@@ -1,0 +1,51 @@
+#ifndef Analysis_StandardTools_Particle_H
+#define Analysis_StandardTools_Particle_H
+
+/** \class Particle
+ *  No description available.
+ *
+ *  $Date: 2013/03/15 13:37:31 $
+ *  $Revision: 1.3 $
+ *  \author R. Bellan - UCSB <riccardo.bellan@cern.ch>
+ */
+
+#include <TObject.h>
+#include <TLorentzVector.h> 
+#include "Math/GenVector/LorentzVector.h"
+
+namespace phys {
+
+  typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
+  TLorentzVector convert(const LorentzVector& l) {return TLorentzVector(l.Px(),l.Py(),l.Pz(),l.E());}
+
+
+  class Particle: public TObject {
+
+  public:
+
+    
+    /// Constructor
+    Particle(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), int q =0)
+      : p4(p)
+      , charge(q){
+    }
+      
+   
+    
+    /// Destructor
+    virtual ~Particle(){};
+    
+    // Operations
+    
+  protected:
+    
+  private:
+    TLorentzVector p4;
+    Int_t charge;
+    
+    ClassDef(Particle, 1) //
+  };
+}
+
+#endif
+

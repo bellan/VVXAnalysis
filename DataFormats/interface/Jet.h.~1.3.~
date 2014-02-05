@@ -1,0 +1,53 @@
+#ifndef Analysis_StandardTools_Jet_H
+#define Analysis_StandardTools_Jet_H
+
+/** \class Jet
+ *  No description available.
+ *
+ *  $Date: 2013/03/12 09:57:23 $
+ *  $Revision: 1.3 $
+ *  \author R. Bellan - UCSB <riccardo.bellan@cern.ch>
+ */
+
+#include "Particle.h"
+
+namespace phys {
+
+  class Jet: public Particle {
+
+  public:
+    
+    /// Constructor
+    Jet(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), int q =0)
+      : Particle(p,q)
+      , chargedHadronMultiplicity(-1)
+      , chargedHadronEnergyFraction(-9999.)
+      , chargedEmEnergyFraction(-9999.)    
+      , neutralEmEnergyFraction(-9999.)    
+      , muonEnergyFraction(-9999.)
+      {}
+    
+    /// Destructor
+    virtual ~Jet(){};
+    
+    // Operations
+    
+  protected:
+    
+  public:
+
+    Double_t csvtagger;         
+    
+    Int_t    chargedHadronMultiplicity;
+    Double_t chargedHadronEnergyFraction;
+    Double_t chargedEmEnergyFraction;    
+    Double_t neutralEmEnergyFraction;    
+    Double_t muonEnergyFraction;
+  
+    
+    ClassDef(Jet, 1) //
+  };
+}
+
+#endif
+

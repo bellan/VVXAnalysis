@@ -1,0 +1,75 @@
+#ifndef Analysis_StandardTools_Lepton_H
+#define Analysis_StandardTools_Lepton_H
+
+/** \class Lepton
+ *  No description available.
+ *
+ *  $Date: 2013/03/15 13:37:31 $
+ *  $Revision: 1.5 $
+ *  \author R. Bellan - UCSB <riccardo.bellan@cern.ch>
+ */
+
+#include "Particle.h"
+#include "Jet.h"
+
+namespace phys {
+
+  class Lepton: public Particle {
+
+  public:
+    
+    /// Constructor
+    Lepton(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), int q =0)
+      : Particle(p,q)
+      , mva(-2.)
+      , dxy(-9999.)               
+      , dz(-9999.)                
+      , sip3Dsignificance(-9999.) 
+      , isoPFrelNeutral(-9999.)   
+      , isoPFrelCharged(-9999.)   
+      , isoIncl0p3(-9999.)        
+      , isoChgd0p3(-9999.)        
+      , drJetLep(-9999.)          
+      , lepJetPtRatio(-9999.)     
+      , isLoose (false)   
+      , isMinimal(false)
+      , isTight(false)
+      , nearestjet(p,q)
+      {}
+    
+   
+    /// Destructor
+    virtual ~Lepton(){};
+    
+    //Lepton(const Lepton&)
+
+
+    // Operations
+    
+  protected:
+    
+  public:
+    Double_t mva;
+    
+    Double_t dxy;               
+    Double_t dz;                
+    Double_t sip3Dsignificance; 
+    Double_t isoPFrelNeutral;   
+    Double_t isoPFrelCharged;   
+    Double_t isoIncl0p3;        
+    Double_t isoChgd0p3;        
+    Double_t drJetLep;          
+    Double_t lepJetPtRatio;     
+    
+    Bool_t isLoose;   
+    Bool_t isMinimal;
+    Bool_t isTight;
+    
+    Jet nearestjet;    
+
+    ClassDef(Lepton, 1) //
+  };
+}
+
+#endif
+

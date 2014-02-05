@@ -1,0 +1,115 @@
+#ifndef ZZWAnalysis_Producers_TreePlanter_H
+#define ZZWAnalysis_Producers_TreePlanter_H
+
+/** \class TreePlanter
+ *  No description available.
+ *
+ *  $Date: $
+ *  $Revision: $
+ *  \author R. Bellan - UNITO <riccardo.bellan@cern.ch>
+ */
+
+#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Utilities/interface/InputTag.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+
+#include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Electron.h"
+#include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
+
+#include "ZZWAnalysis/DataFormats/interface/Lepton.h"
+#include "ZZWAnalysis/DataFormats/interface/Electron.h"
+#include "ZZWAnalysis/DataFormats/interface/Jet.h"
+#include "ZZWAnalysis/DataFormats/interface/Boson.h"
+
+
+class TTree;
+namespace cmg{class PFJet;}
+
+class TreePlanter: public edm::EDAnalyzer {
+  
+ public:
+  
+  /// Constructor
+  TreePlanter(const edm::ParameterSet &);
+  
+  /// Destructor
+  virtual ~TreePlanter(){};
+  
+  // Operations
+  virtual void beginJob();
+  virtual void analyze(const edm::Event& event, const edm::EventSetup& setup);
+  virtual void endJob();
+  void initTree();
+  
+  void fillEventInfo(const edm::Event& event);
+
+  template<typename LEP>
+    phys::Lepton fillLepton(const LEP& particle) const;
+
+   phys::Electron fillElectron(const pat::Electron &electron) const;
+
+   phys::Jet fillJet(const cmg::PFJet &jet) const;
+
+   template<typename PAR>
+     std::vector<phys::Boson<PAR> > fillBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons,  const std::vector<PAR> & physDaughtersCand, int type = 23) const;
+
+ private:
+  struct MinPairComparator{
+    bool operator()( const std::pair<int,double> & a , 
+		     const std::pair<int,double> & b) const{ 
+      return a.second < b.second; 
+    }
+  };
+
+  
+ private:
+
+  TTree *theTree;
+
+  // ------------------- Event info in the tree ------------------- //
+  Int_t event_;
+  Int_t run_;
+  Int_t lumiBlock_;
+  
+
+  Double_t weight_;
+  Double_t puweight_;
+  Double_t xsec_;
+  Int_t nobservedPUInt_; 
+  Int_t ntruePUInt_;
+
+  phys::Particle  met_;
+  Int_t           nvtx_;
+  Double_t        rho_;
+  
+  // ------------------- Objects in the tree ------------------- //
+  std::vector<phys::Lepton>                 muons_;
+  std::vector<phys::Electron>               electrons_;
+  std::vector<phys::Jet>                    jets_;
+  std::vector<phys::Boson<phys::Lepton> >   Zmm_;
+  std::vector<phys::Boson<phys::Electron> > Zee_;
+  std::vector<phys::Boson<phys::Jet> >      Wjj_;
+
+
+  // ------------------- Input Labels ------------------- //
+  edm::InputTag theMuonLabel;
+  edm::InputTag theElectronLabel;
+  edm::InputTag theJetLabel;
+  edm::InputTag theZmmLabel;
+  edm::InputTag theZeeLabel;
+  edm::InputTag theWLabel;
+  edm::InputTag theMETLabel;
+  edm::InputTag theVertexLabel;
+  edm::InputTag thePUInfoLabel;
+
+  // --------------------------------------------------------- //
+
+
+  // Ordinary data members
+  bool isMC_;
+ 
+};
+#endif
+
