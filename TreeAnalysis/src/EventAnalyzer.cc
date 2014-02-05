@@ -1,18 +1,10 @@
 #include "EventAnalyzer.h"
-//#include "../PhenomCorrection/Utilities.h"
 
-
-#include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
-#include <TH2F.h>
 #include <TH1F.h>
 #include <TH1I.h>
 #include <TString.h>
-#include <iostream>
-#include <fstream>
-#include <cmath>
-
 
 using std::cout;
 using std::endl;
@@ -115,10 +107,10 @@ void EventAnalyzer::Init(TTree *tree)
    b_totalEvents = 0; theTree->SetBranchAddress("totalEvents", &totalEvents  , &b_totalEvents  );
 
 
-   thePlots["nelectrons"] = new TH1F("nelectrons","Number of electrons",10,0,10);
-   thePlots["nmuons"]     = new TH1F("nmuons"    ,"Number of muons"    ,10,0,10);  
+   thePlots["nelectrons"] = new TH1I("nelectrons","Number of electrons",10,0,10);
+   thePlots["nmuons"]     = new TH1I("nmuons"    ,"Number of muons"    ,10,0,10);  
    
-   thePlots["nvtx"]       = new TH1F("nvtx"      ,"Number of vertices" ,100,0,100);  
+   thePlots["nvtx"]       = new TH1I("nvtx"      ,"Number of vertices" ,100,0,100);  
    thePlots["rho"]        = new TH1F("rho"      ,"Mean energy density" ,100,0,50);  
    thePlots["met"]        = new TH1F("met"      ,"Missing energy"      ,200,0,800);  
 

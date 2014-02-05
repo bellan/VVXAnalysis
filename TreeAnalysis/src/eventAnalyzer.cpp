@@ -1,14 +1,10 @@
-#include <TChain.h>
-#include <TFile.h>
 #include <iostream>
-#include <TROOT.h>
-#include <TH1F.h>
+#include <boost/lexical_cast.hpp>
 
 #include "ZZWAnalyzer.h"
 
 using std::cout;
 using std::endl;
-#include <boost/lexical_cast.hpp>
 
 int main (int argc, char ** argv){
 

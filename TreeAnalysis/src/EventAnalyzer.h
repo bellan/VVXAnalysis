@@ -4,19 +4,16 @@
 #include <vector>
 #include <string>
 #include <utility>
-#include <TChain.h>
-
-class TTree;
-class TBranch;
-class TH2F;
-class TH1F;
-class TH1I;
-class MuScleFitCorrector;
+#include <map>
 
 #include "Electron.h"
 #include "Lepton.h"
 #include "Jet.h"
 
+class TFile;
+class TTree;
+class TBranch;
+class TH1;
 
 class EventAnalyzer {
 public:
