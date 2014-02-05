@@ -18,10 +18,10 @@
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
 
-#include "ZZWAnalysis/DataFormats/interface/Lepton.h"
-#include "ZZWAnalysis/DataFormats/interface/Electron.h"
-#include "ZZWAnalysis/DataFormats/interface/Jet.h"
-#include "ZZWAnalysis/DataFormats/interface/Boson.h"
+#include "VVXAnalysis/DataFormats/interface/Lepton.h"
+#include "VVXAnalysis/DataFormats/interface/Electron.h"
+#include "VVXAnalysis/DataFormats/interface/Jet.h"
+#include "VVXAnalysis/DataFormats/interface/Boson.h"
 
 
 class TTree;

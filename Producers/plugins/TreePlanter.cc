@@ -1,4 +1,4 @@
-#include "ZZWAnalysis/Producers/plugins/TreePlanter.h"
+#include "VVXAnalysis/Producers/plugins/TreePlanter.h"
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
@@ -13,7 +13,7 @@
 
 #include "AnalysisDataFormats/CMGTools/interface/PFJet.h"
 #include "AnalysisDataFormats/CMGTools/interface/BaseMET.h"
-#include "ZZWAnalysis/DataFormats/interface/Utilities.h"
+#include "VVXAnalysis/DataFormats/interface/Utilities.h"
 
 
 #include <TTree.h>
