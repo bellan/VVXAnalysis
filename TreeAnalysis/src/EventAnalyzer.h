@@ -4,7 +4,6 @@
 #include <vector>
 #include <string>
 #include <utility>
-#include <TROOT.h>
 #include <TChain.h>
 
 class TTree;
