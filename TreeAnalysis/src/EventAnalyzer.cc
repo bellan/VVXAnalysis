@@ -116,7 +116,7 @@ void EventAnalyzer::Init(TTree *tree)
 
    book("mu");
    book("e");
-   bookExtra("e");
+   bookExtraForElectrons("e");
 
    begin();
    book();
@@ -144,22 +144,29 @@ void EventAnalyzer::Show(Long64_t entry)
 }
 
 void EventAnalyzer::book(const std::string &type){
-   thePlots[type+"_pt"]    = new TH1F(TString(type+"_pt") , "p_{T} spectrum",100,0,500);  
-   thePlots[type+"_eta"]   = new TH1F(TString(type+"_eta") , "#eta spectrum",100,-2.5,2.5);  
-   thePlots[type+"_phi"]   = new TH1F(TString(type+"_phi") , "#phi spectrum",50,-3.15,3.15);  
-   
-   thePlots[type+"_dxy"] = new TH1F(TString(type+"_dxy"), "d_{xy}", 200,   0,  0.5);               
-   thePlots[type+"_dz"]  = new TH1F(TString(type+"_dz") , "d_{z}" , 200,   0,  0.5);                
-   thePlots[type+"_sip"] = new TH1F(TString(type+"_sip"), "sip", 100, -10,  10); 
-   //   thePlots[type+"_isoPFrelNeutral"]   = new TH1F(TString(type+"_isoPFrelNeutral")  , "isoPFrelNeutral"  , 200,   0,   1);   
-   //thePlots[type+"_isoPFrelCharged"]   = new TH1F(TString(type+"_isoPFrelCharged")  , "isoPFrelCharged"  , 200,   0,   1);   
-   //thePlots[type+"_isoPFrelNeuChg"]   = new TH1F(TString(type+"_isoPFrelNeuChg")  , "isoPFrelNeuChg"     , 500,   0,   1);   
-   //thePlots[type+"_isoIncl0p3"]        = new TH1F(TString(type+"_isoIncl0p3")       , "isoIncl0p3"       , 100,   0, 100);        
-   //thePlots[type+"_isoChgd0p3"]        = new TH1F(TString(type+"_isoChgd0p3")       , "isoChgd0p3"       , 100,   0, 100);        
+   thePlots[type+"_pt"]    = new TH1F(TString(type+"_pt") , "p_{T} spectrum", 100,   0   , 500   );  
+   thePlots[type+"_eta"]   = new TH1F(TString(type+"_eta"), "#eta spectrum" , 100,  -2.5 ,   2.5 );  
+   thePlots[type+"_phi"]   = new TH1F(TString(type+"_phi"), "#phi spectrum" ,  50,  -3.15,   3.15);   
+   thePlots[type+"_dxy"]   = new TH1F(TString(type+"_dxy"), "d_{xy}"        , 200,   0   ,   0.5 );               
+   thePlots[type+"_dz"]    = new TH1F(TString(type+"_dz") , "d_{z}"         , 200,   0   ,   0.5 );                
+   thePlots[type+"_sip"]   = new TH1F(TString(type+"_sip"), "sip"           , 100, -10   ,  10   ); 
+   thePlots[type+"_combRelIso"]      = new TH1F(TString(type+"_combRelIso")      , "combRelIso"     , 200,   0,   1); 
+   thePlots[type+"_pfCombRelIso"]    = new TH1F(TString(type+"_pfCombRelIso")    , "pfCombRelIso"   , 200,   0,   1);   
+   thePlots[type+"_pfNeutralHadIso"] = new TH1F(TString(type+"_pfNeutralHadIso") , "pfNeutralHadIso", 200,   0,   1);   
+   thePlots[type+"_pfChargedHadIso"] = new TH1F(TString(type+"_pfChargedHadIso") , "pfChargedHadIso", 200,   0,   1);  
+   thePlots[type+"_pfPhotonHadIso"]  = new TH1F(TString(type+"_pfPhotonHadIso")  , "pfPhotonHadIso" , 200,   0,   1);    
+   thePlots[type+"_rho"]             = new TH1F(TString(type+"_rho")             , "rho"            , 200,   0, 200);   
 }
 
 
-void EventAnalyzer::bookExtra(const std::string &type){
+void EventAnalyzer::bookExtraForElectrons(const std::string &type){
+  thePlots[type+"_energy"]     = new TH1F(TString(type+"_energy")    , "energy spectrum"   , 100,  0   , 500   );  
+  thePlots[type+"_phiWidth"]   = new TH1F(TString(type+"_phiWidth")  , "#phi width"        ,  50, -3.15,   3.15);   
+  thePlots[type+"_etaWidth"]   = new TH1F(TString(type+"_etaWidth")  , "#eta width"        , 100, -2.5 ,   2.5 );  
+  thePlots[type+"_BDT"]        = new TH1F(TString(type+"_BDT")       , "BDT"               , 100, -1   ,   1   );   
+  thePlots[type+"_isBDT"]      = new TH1I(TString(type+"_isBDT")     , "is BDT?"           ,   2,  0   ,   2   );  
+  thePlots[type+"_missingHit"] = new TH1I(TString(type+"_missingHit"), "Missing hits"      ,  50,  0   ,  50   );   
+  thePlots[type+"_nCrystals"]  = new TH1I(TString(type+"_nCrystals") , "Number of Crystals",  50,  0   ,  50   );   
 }
 
 
@@ -216,24 +223,45 @@ void EventAnalyzer::basicPlots(){
   foreach(const phys::Electron& e, *electrons) fillLeptonPlots("e",e);
 }
 
-void EventAnalyzer::fillLeptonPlots(const std::string &type, const phys::Lepton & lepton){
-  
+void EventAnalyzer::fillParticlePlots(const std::string &type, const phys::Particle & lepton){
   thePlots[type+"_pt"]->Fill(lepton.pt(),   theWeight);
   thePlots[type+"_eta"]->Fill(lepton.eta(), theWeight);
   thePlots[type+"_phi"]->Fill(lepton.phi(), theWeight);
+}
+
+void EventAnalyzer::fillLeptonPlots(const std::string &type, const phys::Lepton & lepton){
   
+  fillParticlePlots(type, lepton);
+
   thePlots[type+"_dxy"]->Fill(lepton.dxy(), theWeight);   
   thePlots[type+"_dz"] ->Fill(lepton.dz(), theWeight);
   thePlots[type+"_sip"]->Fill(lepton.sip(), theWeight); 
-  // thePlots[type+"_isoPFrelNeutral"]  ->Fill(lepton.isoPFrelNeutral  , theWeight);   
-  //hePlots[type+"_isoPFrelCharged"]  ->Fill(lepton.isoPFrelCharged  , theWeight); 
-  //thePlots[type+"_isoPFrelNeuChg"]   ->Fill(lepton.isoPFrelCharged + lepton.isoPFrelCharged, theWeight);
-  //thePlots[type+"_isoIncl0p3"]       ->Fill(lepton.isoIncl0p3       , theWeight);        
-  //thePlots[type+"_isoChgd0p3"]       ->Fill(lepton.isoChgd0p3       , theWeight);        
+
+  thePlots[type+"_combRelIso"]     ->Fill(lepton.combRelIso()     , theWeight);       
+  thePlots[type+"_pfCombRelIso"]   ->Fill(lepton.pfChargedHadIso(), theWeight);           
+  thePlots[type+"_pfNeutralHadIso"]->Fill(lepton.pfNeutralHadIso(), theWeight);        
+  thePlots[type+"_pfChargedHadIso"]->Fill(lepton.pfPhotonIso()    , theWeight);        
+  thePlots[type+"_pfPhotonHadIso"] ->Fill(lepton.pfCombRelIso()   , theWeight);         
+  thePlots[type+"_rho"]            ->Fill(lepton.rho()            , theWeight);                    
 }
 
-void EventAnalyzer::fillElectronExtraPlots(const std::string &type, const phys::Electron &electron){
+void EventAnalyzer::fillElectronPlots (const std::string &type, const phys::Electron &electron){
+  fillLeptonPlots  (type, electron);
+  fillElectronPlots(type, electron);
+}
+
+void EventAnalyzer::fillExtraPlotsForElectrons(const std::string &type, const phys::Electron &electron){
+
+  thePlots[type+"_energy"]    ->Fill(electron.energy()    , theWeight);  
+  thePlots[type+"_phiWidth"]  ->Fill(electron.phiWidth()  , theWeight);  
+  thePlots[type+"_etaWidth"]  ->Fill(electron.etaWidth()  , theWeight);  
+  thePlots[type+"_BDT"]       ->Fill(electron.BDT()       , theWeight);  
+  thePlots[type+"_isBDT"]     ->Fill(electron.isBDT()     , theWeight);  
+  thePlots[type+"_missingHit"]->Fill(electron.missingHit(), theWeight);  
+  thePlots[type+"_nCrystals"] ->Fill(electron.nCrystals() , theWeight);  
+}
+
+void EventAnalyzer::fillJetPlots(const std::string &type, const phys::Jet      &jet){
+  fillParticlePlots(type, jet);
   
 }
-
-

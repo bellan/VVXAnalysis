@@ -1,12 +1,12 @@
-#ifndef ZZWAnalysis_DataFormats_Electron_H
-#define ZZWAnalysis_DataFormats_Electron_H
+#ifndef VVXAnalysis_DataFormats_Electron_H
+#define VVXAnalysis_DataFormats_Electron_H
 
 /** \class Electron
  *  No description available.
  *
  *  $Date: 2013/03/15 13:37:31 $
  *  $Revision: 1.3 $
- *  \author R. Bellan - UCSB <riccardo.bellan@cern.ch>
+ *  \author R. Bellan - UNITO <riccardo.bellan@cern.ch>
  */
 
 #include "Lepton.h"

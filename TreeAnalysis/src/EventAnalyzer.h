@@ -51,10 +51,15 @@ public:
   
   // Some basic plots. User may want to change these, thou they should be used only for very basic plots.
   void book(const std::string&);
-  void bookExtra(const std::string&);
+  void bookExtraForElectrons(const std::string&);
+  void bookExtraForJets(const std::string&);
   virtual void     basicPlots();
-  void fillLeptonPlots(const std::string&, const phys::Lepton&);
-  void fillElectronExtraPlots(const std::string &type, const phys::Electron &electron);
+  void fillParticlePlots         (const std::string &type, const phys::Particle &particle);
+  void fillLeptonPlots           (const std::string &type, const phys::Lepton   &lepton);
+  void fillJetPlots              (const std::string &type, const phys::Jet      &jet);
+  void fillElectronPlots         (const std::string &type, const phys::Electron &electron);
+  void fillExtraPlotsForElectrons(const std::string &type, const phys::Electron &electron);
+
   
 
  private:
