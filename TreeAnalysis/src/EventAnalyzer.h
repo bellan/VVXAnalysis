@@ -2,7 +2,8 @@
 #define VVXAnalysis_TreeAnalysis_EventAnalyzer_H
 
 /** \class EventAnalyzer
- *  Base class for event analyzers
+ *  Base class for event analyzers. Analyzers have to inherit from this class 
+ *  and implement the pure virtual function analyze(), called each event.
  *
  *  $Date: 2013/03/15 13:37:31 $
  *  $Revision: 1.4 $
@@ -28,7 +29,7 @@ class EventAnalyzer {
 public:
   enum METType {Std,NoMu,NoEl};
 
-  EventAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1.);
+  EventAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = false);
   virtual ~EventAnalyzer();
 
   struct PtComparator{
@@ -54,8 +55,6 @@ public:
   virtual Int_t    GetEntry(Long64_t entry);
   virtual Long64_t LoadTree(Long64_t entry);
   virtual void     Init(TTree *tree);
-  virtual Bool_t   Notify();
-  virtual void     Show(Long64_t entry = -1);
   
   // Some basic plots. User may want to change these, thou they should be used only for very basic plots.
   virtual void     fillBasicPlots();
@@ -68,6 +67,7 @@ public:
  private:
   TTree *theTree;
   int fCurrent; 
+  bool doBasicPlots_;
 
  protected:
   // Histograms helper class
@@ -78,18 +78,21 @@ public:
   int    theCutCounter;
 
   // Access to the branches
-  Int_t    nvtx  ; TBranch *b_nvtx   ;
-  Double_t rho   ; TBranch *b_rho    ;
-  Double_t weight; TBranch *b_weight ;
-  Double_t puweight; TBranch *b_puweight ;
-  Double_t xsec  ; TBranch *b_xsec   ;
-  Int_t totalEvents; TBranch *b_totalEvents;
+  Int_t    event    ; TBranch *b_event;
+  Int_t    run      ; TBranch *b_run;
+  Int_t    lumiBlock; TBranch *b_lumiBlock;
+  Int_t    nvtx     ; TBranch *b_nvtx;
+  Double_t rho      ; TBranch *b_rho;
+  Double_t weight   ; TBranch *b_weight;
+  Double_t puweight ; TBranch *b_puweight;
+  Double_t xsec     ; TBranch *b_xsec;
+  Int_t totalEvents ; TBranch *b_totalEvents;
 
   //MET
-  phys::Particle *met   ; TBranch *b_met    ;
+  phys::Particle *met   ; TBranch *b_met;
 
   //Muons
-  std::vector<phys::Lepton> *muons      ; TBranch *b_muons    ;    
+  std::vector<phys::Lepton> *muons; TBranch *b_muons;    
 
   //Electrons
   std::vector<phys::Electron> *electrons; TBranch *b_electrons;

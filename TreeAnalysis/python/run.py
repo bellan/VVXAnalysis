@@ -1,5 +1,11 @@
 #! /usr/bin/env python
 
+
+##################################
+## R. Bellan (UNITO) - Feb 2014 ##
+##################################
+
+
 import sys, os, commands, math
 
 from readSampleInfo import *
@@ -12,7 +18,7 @@ typeofsamples = ['test','mudata', 'edata', 'W', 'Z', 'ttbar','QCDPT', 'diboson',
 
 def run(typeofsample, cregion):
     inputdir  = '../samples/newvars20130711/'
-    outputdir = '../output'
+    outputdir = 'output'
     
     executable = 'bin/eventAnalyzer'
     lumi = 19029.853
@@ -81,6 +87,8 @@ def run(typeofsample, cregion):
         print output
         hadd = hadd + " " + outputdir+basefile+'.root'
 
+    if os.path.exists( outputdir+typeofsample + '.root'):
+        os.popen('rm "%s".root' %(outputdir+typeofsample))
     print hadd
     failure, output = commands.getstatusoutput(hadd)
 

@@ -1,6 +1,10 @@
+##################################
+## R. Bellan (UNITO) - Feb 2014 ##
+##################################
+
 cmake_minimum_required(VERSION 2.6)
 
-project(MVALeptonID) 
+project(VVXAnalysis) 
 
 #options here
 set(CMAKE_CXX_FLAGS "-Wall -march=native")
