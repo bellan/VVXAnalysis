@@ -52,7 +52,10 @@ execfile(PyFilePath + "MasterPy/ZZ4lAnalysis.py")         # 2012 reference analy
   ### Replace parameters
 ### ----------------------------------------------------------------------
 process.source.fileNames = cms.untracked.vstring(
-    'root://lxcms00//data3/2013/HZZ_cmgTuple/BE539_H1258TeV.root' #533 V5_15_0 version
+    #'root://lxcms00//data3/2013/HZZ_cmgTuple/BE539_H1258TeV.root' #533 V5_15_0 version
+    '/store/cmst3/group/cmgtools/CMG/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_nLP.root'
+    #'/store/cmst3/group/cmgtools/CMG/WZZ_8TeV-aMCatNLO-herwig/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_GEb.root'
+    #'/store/cmst3/group/cmgtools/CMG/ZZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_UV1.root'
     )
 
 
@@ -64,7 +67,7 @@ process.calibratedMuons.fakeSmearing = cms.bool(True)
 
 #process.appendPhotons.debug = cms.untracked.bool(True)
 
-process.maxEvents.input = 100
+process.maxEvents.input = -1
 
 # Silence output
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -80,7 +83,8 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
                                            Jets  = cms.InputTag("cmgPFJetSel"),
                                            Muons = cms.InputTag("appendPhotons:muons"),
-                                           Electrons = cms.InputTag("appendPhotons:electrons"))
+                                           Electrons = cms.InputTag("appendPhotons:electrons")
+                                           EnergyFractionAllowed = cms.double(0)) # maximum energy fraction carried by the lepton in the jet, to accept a jet as non from lepton
 
 process.bareWCand = cms.EDProducer("CandViewShallowCloneCombiner",
                                    decay = cms.string('cmgPFJetSel cmgPFJetSel'),
@@ -116,7 +120,6 @@ process.Candidates = cms.Path(process.muons             +
                               process.WjjSequence
                               )
 
-
 # Fill the tree for the analysis
 process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      muons     = cms.InputTag("appendPhotons:muons"),
@@ -127,11 +130,17 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      Wjj       = cms.InputTag("WCand"),
                                      MET       = cms.InputTag("cmgPFMET"),
                                      Vertices  = cms.InputTag("goodPrimaryVertices"),                                    
-                                     isMC      = cms.untracked.bool(False),
+                                     isMC      = cms.untracked.bool(True),
                                      PUInfo    = cms.untracked.InputTag("addPileupInfo")
                                      )
 
-process.filltrees = cms.Path(process.treePlanter)
+
+process.genCategory =  cms.EDFilter("GenFilterCategory",
+                                    src = cms.InputTag("genParticlesPruned"),
+                                    Category = cms.int32(-1),
+                                    SignalDefinition = cms.int32(1))
+
+process.filltrees = cms.Path(process.printTree + process.genCategory * process.treePlanter)
 
 
 ### ----------------------------------------------------------------------

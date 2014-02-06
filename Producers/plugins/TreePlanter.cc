@@ -58,9 +58,10 @@ void TreePlanter::beginJob(){
   theTree->Branch("run"       , &run_); 
   theTree->Branch("lumiBlock" , &lumiBlock_); 
 
-  theTree->Branch("weight",      &weight_);
-  theTree->Branch("puweight",    &puweight_);
-  theTree->Branch("xsec"  ,      &xsec_);
+  theTree->Branch("weight"     , &weight_);
+  theTree->Branch("puweight"   , &puweight_);
+  theTree->Branch("xsec"       , &xsec_);
+  theTree->Branch("genCategory", &genCategory_);
 
   theTree->Branch("met"   , &met_);
   theTree->Branch("rho"   , &rho_); 
@@ -71,7 +72,9 @@ void TreePlanter::beginJob(){
   theTree->Branch("jets"     , &jets_); 
   theTree->Branch("Zmm"      , &Zmm_); 
   theTree->Branch("Zee"      , &Zee_); 
-  theTree->Branch("Wjj"      , &Wjj_); 
+  theTree->Branch("Wjj"      , &Wjj_);
+
+  theTree->Branch("genParticles", &genParticles_);
 }
 
 
@@ -86,6 +89,7 @@ void TreePlanter::initTree(){
   weight_         =  1;
   puweight_       =  1; 
   xsec_           = -1;
+  genCategory_    = -1;
   nobservedPUInt_ = -1;
   ntruePUInt_     = -1;
 
@@ -99,6 +103,8 @@ void TreePlanter::initTree(){
   Zmm_       = std::vector<phys::Boson<phys::Lepton> >();   
   Zee_       = std::vector<phys::Boson<phys::Electron> >();   
   Wjj_       = std::vector<phys::Boson<phys::Jet> >();   
+
+  genParticles_ = std::vector<phys::Particle>();
  }
 
 
@@ -129,17 +135,17 @@ void TreePlanter::fillEventInfo(const edm::Event& event){
     // FIXME do be completed
     edm::Handle<edm::View<reco::Candidate> > genParticles;
     event.getByLabel(theGenCollectionLabel,  genParticles);
- 
+    
+    for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) 
+      if (p->status() ==3 && std::distance(genParticles->begin(),p) > 5)
+	genParticles_.push_back(phys::Particle(p->p4(), 0, p->pdgId())); // fixme: set properly the charge
+         
+  
     edm::Handle<int> genCategory;
     event.getByLabel(theGenCategoryLabel, genCategory);
-    cout<<"Gen category: " << *genCategory << endl;
-
+    genCategory_ = *genCategory;
   }
-
-
-
 }
-
 
 
 

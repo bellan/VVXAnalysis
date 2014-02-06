@@ -77,6 +77,7 @@ class TreePlanter: public edm::EDAnalyzer {
   Double_t weight_;
   Double_t puweight_;
   Double_t xsec_;
+  Int_t genCategory_;
   Int_t nobservedPUInt_; 
   Int_t ntruePUInt_;
 
@@ -91,7 +92,7 @@ class TreePlanter: public edm::EDAnalyzer {
   std::vector<phys::Boson<phys::Lepton> >   Zmm_;
   std::vector<phys::Boson<phys::Electron> > Zee_;
   std::vector<phys::Boson<phys::Jet> >      Wjj_;
-
+  std::vector<phys::Particle>               genParticles_;
 
   // ------------------- Input Labels ------------------- //
   edm::InputTag theMuonLabel;

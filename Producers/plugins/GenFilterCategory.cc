@@ -101,8 +101,6 @@ void GenFilterCategory::beginJob() {
   edm::Handle<edm::View<reco::Candidate> > genParticles;
   event.getByLabel(genLabel_, genParticles);
  
-  cout<<"Gen particle size: "<<genParticles->size()<<endl;
-
   //------------------ loop over genparticles ---------------------------------------------------------
   for (View<Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) {
     
@@ -112,8 +110,6 @@ void GenFilterCategory::beginJob() {
       int id   = abs(s_id);
       int idx  = std::distance(genParticles->begin(),p);     
       
-      cout<<"PDG id: "<< s_id <<endl;
-
       if ( (id < 7 || id == 21) && idx > 5 ) {   // quarks and gluons
 	theGenj.push_back(&*p);
       }
@@ -138,8 +134,6 @@ void GenFilterCategory::beginJob() {
   int leptonCode = 0;
   if( numMu == 2 && numE == 2 ) leptonCode = 2;
   if( (numMu == 4 && numE == 0) || (numMu == 0 && numE == 4) ) leptonCode = 4;
-
-  cout<<"Lepton code: " << leptonCode <<endl;
 
   if ( theGenq.size() == 2 && theGenl.size() == 4 && (leptonCode == 2 || leptonCode == 4) ) {
 
@@ -167,9 +161,8 @@ void GenFilterCategory::beginJob() {
     bool isZtight  = false;
 
     int bosonId = partonsComposition(j0,j1);
-    cout << "j0 id: " << j0->pdgId() << " j1 id: " << j1->pdgId() << " boson id: " << bosonId << " mass: " << (j0->p4() + j1->p4()).mass() <<endl;
-
-
+    bool qqPassMWwindow = fabs((j0->p4() + j1->p4()).mass() - mW) < 10;
+    bool qqPassMZwindow = fabs((j0->p4() + j1->p4()).mass() - mZ) < 10;
 
     //================Definition of loose particles (mass) =======================
 
@@ -190,8 +183,8 @@ void GenFilterCategory::beginJob() {
 	LeptonsMotherSelec = LeptonsMotherSelec && theGenl[t]->mother()->pdgId() == 23;
       }
       
-      if ( (isWloose || fabs((j0->p4() + j1->p4()).mass() - mW) < 10) && theGenW.size() == 1) isWtight = true;      //definition of tight W (mass + cat)
-      if ( (isZloose || fabs((j0->p4() + j1->p4()).mass() - mZ) < 10) && theGenZ.size() == 3) isZtight = true;      //definition of tight Z (mass + cat)
+      if ( (isWloose || qqPassMWwindow) && theGenW.size() == 1) isWtight = true;      //definition of tight W (mass + cat)
+      if ( (isZloose || qqPassMZwindow) && theGenZ.size() == 3) isZtight = true;      //definition of tight Z (mass + cat)
       
       if ( theGenZ.size() >= 2 && LeptonsMotherSelec ) {
 	
@@ -246,7 +239,7 @@ void GenFilterCategory::beginJob() {
       if ( abs(theGenl[2]->pdgId()) == 11 ) Z1->SetdaughtersId(1); //u
       if ( abs(theGenl[2]->pdgId()) == 13 ) Z1->SetdaughtersId(2); //e   
       
-      if ( isWloose && fabs(bosonId) == 24 ) {      //definition of tight W (mass + cat)
+      if ( (isWloose || qqPassMWwindow) && fabs(bosonId) == 24 ) {      //definition of tight W (mass + cat)
 	
     	W->Setdaughter1(j0->p4());
     	W->Setdaughter2(j1->p4());
@@ -255,7 +248,7 @@ void GenFilterCategory::beginJob() {
    	
 	isWtight = true;
 	
-      } else if ( isZloose && bosonId == 23 ) {     //definition of tight Z (mass + cat)
+      } else if ( (isZloose || qqPassMZwindow) && bosonId == 23 ) {     //definition of tight Z (mass + cat)
 	
 	Z2->Setdaughter1(j0->p4());
     	Z2->Setdaughter2(j1->p4());
@@ -278,23 +271,23 @@ void GenFilterCategory::beginJob() {
 
       if ( Z0->p4().mass() != 0 && Z1->p4().mass() != 0 ) {
 
-	if ( (isWloose || fabs((j0->p4() + j1->p4()).mass() - mW) < 10)  && fabs(bosonId) == 24 ) {    //definition of tight W (mass + cat)
+	if ( (isWloose || qqPassMWwindow)  && fabs(bosonId) == 24 ) {    //definition of tight W (mass + cat)
 	  
 	  W->Setdaughter1(j0->p4());
 	  W->Setdaughter2(j1->p4());
 	  W->SetbosonId(bosonId);
 	  W->SetdaughtersId(3);
 	  
-	  if (fabs((j0->p4() + j1->p4()).mass() - mW) < 10) isWtight = true;  
+	  if (qqPassMWwindow) isWtight = true;  
 	  
-	} else if ( (isZloose || fabs((j0->p4() + j1->p4()).mass() - mZ) < 10)  && bosonId == 23 ) {   //definition of tight Z (mass + cat)
+	} else if ( (isZloose || qqPassMZwindow)  && bosonId == 23 ) {   //definition of tight Z (mass + cat)
 	  
 	  Z2->Setdaughter1(j0->p4());
 	  Z2->Setdaughter2(j1->p4());
 	  Z2->SetbosonId(bosonId);
 	  Z2->SetdaughtersId(3);
 	  
-	  if(fabs((j0->p4() + j1->p4()).mass() - mZ) < 10){
+	  if(qqPassMZwindow){
 	    isZtight = true;
 	    has3Z = true; 
 	  }
@@ -311,7 +304,7 @@ void GenFilterCategory::beginJob() {
     //=====================================================================================
 
     bool hasZZ4l    = fabs(Z0->p4().mass()-mZ) < 10. && fabs(Z1->p4().mass()-mZ) < 10.;
-    bool isMySignal = hasZZ4l && fabs(W->p4().mass()-mW) < 10.;
+    bool isMySignal = hasZZ4l && isWtight;
       
     bool passEtaAccLep = true;
       
@@ -324,12 +317,12 @@ void GenFilterCategory::beginJob() {
     
     if ( passEtaAccLep ) {
       
-      cout << "CHECK: Z0 MASS =  " << Z0->p4().mass() << endl;
+      //cout << "CHECK: Z0 MASS =  " << Z0->p4().mass() << endl;
 
       //Signal: ZZW---------------------------------------categoryNum=0---------------------
       if ( isMySignal ) {
 	categoryNum = 0;
-	cout << "SIGNAL: "  << event.id().event() << "\nEvent category: " << categoryNum << endl;
+	//cout << "SIGNAL: "  << event.id().event() << "\nEvent category: " << categoryNum << endl;
 	category->Fill(0);
 
       } 
@@ -343,7 +336,7 @@ void GenFilterCategory::beginJob() {
 	  //ZZZ ----------------------------------------- categoryNum = 1 ------------------------ 
 	  if ( has3Z ) {
 	    categoryNum = 1;
-	    cout << "ZZZ: " << event.id().event() << "\nEvent category: " << categoryNum << endl;
+	    //cout << "ZZZ: " << event.id().event() << "\nEvent category: " << categoryNum << endl;
 	    category->Fill(1);
 	  }
 	  

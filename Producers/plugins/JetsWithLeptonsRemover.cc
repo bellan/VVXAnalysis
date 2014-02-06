@@ -30,6 +30,7 @@ private:
   edm::InputTag jetSrc_;
   edm::InputTag muonSrc_;
   edm::InputTag electronSrc_;
+  double enFractionAllowed_;
 
   /// Preselection cut
   //StringCutObjectSelector<T> preselection_;
@@ -37,9 +38,10 @@ private:
 
 
 JetsWithLeptonsRemover::JetsWithLeptonsRemover(const edm::ParameterSet & iConfig)
-  : jetSrc_     (iConfig.getParameter<edm::InputTag>("Jets"))
-  , muonSrc_    (iConfig.getParameter<edm::InputTag>("Muons"))
-  , electronSrc_(iConfig.getParameter<edm::InputTag>("Electrons")){
+  : jetSrc_           (iConfig.getParameter<edm::InputTag>("Jets"))
+  , muonSrc_          (iConfig.getParameter<edm::InputTag>("Muons"))
+  , electronSrc_      (iConfig.getParameter<edm::InputTag>("Electrons"))
+  , enFractionAllowed_(iConfig.getParameter<double>("EnergyFractionAllowed")) {
   produces<std::vector<cmg::PFJet> >(); 
 }
 
@@ -54,42 +56,42 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
   edm::Handle<pat::MuonCollection>       muons       ; event.getByLabel(muonSrc_    ,     muons);
   edm::Handle<pat::ElectronCollection>   electrons   ; event.getByLabel(electronSrc_, electrons);
 
-  std::cout<<"----------- Muon -----------"<<std::endl;
-  foreach(const pat::Muon& muon, *muons)
-    std::cout<<"pt: " << muon.pt() << " eta: " << muon.eta() << " phi: " << muon.phi() << " p: " << muon.p() <<std::endl;
+  //std::cout<<"----------- Muon -----------"<<std::endl;
+  //foreach(const pat::Muon& muon, *muons)
+  //  std::cout<<"pt: " << muon.pt() << " eta: " << muon.eta() << " phi: " << muon.phi() << " p: " << muon.p() <<std::endl;
   
 
-  std::cout<<"----------- Jets -----------"<<std::endl;
+  //std::cout<<"----------- Jets -----------"<<std::endl;
   auto_ptr<vector<cmg::PFJet> > out(new vector<cmg::PFJet>());
   foreach(const cmg::PFJet& jet, *jets){
     
-    std::cout<<"\n+++++ Jet +++++ pt: " << jet.pt() << " eta: " << jet.eta() << " phi: " << jet.phi() << std::endl;
+    //std::cout<<"\n+++++ Jet +++++ pt: " << jet.pt() << " eta: " << jet.eta() << " phi: " << jet.phi() << std::endl;
 
     bool leptonjet = false;
 
     const cmg::PFJetComponent mucomp = jet.component(reco::PFCandidate::ParticleType::mu);
     const cmg::PFJetComponent ecomp = jet.component(reco::PFCandidate::ParticleType::e);
-    std::cout<<"== mu comp == num: " << mucomp.number() << " fraction: " << mucomp.fraction() << std::endl; 
-    std::cout<<"== e comp == num: "  << ecomp.number()  << " fraction: " << ecomp.fraction()  << std::endl; 
+    //std::cout<<"== mu comp == num: " << mucomp.number() << " fraction: " << mucomp.fraction() << std::endl; 
+    //std::cout<<"== e comp == num: "  << ecomp.number()  << " fraction: " << ecomp.fraction()  << std::endl; 
 
-    if((mucomp.number() == 0 && ecomp.number() == 0) || (mucomp.fraction() < 0.5 && ecomp.fraction() < 0.5)){
+    if((mucomp.number() == 0 && ecomp.number() == 0) || (mucomp.fraction() < enFractionAllowed_ && ecomp.fraction() < enFractionAllowed_)){
        out->push_back(jet);
        continue;
     }
 
-    if(mucomp.number() > 0 && mucomp.fraction() > 0.50){
+    if(mucomp.number() > 0 && mucomp.fraction() >= enFractionAllowed_){
       math::XYZVectorD v(mucomp.pt(), 0, sqrt(mucomp.energy()*mucomp.energy() - mucomp.pt()*mucomp.pt()));
       double mucomp_abseta = v.eta();
       double mucomp_pt      = mucomp.pt();
-      std::cout<<"-- comp -- pt: " << mucomp_pt << " eta: " << mucomp_abseta                           << " p: " << mucomp.energy() << std::endl;
+      //std::cout<<"-- comp -- pt: " << mucomp_pt << " eta: " << mucomp_abseta                           << " p: " << mucomp.energy() << std::endl;
 
       foreach(const pat::Muon& muon, *muons){
-	std::cout<< (muon.pt()-mucomp_pt)/muon.pt() << " " << (abs(muon.eta())-mucomp_abseta)/abs(muon.eta()) << std::endl;
+	//std::cout<< (muon.pt()-mucomp_pt)/muon.pt() << " " << (abs(muon.eta())-mucomp_abseta)/abs(muon.eta()) << std::endl;
 	  
 	if(isAlmostEqual(muon.pt(), mucomp_pt, 0.1) && isAlmostEqual(abs(muon.eta()), mucomp_abseta, 0.01)){
 	  leptonjet = true;
-	  std::cout<<"\t\t !!! Found a muon-jet matching !!!"<<std::endl;
-	  std::cout<<"-- muon -- pt: " << muon.pt()   << " eta: " << muon.eta()    << " phi: " << muon.phi() << " p: " << muon.p()        << std::endl;
+	  //std::cout<<"\t\t !!! Found a muon-jet matching !!!"<<std::endl;
+	  //std::cout<<"-- muon -- pt: " << muon.pt()   << " eta: " << muon.eta()    << " phi: " << muon.phi() << " p: " << muon.p()        << std::endl;
 	}
       }
     }
@@ -98,13 +100,13 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
       math::XYZVectorD v(ecomp.pt(), 0, sqrt(ecomp.energy()*ecomp.energy() - ecomp.pt()*ecomp.pt()));
       double ecomp_abseta = v.eta();
       double ecomp_pt     = ecomp.pt();
-      std::cout<<"-- comp -- pt: "     << ecomp_pt      << " eta: " << ecomp_abseta                                    << " p: " << ecomp.energy() << std::endl;      
+      //std::cout<<"-- comp -- pt: "     << ecomp_pt      << " eta: " << ecomp_abseta                                    << " p: " << ecomp.energy() << std::endl;      
 
       foreach(const pat::Electron& electron, *electrons)
-	if(isAlmostEqual(electron.pt(), double(ecomp.pt()), 0.1) && isAlmostEqual(abs(electron.eta()), ecomp_abseta, 0.01)){
+	if(isAlmostEqual(electron.pt(), ecomp_pt, 0.1) && isAlmostEqual(abs(electron.eta()), ecomp_abseta, 0.01)){
 	  leptonjet = true;
-      	  std::cout<<"\t\t !!! Found a electron-jet matching !!!"<<std::endl;
-	  std::cout<<"-- electron -- pt: " << electron.pt()   << " eta: " << electron.eta()    << " phi: " << electron.phi() << " p: " << electron.p()   << std::endl;
+      	  //std::cout<<"\t\t !!! Found a electron-jet matching !!!"<<std::endl;
+	  //std::cout<<"-- electron -- pt: " << electron.pt()   << " eta: " << electron.eta()    << " phi: " << electron.phi() << " p: " << electron.p()   << std::endl;
 	}
     }
 
