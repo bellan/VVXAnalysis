@@ -101,6 +101,8 @@ void GenFilterCategory::beginJob() {
   edm::Handle<edm::View<reco::Candidate> > genParticles;
   event.getByLabel(genLabel_, genParticles);
  
+  cout<<"Gen particle size: "<<genParticles->size()<<endl;
+
   //------------------ loop over genparticles ---------------------------------------------------------
   for (View<Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) {
     
@@ -110,10 +112,12 @@ void GenFilterCategory::beginJob() {
       int id   = abs(s_id);
       int idx  = std::distance(genParticles->begin(),p);     
       
-      if ( (id < 8 || id == 9) && idx > 5 ) {   // quarks and gluons
+      cout<<"PDG id: "<< s_id <<endl;
+
+      if ( (id < 7 || id == 21) && idx > 5 ) {   // quarks and gluons
 	theGenj.push_back(&*p);
       }
-      if ( id < 8  && idx > 5 ) {               // quarks
+      if ( id < 7  && idx > 5 ) {               // quarks
 	theGenq.push_back(&*p);
       } else if ( id==23 ) {                    // Z
 	theGenZ.push_back(&*p);
@@ -134,6 +138,8 @@ void GenFilterCategory::beginJob() {
   int leptonCode = 0;
   if( numMu == 2 && numE == 2 ) leptonCode = 2;
   if( (numMu == 4 && numE == 0) || (numMu == 0 && numE == 4) ) leptonCode = 4;
+
+  cout<<"Lepton code: " << leptonCode <<endl;
 
   if ( theGenq.size() == 2 && theGenl.size() == 4 && (leptonCode == 2 || leptonCode == 4) ) {
 
@@ -161,13 +167,19 @@ void GenFilterCategory::beginJob() {
     bool isZtight  = false;
 
     int bosonId = partonsComposition(j0,j1);
+    cout << "j0 id: " << j0->pdgId() << " j1 id: " << j1->pdgId() << " boson id: " << bosonId << " mass: " << (j0->p4() + j1->p4()).mass() <<endl;
+
 
 
     //================Definition of loose particles (mass) =======================
 
-    if ( fabs((theGenj[0]->p4() + theGenj[1]->p4()).mass() - mW) < 10. ) isWloose = true;
-
-    if ( fabs((theGenj[0]->p4() + theGenj[1]->p4()).mass() - mZ) < 10. ) isZloose = true;
+    
+    for(uint i = 0;  i < theGenj.size()-1; ++i)
+      for(uint j = i+1;  j < theGenj.size(); ++j){
+	if ( fabs((theGenj[i]->p4() + theGenj[j]->p4()).mass() - mW) < 10. ) isWloose = true;  
+	if ( fabs((theGenj[i]->p4() + theGenj[j]->p4()).mass() - mZ) < 10. ) isZloose = true;
+      }
+     
 
     
     //--------------------1: MC history------------------------------------
@@ -178,8 +190,8 @@ void GenFilterCategory::beginJob() {
 	LeptonsMotherSelec = LeptonsMotherSelec && theGenl[t]->mother()->pdgId() == 23;
       }
       
-      if ( isWloose && theGenW.size() == 1) isWtight = true;      //definition of tight W (mass + cat)
-      if ( isZloose && theGenZ.size() == 3) isZtight = true;      //definition of tight Z (mass + cat)
+      if ( (isWloose || fabs((j0->p4() + j1->p4()).mass() - mW) < 10) && theGenW.size() == 1) isWtight = true;      //definition of tight W (mass + cat)
+      if ( (isZloose || fabs((j0->p4() + j1->p4()).mass() - mZ) < 10) && theGenZ.size() == 3) isZtight = true;      //definition of tight Z (mass + cat)
       
       if ( theGenZ.size() >= 2 && LeptonsMotherSelec ) {
 	
@@ -266,25 +278,26 @@ void GenFilterCategory::beginJob() {
 
       if ( Z0->p4().mass() != 0 && Z1->p4().mass() != 0 ) {
 
-	if ( isWloose && fabs(bosonId) == 24 ) {    //definition of tight W (mass + cat)
+	if ( (isWloose || fabs((j0->p4() + j1->p4()).mass() - mW) < 10)  && fabs(bosonId) == 24 ) {    //definition of tight W (mass + cat)
 	  
 	  W->Setdaughter1(j0->p4());
 	  W->Setdaughter2(j1->p4());
 	  W->SetbosonId(bosonId);
 	  W->SetdaughtersId(3);
 	  
-	  isWtight = true;  
-	   
-	} else if ( isZloose && bosonId == 23 ) {   //definition of tight Z (mass + cat)
+	  if (fabs((j0->p4() + j1->p4()).mass() - mW) < 10) isWtight = true;  
+	  
+	} else if ( (isZloose || fabs((j0->p4() + j1->p4()).mass() - mZ) < 10)  && bosonId == 23 ) {   //definition of tight Z (mass + cat)
 	  
 	  Z2->Setdaughter1(j0->p4());
 	  Z2->Setdaughter2(j1->p4());
 	  Z2->SetbosonId(bosonId);
 	  Z2->SetdaughtersId(3);
 	  
-	  isZtight = true;
-	  has3Z = true; 
-	  
+	  if(fabs((j0->p4() + j1->p4()).mass() - mZ) < 10){
+	    isZtight = true;
+	    has3Z = true; 
+	  }
 	}
       }     
     } 
