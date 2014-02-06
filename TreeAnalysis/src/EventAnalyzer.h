@@ -1,5 +1,13 @@
-#ifndef EventAnalyzer_h
-#define EventAnalyzer_h
+#ifndef VVXAnalysis_TreeAnalysis_EventAnalyzer_H
+#define VVXAnalysis_TreeAnalysis_EventAnalyzer_H
+
+/** \class EventAnalyzer
+ *  Base class for event analyzers
+ *
+ *  $Date: 2013/03/15 13:37:31 $
+ *  $Revision: 1.4 $
+ *  \author R. Bellan - UNITO <riccardo.bellan@cern.ch>
+ */
 
 #include <vector>
 #include <string>
@@ -10,6 +18,7 @@
 #include "Lepton.h"
 #include "Jet.h"
 
+#include "Histogrammer.h"
 class TFile;
 class TTree;
 class TBranch;
@@ -69,7 +78,8 @@ public:
  protected:
   // Histograms container
   std::map<std::string,TH1*> thePlots;
-  
+  Histogrammer histos;
+
   double theWeight;
   double theSampleWeight;
   int    theCutCounter;

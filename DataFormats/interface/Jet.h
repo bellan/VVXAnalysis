@@ -1,12 +1,12 @@
-#ifndef ZZWAnalysis_DataFormats_Jet_H
-#define ZZWAnalysis_DataFormats_Jet_H
+#ifndef VVXAnalysis_DataFormats_Jet_H
+#define VVXAnalysis_DataFormats_Jet_H
 
 /** \class Jet
  *  No description available.
  *
  *  $Date: 2013/03/15 13:37:31 $
  *  $Revision: 1.4 $
- *  \author R. Bellan - UCSB <riccardo.bellan@cern.ch>
+ *  \author R. Bellan - UNITO <riccardo.bellan@cern.ch>
  */
 
 #include "Particle.h"

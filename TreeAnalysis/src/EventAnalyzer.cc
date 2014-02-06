@@ -143,6 +143,7 @@ void EventAnalyzer::Show(Long64_t entry)
    theTree->Show(entry);
 }
 
+// FIXME! Split
 void EventAnalyzer::book(const std::string &type){
    thePlots[type+"_pt"]    = new TH1F(TString(type+"_pt") , "p_{T} spectrum", 100,   0   , 500   );  
    thePlots[type+"_eta"]   = new TH1F(TString(type+"_eta"), "#eta spectrum" , 100,  -2.5 ,   2.5 );  
@@ -169,6 +170,48 @@ void EventAnalyzer::bookExtraForElectrons(const std::string &type){
   thePlots[type+"_nCrystals"]  = new TH1I(TString(type+"_nCrystals") , "Number of Crystals",  50,  0   ,  50   );   
 }
 
+
+void EventAnalyzer::bookExtraForJets(const std::string &type){
+
+    thePlots[type+"_nConstituents"] = new TH1I(TString(type+"_nConstituents"), "nConstituents", 100, 0, 100); 
+    thePlots[type+"_nCharged"]      = new TH1I(TString(type+"_nCharged")     , "nCharged"     , 100, 0, 100);      
+    thePlots[type+"_nNeutral"]      = new TH1I(TString(type+"_nNeutral")     , "nNeutral"     , 100, 0, 100);      
+
+    thePlots[type+"_neutralHadronEnergyFraction"] = new TH1F(TString(type+"_neutralHadronEnergyFraction"), "neutralHadronEnergyFraction", 100, 0, 1);   
+    thePlots[type+"_chargedHadronEnergyFraction"] = new TH1F(TString(type+"_chargedHadronEnergyFraction"), "chargedHadronEnergyFraction", 100, 0, 1);
+    thePlots[type+"_chargedEmEnergyFraction"]     = new TH1F(TString(type+"_chargedEmEnergyFraction"    ), "chargedEmEnergyFraction"    , 100, 0, 1);    
+    thePlots[type+"_neutralEmEnergyFraction"]     = new TH1F(TString(type+"_neutralEmEnergyFraction"    ), "neutralEmEnergyFraction"    , 100, 0, 1);    
+    thePlots[type+"_muonEnergyFraction"]          = new TH1F(TString(type+"_muonEnergyFraction"         ), "muonEnergyFraction"         , 100, 0, 1); 
+
+    thePlots[type+"_csvtagger"]     = new TH1F(TString(type+"_csvtagger"    ), "csvtagger"    , 200, -1, 1);             
+    thePlots[type+"_girth"]         = new TH1F(TString(type+"_girth"        ), "girth"        , 200,  0, 1);    
+    thePlots[type+"_girth_charged"] = new TH1F(TString(type+"_girth_charged"), "girth_charged", 200,  0, 1);
+    thePlots[type+"_ptd"]           = new TH1F(TString(type+"_ptd"          ), "ptd"          , 1, 1, 1);          
+    thePlots[type+"_rms"]           = new TH1F(TString(type+"_rms"          ), "rms"          , 1, 1, 1);          
+    thePlots[type+"_beta"]          = new TH1F(TString(type+"_beta"         ), "beta"         , 1, 1, 1);         
+    thePlots[type+"_jetArea"]       = new TH1F(TString(type+"_jetArea"      ), "jetArea"      , 1, 1, 1);      
+    thePlots[type+"_secvtxMass"]    = new TH1F(TString(type+"_secvtxMass"   ), "secvtxMass"   , 1, 1, 1);   
+    thePlots[type+"_Lxy"]           = new TH1F(TString(type+"_Lxy"          ), "Lxy"          , 1, 1, 1);          	 
+    thePlots[type+"_LxyErr"]        = new TH1F(TString(type+"_LxyErr"       ), "LxyErr"       , 1, 1, 1);        
+    thePlots[type+"_rawFactor"]     = new TH1F(TString(type+"_rawFactor"    ), "rawFactor"    , 1, 1, 1);    
+
+    thePlots[type+"_uncOnFourVectorScale"] = new TH1F(TString(type+"_uncOnFourVectorScale"), "uncOnFourVectorScale", 1, 1, 1);
+    thePlots[type+"_puMVAFull"]   = new TH1F(TString(type+"_puMVAFull"  ), "puMVAFull"  , 1, 1, 1);   
+    thePlots[type+"_puMVASimple"] = new TH1F(TString(type+"_puMVASimple"), "puMVASimple", 1, 1, 1); 
+    thePlots[type+"_puCutBased"]  = new TH1F(TString(type+"_puCutBased" ), "puCutBased" , 1, 1, 1);  
+
+    thePlots[type+"_pass_puMVAFull_loose"]    = new TH1I(TString(type+"_pass_puMVAFull_loose"   ), "pass_puMVAFull_loose"   , 2, 0, 2);   
+    thePlots[type+"_pass_pUMVAFull_medium"]   = new TH1I(TString(type+"_pass_pUMVAFull_medium"  ), "pass_pUMVAFull_medium"  , 2, 0, 2);  
+    thePlots[type+"_pass_pUMVAFull_tight"]    = new TH1I(TString(type+"_pass_pUMVAFull_tight"   ), "pass_pUMVAFull_tight"   , 2, 0, 2);   
+									                                                    
+    thePlots[type+"_pass_puMVASimple_loose"]  = new TH1I(TString(type+"_pass_puMVASimple_loose" ), "pass_puMVASimple_loose" , 2, 0, 2); 
+    thePlots[type+"_pass_puMVASimple_medium"] = new TH1I(TString(type+"_pass_puMVASimple_medium"), "pass_puMVASimple_medium", 2, 0, 2);
+    thePlots[type+"_pass_puMVASimple_tight"]  = new TH1I(TString(type+"_pass_puMVASimple_tight" ), "pass_puMVASimple_tight" , 2, 0, 2); 
+									                                                    
+    thePlots[type+"_pass_puCutBased_loose"]   = new TH1I(TString(type+"_pass_puCutBased_loose"  ), "pass_puCutBased_loose"  , 2, 0, 2);  
+    thePlots[type+"_pass_puCutBased_medium"]  = new TH1I(TString(type+"_pass_puCutBased_medium" ), "pass_puCutBased_medium" , 2, 0, 2); 
+    thePlots[type+"_pass_puCutBased_tight"]   = new TH1I(TString(type+"_pass_puCutBased_tight"  ), "pass_puCutBased_tight"  , 2, 0, 2);  
+}
 
 Int_t EventAnalyzer::cut(){
   
@@ -199,11 +242,14 @@ void EventAnalyzer::loop(const std::string outputfile){
     basicPlots();
     analyze();
 
+    histos.fill<TH1F>("pippo",100,0,100,met->pt());
+
   }
   TFile fout(TString(outputfile),"RECREATE");
   fout.cd(); 
   for(std::map<std::string,TH1*>::const_iterator h = thePlots.begin(); h != thePlots.end(); ++h)
     h->second->Write();
+  histos.write(fout);
 
   end(fout);
   fout.Close();
@@ -261,7 +307,45 @@ void EventAnalyzer::fillExtraPlotsForElectrons(const std::string &type, const ph
   thePlots[type+"_nCrystals"] ->Fill(electron.nCrystals() , theWeight);  
 }
 
-void EventAnalyzer::fillJetPlots(const std::string &type, const phys::Jet      &jet){
-  fillParticlePlots(type, jet);
+void EventAnalyzer::fillJetPlots(const std::string &type, const phys::Jet      &jet){}
+//   fillParticlePlots(type, jet);
   
-}
+
+//     nConstituents() 
+//     nCharged()      
+//     nNeutral()      
+
+//     neutralHadronEnergyFraction()   
+//     chargedHadronEnergyFraction()
+//     chargedEmEnergyFraction()    
+//     neutralEmEnergyFraction()    
+//     muonEnergyFraction()         
+
+//     csvtagger()             
+//     girth()        
+//     girth_charged()
+//     ptd()          
+//     rms()          
+//     beta()         
+//     jetArea()      
+//     secvtxMass()   
+//     Lxy()          	 
+//     LxyErr()        
+//     rawFactor()    
+//     uncOnFourVectorScale()
+//     puMVAFull()   
+//     puMVASimple() 
+//     puCutBased()  
+					 				      
+//     pass_puMVAFull_loose()   
+//     pass_pUMVAFull_medium()  
+//     pass_pUMVAFull_tight()   
+    			     
+//     pass_puMVASimple_loose() 
+//     pass_puMVASimple_medium()
+//     pass_puMVASimple_tight() 
+    			     
+//     pass_puCutBased_loose()  
+//     pass_puCutBased_medium() 
+//     pass_puCutBased_tight()  
+//}
