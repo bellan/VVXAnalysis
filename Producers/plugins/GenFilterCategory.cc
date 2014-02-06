@@ -24,8 +24,8 @@
 #include <string>
 #include <cmath>
 
-#include "ZZWAnalysis/Producers/interface/Boson.h"
-#include "ZZWAnalysis/Producers/interface/SignalDefinitionUtilities.h"
+#include "VVXAnalysis/Producers/interface/Boson.h"
+#include "VVXAnalysis/Producers/interface/SignalDefinitionUtilities.h"
 
 using namespace std;
 using namespace edm;

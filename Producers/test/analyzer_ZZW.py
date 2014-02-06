@@ -1,11 +1,7 @@
 ### ----------------------------------------------------------------------
-###
-### HCP Synchronization file for 533.
-###
-### FIXME: the path includes the rochester correction (which is a passtrough for 53X right now);
-### the syncronization is supposed to be done with no escale applied
-###
+### Based on ZZ->4l strategy.
 ###----------------------------------------------------------------------
+
 
 LEPTON_SETUP = 2012
 PD = ""
@@ -14,9 +10,28 @@ ELECORRTYPE   = "Paper" # "None", "Moriond", or "Paper"
 ELEREGRESSION = "Paper" # "None", "Moriond", "PaperNoComb", or "Paper" 
 APPLYMUCORR = True
 
-#For DATA: 
-#IsMC = False
-#PD = "DoubleEle"
+
+try:
+    IsMC
+except NameError:
+    IsMC = True
+
+try:
+    LEPTON_SETUP
+except NameError:
+    LEPTON_SETUP = 2012 # define the set of effective areas, rho corrections, etc.
+
+try:
+    PD
+except NameError:
+    PD = ""             # "" for MC, "DoubleEle", "DoubleMu", or "MuEG" for data 
+
+try:
+    MCFILTER
+except NameError:
+    MCFILTER = ""
+
+
 
 # Get absolute path
 import os
@@ -26,8 +41,12 @@ PyFilePath = os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/"
 ### Standard sequence
 ### ----------------------------------------------------------------------
 
-execfile(PyFilePath + "analyzer.py")
+execfile(PyFilePath + "MasterPy/ZZ4lAnalysis.py")         # 2012 reference analysis
 
+
+### ----------------------------------------------------------------------
+### Replace parameters
+### ----------------------------------------------------------------------
 
 ### ----------------------------------------------------------------------
   ### Replace parameters
@@ -85,7 +104,17 @@ process.wPt= cms.EDAnalyzer("CandViewHistoAnalyzer",
 
 # Build W->jj candidate
 process.WjjSequence = cms.Sequence(process.disambiguatedJets * process.bareWCand * process.WCand  * process.wPt)
-process.Candidates *= process.WjjSequence
+
+
+process.Candidates = cms.Path(process.muons             +
+                              process.electrons         + process.cleanSoftElectrons +
+                              process.appendPhotons     +
+                              process.softLeptons       +
+                              # Build Boson candidates
+                              process.bareEECand        + process.EECand +  
+                              process.bareMMCand        + process.MMCand +
+                              process.WjjSequence
+                              )
 
 
 # Fill the tree for the analysis
@@ -102,6 +131,12 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      PUInfo    = cms.untracked.InputTag("addPileupInfo")
                                      )
 
-process.fillTrees = cms.Path(process.treePlanter)
+process.filltrees = cms.Path(process.treePlanter)
 
 
+### ----------------------------------------------------------------------
+### Output root file (monitoring histograms)
+### ----------------------------------------------------------------------
+process.TFileService=cms.Service('TFileService',
+                                fileName=cms.string('ZZ4lAnalysis.root')
+                                )

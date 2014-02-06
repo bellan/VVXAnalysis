@@ -5,11 +5,11 @@
   <use name="CommonTools/UtilAlgos"/>
   <use name="TrackingTools/Records"/>
   <use name="TrackingTools/TransientTrack"/>
-  <use name="ZZWAnalysis/DataFormats"/>
+  <use name="VVXAnalysis/DataFormats"/>
   <use name="DataFormats/PatCandidates"/>
   <use name="AnalysisDataFormats/CMGTools"/>
   <use name="SimGeneral/HepPDTRecord"/>
-  <use name="ZZWAnalysis/Producers"/>
+  <use name="VVXAnalysis/Producers"/>
   <use name="clhep"/>
   <use name="boost"/>
   <use name="root"/>
