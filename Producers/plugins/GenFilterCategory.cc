@@ -36,8 +36,9 @@ class GenFilterCategory: public edm::EDFilter {
 
 public:
   GenFilterCategory(const ParameterSet& pset)
-    : sel_(pset.getParameter<int>("Category"))
-    , num (pset.getParameter<int>("SignalDefinition")) {
+    : sel_     (pset.getParameter<int>("Category"))
+    , num      (pset.getParameter<int>("SignalDefinition"))
+    , genLabel_(pset.getParameter<edm::InputTag>("src")) {
     produces<int>();
 
   }
@@ -69,6 +70,7 @@ public:
 private:
   int sel_;
   int num;
+  edm::InputTag genLabel_;
   TH1F* category;
 
 };
@@ -97,8 +99,7 @@ void GenFilterCategory::beginJob() {
   
   // Get the collection of gen particles
   edm::Handle<edm::View<reco::Candidate> > genParticles;
-  event.getByLabel("genParticles", genParticles);
-
+  event.getByLabel(genLabel_, genParticles);
  
   //------------------ loop over genparticles ---------------------------------------------------------
   for (View<Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) {
