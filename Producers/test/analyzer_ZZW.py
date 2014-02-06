@@ -83,7 +83,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
                                            Jets  = cms.InputTag("cmgPFJetSel"),
                                            Muons = cms.InputTag("appendPhotons:muons"),
-                                           Electrons = cms.InputTag("appendPhotons:electrons")
+                                           Electrons = cms.InputTag("appendPhotons:electrons"),
                                            EnergyFractionAllowed = cms.double(0)) # maximum energy fraction carried by the lepton in the jet, to accept a jet as non from lepton
 
 process.bareWCand = cms.EDProducer("CandViewShallowCloneCombiner",
