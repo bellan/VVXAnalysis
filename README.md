@@ -38,8 +38,12 @@ Recipe for tree analysis:
 - Compile the code. Type: make
 - To run the code, please use ./python/run.py
   ... more info to come ...
-Off course here in this step is suppose that you implement something. I need to give you more info, then. The code is steered by the ./python/run.py code, that knows 
-about the samples and their main characteristics. The actual code, after the compiling step has been succesfully done, is in the ./bin/eventAnalyzer executable.
+Off course, here in this step, it is supposed that you implement something. I need to give you more info, then. The code is steered by the ./python/run.py code, that knows 
+about the samples and their main characteristics. The actual code, after the compiling step has been succesfully done, is codified in the ./bin/eventAnalyzer executable.
 To implement an analysis, you should inherit from the EventAnalyzer class, that set up all the relevant branches, the loop over the events and some usefull utilities for
-histogramming. The base class has a pure virual method (analyze()) that must be implemented in the concrete class (your analysis). To make the code succesfully compiled, you need to modify the CMakeList.txt file and implement that directive. Also, you should modify the src/eventAnalyzer.cpp file to instantiate your class.
+histogramming. The base class has a pure virual method (analyze()) that must be implemented in the concrete class (your analysis). As a matter of fact, all the analysis should be doable
+in the analyze() method (called each event) and in the begin() and end() methods, called before and after the loop over the events starts/ends. Note that the histogrammer utility (a member of the EventAnalyzer class) allows you to fill plots without bothering about histograms booking or writing (see some examples in the EventAnalyzer class).
+To make your code succesfully compiled, you need to modify the CMakeList.txt file and implement the directive to compile it, with the proper dependencies. Also, you should modify the src/eventAnalyzer.cpp file to instantiate your class, even better if you
+implement a new .cpp file with your analysis instance only, in doing that, make sure your new executable is properly compiled by cmake (i.e., you need to modify the 
+CMakeList.txt rules) and that the ./python/run.py knows about it.
 
