@@ -43,7 +43,11 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   edm::Service<TFileService> fs;
   theTree = fs->make<TTree>("ElderTree","ElderTree");
 
-  if(isMC_) thePUInfoLabel = config.getUntrackedParameter<edm::InputTag>("PUInfo",edm::InputTag("addPileupInfo"));
+  if(isMC_){
+    thePUInfoLabel        = config.getUntrackedParameter<edm::InputTag>("PUInfo"       , edm::InputTag("addPileupInfo"));
+    theGenCategoryLabel   = config.getUntrackedParameter<edm::InputTag>("GenCategory"  , edm::InputTag("genCategory"));
+    theGenCollectionLabel = config.getUntrackedParameter<edm::InputTag>("GenCollection", edm::InputTag("genParticlesPruned"));
+  }
 
   initTree();
 }
@@ -120,7 +124,16 @@ void TreePlanter::fillEventInfo(const edm::Event& event){
 	nobservedPUInt_  = pui.getPU_NumInteractions();
 	ntruePUInt_      = pui.getTrueNumInteractions();
 	break;
-      } 
+      }
+    
+    // FIXME do be completed
+    edm::Handle<edm::View<reco::Candidate> > genParticles;
+    event.getByLabel(theGenCollectionLabel,  genParticles);
+ 
+    edm::Handle<int> genCategory;
+    event.getByLabel(theGenCategoryLabel, genCategory);
+    cout<<"Gen category: " << *genCategory << endl;
+
   }
 
 

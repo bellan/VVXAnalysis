@@ -103,6 +103,8 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::InputTag theMETLabel;
   edm::InputTag theVertexLabel;
   edm::InputTag thePUInfoLabel;
+  edm::InputTag theGenCategoryLabel;  
+  edm::InputTag	theGenCollectionLabel;
 
   // --------------------------------------------------------- //
 
