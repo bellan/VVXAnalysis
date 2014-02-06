@@ -47,6 +47,16 @@ class Histogrammer{
    fill<H>(name, name, bins, min, max, value, weight);
  }
 
+ void fill(const std::string& name, const std::string& title, const double& bins, const double& min, const double& max, const double& value, const double& weight = 1){
+   book<TH1F>(name, name, bins, min, max)->Fill(value,weight);
+ }
+ 
+ void fill(const std::string& name, const double& bins, const double& min, const double& max, const double& value, const double& weight = 1){
+   fill(name, name, bins, min, max, value, weight);
+ }
+
+ 
+
  void write(TFile& fout){
    fout.cd(); 
    for(TH1map::const_iterator h = thePlots.begin(); h != thePlots.end(); ++h)

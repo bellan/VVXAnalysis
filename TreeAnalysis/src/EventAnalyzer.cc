@@ -107,19 +107,7 @@ void EventAnalyzer::Init(TTree *tree)
    b_totalEvents = 0; theTree->SetBranchAddress("totalEvents", &totalEvents  , &b_totalEvents  );
 
 
-   thePlots["nelectrons"] = new TH1I("nelectrons","Number of electrons",10,0,10);
-   thePlots["nmuons"]     = new TH1I("nmuons"    ,"Number of muons"    ,10,0,10);  
-   
-   thePlots["nvtx"]       = new TH1I("nvtx"      ,"Number of vertices" ,100,0,100);  
-   thePlots["rho"]        = new TH1F("rho"      ,"Mean energy density" ,100,0,50);  
-   thePlots["met"]        = new TH1F("met"      ,"Missing energy"      ,200,0,800);  
-
-   book("mu");
-   book("e");
-   bookExtraForElectrons("e");
-
    begin();
-   book();
 
    Notify();
 }
@@ -143,75 +131,6 @@ void EventAnalyzer::Show(Long64_t entry)
    theTree->Show(entry);
 }
 
-// FIXME! Split
-void EventAnalyzer::book(const std::string &type){
-   thePlots[type+"_pt"]    = new TH1F(TString(type+"_pt") , "p_{T} spectrum", 100,   0   , 500   );  
-   thePlots[type+"_eta"]   = new TH1F(TString(type+"_eta"), "#eta spectrum" , 100,  -2.5 ,   2.5 );  
-   thePlots[type+"_phi"]   = new TH1F(TString(type+"_phi"), "#phi spectrum" ,  50,  -3.15,   3.15);   
-   thePlots[type+"_dxy"]   = new TH1F(TString(type+"_dxy"), "d_{xy}"        , 200,   0   ,   0.5 );               
-   thePlots[type+"_dz"]    = new TH1F(TString(type+"_dz") , "d_{z}"         , 200,   0   ,   0.5 );                
-   thePlots[type+"_sip"]   = new TH1F(TString(type+"_sip"), "sip"           , 100, -10   ,  10   ); 
-   thePlots[type+"_combRelIso"]      = new TH1F(TString(type+"_combRelIso")      , "combRelIso"     , 200,   0,   1); 
-   thePlots[type+"_pfCombRelIso"]    = new TH1F(TString(type+"_pfCombRelIso")    , "pfCombRelIso"   , 200,   0,   1);   
-   thePlots[type+"_pfNeutralHadIso"] = new TH1F(TString(type+"_pfNeutralHadIso") , "pfNeutralHadIso", 200,   0,   1);   
-   thePlots[type+"_pfChargedHadIso"] = new TH1F(TString(type+"_pfChargedHadIso") , "pfChargedHadIso", 200,   0,   1);  
-   thePlots[type+"_pfPhotonHadIso"]  = new TH1F(TString(type+"_pfPhotonHadIso")  , "pfPhotonHadIso" , 200,   0,   1);    
-   thePlots[type+"_rho"]             = new TH1F(TString(type+"_rho")             , "rho"            , 200,   0, 200);   
-}
-
-
-void EventAnalyzer::bookExtraForElectrons(const std::string &type){
-  thePlots[type+"_energy"]     = new TH1F(TString(type+"_energy")    , "energy spectrum"   , 100,  0   , 500   );  
-  thePlots[type+"_phiWidth"]   = new TH1F(TString(type+"_phiWidth")  , "#phi width"        ,  50, -3.15,   3.15);   
-  thePlots[type+"_etaWidth"]   = new TH1F(TString(type+"_etaWidth")  , "#eta width"        , 100, -2.5 ,   2.5 );  
-  thePlots[type+"_BDT"]        = new TH1F(TString(type+"_BDT")       , "BDT"               , 100, -1   ,   1   );   
-  thePlots[type+"_isBDT"]      = new TH1I(TString(type+"_isBDT")     , "is BDT?"           ,   2,  0   ,   2   );  
-  thePlots[type+"_missingHit"] = new TH1I(TString(type+"_missingHit"), "Missing hits"      ,  50,  0   ,  50   );   
-  thePlots[type+"_nCrystals"]  = new TH1I(TString(type+"_nCrystals") , "Number of Crystals",  50,  0   ,  50   );   
-}
-
-
-void EventAnalyzer::bookExtraForJets(const std::string &type){
-
-    thePlots[type+"_nConstituents"] = new TH1I(TString(type+"_nConstituents"), "nConstituents", 100, 0, 100); 
-    thePlots[type+"_nCharged"]      = new TH1I(TString(type+"_nCharged")     , "nCharged"     , 100, 0, 100);      
-    thePlots[type+"_nNeutral"]      = new TH1I(TString(type+"_nNeutral")     , "nNeutral"     , 100, 0, 100);      
-
-    thePlots[type+"_neutralHadronEnergyFraction"] = new TH1F(TString(type+"_neutralHadronEnergyFraction"), "neutralHadronEnergyFraction", 100, 0, 1);   
-    thePlots[type+"_chargedHadronEnergyFraction"] = new TH1F(TString(type+"_chargedHadronEnergyFraction"), "chargedHadronEnergyFraction", 100, 0, 1);
-    thePlots[type+"_chargedEmEnergyFraction"]     = new TH1F(TString(type+"_chargedEmEnergyFraction"    ), "chargedEmEnergyFraction"    , 100, 0, 1);    
-    thePlots[type+"_neutralEmEnergyFraction"]     = new TH1F(TString(type+"_neutralEmEnergyFraction"    ), "neutralEmEnergyFraction"    , 100, 0, 1);    
-    thePlots[type+"_muonEnergyFraction"]          = new TH1F(TString(type+"_muonEnergyFraction"         ), "muonEnergyFraction"         , 100, 0, 1); 
-
-    thePlots[type+"_csvtagger"]     = new TH1F(TString(type+"_csvtagger"    ), "csvtagger"    , 200, -1, 1);             
-    thePlots[type+"_girth"]         = new TH1F(TString(type+"_girth"        ), "girth"        , 200,  0, 1);    
-    thePlots[type+"_girth_charged"] = new TH1F(TString(type+"_girth_charged"), "girth_charged", 200,  0, 1);
-    thePlots[type+"_ptd"]           = new TH1F(TString(type+"_ptd"          ), "ptd"          , 1, 1, 1);          
-    thePlots[type+"_rms"]           = new TH1F(TString(type+"_rms"          ), "rms"          , 1, 1, 1);          
-    thePlots[type+"_beta"]          = new TH1F(TString(type+"_beta"         ), "beta"         , 1, 1, 1);         
-    thePlots[type+"_jetArea"]       = new TH1F(TString(type+"_jetArea"      ), "jetArea"      , 1, 1, 1);      
-    thePlots[type+"_secvtxMass"]    = new TH1F(TString(type+"_secvtxMass"   ), "secvtxMass"   , 1, 1, 1);   
-    thePlots[type+"_Lxy"]           = new TH1F(TString(type+"_Lxy"          ), "Lxy"          , 1, 1, 1);          	 
-    thePlots[type+"_LxyErr"]        = new TH1F(TString(type+"_LxyErr"       ), "LxyErr"       , 1, 1, 1);        
-    thePlots[type+"_rawFactor"]     = new TH1F(TString(type+"_rawFactor"    ), "rawFactor"    , 1, 1, 1);    
-
-    thePlots[type+"_uncOnFourVectorScale"] = new TH1F(TString(type+"_uncOnFourVectorScale"), "uncOnFourVectorScale", 1, 1, 1);
-    thePlots[type+"_puMVAFull"]   = new TH1F(TString(type+"_puMVAFull"  ), "puMVAFull"  , 1, 1, 1);   
-    thePlots[type+"_puMVASimple"] = new TH1F(TString(type+"_puMVASimple"), "puMVASimple", 1, 1, 1); 
-    thePlots[type+"_puCutBased"]  = new TH1F(TString(type+"_puCutBased" ), "puCutBased" , 1, 1, 1);  
-
-    thePlots[type+"_pass_puMVAFull_loose"]    = new TH1I(TString(type+"_pass_puMVAFull_loose"   ), "pass_puMVAFull_loose"   , 2, 0, 2);   
-    thePlots[type+"_pass_pUMVAFull_medium"]   = new TH1I(TString(type+"_pass_pUMVAFull_medium"  ), "pass_pUMVAFull_medium"  , 2, 0, 2);  
-    thePlots[type+"_pass_pUMVAFull_tight"]    = new TH1I(TString(type+"_pass_pUMVAFull_tight"   ), "pass_pUMVAFull_tight"   , 2, 0, 2);   
-									                                                    
-    thePlots[type+"_pass_puMVASimple_loose"]  = new TH1I(TString(type+"_pass_puMVASimple_loose" ), "pass_puMVASimple_loose" , 2, 0, 2); 
-    thePlots[type+"_pass_puMVASimple_medium"] = new TH1I(TString(type+"_pass_puMVASimple_medium"), "pass_puMVASimple_medium", 2, 0, 2);
-    thePlots[type+"_pass_puMVASimple_tight"]  = new TH1I(TString(type+"_pass_puMVASimple_tight" ), "pass_puMVASimple_tight" , 2, 0, 2); 
-									                                                    
-    thePlots[type+"_pass_puCutBased_loose"]   = new TH1I(TString(type+"_pass_puCutBased_loose"  ), "pass_puCutBased_loose"  , 2, 0, 2);  
-    thePlots[type+"_pass_puCutBased_medium"]  = new TH1I(TString(type+"_pass_puCutBased_medium" ), "pass_puCutBased_medium" , 2, 0, 2); 
-    thePlots[type+"_pass_puCutBased_tight"]   = new TH1I(TString(type+"_pass_puCutBased_tight"  ), "pass_puCutBased_tight"  , 2, 0, 2);  
-}
 
 Int_t EventAnalyzer::cut(){
   
@@ -239,17 +158,12 @@ void EventAnalyzer::loop(const std::string outputfile){
 
     if (cut() < 0) continue;
 
-    basicPlots();
+    fillBasicPlots();
     analyze();
-
-    histos.fill<TH1F>("pippo",100,0,100,met->pt());
-
   }
   TFile fout(TString(outputfile),"RECREATE");
   fout.cd(); 
-  for(std::map<std::string,TH1*>::const_iterator h = thePlots.begin(); h != thePlots.end(); ++h)
-    h->second->Write();
-  histos.write(fout);
+  histograms.write(fout);
 
   end(fout);
   fout.Close();
@@ -257,95 +171,93 @@ void EventAnalyzer::loop(const std::string outputfile){
   
 }
 
-void EventAnalyzer::basicPlots(){
-  thePlots["nvtx"]->Fill(nvtx,theWeight);
-  thePlots["rho"]->Fill(rho,theWeight);
-  thePlots["met"]->Fill(met->pt(),theWeight);
-  
-  thePlots["nmuons"]->Fill(muons->size(),theWeight);
-  foreach(const phys::Lepton& mu, *muons) fillLeptonPlots("mu", mu);
-  
-  thePlots["nelectrons"]->Fill(electrons->size(),theWeight);
-  foreach(const phys::Electron& e, *electrons) fillLeptonPlots("e",e);
+void EventAnalyzer::fillBasicPlots(){
+  histograms.fill<TH1I>("nvtx"     , "Number of vertices" , 100, 0, 100, nvtx             , theWeight);
+  histograms.fill      ("rho"      , "Mean energy density", 100, 0, 50 , rho              , theWeight);
+  histograms.fill      ("met"      , "Missing energy"     , 200, 0, 800, met->pt()        , theWeight);
+  histograms.fill<TH1I>("nmuons"    ,"Number of muons"    ,  10, 0, 10 , muons->size()    , theWeight);
+  histograms.fill<TH1I>("nelectrons","Number of electrons",  10, 0, 10 , electrons->size(), theWeight);
+
+  foreach(const phys::Lepton& mu , *muons)     fillLeptonPlots  ("mu",  mu  );
+  foreach(const phys::Electron& e, *electrons) fillElectronPlots("e" ,  e   );
+  foreach(const phys::Jet& jet   , *jets)      fillJetPlots     ("jet", jet );
 }
 
 void EventAnalyzer::fillParticlePlots(const std::string &type, const phys::Particle & lepton){
-  thePlots[type+"_pt"]->Fill(lepton.pt(),   theWeight);
-  thePlots[type+"_eta"]->Fill(lepton.eta(), theWeight);
-  thePlots[type+"_phi"]->Fill(lepton.phi(), theWeight);
+  histograms.fill(type+"_pt" , "p_{T} spectrum", 100,   0   , 500   ,lepton.pt(),   theWeight);
+  histograms.fill(type+"_eta", "#eta spectrum" , 100,  -2.5 ,   2.5 ,lepton.eta(), theWeight);
+  histograms.fill(type+"_phi", "#phi spectrum" ,  50,  -3.15,   3.15,lepton.phi(), theWeight);
 }
 
 void EventAnalyzer::fillLeptonPlots(const std::string &type, const phys::Lepton & lepton){
   
   fillParticlePlots(type, lepton);
 
-  thePlots[type+"_dxy"]->Fill(lepton.dxy(), theWeight);   
-  thePlots[type+"_dz"] ->Fill(lepton.dz(), theWeight);
-  thePlots[type+"_sip"]->Fill(lepton.sip(), theWeight); 
-
-  thePlots[type+"_combRelIso"]     ->Fill(lepton.combRelIso()     , theWeight);       
-  thePlots[type+"_pfCombRelIso"]   ->Fill(lepton.pfChargedHadIso(), theWeight);           
-  thePlots[type+"_pfNeutralHadIso"]->Fill(lepton.pfNeutralHadIso(), theWeight);        
-  thePlots[type+"_pfChargedHadIso"]->Fill(lepton.pfPhotonIso()    , theWeight);        
-  thePlots[type+"_pfPhotonHadIso"] ->Fill(lepton.pfCombRelIso()   , theWeight);         
-  thePlots[type+"_rho"]            ->Fill(lepton.rho()            , theWeight);                    
+  histograms.fill(type+"_dxy"             , "d_{xy}"         , 200,   0,   0.5, lepton.dxy()            , theWeight);   
+  histograms.fill(type+"_dz"              , "d_{z}"          , 200,   0,   0.5, lepton.dz()             , theWeight);
+  histograms.fill(type+"_sip"             , "sip"            , 100, -10,  10  , lepton.sip()            , theWeight); 
+  histograms.fill(type+"_combRelIso"      , "combRelIso"     , 200,   0,   1  , lepton.combRelIso()     , theWeight);       
+  histograms.fill(type+"_pfCombRelIso"    , "pfCombRelIso"   , 200,   0,   1  , lepton.pfChargedHadIso(), theWeight);           
+  histograms.fill(type+"_pfNeutralHadIso" , "pfNeutralHadIso", 200,   0,   1  , lepton.pfNeutralHadIso(), theWeight);        
+  histograms.fill(type+"_pfChargedHadIso" , "pfChargedHadIso", 200,   0,   1  , lepton.pfPhotonIso()    , theWeight);        
+  histograms.fill(type+"_pfPhotonHadIso"  , "pfPhotonHadIso" , 200,   0,   1  , lepton.pfCombRelIso()   , theWeight);         
+  histograms.fill(type+"_rho"             , "rho"            , 200,   0, 200  , lepton.rho()            , theWeight);                    
 }
 
 void EventAnalyzer::fillElectronPlots (const std::string &type, const phys::Electron &electron){
-  fillLeptonPlots  (type, electron);
-  fillElectronPlots(type, electron);
+  fillLeptonPlots           (type, electron);
+  fillExtraPlotsForElectrons(type, electron);
 }
 
 void EventAnalyzer::fillExtraPlotsForElectrons(const std::string &type, const phys::Electron &electron){
 
-  thePlots[type+"_energy"]    ->Fill(electron.energy()    , theWeight);  
-  thePlots[type+"_phiWidth"]  ->Fill(electron.phiWidth()  , theWeight);  
-  thePlots[type+"_etaWidth"]  ->Fill(electron.etaWidth()  , theWeight);  
-  thePlots[type+"_BDT"]       ->Fill(electron.BDT()       , theWeight);  
-  thePlots[type+"_isBDT"]     ->Fill(electron.isBDT()     , theWeight);  
-  thePlots[type+"_missingHit"]->Fill(electron.missingHit(), theWeight);  
-  thePlots[type+"_nCrystals"] ->Fill(electron.nCrystals() , theWeight);  
+  histograms.fill      (type+"_energy"    , "energy spectrum"   , 100,  0   , 500   , electron.energy()    , theWeight);  
+  histograms.fill      (type+"_phiWidth"  , "#phi width"        ,  50, -3.15,   3.15, electron.phiWidth()  , theWeight);  
+  histograms.fill      (type+"_etaWidth"  , "#eta width"        , 100, -2.5 ,   2.5 , electron.etaWidth()  , theWeight);  
+  histograms.fill      (type+"_BDT"       , "BDT"               , 100, -1   ,   1   , electron.BDT()       , theWeight);  
+  histograms.fill<TH1I>(type+"_isBDT"     , "is BDT?"           ,   2,  0   ,   2   , electron.isBDT()     , theWeight);  
+  histograms.fill<TH1I>(type+"_missingHit", "Missing hits"      ,  50,  0   ,  50   , electron.missingHit(), theWeight);  
+  histograms.fill<TH1I>(type+"_nCrystals" , "Number of Crystals",  50,  0   ,  50   , electron.nCrystals() , theWeight);  
 }
 
-void EventAnalyzer::fillJetPlots(const std::string &type, const phys::Jet      &jet){}
-//   fillParticlePlots(type, jet);
-  
+void EventAnalyzer::fillJetPlots(const std::string &type, const phys::Jet      &jet){
 
-//     nConstituents() 
-//     nCharged()      
-//     nNeutral()      
+  histograms.fill<TH1I>(type+"_nConstituents", 100, 0, 100,jet.nConstituents(),theWeight);
+  histograms.fill<TH1I>(type+"_nCharged"     , 100, 0, 100,jet.nCharged(),theWeight);
+  histograms.fill<TH1I>(type+"_nNeutral"     , 100, 0, 100,jet.nNeutral(),theWeight);
 
-//     neutralHadronEnergyFraction()   
-//     chargedHadronEnergyFraction()
-//     chargedEmEnergyFraction()    
-//     neutralEmEnergyFraction()    
-//     muonEnergyFraction()         
+  histograms.fill(type+"_neutralHadronEnergyFraction", 100, 0, 1, jet.neutralHadronEnergyFraction(), theWeight);
+  histograms.fill(type+"_chargedHadronEnergyFraction", 100, 0, 1, jet.chargedHadronEnergyFraction(), theWeight);
+  histograms.fill(type+"_chargedEmEnergyFraction"    , 100, 0, 1, jet.chargedEmEnergyFraction    (), theWeight);
+  histograms.fill(type+"_neutralEmEnergyFraction"    , 100, 0, 1, jet.neutralEmEnergyFraction    (), theWeight);
+  histograms.fill(type+"_muonEnergyFraction"         , 100, 0, 1, jet.muonEnergyFraction         (), theWeight);
 
-//     csvtagger()             
-//     girth()        
-//     girth_charged()
-//     ptd()          
-//     rms()          
-//     beta()         
-//     jetArea()      
-//     secvtxMass()   
-//     Lxy()          	 
-//     LxyErr()        
-//     rawFactor()    
-//     uncOnFourVectorScale()
-//     puMVAFull()   
-//     puMVASimple() 
-//     puCutBased()  
-					 				      
-//     pass_puMVAFull_loose()   
-//     pass_pUMVAFull_medium()  
-//     pass_pUMVAFull_tight()   
-    			     
-//     pass_puMVASimple_loose() 
-//     pass_puMVASimple_medium()
-//     pass_puMVASimple_tight() 
-    			     
-//     pass_puCutBased_loose()  
-//     pass_puCutBased_medium() 
-//     pass_puCutBased_tight()  
-//}
+  histograms.fill(type+"_csvtagger"    , 200, -1, 1 , jet.csvtagger    (), theWeight);
+  histograms.fill(type+"_girth"        , 200,  0, 1 , jet.girth        (), theWeight);
+  histograms.fill(type+"_girth_charged", 200,  0, 1 , jet.girth_charged(), theWeight);
+  histograms.fill(type+"_ptd"          , 1, 1, 1    , jet.ptd          (), theWeight);
+  histograms.fill(type+"_rms"          , 1, 1, 1    , jet.rms          (), theWeight);
+  histograms.fill(type+"_beta"         , 1, 1, 1    , jet.beta         (), theWeight);
+  histograms.fill(type+"_jetArea"      , 1, 1, 1    , jet.jetArea      (), theWeight);
+  histograms.fill(type+"_secvtxMass"   , 1, 1, 1    , jet.secvtxMass   (), theWeight);
+  histograms.fill(type+"_Lxy"          , 1, 1, 1    , jet.Lxy          (), theWeight);
+  histograms.fill(type+"_LxyErr"       , 1, 1, 1    , jet.LxyErr       (), theWeight);
+  histograms.fill(type+"_rawFactor"    , 1, 1, 1    , jet.rawFactor    (), theWeight);
+
+  histograms.fill(type+"_uncOnFourVectorScale", 1, 1, 1, jet.uncOnFourVectorScale(), theWeight);
+  histograms.fill(type+"_puMVAFull"  , 1, 1, 1, jet.puMVAFull  (), theWeight);
+  histograms.fill(type+"_puMVASimple", 1, 1, 1, jet.puMVASimple(), theWeight);
+  histograms.fill(type+"_puCutBased" , 1, 1, 1, jet.puCutBased (), theWeight);
+
+  histograms.fill<TH1I>(type+"_pass_puMVAFull_loose"   , 2, 0, 2, jet.pass_puMVAFull_loose   (), theWeight);
+  histograms.fill<TH1I>(type+"_pass_pUMVAFull_medium"  , 2, 0, 2, jet.pass_pUMVAFull_medium  (), theWeight);
+  histograms.fill<TH1I>(type+"_pass_pUMVAFull_tight"   , 2, 0, 2, jet.pass_pUMVAFull_tight   (), theWeight);
+				                          	                             
+  histograms.fill<TH1I>(type+"_pass_puMVASimple_loose" , 2, 0, 2, jet.pass_puMVASimple_loose (), theWeight);
+  histograms.fill<TH1I>(type+"_pass_puMVASimple_medium", 2, 0, 2, jet.pass_puMVASimple_medium(), theWeight);
+  histograms.fill<TH1I>(type+"_pass_puMVASimple_tight" , 2, 0, 2, jet.pass_puMVASimple_tight (), theWeight);
+				                          	                             
+  histograms.fill<TH1I>(type+"_pass_puCutBased_loose"  , 2, 0, 2, jet.pass_puCutBased_loose  (), theWeight);
+  histograms.fill<TH1I>(type+"_pass_puCutBased_medium" , 2, 0, 2, jet.pass_puCutBased_medium (), theWeight);
+  histograms.fill<TH1I>(type+"_pass_puCutBased_tight"  , 2, 0, 2, jet.pass_puCutBased_tight  (), theWeight);
+}

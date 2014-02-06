@@ -45,7 +45,6 @@ public:
  protected:
   // Functions to be overloaded in the concrete instance of the EventAnalyzer class.
   virtual void  begin() {}
-  virtual void  book()  {}
   virtual Int_t cut();
   virtual void  analyze() = 0;
   virtual void  end(TFile &) {};  
@@ -59,26 +58,20 @@ public:
   virtual void     Show(Long64_t entry = -1);
   
   // Some basic plots. User may want to change these, thou they should be used only for very basic plots.
-  void book(const std::string&);
-  void bookExtraForElectrons(const std::string&);
-  void bookExtraForJets(const std::string&);
-  virtual void     basicPlots();
+  virtual void     fillBasicPlots();
   void fillParticlePlots         (const std::string &type, const phys::Particle &particle);
   void fillLeptonPlots           (const std::string &type, const phys::Lepton   &lepton);
   void fillJetPlots              (const std::string &type, const phys::Jet      &jet);
   void fillElectronPlots         (const std::string &type, const phys::Electron &electron);
   void fillExtraPlotsForElectrons(const std::string &type, const phys::Electron &electron);
 
-  
-
  private:
   TTree *theTree;
   int fCurrent; 
 
  protected:
-  // Histograms container
-  std::map<std::string,TH1*> thePlots;
-  Histogrammer histos;
+  // Histograms helper class
+  Histogrammer histograms;
 
   double theWeight;
   double theSampleWeight;
