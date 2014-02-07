@@ -104,7 +104,7 @@ namespace phys {
     Double_t puMVAFull()     const {return puMVAFull_;}	      
     Double_t puMVASimple()   const {return puMVASimple_;}	      
     Double_t puCutBased()    const {return puCutBased_;}	      
-					 				      
+   
     Bool_t   pass_puMVAFull_loose()    const {return pass_puMVAFull_loose_;}   
     Bool_t   pass_pUMVAFull_medium()   const {return pass_pUMVAFull_medium_;}  
     Bool_t   pass_pUMVAFull_tight()    const {return pass_pUMVAFull_tight_;}   
