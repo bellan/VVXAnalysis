@@ -81,13 +81,14 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 # jet-jet pairs
 process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
+                                           Preselection = cms.string("pt > 25 && abs(eta) < 2.5"),
                                            Jets  = cms.InputTag("cmgPFJetSel"),
                                            Muons = cms.InputTag("appendPhotons:muons"),
                                            Electrons = cms.InputTag("appendPhotons:electrons"),
                                            EnergyFractionAllowed = cms.double(0)) # maximum energy fraction carried by the lepton in the jet, to accept a jet as non from lepton
 
 process.bareWCand = cms.EDProducer("CandViewShallowCloneCombiner",
-                                   decay = cms.string('cmgPFJetSel cmgPFJetSel'),
+                                   decay = cms.string('disambiguatedJets disambiguatedJets'),
                                    cut = cms.string('mass > 0'), # protect against ghosts
                                    checkCharge = cms.bool(True))
 
@@ -138,7 +139,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
 process.genCategory =  cms.EDFilter("GenFilterCategory",
                                     src = cms.InputTag("genParticlesPruned"),
                                     Category = cms.int32(-1),
-                                    SignalDefinition = cms.int32(1))
+                                    SignalDefinition = cms.int32(3))
 
 process.filltrees = cms.Path(process.printTree + process.genCategory * process.treePlanter)
 

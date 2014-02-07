@@ -33,7 +33,7 @@ private:
   double enFractionAllowed_;
 
   /// Preselection cut
-  //StringCutObjectSelector<T> preselection_;
+  StringCutObjectSelector<cmg::PFJet> preselection_;
 };
 
 
@@ -41,7 +41,9 @@ JetsWithLeptonsRemover::JetsWithLeptonsRemover(const edm::ParameterSet & iConfig
   : jetSrc_           (iConfig.getParameter<edm::InputTag>("Jets"))
   , muonSrc_          (iConfig.getParameter<edm::InputTag>("Muons"))
   , electronSrc_      (iConfig.getParameter<edm::InputTag>("Electrons"))
-  , enFractionAllowed_(iConfig.getParameter<double>("EnergyFractionAllowed")) {
+  , enFractionAllowed_(iConfig.getParameter<double>("EnergyFractionAllowed"))
+  , preselection_     (iConfig.getParameter<std::string>("Preselection"))
+{
   produces<std::vector<cmg::PFJet> >(); 
 }
 
@@ -65,6 +67,8 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
   auto_ptr<vector<cmg::PFJet> > out(new vector<cmg::PFJet>());
   foreach(const cmg::PFJet& jet, *jets){
     
+    if(!preselection_(jet)) continue;
+
     //std::cout<<"\n+++++ Jet +++++ pt: " << jet.pt() << " eta: " << jet.eta() << " phi: " << jet.phi() << std::endl;
 
     bool leptonjet = false;
