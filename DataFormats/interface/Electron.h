@@ -18,7 +18,7 @@ namespace phys {
   public:
     
     /// Constructor
-    Electron(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), int q =0, int id = 0)
+    Electron(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), float q =0, int id = 0)
       : Lepton(p,q,id)
       , energy_(-9999.)
       , phiWidth_(-9999.)
