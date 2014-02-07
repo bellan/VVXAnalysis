@@ -86,6 +86,7 @@ public:
   Double_t weight   ; TBranch *b_weight;
   Double_t puweight ; TBranch *b_puweight;
   Double_t xsec     ; TBranch *b_xsec;
+  Int_t genCategory ; TBranch *b_genCategory;
   Int_t totalEvents ; TBranch *b_totalEvents;
 
   //MET
@@ -99,6 +100,9 @@ public:
 
   // Jets  
   std::vector<phys::Jet> *jets; TBranch *b_jets;
+
+  // GenParticle 
+  std::vector<phys::Particle> *genParticles; TBranch *b_genParticles;
   
 };
 #endif

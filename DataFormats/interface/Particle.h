@@ -49,7 +49,24 @@ namespace phys {
     double pt()         const {return p4_.Pt();}
     double eta()        const {return p4_.Eta();}
     double phi()        const {return p4_.Phi();}
-    
+    // Method that tries to infer the charge of the particle starting from a pdgId in input
+    // to be moved?
+    static double computeCharge(int pdgId) {
+      double charge = 0;
+      if(abs(pdgId) == 1       || abs(pdgId) == 3  || abs(pdgId) == 5) // d, s or b
+	charge = 0; //-1*std::sign(pdgId)*1./3;
+      else if(abs(pdgId) == 2  || abs(pdgId) == 4  || abs(pdgId) == 6) // u, c or t
+	charge = 0; //std::sign(pdgId)*2./3
+      else if(abs(pdgId) == 11 || abs(pdgId) == 13 || abs(pdgId) == 15) // e, mu or tau
+	charge = 0; //-1*std::sign(pdgId);
+      else if(abs(pdgId) == 12 || abs(pdgId) == 14 || abs(pdgId) == 16 ||                  // ve, vmu, vtau
+	      abs(pdgId) == 21 || abs(pdgId) == 22 || abs(pdgId) == 23 || abs(pdgId) == 25) // gluon, gamma, Z, H
+	charge = 0;
+      else if(abs(pdgId) == 24) // W
+	charge = 0; //*std::sign(pdgId);
+
+      return charge;
+    }
  
    private:
     TLorentzVector p4_;

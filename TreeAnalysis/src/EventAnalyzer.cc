@@ -75,6 +75,9 @@ void EventAnalyzer::Init(TTree *tree)
   
   // Jets   
   jets = 0;      b_jets = 0;      theTree->SetBranchAddress("jets", &jets, &b_jets);
+
+  // Jets   
+  genParticles = 0; b_genParticles = 0; theTree->SetBranchAddress("genParticles", &genParticles, &b_genParticles);
   
   // MET
   met = new phys::Particle();
@@ -93,7 +96,8 @@ void EventAnalyzer::Init(TTree *tree)
   // MC related variables
   cout << "Weight from the event sample type: " << theSampleWeight << ", total weight (including PU reweight, if applicable): " << theWeight << endl;
   if(theSampleWeight != 1) b_puweight    = 0; theTree->SetBranchAddress("puweight" , &puweight , &b_puweight );
-   b_xsec        = 0; theTree->SetBranchAddress("xsec"   , &xsec   , &b_xsec  );
+  b_xsec        = 0; theTree->SetBranchAddress("xsec"   , &xsec   , &b_xsec  );
+  b_genCategory = 0; theTree->SetBranchAddress("genCategory"   , &genCategory   , &b_genCategory  );
    
    // Global variables of the sample
    //b_totalEvents = 0; theTree->SetBranchAddress("totalEvents", &totalEvents  , &b_totalEvents  );
