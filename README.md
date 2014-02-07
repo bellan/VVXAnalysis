@@ -15,26 +15,25 @@ The actual analysis is then performed on the TTrees. For this step I implemented
 and once the samples are stored locally, to work off-line (step: tree analysis).
 
 The current structured of the repository is:
-VVXAnalysis/DataFormats  --> Data formats for the object written in the TTree, used in both step previously described.
-VVXAnalysis/Producers    --> CMSSW code for tree production. This code is not used in the tree analysis step.
-VVXAnalysis/TreeAnalysis --> Framework for the tree analysis. It is CMSSW independent.
+- ```VVXAnalysis/DataFormats```  --> Data formats for the object written in the TTree, used in both step previously described.
+- ```VVXAnalysis/Producers```    --> CMSSW code for tree production. This code is not used in the tree analysis step.
+- ```VVXAnalysis/TreeAnalysis``` --> Framework for the tree analysis. It is CMSSW independent.
+
+The code is located in this repository: https://github.com/bellan/VVXAnalysis.git
 
 Recipe for the tree production step
 -----------------------------------
 
 - in a lxplus like environment, setup your area has for H->ZZ->4l analysis:
 - check-out the code from this repository:
-  - git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis
-- Compile the code. It could be that you need to compile using "-k" option in scram, like 
-  ```
-  scram b -j8 -k 
-  ```
+  - ```git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis```
+- Compile the code. It could be that you need to compile using "-k" option in scram, like ```scram b -j8 -k```, 
   to prevent the compiler to stop with TreeAnalysis code errors (related with include paths not being recognised by scram).
-- in VVXAnalysis/Producers/test/analysis_ZZW.py there is an example on cmsRun configuration for an interactive run.
-- in ZZAnalysis/AnalysisStep/test/prod there are queue tools useful for submission/check-status/resubmission/merging.
+- in ```VVXAnalysis/Producers/test/analysis_ZZW.py``` there is an example on cmsRun configuration for an interactive run.
+- in ```ZZAnalysis/AnalysisStep/test/prod``` there are queue tools useful for submission/check-status/resubmission/merging.
   The main commands are described here:
   - https://github.com/CJLST/ZZAnalysis/blob/master/AnalysisStep/test/prod/PRODUCTION.md 
-  - as starting point one can use as template the VVXAnalysis/Producers/test/analyzer_ZZW.py file.
+  - as starting point one can use as template the ```VVXAnalysis/Producers/test/analyzer_ZZW.py``` file.
   - ...
 - The list of currently patified samples is in:
   https://github.com/CJLST/ZZAnalysis/blob/master/AnalysisStep/test/prod/analyzer_2012.py
@@ -54,15 +53,16 @@ cmake CMakeList.txt
 make
 ```
 
-- To run the code, please use ./python/run.py and follow the instruction therein written.
+- To run the code, please use ```./python/run.py``` and follow the instruction therein written.
   ... more info to come ...
 
-Off course, here in this step, it is supposed that you implement something. I need to give you more info, then. The code is steered by the ./python/run.py code, that knows 
-about the samples and their main characteristics. The actual code, after the compiling step has been successfully done, is codified in the ./bin/eventAnalyzer executable.
-To implement an analysis, you should inherit from the EventAnalyzer class, that set up all the relevant branches, the loop over the events and some useful utilities for
-histogramming. The base class has a pure virtual method (analyze()) that must be implemented in the concrete class (your analysis). As a matter of fact, all the analysis should be doable
-in the analyze() method (called each event) and in the begin() and end() methods, called before and after the loop over the events starts/ends. Note that the histogrammer utility (a member of the EventAnalyzer class) allows you to fill plots without bothering about histograms booking or writing (see some examples in the EventAnalyzer class).
-To make your code successfully compiled, you need to modify the CMakeList.txt file and implement the directive to compile it, with the proper dependencies. Also, you should modify the src/eventAnalyzer.cpp file to instantiate your class, even better if you
+Off course, here in this step, it is supposed that you implement something. I need to give you more info, then. The code is steered by the ```./python/run.py``` code, that knows 
+about the samples and their main characteristics. The actual code, after the compiling step has been successfully done, is codified in the ```./bin/eventAnalyzer``` executable.
+To implement an analysis, you should inherit from the ```EventAnalyzer``` class, that set up all the relevant branches, the loop over the events and some useful utilities for
+histogramming. The base class has a pure virtual method (```analyze()```) that must be implemented in the concrete class (your analysis). As a matter of fact, all the analysis should be doable
+in the ```analyze()``` method (called each event) and in the ```begin()``` and ```end()``` methods, called before and after the loop over the events starts/ends. Note that the histogrammer utility (a member of the ```EventAnalyzer``` class) allows you to fill plots without bothering about histograms booking or writing (see some examples in the EventAnalyzer class).
+To make your code successfully compiled, you need to modify the CMakeList.txt file and implement the directive to compile it, with the proper dependencies. 
+Also, you should modify the ```src/eventAnalyzer.cpp``` file to instantiate your class, even better if you
 implement a new .cpp file with your analysis instance only, in doing that, make sure your new executable is properly compiled by cmake (i.e., you need to modify the 
-CMakeList.txt rules) and that the ./python/run.py knows about it.
+```CMakeList.txt``` rules) and that the ```./python/run.py``` knows about it.
 
