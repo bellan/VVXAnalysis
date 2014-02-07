@@ -18,6 +18,7 @@
 #include "Electron.h"
 #include "Lepton.h"
 #include "Jet.h"
+#include "Boson.h"
 
 #include "Histogrammer.h"
 class TFile;
@@ -100,6 +101,11 @@ public:
 
   // Jets  
   std::vector<phys::Jet> *jets; TBranch *b_jets;
+
+  // Bosons
+  std::vector<phys::Boson<phys::Lepton> >   *Zmm; TBranch *b_Zmm;
+  std::vector<phys::Boson<phys::Electron> > *Zee; TBranch *b_Zee;
+  std::vector<phys::Boson<phys::Jet> >      *Wjj; TBranch *b_Wjj;
 
   // GenParticle 
   std::vector<phys::Particle> *genParticles; TBranch *b_genParticles;

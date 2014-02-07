@@ -39,7 +39,7 @@ namespace phys {
     }
 
     // Operations
-    P daughter(int i){
+    P daughter(int i) const{
       if(i == 0) return daughter0_;
       if(i == 1) return daughter1_;
       else abort();

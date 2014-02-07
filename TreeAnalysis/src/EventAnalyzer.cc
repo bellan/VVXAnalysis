@@ -76,6 +76,12 @@ void EventAnalyzer::Init(TTree *tree)
   // Jets   
   jets = 0;      b_jets = 0;      theTree->SetBranchAddress("jets", &jets, &b_jets);
 
+
+  // Bosons   
+  Zmm = 0;      b_Zmm = 0;      theTree->SetBranchAddress("Zmm", &Zmm, &b_Zmm);
+  Zee = 0;      b_Zee = 0;      theTree->SetBranchAddress("Zee", &Zee, &b_Zee);
+  Wjj = 0;      b_Wjj = 0;      theTree->SetBranchAddress("Wjj", &Wjj, &b_Wjj);
+
   // Jets   
   genParticles = 0; b_genParticles = 0; theTree->SetBranchAddress("genParticles", &genParticles, &b_genParticles);
   
@@ -121,6 +127,9 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   stable_sort(muons->begin(),     muons->end(),     PtComparator());
   stable_sort(electrons->begin(), electrons->end(), PtComparator());
   stable_sort(jets->begin(),      jets->end(),      PtComparator());
+  stable_sort(Zmm->begin(),       Zmm->end(),       PtComparator());
+  stable_sort(Zee->begin(),       Zee->end(),       PtComparator());
+  stable_sort(Wjj->begin(),       Wjj->end(),       PtComparator());
 
   return e;
 }

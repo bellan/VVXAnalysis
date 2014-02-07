@@ -1,5 +1,8 @@
 #include "ZZWAnalyzer.h"
 
-void ZZWAnalyzer::analyze(){
+#include <boost/foreach.hpp>
+#define foreach BOOST_FOREACH
 
+
+void ZZWAnalyzer::analyze(){
 }
