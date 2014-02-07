@@ -1,4 +1,7 @@
-Packages for a multi boson final state analysis.
+Packages for a multi boson final state analysis
+-----------------------------------------------
+-----------------------------------------------
+
 The basic objects and selections are based on the H->ZZ->4l analysis; this set of packages can be seen as an extension of the H->ZZ->4l analysis code. 
 As a matter of fact, the user needs follow the very same recipe of the H->ZZ->4l analysis setup and on top of that check-out the code in this repository too.
 
@@ -16,28 +19,44 @@ VVXAnalysis/DataFormats  --> Data formats for the object written in the TTree, u
 VVXAnalysis/Producers    --> CMSSW code for tree production. This code is not used in the tree analysis step.
 VVXAnalysis/TreeAnalysis --> Framework for the tree analysis. It is CMSSW independent.
 
-Recipe for the tree production:
+Recipe for the tree production step
+-----------------------------------
+
 - in a lxplus like environment, setup your area has for H->ZZ->4l analysis:
 - check-out the code from this repository:
-  git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis
-- Compile the code. It could be that you need to compile using "-k" option in scram (like scram b -j8 -k) to prevent the compiler to stop with TreeAnalysis code errors (related with include paths not being recognised by scram).
+  - git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis
+- Compile the code. It could be that you need to compile using "-k" option in scram, like 
+  ```
+  scram b -j8 -k 
+  ```
+  to prevent the compiler to stop with TreeAnalysis code errors (related with include paths not being recognised by scram).
 - in VVXAnalysis/Producers/test/analysis_ZZW.py there is an example on cmsRun configuration for an interactive run.
 - in ZZAnalysis/AnalysisStep/test/prod there are queue tools useful for submission/check-status/resubmission/merging.
   The main commands are described here:
   - https://github.com/CJLST/ZZAnalysis/blob/master/AnalysisStep/test/prod/PRODUCTION.md 
-  - as starting point one can do: ./batch.py -o TEST3 -n ../../../../VVXAnalysis/Producers/test/analyzer_ZZW.py 
+  - as starting point one can use as template the VVXAnalysis/Producers/test/analyzer_ZZW.py file.
   - ...
 - The list of currently patified samples is in:
   https://github.com/CJLST/ZZAnalysis/blob/master/AnalysisStep/test/prod/analyzer_2012.py
-  (I am currently planning to convert it into a csv file to keep trace of relevant information)
+  (I am currently planning to convert it into a csv file to keep trace of relevant information).
 
-Recipe for tree analysis:
-- in an environment with ROOT and CMAKE installed, check-out the code from this repository as done above:
-  git clone ...
-- Generate the Makefile. Type: cmake CMakeList.txt
-- Compile the code. Type: make
+Recipe for tree analysis step
+-----------------------------
+
+- In an environment with ROOT and CMAKE installed, check-out the code from this repository as done above.
+- Generate the Makefile.
+- Compile the code.
+
+```
+git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis
+cd VVXAnalysis/TreeAnalysis
+cmake CMakeList.txt
+make
+```
+
 - To run the code, please use ./python/run.py and follow the instruction therein written.
   ... more info to come ...
+
 Off course, here in this step, it is supposed that you implement something. I need to give you more info, then. The code is steered by the ./python/run.py code, that knows 
 about the samples and their main characteristics. The actual code, after the compiling step has been successfully done, is codified in the ./bin/eventAnalyzer executable.
 To implement an analysis, you should inherit from the EventAnalyzer class, that set up all the relevant branches, the loop over the events and some useful utilities for
