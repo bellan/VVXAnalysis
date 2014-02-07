@@ -24,7 +24,7 @@ The code is located in this repository: https://github.com/bellan/VVXAnalysis.gi
 Recipe for the tree production step
 -----------------------------------
 
-- in a lxplus like environment, setup your area has for H->ZZ->4l analysis:
+- in a lxplus like environment, setup your area has for H->ZZ->4l analysis, following this recipe: https://github.com/CJLST/ZZAnalysis.
 - check-out the code from this repository:
   - ```git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis```
 - Compile the code. It could be that you need to compile using "-k" option in scram, like ```scram b -j8 -k```, 
