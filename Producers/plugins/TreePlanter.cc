@@ -138,7 +138,7 @@ void TreePlanter::fillEventInfo(const edm::Event& event){
     
     for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) 
       if (p->status() ==3 && std::distance(genParticles->begin(),p) > 5)
-	genParticles_.push_back(phys::Particle(p->p4(), 0, p->pdgId())); // fixme: set properly the charge
+	genParticles_.push_back(phys::Particle(p->p4(), phys::Particle::computeCharge(p->pdgId()), p->pdgId()));
          
   
     edm::Handle<int> genCategory;

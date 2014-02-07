@@ -54,16 +54,16 @@ namespace phys {
     static double computeCharge(int pdgId) {
       double charge = 0;
       if(abs(pdgId) == 1       || abs(pdgId) == 3  || abs(pdgId) == 5) // d, s or b
-	charge = 0; //-1*std::sign(pdgId)*1./3;
+	charge = -1*std::copysign(1/3., pdgId);
       else if(abs(pdgId) == 2  || abs(pdgId) == 4  || abs(pdgId) == 6) // u, c or t
-	charge = 0; //std::sign(pdgId)*2./3
+	charge = std::copysign(2/3., pdgId);
       else if(abs(pdgId) == 11 || abs(pdgId) == 13 || abs(pdgId) == 15) // e, mu or tau
-	charge = 0; //-1*std::sign(pdgId);
-      else if(abs(pdgId) == 12 || abs(pdgId) == 14 || abs(pdgId) == 16 ||                  // ve, vmu, vtau
+	charge = -1*std::copysign(1, pdgId);
+      else if(abs(pdgId) == 12 || abs(pdgId) == 14 || abs(pdgId) == 16 ||                   // ve, vmu, vtau
 	      abs(pdgId) == 21 || abs(pdgId) == 22 || abs(pdgId) == 23 || abs(pdgId) == 25) // gluon, gamma, Z, H
 	charge = 0;
       else if(abs(pdgId) == 24) // W
-	charge = 0; //*std::sign(pdgId);
+	charge = std::copysign(1, pdgId);
 
       return charge;
     }
