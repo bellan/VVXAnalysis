@@ -1,7 +1,7 @@
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 
-#include "ZZWAnalyzer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/ZZWAnalyzer.h"
 
 using std::cout;
 using std::endl;
