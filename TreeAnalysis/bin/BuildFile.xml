@@ -1,0 +1,4 @@
+<use name="VVXAnalysis/TreeAnalysis"/>
+
+<bin file="eventAnalyzer.cpp" name="eventAnalyzer">
+</bin>
