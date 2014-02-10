@@ -47,7 +47,8 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , isMC_            (config.getUntrackedParameter<bool>("isMC",false))
   , sampleType_      (config.getParameter<int>("sampleType"))
   , setup_           (config.getParameter<int>("setup"))
-  , theNumberOfEvents(0){
+  , theNumberOfEvents(0)
+  , theNumberOfAnalyzedEvents(){
  
   edm::Service<TFileService> fs;
   theTree = fs->make<TTree>("ElderTree","ElderTree");
@@ -114,19 +115,23 @@ void TreePlanter::endRun(const edm::Run& run, const edm::EventSetup& setup){
 
 void TreePlanter::endJob(){
 
-  double sum = 0;
-  foreach(const double &xsec, theXSections) sum += xsec;
+  Double_t crossSection = 0.;
+  foreach(const double &xsec, theXSections) crossSection += xsec;
   
-  TVectorD * crossSection =  new TVectorD(1);
-  crossSection[0] = sum/theXSections.size();
-  TVectorD * genEvents =  new TVectorD(1);
-  genEvents[0] = theNumberOfEvents;
-  cout << "================================================" << endl;
-  cout << "Total number of generated events: " << (*genEvents)[0] 
-       <<", cross-section: " << (*crossSection)[0]           << endl;
-  cout << "================================================" << endl;
-  theTree->GetUserInfo()->Add(genEvents);
-  theTree->GetUserInfo()->Add(crossSection);
+  crossSection = crossSection/theXSections.size();
+
+  cout << "================================================"        << endl
+       << "Total number of generated events: " << theNumberOfEvents << endl
+       << "Total number of analyzed events: "  << theNumberOfEvents << endl
+       <<" Cross-section: "                    << crossSection      << endl
+       << "================================================"        << endl;
+
+  edm::Service<TFileService> fs;
+  TTree *countTree = fs->make<TTree>("HollyTree","HollyTree");
+  countTree->Branch("genEvents"     , &theNumberOfEvents);
+  countTree->Branch("analyzedEvents", &theNumberOfAnalyzedEvents);
+  countTree->Branch("crossSection"  , &crossSection);
+  countTree->Fill();
 }
 
 
@@ -206,6 +211,8 @@ void TreePlanter::fillEventInfo(const edm::Event& event){
 
 
 void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup){
+  ++theNumberOfAnalyzedEvents;
+
   initTree();
   
   fillEventInfo(event);
