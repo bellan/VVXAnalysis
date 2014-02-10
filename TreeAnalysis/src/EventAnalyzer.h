@@ -15,10 +15,10 @@
 #include <utility>
 #include <map>
 
-#include "Electron.h"
-#include "Lepton.h"
-#include "Jet.h"
-#include "Boson.h"
+#include "VVXAnalysis/DataFormats/interface/Electron.h"
+#include "VVXAnalysis/DataFormats/interface/Lepton.h"
+#include "VVXAnalysis/DataFormats/interface/Jet.h"
+#include "VVXAnalysis/DataFormats/interface/Boson.h"
 
 #include "Histogrammer.h"
 class TFile;

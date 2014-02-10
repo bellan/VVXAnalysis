@@ -18,14 +18,19 @@ set(ROOT_LIBS ${ROOT_LIBS} "-lRooFit -lRooFitCore -lMinuit -lFoam")
 message(STATUS ${ROOT_LIBS})
 
 set(DataFormats ../DataFormats)
-set(DataFormats_interface ${DataFormats}/interface)
+#set(DataFormats_interface ${DataFormats}/interface)
 set(DataFormats_src ${DataFormats}/src)
+
+set(BASE ../../)
+
 set(TreeAnalysis_interface interface)
 set(BIN bin)
 set(SRC src)
 
-set(CMAKE_INCLUDE_PATH ${DataFormats_interface} ${TreeAnalysis_interface}) 
-set(EventDF_HEADERS ${DataFormats_interface}/*.h)
+#set(CMAKE_INCLUDE_PATH ${DataFormats_interface} ${TreeAnalysis_interface}) 
+#set(EventDF_HEADERS ${DataFormats_interface}/*.h)
+set(CMAKE_INCLUDE_PATH ${BASE} ${TreeAnalysis_interface}) 
+set(EventDF_HEADERS ${BASE}/VVXAnalysis/DataFormats/interface/*.h)
 set(EventDF_LINKDEF ${DataFormats_src}/STDToolsLinkDef.h)
 set(EventDF_DICTIONARY STDTools.cxx) 
 

@@ -102,7 +102,8 @@ void EventAnalyzer::Init(TTree *tree)
   // MC related variables
   cout << "Weight from the event sample type: " << theSampleWeight << ", total weight (including PU reweight, if applicable): " << theWeight << endl;
   if(theSampleWeight != 1) b_puweight    = 0; theTree->SetBranchAddress("puweight" , &puweight , &b_puweight );
-  b_xsec        = 0; theTree->SetBranchAddress("xsec"   , &xsec   , &b_xsec  );
+
+  // b_xsec        = 0; theTree->SetBranchAddress("xsec"   , &xsec   , &b_xsec  ); // -->  TVectorD* xsec = (TVectorD*)t->GetUserInfo()->At(0)
   b_genCategory = 0; theTree->SetBranchAddress("genCategory"   , &genCategory   , &b_genCategory  );
    
    // Global variables of the sample
