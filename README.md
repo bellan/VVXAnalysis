@@ -44,15 +44,32 @@ Recipe for the tree production step
 Recipe for tree analysis step
 -----------------------------
 
-- In an environment with ROOT and CMAKE installed, check-out the code from this repository as done above.
-- Generate the Makefile.
-- Compile the code.
+- In an environment with ROOT and CMAKE installed:
+  - check-out the code from this repository as done above.
+  - Generate the Makefile.
+  - Compile the code.
 
 ```
 git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis
 cd VVXAnalysis/TreeAnalysis
 cmake CMakeLists.txt
 make
+```
+
+- In an environment with SCRAM installed:
+  - prepare a CMSSW area 
+  - check-out the code
+  - compile with scram
+  - link the bin to bin/ dir
+
+```
+cmsrel CMSSW_X_Y_Z
+cd CMSSW_X_Y_Z/src/
+cmsenv
+git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis
+scram b
+cd bin/
+ln -s $CMSSW_BASE/bin/slc5_amd64_gcc462/eventAnalyzer
 ```
 
 - To run the code, please use ```./python/run.py``` and follow the instruction therein written.
