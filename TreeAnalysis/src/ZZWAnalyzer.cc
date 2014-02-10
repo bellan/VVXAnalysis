@@ -1,4 +1,4 @@
-#include "ZZWAnalyzer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/ZZWAnalyzer.h"
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH

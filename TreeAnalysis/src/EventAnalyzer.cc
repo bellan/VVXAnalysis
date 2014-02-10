@@ -7,7 +7,7 @@
  *  \author R. Bellan - UNITO <riccardo.bellan@cern.ch>
  */
 
-#include "EventAnalyzer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/EventAnalyzer.h"
 
 #include <TChain.h>
 #include <TFile.h>
