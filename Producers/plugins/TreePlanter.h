@@ -23,6 +23,7 @@
 #include "VVXAnalysis/DataFormats/interface/Jet.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 
+#include "ZZAnalysis/AnalysisStep/interface/PUReweight.h"
 
 class TTree;
 namespace cmg{class PFJet;}
@@ -39,7 +40,9 @@ class TreePlanter: public edm::EDAnalyzer {
   
   // Operations
   virtual void beginJob();
+  virtual void endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup);
   virtual void analyze(const edm::Event& event, const edm::EventSetup& setup);
+  virtual void endRun(const edm::Run& run, const edm::EventSetup& setup);
   virtual void endJob();
   void initTree();
   
@@ -68,13 +71,16 @@ class TreePlanter: public edm::EDAnalyzer {
 
   TTree *theTree;
 
+  PUReweight       PUWeighter_;
+  
+
   // ------------------- Event info in the tree ------------------- //
   Int_t event_;
   Int_t run_;
   Int_t lumiBlock_;
   
 
-  Double_t weight_;
+  Double_t mcprocweight_;
   Double_t puweight_;
   Double_t xsec_;
   Int_t genCategory_;
@@ -109,10 +115,13 @@ class TreePlanter: public edm::EDAnalyzer {
 
   // --------------------------------------------------------- //
 
-
   // Ordinary data members
   bool isMC_;
- 
+  int  sampleType_;
+  int  setup_;
+  std::vector<double> theXSections;
+  int theNumberOfEvents;
+
 };
 #endif
 

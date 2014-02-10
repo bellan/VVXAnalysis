@@ -2,21 +2,27 @@
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/Framework/interface/LuminosityBlock.h"
+#include "FWCore/Framework/interface/Run.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/Common/interface/View.h"
+#include "DataFormats/Common/interface/MergeableCounter.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
 
 #include "AnalysisDataFormats/CMGTools/interface/PFJet.h"
 #include "AnalysisDataFormats/CMGTools/interface/BaseMET.h"
 #include "VVXAnalysis/DataFormats/interface/Utilities.h"
 
+#include "ZZAnalysis/AnalysisStep/interface/MCHistoryTools.h"
 
-#include <TTree.h>
+#include "TTree.h"
+#include "TVectorD.h"
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
@@ -29,17 +35,20 @@ using std::endl;
 
 
 TreePlanter::TreePlanter(const edm::ParameterSet &config)
-  : theMuonLabel    (config.getParameter<edm::InputTag>("muons"    ))
-  , theElectronLabel(config.getParameter<edm::InputTag>("electrons"))
-  , theJetLabel     (config.getParameter<edm::InputTag>("jets"     ))
-  , theZmmLabel     (config.getParameter<edm::InputTag>("Zmm"      ))
-  , theZeeLabel     (config.getParameter<edm::InputTag>("Zee"      ))
-  , theWLabel       (config.getParameter<edm::InputTag>("Wjj"      ))
-  , theMETLabel     (config.getParameter<edm::InputTag>("MET"      ))
-  , theVertexLabel  (config.getParameter<edm::InputTag>("Vertices" ))
-  , isMC_           (config.getUntrackedParameter<bool>("isMC",false))
-{
-  
+  : PUWeighter_      (PUReweight::LEGACY)
+  , theMuonLabel     (config.getParameter<edm::InputTag>("muons"    ))
+  , theElectronLabel (config.getParameter<edm::InputTag>("electrons"))
+  , theJetLabel      (config.getParameter<edm::InputTag>("jets"     ))
+  , theZmmLabel      (config.getParameter<edm::InputTag>("Zmm"      ))
+  , theZeeLabel      (config.getParameter<edm::InputTag>("Zee"      ))
+  , theWLabel        (config.getParameter<edm::InputTag>("Wjj"      ))
+  , theMETLabel      (config.getParameter<edm::InputTag>("MET"      ))
+  , theVertexLabel   (config.getParameter<edm::InputTag>("Vertices" ))
+  , isMC_            (config.getUntrackedParameter<bool>("isMC",false))
+  , sampleType_      (config.getParameter<int>("sampleType"))
+  , setup_           (config.getParameter<int>("setup"))
+  , theNumberOfEvents(0){
+ 
   edm::Service<TFileService> fs;
   theTree = fs->make<TTree>("ElderTree","ElderTree");
 
@@ -58,10 +67,10 @@ void TreePlanter::beginJob(){
   theTree->Branch("run"       , &run_); 
   theTree->Branch("lumiBlock" , &lumiBlock_); 
 
-  theTree->Branch("weight"     , &weight_);
-  theTree->Branch("puweight"   , &puweight_);
-  theTree->Branch("xsec"       , &xsec_);
-  theTree->Branch("genCategory", &genCategory_);
+  theTree->Branch("mcprocweight", &mcprocweight_);
+  theTree->Branch("puweight"    , &puweight_);
+  theTree->Branch("xsec"        , &xsec_);
+  theTree->Branch("genCategory" , &genCategory_);
 
   theTree->Branch("met"   , &met_);
   theTree->Branch("rho"   , &rho_); 
@@ -77,8 +86,49 @@ void TreePlanter::beginJob(){
   theTree->Branch("genParticles", &genParticles_);
 }
 
+void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
+{
+  Float_t Nevt_preskim = -1.;
+  edm::Handle<edm::MergeableCounter> preSkimCounter;
+  if (lumi.getByLabel("preSkimCounter", preSkimCounter)) { // Counter before skim. Does not exist for non-skimmed samples.
+    Nevt_preskim = preSkimCounter->value;
+  }  
+  
+  edm::Handle<edm::MergeableCounter> prePathCounter;
+  lumi.getByLabel("prePathCounter", prePathCounter);       // Counter of input events in the input pattuple
 
-void TreePlanter::endJob(){}
+  // Nevt_gen: this is the number before any skim
+  if (Nevt_preskim>=0.) {
+    theNumberOfEvents += Nevt_preskim; 
+  } else {
+    theNumberOfEvents += prePathCounter->value;    
+  }
+}
+
+
+void TreePlanter::endRun(const edm::Run& run, const edm::EventSetup& setup){
+  edm::Handle<GenRunInfoProduct> genRunInfo;
+  run.getByLabel("generator", genRunInfo);
+  theXSections.push_back(genRunInfo->crossSection());
+}
+
+void TreePlanter::endJob(){
+
+  double sum = 0;
+  foreach(const double &xsec, theXSections) sum += xsec;
+  
+  TVectorD * crossSection =  new TVectorD(1);
+  crossSection[0] = sum/theXSections.size();
+  TVectorD * genEvents =  new TVectorD(1);
+  genEvents[0] = theNumberOfEvents;
+  cout << "================================================" << endl;
+  cout << "Total number of generated events: " << (*genEvents)[0] 
+       <<", cross-section: " << (*crossSection)[0]           << endl;
+  cout << "================================================" << endl;
+  theTree->GetUserInfo()->Add(genEvents);
+  theTree->GetUserInfo()->Add(crossSection);
+}
+
 
 
 void TreePlanter::initTree(){
@@ -86,7 +136,7 @@ void TreePlanter::initTree(){
   run_       = -1;
   lumiBlock_ = -1;
 
-  weight_         =  1;
+  mcprocweight_   =  1;
   puweight_       =  1; 
   xsec_           = -1;
   genCategory_    = -1;
@@ -132,7 +182,6 @@ void TreePlanter::fillEventInfo(const edm::Event& event){
 	break;
       }
     
-    // FIXME do be completed
     edm::Handle<edm::View<reco::Candidate> > genParticles;
     event.getByLabel(theGenCollectionLabel,  genParticles);
     
@@ -144,6 +193,13 @@ void TreePlanter::fillEventInfo(const edm::Event& event){
     edm::Handle<int> genCategory;
     event.getByLabel(theGenCategoryLabel, genCategory);
     genCategory_ = *genCategory;
+
+    // Info about the MC weight
+    puweight_ = PUWeighter_.weight(sampleType_, setup_, ntruePUInt_);
+    
+    MCHistoryTools mch(event);
+    mcprocweight_ = mch.gethepMCweight();
+
   }
 }
 
