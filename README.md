@@ -29,8 +29,7 @@ Recipe for the tree production step
   into ```$CMSSW_BASE/src``` and from there run ./checkout_539.csh, making sure that no ```ZZAnalysis``` subsytem already exists.
 - Check-out the code from this repository.
   - ```git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis```
-- Compile the code. It could be that you need to compile using "-k" option in scram, like ```scram b -j8 -k```, 
-  to prevent the compiler to stop with TreeAnalysis code errors (related with include paths not being recognised by scram).
+- Compile the code with ```scram b``
 - in ```VVXAnalysis/Producers/test/analysis_ZZW.py``` there is an example on cmsRun configuration for an interactive run.
 - in ```ZZAnalysis/AnalysisStep/test/prod``` there are queue tools useful for submission/check-status/resubmission/merging.
   The main commands are described here:
