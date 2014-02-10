@@ -25,11 +25,11 @@ Recipe for the tree production step
 -----------------------------------
 
 - In a lxplus like environment, setup your area has for H->ZZ->4l analysis, following this recipe: https://github.com/CJLST/ZZAnalysis.
-- I suggest to run ```git clone https://github.com/CJLST/ZZAnalysis.git ZZAnalysis``` into a ```tmp/``` area and copy the file ```checkout_539.csh``
+- I suggest to run ```git clone https://github.com/CJLST/ZZAnalysis.git ZZAnalysis``` into a ```tmp/``` area and copy the file ```checkout_539.csh```
   into ```$CMSSW_BASE/src``` and from there run ./checkout_539.csh, making sure that no ```ZZAnalysis``` subsytem already exists.
 - Check-out the code from this repository.
   - ```git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis```
-- Compile the code with ```scram b``
+- Compile the code with ```scram b```
 - in ```VVXAnalysis/Producers/test/analysis_ZZW.py``` there is an example on cmsRun configuration for an interactive run.
 - in ```ZZAnalysis/AnalysisStep/test/prod``` there are queue tools useful for submission/check-status/resubmission/merging.
   The main commands are described here:
