@@ -39,7 +39,7 @@ ROOT_GENERATE_DICTIONARY("${EventDF_HEADERS}" "${EventDF_LINKDEF}" "${EventDF_DI
 
 include_directories(${CMAKE_INCLUDE_PATH})
 set(EventAnalyzer_SRCS ${EventDF_DICTIONARY} ${SRC}/EventAnalyzer.cc ${SRC}/ZZWAnalyzer.cc)
-add_executable(${BIN}/eventAnalyzer ${SRC}/eventAnalyzer.cpp ${EventAnalyzer_SRCS})
+add_executable(${BIN}/eventAnalyzer ${BIN}/eventAnalyzer.cpp ${EventAnalyzer_SRCS})
 target_link_libraries(bin/eventAnalyzer ${ROOT_LIBS})
 
 

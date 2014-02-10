@@ -20,7 +20,7 @@
 #include "VVXAnalysis/DataFormats/interface/Jet.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 
-#include "Histogrammer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
 class TFile;
 class TTree;
 class TBranch;
