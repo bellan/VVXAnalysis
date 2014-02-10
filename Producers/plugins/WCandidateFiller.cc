@@ -70,7 +70,7 @@ WCandidateFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   const float WmassValue = 80.385;
 
   float closestWjjMassDiff = 99999.;
-  int bestWjjIdx = -1;
+  //int bestWjjIdx = -1;
 
   //--- Loop over LL Candidates
   for(unsigned int i = 0; i < jjCands->size(); ++i) {
@@ -80,7 +80,7 @@ WCandidateFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     //--- Find "best Z" (closest to mZ) among those passing the "bestZAmong" selection (2011 PRL logic)
     float diffWmass = fabs(WmassValue - myCand.mass());
     if (diffWmass < closestWjjMassDiff) { // Best among any ll in the collection
-      bestWjjIdx = i;
+      //bestWjjIdx = i;
       closestWjjMassDiff = diffWmass;
     }
    
