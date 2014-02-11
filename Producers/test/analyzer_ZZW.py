@@ -31,7 +31,7 @@ try:
 except NameError:
     MCFILTER = ""
 
-
+samples = [('WZZJets','cmgtools_group','/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0', 'cmgTuple.*root', 2, "")]
 
 # Get absolute path
 import os
@@ -59,15 +59,7 @@ process.source.fileNames = cms.untracked.vstring(
     )
 
 
-### FIXME: DEBUGGING ONLY, turns off smearing if used with special tag
-process.calibratedPatElectrons.synchronization = True
-##process.calibratedPatElectrons.smearingRatio = 1
-process.calibratedMuons.fakeSmearing = cms.bool(True)
-#process.calibratedMuons.fakeSmearing = cms.untracked.bool(True)
-
-#process.appendPhotons.debug = cms.untracked.bool(True)
-
-process.maxEvents.input = -1
+process.maxEvents.input = 13
 
 # Silence output
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -123,6 +115,8 @@ process.Candidates = cms.Path(process.muons             +
 
 # Fill the tree for the analysis
 process.treePlanter = cms.EDAnalyzer("TreePlanter",
+                                     setup = cms.int32(LEPTON_SETUP),
+                                     sampleType = cms.int32(SAMPLE_TYPE),
                                      muons     = cms.InputTag("appendPhotons:muons"),
                                      electrons = cms.InputTag("appendPhotons:electrons"),
                                      jets      = cms.InputTag("disambiguatedJets"),
@@ -132,7 +126,6 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      MET       = cms.InputTag("cmgPFMET"),
                                      Vertices  = cms.InputTag("goodPrimaryVertices"),                                    
                                      isMC      = cms.untracked.bool(True),
-                                     PUInfo    = cms.untracked.InputTag("addPileupInfo")
                                      )
 
 
@@ -141,7 +134,8 @@ process.genCategory =  cms.EDFilter("GenFilterCategory",
                                     Category = cms.int32(-1),
                                     SignalDefinition = cms.int32(3))
 
-process.filltrees = cms.Path(process.printTree + process.genCategory * process.treePlanter)
+#process.filltrees = cms.Path(process.printTree + process.genCategory * process.treePlanter)
+process.filltrees = cms.Path(process.genCategory * process.treePlanter)
 
 
 ### ----------------------------------------------------------------------

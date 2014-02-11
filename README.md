@@ -25,12 +25,11 @@ Recipe for the tree production step
 -----------------------------------
 
 - In a lxplus like environment, setup your area has for H->ZZ->4l analysis, following this recipe: https://github.com/CJLST/ZZAnalysis.
-- I suggest to run ```git clone https://github.com/CJLST/ZZAnalysis.git ZZAnalysis``` into a ```tmp/``` area and copy the file ```checkout_539.csh``
+- I suggest to run ```git clone https://github.com/CJLST/ZZAnalysis.git ZZAnalysis``` into a ```tmp/``` area and copy the file ```checkout_539.csh```
   into ```$CMSSW_BASE/src``` and from there run ./checkout_539.csh, making sure that no ```ZZAnalysis``` subsytem already exists.
 - Check-out the code from this repository.
   - ```git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis```
-- Compile the code. It could be that you need to compile using "-k" option in scram, like ```scram b -j8 -k```, 
-  to prevent the compiler to stop with TreeAnalysis code errors (related with include paths not being recognised by scram).
+- Compile the code with ```scram b```
 - in ```VVXAnalysis/Producers/test/analysis_ZZW.py``` there is an example on cmsRun configuration for an interactive run.
 - in ```ZZAnalysis/AnalysisStep/test/prod``` there are queue tools useful for submission/check-status/resubmission/merging.
   The main commands are described here:
@@ -44,15 +43,32 @@ Recipe for the tree production step
 Recipe for tree analysis step
 -----------------------------
 
-- In an environment with ROOT and CMAKE installed, check-out the code from this repository as done above.
-- Generate the Makefile.
-- Compile the code.
+- In an environment with ROOT and CMAKE installed:
+  - check-out the code from this repository as done above.
+  - Generate the Makefile.
+  - Compile the code.
 
 ```
 git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis
 cd VVXAnalysis/TreeAnalysis
 cmake CMakeLists.txt
 make
+```
+
+- In an environment with SCRAM installed:
+  - prepare a CMSSW area 
+  - check-out the code
+  - compile with scram
+  - link the bin to bin/ dir
+
+```
+cmsrel CMSSW_X_Y_Z
+cd CMSSW_X_Y_Z/src/
+cmsenv
+git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis
+scram b
+cd bin/
+ln -s $CMSSW_BASE/bin/slc5_amd64_gcc462/eventAnalyzer
 ```
 
 - To run the code, please use ```./python/run.py``` and follow the instruction therein written.
