@@ -21,6 +21,8 @@
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 
 #include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/MCInfo.h"
+
 class TFile;
 class TTree;
 class TBranch;
@@ -72,7 +74,10 @@ public:
 
  protected:
   // Histograms helper class
-  Histogrammer histograms;
+  Histogrammer theHistograms;
+
+  // MC helper class
+  MCInfo theMCInfo;
 
   double theWeight;
   double theSampleWeight;
@@ -84,11 +89,11 @@ public:
   Int_t    lumiBlock; TBranch *b_lumiBlock;
   Int_t    nvtx     ; TBranch *b_nvtx;
   Double_t rho      ; TBranch *b_rho;
-  Double_t weight   ; TBranch *b_weight;
-  Double_t puweight ; TBranch *b_puweight;
-  Double_t xsec     ; TBranch *b_xsec;
+  
+		      TBranch *b_puweight;
+  		      TBranch *b_mcprocweight;
   Int_t genCategory ; TBranch *b_genCategory;
-  Int_t totalEvents ; TBranch *b_totalEvents;
+
 
   //MET
   phys::Particle *met   ; TBranch *b_met;

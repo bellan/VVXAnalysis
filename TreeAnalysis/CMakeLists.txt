@@ -32,18 +32,15 @@ set(SRC src)
 set(CMAKE_INCLUDE_PATH ${BASE} ${TreeAnalysis_interface}) 
 set(EventDF_HEADERS ${BASE}/VVXAnalysis/DataFormats/interface/*.h)
 set(EventDF_LINKDEF ${DataFormats_src}/STDToolsLinkDef.h)
-set(EventDF_DICTIONARY STDTools.cxx) 
+set(EventDF_DICTIONARY STDTools.cxx)
 
 include(FindROOT.cmake)
 ROOT_GENERATE_DICTIONARY("${EventDF_HEADERS}" "${EventDF_LINKDEF}" "${EventDF_DICTIONARY}" "${include_directories}")
 
 include_directories(${CMAKE_INCLUDE_PATH})
-set(EventAnalyzer_SRCS ${EventDF_DICTIONARY} ${SRC}/EventAnalyzer.cc ${SRC}/ZZWAnalyzer.cc)
+set(EventAnalyzer_SRCS ${EventDF_DICTIONARY} ${SRC}/MCInfo.cc ${SRC}/EventAnalyzer.cc ${SRC}/ZZWAnalyzer.cc)
 add_executable(${BIN}/eventAnalyzer ${BIN}/eventAnalyzer.cpp ${EventAnalyzer_SRCS})
 target_link_libraries(bin/eventAnalyzer ${ROOT_LIBS})
-
-
-
 
 
 
