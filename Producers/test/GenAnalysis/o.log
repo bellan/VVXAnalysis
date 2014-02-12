@@ -1,0 +1,28 @@
+11-Feb-2014 17:22:35 CET  Initiating request to open file file:/afs/cern.ch/work/b/bellan/QGC/4ljj_QED6_run_0.root
+11-Feb-2014 17:22:37 CET  Successfully opened file file:/afs/cern.ch/work/b/bellan/QGC/4ljj_QED6_run_0.root
+Begin processing the 1st record. Run 1, Event 1, LumiSection 1 at 11-Feb-2014 17:22:39.716 CET
+ZZWCombinedGenAnalyzer: idx= 6 	id= 23	p4= (1.47678,20.7297,-135.326,165.844)
+ZZWCombinedGenAnalyzer: idx= 9 	id= -11	p4= (-9.34828,-0.19055,-6.28616,11.2669)
+ZZWCombinedGenAnalyzer: idx= 10 	id= 11	p4= (-3.38146,-4.11874,-4.3683,6.8906)
+ZZWCombinedGenAnalyzer: idx= 11 	id= -11	p4= (26.5389,13.996,-127.421,130.906)
+ZZWCombinedGenAnalyzer: idx= 12 	id= 11	p4= (-12.3324,11.043,2.7496,16.7808)
+WARNING: ZZWCombinedGenAnalyzer: 	Number of jets= 0	Number of leptons= 4
+11-Feb-2014 17:22:39 CET  Closed file file:/afs/cern.ch/work/b/bellan/QGC/4ljj_QED6_run_0.root
+
+=============================================
+
+MessageLogger Summary
+
+ type     category        sev    module        subroutine        count    total
+ ---- -------------------- -- ---------------- ----------------  -----    -----
+    1 fileAction           -s file_close                             1        1
+    2 fileAction           -s file_open                              2        2
+
+ type    category    Examples: run/evt        run/evt          run/evt
+ ---- -------------------- ---------------- ---------------- ----------------
+    1 fileAction           PostEndRun                        
+    2 fileAction           pre-events       pre-events       
+
+Severity    # Occurrences   Total Occurrences
+--------    -------------   -----------------
+System                  3                   3
