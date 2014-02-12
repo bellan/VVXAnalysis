@@ -37,9 +37,9 @@ def run(typeofsample, cregion):
         inputdir   = 'samples'
         sample     = 'test_'
 
-    if typeofsample == 'WZZJets':
+    if typeofsample == 'WZZ':
         runperiods = ['']
-        inputdir   = baseinput+typeofsample
+        inputdir   = baseinputdir+"WZZJets"
         sample     = 'ZZWAnalysis'
 
     if typeofsample == 'mudata' or typeofsample == 'edata': 
