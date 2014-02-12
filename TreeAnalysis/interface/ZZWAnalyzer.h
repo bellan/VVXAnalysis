@@ -15,8 +15,8 @@
 class ZZWAnalyzer: public EventAnalyzer{
 
 public:
-  ZZWAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1.)
-    : EventAnalyzer(filename, lumi, externalXSection, true){}
+ ZZWAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = false)
+    : EventAnalyzer(filename, lumi, externalXSection, doBasicPlots){}
   virtual ~ZZWAnalyzer(){}
   virtual void analyze();
 };
