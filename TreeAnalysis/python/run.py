@@ -16,6 +16,8 @@ typeofsample = sys.argv[1]
 cregion = 'none' #sys.argv[2]
 typeofsamples = ['test','mudata', 'edata', 'W', 'Z', 'ttbar','QCDPT', 'diboson','ttZ']
 
+baseinputdir = '/afs/cern.ch/work/b/bellan/public/samples/'
+
 def run(typeofsample, cregion):
     inputdir  = '../samples/newvars20130711/'
     outputdir = 'output'
@@ -34,6 +36,11 @@ def run(typeofsample, cregion):
         runperiods = ['1']
         inputdir   = 'samples'
         sample     = 'test_'
+
+    if typeofsample == 'WZZJets':
+        runperiods = ['']
+        inputdir   = baseinput+typeofsample
+        sample     = 'ZZWAnalysis'
 
     if typeofsample == 'mudata' or typeofsample == 'edata': 
         runperiods = ['2012A-13Jul', '2012A-06Aug', '2012B-13Jul', '2012C-24Aug', '2012C-11Dec', '2012C-PromptReco', '2012D-PromptReco']
