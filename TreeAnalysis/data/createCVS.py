@@ -376,14 +376,19 @@ samples = [
 #read xsection file
 filein  = open('Xsection8TeV_v2.txt','r')
 fileout = open('samples_8TeV.csv','w')
-fileout.write("identifier,crossSection = -99.99,totalEvents = -999,luminosity=-99.99,dataset,::PAT,::Tree")
-for line in filein:
-    line =  line.strip()
-    if line.startswith("#"):  continue
-    for i in range(0,len(samples)-1):
-        sample = samples[i][0]
+fileout.write("identifier,crossSection = -99.99,totalEvents = -999,luminosity=-99.99,dataset,::PAT,::Tree\n")
+
+for i in range(0,len(samples)-1):
+    sample = samples[i][0]
+    filein.seek(0)
+    foundsampleinfile = 0
+    for line in filein:
+        line =  line.strip()
+        #print line
+        if line.startswith("#"):  continue
         found =  line.find(sample)
         if(found>0): 
+            foundsampleinfile =+ 1
             spline =  line.split(" ")
             foundsample = False
             comment = False
@@ -393,9 +398,11 @@ for line in filein:
                 elif column == '#':
                     comment = True
                 elif foundsample and not comment and not column == '' and not column == '\n' and not column == '1' and not column == 'all':
-                    fileout.write("{0:s},{1:s},,,{2:s}".format(sample, column,samples[i][2]))
-            #     else:
-            # print "{0:s} not found!".format(sample)
+                    fileout.write("{0:s},{1:s},,,{2:s}\n".format(sample, column,samples[i][2]))
+    if foundsampleinfile == 0:
+        print "{0:s} not found!".format(sample)
+    if foundsampleinfile >1:
+        print "More than one instance for {0:s} has been found!".format(sample)
                     
 
 json.dumps(samples)
