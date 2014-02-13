@@ -52,11 +52,9 @@ for i in range(0,len(samples)-1):
                 # on LXPLUS need to setup python 2.7
                 # setenv PATH ${PATH}:/afs/cern.ch/sw/lcg/external/Python/2.7.2/x86_64-slc5-gcc46-opt/bin
                 # setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/afs/cern.ch/sw/lcg/external/Python/2.7.2/x86_64-slc5-gcc46-opt/lib
-                #fileoutpy.write('{},\n'.format(tuple(newline)))
-                lineforpy = [j for j in samples[i]]
-                lineforpy.append(round(xsec,10))
-                fileoutpy.write('{},\n'.format(tuple(lineforpy)))
-                # for csv file, simplify the output
+                lineforpy = samples[i] + (round(xsec,10),)
+                fileoutpy.write('{},\n'.format(lineforpy))
+                # for csv file reshuffle the order
                 lineforcsv = [sample, round(xsec,10),"","",samples[i][2],samples[i][1],samples[i][3],samples[i][4],samples[i][5]]
                 csvwriter.writerow(lineforcsv)
                 if xsec < 0:
