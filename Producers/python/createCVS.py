@@ -16,7 +16,7 @@ filein  = open('./python/Xsection8TeV_v2.txt','r')
 
 #prepare the csv file
 fileoutcsv = open('../TreeAnalysis/data/samples_8TeV.csv','w')
-fileoutcsv.write("identifier,crossSection = -99.99,totalEvents = -999,luminosity = -99.99,dataset\n")
+fileoutcsv.write("identifier,crossSection = -99.99,totalEvents = -999,luminosity = -99.99,dataset,location,samplename,splitlevel,tune\n")
 csvwriter = csv.writer(fileoutcsv) 
 
 #prepare the py file
@@ -55,12 +55,12 @@ for i in range(0,len(samples)-1):
                 # setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/afs/cern.ch/sw/lcg/external/Python/2.7.2/x86_64-slc5-gcc46-opt/lib
                 fileoutpy.write('{},\n'.format(tuple(newline)))
                 # for csv file, simplify the output
-                lineforcsv = [newline[0],newline[6],"","",newline[2]]
+                lineforcsv = [newline[0],newline[6],"","",newline[2],newline[1],newline[3],newline[4],newline[5]]
                 csvwriter.writerow(lineforcsv)
 
     if foundsampleinfile == 0:
         print "{0:s} not found!".format(sample)
-        fileoutcsv.write("{0:s},,,,{1:s}\n".format(sample, samples[i][2]))
+        fileoutcsv.write("{},,,,{},{},{},{},{},\n".format(sample, samples[i][2],samples[i][1],samples[i][3],samples[i][4],samples[i][5]))
         newline = samples[i] + (-1,)
         fileoutpy.write('{},\n'.format(newline))
     if foundsampleinfile >1:
