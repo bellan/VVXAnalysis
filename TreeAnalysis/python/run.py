@@ -36,8 +36,8 @@ def run(typeofsample, cregion):
         runperiods = ['1']
         inputdir   = 'samples'
         sample     = 'test_'
-
-     if typeofsample == 'WZZ':
+        
+    if typeofsample == 'WZZ':
         runperiods = ['WZZJets']
         inputdir   = baseinputdir
 
