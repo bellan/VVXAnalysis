@@ -31,16 +31,75 @@ def run(typeofsample, cregion):
     outputdir = outputdir+"_"+cregion+"/"
     if not os.path.exists(outputdir):
         os.popen('mkdir "%s"' %outputdir)
-
+        
     if typeofsample == 'test':
         runperiods = ['1']
         inputdir   = 'samples'
         sample     = 'test_'
 
-    if typeofsample == 'WZZJets':
-        runperiods = ['']
-        inputdir   = baseinput+typeofsample
-        sample     = 'ZZWAnalysis'
+     if typeofsample == 'WZZ':
+        runperiods = ['WZZJets']
+        inputdir   = baseinputdir
+
+    if  typeofsample == 'ZZ':
+        runperiods = ['ZZ2e2mu', 'ZZ2mu2tau', 'ZZ4mu', 'ZZ2e2tau', 'ZZ4e', 'ZZ4tau']
+        inputdir   = baseinputdir
+        
+    if typeofsample == 'ZZ2e2m':
+        runperiods = ['ZZ2e2mu']
+        inputdir   = baseinputdir    
+
+    if typeofsample == 'ZZ2m2t':
+        runperiods = ['ZZ2mu2tau']
+        inputdir   = baseinputdir
+
+    if typeofsample == 'ZZ2e2t':
+        runperiods = ['ZZ2e2tau']
+        inputdir   = baseinputdir
+
+    if typeofsample == 'ZZ4m':
+        runperiods = ['ZZ4mu']
+        inputdir   = baseinputdir
+
+    if typeofsample == 'ZZ4e':
+        runperiods = ['ZZ4e']
+        inputdir   = baseinputdir
+
+    if typeofsample == 'ZZ4t':
+        runperiods = ['ZZ4tau']
+        inputdir   = baseinputdir
+
+    if typeofsample == 'TT':
+        runperiods = ['TTTo2L2Nu2B']
+        inputdir   = baseinputdir
+
+    if typeofsample == 'ZZJetsTo4L':
+        runperiods = ['ZZJetsTo4L']
+        inputdir   = baseinputdir
+
+    if typeofsample == 'ZZZ':
+        runperiods = ['ZZZJets']
+        inputdir   = baseinputdir
+
+    if typeofsample == 'TTZ':
+        runperiods = ['TTZJets']
+        inputdir   = baseinputdir
+
+    if typeofsample == 'DYM50NoB':
+        runperiods = ['DYJetsToLLTuneZ2M50-NoB']
+        inputdir   = baseinputdir
+
+    if typeofsample == 'DYM50B':
+        runperiods = ['DYJetsToLLTuneZ2M50-B']
+        inputdir   = baseinputdir
+
+    if typeofsample == 'DYM10B':
+        runperiods = ['DYJetsToLLTuneZ2M10-B']
+        inputdir   = baseinputdir
+
+    if typeofsample == 'DYM10NoB':
+        runperiods = ['DYJetsToLLTuneZ2M10-NoB']
+        inputdir   = baseinputdir
 
     if typeofsample == 'mudata' or typeofsample == 'edata': 
         runperiods = ['2012A-13Jul', '2012A-06Aug', '2012B-13Jul', '2012C-24Aug', '2012C-11Dec', '2012C-PromptReco', '2012D-PromptReco']
