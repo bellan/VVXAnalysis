@@ -47,6 +47,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , isMC_            (config.getUntrackedParameter<bool>("isMC",false))
   , sampleType_      (config.getParameter<int>("sampleType"))
   , setup_           (config.getParameter<int>("setup"))
+  , externalCrossSection_(-1.)
   , theNumberOfEvents(0)
   , theNumberOfAnalyzedEvents(){
  
@@ -57,6 +58,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     thePUInfoLabel        = config.getUntrackedParameter<edm::InputTag>("PUInfo"       , edm::InputTag("addPileupInfo"));
     theGenCategoryLabel   = config.getUntrackedParameter<edm::InputTag>("GenCategory"  , edm::InputTag("genCategory"));
     theGenCollectionLabel = config.getUntrackedParameter<edm::InputTag>("GenCollection", edm::InputTag("genParticlesPruned"));
+    externalCrossSection_ = config.getUntrackedParameter<double>("XSection",-1);
   }
 
   initTree();
@@ -115,23 +117,28 @@ void TreePlanter::endRun(const edm::Run& run, const edm::EventSetup& setup){
 
 void TreePlanter::endJob(){
 
-  Double_t crossSection = 0.;
-  foreach(const double &xsec, theXSections) crossSection += xsec;
-  
-  crossSection = crossSection/theXSections.size();
+  if(isMC_){
 
-  cout << "================================================"        << endl
-       << "Total number of generated events: " << theNumberOfEvents << endl
-       << "Total number of analyzed events: "  << theNumberOfEvents << endl
-       <<" Cross-section: "                    << crossSection      << endl
-       << "================================================"        << endl;
-
-  edm::Service<TFileService> fs;
-  TTree *countTree = fs->make<TTree>("HollyTree","HollyTree");
-  countTree->Branch("genEvents"     , &theNumberOfEvents);
-  countTree->Branch("analyzedEvents", &theNumberOfAnalyzedEvents);
-  countTree->Branch("crossSection"  , &crossSection);
-  countTree->Fill();
+    Double_t internalCrossSection = 0.;
+    foreach(const double &xsec, theXSections) internalCrossSection += xsec;
+    
+    internalCrossSection = internalCrossSection/theXSections.size();
+    
+    cout << "================================================"            << endl
+	 << "Total number of generated events: " << theNumberOfEvents     << endl
+	 << "Total number of analyzed events: "  << theNumberOfEvents     << endl
+	 <<" Internal cross section: "           << internalCrossSection  << endl
+	 <<" External cross section: "           << externalCrossSection_ << endl
+	 << "================================================"            << endl;
+    
+    edm::Service<TFileService> fs;
+    TTree *countTree = fs->make<TTree>("HollyTree","HollyTree");
+    countTree->Branch("genEvents"              , &theNumberOfEvents);
+    countTree->Branch("analyzedEvents"        , &theNumberOfAnalyzedEvents);
+    countTree->Branch("internalCrossSection"  , &internalCrossSection);
+    countTree->Branch("externalCrossSection_" , &externalCrossSection_);
+    countTree->Fill();
+  }
 }
 
 

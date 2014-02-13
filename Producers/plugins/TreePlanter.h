@@ -120,6 +120,7 @@ class TreePlanter: public edm::EDAnalyzer {
   int  sampleType_;
   int  setup_;
   std::vector<double> theXSections;
+  double externalCrossSection_;
   Int_t theNumberOfEvents;
   Int_t theNumberOfAnalyzedEvents;
 };
