@@ -50,7 +50,9 @@ for i in range(0,len(samples)-1):
             if len(newline) == 8:
                 newline[6] = round(newline[6] * newline.pop(7),10)
             if not len(newline) == 0:
-                #print newline
+                # on LXPLUS need to setup python 2.7
+                # setenv PATH ${PATH}:/afs/cern.ch/sw/lcg/external/Python/2.7.2/x86_64-slc5-gcc46-opt/bin
+                # setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/afs/cern.ch/sw/lcg/external/Python/2.7.2/x86_64-slc5-gcc46-opt/lib
                 fileoutpy.write('{},\n'.format(tuple(newline)))
                 # for csv file, simplify the output
                 lineforcsv = [newline[0],newline[6],"","",newline[2]]
