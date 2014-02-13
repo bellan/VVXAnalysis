@@ -6,8 +6,7 @@
 ##################################
 
 
-import sys, os, commands, math, json
-
+import sys, os, commands, math, csv
 
 samples = [
 
@@ -94,8 +93,16 @@ samples = [
 
 #read xsection file
 filein  = open('Xsection8TeV_v2.txt','r')
-fileout = open('samples_8TeV.csv','w')
-fileout.write("identifier,crossSection = -99.99,totalEvents = -999,luminosity=-99.99,dataset,::PAT,::Tree\n")
+
+#prepare the csv file
+fileoutcsv = open('samples_8TeV.csv','w')
+fileoutcsv.write("identifier,crossSection = -99.99,totalEvents = -999,luminosity = -99.99,dataset\n")
+csvwriter = csv.writer(fileoutcsv) 
+
+#prepare the py file
+fileoutpy = open('samples_8TeV.py','w')
+fileoutpy.write('samples = [')
+
 
 for i in range(0,len(samples)-1):
     sample = samples[i][0]
@@ -110,19 +117,32 @@ for i in range(0,len(samples)-1):
             spline =  line.split(" ")
             foundsample = False
             comment = False
+            newline = []
             for column in spline:
                 if column == sample:
                     foundsample = True
+                    for j in range(0,6):
+                        newline.append(samples[i][j])
                 elif column == '#':
                     comment = True
                 elif foundsample and not comment and not column == '' and not column == '\n' and not column == '1' and not column == 'all' and not column == '\t\t':
-                    #print "{0:s},{1:s},,,{2:s}\n".format(sample, column,samples[i][2])
-                    fileout.write("{0:s},{1:s},,,{2:s}\n".format(sample, column,samples[i][2]))
+                    newline.append(float(column))
+            if len(newline) == 8:
+                newline[6] = round(newline[6] * newline.pop(7),10)
+            if not len(newline) == 0:
+                fileoutpy.write('{},\n'.format(tuple(newline)))
+                # for csv file, simplify the output
+                lineforcsv = [newline[0],newline[6],"","",newline[2]]
+                csvwriter.writerow(lineforcsv)
+
     if foundsampleinfile == 0:
         print "{0:s} not found!".format(sample)
-        fileout.write("{0:s},,,,{1:s}\n".format(sample, samples[i][2]))
+        fileoutcsv.write("{0:s},,,,{1:s}\n".format(sample, samples[i][2]))
+        newline = samples[i] + (-1,)
+        fileoutpy.write('{},\n'.format(newline))
     if foundsampleinfile >1:
         print "More than one instance for {0:s} has been found!".format(sample)
-                    
 
-json.dumps(samples)
+fileoutpy.write(']')                  
+
+
