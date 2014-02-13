@@ -12,15 +12,15 @@ from samples_cfi import samplesVVX as samples
 
 
 #read xsection file
-filein  = open('data/Xsection8TeV_v2.txt','r')
+filein  = open('./python/Xsection8TeV_v2.txt','r')
 
 #prepare the csv file
-fileoutcsv = open('data/samples_8TeV.csv','w')
+fileoutcsv = open('../TreeAnalysis/data/samples_8TeV.csv','w')
 fileoutcsv.write("identifier,crossSection = -99.99,totalEvents = -999,luminosity = -99.99,dataset\n")
 csvwriter = csv.writer(fileoutcsv) 
 
 #prepare the py file
-fileoutpy = open('data/samples_8TeV.py','w')
+fileoutpy = open('python/samples_8TeV.py','w')
 fileoutpy.write('samples = [')
 
 
@@ -50,6 +50,7 @@ for i in range(0,len(samples)-1):
             if len(newline) == 8:
                 newline[6] = round(newline[6] * newline.pop(7),10)
             if not len(newline) == 0:
+                #print newline
                 fileoutpy.write('{},\n'.format(tuple(newline)))
                 # for csv file, simplify the output
                 lineforcsv = [newline[0],newline[6],"","",newline[2]]
