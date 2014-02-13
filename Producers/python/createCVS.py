@@ -37,32 +37,38 @@ for i in range(0,len(samples)-1):
             spline =  line.split(" ")
             foundsample = False
             comment = False
-            newline = []
+            xsec = -1
             for column in spline:
                 if column == sample:
                     foundsample = True
-                    for j in range(0,6):
-                        newline.append(samples[i][j])
                 elif column == '#':
                     comment = True
                 elif foundsample and not comment and not column == '' and not column == '\n' and not column == '1' and not column == 'all' and not column == '\t\t':
-                    newline.append(float(column))
-            if len(newline) == 8:
-                newline[6] = round(newline[6] * newline.pop(7),10)
-            if not len(newline) == 0:
+                    if xsec < 0:
+                        xsec = float(column)    
+                    else:
+                        xsec = xsec * float(column)
+            if foundsample:
                 # on LXPLUS need to setup python 2.7
                 # setenv PATH ${PATH}:/afs/cern.ch/sw/lcg/external/Python/2.7.2/x86_64-slc5-gcc46-opt/bin
                 # setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/afs/cern.ch/sw/lcg/external/Python/2.7.2/x86_64-slc5-gcc46-opt/lib
-                fileoutpy.write('{},\n'.format(tuple(newline)))
+                #fileoutpy.write('{},\n'.format(tuple(newline)))
+                lineforpy = [j for j in samples[i]]
+                lineforpy.append(round(xsec,10))
+                fileoutpy.write('{},\n'.format(tuple(lineforpy)))
                 # for csv file, simplify the output
-                lineforcsv = [newline[0],newline[6],"","",newline[2],newline[1],newline[3],newline[4],newline[5]]
+                lineforcsv = [sample, round(xsec,10),"","",samples[i][2],samples[i][1],samples[i][3],samples[i][4],samples[i][5]]
                 csvwriter.writerow(lineforcsv)
+                if xsec < 0:
+                    print "Warning!",sample,"found in xsection file, but without a valid cross section."
 
     if foundsampleinfile == 0:
         print "{0:s} not found!".format(sample)
-        fileoutcsv.write("{},,,,{},{},{},{},{},\n".format(sample, samples[i][2],samples[i][1],samples[i][3],samples[i][4],samples[i][5]))
-        newline = samples[i] + (-1,)
-        fileoutpy.write('{},\n'.format(newline))
+        lineforpy = samples[i] + (-1,)
+        fileoutpy.write('{},\n'.format(lineforpy))
+        lineforcsv = [sample, -1,"","",samples[i][2],samples[i][1],samples[i][3],samples[i][4],samples[i][5]]
+        csvwriter.writerow(lineforcsv)
+
     if foundsampleinfile >1:
         print "More than one instance for {0:s} has been found!".format(sample)
 
