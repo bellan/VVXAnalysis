@@ -1,7 +1,6 @@
 #ifndef Boson_H
 #define Boson_H
 
-#include <DataFormats/HepMCCandidate/interface/GenParticle.h>
 #include "Math/GenVector/LorentzVector.h"
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;

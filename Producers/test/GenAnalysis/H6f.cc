@@ -1,7 +1,4 @@
 #include "H6f.h"
-#include <DataFormats/HepMCCandidate/interface/GenParticle.h>
-#include <FWCore/ServiceRegistry/interface/Service.h>
-#include <CommonTools/UtilAlgos/interface/TFileService.h>
 #include "TFile.h"
 #include <vector>
 #include <algorithm>

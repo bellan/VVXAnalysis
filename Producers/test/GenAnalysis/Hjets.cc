@@ -1,7 +1,4 @@
 #include "Hjets.h"
-#include <DataFormats/HepMCCandidate/interface/GenParticle.h>
-#include <FWCore/ServiceRegistry/interface/Service.h>
-#include <CommonTools/UtilAlgos/interface/TFileService.h>
 #include <DataFormats/Math/interface/deltaPhi.h>
 #include <DataFormats/Math/interface/deltaR.h>
 #include "TFile.h"

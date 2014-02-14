@@ -5,7 +5,6 @@
 #include "TString.h"
 #include "VVXAnalysis/Producers/interface/Boson.h"
 #include <vector>
-#include "DataFormats/Candidate/interface/Candidate.h"
 
 class TFile;
 
