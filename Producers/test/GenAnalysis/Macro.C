@@ -25,10 +25,15 @@ void Macro() {
   // on laptop
   //gSystem->AddIncludePath(" -I../../../../ -I$CMSSW_RELEASE_BASE/src");
 
+  std::string path = std::string(gROOT->GetMacroPath())+"$CMSSW_BASE/src:$CMSSW_BASE/src/VVXAnalysis/Producers/test/GenAnalysis";
+  gROOT->SetMacroPath(path.c_str());
+
+
   gROOT->LoadMacro("H6f.h+");
   gROOT->LoadMacro("Hbos.h+");
   gROOT->LoadMacro("Hjets.h+");
- 
+
+
 
 
   int numb;
