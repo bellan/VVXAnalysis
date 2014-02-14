@@ -76,10 +76,6 @@ void TreePlanter::beginJob(){
 
   theTree->Branch("mcprocweight"     , &mcprocweight_);
   theTree->Branch("puweight"         , &puweight_);
-  theTree->Branch("summcprocweight"  , &summcprocweights_);
-  theTree->Branch("sumpuweight"      , &sumpuweights_);
-  theTree->Branch("sumpumcprocweight", &sumpumcprocweights_);
-
   theTree->Branch("xsec"        , &xsec_);
   theTree->Branch("genCategory" , &genCategory_);
 
@@ -145,6 +141,10 @@ void TreePlanter::endJob(){
     countTree->Branch("analyzedEvents"        , &theNumberOfAnalyzedEvents);
     countTree->Branch("internalCrossSection"  , &internalCrossSection);
     countTree->Branch("externalCrossSection"  , &externalCrossSection_);
+    countTree->Branch("summcprocweight"         , &summcprocweights_);
+    countTree->Branch("sumpuweight"             , &sumpuweights_);
+    countTree->Branch("sumpumcprocweight"       , &sumpumcprocweights_);
+
     countTree->Fill();
   }
 }
