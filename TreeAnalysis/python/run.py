@@ -8,18 +8,23 @@
 
 import sys, os, commands, math
 
-#from readSampleInfo import *
+from readSampleInfo import *
 
 print 'ciao'
 
 typeofsample = sys.argv[1]
-cregion = 'none' #sys.argv[2]
+cregion = 'baseline' #sys.argv[2]
+
+getExternalCrossSectionFromFile = False
+if len(sys.argv) > 2:
+    getExternalCrossSectionFromFile = sys.argv[2] 
+
 typeofsamples = ['test','mudata', 'edata', 'W', 'Z', 'ttbar','QCDPT', 'diboson','ttZ']
 
 baseinputdir = '/afs/cern.ch/work/b/bellan/public/samples/'
 
 def run(typeofsample, cregion):
-    inputdir  = '../samples/newvars20130711/'
+    inputdir  = 'samples/'
     outputdir = 'output'
     
     executable = 'bin/eventAnalyzer'
@@ -33,108 +38,85 @@ def run(typeofsample, cregion):
         os.popen('mkdir "%s"' %outputdir)
         
     if typeofsample == 'test':
-        runperiods = ['1']
-        inputdir   = 'samples'
-        sample     = 'test_'
+        runperiods = ['test']
         
+    #################################################################################
+
+    ### SIGNAL ###
     if typeofsample == 'WZZ':
         runperiods = ['WZZJets']
-        inputdir   = baseinputdir
 
+    #################################################################################
+
+    ### BACKGROUNDS ###
     if  typeofsample == 'ZZ':
-        runperiods = ['ZZ2e2mu', 'ZZ2mu2tau', 'ZZ4mu', 'ZZ2e2tau', 'ZZ4e', 'ZZ4tau']
-        inputdir   = baseinputdir
+        runperiods = ['ZZ2e2mu', 'ZZ2mu2tau', 'ZZ4mu', 'ZZ2e2tau', 'ZZ4e', 'ZZ4tau', 'ZZ2e2mu_ext', 'ZZ2mu2tau_ext', 'ZZ4mu_ext', 'ZZ2e2tau_ext', 'ZZ4e_ext', 'ZZ4tau_ext','ggZZ4l','ggZZ2l2l']
         
-    if typeofsample == 'ZZ2e2m':
-        runperiods = ['ZZ2e2mu']
-        inputdir   = baseinputdir    
-
-    if typeofsample == 'ZZ2m2t':
-        runperiods = ['ZZ2mu2tau']
-        inputdir   = baseinputdir
-
-    if typeofsample == 'ZZ2e2t':
-        runperiods = ['ZZ2e2tau']
-        inputdir   = baseinputdir
-
-    if typeofsample == 'ZZ4m':
-        runperiods = ['ZZ4mu']
-        inputdir   = baseinputdir
-
-    if typeofsample == 'ZZ4e':
-        runperiods = ['ZZ4e']
-        inputdir   = baseinputdir
-
-    if typeofsample == 'ZZ4t':
-        runperiods = ['ZZ4tau']
-        inputdir   = baseinputdir
-
-    if typeofsample == 'TT':
-        runperiods = ['TTTo2L2Nu2B']
-        inputdir   = baseinputdir
-
     if typeofsample == 'ZZJetsTo4L':
         runperiods = ['ZZJetsTo4L']
-        inputdir   = baseinputdir
+
+    if typeofsample == 'tt' or typeofsample == 'ttbar':
+        runperiods = ['TTTo2L2Nu2B','TTZJets','TTWJets','TTWWJets']
+
+    if typeofsample == 'H':
+        runperiods = ['powheg15H126','VBFH126','ttH126','WH126','ZH126']
+        
+    if typeofsample == 'triboson':
+        runperiods = ['ZZZJets','WWWJets','WWZJets']
+
+    if typeofsample == 'WZ':
+        runperiods = ['WZ']
+
+    if typeofsample == 'Z' or typeofsample == 'z':
+        runperiods = ['DYJetsToLLTuneZ2M10','DYJetsToLLTuneZ2M50']
+
+    #missing: powheg15jhuGenV3H126, minloH126, WZZ_aMCatNLO
+
+    #################################################################################
+
+    ### INDIVIDUAL SAMPLES, FOR CONVENIENCE ###
 
     if typeofsample == 'ZZZ':
         runperiods = ['ZZZJets']
-        inputdir   = baseinputdir
+
+    if typeofsample == 'ZZ2e2mu':
+        runperiods = ['ZZ2e2mu']
+
+    if typeofsample == 'ZZ2m2tau':
+        runperiods = ['ZZ2mu2tau']
+
+    if typeofsample == 'ZZ2e2tau':
+        runperiods = ['ZZ2e2tau']
+
+    if typeofsample == 'ZZ4mu':
+        runperiods = ['ZZ4mu']
+
+    if typeofsample == 'ZZ4e':
+        runperiods = ['ZZ4e']
+
+    if typeofsample == 'ZZ4tau':
+        runperiods = ['ZZ4tau']
 
     if typeofsample == 'TTZ':
         runperiods = ['TTZJets']
-        inputdir   = baseinputdir
 
-    if typeofsample == 'DYM50NoB':
-        runperiods = ['DYJetsToLLTuneZ2M50-NoB']
-        inputdir   = baseinputdir
+    #################################################################################
 
-    if typeofsample == 'DYM50B':
-        runperiods = ['DYJetsToLLTuneZ2M50-B']
-        inputdir   = baseinputdir
+    ### DATA ###
 
-    if typeofsample == 'DYM10B':
-        runperiods = ['DYJetsToLLTuneZ2M10-B']
-        inputdir   = baseinputdir
-
-    if typeofsample == 'DYM10NoB':
-        runperiods = ['DYJetsToLLTuneZ2M10-NoB']
-        inputdir   = baseinputdir
+    #################################################################################
 
     if typeofsample == 'mudata' or typeofsample == 'edata': 
         runperiods = ['2012A-13Jul', '2012A-06Aug', '2012B-13Jul', '2012C-24Aug', '2012C-11Dec', '2012C-PromptReco', '2012D-PromptReco']
         lumi = -1
         if typeofsample == 'mudata':
-            inputdir  = 'samples/newvars20130722/'
+            inputdir  = 'samples/'
             sample = 'MuData-'
         if typeofsample == 'edata':
             sample = 'EData-'
-            inputdir  = 'samples/newvars20130722/'
+            inputdir  = 'samples/'
 
-    if typeofsample == 'w' or typeofsample == 'W':
-        runperiods = ['Wlnu1J-madgraph', 'Wlnu2J-madgraph', 'Wlnu3J-madgraph', 'Wlnu4J-madgraph']
 
-    if typeofsample == 'tt' or typeofsample == 'ttbar':
-        runperiods = ['ttbar-madgraph', 'tbarW-powheg', 'tW-powheg'] # run on powheg too
-        #runperiods = ['ttbar-powheg']
-
-    if typeofsample == 'z' or typeofsample == 'Z':
-        runperiods = ['Zll1J-madgraph', 'Zll2J-madgraph', 'Zll3J-madgraph', 'Zll4J-madgraph']
-
-    if typeofsample == 'diboson':
-        runperiods = ['WW-pythia', 'WZ-pythia', 'ZZ-pythia']
-
-    if typeofsample == 'ttZ':
-        runperiods = ['ttZ-madgraph']
-
-    if typeofsample == 'qcdht' or typeofsample == 'QCDHT':
-        runperiods = ['QCD-HT100to250-madgraph', 'QCD-HT250to500-madgraph', 'QCD-HT500to1000-madgraph', 'QCD-HT1000toInf-madgraph']
-    
-    if typeofsample == 'qcdpt' or typeofsample == 'QCDPT':
-        runperiods = ["QCD-PT0to5-pythia6",        "QCD-PT15to30-pythia6",     "QCD-PT30to50-pythia6",    "QCD-PT600to800-pythia6",
-                      "QCD-PT1000to1400-pythia6",  "QCD-PT170to300-pythia6",   "QCD-PT470to600-pythia6",  "QCD-PT800to1000-pythia6",
-                      "QCD-PT120to170-pythia6",    "QCD-PT1800toInf-pythia6",  "QCD-PT50to80-pythia6",    "QCD-PT80to120-pythia6",
-                      "QCD-PT1400to1800-pythia6",  "QCD-PT300to470-pythia6",   "QCD-PT5to15-pythia6"]
 
     # ----- Run over the run periods -----
     hadd = 'hadd ' + outputdir+typeofsample + '.root'
@@ -144,9 +126,9 @@ def run(typeofsample, cregion):
             os.popen('rm "%s".root' %(outputdir+basefile))
 
         externalXsec = -1
-        #if not typeofsample == 'mudata' and not typeofsample == 'edata':
-            #externalXsec = crossSection(period)
-            #print period, " ---> External cross section: ", externalXsec
+        if not typeofsample == 'mudata' and not typeofsample == 'edata' and getExternalCrossSectionFromFile:
+            externalXsec = crossSection(period)
+            print period, " ---> External cross section: ", externalXsec
         command = "./{0:s} {1:s}/{3:s}.root {2:s}/{3:s}.root {4:.0f} {5:.3f}".format(executable,inputdir,outputdir, basefile, lumi, externalXsec)
         print command
         failure, output = commands.getstatusoutput(command)
