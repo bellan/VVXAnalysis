@@ -35,6 +35,11 @@ class MCInfo {
   double mcprocweight_;
   // Weight from PU reweighting. This is a per event weight
   double puweight_;
+
+  // Sum of weights
+  double summcprocweight_;
+  double sumpuweight_;
+  double sumpumcprocweight_;
 };
 
 
