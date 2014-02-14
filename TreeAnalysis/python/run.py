@@ -10,7 +10,7 @@ import sys, os, commands, math
 
 from readSampleInfo import *
 
-print 'ciao'
+print 'Ciao'
 
 typeofsample = sys.argv[1]
 cregion = 'baseline' #sys.argv[2]
@@ -19,7 +19,7 @@ getExternalCrossSectionFromFile = False
 if len(sys.argv) > 2:
     getExternalCrossSectionFromFile = sys.argv[2] 
 
-typeofsamples = ['test','mudata', 'edata', 'W', 'Z', 'ttbar','QCDPT', 'diboson','ttZ']
+typeofsamples = ['test','mudata', 'edata', 'WZZ', 'triboson', 'ZZ', 'WZ', 'Z', 'H', 'tt', 'ZZJetsTo4L']
 
 baseinputdir = '/afs/cern.ch/work/b/bellan/public/samples/'
 
@@ -49,26 +49,31 @@ def run(typeofsample, cregion):
     #################################################################################
 
     ### BACKGROUNDS ###
-    if  typeofsample == 'ZZ':
-        runperiods = ['ZZ2e2mu', 'ZZ2mu2tau', 'ZZ4mu', 'ZZ2e2tau', 'ZZ4e', 'ZZ4tau', 'ZZ2e2mu_ext', 'ZZ2mu2tau_ext', 'ZZ4mu_ext', 'ZZ2e2tau_ext', 'ZZ4e_ext', 'ZZ4tau_ext','ggZZ4l','ggZZ2l2l']
-        
-    if typeofsample == 'ZZJetsTo4L':
-        runperiods = ['ZZJetsTo4L']
-
-    if typeofsample == 'tt' or typeofsample == 'ttbar':
-        runperiods = ['TTTo2L2Nu2B','TTZJets','TTWJets','TTWWJets']
-
-    if typeofsample == 'H':
-        runperiods = ['powheg15H126','VBFH126','ttH126','WH126','ZH126']
-        
     if typeofsample == 'triboson':
         runperiods = ['ZZZJets','WWWJets','WWZJets']
 
+    if  typeofsample == 'ZZ':
+        runperiods = ['ZZ2e2mu', 'ZZ2mu2tau', 'ZZ4mu', 'ZZ2e2tau', 'ZZ4e', 'ZZ4tau', 'ZZ2e2mu_ext', 'ZZ2mu2tau_ext', 'ZZ4mu_ext', 'ZZ2e2tau_ext', 'ZZ4e_ext', 'ZZ4tau_ext','ggZZ4l','ggZZ2l2l']
+       
     if typeofsample == 'WZ':
         runperiods = ['WZ']
 
     if typeofsample == 'Z' or typeofsample == 'z':
         runperiods = ['DYJetsToLLTuneZ2M10','DYJetsToLLTuneZ2M50']
+
+    ## Add W !!! ##
+
+    if typeofsample == 'H':
+        runperiods = ['powheg15H126','VBFH126','ttH126','WH126','ZH126']
+
+    if typeofsample == 'tt' or typeofsample == 'ttbar':
+        runperiods = ['TTTo2L2Nu2B','TTZJets','TTWJets','TTWWJets']      
+
+
+    ### Not exclusive sample w.r.t. the above, but worth of a look ###
+
+    if typeofsample == 'ZZJetsTo4L':
+        runperiods = ['ZZJetsTo4L']
 
     #missing: powheg15jhuGenV3H126, minloH126, WZZ_aMCatNLO
 
