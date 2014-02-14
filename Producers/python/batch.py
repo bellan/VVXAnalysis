@@ -224,9 +224,9 @@ class Component(object):
         self.name = name
         print "checking "+self.name
         self.files = datasetToSource( user, dataset, pattern).fileNames # , True for readCache (?)
-        self.splitFactor = splitFactor
+        self.splitFactor = int(splitFactor)
         self.tune = tune
-        self.xsec = xsec
+        self.xsec = float(xsec)
         self.setup = setup
         
       
@@ -250,7 +250,7 @@ if __name__ == '__main__':
 
     from VVXAnalysis.Producers.readSampleInfo import *
     components = []
-    sampleDB = readSampleDB()
+    sampleDB = readSampleDB('../python/samples_8TeV.csv')
     for sample, settings in sampleDB.iteritems():
         if settings['execute']:
             components.append(Component(sample, settings['user'], settings['dataset'], settings['pattern'], settings['splitLevel'], settings['tune'],settings['crossSection'], setup))
