@@ -58,7 +58,7 @@ def readSamplesInfo(infoFilePath = 'samples_8TeV.csv', indexBy = 'identifier'):
 
 
 def readSampleInfo(sample, infoFilePath = 'samples_8TeV.csv', indexBy = 'identifier'):
-  db,defaults = readSamplesInfo()
+  db,defaults = readSamplesInfo(infoFilePath, indexBy)
 
   if sample in db:
     return db[sample]
@@ -72,7 +72,7 @@ def crossSection(sample, infoFilePath = 'samples_8TeV.csv', indexBy = 'identifie
 
 #merge together db and defaults
 def readSampleDB(infoFilePath = 'samples_8TeV.csv', indexBy = 'identifier'):
-  db,defaults = readSamplesInfo()
+  db,defaults = readSamplesInfo(infoFilePath, indexBy)
   for sample in db:
     for key,val in db[sample].iteritems():
       if key in defaults:
