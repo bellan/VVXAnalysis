@@ -8,7 +8,7 @@
 
 import sys, os, commands, math
 
-from readSampleInfo import *
+#from readSampleInfo import *
 
 print 'ciao'
 
@@ -144,9 +144,9 @@ def run(typeofsample, cregion):
             os.popen('rm "%s".root' %(outputdir+basefile))
 
         externalXsec = -1
-        if not typeofsample == 'mudata' and not typeofsample == 'edata':
-            externalXsec = crossSection(period)
-            print period, " ---> External cross section: ", externalXsec
+        #if not typeofsample == 'mudata' and not typeofsample == 'edata':
+            #externalXsec = crossSection(period)
+            #print period, " ---> External cross section: ", externalXsec
         command = "./{0:s} {1:s}/{3:s}.root {2:s}/{3:s}.root {4:.0f} {5:.3f}".format(executable,inputdir,outputdir, basefile, lumi, externalXsec)
         print command
         failure, output = commands.getstatusoutput(command)
