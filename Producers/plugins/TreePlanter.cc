@@ -48,6 +48,9 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , sampleType_      (config.getParameter<int>("sampleType"))
   , setup_           (config.getParameter<int>("setup"))
   , externalCrossSection_(-1.)
+  , summcprocweights_    (0.)
+  , sumpuweights_        (0.) 
+  , sumpumcprocweights_  (0.)
   , theNumberOfEvents(0)
   , theNumberOfAnalyzedEvents(){
  
@@ -60,6 +63,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     theGenCollectionLabel = config.getUntrackedParameter<edm::InputTag>("GenCollection", edm::InputTag("genParticlesPruned"));
     externalCrossSection_ = config.getUntrackedParameter<double>("XSection",-1);
   }
+   
 
   initTree();
 }
@@ -137,10 +141,10 @@ void TreePlanter::endJob(){
     
     edm::Service<TFileService> fs;
     TTree *countTree = fs->make<TTree>("HollyTree","HollyTree");
-    countTree->Branch("genEvents"              , &theNumberOfEvents);
+    countTree->Branch("genEvents"             , &theNumberOfEvents);
     countTree->Branch("analyzedEvents"        , &theNumberOfAnalyzedEvents);
     countTree->Branch("internalCrossSection"  , &internalCrossSection);
-    countTree->Branch("externalCrossSection_" , &externalCrossSection_);
+    countTree->Branch("externalCrossSection"  , &externalCrossSection_);
     countTree->Fill();
   }
 }
@@ -154,9 +158,6 @@ void TreePlanter::initTree(){
 
   mcprocweight_       = 1.;
   puweight_           = 1.; 
-  summcprocweights_   = 0.;
-  sumpuweights_       = 0.; 
-  sumpumcprocweights_ = 0.;
 
   xsec_           = -1.;
   genCategory_    = -1;

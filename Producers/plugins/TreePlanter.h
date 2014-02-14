@@ -82,9 +82,6 @@ class TreePlanter: public edm::EDAnalyzer {
 
   Double_t mcprocweight_;
   Double_t puweight_;
-  Double_t summcprocweights_;
-  Double_t sumpuweights_;
-  Double_t sumpumcprocweights_;
 
   Double_t xsec_;
   Int_t genCategory_;
@@ -125,6 +122,9 @@ class TreePlanter: public edm::EDAnalyzer {
   int  setup_;
   std::vector<double> theXSections;
   double externalCrossSection_;
+  Double_t summcprocweights_;
+  Double_t sumpuweights_;
+  Double_t sumpumcprocweights_;
   Int_t theNumberOfEvents;
   Int_t theNumberOfAnalyzedEvents;
 };
