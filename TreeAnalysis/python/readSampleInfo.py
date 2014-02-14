@@ -3,7 +3,7 @@
 import sys, os, commands, math
 
 
-def readSamplesInfo(infoFilePath = 'data/samples_8TeV_2012.csv', indexBy = 'dataset'):
+def readSamplesInfo(infoFilePath = 'data/samples_8TeV.csv', indexBy = 'identifier'):
   """
   Loads the sample information database from the given comma-separated-values
   (csv) file.
@@ -59,17 +59,24 @@ def readSamplesInfo(infoFilePath = 'data/samples_8TeV_2012.csv', indexBy = 'data
 
 
 
-def readSampleInfo(sample, infoFilePath = 'samples_8TeV_2012.csv', indexBy = 'dataset'):
+def readSampleInfo(sample, infoFilePath = 'data/samples_8TeV.csv', indexBy = 'identifier'):
   db,defaults = readSamplesInfo()
 
   if sample in db:
     return db[sample]
   else:
     print "Unknown sample", sample
-    #sys.exit(2)
-    # FIXME!!!!!
-    db['crossSection'] = -1
-    return db
+    sys.exit(2)
 
-def crossSection(sample, infoFilePath = 'samples_8TeV_2012.csv', indexBy = 'dataset'):
+
+def crossSection(sample, infoFilePath = 'data/samples_8TeV.csv', indexBy = 'identifier'):
   return float(readSampleInfo(sample)['crossSection'])
+
+#merge together db and defaults
+def readDB(infoFilePath = 'data/samples_8TeV.csv', indexBy = 'identifier'):
+  db,defaults = readSamplesInfo()
+  for sample in db:
+    for key,val in db[sample].iteritems():
+      if key in defaults and val == "":
+        db[sample][key] = defaults[key]
+  return db
