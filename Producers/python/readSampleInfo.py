@@ -1,9 +1,7 @@
-#! /usr/bin/env python
-
 import sys, os, commands, math
 
 
-def readSamplesInfo(infoFilePath = 'data/samples_8TeV.csv', indexBy = 'identifier'):
+def readSamplesInfo(infoFilePath = 'samples_8TeV.csv', indexBy = 'identifier'):
   """
   Loads the sample information database from the given comma-separated-values
   (csv) file.
@@ -59,7 +57,7 @@ def readSamplesInfo(infoFilePath = 'data/samples_8TeV.csv', indexBy = 'identifie
 
 
 
-def readSampleInfo(sample, infoFilePath = 'data/samples_8TeV.csv', indexBy = 'identifier'):
+def readSampleInfo(sample, infoFilePath = 'samples_8TeV.csv', indexBy = 'identifier'):
   db,defaults = readSamplesInfo()
 
   if sample in db:
@@ -69,14 +67,21 @@ def readSampleInfo(sample, infoFilePath = 'data/samples_8TeV.csv', indexBy = 'id
     sys.exit(2)
 
 
-def crossSection(sample, infoFilePath = 'data/samples_8TeV.csv', indexBy = 'identifier'):
+def crossSection(sample, infoFilePath = 'samples_8TeV.csv', indexBy = 'identifier'):
   return float(readSampleInfo(sample)['crossSection'])
 
 #merge together db and defaults
-def readDB(infoFilePath = 'data/samples_8TeV.csv', indexBy = 'identifier'):
+def readSampleDB(infoFilePath = 'samples_8TeV.csv', indexBy = 'identifier'):
   db,defaults = readSamplesInfo()
   for sample in db:
     for key,val in db[sample].iteritems():
-      if key in defaults and val == "":
-        db[sample][key] = defaults[key]
+      if key in defaults:
+        if val == "":
+          db[sample][key] = defaults[key]
+          #print "setting default for ", key, "=",db[sample][key]
+        if key == 'execute':
+          if val == '0' or val == 0 or val == 'False' or val == 'FALSE' or val == 'false' or val == 'NO' or val == 'no' or val == 'No':
+            db[sample][key] = False
   return db
+
+

@@ -15,8 +15,8 @@ from samples_cfi import samplesVVX as samples
 filein  = open('./python/Xsection8TeV_v2.txt','r')
 
 #prepare the csv file
-fileoutcsv = open('../TreeAnalysis/data/samples_8TeV.csv','w')
-fileoutcsv.write("identifier,crossSection = -1,totalEvents = -1,luminosity = -1,execute=True,dataset,location,samplename,splitlevel,tune\n")
+fileoutcsv = open('python/samples_8TeV.csv','w')
+fileoutcsv.write("identifier,crossSection = -1,totalEvents = -1,luminosity = -1,execute=True,dataset,user,pattern,splitLevel,tune\n")
 csvwriter = csv.writer(fileoutcsv) 
 
 #prepare the py file

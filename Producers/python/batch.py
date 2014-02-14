@@ -151,7 +151,7 @@ class MyBatchManager( BatchManager ):
        
        tune  = splitComponents[value].tune
        setup = splitComponents[value].setup
-
+       xsec  = splitComponents[value].xsec
        
        # Set global parameters
        IsMC = True
@@ -246,7 +246,16 @@ if __name__ == '__main__':
     handle = open(cfgFileName, 'r')
     cfo = imp.load_source("pycfg", cfgFileName, handle)
     setup = cfo.LEPTON_SETUP
-    components = [ Component(na, us, da, pattern, sp, tune, xsec, setup) for na, us,da,pattern,sp,tune,xsec in cfo.samples ]
+    #components = [ Component(na, us, da, pattern, sp, tune, xsec, setup) for na, us,da,pattern,sp,tune,xsec in cfo.samples ]
+
+    from VVXAnalysis.TreeAnalysis.readSampleInfo import *
+    components = []
+    sampleDB = readSampleDB()
+    for sample, settings in sampleDB.iteritems():
+        if settings['execute']:
+            components.append(Component(sample, settings['user'], settings['dataset'], settings['pattern'], settings['splitLevel'], settings['tune'],settings['crossSection'], setup))
+            
+        
     handle.close()
 
 

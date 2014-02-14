@@ -1,4 +1,4 @@
-identifier,crossSection = -1,totalEvents = -1,luminosity = -1,execute=True,dataset,location,samplename,splitlevel,tune
+identifier,crossSection = -1,totalEvents = -1,luminosity = -1,execute=True,dataset,user,pattern,splitLevel,tune
 ZZTo4mu,0.07691,,,,/ZZTo4mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,4,
 ZZTo4e,0.07691,,,,/ZZTo4e_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,6,
 ZZTo2mu2tau,0.1767,,,,/ZZTo2mu2tau_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,20,
