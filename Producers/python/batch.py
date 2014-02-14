@@ -248,7 +248,7 @@ if __name__ == '__main__':
     setup = cfo.LEPTON_SETUP
     #components = [ Component(na, us, da, pattern, sp, tune, xsec, setup) for na, us,da,pattern,sp,tune,xsec in cfo.samples ]
 
-    from VVXAnalysis.TreeAnalysis.readSampleInfo import *
+    from VVXAnalysis.Producers.readSampleInfo import *
     components = []
     sampleDB = readSampleDB()
     for sample, settings in sampleDB.iteritems():
