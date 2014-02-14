@@ -3,9 +3,8 @@
 #include <vector>
 #include <algorithm>
 
-
-using namespace std;
-using namespace reco;
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
 
 
 H6f:: H6f(TString name_) : name(name_) {
@@ -51,14 +50,13 @@ H6f::H6f(TString name_, TFile* file) : name(name_) {
 
 
 void H6f::Fill(Boson *V0, Boson *V1, Boson *V2) {
-
-  typedef Candidate::LorentzVector LorentzVector;
-  
-  Candidate::LorentzVector p_2lV0 = V0->p4daughter1() + V0->p4daughter2();
-  Candidate::LorentzVector p_2lV1 = V1->p4daughter1() + V1->p4daughter2();
-  Candidate::LorentzVector p_jj   = V2->p4daughter1() + V2->p4daughter2();
-  Candidate::LorentzVector p_4l   = p_2lV0 + p_2lV1;
-  Candidate::LorentzVector p_6f   = p_2lV0 + p_2lV1 + p_jj;
+  typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
+    
+  LorentzVector p_2lV0 = V0->p4daughter1() + V0->p4daughter2();
+  LorentzVector p_2lV1 = V1->p4daughter1() + V1->p4daughter2();
+  LorentzVector p_jj   = V2->p4daughter1() + V2->p4daughter2();
+  LorentzVector p_4l   = p_2lV0 + p_2lV1;
+  LorentzVector p_6f   = p_2lV0 + p_2lV1 + p_jj;
 
  
   
@@ -74,7 +72,7 @@ void H6f::Fill(Boson *V0, Boson *V1, Boson *V2) {
   h2l1Pt->Fill(p_2lV1.pt());
   hjjPt->Fill(p_jj.pt());
 
-  vector<float> pts_lep; 
+  std::vector<float> pts_lep; 
   pts_lep.push_back(V0->p4daughter1().pt());
   pts_lep.push_back(V0->p4daughter2().pt());
   pts_lep.push_back(V1->p4daughter1().pt());
@@ -86,7 +84,7 @@ void H6f::Fill(Boson *V0, Boson *V1, Boson *V2) {
   h4lPt_3->Fill(pts_lep[1]);
   h4lPt_4->Fill(pts_lep[0]);
     
-  vector<float> pts_j;
+  std::vector<float> pts_j;
   pts_j.push_back(V2->p4daughter1().pt());
   pts_j.push_back(V2->p4daughter2().pt());
   

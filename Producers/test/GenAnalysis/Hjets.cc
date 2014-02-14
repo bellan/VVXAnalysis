@@ -8,6 +8,10 @@
 using namespace std;
 using namespace reco;
 
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+
+#include "DataFormats/Candidate/interface/Candidate.h"
 
 Hjets:: Hjets(TString name_) : name(name_) {
   // Book histograms

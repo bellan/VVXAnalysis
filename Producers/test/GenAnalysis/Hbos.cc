@@ -4,6 +4,9 @@
 #include <vector>
 #include <algorithm>
 
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+
 using namespace std;
 using namespace reco;
 

@@ -7,9 +7,6 @@
 #include <vector>
 
 class TFile;
-namespace reco {
-  class Candidate;
-}
 
 
 class H6f {
