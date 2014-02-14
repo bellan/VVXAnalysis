@@ -70,8 +70,12 @@ void TreePlanter::beginJob(){
   theTree->Branch("run"       , &run_); 
   theTree->Branch("lumiBlock" , &lumiBlock_); 
 
-  theTree->Branch("mcprocweight", &mcprocweight_);
-  theTree->Branch("puweight"    , &puweight_);
+  theTree->Branch("mcprocweight"     , &mcprocweight_);
+  theTree->Branch("puweight"         , &puweight_);
+  theTree->Branch("summcprocweight"  , &summcprocweights_);
+  theTree->Branch("sumpuweight"      , &sumpuweights_);
+  theTree->Branch("sumpumcprocweight", &sumpumcprocweights_);
+
   theTree->Branch("xsec"        , &xsec_);
   theTree->Branch("genCategory" , &genCategory_);
 
@@ -148,9 +152,13 @@ void TreePlanter::initTree(){
   run_       = -1;
   lumiBlock_ = -1;
 
-  mcprocweight_   =  1;
-  puweight_       =  1; 
-  xsec_           = -1;
+  mcprocweight_       = 1.;
+  puweight_           = 1.; 
+  summcprocweights_   = 0.;
+  sumpuweights_       = 0.; 
+  sumpumcprocweights_ = 0.;
+
+  xsec_           = -1.;
   genCategory_    = -1;
   nobservedPUInt_ = -1;
   ntruePUInt_     = -1;
@@ -212,6 +220,11 @@ void TreePlanter::fillEventInfo(const edm::Event& event){
     MCHistoryTools mch(event);
     mcprocweight_ = mch.gethepMCweight();
 
+    // Sum of weight, particularly imprtant for MCs that return also negative weights
+    // or, in general, weighted events
+    sumpuweights_       += puweight_;
+    summcprocweights_   += mcprocweight_;
+    sumpumcprocweights_ += puweight_*mcprocweight_;
   }
 }
 
