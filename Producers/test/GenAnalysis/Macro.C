@@ -16,9 +16,11 @@ TH1F* Integral(TH1F* h);
 TH1F* Divide(TH1F* h_num, TH1F* h_den);
 
 void Macro() {
+
+  gSystem->Load("$CMSSW_BASE/lib/$SCRAM_ARCH/pluginZZWGenAnalysisPlugins.so");
   
   // on LXPLUS:
-  //gSystem->AddIncludePath(" -I$CMSSW_BASE/src/ -I$CMSSW_RELEASE_BASE/src");
+  gSystem->AddIncludePath(" -I$CMSSW_BASE/src/ -I$CMSSW_RELEASE_BASE/src");
 
   // on laptop
   //gSystem->AddIncludePath(" -I../../../../ -I$CMSSW_RELEASE_BASE/src");
