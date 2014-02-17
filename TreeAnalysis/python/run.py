@@ -16,8 +16,13 @@ from readSampleInfo import *
 
 
 ############################## Configuration ##############################
+typeofsamples = typeOfSamples('../Producers/python/samples_8TeV.csv')
+typeofsamples.append('test')
+
+DB = readSampleDB('../Producers/python/samples_8TeV.csv')
+
 typeofsample = sys.argv[1]
-typeofsamples = ['test','mudata', 'edata', 'WZZ', 'triboson', 'ZZ', 'WZ', 'Z', 'H', 'tt', 'ZZJetsTo4L']
+
 baseinputdir = '/afs/cern.ch/work/b/bellan/public/samples/'
 
 cregion = 'baseline' #sys.argv[2]
@@ -27,6 +32,8 @@ executable = 'bin/eventAnalyzer'
 getExternalCrossSectionFromFile = False
 if len(sys.argv) > 2:
     getExternalCrossSectionFromFile = sys.argv[2] 
+
+
 ############################################################################
 
 
@@ -38,80 +45,18 @@ def run(executable, typeofsample, cregion):
     
     lumi = 19029.853
 
-    runperiods = []
-    sample = ''
+    datasets = getSamplesBy('process',typeofsample,'../Producers/python/samples_8TeV.csv')
+
+    sampleprefix = ''
 
     outputdir = outputdir+"_"+cregion+"/"
     if not os.path.exists(outputdir):
         os.popen('mkdir "%s"' %outputdir)
-        
+
+    ### Override configuration, for test only ###
     if typeofsample == 'test':
-        runperiods = ['test']
+        datasets = ['test']
         
-    #################################################################################
-
-    ### SIGNAL ###
-    if typeofsample == 'WZZ':
-        runperiods = ['WZZJets']
-
-    #################################################################################
-
-    ### BACKGROUNDS ###
-    if typeofsample == 'triboson':
-        runperiods = ['ZZZJets','WWWJets','WWZJets']
-
-    if  typeofsample == 'ZZ':
-        runperiods = ['ZZ2e2mu', 'ZZ2mu2tau', 'ZZ4mu', 'ZZ2e2tau', 'ZZ4e', 'ZZ4tau', 'ZZ2e2mu_ext', 'ZZ2mu2tau_ext', 'ZZ4mu_ext', 'ZZ2e2tau_ext', 'ZZ4e_ext', 'ZZ4tau_ext','ggZZ4l','ggZZ2l2l']
-       
-    if typeofsample == 'WZ':
-        runperiods = ['WZ']
-
-    if typeofsample == 'Z' or typeofsample == 'z':
-        runperiods = ['DYJetsToLLTuneZ2M10','DYJetsToLLTuneZ2M50']
-
-    ## Add W !!! ##
-
-    if typeofsample == 'H':
-        runperiods = ['powheg15H126','VBFH126','ttH126','WH126','ZH126']
-
-    if typeofsample == 'tt' or typeofsample == 'ttbar':
-        runperiods = ['TTTo2L2Nu2B','TTZJets','TTWJets','TTWWJets']      
-
-
-    ### Not exclusive sample w.r.t. the above, but worth of a look ###
-
-    if typeofsample == 'ZZJetsTo4L':
-        runperiods = ['ZZJetsTo4L']
-
-    #missing: powheg15jhuGenV3H126, minloH126, WZZ_aMCatNLO
-
-    #################################################################################
-
-    ### INDIVIDUAL SAMPLES, FOR CONVENIENCE ###
-
-    if typeofsample == 'ZZZ':
-        runperiods = ['ZZZJets']
-
-    if typeofsample == 'ZZ2e2mu':
-        runperiods = ['ZZ2e2mu']
-
-    if typeofsample == 'ZZ2m2tau':
-        runperiods = ['ZZ2mu2tau']
-
-    if typeofsample == 'ZZ2e2tau':
-        runperiods = ['ZZ2e2tau']
-
-    if typeofsample == 'ZZ4mu':
-        runperiods = ['ZZ4mu']
-
-    if typeofsample == 'ZZ4e':
-        runperiods = ['ZZ4e']
-
-    if typeofsample == 'ZZ4tau':
-        runperiods = ['ZZ4tau']
-
-    if typeofsample == 'TTZ':
-        runperiods = ['TTZJets']
 
     #################################################################################
 
@@ -120,21 +65,20 @@ def run(executable, typeofsample, cregion):
     #################################################################################
 
     if typeofsample == 'mudata' or typeofsample == 'edata': 
-        runperiods = ['2012A-13Jul', '2012A-06Aug', '2012B-13Jul', '2012C-24Aug', '2012C-11Dec', '2012C-PromptReco', '2012D-PromptReco']
+        datasets = ['2012A-13Jul', '2012A-06Aug', '2012B-13Jul', '2012C-24Aug', '2012C-11Dec', '2012C-PromptReco', '2012D-PromptReco']
         lumi = -1
         if typeofsample == 'mudata':
             inputdir  = 'samples/'
-            sample = 'MuData-'
+            sampleprefix = 'MuData-'
         if typeofsample == 'edata':
-            sample = 'EData-'
+            sampleprefix = 'EData-'
             inputdir  = 'samples/'
-
 
 
     # ----- Run over the run periods -----
     hadd = 'hadd ' + outputdir+typeofsample + '.root'
-    for period in runperiods:
-        basefile = sample+period
+    for period in datasets:
+        basefile = sampleprefix+period
         if os.path.exists(outputdir+basefile+'.root'):
             os.popen('rm "%s".root' %(outputdir+basefile))
 

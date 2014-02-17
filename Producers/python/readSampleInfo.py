@@ -85,3 +85,27 @@ def readSampleDB(infoFilePath = 'samples_8TeV.csv', indexBy = 'identifier'):
   return db
 
 
+def typeOfSamples(infoFilePath = 'samples_8TeV.csv', indexBy = 'identifier'):
+  db,defaults = readSamplesInfo(infoFilePath, indexBy)
+  typeofsamples = []
+  for sample in db:
+    typeofsample = db[sample]['process']
+    if not typeofsample in typeofsamples and not typeofsample == "":
+      typeofsamples.append(typeofsample)
+      
+  return typeofsamples
+
+def getSamplesBy(category, categoryvalue, infoFilePath = 'samples_8TeV.csv', indexBy = 'identifier'):
+  DB = readSampleDB(infoFilePath, indexBy)
+  samples = []
+  for sample in DB:
+    if not category in DB[sample]: 
+      print "ERROR unknown category!"
+      break
+
+    if DB[sample][category] == categoryvalue:
+      samples.append(sample)
+  
+  print samples
+  return samples
+
