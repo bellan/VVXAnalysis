@@ -16,7 +16,7 @@ filein  = open('./python/Xsection8TeV_v2.txt','r')
 
 #prepare the csv file
 fileoutcsv = open('python/samples_8TeV.csv','w')
-fileoutcsv.write("identifier,crossSection = -1,totalEvents = -1,luminosity = -1,execute=True,dataset,user,pattern,splitLevel,tune\n")
+fileoutcsv.write("identifier,process,crossSection = -1,totalEvents = -1,luminosity = -1,execute=True,dataset,user,pattern,splitLevel,tune\n")
 csvwriter = csv.writer(fileoutcsv) 
 
 #prepare the py file
@@ -55,7 +55,7 @@ for i in range(0,len(samples)-1):
                 lineforpy = samples[i] + (round(xsec,10),)
                 fileoutpy.write('{},\n'.format(lineforpy))
                 # for csv file reshuffle the order
-                lineforcsv = [sample, round(xsec,10),"","","",samples[i][2],samples[i][1],samples[i][3],samples[i][4],samples[i][5]]
+                lineforcsv = [sample,"",round(xsec,10),"","","",samples[i][2],samples[i][1],samples[i][3],samples[i][4],samples[i][5]]
                 csvwriter.writerow(lineforcsv)
                 if xsec < 0:
                     print "Warning!",sample,"found in xsection file, but without a valid cross section."
@@ -64,7 +64,7 @@ for i in range(0,len(samples)-1):
         print "{0:s} not found!".format(sample)
         lineforpy = samples[i] + (-1,)
         fileoutpy.write('{},\n'.format(lineforpy))
-        lineforcsv = [sample, -1,"","","",samples[i][2],samples[i][1],samples[i][3],samples[i][4],samples[i][5]]
+        lineforcsv = [sample, "",-1,"","","",samples[i][2],samples[i][1],samples[i][3],samples[i][4],samples[i][5]]
         csvwriter.writerow(lineforcsv)
 
     if foundsampleinfile >1:
