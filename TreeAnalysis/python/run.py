@@ -32,10 +32,7 @@ executable = 'bin/eventAnalyzer'
 getExternalCrossSectionFromFile = False
 if len(sys.argv) > 2:
     getExternalCrossSectionFromFile = sys.argv[2] 
-
-
 ############################################################################
-
 
 
 
@@ -46,6 +43,8 @@ def run(executable, typeofsample, cregion):
     lumi = 19029.853
 
     datasets = getSamplesBy('process',typeofsample,'../Producers/python/samples_8TeV.csv')
+    if len(datasets) == 0:
+        datasets = getSamplesBy('identifier',typeofsample,'../Producers/python/samples_8TeV.csv')
 
     sampleprefix = ''
 

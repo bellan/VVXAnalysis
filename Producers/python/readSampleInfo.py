@@ -99,13 +99,16 @@ def getSamplesBy(category, categoryvalue, infoFilePath = 'samples_8TeV.csv', ind
   DB = readSampleDB(infoFilePath, indexBy)
   samples = []
   for sample in DB:
-    if not category in DB[sample]: 
-      print "ERROR unknown category!"
-      break
 
-    if DB[sample][category] == categoryvalue:
-      samples.append(sample)
+    if(category == indexBy):
+      if(sample == categoryvalue):
+        samples.append(sample)
+    else:
+      if not category in DB[sample]: 
+        print "ERROR unknown category!"
+        return samples
+      if DB[sample][category] == categoryvalue:
+        samples.append(sample)
   
-  print samples
   return samples
 
