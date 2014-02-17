@@ -6,28 +6,36 @@
 ##################################
 
 
-import sys, os, commands, math
-
-from readSampleInfo import *
-
 print 'Ciao'
 
+
+
+import sys, os, commands, math
+from readSampleInfo import *
+
+
+
+############################## Configuration ##############################
 typeofsample = sys.argv[1]
+typeofsamples = ['test','mudata', 'edata', 'WZZ', 'triboson', 'ZZ', 'WZ', 'Z', 'H', 'tt', 'ZZJetsTo4L']
+baseinputdir = '/afs/cern.ch/work/b/bellan/public/samples/'
+
 cregion = 'baseline' #sys.argv[2]
+
+executable = 'bin/eventAnalyzer'
 
 getExternalCrossSectionFromFile = False
 if len(sys.argv) > 2:
     getExternalCrossSectionFromFile = sys.argv[2] 
+############################################################################
 
-typeofsamples = ['test','mudata', 'edata', 'WZZ', 'triboson', 'ZZ', 'WZ', 'Z', 'H', 'tt', 'ZZJetsTo4L']
 
-baseinputdir = '/afs/cern.ch/work/b/bellan/public/samples/'
 
-def run(typeofsample, cregion):
+
+def run(executable, typeofsample, cregion):
     inputdir  = 'samples/'
     outputdir = 'output'
     
-    executable = 'bin/eventAnalyzer'
     lumi = 19029.853
 
     runperiods = []
@@ -150,12 +158,12 @@ if typeofsample == 'all':
     for sample in typeofsamples:
         if cregion == 'all':
             for cr in range(0,4):
-                run(sample, cr)    # runs over all samples in all control reagions
+                run(executable, sample, cr)    # runs over all samples in all control reagions
         else:
-            run(sample, cregion)   # runs over all samples in a specific control reagions
+            run(executable, sample, cregion)   # runs over all samples in a specific control reagions
 else:
     if cregion == 'all':
         for cr in range(0,4):     
-            run(typeofsample, cr)  # runs over a specific sample in all control regions
+            run(executable, typeofsample, cr)  # runs over a specific sample in all control regions
     else:
-        run(typeofsample, cregion) # runs over a specific sample in a specific region
+        run(executable, typeofsample, cregion) # runs over a specific sample in a specific region
