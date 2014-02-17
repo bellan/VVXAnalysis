@@ -18,7 +18,6 @@ set(ROOT_LIBS ${ROOT_LIBS} "-lRooFit -lRooFitCore -lMinuit -lFoam")
 message(STATUS ${ROOT_LIBS})
 
 set(DataFormats ../DataFormats)
-#set(DataFormats_interface ${DataFormats}/interface)
 set(DataFormats_src ${DataFormats}/src)
 
 set(BASE ../../)
@@ -27,8 +26,6 @@ set(TreeAnalysis_interface interface)
 set(BIN bin)
 set(SRC src)
 
-#set(CMAKE_INCLUDE_PATH ${DataFormats_interface} ${TreeAnalysis_interface}) 
-#set(EventDF_HEADERS ${DataFormats_interface}/*.h)
 set(CMAKE_INCLUDE_PATH ${BASE} ${TreeAnalysis_interface}) 
 set(EventDF_HEADERS ${BASE}/VVXAnalysis/DataFormats/interface/*.h)
 set(EventDF_LINKDEF ${DataFormats_src}/STDToolsLinkDef.h)
@@ -38,9 +35,25 @@ include(FindROOT.cmake)
 ROOT_GENERATE_DICTIONARY("${EventDF_HEADERS}" "${EventDF_LINKDEF}" "${EventDF_DICTIONARY}" "${include_directories}")
 
 include_directories(${CMAKE_INCLUDE_PATH})
-set(EventAnalyzer_SRCS ${EventDF_DICTIONARY} ${SRC}/MCInfo.cc ${SRC}/EventAnalyzer.cc ${SRC}/ZZWAnalyzer.cc)
-add_executable(${BIN}/eventAnalyzer ${BIN}/eventAnalyzer.cpp ${EventAnalyzer_SRCS})
-target_link_libraries(bin/eventAnalyzer ${ROOT_LIBS})
+set(EventAnalyzer_SRCS ${EventDF_DICTIONARY} ${SRC}/MCInfo.cc ${SRC}/EventAnalyzer.cc)
+
+# Add executable for a generic VVX analysis. 
+### *** THIS IS A TEMPLATE ONLY *** ###
+set(VVXAnalyzer_SRCS ${EventAnalyzer_SRCS} ${SRC}/VVXAnalyzer.cc)
+add_executable(${BIN}/vvxAnalysis ${BIN}/vvxAnalysis.cpp ${VVXAnalyzer_SRCS})
+target_link_libraries(bin/vvxAnalysis ${ROOT_LIBS})
+
+# Add executable for ZZW analysis
+set(ZZWAnalyzer_SRCS ${EventAnalyzer_SRCS} ${SRC}/ZZWAnalyzer.cc)
+add_executable(${BIN}/zzwAnalysis ${BIN}/zzwAnalysis.cpp ${ZZWAnalyzer_SRCS})
+target_link_libraries(bin/zzwAnalysis ${ROOT_LIBS})
+
+# Add executable for ZZS analysis
+set(ZZSAnalyzer_SRCS ${EventAnalyzer_SRCS} ${SRC}/ZZSAnalyzer.cc)
+add_executable(${BIN}/zzsAnalysis ${BIN}/zzsAnalysis.cpp ${ZZSAnalyzer_SRCS})
+target_link_libraries(bin/zzsAnalysis ${ROOT_LIBS})
+
+
 
 
 

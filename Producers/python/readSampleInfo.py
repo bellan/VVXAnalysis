@@ -68,7 +68,7 @@ def readSampleInfo(sample, infoFilePath = 'samples_8TeV.csv', indexBy = 'identif
 
 
 def crossSection(sample, infoFilePath = 'samples_8TeV.csv', indexBy = 'identifier'):
-  return float(readSampleInfo(sample)['crossSection'])
+  return float(readSampleInfo(sample, infoFilePath, indexBy)['crossSection'])
 
 #merge together db and defaults
 def readSampleDB(infoFilePath = 'samples_8TeV.csv', indexBy = 'identifier'):

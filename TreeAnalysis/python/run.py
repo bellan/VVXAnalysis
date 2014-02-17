@@ -16,18 +16,28 @@ from readSampleInfo import *
 
 
 ############################## Configuration ##############################
-typeofsamples = typeOfSamples('../Producers/python/samples_8TeV.csv')
+csvfile = '../Producers/python/samples_8TeV.csv'
+failure, output = commands.getstatusoutput('ls ./bin/ | grep -v .cpp | grep -v .xml | grep -v .md')
+availableExecutable = output.split()
+executable = sys.argv[1]
+if executable in availableExecutable:
+    executable = 'bin/'+executable
+else:
+    print "ERROR! Unknown executable. Availble executables are:",availableExecutable
+    sys.exit(1)
+
+typeofsamples = typeOfSamples(csvfile)
 typeofsamples.append('test')
 
-DB = readSampleDB('../Producers/python/samples_8TeV.csv')
+DB = readSampleDB(csvfile)
 
-typeofsample = sys.argv[1]
+typeofsample = sys.argv[2]
 
 baseinputdir = '/afs/cern.ch/work/b/bellan/public/samples/'
 
 cregion = 'baseline' #sys.argv[2]
 
-executable = 'bin/eventAnalyzer'
+
 
 getExternalCrossSectionFromFile = False
 if len(sys.argv) > 2:
@@ -42,9 +52,9 @@ def run(executable, typeofsample, cregion):
     
     lumi = 19029.853
 
-    datasets = getSamplesBy('process',typeofsample,'../Producers/python/samples_8TeV.csv')
+    datasets = getSamplesBy('process',typeofsample,csvfile)
     if len(datasets) == 0:
-        datasets = getSamplesBy('identifier',typeofsample,'../Producers/python/samples_8TeV.csv')
+        datasets = getSamplesBy('identifier',typeofsample,csvfile)
 
     sampleprefix = ''
 
@@ -83,7 +93,7 @@ def run(executable, typeofsample, cregion):
 
         externalXsec = -1
         if not typeofsample == 'mudata' and not typeofsample == 'edata' and getExternalCrossSectionFromFile:
-            externalXsec = crossSection(period)
+            externalXsec = crossSection(period, csvfile)
             print period, " ---> External cross section: ", externalXsec
         command = "./{0:s} {1:s}/{3:s}.root {2:s}/{3:s}.root {4:.0f} {5:.3f}".format(executable,inputdir,outputdir, basefile, lumi, externalXsec)
         print command
