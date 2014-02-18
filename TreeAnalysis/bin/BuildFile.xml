@@ -2,3 +2,6 @@
 
 <bin file="eventAnalyzer.cpp" name="eventAnalyzer">
 </bin>
+
+<bin file="zzwAnalysis.cpp" name="zzwAnalysis">
+</bin>
