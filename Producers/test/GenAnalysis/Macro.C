@@ -130,15 +130,15 @@ void Macro() {
   Hjets* WmZZ_Jets = new Hjets("AllJets",fWm);
   Hjets* WmZZ_Jets_Cut = new Hjets("CutJets",fWm);
   TH1F* lostEv_0 = new TH1F("lostEv_0","lostEv_0",3, 0., 3.);
-  lostEv_0 = (TH1F*)f1_0->Get("GenAnalyzer/lostEvEtaRange");
+  lostEv_0 = (TH1F*)f0->Get("GenAnalyzer/lostEvEtaRange");
   TH1F* lostEv_1 = new TH1F("lostEv_1","lostEv_1",3, 0., 3.);
-  lostEv_1 = (TH1F*)f1_1->Get("GenAnalyzer/lostEvEtaRange");
+  lostEv_1 = (TH1F*)f1->Get("GenAnalyzer/lostEvEtaRange");
   TH1F* lostEv_2 = new TH1F("lostEv_2","lostEv_2",3, 0., 3.);
-  lostEv_2 = (TH1F*)f1_2->Get("GenAnalyzer/lostEvEtaRange");
+  lostEv_2 = (TH1F*)f2->Get("GenAnalyzer/lostEvEtaRange");
   TH1F* lostEv_3 = new TH1F("lostEv_3","lostEv_3",3, 0., 3.);
-  lostEv_3 = (TH1F*)f1_3->Get("GenAnalyzer/lostEvEtaRange");
+  lostEv_3 = (TH1F*)f3->Get("GenAnalyzer/lostEvEtaRange");
   TH1F* lostEv_4 = new TH1F("lostEv_4","lostEv_4",3, 0., 3.);
-  lostEv_4 = (TH1F*)f1_4->Get("GenAnalyzer/lostEvEtaRange");
+  lostEv_4 = (TH1F*)f4->Get("GenAnalyzer/lostEvEtaRange");
 
   float L = 300.;
 
@@ -156,11 +156,19 @@ void Macro() {
  
   cout << "\n%%%%%%%%%%%%\nWEIGHTS\nw_QED6= " << w_QED6 << "\nw_WpZZ= " << w_WpZZ << "\nw_WmZZ=" << w_WmZZ <<endl; 
  
+  if(!ZZW_QED6_0)
+    cout<<"1A"<<endl;
+  else
+    cout<<"1B"<<endl;
+
   ZZW_QED6_0->Scale(w_QED6);
+  cout<<"2A"<<endl;
+
   ZZW_QED6_1->Scale(w_QED6);
   ZZW_QED6_2->Scale(w_QED6);
   ZZW_QED6_3->Scale(w_QED6);
   ZZW_QED6_4->Scale(w_QED6);
+
   Backgr_QED6_0->Scale(w_QED6);
   Backgr_QED6_1->Scale(w_QED6);
   Backgr_QED6_2->Scale(w_QED6);
@@ -256,7 +264,6 @@ void Macro() {
   TCanvas* myc12 = new TCanvas("Z Pts", "Z Pts",900,600);
   myc12->Divide(2,1);
 
-  
 
   TLegend* leg = new TLegend(0.67, 0.61,0.88,0.76);
   TLegend* leg1 = new TLegend(0.70, 0.66,0.88,0.76);
