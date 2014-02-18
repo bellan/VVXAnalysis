@@ -7,7 +7,7 @@
 MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& externalXSection)
   : luminosity_(lumi)
   , internalCrossSection_(-1)
-  , externalCrossSection_(-1)
+  , externalCrossSection_(externalXSection)
   , crossSection_(&externalCrossSection_)
   , genEvents_(-1)
   , analyzedEvents_(-1)
