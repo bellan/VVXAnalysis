@@ -6,13 +6,14 @@
 ##################################
 
 
-print '*** UNITO Framework ***'
-
-
 import sys, os, commands, math
 from readSampleInfo import *
+from Colours import *
 
 
+print "\n\n"
+print White('\t\t\t*** UNITO Framework ***')
+print "\n\n"
 
 
 ############################################################################
@@ -48,7 +49,7 @@ availableExecutable = output.split()
 if executable in availableExecutable: 
     executable = 'bin/'+executable
 else:
-    print "ERROR! Unknown executable. Availble executables are:",availableExecutable
+    print Important("ERROR! Unknown executable."),"Availble executables are:",availableExecutable
     sys.exit(1)
 
 
@@ -56,14 +57,16 @@ else:
 ############################ Print the configuration #######################
 ############################################################################
 
-print "Configuration:"
-print "Executable:", executable
-print "Sample/type of samples:", typeofsample
-print "Get (again) cross section from csv file:", getExternalCrossSectionFromFile
-print "CSV file:", csvfile
-print "Control region type:", cregion
-print "Integrated luminosity:", luminosity
-
+print Blue("----------------------------------------------------------------------")
+print Red("Configuration:")
+print "Executable:", Blue(executable)
+print "Sample/type of samples:", Blue(typeofsample)
+print "CSV file: ", Blue(csvfile)
+print "Get (again) cross sections from csv file: ", Blue(getExternalCrossSectionFromFile)
+print "Control region type: ", Blue(cregion)
+print "Integrated luminosity: ", Blue(luminosity)
+print Blue("----------------------------------------------------------------------")
+print "\n\n"
 
 
 ############################################################################
@@ -81,6 +84,8 @@ def run(executable, typeofsample, cregion, luminosity):
     datasets = getSamplesBy('process',typeofsample,csvfile)
     if len(datasets) == 0:
         datasets = getSamplesBy('identifier',typeofsample,csvfile)
+    if len(datasets) == 0:
+        print Important('Error! This sample is not available!'), typeofsample
 
     sampleprefix = ''
 
@@ -118,7 +123,7 @@ def run(executable, typeofsample, cregion, luminosity):
         externalXsec = -1
         if not typeofsample == 'mudata' and not typeofsample == 'edata' and getExternalCrossSectionFromFile:
             externalXsec = crossSection(period, csvfile)
-            print period, " ---> External cross section: ", externalXsec
+            print period, Warning(" ---> External cross section: "), externalXsec
         command = "./{0:s} {1:s}/{3:s}.root {2:s}/{3:s}.root {4:.0f} {5:.3f}".format(executable,inputdir,outputdir, basefile, luminosity, externalXsec)
         print command
         failure, output = commands.getstatusoutput(command)

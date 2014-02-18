@@ -1,5 +1,5 @@
-#ifndef ZZWAnalysis_DataFormats_Particle_H
-#define ZZWAnalysis_DataFormats_Particle_H
+#ifndef VVXAnalysis_DataFormats_Particle_H
+#define VVXAnalysis_DataFormats_Particle_H
 
 /** \class Particle
  *  No description available.
