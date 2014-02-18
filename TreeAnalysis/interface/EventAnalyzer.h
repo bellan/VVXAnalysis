@@ -32,7 +32,7 @@ class EventAnalyzer {
 public:
   enum METType {Std,NoMu,NoEl};
 
-  EventAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = false);
+  EventAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = true);
   virtual ~EventAnalyzer();
 
   struct PtComparator{
@@ -41,6 +41,16 @@ public:
 		     const LEP & b) const{ 
       return a.p4().Pt() > b.p4().Pt(); 
     }
+  };
+  
+  struct MassComparator{
+    MassComparator(const double& ref): ref_(ref){}
+    template<typename PAR>
+    bool operator()(const PAR & a , 
+		    const PAR & b) const{ 
+      return fabs(a.p4().M()-ref_) < fabs(b.p4().M()-ref_); 
+    }
+    double ref_;
   };
   
   // To steer the loop over all events. User is not supposed to change this.
@@ -73,6 +83,10 @@ public:
   bool doBasicPlots_;
 
  protected:
+  static const double ZMASS;
+  static const double WMASS;
+  static const double HMASS;
+
   // Histograms helper class
   Histogrammer theHistograms;
 
