@@ -50,6 +50,12 @@ public:
 		    const PAR & b) const{ 
       return fabs(a.p4().M()-ref_) < fabs(b.p4().M()-ref_); 
     }
+    template<typename PAR>
+    bool operator()(const PAR * a , 
+		    const PAR * b) const{ 
+      return fabs(a->p4().M()-ref_) < fabs(b->p4().M()-ref_); 
+    }
+
     double ref_;
   };
   
