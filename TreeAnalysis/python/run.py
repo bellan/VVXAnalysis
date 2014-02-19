@@ -39,7 +39,6 @@ baseinputdir = 'samples'
 
 
 csvfile = '../Producers/python/samples_8TeV.csv'
-DB = readSampleDB(csvfile)
 
 typeofsamples = typeOfSamples(csvfile)
 typeofsamples.append('test')
@@ -122,17 +121,22 @@ def run(executable, typeofsample, cregion, luminosity):
         if not typeofsample == 'mudata' and not typeofsample == 'edata' and getExternalCrossSectionFromFile:
             externalXsec = crossSection(period, csvfile)
             print "For {} {} {}".format(period, Warning("Using external cross section:"), externalXsec)
+
+        print Red('\n------------------------------ {} -------------------------------\n'.format(basefile))
         command = "./{0:s} {1:s}/{3:s}.root {2:s}/{3:s}.root {4:.0f} {5:.10f}".format(executable,inputdir,outputdir, basefile, luminosity, externalXsec)
         print "Command going to be executed:", Violet(command)
         failure, output = commands.getstatusoutput(command)
-        print "\n\n",output
-        hadd = '{} {}/{}.root'.format(hadd, outputdir, basefile)
+        print "\n",output
 
+    print Red('----------------------------------------------------------------------\n')
     if len(datasets) > 1:
         if os.path.exists('{}/{}.root'.format(outputdir,typeofsample)):
             os.popen('rm {}/{}.root'.format(outputdir,typeofsample))
-        print "Command to be executed:", Violet(hadd)
+        hadd = '{} {}/{}.root'.format(hadd, outputdir, basefile)
+        print "Command going to be executed:", Violet(hadd)
         failure, output = commands.getstatusoutput(hadd)
+
+    print "The output is in", Green('{}/{}.root'.format(outputdir,typeofsample))  
 
 
 if typeofsample == 'all':
@@ -148,3 +152,5 @@ else:
             run(executable, typeofsample, cr, luminosity)  # runs over a specific sample in all control regions
     else:
         run(executable, typeofsample, cregion, luminosity) # runs over a specific sample in a specific region
+
+print "\nJob status: ", OK("DONE"),"\n"

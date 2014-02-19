@@ -28,7 +28,7 @@ int main (int argc, char ** argv){
   analysis.loop(argv[2]);
 
   cout<<"Output saved in --> "<<Green(argv[2])<<endl;
-  cout<<"\nAnalysis status: "<<OK("done!")<<"\n"<<endl;
+  cout<<"\nAnalysis status: "<<OK("DONE")<<"\n"<<endl;
 
   return 0;
 }
