@@ -111,18 +111,20 @@ def run(executable, typeofsample, cregion, luminosity):
 
 
     # ----- Run over the run periods -----
-    hadd = 'hadd {}/{}.root'.format(outputdir,typeofsample)
+    print outputdir,typeofsample
+    hadd = 'hadd {0:s}/{1:s}.root'.format(outputdir,typeofsample)
+    print hadd
     for period in datasets:
         basefile = sampleprefix+period
-        if os.path.exists('{}/{}.root'.format(outputdir,basefile)):
-            os.popen('rm {}/{}.root'.format(outputdir,basefile))
+        if os.path.exists('{0:s}/{1:s}.root'.format(outputdir,basefile)):
+            os.popen('rm {0:s}/{1:s}.root'.format(outputdir,basefile))
 
         externalXsec = -1
         if not typeofsample == 'mudata' and not typeofsample == 'edata' and getExternalCrossSectionFromFile:
             externalXsec = crossSection(period, csvfile)
-            print "For {} {} {}".format(period, Warning("Using external cross section:"), externalXsec)
+            print "For {0:s} {1:s} {2:.6f}".format(period, Warning("Using external cross section:"), externalXsec)
 
-        print Red('\n------------------------------ {} -------------------------------\n'.format(basefile))
+        print Red('\n------------------------------ {0:s} -------------------------------\n'.format(basefile))
         command = "./{0:s} {1:s}/{3:s}.root {2:s}/{3:s}.root {4:.0f} {5:.10f}".format(executable,inputdir,outputdir, basefile, luminosity, externalXsec)
         print "Command going to be executed:", Violet(command)
         failure, output = commands.getstatusoutput(command)
@@ -130,13 +132,13 @@ def run(executable, typeofsample, cregion, luminosity):
 
     print Red('----------------------------------------------------------------------\n')
     if len(datasets) > 1:
-        if os.path.exists('{}/{}.root'.format(outputdir,typeofsample)):
-            os.popen('rm {}/{}.root'.format(outputdir,typeofsample))
-        hadd = '{} {}/{}.root'.format(hadd, outputdir, basefile)
+        if os.path.exists('{0:s}/{1:s}.root'.format(outputdir,typeofsample)):
+            os.popen('rm {0:s}/{1:s}.root'.format(outputdir,typeofsample))
+        hadd = '{0:s} {1:s}/{2:s}.root'.format(hadd, outputdir, basefile)
         print "Command going to be executed:", Violet(hadd)
         failure, output = commands.getstatusoutput(hadd)
 
-    print "The output is in", Green('{}/{}.root'.format(outputdir,typeofsample))  
+    print "The output is in", Green('{0:s}/{1:s}.root'.format(outputdir,typeofsample))  
 
 
 if typeofsample == 'all':
