@@ -19,6 +19,7 @@ public:
     : EventAnalyzer(filename, lumi, externalXSection, doBasicPlots){}
   virtual ~ZZWAnalyzer(){}
   virtual void analyze();
+  virtual Int_t cut();
 };
 #endif
 
