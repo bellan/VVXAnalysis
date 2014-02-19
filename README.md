@@ -2,11 +2,11 @@ Packages for a multi boson final state analysis
 -----------------------------------------------
 -----------------------------------------------
 
-The basic objects and selections are based on the H->ZZ->4l analysis; this set of packages can be seen as an extension of the H->ZZ->4l analysis code. 
-As a matter of fact, the user needs to follow the very same recipe as of the H->ZZ->4l analysis, and on top of that, check-out the code in this repository.
+The basic objects and selections are based on the H --> ZZ --> 4l analysis; this set of packages can be seen as an extension of the H --> ZZ --> 4l analysis code. 
+As a matter of fact, the user needs to follow the very same recipe as of the H --> ZZ --> 4l analysis, and on top of that, check-out the code in this repository.
 
-The philosophy is to run the H->ZZ->4l work-flow up to the production of the Z->ll bosons and deviate from it adding specific objects for the multi boson analyses, e.g.,
-W->jj object or VVS tag-jets or other vector boson decays. The input of the analysis are patuples produced for H->ZZ->4l and the idea is to collaborate with that team to extend the
+The philosophy is to run the H --> ZZ --> 4l work-flow up to the production of the Z --> ll bosons and deviate from it adding specific objects for the multi boson analyses, e.g.,
+W --> jj object or VVS tag-jets or other vector boson decays. The input of the analysis are patuples produced for H --> ZZ --> 4l and the idea is to collaborate with that team to extend the
 pool of samples to fully match our needs too. 
 
 The Multi Boson work-flow then foreseens the production of ROOT tree files, filled with objects like muons, electrons, jets, vector bosons, described by relatively 
@@ -24,7 +24,7 @@ The code is located in this repository: https://github.com/bellan/VVXAnalysis.gi
 Recipe for the tree production step
 -----------------------------------
 
-- In a lxplus like environment, setup your area has for H->ZZ->4l analysis, following the recipe in https://github.com/CJLST/ZZAnalysis.
+- In a lxplus like environment, setup your area has for H --> ZZ --> 4l analysis, following the recipe in https://github.com/CJLST/ZZAnalysis.
 - I suggest to run ```git clone https://github.com/CJLST/ZZAnalysis.git ZZAnalysis``` into a ```tmp/``` area and copy the file ```checkout_539.csh```
   into ```$CMSSW_BASE/src``` and from there run ./checkout_539.csh, making sure that no ```ZZAnalysis``` subsytem already exists.
 - Check-out the code from this repository.
