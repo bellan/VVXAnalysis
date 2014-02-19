@@ -33,21 +33,21 @@ Hbos::Hbos(TString name_) : name(name_) {
 
 Hbos::Hbos(TString name_, TFile* file) : name(name_) {
 
-  hZ0Mass   = (TH1F*) file->Get("MyAnalyzer/"+ name+"_hZ0Mass"); 
-  hZ1Mass   = (TH1F*) file->Get("MyAnalyzer/"+ name+"_hZ1Mass");
-  hVMass    = (TH1F*) file->Get("MyAnalyzer/"+ name+"_hVMass");
+  hZ0Mass   = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZ0Mass"); 
+  hZ1Mass   = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZ1Mass");
+  hVMass    = (TH1F*) file->Get("genAnalyzer/"+ name+"_hVMass");
 
-  hZPt_1    = (TH1F*) file->Get("MyAnalyzer/"+ name+"_hZPt_1");
-  hZPt_2    = (TH1F*) file->Get("MyAnalyzer/"+ name+"_hZPt_2");
-  hVPt      = (TH1F*) file->Get("MyAnalyzer/"+ name+"_hVPt");
-  hZZPt     = (TH1F*) file->Get("MyAnalyzer/"+ name+"_hZZPt");
+  hZPt_1    = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZPt_1");
+  hZPt_2    = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZPt_2");
+  hVPt      = (TH1F*) file->Get("genAnalyzer/"+ name+"_hVPt");
+  hZZPt     = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZZPt");
 
-  hZVDR     = (TH1F*) file->Get("MyAnalyzer/"+ name+"_hZVDR");
-  hZZDR     = (TH1F*) file->Get("MyAnalyzer/"+ name+"_hZZDR");
-  hZZ_VDR   = (TH1F*) file->Get("MyAnalyzer/"+ name+"_hZZ_VDR");
+  hZVDR     = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZVDR");
+  hZZDR     = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZZDR");
+  hZZ_VDR   = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZZ_VDR");
 
-  hZZDeta   = (TH1F*) file->Get("MyAnalyzer/"+ name+"_hZZDeta");
-  hZZ_VDeta = (TH1F*) file->Get("MyAnalyzer/"+ name+"_hZZ_VDeta");
+  hZZDeta   = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZZDeta");
+  hZZ_VDeta = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZZ_VDeta");
 
 }
 
@@ -91,35 +91,35 @@ void Hbos::FillBos(Boson *Z0, Boson *Z1, Boson *V){
 
 void Hbos::Scale(float w) {
 
-  hZ0Mass->Scale(w);
-  hZ1Mass->Scale(w);
-  hVMass->Scale(w);
-  hZPt_1->Scale(w);
-  hZPt_2->Scale(w);
-  hVPt->Scale(w);
-  hZZPt->Scale(w);
-  hZVDR->Scale(w);
-  hZZDR->Scale(w);
-  hZZ_VDR->Scale(w);
-  hZZDeta->Scale(w);
-  hZZ_VDeta->Scale(w);
+  if(hZ0Mass)  hZ0Mass->Scale(w);
+  if(hZ1Mass)  hZ1Mass->Scale(w);
+  if(hVMass)   hVMass->Scale(w);
+  if(hZPt_1)    hZPt_1->Scale(w);
+  if(hZPt_2)    hZPt_2->Scale(w);
+  if(hVPt)      hVPt->Scale(w);
+  if(hZZPt)     hZZPt->Scale(w);
+  if(hZVDR)     hZVDR->Scale(w);
+  if(hZZDR)     hZZDR->Scale(w);
+  if(hZZ_VDR)   hZZ_VDR->Scale(w);
+  if(hZZDeta)   hZZDeta->Scale(w);
+  if(hZZ_VDeta) hZZ_VDeta->Scale(w);
 
 }
 
 
 void Hbos::SetLineColor(Color_t c) {
 
-  hZ0Mass->SetLineColor(c);
-  hZ1Mass->SetLineColor(c);
-  hVMass->SetLineColor(c);
-  hZPt_1->SetLineColor(c);
-  hZPt_2->SetLineColor(c);
-  hVPt->SetLineColor(c);
-  hZZPt->SetLineColor(c);
-  hZVDR->SetLineColor(c);
-  hZZDR->SetLineColor(c); 
-  hZZ_VDR->SetLineColor(c); 
-  hZZDeta->SetLineColor(c); 
-  hZZ_VDeta->SetLineColor(c);
+  if(hZ0Mass)    hZ0Mass->SetLineColor(c);
+  if(hZ1Mass)    hZ1Mass->SetLineColor(c);
+  if(hVMass)     hVMass->SetLineColor(c);
+  if(hZPt_1)     hZPt_1->SetLineColor(c);
+  if(hZPt_2)     hZPt_2->SetLineColor(c);
+  if(hVPt)       hVPt->SetLineColor(c);
+  if(hZZPt)      hZZPt->SetLineColor(c);
+  if(hZVDR)      hZVDR->SetLineColor(c);
+  if(hZZDR)      hZZDR->SetLineColor(c); 
+  if(hZZ_VDR)    hZZ_VDR->SetLineColor(c); 
+  if(hZZDeta)    hZZDeta->SetLineColor(c); 
+  if(hZZ_VDeta)  hZZ_VDeta->SetLineColor(c);
 
 }
