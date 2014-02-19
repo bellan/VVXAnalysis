@@ -49,11 +49,8 @@ for i in range(0,len(samples)-1):
                     else:
                         xsec = xsec * float(column)
             if foundsample:
-                # on LXPLUS need to setup python 2.7
-                # setenv PATH ${PATH}:/afs/cern.ch/sw/lcg/external/Python/2.7.2/x86_64-slc5-gcc46-opt/bin
-                # setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/afs/cern.ch/sw/lcg/external/Python/2.7.2/x86_64-slc5-gcc46-opt/lib
                 lineforpy = samples[i] + (round(xsec,10),)
-                fileoutpy.write('{},\n'.format(lineforpy))
+                fileoutpy.write('{0:s},\n'.format(lineforpy))
                 # for csv file reshuffle the order
                 lineforcsv = [sample,"",round(xsec,10),"","","",samples[i][2],samples[i][1],samples[i][3],samples[i][4],samples[i][5]]
                 csvwriter.writerow(lineforcsv)
@@ -63,7 +60,7 @@ for i in range(0,len(samples)-1):
     if foundsampleinfile == 0:
         print "{0:s} not found!".format(sample)
         lineforpy = samples[i] + (-1,)
-        fileoutpy.write('{},\n'.format(lineforpy))
+        fileoutpy.write('{0:s},\n'.format(lineforpy))
         lineforcsv = [sample, "",-1,"","","",samples[i][2],samples[i][1],samples[i][3],samples[i][4],samples[i][5]]
         csvwriter.writerow(lineforcsv)
 

@@ -26,10 +26,10 @@ Hjets:: Hjets(TString name_) : name(name_) {
 
 Hjets::Hjets(TString name_, TFile* file) : name(name_) {
 
-  hjjDeta = (TH1F*) file->Get("GenAnalyzer/"+ name+"_hjjDeta");
-  hjjDtheta = (TH1F*) file->Get("GenAnalyzer/"+ name+"_hjjDtheta");
-  hjjDphi = (TH1F*) file->Get("GenAnalyzer/"+ name+"_hjjDphi");
-  hjjDR = (TH1F*) file->Get("GenAnalyzer/"+ name+"_hjjDR");
+  hjjDeta = (TH1F*) file->Get("genAnalyzer/"+ name+"_hjjDeta");
+  hjjDtheta = (TH1F*) file->Get("genAnalyzer/"+ name+"_hjjDtheta");
+  hjjDphi = (TH1F*) file->Get("genAnalyzer/"+ name+"_hjjDphi");
+  hjjDR = (TH1F*) file->Get("genAnalyzer/"+ name+"_hjjDR");
 
 }
 

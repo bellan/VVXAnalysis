@@ -10,7 +10,7 @@ class Boson {
  public:
 
   Boson(LorentzVector daughter1 = LorentzVector(0., 0., 0., 0.), LorentzVector daughter2  = LorentzVector(0., 0., 0., 0.), 
-	int bosonId = -1, int daughtersId = 1):fdaughter1(daughter1),fdaughter2(daughter2),fbosonId(bosonId),fdaughtersId(daughtersId){
+	int abosonId = -1, int daughtersIds = 1):fdaughter1(daughter1),fdaughter2(daughter2),fbosonId(abosonId),fdaughtersId(daughtersIds){
 
   }
 

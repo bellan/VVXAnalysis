@@ -35,7 +35,7 @@ Recipe for the tree production step
   The main commands are described here:
   - https://github.com/CJLST/ZZAnalysis/blob/master/AnalysisStep/test/prod/PRODUCTION.md 
   - as starting point one can use as template the ```VVXAnalysis/Producers/test/analyzer_ZZW.py``` file.
-  - ...
+  - For our analysis, I have modified the batch.py from ZZAnalisys and put our version in      ```VVXAnalysis/Producers/python/batch.py```. The sintax and the accepted options are the same, but it uses a CSV file as     input.
 - The list of currently patified samples is in:
   https://github.com/CJLST/ZZAnalysis/blob/master/AnalysisStep/test/prod/analyzer_2012.py
   (I am currently planning to convert it into a csv file to keep trace of relevant information).

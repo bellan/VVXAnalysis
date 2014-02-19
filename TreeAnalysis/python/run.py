@@ -12,7 +12,7 @@ from Colours import *
 
 
 print "\n\n"
-print White('\t\t\t*** UNITO Framework ***')
+print "\t\t\t",White('*** UNITO Framework ***')
 print "\n\n"
 
 
