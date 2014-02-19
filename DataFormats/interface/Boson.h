@@ -36,6 +36,7 @@ namespace phys {
       if(i == 0) daughter0_ = d;
       if(i == 1) daughter1_ = d;
       else abort();
+      p4_ = daughter0_.p4() + daughter1_.p4();
     }
 
     // Operations

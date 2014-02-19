@@ -1,18 +1,18 @@
+#include "VVXAnalysis/TreeAnalysis/interface/ZZSAnalyzer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/Colours.h"
+
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 
-#include "VVXAnalysis/TreeAnalysis/interface/ZZSAnalyzer.h"
-
 using std::cout;
 using std::endl;
+using namespace colour;
 
 int main (int argc, char ** argv){
 
-  cout<<"Ciao"<<endl;
-  
   if(argc < 4){ 
-    cout<<"Too few arguments"<<endl;
-    cout<<"eventAnalyzer <input file name> <output filename> <luminosity (for MC)> <external cross section (for MC)>"<<endl;
+    cout<<Important("Too few arguments")<<endl;
+    cout<<"zzsAnalysis <input file name> <output filename> <luminosity (for MC)> <external cross section (for MC)>"<<endl;
     return 1;
   }
 
@@ -22,12 +22,13 @@ int main (int argc, char ** argv){
   float lumi  = atof(argv[3]); 
   float externalXsec = atof(argv[4]);
     
-  std::cout<<"Analyzing "<<filename<<" ... please wait... "<<endl ;
+  std::cout<<Red("Analyzing "+filename+" ... please wait... ")<<endl ;
   
   ZZSAnalyzer analysis(filename, lumi, externalXsec);
   analysis.loop(argv[2]);
 
-  std::cout<<filename<<" --> "<<argv[2]<<" done!"<<endl ;
+  cout<<"Output saved in --> "<<Green(argv[2])<<endl;
+  cout<<"\nAnalysis status: "<<OK("done!")<<"\n"<<endl;
 
   return 0;
 }

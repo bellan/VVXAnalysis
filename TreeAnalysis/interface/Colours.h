@@ -6,7 +6,7 @@
  *
  *  $Date: 2013/03/15 13:37:31 $
  *  $Revision: 1.3 $
- *  \author R. Bellan - UCSB <riccardo.bellan@cern.ch>
+ *  \author R. Bellan - UNITO <riccardo.bellan@cern.ch>
  */
 
 #include <sstream> 
