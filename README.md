@@ -24,7 +24,7 @@ The code is located in this repository: https://github.com/bellan/VVXAnalysis.gi
 Recipe for the tree production step
 -----------------------------------
 
-- In a lxplus like environment, setup your area has for H --> ZZ -->	4l analysis, following the recipe in https://github.com/CJLST/ZZAnalysis.
+- In a lxplus like environment, setup your area has for H --> ZZ --> 4l analysis, following the recipe in https://github.com/CJLST/ZZAnalysis.
 - I suggest to run ```git clone https://github.com/CJLST/ZZAnalysis.git ZZAnalysis``` into a ```tmp/``` area and copy the file ```checkout_539.csh```
   into ```$CMSSW_BASE/src``` and from there run ./checkout_539.csh, making sure that no ```ZZAnalysis``` subsytem already exists.
 - Check-out the code from this repository.
