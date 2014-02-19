@@ -70,14 +70,10 @@ namespace phys {
       return charge;
     }
  
-   private:
+  protected:
     TLorentzVector p4_;
     Float_t charge_;
-    
-    
-  protected:
     Int_t id_;    
-
 
     //Particle genParticle_;
 
