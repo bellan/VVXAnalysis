@@ -8,6 +8,7 @@
  */
 
 #include "VVXAnalysis/TreeAnalysis/interface/EventAnalyzer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/Colours.h"
 
 #include <TChain.h>
 #include <TFile.h>
@@ -22,7 +23,7 @@
 using std::cout;
 using std::endl;
 using std::flush;
-
+using namespace colour;
 
 
 const double EventAnalyzer::ZMASS = 91.19;
@@ -47,7 +48,7 @@ EventAnalyzer::EventAnalyzer(std::string filename,
   TChain *tree = new TChain("treePlanter/ElderTree");
   tree->Add(filename.c_str());
 
-  if (tree == 0) std::cout<<"Error in EventAnalyzer ctor"<<std::endl;
+  if (tree == 0) std::cout<<Important("Error in EventAnalyzer ctor:")<<" The tree has a null pointer."<<std::endl;
 
   Init(tree);
 }
@@ -182,7 +183,7 @@ void EventAnalyzer::loop(const std::string outputfile){
 
   end(fout);
   fout.Close();
-  cout<<"Event passing all cuts: " << theCutCounter << endl;
+  cout<<"Event passing all cuts: "<< Green(theCutCounter) << endl;
 }
 
 

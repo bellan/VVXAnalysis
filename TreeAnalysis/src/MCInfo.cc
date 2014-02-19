@@ -1,8 +1,10 @@
 #include "VVXAnalysis/TreeAnalysis/interface/MCInfo.h"
+#include "VVXAnalysis/TreeAnalysis/interface/Colours.h"
 
 #include "TChain.h"
 #include <iostream>
 
+using namespace colour;
 
 MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& externalXSection)
   : luminosity_(lumi)
@@ -52,7 +54,7 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
     tree->LoadTree(jentry); tree->GetEntry(jentry);
     
     if(genEvents_ != analyzedEvents_)
-      std::cout << "WARNING! The number of analyzed events differ from the total generated events. Make sure you are properly weighting the events." << std::endl;
+      std::cout << Warning("WARNING! The number of analyzed events differ from the total generated events. Make sure you are properly weighting the events.") << std::endl;
     
     totalAnEvents += analyzedEvents_;
     totalGenEvents += genEvents_;
@@ -76,10 +78,8 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
 
   sampleWeight_ = crossSection()/analyzedEvents_;
 
-  std::cout<<analyzedEvents_ <<" "<<sumpumcprocweight_<<std::endl;
-
-  std::cout<<"\nThis sample has been made out of a dataset containing " << genEvents() << " generated events." << std::endl
-	   <<"Out of them, " << analyzedEvents() << " events have been used to produce the main tree."         << std::endl
-	   <<"The cross-section of this sample is " << crossSection() << " pb (" << xsectype <<")."            << std::endl
-	   <<"The sample weight is " << sampleWeight()                    << std::endl;
+  std::cout<<"\nThis sample has been made out of a dataset containing " << Green(genEvents()) << " generated events." << std::endl
+	   <<"Out of them, " << Green(analyzedEvents()) << " events have been used to produce the main tree."         << std::endl
+	   <<"The cross-section of this sample is " << Green(crossSection()) << Green(" pb ")<<"(" << xsectype <<")." << std::endl
+	   <<"The sample weight is " << Green(sampleWeight())                                                         << std::endl;
 }
