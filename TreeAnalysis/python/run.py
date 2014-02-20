@@ -111,9 +111,7 @@ def run(executable, typeofsample, cregion, luminosity):
 
 
     # ----- Run over the run periods -----
-    print outputdir,typeofsample
     hadd = 'hadd {0:s}/{1:s}.root'.format(outputdir,typeofsample)
-    print hadd
     for period in datasets:
         basefile = sampleprefix+period
         if os.path.exists('{0:s}/{1:s}.root'.format(outputdir,basefile)):
