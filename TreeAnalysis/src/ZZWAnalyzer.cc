@@ -27,7 +27,7 @@ Int_t ZZWAnalyzer::cut(){
 
 void ZZWAnalyzer::analyze() {
   
-  cout<< "Event " << event << endl;
+  cout << "Event " << event << endl;
   
   const Particle* Z0;
   const Particle* Z1;
@@ -44,10 +44,10 @@ void ZZWAnalyzer::analyze() {
   std::stable_sort(Zll.begin(),Zll.end(),MassComparator(ZMASS));
   
   
-  if(Zll.size() >= 2) {
-    foreach(const Particle *z, Zll)
-      cout << "Z_Mass= " << z->p4().M() << endl;
-  }
+//   if(Zll.size() >= 2) {
+//     foreach(const Particle *z, Zll)
+//       cout << "Z_Mass= " << z->p4().M() << endl;
+//   }
   
   Z0 = Zll.at(0);
   Z1 = Zll.at(1);
@@ -62,7 +62,10 @@ void ZZWAnalyzer::analyze() {
   TLorentzVector p_j1 = W.daughter(0).p4();
   TLorentzVector p_j2 = W.daughter(1).p4();
   
-  
+  cout << "Z0_Mass= " << p_Z0.M() << endl;
+  cout << "Z0_Mass= " << p_Z1.M() << endl;
+  cout << "W_Mass= " << W.p4().M() << endl;
+ 
   //================================Histograms=====================================
   
   //------------Mass--------------
