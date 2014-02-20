@@ -129,12 +129,12 @@ def run(executable, typeofsample, cregion, luminosity):
         print "Command going to be executed:", Violet(command)
         failure, output = commands.getstatusoutput(command)
         print "\n",output
+        hadd = '{0:s} {1:s}/{2:s}.root'.format(hadd, outputdir, basefile)
 
     print Red('----------------------------------------------------------------------\n')
     if len(datasets) > 1:
         if os.path.exists('{0:s}/{1:s}.root'.format(outputdir,typeofsample)):
             os.popen('rm {0:s}/{1:s}.root'.format(outputdir,typeofsample))
-        hadd = '{0:s} {1:s}/{2:s}.root'.format(hadd, outputdir, basefile)
         print "Command going to be executed:", Violet(hadd)
         failure, output = commands.getstatusoutput(hadd)
 
