@@ -77,8 +77,8 @@ private:
 
 void GenFilterCategory::beginJob() {
 
-  edm::Service<TFileService> fileService;
-  category        = fileService->make<TH1F>("category", "category", 10, 0., 10.);
+  //edm::Service<TFileService> fileService;
+  // category        = fileService->make<TH1F>("category", "category", 10, 0., 10.);
 }
 
  bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) { 
@@ -323,7 +323,7 @@ void GenFilterCategory::beginJob() {
       if ( isMySignal ) {
 	categoryNum = 0;
 	//cout << "SIGNAL: "  << event.id().event() << "\nEvent category: " << categoryNum << endl;
-	category->Fill(0);
+	//category->Fill(0);
 
       } 
 
@@ -337,25 +337,25 @@ void GenFilterCategory::beginJob() {
 	  if ( has3Z ) {
 	    categoryNum = 1;
 	    //cout << "ZZZ: " << event.id().event() << "\nEvent category: " << categoryNum << endl;
-	    category->Fill(1);
+	    //category->Fill(1);
 	  }
 	  
 	  //ZZWloose ------------------------------------ categoryNum = 2 -----------------------
 	  else if ( !has3Z && isWloose ) {
 	    categoryNum = 2;
-	    category->Fill(2);
+	    //category->Fill(2);
 	  }
 	  
 	  //ZZZloose ------------------------------------ categoryNum = 3 -----------------------
 	  else if ( !has3Z && !isWloose && isZloose ) {
 	    categoryNum = 3;
-	    category->Fill(3);
+	    //category->Fill(3);
 	  }
 
 	  //ZZ+X ---------------------------------------- categoryNum = 4 ------------------------
 	  else {	
 	    categoryNum = 4;
-	    category->Fill(4);
+	    //category->Fill(4);
 	  }
 	}
 
@@ -364,31 +364,31 @@ void GenFilterCategory::beginJob() {
 	  //WZ+X ---------------------------------------- categoryNum = 5 ------------------------
 	  if ( isWtight ) {
 	    categoryNum = 5;
-	    category->Fill(5);
+	    //category->Fill(5);
 	  }
 	  
 	  //ZZjj+X -------------------------------------- categoryNum = 6 ------------------------
 	  else if ( has3Z ) {
 	    categoryNum = 6;
-	    category->Fill(6);
+	    //category->Fill(6);
 	  }
 	  
 	  //ZWloose+X ----------------------------------- categoryNum = 7 ------------------------
 	  else if ( !isWtight && !has3Z && isWloose ) {
 	    categoryNum = 7;
-	    category->Fill(7);
+	    //category->Fill(7);
 	  }
 	  
 	  //ZZjj+X -------------------------------------- categoryNum = 8 ------------------------
 	  else if ( !has3Z && !isWloose && isZloose ) {
 	    categoryNum = 8;
-	    category->Fill(8);
+	    //category->Fill(8);
 	  }
 	  
 	  //Z+X+Y --------------------------------------- categoryNum = 9 ------------------------
 	  else {
 	    categoryNum = 9;
-	    category->Fill(9);
+	    //category->Fill(9);
 	  }
 	  
 	}		
