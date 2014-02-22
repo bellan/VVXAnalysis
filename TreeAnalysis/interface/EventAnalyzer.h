@@ -67,7 +67,7 @@ public:
   virtual void     loop(const std::string outputfile);
 
   // To register the concrete classes
-  virtual void Register(std::string analyisName) = 0;
+  //virtual void Register(std::string analyisName) = 0;
 
 
 

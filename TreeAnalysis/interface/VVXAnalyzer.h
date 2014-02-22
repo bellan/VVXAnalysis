@@ -26,9 +26,9 @@ public:
     return new VVXAnalyzer(filename, lumi, externalXSection, doBasicPlots);
   }
 
-  virtual void Register(std::string analyisName) {
-    AnalysisFactory::get()->Register("VVXAnalyzer", &create);
-  }
+  //  virtual void Register(std::string analyisName) {
+  //  AnalysisFactory::get()->Register("VVXAnalyzer", &create);
+  // }
 
 };
 #endif
