@@ -23,14 +23,18 @@
 #include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/MCInfo.h"
 
+
 class TFile;
 class TTree;
 class TBranch;
 class TH1;
 
+
 class EventAnalyzer {
 public:
+  
   enum METType {Std,NoMu,NoEl};
+  typedef EventAnalyzer* (*CreateAnFn)(std::string, double, double, bool);
 
   EventAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = true);
   virtual ~EventAnalyzer();
@@ -61,6 +65,11 @@ public:
   
   // To steer the loop over all events. User is not supposed to change this.
   virtual void     loop(const std::string outputfile);
+
+  // To register the concrete classes
+  virtual void Register(std::string analyisName) = 0;
+
+
 
  protected:
   // Functions to be overloaded in the concrete instance of the EventAnalyzer class.
@@ -136,6 +145,5 @@ public:
   std::vector<phys::Particle> *genParticles; TBranch *b_genParticles;
   
 };
+
 #endif
-
-
