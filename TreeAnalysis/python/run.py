@@ -20,7 +20,7 @@ print "\n\n"
 ############################## User's inputs ###############################
 ############################################################################
 
-executable = sys.argv[1]
+analysis   = sys.argv[1]
 typeofsample = sys.argv[2]
 
 getExternalCrossSectionFromFile = False
@@ -37,7 +37,7 @@ baseinputdir = 'samples'
 ################ Change this if you know what you are doing ###############
 ###########################################################################
 
-
+executable = "eventAnalyzer" 
 csvfile = '../Producers/python/samples_8TeV.csv'
 
 typeofsamples = typeOfSamples(csvfile)
@@ -58,7 +58,7 @@ else:
 
 print Blue("----------------------------------------------------------------------")
 print Red("Configuration:")
-print "Executable:", Blue(executable)
+print "Executable: {0:s} and analysis: {1:s}".format(Blue(executable), Blue(analysis)) 
 print "Sample/type of samples:", Blue(typeofsample)
 print "CSV file: ", Blue(csvfile)
 print "Get (again) cross sections from csv file: ", Blue(getExternalCrossSectionFromFile)
@@ -71,12 +71,12 @@ print "\n"
 ############################################################################
 
 
-def run(executable, typeofsample, cregion, luminosity):
+def run(executable, analysis, typeofsample, cregion, luminosity):
     inputdir  = baseinputdir
     outputdir = 'results'
     if not os.path.exists(outputdir): os.popen('mkdir "%s"' %outputdir)
 
-    outputdir = outputdir+"/"+executable[4:]+"_"+cregion
+    outputdir = outputdir+"/"+analysis+"_"+cregion
     if not os.path.exists(outputdir): os.popen('mkdir "%s"' %outputdir)
 
 
@@ -123,7 +123,7 @@ def run(executable, typeofsample, cregion, luminosity):
             print "For {0:s} {1:s} {2:.6f}".format(period, Warning("Using external cross section:"), externalXsec)
 
         print Red('\n------------------------------ {0:s} -------------------------------\n'.format(basefile))
-        command = "./{0:s} {1:s}/{3:s}.root {2:s}/{3:s}.root {4:.0f} {5:.10f}".format(executable,inputdir,outputdir, basefile, luminosity, externalXsec)
+        command = "./{0:s} {1:s} {2:s}/{4:s}.root {3:s}/{4:s}.root {5:.0f} {6:.10f}".format(executable,analysis,inputdir,outputdir, basefile, luminosity, externalXsec)
         print "Command going to be executed:", Violet(command)
         failure, output = commands.getstatusoutput(command)
         print "\n",output
@@ -143,14 +143,14 @@ if typeofsample == 'all':
     for sample in typeofsamples:
         if cregion == 'all':
             for cr in range(0,4):
-                run(executable, sample, cr, luminosity)    # runs over all samples in all control reagions
+                run(executable, analysis, sample, cr, luminosity)    # runs over all samples in all control reagions
         else:
-            run(executable, sample, cregion, luminosity)   # runs over all samples in a specific control reagions
+            run(executable, analysis, sample, cregion, luminosity)   # runs over all samples in a specific control reagions
 else:
     if cregion == 'all':
         for cr in range(0,4):     
-            run(executable, typeofsample, cr, luminosity)  # runs over a specific sample in all control regions
+            run(executable, analysis, typeofsample, cr, luminosity)  # runs over a specific sample in all control regions
     else:
-        run(executable, typeofsample, cregion, luminosity) # runs over a specific sample in a specific region
+        run(executable, analysis, typeofsample, cregion, luminosity) # runs over a specific sample in a specific region
 
 print "\nJob status: ", OK("DONE"),"\n"

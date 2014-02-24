@@ -1,8 +1,12 @@
 #include "VVXAnalysis/TreeAnalysis/interface/AnalysisFactory.h"
 #include "VVXAnalysis/TreeAnalysis/interface/VVXAnalyzer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/ZZWAnalyzer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/ZZSAnalyzer.h"
 
 AnalysisFactory::AnalysisFactory(){
   Register("VVXAnalyzer", &VVXAnalyzer::create);
+  Register("ZZWAnalyzer", &ZZWAnalyzer::create);
+  Register("ZZSAnalyzer", &ZZSAnalyzer::create);
 }
 
 void AnalysisFactory::Register(const std::string &analysisName, EventAnalyzer::CreateAnFn pfnCreate)
