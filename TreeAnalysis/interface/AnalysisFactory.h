@@ -19,7 +19,8 @@ private:
     AnalysisFactory(const AnalysisFactory &) { }
     AnalysisFactory &operator=(const AnalysisFactory &) { return *this; }
 
-    typedef std::map<std::string, EventAnalyzer::CreateAnFn> FactoryMap;
+    typedef EventAnalyzer* (*CreateAnFn)(std::string, double, double, bool);
+    typedef std::map<std::string, CreateAnFn> FactoryMap;
     FactoryMap m_FactoryMap;
 public:
     ~AnalysisFactory() { m_FactoryMap.clear(); }
@@ -30,7 +31,7 @@ public:
         return &instance;
     }
 
-    void Register(const std::string &analysisName, EventAnalyzer::CreateAnFn pfnCreate);
+    void Register(const std::string &analysisName, CreateAnFn pfnCreate);
     EventAnalyzer *createAnalysis(const std::string &analysisName, std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = true);
 };
 #endif

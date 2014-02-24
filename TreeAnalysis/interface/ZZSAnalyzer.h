@@ -11,18 +11,15 @@
 
 
 #include "EventAnalyzer.h"
+#include "RegistrableAnalysis.h"
 
-class ZZSAnalyzer: public EventAnalyzer{
+class ZZSAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZSAnalyzer>{
 
 public:
  ZZSAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = false)
     : EventAnalyzer(filename, lumi, externalXSection, doBasicPlots){}
 
   virtual ~ZZSAnalyzer(){}
-
-  static EventAnalyzer* create(std::string filename, double lumi, double externalXSection, bool doBasicPlots) {  
-    return new ZZSAnalyzer(filename, lumi, externalXSection, doBasicPlots);
-  }
 
   virtual void analyze();
 };

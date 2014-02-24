@@ -11,9 +11,9 @@
 
 
 #include "EventAnalyzer.h"
-#include "AnalysisFactory.h"
+#include "RegistrableAnalysis.h"
 
-class VVXAnalyzer: public EventAnalyzer{
+class VVXAnalyzer: public EventAnalyzer, RegistrableAnalysis<VVXAnalyzer>{
 
 public:
 
@@ -21,10 +21,6 @@ public:
     : EventAnalyzer(filename, lumi, externalXSection, doBasicPlots){}
 
   virtual ~VVXAnalyzer(){}
-
-  static EventAnalyzer* create(std::string filename, double lumi, double externalXSection, bool doBasicPlots) {  
-    return new VVXAnalyzer(filename, lumi, externalXSection, doBasicPlots);
-  }
 
   virtual void analyze();
 
