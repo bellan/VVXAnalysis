@@ -51,6 +51,15 @@ else:
     print Important("ERROR! Unknown executable."),"Availble executables are:",availableExecutable
     sys.exit(1)
 
+registry = './src/AnalysisFactory.cc'
+checkIfAnalysisIsRegistered = 'grep -r {0:s} {1:s} | grep create | wc -l'.format(analysis, registry)
+failure, output = commands.getstatusoutput(checkIfAnalysisIsRegistered)
+if (not int(output) ==1):
+    print Important("ERROR! The analysis {0:s} is not registered in {1:2}.".format(analysis,registry))
+    howToRegister = Yellow('Register("{0:s}", &{0:s}::create);'.format(analysis))
+    print "If you have not mispelled the name of your analysis, then please register it adding {0:s} in the constructor of {1:s} and recompile the code.".format(howToRegister, registry)
+    sys.exit(1)
+    
 
 ############################################################################
 ############################ Print the configuration #######################
