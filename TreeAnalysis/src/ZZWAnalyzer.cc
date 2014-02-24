@@ -8,9 +8,11 @@ using namespace std;
 
 Int_t ZZWAnalyzer::cut(){
   
+  bool passZSize = (Zmm->size() + Zee->size()) >= 2;
+
   bool pass = true;
   
-  bool passSize = (Zmm->size() + Zee->size()) >= 2 && Wjj->size() >= 1;
+  bool passSize = passZSize && Wjj->size() >= 1;
   
   int numW = 0;
   foreach(const Boson<Jet>& w, *Wjj)
@@ -42,13 +44,7 @@ void ZZWAnalyzer::analyze() {
     Zll.push_back(&z);
   
   std::stable_sort(Zll.begin(),Zll.end(),MassComparator(ZMASS));
-  
-  
-//   if(Zll.size() >= 2) {
-//     foreach(const Particle *z, Zll)
-//       cout << "Z_Mass= " << z->p4().M() << endl;
-//   }
-  
+    
   Z0 = Zll.at(0);
   Z1 = Zll.at(1);
   
@@ -64,27 +60,27 @@ void ZZWAnalyzer::analyze() {
   
   cout << "Z0_Mass= " << p_Z0.M() << endl;
   cout << "Z0_Mass= " << p_Z1.M() << endl;
-  cout << "W_Mass= " << W.p4().M() << endl;
+  cout << "W_Mass= "  << W.p4().M() << endl;
  
   //================================Histograms=====================================
   
   //------------Mass--------------
   
-  theHistograms.fill("Wjj_Mass", 200,0,200,W.p4().M());
+  theHistograms.fill("Wjj_Mass", 200,0,200,W.p4().M(), theWeight);
   
-  theHistograms.fill("Z0_Mass",200,0,200,p_Z0.M());
-  theHistograms.fill("Z1_Mass",200,0,200,p_Z1.M());
+  theHistograms.fill("Z0_Mass",200,0,200,p_Z0.M(), theWeight);
+  theHistograms.fill("Z1_Mass",200,0,200,p_Z1.M(), theWeight);
   
   //------------Pt--------------
   
-  theHistograms.fill("Z0_Pt", 100,0,100,Z0->pt());
-  theHistograms.fill("Z1_Pt", 100,0,100,Z1->pt());
-  theHistograms.fill("W_Pt", 100,0,100,W.pt());  
+  theHistograms.fill("Z0_Pt", 100,0,100,Z0->pt(), theWeight);
+  theHistograms.fill("Z1_Pt", 100,0,100,Z1->pt(), theWeight);
+  theHistograms.fill("W_Pt", 100,0,100,W.pt(), theWeight);  
   
   //------------Mass 6f--------------
   
   TLorentzVector p_6f = p_Z0 + p_Z1 + p_j1 + p_j2;
   
-  theHistograms.fill("6f_Mass",3000,0,3000,p_6f.M());
+  theHistograms.fill("6f_Mass",3000,0,3000,p_6f.M(), theWeight);
   
 }
