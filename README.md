@@ -9,7 +9,7 @@ The philosophy is to run the H --> ZZ --> 4l work-flow up to the production of t
 W --> jj object or VVS tag-jets or other vector boson decays. The input of the analysis are patuples produced for H --> ZZ --> 4l and the idea is to collaborate with that team to extend the
 pool of samples to fully match our needs too. 
 
-The Multi Boson work-flow then foreseens the production of ROOT tree files, filled with objects like muons, electrons, jets, vector bosons, described by relatively 
+The Multi Boson work-flow then foreseen the production of ROOT tree files, filled with objects like muons, electrons, jets, vector bosons, described by relatively 
 simple data formats (step: tree production).
 The actual analysis is then performed on TTrees. For this step I implemented a C++ framework that put the user in the condition of immediately start an analysis, even on a laptop, 
 and provided the samples are stored locally, to work off-line (step: tree analysis).
@@ -26,7 +26,7 @@ Recipe for the tree production step
 
 - In a lxplus like environment, setup your area has for H --> ZZ --> 4l analysis, following the recipe in https://github.com/CJLST/ZZAnalysis.
 - I suggest to run ```git clone https://github.com/CJLST/ZZAnalysis.git ZZAnalysis``` into a ```tmp/``` area and copy the file ```checkout_539.csh```
-  into ```$CMSSW_BASE/src``` and from there run ./checkout_539.csh, making sure that no ```ZZAnalysis``` subsytem already exists.
+  into ```$CMSSW_BASE/src``` and from there run ./checkout_539.csh, making sure that no ```ZZAnalysis``` subsystem already exists.
 - Check-out the code from this repository.
   - ```git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis```
 - Compile the code with ```scram b```
@@ -35,10 +35,10 @@ Recipe for the tree production step
   The main commands are described here:
   - https://github.com/CJLST/ZZAnalysis/blob/master/AnalysisStep/test/prod/PRODUCTION.md 
   - as starting point one can use as template the ```VVXAnalysis/Producers/test/analyzer_ZZW.py``` file.
-  - For our analysis, I have modified the batch.py from ZZAnalisys and put our version in ```VVXAnalysis/Producers/python/batch.py```. 
-    The sintax and the accepted options are the same, but it uses a CSV file (https://github.com/bellan/VVXAnalysis/Producers/python/samples_8TeV.csv) 
+  - For our analysis, I have modified the batch.py from ZZAnalysis and put our version in ```VVXAnalysis/Producers/python/batch.py```. 
+    The syntax and the accepted options are the same, but it uses a CSV file (https://github.com/bellan/VVXAnalysis/Producers/python/samples_8TeV.csv) 
     as Data Base for the samples given in input.
- - Details about datasets and their management are reported here: https://github.com/bellan/VVXAnalysis/DATASETSMANAGEMENT.md
+ - Details about data-sets and their management are reported here: https://github.com/bellan/VVXAnalysis/DATASETSMANAGEMENT.md
 
 
 Recipe for tree analysis step
