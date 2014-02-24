@@ -92,7 +92,7 @@ def run(executable, analysis, typeofsample, cregion, luminosity):
     datasets = getSamplesBy('process',typeofsample,csvfile)
     if len(datasets) == 0:
         datasets = getSamplesBy('identifier',typeofsample,csvfile)
-    if len(datasets) == 0:
+    if len(datasets) == 0 and not typeofsample == 'test':
         print Important('Error! This sample is not available!'), typeofsample
 
     sampleprefix = ''
