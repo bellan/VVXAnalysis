@@ -75,7 +75,7 @@ cmsenv
 git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis
 scram b
 cd VVXAnalysis/TreeAnalysis/bin/
-ln -s $CMSSW_BASE/bin/slc5_amd64_gcc462/<executable file>
+ln -s $CMSSW_BASE/bin/slc5_amd64_gcc462/eventAnalyzer
 cd ../python/
 ln -s ../../Producers/python/readSampleInfo.py
 cd ..
@@ -85,7 +85,7 @@ ln -s <samples-location> samples/
 
 - To run the code, please use ```./python/run.py``` and follow the instruction therein written. The normal usage is;
   
-  ```./python/run.py <name of executable> <name of the sample/data set type>```
+  ```./python/run.py <name of analysis class> <name of the sample/data set type>```
 
   As further option, it can take a bool that force the analysis to grab the cross-section from the CSV file. 
   The default is ```False```, because normally the tree already contains the cross section from the CSV. This option is meant to be used in case of
@@ -97,14 +97,11 @@ To implement an analysis, you should inherit from the ```EventAnalyzer``` class,
 histogramming. The base class has a pure virtual method (```analyze()```) that must be implemented in the concrete class (your analysis). As a matter of fact, all the analysis should be doable
 in the ```analyze()``` method (called each event) and in the ```begin()``` and ```end()``` methods, called before and after the loop over the events starts/ends.
 Also the ```cut()``` function, called each event, is supposed to be possibly overloaded, as it can holds a pre-selection of the analysis.
-Your class needs then to be instantiated into a ```main()``` and the loop function called; namely, this is done into a ```.cpp``` file.
-To make your code successfully compiled, you need to modify ```CMakeList.txt``` (to compile on your laptop) and ```bin/BuildFile.xml``` (to compile on lxplus), 
-implementing the directive to compile your code, with the proper dependencies.
 
-To make more clear the procedure, I put an example (that it is not supposed to be modified). The example code is in ```bin/vvxAnalysis.cpp``` and ```src/VVXAnalyzer.*```. 
-Untill I do not find a better design, you can clone ```bin/vvxAnalysis.cpp``` and modify the copy to instantiate your analyzer instead of ```VVXAnalyzer```.
-To compile your code, please follow what done for ```VVXAnalyzer``` in ```CMakeList.txt``` (to compile on your laptop) and in ```bin/BuildFile.xml``` (to compile on lxplus like environment). 
-If you are going to run on lxplus, do not forget to link your executable in ```bin/``` as explained above.
+Your class needs then to be registered to be ran by the ```eventAnalyzer``` executable. To do that you have to do two things. First, your class must inherit from ```RegistrableAnalysis.h```, so in the inheritance declaration of your class, make sure you have ```RegistrableAnalysis<YourClass>```. Second, in ```AnalysisFactory.cc```, more precisely in the constructor of the class, add a line like 
+```Register("YourClass", &RegistrableAnalysis<YourClass>::create);``.` 
+To make your code successfully compiled on your laptop, you finally need to modify ```CMakeList.txt``` to add the source code of your analysis. Addi it to the ```VVXAnalyzer_SRCS``` variable (```scram``` instead does everything by itself).
+To make more clear the procedure I have put an example (that it is not supposed to be modified) in ```interface/VVXAnalyzer.h``` and ```src/VVXAnalyzer.cc```. 
 
 Note that the histogrammer utility (a member of the ```EventAnalyzer``` class) allows you to fill plots without bothering 
 about histograms booking or writing (see some examples in the EventAnalyzer class).
