@@ -99,7 +99,7 @@ in the ```analyze()``` method (called each event) and in the ```begin()``` and `
 Also the ```cut()``` function, called each event, is supposed to be possibly overloaded, as it can holds a pre-selection of the analysis.
 
 Your class needs then to be registered to be ran by the ```eventAnalyzer``` executable. To do that you have to do two things. First, your class must inherit from ```RegistrableAnalysis.h```, so in the inheritance declaration of your class, make sure you have ```RegistrableAnalysis<YourClass>```. Second, in ```AnalysisFactory.cc```, more precisely in the constructor of the class, add a line like 
-```Register("YourClass", &RegistrableAnalysis<YourClass>::create);``.` 
+```Register("YourClass", &RegistrableAnalysis<YourClass>::create);``` 
 To make your code successfully compiled on your laptop, you finally need to modify ```CMakeList.txt``` to add the source code of your analysis. Addi it to the ```VVXAnalyzer_SRCS``` variable (```scram``` instead does everything by itself).
 To make more clear the procedure I have put an example (that it is not supposed to be modified) in ```interface/VVXAnalyzer.h``` and ```src/VVXAnalyzer.cc```. 
 
