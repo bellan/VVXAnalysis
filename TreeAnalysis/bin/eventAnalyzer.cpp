@@ -1,4 +1,4 @@
-#include "VVXAnalysis/TreeAnalysis/interface/VVXAnalyzer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/AnalysisFactory.h"
 #include "VVXAnalysis/TreeAnalysis/interface/Colours.h"
 
 #include <iostream>
@@ -16,16 +16,22 @@ int main (int argc, char ** argv){
     return 1;
   }
 
-  // input filename
-  std::string filename(argv[1]);
 
-  float lumi  = atof(argv[3]); 
-  float externalXsec = atof(argv[4]);
+  // input filename
+  std::string filename(argv[2]);
+
+  float lumi  = atof(argv[4]); 
+  float externalXsec = atof(argv[5]);
     
   std::cout<<Yellow("Analyzing "+filename+" ... please wait... ")<<endl ;
-  
-  VVXAnalyzer analysis(filename, lumi, externalXsec);
-  analysis.loop(argv[2]);
+    
+  std::string analysisName = argv[1];
+
+  EventAnalyzer *analysis = AnalysisFactory::get()->createAnalysis(analysisName,filename, lumi, externalXsec);
+  analysis->loop(argv[3]);
+
+  //VVXAnalyzer analysis(filename, lumi, externalXsec);
+  //analysis.loop(argv[2]);
 
   cout<<"Output saved in --> "<<Green(argv[2])<<endl;
   cout<<"\nAnalysis status: "<<OK("DONE")<<"\n"<<endl;

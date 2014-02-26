@@ -11,6 +11,7 @@
 #include "DataFormats/Common/interface/View.h"
 #include "DataFormats/Common/interface/MergeableCounter.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
+#include "DataFormats/Common/interface/MergeableCounter.h"
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
@@ -36,6 +37,8 @@ using std::endl;
 
 TreePlanter::TreePlanter(const edm::ParameterSet &config)
   : PUWeighter_      (PUReweight::LEGACY)
+  , preSkimCounter_  (0)
+  , postSkimCounter_ (0)
   , theMuonLabel     (config.getParameter<edm::InputTag>("muons"    ))
   , theElectronLabel (config.getParameter<edm::InputTag>("electrons"))
   , theJetLabel      (config.getParameter<edm::InputTag>("jets"     ))
@@ -110,6 +113,14 @@ void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::Even
   } else {
     theNumberOfEvents += prePathCounter->value;    
   }
+
+
+  edm::Handle<edm::MergeableCounter> counter;
+  bool found = lumi.getByLabel("preSkimCounter", counter);
+  if(found) preSkimCounter_ += counter->value;
+  
+  found = lumi.getByLabel("postSkimCounter", counter);
+  if(found) postSkimCounter_ += counter->value;
 }
 
 
@@ -141,9 +152,11 @@ void TreePlanter::endJob(){
     countTree->Branch("analyzedEvents"        , &theNumberOfAnalyzedEvents);
     countTree->Branch("internalCrossSection"  , &internalCrossSection);
     countTree->Branch("externalCrossSection"  , &externalCrossSection_);
-    countTree->Branch("summcprocweight"         , &summcprocweights_);
-    countTree->Branch("sumpuweight"             , &sumpuweights_);
-    countTree->Branch("sumpumcprocweight"       , &sumpumcprocweights_);
+    countTree->Branch("summcprocweight"       , &summcprocweights_);
+    countTree->Branch("sumpuweight"           , &sumpuweights_);
+    countTree->Branch("sumpumcprocweight"     , &sumpumcprocweights_);
+    countTree->Branch("preSkimCounter"        , &preSkimCounter_);
+    countTree->Branch("postSkimCounter"       , &postSkimCounter_);
 
     countTree->Fill();
   }

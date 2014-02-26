@@ -20,4 +20,11 @@ but was meant to be an easy extention of the H --> ZZ --> 4l framework.
 The CSV file is used in both steps, trees production and analysis.
 
 Trees production step:
-- 
+- The csv file is parsed by a python script that make it a data base. Unless otherwise specified in the execute column, a set of job is prepared for each sample. To remove a sample from the
+production, just mark it as False in the execute column.
+- The crossSection column is used to set the higher order calculated cross section. It is stored inside the externalCrossSection variable. If it is positive, it is the value used to determine the weght of the sample (the weight is determined at the analysis step).
+
+Trees analysis step:
+- the same python code used to parse the csv file in the tree production phase is used here to process the samples. 
+- one can pass to the ```run.py``` command either the ```identifier```, to analyze a single sample, or the ```process```, to analyze a family of samples.
+- The cross section in the file is normally not used, as in principle, if everything went succesfully, it is already stored inside the trees. However, in case a more precise cross section calculation is provided once the trees have been already produced or for other reasons, it is possible to parse the crossSection column at analysis level and use that values just appending ```True``` at the end of the ```run.py``` command.

@@ -1,10 +1,4 @@
 <use name="VVXAnalysis/TreeAnalysis"/>
 
-<bin file="vvxAnalysis.cpp" name="vvxAnalysis">
-</bin>
-
-<bin file="zzwAnalysis.cpp" name="zzwAnalysis">
-</bin>
-
-<bin file="zzsAnalysis.cpp" name="zzsAnalysis">
+<bin file="eventAnalyzer.cpp" name="eventAnalyzer">
 </bin>

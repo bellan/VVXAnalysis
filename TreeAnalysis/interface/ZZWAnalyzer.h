@@ -11,14 +11,19 @@
 
 
 #include "EventAnalyzer.h"
+#include "RegistrableAnalysis.h"
 
-class ZZWAnalyzer: public EventAnalyzer{
+class ZZWAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZWAnalyzer>{
 
 public:
+
  ZZWAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = false)
     : EventAnalyzer(filename, lumi, externalXSection, doBasicPlots){}
+
   virtual ~ZZWAnalyzer(){}
+
   virtual void analyze();
+
   virtual Int_t cut();
 };
 #endif

@@ -40,6 +40,11 @@ class MCInfo {
   double summcprocweight_;
   double sumpuweight_;
   double sumpumcprocweight_;
+  
+  // Counters for skims
+  int preSkimCounter_; 
+  int postSkimCounter_;
+
 };
 
 

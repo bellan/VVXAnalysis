@@ -37,21 +37,12 @@ ROOT_GENERATE_DICTIONARY("${EventDF_HEADERS}" "${EventDF_LINKDEF}" "${EventDF_DI
 include_directories(${CMAKE_INCLUDE_PATH})
 set(EventAnalyzer_SRCS ${EventDF_DICTIONARY} ${SRC}/MCInfo.cc ${SRC}/EventAnalyzer.cc)
 
-# Add executable for a generic VVX analysis. 
-### *** THIS IS A TEMPLATE ONLY *** ###
-set(VVXAnalyzer_SRCS ${EventAnalyzer_SRCS} ${SRC}/VVXAnalyzer.cc)
-add_executable(${BIN}/vvxAnalysis ${BIN}/vvxAnalysis.cpp ${VVXAnalyzer_SRCS})
-target_link_libraries(bin/vvxAnalysis ${ROOT_LIBS})
+#Set here the location of the source code of your analysis
+set(VVXAnalyzer_SRCS ${EventAnalyzer_SRCS} ${SRC}/VVXAnalyzer.cc ${SRC}/ZZWAnalyzer.cc ${SRC}/ZZSAnalyzer.cc)
 
-# Add executable for ZZW analysis
-set(ZZWAnalyzer_SRCS ${EventAnalyzer_SRCS} ${SRC}/ZZWAnalyzer.cc)
-add_executable(${BIN}/zzwAnalysis ${BIN}/zzwAnalysis.cpp ${ZZWAnalyzer_SRCS})
-target_link_libraries(bin/zzwAnalysis ${ROOT_LIBS})
+add_executable(${BIN}/eventAnalyzer ${BIN}/eventAnalyzer.cpp ${SRC}/AnalysisFactory.cc ${VVXAnalyzer_SRCS})
+target_link_libraries(bin/eventAnalyzer ${ROOT_LIBS})
 
-# Add executable for ZZS analysis
-set(ZZSAnalyzer_SRCS ${EventAnalyzer_SRCS} ${SRC}/ZZSAnalyzer.cc)
-add_executable(${BIN}/zzsAnalysis ${BIN}/zzsAnalysis.cpp ${ZZSAnalyzer_SRCS})
-target_link_libraries(bin/zzsAnalysis ${ROOT_LIBS})
 
 
 

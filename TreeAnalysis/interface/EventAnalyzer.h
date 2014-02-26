@@ -23,13 +23,16 @@
 #include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/MCInfo.h"
 
+
 class TFile;
 class TTree;
 class TBranch;
 class TH1;
 
+
 class EventAnalyzer {
 public:
+  
   enum METType {Std,NoMu,NoEl};
 
   EventAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = true);
@@ -136,6 +139,5 @@ public:
   std::vector<phys::Particle> *genParticles; TBranch *b_genParticles;
   
 };
+
 #endif
-
-
