@@ -33,12 +33,9 @@ void Macro() {
   gROOT->LoadMacro("Hbos.h+");
   gROOT->LoadMacro("Hjets.h+");
 
-
-
-
   int numb;
 
-  cout << "Type a number to analyze data from \n1: MC history \n2: Real signal, MadGraph pairing \n3:Real signal, real pairing" << endl;
+  cout << "Type a number to analyze data from \n1: MC history \n2: Real signal, MadGraph pairing \n3: Real signal, real pairing" << endl;
   cin >> numb;
 
   if (numb == 1 ) {
@@ -130,15 +127,15 @@ void Macro() {
   Hjets* WmZZ_Jets = new Hjets("AllJets",fWm);
   Hjets* WmZZ_Jets_Cut = new Hjets("CutJets",fWm);
   TH1F* lostEv_0 = new TH1F("lostEv_0","lostEv_0",3, 0., 3.);
-  lostEv_0 = (TH1F*)f0->Get("GenAnalyzer/lostEvEtaRange");
+  lostEv_0 = (TH1F*)f0->Get("genAnalyzer/lostEvEtaRange");
   TH1F* lostEv_1 = new TH1F("lostEv_1","lostEv_1",3, 0., 3.);
-  lostEv_1 = (TH1F*)f1->Get("GenAnalyzer/lostEvEtaRange");
+  lostEv_1 = (TH1F*)f1->Get("genAnalyzer/lostEvEtaRange");
   TH1F* lostEv_2 = new TH1F("lostEv_2","lostEv_2",3, 0., 3.);
-  lostEv_2 = (TH1F*)f2->Get("GenAnalyzer/lostEvEtaRange");
+  lostEv_2 = (TH1F*)f2->Get("genAnalyzer/lostEvEtaRange");
   TH1F* lostEv_3 = new TH1F("lostEv_3","lostEv_3",3, 0., 3.);
-  lostEv_3 = (TH1F*)f3->Get("GenAnalyzer/lostEvEtaRange");
+  lostEv_3 = (TH1F*)f3->Get("genAnalyzer/lostEvEtaRange");
   TH1F* lostEv_4 = new TH1F("lostEv_4","lostEv_4",3, 0., 3.);
-  lostEv_4 = (TH1F*)f4->Get("GenAnalyzer/lostEvEtaRange");
+  lostEv_4 = (TH1F*)f4->Get("genAnalyzer/lostEvEtaRange");
 
   float L = 300.;
 
@@ -182,7 +179,7 @@ void Macro() {
   Backgr_QED6_Cut_3->Scale(w_QED6);
   Backgr_QED6_Cut_4->Scale(w_QED6);
   ZZW_WpZZ->SetLineColor(kRed);
-  ZZW_WpZZ->Scale(w_WpZZ);
+   ZZW_WpZZ->Scale(w_WpZZ);
   ZZW_WmZZ->SetLineColor(kRed);
   ZZW_WmZZ->Scale(w_WmZZ);
   ZZW_WpZZ_Cut->SetLineColor(kRed); 
@@ -216,263 +213,279 @@ void Macro() {
   WpZZ_Jets_Cut->Scale(w_WpZZ);
   WmZZ_Jets_Cut->SetLineColor(kGreen);
   WmZZ_Jets_Cut->Scale(w_WmZZ);
+
+  TCanvas* c1 =  new TCanvas("Signal(2f->6f) - Signal(ZZW on-shell) Bosons Mass ","Signal(2f->6f) - Signal(ZZW on-shell) Bosons Mass",900,700);
+  c1->Divide(3,1);
   
-  TCanvas* myc = new TCanvas("SignalQED6 - ZZW - ZZZ","SignalQED6 - ZZW - ZZZ",900,700);
-  myc->Divide(2,2);
+  TCanvas* c2 = new TCanvas("Signal(2f->6f) - Signal(ZZW on-shell) Mass6f & Pts","Signal(2f->6f) - Signal(ZZW on-shell) Mass6f & Pts", 900, 700);
+  c2->Divide(2,2); 
 
-  /////////////////////////////////////////////////////////////////////////////
+  TCanvas* c3 = new TCanvas("Signal - Background","Signal - Background",900,700);
+  c3->Divide(3,1); 
 
-  TCanvas* C0 = new TCanvas("Signal(2f->6f) - Signal(ZZW on-shell) 2l0","Signal(2f->6f) - Signal(ZZW on-shell) 2l0",900,700);
- 
-
-  TCanvas* C1 = new TCanvas("Signal(2f->6f) - Signal(ZZW on-shell) 2l1","Signal(2f->6f) - Signal(ZZW on-shell) 2l1",900,700);
-
+  TCanvas* c4 = new TCanvas("SignalQED6 - ZZW - ZZZ","SignalQED6 - ZZW - ZZZ",900,700);
+  c4->Divide(2,2);
   
-  TCanvas* C2 = new TCanvas("Signal(2f->6f) - Signal(ZZW on-shell) jj","Signal(2f->6f) - Signal(ZZW on-shell) jj",900,700);
- 
+  TCanvas* c5 = new TCanvas("BackgroundQED6 - ZZW CUT", "BackgroundQED6 - ZZW CUT",900,700);
+  c5->Divide(2,2); 
 
-  TCanvas* C3 = new TCanvas("Signal - Background 2l0","Signal - Background 2l0",900,700);
- 
-  TCanvas* C4 = new TCanvas("Signal - Background 2l1","Signal - Background 2l1",900,700);
+  TCanvas* c6 = new TCanvas("Leptons Pt (lep4)", "Leptons Pt (lep4)",900,700);
+  c6->Divide(2,2);
   
-  TCanvas* C5 = new TCanvas("Signal - Background jj","Signal - Background jj",900,700);
+  TCanvas* c7 = new TCanvas("Leptons Pt (lep3)", "Leptons Pt (lep3)",900,700);
+  c7->Divide(2,2);
 
-  /////////////////////////////////////////////////////////////////////////////
+  TCanvas* c8 = new TCanvas("Leptons Pt (lep2)", "Leptons Pt (lep2)",900,700);
+  c8->Divide(2,2);
   
-  TCanvas* myc1 = new TCanvas("BackgroundQED6 - ZZW","BackgroundQED6 - ZZW",900,700);
-  myc1->Divide(2,2); 
+  TCanvas* c9 = new TCanvas("Leptons Pt (lep1)", "Leptons Pt (lep1)",900,700);
+  c9->Divide(2,2);
   
-  TCanvas* myc2 = new TCanvas("BackgroundQED6 - ZZW CUT", "BackgroundQED6 - ZZW CUT",900,700);
-  myc2->Divide(2,2); 
+  TCanvas* c10 = new TCanvas("Jets Pt (j2)", "Jets Pt (j2)",900,700);
+  c10->Divide(2,2);
+  
+  TCanvas* c11 = new TCanvas("Jets Pt (j1)", "Jets Pt (j1)",900,700);
+  c11->Divide(2,2);
+  
+  TCanvas* c12 = new TCanvas("Jets Kinematics: Deta", "Jets Kinematics: Deta",900,600);
+  c12->Divide(2,1);
 
-  TCanvas* myc3 = new TCanvas("Leptons Pt (lep4)", "Leptons Pt (lep4)",900,700);
-  myc3->Divide(2,2);
+  TCanvas* c13 = new TCanvas("Jets Kinematics: Dphi", "Jets Kinematics: Dphi",900,600);
+  c13->Divide(2,1);
+  
+  TCanvas* c14 = new TCanvas("Jets Kinematics: DR", "Jets Kinematics: DR",900,600);
+  c14->Divide(2,1);  
 
-  TCanvas* myc4 = new TCanvas("Leptons Pt (lep3)", "Leptons Pt (lep3)",900,700);
-  myc4->Divide(2,2);
+  TCanvas* c15 = new TCanvas("Z Pts", "Z Pts",900,600);
+  c15->Divide(2,1);
 
-  TCanvas* myc5 = new TCanvas("Leptons Pt (lep2)", "Leptons Pt (lep2)",900,700);
-  myc5->Divide(2,2);
-
-  TCanvas* myc6 = new TCanvas("Leptons Pt (lep1)", "Leptons Pt (lep1)",900,700);
-  myc6->Divide(2,2);
-
-  TCanvas* myc7 = new TCanvas("Jets Pt (j2)", "Jets Pt (j2)",900,700);
-  myc7->Divide(2,2);
-
-  TCanvas* myc8 = new TCanvas("Jets Pt (j1)", "Jets Pt (j1)",900,700);
-  myc8->Divide(2,2);
-
-  TCanvas* myc9 = new TCanvas("Jets Kinematics: Deta", "Jets Kinematics: Deta",900,600);
-  myc9->Divide(2,1);
-
-  TCanvas* myc10 = new TCanvas("Jets Kinematics: Dphi", "Jets Kinematics: Dphi",900,600);
-  myc10->Divide(2,1);
-
-  TCanvas* myc11 = new TCanvas("Jets Kinematics: DR", "Jets Kinematics: DR",900,600);
-  myc11->Divide(2,1);
-
-  TCanvas* myc12 = new TCanvas("Z Pts", "Z Pts",900,600);
-  myc12->Divide(2,1);
-
-  TLegend* L0 = new TLegend(0.67, 0.61,0.88,0.76);
   TLegend* L1 = new TLegend(0.67, 0.61,0.88,0.76);
   TLegend* L2 = new TLegend(0.67, 0.61,0.88,0.76);
-  TLegend* L3 = new TLegend(0.67, 0.61,0.88,0.76);
   TLegend* L4 = new TLegend(0.67, 0.61,0.88,0.76);
   TLegend* L5 = new TLegend(0.67, 0.61,0.88,0.76);
+  TLegend* L6 = new TLegend(0.70, 0.66,0.88,0.76);
+  TLegend* L7 = new TLegend(0.70, 0.66,0.88,0.76);
+  TLegend* L8 = new TLegend(0.70, 0.66,0.88,0.76);
+  TLegend* L9 = new TLegend(0.70, 0.66,0.88,0.76);
+  TLegend* L10 = new TLegend(0.70, 0.66,0.88,0.76);
+  TLegend* L11 = new TLegend(0.70, 0.66,0.88,0.76);
+  TLegend* L12 = new TLegend(0.70, 0.66,0.88,0.76);
+  TLegend* L13 = new TLegend(0.70, 0.66,0.88,0.76);
+  TLegend* L14 = new TLegend(0.70, 0.66,0.88,0.76);
+  TLegend* L15 = new TLegend(0.70, 0.66,0.88,0.76);
+ 
+  ///////////////////////////////////////// Comaprisons 2f->6f - ZZW on-shell //////////////////////////////////
 
-  TLegend* leg = new TLegend(0.67, 0.61,0.88,0.76);
-  TLegend* leg1 = new TLegend(0.70, 0.66,0.88,0.76);
-  TLegend* leg2 = new TLegend(0.67, 0.61,0.88,0.76);
-  TLegend* leg3 = new TLegend(0.70, 0.66,0.88,0.76);
-  TLegend* leg4 = new TLegend(0.70, 0.66,0.88,0.76);
-  TLegend* leg5 = new TLegend(0.70, 0.66,0.88,0.76);
-  TLegend* leg6 = new TLegend(0.70, 0.66,0.88,0.76);
-  TLegend* leg7 = new TLegend(0.70, 0.66,0.88,0.76);
-  TLegend* leg8 = new TLegend(0.70, 0.66,0.88,0.76);
-  TLegend* leg9 = new TLegend(0.70, 0.66,0.88,0.76);
-  TLegend* leg10 = new TLegend(0.70, 0.66,0.88,0.76);
-  TLegend* leg11 = new TLegend(0.70, 0.66,0.88,0.76);
-  TLegend* leg12 = new TLegend(0.70, 0.66,0.88,0.76);
+ //Canvas 1: -------------------------Signal(2f->6f) - Signal(ZZW on-shell) Mass ---------------------//
 
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  //Canvas 000----------------Signal(2f->6f) - Signal(ZZW on-shell)---------------------//
-  C0->cd(0);
+  //----2l0 Mass-----
+  c1->cd(1);
   TH1F ZZW_QED6sum2l0 = (*(ZZW_QED6_0->h2l0Mass)+*(ZZW_QED6_1->h2l0Mass)+*(ZZW_QED6_2->h2l0Mass)+*(ZZW_QED6_3->h2l0Mass)+*(ZZW_QED6_4->h2l0Mass));  
   ZZW_QED6sum2l0.SetTitle("2l0Mass");  
   ZZW_QED6sum2l0.DrawClone();
   TH1F Wsum2l0 = (*(ZZW_WpZZ->h2l0Mass)+*(ZZW_WmZZ->h2l0Mass));
   Wsum2l0.DrawClone("same");
 
-  L0->AddEntry(ZZW_QED6_0->h6fMass, "2f->6f", "l");
-  L0->AddEntry(ZZW_WpZZ->h6fMass, "ZZW on-shell", "l");
-  L0->Draw();
-  
-  //Canvas 001----------------Signal(2f->6f) - Signal(ZZW on-shell)---------------------//
-  C1->cd(0);
-  TH1F ZZW_QED6sum2l1 = (*(ZZW_QED6_0->h2l1Mass)+*(ZZW_QED6_1->h2l1Mass)+*(ZZW_QED6_2->h2l1Mass)+*(ZZW_QED6_3->h2l1Mass)+*(ZZW_QED6_4->h2l1Mass));  
-  ZZW_QED6sum2l1.SetTitle("2l1Mass");  
-  ZZW_QED6sum2l1.DrawClone();
-  TH1F Wsum2l1 = (*(ZZW_WpZZ->h2l1Mass)+*(ZZW_WmZZ->h2l1Mass));
-  Wsum2l1.DrawClone("same");
-  
   L1->AddEntry(ZZW_QED6_0->h6fMass, "2f->6f", "l");
   L1->AddEntry(ZZW_WpZZ->h6fMass, "ZZW on-shell", "l");
   L1->Draw();
   
-  //Canvas 002----------------Signal(2f->6f) - Signal(ZZW on-shell)---------------------//
-  C2->cd(0);
-  TH1F ZZW_QED6sumjj = (*(ZZW_QED6_0->hjjMass)+*(ZZW_QED6_1->hjjMass)+*(ZZW_QED6_2->hjjMass)+*(ZZW_QED6_3->hjjMass)+*(ZZW_QED6_4->hjjMass));  
-  ZZW_QED6sumjj.SetTitle("jjMass");  
-  ZZW_QED6sumjj.DrawClone();
-  TH1F Wsumjj = (*(ZZW_WpZZ->hjjMass)+*(ZZW_WmZZ->hjjMass));
-  Wsumjj.DrawClone("same");
-
-  L2->AddEntry(ZZW_QED6_0->h6fMass, "2f->6f", "l");
-  L2->AddEntry(ZZW_WpZZ->h6fMass, "ZZW on-shell", "l");
-  L2->Draw();
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  
-//   myc0->cd(2);
-//   TH1F ZZW_QED6sum2l1 = (*(ZZW_QED6_0->h2l1Mass)+*(ZZW_QED6_1->h2l1Mass)+*(ZZW_QED6_2->h2l1Mass)+*(ZZW_QED6_3->h2l1Mass)+*(ZZW_QED6_4->h2l1Mass));  
-//   ZZW_QED6sum2l1.SetTitle("2l1Mass");  
-//   ZZW_QED6sum2l1.DrawClone();
-//   TH1F Wsum2l1 = (*(ZZW_WpZZ->h2l1Mass)+*(ZZW_WmZZ->h2l1Mass));
-//   Wsum2l1.DrawClone("same");
-  
-//   myc0->cd(3);
-//   TH1F ZZW_QED6sumjj = (*(ZZW_QED6_0->hjjMass)+*(ZZW_QED6_1->hjjMass)+*(ZZW_QED6_2->hjjMass)+*(ZZW_QED6_3->hjjMass)+*(ZZW_QED6_4->hjjMass));  
-//   ZZW_QED6sumjj.SetTitle("jjMass");  
-//   ZZW_QED6sumjj.DrawClone();
-//   TH1F Wsumjj = (*(ZZW_WpZZ->hjjMass)+*(ZZW_WmZZ->hjjMass));
-//   Wsumjj.DrawClone("same");
-
-
-
-  //Canvas 0----------------SIGNAL QED6 - ZZW (produced on shell) - ZZZ---------------------//
-  myc->cd(1);
-  TH1F ZZW_QED6sum6f = (*(ZZW_QED6_0->h6fMass)+*(ZZW_QED6_1->h6fMass)+*(ZZW_QED6_2->h6fMass)+*(ZZW_QED6_3->h6fMass)+*(ZZW_QED6_4->h6fMass));  
-  ZZW_QED6sum6f.SetTitle("6fMass");
-  ZZW_QED6sum6f.DrawClone();
-  TH1F Wsum6f = (*(ZZW_WpZZ->h6fMass)+*(ZZW_WmZZ->h6fMass));
-  TH1F ZZZ_QED6sum6f = (*(ZZZ_QED6_0->h6fMass)+*(ZZZ_QED6_1->h6fMass)+*(ZZZ_QED6_2->h6fMass)+*(ZZZ_QED6_3->h6fMass)+*(ZZZ_QED6_4->h6fMass));  
-  ZZZ_QED6sum6f.DrawClone("same");
-  Wsum6f.DrawClone("same");
-  
-  leg->AddEntry(ZZW_QED6_0->h6fMass, "QED6", "l");
-  leg->AddEntry(ZZW_WpZZ->h6fMass, "ZZW", "l");
-  leg->AddEntry(ZZZ_QED6_0->h6fMass, "ZZZ", "l");
-  leg->Draw();
-
-  myc->cd(2);
-  TH1F ZZW_QED6sum2l0 = (*(ZZW_QED6_0->h2l0Mass)+*(ZZW_QED6_1->h2l0Mass)+*(ZZW_QED6_2->h2l0Mass)+*(ZZW_QED6_3->h2l0Mass)+*(ZZW_QED6_4->h2l0Mass));  
-  ZZW_QED6sum2l0.SetTitle("2l0Mass");  
-  ZZW_QED6sum2l0.DrawClone();
-  TH1F Wsum2l0 = (*(ZZW_WpZZ->h2l0Mass)+*(ZZW_WmZZ->h2l0Mass));
-  TH1F ZZZ_QED6sum2l0 = (*(ZZZ_QED6_0->h2l0Mass)+*(ZZZ_QED6_1->h2l0Mass)+*(ZZZ_QED6_2->h2l0Mass)+*(ZZZ_QED6_3->h2l0Mass)+*(ZZZ_QED6_4->h2l0Mass));  
-  ZZZ_QED6sum2l0.DrawClone("same");
-  Wsum2l0.DrawClone("same");
-  
-  myc->cd(3);
+  //----2l1 Mass------
+  c1->cd(2);
   TH1F ZZW_QED6sum2l1 = (*(ZZW_QED6_0->h2l1Mass)+*(ZZW_QED6_1->h2l1Mass)+*(ZZW_QED6_2->h2l1Mass)+*(ZZW_QED6_3->h2l1Mass)+*(ZZW_QED6_4->h2l1Mass));  
   ZZW_QED6sum2l1.SetTitle("2l1Mass");  
   ZZW_QED6sum2l1.DrawClone();
   TH1F Wsum2l1 = (*(ZZW_WpZZ->h2l1Mass)+*(ZZW_WmZZ->h2l1Mass));
-  TH1F ZZZ_QED6sum2l1 = (*(ZZZ_QED6_0->h2l1Mass)+*(ZZZ_QED6_1->h2l1Mass)+*(ZZZ_QED6_2->h2l1Mass)+*(ZZZ_QED6_3->h2l1Mass)+*(ZZZ_QED6_4->h2l1Mass));  
-  ZZZ_QED6sum2l1.DrawClone("same");
   Wsum2l1.DrawClone("same");
   
-  myc->cd(4);
+  //----jj Mass------
+  c1->cd(3);
   TH1F ZZW_QED6sumjj = (*(ZZW_QED6_0->hjjMass)+*(ZZW_QED6_1->hjjMass)+*(ZZW_QED6_2->hjjMass)+*(ZZW_QED6_3->hjjMass)+*(ZZW_QED6_4->hjjMass));  
   ZZW_QED6sumjj.SetTitle("jjMass");  
   ZZW_QED6sumjj.DrawClone();
   TH1F Wsumjj = (*(ZZW_WpZZ->hjjMass)+*(ZZW_WmZZ->hjjMass));
+  Wsumjj.DrawClone("same");
+
+
+  //Canvas 2: -------------------------Signal(2f->6f) - Signal(ZZW on-shell) Mass 6f & Pts ---------------------//
+  
+  TH1F ZZW_QED6sum6f_in = (*(ZZW_QED6_0->h6fMass)+*(ZZW_QED6_1->h6fMass)+*(ZZW_QED6_2->h6fMass)+*(ZZW_QED6_3->h6fMass)+*(ZZW_QED6_4->h6fMass));  
+  float IntegralSignalQED6_in =  ZZW_QED6sum6f_in.Integral(0, ZZW_QED6sum6f_in.GetNbinsX()+1);
+  TH1F Wsum6f = (*(ZZW_WpZZ->h6fMass)+*(ZZW_WmZZ->h6fMass));
+  float IntegralSignalZZW = Wsum6f.Integral(0, Wsum6f.GetNbinsX()+1);
+  
+  float scalefactor = IntegralSignalZZW/IntegralSignalQED6_in;
+
+  cout <<"%%%%%%%%%%%%%"<< endl;
+  cout << "Integral QED6= " << IntegralSignalQED6_in << endl;
+  cout << "Integral ZZW= " << IntegralSignalZZW  << endl;
+  cout << "Scale factor= " << scalefactor << endl;
+
+  ZZW_QED6_0->Scale(scalefactor);
+  ZZW_QED6_1->Scale(scalefactor);
+  ZZW_QED6_2->Scale(scalefactor);
+  ZZW_QED6_3->Scale(scalefactor);
+  ZZW_QED6_4->Scale(scalefactor);
+ 
+  TH1F ZZW_QED6sum6f = (*(ZZW_QED6_0->h6fMass)+*(ZZW_QED6_1->h6fMass)+*(ZZW_QED6_2->h6fMass)+*(ZZW_QED6_3->h6fMass)+*(ZZW_QED6_4->h6fMass));  
+  float IntegralSignalQED6 =  ZZW_QED6sum6f.Integral(0, ZZW_QED6sum6f.GetNbinsX()+1);
+  //  TH1F Wsum6f = (*(ZZW_WpZZ->h6fMass)+*(ZZW_WmZZ->h6fMass));
+  //float IntegralSignalZZW = Wsum6f.Integral(0, Wsum6f.GetNbinsX()+1);
+
+  cout <<"------ After  scaling ------"<< endl;
+  cout << "Integral QED6= " << IntegralSignalQED6 << endl;
+  cout << "Integral ZZW= " << IntegralSignalZZW  << endl;
+  cout <<"%%%%%%%%%%%%%"<< endl;
+
+  c2->cd(1);
+  ZZW_QED6sum6f.SetTitle("6fMass");
+  ZZW_QED6sum6f.Rebin(4);
+  Wsum6f.Rebin(4);
+  ZZW_QED6sum6f.DrawClone();
+  Wsum6f.DrawClone("same");
+
+  L2->AddEntry(ZZW_QED6_0->h2l0Pt, "2f->6f", "l");
+  L2->AddEntry(ZZW_WpZZ->h2l0Pt, "ZZW on-shell", "l");
+  L2->Draw();
+  
+  c2->cd(2);
+  TH1F ZZW_QED6sum2l0Pt = (*(ZZW_QED6_0->h2l0Pt)+*(ZZW_QED6_1->h2l0Pt)+*(ZZW_QED6_2->h2l0Pt)+*(ZZW_QED6_3->h2l0Pt)+*(ZZW_QED6_4->h2l0Pt));  
+  TH1F Wsum2l0Pt = (*(ZZW_WpZZ->h2l0Pt)+*(ZZW_WmZZ->h2l0Pt));
+  ZZW_QED6sum2l0Pt.SetTitle("2l0Pt"); 
+  ZZW_QED6sum2l0Pt.Rebin(4);
+  Wsum2l0Pt.Rebin(4);
+  ZZW_QED6sum2l0Pt.DrawClone();
+  Wsum2l0Pt.DrawClone("same");
+
+  c2->cd(3);
+  TH1F ZZW_QED6sum2l1Pt = (*(ZZW_QED6_0->h2l1Pt)+*(ZZW_QED6_1->h2l1Pt)+*(ZZW_QED6_2->h2l1Pt)+*(ZZW_QED6_3->h2l1Pt)+*(ZZW_QED6_4->h2l1Pt));  
+  TH1F Wsum2l1Pt = (*(ZZW_WpZZ->h2l1Pt)+*(ZZW_WmZZ->h2l1Pt));
+  ZZW_QED6sum2l1Pt.SetTitle("2l1Pt");  
+  ZZW_QED6sum2l1Pt.Rebin(4);
+  Wsum2l1Pt.Rebin(4);
+  ZZW_QED6sum2l1Pt.DrawClone();
+  Wsum2l1Pt.DrawClone("same");
+
+  c2->cd(4);
+  TH1F ZZW_QED6sumjjPt = (*(ZZW_QED6_0->hjjPt)+*(ZZW_QED6_1->hjjPt)+*(ZZW_QED6_2->hjjPt)+*(ZZW_QED6_3->hjjPt)+*(ZZW_QED6_4->hjjPt));  
+  TH1F WsumjjPt = (*(ZZW_WpZZ->hjjPt)+*(ZZW_WmZZ->hjjPt));
+  ZZW_QED6sumjjPt.SetTitle("jjPt");  
+  ZZW_QED6sumjjPt.Rebin(6);
+  WsumjjPt.Rebin(6);
+  ZZW_QED6sumjjPt.DrawClone();
+  WsumjjPt.DrawClone("same");
+
+
+
+  //Canvas 3: ------------------------ Signal - Background 2l0Mass, 2l1Mass, Mass6f ---------------------//
+
+  ZZW_QED6_0->Scale(1/scalefactor);
+  ZZW_QED6_1->Scale(1/scalefactor);
+  ZZW_QED6_2->Scale(1/scalefactor);
+  ZZW_QED6_3->Scale(1/scalefactor);
+  ZZW_QED6_4->Scale(1/scalefactor);
+
+  c3->cd(1);
+  gPad->SetLogy();
+  TH1F Backgr_QED6sum2l0 = (*(Backgr_QED6_0->h2l0Mass)+*(Backgr_QED6_1->h2l0Mass)+*(Backgr_QED6_2->h2l0Mass)+*(Backgr_QED6_3->h2l0Mass)+*(Backgr_QED6_4->h2l0Mass));  
+  Backgr_QED6sum2l0.SetTitle("2l0Mass");  
+  Backgr_QED6sum2l0.DrawClone();
+  // TH1F ZZW_QED6sum2l0 = (*(ZZW_QED6_0->h2l0Mass)+*(ZZW_QED6_1->h2l0Mass)+*(ZZW_QED6_2->h2l0Mass)+*(ZZW_QED6_3->h2l0Mass)+*(ZZW_QED6_4->h2l0Mass));
+  ZZW_QED6sum2l0.SetLineColor(kRed);
+  ZZW_QED6sum2l0.DrawClone("same");
+
+
+  c3->cd(2);
+  gPad->SetLogy();
+  TH1F Backgr_QED6sum2l1 = (*(Backgr_QED6_0->h2l1Mass)+*(Backgr_QED6_1->h2l1Mass)+*(Backgr_QED6_2->h2l1Mass)+*(Backgr_QED6_3->h2l1Mass)+*(Backgr_QED6_4->h2l1Mass));  
+  Backgr_QED6sum2l1.SetTitle("2l1Mass");  
+  Backgr_QED6sum2l1.DrawClone();
+  // TH1F ZZW_QED6sum2l1 = (*(ZZW_QED6_0->h2l1Mass)+*(ZZW_QED6_1->h2l1Mass)+*(ZZW_QED6_2->h2l1Mass)+*(ZZW_QED6_3->h2l1Mass)+*(ZZW_QED6_4->h2l1Mass));  
+  ZZW_QED6sum2l1.SetLineColor(kRed);
+  ZZW_QED6sum2l1.DrawClone("same");
+
+  c3->cd(3); 
+  gPad->SetLogy();
+  TH1F Backgr_QED6sum6f = (*(Backgr_QED6_0->h6fMass)+*(Backgr_QED6_1->h6fMass)+*(Backgr_QED6_2->h6fMass)+*(Backgr_QED6_3->h6fMass)+*(Backgr_QED6_4->h6fMass));  
+  Backgr_QED6sum6f.SetTitle("6fMass");
+  Backgr_QED6sum6f.DrawClone();
+  //  TH1F ZZW_QED6sum6f = (*(ZZW_QED6_0->h6fMass)+*(ZZW_QED6_1->h6fMass)+*(ZZW_QED6_2->h6fMass)+*(ZZW_QED6_3->h6fMass)+*(ZZW_QED6_4->h6fMass));
+  ZZW_QED6sum6f.SetLineColor(kRed);
+  ZZW_QED6sum6f.DrawClone("same");
+
+ 
+
+  //Canvas 4: ----------------Signal QED6 - ZZW - ZZZ---------------------//
+  c4->cd(1);
+  //TH1F ZZW_QED6sum6f = (*(ZZW_QED6_0->h6fMass)+*(ZZW_QED6_1->h6fMass)+*(ZZW_QED6_2->h6fMass)+*(ZZW_QED6_3->h6fMass)+*(ZZW_QED6_4->h6fMass));  
+  ZZW_QED6sum6f.SetTitle("6fMass");
+  ZZW_QED6sum6f.DrawClone();
+  //TH1F Wsum6f = (*(ZZW_WpZZ->h6fMass)+*(ZZW_WmZZ->h6fMass));
+  TH1F ZZZ_QED6sum6f = (*(ZZZ_QED6_0->h6fMass)+*(ZZZ_QED6_1->h6fMass)+*(ZZZ_QED6_2->h6fMass)+*(ZZZ_QED6_3->h6fMass)+*(ZZZ_QED6_4->h6fMass));  
+  ZZZ_QED6sum6f.DrawClone("same");
+  Wsum6f.DrawClone("same");
+  
+  L4->AddEntry(ZZW_QED6_0->h6fMass, "QED6", "l");
+  L4->AddEntry(ZZW_WpZZ->h6fMass, "ZZW", "l");
+  L4->AddEntry(ZZZ_QED6_0->h6fMass, "ZZZ", "l");
+  L4->Draw();
+
+  c4->cd(2);
+  //  TH1F ZZW_QED6sum2l0 = (*(ZZW_QED6_0->h2l0Mass)+*(ZZW_QED6_1->h2l0Mass)+*(ZZW_QED6_2->h2l0Mass)+*(ZZW_QED6_3->h2l0Mass)+*(ZZW_QED6_4->h2l0Mass));  
+  ZZW_QED6sum2l0.SetTitle("2l0Mass");  
+  ZZW_QED6sum2l0.DrawClone();
+  //  TH1F Wsum2l0 = (*(ZZW_WpZZ->h2l0Mass)+*(ZZW_WmZZ->h2l0Mass));
+  TH1F ZZZ_QED6sum2l0 = (*(ZZZ_QED6_0->h2l0Mass)+*(ZZZ_QED6_1->h2l0Mass)+*(ZZZ_QED6_2->h2l0Mass)+*(ZZZ_QED6_3->h2l0Mass)+*(ZZZ_QED6_4->h2l0Mass));  
+  ZZZ_QED6sum2l0.DrawClone("same");
+  Wsum2l0.DrawClone("same");
+  
+  c4->cd(3);
+  // TH1F ZZW_QED6sum2l1 = (*(ZZW_QED6_0->h2l1Mass)+*(ZZW_QED6_1->h2l1Mass)+*(ZZW_QED6_2->h2l1Mass)+*(ZZW_QED6_3->h2l1Mass)+*(ZZW_QED6_4->h2l1Mass));  
+  ZZW_QED6sum2l1.SetTitle("2l1Mass");  
+  ZZW_QED6sum2l1.DrawClone();
+  //  TH1F Wsum2l1 = (*(ZZW_WpZZ->h2l1Mass)+*(ZZW_WmZZ->h2l1Mass));
+  TH1F ZZZ_QED6sum2l1 = (*(ZZZ_QED6_0->h2l1Mass)+*(ZZZ_QED6_1->h2l1Mass)+*(ZZZ_QED6_2->h2l1Mass)+*(ZZZ_QED6_3->h2l1Mass)+*(ZZZ_QED6_4->h2l1Mass));  
+  ZZZ_QED6sum2l1.DrawClone("same");
+  Wsum2l1.DrawClone("same");
+  
+  c4->cd(4);
+  //  TH1F ZZW_QED6sumjj = (*(ZZW_QED6_0->hjjMass)+*(ZZW_QED6_1->hjjMass)+*(ZZW_QED6_2->hjjMass)+*(ZZW_QED6_3->hjjMass)+*(ZZW_QED6_4->hjjMass));  
+  ZZW_QED6sumjj.SetTitle("jjMass");  
+  ZZW_QED6sumjj.DrawClone();
+  //  TH1F Wsumjj = (*(ZZW_WpZZ->hjjMass)+*(ZZW_WmZZ->hjjMass));
   TH1F ZZZ_QED6sumjj = (*(ZZZ_QED6_0->hjjMass)+*(ZZZ_QED6_1->hjjMass)+*(ZZZ_QED6_2->hjjMass)+*(ZZZ_QED6_3->hjjMass)+*(ZZZ_QED6_4->hjjMass));  
   ZZZ_QED6sumjj.DrawClone("same");
   Wsumjj.DrawClone("same");
   
-
-  //Canvas 1-------------- Background QED6 - ZZW (produced on shell)-------------------//
-  // myc1->cd(1);
-   TH1F Backgr_QED6sum6f = (*(Backgr_QED6_0->h6fMass)+*(Backgr_QED6_1->h6fMass)+*(Backgr_QED6_2->h6fMass)+*(Backgr_QED6_3->h6fMass)+*(Backgr_QED6_4->h6fMass));  
-//   Backgr_QED6sum6f.SetTitle("6fMass");  
-//   Backgr_QED6sum6f.DrawClone();
-//   Wsum6f.DrawClone("same");
   
- //  leg1->AddEntry(Backgr_QED6_0->h6fMass, "B", "l");
-//   leg1->AddEntry(ZZW_WpZZ->h6fMass, "S", "l");
-//   leg1->Draw();
+//Canvas 5: --------------Background QED6 - ZZW (produced on shell)  CUT----------- m_6f>300 && Pt_lep >7 && Pt_j1>40 && Pt_j2>25-----------//
 
-
-
-
-  
-  C3->cd(0);
-  TH1F Backgr_QED6sum2l0 = (*(Backgr_QED6_0->h2l0Mass)+*(Backgr_QED6_1->h2l0Mass)+*(Backgr_QED6_2->h2l0Mass)+*(Backgr_QED6_3->h2l0Mass)+*(Backgr_QED6_4->h2l0Mass));  
-  Backgr_QED6sum2l0.SetTitle("2l0Mass");  
-  Backgr_QED6sum2l0.DrawClone();
-  Wsum2l0.DrawClone("same");
-
-  L3->AddEntry(Backgr_QED6_0->h6fMass, "B", "l");
-  L3->AddEntry(ZZW_WpZZ->h6fMass, "S", "l");
-  L3->Draw();
-
-
-
-  C4->cd(0);
-  TH1F Backgr_QED6sum2l1 = (*(Backgr_QED6_0->h2l1Mass)+*(Backgr_QED6_1->h2l1Mass)+*(Backgr_QED6_2->h2l1Mass)+*(Backgr_QED6_3->h2l1Mass)+*(Backgr_QED6_4->h2l1Mass));  
-  Backgr_QED6sum2l1.SetTitle("2l1Mass");  
-  Backgr_QED6sum2l1.DrawClone();
-  Wsum2l1.DrawClone("same");
-  
-  L4->AddEntry(Backgr_QED6_0->h6fMass, "B", "l");
-  L4->AddEntry(ZZW_WpZZ->h6fMass, "S", "l");
-  L4->Draw();
-
-
-  
-  C5->cd(0);
-  TH1F Backgr_QED6sumjj = (*(Backgr_QED6_0->hjjMass)+*(Backgr_QED6_1->hjjMass)+*(Backgr_QED6_2->hjjMass)+*(Backgr_QED6_3->hjjMass)+*(Backgr_QED6_4->hjjMass));  
-  Backgr_QED6sumjj.SetTitle("jjMass");  
-  Backgr_QED6sumjj.DrawClone();
-  Wsumjj.DrawClone("same");
-  
-  L5->AddEntry(Backgr_QED6_0->h6fMass, "B", "l");
-  L5->AddEntry(ZZW_WpZZ->h6fMass, "S", "l");
-  L5->Draw();
-
-
-  
-//Canvas 2--------------Background QED6 - ZZW (produced on shell)  CUT----------- m_6f>300 && Pt_lep >7 && Pt_j1>40 && Pt_j2>25-----------//
-  myc2->cd(1);
+  c5->cd(1);
   TH1F Cut_QED6sum6f = (*(Backgr_QED6_Cut_0->h6fMass)+*(Backgr_QED6_Cut_1->h6fMass)+*(Backgr_QED6_Cut_2->h6fMass)+*(Backgr_QED6_Cut_3->h6fMass)+*(Backgr_QED6_Cut_4->h6fMass));  
   Cut_QED6sum6f.SetTitle("6fMass");  
   Cut_QED6sum6f.DrawClone();
   TH1F Wsum6fCut = (*(ZZW_WpZZ_Cut->h6fMass)+*(ZZW_WmZZ_Cut->h6fMass));
   Wsum6fCut.DrawClone("same");
 
-  leg2->AddEntry(Backgr_QED6_Cut_0->h6fMass, "B", "l");
-  leg2->AddEntry(ZZW_WpZZ_Cut->h6fMass, "S", "l");
-  leg2->Draw();
+  L5->AddEntry(Backgr_QED6_Cut_0->h6fMass, "B", "l");
+  L5->AddEntry(ZZW_WpZZ_Cut->h6fMass, "S", "l");
+  L5->Draw();
   
-  myc2->cd(2);
+  c5->cd(2);
   TH1F Cut_QED6sum2l0 = (*(Backgr_QED6_Cut_0->h2l0Mass)+*(Backgr_QED6_Cut_1->h2l0Mass)+*(Backgr_QED6_Cut_2->h2l0Mass)+*(Backgr_QED6_Cut_3->h2l0Mass)+*(Backgr_QED6_Cut_4->h2l0Mass));  
   Cut_QED6sum2l0.SetTitle("2l0Mass");  
   Cut_QED6sum2l0.DrawClone();
   TH1F Wsum2l0Cut = (*(ZZW_WpZZ_Cut->h2l0Mass)+*(ZZW_WmZZ_Cut->h2l0Mass));
   Wsum2l0Cut.DrawClone("same");
   
-  myc2->cd(3);
+  c5->cd(3);
   TH1F Cut_QED6sum2l1= (*(Backgr_QED6_Cut_0->h2l1Mass)+*(Backgr_QED6_Cut_1->h2l1Mass)+*(Backgr_QED6_Cut_2->h2l1Mass)+*(Backgr_QED6_Cut_3->h2l1Mass)+*(Backgr_QED6_Cut_4->h2l1Mass));  
   Cut_QED6sum2l1.SetTitle("2l1Mass");  
   Cut_QED6sum2l1.DrawClone();
   TH1F Wsum2l1Cut = (*(ZZW_WpZZ_Cut->h2l1Mass)+*(ZZW_WmZZ_Cut->h2l1Mass));
   Wsum2l1Cut.DrawClone("same");
   
-  myc2->cd(4);
+  c5->cd(4);
   TH1F Cut_QED6sumjj= (*(Backgr_QED6_Cut_0->hjjMass)+*(Backgr_QED6_Cut_1->hjjMass)+*(Backgr_QED6_Cut_2->hjjMass)+*(Backgr_QED6_Cut_3->hjjMass)+*(Backgr_QED6_Cut_4->hjjMass));  
   Cut_QED6sumjj.SetTitle("jjMass");  
   Cut_QED6sumjj.DrawClone();
@@ -501,7 +514,7 @@ void Macro() {
   float errWm_Cut = sqrt(ZZW_WmZZ_Cut->h6fMass->GetEntries())*w_WmZZ;
   
   
-  cout << "\n%%%%%%%%%%%%\nAFTER SCALING" <<endl;
+  cout << "\n%%%%%%%%%%%%\nAFTER SCALING with WEIGHTS" <<endl;
 
   cout << "\nSIGNAL_2l0= " << ZZW_QED6sum2l0.Integral(0, ZZW_QED6sum2l0.GetNbinsX()+1) 
        << "\nSIGNAL_2l1= " << ZZW_QED6sum2l1.Integral(0, ZZW_QED6sum2l1.GetNbinsX()+1)
@@ -540,20 +553,20 @@ void Macro() {
   TH1F* sj1 = (TH1F*)(*(ZZW_WpZZ_Cut->hjPt_1)+*(ZZW_WmZZ_Cut->hjPt_1));
 
 
-//%%%%%%%% Canvas 3------QED6_4lPt (lep4) - ZZW_4lPt------%%%%%%%%
-  myc3->cd(1);
+//%%%%%%%% Canvas 6: ------QED6_4lPt (lep4) - ZZW_4lPt------%%%%%%%%
+  c6->cd(1);
   bl4->SetTitle("B (QED6) - S (ZZW)");
   bl4->SetName("B (QED6) - S (ZZW)");
   bl4->DrawClone();  
   sl4->DrawClone("same");
   
 
-  leg3->AddEntry(Backgr_QED6_Cut_0->h4lPt_4, "B (QED6)", "l");
-  leg3->AddEntry(ZZW_WpZZ_Cut->h4lPt_4, "S (ZZW)", "l");
-  leg3->Draw();
+  L6->AddEntry(Backgr_QED6_Cut_0->h4lPt_4, "B (QED6)", "l");
+  L6->AddEntry(ZZW_WpZZ_Cut->h4lPt_4, "S (ZZW)", "l");
+  L6->Draw();
 
 //-----------Integral functions---------
-  myc3->cd(2);
+  c6->cd(2);
   TH1F* int_bl4 = Integral(bl4);
   TH1F* int_sl4 = Integral(sl4);  
   int_bl4->SetTitle("Int(B) - Int(S)");
@@ -562,14 +575,14 @@ void Macro() {
   int_sl4->Draw("same");
 
 //-----------S/sqrt(B)------------------ 
-  myc3->cd(3);  
+  c6->cd(3);  
   TH1F* cut0 = Divide(int_sl4,int_bl4);  
   cut0->SetTitle("S/sqrt(B)");
   cut0->SetName("S/sqrt(B)");
   cut0->Draw();
 
 //----------S/sqrt(S+B)-----------------
-  myc3->cd(4);  
+  c6->cd(4);  
   TH1F* int_sbl4sum = (TH1F*)(*(int_sl4)+*(int_bl4));
   TH1F* cut1 = Divide(int_sl4,int_sbl4sum);  
   cut1->SetTitle("S/sqrt(S+B)");
@@ -577,21 +590,21 @@ void Macro() {
   cut1->Draw();
 
 
-//%%%%%%%% Canvas 4------QED6_4lPt (lep3) - ZZW_4lPt------%%%%%%%%
+//%%%%%%%% Canvas 7: ------QED6_4lPt (lep3) - ZZW_4lPt------%%%%%%%%
 
-  myc4->cd(1);
+  c7->cd(1);
   bl3->SetTitle("B (QED6) - S (ZZW)");
   bl3->SetName("B (QED6) - S (ZZW)");
   bl3->DrawClone();  
   sl3->DrawClone("same");
   
 
-  leg4->AddEntry(Backgr_QED6_Cut_0->h4lPt_3, "B (QED6)", "l");
-  leg4->AddEntry(ZZW_WpZZ_Cut->h4lPt_3, "S (ZZW)", "l");
-  leg4->Draw();
+  L7->AddEntry(Backgr_QED6_Cut_0->h4lPt_3, "B (QED6)", "l");
+  L7->AddEntry(ZZW_WpZZ_Cut->h4lPt_3, "S (ZZW)", "l");
+  L7->Draw();
 
 //-----------Integral functions---------
-  myc4->cd(2);
+  c7->cd(2);
   TH1F* int_bl3 = Integral(bl3);
   TH1F* int_sl3 = Integral(sl3);  
   int_bl3->SetTitle("Int(B) - Int(S)");
@@ -600,14 +613,14 @@ void Macro() {
   int_sl3->Draw("same");
 
 //-----------S/sqrt(B)------------------ 
-  myc4->cd(3);  
+  c7->cd(3);  
   TH1F* cut2 = Divide(int_sl3,int_bl3);  
   cut2->SetTitle("S/sqrt(B)");
   cut2->SetName("S/sqrt(B)");
   cut2->Draw();
 
 //----------S/sqrt(S+B)-----------------
-  myc4->cd(4);  
+  c7->cd(4);  
   TH1F* int_sbl3sum = (TH1F*)(*(int_sl3)+*(int_bl3));
   TH1F* cut3 = Divide(int_sl3,int_sbl3sum);  
   cut3->SetTitle("S/sqrt(S+B)");
@@ -616,21 +629,21 @@ void Macro() {
 
 
 
-//%%%%%%%% Canvas 5------QED6_4lPt (lep2) - ZZW_4lPt------%%%%%%%%
+//%%%%%%%% Canvas 8: ------QED6_4lPt (lep2) - ZZW_4lPt------%%%%%%%%
 
-  myc5->cd(1);
+  c8->cd(1);
   bl2->SetTitle("B (QED6) - S (ZZW)");
   bl2->SetName("B (QED6) - S (ZZW)");
   bl2->DrawClone();  
   sl2->DrawClone("same");
   
 
-  leg5->AddEntry(Backgr_QED6_Cut_0->h4lPt_2, "B (QED6)", "l");
-  leg5->AddEntry(ZZW_WpZZ_Cut->h4lPt_2, "S (ZZW)", "l");
-  leg5->Draw();
+  L8->AddEntry(Backgr_QED6_Cut_0->h4lPt_2, "B (QED6)", "l");
+  L8->AddEntry(ZZW_WpZZ_Cut->h4lPt_2, "S (ZZW)", "l");
+  L8->Draw();
 
 //-----------Integral functions---------
-  myc5->cd(2);
+  c8->cd(2);
   TH1F* int_bl2 = Integral(bl2);
   TH1F* int_sl2 = Integral(sl2);  
   int_bl2->SetTitle("Int(B) - Int(S)");
@@ -639,14 +652,14 @@ void Macro() {
   int_sl2->Draw("same");
 
 //-----------S/sqrt(B)------------------ 
-  myc5->cd(3);  
+  c8->cd(3);  
   TH1F* cut4 = Divide(int_sl2,int_bl2);  
   cut4->SetTitle("S/sqrt(B)");
   cut4->SetName("S/sqrt(B)");
   cut4->Draw();
 
 //----------S/sqrt(S+B)-----------------
-  myc5->cd(4);  
+  c8->cd(4);  
   TH1F* int_sbl2sum = (TH1F*)(*(int_sl2)+*(int_bl2));
   TH1F* cut5 = Divide(int_sl2,int_sbl2sum);  
   cut5->SetTitle("S/sqrt(S+B)");
@@ -654,21 +667,21 @@ void Macro() {
   cut5->Draw();
 
 
-//%%%%%%%% Canvas 6------QED6_4lPt (lep1) - ZZW_4lPt------%%%%%%%%
+//%%%%%%%% Canvas 9: ------QED6_4lPt (lep1) - ZZW_4lPt------%%%%%%%%
 
-  myc6->cd(1);
+  c9->cd(1);
   bl1->SetTitle("B (QED6) - S (ZZW)");
   bl1->SetName("B (QED6) - S (ZZW)");
   bl1->DrawClone();  
   sl1->DrawClone("same");
   
 
-  leg6->AddEntry(Backgr_QED6_Cut_0->h4lPt_1, "B (QED6)", "l");
-  leg6->AddEntry(ZZW_WpZZ_Cut->h4lPt_1, "S (ZZW)", "l");
-  leg6->Draw();
+  L9->AddEntry(Backgr_QED6_Cut_0->h4lPt_1, "B (QED6)", "l");
+  L9->AddEntry(ZZW_WpZZ_Cut->h4lPt_1, "S (ZZW)", "l");
+  L9->Draw();
 
 //-----------Integral functions---------
-  myc6->cd(2);
+  c9->cd(2);
   TH1F* int_bl1 = Integral(bl1);
   TH1F* int_sl1 = Integral(sl1);  
   int_bl1->SetTitle("Int(B) - Int(S)");
@@ -677,14 +690,14 @@ void Macro() {
   int_sl1->Draw("same");
 
 //-----------S/sqrt(B)------------------ 
-  myc6->cd(3);  
+  c9->cd(3);  
   TH1F* cut6 = Divide(int_sl1,int_bl1);  
   cut6->SetTitle("S/sqrt(B)");
   cut6->SetName("S/sqrt(B)");
   cut6->Draw();
 
 //----------S/sqrt(S+B)-----------------
-  myc6->cd(4);  
+  c9->cd(4);  
   TH1F* int_sbl1sum = (TH1F*)(*(int_sl1)+*(int_bl1));
   TH1F* cut7 = Divide(int_sl1,int_sbl1sum);  
   cut7->SetTitle("S/sqrt(S+B)");
@@ -692,22 +705,21 @@ void Macro() {
   cut7->Draw();
 
 
+//%%%%%%%% Canvas 10: ------QED6_4lPt (j2) - ZZW_4lPt------%%%%%%%%
 
-//%%%%%%%% Canvas 7------QED6_4lPt (j2) - ZZW_4lPt------%%%%%%%%
-
-  myc7->cd(1);
+  c10->cd(1);
   bj2->SetTitle("B (QED6) - S (ZZW)");
   bj2->SetName("B (QED6) - S (ZZW)");
   bj2->DrawClone();  
   sj2->DrawClone("same");
   
 
-  leg7->AddEntry(Backgr_QED6_Cut_0->hjPt_2, "B (QED6)", "l");
-  leg7->AddEntry(ZZW_WpZZ_Cut->hjPt_2, "S (ZZW)", "l");
-  leg7->Draw();
+  L10->AddEntry(Backgr_QED6_Cut_0->hjPt_2, "B (QED6)", "l");
+  L10->AddEntry(ZZW_WpZZ_Cut->hjPt_2, "S (ZZW)", "l");
+  L10->Draw();
 
 //-----------Integral functions---------
-  myc7->cd(2);
+  c10->cd(2);
   TH1F* int_bj2 = Integral(bj2);
   TH1F* int_sj2 = Integral(sj2);  
   int_bj2->SetTitle("Int(B) - Int(S)");
@@ -716,14 +728,14 @@ void Macro() {
   int_sj2->Draw("same");
 
 //-----------S/sqrt(B)------------------ 
-  myc7->cd(3);  
+  c10->cd(3);  
   TH1F* cut4 = Divide(int_sj2,int_bj2);  
   cut4->SetTitle("S/sqrt(B)");
   cut4->SetName("S/sqrt(B)");
   cut4->Draw();
 
 //----------S/sqrt(S+B)-----------------
-  myc7->cd(4);  
+  c10->cd(4);  
   TH1F* int_sbj2sum = (TH1F*)(*(int_sj2)+*(int_bj2));
   TH1F* cut5 = Divide(int_sj2,int_sbj2sum);  
   cut5->SetTitle("S/sqrt(S+B)");
@@ -732,21 +744,21 @@ void Macro() {
 
 
 
-//%%%%%%%% Canvas 8------QED6_4lPt (j1) - ZZW_4lPt------%%%%%%%%
+//%%%%%%%% Canvas 11: ------QED6_4lPt (j1) - ZZW_4lPt------%%%%%%%%
 
-  myc8->cd(1);
+  c11->cd(1);
   bj1->SetTitle("B (QED6) - S (ZZW)");
   bj1->SetName("B (QED6) - S (ZZW)");
   bj1->DrawClone();  
   sj1->DrawClone("same");
   
 
-  leg8->AddEntry(Backgr_QED6_Cut_0->hjPt_1, "B (QED6)", "l");
-  leg8->AddEntry(ZZW_WpZZ_Cut->hjPt_1, "S (ZZW)", "l");
-  leg8->Draw();
+  L11->AddEntry(Backgr_QED6_Cut_0->hjPt_1, "B (QED6)", "l");
+  L11->AddEntry(ZZW_WpZZ_Cut->hjPt_1, "S (ZZW)", "l");
+  L11->Draw();
 
 //-----------Integral functions---------
-  myc8->cd(2);
+  c11->cd(2);
   TH1F* int_bj1 = Integral(bj1);
   TH1F* int_sj1 = Integral(sj1);  
   int_bj1->SetTitle("Int(B) - Int(S)");
@@ -755,14 +767,14 @@ void Macro() {
   int_sj1->Draw("same");
 
 //-----------S/sqrt(B)------------------ 
-  myc8->cd(3);  
+  c11->cd(3);  
   TH1F* cut6 = Divide(int_sj1,int_bj1);  
   cut6->SetTitle("S/sqrt(B)");
   cut6->SetName("S/sqrt(B)");
   cut6->Draw();
 
 //----------S/sqrt(S+B)-----------------
-  myc8->cd(4);  
+  c11->cd(4);  
   TH1F* int_sbj1sum = (TH1F*)(*(int_sj1)+*(int_bj1));
   TH1F* cut7 = Divide(int_sj1,int_sbj1sum);  
   cut7->SetTitle("S/sqrt(S+B)");
@@ -793,85 +805,84 @@ TH1F* bDR_Cut =(TH1F*)(*(Backgr_Jets_Cut_0->hjjDR)+*(Backgr_Jets_Cut_1->hjjDR)+*
 TH1F* sDR_Cut =(TH1F*)(*(WpZZ_Jets_Cut->hjjDR)+*(WmZZ_Jets_Cut->hjjDR));
 
 
-//Canvas 9----------------Deta-----------------
+//Canvas 12: ----------------Deta-----------------
 
- myc9->cd(1);
+ c12->cd(1);
  bDeta->SetTitle("Deta");
  bDeta->DrawClone();
  sDeta->DrawClone("same");
 
 
 //------Cut--------
- myc9->cd(2);
+ c12->cd(2);
  bDeta_Cut->SetTitle("Deta_Cut");
  bDeta_Cut->DrawClone();
  sDeta_Cut->DrawClone("same");
 
- leg9->AddEntry(Backgr_Jets_0->hjjDeta, "B", "l");
- leg9->AddEntry(WpZZ_Jets->hjjDeta, "S", "l");
- leg9->Draw();
+ L12->AddEntry(Backgr_Jets_0->hjjDeta, "B", "l");
+ L12->AddEntry(WpZZ_Jets->hjjDeta, "S", "l");
+ L12->Draw();
 
 
-//Canvas 10----------------Dphi----------------
+//Canvas 13: ----------------Dphi----------------
 
- myc10->cd(1);
+ c13->cd(1);
  bDphi->SetTitle("Dphi");
  bDphi->DrawClone();
  sDphi->DrawClone("same");
 
 //------Cut--------
- myc10->cd(2);
+ c13->cd(2);
  bDphi_Cut->SetTitle("Dphi_Cut");
  bDphi_Cut->DrawClone();
  sDphi_Cut->DrawClone("same");
 
- leg10->AddEntry(Backgr_Jets_0->hjjDphi, "B", "l");
- leg10->AddEntry(WpZZ_Jets->hjjDphi, "S", "l");
- leg10->Draw();
+ L13->AddEntry(Backgr_Jets_0->hjjDphi, "B", "l");
+ L13->AddEntry(WpZZ_Jets->hjjDphi, "S", "l");
+ L13->Draw();
 
-//Canvas 11----------------DR------------------
+//Canvas 14: ----------------DR------------------
 
- myc11->cd(1);
+ c14->cd(1);
  bDR->SetTitle("DR");
  bDR->DrawClone();
  sDR->DrawClone("same");
 
 //------Cut--------
- myc11->cd(2);
+ c14->cd(2);
  bDR_Cut->SetTitle("DR_Cut");
  bDR_Cut->DrawClone();
  sDR_Cut->DrawClone("same");
 
- leg11->AddEntry(Backgr_Jets_0->hjjDR, "B", "l");
- leg11->AddEntry(WpZZ_Jets->hjjDR, "S", "l");
- leg11->Draw();
+ L14->AddEntry(Backgr_Jets_0->hjjDR, "B", "l");
+ L14->AddEntry(WpZZ_Jets->hjjDR, "S", "l");
+ L14->Draw();
 
 
  //////===========Bosons=============////////////
 
- //Canvas 12----------------ZZPts------------------
+ //Canvas 15: ----------------ZZPts------------------
 
-TH1F* QED6ZPt_1 =(TH1F*)(*(Bosons_QED6_0->hZPt_1)+*(Bosons_QED6_1->hZPt_1)+*(Bosons_QED6_2->hZPt_1)+*(Bosons_QED6_3->hZPt_1)+*(Bosons_QED6_4->hZPt_1));
-TH1F* QED6ZPt_2 =(TH1F*)(*(Bosons_QED6_0->hZPt_2)+*(Bosons_QED6_1->hZPt_2)+*(Bosons_QED6_2->hZPt_2)+*(Bosons_QED6_3->hZPt_2)+*(Bosons_QED6_4->hZPt_2));
-TH1F* WZZ_ZPt_1 =(TH1F*)(*(Bosons_WpZZ->hZPt_1)+*(Bosons_WmZZ->hZPt_1));
-TH1F* WZZ_ZPt_2 =(TH1F*)(*(Bosons_WpZZ->hZPt_2)+*(Bosons_WmZZ->hZPt_2));
-
- myc12->cd(1);
+ TH1F* QED6ZPt_1 =(TH1F*)(*(Bosons_QED6_0->hZPt_1)+*(Bosons_QED6_1->hZPt_1)+*(Bosons_QED6_2->hZPt_1)+*(Bosons_QED6_3->hZPt_1)+*(Bosons_QED6_4->hZPt_1));
+ TH1F* QED6ZPt_2 =(TH1F*)(*(Bosons_QED6_0->hZPt_2)+*(Bosons_QED6_1->hZPt_2)+*(Bosons_QED6_2->hZPt_2)+*(Bosons_QED6_3->hZPt_2)+*(Bosons_QED6_4->hZPt_2));
+ TH1F* WZZ_ZPt_1 =(TH1F*)(*(Bosons_WpZZ->hZPt_1)+*(Bosons_WmZZ->hZPt_1));
+ TH1F* WZZ_ZPt_2 =(TH1F*)(*(Bosons_WpZZ->hZPt_2)+*(Bosons_WmZZ->hZPt_2));
+ 
+ c15->cd(1);
  QED6ZPt_1->SetTitle("ZPt_1");
  QED6ZPt_1->DrawClone();
- WZZ_ZPt_1->DrawClone("same");
+ WZZ_ZPt_1->DrawClone("same"); 
 
- leg12->AddEntry(Bosons_QED6_0->hZPt_1, "QED6", "l");
- leg12->AddEntry(Bosons_WpZZ->hZPt_1, "ZZW", "l");
- leg12->Draw();
+ L15->AddEntry(Bosons_QED6_0->hZPt_1, "QED6", "l");
+ L15->AddEntry(Bosons_WpZZ->hZPt_1, "ZZW", "l");
+ L15->Draw();
  
- myc12->cd(2);
+ c15->cd(2);
  QED6ZPt_2->SetTitle("ZPt_2");
  QED6ZPt_2->DrawClone();
  WZZ_ZPt_2->DrawClone("same");
 
-
-///////////===========ETA CUT:LOST EVENTS and SIGNAL=============////////////
+ ///////////===========ETA CUT:LOST EVENTS and SIGNAL=============////////////
 
  int lostev = (lostEv_0->GetEntries())+(lostEv_1->GetEntries())+(lostEv_2->GetEntries())+(lostEv_3->GetEntries())+(lostEv_4->GetEntries());
 
