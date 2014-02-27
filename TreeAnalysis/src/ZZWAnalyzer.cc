@@ -6,31 +6,90 @@
 using namespace phys;
 using namespace std;
 
-Int_t ZZWAnalyzer::cut(){
+Int_t ZZWAnalyzer::cut() {
   
-  bool passZSize = (Zmm->size() + Zee->size()) >= 2;
+  float mZ = 90.19;
+  bool passMass = true;
+  bool passSize = Wjj->size() >= 1;
 
-  bool pass = true;
-  
-  bool passSize = passZSize && Wjj->size() >= 1;
-  
-  int numW = 0;
-  foreach(const Boson<Jet>& w, *Wjj)
-    if(w.daughter(0).pt() > 40 && w.daughter(1).pt() > 40) ++numW;
-  
-  pass = passSize && numW >=1;
-  
+  foreach(const Boson<Lepton>& zm, *Zmm) {
+    foreach(const Boson<Electron>& ze, *Zee) {
+      passMass = passMass && fabs(zm.p4().M() - mZ ) < 20 && fabs(ze.p4().M() - mZ ) < 20;
+    }
+  }
+ 
+  bool pass = passMass && passSize;
+
   if(pass) ++theCutCounter;
   
   return pass ? 1 : -1;
+  
+  //  int numW = 0;
+  //     foreach(const Boson<Jet>& w, *Wjj)
+  //       if(w.daughter(0).pt() > 40 && w.daughter(1).pt() > 40) ++numW;
   
 }
 
 
 void ZZWAnalyzer::analyze() {
   
-  cout << "Event " << event << endl;
+  //------------- genParticles -----------------------------------------------
+
+  int numMu = 0;
+  int numE  = 0;
   
+  std::vector<const Particle* > Genq;
+  std::vector<const Particle* > Genj;
+  std::vector<const Particle* > Genl;    
+  std::vector<const Particle* > Genlp;
+  std::vector<const Particle* > Genlm;
+  std::vector<const Particle* > GenZ;
+  std::vector<const Particle* > GenW;
+  
+  foreach(const Particle& p, *genParticles) {
+    
+    int s_id = p.id();
+    int id   = abs(s_id);
+        
+    if ( (id < 8 || id == 9)) {   // quarks and gluons
+      Genj.push_back(&p);
+    } 
+    if ( id < 8) {               // quarks
+      Genq.push_back(&p);
+    } else if ( id==23 ) {                   // Z
+      GenZ.push_back(&p);
+    } else if ( id==24 ) {                   // W
+      GenW.push_back(&p);
+    } else if ( id >= 11 && id <= 16 ) {     // leptons 
+      numE  = id == 11 ? numE+1  : numE;
+      numMu = id == 13 ? numMu+1 : numMu;
+      Genl.push_back(&p);
+      if(s_id>0) {Genlp.push_back(&p);
+      } else {Genlm.push_back(&p);}
+    }
+    
+  }
+
+  cout << "===========================" << endl;
+  cout << "GenZsize = " << GenZ.size() << endl;
+  cout << "GenWsize = " << GenW.size() << endl;
+  cout << "===========================" << endl;
+
+  const Particle* Z0gen = GenZ.at(0);
+  const Particle* Z1gen = GenZ.at(1);
+  const Particle* Wgen  = GenW.at(0);
+
+  theHistograms.fill("Z0Gen_Mass", 200, 0, 200, Z0gen->p4().M(), theWeight);
+  theHistograms.fill("Z1Gen_Mass", 200, 0, 200, Z1gen->p4().M(), theWeight);
+  theHistograms.fill("WGen_Mass", 200, 0, 200, Wgen->p4().M(),  theWeight);
+  
+  theHistograms.fill("Z0Gen_Pt", 300, 0, 300, Z0gen->pt(), theWeight);
+  theHistograms.fill("Z1Gen_Pt", 300, 0, 300, Z1gen->pt(), theWeight);
+  theHistograms.fill("WGen_Pt", 300, 0, 300, Wgen->pt(),  theWeight);
+  
+
+//------------- reco Particles -----------------------------------------------
+
   const Particle* Z0;
   const Particle* Z1;
   Boson<Jet> W;
@@ -42,6 +101,7 @@ void ZZWAnalyzer::analyze() {
   
   foreach(const Boson<Electron>& z, *Zee)
     Zll.push_back(&z);
+
   
   std::stable_sort(Zll.begin(),Zll.end(),MassComparator(ZMASS));
     
@@ -58,9 +118,6 @@ void ZZWAnalyzer::analyze() {
   TLorentzVector p_j1 = W.daughter(0).p4();
   TLorentzVector p_j2 = W.daughter(1).p4();
   
-  cout << "Z0_Mass= " << p_Z0.M() << endl;
-  cout << "Z0_Mass= " << p_Z1.M() << endl;
-  cout << "W_Mass= "  << W.p4().M() << endl;
  
   //================================Histograms=====================================
   

@@ -39,8 +39,8 @@ class ZZWCombinedGenAnalyzer: public edm::EDAnalyzer {
 public:
   ZZWCombinedGenAnalyzer(const ParameterSet& pset) {
 
-   //  cout << "Type a number \n1: MC history \n2: Real signal, MadGraph pairing \n3:Real signal, real pairing" << endl;
-//     cin >> num;
+    cout << "Type a number \n1: MC history \n2: Real signal, MadGraph pairing \n3:Real signal, real pairing" << endl;
+    cin >> num;
     
       }
   
@@ -229,95 +229,95 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
 
     
     //--------------------1: MC history------------------------------------
-//     if ( num==1 ) {              
+    if ( num==1 ) {              
       
-//       bool LeptonsMotherSelec = true;   
-//       for(int t=0; t<4; ++t) {
-// 	LeptonsMotherSelec = LeptonsMotherSelec && theGenl[t]->mother()->pdgId() == 23;
-//       }
+      bool LeptonsMotherSelec = true;   
+      for(int t=0; t<4; ++t) {
+	LeptonsMotherSelec = LeptonsMotherSelec && theGenl[t]->mother()->pdgId() == 23;
+      }
       
-//       if ( isWloose && theGenW.size() == 1 ) isWtight = true;      //definition of tight W (mass + cat)
-//       if ( isZloose && theGenZ.size() == 3 ) isZtight = true;      //definition of tight Z (mass + cat)
+      if ( isWloose && theGenW.size() == 1 ) isWtight = true;      //definition of tight W (mass + cat)
+      if ( isZloose && theGenZ.size() == 3 ) isZtight = true;      //definition of tight Z (mass + cat)
       
-//       if ( theGenZ.size() >= 2 && LeptonsMotherSelec ) {
+      if ( theGenZ.size() >= 2 && LeptonsMotherSelec ) {
 	
-//  	Z0->Setdaughter1(theGenl[0]->p4());
-// 	Z0->Setdaughter2(theGenl[1]->p4());
-// 	Z0->SetbosonId(theGenZ[0]->pdgId());
+ 	Z0->Setdaughter1(theGenl[0]->p4());
+	Z0->Setdaughter2(theGenl[1]->p4());
+	Z0->SetbosonId(theGenZ[0]->pdgId());
 	
-// 	Z1->Setdaughter1(theGenl[2]->p4());
-// 	Z1->Setdaughter2(theGenl[3]->p4());
-// 	Z1->SetbosonId(theGenZ[1]->pdgId());
+	Z1->Setdaughter1(theGenl[2]->p4());
+	Z1->Setdaughter2(theGenl[3]->p4());
+	Z1->SetbosonId(theGenZ[1]->pdgId());
 	
-// 	if ( abs(theGenl[0]->pdgId()) == 11 ) Z0->SetdaughtersId(1); //u
-// 	if ( abs(theGenl[0]->pdgId()) == 13 ) Z0->SetdaughtersId(2); //e    
-// 	if ( abs(theGenl[2]->pdgId()) == 11 ) Z1->SetdaughtersId(1); //u
-// 	if ( abs(theGenl[2]->pdgId()) == 13 ) Z1->SetdaughtersId(2); //e   
+	if ( abs(theGenl[0]->pdgId()) == 11 ) Z0->SetdaughtersId(1); //u
+	if ( abs(theGenl[0]->pdgId()) == 13 ) Z0->SetdaughtersId(2); //e    
+	if ( abs(theGenl[2]->pdgId()) == 11 ) Z1->SetdaughtersId(1); //u
+	if ( abs(theGenl[2]->pdgId()) == 13 ) Z1->SetdaughtersId(2); //e   
 	
-// 	if ( isWtight ) {       
+	if ( isWtight ) {       
 
-// 	  W->Setdaughter1(j0->p4());
-// 	  W->Setdaughter2(j1->p4());
-// 	  W->SetbosonId(theGenW[0]->pdgId());
-// 	  W->SetdaughtersId(3);
+	  W->Setdaughter1(j0->p4());
+	  W->Setdaughter2(j1->p4());
+	  W->SetbosonId(theGenW[0]->pdgId());
+	  W->SetdaughtersId(3);
 	  
-// 	  has3VCand = true;
-// 	}
+	  has3VCand = true;
+	}
 	 
-// 	else if ( isZtight ) {
+	else if ( isZtight ) {
 
-// 	  Z2->Setdaughter1(j0->p4());
-// 	  Z2->Setdaughter2(j1->p4());
-// 	  Z2->SetbosonId(theGenZ[2]->pdgId());
-// 	  Z2->SetdaughtersId(3);
+	  Z2->Setdaughter1(j0->p4());
+	  Z2->Setdaughter2(j1->p4());
+	  Z2->SetbosonId(theGenZ[2]->pdgId());
+	  Z2->SetdaughtersId(3);
 	  
-// 	  has3Z = true; 
-// 	}
-//       }
-//     }
+	  has3Z = true; 
+	}
+      }
+    }
     
 
     // -----------------2: Real signal, MadGraph pairing------------------
-//     else if ( num==2 ) {         
+    else if ( num==2 ) {         
       
-//       Z0->Setdaughter1(theGenl[0]->p4());            
-//       Z0->Setdaughter2(theGenl[1]->p4());
-//       Z0->SetbosonId(23);
+      Z0->Setdaughter1(theGenl[0]->p4());            
+      Z0->Setdaughter2(theGenl[1]->p4());
+      Z0->SetbosonId(23);
       
-//       Z1->Setdaughter1(theGenl[2]->p4());
-//       Z1->Setdaughter2(theGenl[3]->p4());
-//       Z1->SetbosonId(23);
+      Z1->Setdaughter1(theGenl[2]->p4());
+      Z1->Setdaughter2(theGenl[3]->p4());
+      Z1->SetbosonId(23);
       
-//       if ( abs(theGenl[0]->pdgId()) == 11 ) Z0->SetdaughtersId(1); //u
-//       if ( abs(theGenl[0]->pdgId()) == 13 ) Z0->SetdaughtersId(2); //e    
-//       if ( abs(theGenl[2]->pdgId()) == 11 ) Z1->SetdaughtersId(1); //u
-//       if ( abs(theGenl[2]->pdgId()) == 13 ) Z1->SetdaughtersId(2); //e   
+      if ( abs(theGenl[0]->pdgId()) == 11 ) Z0->SetdaughtersId(1); //u
+      if ( abs(theGenl[0]->pdgId()) == 13 ) Z0->SetdaughtersId(2); //e    
+      if ( abs(theGenl[2]->pdgId()) == 11 ) Z1->SetdaughtersId(1); //u
+      if ( abs(theGenl[2]->pdgId()) == 13 ) Z1->SetdaughtersId(2); //e   
       
-//       if ( isWloose && fabs(bosonId) == 24 ) {      //definition of tight W (mass + cat)
+      if ( isWloose && fabs(bosonId) == 24 ) {      //definition of tight W (mass + cat)
 	
-//     	W->Setdaughter1(j0->p4());
-//     	W->Setdaughter2(j1->p4());
-//     	W->SetbosonId(bosonId);
-// 	W->SetdaughtersId(3);
+    	W->Setdaughter1(j0->p4());
+    	W->Setdaughter2(j1->p4());
+    	W->SetbosonId(bosonId);
+	W->SetdaughtersId(3);
    	
-// 	isWtight = true;
-// 	has3VCand = true;
+	isWtight = true;
+	has3VCand = true;
 	
-//       } else if ( isZloose && bosonId == 23 ) {     //definition of tight Z (mass + cat)
+      } else if ( isZloose && bosonId == 23 ) {     //definition of tight Z (mass + cat)
 	
-// 	Z2->Setdaughter1(j0->p4());
-//     	Z2->Setdaughter2(j1->p4());
-//     	Z2->SetbosonId(bosonId);
-// 	Z2->SetdaughtersId(3);
+	Z2->Setdaughter1(j0->p4());
+    	Z2->Setdaughter2(j1->p4());
+    	Z2->SetbosonId(bosonId);
+	Z2->SetdaughtersId(3);
    	
-// 	isZtight = true;
-// 	has3Z = true;     	
-//       } 	
-//     }
+	isZtight = true;
+	has3Z = true;     	
+      } 	
+    }
  
    
     //-----------------3: Real signal, real pairing-----------------------
-    //  else if ( num==3 ) {         
+     else if ( num==3 ) {         
       float minMDiff=99999.;
       if (leptonCode == 4) {
 	
@@ -396,11 +396,11 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
 	  
 	}
       }     
-      //   } 
+        } 
     
- //    else {
-//       abort();
-//     }
+    else {
+      abort();
+    }
     
     
     //=====================================================================================
