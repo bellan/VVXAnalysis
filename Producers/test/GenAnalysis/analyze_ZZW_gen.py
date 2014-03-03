@@ -14,7 +14,7 @@ process.source = cms.Source("PoolSource",
     
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1)
+    input = cms.untracked.int32(-1)
 )
 
 process.TFileService=cms.Service('TFileService',
@@ -27,7 +27,7 @@ if (sample=="4ljj") :
 elif (sample=="QED6_0") :
     process.source.fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/b/bellan/QGC/4ljj_QED6_run_0.root')
 #    process.source.eventsToProcess = cms.untracked.VEventRange("1:9868")
-    process.TFileService.fileName = "Evento.root"
+    process.TFileService.fileName = "prova.root"
 elif (sample=="QED6_1") :
     process.source.fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/b/bellan/QGC/4ljj_QED6_run_1.root')
     process.TFileService.fileName = "QED6_1_3_cat2.root"
