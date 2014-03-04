@@ -79,6 +79,8 @@ public:
   // Functions to be overloaded in the concrete instance of the EventAnalyzer class.
   virtual void  begin() {}
   virtual Int_t cut();
+  virtual bool  ZBosonDefinition(const phys::Particle *cand){return true;}
+  virtual bool  WBosonDefinition(const phys::Particle *cand){return true;}
   virtual void  analyze() = 0;
   virtual void  end(TFile &) {};  
   
@@ -140,10 +142,15 @@ public:
   // Jets  
   std::vector<phys::Jet> *jets; TBranch *b_jets;
 
-  // Bosons
-  std::vector<phys::Boson<phys::Lepton> >   *Zmm; TBranch *b_Zmm;
-  std::vector<phys::Boson<phys::Electron> > *Zee; TBranch *b_Zee;
-  std::vector<phys::Boson<phys::Jet> >      *Wjj; TBranch *b_Wjj;
+  // Bosons Candidate
+  std::vector<phys::Boson<phys::Lepton> >   *ZmmCand; TBranch *b_ZmmCand;
+  std::vector<phys::Boson<phys::Electron> > *ZeeCand; TBranch *b_ZeeCand;
+  std::vector<phys::Boson<phys::Jet> >      *WjjCand; TBranch *b_WjjCand;
+  
+  // Bosons (Not in the tree)
+  std::vector<phys::Boson<phys::Lepton> >   *Zmm;
+  std::vector<phys::Boson<phys::Electron> > *Zee;
+  std::vector<phys::Boson<phys::Jet> >      *Wjj;
 
   // GenParticle 
   std::vector<phys::Particle> *genParticles; TBranch *b_genParticles;

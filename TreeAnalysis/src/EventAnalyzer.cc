@@ -82,9 +82,9 @@ void EventAnalyzer::Init(TTree *tree)
 
 
   // Bosons   
-  Zmm = 0;      b_Zmm = 0;      theTree->SetBranchAddress("Zmm", &Zmm, &b_Zmm);
-  Zee = 0;      b_Zee = 0;      theTree->SetBranchAddress("Zee", &Zee, &b_Zee);
-  Wjj = 0;      b_Wjj = 0;      theTree->SetBranchAddress("Wjj", &Wjj, &b_Wjj);
+   Zmm = 0; ZmmCand = 0; b_ZmmCand = 0; theTree->SetBranchAddress("Zmm", &ZmmCand, &b_ZmmCand);
+   Zee = 0; ZeeCand = 0; b_ZeeCand = 0; theTree->SetBranchAddress("Zee", &ZeeCand, &b_ZeeCand);
+   Wjj = 0; WjjCand = 0; b_WjjCand = 0; theTree->SetBranchAddress("Wjj", &WjjCand, &b_WjjCand);
 
   // Jets   
   genParticles = 0; b_genParticles = 0; theTree->SetBranchAddress("genParticles", &genParticles, &b_genParticles);
@@ -126,6 +126,14 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   stable_sort(muons->begin(),     muons->end(),     PtComparator());
   stable_sort(electrons->begin(), electrons->end(), PtComparator());
   stable_sort(jets->begin(),      jets->end(),      PtComparator());
+
+  foreach(const phys::Boson<phys::Lepton> z, *ZmmCand)
+    if(ZBosonDefinition(&z)) Zmm->push_back(z);
+  foreach(const phys::Boson<phys::Electron> z, *ZeeCand)
+    if(ZBosonDefinition(&z)) Zee->push_back(z);
+  foreach(const phys::Boson<phys::Jet> w, *WjjCand)
+    if(WBosonDefinition(&w)) Wjj->push_back(w);
+
   stable_sort(Zmm->begin(),       Zmm->end(),       PtComparator());
   stable_sort(Zee->begin(),       Zee->end(),       PtComparator());
   stable_sort(Wjj->begin(),       Wjj->end(),       PtComparator());
@@ -202,7 +210,6 @@ Int_t EventAnalyzer::cut(){
 
   return pass ? 1 : -1;
 }
-
 
 
 // ------------------------------------------------------------------------------------------ //
