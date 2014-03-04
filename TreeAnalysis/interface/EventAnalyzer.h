@@ -35,7 +35,9 @@ public:
   
   enum METType {Std,NoMu,NoEl};
 
-  EventAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = true);
+/*   typedef std::pair<const Particle*, const Particle*> ParticlePair; */
+
+  EventAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = false);
   virtual ~EventAnalyzer();
 
   struct PtComparator{
@@ -61,6 +63,14 @@ public:
 
     double ref_;
   };
+  
+ /*  struct deltaRComparator{ */
+/*     bool operator()(const ParticlePair & a , */
+/*                     const ParticlePair & b) const{ */
+/*       return deltaR(a.first->Rapidity(), a.first->Phi(), a.second->Rapidity(), a.second->Phi()) < deltaR(b.first->Rapidity(), b.first->Phi(), b.second->Rapidity(), b.second->Phi()); */
+/*     } */
+/*   }; */
+  
   
   // To steer the loop over all events. User is not supposed to change this.
   virtual void     loop(const std::string outputfile);
