@@ -35,10 +35,21 @@ public:
   
   enum METType {Std,NoMu,NoEl};
 
-/*   typedef std::pair<const Particle*, const Particle*> ParticlePair; */
+  typedef std::pair<const phys::Particle*, const phys::Particle*> ParticlePair;
 
   EventAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = false);
   virtual ~EventAnalyzer();
+
+  static double deltaR (double rapidity1, double phi1, double rapidity2, double phi2 ) {
+    
+    double Drapidity = fabs(rapidity1 - rapidity2);
+    double Dphi      = fabs(phi1 - phi2);
+    
+    double dR = sqrt(Drapidity*Drapidity  + Dphi*Dphi);
+    
+    return dR;
+    
+  };
 
   struct PtComparator{
     template<typename LEP>
@@ -64,13 +75,13 @@ public:
     double ref_;
   };
   
- /*  struct deltaRComparator{ */
-/*     bool operator()(const ParticlePair & a , */
-/*                     const ParticlePair & b) const{ */
-/*       return deltaR(a.first->Rapidity(), a.first->Phi(), a.second->Rapidity(), a.second->Phi()) < deltaR(b.first->Rapidity(), b.first->Phi(), b.second->Rapidity(), b.second->Phi()); */
-/*     } */
-/*   }; */
-  
+  struct deltaRComparator{
+    bool operator()(const ParticlePair & a ,
+                    const ParticlePair & b) const{
+      return deltaR(a.first->p4().Rapidity(), a.first->p4().Phi(), a.second->p4().Rapidity(), a.second->p4().Phi()) < deltaR(b.first->p4().Rapidity(), b.first->p4().Phi(), b.second->p4().Rapidity(), b.second->p4().Phi());
+    }
+  };
+
   
   // To steer the loop over all events. User is not supposed to change this.
   virtual void     loop(const std::string outputfile);
@@ -79,8 +90,8 @@ public:
   // Functions to be overloaded in the concrete instance of the EventAnalyzer class.
   virtual void  begin() {}
   virtual Int_t cut();
-  virtual bool  ZBosonDefinition(const phys::Particle *cand){return true;}
-  virtual bool  WBosonDefinition(const phys::Particle *cand){return true;}
+  virtual bool  ZBosonDefinition(const phys::Particle *cand);
+  virtual bool  WBosonDefinition(const phys::Particle *cand);
   virtual void  analyze() = 0;
   virtual void  end(TFile &) {};  
   

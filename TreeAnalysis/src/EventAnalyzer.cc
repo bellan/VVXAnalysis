@@ -201,14 +201,41 @@ void EventAnalyzer::loop(const std::string outputfile){
 // ------------------------------------------------------------------------------------------ //
 
 
-
-Int_t EventAnalyzer::cut(){
+Int_t EventAnalyzer::cut() {
   
   bool pass = true;
-
+  
   if(pass) ++theCutCounter;
-
+  
   return pass ? 1 : -1;
+}
+
+
+
+// ------------------------------------------------------------------------------------------ //
+// ----------------------------------- ZBosonDefinition ------------------------------------- //
+// ------------------------------------------------------------------------------------------ //
+
+
+bool EventAnalyzer::ZBosonDefinition(const phys::Particle *cand){
+
+  if(fabs(cand->p4().M() - ZMASS) < 20)  return true;
+  else return false;
+
+}
+
+
+
+// ------------------------------------------------------------------------------------------ //
+// ----------------------------------- WBosonDefinition ------------------------------------- //
+// ------------------------------------------------------------------------------------------ //
+
+
+bool EventAnalyzer::WBosonDefinition(const phys::Particle *cand){
+
+  if(fabs(cand->p4().M() - WMASS) < 40)  return true;
+  else return false;
+
 }
 
 
