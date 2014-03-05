@@ -221,8 +221,10 @@ Int_t EventAnalyzer::cut() {
 
 bool EventAnalyzer::ZBosonDefinition(const phys::Particle *cand){
 
-  if(fabs(cand->p4().M() - ZMASS) < 20)  return true;
-  else return false;
+
+  if(fabs(cand->p4().M() - ZMASS) < 20) return true;
+  
+ else return false;
 
 }
 
