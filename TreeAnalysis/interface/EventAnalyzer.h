@@ -41,9 +41,9 @@ class Selector : public SelectorBase {
 public:
   Analysis& analysis;
   Selector(Analysis& ananalysis) : analysis(ananalysis) { };
-  virtual bool operator()(const phys::Boson<phys::Lepton>&   boson) const { return analysis.bosonDefinition(boson); };
-  virtual bool operator()(const phys::Boson<phys::Electron>& boson) const { return analysis.bosonDefinition(boson); };
-  virtual bool operator()(const phys::Boson<phys::Jet>&      boson) const { return analysis.bosonDefinition(boson); };
+  virtual bool operator()(const phys::Boson<phys::Lepton>&   boson) const { return analysis.bosonDefinition(boson); }
+  virtual bool operator()(const phys::Boson<phys::Electron>& boson) const { return analysis.bosonDefinition(boson); }
+  virtual bool operator()(const phys::Boson<phys::Jet>&      boson) const { return analysis.bosonDefinition(boson); }
 };
 
 
