@@ -6,7 +6,6 @@
 
 using namespace phys;
 
-
 void VVXAnalyzer::analyze(){
 
   std::vector<const Particle* > Z;
@@ -16,9 +15,5 @@ void VVXAnalyzer::analyze(){
   foreach(const Boson<Electron>& z, *Zee)
     Z.push_back(&z);
 
-
-
   std::stable_sort(Z.begin(),Z.end(),MassComparator(ZMASS));
-  
-
 }

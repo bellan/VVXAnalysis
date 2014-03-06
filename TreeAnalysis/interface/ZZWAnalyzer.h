@@ -18,13 +18,26 @@ class ZZWAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZWAnalyzer>{
 public:
 
  ZZWAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = false)
-    : EventAnalyzer(filename, lumi, externalXSection, doBasicPlots){}
+   : EventAnalyzer(*(new Selector<ZZWAnalyzer>(*this)),
+		   filename, lumi, externalXSection, doBasicPlots){}
 
   virtual ~ZZWAnalyzer(){}
 
   virtual void analyze();
 
   virtual Int_t cut();
+
+ private:
+  friend class Selector<ZZWAnalyzer>; 
+  template< class PAR >
+    bool ZBosonDefinition(phys::Boson<PAR> cand) const{
+    return fabs(cand.p4().M() - ZMASS) < 20;
+  }
+  template< class PAR >
+    bool WBosonDefinition(phys::Boson<PAR> cand) const{
+    return fabs(cand.p4().M() - WMASS) < 40;
+  }
+
 };
 #endif
 

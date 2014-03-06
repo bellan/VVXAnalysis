@@ -29,15 +29,32 @@ class TTree;
 class TBranch;
 class TH1;
 
+class SelectorBase {
+public:
+  virtual bool operator()(const phys::Boson<phys::Lepton>&)   const = 0;
+  virtual bool operator()(const phys::Boson<phys::Electron>&) const = 0;
+  virtual bool operator()(const phys::Boson<phys::Jet>&)      const = 0;
+};
+
+template <typename Analysis>
+class Selector : public SelectorBase {
+public:
+  Analysis& analysis;
+  Selector(Analysis& ananalysis) : analysis(ananalysis) { };
+  virtual bool operator()(const phys::Boson<phys::Lepton>&   boson) const { return analysis.ZBosonDefinition(boson); }
+  virtual bool operator()(const phys::Boson<phys::Electron>& boson) const { return analysis.ZBosonDefinition(boson); }
+  virtual bool operator()(const phys::Boson<phys::Jet>&      boson) const { return analysis.WBosonDefinition(boson); }
+};
+
 
 class EventAnalyzer {
 public:
   
   enum METType {Std,NoMu,NoEl};
-
   typedef std::pair<const phys::Particle*, const phys::Particle*> ParticlePair;
 
-  EventAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = false);
+  EventAnalyzer(SelectorBase& aSelector, std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = true);
+
   virtual ~EventAnalyzer();
 
   static double deltaR (double rapidity1, double phi1, double rapidity2, double phi2 ) {
@@ -75,6 +92,9 @@ public:
     double ref_;
   };
   
+  // Class for specific selections
+  SelectorBase& select;
+
   struct deltaRComparator{
     bool operator()(const ParticlePair & a ,
                     const ParticlePair & b) const{
@@ -82,7 +102,6 @@ public:
     }
   };
 
-  
   // To steer the loop over all events. User is not supposed to change this.
   virtual void     loop(const std::string outputfile);
 
@@ -90,8 +109,6 @@ public:
   // Functions to be overloaded in the concrete instance of the EventAnalyzer class.
   virtual void  begin() {}
   virtual Int_t cut();
-  virtual bool  ZBosonDefinition(const phys::Particle *cand);
-  virtual bool  WBosonDefinition(const phys::Particle *cand);
   virtual void  analyze() = 0;
   virtual void  end(TFile &) {};  
   
