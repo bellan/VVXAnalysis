@@ -1,41 +1,43 @@
 #include "VVXAnalysis/TreeAnalysis/interface/ZZWAnalyzer.h"
-                                                                                                                                                                                                                                                                                                                                                                             
+#include "VVXAnalysis/TreeAnalysis/interface/Colours.h"
+                                                                                                                                                                                                                                                                                                                                                                           
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
 using namespace phys;
 using namespace std;
+using namespace colour;
+
+
 
 
 
 Int_t ZZWAnalyzer::cut() {
   
+  bool category0 = genCategory == 0;
+
   bool passSize = ( Zmm->size() + Zee->size() ) >= 2;
 
-  theHistograms.fill<TH1I>("Number of events", "Number of events", 10, 0, 10, 0);  // Number of events without any extra cut ---------------------
+  bool offset =  category0 && passSize; 
 
+  if(offset) theHistograms.fill<TH1I>("Number of events", "Number of events", 10, 0, 10, 0);  // Number of total events --------------------------
 
-  bool pass1 = passSize && Wjj->size() >= 1;
+ 
+  bool pass1 =  offset && Wjj->size() >= 1;
 
-  if(pass1) {  
-    theHistograms.fill("Number of events" , 10, 0, 10, 1);    //Number of events after the first cut: At least 1 W ------------------------------- 
-  }                                                                   
+  if(pass1) theHistograms.fill("Number of events" , 10, 0, 10, 1);    //Number of events after the first cut: At least 1 W -----------------------                               
 
 
   int numW = 0;
   foreach(const Boson<Jet>& w, *Wjj)
     if(w.daughter(0).pt() > 40 && w.daughter(1).pt() > 40) ++numW;       
   
-  bool pass = pass1; 
-
-    //&& numW >= 1;
+  bool pass = pass1;  //&& numW >= 1;; 
 
   if(pass) {
     ++theCutCounter;
     theHistograms.fill("Number of events" , 10, 0, 10, 2);   //Number of events after the second cut: 2jets Pt>40GeV -----------------------------
   }
-
-  //  cout << "New Event " << pass <<endl;
 
   return pass ? 1 : -1;
       
@@ -93,6 +95,7 @@ void ZZWAnalyzer::analyze() {
   cout << "=============== genParticles: history information ===============" << endl; 
   cout << "Number of partons in the jets= " << Genj.size() << endl;
   cout << "Number of leptons= "             << Genl.size() << endl;
+  cout << "Category= "                      << genCategory << endl;
 
 
   /////-----------------Histograms-------------------
@@ -161,9 +164,10 @@ void ZZWAnalyzer::analyze() {
   TLorentzVector p_myj2 = myW.daughter(1).p4();
   
   
-  cout <<  "=============== MASSES COMPARISON: Z gen  ||  Z reco matched with gen  ||  Z reco ===============" << endl;
-  cout << "Z0gen= " << Z0gen->p4().M() << "\tZ0mathced = " << Z0->p4().M() << "\tZ0reco = " << p_myZ0.M() <<endl;
-  cout << "Z1gen= " << Z1gen->p4().M() << "\tZ1mathced = " << Z1->p4().M() << "\tZ1reco = " << p_myZ1.M() <<endl;
+  cout <<  "--------------- MASSES COMPARISON: Z gen  ||  Z reco matched with gen  ||  Z reco ---------------" << endl;
+  cout << "Z0gen= " << Z0gen->p4().M() << "\tZ0matched = " << Z0->p4().M() << "\tZ0reco = " << Green(p_myZ0.M()) <<endl;
+  cout << "Z1gen= " << Z1gen->p4().M() << "\tZ1matched = " << Z1->p4().M() << "\tZ1reco = " << Green(p_myZ1.M()) <<endl;
+  cout << "    " << endl;
   
   
   if ( (p_myZ0 == Z0->p4() && p_myZ1 == Z1->p4()) || (p_myZ0 == Z1->p4() && p_myZ1 == Z0->p4())) {
