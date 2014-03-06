@@ -6,6 +6,12 @@
 using namespace phys;
 using namespace std;
 
+
+//template< class PAR >
+//bool ZZWAnalyzer::bosonDefinition(phys::Boson<PAR> vb) const{
+//  return true;
+//}
+
 Int_t ZZWAnalyzer::cut() {
   
   theHistograms.fill<TH1I>("Number of events", "Number of events", 10, 0, 10, 0);  // Number of events without any extra cut

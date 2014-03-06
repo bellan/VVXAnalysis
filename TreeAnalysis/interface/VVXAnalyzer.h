@@ -18,11 +18,23 @@ class VVXAnalyzer: public EventAnalyzer, RegistrableAnalysis<VVXAnalyzer>{
 public:
 
  VVXAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = false)
-    : EventAnalyzer(filename, lumi, externalXSection, doBasicPlots){}
+   : EventAnalyzer(*(new Selector<VVXAnalyzer>(*this)),
+		   filename, lumi, externalXSection, doBasicPlots){}
 
   virtual ~VVXAnalyzer(){}
 
   virtual void analyze();
+
+ private:
+  friend class Selector<VVXAnalyzer>;
+  template< class PAR >
+    bool bosonDefinition(phys::Boson<PAR> vb) const { 
+    std::cout << "VVX: Boson " << vb.p4().Pt() << std::endl; 
+    return true;
+  }
+
+
+
 
 };
 #endif

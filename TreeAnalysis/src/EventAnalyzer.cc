@@ -37,10 +37,12 @@ const double EventAnalyzer::HMASS = 125.6;
 
 
 
-EventAnalyzer::EventAnalyzer(std::string filename, 
+EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
+			     std::string filename, 
 			     double lumi, 
 			     double externalXSection, bool doBasicPlots)
-  : doBasicPlots_(doBasicPlots)
+  : select(aSelector)
+  , doBasicPlots_(doBasicPlots)
   , theMCInfo(filename, lumi, externalXSection)
   , theWeight(1.)
   , theCutCounter(0){
@@ -130,11 +132,11 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   Zmm->clear(); Zee->clear(); Wjj->clear();
 
   foreach(const phys::Boson<phys::Lepton> z, *ZmmCand)
-    if(ZBosonDefinition(&z)) Zmm->push_back(z);
+    if(select(z)) Zmm->push_back(z);
   foreach(const phys::Boson<phys::Electron> z, *ZeeCand)
-    if(ZBosonDefinition(&z)) Zee->push_back(z);
+    if(select(z)) Zee->push_back(z);
   foreach(const phys::Boson<phys::Jet> w, *WjjCand)
-    if(WBosonDefinition(&w)) Wjj->push_back(w);
+    if(select(w)) Wjj->push_back(w);
 
   stable_sort(Zmm->begin(),       Zmm->end(),       PtComparator());
   stable_sort(Zee->begin(),       Zee->end(),       PtComparator());

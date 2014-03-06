@@ -29,13 +29,30 @@ class TTree;
 class TBranch;
 class TH1;
 
+class SelectorBase {
+public:
+  virtual bool operator()(const phys::Boson<phys::Lepton>&)   const = 0;
+  virtual bool operator()(const phys::Boson<phys::Electron>&) const = 0;
+  virtual bool operator()(const phys::Boson<phys::Jet>&)      const = 0;
+};
+
+template <typename Analysis>
+class Selector : public SelectorBase {
+public:
+  Analysis& analysis;
+  Selector(Analysis& ananalysis) : analysis(ananalysis) { };
+  virtual bool operator()(const phys::Boson<phys::Lepton>&   boson) const { return analysis.bosonDefinition(boson); };
+  virtual bool operator()(const phys::Boson<phys::Electron>& boson) const { return analysis.bosonDefinition(boson); };
+  virtual bool operator()(const phys::Boson<phys::Jet>&      boson) const { return analysis.bosonDefinition(boson); };
+};
+
 
 class EventAnalyzer {
 public:
   
   enum METType {Std,NoMu,NoEl};
-
-  EventAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = true);
+  
+  EventAnalyzer(SelectorBase& aSelector, std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = true);
   virtual ~EventAnalyzer();
 
   struct PtComparator{
@@ -62,6 +79,9 @@ public:
     double ref_;
   };
   
+  // Class for specific selections
+  SelectorBase& select;
+
   // To steer the loop over all events. User is not supposed to change this.
   virtual void     loop(const std::string outputfile);
 
@@ -69,8 +89,6 @@ public:
   // Functions to be overloaded in the concrete instance of the EventAnalyzer class.
   virtual void  begin() {}
   virtual Int_t cut();
-  virtual bool  ZBosonDefinition(const phys::Particle *cand){return true;}
-  virtual bool  WBosonDefinition(const phys::Particle *cand){return true;}
   virtual void  analyze() = 0;
   virtual void  end(TFile &) {};  
   
