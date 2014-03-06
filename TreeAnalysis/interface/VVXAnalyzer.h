@@ -28,9 +28,13 @@ public:
  private:
   friend class Selector<VVXAnalyzer>;
   template< class PAR >
-    bool bosonDefinition(phys::Boson<PAR> vb) const 
-    {std::cout << "VVX: Boson " << vb.p4().Pt() << std::endl; return true;}
-  
+    bool ZBosonDefinition(phys::Boson<PAR> cand) const{
+    return fabs(cand.p4().M() - ZMASS) < 20;
+  }
+  template< class PAR >
+    bool WBosonDefinition(phys::Boson<PAR> cand) const{
+    return fabs(cand.p4().M() - WMASS) < 40;
+  }
 };
 #endif
 

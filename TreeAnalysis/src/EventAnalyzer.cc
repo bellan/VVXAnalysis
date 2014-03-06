@@ -205,13 +205,12 @@ void EventAnalyzer::loop(const std::string outputfile){
 // ------------------------------------------------------------------------------------------ //
 
 
-
-Int_t EventAnalyzer::cut(){
+Int_t EventAnalyzer::cut() {
   
   bool pass = true;
-
+  
   if(pass) ++theCutCounter;
-
+  
   return pass ? 1 : -1;
 }
 

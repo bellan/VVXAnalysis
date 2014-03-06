@@ -7,42 +7,35 @@ using namespace phys;
 using namespace std;
 
 
-//template< class PAR >
-//bool ZZWAnalyzer::bosonDefinition(phys::Boson<PAR> vb) const{
-//  return true;
-//}
 
 Int_t ZZWAnalyzer::cut() {
   
-  theHistograms.fill<TH1I>("Number of events", "Number of events", 10, 0, 10, 0);  // Number of events without any extra cut
+  bool passSize = ( Zmm->size() + Zee->size() ) >= 2;
 
-  float mZ = 90.19;
+  theHistograms.fill<TH1I>("Number of events", "Number of events", 10, 0, 10, 0);  // Number of events without any extra cut ---------------------
 
-  bool passMass = true;
-  bool passSize = Wjj->size() >= 1;  //// ???
 
-  foreach(const Boson<Lepton>& zm, *Zmm) {
-    foreach(const Boson<Electron>& ze, *Zee) {
-      passMass = passMass && fabs(zm.p4().M() - mZ ) < 20. && fabs(ze.p4().M() - mZ ) < 20.;
-    }
-  }
- 
-  bool pass1 = passMass && passSize;
+  bool pass1 = passSize && Wjj->size() >= 1;
 
   if(pass1) {  
-    theHistograms.fill("Number of events" , 10, 0, 10, 1);    //Number of events after the first cut: Zreco Mass range (mZ +/- 20 GeV) + At least 1 W  
+    theHistograms.fill("Number of events" , 10, 0, 10, 1);    //Number of events after the first cut: At least 1 W ------------------------------- 
   }                                                                   
+
 
   int numW = 0;
   foreach(const Boson<Jet>& w, *Wjj)
     if(w.daughter(0).pt() > 40 && w.daughter(1).pt() > 40) ++numW;       
   
-  bool pass = pass1 && numW >= 1;
+  bool pass = pass1; 
+
+    //&& numW >= 1;
 
   if(pass) {
     ++theCutCounter;
-    theHistograms.fill("Number of events" , 10, 0, 10, 2);   //Number of events after the second cut: Zreco Mass range (mZ +/- 20 GeV) + At least 1 W + 2jets Pt>40GeV 
+    theHistograms.fill("Number of events" , 10, 0, 10, 2);   //Number of events after the second cut: 2jets Pt>40GeV -----------------------------
   }
+
+  //  cout << "New Event " << pass <<endl;
 
   return pass ? 1 : -1;
       
@@ -50,8 +43,12 @@ Int_t ZZWAnalyzer::cut() {
 
 
 void ZZWAnalyzer::analyze() {
+
   
-  //================================ genParticles ================================
+  //================================================================//
+  //                             genParticles                       //    
+  //================================================================//
+  
 
   int numMu = 0;
   int numE  = 0;
@@ -94,11 +91,6 @@ void ZZWAnalyzer::analyze() {
 
 
   cout << "=============== genParticles: history information ===============" << endl; 
-
-  cout << "Z0genMass= " << Z0gen->p4().M() << endl;
-  cout << "Z1genMass= " << Z1gen->p4().M() << endl;
-  cout << "WgenMass= "  << Wgen->p4().M() << endl;
-  cout << "------------------------" << endl;
   cout << "Number of partons in the jets= " << Genj.size() << endl;
   cout << "Number of leptons= "             << Genl.size() << endl;
 
@@ -107,69 +99,98 @@ void ZZWAnalyzer::analyze() {
   
   //------------Mass--------------
   
-  theHistograms.fill("Z0Gen_Mass", 200, 0, 200, Z0gen->p4().M(), theWeight);
-  theHistograms.fill("Z1Gen_Mass", 200, 0, 200, Z1gen->p4().M(), theWeight);
-  theHistograms.fill("WGen_Mass" , 200, 0, 200, Wgen->p4().M() , theWeight);
+  theHistograms.fill("Z0Gen_Mass", "Z0Gen_Mass", 200, 0, 200, Z0gen->p4().M(), theWeight);
+  theHistograms.fill("Z1Gen_Mass", "Z1Gen_Mass", 200, 0, 200, Z1gen->p4().M(), theWeight);
+  theHistograms.fill("WGen_Mass" , "WGen_Mass" , 200, 0, 200, Wgen->p4().M() , theWeight);
   
   //------------Pt--------------
   
-  theHistograms.fill("Z0Gen_Pt", 300, 0, 300, Z0gen->pt(), theWeight);
-  theHistograms.fill("Z1Gen_Pt", 300, 0, 300, Z1gen->pt(), theWeight);
-  theHistograms.fill("WGen_Pt" , 300, 0, 300, Wgen->pt() , theWeight);
-  
+  theHistograms.fill("Z0Gen_Pt"  , "Z0Gen_Pt"  , 300, 0, 300, Z0gen->pt()    , theWeight);
+  theHistograms.fill("Z1Gen_Pt"  , "Z1Gen_Pt"  , 300, 0, 300, Z1gen->pt()    , theWeight);
+  theHistograms.fill("WGen_Pt"   , "WGen_Pt"   , 300, 0, 300, Wgen->pt()     , theWeight);
+   
   //----------------------------
 
   theHistograms.fill<TH1I>("Number of leptons", "Number of leptons", 10, 0, 10, Genl.size());
   theHistograms.fill<TH1I>("Number of partons", "Number of partons", 10, 0, 10, Genj.size());
 
 
-  //================================ reco Particles ================================
-  
-  const Particle* Z0;
-  const Particle* Z1;
-  Boson<Jet> W;
-  
+
+  //================================================================//
+  //                          reco Particles                        //    
+  //================================================================//
+
+ 
+  //%%%%%%%% Comparison genParticles - recoParticles %%%%%%%%//
+
+  std::vector< std::pair<const Particle*, const Particle* > > Vgen_reco;
+
   std::vector<const Particle* > Zll;
-  
-  foreach(const Boson<Lepton>& z, *Zmm)
-    Zll.push_back(&z);
-  
-  foreach(const Boson<Electron>& z, *Zee)
-    Zll.push_back(&z);
 
+  foreach(const Boson<Lepton>& z, *Zmm) {
+    Vgen_reco.push_back(make_pair(Z0gen, & z));
+    Vgen_reco.push_back(make_pair(Z1gen, & z));
+    Zll.push_back(& z);      
+  }
+
+  foreach(const Boson<Electron>& z, *Zee) {
+    Vgen_reco.push_back(make_pair(Z0gen, & z));
+    Vgen_reco.push_back(make_pair(Z1gen, & z));
+    Zll.push_back(& z);
+  }
   
-  std::stable_sort(Zll.begin(),Zll.end(),MassComparator(ZMASS));
+  std::stable_sort(Vgen_reco.begin(), Vgen_reco.end(), deltaRComparator());
+ 
+  const Particle* Z0 = Vgen_reco.at(0).second;
+  const Particle* Z1 = Vgen_reco.at(1).second;
+
+
+  //%%%%%%%%%%%% Definition of the signal %%%%%%%%%%%%//  
+ 
+  std::stable_sort(Zll.begin() ,Zll.end() ,MassComparator(ZMASS));
   std::stable_sort(Wjj->begin(),Wjj->end(),MassComparator(WMASS));
-
-  Z0 = Zll.at(0);
-  Z1 = Zll.at(1);
-  W  = Wjj->at(0);
   
-  TLorentzVector p_Z0 = Z0->p4();
-  TLorentzVector p_Z1 = Z1->p4();
+  const Particle* myZ0  = Zll.at(0);
+  const Particle* myZ1  = Zll.at(1);
+  Boson<Jet> myW        = Wjj->at(0);
   
-  TLorentzVector p_j1 = W.daughter(0).p4();
-  TLorentzVector p_j2 = W.daughter(1).p4();
+  TLorentzVector p_myZ0 = myZ0->p4();
+  TLorentzVector p_myZ1 = myZ1->p4();
+ 
+  TLorentzVector p_myj1 = myW.daughter(0).p4();
+  TLorentzVector p_myj2 = myW.daughter(1).p4();
   
   
-  /////-----------------Histograms-------------------
+  cout <<  "=============== MASSES COMPARISON: Z gen  ||  Z reco matched with gen  ||  Z reco ===============" << endl;
+  cout << "Z0gen= " << Z0gen->p4().M() << "\tZ0mathced = " << Z0->p4().M() << "\tZ0reco = " << p_myZ0.M() <<endl;
+  cout << "Z1gen= " << Z1gen->p4().M() << "\tZ1mathced = " << Z1->p4().M() << "\tZ1reco = " << p_myZ1.M() <<endl;
   
-  //------------Mass--------------
   
-  theHistograms.fill("Wjj_Mass", 200,0,200,W.p4().M(), theWeight);  
-  theHistograms.fill("Z0_Mass",200,0,200,p_Z0.M()    , theWeight);
-  theHistograms.fill("Z1_Mass",200,0,200,p_Z1.M()    , theWeight);
-  
-  //------------Pt--------------
-  
-  theHistograms.fill("Z0_Pt", 300,0,300,Z0->pt(), theWeight);
-  theHistograms.fill("Z1_Pt", 300,0,300,Z1->pt(), theWeight);
-  theHistograms.fill("W_Pt", 300,0,300,W.pt()   , theWeight);  
-  
-  //------------Mass 6f--------------
-  
-  TLorentzVector p_6f = p_Z0 + p_Z1 + p_j1 + p_j2;
-  
-  theHistograms.fill("6f_Mass",3000,0,3000,p_6f.M(), theWeight);
-  
+  if ( (p_myZ0 == Z0->p4() && p_myZ1 == Z1->p4()) || (p_myZ0 == Z1->p4() && p_myZ1 == Z0->p4())) {
+    theHistograms.fill<TH1I>("Efficiency of signal definition", "Efficiency of signal definition", 3, 0, 3, 1);
+    
+    
+    /////-----------------Histograms-------------------
+    
+    //------------Mass--------------
+    
+    theHistograms.fill("Z0_Mass" , "Z0_Mass" , 200, 0, 200, p_myZ0.M()  , theWeight);
+    theHistograms.fill("Z1_Mass" , "Z1_Mass" , 200, 0, 200, p_myZ1.M()  , theWeight);
+    theHistograms.fill("Wjj_Mass", "Wjj_Mass", 200, 0, 200, myW.p4().M(), theWeight);  
+    
+    //------------Pt--------------
+    
+    theHistograms.fill("Z0_Pt"   , "Z0_Pt"   , 300, 0, 300, myZ0->pt()  , theWeight);
+    theHistograms.fill("Z1_Pt"   , "Z1_Pt"   , 300, 0, 300, myZ1->pt()  , theWeight);
+    theHistograms.fill("W_Pt"    , "W_Pt"    , 300, 0, 300, myW.pt()    , theWeight);  
+    
+    //------------Mass 6f--------------
+    
+    TLorentzVector p_6f = p_myZ0 + p_myZ1 + p_myj1 + p_myj2;
+    
+    theHistograms.fill("6f_Mass" , "6f_Mass" , 3000, 0, 3000, p_6f.M(), theWeight);
+    
+  }  
 }
+
+

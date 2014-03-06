@@ -41,9 +41,9 @@ class Selector : public SelectorBase {
 public:
   Analysis& analysis;
   Selector(Analysis& ananalysis) : analysis(ananalysis) { };
-  virtual bool operator()(const phys::Boson<phys::Lepton>&   boson) const { return analysis.bosonDefinition(boson); }
-  virtual bool operator()(const phys::Boson<phys::Electron>& boson) const { return analysis.bosonDefinition(boson); }
-  virtual bool operator()(const phys::Boson<phys::Jet>&      boson) const { return analysis.bosonDefinition(boson); }
+  virtual bool operator()(const phys::Boson<phys::Lepton>&   boson) const { return analysis.ZBosonDefinition(boson); }
+  virtual bool operator()(const phys::Boson<phys::Electron>& boson) const { return analysis.ZBosonDefinition(boson); }
+  virtual bool operator()(const phys::Boson<phys::Jet>&      boson) const { return analysis.WBosonDefinition(boson); }
 };
 
 
@@ -51,9 +51,22 @@ class EventAnalyzer {
 public:
   
   enum METType {Std,NoMu,NoEl};
-  
+  typedef std::pair<const phys::Particle*, const phys::Particle*> ParticlePair;
+
   EventAnalyzer(SelectorBase& aSelector, std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = true);
+
   virtual ~EventAnalyzer();
+
+  static double deltaR (double rapidity1, double phi1, double rapidity2, double phi2 ) {
+    
+    double Drapidity = fabs(rapidity1 - rapidity2);
+    double Dphi      = fabs(phi1 - phi2);
+    
+    double dR = sqrt(Drapidity*Drapidity  + Dphi*Dphi);
+    
+    return dR;
+    
+  };
 
   struct PtComparator{
     template<typename LEP>
@@ -81,6 +94,13 @@ public:
   
   // Class for specific selections
   SelectorBase& select;
+
+  struct deltaRComparator{
+    bool operator()(const ParticlePair & a ,
+                    const ParticlePair & b) const{
+      return deltaR(a.first->p4().Rapidity(), a.first->p4().Phi(), a.second->p4().Rapidity(), a.second->p4().Phi()) < deltaR(b.first->p4().Rapidity(), b.first->p4().Phi(), b.second->p4().Rapidity(), b.second->p4().Phi());
+    }
+  };
 
   // To steer the loop over all events. User is not supposed to change this.
   virtual void     loop(const std::string outputfile);

@@ -25,12 +25,15 @@ public:
   virtual void analyze();
 
  private:
-  template< class PAR >
-    bool bosonDefinition(phys::Boson<PAR> vb) const { 
-    return true;
-  }
   friend class Selector<ZZSAnalyzer>;
-
+  template< class PAR >
+    bool ZBosonDefinition(phys::Boson<PAR> cand) const{
+    return fabs(cand.p4().M() - ZMASS) < 20;
+  }
+  template< class PAR >
+    bool WBosonDefinition(phys::Boson<PAR> cand) const{
+    return fabs(cand.p4().M() - WMASS) < 40;
+  }
 };
 #endif
 
