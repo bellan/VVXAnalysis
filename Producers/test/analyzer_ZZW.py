@@ -57,10 +57,10 @@ execfile(PyFilePath + "MasterPy/ZZ4lAnalysis.py")         # 2012 reference analy
 ### ----------------------------------------------------------------------
 #process.source.fileNames = cms.untracked.vstring(
     #'root://lxcms00//data3/2013/HZZ_cmgTuple/BE539_H1258TeV.root' #533 V5_15_0 version
-    #'/store/cmst3/group/cmgtools/CMG/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_nLP.root'
+#    '/store/cmst3/group/cmgtools/CMG/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_nLP.root'
     #     #'/store/cmst3/group/cmgtools/CMG/WZZ_8TeV-aMCatNLO-herwig/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_GEb.root'
     #     #'/store/cmst3/group/cmgtools/CMG/ZZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_UV1.root'
-#)
+#    )
 
 
 process.maxEvents.input = -1
@@ -77,16 +77,25 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 
 # jet-jet pairs
 process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
-                                           Preselection = cms.string("pt > 25"),
+                                           Preselection = cms.string("pt > 30"),
                                            Jets  = cms.InputTag("cmgPFJetSel"),
                                            Muons = cms.InputTag("appendPhotons:muons"),
                                            Electrons = cms.InputTag("appendPhotons:electrons"),
                                            EnergyFractionAllowed = cms.double(0)) # maximum energy fraction carried by the lepton in the jet, to accept a jet as non from lepton
 
+
+process.centralJets = cms.EDFilter("EtaPtMinCandViewSelector",
+                                     src = cms.InputTag("disambiguatedJets"),
+                                     ptMin   = cms.double(30),
+                                     etaMin = cms.double(-2.5),
+                                     etaMax = cms.double(2.5)
+                                     )
+
+
 process.bareWCand = cms.EDProducer("CandViewShallowCloneCombiner",
-                                   decay = cms.string('disambiguatedJets disambiguatedJets'),
+                                   decay = cms.string('centralJets centralJets'),
                                    cut = cms.string('mass > 0'), # protect against ghosts
-                                   checkCharge = cms.bool(True))
+                                   checkCharge = cms.bool(False))
 
 process.WCand = cms.EDProducer("WCandidateFiller",
                                src = cms.InputTag("bareWCand"))
@@ -104,7 +113,7 @@ process.wPt= cms.EDAnalyzer("CandViewHistoAnalyzer",
                                                             plotquantity = cms.untracked.string("pt"))))
 
 # Build W->jj candidate
-process.WjjSequence = cms.Sequence(process.disambiguatedJets * process.bareWCand * process.WCand)#  * process.wPt)
+process.WjjSequence = cms.Sequence(process.disambiguatedJets * process.centralJets * process.bareWCand * process.WCand)#  * process.wPt)
 
 
 process.Candidates = cms.Path(process.muons             +
