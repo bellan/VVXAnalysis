@@ -40,6 +40,7 @@ public:
     , num      (pset.getParameter<int>("SignalDefinition"))
     , genLabel_(pset.getParameter<edm::InputTag>("src")) {
     produces<int>();
+    produces<std::vector<reco::GenParticle> >();
 
   }
   
@@ -408,7 +409,15 @@ void GenFilterCategory::beginJob() {}
   
   std::auto_ptr<int> output(new int(categoryNum));
   event.put(output);
+
+
+  std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl(new std::vector<reco::GenParticle>());
+  for(std::vector<const reco::Candidate*>::const_iterator it = theGenZ.begin(); it != theGenZ.end(); ++it) outputGenColl->push_back(*dynamic_cast<const reco::GenParticle*>(*it));
+  for(std::vector<const reco::Candidate*>::const_iterator it = theGenW.begin(); it != theGenW.end(); ++it) outputGenColl->push_back(*dynamic_cast<const reco::GenParticle*>(*it));
+  event.put(outputGenColl);
   
+
+
   if(sel_ >= 0)
     return sel_ == categoryNum;
   else

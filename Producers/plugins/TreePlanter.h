@@ -102,6 +102,7 @@ class TreePlanter: public edm::EDAnalyzer {
   std::vector<phys::Boson<phys::Electron> > Zee_;
   std::vector<phys::Boson<phys::Jet> >      Wjj_;
   std::vector<phys::Particle>               genParticles_;
+  std::vector<phys::Boson<phys::Particle> > genVBParticles_;
 
   // ------------------- Input Labels ------------------- //
   edm::InputTag theMuonLabel;
@@ -113,7 +114,8 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::InputTag theMETLabel;
   edm::InputTag theVertexLabel;
   edm::InputTag thePUInfoLabel;
-  edm::InputTag theGenCategoryLabel;  
+  edm::InputTag theGenCategoryLabel;
+  edm::InputTag theGenVBCollectionLabel;
   edm::InputTag	theGenCollectionLabel;
 
   // --------------------------------------------------------- //
