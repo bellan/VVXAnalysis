@@ -27,7 +27,9 @@
 #include "H6f.h"
 #include "Hbos.h"
 #include "Hjets.h"
+
 #include "VVXAnalysis/Producers/interface/Boson.h"
+#include "VVXAnalysis/Producers/interface/SignalDefinitionUtilities.h"
 
 using namespace std;
 using namespace edm;
@@ -248,18 +250,30 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
 	Z1->Setdaughter1(theGenl[2]->p4());
 	Z1->Setdaughter2(theGenl[3]->p4());
 	Z1->SetbosonId(theGenZ[1]->pdgId());
-	
-	if ( abs(theGenl[0]->pdgId()) == 11 ) Z0->SetdaughtersId(1); //u
-	if ( abs(theGenl[0]->pdgId()) == 13 ) Z0->SetdaughtersId(2); //e    
-	if ( abs(theGenl[2]->pdgId()) == 11 ) Z1->SetdaughtersId(1); //u
-	if ( abs(theGenl[2]->pdgId()) == 13 ) Z1->SetdaughtersId(2); //e   
+
+	if ( abs(theGenl[0]->pdgId()) == 11 ) {     //e
+	  Z0->Setdaughter1Id(11);
+	  Z0->Setdaughter2Id(-11); 
+	}
+	if ( abs(theGenl[0]->pdgId()) == 13 ) {     //u
+	  Z0->Setdaughter1Id(13);
+	  Z0->Setdaughter2Id(-13);
+	}
+	if ( abs(theGenl[2]->pdgId()) == 11 ) {     //e
+	  Z1->Setdaughter1Id(11);
+	  Z1->Setdaughter2Id(-11);
+	}
+	if ( abs(theGenl[2]->pdgId()) == 13 ) {     //u
+	  Z1->Setdaughter1Id(13);
+	  Z1->Setdaughter2Id(-13);
+	}
 	
 	if ( isWtight ) {       
 
 	  W->Setdaughter1(j0->p4());
 	  W->Setdaughter2(j1->p4());
 	  W->SetbosonId(theGenW[0]->pdgId());
-	  W->SetdaughtersId(3);
+	  //	  W->SetdaughtersId(3);
 	  
 	  has3VCand = true;
 	}
@@ -269,7 +283,7 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
 	  Z2->Setdaughter1(j0->p4());
 	  Z2->Setdaughter2(j1->p4());
 	  Z2->SetbosonId(theGenZ[2]->pdgId());
-	  Z2->SetdaughtersId(3);
+	  //	  Z2->SetdaughtersId(3);
 	  
 	  has3Z = true; 
 	}
@@ -288,17 +302,29 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
       Z1->Setdaughter2(theGenl[3]->p4());
       Z1->SetbosonId(23);
       
-      if ( abs(theGenl[0]->pdgId()) == 11 ) Z0->SetdaughtersId(1); //u
-      if ( abs(theGenl[0]->pdgId()) == 13 ) Z0->SetdaughtersId(2); //e    
-      if ( abs(theGenl[2]->pdgId()) == 11 ) Z1->SetdaughtersId(1); //u
-      if ( abs(theGenl[2]->pdgId()) == 13 ) Z1->SetdaughtersId(2); //e   
+      if ( abs(theGenl[0]->pdgId()) == 11 ) {     //e
+	Z0->Setdaughter1Id(11);
+	Z0->Setdaughter2Id(-11); 
+      }
+      if ( abs(theGenl[0]->pdgId()) == 13 ) {     //u
+	Z0->Setdaughter1Id(13);
+	Z0->Setdaughter2Id(-13);
+      }
+      if ( abs(theGenl[2]->pdgId()) == 11 ) {     //e
+	Z1->Setdaughter1Id(11);
+	Z1->Setdaughter2Id(-11);
+      }
+      if ( abs(theGenl[2]->pdgId()) == 13 ) {     //u
+	Z1->Setdaughter1Id(13);
+	Z1->Setdaughter2Id(-13);
+      }
       
       if ( isWloose && fabs(bosonId) == 24 ) {      //definition of tight W (mass + cat)
 	
     	W->Setdaughter1(j0->p4());
     	W->Setdaughter2(j1->p4());
     	W->SetbosonId(bosonId);
-	W->SetdaughtersId(3);
+	//	W->SetdaughtersId(3);
    	
 	isWtight = true;
 	has3VCand = true;
@@ -308,7 +334,7 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
 	Z2->Setdaughter1(j0->p4());
     	Z2->Setdaughter2(j1->p4());
     	Z2->SetbosonId(bosonId);
-	Z2->SetdaughtersId(3);
+	//	Z2->SetdaughtersId(3);
    	
 	isZtight = true;
 	has3Z = true;     	
@@ -317,61 +343,13 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
  
    
     //-----------------3: Real signal, real pairing-----------------------
-     else if ( num==3 ) {         
-      float minMDiff=99999.;
-      if (leptonCode == 4) {
-	
-	for (int k=0; k<2; ++k) {
-	  for (int j=0; j<2; ++j) {
-	    float mDiff = fabs((theGenlp[k]->p4() + theGenlm[j]->p4()).mass() - mZ);
-	    if ( mDiff < minMDiff ) {
-	      minMDiff=mDiff;   
-	      
-	      Z0->Setdaughter1(theGenlp[k]->p4());            
-	      Z0->Setdaughter2(theGenlm[j]->p4());
-	      	      
-	      Z1->Setdaughter1(theGenlp[(k+1)%2]->p4());            
-	      Z1->Setdaughter2(theGenlm[(j+1)%2]->p4());
-	        
-	      if ( fabs(theGenl[0]->pdgId()) == 11 ) {
-		Z0->SetdaughtersId(1); //u
-		Z1->SetdaughtersId(1); //u
-	      }
-	      if ( fabs(theGenl[0]->pdgId()) == 13 ) {
-		Z0->SetdaughtersId(2); //e   
-		Z1->SetdaughtersId(2); //e   
-	      }	
-	    }      
-	  } 	
-	}
-      }
-      else { 
+     else if ( num==3 ) {     
 
-	for (int z=0; z<2; ++z) {
-	  if ( fabs(theGenlp[z]->pdgId()) == fabs(theGenlm[0]->pdgId()) ) { 
-	    
-	    Z0->Setdaughter1(theGenlp[z]->p4());
-	    Z0->Setdaughter2(theGenlm[0]->p4());	  
-	    
-	    Z1->Setdaughter1(theGenlp[(z+1)%2]->p4());
-	    Z1->Setdaughter2(theGenlm[1]->p4());
-	    
-	    if ( fabs(theGenlm[0]->pdgId()) == 11 ) {
-	      Z0->SetdaughtersId(1); //u
-	      Z1->SetdaughtersId(2); //e
-	    }
-	    if ( fabs(theGenlm[0]->pdgId()) == 13 ) {
-	      Z0->SetdaughtersId(2); //e
-	      Z1->SetdaughtersId(1); //u
-	    }
-
-	  }
-	}	
-      }
+       std::pair<Boson*,Boson*> ZZ = makeZbosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
     
-      Z0->SetbosonId(23);
-      Z1->SetbosonId(23);	
-      
+      Z0 = ZZ.first;
+      Z1 = ZZ.second;
+    
       if ( Z0->p4().mass() != 0 && Z1->p4().mass() != 0 ) {
 
 	if ( isWloose && fabs(bosonId) == 24 ) {    //definition of tight W (mass + cat)
@@ -379,7 +357,7 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
 	  W->Setdaughter1(j0->p4());
 	  W->Setdaughter2(j1->p4());
 	  W->SetbosonId(bosonId);
-	  W->SetdaughtersId(3);
+	  //	  W->SetdaughtersId(3);
 	  
 	  isWtight = true;
 	  has3VCand = true;   
@@ -389,7 +367,7 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
 	  Z2->Setdaughter1(j0->p4());
 	  Z2->Setdaughter2(j1->p4());
 	  Z2->SetbosonId(bosonId);
-	  Z2->SetdaughtersId(3);
+	  //	  Z2->SetdaughtersId(3);
 	  
 	  isZtight = true;
 	  has3Z = true; 
