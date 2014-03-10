@@ -52,20 +52,22 @@ public:
   
   //-----------FUNCTION: Check of the bosons partons composition---------
   
-  int partonsComposition(const Candidate* j_0, const Candidate* j_1) {    
+  tuple<int,int,int> partonsComposition(const Candidate* j_0, const Candidate* j_1) {    
+    tuple<int,int,int> result(0,0,0);
+
     int j0Id = j_0->pdgId();
     int j1Id = j_1->pdgId();    
     if ( abs(j0Id) < 6 && abs(j1Id ) < 6) {
       if( abs(j0Id + j1Id) == 1 || abs(j0Id + j1Id) == 3 ) {
-	if( j0Id % 2 == 0 )  return copysign(24,j0Id);       // W
-	else if( j1Id % 2 == 0 )  return copysign(24,j1Id);  // W
-	else return 0;
+	if( j0Id % 2 == 0 )       return make_tuple(copysign(24,j0Id),j0Id,j1Id);  // W
+	else if( j1Id % 2 == 0 )  return make_tuple(copysign(24,j1Id),j0Id,j1Id);  // W
+	else return result;
       }
-      else if( j0Id + j1Id == 0 ) return 23;                 // Z
-      else return 0;                            
+      else if( j0Id + j1Id == 0 ) return make_tuple(23,j0Id,j1Id);                 // Z
+      else return result;                             
 
     }
-    else return 0;
+    else return result;
   } 
   //------------------------------------  
   
@@ -158,7 +160,9 @@ void GenFilterCategory::beginJob() {}
     bool isWtight  = false;
     bool isZtight  = false;
 
-    int bosonId = partonsComposition(j0,j1);
+    tuple<int,int,int> bosonIdHistory = partonsComposition(j0,j1);
+    int bosonId = get<0>(bosonIdHistory);
+
     bool qqPassMWwindow = fabs((j0->p4() + j1->p4()).mass() - mW) < 10;
     bool qqPassMZwindow = fabs((j0->p4() + j1->p4()).mass() - mZ) < 10;
 
@@ -298,16 +302,19 @@ void GenFilterCategory::beginJob() {}
 	  W->Setdaughter1(j0->p4());
 	  W->Setdaughter2(j1->p4());
 	  W->SetbosonId(bosonId);
-	  //  W->SetdaughtersId(3);
+	  W->Setdaughter1Id(get<1>(bosonIdHistory));
+	  W->Setdaughter2Id(get<2>(bosonIdHistory));
 	  
 	  if (qqPassMWwindow) isWtight = true;  
+	    
 	  
 	} else if ( (isZloose || qqPassMZwindow)  && bosonId == 23 ) {   //definition of tight Z (mass + cat)
 	  
 	  Z2->Setdaughter1(j0->p4());
 	  Z2->Setdaughter2(j1->p4());
 	  Z2->SetbosonId(bosonId);
-	  //	  Z2->SetdaughtersId(3);
+	  Z2->Setdaughter1Id(get<1>(bosonIdHistory));
+	  Z2->Setdaughter2Id(get<2>(bosonIdHistory));
 	  
 	  if(qqPassMZwindow){
 	    isZtight = true;
@@ -419,7 +426,7 @@ void GenFilterCategory::beginJob() {}
   if(Z0->bosonId() > 0) outputGenColl = loadGenBoson(Z0, genRefs, outputGenColl);
   if(Z1->bosonId() > 0) outputGenColl = loadGenBoson(Z1, genRefs, outputGenColl);
   if(Z2->bosonId() > 0) outputGenColl = loadGenBoson(Z2, genRefs, outputGenColl);
-  if(W->bosonId() > 0)  outputGenColl = loadGenBoson(W, genRefs, outputGenColl);
+  if(fabs(W->bosonId()) > 0)  outputGenColl = loadGenBoson(W, genRefs, outputGenColl);
   
 
 
@@ -440,9 +447,9 @@ void GenFilterCategory::beginJob() {}
  std::auto_ptr<std::vector<reco::GenParticle> > GenFilterCategory::loadGenBoson(const Boson * vb, const GenParticleRefProd &genRefs, std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl){
 
    size_t initialSize = outputGenColl->size();
-   outputGenColl->push_back(reco::GenParticle(vb->bosonId() == 23 ? 0 : copysign(1, vb->daughtersId()), vb->p4(), GenParticle::Point(0.,0.,0.), vb->bosonId(), 3, true));
-   outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb->daughtersId()), vb->p4daughter1(), GenParticle::Point(0.,0.,0.), vb->daughtersId(),3, true));
-   outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb->daughtersId()), vb->p4daughter2(), GenParticle::Point(0.,0.,0.), vb->daughtersId(),3, true));
+   outputGenColl->push_back(reco::GenParticle(vb->bosonId() == 23 ? 0 : copysign(1, vb->bosonId()), vb->p4(),          GenParticle::Point(0.,0.,0.), vb->bosonId()   , 3, true));
+   outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb->daughter1Id())                    , vb->p4daughter1(), GenParticle::Point(0.,0.,0.), vb->daughter1Id(),3, true));
+   outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb->daughter2Id())                    , vb->p4daughter2(), GenParticle::Point(0.,0.,0.), vb->daughter2Id(),3, true));
    outputGenColl->at(initialSize).addDaughter(GenParticleRef(genRefs,initialSize+1));
    outputGenColl->at(initialSize).addDaughter(GenParticleRef(genRefs,initialSize+2));
    
