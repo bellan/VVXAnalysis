@@ -234,10 +234,15 @@ void TreePlanter::fillEventInfo(const edm::Event& event){
 
     event.getByLabel(theGenVBCollectionLabel,  genParticles);
     
-    for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) 
-      genVBParticles_.push_back(phys::Boson<phys::Particle>(phys::Particle(p->daughter(0)->p4(), phys::Particle::computeCharge(p->daughter(0)->pdgId()), p->daughter(0)->pdgId()),
-							    phys::Particle(p->daughter(1)->p4(), phys::Particle::computeCharge(p->daughter(1)->pdgId()), p->daughter(1)->pdgId()),
-							    abs(p->pdgId())));
+    for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p){
+      if(fabs(p->pdgId()) == 24 || p->pdgId() == 23){
+	cout<<"2 KKKKKKK: "<<p->pdgId() <<" " <<p->numberOfDaughters()<<endl;
+	cout<<"3 KKKKKKK: "<<p->daughter(0)->pdgId()<<" "<<p->daughter(1)->pdgId()<<endl;
+	genVBParticles_.push_back(phys::Boson<phys::Particle>(phys::Particle(p->daughter(0)->p4(), phys::Particle::computeCharge(p->daughter(0)->pdgId()), p->daughter(0)->pdgId()),
+							      phys::Particle(p->daughter(1)->p4(), phys::Particle::computeCharge(p->daughter(1)->pdgId()), p->daughter(1)->pdgId()),
+							      abs(p->pdgId())));
+      }
+    }
     
     // Info about the MC weight
     puweight_ = PUWeighter_.weight(sampleType_, setup_, ntruePUInt_);

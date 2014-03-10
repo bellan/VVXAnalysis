@@ -45,6 +45,7 @@ public:
   }
   
   bool filter(edm::Event & event, const edm::EventSetup& eventSetup);
+  std::auto_ptr<std::vector<reco::GenParticle> > loadGenBoson(const Boson * vb, const GenParticleRefProd &genRefs, std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl);
   
   virtual void beginJob();
   virtual void endJob(){}
@@ -136,6 +137,11 @@ void GenFilterCategory::beginJob() {
   if( numMu == 2 && numE == 2 ) leptonCode = 2;
   if( (numMu == 4 && numE == 0) || (numMu == 0 && numE == 4) ) leptonCode = 4;
 
+  Boson *Z0 = new Boson();
+  Boson *Z1 = new Boson();
+  Boson *W  = new Boson();
+  Boson *Z2 = new Boson();
+
   if ( theGenq.size() == 2 && theGenl.size() == 4 && (leptonCode == 2 || leptonCode == 4) ) {
 
     const float mZ = 91.19;
@@ -149,12 +155,7 @@ void GenFilterCategory::beginJob() {
       j1 = theGenq[0];  
     }
 
-    Boson *Z0 = new Boson();
-    Boson *Z1 = new Boson();
-    Boson *W  = new Boson();
-    Boson *Z2 = new Boson();
-
-    
+       
     bool has3Z     = false;
     bool isWloose  = false;
     bool isZloose  = false;
@@ -402,17 +403,42 @@ void GenFilterCategory::beginJob() {
 
 
   std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl(new std::vector<reco::GenParticle>());
-  for(std::vector<const reco::Candidate*>::const_iterator it = theGenZ.begin(); it != theGenZ.end(); ++it) outputGenColl->push_back(*dynamic_cast<const reco::GenParticle*>(*it));
-  for(std::vector<const reco::Candidate*>::const_iterator it = theGenW.begin(); it != theGenW.end(); ++it) outputGenColl->push_back(*dynamic_cast<const reco::GenParticle*>(*it));
-  event.put(outputGenColl);
+
+  GenParticleRefProd genRefs = event.getRefBeforePut<std::vector<reco::GenParticle> >();
+
+  if(Z0->bosonId() > 0) outputGenColl = loadGenBoson(Z0, genRefs, outputGenColl);
+  if(Z1->bosonId() > 0) outputGenColl = loadGenBoson(Z1, genRefs, outputGenColl);
+  if(Z2->bosonId() > 0) outputGenColl = loadGenBoson(Z2, genRefs, outputGenColl);
+  if(W->bosonId() > 0)  outputGenColl = loadGenBoson(W, genRefs, outputGenColl);
   
 
 
+  event.put(outputGenColl);
+  
+  if(Z0) delete Z0; 
+  if(Z1) delete	Z1;
+  if(W)  delete	W;  
+  if(Z2) delete Z2;
+  
   if(sel_ >= 0)
     return sel_ == categoryNum;
   else
     return true;
  }
+
+
+ std::auto_ptr<std::vector<reco::GenParticle> > GenFilterCategory::loadGenBoson(const Boson * vb, const GenParticleRefProd &genRefs, std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl){
+
+   size_t initialSize = outputGenColl->size();
+   outputGenColl->push_back(reco::GenParticle(vb->bosonId() == 23 ? 0 : copysign(1, vb->daughtersId()), vb->p4(), GenParticle::Point(0.,0.,0.), vb->bosonId(), 3, true));
+   outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb->daughtersId()), vb->p4daughter1(), GenParticle::Point(0.,0.,0.), vb->daughtersId(),3, true));
+   outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb->daughtersId()), vb->p4daughter2(), GenParticle::Point(0.,0.,0.), vb->daughtersId(),3, true));
+   outputGenColl->at(initialSize).addDaughter(GenParticleRef(genRefs,initialSize+1));
+   outputGenColl->at(initialSize).addDaughter(GenParticleRef(genRefs,initialSize+2));
+   
+   return outputGenColl;
+ }
+
 
 #include "FWCore/Framework/interface/MakerMacros.h"
 DEFINE_FWK_MODULE(GenFilterCategory);
