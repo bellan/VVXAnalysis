@@ -126,26 +126,32 @@ void ZZWAnalyzer::analyze() {
  
   //%%%%%%%% Comparison genParticles - recoParticles %%%%%%%%//
 
-  std::vector< std::pair<const Particle*, const Particle* > > Vgen_reco;
-
+  std::vector< std::pair<const Particle*, const Particle* > > ZcomparatorVector;
+  std::vector< std::pair<const Particle*, const Particle* > > WcomparatorVector;
   std::vector<const Particle* > Zll;
 
   foreach(const Boson<Lepton>& z, *Zmm) {
-    Vgen_reco.push_back(make_pair(Z0gen, & z));
-    Vgen_reco.push_back(make_pair(Z1gen, & z));
+    ZcomparatorVector.push_back(make_pair(Z0gen, & z));
+    ZcomparatorVector.push_back(make_pair(Z1gen, & z));
     Zll.push_back(& z);      
   }
 
   foreach(const Boson<Electron>& z, *Zee) {
-    Vgen_reco.push_back(make_pair(Z0gen, & z));
-    Vgen_reco.push_back(make_pair(Z1gen, & z));
+    ZcomparatorVector.push_back(make_pair(Z0gen, & z));
+    ZcomparatorVector.push_back(make_pair(Z1gen, & z));
     Zll.push_back(& z);
   }
   
-  std::stable_sort(Vgen_reco.begin(), Vgen_reco.end(), deltaRComparator());
- 
-  const Particle* Z0 = Vgen_reco.at(0).second;
-  const Particle* Z1 = Vgen_reco.at(1).second;
+  foreach(const Boson<Jet>& w, *Wjj) {
+    WcomparatorVector.push_back(make_pair(Wgen, & w));
+  }
+  
+  std::stable_sort(ZcomparatorVector.begin(), ZcomparatorVector.end(), deltaRComparator());
+  std::stable_sort(WcomparatorVector.begin(), WcomparatorVector.end(), deltaRComparator());
+  
+  const Particle* Z0 = ZcomparatorVector.at(0).second;
+  const Particle* Z1 = ZcomparatorVector.at(1).second;
+  const Particle* W  = WcomparatorVector.at(0).first;
 
 
   //%%%%%%%%%%%% Definition of the signal %%%%%%%%%%%%//  
@@ -159,41 +165,51 @@ void ZZWAnalyzer::analyze() {
   
   TLorentzVector p_myZ0 = myZ0->p4();
   TLorentzVector p_myZ1 = myZ1->p4();
+  TLorentzVector p_myW  = myW.p4();
  
   TLorentzVector p_myj1 = myW.daughter(0).p4();
   TLorentzVector p_myj2 = myW.daughter(1).p4();
   
   
-  cout <<  "--------------- MASSES COMPARISON: Z gen  ||  Z reco matched with gen  ||  Z reco ---------------" << endl;
+  cout <<  "--------------- MASSES COMPARISON: Z gen  ||  Z reco matched with gen  ||  Z reco ---------------"   << endl;
   cout << "Z0gen= " << Z0gen->p4().M() << "\tZ0matched = " << Z0->p4().M() << "\tZ0reco = " << Green(p_myZ0.M()) <<endl;
   cout << "Z1gen= " << Z1gen->p4().M() << "\tZ1matched = " << Z1->p4().M() << "\tZ1reco = " << Green(p_myZ1.M()) <<endl;
+  cout << "Wgen= "  << Wgen->p4().M()  << "\tWmatched = "  << W->p4().M()  << "\tWreco = "  << Green(p_myW.M())  <<endl;
   cout << "    " << endl;
   
+  bool ZcorrectMatch = (p_myZ0 == Z0->p4() && p_myZ1 == Z1->p4()) || (p_myZ0 == Z1->p4() && p_myZ1 == Z0->p4());
+  bool WcorrectMatch = p_myW == W->p4();
+
+  if ( ZcorrectMatch ) theHistograms.fill<TH1I>("Efficiency of Z definition", "Efficiency of Z definition", 3, 0, 3, 1);
   
-  if ( (p_myZ0 == Z0->p4() && p_myZ1 == Z1->p4()) || (p_myZ0 == Z1->p4() && p_myZ1 == Z0->p4())) {
-    theHistograms.fill<TH1I>("Efficiency of signal definition", "Efficiency of signal definition", 3, 0, 3, 1);
+  if ( WcorrectMatch ) {
     
+    theHistograms.fill<TH1I>("Efficiency of W definition", "Efficiency of W definition", 3, 0, 3, 1);
     
-    /////-----------------Histograms-------------------
+    if ( ZcorrectMatch ) {
+      
+      
+      /////-----------------Histograms-------------------
+      
+      //------------Mass-------------
+      
+      theHistograms.fill("Z0_Mass" , "Z0_Mass" , 200, 0, 200, p_myZ0.M()  , theWeight);
+      theHistograms.fill("Z1_Mass" , "Z1_Mass" , 200, 0, 200, p_myZ1.M()  , theWeight);
+      theHistograms.fill("Wjj_Mass", "Wjj_Mass", 200, 0, 200, p_myW.M()   , theWeight);  
+      
+      //------------Pt--------------
+      
+      theHistograms.fill("Z0_Pt"   , "Z0_Pt"   , 300, 0, 300, myZ0->pt()  , theWeight);
+      theHistograms.fill("Z1_Pt"   , "Z1_Pt"   , 300, 0, 300, myZ1->pt()  , theWeight);
+      theHistograms.fill("W_Pt"    , "W_Pt"    , 300, 0, 300, myW.pt()    , theWeight);  
+      
+      //------------Mass 6f----------
+      
+      TLorentzVector p_6f = p_myZ0 + p_myZ1 + p_myj1 + p_myj2;
+      
+      theHistograms.fill("6f_Mass" , "6f_Mass" , 3000, 0, 3000, p_6f.M(), theWeight);
     
-    //------------Mass--------------
-    
-    theHistograms.fill("Z0_Mass" , "Z0_Mass" , 200, 0, 200, p_myZ0.M()  , theWeight);
-    theHistograms.fill("Z1_Mass" , "Z1_Mass" , 200, 0, 200, p_myZ1.M()  , theWeight);
-    theHistograms.fill("Wjj_Mass", "Wjj_Mass", 200, 0, 200, myW.p4().M(), theWeight);  
-    
-    //------------Pt--------------
-    
-    theHistograms.fill("Z0_Pt"   , "Z0_Pt"   , 300, 0, 300, myZ0->pt()  , theWeight);
-    theHistograms.fill("Z1_Pt"   , "Z1_Pt"   , 300, 0, 300, myZ1->pt()  , theWeight);
-    theHistograms.fill("W_Pt"    , "W_Pt"    , 300, 0, 300, myW.pt()    , theWeight);  
-    
-    //------------Mass 6f--------------
-    
-    TLorentzVector p_6f = p_myZ0 + p_myZ1 + p_myj1 + p_myj2;
-    
-    theHistograms.fill("6f_Mass" , "6f_Mass" , 3000, 0, 3000, p_6f.M(), theWeight);
-    
+    }
   }  
 }
 
