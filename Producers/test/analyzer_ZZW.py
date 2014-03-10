@@ -55,12 +55,14 @@ execfile(PyFilePath + "MasterPy/ZZ4lAnalysis.py")         # 2012 reference analy
 ### ----------------------------------------------------------------------
   ### Replace parameters
 ### ----------------------------------------------------------------------
-#process.source.fileNames = cms.untracked.vstring(
+process.source.fileNames = cms.untracked.vstring(
+   # '/store/cmst3/group/cmgtools/CMG/WZZ_8TeV-aMCatNLO-herwig/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_13_1_YZF.root'
+
     #'root://lxcms00//data3/2013/HZZ_cmgTuple/BE539_H1258TeV.root' #533 V5_15_0 version
-#    '/store/cmst3/group/cmgtools/CMG/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_nLP.root'
+    '/store/cmst3/group/cmgtools/CMG/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_nLP.root'
     #     #'/store/cmst3/group/cmgtools/CMG/WZZ_8TeV-aMCatNLO-herwig/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_GEb.root'
     #     #'/store/cmst3/group/cmgtools/CMG/ZZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_UV1.root'
-#    )
+    )
 
 
 process.maxEvents.input = -1
@@ -77,7 +79,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 
 # jet-jet pairs
 process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
-                                           Preselection = cms.string("pt > 30"),
+                                           Preselection = cms.string("pt > 20"),
                                            Jets  = cms.InputTag("cmgPFJetSel"),
                                            Muons = cms.InputTag("appendPhotons:muons"),
                                            Electrons = cms.InputTag("appendPhotons:electrons"),
@@ -86,7 +88,7 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
 
 process.centralJets = cms.EDFilter("EtaPtMinCandViewSelector",
                                      src = cms.InputTag("disambiguatedJets"),
-                                     ptMin   = cms.double(30),
+                                     ptMin   = cms.double(20),
                                      etaMin = cms.double(-2.5),
                                      etaMax = cms.double(2.5)
                                      )
@@ -182,7 +184,7 @@ process.zzCounterFilter = cms.EDFilter("CandViewCountFilter",
 
 process.jetPtFilter = cms.EDFilter("PtMinCandViewSelector",
                                    src = cms.InputTag("disambiguatedJets"),
-                                   ptMin = cms.double(30)
+                                   ptMin = cms.double(20)
                                    )
 process.jetCounterFilter = cms.EDFilter("CandViewCountFilter",
                                         src = cms.InputTag("jetPtFilter"),
