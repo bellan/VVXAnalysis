@@ -40,6 +40,7 @@ public:
     , num      (pset.getParameter<int>("SignalDefinition"))
     , genLabel_(pset.getParameter<edm::InputTag>("src")) {
     produces<int>();
+    produces<std::vector<reco::GenParticle> >();
 
   }
   
@@ -75,11 +76,7 @@ private:
 
 };
 
-void GenFilterCategory::beginJob() {
-
-  //edm::Service<TFileService> fileService;
-  // category        = fileService->make<TH1F>("category", "category", 10, 0., 10.);
-}
+void GenFilterCategory::beginJob() {}
 
  bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) { 
 
@@ -196,17 +193,29 @@ void GenFilterCategory::beginJob() {
 	Z1->Setdaughter2(theGenl[3]->p4());
 	Z1->SetbosonId(theGenZ[1]->pdgId());
 	
-	if ( abs(theGenl[0]->pdgId()) == 11 ) Z0->SetdaughtersId(1); //u
-	if ( abs(theGenl[0]->pdgId()) == 13 ) Z0->SetdaughtersId(2); //e    
-	if ( abs(theGenl[2]->pdgId()) == 11 ) Z1->SetdaughtersId(1); //u
-	if ( abs(theGenl[2]->pdgId()) == 13 ) Z1->SetdaughtersId(2); //e   
+	if ( abs(theGenl[0]->pdgId()) == 11 ) {     //e
+	  Z0->Setdaughter1Id(11);
+	  Z0->Setdaughter2Id(-11); 
+	}
+	if ( abs(theGenl[0]->pdgId()) == 13 ) {     //u
+	  Z0->Setdaughter1Id(13);
+	  Z0->Setdaughter2Id(-13);
+	}
+	if ( abs(theGenl[2]->pdgId()) == 11 ) {     //e
+	  Z1->Setdaughter1Id(11);
+	  Z1->Setdaughter2Id(-11);
+	}
+	if ( abs(theGenl[2]->pdgId()) == 13 ) {     //u
+	  Z1->Setdaughter1Id(13);
+	  Z1->Setdaughter2Id(-13);
+	}
 	
 	if ( isWtight ) {       
 
 	  W->Setdaughter1(j0->p4());
 	  W->Setdaughter2(j1->p4());
 	  W->SetbosonId(theGenW[0]->pdgId());
-	  W->SetdaughtersId(3);
+	  //	  W->SetdaughtersId(3);
 	  
 	}
 	 
@@ -215,7 +224,7 @@ void GenFilterCategory::beginJob() {
 	  Z2->Setdaughter1(j0->p4());
 	  Z2->Setdaughter2(j1->p4());
 	  Z2->SetbosonId(theGenZ[2]->pdgId());
-	  Z2->SetdaughtersId(3);
+	  //	  Z2->SetdaughtersId(3);
 	  
 	  has3Z = true; 
 	}
@@ -234,17 +243,29 @@ void GenFilterCategory::beginJob() {
       Z1->Setdaughter2(theGenl[3]->p4());
       Z1->SetbosonId(23);
       
-      if ( abs(theGenl[0]->pdgId()) == 11 ) Z0->SetdaughtersId(1); //u
-      if ( abs(theGenl[0]->pdgId()) == 13 ) Z0->SetdaughtersId(2); //e    
-      if ( abs(theGenl[2]->pdgId()) == 11 ) Z1->SetdaughtersId(1); //u
-      if ( abs(theGenl[2]->pdgId()) == 13 ) Z1->SetdaughtersId(2); //e   
+      if ( abs(theGenl[0]->pdgId()) == 11 ) {     //e
+	Z0->Setdaughter1Id(11);
+	Z0->Setdaughter2Id(-11); 
+      }
+      if ( abs(theGenl[0]->pdgId()) == 13 ) {     //u
+	Z0->Setdaughter1Id(13);
+	Z0->Setdaughter2Id(-13);
+      }
+      if ( abs(theGenl[2]->pdgId()) == 11 ) {     //e
+	Z1->Setdaughter1Id(11);
+	Z1->Setdaughter2Id(-11);
+      }
+      if ( abs(theGenl[2]->pdgId()) == 13 ) {     //u
+	Z1->Setdaughter1Id(13);
+	Z1->Setdaughter2Id(-13);
+      }
       
       if ( (isWloose || qqPassMWwindow) && fabs(bosonId) == 24 ) {      //definition of tight W (mass + cat)
 	
     	W->Setdaughter1(j0->p4());
     	W->Setdaughter2(j1->p4());
     	W->SetbosonId(bosonId);
-	W->SetdaughtersId(3);
+	//	W->SetdaughtersId(3);
    	
 	isWtight = true;
 	
@@ -253,7 +274,7 @@ void GenFilterCategory::beginJob() {
 	Z2->Setdaughter1(j0->p4());
     	Z2->Setdaughter2(j1->p4());
     	Z2->SetbosonId(bosonId);
-	Z2->SetdaughtersId(3);
+	//	Z2->SetdaughtersId(3);
    	
 	isZtight = true;
 	has3Z = true;     	
@@ -264,7 +285,7 @@ void GenFilterCategory::beginJob() {
     //-----------------3: Real signal, real pairing-----------------------
     else if ( num==3 ) {         
 
-      std::pair<Boson*,Boson*> ZZ = makeZbosonsFromLeptons(theGenl, theGenlm, theGenlp, leptonCode, mZ);
+      std::pair<Boson*,Boson*> ZZ = makeZbosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
       
       Z0 = ZZ.first;
       Z1 = ZZ.second;
@@ -276,7 +297,7 @@ void GenFilterCategory::beginJob() {
 	  W->Setdaughter1(j0->p4());
 	  W->Setdaughter2(j1->p4());
 	  W->SetbosonId(bosonId);
-	  W->SetdaughtersId(3);
+	  //  W->SetdaughtersId(3);
 	  
 	  if (qqPassMWwindow) isWtight = true;  
 	  
@@ -285,7 +306,7 @@ void GenFilterCategory::beginJob() {
 	  Z2->Setdaughter1(j0->p4());
 	  Z2->Setdaughter2(j1->p4());
 	  Z2->SetbosonId(bosonId);
-	  Z2->SetdaughtersId(3);
+	  //	  Z2->SetdaughtersId(3);
 	  
 	  if(qqPassMZwindow){
 	    isZtight = true;
@@ -315,15 +336,12 @@ void GenFilterCategory::beginJob() {
  
     //////// eta cut for all leptons ///////
     
-    if ( passEtaAccLep ) {
-      
-      //cout << "CHECK: Z0 MASS =  " << Z0->p4().mass() << endl;
+    if ( passEtaAccLep) {
 
       //Signal: ZZW---------------------------------------categoryNum=0---------------------
       if ( isMySignal ) {
 	categoryNum = 0;
-	//cout << "SIGNAL: "  << event.id().event() << "\nEvent category: " << categoryNum << endl;
-	//category->Fill(0);
+	cout << "SIGNAL: "  << event.id().event() << "\nEvent category: " << categoryNum << endl;
 
       } 
 
@@ -336,26 +354,22 @@ void GenFilterCategory::beginJob() {
 	  //ZZZ ----------------------------------------- categoryNum = 1 ------------------------ 
 	  if ( has3Z ) {
 	    categoryNum = 1;
-	    //cout << "ZZZ: " << event.id().event() << "\nEvent category: " << categoryNum << endl;
-	    //category->Fill(1);
+	    cout << "ZZZ: " << event.id().event() << "\nEvent category: " << categoryNum << endl;
 	  }
 	  
 	  //ZZWloose ------------------------------------ categoryNum = 2 -----------------------
 	  else if ( !has3Z && isWloose ) {
 	    categoryNum = 2;
-	    //category->Fill(2);
 	  }
 	  
 	  //ZZZloose ------------------------------------ categoryNum = 3 -----------------------
 	  else if ( !has3Z && !isWloose && isZloose ) {
 	    categoryNum = 3;
-	    //category->Fill(3);
 	  }
 
 	  //ZZ+X ---------------------------------------- categoryNum = 4 ------------------------
 	  else {	
 	    categoryNum = 4;
-	    //category->Fill(4);
 	  }
 	}
 
@@ -364,41 +378,46 @@ void GenFilterCategory::beginJob() {
 	  //WZ+X ---------------------------------------- categoryNum = 5 ------------------------
 	  if ( isWtight ) {
 	    categoryNum = 5;
-	    //category->Fill(5);
 	  }
 	  
 	  //ZZjj+X -------------------------------------- categoryNum = 6 ------------------------
 	  else if ( has3Z ) {
 	    categoryNum = 6;
-	    //category->Fill(6);
 	  }
 	  
 	  //ZWloose+X ----------------------------------- categoryNum = 7 ------------------------
 	  else if ( !isWtight && !has3Z && isWloose ) {
 	    categoryNum = 7;
-	    //category->Fill(7);
 	  }
 	  
 	  //ZZjj+X -------------------------------------- categoryNum = 8 ------------------------
 	  else if ( !has3Z && !isWloose && isZloose ) {
 	    categoryNum = 8;
-	    //category->Fill(8);
 	  }
 	  
 	  //Z+X+Y --------------------------------------- categoryNum = 9 ------------------------
 	  else {
 	    categoryNum = 9;
-	    //category->Fill(9);
 	  }
 	  
 	}		
       }      
     }
   }
+ 
+ 
   
   std::auto_ptr<int> output(new int(categoryNum));
   event.put(output);
+
+
+  std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl(new std::vector<reco::GenParticle>());
+  for(std::vector<const reco::Candidate*>::const_iterator it = theGenZ.begin(); it != theGenZ.end(); ++it) outputGenColl->push_back(*dynamic_cast<const reco::GenParticle*>(*it));
+  for(std::vector<const reco::Candidate*>::const_iterator it = theGenW.begin(); it != theGenW.end(); ++it) outputGenColl->push_back(*dynamic_cast<const reco::GenParticle*>(*it));
+  event.put(outputGenColl);
   
+
+
   if(sel_ >= 0)
     return sel_ == categoryNum;
   else

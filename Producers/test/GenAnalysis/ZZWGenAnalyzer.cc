@@ -51,56 +51,28 @@ private:
 
   edm::InputTag categoryLabel_;
 
-//   H6f* hAll6f;
-//   H6f* hZZW6f;
-//   H6f* hBackgr;
-//   H6f* hAllCut;
-//   H6f* hZZWCut;
-//   H6f* hBackgrCut;
-//   H6f* hZZZ6f;   
   Hbos* hBosons;
   Hbos* hBosonsCut;
-//   Hjets* hAllJets;
-//   Hjets* hBackgrJets;
-//   Hjets* hCutJets;
-//   Hjets* hBackgrCutJets;
-//   TH2F* WZ;
   TH1F* all6fMass;
-  TH1F* all6fMassCut;
-//   TH1F* all6fMassBackgr;
-//   TH1F* category;
- TH1F* notEv;
- TH1F* lostEvEtaRange;
-  //  int num; 
+  TH1F* all6fMassCut;  
+  TH1F* notEv;
+  TH1F* lostEvEtaRange;
 };
 
 void ZZWGenAnalyzer::beginJob() {
- //  hAll6f         = new H6f("All6f");
-//   hZZW6f         = new H6f("ZZW6f");
-//   hBackgr        = new H6f("Backgr");
-//   hAllCut        = new H6f("AllCut");
-//   hZZWCut        = new H6f("ZZWCut");
-//   hBackgrCut     = new H6f("BackgrCut");
-//   hZZZ6f         = new H6f("ZZZ6f");
-  hBosons        = new Hbos("Bosons");
+
+  hBosons    = new Hbos("Bosons");
   hBosonsCut = new Hbos("BosonsCut");
-//   hAllJets       = new Hjets("AllJets");
-//   hBackgrJets    = new Hjets("BackgrJets");
-//   hCutJets       = new Hjets("CutJets");
-//   hBackgrCutJets = new Hjets("BackgrCutJets");
 
   edm::Service<TFileService> fileService;
- //  WZ              = fileService->make<TH2F>("WZ", "WZ", 4, 0., 4., 4, 0., 4.);
   all6fMass       = fileService->make<TH1F>("all6fMass", "all6fMass", 300, 0., 3000.);
   all6fMassCut    = fileService->make<TH1F>("all6fMassCut", "all6fMassCut", 300, 0., 3000.);
-  // all6fMassBackgr = fileService->make<TH1F>("all6fMassBackgr", "all6fMassBackgr", 300, 0., 3000.);
-//   category        = fileService->make<TH1F>("category", "category", 10, 0., 10.);
- notEv           = fileService->make<TH1F>("notEv", "notEv", 3, 0., 3.);
- lostEvEtaRange  = fileService->make<TH1F>("lostEvEtaRange", "lostEvEtaRange", 3, 0., 3.);
+  notEv           = fileService->make<TH1F>("notEv", "notEv", 3, 0., 3.);
+  lostEvEtaRange  = fileService->make<TH1F>("lostEvEtaRange", "lostEvEtaRange", 3, 0., 3.);
 }
 
 void ZZWGenAnalyzer::analyze(const Event & event, const EventSetup& eventSetup) { 
-
+  
   typedef Candidate::LorentzVector LorentzVector;
   
   std::vector<const reco::Candidate *> theGenZ;
@@ -214,14 +186,14 @@ void ZZWGenAnalyzer::analyze(const Event & event, const EventSetup& eventSetup) 
       
       if ( *category == 2 ) {
 	
-	std::pair<Boson*,Boson*> ZZ = makeZbosonsFromLeptons(theGenl, theGenlm, theGenlp, leptonCode, mZ);
+	std::pair<Boson*,Boson*> ZZ = makeZbosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
 	
 	Z0 = ZZ.first;
 	Z1 = ZZ.second;
 	
 	V->Setdaughter1(j0->p4());
 	V->Setdaughter2(j1->p4());
-	V->SetdaughtersId(3);
+	//	V->SetdaughtersId(3);
 	
 	all6fMass->Fill(m_6f);
 	hBosons->FillBos(Z0,Z1,V);

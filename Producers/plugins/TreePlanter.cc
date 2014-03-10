@@ -61,10 +61,11 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   theTree = fs->make<TTree>("ElderTree","ElderTree");
 
   if(isMC_){
-    thePUInfoLabel        = config.getUntrackedParameter<edm::InputTag>("PUInfo"       , edm::InputTag("addPileupInfo"));
-    theGenCategoryLabel   = config.getUntrackedParameter<edm::InputTag>("GenCategory"  , edm::InputTag("genCategory"));
-    theGenCollectionLabel = config.getUntrackedParameter<edm::InputTag>("GenCollection", edm::InputTag("genParticlesPruned"));
-    externalCrossSection_ = config.getUntrackedParameter<double>("XSection",-1);
+    thePUInfoLabel          = config.getUntrackedParameter<edm::InputTag>("PUInfo"         , edm::InputTag("addPileupInfo"));
+    theGenCategoryLabel     = config.getUntrackedParameter<edm::InputTag>("GenCategory"    , edm::InputTag("genCategory"));
+    theGenCollectionLabel   = config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("genParticlesPruned"));
+    theGenVBCollectionLabel = config.getUntrackedParameter<edm::InputTag>("GenVBCollection", edm::InputTag("genCategory"));
+    externalCrossSection_   = config.getUntrackedParameter<double>("XSection",-1);
   }
    
 
@@ -93,7 +94,9 @@ void TreePlanter::beginJob(){
   theTree->Branch("Zee"      , &Zee_); 
   theTree->Branch("Wjj"      , &Wjj_);
 
-  theTree->Branch("genParticles", &genParticles_);
+  theTree->Branch("genParticles"  , &genParticles_);
+  theTree->Branch("genVBParticles", &genVBParticles_);
+
 }
 
 void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
@@ -189,6 +192,7 @@ void TreePlanter::initTree(){
   Wjj_       = std::vector<phys::Boson<phys::Jet> >();   
 
   genParticles_ = std::vector<phys::Particle>();
+  genVBParticles_ = std::vector<phys::Boson<phys::Particle> >();
  }
 
 
@@ -228,6 +232,13 @@ void TreePlanter::fillEventInfo(const edm::Event& event){
     event.getByLabel(theGenCategoryLabel, genCategory);
     genCategory_ = *genCategory;
 
+    event.getByLabel(theGenVBCollectionLabel,  genParticles);
+    
+    for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) 
+      genVBParticles_.push_back(phys::Boson<phys::Particle>(phys::Particle(p->daughter(0)->p4(), phys::Particle::computeCharge(p->daughter(0)->pdgId()), p->daughter(0)->pdgId()),
+							    phys::Particle(p->daughter(1)->p4(), phys::Particle::computeCharge(p->daughter(1)->pdgId()), p->daughter(1)->pdgId()),
+							    abs(p->pdgId())));
+    
     // Info about the MC weight
     puweight_ = PUWeighter_.weight(sampleType_, setup_, ntruePUInt_);
     

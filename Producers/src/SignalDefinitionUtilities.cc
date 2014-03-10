@@ -2,7 +2,7 @@
 
 #include "VVXAnalysis/Producers/interface/SignalDefinitionUtilities.h"
 
-  std::pair<Boson*,Boson*> makeZbosonsFromLeptons(const std::vector<const reco::Candidate *>& l, const std::vector<const reco::Candidate *>& lm, const std::vector<const reco::Candidate *>& lp, int leptonCode, float mZ){
+  std::pair<Boson*,Boson*> makeZbosonsFromLeptons(const std::vector<const reco::Candidate *>& lm, const std::vector<const reco::Candidate *>& lp, int leptonCode, float mZ){
     
     Boson *Z0 = new Boson();
     Boson *Z1 = new Boson();
@@ -22,13 +22,17 @@
 	    Z1->Setdaughter1(lp[(k+1)%2]->p4());            
 	    Z1->Setdaughter2(lm[(j+1)%2]->p4());
 	    
-	    if ( fabs(l[0]->pdgId()) == 11 ) {
-	      Z0->SetdaughtersId(1); //u
-	      Z1->SetdaughtersId(1); //u
+	    if ( fabs(lp[0]->pdgId()) == 11 ) {
+	      Z0->Setdaughter1Id(11);  //e
+	      Z0->Setdaughter2Id(-11); //e
+	      Z1->Setdaughter1Id(11);  //e
+	      Z1->Setdaughter2Id(-11); //e
 	    }
-	    if ( fabs(l[0]->pdgId()) == 13 ) {
-	      Z0->SetdaughtersId(2); //e   
-	      Z1->SetdaughtersId(2); //e   
+	    if ( fabs(lp[0]->pdgId()) == 13 ) {
+	      Z0->Setdaughter1Id(13);  //u   
+	      Z0->Setdaughter2Id(-13); //u   
+	      Z1->Setdaughter1Id(13);  //u   
+	      Z1->Setdaughter2Id(-13); //u   
 	    }	
 	  }      
 	} 	
@@ -46,12 +50,16 @@
 	  Z1->Setdaughter2(lm[1]->p4());
 	  
 	  if ( fabs(lm[0]->pdgId()) == 11 ) {
-	    Z0->SetdaughtersId(1); //u
-	    Z1->SetdaughtersId(2); //e
+	    Z0->Setdaughter1Id(11);
+	    Z0->Setdaughter2Id(-11);
+	    Z1->Setdaughter1Id(13); 
+	    Z1->Setdaughter2Id(-13);
 	  }
 	  if ( fabs(lm[0]->pdgId()) == 13 ) {
-	    Z0->SetdaughtersId(2); //e
-	    Z1->SetdaughtersId(1); //u
+	    Z0->Setdaughter1Id(13);
+	    Z0->Setdaughter2Id(-13);
+	    Z1->Setdaughter1Id(11); 
+	    Z1->Setdaughter2Id(-11);
 	  }
 	  
 	}
