@@ -3,7 +3,7 @@
 
 #include "TH1F.h"
 #include "TString.h"
-#include "VVXAnalysis/Producers/interface/Boson.h"
+#include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include <vector>
 
 class TFile;
@@ -14,7 +14,7 @@ class Hbos {
   Hbos(TString name_);
   Hbos(TString name_, TFile* file);
   
-  void FillBos(Boson *Z0, Boson *Z1, Boson *V);
+  void FillBos(const phys::Boson<phys::Particle> &Z0, const phys::Boson<phys::Particle> &Z1, const phys::Boson<phys::Particle> &V);
 
   void Scale(float w);
   

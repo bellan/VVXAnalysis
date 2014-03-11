@@ -27,8 +27,8 @@
 #include "H6f.h"
 #include "Hbos.h"
 #include "Hjets.h"
-#include "VVXAnalysis/Producers/interface/Boson.h"
 
+#include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/Producers/interface/SignalDefinitionUtilities.h"
 
 using namespace std;
@@ -153,9 +153,9 @@ void ZZWGenAnalyzer::analyze(const Event & event, const EventSetup& eventSetup) 
     }   
    
  
-    Boson *Z0 = new Boson();
-    Boson *Z1 = new Boson();
-    Boson *V  = new Boson();
+    phys::Boson<phys::Particle> Z0;
+    phys::Boson<phys::Particle> Z1;
+    phys::Boson<phys::Particle> V ;
 
     bool passPtAccLep  = true;
     LorentzVector p_4l(0.,0.,0.,0.);  
@@ -186,14 +186,13 @@ void ZZWGenAnalyzer::analyze(const Event & event, const EventSetup& eventSetup) 
       
       if ( *category == 2 ) {
 	
-	std::pair<Boson*,Boson*> ZZ = makeZbosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
+	std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > ZZ = makeZbosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
 	
 	Z0 = ZZ.first;
 	Z1 = ZZ.second;
 	
-	V->Setdaughter1(j0->p4());
-	V->Setdaughter2(j1->p4());
-	//	V->SetdaughtersId(3);
+	V.setDaughter(0,phys::Particle(j0->p4(),phys::Particle::computeCharge(j0->pdgId()), j0->pdgId()));
+	V.setDaughter(1,phys::Particle(j1->p4(),phys::Particle::computeCharge(j1->pdgId()), j1->pdgId()));
 	
 	all6fMass->Fill(m_6f);
 	hBosons->FillBos(Z0,Z1,V);

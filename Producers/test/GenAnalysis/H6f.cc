@@ -49,34 +49,33 @@ H6f::H6f(TString name_, TFile* file) : name(name_) {
 }
 
 
-void H6f::Fill(Boson *V0, Boson *V1, Boson *V2) {
-  typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
-    
-  LorentzVector p_2lV0 = V0->p4daughter1() + V0->p4daughter2();
-  LorentzVector p_2lV1 = V1->p4daughter1() + V1->p4daughter2();
-  LorentzVector p_jj   = V2->p4daughter1() + V2->p4daughter2();
-  LorentzVector p_4l   = p_2lV0 + p_2lV1;
-  LorentzVector p_6f   = p_2lV0 + p_2lV1 + p_jj;
+void H6f::Fill(const phys::Boson<phys::Particle> &V0, const phys::Boson<phys::Particle> &V1, const phys::Boson<phys::Particle> &V2) {
+      
+  TLorentzVector p_2lV0 = V0.daughter(0).p4() + V0.daughter(1).p4();
+  TLorentzVector p_2lV1 = V1.daughter(0).p4() + V1.daughter(1).p4();
+  TLorentzVector p_jj   = V2.daughter(0).p4() + V2.daughter(1).p4();
+  TLorentzVector p_4l   = p_2lV0 + p_2lV1;
+  TLorentzVector p_6f   = p_2lV0 + p_2lV1 + p_jj;
 
  
   
-  h6fMass->Fill(p_6f.mass());
+  h6fMass->Fill(p_6f.M());
 
-  h2l0Mass->Fill(p_2lV0.mass());
-  h2l1Mass->Fill(p_2lV1.mass());
-  hjjMass->Fill(p_jj.mass());
+  h2l0Mass->Fill(p_2lV0.M());
+  h2l1Mass->Fill(p_2lV1.M());
+  hjjMass->Fill(p_jj.M());
 
-  h4lMass->Fill(p_4l.mass());
+  h4lMass->Fill(p_4l.M());
     
-  h2l0Pt->Fill(p_2lV0.pt());
-  h2l1Pt->Fill(p_2lV1.pt());
-  hjjPt->Fill(p_jj.pt());
+  h2l0Pt->Fill(p_2lV0.Pt());
+  h2l1Pt->Fill(p_2lV1.Pt());
+  hjjPt->Fill(p_jj.Pt());
 
   std::vector<float> pts_lep; 
-  pts_lep.push_back(V0->p4daughter1().pt());
-  pts_lep.push_back(V0->p4daughter2().pt());
-  pts_lep.push_back(V1->p4daughter1().pt());
-  pts_lep.push_back(V1->p4daughter2().pt());
+  pts_lep.push_back(V0.daughter(0).p4().Pt());
+  pts_lep.push_back(V0.daughter(1).p4().Pt());
+  pts_lep.push_back(V1.daughter(0).p4().Pt());
+  pts_lep.push_back(V1.daughter(1).p4().Pt());
   
   sort(pts_lep.begin(),pts_lep.end());
   h4lPt_1->Fill(pts_lep[3]);
@@ -85,8 +84,8 @@ void H6f::Fill(Boson *V0, Boson *V1, Boson *V2) {
   h4lPt_4->Fill(pts_lep[0]);
     
   std::vector<float> pts_j;
-  pts_j.push_back(V2->p4daughter1().pt());
-  pts_j.push_back(V2->p4daughter2().pt());
+  pts_j.push_back(V2.daughter(0).p4().Pt());
+  pts_j.push_back(V2.daughter(1).p4().Pt());
   
   sort(pts_j.begin(),pts_j.end());
   hjPt_1->Fill(pts_j[1]);
