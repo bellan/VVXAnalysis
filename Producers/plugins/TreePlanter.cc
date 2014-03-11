@@ -239,7 +239,7 @@ void TreePlanter::fillEventInfo(const edm::Event& event){
 	genVBParticles_.push_back(phys::Boson<phys::Particle>(phys::Particle(p->daughter(0)->p4(), phys::Particle::computeCharge(p->daughter(0)->pdgId()), p->daughter(0)->pdgId()),
 							      phys::Particle(p->daughter(1)->p4(), phys::Particle::computeCharge(p->daughter(1)->pdgId()), p->daughter(1)->pdgId()),
 							      p->pdgId()));
-    
+
     // Info about the MC weight
     puweight_ = PUWeighter_.weight(sampleType_, setup_, ntruePUInt_);
     
@@ -292,8 +292,6 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   Zee_ = fillBosons(Zee, electrons_);
 
   Wjj_ = fillBosons(Wjj, jets_, 24);
-
-
 
   theTree->Fill();
 }

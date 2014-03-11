@@ -82,8 +82,6 @@ void GenFilterCategory::beginJob() {}
 
  bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) { 
 
-  typedef Candidate::LorentzVector LorentzVector;
-
   std::vector<const reco::Candidate *> theGenZ;
   std::vector<const reco::Candidate *> theGenW;
   std::vector<const reco::Candidate *> theGenl;
@@ -129,7 +127,6 @@ void GenFilterCategory::beginJob() {}
   }   
   //------------------ end of loop over genparticles --------------------------------------------------
   
-
   int leptonCode = 0;
   if( numMu == 2 && numE == 2 ) leptonCode = 2;
   if( (numMu == 4 && numE == 0) || (numMu == 0 && numE == 4) ) leptonCode = 4;
@@ -173,7 +170,6 @@ void GenFilterCategory::beginJob() {}
 	if ( fabs((theGenj[i]->p4() + theGenj[j]->p4()).mass() - mZ) < 10. ) isZloose = true;
       }
      
-
     
     //--------------------1: MC history------------------------------------
     if ( num==1 ) {              
@@ -250,9 +246,8 @@ void GenFilterCategory::beginJob() {}
    
     //-----------------3: Real signal, real pairing-----------------------
     else if ( num==3 ) {         
-
       std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > ZZ = makeZbosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
-      
+
       Z0 = ZZ.first;
       Z1 = ZZ.second;
 
@@ -265,14 +260,13 @@ void GenFilterCategory::beginJob() {}
 	  W.setId(bosonId);
   
 	  if (qqPassMWwindow) isWtight = true;  
-	    
 	  
 	} else if ( (isZloose || qqPassMZwindow)  && bosonId == 23 ) {   //definition of tight Z (mass + cat)
 	  
 	  Z2.setDaughter(0,phys::Particle(j0->p4(),phys::Particle::computeCharge(j0->pdgId()), j0->pdgId()));
 	  Z2.setDaughter(1,phys::Particle(j1->p4(),phys::Particle::computeCharge(j1->pdgId()), j1->pdgId()));
 	  Z2.setId(bosonId);
-	    
+
 	  if(qqPassMZwindow){
 	    isZtight = true;
 	    has3Z = true; 
@@ -281,12 +275,8 @@ void GenFilterCategory::beginJob() {}
       }     
     } 
     
-    else {
-      abort();
-    }
+    else { cout << "*** Signal definition not found! ***" << endl; abort(); }
 
-   
-    
     //=====================================================================================
 
     bool hasZZ4l    = fabs(Z0.p4().M()-mZ) < 10. && fabs(Z1.p4().M()-mZ) < 10.;
@@ -370,8 +360,6 @@ void GenFilterCategory::beginJob() {}
     }
   }
  
- 
-  
   std::auto_ptr<int> output(new int(categoryNum));
   event.put(output);
 
@@ -385,8 +373,6 @@ void GenFilterCategory::beginJob() {}
   if(Z2.id() > 0) outputGenColl = loadGenBoson(Z2, genRefs, outputGenColl);
   if(fabs(W.id()) > 0)  outputGenColl = loadGenBoson(W, genRefs, outputGenColl);
   
-
-
   event.put(outputGenColl);
   
   if(sel_ >= 0)
