@@ -3,6 +3,9 @@
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
+using std::cout;
+using std::endl;
+
 
 using namespace phys;
 
@@ -16,4 +19,9 @@ void VVXAnalyzer::analyze(){
     Z.push_back(&z);
 
   std::stable_sort(Z.begin(),Z.end(),MassComparator(ZMASS));
+
+  if(genCategory == 0)
+    foreach(const Boson<Particle>& v, *genVBParticles)
+      cout<<"Gen Boson Id " << v.id() << ". Daughters id: "<< v.daughter(0).id() << " "<<v.daughter(1).id() << endl;
+
 }

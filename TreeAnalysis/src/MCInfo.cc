@@ -84,10 +84,11 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
     xsectype = "external";
   }
 
-  sampleWeight_ = crossSection()/genEvents_;
+  sampleWeight_ = luminosity_*crossSection()/genEvents_;
 
-  std::cout<<"\nThis sample has been made out of a dataset containing " << Green(genEvents()) << " generated events." << std::endl
-	   <<"Out of them, " << Green(analyzedEvents()) << " events have been used to produce the main tree."         << std::endl
-	   <<"The cross-section of this sample is " << Green(crossSection()) << Green(" pb ")<<"(" << xsectype <<")." << std::endl
-	   <<"The sample weight is " << Green(sampleWeight())                                                         << std::endl;
+  std::cout<<"\nThis sample has been made out of a dataset containing " << Green(genEvents()) << " generated events."   << std::endl
+	   <<"Out of them, " << Green(analyzedEvents()) << " events have been used to produce the main tree."           << std::endl
+	   <<"The cross-section of this sample is " << Green(crossSection()) << Green(" pb ") << "(" << xsectype <<")." << std::endl
+	   <<"The integrated luminosity scenario is: "<< Green(luminosity_) << Green("/pb.") 
+	   << " The sample weight is " << Green(sampleWeight()) << "."                                                  << std::endl;
 }
