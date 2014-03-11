@@ -75,6 +75,13 @@ public:
       return a.p4().Pt() > b.p4().Pt(); 
     }
   };
+
+ struct WPtComparator{
+    bool operator()( const phys::Boson<phys::Jet> & w1 , 
+		     const phys::Boson<phys::Jet> & w2) const{ 
+      return w1.pt() > w2.pt(); 
+    }
+  };
   
   struct MassComparator{
     MassComparator(const double& ref): ref_(ref){}
