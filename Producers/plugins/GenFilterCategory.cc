@@ -45,7 +45,7 @@ public:
   }
   
   bool filter(edm::Event & event, const edm::EventSetup& eventSetup);
-  std::auto_ptr<std::vector<reco::GenParticle> > loadGenBoson(const Boson * vb, const GenParticleRefProd &genRefs, std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl);
+  std::auto_ptr<std::vector<reco::GenParticle> > loadGenBoson(const Boson<Particle> &vb, const GenParticleRefProd &genRefs, std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl);
   
   virtual void beginJob();
   virtual void endJob(){}
@@ -135,10 +135,10 @@ void GenFilterCategory::beginJob() {}
   if( numMu == 2 && numE == 2 ) leptonCode = 2;
   if( (numMu == 4 && numE == 0) || (numMu == 0 && numE == 4) ) leptonCode = 4;
 
-  Boson *Z0 = new Boson();
-  Boson *Z1 = new Boson();
-  Boson *W  = new Boson();
-  Boson *Z2 = new Boson();
+  Boson<Particle> Z0;
+  Boson<Particle> Z1;
+  Boson<Particle> W; 
+  Boson<Particle> Z2;
 
   if ( theGenq.size() == 2 && theGenl.size() == 4 && (leptonCode == 2 || leptonCode == 4) ) {
 
@@ -190,46 +190,46 @@ void GenFilterCategory::beginJob() {}
       
       if ( theGenZ.size() >= 2 && LeptonsMotherSelec ) {
 	
- 	Z0->Setdaughter1(theGenl[0]->p4());
-	Z0->Setdaughter2(theGenl[1]->p4());
-	Z0->SetbosonId(theGenZ[0]->pdgId());
+ 	Z0.Setdaughter1(theGenl[0]->p4());
+	Z0.Setdaughter2(theGenl[1]->p4());
+	Z0.setId(theGenZ[0]->pdgId());
 	
-	Z1->Setdaughter1(theGenl[2]->p4());
-	Z1->Setdaughter2(theGenl[3]->p4());
-	Z1->SetbosonId(theGenZ[1]->pdgId());
+	Z1.Setdaughter1(theGenl[2]->p4());
+	Z1.Setdaughter2(theGenl[3]->p4());
+	Z1.setId(theGenZ[1]->pdgId());
 	
 	if ( abs(theGenl[0]->pdgId()) == 11 ) {     //e
-	  Z0->Setdaughter1Id(11);
-	  Z0->Setdaughter2Id(-11); 
+	  Z0.Setdaughter1Id(11);
+	  Z0.Setdaughter2Id(-11); 
 	}
 	if ( abs(theGenl[0]->pdgId()) == 13 ) {     //u
-	  Z0->Setdaughter1Id(13);
-	  Z0->Setdaughter2Id(-13);
+	  Z0.Setdaughter1Id(13);
+	  Z0.Setdaughter2Id(-13);
 	}
 	if ( abs(theGenl[2]->pdgId()) == 11 ) {     //e
-	  Z1->Setdaughter1Id(11);
-	  Z1->Setdaughter2Id(-11);
+	  Z1.Setdaughter1Id(11);
+	  Z1.Setdaughter2Id(-11);
 	}
 	if ( abs(theGenl[2]->pdgId()) == 13 ) {     //u
-	  Z1->Setdaughter1Id(13);
-	  Z1->Setdaughter2Id(-13);
+	  Z1.Setdaughter1Id(13);
+	  Z1.Setdaughter2Id(-13);
 	}
 	
 	if ( isWtight ) {       
 
-	  W->Setdaughter1(j0->p4());
-	  W->Setdaughter2(j1->p4());
-	  W->SetbosonId(theGenW[0]->pdgId());
-	  //	  W->SetdaughtersId(3);
+	  W.Setdaughter1(j0->p4());
+	  W.Setdaughter2(j1->p4());
+	  W.setId(theGenW[0]->pdgId());
+	  //	  W.SetdaughtersId(3);
 	  
 	}
 	 
 	else if ( isZtight ) {
 
-	  Z2->Setdaughter1(j0->p4());
-	  Z2->Setdaughter2(j1->p4());
-	  Z2->SetbosonId(theGenZ[2]->pdgId());
-	  //	  Z2->SetdaughtersId(3);
+	  Z2.Setdaughter1(j0->p4());
+	  Z2.Setdaughter2(j1->p4());
+	  Z2.setId(theGenZ[2]->pdgId());
+	  //	  Z2.SetdaughtersId(3);
 	  
 	  has3Z = true; 
 	}
@@ -240,46 +240,46 @@ void GenFilterCategory::beginJob() {}
     // -----------------2: Real signal, MadGraph pairing------------------
     else if ( num==2 ) {         
       
-      Z0->Setdaughter1(theGenl[0]->p4());            
-      Z0->Setdaughter2(theGenl[1]->p4());
-      Z0->SetbosonId(23);
+      Z0.Setdaughter1(theGenl[0]->p4());            
+      Z0.Setdaughter2(theGenl[1]->p4());
+      Z0.setId(23);
       
-      Z1->Setdaughter1(theGenl[2]->p4());
-      Z1->Setdaughter2(theGenl[3]->p4());
-      Z1->SetbosonId(23);
+      Z1.Setdaughter1(theGenl[2]->p4());
+      Z1.Setdaughter2(theGenl[3]->p4());
+      Z1.setId(23);
       
       if ( abs(theGenl[0]->pdgId()) == 11 ) {     //e
-	Z0->Setdaughter1Id(11);
-	Z0->Setdaughter2Id(-11); 
+	Z0.Setdaughter1Id(11);
+	Z0.Setdaughter2Id(-11); 
       }
       if ( abs(theGenl[0]->pdgId()) == 13 ) {     //u
-	Z0->Setdaughter1Id(13);
-	Z0->Setdaughter2Id(-13);
+	Z0.Setdaughter1Id(13);
+	Z0.Setdaughter2Id(-13);
       }
       if ( abs(theGenl[2]->pdgId()) == 11 ) {     //e
-	Z1->Setdaughter1Id(11);
-	Z1->Setdaughter2Id(-11);
+	Z1.Setdaughter1Id(11);
+	Z1.Setdaughter2Id(-11);
       }
       if ( abs(theGenl[2]->pdgId()) == 13 ) {     //u
-	Z1->Setdaughter1Id(13);
-	Z1->Setdaughter2Id(-13);
+	Z1.Setdaughter1Id(13);
+	Z1.Setdaughter2Id(-13);
       }
       
       if ( (isWloose || qqPassMWwindow) && fabs(bosonId) == 24 ) {      //definition of tight W (mass + cat)
 	
-    	W->Setdaughter1(j0->p4());
-    	W->Setdaughter2(j1->p4());
-    	W->SetbosonId(bosonId);
-	//	W->SetdaughtersId(3);
+    	W.Setdaughter1(j0->p4());
+    	W.Setdaughter2(j1->p4());
+    	W.setId(bosonId);
+	//	W.SetdaughtersId(3);
    	
 	isWtight = true;
 	
       } else if ( (isZloose || qqPassMZwindow) && bosonId == 23 ) {     //definition of tight Z (mass + cat)
 	
-	Z2->Setdaughter1(j0->p4());
-    	Z2->Setdaughter2(j1->p4());
-    	Z2->SetbosonId(bosonId);
-	//	Z2->SetdaughtersId(3);
+	Z2.Setdaughter1(j0->p4());
+    	Z2.Setdaughter2(j1->p4());
+    	Z2.setId(bosonId);
+	//	Z2.SetdaughtersId(3);
    	
 	isZtight = true;
 	has3Z = true;     	
@@ -290,31 +290,31 @@ void GenFilterCategory::beginJob() {}
     //-----------------3: Real signal, real pairing-----------------------
     else if ( num==3 ) {         
 
-      std::pair<Boson*,Boson*> ZZ = makeZbosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
+      std::pair<Boson<Particle>, Boson<Particle> > ZZ = makeZbosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
       
       Z0 = ZZ.first;
       Z1 = ZZ.second;
 
-      if ( Z0->p4().mass() != 0 && Z1->p4().mass() != 0 ) {
+      if ( Z0.p4().mass() != 0 && Z1.p4().mass() != 0 ) {
 
 	if ( (isWloose || qqPassMWwindow)  && fabs(bosonId) == 24 ) {    //definition of tight W (mass + cat)
 	  
-	  W->Setdaughter1(j0->p4());
-	  W->Setdaughter2(j1->p4());
-	  W->SetbosonId(bosonId);
-	  W->Setdaughter1Id(get<1>(bosonIdHistory));
-	  W->Setdaughter2Id(get<2>(bosonIdHistory));
+	  W.Setdaughter1(j0->p4());
+	  W.Setdaughter2(j1->p4());
+	  W.setId(bosonId);
+	  W.Setdaughter1Id(get<1>(bosonIdHistory));
+	  W.Setdaughter2Id(get<2>(bosonIdHistory));
 	  
 	  if (qqPassMWwindow) isWtight = true;  
 	    
 	  
 	} else if ( (isZloose || qqPassMZwindow)  && bosonId == 23 ) {   //definition of tight Z (mass + cat)
 	  
-	  Z2->Setdaughter1(j0->p4());
-	  Z2->Setdaughter2(j1->p4());
-	  Z2->SetbosonId(bosonId);
-	  Z2->Setdaughter1Id(get<1>(bosonIdHistory));
-	  Z2->Setdaughter2Id(get<2>(bosonIdHistory));
+	  Z2.Setdaughter1(j0->p4());
+	  Z2.Setdaughter2(j1->p4());
+	  Z2.setId(bosonId);
+	  Z2.Setdaughter1Id(get<1>(bosonIdHistory));
+	  Z2.Setdaughter2Id(get<2>(bosonIdHistory));
 	  
 	  if(qqPassMZwindow){
 	    isZtight = true;
@@ -332,7 +332,7 @@ void GenFilterCategory::beginJob() {}
     
     //=====================================================================================
 
-    bool hasZZ4l    = fabs(Z0->p4().mass()-mZ) < 10. && fabs(Z1->p4().mass()-mZ) < 10.;
+    bool hasZZ4l    = fabs(Z0.p4().mass()-mZ) < 10. && fabs(Z1.p4().mass()-mZ) < 10.;
     bool isMySignal = hasZZ4l && isWtight;
       
     bool passEtaAccLep = true;
@@ -423,19 +423,14 @@ void GenFilterCategory::beginJob() {}
 
   GenParticleRefProd genRefs = event.getRefBeforePut<std::vector<reco::GenParticle> >();
 
-  if(Z0->bosonId() > 0) outputGenColl = loadGenBoson(Z0, genRefs, outputGenColl);
-  if(Z1->bosonId() > 0) outputGenColl = loadGenBoson(Z1, genRefs, outputGenColl);
-  if(Z2->bosonId() > 0) outputGenColl = loadGenBoson(Z2, genRefs, outputGenColl);
-  if(fabs(W->bosonId()) > 0)  outputGenColl = loadGenBoson(W, genRefs, outputGenColl);
+  if(Z0.bosonId() > 0) outputGenColl = loadGenBoson(Z0, genRefs, outputGenColl);
+  if(Z1.bosonId() > 0) outputGenColl = loadGenBoson(Z1, genRefs, outputGenColl);
+  if(Z2.bosonId() > 0) outputGenColl = loadGenBoson(Z2, genRefs, outputGenColl);
+  if(fabs(W.bosonId()) > 0)  outputGenColl = loadGenBoson(W, genRefs, outputGenColl);
   
 
 
   event.put(outputGenColl);
-  
-  if(Z0) delete Z0; 
-  if(Z1) delete	Z1;
-  if(W)  delete	W;  
-  if(Z2) delete Z2;
   
   if(sel_ >= 0)
     return sel_ == categoryNum;
@@ -444,12 +439,12 @@ void GenFilterCategory::beginJob() {}
  }
 
 
- std::auto_ptr<std::vector<reco::GenParticle> > GenFilterCategory::loadGenBoson(const Boson * vb, const GenParticleRefProd &genRefs, std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl){
+ std::auto_ptr<std::vector<reco::GenParticle> > GenFilterCategory::loadGenBoson(const Boson<Particle> &vb, const GenParticleRefProd &genRefs, std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl){
 
    size_t initialSize = outputGenColl->size();
-   outputGenColl->push_back(reco::GenParticle(vb->bosonId() == 23 ? 0 : copysign(1, vb->bosonId()), vb->p4(),          GenParticle::Point(0.,0.,0.), vb->bosonId()   , 3, true));
-   outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb->daughter1Id())                    , vb->p4daughter1(), GenParticle::Point(0.,0.,0.), vb->daughter1Id(),3, true));
-   outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb->daughter2Id())                    , vb->p4daughter2(), GenParticle::Point(0.,0.,0.), vb->daughter2Id(),3, true));
+   outputGenColl->push_back(reco::GenParticle(vb.bosonId() == 23 ? 0 : copysign(1, vb.bosonId()), vb.p4(),          GenParticle::Point(0.,0.,0.), vb.bosonId()   , 3, true));
+   outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb.daughter1Id())                    , vb.p4daughter1(), GenParticle::Point(0.,0.,0.), vb.daughter1Id(),3, true));
+   outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb.daughter2Id())                    , vb.p4daughter2(), GenParticle::Point(0.,0.,0.), vb.daughter2Id(),3, true));
    outputGenColl->at(initialSize).addDaughter(GenParticleRef(genRefs,initialSize+1));
    outputGenColl->at(initialSize).addDaughter(GenParticleRef(genRefs,initialSize+2));
    

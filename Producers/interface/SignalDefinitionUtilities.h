@@ -5,6 +5,6 @@
 #include "DataFormats/Candidate/interface/Candidate.h"
 
 
-std::pair<Boson*,Boson*> makeZbosonsFromLeptons(const std::vector<const reco::Candidate *>& lm, const std::vector<const reco::Candidate *>& lp, int leptonCode, float mZ);
+std::pair<Boson<Particle>, Boson<Particle> > makeZbosonsFromLeptons(const std::vector<const reco::Candidate *>& lm, const std::vector<const reco::Candidate *>& lp, int leptonCode, float mZ);
 
 
