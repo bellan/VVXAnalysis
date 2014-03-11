@@ -69,6 +69,8 @@ namespace phys {
 
       return charge;
     }
+
+    void setId(int id) {id_ = id;}
  
   protected:
     TLorentzVector p4_;
