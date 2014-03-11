@@ -181,8 +181,8 @@ public:
   std::vector<phys::Boson<phys::Jet> >      *Wjj;
 
   // GenParticle 
-  std::vector<phys::Particle>               *genParticles; TBranch *b_genParticles;
-  std::vector<phys::Boson<phys::Particle> > *genVBs;       TBranch *b_genVBs;
+  std::vector<phys::Particle>               *genParticles;   TBranch *b_genParticles;
+  std::vector<phys::Boson<phys::Particle> > *genVBParticles; TBranch *b_genVBParticles;
 };
 
 #endif

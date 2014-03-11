@@ -89,8 +89,8 @@ void EventAnalyzer::Init(TTree *tree)
   Wjj = new std::vector<phys::Boson<phys::Jet> > ()    ; WjjCand = 0; b_WjjCand = 0; theTree->SetBranchAddress("Wjj", &WjjCand, &b_WjjCand);
 
   // Gen Particles   
-  genParticles = 0;                                                b_genParticles = 0; theTree->SetBranchAddress("genParticles", &genParticles, &b_genParticles);
-  genVBs       = new std::vector<phys::Boson<phys::Particle> > (); b_genVBs       = 0; theTree->SetBranchAddress("genVBs"      , &genVBs      , &b_genVBs);
+  genParticles   = 0;                                                b_genParticles   = 0; theTree->SetBranchAddress("genParticles"  , &genParticles  , &b_genParticles);
+  genVBParticles = new std::vector<phys::Boson<phys::Particle> > (); b_genVBParticles = 0; theTree->SetBranchAddress("genVBParticles", &genVBParticles, &b_genVBParticles);
 
   // MET
   met = new phys::Particle();
