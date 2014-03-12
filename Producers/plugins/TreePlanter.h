@@ -47,16 +47,21 @@ class TreePlanter: public edm::EDAnalyzer {
   void initTree();
   
   void fillEventInfo(const edm::Event& event);
-
+  
   template<typename LEP>
     phys::Lepton fillLepton(const LEP& particle) const;
+  
+  phys::Lepton fill(const pat::Muon &muon) const;
 
-   phys::Electron fillElectron(const pat::Electron &electron) const;
-
-   phys::Jet fillJet(const cmg::PFJet &jet) const;
-
-   template<typename PAR>
-     std::vector<phys::Boson<PAR> > fillBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons,  const std::vector<PAR> & physDaughtersCand, int type = 23) const;
+  phys::Electron fill(const pat::Electron &electron) const;
+  
+  phys::Jet fill(const cmg::PFJet &jet) const;
+  
+  template<typename PAR>
+    std::vector<phys::Boson<PAR> > fillBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons,  const std::vector<PAR> & physDaughtersCand, int type = 23) const;
+  
+  template<typename T, typename PAR>
+    std::vector<phys::Boson<PAR> > fillBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type = 23) const;
 
  private:
   struct MinPairComparator{
