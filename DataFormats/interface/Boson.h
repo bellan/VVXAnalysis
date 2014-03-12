@@ -34,16 +34,16 @@ namespace phys {
     
     void setDaughter(int i, const P& d){
       if(i == 0) daughter0_ = d;
-      if(i == 1) daughter1_ = d;
-      else abort();
+      else if(i == 1) daughter1_ = d;
+      else { std::cout << "*** Boson's daughter not found! ***" << " Cannot set it. " << i << std::endl; abort(); }
       p4_ = daughter0_.p4() + daughter1_.p4();
     }
 
     // Operations
     P daughter(int i) const{
       if(i == 0) return daughter0_;
-      if(i == 1) return daughter1_;
-      else abort();
+      else if(i == 1) return daughter1_;
+      else { std::cout << "*** Boson's daughter not found! ***" << " " << i << std::endl; abort();}
     }
 
     
