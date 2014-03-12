@@ -45,7 +45,7 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
   , doBasicPlots_(doBasicPlots)
   , theMCInfo(filename, lumi, externalXSection)
   , theWeight(1.)
-  , theCutCounter(0){
+  , theCutCounter(0.){
 
   TChain *tree = new TChain("treePlanter/ElderTree");
   tree->Add(filename.c_str());
@@ -210,7 +210,7 @@ Int_t EventAnalyzer::cut() {
   
   bool pass = true;
   
-  if(pass) ++theCutCounter;
+  if(pass) theCutCounter += theWeight;
   
   return pass ? 1 : -1;
 }
