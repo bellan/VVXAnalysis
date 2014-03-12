@@ -296,8 +296,7 @@ void GenFilterCategory::beginJob() {}
       //Signal: ZZW---------------------------------------categoryNum=0---------------------
       if ( isMySignal ) {
 	categoryNum = 0;
-	cout << "SIGNAL: "  << event.id().event() << "\nEvent category: " << categoryNum << endl;
-
+	//cout << "SIGNAL: "  << event.id().event() << "\nEvent category: " << categoryNum << endl;
       } 
 
       //=========Background=========//
