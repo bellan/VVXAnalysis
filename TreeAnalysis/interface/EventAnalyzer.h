@@ -98,7 +98,7 @@ public:
 
     double ref_;
   };
-  
+ 
   // Class for specific selections
   SelectorBase& select;
 
