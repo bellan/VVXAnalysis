@@ -10,33 +10,36 @@ using namespace colour;
 
 
 
-
-
 Int_t ZZWAnalyzer::cut() {
+
+
+  bool background = genCategory != 0;
+
+  if (background) theHistograms.fill("Number of background events", "Number of background events", 10, 0, 10, 0, theWeight);  // Number of total background events -----------------------------------------
+
+
+  bool signal = genCategory == 0;
   
-  bool category0 = genCategory == 0;
+  if(signal)
+    theHistograms.fill("Number of signal events", "Number of signal events", 10, 0, 10, 0, theWeight);           // Number of total signal events ----------------------------------------------------------
 
-  bool passSize = ( Zmm->size() + Zee->size() ) >= 2;
 
-  bool offset =  category0 && passSize; 
+  bool passZsize = ( Zmm->size() + Zee->size() ) >= 2;
+ 
+  if(signal && passZsize)     theHistograms.fill("Number of signal events"    , 10, 0, 10, 1, theWeight);               //Number of events with 2 well-defined Z bosons  ------------------------------------                              
+  if(background && passZsize) theHistograms.fill("Number of background events", 10, 0, 10, 1, theWeight);
 
-  if(offset) theHistograms.fill<TH1I>("Number of events", "Number of events", 10, 0, 10, 0);  // Number of total events --------------------------
+
+  bool passWsize =  Wjj->size() >= 1;
 
  
-  bool pass1 =  offset && Wjj->size() >= 1;
-
-  if(pass1) theHistograms.fill("Number of events" , 10, 0, 10, 1);    //Number of events after the first cut: At least 1 W -----------------------                               
-
-
-  int numW = 0;
-  foreach(const Boson<Jet>& w, *Wjj)
-    if(w.daughter(0).pt() > 40 && w.daughter(1).pt() > 40) ++numW;       
+  if(background && passZsize && passWsize) theHistograms.fill("Number of background events", 10, 0, 10, 2, theWeight);  //Number of events with 2 well-defined Z bosons and 1 well-defined W boson -----------
   
-  bool pass = pass1;  //&& numW >= 1;; 
-
+  bool pass = signal && passZsize && passWsize;
+  
   if(pass) {
     ++theCutCounter;
-    theHistograms.fill("Number of events" , 10, 0, 10, 2);   //Number of events after the second cut: 2jets Pt>40GeV -----------------------------
+    theHistograms.fill("Number of signal events" , 10, 0, 10, 2, theWeight);              //Number of events with 2 well-defined Z bosons and 1 well-defined W boson -----------------------------------------
   }
 
   return pass ? 1 : -1;
@@ -52,50 +55,28 @@ void ZZWAnalyzer::analyze() {
   //================================================================//
   
 
-  int numMu = 0;
-  int numE  = 0;
+  std::vector<const Boson<Particle>* > GenZ;
+  std::vector<const Boson<Particle>* > GenW;
   
-  std::vector<const Particle* > Genq;
-  std::vector<const Particle* > Genj;
-  std::vector<const Particle* > Genl;    
-  std::vector<const Particle* > Genlp;
-  std::vector<const Particle* > Genlm;
-  std::vector<const Particle* > GenZ;
-  std::vector<const Particle* > GenW;
-  
-  foreach(const Particle& p, *genParticles) {
+  foreach(const Boson<Particle>& b, *genVBParticles) {
     
-    int s_id = p.id();
+    int s_id = b.id();
     int id   = abs(s_id);
-        
-    if ( (id < 8 || id == 9)) {              // quarks and gluons
-      Genj.push_back(&p);
-    } 
-    if ( id < 8) {                           // quarks
-      Genq.push_back(&p);
-    } else if ( id==23 ) {                   // Z
-      GenZ.push_back(&p);
-    } else if ( id==24 ) {                   // W
-      GenW.push_back(&p);
-    } else if ( id >= 11 && id <= 16 ) {     // leptons 
-      numE  = id == 11 ? numE+1  : numE;
-      numMu = id == 13 ? numMu+1 : numMu;
-      Genl.push_back(&p);
-      if(s_id>0) {Genlp.push_back(&p);
-      } else {Genlm.push_back(&p);}
-    }
-    
+
+    if (id == 23)  GenZ.push_back(&b);      // Z
+    else if (id == 24) GenW.push_back(&b);  // W
+ 
   }
 
-  const Particle* Z0gen = GenZ.at(0);
-  const Particle* Z1gen = GenZ.at(1);
-  const Particle* Wgen  = GenW.at(0);
+  const Boson<Particle>* Z0gen = GenZ.at(0);
+  const Boson<Particle>* Z1gen = GenZ.at(1);
+  const Boson<Particle>* Wgen  = GenW.at(0);
+
 
   cout << "\n=============== genParticles: history information ===============" << endl; 
-  cout << "Number of partons in the jets= " << Genj.size() << endl;
-  cout << "Number of leptons= "             << Genl.size() << endl;
-  cout << "Number of generated W= "         << GenW.size() << endl;
-  cout << "Category= "                      << genCategory << endl;
+  cout << "Number of generated Z= "  << GenZ.size() << endl;
+  cout << "Number of generated W= "  << GenW.size() << endl;
+  cout << "Category= "               << genCategory << endl;
 
 
   /////-----------------Histograms-------------------
@@ -112,11 +93,6 @@ void ZZWAnalyzer::analyze() {
   theHistograms.fill("Z1Gen_Pt"  , "Z1Gen_Pt"  , 300, 0, 300, Z1gen->pt()    , theWeight);
   theHistograms.fill("WGen_Pt"   , "WGen_Pt"   , 300, 0, 300, Wgen->pt()     , theWeight);
    
-  //----------------------------
-
-  theHistograms.fill<TH1I>("Number of leptons", "Number of leptons", 10, 0, 10, Genl.size());
-  theHistograms.fill<TH1I>("Number of partons", "Number of partons", 10, 0, 10, Genj.size());
-
 
 
   //================================================================//
@@ -129,14 +105,19 @@ void ZZWAnalyzer::analyze() {
   std::vector< std::pair<const Particle*, const Particle* > > ZcomparatorVector;
   std::vector< std::pair<const Particle*, const Particle* > > WcomparatorVector;
   std::vector<const Particle* > Zll;
-
+  
+  Boson<Lepton>& Zmm1 = Zmm->at(0);
+  Boson<Lepton>& Zmm2 = Zmm->at(0);
+  
+  
   foreach(const Boson<Lepton>& z, *Zmm) {
     ZcomparatorVector.push_back(make_pair(Z0gen, & z));
     ZcomparatorVector.push_back(make_pair(Z1gen, & z));
-    Zll.push_back(& z);      
+    Zll.push_back(& z);
   }
-
-  foreach(const Boson<Electron>& z, *Zee) {
+  
+  
+  foreach(const Boson<Electron>& z, *Zee) {   
     ZcomparatorVector.push_back(make_pair(Z0gen, & z));
     ZcomparatorVector.push_back(make_pair(Z1gen, & z));
     Zll.push_back(& z);
@@ -146,21 +127,53 @@ void ZZWAnalyzer::analyze() {
     WcomparatorVector.push_back(make_pair(Wgen, & w));
   }
   
+
   std::stable_sort(ZcomparatorVector.begin(), ZcomparatorVector.end(), deltaRComparator());
   std::stable_sort(WcomparatorVector.begin(), WcomparatorVector.end(), deltaRComparator());
   
   const Particle* Z0 = ZcomparatorVector.at(0).second;         // Definition of correctly matched bosons
   const Particle* Z1 = ZcomparatorVector.at(1).second;         //
-  const Particle* W  = WcomparatorVector.at(0).first;          //
+  const Particle* W  = WcomparatorVector.at(0).first;    
+  
+
 
 
   //%%%%%%%%%%%% Definition of the signal %%%%%%%%%%%%//  
  
   std::stable_sort(Zll.begin() ,Zll.end() ,MassComparator(ZMASS));
-  //std::stable_sort(Wjj->begin(),Wjj->end(),MassComparator(WMASS));
-  std::stable_sort(Wjj->begin(),Wjj->end(),WPtComparator());
+  std::stable_sort(Wjj->begin(),Wjj->end(),MassComparator(WMASS));
+  //std::stable_sort(Wjj->begin(),Wjj->end(),WPtComparator());
   
   const Particle* myZ0  = Zll.at(0);
+
+
+//   bool passGhost = true;
+//     for (int i=0; i<=1; ++i){
+//       for (int j=0; j<=1; ++j) {
+// 	double DR = deltaR(Zmm1.daughter(i).p4().Rapidity(), Zmm1.daughter(i).p4().Phi(), z.daughter(j).p4().Rapidity(), z.daughter(j).p4().Phi());
+// 	if (DR < 0.02) {
+// 	  passGhost=false;
+// 	  break;
+// 	}
+//       }
+//     }
+    
+//     if (passGhost)  { 
+//       Z2=z;
+//       break;
+//     }
+
+
+//     if (passGhost)  {    
+//       
+//     } else Zllwrong.push_back(& z);
+//  }
+  
+  // Se tutte le Z falliscono il taglio, allora Zmm1==Zmm2
+  // Altrimenti la rtua seconda Z e' Zmm2
+
+
+
   const Particle* myZ1  = Zll.at(1);
   Boson<Jet> myW        = Wjj->at(0);
   
@@ -181,9 +194,9 @@ void ZZWAnalyzer::analyze() {
   bool ZcorrectMatch = (p_myZ0 == Z0->p4() && p_myZ1 == Z1->p4()) || (p_myZ0 == Z1->p4() && p_myZ1 == Z0->p4());
   bool WcorrectMatch = p_myW == W->p4();
 
-  if ( ZcorrectMatch ) theHistograms.fill<TH1I>("Efficiency of Z definition", "Efficiency of Z definition", 3, 0, 3, 1);
+  if ( ZcorrectMatch ) theHistograms.fill("Efficiency of Z definition", "Efficiency of Z definition", 3, 0, 3, 1, theWeight);
   
-  if ( WcorrectMatch ) theHistograms.fill<TH1I>("Efficiency of W definition", "Efficiency of W definition", 3, 0, 3, 1);
+  if ( WcorrectMatch ) theHistograms.fill("Efficiency of W definition", "Efficiency of W definition", 3, 0, 3, 1, theWeight);
 
   if ( ZcorrectMatch && WcorrectMatch ) theHistograms.fill<TH1I>("Efficiency of signal definition", "Efficiency of signal definition", 3, 0, 3, 1);
 

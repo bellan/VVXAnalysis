@@ -30,12 +30,14 @@ public:
  private:
   friend class Selector<ZZWAnalyzer>; 
   template< class PAR >
-    bool ZBosonDefinition(phys::Boson<PAR> cand) const{
+    bool ZBosonDefinition(phys::Boson<PAR> cand) const {
     return fabs(cand.p4().M() - ZMASS) < 20;
   }
   template< class PAR >
-    bool WBosonDefinition(phys::Boson<PAR> cand) const{
-    return fabs(cand.p4().M() - WMASS) < 40;
+    bool WBosonDefinition(phys::Boson<PAR> cand) const {
+    bool massRange = fabs(cand.p4().M() - WMASS) < 40;
+    bool jetPt = cand.daughter(0).pt() > 40 || cand.daughter(1).pt() > 40;
+    return massRange && jetPt;
   }
 
 };
