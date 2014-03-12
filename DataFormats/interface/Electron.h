@@ -56,6 +56,32 @@ namespace phys {
     Int_t    missingHit() const {return missingHit_;}
     Int_t    nCrystals()  const {return nCrystals_;} 
     
+    Bool_t passBDT() const {
+
+      bool lowPt   = pt() > 7 && pt() < 10;
+      bool highPt  = pt() >= 10;
+      if(!lowPt && !highPt) return false;
+
+      bool lowEta  = fabs(eta()) < 0.8;
+      bool midEta  = fabs(eta()) >= 0.8 && fabs(eta()) < 1.479;
+      bool highEta = fabs(eta()) >= 1.479 && fabs(eta()) < 2.5; 
+      if(!lowEta && !midEta && ! highEta) return false;
+
+      if(pfCombRelIso() > 0.4 || missingHit() > 1 || sip() >=  4) return false;
+
+      if(lowPt){
+	if(lowEta)  return BDT() > 0.47;
+	if(midEta)  return BDT() > 0.004;
+	if(highEta) return BDT() > 0.295;
+      }
+      if(highPt){
+	if(lowEta)  return BDT() > -0.34;
+	if(midEta)  return BDT() > -0.65;
+	if(highEta) return BDT() >  0.60;
+      }
+      return false;
+    }
+
 
   protected:
     
