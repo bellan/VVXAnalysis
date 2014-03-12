@@ -311,8 +311,8 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
   output.pfPhotonIso_     = lepton.userFloat("PFPhotonIso"    );
   output.pfCombRelIso_    = lepton.userFloat("CombRelIsoPF"   );
   output.rho_             = lepton.userFloat("rho"            );
-  output.isPF_            = lepton.userInt  ("isPFMuon"       );
-  output.matchHLT_        = lepton.userInt  ("HLTMatch"       );
+  output.isPF_            = lepton.userFloat("isPFMuon"       );
+  output.matchHLT_        = lepton.userFloat("HLTMatch"       );
      
   return output; 
 }
@@ -326,7 +326,7 @@ phys::Electron TreePlanter::fillElectron(const pat::Electron &electron) const{
   output.phiWidth_   = electron.userFloat("phiWidth"  );
   output.etaWidth_   = electron.userFloat("etaWidth"  );
   output.BDT_        = electron.userFloat("BDT"       );
-  output.isBDT_      = electron.userInt  ("isBDT"     );
+  output.isBDT_      = electron.userFloat("isBDT"     );
   output.missingHit_ = electron.userInt  ("missingHit");
   output.nCrystals_  = electron.userInt  ("nCrystals" );
 
