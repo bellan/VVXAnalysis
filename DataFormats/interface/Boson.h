@@ -28,7 +28,12 @@ namespace phys {
       , daughter1_(daughter1)
       {}
         
-    
+    template<typename T>
+      Boson<T> clone() const {
+      return Boson<T>(daughter0_,daughter1_,id_);
+    }
+
+
     /// Destructor
     virtual ~Boson(){};
     

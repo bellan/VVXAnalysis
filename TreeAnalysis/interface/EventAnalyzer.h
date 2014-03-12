@@ -66,7 +66,22 @@ public:
     
     return dR;
     
-  };
+  }
+  template <typename T>
+    static double deltaR (const T&a, const T&b ) {
+    
+    double Drapidity = a.Eta() - b.Eta();
+    double Dphi      = a.Phi() - b.Phi();
+    
+    double dR = sqrt(Drapidity*Drapidity  + Dphi*Dphi);
+    
+    return dR;
+  }
+
+
+
+
+
 
   struct PtComparator{
     template<typename LEP>
@@ -151,7 +166,7 @@ public:
 
   double theWeight;
   double theSampleWeight;
-  int    theCutCounter;
+  double theCutCounter;
 
   // Access to the branches
   Int_t    event    ; TBranch *b_event;
