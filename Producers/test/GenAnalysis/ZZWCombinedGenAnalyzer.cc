@@ -28,7 +28,7 @@
 #include "Hbos.h"
 #include "Hjets.h"
 
-#include "VVXAnalysis/Producers/interface/Boson.h"
+#include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/Producers/interface/SignalDefinitionUtilities.h"
 
 using namespace std;
@@ -208,10 +208,10 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
       j1 = theGenq[0];  
     }
 
-    Boson *Z0     = new Boson();
-    Boson *Z1     = new Boson();
-    Boson *W      = new Boson();
-    Boson *Z2     = new Boson();
+    phys::Boson<phys::Particle> Z0;
+    phys::Boson<phys::Particle> Z1;
+    phys::Boson<phys::Particle> W ;
+    phys::Boson<phys::Particle> Z2;
 
     
     bool has3VCand = false;
@@ -243,47 +243,30 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
       
       if ( theGenZ.size() >= 2 && LeptonsMotherSelec ) {
 	
- 	Z0->Setdaughter1(theGenl[0]->p4());
-	Z0->Setdaughter2(theGenl[1]->p4());
-	Z0->SetbosonId(theGenZ[0]->pdgId());
-	
-	Z1->Setdaughter1(theGenl[2]->p4());
-	Z1->Setdaughter2(theGenl[3]->p4());
-	Z1->SetbosonId(theGenZ[1]->pdgId());
+ 	Z0.setDaughter(0,phys::Particle(theGenl[0]->p4(),phys::Particle::computeCharge(theGenl[0]->pdgId()),theGenl[0]->pdgId()));
+	Z0.setDaughter(1,phys::Particle(theGenl[1]->p4(),phys::Particle::computeCharge(theGenl[1]->pdgId()),theGenl[1]->pdgId()));
+	Z0.setId(theGenZ[0]->pdgId());
 
-	if ( abs(theGenl[0]->pdgId()) == 11 ) {     //e
-	  Z0->Setdaughter1Id(11);
-	  Z0->Setdaughter2Id(-11); 
-	}
-	if ( abs(theGenl[0]->pdgId()) == 13 ) {     //u
-	  Z0->Setdaughter1Id(13);
-	  Z0->Setdaughter2Id(-13);
-	}
-	if ( abs(theGenl[2]->pdgId()) == 11 ) {     //e
-	  Z1->Setdaughter1Id(11);
-	  Z1->Setdaughter2Id(-11);
-	}
-	if ( abs(theGenl[2]->pdgId()) == 13 ) {     //u
-	  Z1->Setdaughter1Id(13);
-	  Z1->Setdaughter2Id(-13);
-	}
-	
-	if ( isWtight ) {       
+ 	Z1.setDaughter(0,phys::Particle(theGenl[2]->p4(),phys::Particle::computeCharge(theGenl[2]->pdgId()),theGenl[2]->pdgId()));
+	Z1.setDaughter(1,phys::Particle(theGenl[3]->p4(),phys::Particle::computeCharge(theGenl[3]->pdgId()),theGenl[3]->pdgId()));
+	Z1.setId(theGenZ[1]->pdgId());
 
-	  W->Setdaughter1(j0->p4());
-	  W->Setdaughter2(j1->p4());
-	  W->SetbosonId(theGenW[0]->pdgId());
-	  //	  W->SetdaughtersId(3);
-	  
+	
+	if ( isWtight ) {       // FIXME: why only tight?
+
+	  W.setDaughter(0,phys::Particle(j0->p4(),phys::Particle::computeCharge(j0->pdgId()), j0->pdgId()));
+	  W.setDaughter(1,phys::Particle(j1->p4(),phys::Particle::computeCharge(j1->pdgId()), j1->pdgId()));
+	  W.setId(theGenW[0]->pdgId());
+
 	  has3VCand = true;
 	}
 	 
-	else if ( isZtight ) {
+	else if ( isZtight ) {        // FIXME: why only tight?
+ 
+	  Z2.setDaughter(0,phys::Particle(j0->p4(),phys::Particle::computeCharge(j0->pdgId()), j0->pdgId()));
+	  Z2.setDaughter(1,phys::Particle(j1->p4(),phys::Particle::computeCharge(j1->pdgId()), j1->pdgId()));
+	  Z2.setId(theGenZ[2]->pdgId());
 
-	  Z2->Setdaughter1(j0->p4());
-	  Z2->Setdaughter2(j1->p4());
-	  Z2->SetbosonId(theGenZ[2]->pdgId());
-	  //	  Z2->SetdaughtersId(3);
 	  
 	  has3Z = true; 
 	}
@@ -294,48 +277,31 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
     // -----------------2: Real signal, MadGraph pairing------------------
     else if ( num==2 ) {         
       
-      Z0->Setdaughter1(theGenl[0]->p4());            
-      Z0->Setdaughter2(theGenl[1]->p4());
-      Z0->SetbosonId(23);
+
+      Z0.setDaughter(0,phys::Particle(theGenl[0]->p4(),phys::Particle::computeCharge(theGenl[0]->pdgId()),theGenl[0]->pdgId()));
+      Z0.setDaughter(1,phys::Particle(theGenl[1]->p4(),phys::Particle::computeCharge(theGenl[1]->pdgId()),theGenl[1]->pdgId()));
+      Z0.setId(theGenZ[0]->pdgId());
       
-      Z1->Setdaughter1(theGenl[2]->p4());
-      Z1->Setdaughter2(theGenl[3]->p4());
-      Z1->SetbosonId(23);
-      
-      if ( abs(theGenl[0]->pdgId()) == 11 ) {     //e
-	Z0->Setdaughter1Id(11);
-	Z0->Setdaughter2Id(-11); 
-      }
-      if ( abs(theGenl[0]->pdgId()) == 13 ) {     //u
-	Z0->Setdaughter1Id(13);
-	Z0->Setdaughter2Id(-13);
-      }
-      if ( abs(theGenl[2]->pdgId()) == 11 ) {     //e
-	Z1->Setdaughter1Id(11);
-	Z1->Setdaughter2Id(-11);
-      }
-      if ( abs(theGenl[2]->pdgId()) == 13 ) {     //u
-	Z1->Setdaughter1Id(13);
-	Z1->Setdaughter2Id(-13);
-      }
+      Z1.setDaughter(0,phys::Particle(theGenl[2]->p4(),phys::Particle::computeCharge(theGenl[2]->pdgId()),theGenl[2]->pdgId()));
+      Z1.setDaughter(1,phys::Particle(theGenl[3]->p4(),phys::Particle::computeCharge(theGenl[3]->pdgId()),theGenl[3]->pdgId()));
+      Z1.setId(theGenZ[1]->pdgId());
+
       
       if ( isWloose && fabs(bosonId) == 24 ) {      //definition of tight W (mass + cat)
 	
-    	W->Setdaughter1(j0->p4());
-    	W->Setdaughter2(j1->p4());
-    	W->SetbosonId(bosonId);
-	//	W->SetdaughtersId(3);
-   	
+	W.setDaughter(0,phys::Particle(j0->p4(),phys::Particle::computeCharge(j0->pdgId()), j0->pdgId()));
+	W.setDaughter(1,phys::Particle(j1->p4(),phys::Particle::computeCharge(j1->pdgId()), j1->pdgId()));
+	W.setId(bosonId);
+	
 	isWtight = true;
 	has3VCand = true;
 	
       } else if ( isZloose && bosonId == 23 ) {     //definition of tight Z (mass + cat)
 	
-	Z2->Setdaughter1(j0->p4());
-    	Z2->Setdaughter2(j1->p4());
-    	Z2->SetbosonId(bosonId);
-	//	Z2->SetdaughtersId(3);
-   	
+	Z2.setDaughter(0,phys::Particle(j0->p4(),phys::Particle::computeCharge(j0->pdgId()), j0->pdgId()));
+	Z2.setDaughter(1,phys::Particle(j1->p4(),phys::Particle::computeCharge(j1->pdgId()), j1->pdgId()));
+	Z2.setId(bosonId);
+	
 	isZtight = true;
 	has3Z = true;     	
       } 	
@@ -345,29 +311,29 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
     //-----------------3: Real signal, real pairing-----------------------
      else if ( num==3 ) {     
 
-       std::pair<Boson*,Boson*> ZZ = makeZbosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
+       std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> >  ZZ = makeZbosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
     
       Z0 = ZZ.first;
       Z1 = ZZ.second;
     
-      if ( Z0->p4().mass() != 0 && Z1->p4().mass() != 0 ) {
+      if ( Z0.p4().M() != 0 && Z1.p4().M() != 0 ) {
 
 	if ( isWloose && fabs(bosonId) == 24 ) {    //definition of tight W (mass + cat)
 	  
-	  W->Setdaughter1(j0->p4());
-	  W->Setdaughter2(j1->p4());
-	  W->SetbosonId(bosonId);
-	  //	  W->SetdaughtersId(3);
 	  
+	  W.setDaughter(0,phys::Particle(j0->p4(),phys::Particle::computeCharge(j0->pdgId()), j0->pdgId()));
+	  W.setDaughter(1,phys::Particle(j1->p4(),phys::Particle::computeCharge(j1->pdgId()), j1->pdgId()));
+	  W.setId(bosonId);
+
 	  isWtight = true;
 	  has3VCand = true;   
 	   
 	} else if ( isZloose && bosonId == 23 ) {   //definition of tight Z (mass + cat)
 	  
-	  Z2->Setdaughter1(j0->p4());
-	  Z2->Setdaughter2(j1->p4());
-	  Z2->SetbosonId(bosonId);
-	  //	  Z2->SetdaughtersId(3);
+	  Z2.setDaughter(0,phys::Particle(j0->p4(),phys::Particle::computeCharge(j0->pdgId()), j0->pdgId()));
+	  Z2.setDaughter(1,phys::Particle(j1->p4(),phys::Particle::computeCharge(j1->pdgId()), j1->pdgId()));
+	  Z2.setId(bosonId);
+
 	  
 	  isZtight = true;
 	  has3Z = true; 
@@ -383,8 +349,8 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
     
     //=====================================================================================
 
-    bool hasZZ4l    = fabs(Z0->p4().mass()-mZ) < 10. && fabs(Z1->p4().mass()-mZ) < 10.;
-    bool isMySignal = hasZZ4l && fabs(W->p4().mass()-mW) < 10.;
+    bool hasZZ4l    = fabs(Z0.p4().M()-mZ) < 10. && fabs(Z1.p4().M()-mZ) < 10.;
+    bool isMySignal = hasZZ4l && fabs(W.p4().M()-mW) < 10.;
       
     bool passEtaAccLep = true;
     bool passPtAccLep  = true;
@@ -398,7 +364,7 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
     }
 
     p_6f = p_4l + j0->p4() + j1->p4(); 
-    LorentzVector p_6fBos = Z0->p4daughter1() + Z0->p4daughter2() + Z1->p4daughter1() + Z1->p4daughter2() + W->p4daughter1() + W->p4daughter2();
+    LorentzVector p_6fBos = phys::Particle::convert(Z0.daughter(0).p4() + Z0.daughter(1).p4() + Z1.daughter(0).p4() + Z1.daughter(1).p4() + W.daughter(0).p4() + W.daughter(1).p4());
     float m_6fBos = p_6fBos.mass();
     float m_6f = p_6f.mass();
       

@@ -2,7 +2,7 @@
 #define H6f_H
 
 #include "TH1F.h"
-#include "VVXAnalysis/Producers/interface/Boson.h"
+#include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "TString.h"
 #include <vector>
 
@@ -15,7 +15,7 @@ class H6f {
   H6f(TString name_);
   H6f(TString name_, TFile* file);
 
-  void Fill(Boson *V0, Boson *V1, Boson *V2); 
+  void Fill(const phys::Boson<phys::Particle> &V0, const phys::Boson<phys::Particle> &V1, const phys::Boson<phys::Particle> &V2);
 
   void Scale(float w);
 

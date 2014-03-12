@@ -52,33 +52,33 @@ Hbos::Hbos(TString name_, TFile* file) : name(name_) {
 }
 
 
-void Hbos::FillBos(Boson *Z0, Boson *Z1, Boson *V){
+void Hbos::FillBos(const phys::Boson<phys::Particle> &Z0, const phys::Boson<phys::Particle> &Z1, const phys::Boson<phys::Particle> &V){
   
-  LorentzVector ZZp4 = Z0->p4() + Z1->p4();
+  TLorentzVector ZZp4 = Z0.p4() + Z1.p4();
 
   vector<float> pts_Z;
   for (int i=0; i<2; i++ ) {
-    pts_Z.push_back((Z0->p4()).pt());
-    pts_Z.push_back((Z1->p4()).pt());
+    pts_Z.push_back((Z0.p4()).Pt());
+    pts_Z.push_back((Z1.p4()).Pt());
   }
   sort(pts_Z.begin(),pts_Z.end());
   
-  double DR1      = reco::deltaR(V->p4().eta(), V->p4().phi(), Z0->p4().eta(), Z0->p4().phi());
-  double DR2      = reco::deltaR(V->p4().eta(), V->p4().phi(), Z1->p4().eta(), Z1->p4().phi());
+  double DR1      = reco::deltaR(V.p4().Eta(), V.p4().Phi(), Z0.p4().Eta(), Z0.p4().Phi());
+  double DR2      = reco::deltaR(V.p4().Eta(), V.p4().Phi(), Z1.p4().Eta(), Z1.p4().Phi());
   double DR_ZV    = std::min(DR1,DR2);
-  double DR_ZZ    = reco::deltaR(Z0->p4().eta(), Z0->p4().phi(), Z1->p4().eta(), Z1->p4().phi());
-  double DR_ZZ_V  = reco::deltaR(ZZp4.eta(), ZZp4.phi(), V->p4().eta(), V->p4().phi());
-  float Deta_ZZ   = abs((Z0->p4().eta()) - (Z1->p4().eta()));
-  float Deta_ZZ_V = abs(ZZp4.eta() - (V->p4().eta()));
+  double DR_ZZ    = reco::deltaR(Z0.p4().Eta(), Z0.p4().Phi(), Z1.p4().Eta(), Z1.p4().Phi());
+  double DR_ZZ_V  = reco::deltaR(ZZp4.Eta(), ZZp4.Phi(), V.p4().Eta(), V.p4().Phi());
+  float Deta_ZZ   = abs((Z0.p4().Eta()) - (Z1.p4().Eta()));
+  float Deta_ZZ_V = abs(ZZp4.Eta() - (V.p4().Eta()));
   
-  hZ0Mass->Fill(Z0->p4().mass());
-  hZ1Mass->Fill(Z1->p4().mass());
-  hVMass->Fill(V->p4().mass()); 
+  hZ0Mass->Fill(Z0.p4().M());
+  hZ1Mass->Fill(Z1.p4().M());
+  hVMass->Fill(V.p4().M()); 
   
   hZPt_1->Fill(pts_Z[1]);
   hZPt_2->Fill(pts_Z[0]); 
-  hVPt->Fill(V->p4().pt());
-  hZZPt->Fill(ZZp4.pt()); 
+  hVPt->Fill(V.p4().Pt());
+  hZZPt->Fill(ZZp4.Pt()); 
  
   hZVDR->Fill(DR_ZV);
   hZZDR->Fill(DR_ZZ);

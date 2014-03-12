@@ -1,6 +1,7 @@
 <use name="DataFormats/RecoCandidate"/>
 <use name="FWCore/ServiceRegistry"/>
 <use name="CommonTools/UtilAlgos"/>
+<use name="VVXAnalysis/DataFormats"/>
 <export>
 <lib name="1"/>
 </export>

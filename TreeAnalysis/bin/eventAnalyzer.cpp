@@ -30,9 +30,6 @@ int main (int argc, char ** argv){
   EventAnalyzer *analysis = AnalysisFactory::get()->createAnalysis(analysisName,filename, lumi, externalXsec);
   analysis->loop(argv[3]);
 
-  //VVXAnalyzer analysis(filename, lumi, externalXsec);
-  //analysis.loop(argv[2]);
-
   cout<<"Output saved in --> "<<Green(argv[2])<<endl;
   cout<<"\nAnalysis status: "<<OK("DONE")<<"\n"<<endl;
 

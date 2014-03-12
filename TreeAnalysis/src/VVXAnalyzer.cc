@@ -20,8 +20,4 @@ void VVXAnalyzer::analyze(){
 
   std::stable_sort(Z.begin(),Z.end(),MassComparator(ZMASS));
 
-  if(genCategory == 0)
-    foreach(const Boson<Particle>& v, *genVBParticles)
-      cout<<"Gen Boson Id " << v.id() << ". Daughters id: "<< v.daughter(0).id() << " "<<v.daughter(1).id() << endl;
-
 }

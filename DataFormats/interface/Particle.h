@@ -27,7 +27,8 @@ namespace phys {
     friend class ::TreePlanter;
 
   public:
-    static TLorentzVector convert(const LorentzVector& l) {return TLorentzVector(l.Px(),l.Py(),l.Pz(),l.E());}
+    static TLorentzVector convert(const LorentzVector& l)  {return TLorentzVector(l.Px(),l.Py(),l.Pz(),l.E());}
+    static LorentzVector  convert(const TLorentzVector& l) {return LorentzVector(l.Px(),l.Py(),l.Pz(),l.E());}
     
     /// Constructor
     Particle(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), float q =0, int i = 0)
