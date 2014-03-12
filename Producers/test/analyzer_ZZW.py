@@ -4,8 +4,8 @@
 
 
 LEPTON_SETUP = 2012
-PD = ""
-MCFILTER = ""
+#PD = ""
+#MCFILTER = ""
 ELECORRTYPE   = "Paper" # "None", "Moriond", or "Paper"
 ELEREGRESSION = "Paper" # "None", "Moriond", "PaperNoComb", or "Paper" 
 APPLYMUCORR = True
@@ -130,18 +130,22 @@ process.Candidates = cms.Path(process.muons             +
 
 # Fill the tree for the analysis
 process.treePlanter = cms.EDAnalyzer("TreePlanter",
-                                     setup      = cms.int32(LEPTON_SETUP),
-                                     sampleType = cms.int32(SAMPLE_TYPE),
-                                     muons      = cms.InputTag("appendPhotons:muons"),
-                                     electrons  = cms.InputTag("appendPhotons:electrons"),
-                                     jets       = cms.InputTag("disambiguatedJets"),
-                                     Zmm        = cms.InputTag("MMCand"),
-                                     Zee        = cms.InputTag("EECand"),
-                                     Wjj        = cms.InputTag("WCand"),
-                                     MET        = cms.InputTag("cmgPFMET"),
-                                     Vertices   = cms.InputTag("goodPrimaryVertices"),                                    
-                                     isMC       = cms.untracked.bool(True),
-                                     XSection   = cms.untracked.double(XSEC)
+                                     MCFilterPath = cms.string(MCFILTER),
+                                     setup        = cms.int32(LEPTON_SETUP),
+                                     sampleType   = cms.int32(SAMPLE_TYPE),
+                                     PD           = cms.string(PD),
+                                     skimPaths    = cms.vstring(SkimPaths),
+                                     channel      = cms.untracked.string('aChannel'),
+                                     muons        = cms.InputTag("appendPhotons:muons"),
+                                     electrons    = cms.InputTag("appendPhotons:electrons"),
+                                     jets         = cms.InputTag("disambiguatedJets"),
+                                     Zmm          = cms.InputTag("MMCand"),
+                                     Zee          = cms.InputTag("EECand"),
+                                     Wjj          = cms.InputTag("WCand"),
+                                     MET          = cms.InputTag("cmgPFMET"),
+                                     Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
+                                     isMC         = cms.untracked.bool(IsMC),
+                                     XSection     = cms.untracked.double(XSEC)
                                      )
 
 
@@ -200,7 +204,7 @@ process.preselection = cms.Sequence(process.preSkimCounter*
 ########################################################
 
 
-process.filltrees = cms.Path(process.preselection* process.genCategory * process.treePlanter)
+process.filltrees = cms.EndPath(process.preselection* process.genCategory * process.treePlanter)
 
 
 

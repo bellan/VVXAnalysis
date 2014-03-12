@@ -24,6 +24,7 @@
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 
 #include "ZZAnalysis/AnalysisStep/interface/PUReweight.h"
+#include "VVXAnalysis/Producers/interface/FilterController.h"
 
 class TTree;
 namespace cmg{class PFJet;}
@@ -77,7 +78,7 @@ class TreePlanter: public edm::EDAnalyzer {
   TTree *theTree;
 
   PUReweight       PUWeighter_;
-  
+  FilterController filterController_;
 
   // ------------------- Event info in the tree ------------------- //
   Int_t event_;
