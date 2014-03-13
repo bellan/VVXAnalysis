@@ -308,7 +308,7 @@ void GenFilterCategory::beginJob() {}
 	  //ZZZ ----------------------------------------- categoryNum = 1 ------------------------ 
 	  if ( has3Z ) {
 	    categoryNum = 1;
-	    cout << "ZZZ: " << event.id().event() << "\nEvent category: " << categoryNum << endl;
+	    //cout << "ZZZ: " << event.id().event() << "\nEvent category: " << categoryNum << endl;
 	  }
 	  
 	  //ZZWloose ------------------------------------ categoryNum = 2 -----------------------
