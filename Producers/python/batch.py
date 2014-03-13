@@ -170,8 +170,6 @@ class MyBatchManager( BatchManager ):
                MCFILTER = "HF" # Note: further customization of the filter module is done below           
            if ("MH126" in tunes) :
                SUPERMELA_MASS = 126
-           if "Signal" in tunes or "NoSignal" in tunes:
-               MCFILTER = "signal"
            # customization for "MCAllEvents" is done below
 
            #FIXME: should check tunes for consistency
@@ -217,12 +215,12 @@ class MyBatchManager( BatchManager ):
            cfgFile.write( 'process.HF = cms.Path(process.heavyflavorfilter)\n\n' )
        elif "DYJets_NoB" in tune :
            cfgFile.write( 'process.HF = cms.Path(~process.heavyflavorfilter)\n\n' )
-       if "Signal" in tune:
+       if "Signal" in tune and not "NoSignal" in tune:
            cfgFile.write( '\nprocess.genCategory0 = cms.EDFilter("GenFilterCategory", src = cms.InputTag("genParticlesPruned"), Category = cms.int32(0), SignalDefinition = cms.int32(3))\n')
-           cfgFile.write( 'process.signal = cms.Path(process.genCategory0)\n\n' )
+           cfgFile.write( 'process.preselection += process.genCategory0\n\n' )
        if "NoSignal" in tune:
            cfgFile.write( '\nprocess.genCategory0 = cms.EDFilter("GenFilterCategory", src = cms.InputTag("genParticlesPruned"), Category = cms.int32(0), SignalDefinition = cms.int32(3))\n')
-           cfgFile.write( 'process.signal = cms.Path(~process.genCategory0)\n\n' )
+           cfgFile.write( 'process.preselection += ~process.genCategory0\n\n' )
            
        cfgFile.close()
 
