@@ -180,8 +180,6 @@ class MyBatchManager( BatchManager ):
 
        # Read CFG file so that it is customized with the above globals
        namespace = {'IsMC':IsMC, 'PD':PD, 'MCFILTER':MCFILTER, 'SUPERMELA_MASS':SUPERMELA_MASS, 'XSEC':XSEC}
-       print "filename", cfgFileName
-       print "parameters", namespace
        execfile(cfgFileName,namespace)
 #       handle = open(cfgFileName, 'r')
 #       cfo = imp.load_source("pycfg", cfgFileName, handle)
