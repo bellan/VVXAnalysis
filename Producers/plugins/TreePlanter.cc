@@ -37,6 +37,7 @@ using std::endl;
 
 TreePlanter::TreePlanter(const edm::ParameterSet &config)
   : PUWeighter_      (PUReweight::LEGACY)
+  , filterController_(config)
   , preSkimCounter_  (0)
   , postSkimCounter_ (0)
   , theMuonLabel     (config.getParameter<edm::InputTag>("muons"    ))
@@ -90,9 +91,9 @@ void TreePlanter::beginJob(){
   theTree->Branch("muons"    , &muons_);
   theTree->Branch("electrons", &electrons_);
   theTree->Branch("jets"     , &jets_); 
-  theTree->Branch("Zmm"      , &Zmm_); 
-  theTree->Branch("Zee"      , &Zee_); 
-  theTree->Branch("Wjj"      , &Wjj_);
+  theTree->Branch("ZmmCand"  , &Zmm_); 
+  theTree->Branch("ZeeCand"  , &Zee_); 
+  theTree->Branch("WjjCand"  , &Wjj_);
 
   theTree->Branch("genParticles"  , &genParticles_);
   theTree->Branch("genVBParticles", &genVBParticles_);
@@ -259,6 +260,9 @@ void TreePlanter::fillEventInfo(const edm::Event& event){
 void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup){
   ++theNumberOfAnalyzedEvents;
 
+  // Apply MC filter (skip event)
+  if (isMC_ && !(filterController_.passMCFilter(event))) return;
+
   initTree();
   
   fillEventInfo(event);
@@ -273,25 +277,29 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
 
   foreach(const pat::Muon& muon, *muons){
-    phys::Lepton physmuon = fillLepton(muon);
+    //if(!muon.userFloat("isGood") || muon.userFloat("CombRelIsoPF") >= 4) continue;  // commented because the combination of the two flags is more restrictive than Z.userfloat("goodLeptons"), hence the matching can fail.
+    if(!muon.userFloat("isGood")) continue; 
+    phys::Lepton physmuon = fill(muon);
     muons_.push_back(physmuon);
   }
 
   foreach(const pat::Electron& electron, *electrons){
-    phys::Electron physelectron =  fillElectron(electron);
+    //if(!electron.userFloat("isGood") || electron.userFloat("CombRelIsoPF") >= 4) continue; 
+    if(!electron.userFloat("isGood")) continue; 
+    phys::Electron physelectron =  fill(electron);
     electrons_.push_back(physelectron);
   }
 
   foreach(const cmg::PFJet& jet, *jets){
-    phys::Jet physjet = fillJet(jet);
+    phys::Jet physjet = fill(jet);
     jets_.push_back(physjet);
   }
 
-  Zmm_ = fillBosons(Zmm, muons_);
- 
-  Zee_ = fillBosons(Zee, electrons_);
+  Zmm_ = fillBosons<pat::Muon,phys::Lepton>(Zmm);
 
-  Wjj_ = fillBosons(Wjj, jets_, 24);
+  Zee_ = fillBosons<pat::Electron,phys::Electron>(Zee);
+
+  Wjj_ = fillBosons<cmg::PFJet,phys::Jet>(Wjj, 24);
 
   theTree->Fill();
 }
@@ -311,14 +319,14 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
   output.pfPhotonIso_     = lepton.userFloat("PFPhotonIso"    );
   output.pfCombRelIso_    = lepton.userFloat("CombRelIsoPF"   );
   output.rho_             = lepton.userFloat("rho"            );
-  output.isPF_            = lepton.userInt  ("isPFMuon"       );
-  output.matchHLT_        = lepton.userInt  ("HLTMatch"       );
+  output.isPF_            = lepton.userFloat("isPFMuon"       );
+  output.matchHLT_        = lepton.userFloat("HLTMatch"       );
      
   return output; 
 }
 
 
-phys::Electron TreePlanter::fillElectron(const pat::Electron &electron) const{
+phys::Electron TreePlanter::fill(const pat::Electron &electron) const{
 
   phys::Electron output(fillLepton(electron));
   
@@ -326,7 +334,7 @@ phys::Electron TreePlanter::fillElectron(const pat::Electron &electron) const{
   output.phiWidth_   = electron.userFloat("phiWidth"  );
   output.etaWidth_   = electron.userFloat("etaWidth"  );
   output.BDT_        = electron.userFloat("BDT"       );
-  output.isBDT_      = electron.userInt  ("isBDT"     );
+  output.isBDT_      = electron.userFloat("isBDT"     );
   output.missingHit_ = electron.userInt  ("missingHit");
   output.nCrystals_  = electron.userInt  ("nCrystals" );
 
@@ -334,7 +342,13 @@ phys::Electron TreePlanter::fillElectron(const pat::Electron &electron) const{
 }
 
 
-phys::Jet TreePlanter::fillJet(const cmg::PFJet &jet) const{
+phys::Lepton TreePlanter::fill(const pat::Muon& mu) const{
+  return fillLepton(mu);
+}
+
+
+
+phys::Jet TreePlanter::fill(const cmg::PFJet &jet) const{
   
   phys::Jet output(phys::Particle::convert(jet.p4()),jet.charge(),1);
   
@@ -384,13 +398,35 @@ std::vector<phys::Boson<PAR> > TreePlanter::fillBosons(const edm::Handle<edm::Vi
   std::vector<phys::Boson<PAR> > physBosons;
   
   foreach(const pat::CompositeCandidate& v, *edmBosons){
-    
+  
+    if(v.hasUserFloat("GoodLeptons") && !v.userFloat("GoodLeptons")) continue;
+  
     PAR d0,d1;
     
     foreach(const PAR& particle, physDaughtersCand){
       if( isAlmostEqual(particle.p4().Pt(), v.daughter(0)->pt()) && isAlmostEqual(particle.p4().Eta(), v.daughter(0)->eta())) d0 = particle;
       if( isAlmostEqual(particle.p4().Pt(), v.daughter(1)->pt()) && isAlmostEqual(particle.p4().Eta(), v.daughter(1)->eta())) d1 = particle;
     }
+    
+    if(d0.id() == 0 || d1.id() == 0) edm::LogError("TreePlanter") << "TreePlanter: VB candidate does not have a matching good particle!";
+  
+    phys::Boson<PAR> physV(d0, d1, type);
+    physBosons.push_back(physV);
+  }
+  return physBosons;
+}
+
+template<typename T, typename PAR>
+std::vector<phys::Boson<PAR> > TreePlanter::fillBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const {
+  
+  std::vector<phys::Boson<PAR> > physBosons;
+  
+  foreach(const pat::CompositeCandidate& v, *edmBosons){
+
+    if(v.hasUserFloat("GoodLeptons") && !v.userFloat("GoodLeptons")) continue;
+
+    PAR d0 = fill(*dynamic_cast<const T*>(v.daughter(0)->masterClone().get()));
+    PAR d1 = fill(*dynamic_cast<const T*>(v.daughter(1)->masterClone().get()));
     
     if(d0.id() == 0 || d1.id() == 0) edm::LogError("TreePlanter") << "TreePlanter: VB candidate does not have a matching good particle!";
   

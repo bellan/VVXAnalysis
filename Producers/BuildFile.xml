@@ -2,6 +2,7 @@
 <use name="FWCore/ServiceRegistry"/>
 <use name="CommonTools/UtilAlgos"/>
 <use name="VVXAnalysis/DataFormats"/>
+<use name="ZZAnalysis/AnalysisStep"/>
 <export>
 <lib name="1"/>
 </export>
