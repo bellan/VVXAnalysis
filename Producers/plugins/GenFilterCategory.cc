@@ -384,9 +384,10 @@ void GenFilterCategory::beginJob() {}
 std::auto_ptr<std::vector<reco::GenParticle> > GenFilterCategory::loadGenBoson(const phys::Boson<phys::Particle> &vb, const GenParticleRefProd &genRefs, std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl){
 
    size_t initialSize = outputGenColl->size();
+
    outputGenColl->push_back(reco::GenParticle(vb.id() == 23 ? 0 : copysign(1, vb.id()), phys::Particle::convert(vb.p4())            , GenParticle::Point(0.,0.,0.), vb.id()            , 3, true));
    outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb.daughter(0).id())      , phys::Particle::convert(vb.daughter(0).p4()), GenParticle::Point(0.,0.,0.), vb.daughter(0).id(), 3, true));
-   outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb.daughter(1).id())      , phys::Particle::convert(vb.daughter(0).p4()), GenParticle::Point(0.,0.,0.), vb.daughter(1).id(), 3, true));
+   outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb.daughter(1).id())      , phys::Particle::convert(vb.daughter(1).p4()), GenParticle::Point(0.,0.,0.), vb.daughter(1).id(), 3, true));
    outputGenColl->at(initialSize).addDaughter(GenParticleRef(genRefs,initialSize+1));
    outputGenColl->at(initialSize).addDaughter(GenParticleRef(genRefs,initialSize+2));
    
