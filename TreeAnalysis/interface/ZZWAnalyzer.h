@@ -17,7 +17,7 @@ class ZZWAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZWAnalyzer>{
 
 public:
 
- ZZWAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = false)
+ ZZWAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = true)
    : EventAnalyzer(*(new Selector<ZZWAnalyzer>(*this)),
 		   filename, lumi, externalXSection, doBasicPlots){}
 
@@ -28,6 +28,7 @@ public:
   virtual Int_t cut();
 
  private:
+
   friend class Selector<ZZWAnalyzer>; 
   template< class PAR >
     bool ZBosonDefinition(phys::Boson<PAR> cand) const {
@@ -39,6 +40,11 @@ public:
     bool jetPt = cand.daughter(0).pt() > 40 || cand.daughter(1).pt() > 40;
     return massRange && jetPt;
   }
+
+  phys::Boson<phys::Lepton> myZ0;
+  phys::Boson<phys::Lepton> myZ1;
+  phys::Boson<phys::Jet> myW;
+
 
 };
 #endif
