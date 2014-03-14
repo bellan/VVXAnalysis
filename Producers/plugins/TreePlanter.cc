@@ -374,12 +374,12 @@ phys::Jet TreePlanter::fill(const cmg::PFJet &jet) const{
   output.LxyErr_                  = jet.LxyErr();
   output.rawFactor_               = jet.rawFactor();
   output.uncOnFourVectorScale_    = jet.uncOnFourVectorScale();
-  output.puMVAFull_               = jet.puMva("full");
+  output.puMVAFull_               = jet.puMva("full53x");
   output.puMVASimple_             = jet.puMva("simple");
   output.puCutBased_              = jet.puMva("cut-based");
-  output.pass_puMVAFull_loose_    = jet.passPuJetId("full"     , PileupJetIdentifier::kLoose);
-  output.pass_pUMVAFull_medium_   = jet.passPuJetId("full"     , PileupJetIdentifier::kMedium);
-  output.pass_pUMVAFull_tight_    = jet.passPuJetId("full"     , PileupJetIdentifier::kTight); 
+  output.pass_puMVAFull_loose_    = jet.passPuJetId("full53x"  , PileupJetIdentifier::kLoose);
+  output.pass_pUMVAFull_medium_   = jet.passPuJetId("full53x"  , PileupJetIdentifier::kMedium);
+  output.pass_pUMVAFull_tight_    = jet.passPuJetId("full53x"  , PileupJetIdentifier::kTight); 
   output.pass_puMVASimple_loose_  = jet.passPuJetId("simple"   , PileupJetIdentifier::kLoose); 
   output.pass_puMVASimple_medium_ = jet.passPuJetId("simple"   , PileupJetIdentifier::kMedium); 
   output.pass_puMVASimple_tight_  = jet.passPuJetId("simple"   , PileupJetIdentifier::kTight); 
