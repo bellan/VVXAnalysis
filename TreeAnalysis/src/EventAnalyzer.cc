@@ -84,9 +84,9 @@ void EventAnalyzer::Init(TTree *tree)
 
 
   // Bosons   
-  Zmm = new std::vector<phys::Boson<phys::Lepton> >()  ; ZmmCand = 0; b_ZmmCand = 0; theTree->SetBranchAddress("Zmm", &ZmmCand, &b_ZmmCand);
-  Zee = new std::vector<phys::Boson<phys::Electron> >(); ZeeCand = 0; b_ZeeCand = 0; theTree->SetBranchAddress("Zee", &ZeeCand, &b_ZeeCand);
-  Wjj = new std::vector<phys::Boson<phys::Jet> > ()    ; WjjCand = 0; b_WjjCand = 0; theTree->SetBranchAddress("Wjj", &WjjCand, &b_WjjCand);
+  Zmm = new std::vector<phys::Boson<phys::Lepton> >()  ; ZmmCand = 0; b_ZmmCand = 0; theTree->SetBranchAddress("ZmmCand", &ZmmCand, &b_ZmmCand);
+  Zee = new std::vector<phys::Boson<phys::Electron> >(); ZeeCand = 0; b_ZeeCand = 0; theTree->SetBranchAddress("ZeeCand", &ZeeCand, &b_ZeeCand);
+  Wjj = new std::vector<phys::Boson<phys::Jet> > ()    ; WjjCand = 0; b_WjjCand = 0; theTree->SetBranchAddress("WjjCand", &WjjCand, &b_WjjCand);
 
   // Gen Particles   
   genParticles   = 0;                                                b_genParticles   = 0; theTree->SetBranchAddress("genParticles"  , &genParticles  , &b_genParticles);
