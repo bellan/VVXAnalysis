@@ -120,6 +120,36 @@ namespace phys {
     // return the matched MC parton flavour
     Int_t mcPartonFlavour() const {return mcPartonFlavour_;}
 
+    bool    passLooseJetID() const {
+      return 
+	neutralHadronEnergyFraction_  < 0.99                    &&
+	neutralEmEnergyFraction_      < 0.99                    &&
+	nConstituents_                > 1                       &&
+	(chargedHadronEnergyFraction_ > 0 || fabs(eta()) > 2.4) &&
+	(nCharged_                    > 0 || fabs(eta()) > 2.4) &&
+	(chargedEmEnergyFraction_ < 0.99  || fabs(eta()) > 2.4);
+    }
+
+    bool passPUID() const {
+      bool passPU = true;
+      float jpt    = pt();
+      float jeta   = fabs(eta());
+      float jpumva = puMVAFull();
+      if(jpt > 20){
+	if(jeta > 3.)          { if(jpumva <= -0.45) passPU = false;} 
+	else if(jeta > 2.75)   { if(jpumva <= -0.55) passPU = false;}
+	else if(jeta > 2.5)    { if(jpumva <= -0.60) passPU = false;}
+	else                   { if(jpumva <= -0.63) passPU = false;}
+      }
+      else{
+	if(jeta>3.)            { if(jpumva <= -0.95) passPU = false;}
+	else if(jeta > 2.75)   { if(jpumva <= -0.94) passPU = false;}
+	else if(jeta > 2.5)    { if(jpumva <= -0.96) passPU = false;}
+	else                   { if(jpumva <= -0.95) passPU = false;}
+      }
+      return passPU;
+    }
+
     
   protected:
     
