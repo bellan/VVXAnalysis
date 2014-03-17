@@ -20,7 +20,7 @@ Int_t ZZWAnalyzer::cut() {
  
   theHistograms.fill("Number of events", "Number of events", 10, 0, 10, 0, theWeight);  // 0: Number of total events --------------------------------------------------------------------------------------
   
-  theHistograms.fill("MET", "MET", 300, 0, 300, met->p4().E(), theWeight);
+  theHistograms.fill("MET", "MET", 300, 0, 300, met->pt(), theWeight);
 
 
   bool passZsize = ( Zmm->size() + Zee->size() ) >= 2;                //  1: Events with 2 well-defined Z bosons  -----------------------------------------------------------------------------------------
@@ -108,9 +108,9 @@ Int_t ZZWAnalyzer::cut() {
     theHistograms.fill("Number of events", 10, 0, 10, 5, theWeight);   
 
 
-    bool passMET = true;                    // 6: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing, massll > 4 GeV, 1lepton pt>10 and 1lepton pt >20, MET < 100--------------
+    bool passMET = true;                    // 6: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing, massll > 4 GeV, 1lepton pt>10 and 1lepton pt >20, MET < 80--------------
 
-    if( met->p4().E() > 100 ) passMET = false;
+    if( met->pt() > 80 ) passMET = false;
 
     if(passMET  = false) return -1;
 
@@ -153,7 +153,7 @@ Int_t ZZWAnalyzer::cut() {
 
     //-------------MET-------------
 
-    theHistograms.fill("MET after cut", "MET after cut", 300, 0, 300, met->p4().M(), theWeight);
+    theHistograms.fill("MET after cut", "MET after cut", 300, 0, 300, met->pt(), theWeight);
 
       
     theCutCounter += theWeight; 
