@@ -101,18 +101,14 @@ Int_t ZZWAnalyzer::cut() {
       }
     }
 
-    if(passLeptonsPt = false) return -1;
+    if(passLeptonsPt == false) return -1;
 
 
 
     theHistograms.fill("Number of events", 10, 0, 10, 5, theWeight);   
 
 
-    bool passMET = true;                    // 6: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing, massll > 4 GeV, 1lepton pt>10 and 1lepton pt >20, MET < 80--------------
-
-    if( met->pt() > 80 ) passMET = false;
-
-    if(passMET  = false) return -1;
+    if( met->pt() > 80 ) return -1;        // 6: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing, massll > 4 GeV, 1lepton pt>10 and 1lepton pt >20, MET < 80--------------
 
 
     theHistograms.fill("Number of events", 10, 0, 10, 6, theWeight);  
