@@ -95,11 +95,15 @@ Int_t ZZWAnalyzer::cut() {
     
     bool passLeptonsPt = false;                       // 5: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing, massll > 4 GeV, 1lepton pt>10 and 1lepton pt >20------------
     
+    int count10 =0;
+    int count20 = 0;
     if (myZ0.daughter(0).pt() > 10 || myZ0.daughter(1).pt() > 10 || myZ1.daughter(0).pt() > 10 || myZ1.daughter(1).pt() > 10 ) {
-      if (myZ0.daughter(0).pt() > 20 || myZ0.daughter(1).pt() > 20 || myZ1.daughter(0).pt() > 20 || myZ1.daughter(1).pt() > 20 ) {
-	passLeptonsPt = true;
-      }
+      ++count10;
     }
+    if (myZ0.daughter(0).pt() > 20 || myZ0.daughter(1).pt() > 20 || myZ1.daughter(0).pt() > 20 || myZ1.daughter(1).pt() > 20 ) {
+      ++count20;
+    }
+    if ( count10 >= 1 && count20 >= 1 ) passLeptonsPt = true;
 
     if(passLeptonsPt == false) return -1;
 
