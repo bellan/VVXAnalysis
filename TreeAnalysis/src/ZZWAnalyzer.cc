@@ -22,7 +22,6 @@ Int_t ZZWAnalyzer::cut() {
   
   theHistograms.fill("MET", "MET", 300, 0, 300, met->pt(), theWeight);
 
-
   bool passZsize = ( Zmm->size() + Zee->size() ) >= 2;                //  1: Events with 2 well-defined Z bosons  -----------------------------------------------------------------------------------------
   
   if(passZsize)  theHistograms.fill("Number of events", 10, 0, 10, 1, theWeight);    
@@ -95,24 +94,29 @@ Int_t ZZWAnalyzer::cut() {
     
     bool passLeptonsPt = false;                       // 5: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing, massll > 4 GeV, 1lepton pt>10 and 1lepton pt >20------------
     
-    if (myZ0.daughter(0).pt() > 10 || myZ0.daughter(1).pt() > 10 || myZ1.daughter(0).pt() > 10 || myZ1.daughter(1).pt() > 10 ) {
-      if (myZ0.daughter(0).pt() > 20 || myZ0.daughter(1).pt() > 20 || myZ1.daughter(0).pt() > 20 || myZ1.daughter(1).pt() > 20 ) {
-	passLeptonsPt = true;
-      }
+    int count10 =0;
+    int count20 = 0;
+    
+    for (int j = 0; j<=1; ++j) {
+      if (myZ0.daughter(j).pt() > 10 ) ++count10;
+      if (myZ1.daughter(j).pt() > 10 ) ++count10;	
     }
-
-    if(passLeptonsPt = false) return -1;
-
-
-
+    
+    
+    if (myZ0.daughter(0).pt() > 20 || myZ0.daughter(1).pt() > 20 || myZ1.daughter(0).pt() > 20 || myZ1.daughter(1).pt() > 20 ) {
+      ++count20;
+    }
+    
+    if ( count10 >= 2 && count20 == 1 ) passLeptonsPt = true;
+    
+    if(passLeptonsPt == false) return -1;
+    
+    
+    
     theHistograms.fill("Number of events", 10, 0, 10, 5, theWeight);   
 
 
-    bool passMET = true;                    // 6: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing, massll > 4 GeV, 1lepton pt>10 and 1lepton pt >20, MET < 80--------------
-
-    if( met->pt() > 80 ) passMET = false;
-
-    if(passMET  = false) return -1;
+    if( met->pt() > 80 ) return -1;        // 6: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing, massll > 4 GeV, 1lepton pt>10 and 1lepton pt >20, MET < 80--------------
 
 
     theHistograms.fill("Number of events", 10, 0, 10, 6, theWeight);  
@@ -124,13 +128,28 @@ Int_t ZZWAnalyzer::cut() {
     TLorentzVector p_myj1 = myW.daughter(0).p4();
     TLorentzVector p_myj2 = myW.daughter(1).p4();
 
-    cout << Red("\n============Event: ") << Red(event) << Red(" ==================")  << endl;
+    cout << endl << Red("============Event: ") << Red(event) << Red(" w= ") << Red(theWeight) << " " << Red(" ==================")  << endl;
     cout << "-----------reco Particles Masses ------------" << endl;
     cout << "Z0reco = " << Green(myZ0.p4().M()) <<endl;
     cout << "Z1reco = " << Green(myZ1.p4().M()) <<endl;
     cout << "Wreco  = " << Green(myW.p4().M())  <<endl;
-  
+    cout << "Lepton 1" << "\tPt = " << myZ0.daughter(0).pt() << "\tEta = " << myZ0.daughter(0).p4().Eta() << "\tPhi = " << myZ0.daughter(0).p4().Phi() << endl; 
+    cout << "Lepton 2" << "\tPt = " << myZ0.daughter(1).pt() << "\tEta = " << myZ0.daughter(1).p4().Eta() << "\tPhi = " << myZ0.daughter(1).p4().Phi() << endl; 
+    cout << "Lepton 3" << "\tPt = " << myZ1.daughter(0).pt() << "\tEta = " << myZ1.daughter(0).p4().Eta() << "\tPhi = " << myZ1.daughter(0).p4().Phi() << endl; 
+    cout << "Lepton 4" << "\tPt = " << myZ1.daughter(1).pt() << "\tEta = " << myZ1.daughter(1).p4().Eta() << "\tPhi = " << myZ1.daughter(1).p4().Phi() << endl; 
 
+    double deltaRJets11 = deltaR(myW.daughter(0).p4().Rapidity(), myW.daughter(0).p4().Phi(), myZ0.daughter(0).p4().Rapidity(), myZ0.daughter(0).p4().Phi());
+    double deltaRJets12 = deltaR(myW.daughter(0).p4().Rapidity(), myW.daughter(0).p4().Phi(), myZ0.daughter(1).p4().Rapidity(), myZ0.daughter(1).p4().Phi());
+    double deltaRJets13 = deltaR(myW.daughter(0).p4().Rapidity(), myW.daughter(0).p4().Phi(), myZ1.daughter(0).p4().Rapidity(), myZ1.daughter(0).p4().Phi());
+    double deltaRJets14 = deltaR(myW.daughter(0).p4().Rapidity(), myW.daughter(0).p4().Phi(), myZ1.daughter(1).p4().Rapidity(), myZ1.daughter(1).p4().Phi());
+    double deltaRJets21 = deltaR(myW.daughter(1).p4().Rapidity(), myW.daughter(1).p4().Phi(), myZ0.daughter(0).p4().Rapidity(), myZ0.daughter(0).p4().Phi());
+    double deltaRJets22 = deltaR(myW.daughter(1).p4().Rapidity(), myW.daughter(1).p4().Phi(), myZ0.daughter(1).p4().Rapidity(), myZ0.daughter(1).p4().Phi());
+    double deltaRJets23 = deltaR(myW.daughter(1).p4().Rapidity(), myW.daughter(1).p4().Phi(), myZ1.daughter(0).p4().Rapidity(), myZ1.daughter(0).p4().Phi());
+    double deltaRJets24 = deltaR(myW.daughter(1).p4().Rapidity(), myW.daughter(1).p4().Phi(), myZ1.daughter(1).p4().Rapidity(), myZ1.daughter(1).p4().Phi());
+
+    cout << "Jet 1" << "\t\tPt = " << myW.daughter(0).pt() << "\tEta = " << myW.daughter(0).p4().Eta() << "\tPhi = " << myW.daughter(0).p4().Phi() << "\tdeltaR with leptons 1,2,3,4= " << deltaRJets11 << ", " << deltaRJets12 << ", " << deltaRJets13 << ", " << deltaRJets14 << endl;
+    cout << "Jet 2" << "\t\tPt = " << myW.daughter(1).pt() << "\tEta = " << myW.daughter(1).p4().Eta() << "\tPhi = " << myW.daughter(1).p4().Phi() << "\tdeltaR with leptons 1,2,3,4= " << deltaRJets21 << ", " << deltaRJets22 << ", " << deltaRJets23 << ", " << deltaRJets24 << endl;
+     
     /////-----------------Histograms-------------------
     
     //------------Mass-------------
@@ -138,6 +157,7 @@ Int_t ZZWAnalyzer::cut() {
     theHistograms.fill("Z0_Mass" , "Z0_Mass" , 200, 0, 200, p_myZ0.M() , theWeight);
     theHistograms.fill("Z1_Mass" , "Z1_Mass" , 200, 0, 200, p_myZ1.M() , theWeight);
     theHistograms.fill("Wjj_Mass", "Wjj_Mass", 200, 0, 200, p_myW.M()  , theWeight);  
+    theHistograms.fill("4l_Mass" , "4l_Mass" , 150, 0, 150, (myZ0.daughter(0).p4() + myZ0.daughter(1).p4() + myZ1.daughter(0).p4() + myZ1.daughter(1).p4()).M(), theWeight);
       
     //------------Pt--------------
       
