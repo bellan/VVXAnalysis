@@ -57,15 +57,17 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   double meanIntCrossSection = 0.;
   int    totalAnEvents       = 0 ;
   int    totalGenEvents      = 0 ;
-  
+  double totalSumMCProc      = 0.;
+
   for (Long64_t jentry=0; jentry<nentries; ++jentry){
     tree->LoadTree(jentry); tree->GetEntry(jentry);
     
     if(genEvents_ != preSkimCounter_)
       std::cout << Warning("WARNING! The number of skimmed events differ from the total generated events. Make sure you are properly weighting the events.") << std::endl;
     
-    totalAnEvents += analyzedEvents_;
+    totalAnEvents  += analyzedEvents_;
     totalGenEvents += genEvents_;
+    totalSumMCProc += summcprocweight_;
     meanIntCrossSection += genEvents_*internalCrossSection_;
   }
   
@@ -75,6 +77,7 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   // ... and the variables used to set the branch address can be overwritten too
   genEvents_            = totalGenEvents;
   analyzedEvents_       = totalAnEvents;
+  summcprocweight_      = totalSumMCProc;
   internalCrossSection_ = meanIntCrossSection/genEvents_;
 
   crossSection_ = &internalCrossSection_;
@@ -85,10 +88,15 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   }
 
   sampleWeight_ = luminosity_*crossSection()/genEvents_;
+  
+  
+
 
   std::cout<<"\nThis sample has been made out of a dataset containing " << Green(genEvents()) << " generated events."   << std::endl
 	   <<"Out of them, " << Green(analyzedEvents()) << " events have been used to produce the main tree."           << std::endl
-	   <<"The cross-section of this sample is " << Green(crossSection()) << Green(" pb ") << "(" << xsectype <<")." << std::endl
-	   <<"The integrated luminosity scenario is: "<< Green(luminosity_) << Green("/pb.") 
-	   << " The sample weight is " << Green(sampleWeight()) << "."                                                  << std::endl;
+	   <<"The cross-section of this sample is " << Green(crossSection()) << Green(" pb ") << "(" << xsectype <<")"  
+	   <<" and the integrated luminosity scenario is "<< Green(luminosity_) << Green("/pb.")                        << std::endl
+	   <<"The MC process event normalization is " << Green(analyzedEvents_/summcprocweight_)
+	   <<" and the sample weight is " << Green(sampleWeight()) <<  "."                                              << std::endl;
+	   
 }
