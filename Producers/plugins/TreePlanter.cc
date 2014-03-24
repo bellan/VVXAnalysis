@@ -143,12 +143,12 @@ void TreePlanter::endJob(){
     
     internalCrossSection = internalCrossSection/theXSections.size();
     
-    cout << "================================================"            << endl
-	 << "Total number of generated events: " << theNumberOfEvents     << endl
-	 << "Total number of analyzed events: "  << theNumberOfEvents     << endl
-	 <<" Internal cross section: "           << internalCrossSection  << endl
-	 <<" External cross section: "           << externalCrossSection_ << endl
-	 << "================================================"            << endl;
+    cout << "================================================"                << endl
+	 << "Total number of generated events: " << theNumberOfEvents         << endl
+	 << "Total number of analyzed events: "  << theNumberOfAnalyzedEvents << endl
+	 <<" Internal cross section: "           << internalCrossSection      << endl
+	 <<" External cross section: "           << externalCrossSection_     << endl
+	 << "================================================"                << endl;
     
     edm::Service<TFileService> fs;
     TTree *countTree = fs->make<TTree>("HollyTree","HollyTree");
