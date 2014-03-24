@@ -76,7 +76,9 @@ Int_t ZZWAnalyzer::cut() {
 
   
     theHistograms.fill("Number of events", 10, 0, 10, 3, theWeight);   
-  
+
+    // ------------------------ myZ0, myZ1, myW defined : BEGINNING OF CUTS ---------------------------- //
+
   
     bool passllLowMass = true;                       // 4: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing, massll > 4 GeV---------------------------------------------
     
@@ -116,10 +118,11 @@ Int_t ZZWAnalyzer::cut() {
     theHistograms.fill("Number of events", 10, 0, 10, 5, theWeight);   
 
 
-    if( met->pt() > 80 ) return -1;        // 6: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing, massll > 4 GeV, 1lepton pt>10 and 1lepton pt >20, MET < 80--------------
+    if ( met->pt() > 80 ) return -1;        // 6: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing, massll > 4 GeV, 1lepton pt>10 and 1lepton pt >20, MET < 80--------------
 
 
     theHistograms.fill("Number of events", 10, 0, 10, 6, theWeight);  
+
 
     TLorentzVector p_myZ0 = myZ0.p4();
     TLorentzVector p_myZ1 = myZ1.p4();
@@ -147,9 +150,11 @@ Int_t ZZWAnalyzer::cut() {
     double deltaRJets23 = deltaR(myW.daughter(1).p4().Rapidity(), myW.daughter(1).p4().Phi(), myZ1.daughter(0).p4().Rapidity(), myZ1.daughter(0).p4().Phi());
     double deltaRJets24 = deltaR(myW.daughter(1).p4().Rapidity(), myW.daughter(1).p4().Phi(), myZ1.daughter(1).p4().Rapidity(), myZ1.daughter(1).p4().Phi());
 
+  
     cout << "Jet 1" << "\t\tPt = " << myW.daughter(0).pt() << "\tEta = " << myW.daughter(0).p4().Eta() << "\tPhi = " << myW.daughter(0).p4().Phi() << "\tdeltaR with leptons 1,2,3,4= " << deltaRJets11 << ", " << deltaRJets12 << ", " << deltaRJets13 << ", " << deltaRJets14 << endl;
     cout << "Jet 2" << "\t\tPt = " << myW.daughter(1).pt() << "\tEta = " << myW.daughter(1).p4().Eta() << "\tPhi = " << myW.daughter(1).p4().Phi() << "\tdeltaR with leptons 1,2,3,4= " << deltaRJets21 << ", " << deltaRJets22 << ", " << deltaRJets23 << ", " << deltaRJets24 << endl;
      
+
     /////-----------------Histograms-------------------
     
     //------------Mass-------------
@@ -157,7 +162,7 @@ Int_t ZZWAnalyzer::cut() {
     theHistograms.fill("Z0_Mass" , "Z0_Mass" , 200, 0, 200, p_myZ0.M() , theWeight);
     theHistograms.fill("Z1_Mass" , "Z1_Mass" , 200, 0, 200, p_myZ1.M() , theWeight);
     theHistograms.fill("Wjj_Mass", "Wjj_Mass", 200, 0, 200, p_myW.M()  , theWeight);  
-    theHistograms.fill("4l_Mass" , "4l_Mass" , 150, 0, 150, (myZ0.daughter(0).p4() + myZ0.daughter(1).p4() + myZ1.daughter(0).p4() + myZ1.daughter(1).p4()).M(), theWeight);
+    
       
     //------------Pt--------------
       
@@ -165,16 +170,30 @@ Int_t ZZWAnalyzer::cut() {
     theHistograms.fill("Z1_Pt"   , "Z1_Pt"   , 300, 0, 300, myZ1.pt() , theWeight);
     theHistograms.fill("W_Pt"    , "W_Pt"    , 300, 0, 300, myW.pt()  , theWeight);  
       
-    //------------Mass 6f----------
+    //----------Mass fermions--------
       
     TLorentzVector p_6f = p_myZ0 + p_myZ1 + p_myj1 + p_myj2;
       
-    theHistograms.fill("6f_Mass" , "6f_Mass" , 3000, 0, 3000, p_6f.M(), theWeight);
+    theHistograms.fill("6f_Mass" , "6f_Mass" , 1500, 0, 1500, p_6f.M(), theWeight);
+
+    theHistograms.fill("4l_Mass" , "4l_Mass" , 1500, 0 ,1500, (p_myZ0 + p_myZ1).M() , theWeight);
 
     //-------------MET-------------
 
     theHistograms.fill("MET after cut", "MET after cut", 300, 0, 300, met->pt(), theWeight);
 
+   //-----------delta_R-----------
+
+    theHistograms.fill("Reco_DR_J1L1", "Reco_DR_J1L1", 100, 0, 8, deltaRJets11, theWeight);
+    theHistograms.fill("Reco_DR_J1L2", "Reco_DR_J1L2", 100, 0, 8, deltaRJets12, theWeight);
+    theHistograms.fill("Reco_DR_J1L3", "Reco_DR_J1L3", 100, 0, 8, deltaRJets13, theWeight);
+    theHistograms.fill("Reco_DR_J1L4", "Reco_DR_J1L4", 100, 0, 8, deltaRJets14, theWeight);
+    theHistograms.fill("Reco_DR_J2L1", "Reco_DR_J2L1", 100, 0, 8, deltaRJets21, theWeight);
+    theHistograms.fill("Reco_DR_J2L2", "Reco_DR_J2L2", 100, 0, 8, deltaRJets22, theWeight);
+    theHistograms.fill("Reco_DR_J2L3", "Reco_DR_J2L3", 100, 0, 8, deltaRJets23, theWeight);
+    theHistograms.fill("Reco_DR_J2L4", "Reco_DR_J2L4", 100, 0, 8, deltaRJets24, theWeight);
+    
+    
       
     theCutCounter += theWeight; 
 
@@ -227,6 +246,16 @@ void ZZWAnalyzer::analyze() {
       const Boson<Particle>* Z1gen = GenZ.at(1);
       const Boson<Particle>* Wgen  = GenW.at(0);
       
+      double DR11 = deltaR(Wgen->daughter(0).p4().Rapidity(), Wgen->daughter(0).p4().Phi(), Z0gen->daughter(0).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
+      double DR12 = deltaR(Wgen->daughter(0).p4().Rapidity(), Wgen->daughter(0).p4().Phi(), Z0gen->daughter(1).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
+      double DR13 = deltaR(Wgen->daughter(0).p4().Rapidity(), Wgen->daughter(0).p4().Phi(), Z1gen->daughter(0).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
+      double DR14 = deltaR(Wgen->daughter(0).p4().Rapidity(), Wgen->daughter(0).p4().Phi(), Z1gen->daughter(1).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
+      double DR21 = deltaR(Wgen->daughter(1).p4().Rapidity(), Wgen->daughter(1).p4().Phi(), Z0gen->daughter(0).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
+      double DR22 = deltaR(Wgen->daughter(1).p4().Rapidity(), Wgen->daughter(1).p4().Phi(), Z0gen->daughter(1).p4().Rapidity(), Z0gen->daughter(1).p4().Phi());
+      double DR23 = deltaR(Wgen->daughter(1).p4().Rapidity(), Wgen->daughter(1).p4().Phi(), Z1gen->daughter(0).p4().Rapidity(), Z1gen->daughter(0).p4().Phi());
+      double DR24 = deltaR(Wgen->daughter(1).p4().Rapidity(), Wgen->daughter(1).p4().Phi(), Z1gen->daughter(1).p4().Rapidity(), Z1gen->daughter(1).p4().Phi());
+      
+      
       
       /////-----------------Histograms-------------------
       
@@ -242,53 +271,83 @@ void ZZWAnalyzer::analyze() {
       theHistograms.fill("Z1Gen_Pt"  , "Z1Gen_Pt"  , 300, 0, 300, Z1gen->pt()    , theWeight);
       theHistograms.fill("WGen_Pt"   , "WGen_Pt"   , 300, 0, 300, Wgen->pt()     , theWeight);
    
+      //------------DR--------------
 
- 
+      theHistograms.fill("Gen_DR_J1L1", "Gen_DR_J1L1", 100, 0, 8, DR11, theWeight);
+      theHistograms.fill("Gen_DR_J1L2", "Gen_DR_J1L2", 100, 0, 8, DR12, theWeight);
+      theHistograms.fill("Gen_DR_J1L3", "Gen_DR_J1L3", 100, 0, 8, DR13, theWeight);
+      theHistograms.fill("Gen_DR_J1L4", "Gen_DR_J1L4", 100, 0, 8, DR14, theWeight);
+      theHistograms.fill("Gen_DR_J2L1", "Gen_DR_J2L1", 100, 0, 8, DR21, theWeight);
+      theHistograms.fill("Gen_DR_J2L2", "Gen_DR_J2L2", 100, 0, 8, DR22, theWeight);
+      theHistograms.fill("Gen_DR_J2L3", "Gen_DR_J2L3", 100, 0, 8, DR23, theWeight);
+      theHistograms.fill("Gen_DR_J2L4", "Gen_DR_J2L4", 100, 0, 8, DR24, theWeight);
+      
+      
       //%%%%%%%% Comparison genParticles - recoParticles %%%%%%%%//
-
-      std::vector< std::pair<const Particle*, const Particle* > > ZcomparatorVector;
-      std::vector< std::pair<const Particle*, const Particle* > > WcomparatorVector;  
+      
+      std::vector< std::pair<const Particle* , Boson<Lepton>> > ZcomparatorVector;
+      std::vector< std::pair<const Particle* , Boson<Jet>> >    WcomparatorVector;  
   
 
 
       foreach(const Boson<Lepton>& z, *Zmm) {
-	ZcomparatorVector.push_back(make_pair(Z0gen, & z));
-	ZcomparatorVector.push_back(make_pair(Z1gen, & z));
+	ZcomparatorVector.push_back(make_pair(Z0gen, z.clone<Lepton>()));
+	ZcomparatorVector.push_back(make_pair(Z1gen, z.clone<Lepton>()));
       }
   
   
       foreach(const Boson<Electron>& z, *Zee) {   
-	ZcomparatorVector.push_back(make_pair(Z0gen, & z));
-	ZcomparatorVector.push_back(make_pair(Z1gen, & z));
+	ZcomparatorVector.push_back(make_pair(Z0gen, z.clone<Lepton>()));
+	ZcomparatorVector.push_back(make_pair(Z1gen, z.clone<Lepton>()));
       }
   
-      foreach(const Boson<Jet>& w, *Wjj) {
-	WcomparatorVector.push_back(make_pair(Wgen, & w));
+      foreach(const Boson<Jet> w, *Wjj) {
+	WcomparatorVector.push_back(make_pair(Wgen, w));
       }
   
-      std::stable_sort(ZcomparatorVector.begin(), ZcomparatorVector.end(), deltaRComparator());
-      std::stable_sort(WcomparatorVector.begin(), WcomparatorVector.end(), deltaRComparator());
+      std::stable_sort(ZcomparatorVector.begin(), ZcomparatorVector.end(), ZdeltaRComparator());
+      std::stable_sort(WcomparatorVector.begin(), WcomparatorVector.end(), WdeltaRComparator());
 
-      const Particle* Z0 = ZcomparatorVector.at(0).second;         // Definition of correctly matched bosons
-      const Particle* Z1 = ZcomparatorVector.at(1).second;         //
-      const Particle* W  = WcomparatorVector.at(0).second;          //
+    
+      
+      Boson<Lepton> Z0 = ZcomparatorVector.at(0).second;         // Definition of correctly matched bosons
+      Boson<Lepton> Z1 = ZcomparatorVector.at(1).second;         //
+      Boson<Jet> W     = WcomparatorVector.at(0).second;         //
   
       
       cout <<  "\n------- MASSES COMPARISON: Z gen  ||  Z reco matched with gen  ||  Z reco -------"   << endl;
-      cout << "Z0gen= " << Z0gen->p4().M() << "\t\tZ0matched = " << Z0->p4().M() << "\t\tZ0reco = " << Green(myZ0.p4().M()) <<endl;
-      cout << "Z1gen= " << Z1gen->p4().M() << "\t\tZ1matched = " << Z1->p4().M() << "\t\tZ1reco = " << Green(myZ1.p4().M()) <<endl;
-      cout << "Wgen=  " << Wgen->p4().M()  << "\t\tWmatched =  " << W->p4().M()  << "\t\tWreco = "  << Green(myW.p4().M())  <<endl;
+      cout << "Z0gen= " << Z0gen->p4().M() << "\t\tZ0matched = " << Z0.p4().M() << "\t\tZ0reco = " << Green(myZ0.p4().M()) <<endl;
+      cout << "Z1gen= " << Z1gen->p4().M() << "\t\tZ1matched = " << Z1.p4().M() << "\t\tZ1reco = " << Green(myZ1.p4().M()) <<endl;
+      cout << "Wgen=  " << Wgen->p4().M()  << "\t\tWmatched =  " << W.p4().M()  << "\t\tWreco = "  << Green(myW.p4().M())  <<endl;
 
       
-      bool ZcorrectMatch = (myZ0.p4() == Z0->p4() && myZ1.p4() == Z1->p4()) || (myZ0.p4() == Z1->p4() && myZ1.p4() == Z0->p4());
-      bool WcorrectMatch = myW.p4() == W->p4();
+      bool ZcorrectMatch = (myZ0.p4() == Z0.p4() && myZ1.p4() == Z1.p4()) || (myZ0.p4() == Z1.p4() && myZ1.p4() == Z0.p4());
+      bool WcorrectMatch = myW.p4() == W.p4();
       
       if ( ZcorrectMatch ) theHistograms.fill("Efficiency of Z definition", "Efficiency of Z definition", 3, 0, 3, 1, theWeight);
       
       if ( WcorrectMatch ) theHistograms.fill("Efficiency of W definition", "Efficiency of W definition", 3, 0, 3, 1, theWeight);
       
       if ( ZcorrectMatch && WcorrectMatch ) theHistograms.fill("Efficiency of signal definition", "Efficiency of signal definition", 3, 0, 3, 1, theWeight);
-         
+
+      double deltaRJet1Lep1 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z0.daughter(0).p4().Rapidity(), Z0.daughter(0).p4().Phi());
+      double deltaRJet1Lep2 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z0.daughter(1).p4().Rapidity(), Z0.daughter(1).p4().Phi());
+      double deltaRJet1Lep3 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z1.daughter(0).p4().Rapidity(), Z1.daughter(0).p4().Phi());
+      double deltaRJet1Lep4 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z1.daughter(1).p4().Rapidity(), Z1.daughter(1).p4().Phi());
+      double deltaRJet2Lep1 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z0.daughter(0).p4().Rapidity(), Z0.daughter(0).p4().Phi());
+      double deltaRJet2Lep2 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z0.daughter(1).p4().Rapidity(), Z0.daughter(1).p4().Phi());
+      double deltaRJet2Lep3 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z1.daughter(0).p4().Rapidity(), Z1.daughter(0).p4().Phi());
+      double deltaRJet2Lep4 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z1.daughter(1).p4().Rapidity(), Z1.daughter(1).p4().Phi());
+
+      theHistograms.fill("Matched_DR_J1L1", "Matched_DR_J1L1", 100, 0, 8, deltaRJet1Lep1, theWeight);
+      theHistograms.fill("Matched_DR_J1L2", "Matched_DR_J1L2", 100, 0, 8, deltaRJet1Lep2, theWeight);
+      theHistograms.fill("Matched_DR_J1L3", "Matched_DR_J1L3", 100, 0, 8, deltaRJet1Lep3, theWeight);
+      theHistograms.fill("Matched_DR_J1L4", "Matched_DR_J1L4", 100, 0, 8, deltaRJet1Lep4, theWeight);
+      theHistograms.fill("Matched_DR_J2L1", "Matched_DR_J2L1", 100, 0, 8, deltaRJet2Lep1, theWeight);
+      theHistograms.fill("Matched_DR_J2L2", "Matched_DR_J2L2", 100, 0, 8, deltaRJet2Lep2, theWeight);
+      theHistograms.fill("Matched_DR_J2L3", "Matched_DR_J2L3", 100, 0, 8, deltaRJet2Lep3, theWeight);
+      theHistograms.fill("Matched_DR_J2L4", "Matched_DR_J2L4", 100, 0, 8, deltaRJet2Lep4, theWeight);
+      
     }
 
     else {
