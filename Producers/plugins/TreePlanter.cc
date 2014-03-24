@@ -37,7 +37,6 @@ using std::endl;
 
 TreePlanter::TreePlanter(const edm::ParameterSet &config)
   : PUWeighter_      (PUReweight::LEGACY)
-  , filterController_(config)
   , preSkimCounter_  (0)
   , postSkimCounter_ (0)
   , theMuonLabel     (config.getParameter<edm::InputTag>("muons"    ))
@@ -143,12 +142,12 @@ void TreePlanter::endJob(){
     
     internalCrossSection = internalCrossSection/theXSections.size();
     
-    cout << "================================================"            << endl
-	 << "Total number of generated events: " << theNumberOfEvents     << endl
-	 << "Total number of analyzed events: "  << theNumberOfEvents     << endl
-	 <<" Internal cross section: "           << internalCrossSection  << endl
-	 <<" External cross section: "           << externalCrossSection_ << endl
-	 << "================================================"            << endl;
+    cout << "================================================"                << endl
+	 << "Total number of generated events: " << theNumberOfEvents         << endl
+	 << "Total number of analyzed events: "  << theNumberOfAnalyzedEvents << endl
+	 <<" Internal cross section: "           << internalCrossSection      << endl
+	 <<" External cross section: "           << externalCrossSection_     << endl
+	 << "================================================"                << endl;
     
     edm::Service<TFileService> fs;
     TTree *countTree = fs->make<TTree>("HollyTree","HollyTree");
@@ -259,9 +258,6 @@ void TreePlanter::fillEventInfo(const edm::Event& event){
 
 void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup){
   ++theNumberOfAnalyzedEvents;
-
-  // Apply MC filter (skip event)
-  if (isMC_ && !(filterController_.passMCFilter(event))) return;
 
   initTree();
   
