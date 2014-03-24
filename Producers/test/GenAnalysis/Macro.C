@@ -221,7 +221,7 @@ void Macro() {
   c2->Divide(2,2); 
 
   TCanvas* c3 = new TCanvas("Signal - Background","Signal - Background",900,700);
-  c3->Divide(3,1); 
+  c3->Divide(2,2); 
 
   TCanvas* c4 = new TCanvas("SignalQED6 - ZZW - ZZZ","SignalQED6 - ZZW - ZZZ",900,700);
   c4->Divide(2,2);
@@ -307,6 +307,9 @@ void Macro() {
   Wsumjj.DrawClone("same");
 
 
+  TH1F ZZW_QED6sum4l = (*(ZZW_QED6_0->h4lMass)+*(ZZW_QED6_1->h4lMass)+*(ZZW_QED6_2->h4lMass)+*(ZZW_QED6_3->h4lMass)+*(ZZW_QED6_4->h4lMass));
+
+
   //Canvas 2: -------------------------Signal(2f->6f) - Signal(ZZW on-shell) Mass 6f & Pts ---------------------//
   
   TH1F ZZW_QED6sum6f_in = (*(ZZW_QED6_0->h6fMass)+*(ZZW_QED6_1->h6fMass)+*(ZZW_QED6_2->h6fMass)+*(ZZW_QED6_3->h6fMass)+*(ZZW_QED6_4->h6fMass));  
@@ -377,7 +380,7 @@ void Macro() {
 
 
 
-  //Canvas 3: ------------------------ Signal - Background 2l0Mass, 2l1Mass, Mass6f ---------------------//
+  //Canvas 3: ------------------------ Signal - Background 2l0Mass, 2l1Mass, Mass6f, Mass4l ---------------------//
 
   ZZW_QED6_0->Scale(1/scalefactor);
   ZZW_QED6_1->Scale(1/scalefactor);
@@ -390,7 +393,6 @@ void Macro() {
   TH1F Backgr_QED6sum2l0 = (*(Backgr_QED6_0->h2l0Mass)+*(Backgr_QED6_1->h2l0Mass)+*(Backgr_QED6_2->h2l0Mass)+*(Backgr_QED6_3->h2l0Mass)+*(Backgr_QED6_4->h2l0Mass));  
   Backgr_QED6sum2l0.SetTitle("2l0Mass");  
   Backgr_QED6sum2l0.DrawClone();
-  // TH1F ZZW_QED6sum2l0 = (*(ZZW_QED6_0->h2l0Mass)+*(ZZW_QED6_1->h2l0Mass)+*(ZZW_QED6_2->h2l0Mass)+*(ZZW_QED6_3->h2l0Mass)+*(ZZW_QED6_4->h2l0Mass));
   ZZW_QED6sum2l0.SetLineColor(kRed);
   ZZW_QED6sum2l0.DrawClone("same");
 
@@ -400,18 +402,25 @@ void Macro() {
   TH1F Backgr_QED6sum2l1 = (*(Backgr_QED6_0->h2l1Mass)+*(Backgr_QED6_1->h2l1Mass)+*(Backgr_QED6_2->h2l1Mass)+*(Backgr_QED6_3->h2l1Mass)+*(Backgr_QED6_4->h2l1Mass));  
   Backgr_QED6sum2l1.SetTitle("2l1Mass");  
   Backgr_QED6sum2l1.DrawClone();
-  // TH1F ZZW_QED6sum2l1 = (*(ZZW_QED6_0->h2l1Mass)+*(ZZW_QED6_1->h2l1Mass)+*(ZZW_QED6_2->h2l1Mass)+*(ZZW_QED6_3->h2l1Mass)+*(ZZW_QED6_4->h2l1Mass));  
   ZZW_QED6sum2l1.SetLineColor(kRed);
   ZZW_QED6sum2l1.DrawClone("same");
 
   c3->cd(3); 
   gPad->SetLogy();
+  //  gPad->SetLogx();
   TH1F Backgr_QED6sum6f = (*(Backgr_QED6_0->h6fMass)+*(Backgr_QED6_1->h6fMass)+*(Backgr_QED6_2->h6fMass)+*(Backgr_QED6_3->h6fMass)+*(Backgr_QED6_4->h6fMass));  
   Backgr_QED6sum6f.SetTitle("6fMass");
   Backgr_QED6sum6f.DrawClone();
-  //  TH1F ZZW_QED6sum6f = (*(ZZW_QED6_0->h6fMass)+*(ZZW_QED6_1->h6fMass)+*(ZZW_QED6_2->h6fMass)+*(ZZW_QED6_3->h6fMass)+*(ZZW_QED6_4->h6fMass));
   ZZW_QED6sum6f.SetLineColor(kRed);
   ZZW_QED6sum6f.DrawClone("same");
+
+  c3->cd(4); 
+  gPad->SetLogy();
+  TH1F Backgr_QED6sum4l = (*(Backgr_QED6_0->h4lMass)+*(Backgr_QED6_1->h4lMass)+*(Backgr_QED6_2->h4lMass)+*(Backgr_QED6_3->h4lMass)+*(Backgr_QED6_4->h4lMass));  
+  Backgr_QED6sum4l.SetTitle("4lMass");
+  Backgr_QED6sum4l.DrawClone();
+  ZZW_QED6sum4l.SetLineColor(kRed);
+  ZZW_QED6sum4l.DrawClone("same");
 
  
 
@@ -524,7 +533,7 @@ void Macro() {
        << "\nBackground_Cut= " << Cut_QED6sum6f.Integral(0,Cut_QED6sum6f.GetNbinsX()+1) 
        << "\t\tError= " << sqrt(errCut_QED6_0*errCut_QED6_0 + errCut_QED6_1*errCut_QED6_1 + errCut_QED6_2*errCut_QED6_2 + errCut_QED6_3*errCut_QED6_3 + errCut_QED6_4*errCut_QED6_4)    
        <<"\nSIGNAL_onshell= " << Wsum6f.Integral(0, Wsum6f.GetNbinsX()+1) 
-       << "\t\t\tErrorSignalOnShell= " << sqrt(errWp*errWp + errWm*errWm)    
+       << "\t\tErrorSignalOnShell= " << sqrt(errWp*errWp + errWm*errWm)    
        << "\nSignal_Cut= " << Wsum6fCut.Integral(0, Wsum6fCut.GetNbinsX()+1)
        << "\t\tError= " << sqrt(errWp_Cut*errWp_Cut + errWm_Cut*errWm_Cut)  << endl;
   
