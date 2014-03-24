@@ -64,10 +64,12 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
   
 
   //std::cout<<"----------- Jets -----------"<<std::endl;
+  int passPresel = 0;
   auto_ptr<vector<cmg::PFJet> > out(new vector<cmg::PFJet>());
   foreach(const cmg::PFJet& jet, *jets){
     
     if(!preselection_(jet)) continue;
+    ++passPresel;
 
     //std::cout<<"\n+++++ Jet +++++ pt: " << jet.pt() << " eta: " << jet.eta() << " phi: " << jet.phi() << std::endl;
 
@@ -100,7 +102,7 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
       }
     }
 
-    if(ecomp.number() > 0 && ecomp.fraction() > 0.50){
+    if(ecomp.number() > 0 && ecomp.fraction() >= enFractionAllowed_){
       math::XYZVectorD v(ecomp.pt(), 0, sqrt(ecomp.energy()*ecomp.energy() - ecomp.pt()*ecomp.pt()));
       double ecomp_abseta = v.eta();
       double ecomp_pt     = ecomp.pt();
@@ -116,11 +118,11 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
 
     if(!leptonjet) out->push_back(jet);
   }
-  
+  //std::cout<<"Pass Presel: "<<passPresel<<" pass cleaning: "<<out->size() << std::endl;
   event.put(out);
 }
 
-
+ 
 
 #include "FWCore/Framework/interface/MakerMacros.h"
 
