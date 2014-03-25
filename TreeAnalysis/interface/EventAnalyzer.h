@@ -79,9 +79,19 @@ public:
     return dR;
   }
 
-
-
-
+ 
+    static double deltaPhi (const TLorentzVector &a, const TLorentzVector &b) {
+    
+    double phi1 = a.Phi();
+    double phi2 = b.Phi();
+    
+    double DPhi = fabs(phi2 - phi1);
+    
+    if(DPhi > TMath::Pi()) DPhi = (2*TMath::Pi()) - DPhi;
+    
+    return DPhi;   
+  }
+  
 
 
   struct PtComparator{
