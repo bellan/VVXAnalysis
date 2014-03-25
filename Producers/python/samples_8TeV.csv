@@ -23,7 +23,7 @@ minloH126,,0.0052603667,,,,/GluGluToHToZZTo4L_M-126_8TeV-minloHJJ-pythia6-tauola
 DYJetsToLLTuneZ2M50,Z,3503.71,,,,/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,20,
 DYJetsToLLTuneZ2M10,Z,915,,,,/DYJetsToLL_M-10To50filter_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,20,
 TTTo2L2Nu2B,tt,23.64,,,,/TTTo2L2Nu2B_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,6,
-ZZJetsTo4L,,0.76083,,,,/ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,6,
+ZZJetsTo4L,,0.1296,,,,/ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,6,
 WWWJets,triboson,0.08058,,,,/WWWJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,
 WWZJets,triboson,0.05795,,,,/WWZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,
 WZZJetsSignal,WZZ,0.01968,,,,/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,Signal
