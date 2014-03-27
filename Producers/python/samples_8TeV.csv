@@ -1,4 +1,5 @@
 identifier,process,crossSection = -1,totalEvents = -1,luminosity = -1,execute=True,dataset,user,pattern,splitLevel,tune
+Phantom_2e2mu2j,,0.00053860115,,,,/VBF_phantom_8TeV/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,4,
 ZZTo4mu,ZZ,0.07691,,,,/ZZTo4mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,4,
 ZZTo4e,ZZ,0.07691,,,,/ZZTo4e_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,6,
 ZZTo2mu2tau,ZZ,0.1767,,,,/ZZTo2mu2tau_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,20,
