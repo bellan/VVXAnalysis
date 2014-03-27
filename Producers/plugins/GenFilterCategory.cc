@@ -57,7 +57,7 @@ public:
     int j0Id = j_0->pdgId();
     int j1Id = j_1->pdgId();    
     if ( abs(j0Id) < 6 && abs(j1Id ) < 6) {
-      if( abs(j0Id + j1Id) == 1 || abs(j0Id + j1Id) == 3 ) {
+      if( (j0Id*j1Id) <0 && (abs(j0Id + j1Id) == 1 || abs(j0Id + j1Id) == 3) ) {
 	if( j0Id % 2 == 0 )       return copysign(24,j0Id);  // W
 	else if( j1Id % 2 == 0 )  return copysign(24,j1Id);  // W
 	else return 0;

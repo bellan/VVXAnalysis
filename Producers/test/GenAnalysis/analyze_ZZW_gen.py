@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("ANALYSIS")
 
 ####
-sample = "QED6_0"
+sample = "prova"
 
 ####
 
@@ -17,17 +17,35 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
 )
 
+process.load("FWCore.MessageService.MessageLogger_cfi")
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
+
+
+
 process.TFileService=cms.Service('TFileService',
                                 fileName=cms.string('VVVAnalysis.root')
                                 )
 
+if (sample == "prova") :
+    process.source.fileNames = cms.untracked.vstring('/store/cmst3/user/cmgtools/CMG//ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_9_1_bA3.root')
+    
+# process.source.fileNames = cms.untracked.vstring('/store/cmst3/group/cmgtools/CMG//WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_1_1_aLX.root')
+
+# process.source.fileNames = cms.untracked.vstring('/store/cmst3/user/cmgtools/CMG/ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_9_1_wlb.root',
+#                                                  '/store/cmst3/user/cmgtools/CMG/ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_8_1_ru8.root',
+#                                                  '/store/cmst3/user/cmgtools/CMG/ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_7_1_sTi.root',
+#                                                  '/store/cmst3/user/cmgtools/CMG/ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_6_1_zVE.root')
+
+#    process.source.fileNames = cms.untracked.vstring('/store/cmst3/group/cmgtools/CMG/WZZ_8TeV-aMCatNLO-herwig/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_13_1_YZF.root')
+
+#    process.TFileService.fileName = "prova.root"
 if (sample=="4ljj") :
     process.source.fileNames = cms.untracked.vstring('root://lxcms00//data/VVV/madgraph_pythia_4ljj.root')
     process.TFileService.fileName = "4ljj_3_GenAn.root"
 elif (sample=="QED6_0") :
     process.source.fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/b/bellan/QGC/4ljj_QED6_run_0.root')
 #    process.source.eventsToProcess = cms.untracked.VEventRange("1:9868")
-    process.TFileService.fileName = "prova.root"
+    process.TFileService.fileName = "QED6_1_3_cat2.root"
 elif (sample=="QED6_1") :
     process.source.fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/b/bellan/QGC/4ljj_QED6_run_1.root')
     process.TFileService.fileName = "QED6_1_3_cat2.root"
@@ -60,22 +78,26 @@ elif (sample=="W-ZZ") :
 ###
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.printTree = cms.EDAnalyzer("ParticleListDrawer",
-                                   maxEventsToPrint = cms.untracked.int32(100),
-                                   printVertex = cms.untracked.bool(False),
-                                   src = cms.InputTag("genParticles")
-                                   )
-process.genAnalyzer = cms.EDAnalyzer("ZZWCombinedGenAnalyzer")
+                                    maxEventsToPrint = cms.untracked.int32(-1),
+                                    printVertex = cms.untracked.bool(False),
+                                    src = cms.InputTag("genParticlesPruned")
+                                    )
+#process.genAnalyzer = cms.EDAnalyzer("ZZWCombinedGenAnalyzer")
 
     
 
-## process.genCategory =  cms.EDFilter("GenFilterCategory",
-##                                     Category = cms.int32(-1),
-##                                     SignalDefinition = cms.int32(3))
-## process.myAnalyzer = cms.EDAnalyzer("ZZWGenAnalyzer",
-##                                    Category = cms.InputTag("genCategory")
-##                                    )
+process.genCategory =  cms.EDFilter("GenFilterCategory",
+                                    Category = cms.int32(0),
+                                    SignalDefinition = cms.int32(3),
+                                    src = cms.InputTag("genParticlesPruned"))
+process.myAnalyzer = cms.EDAnalyzer("ZZWGenAnalyzer",
+                                   Category = cms.InputTag("genCategory")
+                                   )
 
 #process.analysis = cms.Path(process.genCategory*process.myAnalyzer)
-process.analysis = cms.Path(process.genAnalyzer) #*process.printTree)
+#process.analysis = cms.Path(process.genAnalyzer) #*process.printTree)
 #process.analysis = cms.Path(process.printTree*process.GenAnalyzer)
 
+
+process.analysis = cms.Path(~process.genCategory*process.printTree)
+#process.analysis = cms.Path(process.printTree)
