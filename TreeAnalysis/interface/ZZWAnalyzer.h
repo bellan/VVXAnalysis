@@ -37,7 +37,7 @@ public:
   template< class PAR >
     bool WBosonDefinition(phys::Boson<PAR> cand) const {
     bool massRange = fabs(cand.p4().M() - WMASS) < 40;
-    bool jetPt = cand.daughter(0).pt() > 40 || cand.daughter(1).pt() > 40;
+    bool jetPt = (cand.daughter(0).pt() > 25 && cand.daughter(1).pt() > 40) || (cand.daughter(0).pt() > 40 && cand.daughter(1).pt() > 25); 
     bool jetsID = cand.daughter(0).passPUID() && cand.daughter(0).passLooseJetID() && cand.daughter(1).passPUID() && cand.daughter(1).passLooseJetID();
     return massRange && jetPt && jetsID;
   }

@@ -51,7 +51,8 @@ class EventAnalyzer {
 public:
   
   enum METType {Std,NoMu,NoEl};
-  typedef std::pair<const phys::Particle*, const phys::Particle*> ParticlePair;
+  typedef std::pair<const phys::Particle*, phys::Boson<phys::Lepton> > ZParticlePair;
+  typedef std::pair<const phys::Particle*, phys::Boson<phys::Jet> >    WParticlePair;
 
   EventAnalyzer(SelectorBase& aSelector, std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = true);
 
@@ -78,9 +79,19 @@ public:
     return dR;
   }
 
-
-
-
+ 
+    static double deltaPhi (const TLorentzVector &a, const TLorentzVector &b) {
+    
+    double phi1 = a.Phi();
+    double phi2 = b.Phi();
+    
+    double DPhi = fabs(phi2 - phi1);
+    
+    if(DPhi > TMath::Pi()) DPhi = (2*TMath::Pi()) - DPhi;
+    
+    return DPhi;   
+  }
+  
 
 
   struct PtComparator{
@@ -117,10 +128,17 @@ public:
   // Class for specific selections
   SelectorBase& select;
 
-  struct deltaRComparator{
-    bool operator()(const ParticlePair & a ,
-                    const ParticlePair & b) const{
-      return deltaR(a.first->p4().Rapidity(), a.first->p4().Phi(), a.second->p4().Rapidity(), a.second->p4().Phi()) < deltaR(b.first->p4().Rapidity(), b.first->p4().Phi(), b.second->p4().Rapidity(), b.second->p4().Phi());
+  struct ZdeltaRComparator{
+    bool operator()(const ZParticlePair & a ,
+                    const ZParticlePair & b) const{
+      return deltaR(a.first->p4().Rapidity(), a.first->p4().Phi(), a.second.p4().Rapidity(), a.second.p4().Phi()) < deltaR(b.first->p4().Rapidity(), b.first->p4().Phi(), b.second.p4().Rapidity(), b.second.p4().Phi());
+    }
+  };
+
+  struct WdeltaRComparator{
+    bool operator()(const WParticlePair & a ,
+                    const WParticlePair & b) const{
+      return deltaR(a.first->p4().Rapidity(), a.first->p4().Phi(), a.second.p4().Rapidity(), a.second.p4().Phi()) < deltaR(b.first->p4().Rapidity(), b.first->p4().Phi(), b.second.p4().Rapidity(), b.second.p4().Phi());
     }
   };
 
