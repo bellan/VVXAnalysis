@@ -336,8 +336,8 @@ void ZZWAnalyzer::analyze() {
       
 	//%%%%%%%% Comparison genParticles - recoParticles %%%%%%%%//
       
-	std::vector< std::pair<const Particle* , Boson<Lepton>> > ZcomparatorVector;
-	std::vector< std::pair<const Particle* , Boson<Jet>> >    WcomparatorVector;  
+	std::vector< std::pair<const Particle* , Boson<Lepton> > > ZcomparatorVector;
+	std::vector< std::pair<const Particle* , Boson<Jet> > >    WcomparatorVector;  
   
 
 
