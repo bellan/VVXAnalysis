@@ -254,77 +254,61 @@ bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
       
     bool passEtaAccLep = true;
       
-    for(int i=0; i<4; ++i) {
-      passEtaAccLep = passEtaAccLep && fabs(theGenl[i].eta()) < 2.5;
-    }
-      
+    for(int i=0; i<4; ++i) passEtaAccLep = passEtaAccLep && fabs(theGenl[i].eta()) < 2.5;       
  
-    //////// eta cut for all leptons ///////
+    // eta cut for all leptons
     
     if ( passEtaAccLep) {
 
-      //Signal: ZZW---------------------------------------categoryNum=0---------------------
-      if ( isMySignal ) {
-	categoryNum = 0;
-	//cout << "SIGNAL: "  << event.id().event() << "\nEvent category: " << categoryNum << endl;
-      } 
+      // ========== Signal: ZZW ==========
 
-      //=========Background=========//
+      if ( isMySignal ) categoryNum = 0;
+
+      // ========== Background ==========
 
       else {     
-	   
+	
 	if( hasZZ4l ){
 
-	  //ZZZ ----------------------------------------- categoryNum = 1 ------------------------ 
-	  if ( has3Z ) {
-	    categoryNum = 1;
-	    //cout << "ZZZ: " << event.id().event() << "\nEvent category: " << categoryNum << endl;
-	  }
-	  
-	  //ZZWloose ------------------------------------ categoryNum = 2 -----------------------
-	  else if ( !has3Z && isWloose ) {
-	    categoryNum = 2;
-	  }
-	  
-	  //ZZZloose ------------------------------------ categoryNum = 3 -----------------------
-	  else if ( !has3Z && !isWloose && isZloose ) {
-	    categoryNum = 3;
-	  }
+	  // ---------- ZZZ ---------- 
 
-	  //ZZ+X ---------------------------------------- categoryNum = 4 ------------------------
-	  else {	
-	    categoryNum = 4;
-	  }
+	  if ( has3Z )                                categoryNum = 1;
+	  
+	  // ---------- ZZWloose ----------
+
+	  else if ( !has3Z && isWloose )              categoryNum = 2;
+	  
+	  // ---------- ZZZloose ----------
+
+	  else if ( !has3Z && !isWloose && isZloose ) categoryNum = 3;
+	  
+	  // ---------- ZZ+X ----------
+
+	  else                                        categoryNum = 4;
 	}
 
 	else {
 	  
-	  //WZ+X ---------------------------------------- categoryNum = 5 ------------------------
-	  if ( isWtight ) {
-	    categoryNum = 5;
-	  }
+	  // ---------- WZ+X ----------
+
+	  if ( isWtight )                             categoryNum = 5;
+	  	  
+	  // ---------- ZZjj+X ----------
 	  
-	  //ZZjj+X -------------------------------------- categoryNum = 6 ------------------------
-	  else if ( has3Z ) {
-	    categoryNum = 6;
-	  }
+	  else if ( has3Z )                           categoryNum = 6;
 	  
-	  //ZWloose+X ----------------------------------- categoryNum = 7 ------------------------
-	  else if ( !isWtight && !has3Z && isWloose ) {
-	    categoryNum = 7;
-	  }
+	  // ---------- ZWloose+X ----------
 	  
-	  //ZZjj+X -------------------------------------- categoryNum = 8 ------------------------
-	  else if ( !has3Z && !isWloose && isZloose ) {
-	    categoryNum = 8;
-	  }
+	  else if ( !isWtight && !has3Z && isWloose ) categoryNum = 7;
+	  	  
+	  // ---------- ZZjj+X ----------
+
+	  else if ( !has3Z && !isWloose && isZloose ) categoryNum = 8;
 	  
-	  //Z+X+Y --------------------------------------- categoryNum = 9 ------------------------
-	  else {
-	    categoryNum = 9;
-	  }
-	  
-	}		
+	  // ---------- Z+X+Y----------
+
+	  else              	                      categoryNum = 9;
+  	}		
       }      
     }
   }
