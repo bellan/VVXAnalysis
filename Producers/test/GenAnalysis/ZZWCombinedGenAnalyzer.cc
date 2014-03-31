@@ -311,7 +311,7 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
     //-----------------3: Real signal, real pairing-----------------------
      else if ( num==3 ) {     
 
-       std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> >  ZZ = makeZbosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
+       std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> >  ZZ = makeZBosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
     
       Z0 = ZZ.first;
       Z1 = ZZ.second;
