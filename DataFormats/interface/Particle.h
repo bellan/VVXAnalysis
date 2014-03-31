@@ -71,7 +71,7 @@ namespace phys {
       return charge;
     }
 
-    void setId(int id) {id_ = id;}
+    void setId(int pid) {id_ = pid;}
  
   protected:
     TLorentzVector p4_;
