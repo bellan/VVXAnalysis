@@ -23,6 +23,7 @@
 #include <iterator>
 #include <string>
 #include <cmath>
+#include <tuple> 
 
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/Producers/interface/SignalDefinitionUtilities.h"
@@ -39,6 +40,28 @@ const float MW = 80.39;
 class GenFilterCategory: public edm::EDFilter {
 
 public:
+  typedef std::tuple<uint,uint,int,double> QuarkPairFeatures;
+  typedef std::vector<QuarkPairFeatures> QuarkPairsFeatures;
+
+  struct MassComparator{
+    MassComparator(int id, const double& ref): id_(id), ref_(ref){}
+
+    bool operator()(const QuarkPairFeatures & a , 
+		    const QuarkPairFeatures & b) const{ 
+      if       (abs(std::get<2>(a)) == id_ && abs(std::get<2>(b)) != id_) return true;
+      else if  (abs(std::get<2>(a)) != id_ && abs(std::get<2>(b)) == id_) return false;
+      else if  (abs(std::get<2>(a)) == id_ && abs(std::get<2>(b)) == id_)
+	return fabs(std::get<3>(a) - ref_) < fabs(std::get<3>(b) - ref_); 
+      else    
+	return true;
+    }
+
+    int id_;
+    double ref_;
+  };
+  
+
+
   GenFilterCategory(const ParameterSet& pset)
     : sel_     (pset.getParameter<int>("Category"))
     , num      (pset.getParameter<int>("SignalDefinition"))
@@ -116,31 +139,79 @@ bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 
   phys::Boson<phys::Particle> Z0, Z1, Z2, W;
 
-  // FIXME!!!!
-  if ( theGenq.size() == 2 && theGenl.size() == 4 && (leptonCode == 2 || leptonCode == 4) ) {
+  if ( theGenq.size() >= 2 && theGenl.size() == 4 && (leptonCode == 2 || leptonCode == 4) ) {
 
-    phys::Particle q0 = theGenq[0], q1 = theGenq[1];
+    bool isWloose  = false, isZloose  = false, isWtight  = false, isZtight  = false;
+
+    phys::Particle q0, q1;
+    int bosonId = -99;
+
+    QuarkPairsFeatures quarkPairsFeatures;
     
-    if ( q0.pt() < q1.pt() ) { q0 = theGenq[1];  q1 = theGenq[0]; }
-    
-    bool has3Z = false, isWloose  = false, isZloose  = false, isWtight  = false, isZtight  = false;
+    for(uint i = 0;  i < theGenq.size()-1; ++i) for(uint j = i+1;  j < theGenq.size(); ++j)
+      quarkPairsFeatures.push_back(std::make_tuple(i, j, makeVBosonsFromIds(theGenq[i].id(), theGenq[j].id()), (theGenq[i].p4() + theGenq[j].p4()).M()));
+      
+    // ----- Search for a true W in the event -----
+    std::stable_sort(quarkPairsFeatures.begin(), quarkPairsFeatures.end(), MassComparator(24, MW));
+    QuarkPairFeatures bestQuarkPair = quarkPairsFeatures.front();
+    if(abs(std::get<2>(bestQuarkPair)) == 24 and fabs(std::get<3>(bestQuarkPair) - MW) < 10){
+      q0 = theGenq[std::get<0>(bestQuarkPair)];
+      q1 = theGenq[std::get<1>(bestQuarkPair)];
+      if ( q0.pt() < q1.pt() ) { q0 = theGenq[std::get<1>(bestQuarkPair)];  q1 = theGenq[std::get<0>(bestQuarkPair)]; }
+      bosonId =  std::get<2>(bestQuarkPair);
+      isWtight = true;
+    }
+    // --------------------------------------------
 
-    // FIXME!!!!
-    int bosonId = makeVBosonsFromIds(q0.id(), q1.id());
-
-    // FIXME!!!!
-    bool qqPassMWwindow = fabs((q0.p4() + q1.p4()).M() - MW) < 10;
-    bool qqPassMZwindow = fabs((q0.p4() + q1.p4()).M() - MZ) < 10;
-
-    //================Definition of loose particles (mass) =======================
-
-    
-    for(uint i = 0;  i < theGenj.size()-1; ++i)
-      for(uint j = i+1;  j < theGenj.size(); ++j){
-	if ( fabs((theGenj[i].p4() + theGenj[j].p4()).M() - MW) < 10. ) isWloose = true;  
-	if ( fabs((theGenj[i].p4() + theGenj[j].p4()).M() - MZ) < 10. ) isZloose = true;
+    // ----- Search for a true Z in the event -----
+    if(!isWtight){
+      std::stable_sort(quarkPairsFeatures.begin(), quarkPairsFeatures.end(), MassComparator(23, MZ));
+      QuarkPairFeatures bestQuarkPair = quarkPairsFeatures.front();
+      if(abs(std::get<2>(bestQuarkPair)) == 23 and fabs(std::get<3>(bestQuarkPair) - MZ) < 10){
+	q0 = theGenq[std::get<0>(bestQuarkPair)];
+	q1 = theGenq[std::get<1>(bestQuarkPair)];
+	if ( q0.pt() < q1.pt() ) { q0 = theGenq[std::get<1>(bestQuarkPair)];  q1 = theGenq[std::get<0>(bestQuarkPair)]; }
+	bosonId =  std::get<2>(bestQuarkPair);
+	isZtight = true;
       }
-     
+    }
+    // --------------------------------------------
+
+    // ---- Search for loose W/Z (i.e., not true boson, but rather combinations of partons that resemble a boson ----- 
+
+    if(!isWtight && !isZtight){
+      QuarkPairsFeatures jetPairsFeatures;
+      for(uint i = 0;  i < theGenj.size()-1; ++i) for(uint j = i+1;  j < theGenj.size(); ++j)
+	jetPairsFeatures.push_back(std::make_tuple(i, j, 0, (theGenj[i].p4() + theGenj[j].p4()).M()));
+
+      QuarkPairFeatures bestJetPairW;
+      std::stable_sort(jetPairsFeatures.begin(), jetPairsFeatures.end(), MassComparator(0, MW));
+      bestJetPairW = jetPairsFeatures.front();
+      
+      QuarkPairFeatures bestJetPairZ;
+      std::stable_sort(jetPairsFeatures.begin(), jetPairsFeatures.end(), MassComparator(0, MZ));
+      bestJetPairZ = jetPairsFeatures.front();
+
+      if ( fabs(std::get<3>(bestJetPairZ) - MZ) < 10. ){
+	isZloose = true; 
+	bosonId = 123;
+	q0 = theGenj[std::get<0>(bestJetPairZ)];
+	q1 = theGenj[std::get<1>(bestJetPairZ)];
+	if ( q0.pt() < q1.pt() ) { q0 = theGenj[std::get<1>(bestJetPairZ)];  q1 = theGenj[std::get<0>(bestJetPairZ)]; }
+      }
+
+      // Give priority to W loose, accordingly with background categorization
+      if ( fabs(std::get<3>(bestJetPairW) - MW) < 10. ){
+	isWloose = true;
+	bosonId = 124;  
+	q0 = theGenj[std::get<0>(bestJetPairW)];
+	q1 = theGenj[std::get<1>(bestJetPairW)];
+	if ( q0.pt() < q1.pt() ) { q0 = theGenj[std::get<1>(bestJetPairW)];  q1 = theGenj[std::get<0>(bestJetPairW)]; }
+      }
+	
+    }
+    // --------------------------------------------
+
     
     //--------------------1: MC history------------------------------------
     if ( num==1 ) {              
@@ -149,8 +220,8 @@ bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
       for(int t=0; t<4; ++t) LeptonsMotherSelec = LeptonsMotherSelec && theGenl[t].motherId() == 23;
       
       
-      if ( (isWloose || qqPassMWwindow) && theGenW.size() == 1) isWtight = true;      //definition of tight W (mass + cat)
-      if ( (isZloose || qqPassMZwindow) && theGenZ.size() == 3) isZtight = true;      //definition of tight Z (mass + cat)
+      if ( theGenW.size() == 1) isWtight = true;      //definition of tight W (mass + cat)
+      if ( theGenZ.size() == 3) isZtight = true;      //definition of tight Z (mass + cat)
       
       if ( theGenZ.size() >= 2 && LeptonsMotherSelec ) {
 
@@ -164,20 +235,17 @@ bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 
 
 	if ( isWtight ) {       
-
+	  // FIXME... it should be done using parentage
 	  W.setDaughter(0, q0);
 	  W.setDaughter(1, q1);
-	  W.setId(theGenW[0].id());
-	  
+	  W.setId(theGenW[0].id());  
 	}
 	 
 	else if ( isZtight ) {
-
+	  // FIXME... it should be done using parentage
 	  Z2.setDaughter(0, q0);
 	  Z2.setDaughter(1, q1);
 	  Z2.setId(theGenZ[2].id());
-	  
-	  has3Z = true; 
 	}
       }
     }
@@ -194,22 +262,17 @@ bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
       Z1.setDaughter(1, theGenl[3]);
       Z1.setId(theGenZ[1].id());
       
-      if ( (isWloose || qqPassMWwindow) && fabs(bosonId) == 24 ) {      //definition of tight W (mass + cat)
+      if (isWloose || isWtight) {      //definition of tight W (mass + cat)
 	
     	W.setDaughter(0, q0);
 	W.setDaughter(1, q1);
 	W.setId(bosonId);
-   	
-	isWtight = true;
 	
-      } else if ( (isZloose || qqPassMZwindow) && bosonId == 23 ) {     //definition of tight Z (mass + cat)
+      } else if (isZloose || isZtight) {     //definition of tight Z (mass + cat)
 	
 	Z2.setDaughter(0, q0);
 	Z2.setDaughter(1, q1);
 	Z2.setId(bosonId);
-   	
-	isZtight = true;
-	has3Z = true;     	
       } 	
     }
  
@@ -223,24 +286,18 @@ bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 
       if ( Z0.p4().M() != 0 && Z1.p4().M() != 0 ) {
 
-	if ( (isWloose || qqPassMWwindow)  && fabs(bosonId) == 24 ) {    //definition of tight W (mass + cat)
+	if (isWloose || isWtight) {    //definition of tight W (mass + cat)
 	  
 	  W.setDaughter(0, q0);
 	  W.setDaughter(1, q1);
 	  W.setId(bosonId);
-  
-	  if (qqPassMWwindow) isWtight = true;  
 	  
-	} else if ( (isZloose || qqPassMZwindow)  && bosonId == 23 ) {   //definition of tight Z (mass + cat)
+	} else if (isZloose || isZtight) {   //definition of tight Z (mass + cat)
 	  
 	  Z2.setDaughter(0, q0);
 	  Z2.setDaughter(1, q1);
 	  Z2.setId(bosonId);
-
-	  if(qqPassMZwindow){
-	    isZtight = true;
-	    has3Z = true; 
-	  }
+	  
 	}
       }     
     } 
@@ -249,8 +306,9 @@ bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 
     //=====================================================================================
 
-    bool hasZZ4l    = fabs(Z0.p4().M()-MZ) < 10. && fabs(Z1.p4().M()-MZ) < 10.;
+    bool hasZZ4l    = fabs(Z0.p4().M()-MZ) < 10. && fabs(Z1.p4().M()-MZ) < 10.;    
     bool isMySignal = hasZZ4l && isWtight;
+    bool has3Z      = hasZZ4l && isZtight;
       
     bool passEtaAccLep = true;
       
