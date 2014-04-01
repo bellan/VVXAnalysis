@@ -12,12 +12,13 @@ using namespace colour;
 
 Int_t ZZWAnalyzer::cut() {
 
+ 
   // if (genCategory != 0) return -1; 
 
   //================================================================//
   //                          reco Particles                        //    
   //================================================================//
-    
+  
  
   theHistograms.fill("Number of events", "Number of events", 10, 0, 10, 0, theWeight);  // 0: Number of total events ----------------------------------------------------------------------------------------
   
@@ -54,21 +55,21 @@ Int_t ZZWAnalyzer::cut() {
     }
     
     std::stable_sort(Zll.begin() ,Zll.end() ,MassComparator(ZMASS));
-    //std::stable_sort(Wjj->begin(),Wjj->end(),MassComparator(WMASS));
+    std::stable_sort(Wjj->begin(),Wjj->end(),MassComparator(WMASS));
     //std::stable_sort(Wjj->begin(),Wjj->end(),WPtComparator());
-    std::stable_sort(Wjj->begin(),Wjj->end(),WJetPtComparator());
+    //std::stable_sort(Wjj->begin(),Wjj->end(),WJetPtComparator());
   
     myZ0 = Zll.at(0);
     myZ1 = Boson<Lepton>();
     myW  = Wjj->at(0);
-    bool WmassRange = (fabs(myW.p4().M() - WMASS) < 40);
+    //  bool WmassRange = (fabs(myW.p4().M() - WMASS) < 40);
     
     cout << endl << Green("---------------Selected W---------------") << endl;
     cout << "Pt Jet1 myW = " << myW.daughter(0).pt() << endl;
     cout << "Pt Jet2 myW = " << myW.daughter(1).pt() << endl;
     cout << "----------------------------------------" << endl;
     
-    if(!WmassRange) return -1;  
+    //   if(!WmassRange) return -1;  
 
     
     theHistograms.fill("Number of events", 10, 0, 10, 2, theWeight);                                
@@ -192,6 +193,11 @@ Int_t ZZWAnalyzer::cut() {
      
 
     /////-----------------Histograms-------------------
+  
+    if(genParticles->size() == 9)  theHistograms.fill("0 jet", "0 jet", 3, 0, 3, 1, theWeight);
+    
+    if(genParticles->size() == 10) theHistograms.fill("1 jet", "1 jet", 3, 0, 3, 1, theWeight);
+    
     
     //------------Mass-------------
     
@@ -253,6 +259,8 @@ Int_t ZZWAnalyzer::cut() {
 
 }
 
+ 
+
 
 void ZZWAnalyzer::analyze() {
 
@@ -282,7 +290,8 @@ void ZZWAnalyzer::analyze() {
 	if (id == 23)  GenZ.push_back(&b);      // Z
 	else if (id == 24) GenW.push_back(&b);  // W
       
-      }
+      } 
+
 
       cout << "---------- genParticles: history information ----------" << endl; 
       cout << "Number of generated Z= "  << GenZ.size() << endl;

@@ -15,87 +15,128 @@ using namespace std;
 
 void MacroReco() {
 
-  TFile* ZZ_noSkim       = new TFile("/afs/cern.ch/user/b/bellan/public/for_Giulia/results/zzwAnalysis_baseline/ZZ.root");
-  TFile* H_noSkim        = new TFile("/afs/cern.ch/user/b/bellan/public/for_Giulia/results/zzwAnalysis_baseline/H.root");
-  TFile* Z_noSkim        = new TFile("/afs/cern.ch/user/b/bellan/public/for_Giulia/results/zzwAnalysis_baseline/Z.root");
-  TFile* tt_noSkim       = new TFile("/afs/cern.ch/user/b/bellan/public/for_Giulia/results/zzwAnalysis_baseline/tt.root");
-  TFile* triboson_noSkim = new TFile("/afs/cern.ch/user/b/bellan/public/for_Giulia/results/zzwAnalysis_baseline/triboson.root");
-  TFile* WZZ_noSkim      = new TFile("/afs/cern.ch/user/b/bellan/public/for_Giulia/results/zzwAnalysis_baseline/WZZJets.root");
+  TFile* ZZ             = new TFile("/afs/cern.ch/work/MSSW_5_3_9/src/VVXAnalysis/TreeAnalysis/results_test/ZZWAnalysis_baseline/ZZ.root");
+  TFile* H              = new TFile("/afs/cern.ch/work/MSSW_5_3_9/src/VVXAnalysis/TreeAnalysis/results_test/ZZWAnalysis_baseline/H.root");
+  TFile* Z              = new TFile("/afs/cern.ch/work/MSSW_5_3_9/src/VVXAnalysis/TreeAnalysis/results_test/ZZWAnalysis_baseline/Z.root");
+  TFile* tt             = new TFile("/afs/cern.ch/work/MSSW_5_3_9/src/VVXAnalysis/TreeAnalysis/results_test/ZZWAnalysis_baseline/tt.root");
+  TFile* triboson       = new TFile("/afs/cern.ch/work/MSSW_5_3_9/src/VVXAnalysis/TreeAnalysis/results_test/ZZWAnalysis_baseline/triboson.root");
+  TFile* WZ             = new TFile("/afs/cern.ch/work/MSSW_5_3_9/src/VVXAnalysis/TreeAnalysis/results_test/ZZWAnalysis_baseline/WZ.root");
+  TFile* WZZSignal      = new TFile("/afs/cern.ch/work/MSSW_5_3_9/src/VVXAnalysis/TreeAnalysis/results_test/ZZWAnalysis_baseline/WZZJetsSignal.root");
+  TFile* WZZNoSignal    = new TFile("/afs/cern.ch/work/MSSW_5_3_9/src/VVXAnalysis/TreeAnalysis/results_test/ZZWAnalysis_baseline/WZZJetsNoSignal.root");
+  TFile* ZZJetsSignal   = new TFile("/afs/cern.ch/work/MSSW_5_3_9/src/VVXAnalysis/TreeAnalysis/results_test/ZZWAnalysis_baseline/ZZJetsTo4L_Signal.root");
+  TFile* ZZJetsNoSignal = new TFile("/afs/cern.ch/work/MSSW_5_3_9/src/VVXAnalysis/TreeAnalysis/results_test/ZZWAnalysis_baseline/ZZJetsTo4L_NoSignal.root");
 
+  TCanvas *c = new TCanvas("m6f - BosonsPt", "m6f - BosonsPt", 700, 900);
+  c->Divide(2,2); 
+  TLegend *l = new TLegend(0.67, 0.61,0.88,0.76);
 
-  TCanvas *c = new TCanvas("Ricostruiti", "Ricostruiti", 700, 900);
-  c->Divide(2,2);
+  TCanvas *c1 = new TCanvas("Delta Phi", "Delta Phi", 700, 900);
+  c1->Divide(2,2); 
+  TLegend *l1 = new TLegend(0.67, 0.61,0.88,0.76);
+  
+  TH1F *m6f_ZZ             = (TH1F*)ZZ->Get("6f_Mass");
+  TH1F *m6f_H              = (TH1F*)H->Get("6f_Mass");
+  TH1F *m6f_Z              = (TH1F*)Z->Get("6f_Mass");
+  TH1F *m6f_tt             = (TH1F*)tt->Get("6f_Mass;1");
+  TH1F *m6f_triboson       = (TH1F*)triboson->Get("6f_Mass");
+  TH1F *m6f_WZ             = (TH1F*)WZ->Get("6f_Mass");
+  TH1F *m6f_WZZSignal      = (TH1F*)WZZSignal->Get("6f_Mass");
+  TH1F *m6f_WZZNoSignal    = (TH1F*)WZZNoSignal->Get("6f_Mass");
+  TH1F *m6f_ZZJetsSignal   = (TH1F*)ZZJetsSignal->Get("6f_Mass");
+  TH1F *m6f_ZZJetsNoSignal = (TH1F*)ZZJetsNoSignal->Get("6f_Mass");
+  
+  TH1F *WPt_ZZ             = (TH1F*)ZZ->Get("W_Pt");
+  TH1F *WPt_H              = (TH1F*)H->Get("W_Pt");
+  TH1F *WPt_Z              = (TH1F*)Z->Get("W_Pt");
+  TH1F *WPt_tt             = (TH1F*)tt->Get("W_Pt");
+  TH1F *WPt_triboson       = (TH1F*)triboson->Get("W_Pt");
+  TH1F *WPt_WZ             = (TH1F*)WZ->Get("W_Pt");
+  TH1F *WPt_WZZSignal      = (TH1F*)WZZSignal->Get("W_Pt");
+  TH1F *WPt_WZZNoSignal    = (TH1F*)WZZNoSignal->Get("W_Pt");
+  TH1F *WPt_ZZJetsSignal   = (TH1F*)ZZJetsSignal->Get("W_Pt");
+  TH1F *WPt_ZZJetsNoSignal = (TH1F*)ZZJetsNoSignal->Get("W_Pt");
+
+  TH1F *Z0Pt_ZZ             = (TH1F*)ZZ->Get("Z0_Pt");
+  TH1F *Z0Pt_H              = (TH1F*)H->Get("Z0_Pt");
+  TH1F *Z0Pt_Z              = (TH1F*)Z->Get("Z0_Pt");
+  TH1F *Z0Pt_tt             = (TH1F*)tt->Get("Z0_Pt");
+  TH1F *Z0Pt_triboson       = (TH1F*)triboson->Get("Z0_Pt");
+  TH1F *Z0Pt_WZ             = (TH1F*)WZ->Get("Z0_Pt");
+  TH1F *Z0Pt_WZZSignal      = (TH1F*)WZZSignal->Get("Z0_Pt");
+  TH1F *Z0Pt_WZZNoSignal    = (TH1F*)WZZNoSignal->Get("Z0_Pt");
+  TH1F *Z0Pt_ZZJetsSignal   = (TH1F*)ZZJetsSignal->Get("Z0_Pt");
+  TH1F *Z0Pt_ZZJetsNoSignal = (TH1F*)ZZJetsNoSignal->Get("Z0_Pt");
  
-  TLegend* l = new TLegend(0.67, 0.61,0.88,0.76);
-
-  TH1F *m6f_ZZ_noSkim       = (TH1F*)ZZ_noSkim->Get("6f_Mass");
-  TH1F *m6f_H_noSkim        = (TH1F*)H_noSkim->Get("6f_Mass");
-  TH1F *m6f_Z_noSkim        = (TH1F*)Z_noSkim->Get("6f_Mass");
-  TH1F *m6f_tt_noSkim       = (TH1F*)tt_noSkim->Get("6f_Mass;1");
-  TH1F *m6f_triboson_noSkim = (TH1F*)triboson_noSkim->Get("6f_Mass");
-  TH1F *m6f_WZZ_noSkim      = (TH1F*)WZZ_noSkim->Get("6f_Mass");
-
-  TH1F *WPt_ZZ_noSkim       = (TH1F*)ZZ_noSkim->Get("W_Pt");
-  TH1F *WPt_H_noSkim        = (TH1F*)H_noSkim->Get("W_Pt");
-  TH1F *WPt_Z_noSkim        = (TH1F*)Z_noSkim->Get("W_Pt");
-  TH1F *WPt_tt_noSkim       = (TH1F*)tt_noSkim->Get("W_Pt");
-  TH1F *WPt_triboson_noSkim = (TH1F*)triboson_noSkim->Get("W_Pt");
-  TH1F *WPt_WZZ_noSkim      = (TH1F*)WZZ_noSkim->Get("W_Pt");
-
-  TH1F *Z0Pt_ZZ_noSkim       = (TH1F*)ZZ_noSkim->Get("Z0_Pt");
-  TH1F *Z0Pt_H_noSkim        = (TH1F*)H_noSkim->Get("Z0_Pt");
-  TH1F *Z0Pt_Z_noSkim        = (TH1F*)Z_noSkim->Get("Z0_Pt");
-  TH1F *Z0Pt_tt_noSkim       = (TH1F*)tt_noSkim->Get("Z0_Pt");
-  TH1F *Z0Pt_triboson_noSkim = (TH1F*)triboson_noSkim->Get("Z0_Pt");
-  TH1F *Z0Pt_WZZ_noSkim      = (TH1F*)WZZ_noSkim->Get("Z0_Pt");
-
-  TH1F *Z1Pt_ZZ_noSkim       = (TH1F*)ZZ_noSkim->Get("Z1_Pt");
-  TH1F *Z1Pt_H_noSkim        = (TH1F*)H_noSkim->Get("Z1_Pt");
-  TH1F *Z1Pt_Z_noSkim        = (TH1F*)Z_noSkim->Get("Z1_Pt");
-  TH1F *Z1Pt_tt_noSkim       = (TH1F*)tt_noSkim->Get("Z1_Pt");
-  TH1F *Z1Pt_triboson_noSkim = (TH1F*)triboson_noSkim->Get("Z1_Pt");
-  TH1F *Z1Pt_WZZ_noSkim      = (TH1F*)WZZ_noSkim->Get("Z1_Pt");
-
-
+  TH1F *Z1Pt_ZZ             = (TH1F*)ZZ->Get("Z1_Pt");
+  TH1F *Z1Pt_H              = (TH1F*)H->Get("Z1_Pt");
+  TH1F *Z1Pt_Z              = (TH1F*)Z->Get("Z1_Pt");
+  TH1F *Z1Pt_tt             = (TH1F*)tt->Get("Z1_Pt");
+  TH1F *Z1Pt_triboson       = (TH1F*)triboson->Get("Z1_Pt");
+  TH1F *Z1Pt_WZ             = (TH1F*)WZ->Get("Z1_Pt");
+  TH1F *Z1Pt_WZZSignal      = (TH1F*)WZZSignal->Get("Z1_Pt");
+  TH1F *Z1Pt_WZZNoSignal    = (TH1F*)WZZNoSignal->Get("Z1_Pt");
+  TH1F *Z1Pt_ZZJetsSignal   = (TH1F*)ZZJetsSignal->Get("Z1_Pt");
+  TH1F *Z1Pt_ZZJetsNoSignal = (TH1F*)ZZJetsNoSignal->Get("Z1_Pt");
+ 
   ///////////////////// m6f ////////////////////////////
 
   c->cd(1);
   gPad->SetLogy();
 
-  m6f_ZZ_noSkim->Rebin(8);
-  m6f_H_noSkim->Rebin(8);
-  m6f_Z_noSkim->Rebin(8);
-  m6f_tt_noSkim->Rebin(8);
-  m6f_triboson_noSkim->Rebin(8);
-  m6f_WZZ_noSkim->Rebin(8);
+  m6f_ZZ->Rebin(8);
+  m6f_H->Rebin(8);
+  m6f_Z->Rebin(8);
+  m6f_tt->Rebin(8);
+  m6f_triboson->Rebin(8);
+  m6f_WZ->Rebin(8); 
+  m6f_WZZSignal->Rebin(8);      
+  m6f_WZZNoSignal->Rebin(8);    
+  m6f_ZZJetsSignal->Rebin(8);   
+  m6f_ZZJetsNoSignal->Rebin(8);
   
-  m6f_ZZ_noSkim->SetLineColor(kGreen);
-  m6f_H_noSkim->SetLineColor(kBlue);
-  m6f_Z_noSkim->SetLineColor(kYellow);
-  m6f_tt_noSkim->SetLineColor(kViolet);
+  m6f_ZZ->SetLineColor(kGreen);
+  m6f_H->SetLineColor(kBlue);
+  m6f_Z->SetLineColor(kYellow);
+  m6f_tt->SetLineColor(kViolet);
   m6f_triboson_noSkim->SetLineColor(kRed);
-  m6f_WZZ_noSkim->SetLineColor(kBlack);
+  m6f_WZ->SetLineColor(kRed); 
+  m6f_WZZSignal->SetLineColor(kRed);
+  m6f_WZZNoSignal-> SetLineColor(kRed);   
+  m6f_ZZJetsSignal->SetLineColor(kRed);
+  m6f_ZZJetsNoSignal->SetLineColor(kRed);
+ 
   
-  m6f_ZZ_noSkim->GetYaxis()->SetRangeUser(0.00000001,0.01);
+  m6f_ZZ->GetYaxis()->SetRangeUser(0.00000001,0.01);
 
-  m6f_ZZ_noSkim->Draw();
-  m6f_H_noSkim->Draw("same");
-  m6f_Z_noSkim->Draw("same");
-  m6f_tt_noSkim->Draw("same");
-  m6f_triboson_noSkim->Draw("same");
-  m6f_WZZ_noSkim->Draw("same");
+  m6f_ZZ->Draw();
+  m6f_H->Draw("same");
+  m6f_Z->Draw("same");
+  m6f_tt->Draw("same");
+  m6f_triboson->Draw("same");
+  m6f_WZ->Draw("same");
+  m6f_WZZSignal->Draw("same");   
+  m6f_WZZNoSignal->Draw("same");    
+  m6f_ZZJetsSignal->Draw("same");
+  m6f_ZZJetsNoSignal->Draw("same");
+
   
-  l->AddEntry(m6f_WZZ_noSkim, "ZZW", "l");
-  l->AddEntry(m6f_ZZ_noSkim, "ZZ", "l");
-  l->AddEntry(m6f_H_noSkim, "H", "l");
-  l->AddEntry(m6f_Z_noSkim, "Z", "l");
-  l->AddEntry(m6f_tt_noSkim, "tt", "l");
-  l->AddEntry(m6f_triboson_noSkim, "triboson", "l");
-  
+  l->AddEntry(m6f_WZZSignal, "WZZSignal", "l");
+  l->AddEntry(m6f_ZZJetsSignal, "ZZJetsSignal", "l");
+  l->AddEntry(m6f_ZZ, "ZZ", "l");
+  l->AddEntry(m6f_H, "H", "l");
+  l->AddEntry(m6f_Z, "Z", "l");
+  l->AddEntry(m6f_tt, "tt", "l");
+  l->AddEntry(m6f_triboson, "triboson", "l");
+  l->AddEntry(m6f_WZZNoSignal, "WZZNoSignal", "l");
+  l->AddEntry(m6f_WZ, "WZ", "l");
+  l->AddEntry(m6f_ZZJetsNoSignal, "ZZJetsNoSignal", "l");
+ 
+
   
   l->Draw();
 
   ///////////////////// WPt ////////////////////////////  
+
   c->cd(2);
   gPad->SetLogy();
 
@@ -122,117 +163,10 @@ void MacroReco() {
   WPt_triboson_noSkim->Draw("same");
   WPt_WZZ_noSkim->Draw("same");
   
-
-  ///////////////////// Z0Pt ////////////////////////////
-  c->cd(3);
-  gPad->SetLogy();
-
-  Z0Pt_ZZ_noSkim->Rebin(4); 
-  Z0Pt_H_noSkim->Rebin(4);
-  Z0Pt_Z_noSkim->Rebin(4);
-  Z0Pt_tt_noSkim->Rebin(4);
-  Z0Pt_triboson_noSkim->Rebin(4); 
-  Z0Pt_WZZ_noSkim->Rebin(4);
-
-  Z0Pt_ZZ_noSkim->SetLineColor(kGreen);
-  Z0Pt_H_noSkim->SetLineColor(kBlue);
-  Z0Pt_Z_noSkim->SetLineColor(kYellow);
-  Z0Pt_tt_noSkim->SetLineColor(kViolet);
-  Z0Pt_triboson_noSkim->SetLineColor(kRed);
-  Z0Pt_WZZ_noSkim->SetLineColor(kBlack);
   
-  Z0Pt_ZZ_noSkim->GetYaxis()->SetRangeUser(0.00000001,0.01);
 
-  Z0Pt_ZZ_noSkim->Draw();
-  Z0Pt_H_noSkim->Draw("same");
-  Z0Pt_Z_noSkim->Draw("same");
-  Z0Pt_tt_noSkim->Draw("same");
-  Z0Pt_triboson_noSkim->Draw("same");
-  Z0Pt_WZZ_noSkim->Draw("same");
 
-  ///////////////////// Z1Pt ////////////////////////////
-  c->cd(4);
-  gPad->SetLogy();
 
-  Z1Pt_ZZ_noSkim->Rebin(4); 
-  Z1Pt_H_noSkim->Rebin(4);
-  Z1Pt_Z_noSkim->Rebin(4);
-  Z1Pt_tt_noSkim->Rebin(4);
-  Z1Pt_triboson_noSkim->Rebin(4); 
-  Z1Pt_WZZ_noSkim->Rebin(4);
-
-  Z1Pt_ZZ_noSkim->SetLineColor(kGreen);
-  Z1Pt_H_noSkim->SetLineColor(kBlue);
-  Z1Pt_Z_noSkim->SetLineColor(kYellow);
-  Z1Pt_tt_noSkim->SetLineColor(kViolet);
-  Z1Pt_triboson_noSkim->SetLineColor(kRed);
-  Z1Pt_WZZ_noSkim->SetLineColor(kBlack);
-  
-  Z1Pt_ZZ_noSkim->GetYaxis()->SetRangeUser(0.00000001,0.01);
-
-  Z1Pt_ZZ_noSkim->Draw();
-  Z1Pt_H_noSkim->Draw("same");
-  Z1Pt_Z_noSkim->Draw("same");
-  Z1Pt_tt_noSkim->Draw("same");
-  Z1Pt_triboson_noSkim->Draw("same");
-  Z1Pt_WZZ_noSkim->Draw("same");
-
-  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%//
-  //                                                                        //
-  //                     Skimmed samples                                    // 
-  //                                                                        //
-  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%//
-
-  TFile* WZZgen = new TFile("/afs/cern.ch/work/g/ggonella/CMSSW_5_3_9/src/VVXAnalysis/TreeAnalysis/results/ZZWAnalyzer_baseline/WZZJets.root");
-  TFile* WZZ    = new TFile("/afs/cern.ch/work/g/ggonella/CMSSW_5_3_9/src/VVXAnalysis/TreeAnalysis/results/ZZWAnalyzer_baseline/WZZJets.root");
-  
-  TH1F *Z0genPt_WZZ = (TH1F*)WZZgen->Get("Z0Gen_Pt");
-  TH1F *Z1genPt_WZZ = (TH1F*)WZZgen->Get("Z1Gen_Pt");
-  TH1F *WgenPt_WZZ  = (TH1F*)WZZgen->Get("WGen_Pt" );
-  
-  TH1F *Z0Pt_WZZ = (TH1F*)WZZ->Get("Z0_Pt");
-  TH1F *Z1Pt_WZZ = (TH1F*)WZZ->Get("Z1_Pt");
-  TH1F *WPt_WZZ  = (TH1F*)WZZ->Get("W_Pt" );
-  
-  TCanvas * c1 = new TCanvas ("Pt genPart - recoPart", "Pt genPart - recoPart", 1100, 600);
-  c1->Divide(3,1);
-  
-  TLegend* l1 = new TLegend(0.89, 0.89, 0.70, 0.78);
-  
-  ///////////////////// comparison: Pt genPart - recoPart  ////////////////////////////
-
-  c1->cd(1);
-
-  Z0genPt_WZZ->SetLineColor(kRed);
-  Z0Pt_WZZ->SetLineColor(kBlue);
-  Z0genPt_WZZ->SetTitle("Z0 Pt");
-
-  Z0genPt_WZZ->Draw();
-  Z0Pt_WZZ->Draw("same");
-    
-  l1->AddEntry(Z0genPt_WZZ, "Z0gen", "l");
-  l1->AddEntry(Z0Pt_WZZ, "Z0reco", "l");
-
-  l1->Draw();
-
-  c1->cd(2);
-  
-  Z1genPt_WZZ->SetLineColor(kRed);
-  Z1Pt_WZZ->SetLineColor(kBlue);
-  Z1genPt_WZZ->SetTitle("Z1 Pt");
-
-  Z1genPt_WZZ->Draw(); 
-  Z1Pt_WZZ->Draw("same");
-    
-  c1->cd(3);
-  
-  WgenPt_WZZ->SetLineColor(kRed);
-  WPt_WZZ->SetLineColor(kBlue);
-  WgenPt_WZZ->SetTitle("W Pt");
-
-  WgenPt_WZZ->Draw(); 
-  WPt_WZZ->Draw("same");
-  
 
   gStyle->SetOptStat(0);
 
