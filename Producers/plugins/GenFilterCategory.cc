@@ -32,6 +32,10 @@ using namespace edm;
 using namespace reco;
 
 
+const float MZ = 91.19;
+const float MW = 80.39;
+
+
 class GenFilterCategory: public edm::EDFilter {
 
 public:
@@ -43,33 +47,17 @@ public:
     produces<std::vector<reco::GenParticle> >();
 
   }
-  
+ 
+
   bool filter(edm::Event & event, const edm::EventSetup& eventSetup);
   std::auto_ptr<std::vector<reco::GenParticle> > loadGenBoson(const phys::Boson<phys::Particle> &vb, const GenParticleRefProd &genRefs, std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl);
   
   virtual void beginJob();
   virtual void endJob(){}
-  
-  //-----------FUNCTION: Check of the bosons partons composition---------
-  
-  int partonsComposition(const Candidate* j_0, const Candidate* j_1) {    
-
-    int j0Id = j_0->pdgId();
-    int j1Id = j_1->pdgId();    
-    if ( abs(j0Id) < 6 && abs(j1Id ) < 6) {
-      if( (j0Id*j1Id) <0 && (abs(j0Id + j1Id) == 1 || abs(j0Id + j1Id) == 3) ) {
-	if( j0Id % 2 == 0 )       return copysign(24,j0Id);  // W
-	else if( j1Id % 2 == 0 )  return copysign(24,j1Id);  // W
-	else return 0;
-      }
-      else if( j0Id + j1Id == 0 ) return 23;                 // Z
-      else return 0;                             
-
-    }
-    else return 0;
-  } 
+    
   //------------------------------------  
-  
+
+
 private:
   int sel_;
   int num;
@@ -80,15 +68,10 @@ private:
 
 void GenFilterCategory::beginJob() {}
 
- bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) { 
+bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) { 
 
-  std::vector<const reco::Candidate *> theGenZ;
-  std::vector<const reco::Candidate *> theGenW;
-  std::vector<const reco::Candidate *> theGenl;
-  std::vector<const reco::Candidate *> theGenlp;
-  std::vector<const reco::Candidate *> theGenlm;
-  std::vector<const reco::Candidate *> theGenj;
-  std::vector<const reco::Candidate *> theGenq;
+  std::vector<phys::Particle> theGenZ, theGenW;
+  std::vector<phys::Particle> theGenl, theGenlp, theGenlm, theGenj, theGenq;
 
   int categoryNum = 999; 
   int numMu       = 0;
@@ -107,67 +90,55 @@ void GenFilterCategory::beginJob() {}
       int id   = abs(s_id);
       int idx  = std::distance(genParticles->begin(),p);     
       
-      if ( (id < 7 || id == 21) && idx > 5 ) {   // quarks and gluons
-	theGenj.push_back(&*p);
-      }
-      if ( id < 7  && idx > 5 ) {               // quarks
-	theGenq.push_back(&*p);
-      } else if ( id==23 ) {                    // Z
-	theGenZ.push_back(&*p);
-      } else if ( id==24 ) {                    // W
-	theGenW.push_back(&*p);
-      } else if ( id >= 11 && id <= 16 ) {      // leptons 
-	numE  = id == 11 ? numE+1  : numE;
-	numMu = id == 13 ? numMu+1 : numMu;
-	theGenl.push_back(&*p);
-	if(s_id>0) {theGenlp.push_back(&*p);
-	} else {theGenlm.push_back(&*p);}
+      
+      if ( (id < 7 || id == 21) && idx > 5 ) { theGenj.push_back(convert(*p)); } // quarks and gluons
+
+      if ( id < 7  && idx > 5 )              { theGenq.push_back(convert(*p)); } // quarks
+      
+      else if ( id == 23 )                   { theGenZ.push_back(convert(*p)); } // Z
+   
+      else if ( id == 24 )                   { theGenW.push_back(convert(*p)); } // W 
+
+      else if ( id >= 11 && id <= 16 )       {                                   // leptons  
+	numE  = id == 11 ? numE+1  : numE; numMu = id == 13 ? numMu+1 : numMu;
+	                                       theGenl.push_back (convert(*p));
+	if (s_id>0)                          { theGenlp.push_back(convert(*p));} // positive leptons                                          
+	else                                 { theGenlm.push_back(convert(*p));} // negative leptons                                          
       } 
-    }    
+    }
+    
   }   
   //------------------ end of loop over genparticles --------------------------------------------------
   
   int leptonCode = 0;
-  if( numMu == 2 && numE == 2 ) leptonCode = 2;
+  if(  numMu == 2 && numE == 2)                                leptonCode = 2;
   if( (numMu == 4 && numE == 0) || (numMu == 0 && numE == 4) ) leptonCode = 4;
 
-  phys::Boson<phys::Particle> Z0;
-  phys::Boson<phys::Particle> Z1;
-  phys::Boson<phys::Particle> W; 
-  phys::Boson<phys::Particle> Z2;
+  phys::Boson<phys::Particle> Z0, Z1, Z2, W;
 
+  // FIXME!!!!
   if ( theGenq.size() == 2 && theGenl.size() == 4 && (leptonCode == 2 || leptonCode == 4) ) {
 
-    const float mZ = 91.19;
-    const float mW = 80.39;
+    phys::Particle q0 = theGenq[0], q1 = theGenq[1];
     
-    const Candidate* j0 = theGenq[0];
-    const Candidate* j1 = theGenq[1];
+    if ( q0.pt() < q1.pt() ) { q0 = theGenq[1];  q1 = theGenq[0]; }
     
-    if ( theGenq[0]->p4().pt() < theGenq[1]->p4().pt() ) {
-      j0 = theGenq[1];  
-      j1 = theGenq[0];  
-    }
+    bool has3Z = false, isWloose  = false, isZloose  = false, isWtight  = false, isZtight  = false;
 
-       
-    bool has3Z     = false;
-    bool isWloose  = false;
-    bool isZloose  = false;
-    bool isWtight  = false;
-    bool isZtight  = false;
+    // FIXME!!!!
+    int bosonId = makeVBosonsFromIds(q0.id(), q1.id());
 
-    int bosonId = partonsComposition(j0,j1);
-
-    bool qqPassMWwindow = fabs((j0->p4() + j1->p4()).mass() - mW) < 10;
-    bool qqPassMZwindow = fabs((j0->p4() + j1->p4()).mass() - mZ) < 10;
+    // FIXME!!!!
+    bool qqPassMWwindow = fabs((q0.p4() + q1.p4()).M() - MW) < 10;
+    bool qqPassMZwindow = fabs((q0.p4() + q1.p4()).M() - MZ) < 10;
 
     //================Definition of loose particles (mass) =======================
 
     
     for(uint i = 0;  i < theGenj.size()-1; ++i)
       for(uint j = i+1;  j < theGenj.size(); ++j){
-	if ( fabs((theGenj[i]->p4() + theGenj[j]->p4()).mass() - mW) < 10. ) isWloose = true;  
-	if ( fabs((theGenj[i]->p4() + theGenj[j]->p4()).mass() - mZ) < 10. ) isZloose = true;
+	if ( fabs((theGenj[i].p4() + theGenj[j].p4()).M() - MW) < 10. ) isWloose = true;  
+	if ( fabs((theGenj[i].p4() + theGenj[j].p4()).M() - MZ) < 10. ) isZloose = true;
       }
      
     
@@ -175,37 +146,36 @@ void GenFilterCategory::beginJob() {}
     if ( num==1 ) {              
       
       bool LeptonsMotherSelec = true;   
-      for(int t=0; t<4; ++t) {
-	LeptonsMotherSelec = LeptonsMotherSelec && theGenl[t]->mother()->pdgId() == 23;
-      }
+      for(int t=0; t<4; ++t) LeptonsMotherSelec = LeptonsMotherSelec && theGenl[t].motherId() == 23;
+      
       
       if ( (isWloose || qqPassMWwindow) && theGenW.size() == 1) isWtight = true;      //definition of tight W (mass + cat)
       if ( (isZloose || qqPassMZwindow) && theGenZ.size() == 3) isZtight = true;      //definition of tight Z (mass + cat)
       
       if ( theGenZ.size() >= 2 && LeptonsMotherSelec ) {
 
-	Z0.setDaughter(0,phys::Particle(theGenl[0]->p4(),phys::Particle::computeCharge(theGenl[0]->pdgId()),theGenl[0]->pdgId()));
-	Z0.setDaughter(1,phys::Particle(theGenl[1]->p4(),phys::Particle::computeCharge(theGenl[1]->pdgId()),theGenl[1]->pdgId()));
-	Z0.setId(theGenZ[0]->pdgId());
+	Z0.setDaughter(0, theGenl[0]);
+	Z0.setDaughter(1, theGenl[1]);
+	Z0.setId(theGenZ[0].id());
 
- 	Z1.setDaughter(0,phys::Particle(theGenl[2]->p4(),phys::Particle::computeCharge(theGenl[2]->pdgId()),theGenl[2]->pdgId()));
-	Z1.setDaughter(1,phys::Particle(theGenl[3]->p4(),phys::Particle::computeCharge(theGenl[3]->pdgId()),theGenl[3]->pdgId()));
-	Z1.setId(theGenZ[1]->pdgId());
+ 	Z1.setDaughter(0, theGenl[2]);
+	Z1.setDaughter(1, theGenl[3]);
+	Z1.setId(theGenZ[1].id());
 
 
 	if ( isWtight ) {       
 
-	  W.setDaughter(0,phys::Particle(j0->p4(),phys::Particle::computeCharge(j0->pdgId()), j0->pdgId()));
-	  W.setDaughter(1,phys::Particle(j1->p4(),phys::Particle::computeCharge(j1->pdgId()), j1->pdgId()));
-	  W.setId(theGenW[0]->pdgId());
+	  W.setDaughter(0, q0);
+	  W.setDaughter(1, q1);
+	  W.setId(theGenW[0].id());
 	  
 	}
 	 
 	else if ( isZtight ) {
 
-	  Z2.setDaughter(0,phys::Particle(j0->p4(),phys::Particle::computeCharge(j0->pdgId()), j0->pdgId()));
-	  Z2.setDaughter(1,phys::Particle(j1->p4(),phys::Particle::computeCharge(j1->pdgId()), j1->pdgId()));
-	  Z2.setId(theGenZ[2]->pdgId());
+	  Z2.setDaughter(0, q0);
+	  Z2.setDaughter(1, q1);
+	  Z2.setId(theGenZ[2].id());
 	  
 	  has3Z = true; 
 	}
@@ -216,26 +186,26 @@ void GenFilterCategory::beginJob() {}
     // -----------------2: Real signal, MadGraph pairing------------------
     else if ( num==2 ) {         
       
-      Z0.setDaughter(0,phys::Particle(theGenl[0]->p4(),phys::Particle::computeCharge(theGenl[0]->pdgId()),theGenl[0]->pdgId()));
-      Z0.setDaughter(1,phys::Particle(theGenl[1]->p4(),phys::Particle::computeCharge(theGenl[1]->pdgId()),theGenl[1]->pdgId()));
-      Z0.setId(theGenZ[0]->pdgId());
+      Z0.setDaughter(0, theGenl[0]);
+      Z0.setDaughter(1, theGenl[1]);
+      Z0.setId(theGenZ[0].id());
       
-      Z1.setDaughter(0,phys::Particle(theGenl[2]->p4(),phys::Particle::computeCharge(theGenl[2]->pdgId()),theGenl[2]->pdgId()));
-      Z1.setDaughter(1,phys::Particle(theGenl[3]->p4(),phys::Particle::computeCharge(theGenl[3]->pdgId()),theGenl[3]->pdgId()));
-      Z1.setId(theGenZ[1]->pdgId());
+      Z1.setDaughter(0, theGenl[2]);
+      Z1.setDaughter(1, theGenl[3]);
+      Z1.setId(theGenZ[1].id());
       
       if ( (isWloose || qqPassMWwindow) && fabs(bosonId) == 24 ) {      //definition of tight W (mass + cat)
 	
-    	W.setDaughter(0,phys::Particle(j0->p4(),phys::Particle::computeCharge(j0->pdgId()), j0->pdgId()));
-	W.setDaughter(1,phys::Particle(j1->p4(),phys::Particle::computeCharge(j1->pdgId()), j1->pdgId()));
+    	W.setDaughter(0, q0);
+	W.setDaughter(1, q1);
 	W.setId(bosonId);
    	
 	isWtight = true;
 	
       } else if ( (isZloose || qqPassMZwindow) && bosonId == 23 ) {     //definition of tight Z (mass + cat)
 	
-	Z2.setDaughter(0,phys::Particle(j0->p4(),phys::Particle::computeCharge(j0->pdgId()), j0->pdgId()));
-	Z2.setDaughter(1,phys::Particle(j1->p4(),phys::Particle::computeCharge(j1->pdgId()), j1->pdgId()));
+	Z2.setDaughter(0, q0);
+	Z2.setDaughter(1, q1);
 	Z2.setId(bosonId);
    	
 	isZtight = true;
@@ -246,7 +216,7 @@ void GenFilterCategory::beginJob() {}
    
     //-----------------3: Real signal, real pairing-----------------------
     else if ( num==3 ) {         
-      std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > ZZ = makeZbosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
+      std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > ZZ = makeZBosonsFromLeptons(theGenlm, theGenlp, leptonCode, MZ);
 
       Z0 = ZZ.first;
       Z1 = ZZ.second;
@@ -255,16 +225,16 @@ void GenFilterCategory::beginJob() {}
 
 	if ( (isWloose || qqPassMWwindow)  && fabs(bosonId) == 24 ) {    //definition of tight W (mass + cat)
 	  
-	  W.setDaughter(0,phys::Particle(j0->p4(),phys::Particle::computeCharge(j0->pdgId()), j0->pdgId()));
-	  W.setDaughter(1,phys::Particle(j1->p4(),phys::Particle::computeCharge(j1->pdgId()), j1->pdgId()));
+	  W.setDaughter(0, q0);
+	  W.setDaughter(1, q1);
 	  W.setId(bosonId);
   
 	  if (qqPassMWwindow) isWtight = true;  
 	  
 	} else if ( (isZloose || qqPassMZwindow)  && bosonId == 23 ) {   //definition of tight Z (mass + cat)
 	  
-	  Z2.setDaughter(0,phys::Particle(j0->p4(),phys::Particle::computeCharge(j0->pdgId()), j0->pdgId()));
-	  Z2.setDaughter(1,phys::Particle(j1->p4(),phys::Particle::computeCharge(j1->pdgId()), j1->pdgId()));
+	  Z2.setDaughter(0, q0);
+	  Z2.setDaughter(1, q1);
 	  Z2.setId(bosonId);
 
 	  if(qqPassMZwindow){
@@ -279,82 +249,66 @@ void GenFilterCategory::beginJob() {}
 
     //=====================================================================================
 
-    bool hasZZ4l    = fabs(Z0.p4().M()-mZ) < 10. && fabs(Z1.p4().M()-mZ) < 10.;
+    bool hasZZ4l    = fabs(Z0.p4().M()-MZ) < 10. && fabs(Z1.p4().M()-MZ) < 10.;
     bool isMySignal = hasZZ4l && isWtight;
       
     bool passEtaAccLep = true;
       
-    for(int i=0; i<4; ++i) {
-      passEtaAccLep = passEtaAccLep && fabs(theGenl[i]->p4().eta()) < 2.5;
-    }
-      
+    for(int i=0; i<4; ++i) passEtaAccLep = passEtaAccLep && fabs(theGenl[i].eta()) < 2.5;       
  
-    //////// eta cut for all leptons ///////
+    // eta cut for all leptons
     
     if ( passEtaAccLep) {
 
-      //Signal: ZZW---------------------------------------categoryNum=0---------------------
-      if ( isMySignal ) {
-	categoryNum = 0;
-	//cout << "SIGNAL: "  << event.id().event() << "\nEvent category: " << categoryNum << endl;
-      } 
+      // ========== Signal: ZZW ==========
 
-      //=========Background=========//
+      if ( isMySignal ) categoryNum = 0;
+
+      // ========== Background ==========
 
       else {     
-	   
+	
 	if( hasZZ4l ){
 
-	  //ZZZ ----------------------------------------- categoryNum = 1 ------------------------ 
-	  if ( has3Z ) {
-	    categoryNum = 1;
-	    //cout << "ZZZ: " << event.id().event() << "\nEvent category: " << categoryNum << endl;
-	  }
-	  
-	  //ZZWloose ------------------------------------ categoryNum = 2 -----------------------
-	  else if ( !has3Z && isWloose ) {
-	    categoryNum = 2;
-	  }
-	  
-	  //ZZZloose ------------------------------------ categoryNum = 3 -----------------------
-	  else if ( !has3Z && !isWloose && isZloose ) {
-	    categoryNum = 3;
-	  }
+	  // ---------- ZZZ ---------- 
 
-	  //ZZ+X ---------------------------------------- categoryNum = 4 ------------------------
-	  else {	
-	    categoryNum = 4;
-	  }
+	  if ( has3Z )                                categoryNum = 1;
+	  
+	  // ---------- ZZWloose ----------
+
+	  else if ( !has3Z && isWloose )              categoryNum = 2;
+	  
+	  // ---------- ZZZloose ----------
+
+	  else if ( !has3Z && !isWloose && isZloose ) categoryNum = 3;
+	  
+	  // ---------- ZZ+X ----------
+
+	  else                                        categoryNum = 4;
 	}
 
 	else {
 	  
-	  //WZ+X ---------------------------------------- categoryNum = 5 ------------------------
-	  if ( isWtight ) {
-	    categoryNum = 5;
-	  }
+	  // ---------- WZ+X ----------
+
+	  if ( isWtight )                             categoryNum = 5;
+	  	  
+	  // ---------- ZZjj+X ----------
 	  
-	  //ZZjj+X -------------------------------------- categoryNum = 6 ------------------------
-	  else if ( has3Z ) {
-	    categoryNum = 6;
-	  }
+	  else if ( has3Z )                           categoryNum = 6;
 	  
-	  //ZWloose+X ----------------------------------- categoryNum = 7 ------------------------
-	  else if ( !isWtight && !has3Z && isWloose ) {
-	    categoryNum = 7;
-	  }
+	  // ---------- ZWloose+X ----------
 	  
-	  //ZZjj+X -------------------------------------- categoryNum = 8 ------------------------
-	  else if ( !has3Z && !isWloose && isZloose ) {
-	    categoryNum = 8;
-	  }
+	  else if ( !isWtight && !has3Z && isWloose ) categoryNum = 7;
+	  	  
+	  // ---------- ZZjj+X ----------
+
+	  else if ( !has3Z && !isWloose && isZloose ) categoryNum = 8;
 	  
-	  //Z+X+Y --------------------------------------- categoryNum = 9 ------------------------
-	  else {
-	    categoryNum = 9;
-	  }
-	  
-	}		
+	  // ---------- Z+X+Y----------
+
+	  else              	                      categoryNum = 9;
+  	}		
       }      
     }
   }
@@ -393,6 +347,10 @@ std::auto_ptr<std::vector<reco::GenParticle> > GenFilterCategory::loadGenBoson(c
    
    return outputGenColl;
  }
+
+
+
+
 
 
 #include "FWCore/Framework/interface/MakerMacros.h"

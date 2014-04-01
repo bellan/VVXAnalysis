@@ -34,12 +34,14 @@ namespace phys {
     Particle(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), float q =0, int i = 0)
       : p4_(p)
       , charge_(q)
-      , id_(i){}
+      , id_(i)
+      , motherId_(-99.){}
 
       Particle(const LorentzVector& l, float q =0, int i = 0)
 	:p4_(convert(l))
 	, charge_(q)
-	, id_(i){}
+	, id_(i)
+	, motherId_(-99.){}
 
 	
     /// Destructor
@@ -71,14 +73,18 @@ namespace phys {
       return charge;
     }
 
-    void setId(int id) {id_ = id;}
+    void setId(int pid) {id_ = pid;}
+    
+    void setMotherId(int pid) {motherId_ = pid;}
+    
+    int motherId() const {return motherId_;}
  
   protected:
     TLorentzVector p4_;
     Float_t charge_;
     Int_t id_;    
+    Int_t motherId_;
 
-    //Particle genParticle_;
 
   private:
     ClassDef(Particle, 1) //

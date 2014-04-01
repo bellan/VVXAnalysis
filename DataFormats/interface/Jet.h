@@ -22,8 +22,8 @@ namespace phys {
   public:
     
     /// Constructor
-    Jet(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), float q =0, int id = 0)
-      : Particle(p, q, id)
+    Jet(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), float q =0, int pid = 0)
+      : Particle(p, q, pid)
       , nConstituents_(-1)
       , nCharged_(-1)
       , nNeutral_(-1)

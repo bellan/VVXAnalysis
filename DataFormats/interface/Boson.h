@@ -18,12 +18,12 @@ namespace phys {
 
   public:
     /// Constructor
-    Boson(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), int id = 0)
-      : Particle(p,0,id){}
+    Boson(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), int pid = 0)
+      : Particle(p,0,pid){}
 
 
-    Boson(const P& daughter0, const P& daughter1, int id = 0)
-      : Particle(daughter0.p4()+daughter1.p4(), 0, id)
+    Boson(const P& daughter0, const P& daughter1, int pid = 0)
+      : Particle(daughter0.p4()+daughter1.p4(), 0, pid)
       , daughter0_(daughter0)
       , daughter1_(daughter1)
       {}

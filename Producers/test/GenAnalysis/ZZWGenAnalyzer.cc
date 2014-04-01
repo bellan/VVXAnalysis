@@ -189,7 +189,7 @@ void ZZWGenAnalyzer::analyze(const Event & event, const EventSetup& eventSetup) 
       
       if ( *category == 0 ) {
 	
-	std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > ZZ = makeZbosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
+	std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > ZZ = makeZBosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
 	
 	Z0 = ZZ.first;
 	Z1 = ZZ.second;
