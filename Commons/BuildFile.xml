@@ -1,0 +1,5 @@
+<use name="DataFormats/RecoCandidate"/>
+<use name="VVXAnalysis/DataFormats"/>
+<export>
+<lib name="1"/>
+</export>

@@ -10,6 +10,7 @@
   <use name="AnalysisDataFormats/CMGTools"/>
   <use name="SimGeneral/HepPDTRecord"/>
   <use name="VVXAnalysis/Producers"/>
+  <use name="VVXAnalysis/Commons"/>
   <use name="ZZAnalysis/AnalysisStep"/>
   <use name="clhep"/>
   <use name="boost"/>
