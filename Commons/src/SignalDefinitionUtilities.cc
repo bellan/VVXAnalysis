@@ -1,6 +1,6 @@
 //-----------FUNCTION: definition of the two ZZ bosons from leptons-------
 
-#include "VVXAnalysis/Producers/interface/SignalDefinitionUtilities.h"
+#include "VVXAnalysis/Commons/interface/SignalDefinitionUtilities.h"
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
