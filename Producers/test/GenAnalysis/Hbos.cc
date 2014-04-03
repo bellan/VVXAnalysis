@@ -33,21 +33,21 @@ Hbos::Hbos(TString name_) : name(name_) {
 
 Hbos::Hbos(TString name_, TFile* file) : name(name_) {
 
-  hZ0Mass   = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZ0Mass"); 
-  hZ1Mass   = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZ1Mass");
-  hVMass    = (TH1F*) file->Get("genAnalyzer/"+ name+"_hVMass");
+  hZ0Mass   = (TH1F*) file->Get(name+"_hZ0Mass"); 
+  hZ1Mass   = (TH1F*) file->Get(name+"_hZ1Mass");
+  hVMass    = (TH1F*) file->Get(name+"_hVMass");
 
-  hZPt_1    = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZPt_1");
-  hZPt_2    = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZPt_2");
-  hVPt      = (TH1F*) file->Get("genAnalyzer/"+ name+"_hVPt");
-  hZZPt     = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZZPt");
+  hZPt_1    = (TH1F*) file->Get(name+"_hZPt_1");
+  hZPt_2    = (TH1F*) file->Get(name+"_hZPt_2");
+  hVPt      = (TH1F*) file->Get(name+"_hVPt");
+  hZZPt     = (TH1F*) file->Get(name+"_hZZPt");
 
-  hZVDR     = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZVDR");
-  hZZDR     = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZZDR");
-  hZZ_VDR   = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZZ_VDR");
+  hZVDR     = (TH1F*) file->Get(name+"_hZVDR");
+  hZZDR     = (TH1F*) file->Get(name+"_hZZDR");
+  hZZ_VDR   = (TH1F*) file->Get(name+"_hZZ_VDR");
 
-  hZZDeta   = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZZDeta");
-  hZZ_VDeta = (TH1F*) file->Get("genAnalyzer/"+ name+"_hZZ_VDeta");
+  hZZDeta   = (TH1F*) file->Get(name+"_hZZDeta");
+  hZZ_VDeta = (TH1F*) file->Get(name+"_hZZ_VDeta");
 
 }
 

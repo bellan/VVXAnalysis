@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("ANALYSIS")
 
 ####
-sample = "W+ZZ"
+sample = "W-ZZ"
 
 ####
 
