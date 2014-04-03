@@ -1,6 +1,7 @@
 //-----------FUNCTION: definition of the two ZZ bosons from leptons-------
 
-#include "VVXAnalysis/Commons/interface/SignalDefinitionUtilities.h"
+#include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
+#include "VVXAnalysis/Commons/interface/PhysTools.h"
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
@@ -32,21 +33,21 @@ struct MassComparator{
 };
 
 
-std::pair<phys::Boson<phys::Particle> ,phys::Boson<phys::Particle> > makeZBosonsFromLeptons(const std::vector<const reco::Candidate *>& lm, const std::vector<const reco::Candidate *>& lp, int leptonCode, float mZ){
+std::pair<phys::Boson<phys::Particle> ,phys::Boson<phys::Particle> > zzw::makeZBosonsFromLeptons(const std::vector<const reco::Candidate *>& lm, const std::vector<const reco::Candidate *>& lp, int leptonCode, float mZ){
   std::vector<phys::Particle> plm;
   std::vector<phys::Particle> plp;
 
   foreach(const reco::Candidate *gp, lm)
-    plm.push_back(convert(*gp));
+    plm.push_back(phys::convert(*gp));
   
   foreach(const reco::Candidate *gp, lp)
-    plp.push_back(convert(*gp));
+    plp.push_back(phys::convert(*gp));
    
-  return makeZBosonsFromLeptons(plm, plp, leptonCode, mZ);
+  return zzw::makeZBosonsFromLeptons(plm, plp, leptonCode, mZ);
 }
   
   
-std::pair<phys::Boson<phys::Particle> ,phys::Boson<phys::Particle> > makeZBosonsFromLeptons(const std::vector<phys::Particle>& lm, const std::vector<phys::Particle>& lp, int leptonCode, float mZ){
+std::pair<phys::Boson<phys::Particle> ,phys::Boson<phys::Particle> > zzw::makeZBosonsFromLeptons(const std::vector<phys::Particle>& lm, const std::vector<phys::Particle>& lp, int leptonCode, float mZ){
     
     phys::Boson<phys::Particle> Z0;
     phys::Boson<phys::Particle> Z1;
@@ -88,7 +89,7 @@ std::pair<phys::Boson<phys::Particle> ,phys::Boson<phys::Particle> > makeZBosons
 
 
 
-int makeVBosonsFromIds(int j0Id, int j1Id) {    
+int zzw::makeVBosonsFromIds(int j0Id, int j1Id) {    
   
   if ( abs(j0Id) < 6 && abs(j1Id ) < 6) {
     if( (j0Id*j1Id) <0 && (abs(j0Id + j1Id) == 1 || abs(j0Id + j1Id) == 3) ) {
@@ -103,17 +104,9 @@ int makeVBosonsFromIds(int j0Id, int j1Id) {
   else return 0;
 }
 
-phys::Particle convert(const reco::Candidate &rc){
-  
-  phys::Particle p(rc.p4(),phys::Particle::computeCharge(rc.pdgId()),rc.pdgId());
-  p.setMotherId(rc.mother()->pdgId());
-  
-  return p;
-}
-
-ZZWGenTopology getGenTopology(int signalDefinition, 
-			      const std::vector<phys::Particle> &theGenl, const std::vector<phys::Particle> &theGenj, 
-			      const std::vector<phys::Particle> &theGenZ, const std::vector<phys::Particle> &theGenW){
+zzw::GenTopology zzw::getGenTopology(int signalDefinition, 
+				     const std::vector<phys::Particle> &theGenl, const std::vector<phys::Particle> &theGenj, 
+				     const std::vector<phys::Particle> &theGenZ, const std::vector<phys::Particle> &theGenW){
   int categoryNum = 999; 
   
   int numMu       = 0, numE     = 0;

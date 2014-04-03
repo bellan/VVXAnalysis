@@ -6,7 +6,7 @@
 <use name="CommonTools/CandAlgos"/>
 <use name="CommonTools/CandUtils"/>
 <use name="CommonTools/UtilAlgos"/>
-<use name="VVXAnalysis/Producers"/>
+<use name="VVXAnalysis/Commons"/>
 
 <library   file="GenAnalysis/*.cc" name="ZZWGenAnalysisPlugins">
   <flags   EDM_PLUGIN="1"/>

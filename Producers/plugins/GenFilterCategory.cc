@@ -13,24 +13,17 @@
 #include <FWCore/ServiceRegistry/interface/Service.h>
 #include <CommonTools/UtilAlgos/interface/TFileService.h>
 #include <DataFormats/HepMCCandidate/interface/GenParticle.h>
-#include <Calibration/IsolatedParticles/plugins/IsolatedGenParticles.h>
-
-#include <TH1F.h>
-#include <TH2F.h>
 
 #include <iostream>
 #include <vector>
-#include <iterator>
-#include <string>
-#include <cmath>
 #include <tuple> 
 
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
-#include "VVXAnalysis/Commons/interface/SignalDefinitionUtilities.h"
+#include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
+#include "VVXAnalysis/Commons/interface/PhysTools.h"
 
 using namespace std;
 using namespace edm;
-using namespace reco;
 
 
 class GenFilterCategory: public edm::EDFilter {
@@ -49,7 +42,7 @@ public:
  
 
   bool filter(edm::Event & event, const edm::EventSetup& eventSetup);
-  std::auto_ptr<std::vector<reco::GenParticle> > loadGenBoson(const phys::Boson<phys::Particle> &vb, const GenParticleRefProd &genRefs, std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl);
+  std::auto_ptr<std::vector<reco::GenParticle> > loadGenBoson(const phys::Boson<phys::Particle> &vb, const reco::GenParticleRefProd &genRefs, std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl);
   
   virtual void beginJob();
   virtual void endJob(){}
@@ -77,7 +70,7 @@ bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   event.getByLabel(genLabel_, genParticles);
  
   //------------------ loop over genparticles ---------------------------------------------------------
-  for (View<Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) {
+  for (View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) {
     
     if (p->status()==3) {                      // Status 3 particles are the generated ones.
   
@@ -85,21 +78,21 @@ bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
       int idx  = std::distance(genParticles->begin(),p);     
       
       
-      if ( (id < 7 || id == 21) && idx > 5 ) { theGenj.push_back(convert(*p)); } // quarks and gluons
+      if ( (id < 7 || id == 21) && idx > 5 ) { theGenj.push_back(phys::convert(*p)); } // quarks and gluons
 
-      if ( id < 7  && idx > 5 )              { theGenq.push_back(convert(*p)); } // quarks
+      if ( id < 7  && idx > 5 )              { theGenq.push_back(phys::convert(*p)); } // quarks
       
-      else if ( id == 23 )                   { theGenZ.push_back(convert(*p)); } // Z
+      else if ( id == 23 )                   { theGenZ.push_back(phys::convert(*p)); } // Z
    
-      else if ( id == 24 )                   { theGenW.push_back(convert(*p)); } // W 
+      else if ( id == 24 )                   { theGenW.push_back(phys::convert(*p)); } // W 
 
-      else if ( id >= 11 && id <= 16 )       { theGenl.push_back (convert(*p));}// leptons        
+      else if ( id >= 11 && id <= 16 )       { theGenl.push_back(phys::convert(*p)); }// leptons        
     }
     //     if(p->status()==1 && p->mother()->pdgId() == 23  && (abs(p->pdgId()) == 11 || abs(p->pdgId()) == 13)){
     //       numE_st1  = abs(p->pdgId()) == 11 ? numE_st1+1  : numE_st1; numMu_st1 = abs(p->pdgId()) == 13 ? numMu_st1+1 : numMu_st1;
     //       theGenl_st1.push_back (convert(*p));
-    //       if (p->pdgId() > 0)                  { theGenlp_st1.push_back(convert(*p));} // positive leptons                                          
-    //       else                                 { theGenlm_st1.push_back(convert(*p));} // negative leptons      
+    //       if (p->pdgId() > 0)                  { theGenlp_st1.push_back(phys::convert(*p));} // positive leptons                                          
+    //       else                                 { theGenlm_st1.push_back(phys::convert(*p));} // negative leptons      
     //     }
   }
   //   if(theGenl.size() == 0){
@@ -113,7 +106,7 @@ bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   //------------------ end of loop over genparticles --------------------------------------------------
 
   
-  ZZWGenTopology zzwGenTopology = getGenTopology(signalDefinition_, theGenl, theGenj, theGenZ, theGenW);
+  zzw::GenTopology zzwGenTopology = zzw::getGenTopology(signalDefinition_, theGenl, theGenj, theGenZ, theGenW);
 
   std::auto_ptr<int> output(new int(std::get<0>(zzwGenTopology))); // GenCategory
   event.put(output);
@@ -121,7 +114,7 @@ bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   
   std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl(new std::vector<reco::GenParticle>());
   
-  GenParticleRefProd genRefs = event.getRefBeforePut<std::vector<reco::GenParticle> >();
+  reco::GenParticleRefProd genRefs = event.getRefBeforePut<std::vector<reco::GenParticle> >();
 
   // a simple, beautiful loop over the tuple elements is not possible without writing more code than what implemented in this class, for curiosity see
   // http://stackoverflow.com/questions/1198260/iterate-over-tuple, http://stackoverflow.com/questions/18155533/how-to-iterate-through-stdtuple, http://www.metaxcompile.com/blog/2013/03/14/A_cleaner_way_to_do_tuple_iteration.html
@@ -139,15 +132,15 @@ bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 }
 
 
-std::auto_ptr<std::vector<reco::GenParticle> > GenFilterCategory::loadGenBoson(const phys::Boson<phys::Particle> &vb, const GenParticleRefProd &genRefs, std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl){
+std::auto_ptr<std::vector<reco::GenParticle> > GenFilterCategory::loadGenBoson(const phys::Boson<phys::Particle> &vb, const reco::GenParticleRefProd &genRefs, std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl){
 
    size_t initialSize = outputGenColl->size();
 
-   outputGenColl->push_back(reco::GenParticle(vb.id() == 23 ? 0 : copysign(1, vb.id()), phys::Particle::convert(vb.p4())            , GenParticle::Point(0.,0.,0.), vb.id()            , 3, true));
-   outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb.daughter(0).id())      , phys::Particle::convert(vb.daughter(0).p4()), GenParticle::Point(0.,0.,0.), vb.daughter(0).id(), 3, true));
-   outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb.daughter(1).id())      , phys::Particle::convert(vb.daughter(1).p4()), GenParticle::Point(0.,0.,0.), vb.daughter(1).id(), 3, true));
-   outputGenColl->at(initialSize).addDaughter(GenParticleRef(genRefs,initialSize+1));
-   outputGenColl->at(initialSize).addDaughter(GenParticleRef(genRefs,initialSize+2));
+   outputGenColl->push_back(reco::GenParticle(vb.id() == 23 ? 0 : copysign(1, vb.id()), phys::Particle::convert(vb.p4())            , reco::GenParticle::Point(0.,0.,0.), vb.id()            , 3, true));
+   outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb.daughter(0).id())      , phys::Particle::convert(vb.daughter(0).p4()), reco::GenParticle::Point(0.,0.,0.), vb.daughter(0).id(), 3, true));
+   outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb.daughter(1).id())      , phys::Particle::convert(vb.daughter(1).p4()), reco::GenParticle::Point(0.,0.,0.), vb.daughter(1).id(), 3, true));
+   outputGenColl->at(initialSize).addDaughter(reco::GenParticleRef(genRefs,initialSize+1));
+   outputGenColl->at(initialSize).addDaughter(reco::GenParticleRef(genRefs,initialSize+2));
    
    return outputGenColl;
  }
