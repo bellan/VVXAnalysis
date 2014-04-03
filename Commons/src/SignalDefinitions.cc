@@ -361,15 +361,23 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
   }
  
 
-//   if(categoryNum == 0){
-//     cout<<"----------------------------------------------------------------------------------"<<endl;
-//     cout<<"Run: " << event.run() << " event: " << event.id().event() <<endl;
-//     cout<<"----------------------------------------------------------------------------------"<<endl;
-//     for(View<Candidate>::const_iterator it = genParticles->begin(); it != genParticles->end(); ++it)
-//       if (it->status()==3) { 
-// 	cout << it->pdgId() << endl;
-//       }
-//     cout<<"VB: " << W.daughter(0).id() << " " << W.daughter(1).id() << " "<<W.p4().M() << endl;
+ //  if(categoryNum != 0){
+//     cout << "----------------------------------------------------------------------------------" << endl;
+//     cout << "Category: " << categoryNum << endl;
+//     // cout<<"Run: " << event.run() << " event: " << event.id().event() <<endl;
+//     cout << "----------------------------------------------------------------------------------" << endl;
+
+//     foreach(const phys::Particle& p, theGenl) cout<< p.id() << " " << p.eta() << endl;
+//     foreach(const phys::Particle& p, theGenj) cout<< p.id() << endl;
+
+//     cout<<"Z0: " << Z0.id() << " " << Z0.p4().M() << " daughters id: "  << Z0.daughter(0).id() << " " << Z0.daughter(1).id() << endl;
+//     cout<<"Z1: " << Z1.id() << " " << Z1.p4().M() << " daughters id: "  << Z1.daughter(0).id() << " " << Z1.daughter(1).id() << endl;
+//     cout<<"Z2: " << Z2.id() << " " << Z2.p4().M() << " daughters id: "  << Z2.daughter(0).id() << " " << Z2.daughter(1).id() << endl;
+//     cout<<"W: "  << W.id()  << " " << W.p4().M()  << " daughters id: "  << W.daughter(0).id()  << " " << W.daughter(1).id()  << endl;
+    
+//     foreach(const phys::Particle& p, theGenZ) cout<<"Z true: " << p.id() << " " << p.p4().M() << endl;
+//     foreach(const phys::Particle& p, theGenW) cout<<"W true: " << p.id() << " " << p.p4().M() << endl;
+
 //   }
 
   return std::make_tuple(categoryNum, Z0, Z1, Z2, W);
