@@ -29,7 +29,7 @@
 #include "Hjets.h"
 
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
-#include "VVXAnalysis/Producers/interface/SignalDefinitionUtilities.h"
+#include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
 
 using namespace std;
 using namespace edm;
@@ -57,8 +57,8 @@ public:
   int partonsComposition(const Candidate* j_0, const Candidate* j_1) {    
     int j0Id = j_0->pdgId();
     int j1Id = j_1->pdgId();    
-    if ( abs(j0Id) < 6 && abs(j1Id ) < 6) {
-      if( abs(j0Id + j1Id) == 1 || abs(j0Id + j1Id) == 3 ) {
+    if (  abs(j0Id) < 6 && abs(j1Id ) < 6) {
+      if( (j0Id*j1Id) <0 && (abs(j0Id + j1Id) == 1 || abs(j0Id + j1Id) == 3) ) {
 	if( j0Id % 2 == 0 )  return copysign(24,j0Id);       // W
 	else if( j1Id % 2 == 0 )  return copysign(24,j1Id);  // W
 	else return 0;
@@ -223,7 +223,9 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
 
     int bosonId = partonsComposition(j0,j1);
 
-
+    bool qqPassMWwindow = fabs((j0->p4() + j1->p4()).mass() - mW) < 10;
+    bool qqPassMZwindow = fabs((j0->p4() + j1->p4()).mass() - mZ) < 10;
+    
     //================Definition of loose particles (mass) 
     if ( fabs((theGenj[0]->p4() + theGenj[1]->p4()).mass() - mW) < 10. ) isWloose = true;
 
@@ -311,46 +313,46 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
     //-----------------3: Real signal, real pairing-----------------------
      else if ( num==3 ) {     
 
-       std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> >  ZZ = makeZbosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
+       std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> >  ZZ = zzw::makeZBosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
     
       Z0 = ZZ.first;
       Z1 = ZZ.second;
     
       if ( Z0.p4().M() != 0 && Z1.p4().M() != 0 ) {
 
-	if ( isWloose && fabs(bosonId) == 24 ) {    //definition of tight W (mass + cat)
+	if ( (isWloose || qqPassMWwindow) && fabs(bosonId) == 24 ) {    //definition of tight W (mass + cat)
 	  
 	  
 	  W.setDaughter(0,phys::Particle(j0->p4(),phys::Particle::computeCharge(j0->pdgId()), j0->pdgId()));
 	  W.setDaughter(1,phys::Particle(j1->p4(),phys::Particle::computeCharge(j1->pdgId()), j1->pdgId()));
 	  W.setId(bosonId);
 
-	  isWtight = true;
-	  has3VCand = true;   
+	  if (qqPassMWwindow) isWtight = true;
+	  //has3VCand = true;   
 	   
-	} else if ( isZloose && bosonId == 23 ) {   //definition of tight Z (mass + cat)
+	} else if ( (isZloose || qqPassMZwindow) && bosonId == 23 ) {   //definition of tight Z (mass + cat)
 	  
 	  Z2.setDaughter(0,phys::Particle(j0->p4(),phys::Particle::computeCharge(j0->pdgId()), j0->pdgId()));
 	  Z2.setDaughter(1,phys::Particle(j1->p4(),phys::Particle::computeCharge(j1->pdgId()), j1->pdgId()));
 	  Z2.setId(bosonId);
 
-	  
-	  isZtight = true;
-	  has3Z = true; 
-	  
+	  if(qqPassMZwindow){
+	    isZtight = true;
+	    has3Z = true; 
+	  }
 	}
       }     
         } 
     
     else {
-      abort();
+      cout << "*** Signal definition not found! ***" << endl; abort();
     }
     
     
     //=====================================================================================
 
     bool hasZZ4l    = fabs(Z0.p4().M()-mZ) < 10. && fabs(Z1.p4().M()-mZ) < 10.;
-    bool isMySignal = hasZZ4l && fabs(W.p4().M()-mW) < 10.;
+    bool isMySignal = hasZZ4l && isWtight;
       
     bool passEtaAccLep = true;
     bool passPtAccLep  = true;

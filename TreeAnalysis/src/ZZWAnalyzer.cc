@@ -12,30 +12,31 @@ using namespace colour;
 
 Int_t ZZWAnalyzer::cut() {
 
-  if (genCategory != 0) return -1; 
+ 
+  // if (genCategory != 0) return -1; 
 
   //================================================================//
   //                          reco Particles                        //    
   //================================================================//
-    
+  
  
-  theHistograms.fill("Number of events", "Number of events", 10, 0, 10, 0, theWeight);  // 0: Number of total events --------------------------------------------------------------------------------------
+  theHistograms.fill("Number of events", "Number of events", 10, 0, 10, 0, theWeight);  // 0: Number of total events ----------------------------------------------------------------------------------------
   
   theHistograms.fill("MET", "MET", 300, 0, 300, met->pt(), theWeight);
 
-  bool passZsize = ( Zmm->size() + Zee->size() ) >= 2;                //  1: Events with 2 well-defined Z bosons  -----------------------------------------------------------------------------------------
+  bool passZsize = ( Zmm->size() + Zee->size() ) >= 2;                //  1: Events with at lest 2 well-defined Z bosons  -----------------------------------------------------------------------------------
   
   if(passZsize)  theHistograms.fill("Number of events", 10, 0, 10, 1, theWeight);    
   
   
-  bool passWsize =  Wjj->size() >= 1;
+  bool passWsize =  Wjj->size() >= 1;                   //  2: Events with at least 2 well-defined Z bosons and 1 weel-defined W boson -----------------------------------------------------------------------
   
-  bool pass = passZsize && passWsize;                     //  2: Events with 2 well-defined Z bosons and 1 well-defined W boson ---------------------------------------------------------------------------
+  bool pass = passZsize && passWsize;                    
   
   if(pass) {
-    
-    theHistograms.fill("Number of events", 10, 0, 10, 2, theWeight);  
        
+    cout << "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+
     std::vector<Boson<Lepton> > Zll; 
     
     foreach(const Boson<Lepton>& z, *Zmm) {
@@ -46,17 +47,35 @@ Int_t ZZWAnalyzer::cut() {
       Zll.push_back(z.clone<Lepton>());
     }
   
+    foreach(const Boson<Jet>& w, *Wjj) { 
+      cout << Violet("--------------Candidate W---------------") << endl;
+      cout << "Pt Jet1 = " << w.daughter(0).pt() << endl;
+      cout << "Pt Jet2 = " << w.daughter(1).pt() << endl;
+      cout << "------------------------------" << endl;
+    }
+    
     std::stable_sort(Zll.begin() ,Zll.end() ,MassComparator(ZMASS));
     std::stable_sort(Wjj->begin(),Wjj->end(),MassComparator(WMASS));
     //std::stable_sort(Wjj->begin(),Wjj->end(),WPtComparator());
+    //std::stable_sort(Wjj->begin(),Wjj->end(),WJetPtComparator());
   
     myZ0 = Zll.at(0);
     myZ1 = Boson<Lepton>();
     myW  = Wjj->at(0);
-  
+    //  bool WmassRange = (fabs(myW.p4().M() - WMASS) < 40);
+    
+    cout << endl << Green("---------------Selected W---------------") << endl;
+    cout << "Pt Jet1 myW = " << myW.daughter(0).pt() << endl;
+    cout << "Pt Jet2 myW = " << myW.daughter(1).pt() << endl;
+    cout << "----------------------------------------" << endl;
+    
+    //   if(!WmassRange) return -1;  
 
+    
+    theHistograms.fill("Number of events", 10, 0, 10, 2, theWeight);                                
+    
     bool passGhost = true;                                 // 3: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing------------------------------------------------------
-  
+    
     for(vector<Boson<Lepton> >::iterator b = Zll.begin()+1; b != Zll.end(); ++b) { 
     
       double DR00 = deltaR(myZ0.daughter(0).p4().Rapidity(), myZ0.daughter(0).p4().Phi(), b->daughter(0).p4().Rapidity(), b->daughter(0).p4().Phi());
@@ -160,7 +179,7 @@ Int_t ZZWAnalyzer::cut() {
     double DPhi_Z1_W    = deltaPhi(p_myZ1, p_myW);
 
 
-    cout << endl << Red("============Event: ") << Red(event) << Red(" w= ") << Red(theWeight) << " " << Red(" ==================")  << endl;
+    cout << endl << Red("============Selected Event: ") << Red(event) << Red(" w= ") << Red(theWeight) << " " << Red(" ==================")  << endl;
     cout << "-----------reco Particles Masses ------------" << endl;
     cout << "Z0reco = " << Green(myZ0.p4().M()) <<endl;
     cout << "Z1reco = " << Green(myZ1.p4().M()) <<endl;
@@ -169,11 +188,16 @@ Int_t ZZWAnalyzer::cut() {
     cout << "Lepton 2" << "\tPt = "   << p_myl2.Pt() << "\tEta = " <<  p_myl2.Eta() << "\tPhi = " << p_myl2.Phi() << endl; 
     cout << "Lepton 3" << "\tPt = "   << p_myl3.Pt() << "\tEta = " <<  p_myl3.Eta() << "\tPhi = " << p_myl3.Phi() << endl; 
     cout << "Lepton 4" << "\tPt = "   << p_myl4.Pt() << "\tEta = " <<  p_myl4.Eta() << "\tPhi = " << p_myl4.Phi() << endl;   
-    cout << "Jet 1"    << "\t\tPt = " << p_myj1.Pt() << "\tEta = " << p_myj1.Eta()  << "\tPhi = " << p_myj1.Phi() << "\tdeltaR with leptons 1,2,3,4= " << deltaRJets11 << ", " << deltaRJets12 << ", " << deltaRJets13 << ", " << deltaRJets14 << endl;
-    cout << "Jet 2"    << "\t\tPt = " << p_myj2.Pt() << "\tEta = " << p_myj2.Eta()  << "\tPhi = " << p_myj2.Phi() << "\tdeltaR with leptons 1,2,3,4= " << deltaRJets21 << ", " << deltaRJets22 << ", " << deltaRJets23 << ", " << deltaRJets24 << endl;
+    cout << "Jet 1"    << "\t\tPt = " << p_myj1.Pt() << "\tEta = " <<  p_myj1.Eta() << "\t\tPhi = " << p_myj1.Phi() << "\tdeltaR with leptons 1,2,3,4= " << deltaRJets11 << ", " << deltaRJets12 << ", " << deltaRJets13 << ", " << deltaRJets14 << endl;
+    cout << "Jet 2"    << "\t\tPt = " << p_myj2.Pt() << "\tEta = " <<  p_myj2.Eta() << "\t\tPhi = " << p_myj2.Phi() << "\tdeltaR with leptons 1,2,3,4= " << deltaRJets21 << ", " << deltaRJets22 << ", " << deltaRJets23 << ", " << deltaRJets24 << endl;
      
 
     /////-----------------Histograms-------------------
+  
+    if(genParticles->size() == 9)  theHistograms.fill("0 jet", "0 jet", 3, 0, 3, 1, theWeight);
+    
+    if(genParticles->size() == 10) theHistograms.fill("1 jet", "1 jet", 3, 0, 3, 1, theWeight);
+    
     
     //------------Mass-------------
     
@@ -235,6 +259,8 @@ Int_t ZZWAnalyzer::cut() {
 
 }
 
+ 
+
 
 void ZZWAnalyzer::analyze() {
 
@@ -264,7 +290,8 @@ void ZZWAnalyzer::analyze() {
 	if (id == 23)  GenZ.push_back(&b);      // Z
 	else if (id == 24) GenW.push_back(&b);  // W
       
-      }
+      } 
+
 
       cout << "---------- genParticles: history information ----------" << endl; 
       cout << "Number of generated Z= "  << GenZ.size() << endl;
@@ -300,6 +327,9 @@ void ZZWAnalyzer::analyze() {
 	theHistograms.fill("Z0Gen_Pt"  , "Z0Gen_Pt"  , 300, 0, 300, Z0gen->pt()    , theWeight);
 	theHistograms.fill("Z1Gen_Pt"  , "Z1Gen_Pt"  , 300, 0, 300, Z1gen->pt()    , theWeight);
 	theHistograms.fill("WGen_Pt"   , "WGen_Pt"   , 300, 0, 300, Wgen->pt()     , theWeight);
+
+	theHistograms.fill("j1Gen_Pt"  , "j1Gen_Pt"  , 300, 0, 300, Wgen->daughter(0).pt() , theWeight);
+	theHistograms.fill("j2Gen_Pt"  , "j2Gen_Pt"  , 300, 0, 300, Wgen->daughter(1).pt() , theWeight);
    
 	//------------DR--------------
 
@@ -352,10 +382,10 @@ void ZZWAnalyzer::analyze() {
 	cout << "Wgen=  " << Wgen->p4().M()  << "\t\tWmatched =  " << W.p4().M()  << "\t\tWreco = "  << Green(myW.p4().M())  <<endl;
 
 	cout <<  "\n------- DAUGHTERS IDS COMPARISON: Z gen  ||  Z reco matched with gen  ||  Z reco -------"   << endl;
-	cout << "daughter1 \tZ0gen = " << Z0gen->daughter(0).id() << "\tZ0matched = " << Z0.daughter(0).id() << "Z0reco = " << myZ0.daughter(0).id() << endl;
-	cout << "daughter2 \tZ0gen = " << Z0gen->daughter(1).id() << "\tZ0matched = " << Z0.daughter(1).id() << "Z0reco = " << myZ0.daughter(1).id() << endl;
-	cout << "daughter1 \tZ0gen = " << Z1gen->daughter(0).id() << "\tZ0matched = " << Z1.daughter(0).id() << "Z0reco = " << myZ1.daughter(0).id() << endl;
-	cout << "daughter2 \tZ0gen = " << Z1gen->daughter(1).id() << "\tZ0matched = " << Z1.daughter(1).id() << "Z0reco = " << myZ1.daughter(1).id() << endl;
+	cout << "daughter1 \tZ0gen = " << Z0gen->daughter(0).id() << "\tZ0matched = " << Z0.daughter(0).id() << "\tZ0reco = " << myZ0.daughter(0).id() << endl;
+	cout << "daughter2 \tZ0gen = " << Z0gen->daughter(1).id() << "\tZ0matched = " << Z0.daughter(1).id() << "\tZ0reco = " << myZ0.daughter(1).id() << endl;
+	cout << "daughter1 \tZ0gen = " << Z1gen->daughter(0).id() << "\tZ0matched = " << Z1.daughter(0).id() << "\tZ0reco = " << myZ1.daughter(0).id() << endl;
+	cout << "daughter2 \tZ0gen = " << Z1gen->daughter(1).id() << "\tZ0matched = " << Z1.daughter(1).id() << "\tZ0reco = " << myZ1.daughter(1).id() << endl;
       
       
 	bool ZcorrectMatch = (myZ0.p4() == Z0.p4() && myZ1.p4() == Z1.p4()) || (myZ0.p4() == Z1.p4() && myZ1.p4() == Z0.p4());

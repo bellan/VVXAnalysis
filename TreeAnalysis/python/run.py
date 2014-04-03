@@ -29,6 +29,7 @@ if len(sys.argv) > 3: getExternalCrossSectionFromFile = sys.argv[3]
 cregion = 'baseline' # in case, make it a further external argument
 
 luminosity = 200000 #19029.853
+
 baseinputdir = 'samples'
 
 
@@ -82,7 +83,7 @@ print "\n"
 
 def run(executable, analysis, typeofsample, cregion, luminosity):
     inputdir  = baseinputdir
-    outputdir = 'results'
+    outputdir = 'results_test'
     if not os.path.exists(outputdir): os.popen('mkdir "%s"' %outputdir)
 
     outputdir = outputdir+"/"+analysis+"_"+cregion

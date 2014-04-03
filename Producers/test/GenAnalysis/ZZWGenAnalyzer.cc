@@ -29,7 +29,7 @@
 #include "Hjets.h"
 
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
-#include "VVXAnalysis/Producers/interface/SignalDefinitionUtilities.h"
+#include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
 
 using namespace std;
 using namespace edm;
@@ -54,6 +54,7 @@ private:
   Hbos* hBosons;
   Hbos* hBosonsCut;
   TH1F* all6fMass;
+  TH1F* all4lMass;
   TH1F* all6fMassCut;  
   TH1F* notEv;
   TH1F* lostEvEtaRange;
@@ -66,6 +67,7 @@ void ZZWGenAnalyzer::beginJob() {
 
   edm::Service<TFileService> fileService;
   all6fMass       = fileService->make<TH1F>("all6fMass", "all6fMass", 300, 0., 3000.);
+  all4lMass       = fileService->make<TH1F>("all4lMass", "all4lMass", 300, 0., 3000.);
   all6fMassCut    = fileService->make<TH1F>("all6fMassCut", "all6fMassCut", 300, 0., 3000.);
   notEv           = fileService->make<TH1F>("notEv", "notEv", 3, 0., 3.);
   lostEvEtaRange  = fileService->make<TH1F>("lostEvEtaRange", "lostEvEtaRange", 3, 0., 3.);
@@ -168,6 +170,7 @@ void ZZWGenAnalyzer::analyze(const Event & event, const EventSetup& eventSetup) 
     p_6f = p_4l + j0->p4() + j1->p4(); 
     
     float m_6f = p_6f.mass();
+    float m_4l = p_4l.mass();
       
     bool pass6fMass  = m_6f > 300.;
     bool passPtCutJet = j0->p4().pt() > 40. && j1->p4().pt() > 25.;
@@ -184,9 +187,9 @@ void ZZWGenAnalyzer::analyze(const Event & event, const EventSetup& eventSetup) 
       
       //==========================CATEGORY SELECTION=====================//
       
-      if ( *category == 2 ) {
+      if ( *category == 0 ) {
 	
-	std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > ZZ = makeZbosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
+	std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > ZZ = zzw::makeZBosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
 	
 	Z0 = ZZ.first;
 	Z1 = ZZ.second;
@@ -195,6 +198,7 @@ void ZZWGenAnalyzer::analyze(const Event & event, const EventSetup& eventSetup) 
 	V.setDaughter(1,phys::Particle(j1->p4(),phys::Particle::computeCharge(j1->pdgId()), j1->pdgId()));
 	
 	all6fMass->Fill(m_6f);
+	all4lMass->Fill(m_4l);
 	hBosons->FillBos(Z0,Z1,V);
 	
 	//Cuts-----------------

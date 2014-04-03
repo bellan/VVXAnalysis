@@ -12,7 +12,7 @@
 
 #include "AnalysisDataFormats/CMGTools/interface/PFJet.h"
 #include "DataFormats/Math/interface/Vector3D.h"
-#include "VVXAnalysis/DataFormats/interface/Utilities.h"
+#include "VVXAnalysis/Commons/interface/Utilities.h"
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH

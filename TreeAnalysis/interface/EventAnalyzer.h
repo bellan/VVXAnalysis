@@ -13,6 +13,7 @@
 #include <vector>
 #include <string>
 #include <utility>
+#include <algorithm>
 #include <map>
 
 #include "VVXAnalysis/DataFormats/interface/Electron.h"
@@ -62,7 +63,8 @@ public:
     
     double Drapidity = fabs(rapidity1 - rapidity2);
     double Dphi      = fabs(phi1 - phi2);
-    
+    if (Dphi>TMath::Pi()) Dphi -= TMath::TwoPi();
+
     double dR = sqrt(Drapidity*Drapidity  + Dphi*Dphi);
     
     return dR;
@@ -72,8 +74,9 @@ public:
     static double deltaR (const T&a, const T&b ) {
     
     double Drapidity = a.Eta() - b.Eta();
-    double Dphi      = a.Phi() - b.Phi();
-    
+    double Dphi      = a.Phi() - b.Phi(); 
+    if (Dphi>TMath::Pi()) Dphi -= TMath::TwoPi();
+   
     double dR = sqrt(Drapidity*Drapidity  + Dphi*Dphi);
     
     return dR;
@@ -85,9 +88,9 @@ public:
     double phi1 = a.Phi();
     double phi2 = b.Phi();
     
-    double DPhi = fabs(phi2 - phi1);
+    double DPhi = std::abs(phi2 - phi1);
     
-    if(DPhi > TMath::Pi()) DPhi = (2*TMath::Pi()) - DPhi;
+    if(DPhi > TMath::Pi()) DPhi = (TMath::TwoPi()) - DPhi;
     
     return DPhi;   
   }
@@ -103,11 +106,29 @@ public:
   };
 
  struct WPtComparator{
-    bool operator()( const phys::Boson<phys::Jet> & w1 , 
-		     const phys::Boson<phys::Jet> & w2) const{ 
-      return w1.pt() > w2.pt(); 
+    bool operator()( const phys::Boson<phys::Jet> & w1 ,
+		     const phys::Boson<phys::Jet> & w2) const{
+      return w1.pt() > w2.pt();
     }
   };
+
+ struct WJetPtComparator{
+    bool operator()( const phys::Boson<phys::Jet> & w1 ,
+		     const phys::Boson<phys::Jet> & w2) const{
+      double w1pt1 = w1.daughter(0).pt();
+      double w1pt2 = w1.daughter(1).pt();
+      if (w1pt2>w1pt1) std::swap(w1pt1,w1pt2);
+      double w2pt1 = w2.daughter(0).pt();
+      double w2pt2 = w2.daughter(1).pt();
+      if (w2pt2>w2pt1) std::swap(w2pt1,w2pt2);
+
+      if (w1pt2==w2pt2) {
+	return w1pt1>w2pt1;
+      } else return (w1pt2>w2pt2);
+    }
+  };
+
+
   
   struct MassComparator{
     MassComparator(const double& ref): ref_(ref){}
