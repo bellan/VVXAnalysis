@@ -12,8 +12,7 @@ using namespace colour;
 
 Int_t ZZWAnalyzer::cut() {
 
- 
-  // if (genCategory != 0) return -1; 
+
 
   //================================================================//
   //                          reco Particles                        //    
@@ -21,60 +20,35 @@ Int_t ZZWAnalyzer::cut() {
   
  
   theHistograms.fill("Number of events", "Number of events", 10, 0, 10, 0, theWeight);  // 0: Number of total events ----------------------------------------------------------------------------------------
-  
   theHistograms.fill("MET", "MET", 300, 0, 300, met->pt(), theWeight);
 
-  bool passZsize = ( Zmm->size() + Zee->size() ) >= 2;                //  1: Events with at lest 2 well-defined Z bosons  -----------------------------------------------------------------------------------
-  
-  if(passZsize)  theHistograms.fill("Number of events", 10, 0, 10, 1, theWeight);    
-  
-  
-  bool passWsize =  Wjj->size() >= 1;                   //  2: Events with at least 2 well-defined Z bosons and 1 weel-defined W boson -----------------------------------------------------------------------
-  
-  bool pass = passZsize && passWsize;                    
-  
-  if(pass) {
-       
-    cout << "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
 
+  //.......Z definition
+
+  bool passZsize = ( Zmm->size() + Zee->size() ) >= 2;               
+                   
+  bool passGhost = true;   
+  
+  bool passLowMass = true;
+  
+  if (passZSize) {
+    
     std::vector<Boson<Lepton> > Zll; 
     
     foreach(const Boson<Lepton>& z, *Zmm) {
       Zll.push_back(z.clone<Lepton>()); 
     }
-  
+    
     foreach(const Boson<Electron>& z, *Zee) { 
       Zll.push_back(z.clone<Lepton>());
     }
-  
-    foreach(const Boson<Jet>& w, *Wjj) { 
-      cout << Violet("--------------Candidate W---------------") << endl;
-      cout << "Pt Jet1 = " << w.daughter(0).pt() << endl;
-      cout << "Pt Jet2 = " << w.daughter(1).pt() << endl;
-      cout << "------------------------------" << endl;
-    }
     
     std::stable_sort(Zll.begin() ,Zll.end() ,MassComparator(ZMASS));
-    std::stable_sort(Wjj->begin(),Wjj->end(),MassComparator(WMASS));
-    //std::stable_sort(Wjj->begin(),Wjj->end(),WPtComparator());
-    //std::stable_sort(Wjj->begin(),Wjj->end(),WJetPtComparator());
-  
+    
     myZ0 = Zll.at(0);
     myZ1 = Boson<Lepton>();
-    myW  = Wjj->at(0);
-    //  bool WmassRange = (fabs(myW.p4().M() - WMASS) < 40);
     
-    cout << endl << Green("---------------Selected W---------------") << endl;
-    cout << "Pt Jet1 myW = " << myW.daughter(0).pt() << endl;
-    cout << "Pt Jet2 myW = " << myW.daughter(1).pt() << endl;
-    cout << "----------------------------------------" << endl;
-    
-    //   if(!WmassRange) return -1;  
-
-    
-    theHistograms.fill("Number of events", 10, 0, 10, 2, theWeight);                                
-    
-    bool passGhost = true;                                 // 3: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing------------------------------------------------------
+                                
     
     for(vector<Boson<Lepton> >::iterator b = Zll.begin()+1; b != Zll.end(); ++b) { 
     
@@ -94,27 +68,49 @@ Int_t ZZWAnalyzer::cut() {
 
     if(passGhost == false) return -1;
 
-  
-    theHistograms.fill("Number of events", 10, 0, 10, 3, theWeight);   
-
-    // ------------------------ myZ0, myZ1, myW defined : BEGINNING OF CUTS ---------------------------- //
-
-  
-    bool passllLowMass = true;                       // 4: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing, massll > 4 GeV---------------------------------------------
-    
     for(int i = 0; i <=1; ++i) {
       if ( myZ0.daughter(0).charge() != myZ1.daughter(i).charge() ) {
-    	if ( (myZ0.daughter(0).p4() + myZ1.daughter(i).p4()).M() < 4 || (myZ0.daughter(1).p4() + myZ1.daughter((i+1)%2).p4()).M() < 4 ) passllLowMass = false;
+	if ( (myZ0.daughter(0).p4() + myZ1.daughter(i).p4()).M() < 4 || (myZ0.daughter(1).p4() + myZ1.daughter((i+1)%2).p4()).M() < 4 ) passllLowMass = false;
       }
     }
-    
+  
     if (passllLowMass == false)  return -1;
+  
+  }
+  
+  bool Zdef = (passZsize && passGhost && passGhost);
+  if (Zdef) theHistograms.fill("Number of events", 10, 0, 10, 1, theWeight);     //  1: Events with at lest 2 well-defined Z bosons  -----------------------------------------------------------------------------------
+  
+
+  //.......W request
+
+  bool passWsize =  Wjj->size() >= 1;                 
+  
+  bool pass = Zdef && passWsize;                    
+  
+  if(pass) {
+       
+    std::stable_sort(Wjj->begin(),Wjj->end(),MassComparator(WMASS));
+    //std::stable_sort(Wjj->begin(),Wjj->end(),WJetPtComparator());
+  
+    myW  = Wjj->at(0);
+    //  bool WmassRange = (fabs(myW.p4().M() - WMASS) < 40);
     
+    cout << endl << Green("---------------Selected W---------------") << endl;
+    cout << "Pt Jet1 myW = " << myW.daughter(0).pt() << endl;
+    cout << "Pt Jet2 myW = " << myW.daughter(1).pt() << endl;
+    cout << "----------------------------------------" << endl;
     
-    theHistograms.fill("Number of events", 10, 0, 10, 4, theWeight);   
+    theHistograms.fill("Number of events", 10, 0, 10, 2, theWeight);      //  2: Events with at lest 2 well-defined Z bosons and 1 well-defined W boson  -----------------------------------------------------------------------------------
+   
+    //   if(!WmassRange) return -1;  
+
     
-    
-    bool passLeptonsPt = false;                       // 5: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing, massll > 4 GeV, 1lepton pt>10 and 1lepton pt >20------------
+                   
+    //..........................myZ0, myZ1, myW defined : BEGINNING OF CUTS  ..........................//
+
+ 
+    bool passLeptonsPt = false;                       // 3: Events with 2 well-defined Z bosons, 1 well-defined W boson, 1lepton pt>10 and 1lepton pt >20------------
     
     int count10 =0;
     int count20 = 0;
@@ -133,15 +129,13 @@ Int_t ZZWAnalyzer::cut() {
     
     if(passLeptonsPt == false) return -1;
     
-    
-    
-    theHistograms.fill("Number of events", 10, 0, 10, 5, theWeight);   
+   
+    theHistograms.fill("Number of events", 10, 0, 10, 3, theWeight);   
 
 
-    if ( met->pt() > 80 ) return -1;        // 6: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing, massll > 4 GeV, 1lepton pt>10 and 1lepton pt >20, MET < 80--------------
+    if ( met->pt() > 80 ) return -1;        // 4: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing, massll > 4 GeV, 1lepton pt>10 and 1lepton pt >20, MET < 80--------------
 
-
-    theHistograms.fill("Number of events", 10, 0, 10, 6, theWeight);  
+    theHistograms.fill("Number of events", 10, 0, 10, 4, theWeight);  
 
 
     TLorentzVector p_myZ0 = myZ0.p4();
@@ -158,6 +152,12 @@ Int_t ZZWAnalyzer::cut() {
 
     TLorentzVector p_4l = p_myZ0 + p_myZ1; 
     TLorentzVector p_6f = p_4l  + p_myj1 + p_myj2;
+
+
+    //   if ( p_6f.M() < 300 ) return -1;         // 5: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing, massll > 4 GeV, 1lepton pt>10 and 1lepton pt >20, MET < 80, m6f>300GeV--------------
+
+    //   theHistograms.fill("Number of events", 10, 0, 10, 5, theWeight);  
+
 
     double ptj1 = max(p_myj1.Pt(), p_myj2.Pt());
     double ptj2 = min(p_myj1.Pt(), p_myj2.Pt());
@@ -272,165 +272,165 @@ void ZZWAnalyzer::analyze() {
   
  
 
-    //================================================================//
-    //                             genParticles                       //    
-    //================================================================//
+  //================================================================//
+  //                             genParticles                       //    
+  //================================================================//
   
-    if (genVBParticles->size() >= 3) {
+  if (genVBParticles->size() >= 3) {
     
-      std::vector<const Boson<Particle>* > GenZ;
-      std::vector<const Boson<Particle>* > GenW;
+    std::vector<const Boson<Particle>* > GenZ;
+    std::vector<const Boson<Particle>* > GenW;
     
 
-      foreach(const Boson<Particle>& b, *genVBParticles) {
+    foreach(const Boson<Particle>& b, *genVBParticles) {
       
-	int s_id = b.id();
-	int id   = abs(s_id);
+      int s_id = b.id();
+      int id   = abs(s_id);
       
-	if (id == 23)  GenZ.push_back(&b);      // Z
-	else if (id == 24) GenW.push_back(&b);  // W
+      if (id == 23)  GenZ.push_back(&b);      // Z
+      else if (id == 24) GenW.push_back(&b);  // W
       
-      } 
+    } 
 
 
-      cout << "---------- genParticles: history information ----------" << endl; 
-      cout << "Number of generated Z= "  << GenZ.size() << endl;
-      cout << "Number of generated W= "  << GenW.size() << endl;
+    cout << "---------- genParticles: history information ----------" << endl; 
+    cout << "Number of generated Z= "  << GenZ.size() << endl;
+    cout << "Number of generated W= "  << GenW.size() << endl;
   
-      if ( GenZ.size() >= 2 && GenW.size() >= 1 ) {
+    if ( GenZ.size() >= 2 && GenW.size() >= 1 ) {
     
-	const Boson<Particle>* Z0gen = GenZ.at(0);
-	const Boson<Particle>* Z1gen = GenZ.at(1);
-	const Boson<Particle>* Wgen  = GenW.at(0);
+      const Boson<Particle>* Z0gen = GenZ.at(0);
+      const Boson<Particle>* Z1gen = GenZ.at(1);
+      const Boson<Particle>* Wgen  = GenW.at(0);
       
-	double DR11 = deltaR(Wgen->daughter(0).p4().Rapidity(), Wgen->daughter(0).p4().Phi(), Z0gen->daughter(0).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
-	double DR12 = deltaR(Wgen->daughter(0).p4().Rapidity(), Wgen->daughter(0).p4().Phi(), Z0gen->daughter(1).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
-	double DR13 = deltaR(Wgen->daughter(0).p4().Rapidity(), Wgen->daughter(0).p4().Phi(), Z1gen->daughter(0).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
-	double DR14 = deltaR(Wgen->daughter(0).p4().Rapidity(), Wgen->daughter(0).p4().Phi(), Z1gen->daughter(1).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
-	double DR21 = deltaR(Wgen->daughter(1).p4().Rapidity(), Wgen->daughter(1).p4().Phi(), Z0gen->daughter(0).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
-	double DR22 = deltaR(Wgen->daughter(1).p4().Rapidity(), Wgen->daughter(1).p4().Phi(), Z0gen->daughter(1).p4().Rapidity(), Z0gen->daughter(1).p4().Phi());
-	double DR23 = deltaR(Wgen->daughter(1).p4().Rapidity(), Wgen->daughter(1).p4().Phi(), Z1gen->daughter(0).p4().Rapidity(), Z1gen->daughter(0).p4().Phi());
-	double DR24 = deltaR(Wgen->daughter(1).p4().Rapidity(), Wgen->daughter(1).p4().Phi(), Z1gen->daughter(1).p4().Rapidity(), Z1gen->daughter(1).p4().Phi());
+      double DR11 = deltaR(Wgen->daughter(0).p4().Rapidity(), Wgen->daughter(0).p4().Phi(), Z0gen->daughter(0).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
+      double DR12 = deltaR(Wgen->daughter(0).p4().Rapidity(), Wgen->daughter(0).p4().Phi(), Z0gen->daughter(1).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
+      double DR13 = deltaR(Wgen->daughter(0).p4().Rapidity(), Wgen->daughter(0).p4().Phi(), Z1gen->daughter(0).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
+      double DR14 = deltaR(Wgen->daughter(0).p4().Rapidity(), Wgen->daughter(0).p4().Phi(), Z1gen->daughter(1).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
+      double DR21 = deltaR(Wgen->daughter(1).p4().Rapidity(), Wgen->daughter(1).p4().Phi(), Z0gen->daughter(0).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
+      double DR22 = deltaR(Wgen->daughter(1).p4().Rapidity(), Wgen->daughter(1).p4().Phi(), Z0gen->daughter(1).p4().Rapidity(), Z0gen->daughter(1).p4().Phi());
+      double DR23 = deltaR(Wgen->daughter(1).p4().Rapidity(), Wgen->daughter(1).p4().Phi(), Z1gen->daughter(0).p4().Rapidity(), Z1gen->daughter(0).p4().Phi());
+      double DR24 = deltaR(Wgen->daughter(1).p4().Rapidity(), Wgen->daughter(1).p4().Phi(), Z1gen->daughter(1).p4().Rapidity(), Z1gen->daughter(1).p4().Phi());
       
       
       
-	/////-----------------Histograms-------------------
+      /////-----------------Histograms-------------------
       
-	//------------Mass--------------
+      //------------Mass--------------
   
-	theHistograms.fill("Z0Gen_Mass", "Z0Gen_Mass", 200, 0, 200, Z0gen->p4().M(), theWeight);
-	theHistograms.fill("Z1Gen_Mass", "Z1Gen_Mass", 200, 0, 200, Z1gen->p4().M(), theWeight);
-	theHistograms.fill("WGen_Mass" , "WGen_Mass" , 200, 0, 200, Wgen->p4().M() , theWeight);
+      theHistograms.fill("Z0Gen_Mass", "Z0Gen_Mass", 200, 0, 200, Z0gen->p4().M(), theWeight);
+      theHistograms.fill("Z1Gen_Mass", "Z1Gen_Mass", 200, 0, 200, Z1gen->p4().M(), theWeight);
+      theHistograms.fill("WGen_Mass" , "WGen_Mass" , 200, 0, 200, Wgen->p4().M() , theWeight);
   
-	//------------Pt--------------
+      //------------Pt--------------
   
-	theHistograms.fill("Z0Gen_Pt"  , "Z0Gen_Pt"  , 300, 0, 300, Z0gen->pt()    , theWeight);
-	theHistograms.fill("Z1Gen_Pt"  , "Z1Gen_Pt"  , 300, 0, 300, Z1gen->pt()    , theWeight);
-	theHistograms.fill("WGen_Pt"   , "WGen_Pt"   , 300, 0, 300, Wgen->pt()     , theWeight);
+      theHistograms.fill("Z0Gen_Pt"  , "Z0Gen_Pt"  , 300, 0, 300, Z0gen->pt()    , theWeight);
+      theHistograms.fill("Z1Gen_Pt"  , "Z1Gen_Pt"  , 300, 0, 300, Z1gen->pt()    , theWeight);
+      theHistograms.fill("WGen_Pt"   , "WGen_Pt"   , 300, 0, 300, Wgen->pt()     , theWeight);
 
-	theHistograms.fill("j1Gen_Pt"  , "j1Gen_Pt"  , 300, 0, 300, Wgen->daughter(0).pt() , theWeight);
-	theHistograms.fill("j2Gen_Pt"  , "j2Gen_Pt"  , 300, 0, 300, Wgen->daughter(1).pt() , theWeight);
+      theHistograms.fill("j1Gen_Pt"  , "j1Gen_Pt"  , 300, 0, 300, Wgen->daughter(0).pt() , theWeight);
+      theHistograms.fill("j2Gen_Pt"  , "j2Gen_Pt"  , 300, 0, 300, Wgen->daughter(1).pt() , theWeight);
    
-	//------------DR--------------
+      //------------DR--------------
 
-	theHistograms.fill("Gen_DR_J1L1", "Gen_DR_J1L1", 100, 0, 8, DR11, theWeight);
-	theHistograms.fill("Gen_DR_J1L2", "Gen_DR_J1L2", 100, 0, 8, DR12, theWeight);
-	theHistograms.fill("Gen_DR_J1L3", "Gen_DR_J1L3", 100, 0, 8, DR13, theWeight);
-	theHistograms.fill("Gen_DR_J1L4", "Gen_DR_J1L4", 100, 0, 8, DR14, theWeight);
-	theHistograms.fill("Gen_DR_J2L1", "Gen_DR_J2L1", 100, 0, 8, DR21, theWeight);
-	theHistograms.fill("Gen_DR_J2L2", "Gen_DR_J2L2", 100, 0, 8, DR22, theWeight);
-	theHistograms.fill("Gen_DR_J2L3", "Gen_DR_J2L3", 100, 0, 8, DR23, theWeight);
-	theHistograms.fill("Gen_DR_J2L4", "Gen_DR_J2L4", 100, 0, 8, DR24, theWeight);
+      theHistograms.fill("Gen_DR_J1L1", "Gen_DR_J1L1", 100, 0, 8, DR11, theWeight);
+      theHistograms.fill("Gen_DR_J1L2", "Gen_DR_J1L2", 100, 0, 8, DR12, theWeight);
+      theHistograms.fill("Gen_DR_J1L3", "Gen_DR_J1L3", 100, 0, 8, DR13, theWeight);
+      theHistograms.fill("Gen_DR_J1L4", "Gen_DR_J1L4", 100, 0, 8, DR14, theWeight);
+      theHistograms.fill("Gen_DR_J2L1", "Gen_DR_J2L1", 100, 0, 8, DR21, theWeight);
+      theHistograms.fill("Gen_DR_J2L2", "Gen_DR_J2L2", 100, 0, 8, DR22, theWeight);
+      theHistograms.fill("Gen_DR_J2L3", "Gen_DR_J2L3", 100, 0, 8, DR23, theWeight);
+      theHistograms.fill("Gen_DR_J2L4", "Gen_DR_J2L4", 100, 0, 8, DR24, theWeight);
       
       
-	//%%%%%%%% Comparison genParticles - recoParticles %%%%%%%%//
+      //%%%%%%%% Comparison genParticles - recoParticles %%%%%%%%//
       
-	std::vector< std::pair<const Particle* , Boson<Lepton> > > ZcomparatorVector;
-	std::vector< std::pair<const Particle* , Boson<Jet> > >    WcomparatorVector;  
+      std::vector< std::pair<const Particle* , Boson<Lepton> > > ZcomparatorVector;
+      std::vector< std::pair<const Particle* , Boson<Jet> > >    WcomparatorVector;  
   
 
 
-	foreach(const Boson<Lepton>& z, *Zmm) {
-	  ZcomparatorVector.push_back(make_pair(Z0gen, z.clone<Lepton>()));
-	  ZcomparatorVector.push_back(make_pair(Z1gen, z.clone<Lepton>()));
-	}
+      foreach(const Boson<Lepton>& z, *Zmm) {
+	ZcomparatorVector.push_back(make_pair(Z0gen, z.clone<Lepton>()));
+	ZcomparatorVector.push_back(make_pair(Z1gen, z.clone<Lepton>()));
+      }
   
   
-	foreach(const Boson<Electron>& z, *Zee) {   
-	  ZcomparatorVector.push_back(make_pair(Z0gen, z.clone<Lepton>()));
-	  ZcomparatorVector.push_back(make_pair(Z1gen, z.clone<Lepton>()));
-	}
+      foreach(const Boson<Electron>& z, *Zee) {   
+	ZcomparatorVector.push_back(make_pair(Z0gen, z.clone<Lepton>()));
+	ZcomparatorVector.push_back(make_pair(Z1gen, z.clone<Lepton>()));
+      }
   
-	foreach(const Boson<Jet> w, *Wjj) {
-	  WcomparatorVector.push_back(make_pair(Wgen, w));
-	}
+      foreach(const Boson<Jet> w, *Wjj) {
+	WcomparatorVector.push_back(make_pair(Wgen, w));
+      }
   
-	std::stable_sort(ZcomparatorVector.begin(), ZcomparatorVector.end(), ZdeltaRComparator());
-	std::stable_sort(WcomparatorVector.begin(), WcomparatorVector.end(), WdeltaRComparator());
+      std::stable_sort(ZcomparatorVector.begin(), ZcomparatorVector.end(), ZdeltaRComparator());
+      std::stable_sort(WcomparatorVector.begin(), WcomparatorVector.end(), WdeltaRComparator());
 
     
       
-	Boson<Lepton> Z0 = ZcomparatorVector.at(0).second;         // Definition of correctly matched bosons
-	Boson<Lepton> Z1 = ZcomparatorVector.at(1).second;         //
-	Boson<Jet> W     = WcomparatorVector.at(0).second;         //
+      Boson<Lepton> Z0 = ZcomparatorVector.at(0).second;         // Definition of correctly matched bosons
+      Boson<Lepton> Z1 = ZcomparatorVector.at(1).second;         //
+      Boson<Jet> W     = WcomparatorVector.at(0).second;         //
   
       
-	cout <<  "\n---------- MASSES COMPARISON: Z gen  ||  Z reco matched with gen  ||  Z reco ----------"   << endl;
+      cout <<  "\n---------- MASSES COMPARISON: Z gen  ||  Z reco matched with gen  ||  Z reco ----------"   << endl;
 
-	cout << "Z0gen= " << Z0gen->p4().M() << "\t\tZ0matched = " << Z0.p4().M() << "\t\tZ0reco = " << Green(myZ0.p4().M()) <<endl;
-	cout << "Z1gen= " << Z1gen->p4().M() << "\t\tZ1matched = " << Z1.p4().M() << "\t\tZ1reco = " << Green(myZ1.p4().M()) <<endl;
-	cout << "Wgen=  " << Wgen->p4().M()  << "\t\tWmatched =  " << W.p4().M()  << "\t\tWreco = "  << Green(myW.p4().M())  <<endl;
+      cout << "Z0gen= " << Z0gen->p4().M() << "\t\tZ0matched = " << Z0.p4().M() << "\t\tZ0reco = " << Green(myZ0.p4().M()) <<endl;
+      cout << "Z1gen= " << Z1gen->p4().M() << "\t\tZ1matched = " << Z1.p4().M() << "\t\tZ1reco = " << Green(myZ1.p4().M()) <<endl;
+      cout << "Wgen=  " << Wgen->p4().M()  << "\t\tWmatched =  " << W.p4().M()  << "\t\tWreco = "  << Green(myW.p4().M())  <<endl;
 
-	cout <<  "\n------- DAUGHTERS IDS COMPARISON: Z gen  ||  Z reco matched with gen  ||  Z reco -------"   << endl;
-	cout << "daughter1 \tZ0gen = " << Z0gen->daughter(0).id() << "\tZ0matched = " << Z0.daughter(0).id() << "\tZ0reco = " << myZ0.daughter(0).id() << endl;
-	cout << "daughter2 \tZ0gen = " << Z0gen->daughter(1).id() << "\tZ0matched = " << Z0.daughter(1).id() << "\tZ0reco = " << myZ0.daughter(1).id() << endl;
-	cout << "daughter1 \tZ0gen = " << Z1gen->daughter(0).id() << "\tZ0matched = " << Z1.daughter(0).id() << "\tZ0reco = " << myZ1.daughter(0).id() << endl;
-	cout << "daughter2 \tZ0gen = " << Z1gen->daughter(1).id() << "\tZ0matched = " << Z1.daughter(1).id() << "\tZ0reco = " << myZ1.daughter(1).id() << endl;
+      cout <<  "\n------- DAUGHTERS IDS COMPARISON: Z gen  ||  Z reco matched with gen  ||  Z reco -------"   << endl;
+      cout << "daughter1 \tZ0gen = " << Z0gen->daughter(0).id() << "\tZ0matched = " << Z0.daughter(0).id() << "\tZ0reco = " << myZ0.daughter(0).id() << endl;
+      cout << "daughter2 \tZ0gen = " << Z0gen->daughter(1).id() << "\tZ0matched = " << Z0.daughter(1).id() << "\tZ0reco = " << myZ0.daughter(1).id() << endl;
+      cout << "daughter1 \tZ0gen = " << Z1gen->daughter(0).id() << "\tZ0matched = " << Z1.daughter(0).id() << "\tZ0reco = " << myZ1.daughter(0).id() << endl;
+      cout << "daughter2 \tZ0gen = " << Z1gen->daughter(1).id() << "\tZ0matched = " << Z1.daughter(1).id() << "\tZ0reco = " << myZ1.daughter(1).id() << endl;
       
       
-	bool ZcorrectMatch = (myZ0.p4() == Z0.p4() && myZ1.p4() == Z1.p4()) || (myZ0.p4() == Z1.p4() && myZ1.p4() == Z0.p4());
-	bool WcorrectMatch = myW.p4() == W.p4();
+      bool ZcorrectMatch = (myZ0.p4() == Z0.p4() && myZ1.p4() == Z1.p4()) || (myZ0.p4() == Z1.p4() && myZ1.p4() == Z0.p4());
+      bool WcorrectMatch = myW.p4() == W.p4();
       
-	if ( ZcorrectMatch ) theHistograms.fill("Efficiency of Z definition", "Efficiency of Z definition", 3, 0, 3, 1, theWeight);
+      if ( ZcorrectMatch ) theHistograms.fill("Efficiency of Z definition", "Efficiency of Z definition", 3, 0, 3, 1, theWeight);
       
-	if ( WcorrectMatch ) theHistograms.fill("Efficiency of W definition", "Efficiency of W definition", 3, 0, 3, 1, theWeight);
+      if ( WcorrectMatch ) theHistograms.fill("Efficiency of W definition", "Efficiency of W definition", 3, 0, 3, 1, theWeight);
       
-	if ( ZcorrectMatch && WcorrectMatch ) theHistograms.fill("Efficiency of signal definition", "Efficiency of signal definition", 3, 0, 3, 1, theWeight);
+      if ( ZcorrectMatch && WcorrectMatch ) theHistograms.fill("Efficiency of signal definition", "Efficiency of signal definition", 3, 0, 3, 1, theWeight);
 
-	double deltaRJet1Lep1 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z0.daughter(0).p4().Rapidity(), Z0.daughter(0).p4().Phi());
-	double deltaRJet1Lep2 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z0.daughter(1).p4().Rapidity(), Z0.daughter(1).p4().Phi());
-	double deltaRJet1Lep3 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z1.daughter(0).p4().Rapidity(), Z1.daughter(0).p4().Phi());
-	double deltaRJet1Lep4 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z1.daughter(1).p4().Rapidity(), Z1.daughter(1).p4().Phi());
-	double deltaRJet2Lep1 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z0.daughter(0).p4().Rapidity(), Z0.daughter(0).p4().Phi());
-	double deltaRJet2Lep2 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z0.daughter(1).p4().Rapidity(), Z0.daughter(1).p4().Phi());
-	double deltaRJet2Lep3 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z1.daughter(0).p4().Rapidity(), Z1.daughter(0).p4().Phi());
-	double deltaRJet2Lep4 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z1.daughter(1).p4().Rapidity(), Z1.daughter(1).p4().Phi());
+      double deltaRJet1Lep1 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z0.daughter(0).p4().Rapidity(), Z0.daughter(0).p4().Phi());
+      double deltaRJet1Lep2 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z0.daughter(1).p4().Rapidity(), Z0.daughter(1).p4().Phi());
+      double deltaRJet1Lep3 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z1.daughter(0).p4().Rapidity(), Z1.daughter(0).p4().Phi());
+      double deltaRJet1Lep4 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z1.daughter(1).p4().Rapidity(), Z1.daughter(1).p4().Phi());
+      double deltaRJet2Lep1 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z0.daughter(0).p4().Rapidity(), Z0.daughter(0).p4().Phi());
+      double deltaRJet2Lep2 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z0.daughter(1).p4().Rapidity(), Z0.daughter(1).p4().Phi());
+      double deltaRJet2Lep3 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z1.daughter(0).p4().Rapidity(), Z1.daughter(0).p4().Phi());
+      double deltaRJet2Lep4 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z1.daughter(1).p4().Rapidity(), Z1.daughter(1).p4().Phi());
 
-	theHistograms.fill("Matched_DR_J1L1", "Matched_DR_J1L1", 100, 0, 8, deltaRJet1Lep1, theWeight);
-	theHistograms.fill("Matched_DR_J1L2", "Matched_DR_J1L2", 100, 0, 8, deltaRJet1Lep2, theWeight);
-	theHistograms.fill("Matched_DR_J1L3", "Matched_DR_J1L3", 100, 0, 8, deltaRJet1Lep3, theWeight);
-	theHistograms.fill("Matched_DR_J1L4", "Matched_DR_J1L4", 100, 0, 8, deltaRJet1Lep4, theWeight);
-	theHistograms.fill("Matched_DR_J2L1", "Matched_DR_J2L1", 100, 0, 8, deltaRJet2Lep1, theWeight);
-	theHistograms.fill("Matched_DR_J2L2", "Matched_DR_J2L2", 100, 0, 8, deltaRJet2Lep2, theWeight);
-	theHistograms.fill("Matched_DR_J2L3", "Matched_DR_J2L3", 100, 0, 8, deltaRJet2Lep3, theWeight);
-	theHistograms.fill("Matched_DR_J2L4", "Matched_DR_J2L4", 100, 0, 8, deltaRJet2Lep4, theWeight);
+      theHistograms.fill("Matched_DR_J1L1", "Matched_DR_J1L1", 100, 0, 8, deltaRJet1Lep1, theWeight);
+      theHistograms.fill("Matched_DR_J1L2", "Matched_DR_J1L2", 100, 0, 8, deltaRJet1Lep2, theWeight);
+      theHistograms.fill("Matched_DR_J1L3", "Matched_DR_J1L3", 100, 0, 8, deltaRJet1Lep3, theWeight);
+      theHistograms.fill("Matched_DR_J1L4", "Matched_DR_J1L4", 100, 0, 8, deltaRJet1Lep4, theWeight);
+      theHistograms.fill("Matched_DR_J2L1", "Matched_DR_J2L1", 100, 0, 8, deltaRJet2Lep1, theWeight);
+      theHistograms.fill("Matched_DR_J2L2", "Matched_DR_J2L2", 100, 0, 8, deltaRJet2Lep2, theWeight);
+      theHistograms.fill("Matched_DR_J2L3", "Matched_DR_J2L3", 100, 0, 8, deltaRJet2Lep3, theWeight);
+      theHistograms.fill("Matched_DR_J2L4", "Matched_DR_J2L4", 100, 0, 8, deltaRJet2Lep4, theWeight);
       
-      }
-
-      else {
-
-	cout << "\nNOT A GENERATED SIGNAL EVENT" << endl;
-	return;
-      }
-
     }
-  
+
     else {
+
       cout << "\nNOT A GENERATED SIGNAL EVENT" << endl;
       return;
     }
 
   }
+  
+  else {
+    cout << "\nNOT A GENERATED SIGNAL EVENT" << endl;
+    return;
+  }
+
+}
 
 
 
