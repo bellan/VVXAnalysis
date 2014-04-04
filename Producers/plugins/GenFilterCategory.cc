@@ -63,7 +63,7 @@ void GenFilterCategory::beginJob() {}
 bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) { 
 
   std::vector<phys::Particle> theGenZ, theGenW;
-  std::vector<phys::Particle> theGenl, theGenj, theGenq;
+  std::vector<phys::Particle> theGenl, theGenj;
   
   // Get the collection of gen particles
   edm::Handle<edm::View<reco::Candidate> > genParticles;
@@ -80,8 +80,6 @@ bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
       
       if ( (id < 7 || id == 21) && idx > 5 ) { theGenj.push_back(phys::convert(*p)); } // quarks and gluons
 
-      if ( id < 7  && idx > 5 )              { theGenq.push_back(phys::convert(*p)); } // quarks
-      
       else if ( id == 23 )                   { theGenZ.push_back(phys::convert(*p)); } // Z
    
       else if ( id == 24 )                   { theGenW.push_back(phys::convert(*p)); } // W 
