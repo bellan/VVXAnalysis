@@ -99,14 +99,14 @@ void Macro6f() {
   my8->Add(m6f_4,1);
   my9 = (TH1F*)my8->Clone();
   my9->Add(m6f_9,1);
-
+  
   c->cd(0);
- 
+  c->SetLogy();
   my1->SetFillColor(kGreen);
   my2->SetFillColor(kRed);  
   my3->SetFillColor(kBlue);
   my4->SetFillColor(kPink);
-  my5->SetFillColor(kBlack);
+  my5->SetFillColor(kBlack)
   my6->SetFillColor(kYellow);
   my7->SetFillColor(kAzure);
   my8->SetFillColor(kViolet);
@@ -114,7 +114,8 @@ void Macro6f() {
   m6f_sign->SetLineColor(kBlack);
 
   my9->SetTitle("Mass 6 fermions");
-  my9->SetMaximum(100.);
+  my9->SetMaximum(1000.);
+  my9->Rebin(2);
   my9->Draw();
   my8->Draw("same");
   my7->Draw("same");
