@@ -76,11 +76,11 @@ Int_t ZZWAnalyzer::cut() {
 
     for(int i = 0; i <=1; ++i) {
       if ( myZ0.daughter(0).charge() != myZ1.daughter(i).charge() ) {
-	if ( (myZ0.daughter(0).p4() + myZ1.daughter(i).p4()).M() < 4 || (myZ0.daughter(1).p4() + myZ1.daughter((i+1)%2).p4()).M() < 4 ) passllLowMass = false;
+	if ( (myZ0.daughter(0).p4() + myZ1.daughter(i).p4()).M() < 4 || (myZ0.daughter(1).p4() + myZ1.daughter((i+1)%2).p4()).M() < 4 ) passLowMass = false;
       }
     }
   
-    if (passllLowMass == false) return -1;
+    if (passLowMass == false)  return -1;
   
   }
   
