@@ -25,7 +25,7 @@ void Macro6f() {
   
  
   TFile* QED6_S = new TFile("QED6_SIGNAL.root");
-  TFile* QED6_B = new TFile("QED6_BACKGR.root");
+  TFile* QED6_B = new TFile("QED6_SINGLEBACKGR.root");
   
   TCanvas* c =  new TCanvas("Mass 6 fermions","Mass 6 fermions", 900, 700);
   c->Divide(2,1);
@@ -106,7 +106,7 @@ void Macro6f() {
   my2->SetFillColor(kRed);  
   my3->SetFillColor(kBlue);
   my4->SetFillColor(kPink);
-  my5->SetFillColor(kBlack)
+  my5->SetFillColor(kBlack);
   my6->SetFillColor(kYellow);
   my7->SetFillColor(kAzure);
   my8->SetFillColor(kViolet);
