@@ -301,7 +301,7 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
       
     bool passEtaAccLep = true;
       
-    for(int i=0; i<4; ++i) passEtaAccLep = passEtaAccLep && fabs(theGenl[i].eta()) < 2.5;       
+    // for(int i=0; i<4; ++i) passEtaAccLep = passEtaAccLep && fabs(theGenl[i].eta()) < 2.5;       
  
     // eta cut for all leptons
     
