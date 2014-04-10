@@ -319,42 +319,42 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
 
 	  // ---------- ZZZ ---------- 
 
-	  if ( has3Z )                                categoryNum = 1;
+	  if ( has3Z )                                   categoryNum = 1;
 	  
 	  // ---------- ZZWloose ----------
 
-	  else if ( !has3Z && isWloose )              categoryNum = 2;
+	  else if ( !has3Z && isWloose )                 categoryNum = 2;
 	  
 	  // ---------- ZZZloose ----------
 
-	  else if ( !has3Z && !isWloose && isZloose ) categoryNum = 3;
+	  else if ( !has3Z && !isWloose && isZloose )    categoryNum = 3;
 	  
 	  // ---------- ZZ+X ----------
 
-	  else                                        categoryNum = 4;
+	  else                                           categoryNum = 4;
 	}
 
 	else {
 	  
 	  // ---------- WZ+X ----------
 
-	  if ( isWtight )                             categoryNum = 5;
+	  if ( isWtight )                                categoryNum = 5;
 	  	  
 	  // ---------- ZZjj+X ----------
 	  
-	  else if ( has3Z )                           categoryNum = 6;
+	  else if ( isZtight )                           categoryNum = 6;
 	  
 	  // ---------- ZWloose+X ----------
 	  
-	  else if ( !isWtight && !has3Z && isWloose ) categoryNum = 7;
+	  else if ( !isWtight && !isZtight && isWloose ) categoryNum = 7;
 	  	  
 	  // ---------- ZZjj+X ----------
 
-	  else if ( !has3Z && !isWloose && isZloose ) categoryNum = 8;
+	  else if ( !isZtight && !isWloose && isZloose ) categoryNum = 8;
 	  
 	  // ---------- Z+X+Y----------
 
-	  else              	                      categoryNum = 9;
+	  else              	                         categoryNum = 9;
   	}		
       }      
     }

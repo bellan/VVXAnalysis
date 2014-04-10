@@ -14,6 +14,7 @@
 #include <DataFormats/HepMCCandidate/interface/GenParticle.h>
 #include <Calibration/IsolatedParticles/plugins/IsolatedGenParticles.h>
 #include <FWCore/Utilities/interface/InputTag.h>
+#include <FWCore/ServiceRegistry/interface/Service.h>
 
 #include <TH1F.h>
 #include <TH2F.h>
@@ -23,6 +24,7 @@
 #include <iterator>
 #include <string>
 #include <cmath>
+#include <tuple> 
 
 #include "H6f.h"
 #include "Hbos.h"
@@ -30,195 +32,170 @@
 
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
+#include "VVXAnalysis/Commons/interface/PhysTools.h"
 
 using namespace std;
 using namespace edm;
 using namespace reco;
+
+#include <boost/foreach.hpp>
+#define foreach BOOST_FOREACH
 
 
 
 class ZZWGenAnalyzer: public edm::EDAnalyzer {
 
 public:
-  ZZWGenAnalyzer(const ParameterSet& pset):categoryLabel_(pset.getParameter<edm::InputTag>("Category"))  {}
+  ZZWGenAnalyzer(const ParameterSet& pset)
+    : signalDefinition_(pset.getUntrackedParameter<int>("SignalDefinition",3))
+    , categoryLabel_(pset.getParameter<edm::InputTag>("Category")) {}
+					 
+ 
 
- void analyze(const edm::Event & event, const edm::EventSetup& eventSetup);
+  void analyze(const edm::Event & event, const edm::EventSetup& eventSetup);
   
   virtual void beginJob();
   virtual void endJob(){}
 
 private:
-
+  int signalDefinition_;
   edm::InputTag categoryLabel_;
 
+  H6f*  hAll;
   Hbos* hBosons;
-  Hbos* hBosonsCut;
   TH1F* all6fMass;
   TH1F* all4lMass;
-  TH1F* all6fMassCut;  
   TH1F* notEv;
   TH1F* lostEvEtaRange;
+  TH1I* categoryCheck;
 };
 
 void ZZWGenAnalyzer::beginJob() {
 
+  hAll       = new H6f("All");
   hBosons    = new Hbos("Bosons");
-  hBosonsCut = new Hbos("BosonsCut");
 
   edm::Service<TFileService> fileService;
   all6fMass       = fileService->make<TH1F>("all6fMass", "all6fMass", 300, 0., 3000.);
   all4lMass       = fileService->make<TH1F>("all4lMass", "all4lMass", 300, 0., 3000.);
-  all6fMassCut    = fileService->make<TH1F>("all6fMassCut", "all6fMassCut", 300, 0., 3000.);
   notEv           = fileService->make<TH1F>("notEv", "notEv", 3, 0., 3.);
   lostEvEtaRange  = fileService->make<TH1F>("lostEvEtaRange", "lostEvEtaRange", 3, 0., 3.);
+  categoryCheck   = fileService->make<TH1I>("categoryCheck", "categoryCheck", 10, 0, 10);
 }
 
 void ZZWGenAnalyzer::analyze(const Event & event, const EventSetup& eventSetup) { 
   
   typedef Candidate::LorentzVector LorentzVector;
   
-  std::vector<const reco::Candidate *> theGenZ;
-  std::vector<const reco::Candidate *> theGenW;
-  std::vector<const reco::Candidate *> theGenl;
-  std::vector<const reco::Candidate *> theGenlp;
-  std::vector<const reco::Candidate *> theGenlm;
-  std::vector<const reco::Candidate *> theGenj;
-  std::vector<const reco::Candidate *> theGenq;
+  std::vector<phys::Particle> theGenZ;
+  std::vector<phys::Particle> theGenW;
+  std::vector<phys::Particle> theGenl;
+  std::vector<phys::Particle> theGenlp;
+  std::vector<phys::Particle> theGenlm;
+  std::vector<phys::Particle> theGenj;
+  std::vector<phys::Particle> theGenq;
 
-  int numMu = 0;
-  int numE  = 0;
-  
+ 
   edm::Handle<int> category;
   event.getByLabel(categoryLabel_, category);
-
-  edm::Handle<edm::View<reco::Candidate> > genParticles;
-  event.getByLabel("genParticles", genParticles);
   
-
+  edm::Handle<edm::View<reco::Candidate> > genParticles;
+  event.getByLabel("genParticles", genParticles);  
+  
   //------------------ loop over genparticles ---------------------------------------------------------
-  for (View<Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) {
+  for (View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) {
     
     if (p->status()==3) {                      // Status 3 particles are the generated ones.
       
-      int s_id = p->pdgId();
-      int id   = abs(s_id);
+      int id   = abs(p->pdgId());
       int idx  = std::distance(genParticles->begin(),p);     
       
-      bool printIt=true;
-      if ( (id < 8 || id == 9) && idx > 5 ) {   // quarks and gluons
-	theGenj.push_back(&*p);
-      } 
-      if ( id < 8 && idx > 5 ) {               // quarks
-	theGenq.push_back(&*p);
-      } else if ( id==23 ) {                   // Z
-	theGenZ.push_back(&*p);
-      } else if ( id==24 ) {                   // W
-	theGenW.push_back(&*p);
-      } else if ( id >= 11 && id <= 16 ) {     // leptons 
-	numE  = id == 11 ? numE+1  : numE;
-	numMu = id == 13 ? numMu+1 : numMu;
-	theGenl.push_back(&*p);
-	if(s_id>0) {theGenlp.push_back(&*p);
-	} else {theGenlm.push_back(&*p);}
-      }
-
- else {
-	printIt=false;
-      }
-      if (printIt) {
-	cout << "ZZWGenAnalyzer: idx= "  <<  idx << " \tid= " << p->pdgId() << "\tp4= " << p->p4() <<  endl; 
-      }
-    }    
-  }   
-  //------------------ end of loop over genparticles --------------------------------------------------
+      
+      if ( (id < 7 || id == 21) && idx > 5 ) { theGenj.push_back(phys::convert(*p)); } // quarks and gluons
+      
+      if ( id < 7  && idx > 5 )              { theGenq.push_back(phys::convert(*p)); } // quarks
+      
+      else if ( id == 23 )                   { theGenZ.push_back(phys::convert(*p)); } // Z
+      
+      else if ( id == 24 )                   { theGenW.push_back(phys::convert(*p)); } // W 
+      
+      else if ( id >= 11 && id <= 16 )       { theGenl.push_back(phys::convert(*p)); }// leptons        
+    }
+  } //------------------ end of loop over genparticles --------------------------------------------------
   
-  int leptonCode = 0;
-  if( numMu == 2 && numE == 2 ) leptonCode = 2;
-  if( (numMu == 4 && numE == 0) || (numMu == 0 && numE == 4) ) leptonCode = 4; 
- 
-  //selection of EVENTS; 2jets, 4leptons
-  if ( theGenq.size()!=2 || theGenl.size()!=4 ) {  
-    cout << "WARNING: ZZWGenAnalyzer: " << "\tNumber of jets= " << theGenq.size() << "\tNumber of leptons= "  <<  theGenl.size() << endl;
+  if ( theGenq.size()!=2 || theGenl.size()!=4 ) {
+    cout << "WARNING: ZZWGenAnalyzer: " << "\tNumber of jets= " << theGenq.size() << "\tNumber of leptons= " << theGenl.size() << endl;
     notEv->Fill(1);
   } 
+  
+  else {
 
-  else if ( theGenq.size() == 2 && theGenl.size() == 4 && (leptonCode == 2 || leptonCode == 4) ) {
-      
-    const float mZ = 91.19;
-    
-    const Candidate* j0 = theGenq[0];
-    const Candidate* j1 = theGenq[1];
-    
-    if (theGenq[0]->p4().pt() < theGenq[1]->p4().pt()) {
+    phys::Particle j0 = theGenq[0];
+    phys::Particle j1 = theGenq[1];
+   
+    if (theGenq[0].pt() < theGenq[1].pt()) {
       j0 = theGenq[1];  
       j1 = theGenq[0];  
-    }   
+    }
+    
    
- 
-    phys::Boson<phys::Particle> Z0;
-    phys::Boson<phys::Particle> Z1;
-    phys::Boson<phys::Particle> V ;
+    zzw::GenTopology zzwGenTopology = zzw::getGenTopology(signalDefinition_, theGenl, theGenj, theGenZ, theGenW);
 
-    bool passPtAccLep  = true;
-    LorentzVector p_4l(0.,0.,0.,0.);  
-    LorentzVector p_6f(0.,0.,0.,0.);
+  
+
+    phys::Boson<phys::Particle> Z0  = std::get<1>(zzwGenTopology);
+    phys::Boson<phys::Particle> Z1  = std::get<2>(zzwGenTopology);
+    phys::Boson<phys::Particle> Zjj = std::get<3>(zzwGenTopology);
+    phys::Boson<phys::Particle> W   = std::get<4>(zzwGenTopology);
+
+  
+    TLorentzVector p_4l;//(0.,0.,0.,0.);  
+    TLorentzVector p_6f;//(0.,0.,0.,0.);
     
     for(int i=0; i<4; ++i) {
-      p_4l += theGenl[i]->p4();
-      passPtAccLep  = passPtAccLep  && (theGenl[i]->p4()).pt() > 7.;
+      p_4l += theGenl[i].p4();
     }  
-    p_6f = p_4l + j0->p4() + j1->p4(); 
+    p_6f = p_4l + j0.p4() + j1.p4(); 
     
-    float m_6f = p_6f.mass();
-    float m_4l = p_4l.mass();
-      
-    bool pass6fMass  = m_6f > 300.;
-    bool passPtCutJet = j0->p4().pt() > 40. && j1->p4().pt() > 25.;
-    
+    float m_6f = p_6f.M();
+    float m_4l = p_4l.M();
+     
     bool passEtaAccLep = true;
     
     for(int i=0; i<4; ++i) {
-      passEtaAccLep = passEtaAccLep && fabs(theGenl[i]->p4().eta()) < 2.5;
+      passEtaAccLep = passEtaAccLep && fabs(theGenl[i].p4().Eta()) < 2.5;
     }   
-      
+   
+
     //--------Eta Cut-------------------------
     
-    if ( passEtaAccLep ) {
+       if ( passEtaAccLep ) {
       
-      //==========================CATEGORY SELECTION=====================//
+      //==========================HISTOS FILLING=====================//
       
-      if ( *category == 0 ) {
+   
+      all6fMass->Fill(m_6f);
+      all4lMass->Fill(m_4l);
 	
-	std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > ZZ = zzw::makeZBosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
-	
-	Z0 = ZZ.first;
-	Z1 = ZZ.second;
-	
-	V.setDaughter(0,phys::Particle(j0->p4(),phys::Particle::computeCharge(j0->pdgId()), j0->pdgId()));
-	V.setDaughter(1,phys::Particle(j1->p4(),phys::Particle::computeCharge(j1->pdgId()), j1->pdgId()));
-	
-	all6fMass->Fill(m_6f);
-	all4lMass->Fill(m_4l);
-	hBosons->FillBos(Z0,Z1,V);
-	
-	//Cuts-----------------
-	if ( passPtAccLep && passPtCutJet && pass6fMass ) {
-	  all6fMassCut->Fill(p_6f.mass());
-	  hBosonsCut->FillBos(Z0,Z1,V);
-	} //-------------------  
-
-      } //==============================================================//
+      if(W.id() != 0) {
+	hAll->Fill(Z0,Z1,W);
+	hBosons->FillBos(Z0,Z1,W);
+	categoryCheck->Fill(*category);
+      } else if (Zjj.id() != 0) {
+	hAll->Fill(Z0,Z1,Zjj);
+	hBosons->FillBos(Z0,Z1,Zjj);
+	categoryCheck->Fill(*category);
+      }
     }
-    //--------------------------------------
+  
     
     else {
-	cout << "LOST_EVENT (out of leptons eta range): " << event.id().event() << endl;
-	lostEvEtaRange->Fill(1);
-      }  
-      
+      cout << "LOST_EVENT (out of leptons eta range): " << event.id().event() << endl;
+      lostEvEtaRange->Fill(1);
+    }  
+    
   }
 }
-
 
 #include "FWCore/Framework/interface/MakerMacros.h"
 DEFINE_FWK_MODULE(ZZWGenAnalyzer);
