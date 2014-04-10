@@ -28,7 +28,7 @@ if len(sys.argv) > 3: getExternalCrossSectionFromFile = sys.argv[3]
 
 cregion = 'baseline' # in case, make it a further external argument
 
-luminosity = 200000 #19029.853
+luminosity = 300000.0
 
 baseinputdir = 'samples'
 

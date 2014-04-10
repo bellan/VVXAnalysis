@@ -63,11 +63,27 @@ private:
 
   H6f*  hAll;
   Hbos* hBosons;
-  TH1F* all6fMass;
+  TH1F* all6fMass_0;
   TH1F* all4lMass;
+  TH1F* all6fMass_1;
+  TH1F* all6fMass_2;
+  TH1F* all6fMass_3;
+  TH1F* all6fMass_4;
+  TH1F* all6fMass_5;
+  TH1F* all6fMass_6;
+  TH1F* all6fMass_7;
+  TH1F* all6fMass_8;
+  TH1F* all6fMass_9;
+  TH1F* hl1_eta;
+  TH1F* hl2_eta;
+  TH1F* hl3_eta;
+  TH1F* hl4_eta;
+  TH1F* hj1_eta;
+  TH1F* hj2_eta;
+  
   TH1F* notEv;
   TH1F* lostEvEtaRange;
-  TH1I* categoryCheck;
+  //  TH1I* categoryCheck;
 };
 
 void ZZWGenAnalyzer::beginJob() {
@@ -76,11 +92,27 @@ void ZZWGenAnalyzer::beginJob() {
   hBosons    = new Hbos("Bosons");
 
   edm::Service<TFileService> fileService;
-  all6fMass       = fileService->make<TH1F>("all6fMass", "all6fMass", 300, 0., 3000.);
+  all6fMass_0       = fileService->make<TH1F>("all6fMass_0", "all6fMass_0", 300, 0., 3000.);
+  all6fMass_1       = fileService->make<TH1F>("all6fMass_1", "all6fMass_1", 300, 0., 3000.);
+  all6fMass_2       = fileService->make<TH1F>("all6fMass_2", "all6fMass_2", 300, 0., 3000.);
+  all6fMass_3       = fileService->make<TH1F>("all6fMass_3", "all6fMass_3", 300, 0., 3000.);
+  all6fMass_4       = fileService->make<TH1F>("all6fMass_4", "all6fMass_4", 300, 0., 3000.);
+  all6fMass_5       = fileService->make<TH1F>("all6fMass_5", "all6fMass_5", 300, 0., 3000.);
+  all6fMass_6       = fileService->make<TH1F>("all6fMass_6", "all6fMass_6", 300, 0., 3000.);
+  all6fMass_7       = fileService->make<TH1F>("all6fMass_7", "all6fMass_7", 300, 0., 3000.);
+  all6fMass_8       = fileService->make<TH1F>("all6fMass_8", "all6fMass_8", 300, 0., 3000.);
+  all6fMass_9       = fileService->make<TH1F>("all6fMass_9", "all6fMass_9", 300, 0., 3000.);
+  hl1_eta   = fileService->make<TH1F>("l1_eta", "l1_eta", 50, 0., 10.);
+  hl2_eta   = fileService->make<TH1F>("l2_eta", "l2_eta", 50, 0., 10.);
+  hl3_eta   = fileService->make<TH1F>("l3_eta", "l3_eta", 50, 0., 10.);
+  hl4_eta   = fileService->make<TH1F>("l4_eta", "l4_eta", 50, 0., 10.);
+  hj1_eta   = fileService->make<TH1F>("j1_eta", "j1_eta", 50, 0., 10.);
+  hj2_eta   = fileService->make<TH1F>("j2_eta", "j2_eta", 50, 0., 10.);
+
   all4lMass       = fileService->make<TH1F>("all4lMass", "all4lMass", 300, 0., 3000.);
   notEv           = fileService->make<TH1F>("notEv", "notEv", 3, 0., 3.);
   lostEvEtaRange  = fileService->make<TH1F>("lostEvEtaRange", "lostEvEtaRange", 3, 0., 3.);
-  categoryCheck   = fileService->make<TH1I>("categoryCheck", "categoryCheck", 10, 0, 10);
+  //  categoryCheck   = fileService->make<TH1I>("categoryCheck", "categoryCheck", 10, 0, 10);
 }
 
 void ZZWGenAnalyzer::analyze(const Event & event, const EventSetup& eventSetup) { 
@@ -166,37 +198,67 @@ void ZZWGenAnalyzer::analyze(const Event & event, const EventSetup& eventSetup) 
       passEtaAccLep = passEtaAccLep && fabs(theGenl[i].p4().Eta()) < 2.5;
     }   
    
+    float l1_eta = theGenl[0].p4().Eta();
+    float l2_eta = theGenl[1].p4().Eta();
+    float l3_eta = theGenl[2].p4().Eta();
+    float l4_eta = theGenl[3].p4().Eta();
+    float j1_eta = theGenj[0].p4().Eta();
+    float j2_eta = theGenj[1].p4().Eta();
+    
 
+    hl1_eta->Fill(l1_eta);
+    hl2_eta->Fill(l2_eta);
+    hl3_eta->Fill(l3_eta);
+    hl4_eta->Fill(l4_eta);
+    hj1_eta->Fill(j1_eta);
+    hj2_eta->Fill(j2_eta);
+ 
+ 
+ 
     //--------Eta Cut-------------------------
     
-       if ( passEtaAccLep ) {
+    //    if ( passEtaAccLep ) {
       
       //==========================HISTOS FILLING=====================//
       
-   
-      all6fMass->Fill(m_6f);
-      all4lMass->Fill(m_4l);
-	
-      if(W.id() != 0) {
-	hAll->Fill(Z0,Z1,W);
-	hBosons->FillBos(Z0,Z1,W);
-	categoryCheck->Fill(*category);
-      } else if (Zjj.id() != 0) {
-	hAll->Fill(Z0,Z1,Zjj);
-	hBosons->FillBos(Z0,Z1,Zjj);
-	categoryCheck->Fill(*category);
-      }
-    }
-  
-    
-    else {
-      cout << "LOST_EVENT (out of leptons eta range): " << event.id().event() << endl;
-      lostEvEtaRange->Fill(1);
-    }  
-    
+	 //	 if (*category == 0)   {
+	 //  all6fMass_0->Fill(m_6f);
+	 //   all4lMass->Fill(m_4l);
+	   if(W.id() != 0) {
+	     hAll->Fill(Z0,Z1,W);
+	     hBosons->FillBos(Z0,Z1,W);
+	     //	categoryCheck->Fill(*category);
+	   } else if (Zjj.id() != 0) {
+	     hAll->Fill(Z0,Z1,Zjj);
+	     hBosons->FillBos(Z0,Z1,Zjj);
+	     //	categoryCheck->Fill(*category);
+	   }
+	   //	 }
+	 //	 else {
+	   if (*category == 0)    all6fMass_0->Fill(m_6f);
+	   if (*category == 1)    all6fMass_1->Fill(m_6f);
+	   if (*category == 2)    all6fMass_2->Fill(m_6f);
+	   if (*category == 3)    all6fMass_3->Fill(m_6f);
+	   if (*category == 4)    all6fMass_4->Fill(m_6f);
+	   if (*category == 5)    all6fMass_5->Fill(m_6f);
+	   if (*category == 6)    all6fMass_6->Fill(m_6f);
+	   if (*category == 7)    all6fMass_7->Fill(m_6f);
+	   if (*category == 8)    all6fMass_8->Fill(m_6f);
+	   if (*category == 9)    all6fMass_9->Fill(m_6f);
+	   //	 }
+	 
+	 
+	   //     }
+       
+       
+     //   else {
+// 	 cout << "LOST_EVENT (out of leptons eta range): " << event.id().event() << endl;
+// 	 lostEvEtaRange->Fill(1);
+//     }  
+       
   }
+  
 }
-
 #include "FWCore/Framework/interface/MakerMacros.h"
 DEFINE_FWK_MODULE(ZZWGenAnalyzer);
 

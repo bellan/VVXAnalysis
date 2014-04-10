@@ -31,20 +31,20 @@ H6f:: H6f(TString name_) : name(name_) {
 
 
 H6f::H6f(TString name_, TFile* file) : name(name_) {
-  h6fMass  = (TH1F*) file->Get("genAnalyzer/"+ name+"_h6fMass");
-  h2l0Mass = (TH1F*) file->Get("genAnalyzer/"+ name+"_h2l0Mass");
-  h2l1Mass = (TH1F*) file->Get("genAnalyzer/"+ name+"_h2l1Mass");
-  hjjMass  = (TH1F*) file->Get("genAnalyzer/"+ name+"_hjjMass");
-  h4lMass  = (TH1F*) file->Get("genAnalyzer/"+ name+"_h4lMass");
-  h2l0Pt   = (TH1F*) file->Get("genAnalyzer/"+ name+"_h2l0Pt");
-  h2l1Pt   = (TH1F*) file->Get("genAnalyzer/"+ name+"_h2l1Pt");
-  hjjPt    = (TH1F*) file->Get("genAnalyzer/"+ name+"_hjjPt");
-  h4lPt_1  = (TH1F*) file->Get("genAnalyzer/"+ name+"_h4lPt_1");
-  h4lPt_2  = (TH1F*) file->Get("genAnalyzer/"+ name+"_h4lPt_2");
-  h4lPt_3  = (TH1F*) file->Get("genAnalyzer/"+ name+"_h4lPt_3");  
-  h4lPt_4  = (TH1F*) file->Get("genAnalyzer/"+ name+"_h4lPt_4");
-  hjPt_1   = (TH1F*) file->Get("genAnalyzer/"+ name+"_hjPt_1");
-  hjPt_2   = (TH1F*) file->Get("genAnalyzer/"+ name+"_hjPt_2");
+  h6fMass  = (TH1F*) file->Get(name+"_h6fMass");
+  h2l0Mass = (TH1F*) file->Get(name+"_h2l0Mass");
+  h2l1Mass = (TH1F*) file->Get(name+"_h2l1Mass");
+  hjjMass  = (TH1F*) file->Get(name+"_hjjMass");
+  h4lMass  = (TH1F*) file->Get(name+"_h4lMass");
+  h2l0Pt   = (TH1F*) file->Get(name+"_h2l0Pt");
+  h2l1Pt   = (TH1F*) file->Get(name+"_h2l1Pt");
+  hjjPt    = (TH1F*) file->Get(name+"_hjjPt");
+  h4lPt_1  = (TH1F*) file->Get(name+"_h4lPt_1");
+  h4lPt_2  = (TH1F*) file->Get(name+"_h4lPt_2");
+  h4lPt_3  = (TH1F*) file->Get(name+"_h4lPt_3");  
+  h4lPt_4  = (TH1F*) file->Get(name+"_h4lPt_4");
+  hjPt_1   = (TH1F*) file->Get(name+"_hjPt_1");
+  hjPt_2   = (TH1F*) file->Get(name+"_hjPt_2");
     
 }
 
