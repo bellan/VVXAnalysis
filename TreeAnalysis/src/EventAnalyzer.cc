@@ -145,7 +145,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   stable_sort(Wjj->begin(),       Wjj->end(),       PtComparator());
 
   theWeight = theMCInfo.weight();
-  if(genCategory == 0) theInputWeightedEvents += theWeight;
+  theInputWeightedEvents += theWeight;
 
   return e;
 }
@@ -198,7 +198,7 @@ void EventAnalyzer::loop(const std::string outputfile){
 
   end(fout);
   fout.Close();
-  cout<<"Events in input: " << Green(theInputWeightedEvents)<< endl;
+  //cout<<"Events in input: " << Green(theInputWeightedEvents)<< endl;
   cout<<"Events passing all cuts: "<< Green(theCutCounter) << endl;
 }
 
