@@ -45,7 +45,8 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
   , doBasicPlots_(doBasicPlots)
   , theMCInfo(filename, lumi, externalXSection)
   , theWeight(1.)
-  , theCutCounter(0.){
+  , theCutCounter(0.)
+  , theInputWeightedEvents(0.){
 
   TChain *tree = new TChain("treePlanter/ElderTree");
   tree->Add(filename.c_str());
@@ -144,6 +145,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   stable_sort(Wjj->begin(),       Wjj->end(),       PtComparator());
 
   theWeight = theMCInfo.weight();
+  if(genCategory == 0) theInputWeightedEvents += theWeight;
 
   return e;
 }
@@ -196,7 +198,8 @@ void EventAnalyzer::loop(const std::string outputfile){
 
   end(fout);
   fout.Close();
-  cout<<"Event passing all cuts: "<< Green(theCutCounter) << endl;
+  cout<<"Events in input: " << Green(theInputWeightedEvents)<< endl;
+  cout<<"Events passing all cuts: "<< Green(theCutCounter) << endl;
 }
 
 

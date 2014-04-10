@@ -64,7 +64,9 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
     tree->LoadTree(jentry); tree->GetEntry(jentry);
     
     if(genEvents_ != preSkimCounter_)
-      std::cout << Warning("WARNING! The number of skimmed events differ from the total generated events. Make sure you are properly weighting the events.") << std::endl;
+      std::cout << Warning("WARNING! The number of skimmed events differs from the total generated events. Make sure you are properly weighting the events.") 
+		<< " Generated events: " <<  genEvents_ << " Pre-skimmed events: " << preSkimCounter_ 
+		<< std::endl;
     
     totalAnEvents    += analyzedEvents_;
     totalGenEvents   += genEvents_;

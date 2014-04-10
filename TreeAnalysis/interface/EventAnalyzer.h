@@ -206,6 +206,7 @@ public:
   double theWeight;
   double theSampleWeight;
   double theCutCounter;
+  double theInputWeightedEvents;
 
   // Access to the branches
   Int_t    event    ; TBranch *b_event;
