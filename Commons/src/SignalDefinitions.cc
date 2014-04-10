@@ -301,15 +301,26 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
       
     bool passEtaAccLep = true;
       
-    // for(int i=0; i<4; ++i) passEtaAccLep = passEtaAccLep && fabs(theGenl[i].eta()) < 2.5;       
- 
+    //for(int i=0; i<4; ++i) passEtaAccLep = passEtaAccLep && fabs(theGenl[i].eta()) < 2.5;
+     
     // eta cut for all leptons
     
     if ( passEtaAccLep) {
 
       // ========== Signal: ZZW ==========
 
-      if ( isMySignal ) categoryNum = 0;
+      if ( isMySignal ){
+	//categoryNum = 0;
+	bool passZZacc = fabs(Z0.daughter(0).eta()) < 2.5 && fabs(Z0.daughter(1).eta()) < 2.5 &&
+	  fabs(Z1.daughter(0).eta()) < 2.5 && fabs(Z1.daughter(1).eta()) < 2.5;
+	
+	bool passWacc = fabs(W.daughter(0).eta()) < 2.5 && fabs(W.daughter(1).eta()) < 2.5 && 
+	  fabs(W.daughter(0).pt()) > 20 && fabs(W.daughter(1).pt()) > 20; 
+	
+	if(passZZacc && passWacc) categoryNum = 0;
+	//if(passZZacc) categoryNum = 101;
+	//if(passWacc) categoryNum = 102;
+      }
 
       // ========== Background ==========
 
