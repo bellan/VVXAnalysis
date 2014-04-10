@@ -21,8 +21,16 @@ Int_t ZZWAnalyzer::cut() {
  
   theHistograms.fill("Number of events", "Number of events", 10, 0, 10, 0, theWeight);  // 0: Number of total events ----------------------------------------------------------------------------------------
   theHistograms.fill("MET", "MET", 300, 0, 300, met->pt(), theWeight);
+  
+  theHistograms.fill("Selection", "Selection", 3, 0, 3, 0, theWeight);
 
+  //.......W request
 
+  bool passWsize =  Wjj->size() >= 1;    
+  
+  if (passWsize) theHistograms.fill("Selection", "Selection", 3, 0, 3, 2, theWeight);
+  
+  
   //.......Z0,Z1 definition
 
   bool passZsize = ( Zmm->size() + Zee->size() ) >= 2;               
@@ -64,7 +72,7 @@ Int_t ZZWAnalyzer::cut() {
       }   
     }  
 
-    if(passGhost == false); //return -1;
+    if(passGhost == false) return -1;
 
     for(int i = 0; i <=1; ++i) {
       if ( myZ0.daughter(0).charge() != myZ1.daughter(i).charge() ) {
@@ -72,18 +80,18 @@ Int_t ZZWAnalyzer::cut() {
       }
     }
   
-    if (passllLowMass == false);  //return -1;
+    if (passllLowMass == false) return -1;
   
   }
   
   bool Zdef = (passZsize && passGhost && passllLowMass);
-  if (Zdef) theHistograms.fill("Number of events", 10, 0, 10, 1, theWeight);     //  1: Events with at lest 2 well-defined Z bosons  -----------------------------------------------------------------------------------
+  if (Zdef) {
+    theHistograms.fill("Number of events", 10, 0, 10, 1, theWeight);     //  1: Events with at lest 2 well-defined Z bosons  -----------------------------------------------------------------------------------
+    theHistograms.fill("Selection", "Selection", 3, 0, 3, 1, theWeight);
+  }  
+ 
   
-
-  //.......W request
-
-  bool passWsize =  Wjj->size() >= 1;                 
-  
+ 
   bool pass = Zdef && passWsize;                    
   
   if(pass) {
@@ -125,13 +133,13 @@ Int_t ZZWAnalyzer::cut() {
     
     if ( count10 >= 2 && count20 == 1 ) passLeptonsPt = true;
     
-    if(passLeptonsPt == false); //return -1;
+    if(passLeptonsPt == false) return -1;
     
    
     theHistograms.fill("Number of events", 10, 0, 10, 3, theWeight);   
 
 
-    if ( met->pt() > 80 ); //return -1;        // 4: Events with 2 well-defined Z bosons, 1 well-defined W boson, 1lepton pt>10 and 1lepton pt >20, MET < 80--------------
+    if ( met->pt() > 80 ) return -1;        // 4: Events with 2 well-defined Z bosons, 1 well-defined W boson, 1lepton pt>10 and 1lepton pt >20, MET < 80--------------
 
     theHistograms.fill("Number of events", 10, 0, 10, 4, theWeight);  
 
@@ -154,7 +162,7 @@ Int_t ZZWAnalyzer::cut() {
 
     if ( p_6f.M() < 300 ) return -1;         // 5: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing, massll > 4 GeV, 1lepton pt>10 and 1lepton pt >20, MET < 80, m6f>300GeV--------------
 
-       theHistograms.fill("Number of events", 10, 0, 10, 5, theWeight);  
+    theHistograms.fill("Number of events", 10, 0, 10, 5, theWeight);  
 
 
     double ptj1 = max(p_myj1.Pt(), p_myj2.Pt());
@@ -214,6 +222,7 @@ Int_t ZZWAnalyzer::cut() {
     theHistograms.fill("j2_Pt"   , "j2_Pt"   , 300, 0, 300, ptj2      , theWeight);
 
     theHistograms.fill("TotalPt", "TotalPt", 100, 0, 50, (p_myZ0 + p_myZ1 + p_myW).Pt(), theWeight);
+
       
     //----------Fermions Masses--------
           
