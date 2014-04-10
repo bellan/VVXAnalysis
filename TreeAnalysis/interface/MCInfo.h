@@ -9,8 +9,10 @@ class MCInfo {
   MCInfo(const std::string &filename="", const double & lumi = -1, const double& externalXSection = -1.);
   ~MCInfo(){}
 
-  int genEvents()               const {return genEvents_;}
-  int analyzedEvents()          const {return analyzedEvents_;}
+  int    genEvents()              const {return genEvents_;}
+  int    analyzedEvents()         const {return analyzedEvents_;}
+  double analyzedEventsWeighted() const {return sumpumcprocweight_ * sampleWeight();}
+
   double internalCrossSection() const {return internalCrossSection_;}
   double externalCrossSection() const {return externalCrossSection_;}
   double crossSection()         const {return *crossSection_;}
@@ -29,6 +31,7 @@ class MCInfo {
   double *crossSection_;
   int    genEvents_;
   int    analyzedEvents_;
+
 
   // Pure sample weight (from cross section and number of analyzed events)
   double sampleWeight_;
