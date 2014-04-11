@@ -128,79 +128,82 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
 
   phys::Boson<phys::Particle> Z0, Z1, Z2, W;
 
-  if ( theGenq.size() >= 2  && (leptonCode == 2 || leptonCode == 4) ) {
+  if ( leptonCode == 2 || leptonCode == 4) {
 
     bool isWloose  = false, isZloose  = false, isWtight  = false, isZtight  = false;
 
     phys::Particle q0, q1;
     int bosonId = -99;
 
-    QuarkPairsFeatures quarkPairsFeatures;
+    if(theGenq.size() >= 2) {
+      QuarkPairsFeatures quarkPairsFeatures;
     
-    for(uint i = 0;  i < theGenq.size()-1; ++i) for(uint j = i+1;  j < theGenq.size(); ++j)
-      quarkPairsFeatures.push_back(std::make_tuple(i, j, makeVBosonsFromIds(theGenq[i].id(), theGenq[j].id()), (theGenq[i].p4() + theGenq[j].p4()).M()));
+      for(uint i = 0;  i < theGenq.size()-1; ++i) for(uint j = i+1;  j < theGenq.size(); ++j)
+	quarkPairsFeatures.push_back(std::make_tuple(i, j, makeVBosonsFromIds(theGenq[i].id(), theGenq[j].id()), (theGenq[i].p4() + theGenq[j].p4()).M()));
       
-    // ----- Search for a true W in the event -----
-    std::stable_sort(quarkPairsFeatures.begin(), quarkPairsFeatures.end(), MassComparator(24, MW));
-    QuarkPairFeatures bestQuarkPair = quarkPairsFeatures.front();
-    if(abs(std::get<2>(bestQuarkPair)) == 24 and fabs(std::get<3>(bestQuarkPair) - MW) < 10){
-      q0 = theGenq[std::get<0>(bestQuarkPair)];
-      q1 = theGenq[std::get<1>(bestQuarkPair)];
-      if ( q0.pt() < q1.pt() ) { q0 = theGenq[std::get<1>(bestQuarkPair)];  q1 = theGenq[std::get<0>(bestQuarkPair)]; }
-      bosonId =  std::get<2>(bestQuarkPair);
-      isWtight = true;
-    }
-    // --------------------------------------------
-
-    // ----- Search for a true Z in the event -----
-    if(!isWtight){
-      std::stable_sort(quarkPairsFeatures.begin(), quarkPairsFeatures.end(), MassComparator(23, MZ));
+      // ----- Search for a true W in the event -----
+      std::stable_sort(quarkPairsFeatures.begin(), quarkPairsFeatures.end(), MassComparator(24, MW));
       QuarkPairFeatures bestQuarkPair = quarkPairsFeatures.front();
-      if(abs(std::get<2>(bestQuarkPair)) == 23 and fabs(std::get<3>(bestQuarkPair) - MZ) < 10){
+      if(abs(std::get<2>(bestQuarkPair)) == 24 and fabs(std::get<3>(bestQuarkPair) - MW) < 10){
 	q0 = theGenq[std::get<0>(bestQuarkPair)];
 	q1 = theGenq[std::get<1>(bestQuarkPair)];
 	if ( q0.pt() < q1.pt() ) { q0 = theGenq[std::get<1>(bestQuarkPair)];  q1 = theGenq[std::get<0>(bestQuarkPair)]; }
 	bosonId =  std::get<2>(bestQuarkPair);
-	isZtight = true;
+	isWtight = true;
       }
-    }
-    // --------------------------------------------
-
-    // ---- Search for loose W/Z (i.e., not true boson, but rather combinations of partons that resemble a boson ----- 
-
-    if(!isWtight && !isZtight){
-      QuarkPairsFeatures jetPairsFeatures;
-      for(uint i = 0;  i < theGenj.size()-1; ++i) for(uint j = i+1;  j < theGenj.size(); ++j)
-	jetPairsFeatures.push_back(std::make_tuple(i, j, 0, (theGenj[i].p4() + theGenj[j].p4()).M()));
-
-      QuarkPairFeatures bestJetPairW;
-      std::stable_sort(jetPairsFeatures.begin(), jetPairsFeatures.end(), MassComparator(0, MW));
-      bestJetPairW = jetPairsFeatures.front();
+      // --------------------------------------------
       
-      QuarkPairFeatures bestJetPairZ;
-      std::stable_sort(jetPairsFeatures.begin(), jetPairsFeatures.end(), MassComparator(0, MZ));
-      bestJetPairZ = jetPairsFeatures.front();
-
-      if ( fabs(std::get<3>(bestJetPairZ) - MZ) < 10. ){
-	isZloose = true; 
-	bosonId = 123;
-	q0 = theGenj[std::get<0>(bestJetPairZ)];
-	q1 = theGenj[std::get<1>(bestJetPairZ)];
-	if ( q0.pt() < q1.pt() ) { q0 = theGenj[std::get<1>(bestJetPairZ)];  q1 = theGenj[std::get<0>(bestJetPairZ)]; }
+      // ----- Search for a true Z in the event -----
+      if(!isWtight){
+	std::stable_sort(quarkPairsFeatures.begin(), quarkPairsFeatures.end(), MassComparator(23, MZ));
+	QuarkPairFeatures bestQuarkPair = quarkPairsFeatures.front();
+	if(abs(std::get<2>(bestQuarkPair)) == 23 and fabs(std::get<3>(bestQuarkPair) - MZ) < 10){
+	  q0 = theGenq[std::get<0>(bestQuarkPair)];
+	  q1 = theGenq[std::get<1>(bestQuarkPair)];
+	  if ( q0.pt() < q1.pt() ) { q0 = theGenq[std::get<1>(bestQuarkPair)];  q1 = theGenq[std::get<0>(bestQuarkPair)]; }
+	  bosonId =  std::get<2>(bestQuarkPair);
+	  isZtight = true;
+	}
       }
-
-      // Give priority to W loose, accordingly with background categorization
-      if ( fabs(std::get<3>(bestJetPairW) - MW) < 10. ){
-	isWloose = true;
-	bosonId = 124;  
-	q0 = theGenj[std::get<0>(bestJetPairW)];
-	q1 = theGenj[std::get<1>(bestJetPairW)];
-	if ( q0.pt() < q1.pt() ) { q0 = theGenj[std::get<1>(bestJetPairW)];  q1 = theGenj[std::get<0>(bestJetPairW)]; }
-      }
-	
-    }
     // --------------------------------------------
+    }
 
+
+    if(theGenj.size() >= 2) {
+
+      // ---- Search for loose W/Z (i.e., not true boson, but rather combinations of partons that resemble a boson ----- 
+      if(!isWtight && !isZtight){
+	QuarkPairsFeatures jetPairsFeatures;
+	for(uint i = 0;  i < theGenj.size()-1; ++i) for(uint j = i+1;  j < theGenj.size(); ++j)
+	  jetPairsFeatures.push_back(std::make_tuple(i, j, 0, (theGenj[i].p4() + theGenj[j].p4()).M()));
+
+	QuarkPairFeatures bestJetPairW;
+	std::stable_sort(jetPairsFeatures.begin(), jetPairsFeatures.end(), MassComparator(0, MW));
+	bestJetPairW = jetPairsFeatures.front();
+      
+	QuarkPairFeatures bestJetPairZ;
+	std::stable_sort(jetPairsFeatures.begin(), jetPairsFeatures.end(), MassComparator(0, MZ));
+	bestJetPairZ = jetPairsFeatures.front();
+
+	if ( fabs(std::get<3>(bestJetPairZ) - MZ) < 10. ){
+	  isZloose = true; 
+	  bosonId = 123;
+	  q0 = theGenj[std::get<0>(bestJetPairZ)];
+	  q1 = theGenj[std::get<1>(bestJetPairZ)];
+	  if ( q0.pt() < q1.pt() ) { q0 = theGenj[std::get<1>(bestJetPairZ)];  q1 = theGenj[std::get<0>(bestJetPairZ)]; }
+	}
+
+	// Give priority to W loose, accordingly with background categorization
+	if ( fabs(std::get<3>(bestJetPairW) - MW) < 10. ){
+	  isWloose = true;
+	  bosonId = 124;  
+	  q0 = theGenj[std::get<0>(bestJetPairW)];
+	  q1 = theGenj[std::get<1>(bestJetPairW)];
+	  if ( q0.pt() < q1.pt() ) { q0 = theGenj[std::get<1>(bestJetPairW)];  q1 = theGenj[std::get<0>(bestJetPairW)]; }
+	}
+      }
+      // --------------------------------------------
+    }
     
     //--------------------1: MC history------------------------------------
     if ( signalDefinition==1 ) {              
@@ -272,22 +275,18 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
 
       Z0 = ZZ.first;
       Z1 = ZZ.second;
-
-      if ( Z0.p4().M() != 0 && Z1.p4().M() != 0 ) {
-
-	if (isWloose || isWtight) {    //definition of tight W (mass + cat)
-	  
-	  W.setDaughter(0, q0);
-	  W.setDaughter(1, q1);
-	  W.setId(bosonId);
-	  
-	} else if (isZloose || isZtight) {   //definition of tight Z (mass + cat)
-	  
-	  Z2.setDaughter(0, q0);
-	  Z2.setDaughter(1, q1);
-	  Z2.setId(bosonId);
-	  
-	}
+      
+      if (isWloose || isWtight) {    //definition of tight W (mass + cat)
+	
+	W.setDaughter(0, q0);
+	W.setDaughter(1, q1);
+	W.setId(bosonId);
+	
+      } else if (isZloose || isZtight) {   //definition of tight Z (mass + cat)
+	
+	Z2.setDaughter(0, q0);
+	Z2.setDaughter(1, q1);
+	Z2.setId(bosonId);
       }     
     } 
     
@@ -314,8 +313,8 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
 	//bool passZZacc = fabs(Z0.daughter(0).eta()) < 2.5 && fabs(Z0.daughter(1).eta()) < 2.5 &&
 	//  fabs(Z1.daughter(0).eta()) < 2.5 && fabs(Z1.daughter(1).eta()) < 2.5;
 	
-	//bool passWacc = fabs(W.daughter(0).eta()) < 2.5 && fabs(W.daughter(1).eta()) < 2.5 && 
-	//  fabs(W.daughter(0).pt()) > 20 && fabs(W.daughter(1).pt()) > 20; 
+	//	bool passWacc = fabs(W.daughter(0).eta()) < 2.5 && fabs(W.daughter(1).eta()) < 2.5 && 
+	//  (fabs(W.daughter(0).pt()) > 20 || fabs(W.daughter(1).pt()) > 20); 
 	
 	//if(passZZacc && passWacc) categoryNum = 0;
 	//if(passZZacc) categoryNum = 101;
