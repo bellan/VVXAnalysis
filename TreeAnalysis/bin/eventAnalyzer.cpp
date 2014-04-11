@@ -30,7 +30,7 @@ int main (int argc, char ** argv){
   EventAnalyzer *analysis = AnalysisFactory::get()->createAnalysis(analysisName,filename, lumi, externalXsec);
   analysis->loop(argv[3]);
 
-  cout<<"Output saved in --> "<<Green(argv[2])<<endl;
+  cout<<"Output saved in --> "<<Green(argv[3])<<endl;
   cout<<"\nAnalysis status: "<<OK("DONE")<<"\n"<<endl;
 
   return 0;
