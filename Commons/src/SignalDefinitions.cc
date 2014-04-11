@@ -310,14 +310,14 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
       // ========== Signal: ZZW ==========
 
       if ( isMySignal ){
-	//categoryNum = 0;
-	bool passZZacc = fabs(Z0.daughter(0).eta()) < 2.5 && fabs(Z0.daughter(1).eta()) < 2.5 &&
-	  fabs(Z1.daughter(0).eta()) < 2.5 && fabs(Z1.daughter(1).eta()) < 2.5;
+	categoryNum = 0;
+	//bool passZZacc = fabs(Z0.daughter(0).eta()) < 2.5 && fabs(Z0.daughter(1).eta()) < 2.5 &&
+	//  fabs(Z1.daughter(0).eta()) < 2.5 && fabs(Z1.daughter(1).eta()) < 2.5;
 	
-	bool passWacc = fabs(W.daughter(0).eta()) < 2.5 && fabs(W.daughter(1).eta()) < 2.5 && 
-	  fabs(W.daughter(0).pt()) > 20 && fabs(W.daughter(1).pt()) > 20; 
+	//bool passWacc = fabs(W.daughter(0).eta()) < 2.5 && fabs(W.daughter(1).eta()) < 2.5 && 
+	//  fabs(W.daughter(0).pt()) > 20 && fabs(W.daughter(1).pt()) > 20; 
 	
-	if(passZZacc && passWacc) categoryNum = 0;
+	//if(passZZacc && passWacc) categoryNum = 0;
 	//if(passZZacc) categoryNum = 101;
 	//if(passWacc) categoryNum = 102;
       }
