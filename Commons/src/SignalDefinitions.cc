@@ -378,67 +378,67 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
 
 
 
-// #include "VVXAnalysis/TreeAnalysis/interface/ZZSelector.h"
-// #include "VVXAnalysis/Commons/interface/Utilities.h"
-// #include "VVXAnalysis/Commons/interface/Comparators.h"
-// #include "VVXAnalysis/Commons/interface/Constants.h"
+#include "VVXAnalysis/TreeAnalysis/interface/ZZSelector.h"
+#include "VVXAnalysis/Commons/interface/Utilities.h"
+#include "VVXAnalysis/Commons/interface/Comparators.h"
+#include "VVXAnalysis/Commons/interface/Constants.h"
   
 
-// std::tuple<bool, Boson<Lepton>, Boson<Lepton> > zz::zz4l(const std::vector<phys::Boson<phys::Lepton> >  &Zmm,
-// 							 const std::vector<phys::Boson<phys::Electron> > &Zee){
+std::tuple<bool, phys::Boson<phys::Lepton>, phys::Boson<phys::Lepton> > zz::zz4l(const std::vector<phys::Boson<phys::Lepton> >  &Zmm,
+										 const std::vector<phys::Boson<phys::Electron> > &Zee){
 				   
-//   if(Zmm.size() + Zee.size() < 2) return std::make_tuple(false, phys::Boson<Lphys::epton>(), phys::Boson<phys::Lepton>());
+  if(Zmm.size() + Zee.size() < 2) return std::make_tuple(false, phys::Boson<phys::Lepton>(), phys::Boson<phys::Lepton>());
 
   
-//   std::vector<phys::Boson<Lphys::epton> > Zll; 
+  std::vector<phys::Boson<phys::Lepton> > Zll; 
   
-//   foreach(const phys::Boson<phys::Lepton>& z,   Zmm) Zll.push_back(z.clone<phys::Lepton>()); 
-//   foreach(const phys::Boson<phys::Electron>& z, Zee) Zll.push_back(z.clone<phys::Lepton>());
+  foreach(const phys::Boson<phys::Lepton>& z,   Zmm) Zll.push_back(z.clone<phys::Lepton>()); 
+  foreach(const phys::Boson<phys::Electron>& z, Zee) Zll.push_back(z.clone<phys::Lepton>());
   
-//   std::stable_sort(Zll.begin(), Zll.end(), phys::MassComparator(phys::phys::ZMASS));
-//   phys::Boson<phys::Lepton> Z0 = Zll.at(0);
+  std::stable_sort(Zll.begin(), Zll.end(), phys::MassComparator(phys::ZMASS));
+  phys::Boson<phys::Lepton> Z0 = Zll.at(0);
 
   
-//   // Search for the second Z, that must not be composed by the same daughters as the first Z.
-//   // Several options are here available, in case more than one Z1 is present:
-//   // I- most close to Z mass, II- largest Z pT, III- largest sum of Z daughters' pT. 
-//   phys::Boson<Lphys::epton> Z1;
+  // Search for the second Z, that must not be composed by the same daughters as the first Z.
+  // Several options are here available, in case more than one Z1 is present:
+  // I- most close to Z mass, II- largest Z pT, III- largest sum of Z daughters' pT. 
+  phys::Boson<phys::Lepton> Z1;
 
-//   foreach(const phys::Boson<phys::Lepton> &z, Zll){
+  foreach(const phys::Boson<phys::Lepton> &z, Zll){
     
-//     double DR00 = physmath::deltaR(Z0.daughter(0), z.daughter(0));
-//     double DR01 = physmath::deltaR(Z0.daughter(0), z.daughter(1));
-//     double DR10 = physmath::deltaR(Z0.daughter(1), z.daughter(0));
-//     double DR11 = physmath::deltaR(Z0.daughter(1), z.daughter(1));
+    double DR00 = physmath::deltaR(Z0.daughter(0), z.daughter(0));
+    double DR01 = physmath::deltaR(Z0.daughter(0), z.daughter(1));
+    double DR10 = physmath::deltaR(Z0.daughter(1), z.daughter(0));
+    double DR11 = physmath::deltaR(Z0.daughter(1), z.daughter(1));
     
-//     if (DR00 > 0.02 && DR01 > 0.02 && DR10 > 0.02 && DR11 > 0.02){
-//       Z1 = z;
-//       break;
-//     }
-//   }  
+    if (DR00 > 0.02 && DR01 > 0.02 && DR10 > 0.02 && DR11 > 0.02){
+      Z1 = z;
+      break;
+    }
+  }  
   
-//   if(Z1.id() == 0) return std::make_tuple(false, phys::Boson<phys::Lepton>(), phys::Boson<phys::Lepton>());
+  if(Z1.id() == 0) return std::make_tuple(false, phys::Boson<phys::Lepton>(), phys::Boson<phys::Lepton>());
   
-//   // Now check that the 4 leptons can pass the requirement to be on the trigger plateau
-//   int count10 = 0;
-//   int count20 = 0;
-//   for (int i = 0; i<=1; ++i) {
-//     if (Z0.daughter(i).pt() > 10 || Z1.daughter(i).pt() > 10) ++count10;
-//     if (Z0.daughter(i).pt() > 20 || Z1.daughter(i).pt() > 20) ++count20;
-//   }
+  // Now check that the 4 leptons can pass the requirement to be on the trigger plateau
+  int count10 = 0;
+  int count20 = 0;
+  for (int i = 0; i<=1; ++i) {
+    if (Z0.daughter(i).pt() > 10 || Z1.daughter(i).pt() > 10) ++count10;
+    if (Z0.daughter(i).pt() > 20 || Z1.daughter(i).pt() > 20) ++count20;
+  }
   
-//   if (count10 < 2 || count20 < 1 ) return std::make_tuple(false, phys::Boson<phys::Lepton>(), phys::Boson<phys::Lepton>());
+  if (count10 < 2 || count20 < 1 ) return std::make_tuple(false, phys::Boson<phys::Lepton>(), phys::Boson<phys::Lepton>());
    
-//   bool passllLowMass = true;
+  bool passllLowMass = true;
   
-//   for(int i = 0; i <=1; ++i) {
-//     if ( Z0.daughter(0).charge() != Z1.daughter(i).charge() ) {
-//       if ( (Z0.daughter(0).p4() + Z1.daughter(i).p4()).M() < 4 || (Z0.daughter(1).p4() + Z1.daughter((i+1)%2).p4()).M() < 4 ) passllLowMass = false;
-//     }
-//   }
+  for(int i = 0; i <=1; ++i) {
+    if ( Z0.daughter(0).charge() != Z1.daughter(i).charge() ) {
+      if ( (Z0.daughter(0).p4() + Z1.daughter(i).p4()).M() < 4 || (Z0.daughter(1).p4() + Z1.daughter((i+1)%2).p4()).M() < 4 ) passllLowMass = false;
+    }
+  }
   
-//   if(!passllLowMass) return std::make_tuple(false, phys::Boson<phys::Lepton>(), phys::Boson<phys::Lepton>());
+  if(!passllLowMass) return std::make_tuple(false, phys::Boson<phys::Lepton>(), phys::Boson<phys::Lepton>());
     
-//   return std::make_pair(true, Z0, Z1);
-// }
-// }
+  return std::make_tuple(true, Z0, Z1);
+}
+
