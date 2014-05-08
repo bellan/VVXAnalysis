@@ -1,7 +1,10 @@
 //-----------FUNCTION: definition of the two ZZ bosons from leptons-------
 
 #include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
-#include "VVXAnalysis/Commons/interface/PhysTools.h"
+//#include "VVXAnalysis/Commons/interface/PhysTools.h"
+#include "VVXAnalysis/Commons/interface/Comparators.h"
+#include "VVXAnalysis/Commons/interface/Constants.h"
+
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
@@ -9,42 +12,22 @@
 using std::cout;
 using std::endl;
 
-const float MZ = 91.19;
-const float MW = 80.39;
 
 typedef std::tuple<uint,uint,int,double> QuarkPairFeatures;
-typedef std::vector<QuarkPairFeatures>   QuarkPairsFeatures;
+typedef std::vector<QuarkPairFeatures> QuarkPairsFeatures;
 
-struct MassComparator{
-  MassComparator(int id, const double& ref): id_(id), ref_(ref){}
+// std::pair<phys::Boson<phys::Particle> ,phys::Boson<phys::Particle> > zzw::makeZBosonsFromLeptons(const std::vector<const reco::Candidate *>& lm, const std::vector<const reco::Candidate *>& lp, int leptonCode, float mZ){
+//   std::vector<phys::Particle> plm;
+//   std::vector<phys::Particle> plp;
+
+//   foreach(const reco::Candidate *gp, lm)
+//     plm.push_back(phys::convert(*gp));
   
-  bool operator()(const QuarkPairFeatures & a , 
-		  const QuarkPairFeatures & b) const{ 
-    if       (abs(std::get<2>(a)) == id_ && abs(std::get<2>(b)) != id_) return true;
-    else if  (abs(std::get<2>(a)) != id_ && abs(std::get<2>(b)) == id_) return false;
-    else if  (abs(std::get<2>(a)) == id_ && abs(std::get<2>(b)) == id_)
-      return fabs(std::get<3>(a) - ref_) < fabs(std::get<3>(b) - ref_); 
-    else    
-      return true;
-  }
-  
-  int id_;
-  double ref_;
-};
-
-
-std::pair<phys::Boson<phys::Particle> ,phys::Boson<phys::Particle> > zzw::makeZBosonsFromLeptons(const std::vector<const reco::Candidate *>& lm, const std::vector<const reco::Candidate *>& lp, int leptonCode, float mZ){
-  std::vector<phys::Particle> plm;
-  std::vector<phys::Particle> plp;
-
-  foreach(const reco::Candidate *gp, lm)
-    plm.push_back(phys::convert(*gp));
-  
-  foreach(const reco::Candidate *gp, lp)
-    plp.push_back(phys::convert(*gp));
+//   foreach(const reco::Candidate *gp, lp)
+//     plp.push_back(phys::convert(*gp));
    
-  return zzw::makeZBosonsFromLeptons(plm, plp, leptonCode, mZ);
-}
+//   return zzw::makeZBosonsFromLeptons(plm, plp, leptonCode, mZ);
+// }
   
   
 std::pair<phys::Boson<phys::Particle> ,phys::Boson<phys::Particle> > zzw::makeZBosonsFromLeptons(const std::vector<phys::Particle>& lm, const std::vector<phys::Particle>& lp, int leptonCode, float mZ){
@@ -142,9 +125,9 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
 	quarkPairsFeatures.push_back(std::make_tuple(i, j, makeVBosonsFromIds(theGenq[i].id(), theGenq[j].id()), (theGenq[i].p4() + theGenq[j].p4()).M()));
       
       // ----- Search for a true W in the event -----
-      std::stable_sort(quarkPairsFeatures.begin(), quarkPairsFeatures.end(), MassComparator(24, MW));
+      std::stable_sort(quarkPairsFeatures.begin(), quarkPairsFeatures.end(), phys::MassComparator(24, phys::WMASS));
       QuarkPairFeatures bestQuarkPair = quarkPairsFeatures.front();
-      if(abs(std::get<2>(bestQuarkPair)) == 24 and fabs(std::get<3>(bestQuarkPair) - MW) < 10){
+      if(abs(std::get<2>(bestQuarkPair)) == 24 and fabs(std::get<3>(bestQuarkPair) - phys::WMASS) < 10){
 	q0 = theGenq[std::get<0>(bestQuarkPair)];
 	q1 = theGenq[std::get<1>(bestQuarkPair)];
 	if ( q0.pt() < q1.pt() ) { q0 = theGenq[std::get<1>(bestQuarkPair)];  q1 = theGenq[std::get<0>(bestQuarkPair)]; }
@@ -155,9 +138,9 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
       
       // ----- Search for a true Z in the event -----
       if(!isWtight){
-	std::stable_sort(quarkPairsFeatures.begin(), quarkPairsFeatures.end(), MassComparator(23, MZ));
+	std::stable_sort(quarkPairsFeatures.begin(), quarkPairsFeatures.end(), phys::MassComparator(23, phys::ZMASS));
 	QuarkPairFeatures bestQuarkPair = quarkPairsFeatures.front();
-	if(abs(std::get<2>(bestQuarkPair)) == 23 and fabs(std::get<3>(bestQuarkPair) - MZ) < 10){
+	if(abs(std::get<2>(bestQuarkPair)) == 23 and fabs(std::get<3>(bestQuarkPair) - phys::ZMASS) < 10){
 	  q0 = theGenq[std::get<0>(bestQuarkPair)];
 	  q1 = theGenq[std::get<1>(bestQuarkPair)];
 	  if ( q0.pt() < q1.pt() ) { q0 = theGenq[std::get<1>(bestQuarkPair)];  q1 = theGenq[std::get<0>(bestQuarkPair)]; }
@@ -178,14 +161,14 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
 	  jetPairsFeatures.push_back(std::make_tuple(i, j, 0, (theGenj[i].p4() + theGenj[j].p4()).M()));
 
 	QuarkPairFeatures bestJetPairW;
-	std::stable_sort(jetPairsFeatures.begin(), jetPairsFeatures.end(), MassComparator(0, MW));
+	std::stable_sort(jetPairsFeatures.begin(), jetPairsFeatures.end(), phys::MassComparator(0, phys::WMASS));
 	bestJetPairW = jetPairsFeatures.front();
       
 	QuarkPairFeatures bestJetPairZ;
-	std::stable_sort(jetPairsFeatures.begin(), jetPairsFeatures.end(), MassComparator(0, MZ));
+	std::stable_sort(jetPairsFeatures.begin(), jetPairsFeatures.end(), phys::MassComparator(0, phys::ZMASS));
 	bestJetPairZ = jetPairsFeatures.front();
 
-	if ( fabs(std::get<3>(bestJetPairZ) - MZ) < 10. ){
+	if ( fabs(std::get<3>(bestJetPairZ) - phys::ZMASS) < 10. ){
 	  isZloose = true; 
 	  bosonId = 123;
 	  q0 = theGenj[std::get<0>(bestJetPairZ)];
@@ -194,7 +177,7 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
 	}
 
 	// Give priority to W loose, accordingly with background categorization
-	if ( fabs(std::get<3>(bestJetPairW) - MW) < 10. ){
+	if ( fabs(std::get<3>(bestJetPairW) - phys::WMASS) < 10. ){
 	  isWloose = true;
 	  bosonId = 124;  
 	  q0 = theGenj[std::get<0>(bestJetPairW)];
@@ -271,7 +254,7 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
    
     //-----------------3: Real signal, real pairing-----------------------
     else if ( signalDefinition==3 ) {         
-      std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > ZZ = makeZBosonsFromLeptons(theGenlm, theGenlp, leptonCode, MZ);
+      std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > ZZ = makeZBosonsFromLeptons(theGenlm, theGenlp, leptonCode, phys::ZMASS);
 
       Z0 = ZZ.first;
       Z1 = ZZ.second;
@@ -294,7 +277,7 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
 
     //=====================================================================================
 
-    bool hasZZ4l    = fabs(Z0.p4().M()-MZ) < 10. && fabs(Z1.p4().M()-MZ) < 10.;    
+    bool hasZZ4l    = fabs(Z0.p4().M()-phys::ZMASS) < 10. && fabs(Z1.p4().M()-phys::ZMASS) < 10.;    
     bool isMySignal = hasZZ4l && isWtight;
     bool has3Z      = hasZZ4l && isZtight;
       
@@ -391,4 +374,71 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
 //   }
 
   return std::make_tuple(categoryNum, Z0, Z1, Z2, W);
- }
+}
+
+
+
+// #include "VVXAnalysis/TreeAnalysis/interface/ZZSelector.h"
+// #include "VVXAnalysis/Commons/interface/Utilities.h"
+// #include "VVXAnalysis/Commons/interface/Comparators.h"
+// #include "VVXAnalysis/Commons/interface/Constants.h"
+  
+
+// std::tuple<bool, Boson<Lepton>, Boson<Lepton> > zz::zz4l(const std::vector<phys::Boson<phys::Lepton> >  &Zmm,
+// 							 const std::vector<phys::Boson<phys::Electron> > &Zee){
+				   
+//   if(Zmm.size() + Zee.size() < 2) return std::make_tuple(false, phys::Boson<Lphys::epton>(), phys::Boson<phys::Lepton>());
+
+  
+//   std::vector<phys::Boson<Lphys::epton> > Zll; 
+  
+//   foreach(const phys::Boson<phys::Lepton>& z,   Zmm) Zll.push_back(z.clone<phys::Lepton>()); 
+//   foreach(const phys::Boson<phys::Electron>& z, Zee) Zll.push_back(z.clone<phys::Lepton>());
+  
+//   std::stable_sort(Zll.begin(), Zll.end(), phys::MassComparator(phys::phys::ZMASS));
+//   phys::Boson<phys::Lepton> Z0 = Zll.at(0);
+
+  
+//   // Search for the second Z, that must not be composed by the same daughters as the first Z.
+//   // Several options are here available, in case more than one Z1 is present:
+//   // I- most close to Z mass, II- largest Z pT, III- largest sum of Z daughters' pT. 
+//   phys::Boson<Lphys::epton> Z1;
+
+//   foreach(const phys::Boson<phys::Lepton> &z, Zll){
+    
+//     double DR00 = physmath::deltaR(Z0.daughter(0), z.daughter(0));
+//     double DR01 = physmath::deltaR(Z0.daughter(0), z.daughter(1));
+//     double DR10 = physmath::deltaR(Z0.daughter(1), z.daughter(0));
+//     double DR11 = physmath::deltaR(Z0.daughter(1), z.daughter(1));
+    
+//     if (DR00 > 0.02 && DR01 > 0.02 && DR10 > 0.02 && DR11 > 0.02){
+//       Z1 = z;
+//       break;
+//     }
+//   }  
+  
+//   if(Z1.id() == 0) return std::make_tuple(false, phys::Boson<phys::Lepton>(), phys::Boson<phys::Lepton>());
+  
+//   // Now check that the 4 leptons can pass the requirement to be on the trigger plateau
+//   int count10 = 0;
+//   int count20 = 0;
+//   for (int i = 0; i<=1; ++i) {
+//     if (Z0.daughter(i).pt() > 10 || Z1.daughter(i).pt() > 10) ++count10;
+//     if (Z0.daughter(i).pt() > 20 || Z1.daughter(i).pt() > 20) ++count20;
+//   }
+  
+//   if (count10 < 2 || count20 < 1 ) return std::make_tuple(false, phys::Boson<phys::Lepton>(), phys::Boson<phys::Lepton>());
+   
+//   bool passllLowMass = true;
+  
+//   for(int i = 0; i <=1; ++i) {
+//     if ( Z0.daughter(0).charge() != Z1.daughter(i).charge() ) {
+//       if ( (Z0.daughter(0).p4() + Z1.daughter(i).p4()).M() < 4 || (Z0.daughter(1).p4() + Z1.daughter((i+1)%2).p4()).M() < 4 ) passllLowMass = false;
+//     }
+//   }
+  
+//   if(!passllLowMass) return std::make_tuple(false, phys::Boson<phys::Lepton>(), phys::Boson<phys::Lepton>());
+    
+//   return std::make_pair(true, Z0, Z1);
+// }
+// }

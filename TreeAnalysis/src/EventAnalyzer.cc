@@ -9,6 +9,8 @@
 
 #include "VVXAnalysis/TreeAnalysis/interface/EventAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/Colours.h"
+#include "VVXAnalysis/Commons/interface/Comparators.h"
+#include "VVXAnalysis/Commons/interface/Constants.h"
 
 #include <TChain.h>
 #include <TFile.h>
@@ -24,11 +26,6 @@ using std::cout;
 using std::endl;
 using std::flush;
 using namespace colour;
-
-
-const double EventAnalyzer::ZMASS = 91.19;
-const double EventAnalyzer::WMASS = 80.39;
-const double EventAnalyzer::HMASS = 125.6;
 
 
 // ------------------------------------------------------------------------------------------ //
@@ -127,9 +124,9 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   
   int e =  theTree->GetEntry(entry);
   
-  stable_sort(muons->begin(),     muons->end(),     PtComparator());
-  stable_sort(electrons->begin(), electrons->end(), PtComparator());
-  stable_sort(jets->begin(),      jets->end(),      PtComparator());
+  stable_sort(muons->begin(),     muons->end(),     phys::PtComparator());
+  stable_sort(electrons->begin(), electrons->end(), phys::PtComparator());
+  stable_sort(jets->begin(),      jets->end(),      phys::PtComparator());
 
   Zmm->clear(); Zee->clear(); Wjj->clear();
 
@@ -140,9 +137,9 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   foreach(const phys::Boson<phys::Jet> w, *WjjCand)
     if(select(w)) Wjj->push_back(w);
 
-  stable_sort(Zmm->begin(),       Zmm->end(),       PtComparator());
-  stable_sort(Zee->begin(),       Zee->end(),       PtComparator());
-  stable_sort(Wjj->begin(),       Wjj->end(),       PtComparator());
+  stable_sort(Zmm->begin(), Zmm->end(), phys::PtComparator());
+  stable_sort(Zee->begin(), Zee->end(), phys::PtComparator());
+  stable_sort(Wjj->begin(), Wjj->end(), phys::PtComparator());
 
   theWeight = theMCInfo.weight();
   theInputWeightedEvents += theWeight;
@@ -184,9 +181,9 @@ void EventAnalyzer::loop(const std::string outputfile){
     nb = GetEntry(jentry);  nbytes += nb; 
 
     if (cut() < 0) continue;
+    theCutCounter += theWeight;
 
     theHistograms.fill("weight",100, 0, 200, theWeight);
-
 
     if(doBasicPlots_) fillBasicPlots();
     analyze();
@@ -212,8 +209,6 @@ void EventAnalyzer::loop(const std::string outputfile){
 Int_t EventAnalyzer::cut() {
   
   bool pass = true;
-  
-  if(pass) theCutCounter += theWeight;
   
   return pass ? 1 : -1;
 }

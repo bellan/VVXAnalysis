@@ -52,8 +52,6 @@ class EventAnalyzer {
 public:
   
   enum METType {Std,NoMu,NoEl};
-  typedef std::pair<const phys::Particle*, phys::Boson<phys::Lepton> > ZParticlePair;
-  typedef std::pair<const phys::Particle*, phys::Boson<phys::Jet> >    WParticlePair;
 
   EventAnalyzer(SelectorBase& aSelector, std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = true);
 
@@ -94,74 +92,9 @@ public:
     
     return DPhi;   
   }
-  
-
-
-  struct PtComparator{
-    template<typename LEP>
-    bool operator()( const LEP & a , 
-		     const LEP & b) const{ 
-      return a.p4().Pt() > b.p4().Pt(); 
-    }
-  };
-
- struct WPtComparator{
-    bool operator()( const phys::Boson<phys::Jet> & w1 ,
-		     const phys::Boson<phys::Jet> & w2) const{
-      return w1.pt() > w2.pt();
-    }
-  };
-
- struct WJetPtComparator{
-    bool operator()( const phys::Boson<phys::Jet> & w1 ,
-		     const phys::Boson<phys::Jet> & w2) const{
-      double w1pt1 = w1.daughter(0).pt();
-      double w1pt2 = w1.daughter(1).pt();
-      if (w1pt2>w1pt1) std::swap(w1pt1,w1pt2);
-      double w2pt1 = w2.daughter(0).pt();
-      double w2pt2 = w2.daughter(1).pt();
-      if (w2pt2>w2pt1) std::swap(w2pt1,w2pt2);
-
-      if (w1pt2==w2pt2) {
-	return w1pt1>w2pt1;
-      } else return (w1pt2>w2pt2);
-    }
-  };
-
-
-  
-  struct MassComparator{
-    MassComparator(const double& ref): ref_(ref){}
-    template<typename PAR>
-    bool operator()(const PAR & a , 
-		    const PAR & b) const{ 
-      return fabs(a.p4().M()-ref_) < fabs(b.p4().M()-ref_); 
-    }
-    template<typename PAR>
-    bool operator()(const PAR * a , 
-		    const PAR * b) const{ 
-      return fabs(a->p4().M()-ref_) < fabs(b->p4().M()-ref_); 
-    }
-
-    double ref_;
-  };
- 
+    
   // Class for specific selections
   SelectorBase& select;
-
-  struct ZdeltaRComparator{
-    bool operator()(const ZParticlePair & a ,
-                    const ZParticlePair & b) const{
-      return deltaR(a.first->p4().Rapidity(), a.first->p4().Phi(), a.second.p4().Rapidity(), a.second.p4().Phi()) < deltaR(b.first->p4().Rapidity(), b.first->p4().Phi(), b.second.p4().Rapidity(), b.second.p4().Phi());
-    }
-  };
-
-  struct WdeltaRComparator{
-    bool operator()(const WParticlePair & a ,
-                    const WParticlePair & b) const{
-      return deltaR(a.first->p4().Rapidity(), a.first->p4().Phi(), a.second.p4().Rapidity(), a.second.p4().Phi()) < deltaR(b.first->p4().Rapidity(), b.first->p4().Phi(), b.second.p4().Rapidity(), b.second.p4().Phi());
-    }
-  };
 
   // To steer the loop over all events. User is not supposed to change this.
   virtual void     loop(const std::string outputfile);
@@ -193,9 +126,6 @@ public:
   bool doBasicPlots_;
 
  protected:
-  static const double ZMASS;
-  static const double WMASS;
-  static const double HMASS;
 
   // Histograms helper class
   Histogrammer theHistograms;

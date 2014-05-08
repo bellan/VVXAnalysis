@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 2.6)
 project(VVXAnalysis) 
 
 #options here
-set(CMAKE_CXX_FLAGS "-Wall -march=native")
+set(CMAKE_CXX_FLAGS "-Wall -march=native -std=c++0x")
 
 #get ROOT stuff here
 exec_program(root-config ARGS "--incdir" OUTPUT_VARIABLE ROOT_INCLUDE_DIR)
@@ -19,6 +19,8 @@ message(STATUS ${ROOT_LIBS})
 
 set(DataFormats ../DataFormats)
 set(DataFormats_src ${DataFormats}/src)
+set(Commons_src ../Commons/src)
+
 
 set(BASE ../../)
 
@@ -35,7 +37,7 @@ include(FindROOT.cmake)
 ROOT_GENERATE_DICTIONARY("${EventDF_HEADERS}" "${EventDF_LINKDEF}" "${EventDF_DICTIONARY}" "${include_directories}")
 
 include_directories(${CMAKE_INCLUDE_PATH})
-set(EventAnalyzer_SRCS ${EventDF_DICTIONARY} ${SRC}/MCInfo.cc ${SRC}/EventAnalyzer.cc)
+set(EventAnalyzer_SRCS ${EventDF_DICTIONARY} ${SRC}/MCInfo.cc ${SRC}/EventAnalyzer.cc ${Commons_src}/SignalDefinitions.cc)
 
 #Set here the location of the source code of your analysis
 set(VVXAnalyzer_SRCS ${EventAnalyzer_SRCS} ${SRC}/VVXAnalyzer.cc ${SRC}/ZZWAnalyzer.cc ${SRC}/ZZSAnalyzer.cc)
