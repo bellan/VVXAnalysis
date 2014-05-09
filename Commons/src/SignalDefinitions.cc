@@ -4,6 +4,9 @@
 //#include "VVXAnalysis/Commons/interface/PhysTools.h"
 #include "VVXAnalysis/Commons/interface/Comparators.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
+#include "VVXAnalysis/Commons/interface/Utilities.h"
+#include "VVXAnalysis/Commons/interface/Comparators.h"
+#include "VVXAnalysis/Commons/interface/Constants.h"
 
 
 #include <boost/foreach.hpp>
@@ -16,19 +19,7 @@ using std::endl;
 typedef std::tuple<uint,uint,int,double> QuarkPairFeatures;
 typedef std::vector<QuarkPairFeatures> QuarkPairsFeatures;
 
-// std::pair<phys::Boson<phys::Particle> ,phys::Boson<phys::Particle> > zzw::makeZBosonsFromLeptons(const std::vector<const reco::Candidate *>& lm, const std::vector<const reco::Candidate *>& lp, int leptonCode, float mZ){
-//   std::vector<phys::Particle> plm;
-//   std::vector<phys::Particle> plp;
 
-//   foreach(const reco::Candidate *gp, lm)
-//     plm.push_back(phys::convert(*gp));
-  
-//   foreach(const reco::Candidate *gp, lp)
-//     plp.push_back(phys::convert(*gp));
-   
-//   return zzw::makeZBosonsFromLeptons(plm, plp, leptonCode, mZ);
-// }
-  
   
 std::pair<phys::Boson<phys::Particle> ,phys::Boson<phys::Particle> > zzw::makeZBosonsFromLeptons(const std::vector<phys::Particle>& lm, const std::vector<phys::Particle>& lp, int leptonCode, float mZ){
     
@@ -377,12 +368,7 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
 }
 
 
-
-#include "VVXAnalysis/TreeAnalysis/interface/ZZSelector.h"
-#include "VVXAnalysis/Commons/interface/Utilities.h"
-#include "VVXAnalysis/Commons/interface/Comparators.h"
-#include "VVXAnalysis/Commons/interface/Constants.h"
-  
+ 
 
 std::tuple<bool, phys::Boson<phys::Lepton>, phys::Boson<phys::Lepton> > zz::zz4l(const std::vector<phys::Boson<phys::Lepton> >  &Zmm,
 										 const std::vector<phys::Boson<phys::Electron> > &Zee){

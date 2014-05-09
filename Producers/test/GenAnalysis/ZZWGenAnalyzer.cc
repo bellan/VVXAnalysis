@@ -190,7 +190,7 @@ void ZZWGenAnalyzer::analyze(const Event & event, const EventSetup& eventSetup) 
     p_6f = p_4l + j0.p4() + j1.p4(); 
     
     float m_6f = p_6f.M();
-    float m_4l = p_4l.M();
+    //float m_4l = p_4l.M();
      
     bool passEtaAccLep = true;
     
