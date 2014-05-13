@@ -94,7 +94,7 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
       foreach(const pat::Muon& muon, *muons){
 	//std::cout<< (muon.pt()-mucomp_pt)/muon.pt() << " " << (abs(muon.eta())-mucomp_abseta)/abs(muon.eta()) << std::endl;
 	  
-	if(isAlmostEqual(muon.pt(), mucomp_pt, 0.1) && isAlmostEqual(abs(muon.eta()), mucomp_abseta, 0.01)){
+	if(physmath::isAlmostEqual(muon.pt(), mucomp_pt, 0.1) && fabs(fabs(muon.eta()) - mucomp_abseta) < 0.01){
 	  leptonjet = true;
 	  //std::cout<<"\t\t !!! Found a muon-jet matching !!!"<<std::endl;
 	  //std::cout<<"-- muon -- pt: " << muon.pt()   << " eta: " << muon.eta()    << " phi: " << muon.phi() << " p: " << muon.p()        << std::endl;
@@ -109,7 +109,7 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
       //std::cout<<"-- comp -- pt: "     << ecomp_pt      << " eta: " << ecomp_abseta                                    << " p: " << ecomp.energy() << std::endl;      
 
       foreach(const pat::Electron& electron, *electrons)
-	if(isAlmostEqual(electron.pt(), ecomp_pt, 0.1) && isAlmostEqual(abs(electron.eta()), ecomp_abseta, 0.01)){
+	if(physmath::isAlmostEqual(electron.pt(), ecomp_pt, 0.1) && fabs(fabs(electron.eta() - ecomp_abseta)) < 0.01){
 	  leptonjet = true;
       	  //std::cout<<"\t\t !!! Found a electron-jet matching !!!"<<std::endl;
 	  //std::cout<<"-- electron -- pt: " << electron.pt()   << " eta: " << electron.eta()    << " phi: " << electron.phi() << " p: " << electron.p()   << std::endl;
