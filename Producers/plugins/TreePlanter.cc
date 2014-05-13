@@ -4,8 +4,10 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
 #include "FWCore/Framework/interface/Run.h"
+#include "FWCore/Common/interface/TriggerNames.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
+#include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/Common/interface/View.h"
@@ -37,6 +39,10 @@ using std::endl;
 
 TreePlanter::TreePlanter(const edm::ParameterSet &config)
   : PUWeighter_      (PUReweight::LEGACY)
+  , filterController_(config)
+  , passTrigger_(false)
+  , passSkim_(false)
+  , triggerWord_(0)
   , preSkimCounter_  (0)
   , postSkimCounter_ (0)
   , theMuonLabel     (config.getParameter<edm::InputTag>("muons"    ))
@@ -50,6 +56,9 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , isMC_            (config.getUntrackedParameter<bool>("isMC",false))
   , sampleType_      (config.getParameter<int>("sampleType"))
   , setup_           (config.getParameter<int>("setup"))
+  , applyTrigger_    (config.getUntrackedParameter<bool>("TriggerRequired", false)) 
+  , applySkim_       (config.getUntrackedParameter<bool>("SkimRequired"   , true)) 
+  , applyMCSel_      (config.getUntrackedParameter<bool>("DoMCSelection"  , false)) 
   , externalCrossSection_(-1.)
   , summcprocweights_    (0.)
   , sumpuweights_        (0.) 
@@ -68,6 +77,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     externalCrossSection_   = config.getUntrackedParameter<double>("XSection",-1);
   }
    
+  skimPaths_ = config.getParameter<std::vector<std::string> >("skimPaths");
 
   initTree();
 }
@@ -77,6 +87,10 @@ void TreePlanter::beginJob(){
   theTree->Branch("event"     , &event_); 
   theTree->Branch("run"       , &run_); 
   theTree->Branch("lumiBlock" , &lumiBlock_); 
+
+  theTree->Branch("passTrigger" , &passTrigger_); 
+  theTree->Branch("passSkim"    , &passSkim_); 
+  theTree->Branch("triggerWord" , &triggerWord_); 
 
   theTree->Branch("mcprocweight"     , &mcprocweight_);
   theTree->Branch("puweight"         , &puweight_);
@@ -172,6 +186,10 @@ void TreePlanter::initTree(){
   run_       = -1;
   lumiBlock_ = -1;
 
+  passTrigger_ = false;
+  passSkim_    = false;
+  triggerWord_ = 0;
+
   mcprocweight_       = 1.;
   puweight_           = 1.; 
 
@@ -196,14 +214,24 @@ void TreePlanter::initTree(){
  }
 
 
-void TreePlanter::fillEventInfo(const edm::Event& event){
+bool TreePlanter::fillEventInfo(const edm::Event& event){
 
-  // What is missing:
-  // rho, weight (MC and PU), xsection, process type
+  // Check trigger request
+  passTrigger_ = filterController_.passTrigger(event, triggerWord_);
+  if (applyTrigger_ && !passTrigger_) return false;
+  
+  // Check Skim requests
+  passSkim_ = filterController_.passSkim(event, triggerWord_);
+  if (applySkim_    && !passSkim_)   return false;
+  
+  // Apply MC filter
+  //if (isMC_ && !(filterController_.passMCFilter(event))) return false;
 
   run_       = event.id().run();
   event_     = event.id().event(); 
   lumiBlock_ = event.luminosityBlock();
+
+
 
   edm::Handle<std::vector<cmg::BaseMET> > met;   event.getByLabel(theMETLabel, met);
   met_ = phys::Particle(phys::Particle::convert(met->front().p4()));
@@ -252,6 +280,8 @@ void TreePlanter::fillEventInfo(const edm::Event& event){
     summcprocweights_   += mcprocweight_;
     sumpumcprocweights_ += puweight_*mcprocweight_;
   }
+
+  return true;
 }
 
 
@@ -261,8 +291,9 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
   initTree();
   
-  fillEventInfo(event);
-
+  bool goodEvent = fillEventInfo(event);
+  if(!goodEvent) return;
+  
   // Load a bunch of objects from the event
   edm::Handle<pat::MuonCollection>       muons        ; event.getByLabel(theMuonLabel    ,     muons);
   edm::Handle<pat::ElectronCollection>   electrons    ; event.getByLabel(theElectronLabel, electrons);

@@ -10,6 +10,8 @@ ELECORRTYPE   = "Paper" # "None", "Moriond", or "Paper"
 ELEREGRESSION = "Paper" # "None", "Moriond", "PaperNoComb", or "Paper" 
 APPLYMUCORR = True
 
+#MCFILTER  = "signaldefinition"
+
 try:
     IsMC
 except NameError:
@@ -51,6 +53,7 @@ execfile(PyFilePath + "MasterPy/ZZ4lAnalysis.py")         # 2012 reference analy
 ### ----------------------------------------------------------------------
 ### Replace parameters
 ### ----------------------------------------------------------------------
+SkimPaths.append("preselection")
 
 ### ----------------------------------------------------------------------
   ### Replace parameters
@@ -60,10 +63,11 @@ process.source.fileNames = cms.untracked.vstring(
     
     # 'root://lxcms00//data3/2013/HZZ_cmgTuple/BE539_H1258TeV.root' #533 V5_15_0 version
     '/store/cmst3/group/cmgtools/CMG/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_nLP.root'
-    # '/store/cmst3/group/cmgtools/CMG/WZZ_8TeV-aMCatNLO-herwig/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_GEb.root'
+    #'/store/cmst3/group/cmgtools/CMG/WZZ_8TeV-aMCatNLO-herwig/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_GEb.root'
     # '/store/cmst3/group/cmgtools/CMG/ZZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_UV1.root'
     # '/store/cmst3/user/cmgtools/CMG/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_irQ.root'
     #'/store/cmst3/user/cmgtools/CMG//ZZTo4mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_UR6.root'
+    #'/store/cmst3/user/cmgtools/CMG/VBF_phantom_8TeV/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_42.root'
     )
 
 
@@ -132,8 +136,13 @@ process.Candidates = cms.Path(process.muons             +
 
 # Fill the tree for the analysis
 process.treePlanter = cms.EDAnalyzer("TreePlanter",
+                                     channel = cms.untracked.string('aChannel'),
                                      setup        = cms.int32(LEPTON_SETUP),
                                      sampleType   = cms.int32(SAMPLE_TYPE),
+                                     PD           = cms.string(PD),
+                                     skimPaths    = cms.vstring(SkimPaths),
+                                     MCFilterPath = cms.string(MCFILTER),
+                                     isMC         = cms.untracked.bool(IsMC),
                                      muons        = cms.InputTag("appendPhotons:muons"),
                                      electrons    = cms.InputTag("appendPhotons:electrons"),
                                      jets         = cms.InputTag("disambiguatedJets"),
@@ -142,7 +151,6 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      Wjj          = cms.InputTag("WCand"),
                                      MET          = cms.InputTag("cmgPFMET"),
                                      Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
-                                     isMC         = cms.untracked.bool(IsMC),
                                      XSection     = cms.untracked.double(XSEC)
                                      )
 
@@ -151,9 +159,6 @@ process.genCategory =  cms.EDFilter("GenFilterCategory",
                                     src = cms.InputTag("genParticlesPruned"),
                                     Category = cms.int32(-1),
                                     SignalDefinition = cms.int32(3))
-
-#process.filltrees = cms.Path(process.printTree + process.genCategory * process.treePlanter)
-
 
 ### Activate some skimming ###
 process.preSkimCounter = cms.EDProducer("EventCountProducer")
@@ -195,17 +200,24 @@ process.jetCounterFilter = cms.EDFilter("CandViewCountFilter",
 process.postSkimCounter = cms.EDProducer("EventCountProducer")
 
 
-process.preselection = cms.Sequence(process.preSkimCounter*
-                                    ((process.bareMMMMCand+process.bareEEEECand+process.bareEEMMCand)*process.ZZCand*process.zzCounterFilter+
-                                     process.jetPtFilter*process.jetCounterFilter)*
-                                    process.postSkimCounter)
+process.preselection = cms.Path(process.preSkimCounter*
+                                ((process.bareMMMMCand+process.bareEEEECand+process.bareEEMMCand)*process.ZZCand*process.zzCounterFilter+
+                                 process.jetPtFilter*process.jetCounterFilter)*
+                                process.postSkimCounter)
 ########################################################
 
 
 
-process.filltrees = cms.Path(process.preselection * process.genCategory * process.treePlanter)
+process.printTree = cms.EDAnalyzer("ParticleListDrawer",
+                                   maxEventsToPrint = cms.untracked.int32(-1),
+                                   printVertex = cms.untracked.bool(False),
+                                   src = cms.InputTag("genParticlesPruned")
+                                   )
 
+process.signalDefinition = cms.Path(process.genCategory)
+#process.filltrees = cms.Path(process.preselection * process.genCategory * process.treePlanter * process.printTree)
 
+process.filltrees = cms.EndPath(process.treePlanter)
 
 ### ----------------------------------------------------------------------
 ### Output root file (monitoring histograms)
@@ -213,3 +225,4 @@ process.filltrees = cms.Path(process.preselection * process.genCategory * proces
 process.TFileService=cms.Service('TFileService',
                                 fileName=cms.string('ZZWAnalysis.root')
                                 )
+

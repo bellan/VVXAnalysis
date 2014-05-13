@@ -23,6 +23,8 @@
 #include "VVXAnalysis/DataFormats/interface/Jet.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 
+#include "VVXAnalysis/Producers/interface/FilterController.h"
+
 #include "ZZAnalysis/AnalysisStep/interface/PUReweight.h"
 
 class TTree;
@@ -46,7 +48,7 @@ class TreePlanter: public edm::EDAnalyzer {
   virtual void endJob();
   void initTree();
   
-  void fillEventInfo(const edm::Event& event);
+  bool fillEventInfo(const edm::Event& event);
   
   template<typename LEP>
     phys::Lepton fillLepton(const LEP& particle) const;
@@ -77,12 +79,18 @@ class TreePlanter: public edm::EDAnalyzer {
   TTree *theTree;
 
   PUReweight       PUWeighter_;
+  FilterController filterController_;
 
   // ------------------- Event info in the tree ------------------- //
   Int_t event_;
   Int_t run_;
   Int_t lumiBlock_;
   
+  Bool_t  passTrigger_;
+  Bool_t  passSkim_;
+  Short_t triggerWord_;
+  
+
   Int_t preSkimCounter_;
   Int_t postSkimCounter_;
 
@@ -128,6 +136,10 @@ class TreePlanter: public edm::EDAnalyzer {
   bool isMC_;
   int  sampleType_;
   int  setup_;
+  bool applyTrigger_;
+  bool applySkim_;
+  bool applyMCSel_;
+
   std::vector<double> theXSections;
   double externalCrossSection_;
   Double_t summcprocweights_;
@@ -135,6 +147,9 @@ class TreePlanter: public edm::EDAnalyzer {
   Double_t sumpumcprocweights_;
   Int_t theNumberOfEvents;
   Int_t theNumberOfAnalyzedEvents;
+
+
+  std::vector<std::string> skimPaths_;
 };
 #endif
 

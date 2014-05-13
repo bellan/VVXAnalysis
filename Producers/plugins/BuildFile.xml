@@ -11,6 +11,7 @@
   <use name="VVXAnalysis/Commons"/>
   <use name="VVXAnalysis/DataFormats"/>
   <use name="ZZAnalysis/AnalysisStep"/>
+  <use name="VVXAnalysis/Producers"/>
   <use name="clhep"/>
   <use name="boost"/>
   <use name="root"/>
