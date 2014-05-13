@@ -419,29 +419,6 @@ phys::Jet TreePlanter::fill(const cmg::PFJet &jet) const{
   return output; 
 }
 
-template<typename PAR>
-std::vector<phys::Boson<PAR> > TreePlanter::fillBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, const std::vector<PAR> & physDaughtersCand, int type) const {
-  
-  std::vector<phys::Boson<PAR> > physBosons;
-  
-  foreach(const pat::CompositeCandidate& v, *edmBosons){
-  
-    if(v.hasUserFloat("GoodLeptons") && !v.userFloat("GoodLeptons")) continue;
-  
-    PAR d0,d1;
-    
-    foreach(const PAR& particle, physDaughtersCand){
-      if( isAlmostEqual(particle.p4().Pt(), v.daughter(0)->pt()) && isAlmostEqual(particle.p4().Eta(), v.daughter(0)->eta())) d0 = particle;
-      if( isAlmostEqual(particle.p4().Pt(), v.daughter(1)->pt()) && isAlmostEqual(particle.p4().Eta(), v.daughter(1)->eta())) d1 = particle;
-    }
-    
-    if(d0.id() == 0 || d1.id() == 0) edm::LogError("TreePlanter") << "TreePlanter: VB candidate does not have a matching good particle!";
-  
-    phys::Boson<PAR> physV(d0, d1, type);
-    physBosons.push_back(physV);
-  }
-  return physBosons;
-}
 
 template<typename T, typename PAR>
 std::vector<phys::Boson<PAR> > TreePlanter::fillBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const {
@@ -454,10 +431,19 @@ std::vector<phys::Boson<PAR> > TreePlanter::fillBosons(const edm::Handle<edm::Vi
 
     PAR d0 = fill(*dynamic_cast<const T*>(v.daughter(0)->masterClone().get()));
     PAR d1 = fill(*dynamic_cast<const T*>(v.daughter(1)->masterClone().get()));
-    
+   
+   
     if(d0.id() == 0 || d1.id() == 0) edm::LogError("TreePlanter") << "TreePlanter: VB candidate does not have a matching good particle!";
   
     phys::Boson<PAR> physV(d0, d1, type);
+
+    // Add FSR
+    if(v.hasUserFloat("dauWithFSR") && v.userFloat("dauWithFSR") >= 0){
+      phys::Particle photon(phys::Particle::convert(v.daughter(2)->p4()), 0, 22);
+      physV.addFSR(v.userFloat("dauWithFSR"), photon);
+    }
+
+
     physBosons.push_back(physV);
   }
   return physBosons;

@@ -19,13 +19,15 @@ namespace phys {
   public:
     /// Constructor
     Boson(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), int pid = 0)
-      : Particle(p,0,pid){}
+      : Particle(p,0,pid)
+      , indexFSR_(-1){}
 
 
     Boson(const P& daughter0, const P& daughter1, int pid = 0)
       : Particle(daughter0.p4()+daughter1.p4(), 0, pid)
       , daughter0_(daughter0)
       , daughter1_(daughter1)
+      , indexFSR_(-1)
       {}
         
     template<typename T>
@@ -51,13 +53,26 @@ namespace phys {
       else { std::cout << "*** Boson's daughter not found! ***" << " " << i << std::endl; abort();}
     }
 
-    
+    void addFSR(int daughter_index, const Particle &photon){
+      indexFSR_ = daughter_index;
+      fsrPhoton_ = photon;
+      p4_ = p4_ + fsrPhoton_.p4();
+    }
+
+    Particle fsrPhoton() const {return fsrPhoton_;}
+
+    int daughterWithFSR() const {return indexFSR_;}
+   
+
+
   protected:
     
   private:
     P daughter0_;
     P daughter1_;
 
+    Int_t indexFSR_;     // daughter with FSR, -1 if no one radiated
+    Particle fsrPhoton_;
 
     ClassDef(Boson, 1) //
   };

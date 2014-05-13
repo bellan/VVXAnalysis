@@ -73,7 +73,7 @@ namespace phys {
       return charge;
     }
 
-    void setId(int pid) {id_ = pid;}
+    void setId(int pid) {id_ = pid; charge_ = computeCharge(pid);}
     
     void setMotherId(int pid) {motherId_ = pid;}
     

@@ -71,7 +71,7 @@ process.source.fileNames = cms.untracked.vstring(
     )
 
 
-process.maxEvents.input = -1
+process.maxEvents.input = 1000
 
 # Silence output
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -214,10 +214,28 @@ process.printTree = cms.EDAnalyzer("ParticleListDrawer",
                                    src = cms.InputTag("genParticlesPruned")
                                    )
 
+process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
+     dumpTrigger = cms.untracked.bool(True),
+     muonSrc = cms.InputTag("appendPhotons:muons"), 
+     electronSrc = cms.InputTag("appendPhotons:electrons"),
+     candidateSrcs = cms.PSet(
+        Zmm   = cms.InputTag("MMCand"),
+        Zee   = cms.InputTag("EECand"),
+#        Z     = cms.InputTag("ZCand"),
+        MMMM  = cms.InputTag("MMMMCand"),
+        EEEE  = cms.InputTag("EEEECand"),
+        EEMM  = cms.InputTag("EEMMCand"),
+     )
+)
+
+
+
+
+
 process.signalDefinition = cms.Path(process.genCategory)
 #process.filltrees = cms.Path(process.preselection * process.genCategory * process.treePlanter * process.printTree)
 
-process.filltrees = cms.EndPath(process.treePlanter)
+process.filltrees = cms.EndPath(process.treePlanter*process.MMMMCand *process.EEMMCand *process.EEEECand *process.dumpUserData)
 
 ### ----------------------------------------------------------------------
 ### Output root file (monitoring histograms)
