@@ -71,7 +71,7 @@ process.source.fileNames = cms.untracked.vstring(
     )
 
 
-process.maxEvents.input = 1000
+process.maxEvents.input = -1
 
 # Silence output
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -235,7 +235,7 @@ process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
 process.signalDefinition = cms.Path(process.genCategory)
 #process.filltrees = cms.Path(process.preselection * process.genCategory * process.treePlanter * process.printTree)
 
-process.filltrees = cms.EndPath(process.treePlanter*process.MMMMCand *process.EEMMCand *process.EEEECand *process.dumpUserData)
+process.filltrees = cms.EndPath(process.treePlanter)
 
 ### ----------------------------------------------------------------------
 ### Output root file (monitoring histograms)
