@@ -51,6 +51,9 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theZmmLabel      (config.getParameter<edm::InputTag>("Zmm"      ))
   , theZeeLabel      (config.getParameter<edm::InputTag>("Zee"      ))
   , theWLabel        (config.getParameter<edm::InputTag>("Wjj"      ))
+  , theZZmmmmLabel   (config.getParameter<edm::InputTag>("ZZmmmm"   ))
+  , theZZeeeeLabel   (config.getParameter<edm::InputTag>("ZZeeee"   ))
+  , theZZeemmLabel   (config.getParameter<edm::InputTag>("ZZeemm"   ))
   , theMETLabel      (config.getParameter<edm::InputTag>("MET"      ))
   , theVertexLabel   (config.getParameter<edm::InputTag>("Vertices" ))
   , isMC_            (config.getUntrackedParameter<bool>("isMC",false))
@@ -101,12 +104,15 @@ void TreePlanter::beginJob(){
   theTree->Branch("rho"   , &rho_); 
   theTree->Branch("nvtxs" , &nvtx_);
 
-  theTree->Branch("muons"    , &muons_);
-  theTree->Branch("electrons", &electrons_);
-  theTree->Branch("jets"     , &jets_); 
-  theTree->Branch("ZmmCand"  , &Zmm_); 
-  theTree->Branch("ZeeCand"  , &Zee_); 
-  theTree->Branch("WjjCand"  , &Wjj_);
+  theTree->Branch("muons"     , &muons_);
+  theTree->Branch("electrons" , &electrons_);
+  theTree->Branch("jets"      , &jets_); 
+  theTree->Branch("ZmmCand"   , &Zmm_); 
+  theTree->Branch("ZeeCand"   , &Zee_); 
+  theTree->Branch("WjjCand"   , &Wjj_);
+  //theTree->Branch("ZZmmmmCand", &ZZmmmm_); 
+  //theTree->Branch("ZZeeeeCand", &ZZeeee_); 
+  //theTree->Branch("ZZeemmCand", &ZZeemm_); 
 
   theTree->Branch("genParticles"  , &genParticles_);
   theTree->Branch("genVBParticles", &genVBParticles_);

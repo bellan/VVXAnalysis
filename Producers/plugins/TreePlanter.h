@@ -120,6 +120,9 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::InputTag theZmmLabel;
   edm::InputTag theZeeLabel;
   edm::InputTag theWLabel;
+  edm::InputTag theZZmmmmLabel;
+  edm::InputTag theZZeeeeLabel;
+  edm::InputTag theZZeemmLabel;
   edm::InputTag theMETLabel;
   edm::InputTag theVertexLabel;
   edm::InputTag thePUInfoLabel;
