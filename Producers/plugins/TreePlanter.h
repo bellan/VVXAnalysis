@@ -22,6 +22,7 @@
 #include "VVXAnalysis/DataFormats/interface/Electron.h"
 #include "VVXAnalysis/DataFormats/interface/Jet.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
+#include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 
 #include "VVXAnalysis/Producers/interface/FilterController.h"
 
@@ -108,13 +109,13 @@ class TreePlanter: public edm::EDAnalyzer {
   std::vector<phys::Electron>               electrons_;
   std::vector<phys::Jet>                    jets_;
 
-  std::vector<phys::Boson<phys::Lepton> >   Zmm_;
+  std::vector<phys::Boson<phys::Lepton>   > Zmm_;
   std::vector<phys::Boson<phys::Electron> > Zee_;
-  std::vector<phys::Boson<phys::Jet> >      Wjj_;
+  std::vector<phys::Boson<phys::Jet>      > Wjj_;
 
-  std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton >   ZZ4m_;
-  std::vector<phys::DiBoson<phys::Electron, phys::Electron > ZZ4e_;
-  std::vector<phys::DiBoson<phys::Electron, phys::Lepton >   ZZ2e2m_;
+  std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   > ZZ4m_;
+  std::vector<phys::DiBoson<phys::Electron, phys::Electron> > ZZ4e_;
+  std::vector<phys::DiBoson<phys::Electron, phys::Lepton>   > ZZ2e2m_;
 
   std::vector<phys::Particle>               genParticles_;
   std::vector<phys::Boson<phys::Particle> > genVBParticles_;
@@ -126,9 +127,9 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::InputTag theZmmLabel;
   edm::InputTag theZeeLabel;
   edm::InputTag theWLabel;
-  edm::InputTag theZZmmmmLabel;
-  edm::InputTag theZZeeeeLabel;
-  edm::InputTag theZZeemmLabel;
+  edm::InputTag theZZ4mLabel;
+  edm::InputTag theZZ4eLabel;
+  edm::InputTag theZZ2e2mLabel;
   edm::InputTag theMETLabel;
   edm::InputTag theVertexLabel;
   edm::InputTag thePUInfoLabel;
