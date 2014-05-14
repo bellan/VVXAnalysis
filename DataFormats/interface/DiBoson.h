@@ -49,6 +49,20 @@ namespace phys {
     // Type of search/control region
     short region() const {return regionWord_;}
 
+    void setRegion(short regionWord, bool isBestCand){
+      regionWord_ = regionWord;
+      isBestCand_ = isBestCand;
+    } 
+
+    void setQualityFlag(bool isBestCand){
+      isBestCand_ = isBestCand;
+    }
+
+    void setSelectionLevel(bool passFullSel){
+      passFullSel_ = passFullSel;
+    }
+
+
   private:
 
     Boson<P1> daughter0_;

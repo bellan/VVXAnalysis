@@ -51,9 +51,9 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theZmmLabel      (config.getParameter<edm::InputTag>("Zmm"      ))
   , theZeeLabel      (config.getParameter<edm::InputTag>("Zee"      ))
   , theWLabel        (config.getParameter<edm::InputTag>("Wjj"      ))
-  , theZZmmmmLabel   (config.getParameter<edm::InputTag>("ZZmmmm"   ))
-  , theZZeeeeLabel   (config.getParameter<edm::InputTag>("ZZeeee"   ))
-  , theZZeemmLabel   (config.getParameter<edm::InputTag>("ZZeemm"   ))
+  , theZZ4mLabel     (config.getParameter<edm::InputTag>("ZZ4m"     ))
+  , theZZ4eLabel     (config.getParameter<edm::InputTag>("ZZ4e"     ))
+  , theZZ2e2mLabel   (config.getParameter<edm::InputTag>("ZZ2e2m"   ))
   , theMETLabel      (config.getParameter<edm::InputTag>("MET"      ))
   , theVertexLabel   (config.getParameter<edm::InputTag>("Vertices" ))
   , isMC_            (config.getUntrackedParameter<bool>("isMC",false))
@@ -110,9 +110,9 @@ void TreePlanter::beginJob(){
   theTree->Branch("ZmmCand"   , &Zmm_); 
   theTree->Branch("ZeeCand"   , &Zee_); 
   theTree->Branch("WjjCand"   , &Wjj_);
-  //theTree->Branch("ZZmmmmCand", &ZZmmmm_); 
-  //theTree->Branch("ZZeeeeCand", &ZZeeee_); 
-  //theTree->Branch("ZZeemmCand", &ZZeemm_); 
+  theTree->Branch("ZZ4mCand"  , &ZZ4m_); 
+  theTree->Branch("ZZ4eCand"  , &ZZ4e_); 
+  theTree->Branch("ZZ2e2mCand", &ZZ2e2m_); 
 
   theTree->Branch("genParticles"  , &genParticles_);
   theTree->Branch("genVBParticles", &genVBParticles_);
@@ -211,9 +211,12 @@ void TreePlanter::initTree(){
   muons_     = std::vector<phys::Lepton>();
   electrons_ = std::vector<phys::Electron>();
   jets_      = std::vector<phys::Jet>();
-  Zmm_       = std::vector<phys::Boson<phys::Lepton> >();   
+  Zmm_       = std::vector<phys::Boson<phys::Lepton>   >();   
   Zee_       = std::vector<phys::Boson<phys::Electron> >();   
-  Wjj_       = std::vector<phys::Boson<phys::Jet> >();   
+  Wjj_       = std::vector<phys::Boson<phys::Jet>      >();   
+  ZZ4m_      = std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   >();
+  ZZ4e_      = std::vector<phys::DiBoson<phys::Electron, phys::Electron> >();
+  ZZ2e2m_    = std::vector<phys::DiBoson<phys::Electron, phys::Lepton>   >();
 
   genParticles_ = std::vector<phys::Particle>();
   genVBParticles_ = std::vector<phys::Boson<phys::Particle> >();
@@ -301,13 +304,15 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   if(!goodEvent) return;
   
   // Load a bunch of objects from the event
-  edm::Handle<pat::MuonCollection>       muons        ; event.getByLabel(theMuonLabel    ,     muons);
-  edm::Handle<pat::ElectronCollection>   electrons    ; event.getByLabel(theElectronLabel, electrons);
-  edm::Handle<std::vector<cmg::PFJet> >  jets         ; event.getByLabel(theJetLabel     ,      jets);
-  edm::Handle<edm::View<pat::CompositeCandidate> > Zmm; event.getByLabel(theZmmLabel     ,       Zmm);
-  edm::Handle<edm::View<pat::CompositeCandidate> > Zee; event.getByLabel(theZeeLabel     ,       Zee);
-  edm::Handle<edm::View<pat::CompositeCandidate> > Wjj; event.getByLabel(theWLabel       ,       Wjj);
-
+  edm::Handle<pat::MuonCollection>       muons            ; event.getByLabel(theMuonLabel    ,     muons);
+  edm::Handle<pat::ElectronCollection>   electrons        ; event.getByLabel(theElectronLabel, electrons);
+  edm::Handle<std::vector<cmg::PFJet> >  jets             ; event.getByLabel(theJetLabel     ,      jets);
+  edm::Handle<edm::View<pat::CompositeCandidate> > Zmm    ; event.getByLabel(theZmmLabel     ,       Zmm);
+  edm::Handle<edm::View<pat::CompositeCandidate> > Zee    ; event.getByLabel(theZeeLabel     ,       Zee);
+  edm::Handle<edm::View<pat::CompositeCandidate> > Wjj    ; event.getByLabel(theWLabel       ,       Wjj);
+  edm::Handle<edm::View<pat::CompositeCandidate> > ZZ4m   ; event.getByLabel(theZZ4mLabel    ,      ZZ4m);
+  edm::Handle<edm::View<pat::CompositeCandidate> > ZZ4e   ; event.getByLabel(theZZ4eLabel    ,      ZZ4e);
+  edm::Handle<edm::View<pat::CompositeCandidate> > ZZ2e2m ; event.getByLabel(theZZ2e2mLabel  ,    ZZ2e2m);
 
   foreach(const pat::Muon& muon, *muons){
     //if(!muon.userFloat("isGood") || muon.userFloat("CombRelIsoPF") >= 4) continue;  // commented because the combination of the two flags is more restrictive than Z.userfloat("goodLeptons"), hence the matching can fail.
@@ -328,11 +333,15 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
     jets_.push_back(physjet);
   }
 
-  Zmm_ = fillBosons<pat::Muon,phys::Lepton>(Zmm);
+  Zmm_  = fillBosons<pat::Muon,phys::Lepton>(Zmm);
 
-  Zee_ = fillBosons<pat::Electron,phys::Electron>(Zee);
+  Zee_  = fillBosons<pat::Electron,phys::Electron>(Zee);
 
-  Wjj_ = fillBosons<cmg::PFJet,phys::Jet>(Wjj, 24);
+  Wjj_  = fillBosons<cmg::PFJet,phys::Jet>(Wjj, 24);
+
+  //ZZ4m_ = fillDiBoson<pat::Muon,phys::Lepton>(Zmm);
+
+
 
   theTree->Fill();
 }
@@ -454,6 +463,17 @@ std::vector<phys::Boson<PAR> > TreePlanter::fillBosons(const edm::Handle<edm::Vi
   }
   return physBosons;
 }
+
+
+
+// std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons){
+
+//   std::vector<phys::DiBoson<PAR1,PAR2> > physDiBosons;
+//   foreach(const pat::CompositeCandidate& v, *edmDiBosons){
+    
+//   }
+
+// }
 
 
 

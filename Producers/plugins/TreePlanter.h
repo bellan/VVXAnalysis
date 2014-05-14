@@ -107,9 +107,15 @@ class TreePlanter: public edm::EDAnalyzer {
   std::vector<phys::Lepton>                 muons_;
   std::vector<phys::Electron>               electrons_;
   std::vector<phys::Jet>                    jets_;
+
   std::vector<phys::Boson<phys::Lepton> >   Zmm_;
   std::vector<phys::Boson<phys::Electron> > Zee_;
   std::vector<phys::Boson<phys::Jet> >      Wjj_;
+
+  std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton >   ZZ4m_;
+  std::vector<phys::DiBoson<phys::Electron, phys::Electron > ZZ4e_;
+  std::vector<phys::DiBoson<phys::Electron, phys::Lepton >   ZZ2e2m_;
+
   std::vector<phys::Particle>               genParticles_;
   std::vector<phys::Boson<phys::Particle> > genVBParticles_;
 
