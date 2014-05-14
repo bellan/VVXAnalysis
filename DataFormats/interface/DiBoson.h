@@ -25,13 +25,29 @@ namespace phys {
       , passFullSel_(false)
       {}
 
-
   DiBoson(const Boson<P1>& vb1, const Boson<P2>& vb2)
     : Particle(vb1.p4()+vb2.p4(),0,0)
       , regionWord_(0)
       , isBestCand_(false)
       , passFullSel_(false)
       {}
+
+    template<typename T>
+      Boson<T> daughter(int i) const{
+      if(i == 0) return daughter0_;
+      else if(i == 1) return daughter1_;
+      else { std::cout << "*** DiBoson's daughter not found! ***" << " " << i << std::endl; abort();}
+    }
+
+    // Best candidate in the Control/Search region
+    bool isBestCandidate() const {return isBestCand_;}
+
+    // True if pass all requirements on di-boson quantities and on
+    // its daughters and grand daughters and...
+    bool passFullSelection() const {return passFullSel_;}
+
+    // Type of search/control region
+    short region() const {return regionWord_;}
 
   private:
 
