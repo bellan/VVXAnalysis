@@ -20,7 +20,8 @@ namespace phys {
     /// Constructor
     Boson(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), int pid = 0)
       : Particle(p,0,pid)
-      , indexFSR_(-1){}
+      , indexFSR_(-1)
+      , hasGoodDaughters_(false){}
 
 
     Boson(const P& daughter0, const P& daughter1, int pid = 0)
@@ -28,14 +29,22 @@ namespace phys {
       , daughter0_(daughter0)
       , daughter1_(daughter1)
       , indexFSR_(-1)
+      , hasGoodDaughters_(false)
       {}
-        
+    
+/*       Boson(const Boson<P>& vb) */
+/* 	: Boson(vb.daughter(0),vb.daughter(1),vb.charge(),vb.id()) */
+/* 	, indexFSR_(vb.daughterWithFSR()) */
+/* 	, fsrPhoton_(vb.fsrPhoton()) */
+/* 	, hasGoodDaughters_(vb.hasGoodDaughters()){} */
+
+    
     template<typename T>
       Boson<T> clone() const {
       return Boson<T>(daughter0_,daughter1_,id_);
     }
 
-
+    
     /// Destructor
     virtual ~Boson(){};
     
@@ -63,6 +72,10 @@ namespace phys {
 
     int daughterWithFSR() const {return indexFSR_;}
    
+    // the daughters pass the quality criteria
+    bool hasGoodDaughters() const {return hasGoodDaughters_;}
+    
+    void setDaughtersQuality(bool q) {hasGoodDaughters_ = q;}
 
 
   protected:
@@ -73,6 +86,8 @@ namespace phys {
 
     Int_t indexFSR_;     // daughter with FSR, -1 if no one radiated
     Particle fsrPhoton_;
+
+    Bool_t hasGoodDaughters_;
 
     ClassDef(Boson, 1) //
   };

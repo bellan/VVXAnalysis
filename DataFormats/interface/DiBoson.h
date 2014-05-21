@@ -19,14 +19,16 @@ namespace phys {
     
   public:
     /// Constructor
-  DiBoson(): Particle()
+    DiBoson(): Particle()
       , regionWord_(0)
       , isBestCand_(false)
       , passFullSel_(false)
       {}
-
-  DiBoson(const Boson<P1>& vb1, const Boson<P2>& vb2)
-    : Particle(vb1.p4()+vb2.p4(),0,0)
+      
+    DiBoson(const Boson<P1>& vb1, const Boson<P2>& vb2)
+      : Particle(vb1.p4()+vb2.p4(),0,46)
+      //, daughter0_(vb1)
+      //, daughter0_(vb2)
       , regionWord_(0)
       , isBestCand_(false)
       , passFullSel_(false)
@@ -39,6 +41,12 @@ namespace phys {
       else { std::cout << "*** DiBoson's daughter not found! ***" << " " << i << std::endl; abort();}
     }
 
+    //   template <typename T1, typename T2>
+    // static DiBoson<T1, T2> getNew(const Boson<T1>& vb1, const Boson<T2>& vb2) {
+    //  phys::DiBoson<T1,T2> VV(vb1,vb2);
+    //  return VV;
+    // }
+
     // Best candidate in the Control/Search region
     bool isBestCandidate() const {return isBestCand_;}
 
@@ -49,9 +57,8 @@ namespace phys {
     // Type of search/control region
     short region() const {return regionWord_;}
 
-    void setRegion(short regionWord, bool isBestCand){
+    void setRegion(short regionWord){
       regionWord_ = regionWord;
-      isBestCand_ = isBestCand;
     } 
 
     void setQualityFlag(bool isBestCand){
@@ -68,7 +75,7 @@ namespace phys {
     Boson<P1> daughter0_;
     Boson<P2> daughter1_;
     
-    Short_t regionWord_;
+    Int_t regionWord_;
     Bool_t isBestCand_;
     Bool_t passFullSel_;
 
