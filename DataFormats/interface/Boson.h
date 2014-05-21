@@ -32,11 +32,13 @@ namespace phys {
       , hasGoodDaughters_(false)
       {}
     
-/*       Boson(const Boson<P>& vb) */
-/* 	: Boson(vb.daughter(0),vb.daughter(1),vb.charge(),vb.id()) */
-/* 	, indexFSR_(vb.daughterWithFSR()) */
-/* 	, fsrPhoton_(vb.fsrPhoton()) */
-/* 	, hasGoodDaughters_(vb.hasGoodDaughters()){} */
+      Boson(const Boson<P>& vb)
+	: Particle(vb.daughter(0).p4() + vb.daughter(1).p4(), vb.charge(), vb.id())
+	, daughter0_(vb.daughter(0))
+	, daughter1_(vb.daughter(1))
+	, indexFSR_(vb.daughterWithFSR())
+	, fsrPhoton_(vb.fsrPhoton())
+	, hasGoodDaughters_(vb.hasGoodDaughters()){}
 
     
     template<typename T>

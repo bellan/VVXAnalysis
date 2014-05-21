@@ -347,15 +347,11 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
 
   // The bosons have NOT any requirement on the quality of their daughters, only the flag is set (because of the same code is usd for CR too)
-  cout << "Fill 4 mu: " << ZZ4m->size() << endl;
   ZZ4m_   = fillDiBosons<pat::Muon,phys::Lepton,pat::Muon,phys::Lepton>(ZZ4m);
-  cout << ZZ4m_.size() << endl;
-  cout << "Fill 4 e: "  << ZZ4e->size() << endl;
+
   ZZ4e_   = fillDiBosons<pat::Electron,phys::Electron,pat::Electron,phys::Electron>(ZZ4e);
-  cout << ZZ4e_.size() << endl;
-  cout << "Fill 2 e 2 mu: " << ZZ2e2m->size() << endl;
-  //  ZZ2e2m_ = fillDiBosons<pat::Electron,phys::Electron,pat::Muon,phys::Lepton>(ZZ2e2m);
-  cout << ZZ2e2m_.size() << endl;
+
+  ZZ2e2m_ = fillDiBosons<pat::Electron,phys::Electron,pat::Muon,phys::Lepton>(ZZ2e2m);
 
   theTree->Fill();
 }
@@ -473,14 +469,9 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
   
   
   if(d0.id() == 0 || d1.id() == 0) edm::LogError("TreePlanter") << "TreePlanter: VB candidate does not have a matching good particle!";
-
-  cout<<"Look d0 pt: " << d0.pt() << " and an ID: " << d0.id()  << endl;
-  cout<<"Look d1 pt: " << d1.pt() << " and an ID: " << d1.id()  << endl;
   
   phys::Boson<PAR> physV(d0, d1, type);
   
-  cout<<"Look physV pt: " << physV.pt() << " and an ID: " << physV.id()  << endl;
-
   // Add FSR
   if(v.hasUserFloat("dauWithFSR") && v.userFloat("dauWithFSR") >= 0){
     phys::Particle photon(phys::Particle::convert(v.daughter(2)->p4()), 0, 22);
@@ -499,8 +490,6 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
 template<typename T1, typename PAR1, typename T2, typename PAR2>
 std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const{
 
-  cout << "fill di-bosons: " <<edmDiBosons->size() <<endl;
-
   std::vector<phys::DiBoson<PAR1,PAR2> > physDiBosons;
 
   foreach(const pat::CompositeCandidate& edmVV, *edmDiBosons){
@@ -508,54 +497,27 @@ std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(const edm::Hand
     const pat::CompositeCandidate* edmV0   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z1")->masterClone().get());
     const pat::CompositeCandidate* edmV1   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z2")->masterClone().get());
 
-    phys::DiBoson<PAR1,PAR2> VV;
-
-    //cout<<"Look a pt: " << edmV0->daughter(0)->pt() << " and an ID: " << edmV0->daughter(0)->pdgId()  << endl;
-    //cout<<"Look a pt: " << edmV0->daughter(1)->pt() << " and an ID: " << edmV0->daughter(1)->pdgId()  << endl;
-    //cout<<"Look a pt: " << edmV1->daughter(0)->pt() << " and an ID: " << edmV1->daughter(0)->pdgId()  << endl;
-    //cout<<"Look a pt: " << edmV1->daughter(1)->pt() << " and an ID: " << edmV1->daughter(1)->pdgId()  << endl;
-
-    //if(dynamic_cast<const T1*>(edmV0->daughter(0)->masterClone().get())) cout << "YES T1 0" <<endl;
-    //if(dynamic_cast<const T2*>(edmV1->daughter(0)->masterClone().get())) cout << "YES T2 1" <<endl;
-    //if(dynamic_cast<const T2*>(edmV0->daughter(0)->masterClone().get())) cout << "YES T2 0" <<endl;
-    //if(dynamic_cast<const T1*>(edmV1->daughter(0)->masterClone().get())) cout << "YES T1 1" <<endl;
+    phys::Boson<PAR1> V0;
+    phys::Boson<PAR2> V1;
     
-
     if(dynamic_cast<const T1*>(edmV0->daughter(0)->masterClone().get()) && dynamic_cast<const T2*>(edmV1->daughter(0)->masterClone().get())){
-      cout << "T1-0 and T2-1" << endl;
-      phys::Boson<PAR1> V0 = fillBoson<T1,PAR1>(*edmV0, 23, false);
-      phys::Boson<PAR2> V1 = fillBoson<T2,PAR2>(*edmV1, 23, false);
-      cout << "V0 pt: " << V0.pt() << " id: " << V0.id() << endl;
-      cout << "V1 pt: " << V1.pt() << " id: " << V1.id() << endl;
-
-      //VV = phys::DiBoson::getNew(V0, V1);
-      //cout << "VV.V0 pt: " << VV.template daughter<PAR1>(0).pt() << " id: " << VV.template daughter<PAR1>(0).id() << endl;
-      //cout << "VV.V1 pt: " << VV.template daughter<PAR2>(1).pt() << " id: " << VV.template daughter<PAR2>(1).id() << endl;
+      V0 = fillBoson<T1,PAR1>(*edmV0, 23, false);
+      V1 = fillBoson<T2,PAR2>(*edmV1, 23, false);
     }
     else if(dynamic_cast<const T2*>(edmV0->daughter(0)->masterClone().get()) && dynamic_cast<const T1*>(edmV1->daughter(0)->masterClone().get())){
-      cout << "T2-0 and T1-1" << endl;
-      phys::Boson<PAR1> V0 = fillBoson<T2,PAR1>(*edmV0, 23, false);
-      phys::Boson<PAR2> V1 = fillBoson<T1,PAR2>(*edmV1, 23, false);
-      cout << "V0 pt: " << V0.pt() << " id: " << V0.id() << endl;
-      cout << "V1 pt: " << V1.pt() << " id: " << V1.id() << endl;
-
-      //VV = phys::DiBoson<PAR1,PAR2>(V0, V1);
-      //cout << "VV.V0 pt: " << VV.template daughter<PAR1>(0).pt() << " id: " << VV.template daughter<PAR1>(0).id() << endl;
-      //cout << "VV.V1 pt: " << VV.template daughter<PAR2>(1).pt() << " id: " << VV.template daughter<PAR2>(1).id() << endl;
+      V0 = fillBoson<T2,PAR1>(*edmV0, 23, false);
+      V1 = fillBoson<T1,PAR2>(*edmV1, 23, false);
     }
     else{
       edm::LogError("TreePlanter") << "Do not know what to cast in fillDiBosons" << endl;
       return physDiBosons;
     }
     
+    phys::DiBoson<PAR1,PAR2> VV(V0, V1);
     VV.setQualityFlag   (edmVV.userFloat("isBestCand"));
     VV.setSelectionLevel(edmVV.userFloat("FullSel"));
     VV.setRegion        (computeCRFlag(edmVV));
     
-    cout << "BP VV.V0 pt: " << VV.template daughter<PAR1>(0).pt() << " id: " << VV.template daughter<PAR1>(0).id() << endl;
-    cout << "BP VV.V1 pt: " << VV.template daughter<PAR2>(1).pt() << " id: " << VV.template daughter<PAR2>(1).id() << endl;
-    
-
     physDiBosons.push_back(VV);
   }
 
