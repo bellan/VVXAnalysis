@@ -13,6 +13,18 @@ namespace phys{
     }
   };
   
+struct ScalarSumPtComparator{
+    template<typename PAR>
+    bool operator()( const PAR & a , 
+		     const PAR & b) const{ 
+      double sumPta = a.daughter(0).pt() + a.daughter(1).pt();
+      double sumPtb = b.daughter(0).pt() + b.daughter(1).pt();
+      return sumPta > sumPtb; 
+    }
+  };
+  
+
+
   struct WJetPtComparator{
     template<typename BOS>
     bool operator()( const BOS & w1 ,

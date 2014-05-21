@@ -390,6 +390,9 @@ std::tuple<bool, phys::Boson<phys::Lepton>, phys::Boson<phys::Lepton> > zz::zz4l
   // I- most close to Z mass, II- largest Z pT, III- largest sum of Z daughters' pT. 
   phys::Boson<phys::Lepton> Z1;
 
+  // Choose case III, as in H->ZZ and ZZ analysies
+  std::stable_sort(Zll.begin(), Zll.end(), phys::ScalarSumPtComparator());
+
   foreach(const phys::Boson<phys::Lepton> &z, Zll){
     
     double DR00 = physmath::deltaR(Z0.daughter(0), z.daughter(0));
