@@ -23,6 +23,7 @@
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 
 #include "ZZAnalysis/AnalysisStep/interface/MCHistoryTools.h"
+#include "ZZAnalysis/AnalysisStep/interface/bitops.h"
 
 #include "TTree.h"
 #include "TVectorD.h"
@@ -155,6 +156,8 @@ void TreePlanter::endRun(const edm::Run& run, const edm::EventSetup& setup){
 
 void TreePlanter::endJob(){
 
+  if(mcHistoryTools_) delete mcHistoryTools_;
+
   if(isMC_){
 
     Double_t internalCrossSection = 0.;
@@ -280,8 +283,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     // Info about the MC weight
     puweight_ = PUWeighter_.weight(sampleType_, setup_, ntruePUInt_);
     
-    MCHistoryTools mch(event);
-    mcprocweight_ = mch.gethepMCweight();
+    mcprocweight_ = mcHistoryTools_->gethepMCweight();
 
     // Sum of weight, particularly imprtant for MCs that return also negative weights
     // or, in general, weighted events
@@ -300,6 +302,9 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
   initTree();
   
+  if(mcHistoryTools_) delete mcHistoryTools_;
+  mcHistoryTools_ = new MCHistoryTools(event);
+
   bool goodEvent = fillEventInfo(event);
   if(!goodEvent) return;
   
@@ -333,15 +338,19 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
     jets_.push_back(physjet);
   }
 
-  Zmm_  = fillBosons<pat::Muon,phys::Lepton>(Zmm);
-
-  Zee_  = fillBosons<pat::Electron,phys::Electron>(Zee);
-
-  Wjj_  = fillBosons<cmg::PFJet,phys::Jet>(Wjj, 24);
-
-  //ZZ4m_ = fillDiBoson<pat::Muon,phys::Lepton>(Zmm);
-
-
+  cout << "1" << endl;
+  Zmm_    = fillBosons<pat::Muon,phys::Lepton>(Zmm);
+  cout << "2" << endl;
+  Zee_    = fillBosons<pat::Electron,phys::Electron>(Zee);
+  cout << "3" << endl;
+  Wjj_    = fillBosons<cmg::PFJet,phys::Jet>(Wjj, 24);
+  cout << "4" << endl;
+  ZZ4m_   = fillDiBosons<pat::Muon,phys::Lepton,pat::Muon,phys::Lepton>(ZZ4m);
+  cout << "5" << endl;
+  ZZ4e_   = fillDiBosons<pat::Electron,phys::Electron,pat::Electron,phys::Electron>(ZZ4e);
+  cout << "6" << endl;
+  ZZ2e2m_ = fillDiBosons<pat::Electron,phys::Electron,pat::Muon,phys::Lepton>(ZZ2e2m);
+  cout << "7" << endl;
 
   theTree->Fill();
 }
@@ -441,39 +450,122 @@ std::vector<phys::Boson<PAR> > TreePlanter::fillBosons(const edm::Handle<edm::Vi
   std::vector<phys::Boson<PAR> > physBosons;
   
   foreach(const pat::CompositeCandidate& v, *edmBosons){
-
-    if(v.hasUserFloat("GoodLeptons") && !v.userFloat("GoodLeptons")) continue;
-
-    PAR d0 = fill(*dynamic_cast<const T*>(v.daughter(0)->masterClone().get()));
-    PAR d1 = fill(*dynamic_cast<const T*>(v.daughter(1)->masterClone().get()));
-   
-   
-    if(d0.id() == 0 || d1.id() == 0) edm::LogError("TreePlanter") << "TreePlanter: VB candidate does not have a matching good particle!";
-  
-    phys::Boson<PAR> physV(d0, d1, type);
-
-    // Add FSR
-    if(v.hasUserFloat("dauWithFSR") && v.userFloat("dauWithFSR") >= 0){
-      phys::Particle photon(phys::Particle::convert(v.daughter(2)->p4()), 0, 22);
-      physV.addFSR(v.userFloat("dauWithFSR"), photon);
-    }
-
-
-    physBosons.push_back(physV);
+    phys::Boson<PAR> physV = fillBoson<T, PAR>(v, type);
+    if(physV.isValid()) physBosons.push_back(physV);
   }
   return physBosons;
 }
 
 
+template<typename T, typename PAR>
+phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int type) const {
 
-// std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons){
+  if(v.hasUserFloat("GoodLeptons") && !v.userFloat("GoodLeptons")) return phys::Boson<PAR>();
+  
+  PAR d0 = fill(*dynamic_cast<const T*>(v.daughter(0)->masterClone().get()));
+  PAR d1 = fill(*dynamic_cast<const T*>(v.daughter(1)->masterClone().get()));
+  
+  
+  if(d0.id() == 0 || d1.id() == 0) edm::LogError("TreePlanter") << "TreePlanter: VB candidate does not have a matching good particle!";
+  
+  phys::Boson<PAR> physV(d0, d1, type);
+  
+  // Add FSR
+  if(v.hasUserFloat("dauWithFSR") && v.userFloat("dauWithFSR") >= 0){
+    phys::Particle photon(phys::Particle::convert(v.daughter(2)->p4()), 0, 22);
+    physV.addFSR(v.userFloat("dauWithFSR"), photon);
+  }
 
-//   std::vector<phys::DiBoson<PAR1,PAR2> > physDiBosons;
-//   foreach(const pat::CompositeCandidate& v, *edmDiBosons){
+  return physV;
+}
+
+
+// Right now, only for ZZ
+template<typename T1, typename PAR1, typename T2, typename PAR2>
+std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const{
+
+  std::vector<phys::DiBoson<PAR1,PAR2> > physDiBosons;
+
+  foreach(const pat::CompositeCandidate& edmVV, *edmDiBosons){
+
+    const pat::CompositeCandidate* edmV0   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z1"));
+    const pat::CompositeCandidate* edmV1   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z2"));
+
+    phys::DiBoson<PAR1,PAR2> VV;
+
+    if(dynamic_cast<const T1*>(edmV0) && dynamic_cast<const T2*>(edmV1)){
+      phys::Boson<PAR1> V0 = fillBoson<T1,PAR1>(*edmV0, 23);
+      phys::Boson<PAR2> V1 = fillBoson<T2,PAR2>(*edmV1, 23);
+      VV = phys::DiBoson<PAR1,PAR2>(V0, V1);
+    }
+    else if(dynamic_cast<const T2*>(edmV0) && dynamic_cast<const T1*>(edmV1)){
+      phys::Boson<PAR1> V0 = fillBoson<T2,PAR1>(*edmV0, 23);
+      phys::Boson<PAR2> V1 = fillBoson<T1,PAR2>(*edmV1, 23);
+      VV = phys::DiBoson<PAR1,PAR2>(V0, V1);
+    }
+    else{
+      cout << "WARNING!! Do not know what to cast in fillDiBosons" << endl;
+      return physDiBosons;
+    }
     
-//   }
+    VV.setQualityFlag   (edmVV.userFloat("isBestCand"));
+    VV.setSelectionLevel(edmVV.userFloat("FullSel"));
+    VV.setRegion        (computeCRFlag(edmVV));
+    
+    physDiBosons.push_back(VV);
+  }
 
-// }
+  return physDiBosons;
+}
+
+int TreePlanter::computeCRFlag(const pat::CompositeCandidate & vv) const{
+  int CRFLAG=0;
+  //bool candIsBest = vv.userFloat("isBestCand");
+  
+  Channel channel = filterController_.channel();
+
+  if (channel==ZLL) {
+    if(vv.userFloat("isBestCRZLL")&&vv.userFloat("CRZLL"))
+      set_bit(CRFLAG,CRZLL);
+    if(vv.userFloat("isBestCRMMMMss")&&vv.userFloat("CRLLLL"))
+      set_bit(CRFLAG,CRMMMMss);
+    if(vv.userFloat("isBestCRMMMMos")&&vv.userFloat("CRLLLL"))
+      set_bit(CRFLAG,CRMMMMos);
+    if(vv.userFloat("isBestCREEEEss")&&vv.userFloat("CRLLLL"))
+      set_bit(CRFLAG,CREEEEss);
+    if(vv.userFloat("isBestCREEEEos")&&vv.userFloat("CRLLLL"))
+      set_bit(CRFLAG,CREEEEos);
+    if(vv.userFloat("isBestCREEMMss")&&vv.userFloat("CRLLLL"))
+      set_bit(CRFLAG,CREEMMss);
+    if(vv.userFloat("isBestCREEMMos")&&vv.userFloat("CRLLLL"))
+      set_bit(CRFLAG,CREEMMos);
+    if(vv.userFloat("isBestCRMMEEss")&&vv.userFloat("CRLLLL"))
+      set_bit(CRFLAG,CRMMEEss);
+    if(vv.userFloat("isBestCRMMEEos")&&vv.userFloat("CRLLLL"))
+      set_bit(CRFLAG,CRMMEEos);
+    if(vv.userFloat("isBestCRZLL")&&vv.userFloat("CRZLLHiSIP"))
+      set_bit(CRFLAG,CRZLLHiSIP);
+    if(vv.userFloat("isBestCRZMM")&&vv.userFloat("CRZLLHiSIP"))
+      set_bit(CRFLAG,CRZLLHiSIPMM);
+    if(vv.userFloat("isBestCRZLLHiSIPKin")&&vv.userFloat("CRZLLHiSIPKin"))
+      set_bit(CRFLAG,CRZLLHiSIPKin);  
+  }
+
+  //For the SR, also fold information about acceptance in CRflag 
+  if (filterController_.isMC() && (channel==EEEE||channel==MMMM||channel==EEMM)) {
+    bool gen_ZZ4lInEtaAcceptance   = false; // All 4 gen leptons in eta acceptance
+    bool gen_ZZ4lInEtaPtAcceptance = false; // All 4 gen leptons in eta,pT acceptance
+    bool gen_m4l_180               = false; // gen_m4l > 180
+    bool gen_ZZInAcceptance        = false; // Unused; old ZZ phase space
+
+    mcHistoryTools_->genAcceptance(gen_ZZInAcceptance, gen_ZZ4lInEtaAcceptance, gen_ZZ4lInEtaPtAcceptance, gen_m4l_180);
+
+    if (gen_ZZ4lInEtaAcceptance)   set_bit(CRFLAG,28);
+    if (gen_ZZ4lInEtaPtAcceptance) set_bit(CRFLAG,29);
+    if (gen_m4l_180)               set_bit(CRFLAG,30);
+  }
+  return CRFLAG;
+}
 
 
 

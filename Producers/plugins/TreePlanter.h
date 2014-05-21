@@ -30,6 +30,8 @@
 
 class TTree;
 namespace cmg{class PFJet;}
+class MCHistoryTools;
+
 
 class TreePlanter: public edm::EDAnalyzer {
   
@@ -63,6 +65,14 @@ class TreePlanter: public edm::EDAnalyzer {
   template<typename T, typename PAR>
     std::vector<phys::Boson<PAR> > fillBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type = 23) const;
 
+  template<typename T, typename PAR>
+    phys::Boson<PAR> fillBoson(const pat::CompositeCandidate & v, int type = 23) const;
+
+  template<typename T1, typename PAR1, typename T2, typename PAR2>
+    std::vector<phys::DiBoson<PAR1,PAR2> > fillDiBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const;
+
+  int computeCRFlag(const pat::CompositeCandidate & vv) const;
+
  private:
   struct MinPairComparator{
     bool operator()( const std::pair<int,double> & a , 
@@ -78,7 +88,7 @@ class TreePlanter: public edm::EDAnalyzer {
 
   PUReweight       PUWeighter_;
   FilterController filterController_;
-
+  MCHistoryTools   *mcHistoryTools_;
   // ------------------- Event info in the tree ------------------- //
   Int_t event_;
   Int_t run_;
