@@ -338,19 +338,20 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
     jets_.push_back(physjet);
   }
 
-  cout << "1" << endl;
+  // The bosons are selected requiring that their daughters pass the quality criteria to be good daughters
   Zmm_    = fillBosons<pat::Muon,phys::Lepton>(Zmm, 23);
-  cout << "2" << endl;
+
   Zee_    = fillBosons<pat::Electron,phys::Electron>(Zee, 23);
-  cout << "3" << endl;
+
   Wjj_    = fillBosons<cmg::PFJet,phys::Jet>(Wjj, 24);
-  cout << "4" << endl;
+
+
+  // The bosons have NOT any requirement on the quality of their daughters, only the flag is set (because of the same code is usd for CR too)
   ZZ4m_   = fillDiBosons<pat::Muon,phys::Lepton,pat::Muon,phys::Lepton>(ZZ4m);
-  cout << "5" << endl;
+
   ZZ4e_   = fillDiBosons<pat::Electron,phys::Electron,pat::Electron,phys::Electron>(ZZ4e);
-  cout << "6" << endl;
+
   ZZ2e2m_ = fillDiBosons<pat::Electron,phys::Electron,pat::Muon,phys::Lepton>(ZZ2e2m);
-  cout << "7" << endl;
 
   theTree->Fill();
 }
