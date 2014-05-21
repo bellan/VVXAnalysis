@@ -218,7 +218,9 @@ process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
 process.signalDefinition = cms.Path(process.genCategory)
 #process.filltrees = cms.Path(process.preselection * process.genCategory * process.treePlanter * process.printTree)
 
-process.filltrees = cms.EndPath(process.treePlanter *process.dumpUserData)
+#process.filltrees = cms.EndPath(process.treePlanter *process.dumpUserData)
+
+process.filltrees = cms.EndPath(process.treePlanter)
 
 ### ----------------------------------------------------------------------
 ### Output root file (monitoring histograms)

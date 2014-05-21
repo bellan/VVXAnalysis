@@ -63,10 +63,10 @@ class TreePlanter: public edm::EDAnalyzer {
   phys::Jet fill(const cmg::PFJet &jet) const;
   
   template<typename T, typename PAR>
-    std::vector<phys::Boson<PAR> > fillBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type = 23) const;
+    std::vector<phys::Boson<PAR> > fillBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const;
 
   template<typename T, typename PAR>
-    phys::Boson<PAR> fillBoson(const pat::CompositeCandidate & v, int type = 23) const;
+    phys::Boson<PAR> fillBoson(const pat::CompositeCandidate & v, int type, bool requireQualityCriteria) const;
 
   template<typename T1, typename PAR1, typename T2, typename PAR2>
     std::vector<phys::DiBoson<PAR1,PAR2> > fillDiBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const;

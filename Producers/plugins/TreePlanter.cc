@@ -339,9 +339,9 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   }
 
   cout << "1" << endl;
-  Zmm_    = fillBosons<pat::Muon,phys::Lepton>(Zmm);
+  Zmm_    = fillBosons<pat::Muon,phys::Lepton>(Zmm, 23);
   cout << "2" << endl;
-  Zee_    = fillBosons<pat::Electron,phys::Electron>(Zee);
+  Zee_    = fillBosons<pat::Electron,phys::Electron>(Zee, 23);
   cout << "3" << endl;
   Wjj_    = fillBosons<cmg::PFJet,phys::Jet>(Wjj, 24);
   cout << "4" << endl;
@@ -450,7 +450,7 @@ std::vector<phys::Boson<PAR> > TreePlanter::fillBosons(const edm::Handle<edm::Vi
   std::vector<phys::Boson<PAR> > physBosons;
   
   foreach(const pat::CompositeCandidate& v, *edmBosons){
-    phys::Boson<PAR> physV = fillBoson<T, PAR>(v, type);
+    phys::Boson<PAR> physV = fillBoson<T, PAR>(v, type, true);
     if(physV.isValid()) physBosons.push_back(physV);
   }
   return physBosons;
@@ -458,9 +458,10 @@ std::vector<phys::Boson<PAR> > TreePlanter::fillBosons(const edm::Handle<edm::Vi
 
 
 template<typename T, typename PAR>
-phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int type) const {
+phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int type, bool requireQualityCriteria) const {
 
-  if(v.hasUserFloat("GoodLeptons") && !v.userFloat("GoodLeptons")) return phys::Boson<PAR>();
+  // Filter on the quality of daughters, right now only for ll pairs
+  if(requireQualityCriteria && v.hasUserFloat("GoodLeptons") && !v.userFloat("GoodLeptons")) return phys::Boson<PAR>();
   
   PAR d0 = fill(*dynamic_cast<const T*>(v.daughter(0)->masterClone().get()));
   PAR d1 = fill(*dynamic_cast<const T*>(v.daughter(1)->masterClone().get()));
@@ -475,6 +476,10 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
     phys::Particle photon(phys::Particle::convert(v.daughter(2)->p4()), 0, 22);
     physV.addFSR(v.userFloat("dauWithFSR"), photon);
   }
+  
+  // Add quality of daughters, right now only for ll pairs
+  if(v.hasUserFloat("GoodLeptons")) physV.setDaughtersQuality(v.userFloat("GoodLeptons"));
+  
 
   return physV;
 }
@@ -494,13 +499,13 @@ std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(const edm::Hand
     phys::DiBoson<PAR1,PAR2> VV;
 
     if(dynamic_cast<const T1*>(edmV0) && dynamic_cast<const T2*>(edmV1)){
-      phys::Boson<PAR1> V0 = fillBoson<T1,PAR1>(*edmV0, 23);
-      phys::Boson<PAR2> V1 = fillBoson<T2,PAR2>(*edmV1, 23);
+      phys::Boson<PAR1> V0 = fillBoson<T1,PAR1>(*edmV0, 23, false);
+      phys::Boson<PAR2> V1 = fillBoson<T2,PAR2>(*edmV1, 23, false);
       VV = phys::DiBoson<PAR1,PAR2>(V0, V1);
     }
     else if(dynamic_cast<const T2*>(edmV0) && dynamic_cast<const T1*>(edmV1)){
-      phys::Boson<PAR1> V0 = fillBoson<T2,PAR1>(*edmV0, 23);
-      phys::Boson<PAR2> V1 = fillBoson<T1,PAR2>(*edmV1, 23);
+      phys::Boson<PAR1> V0 = fillBoson<T2,PAR1>(*edmV0, 23, false);
+      phys::Boson<PAR2> V1 = fillBoson<T1,PAR2>(*edmV1, 23, false);
       VV = phys::DiBoson<PAR1,PAR2>(V0, V1);
     }
     else{
@@ -520,8 +525,7 @@ std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(const edm::Hand
 
 int TreePlanter::computeCRFlag(const pat::CompositeCandidate & vv) const{
   int CRFLAG=0;
-  //bool candIsBest = vv.userFloat("isBestCand");
-  
+    
   Channel channel = filterController_.channel();
 
   if (channel==ZLL) {
