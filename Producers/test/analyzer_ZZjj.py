@@ -65,7 +65,7 @@ process.source.fileNames = cms.untracked.vstring(
     '/store/cmst3/group/cmgtools/CMG/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_nLP.root'
     #'/store/cmst3/group/cmgtools/CMG/WZZ_8TeV-aMCatNLO-herwig/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_GEb.root'
     # '/store/cmst3/group/cmgtools/CMG/ZZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_UV1.root'
-    # '/store/cmst3/user/cmgtools/CMG/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_irQ.root'
+    #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_irQ.root'
     #'/store/cmst3/user/cmgtools/CMG//ZZTo4mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_UR6.root'
     #'/store/cmst3/user/cmgtools/CMG/VBF_phantom_8TeV/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_42.root'
     )
@@ -187,8 +187,9 @@ process.preselection = cms.Path(process.preSkimCounter*
                                 (process.ZZFiltered*process.zzCounterFilter+
                                 process.jetPtFilter*process.jetCounterFilter)*
                                 process.postSkimCounter)
-########################################################
 
+
+########################################################
 
 
 process.printTree = cms.EDAnalyzer("ParticleListDrawer",
@@ -212,18 +213,20 @@ process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
 )
 
 
-
+########################################################
 
 
 process.signalDefinition = cms.Path(process.genCategory)
-#process.filltrees = cms.Path(process.preselection * process.genCategory * process.treePlanter * process.printTree)
-
-#process.filltrees = cms.EndPath(process.treePlanter *process.dumpUserData)
 
 process.filltrees = cms.EndPath(process.treePlanter)
 
+
+#process.filltrees = cms.Path(process.preselection * process.genCategory * process.treePlanter * process.printTree)
+#process.filltrees = cms.EndPath(process.treePlanter *process.dumpUserData)
+
+
 ### ----------------------------------------------------------------------
-### Output root file (monitoring histograms)
+### Output root file
 ### ----------------------------------------------------------------------
 process.TFileService=cms.Service('TFileService',
                                 fileName=cms.string('ZZWAnalysis.root')

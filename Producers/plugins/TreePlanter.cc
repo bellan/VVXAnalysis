@@ -494,9 +494,18 @@ std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(const edm::Hand
 
   foreach(const pat::CompositeCandidate& edmVV, *edmDiBosons){
 
-    const pat::CompositeCandidate* edmV0   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z1")->masterClone().get());
-    const pat::CompositeCandidate* edmV1   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z2")->masterClone().get());
-
+    const pat::CompositeCandidate* edmV0;
+    const pat::CompositeCandidate* edmV1;
+    
+    if (filterController_.channel() != ZL) { // Regular 4l candidates
+      edmV0   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z1")->masterClone().get());      
+      edmV1   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z2")->masterClone().get());
+      
+    } else {              // Special handling of Z+l candidates 
+      edmV0   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter(0)->masterClone().get());      
+      edmV1   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter(1)->masterClone().get());
+    }
+    
     phys::Boson<PAR1> V0;
     phys::Boson<PAR2> V1;
     
