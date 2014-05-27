@@ -1,5 +1,5 @@
 #include "VVXAnalysis/TreeAnalysis/interface/ZZWAnalyzer.h"
-#include "VVXAnalysis/TreeAnalysis/interface/Colours.h"
+#include "VVXAnalysis/Commons/interface/Colours.h"
 #include "VVXAnalysis/Commons/interface/Comparators.h"
 
 #include <boost/foreach.hpp>

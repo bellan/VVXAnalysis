@@ -1,5 +1,5 @@
 #include "VVXAnalysis/TreeAnalysis/interface/MCInfo.h"
-#include "VVXAnalysis/TreeAnalysis/interface/Colours.h"
+#include "VVXAnalysis/Commons/interface/Colours.h"
 
 #include "TChain.h"
 #include <iostream>

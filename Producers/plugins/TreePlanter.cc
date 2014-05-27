@@ -41,6 +41,7 @@ using std::endl;
 TreePlanter::TreePlanter(const edm::ParameterSet &config)
   : PUWeighter_      (PUReweight::LEGACY)
   , filterController_(config)
+  , mcHistoryTools_  (0)
   , passTrigger_(false)
   , passSkim_(false)
   , triggerWord_(0)
@@ -229,6 +230,7 @@ void TreePlanter::initTree(){
 bool TreePlanter::fillEventInfo(const edm::Event& event){
 
   // Check trigger request
+  // FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME
   passTrigger_ = filterController_.passTrigger(event, triggerWord_);
   if (applyTrigger_ && !passTrigger_) return false;
   
@@ -307,7 +309,11 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
   bool goodEvent = fillEventInfo(event);
   if(!goodEvent) return;
-  
+
+  //// For Z+L CRs, we want only events with exactly 1 Z+l candidate.
+  ////if (filterController_.channel() == ZL && ???size() != 1) return;
+
+
   // Load a bunch of objects from the event
   edm::Handle<pat::MuonCollection>       muons            ; event.getByLabel(theMuonLabel    ,     muons);
   edm::Handle<pat::ElectronCollection>   electrons        ; event.getByLabel(theElectronLabel, electrons);
@@ -338,6 +344,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
     jets_.push_back(physjet);
   }
 
+
   // The bosons are selected requiring that their daughters pass the quality criteria to be good daughters
   Zmm_    = fillBosons<pat::Muon,phys::Lepton>(Zmm, 23);
 
@@ -352,6 +359,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   ZZ4e_   = fillDiBosons<pat::Electron,phys::Electron,pat::Electron,phys::Electron>(ZZ4e);
 
   ZZ2e2m_ = fillDiBosons<pat::Electron,phys::Electron,pat::Muon,phys::Lepton>(ZZ2e2m);
+
 
   theTree->Fill();
 }

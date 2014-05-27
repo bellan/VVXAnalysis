@@ -8,7 +8,7 @@
  */
 
 #include "VVXAnalysis/TreeAnalysis/interface/EventAnalyzer.h"
-#include "VVXAnalysis/TreeAnalysis/interface/Colours.h"
+#include "VVXAnalysis/Commons/interface/Colours.h"
 #include "VVXAnalysis/Commons/interface/Comparators.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
 

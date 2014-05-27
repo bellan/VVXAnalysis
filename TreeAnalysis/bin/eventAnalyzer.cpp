@@ -1,5 +1,5 @@
 #include "VVXAnalysis/TreeAnalysis/interface/AnalysisFactory.h"
-#include "VVXAnalysis/TreeAnalysis/interface/Colours.h"
+#include "VVXAnalysis/Commons/interface/Colours.h"
 
 #include <iostream>
 #include <boost/lexical_cast.hpp>
