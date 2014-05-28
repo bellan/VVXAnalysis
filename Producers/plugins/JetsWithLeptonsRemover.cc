@@ -47,7 +47,8 @@ private:
   StringCutObjectSelector<pat::CompositeCandidate> preselectionVV_;
 
   // Some istograms for monitoring
-  bool doDebugPlots_;
+  bool  activateDebugPrintOuts_;
+  bool  doDebugPlots_;
   TH1F *hNLeptonJets;
   TH1F *hDeltaPt_jet_lepton;
   TH1F *hDeltaPt_jetcomp_lepton;
@@ -71,7 +72,9 @@ JetsWithLeptonsRemover::JetsWithLeptonsRemover(const edm::ParameterSet & iConfig
   , enFractionAllowed_(iConfig.getParameter<double>("EnergyFractionAllowed"))
   , preselectionJ_    (iConfig.getParameter<std::string>("JetPreselection"))
   , preselectionVV_   (iConfig.getParameter<std::string>("DiBosonPreselection"))
-  , doDebugPlots_     (iConfig.getUntrackedParameter<bool>("DebugPlots",false)) 
+
+  , activateDebugPrintOuts_ (iConfig.getUntrackedParameter<bool>("DebugPrintOuts",false))   
+  , doDebugPlots_           (iConfig.getUntrackedParameter<bool>("DebugPlots",false)) 
 {
   produces<std::vector<cmg::PFJet> >(); 
 
@@ -107,7 +110,7 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
   //  std::cout<<"pt: " << muon.pt() << " eta: " << muon.eta() << " phi: " << muon.phi() << " p: " << muon.p() <<std::endl;
   
 
-  std::cout << "\n\n----------- NEW EVENT ----------- number of jets: " << jets->size() << std::endl;
+  if(activateDebugPrintOuts_) std::cout << "\n\n----------- NEW EVENT ----------- number of jets: " << jets->size() << std::endl;
   int passPresel = 0;
   int numLepJets = 0;
   auto_ptr<vector<cmg::PFJet> > out(new vector<cmg::PFJet>());
@@ -116,7 +119,7 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
     if(!preselectionJ_(jet)) continue;
     ++passPresel;
 
-    std::cout<<"\n+++++ Jet +++++ pt: " << jet.pt() << " eta: " << jet.eta() << " phi: " << jet.phi() << std::endl;
+    if(activateDebugPrintOuts_) std::cout<<"\n+++++ Jet +++++ pt: " << jet.pt() << " eta: " << jet.eta() << " phi: " << jet.phi() << std::endl;
 
     bool leptonjet = false;
 
@@ -137,10 +140,10 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
     double ecomp_abseta = ve.eta();
     double ecomp_pt     = ecomp.pt();
     
-
-    std::cout << "== mu comp == num: " << mucomp.number() << " fraction: " << mucomp.fraction() << " pt: " << mucomp_pt << " eta: " << mucomp_abseta << std::endl; 
-    std::cout << "== e comp == num: "  << ecomp.number()  << " fraction: " << ecomp.fraction()  << " pt: " << ecomp_pt << " eta: " << ecomp_abseta << std::endl; 
-
+    if(activateDebugPrintOuts_){
+      std::cout << "== mu comp == num: " << mucomp.number() << " fraction: " << mucomp.fraction() << " pt: " << mucomp_pt << " eta: " << mucomp_abseta << std::endl; 
+      std::cout << "== e comp == num: "  << ecomp.number()  << " fraction: " << ecomp.fraction()  << " pt: " << ecomp_pt << " eta: " << ecomp_abseta << std::endl; 
+    }
 
     if(cleaningFromDiboson_){
       edm::Handle<edm::View<pat::CompositeCandidate> > VV   ; event.getByLabel(diBosonSrc_, VV);
@@ -170,11 +173,12 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
 		lepcomp_abseta = ecomp_abseta;
 	      }
 	      else std::cout << "Do not know what to do ... do you know what are you doing?" << std::endl;
-	      
-	      std::cout << "ID lepton: " << v->daughter(j)->pdgId() << " pt: " << v->daughter(j)->pt()   << " eta: " << v->daughter(j)->eta() << " phi: " << v->daughter(j)->phi() << " p: " << v->daughter(j)->p() << std::endl;
+
+	      if(activateDebugPrintOuts_)
+		std::cout << "ID lepton: " << v->daughter(j)->pdgId() << " pt: " << v->daughter(j)->pt()   << " eta: " << v->daughter(j)->eta() << " phi: " << v->daughter(j)->phi() << " p: " << v->daughter(j)->p() << std::endl;
 	      if(physmath::isAlmostEqual(v->daughter(j)->pt(), lepcomp_pt, 0.1) && fabs(fabs(v->daughter(j)->eta()) - lepcomp_abseta) < 0.01){
 		leptonjet = true;
-		std::cout << Green("\t\t !!! Found a matching lepton-jet !!!")<<std::endl;
+		if(activateDebugPrintOuts_) std::cout << Green("\t\t !!! Found a matching lepton-jet !!!")<<std::endl;
 		if(doDebugPlots_){
 		  hDeltaPt_jet_lepton     ->Fill(v->daughter(j)->pt()  - jet.pt());
 		  hDeltaPt_jetcomp_lepton ->Fill(v->daughter(j)->pt()  - lepcomp_pt);    
@@ -191,13 +195,14 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
 	    const cmg::PFJetComponent photoncomp = jet.component(reco::PFCandidate::ParticleType::gamma);
 	    
 	    double photon_en_frac = v->daughter(2)->energy()/jet.energy();
-	    std::cout << "Sister of " << v->userFloat("dauWithFSR") << " (" <<  v->daughter(v->userFloat("dauWithFSR"))->pdgId() << "), pt: "
-		      << v->daughter(2)->pt()   << " eta: " << v->daughter(2)->eta() << " phi: " << v->daughter(2)->phi() << " p: " << v->daughter(2)->p()
-		      << " Photon energy fraction in the jet: " <<  photon_en_frac 
-		      << std::endl;
+	    if(activateDebugPrintOuts_)
+	      std::cout << "Sister of " << v->userFloat("dauWithFSR") << " (" <<  v->daughter(v->userFloat("dauWithFSR"))->pdgId() << "), pt: "
+			<< v->daughter(2)->pt()   << " eta: " << v->daughter(2)->eta() << " phi: " << v->daughter(2)->phi() << " p: " << v->daughter(2)->p()
+			<< " Photon energy fraction in the jet: " <<  photon_en_frac 
+			<< std::endl;
 	    if(photoncomp.number() > 0 && photon_en_frac > 0.5 && reco::deltaR(*v->daughter(2), jet) < 0.05){
 	      leptonjet = true; 
-	      std::cout << Blue("\t\t !!! Found a matching FSR lepton-jet !!!")<<std::endl;	  
+	      if(activateDebugPrintOuts_) std::cout << Blue("\t\t !!! Found a matching FSR lepton-jet !!!")<<std::endl;	  
 	      if(doDebugPlots_){
 		math::XYZVectorD vp(photoncomp.pt(), 0, sqrt(photoncomp.energy()*photoncomp.energy() - photoncomp.pt()*photoncomp.pt()));
 		hDeltaPt_jet_fsr     ->Fill(v->daughter(2)->pt()  - jet.pt());
@@ -254,8 +259,10 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
 
   if(doDebugPlots_) hNLeptonJets->Fill(numLepJets);
   
-  std::cout<<"Pass Presel: "<<passPresel<<" pass cleaning: "<<out->size() << std::endl;
-  std::cout<<"-------------------------------------------------------------------------"<< std::endl;
+  if(activateDebugPrintOuts_){
+    std::cout<<"Pass Presel: "<<passPresel<<" pass cleaning: "<<out->size() << std::endl;
+    std::cout<<"-------------------------------------------------------------------------"<< std::endl;
+  }
 
   event.put(out);
 }
