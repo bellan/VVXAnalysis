@@ -231,7 +231,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
 
   // Check trigger request
   // FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME
-  passTrigger_ = filterController_.passTrigger(event, triggerWord_);
+  passTrigger_ = filterController_.passTrigger(EEEE,event, triggerWord_);
   if (applyTrigger_ && !passTrigger_) return false;
   
   // Check Skim requests
@@ -354,11 +354,11 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
 
   // The bosons have NOT any requirement on the quality of their daughters, only the flag is set (because of the same code is usd for CR too)
-  ZZ4m_   = fillDiBosons<pat::Muon,phys::Lepton,pat::Muon,phys::Lepton>(ZZ4m);
+  ZZ4m_   = fillDiBosons<pat::Muon,phys::Lepton,pat::Muon,phys::Lepton>(MMMM,ZZ4m);
 
-  ZZ4e_   = fillDiBosons<pat::Electron,phys::Electron,pat::Electron,phys::Electron>(ZZ4e);
+  ZZ4e_   = fillDiBosons<pat::Electron,phys::Electron,pat::Electron,phys::Electron>(EEEE,ZZ4e);
 
-  ZZ2e2m_ = fillDiBosons<pat::Electron,phys::Electron,pat::Muon,phys::Lepton>(ZZ2e2m);
+  ZZ2e2m_ = fillDiBosons<pat::Electron,phys::Electron,pat::Muon,phys::Lepton>(EEMM,ZZ2e2m);
 
 
   theTree->Fill();
@@ -496,7 +496,7 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
 
 // Right now, only for ZZ
 template<typename T1, typename PAR1, typename T2, typename PAR2>
-std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const{
+std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(Channel channel, const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const{
 
   std::vector<phys::DiBoson<PAR1,PAR2> > physDiBosons;
 
@@ -505,7 +505,7 @@ std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(const edm::Hand
     const pat::CompositeCandidate* edmV0;
     const pat::CompositeCandidate* edmV1;
     
-    if (filterController_.channel() != ZL) { // Regular 4l candidates
+    if (channel != ZL) { // Regular 4l candidates
       edmV0   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z1")->masterClone().get());      
       edmV1   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z2")->masterClone().get());
       
@@ -533,7 +533,7 @@ std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(const edm::Hand
     phys::DiBoson<PAR1,PAR2> VV(V0, V1);
     VV.setQualityFlag   (edmVV.userFloat("isBestCand"));
     VV.setSelectionLevel(edmVV.userFloat("FullSel"));
-    VV.setRegion        (computeCRFlag(edmVV));
+    VV.setRegion        (computeCRFlag(channel,edmVV));
     
     physDiBosons.push_back(VV);
   }
@@ -541,11 +541,9 @@ std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(const edm::Hand
   return physDiBosons;
 }
 
-int TreePlanter::computeCRFlag(const pat::CompositeCandidate & vv) const{
+int TreePlanter::computeCRFlag(Channel channel, const pat::CompositeCandidate & vv) const{
   int CRFLAG=0;
     
-  Channel channel = filterController_.channel();
-
   if (channel==ZLL) {
     if(vv.userFloat("isBestCRZLL")&&vv.userFloat("CRZLL"))
       set_bit(CRFLAG,CRZLL);

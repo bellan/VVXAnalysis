@@ -7,6 +7,7 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "DataFormats/Math/interface/deltaR.h"
+#include "DataFormats/Math/interface/deltaPhi.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonSelectors.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
@@ -79,17 +80,17 @@ JetsWithLeptonsRemover::JetsWithLeptonsRemover(const edm::ParameterSet & iConfig
 
   if(doDebugPlots_){
     edm::Service<TFileService> fs;
-    hNLeptonJets              = fs->make<TH1F>("hNLeptonJets"            , "Number of lepton-jets found", 10,   0, 10);
-    hDeltaPt_jet_lepton       = fs->make<TH1F>("hDeltaPt_jet_lepton"     , "#Delta p_T (jet, l)"       , 100, -50, 50);
-    hDeltaPt_jetcomp_lepton   = fs->make<TH1F>("hDeltaPt_jetcomp_lepton" , "#Delta p_T (jetcomp, l)"   , 100, -50, 50);
-    hDeltaPt_jet_fsr          = fs->make<TH1F>("hDeltaPt_jet_fsr"        , "#Delta p_T (jet, fsr)"     , 100, -50, 50);
-    hDeltaPt_jetcomp_fsr      = fs->make<TH1F>("hDeltaPt_jetcomp_fsr"    , "#Delta p_T (jetcomp, fsr)" , 100, -50, 50);
-    hDeltaPhi_jet_lepton      = fs->make<TH1F>("hDeltaPhi_jet_lepton"    , "#Delta #phi (jet, l)"      , 100, -50, 50);
-    hDeltaPhi_jet_fsr	      = fs->make<TH1F>("hDeltaPhi_jet_fsr"       , "#Delta #phi (jet, fsr)"    , 100, -50, 50);
-    hDeltaEta_jet_lepton      = fs->make<TH1F>("hDeltaEta_jet_lepton"    , "#Delta #eta (jet, l)"      , 100, -50, 50);
-    hDeltaEta_jetcomp_lepton  = fs->make<TH1F>("hDeltaEta_jetcomp_lepton", "#Delta #eta (jetcomp, l)"  , 100, -50, 50);
-    hDeltaEta_jet_fsr	      = fs->make<TH1F>("hDeltaEta_jet_fsr"       , "#Delta #eta (jet, fsr)"    , 100, -50, 50);
-    hDeltaEta_jetcomp_fsr     = fs->make<TH1F>("hDeltaEta_jetcomp_fsr"   , "#Delta #eta (jetcomp, fsr)", 100, -50, 50);
+    hNLeptonJets              = fs->make<TH1F>("hNLeptonJets"            , "Number of lepton-jets found",  10,   0, 10);
+    hDeltaPt_jet_lepton       = fs->make<TH1F>("hDeltaPt_jet_lepton"     , "#Delta p_T (jet, l)"        , 100, -50, 50);
+    hDeltaPt_jetcomp_lepton   = fs->make<TH1F>("hDeltaPt_jetcomp_lepton" , "#Delta p_T (jetcomp, l)"    , 100, -50, 50);
+    hDeltaPt_jet_fsr          = fs->make<TH1F>("hDeltaPt_jet_fsr"        , "#Delta p_T (jet, fsr)"      , 100, -50, 50);
+    hDeltaPt_jetcomp_fsr      = fs->make<TH1F>("hDeltaPt_jetcomp_fsr"    , "#Delta p_T (jetcomp, fsr)"  , 100, -50, 50);
+    hDeltaPhi_jet_lepton      = fs->make<TH1F>("hDeltaPhi_jet_lepton"    , "#Delta #phi (jet, l)"       , 100,  -4,  4);
+    hDeltaPhi_jet_fsr	      = fs->make<TH1F>("hDeltaPhi_jet_fsr"       , "#Delta #phi (jet, fsr)"     , 100,  -4,  4);
+    hDeltaEta_jet_lepton      = fs->make<TH1F>("hDeltaEta_jet_lepton"    , "#Delta #eta (jet, l)"       , 100,  -5,  5);
+    hDeltaEta_jetcomp_lepton  = fs->make<TH1F>("hDeltaEta_jetcomp_lepton", "#Delta #eta (jetcomp, l)"   , 100,  -5,  5);
+    hDeltaEta_jet_fsr	      = fs->make<TH1F>("hDeltaEta_jet_fsr"       , "#Delta #eta (jet, fsr)"     , 100,  -5,  5);
+    hDeltaEta_jetcomp_fsr     = fs->make<TH1F>("hDeltaEta_jetcomp_fsr"   , "#Delta #eta (jetcomp, fsr)" , 100,  -5,  5);
   }
 }
 
@@ -175,11 +176,11 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
 		leptonjet = true;
 		std::cout << Green("\t\t !!! Found a matching lepton-jet !!!")<<std::endl;
 		if(doDebugPlots_){
-		  hDeltaPt_jet_lepton     ->Fill(v->daughter(j)->pt()-jet.pt());
-		  hDeltaPt_jetcomp_lepton ->Fill(v->daughter(j)->pt()-lepcomp_pt);    
-		  hDeltaPhi_jet_lepton    ->Fill(v->daughter(j)->phi()-jet.phi());
-		  hDeltaEta_jet_lepton    ->Fill(v->daughter(j)->eta()-jet.eta());  
-		  hDeltaEta_jetcomp_lepton->Fill(v->daughter(j)->eta()-lepcomp_abseta);    
+		  hDeltaPt_jet_lepton     ->Fill(v->daughter(j)->pt()  - jet.pt());
+		  hDeltaPt_jetcomp_lepton ->Fill(v->daughter(j)->pt()  - lepcomp_pt);    
+		  hDeltaPhi_jet_lepton    ->Fill(v->daughter(j)->phi() - jet.phi());
+		  hDeltaEta_jet_lepton    ->Fill(v->daughter(j)->eta() - jet.eta());  
+		  hDeltaEta_jetcomp_lepton->Fill(fabs(v->daughter(j)->eta()) - lepcomp_abseta);    
 		}
 	      }
 	  }
@@ -194,16 +195,16 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
 		      << v->daughter(2)->pt()   << " eta: " << v->daughter(2)->eta() << " phi: " << v->daughter(2)->phi() << " p: " << v->daughter(2)->p()
 		      << " Photon energy fraction in the jet: " <<  photon_en_frac 
 		      << std::endl;
-	    if(photoncomp.number() > 0 && photon_en_frac > 0.5 && physmath::deltaR(*v->daughter(2), jet) < 0.05){
+	    if(photoncomp.number() > 0 && photon_en_frac > 0.5 && reco::deltaR(*v->daughter(2), jet) < 0.05){
 	      leptonjet = true; 
 	      std::cout << Blue("\t\t !!! Found a matching FSR lepton-jet !!!")<<std::endl;	  
 	      if(doDebugPlots_){
 		math::XYZVectorD vp(photoncomp.pt(), 0, sqrt(photoncomp.energy()*photoncomp.energy() - photoncomp.pt()*photoncomp.pt()));
-		hDeltaPt_jet_fsr     ->Fill(v->daughter(2)->pt()-jet.pt());
-		hDeltaPt_jetcomp_fsr ->Fill(v->daughter(2)->pt()-photoncomp.pt());    
-		hDeltaPhi_jet_fsr    ->Fill(v->daughter(2)->phi()-jet.phi());
-		hDeltaEta_jet_fsr    ->Fill(v->daughter(2)->eta()-jet.eta());  
-		hDeltaEta_jetcomp_fsr->Fill(v->daughter(2)->eta()-vp.eta()); 
+		hDeltaPt_jet_fsr     ->Fill(v->daughter(2)->pt()  - jet.pt());
+		hDeltaPt_jetcomp_fsr ->Fill(v->daughter(2)->pt()  - photoncomp.pt());    
+		hDeltaPhi_jet_fsr    ->Fill(v->daughter(2)->phi() - jet.phi());
+		hDeltaEta_jet_fsr    ->Fill(v->daughter(2)->eta() - jet.eta());  
+		hDeltaEta_jetcomp_fsr->Fill(fabs(v->daughter(2)->eta()) - vp.eta()); 
 	      }
 	    }
 	  }

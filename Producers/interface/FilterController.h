@@ -19,6 +19,10 @@
 
 class FilterController {
  public:
+  
+  enum Trigger{DiMu, DiEle, MuEle, TriEle};
+  typedef std::map<Trigger,bool> TriggerResults;
+
   /// Constructor
   FilterController(const edm::ParameterSet& pset);
 
@@ -30,12 +34,15 @@ class FilterController {
   
   /// Pass skim (set bit in trigworld)
   bool passSkim(const edm::Event & event, short& trigworld, bool makeAnd = true);
-  
+
+  /// Get Simple trigger status
+  TriggerResults getTriggerResults(const edm::Event & event, short& trigword);
+
   /// Pass trigger requests
-  bool passTrigger(const edm::Event & event) { short bw=0; return passTrigger(event,bw); }
+  bool passTrigger(Channel channel, const edm::Event & event) { short bw=0; return passTrigger(channel,event,bw); }
 
   /// Pass trigger requests (and set bits in trigworld)
-  bool passTrigger(const edm::Event & event, short& trigworld);
+  bool passTrigger(Channel channel, const edm::Event & event, short& trigword);
 
 
   /// Pass MC filters specified in the card "MCFilterPath"
@@ -46,8 +53,6 @@ class FilterController {
 
   bool isMC() const {return isMC_;};
 
-  Channel channel() const {return theChannel;}
-
   /// Running condition to be emulated (2011 or 2012)
   int setup() {return theSetup;};
 
@@ -57,7 +62,6 @@ class FilterController {
   std::string PD;
 
  private:
-  Channel theChannel;
   bool isMC_;
   int theSetup;
   int theSampleType;

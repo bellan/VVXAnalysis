@@ -69,9 +69,9 @@ class TreePlanter: public edm::EDAnalyzer {
     phys::Boson<PAR> fillBoson(const pat::CompositeCandidate & v, int type, bool requireQualityCriteria) const;
 
   template<typename T1, typename PAR1, typename T2, typename PAR2>
-    std::vector<phys::DiBoson<PAR1,PAR2> > fillDiBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const;
+    std::vector<phys::DiBoson<PAR1,PAR2> > fillDiBosons(Channel channel, const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const;
 
-  int computeCRFlag(const pat::CompositeCandidate & vv) const;
+  int computeCRFlag(Channel channel, const pat::CompositeCandidate & vv) const;
 
  private:
   struct MinPairComparator{
