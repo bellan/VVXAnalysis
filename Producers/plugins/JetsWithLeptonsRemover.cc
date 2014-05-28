@@ -30,7 +30,7 @@ public:
   virtual ~JetsWithLeptonsRemover() { }
 
   virtual void produce(edm::Event & iEvent, const edm::EventSetup & iSetup);
-  
+  bool isGood(const cmg::PFJet jet, int year) const;
   
 private:
   /// Labels for input collections
@@ -41,7 +41,7 @@ private:
   bool tagOnly_;
   double enFractionAllowed_;
   bool cleaningFromDiboson_;
-
+ 
   /// Preselection cut
   StringCutObjectSelector<cmg::PFJet> preselectionJ_;
   StringCutObjectSelector<pat::CompositeCandidate> preselectionVV_;
@@ -116,8 +116,10 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
   auto_ptr<vector<cmg::PFJet> > out(new vector<cmg::PFJet>());
   foreach(const cmg::PFJet& jet, *jets){
     
-    if(!preselectionJ_(jet)) continue;
+    if(!preselectionJ_(jet) && isGood(jet,2012)) continue;
     ++passPresel;
+
+
 
     if(activateDebugPrintOuts_) std::cout<<"\n+++++ Jet +++++ pt: " << jet.pt() << " eta: " << jet.eta() << " phi: " << jet.phi() << std::endl;
 
@@ -217,16 +219,29 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
       }
       if(leptonjet) ++numLepJets;
     }
+
     
+
+
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------------------
     // If it is a jet matching any of the leptons from the di-boson, or from a FSR photon, then it will not be loaded inside the jet cleaned container (no matter what)
     if(leptonjet) continue;
-    
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+    // Now, check for jets originated from extra leptons in the event. Here, the jets can be tagged only, for a later study of them.
+ 
+    // Check for muon-originated jets
     if(!leptonjet && mucomp.number() > 0 && mucomp.fraction() >= enFractionAllowed_){
       edm::Handle<pat::MuonCollection>       muons       ; event.getByLabel(muonSrc_    ,     muons);
       
       //std::cout<<"-- comp -- pt: " << mucomp_pt << " eta: " << mucomp_abseta                           << " p: " << mucomp.energy() << std::endl;
 
       foreach(const pat::Muon& muon, *muons){
+	// Perform the matching only if the lepton pass certain requirements
+
 	//std::cout<< (muon.pt()-mucomp_pt)/muon.pt() << " " << (abs(muon.eta())-mucomp_abseta)/abs(muon.eta()) << std::endl;
 	  
 	if(physmath::isAlmostEqual(muon.pt(), mucomp_pt, 0.1) && fabs(fabs(muon.eta()) - mucomp_abseta) < 0.01){
@@ -237,18 +252,22 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
       }
     }
 
-
+    // Check for electron-originated jets
     if(!leptonjet && ecomp.number() > 0 && ecomp.fraction() >= enFractionAllowed_){
-      edm::Handle<pat::ElectronCollection>   electrons   ; event.getByLabel(electronSrc_, electrons);
-	 
+      edm::Handle<pat::ElectronCollection>   electrons   ; event.getByLabel(electronSrc_, electrons); 
+
       //std::cout<<"-- comp -- pt: "     << ecomp_pt      << " eta: " << ecomp_abseta                                    << " p: " << ecomp.energy() << std::endl;      
 
-      foreach(const pat::Electron& electron, *electrons)
+      foreach(const pat::Electron& electron, *electrons){
+
+	// Perform the matching only if the lepton pass certain requirements
+
 	if(physmath::isAlmostEqual(electron.pt(), ecomp_pt, 0.1) && fabs(fabs(electron.eta() - ecomp_abseta)) < 0.01){
 	  leptonjet = true;
       	  //std::cout<<"\t\t !!! Found a electron-jet matching !!!"<<std::endl;
 	  //std::cout<<"-- electron -- pt: " << electron.pt()   << " eta: " << electron.eta()    << " phi: " << electron.phi() << " p: " << electron.p()   << std::endl;
 	}
+      }
     }
 
     
@@ -267,7 +286,54 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
   event.put(out);
 }
 
- 
+
+
+bool JetsWithLeptonsRemover::isGood(const cmg::PFJet jet, int year) const {
+  
+  float jeta=fabs(jet.eta());
+  
+  //		bool looseJetID = (jet.getSelection("cuts_looseJetId") > 0) ;
+  bool looseJetID = (jet.component(5).fraction() < 0.99 && 
+		     jet.component(4).fraction() < 0.99 && 
+		     jet.nConstituents() > 1 && 
+		     ( jet.component(1).fraction() > 0 || jeta > 2.4 )  &&
+		     ( ( jet.component(1).number() + jet.component(2).number() + jet.component(3).number() ) > 0 || jeta > 2.4 ) &&
+		     ( jet.component(2).fraction() < 0.99 || jeta > 2.4 ) );
+  
+  if(!looseJetID) return false;
+
+  bool passPU = true; //jet.passPuJetId("full", PileupJetIdentifier::kLoose);
+  
+  //HARD CODED implementation of JetMET V00-03-04 WPs - for synch only
+  //#4 Eta Categories  0-2.5 2.5-2.75 2.75-3.0 3.0-5.0
+  //Pt010_Loose    = cms.vdouble(-0.95,-0.96,-0.94,-0.95),
+  //Pt1020_Loose   = cms.vdouble(-0.95,-0.96,-0.94,-0.95),
+  //Pt2030_Loose   = cms.vdouble(-0.63,-0.60,-0.55,-0.45),
+  //Pt3050_Loose   = cms.vdouble(-0.63,-0.60,-0.55,-0.45), 
+  float jpt=jet.pt();
+  float jpumva=0.;
+  if(year==2012)jpumva=jet.puMva("full53x");
+  else jpumva=jet.puMva("full");
+  if(jpt>20){
+    if(jeta>3.){
+      if(jpumva<=-0.45)passPU=false;
+    }else if(jeta>2.75){
+      if(jpumva<=-0.55)passPU=false;
+    }else if(jeta>2.5){
+      if(jpumva<=-0.6)passPU=false;
+    }else if(jpumva<=-0.63)passPU=false;
+  }else{
+    if(jeta>3.){
+      if(jpumva<=-0.95)passPU=false;
+    }else if(jeta>2.75){
+      if(jpumva<=-0.94)passPU=false;
+    }else if(jeta>2.5){
+      if(jpumva<=-0.96)passPU=false;
+    }else if(jpumva<=-0.95)passPU=false;
+  }
+
+  return looseJetID && passPU;
+}
 
 #include "FWCore/Framework/interface/MakerMacros.h"
 
