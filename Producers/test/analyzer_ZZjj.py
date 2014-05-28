@@ -4,6 +4,7 @@
 
 
 LEPTON_SETUP = 2012
+JET_SETUP    = 2012
 #PD = ""
 #MCFILTER = ""
 ELECORRTYPE   = "Paper" # "None", "Moriond", or "Paper"
@@ -21,6 +22,11 @@ try:
     LEPTON_SETUP
 except NameError:
     LEPTON_SETUP = 2012 # define the set of effective areas, rho corrections, etc.
+
+try:
+    JET_SETUP
+except NameError:
+    JET_SETUP = 2012 # define the MVA for the jet PU Id
 
 try:
     PD
@@ -194,6 +200,7 @@ process.postCleaningElectrons = cms.EDProducer("PATElectronCleaner",
 ### ......................................................................... ###
 
 process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
+                                           Setup               = cms.int32(JET_SETUP),
                                            JetPreselection     = cms.string("pt > 20"),
                                            DiBosonPreselection = cms.string(""),
                                            Jets      = cms.InputTag("cmgPFJetSel"),

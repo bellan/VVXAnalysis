@@ -30,10 +30,11 @@ public:
   virtual ~JetsWithLeptonsRemover() { }
 
   virtual void produce(edm::Event & iEvent, const edm::EventSetup & iSetup);
-  bool isGood(const cmg::PFJet jet, int year) const;
+  bool isGood(const cmg::PFJet jet) const;
   
 private:
   /// Labels for input collections
+  int setup_;
   edm::InputTag jetSrc_;
   edm::InputTag muonSrc_;
   edm::InputTag electronSrc_;
@@ -64,7 +65,8 @@ private:
 
 
 JetsWithLeptonsRemover::JetsWithLeptonsRemover(const edm::ParameterSet & iConfig)
-  : jetSrc_           (iConfig.getParameter<edm::InputTag>("Jets"))
+  : setup_            (iConfig.getParameter<int>("Setup"))
+  , jetSrc_           (iConfig.getParameter<edm::InputTag>("Jets"))
   , muonSrc_          (iConfig.getParameter<edm::InputTag>("Muons"))
   , electronSrc_      (iConfig.getParameter<edm::InputTag>("Electrons"))
   , diBosonSrc_       (iConfig.getParameter<edm::InputTag>("Diboson"))  
@@ -116,7 +118,7 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
   auto_ptr<vector<cmg::PFJet> > out(new vector<cmg::PFJet>());
   foreach(const cmg::PFJet& jet, *jets){
     
-    if(!preselectionJ_(jet) && isGood(jet,2012)) continue;
+    if(!preselectionJ_(jet) && isGood(jet)) continue;
     ++passPresel;
 
 
@@ -128,11 +130,6 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
     const cmg::PFJetComponent mucomp     = jet.component(reco::PFCandidate::ParticleType::mu);
     const cmg::PFJetComponent ecomp      = jet.component(reco::PFCandidate::ParticleType::e);
    
-
-    //if((mucomp.number() == 0 && ecomp.number() == 0) || (mucomp.fraction() < enFractionAllowed_ && ecomp.fraction() < enFractionAllowed_)){
-    //   out->push_back(jet);
-    //   continue;
-    // }
 
     math::XYZVectorD vm(mucomp.pt(), 0, sqrt(mucomp.energy()*mucomp.energy() - mucomp.pt()*mucomp.pt()));
     double mucomp_abseta = vm.eta();
@@ -235,60 +232,51 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
  
     // Check for muon-originated jets
     if(!leptonjet && mucomp.number() > 0 && mucomp.fraction() >= enFractionAllowed_){
-      edm::Handle<pat::MuonCollection>       muons       ; event.getByLabel(muonSrc_    ,     muons);
+      edm::Handle<pat::MuonCollection>  muons; event.getByLabel(muonSrc_, muons);
       
-      //std::cout<<"-- comp -- pt: " << mucomp_pt << " eta: " << mucomp_abseta                           << " p: " << mucomp.energy() << std::endl;
-
       foreach(const pat::Muon& muon, *muons){
-	// Perform the matching only if the lepton pass certain requirements
 
-	//std::cout<< (muon.pt()-mucomp_pt)/muon.pt() << " " << (abs(muon.eta())-mucomp_abseta)/abs(muon.eta()) << std::endl;
-	  
+	if(activateDebugPrintOuts_) std::cout<<"Muon pt: " << muon.pt()   << " eta: " << muon.eta()    << " phi: " << muon.phi() << " p: " << muon.p() << std::endl;  
+
 	if(physmath::isAlmostEqual(muon.pt(), mucomp_pt, 0.1) && fabs(fabs(muon.eta()) - mucomp_abseta) < 0.01){
 	  leptonjet = true;
-	  //std::cout<<"\t\t !!! Found a muon-jet matching !!!"<<std::endl;
-	  //std::cout<<"-- muon -- pt: " << muon.pt()   << " eta: " << muon.eta()    << " phi: " << muon.phi() << " p: " << muon.p()        << std::endl;  
+	  if(activateDebugPrintOuts_) std::cout << Green("\t\t !!! Found a matching lepton-jet (muon not coming from ZZ decay) !!!")<<std::endl;
 	}
       }
     }
+
 
     // Check for electron-originated jets
     if(!leptonjet && ecomp.number() > 0 && ecomp.fraction() >= enFractionAllowed_){
       edm::Handle<pat::ElectronCollection>   electrons   ; event.getByLabel(electronSrc_, electrons); 
 
-      //std::cout<<"-- comp -- pt: "     << ecomp_pt      << " eta: " << ecomp_abseta                                    << " p: " << ecomp.energy() << std::endl;      
-
       foreach(const pat::Electron& electron, *electrons){
 
-	// Perform the matching only if the lepton pass certain requirements
+	if(activateDebugPrintOuts_) std::cout<<"Electron pt: " << electron.pt()   << " eta: " << electron.eta()    << " phi: " << electron.phi() << " p: " << electron.p() << std::endl;  
 
 	if(physmath::isAlmostEqual(electron.pt(), ecomp_pt, 0.1) && fabs(fabs(electron.eta() - ecomp_abseta)) < 0.01){
 	  leptonjet = true;
-      	  //std::cout<<"\t\t !!! Found a electron-jet matching !!!"<<std::endl;
-	  //std::cout<<"-- electron -- pt: " << electron.pt()   << " eta: " << electron.eta()    << " phi: " << electron.phi() << " p: " << electron.p()   << std::endl;
+	  if(activateDebugPrintOuts_) std::cout << Green("\t\t !!! Found a matching lepton-jet (electron not coming from ZZ decay) !!!")<<std::endl;
 	}
       }
     }
 
     
-    // FIXME asso map!
-
+    // FIXME asso map!   
     if(tagOnly_ || !leptonjet) out->push_back(jet);
   }
 
   if(doDebugPlots_) hNLeptonJets->Fill(numLepJets);
   
-  if(activateDebugPrintOuts_){
-    std::cout<<"Pass Presel: "<<passPresel<<" pass cleaning: "<<out->size() << std::endl;
-    std::cout<<"-------------------------------------------------------------------------"<< std::endl;
-  }
-
+  if(activateDebugPrintOuts_) std::cout << "Pass Presel: " << passPresel << " pass cleaning: " << out->size()
+					<< "\n-------------------------------------------------------------------------" << std::endl;
+  
   event.put(out);
 }
 
 
 
-bool JetsWithLeptonsRemover::isGood(const cmg::PFJet jet, int year) const {
+bool JetsWithLeptonsRemover::isGood(const cmg::PFJet jet) const {
   
   float jeta=fabs(jet.eta());
   
@@ -312,26 +300,23 @@ bool JetsWithLeptonsRemover::isGood(const cmg::PFJet jet, int year) const {
   //Pt3050_Loose   = cms.vdouble(-0.63,-0.60,-0.55,-0.45), 
   float jpt=jet.pt();
   float jpumva=0.;
-  if(year==2012)jpumva=jet.puMva("full53x");
-  else jpumva=jet.puMva("full");
-  if(jpt>20){
-    if(jeta>3.){
-      if(jpumva<=-0.45)passPU=false;
-    }else if(jeta>2.75){
-      if(jpumva<=-0.55)passPU=false;
-    }else if(jeta>2.5){
-      if(jpumva<=-0.6)passPU=false;
-    }else if(jpumva<=-0.63)passPU=false;
-  }else{
-    if(jeta>3.){
-      if(jpumva<=-0.95)passPU=false;
-    }else if(jeta>2.75){
-      if(jpumva<=-0.94)passPU=false;
-    }else if(jeta>2.5){
-      if(jpumva<=-0.96)passPU=false;
-    }else if(jpumva<=-0.95)passPU=false;
-  }
 
+  if(setup_==2012)jpumva=jet.puMva("full53x");
+  else jpumva=jet.puMva("full");
+  
+  if(jpt>20){
+    if(jeta > 3.)       { if(jpumva <= -0.45) passPU=false;}
+    else if(jeta > 2.75){ if(jpumva <= -0.55) passPU=false;}
+    else if(jeta > 2.50){ if(jpumva <= -0.60) passPU=false;}
+    else                { if(jpumva <= -0.63) passPU=false;}
+  }
+  else{
+    if(jeta > 3.)       { if(jpumva <= -0.95) passPU=false;}
+    else if(jeta > 2.75){ if(jpumva <= -0.94) passPU=false;}
+    else if(jeta > 2.50){ if(jpumva <= -0.96) passPU=false;}
+    else                { if(jpumva <= -0.95) passPU=false;}
+  }
+  
   return looseJetID && passPU;
 }
 
