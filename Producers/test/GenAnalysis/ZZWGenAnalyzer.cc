@@ -210,20 +210,16 @@ void ZZWGenAnalyzer::analyze(const Event & event, const EventSetup& eventSetup) 
     for(int i=0; i<4; ++i) {
       p_4l += theGenl[i].p4();
     }  
-<<<<<<< HEAD
 
     p_jj = j0.p4() + j1.p4();
 
     p_6f = p_4l + p_jj; 
-=======
+
     p_6f = p_4l + j0.p4() + j1.p4(); 
     
     float m_6f = p_6f.M();
     //float m_4l = p_4l.M();
->>>>>>> 858e82086745112e5c057acb3ff724b63c6db2be
      
-    float m_6f = p_6f.M();
-        
     bool passEtaAccLep = true;
     
     for(int i=0; i<4; ++i) {
