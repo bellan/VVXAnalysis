@@ -35,15 +35,18 @@ class FilterController {
   /// Pass skim (set bit in trigworld)
   bool passSkim(const edm::Event & event, short& trigworld, bool makeAnd = true);
 
-  /// Get Simple trigger status
-  TriggerResults getTriggerResults(const edm::Event & event, short& trigword);
-
   /// Pass trigger requests
   bool passTrigger(Channel channel, const edm::Event & event) { short bw=0; return passTrigger(channel,event,bw); }
 
   /// Pass trigger requests (and set bits in trigworld)
-  bool passTrigger(Channel channel, const edm::Event & event, short& trigword);
+  bool passTrigger(Channel channel, const edm::Event & event, short& trigword)
+  {trigword = getTriggerWord(event); return passTrigger(channel, trigword);}
 
+  /// Set bits in trigword
+  short getTriggerWord(const edm::Event & event);
+
+  /// Check if the trigger is satisfied for a given final state. Trigger word is give in INPUT
+  bool passTrigger(Channel channel, const short& trigword) const;
 
   /// Pass MC filters specified in the card "MCFilterPath"
   bool passMCFilter(const edm::Event & event);

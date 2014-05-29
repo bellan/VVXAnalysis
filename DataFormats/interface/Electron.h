@@ -15,8 +15,9 @@ namespace phys {
 
   class Electron: public Lepton {
 
+    friend class ::TreePlanter;
   public:
-    
+
     /// Constructor
     Electron(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), float q =0, int pid = 0)
       : Lepton(p,q,pid)

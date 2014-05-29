@@ -1,5 +1,6 @@
 #include "VVXAnalysis/Producers/interface/FilterController.h"
 #include <ZZAnalysis/AnalysisStep/interface/bitops.h>
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 using namespace std;
 
@@ -66,17 +67,16 @@ FilterController::passSkim(const edm::Event & event, short& trigworld, bool make
     for (vector<string>::const_iterator name = skimPaths.begin(); name!= skimPaths.end(); ++name) 
       evtPassSkim = makeAnd ? evtPassSkim && passFilter(event, *name) : evtPassSkim || passFilter(event, *name);
   
-  if (evtPassSkim) set_bit_16(trigworld,7);
+  if (evtPassSkim) set_bit_16(trigworld,8);
   return evtPassSkim;
 }
 
 
 
 
-FilterController::TriggerResults
-FilterController::getTriggerResults(const edm::Event & event, short& trigword){
+short FilterController::getTriggerWord(const edm::Event & event){
 
-  TriggerResults results;
+  short trigword = 0;
 
   bool passDiMu = passFilter(event, "triggerDiMu");
   bool passDiEle = passFilter(event, "triggerDiEle");
@@ -94,75 +94,50 @@ FilterController::getTriggerResults(const edm::Event & event, short& trigword){
     passTriEle = passFilter(event, "triggerTriEle");
   }
 
-  results[DiMu]   = passDiMu;
-  results[DiEle]  = passDiEle;
-  results[MuEle]  = passMuEle;
-  results[TriEle] = passTriEle;
-
-  if (passDiMu) set_bit_16(trigword,1);
-  if (passDiEle) set_bit_16(trigword,2);
-  if (passMuEle) set_bit_16(trigword,3);
-  if (passTriEle) set_bit_16(trigword,4);
+  bool passAtLeastOneTrigger = passDiMu || passDiEle || passMuEle || passTriEle;
   
+  if (passAtLeastOneTrigger)   set_bit_16(trigword,0);
+  if (passDiMu)                set_bit_16(trigword,1);
+  if (passDiEle)               set_bit_16(trigword,2);
+  if (passMuEle)               set_bit_16(trigword,3);
+  if (passTriEle)              set_bit_16(trigword,4);
+ 
+  // To be matched with channel == EEEE final state
+  if (passDiEle || passTriEle)                                             set_bit_16(trigword,5); 
+  
+  // To be matched with channel == EEMM final state
+  if ((PD=="" && (passDiEle || passDiMu || passMuEle)) ||
+      (PD=="DoubleEle" && passDiEle) ||
+      (PD=="DoubleMu" && passDiMu && !passDiEle) ||
+      (PD=="MuEG" && passMuEle && !passDiMu && !passDiEle ))               set_bit_16(trigword,6);
+  
+  // To be matched with channel == ZLL or ZL final states
+  if ((PD=="" && (passDiEle || passDiMu || passMuEle || passTriEle)) ||
+      (PD=="DoubleEle" && (passDiEle || passTriEle)) ||
+      (PD=="DoubleMu" && passDiMu && !passDiEle && !passTriEle) ||
+      (PD=="MuEG" && passMuEle && !passDiMu && !passDiEle && !passTriEle)) set_bit_16(trigword,7);
+    
+  // Note: for MMMM final state the requirement is passDiMu, so it needs to be matched with bit 1 (see few line above)
 
-  return results;
+  return trigword;
 }
-
-
-
-
-
 
 
 bool
-FilterController::passTrigger(Channel channel, const edm::Event & event, short& trigword){
+FilterController::passTrigger(Channel channel, const short& trigword) const{
 
-  std::map<Trigger,bool> triggerResults = getTriggerResults(event,trigword);
-
-
-  bool passDiMu =   triggerResults[DiMu]  ;
-  bool passDiEle =  triggerResults[DiEle]; 
-  bool passMuEle  = triggerResults[MuEle] ;
-  bool passTriEle = triggerResults[TriEle];
-
-
-
-
-  // FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME
-  // FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME
-  // FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME
-
-  bool evtPassTrigger = false;
-  //FIXME: this is assuming that we do not pick EEEE or MMMM from "DoubleOr" files as there is no protection for accidental triggers
-  if ((channel==EEEE && (passDiEle || passTriEle)) ||
-      (channel==MMMM && passDiMu)) {
-    evtPassTrigger = true;
-  }
-
-  if (channel==EEMM) {
-    if ((PD=="" && (passDiEle || passDiMu || passMuEle)) ||
-(PD=="DoubleEle" && passDiEle) ||
-(PD=="DoubleMu" && passDiMu && !passDiEle) ||
-(PD=="MuEG" && passMuEle && !passDiMu && !passDiEle )) {
-      evtPassTrigger = true;
-    }
-  }
-
-  // Use all triggers together for the CR
-  if (channel==ZLL || channel==ZL) {
-    if ((PD=="" && (passDiEle || passDiMu || passMuEle || passTriEle)) ||
-(PD=="DoubleEle" && (passDiEle || passTriEle)) ||
-(PD=="DoubleMu" && passDiMu && !passDiEle && !passTriEle) ||
-(PD=="MuEG" && passMuEle && !passDiMu && !passDiEle && !passTriEle)) {
-      evtPassTrigger = true;
-    }
+  if(channel == NONE) return test_bit_16(trigword,0);
+  if(channel == MMMM) return test_bit_16(trigword,1);
+  if(channel == EEEE) return test_bit_16(trigword,5);
+  if(channel == EEMM) return test_bit_16(trigword,6);
+  if(channel == ZLL || channel == ZL) return test_bit_16(trigword,7);
+  else{
+    edm::LogWarning("FilterController") << "Unknown channel, do not know what to do.";
+    return false;
   }
   
-  if (evtPassTrigger) set_bit_16(trigword,0);
- 
-  
-  return evtPassTrigger;
 }
+
 
 bool
 FilterController::passFilter(const edm::Event & event, const string& filterPath, bool fromHLT) {

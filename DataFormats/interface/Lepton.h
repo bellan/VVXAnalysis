@@ -57,7 +57,7 @@ namespace phys {
 
   protected:
     
-    //public:
+
   private:
     Double_t dxy_;               
     Double_t dz_;                

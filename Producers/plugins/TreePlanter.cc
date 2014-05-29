@@ -229,9 +229,9 @@ void TreePlanter::initTree(){
 
 bool TreePlanter::fillEventInfo(const edm::Event& event){
 
-  // Check trigger request
-  // FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME
-  passTrigger_ = filterController_.passTrigger(EEEE,event, triggerWord_);
+  // Check trigger request. Actually, it is a very very loose request, not the actual one, that instead should be
+  // asked to the specific final state
+  passTrigger_ = filterController_.passTrigger(NONE, event, triggerWord_);
   if (applyTrigger_ && !passTrigger_) return false;
   
   // Check Skim requests
@@ -533,8 +533,10 @@ std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(Channel channel
     phys::DiBoson<PAR1,PAR2> VV(V0, V1);
     VV.setQualityFlag   (edmVV.userFloat("isBestCand"));
     VV.setSelectionLevel(edmVV.userFloat("FullSel"));
-    VV.setRegion        (computeCRFlag(channel,edmVV));
-    
+    //VV.setRegion        (computeCRFlag(channel,edmVV));
+    VV.regionWord_  = computeCRFlag(channel,edmVV);
+    VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
+
     physDiBosons.push_back(VV);
   }
 
@@ -563,7 +565,7 @@ int TreePlanter::computeCRFlag(Channel channel, const pat::CompositeCandidate & 
       set_bit(CRFLAG,CRMMEEss);
     if(vv.userFloat("isBestCRMMEEos")&&vv.userFloat("CRLLLL"))
       set_bit(CRFLAG,CRMMEEos);
-    if(vv.userFloat("isBestCRZLL")&&vv.userFloat("CRZLLHiSIP"))
+    if(vv.userFloat("isBestCRZLL")&&vv.userFloat("CRZLLHiSIP")) 
       set_bit(CRFLAG,CRZLLHiSIP);
     if(vv.userFloat("isBestCRZMM")&&vv.userFloat("CRZLLHiSIP"))
       set_bit(CRFLAG,CRZLLHiSIPMM);
