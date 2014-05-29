@@ -22,11 +22,16 @@
 #include "VVXAnalysis/DataFormats/interface/Electron.h"
 #include "VVXAnalysis/DataFormats/interface/Jet.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
+#include "VVXAnalysis/DataFormats/interface/DiBoson.h"
+
+#include "VVXAnalysis/Producers/interface/FilterController.h"
 
 #include "ZZAnalysis/AnalysisStep/interface/PUReweight.h"
 
 class TTree;
 namespace cmg{class PFJet;}
+class MCHistoryTools;
+
 
 class TreePlanter: public edm::EDAnalyzer {
   
@@ -46,7 +51,7 @@ class TreePlanter: public edm::EDAnalyzer {
   virtual void endJob();
   void initTree();
   
-  void fillEventInfo(const edm::Event& event);
+  bool fillEventInfo(const edm::Event& event);
   
   template<typename LEP>
     phys::Lepton fillLepton(const LEP& particle) const;
@@ -57,11 +62,16 @@ class TreePlanter: public edm::EDAnalyzer {
   
   phys::Jet fill(const cmg::PFJet &jet) const;
   
-  template<typename PAR>
-    std::vector<phys::Boson<PAR> > fillBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons,  const std::vector<PAR> & physDaughtersCand, int type = 23) const;
-  
   template<typename T, typename PAR>
-    std::vector<phys::Boson<PAR> > fillBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type = 23) const;
+    std::vector<phys::Boson<PAR> > fillBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const;
+
+  template<typename T, typename PAR>
+    phys::Boson<PAR> fillBoson(const pat::CompositeCandidate & v, int type, bool requireQualityCriteria) const;
+
+  template<typename T1, typename PAR1, typename T2, typename PAR2>
+    std::vector<phys::DiBoson<PAR1,PAR2> > fillDiBosons(Channel channel, const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const;
+
+  int computeCRFlag(Channel channel, const pat::CompositeCandidate & vv) const;
 
  private:
   struct MinPairComparator{
@@ -77,12 +87,18 @@ class TreePlanter: public edm::EDAnalyzer {
   TTree *theTree;
 
   PUReweight       PUWeighter_;
-
+  FilterController filterController_;
+  MCHistoryTools   *mcHistoryTools_;
   // ------------------- Event info in the tree ------------------- //
   Int_t event_;
   Int_t run_;
   Int_t lumiBlock_;
   
+  Bool_t  passTrigger_;
+  Bool_t  passSkim_;
+  Short_t triggerWord_;
+  
+
   Int_t preSkimCounter_;
   Int_t postSkimCounter_;
 
@@ -102,9 +118,15 @@ class TreePlanter: public edm::EDAnalyzer {
   std::vector<phys::Lepton>                 muons_;
   std::vector<phys::Electron>               electrons_;
   std::vector<phys::Jet>                    jets_;
-  std::vector<phys::Boson<phys::Lepton> >   Zmm_;
+
+  std::vector<phys::Boson<phys::Lepton>   > Zmm_;
   std::vector<phys::Boson<phys::Electron> > Zee_;
-  std::vector<phys::Boson<phys::Jet> >      Wjj_;
+  std::vector<phys::Boson<phys::Jet>      > Wjj_;
+
+  std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   > ZZ4m_;
+  std::vector<phys::DiBoson<phys::Electron, phys::Electron> > ZZ4e_;
+  std::vector<phys::DiBoson<phys::Electron, phys::Lepton>   > ZZ2e2m_;
+
   std::vector<phys::Particle>               genParticles_;
   std::vector<phys::Boson<phys::Particle> > genVBParticles_;
 
@@ -115,6 +137,9 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::InputTag theZmmLabel;
   edm::InputTag theZeeLabel;
   edm::InputTag theWLabel;
+  edm::InputTag theZZ4mLabel;
+  edm::InputTag theZZ4eLabel;
+  edm::InputTag theZZ2e2mLabel;
   edm::InputTag theMETLabel;
   edm::InputTag theVertexLabel;
   edm::InputTag thePUInfoLabel;
@@ -128,6 +153,10 @@ class TreePlanter: public edm::EDAnalyzer {
   bool isMC_;
   int  sampleType_;
   int  setup_;
+  bool applyTrigger_;
+  bool applySkim_;
+  bool applyMCSel_;
+
   std::vector<double> theXSections;
   double externalCrossSection_;
   Double_t summcprocweights_;
@@ -135,6 +164,9 @@ class TreePlanter: public edm::EDAnalyzer {
   Double_t sumpumcprocweights_;
   Int_t theNumberOfEvents;
   Int_t theNumberOfAnalyzedEvents;
+
+
+  std::vector<std::string> skimPaths_;
 };
 #endif
 

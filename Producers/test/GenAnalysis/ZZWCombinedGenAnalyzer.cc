@@ -4,7 +4,6 @@
  *
  */
 
-
 #include <FWCore/Framework/interface/Frameworkfwd.h>
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/ESHandle.h>
@@ -30,6 +29,8 @@
 
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
+#include "VVXAnalysis/Commons/interface/Constants.h"
+#include "VVXAnalysis/Commons/interface/PhysTools.h"
 
 using namespace std;
 using namespace edm;
@@ -131,8 +132,10 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
   std::vector<const reco::Candidate *> theGenZ;
   std::vector<const reco::Candidate *> theGenW;
   std::vector<const reco::Candidate *> theGenl;
-  std::vector<const reco::Candidate *> theGenlp;
-  std::vector<const reco::Candidate *> theGenlm;
+  std::vector<phys::Particle> theGenlp;
+  std::vector<phys::Particle> theGenlm;
+  //std::vector<const reco::Candidate *> theGenlp;
+  //std::vector<const reco::Candidate *> theGenlm;
   std::vector<const reco::Candidate *> theGenj;
   std::vector<const reco::Candidate *> theGenq;
 
@@ -168,8 +171,8 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
 	numE  = id == 11 ? numE+1  : numE;
 	numMu = id == 13 ? numMu+1 : numMu;
 	theGenl.push_back(&*p);
-	if(s_id>0) {theGenlp.push_back(&*p);
-	} else {theGenlm.push_back(&*p);}
+	//if(s_id>0) {theGenlp.push_back(phys::convert(*p));
+	//} else {theGenlm.push_back(phys::convert(*p));}
       } else {
 	printIt=false;
       }
@@ -313,7 +316,7 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
     //-----------------3: Real signal, real pairing-----------------------
      else if ( num==3 ) {     
 
-       std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> >  ZZ = zzw::makeZBosonsFromLeptons(theGenlm, theGenlp, leptonCode, mZ);
+       std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> >  ZZ = zzw::makeZBosonsFromLeptons(theGenlm, theGenlp, leptonCode, phys::ZMASS);
     
       Z0 = ZZ.first;
       Z1 = ZZ.second;

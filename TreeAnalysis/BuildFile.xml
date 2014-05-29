@@ -1,6 +1,7 @@
 <use name="boost"/>
 <use name="root"/>
 <use name="VVXAnalysis/DataFormats"/>
+<use name="VVXAnalysis/Commons"/>
 
 <export>
    <lib name="1"/>

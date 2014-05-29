@@ -1,6 +1,7 @@
 #include "VVXAnalysis/TreeAnalysis/interface/ZZWAnalyzer.h"
-#include "VVXAnalysis/TreeAnalysis/interface/Colours.h"
-                                                                                                                                                                                                                                                                                                                                                                           
+#include "VVXAnalysis/Commons/interface/Colours.h"
+#include "VVXAnalysis/Commons/interface/Comparators.h"
+
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
@@ -77,7 +78,9 @@ Int_t ZZWAnalyzer::cut() {
       double DR11 = deltaR(myZ0.daughter(1).p4().Rapidity(), myZ0.daughter(1).p4().Phi(), b->daughter(1).p4().Rapidity(), b->daughter(1).p4().Phi());
 
       if (DR00 < 0.02 || DR01 < 0.02 || DR10 < 0.02 || DR11 < 0.02) {
-	passGhost=false;
+	passGhost=false; 
+	// BUG! If the first Z1 canidate fails, then the remaining candidate can never have passGhost == true.
+	cout << "Check me! Most probably I am a bug!" << endl;
       }    
       if(passGhost) {  
 	myZ1 = *b;
@@ -385,8 +388,8 @@ void ZZWAnalyzer::analyze() {
 	WcomparatorVector.push_back(make_pair(Wgen, w));
       }
   
-      std::stable_sort(ZcomparatorVector.begin(), ZcomparatorVector.end(), ZdeltaRComparator());
-      std::stable_sort(WcomparatorVector.begin(), WcomparatorVector.end(), WdeltaRComparator());
+      std::stable_sort(ZcomparatorVector.begin(), ZcomparatorVector.end(), VdeltaRComparator());
+      std::stable_sort(WcomparatorVector.begin(), WcomparatorVector.end(), VdeltaRComparator());
 
     
       

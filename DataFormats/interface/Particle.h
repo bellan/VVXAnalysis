@@ -54,6 +54,8 @@ namespace phys {
     double pt()         const {return p4_.Pt();}
     double eta()        const {return p4_.Eta();}
     double phi()        const {return p4_.Phi();}
+    double p()          const {return p4_.Mag();}
+
     // Method that tries to infer the charge of the particle starting from a pdgId in input
     // to be moved?
     static double computeCharge(int pdgId) {
@@ -73,11 +75,13 @@ namespace phys {
       return charge;
     }
 
-    void setId(int pid) {id_ = pid;}
+    void setId(int pid) {id_ = pid; charge_ = computeCharge(pid);}
     
     void setMotherId(int pid) {motherId_ = pid;}
     
     int motherId() const {return motherId_;}
+
+    bool isValid() const {return id_ != 0 && p() > 0;}
  
   protected:
     TLorentzVector p4_;

@@ -12,6 +12,7 @@
 
 #include "EventAnalyzer.h"
 #include "RegistrableAnalysis.h"
+#include "VVXAnalysis/Commons/interface/Constants.h"
 
 class ZZSAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZSAnalyzer>{
 
@@ -28,11 +29,11 @@ public:
   friend class Selector<ZZSAnalyzer>;
   template< class PAR >
     bool ZBosonDefinition(phys::Boson<PAR> cand) const{
-    return fabs(cand.p4().M() - ZMASS) < 20;
+    return fabs(cand.p4().M() - phys::ZMASS) < 20;
   }
   template< class PAR >
     bool WBosonDefinition(phys::Boson<PAR> cand) const{
-    return fabs(cand.p4().M() - WMASS) < 40;
+    return fabs(cand.p4().M() - phys::WMASS) < 40;
   }
 };
 #endif
