@@ -16,7 +16,7 @@ using namespace std;
 void Macro6f() {
 
   gSystem->Load("$CMSSW_BASE/lib/$SCRAM_ARCH/pluginZZWGenAnalysisPlugins.so");
-  
+
   gSystem->AddIncludePath(" -I$CMSSW_BASE/src/ -I$CMSSW_RELEASE_BASE/src");
   
   
@@ -24,14 +24,14 @@ void Macro6f() {
   gROOT->SetMacroPath(path.c_str());
   
  
-  TFile* QED6_S = new TFile("QED6_SIGNAL.root");
-  TFile* QED6_B = new TFile("QED6_SINGLEBACKGR.root");
+  TFile* QED6_S = new TFile("QED_SIGN.root");
+  TFile* QED6_B = new TFile("QED_BACKGR.root");
   
-  TCanvas* c =  new TCanvas("Mass 6 fermions","Mass 6 fermions", 900, 700);
+  TCanvas* c =  new TCanvas("Mass 6 fermions","Mass 6 fermions", 1000, 600);
   c->Divide(2,1);
   
   TLegend* leg = new TLegend(0.67, 0.61,0.88,0.76);
-  
+  leg->SetFillColor(kWhite);
 
   float L = 300.;
   
@@ -69,8 +69,9 @@ void Macro6f() {
   TH1F* my7 = new TH1F("my7", "my7", 3000, 0, 3000);
   TH1F* my8 = new TH1F("my8", "my8", 3000, 0, 3000);
   TH1F* my9 = new TH1F("my9", "my9", 3000, 0, 3000);  
+  TH1F* my_sign = new TH1F("my_sign", "my_sign", 3000, 0, 3000);
   
-  m6f_sign->Scale(w_QED6);
+  m6f_sign->Scale(w_QED6*25);
   m6f_1->Scale(w_QED6);
   m6f_2->Scale(w_QED6);
   m6f_3->Scale(w_QED6);
@@ -99,6 +100,8 @@ void Macro6f() {
   my8->Add(m6f_4,1);
   my9 = (TH1F*)my8->Clone();
   my9->Add(m6f_9,1);
+  my_sign = (TH1F*)my9->Clone();
+  my_sign->Add(m6f_sign,1);
   
   c->cd(0);
   c->SetLogy();
@@ -111,12 +114,26 @@ void Macro6f() {
   my7->SetFillColor(kAzure);
   my8->SetFillColor(kViolet);
   my9->SetFillColor(kOrange);
-  m6f_sign->SetLineColor(kBlack);
+  my_sign->SetFillColor(kRed);
 
-  my9->SetTitle("Mass 6 fermions");
-  my9->SetMaximum(1000.);
+  my1->Rebin(2);
+  my2->Rebin(2);
+  my3->Rebin(2);
+  my4->Rebin(2);
+  my5->Rebin(2);
+  my6->Rebin(2);
+  my7->Rebin(2);
+  my8->Rebin(2);
   my9->Rebin(2);
-  my9->Draw();
+  my_sign->Rebin(2);
+
+  my_sign->SetTitle("");
+  my_sign->Draw();
+  my_sign->SetMaximum(1000.);
+  my_sign->GetXaxis()->SetTitle("m_{6f} [GeV]");
+  my_sign->GetYaxis()->SetTitle("Events/5GeV");
+  my_sign->GetXaxis()->SetRangeUser(0, 1500);
+  my9->Draw("same");
   my8->Draw("same");
   my7->Draw("same");
   my6->Draw("same");
@@ -125,20 +142,19 @@ void Macro6f() {
   my3->Draw("same");
   my2->Draw("same");
   my1->Draw("same");
-  m6f_sign->Draw("same");
-
  
-  leg->AddEntry(my1, "1 backgr", "f");
-  leg->AddEntry(my2, "2 backgr", "f");
-  leg->AddEntry(my3, "3 backgr", "f");
-  leg->AddEntry(my4, "4 backgr", "f");
-  leg->AddEntry(my5, "5 backgr", "f");
-  leg->AddEntry(my6, "6 backgr", "f");
-  leg->AddEntry(my7, "7 backgr", "f");
-  leg->AddEntry(my8, "8 backgr", "f");
-  leg->AddEntry(my9, "9 backgr", "f");
-  leg->AddEntry(m6f_sign, "signal", "l");
-  leg->Draw();
 
+  leg->AddEntry(my3, "ZZZ", "f"); 
+  leg->AddEntry(my2, "ZZW*", "f");
+  leg->AddEntry(my1, "ZZZ*", "f");
+  leg->AddEntry(my6, "ZZ+X", "f"); 
+  leg->AddEntry(my5, "WZ+X", "f"); 
+  leg->AddEntry(my8, "ZZjj+X", "f");
+  leg->AddEntry(my7, "ZW*+X", "f");
+  leg->AddEntry(my4, "ZZ*+X", "f");
+  leg->AddEntry(my9, "X+Y", "f");
+  leg->AddEntry(my_sign, "signal x 25", "f");
+  leg->Draw();
+  
   TStyle::gStyle->SetOptStat(0);
 }
