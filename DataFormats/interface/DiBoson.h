@@ -17,6 +17,7 @@ namespace phys {
   template <typename P1, typename P2>
     class DiBoson: public Particle {
     
+    friend class ::TreePlanter;
   public:
     /// Constructor
     DiBoson(): Particle()
@@ -67,7 +68,11 @@ namespace phys {
       passFullSel_ = passFullSel;
     }
 
+    bool passTriggerSelection() const{
+      return passTrigger_;
+    }
 
+    
   private:
 
     Boson<P1> daughter0_;
@@ -76,6 +81,7 @@ namespace phys {
     Int_t regionWord_;
     Bool_t isBestCand_;
     Bool_t passFullSel_;
+    Bool_t passTrigger_;
 
     ClassDef(DiBoson, 1) //
   };
