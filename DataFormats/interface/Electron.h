@@ -86,7 +86,7 @@ namespace phys {
 
   protected:
     
-  public:
+  private:
     Double_t energy_;
     Double_t phiWidth_;
     Double_t etaWidth_;

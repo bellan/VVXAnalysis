@@ -16,6 +16,7 @@ namespace phys {
   template <typename P>
   class Boson: public Particle {
 
+    friend class ::TreePlanter;
   public:
     /// Constructor
     Boson(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), int pid = 0)
@@ -70,6 +71,8 @@ namespace phys {
       p4_ = p4_ + fsrPhoton_.p4();
     }
 
+    
+
     Particle fsrPhoton() const {return fsrPhoton_;}
 
     int daughterWithFSR() const {return indexFSR_;}
@@ -77,8 +80,6 @@ namespace phys {
     // the daughters pass the quality criteria
     bool hasGoodDaughters() const {return hasGoodDaughters_;}
     
-    void setDaughtersQuality(bool q) {hasGoodDaughters_ = q;}
-
 
   protected:
     

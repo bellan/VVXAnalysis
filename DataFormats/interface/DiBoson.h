@@ -56,22 +56,6 @@ namespace phys {
     // Type of search/control region
     short region() const {return regionWord_;}
 
-    void setRegion(short regionWord){
-      regionWord_ = regionWord;
-    } 
-
-    void setQualityFlag(bool isBestCand){
-      isBestCand_ = isBestCand;
-    }
-
-    void setSelectionLevel(bool passFullSel){
-      passFullSel_ = passFullSel;
-    }
-
-    bool passTriggerSelection() const{
-      return passTrigger_;
-    }
-
     
   private:
 

@@ -487,7 +487,7 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
   }
   
   // Add quality of daughters, right now only for ll pairs
-  if(v.hasUserFloat("GoodLeptons")) physV.setDaughtersQuality(v.userFloat("GoodLeptons"));
+  if(v.hasUserFloat("GoodLeptons")) physV.hasGoodDaughters_ = v.userFloat("GoodLeptons");
   
 
   return physV;
@@ -531,9 +531,8 @@ std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(Channel channel
     }
     
     phys::DiBoson<PAR1,PAR2> VV(V0, V1);
-    VV.setQualityFlag   (edmVV.userFloat("isBestCand"));
-    VV.setSelectionLevel(edmVV.userFloat("FullSel"));
-    //VV.setRegion        (computeCRFlag(channel,edmVV));
+    VV.isBestCand_  = edmVV.userFloat("isBestCand");
+    VV.passFullSel_ = edmVV.userFloat("FullSel");
     VV.regionWord_  = computeCRFlag(channel,edmVV);
     VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
 
