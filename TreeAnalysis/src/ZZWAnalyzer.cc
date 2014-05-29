@@ -20,10 +20,23 @@ Int_t ZZWAnalyzer::cut() {
   
  
   theHistograms.fill("Number of events", "Number of events", 10, 0, 10, 0, theWeight);  // 0: Number of total events ----------------------------------------------------------------------------------------
-  theHistograms.fill("MET", "MET", 300, 0, 300, met->pt(), theWeight);
+  
+  theHistograms.fill("MET_beforeCuts", "MET_beforeCuts", 300, 0, 300, met->pt(), theWeight);
   
   theHistograms.fill("Selection", "Selection", 3, 0, 3, 0, theWeight);
 
+  foreach(const Lepton m, *muons) {
+    theHistograms.fill("Leptons_P_{T}_beforeCuts", "Leptons_P_{T}_beforeCuts", 300, 0, 300, m.p4().Pt(), theWeight);
+  }
+
+  foreach(const Lepton e, *electrons) {
+    theHistograms.fill("Leptons_P_{T}_beforeCuts", 300, 0, 300, e.p4().Pt(), theWeight );
+  }
+
+  foreach(const Jet j, *jets) {
+    theHistograms.fill("Jets_P_{T}_beforeCuts", "Jets_P_{T}_beforeCuts", 300, 0, 300, j.p4().Pt(), theWeight );
+  }
+  
   //.......W request
 
   bool passWsize =  Wjj->size() >= 1;    

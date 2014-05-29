@@ -16,7 +16,7 @@ using namespace std;
 void Macro6f() {
 
   gSystem->Load("$CMSSW_BASE/lib/$SCRAM_ARCH/pluginZZWGenAnalysisPlugins.so");
-  
+
   gSystem->AddIncludePath(" -I$CMSSW_BASE/src/ -I$CMSSW_RELEASE_BASE/src");
   
   
