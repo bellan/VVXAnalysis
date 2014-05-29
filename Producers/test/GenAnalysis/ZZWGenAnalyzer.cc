@@ -190,7 +190,13 @@ void ZZWGenAnalyzer::analyze(const Event & event, const EventSetup& eventSetup) 
     
     Z0 = ZZ.first;
     Z1 = ZZ.second;
-  
+    if( fabs((((ZZ.first).p4()).M()) - mZ) > fabs((((ZZ.second).p4()).M()) - mZ)){
+      Z1 = ZZ.first;
+      Z0 = ZZ.second;
+    }
+
+
+
     W.setDaughter(0, phys::Particle(theGenj[0].p4()));
     W.setDaughter(1, phys::Particle(theGenj[1].p4()));
     
