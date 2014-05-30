@@ -27,13 +27,16 @@ namespace phys {
       {}
       
     DiBoson(const Boson<P1>& vb1, const Boson<P2>& vb2)
-      : Particle(vb1.p4()+vb2.p4(),0,46)
+      : Particle(vb1.p4()+vb2.p4(),0,0)
       , daughter0_(vb1)
       , daughter1_(vb2)
       , regionWord_(0)
       , isBestCand_(false)
       , passFullSel_(false)
-      {}
+      {
+	for(unsigned int i = 0; i < 2; ++i)
+	  id_ += abs(vb1.daughter(i).id()) + abs(vb2.daughter(i).id());
+      }
 
     template<typename T>
       Boson<T> daughter(int i) const{
