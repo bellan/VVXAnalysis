@@ -2,10 +2,12 @@
 
 import commands, ROOT, sys
 from Colours import *
-from ROOT import gROOT, TTree
+from ROOT import gROOT, TTree, gSystem
 
-gROOT.ProcessLine(".L ../DataFormats/interface/Particle.h+")
+gROOT.ProcessLine(".L ../DataFormats/src/loader.C++")
+
 from ROOT import phys
+
 
 LorentzVector  = ROOT.Math.LorentzVector('ROOT::Math::PxPyPzE4D<double>')
 ParticleVector = ROOT.std.vector('phys::Particle')

@@ -245,8 +245,6 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   event_     = event.id().event(); 
   lumiBlock_ = event.luminosityBlock();
 
-
-
   edm::Handle<std::vector<cmg::BaseMET> > met;   event.getByLabel(theMETLabel, met);
   met_ = phys::Particle(phys::Particle::convert(met->front().p4()));
 
@@ -254,6 +252,9 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   nvtx_ = vertices->size();
     
   if (isMC_) {
+    if(mcHistoryTools_) delete mcHistoryTools_;
+    mcHistoryTools_ = new MCHistoryTools(event);
+    
     edm::Handle<std::vector<PileupSummaryInfo> > puInfo; event.getByLabel(thePUInfoLabel, puInfo);
     foreach(const PileupSummaryInfo& pui, *puInfo)
       if(pui.getBunchCrossing() == 0) { 
@@ -303,9 +304,6 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   ++theNumberOfAnalyzedEvents;
 
   initTree();
-  
-  if(mcHistoryTools_) delete mcHistoryTools_;
-  mcHistoryTools_ = new MCHistoryTools(event);
 
   bool goodEvent = fillEventInfo(event);
   if(!goodEvent) return;
@@ -573,7 +571,7 @@ int TreePlanter::computeCRFlag(Channel channel, const pat::CompositeCandidate & 
   }
 
   //For the SR, also fold information about acceptance in CRflag 
-  if (filterController_.isMC() && (channel==EEEE||channel==MMMM||channel==EEMM)) {
+  if (isMC_ && (channel==EEEE||channel==MMMM||channel==EEMM)) {
     bool gen_ZZ4lInEtaAcceptance   = false; // All 4 gen leptons in eta acceptance
     bool gen_ZZ4lInEtaPtAcceptance = false; // All 4 gen leptons in eta,pT acceptance
     bool gen_m4l_180               = false; // gen_m4l > 180
