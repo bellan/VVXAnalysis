@@ -150,9 +150,11 @@ void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::Even
 
 
 void TreePlanter::endRun(const edm::Run& run, const edm::EventSetup& setup){
-  edm::Handle<GenRunInfoProduct> genRunInfo;
-  run.getByLabel("generator", genRunInfo);
-  theXSections.push_back(genRunInfo->crossSection());
+  if(isMC_){
+    edm::Handle<GenRunInfoProduct> genRunInfo;
+    run.getByLabel("generator", genRunInfo);
+    theXSections.push_back(genRunInfo->crossSection());
+  }
 }
 
 void TreePlanter::endJob(){
@@ -532,6 +534,7 @@ std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(Channel channel
     VV.isBestCand_  = edmVV.userFloat("isBestCand");
     VV.passFullSel_ = edmVV.userFloat("FullSel");
     VV.regionWord_  = computeCRFlag(channel,edmVV);
+    VV.triggerWord_ = triggerWord_;
     VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
 
     physDiBosons.push_back(VV);
