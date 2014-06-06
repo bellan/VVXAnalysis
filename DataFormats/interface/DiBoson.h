@@ -21,6 +21,7 @@ namespace phys {
   public:
     /// Constructor
     DiBoson(): Particle()
+      , triggerWord_(0)
       , regionWord_(0)
       , isBestCand_(false)
       , passFullSel_(false)
@@ -30,6 +31,7 @@ namespace phys {
       : Particle(vb1.p4()+vb2.p4(),0,0)
       , daughter0_(vb1)
       , daughter1_(vb2)
+      , triggerWord_(0)
       , regionWord_(0)
       , isBestCand_(false)
       , passFullSel_(false)
@@ -57,18 +59,24 @@ namespace phys {
     bool passFullSelection() const {return passFullSel_;}
 
     // Type of search/control region
-    short region() const {return regionWord_;}
+    int region() const {return regionWord_;}
 
+    // Triggers that have been passed
+    short trigger() const {return triggerWord_;}
     
+    // True if pass the trigger for a given final state
+    bool passTrigger() const {return passTrigger_;}
+
   private:
 
     Boson<P1> daughter0_;
     Boson<P2> daughter1_;
     
-    Int_t regionWord_;
-    Bool_t isBestCand_;
-    Bool_t passFullSel_;
-    Bool_t passTrigger_;
+    Short_t triggerWord_;
+    Int_t   regionWord_;
+    Bool_t  isBestCand_;
+    Bool_t  passFullSel_;
+    Bool_t  passTrigger_;
 
     ClassDef(DiBoson, 1) //
   };
