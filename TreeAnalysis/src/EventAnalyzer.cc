@@ -86,6 +86,14 @@ void EventAnalyzer::Init(TTree *tree)
   Zee = new std::vector<phys::Boson<phys::Electron> >(); ZeeCand = 0; b_ZeeCand = 0; theTree->SetBranchAddress("ZeeCand", &ZeeCand, &b_ZeeCand);
   Wjj = new std::vector<phys::Boson<phys::Jet> > ()    ; WjjCand = 0; b_WjjCand = 0; theTree->SetBranchAddress("WjjCand", &WjjCand, &b_WjjCand);
 
+  // DiBosons
+  ZZ4m   = 0; b_ZZ4m   = 0; theTree->SetBranchAddress("ZZ4mCand"  , &ZZ4m  , &b_ZZ4m  );
+  ZZ4e   = 0; b_ZZ4e   = 0; theTree->SetBranchAddress("ZZ4eCand"  , &ZZ4e  , &b_ZZ4e  );
+  ZZ2e2m = 0; b_ZZ2e2m = 0; theTree->SetBranchAddress("ZZ2e2mCand", &ZZ2e2m, &b_ZZ2e2m);
+
+  //ZZ = new std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   >();
+
+
   // Gen Particles   
   genParticles   = 0;                                                b_genParticles   = 0; theTree->SetBranchAddress("genParticles"  , &genParticles  , &b_genParticles);
   genVBParticles = new std::vector<phys::Boson<phys::Particle> > (); b_genVBParticles = 0; theTree->SetBranchAddress("genVBParticles", &genVBParticles, &b_genVBParticles);
@@ -102,11 +110,15 @@ void EventAnalyzer::Init(TTree *tree)
   b_nvtx        = 0; theTree->SetBranchAddress("nvtxs"  , &nvtx   , &b_nvtx   );
   b_rho         = 0; theTree->SetBranchAddress("rho"    , &rho    , &b_rho    );
   
-  
   // MC related variables
   b_puweight     = 0; theTree->SetBranchAddress("puweight"    , &theMCInfo.puweight_     , &b_puweight );
   b_mcprocweight = 0; theTree->SetBranchAddress("mcprocweight", &theMCInfo.mcprocweight_ , &b_mcprocweight);
   b_genCategory  = 0; theTree->SetBranchAddress("genCategory" , &genCategory             , &b_genCategory  );
+
+  // Info about selections
+  b_passTrigger = 0; theTree->SetBranchAddress("passTrigger", &passTrigger, &b_passTrigger); 
+  b_passSkim    = 0; theTree->SetBranchAddress("passSkim"   , &passSkim   , &b_passSkim   ); 
+  b_triggerWord = 0; theTree->SetBranchAddress("triggerWord", &triggerWord, &b_triggerWord); 
 }
 
 

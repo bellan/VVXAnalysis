@@ -43,17 +43,17 @@ WWGJets,triboson,-1,,,,/WWGJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-
 TTGJets,tt,-1,,,,/TTGJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,
 WGToLNuG,W,-1,,,,/WGToLNuG_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,8,
 
-DoubleMuA,doubleMu,-1,,,,/DoubleMu/Run2012A-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleMu
-DoubleMuB,doubleMu,-1,,,,/DoubleMuParked/Run2012B-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleMu
-DoubleMuC,doubleMu,-1,,,,/DoubleMuParked/Run2012C-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleMu
-DoubleMuD,doubleMu,-1,,,,/DoubleMuParked/Run2012D-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,15,DoubleMu
+DoubleMuA,DoubleMu,-1,,,,/DoubleMu/Run2012A-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleMu
+DoubleMuB,DoubleMu,-1,,,,/DoubleMuParked/Run2012B-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleMu
+DoubleMuC,DoubleMu,-1,,,,/DoubleMuParked/Run2012C-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleMu
+DoubleMuD,DoubleMu,-1,,,,/DoubleMuParked/Run2012D-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,15,DoubleMu
 
-DoubleEleA,doubleEle,-1,,,,/DoubleElectron/Run2012A-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleEle
-DoubleEleB,doubleEle,-1,,,,/DoubleElectron/Run2012B-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleEle
-DoubleEleC,doubleEle,-1,,,,/DoubleElectron/Run2012C-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleEle
-DoubleEleD,doubleEle,-1,,,,/DoubleElectron/Run2012D-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,15,DoubleEle
+DoubleEleA,DoubleEle,-1,,,,/DoubleElectron/Run2012A-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleEle
+DoubleEleB,DoubleEle,-1,,,,/DoubleElectron/Run2012B-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleEle
+DoubleEleC,DoubleEle,-1,,,,/DoubleElectron/Run2012C-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleEle
+DoubleEleD,DoubleEle,-1,,,,/DoubleElectron/Run2012D-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,15,DoubleEle
 
-MuEGA,muEle,-1,,,,/MuEG/Run2012A-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,MuEG
-MuEGB,muEle,-1,,,,/MuEG/Run2012B-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,MuEG
-MuEGC,muEle,-1,,,,/MuEG/Run2012C-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,MuEG
-MuEGD,muEle,-1,,,,/MuEG/Run2012D-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,15,MuEG
+MuEGA,MuEG,-1,,,,/MuEG/Run2012A-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,MuEG
+MuEGB,MuEG,-1,,,,/MuEG/Run2012B-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,MuEG
+MuEGC,MuEG,-1,,,,/MuEG/Run2012C-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,MuEG
+MuEGD,MuEG,-1,,,,/MuEG/Run2012D-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,15,MuEG

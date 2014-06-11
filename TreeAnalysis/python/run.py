@@ -28,7 +28,8 @@ if len(sys.argv) > 3: getExternalCrossSectionFromFile = sys.argv[3]
 
 cregion = 'baseline' # in case, make it a further external argument
 
-luminosity = 300000.0
+#luminosity = 300000.0
+luminosity = 19029.853
 
 baseinputdir = 'samples'
 
@@ -83,7 +84,7 @@ print "\n"
 
 def run(executable, analysis, typeofsample, cregion, luminosity):
     inputdir  = baseinputdir
-    outputdir = 'results_test'
+    outputdir = 'results'
     if not os.path.exists(outputdir): os.popen('mkdir "%s"' %outputdir)
 
     outputdir = outputdir+"/"+analysis+"_"+cregion
@@ -111,14 +112,10 @@ def run(executable, analysis, typeofsample, cregion, luminosity):
 
     #################################################################################
 
-    if typeofsample == 'mudata' or typeofsample == 'edata': 
-        datasets = ['2012A-13Jul', '2012A-06Aug', '2012B-13Jul', '2012C-24Aug', '2012C-11Dec', '2012C-PromptReco', '2012D-PromptReco']
+    print typeofsample[0:8], typeofsample[0:8], typeofsample[0:4]
+    if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:5] == 'MuEG':
         luminosity = -1
-        if typeofsample == 'mudata':
-            sampleprefix = 'MuData-'
-        if typeofsample == 'edata':
-            sampleprefix = 'EData-'
-
+        
 
     # ----- Run over the run periods -----
     hadd = 'hadd {0:s}/{1:s}.root'.format(outputdir,typeofsample)
