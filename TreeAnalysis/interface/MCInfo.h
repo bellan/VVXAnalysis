@@ -19,7 +19,7 @@ class MCInfo {
   double sampleWeight()         const {return sampleWeight_;}
   double mcProcWeight()         const {return mcprocweight_*analyzedEvents_/summcprocweight_;}
   // Total weight of the event, computed on the fly
-  double weight()               const {return sampleWeight_*mcProcWeight()*puweight_;}
+  double weight()               const {return luminosity_ >= 0 ? sampleWeight_*mcProcWeight()*puweight_ : 1.;}
   
  private:
   friend class EventAnalyzer;
