@@ -20,6 +20,8 @@
 #include "VVXAnalysis/DataFormats/interface/Lepton.h"
 #include "VVXAnalysis/DataFormats/interface/Jet.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
+#include "VVXAnalysis/DataFormats/interface/DiBoson.h"
+#include "VVXAnalysis/DataFormats/interface/TypeDefs.h"
 
 #include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/MCInfo.h"
@@ -149,6 +151,10 @@ public:
   		      TBranch *b_mcprocweight;
   Int_t genCategory ; TBranch *b_genCategory;
 
+  Bool_t  passTrigger; TBranch *b_passTrigger;
+  Bool_t  passSkim   ; TBranch *b_passSkim;
+  Short_t triggerWord; TBranch *b_triggerWord;
+  
 
   //MET
   phys::Particle *met   ; TBranch *b_met;
@@ -171,6 +177,14 @@ public:
   std::vector<phys::Boson<phys::Lepton> >   *Zmm;
   std::vector<phys::Boson<phys::Electron> > *Zee;
   std::vector<phys::Boson<phys::Jet> >      *Wjj;
+
+  // DiBosons
+  std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   >  *ZZ4m  ; TBranch *b_ZZ4m; 
+  std::vector<phys::DiBoson<phys::Electron, phys::Electron> >  *ZZ4e  ; TBranch *b_ZZ4e;  
+  std::vector<phys::DiBoson<phys::Electron, phys::Lepton>   >  *ZZ2e2m; TBranch *b_ZZ2e2m;
+
+  // DiBoson (Not in the tree)
+  phys::DiBoson<phys::Lepton  , phys::Lepton> *ZZ;
 
   // GenParticle 
   std::vector<phys::Particle>               *genParticles;   TBranch *b_genParticles;
