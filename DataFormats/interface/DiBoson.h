@@ -40,6 +40,11 @@ namespace phys {
 	  id_ += abs(vb1.daughter(i).id()) + abs(vb2.daughter(i).id());
       }
 
+    template<typename T1, typename T2>
+      DiBoson<T1,T2> clone() const {
+      return DiBoson<T1,T2>(daughter0_.clone<T1>(), daughter1_.clone<T2>());
+    }
+
     template<typename T>
       Boson<T> daughter(int i) const{
       if(i == 0) return daughter0_;

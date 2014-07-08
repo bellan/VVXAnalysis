@@ -126,6 +126,7 @@ public:
   TTree *theTree;
   int fCurrent; 
   bool doBasicPlots_;
+  int  triggerChecks_;
 
  protected:
 

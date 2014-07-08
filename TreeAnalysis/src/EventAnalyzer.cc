@@ -40,6 +40,7 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 			     double externalXSection, bool doBasicPlots)
   : select(aSelector)
   , doBasicPlots_(doBasicPlots)
+  , triggerChecks_(0)
   , theMCInfo(filename, lumi, externalXSection)
   , theWeight(1.)
   , theCutCounter(0.)
@@ -91,7 +92,7 @@ void EventAnalyzer::Init(TTree *tree)
   ZZ4e   = 0; b_ZZ4e   = 0; theTree->SetBranchAddress("ZZ4eCand"  , &ZZ4e  , &b_ZZ4e  );
   ZZ2e2m = 0; b_ZZ2e2m = 0; theTree->SetBranchAddress("ZZ2e2mCand", &ZZ2e2m, &b_ZZ2e2m);
 
-  //ZZ = new std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   >();
+  ZZ = 0;
 
 
   // Gen Particles   
@@ -153,6 +154,22 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   stable_sort(Zee->begin(), Zee->end(), phys::PtComparator());
   stable_sort(Wjj->begin(), Wjj->end(), phys::PtComparator());
 
+  int triggers = 0;
+  if((ZZ4m->size() + ZZ4e->size() + ZZ2e2m->size()) > 0){
+
+    if(ZZ4m->size() == 1 && ZZ4m->front().passTrigger()){ ++triggers;
+      ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4m->front().clone<phys::Lepton,phys::Lepton>());
+    }
+    else if(ZZ4e->size() == 1 && ZZ4e->front().passTrigger()){ ++triggers;
+      ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4e->front().clone<phys::Lepton,phys::Lepton>());
+    }
+    else if(ZZ2e2m->size() == 1 && ZZ2e2m->front().passTrigger()){ ++triggers;
+      ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ2e2m->front().clone<phys::Lepton,phys::Lepton>());
+    }
+  }
+  if(triggers  > 1) triggerChecks_ =  1;
+  if(triggers == 0) triggerChecks_ = -1;
+
   theWeight = theMCInfo.weight();
   theInputWeightedEvents += theWeight;
 
@@ -209,6 +226,7 @@ void EventAnalyzer::loop(const std::string outputfile){
   fout.Close();
   //cout<<"Events in input: " << Green(theInputWeightedEvents)<< endl;
   cout<<"Events passing all cuts: "<< Green(theCutCounter) << endl;
+  if(triggerChecks_ !=0) cout << colour::Warning("At least one event failed the check on trigger-preselection ") << colour::Warning(triggerChecks_) << endl;
 }
 
 
