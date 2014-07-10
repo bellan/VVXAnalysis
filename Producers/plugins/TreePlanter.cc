@@ -69,7 +69,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , sumpuweights_        (0.) 
   , sumpumcprocweights_  (0.)
   , theNumberOfEvents(0)
-  , theNumberOfAnalyzedEvents(){
+  , theNumberOfAnalyzedEvents(0){
  
   edm::Service<TFileService> fs;
   theTree = fs->make<TTree>("ElderTree","ElderTree");
@@ -303,12 +303,12 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
 
 
 void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup){
-  ++theNumberOfAnalyzedEvents;
 
   initTree();
 
   bool goodEvent = fillEventInfo(event);
   if(!goodEvent) return;
+  ++theNumberOfAnalyzedEvents;
 
   //// For Z+L CRs, we want only events with exactly 1 Z+l candidate.
   ////if (filterController_.channel() == ZL && ???size() != 1) return;

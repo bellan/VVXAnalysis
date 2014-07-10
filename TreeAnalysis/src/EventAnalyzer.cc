@@ -79,8 +79,8 @@ void EventAnalyzer::Init(TTree *tree)
   electrons = 0; b_electrons = 0; theTree->SetBranchAddress("electrons", &electrons, &b_electrons);
   
   // Jets   
-  jets = 0;      b_jets = 0;      theTree->SetBranchAddress("jets", &jets, &b_jets);
-
+  pjets = 0;      b_pjets = 0;    theTree->SetBranchAddress("jets", &pjets, &b_pjets);
+  jets  = new std::vector<phys::Jet>(); centralJets  = new std::vector<phys::Jet>();
 
   // Bosons   
   Zmm = new std::vector<phys::Boson<phys::Lepton> >()  ; ZmmCand = 0; b_ZmmCand = 0; theTree->SetBranchAddress("ZmmCand", &ZmmCand, &b_ZmmCand);
@@ -139,7 +139,17 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   
   stable_sort(muons->begin(),     muons->end(),     phys::PtComparator());
   stable_sort(electrons->begin(), electrons->end(), phys::PtComparator());
-  stable_sort(jets->begin(),      jets->end(),      phys::PtComparator());
+  stable_sort(pjets->begin(),     pjets->end(),     phys::PtComparator());
+
+  // Some selection on jets
+  jets->clear(); centralJets->clear();
+  foreach(const phys::Jet &jet, *pjets)
+    if(jet.pt() > 30){
+      if(fabs(jet.eta()) < 4.7) jets->push_back(jet);
+      if(fabs(jet.eta()) < 2.5) centralJets->push_back(jet);
+    }
+
+  
 
   Zmm->clear(); Zee->clear(); Wjj->clear();
 
@@ -171,6 +181,9 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   if(triggers == 0) triggerChecks_ = -1;
 
   theWeight = theMCInfo.weight();
+  // Temporary hack to fix a normalization issue in the samples
+  theWeight = theWeight/theMCInfo.analyzedEvents()* theTree->GetEntries();
+
   theInputWeightedEvents += theWeight;
 
   return e;

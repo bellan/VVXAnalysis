@@ -112,7 +112,6 @@ def run(executable, analysis, typeofsample, cregion, luminosity):
 
     #################################################################################
 
-    print typeofsample[0:8], typeofsample[0:8], typeofsample[0:4]
     if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:5] == 'MuEG':
         luminosity = -1
         

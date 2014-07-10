@@ -166,8 +166,14 @@ public:
   //Electrons
   std::vector<phys::Electron> *electrons; TBranch *b_electrons;
 
-  // Jets  
-  std::vector<phys::Jet> *jets; TBranch *b_jets;
+  // Persistent Jets (no eta cut, pT > 20 GeV)  
+  std::vector<phys::Jet> *pjets; TBranch *b_pjets;
+
+  // Jets with pT > 30 GeV and |eta| < 4.7 (not in the tree)
+  std::vector<phys::Jet> *jets;
+  
+  // Central jets (not in the tree)
+  std::vector<phys::Jet> *centralJets;
 
   // Bosons Candidate
   std::vector<phys::Boson<phys::Lepton> >   *ZmmCand; TBranch *b_ZmmCand;

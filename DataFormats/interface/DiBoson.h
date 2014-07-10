@@ -2,7 +2,8 @@
 #define ZZWAnalysis_DataFormats_DiBoson_H
 
 /** \class DiBoson
- *  No description available.
+ *  
+ *  Ids: 4mu = 4*13 = 52; 2e2mu = 2*13 + 2*11 = 48; 4e = 4*11 = 44 
  *
  *  $Date: 2013/03/15 13:37:31 $
  *  $Revision: 1.3 $

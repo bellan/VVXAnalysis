@@ -68,13 +68,13 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
 		<< " Generated events: " <<  genEvents_ << " Pre-skimmed events: " << preSkimCounter_ 
 		<< std::endl;
     
-    totalAnEvents    += analyzedEvents_;
-    totalGenEvents   += genEvents_;
-    totalSumMCProc   += summcprocweight_;
-    totalSumPUMCProc += sumpumcprocweight_;
+    totalAnEvents       += analyzedEvents_;
+    totalGenEvents      += genEvents_;
+    totalSumMCProc      += summcprocweight_;
+    totalSumPUMCProc    += sumpumcprocweight_;
     meanIntCrossSection += genEvents_*internalCrossSection_;
   }
-  
+
   // The tree is not needed anymore
   delete tree;
   
