@@ -40,7 +40,7 @@ namespace phys {
 	, missingHit_(-1)
 	, nCrystals_(-1)
 	{
-	  Particle::id_ = 11;
+	  if(abs(id()) != 11) Particle::id_ = 111;
 	}
     
 
