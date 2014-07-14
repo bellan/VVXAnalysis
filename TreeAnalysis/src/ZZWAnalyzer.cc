@@ -26,6 +26,7 @@ Int_t ZZWAnalyzer::cut() {
   
   theHistograms.fill("Selection", "Selection", 3, 0, 3, 0, theWeight);
 
+
   foreach(const Lepton m, *muons) {
     theHistograms.fill("Leptons_P_{T}_beforeCuts", "Leptons_P_{T}_beforeCuts", 300, 0, 300, m.p4().Pt(), theWeight);
   }
@@ -79,15 +80,16 @@ Int_t ZZWAnalyzer::cut() {
 
       if (DR00 < 0.02 || DR01 < 0.02 || DR10 < 0.02 || DR11 < 0.02) {
 	passGhost=false; 
-	// BUG! If the first Z1 canidate fails, then the remaining candidate can never have passGhost == true.
+	// BUG! If the first Z1 canidate fails, then the remaining candidate can never have passGhost == true  ?
 	cout << "Check me! Most probably I am a bug!" << endl;
-      }    
+      } 
+      
       if(passGhost) {  
 	myZ1 = *b;
 	break;
       }   
-    }  
-
+    } 
+    
     if(passGhost == false) return -1;
 
     for(int i = 0; i <=1; ++i) {
