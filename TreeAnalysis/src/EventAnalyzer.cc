@@ -189,7 +189,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   // FIXME: Correction for efficiency is temporary here (later, weight(*ZZ) --> weight())
   theWeight = theMCInfo.weight(*ZZ);
   // FIXME: Temporary hack to fix a normalization issue in the samples
-  theWeight = theWeight/theMCInfo.analyzedEvents()* theTree->GetEntries();
+  if(theWeight != 1) theWeight = theWeight/theMCInfo.analyzedEvents()* theTree->GetEntries();
 
   theInputWeightedEvents += theWeight;
 
