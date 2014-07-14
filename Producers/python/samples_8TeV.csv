@@ -1,6 +1,7 @@
 identifier,process,crossSection = -1,totalEvents = -1,luminosity = -1,execute=True,dataset,user,pattern,splitLevel,tune
 ZZTo4eJJ_SMHContinInterf_H125.6,Phantom_4l2j,2.484688144236787E-004,,,,/ZZTo4eJJ_SMHContinInterf_M-125p6_8TeV-phantom-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,3,
 ZZTo2e2muJJ_SMHContinInterf_H125.6,Phantom_4l2j,5.434945696873235E-004,,,,/ZZTo2e2muJJ_SMHContinInterf_M-125p6_8TeV-phantom-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,3,
+ZZTo4muJJ_BSM25HContinInterf_H125.6,Phantom_4l2j,2.487975936891337E-004,,,,/ZZTo4muJJ_BSM25HContinInterf_M-125p6_8TeV-phantom-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,3,
 ZZJetsTo4LSignal,ZZJetsTo4L,0.1296,,,,/ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,6,Signal
 ZZJetsTo4LNoSignal,ZZJetsTo4L,0.1296,,,,/ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,6,NoSignal
 WZZJetsSignal,WZZ,0.01968,,,,/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,Signal
