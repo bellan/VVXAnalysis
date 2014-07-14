@@ -40,7 +40,6 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 			     double externalXSection, bool doBasicPlots)
   : select(aSelector)
   , doBasicPlots_(doBasicPlots)
-  , triggerChecks_(0)
   , theMCInfo(filename, lumi, externalXSection)
   , theWeight(1.)
   , theCutCounter(0.)
@@ -163,25 +162,33 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   stable_sort(Zmm->begin(), Zmm->end(), phys::PtComparator());
   stable_sort(Zee->begin(), Zee->end(), phys::PtComparator());
   stable_sort(Wjj->begin(), Wjj->end(), phys::PtComparator());
-
+  
+  int totCand = ZZ4m->size() + ZZ4e->size() + ZZ2e2m->size();
+  theHistograms.fill("nZZCandidates",     "Number of good candidates in the event", 10, 0, 10, totCand       , 1);
+  theHistograms.fill("nZZ4eCandidates",   "Number of good candidates in the event", 10, 0, 10, ZZ4e->size()  , 1);
+  theHistograms.fill("nZZ4mCandidates",   "Number of good candidates in the event", 10, 0, 10, ZZ4m->size()  , 1);
+  theHistograms.fill("nZZ2e2mCandidates", "Number of good candidates in the event", 10, 0, 10, ZZ2e2m->size(), 1);
+  
   int triggers = 0;
-  if((ZZ4m->size() + ZZ4e->size() + ZZ2e2m->size()) > 0){
-
+  if(totCand > 0){
+    
     if(ZZ4m->size() == 1 && ZZ4m->front().passTrigger()){ ++triggers;
       ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4m->front().clone<phys::Lepton,phys::Lepton>());
     }
-    else if(ZZ4e->size() == 1 && ZZ4e->front().passTrigger()){ ++triggers;
+    if(ZZ4e->size() == 1 && ZZ4e->front().passTrigger()){ ++triggers;
       ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4e->front().clone<phys::Lepton,phys::Lepton>());
     }
-    else if(ZZ2e2m->size() == 1 && ZZ2e2m->front().passTrigger()){ ++triggers;
+    if(ZZ2e2m->size() == 1 && ZZ2e2m->front().passTrigger()){ ++triggers;
       ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ2e2m->front().clone<phys::Lepton,phys::Lepton>());
     }
   }
-  if(triggers  > 1) triggerChecks_ =  1;
-  if(triggers == 0) triggerChecks_ = -1;
 
-  theWeight = theMCInfo.weight();
-  // Temporary hack to fix a normalization issue in the samples
+  theHistograms.fill("GoodTriggerableCands", "Number of good triggerable candidates in the event", 10, 0, 10, triggers, 1);
+  if(triggers != 1) return 0;
+  
+  // FIXME: Correction for efficiency is temporary here (later, weight(*ZZ) --> weight())
+  theWeight = theMCInfo.weight(*ZZ);
+  // FIXME: Temporary hack to fix a normalization issue in the samples
   theWeight = theWeight/theMCInfo.analyzedEvents()* theTree->GetEntries();
 
   theInputWeightedEvents += theWeight;
@@ -212,7 +219,6 @@ void EventAnalyzer::loop(const std::string outputfile){
   if (theTree == 0) return;
 
   Long64_t nentries = theTree->GetEntries();  
-  Long64_t nbytes = 0, nb = 0;
 
   begin();
 
@@ -220,7 +226,7 @@ void EventAnalyzer::loop(const std::string outputfile){
 
     Long64_t ientry = LoadTree(jentry);
     if (ientry < 0) break;
-    nb = GetEntry(jentry);  nbytes += nb; 
+    if (!GetEntry(jentry)) continue;
 
     if (cut() < 0) continue;
     theCutCounter += theWeight;
@@ -239,7 +245,6 @@ void EventAnalyzer::loop(const std::string outputfile){
   fout.Close();
   //cout<<"Events in input: " << Green(theInputWeightedEvents)<< endl;
   cout<<"Events passing all cuts: "<< Green(theCutCounter) << endl;
-  if(triggerChecks_ !=0) cout << colour::Warning("At least one event failed the check on trigger-preselection ") << colour::Warning(triggerChecks_) << endl;
 }
 
 
@@ -367,3 +372,5 @@ void EventAnalyzer::fillJetPlots(const std::string &type, const phys::Jet      &
   theHistograms.fill<TH1I>(type+"_pass_puCutBased_medium" , 2, 0, 2, jet.pass_puCutBased_medium (), theWeight); // void??
   theHistograms.fill<TH1I>(type+"_pass_puCutBased_tight"  , 2, 0, 2, jet.pass_puCutBased_tight  (), theWeight); // void??
 }
+
+
