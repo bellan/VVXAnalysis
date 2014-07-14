@@ -99,6 +99,7 @@ process.TFileService=cms.Service('TFileService', fileName=cms.string('ZZjjAnalys
 
  
 process.treePlanter = cms.EDAnalyzer("TreePlanter",
+                                     sampleName   = cms.string(SAMPLENAME),
                                      setup        = cms.int32(LEPTON_SETUP),
                                      sampleType   = cms.int32(SAMPLE_TYPE),
                                      PD           = cms.string(PD),

@@ -58,6 +58,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theZZ2e2mLabel   (config.getParameter<edm::InputTag>("ZZ2e2m"   ))
   , theMETLabel      (config.getParameter<edm::InputTag>("MET"      ))
   , theVertexLabel   (config.getParameter<edm::InputTag>("Vertices" ))
+  , sampleName_      (config.getParameter<std::string>("sampleName"))
   , isMC_            (config.getUntrackedParameter<bool>("isMC",false))
   , sampleType_      (config.getParameter<int>("sampleType"))
   , setup_           (config.getParameter<int>("setup"))
@@ -255,7 +256,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     
   if (isMC_) {
     if(mcHistoryTools_) delete mcHistoryTools_;
-    mcHistoryTools_ = new MCHistoryTools(event);
+    mcHistoryTools_ = new MCHistoryTools(event, sampleName_);
     
     edm::Handle<std::vector<PileupSummaryInfo> > puInfo; event.getByLabel(thePUInfoLabel, puInfo);
     foreach(const PileupSummaryInfo& pui, *puInfo)

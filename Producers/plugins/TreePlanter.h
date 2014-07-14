@@ -150,6 +150,7 @@ class TreePlanter: public edm::EDAnalyzer {
   // --------------------------------------------------------- //
 
   // Ordinary data members
+  std::string sampleName_;
   bool isMC_;
   int  sampleType_;
   int  setup_;
