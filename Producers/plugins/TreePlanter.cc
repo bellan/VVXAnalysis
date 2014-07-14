@@ -354,6 +354,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
 
   // The bosons have NOT any requirement on the quality of their daughters, only the flag is set (because of the same code is usd for CR too)
+
   ZZ4m_   = fillDiBosons<pat::Muon,phys::Lepton,pat::Muon,phys::Lepton>(MMMM,ZZ4m);
 
   ZZ4e_   = fillDiBosons<pat::Electron,phys::Electron,pat::Electron,phys::Electron>(EEEE,ZZ4e);
@@ -368,7 +369,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 template<typename LEP>
 phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
 
-  phys::Lepton output(phys::Particle::convert(lepton.p4()),lepton.charge(),13);
+  phys::Lepton output(phys::Particle::convert(lepton.p4()),lepton.charge(),lepton.pdgId());
   
   output.dxy_             = lepton.userFloat("dxy"            );               
   output.dz_              = lepton.userFloat("dz"             );                
@@ -504,7 +505,7 @@ std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(Channel channel
 
     const pat::CompositeCandidate* edmV0;
     const pat::CompositeCandidate* edmV1;
-    
+
     if (channel != ZL) { // Regular 4l candidates
       edmV0   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z1")->masterClone().get());      
       edmV1   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z2")->masterClone().get());
@@ -522,13 +523,14 @@ std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(Channel channel
       V1 = fillBoson<T2,PAR2>(*edmV1, 23, false);
     }
     else if(dynamic_cast<const T2*>(edmV0->daughter(0)->masterClone().get()) && dynamic_cast<const T1*>(edmV1->daughter(0)->masterClone().get())){
-      V0 = fillBoson<T2,PAR1>(*edmV0, 23, false);
-      V1 = fillBoson<T1,PAR2>(*edmV1, 23, false);
+      V0 = fillBoson<T1,PAR1>(*edmV1, 23, false);
+      V1 = fillBoson<T2,PAR2>(*edmV0, 23, false);
     }
     else{
       edm::LogError("TreePlanter") << "Do not know what to cast in fillDiBosons" << endl;
       return physDiBosons;
     }
+
     
     phys::DiBoson<PAR1,PAR2> VV(V0, V1);
     VV.isBestCand_  = edmVV.userFloat("isBestCand");
