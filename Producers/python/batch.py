@@ -219,11 +219,15 @@ class MyBatchManager( BatchManager ):
            cfgFile.write( 'process.HF = cms.Path(~process.heavyflavorfilter)\n\n' )
        if "Signal" in tune and not "NoSignal" in tune:
            cfgFile.write( '\nprocess.genCategory0 = cms.EDFilter("GenFilterCategory", src = cms.InputTag("genParticlesPruned"), Category = cms.int32(0), SignalDefinition = cms.int32(3))\n')
-           cfgFile.write( 'process.preselection += process.genCategory0\n\n' )
+           cfgFile.write( 'process.signalFilters += process.genCategory0\n' )
+           cfgFile.write( 'process.postSkimSignalCounter = cms.EDProducer("EventCountProducer")\n' )
+           cfgFile.write( 'process.signalFilters += process.postSkimSignalCounter\n\n' )
        if "NoSignal" in tune:
            cfgFile.write( '\nprocess.genCategory0 = cms.EDFilter("GenFilterCategory", src = cms.InputTag("genParticlesPruned"), Category = cms.int32(0), SignalDefinition = cms.int32(3))\n')
-           cfgFile.write( 'process.preselection += ~process.genCategory0\n\n' )
-           
+           cfgFile.write( 'process.signalFilters += ~process.genCategory0\n' )
+           cfgFile.write( 'process.postSkimSignalCounter = cms.EDProducer("EventCountProducer")\n' )
+           cfgFile.write( 'process.signalFilters += process.postSkimSignalCounter\n\n' )
+
        cfgFile.close()
 
 

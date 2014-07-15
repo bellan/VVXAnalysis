@@ -293,9 +293,9 @@ process.postRecoCleaning = cms.Sequence( process.ZZFiltered
 ### ------------------------------------------------------------------------- ###
 
 # Skim counters
-process.preSkimCounter  = cms.EDProducer("EventCountProducer")
-process.postSkimCounter = cms.EDProducer("EventCountProducer")
-
+process.prePreselectionCounter       = cms.EDProducer("EventCountProducer")
+#process.preSkimSignalCounter         = cms.EDProducer("EventCountProducer")
+process.postPreselectionCounter      = cms.EDProducer("EventCountProducer")
 
 
 ### Some filters
@@ -304,15 +304,17 @@ process.postSkimCounter = cms.EDProducer("EventCountProducer")
 process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("disambiguatedJets"), minNumber = cms.uint32(0))
 
 # Select only events with one such candidate
-process.zzCounterFilter= cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZZFiltered"), minNumber = cms.uint32(1))
+process.zzCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZZFiltered"), minNumber = cms.uint32(1))
 
-
+# Empty sequence to attach the signal filter (if specified in the CSV file)
+process.signalFilters    = cms.Sequence() 
 
 ### Path that pre-select the higher level objects that will input the TreePlanter
-process.preselection = cms.Path( process.preSkimCounter
+process.preselection = cms.Path( process.prePreselectionCounter
+                                 * process.signalFilters
                                  * process.postRecoCleaning 
                                  * process.zzCounterFilter * process.jetCounterFilter
-                                 * process.postSkimCounter)
+                                 * process.postPreselectionCounter)
 
 
 

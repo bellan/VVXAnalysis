@@ -42,11 +42,14 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   : PUWeighter_      (PUReweight::LEGACY)
   , filterController_(config)
   , mcHistoryTools_  (0)
+  , leptonEfficiency_(edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/scale_factors_muons2012.root").fullPath(),
+		      edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/scale_factors_ele2012.root").fullPath())
   , passTrigger_(false)
   , passSkim_(false)
   , triggerWord_(0)
   , preSkimCounter_  (0)
   , postSkimCounter_ (0)
+  , postSkimSignalCounter_(0)
   , theMuonLabel     (config.getParameter<edm::InputTag>("muons"    ))
   , theElectronLabel (config.getParameter<edm::InputTag>("electrons"))
   , theJetLabel      (config.getParameter<edm::InputTag>("jets"     ))
@@ -124,6 +127,8 @@ void TreePlanter::beginJob(){
 
 void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
 {
+  // Beware: preSkimCounter for H->ZZ->4l means a skim done at path level
+
   Float_t Nevt_preskim = -1.;
   edm::Handle<edm::MergeableCounter> preSkimCounter;
   if (lumi.getByLabel("preSkimCounter", preSkimCounter)) { // Counter before skim. Does not exist for non-skimmed samples.
@@ -140,13 +145,17 @@ void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::Even
     theNumberOfEvents += prePathCounter->value;    
   }
 
-
+  // Beware: pre/post Skim here means before/after the preselection path at Tree building level!
   edm::Handle<edm::MergeableCounter> counter;
-  bool found = lumi.getByLabel("preSkimCounter", counter);
+  bool found = lumi.getByLabel("prePreselectionCounter", counter);
   if(found) preSkimCounter_ += counter->value;
   
-  found = lumi.getByLabel("postSkimCounter", counter);
+  found = lumi.getByLabel("postPreselectionCounter", counter);
   if(found) postSkimCounter_ += counter->value;
+
+  found = lumi.getByLabel("postSkimSignalCounter", counter);
+  if(found) postSkimSignalCounter_ += counter->value;
+
 }
 
 
@@ -187,6 +196,7 @@ void TreePlanter::endJob(){
     countTree->Branch("sumpumcprocweight"     , &sumpumcprocweights_);
     countTree->Branch("preSkimCounter"        , &preSkimCounter_);
     countTree->Branch("postSkimCounter"       , &postSkimCounter_);
+    countTree->Branch("postSkimSignalCounter" , &postSkimSignalCounter_);
 
     countTree->Fill();
   }
