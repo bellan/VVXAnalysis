@@ -74,8 +74,8 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , sumpumcprocweights_  (0.)
   , theNumberOfEvents(0)
   , theNumberOfAnalyzedEvents(0)
-  , numberOfInEtaAcceptanceEvents_(0)
-  , numberOfInEtaPtAcceptanceEvents_(0){
+  , eventsInEtaAcceptance_(0)
+  , eventsInEtaPtAcceptance_(0){
  
   edm::Service<TFileService> fs;
   theTree = fs->make<TTree>("ElderTree","ElderTree");
@@ -199,8 +199,8 @@ void TreePlanter::endJob(){
     countTree->Branch("preSkimCounter"        , &preSkimCounter_);
     countTree->Branch("postSkimCounter"       , &postSkimCounter_);
     countTree->Branch("postSkimSignalCounter" , &postSkimSignalCounter_);
-    countTree->Branch("numberOfInEtaAcceptanceEvents"   , &numberOfInEtaAcceptanceEvents_);
-    countTree->Branch("numberOfInEtaPtAcceptanceEvents" , &numberOfInEtaPtAcceptanceEvents_);
+    countTree->Branch("eventsInEtaAcceptanceEvents"   , &eventsInEtaAcceptance_);
+    countTree->Branch("eventsInEtaPtAcceptanceEvents" , &eventsInEtaPtAcceptance_);
 
 
     countTree->Fill();
@@ -257,8 +257,8 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     bool gen_m4l_180               = false; // gen_m4l > 180
     bool gen_ZZInAcceptance        = false; // Unused; old ZZ phase space
     mcHistoryTools_->genAcceptance(gen_ZZInAcceptance, gen_ZZ4lInEtaAcceptance, gen_ZZ4lInEtaPtAcceptance, gen_m4l_180);
-    if (gen_ZZ4lInEtaAcceptance)   ++numberOfInEtaAcceptanceEvents_;  
-    if (gen_ZZ4lInEtaPtAcceptance) ++numberOfInEtaPtAcceptanceEvents_;
+    if (gen_ZZ4lInEtaAcceptance)   ++eventsInEtaAcceptance_;  
+    if (gen_ZZ4lInEtaPtAcceptance) ++eventsInEtaPtAcceptance_;
   }
     
   // Check trigger request. Actually, it is a very very loose request, not the actual one, that instead should be

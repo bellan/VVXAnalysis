@@ -56,6 +56,9 @@ class MCInfo {
   int preSkimCounter_; 
   int postSkimCounter_;
 
+  int eventsInEtaAcceptance_;
+  int eventsInEtaPtAcceptance_;
+
 };
 
 
