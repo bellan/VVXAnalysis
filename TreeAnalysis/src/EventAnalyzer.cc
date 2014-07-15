@@ -186,7 +186,6 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   theHistograms.fill("GoodTriggerableCands", "Number of good triggerable candidates in the event", 10, 0, 10, triggers, 1);
   if(triggers != 1) return 0;
   
-  // FIXME: Correction for efficiency is temporary here (later, weight(*ZZ) --> weight())
   theWeight = theMCInfo.weight(*ZZ);
   
   theInputWeightedEvents += theWeight;
