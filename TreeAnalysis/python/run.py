@@ -30,7 +30,6 @@ cregion = 'baseline' # in case, make it a further external argument
 
 #luminosity = 300000.0
 luminosity = 19029.853
-
 baseinputdir = 'samples'
 
 
@@ -111,9 +110,10 @@ def run(executable, analysis, typeofsample, cregion, luminosity):
     ### Special treatment for DATA ###
 
     #################################################################################
-
+    isData = False
     if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:5] == 'MuEG':
         luminosity = -1
+        isData = True
         
 
     # ----- Run over the run periods -----
@@ -124,7 +124,7 @@ def run(executable, analysis, typeofsample, cregion, luminosity):
             os.popen('rm {0:s}/{1:s}.root'.format(outputdir,basefile))
 
         externalXsec = -1
-        if not typeofsample == 'mudata' and not typeofsample == 'edata' and getExternalCrossSectionFromFile:
+        if not isData and getExternalCrossSectionFromFile:
             externalXsec = crossSection(period, csvfile)
             print "For {0:s} {1:s} {2:.6f}".format(period, Warning("Using external cross section:"), externalXsec)
 
@@ -148,13 +148,14 @@ def run(executable, analysis, typeofsample, cregion, luminosity):
     print "The output is in", Green('{0:s}/{1:s}.root'.format(outputdir,typeofsample))  
 
 
-if typeofsample == 'all':
+if typeofsample == 'all' or typeofsample == 'data':
     for sample in typeofsamples:
-        if cregion == 'all':
-            for cr in range(0,4):
-                run(executable, analysis, sample, cr, luminosity)    # runs over all samples in all control reagions
-        else:
-            run(executable, analysis, sample, cregion, luminosity)   # runs over all samples in a specific control reagions
+        if typeofsample == 'all' or sample[0:8] == 'DoubleMu' or sample[0:9] == 'DoubleEle' or sample[0:5] == 'MuEG':
+            if cregion == 'all':
+                for cr in range(0,4):
+                    run(executable, analysis, sample, cr, luminosity)    # runs over all samples in all control reagions
+            else:
+                run(executable, analysis, sample, cregion, luminosity)   # runs over all samples in a specific control reagions
 else:
     if cregion == 'all':
         for cr in range(0,4):     
