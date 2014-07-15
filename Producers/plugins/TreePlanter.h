@@ -170,6 +170,8 @@ class TreePlanter: public edm::EDAnalyzer {
   Double_t sumpumcprocweights_;
   Int_t theNumberOfEvents;
   Int_t theNumberOfAnalyzedEvents;
+  Int_t numberOfInEtaAcceptanceEvents_;
+  Int_t numberOfInEtaPtAcceptanceEvents_;
 
 
   std::vector<std::string> skimPaths_;

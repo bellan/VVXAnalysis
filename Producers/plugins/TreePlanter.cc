@@ -73,7 +73,9 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , sumpuweights_        (0.) 
   , sumpumcprocweights_  (0.)
   , theNumberOfEvents(0)
-  , theNumberOfAnalyzedEvents(0){
+  , theNumberOfAnalyzedEvents(0)
+  , numberOfInEtaAcceptanceEvents_(0)
+  , numberOfInEtaPtAcceptanceEvents_(0){
  
   edm::Service<TFileService> fs;
   theTree = fs->make<TTree>("ElderTree","ElderTree");
@@ -197,6 +199,9 @@ void TreePlanter::endJob(){
     countTree->Branch("preSkimCounter"        , &preSkimCounter_);
     countTree->Branch("postSkimCounter"       , &postSkimCounter_);
     countTree->Branch("postSkimSignalCounter" , &postSkimSignalCounter_);
+    countTree->Branch("numberOfInEtaAcceptanceEvents"   , &numberOfInEtaAcceptanceEvents_);
+    countTree->Branch("numberOfInEtaPtAcceptanceEvents" , &numberOfInEtaPtAcceptanceEvents_);
+
 
     countTree->Fill();
   }
@@ -242,6 +247,20 @@ void TreePlanter::initTree(){
 
 bool TreePlanter::fillEventInfo(const edm::Event& event){
 
+  // Fill some info abut acceptance before cutting away events. Beware: if the signal is defined a-posteriori, we will have a problem. For that case, we need to
+  // explicitly check here that we are counting signal and not irreducible background.
+  if (isMC_) {
+    if(mcHistoryTools_) delete mcHistoryTools_;
+    mcHistoryTools_ = new MCHistoryTools(event, sampleName_);
+    bool gen_ZZ4lInEtaAcceptance   = false; // All 4 gen leptons in eta acceptance
+    bool gen_ZZ4lInEtaPtAcceptance = false; // All 4 gen leptons in eta,pT acceptance
+    bool gen_m4l_180               = false; // gen_m4l > 180
+    bool gen_ZZInAcceptance        = false; // Unused; old ZZ phase space
+    mcHistoryTools_->genAcceptance(gen_ZZInAcceptance, gen_ZZ4lInEtaAcceptance, gen_ZZ4lInEtaPtAcceptance, gen_m4l_180);
+    if (gen_ZZ4lInEtaAcceptance)   ++numberOfInEtaAcceptanceEvents_;  
+    if (gen_ZZ4lInEtaPtAcceptance) ++numberOfInEtaPtAcceptanceEvents_;
+  }
+    
   // Check trigger request. Actually, it is a very very loose request, not the actual one, that instead should be
   // asked to the specific final state
   passTrigger_ = filterController_.passTrigger(NONE, event, triggerWord_);
@@ -265,9 +284,6 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   nvtx_ = vertices->size();
     
   if (isMC_) {
-    if(mcHistoryTools_) delete mcHistoryTools_;
-    mcHistoryTools_ = new MCHistoryTools(event, sampleName_);
-    
     edm::Handle<std::vector<PileupSummaryInfo> > puInfo; event.getByLabel(thePUInfoLabel, puInfo);
     foreach(const PileupSummaryInfo& pui, *puInfo)
       if(pui.getBunchCrossing() == 0) { 
