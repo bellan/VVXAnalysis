@@ -25,6 +25,7 @@
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 
 #include "VVXAnalysis/Producers/interface/FilterController.h"
+#include "VVXAnalysis/Commons/interface/LeptonEfficiency.h"
 
 #include "ZZAnalysis/AnalysisStep/interface/PUReweight.h"
 
@@ -89,6 +90,9 @@ class TreePlanter: public edm::EDAnalyzer {
   PUReweight       PUWeighter_;
   FilterController filterController_;
   MCHistoryTools   *mcHistoryTools_;
+  // To get Lepton efficiency scale factors. Temporary here!
+  LeptonEfficiency leptonEfficiency_;
+
   // ------------------- Event info in the tree ------------------- //
   Int_t event_;
   Int_t run_;

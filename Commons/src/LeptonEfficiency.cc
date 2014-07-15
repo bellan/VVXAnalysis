@@ -51,9 +51,12 @@ double LeptonEfficiency::scaleFactor(const double& lepPt, const double& lepEta, 
   return sFactor;
 }
 
+double LeptonEfficiency::scaleFactor(const phys::Lepton& lep) const{
+  return scaleFactor(lep.pt(), lep.eta(), lep.id()); 
+}
+
 double LeptonEfficiency::weight(const phys::Boson<phys::Lepton> &Z) const{
-  return scaleFactor(Z.daughter(0).pt(),Z.daughter(0).eta(),Z.daughter(0).id()) * 
-    scaleFactor(Z.daughter(1).pt(),Z.daughter(1).eta(),Z.daughter(1).id());
+  return scaleFactor(Z.daughter(0)) * scaleFactor(Z.daughter(1));
 }
 
 double LeptonEfficiency::weight(const phys::DiBoson<phys::Lepton,phys::Lepton> &ZZ) const{

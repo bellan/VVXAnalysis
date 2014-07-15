@@ -37,8 +37,10 @@ namespace phys {
       , isBestCand_(false)
       , passFullSel_(false)
       {
-	for(unsigned int i = 0; i < 2; ++i)
+	for(unsigned int i = 0; i < 2; ++i){
 	  id_ += abs(vb1.daughter(i).id()) + abs(vb2.daughter(i).id());
+	  efficiencySF_ *= abs(vb1.daughter(i).id()) * abs(vb2.daughter(i).id());
+	}
       }
 
     template<typename T1, typename T2>

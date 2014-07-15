@@ -19,6 +19,7 @@ class LeptonEfficiency{
  public:
   LeptonEfficiency();
   double scaleFactor(const double& lepPt, const double& lepEta, int lepId) const;
+  double scaleFactor(const phys::Lepton& lep) const;
   double weight(const phys::DiBoson<phys::Lepton,phys::Lepton> &ZZ) const;
   double weight(const phys::Boson<phys::Lepton> &Z) const;
 

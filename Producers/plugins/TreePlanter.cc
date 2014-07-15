@@ -372,17 +372,19 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
 
   phys::Lepton output(phys::Particle::convert(lepton.p4()),lepton.charge(),lepton.pdgId());
   
-  output.dxy_             = lepton.userFloat("dxy"            );               
-  output.dz_              = lepton.userFloat("dz"             );                
-  output.sip_             = lepton.userFloat("SIP"            );
-  output.combRelIso_      = lepton.userFloat("combRelIso"     );
-  output.pfChargedHadIso_ = lepton.userFloat("PFChargedHadIso");
-  output.pfNeutralHadIso_ = lepton.userFloat("PFNeutralHadIso");
-  output.pfPhotonIso_     = lepton.userFloat("PFPhotonIso"    );
-  output.pfCombRelIso_    = lepton.userFloat("CombRelIsoPF"   );
-  output.rho_             = lepton.userFloat("rho"            );
-  output.isPF_            = lepton.userFloat("isPFMuon"       );
-  output.matchHLT_        = lepton.userFloat("HLTMatch"       );
+  output.dxy_             = lepton.userFloat("dxy"              );               
+  output.dz_              = lepton.userFloat("dz"               );                
+  output.sip_             = lepton.userFloat("SIP"              );
+  output.combRelIso_      = lepton.userFloat("combRelIso"       );
+  output.pfChargedHadIso_ = lepton.userFloat("PFChargedHadIso"  );
+  output.pfNeutralHadIso_ = lepton.userFloat("PFNeutralHadIso"  );
+  output.pfPhotonIso_     = lepton.userFloat("PFPhotonIso"      );
+  output.pfCombRelIso_    = lepton.userFloat("CombRelIsoPF"     );
+  output.rho_             = lepton.userFloat("rho"              );
+  output.isPF_            = lepton.userFloat("isPFMuon"         );
+  output.matchHLT_        = lepton.userFloat("HLTMatch"         );
+  output.efficiencySF_    = leptonEfficiency_.scaleFactor(output);
+  
      
   return output; 
 }
