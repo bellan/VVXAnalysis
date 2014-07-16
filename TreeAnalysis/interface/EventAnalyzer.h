@@ -26,7 +26,6 @@
 #include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/MCInfo.h"
 
-
 class TFile;
 class TTree;
 class TBranch;
@@ -126,8 +125,7 @@ public:
   TTree *theTree;
   int fCurrent; 
   bool doBasicPlots_;
-  int  triggerChecks_;
-
+  
  protected:
 
   // Histograms helper class

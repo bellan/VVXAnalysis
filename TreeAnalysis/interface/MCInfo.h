@@ -1,6 +1,9 @@
 #ifndef VVXAnalysis_TreeAnalysis_MCInfo_H
 #define VVXAnalysis_TreeAnalysis_MCInfo_H
 
+#include "VVXAnalysis/DataFormats/interface/DiBoson.h"
+#include "VVXAnalysis/Commons/interface/LeptonEfficiency.h"
+
 #include <string>
 
 class MCInfo {
@@ -20,10 +23,16 @@ class MCInfo {
   double mcProcWeight()         const {return mcprocweight_*analyzedEvents_/summcprocweight_;}
   // Total weight of the event, computed on the fly
   double weight()               const {return luminosity_ >= 0 ? sampleWeight_*mcProcWeight()*puweight_ : 1.;}
+  // Intermediate step, later the efficiency weight will be taken directly from the event
+  double leptonEfficiencyWeight(const phys::DiBoson<phys::Lepton, phys::Lepton> &ZZ) const {return leptonEfficiency_.weight(ZZ);}
+  double weight(const phys::DiBoson<phys::Lepton, phys::Lepton> &ZZ) const {return luminosity_ >= 0 ? weight()*leptonEfficiencyWeight(ZZ) : 1.;}
   
  private:
   friend class EventAnalyzer;
   
+  // To get Lepton efficiency scale factors. Temporary here!
+  LeptonEfficiency leptonEfficiency_;
+
   // integrated luminosity
   double luminosity_;
   double internalCrossSection_;
