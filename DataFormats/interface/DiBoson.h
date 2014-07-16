@@ -39,7 +39,7 @@ namespace phys {
       {
 	for(unsigned int i = 0; i < 2; ++i){
 	  id_ += abs(vb1.daughter(i).id()) + abs(vb2.daughter(i).id());
-	  efficiencySF_ *= abs(vb1.daughter(i).id()) * abs(vb2.daughter(i).id());
+	  efficiencySF_ *= vb1.daughter(i).efficiencySF() * vb2.daughter(i).efficiencySF();
 	}
       }
 

@@ -199,8 +199,8 @@ void TreePlanter::endJob(){
     countTree->Branch("preSkimCounter"        , &preSkimCounter_);
     countTree->Branch("postSkimCounter"       , &postSkimCounter_);
     countTree->Branch("postSkimSignalCounter" , &postSkimSignalCounter_);
-    countTree->Branch("eventsInEtaAcceptanceEvents"   , &eventsInEtaAcceptance_);
-    countTree->Branch("eventsInEtaPtAcceptanceEvents" , &eventsInEtaPtAcceptance_);
+    countTree->Branch("eventsInEtaAcceptance"   , &eventsInEtaAcceptance_);
+    countTree->Branch("eventsInEtaPtAcceptance" , &eventsInEtaPtAcceptance_);
 
 
     countTree->Fill();
