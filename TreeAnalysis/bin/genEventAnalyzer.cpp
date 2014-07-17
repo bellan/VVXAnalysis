@@ -3,6 +3,7 @@
 #include "VVXAnalysis/TreeAnalysis/interface/GenEventAnalyzer.h"
 
 #include <iostream>
+#include <string>
 #include <boost/lexical_cast.hpp>
 
 using std::cout;
@@ -11,9 +12,9 @@ using namespace colour;
 
 int main (int argc, char ** argv){
 
-  if(argc < 3){ 
+  if(argc < 4){ 
     cout<<Important("Too few arguments")<<endl;
-    cout<<"MadGraph Analysis <input file name> <output filename> <luminosity (for MC)>"<<endl;
+    cout<<"MadGraph Analysis <input file name> <output filename> <luminosity (for MC)> <cross section>"<<endl;
     return 1;
   }
 
@@ -25,9 +26,9 @@ int main (int argc, char ** argv){
     
   std::cout<<Yellow("Analyzing "+filename+" ... please wait... ")<<endl ;
     
-  // std::string analysisName = argv[1];
+  float xsec = std::stof(argv[4]);
 
-  GenEventAnalyzer *analysis = new GenEventAnalyzer(filename, lumi);
+  GenEventAnalyzer *analysis = new GenEventAnalyzer(filename, lumi, xsec);
   analysis->loop(argv[2]);
 
   cout<<"Output saved in --> "<<Green(argv[2])<<endl;
