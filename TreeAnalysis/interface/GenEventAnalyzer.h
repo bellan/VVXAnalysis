@@ -26,7 +26,7 @@ class TH1;
 class GenEventAnalyzer {
 public:
 
-  GenEventAnalyzer(std::string filename, double lumi = 1.);
+  GenEventAnalyzer(std::string filename, double lumi = 1., float xsec = 1.);
 
   virtual ~GenEventAnalyzer();
 
@@ -49,6 +49,9 @@ public:
  private:
   TTree *theTree;
   int fCurrent;
+  double lumi_;
+  float xsec_;
+  float theWeight;
   
  protected:
   /*   static const double ZMASS; */
