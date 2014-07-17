@@ -37,12 +37,12 @@ using namespace std;
 
 
 GenEventAnalyzer::GenEventAnalyzer(std::string filename, 
-				   double lumi 
+				   double lumi,
+				   float xsec
 				   )
- //  : theGenMCInfo(filename, lumi)
-//   , theWeight(1.)
-//   , theCutCounter(0.)
-// theInputWeightedEvents(0.)
+  : lumi_(lumi)
+  , xsec_(xsec)
+
 {
 
   TChain *tree = new TChain("Cypress"); 
@@ -64,7 +64,6 @@ GenEventAnalyzer::~GenEventAnalyzer(){
 
 void GenEventAnalyzer::Init(TTree *tree)
 {
-  //  TH1F::SetDefaultSumw2(kTRUE);
   
   // Set branch addresses and branch pointers
   if (!tree) return;
@@ -95,10 +94,6 @@ Int_t GenEventAnalyzer::GetEntry(Long64_t entry){
   if (!theTree) return 0;
   
   int e =  theTree->GetEntry(entry);
-
-
- //  theWeight = lumi*XS/;
-//   theInputWeightedEvents += theWeight;
 
   return e;
 }
@@ -137,9 +132,6 @@ void GenEventAnalyzer::loop(const std::string outputfile){
     nb = GetEntry(jentry);  nbytes += nb; 
 
     if (cut() < 0) continue;
- //    theCutCounter += theWeight;
-
-    //  theHistograms.fill("weight",100, 0, 200, theWeight);
 
     analyze();
   }
@@ -150,8 +142,7 @@ void GenEventAnalyzer::loop(const std::string outputfile){
 
   end(fout);
   fout.Close();
-  //cout<<"Events in input: " << Green(theInputWeightedEvents)<< endl;
-  // cout<<"Events passing all cuts: "<< Green(theCutCounter) << endl;
+ 
 }
 
 
@@ -162,9 +153,12 @@ void GenEventAnalyzer::loop(const std::string outputfile){
 
 void GenEventAnalyzer::analyze() {
   
+  //  cout << "GenParticlesIn size = " << genParticlesIn->size() << endl;
+ theWeight = lumi_*xsec_/200000.;
+
  if (genParticles->size() >= 3) {
 
-  theHistograms.fill("Number of events", "Number of events", 10, 0, 10, 0);//, theWeight);
+  theHistograms.fill("Number of events", "Number of events", 10, 0, 10, 0, theWeight);
 
    std::vector<const Particle* > Genj;
    std::vector<const Particle* > Genq;
@@ -178,9 +172,9 @@ void GenEventAnalyzer::analyze() {
      int s_id = b.id();
      int id   = abs(s_id);
      
-     if ( (id < 7 || id == 21) && id > 5 ) Genj.push_back(&b);  //quark and gluons
+     if ( id < 7 || id == 21 ) Genj.push_back(&b);  //quark and gluons
      
-     if ( id < 7  && id > 5 ) Genq.push_back(&b);               //quark
+     if ( id < 7 ) Genq.push_back(&b);               //quark
      
      else if ( id >= 11 && id <= 16 ) Genl.push_back(&b);        //leptons
      
@@ -188,46 +182,95 @@ void GenEventAnalyzer::analyze() {
      
      else if ( id == 24 ) GenW.push_back(&b);                    // W
 
-     else cout << "I've found id = " << id << endl;
+     else cout << "!!!!!!! I've found id = " << id << endl;
+
+     if ( id == 21 ) cout << "I'VE FOUND A GLUON!!!" << endl;  
       
    } 
-
-
 
     cout << "---------- genParticles: history information ----------" << endl; 
     cout << "Number of generated Z= "        << GenZ.size() << endl;
     cout << "Number of generated W= "        << GenW.size() << endl;
-    cout << "Number of generated q= "        << Genq.size() << endl;
-    cout << "Number of generated q and g= "  << Genj.size() << endl;
-    cout << "Number of generated l= "        << Genl.size() << endl;
+    cout << "Number of generated q = "       << Genq.size() << endl;
+    cout << "Number of generated q and g = " << Genj.size() << endl;
+    cout << "Number of generated l = "       << Genl.size() << endl;
+    cout << "Weight = " << theWeight << endl;
     
  
-      if ( GenZ.size() >= 2 && GenW.size() >= 1 ) {
+    if ( GenZ.size() >= 2 && GenW.size() >= 1 ) {
 	
-	const Particle* Z0gen = GenZ.at(0);
-	const Particle* Z1gen = GenZ.at(1);
-	const Particle* Wgen  = GenW.at(0);
-	
-	
-	//------------Mass--------------
-	
-	theHistograms.fill("Z0Gen_Mass", "Z0Gen_Mass", 200, 0, 200, Z0gen->p4().M());
-	theHistograms.fill("Z1Gen_Mass", "Z1Gen_Mass", 200, 0, 200, Z1gen->p4().M());
-	theHistograms.fill("WGen_Mass" , "WGen_Mass" , 200, 0, 200, Wgen->p4().M());
-
-	theHistograms.fill("Z0Gen_Mass", "Z0Gen_Mass", 200, 0, 200, Z0gen->p4().M());
-	theHistograms.fill("Z1Gen_Mass", "Z1Gen_Mass", 200, 0, 200, Z1gen->p4().M());
-	theHistograms.fill("WGen_Mass" , "WGen_Mass" , 200, 0, 200, Wgen->p4().M());
-	
-	//------------Pt--------------
-	
-	theHistograms.fill("Z0Gen_Pt"  , "Z0Gen_Pt"  , 300, 0, 300, Z0gen->pt()    );
-	theHistograms.fill("Z1Gen_Pt"  , "Z1Gen_Pt"  , 300, 0, 300, Z1gen->pt()    );
-	theHistograms.fill("WGen_Pt"   , "WGen_Pt"   , 300, 0, 300, Wgen->pt()     );
-	
-      }
+      const Particle* Z0 = GenZ.at(0);
+      const Particle* Z1 = GenZ.at(1);
+      const Particle* W  = GenW.at(0);
       
+      const Particle* l0 = Genl.at(0);
+      const Particle* l1 = Genl.at(1);
+      const Particle* l2 = Genl.at(2);
+      const Particle* l3 = Genl.at(3);
+      
+      const Particle* j0 = Genq.at(0);
+      const Particle* j1 = Genq.at(1);
+
+      TLorentzVector p_Z0 = Z0->p4();
+      TLorentzVector p_Z1 = Z1->p4();
+      TLorentzVector p_W  = W->p4();
+      
+      TLorentzVector p_l0 = l0->p4();
+      TLorentzVector p_l1 = l1->p4();
+      TLorentzVector p_l2 = l2->p4();
+      TLorentzVector p_l3 = l3->p4();
+      
+      TLorentzVector p_j0 = j0->p4();
+      TLorentzVector p_j1 = j1->p4();
+      
+      TLorentzVector p_4l = p_l0 + p_l1 + p_l2 + p_l3;
+      TLorentzVector p_jj = p_j0 + p_j1;
+      TLorentzVector p_6f = p_4l + p_jj;
+
+      double Detajj = p_j0.Eta() - p_j1.Eta();
+      
+      
+      //------------Mass--------------
+
+      theHistograms.fill("M_Z0", "M_Z0", 100, 40, 140, p_Z0.M(), theWeight);
+      theHistograms.fill("M_Z1", "M_Z1", 100, 40, 140, p_Z1.M(), theWeight);
+      theHistograms.fill("M_W" , "M_W" , 100, 40, 140, p_W.M() , theWeight);
+      
+    
+      theHistograms.fill("M_ll0", "M_ll0", 100, 40, 140, (p_l0 + p_l1).M(), theWeight);
+      theHistograms.fill("M_ll1", "M_ll1", 100, 40, 140, (p_l2 + p_l3).M(), theWeight);
+      theHistograms.fill("M_jj" , "M_jj" , 100, 40, 140, (p_j0 + p_j1).M(), theWeight);
+      theHistograms.fill("M_4l" , "M_4l" , 1000, 0, 1000, p_4l.M()        , theWeight);
+      theHistograms.fill("M_6f" , "M_6f" , 3000, 0, 3000, p_6f.M()        , theWeight);
+      
+      
+      
+      //------------Pt--------------
+
+      theHistograms.fill("Pt_Z0", "Pt_Z0", 500, 0, 500, Z0->pt(), theWeight);
+      theHistograms.fill("Pt_Z1", "Pt_Z1", 500, 0, 500, Z1->pt(), theWeight);
+      theHistograms.fill("Pt_W" , "Pt_W" , 500, 0, 500, W->pt() , theWeight);
+      
+      
+      theHistograms.fill("Pt_l0", "Pt_l0", 1000, 0, 1000, l0->pt() , theWeight);
+      theHistograms.fill("Pt_l1", "Pt_l1", 1000, 0, 1000, l1->pt() , theWeight);
+      theHistograms.fill("Pt_l2", "Pt_l2", 1000, 0, 1000, l2->pt() , theWeight);
+      theHistograms.fill("Pt_l3", "Pt_l3", 1000, 0, 1000, l3->pt() , theWeight);
+      theHistograms.fill("Pt_j0", "Pt_j0", 1000, 0, 1000, j0->pt() , theWeight);
+      theHistograms.fill("Pt_j1", "Pt_j1", 1000, 0, 1000, j1->pt() , theWeight);
+      theHistograms.fill("Pt_4l", "Pt_4l", 1000, 0, 1000, p_4l.Pt(), theWeight);
+
+
+
+      //------------Deta--------------
+      
+      theHistograms.fill("Deta_jj", "Deta_jj", 100, 0, 5, Detajj , theWeight);
+      
+    }
+    
  }
+ 
+ // else cout << "GenParticles size < 3. It is  = " << genParticles->size() <<endl;
  
 }
 
