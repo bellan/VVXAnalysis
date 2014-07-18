@@ -34,7 +34,7 @@ void ZZSAnalyzer::analyze(){
 
     double jet_pt[size];
     double jet_mass = 0;
-    double jet_mass_check = 0;
+    //    double jet_mass_check = 0;
     double jet_deltaeta =0;
     double jet_deltay =0;
 
@@ -105,7 +105,7 @@ void ZZSAnalyzer::analyze(){
 
     double cjet_pt[csize];
     double cjet_mass = 0;
-    double cjet_mass_check = 0;
+    //double cjet_mass_check = 0;
     double cjet_deltaeta =0;
     double cjet_deltay =0;
 
@@ -147,7 +147,7 @@ void ZZSAnalyzer::analyze(){
       cjet_deltaeta = TMath::Abs(lead_cjet1.PseudoRapidity() - lead_cjet2.PseudoRapidity());
       cjet_deltay = TMath::Abs(lead_cjet1.Rapidity() - lead_cjet2.Rapidity());
       
-      cjet_mass_check = TMath::Sqrt(lead_cjet1.M()*lead_cjet1.M()+lead_cjet2.M()*lead_cjet2.M()+2*(lead_cjet1[3]*lead_cjet2[3] - lead_cjet1[0]*lead_cjet2[0] - lead_cjet1[1]*lead_cjet2[1] - lead_cjet1[2]*lead_cjet2[2]));
+      //cjet_mass_check = TMath::Sqrt(lead_cjet1.M()*lead_cjet1.M()+lead_cjet2.M()*lead_cjet2.M()+2*(lead_cjet1[3]*lead_cjet2[3] - lead_cjet1[0]*lead_cjet2[0] - lead_cjet1[1]*lead_cjet2[1] - lead_cjet1[2]*lead_cjet2[2]));
       
       //std::cout<< "M_jj = " << cjet_mass << " M1= " << lead_cjet1.M() <<  " M2= " << lead_cjet2.M() << " " << cjet_deltaeta << std::endl; 
       
