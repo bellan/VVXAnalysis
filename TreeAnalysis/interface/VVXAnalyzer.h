@@ -28,6 +28,8 @@ public:
   
   virtual Int_t cut();
 
+  void ZZplots(int id = -1);
+  
  private:
   friend class Selector<VVXAnalyzer>;
   template< class PAR >

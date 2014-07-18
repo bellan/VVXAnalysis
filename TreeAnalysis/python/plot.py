@@ -14,8 +14,14 @@ plot = "nCentralJets"
 
 results = "results/{0:s}_{1:s}/".format(analysis,cregion)
 
-typeofsamples_uno = {'triboson':2,'H':3,'WZ':4,'WZZ':5,'tt':6,'Z':5,'ZZ':1}
-typeofsamples = OrderedDict([('triboson',2) , ('H',3) , ('WZ',4) , ('WZZ',5) , ('tt',6) , ('Z',5) , ('ZZ',1)])
+typeofsamples = OrderedDict([('WWZJets', ROOT.kOrange+2),
+                             ('WZ',ROOT.kOrange+1),
+                             ('tt',ROOT.kOrange), 
+                             ('Z',ROOT.kYellow),
+                             ('H',ROOT.kAzure-6), ('ZZZJets',ROOT.kAzure-7), ('WZZ',ROOT.kAzure-8),
+                             ('ZZ',ROOT.kAzure-9)])
+#typeofsamples = OrderedDict([('triboson',ROOT.kAzure-7) , ('H',ROOT.kRed) , ('WZ',ROOT.kOrange) , ('WZZ',ROOT.kAzure-8) , ('tt',ROOT.kYellow) , ('Z',ROOT.kGreen-5) , ('ZZ',ROOT.kAzure-9)])
+#typeofsamples = OrderedDict([('ZZZJets',ROOT.kAzure-7) , ('WZZJetsSignal',ROOT.kAzure-8) ,  ('ZZTo2e2tau',ROOT.kAzure-9)])
 
 print typeofsamples
 
