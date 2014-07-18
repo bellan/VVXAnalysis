@@ -141,7 +141,7 @@ def run(executable, analysis, typeofsample, cregion, luminosity):
             os.popen('rm {0:s}/{1:s}.root'.format(outputdir,typeofsample))
         print "Command going to be executed:", Violet(hadd)
         failure, output = commands.getstatusoutput(hadd)
-    elif len(datasets) == 1:
+    elif len(datasets) == 1 and not datasets[0] == typeofsample:
         print "One sample in the dataset, just copying it."
         os.popen('cp {0:s}/{1:s}.root {0:s}/{2:s}.root'.format(outputdir,datasets[0],typeofsample))
 
