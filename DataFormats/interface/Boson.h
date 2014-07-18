@@ -47,7 +47,9 @@ namespace phys {
     
     template<typename T>
       Boson<T> clone() const {
-      return Boson<T>(daughter0_,daughter1_,id_);
+      Boson<T> newboson(daughter0_,daughter1_,id_);
+      if(indexFSR_ >=0) newboson.addFSR(indexFSR_,fsrPhoton_);
+      return newboson;
     }
 
     
