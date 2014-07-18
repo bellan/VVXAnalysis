@@ -4,9 +4,9 @@
 #include <TFile.h>
 #include <iostream>
 
-LeptonEfficiency::LeptonEfficiency(){
-  TFile *fMu = new TFile("../../VVXAnalysis/Commons/data/scale_factors_muons2012.root");
-  TFile *fEl = new TFile("../../VVXAnalysis/Commons/data/scale_factors_ele2012.root");
+LeptonEfficiency::LeptonEfficiency(const std::string& muonfilename, const std::string& electronfilename){
+  TFile *fMu = new TFile(muonfilename.c_str());
+  TFile *fEl = new TFile(electronfilename.c_str());
   
   hMu_ = dynamic_cast<TH2F*>(fMu->Get("TH2D_ALL_2012"));
   hEl_ = dynamic_cast<TH2F*>(fEl->Get("h_electronScaleFactor_RecoIdIsoSip"));
@@ -51,9 +51,12 @@ double LeptonEfficiency::scaleFactor(const double& lepPt, const double& lepEta, 
   return sFactor;
 }
 
+double LeptonEfficiency::scaleFactor(const phys::Lepton& lep) const{
+  return scaleFactor(lep.pt(), lep.eta(), lep.id()); 
+}
+
 double LeptonEfficiency::weight(const phys::Boson<phys::Lepton> &Z) const{
-  return scaleFactor(Z.daughter(0).pt(),Z.daughter(0).eta(),Z.daughter(0).id()) * 
-    scaleFactor(Z.daughter(1).pt(),Z.daughter(1).eta(),Z.daughter(1).id());
+  return scaleFactor(Z.daughter(0)) * scaleFactor(Z.daughter(1));
 }
 
 double LeptonEfficiency::weight(const phys::DiBoson<phys::Lepton,phys::Lepton> &ZZ) const{

@@ -186,8 +186,12 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   theHistograms.fill("GoodTriggerableCands", "Number of good triggerable candidates in the event", 10, 0, 10, triggers, 1);
   if(triggers != 1) return 0;
   
-  // FIXME: Correction for efficiency is temporary here (later, weight(*ZZ) --> weight())
   theWeight = theMCInfo.weight(*ZZ);
+
+  theHistograms.fill("weight_full",1000, 0, 10, theWeight);
+  theHistograms.fill("weight_bare",1000, 0, 10, theMCInfo.weight());
+  theHistograms.fill("weight_SF",1000, 0, 10, ZZ->efficiencySF());
+  
   
   theInputWeightedEvents += theWeight;
 
@@ -228,8 +232,6 @@ void EventAnalyzer::loop(const std::string outputfile){
 
     if (cut() < 0) continue;
     theCutCounter += theWeight;
-
-    theHistograms.fill("weight",100, 0, 200, theWeight);
 
     if(doBasicPlots_) fillBasicPlots();
     analyze();

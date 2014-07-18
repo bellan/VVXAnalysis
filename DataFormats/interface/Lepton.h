@@ -54,7 +54,7 @@ namespace phys {
     Double_t rho()             const {return rho_;}             
     Bool_t   isPF()            const {return isPF_;}
     Bool_t   matchHLT()        const {return matchHLT_;}
-
+    
   protected:
     
 
@@ -71,7 +71,7 @@ namespace phys {
 
     Bool_t isPF_;
     Bool_t matchHLT_;
-    
+   
     //Jet nearestjet;    
 
     ClassDef(Lepton, 1) //

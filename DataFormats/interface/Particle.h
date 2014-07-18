@@ -35,13 +35,15 @@ namespace phys {
       : p4_(mom)
       , charge_(q)
       , id_(i)
-      , motherId_(-99.){}
+      , motherId_(-99.)
+      , efficiencySF_(1.){}
 
       Particle(const LorentzVector& l, float q =0, int i = 0)
 	:p4_(convert(l))
 	, charge_(q)
 	, id_(i)
-	, motherId_(-99.){}
+	, motherId_(-99.)
+        , efficiencySF_(1.){}
 
 	
     /// Destructor
@@ -83,13 +85,15 @@ namespace phys {
     int motherId() const {return motherId_;}
 
     bool isValid() const {return id_ != 0 && p() > 0;}
+
+    Double_t efficiencySF() const {return efficiencySF_;}
  
   protected:
     TLorentzVector p4_;
     Float_t charge_;
     Int_t id_;    
     Int_t motherId_;
-
+    Double_t efficiencySF_;
 
   private:
     ClassDef(Particle, 1) //
