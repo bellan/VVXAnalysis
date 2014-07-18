@@ -42,6 +42,8 @@ namespace phys {
       , fsrPhoton_(vb.fsrPhoton())
       , hasGoodDaughters_(vb.hasGoodDaughters()){
       efficiencySF_ = vb.daughter(0).efficiencySF() * vb.daughter(1).efficiencySF();
+      
+      if(indexFSR_ >=0)  p4_ = p4_ + fsrPhoton_.p4();
     }
     
     
