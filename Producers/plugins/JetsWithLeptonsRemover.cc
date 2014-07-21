@@ -118,7 +118,7 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
   auto_ptr<vector<cmg::PFJet> > out(new vector<cmg::PFJet>());
   foreach(const cmg::PFJet& jet, *jets){
     
-    if(!preselectionJ_(jet) && isGood(jet)) continue;
+    if(!preselectionJ_(jet) || !isGood(jet)) continue;
     ++passPresel;
 
 
