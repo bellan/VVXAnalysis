@@ -222,9 +222,9 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
 
 process.centralJets = cms.EDFilter("EtaPtMinCMGPFJetSelector", 
                                    src = cms.InputTag("disambiguatedJets"),
-                                   ptMin   = cms.double(20),
-                                   etaMin = cms.double(-2.5),
-                                   etaMax = cms.double(2.5)
+                                   ptMin   = cms.double(30),
+                                   etaMin = cms.double(-2.4),
+                                   etaMax = cms.double(2.4)
                                    )
 
 process.bareWCand = cms.EDProducer("CandViewShallowCloneCombiner",
