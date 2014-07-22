@@ -145,7 +145,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   foreach(const phys::Jet &jet, *pjets)
     if(jet.pt() > 30 && jet.passLooseJetID() && jet.passPUID()){
       if(fabs(jet.eta()) < 4.7) jets->push_back(jet);
-      if(fabs(jet.eta()) < 2.5) centralJets->push_back(jet);
+      if(fabs(jet.eta()) < 2.4) centralJets->push_back(jet);
     }
 
   
