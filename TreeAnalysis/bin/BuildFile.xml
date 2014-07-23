@@ -2,3 +2,7 @@
 
 <bin file="eventAnalyzer.cpp" name="eventAnalyzer">
 </bin>
+
+
+<bin file="genEventAnalyzer.cpp" name="genEventAnalyzer">
+</bin>
