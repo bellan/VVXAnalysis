@@ -51,12 +51,6 @@ public:
   template< class PAR >
     bool WBosonDefinition(phys::Boson<PAR> cand) {
 
-    theHistograms.fill("WCandDPt"    , "WCandDPt", 250, 0, 1000, cand.daughter(0).pt(), theWeight);
-    theHistograms.fill("WCandDPt"    , "WCandDPt", 250, 0, 1000, cand.daughter(1).pt(), theWeight);
-
-    theHistograms.fill("WCandDEta"    , "WCandDEta", 100, -2.5, 2.5, cand.daughter(0).eta(), theWeight);
-    theHistograms.fill("WCandDEta"    , "WCandDEta", 100, -2.5, 2.5, cand.daughter(1).eta(), theWeight);
-
     bool gooddaughters = false;
     if(fabs(cand.daughter(0).eta()) < 2.5 && cand.daughter(0).pt() > 30 &&
        cand.daughter(0).passPUID() && cand.daughter(0).passLooseJetID() &&
@@ -64,11 +58,8 @@ public:
        cand.daughter(1).passPUID() && cand.daughter(1).passLooseJetID())
       gooddaughters = true;
 
-    if(fabs(cand.p4().M() - phys::WMASS) < 150 && gooddaughters){    
-      theHistograms.fill("WCandPt"    , "WCandPt", 250, 0, 1000, cand.p4().Pt(), theWeight);
-      theHistograms.fill("WCandMass"    , "WCandMass", 200, 0, 500, cand.p4().M(), theWeight);
+    if(fabs(cand.p4().M() - phys::WMASS) < 150 && gooddaughters)
       return true;
-    }
     return false;
 
   }
