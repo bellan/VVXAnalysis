@@ -60,6 +60,8 @@ for line in input_file:
         if int(line.split()[1]) is 1:
             # We have a final state particle on this line
             genParticles.push_back(gp)
+        elif int(line.split()[1]) is 2:
+            genParticles.push_back(gp)            
         elif int(line.split()[1]) is -1:
             genParticlesIn.push_back(gp)
 
