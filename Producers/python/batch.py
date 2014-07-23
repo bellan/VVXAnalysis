@@ -33,6 +33,7 @@ def split(comps):
                 numJobs=numJobs+1
                 newComp = copy.deepcopy(comp)
                 newComp.files = chunk
+                newComp.samplename = comp.name
                 newComp.name = '{name}_Chunk{index}'.format(name=newComp.name,
                                                        index=ichunk)
                 splitComps.append( newComp )
@@ -149,6 +150,7 @@ class MyBatchManager( BatchManager ):
        #
        # setup can be 2011 or 2012 
        
+       SAMPLENAME  = splitComponents[value].samplename
        tune  = splitComponents[value].tune
        setup = splitComponents[value].setup
        xsec  = splitComponents[value].xsec
@@ -174,10 +176,10 @@ class MyBatchManager( BatchManager ):
 
            #FIXME: should check tunes for consistency
        XSEC = xsec
-       print "parameters", tune, IsMC, PD, MCFILTER, SUPERMELA_MASS, XSEC
+       print SAMPLENAME, "parameters:", tune, IsMC, PD, MCFILTER, SUPERMELA_MASS, XSEC
 
        # Read CFG file so that it is customized with the above globals
-       namespace = {'IsMC':IsMC, 'PD':PD, 'MCFILTER':MCFILTER, 'SUPERMELA_MASS':SUPERMELA_MASS, 'XSEC':XSEC}
+       namespace = {'IsMC':IsMC, 'PD':PD, 'MCFILTER':MCFILTER, 'SUPERMELA_MASS':SUPERMELA_MASS, 'SAMPLENAME':SAMPLENAME, 'XSEC':XSEC}
        execfile(cfgFileName,namespace)
 #       handle = open(cfgFileName, 'r')
 #       cfo = imp.load_source("pycfg", cfgFileName, handle)
@@ -217,11 +219,15 @@ class MyBatchManager( BatchManager ):
            cfgFile.write( 'process.HF = cms.Path(~process.heavyflavorfilter)\n\n' )
        if "Signal" in tune and not "NoSignal" in tune:
            cfgFile.write( '\nprocess.genCategory0 = cms.EDFilter("GenFilterCategory", src = cms.InputTag("genParticlesPruned"), Category = cms.int32(0), SignalDefinition = cms.int32(3))\n')
-           cfgFile.write( 'process.preselection += process.genCategory0\n\n' )
+           cfgFile.write( 'process.signalFilters += process.genCategory0\n' )
+           cfgFile.write( 'process.postSkimSignalCounter = cms.EDProducer("EventCountProducer")\n' )
+           cfgFile.write( 'process.signalFilters += process.postSkimSignalCounter\n\n' )
        if "NoSignal" in tune:
            cfgFile.write( '\nprocess.genCategory0 = cms.EDFilter("GenFilterCategory", src = cms.InputTag("genParticlesPruned"), Category = cms.int32(0), SignalDefinition = cms.int32(3))\n')
-           cfgFile.write( 'process.preselection += ~process.genCategory0\n\n' )
-           
+           cfgFile.write( 'process.signalFilters += ~process.genCategory0\n' )
+           cfgFile.write( 'process.postSkimSignalCounter = cms.EDProducer("EventCountProducer")\n' )
+           cfgFile.write( 'process.signalFilters += process.postSkimSignalCounter\n\n' )
+
        cfgFile.close()
 
 

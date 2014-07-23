@@ -42,11 +42,14 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   : PUWeighter_      (PUReweight::LEGACY)
   , filterController_(config)
   , mcHistoryTools_  (0)
+  , leptonEfficiency_(edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/scale_factors_muons2012.root").fullPath(),
+		      edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/scale_factors_ele2012.root").fullPath())
   , passTrigger_(false)
   , passSkim_(false)
   , triggerWord_(0)
   , preSkimCounter_  (0)
   , postSkimCounter_ (0)
+  , postSkimSignalCounter_(0)
   , theMuonLabel     (config.getParameter<edm::InputTag>("muons"    ))
   , theElectronLabel (config.getParameter<edm::InputTag>("electrons"))
   , theJetLabel      (config.getParameter<edm::InputTag>("jets"     ))
@@ -58,6 +61,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theZZ2e2mLabel   (config.getParameter<edm::InputTag>("ZZ2e2m"   ))
   , theMETLabel      (config.getParameter<edm::InputTag>("MET"      ))
   , theVertexLabel   (config.getParameter<edm::InputTag>("Vertices" ))
+  , sampleName_      (config.getParameter<std::string>("sampleName"))
   , isMC_            (config.getUntrackedParameter<bool>("isMC",false))
   , sampleType_      (config.getParameter<int>("sampleType"))
   , setup_           (config.getParameter<int>("setup"))
@@ -69,7 +73,9 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , sumpuweights_        (0.) 
   , sumpumcprocweights_  (0.)
   , theNumberOfEvents(0)
-  , theNumberOfAnalyzedEvents(){
+  , theNumberOfAnalyzedEvents(0)
+  , eventsInEtaAcceptance_(0)
+  , eventsInEtaPtAcceptance_(0){
  
   edm::Service<TFileService> fs;
   theTree = fs->make<TTree>("ElderTree","ElderTree");
@@ -123,6 +129,8 @@ void TreePlanter::beginJob(){
 
 void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
 {
+  // Beware: preSkimCounter for H->ZZ->4l means a skim done at path level
+
   Float_t Nevt_preskim = -1.;
   edm::Handle<edm::MergeableCounter> preSkimCounter;
   if (lumi.getByLabel("preSkimCounter", preSkimCounter)) { // Counter before skim. Does not exist for non-skimmed samples.
@@ -139,20 +147,26 @@ void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::Even
     theNumberOfEvents += prePathCounter->value;    
   }
 
-
+  // Beware: pre/post Skim here means before/after the preselection path at Tree building level!
   edm::Handle<edm::MergeableCounter> counter;
-  bool found = lumi.getByLabel("preSkimCounter", counter);
+  bool found = lumi.getByLabel("prePreselectionCounter", counter);
   if(found) preSkimCounter_ += counter->value;
   
-  found = lumi.getByLabel("postSkimCounter", counter);
+  found = lumi.getByLabel("postPreselectionCounter", counter);
   if(found) postSkimCounter_ += counter->value;
+
+  found = lumi.getByLabel("postSkimSignalCounter", counter);
+  if(found) postSkimSignalCounter_ += counter->value;
+
 }
 
 
 void TreePlanter::endRun(const edm::Run& run, const edm::EventSetup& setup){
-  edm::Handle<GenRunInfoProduct> genRunInfo;
-  run.getByLabel("generator", genRunInfo);
-  theXSections.push_back(genRunInfo->crossSection());
+  if(isMC_){
+    edm::Handle<GenRunInfoProduct> genRunInfo;
+    run.getByLabel("generator", genRunInfo);
+    theXSections.push_back(genRunInfo->crossSection());
+  }
 }
 
 void TreePlanter::endJob(){
@@ -184,6 +198,10 @@ void TreePlanter::endJob(){
     countTree->Branch("sumpumcprocweight"     , &sumpumcprocweights_);
     countTree->Branch("preSkimCounter"        , &preSkimCounter_);
     countTree->Branch("postSkimCounter"       , &postSkimCounter_);
+    countTree->Branch("postSkimSignalCounter" , &postSkimSignalCounter_);
+    countTree->Branch("eventsInEtaAcceptance"   , &eventsInEtaAcceptance_);
+    countTree->Branch("eventsInEtaPtAcceptance" , &eventsInEtaPtAcceptance_);
+
 
     countTree->Fill();
   }
@@ -229,6 +247,20 @@ void TreePlanter::initTree(){
 
 bool TreePlanter::fillEventInfo(const edm::Event& event){
 
+  // Fill some info abut acceptance before cutting away events. Beware: if the signal is defined a-posteriori, we will have a problem. For that case, we need to
+  // explicitly check here that we are counting signal and not irreducible background.
+  if (isMC_) {
+    if(mcHistoryTools_) delete mcHistoryTools_;
+    mcHistoryTools_ = new MCHistoryTools(event, sampleName_);
+    bool gen_ZZ4lInEtaAcceptance   = false; // All 4 gen leptons in eta acceptance
+    bool gen_ZZ4lInEtaPtAcceptance = false; // All 4 gen leptons in eta,pT acceptance
+    bool gen_m4l_180               = false; // gen_m4l > 180
+    bool gen_ZZInAcceptance        = false; // Unused; old ZZ phase space
+    mcHistoryTools_->genAcceptance(gen_ZZInAcceptance, gen_ZZ4lInEtaAcceptance, gen_ZZ4lInEtaPtAcceptance, gen_m4l_180);
+    if (gen_ZZ4lInEtaAcceptance)   ++eventsInEtaAcceptance_;  
+    if (gen_ZZ4lInEtaPtAcceptance) ++eventsInEtaPtAcceptance_;
+  }
+    
   // Check trigger request. Actually, it is a very very loose request, not the actual one, that instead should be
   // asked to the specific final state
   passTrigger_ = filterController_.passTrigger(NONE, event, triggerWord_);
@@ -252,9 +284,6 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   nvtx_ = vertices->size();
     
   if (isMC_) {
-    if(mcHistoryTools_) delete mcHistoryTools_;
-    mcHistoryTools_ = new MCHistoryTools(event);
-    
     edm::Handle<std::vector<PileupSummaryInfo> > puInfo; event.getByLabel(thePUInfoLabel, puInfo);
     foreach(const PileupSummaryInfo& pui, *puInfo)
       if(pui.getBunchCrossing() == 0) { 
@@ -301,12 +330,12 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
 
 
 void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup){
-  ++theNumberOfAnalyzedEvents;
 
   initTree();
 
   bool goodEvent = fillEventInfo(event);
   if(!goodEvent) return;
+  ++theNumberOfAnalyzedEvents;
 
   //// For Z+L CRs, we want only events with exactly 1 Z+l candidate.
   ////if (filterController_.channel() == ZL && ???size() != 1) return;
@@ -352,6 +381,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
 
   // The bosons have NOT any requirement on the quality of their daughters, only the flag is set (because of the same code is usd for CR too)
+
   ZZ4m_   = fillDiBosons<pat::Muon,phys::Lepton,pat::Muon,phys::Lepton>(MMMM,ZZ4m);
 
   ZZ4e_   = fillDiBosons<pat::Electron,phys::Electron,pat::Electron,phys::Electron>(EEEE,ZZ4e);
@@ -366,19 +396,21 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 template<typename LEP>
 phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
 
-  phys::Lepton output(phys::Particle::convert(lepton.p4()),lepton.charge(),13);
+  phys::Lepton output(phys::Particle::convert(lepton.p4()),lepton.charge(),lepton.pdgId());
   
-  output.dxy_             = lepton.userFloat("dxy"            );               
-  output.dz_              = lepton.userFloat("dz"             );                
-  output.sip_             = lepton.userFloat("SIP"            );
-  output.combRelIso_      = lepton.userFloat("combRelIso"     );
-  output.pfChargedHadIso_ = lepton.userFloat("PFChargedHadIso");
-  output.pfNeutralHadIso_ = lepton.userFloat("PFNeutralHadIso");
-  output.pfPhotonIso_     = lepton.userFloat("PFPhotonIso"    );
-  output.pfCombRelIso_    = lepton.userFloat("CombRelIsoPF"   );
-  output.rho_             = lepton.userFloat("rho"            );
-  output.isPF_            = lepton.userFloat("isPFMuon"       );
-  output.matchHLT_        = lepton.userFloat("HLTMatch"       );
+  output.dxy_             = lepton.userFloat("dxy"              );               
+  output.dz_              = lepton.userFloat("dz"               );                
+  output.sip_             = lepton.userFloat("SIP"              );
+  output.combRelIso_      = lepton.userFloat("combRelIso"       );
+  output.pfChargedHadIso_ = lepton.userFloat("PFChargedHadIso"  );
+  output.pfNeutralHadIso_ = lepton.userFloat("PFNeutralHadIso"  );
+  output.pfPhotonIso_     = lepton.userFloat("PFPhotonIso"      );
+  output.pfCombRelIso_    = lepton.userFloat("CombRelIsoPF"     );
+  output.rho_             = lepton.userFloat("rho"              );
+  output.isPF_            = lepton.userFloat("isPFMuon"         );
+  output.matchHLT_        = lepton.userFloat("HLTMatch"         );
+  output.efficiencySF_    = leptonEfficiency_.scaleFactor(output);
+  
      
   return output; 
 }
@@ -502,7 +534,7 @@ std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(Channel channel
 
     const pat::CompositeCandidate* edmV0;
     const pat::CompositeCandidate* edmV1;
-    
+
     if (channel != ZL) { // Regular 4l candidates
       edmV0   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z1")->masterClone().get());      
       edmV1   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z2")->masterClone().get());
@@ -520,18 +552,20 @@ std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(Channel channel
       V1 = fillBoson<T2,PAR2>(*edmV1, 23, false);
     }
     else if(dynamic_cast<const T2*>(edmV0->daughter(0)->masterClone().get()) && dynamic_cast<const T1*>(edmV1->daughter(0)->masterClone().get())){
-      V0 = fillBoson<T2,PAR1>(*edmV0, 23, false);
-      V1 = fillBoson<T1,PAR2>(*edmV1, 23, false);
+      V0 = fillBoson<T1,PAR1>(*edmV1, 23, false);
+      V1 = fillBoson<T2,PAR2>(*edmV0, 23, false);
     }
     else{
       edm::LogError("TreePlanter") << "Do not know what to cast in fillDiBosons" << endl;
       return physDiBosons;
     }
+
     
     phys::DiBoson<PAR1,PAR2> VV(V0, V1);
     VV.isBestCand_  = edmVV.userFloat("isBestCand");
     VV.passFullSel_ = edmVV.userFloat("FullSel");
     VV.regionWord_  = computeCRFlag(channel,edmVV);
+    VV.triggerWord_ = triggerWord_;
     VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
 
     physDiBosons.push_back(VV);

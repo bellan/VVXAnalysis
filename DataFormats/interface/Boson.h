@@ -19,32 +19,39 @@ namespace phys {
     friend class ::TreePlanter;
   public:
     /// Constructor
-    Boson(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), int pid = 0)
-      : Particle(p,0,pid)
+  Boson(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), int pid = 0)
+    : Particle(p,0,pid)
       , indexFSR_(-1)
       , hasGoodDaughters_(false){}
 
-
-    Boson(const P& daughter0, const P& daughter1, int pid = 0)
-      : Particle(daughter0.p4()+daughter1.p4(), 0, pid)
+    
+  Boson(const P& daughter0, const P& daughter1, int pid = 0)
+    : Particle(daughter0.p4()+daughter1.p4(), 0, pid)
       , daughter0_(daughter0)
       , daughter1_(daughter1)
       , indexFSR_(-1)
-      , hasGoodDaughters_(false)
-      {}
+      , hasGoodDaughters_(false){
+       efficiencySF_ = daughter0.efficiencySF() * daughter1.efficiencySF();
+    }
     
-      Boson(const Boson<P>& vb)
-	: Particle(vb.daughter(0).p4() + vb.daughter(1).p4(), vb.charge(), vb.id())
-	, daughter0_(vb.daughter(0))
-	, daughter1_(vb.daughter(1))
-	, indexFSR_(vb.daughterWithFSR())
-	, fsrPhoton_(vb.fsrPhoton())
-	, hasGoodDaughters_(vb.hasGoodDaughters()){}
-
+  Boson(const Boson<P>& vb)
+    : Particle(vb.daughter(0).p4() + vb.daughter(1).p4(), vb.charge(), vb.id())
+      , daughter0_(vb.daughter(0))
+      , daughter1_(vb.daughter(1))
+      , indexFSR_(vb.daughterWithFSR())
+      , fsrPhoton_(vb.fsrPhoton())
+      , hasGoodDaughters_(vb.hasGoodDaughters()){
+      efficiencySF_ = vb.daughter(0).efficiencySF() * vb.daughter(1).efficiencySF();
+      
+      if(indexFSR_ >=0)  p4_ = p4_ + fsrPhoton_.p4();
+    }
+    
     
     template<typename T>
       Boson<T> clone() const {
-      return Boson<T>(daughter0_,daughter1_,id_);
+      Boson<T> newboson(daughter0_,daughter1_,id_);
+      if(indexFSR_ >=0) newboson.addFSR(indexFSR_,fsrPhoton_);
+      return newboson;
     }
 
     

@@ -78,13 +78,21 @@ void EventAnalyzer::Init(TTree *tree)
   electrons = 0; b_electrons = 0; theTree->SetBranchAddress("electrons", &electrons, &b_electrons);
   
   // Jets   
-  jets = 0;      b_jets = 0;      theTree->SetBranchAddress("jets", &jets, &b_jets);
-
+  pjets = 0;      b_pjets = 0;    theTree->SetBranchAddress("jets", &pjets, &b_pjets);
+  jets  = new std::vector<phys::Jet>(); centralJets  = new std::vector<phys::Jet>();
 
   // Bosons   
   Zmm = new std::vector<phys::Boson<phys::Lepton> >()  ; ZmmCand = 0; b_ZmmCand = 0; theTree->SetBranchAddress("ZmmCand", &ZmmCand, &b_ZmmCand);
   Zee = new std::vector<phys::Boson<phys::Electron> >(); ZeeCand = 0; b_ZeeCand = 0; theTree->SetBranchAddress("ZeeCand", &ZeeCand, &b_ZeeCand);
   Wjj = new std::vector<phys::Boson<phys::Jet> > ()    ; WjjCand = 0; b_WjjCand = 0; theTree->SetBranchAddress("WjjCand", &WjjCand, &b_WjjCand);
+
+  // DiBosons
+  ZZ4m   = 0; b_ZZ4m   = 0; theTree->SetBranchAddress("ZZ4mCand"  , &ZZ4m  , &b_ZZ4m  );
+  ZZ4e   = 0; b_ZZ4e   = 0; theTree->SetBranchAddress("ZZ4eCand"  , &ZZ4e  , &b_ZZ4e  );
+  ZZ2e2m = 0; b_ZZ2e2m = 0; theTree->SetBranchAddress("ZZ2e2mCand", &ZZ2e2m, &b_ZZ2e2m);
+
+  ZZ = 0;
+
 
   // Gen Particles   
   genParticles   = 0;                                                b_genParticles   = 0; theTree->SetBranchAddress("genParticles"  , &genParticles  , &b_genParticles);
@@ -102,11 +110,15 @@ void EventAnalyzer::Init(TTree *tree)
   b_nvtx        = 0; theTree->SetBranchAddress("nvtxs"  , &nvtx   , &b_nvtx   );
   b_rho         = 0; theTree->SetBranchAddress("rho"    , &rho    , &b_rho    );
   
-  
   // MC related variables
   b_puweight     = 0; theTree->SetBranchAddress("puweight"    , &theMCInfo.puweight_     , &b_puweight );
   b_mcprocweight = 0; theTree->SetBranchAddress("mcprocweight", &theMCInfo.mcprocweight_ , &b_mcprocweight);
   b_genCategory  = 0; theTree->SetBranchAddress("genCategory" , &genCategory             , &b_genCategory  );
+
+  // Info about selections
+  b_passTrigger = 0; theTree->SetBranchAddress("passTrigger", &passTrigger, &b_passTrigger); 
+  b_passSkim    = 0; theTree->SetBranchAddress("passSkim"   , &passSkim   , &b_passSkim   ); 
+  b_triggerWord = 0; theTree->SetBranchAddress("triggerWord", &triggerWord, &b_triggerWord); 
 }
 
 
@@ -126,7 +138,17 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   
   stable_sort(muons->begin(),     muons->end(),     phys::PtComparator());
   stable_sort(electrons->begin(), electrons->end(), phys::PtComparator());
-  stable_sort(jets->begin(),      jets->end(),      phys::PtComparator());
+  stable_sort(pjets->begin(),     pjets->end(),     phys::PtComparator());
+
+  // Some selection on jets
+  jets->clear(); centralJets->clear();
+  foreach(const phys::Jet &jet, *pjets)
+    if(jet.pt() > 30 && jet.passLooseJetID() && jet.passPUID()){
+      if(fabs(jet.eta()) < 4.7) jets->push_back(jet);
+      if(fabs(jet.eta()) < 2.4) centralJets->push_back(jet);
+    }
+
+  
 
   Zmm->clear(); Zee->clear(); Wjj->clear();
 
@@ -140,8 +162,37 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   stable_sort(Zmm->begin(), Zmm->end(), phys::PtComparator());
   stable_sort(Zee->begin(), Zee->end(), phys::PtComparator());
   stable_sort(Wjj->begin(), Wjj->end(), phys::PtComparator());
+  
+  int totCand = ZZ4m->size() + ZZ4e->size() + ZZ2e2m->size();
+  theHistograms.fill("nZZCandidates",     "Number of good candidates in the event", 10, 0, 10, totCand       , 1);
+  theHistograms.fill("nZZ4eCandidates",   "Number of good candidates in the event", 10, 0, 10, ZZ4e->size()  , 1);
+  theHistograms.fill("nZZ4mCandidates",   "Number of good candidates in the event", 10, 0, 10, ZZ4m->size()  , 1);
+  theHistograms.fill("nZZ2e2mCandidates", "Number of good candidates in the event", 10, 0, 10, ZZ2e2m->size(), 1);
+  
+  int triggers = 0;
+  if(totCand > 0){
+    
+    if(ZZ4m->size() == 1 && ZZ4m->front().passTrigger()){ ++triggers;
+      ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4m->front().clone<phys::Lepton,phys::Lepton>());
+    }
+    if(ZZ4e->size() == 1 && ZZ4e->front().passTrigger()){ ++triggers;
+      ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4e->front().clone<phys::Lepton,phys::Lepton>());
+    }
+    if(ZZ2e2m->size() == 1 && ZZ2e2m->front().passTrigger()){ ++triggers;
+      ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ2e2m->front().clone<phys::Lepton,phys::Lepton>());
+    }
+  }
 
-  theWeight = theMCInfo.weight();
+  theHistograms.fill("GoodTriggerableCands", "Number of good triggerable candidates in the event", 10, 0, 10, triggers, 1);
+  if(triggers != 1) return 0;
+  
+  theWeight = theMCInfo.weight(*ZZ);
+
+  theHistograms.fill("weight_full",1000, 0, 10, theWeight);
+  theHistograms.fill("weight_bare",1000, 0, 10, theMCInfo.weight());
+  theHistograms.fill("weight_SF",1000, 0, 10, ZZ->efficiencySF());
+  
+  
   theInputWeightedEvents += theWeight;
 
   return e;
@@ -170,7 +221,6 @@ void EventAnalyzer::loop(const std::string outputfile){
   if (theTree == 0) return;
 
   Long64_t nentries = theTree->GetEntries();  
-  Long64_t nbytes = 0, nb = 0;
 
   begin();
 
@@ -178,12 +228,10 @@ void EventAnalyzer::loop(const std::string outputfile){
 
     Long64_t ientry = LoadTree(jentry);
     if (ientry < 0) break;
-    nb = GetEntry(jentry);  nbytes += nb; 
+    if (!GetEntry(jentry)) continue;
 
     if (cut() < 0) continue;
     theCutCounter += theWeight;
-
-    theHistograms.fill("weight",100, 0, 200, theWeight);
 
     if(doBasicPlots_) fillBasicPlots();
     analyze();
@@ -324,3 +372,5 @@ void EventAnalyzer::fillJetPlots(const std::string &type, const phys::Jet      &
   theHistograms.fill<TH1I>(type+"_pass_puCutBased_medium" , 2, 0, 2, jet.pass_puCutBased_medium (), theWeight); // void??
   theHistograms.fill<TH1I>(type+"_pass_puCutBased_tight"  , 2, 0, 2, jet.pass_puCutBased_tight  (), theWeight); // void??
 }
+
+

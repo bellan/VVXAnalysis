@@ -70,8 +70,8 @@ process.source.fileNames = cms.untracked.vstring(
     #'/store/cmst3/group/cmgtools/CMG/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_nLP.root'
     #'/store/cmst3/group/cmgtools/CMG/WZZ_8TeV-aMCatNLO-herwig/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_GEb.root'
     # '/store/cmst3/group/cmgtools/CMG/ZZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_UV1.root'
-    '/store/cmst3/user/cmgtools/CMG/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_irQ.root'
-    #'/store/cmst3/user/cmgtools/CMG//ZZTo4mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_UR6.root'
+    #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_irQ.root'
+    '/store/cmst3/user/cmgtools/CMG//ZZTo4mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_UR6.root'
     #'/store/cmst3/user/cmgtools/CMG/VBF_phantom_8TeV/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_42.root'
     )
 
@@ -99,6 +99,7 @@ process.TFileService=cms.Service('TFileService', fileName=cms.string('ZZjjAnalys
 
  
 process.treePlanter = cms.EDAnalyzer("TreePlanter",
+                                     sampleName   = cms.string(SAMPLENAME),
                                      setup        = cms.int32(LEPTON_SETUP),
                                      sampleType   = cms.int32(SAMPLE_TYPE),
                                      PD           = cms.string(PD),
@@ -203,13 +204,13 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
                                            Setup               = cms.int32(JET_SETUP),
                                            JetPreselection     = cms.string("pt > 20"),
                                            DiBosonPreselection = cms.string(""),
+                                           MatchingType        = cms.string("byDeltaR"), 
                                            Jets      = cms.InputTag("cmgPFJetSel"),
                                            Muons     = cms.InputTag("postCleaningMuons"),
                                            Electrons = cms.InputTag("postCleaningElectrons"),
                                            Diboson   = cms.InputTag("ZZFiltered"),
-                                           TagOnly   = cms.bool(False), 
                                            EnergyFractionAllowed = cms.double(0), # maximum energy fraction carried by the lepton in the jet, to accept a jet as non from lepton                             
-                                           DebugPlots= cms.untracked.bool(True)
+                                           DebugPlots= cms.untracked.bool(False)
                                            )
 
 
@@ -221,9 +222,9 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
 
 process.centralJets = cms.EDFilter("EtaPtMinCMGPFJetSelector", 
                                    src = cms.InputTag("disambiguatedJets"),
-                                   ptMin   = cms.double(20),
-                                   etaMin = cms.double(-2.5),
-                                   etaMax = cms.double(2.5)
+                                   ptMin   = cms.double(30),
+                                   etaMin = cms.double(-2.4),
+                                   etaMax = cms.double(2.4)
                                    )
 
 process.bareWCand = cms.EDProducer("CandViewShallowCloneCombiner",
@@ -292,9 +293,9 @@ process.postRecoCleaning = cms.Sequence( process.ZZFiltered
 ### ------------------------------------------------------------------------- ###
 
 # Skim counters
-process.preSkimCounter  = cms.EDProducer("EventCountProducer")
-process.postSkimCounter = cms.EDProducer("EventCountProducer")
-
+process.prePreselectionCounter       = cms.EDProducer("EventCountProducer")
+#process.preSkimSignalCounter         = cms.EDProducer("EventCountProducer")
+process.postPreselectionCounter      = cms.EDProducer("EventCountProducer")
 
 
 ### Some filters
@@ -303,15 +304,17 @@ process.postSkimCounter = cms.EDProducer("EventCountProducer")
 process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("disambiguatedJets"), minNumber = cms.uint32(0))
 
 # Select only events with one such candidate
-process.zzCounterFilter= cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZZFiltered"), minNumber = cms.uint32(1))
+process.zzCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZZFiltered"), minNumber = cms.uint32(1))
 
-
+# Empty sequence to attach the signal filter (if specified in the CSV file)
+process.signalFilters    = cms.Sequence() 
 
 ### Path that pre-select the higher level objects that will input the TreePlanter
-process.preselection = cms.Path( process.preSkimCounter
+process.preselection = cms.Path( process.prePreselectionCounter
+                                 * process.signalFilters
                                  * process.postRecoCleaning 
                                  * process.zzCounterFilter * process.jetCounterFilter
-                                 * process.postSkimCounter)
+                                 * process.postPreselectionCounter)
 
 
 

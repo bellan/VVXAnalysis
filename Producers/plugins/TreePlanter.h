@@ -25,6 +25,7 @@
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 
 #include "VVXAnalysis/Producers/interface/FilterController.h"
+#include "VVXAnalysis/Commons/interface/LeptonEfficiency.h"
 
 #include "ZZAnalysis/AnalysisStep/interface/PUReweight.h"
 
@@ -89,6 +90,9 @@ class TreePlanter: public edm::EDAnalyzer {
   PUReweight       PUWeighter_;
   FilterController filterController_;
   MCHistoryTools   *mcHistoryTools_;
+  // To get Lepton efficiency scale factors. Temporary here!
+  LeptonEfficiency leptonEfficiency_;
+
   // ------------------- Event info in the tree ------------------- //
   Int_t event_;
   Int_t run_;
@@ -101,6 +105,7 @@ class TreePlanter: public edm::EDAnalyzer {
 
   Int_t preSkimCounter_;
   Int_t postSkimCounter_;
+  Int_t postSkimSignalCounter_;
 
   Double_t mcprocweight_;
   Double_t puweight_;
@@ -150,6 +155,7 @@ class TreePlanter: public edm::EDAnalyzer {
   // --------------------------------------------------------- //
 
   // Ordinary data members
+  std::string sampleName_;
   bool isMC_;
   int  sampleType_;
   int  setup_;
@@ -164,6 +170,8 @@ class TreePlanter: public edm::EDAnalyzer {
   Double_t sumpumcprocweights_;
   Int_t theNumberOfEvents;
   Int_t theNumberOfAnalyzedEvents;
+  Int_t eventsInEtaAcceptance_;
+  Int_t eventsInEtaPtAcceptance_;
 
 
   std::vector<std::string> skimPaths_;

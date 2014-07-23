@@ -21,7 +21,8 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   , sumpumcprocweight_(0)
   , preSkimCounter_(0) 
   , postSkimCounter_(0)
-
+  , eventsInEtaAcceptance_(0)
+  , eventsInEtaPtAcceptance_(0)
 {
 
   if(lumi <= 0) return;
@@ -31,25 +32,30 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
 
   if (tree == 0) return;
   
-  TBranch *b_genEvents            = 0;
-  TBranch *b_analyzedEvents       = 0;
-  TBranch *b_internalCrossSection = 0;  
-  TBranch *b_externalCrossSection = 0;  
-  TBranch *b_summcprocweight    = 0;  
-  TBranch *b_sumpuweight        = 0;  
-  TBranch *b_sumpumcprocweight  = 0;
-  TBranch *b_preSkimCounter  = 0;
-  TBranch *b_postSkimCounter = 0;
-  
-  tree->SetBranchAddress("genEvents"             , &genEvents_           , &b_genEvents           );
-  tree->SetBranchAddress("analyzedEvents"        , &analyzedEvents_      , &b_analyzedEvents      );
-  tree->SetBranchAddress("internalCrossSection"  , &internalCrossSection_, &b_internalCrossSection);
-  tree->SetBranchAddress("externalCrossSection"  , &externalCrossSection_, &b_externalCrossSection);
-  tree->SetBranchAddress("summcprocweight"       , &summcprocweight_     , &b_summcprocweight     );  
-  tree->SetBranchAddress("sumpuweight"           , &sumpuweight_         , &b_sumpuweight         );  
-  tree->SetBranchAddress("sumpumcprocweight"     , &sumpumcprocweight_   , &b_sumpumcprocweight   );  
-  tree->SetBranchAddress("preSkimCounter"        , &preSkimCounter_      , &b_preSkimCounter      );
-  tree->SetBranchAddress("postSkimCounter"       , &postSkimCounter_     , &b_postSkimCounter     );
+  TBranch *b_genEvents               = 0;
+  TBranch *b_analyzedEvents          = 0;
+  TBranch *b_internalCrossSection    = 0;  
+  TBranch *b_externalCrossSection    = 0;  
+  TBranch *b_summcprocweight         = 0;  
+  TBranch *b_sumpuweight             = 0;  
+  TBranch *b_sumpumcprocweight       = 0;
+  TBranch *b_preSkimCounter          = 0;
+  TBranch *b_postSkimCounter         = 0;
+  TBranch *b_eventsInEtaAcceptance   = 0;
+  TBranch *b_eventsInEtaPtAcceptance = 0;
+
+  tree->SetBranchAddress("genEvents"              , &genEvents_              , &b_genEvents              );
+  tree->SetBranchAddress("analyzedEvents"         , &analyzedEvents_         , &b_analyzedEvents         );
+  tree->SetBranchAddress("internalCrossSection"   , &internalCrossSection_   , &b_internalCrossSection   );
+  tree->SetBranchAddress("externalCrossSection"   , &externalCrossSection_   , &b_externalCrossSection   );
+  tree->SetBranchAddress("summcprocweight"        , &summcprocweight_        , &b_summcprocweight        );  
+  tree->SetBranchAddress("sumpuweight"            , &sumpuweight_            , &b_sumpuweight            );  
+  tree->SetBranchAddress("sumpumcprocweight"      , &sumpumcprocweight_      , &b_sumpumcprocweight      );  
+  tree->SetBranchAddress("preSkimCounter"         , &preSkimCounter_         , &b_preSkimCounter         );
+  tree->SetBranchAddress("postSkimCounter"        , &postSkimCounter_        , &b_postSkimCounter        );
+  tree->SetBranchAddress("eventsInEtaAcceptance"  , &eventsInEtaAcceptance_  , &b_eventsInEtaAcceptance  );
+  tree->SetBranchAddress("eventsInEtaPtAcceptance", &eventsInEtaPtAcceptance_, &b_eventsInEtaPtAcceptance);
+    
 
   Long64_t nentries = tree->GetEntries();  
   
@@ -59,31 +65,37 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   int    totalGenEvents      = 0 ;
   double totalSumMCProc      = 0.;
   double totalSumPUMCProc    = 0.;
+  int    totalAccEta         = 0 ;
+  int    totalAccEtaPt       = 0 ;
 
   for (Long64_t jentry=0; jentry<nentries; ++jentry){
     tree->LoadTree(jentry); tree->GetEntry(jentry);
     
     if(genEvents_ != preSkimCounter_)
-      std::cout << Warning("WARNING! The number of skimmed events differs from the total generated events. Make sure you are properly weighting the events.") 
+      std::cout << colour::Warning("WARNING! The number of skimmed events differs from the total generated events. Make sure you are properly weighting the events.") 
 		<< " Generated events: " <<  genEvents_ << " Pre-skimmed events: " << preSkimCounter_ 
 		<< std::endl;
     
-    totalAnEvents    += analyzedEvents_;
-    totalGenEvents   += genEvents_;
-    totalSumMCProc   += summcprocweight_;
-    totalSumPUMCProc += sumpumcprocweight_;
+    totalAnEvents       += analyzedEvents_;
+    totalGenEvents      += genEvents_;
+    totalSumMCProc      += summcprocweight_;
+    totalSumPUMCProc    += sumpumcprocweight_;
     meanIntCrossSection += genEvents_*internalCrossSection_;
+    totalAccEta         += eventsInEtaAcceptance_;
+    totalAccEtaPt       += eventsInEtaPtAcceptance_;
   }
-  
+
   // The tree is not needed anymore
   delete tree;
   
   // ... and the variables used to set the branch address can be overwritten too
-  genEvents_            = totalGenEvents;
-  analyzedEvents_       = totalAnEvents;
-  summcprocweight_      = totalSumMCProc;
-  sumpumcprocweight_    = totalSumPUMCProc;
-  internalCrossSection_ = meanIntCrossSection/genEvents_;
+  genEvents_               = totalGenEvents;
+  analyzedEvents_          = totalAnEvents;
+  summcprocweight_         = totalSumMCProc;
+  sumpumcprocweight_       = totalSumPUMCProc;
+  internalCrossSection_    = meanIntCrossSection/genEvents_;
+  eventsInEtaAcceptance_   = totalAccEta;
+  eventsInEtaPtAcceptance_ = totalAccEtaPt;
 
   crossSection_ = &internalCrossSection_;
   std::string xsectype = "internal";

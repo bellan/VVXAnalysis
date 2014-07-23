@@ -2,7 +2,8 @@
 #define ZZWAnalysis_DataFormats_DiBoson_H
 
 /** \class DiBoson
- *  No description available.
+ *  
+ *  Ids: 4mu = 4*13 = 52; 2e2mu = 2*13 + 2*11 = 48; 4e = 4*11 = 44 
  *
  *  $Date: 2013/03/15 13:37:31 $
  *  $Revision: 1.3 $
@@ -21,22 +22,39 @@ namespace phys {
   public:
     /// Constructor
     DiBoson(): Particle()
+      , triggerWord_(0)
       , regionWord_(0)
       , isBestCand_(false)
       , passFullSel_(false)
+      , passTrigger_(false)
       {}
       
     DiBoson(const Boson<P1>& vb1, const Boson<P2>& vb2)
       : Particle(vb1.p4()+vb2.p4(),0,0)
       , daughter0_(vb1)
       , daughter1_(vb2)
+      , triggerWord_(0)
       , regionWord_(0)
       , isBestCand_(false)
       , passFullSel_(false)
+      , passTrigger_(false)
       {
-	for(unsigned int i = 0; i < 2; ++i)
+	for(unsigned int i = 0; i < 2; ++i){
 	  id_ += abs(vb1.daughter(i).id()) + abs(vb2.daughter(i).id());
+	  efficiencySF_ *= vb1.daughter(i).efficiencySF() * vb2.daughter(i).efficiencySF();
+	}
       }
+
+    template<typename T1, typename T2>
+      DiBoson<T1,T2> clone() const {
+      DiBoson<T1,T2> newdiboson(daughter0_.clone<T1>(), daughter1_.clone<T2>());
+      newdiboson.setTriggerWord(triggerWord_);
+      newdiboson.setRegionWord (regionWord_ );
+      newdiboson.setIsBestCand (isBestCand_ );
+      newdiboson.setPassFullSel(passFullSel_);
+      newdiboson.setPassTrigger(passTrigger_);
+      return newdiboson;
+    }
 
     template<typename T>
       Boson<T> daughter(int i) const{
@@ -57,18 +75,30 @@ namespace phys {
     bool passFullSelection() const {return passFullSel_;}
 
     // Type of search/control region
-    short region() const {return regionWord_;}
+    int region() const {return regionWord_;}
 
+    // Triggers that have been passed
+    short trigger() const {return triggerWord_;}
     
+    // True if pass the trigger for a given final state
+    bool passTrigger() const {return passTrigger_;}
+
+    void setTriggerWord(Short_t tw) {triggerWord_ = tw;}
+    void setRegionWord (Int_t   rw) {regionWord_  = rw;} 
+    void setIsBestCand (Bool_t  bc) {isBestCand_  = bc;} 
+    void setPassFullSel(Bool_t  fs) {passFullSel_ = fs;}
+    void setPassTrigger(Bool_t  pt) {passTrigger_ = pt;}
+
   private:
 
     Boson<P1> daughter0_;
     Boson<P2> daughter1_;
     
-    Int_t regionWord_;
-    Bool_t isBestCand_;
-    Bool_t passFullSel_;
-    Bool_t passTrigger_;
+    Short_t triggerWord_;
+    Int_t   regionWord_;
+    Bool_t  isBestCand_;
+    Bool_t  passFullSel_;
+    Bool_t  passTrigger_;
 
     ClassDef(DiBoson, 1) //
   };

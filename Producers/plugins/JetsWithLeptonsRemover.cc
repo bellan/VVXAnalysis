@@ -1,3 +1,12 @@
+/** \class to remove jets overlapping with leptons
+ *  No description available.
+ *
+ *  $Date:  $
+ *  $Revision: $
+ *  \author R. Bellan - UNITO <riccardo.bellan@cern.ch>
+ */
+
+
 #include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -26,20 +35,24 @@ using namespace colour;
 
 class  JetsWithLeptonsRemover: public edm::EDProducer {
 public:
+  
+  enum MatchingType{byConstituents, byDeltaR};
+
   explicit JetsWithLeptonsRemover(const edm::ParameterSet & iConfig);
   virtual ~JetsWithLeptonsRemover() { }
 
   virtual void produce(edm::Event & iEvent, const edm::EventSetup & iSetup);
   bool isGood(const cmg::PFJet jet) const;
+  bool checkLeptonJet(const edm::Event & event, const cmg::PFJet& jet);
   
 private:
   /// Labels for input collections
   int setup_;
+  MatchingType matchingType_;
   edm::InputTag jetSrc_;
   edm::InputTag muonSrc_;
   edm::InputTag electronSrc_;
   edm::InputTag diBosonSrc_;
-  bool tagOnly_;
   double enFractionAllowed_;
   bool cleaningFromDiboson_;
  
@@ -70,7 +83,6 @@ JetsWithLeptonsRemover::JetsWithLeptonsRemover(const edm::ParameterSet & iConfig
   , muonSrc_          (iConfig.getParameter<edm::InputTag>("Muons"))
   , electronSrc_      (iConfig.getParameter<edm::InputTag>("Electrons"))
   , diBosonSrc_       (iConfig.getParameter<edm::InputTag>("Diboson"))  
-  , tagOnly_          (iConfig.getParameter<bool>("TagOnly")) // Tag muons and electrons - matching jets, BUT still discard the one that matches diboson grand-daughters
   , enFractionAllowed_(iConfig.getParameter<double>("EnergyFractionAllowed"))
   , preselectionJ_    (iConfig.getParameter<std::string>("JetPreselection"))
   , preselectionVV_   (iConfig.getParameter<std::string>("DiBosonPreselection"))
@@ -78,6 +90,12 @@ JetsWithLeptonsRemover::JetsWithLeptonsRemover(const edm::ParameterSet & iConfig
   , activateDebugPrintOuts_ (iConfig.getUntrackedParameter<bool>("DebugPrintOuts",false))   
   , doDebugPlots_           (iConfig.getUntrackedParameter<bool>("DebugPlots",false)) 
 {
+
+  std::string matchingType = iConfig.getParameter<std::string>("MatchingType");
+  if(matchingType == "byConstituents") matchingType_ = JetsWithLeptonsRemover::byConstituents;
+  else if(matchingType == "byDeltaR")  matchingType_ = JetsWithLeptonsRemover::byDeltaR;
+  else std::cout << "Not making any matching, the matching you choose is not foreseen: " << matchingType << std::endl; 
+  
   produces<std::vector<cmg::PFJet> >(); 
 
   if(diBosonSrc_.label() != "") cleaningFromDiboson_ = true;
@@ -118,152 +136,15 @@ void JetsWithLeptonsRemover::produce(edm::Event & event, const edm::EventSetup &
   auto_ptr<vector<cmg::PFJet> > out(new vector<cmg::PFJet>());
   foreach(const cmg::PFJet& jet, *jets){
     
-    if(!preselectionJ_(jet) && isGood(jet)) continue;
+    if(!preselectionJ_(jet) || !isGood(jet)) continue;
     ++passPresel;
-
-
-
+      
     if(activateDebugPrintOuts_) std::cout<<"\n+++++ Jet +++++ pt: " << jet.pt() << " eta: " << jet.eta() << " phi: " << jet.phi() << std::endl;
-
-    bool leptonjet = false;
-
-    const cmg::PFJetComponent mucomp     = jet.component(reco::PFCandidate::ParticleType::mu);
-    const cmg::PFJetComponent ecomp      = jet.component(reco::PFCandidate::ParticleType::e);
-   
-
-    math::XYZVectorD vm(mucomp.pt(), 0, sqrt(mucomp.energy()*mucomp.energy() - mucomp.pt()*mucomp.pt()));
-    double mucomp_abseta = vm.eta();
-    double mucomp_pt      = mucomp.pt();
     
-    math::XYZVectorD ve(ecomp.pt(), 0, sqrt(ecomp.energy()*ecomp.energy() - ecomp.pt()*ecomp.pt()));
-    double ecomp_abseta = ve.eta();
-    double ecomp_pt     = ecomp.pt();
-    
-    if(activateDebugPrintOuts_){
-      std::cout << "== mu comp == num: " << mucomp.number() << " fraction: " << mucomp.fraction() << " pt: " << mucomp_pt << " eta: " << mucomp_abseta << std::endl; 
-      std::cout << "== e comp == num: "  << ecomp.number()  << " fraction: " << ecomp.fraction()  << " pt: " << ecomp_pt << " eta: " << ecomp_abseta << std::endl; 
-    }
-
-    if(cleaningFromDiboson_){
-      edm::Handle<edm::View<pat::CompositeCandidate> > VV   ; event.getByLabel(diBosonSrc_, VV);
-      pat::CompositeCandidate bestVV; bool found = false;
-      foreach(const pat::CompositeCandidate &vv, *VV)
-	if (preselectionVV_(vv)){
-	  bestVV = vv; 
-	  found = true;
-	  break;
-	}
-      
-      if(found) { 
-	for(int i=0; i<2; ++i){
-	  
-	  const pat::CompositeCandidate *v =  dynamic_cast<const pat::CompositeCandidate*>(bestVV.daughter(i)->masterClone().get());
-	  
-
-	  for(int j=0; j<2; ++j){
-	      double lepcomp_pt     = -999999999;
-	      double lepcomp_abseta = -999999999;
-	      if(abs(v->daughter(j)->pdgId()) == 13){
-		lepcomp_pt     = mucomp_pt;
-		lepcomp_abseta = mucomp_abseta;
-	      }
-	      else if(abs(v->daughter(j)->pdgId()) == 11){
-		lepcomp_pt     = ecomp_pt;
-		lepcomp_abseta = ecomp_abseta;
-	      }
-	      else std::cout << "Do not know what to do ... do you know what are you doing?" << std::endl;
-
-	      if(activateDebugPrintOuts_)
-		std::cout << "ID lepton: " << v->daughter(j)->pdgId() << " pt: " << v->daughter(j)->pt()   << " eta: " << v->daughter(j)->eta() << " phi: " << v->daughter(j)->phi() << " p: " << v->daughter(j)->p() << std::endl;
-	      if(physmath::isAlmostEqual(v->daughter(j)->pt(), lepcomp_pt, 0.1) && fabs(fabs(v->daughter(j)->eta()) - lepcomp_abseta) < 0.01){
-		leptonjet = true;
-		if(activateDebugPrintOuts_) std::cout << Green("\t\t !!! Found a matching lepton-jet !!!")<<std::endl;
-		if(doDebugPlots_){
-		  hDeltaPt_jet_lepton     ->Fill(v->daughter(j)->pt()  - jet.pt());
-		  hDeltaPt_jetcomp_lepton ->Fill(v->daughter(j)->pt()  - lepcomp_pt);    
-		  hDeltaPhi_jet_lepton    ->Fill(v->daughter(j)->phi() - jet.phi());
-		  hDeltaEta_jet_lepton    ->Fill(v->daughter(j)->eta() - jet.eta());  
-		  hDeltaEta_jetcomp_lepton->Fill(fabs(v->daughter(j)->eta()) - lepcomp_abseta);    
-		}
-	      }
-	  }
-	  
-	  // Check if the jet matches FSR photons
-	  if(v->hasUserFloat("dauWithFSR") && v->userFloat("dauWithFSR") >= 0){
-	    
-	    const cmg::PFJetComponent photoncomp = jet.component(reco::PFCandidate::ParticleType::gamma);
-	    
-	    double photon_en_frac = v->daughter(2)->energy()/jet.energy();
-	    if(activateDebugPrintOuts_)
-	      std::cout << "Sister of " << v->userFloat("dauWithFSR") << " (" <<  v->daughter(v->userFloat("dauWithFSR"))->pdgId() << "), pt: "
-			<< v->daughter(2)->pt()   << " eta: " << v->daughter(2)->eta() << " phi: " << v->daughter(2)->phi() << " p: " << v->daughter(2)->p()
-			<< " Photon energy fraction in the jet: " <<  photon_en_frac 
-			<< std::endl;
-	    if(photoncomp.number() > 0 && photon_en_frac > 0.5 && reco::deltaR(*v->daughter(2), jet) < 0.05){
-	      leptonjet = true; 
-	      if(activateDebugPrintOuts_) std::cout << Blue("\t\t !!! Found a matching FSR lepton-jet !!!")<<std::endl;	  
-	      if(doDebugPlots_){
-		math::XYZVectorD vp(photoncomp.pt(), 0, sqrt(photoncomp.energy()*photoncomp.energy() - photoncomp.pt()*photoncomp.pt()));
-		hDeltaPt_jet_fsr     ->Fill(v->daughter(2)->pt()  - jet.pt());
-		hDeltaPt_jetcomp_fsr ->Fill(v->daughter(2)->pt()  - photoncomp.pt());    
-		hDeltaPhi_jet_fsr    ->Fill(v->daughter(2)->phi() - jet.phi());
-		hDeltaEta_jet_fsr    ->Fill(v->daughter(2)->eta() - jet.eta());  
-		hDeltaEta_jetcomp_fsr->Fill(fabs(v->daughter(2)->eta()) - vp.eta()); 
-	      }
-	    }
-	  }
-	}
-      }
-      if(leptonjet) ++numLepJets;
-    }
-
-    
-
-
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // If it is a jet matching any of the leptons from the di-boson, or from a FSR photon, then it will not be loaded inside the jet cleaned container (no matter what)
-    if(leptonjet) continue;
-    // ----------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-    // Now, check for jets originated from extra leptons in the event. Here, the jets can be tagged only, for a later study of them.
- 
-    // Check for muon-originated jets
-    if(!leptonjet && mucomp.number() > 0 && mucomp.fraction() >= enFractionAllowed_){
-      edm::Handle<pat::MuonCollection>  muons; event.getByLabel(muonSrc_, muons);
-      
-      foreach(const pat::Muon& muon, *muons){
-
-	if(activateDebugPrintOuts_) std::cout<<"Muon pt: " << muon.pt()   << " eta: " << muon.eta()    << " phi: " << muon.phi() << " p: " << muon.p() << std::endl;  
-
-	if(physmath::isAlmostEqual(muon.pt(), mucomp_pt, 0.1) && fabs(fabs(muon.eta()) - mucomp_abseta) < 0.01){
-	  leptonjet = true;
-	  if(activateDebugPrintOuts_) std::cout << Green("\t\t !!! Found a matching lepton-jet (muon not coming from ZZ decay) !!!")<<std::endl;
-	}
-      }
-    }
-
-
-    // Check for electron-originated jets
-    if(!leptonjet && ecomp.number() > 0 && ecomp.fraction() >= enFractionAllowed_){
-      edm::Handle<pat::ElectronCollection>   electrons   ; event.getByLabel(electronSrc_, electrons); 
-
-      foreach(const pat::Electron& electron, *electrons){
-
-	if(activateDebugPrintOuts_) std::cout<<"Electron pt: " << electron.pt()   << " eta: " << electron.eta()    << " phi: " << electron.phi() << " p: " << electron.p() << std::endl;  
-
-	if(physmath::isAlmostEqual(electron.pt(), ecomp_pt, 0.1) && fabs(fabs(electron.eta() - ecomp_abseta)) < 0.01){
-	  leptonjet = true;
-	  if(activateDebugPrintOuts_) std::cout << Green("\t\t !!! Found a matching lepton-jet (electron not coming from ZZ decay) !!!")<<std::endl;
-	}
-      }
-    }
-
-    
-    // FIXME asso map!   
-    if(tagOnly_ || !leptonjet) out->push_back(jet);
+    if(checkLeptonJet(event, jet))
+      ++numLepJets;
+    else
+      out->push_back(jet);
   }
 
   if(doDebugPlots_) hNLeptonJets->Fill(numLepJets);
@@ -319,6 +200,193 @@ bool JetsWithLeptonsRemover::isGood(const cmg::PFJet jet) const {
   
   return looseJetID && passPU;
 }
+
+
+
+bool JetsWithLeptonsRemover::checkLeptonJet(const edm::Event & event, const cmg::PFJet& jet){
+
+    bool leptonjet = false;
+
+    const cmg::PFJetComponent mucomp     = jet.component(reco::PFCandidate::ParticleType::mu);
+    const cmg::PFJetComponent ecomp      = jet.component(reco::PFCandidate::ParticleType::e);
+   
+
+    math::XYZVectorD vm(mucomp.pt(), 0, sqrt(mucomp.energy()*mucomp.energy() - mucomp.pt()*mucomp.pt()));
+    double mucomp_abseta = vm.eta();
+    double mucomp_pt      = mucomp.pt();
+    
+    math::XYZVectorD ve(ecomp.pt(), 0, sqrt(ecomp.energy()*ecomp.energy() - ecomp.pt()*ecomp.pt()));
+    double ecomp_abseta = ve.eta();
+    double ecomp_pt     = ecomp.pt();
+    
+    if(activateDebugPrintOuts_){
+      std::cout << "== mu comp == num: " << mucomp.number() << " fraction: " << mucomp.fraction() << " pt: " << mucomp_pt << " eta: " << mucomp_abseta << std::endl; 
+      std::cout << "== e comp == num: "  << ecomp.number()  << " fraction: " << ecomp.fraction()  << " pt: " << ecomp_pt << " eta: " << ecomp_abseta << std::endl; 
+    }
+
+    if(cleaningFromDiboson_){
+      edm::Handle<edm::View<pat::CompositeCandidate> > VV   ; event.getByLabel(diBosonSrc_, VV);
+      pat::CompositeCandidate bestVV; bool found = false;
+      foreach(const pat::CompositeCandidate &vv, *VV)
+	if (preselectionVV_(vv)){
+	  bestVV = vv; 
+	  found = true;
+	  break;
+	}
+      
+      if(found) { 
+	for(int i=0; i<2; ++i){
+	  
+	  const pat::CompositeCandidate *v =  dynamic_cast<const pat::CompositeCandidate*>(bestVV.daughter(i)->masterClone().get());
+	  
+
+	  for(int j=0; j<2; ++j){
+	      double lepcomp_pt     = -999999999;
+	      double lepcomp_abseta = -999999999;
+	      if(abs(v->daughter(j)->pdgId()) == 13){
+		lepcomp_pt     = mucomp_pt;
+		lepcomp_abseta = mucomp_abseta;
+	      }
+	      else if(abs(v->daughter(j)->pdgId()) == 11){
+		lepcomp_pt     = ecomp_pt;
+		lepcomp_abseta = ecomp_abseta;
+	      }
+	      else std::cout << "Do not know what to do ... do you know what are you doing?" << std::endl;
+
+	      if(activateDebugPrintOuts_)
+		std::cout << "ID lepton: " << v->daughter(j)->pdgId() << " pt: " << v->daughter(j)->pt()   << " eta: " << v->daughter(j)->eta() << " phi: " << v->daughter(j)->phi() << " p: " << v->daughter(j)->p() << std::endl;
+
+	      bool checkVariable = false;
+	      if(matchingType_ == JetsWithLeptonsRemover::byConstituents)
+		checkVariable = physmath::isAlmostEqual(v->daughter(j)->pt(), lepcomp_pt, 0.1) && fabs(fabs(v->daughter(j)->eta()) - lepcomp_abseta) < 0.01;
+	      else if (matchingType_ == JetsWithLeptonsRemover::byDeltaR)
+		checkVariable = reco::deltaR(*v->daughter(j), jet) < 0.5;
+	      else
+		std::cout << "Not making any matching, the matching you choose is not foreseen" << std::endl;
+		
+
+	      if(checkVariable){
+		leptonjet = true;
+		if(activateDebugPrintOuts_) std::cout << Green("\t\t !!! Found a matching lepton-jet !!!")<<std::endl;
+		if(doDebugPlots_){
+		  hDeltaPt_jet_lepton     ->Fill(v->daughter(j)->pt()  - jet.pt());
+		  hDeltaPt_jetcomp_lepton ->Fill(v->daughter(j)->pt()  - lepcomp_pt);    
+		  hDeltaPhi_jet_lepton    ->Fill(v->daughter(j)->phi() - jet.phi());
+		  hDeltaEta_jet_lepton    ->Fill(v->daughter(j)->eta() - jet.eta());  
+		  hDeltaEta_jetcomp_lepton->Fill(fabs(v->daughter(j)->eta()) - lepcomp_abseta);    
+		}
+	      }
+	  }
+	  
+	  // Check if the jet matches FSR photons
+	  if(v->hasUserFloat("dauWithFSR") && v->userFloat("dauWithFSR") >= 0){
+	    
+	    const cmg::PFJetComponent photoncomp = jet.component(reco::PFCandidate::ParticleType::gamma);
+	    
+	    double photon_en_frac = v->daughter(2)->energy()/jet.energy();
+	    if(activateDebugPrintOuts_)
+	      std::cout << "Sister of " << v->userFloat("dauWithFSR") << " (" <<  v->daughter(v->userFloat("dauWithFSR"))->pdgId() << "), pt: "
+			<< v->daughter(2)->pt()   << " eta: " << v->daughter(2)->eta() << " phi: " << v->daughter(2)->phi() << " p: " << v->daughter(2)->p()
+			<< " Photon energy fraction in the jet: " <<  photon_en_frac 
+			<< std::endl;
+	    if(photoncomp.number() > 0 && photon_en_frac > 0.5 && reco::deltaR(*v->daughter(2), jet) < 0.05){
+	      leptonjet = true; 
+	      if(activateDebugPrintOuts_) std::cout << Blue("\t\t !!! Found a matching FSR lepton-jet !!!")<<std::endl;	  
+	      if(doDebugPlots_){
+		math::XYZVectorD vp(photoncomp.pt(), 0, sqrt(photoncomp.energy()*photoncomp.energy() - photoncomp.pt()*photoncomp.pt()));
+		hDeltaPt_jet_fsr     ->Fill(v->daughter(2)->pt()  - jet.pt());
+		hDeltaPt_jetcomp_fsr ->Fill(v->daughter(2)->pt()  - photoncomp.pt());    
+		hDeltaPhi_jet_fsr    ->Fill(v->daughter(2)->phi() - jet.phi());
+		hDeltaEta_jet_fsr    ->Fill(v->daughter(2)->eta() - jet.eta());  
+		hDeltaEta_jetcomp_fsr->Fill(fabs(v->daughter(2)->eta()) - vp.eta()); 
+	      }
+	    }
+	  }
+	}
+      }
+    }
+
+    
+
+
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // If it is a jet matching any of the leptons from the di-boson, or from a FSR photon, then it will not be loaded inside the jet cleaned container (no matter what)
+    if(leptonjet) return leptonjet;
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+    // Now, check for jets originated from extra leptons in the event. Here, the jets can be tagged only, for a later study of them.
+ 
+    // Check for muon-originated jets   
+    edm::Handle<pat::MuonCollection>  muons; event.getByLabel(muonSrc_, muons);
+    
+    foreach(const pat::Muon& muon, *muons){
+      
+      if(activateDebugPrintOuts_) std::cout<<"Muon pt: " << muon.pt()   << " eta: " << muon.eta()    << " phi: " << muon.phi() << " p: " << muon.p() << std::endl;  
+      
+      bool checkVariable = false;
+      if(matchingType_ == JetsWithLeptonsRemover::byConstituents)
+	checkVariable =  mucomp.number() > 0 && mucomp.fraction() >= enFractionAllowed_ &&
+	  physmath::isAlmostEqual(muon.pt(), mucomp_pt, 0.1) && fabs(fabs(muon.eta()) - mucomp_abseta) < 0.01;
+      else if (matchingType_ == JetsWithLeptonsRemover::byDeltaR)
+	checkVariable = reco::deltaR(muon, jet) < 0.5;
+      else
+	std::cout << "Not making any matching, the matching you choose is not foreseen" << std::endl;
+      
+      if(checkVariable){
+	leptonjet = true;
+	if(activateDebugPrintOuts_) std::cout << Green("\t\t !!! Found a matching lepton-jet (muon not coming from ZZ decay) !!!")<<std::endl;
+      }
+    }
+    
+
+
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    if(leptonjet) return leptonjet;
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+    // Check for electron-originated jets
+      edm::Handle<pat::ElectronCollection>   electrons   ; event.getByLabel(electronSrc_, electrons); 
+
+      foreach(const pat::Electron& electron, *electrons){
+
+	if(activateDebugPrintOuts_) std::cout<<"Electron pt: " << electron.pt()   << " eta: " << electron.eta()    << " phi: " << electron.phi() << " p: " << electron.p() << std::endl;  
+
+
+	bool checkVariable = false;
+	if(matchingType_ == JetsWithLeptonsRemover::byConstituents)
+	  checkVariable = ecomp.number() > 0 && ecomp.fraction() >= enFractionAllowed_ &&
+	    physmath::isAlmostEqual(electron.pt(), ecomp_pt, 0.1) && fabs(fabs(electron.eta() - ecomp_abseta)) < 0.01;
+	else if (matchingType_ == JetsWithLeptonsRemover::byDeltaR)
+	  checkVariable = reco::deltaR(electron, jet) < 0.5;
+	else
+	  std::cout << "Not making any matching, the matching you choose is not foreseen" << std::endl;
+
+	if(checkVariable){
+	  leptonjet = true;
+	  if(activateDebugPrintOuts_) std::cout << Green("\t\t !!! Found a matching lepton-jet (electron not coming from ZZ decay) !!!")<<std::endl;
+	}
+      }
+    
+    
+    return leptonjet;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 #include "FWCore/Framework/interface/MakerMacros.h"
 

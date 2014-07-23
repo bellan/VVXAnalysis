@@ -103,7 +103,7 @@ short FilterController::getTriggerWord(const edm::Event & event){
   if (passTriEle)              set_bit_16(trigword,4);
  
   // To be matched with channel == EEEE final state
-  if (passDiEle || passTriEle)                                             set_bit_16(trigword,5); 
+  if ((PD=="" || PD=="DoubleEle") && (passDiEle || passTriEle))            set_bit_16(trigword,5); 
   
   // To be matched with channel == EEMM final state
   if ((PD=="" && (passDiEle || passDiMu || passMuEle)) ||
@@ -111,11 +111,15 @@ short FilterController::getTriggerWord(const edm::Event & event){
       (PD=="DoubleMu" && passDiMu && !passDiEle) ||
       (PD=="MuEG" && passMuEle && !passDiMu && !passDiEle ))               set_bit_16(trigword,6);
   
+  // To be matched with channel == MMMM final state
+  if ((PD=="" || PD=="DoubleMu") && passDiMu)                              set_bit_16(trigword,7); 
+  
+
   // To be matched with channel == ZLL or ZL final states
   if ((PD=="" && (passDiEle || passDiMu || passMuEle || passTriEle)) ||
       (PD=="DoubleEle" && (passDiEle || passTriEle)) ||
       (PD=="DoubleMu" && passDiMu && !passDiEle && !passTriEle) ||
-      (PD=="MuEG" && passMuEle && !passDiMu && !passDiEle && !passTriEle)) set_bit_16(trigword,7);
+      (PD=="MuEG" && passMuEle && !passDiMu && !passDiEle && !passTriEle)) set_bit_16(trigword,8);
     
   // Note: for MMMM final state the requirement is passDiMu, so it needs to be matched with bit 1 (see few line above)
 
@@ -127,10 +131,10 @@ bool
 FilterController::passTrigger(Channel channel, const short& trigword) const{
 
   if(channel == NONE) return test_bit_16(trigword,0);
-  if(channel == MMMM) return test_bit_16(trigword,1);
   if(channel == EEEE) return test_bit_16(trigword,5);
   if(channel == EEMM) return test_bit_16(trigword,6);
-  if(channel == ZLL || channel == ZL) return test_bit_16(trigword,7);
+  if(channel == MMMM) return test_bit_16(trigword,7);
+  if(channel == ZLL || channel == ZL) return test_bit_16(trigword,8);
   else{
     edm::LogWarning("FilterController") << "Unknown channel, do not know what to do.";
     return false;

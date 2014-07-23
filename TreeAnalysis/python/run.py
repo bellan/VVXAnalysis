@@ -28,8 +28,7 @@ if len(sys.argv) > 3: getExternalCrossSectionFromFile = sys.argv[3]
 
 cregion = 'baseline' # in case, make it a further external argument
 
-luminosity = 300000.0
-
+luminosity = 19712
 baseinputdir = 'samples'
 
 
@@ -83,7 +82,7 @@ print "\n"
 
 def run(executable, analysis, typeofsample, cregion, luminosity):
     inputdir  = baseinputdir
-    outputdir = 'results_test'
+    outputdir = 'results'
     if not os.path.exists(outputdir): os.popen('mkdir "%s"' %outputdir)
 
     outputdir = outputdir+"/"+analysis+"_"+cregion
@@ -110,15 +109,11 @@ def run(executable, analysis, typeofsample, cregion, luminosity):
     ### Special treatment for DATA ###
 
     #################################################################################
-
-    if typeofsample == 'mudata' or typeofsample == 'edata': 
-        datasets = ['2012A-13Jul', '2012A-06Aug', '2012B-13Jul', '2012C-24Aug', '2012C-11Dec', '2012C-PromptReco', '2012D-PromptReco']
+    isData = False
+    if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:5] == 'MuEG':
         luminosity = -1
-        if typeofsample == 'mudata':
-            sampleprefix = 'MuData-'
-        if typeofsample == 'edata':
-            sampleprefix = 'EData-'
-
+        isData = True
+        
 
     # ----- Run over the run periods -----
     hadd = 'hadd {0:s}/{1:s}.root'.format(outputdir,typeofsample)
@@ -128,7 +123,7 @@ def run(executable, analysis, typeofsample, cregion, luminosity):
             os.popen('rm {0:s}/{1:s}.root'.format(outputdir,basefile))
 
         externalXsec = -1
-        if not typeofsample == 'mudata' and not typeofsample == 'edata' and getExternalCrossSectionFromFile:
+        if not isData and getExternalCrossSectionFromFile:
             externalXsec = crossSection(period, csvfile)
             print "For {0:s} {1:s} {2:.6f}".format(period, Warning("Using external cross section:"), externalXsec)
 
@@ -145,17 +140,21 @@ def run(executable, analysis, typeofsample, cregion, luminosity):
             os.popen('rm {0:s}/{1:s}.root'.format(outputdir,typeofsample))
         print "Command going to be executed:", Violet(hadd)
         failure, output = commands.getstatusoutput(hadd)
+    elif len(datasets) == 1 and not datasets[0] == typeofsample:
+        print "One sample in the dataset, just copying it."
+        os.popen('cp {0:s}/{1:s}.root {0:s}/{2:s}.root'.format(outputdir,datasets[0],typeofsample))
 
     print "The output is in", Green('{0:s}/{1:s}.root'.format(outputdir,typeofsample))  
 
 
-if typeofsample == 'all':
+if typeofsample == 'all' or typeofsample == 'data':
     for sample in typeofsamples:
-        if cregion == 'all':
-            for cr in range(0,4):
-                run(executable, analysis, sample, cr, luminosity)    # runs over all samples in all control reagions
-        else:
-            run(executable, analysis, sample, cregion, luminosity)   # runs over all samples in a specific control reagions
+        if typeofsample == 'all' or sample[0:8] == 'DoubleMu' or sample[0:9] == 'DoubleEle' or sample[0:5] == 'MuEG':
+            if cregion == 'all':
+                for cr in range(0,4):
+                    run(executable, analysis, sample, cr, luminosity)    # runs over all samples in all control reagions
+            else:
+                run(executable, analysis, sample, cregion, luminosity)   # runs over all samples in a specific control reagions
 else:
     if cregion == 'all':
         for cr in range(0,4):     

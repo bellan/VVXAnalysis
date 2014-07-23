@@ -1,6 +1,9 @@
 #ifndef VVXAnalysis_TreeAnalysis_MCInfo_H
 #define VVXAnalysis_TreeAnalysis_MCInfo_H
 
+#include "VVXAnalysis/DataFormats/interface/DiBoson.h"
+#include "VVXAnalysis/DataFormats/interface/Lepton.h"
+
 #include <string>
 
 class MCInfo {
@@ -18,8 +21,12 @@ class MCInfo {
   double crossSection()         const {return *crossSection_;}
   double sampleWeight()         const {return sampleWeight_;}
   double mcProcWeight()         const {return mcprocweight_*analyzedEvents_/summcprocweight_;}
-  // Total weight of the event, computed on the fly
-  double weight()               const {return sampleWeight_*mcProcWeight()*puweight_;}
+
+  // Total MC weight of the event. Beware, it does not include DATA/MC correction! See instead below.
+  double weight()               const {return luminosity_ >= 0 ? sampleWeight_*mcProcWeight()*puweight_ : 1.;}
+
+  // Total weight of the event, including efficiency scale factors.
+  double weight(const phys::DiBoson<phys::Lepton, phys::Lepton> &ZZ) const {return luminosity_ >= 0 ? weight() * ZZ.efficiencySF() : 1.;}
   
  private:
   friend class EventAnalyzer;
@@ -48,6 +55,9 @@ class MCInfo {
   // Counters for skims
   int preSkimCounter_; 
   int postSkimCounter_;
+
+  int eventsInEtaAcceptance_;
+  int eventsInEtaPtAcceptance_;
 
 };
 
