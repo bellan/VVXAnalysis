@@ -7,6 +7,7 @@
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 #include "VVXAnalysis/Commons/interface/Comparators.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
+#include <ZZAnalysis/AnalysisStep/interface/bitops.h>
 
 
 #include <boost/foreach.hpp>
@@ -20,7 +21,7 @@ typedef std::tuple<uint,uint,int,double> QuarkPairFeatures;
 typedef std::vector<QuarkPairFeatures> QuarkPairsFeatures;
 
 
-  
+
 std::pair<phys::Boson<phys::Particle> ,phys::Boson<phys::Particle> > zzw::makeZBosonsFromLeptons(const std::vector<phys::Particle>& lm, const std::vector<phys::Particle>& lp, int leptonCode, float mZ){
     
     phys::Boson<phys::Particle> Z0;
@@ -63,7 +64,11 @@ std::pair<phys::Boson<phys::Particle> ,phys::Boson<phys::Particle> > zzw::makeZB
 
 
 
-int zzw::makeVBosonsFromIds(int j0Id, int j1Id) {    
+
+
+
+
+int vvx::makeVBosonsFromIds(int j0Id, int j1Id) {    
   
   if ( abs(j0Id) < 6 && abs(j1Id ) < 6) {
     if( (j0Id*j1Id) <0 && (abs(j0Id + j1Id) == 1 || abs(j0Id + j1Id) == 3) ) {
@@ -77,6 +82,7 @@ int zzw::makeVBosonsFromIds(int j0Id, int j1Id) {
   }
   else return 0;
 }
+
 
 zzw::GenTopology zzw::getGenTopology(int signalDefinition, 
 				     const std::vector<phys::Particle> &theGenl, const std::vector<phys::Particle> &theGenj, 
@@ -113,7 +119,7 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
       QuarkPairsFeatures quarkPairsFeatures;
     
       for(uint i = 0;  i < theGenq.size()-1; ++i) for(uint j = i+1;  j < theGenq.size(); ++j)
-	quarkPairsFeatures.push_back(std::make_tuple(i, j, makeVBosonsFromIds(theGenq[i].id(), theGenq[j].id()), (theGenq[i].p4() + theGenq[j].p4()).M()));
+	quarkPairsFeatures.push_back(std::make_tuple(i, j, vvx::makeVBosonsFromIds(theGenq[i].id(), theGenq[j].id()), (theGenq[i].p4() + theGenq[j].p4()).M()));
       
       // ----- Search for a true W in the event -----
       std::stable_sort(quarkPairsFeatures.begin(), quarkPairsFeatures.end(), phys::MassComparator(24, phys::WMASS));
@@ -127,7 +133,7 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
       }
       // --------------------------------------------
       
-      // ----- Search for a true Z in the event -----
+      // ----- Search for a true hadronic Z in the event -----
       if(!isWtight){
 	std::stable_sort(quarkPairsFeatures.begin(), quarkPairsFeatures.end(), phys::MassComparator(23, phys::ZMASS));
 	QuarkPairFeatures bestQuarkPair = quarkPairsFeatures.front();
@@ -368,7 +374,6 @@ zzw::GenTopology zzw::getGenTopology(int signalDefinition,
 }
 
 
- 
 
 std::tuple<bool, phys::Boson<phys::Lepton>, phys::Boson<phys::Lepton> > zz::zz4l(const std::vector<phys::Boson<phys::Lepton> >  &Zmm,
 										 const std::vector<phys::Boson<phys::Electron> > &Zee){
@@ -430,4 +435,138 @@ std::tuple<bool, phys::Boson<phys::Lepton>, phys::Boson<phys::Lepton> > zz::zz4l
     
   return std::make_tuple(true, Z0, Z1);
 }
+
+
+
+//--------------------------------------------------------------//
+//                         ZZ analysis                          //
+//--------------------------------------------------------------//
+
+
+
+///////-------- Getzz: given a vector of Z Boson<Particle> returns a tuple of the 2 Z chosen-------------------------
+
+
+std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::Getzz(const std::vector<phys::Boson<phys::Particle> >  &ZLL){
+  
+  
+  if(ZLL.size() < 2) return std::make_tuple(false, phys::Boson<phys::Particle>(),phys::Boson<phys::Particle>());//FIXME
+  
+  std::vector<phys::Boson<phys::Particle> > Zll;  
+  
+  foreach(const phys::Boson<phys::Particle>& z,   ZLL) Zll.push_back(z.clone<phys::Particle>()); //FIXME
+
+   // Search for the first Z that must have the mass closest to the nominal Z mass
+ 
+  std::stable_sort(Zll.begin(), Zll.end(), phys::MassComparator(phys::ZMASS));
+  phys::Boson<phys::Particle> Z0 = Zll.at(0);
+  
+  // Search for the second Z that must not be composed by the same daughters as the first Z and is chosen by the largest sum of Z daughters'  as in H->ZZ and ZZ analysies. 
+  
+  phys::Boson<phys::Particle> Z1;
+  
+  std::stable_sort(Zll.begin(), Zll.end(), phys::ScalarSumPtComparator());
+  
+  foreach(const phys::Boson<phys::Particle> &z, Zll){
+    
+    
+    double DP00 =(Z0.daughter(0)).p() - (z.daughter(0)).p();
+    double DP01 =(Z0.daughter(0)).p() - (z.daughter(1)).p();
+    double DP10 =(Z0.daughter(1)).p() - (z.daughter(0)).p();
+    double DP11 =(Z0.daughter(1)).p() - (z.daughter(1)).p();   
+
+    
+    if (DP00 > 1e-5 && DP01 > 1e-5 && DP10 > 1e-5 && DP11 > 1e-5){
+      Z1 = z;
+      break;
+    }
+  }  
+  
+  if(Z1.id() == 0) return std::make_tuple(false, phys::Boson<phys::Particle>(), phys::Boson<phys::Particle>());
+  
+  // Now check that the 4 leptons are not mismatched due to the presence of low mass resonances 
+  
+  bool passllLowMass = true;
+  
+  for(int i = 0; i <=1; ++i) {
+    if ( Z0.daughter(0).charge() != Z1.daughter(i).charge() ) {
+      if ( (Z0.daughter(0).p4() + Z1.daughter(i).p4()).M() < 4 || (Z0.daughter(1).p4() + Z1.daughter((i+1)%2).p4()).M() < 4 ) passllLowMass = false;
+    }
+  }
+  
+  if(!passllLowMass) return std::make_tuple(false, phys::Boson<phys::Particle>(), phys::Boson<phys::Particle>());
+  return std::make_tuple(true, Z0, Z1);
+}
+
+
+
+
+///////------------------- getSignalTopology: categorization of the signal given the 2 vectors of leptons and partons (quarks and gluons) --------------------------------------------
+
+
+zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theGenl, const std::vector<phys::Particle> &theGenj){
+  
+  int Topology = 0; 
+  
+  int numMu       = 0, numE     = 0;
+  std::vector<phys::Particle> theGenlm, theGenlp, theGenq;
+
+  foreach(const phys::Particle &p, theGenj)  if (abs(p.id()) < 7) theGenq.push_back(p);  // quarks
+  
+  foreach(const phys::Particle &p, theGenl){
+    numE  = abs(p.id()) == 11 ? numE+1  : numE; 
+    numMu = abs(p.id()) == 13 ? numMu+1 : numMu;
+   
+    if (p.id() > 0)                   theGenlp.push_back(p); // positive leptons                                          
+    else                              theGenlm.push_back(p); // negative leptons 
+  
+  }
+  
+  // Creation and filling of the vector of Z bosons
+  
+  std::vector<phys::Boson<phys::Particle>> Z;
+  
+  
+  foreach(const phys::Particle &p, theGenlp){
+    foreach(const phys::Particle &m, theGenlm){
+      
+      
+      phys::Boson<phys::Particle> z;
+      
+      if(abs(p.id()) == abs(m.id())) {
+	z.setDaughter(0,p);
+	z.setDaughter(1,m);
+	z.setId(23);
+	Z.push_back(z);
+      }    
+    }
+  }
+  
+  phys::Boson<phys::Particle> Z0, Z1, Z2, Z3, W0, W1; 
+  
+  
+  if ( Z.size() < 2) return std::make_tuple(Topology, Z0, Z1, Z2, Z3, W0, W1);
+  
+  std::tuple<bool, phys::Boson<phys::Particle>,phys::Boson<phys::Particle> > Zpair = zz::Getzz(Z);
+    
+  if(!std::get<0>(Zpair)) return std::make_tuple(Topology, Z0, Z1, Z2, Z3, W0, W1); 
+
+    
+  //----------------- ZZ4l definition-----------------------
+    
+  Z0 = std::get<1>(Zpair);    
+  Z1 = std::get<2>(Zpair);
+       
+  bool hasZZ4l    = (Z0.p4().M() <= 120.) && (Z0.p4().M() >= 60.) && (Z1.p4().M() <= 120.) && (Z1.p4().M() >= 60.);
+    
+  if(hasZZ4l){
+      
+    set_bit(Topology,0);
+          
+  }
+  
+  return std::make_tuple(Topology, Z0, Z1, Z2, Z3, W0, W1);
+}
+
+
 
