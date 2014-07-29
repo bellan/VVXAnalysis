@@ -1,5 +1,7 @@
 <use name="DataFormats/RecoCandidate"/>
 <use name="VVXAnalysis/DataFormats"/>
+<use name="ZZAnalysis/AnalysisStep"/>
+
 <export>
 <lib name="1"/>
 </export>
