@@ -36,6 +36,7 @@ namespace phys {
       , rho_(-9999.) 
       , isPF_(false)
       , matchHLT_(false)
+      , isGood_(false)
       //, nearestjet(TLorentzVector(0.,0.,0.,0.), 0)
       {}
     
@@ -54,7 +55,8 @@ namespace phys {
     Double_t rho()             const {return rho_;}             
     Bool_t   isPF()            const {return isPF_;}
     Bool_t   matchHLT()        const {return matchHLT_;}
-    
+    Bool_t   isGood()          const {return isGood_;}
+
   protected:
     
 
@@ -71,7 +73,8 @@ namespace phys {
 
     Bool_t isPF_;
     Bool_t matchHLT_;
-   
+    Bool_t isGood_;
+
     //Jet nearestjet;    
 
     ClassDef(Lepton, 1) //

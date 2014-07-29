@@ -56,7 +56,7 @@ class TreePlanter: public edm::EDAnalyzer {
   
   template<typename LEP>
     phys::Lepton fillLepton(const LEP& particle) const;
-  
+
   phys::Lepton fill(const pat::Muon &muon) const;
 
   phys::Electron fill(const pat::Electron &electron) const;
@@ -68,6 +68,13 @@ class TreePlanter: public edm::EDAnalyzer {
 
   template<typename T, typename PAR>
     phys::Boson<PAR> fillBoson(const pat::CompositeCandidate & v, int type, bool requireQualityCriteria) const;
+
+
+  template<typename T1, typename PAR1, typename T2, typename PAR2>
+    phys::DiBoson<PAR1,PAR2> fillDiBoson(Channel channel, const pat::CompositeCandidate& edmDiBosons) const;
+
+  template<typename PAR1, typename PAR2>
+    std::vector<phys::DiBoson<PAR1,PAR2> > fillDiBosons(Channel channel, const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const;
 
   template<typename T1, typename PAR1, typename T2, typename PAR2>
     std::vector<phys::DiBoson<PAR1,PAR2> > fillDiBosons(Channel channel, const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const;
@@ -132,6 +139,8 @@ class TreePlanter: public edm::EDAnalyzer {
   std::vector<phys::DiBoson<phys::Electron, phys::Electron> > ZZ4e_;
   std::vector<phys::DiBoson<phys::Electron, phys::Lepton>   > ZZ2e2m_;
 
+  std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   > Zll_;
+
   std::vector<phys::Particle>               genParticles_;
   std::vector<phys::Boson<phys::Particle> > genVBParticles_;
 
@@ -145,6 +154,7 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::InputTag theZZ4mLabel;
   edm::InputTag theZZ4eLabel;
   edm::InputTag theZZ2e2mLabel;
+  edm::InputTag theZllLabel;
   edm::InputTag theMETLabel;
   edm::InputTag theVertexLabel;
   edm::InputTag thePUInfoLabel;

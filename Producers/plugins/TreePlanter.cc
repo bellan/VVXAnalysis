@@ -59,6 +59,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theZZ4mLabel     (config.getParameter<edm::InputTag>("ZZ4m"     ))
   , theZZ4eLabel     (config.getParameter<edm::InputTag>("ZZ4e"     ))
   , theZZ2e2mLabel   (config.getParameter<edm::InputTag>("ZZ2e2m"   ))
+  , theZllLabel      (config.getParameter<edm::InputTag>("Zll"      ))
   , theMETLabel      (config.getParameter<edm::InputTag>("MET"      ))
   , theVertexLabel   (config.getParameter<edm::InputTag>("Vertices" ))
   , sampleName_      (config.getParameter<std::string>("sampleName"))
@@ -121,6 +122,7 @@ void TreePlanter::beginJob(){
   theTree->Branch("ZZ4mCand"  , &ZZ4m_); 
   theTree->Branch("ZZ4eCand"  , &ZZ4e_); 
   theTree->Branch("ZZ2e2mCand", &ZZ2e2m_); 
+  theTree->Branch("ZllCand"   , &Zll_); 
 
   theTree->Branch("genParticles"  , &genParticles_);
   theTree->Branch("genVBParticles", &genVBParticles_);
@@ -239,6 +241,7 @@ void TreePlanter::initTree(){
   ZZ4m_      = std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   >();
   ZZ4e_      = std::vector<phys::DiBoson<phys::Electron, phys::Electron> >();
   ZZ2e2m_    = std::vector<phys::DiBoson<phys::Electron, phys::Lepton>   >();
+  Zll_       = std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   >();
 
   genParticles_ = std::vector<phys::Particle>();
   genVBParticles_ = std::vector<phys::Boson<phys::Particle> >();
@@ -351,6 +354,9 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   edm::Handle<edm::View<pat::CompositeCandidate> > ZZ4m   ; event.getByLabel(theZZ4mLabel    ,      ZZ4m);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZZ4e   ; event.getByLabel(theZZ4eLabel    ,      ZZ4e);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZZ2e2m ; event.getByLabel(theZZ2e2mLabel  ,    ZZ2e2m);
+  // Collections for CR
+  edm::Handle<edm::View<pat::CompositeCandidate> > Zll    ; event.getByLabel(theZllLabel     ,       Zll);
+  
 
   foreach(const pat::Muon& muon, *muons){
     //if(!muon.userFloat("isGood") || muon.userFloat("CombRelIsoPF") >= 4) continue;  // commented because the combination of the two flags is more restrictive than Z.userfloat("goodLeptons"), hence the matching can fail.
@@ -388,6 +394,8 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
   ZZ2e2m_ = fillDiBosons<pat::Electron,phys::Electron,pat::Muon,phys::Lepton>(EEMM,ZZ2e2m);
 
+  Zll_    = fillDiBosons<phys::Lepton,phys::Lepton>(ZLL,Zll);
+
 
   theTree->Fill();
 }
@@ -409,6 +417,7 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
   output.rho_             = lepton.userFloat("rho"              );
   output.isPF_            = lepton.userFloat("isPFMuon"         );
   output.matchHLT_        = lepton.userFloat("HLTMatch"         );
+  output.isGood_          = lepton.userFloat("isGood"           );
   output.efficiencySF_    = leptonEfficiency_.scaleFactor(output);
   
      
@@ -484,27 +493,13 @@ phys::Jet TreePlanter::fill(const cmg::PFJet &jet) const{
 
 
 template<typename T, typename PAR>
-std::vector<phys::Boson<PAR> > TreePlanter::fillBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const {
-  
-  std::vector<phys::Boson<PAR> > physBosons;
-  
-  foreach(const pat::CompositeCandidate& v, *edmBosons){
-    phys::Boson<PAR> physV = fillBoson<T, PAR>(v, type, true);
-    if(physV.isValid()) physBosons.push_back(physV);
-  }
-  return physBosons;
-}
-
-
-template<typename T, typename PAR>
 phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int type, bool requireQualityCriteria) const {
 
   // Filter on the quality of daughters, right now only for ll pairs
   if(requireQualityCriteria && v.hasUserFloat("GoodLeptons") && !v.userFloat("GoodLeptons")) return phys::Boson<PAR>();
-  
+
   PAR d0 = fill(*dynamic_cast<const T*>(v.daughter(0)->masterClone().get()));
   PAR d1 = fill(*dynamic_cast<const T*>(v.daughter(1)->masterClone().get()));
-  
   
   if(d0.id() == 0 || d1.id() == 0) edm::LogError("TreePlanter") << "TreePlanter: VB candidate does not have a matching good particle!";
   
@@ -526,53 +521,129 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
 
 // Right now, only for ZZ
 template<typename T1, typename PAR1, typename T2, typename PAR2>
+phys::DiBoson<PAR1,PAR2> TreePlanter::fillDiBoson(Channel channel, const pat::CompositeCandidate& edmVV) const{
+  
+  const pat::CompositeCandidate* edmV0;
+  const pat::CompositeCandidate* edmV1;
+  
+  if (channel != ZL) { // Regular 4l candidates
+    edmV0   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z1")->masterClone().get());      
+    edmV1   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z2")->masterClone().get());
+    
+  } else {              // Special handling of Z+l candidates 
+    edmV0   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter(0)->masterClone().get());      
+    edmV1   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter(1)->masterClone().get());
+  }
+  
+  phys::Boson<PAR1> V0;
+  phys::Boson<PAR2> V1;
+  
+  // The first boson is always a good Z, also in the CR. For the other particle assign 23 if it is a true Z from SR
+  // or 26 if the two additional leptons comes from LL, 27 if the additional lepton is only one.
+  int idV1 = (channel != ZL && channel != ZLL) ? 23 : (channel == ZLL ? 26 : (channel == ZL ? 27 : 0));
+
+  if(dynamic_cast<const T1*>(edmV0->daughter(0)->masterClone().get()) && dynamic_cast<const T2*>(edmV1->daughter(0)->masterClone().get())){
+    V0 = fillBoson<T1,PAR1>(*edmV0, 23, false);
+    V1 = fillBoson<T2,PAR2>(*edmV1, idV1, false);
+  }
+  else if(dynamic_cast<const T2*>(edmV0->daughter(0)->masterClone().get()) && dynamic_cast<const T1*>(edmV1->daughter(0)->masterClone().get())){
+    V0 = fillBoson<T1,PAR1>(*edmV1, idV1, false);
+    V1 = fillBoson<T2,PAR2>(*edmV0, 23, false);
+  }
+  else{
+    edm::LogError("TreePlanter") << "Do not know what to cast in fillDiBosons" << endl;
+    return phys::DiBoson<PAR1,PAR2>();
+  }
+  
+  phys::DiBoson<PAR1,PAR2> VV(V0, V1);
+  VV.isBestCand_  = edmVV.userFloat("isBestCand");
+  VV.passFullSel_ = edmVV.userFloat("FullSel");
+  VV.regionWord_  = computeCRFlag(channel,edmVV);
+  VV.triggerWord_ = triggerWord_;
+  VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
+  
+  return VV;
+}
+
+
+
+template<typename T, typename PAR>
+std::vector<phys::Boson<PAR> > TreePlanter::fillBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const {
+  
+  std::vector<phys::Boson<PAR> > physBosons;
+  
+  foreach(const pat::CompositeCandidate& v, *edmBosons){
+    phys::Boson<PAR> physV = fillBoson<T, PAR>(v, type, true);
+    if(physV.isValid()) physBosons.push_back(physV);
+  }
+  return physBosons;
+}
+
+
+// Right now, only for ZZ
+template<typename T1, typename PAR1, typename T2, typename PAR2>
 std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(Channel channel, const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const{
 
   std::vector<phys::DiBoson<PAR1,PAR2> > physDiBosons;
-
+  
   foreach(const pat::CompositeCandidate& edmVV, *edmDiBosons){
-
-    const pat::CompositeCandidate* edmV0;
-    const pat::CompositeCandidate* edmV1;
-
-    if (channel != ZL) { // Regular 4l candidates
-      edmV0   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z1")->masterClone().get());      
-      edmV1   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z2")->masterClone().get());
-      
-    } else {              // Special handling of Z+l candidates 
-      edmV0   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter(0)->masterClone().get());      
-      edmV1   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter(1)->masterClone().get());
-    }
-    
-    phys::Boson<PAR1> V0;
-    phys::Boson<PAR2> V1;
-    
-    if(dynamic_cast<const T1*>(edmV0->daughter(0)->masterClone().get()) && dynamic_cast<const T2*>(edmV1->daughter(0)->masterClone().get())){
-      V0 = fillBoson<T1,PAR1>(*edmV0, 23, false);
-      V1 = fillBoson<T2,PAR2>(*edmV1, 23, false);
-    }
-    else if(dynamic_cast<const T2*>(edmV0->daughter(0)->masterClone().get()) && dynamic_cast<const T1*>(edmV1->daughter(0)->masterClone().get())){
-      V0 = fillBoson<T1,PAR1>(*edmV1, 23, false);
-      V1 = fillBoson<T2,PAR2>(*edmV0, 23, false);
-    }
-    else{
-      edm::LogError("TreePlanter") << "Do not know what to cast in fillDiBosons" << endl;
-      return physDiBosons;
-    }
-
-    
-    phys::DiBoson<PAR1,PAR2> VV(V0, V1);
-    VV.isBestCand_  = edmVV.userFloat("isBestCand");
-    VV.passFullSel_ = edmVV.userFloat("FullSel");
-    VV.regionWord_  = computeCRFlag(channel,edmVV);
-    VV.triggerWord_ = triggerWord_;
-    VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
-
-    physDiBosons.push_back(VV);
+    phys::DiBoson<PAR1,PAR2> physVV = fillDiBoson<T1,PAR1,T2,PAR2>(channel, edmVV);
+    if(physVV.isValid()) physDiBosons.push_back(physVV);
   }
 
   return physDiBosons;
 }
+
+
+
+// ZLL
+template<typename PAR1, typename PAR2>
+std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(Channel channel, const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const{
+
+  std::vector<phys::DiBoson<PAR1,PAR2> > physDiBosons;
+  
+  foreach(const pat::CompositeCandidate& edmVV, *edmDiBosons){
+    
+    phys::DiBoson<PAR1,PAR2> physVV;
+
+    int count = 0;
+    
+    int regionWord = computeCRFlag(channel,edmVV);
+    // 4 mu cases
+    if(test_bit(regionWord,CRMMMMss ) || test_bit(regionWord,CRMMMMos )){
+      physVV = fillDiBoson<pat::Muon,phys::Lepton,pat::Muon,phys::Lepton>(channel, edmVV);
+      ++count;
+    }  
+    
+    // 4 e cases
+    if(test_bit(regionWord, CREEEEss) || test_bit(regionWord, CREEEEos)){
+      physVV = fillDiBoson<pat::Electron,phys::Lepton,pat::Electron,phys::Lepton>(channel, edmVV);      
+      ++count;
+    }  
+    
+    // 2 e 2 mu cases
+    if(test_bit(regionWord, CREEMMss) || test_bit(regionWord, CREEMMos)){
+      physVV = fillDiBoson<pat::Electron,phys::Lepton,pat::Muon,phys::Lepton>(channel, edmVV);
+      ++count;
+    }  
+    
+    // 2 mu 2 e cases
+    if(test_bit(regionWord, CRMMEEss) || test_bit(regionWord, CRMMEEos)){
+      physVV = fillDiBoson<pat::Muon,phys::Lepton,pat::Electron,phys::Lepton>(channel, edmVV);
+      ++count;
+    }  
+    
+    if(physVV.isValid()) physDiBosons.push_back(physVV);    
+  }
+  
+  return physDiBosons;
+}
+
+
+
+
+
+
 
 int TreePlanter::computeCRFlag(Channel channel, const pat::CompositeCandidate & vv) const{
   int CRFLAG=0;

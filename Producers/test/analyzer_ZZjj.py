@@ -70,8 +70,8 @@ process.source.fileNames = cms.untracked.vstring(
     #'/store/cmst3/group/cmgtools/CMG/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_nLP.root'
     #'/store/cmst3/group/cmgtools/CMG/WZZ_8TeV-aMCatNLO-herwig/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_GEb.root'
     # '/store/cmst3/group/cmgtools/CMG/ZZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_UV1.root'
-    #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_irQ.root'
-    '/store/cmst3/user/cmgtools/CMG//ZZTo4mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_UR6.root'
+    '/store/cmst3/user/cmgtools/CMG/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_irQ.root'
+    #'/store/cmst3/user/cmgtools/CMG//ZZTo4mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_UR6.root'
     #'/store/cmst3/user/cmgtools/CMG/VBF_phantom_8TeV/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_42.root'
     )
 
@@ -115,6 +115,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      ZZ4m         = cms.InputTag("MMMMFiltered"),          # only the best ZZ->4mu candidate that pass the FULL selection
                                      ZZ4e         = cms.InputTag("EEEEFiltered"),          # only the best ZZ->4e candidate that pass the FULL selection
                                      ZZ2e2m       = cms.InputTag("EEMMFiltered"),          # only the best ZZ->2e2mu candidate that pass the FULL selection
+                                     Zll          = cms.InputTag("ZLLCand"), 
                                      MET          = cms.InputTag("cmgPFMET"),
                                      Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
                                      XSection     = cms.untracked.double(XSEC)
@@ -329,6 +330,11 @@ if IsMC:
 
 
 
+### Run the CR sequence too ###
+process.CRPath = cms.Path(process.CR)
+
+
+
 ### ------------------------------------------------------------------------- ###
 ### Run the TreePlanter
 ### ------------------------------------------------------------------------- ###
@@ -356,7 +362,6 @@ process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
                                        electronSrc = cms.InputTag("appendPhotons:electrons"),
                                        candidateSrcs = cms.PSet( Zmm   = cms.InputTag("MMCand"),
                                                                  Zee   = cms.InputTag("EECand"),
-                                                                 #        Z     = cms.InputTag("ZCand"),
                                                                  MMMM  = cms.InputTag("MMMMCand"),
                                                                  EEEE  = cms.InputTag("EEEECand"),
                                                                  EEMM  = cms.InputTag("EEMMCand"),
