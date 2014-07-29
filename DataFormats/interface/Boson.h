@@ -32,6 +32,7 @@ namespace phys {
       , indexFSR_(-1)
       , hasGoodDaughters_(false){
        efficiencySF_ = daughter0.efficiencySF() * daughter1.efficiencySF();
+       charge_ = daughter0.charge() + daughter1.charge();
     }
     
   Boson(const Boson<P>& vb)
@@ -42,7 +43,8 @@ namespace phys {
       , fsrPhoton_(vb.fsrPhoton())
       , hasGoodDaughters_(vb.hasGoodDaughters()){
       efficiencySF_ = vb.daughter(0).efficiencySF() * vb.daughter(1).efficiencySF();
-      
+      charge_ = vb.daughter(0).charge() + vb.daughter(1).charge();
+
       if(indexFSR_ >=0)  p4_ = p4_ + fsrPhoton_.p4();
     }
     
