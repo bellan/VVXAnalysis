@@ -633,8 +633,6 @@ std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(Channel channel
       ++count;
     }  
     
-    if(count > 1 ) cout << "Hey! Look! " << count << endl;
-    
     if(physVV.isValid()) physDiBosons.push_back(physVV);    
   }
   
