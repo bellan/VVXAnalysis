@@ -34,7 +34,6 @@ public:
 
   ZZGenFilterCategory(const ParameterSet& pset)
     : sel_             (pset.getParameter<int>("Topology"))
-		     //  , opt_             (pset.getParameter<bool>("Option")) 
     , genLabel_        (pset.getParameter<edm::InputTag>("src")) {
     produces<int>();
     produces<std::vector<reco::GenParticle> >();
@@ -53,7 +52,6 @@ public:
 
 private:
   int sel_;
-  bool opt_;
   edm::InputTag genLabel_;
   TH1F* topology;
 
@@ -118,9 +116,7 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   event.put(outputGenColl);
   
 
-  cout << " Topology " << std::get<0>(zzSignalTopology) << " sel " << sel_  << endl;
-
-   if(sel_ >= 0)
+  if(sel_ >= 0)
     return sel_ == std::get<0>(zzSignalTopology);
   else
     return true;
