@@ -39,7 +39,7 @@ namespace zz{
     zz4l(const std::vector<phys::Boson<phys::Lepton> >  &Zmm,
 	 const std::vector<phys::Boson<phys::Electron> > &Zee);
   
-  std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > Getzz(const std::vector<phys::Boson<phys::Particle> >  &Zll);
+  std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > getZZ(const std::vector<phys::Boson<phys::Particle> >  &Zll);
 
 
 

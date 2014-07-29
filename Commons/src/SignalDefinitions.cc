@@ -447,7 +447,7 @@ std::tuple<bool, phys::Boson<phys::Lepton>, phys::Boson<phys::Lepton> > zz::zz4l
 ///////-------- Getzz: given a vector of Z Boson<Particle> returns a tuple of the 2 Z chosen-------------------------
 
 
-std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::Getzz(const std::vector<phys::Boson<phys::Particle> >  &ZLL){
+std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::getZZ(const std::vector<phys::Boson<phys::Particle> >  &ZLL){
   
   
   if(ZLL.size() < 2) return std::make_tuple(false, phys::Boson<phys::Particle>(),phys::Boson<phys::Particle>());//FIXME
@@ -470,10 +470,10 @@ std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::
   foreach(const phys::Boson<phys::Particle> &z, Zll){
     
     
-    double DP00 =(Z0.daughter(0)).p() - (z.daughter(0)).p();
-    double DP01 =(Z0.daughter(0)).p() - (z.daughter(1)).p();
-    double DP10 =(Z0.daughter(1)).p() - (z.daughter(0)).p();
-    double DP11 =(Z0.daughter(1)).p() - (z.daughter(1)).p();   
+    double DP00 =(Z0.daughter(0).p4() - z.daughter(0).p4()).P();
+    double DP01 =(Z0.daughter(0).p4() - z.daughter(1).p4()).P();
+    double DP10 =(Z0.daughter(1).p4() - z.daughter(0).p4()).P();
+    double DP11 =(Z0.daughter(1).p4() - z.daughter(1).p4()).P();   
 
     
     if (DP00 > 1e-5 && DP01 > 1e-5 && DP10 > 1e-5 && DP11 > 1e-5){
@@ -517,14 +517,14 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
     numE  = abs(p.id()) == 11 ? numE+1  : numE; 
     numMu = abs(p.id()) == 13 ? numMu+1 : numMu;
    
-    if (p.id() > 0)                   theGenlp.push_back(p); // positive leptons                                          
-    else                              theGenlm.push_back(p); // negative leptons 
+    if (p.id() > 0)                   theGenlm.push_back(p); // positive leptons                                          
+    else                              theGenlp.push_back(p); // negative leptons 
   
   }
   
   // Creation and filling of the vector of Z bosons
   
-  std::vector<phys::Boson<phys::Particle>> Z;
+  std::vector<phys::Boson<phys::Particle> > Z;
   
   
   foreach(const phys::Particle &p, theGenlp){
@@ -547,7 +547,7 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   
   if ( Z.size() < 2) return std::make_tuple(Topology, Z0, Z1, Z2, Z3, W0, W1);
   
-  std::tuple<bool, phys::Boson<phys::Particle>,phys::Boson<phys::Particle> > Zpair = zz::Getzz(Z);
+  std::tuple<bool, phys::Boson<phys::Particle>,phys::Boson<phys::Particle> > Zpair = zz::getZZ(Z);
     
   if(!std::get<0>(Zpair)) return std::make_tuple(Topology, Z0, Z1, Z2, Z3, W0, W1); 
 
