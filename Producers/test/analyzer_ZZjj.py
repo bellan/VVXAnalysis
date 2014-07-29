@@ -266,9 +266,15 @@ process.EEMMFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
                                     cut = cms.string("userFloat('isBestCand') && userFloat('FullSel')")
                                     )
 
-### ------------------------------------------------------------------------- ###
 
+### ......................................................................... ###
+### Clean the Z+2 lepton candidates to select only the best possible candidate for that region, requiring that at least one lepton fails the FULL selection
+### ......................................................................... ###
 
+#process.ZLLFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
+#                                   src = cms.InputTag("ZLLCand"),
+#                                   cut = cms.string("userFloat('isBestCand') && userFloat('FullSel')")
+#                                   )
 
 
 
@@ -321,10 +327,10 @@ process.preselection = cms.Path( process.prePreselectionCounter
 
 ### If it is MC, run also the signal definition path
 if IsMC:
-    process.genCategory =  cms.EDFilter("GenFilterCategory",
-                                        src = cms.InputTag("genParticlesPruned"),
-                                        Category = cms.int32(-1),
-                                        SignalDefinition = cms.int32(3))
+    process.genCategory =  cms.EDFilter("ZZGenFilterCategory",
+                                        Topology = cms.int32(int('-1',2)), # -1 means get everything, 1 means the request of having a ZZ pair. For other topology see the README under VVXAnalysis/Commons
+                                        src = cms.InputTag("genParticlesPruned")
+                                        )
     
     process.signalDefinition = cms.Path(process.genCategory)
 
