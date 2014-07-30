@@ -99,6 +99,7 @@ class TreePlanter: public edm::EDAnalyzer {
   MCHistoryTools   *mcHistoryTools_;
   // To get Lepton efficiency scale factors. Temporary here!
   LeptonEfficiency leptonEfficiency_;
+  Int_t signalDefinition_;
 
   // ------------------- Event info in the tree ------------------- //
   Int_t event_;
@@ -112,7 +113,8 @@ class TreePlanter: public edm::EDAnalyzer {
 
   Int_t preSkimCounter_;
   Int_t postSkimCounter_;
-  Int_t postSkimSignalCounter_;
+  Int_t signalCounter_;
+  Int_t postSkimSignalEvents_;
 
   Double_t mcprocweight_;
   Double_t puweight_;
