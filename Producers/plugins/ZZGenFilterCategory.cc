@@ -84,7 +84,7 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
       
       else if ( id == 24 )                   { theGenW.push_back(phys::convert(*p)); } // W 
       
-      else if ( id >= 11 && id <= 16 )       { theGenl.push_back(phys::convert(*p)); }// leptons        
+      else if ( id == 11 || id == 13 )       { theGenl.push_back(phys::convert(*p)); }// leptons        
     }
     
   }

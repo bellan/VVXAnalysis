@@ -508,15 +508,12 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   
   int Topology = 0; 
   
-  int numMu       = 0, numE     = 0;
-  std::vector<phys::Particle> theGenlm, theGenlp, theGenq;
+    std::vector<phys::Particle> theGenlm, theGenlp, theGenq;
 
   foreach(const phys::Particle &p, theGenj)  if (abs(p.id()) < 7) theGenq.push_back(p);  // quarks
   
   foreach(const phys::Particle &p, theGenl){
-    numE  = abs(p.id()) == 11 ? numE+1  : numE; 
-    numMu = abs(p.id()) == 13 ? numMu+1 : numMu;
-   
+     
     if (p.id() > 0)                   theGenlm.push_back(p); // positive leptons                                          
     else                              theGenlp.push_back(p); // negative leptons 
   
