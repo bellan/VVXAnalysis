@@ -50,6 +50,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , triggerWord_(0)
   , preSkimCounter_  (0)
   , postSkimCounter_ (0)
+  , postSkimSignalCounter_(0)
   , signalCounter_(0)
   , postSkimSignalEvents_(0)
   , theMuonLabel     (config.getParameter<edm::InputTag>("muons"    ))
@@ -161,6 +162,9 @@ void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::Even
 
   found = lumi.getByLabel("signalCounter", counter);
   if(found) signalCounter_ += counter->value;
+
+  found = lumi.getByLabel("postSkimSignalCounter", counter);
+  if(found) postSkimSignalCounter_ += counter->value;
 }
 
 
@@ -202,6 +206,7 @@ void TreePlanter::endJob(){
     countTree->Branch("sumpumcprocweight"     , &sumpumcprocweights_);
     countTree->Branch("preSkimCounter"        , &preSkimCounter_);
     countTree->Branch("postSkimCounter"       , &postSkimCounter_);
+    countTree->Branch("postSkimSignalCounter" , &postSkimSignalCounter_);
     countTree->Branch("signalCounter"         , &signalCounter_);
     countTree->Branch("postSkimSignalEvents"  , &postSkimSignalEvents_);
     countTree->Branch("eventsInEtaAcceptance"   , &eventsInEtaAcceptance_);

@@ -113,6 +113,7 @@ class TreePlanter: public edm::EDAnalyzer {
 
   Int_t preSkimCounter_;
   Int_t postSkimCounter_;
+  Int_t postSkimSignalCounter_;
   Int_t signalCounter_;
   Int_t postSkimSignalEvents_;
 
