@@ -57,6 +57,7 @@ namespace phys {
     double eta()        const {return p4_.Eta();}
     double phi()        const {return p4_.Phi();}
     double p()          const {return p4_.P();}
+    double e()          const {return p4_.E();}
     double mass()       const {return p4_.M();} 
 
     // Method that tries to infer the charge of the particle starting from a pdgId in input
