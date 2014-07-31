@@ -14,7 +14,7 @@ In the following the position of the bit set (left) and the event category (righ
 - 1 --> + jets(Right Pt and eta range)
   
 - 2 --> + 2q
-  
+ 
 - 3 --> + 1lepton
   
 - 4 --> + hadronic W
