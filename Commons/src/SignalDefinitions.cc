@@ -638,27 +638,29 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   
   // Definition of the topologies 
  
-  bool passJetPt = false; 
-  bool passJetEta = true;
+//   bool passJetPt = false; 
+//   bool passJetEta = true;
   
-  int count = 0;
+  int countj = 0;
+  int countq = 0;
   
-  if (theGenj.size() != 0) {
-
-    for (int j = 0; j < (theGenj.size()); ++j) {
-      if (theGenj[j].p4().Pt() > 30.) ++count;
-    }   
-    if ( count >= 1 ) passJetPt = true;
+  //  if (theGenj.size() != 0) {
+  
+  for (int j = 0; j < (theGenj.size()); ++j) {
     
-    for(int i=0; i<(theGenj.size()); ++i) {
-      passJetEta = passJetEta && fabs(theGenj[i].p4().Eta()) < 2.5;
-    }   
+    if (theGenj[j].p4().E() > 20. && fabs(theGenj[j].p4().Eta()) < 5) {
+      
+      if (abs(theGenj[j].id()) < 7) countq ++;
+      else  countj++;
+      
+    }
     
   }
   
-  bool hasJets = passJetPt && passJetEta;
   
-  bool hasAtLeast2quarks = theGenq.size() >= 2;
+  bool hasJets = countj >= 1;
+  
+  bool hasAtLeast2quarks =  countq >= 2;
   
   bool has5leptons       = theGenl.size() == 5;
 
@@ -668,7 +670,7 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   
   topology.set(0);                             //ZZ4l 
 
-  if(hasJets)              topology.set(1);    //ZZ4l + jets(Right Pt and eta range)
+  if(hasJets)              topology.set(1);    //ZZ4l + jets (E>20 GeV and |eta| < 5)
   
   if(hasAtLeast2quarks)    topology.set(2);    //ZZ4l + 2q
   
