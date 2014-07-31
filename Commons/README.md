@@ -11,9 +11,9 @@ In the following the position of the bit set (left) and the event category (righ
 
 - 0 --> ZZ4l 
 
-- 1 --> + jets(Right Pt and eta range)
+- 1 --> + jets (At least one with E > 20 GeV and |eta| < 5)
   
-- 2 --> + 2q
+- 2 --> + 2q (E > 20 GeV and |eta| < 5)
  
 - 3 --> + 1lepton
   
