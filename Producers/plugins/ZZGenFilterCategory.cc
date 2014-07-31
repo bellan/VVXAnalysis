@@ -53,7 +53,6 @@ public:
 private:
   int sel_;
   edm::InputTag genLabel_;
-  TH1F* topology;
 
 };
 
@@ -93,7 +92,6 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   
   zz::SignalTopology zzSignalTopology = zz::getSignalTopology(theGenl, theGenj);
 
-  // std::auto_ptr<int> output(new int(std::get<0>(zzSignalTopology))); //Topology //FIXME
   std::auto_ptr<int> output(new int(std::get<0>(zzSignalTopology))); //Topology
   
   event.put(output); //To understand...maybe
@@ -115,9 +113,14 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   
   event.put(outputGenColl);
   
+  if (sel_ >= 0) {
 
-  if(sel_ >= 0)
-    return sel_ == std::get<0>(zzSignalTopology);
+    if( ((std::get<0>(zzSignalTopology) ^ sel_) & sel_) == 0)   return true;
+
+    else return false;
+
+  }
+
   else
     return true;
 
