@@ -44,12 +44,14 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , mcHistoryTools_  (0)
   , leptonEfficiency_(edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/scale_factors_muons2012.root").fullPath(),
 		      edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/scale_factors_ele2012.root").fullPath())
+  , signalDefinition_(config.getParameter<int>("signalDefinition"   ))
   , passTrigger_(false)
   , passSkim_(false)
   , triggerWord_(0)
   , preSkimCounter_  (0)
   , postSkimCounter_ (0)
-  , postSkimSignalCounter_(0)
+  , signalCounter_(0)
+  , postSkimSignalEvents_(0)
   , theMuonLabel     (config.getParameter<edm::InputTag>("muons"    ))
   , theElectronLabel (config.getParameter<edm::InputTag>("electrons"))
   , theJetLabel      (config.getParameter<edm::InputTag>("jets"     ))
@@ -157,9 +159,8 @@ void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::Even
   found = lumi.getByLabel("postPreselectionCounter", counter);
   if(found) postSkimCounter_ += counter->value;
 
-  found = lumi.getByLabel("postSkimSignalCounter", counter);
-  if(found) postSkimSignalCounter_ += counter->value;
-
+  found = lumi.getByLabel("signalCounter", counter);
+  if(found) signalCounter_ += counter->value;
 }
 
 
@@ -191,6 +192,7 @@ void TreePlanter::endJob(){
     
     edm::Service<TFileService> fs;
     TTree *countTree = fs->make<TTree>("HollyTree","HollyTree");
+    countTree->Branch("signalDefinition"      , &signalDefinition_);
     countTree->Branch("genEvents"             , &theNumberOfEvents);
     countTree->Branch("analyzedEvents"        , &theNumberOfAnalyzedEvents);
     countTree->Branch("internalCrossSection"  , &internalCrossSection);
@@ -200,7 +202,8 @@ void TreePlanter::endJob(){
     countTree->Branch("sumpumcprocweight"     , &sumpumcprocweights_);
     countTree->Branch("preSkimCounter"        , &preSkimCounter_);
     countTree->Branch("postSkimCounter"       , &postSkimCounter_);
-    countTree->Branch("postSkimSignalCounter" , &postSkimSignalCounter_);
+    countTree->Branch("signalCounter"         , &signalCounter_);
+    countTree->Branch("postSkimSignalEvents"  , &postSkimSignalEvents_);
     countTree->Branch("eventsInEtaAcceptance"   , &eventsInEtaAcceptance_);
     countTree->Branch("eventsInEtaPtAcceptance" , &eventsInEtaPtAcceptance_);
 
@@ -286,7 +289,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   edm::Handle<std::vector<reco::Vertex> > vertices; event.getByLabel(theVertexLabel, vertices);
   nvtx_ = vertices->size();
     
-  if (isMC_) {
+  if(isMC_){
     edm::Handle<std::vector<PileupSummaryInfo> > puInfo; event.getByLabel(thePUInfoLabel, puInfo);
     foreach(const PileupSummaryInfo& pui, *puInfo)
       if(pui.getBunchCrossing() == 0) { 
@@ -306,10 +309,11 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     edm::Handle<int> genCategory;
     event.getByLabel(theGenCategoryLabel, genCategory);
     genCategory_ = *genCategory;
+    if(((genCategory_ ^ signalDefinition_) & signalDefinition_) == 0) ++postSkimSignalEvents_;
 
     event.getByLabel(theGenVBCollectionLabel,  genParticles);
     
-    for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p)
+    for(edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p)
       if(fabs(p->pdgId()) == 24 || p->pdgId() == 23)
 	genVBParticles_.push_back(phys::Boson<phys::Particle>(phys::Particle(p->daughter(0)->p4(), phys::Particle::computeCharge(p->daughter(0)->pdgId()), p->daughter(0)->pdgId()),
 							      phys::Particle(p->daughter(1)->p4(), phys::Particle::computeCharge(p->daughter(1)->pdgId()), p->daughter(1)->pdgId()),

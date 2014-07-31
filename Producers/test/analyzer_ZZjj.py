@@ -13,6 +13,8 @@ APPLYMUCORR = True
 
 #MCFILTER  = "signaldefinition"
 
+SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the choosedn windows. For other topology see the README under VVXAnalysis/Commons.
+
 try:
     IsMC
 except NameError:
@@ -106,6 +108,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      skimPaths    = cms.vstring(SkimPaths),
                                      MCFilterPath = cms.string(MCFILTER),
                                      isMC         = cms.untracked.bool(IsMC),
+                                     signalDefinition = cms.int32(SIGNALDEFINITION),
                                      muons        = cms.InputTag("postCleaningMuons"),     # all good isolated muons BUT the ones coming from ZZ decay
                                      electrons    = cms.InputTag("postCleaningElectrons"), # all good isolated electrons BUT the ones coming from ZZ decay
                                      jets         = cms.InputTag("disambiguatedJets"),     # jets which contains leptons from ZZ or other good isolated leptons are removed
@@ -246,24 +249,33 @@ process.WjjSequence = cms.Sequence(process.centralJets * process.bareWCand * pro
 ### Clean the 4 lepton candidates to select only the best possible candidate, requiring that passes the FULL selection
 ### ......................................................................... ###
 
+Z1MASS            = "daughter('Z1').mass>60 && daughter('Z1').mass<120"
+Z2MASS            = "daughter('Z2').mass>60 && daughter('Z2').mass<120"
+FULLSELTIGHT      = (FULLSEL + "&&" + Z1MASS + "&&" + Z2MASS)
+
+process.MMMMCand.flags.FullSelTight = cms.string(FULLSELTIGHT)
+process.EEEECand.flags.FullSelTight = cms.string(FULLSELTIGHT)
+process.EEMMCand.flags.FullSelTight = cms.string(FULLSELTIGHT)
+
+
 process.ZZFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
                                   src = cms.InputTag("ZZCand"),
-                                  cut = cms.string("userFloat('isBestCand') && userFloat('FullSel')")
+                                  cut = cms.string("userFloat('isBestCand') && userFloat('FullSelTight')")
                                   )
 
 process.MMMMFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
                                     src = cms.InputTag("MMMMCand"),
-                                    cut = cms.string("userFloat('isBestCand') && userFloat('FullSel')")
+                                    cut = cms.string("userFloat('isBestCand') && userFloat('FullSelTight')")
                                     )
 
 process.EEEEFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
                                     src = cms.InputTag("EEEECand"),
-                                    cut = cms.string("userFloat('isBestCand') && userFloat('FullSel')")
+                                    cut = cms.string("userFloat('isBestCand') && userFloat('FullSelTight')")
                                     )
 
 process.EEMMFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
                                     src = cms.InputTag("EEMMCand"),
-                                    cut = cms.string("userFloat('isBestCand') && userFloat('FullSel')")
+                                    cut = cms.string("userFloat('isBestCand') && userFloat('FullSelTight')")
                                     )
 
 
@@ -328,11 +340,11 @@ process.preselection = cms.Path( process.prePreselectionCounter
 ### If it is MC, run also the signal definition path
 if IsMC:
     process.genCategory =  cms.EDFilter("ZZGenFilterCategory",
-                                        Topology = cms.int32(int('-1',2)), # -1 means get everything, 1 means the request of having a ZZ pair. For other topology see the README under VVXAnalysis/Commons
+                                        Topology = cms.int32(SIGNALDEFINITION),
                                         src = cms.InputTag("genParticlesPruned")
                                         )
-    
-    process.signalDefinition = cms.Path(process.genCategory)
+    process.signalCounter    = cms.EDProducer("EventCountProducer")
+    process.signalDefinition = cms.Path(process.genCategory * process.signalCounter)
 
 
 

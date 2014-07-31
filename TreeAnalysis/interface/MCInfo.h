@@ -28,6 +28,12 @@ class MCInfo {
   // Total weight of the event, including efficiency scale factors.
   double weight(const phys::DiBoson<phys::Lepton, phys::Lepton> &ZZ) const {return luminosity_ >= 0 ? weight() * ZZ.efficiencySF() : 1.;}
   
+  double signalEfficiency()           const {return signalEfficiency_;}
+
+  double signalEfficiencyCorrection() const {return 1./signalEfficiency_;}
+
+  int    signalDefinition()           const {return signalDefinition_;}
+
  private:
   friend class EventAnalyzer;
   
@@ -36,6 +42,8 @@ class MCInfo {
   double internalCrossSection_;
   double externalCrossSection_;
   double *crossSection_;
+  double signalEfficiency_;
+  int    signalDefinition_;
   int    genEvents_;
   int    analyzedEvents_;
 
@@ -55,7 +63,9 @@ class MCInfo {
   // Counters for skims
   int preSkimCounter_; 
   int postSkimCounter_;
+  int signalCounter_;
 
+  int postSkimSignalEvents_;
   int eventsInEtaAcceptance_;
   int eventsInEtaPtAcceptance_;
 
