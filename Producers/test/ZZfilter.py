@@ -10,7 +10,7 @@ process.source = cms.Source("PoolSource",
     
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10000)
+    input = cms.untracked.int32(1000)
 )
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -18,9 +18,9 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 
 
-#process.TFileService=cms.Service('TFileService',
-#                               fileName=cms.string('VVVAnalysis.root')
-#                              )
+process.TFileService=cms.Service('TFileService',
+                                 fileName=cms.string('VVVAnalysis.root')
+                                 )
 
 
     
@@ -48,25 +48,28 @@ process.printTree = cms.EDAnalyzer("ParticleListDrawer",
 option = int('0',2) 
 
 process.zzGenCategory =  cms.EDFilter("ZZGenFilterCategory",
-                                      Topology = cms.int32(option), # -1 means get everything. 1 means only ZZ,and so on...
-                                      Option = cms.bool(True), # True for specific selection, False for every good signal (Two ZZ in correct mass range ecc...) 
+                                      Topology = cms.int32(-1), # -1 means get everything
                                       src = cms.InputTag("genParticlesPruned")
                                       )
 
+process.zzGenAnalyzer = cms.EDAnalyzer("ZZGenAnalyzer",
+                                       Topology = cms.InputTag("zzGenCategory")
+                                    )
 
-process.output = cms.OutputModule("PoolOutputModule",
-                                  fileName = cms.untracked.string('output.root'),
-                                  # put this if you have a filter
-                                  SelectEvents = cms.untracked.PSet(
-      SelectEvents = cms.vstring('analysis')
-    ),
+
+## process.output = cms.OutputModule("PoolOutputModule",
+##                                   fileName = cms.untracked.string('output.root'),
+##                                   # put this if you have a filter
+##                                   SelectEvents = cms.untracked.PSet(
+##       SelectEvents = cms.vstring('analysis')
+##     ),
                                   
-)
+## )
 
 #process.analysis = cms.Path(process.printTree*process.zzGenCategory)
-process.analysis = cms.Path(process.zzGenCategory)
+process.analysis = cms.Path(process.zzGenCategory*process.zzGenAnalyzer)
 
-process.out = cms.EndPath(process.output)
+#process.out = cms.EndPath(process.output)
 
 
 
