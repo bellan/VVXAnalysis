@@ -48,8 +48,8 @@ namespace zz{
     phys::Boson<phys::Particle>,    // Z1 --> ll
     phys::Boson<phys::Particle>,    // Z2 --> ll
     phys::Boson<phys::Particle>,    // Z3 --> jj
-    phys::Boson<phys::Particle>,    //  W --> lv
-    phys::Boson<phys::Particle>     //  W --> jj
+    phys::Boson<phys::Particle>,    // W0 --> lv
+    phys::Boson<phys::Particle>     // W1 --> jj
     > SignalTopology;
 
 
