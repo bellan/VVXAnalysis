@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("ANALYSIS")
 
 ####
-sample = "W+ZZ"
+sample = "prova"
 
 ####
 
@@ -14,7 +14,7 @@ process.source = cms.Source("PoolSource",
     
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(100)
 )
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -27,7 +27,8 @@ process.TFileService=cms.Service('TFileService',
                                 )
 
 if (sample == "prova") :
-    process.source.fileNames = cms.untracked.vstring('/store/cmst3/user/cmgtools/CMG//ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_9_1_bA3.root')
+ #   process.source.fileNames = cms.untracked.vstring('/store/cmst3/user/cmgtools/CMG//ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_9_1_bA3.root')
+ process.source.fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/b/bellan/public/samples/ZZTo2e2mu.root')
     
 # process.source.fileNames = cms.untracked.vstring('/store/cmst3/group/cmgtools/CMG//WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_1_1_aLX.root')
 
@@ -41,11 +42,11 @@ if (sample == "prova") :
 #    process.TFileService.fileName = "prova.root"
 if (sample=="4ljj") :
     process.source.fileNames = cms.untracked.vstring('root://lxcms00//data/VVV/madgraph_pythia_4ljj.root')
-    process.TFileService.fileName = "4ljj_3_GenAn.root"
+    process.TFileService.fileName = "4ljj_test.root"
 elif (sample=="QED6_0") :
     process.source.fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/b/bellan/QGC/4ljj_QED6_run_0.root')
 #    process.source.eventsToProcess = cms.untracked.VEventRange("1:9868")
-    process.TFileService.fileName = "QED6_0_backgr.root"
+    process.TFileService.fileName = "QED6_0_test1.root"
 elif (sample=="QED6_1") :
     process.source.fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/b/bellan/QGC/4ljj_QED6_run_1.root')
     process.TFileService.fileName = "QED6_1_backgr.root"
@@ -94,10 +95,10 @@ process.myAnalyzer = cms.EDAnalyzer("ZZWGenAnalyzer",
                                     Category = cms.InputTag("genCategory"),
                                     #SignalDefinition = cms.untracked.int32(3),
                                     )
-process.analysis = cms.Path(~process.genCategory*process.myAnalyzer)
-#process.analysis = cms.Path(process.genAnalyzer) #*process.printTree)
+#process.analysis = cms.Path(~process.genCategory*process.myAnalyzer)
+#process.analysis = cms.Path(process.genAnalyzer)*process.printTree)
 #process.analysis = cms.Path(process.printTree*process.genAnalyzer)
 
-
+process.analysis = cms.Path(process.printTree)#*process.genCategory*process.myAnalyzer)
 #process.analysis = cms.Path(~process.genCategory*process.printTree)
 #process.analysis = cms.Path(process.printTree)
