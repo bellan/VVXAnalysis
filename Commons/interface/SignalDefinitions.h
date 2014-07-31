@@ -6,7 +6,6 @@
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/DataFormats/interface/Lepton.h"
 #include "VVXAnalysis/DataFormats/interface/Electron.h"
-#include <ZZAnalysis/AnalysisStep/interface/bitops.h>
 #include <tuple>
 
 namespace vvx{

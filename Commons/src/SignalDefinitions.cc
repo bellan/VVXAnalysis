@@ -646,7 +646,7 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   
   //  if (theGenj.size() != 0) {
   
-  for (int j = 0; j < (theGenj.size()); ++j) {
+  for (uint j = 0; j < theGenj.size(); ++j) {
     
     if (theGenj[j].p4().E() > 20. && fabs(theGenj[j].p4().Eta()) < 5) {
       
