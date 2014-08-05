@@ -43,7 +43,8 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
   , theMCInfo(filename, lumi, externalXSection)
   , theWeight(1.)
   , theCutCounter(0.)
-  , theInputWeightedEvents(0.){
+  , theInputWeightedEvents(0.)
+  , genCategory(-99){
 
   TChain *tree = new TChain("treePlanter/ElderTree");
   tree->Add(filename.c_str());
@@ -63,9 +64,7 @@ EventAnalyzer::~EventAnalyzer(){
 
 
 void EventAnalyzer::Init(TTree *tree)
-{
-  TH1F::SetDefaultSumw2(kTRUE);
-  
+{   
   // Set branch addresses and branch pointers
   if (!tree) return;
   theTree = tree;
