@@ -13,16 +13,7 @@ using namespace phys;
 
 Int_t VVXAnalyzer::cut() {
   
-  if(!ZZ->passTrigger())          theHistograms.fill("CutCheck",5,0,5,0);
-  if(! 60 < ZZ->first().mass())   theHistograms.fill("CutCheck",5,0,5,1);
-  if(! ZZ->first().mass() < 120)  theHistograms.fill("CutCheck",5,0,5,2);
-  if(! 60 < ZZ->second().mass())  theHistograms.fill("CutCheck",5,0,5,3);
-  if(! ZZ->second().mass() < 120) theHistograms.fill("CutCheck",5,0,5,4);
-  
-  if(ZZ->passTrigger() &&
-     60 < ZZ->first().mass()  && ZZ->first().mass()  < 120 &&
-     60 < ZZ->second().mass() && ZZ->second().mass() < 120)
-    return 1;
+  if(ZZ->passTrigger()) return 1;
   
   theHistograms.fill("mZ1_nonPassing", "Invariant mass of Z_{1} for non passing events",  50, 0, 200, ZZ->first().mass() , theWeight); 
   theHistograms.fill("mZ2_nonPassing", "Invariant mass of Z_{2} for non passing events",  50, 0, 200, ZZ->second().mass(), theWeight); 
