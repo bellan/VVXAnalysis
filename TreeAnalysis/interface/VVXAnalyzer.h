@@ -20,7 +20,9 @@ public:
 
  VVXAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = false)
    : EventAnalyzer(*(new Selector<VVXAnalyzer>(*this)), 
-		   filename, lumi, externalXSection, doBasicPlots){}
+		   filename, lumi, externalXSection, doBasicPlots){
+    theHistograms.profile(genCategory);
+  }
 
   virtual ~VVXAnalyzer(){}
 
