@@ -360,11 +360,11 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   edm::Handle<edm::View<pat::CompositeCandidate> > Zmm    ; event.getByLabel(theZmmLabel     ,       Zmm);
   edm::Handle<edm::View<pat::CompositeCandidate> > Zee    ; event.getByLabel(theZeeLabel     ,       Zee);
   edm::Handle<edm::View<pat::CompositeCandidate> > Wjj    ; event.getByLabel(theWLabel       ,       Wjj);
-  edm::Handle<edm::View<pat::CompositeCandidate> > ZZ4m   ; event.getByLabel(theZZ4mLabel    ,      ZZ4m);
-  edm::Handle<edm::View<pat::CompositeCandidate> > ZZ4e   ; event.getByLabel(theZZ4eLabel    ,      ZZ4e);
-  edm::Handle<edm::View<pat::CompositeCandidate> > ZZ2e2m ; event.getByLabel(theZZ2e2mLabel  ,    ZZ2e2m);
+  edm::Handle<edm::View<pat::CompositeCandidate> > ZZ4m   ; bool doZZ4m = event.getByLabel(theZZ4mLabel    ,      ZZ4m);
+  edm::Handle<edm::View<pat::CompositeCandidate> > ZZ4e   ; bool doZZ4e = event.getByLabel(theZZ4eLabel    ,      ZZ4e);
+  edm::Handle<edm::View<pat::CompositeCandidate> > ZZ2e2m ; bool doZZ2e2m = event.getByLabel(theZZ2e2mLabel  ,    ZZ2e2m);
   // Collections for CR
-  edm::Handle<edm::View<pat::CompositeCandidate> > Zll    ; event.getByLabel(theZllLabel     ,       Zll);
+  edm::Handle<edm::View<pat::CompositeCandidate> > Zll    ; bool doZll = event.getByLabel(theZllLabel     ,       Zll);
   
 
   foreach(const pat::Muon& muon, *muons){
@@ -397,13 +397,13 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
   // The bosons have NOT any requirement on the quality of their daughters, only the flag is set (because of the same code is usd for CR too)
 
-  ZZ4m_   = fillDiBosons<pat::Muon,phys::Lepton,pat::Muon,phys::Lepton>(MMMM,ZZ4m);
+  if(doZZ4m) ZZ4m_     = fillDiBosons<pat::Muon,phys::Lepton,pat::Muon,phys::Lepton>(MMMM,ZZ4m);
 
-  ZZ4e_   = fillDiBosons<pat::Electron,phys::Electron,pat::Electron,phys::Electron>(EEEE,ZZ4e);
+  if(doZZ4e) ZZ4e_     = fillDiBosons<pat::Electron,phys::Electron,pat::Electron,phys::Electron>(EEEE,ZZ4e);
 
-  ZZ2e2m_ = fillDiBosons<pat::Electron,phys::Electron,pat::Muon,phys::Lepton>(EEMM,ZZ2e2m);
+  if(doZZ2e2m) ZZ2e2m_ = fillDiBosons<pat::Electron,phys::Electron,pat::Muon,phys::Lepton>(EEMM,ZZ2e2m);
 
-  Zll_    = fillDiBosons<phys::Lepton,phys::Lepton>(ZLL,Zll);
+  if(doZll) Zll_       = fillDiBosons<phys::Lepton,phys::Lepton>(ZLL,Zll);
 
 
   theTree->Fill();
