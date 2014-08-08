@@ -67,15 +67,10 @@ SkimPaths.append("preselection")
   ### Replace parameters
 ### ----------------------------------------------------------------------
 process.source.fileNames = cms.untracked.vstring(
-    # '/store/cmst3/group/cmgtools/CMG/WZZ_8TeV-aMCatNLO-herwig/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_13_1_YZF.root'    
-    # 'root://lxcms00//data3/2013/HZZ_cmgTuple/BE539_H1258TeV.root' #533 V5_15_0 version
-    #'/store/cmst3/group/cmgtools/CMG/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_nLP.root'
-    #'/store/cmst3/group/cmgtools/CMG/WZZ_8TeV-aMCatNLO-herwig/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_GEb.root'
-    # '/store/cmst3/group/cmgtools/CMG/ZZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_UV1.root'
-    '/store/cmst3/user/cmgtools/CMG/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_irQ.root'
-    #'/store/cmst3/user/cmgtools/CMG/ZZTo4mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_UR6.root'
-    #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2tau_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_E2X.root'
-    #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2muJJ_SMHContinInterf_M-125p6_8TeV-phantom-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_tZF.root'
+    #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_irQ.root'
+    #'/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_99_1_z8J.root'
+    #'/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_999_0_dXJ.root'
+    '/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_998_0_V7X.root'
     )
 
 
@@ -90,7 +85,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 ### ----------------------------------------------------------------------
 
 
-process.TFileService=cms.Service('TFileService', fileName=cms.string('ZZjjAnalysis.root'))
+process.TFileService=cms.Service('TFileService', fileName=cms.string('ZZjjAnalysisCR.root'))
 
 
 #####################################################################################################################################################
@@ -116,10 +111,10 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      Zmm          = cms.InputTag("MMCand"),
                                      Zee          = cms.InputTag("EECand"),
                                      Wjj          = cms.InputTag("WCand"),
-                                     ZZ4m         = cms.InputTag("MMMMFiltered"),          # only the best ZZ->4mu candidate that pass the FULL selection
-                                     ZZ4e         = cms.InputTag("EEEEFiltered"),          # only the best ZZ->4e candidate that pass the FULL selection
-                                     ZZ2e2m       = cms.InputTag("EEMMFiltered"),          # only the best ZZ->2e2mu candidate that pass the FULL selection
-                                     Zll          = cms.InputTag(""), 
+                                     ZZ4m         = cms.InputTag(""),          # only the best ZZ->4mu candidate that pass the FULL selection
+                                     ZZ4e         = cms.InputTag(""),          # only the best ZZ->4e candidate that pass the FULL selection
+                                     ZZ2e2m       = cms.InputTag(""),          # only the best ZZ->2e2mu candidate that pass the FULL selection
+                                     Zll          = cms.InputTag("ZLLFiltered"), 
                                      MET          = cms.InputTag("cmgPFMET"),
                                      Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
                                      XSection     = cms.untracked.double(XSEC)
@@ -141,7 +136,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
 
 
 # Muons cleaning. First, create a muon collection from the best ZZ candidate grand daughters
-process.muonsFromZZ = cms.EDProducer("PATMuonsFromCompositeCandidates", src =  cms.InputTag("ZZFiltered"), SplitLevel = cms.int32(1))
+process.muonsFromZZ = cms.EDProducer("PATMuonsFromCompositeCandidates", src =  cms.InputTag("ZLLFiltered"), SplitLevel = cms.int32(1))
 
 # Muons cleaning. Second, remove from the muon collection the muons that come from the best ZZ candidate that pass the full selection (previous collection).
 # The newly produced collection is also filtered in muon quality and isolation
@@ -171,7 +166,7 @@ process.postCleaningMuons = cms.EDProducer("PATMuonCleaner",
 
 
 # Electrons cleaning. First, create a electron collection from the best ZZ candidate grand daughters
-process.electronsFromZZ = cms.EDProducer("PATElectronsFromCompositeCandidates", src =  cms.InputTag("ZZFiltered"), SplitLevel = cms.int32(1))
+process.electronsFromZZ = cms.EDProducer("PATElectronsFromCompositeCandidates", src =  cms.InputTag("ZLLFiltered"), SplitLevel = cms.int32(1))
 
 # Electrons cleaning. Second, remove from the electron collection the electrons that come from the best ZZ candidate that pass the full selection (previous collection).
 # The newly produced collection is also filtered in electron quality and isolation
@@ -213,7 +208,7 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
                                            Jets      = cms.InputTag("cmgPFJetSel"),
                                            Muons     = cms.InputTag("postCleaningMuons"),
                                            Electrons = cms.InputTag("postCleaningElectrons"),
-                                           Diboson   = cms.InputTag("ZZFiltered"),
+                                           Diboson   = cms.InputTag("ZLLFiltered"),
                                            EnergyFractionAllowed = cms.double(0), # maximum energy fraction carried by the lepton in the jet, to accept a jet as non from lepton                             
                                            DebugPlots= cms.untracked.bool(False)
                                            )
@@ -250,44 +245,33 @@ process.WjjSequence = cms.Sequence(process.centralJets * process.bareWCand * pro
 ### Clean the 4 lepton candidates to select only the best possible candidate, requiring that passes the FULL selection
 ### ......................................................................... ###
 
-Z1MASS            = "daughter('Z1').mass>60 && daughter('Z1').mass<120"
-Z2MASS            = "daughter('Z2').mass>60 && daughter('Z2').mass<120"
-FULLSELTIGHT      = (FULLSEL + "&&" + Z1MASS + "&&" + Z2MASS)
+Z1MASS  = "daughter(0).mass>60 && daughter(0).mass<120"
+Z2MASS  = "daughter(1).mass>60 && daughter(1).mass<120"
+#BESTCR  = ("userFloat('d0.GoodLeptons') && userFloat('d0.isBestZ') &&" + Z2SIP + "&&" + Z1MASS)
 
-process.MMMMCand.flags.FullSelTight = cms.string(FULLSELTIGHT)
-process.EEEECand.flags.FullSelTight = cms.string(FULLSELTIGHT)
-process.EEMMCand.flags.FullSelTight = cms.string(FULLSELTIGHT)
+BESTZLL = (CR_BESTCANDBASE       + "&&" +  
+          Z1MASS                + "&&" +  
+          "userFloat('d0.isBestZ') &&" + 
+          Z2SIP)
 
 
-process.ZZFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
-                                  src = cms.InputTag("ZZCand"),
-                                  cut = cms.string("userFloat('isBestCand') && userFloat('FullSelTight')")
-                                  )
+ZLLSEL  = (CR_BASESEL + "&& !userFloat('d1.GoodLeptons') &&" + Z2MASS)
+#CRSEL  = (CR_BASESEL + "&&" + Z2MASS)
+              
+              
+process.ZLLCand.bestCandAmong.isBestCandZLL = cms.string(BESTZLL)
+process.ZLLCand.flags.SelZLL = cms.string(ZLLSEL)
 
-process.MMMMFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
-                                    src = cms.InputTag("MMMMCand"),
-                                    cut = cms.string("userFloat('isBestCand') && userFloat('FullSelTight')")
-                                    )
-
-process.EEEEFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
-                                    src = cms.InputTag("EEEECand"),
-                                    cut = cms.string("userFloat('isBestCand') && userFloat('FullSelTight')")
-                                    )
-
-process.EEMMFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
-                                    src = cms.InputTag("EEMMCand"),
-                                    cut = cms.string("userFloat('isBestCand') && userFloat('FullSelTight')")
-                                    )
 
 
 ### ......................................................................... ###
 ### Clean the Z+2 lepton candidates to select only the best possible candidate for that region, requiring that at least one lepton fails the FULL selection
 ### ......................................................................... ###
 
-#process.ZLLFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
-#                                   src = cms.InputTag("ZLLCand"),
-#                                   cut = cms.string("userFloat('isBestCand') && userFloat('FullSel')")
-#                                   )
+process.ZLLFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
+                                   src = cms.InputTag("ZLLCand"),
+                                   cut = cms.string("userFloat('isBestCandZLL') && userFloat('SelZLL')")
+                                   )
 
 
 
@@ -295,10 +279,7 @@ process.EEMMFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
 ### Define the post reconstruction cleaning sequence
 ### ------------------------------------------------------------------------- ###
 
-process.postRecoCleaning = cms.Sequence( process.ZZFiltered
-                                         + process.MMMMFiltered
-                                         + process.EEEEFiltered
-                                         + process.EEMMFiltered
+process.postRecoCleaning = cms.Sequence( process.ZLLFiltered
                                          + process.muonsFromZZ*process.postCleaningMuons 
                                          + process.electronsFromZZ*process.postCleaningElectrons
                                          + process.disambiguatedJets
@@ -324,16 +305,17 @@ process.postPreselectionCounter      = cms.EDProducer("EventCountProducer")
 process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("disambiguatedJets"), minNumber = cms.uint32(0))
 
 # Select only events with one such candidate
-process.zzCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZZFiltered"), minNumber = cms.uint32(1))
+process.zllCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZLLFiltered"), minNumber = cms.uint32(1))
 
 # Empty sequence to attach the signal filter (if specified in the CSV file)
 process.signalFilters    = cms.Sequence() 
 
 ### Path that pre-select the higher level objects that will input the TreePlanter
 process.preselection = cms.Path( process.prePreselectionCounter
+                                 * process.CR
                                  * process.signalFilters
                                  * process.postRecoCleaning 
-                                 * process.zzCounterFilter * process.jetCounterFilter
+                                 * process.zllCounterFilter * process.jetCounterFilter
                                  * process.postPreselectionCounter)
 
 
@@ -346,6 +328,7 @@ if IsMC:
                                         )
     process.signalCounter    = cms.EDProducer("EventCountProducer")
     process.signalDefinition = cms.Path(process.genCategory * process.signalCounter)
+
 
 
 

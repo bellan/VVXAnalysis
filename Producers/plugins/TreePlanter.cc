@@ -360,11 +360,11 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   edm::Handle<edm::View<pat::CompositeCandidate> > Zmm    ; event.getByLabel(theZmmLabel     ,       Zmm);
   edm::Handle<edm::View<pat::CompositeCandidate> > Zee    ; event.getByLabel(theZeeLabel     ,       Zee);
   edm::Handle<edm::View<pat::CompositeCandidate> > Wjj    ; event.getByLabel(theWLabel       ,       Wjj);
-  edm::Handle<edm::View<pat::CompositeCandidate> > ZZ4m   ; event.getByLabel(theZZ4mLabel    ,      ZZ4m);
-  edm::Handle<edm::View<pat::CompositeCandidate> > ZZ4e   ; event.getByLabel(theZZ4eLabel    ,      ZZ4e);
-  edm::Handle<edm::View<pat::CompositeCandidate> > ZZ2e2m ; event.getByLabel(theZZ2e2mLabel  ,    ZZ2e2m);
+  edm::Handle<edm::View<pat::CompositeCandidate> > ZZ4m   ; bool doZZ4m = event.getByLabel(theZZ4mLabel    ,      ZZ4m);
+  edm::Handle<edm::View<pat::CompositeCandidate> > ZZ4e   ; bool doZZ4e = event.getByLabel(theZZ4eLabel    ,      ZZ4e);
+  edm::Handle<edm::View<pat::CompositeCandidate> > ZZ2e2m ; bool doZZ2e2m = event.getByLabel(theZZ2e2mLabel  ,    ZZ2e2m);
   // Collections for CR
-  edm::Handle<edm::View<pat::CompositeCandidate> > Zll    ; event.getByLabel(theZllLabel     ,       Zll);
+  edm::Handle<edm::View<pat::CompositeCandidate> > Zll    ; bool doZll = event.getByLabel(theZllLabel     ,       Zll);
   
 
   foreach(const pat::Muon& muon, *muons){
@@ -397,13 +397,13 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
   // The bosons have NOT any requirement on the quality of their daughters, only the flag is set (because of the same code is usd for CR too)
 
-  ZZ4m_   = fillDiBosons<pat::Muon,phys::Lepton,pat::Muon,phys::Lepton>(MMMM,ZZ4m);
+  if(doZZ4m) ZZ4m_     = fillDiBosons<pat::Muon,phys::Lepton,pat::Muon,phys::Lepton>(MMMM,ZZ4m);
 
-  ZZ4e_   = fillDiBosons<pat::Electron,phys::Electron,pat::Electron,phys::Electron>(EEEE,ZZ4e);
+  if(doZZ4e) ZZ4e_     = fillDiBosons<pat::Electron,phys::Electron,pat::Electron,phys::Electron>(EEEE,ZZ4e);
 
-  ZZ2e2m_ = fillDiBosons<pat::Electron,phys::Electron,pat::Muon,phys::Lepton>(EEMM,ZZ2e2m);
+  if(doZZ2e2m) ZZ2e2m_ = fillDiBosons<pat::Electron,phys::Electron,pat::Muon,phys::Lepton>(EEMM,ZZ2e2m);
 
-  Zll_    = fillDiBosons<phys::Lepton,phys::Lepton>(ZLL,Zll);
+  if(doZll) Zll_       = fillDiBosons<phys::Lepton,phys::Lepton>(ZLL,Zll);
 
 
   theTree->Fill();
@@ -422,7 +422,7 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
   output.pfChargedHadIso_ = lepton.userFloat("PFChargedHadIso"  );
   output.pfNeutralHadIso_ = lepton.userFloat("PFNeutralHadIso"  );
   output.pfPhotonIso_     = lepton.userFloat("PFPhotonIso"      );
-  output.pfCombRelIso_    = lepton.userFloat("CombRelIsoPF"     );
+  output.pfCombRelIso_    = lepton.userFloat("combRelIsoPF"     );  
   output.rho_             = lepton.userFloat("rho"              );
   output.isPF_            = lepton.userFloat("isPFMuon"         );
   output.matchHLT_        = lepton.userFloat("HLTMatch"         );
@@ -501,6 +501,15 @@ phys::Jet TreePlanter::fill(const cmg::PFJet &jet) const{
 }
 
 
+void TreePlanter::addExtras(phys::Jet &jet, const pat::CompositeCandidate & v, const std::string& userFloatName) const{}
+
+void TreePlanter::addExtras(phys::Lepton& mu, const pat::CompositeCandidate & v, const std::string& userFloatName) const {
+  // in the future it could become a map inside the phys::Particle class. Right now there is not a realy need to
+  // make such a complication.
+  if(v.hasUserFloat(userFloatName)) mu.pfCombRelIsoFSRCorr_ = v.userFloat(userFloatName);
+}
+
+
 template<typename T, typename PAR>
 phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int type, bool requireQualityCriteria) const {
 
@@ -508,8 +517,10 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
   if(requireQualityCriteria && v.hasUserFloat("GoodLeptons") && !v.userFloat("GoodLeptons")) return phys::Boson<PAR>();
 
   PAR d0 = fill(*dynamic_cast<const T*>(v.daughter(0)->masterClone().get()));
+  addExtras(d0, v ,"d0.combRelIsoPFFSRCorr");
   PAR d1 = fill(*dynamic_cast<const T*>(v.daughter(1)->masterClone().get()));
-  
+  addExtras(d1, v ,"d0.combRelIsoPFFSRCorr");
+
   if(d0.id() == 0 || d1.id() == 0) edm::LogError("TreePlanter") << "TreePlanter: VB candidate does not have a matching good particle!";
   
   phys::Boson<PAR> physV(d0, d1, type);
@@ -681,7 +692,10 @@ int TreePlanter::computeCRFlag(Channel channel, const pat::CompositeCandidate & 
     if(vv.userFloat("isBestCRZMM")&&vv.userFloat("CRZLLHiSIP"))
       set_bit(CRFLAG,CRZLLHiSIPMM);
     if(vv.userFloat("isBestCRZLLHiSIPKin")&&vv.userFloat("CRZLLHiSIPKin"))
-      set_bit(CRFLAG,CRZLLHiSIPKin);  
+      set_bit(CRFLAG,CRZLLHiSIPKin);
+    // The one actually used:
+    if(vv.userFloat("isBestCandZLL")&&vv.userFloat("SelZLL"))
+      set_bit(CRFLAG,ZLL);
   }
 
   //For the SR, also fold information about acceptance in CRflag 
