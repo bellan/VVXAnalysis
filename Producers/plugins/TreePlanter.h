@@ -62,6 +62,10 @@ class TreePlanter: public edm::EDAnalyzer {
   phys::Electron fill(const pat::Electron &electron) const;
   
   phys::Jet fill(const cmg::PFJet &jet) const;
+
+  void addExtras(phys::Jet &jet, const pat::CompositeCandidate & v, const std::string& userFloatName) const;
+  void addExtras(phys::Lepton& mu, const pat::CompositeCandidate & v, const std::string& userFloatName) const;
+
   
   template<typename T, typename PAR>
     std::vector<phys::Boson<PAR> > fillBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const;

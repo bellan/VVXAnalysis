@@ -422,7 +422,7 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
   output.pfChargedHadIso_ = lepton.userFloat("PFChargedHadIso"  );
   output.pfNeutralHadIso_ = lepton.userFloat("PFNeutralHadIso"  );
   output.pfPhotonIso_     = lepton.userFloat("PFPhotonIso"      );
-  output.pfCombRelIso_    = lepton.userFloat("CombRelIsoPF"     );
+  output.pfCombRelIso_    = lepton.userFloat("combRelIsoPF"     );  
   output.rho_             = lepton.userFloat("rho"              );
   output.isPF_            = lepton.userFloat("isPFMuon"         );
   output.matchHLT_        = lepton.userFloat("HLTMatch"         );
@@ -501,6 +501,15 @@ phys::Jet TreePlanter::fill(const cmg::PFJet &jet) const{
 }
 
 
+void TreePlanter::addExtras(phys::Jet &jet, const pat::CompositeCandidate & v, const std::string& userFloatName) const{}
+
+void TreePlanter::addExtras(phys::Lepton& mu, const pat::CompositeCandidate & v, const std::string& userFloatName) const {
+  // in the future it could become a map inside the phys::Particle class. Right now there is not a realy need to
+  // make such a complication.
+  if(v.hasUserFloat(userFloatName)) mu.pfCombRelIsoFSRCorr_ = v.userFloat(userFloatName);
+}
+
+
 template<typename T, typename PAR>
 phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int type, bool requireQualityCriteria) const {
 
@@ -508,8 +517,10 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
   if(requireQualityCriteria && v.hasUserFloat("GoodLeptons") && !v.userFloat("GoodLeptons")) return phys::Boson<PAR>();
 
   PAR d0 = fill(*dynamic_cast<const T*>(v.daughter(0)->masterClone().get()));
+  addExtras(d0, v ,"d0.combRelIsoPFFSRCorr");
   PAR d1 = fill(*dynamic_cast<const T*>(v.daughter(1)->masterClone().get()));
-  
+  addExtras(d1, v ,"d0.combRelIsoPFFSRCorr");
+
   if(d0.id() == 0 || d1.id() == 0) edm::LogError("TreePlanter") << "TreePlanter: VB candidate does not have a matching good particle!";
   
   phys::Boson<PAR> physV(d0, d1, type);
@@ -681,7 +692,10 @@ int TreePlanter::computeCRFlag(Channel channel, const pat::CompositeCandidate & 
     if(vv.userFloat("isBestCRZMM")&&vv.userFloat("CRZLLHiSIP"))
       set_bit(CRFLAG,CRZLLHiSIPMM);
     if(vv.userFloat("isBestCRZLLHiSIPKin")&&vv.userFloat("CRZLLHiSIPKin"))
-      set_bit(CRFLAG,CRZLLHiSIPKin);  
+      set_bit(CRFLAG,CRZLLHiSIPKin);
+    // The one actually used:
+    if(vv.userFloat("isBestCandZLL")&&vv.userFloat("SelZLL"))
+      set_bit(CRFLAG,ZLL);
   }
 
   //For the SR, also fold information about acceptance in CRflag 
