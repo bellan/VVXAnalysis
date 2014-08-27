@@ -59,6 +59,15 @@ namespace phys {
     Bool_t   matchHLT()            const {return matchHLT_;}
     Bool_t   isGood()              const {return isGood_;}
 
+    Bool_t   passFullSelNoFSRCorr()const {return isGood_ && pfCombRelIso_ < 0.4;}
+    Bool_t   passFullSel()         const {return isGood_ && pfCombRelIsoFSRCorr_ < 0.4;}
+
+    void     setFakeRateSF(const std::pair<double,double> & sf) {
+      fakeRateSF_    = passFullSel() ? 1. : sf.first;
+      fakeRateSFUnc_ = passFullSel() ? 0. : sf.second;
+    }
+    
+
   protected:
     
 

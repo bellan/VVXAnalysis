@@ -26,13 +26,14 @@ namespace phys {
 
     
   Boson(const P& daughter0, const P& daughter1, int pid = 0)
-    : Particle(daughter0.p4()+daughter1.p4(), 0, pid)
+    : Particle(daughter0.p4()+daughter1.p4(), daughter0.charge()+daughter1.charge(), pid)
       , daughter0_(daughter0)
       , daughter1_(daughter1)
       , indexFSR_(-1)
       , hasGoodDaughters_(false){
-       efficiencySF_ = daughter0.efficiencySF() * daughter1.efficiencySF();
-       charge_ = daughter0.charge() + daughter1.charge();
+
+      init();
+
     }
     
   Boson(const Boson<P>& vb)
@@ -42,10 +43,8 @@ namespace phys {
       , indexFSR_(vb.daughterWithFSR())
       , fsrPhoton_(vb.fsrPhoton())
       , hasGoodDaughters_(vb.hasGoodDaughters()){
-      efficiencySF_ = vb.daughter(0).efficiencySF() * vb.daughter(1).efficiencySF();
-      charge_ = vb.daughter(0).charge() + vb.daughter(1).charge();
 
-      if(indexFSR_ >=0)  p4_ = p4_ + fsrPhoton_.p4();
+      init();
     }
     
     
@@ -59,6 +58,8 @@ namespace phys {
     
     /// Destructor
     virtual ~Boson(){};
+
+
     
     void setDaughter(int i, const P& d){
       if(i == 0) daughter0_ = d;
@@ -89,6 +90,8 @@ namespace phys {
     // the daughters pass the quality criteria
     bool hasGoodDaughters() const {return hasGoodDaughters_;}
     
+    // Number of good daughters
+    int numberOfGoodDaughters() const {return int(daughter0_.passFullSel()) + int(daughter1_.passFullSel());}
 
   protected:
     
@@ -100,6 +103,16 @@ namespace phys {
     Particle fsrPhoton_;
 
     Bool_t hasGoodDaughters_;
+
+    void init(){
+      efficiencySF_  = daughter0_.efficiencySF() * daughter1_.efficiencySF();
+      fakeRateSF_    = daughter0_.fakeRateSF() * daughter1_.fakeRateSF();
+      fakeRateSFUnc_ = sqrt(pow(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUnc(),2) +  
+			    pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc(),2));
+      
+      charge_ = daughter0_.charge() + daughter1_.charge();
+      if(indexFSR_ >=0)  p4_ = p4_ + fsrPhoton_.p4();
+    }
 
     ClassDef(Boson, 1) //
   };
