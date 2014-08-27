@@ -227,7 +227,7 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
 
 process.centralJets = cms.EDFilter("EtaPtMinCMGPFJetSelector", 
                                    src = cms.InputTag("disambiguatedJets"),
-                                   ptMin   = cms.double(30),
+                                   ptMin   = cms.double(20),
                                    etaMin = cms.double(-2.4),
                                    etaMax = cms.double(2.4)
                                    )
