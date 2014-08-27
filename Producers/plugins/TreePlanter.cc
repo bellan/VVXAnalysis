@@ -14,12 +14,15 @@
 #include "DataFormats/Common/interface/MergeableCounter.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/Common/interface/MergeableCounter.h"
+#include "DataFormats/Common/interface/Ptr.h"
+#include "DataFormats/JetReco/interface/GenJet.h"
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
 
 #include "AnalysisDataFormats/CMGTools/interface/PFJet.h"
 #include "AnalysisDataFormats/CMGTools/interface/BaseMET.h"
+#include "AnalysisDataFormats/CMGTools/interface/PhysicsObject.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 
 #include "ZZAnalysis/AnalysisStep/interface/MCHistoryTools.h"
@@ -42,8 +45,10 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   : PUWeighter_      (PUReweight::LEGACY)
   , filterController_(config)
   , mcHistoryTools_  (0)
-  , leptonEfficiency_(edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/scale_factors_muons2012.root").fullPath(),
-		      edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/scale_factors_ele2012.root").fullPath())
+  , leptonScaleFactors_(edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/scale_factors_muons2012.root").fullPath(),
+			edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/scale_factors_ele2012.root").fullPath(),
+			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates_mu.root").fullPath(),
+			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates_el.root").fullPath())
   , signalDefinition_(config.getParameter<int>("signalDefinition"   ))
   , passTrigger_(false)
   , passSkim_(false)
@@ -79,17 +84,20 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theNumberOfEvents(0)
   , theNumberOfAnalyzedEvents(0)
   , eventsInEtaAcceptance_(0)
-  , eventsInEtaPtAcceptance_(0){
+  , eventsInEtaPtAcceptance_(0)
+  , eventsIn2P2FCR_(0)
+  , eventsIn3P1FCR_(0){
  
   edm::Service<TFileService> fs;
   theTree = fs->make<TTree>("ElderTree","ElderTree");
 
   if(isMC_){
-    thePUInfoLabel          = config.getUntrackedParameter<edm::InputTag>("PUInfo"         , edm::InputTag("addPileupInfo"));
-    theGenCategoryLabel     = config.getUntrackedParameter<edm::InputTag>("GenCategory"    , edm::InputTag("genCategory"));
-    theGenCollectionLabel   = config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("genParticlesPruned"));
-    theGenVBCollectionLabel = config.getUntrackedParameter<edm::InputTag>("GenVBCollection", edm::InputTag("genCategory"));
-    externalCrossSection_   = config.getUntrackedParameter<double>("XSection",-1);
+    thePUInfoLabel           = config.getUntrackedParameter<edm::InputTag>("PUInfo"         , edm::InputTag("addPileupInfo"));
+    theGenCategoryLabel      = config.getUntrackedParameter<edm::InputTag>("GenCategory"    , edm::InputTag("genCategory"));
+    theGenCollectionLabel    = config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("genParticlesPruned"));
+    theGenJetCollectionLabel = config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("genJetSel"));
+    theGenVBCollectionLabel  = config.getUntrackedParameter<edm::InputTag>("GenVBCollection", edm::InputTag("genCategory"));
+    externalCrossSection_    = config.getUntrackedParameter<double>("XSection",-1);
   }
    
   skimPaths_ = config.getParameter<std::vector<std::string> >("skimPaths");
@@ -109,7 +117,6 @@ void TreePlanter::beginJob(){
 
   theTree->Branch("mcprocweight"     , &mcprocweight_);
   theTree->Branch("puweight"         , &puweight_);
-  theTree->Branch("xsec"        , &xsec_);
   theTree->Branch("genCategory" , &genCategory_);
 
   theTree->Branch("met"   , &met_);
@@ -129,7 +136,7 @@ void TreePlanter::beginJob(){
 
   theTree->Branch("genParticles"  , &genParticles_);
   theTree->Branch("genVBParticles", &genVBParticles_);
-
+  theTree->Branch("genJets"       , &genJets_);
 }
 
 void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
@@ -165,6 +172,12 @@ void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::Even
 
   found = lumi.getByLabel("postSkimSignalCounter", counter);
   if(found) postSkimSignalCounter_ += counter->value;
+
+  found = lumi.getByLabel("cr2P2FCounter", counter);
+  if(found) eventsIn2P2FCR_ += counter->value;
+
+  found = lumi.getByLabel("cr3P1FCounter", counter);
+  if(found) eventsIn3P1FCR_ += counter->value;
 }
 
 
@@ -180,6 +193,13 @@ void TreePlanter::endJob(){
 
   if(mcHistoryTools_) delete mcHistoryTools_;
 
+  edm::Service<TFileService> fs;
+  TTree *countTree = fs->make<TTree>("HollyTree","HollyTree");
+  
+  countTree->Branch("analyzedEvents", &theNumberOfAnalyzedEvents);
+  countTree->Branch("eventsIn2P2FCR", &eventsIn2P2FCR_);
+  countTree->Branch("eventsIn3P1FCR", &eventsIn3P1FCR_);
+
   if(isMC_){
 
     Double_t internalCrossSection = 0.;
@@ -194,11 +214,8 @@ void TreePlanter::endJob(){
 	 <<" External cross section: "           << externalCrossSection_     << endl
 	 << "================================================"                << endl;
     
-    edm::Service<TFileService> fs;
-    TTree *countTree = fs->make<TTree>("HollyTree","HollyTree");
     countTree->Branch("signalDefinition"      , &signalDefinition_);
     countTree->Branch("genEvents"             , &theNumberOfEvents);
-    countTree->Branch("analyzedEvents"        , &theNumberOfAnalyzedEvents);
     countTree->Branch("internalCrossSection"  , &internalCrossSection);
     countTree->Branch("externalCrossSection"  , &externalCrossSection_);
     countTree->Branch("summcprocweight"       , &summcprocweights_);
@@ -211,10 +228,9 @@ void TreePlanter::endJob(){
     countTree->Branch("postSkimSignalEvents"  , &postSkimSignalEvents_);
     countTree->Branch("eventsInEtaAcceptance"   , &eventsInEtaAcceptance_);
     countTree->Branch("eventsInEtaPtAcceptance" , &eventsInEtaPtAcceptance_);
-
-
-    countTree->Fill();
   }
+  
+  countTree->Fill();
 }
 
 
@@ -231,7 +247,6 @@ void TreePlanter::initTree(){
   mcprocweight_       = 1.;
   puweight_           = 1.; 
 
-  xsec_           = -1.;
   genCategory_    = -1;
   nobservedPUInt_ = -1;
   ntruePUInt_     = -1;
@@ -253,6 +268,7 @@ void TreePlanter::initTree(){
 
   genParticles_ = std::vector<phys::Particle>();
   genVBParticles_ = std::vector<phys::Boson<phys::Particle> >();
+  genJets_ = std::vector<phys::Particle>();
  }
 
 
@@ -323,6 +339,13 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
 	genVBParticles_.push_back(phys::Boson<phys::Particle>(phys::Particle(p->daughter(0)->p4(), phys::Particle::computeCharge(p->daughter(0)->pdgId()), p->daughter(0)->pdgId()),
 							      phys::Particle(p->daughter(1)->p4(), phys::Particle::computeCharge(p->daughter(1)->pdgId()), p->daughter(1)->pdgId()),
 							      p->pdgId()));
+    
+    // Get the gen jet collection
+    edm::Handle<std::vector<cmg::PhysicsObjectWithPtr<edm::Ptr<reco::GenJet> > > > genJets;
+    event.getByLabel(theGenJetCollectionLabel,  genJets);
+
+    foreach(const cmg::PhysicsObjectWithPtr<edm::Ptr<reco::GenJet> > & jet, *genJets)
+      genJets_.push_back(phys::Particle(jet.p4(), phys::Particle::computeCharge(jet.pdgId()), jet.pdgId()));
     
     // Info about the MC weight
     puweight_ = PUWeighter_.weight(sampleType_, setup_, ntruePUInt_);
@@ -427,8 +450,8 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
   output.isPF_            = lepton.userFloat("isPFMuon"         );
   output.matchHLT_        = lepton.userFloat("HLTMatch"         );
   output.isGood_          = lepton.userFloat("isGood"           );
-  output.efficiencySF_    = leptonEfficiency_.scaleFactor(output);
-  
+  output.efficiencySF_    = leptonScaleFactors_.efficiencyScaleFactor(output);
+  output.setFakeRateSF(leptonScaleFactors_.fakeRateScaleFactor(output));
      
   return output; 
 }

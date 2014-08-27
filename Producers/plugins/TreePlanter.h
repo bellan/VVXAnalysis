@@ -25,7 +25,7 @@
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 
 #include "VVXAnalysis/Producers/interface/FilterController.h"
-#include "VVXAnalysis/Commons/interface/LeptonEfficiency.h"
+#include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 
 #include "ZZAnalysis/AnalysisStep/interface/PUReweight.h"
 
@@ -102,7 +102,7 @@ class TreePlanter: public edm::EDAnalyzer {
   FilterController filterController_;
   MCHistoryTools   *mcHistoryTools_;
   // To get Lepton efficiency scale factors. Temporary here!
-  LeptonEfficiency leptonEfficiency_;
+  LeptonScaleFactors leptonScaleFactors_;
   Int_t signalDefinition_;
 
   // ------------------- Event info in the tree ------------------- //
@@ -124,7 +124,6 @@ class TreePlanter: public edm::EDAnalyzer {
   Double_t mcprocweight_;
   Double_t puweight_;
 
-  Double_t xsec_;
   Int_t genCategory_;
   Int_t nobservedPUInt_; 
   Int_t ntruePUInt_;
@@ -150,6 +149,7 @@ class TreePlanter: public edm::EDAnalyzer {
 
   std::vector<phys::Particle>               genParticles_;
   std::vector<phys::Boson<phys::Particle> > genVBParticles_;
+  std::vector<phys::Particle>               genJets_;
 
   // ------------------- Input Labels ------------------- //
   edm::InputTag theMuonLabel;
@@ -168,6 +168,7 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::InputTag theGenCategoryLabel;
   edm::InputTag theGenVBCollectionLabel;
   edm::InputTag	theGenCollectionLabel;
+  edm::InputTag	theGenJetCollectionLabel;
 
   // --------------------------------------------------------- //
 
@@ -189,7 +190,8 @@ class TreePlanter: public edm::EDAnalyzer {
   Int_t theNumberOfAnalyzedEvents;
   Int_t eventsInEtaAcceptance_;
   Int_t eventsInEtaPtAcceptance_;
-
+  Int_t eventsIn2P2FCR_;
+  Int_t eventsIn3P1FCR_;
 
   std::vector<std::string> skimPaths_;
 };
