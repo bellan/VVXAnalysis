@@ -30,7 +30,7 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   , eventsInEtaPtAcceptance_(0)
 {
 
-  if(lumi <= 0) return;
+  if(lumi <= 0) return; // FIXME: access here CR info
   
   TChain *tree = new TChain("treePlanter/HollyTree");
   tree->Add(filename.c_str());
