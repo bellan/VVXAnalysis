@@ -68,11 +68,10 @@ SkimPaths.append("preselection")
 ### ----------------------------------------------------------------------
 process.source.fileNames = cms.untracked.vstring(
     #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_irQ.root'
-    #'/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_99_1_z8J.root'
-    #'/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_999_0_dXJ.root'
+    '/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_99_1_z8J.root',
+    '/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_999_0_dXJ.root',
     '/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_998_0_V7X.root'
     )
-
 
 process.maxEvents.input = -1
 
@@ -268,7 +267,7 @@ process.ZLLCand.flags.SelZLL = cms.string(ZLLSEL)
 ### Clean the Z+2 lepton candidates to select only the best possible candidate for that region, requiring that at least one lepton fails the FULL selection
 ### ......................................................................... ###
 
-process.ZLLFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
+process.ZLLFiltered = cms.EDFilter("PATCompositeCandidateSelector",
                                    src = cms.InputTag("ZLLCand"),
                                    cut = cms.string("userFloat('isBestCandZLL') && userFloat('SelZLL')")
                                    )
@@ -305,10 +304,41 @@ process.postPreselectionCounter      = cms.EDProducer("EventCountProducer")
 process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("disambiguatedJets"), minNumber = cms.uint32(0))
 
 # Select only events with one such candidate
-process.zllCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZLLFiltered"), minNumber = cms.uint32(1))
+process.zllCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZLLFiltered"), minNumber = cms.uint32(1))
 
 # Empty sequence to attach the signal filter (if specified in the CSV file)
 process.signalFilters    = cms.Sequence() 
+
+
+# Some counters and paths functional to the fake lepton background estimation
+PASSD0 = "(userFloat('d1.d0.isGood') && userFloat('d1.d0.pfCombRelIsoFSRCorr') < 0.4)"
+PASSD1 = "(userFloat('d1.d1.isGood') && userFloat('d1.d1.pfCombRelIsoFSRCorr') < 0.4)"
+FAILD0 = "!" + PASSD0
+FAILD1 = "!" + PASSD1
+
+process.cand2P2F =  cms.EDFilter("PATCompositeCandidateSelector",
+                                 src = cms.InputTag("ZLLFiltered"),
+                                 cut = cms.string(FAILD0 + "&&" + FAILD1)
+                                 )
+
+process.cand3P1F =  cms.EDFilter("PATCompositeCandidateSelector",
+                                 src = cms.InputTag("ZLLFiltered"),
+                                 cut = cms.string("(" + FAILD0 + "&&" + PASSD1 + ") || (" + PASSD0 + "&&" + FAILD1 + ")")
+                                 )
+
+process.cand2P2FFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand2P2F"), minNumber = cms.uint32(1))
+process.cand3P1FFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand3P1F"), minNumber = cms.uint32(1))
+
+
+#process.cr2P2FCounter      = cms.EDProducer("SelectedEventCountProducer", name = cms.vstring("cr2P2F","preselection"))
+#process.cr3P1FCounter      = cms.EDProducer("SelectedEventCountProducer", name = cms.vstring("cr3P1F","preselection"))
+process.cr2P2FCounter      = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("cr2P2F","preselection"))
+process.cr3P1FCounter      = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("cr3P1F","preselection"))
+
+
+#process.crDefinitions = cms.Sequence(cms.ignore(process.cand2P2F) * cms.ignore(process.cand2P2FFilter) + 
+#                                     cms.ignore(process.cand3P1F) * cms.ignore(process.cand3P1FFilter)) 
+
 
 ### Path that pre-select the higher level objects that will input the TreePlanter
 process.preselection = cms.Path( process.prePreselectionCounter
@@ -316,7 +346,12 @@ process.preselection = cms.Path( process.prePreselectionCounter
                                  * process.signalFilters
                                  * process.postRecoCleaning 
                                  * process.zllCounterFilter * process.jetCounterFilter
+#                                 * process.crDefinitions
                                  * process.postPreselectionCounter)
+
+
+process.cr2P2F = cms.Path(process.cand2P2F * process.cand2P2FFilter)
+process.cr3P1F = cms.Path(process.cand3P1F * process.cand3P1FFilter)
 
 
 
@@ -330,13 +365,11 @@ if IsMC:
     process.signalDefinition = cms.Path(process.genCategory * process.signalCounter)
 
 
-
-
 ### ------------------------------------------------------------------------- ###
 ### Run the TreePlanter
 ### ------------------------------------------------------------------------- ###
 
-process.filltrees = cms.EndPath(process.treePlanter)
+process.filltrees = cms.EndPath(process.cr2P2FCounter + process.cr3P1FCounter + process.treePlanter)
 
 ########################################################################################################################################################################
 
