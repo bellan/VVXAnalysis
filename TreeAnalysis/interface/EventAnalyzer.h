@@ -54,7 +54,7 @@ public:
   
   enum METType {Std,NoMu,NoEl};
 
-  EventAnalyzer(SelectorBase& aSelector, std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = true);
+  EventAnalyzer(SelectorBase& aSelector, const std::string& region, const std::string& filename, const double& lumi = 1., const double& externalXSection = -1., bool doBasicPlots = true);
 
   virtual ~EventAnalyzer();
 
@@ -187,6 +187,9 @@ public:
   std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   >  *ZZ4m  ; TBranch *b_ZZ4m; 
   std::vector<phys::DiBoson<phys::Electron, phys::Electron> >  *ZZ4e  ; TBranch *b_ZZ4e;  
   std::vector<phys::DiBoson<phys::Electron, phys::Lepton>   >  *ZZ2e2m; TBranch *b_ZZ2e2m;
+
+  // Zll --> for CR
+  std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   >  *Zll  ; TBranch *b_Zll; 
 
   // DiBoson (Not in the tree)
   phys::DiBoson<phys::Lepton  , phys::Lepton> *ZZ;

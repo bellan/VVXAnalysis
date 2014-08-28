@@ -35,9 +35,10 @@ using namespace colour;
 
 
 EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
-			     std::string filename, 
-			     double lumi, 
-			     double externalXSection, bool doBasicPlots)
+			     const std::string& region, 
+			     const std::string& filename, 
+			     const double& lumi, 
+			     const double& externalXSection, bool doBasicPlots)
   : select(aSelector)
   , doBasicPlots_(doBasicPlots)
   , theMCInfo(filename, lumi, externalXSection)
@@ -90,6 +91,10 @@ void EventAnalyzer::Init(TTree *tree)
   ZZ4e   = 0; b_ZZ4e   = 0; theTree->SetBranchAddress("ZZ4eCand"  , &ZZ4e  , &b_ZZ4e  );
   ZZ2e2m = 0; b_ZZ2e2m = 0; theTree->SetBranchAddress("ZZ2e2mCand", &ZZ2e2m, &b_ZZ2e2m);
 
+  // Zll --> for CR
+  Zll   = 0; b_Zll   = 0; theTree->SetBranchAddress("ZllCand"  , &Zll  , &b_Zll);
+
+  // Best diboson to be used in the event
   ZZ = 0;
 
 
@@ -172,18 +177,21 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   if(totCand > 0){
     
     if(ZZ4m->size() == 1 && ZZ4m->front().passTrigger()){ ++triggers;
+      if(ZZ) delete ZZ;
       ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4m->front().clone<phys::Lepton,phys::Lepton>());
     }
     if(ZZ4e->size() == 1 && ZZ4e->front().passTrigger()){ ++triggers;
+      if(ZZ) delete ZZ;
       ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4e->front().clone<phys::Lepton,phys::Lepton>());
     }
     if(ZZ2e2m->size() == 1 && ZZ2e2m->front().passTrigger()){ ++triggers;
+      if(ZZ) delete ZZ;
       ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ2e2m->front().clone<phys::Lepton,phys::Lepton>());
     }
   }
 
   theHistograms.fill("GoodTriggerableCands", "Number of good triggerable candidates in the event", 10, 0, 10, triggers, 1);
-  if(triggers != 1) return 0;
+  if(triggers != 1) return 0; // FIXME for the case of CR
   
   theWeight = theMCInfo.weight(*ZZ);
 
