@@ -197,6 +197,9 @@ public:
   // GenParticle 
   std::vector<phys::Particle>               *genParticles;   TBranch *b_genParticles;
   std::vector<phys::Boson<phys::Particle> > *genVBParticles; TBranch *b_genVBParticles;
+  
+  // GenJets
+  std::vector<phys::Particle>               *genJets;   TBranch *b_genJets;
 };
 
 #endif

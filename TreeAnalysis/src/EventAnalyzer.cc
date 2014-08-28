@@ -101,6 +101,9 @@ void EventAnalyzer::Init(TTree *tree)
   // Gen Particles   
   genParticles   = 0;                                                b_genParticles   = 0; theTree->SetBranchAddress("genParticles"  , &genParticles  , &b_genParticles);
   genVBParticles = new std::vector<phys::Boson<phys::Particle> > (); b_genVBParticles = 0; theTree->SetBranchAddress("genVBParticles", &genVBParticles, &b_genVBParticles);
+  
+  // Gen Jets
+  genJets   = 0;                                                b_genJets   = 0; theTree->SetBranchAddress("genJets"  , &genJets  , &b_genJets);
 
   // MET
   met = new phys::Particle();
