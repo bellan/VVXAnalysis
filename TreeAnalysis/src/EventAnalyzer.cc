@@ -35,20 +35,20 @@ using namespace colour;
 
 
 EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
-			     const std::string& region, 
-			     const std::string& filename, 
-			     const double& lumi, 
-			     const double& externalXSection, bool doBasicPlots)
+			     const AnalysisConfiguration& configuration)
   : select(aSelector)
-  , doBasicPlots_(doBasicPlots)
-  , theMCInfo(filename, lumi, externalXSection)
+  , doBasicPlots_(configuration.getParameter<bool>("doBasicPlots"))
+  , region_      (configuration.getParameter<std::string>("region"))
+  , theMCInfo    (configuration.getParameter<std::string>("filename"), 
+		  configuration.getParameter<double>("lumi"), 
+		  configuration.getParameter<double>("externalXSection"))
   , theWeight(1.)
   , theCutCounter(0.)
   , theInputWeightedEvents(0.)
   , genCategory(-99){
 
   TChain *tree = new TChain("treePlanter/ElderTree");
-  tree->Add(filename.c_str());
+  tree->Add(configuration.getParameter<std::string>("filename").c_str());
 
   if (tree == 0) std::cout<<Important("Error in EventAnalyzer ctor:")<<" The tree has a null pointer."<<std::endl;
 

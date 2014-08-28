@@ -15,24 +15,22 @@ int main (int argc, char ** argv){
     cout<<"vvxAnalysis <input file name> <output filename> <luminosity (for MC)> <external cross section (for MC)>"<<endl;
     return 1;
   }
-
-  // Region:
-  std::string region(argv[2]);
-
-  // input filename
-  std::string filename(argv[3]);
-
-  float lumi  = atof(argv[5]); 
-  float externalXsec = atof(argv[6]);
     
-  std::cout<<Yellow("Analyzing "+filename+" ... please wait... ")<<endl ;
-    
-  std::string analysisName = argv[1];
+  AnalysisConfiguration analysisConfig;
+  analysisConfig.addParameter("analysisName", std::string(argv[1]));
+  analysisConfig.addParameter("region"      , std::string(argv[2]));
+  analysisConfig.addParameter("filename"    , std::string(argv[3]));
+  analysisConfig.addParameter("outputfile"  , std::string(argv[4]));
+  analysisConfig.addParameter("lumi"        , atof(argv[5]));
+  analysisConfig.addParameter("externalXSection", atof(argv[6]));
+  analysisConfig.addParameter("doBasicPlots", false);
 
-  EventAnalyzer *analysis = AnalysisFactory::get()->createAnalysis(analysisName, region, filename, lumi, externalXsec);
-  analysis->loop(argv[4]);
+  std::cout<<Yellow("Analyzing "+analysisConfig.getParameter<std::string>("filename")+" ... please wait... ")<<endl ;
 
-  cout<<"Output saved in --> "<<Green(argv[4])<<endl;
+  EventAnalyzer *analysis = AnalysisFactory::get()->createAnalysis(analysisConfig);
+  analysis->loop(analysisConfig.getParameter<std::string>("outputfile"));
+
+  cout<<"Output saved in --> "<<Green(analysisConfig.getParameter<std::string>("outputfile"))<<endl;
   cout<<"\nAnalysis status: "<<OK("DONE")<<"\n"<<endl;
 
   return 0;

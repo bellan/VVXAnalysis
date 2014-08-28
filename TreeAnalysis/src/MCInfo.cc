@@ -58,8 +58,6 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   eventsIn2P2FCR_ = totalEventsIn2P2FCR;
   eventsIn3P1FCR_ = totalEventsIn3P1FCR;
 
-  std::cout<<"2p2f: "  <<eventsIn2P2FCR_<<" 3p1f: "<< eventsIn3P1FCR_ << std::endl;
-
   if(lumi <= 0) return; // FIXME: access here CR info
   
   

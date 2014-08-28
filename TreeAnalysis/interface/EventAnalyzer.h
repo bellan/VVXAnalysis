@@ -16,6 +16,8 @@
 #include <algorithm>
 #include <map>
 
+#include "AnalysisConfiguration.h"
+
 #include "VVXAnalysis/DataFormats/interface/Electron.h"
 #include "VVXAnalysis/DataFormats/interface/Lepton.h"
 #include "VVXAnalysis/DataFormats/interface/Jet.h"
@@ -54,7 +56,7 @@ public:
   
   enum METType {Std,NoMu,NoEl};
 
-  EventAnalyzer(SelectorBase& aSelector, const std::string& region, const std::string& filename, const double& lumi = 1., const double& externalXSection = -1., bool doBasicPlots = true);
+  EventAnalyzer(SelectorBase& aSelector, const AnalysisConfiguration& configuration);
 
   virtual ~EventAnalyzer();
 
@@ -127,6 +129,9 @@ public:
   bool doBasicPlots_;
   
  protected:
+
+  // Region
+  std::string region_;
 
   // Histograms helper class
   Histogrammer theHistograms;

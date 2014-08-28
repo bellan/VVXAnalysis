@@ -14,11 +14,12 @@ void AnalysisFactory::Register(const std::string &analysisName, CreateAnFn pfnCr
     m_FactoryMap[analysisName] = pfnCreate;
 }
 
-EventAnalyzer *AnalysisFactory::createAnalysis(const std::string &analysisName, const std::string& region, const std::string& filename, const double& lumi, const double& externalXSection, bool doBasicPlots)
+//EventAnalyzer *AnalysisFactory::createAnalysis(const std::string &analysisName, const std::string& region, const std::string& filename, const double& lumi, const double& externalXSection, bool doBasicPlots)
+EventAnalyzer *AnalysisFactory::createAnalysis(const AnalysisConfiguration &analysisConfiguration)
 {
-  FactoryMap::iterator it = m_FactoryMap.find(analysisName);
+  FactoryMap::iterator it = m_FactoryMap.find(analysisConfiguration.getParameter<std::string>("analysisName"));
   if( it != m_FactoryMap.end() )
-    return it->second(region, filename, lumi, externalXSection, doBasicPlots);
+    return it->second(analysisConfiguration);
  
   return NULL;
 }
