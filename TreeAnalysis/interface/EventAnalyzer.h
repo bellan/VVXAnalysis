@@ -28,6 +28,8 @@
 #include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/MCInfo.h"
 
+#include "VVXAnalysis/Commons/interface/RegionTypes.h"
+
 class TFile;
 class TTree;
 class TBranch;
@@ -131,7 +133,7 @@ public:
  protected:
 
   // Region
-  std::string region_;
+   phys::RegionTypes region_;
 
   // Histograms helper class
   Histogrammer theHistograms;

@@ -38,7 +38,7 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 			     const AnalysisConfiguration& configuration)
   : select(aSelector)
   , doBasicPlots_(configuration.getParameter<bool>("doBasicPlots"))
-  , region_      (configuration.getParameter<std::string>("region"))
+  , region_      (configuration.getParameter<phys::RegionTypes>("region"))
   , theMCInfo    (configuration.getParameter<std::string>("filename"), 
 		  configuration.getParameter<double>("lumi"), 
 		  configuration.getParameter<double>("externalXSection"))
