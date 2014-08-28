@@ -17,8 +17,9 @@
 class ZZSAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZSAnalyzer>{
 
 public:
- ZZSAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = false)
+ ZZSAnalyzer(const std::string region, const std::string& filename, const double& lumi = 1., const double& externalXSection = -1., bool doBasicPlots = false)
    : EventAnalyzer(*(new Selector<ZZSAnalyzer>(*this)),
+		   region,
 		   filename, lumi, externalXSection, doBasicPlots){}
   
   virtual ~ZZSAnalyzer(){}

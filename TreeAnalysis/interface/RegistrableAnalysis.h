@@ -1,5 +1,5 @@
-#ifndef pippo
-#define pippo
+#ifndef VVXAnalysis_TreeAnalysis_RegistrableAnalysis_h
+#define VVXAnalysis_TreeAnalysis_RegistrableAnalysis_h
 
 class EventAnalyzer;
 
@@ -9,8 +9,8 @@ class RegistrableAnalysis{
 
   RegistrableAnalysis(){}
   
-  static EventAnalyzer* create(std::string filename, double lumi, double externalXSection, bool doBasicPlots) {  
-    return new T(filename, lumi, externalXSection, doBasicPlots);
+  static EventAnalyzer* create(const std::string& region, const std::string& filename, const double& lumi, const double& externalXSection, bool doBasicPlots) {  
+    return new T(region, filename, lumi, externalXSection, doBasicPlots);
   }
   
     

@@ -16,21 +16,23 @@ int main (int argc, char ** argv){
     return 1;
   }
 
+  // Region:
+  std::string region(argv[2]);
 
   // input filename
-  std::string filename(argv[2]);
+  std::string filename(argv[3]);
 
-  float lumi  = atof(argv[4]); 
-  float externalXsec = atof(argv[5]);
+  float lumi  = atof(argv[5]); 
+  float externalXsec = atof(argv[6]);
     
   std::cout<<Yellow("Analyzing "+filename+" ... please wait... ")<<endl ;
     
   std::string analysisName = argv[1];
 
-  EventAnalyzer *analysis = AnalysisFactory::get()->createAnalysis(analysisName,filename, lumi, externalXsec);
-  analysis->loop(argv[3]);
+  EventAnalyzer *analysis = AnalysisFactory::get()->createAnalysis(analysisName, region, filename, lumi, externalXsec);
+  analysis->loop(argv[4]);
 
-  cout<<"Output saved in --> "<<Green(argv[3])<<endl;
+  cout<<"Output saved in --> "<<Green(argv[4])<<endl;
   cout<<"\nAnalysis status: "<<OK("DONE")<<"\n"<<endl;
 
   return 0;

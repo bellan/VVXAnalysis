@@ -48,7 +48,6 @@ if region not in regions:
     sys.exit(1)
 
 getExternalCrossSectionFromFile = False if options.getExternalCrossSectionFromFile is None else options.getExternalCrossSectionFromFile
-print getExternalCrossSectionFromFile
 
 luminosity = options.luminosity
 baseinputdir = options.directory
@@ -160,7 +159,7 @@ def run(executable, analysis, typeofsample, region, luminosity):
             print "For {0:s} {1:s} {2:.6f}".format(period, Warning("Using external cross section:"), externalXsec)
 
         print Red('\n------------------------------ {0:s} -------------------------------\n'.format(basefile))
-        command = "./{0:s} {1:s} {2:s}/{4:s}.root {3:s}/{4:s}.root {5:.0f} {6:.10f}".format(executable,analysis,inputdir,outputdir, basefile, luminosity, externalXsec)
+        command = "./{0:s} {1:s} {2:s} {3:s}/{5:s}.root {4:s}/{5:s}.root {6:.0f} {7:.10f}".format(executable,analysis,region,inputdir,outputdir, basefile, luminosity, externalXsec)
         print "Command going to be executed:", Violet(command)
         failure, output = commands.getstatusoutput(command)
         print "\n",output
