@@ -28,14 +28,40 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   , postSkimSignalEvents_(0)
   , eventsInEtaAcceptance_(0)
   , eventsInEtaPtAcceptance_(0)
+  , eventsIn2P2FCR_(0)
+  , eventsIn3P1FCR_(0)
 {
 
-  if(lumi <= 0) return; // FIXME: access here CR info
-  
   TChain *tree = new TChain("treePlanter/HollyTree");
   tree->Add(filename.c_str());
 
   if (tree == 0) return;
+
+  TBranch *b_eventsIn2P2FCR   = 0;
+  TBranch *b_eventsIn3P1FCR   = 0;
+
+  tree->SetBranchAddress("eventsIn2P2FCR", &eventsIn2P2FCR_, &b_eventsIn2P2FCR);
+  tree->SetBranchAddress("eventsIn3P1FCR", &eventsIn3P1FCR_, &b_eventsIn3P1FCR);
+
+  int totalEventsIn2P2FCR = 0;
+  int totalEventsIn3P1FCR = 0;
+
+  Long64_t nentries = tree->GetEntries();  
+
+  for (Long64_t jentry=0; jentry<nentries; ++jentry){
+    tree->LoadTree(jentry); tree->GetEntry(jentry);
+
+    totalEventsIn2P2FCR += eventsIn2P2FCR_;
+    totalEventsIn3P1FCR += eventsIn3P1FCR_;
+  }
+
+  eventsIn2P2FCR_ = totalEventsIn2P2FCR;
+  eventsIn3P1FCR_ = totalEventsIn3P1FCR;
+
+  std::cout<<"2p2f: "  <<eventsIn2P2FCR_<<" 3p1f: "<< eventsIn3P1FCR_ << std::endl;
+
+  if(lumi <= 0) return; // FIXME: access here CR info
+  
   
   TBranch *b_signalDefinition        = 0;
   TBranch *b_genEvents               = 0;
@@ -68,7 +94,7 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   tree->SetBranchAddress("eventsInEtaPtAcceptance", &eventsInEtaPtAcceptance_, &b_eventsInEtaPtAcceptance);
     
 
-  Long64_t nentries = tree->GetEntries();  
+
   
   // temp variables
   double meanIntCrossSection = 0.;
