@@ -171,37 +171,48 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   stable_sort(Wjj->begin(), Wjj->end(), phys::PtComparator());
   
   int totCand = ZZ4m->size() + ZZ4e->size() + ZZ2e2m->size();
+  // Control plots. They can be useful to understand if everything is going well (even in CRs)
   theHistograms.fill("nZZCandidates",     "Number of good candidates in the event", 10, 0, 10, totCand       , 1);
   theHistograms.fill("nZZ4eCandidates",   "Number of good candidates in the event", 10, 0, 10, ZZ4e->size()  , 1);
   theHistograms.fill("nZZ4mCandidates",   "Number of good candidates in the event", 10, 0, 10, ZZ4m->size()  , 1);
   theHistograms.fill("nZZ2e2mCandidates", "Number of good candidates in the event", 10, 0, 10, ZZ2e2m->size(), 1);
+  theHistograms.fill("nZllCandidates", "Number of Zll candidates in the event", 10, 0, 10, Zll->size() , 1);
   
-  int triggers = 0;
-  if(totCand > 0){
+  // Signal region case
+  if(region_ == phys::SR){
+    int triggers = 0;
+    if(totCand > 0){
     
-    if(ZZ4m->size() == 1 && ZZ4m->front().passTrigger()){ ++triggers;
-      if(ZZ) delete ZZ;
-      ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4m->front().clone<phys::Lepton,phys::Lepton>());
+      if(ZZ4m->size() == 1 && ZZ4m->front().passTrigger()){ ++triggers;
+	if(ZZ) delete ZZ;
+	ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4m->front().clone<phys::Lepton,phys::Lepton>());
+      }
+      if(ZZ4e->size() == 1 && ZZ4e->front().passTrigger()){ ++triggers;
+	if(ZZ) delete ZZ;
+	ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4e->front().clone<phys::Lepton,phys::Lepton>());
+      }
+      if(ZZ2e2m->size() == 1 && ZZ2e2m->front().passTrigger()){ ++triggers;
+	if(ZZ) delete ZZ;
+	ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ2e2m->front().clone<phys::Lepton,phys::Lepton>());
+      }
     }
-    if(ZZ4e->size() == 1 && ZZ4e->front().passTrigger()){ ++triggers;
-      if(ZZ) delete ZZ;
-      ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4e->front().clone<phys::Lepton,phys::Lepton>());
-    }
-    if(ZZ2e2m->size() == 1 && ZZ2e2m->front().passTrigger()){ ++triggers;
-      if(ZZ) delete ZZ;
-      ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ2e2m->front().clone<phys::Lepton,phys::Lepton>());
-    }
+    theHistograms.fill("GoodTriggerableCands", "Number of good triggerable candidates in the event", 10, 0, 10, triggers, 1);
+    if(triggers != 1) return 0;
   }
-
-  theHistograms.fill("GoodTriggerableCands", "Number of good triggerable candidates in the event", 10, 0, 10, triggers, 1);
-  if(triggers != 1) return 0; // FIXME for the case of CR
+  // Control region case
+  else{
+    if(Zll->empty()) return 0;
+    if(ZZ) delete ZZ;
+    ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(Zll->front().clone<phys::Lepton,phys::Lepton>());
+  }
+  
   
   theWeight = theMCInfo.weight(*ZZ);
 
-  theHistograms.fill("weight_full",1000, 0, 10, theWeight);
-  theHistograms.fill("weight_bare",1000, 0, 10, theMCInfo.weight());
-  theHistograms.fill("weight_SF",1000, 0, 10, ZZ->efficiencySF());
-  
+  theHistograms.fill("weight_full",1200, -2, 10, theWeight);
+  theHistograms.fill("weight_bare",1200, -2, 10, theMCInfo.weight());
+  theHistograms.fill("weight_efficiencySF",1200, -2, 10, ZZ->efficiencySF());
+  theHistograms.fill("weight_fakeRateSF",1200, -2, 10, ZZ->fakeRateSF());
   
   theInputWeightedEvents += theWeight;
 

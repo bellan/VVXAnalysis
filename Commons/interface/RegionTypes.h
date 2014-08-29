@@ -4,7 +4,7 @@
 #include <string>
 
 namespace phys{
-  enum RegionTypes {SR, CR2P2F, CR3P1F};
+  enum RegionTypes {SR, CR, CR2P2F, CR3P1F};
   
   RegionTypes regionType(const std::string& input);
 
