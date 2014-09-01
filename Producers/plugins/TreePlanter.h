@@ -77,11 +77,10 @@ class TreePlanter: public edm::EDAnalyzer {
   template<typename T1, typename PAR1, typename T2, typename PAR2>
     phys::DiBoson<PAR1,PAR2> fillDiBoson(Channel channel, const pat::CompositeCandidate& edmDiBosons) const;
 
-  template<typename PAR1, typename PAR2>
-    std::vector<phys::DiBoson<PAR1,PAR2> > fillDiBosons(Channel channel, const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const;
-
   template<typename T1, typename PAR1, typename T2, typename PAR2>
     std::vector<phys::DiBoson<PAR1,PAR2> > fillDiBosons(Channel channel, const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const;
+
+  std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > fillZll(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const;
 
   int computeCRFlag(Channel channel, const pat::CompositeCandidate & vv) const;
 

@@ -24,6 +24,7 @@
 #include "AnalysisDataFormats/CMGTools/interface/BaseMET.h"
 #include "AnalysisDataFormats/CMGTools/interface/PhysicsObject.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
+#include "VVXAnalysis/Commons/interface/FinalStates.h"
 
 #include "ZZAnalysis/AnalysisStep/interface/MCHistoryTools.h"
 #include "ZZAnalysis/AnalysisStep/interface/bitops.h"
@@ -426,7 +427,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
   if(doZZ2e2m) ZZ2e2m_ = fillDiBosons<pat::Electron,phys::Electron,pat::Muon,phys::Lepton>(EEMM,ZZ2e2m);
 
-  if(doZll) Zll_       = fillDiBosons<phys::Lepton,phys::Lepton>(ZLL,Zll);
+  if(doZll) Zll_       = fillZll(Zll);
 
 
   theTree->Fill();
@@ -640,42 +641,47 @@ std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(Channel channel
 
 
 // ZLL
-template<typename PAR1, typename PAR2>
-std::vector<phys::DiBoson<PAR1,PAR2> > TreePlanter::fillDiBosons(Channel channel, const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const{
+std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > TreePlanter::fillZll(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const{
 
-  std::vector<phys::DiBoson<PAR1,PAR2> > physDiBosons;
+  std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > physDiBosons;
   
   foreach(const pat::CompositeCandidate& edmVV, *edmDiBosons){
     
-    phys::DiBoson<PAR1,PAR2> physVV;
+    phys::DiBoson<phys::Lepton,phys::Lepton> physVV;
 
     int count = 0;
     
-    int regionWord = computeCRFlag(channel,edmVV);
-    // 4 mu cases
-    if(test_bit(regionWord,CRMMMMss ) || test_bit(regionWord,CRMMMMos )){
-      physVV = fillDiBoson<pat::Muon,phys::Lepton,pat::Muon,phys::Lepton>(channel, edmVV);
-      ++count;
-    }  
+    int regionWord = computeCRFlag(ZLL,edmVV);
+
+    if(test_bit(regionWord, Z2eLL)){
+
+      // 4 e case
+      if(abs(edmVV.daughter("Z2")->daughter(0)->pdgId()) == 11){
+	physVV = fillDiBoson<pat::Electron,phys::Lepton,pat::Electron,phys::Lepton>(ZLL, edmVV);      
+	++count;
+      }
+      
+      // 2 e 2mu case
+      if(abs(edmVV.daughter("Z2")->daughter(0)->pdgId()) == 13){
+	physVV = fillDiBoson<pat::Electron,phys::Lepton,pat::Muon,phys::Lepton>(ZLL, edmVV);
+	++count;
+      }
+    }
+    if(test_bit(regionWord, Z2mLL)){
     
-    // 4 e cases
-    if(test_bit(regionWord, CREEEEss) || test_bit(regionWord, CREEEEos)){
-      physVV = fillDiBoson<pat::Electron,phys::Lepton,pat::Electron,phys::Lepton>(channel, edmVV);      
-      ++count;
-    }  
-    
-    // 2 e 2 mu cases
-    if(test_bit(regionWord, CREEMMss) || test_bit(regionWord, CREEMMos)){
-      physVV = fillDiBoson<pat::Electron,phys::Lepton,pat::Muon,phys::Lepton>(channel, edmVV);
-      ++count;
-    }  
-    
-    // 2 mu 2 e cases
-    if(test_bit(regionWord, CRMMEEss) || test_bit(regionWord, CRMMEEos)){
-      physVV = fillDiBoson<pat::Muon,phys::Lepton,pat::Electron,phys::Lepton>(channel, edmVV);
-      ++count;
-    }  
-    
+      // 4 mu case
+      if(abs(edmVV.daughter("Z2")->daughter(0)->pdgId()) == 13){
+	physVV = fillDiBoson<pat::Muon,phys::Lepton,pat::Muon,phys::Lepton>(ZLL, edmVV);	
+	++count;
+      }
+
+      // 2 mu 2 e case
+      if(abs(edmVV.daughter("Z2")->daughter(0)->pdgId()) == 11){
+	physVV = fillDiBoson<pat::Muon,phys::Lepton,pat::Electron,phys::Lepton>(ZLL, edmVV);
+	++count;
+      }
+    }
+
     if(physVV.isValid()) physDiBosons.push_back(physVV);    
   }
   
@@ -716,9 +722,14 @@ int TreePlanter::computeCRFlag(Channel channel, const pat::CompositeCandidate & 
       set_bit(CRFLAG,CRZLLHiSIPMM);
     if(vv.userFloat("isBestCRZLLHiSIPKin")&&vv.userFloat("CRZLLHiSIPKin"))
       set_bit(CRFLAG,CRZLLHiSIPKin);
-    // The one actually used:
+    // The ones actually used:
+    if(vv.userFloat("isBestCandZ2eLL")&&vv.userFloat("SelZLL"))
+      set_bit(CRFLAG,Z2eLL);
+    if(vv.userFloat("isBestCandZ2mLL")&&vv.userFloat("SelZLL"))
+      set_bit(CRFLAG,Z2mLL);
     if(vv.userFloat("isBestCandZLL")&&vv.userFloat("SelZLL"))
       set_bit(CRFLAG,ZLL);
+
   }
 
   //For the SR, also fold information about acceptance in CRflag 

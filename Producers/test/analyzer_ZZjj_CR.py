@@ -15,6 +15,8 @@ APPLYMUCORR = True
 
 SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the choosedn windows. For other topology see the README under VVXAnalysis/Commons.
 
+CONTROLREGION = '3P1F'
+
 try:
     IsMC
 except NameError:
@@ -84,7 +86,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 ### ----------------------------------------------------------------------
 
 
-process.TFileService=cms.Service('TFileService', fileName=cms.string('ZZjjAnalysisCR.root'))
+process.TFileService=cms.Service('TFileService', fileName=cms.string('ZZjjAnalysisCR{0:s}.root'.format(CONTROLREGION)))
 
 
 #####################################################################################################################################################
@@ -246,18 +248,81 @@ process.WjjSequence = cms.Sequence(process.centralJets * process.bareWCand * pro
 
 Z1MASS  = "daughter(0).mass>60 && daughter(0).mass<120"
 Z2MASS  = "daughter(1).mass>60 && daughter(1).mass<120"
-#BESTCR  = ("userFloat('d0.GoodLeptons') && userFloat('d0.isBestZ') &&" + Z2SIP + "&&" + Z1MASS)
+LL_OS = "(daughter(1).daughter(0).pdgId + daughter(1).daughter(1).pdgId) == 0" #Z2 = l+l-
 
-BESTZLL = (CR_BESTCANDBASE       + "&&" +  
-          Z1MASS                + "&&" +  
-          "userFloat('d0.isBestZ') &&" + 
-          Z2SIP)
+PASSD0 = "(userFloat('d1.d0.isGood') && userFloat('d1.d0.pfCombRelIsoFSRCorr') < 0.4)"
+PASSD1 = "(userFloat('d1.d1.isGood') && userFloat('d1.d1.pfCombRelIsoFSRCorr') < 0.4)"
+FAILD0 = "!" + PASSD0
+FAILD1 = "!" + PASSD1
+BOTHFAIL = FAILD0 + "&&" + FAILD1
+PASSD0_XOR_PASSD1 = "((" + PASSD0 + "&&" + FAILD1 + ") || (" + PASSD1 + "&&" + FAILD0 + "))"
+PASSD0_OR_PASSD1 = "(" + PASSD0 + "||" + PASSD1 + ")"
+
+# CR 3P1F
+BESTZLL_3P1F   = (CR_BESTCANDBASE       + "&&" +  
+                  Z1MASS                + "&&" +  
+                  "userFloat('d0.isBestZ') &&" + 
+                  LL_OS                 + "&&" +  
+                  PASSD0_OR_PASSD1     + "&&" +  
+                  Z2SIP)
+
+BESTZ2mLL_3P1F = (CR_BESTCANDBASE         + "&&" +  
+                  Z1MASS                  + "&&" +  
+                  "userFloat('d0.isBestZmm') &&" + 
+                  LL_OS                   + "&&" +  
+                  PASSD0_OR_PASSD1       + "&&" +  
+                  Z2SIP)
+
+BESTZ2eLL_3P1F = (CR_BESTCANDBASE         + "&&" +  
+                  Z1MASS                  + "&&" +  
+                  "userFloat('d0.isBestZee') &&" + 
+                  LL_OS                   + "&&" +  
+                  PASSD0_OR_PASSD1       + "&&" +  
+                  Z2SIP)
+
+ZLLSEL_3P1F  = (CR_BASESEL + "&&" + PASSD0_XOR_PASSD1 + "&&" + Z2MASS)
 
 
-ZLLSEL  = (CR_BASESEL + "&& !userFloat('d1.GoodLeptons') &&" + Z2MASS)
-#CRSEL  = (CR_BASESEL + "&&" + Z2MASS)
-              
-              
+# CR 2P2F
+BESTZLL_2P2F   = (CR_BESTCANDBASE       + "&&" +  
+                  Z1MASS                + "&&" +  
+                  "userFloat('d0.isBestZ') &&" + 
+                  LL_OS                 + "&&" +  
+                  Z2SIP)
+
+BESTZ2mLL_2P2F = (CR_BESTCANDBASE         + "&&" +  
+                  Z1MASS                  + "&&" +  
+                  "userFloat('d0.isBestZmm') &&" + 
+                  LL_OS                   + "&&" +  
+                  Z2SIP)
+
+BESTZ2eLL_2P2F = (CR_BESTCANDBASE         + "&&" +  
+                  Z1MASS                  + "&&" +  
+                  "userFloat('d0.isBestZee') &&" + 
+                  LL_OS                   + "&&" +  
+                  Z2SIP)
+
+ZLLSEL_2P2F  = (CR_BASESEL + "&&" + BOTHFAIL + "&&" + Z2MASS)
+
+
+
+BESTZ2mLL = BESTZ2mLL_3P1F
+BESTZ2eLL = BESTZ2eLL_3P1F
+BESTZLL   = BESTZLL_3P1F
+ZLLSEL    = ZLLSEL_3P1F
+
+
+if CONTROLREGION == '2P2F':
+    BESTZ2mLL = BESTZ2mLL_2P2F
+    BESTZ2eLL = BESTZ2eLL_2P2F
+    BESTZLL = BESTZLL_2P2F
+    ZLLSEL  = ZLLSEL_2P2F
+elif not CONTROLREGION == '2P2F' and not CONTROLREGION == '3P1F' :
+    print "Do not know what tho do with {0:s} control region. Collapsing into 3P1F one.".format(CONTROLREGION)
+
+
+process.ZLLCand.bestCandAmong.isBestCandZ2mLL = cms.string(BESTZ2mLL)
+process.ZLLCand.bestCandAmong.isBestCandZ2eLL = cms.string(BESTZ2eLL)
 process.ZLLCand.bestCandAmong.isBestCandZLL = cms.string(BESTZLL)
 process.ZLLCand.flags.SelZLL = cms.string(ZLLSEL)
 
@@ -267,10 +332,25 @@ process.ZLLCand.flags.SelZLL = cms.string(ZLLSEL)
 ### Clean the Z+2 lepton candidates to select only the best possible candidate for that region, requiring that at least one lepton fails the FULL selection
 ### ......................................................................... ###
 
+process.Z2mLLFiltered = cms.EDFilter("PATCompositeCandidateSelector",
+                                     src = cms.InputTag("ZLLCand"),
+                                     cut = cms.string("userFloat('isBestCandZ2mLL') && userFloat('SelZLL')")
+                                     )
+
+process.Z2eLLFiltered = cms.EDFilter("PATCompositeCandidateSelector",
+                                     src = cms.InputTag("ZLLCand"),
+                                     cut = cms.string("userFloat('isBestCandZ2eLL') && userFloat('SelZLL')")
+                                     )
+
 process.ZLLFiltered = cms.EDFilter("PATCompositeCandidateSelector",
                                    src = cms.InputTag("ZLLCand"),
                                    cut = cms.string("userFloat('isBestCandZLL') && userFloat('SelZLL')")
                                    )
+
+# Merger of all ZZ final states.
+process.ZLLFiltered = cms.EDProducer("PATCompositeCandidateMerger",
+                                     src = cms.VInputTag(cms.InputTag("Z2mLLFiltered"), cms.InputTag("Z2eLLFiltered"))
+                                     )
 
 
 
@@ -278,7 +358,9 @@ process.ZLLFiltered = cms.EDFilter("PATCompositeCandidateSelector",
 ### Define the post reconstruction cleaning sequence
 ### ------------------------------------------------------------------------- ###
 
-process.postRecoCleaning = cms.Sequence( process.ZLLFiltered
+process.postRecoCleaning = cms.Sequence( process.Z2mLLFiltered
+                                         + process.Z2eLLFiltered
+                                         + process.ZLLFiltered
                                          + process.muonsFromZZ*process.postCleaningMuons 
                                          + process.electronsFromZZ*process.postCleaningElectrons
                                          + process.disambiguatedJets
@@ -311,19 +393,15 @@ process.signalFilters    = cms.Sequence()
 
 
 # Some counters and paths functional to the fake lepton background estimation
-PASSD0 = "(userFloat('d1.d0.isGood') && userFloat('d1.d0.pfCombRelIsoFSRCorr') < 0.4)"
-PASSD1 = "(userFloat('d1.d1.isGood') && userFloat('d1.d1.pfCombRelIsoFSRCorr') < 0.4)"
-FAILD0 = "!" + PASSD0
-FAILD1 = "!" + PASSD1
 
 process.cand2P2F =  cms.EDFilter("PATCompositeCandidateSelector",
                                  src = cms.InputTag("ZLLFiltered"),
-                                 cut = cms.string(FAILD0 + "&&" + FAILD1)
+                                 cut = cms.string(BOTHFAIL)
                                  )
 
 process.cand3P1F =  cms.EDFilter("PATCompositeCandidateSelector",
                                  src = cms.InputTag("ZLLFiltered"),
-                                 cut = cms.string("(" + FAILD0 + "&&" + PASSD1 + ") || (" + PASSD0 + "&&" + FAILD1 + ")")
+                                 cut = cms.string(PASSD0_XOR_PASSD1)
                                  )
 
 process.cand2P2FFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand2P2F"), minNumber = cms.uint32(1))
