@@ -206,7 +206,13 @@ public:
   std::vector<phys::Boson<phys::Particle> > *genVBParticles; TBranch *b_genVBParticles;
   
   // GenJets
-  std::vector<phys::Particle>               *genJets;   TBranch *b_genJets;
+  std::vector<phys::Particle>               *pgenJets;   TBranch *b_pgenJets;
+
+  // Jets with pT > 30 GeV and |eta| < 4.7 (not in the tree)
+  std::vector<phys::Particle> *genJets;
+  
+  // Central jets (not in the tree)
+  std::vector<phys::Particle> *centralGenJets;
 };
 
 #endif

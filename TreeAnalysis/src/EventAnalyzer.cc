@@ -103,7 +103,8 @@ void EventAnalyzer::Init(TTree *tree)
   genVBParticles = new std::vector<phys::Boson<phys::Particle> > (); b_genVBParticles = 0; theTree->SetBranchAddress("genVBParticles", &genVBParticles, &b_genVBParticles);
   
   // Gen Jets
-  genJets   = 0;                                                b_genJets   = 0; theTree->SetBranchAddress("genJets"  , &genJets  , &b_genJets);
+  pgenJets   = 0;                                                    b_pgenJets   = 0; theTree->SetBranchAddress("genJets"  , &pgenJets  , &b_pgenJets);
+  genJets  = new std::vector<phys::Particle>(); centralGenJets  = new std::vector<phys::Particle>();
 
   // MET
   met = new phys::Particle();
@@ -146,6 +147,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   stable_sort(muons->begin(),     muons->end(),     phys::PtComparator());
   stable_sort(electrons->begin(), electrons->end(), phys::PtComparator());
   stable_sort(pjets->begin(),     pjets->end(),     phys::PtComparator());
+  stable_sort(pgenJets->begin(),  pgenJets->end(),  phys::PtComparator());
 
   // Some selection on jets
   jets->clear(); centralJets->clear();
@@ -155,8 +157,19 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
       if(fabs(jet.eta()) < 2.4) centralJets->push_back(jet);
     }
 
+  genJets->clear(); centralGenJets->clear();
+  foreach(const phys::Particle &jet, *pgenJets)
+    if(jet.pt() > 30){
+      bool leptonMatch = false;
+      foreach(const phys::Particle &gen, *genParticles)
+	if(physmath::deltaR(gen,jet) < 0.5 && (abs(gen.id()) == 11 || abs(gen.id()) == 13)) leptonMatch = true;
+      
+      if(!leptonMatch){
+	if(fabs(jet.eta()) < 4.7) genJets->push_back(jet);
+	if(fabs(jet.eta()) < 2.4) centralGenJets->push_back(jet);
+      }
+    }
   
-
   Zmm->clear(); Zee->clear(); Wjj->clear();
 
   foreach(const phys::Boson<phys::Lepton> z, *ZmmCand)
