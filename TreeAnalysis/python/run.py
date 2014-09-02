@@ -15,7 +15,7 @@ from Colours import *
 ############################################################################
 ############################## User's inputs ###############################
 ############################################################################
-regions = ['SR','CR']
+regions = ['SR','CR2P2F','CR3P1F','CR3P1FXOR']
 
 parser = OptionParser(usage="usage: %prog <analysis> <sample> [options]")
 parser.add_option("-r", "--region", dest="region",
@@ -51,6 +51,8 @@ getExternalCrossSectionFromFile = False if options.getExternalCrossSectionFromFi
 
 luminosity = options.luminosity
 baseinputdir = options.directory
+if not region == 'SR': baseinputdir = baseinputdir+"/"+region
+
 
 
 
