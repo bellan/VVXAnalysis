@@ -161,7 +161,7 @@ def run(executable, analysis, typeofsample, region, luminosity):
             print "For {0:s} {1:s} {2:.6f}".format(period, Warning("Using external cross section:"), externalXsec)
 
         print Red('\n------------------------------ {0:s} -------------------------------\n'.format(basefile))
-        command = "./{0:s} {1:s} {2:s} {3:s}/{5:s}.root {4:s}/{5:s}.root {6:.0f} {7:.10f}".format(executable,analysis,region,inputdir,outputdir, basefile, luminosity, externalXsec)
+        command = "./{0:s} {1:s} {2:s} {3:s}/{5:s}.root {4:s}/{5:s}.root {6:.0f} {7:.5f}".format(executable,analysis,region,inputdir,outputdir, basefile, luminosity, externalXsec)
         print "Command going to be executed:", Violet(command)
         failure, output = commands.getstatusoutput(command)
         print "\n",output
