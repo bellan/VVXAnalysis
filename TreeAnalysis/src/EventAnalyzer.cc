@@ -191,21 +191,18 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   theHistograms.fill("nZZ2e2mCandidates", "Number of good candidates in the event", 10, 0, 10, ZZ2e2m->size(), 1);
   theHistograms.fill("nZllCandidates", "Number of Zll candidates in the event", 10, 0, 10, Zll->size() , 1);
   
+  if(ZZ) delete ZZ;
   // Signal region case
   if(region_ == phys::SR){
     int triggers = 0;
     if(totCand > 0){
-    
       if(ZZ4m->size() == 1 && ZZ4m->front().passTrigger()){ ++triggers;
-	if(ZZ) delete ZZ;
 	ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4m->front().clone<phys::Lepton,phys::Lepton>());
       }
       if(ZZ4e->size() == 1 && ZZ4e->front().passTrigger()){ ++triggers;
-	if(ZZ) delete ZZ;
 	ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4e->front().clone<phys::Lepton,phys::Lepton>());
       }
       if(ZZ2e2m->size() == 1 && ZZ2e2m->front().passTrigger()){ ++triggers;
-	if(ZZ) delete ZZ;
 	ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ2e2m->front().clone<phys::Lepton,phys::Lepton>());
       }
     }
@@ -214,12 +211,10 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   }
   // Control region case
   else{
-    if(Zll->empty()) return 0;
-    if(ZZ) delete ZZ;
+    if(Zll->empty() || !Zll->front().passTrigger()) return 0;   
     ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(Zll->front().clone<phys::Lepton,phys::Lepton>());
   }
-  
-  
+    
   theWeight = theMCInfo.weight(*ZZ);
 
   theHistograms.fill("weight_full",1200, -2, 10, theWeight);
