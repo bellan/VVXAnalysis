@@ -98,7 +98,6 @@ namespace phys {
 
     double fakeRateSF() const {
       double fakeRateSF = daughter0_.fakeRateSF() * daughter1_.fakeRateSF();
-      //if(numberOfGoodGrandDaughters() == 2) return 0;
       return numberOfGoodGrandDaughters() == 2 ? -1*fakeRateSF : fakeRateSF;
     }
 

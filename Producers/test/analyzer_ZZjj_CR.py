@@ -70,10 +70,14 @@ SkimPaths.append("preselection")
 ### ----------------------------------------------------------------------
 process.source.fileNames = cms.untracked.vstring(
     #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_irQ.root'
-    '/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_99_1_z8J.root',
-    '/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_999_0_dXJ.root',
-    '/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_998_0_V7X.root'
+    #'/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_997_0_MQw.root',
+    '/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_998_0_V7X.root',
+    #'/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_999_0_dXJ.root',
+    #'/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_99_1_z8J.root',
+    #'/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_9_1_blv.root'
     )
+
+#process.source.skipEvents = cms.untracked.uint32(13328)
 
 process.maxEvents.input = -1
 
@@ -250,34 +254,34 @@ Z1MASS  = "daughter(0).mass>60 && daughter(0).mass<120"
 Z2MASS  = "daughter(1).mass>60 && daughter(1).mass<120"
 LL_OS = "(daughter(1).daughter(0).pdgId + daughter(1).daughter(1).pdgId) == 0" #Z2 = l+l-
 
-PASSD0 = "(userFloat('d1.d0.isGood') && userFloat('d1.d0.pfCombRelIsoFSRCorr') < 0.4)"
-PASSD1 = "(userFloat('d1.d1.isGood') && userFloat('d1.d1.pfCombRelIsoFSRCorr') < 0.4)"
+PASSD0 = "(userFloat('d1.d0.isGood') && userFloat('d1.d0.combRelIsoPFFSRCorr') < 0.4)"
+PASSD1 = "(userFloat('d1.d1.isGood') && userFloat('d1.d1.combRelIsoPFFSRCorr') < 0.4)"
 FAILD0 = "!" + PASSD0
 FAILD1 = "!" + PASSD1
 BOTHFAIL = FAILD0 + "&&" + FAILD1
 PASSD0_XOR_PASSD1 = "((" + PASSD0 + "&&" + FAILD1 + ") || (" + PASSD1 + "&&" + FAILD0 + "))"
-PASSD0_OR_PASSD1 = "(" + PASSD0 + "||" + PASSD1 + ")"
+PASSD0_OR_PASSD1  = "(" + PASSD0 + "||" + PASSD1 + ")"
 
 # CR 3P1F
 BESTZLL_3P1F   = (CR_BESTCANDBASE       + "&&" +  
                   Z1MASS                + "&&" +  
                   "userFloat('d0.isBestZ') &&" + 
                   LL_OS                 + "&&" +  
-                  PASSD0_OR_PASSD1     + "&&" +  
+                  PASSD0_OR_PASSD1      + "&&" +  
                   Z2SIP)
 
 BESTZ2mLL_3P1F = (CR_BESTCANDBASE         + "&&" +  
                   Z1MASS                  + "&&" +  
                   "userFloat('d0.isBestZmm') &&" + 
                   LL_OS                   + "&&" +  
-                  PASSD0_OR_PASSD1       + "&&" +  
+                  PASSD0_OR_PASSD1        + "&&" +  
                   Z2SIP)
 
 BESTZ2eLL_3P1F = (CR_BESTCANDBASE         + "&&" +  
                   Z1MASS                  + "&&" +  
                   "userFloat('d0.isBestZee') &&" + 
                   LL_OS                   + "&&" +  
-                  PASSD0_OR_PASSD1       + "&&" +  
+                  PASSD0_OR_PASSD1        + "&&" +  
                   Z2SIP)
 
 ZLLSEL_3P1F  = (CR_BASESEL + "&&" + PASSD0_XOR_PASSD1 + "&&" + Z2MASS)
@@ -319,7 +323,7 @@ if CONTROLREGION == '2P2F':
     ZLLSEL  = ZLLSEL_2P2F
 elif not CONTROLREGION == '2P2F' and not CONTROLREGION == '3P1F' :
     print "Do not know what tho do with {0:s} control region. Collapsing into 3P1F one.".format(CONTROLREGION)
-
+    
 
 process.ZLLCand.bestCandAmong.isBestCandZ2mLL = cms.string(BESTZ2mLL)
 process.ZLLCand.bestCandAmong.isBestCandZ2eLL = cms.string(BESTZ2eLL)
@@ -342,10 +346,10 @@ process.Z2eLLFiltered = cms.EDFilter("PATCompositeCandidateSelector",
                                      cut = cms.string("userFloat('isBestCandZ2eLL') && userFloat('SelZLL')")
                                      )
 
-process.ZLLFiltered = cms.EDFilter("PATCompositeCandidateSelector",
-                                   src = cms.InputTag("ZLLCand"),
-                                   cut = cms.string("userFloat('isBestCandZLL') && userFloat('SelZLL')")
-                                   )
+#process.ZLLFiltered = cms.EDFilter("PATCompositeCandidateSelector",
+#                                   src = cms.InputTag("ZLLCand"),
+#                                   cut = cms.string("userFloat('isBestCandZLL') && userFloat('SelZLL')")
+#                                   )
 
 # Merger of all ZZ final states.
 process.ZLLFiltered = cms.EDProducer("PATCompositeCandidateMerger",
@@ -472,11 +476,12 @@ process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
                                                                  Zee   = cms.InputTag("EECand"),
                                                                  MMMM  = cms.InputTag("MMMMCand"),
                                                                  EEEE  = cms.InputTag("EEEECand"),
-                                                                 EEMM  = cms.InputTag("EEMMCand"),
+                                                                 #EEMM  = cms.InputTag("EEMMCand"),
+                                                                 EEMM  = cms.InputTag("ZLLFiltered"),
                                                                  )
                                        )
 
 #process.filltrees = cms.Path(process.preselection * process.genCategory * process.treePlanter * process.printTree)
-#process.filltrees = cms.EndPath(process.treePlanter *process.dumpUserData)
+#process.filltrees = cms.EndPath(process.cr2P2FCounter + process.cr3P1FCounter + process.treePlanter + process.dumpUserData)
 
 ########################################################
