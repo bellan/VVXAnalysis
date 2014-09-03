@@ -73,7 +73,7 @@ std::pair<double,double> LeptonScaleFactors::fakeRateScaleFactor(const double& l
   double fakeRate    = 1.;
   double fakeRateUnc = 0.;
   
-  double pt  = lepPt < 80 ? pt : 79;
+  double pt  = lepPt < 80 ? lepPt : 79;
 
   
   if(abs(lepId) == 13){
