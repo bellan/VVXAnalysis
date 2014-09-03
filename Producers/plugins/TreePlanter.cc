@@ -527,10 +527,10 @@ phys::Jet TreePlanter::fill(const cmg::PFJet &jet) const{
 
 void TreePlanter::addExtras(phys::Jet &jet, const pat::CompositeCandidate & v, const std::string& userFloatName) const{}
 
-void TreePlanter::addExtras(phys::Lepton& mu, const pat::CompositeCandidate & v, const std::string& userFloatName) const {
+void TreePlanter::addExtras(phys::Lepton& l, const pat::CompositeCandidate & v, const std::string& userFloatName) const {
   // in the future it could become a map inside the phys::Particle class. Right now there is not a realy need to
   // make such a complication.
-  if(v.hasUserFloat(userFloatName)) mu.pfCombRelIsoFSRCorr_ = v.userFloat(userFloatName);
+  if(v.hasUserFloat(userFloatName)) l.pfCombRelIsoFSRCorr_ = v.userFloat(userFloatName);
 }
 
 
@@ -543,7 +543,7 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
   PAR d0 = fill(*dynamic_cast<const T*>(v.daughter(0)->masterClone().get()));
   addExtras(d0, v ,"d0.combRelIsoPFFSRCorr");
   PAR d1 = fill(*dynamic_cast<const T*>(v.daughter(1)->masterClone().get()));
-  addExtras(d1, v ,"d0.combRelIsoPFFSRCorr");
+  addExtras(d1, v ,"d1.combRelIsoPFFSRCorr");
 
   if(d0.id() == 0 || d1.id() == 0) edm::LogError("TreePlanter") << "TreePlanter: VB candidate does not have a matching good particle!";
   
@@ -646,7 +646,7 @@ std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > TreePlanter::fillZll(cons
   std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > physDiBosons;
   
   foreach(const pat::CompositeCandidate& edmVV, *edmDiBosons){
-    
+  
     phys::DiBoson<phys::Lepton,phys::Lepton> physVV;
 
     int count = 0;
@@ -682,7 +682,7 @@ std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > TreePlanter::fillZll(cons
       }
     }
 
-    if(physVV.isValid()) physDiBosons.push_back(physVV);    
+    if(physVV.isValid()) physDiBosons.push_back(physVV);
   }
   
   return physDiBosons;
