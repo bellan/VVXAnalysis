@@ -24,7 +24,6 @@
 #include "AnalysisDataFormats/CMGTools/interface/BaseMET.h"
 #include "AnalysisDataFormats/CMGTools/interface/PhysicsObject.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
-#include "VVXAnalysis/Commons/interface/FinalStates.h"
 
 #include "ZZAnalysis/AnalysisStep/interface/MCHistoryTools.h"
 #include "ZZAnalysis/AnalysisStep/interface/bitops.h"
@@ -453,7 +452,7 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
   output.isGood_          = lepton.userFloat("isGood"           );
   output.efficiencySF_    = leptonScaleFactors_.efficiencyScaleFactor(output);
   output.setFakeRateSF(leptonScaleFactors_.fakeRateScaleFactor(output));
-     
+
   return output; 
 }
 
@@ -530,7 +529,10 @@ void TreePlanter::addExtras(phys::Jet &jet, const pat::CompositeCandidate & v, c
 void TreePlanter::addExtras(phys::Lepton& l, const pat::CompositeCandidate & v, const std::string& userFloatName) const {
   // in the future it could become a map inside the phys::Particle class. Right now there is not a realy need to
   // make such a complication.
-  if(v.hasUserFloat(userFloatName)) l.pfCombRelIsoFSRCorr_ = v.userFloat(userFloatName);
+  if(v.hasUserFloat(userFloatName)){
+    l.pfCombRelIsoFSRCorr_ = v.userFloat(userFloatName);
+    l.realignFakeRate();
+  }
 }
 
 
@@ -558,7 +560,6 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
   // Add quality of daughters, right now only for ll pairs
   if(v.hasUserFloat("GoodLeptons")) physV.hasGoodDaughters_ = v.userFloat("GoodLeptons");
   
-
   return physV;
 }
 
@@ -566,7 +567,7 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
 // Right now, only for ZZ
 template<typename T1, typename PAR1, typename T2, typename PAR2>
 phys::DiBoson<PAR1,PAR2> TreePlanter::fillDiBoson(Channel channel, const pat::CompositeCandidate& edmVV) const{
-  
+
   const pat::CompositeCandidate* edmV0;
   const pat::CompositeCandidate* edmV1;
   
@@ -653,7 +654,7 @@ std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > TreePlanter::fillZll(cons
     
     int regionWord = computeCRFlag(ZLL,edmVV);
 
-    if(test_bit(regionWord, Z2eLL)){
+    if(test_bit(regionWord, CRZ2eLL)){
 
       // 4 e case
       if(abs(edmVV.daughter("Z2")->daughter(0)->pdgId()) == 11){
@@ -667,7 +668,7 @@ std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > TreePlanter::fillZll(cons
 	++count;
       }
     }
-    if(test_bit(regionWord, Z2mLL)){
+    if(test_bit(regionWord, CRZ2mLL)){
     
       // 4 mu case
       if(abs(edmVV.daughter("Z2")->daughter(0)->pdgId()) == 13){
@@ -684,7 +685,7 @@ std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > TreePlanter::fillZll(cons
 
     if(physVV.isValid()) physDiBosons.push_back(physVV);
   }
-  
+
   return physDiBosons;
 }
 
@@ -723,10 +724,10 @@ int TreePlanter::computeCRFlag(Channel channel, const pat::CompositeCandidate & 
     if(vv.userFloat("isBestCRZLLHiSIPKin")&&vv.userFloat("CRZLLHiSIPKin"))
       set_bit(CRFLAG,CRZLLHiSIPKin);
     // The ones actually used:
-    if(vv.userFloat("isBestCandZ2eLL")&&vv.userFloat("SelZLL"))
-      set_bit(CRFLAG,Z2eLL);
-    if(vv.userFloat("isBestCandZ2mLL")&&vv.userFloat("SelZLL"))
-      set_bit(CRFLAG,Z2mLL);
+    if(vv.userFloat("isBestCandCRZ2eLL")&&vv.userFloat("SelZLL"))
+      set_bit(CRFLAG,CRZ2eLL);
+    if(vv.userFloat("isBestCandCRZ2mLL")&&vv.userFloat("SelZLL"))
+      set_bit(CRFLAG,CRZ2mLL);
     if(vv.userFloat("isBestCandZLL")&&vv.userFloat("SelZLL"))
       set_bit(CRFLAG,ZLL);
 
