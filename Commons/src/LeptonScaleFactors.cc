@@ -100,10 +100,10 @@ std::pair<double,double> LeptonScaleFactors::fakeRateScaleFactor(const double& l
     abort();
   }
   
-  if(fakeRate < 0.001 || fakeRate > 10.){
-    std::cout << colour::Warning("Efficiency scale factor out of range") << " Lepton ID = " << lepId << ", pt =  " << pt << ", eta = " << lepEta << ", scale factor = " << fakeRate << std::endl;
-  }
-
+  if(fakeRate < 0.001 || fakeRate > 10.)
+    std::cout << colour::Warning("Fake rate scale factor out of range") << " Lepton ID = " << lepId << ", pt =  " << pt << ", eta = " << lepEta << ", scale factor = " << fakeRate << std::endl;
+  
+  
   return std::make_pair(fakeRate/(1-fakeRate),fakeRateUnc/pow(1-fakeRate,2));
 }
 
