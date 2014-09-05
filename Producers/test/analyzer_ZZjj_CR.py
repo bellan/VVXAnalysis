@@ -15,7 +15,7 @@ APPLYMUCORR = True
 
 SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the choosedn windows. For other topology see the README under VVXAnalysis/Commons.
 
-CONTROLREGION = '3P1F'
+CONTROLREGION = '2P2F'
 
 try:
     IsMC
@@ -71,13 +71,21 @@ SkimPaths.append("preselection")
 process.source.fileNames = cms.untracked.vstring(
     #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_irQ.root'
     #'/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_997_0_MQw.root',
-    '/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_998_0_V7X.root',
+    #'/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_998_0_V7X.root',
     #'/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_999_0_dXJ.root',
     #'/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_99_1_z8J.root',
     #'/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_9_1_blv.root'
+    
+    '/store/cmst3/user/cmgtools/CMG/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_1006_0_kDH.root',
+    '/store/cmst3/user/cmgtools/CMG/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_1015_0_zrA.root',
+    '/store/cmst3/user/cmgtools/CMG/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_1021_0_2Im.root',
+    '/store/cmst3/user/cmgtools/CMG/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_1023_0_nwv.root',
+    '/store/cmst3/user/cmgtools/CMG/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_1025_0_h1F.root',
+    '/store/cmst3/user/cmgtools/CMG/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_1026_0_J5E.root'
     )
 
 #process.source.skipEvents = cms.untracked.uint32(13328)
+#process.source.skipEvents = cms.untracked.uint32(12788)
 
 process.maxEvents.input = -1
 
@@ -325,8 +333,8 @@ elif not CONTROLREGION == '2P2F' and not CONTROLREGION == '3P1F' :
     print "Do not know what tho do with {0:s} control region. Collapsing into 3P1F one.".format(CONTROLREGION)
     
 
-process.ZLLCand.bestCandAmong.isBestCandZ2mLL = cms.string(BESTZ2mLL)
-process.ZLLCand.bestCandAmong.isBestCandZ2eLL = cms.string(BESTZ2eLL)
+process.ZLLCand.bestCandAmong.isBestCandCRZ2mLL = cms.string(BESTZ2mLL)
+process.ZLLCand.bestCandAmong.isBestCandCRZ2eLL = cms.string(BESTZ2eLL)
 process.ZLLCand.bestCandAmong.isBestCandZLL = cms.string(BESTZLL)
 process.ZLLCand.flags.SelZLL = cms.string(ZLLSEL)
 
@@ -338,12 +346,12 @@ process.ZLLCand.flags.SelZLL = cms.string(ZLLSEL)
 
 process.Z2mLLFiltered = cms.EDFilter("PATCompositeCandidateSelector",
                                      src = cms.InputTag("ZLLCand"),
-                                     cut = cms.string("userFloat('isBestCandZ2mLL') && userFloat('SelZLL')")
+                                     cut = cms.string("userFloat('isBestCandCRZ2mLL') && userFloat('SelZLL')")
                                      )
 
 process.Z2eLLFiltered = cms.EDFilter("PATCompositeCandidateSelector",
                                      src = cms.InputTag("ZLLCand"),
-                                     cut = cms.string("userFloat('isBestCandZ2eLL') && userFloat('SelZLL')")
+                                     cut = cms.string("userFloat('isBestCandCRZ2eLL') && userFloat('SelZLL')")
                                      )
 
 #process.ZLLFiltered = cms.EDFilter("PATCompositeCandidateSelector",
