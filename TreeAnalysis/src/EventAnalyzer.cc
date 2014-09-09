@@ -143,7 +143,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   if (!theTree) return 0;
   
   int e =  theTree->GetEntry(entry);
-  
+
   stable_sort(muons->begin(),     muons->end(),     phys::PtComparator());
   stable_sort(electrons->begin(), electrons->end(), phys::PtComparator());
   stable_sort(pjets->begin(),     pjets->end(),     phys::PtComparator());
@@ -169,7 +169,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
 	if(fabs(jet.eta()) < 2.4) centralGenJets->push_back(jet);
       }
     }
-  
+
   Zmm->clear(); Zee->clear(); Wjj->clear();
 
   foreach(const phys::Boson<phys::Lepton> z, *ZmmCand)
@@ -191,18 +191,20 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   theHistograms.fill("nZZ2e2mCandidates", "Number of good candidates in the event", 10, 0, 10, ZZ2e2m->size(), 1);
   theHistograms.fill("nZllCandidates", "Number of Zll candidates in the event", 10, 0, 10, Zll->size() , 1);
   
-  if(ZZ) delete ZZ;
   // Signal region case
   if(region_ == phys::SR){
     int triggers = 0;
     if(totCand > 0){
       if(ZZ4m->size() == 1 && ZZ4m->front().passTrigger()){ ++triggers;
+	if(ZZ) delete ZZ;
 	ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4m->front().clone<phys::Lepton,phys::Lepton>());
       }
       if(ZZ4e->size() == 1 && ZZ4e->front().passTrigger()){ ++triggers;
+	if(ZZ) delete ZZ;
 	ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4e->front().clone<phys::Lepton,phys::Lepton>());
       }
       if(ZZ2e2m->size() == 1 && ZZ2e2m->front().passTrigger()){ ++triggers;
+	if(ZZ) delete ZZ;
 	ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ2e2m->front().clone<phys::Lepton,phys::Lepton>());
       }
     }
@@ -212,18 +214,22 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   // Control region case
   else{
     if(Zll->empty() || !Zll->front().passTrigger()) return 0;   
+    if(ZZ) delete ZZ;
     ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(Zll->front().clone<phys::Lepton,phys::Lepton>());
   }
-    
+
   theWeight = theMCInfo.weight(*ZZ);
 
-  theHistograms.fill("weight_full",1200, -2, 10, theWeight);
-  theHistograms.fill("weight_bare",1200, -2, 10, theMCInfo.weight());
-  theHistograms.fill("weight_efficiencySF",1200, -2, 10, ZZ->efficiencySF());
-  theHistograms.fill("weight_fakeRateSF",1200, -2, 10, ZZ->fakeRateSF());
+  theHistograms.fill("weight_full"  , "All weights applied"                                    , 1200, -2, 10, theWeight);
+  theHistograms.fill("weight_bare"  , "All weights, but efficiency and fake rate scale factors", 1200, -2, 10, theMCInfo.weight());
+  theHistograms.fill("weight_pu"    , "Weight from PU reweighting procedure"                   , 1200, -2, 10, theMCInfo.puWeight());
+  theHistograms.fill("weight_sample", "Weight from cross-section and luminosity"               , 1200, -2, 10, theMCInfo.sampleWeight());
+  theHistograms.fill("weight_mcProc", "Weight from MC intrinsic event weight"                  , 1200, -2, 10, theMCInfo.mcProcWeight());
+  theHistograms.fill("weight_efficiencySF", "Weight from data/MC lepton efficiency"            , 1200, -2, 10, ZZ->efficiencySF());
+  theHistograms.fill("weight_fakeRateSF"  , "Weight from fake rate scale factor"               , 1200, -2, 10, ZZ->fakeRateSF());
   
   theInputWeightedEvents += theWeight;
-
+  
   return e;
 }
 
