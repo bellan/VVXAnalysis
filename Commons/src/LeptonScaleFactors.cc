@@ -23,35 +23,29 @@ LeptonScaleFactors::LeptonScaleFactors(const std::string& muonEffFilename, const
 
 }
 
-double LeptonScaleFactors::efficiencyScaleFactor(const double& lepPt, const double& lepEta, int lepId) const {
+double LeptonScaleFactors::efficiencyScaleFactor(const double& pt, const double& eta, int id) const {
 
-  double sFactor = 1.;
-  
-  double pt  = lepPt;
-  double eta = lepEta;
-  int    id  = abs(lepId);
-  
-  //avoid to go out of the TH boundary
-  if(id == 13 && pt > 99.) pt = 99.;
-  else if(id == 11){
-    eta = abs(lepEta);
-    if(pt > 199.) pt = 199.;
-  }
-  
-  if(id == 13){
-    sFactor  = hEffMu_->GetBinContent(hEffMu_->GetXaxis()->FindBin(pt), hEffMu_->GetYaxis()->FindBin(eta));
-    if(pt < 5.) sFactor = 0.;
-  }
-  else if(id == 11){
-    sFactor  = hEffEl_->GetBinContent(hEffEl_->GetXaxis()->FindBin(pt), hEffEl_->GetYaxis()->FindBin(eta));
-  }
-  else {
+  const TH2F *hDataMCSF = 0;
+
+  if      (abs(id) == 13) hDataMCSF = hEffMu_;
+  else if (abs(id) == 11) hDataMCSF = hEffEl_;
+  else{
+    std::cout << colour::Warning("Efficiency scale factor asked for an unknown particle") << " ID = " << id << std::endl;
     abort();
   }
+  
+  double sFactor = 1.;
+  int ptbin  = hDataMCSF->GetXaxis()->FindBin(pt);
+  int etabin = hDataMCSF->GetYaxis()->FindBin(eta);
+
+  if(pt >= hDataMCSF->GetXaxis()->GetXmax()) ptbin = hDataMCSF->GetXaxis()->GetLast();
+  
+  sFactor  = hDataMCSF->GetBinContent(ptbin,etabin);
   
   if(sFactor < 0.001 || sFactor > 10.){
     std::cout << colour::Warning("Efficiency scale factor out of range") << " Lepton ID = " << id << ", pt =  " << pt << ", eta = " << eta << ", scale factor = " << sFactor << std::endl;
   }
+
   return sFactor;
 }
 
