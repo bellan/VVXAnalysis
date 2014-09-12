@@ -14,7 +14,7 @@ class MCInfo {
 
   int    genEvents()              const {return genEvents_;}
   int    analyzedEvents()         const {return analyzedEvents_;}
-  double analyzedEventsWeighted() const {return sumpumcprocweight_ * sampleWeight();}
+  double analyzedEventsWeighted() const {return analyzedEvents() * sampleWeight();}
 
   double internalCrossSection() const {return internalCrossSection_;}
   double externalCrossSection() const {return externalCrossSection_;}
@@ -28,7 +28,7 @@ class MCInfo {
   double puWeight()             const {return puweight_;}
 
   // Total MC weight of the event. Beware, it does not include DATA/MC correction! See instead below.
-  double weight()               const {return luminosity_ >= 0 ? sampleWeight_*mcProcWeight()*puweight_ : 1.;}
+  double weight()               const {return luminosity_ >= 0 ? sampleWeight()*mcProcWeight()*puWeight() : 1.;}
 
   // Total weight of the event, including efficiency scale factors.
   double weight(const phys::DiBoson<phys::Lepton, phys::Lepton> &ZZ) const {return ZZ.fakeRateSF() * (luminosity_ >= 0 ? weight() * ZZ.efficiencySF() : 1.);}
