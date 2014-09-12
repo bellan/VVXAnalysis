@@ -286,6 +286,17 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     mcHistoryTools_->genAcceptance(gen_ZZInAcceptance, gen_ZZ4lInEtaAcceptance, gen_ZZ4lInEtaPtAcceptance, gen_m4l_180);
     if (gen_ZZ4lInEtaAcceptance)   ++eventsInEtaAcceptance_;  
     if (gen_ZZ4lInEtaPtAcceptance) ++eventsInEtaPtAcceptance_;
+
+    // Info about the MC weight
+    puweight_ = PUWeighter_.weight(sampleType_, setup_, ntruePUInt_);
+    
+    mcprocweight_ = mcHistoryTools_->gethepMCweight();
+    
+    // Sum of weight, particularly imprtant for MCs that return also negative weights
+    // or, in general, weighted events
+    sumpuweights_       += puweight_;
+    summcprocweights_   += mcprocweight_;
+    sumpumcprocweights_ += puweight_*mcprocweight_;
   }
     
   // Check trigger request. Actually, it is a very very loose request, not the actual one, that instead should be
@@ -346,17 +357,6 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
 
     foreach(const cmg::PhysicsObjectWithPtr<edm::Ptr<reco::GenJet> > & jet, *genJets)
       genJets_.push_back(phys::Particle(jet.p4(), phys::Particle::computeCharge(jet.pdgId()), jet.pdgId()));
-    
-    // Info about the MC weight
-    puweight_ = PUWeighter_.weight(sampleType_, setup_, ntruePUInt_);
-    
-    mcprocweight_ = mcHistoryTools_->gethepMCweight();
-
-    // Sum of weight, particularly imprtant for MCs that return also negative weights
-    // or, in general, weighted events
-    sumpuweights_       += puweight_;
-    summcprocweights_   += mcprocweight_;
-    sumpumcprocweights_ += puweight_*mcprocweight_;
   }
 
   return true;
