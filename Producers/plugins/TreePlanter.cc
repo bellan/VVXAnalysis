@@ -287,6 +287,16 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     if (gen_ZZ4lInEtaAcceptance)   ++eventsInEtaAcceptance_;  
     if (gen_ZZ4lInEtaPtAcceptance) ++eventsInEtaPtAcceptance_;
 
+
+    edm::Handle<std::vector<PileupSummaryInfo> > puInfo; event.getByLabel(thePUInfoLabel, puInfo);
+    foreach(const PileupSummaryInfo& pui, *puInfo)
+      if(pui.getBunchCrossing() == 0) { 
+	nobservedPUInt_  = pui.getPU_NumInteractions();
+	ntruePUInt_      = pui.getTrueNumInteractions();
+	break;
+      }
+    
+
     // Info about the MC weight
     puweight_ = PUWeighter_.weight(sampleType_, setup_, ntruePUInt_);
     
@@ -322,13 +332,6 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   nvtx_ = vertices->size();
     
   if(isMC_){
-    edm::Handle<std::vector<PileupSummaryInfo> > puInfo; event.getByLabel(thePUInfoLabel, puInfo);
-    foreach(const PileupSummaryInfo& pui, *puInfo)
-      if(pui.getBunchCrossing() == 0) { 
-	nobservedPUInt_  = pui.getPU_NumInteractions();
-	ntruePUInt_      = pui.getTrueNumInteractions();
-	break;
-      }
     
     edm::Handle<edm::View<reco::Candidate> > genParticles;
     event.getByLabel(theGenCollectionLabel,  genParticles);
