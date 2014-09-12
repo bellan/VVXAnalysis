@@ -156,7 +156,7 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
 	   <<"Out of them, " << Green(analyzedEvents()) << " events have been used to produce the main tree."           << std::endl
 	   <<"The cross-section of this sample is " << Green(crossSection()) << Green(" pb ") << "(" << xsectype <<")"  
 	   <<" and the integrated luminosity scenario is "<< Green(luminosity_) << Green("/pb.")                        << std::endl
-	   <<"The MC process event normalization is " << Green(mcProcWeightNormalization())
+	   <<"The MC process event normalization is (approx.) " << Green(mcProcWeightNormalization())
 	   <<" and the sample weight is " << Green(sampleWeight()) 
 	   <<". The number of weighted events in the sample is " << Green(analyzedEventsWeighted()) << "."              << std::endl
 	   << "The signal definition adopted for this analysis is " << Green(signalDefinition()) 
