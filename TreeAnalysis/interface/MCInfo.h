@@ -20,9 +20,9 @@ class MCInfo {
   double externalCrossSection() const {return externalCrossSection_;}
   double crossSection()         const {return *crossSection_;}
   double sampleWeight()         const {return sampleWeight_;}
-  //double mcProcWeight()         const {return mcprocweight_*analyzedEvents_/summcprocweight_;}
+  //double mcProcWeight()         const {return mcprocweight_*genEvents_/summcprocweight_;}
   double mcProcWeight()         const {return 1.;}
-  double mcProcWeightNormalization() const {return analyzedEvents_/summcprocweight_;}
+  double mcProcWeightNormalization() const {return genEvents_/summcprocweight_;}
   double mcProcWeightUnormalized()   const {return mcprocweight_;}
   double summcprocweight()      const {return summcprocweight_;}     
   double puWeight()             const {return puweight_;}
