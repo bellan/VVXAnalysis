@@ -7,68 +7,104 @@ from ROOT import TH1F
 from readSampleInfo import *
 from collections import OrderedDict
 
-analysis = "VVXAnalyzer"
-cregion = "baseline"
-sample = "ZZ"
-plot = sys.argv[1] #"ZZTo4l_nCentralJets"
+##### Extract MC plot #####
+def getMCPlot(inputdir, category, plot):
+    signal = OrderedDict([('ZZZJets',ROOT.kAzure-4) , 
+                          ('WZZJets',ROOT.kAzure-5),
+                          ('H',ROOT.kAzure-6),
+                          ('qq_4l2j',ROOT.kAzure-7),
+                          ('gg_4l',ROOT.kAzure-8),
+                          ('qq_ZZ',ROOT.kAzure-9)])
 
-results = "results/{0:s}_{1:s}/".format(analysis,cregion)
+    background = OrderedDict([('WWZJets', ROOT.kOrange+2),
+                              ('WZ',ROOT.kOrange+1),
+                              ('tt',ROOT.kOrange), 
+                              ('Z',ROOT.kYellow)])
 
-typeofsamples = OrderedDict([('WWZJets', ROOT.kOrange+2),
-                             ('WZ',ROOT.kOrange+1),
-                             ('tt',ROOT.kOrange), 
-                             #('Z',ROOT.kYellow),
-                             ('H',ROOT.kAzure-6), 
-                             ('ZZZJets',ROOT.kAzure-7), 
-                             ('WZZJets',ROOT.kAzure-8),
-                             ('ZZ',ROOT.kAzure-9)])
-#typeofsamples = OrderedDict([('triboson',ROOT.kAzure-7) , ('H',ROOT.kRed) , ('WZ',ROOT.kOrange) , ('WZZ',ROOT.kAzure-8) , ('tt',ROOT.kYellow) , ('Z',ROOT.kGreen-5) , ('ZZ',ROOT.kAzure-9)])
-#typeofsamples = OrderedDict([('ZZZJets',ROOT.kAzure-7) , ('WZZJetsSignal',ROOT.kAzure-8) ,  ('ZZTo2e2tau',ROOT.kAzure-9)])
-
-#typeofsamples = OrderedDict([('ZZZJets',ROOT.kAzure) , ('WZZJetsSignal',ROOT.kAzure-1),
-#                             ('ZZTo4tau',ROOT.kAzure-2), 
-#                             ('ZZTo2mu2tau',ROOT.kAzure-3),  
-#                             ('ZZTo2e2tau',ROOT.kAzure-4), 
-#                             ('ggZZ4l',ROOT.kAzure-5),
-#                             ('ggZZ2l2l',ROOT.kAzure-6),
-#                             ('ZZTo4e',ROOT.kAzure-7),
-#                             ('ZZTo4mu',ROOT.kAzure-8), 
-#                             ('ZZTo2e2mu',ROOT.kAzure-9)])
-
-
-print typeofsamples
-
-files = {}
-for sample in typeofsamples:
-    files[sample] = ROOT.TFile(results+sample+".root")
+    typeofsamples = []
+    if category == 'all':
+        allsamples = background
+        allsamples.update(signal)
+        typeofsamples = allsamples
+    elif category == 'signal':
+        typeofsamples = signal
+    elif category == 'background':
+        typeofsamples = background
     
-totalMC = 0
 
-stack = ROOT.THStack("stack",plot+"_stack")
-for sample in typeofsamples:
-    h = files[sample].Get(plot)
-    print sample, ", total number of events: ", h.Integral()
-    totalMC += h.Integral()
-    h.SetLineColor(typeofsamples[sample])
-    h.SetFillColor(typeofsamples[sample])
-    h.SetMarkerStyle(21)
-    h.SetMarkerColor(typeofsamples[sample])
-    stack.Add(h)
+    files = {}
+    for sample in typeofsamples:
+        files[sample] = ROOT.TFile(inputdir+sample+".root")
+    
+    totalMC = 0
 
-c1 = ROOT.TCanvas(plot+"_stack",plot+"_stack")
-c1.cd()
+    stack = ROOT.THStack("stack",plot+"_stack")
+    for sample in typeofsamples:
+        h2d = files[sample].Get(plot)
+        h = h2d.ProjectionY("_signal",2,-1).Clone()
+        if not h: continue
+        print sample, ", total number of events: ", h.Integral()
+        totalMC += h.Integral()
+        h.SetLineColor(typeofsamples[sample])
+        h.SetFillColor(typeofsamples[sample])
+        h.SetMarkerStyle(21)
+        h.SetMarkerColor(typeofsamples[sample])
+        stack.Add(h)
 
-stack.Draw('hist')
+    print "Total MC = {0:.2f}".format(totalMC)
+    return copy.deepcopy(stack)
 
-fdata = ROOT.TFile(results+"data.root")
-hdata = fdata.Get(plot)
-print "Total MC = {0:.2f}, data = {1:0.1f}".format(totalMC, hdata.Integral())
-hdata.SetMarkerColor(ROOT.kBlack)
-hdata.SetLineColor(ROOT.kBlack)
-hdata.SetMarkerStyle(21)
-hdata.Draw("same")
-c1.Update()
+######
 
-c1.SaveAs(plot+"_stack.png")
-input()
+def getDataPlot(inputdir, plot):
+    fdata = ROOT.TFile(inputdir+"data.root")
+    hdata = fdata.Get(plot)
+    hdata.SetMarkerColor(ROOT.kBlack)
+    hdata.SetLineColor(ROOT.kBlack)
+    hdata.SetMarkerStyle(21)
+    print "Total data = {0:0.1f}".format(hdata.Integral())
+    return copy.deepcopy(hdata)
 
+
+if __name__ == '__main__':
+
+    plot = sys.argv[1] #"ZZTo4l_nCentralJets"
+
+    analysis = "VVXAnalyzer"
+    cregion_1 = "SR"
+    cregion_2 = "SR"
+    type_1 = 'MC'
+    type_2 = 'datasubtracted'
+    category = 'signal'
+
+    c1 = ROOT.TCanvas(plot,plot)
+    c1.cd()
+
+    if type_1 == 'MC':
+        hmc = getMCPlot("results/{0:s}_{1:s}/".format(analysis,cregion_1), category, plot)
+        hmc.Draw('hist')
+
+    if type_1 == 'data':
+        hdata = getDataPlot("results/{0:s}_{1:s}/".format(analysis,cregion_1),plot)
+        hdata.Draw()
+
+    if type_2 == 'data':
+        hdata = getDataPlot("results/{0:s}_{1:s}/".format(analysis,cregion_2),plot)
+        hdata.Draw("same")
+        
+    if type_2 == 'MC':
+        hmc = getMCPlot("results/{0:s}_{1:s}/".format(analysis,cregion_2),category,plot)
+        hmc.Draw('histsame')
+    
+    if type_2 == 'datasubtracted':
+        hdata_SR = getDataPlot("results/{0:s}_{1:s}/".format(analysis,'SR'),plot)
+        hdata_CR = getDataPlot("results/{0:s}_{1:s}/".format(analysis,'CR'),plot)
+        hsub = hdata_SR.Clone("BackgroundSubtracted")
+        hsub.Add(hdata_CR, -1)
+        hsub.Draw('same')
+
+    c1.Update()
+
+    
+    c1.SaveAs(plot+"_stack.png")
+    input()
