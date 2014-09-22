@@ -608,7 +608,15 @@ phys::DiBoson<PAR1,PAR2> TreePlanter::fillDiBoson(Channel channel, const pat::Co
   VV.passFullSel_ = edmVV.userFloat("FullSel");
   VV.regionWord_  = computeCRFlag(channel,edmVV);
   VV.triggerWord_ = triggerWord_;
-  VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
+
+  // Set the trigger bit. Special care should be put for ZLL CR, for the other channels the code below do not add anything to FilterController:passTrigger
+  uint bit = 0;
+  if (VV.id() == 44) bit = 5;        // ZZ->4e or Z->2e + 2e
+  else if (VV.id() == 48) bit = 6;   // ZZ->2e2mu or Z->2e + 2mu or Z->2mu + 2e
+  else if (VV.id() == 52) bit = 7;   // ZZ->4mu or Z->2mu + 2mu
+  else {cout << "Do not know what to do when setting trigger bit in TreePlanter. Unknown ZZ id: " << VV.id() << endl; abort();}
+
+  VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_) && test_bit(triggerWord_,bit); // triggerWord_ needs to be filled beforehand (as it is).
   
   return VV;
 }
