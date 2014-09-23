@@ -1,67 +1,67 @@
-identifier,process,crossSection = -1,totalEvents = -1,luminosity = -1,execute=True,dataset,user,pattern,splitLevel,tune
+identifier,process,crossSection = -1,totalEvents = -1,luminosity = -1,execute=True,dataset,user,pattern,splitLevel,tune,pdf=False
 
-ZZTo4eJJ_SMHContinInterf_H125.6,qq_4l2j,2.484688144236787E-004,,,,/ZZTo4eJJ_SMHContinInterf_M-125p6_8TeV-phantom-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,1,
-ZZTo2e2muJJ_SMHContinInterf_H125.6,qq_4l2j,5.434945696873235E-004,,,,/ZZTo2e2muJJ_SMHContinInterf_M-125p6_8TeV-phantom-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,1,
-ZZTo4muJJ_SMHContinInterf_H125.6,qq_4l2j,2.487975936891337E-004,,,,/ZZTo4muJJ_SMHContinInterf_M-125p6_8TeV-phantom-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,1,
-ZZJetsTo4L,,0.1296,,,,/ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,6,
+ZZTo4eJJ_SMHContinInterf_H125.6,qq_4l2j,2.484688144236787E-004,,,,/ZZTo4eJJ_SMHContinInterf_M-125p6_8TeV-phantom-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,1,,
+ZZTo2e2muJJ_SMHContinInterf_H125.6,qq_4l2j,5.434945696873235E-004,,,,/ZZTo2e2muJJ_SMHContinInterf_M-125p6_8TeV-phantom-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,1,,
+ZZTo4muJJ_SMHContinInterf_H125.6,qq_4l2j,2.487975936891337E-004,,,,/ZZTo4muJJ_SMHContinInterf_M-125p6_8TeV-phantom-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,1,,
+ZZJetsTo4L,,0.1296,,,,/ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,6,,
 
-ggTo4e_SMHContinInterf-MCFM67_H125.6,gg_4l,0.000592000,,,,/GluGluTo4e_SMHContinInterf_M-125p6_8TeV-MCFM67-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,1,
-ggTo4mu_SMHContinInterf-MCFM67_H125.6,gg_4l,0.000592340,,,,/GluGluTo4mu_SMHContinInterf_M-125p6_8TeV-MCFM67-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,1,
-ggTo2e2mu_SMHContinInterf-MCFM67_H125.6,gg_4l,0.00118409,,,,/GluGluTo2e2mu_SMHContinInterf_M-125p6_8TeV-MCFM67-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,1,
+ggTo4e_SMHContinInterf-MCFM67_H125.6,gg_4l,0.000592000,,,,/GluGluTo4e_SMHContinInterf_M-125p6_8TeV-MCFM67-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,1,,
+ggTo4mu_SMHContinInterf-MCFM67_H125.6,gg_4l,0.000592340,,,,/GluGluTo4mu_SMHContinInterf_M-125p6_8TeV-MCFM67-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,1,,
+ggTo2e2mu_SMHContinInterf-MCFM67_H125.6,gg_4l,0.00118409,,,,/GluGluTo2e2mu_SMHContinInterf_M-125p6_8TeV-MCFM67-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,1,,
 
-ZZTo4mu,qq_ZZ,0.07691,,,,/ZZTo4mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,4,
-ZZTo4e,qq_ZZ,0.07691,,,,/ZZTo4e_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,6,
-ZZTo2mu2tau,qq_ZZ,0.1767,,,,/ZZTo2mu2tau_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,20,
-ZZTo2e2tau,qq_ZZ,0.1767,,,,/ZZTo2e2tau_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,20,
-ZZTo2e2mu,qq_ZZ,0.1767,,,,/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,12,
-ZZTo4tau,qq_ZZ,0.07691,,,,/ZZTo4tau_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,40,
-ZZTo4mu_ext,,0.07691,,,,/ZZTo4mu_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,4,
-ZZTo4e_ext,,0.07691,,,,/ZZTo4e_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,6,
-ZZTo2mu2tau_ext,,0.1767,,,,/ZZTo2mu2tau_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,20,
-ZZTo2e2tau_ext,,0.1767,,,,/ZZTo2e2tau_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,20,
-ZZTo2e2mu_ext,,0.1767,,,,/ZZTo2e2mu_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,12,
-ZZTo4tau_ext,,0.07691,,,,/ZZTo4tau_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,40,
+ZZTo4mu,qq_ZZ,0.07691,,,,/ZZTo4mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,4,,True
+ZZTo4e,qq_ZZ,0.07691,,,,/ZZTo4e_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,6,,
+ZZTo2mu2tau,qq_ZZ,0.1767,,,,/ZZTo2mu2tau_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,20,,
+ZZTo2e2tau,qq_ZZ,0.1767,,,,/ZZTo2e2tau_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,20,,
+ZZTo2e2mu,qq_ZZ,0.1767,,,,/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,12,,
+ZZTo4tau,qq_ZZ,0.07691,,,,/ZZTo4tau_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,40,,
+ZZTo4mu_ext,,0.07691,,,,/ZZTo4mu_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,4,,
+ZZTo4e_ext,,0.07691,,,,/ZZTo4e_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,6,,
+ZZTo2mu2tau_ext,,0.1767,,,,/ZZTo2mu2tau_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,20,,
+ZZTo2e2tau_ext,,0.1767,,,,/ZZTo2e2tau_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,20,,
+ZZTo2e2mu_ext,,0.1767,,,,/ZZTo2e2mu_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,12,,
+ZZTo4tau_ext,,0.07691,,,,/ZZTo4tau_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,40,,
 
-VBFH126,H,0.000473536,,,,/VBF_HToZZTo4L_M-126_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,15,
-ttH126,H,0.0001081681,,,,/TTbarH_HToZZTo4L_M-126_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,1,
-WH126,H,0.000205867,,,,/WH_HToZZTo4L_M-126_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,
-ZH126,H,0.0003340932,,,,/ZH_HToZZTo4L_M-126_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,
-powheg15H126,H,0.00572894,,,,/GluGluToHToZZTo4L_M-126_8TeV-powheg15-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,2,
-powheg15jhuGenV3H126,,0.00572894,,,,/SMHiggsToZZTo4L_M-126_8TeV-powheg15-JHUgenV3-pythia6/Summer12_DR53X-PU_S10_START53_V19-v2/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,2,
-minloH126,,0.005225759,,,,/GluGluToHToZZTo4L_M-126_8TeV-minloHJJ-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,2,
+VBFH126,H,0.000473536,,,,/VBF_HToZZTo4L_M-126_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,15,,
+ttH126,H,0.0001081681,,,,/TTbarH_HToZZTo4L_M-126_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,1,,
+WH126,H,0.000205867,,,,/WH_HToZZTo4L_M-126_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,,
+ZH126,H,0.0003340932,,,,/ZH_HToZZTo4L_M-126_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,,
+powheg15H126,H,0.00572894,,,,/GluGluToHToZZTo4L_M-126_8TeV-powheg15-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,2,,
+powheg15jhuGenV3H126,,0.00572894,,,,/SMHiggsToZZTo4L_M-126_8TeV-powheg15-JHUgenV3-pythia6/Summer12_DR53X-PU_S10_START53_V19-v2/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,2,,
+minloH126,,0.005225759,,,,/GluGluToHToZZTo4L_M-126_8TeV-minloHJJ-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,2,,
 
-DYJetsToLLTuneZ2M50,Z,3503.71,,,,/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,20,
-DYJetsToLLTuneZ2M10,Z,915,,,,/DYJetsToLL_M-10To50filter_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,20,
+DYJetsToLLTuneZ2M50,Z,3503.71,,,,/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,20,,
+DYJetsToLLTuneZ2M10,Z,915,,,,/DYJetsToLL_M-10To50filter_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,20,,
 
-WZ,WZ,1.057,,,,/WZJetsTo3LNu_TuneZ2_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,8,
-WWJets,WW,5.995,,,,/WWJetsTo2L2Nu_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,8,
-WGToLNuG,WG,-1,,,,/WGToLNuG_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,8,
+WZ,WZ,1.057,,,,/WZJetsTo3LNu_TuneZ2_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,8,,
+WWJets,WW,5.995,,,,/WWJetsTo2L2Nu_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,8,,
+WGToLNuG,WG,-1,,,,/WGToLNuG_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,8,,
 
-WZZJets,triboson,0.01968,,,,/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,
-WZZ_aMCatNLO,,0.01968,,,,/WZZ_8TeV-aMCatNLO-herwig/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,
-WWWJets,triboson,0.08058,,,,/WWWJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,
-WWZJets,triboson,0.05795,,,,/WWZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,
-ZZZJets,triboson,0.005527,,,,/ZZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,
-WWGJets,triboson,-1,,,,/WWGJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,
+WZZJets,triboson,0.01968,,,,/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,,
+WZZ_aMCatNLO,,0.01968,,,,/WZZ_8TeV-aMCatNLO-herwig/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,,
+WWWJets,triboson,0.08058,,,,/WWWJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,,
+WWZJets,triboson,0.05795,,,,/WWZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,,
+ZZZJets,triboson,0.005527,,,,/ZZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,,
+WWGJets,triboson,-1,,,,/WWGJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,,
 
-TTTo2L2Nu2B,tt,23.64,,,,/TTTo2L2Nu2B_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,6,
-TTWJets,tt,0.232,,,,/TTWJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,
-TTZJets,tt,0.2057,,,,/TTZJets_8TeV-madgraph_v2/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,
-TTWWJets,tt,-1,,,,/TTWWJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,
-TTGJets,tt,-1,,,,/TTGJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,
+TTTo2L2Nu2B,tt,23.64,,,,/TTTo2L2Nu2B_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,6,,
+TTWJets,tt,0.232,,,,/TTWJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,,
+TTZJets,tt,0.2057,,,,/TTZJets_8TeV-madgraph_v2/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,,
+TTWWJets,tt,-1,,,,/TTWWJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,,
+TTGJets,tt,-1,,,,/TTGJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,,
 
 
-DoubleMuA,DoubleMu,-1,,,,/DoubleMu/Run2012A-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleMu
-DoubleMuB,DoubleMu,-1,,,,/DoubleMuParked/Run2012B-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleMu
-DoubleMuC,DoubleMu,-1,,,,/DoubleMuParked/Run2012C-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleMu
-DoubleMuD,DoubleMu,-1,,,,/DoubleMuParked/Run2012D-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,15,DoubleMu
+DoubleMuA,DoubleMu,-1,,,,/DoubleMu/Run2012A-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleMu,
+DoubleMuB,DoubleMu,-1,,,,/DoubleMuParked/Run2012B-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleMu,
+DoubleMuC,DoubleMu,-1,,,,/DoubleMuParked/Run2012C-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleMu,
+DoubleMuD,DoubleMu,-1,,,,/DoubleMuParked/Run2012D-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,15,DoubleMu,
 
-DoubleEleA,DoubleEle,-1,,,,/DoubleElectron/Run2012A-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleEle
-DoubleEleB,DoubleEle,-1,,,,/DoubleElectron/Run2012B-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleEle
-DoubleEleC,DoubleEle,-1,,,,/DoubleElectron/Run2012C-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleEle
-DoubleEleD,DoubleEle,-1,,,,/DoubleElectron/Run2012D-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,15,DoubleEle
+DoubleEleA,DoubleEle,-1,,,,/DoubleElectron/Run2012A-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleEle,
+DoubleEleB,DoubleEle,-1,,,,/DoubleElectron/Run2012B-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleEle,
+DoubleEleC,DoubleEle,-1,,,,/DoubleElectron/Run2012C-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,DoubleEle,
+DoubleEleD,DoubleEle,-1,,,,/DoubleElectron/Run2012D-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,15,DoubleEle,
 
-MuEGA,MuEG,-1,,,,/MuEG/Run2012A-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,MuEG
-MuEGB,MuEG,-1,,,,/MuEG/Run2012B-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,MuEG
-MuEGC,MuEG,-1,,,,/MuEG/Run2012C-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,MuEG
-MuEGD,MuEG,-1,,,,/MuEG/Run2012D-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,15,MuEG
+MuEGA,MuEG,-1,,,,/MuEG/Run2012A-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,MuEG,
+MuEGB,MuEG,-1,,,,/MuEG/Run2012B-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,MuEG,
+MuEGC,MuEG,-1,,,,/MuEG/Run2012C-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,18,MuEG,
+MuEGD,MuEG,-1,,,,/MuEG/Run2012D-22Jan2013-v1/AOD/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,15,MuEG,

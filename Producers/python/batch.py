@@ -245,6 +245,11 @@ class Component(object):
       
 if __name__ == '__main__':
     batchManager = MyBatchManager()
+
+    batchManager.parser_.add_option("-p", "--pdf", dest="PDFstep",
+                                    help="Step of PDF systematic uncertainty evaluation. It could be 1 or 2.",
+                                    default=0)
+
     batchManager.parser_.usage="""
     %prog [options] <cfgFile>
 
@@ -266,8 +271,10 @@ if __name__ == '__main__':
     sampleDB = readSampleDB('../python/samples_8TeV.csv')
     for sample, settings in sampleDB.iteritems():
         if settings['execute']:
-            components.append(Component(sample, settings['user'], settings['dataset'], settings['pattern'], settings['splitLevel'], settings['tune'],settings['crossSection'], setup))
-            
+            if batchManager.options_.PDFstep == 0:
+                components.append(Component(sample, settings['user'], settings['dataset'], settings['pattern'], settings['splitLevel'], settings['tune'],settings['crossSection'], setup))
+            elif (not batchManager.options_.PDFstep == 0) and settings['pdf']:
+                components.append(Component(sample, settings['user'], settings['dataset'], settings['pattern'], settings['splitLevel'], settings['tune'],settings['crossSection'], setup))
         
     handle.close()
 

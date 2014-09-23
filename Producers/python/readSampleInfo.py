@@ -1,6 +1,16 @@
 import sys, os, commands, math
 
 
+def checkBool(val):
+  if val == 'False' or val == 'FALSE' or val == 'false' or val == 'NO' or val == 'no' or val == 'No':
+    return False
+  elif val == 'True' or val == 'TRUE' or val == 'true' or val == 'YES' or val == 'yes' or val == 'Yes':
+    return True
+  else:
+    return val
+  
+
+
 def readSamplesInfo(infoFilePath = 'samples_8TeV.csv', indexBy = 'identifier'):
   """
   Loads the sample information database from the given comma-separated-values
@@ -47,7 +57,7 @@ def readSamplesInfo(infoFilePath = 'samples_8TeV.csv', indexBy = 'identifier'):
         if not datum:       break
         if "=" in datum:
           (datum, default)  = map(str.strip, datum.split("="))
-          defaults[datum]   = default
+          defaults[datum]   = checkBool(default)
         header.append(datum)
 
 
@@ -79,9 +89,7 @@ def readSampleDB(infoFilePath = 'samples_8TeV.csv', indexBy = 'identifier'):
         if val == "":
           db[sample][key] = defaults[key]
           #print "setting default for ", key, "=",db[sample][key]
-        if key == 'execute':
-          if val == '0' or val == 0 or val == 'False' or val == 'FALSE' or val == 'false' or val == 'NO' or val == 'no' or val == 'No':
-            db[sample][key] = False
+
   return db
 
 
