@@ -121,8 +121,6 @@ short FilterController::getTriggerWord(const edm::Event & event){
       (PD=="DoubleMu" && passDiMu && !passDiEle && !passTriEle) ||
       (PD=="MuEG" && passMuEle && !passDiMu && !passDiEle && !passTriEle)) set_bit_16(trigword,8);
     
-  // Note: for MMMM final state the requirement is passDiMu, so it needs to be matched with bit 1 (see few line above)
-
   return trigword;
 }
 
