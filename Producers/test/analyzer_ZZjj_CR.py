@@ -258,8 +258,16 @@ process.WjjSequence = cms.Sequence(process.centralJets * process.bareWCand * pro
 ### Clean the 4 lepton candidates to select only the best possible candidate, requiring that passes the FULL selection
 ### ......................................................................... ###
 
+# Z1MASS_LARGE is used to define the best Z1 candidate, to be aligned with what done for Higgs studies.
+# Z1MASS is then used for the actual cut.
+
+Z1MASS_LARGE  = "daughter(0).mass>40 && daughter(0).mass<120"
 Z1MASS  = "daughter(0).mass>60 && daughter(0).mass<120"
 Z2MASS  = "daughter(1).mass>60 && daughter(1).mass<120"
+# Value here below are the ones used for the H->ZZ analysis and here for cross-check for dedicated studies. 
+#Z1MASS  = "daughter(0).mass>40 && daughter(0).mass<120"
+#Z2MASS  = "daughter(1).mass>12 && daughter(1).mass<120"
+
 LL_OS = "(daughter(1).daughter(0).pdgId + daughter(1).daughter(1).pdgId) == 0" #Z2 = l+l-
 
 PASSD0 = "(userFloat('d1.d0.isGood') && userFloat('d1.d0.combRelIsoPFFSRCorr') < 0.4)"
@@ -272,49 +280,52 @@ PASSD0_OR_PASSD1  = "(" + PASSD0 + "||" + PASSD1 + ")"
 
 # CR 3P1F
 BESTZLL_3P1F   = (CR_BESTCANDBASE       + "&&" +  
-                  Z1MASS                + "&&" +  
+                  Z1MASS_LARGE          + "&&" +  
                   "userFloat('d0.isBestZ') &&" + 
                   LL_OS                 + "&&" +  
                   PASSD0_OR_PASSD1      + "&&" +  
                   Z2SIP)
 
 BESTZ2mLL_3P1F = (CR_BESTCANDBASE         + "&&" +  
-                  Z1MASS                  + "&&" +  
+                  Z1MASS_LARGE            + "&&" +  
                   "userFloat('d0.isBestZmm') &&" + 
                   LL_OS                   + "&&" +  
                   PASSD0_OR_PASSD1        + "&&" +  
                   Z2SIP)
 
 BESTZ2eLL_3P1F = (CR_BESTCANDBASE         + "&&" +  
-                  Z1MASS                  + "&&" +  
+                  Z1MASS_LARGE            + "&&" +  
                   "userFloat('d0.isBestZee') &&" + 
                   LL_OS                   + "&&" +  
                   PASSD0_OR_PASSD1        + "&&" +  
                   Z2SIP)
 
-ZLLSEL_3P1F  = (CR_BASESEL + "&&" + PASSD0_XOR_PASSD1 + "&&" + Z2MASS)
+
+ZLLSEL_3P1F  = (CR_BASESEL + "&&" + PASSD0_XOR_PASSD1 + "&&" + Z1MASS + "&&" + Z2MASS)
+
 
 
 # CR 2P2F
 BESTZLL_2P2F   = (CR_BESTCANDBASE       + "&&" +  
-                  Z1MASS                + "&&" +  
+                  Z1MASS_LARGE          + "&&" +  
                   "userFloat('d0.isBestZ') &&" + 
                   LL_OS                 + "&&" +  
                   Z2SIP)
 
 BESTZ2mLL_2P2F = (CR_BESTCANDBASE         + "&&" +  
-                  Z1MASS                  + "&&" +  
+                  Z1MASS_LARGE            + "&&" +  
                   "userFloat('d0.isBestZmm') &&" + 
                   LL_OS                   + "&&" +  
                   Z2SIP)
 
 BESTZ2eLL_2P2F = (CR_BESTCANDBASE         + "&&" +  
-                  Z1MASS                  + "&&" +  
+                  Z1MASS_LARGE            + "&&" +  
                   "userFloat('d0.isBestZee') &&" + 
                   LL_OS                   + "&&" +  
                   Z2SIP)
 
-ZLLSEL_2P2F  = (CR_BASESEL + "&&" + BOTHFAIL + "&&" + Z2MASS)
+
+ZLLSEL_2P2F  = (CR_BASESEL + "&&" + BOTHFAIL + "&&" + Z1MASS + "&&" + Z2MASS)
 
 
 
