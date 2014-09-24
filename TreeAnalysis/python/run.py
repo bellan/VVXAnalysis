@@ -15,7 +15,7 @@ from Colours import *
 ############################################################################
 ############################## User's inputs ###############################
 ############################################################################
-regions = ['SR','CR2P2F','CR3P1F','CR3P1FXOR']
+regions = ['SR','CR2P2F','CR3P1F','CR3P1F_HZZ','CR2P2F_HZZ']
 
 parser = OptionParser(usage="usage: %prog <analysis> <sample> [options]")
 parser.add_option("-r", "--region", dest="region",
@@ -143,7 +143,7 @@ def run(executable, analysis, typeofsample, region, luminosity):
 
     #################################################################################
     isData = False
-    if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:4] == 'MuEG':
+    if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:4] == 'MuEG' or typeofsample[0:4] == 'test':
         luminosity = -1
         isData = True
         
