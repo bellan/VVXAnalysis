@@ -125,6 +125,43 @@ def tuneProcess(process):
             
 class MyBatchManager( BatchManager ):
    '''Batch manager specific to cmsRun processes.''' 
+
+   def __init__(self):
+       self.DefineOptions()
+
+       self.parser_.add_option("-p", "--pdf", dest="PDFstep",
+                               help="Step of PDF systematic uncertainty evaluation. It could be 1 or 2.",
+                               default=0)
+       
+       self.parser_.add_option("-i", "--secondary-input-dir", dest="secondaryInputDir",
+                               help="Name of the local input directory for your PDF jobs",
+                               default=None)
+
+
+
+   def setSecondaryInputDir(self):
+       if not self.options_.secondaryInputDir == None:
+           self.secondaryInputDir_ = os.path.abspath(self.options_.secondaryInputDir)
+       else: 
+           self.secondaryInputDir_ = None
+       
+
+   def PrepareJob( self, value, dirname=None):
+       '''Prepare a job for a given value.
+       
+       calls PrepareJobUser, which should be overloaded by the user.
+       '''
+       print 'PrepareJob : %s' % value 
+       dname = dirname
+       if dname  is None:
+           dname = 'Job_{value}'.format( value=value )
+       jobDir = '/'.join( [self.outputDir_, dname])
+       print '\t',jobDir 
+       self.mkdir( jobDir )
+       self.listOfJobs_.append( jobDir )
+       if not self.secondaryInputDir_ == None: self.inputPDFDir_ = '/'.join( [self.secondaryInputDir_, dname])
+       self.PrepareJobUser( jobDir, value )
+       
          
    def PrepareJobUser(self, jobDir, value ):
        '''Prepare one job. This function is called by the base class.'''
@@ -187,8 +224,21 @@ class MyBatchManager( BatchManager ):
 #       handle.close()                  
 
        process = namespace.get('process') 
-       process.source.fileNames = splitComponents[value].files
+       if splitComponents[value].pdfstep < 2:
 
+           process.source.fileNames = splitComponents[value].files
+
+           # PDF step 1 case: create also a snippet to be used later in step 2 phase
+           if splitComponents[value].pdfstep == 1:
+               cfgSnippetPDFStep2 = open(jobDir+'/inputForPDFstep2.py','w')
+               cfgSnippetPDFStep2.write('process.source.fileNames = ["file:{0:s}/{1:s}"]\n'.format(jobDir, process.weightout.fileName.value()))
+               cfgSnippetPDFStep2.write('process.source.secondaryFileNames = [')
+               for item in splitComponents[value].files: cfgSnippetPDFStep2.write("'%s',\n" % item)
+               cfgSnippetPDFStep2.write(']')
+               cfgSnippetPDFStep2.write( '\n' )
+               cfgSnippetPDFStep2.close()
+
+      
        if "MCAllEvents" in tune:
            process.ZZ4muTree.skipEmptyEvents = False
            process.ZZ4eTree.skipEmptyEvents = False
@@ -202,6 +252,15 @@ class MyBatchManager( BatchManager ):
        cfgFile.write( '\n' )
        del namespace
        del process
+
+
+       if splitComponents[value].pdfstep == 2:
+           cfgSnippetPDFStep2 = open(self.inputPDFDir_+'/inputForPDFstep2.py','r')
+           shutil.copyfileobj(cfgSnippetPDFStep2,cfgFile)
+           cfgSnippetPDFStep2.close()
+           #process.source.fileNames           = ["{0:s}/{1:s}".format(jobDir, process.weightout.fileName.value())]
+           #process.source.secondaryFileNames  = splitComponents[value].files
+           
 
        # Tune process
        # JSON for data
@@ -233,7 +292,7 @@ class MyBatchManager( BatchManager ):
 
 class Component(object):
 
-    def __init__(self, name, user, dataset, pattern, splitFactor, tune, xsec, setup ):
+    def __init__(self, name, user, dataset, pattern, splitFactor, tune, xsec, setup, pdfstep ):
         self.name = name
         print "checking "+self.name
         self.files = datasetToSource( user, dataset, pattern).fileNames # , True for readCache (?)
@@ -241,14 +300,14 @@ class Component(object):
         self.tune = tune
         self.xsec = float(xsec)
         self.setup = setup
+        self.pdfstep = int(pdfstep)
+        if self.pdfstep <0 or self.pdfstep>2:
+            print "Unknown PDF step", pdfstep
+            sys.exit(1)
         
       
 if __name__ == '__main__':
     batchManager = MyBatchManager()
-
-    batchManager.parser_.add_option("-p", "--pdf", dest="PDFstep",
-                                    help="Step of PDF systematic uncertainty evaluation. It could be 1 or 2.",
-                                    default=0)
 
     batchManager.parser_.usage="""
     %prog [options] <cfgFile>
@@ -258,7 +317,8 @@ if __name__ == '__main__':
     """
 
     options, args = batchManager.ParseOptions()
-
+    batchManager.setSecondaryInputDir()
+    
     cfgFileName = args[0]
 
     handle = open(cfgFileName, 'r')
@@ -271,15 +331,15 @@ if __name__ == '__main__':
     sampleDB = readSampleDB('../python/samples_8TeV.csv')
     for sample, settings in sampleDB.iteritems():
         if settings['execute']:
-            if batchManager.options_.PDFstep == 0:
-                components.append(Component(sample, settings['user'], settings['dataset'], settings['pattern'], settings['splitLevel'], settings['tune'],settings['crossSection'], setup))
-            elif (not batchManager.options_.PDFstep == 0) and settings['pdf']:
-                components.append(Component(sample, settings['user'], settings['dataset'], settings['pattern'], settings['splitLevel'], settings['tune'],settings['crossSection'], setup))
-        
+            pdfstep = batchManager.options_.PDFstep
+            if pdfstep == 0 or ((not pdfstep == 0) and settings['pdf']):
+                components.append(Component(sample, settings['user'], settings['dataset'], settings['pattern'], settings['splitLevel'], settings['tune'],settings['crossSection'], setup, pdfstep))
+
     handle.close()
 
 
     splitComponents = split( components )
+
     listOfValues = range(0, len(splitComponents))
     listOfNames = [comp.name for comp in splitComponents]
 
