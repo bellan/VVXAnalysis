@@ -141,7 +141,8 @@ class MyBatchManager( BatchManager ):
 
    def setSecondaryInputDir(self):
        if not self.options_.secondaryInputDir == None:
-           self.secondaryInputDir_ = os.path.abspath(self.options_.secondaryInputDir)
+           self.secondaryInputDir_ = os.path.abspath(self.options_.secondaryInputDir) + '/AAAOK/'
+           
        else: 
            self.secondaryInputDir_ = None
        
