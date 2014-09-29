@@ -234,7 +234,7 @@ class MyBatchManager( BatchManager ):
            # PDF step 1 case: create also a snippet to be used later in step 2 phase
            if splitComponents[value].pdfstep == 1:
                cfgSnippetPDFStep2 = open(jobDir+'/inputForPDFstep2.py','w')
-               cfgSnippetPDFStep2.write('process.source.fileNames = ["file:{0:s}/{1:s}"]\n'.format(self.outputDir_+'AAAOK/'+jobDir.replace(self.outputDir_,''), process.weightout.fileName.value()))
+               cfgSnippetPDFStep2.write('process.source.fileNames = ["file:{0:s}/{1:s}"]\n'.format(self.outputDir_+'/AAAOK'+jobDir.replace(self.outputDir_,''), process.weightout.fileName.value()))
                cfgSnippetPDFStep2.write('process.source.secondaryFileNames = [')
                for item in splitComponents[value].files: cfgSnippetPDFStep2.write("'%s',\n" % item)
                cfgSnippetPDFStep2.write(']')
