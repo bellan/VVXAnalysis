@@ -10,7 +10,8 @@ import shutil
 import pickle
 import math
 from CMGTools.Production.batchmanager import BatchManager
-from CMGTools.Production.datasetToSource import *
+from VVXAnalysis.Producers.datasetToSource import *
+#from CMGTools.Production.datasetToSource import *
 
 def chunks(l, n):
     return [l[i:i+n] for i in range(0, len(l), n)]
@@ -142,7 +143,6 @@ class MyBatchManager( BatchManager ):
    def setSecondaryInputDir(self):
        if not self.options_.secondaryInputDir == None:
            self.secondaryInputDir_ = os.path.abspath(self.options_.secondaryInputDir) + '/AAAOK/'
-           
        else: 
            self.secondaryInputDir_ = None
        
@@ -161,6 +161,7 @@ class MyBatchManager( BatchManager ):
        self.mkdir( jobDir )
        self.listOfJobs_.append( jobDir )
        if not self.secondaryInputDir_ == None: self.inputPDFDir_ = '/'.join( [self.secondaryInputDir_, dname])
+
        self.PrepareJobUser( jobDir, value )
        
          
@@ -225,21 +226,21 @@ class MyBatchManager( BatchManager ):
 #       handle.close()                  
 
        process = namespace.get('process') 
-       if splitComponents[value].pdfstep < 2:
+       process.source = splitComponents[value].source
+       process.source.fileNames = splitComponents[value].files
 
-           process.source.fileNames = splitComponents[value].files
+       if splitComponents[value].pdfstep < 2:
 
            # PDF step 1 case: create also a snippet to be used later in step 2 phase
            if splitComponents[value].pdfstep == 1:
                cfgSnippetPDFStep2 = open(jobDir+'/inputForPDFstep2.py','w')
-               cfgSnippetPDFStep2.write('process.source.fileNames = ["file:{0:s}/{1:s}"]\n'.format(jobDir, process.weightout.fileName.value()))
+               cfgSnippetPDFStep2.write('process.source.fileNames = ["file:{0:s}/{1:s}"]\n'.format(self.outputDir_+'AAAOK/'+jobDir.replace(self.outputDir_,''), process.weightout.fileName.value()))
                cfgSnippetPDFStep2.write('process.source.secondaryFileNames = [')
                for item in splitComponents[value].files: cfgSnippetPDFStep2.write("'%s',\n" % item)
                cfgSnippetPDFStep2.write(']')
                cfgSnippetPDFStep2.write( '\n' )
                cfgSnippetPDFStep2.close()
 
-      
        if "MCAllEvents" in tune:
            process.ZZ4muTree.skipEmptyEvents = False
            process.ZZ4eTree.skipEmptyEvents = False
@@ -251,16 +252,14 @@ class MyBatchManager( BatchManager ):
        # cfgFile.write('import os,sys\n')
        cfgFile.write( process.dumpPython() )
        cfgFile.write( '\n' )
+
        del namespace
        del process
-
 
        if splitComponents[value].pdfstep == 2:
            cfgSnippetPDFStep2 = open(self.inputPDFDir_+'/inputForPDFstep2.py','r')
            shutil.copyfileobj(cfgSnippetPDFStep2,cfgFile)
            cfgSnippetPDFStep2.close()
-           #process.source.fileNames           = ["{0:s}/{1:s}".format(jobDir, process.weightout.fileName.value())]
-           #process.source.secondaryFileNames  = splitComponents[value].files
            
 
        # Tune process
@@ -296,7 +295,8 @@ class Component(object):
     def __init__(self, name, user, dataset, pattern, splitFactor, tune, xsec, setup, pdfstep ):
         self.name = name
         print "checking "+self.name
-        self.files = datasetToSource( user, dataset, pattern).fileNames # , True for readCache (?)
+        self.source = datasetToSource( user, dataset, pattern) # , True for readCache (?)
+        self.files = self.source.fileNames # , True for readCache (?)
         self.splitFactor = int(splitFactor)
         self.tune = tune
         self.xsec = float(xsec)
