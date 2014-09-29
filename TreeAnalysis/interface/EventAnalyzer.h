@@ -110,7 +110,8 @@ public:
   virtual Int_t cut();
   virtual void  analyze() = 0;
   virtual void  end(TFile &) {};  
-  
+  TTree * tree() const {return theTree;}
+
  private:
   // Structural functions to access the tree branches. User is not supposed to change these.
   virtual Int_t    GetEntry(Long64_t entry);
