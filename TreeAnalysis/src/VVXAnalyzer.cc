@@ -13,21 +13,7 @@ using namespace phys;
 
 Int_t VVXAnalyzer::cut() {
   
-  if(!ZZ->passTrigger())          theHistograms.fill("CutCheck",5,0,5,0);
-  if(! 60 < ZZ->first().mass())   theHistograms.fill("CutCheck",5,0,5,1);
-  if(! ZZ->first().mass() < 120)  theHistograms.fill("CutCheck",5,0,5,2);
-  if(! 60 < ZZ->second().mass())  theHistograms.fill("CutCheck",5,0,5,3);
-  if(! ZZ->second().mass() < 120) theHistograms.fill("CutCheck",5,0,5,4);
-  
-  if(ZZ->passTrigger() &&
-     60 < ZZ->first().mass()  && ZZ->first().mass()  < 120 &&
-     60 < ZZ->second().mass() && ZZ->second().mass() < 120)
-    return 1;
-  
-  theHistograms.fill("mZ1_nonPassing", "Invariant mass of Z_{1} for non passing events",  50, 0, 200, ZZ->first().mass() , theWeight); 
-  theHistograms.fill("mZ2_nonPassing", "Invariant mass of Z_{2} for non passing events",  50, 0, 200, ZZ->second().mass(), theWeight); 
-
-  return -1;
+  return 1;
 }
 
 void VVXAnalyzer::ZZplots(int id){
@@ -64,7 +50,11 @@ void VVXAnalyzer::ZZplots(int id){
 
 
 void VVXAnalyzer::analyze(){
-  
+
+  theHistograms.fill("fakeRateWeight", "FakeRate",  100, -2, 2, ZZ->fakeRateSF() , 1); 
+  if(ZZ->numberOfGoodGrandDaughters() == 3) theHistograms.fill("fakeRateWeight_3p1F", "FakeRate 3P1F",  100, -2, 2, ZZ->fakeRateSF() , 1); 
+  if(ZZ->numberOfGoodGrandDaughters() == 2) theHistograms.fill("fakeRateWeight_2p2F", "FakeRate 2P2F",  100, -2, 2, ZZ->fakeRateSF() , 1); 
+
   // Some basic plots on ZZ
   ZZplots();   // ZZ --> 4l
   ZZplots(52); // ZZ --> 4m

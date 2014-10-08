@@ -9,6 +9,7 @@
  *  \author R. Bellan - UNITO <riccardo.bellan@cern.ch>
  */
 
+#include "AnalysisConfiguration.h"
 #include "EventAnalyzer.h"
 #include <map>
 #include <string>
@@ -19,7 +20,7 @@ private:
     AnalysisFactory(const AnalysisFactory &) { }
     AnalysisFactory &operator=(const AnalysisFactory &) { return *this; }
 
-    typedef EventAnalyzer* (*CreateAnFn)(std::string, double, double, bool);
+    typedef EventAnalyzer* (*CreateAnFn)(const AnalysisConfiguration& analysisConfiguration);
     typedef std::map<std::string, CreateAnFn> FactoryMap;
     FactoryMap m_FactoryMap;
 public:
@@ -32,6 +33,8 @@ public:
     }
 
     void Register(const std::string &analysisName, CreateAnFn pfnCreate);
-    EventAnalyzer *createAnalysis(const std::string &analysisName, std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = true);
+    //EventAnalyzer *createAnalysis(const std::string &analysisName, const std::string& region, const std::string& filename, const double& lumi = 1., const double& externalXSection = -1., bool doBasicPlots = true);
+    EventAnalyzer *createAnalysis(const AnalysisConfiguration &analysisConfiguration);
+
 };
 #endif

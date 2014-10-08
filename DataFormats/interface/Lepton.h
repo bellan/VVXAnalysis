@@ -33,6 +33,7 @@ namespace phys {
       , pfNeutralHadIso_(-9999.)
       , pfPhotonIso_(-9999.)
       , pfCombRelIso_(-9999.)
+      , pfCombRelIsoFSRCorr_(-9999.)
       , rho_(-9999.) 
       , isPF_(false)
       , matchHLT_(false)
@@ -44,18 +45,37 @@ namespace phys {
     virtual ~Lepton(){};
     
     // Operations
-    Double_t dxy()             const {return dxy_;}            
-    Double_t dz()              const {return dz_;}             
-    Double_t sip()             const {return sip_;}	      
-    Double_t combRelIso()      const {return combRelIso_;}     
-    Double_t pfChargedHadIso() const {return pfChargedHadIso_;}
-    Double_t pfNeutralHadIso() const {return pfNeutralHadIso_;}
-    Double_t pfPhotonIso()     const {return pfPhotonIso_;}    
-    Double_t pfCombRelIso()    const {return pfCombRelIso_;}   
-    Double_t rho()             const {return rho_;}             
-    Bool_t   isPF()            const {return isPF_;}
-    Bool_t   matchHLT()        const {return matchHLT_;}
-    Bool_t   isGood()          const {return isGood_;}
+    Double_t dxy()                 const {return dxy_;}            
+    Double_t dz()                  const {return dz_;}             
+    Double_t sip()                 const {return sip_;}	      
+    Double_t combRelIso()          const {return combRelIso_;}     
+    Double_t pfChargedHadIso()     const {return pfChargedHadIso_;}
+    Double_t pfNeutralHadIso()     const {return pfNeutralHadIso_;}
+    Double_t pfPhotonIso()         const {return pfPhotonIso_;}    
+    Double_t pfCombRelIso()        const {return pfCombRelIso_;}   
+    Double_t pfCombRelIsoFSRCorr() const {return pfCombRelIsoFSRCorr_;}   
+    Double_t rho()                 const {return rho_;}             
+    Bool_t   isPF()                const {return isPF_;}
+    Bool_t   matchHLT()            const {return matchHLT_;}
+    Bool_t   isGood()              const {return isGood_;}
+
+    Bool_t   passFullSelNoFSRCorr()const {return isGood_ && pfCombRelIso_ < 0.4;}
+    Bool_t   passFullSel()         const {return isGood_ && pfCombRelIsoFSRCorr_ < 0.4;}
+
+    // The fake rate is set to a value different from 1 even for true leptons.
+    void setFakeRateSF(const std::pair<double,double> & sf) {
+      fakeRateSF_    =  sf.first; fakeRateSFUnc_ =  sf.second;
+    }
+    
+    Double_t fakeRateSF()    const {return passFullSel() ? 1. : fakeRateSF_;}
+    
+    Double_t fakeRateSFUnc() const {return passFullSel() ? 1. : fakeRateSFUnc_;}
+    
+    // This hack is needed because the FSR-corrected isolation is a property of the boson and if a lepton is really a good lepton is know only a-posteriory (for CRs).
+    void realignFakeRate() {
+      fakeRateSF_    = fakeRateSF();
+      fakeRateSFUnc_ = fakeRateSFUnc();
+    }
 
   protected:
     
@@ -69,6 +89,7 @@ namespace phys {
     Double_t pfNeutralHadIso_;
     Double_t pfPhotonIso_;
     Double_t pfCombRelIso_;
+    Double_t pfCombRelIsoFSRCorr_;
     Double_t rho_;
 
     Bool_t isPF_;

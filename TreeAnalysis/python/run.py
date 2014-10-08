@@ -7,29 +7,60 @@
 
 
 import sys, os, commands, math
+from optparse import OptionParser
 from readSampleInfo import *
 from Colours import *
-
-
-print "\n\n"
-print "\t\t\t",White('*** UNITO Framework ***')
-print "\n\n"
 
 
 ############################################################################
 ############################## User's inputs ###############################
 ############################################################################
+regions = ['SR','CR','CR2P2F','CR3P1F','CR3P1F_HZZ','CR2P2F_HZZ']
 
-analysis   = sys.argv[1]
-typeofsample = sys.argv[2]
+parser = OptionParser(usage="usage: %prog <analysis> <sample> [options]")
+parser.add_option("-r", "--region", dest="region",
+                  default="SR",
+                  help="Region type are {0:s}. Default is SR.".format(', '.join(regions)))
 
-getExternalCrossSectionFromFile = False
-if len(sys.argv) > 3: getExternalCrossSectionFromFile = sys.argv[3] 
+parser.add_option("-e", "--external-cross-section", dest="getExternalCrossSectionFromFile",
+                  action="store_true",
+                  help="Use this option if you want to read the cross-section from the csv file")
 
-cregion = 'baseline' # in case, make it a further external argument
+parser.add_option("-l", "--luminosity", dest="luminosity",
+                  type='int',
+                  default=19712,
+                  help="Set luminosity scenario from command line. Default is 19712/pb.")
 
-luminosity = 19712
-baseinputdir = 'samples'
+parser.add_option("-d", "--directory", dest="directory",
+                  default="samples",
+                  help="Sample location, default is ./samples")
+
+
+
+(options, args) = parser.parse_args()
+
+analysis   = args[0]
+typeofsample = args[1]
+region = options.region
+
+if region not in regions:
+    print region, "is an unknown region. Run {0:s} -h for more details.".format(sys.argv[0])
+    sys.exit(1)
+
+getExternalCrossSectionFromFile = False if options.getExternalCrossSectionFromFile is None else options.getExternalCrossSectionFromFile
+
+luminosity = options.luminosity
+baseinputdir = options.directory
+
+
+
+###########################################################################
+###########################################################################
+print "\n\n"
+print "\t\t\t",White('*** UNITO Framework ***')
+print "\n\n"
+###########################################################################
+###########################################################################
 
 
 
@@ -71,7 +102,7 @@ print "Executable: {0:s} and analysis: {1:s}".format(Blue(executable), Blue(anal
 print "Sample/type of samples:", Blue(typeofsample)
 print "CSV file: ", Blue(csvfile)
 print "Get (again) cross sections from csv file: ", Blue(getExternalCrossSectionFromFile)
-print "Control region type: ", Blue(cregion)
+print "Region type: ", Blue(region)
 print "Integrated luminosity: ", Blue(luminosity)
 print Blue("----------------------------------------------------------------------")
 print "\n"
@@ -80,12 +111,14 @@ print "\n"
 ############################################################################
 
 
-def run(executable, analysis, typeofsample, cregion, luminosity):
-    inputdir  = baseinputdir
+def run(executable, analysis, typeofsample, region, luminosity):
+    inputdir = baseinputdir
+    if not region == 'SR': inputdir = baseinputdir+"/"+region
+
     outputdir = 'results'
     if not os.path.exists(outputdir): os.popen('mkdir "%s"' %outputdir)
 
-    outputdir = outputdir+"/"+analysis+"_"+cregion
+    outputdir = outputdir+"/"+analysis+"_"+region
     if not os.path.exists(outputdir): os.popen('mkdir "%s"' %outputdir)
 
 
@@ -110,7 +143,7 @@ def run(executable, analysis, typeofsample, cregion, luminosity):
 
     #################################################################################
     isData = False
-    if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:5] == 'MuEG':
+    if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:4] == 'MuEG' or typeofsample[0:4] == 'test':
         luminosity = -1
         isData = True
         
@@ -128,7 +161,7 @@ def run(executable, analysis, typeofsample, cregion, luminosity):
             print "For {0:s} {1:s} {2:.6f}".format(period, Warning("Using external cross section:"), externalXsec)
 
         print Red('\n------------------------------ {0:s} -------------------------------\n'.format(basefile))
-        command = "./{0:s} {1:s} {2:s}/{4:s}.root {3:s}/{4:s}.root {5:.0f} {6:.10f}".format(executable,analysis,inputdir,outputdir, basefile, luminosity, externalXsec)
+        command = "./{0:s} {1:s} {2:s} {3:s}/{5:s}.root {4:s}/{5:s}.root {6:.0f} {7:.5f}".format(executable,analysis,region,inputdir,outputdir, basefile, luminosity, externalXsec)
         print "Command going to be executed:", Violet(command)
         failure, output = commands.getstatusoutput(command)
         print "\n",output
@@ -144,22 +177,52 @@ def run(executable, analysis, typeofsample, cregion, luminosity):
         print "One sample in the dataset, just copying it."
         os.popen('cp {0:s}/{1:s}.root {0:s}/{2:s}.root'.format(outputdir,datasets[0],typeofsample))
 
-    print "The output is in", Green('{0:s}/{1:s}.root'.format(outputdir,typeofsample))  
+    output = '{0:s}/{1:s}.root'.format(outputdir,typeofsample)
+    print "The output is in", Green(output)
+    return output
 
 
 if typeofsample == 'all' or typeofsample == 'data':
+    outputLocations = []
     for sample in typeofsamples:
         if typeofsample == 'all' or sample[0:8] == 'DoubleMu' or sample[0:9] == 'DoubleEle' or sample[0:5] == 'MuEG':
-            if cregion == 'all':
-                for cr in range(0,4):
+            if region == 'all':
+                for cr in regions:
                     run(executable, analysis, sample, cr, luminosity)    # runs over all samples in all control reagions
+            elif region == 'CR':
+                outputCR2P2F = run(executable, analysis, sample, 'CR2P2F', luminosity)    # runs over all samples in the CR2P2F control reagion
+                outputCR3P1F = run(executable, analysis, sample, 'CR3P1F', luminosity)    # runs over all samples in the CR3P1F control reagion
+
+                if not os.path.exists('results/"%s"_CR' %analysis): os.popen('mkdir results/"%s"_CR' %analysis)
+                outputRedBkg = 'results/{0:s}_CR/reducible_background_from_{1:s}.root'.format(analysis, sample)
+                hadd = 'hadd {0:s} {1:s} {2:s}'.format(outputRedBkg, outputCR2P2F, outputCR3P1F)
+                if os.path.exists('{0:s}'.format(outputRedBkg)):
+                    os.popen('rm {0:s}'.format(outputRedBkg))
+                print "Command going to be executed:", Violet(hadd)
+                failure, output = commands.getstatusoutput(hadd)
+                outputLocations.append(outputRedBkg)
+
             else:
-                run(executable, analysis, sample, cregion, luminosity)   # runs over all samples in a specific control reagions
+                outputLocations.append(run(executable, analysis, sample, region, luminosity))   # runs over all samples in a specific control reagions
+    if typeofsample == 'data':
+        failure, basename = commands.getstatusoutput('basename {0:s}'.format(outputLocations[0]))
+        outputdir = outputLocations[0].replace(basename,'')
+        hadd = 'hadd {0:s}/data.root '.format(outputdir)
+        for result in outputLocations:
+            hadd = '{0:s} {1:s}'.format(hadd, result)
+        if os.path.exists('{0:s}/data.root'.format(outputdir)):
+            os.popen('rm {0:s}/data.root'.format(outputdir))
+        print "Command going to be executed:", Violet(hadd)
+        failure, output = commands.getstatusoutput(hadd)
+
+
+
+            
 else:
-    if cregion == 'all':
+    if region == 'all':
         for cr in range(0,4):     
             run(executable, analysis, typeofsample, cr, luminosity)  # runs over a specific sample in all control regions
     else:
-        run(executable, analysis, typeofsample, cregion, luminosity) # runs over a specific sample in a specific region
+        run(executable, analysis, typeofsample, region, luminosity) # runs over a specific sample in a specific region
 
 print "\nJob status: ", OK("DONE"),"\n"

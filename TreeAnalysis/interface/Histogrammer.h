@@ -21,7 +21,12 @@ class Histogrammer{
   typedef std::map<std::string,TH1*> TH1map;
 
  public:
-  Histogrammer(){}
+ Histogrammer()
+   : profile_(false)
+   , category_(0){
+    TH1F::SetDefaultSumw2(kTRUE);
+  }
+  
   ~Histogrammer(){}
 
   // Methods for 1D histograms
@@ -42,7 +47,13 @@ class Histogrammer{
  
  template<typename H>
    void fill(const std::string& name, const std::string& title, const double& bins, const double& min, const double& max, const double& value, const double& weight = 1){
-   book<H>(name, name, bins, min, max)->Fill(value,weight);
+
+   if(profile())
+     // Profile by gen category, right now it is a word of 64 bit
+     book<TH2F>(name, name, 64, 0, 64, bins, min, max)->Fill(*category_,value,weight);
+   else
+     book<H>(name, name, bins, min, max)->Fill(value,weight);
+
  }
 
  template<typename H>
@@ -51,12 +62,23 @@ class Histogrammer{
  }
 
  void fill(const std::string& name, const std::string& title, const double& bins, const double& min, const double& max, const double& value, const double& weight = 1){
-   book<TH1F>(name, name, bins, min, max)->Fill(value,weight);
+   fill<TH1F>(name, name, bins, min, max, value, weight);
  }
  
  void fill(const std::string& name, const double& bins, const double& min, const double& max, const double& value, const double& weight = 1){
    fill(name, name, bins, min, max, value, weight);
  }
+
+ void profile(const int& category) {
+   category_ = &category;
+   profile_  = true;
+ }
+
+ bool profile() const {
+   // Do not profile data
+   return profile_ && *category_ >=0;
+ }
+
  
  // Methods for 2D histograms
 
@@ -124,7 +146,8 @@ class Histogrammer{
  private:
   // Histograms container
   std::map<std::string,TH1*> thePlots;
-  
+  bool profile_;
+  const int  *category_;
 
 };
 

@@ -10,7 +10,7 @@ foreach chunk ( *Chunk* )
  set fail="false"
 
  # Check that root file is existing and not empty
- set filename=${chunk}/ZZjjAnalysis.root
+ set filename=${chunk}/$1
  if ( ! -e $filename ) then
    echo "Missing root file in " ${chunk}
    set fail="true"

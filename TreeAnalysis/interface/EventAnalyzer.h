@@ -16,6 +16,8 @@
 #include <algorithm>
 #include <map>
 
+#include "AnalysisConfiguration.h"
+
 #include "VVXAnalysis/DataFormats/interface/Electron.h"
 #include "VVXAnalysis/DataFormats/interface/Lepton.h"
 #include "VVXAnalysis/DataFormats/interface/Jet.h"
@@ -25,6 +27,8 @@
 
 #include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/MCInfo.h"
+
+#include "VVXAnalysis/Commons/interface/RegionTypes.h"
 
 class TFile;
 class TTree;
@@ -54,7 +58,7 @@ public:
   
   enum METType {Std,NoMu,NoEl};
 
-  EventAnalyzer(SelectorBase& aSelector, std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = true);
+  EventAnalyzer(SelectorBase& aSelector, const AnalysisConfiguration& configuration);
 
   virtual ~EventAnalyzer();
 
@@ -106,7 +110,8 @@ public:
   virtual Int_t cut();
   virtual void  analyze() = 0;
   virtual void  end(TFile &) {};  
-  
+  TTree * tree() const {return theTree;}
+
  private:
   // Structural functions to access the tree branches. User is not supposed to change these.
   virtual Int_t    GetEntry(Long64_t entry);
@@ -127,6 +132,9 @@ public:
   bool doBasicPlots_;
   
  protected:
+
+  // Region
+   phys::RegionTypes region_;
 
   // Histograms helper class
   Histogrammer theHistograms;
@@ -188,12 +196,24 @@ public:
   std::vector<phys::DiBoson<phys::Electron, phys::Electron> >  *ZZ4e  ; TBranch *b_ZZ4e;  
   std::vector<phys::DiBoson<phys::Electron, phys::Lepton>   >  *ZZ2e2m; TBranch *b_ZZ2e2m;
 
+  // Zll --> for CR
+  std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   >  *Zll  ; TBranch *b_Zll; 
+
   // DiBoson (Not in the tree)
   phys::DiBoson<phys::Lepton  , phys::Lepton> *ZZ;
 
   // GenParticle 
   std::vector<phys::Particle>               *genParticles;   TBranch *b_genParticles;
   std::vector<phys::Boson<phys::Particle> > *genVBParticles; TBranch *b_genVBParticles;
+  
+  // GenJets
+  std::vector<phys::Particle>               *pgenJets;   TBranch *b_pgenJets;
+
+  // Jets with pT > 30 GeV and |eta| < 4.7 (not in the tree)
+  std::vector<phys::Particle> *genJets;
+  
+  // Central jets (not in the tree)
+  std::vector<phys::Particle> *centralGenJets;
 };
 
 #endif

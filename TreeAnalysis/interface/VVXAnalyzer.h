@@ -18,9 +18,13 @@ class VVXAnalyzer: public EventAnalyzer, RegistrableAnalysis<VVXAnalyzer>{
 
 public:
 
- VVXAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = false)
+  //, const std::string& filename, const double& lumi = 1., const double& externalXSection = -1., bool doBasicPlots = false
+
+ VVXAnalyzer(const AnalysisConfiguration& configuration)
    : EventAnalyzer(*(new Selector<VVXAnalyzer>(*this)), 
-		   filename, lumi, externalXSection, doBasicPlots){}
+		   configuration){
+    theHistograms.profile(genCategory);
+  }
 
   virtual ~VVXAnalyzer(){}
 

@@ -18,9 +18,9 @@ class ZZWAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZWAnalyzer>{
 
 public:
 
- ZZWAnalyzer(std::string filename, double lumi = 1., double externalXSection = -1., bool doBasicPlots = true)
+ ZZWAnalyzer(const AnalysisConfiguration& configuration)
    : EventAnalyzer(*(new Selector<ZZWAnalyzer>(*this)),
-		   filename, lumi, externalXSection, doBasicPlots){}
+		   configuration){}
 
   virtual ~ZZWAnalyzer(){}
 

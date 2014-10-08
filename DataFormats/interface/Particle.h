@@ -36,14 +36,18 @@ namespace phys {
       , charge_(q)
       , id_(i)
       , motherId_(-99.)
-      , efficiencySF_(1.){}
+      , efficiencySF_(1.)
+      , fakeRateSF_(1.)
+      {}
 
       Particle(const LorentzVector& l, float q =0, int i = 0)
 	:p4_(convert(l))
 	, charge_(q)
 	, id_(i)
 	, motherId_(-99.)
-        , efficiencySF_(1.){}
+        , efficiencySF_(1.)
+        , fakeRateSF_(1.)
+      {}
 
 	
     /// Destructor
@@ -57,6 +61,7 @@ namespace phys {
     double eta()        const {return p4_.Eta();}
     double phi()        const {return p4_.Phi();}
     double p()          const {return p4_.P();}
+    double e()          const {return p4_.E();}
     double mass()       const {return p4_.M();} 
 
     // Method that tries to infer the charge of the particle starting from a pdgId in input
@@ -86,7 +91,11 @@ namespace phys {
 
     bool isValid() const {return id_ != 0 && p() > 0;}
 
-    Double_t efficiencySF() const {return efficiencySF_;}
+    Double_t efficiencySF()  const {return efficiencySF_;}
+    Double_t fakeRateSF()    const {return fakeRateSF_;}
+    Double_t fakeRateSFUnc() const {return fakeRateSFUnc_;}
+
+    Bool_t   passFullSel() const {return true;}
  
   protected:
     TLorentzVector p4_;
@@ -94,6 +103,8 @@ namespace phys {
     Int_t id_;    
     Int_t motherId_;
     Double_t efficiencySF_;
+    Double_t fakeRateSF_;
+    Double_t fakeRateSFUnc_;
 
   private:
     ClassDef(Particle, 1) //

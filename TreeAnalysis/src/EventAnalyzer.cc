@@ -35,18 +35,20 @@ using namespace colour;
 
 
 EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
-			     std::string filename, 
-			     double lumi, 
-			     double externalXSection, bool doBasicPlots)
+			     const AnalysisConfiguration& configuration)
   : select(aSelector)
-  , doBasicPlots_(doBasicPlots)
-  , theMCInfo(filename, lumi, externalXSection)
+  , doBasicPlots_(configuration.getParameter<bool>("doBasicPlots"))
+  , region_      (configuration.getParameter<phys::RegionTypes>("region"))
+  , theMCInfo    (configuration.getParameter<std::string>("filename"), 
+		  configuration.getParameter<double>("lumi"), 
+		  configuration.getParameter<double>("externalXSection"))
   , theWeight(1.)
   , theCutCounter(0.)
-  , theInputWeightedEvents(0.){
+  , theInputWeightedEvents(0.)
+  , genCategory(-99){
 
   TChain *tree = new TChain("treePlanter/ElderTree");
-  tree->Add(filename.c_str());
+  tree->Add(configuration.getParameter<std::string>("filename").c_str());
 
   if (tree == 0) std::cout<<Important("Error in EventAnalyzer ctor:")<<" The tree has a null pointer."<<std::endl;
 
@@ -56,16 +58,13 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 
 
 EventAnalyzer::~EventAnalyzer(){
-  if (!theTree) return;
   delete theTree->GetCurrentFile();
 }
 
 
 
 void EventAnalyzer::Init(TTree *tree)
-{
-  TH1F::SetDefaultSumw2(kTRUE);
-  
+{   
   // Set branch addresses and branch pointers
   if (!tree) return;
   theTree = tree;
@@ -91,12 +90,20 @@ void EventAnalyzer::Init(TTree *tree)
   ZZ4e   = 0; b_ZZ4e   = 0; theTree->SetBranchAddress("ZZ4eCand"  , &ZZ4e  , &b_ZZ4e  );
   ZZ2e2m = 0; b_ZZ2e2m = 0; theTree->SetBranchAddress("ZZ2e2mCand", &ZZ2e2m, &b_ZZ2e2m);
 
+  // Zll --> for CR
+  Zll   = 0; b_Zll   = 0; theTree->SetBranchAddress("ZllCand"  , &Zll  , &b_Zll);
+
+  // Best diboson to be used in the event
   ZZ = 0;
 
 
   // Gen Particles   
   genParticles   = 0;                                                b_genParticles   = 0; theTree->SetBranchAddress("genParticles"  , &genParticles  , &b_genParticles);
   genVBParticles = new std::vector<phys::Boson<phys::Particle> > (); b_genVBParticles = 0; theTree->SetBranchAddress("genVBParticles", &genVBParticles, &b_genVBParticles);
+  
+  // Gen Jets
+  pgenJets   = 0;                                                    b_pgenJets   = 0; theTree->SetBranchAddress("genJets"  , &pgenJets  , &b_pgenJets);
+  genJets  = new std::vector<phys::Particle>(); centralGenJets  = new std::vector<phys::Particle>();
 
   // MET
   met = new phys::Particle();
@@ -135,10 +142,11 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   if (!theTree) return 0;
   
   int e =  theTree->GetEntry(entry);
-  
+
   stable_sort(muons->begin(),     muons->end(),     phys::PtComparator());
   stable_sort(electrons->begin(), electrons->end(), phys::PtComparator());
   stable_sort(pjets->begin(),     pjets->end(),     phys::PtComparator());
+  stable_sort(pgenJets->begin(),  pgenJets->end(),  phys::PtComparator());
 
   // Some selection on jets
   jets->clear(); centralJets->clear();
@@ -148,7 +156,18 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
       if(fabs(jet.eta()) < 2.4) centralJets->push_back(jet);
     }
 
-  
+  genJets->clear(); centralGenJets->clear();
+  foreach(const phys::Particle &jet, *pgenJets)
+    if(jet.pt() > 30){
+      bool leptonMatch = false;
+      foreach(const phys::Particle &gen, *genParticles)
+	if(physmath::deltaR(gen,jet) < 0.5 && (abs(gen.id()) == 11 || abs(gen.id()) == 13)) leptonMatch = true;
+      
+      if(!leptonMatch){
+	if(fabs(jet.eta()) < 4.7) genJets->push_back(jet);
+	if(fabs(jet.eta()) < 2.4) centralGenJets->push_back(jet);
+      }
+    }
 
   Zmm->clear(); Zee->clear(); Wjj->clear();
 
@@ -164,37 +183,53 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   stable_sort(Wjj->begin(), Wjj->end(), phys::PtComparator());
   
   int totCand = ZZ4m->size() + ZZ4e->size() + ZZ2e2m->size();
+  // Control plots. They can be useful to understand if everything is going well (even in CRs)
   theHistograms.fill("nZZCandidates",     "Number of good candidates in the event", 10, 0, 10, totCand       , 1);
   theHistograms.fill("nZZ4eCandidates",   "Number of good candidates in the event", 10, 0, 10, ZZ4e->size()  , 1);
   theHistograms.fill("nZZ4mCandidates",   "Number of good candidates in the event", 10, 0, 10, ZZ4m->size()  , 1);
   theHistograms.fill("nZZ2e2mCandidates", "Number of good candidates in the event", 10, 0, 10, ZZ2e2m->size(), 1);
+  theHistograms.fill("nZllCandidates", "Number of Zll candidates in the event", 10, 0, 10, Zll->size() , 1);
   
-  int triggers = 0;
-  if(totCand > 0){
-    
-    if(ZZ4m->size() == 1 && ZZ4m->front().passTrigger()){ ++triggers;
-      ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4m->front().clone<phys::Lepton,phys::Lepton>());
+  
+  delete ZZ; ZZ = 0;
+
+  // Signal region case
+  if(region_ == phys::SR){
+    int triggers = 0;
+    if(totCand > 0){
+      if(ZZ4m->size() == 1 && ZZ4m->front().passTrigger()){ ++triggers;
+	ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4m->front().clone<phys::Lepton,phys::Lepton>());
+      }
+      if(ZZ4e->size() == 1 && ZZ4e->front().passTrigger()){ ++triggers;
+	ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4e->front().clone<phys::Lepton,phys::Lepton>());
+      }
+      if(ZZ2e2m->size() == 1 && ZZ2e2m->front().passTrigger()){ ++triggers;
+	ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ2e2m->front().clone<phys::Lepton,phys::Lepton>());
+      }
     }
-    if(ZZ4e->size() == 1 && ZZ4e->front().passTrigger()){ ++triggers;
-      ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4e->front().clone<phys::Lepton,phys::Lepton>());
-    }
-    if(ZZ2e2m->size() == 1 && ZZ2e2m->front().passTrigger()){ ++triggers;
-      ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ2e2m->front().clone<phys::Lepton,phys::Lepton>());
-    }
+    theHistograms.fill("GoodTriggerableCands", "Number of good triggerable candidates in the event", 10, 0, 10, triggers, 1);
+    if(triggers != 1) return 0;
+  }
+  // Control region case
+  else{
+    if(Zll->empty() || !Zll->front().passTrigger()) return 0;   
+    ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(Zll->front().clone<phys::Lepton,phys::Lepton>());
   }
 
-  theHistograms.fill("GoodTriggerableCands", "Number of good triggerable candidates in the event", 10, 0, 10, triggers, 1);
-  if(triggers != 1) return 0;
-  
+  if(!ZZ) return 0;
+
   theWeight = theMCInfo.weight(*ZZ);
 
-  theHistograms.fill("weight_full",1000, 0, 10, theWeight);
-  theHistograms.fill("weight_bare",1000, 0, 10, theMCInfo.weight());
-  theHistograms.fill("weight_SF",1000, 0, 10, ZZ->efficiencySF());
-  
+  theHistograms.fill("weight_full"  , "All weights applied"                                    , 1200, -2, 10, theWeight);
+  theHistograms.fill("weight_bare"  , "All weights, but efficiency and fake rate scale factors", 1200, -2, 10, theMCInfo.weight());
+  theHistograms.fill("weight_pu"    , "Weight from PU reweighting procedure"                   , 1200, -2, 10, theMCInfo.puWeight());
+  theHistograms.fill("weight_sample", "Weight from cross-section and luminosity"               , 1200, -2, 10, theMCInfo.sampleWeight());
+  theHistograms.fill("weight_mcProc", "Weight from MC intrinsic event weight"                  , 1200, -2, 10, theMCInfo.mcProcWeight());
+  theHistograms.fill("weight_efficiencySF", "Weight from data/MC lepton efficiency"            , 1200, -2, 10, ZZ->efficiencySF());
+  theHistograms.fill("weight_fakeRateSF"  , "Weight from fake rate scale factor"               , 1200, -2, 10, ZZ->fakeRateSF());
   
   theInputWeightedEvents += theWeight;
-
+  
   return e;
 }
 

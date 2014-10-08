@@ -40,11 +40,12 @@ namespace phys {
       , passTrigger_(false)
       {
 	for(unsigned int i = 0; i < 2; ++i){
-	  id_ += abs(vb1.daughter(i).id()) + abs(vb2.daughter(i).id()) + vb1.daughter(i).id() + vb2.daughter(i).id();
-	  efficiencySF_ *= vb1.daughter(i).efficiencySF() * vb2.daughter(i).efficiencySF();
+	  id_ += abs(daughter0_.daughter(i).id()) + abs(daughter1_.daughter(i).id()) + daughter0_.daughter(i).id() + daughter1_.daughter(i).id();
 	}
+	efficiencySF_ = daughter0_.efficiencySF() * daughter1_.efficiencySF();
+	fakeRateSF_   = daughter0_.fakeRateSF() * daughter1_.fakeRateSF();
       }
-
+    
     template<typename T1, typename T2>
       DiBoson<T1,T2> clone() const {
       DiBoson<T1,T2> newdiboson(daughter0_.clone<T1>(), daughter1_.clone<T2>());
@@ -88,6 +89,17 @@ namespace phys {
     void setIsBestCand (Bool_t  bc) {isBestCand_  = bc;} 
     void setPassFullSel(Bool_t  fs) {passFullSel_ = fs;}
     void setPassTrigger(Bool_t  pt) {passTrigger_ = pt;}
+
+    int numberOfGoodGrandDaughters() const {
+      // Put a protection because right now are contemplated only cases where at least one boson is made of good leptons.
+      if(daughter0_.numberOfGoodDaughters() < 2 && daughter1_.numberOfGoodDaughters() < 2) abort();
+      return daughter0_.numberOfGoodDaughters() + daughter1_.numberOfGoodDaughters();
+    }
+
+    double fakeRateSF() const {
+      double fakeRateSF = daughter0_.fakeRateSF() * daughter1_.fakeRateSF();
+      return numberOfGoodGrandDaughters() == 2 ? -1*fakeRateSF : fakeRateSF;
+    }
 
   private:
 
