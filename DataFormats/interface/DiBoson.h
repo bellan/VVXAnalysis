@@ -42,8 +42,12 @@ namespace phys {
 	for(unsigned int i = 0; i < 2; ++i){
 	  id_ += abs(daughter0_.daughter(i).id()) + abs(daughter1_.daughter(i).id()) + daughter0_.daughter(i).id() + daughter1_.daughter(i).id();
 	}
-	efficiencySF_ = daughter0_.efficiencySF() * daughter1_.efficiencySF();
-	fakeRateSF_   = daughter0_.fakeRateSF() * daughter1_.fakeRateSF();
+	efficiencySF_  = daughter0_.efficiencySF() * daughter1_.efficiencySF();
+	fakeRateSF_    = daughter0_.fakeRateSF() * daughter1_.fakeRateSF();
+	fakeRateSFUnc_ = sqrt(pow(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUnc(),2) +  
+			      pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc(),2));
+
+
       }
     
     template<typename T1, typename T2>
