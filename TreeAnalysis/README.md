@@ -86,3 +86,5 @@ Additional remarks
 - gg_4l are at LO, but Passarino calculated the K factor to go to NNLO. It is an inclusive value, that might depend on jets multiplicity.
 The correction could be sizable, as for the inclusive KF it was obtained something of the order of 2 (for a population that account for the 10% of the total).
 - An EWK correction for all qq process needs to be applied. Right now, it exist as a KF and the depedence as a function of the number of jets is unknown. Also this correction can be sizable.
+- Signal lies in qq_ZZ, qq_4l2j, gg_4l, Higgs samples, WZZJets, ZZZJets.
+- Irreducible background in: WWZJets, TTZJets, TTWWJets.

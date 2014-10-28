@@ -15,6 +15,7 @@
 #include <utility>
 #include <algorithm>
 #include <map>
+#include <bitset>
 
 #include "AnalysisConfiguration.h"
 
@@ -148,15 +149,16 @@ public:
   double theInputWeightedEvents;
 
   // Access to the branches
-  Int_t    event    ; TBranch *b_event;
-  Int_t    run      ; TBranch *b_run;
-  Int_t    lumiBlock; TBranch *b_lumiBlock;
-  Int_t    nvtx     ; TBranch *b_nvtx;
-  Double_t rho      ; TBranch *b_rho;
+  Int_t    event     ; TBranch *b_event;
+  Int_t    run       ; TBranch *b_run;
+  Int_t    lumiBlock ; TBranch *b_lumiBlock;
+  Int_t    nvtx      ; TBranch *b_nvtx;
+  Double_t rho       ; TBranch *b_rho;
   
 		      TBranch *b_puweight;
   		      TBranch *b_mcprocweight;
-  Int_t genCategory ; TBranch *b_genCategory;
+  Int_t genCategory  ; TBranch *b_genCategory;
+  std::bitset<16> topology;
 
   Bool_t  passTrigger; TBranch *b_passTrigger;
   Bool_t  passSkim   ; TBranch *b_passSkim;
