@@ -26,7 +26,7 @@ VBFH126,,0.000473536,,,,/VBF_HToZZTo4L_M-126_8TeV-powheg-pythia6/Summer12_DR53X-
 ttH126,H,0.0001081681,,,,/TTbarH_HToZZTo4L_M-126_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,1,,True
 WH126,H,0.000205867,,,,/WH_HToZZTo4L_M-126_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,,True
 ZH126,H,0.0003340932,,,,/ZH_HToZZTo4L_M-126_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools_group,cmgTuple.*root,2,,True
-powheg15H126,H,0.00572894,,,,/GluGluToHToZZTo4L_M-126_8TeV-powheg15-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,2,,True
+powheg15H126,,0.00572894,,,,/GluGluToHToZZTo4L_M-126_8TeV-powheg15-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0,cmgtools,cmgTuple.*root,2,,True
 powheg15jhuGenV3H126,,0.00572894,,,,/SMHiggsToZZTo4L_M-126_8TeV-powheg15-JHUgenV3-pythia6/Summer12_DR53X-PU_S10_START53_V19-v2/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,2,,
 minloH126,,0.005225759,,,,/GluGluToHToZZTo4L_M-126_8TeV-minloHJJ-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,2,,
 
