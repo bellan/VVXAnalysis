@@ -94,6 +94,7 @@ namespace phys {
     Double_t efficiencySF()  const {return efficiencySF_;}
     Double_t fakeRateSF()    const {return fakeRateSF_;}
     Double_t fakeRateSFUnc() const {return fakeRateSFUnc_;}
+    Double_t fakeRateSFVar() const {return fakeRateSFUnc_*fakeRateSFUnc_;}
 
     Bool_t   passFullSel() const {return true;}
  
