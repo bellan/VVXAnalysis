@@ -59,6 +59,7 @@ namespace phys {
     float charge()      const {return charge_;}
     double pt()         const {return p4_.Pt();}
     double eta()        const {return p4_.Eta();}
+    double rapidity()   const {return p4_.Rapidity();}
     double phi()        const {return p4_.Phi();}
     double p()          const {return p4_.P();}
     double e()          const {return p4_.E();}
