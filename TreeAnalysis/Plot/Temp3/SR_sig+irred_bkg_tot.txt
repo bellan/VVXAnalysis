@@ -1,0 +1,56 @@
+Info in <TCanvas::Print>: file Stack_SR_sig+irred_bkg_tot.png has been created
+Info in <TCanvas::SaveAs>: ROOT file Stack_SR_sig+irred_bkg_tot.root has been created
+
+######### Contribution to fake rate #########
+
+DoubleMu .......................... 3.23906210612
+DoubleEle .......................... 2.72710878076
+MuEG .......................... 0.0563635145081
+                                __________________ 
+
+Irreducible background---------->  6.02253439499 
+
+
+######### Contribution to fake rate #########
+
+DoubleMu .......................... 3.23906210612
+DoubleEle .......................... 2.72710878076
+MuEG .......................... 0.0563635145081
+                                __________________ 
+
+Irreducible background---------->  6.02253439499 
+
+
+######### MonteCarlo samples #########
+
+WWZJets .......................... 0.302447076057
+TTWWJets .......................... 0.0043484694387
+TTZJets .......................... 1.58860274195
+ZZTo2e2mu .......................... 117.637175873
+ZZTo2e2muJJ_SMHContinInterf_H125.6 .......................... 1.07584732932
+ZZTo4eJJ_SMHContinInterf_H125.6 .......................... 0.439676628528
+ZZTo4e .......................... 48.0115651688
+ZZTo4mu .......................... 69.5773944438
+ZZTo4muJJ_SMHContinInterf_H125.6 .......................... 0.632912153502
+ggTo2e2mu_SMHContinInterf-MCFM67_H125.6 .......................... 8.5194750472
+ggTo4e_SMHContinInterf-MCFM67_H125.6 .......................... 3.46717997273
+ggTo4mu_SMHContinInterf-MCFM67_H125.6 .......................... 5.03659349356
+ZZZJets .......................... 0.596664315611
+WZZJets .......................... 0.704832588415
+WH126 .......................... 0.0295284701656
+ZH126 .......................... 0.398945959589
+ttH126 .......................... 0.0336578099035
+
+######### Data #########
+
+DoubleMu .......................... 108.0
+DoubleEle .......................... 179.0
+MuEG .......................... 1.0
+digit anything you want to end the script 
+Traceback (most recent call last):
+  File "./scriptStack.py", line 42, in <module>
+    CloseVar=input("digit anything you want to end the script \n")        
+  File "<string>", line 0
+    
+    ^
+SyntaxError: unexpected EOF while parsing

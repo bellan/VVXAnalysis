@@ -1,0 +1,60 @@
+Error in <TFile::TFile>: file ../results/ZZjAnalyzer_CR3P1F/WH126.root does not exist
+Error in <TFile::TFile>: file ../results/ZZjAnalyzer_CR3P1F/ZH126.root does not exist
+Error in <TFile::TFile>: file ../results/ZZjAnalyzer_CR3P1F/DYJetsToLLTuneZ2M10.root does not exist
+Info in <TCanvas::Print>: file Stack_CR3P1F_sigTot+irred_bkg_tot+red_bkg.png has been created
+Info in <TCanvas::SaveAs>: ROOT file Stack_CR3P1F_sigTot+irred_bkg_tot+red_bkg.root has been created
+
+######### Contribution to fake rate #########
+
+DoubleMu .......................... 3.23906214756
+DoubleEle .......................... 2.72710876539
+MuEG .......................... 0.0563635145081
+                                __________________ 
+
+Reducible background---------->  6.02253441082 
+
+
+######### MonteCarlo samples #########
+
+WWZJets .......................... 0.0296599167687
+TTWWJets .......................... 0.00065858274408
+TTZJets .......................... 0.165324922813
+ZZTo2e2mu .......................... 0.589256466371
+ZZTo2e2muJJ_SMHContinInterf_H125.6 .......................... 0.0140667174045
+ZZTo4eJJ_SMHContinInterf_H125.6 .......................... 0.00588819542054
+ZZTo4e .......................... 0.257432413788
+ZZTo4mu .......................... 0.31989236832
+ZZTo4muJJ_SMHContinInterf_H125.6 .......................... 0.00811144417776
+ggTo2e2mu_SMHContinInterf-MCFM67_H125.6 .......................... 0.0477591079962
+ggTo4e_SMHContinInterf-MCFM67_H125.6 .......................... 0.0195647976165
+ggTo4mu_SMHContinInterf-MCFM67_H125.6 .......................... 0.0281646973004
+ZZZJets .......................... 0.00617663877932
+WZZJets .......................... 0.0122748793437
+WH126  has no entries or is a zombie
+ZH126  has no entries or is a zombie
+ttH126 .......................... 0.00159652806281
+WWWJets .......................... 0.00148077582708
+WZ .......................... 1.06280754815
+TTTo2L2Nu2B .......................... 0.388186172873
+TTWJets .......................... 0.0129735312739
+TTGJets .......................... 0.0389565601945
+DYJetsToLLTuneZ2M50 .......................... 4.42984947003
+DYJetsToLLTuneZ2M10  has no entries or is a zombie
+
+######### Data #########
+
+DoubleMu .......................... 4.57928491756
+DoubleEle .......................... 3.86148874462
+MuEG .......................... 0.0910865236074
+DoubleMu INTEGRAL HVAR =  0.0910865236074 N BINS 200
+DoubleEle INTEGRAL HVAR =  0.0910865236074 N BINS 200
+MuEG INTEGRAL HVAR =  0.0910865236074 N BINS 200
+TOTAL  2.39892911993
+digit anything you want to end the script 
+Traceback (most recent call last):
+  File "./scriptStack.py", line 46, in <module>
+    CloseVar=input("digit anything you want to end the script \n")        
+  File "<string>", line 0
+    
+    ^
+SyntaxError: unexpected EOF while parsing

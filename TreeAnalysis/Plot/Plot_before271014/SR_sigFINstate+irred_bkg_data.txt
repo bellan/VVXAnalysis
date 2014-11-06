@@ -1,0 +1,41 @@
+Info in <TCanvas::Print>: file Stack_SR_data_sigFINstate+irred_bkg.png has been created
+Info in <TCanvas::SaveAs>: ROOT file Stack_SR_data_sigFINstate+irred_bkg.root has been created
+Info in <TCanvas::Print>: pdf file Stack_SR_data_sigFINstate+irred_bkg.pdf has been created
+
+FAKE RATE DENTRO IL MODULO---------->  6.02253439499 
+
+
+FAKE RATE NEL MAIN--------->  data driven. Total number of irreducible background events:  6.02253441006 
+
+
+FAKE RATE DENTRO IL MODULO---------->  6.02253439499 
+
+
+######### MonteCarlo samples #########
+
+WWZJets .......................... 0.302447076057
+TTWWJets .......................... 0.0043484694387
+TTZJets .......................... 1.58860274195
+ZZTo2e2mu .......................... 117.637175873
+ZZTo2e2muJJ_SMHContinInterf_H125.6 .......................... 1.07584732932
+ggTo2e2mu_SMHContinInterf-MCFM67_H125.6 .......................... 8.5194750472
+ZZTo4eJJ_SMHContinInterf_H125.6 .......................... 0.439676628528
+ZZTo4e .......................... 48.0115651688
+ggTo4e_SMHContinInterf-MCFM67_H125.6 .......................... 3.46717997273
+ZZTo4mu .......................... 69.5773944438
+ggTo4mu_SMHContinInterf-MCFM67_H125.6 .......................... 5.03659349356
+ZZTo4muJJ_SMHContinInterf_H125.6 .......................... 0.632912153502
+
+######### Data #########
+
+DoubleMu .......................... 108.0
+DoubleEle .......................... 179.0
+MuEG .......................... 1.0
+digit anything you want to end the script 
+Traceback (most recent call last):
+  File "../python/StackPlot_func.py", line 256, in <module>
+    CloseVar=input("digit anything you want to end the script \n")        
+  File "<string>", line 0
+    
+    ^
+SyntaxError: unexpected EOF while parsing
