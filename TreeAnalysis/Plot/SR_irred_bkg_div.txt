@@ -1,0 +1,27 @@
+libGL error: failed to load driver: swrast
+Info in <TCanvas::Print>: file Stack_SR_irred_bkg_div_FinState.png has been created
+Info in <TCanvas::SaveAs>: ROOT file Stack_SR_irred_bkg_div_FinState.root has been created
+
+######### Contribution to fake rate #########
+
+DoubleMu .......................... 3.23906214756
+DoubleEle .......................... 3.86844368608
+MuEG .......................... 0.0912705164956
+                                __________________ 
+
+Reducible background---------->  7.19877639077 
+
+
+######### MonteCarlo samples #########
+
+WWZJets .......................... 0.302447076057
+TTZJets .......................... 1.58860274195
+TTWWJets .......................... 0.0043484694387
+digit anything you want to end the script 
+Traceback (most recent call last):
+  File "./scriptStack.py", line 63, in <module>
+    CloseVar=input("digit anything you want to end the script \n")        
+  File "<string>", line 0
+    
+    ^
+SyntaxError: unexpected EOF while parsing

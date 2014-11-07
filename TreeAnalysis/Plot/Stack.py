@@ -122,7 +122,7 @@ def GetDataPlot(region):
     for d in typeofsamples:
         datafiles[d["sample"]] = ROOT.TFile(inputdir+d["sample"]+".root")
     
-    #print "\n","######### Data #########\n"
+    print "\n","######### Data #########\n"
 
     hdata=ROOT.TH1F()
     hvar=ROOT.TH1F()
@@ -133,17 +133,17 @@ def GetDataPlot(region):
             print d["sample"]," has no enetries or is a zombie" 
             continue
         if isFirst:
-            #if region=="CR2P2F":
-                #print d["sample"], "..........................", -h.Integral()
-            #else:
-                #print d["sample"], "..........................", h.Integral()
+            if region=="CR2P2F":
+                print d["sample"], "..........................", -h.Integral()
+            else:
+                print d["sample"], "..........................", h.Integral()
             hdata=copy.deepcopy(h)
             isFirst=0
             continue
-        #if region=="CR2P2F":
-            #print d["sample"], "..........................", -h.Integral()
-        #else:
-            #print d["sample"], "..........................", h.Integral()
+        if region=="CR2P2F":
+            print d["sample"], "..........................", -h.Integral()
+        else:
+            print d["sample"], "..........................", h.Integral()
         hdata.Add(h)
 
     if region=="CR2P2F":
@@ -152,18 +152,21 @@ def GetDataPlot(region):
     hdata.SetMarkerStyle(21)
     hdata.SetMarkerSize(.5)
     hdata.Rebin(2) #FIX MEEEE
-    #hdata.GetYaxis().SetRangeUser(0,40)
+   
     
     return copy.deepcopy(hdata)
 
 #######################################################
 
-def SetError(h, hvar):
+def SetError(h22, h31, hvar):
 
     Nbins= h.GetNbinsX()
     
     for i in range(1,Nbins):
-        err = math.sqrt(hvar.GetBinContent(i)+(h.GetBinError(i)*GetBinError(i)))
+        stat22 = h22.GetBinError(i)
+        stat31 = h31.GetBinError(i)
+        stat = (stat22*stat22)+(stat31*stat31)
+        err = math.sqrt(hvar.GetBinContent(i)+ stat)
         h.SetBinError(i,err)
         
     return 1
@@ -219,7 +222,7 @@ def GetFakeRate(region, method):
         hvar.Add(hv31)
             
         h22 = filesCR2P2F[s["sample"]].Get("ZZMass")
-        h22 = filesCR2P2F[s["sample"]].Get("ZZMass_FRVar")
+        hv22 = filesCR2P2F[s["sample"]].Get("ZZMass_FRVar")
         if h22==None:
             print s["sample"]," has no enetries or is a zombie" 
             continue
@@ -236,7 +239,6 @@ def GetFakeRate(region, method):
         hFakeRate.Rebin(2) #FIX MEEEEE
 
     else:
-
        
         hFakeRate.SetMarkerStyle(21)
         hFakeRate.SetMarkerSize(.5)
@@ -263,10 +265,13 @@ def GetStackPlot(region, category):
 
     stack = ROOT.THStack("stack",region+" "+category)
 
-    if region=="SR":
-        hfake=GetFakeRate(region,"data")
-        stack.Add(hfake)
-        leg.AddEntry(hfake,"Reducible background","f")
+# Comment this if you don't want the irreducible background (FR method) to be shown ------------------
+    #if region=="SR":
+    #    hfake=GetFakeRate(region,"data")
+    #    stack.Add(hfake)
+    #    leg.AddEntry(hfake,"Reducible background","f")
+
+##----------------------
 
     print "\n","######### MonteCarlo samples #########\n"
 

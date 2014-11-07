@@ -1,0 +1,27 @@
+libGL error: failed to load driver: swrast
+Info in <TCanvas::Print>: file Stack_SR_sig.png has been created
+Info in <TCanvas::SaveAs>: ROOT file Stack_SR_sig.root has been created
+
+######### Contribution to fake rate #########
+
+DoubleMu .......................... 3.23906214756
+DoubleEle .......................... 2.72710876539
+MuEG .......................... 0.0563635145081
+                                __________________ 
+
+Reducible background---------->  6.02253441082 
+
+For sample  WH126 PassDef has no entries
+For sample  ZH126 PassDef has no entries
+Total events passing signal defition  253.744820312
+For sample  WH126 NoPassDef has no entries
+For sample  ZH126 NoPassDef has no entries
+Total events not passing signal defition  1.9881480079
+digit anything you want to end the script 
+Traceback (most recent call last):
+  File "./scriptStack.py", line 63, in <module>
+    CloseVar=input("digit anything you want to end the script \n")        
+  File "<string>", line 0
+    
+    ^
+SyntaxError: unexpected EOF while parsing
