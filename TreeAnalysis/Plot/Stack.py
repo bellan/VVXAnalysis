@@ -168,9 +168,7 @@ def SetFakeRate(h31, h22, hvar):
         stat31 = h31.GetBinError(i)
         stat = (stat22*stat22)+(stat31*stat31)
         err = math.sqrt(hvar.GetBinContent(i)+ stat)
-        print 'contents',h31.GetBinContent(i),' ',h22.GetBinContent(i),'\n'
         h31.SetBinContent(i,h31.GetBinContent(i)+h22.GetBinContent(i))
-        print 'contents After',h31.GetBinContent(i),' ',h22.GetBinContent(i),'\n'
         h31.SetBinError(i,err)      
         
     return 1
