@@ -1,3 +1,0 @@
-f = ROOT.TFile("../results/ZZjAnalyzer_SR/DoubleMu.root")
-f = ROOT.TFile("../results/ZZjAnalyzer_SR/DoubleEle.root")
-f = ROOT.TFile("../results/ZZjAnalyzer_SR/MuEG.root")
