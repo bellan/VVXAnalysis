@@ -324,18 +324,18 @@ void ZZWAnalyzer::analyze() {
   
     if ( GenZ.size() >= 2 && GenW.size() >= 1 ) {
     
-      const Boson<Particle>* Z0gen = GenZ.at(0);
-      const Boson<Particle>* Z1gen = GenZ.at(1);
-      const Boson<Particle>* Wgen  = GenW.at(0);
+      const Boson<Particle>& Z0gen = *GenZ.at(0);
+      const Boson<Particle>& Z1gen = *GenZ.at(1);
+      const Boson<Particle>& Wgen  = *GenW.at(0);
       
-      double DR11 = deltaR(Wgen->daughter(0).p4().Rapidity(), Wgen->daughter(0).p4().Phi(), Z0gen->daughter(0).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
-      double DR12 = deltaR(Wgen->daughter(0).p4().Rapidity(), Wgen->daughter(0).p4().Phi(), Z0gen->daughter(1).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
-      double DR13 = deltaR(Wgen->daughter(0).p4().Rapidity(), Wgen->daughter(0).p4().Phi(), Z1gen->daughter(0).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
-      double DR14 = deltaR(Wgen->daughter(0).p4().Rapidity(), Wgen->daughter(0).p4().Phi(), Z1gen->daughter(1).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
-      double DR21 = deltaR(Wgen->daughter(1).p4().Rapidity(), Wgen->daughter(1).p4().Phi(), Z0gen->daughter(0).p4().Rapidity(), Z0gen->daughter(0).p4().Phi());
-      double DR22 = deltaR(Wgen->daughter(1).p4().Rapidity(), Wgen->daughter(1).p4().Phi(), Z0gen->daughter(1).p4().Rapidity(), Z0gen->daughter(1).p4().Phi());
-      double DR23 = deltaR(Wgen->daughter(1).p4().Rapidity(), Wgen->daughter(1).p4().Phi(), Z1gen->daughter(0).p4().Rapidity(), Z1gen->daughter(0).p4().Phi());
-      double DR24 = deltaR(Wgen->daughter(1).p4().Rapidity(), Wgen->daughter(1).p4().Phi(), Z1gen->daughter(1).p4().Rapidity(), Z1gen->daughter(1).p4().Phi());
+      double DR11 = deltaR(Wgen.daughter(0).p4().Rapidity(), Wgen.daughter(0).p4().Phi(), Z0gen.daughter(0).p4().Rapidity(), Z0gen.daughter(0).p4().Phi());
+      double DR12 = deltaR(Wgen.daughter(0).p4().Rapidity(), Wgen.daughter(0).p4().Phi(), Z0gen.daughter(1).p4().Rapidity(), Z0gen.daughter(0).p4().Phi());
+      double DR13 = deltaR(Wgen.daughter(0).p4().Rapidity(), Wgen.daughter(0).p4().Phi(), Z1gen.daughter(0).p4().Rapidity(), Z0gen.daughter(0).p4().Phi());
+      double DR14 = deltaR(Wgen.daughter(0).p4().Rapidity(), Wgen.daughter(0).p4().Phi(), Z1gen.daughter(1).p4().Rapidity(), Z0gen.daughter(0).p4().Phi());
+      double DR21 = deltaR(Wgen.daughter(1).p4().Rapidity(), Wgen.daughter(1).p4().Phi(), Z0gen.daughter(0).p4().Rapidity(), Z0gen.daughter(0).p4().Phi());
+      double DR22 = deltaR(Wgen.daughter(1).p4().Rapidity(), Wgen.daughter(1).p4().Phi(), Z0gen.daughter(1).p4().Rapidity(), Z0gen.daughter(1).p4().Phi());
+      double DR23 = deltaR(Wgen.daughter(1).p4().Rapidity(), Wgen.daughter(1).p4().Phi(), Z1gen.daughter(0).p4().Rapidity(), Z1gen.daughter(0).p4().Phi());
+      double DR24 = deltaR(Wgen.daughter(1).p4().Rapidity(), Wgen.daughter(1).p4().Phi(), Z1gen.daughter(1).p4().Rapidity(), Z1gen.daughter(1).p4().Phi());
       
       
       
@@ -343,18 +343,18 @@ void ZZWAnalyzer::analyze() {
       
       //------------Mass--------------
   
-      theHistograms.fill("Z0Gen_Mass", "Z0Gen_Mass", 200, 0, 200, Z0gen->p4().M(), theWeight);
-      theHistograms.fill("Z1Gen_Mass", "Z1Gen_Mass", 200, 0, 200, Z1gen->p4().M(), theWeight);
-      theHistograms.fill("WGen_Mass" , "WGen_Mass" , 200, 0, 200, Wgen->p4().M() , theWeight);
+      theHistograms.fill("Z0Gen_Mass", "Z0Gen_Mass", 200, 0, 200, Z0gen.p4().M(), theWeight);
+      theHistograms.fill("Z1Gen_Mass", "Z1Gen_Mass", 200, 0, 200, Z1gen.p4().M(), theWeight);
+      theHistograms.fill("WGen_Mass" , "WGen_Mass" , 200, 0, 200, Wgen.p4().M() , theWeight);
   
       //------------Pt--------------
   
-      theHistograms.fill("Z0Gen_Pt"  , "Z0Gen_Pt"  , 300, 0, 300, Z0gen->pt()    , theWeight);
-      theHistograms.fill("Z1Gen_Pt"  , "Z1Gen_Pt"  , 300, 0, 300, Z1gen->pt()    , theWeight);
-      theHistograms.fill("WGen_Pt"   , "WGen_Pt"   , 300, 0, 300, Wgen->pt()     , theWeight);
+      theHistograms.fill("Z0Gen_Pt"  , "Z0Gen_Pt"  , 300, 0, 300, Z0gen.pt()    , theWeight);
+      theHistograms.fill("Z1Gen_Pt"  , "Z1Gen_Pt"  , 300, 0, 300, Z1gen.pt()    , theWeight);
+      theHistograms.fill("WGen_Pt"   , "WGen_Pt"   , 300, 0, 300, Wgen.pt()     , theWeight);
 
-      theHistograms.fill("j1Gen_Pt"  , "j1Gen_Pt"  , 300, 0, 300, Wgen->daughter(0).pt() , theWeight);
-      theHistograms.fill("j2Gen_Pt"  , "j2Gen_Pt"  , 300, 0, 300, Wgen->daughter(1).pt() , theWeight);
+      theHistograms.fill("j1Gen_Pt"  , "j1Gen_Pt"  , 300, 0, 300, Wgen.daughter(0).pt() , theWeight);
+      theHistograms.fill("j2Gen_Pt"  , "j2Gen_Pt"  , 300, 0, 300, Wgen.daughter(1).pt() , theWeight);
    
       //------------DR--------------
 
@@ -370,8 +370,8 @@ void ZZWAnalyzer::analyze() {
       
       //%%%%%%%% Comparison genParticles - recoParticles %%%%%%%%//
       
-      std::vector< std::pair<const Particle* , Boson<Lepton> > > ZcomparatorVector;
-      std::vector< std::pair<const Particle* , Boson<Jet> > >    WcomparatorVector;  
+      std::vector< std::pair<Boson<Particle> , Boson<Lepton> > > ZcomparatorVector;
+      std::vector< std::pair<Boson<Particle> , Boson<Jet> > >    WcomparatorVector;  
   
 
 
@@ -402,15 +402,15 @@ void ZZWAnalyzer::analyze() {
       
       cout <<  "\n---------- MASSES COMPARISON: Z gen  ||  Z reco matched with gen  ||  Z reco ----------"   << endl;
 
-      cout << "Z0gen= " << Z0gen->p4().M() << "\t\tZ0matched = " << Z0.p4().M() << "\t\tZ0reco = " << Green(myZ0.p4().M()) <<endl;
-      cout << "Z1gen= " << Z1gen->p4().M() << "\t\tZ1matched = " << Z1.p4().M() << "\t\tZ1reco = " << Green(myZ1.p4().M()) <<endl;
-      cout << "Wgen=  " << Wgen->p4().M()  << "\t\tWmatched =  " << W.p4().M()  << "\t\tWreco = "  << Green(myW.p4().M())  <<endl;
+      cout << "Z0gen= " << Z0gen.p4().M() << "\t\tZ0matched = " << Z0.p4().M() << "\t\tZ0reco = " << Green(myZ0.p4().M()) <<endl;
+      cout << "Z1gen= " << Z1gen.p4().M() << "\t\tZ1matched = " << Z1.p4().M() << "\t\tZ1reco = " << Green(myZ1.p4().M()) <<endl;
+      cout << "Wgen=  " << Wgen.p4().M()  << "\t\tWmatched =  " << W.p4().M()  << "\t\tWreco = "  << Green(myW.p4().M())  <<endl;
 
       cout <<  "\n------- DAUGHTERS IDS COMPARISON: Z gen  ||  Z reco matched with gen  ||  Z reco -------"   << endl;
-      cout << "daughter1 \tZ0gen = " << Z0gen->daughter(0).id() << "\tZ0matched = " << Z0.daughter(0).id() << "\tZ0reco = " << myZ0.daughter(0).id() << endl;
-      cout << "daughter2 \tZ0gen = " << Z0gen->daughter(1).id() << "\tZ0matched = " << Z0.daughter(1).id() << "\tZ0reco = " << myZ0.daughter(1).id() << endl;
-      cout << "daughter1 \tZ0gen = " << Z1gen->daughter(0).id() << "\tZ0matched = " << Z1.daughter(0).id() << "\tZ0reco = " << myZ1.daughter(0).id() << endl;
-      cout << "daughter2 \tZ0gen = " << Z1gen->daughter(1).id() << "\tZ0matched = " << Z1.daughter(1).id() << "\tZ0reco = " << myZ1.daughter(1).id() << endl;
+      cout << "daughter1 \tZ0gen = " << Z0gen.daughter(0).id() << "\tZ0matched = " << Z0.daughter(0).id() << "\tZ0reco = " << myZ0.daughter(0).id() << endl;
+      cout << "daughter2 \tZ0gen = " << Z0gen.daughter(1).id() << "\tZ0matched = " << Z0.daughter(1).id() << "\tZ0reco = " << myZ0.daughter(1).id() << endl;
+      cout << "daughter1 \tZ0gen = " << Z1gen.daughter(0).id() << "\tZ0matched = " << Z1.daughter(0).id() << "\tZ0reco = " << myZ1.daughter(0).id() << endl;
+      cout << "daughter2 \tZ0gen = " << Z1gen.daughter(1).id() << "\tZ0matched = " << Z1.daughter(1).id() << "\tZ0reco = " << myZ1.daughter(1).id() << endl;
       
       
       bool ZcorrectMatch = (myZ0.p4() == Z0.p4() && myZ1.p4() == Z1.p4()) || (myZ0.p4() == Z1.p4() && myZ1.p4() == Z0.p4());
