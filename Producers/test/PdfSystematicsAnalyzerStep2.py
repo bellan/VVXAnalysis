@@ -66,7 +66,7 @@ weightfile='file:PdfWeight.root'
 
 process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(weightfile),
-secondaryFileNames = cms.untracked.vstring(infile2)
+secondaryFileNames = cms.untracked.vstring(infile1)
 )
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 10000
@@ -83,9 +83,8 @@ src = cms.InputTag("genParticlesPruned")
 
 process.signalFilters += process.zzGenCategory
 
-
 # Collect uncertainties for rate and acceptance
-process.pdfSystematics = cms.EDFilter("PdfSystematicsAnalyzerZZ",
+process.pdfSystematics = cms.EDAnalyzer("PdfSystematicsAnalyzerZZ",
       SelectorPath = cms.untracked.string('preselection'),
       PdfWeightTags = cms.untracked.VInputTag(
               "pdfWeights:CT10"
@@ -94,8 +93,11 @@ process.pdfSystematics = cms.EDFilter("PdfSystematicsAnalyzerZZ",
       )
 )
 
+process.genEventCounter  = cms.EDProducer("EventCountProducer")
+# Main path
+#process.pdfana = cms.Sequence(process.genEventCounter*process.zzGenCategory*process.pdfWeights)
 
-process.thisIsTheEnd = cms.EndPath( process.zzGenCategory*process.pdfSystematics)
+process.thisIsTheEnd = cms.EndPath(process.genEventCounter*process.zzGenCategory*process.pdfSystematics)
 #process.end = cms.EndPath(process.pdfSystematics)
 
 

@@ -156,21 +156,22 @@ def GetDataPlot(region):
     
     return copy.deepcopy(hdata)
 
-#######################################################
+######################################################
 
-def SetError(h22, h31, hvar):
+def SetFakeRate(h31, h22, hvar):
 
-    Nbins= h.GetNbinsX()
+    Nbins= h31.GetNbinsX()
     
     for i in range(1,Nbins):
+
         stat22 = h22.GetBinError(i)
         stat31 = h31.GetBinError(i)
         stat = (stat22*stat22)+(stat31*stat31)
         err = math.sqrt(hvar.GetBinContent(i)+ stat)
-        h.SetBinError(i,err)
+        h31.SetBinContent(i,h31.GetBinContent(i)+h22.GetBinContent(i))
+        h31.SetBinError(i,err)      
         
     return 1
-
 #######################################################
 
 def GetFakeRate(region, method): 
@@ -195,6 +196,7 @@ def GetFakeRate(region, method):
     print "\n","######### Contribution to fake rate #########\n"
 
     hFakeRate=ROOT.TH1F()
+    h22Tot=ROOT.TH1F()
     hvar=ROOT.TH1F()
 
     isFirst=1
@@ -209,29 +211,32 @@ def GetFakeRate(region, method):
             hvar=copy.deepcopy(hv31)
             h22 = filesCR2P2F[s["sample"]].Get("ZZMass")
             hv22 = filesCR2P2F[s["sample"]].Get("ZZMass_FRVar")
+            h22Tot=copy.deepcopy(h22) 
             isFirst=0
             print s["sample"], "..........................",(h31.Integral())+(h22.Integral())
             if h22==None:
                 print s["sample"]," has no enetries or is a zombie" 
                 continue
-            hFakeRate.Add(h22)
+            # hFakeRate.Add(h22)
             hvar.Add(hv22)
             continue 
-            
+                      
         hFakeRate.Add(h31)
-        hvar.Add(hv31)
-            
+        hvar.Add(hv31)        
         h22 = filesCR2P2F[s["sample"]].Get("ZZMass")
         hv22 = filesCR2P2F[s["sample"]].Get("ZZMass_FRVar")
         if h22==None:
             print s["sample"]," has no enetries or is a zombie" 
             continue
-        hFakeRate.Add(h22)
+        h22Tot.Add(h22)
         hvar.Add(hv22)
         print s["sample"], "..........................",(h31.Integral())+(h22.Integral())
-
+    
+    SetFakeRate(hFakeRate,h22Tot,hvar)
+    Err=ROOT.Double(0.)
+    Integr= hFakeRate.IntegralAndError(0,-1,Err)
     print "                                __________________ "
-    print "\n","Reducible background----------> ",hFakeRate.Integral(),"\n"
+    print "\n","Reducible background----------> ",Integr," +- ",Err,"\n"
 
     if region != "SR_compare":    
         hFakeRate.SetFillColor(ROOT.kGray)
