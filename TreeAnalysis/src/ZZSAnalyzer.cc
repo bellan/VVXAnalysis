@@ -79,24 +79,17 @@ int top_3 = 0;
 int top_4 = 0;
 int top_5 = 0;
 int sig = 0;
-// int q = 0;
-// int g = 0;
-// int q_30 = 0;
-// int g_30 = 0;
 int inDeltaEta_4l = 0;
 int inDeltaY_4l = 0;
 int inDeltaEta_ZZ = 0;
 int inDeltaY_ZZ = 0;
-// TVectorD DeltaEta_c1;
-// TVectorD mJJ_c1;
-int c1 =0;
-// TVectorD DeltaEta_c2;
-// TVectorD mJJ_c2;
-int c2 =0;
-// int n = tree()->GetEntries();
-// float DeltaEta[n];
-// float mJJ[n];
-//const AnalysisConfiguration& configuration;
+
+int q = 0;
+int g = 0;
+int hq = 0;
+int p = 0;
+int l =0;
+int o = 0;
 
 void ZZSAnalyzer::analyze(){
   
@@ -113,48 +106,56 @@ void ZZSAnalyzer::analyze(){
 
     foreach(const Jet &jet, *jets){
       double bestDeltaR = 1e30;
-      const Particle* matchedJet =0; 
+      const Particle* matchedGenJet = 0; 
       foreach(const Particle &gjet, *pgenJets){
 	double myDeltaR=physmath::deltaR(jet, gjet);
 	if (myDeltaR<bestDeltaR) {
-	  matchedJet=&gjet;
+	  matchedGenJet=&gjet;
 	  bestDeltaR=myDeltaR;
 	}
       }
-      GenRecoJetMatchedVector.push_back(make_pair(matchedJet,&jet));
+      if(bestDeltaR < 0.4) GenRecoJetMatchedVector.push_back(make_pair(matchedGenJet,&jet));
     }
 
 
     for(std::vector<std::pair<const Particle*, const Jet*> >::iterator it = GenRecoJetMatchedVector.begin(); it != GenRecoJetMatchedVector.end(); it++){
-      // std::cout << "(" << it->first->pt() << ", " << it->second->pt() << ")" << std::endl;
-
-      std::cout << "DeltaR = " << physmath::deltaR(it->first, it->second) << std::endl;
+     
+      std::cout << "DeltaR = " << physmath::deltaR(*(it->first), *(it->second)) << std::endl;
  
-     //  double bestDeltaR = 1e30;
-     //  const Particle* matchedParticle =0; 
-     //  foreach(const Particle &gparticle, *pgenJets){
-     // 	double myDeltaR=physmath::deltaR(it->first, gparticle);
-     // 	if (myDeltaR<bestDeltaR) {
-     // 	  matchedParticle=&gparticle;
-     // 	  bestDeltaR=myDeltaR;
-     // 	}
-     //  }
-     // RecoJetGenParticleMatchedVector.push_back(make_pair(matchedParticle,it->second));
+      double bestDeltaR = 1e30;
+      const Particle* matchedGenParticle =0; 
+      foreach(const Particle &gparticle, *genParticles){
+     	double myDeltaR=physmath::deltaR(*(it->first), gparticle);
+     	if (myDeltaR<bestDeltaR) {
+     	  matchedGenParticle=&gparticle;
+     	  bestDeltaR=myDeltaR;
+     	}
+      }
+     if(bestDeltaR < 0.4) RecoJetGenParticleMatchedVector.push_back(make_pair(matchedGenParticle,it->second));
 
     }
 
-    // int q = 0;
-    // int g = 0;
+   
     
-    // for(std::vector<std::pair<const Particle*, const Particle*> >::iterator j = RecoJetGenParticleMatchedVector.begin(); j != RecoJetGenParticleMatchedVector.end(); j++){
+    for(std::vector<std::pair<const Particle*, const Particle*> >::iterator j = RecoJetGenParticleMatchedVector.begin(); j != RecoJetGenParticleMatchedVector.end(); j++){
       
-    //   if(abs(j->first->id()) == 1 || abs(j->first->id()) == 2 )	q++;
+      std::cout << "gen particle id = " << j->first->id() << std::endl; 
+
+      if(abs(j->first->id()) == 1 || abs(j->first->id()) == 2 )	q++;
       
-    //   else if(abs(gen.id()) == 21)  g++;
+      else if(abs(j->first->id()) == 21)  g++;
+
+      else if(abs(j->first->id()) == 3 ||abs(j->first->id()) == 4 || abs(j->first->id()) == 5 || abs(j->first->id()) == 6 ) hq++;
       
-    // }
+
+      else if(abs(j->first->id()) == 22) p++;
+      
+      else if(abs(j->first->id()) == 11 || abs(j->first->id()) == 13) l++;
+
+      else o++;
+    }
     
-    //  std::cout << "quark-jet = " << q  << "gluon-jet = " << g << std::endl;
+    std::cout << "quark jets = " << q  << " gluon jets = " << g << " heavy jets = " << hq << " photon jets = " << p << " lepton jets = " << l << " other jets = " << o << std::endl;
 
      
       
@@ -175,11 +176,7 @@ void ZZSAnalyzer::analyze(){
       
       theHistograms.fill("ngenJets_sigVVS"       , "Number of generated jets (|#eta|<4.7 and p_T > 30 GeV) - VVS signal condictions required"        , 10, 0, 10, genJets->size(), theWeight);
       theHistograms.fill("ngenCentralJets_sigVVS", "Number of generated central jets (|#eta|<2.5 and p_T > 30 GeV) - VVS signal condictions required", 10, 0, 10,  centralGenJets->size(), theWeight);
-      //genJets pt>30, |eta|< 4.7
-      //  foreach(const Particle genJet, *genJets){
-      // theHistograms.fill("jet_girth", "jet girth",  100, -100, 100, genJets->at(0).girth(), theWeight);
-	// }
-
+      
     }
 
   }
