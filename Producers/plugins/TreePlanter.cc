@@ -337,7 +337,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     event.getByLabel(theGenCollectionLabel,  genParticles);
     
     for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) 
-      if (p->status() ==3 && std::distance(genParticles->begin(),p) > 5)
+      if (p->status() == 3)
 	genParticles_.push_back(phys::Particle(p->p4(), phys::Particle::computeCharge(p->pdgId()), p->pdgId()));
          
   
