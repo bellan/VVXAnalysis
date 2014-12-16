@@ -1,5 +1,9 @@
 //-----------FUNCTION: definition of the two ZZ bosons from leptons-------
 
+// WARNING: Right now (Dic 16) the signal definition applied on final ntuples does not work out of the box anymore.
+// To run it properly one needs to remove the initial state parton!!
+
+
 #ifndef VVXAnalysis_Commons_SignalDefinitions_H
 #define VVXAnalysis_Commons_SignalDefinitions_H
 
