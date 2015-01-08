@@ -45,6 +45,9 @@ set(VVXAnalyzer_SRCS ${EventAnalyzer_SRCS} ${SRC}/VVXAnalyzer.cc ${SRC}/ZZWAnaly
 add_executable(${BIN}/eventAnalyzer ${BIN}/eventAnalyzer.cpp ${SRC}/AnalysisFactory.cc ${VVXAnalyzer_SRCS})
 target_link_libraries(bin/eventAnalyzer ${ROOT_LIBS})
 
+add_executable(${BIN}/treeFilter ${BIN}/treeFilter.cpp ${EventDF_DICTIONARY})
+target_link_libraries(bin/treeFilter ${ROOT_LIBS})
+
 
 
 

@@ -24,7 +24,7 @@ parser.add_option("-r", "--region", dest="region",
 
 parser.add_option("-e", "--external-cross-section", dest="getExternalCrossSectionFromFile",
                   action="store_true",
-                  help="Use this option if you want to read the cross-section from the csv file")
+                  help="Use this option if you want to force to read again the cross-section from the csv file")
 
 parser.add_option("-l", "--luminosity", dest="luminosity",
                   type='int',
