@@ -24,6 +24,9 @@ public:
   virtual ~ZZSAnalyzer(){}
 
   virtual void analyze();
+  virtual Int_t cut();
+
+  void ZZplots(int id =-1);
 
  private:
   friend class Selector<ZZSAnalyzer>;

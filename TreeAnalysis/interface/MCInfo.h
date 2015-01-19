@@ -46,6 +46,7 @@ class MCInfo {
   double luminosity_;
   double internalCrossSection_;
   double externalCrossSection_;
+  double externalCrossSectionFromCSV_;
   double *crossSection_;
   double signalEfficiency_;
   int    signalDefinition_;

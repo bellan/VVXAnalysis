@@ -79,7 +79,7 @@ struct ScalarSumPtComparator{
     template<typename PAIR>
     bool operator()(const PAIR & a,
                     const PAIR & b) const{
-      return physmath::deltaR(*a.first, a.second) < physmath::deltaR(*b.first, b.second);
+      return physmath::deltaR(a.first, a.second) < physmath::deltaR(b.first, b.second);
     }
   };
   

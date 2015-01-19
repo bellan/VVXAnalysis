@@ -28,7 +28,7 @@ int main (int argc, char ** argv){
   analysisConfig.addParameter("test"    , phys::RegionTypes::CR3P1F);
 
 
-  std::cout<<Yellow("Analyzing "+analysisConfig.getParameter<std::string>("filename")+" ... please wait... ")<<endl ;
+  cout<<Yellow("Analyzing "+analysisConfig.getParameter<std::string>("filename")+" ... please wait... ")<<endl ;
 
   EventAnalyzer *analysis = AnalysisFactory::get()->createAnalysis(analysisConfig);
   analysis->loop(analysisConfig.getParameter<std::string>("outputfile"));

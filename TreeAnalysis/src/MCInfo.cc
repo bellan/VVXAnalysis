@@ -10,7 +10,8 @@ using namespace colour;
 MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& externalXSection)
   : luminosity_(lumi)
   , internalCrossSection_(-1)
-  , externalCrossSection_(externalXSection)
+  , externalCrossSection_(-1)
+  , externalCrossSectionFromCSV_(externalXSection)
   , crossSection_(&externalCrossSection_)
   , signalEfficiency_(0.)
   , signalDefinition_(-99)
@@ -138,12 +139,15 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   signalCounter_           = totalSignalEventsPreSel;
   postSkimSignalEvents_    = totalSignalEventsPostSel; 
 
-
   crossSection_ = &internalCrossSection_;
   std::string xsectype = "internal";
   if(externalCrossSection_ > 0){
     crossSection_ = &externalCrossSection_;
     xsectype = "external";
+  }
+  if(externalCrossSectionFromCSV_ > 0){
+    crossSection_ = &externalCrossSectionFromCSV_;
+    xsectype = "externalFromCSV";
   }
 
   sampleWeight_ = luminosity_*crossSection()/genEvents_;
