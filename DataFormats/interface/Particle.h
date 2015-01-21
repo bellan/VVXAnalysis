@@ -13,6 +13,7 @@
 #include <TLorentzVector.h> 
 #include "Math/GenVector/LorentzVector.h"
 
+#include <iostream>
 #include <cmath>
 
 class TreePlanter;
@@ -87,6 +88,8 @@ namespace phys {
     void setId(int pid) {id_ = pid; charge_ = computeCharge(pid);}
     
     void setMotherId(int pid) {motherId_ = pid;}
+
+    void setP4(const TLorentzVector& p){p4_=p;}
     
     int motherId() const {return motherId_;}
 
@@ -108,9 +111,18 @@ namespace phys {
     Double_t fakeRateSF_;
     Double_t fakeRateSFUnc_;
 
+  public:
+    friend std::ostream&  operator<<(std::ostream& os, const Particle& obj){
+      
+      os << "ID = " << obj.id() << " p = (" << obj.e() << "," << obj.p4().X() << "," << obj.p4().Py() << "," << obj.p4().Pz() << "), pT = " << obj.pt() << " eta = " << (obj.p() != 0 ? obj.eta() : 0.) << " phi = " << obj.phi();    
+      // write obj to stream
+      return os;
+    }
+    
   private:
-    ClassDef(Particle, 1) //
+    ClassDef(Particle, 1) //     
   };
+
 }
 
 #endif
