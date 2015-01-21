@@ -99,7 +99,9 @@ process.weightout = cms.OutputModule("PoolOutputModule",
 
 process.zzGenCategory = cms.EDFilter("ZZGenFilterCategory",
                                      Topology = cms.int32(1), # -1 means get everything
-                                     src = cms.InputTag("genParticlesPruned")
+                                     ParticleStatus = cms.int32(1), 
+                                     src            = cms.InputTag("genParticlesPruned"),
+                                     GenJets        = cms.InputTag("genJetSel")
                                      )
 
 

@@ -71,15 +71,17 @@ process.source.fileNames = cms.untracked.vstring(
     # 'root://lxcms00//data3/2013/HZZ_cmgTuple/BE539_H1258TeV.root' #533 V5_15_0 version
     #'/store/cmst3/group/cmgtools/CMG/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_nLP.root'
     #'/store/cmst3/group/cmgtools/CMG/WZZ_8TeV-aMCatNLO-herwig/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_GEb.root'
-    # '/store/cmst3/group/cmgtools/CMG/ZZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_UV1.root'
-    '/store/cmst3/user/cmgtools/CMG/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_irQ.root'
+    #'/store/cmst3/group/cmgtools/CMG/ZZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_UV1.root'
+    #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_irQ.root'
     #'/store/cmst3/user/cmgtools/CMG/ZZTo4mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_UR6.root'
     #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2tau_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_E2X.root'
     #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2muJJ_SMHContinInterf_M-125p6_8TeV-phantom-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_tZF.root'
+    #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2tau_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_50_1_Fka.root',
+    #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2tau_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_6_1_EfC.root'
+    '/store/cmst3/user/cmgtools/CMG//ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_6_1_zVE.root'
     )
 
-
-process.maxEvents.input = -1
+process.maxEvents.input = 1000
 
 # Silence output
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -207,7 +209,7 @@ process.postCleaningElectrons = cms.EDProducer("PATElectronCleaner",
 
 process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
                                            Setup               = cms.int32(JET_SETUP),
-                                           JetPreselection     = cms.string("pt > 20"),
+                                           JetPreselection     = cms.string("pt > 30"),
                                            DiBosonPreselection = cms.string(""),
                                            MatchingType        = cms.string("byDeltaR"), 
                                            Jets      = cms.InputTag("cmgPFJetSel"),
@@ -227,7 +229,7 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
 
 process.centralJets = cms.EDFilter("EtaPtMinCMGPFJetSelector", 
                                    src = cms.InputTag("disambiguatedJets"),
-                                   ptMin   = cms.double(20),
+                                   ptMin   = cms.double(30),
                                    etaMin = cms.double(-2.4),
                                    etaMax = cms.double(2.4)
                                    )
@@ -341,8 +343,10 @@ process.preselection = cms.Path( process.prePreselectionCounter
 ### If it is MC, run also the signal definition path
 if IsMC:
     process.genCategory =  cms.EDFilter("ZZGenFilterCategory",
-                                        Topology = cms.int32(SIGNALDEFINITION),
-                                        src = cms.InputTag("genParticlesPruned")
+                                        Topology       = cms.int32(SIGNALDEFINITION), 
+                                        ParticleStatus = cms.int32(1), 
+                                        src            = cms.InputTag("genParticlesPruned"),
+                                        GenJets        = cms.InputTag("genJetSel"),
                                         )
     process.signalCounter    = cms.EDProducer("EventCountProducer")
     process.signalDefinition = cms.Path(process.genCategory * process.signalCounter)
@@ -353,7 +357,8 @@ if IsMC:
 ### Run the TreePlanter
 ### ------------------------------------------------------------------------- ###
 
-process.thisIsTheEnd = cms.EndPath(process.treePlanter)
+
+#process.thisIsTheEnd = cms.EndPath(process.treePlanter)
 
 ########################################################################################################################################################################
 
@@ -384,5 +389,6 @@ process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
 
 #process.filltrees = cms.Path(process.preselection * process.genCategory * process.treePlanter * process.printTree)
 #process.filltrees = cms.EndPath(process.treePlanter *process.dumpUserData)
+process.filltrees = cms.EndPath(process.treePlanter *process.printTree)
 
 ########################################################

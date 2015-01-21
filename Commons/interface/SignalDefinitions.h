@@ -1,7 +1,5 @@
 //-----------FUNCTION: definition of the two ZZ bosons from leptons-------
 
-// WARNING: Right now (Dic 16) the signal definition applied on final ntuples does not work out of the box anymore.
-// To run it properly one needs to remove the initial state parton!!
 
 
 #ifndef VVXAnalysis_Commons_SignalDefinitions_H
@@ -56,7 +54,8 @@ namespace zz{
     > SignalTopology;
 
 
-  SignalTopology getSignalTopology( const std::vector<phys::Particle> &theGenl, const std::vector<phys::Particle> &theGenj);			    
+  SignalTopology getSignalTopologyStatus3(const std::vector<phys::Particle> &theGenl, const std::vector<phys::Particle> &theGenj);			    
+  SignalTopology getSignalTopology       (const std::vector<phys::Particle> &theGenl, std::vector<phys::Particle> &theGenj);			    
 }
 
 

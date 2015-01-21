@@ -22,7 +22,6 @@
 
 #include "AnalysisDataFormats/CMGTools/interface/PFJet.h"
 #include "AnalysisDataFormats/CMGTools/interface/BaseMET.h"
-#include "AnalysisDataFormats/CMGTools/interface/PhysicsObject.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 
 #include "ZZAnalysis/AnalysisStep/interface/MCHistoryTools.h"
@@ -95,8 +94,8 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     thePUInfoLabel           = config.getUntrackedParameter<edm::InputTag>("PUInfo"         , edm::InputTag("addPileupInfo"));
     theGenCategoryLabel      = config.getUntrackedParameter<edm::InputTag>("GenCategory"    , edm::InputTag("genCategory"));
     theGenCollectionLabel    = config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("genParticlesPruned"));
-    theGenJetCollectionLabel = config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("genJetSel"));
-    theGenVBCollectionLabel  = config.getUntrackedParameter<edm::InputTag>("GenVBCollection", edm::InputTag("genCategory"));
+    theGenJetCollectionLabel = config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("genCategory","genJets"));
+    theGenVBCollectionLabel  = config.getUntrackedParameter<edm::InputTag>("GenVBCollection", edm::InputTag("genCategory","vectorBosons"));
     externalCrossSection_    = config.getUntrackedParameter<double>("XSection",-1);
   }
    
@@ -337,7 +336,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     event.getByLabel(theGenCollectionLabel,  genParticles);
     
     for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) 
-      if (p->status() == 3 && p->id() < 2212)
+      if (p->status() == 3 && std::distance(genParticles->begin(),p) > 5)
 	genParticles_.push_back(phys::Particle(p->p4(), phys::Particle::computeCharge(p->pdgId()), p->pdgId()));
          
   
@@ -355,11 +354,11 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
 							      p->pdgId()));
     
     // Get the gen jet collection
-    edm::Handle<std::vector<cmg::PhysicsObjectWithPtr<edm::Ptr<reco::GenJet> > > > genJets;
+    edm::Handle<edm::View<reco::Candidate> > genJets;
     event.getByLabel(theGenJetCollectionLabel,  genJets);
 
-    foreach(const cmg::PhysicsObjectWithPtr<edm::Ptr<reco::GenJet> > & jet, *genJets)
-      genJets_.push_back(phys::Particle(jet.p4(), phys::Particle::computeCharge(jet.pdgId()), jet.pdgId()));
+    for(edm::View<reco::Candidate>::const_iterator jet = genJets->begin(); jet != genJets->end(); ++jet)
+      genJets_.push_back(phys::Particle(jet->p4(), phys::Particle::computeCharge(jet->pdgId()), jet->pdgId()));
   }
 
   return true;

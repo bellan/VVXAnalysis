@@ -447,19 +447,18 @@ std::tuple<bool, phys::Boson<phys::Lepton>, phys::Boson<phys::Lepton> > zz::zz4l
 std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::getZZ(const std::vector<phys::Boson<phys::Particle> >  &ZLL){
   
   
-  if(ZLL.size() < 2) return std::make_tuple(false, phys::Boson<phys::Particle>(),phys::Boson<phys::Particle>());//FIXME
+  if(ZLL.size() < 2) return std::make_tuple(false, phys::Boson<phys::Particle>(),phys::Boson<phys::Particle>());
   
   std::vector<phys::Boson<phys::Particle> > Zll;  
   
-  foreach(const phys::Boson<phys::Particle>& z,   ZLL) Zll.push_back(z.clone<phys::Particle>()); //FIXME
+  foreach(const phys::Boson<phys::Particle>& z,   ZLL) Zll.push_back(z.clone<phys::Particle>());
 
-   // Search for the first Z that must have the mass closest to the nominal Z mass
+  // Search for the first Z that must have the mass closest to the nominal Z mass
  
   std::stable_sort(Zll.begin(), Zll.end(), phys::MassComparator(phys::ZMASS));
   phys::Boson<phys::Particle> Z0 = Zll.at(0);
   
   // Search for the second Z that must not be composed by the same daughters as the first Z and is chosen by the largest sum of Z daughters'  as in H->ZZ and ZZ analysies. 
-  
   phys::Boson<phys::Particle> Z1;
   
   std::stable_sort(Zll.begin(), Zll.end(), phys::ScalarSumPtComparator());
@@ -491,8 +490,13 @@ std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::
     }
   }
   
-  if(!passllLowMass) return std::make_tuple(false, phys::Boson<phys::Particle>(), phys::Boson<phys::Particle>());
-  return std::make_tuple(true, Z0, Z1);
+  bool inZMassWindow = true;
+
+  if(Z0.mass() > 120. || Z0.mass() < 60. || Z1.mass() > 120. || Z1.mass() < 60.)
+    inZMassWindow = false;
+
+  if(!passllLowMass || !inZMassWindow) return std::make_tuple(false, phys::Boson<phys::Particle>(), phys::Boson<phys::Particle>());
+  else return std::make_tuple(true, Z0, Z1);
 }
 
 
@@ -501,12 +505,12 @@ std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::
 ///////------------------- getSignalTopology: categorization of the signal given the 2 vectors of leptons and partons (quarks and gluons) --------------------------------------------
 
 
-zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theGenl, const std::vector<phys::Particle> &theGenj){
+zz::SignalTopology zz::getSignalTopologyStatus3(const std::vector<phys::Particle> &theGenl, const std::vector<phys::Particle> &theGenj){
   
   bitset<16>  topology;   
   
   std::vector<phys::Particle> theGenlm, theGenlp, theGenq;
-  
+
   foreach(const phys::Particle &p, theGenj)  if (abs(p.id()) < 7) theGenq.push_back(p);  // quarks
   
   foreach(const phys::Particle &p, theGenl){
@@ -684,5 +688,142 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
 
 }
 
+
+zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theGenl, std::vector<phys::Particle> &theGenj){
+  
+  bitset<16>  topology;   
+  
+  std::vector<phys::Particle> theGenlm, theGenlp;
+
+  foreach(const phys::Particle &p, theGenl)
+    if (p.id() > 0) theGenlm.push_back(p); // negative leptons                                          
+    else            theGenlp.push_back(p); // positive leptons 
+  
+  
+  // Creation and filling of the vector of Z boson candidates
+  std::vector<phys::Boson<phys::Particle> > Z;
+  
+  foreach(const phys::Particle &p, theGenlp) foreach(const phys::Particle &m, theGenlm)
+    if(abs(p.id()) == abs(m.id())) Z.push_back(phys::Boson<phys::Particle>(m,p,23));
+  
+  // ---------------------------- Creation of the bosons ----------------------------
+
+  phys::Boson<phys::Particle> Z0, Z1, Z2, Z3, W0, W1;
+  
+  // Not enough Zs candidates
+  if ( Z.size() < 2) return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1);
+  
+  std::tuple<bool, phys::Boson<phys::Particle>,phys::Boson<phys::Particle> > Zpair = zz::getZZ(Z);
+    
+  // Not enough Zs with good quality 
+  if(!std::get<0>(Zpair)) return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1); 
+
+     
+  Z0 = std::get<1>(Zpair); 
+  Z1 = std::get<2>(Zpair); 
+
+  // Clean the gen jet collection properly
+  std::vector<phys::Particle> tmp;
+  foreach(const phys::Particle& jet, theGenj)
+    if(physmath::deltaR(Z0.daughter(0),jet) > 0.5 &&
+       physmath::deltaR(Z0.daughter(1),jet) > 0.5 &&
+       physmath::deltaR(Z1.daughter(0),jet) > 0.5 &&
+       physmath::deltaR(Z1.daughter(1),jet) > 0.5)
+      tmp.push_back(jet);
+  theGenj = tmp;
+
+  bool foundWjj(false), foundZjj(false);
+
+
+  // Now check if there are  additional W/Z boson candidates which decays into hadrons
+  if(theGenj.size() >= 2) {
+    
+    // ---- Search for W/Z  ----- 
+    QuarkPairsFeatures jetPairsFeatures;
+
+    // make all jet-jet pairs
+    for(uint i = 0;  i < theGenj.size()-1; ++i) for(uint j = i+1;  j < theGenj.size(); ++j)
+						  jetPairsFeatures.push_back(std::make_tuple(i, j, 0, (theGenj[i].p4() + theGenj[j].p4()).M()));
+
+    // Search for W-->jj
+    QuarkPairFeatures bestJetPairW;
+    std::stable_sort(jetPairsFeatures.begin(), jetPairsFeatures.end(), phys::MassComparator(0, phys::WMASS));
+    bestJetPairW = jetPairsFeatures.front();
+
+    if ( fabs(std::get<3>(bestJetPairW) - phys::WMASS) < 30. ){
+      phys::Particle q0 = theGenj[std::get<0>(bestJetPairW)];
+      phys::Particle q1 = theGenj[std::get<1>(bestJetPairW)];
+      if (q0.pt() < q1.pt()) std::swap(q0,q1); 
+      W1 = phys::Boson<phys::Particle>(q0, q1, 24);
+      foundWjj = true;
+    }
+    
+    // Search for Z-->jj
+    QuarkPairFeatures bestJetPairZ;
+    std::stable_sort(jetPairsFeatures.begin(), jetPairsFeatures.end(), phys::MassComparator(0, phys::ZMASS));
+    bestJetPairZ = jetPairsFeatures.front();
+    
+    //
+    if ( fabs(std::get<3>(bestJetPairZ) - phys::ZMASS) < 30. ){
+      phys::Particle q0 = theGenj[std::get<0>(bestJetPairZ)];
+      phys::Particle q1 = theGenj[std::get<1>(bestJetPairZ)];
+      if (q0.pt() < q1.pt()) std::swap(q0,q1); 
+      Z3 = phys::Boson<phys::Particle>(q0, q1, 23);
+      foundZjj = true;
+    }
+  } //------------------------- end searching for the bosons ----------------------------------------
+  
+  
+  // Some usefull counters for topology characterization
+  int countJets = 0;
+  int countCentralJets = 0;
+  foreach(const phys::Particle& jet, theGenj)
+    if(jet.pt() > 30.){
+      if(jet.eta() < 4.7) ++countJets;
+      if(jet.eta() < 2.4) ++countCentralJets;
+    }
+  
+  
+  bool hasJets = countJets > 0;
+  
+  bool hasAtLeast2jets =  countJets > 1;
+  
+  bool hasCentralJets = countCentralJets > 0;
+  
+  bool has5leptons       = false;
+  
+  
+  // Definition of the topologies 
+  
+  topology.set(0);                         //ZZ4l 
+  
+  if(hasJets)          topology.set(1);    //ZZ4l + jets (pT>30 GeV and |eta| < 4.7)
+  
+  if(hasAtLeast2jets)  topology.set(2);    //ZZ4l + 2jets
+  
+  if(hasCentralJets)   topology.set(3);    //ZZ4l + jets (pT>30 GeV and |eta| < 2.4)
+  
+  if(foundWjj)         topology.set(4);    //ZZ4l + hadronic W
+  
+  if(foundZjj)         topology.set(5);    //ZZ4l + hadronic Z
+  
+  if(has5leptons)      topology.set(6);    //ZZ4l + 1lepton
+
+
+  // OLD definition
+  //topology.set(0);                             //ZZ4l 
+  //if(hasJets)              topology.set(1);    //ZZ4l + jets (E>20 GeV and |eta| < 5)
+  //if(hasAtLeast2jets)      topology.set(2);    //ZZ4l + 2q
+  //if(has5leptons)          topology.set(3);    //ZZ4l + 1lepton
+  //if(foundWjj) topology.set(4);    //ZZ4l + hadronic W
+  //if(foundZjj) topology.set(5);    //ZZ4l + hadronic Z
+
+
+ 
+  // The leptonic Z and W topologies are missing!! FIXME
+  
+  return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1);
+
+}
 
 

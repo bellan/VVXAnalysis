@@ -277,12 +277,12 @@ class MyBatchManager( BatchManager ):
        elif "DYJets_NoB" in tune :
            cfgFile.write( 'process.HF = cms.Path(~process.heavyflavorfilter)\n\n' )
        if "Signal" in tune and not "NoSignal" in tune:
-           cfgFile.write( '\nprocess.genCategory0 = process.genCategory =  cms.EDFilter("ZZGenFilterCategory", Topology = cms.int32(SIGNALDEFINITION), src = cms.InputTag("genParticlesPruned"))\n')
+           cfgFile.write( '\nprocess.genCategory0 = process.genCategory =  cms.EDFilter("ZZGenFilterCategory", Topology = cms.int32(SIGNALDEFINITION), ParticleStatus = cms.int32(1), GenJets = cms.InputTag("genJetSel"), src = cms.InputTag("genParticlesPruned"))\n')
            cfgFile.write( 'process.signalFilters += process.genCategory0\n' )
            cfgFile.write( 'process.postSkimSignalCounter = cms.EDProducer("EventCountProducer")\n' )
            cfgFile.write( 'process.signalFilters += process.postSkimSignalCounter\n\n' )
        if "NoSignal" in tune:
-           cfgFile.write( '\nprocess.genCategory0 = process.genCategory =  cms.EDFilter("ZZGenFilterCategory", Topology = cms.int32(SIGNALDEFINITION), src = cms.InputTag("genParticlesPruned"))\n')
+           cfgFile.write( '\nprocess.genCategory0 = process.genCategory =  cms.EDFilter("ZZGenFilterCategory", Topology = cms.int32(SIGNALDEFINITION), ParticleStatus = cms.int32(1), GenJets = cms.InputTag("genJetSel"), src = cms.InputTag("genParticlesPruned"))\n')
            cfgFile.write( 'process.signalFilters += ~process.genCategory0\n' )
            cfgFile.write( 'process.postSkimSignalCounter = cms.EDProducer("EventCountProducer")\n' )
            cfgFile.write( 'process.signalFilters += process.postSkimSignalCounter\n\n' )
