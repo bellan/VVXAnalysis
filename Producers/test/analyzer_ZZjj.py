@@ -358,7 +358,7 @@ if IsMC:
 ### ------------------------------------------------------------------------- ###
 
 
-#process.thisIsTheEnd = cms.EndPath(process.treePlanter)
+process.thisIsTheEnd = cms.EndPath(process.treePlanter)
 
 ########################################################################################################################################################################
 
@@ -389,6 +389,6 @@ process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
 
 #process.filltrees = cms.Path(process.preselection * process.genCategory * process.treePlanter * process.printTree)
 #process.filltrees = cms.EndPath(process.treePlanter *process.dumpUserData)
-process.filltrees = cms.EndPath(process.treePlanter *process.printTree)
+#process.filltrees = cms.EndPath(process.treePlanter *process.printTree)
 
 ########################################################
