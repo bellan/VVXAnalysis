@@ -45,7 +45,7 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
   , theWeight(1.)
   , theCutCounter(0.)
   , theInputWeightedEvents(0.)
-  , genCategory(-99){
+  , genCategory(-128){
 
   TChain *tree = new TChain("treePlanter/ElderTree");
   tree->Add(configuration.getParameter<std::string>("filename").c_str());
