@@ -1,0 +1,9 @@
+# Ignore some ancillary files
+
+*.pyc
+*.*~
+*.d
+*.so
+*.root
+*.log
+__init__.py
