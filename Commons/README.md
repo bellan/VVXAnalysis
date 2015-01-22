@@ -9,14 +9,16 @@ The first bit (0) is set for all the events with the right ZZ --> 4l Z bosons (c
 
 In the following the position of the bit set (left) and the event category (right) are listed:
 
-- 0 --> ZZ4l 
+- 0 (meaning least important bit up) --> ZZ4l 
 
-- 1 --> + jets (At least one with E > 20 GeV and |eta| < 5)
+- 1 --> + jets (at least one genjet with pT > 30 GeV and |eta| < 4.7)
   
-- 2 --> + 2q (E > 20 GeV and |eta| < 5)
+- 2 --> + 2q (at least two genjets with pT > 30 GeV and |eta| < 4.7)
  
-- 3 --> + 1lepton
+- 3 --> + central jets (at least one genjet with pT > 30 GeV and |eta| < 2.4)
   
 - 4 --> + hadronic W
     
 - 5 --> + hadronic Z
+
+- 6 --> + 1lepton (not active right now)
