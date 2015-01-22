@@ -12,7 +12,12 @@ The MadGraph set
 
 - qq,qg,gg -> 4l +0,1,2 j (MadGraph). LO for the zero jet bin, NLO for the others
    - ZZJetsTo4L 
+- gg -> 4l (MCFM). LO. Nickname: gg_4l.
+   - ggTo4e_SMHContinInterf-MCFM67_H125.6
+   - ggTo4mu_SMHContinInterf-MCFM67_H125.6
+   - ggTo2e2mu_SMHContinInterf-MCFM67_H125.6
 - Higgs samples
+   - powheg15jhuGenV3H126
    - VBFH126
    - ttH126
 - Dibosons
@@ -52,6 +57,7 @@ The Powheg set
    - ggTo4mu_SMHContinInterf-MCFM67_H125.6
    - ggTo2e2mu_SMHContinInterf-MCFM67_H125.6
 - Higgs samples
+   - VBFH126
    - ttH126
 - Dibosons
    - WZ
