@@ -20,6 +20,8 @@ The MadGraph set
    - powheg15jhuGenV3H126
    - VBFH126
    - ttH126
+   - ZH
+   - WH
 - Dibosons
    - WZ
    - WWJets
@@ -57,7 +59,6 @@ The Powheg set
    - ggTo4mu_SMHContinInterf-MCFM67_H125.6
    - ggTo2e2mu_SMHContinInterf-MCFM67_H125.6
 - Higgs samples
-   - VBFH126
    - ttH126
 - Dibosons
    - WZ
