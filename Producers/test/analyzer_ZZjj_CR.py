@@ -15,7 +15,7 @@ APPLYMUCORR = True
 
 SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the choosedn windows. For other topology see the README under VVXAnalysis/Commons.
 
-CONTROLREGION = '2P2F'
+CONTROLREGION = '3P1F'
 
 try:
     IsMC
@@ -215,7 +215,7 @@ process.postCleaningElectrons = cms.EDProducer("PATElectronCleaner",
 
 process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
                                            Setup               = cms.int32(JET_SETUP),
-                                           JetPreselection     = cms.string("pt > 20"),
+                                           JetPreselection     = cms.string("pt > 30"),
                                            DiBosonPreselection = cms.string(""),
                                            MatchingType        = cms.string("byDeltaR"), 
                                            Jets      = cms.InputTag("cmgPFJetSel"),
