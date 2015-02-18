@@ -89,11 +89,17 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   case 1:{
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     std::vector<phys::Particle> genPhotons;
-    
+
     //------------------ loop over genparticles ---------------------------------------------------------
     for (View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) {
       
       if (p->status() == 1){
+
+	if(p->p4().P() != p->p4().P()){
+	  cout << "This particle, " << p->pdgId() << ", as NaN in p4 components: " << p->p4().P() << endl;
+	  continue;
+	}
+
 	int id   = abs(p->pdgId());  
 	
 	if( id == 11 || id == 13) { 
@@ -101,7 +107,8 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 	  for(unsigned int i = 0; i < p->numberOfMothers(); ++i)
 	    if(abs(p->mother(i)->pdgId() == 15)) fromTau = true;
 	  if(!fromTau)  genLeptons.push_back(phys::convert(*p)); } // leptons     
-	if( id == 22) { genPhotons.push_back(phys::convert(*p)); } // photons
+	if( id == 22) 
+	  genPhotons.push_back(phys::convert(*p)); 
       }
       // FIXME TMP!
       //if (p->status() == 3)
@@ -127,7 +134,6 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
     foreach(const cmg::PhysicsObjectWithPtr<edm::Ptr<reco::GenJet> > & jet, *genJetsH)
       if(jet.pt() > 30 && fabs(jet.eta()) < 4.7)
 	genJets.push_back(phys::Particle(jet.p4(), phys::Particle::computeCharge(jet.pdgId()), jet.pdgId()));
-    
     
     break;
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
