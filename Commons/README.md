@@ -13,7 +13,7 @@ In the following the position of the bit set (left) and the event category (righ
 
 - 1 --> + jets (at least one genjet with pT > 30 GeV and |eta| < 4.7)
   
-- 2 --> + 2q (at least two genjets with pT > 30 GeV and |eta| < 4.7)
+- 2 --> + 2 jets (at least two genjets with pT > 30 GeV and |eta| < 4.7)
  
 - 3 --> + central jets (at least one genjet with pT > 30 GeV and |eta| < 2.4)
   
