@@ -162,7 +162,7 @@ void PdfSystematicsAnalyzerZZ::endJob(){
     
     
     double events_central = weightedSelectedEvents_[pdfStart_[i]]; 
-    std::cout<<" very original Events "<<theNumberOfEvents_<<" orig evee "<<originalEvents_<<std::endl;
+    std::cout<<"Events before gen filter "<<theNumberOfEvents_<<std::endl<<"Original events after gen filter "<<originalEvents_<<std::endl;
     //       _hPlots[FinStat][i]->Fill(0.,8,originalEvents_);  
     for(int f=1; f<=4; f++){
       std::string hname= _hPlots[f][i]->GetName();
@@ -176,8 +176,7 @@ void PdfSystematicsAnalyzerZZ::endJob(){
       _hPlots[f][i]->Fill(0.,5.,Newweighted2SelectedEvents_[f][pdfStart_[i]]);
       
     }    
-    
-    
+        
     edm::LogVerbatim("PDFAnalysis") << "\tEstimate for central PDF member: " << int(events_central) << " [events]";
     double events2_central = weighted2SelectedEvents_[pdfStart_[i]];
     edm::LogVerbatim("PDFAnalysis") << "\ti.e. [" << std::setprecision(4) << 100*(events_central-selectedEvents_)/selectedEvents_ << " +- " <<
@@ -328,17 +327,6 @@ void PdfSystematicsAnalyzerZZ::endJob(){
 void PdfSystematicsAnalyzerZZ::analyze(const edm::Event & ev, const edm::EventSetup&){
   
   edm::Handle<std::vector<double> > weightHandle;
-  edm::Handle<int> genCategory;
-  ev.getByLabel(theGenCategoryLabel, genCategory);
-  genCategory_ = *genCategory;
-  int FinStat;
-  if(test_bit(genCategory_,6)) FinStat = 1;
-  else if(test_bit(genCategory_,7)) FinStat = 2;  
-  else if(test_bit(genCategory_,8)) FinStat = 3;
-  else {
-    FinStat = 0;
-  std::cout<<"The final state is not 2e2mu, 4mu or 4e"<<std::endl;
-  }
   for (unsigned int i=0; i<pdfWeightTags_.size(); ++i) {
     if (!ev.getByLabel(pdfWeightTags_[i], weightHandle)) {
       if (originalEvents_==0) {
@@ -350,7 +338,21 @@ void PdfSystematicsAnalyzerZZ::analyze(const edm::Event & ev, const edm::EventSe
       return;     
     }
   }
-  
+
+  //Check final state  
+  edm::Handle<int> genCategory;
+  ev.getByLabel(theGenCategoryLabel, genCategory);
+  genCategory_ = *genCategory;
+  // std::cout<<"genCategory "<<genCategory_<<std::endl;
+  int FinStat=0;
+  if     (test_bit(genCategory_,7) && !test_bit(genCategory_,8)) FinStat = 1; //4mu
+  else if(test_bit(genCategory_,8) && !test_bit(genCategory_,7)) FinStat = 2; //4e
+  else if(test_bit(genCategory_,7) && test_bit(genCategory_,8)) FinStat = 3; //2e2mu
+  else {
+    FinStat = 0;
+  }
+
+
   originalEvents_++;
 
       bool selectedEvent = false;

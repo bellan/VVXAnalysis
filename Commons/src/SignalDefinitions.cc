@@ -686,6 +686,7 @@ zz::SignalTopology zz::getSignalTopologyStatus3(const std::vector<phys::Particle
     
    return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1);
 
+
 }
 
 
@@ -722,6 +723,10 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   Z0 = std::get<1>(Zpair); 
   Z1 = std::get<2>(Zpair); 
 
+
+  int Z0DaugID = Z0.daughter(0).id();  
+  int Z1DaugID = Z1.daughter(1).id();
+
   // Clean the gen jet collection properly
   std::vector<phys::Particle> tmp;
   foreach(const phys::Particle& jet, theGenj)
@@ -733,6 +738,7 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   theGenj = tmp;
 
   bool foundWjj(false), foundZjj(false);
+
 
 
   // Now check if there are  additional W/Z boson candidates which decays into hadrons
@@ -809,6 +815,15 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   
   if(has5leptons)      topology.set(6);    //ZZ4l + 1lepton
 
+
+
+  if((abs(Z0DaugID)==13) & (abs(Z1DaugID)==13)) topology.set(7);                                       // Final state 4mu
+  else if((abs(Z0DaugID)==11) & (abs(Z1DaugID)==11)) topology.set(8);                                    // Final state 4e
+  else if(((abs(Z0DaugID)==11) & (abs(Z1DaugID)==13)) || ((abs(Z0DaugID)==13) & (abs(Z1DaugID)==11))){ // Final state 2mu2e
+    topology.set(7);
+    topology.set(8);
+  }
+  else  std::cout<<"Final state is not 4mu, 4e or 2mu2e"<<std::endl;
 
   // OLD definition
   //topology.set(0);                             //ZZ4l 
