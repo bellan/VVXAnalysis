@@ -89,7 +89,7 @@ namespace phys {
     
     void setMotherId(int pid) {motherId_ = pid;}
 
-    void setP4(const TLorentzVector& p){p4_=p;}
+    void setP4(const TLorentzVector& pi){p4_=pi;}
     
     int motherId() const {return motherId_;}
 
