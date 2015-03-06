@@ -101,6 +101,7 @@ namespace phys {
     }
 
     double fakeRateSF() const {
+      if(id_ == 0) return 1.; // To be checked
       double fakeRateSF = daughter0_.fakeRateSF() * daughter1_.fakeRateSF();
       return numberOfGoodGrandDaughters() == 2 ? -1*fakeRateSF : fakeRateSF;
     }
