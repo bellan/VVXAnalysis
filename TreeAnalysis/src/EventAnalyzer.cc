@@ -210,6 +210,9 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
     theHistograms.fill("GoodTriggerableCands", "Number of good triggerable candidates in the event", 10, 0, 10, triggers, 1);
     if(triggers != 1) return 0;
   }
+  
+  else if(region_ == phys::MC) ZZ = new phys::DiBoson<phys::Lepton, phys::Lepton>();
+  
   // Control region case
   else{
     if(Zll->empty() || !Zll->front().passTrigger()) return 0;   
@@ -231,6 +234,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   theInputWeightedEvents += theWeight;
 
   topology = std::bitset<16>(genCategory);
+
 
   return e;
 }
