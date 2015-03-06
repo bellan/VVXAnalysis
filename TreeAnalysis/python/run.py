@@ -15,7 +15,7 @@ from Colours import *
 ############################################################################
 ############################## User's inputs ###############################
 ############################################################################
-regions = ['SR','CR','CR2P2F','CR3P1F','CR3P1F_HZZ','CR2P2F_HZZ']
+regions = ['SR','CR','CR2P2F','CR3P1F','CR3P1F_HZZ','CR2P2F_HZZ', 'MC']
 
 parser = OptionParser(usage="usage: %prog <analysis> <sample> [options]")
 parser.add_option("-r", "--region", dest="region",
@@ -113,7 +113,7 @@ print "\n"
 
 def run(executable, analysis, typeofsample, region, luminosity):
     inputdir = baseinputdir
-    if not region == 'SR': inputdir = baseinputdir+"/"+region
+    if not region == 'SR' and not region == 'MC': inputdir = baseinputdir+"/"+region
 
     outputdir = 'results'
     if not os.path.exists(outputdir): os.popen('mkdir "%s"' %outputdir)
