@@ -796,7 +796,7 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   
   bool hasCentralJets = countCentralJets > 0;
   
-  bool has5leptons       = false;
+  bool has5leptons    = theGenl.size() == 5;
   
   
   // Definition of the topologies 
@@ -816,14 +816,9 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   if(has5leptons)      topology.set(6);    //ZZ4l + 1lepton
 
 
+  if(abs(Z0DaugID) == 13 || abs(Z1DaugID) == 13) topology.set(7);
+  if(abs(Z0DaugID) == 11 || abs(Z1DaugID) == 11) topology.set(8);
 
-  if((abs(Z0DaugID)==13) & (abs(Z1DaugID)==13)) topology.set(7);                                       // Final state 4mu
-  else if((abs(Z0DaugID)==11) & (abs(Z1DaugID)==11)) topology.set(8);                                    // Final state 4e
-  else if(((abs(Z0DaugID)==11) & (abs(Z1DaugID)==13)) || ((abs(Z0DaugID)==13) & (abs(Z1DaugID)==11))){ // Final state 2mu2e
-    topology.set(7);
-    topology.set(8);
-  }
-  else  std::cout<<"Final state is not 4mu, 4e or 2mu2e"<<std::endl;
 
   // OLD definition
   //topology.set(0);                             //ZZ4l 
