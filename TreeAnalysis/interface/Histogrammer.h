@@ -31,7 +31,7 @@ class Histogrammer{
 
   // Methods for 1D histograms
   template<typename H>
-    TH1* book(const std::string& name, const std::string& title, const double& bins, const double& min, const double& max){
+    TH1* book(const std::string& name, const std::string& title, int bins, const double& min, const double& max){
     TH1map::iterator f = thePlots.find(name);
     if(f != thePlots.end()) return f->second; 
     else{
@@ -41,12 +41,12 @@ class Histogrammer{
   }
 
  template<typename H>
-    TH1* book(const std::string& name, const double& bins, const double& min, const double& max){
+    TH1* book(const std::string& name, int bins, const double& min, const double& max){
    return book<H>(name, name, bins, min, max);
  }
  
  template<typename H>
-   void fill(const std::string& name, const std::string& title, const double& bins, const double& min, const double& max, const double& value, const double& weight = 1){
+   void fill(const std::string& name, const std::string& title, int bins, const double& min, const double& max, const double& value, const double& weight = 1){
 
    if(profile())
      // Profile by gen category, right now it is a word of 64 bit
@@ -57,17 +57,61 @@ class Histogrammer{
  }
 
  template<typename H>
-   void fill(const std::string& name, const double& bins, const double& min, const double& max, const double& value, const double& weight = 1){
+   void fill(const std::string& name, int bins, const double& min, const double& max, const double& value, const double& weight = 1){
    fill<H>(name, name, bins, min, max, value, weight);
  }
 
- void fill(const std::string& name, const std::string& title, const double& bins, const double& min, const double& max, const double& value, const double& weight = 1){
+ void fill(const std::string& name, const std::string& title, int bins, const double& min, const double& max, const double& value, const double& weight = 1){
    fill<TH1F>(name, name, bins, min, max, value, weight);
  }
  
- void fill(const std::string& name, const double& bins, const double& min, const double& max, const double& value, const double& weight = 1){
+ void fill(const std::string& name, int bins, const double& min, const double& max, const double& value, const double& weight = 1){
    fill(name, name, bins, min, max, value, weight);
  }
+
+ // --------------------- Variable binning size ---------------------------
+
+ template<typename H>
+   TH1* book(const std::string& name, const std::string& title, const std::vector<double>& xbins){
+   TH1map::iterator f = thePlots.find(name);
+   if(f != thePlots.end()) return f->second;
+    else{
+      thePlots[name] = new H(TString(name),TString(title),xbins.size(),&xbins[0]);
+      return thePlots[name];
+    }
+ }
+ 
+ template<typename H>
+   TH1* book(const std::string& name, const std::vector<double>& xbins){
+   return book<H>(name, name, xbins);
+ }
+ 
+ template<typename H>
+   void fill(const std::string& name, const std::string& title, const std::vector<double>& xbins, const double& value, const double& weight = 1){
+
+   /* if(profile()) */
+   /*   // Profile by gen category, right now it is a word of 64 bit */
+   /*   book<TH2F>(name, name, 64, 0, 64, bins, xbins)->Fill(*category_,value,weight); */
+   /* else */
+     book<H>(name, name, xbins)->Fill(value,weight);
+
+ }
+
+ template<typename H>
+   void fill(const std::string& name, const std::vector<double>& xbins, const double& value, const double& weight = 1){
+   fill<H>(name, name, xbins, value, weight);
+ }
+
+ void fill(const std::string& name, const std::string& title, const std::vector<double>& xbins, const double& value, const double& weight = 1){
+   fill<TH1F>(name, name, xbins, value, weight);
+ }
+ 
+ void fill(const std::string& name, const std::vector<double>& xbins, const double& value, const double& weight = 1){
+   fill(name, name, xbins, value, weight);
+ }
+
+ // -----------------------------------------------------------------------
+
 
  void profile(const int& category) {
    category_ = &category;
