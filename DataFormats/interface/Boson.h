@@ -19,8 +19,8 @@ namespace phys {
     friend class ::TreePlanter;
   public:
     /// Constructor
-  Boson(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), int pid = 0)
-    : Particle(p,0,pid)
+  Boson(const TLorentzVector& pi = TLorentzVector(0.,0.,0.,0.), int pid = 0)
+    : Particle(pi,0,pid)
       , indexFSR_(-1)
       , hasGoodDaughters_(false){}
 
