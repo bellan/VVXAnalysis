@@ -93,7 +93,7 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
     //------------------ loop over genparticles ---------------------------------------------------------
     for (View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) {
       
-      if (p->status() == 1){
+      if (false && p->status() == 1){
 
 	if(p->p4().P() != p->p4().P()){
 	  cout << "This particle, " << p->pdgId() << ", as NaN in p4 components: " << p->p4().P() << endl;
@@ -110,22 +110,22 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 	if( id == 22) 
 	  genPhotons.push_back(phys::convert(*p)); 
       }
-      // FIXME TMP!
-      //if (p->status() == 3)
-      //if( abs(p->pdgId()) == 11 || abs(p->pdgId()) == 13)
-      // cout << "Status 3 Lepton: " << phys::convert(*p) << endl;
+      if (p->status() == 3){
+	int id   = abs(p->pdgId());     
+	if ( id == 11 || id == 13 ) { genLeptons.push_back(phys::convert(*p)); }// leptons   
+      }
     }
     
-    foreach(phys::Particle &lep, genLeptons)
-      foreach(const phys::Particle &pho, genPhotons)
-      if(reco::deltaR(lep,pho) < 0.1) lep.setP4(lep.p4()+pho.p4()); // update iteratively, so if there is more than one photon to be associated it will mange it
+    //foreach(phys::Particle &lep, genLeptons)
+    //  foreach(const phys::Particle &pho, genPhotons)
+    //  if(reco::deltaR(lep,pho) < 0.1) lep.setP4(lep.p4()+pho.p4()); // update iteratively, so if there is more than one photon to be associated it will mange it
                                                                     // Note: right no it does not look at the order in which the photons are added, so there could be some
                                                                     // imperfection in the association. One way to overcome this would be to add the nearest one first.
-
-    //foreach(phys::Particle &lep, genLeptons) 	 cout << "Status 1 Lepton: " << lep << endl;
-
+    
+    
     //------------------ end of loop over genparticles --------------------------------------------------
-     
+
+
     
     // Get gen jets
     edm::Handle<std::vector<cmg::PhysicsObjectWithPtr<edm::Ptr<reco::GenJet> > > > genJetsH;
