@@ -76,7 +76,7 @@ class Histogrammer{
    TH1map::iterator f = thePlots.find(name);
    if(f != thePlots.end()) return f->second;
     else{
-      thePlots[name] = new H(TString(name),TString(title),xbins.size(),&xbins[0]);
+      thePlots[name] = new H(TString(name),TString(title),xbins.size()-1,&xbins[0]);
       return thePlots[name];
     }
  }
