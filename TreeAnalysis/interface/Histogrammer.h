@@ -176,8 +176,56 @@ class Histogrammer{
  }
 
 
+// --------------------- Variable binning size ---------------------------
 
+template<typename H>
+  TH2* book(const std::string& name, const std::string& title, const std::vector<double>& xbins, const std::vector<double>& ybins ){
+    TH1map::iterator f = thePlots.find(name);
+    if(f != thePlots.end()) return dynamic_cast<TH2*>(f->second); 
+    else{
+      thePlots[name] = new H(TString(name),TString(title),xbins.size()-1,&xbins[0],ybins.size()-1,&ybins[0]);
+      return dynamic_cast<TH2*>(thePlots[name]);
+    }
+  }
+ 
+ template<typename H>
+   TH1* book(const std::string& name, 
+	     const std::vector<double>& xbins,
+	     const std::vector<double>& ybins){
+   return book<H>(name, name, ybins);
+ }
 
+ template<typename H>
+   void fill(const std::string& name, const std::string& title, 
+	     const std::vector<double>& xbins,
+	     const std::vector<double>& ybins,
+	     const double& xvalue, const double& yvalue, const double& weight = 1){
+   book<H>(name, name, xbins, ybins)->Fill(xvalue,yvalue,weight);
+ }
+
+ template<typename H>
+   void fill(const std::string& name, 
+	     const std::vector<double>& xbins,
+	     const std::vector<double>& ybins,
+	     const double& xvalue, const double& yvalue, const double& weight = 1){
+   fill<H>(name, name, xbins, ybins, xvalue, yvalue, weight);
+ }
+
+ void fill(const std::string& name, const std::string& title, 
+	   const std::vector<double>& xbins,
+	   const std::vector<double>& ybins,
+	   const double& xvalue, const double& yvalue, const double& weight = 1){
+   book<TH2F>(name, name, xbins, ybins)->Fill(xvalue,yvalue,weight);
+ }
+ 
+ void fill(const std::string& name, 
+	   const std::vector<double>& xbins,
+	   const std::vector<double>& ybins,
+	   const double& xvalue, const double& yvalue, const double& weight = 1){
+   fill(name, name, xbins, ybins, xvalue, yvalue, weight);
+ }
+
+ 
  // Methods for all histogram types
  void write(TFile& fout){
    fout.cd(); 
