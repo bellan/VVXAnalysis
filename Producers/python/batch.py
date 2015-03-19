@@ -286,6 +286,14 @@ class MyBatchManager( BatchManager ):
            cfgFile.write( 'process.signalFilters += ~process.genCategory0\n' )
            cfgFile.write( 'process.postSkimSignalCounter = cms.EDProducer("EventCountProducer")\n' )
            cfgFile.write( 'process.signalFilters += process.postSkimSignalCounter\n\n' )
+       if "NoTaus" in tune:
+           cfgFile.write( '\nprocess.genTaus = cms.EDFilter("PdgIdAndStatusCandViewSelector", src = cms.InputTag("genParticlesPruned"), pdgId = cms.vint32( 15 ), status = cms.vint32( 3 ))\n')
+           cfgFile.write( 'process.genTauCounterFilter =  cms.EDFilter("CandViewCountFilter", src = cms.InputTag("genTaus"), minNumber = cms.uint32(1))\n')
+           cfgFile.write( 'process.preSkimCounter  = cms.EDProducer("EventCountProducer")\n')
+           cfgFile.write( 'process.signalFilters += process.genTaus\n')
+           cfgFile.write( 'process.signalFilters += ~process.genTauCounterFilter\n')
+           cfgFile.write( 'process.signalFilters += process.preSkimCounter\n\n')
+
 
        cfgFile.close()
 
