@@ -11,8 +11,6 @@ ELECORRTYPE   = "Paper" # "None", "Moriond", or "Paper"
 ELEREGRESSION = "Paper" # "None", "Moriond", "PaperNoComb", or "Paper" 
 APPLYMUCORR = True
 
-#MCFILTER  = "signaldefinition"
-
 SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the choosedn windows. For other topology see the README under VVXAnalysis/Commons.
 
 try:
@@ -96,36 +94,6 @@ process.TFileService=cms.Service('TFileService', fileName=cms.string('ZZjjAnalys
 
 
 #####################################################################################################################################################
-
-
-### ------------------------------------------------------------------------- ###
-### Fill the tree for the analysis
-### ------------------------------------------------------------------------- ###
-
- 
-process.treePlanter = cms.EDAnalyzer("TreePlanter",
-                                     sampleName   = cms.string(SAMPLENAME),
-                                     setup        = cms.int32(LEPTON_SETUP),
-                                     sampleType   = cms.int32(SAMPLE_TYPE),
-                                     PD           = cms.string(PD),
-                                     skimPaths    = cms.vstring(SkimPaths),
-                                     MCFilterPath = cms.string(MCFILTER),
-                                     isMC         = cms.untracked.bool(IsMC),
-                                     signalDefinition = cms.int32(SIGNALDEFINITION),
-                                     muons        = cms.InputTag("postCleaningMuons"),     # all good isolated muons BUT the ones coming from ZZ decay
-                                     electrons    = cms.InputTag("postCleaningElectrons"), # all good isolated electrons BUT the ones coming from ZZ decay
-                                     jets         = cms.InputTag("disambiguatedJets"),     # jets which contains leptons from ZZ or other good isolated leptons are removed
-                                     Zmm          = cms.InputTag("MMCand"),
-                                     Zee          = cms.InputTag("EECand"),
-                                     Wjj          = cms.InputTag("WCand"),
-                                     ZZ4m         = cms.InputTag("MMMMFiltered"),          # only the best ZZ->4mu candidate that pass the FULL selection
-                                     ZZ4e         = cms.InputTag("EEEEFiltered"),          # only the best ZZ->4e candidate that pass the FULL selection
-                                     ZZ2e2m       = cms.InputTag("EEMMFiltered"),          # only the best ZZ->2e2mu candidate that pass the FULL selection
-                                     Zll          = cms.InputTag(""), 
-                                     MET          = cms.InputTag("cmgPFMET"),
-                                     Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
-                                     XSection     = cms.untracked.double(XSEC)
-                                     )
 
 
 ### ------------------------------------------------------------------------- ###
@@ -309,7 +277,6 @@ process.postRecoCleaning = cms.Sequence( process.ZZFiltered
 
 
 
-
 ### ------------------------------------------------------------------------- ###
 ### Run the preselection
 ### ------------------------------------------------------------------------- ###
@@ -328,20 +295,21 @@ process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTa
 # Select only events with one such candidate
 process.zzCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZZFiltered"), minNumber = cms.uint32(1))
 
-# Empty sequence to attach the signal filter (if specified in the CSV file)
-process.signalFilters    = cms.Sequence() 
-
 ### Path that pre-select the higher level objects that will input the TreePlanter
 process.preselection = cms.Path( process.prePreselectionCounter
-                                 * process.signalFilters
                                  * process.postRecoCleaning 
                                  * process.zzCounterFilter * process.jetCounterFilter
                                  * process.postPreselectionCounter)
 
 
-
 ### If it is MC, run also the signal definition path
 if IsMC:
+    # Empty sequence to attach the signal filter (if specified in the CSV file)
+    process.mcSelectionCounter = cms.EDProducer("EventCountProducer") # not really needeed... it is mainly an hack to get the path executed
+    process.signalFilters = cms.Sequence(process.mcSelectionCounter) 
+    process.mcSelection   = cms.Path(process.signalFilters)
+    MCFILTER = "mcSelection"
+
     process.genCategory =  cms.EDFilter("ZZGenFilterCategory",
                                         Topology       = cms.int32(SIGNALDEFINITION), 
                                         ParticleStatus = cms.int32(1), 
@@ -350,6 +318,38 @@ if IsMC:
                                         )
     process.signalCounter    = cms.EDProducer("EventCountProducer")
     process.signalDefinition = cms.Path(process.genCategory * process.signalCounter)
+
+
+
+### ------------------------------------------------------------------------- ###
+### Fill the tree for the analysis
+### ------------------------------------------------------------------------- ###
+
+ 
+process.treePlanter = cms.EDAnalyzer("TreePlanter",
+                                     sampleName   = cms.string(SAMPLENAME),
+                                     setup        = cms.int32(LEPTON_SETUP),
+                                     sampleType   = cms.int32(SAMPLE_TYPE),
+                                     PD           = cms.string(PD),
+                                     skimPaths    = cms.vstring(SkimPaths),
+                                     SkimRequired = cms.untracked.bool(False),
+                                     MCFilterPath = cms.string(MCFILTER),
+                                     isMC         = cms.untracked.bool(IsMC),
+                                     signalDefinition = cms.int32(SIGNALDEFINITION),
+                                     muons        = cms.InputTag("postCleaningMuons"),     # all good isolated muons BUT the ones coming from ZZ decay
+                                     electrons    = cms.InputTag("postCleaningElectrons"), # all good isolated electrons BUT the ones coming from ZZ decay
+                                     jets         = cms.InputTag("disambiguatedJets"),     # jets which contains leptons from ZZ or other good isolated leptons are removed
+                                     Zmm          = cms.InputTag("MMCand"),
+                                     Zee          = cms.InputTag("EECand"),
+                                     Wjj          = cms.InputTag("WCand"),
+                                     ZZ4m         = cms.InputTag("MMMMFiltered"),          # only the best ZZ->4mu candidate that pass the FULL selection
+                                     ZZ4e         = cms.InputTag("EEEEFiltered"),          # only the best ZZ->4e candidate that pass the FULL selection
+                                     ZZ2e2m       = cms.InputTag("EEMMFiltered"),          # only the best ZZ->2e2mu candidate that pass the FULL selection
+                                     Zll          = cms.InputTag(""), 
+                                     MET          = cms.InputTag("cmgPFMET"),
+                                     Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
+                                     XSection     = cms.untracked.double(XSEC)
+                                     )
 
 
 
