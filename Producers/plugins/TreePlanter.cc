@@ -276,6 +276,10 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   // Fill some info abut acceptance before cutting away events. Beware: if the signal is defined a-posteriori, we will have a problem. For that case, we need to
   // explicitly check here that we are counting signal and not irreducible background.
   if (isMC_) {
+    // Apply MC filter
+    if (!filterController_.passMCFilter(event)) return false;
+
+
     if(mcHistoryTools_) delete mcHistoryTools_;
     mcHistoryTools_ = new MCHistoryTools(event, sampleName_);
     bool gen_ZZ4lInEtaAcceptance   = false; // All 4 gen leptons in eta acceptance
@@ -317,9 +321,6 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   passSkim_ = filterController_.passSkim(event, triggerWord_);
   if (applySkim_    && !passSkim_)   return false;
   
-  // Apply MC filter
-  //if (isMC_ && !(filterController_.passMCFilter(event))) return false;
-
   run_       = event.id().run();
   event_     = event.id().event(); 
   lumiBlock_ = event.luminosityBlock();
