@@ -162,6 +162,5 @@ FilterController::passFilter(const edm::Event & event, const string& filterPath,
     abort();
   }
   return myTriggerResults->accept(i);
-
 }
 
