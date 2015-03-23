@@ -6,6 +6,7 @@
 #include "FWCore/Framework/interface/Run.h"
 #include "FWCore/Common/interface/TriggerNames.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/Math/interface/deltaR.h"
@@ -20,8 +21,8 @@
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
 
-#include "AnalysisDataFormats/CMGTools/interface/PFJet.h"
-#include "AnalysisDataFormats/CMGTools/interface/BaseMET.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
+#include "DataFormats/PatCandidates/interface/MET.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 
 #include "ZZAnalysis/AnalysisStep/interface/MCHistoryTools.h"
@@ -70,6 +71,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theMETLabel      (config.getParameter<edm::InputTag>("MET"      ))
   , theVertexLabel   (config.getParameter<edm::InputTag>("Vertices" ))
   , sampleName_      (config.getParameter<std::string>("sampleName"))
+  , jecFileName_     (config.getParameter<std::string>("JECFileName"))
   , isMC_            (config.getUntrackedParameter<bool>("isMC",false))
   , sampleType_      (config.getParameter<int>("sampleType"))
   , setup_           (config.getParameter<int>("setup"))
@@ -100,6 +102,8 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   }
    
   skimPaths_ = config.getParameter<std::vector<std::string> >("skimPaths");
+
+  JES_ = new JetCorrectionUncertainty(edm::FileInPath(jecFileName_).fullPath());
 
   initTree();
 }
@@ -191,6 +195,7 @@ void TreePlanter::endRun(const edm::Run& run, const edm::EventSetup& setup){
 void TreePlanter::endJob(){
 
   if(mcHistoryTools_) delete mcHistoryTools_;
+  if(JES_) delete JES_;
 
   edm::Service<TFileService> fs;
   TTree *countTree = fs->make<TTree>("HollyTree","HollyTree");
@@ -324,7 +329,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   event_     = event.id().event(); 
   lumiBlock_ = event.luminosityBlock();
 
-  edm::Handle<std::vector<cmg::BaseMET> > met;   event.getByLabel(theMETLabel, met);
+  edm::Handle<pat::METCollection> met;   event.getByLabel(theMETLabel, met);
   met_ = phys::Particle(phys::Particle::convert(met->front().p4()));
 
   edm::Handle<std::vector<reco::Vertex> > vertices; event.getByLabel(theVertexLabel, vertices);
@@ -381,7 +386,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   // Load a bunch of objects from the event
   edm::Handle<pat::MuonCollection>       muons            ; event.getByLabel(theMuonLabel    ,     muons);
   edm::Handle<pat::ElectronCollection>   electrons        ; event.getByLabel(theElectronLabel, electrons);
-  edm::Handle<std::vector<cmg::PFJet> >  jets             ; event.getByLabel(theJetLabel     ,      jets);
+  edm::Handle<std::vector<pat::Jet> >  jets             ; event.getByLabel(theJetLabel     ,      jets);
   edm::Handle<edm::View<pat::CompositeCandidate> > Zmm    ; event.getByLabel(theZmmLabel     ,       Zmm);
   edm::Handle<edm::View<pat::CompositeCandidate> > Zee    ; event.getByLabel(theZeeLabel     ,       Zee);
   edm::Handle<edm::View<pat::CompositeCandidate> > Wjj    ; event.getByLabel(theWLabel       ,       Wjj);
@@ -406,7 +411,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
     electrons_.push_back(physelectron);
   }
 
-  foreach(const cmg::PFJet& jet, *jets){
+  foreach(const pat::Jet& jet, *jets){
     phys::Jet physjet = fill(jet);
     jets_.push_back(physjet);
   }
@@ -417,7 +422,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
   Zee_    = fillBosons<pat::Electron,phys::Electron>(Zee, 23);
 
-  Wjj_    = fillBosons<cmg::PFJet,phys::Jet>(Wjj, 24);
+  Wjj_    = fillBosons<pat::Jet,phys::Jet>(Wjj, 24);
 
 
   // The bosons have NOT any requirement on the quality of their daughters, only the flag is set (because of the same code is usd for CR too)
@@ -481,47 +486,78 @@ phys::Lepton TreePlanter::fill(const pat::Muon& mu) const{
 
 
 
-phys::Jet TreePlanter::fill(const cmg::PFJet &jet) const{
+phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   
   phys::Jet output(phys::Particle::convert(jet.p4()),jet.charge(),1);
   
-  output.nConstituents_ = jet.nConstituents();
-  output.nCharged_ = jet.nCharged();
-  output.nNeutral_ = jet.nNeutral();
+  output.nConstituents_ = jet.numberOfDaughters();
+  output.nCharged_ = jet.chargedMultiplicity();
+  output.nNeutral_ = jet.neutralMultiplicity();
     
-  output.neutralHadronEnergyFraction_ = jet.component(reco::PFCandidate::ParticleType::h0).fraction();
-  output.chargedHadronEnergyFraction_ = jet.component(reco::PFCandidate::ParticleType::h).fraction();
-  output.chargedEmEnergyFraction_     = jet.component(reco::PFCandidate::ParticleType::e).fraction();    
-  output.neutralEmEnergyFraction_     = jet.component(reco::PFCandidate::ParticleType::gamma).fraction();    
-  output.muonEnergyFraction_          = jet.component(reco::PFCandidate::ParticleType::mu).fraction();
+  output.neutralHadronEnergyFraction_ = jet.neutralHadronEnergyFraction();
+  output.chargedHadronEnergyFraction_ = jet.chargedHadronEnergyFraction();
+  output.chargedEmEnergyFraction_     = jet.chargedEmEnergyFraction();
+  output.neutralEmEnergyFraction_     = jet.neutralEmEnergyFraction();  
+  output.muonEnergyFraction_          = jet.muonEnergyFraction();        
   
-  output.csvtagger_               = jet.btag("combinedSecondaryVertexBJetTags");
-  output.girth_                   = jet.girth();
-  output.girth_charged_           = jet.girth_charged();
-  output.ptd_                     = jet.ptd();
-  output.rms_                     = jet.rms();
-  output.beta_                    = jet.beta();
+  if(jet.hasUserFloat("combinedInclusiveSecondaryVertexV2BJetTags")) output.csvtagger_               = jet.bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags");
+
+
+  //girth - See http://arxiv.org/abs/1106.3076v2 - eqn (2)
+  double gsumcharged = 0.0;
+  double gsum = 0.0;
+  float sumpt2 = 0;
+  float sumpt = 0;
+
+  for(unsigned i=0; i<jet.numberOfDaughters();++i){
+    sumpt2 += jet.daughter(i)->pt() * jet.daughter(i)->pt();
+    sumpt += jet.daughter(i)->pt();
+
+
+    const double dr = reco::deltaR(*jet.daughter(i),jet);
+    gsum += (dr*( jet.daughter(i)->pt()/jet.pt() ) );
+    if(jet.daughter(i)->charge() == 0) continue;
+    else
+      gsumcharged += (dr*( jet.daughter(i)->pt()/jet.pt() ) );
+  }
+  output.girth_        = gsum;
+  output.girth_charged_ = gsumcharged;
+  //end girth
+  output.ptd_ = sqrt( sumpt2 ) / sumpt; 
+  
   output.jetArea_                 = jet.jetArea();
-  output.secvtxMass_              = jet.secvtxMass();
-  output.Lxy_                     = jet.Lxy();
-  output.LxyErr_                  = jet.LxyErr();
-  output.rawFactor_               = jet.rawFactor();
-  output.uncOnFourVectorScale_    = jet.uncOnFourVectorScale();
-  output.puMVAFull_               = jet.puMva("full53x");
-  output.puMVASimple_             = jet.puMva("simple");
-  output.puCutBased_              = jet.puMva("cut-based");
-  output.pass_puMVAFull_loose_    = jet.passPuJetId("full53x"  , PileupJetIdentifier::kLoose);
-  output.pass_pUMVAFull_medium_   = jet.passPuJetId("full53x"  , PileupJetIdentifier::kMedium);
-  output.pass_pUMVAFull_tight_    = jet.passPuJetId("full53x"  , PileupJetIdentifier::kTight); 
-  output.pass_puMVASimple_loose_  = jet.passPuJetId("simple"   , PileupJetIdentifier::kLoose); 
-  output.pass_puMVASimple_medium_ = jet.passPuJetId("simple"   , PileupJetIdentifier::kMedium); 
-  output.pass_puMVASimple_tight_  = jet.passPuJetId("simple"   , PileupJetIdentifier::kTight); 
-  output.pass_puCutBased_loose_   = jet.passPuJetId("cut-based", PileupJetIdentifier::kLoose); 
-  output.pass_puCutBased_medium_  = jet.passPuJetId("cut-based", PileupJetIdentifier::kMedium);
-  output.pass_puCutBased_tight_   = jet.passPuJetId("cut-based", PileupJetIdentifier::kTight);
+  if(jet.hasUserFloat("vtxMass")) output.secvtxMass_ = jet.userFloat("vtxMass");
+  if(jet.hasUserFloat("Lxy") )    output.Lxy_        = jet.userFloat("Lxy");
+  if(jet.hasUserFloat("LxyErr") ) output.LxyErr_      = jet.userFloat("LxyErr"); 
+  
+  if(jet.hasUserFloat("pileupJetId:fullDiscriminant")) output.puMVAFull_ = jet.userFloat("pileupJetId:fullDiscriminant");
   
   output.mcPartonFlavour_ = jet.partonFlavour();
+  
+  // JEC
+  output.rawFactor_               = jet.jecFactor(0);
+  // JES
+  JES_->setJetEta(jet.eta());
+  JES_->setJetPt(jet.pt());
+  output.uncOnFourVectorScale_    = JES_->getUncertainty(true);
+
  
+  // To be removed (also the memebers in jet class
+  // output.puMVASimple_             = jet.puMva("simple");
+  // output.puCutBased_              = jet.puMva("cut-based");
+  // output.pass_puMVAFull_loose_    = jet.passPuJetId("full53x"  , PileupJetIdentifier::kLoose);
+  // output.pass_pUMVAFull_medium_   = jet.passPuJetId("full53x"  , PileupJetIdentifier::kMedium);
+  // output.pass_pUMVAFull_tight_    = jet.passPuJetId("full53x"  , PileupJetIdentifier::kTight); 
+  // output.pass_puMVASimple_loose_  = jet.passPuJetId("simple"   , PileupJetIdentifier::kLoose); 
+  // output.pass_puMVASimple_medium_ = jet.passPuJetId("simple"   , PileupJetIdentifier::kMedium); 
+  // output.pass_puMVASimple_tight_  = jet.passPuJetId("simple"   , PileupJetIdentifier::kTight); 
+  // output.pass_puCutBased_loose_   = jet.passPuJetId("cut-based", PileupJetIdentifier::kLoose); 
+  // output.pass_puCutBased_medium_  = jet.passPuJetId("cut-based", PileupJetIdentifier::kMedium);
+  // output.pass_puCutBased_tight_   = jet.passPuJetId("cut-based", PileupJetIdentifier::kTight);
+  // output.rms_                     = jet.rms();
+  // output.beta_                    = jet.beta();
+
+
   return output; 
 }
 

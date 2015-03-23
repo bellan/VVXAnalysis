@@ -78,7 +78,8 @@ process.source.fileNames = cms.untracked.vstring(
     #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2muJJ_SMHContinInterf_M-125p6_8TeV-phantom-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_tZF.root'
     #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2tau_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_50_1_Fka.root',
     #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2tau_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_6_1_EfC.root'
-    '/store/cmst3/user/cmgtools/CMG//ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_6_1_zVE.root'
+    #'/store/cmst3/user/cmgtools/CMG//ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_6_1_zVE.root'
+    '/store/mc/Phys14DR/ZZTo4L_Tune4C_13TeV-powheg-pythia8/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/04CD96C9-E269-E411-9D64-00266CF9ADA0.root'
     )
 
 process.maxEvents.input = -1
@@ -227,7 +228,7 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
 ### Build the W->jj candidate out of the previously disambiguated jet collection, restricted to the central regions
 ### ......................................................................... ###
 
-process.centralJets = cms.EDFilter("EtaPtMinCMGPFJetSelector", 
+process.centralJets = cms.EDFilter("EtaPtMinCandSelector", 
                                    src = cms.InputTag("disambiguatedJets"),
                                    ptMin   = cms.double(30),
                                    etaMin = cms.double(-2.4),

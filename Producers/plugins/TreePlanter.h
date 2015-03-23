@@ -30,9 +30,9 @@
 #include "ZZAnalysis/AnalysisStep/interface/PUReweight.h"
 
 class TTree;
-namespace cmg{class PFJet;}
+namespace pat{class Jet;}
 class MCHistoryTools;
-
+class JetCorrectionUncertainty;
 
 class TreePlanter: public edm::EDAnalyzer {
   
@@ -61,7 +61,7 @@ class TreePlanter: public edm::EDAnalyzer {
 
   phys::Electron fill(const pat::Electron &electron) const;
   
-  phys::Jet fill(const cmg::PFJet &jet) const;
+  phys::Jet fill(const pat::Jet &jet) const;
 
   void addExtras(phys::Jet &jet, const pat::CompositeCandidate & v, const std::string& userFloatName) const;
   void addExtras(phys::Lepton& mu, const pat::CompositeCandidate & v, const std::string& userFloatName) const;
@@ -173,12 +173,15 @@ class TreePlanter: public edm::EDAnalyzer {
 
   // Ordinary data members
   std::string sampleName_;
+  std::string jecFileName_;
   bool isMC_;
   int  sampleType_;
   int  setup_;
   bool applyTrigger_;
   bool applySkim_;
   bool applyMCSel_;
+
+  JetCorrectionUncertainty *JES_;
 
   std::vector<double> theXSections;
   double externalCrossSection_;

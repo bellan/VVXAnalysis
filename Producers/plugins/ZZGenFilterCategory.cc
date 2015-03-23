@@ -16,8 +16,6 @@
 #include <DataFormats/HepMCCandidate/interface/GenParticle.h>
 #include "DataFormats/JetReco/interface/GenJet.h"
 
-#include "AnalysisDataFormats/CMGTools/interface/PhysicsObject.h"
-
 #include <iostream>
 #include <vector>
 #include <tuple> 
@@ -128,10 +126,10 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 
     
     // Get gen jets
-    edm::Handle<std::vector<cmg::PhysicsObjectWithPtr<edm::Ptr<reco::GenJet> > > > genJetsH;
+    edm::Handle<std::vector<reco::GenJet> > genJetsH;
     event.getByLabel(genJetsLabel_,  genJetsH);
     
-    foreach(const cmg::PhysicsObjectWithPtr<edm::Ptr<reco::GenJet> > & jet, *genJetsH)
+    foreach(const reco::GenJet& jet, *genJetsH)
       if(jet.pt() > 30 && fabs(jet.eta()) < 4.7)
 	genJets.push_back(phys::Particle(jet.p4(), phys::Particle::computeCharge(jet.pdgId()), jet.pdgId()));
     

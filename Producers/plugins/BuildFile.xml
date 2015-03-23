@@ -6,7 +6,7 @@
   <use name="TrackingTools/Records"/>
   <use name="TrackingTools/TransientTrack"/>
   <use name="DataFormats/PatCandidates"/>
-  <use name="AnalysisDataFormats/CMGTools"/>
+  <use name="CondFormats/JetMETObjects"/>
   <use name="SimGeneral/HepPDTRecord"/>
   <use name="VVXAnalysis/Commons"/>
   <use name="VVXAnalysis/DataFormats"/>
