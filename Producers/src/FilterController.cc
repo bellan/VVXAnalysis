@@ -13,8 +13,11 @@ FilterController::FilterController(const edm::ParameterSet& pset) :
   MCFilter(pset.getParameter<std::string>("MCFilterPath")){
   
   // Check for inconsistent configurations
-  if ((theSampleType != 2011 && theSampleType != 2012) ||
-      ((theSampleType != theSetup) && (!isMC_ || theSampleType!=2011))) {
+  if ( ( theSampleType!=2011 && theSampleType!=2012 && theSampleType!=2015 ) ||
+       ( theSetup!=2011 && theSetup!=2012 && theSetup!=2015 ) ||
+       ( theSampleType!=theSetup ) // No sample rescaling supported as of now.
+       // We may add exception for MC only when needed.
+       ) {
     cout << "ERROR: FilterController: inconsistent setup" << theSampleType << " " << theSetup << " " <<isMC_ << endl;
     abort();
   }
@@ -75,7 +78,7 @@ FilterController::passSkim(const edm::Event & event, short& trigworld, bool make
 
 
 short FilterController::getTriggerWord(const edm::Event & event){
-
+  // FIXME // FIXME
   short trigword = 0;
 
   bool passDiMu = passFilter(event, "triggerDiMu");
@@ -90,7 +93,7 @@ short FilterController::getTriggerWord(const edm::Event & event){
     }
   }
   bool passTriEle = false;
-  if (theSetup == 2012) {
+  if (theSetup >= 2012) {
     passTriEle = passFilter(event, "triggerTriEle");
   }
 

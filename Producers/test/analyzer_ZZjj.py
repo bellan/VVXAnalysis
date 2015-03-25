@@ -2,14 +2,12 @@
 ### Based on ZZ->4l strategy.
 ###----------------------------------------------------------------------
 
-
-LEPTON_SETUP = 2012
-JET_SETUP    = 2012
+LEPTON_SETUP = 2015
 #PD = ""
 #MCFILTER = ""
-ELECORRTYPE   = "Paper" # "None", "Moriond", or "Paper"
-ELEREGRESSION = "Paper" # "None", "Moriond", "PaperNoComb", or "Paper" 
-APPLYMUCORR = True
+ELECORRTYPE   = "None" # "None", "Moriond", or "Paper"
+ELEREGRESSION = "None" # "None", "Moriond", "PaperNoComb", or "Paper" 
+APPLYMUCORR = False # ??? FIXME
 
 SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the choosedn windows. For other topology see the README under VVXAnalysis/Commons.
 
@@ -21,7 +19,7 @@ except NameError:
 try:
     LEPTON_SETUP
 except NameError:
-    LEPTON_SETUP = 2012 # define the set of effective areas, rho corrections, etc.
+    LEPTON_SETUP = 2015
 
 try:
     JET_SETUP
@@ -65,22 +63,11 @@ SkimPaths.append("preselection")
   ### Replace parameters
 ### ----------------------------------------------------------------------
 process.source.fileNames = cms.untracked.vstring(
-    # '/store/cmst3/group/cmgtools/CMG/WZZ_8TeV-aMCatNLO-herwig/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_13_1_YZF.root'    
-    # 'root://lxcms00//data3/2013/HZZ_cmgTuple/BE539_H1258TeV.root' #533 V5_15_0 version
-    #'/store/cmst3/group/cmgtools/CMG/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_nLP.root'
-    #'/store/cmst3/group/cmgtools/CMG/WZZ_8TeV-aMCatNLO-herwig/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_GEb.root'
-    #'/store/cmst3/group/cmgtools/CMG/ZZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_UV1.root'
-    #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_irQ.root'
-    #'/store/cmst3/user/cmgtools/CMG/ZZTo4mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_UR6.root'
-    #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2tau_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_E2X.root'
-    #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2muJJ_SMHContinInterf_M-125p6_8TeV-phantom-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_tZF.root'
-    #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2tau_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_50_1_Fka.root',
-    #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2tau_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_6_1_EfC.root'
-    #'/store/cmst3/user/cmgtools/CMG//ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_6_1_zVE.root'
     '/store/mc/Phys14DR/ZZTo4L_Tune4C_13TeV-powheg-pythia8/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/04CD96C9-E269-E411-9D64-00266CF9ADA0.root'
+    #'/store/mc/Phys14DR/GluGluToHToZZTo4L_M-125_13TeV-powheg-pythia6/MINIAODSIM/PU20bx25_tsg_PHYS14_25_V1-v1/00000/3295EF7C-2070-E411-89C4-7845C4FC35DB.root'
     )
 
-process.maxEvents.input = -1
+process.maxEvents.input = 1000
 
 # Silence output
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -181,7 +168,7 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
                                            JetPreselection     = cms.string("pt > 30"),
                                            DiBosonPreselection = cms.string(""),
                                            MatchingType        = cms.string("byDeltaR"), 
-                                           Jets      = cms.InputTag("cmgPFJetSel"),
+                                           Jets      = cms.InputTag("slimmedJets"),
                                            Muons     = cms.InputTag("postCleaningMuons"),
                                            Electrons = cms.InputTag("postCleaningElectrons"),
                                            Diboson   = cms.InputTag("ZZFiltered"),
@@ -196,22 +183,22 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
 ### Build the W->jj candidate out of the previously disambiguated jet collection, restricted to the central regions
 ### ......................................................................... ###
 
-process.centralJets = cms.EDFilter("EtaPtMinCandSelector", 
+process.centralJets = cms.EDFilter("EtaPtMinCandViewSelector", 
                                    src = cms.InputTag("disambiguatedJets"),
                                    ptMin   = cms.double(30),
                                    etaMin = cms.double(-2.4),
                                    etaMax = cms.double(2.4)
                                    )
 
-process.bareWCand = cms.EDProducer("CandViewShallowCloneCombiner",
-                                   decay = cms.string('centralJets centralJets'),
-                                   cut = cms.string('mass > 20'), # protect against ghosts
-                                   checkCharge = cms.bool(False))
+process.bareVhadCand = cms.EDProducer("CandViewShallowCloneCombiner",
+                                      decay = cms.string('centralJets centralJets'),
+                                      cut = cms.string('mass > 20'), # protect against ghosts
+                                      checkCharge = cms.bool(False))
 
-process.WCand = cms.EDProducer("WCandidateFiller",
-                               src = cms.InputTag("bareWCand"))
+process.VhadCand = cms.EDProducer("WCandidateFiller",
+                                  src = cms.InputTag("bareVhadCand"))
 
-process.WjjSequence = cms.Sequence(process.centralJets * process.bareWCand * process.WCand)
+process.VhadSequence = cms.Sequence(process.centralJets * process.bareVhadCand * process.VhadCand)
 
 
 
@@ -225,31 +212,12 @@ Z1MASS            = "daughter('Z1').mass>60 && daughter('Z1').mass<120"
 Z2MASS            = "daughter('Z2').mass>60 && daughter('Z2').mass<120"
 FULLSELTIGHT      = (FULLSEL + "&&" + Z1MASS + "&&" + Z2MASS)
 
-process.MMMMCand.flags.FullSelTight = cms.string(FULLSELTIGHT)
-process.EEEECand.flags.FullSelTight = cms.string(FULLSELTIGHT)
-process.EEMMCand.flags.FullSelTight = cms.string(FULLSELTIGHT)
-
+process.ZZCand.flags.FullSelTight = cms.string(FULLSELTIGHT)
 
 process.ZZFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
                                   src = cms.InputTag("ZZCand"),
                                   cut = cms.string("userFloat('isBestCand') && userFloat('FullSelTight')")
                                   )
-
-process.MMMMFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
-                                    src = cms.InputTag("MMMMCand"),
-                                    cut = cms.string("userFloat('isBestCand') && userFloat('FullSelTight')")
-                                    )
-
-process.EEEEFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
-                                    src = cms.InputTag("EEEECand"),
-                                    cut = cms.string("userFloat('isBestCand') && userFloat('FullSelTight')")
-                                    )
-
-process.EEMMFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
-                                    src = cms.InputTag("EEMMCand"),
-                                    cut = cms.string("userFloat('isBestCand') && userFloat('FullSelTight')")
-                                    )
-
 
 ### ......................................................................... ###
 ### Clean the Z+2 lepton candidates to select only the best possible candidate for that region, requiring that at least one lepton fails the FULL selection
@@ -267,13 +235,10 @@ process.EEMMFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
 ### ------------------------------------------------------------------------- ###
 
 process.postRecoCleaning = cms.Sequence( process.ZZFiltered
-                                         + process.MMMMFiltered
-                                         + process.EEEEFiltered
-                                         + process.EEMMFiltered
                                          + process.muonsFromZZ*process.postCleaningMuons 
                                          + process.electronsFromZZ*process.postCleaningElectrons
                                          + process.disambiguatedJets
-                                         + process.WjjSequence
+                                         + process.VhadSequence
                                          )
 
 
@@ -314,8 +279,8 @@ if IsMC:
     process.genCategory =  cms.EDFilter("ZZGenFilterCategory",
                                         Topology       = cms.int32(SIGNALDEFINITION), 
                                         ParticleStatus = cms.int32(1), 
-                                        src            = cms.InputTag("genParticlesPruned"),
-                                        GenJets        = cms.InputTag("genJetSel"),
+                                        src            = cms.InputTag("prunedGenParticles"),
+                                        GenJets        = cms.InputTag("slimmedGenJets"),
                                         )
     process.signalCounter    = cms.EDProducer("EventCountProducer")
     process.signalDefinition = cms.Path(process.genCategory * process.signalCounter)
@@ -337,17 +302,15 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      MCFilterPath = cms.string(MCFILTER),
                                      isMC         = cms.untracked.bool(IsMC),
                                      signalDefinition = cms.int32(SIGNALDEFINITION),
+                                     JECFileName  = cms.string("VVXAnalysis/Producers/test/Winter14_V5_DATA_Uncertainty_AK5PF.txt"),
                                      muons        = cms.InputTag("postCleaningMuons"),     # all good isolated muons BUT the ones coming from ZZ decay
                                      electrons    = cms.InputTag("postCleaningElectrons"), # all good isolated electrons BUT the ones coming from ZZ decay
-                                     jets         = cms.InputTag("disambiguatedJets"),     # jets which contains leptons from ZZ or other good isolated leptons are removed
-                                     Zmm          = cms.InputTag("MMCand"),
-                                     Zee          = cms.InputTag("EECand"),
-                                     Wjj          = cms.InputTag("WCand"),
-                                     ZZ4m         = cms.InputTag("MMMMFiltered"),          # only the best ZZ->4mu candidate that pass the FULL selection
-                                     ZZ4e         = cms.InputTag("EEEEFiltered"),          # only the best ZZ->4e candidate that pass the FULL selection
-                                     ZZ2e2m       = cms.InputTag("EEMMFiltered"),          # only the best ZZ->2e2mu candidate that pass the FULL selection
+                                     jets         = cms.InputTag("disambiguatedJets"),     # jets which do not contains leptons from ZZ or other good isolated leptons
+                                     Z            = cms.InputTag("ZCand"),
+                                     Vhad         = cms.InputTag("VhadCand"),
+                                     ZZ           = cms.InputTag("ZZFiltered"),            # only the best ZZ->4l candidate that pass the FULL selection
                                      Zll          = cms.InputTag(""), 
-                                     MET          = cms.InputTag("cmgPFMET"),
+                                     MET          = cms.InputTag("slimmedMETs"),
                                      Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
                                      XSection     = cms.untracked.double(XSEC)
                                      )

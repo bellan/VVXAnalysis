@@ -59,26 +59,28 @@ class TreePlanter: public edm::EDAnalyzer {
 
   phys::Lepton fill(const pat::Muon &muon) const;
 
-  phys::Electron fill(const pat::Electron &electron) const;
-  
+  phys::Lepton fill(const pat::Electron &electron) const;
+
+  phys::Lepton fill(const reco::RecoCandidate& lep) const;
+
   phys::Jet fill(const pat::Jet &jet) const;
 
   void addExtras(phys::Jet &jet, const pat::CompositeCandidate & v, const std::string& userFloatName) const;
   void addExtras(phys::Lepton& mu, const pat::CompositeCandidate & v, const std::string& userFloatName) const;
 
   
-  template<typename T, typename PAR>
-    std::vector<phys::Boson<PAR> > fillBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const;
+  std::vector<phys::Boson<phys::Lepton> > fillLepBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const;
+  std::vector<phys::Boson<phys::Jet> >    fillHadBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const;
+
 
   template<typename T, typename PAR>
     phys::Boson<PAR> fillBoson(const pat::CompositeCandidate & v, int type, bool requireQualityCriteria) const;
 
 
-  template<typename T1, typename PAR1, typename T2, typename PAR2>
-    phys::DiBoson<PAR1,PAR2> fillDiBoson(Channel channel, const pat::CompositeCandidate& edmDiBosons) const;
+  template<typename T1, typename T2>
+    phys::DiBoson<phys::Lepton,phys::Lepton> fillDiBoson(Channel channel, const pat::CompositeCandidate& edmDiBosons) const;
 
-  template<typename T1, typename PAR1, typename T2, typename PAR2>
-    std::vector<phys::DiBoson<PAR1,PAR2> > fillDiBosons(Channel channel, const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const;
+  std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > fillDiBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const;
 
   std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > fillZll(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const;
 
@@ -132,18 +134,23 @@ class TreePlanter: public edm::EDAnalyzer {
   Double_t        rho_;
   
   // ------------------- Objects in the tree ------------------- //
+  // all good isolated muons BUT the ones coming from ZZ decay
   std::vector<phys::Lepton>                 muons_;
+  // all good isolated electrons BUT the ones coming from ZZ decay
   std::vector<phys::Electron>               electrons_;
+  // jets which do not contains leptons from ZZ or other good isolated leptons
   std::vector<phys::Jet>                    jets_;
 
-  std::vector<phys::Boson<phys::Lepton>   > Zmm_;
-  std::vector<phys::Boson<phys::Electron> > Zee_;
-  std::vector<phys::Boson<phys::Jet>      > Wjj_;
+  // Z --> ll
+  std::vector<phys::Boson<phys::Lepton>   > Z_;
 
-  std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   > ZZ4m_;
-  std::vector<phys::DiBoson<phys::Electron, phys::Electron> > ZZ4e_;
-  std::vector<phys::DiBoson<phys::Electron, phys::Lepton>   > ZZ2e2m_;
+  // V --> jj, with V = W,Z
+  std::vector<phys::Boson<phys::Jet>      > Vhad_;
 
+  // ZZ in the SR
+  std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   > ZZ_;
+
+  // Z + ll, CR
   std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   > Zll_;
 
   std::vector<phys::Particle>               genParticles_;
@@ -154,12 +161,9 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::InputTag theMuonLabel;
   edm::InputTag theElectronLabel;
   edm::InputTag theJetLabel;
-  edm::InputTag theZmmLabel;
-  edm::InputTag theZeeLabel;
-  edm::InputTag theWLabel;
-  edm::InputTag theZZ4mLabel;
-  edm::InputTag theZZ4eLabel;
-  edm::InputTag theZZ2e2mLabel;
+  edm::InputTag theZLabel;
+  edm::InputTag theVhadLabel;
+  edm::InputTag theZZLabel;
   edm::InputTag theZllLabel;
   edm::InputTag theMETLabel;
   edm::InputTag theVertexLabel;
