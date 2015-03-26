@@ -15,7 +15,7 @@ APPLYMUCORR = True
 
 SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the choosedn windows. For other topology see the README under VVXAnalysis/Commons.
 
-CONTROLREGION = '3P1F'
+CONTROLREGION = '2P2F'
 
 try:
     IsMC
@@ -123,7 +123,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      jets         = cms.InputTag("disambiguatedJets"),     # jets which contains leptons from ZZ or other good isolated leptons are removed
                                      Zmm          = cms.InputTag("MMCand"),
                                      Zee          = cms.InputTag("EECand"),
-                                     Wjj          = cms.InputTag("WCand"),
+                                     Vhad         = cms.InputTag("VhadCand"),
                                      ZZ4m         = cms.InputTag(""),          # only the best ZZ->4mu candidate that pass the FULL selection
                                      ZZ4e         = cms.InputTag(""),          # only the best ZZ->4e candidate that pass the FULL selection
                                      ZZ2e2m       = cms.InputTag(""),          # only the best ZZ->2e2mu candidate that pass the FULL selection
@@ -240,15 +240,15 @@ process.centralJets = cms.EDFilter("EtaPtMinCMGPFJetSelector",
                                    etaMax = cms.double(2.4)
                                    )
 
-process.bareWCand = cms.EDProducer("CandViewShallowCloneCombiner",
-                                   decay = cms.string('centralJets centralJets'),
-                                   cut = cms.string('mass > 20'), # protect against ghosts
-                                   checkCharge = cms.bool(False))
+process.bareVhadCand = cms.EDProducer("CandViewShallowCloneCombiner",
+                                      decay = cms.string('centralJets centralJets'),
+                                      cut = cms.string('mass > 20'), # protect against ghosts
+                                      checkCharge = cms.bool(False))
 
-process.WCand = cms.EDProducer("WCandidateFiller",
-                               src = cms.InputTag("bareWCand"))
+process.VhadCand = cms.EDProducer("WCandidateFiller",
+                                  src = cms.InputTag("bareVhadCand"))
 
-process.WjjSequence = cms.Sequence(process.centralJets * process.bareWCand * process.WCand)
+process.VhadSequence = cms.Sequence(process.centralJets * process.bareVhadCand * process.VhadCand)
 
 
 
@@ -387,7 +387,7 @@ process.postRecoCleaning = cms.Sequence( process.Z2mLLFiltered
                                          + process.muonsFromZZ*process.postCleaningMuons 
                                          + process.electronsFromZZ*process.postCleaningElectrons
                                          + process.disambiguatedJets
-                                         + process.WjjSequence
+                                         + process.VhadSequence
                                          )
 
 
