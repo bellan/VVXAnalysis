@@ -132,23 +132,28 @@ class TreePlanter: public edm::EDAnalyzer {
   Double_t        rho_;
   
   // ------------------- Objects in the tree ------------------- //
+
+  // all good isolated muons BUT the ones coming from ZZ decay
   std::vector<phys::Lepton>                 muons_;
+  // all good isolated electrons BUT the ones coming from ZZ decay
   std::vector<phys::Electron>               electrons_;
+  // jets which do not contains leptons from ZZ or other good isolated leptons
   std::vector<phys::Jet>                    jets_;
-
-  std::vector<phys::Boson<phys::Lepton>   > Zmm_;
-  std::vector<phys::Boson<phys::Electron> > Zee_;
-  std::vector<phys::Boson<phys::Jet>      > Wjj_;
-
-  std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   > ZZ4m_;
-  std::vector<phys::DiBoson<phys::Electron, phys::Electron> > ZZ4e_;
-  std::vector<phys::DiBoson<phys::Electron, phys::Lepton>   > ZZ2e2m_;
-
-  std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   > Zll_;
+  // Z --> ll
+  std::vector<phys::Boson<phys::Lepton>   > Z_;
+  // V --> jj, with V = W,Z
+  std::vector<phys::Boson<phys::Jet> > Vhad_;
+  // ZZ in the SR or Z+ll in the CR
+  phys::DiBoson<phys::Lepton  , phys::Lepton> ZZ_;
 
   std::vector<phys::Particle>               genParticles_;
   std::vector<phys::Boson<phys::Particle> > genVBParticles_;
   std::vector<phys::Particle>               genJets_;
+
+  std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   > Zll_;
+  std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   > ZZ4m_;
+  std::vector<phys::DiBoson<phys::Electron, phys::Electron> > ZZ4e_;
+  std::vector<phys::DiBoson<phys::Electron, phys::Lepton>   > ZZ2e2m_;
 
   // ------------------- Input Labels ------------------- //
   edm::InputTag theMuonLabel;
@@ -156,7 +161,7 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::InputTag theJetLabel;
   edm::InputTag theZmmLabel;
   edm::InputTag theZeeLabel;
-  edm::InputTag theWLabel;
+  edm::InputTag theVhadLabel;
   edm::InputTag theZZ4mLabel;
   edm::InputTag theZZ4eLabel;
   edm::InputTag theZZ2e2mLabel;
