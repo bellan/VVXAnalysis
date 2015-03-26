@@ -91,7 +91,9 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
     //------------------ loop over genparticles ---------------------------------------------------------
     for (View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) {
       
-      if (false && p->status() == 1){
+      //cout << std::distance(genParticles->begin(),p) << " ID: " << p->pdgId() << " status: " << p->status() << endl;
+
+      if (p->status() == 1){
 
 	if(p->p4().P() != p->p4().P()){
 	  cout << "This particle, " << p->pdgId() << ", as NaN in p4 components: " << p->p4().P() << endl;
@@ -108,7 +110,7 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 	if( id == 22) 
 	  genPhotons.push_back(phys::convert(*p)); 
       }
-      if (p->status() == 3){
+      if (false && p->status() == 3){
 	int id   = abs(p->pdgId());     
 	if ( id == 11 || id == 13 ) { genLeptons.push_back(phys::convert(*p)); }// leptons   
       }
@@ -132,7 +134,8 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
     foreach(const reco::GenJet& jet, *genJetsH)
       if(jet.pt() > 30 && fabs(jet.eta()) < 4.7)
 	genJets.push_back(phys::Particle(jet.p4(), phys::Particle::computeCharge(jet.pdgId()), jet.pdgId()));
-    
+
+    //cout << "# Leptons: " << genLeptons.size() << " # genjets:  " << genJets.size() << endl;     
     break;
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     }
@@ -164,16 +167,16 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 
   // cout << "Topology " <<  std::get<0>(zzSignalTopology) << endl;
   // cout << "Z0 " <<  std::get<1>(zzSignalTopology) << " " << std::get<1>(zzSignalTopology).mass() << endl;
-  //if(std::get<1>(zzSignalTopology).id() == 23){
-  // cout << std::get<1>(zzSignalTopology).daughter(0) << endl;
-  // cout << std::get<1>(zzSignalTopology).daughter(1) << endl;
+  // if(std::get<1>(zzSignalTopology).id() == 23){
+  //   cout << std::get<1>(zzSignalTopology).daughter(0) << endl;
+  //   cout << std::get<1>(zzSignalTopology).daughter(1) << endl;
   // }
   // cout << "Z1 " <<  std::get<2>(zzSignalTopology) << " " << std::get<2>(zzSignalTopology).mass() << endl;
-  //if(std::get<2>(zzSignalTopology).id() == 23){
-  // cout << std::get<2>(zzSignalTopology).daughter(0) << endl;
-  // cout << std::get<2>(zzSignalTopology).daughter(1) << endl;
+  // if(std::get<2>(zzSignalTopology).id() == 23){
+  //   cout << std::get<2>(zzSignalTopology).daughter(0) << endl;
+  //   cout << std::get<2>(zzSignalTopology).daughter(1) << endl;
   // }
-
+ 
 
   std::auto_ptr<int> output(new int(std::get<0>(zzSignalTopology))); //Topology
   

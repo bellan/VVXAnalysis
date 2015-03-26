@@ -67,7 +67,7 @@ process.source.fileNames = cms.untracked.vstring(
     #'/store/mc/Phys14DR/GluGluToHToZZTo4L_M-125_13TeV-powheg-pythia6/MINIAODSIM/PU20bx25_tsg_PHYS14_25_V1-v1/00000/3295EF7C-2070-E411-89C4-7845C4FC35DB.root'
     )
 
-process.maxEvents.input = 1000
+process.maxEvents.input = -1
 
 # Silence output
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -336,7 +336,7 @@ process.thisIsTheEnd = cms.EndPath(process.treePlanter)
 process.printTree = cms.EDAnalyzer("ParticleListDrawer",
                                    maxEventsToPrint = cms.untracked.int32(-1),
                                    printVertex = cms.untracked.bool(False),
-                                   src = cms.InputTag("genParticlesPruned")
+                                   src = cms.InputTag("prunedGenParticles")
                                    )
 
 process.dumpUserData =  cms.EDAnalyzer("dumpUserData",

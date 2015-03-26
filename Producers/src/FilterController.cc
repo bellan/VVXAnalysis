@@ -81,7 +81,7 @@ short FilterController::getTriggerWord(const edm::Event & event){
   // FIXME // FIXME
   short trigword = 0;
 
-  bool passDiMu = passFilter(event, "triggerDiMu");
+  bool passDiMu  = passFilter(event, "triggerDiMu" );
   bool passDiEle = passFilter(event, "triggerDiEle");
   bool passMuEle = passFilter(event, "triggerMuEle");
   if ((!isMC_) && theSetup == 2011 ) { // follow changes in trigger menu in data 2011 (see wiki)
