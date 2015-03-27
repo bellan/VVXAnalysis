@@ -119,7 +119,6 @@ void TreePlanter::beginJob(){
   theTree->Branch("genCategory" , &genCategory_);
 
   theTree->Branch("met"   , &met_);
-  theTree->Branch("rho"   , &rho_); 
   theTree->Branch("nvtxs" , &nvtx_);
 
   theTree->Branch("muons"     , &muons_);
@@ -248,7 +247,6 @@ void TreePlanter::initTree(){
 
   met_    = phys::Particle();
   nvtx_   = -1;
-  rho_    = -1;
 
   muons_     = std::vector<phys::Lepton>();
   electrons_ = std::vector<phys::Electron>();

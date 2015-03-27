@@ -129,7 +129,6 @@ class TreePlanter: public edm::EDAnalyzer {
 
   phys::Particle  met_;
   Int_t           nvtx_;
-  Double_t        rho_;
   
   // ------------------- Objects in the tree ------------------- //
 
