@@ -81,20 +81,11 @@ void EventAnalyzer::Init(TTree *tree)
   jets  = new std::vector<phys::Jet>(); centralJets  = new std::vector<phys::Jet>();
 
   // Bosons   
-  Zmm = new std::vector<phys::Boson<phys::Lepton> >()  ; ZmmCand = 0; b_ZmmCand = 0; theTree->SetBranchAddress("ZmmCand", &ZmmCand, &b_ZmmCand);
-  Zee = new std::vector<phys::Boson<phys::Electron> >(); ZeeCand = 0; b_ZeeCand = 0; theTree->SetBranchAddress("ZeeCand", &ZeeCand, &b_ZeeCand);
-  Wjj = new std::vector<phys::Boson<phys::Jet> > ()    ; WjjCand = 0; b_WjjCand = 0; theTree->SetBranchAddress("WjjCand", &WjjCand, &b_WjjCand);
+  Z    = new std::vector<phys::Boson<phys::Lepton> >()  ; ZCand = 0   ; b_ZCand = 0   ; theTree->SetBranchAddress("ZCand"   , &ZCand   , &b_ZCand);
+  Vhad = new std::vector<phys::Boson<phys::Jet> > ()    ; VhadCand = 0; b_VhadCand = 0; theTree->SetBranchAddress("VhadCand", &VhadCand, &b_VhadCand);
 
-  // DiBosons
-  ZZ4m   = 0; b_ZZ4m   = 0; theTree->SetBranchAddress("ZZ4mCand"  , &ZZ4m  , &b_ZZ4m  );
-  ZZ4e   = 0; b_ZZ4e   = 0; theTree->SetBranchAddress("ZZ4eCand"  , &ZZ4e  , &b_ZZ4e  );
-  ZZ2e2m = 0; b_ZZ2e2m = 0; theTree->SetBranchAddress("ZZ2e2mCand", &ZZ2e2m, &b_ZZ2e2m);
-
-  // Zll --> for CR
-  Zll   = 0; b_Zll   = 0; theTree->SetBranchAddress("ZllCand"  , &Zll  , &b_Zll);
-
-  // Best diboson to be used in the event
-  ZZ = 0;
+  // DiBoson, if in SR, or Z+ll if in CR
+  ZZ   = new phys::DiBoson<phys::Lepton, phys::Lepton>(); b_ZZ   = 0; theTree->SetBranchAddress("ZZCand"  , &ZZ  , &b_ZZ  );
 
 
   // Gen Particles   
@@ -169,57 +160,19 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
       }
     }
 
-  Zmm->clear(); Zee->clear(); Wjj->clear();
+  Z->clear(); Vhad->clear();
 
-  foreach(const phys::Boson<phys::Lepton> z, *ZmmCand)
-    if(select(z)) Zmm->push_back(z);
-  foreach(const phys::Boson<phys::Electron> z, *ZeeCand)
-    if(select(z)) Zee->push_back(z);
-  foreach(const phys::Boson<phys::Jet> w, *WjjCand)
-    if(select(w)) Wjj->push_back(w);
+  foreach(const phys::Boson<phys::Lepton> z, *ZCand)
+    if(select(z)) Z->push_back(z);
+  foreach(const phys::Boson<phys::Jet> v, *VhadCand)
+    if(select(v)) Vhad->push_back(v);
 
-  stable_sort(Zmm->begin(), Zmm->end(), phys::PtComparator());
-  stable_sort(Zee->begin(), Zee->end(), phys::PtComparator());
-  stable_sort(Wjj->begin(), Wjj->end(), phys::PtComparator());
+  stable_sort(Z->begin(), Z->end(), phys::PtComparator());
+  stable_sort(Vhad->begin(), Vhad->end(), phys::PtComparator());
   
-  int totCand = ZZ4m->size() + ZZ4e->size() + ZZ2e2m->size();
-  // Control plots. They can be useful to understand if everything is going well (even in CRs)
-  theHistograms.fill("nZZCandidates",     "Number of good candidates in the event", 10, 0, 10, totCand       , 1);
-  theHistograms.fill("nZZ4eCandidates",   "Number of good candidates in the event", 10, 0, 10, ZZ4e->size()  , 1);
-  theHistograms.fill("nZZ4mCandidates",   "Number of good candidates in the event", 10, 0, 10, ZZ4m->size()  , 1);
-  theHistograms.fill("nZZ2e2mCandidates", "Number of good candidates in the event", 10, 0, 10, ZZ2e2m->size(), 1);
-  theHistograms.fill("nZllCandidates", "Number of Zll candidates in the event", 10, 0, 10, Zll->size() , 1);
+  if(region_ == phys::MC) ZZ = new phys::DiBoson<phys::Lepton, phys::Lepton>();
   
-  
-  delete ZZ; ZZ = 0;
-
-  // Signal region case
-  if(region_ == phys::SR){
-    int triggers = 0;
-    if(totCand > 0){
-      if(ZZ4m->size() == 1 && ZZ4m->front().passTrigger()){ ++triggers;
-	ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4m->front().clone<phys::Lepton,phys::Lepton>());
-      }
-      if(ZZ4e->size() == 1 && ZZ4e->front().passTrigger()){ ++triggers;
-	ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ4e->front().clone<phys::Lepton,phys::Lepton>());
-      }
-      if(ZZ2e2m->size() == 1 && ZZ2e2m->front().passTrigger()){ ++triggers;
-	ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(ZZ2e2m->front().clone<phys::Lepton,phys::Lepton>());
-      }
-    }
-    theHistograms.fill("GoodTriggerableCands", "Number of good triggerable candidates in the event", 10, 0, 10, triggers, 1);
-    if(triggers != 1) return 0;
-  }
-  
-  else if(region_ == phys::MC) ZZ = new phys::DiBoson<phys::Lepton, phys::Lepton>();
-  
-  // Control region case
-  else{
-    if(Zll->empty() || !Zll->front().passTrigger()) return 0;   
-    ZZ = new phys::DiBoson<phys::Lepton  , phys::Lepton>(Zll->front().clone<phys::Lepton,phys::Lepton>());
-  }
-
-  if(!ZZ) return 0;
+  //if(!ZZ) return 0;
 
   theWeight = theMCInfo.weight(*ZZ);
 

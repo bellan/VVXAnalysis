@@ -41,14 +41,14 @@ Int_t ZZWSRDefinition::cut() {
   
   //.......W request
 
-  bool passWsize =  Wjj->size() >= 1;    
+  bool passWsize =  Vhad->size() >= 1;    
   
   if (passWsize) theHistograms.fill("Selection", "Selection", 3, 0, 3, 2, theWeight);
   
   
   //.......Z0,Z1 definition
 
-  bool passZsize = ( Zmm->size() + Zee->size() ) >= 2;               
+  bool passZsize = Z->size() >= 2;               
                    
   bool passGhost = true;   
   
@@ -58,13 +58,10 @@ Int_t ZZWSRDefinition::cut() {
     
     std::vector<Boson<Lepton> > Zll; 
     
-    foreach(const Boson<Lepton>& z, *Zmm) {
+    foreach(const Boson<Lepton>& z, *Z) {
       Zll.push_back(z.clone<Lepton>()); 
     }
     
-    foreach(const Boson<Electron>& z, *Zee) { 
-      Zll.push_back(z.clone<Lepton>());
-    }
     
     std::stable_sort(Zll.begin() ,Zll.end() ,MassComparator(ZMASS));
     
@@ -114,10 +111,10 @@ Int_t ZZWSRDefinition::cut() {
   
   if(pass) {
        
-    std::stable_sort(Wjj->begin(),Wjj->end(),MassComparator(WMASS));
+    std::stable_sort(Vhad->begin(),Vhad->end(),MassComparator(WMASS)); // FIXME: Z too!
     //std::stable_sort(Wjj->begin(),Wjj->end(),WJetPtComparator());
   
-    myW  = Wjj->at(0);
+    myW  = Vhad->at(0);
     //  bool WmassRange = (fabs(myW.p4().M() - WMASS) < 40);
     
     cout << endl << Green("---------------Selected W---------------") << endl;
@@ -375,18 +372,12 @@ void ZZWSRDefinition::analyze() {
   
 
 
-      foreach(const Boson<Lepton>& z, *Zmm) {
+      foreach(const Boson<Lepton>& z, *Z) {
 	ZcomparatorVector.push_back(make_pair(Z0gen, z.clone<Lepton>()));
 	ZcomparatorVector.push_back(make_pair(Z1gen, z.clone<Lepton>()));
       }
-  
-  
-      foreach(const Boson<Electron>& z, *Zee) {   
-	ZcomparatorVector.push_back(make_pair(Z0gen, z.clone<Lepton>()));
-	ZcomparatorVector.push_back(make_pair(Z1gen, z.clone<Lepton>()));
-      }
-  
-      foreach(const Boson<Jet> w, *Wjj) {
+      
+      foreach(const Boson<Jet> w, *Vhad) {  // FIXME: Z too!
 	WcomparatorVector.push_back(make_pair(Wgen, w));
       }
   
