@@ -153,7 +153,6 @@ public:
   Int_t    run       ; TBranch *b_run;
   Int_t    lumiBlock ; TBranch *b_lumiBlock;
   Int_t    nvtx      ; TBranch *b_nvtx;
-  Double_t rho       ; TBranch *b_rho;
   
 		      TBranch *b_puweight;
   		      TBranch *b_mcprocweight;

@@ -106,7 +106,6 @@ void EventAnalyzer::Init(TTree *tree)
   b_lumiBlock   = 0; theTree->SetBranchAddress("lumiBlock", &lumiBlock, &b_lumiBlock);
 
   b_nvtx        = 0; theTree->SetBranchAddress("nvtxs"  , &nvtx   , &b_nvtx   );
-  b_rho         = 0; theTree->SetBranchAddress("rho"    , &rho    , &b_rho    );
   
   // MC related variables
   b_puweight     = 0; theTree->SetBranchAddress("puweight"    , &theMCInfo.puweight_     , &b_puweight );
@@ -264,7 +263,6 @@ Int_t EventAnalyzer::cut() {
 
 void EventAnalyzer::fillBasicPlots(){
   theHistograms.fill<TH1I>("nvtx"     , "Number of vertices" , 100, 0, 100, nvtx             , theWeight);
-  theHistograms.fill      ("rho"      , "Mean energy density", 100, 0, 50 , rho              , theWeight);
   theHistograms.fill      ("met"      , "Missing energy"     , 200, 0, 800, met->pt()        , theWeight);
   theHistograms.fill<TH1I>("nmuons"    ,"Number of muons"    ,  10, 0, 10 , muons->size()    , theWeight);
   theHistograms.fill<TH1I>("nelectrons","Number of electrons",  10, 0, 10 , electrons->size(), theWeight);
