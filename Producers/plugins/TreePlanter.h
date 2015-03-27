@@ -131,7 +131,6 @@ class TreePlanter: public edm::EDAnalyzer {
 
   phys::Particle  met_;
   Int_t           nvtx_;
-  Double_t        rho_;
   
   // ------------------- Objects in the tree ------------------- //
   // all good isolated muons BUT the ones coming from ZZ decay
@@ -147,11 +146,8 @@ class TreePlanter: public edm::EDAnalyzer {
   // V --> jj, with V = W,Z
   std::vector<phys::Boson<phys::Jet>      > Vhad_;
 
-  // ZZ in the SR
-  std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   > ZZ_;
-
-  // Z + ll, CR
-  std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   > Zll_;
+  // ZZ in the SR, Z + ll in the CR
+  phys::DiBoson<phys::Lepton  , phys::Lepton> ZZ_;
 
   std::vector<phys::Particle>               genParticles_;
   std::vector<phys::Boson<phys::Particle> > genVBParticles_;

@@ -120,7 +120,6 @@ void TreePlanter::beginJob(){
   theTree->Branch("genCategory" , &genCategory_);
 
   theTree->Branch("met"   , &met_);
-  theTree->Branch("rho"   , &rho_); 
   theTree->Branch("nvtxs" , &nvtx_);
 
   theTree->Branch("muons"     , &muons_);
@@ -129,7 +128,6 @@ void TreePlanter::beginJob(){
   theTree->Branch("ZCand"     , &Z_); 
   theTree->Branch("VhadCand"  , &Vhad_);
   theTree->Branch("ZZCand"    , &ZZ_); 
-  theTree->Branch("ZllCand"   , &Zll_); 
 
   theTree->Branch("genParticles"  , &genParticles_);
   theTree->Branch("genVBParticles", &genVBParticles_);
@@ -251,15 +249,13 @@ void TreePlanter::initTree(){
 
   met_    = phys::Particle();
   nvtx_   = -1;
-  rho_    = -1;
 
   muons_     = std::vector<phys::Lepton>();
   electrons_ = std::vector<phys::Electron>();
   jets_      = std::vector<phys::Jet>();
   Z_         = std::vector<phys::Boson<phys::Lepton>   >();   
   Vhad_      = std::vector<phys::Boson<phys::Jet>      >();   
-  ZZ_        = std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   >();
-  Zll_       = std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   >();
+  ZZ_        = phys::DiBoson<phys::Lepton  , phys::Lepton>();
 
   genParticles_ = std::vector<phys::Particle>();
   genVBParticles_ = std::vector<phys::Boson<phys::Particle> >();
@@ -333,7 +329,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     event.getByLabel(theGenCollectionLabel,  genParticles);
     
     for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) 
-      if (p->status() == 3 && std::distance(genParticles->begin(),p) > 5)
+      if (p->status() == 1)
 	genParticles_.push_back(phys::Particle(p->p4(), phys::Particle::computeCharge(p->pdgId()), p->pdgId()));
          
   
@@ -413,9 +409,14 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
   // The bosons have NOT any requirement on the quality of their daughters, only the flag is set (because of the same code is usd for CR too)
 
-  if(doZZ)  ZZ_   = fillDiBosons(ZZ);
-  if(doZll) Zll_  = fillZll(Zll);
-  
+  if(doZZ){
+    std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > ZZs = fillDiBosons(ZZ);
+    if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();   
+  }
+  else if(doZll){ 
+    std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > Zlls = fillZll(Zll);
+    if(Zlls.size() == 1 && Zlls.front().passTrigger()) ZZ_ = Zlls.front();     
+  }
 
   theTree->Fill();
 }
