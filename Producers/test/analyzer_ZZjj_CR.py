@@ -2,16 +2,12 @@
 ### Based on ZZ->4l strategy.
 ###----------------------------------------------------------------------
 
-
-LEPTON_SETUP = 2012
-JET_SETUP    = 2012
+LEPTON_SETUP = 2015
 #PD = ""
 #MCFILTER = ""
-ELECORRTYPE   = "Paper" # "None", "Moriond", or "Paper"
-ELEREGRESSION = "Paper" # "None", "Moriond", "PaperNoComb", or "Paper" 
-APPLYMUCORR = True
-
-#MCFILTER  = "signaldefinition"
+ELECORRTYPE   = "None" # "None", "Moriond", or "Paper"
+ELEREGRESSION = "None" # "None", "Moriond", "PaperNoComb", or "Paper" 
+APPLYMUCORR = False
 
 SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the choosedn windows. For other topology see the README under VVXAnalysis/Commons.
 
@@ -25,7 +21,7 @@ except NameError:
 try:
     LEPTON_SETUP
 except NameError:
-    LEPTON_SETUP = 2012 # define the set of effective areas, rho corrections, etc.
+    LEPTON_SETUP = 2015
 
 try:
     JET_SETUP
@@ -69,19 +65,7 @@ SkimPaths.append("preselection")
   ### Replace parameters
 ### ----------------------------------------------------------------------
 process.source.fileNames = cms.untracked.vstring(
-    #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_irQ.root'
-    #'/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_997_0_MQw.root',
-    #'/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_998_0_V7X.root',
-    #'/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_999_0_dXJ.root',
-    #'/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_99_1_z8J.root',
-    #'/store/cmst3/user/cmgtools/CMG//DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_9_1_blv.root'
-    
-    '/store/cmst3/user/cmgtools/CMG/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_1006_0_kDH.root',
-    '/store/cmst3/user/cmgtools/CMG/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_1015_0_zrA.root',
-    '/store/cmst3/user/cmgtools/CMG/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_1021_0_2Im.root',
-    '/store/cmst3/user/cmgtools/CMG/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_1023_0_nwv.root',
-    '/store/cmst3/user/cmgtools/CMG/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_1025_0_h1F.root',
-    '/store/cmst3/user/cmgtools/CMG/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_1026_0_J5E.root'
+    '/store/mc/Phys14DR/ZZTo4L_Tune4C_13TeV-powheg-pythia8/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/04CD96C9-E269-E411-9D64-00266CF9ADA0.root'
     )
 
 #process.source.skipEvents = cms.untracked.uint32(13328)
@@ -103,35 +87,6 @@ process.TFileService=cms.Service('TFileService', fileName=cms.string('ZZjjAnalys
 
 #####################################################################################################################################################
 
-
-### ------------------------------------------------------------------------- ###
-### Fill the tree for the analysis
-### ------------------------------------------------------------------------- ###
-
- 
-process.treePlanter = cms.EDAnalyzer("TreePlanter",
-                                     sampleName   = cms.string(SAMPLENAME),
-                                     setup        = cms.int32(LEPTON_SETUP),
-                                     sampleType   = cms.int32(SAMPLE_TYPE),
-                                     PD           = cms.string(PD),
-                                     skimPaths    = cms.vstring(SkimPaths),
-                                     MCFilterPath = cms.string(MCFILTER),
-                                     isMC         = cms.untracked.bool(IsMC),
-                                     signalDefinition = cms.int32(SIGNALDEFINITION),
-                                     muons        = cms.InputTag("postCleaningMuons"),     # all good isolated muons BUT the ones coming from ZZ decay
-                                     electrons    = cms.InputTag("postCleaningElectrons"), # all good isolated electrons BUT the ones coming from ZZ decay
-                                     jets         = cms.InputTag("disambiguatedJets"),     # jets which contains leptons from ZZ or other good isolated leptons are removed
-                                     Zmm          = cms.InputTag("MMCand"),
-                                     Zee          = cms.InputTag("EECand"),
-                                     Wjj          = cms.InputTag("WCand"),
-                                     ZZ4m         = cms.InputTag(""),          # only the best ZZ->4mu candidate that pass the FULL selection
-                                     ZZ4e         = cms.InputTag(""),          # only the best ZZ->4e candidate that pass the FULL selection
-                                     ZZ2e2m       = cms.InputTag(""),          # only the best ZZ->2e2mu candidate that pass the FULL selection
-                                     Zll          = cms.InputTag("ZLLFiltered"), 
-                                     MET          = cms.InputTag("cmgPFMET"),
-                                     Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
-                                     XSection     = cms.untracked.double(XSEC)
-                                     )
 
 
 ### ------------------------------------------------------------------------- ###
@@ -218,7 +173,7 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
                                            JetPreselection     = cms.string("pt > 30"),
                                            DiBosonPreselection = cms.string(""),
                                            MatchingType        = cms.string("byDeltaR"), 
-                                           Jets      = cms.InputTag("cmgPFJetSel"),
+                                           Jets      = cms.InputTag("slimmedJets"),
                                            Muons     = cms.InputTag("postCleaningMuons"),
                                            Electrons = cms.InputTag("postCleaningElectrons"),
                                            Diboson   = cms.InputTag("ZLLFiltered"),
@@ -233,22 +188,22 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
 ### Build the W->jj candidate out of the previously disambiguated jet collection, restricted to the central regions
 ### ......................................................................... ###
 
-process.centralJets = cms.EDFilter("EtaPtMinCMGPFJetSelector", 
+process.centralJets = cms.EDFilter("EtaPtMinCandViewSelector", 
                                    src = cms.InputTag("disambiguatedJets"),
                                    ptMin   = cms.double(30),
                                    etaMin = cms.double(-2.4),
                                    etaMax = cms.double(2.4)
                                    )
 
-process.bareWCand = cms.EDProducer("CandViewShallowCloneCombiner",
-                                   decay = cms.string('centralJets centralJets'),
-                                   cut = cms.string('mass > 20'), # protect against ghosts
-                                   checkCharge = cms.bool(False))
+process.bareVhadCand = cms.EDProducer("CandViewShallowCloneCombiner",
+                                      decay = cms.string('centralJets centralJets'),
+                                      cut = cms.string('mass > 20'), # protect against ghosts
+                                      checkCharge = cms.bool(False))
 
-process.WCand = cms.EDProducer("WCandidateFiller",
-                               src = cms.InputTag("bareWCand"))
+process.VhadCand = cms.EDProducer("WCandidateFiller",
+                                  src = cms.InputTag("bareVhadCand"))
 
-process.WjjSequence = cms.Sequence(process.centralJets * process.bareWCand * process.WCand)
+process.VhadSequence = cms.Sequence(process.centralJets * process.bareVhadCand * process.VhadCand)
 
 
 
@@ -270,82 +225,45 @@ Z2MASS  = "daughter(1).mass>60 && daughter(1).mass<120"
 
 LL_OS = "(daughter(1).daughter(0).pdgId + daughter(1).daughter(1).pdgId) == 0" #Z2 = l+l-
 
-PASSD0 = "(userFloat('d1.d0.isGood') && userFloat('d1.d0.combRelIsoPFFSRCorr') < 0.4)"
-PASSD1 = "(userFloat('d1.d1.isGood') && userFloat('d1.d1.combRelIsoPFFSRCorr') < 0.4)"
+PASSD0 = "(userFloat('d1.d0.isGood') && userFloat('d1.d0.combRelIsoPFFSRCorr') < 0.4)" # FIXME
+PASSD1 = "(userFloat('d1.d1.isGood') && userFloat('d1.d1.combRelIsoPFFSRCorr') < 0.4)" # FIXME
 FAILD0 = "!" + PASSD0
 FAILD1 = "!" + PASSD1
 BOTHFAIL = FAILD0 + "&&" + FAILD1
 PASSD0_XOR_PASSD1 = "((" + PASSD0 + "&&" + FAILD1 + ") || (" + PASSD1 + "&&" + FAILD0 + "))"
 PASSD0_OR_PASSD1  = "(" + PASSD0 + "||" + PASSD1 + ")"
 
+
+CR_BESTCANDBASE_ZZONSHELL = (CR_BESTCANDBASE_AA    + "&&" +  
+                             LL_OS                 + "&&" +  
+                             Z1MASS                + "&&" + 
+                             Z2MASS                + "&&" + 
+                             MLLALLCOMB            + "&&" +
+                             PT20_10               + "&&" + 
+                             "mass > 70 &&"               +
+                             SMARTMALLCOMB         )
+
 # CR 3P1F
-BESTZLL_3P1F   = (CR_BESTCANDBASE       + "&&" +  
-                  Z1MASS_LARGE          + "&&" +  
-                  "userFloat('d0.isBestZ') &&" + 
-                  LL_OS                 + "&&" +  
-                  PASSD0_OR_PASSD1      + "&&" +  
-                  Z2SIP)
-
-BESTZ2mLL_3P1F = (CR_BESTCANDBASE         + "&&" +  
-                  Z1MASS_LARGE            + "&&" +  
-                  "userFloat('d0.isBestZmm') &&" + 
-                  LL_OS                   + "&&" +  
-                  PASSD0_OR_PASSD1        + "&&" +  
-                  Z2SIP)
-
-BESTZ2eLL_3P1F = (CR_BESTCANDBASE         + "&&" +  
-                  Z1MASS_LARGE            + "&&" +  
-                  "userFloat('d0.isBestZee') &&" + 
-                  LL_OS                   + "&&" +  
-                  PASSD0_OR_PASSD1        + "&&" +  
-                  Z2SIP)
-
-
-ZLLSEL_3P1F  = (CR_BASESEL + "&&" + PASSD0_XOR_PASSD1 + "&&" + Z1MASS + "&&" + Z2MASS)
-
+BESTZLL_3P1F   = (CR_BESTCANDBASE_ZZONSHELL + "&&" + PASSD0_OR_PASSD1)                 
+ZLLSEL_3P1F  = (CR_BASESEL + "&&" + PASSD0_XOR_PASSD1)
 
 
 # CR 2P2F
-BESTZLL_2P2F   = (CR_BESTCANDBASE       + "&&" +  
-                  Z1MASS_LARGE          + "&&" +  
-                  "userFloat('d0.isBestZ') &&" + 
-                  LL_OS                 + "&&" +  
-                  Z2SIP)
-
-BESTZ2mLL_2P2F = (CR_BESTCANDBASE         + "&&" +  
-                  Z1MASS_LARGE            + "&&" +  
-                  "userFloat('d0.isBestZmm') &&" + 
-                  LL_OS                   + "&&" +  
-                  Z2SIP)
-
-BESTZ2eLL_2P2F = (CR_BESTCANDBASE         + "&&" +  
-                  Z1MASS_LARGE            + "&&" +  
-                  "userFloat('d0.isBestZee') &&" + 
-                  LL_OS                   + "&&" +  
-                  Z2SIP)
+BESTZLL_2P2F   = (CR_BESTCANDBASE_ZZONSHELL)
+ZLLSEL_2P2F  = (CR_BASESEL + "&&" + BOTHFAIL)
 
 
-ZLLSEL_2P2F  = (CR_BASESEL + "&&" + BOTHFAIL + "&&" + Z1MASS + "&&" + Z2MASS)
-
-
-
-BESTZ2mLL = BESTZ2mLL_3P1F
-BESTZ2eLL = BESTZ2eLL_3P1F
 BESTZLL   = BESTZLL_3P1F
 ZLLSEL    = ZLLSEL_3P1F
 
 
 if CONTROLREGION == '2P2F':
-    BESTZ2mLL = BESTZ2mLL_2P2F
-    BESTZ2eLL = BESTZ2eLL_2P2F
     BESTZLL = BESTZLL_2P2F
     ZLLSEL  = ZLLSEL_2P2F
 elif not CONTROLREGION == '2P2F' and not CONTROLREGION == '3P1F' :
     print "Do not know what tho do with {0:s} control region. Collapsing into 3P1F one.".format(CONTROLREGION)
     
 
-process.ZLLCand.bestCandAmong.isBestCandCRZ2mLL = cms.string(BESTZ2mLL)
-process.ZLLCand.bestCandAmong.isBestCandCRZ2eLL = cms.string(BESTZ2eLL)
 process.ZLLCand.bestCandAmong.isBestCandZLL = cms.string(BESTZLL)
 process.ZLLCand.flags.SelZLL = cms.string(ZLLSEL)
 
@@ -355,39 +273,22 @@ process.ZLLCand.flags.SelZLL = cms.string(ZLLSEL)
 ### Clean the Z+2 lepton candidates to select only the best possible candidate for that region, requiring that at least one lepton fails the FULL selection
 ### ......................................................................... ###
 
-process.Z2mLLFiltered = cms.EDFilter("PATCompositeCandidateSelector",
-                                     src = cms.InputTag("ZLLCand"),
-                                     cut = cms.string("userFloat('isBestCandCRZ2mLL') && userFloat('SelZLL')")
-                                     )
 
-process.Z2eLLFiltered = cms.EDFilter("PATCompositeCandidateSelector",
-                                     src = cms.InputTag("ZLLCand"),
-                                     cut = cms.string("userFloat('isBestCandCRZ2eLL') && userFloat('SelZLL')")
-                                     )
-
-#process.ZLLFiltered = cms.EDFilter("PATCompositeCandidateSelector",
-#                                   src = cms.InputTag("ZLLCand"),
-#                                   cut = cms.string("userFloat('isBestCandZLL') && userFloat('SelZLL')")
-#                                   )
-
-# Merger of all ZZ final states.
-process.ZLLFiltered = cms.EDProducer("PATCompositeCandidateMerger",
-                                     src = cms.VInputTag(cms.InputTag("Z2mLLFiltered"), cms.InputTag("Z2eLLFiltered"))
-                                     )
-
+process.ZLLFiltered = cms.EDFilter("PATCompositeCandidateSelector",
+                                   src = cms.InputTag("ZLLCand"),
+                                   cut = cms.string("userFloat('isBestCandZLL') && userFloat('SelZLL')")
+                                   )
 
 
 ### ------------------------------------------------------------------------- ###
 ### Define the post reconstruction cleaning sequence
 ### ------------------------------------------------------------------------- ###
 
-process.postRecoCleaning = cms.Sequence( process.Z2mLLFiltered
-                                         + process.Z2eLLFiltered
-                                         + process.ZLLFiltered
+process.postRecoCleaning = cms.Sequence(   process.ZLLFiltered
                                          + process.muonsFromZZ*process.postCleaningMuons 
                                          + process.electronsFromZZ*process.postCleaningElectrons
                                          + process.disambiguatedJets
-                                         + process.WjjSequence
+                                         + process.VhadSequence
                                          )
 
 
@@ -410,9 +311,6 @@ process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTa
 
 # Select only events with one such candidate
 process.zllCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZLLFiltered"), minNumber = cms.uint32(1))
-
-# Empty sequence to attach the signal filter (if specified in the CSV file)
-process.signalFilters    = cms.Sequence() 
 
 
 # Some counters and paths functional to the fake lepton background estimation
@@ -444,7 +342,6 @@ process.cr3P1FCounter      = cms.EDProducer("SelectedEventCountProducer", names 
 ### Path that pre-select the higher level objects that will input the TreePlanter
 process.preselection = cms.Path( process.prePreselectionCounter
                                  * process.CR
-                                 * process.signalFilters
                                  * process.postRecoCleaning 
                                  * process.zllCounterFilter * process.jetCounterFilter
 #                                 * process.crDefinitions
@@ -458,14 +355,49 @@ process.cr3P1F = cms.Path(process.cand3P1F * process.cand3P1FFilter)
 
 ### If it is MC, run also the signal definition path
 if IsMC:
+    # Empty sequence to attach the signal filter (if specified in the CSV file)
+    process.mcSelectionCounter = cms.EDProducer("EventCountProducer") # not really needeed... it is mainly an hack to get the path executed
+    process.signalFilters = cms.Sequence(process.mcSelectionCounter) 
+    process.mcSelection   = cms.Path(process.signalFilters)
+    MCFILTER = "mcSelection"
+
     process.genCategory =  cms.EDFilter("ZZGenFilterCategory",
                                         Topology = cms.int32(SIGNALDEFINITION),
                                         ParticleStatus = cms.int32(1), 
-                                        src            = cms.InputTag("genParticlesPruned"),
-                                        GenJets        = cms.InputTag("genJetSel"),
+                                        src            = cms.InputTag("prunedGenParticles"),
+                                        GenJets        = cms.InputTag("slimmedGenJets"),
                                         )
     process.signalCounter    = cms.EDProducer("EventCountProducer")
     process.signalDefinition = cms.Path(process.genCategory * process.signalCounter)
+
+
+### ------------------------------------------------------------------------- ###
+### Fill the tree for the analysis
+### ------------------------------------------------------------------------- ###
+
+ 
+process.treePlanter = cms.EDAnalyzer("TreePlanter",
+                                     sampleName   = cms.string(SAMPLENAME),
+                                     setup        = cms.int32(LEPTON_SETUP),
+                                     sampleType   = cms.int32(SAMPLE_TYPE),
+                                     PD           = cms.string(PD),
+                                     skimPaths    = cms.vstring(SkimPaths),
+                                     MCFilterPath = cms.string(MCFILTER),
+                                     isMC         = cms.untracked.bool(IsMC),
+                                     signalDefinition = cms.int32(SIGNALDEFINITION),
+                                     JECFileName  = cms.string("VVXAnalysis/Producers/test/Winter14_V5_DATA_Uncertainty_AK5PF.txt"),
+                                     muons        = cms.InputTag("postCleaningMuons"),     # all good isolated muons BUT the ones coming from ZZ decay
+                                     electrons    = cms.InputTag("postCleaningElectrons"), # all good isolated electrons BUT the ones coming from ZZ decay
+                                     jets         = cms.InputTag("disambiguatedJets"),     # jets which contains leptons from ZZ or other good isolated leptons are removed
+                                     Z            = cms.InputTag("ZCand"),
+                                     Vhad         = cms.InputTag("VhadCand"),
+                                     ZZ           = cms.InputTag(""),            # only the best ZZ->4l candidate that pass the FULL selection
+                                     Zll          = cms.InputTag("ZLLFiltered"), 
+                                     MET          = cms.InputTag("slimmedMETs"),
+                                     Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
+                                     XSection     = cms.untracked.double(XSEC)
+                                     )
+
 
 
 ### ------------------------------------------------------------------------- ###
@@ -486,7 +418,7 @@ process.filltrees = cms.EndPath(process.cr2P2FCounter + process.cr3P1FCounter + 
 process.printTree = cms.EDAnalyzer("ParticleListDrawer",
                                    maxEventsToPrint = cms.untracked.int32(-1),
                                    printVertex = cms.untracked.bool(False),
-                                   src = cms.InputTag("genParticlesPruned")
+                                   src = cms.InputTag("prunedGenParticles")
                                    )
 
 process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
