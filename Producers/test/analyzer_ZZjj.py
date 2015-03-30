@@ -65,9 +65,10 @@ SkimPaths.append("preselection")
 process.source.fileNames = cms.untracked.vstring(
     '/store/mc/Phys14DR/ZZTo4L_Tune4C_13TeV-powheg-pythia8/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/04CD96C9-E269-E411-9D64-00266CF9ADA0.root'
     #'/store/mc/Phys14DR/GluGluToHToZZTo4L_M-125_13TeV-powheg-pythia6/MINIAODSIM/PU20bx25_tsg_PHYS14_25_V1-v1/00000/3295EF7C-2070-E411-89C4-7845C4FC35DB.root'
+    #'/store/mc/Spring14miniaod/WH_ZH_HToZZ_4LFilter_M-125_13TeV_pythia6/MINIAODSIM/PU20bx25_POSTLS170_V5-v1/00000/0ABFFCEF-AA09-E411-8022-001E673970FD.root'
     )
 
-process.maxEvents.input = -1
+process.maxEvents.input = 1000
 
 # Silence output
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -210,13 +211,13 @@ process.VhadSequence = cms.Sequence(process.centralJets * process.bareVhadCand *
 
 Z1MASS            = "daughter('Z1').mass>60 && daughter('Z1').mass<120"
 Z2MASS            = "daughter('Z2').mass>60 && daughter('Z2').mass<120"
-FULLSELTIGHT      = (FULLSEL + "&&" + Z1MASS + "&&" + Z2MASS)
+ZZWITHONSHELLZS   = (BESTCAND_AMONG + "&&" + Z1MASS + "&&" + Z2MASS)
 
-process.ZZCand.flags.FullSelTight = cms.string(FULLSELTIGHT)
+process.ZZCand.bestCandAmong = cms.PSet(isBestCand = cms.string(ZZWITHONSHELLZS))
 
 process.ZZFiltered = cms.EDFilter("PATCompositeCandidateRefSelector",
                                   src = cms.InputTag("ZZCand"),
-                                  cut = cms.string("userFloat('isBestCand') && userFloat('FullSelTight')")
+                                  cut = cms.string("userFloat('isBestCand') && userFloat('FullSel')")
                                   )
 
 ### ......................................................................... ###
