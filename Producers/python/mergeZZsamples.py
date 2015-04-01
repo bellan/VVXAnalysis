@@ -4,7 +4,7 @@ import sys, os, commands
 
 print "Merging ZZ samples"
 
-outputdir = '/afs/cern.ch/work/b/bellan/public/samples/'
+outputdir = sys.argv[1]
 inputdir  = outputdir+'ZZunmerged'
 
 print inputdir
