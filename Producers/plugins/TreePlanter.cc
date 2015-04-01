@@ -314,7 +314,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   // Check Skim requests
   passSkim_ = filterController_.passSkim(event, triggerWord_);
   if (applySkim_    && !passSkim_)   return false;
-  
+
   run_       = event.id().run();
   event_     = event.id().event(); 
   lumiBlock_ = event.luminosityBlock();
@@ -438,11 +438,11 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
     if(ZZ2e2m_.size() == 1 && ZZ2e2m_.front().passTrigger()){ ++triggers;
       ZZ_ = ZZ2e2m_.front().clone<phys::Lepton,phys::Lepton>();
     }
-    if(triggers != 1) return;
+    if(triggers != 1 && applySkim_) return;
   }
   else if(doZll && !Zll_.empty() && Zll_.front().passTrigger())
     ZZ_ = Zll_.front().clone<phys::Lepton,phys::Lepton>();
-  else return;
+  else if(applySkim_) return;
 
   theTree->Fill();
 }
