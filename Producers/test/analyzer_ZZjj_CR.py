@@ -71,7 +71,7 @@ process.source.fileNames = cms.untracked.vstring(
 #process.source.skipEvents = cms.untracked.uint32(13328)
 #process.source.skipEvents = cms.untracked.uint32(12788)
 
-process.maxEvents.input = -1
+process.maxEvents.input = 3000
 
 # Silence output
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -223,10 +223,10 @@ Z2MASS  = "daughter(1).mass>60 && daughter(1).mass<120"
 #Z1MASS  = "daughter(0).mass>40 && daughter(0).mass<120"
 #Z2MASS  = "daughter(1).mass>12 && daughter(1).mass<120"
 
-LL_OS = "(daughter(1).daughter(0).pdgId + daughter(1).daughter(1).pdgId) == 0" #Z2 = l+l-
+Z2LL_OS = "(daughter(1).daughter(0).pdgId + daughter(1).daughter(1).pdgId) == 0" #Z2 = l+l-
 
-PASSD0 = "(userFloat('d1.d0.isGood') && userFloat('d1.d0.combRelIsoPFFSRCorr') < 0.4)" # FIXME
-PASSD1 = "(userFloat('d1.d1.isGood') && userFloat('d1.d1.combRelIsoPFFSRCorr') < 0.4)" # FIXME
+PASSD0 = "(userFloat('d1.d0.isGood') && userFloat('d1.d0.passCombRelIsoPFFSRCorr'))" # FIXME
+PASSD1 = "(userFloat('d1.d1.isGood') && userFloat('d1.d1.passCombRelIsoPFFSRCorr'))" # FIXME
 FAILD0 = "!" + PASSD0
 FAILD1 = "!" + PASSD1
 BOTHFAIL = FAILD0 + "&&" + FAILD1
@@ -235,7 +235,7 @@ PASSD0_OR_PASSD1  = "(" + PASSD0 + "||" + PASSD1 + ")"
 
 
 CR_BESTCANDBASE_ZZONSHELL = (CR_BESTCANDBASE_AA    + "&&" +  
-                             LL_OS                 + "&&" +  
+                             Z2LL_OS               + "&&" +  
                              Z1MASS                + "&&" + 
                              Z2MASS                + "&&" + 
                              MLLALLCOMB            + "&&" +
