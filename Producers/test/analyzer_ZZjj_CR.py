@@ -71,7 +71,7 @@ process.source.fileNames = cms.untracked.vstring(
 #process.source.skipEvents = cms.untracked.uint32(13328)
 #process.source.skipEvents = cms.untracked.uint32(12788)
 
-process.maxEvents.input = 3000
+process.maxEvents.input = -1
 
 # Silence output
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -82,7 +82,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 ### ----------------------------------------------------------------------
 
 
-process.TFileService=cms.Service('TFileService', fileName=cms.string('ZZjjAnalysisCR{0:s}.root'.format(CONTROLREGION)))
+process.TFileService=cms.Service('TFileService', fileName=cms.string('XXZZjjAnalysisCR{0:s}.root'.format(CONTROLREGION)))
 
 
 #####################################################################################################################################################
@@ -223,49 +223,35 @@ Z2MASS  = "daughter(1).mass>60 && daughter(1).mass<120"
 #Z1MASS  = "daughter(0).mass>40 && daughter(0).mass<120"
 #Z2MASS  = "daughter(1).mass>12 && daughter(1).mass<120"
 
-Z2LL_OS = "(daughter(1).daughter(0).pdgId + daughter(1).daughter(1).pdgId) == 0" #Z2 = l+l-
 
-PASSD0 = "(userFloat('d1.d0.isGood') && userFloat('d1.d0.passCombRelIsoPFFSRCorr'))" # FIXME
-PASSD1 = "(userFloat('d1.d1.isGood') && userFloat('d1.d1.passCombRelIsoPFFSRCorr'))" # FIXME
-FAILD0 = "!" + PASSD0
-FAILD1 = "!" + PASSD1
-BOTHFAIL = FAILD0 + "&&" + FAILD1
-PASSD0_XOR_PASSD1 = "((" + PASSD0 + "&&" + FAILD1 + ") || (" + PASSD1 + "&&" + FAILD0 + "))"
-PASSD0_OR_PASSD1  = "(" + PASSD0 + "||" + PASSD1 + ")"
+CR_BESTZLLos_ONSHELL = (CR_BESTZLLos + "&&" +  
+                        Z1MASS       + "&&" + 
+                        Z2MASS)
 
-
-CR_BESTCANDBASE_ZZONSHELL = (CR_BESTCANDBASE_AA    + "&&" +  
-                             Z2LL_OS               + "&&" +  
-                             Z1MASS                + "&&" + 
-                             Z2MASS                + "&&" + 
-                             MLLALLCOMB            + "&&" +
-                             PT20_10               + "&&" + 
-                             "mass > 70 &&"               +
-                             SMARTMALLCOMB         )
 
 # CR 3P1F
-BESTZLL_3P1F   = (CR_BESTCANDBASE_ZZONSHELL + "&&" + PASSD0_OR_PASSD1)                 
-ZLLSEL_3P1F  = (CR_BASESEL + "&&" + PASSD0_XOR_PASSD1)
+CR_BESTZLLos_3P1F   = (CR_BESTZLLos_ONSHELL + "&&" + PASSD0_OR_PASSD1)                 
+CR_ZLLSELos_3P1F  = (CR_BASESEL + "&&" + PASSD0_XOR_PASSD1)
 
 
 # CR 2P2F
-BESTZLL_2P2F   = (CR_BESTCANDBASE_ZZONSHELL)
-ZLLSEL_2P2F  = (CR_BASESEL + "&&" + BOTHFAIL)
+CR_BESTZLLos_2P2F   = (CR_BESTZLLos_ONSHELL)
+CR_ZLLSELos_2P2F  = (CR_BASESEL + "&&" + BOTHFAIL)
 
 
-BESTZLL   = BESTZLL_3P1F
-ZLLSEL    = ZLLSEL_3P1F
+CR_BESTZLLos   = CR_BESTZLLos_3P1F
+CR_ZLLosSEL    = CR_ZLLosSEL_3P1F
 
 
 if CONTROLREGION == '2P2F':
-    BESTZLL = BESTZLL_2P2F
-    ZLLSEL  = ZLLSEL_2P2F
+    CR_BESTZLLos = CR_BESTZLLos_2P2F
+    CR_ZLLSELos  = CR_ZLLosSEL_2P2F
 elif not CONTROLREGION == '2P2F' and not CONTROLREGION == '3P1F' :
     print "Do not know what tho do with {0:s} control region. Collapsing into 3P1F one.".format(CONTROLREGION)
     
 
-process.ZLLCand.bestCandAmong.isBestCandZLL = cms.string(BESTZLL)
-process.ZLLCand.flags.SelZLL = cms.string(ZLLSEL)
+process.ZLLCand.bestCandAmong.isBestCandZLL = cms.string(CR_BESTZLLos)
+process.ZLLCand.flags.SelZLL = cms.string(CR_ZLLosSEL)
 
 
 
