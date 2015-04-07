@@ -46,7 +46,7 @@ public:
     , genLabel_        (pset.getParameter<edm::InputTag>("src"))
     , genJetsLabel_    (pset.getParameter<edm::InputTag>("GenJets"))
   {
-    if(particleStatus_ != 1 || particleStatus_ != 3)
+    if(particleStatus_ != 1 && particleStatus_ != 3)
       edm::LogError("ZZGenFilterCategory") << "ZZGenFilterCategory: input for signal definition non available!";
 
     produces<int>();
