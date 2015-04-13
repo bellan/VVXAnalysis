@@ -399,7 +399,24 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
   // The bosons have NOT any requirement on the quality of their daughters, only the flag is set (because of the same code is usd for CR too)
   std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > ZZs = fillDiBosons(ZZ);
-  if(ZZ->size() > 1) cout << "More than one ZZ candidate!! " << ZZ->size() << endl;  
+  if(ZZ->size() > 1) {
+    cout << "----------------------------------------------------" << endl;
+    cout << "More than one ZZ candidate!! " << ZZ->size() << endl;  
+    cout << "Event: " << event_ << endl;
+    typedef phys::DiBoson<phys::Lepton,phys::Lepton> ZZlep;
+    foreach(const ZZlep& zz , ZZs){
+      cout << "....................." << endl;
+      cout << zz << " SR? " << test_bit(zz.regionWord_,Channel::ZZ) << " CR2P2F? " << test_bit(zz.regionWord_,CRZLLos_2P2F) << " CR3P1F? " << test_bit(zz.regionWord_,CRZLLos_3P1F) << endl;
+      cout << "daughter 0: "   << zz.first() << endl;
+      cout << "daughter 0.1: " << zz.first().daughter(0) << " is good? " <<  zz.first().daughter(0).isGood() << " pass full sel? " << zz.first().daughter(0).passFullSel() <<  endl;
+      cout << "daughter 0.1: " << zz.first().daughter(1) << " is good? " <<  zz.first().daughter(1).isGood() << " pass full sel? " << zz.first().daughter(1).passFullSel() <<  endl;
+      cout << "daughter 1: "   << zz.second() << endl;
+      cout << "daughter 1.1: " << zz.second().daughter(0) << " is good? " <<  zz.second().daughter(0).isGood() << " pass full sel? " << zz.second().daughter(0).passFullSel() <<  endl;
+      cout << "daughter 1.1: " << zz.second().daughter(1) << " is good? " <<  zz.second().daughter(1).isGood() << " pass full sel? " << zz.second().daughter(1).passFullSel() <<  endl;
+      cout << "....................." << endl;
+    }
+    cout << "----------------------------------------------------" << endl;
+  }
   if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();     
   else if(applySkim_) return;
 
@@ -652,9 +669,9 @@ int TreePlanter::computeRegionFlag(const pat::CompositeCandidate & vv) const{
 
   if(vv.userFloat("isBestCand") && vv.userFloat("FullSelTight"))
     set_bit(REGIONFLAG,ZZ);
-  if((vv.userFloat("isBestCandCRZ2eLL_2P2F") || vv.userFloat("isBestCandCRZ2mLL_2P2F")) && vv.userFloat("SelZLL_2P2F"))
+  if(vv.userFloat("isBestCRZLLos_2P2F") && vv.userFloat("SelZLL_2P2F"))
     set_bit(REGIONFLAG,CRZLLos_2P2F);
-  if((vv.userFloat("isBestCandCRZ2eLL_3P1F") || vv.userFloat("isBestCandCRZ2mLL_3P1F")) && vv.userFloat("SelZLL_3P1F"))
+  if(vv.userFloat("isBestCRZLLos_3P1F") && vv.userFloat("SelZLL_3P1F"))
     set_bit(REGIONFLAG,CRZLLos_3P1F);
 
   //For the SR, also fold information about acceptance in CRflag 
