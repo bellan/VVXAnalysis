@@ -222,7 +222,7 @@ bool JetsWithLeptonsRemover::checkLeptonJet(const edm::Event & event, const pat:
 	  for(int j=0; j<2; ++j){
 	    bool checkVariable = false;
 	    if (matchingType_ == JetsWithLeptonsRemover::byDeltaR)
-	      checkVariable = reco::deltaR(*v->daughter(j), jet) < 0.5;
+	      checkVariable = reco::deltaR(*v->daughter(j), jet) < 0.4;
 	    else
 	      std::cout << "Not making any matching, the matching you choose is not foreseen" << std::endl;
 	    
@@ -283,7 +283,7 @@ bool JetsWithLeptonsRemover::checkLeptonJet(const edm::Event & event, const pat:
       
       bool checkVariable = false;
       if (matchingType_ == JetsWithLeptonsRemover::byDeltaR)
-	checkVariable = reco::deltaR(muon, jet) < 0.5;
+	checkVariable = reco::deltaR(muon, jet) < 0.4;
       else
 	std::cout << "Not making any matching, the matching you choose is not foreseen" << std::endl;
       
@@ -311,7 +311,7 @@ bool JetsWithLeptonsRemover::checkLeptonJet(const edm::Event & event, const pat:
 
 	bool checkVariable = false;
 	if (matchingType_ == JetsWithLeptonsRemover::byDeltaR)
-	  checkVariable = reco::deltaR(electron, jet) < 0.5;
+	  checkVariable = reco::deltaR(electron, jet) < 0.4;
 	else
 	  std::cout << "Not making any matching, the matching you choose is not foreseen" << std::endl;
 	
