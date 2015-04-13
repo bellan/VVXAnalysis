@@ -97,7 +97,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 ### ----------------------------------------------------------------------
 ### Output root file
 ### ----------------------------------------------------------------------
-
+#process.source.eventsToProcess = cms.untracked.VEventRange("1:5666496")
 
 process.TFileService=cms.Service('TFileService', fileName=cms.string('ZZjjAnalysis.root'))
 
@@ -186,7 +186,7 @@ process.postCleaningElectrons = cms.EDProducer("PATElectronCleaner",
 
 process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
                                            Setup               = cms.int32(JET_SETUP),
-                                           JetPreselection     = cms.string("pt > 30"),
+                                           JetPreselection     = cms.string("pt > 20"),
                                            DiBosonPreselection = cms.string(""),
                                            MatchingType        = cms.string("byDeltaR"), 
                                            Jets      = cms.InputTag("cmgPFJetSel"),
@@ -206,7 +206,7 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
 
 process.centralJets = cms.EDFilter("EtaPtMinCMGPFJetSelector", 
                                    src = cms.InputTag("disambiguatedJets"),
-                                   ptMin   = cms.double(30),
+                                   ptMin   = cms.double(20),
                                    etaMin = cms.double(-2.4),
                                    etaMax = cms.double(2.4)
                                    )
@@ -268,7 +268,7 @@ Z2MASS  = "daughter(1).mass>60 && daughter(1).mass<120"
 #Z1MASS  = "daughter(0).mass>40 && daughter(0).mass<120"
 #Z2MASS  = "daughter(1).mass>12 && daughter(1).mass<120"
 
-LL_OS = "(daughter(1).daughter(0).pdgId + daughter(1).daughter(1).pdgId) == 0" #Z2 = l+l-
+Z2LL_OS = "(daughter(1).daughter(0).pdgId + daughter(1).daughter(1).pdgId) == 0" #Z2 = l+l-
 
 PASSD0 = "(userFloat('d1.d0.isGood') && userFloat('d1.d0.combRelIsoPFFSRCorr') < 0.4)"
 PASSD1 = "(userFloat('d1.d1.isGood') && userFloat('d1.d1.combRelIsoPFFSRCorr') < 0.4)"
@@ -279,92 +279,50 @@ BOTHFAIL = FAILD0 + "&&" + FAILD1
 PASSD0_XOR_PASSD1 = "((" + PASSD0 + "&&" + FAILD1 + ") || (" + PASSD1 + "&&" + FAILD0 + "))"
 PASSD0_OR_PASSD1  = "(" + PASSD0 + "||" + PASSD1 + ")"
 
-# CR 3P1F
-BESTZLL_3P1F   = (CR_BESTCANDBASE       + "&&" +  
-                  Z1MASS_LARGE          + "&&" +  
-                  "userFloat('d0.isBestZ') &&" + 
-                  LL_OS                 + "&&" +  
-                  PASSD0_OR_PASSD1      + "&&" +  
-                  Z2SIP)
-
-BESTZ2mLL_3P1F = (CR_BESTCANDBASE         + "&&" +  
-                  Z1MASS_LARGE            + "&&" +  
-                  "userFloat('d0.isBestZmm') &&" + 
-                  LL_OS                   + "&&" +  
-                  PASSD0_OR_PASSD1        + "&&" +  
-                  Z2SIP)
-
-BESTZ2eLL_3P1F = (CR_BESTCANDBASE         + "&&" +  
-                  Z1MASS_LARGE            + "&&" +  
-                  "userFloat('d0.isBestZee') &&" + 
-                  LL_OS                   + "&&" +  
-                  PASSD0_OR_PASSD1        + "&&" +  
-                  Z2SIP)
+# CR Base
+CR_BESTZLLos = (CR_BESTCANDBASE       + "&&" +  
+                Z1MASS_LARGE          + "&&" +  
+                "userFloat('d0.isBestZ') &&" + 
+                Z2LL_OS               + "&&" +  
+                Z2SIP)
 
 
-ZLLSEL_3P1F  = (CR_BASESEL + "&&" + PASSD0_XOR_PASSD1 + "&&" + Z1MASS + "&&" + Z2MASS)
+# CR 3P1F 
+CR_BESTZLLos_3P1F = (CR_BESTZLLos    + "&&" +  
+                     PASSD0_OR_PASSD1)
+
+CR_ZLLosSEL_3P1F  = (CR_BASESEL + "&&" + PASSD0_XOR_PASSD1 + "&&" + Z1MASS + "&&" + Z2MASS)
 
 
 
 # CR 2P2F
-BESTZLL_2P2F   = (CR_BESTCANDBASE       + "&&" +  
-                  Z1MASS_LARGE          + "&&" +  
-                  "userFloat('d0.isBestZ') &&" + 
-                  LL_OS                 + "&&" +  
-                  Z2SIP)
+CR_BESTZLLos_2P2F = (CR_BESTZLLos)
 
-BESTZ2mLL_2P2F = (CR_BESTCANDBASE         + "&&" +  
-                  Z1MASS_LARGE            + "&&" +  
-                  "userFloat('d0.isBestZmm') &&" + 
-                  LL_OS                   + "&&" +  
-                  Z2SIP)
-
-BESTZ2eLL_2P2F = (CR_BESTCANDBASE         + "&&" +  
-                  Z1MASS_LARGE            + "&&" +  
-                  "userFloat('d0.isBestZee') &&" + 
-                  LL_OS                   + "&&" +  
-                  Z2SIP)
+CR_ZLLosSEL_2P2F  = (CR_BASESEL + "&&" + BOTHFAIL + "&&" + Z1MASS + "&&" + Z2MASS)
 
 
-ZLLSEL_2P2F  = (CR_BASESEL + "&&" + BOTHFAIL + "&&" + Z1MASS + "&&" + Z2MASS)
+process.ZLLCand.bestCandAmong.isBestCRZLLos_3P1F = cms.string(CR_BESTZLLos_3P1F)
+process.ZLLCand.flags.SelZLL_3P1F = cms.string(CR_ZLLosSEL_3P1F)
 
+process.ZLLCand.bestCandAmong.isBestCRZLLos_2P2F = cms.string(CR_BESTZLLos_2P2F)
+process.ZLLCand.flags.SelZLL_2P2F = cms.string(CR_ZLLosSEL_2P2F)
 
-process.ZLLCand.bestCandAmong.isBestCandCRZ2mLL_2P2F = cms.string(BESTZ2mLL_2P2F)
-process.ZLLCand.bestCandAmong.isBestCandCRZ2eLL_2P2F = cms.string(BESTZ2eLL_2P2F)
-process.ZLLCand.bestCandAmong.isBestCandZLL_2P2F     = cms.string(BESTZLL_2P2F)
-process.ZLLCand.flags.SelZLL_2P2F = cms.string(ZLLSEL_2P2F)
+process.ZLLFiltered3P1F = cms.EDFilter("PATCompositeCandidateSelector",
+                                       src = cms.InputTag("ZLLCand"),
+                                       cut = cms.string("userFloat('isBestCRZLLos_3P1F') && userFloat('SelZLL_3P1F')")
+                                       )
 
-process.ZLLCand.bestCandAmong.isBestCandCRZ2mLL_3P1F = cms.string(BESTZ2mLL_3P1F)
-process.ZLLCand.bestCandAmong.isBestCandCRZ2eLL_3P1F = cms.string(BESTZ2eLL_3P1F)
-process.ZLLCand.bestCandAmong.isBestCandZLL_3P1F     = cms.string(BESTZLL_3P1F)
-process.ZLLCand.flags.SelZLL_3P1F = cms.string(ZLLSEL_3P1F)
+process.ZLLFiltered2P2F = cms.EDFilter("PATCompositeCandidateSelector",
+                                       src = cms.InputTag("ZLLCand"),
+                                       cut = cms.string("userFloat('isBestCRZLLos_2P2F') && userFloat('SelZLL_2P2F')")
+                                       )
 
-
-process.Z2mLLFiltered2P2F = cms.EDFilter("PATCompositeCandidateSelector",
-                                          src = cms.InputTag("ZLLCand"),
-                                          cut = cms.string("userFloat('isBestCandCRZ2mLL_2P2F') && userFloat('SelZLL_2P2F')")
-                                          )
-
-process.Z2eLLFiltered2P2F = cms.EDFilter("PATCompositeCandidateSelector",
-                                          src = cms.InputTag("ZLLCand"),
-                                          cut = cms.string("userFloat('isBestCandCRZ2eLL_2P2F') && userFloat('SelZLL_2P2F')")
-                                          )
-
-process.Z2mLLFiltered3P1F = cms.EDFilter("PATCompositeCandidateSelector",
-                                          src = cms.InputTag("ZLLCand"),
-                                          cut = cms.string("userFloat('isBestCandCRZ2mLL_3P1F') && userFloat('SelZLL_3P1F')")
-                                          )
-
-process.Z2eLLFiltered3P1F = cms.EDFilter("PATCompositeCandidateSelector",
-                                          src = cms.InputTag("ZLLCand"),
-                                          cut = cms.string("userFloat('isBestCandCRZ2eLL_3P1F') && userFloat('SelZLL_3P1F')")
-                                          )
 
 # Merger of all ZZ final states.
-process.ZZFiltered = cms.EDProducer("PATCompositeCandidateMerger",
+process.ZZFiltered = cms.EDProducer("PATCompositeCandidateMergerWithPriority",
                                     src = cms.VInputTag(cms.InputTag("MMMMFiltered"), cms.InputTag("EEEEFiltered"), cms.InputTag("EEMMFiltered"),
-                                                        cms.InputTag("Z2mLLFiltered2P2F"), cms.InputTag("Z2eLLFiltered2P2F"),
-                                                        cms.InputTag("Z2mLLFiltered3P1F"), cms.InputTag("Z2eLLFiltered3P1F"))
+                                                        cms.InputTag("ZLLFiltered2P2F"), cms.InputTag("ZLLFiltered3P1F")),
+                                    priority = cms.vint32(1,1,1,0,0)
                                     )
 
 ### ------------------------------------------------------------------------- ###
@@ -374,8 +332,8 @@ process.ZZFiltered = cms.EDProducer("PATCompositeCandidateMerger",
 process.postRecoCleaning = cms.Sequence( process.MMMMFiltered
                                          + process.EEEEFiltered
                                          + process.EEMMFiltered
-                                         + process.Z2mLLFiltered2P2F + process.Z2eLLFiltered2P2F
-                                         + process.Z2mLLFiltered3P1F + process.Z2eLLFiltered3P1F
+                                         + process.ZLLFiltered2P2F
+                                         + process.ZLLFiltered3P1F
                                          + process.ZZFiltered
                                          + process.muonsFromZZ*process.postCleaningMuons 
                                          + process.electronsFromZZ*process.postCleaningElectrons
@@ -503,14 +461,16 @@ process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
                                        electronSrc = cms.InputTag("appendPhotons:electrons"),
                                        candidateSrcs = cms.PSet( Zmm   = cms.InputTag("MMCand"),
                                                                  Zee   = cms.InputTag("EECand"),
-                                                                 MMMM  = cms.InputTag("MMMMCand"),
-                                                                 EEEE  = cms.InputTag("EEEECand"),
+                                                                 #MMMM  = cms.InputTag("MMMMCand"),
+                                                                 #EEEE  = cms.InputTag("EEEECand"),
+                                                                 ZLL  = cms.InputTag("ZLLCand"),
+                                                                 #ZLLCandPreFiltered = cms.InputTag("ZLLCandPreFiltered"),
                                                                  EEMM  = cms.InputTag("EEMMCand"),
                                                                  )
                                        )
 
 #process.filltrees = cms.Path(process.preselection * process.genCategory * process.treePlanter * process.printTree)
-#process.filltrees = cms.EndPath(process.treePlanter *process.dumpUserData)
+#process.filltrees = cms.EndPath(process.srCounter + process.cr2P2FCounter + process.cr3P1FCounter +process.treePlanter *process.dumpUserData)
 #process.filltrees = cms.EndPath(process.treePlanter *process.printTree)
 
 ########################################################
