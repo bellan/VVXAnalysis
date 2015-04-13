@@ -186,7 +186,7 @@ process.postCleaningElectrons = cms.EDProducer("PATElectronCleaner",
 
 process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
                                            Setup               = cms.int32(JET_SETUP),
-                                           JetPreselection     = cms.string("pt > 20"),
+                                           JetPreselection     = cms.string("pt > 10"),
                                            DiBosonPreselection = cms.string(""),
                                            MatchingType        = cms.string("byDeltaR"), 
                                            Jets      = cms.InputTag("cmgPFJetSel"),
@@ -206,7 +206,7 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
 
 process.centralJets = cms.EDFilter("EtaPtMinCMGPFJetSelector", 
                                    src = cms.InputTag("disambiguatedJets"),
-                                   ptMin   = cms.double(20),
+                                   ptMin   = cms.double(10),
                                    etaMin = cms.double(-2.4),
                                    etaMax = cms.double(2.4)
                                    )
