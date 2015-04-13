@@ -753,38 +753,11 @@ int TreePlanter::computeCRFlag(Channel channel, const pat::CompositeCandidate & 
   int CRFLAG=0;
     
   if (channel==ZLL) {
-    if(vv.userFloat("isBestCRZLL")&&vv.userFloat("CRZLL"))
-      set_bit(CRFLAG,CRZLL);
-    if(vv.userFloat("isBestCRMMMMss")&&vv.userFloat("CRLLLL"))
-      set_bit(CRFLAG,CRMMMMss);
-    if(vv.userFloat("isBestCRMMMMos")&&vv.userFloat("CRLLLL"))
-      set_bit(CRFLAG,CRMMMMos);
-    if(vv.userFloat("isBestCREEEEss")&&vv.userFloat("CRLLLL"))
-      set_bit(CRFLAG,CREEEEss);
-    if(vv.userFloat("isBestCREEEEos")&&vv.userFloat("CRLLLL"))
-      set_bit(CRFLAG,CREEEEos);
-    if(vv.userFloat("isBestCREEMMss")&&vv.userFloat("CRLLLL"))
-      set_bit(CRFLAG,CREEMMss);
-    if(vv.userFloat("isBestCREEMMos")&&vv.userFloat("CRLLLL"))
-      set_bit(CRFLAG,CREEMMos);
-    if(vv.userFloat("isBestCRMMEEss")&&vv.userFloat("CRLLLL"))
-      set_bit(CRFLAG,CRMMEEss);
-    if(vv.userFloat("isBestCRMMEEos")&&vv.userFloat("CRLLLL"))
-      set_bit(CRFLAG,CRMMEEos);
-    if(vv.userFloat("isBestCRZLL")&&vv.userFloat("CRZLLHiSIP")) 
-      set_bit(CRFLAG,CRZLLHiSIP);
-    if(vv.userFloat("isBestCRZMM")&&vv.userFloat("CRZLLHiSIP"))
-      set_bit(CRFLAG,CRZLLHiSIPMM);
-    if(vv.userFloat("isBestCRZLLHiSIPKin")&&vv.userFloat("CRZLLHiSIPKin"))
-      set_bit(CRFLAG,CRZLLHiSIPKin);
     // The ones actually used:
     if(vv.userFloat("isBestCandCRZ2eLL")&&vv.userFloat("SelZLL"))
       set_bit(CRFLAG,CRZ2eLL);
     if(vv.userFloat("isBestCandCRZ2mLL")&&vv.userFloat("SelZLL"))
       set_bit(CRFLAG,CRZ2mLL);
-    if(vv.userFloat("isBestCandZLL")&&vv.userFloat("SelZLL"))
-      set_bit(CRFLAG,ZLL);
-
   }
 
   //For the SR, also fold information about acceptance in CRflag 
