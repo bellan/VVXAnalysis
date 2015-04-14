@@ -2,7 +2,7 @@
 #define VVXAnalysis_TreeAnalysis_AnalysisConfiguration_h
 
 /** \class AnalysisConfiguration
- *  Fold the configuration of the analysis in a unique object, so new additions are more easier to be propagated to the concre classes
+ *  Fold the configuration of the analysis in a unique object, so new additions are more easier to be propagated to the concrete classes
  *
  *  $Date: 2013/03/15 13:37:31 $
  *  $Revision: 1.4 $
