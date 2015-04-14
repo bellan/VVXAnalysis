@@ -113,8 +113,7 @@ print "\n"
 
 def run(executable, analysis, typeofsample, region, luminosity):
     inputdir = baseinputdir
-    if not region == 'SR' and not region == 'MC': inputdir = baseinputdir+"/"+region
-
+    
     outputdir = 'results'
     if not os.path.exists(outputdir): os.popen('mkdir "%s"' %outputdir)
 
