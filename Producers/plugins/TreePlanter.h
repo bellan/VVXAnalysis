@@ -32,7 +32,8 @@
 class TTree;
 namespace cmg{class PFJet;}
 class MCHistoryTools;
-
+class JetCorrectorParameters;
+class SimpleJetResolution;
 
 class TreePlanter: public edm::EDAnalyzer {
   
@@ -100,6 +101,8 @@ class TreePlanter: public edm::EDAnalyzer {
   // To get Lepton efficiency scale factors. Temporary here!
   LeptonScaleFactors leptonScaleFactors_;
   Int_t signalDefinition_;
+  JetCorrectorParameters *jetCorrectorParameters_;
+  SimpleJetResolution    *jetResolution_;
 
   // ------------------- Event info in the tree ------------------- //
   Int_t event_;

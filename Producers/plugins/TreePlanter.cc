@@ -17,6 +17,9 @@
 #include "DataFormats/Common/interface/Ptr.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
 
+#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
+#include "CondFormats/JetMETObjects/interface/SimpleJetResolution.h"
+
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
 
@@ -96,6 +99,9 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   }
    
   skimPaths_ = config.getParameter<std::vector<std::string> >("skimPaths");
+
+  jetCorrectorParameters_ = new JetCorrectorParameters(edm::FileInPath("CondFormats/JetMETObjects/data/JetResolutionInputAK5PFCHS.txt").fullPath());
+  JER_ = new  SimpleJetResolution(*jetCorrectorParameters_);
 
   initTree();
 }
@@ -182,6 +188,9 @@ void TreePlanter::endRun(const edm::Run& run, const edm::EventSetup& setup){
 }
 
 void TreePlanter::endJob(){
+
+  if(jetCorrectorParameters_) delete jetCorrectorParameters_;
+  if(JER_) delete JER_;
 
   if(mcHistoryTools_) delete mcHistoryTools_;
 
@@ -393,7 +402,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
     jets_.push_back(physjet);
   }
 
- 
+  // The bosons are selected requiring that their daughters pass the quality criteria to be good daughters
   Vhad_   = fillBosons<cmg::PFJet,phys::Jet>(Vhad, 24);
 
 
@@ -511,7 +520,25 @@ phys::Jet TreePlanter::fill(const cmg::PFJet &jet) const{
   output.pass_puCutBased_tight_   = jet.passPuJetId("cut-based", PileupJetIdentifier::kTight);
   
   output.mcPartonFlavour_ = jet.partonFlavour();
- 
+
+  // Fill JER quantities
+  if(isMC_){
+    std::vector<float> fx, fY;
+    fx.push_back(output.eta()); // Jet Eta
+    fY.push_back(output.pt());  // Jet PT
+    fY.push_back(ntruePUInt_);  // Number of truth pileup
+    output.sigma_MC_ = JER_->resolution(fx,fY);
+    
+    // From: https://twiki.cern.ch/twiki/bin/view/CMS/JetResolution
+    if      (abs(output.eta()) < 0.5) {output.jer_c_ = 1.079; output.jer_cdown_ = 1.053; output.jer_cup_ = 1.105;}
+    else if (abs(output.eta()) < 1.1) {output.jer_c_ = 1.099; output.jer_cdown_ = 1.071; output.jer_cup_ = 1.127;}
+    else if (abs(output.eta()) < 1.7) {output.jer_c_ = 1.121; output.jer_cdown_ = 1.092; output.jer_cup_ = 1.150;}
+    else if (abs(output.eta()) < 2.3) {output.jer_c_ = 1.208; output.jer_cdown_ = 1.162; output.jer_cup_ = 1.254;}
+    else if (abs(output.eta()) < 2.8) {output.jer_c_ = 1.254; output.jer_cdown_ = 1.192; output.jer_cup_ = 1.316;}
+    else if (abs(output.eta()) < 3.2) {output.jer_c_ = 1.395; output.jer_cdown_ = 1.332; output.jer_cup_ = 1.458;}
+    else if (abs(output.eta()) < 5.0) {output.jer_c_ = 1.056; output.jer_cdown_ = 0.865; output.jer_cup_ = 1.247;}
+  }
+
   return output; 
 }
 
@@ -606,8 +633,13 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   else if (VV.id() == 52) effectiveChannel = MMMM;  // ZZ->4mu or Z->2mu + 2mu
   else {cout << "Do not know what to do when setting trigger bit in TreePlanter. Unknown ZZ id: " << VV.id() << endl; abort();}
   
-  VV.isBestCand_  = edmVV.userFloat("isBestCand");
-  VV.passFullSel_ = edmVV.userFloat("FullSelTight");
+  VV.isBestCand_         = edmVV.userFloat("isBestCand");
+  VV.passFullSel_        = edmVV.userFloat("FullSelTight");
+  VV.isBestCRZLLos_2P2F_ = edmVV.userFloat("isBestCRZLLos_2P2F");
+  VV.passSelZLL_2P2F_    = edmVV.userFloat("SelZLL_2P2F");
+  VV.isBestCRZLLos_3P1F_ = edmVV.userFloat("isBestCRZLLos_3P1F");
+  VV.passSelZLL_3P1F_    = edmVV.userFloat("SelZLL_3P1F");   
+
   VV.regionWord_  = regionWord;
   VV.triggerWord_ = triggerWord_;
   VV.passTrigger_ = filterController_.passTrigger(effectiveChannel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
@@ -656,10 +688,6 @@ std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > TreePlanter::fillDiBosons
 
   return physDiBosons;
 }
-
-
-
-
 
 
 
