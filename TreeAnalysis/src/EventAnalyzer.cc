@@ -232,9 +232,10 @@ void EventAnalyzer::loop(const std::string outputfile){
 
   TFile fout(TString(outputfile),"RECREATE");
   fout.cd(); 
-  theHistograms.write(fout);
 
   end(fout);
+  theHistograms.write(fout);
+
   fout.Close();
   //cout<<"Events in input: " << Green(theInputWeightedEvents)<< endl;
   cout<<"Events passing all cuts: "<< Green(theCutCounter) << endl;
