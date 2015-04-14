@@ -15,7 +15,7 @@ APPLYMUCORR = True
 
 SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the choosedn windows. For other topology see the README under VVXAnalysis/Commons.
 
-CONTROLREGION = '3P1F'
+CONTROLREGION = 'CR'
 
 try:
     IsMC
@@ -299,41 +299,55 @@ ZLLSEL_2P2F  = (CR_BASESEL + "&&" + BOTHFAIL + "&&" + Z1MASS + "&&" + Z2MASS)
 
 
 
-BESTZ2mLL = BESTZ2mLL_3P1F
-BESTZ2eLL = BESTZ2eLL_3P1F
-BESTZLL   = BESTZLL_3P1F
-ZLLSEL    = ZLLSEL_3P1F
+#BESTZ2mLL = BESTZ2mLL_3P1F
+#BESTZ2eLL = BESTZ2eLL_3P1F
+#BESTZLL   = BESTZLL_3P1F
+#ZLLSEL    = ZLLSEL_3P1F
 
 
-if CONTROLREGION == '2P2F':
-    BESTZ2mLL = BESTZ2mLL_2P2F
-    BESTZ2eLL = BESTZ2eLL_2P2F
-    BESTZLL = BESTZLL_2P2F
-    ZLLSEL  = ZLLSEL_2P2F
-elif not CONTROLREGION == '2P2F' and not CONTROLREGION == '3P1F' :
-    print "Do not know what tho do with {0:s} control region. Collapsing into 3P1F one.".format(CONTROLREGION)
+#if CONTROLREGION == '2P2F':
+#    BESTZ2mLL = BESTZ2mLL_2P2F
+#    BESTZ2eLL = BESTZ2eLL_2P2F
+#    BESTZLL = BESTZLL_2P2F
+#    ZLLSEL  = ZLLSEL_2P2F
+#elif not CONTROLREGION == '2P2F' and not CONTROLREGION == '3P1F' :
+#    print "Do not know what tho do with {0:s} control region. Collapsing into 3P1F one.".format(CONTROLREGION)
     
 
-process.ZLLCand.bestCandAmong.isBestCandCRZ2mLL = cms.string(BESTZ2mLL)
-process.ZLLCand.bestCandAmong.isBestCandCRZ2eLL = cms.string(BESTZ2eLL)
-process.ZLLCand.bestCandAmong.isBestCandZLL = cms.string(BESTZLL)
-process.ZLLCand.flags.SelZLL = cms.string(ZLLSEL)
+process.ZLLCand.bestCandAmong.isBestCandCRZ2mLL_2P2F = cms.string(BESTZ2mLL_2P2F)
+process.ZLLCand.bestCandAmong.isBestCandCRZ2eLL_2P2F = cms.string(BESTZ2eLL_2P2F)
+process.ZLLCand.bestCandAmong.isBestCandZLL_2P2F     = cms.string(BESTZLL_2P2F)
+process.ZLLCand.flags.SelZLL_2P2F = cms.string(ZLLSEL_2P2F)
 
+process.ZLLCand.bestCandAmong.isBestCandCRZ2mLL_3P1F = cms.string(BESTZ2mLL_3P1F)
+process.ZLLCand.bestCandAmong.isBestCandCRZ2eLL_3P1F = cms.string(BESTZ2eLL_3P1F)
+process.ZLLCand.bestCandAmong.isBestCandZLL_3P1F     = cms.string(BESTZLL_3P1F)
+process.ZLLCand.flags.SelZLL_3P1F = cms.string(ZLLSEL_3P1F)
 
 
 ### ......................................................................... ###
 ### Clean the Z+2 lepton candidates to select only the best possible candidate for that region, requiring that at least one lepton fails the FULL selection
 ### ......................................................................... ###
 
-process.Z2mLLFiltered = cms.EDFilter("PATCompositeCandidateSelector",
-                                     src = cms.InputTag("ZLLCand"),
-                                     cut = cms.string("userFloat('isBestCandCRZ2mLL') && userFloat('SelZLL')")
-                                     )
+process.Z2mLLFiltered2P2F = cms.EDFilter("PATCompositeCandidateSelector",
+                                          src = cms.InputTag("ZLLCand"),
+                                          cut = cms.string("userFloat('isBestCandCRZ2mLL_2P2F') && userFloat('SelZLL_2P2F')")
+                                          )
 
-process.Z2eLLFiltered = cms.EDFilter("PATCompositeCandidateSelector",
-                                     src = cms.InputTag("ZLLCand"),
-                                     cut = cms.string("userFloat('isBestCandCRZ2eLL') && userFloat('SelZLL')")
-                                     )
+process.Z2eLLFiltered2P2F = cms.EDFilter("PATCompositeCandidateSelector",
+                                          src = cms.InputTag("ZLLCand"),
+                                          cut = cms.string("userFloat('isBestCandCRZ2eLL_2P2F') && userFloat('SelZLL_2P2F')")
+                                          )
+
+process.Z2mLLFiltered3P1F = cms.EDFilter("PATCompositeCandidateSelector",
+                                          src = cms.InputTag("ZLLCand"),
+                                          cut = cms.string("userFloat('isBestCandCRZ2mLL_3P1F') && userFloat('SelZLL_3P1F')")
+                                          )
+
+process.Z2eLLFiltered3P1F = cms.EDFilter("PATCompositeCandidateSelector",
+                                          src = cms.InputTag("ZLLCand"),
+                                          cut = cms.string("userFloat('isBestCandCRZ2eLL_3P1F') && userFloat('SelZLL_3P1F')")
+                                          )
 
 #process.ZLLFiltered = cms.EDFilter("PATCompositeCandidateSelector",
 #                                   src = cms.InputTag("ZLLCand"),
@@ -342,7 +356,8 @@ process.Z2eLLFiltered = cms.EDFilter("PATCompositeCandidateSelector",
 
 # Merger of all ZZ final states.
 process.ZLLFiltered = cms.EDProducer("PATCompositeCandidateMerger",
-                                     src = cms.VInputTag(cms.InputTag("Z2mLLFiltered"), cms.InputTag("Z2eLLFiltered"))
+                                     src = cms.VInputTag(cms.InputTag("Z2mLLFiltered2P2F"), cms.InputTag("Z2eLLFiltered2P2F"),
+                                                         cms.InputTag("Z2mLLFiltered3P1F"), cms.InputTag("Z2eLLFiltered3P1F"))
                                      )
 
 
@@ -351,8 +366,8 @@ process.ZLLFiltered = cms.EDProducer("PATCompositeCandidateMerger",
 ### Define the post reconstruction cleaning sequence
 ### ------------------------------------------------------------------------- ###
 
-process.postRecoCleaning = cms.Sequence( process.Z2mLLFiltered
-                                         + process.Z2eLLFiltered
+process.postRecoCleaning = cms.Sequence(   process.Z2mLLFiltered2P2F + process.Z2eLLFiltered2P2F
+                                         + process.Z2mLLFiltered3P1F + process.Z2eLLFiltered3P1F
                                          + process.ZLLFiltered
                                          + process.muonsFromZZ*process.postCleaningMuons 
                                          + process.electronsFromZZ*process.postCleaningElectrons
@@ -460,10 +475,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      Zmm          = cms.InputTag("MMCand"),
                                      Zee          = cms.InputTag("EECand"),
                                      Vhad         = cms.InputTag("VhadCand"),
-                                     ZZ4m         = cms.InputTag(""),          # only the best ZZ->4mu candidate that pass the FULL selection
-                                     ZZ4e         = cms.InputTag(""),          # only the best ZZ->4e candidate that pass the FULL selection
-                                     ZZ2e2m       = cms.InputTag(""),          # only the best ZZ->2e2mu candidate that pass the FULL selection
-                                     Zll          = cms.InputTag("ZLLFiltered"), 
+                                     ZZ         = cms.InputTag("ZLLFiltered"),          # only the best ZZ candidate that pass the FULL selection
                                      MET          = cms.InputTag("cmgPFMET"),
                                      Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
                                      XSection     = cms.untracked.double(XSEC)
