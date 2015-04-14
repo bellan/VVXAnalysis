@@ -81,7 +81,6 @@ void EventAnalyzer::Init(TTree *tree)
   jets  = new std::vector<phys::Jet>(); centralJets  = new std::vector<phys::Jet>();
 
   // Bosons   
-  Z    = new std::vector<phys::Boson<phys::Lepton> >()  ; ZCand = 0   ; b_ZCand = 0   ; theTree->SetBranchAddress("ZCand"   , &ZCand   , &b_ZCand);
   Vhad = new std::vector<phys::Boson<phys::Jet> > ()    ; VhadCand = 0; b_VhadCand = 0; theTree->SetBranchAddress("VhadCand", &VhadCand, &b_VhadCand);
 
   // DiBoson, if in SR, or Z+ll if in CR
@@ -159,18 +158,22 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
       }
     }
 
-  Z->clear(); Vhad->clear();
+  Vhad->clear();
 
-  foreach(const phys::Boson<phys::Lepton> z, *ZCand)
-    if(select(z)) Z->push_back(z);
   foreach(const phys::Boson<phys::Jet> v, *VhadCand)
     if(select(v)) Vhad->push_back(v);
 
-  stable_sort(Z->begin(), Z->end(), phys::PtComparator());
   stable_sort(Vhad->begin(), Vhad->end(), phys::PtComparator());
   
   if(region_ == phys::MC) ZZ = new phys::DiBoson<phys::Lepton, phys::Lepton>();
   
+  // Check if the request on region tye matches with the categorization of the event
+  std::bitset<128> regionWord = std::bitset<128>(ZZ->region());
+  // check bits accordingly to ZZAnalysis/AnalysisStep/interface/FinalStates.h
+  if(region_  == phys::SR                                     && !regionWord.test(3))  return 0;
+  if((region_ == phys::CR2P2F || region_ == phys::CR2P2F_HZZ) && !regionWord.test(22)) return 0;
+  if((region_ == phys::CR3P1F || region_ == phys::CR3P1F_HZZ) && !regionWord.test(23)) return 0;
+
   //if(!ZZ) return 0;
 
   theWeight = theMCInfo.weight(*ZZ);
@@ -185,7 +188,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   
   theInputWeightedEvents += theWeight;
 
-  topology = std::bitset<16>(genCategory);
+     topology = std::bitset<16>(genCategory);
 
 
   return e;

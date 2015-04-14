@@ -187,7 +187,6 @@ public:
   std::vector<phys::Boson<phys::Jet> >      *VhadCand; TBranch *b_VhadCand;
   
   // Bosons (Not in the tree)
-  std::vector<phys::Boson<phys::Lepton> >   *Z;
   std::vector<phys::Boson<phys::Jet> >      *Vhad;
 
   // DiBoson, if in SR, or Z+ll if in CR
