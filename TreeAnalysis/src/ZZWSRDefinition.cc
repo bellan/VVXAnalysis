@@ -48,7 +48,7 @@ Int_t ZZWSRDefinition::cut() {
   
   //.......Z0,Z1 definition
 
-  bool passZsize = Z->size() >= 2;               
+  bool passZsize = 0; // FIXME
                    
   bool passGhost = true;   
   
@@ -58,14 +58,14 @@ Int_t ZZWSRDefinition::cut() {
     
     std::vector<Boson<Lepton> > Zll; 
     
-    foreach(const Boson<Lepton>& z, *Z) {
-      Zll.push_back(z.clone<Lepton>()); 
-    }
+    //    foreach(const Boson<Lepton>& z, *Z) {
+    //  Zll.push_back(z.clone<Lepton>()); 
+    // }
     
     
     std::stable_sort(Zll.begin() ,Zll.end() ,MassComparator(ZMASS));
     
-    myZ0 = Zll.at(0);
+    myZ0 = Zll.at(0);  // Fixme, it will crash
     myZ1 = Boson<Lepton>();
         
     for(vector<Boson<Lepton> >::iterator b = Zll.begin()+1; b != Zll.end(); ++b) { 
@@ -372,64 +372,64 @@ void ZZWSRDefinition::analyze() {
   
 
 
-      foreach(const Boson<Lepton>& z, *Z) {
-	ZcomparatorVector.push_back(make_pair(Z0gen, z.clone<Lepton>()));
-	ZcomparatorVector.push_back(make_pair(Z1gen, z.clone<Lepton>()));
-      }
+      // foreach(const Boson<Lepton>& z, *Z) {
+      // 	ZcomparatorVector.push_back(make_pair(Z0gen, z.clone<Lepton>()));
+      // 	ZcomparatorVector.push_back(make_pair(Z1gen, z.clone<Lepton>()));
+      // }
       
       foreach(const Boson<Jet> w, *Vhad) {  // FIXME: Z too!
 	WcomparatorVector.push_back(make_pair(Wgen, w));
       }
   
-      std::stable_sort(ZcomparatorVector.begin(), ZcomparatorVector.end(), VdeltaRComparator());
+      //std::stable_sort(ZcomparatorVector.begin(), ZcomparatorVector.end(), VdeltaRComparator());
       std::stable_sort(WcomparatorVector.begin(), WcomparatorVector.end(), VdeltaRComparator());
 
     
       
-      Boson<Lepton> Z0 = ZcomparatorVector.at(0).second;         // Definition of correctly matched bosons
-      Boson<Lepton> Z1 = ZcomparatorVector.at(1).second;         //
+      //Boson<Lepton> Z0 = ZcomparatorVector.at(0).second;         // Definition of correctly matched bosons
+      //Boson<Lepton> Z1 = ZcomparatorVector.at(1).second;         //
       Boson<Jet> W     = WcomparatorVector.at(0).second;         //
   
       
-      cout <<  "\n---------- MASSES COMPARISON: Z gen  ||  Z reco matched with gen  ||  Z reco ----------"   << endl;
+      // cout <<  "\n---------- MASSES COMPARISON: Z gen  ||  Z reco matched with gen  ||  Z reco ----------"   << endl;
 
-      cout << "Z0gen= " << Z0gen.p4().M() << "\t\tZ0matched = " << Z0.p4().M() << "\t\tZ0reco = " << Green(myZ0.p4().M()) <<endl;
-      cout << "Z1gen= " << Z1gen.p4().M() << "\t\tZ1matched = " << Z1.p4().M() << "\t\tZ1reco = " << Green(myZ1.p4().M()) <<endl;
-      cout << "Wgen=  " << Wgen.p4().M()  << "\t\tWmatched =  " << W.p4().M()  << "\t\tWreco = "  << Green(myW.p4().M())  <<endl;
+      // cout << "Z0gen= " << Z0gen.p4().M() << "\t\tZ0matched = " << Z0.p4().M() << "\t\tZ0reco = " << Green(myZ0.p4().M()) <<endl;
+      // cout << "Z1gen= " << Z1gen.p4().M() << "\t\tZ1matched = " << Z1.p4().M() << "\t\tZ1reco = " << Green(myZ1.p4().M()) <<endl;
+      // cout << "Wgen=  " << Wgen.p4().M()  << "\t\tWmatched =  " << W.p4().M()  << "\t\tWreco = "  << Green(myW.p4().M())  <<endl;
 
-      cout <<  "\n------- DAUGHTERS IDS COMPARISON: Z gen  ||  Z reco matched with gen  ||  Z reco -------"   << endl;
-      cout << "daughter1 \tZ0gen = " << Z0gen.daughter(0).id() << "\tZ0matched = " << Z0.daughter(0).id() << "\tZ0reco = " << myZ0.daughter(0).id() << endl;
-      cout << "daughter2 \tZ0gen = " << Z0gen.daughter(1).id() << "\tZ0matched = " << Z0.daughter(1).id() << "\tZ0reco = " << myZ0.daughter(1).id() << endl;
-      cout << "daughter1 \tZ0gen = " << Z1gen.daughter(0).id() << "\tZ0matched = " << Z1.daughter(0).id() << "\tZ0reco = " << myZ1.daughter(0).id() << endl;
-      cout << "daughter2 \tZ0gen = " << Z1gen.daughter(1).id() << "\tZ0matched = " << Z1.daughter(1).id() << "\tZ0reco = " << myZ1.daughter(1).id() << endl;
+      // cout <<  "\n------- DAUGHTERS IDS COMPARISON: Z gen  ||  Z reco matched with gen  ||  Z reco -------"   << endl;
+      // cout << "daughter1 \tZ0gen = " << Z0gen.daughter(0).id() << "\tZ0matched = " << Z0.daughter(0).id() << "\tZ0reco = " << myZ0.daughter(0).id() << endl;
+      // cout << "daughter2 \tZ0gen = " << Z0gen.daughter(1).id() << "\tZ0matched = " << Z0.daughter(1).id() << "\tZ0reco = " << myZ0.daughter(1).id() << endl;
+      // cout << "daughter1 \tZ0gen = " << Z1gen.daughter(0).id() << "\tZ0matched = " << Z1.daughter(0).id() << "\tZ0reco = " << myZ1.daughter(0).id() << endl;
+      // cout << "daughter2 \tZ0gen = " << Z1gen.daughter(1).id() << "\tZ0matched = " << Z1.daughter(1).id() << "\tZ0reco = " << myZ1.daughter(1).id() << endl;
       
       
-      bool ZcorrectMatch = (myZ0.p4() == Z0.p4() && myZ1.p4() == Z1.p4()) || (myZ0.p4() == Z1.p4() && myZ1.p4() == Z0.p4());
-      bool WcorrectMatch = myW.p4() == W.p4();
+      // bool ZcorrectMatch = (myZ0.p4() == Z0.p4() && myZ1.p4() == Z1.p4()) || (myZ0.p4() == Z1.p4() && myZ1.p4() == Z0.p4());
+      // bool WcorrectMatch = myW.p4() == W.p4();
       
-      if ( ZcorrectMatch ) theHistograms.fill("Efficiency of Z definition", "Efficiency of Z definition", 3, 0, 3, 1, theWeight);
+      // if ( ZcorrectMatch ) theHistograms.fill("Efficiency of Z definition", "Efficiency of Z definition", 3, 0, 3, 1, theWeight);
       
-      if ( WcorrectMatch ) theHistograms.fill("Efficiency of W definition", "Efficiency of W definition", 3, 0, 3, 1, theWeight);
+      // if ( WcorrectMatch ) theHistograms.fill("Efficiency of W definition", "Efficiency of W definition", 3, 0, 3, 1, theWeight);
       
-      if ( ZcorrectMatch && WcorrectMatch ) theHistograms.fill("Efficiency of signal definition", "Efficiency of signal definition", 3, 0, 3, 1, theWeight);
+      // if ( ZcorrectMatch && WcorrectMatch ) theHistograms.fill("Efficiency of signal definition", "Efficiency of signal definition", 3, 0, 3, 1, theWeight);
 
-      double deltaRJet1Lep1 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z0.daughter(0).p4().Rapidity(), Z0.daughter(0).p4().Phi());
-      double deltaRJet1Lep2 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z0.daughter(1).p4().Rapidity(), Z0.daughter(1).p4().Phi());
-      double deltaRJet1Lep3 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z1.daughter(0).p4().Rapidity(), Z1.daughter(0).p4().Phi());
-      double deltaRJet1Lep4 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z1.daughter(1).p4().Rapidity(), Z1.daughter(1).p4().Phi());
-      double deltaRJet2Lep1 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z0.daughter(0).p4().Rapidity(), Z0.daughter(0).p4().Phi());
-      double deltaRJet2Lep2 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z0.daughter(1).p4().Rapidity(), Z0.daughter(1).p4().Phi());
-      double deltaRJet2Lep3 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z1.daughter(0).p4().Rapidity(), Z1.daughter(0).p4().Phi());
-      double deltaRJet2Lep4 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z1.daughter(1).p4().Rapidity(), Z1.daughter(1).p4().Phi());
+      // double deltaRJet1Lep1 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z0.daughter(0).p4().Rapidity(), Z0.daughter(0).p4().Phi());
+      // double deltaRJet1Lep2 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z0.daughter(1).p4().Rapidity(), Z0.daughter(1).p4().Phi());
+      // double deltaRJet1Lep3 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z1.daughter(0).p4().Rapidity(), Z1.daughter(0).p4().Phi());
+      // double deltaRJet1Lep4 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z1.daughter(1).p4().Rapidity(), Z1.daughter(1).p4().Phi());
+      // double deltaRJet2Lep1 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z0.daughter(0).p4().Rapidity(), Z0.daughter(0).p4().Phi());
+      // double deltaRJet2Lep2 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z0.daughter(1).p4().Rapidity(), Z0.daughter(1).p4().Phi());
+      // double deltaRJet2Lep3 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z1.daughter(0).p4().Rapidity(), Z1.daughter(0).p4().Phi());
+      // double deltaRJet2Lep4 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z1.daughter(1).p4().Rapidity(), Z1.daughter(1).p4().Phi());
 
-      theHistograms.fill("Matched_DR_J1L1", "Matched_DR_J1L1", 100, 0, 8, deltaRJet1Lep1, theWeight);
-      theHistograms.fill("Matched_DR_J1L2", "Matched_DR_J1L2", 100, 0, 8, deltaRJet1Lep2, theWeight);
-      theHistograms.fill("Matched_DR_J1L3", "Matched_DR_J1L3", 100, 0, 8, deltaRJet1Lep3, theWeight);
-      theHistograms.fill("Matched_DR_J1L4", "Matched_DR_J1L4", 100, 0, 8, deltaRJet1Lep4, theWeight);
-      theHistograms.fill("Matched_DR_J2L1", "Matched_DR_J2L1", 100, 0, 8, deltaRJet2Lep1, theWeight);
-      theHistograms.fill("Matched_DR_J2L2", "Matched_DR_J2L2", 100, 0, 8, deltaRJet2Lep2, theWeight);
-      theHistograms.fill("Matched_DR_J2L3", "Matched_DR_J2L3", 100, 0, 8, deltaRJet2Lep3, theWeight);
-      theHistograms.fill("Matched_DR_J2L4", "Matched_DR_J2L4", 100, 0, 8, deltaRJet2Lep4, theWeight);
+      // theHistograms.fill("Matched_DR_J1L1", "Matched_DR_J1L1", 100, 0, 8, deltaRJet1Lep1, theWeight);
+      // theHistograms.fill("Matched_DR_J1L2", "Matched_DR_J1L2", 100, 0, 8, deltaRJet1Lep2, theWeight);
+      // theHistograms.fill("Matched_DR_J1L3", "Matched_DR_J1L3", 100, 0, 8, deltaRJet1Lep3, theWeight);
+      // theHistograms.fill("Matched_DR_J1L4", "Matched_DR_J1L4", 100, 0, 8, deltaRJet1Lep4, theWeight);
+      // theHistograms.fill("Matched_DR_J2L1", "Matched_DR_J2L1", 100, 0, 8, deltaRJet2Lep1, theWeight);
+      // theHistograms.fill("Matched_DR_J2L2", "Matched_DR_J2L2", 100, 0, 8, deltaRJet2Lep2, theWeight);
+      // theHistograms.fill("Matched_DR_J2L3", "Matched_DR_J2L3", 100, 0, 8, deltaRJet2Lep3, theWeight);
+      // theHistograms.fill("Matched_DR_J2L4", "Matched_DR_J2L4", 100, 0, 8, deltaRJet2Lep4, theWeight);
       
     }
 
