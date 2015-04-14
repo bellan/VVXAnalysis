@@ -153,7 +153,6 @@ public:
   Int_t    run       ; TBranch *b_run;
   Int_t    lumiBlock ; TBranch *b_lumiBlock;
   Int_t    nvtx      ; TBranch *b_nvtx;
-  Double_t rho       ; TBranch *b_rho;
   
 		      TBranch *b_puweight;
   		      TBranch *b_mcprocweight;
@@ -184,25 +183,14 @@ public:
   std::vector<phys::Jet> *centralJets;
 
   // Bosons Candidate
-  std::vector<phys::Boson<phys::Lepton> >   *ZmmCand; TBranch *b_ZmmCand;
-  std::vector<phys::Boson<phys::Electron> > *ZeeCand; TBranch *b_ZeeCand;
-  std::vector<phys::Boson<phys::Jet> >      *WjjCand; TBranch *b_WjjCand;
+  std::vector<phys::Boson<phys::Lepton> >   *ZCand   ; TBranch *b_ZCand;
+  std::vector<phys::Boson<phys::Jet> >      *VhadCand; TBranch *b_VhadCand;
   
   // Bosons (Not in the tree)
-  std::vector<phys::Boson<phys::Lepton> >   *Zmm;
-  std::vector<phys::Boson<phys::Electron> > *Zee;
-  std::vector<phys::Boson<phys::Jet> >      *Wjj;
+  std::vector<phys::Boson<phys::Jet> >      *Vhad;
 
-  // DiBosons
-  std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   >  *ZZ4m  ; TBranch *b_ZZ4m; 
-  std::vector<phys::DiBoson<phys::Electron, phys::Electron> >  *ZZ4e  ; TBranch *b_ZZ4e;  
-  std::vector<phys::DiBoson<phys::Electron, phys::Lepton>   >  *ZZ2e2m; TBranch *b_ZZ2e2m;
-
-  // Zll --> for CR
-  std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton>   >  *Zll  ; TBranch *b_Zll; 
-
-  // DiBoson (Not in the tree)
-  phys::DiBoson<phys::Lepton  , phys::Lepton> *ZZ;
+  // DiBoson, if in SR, or Z+ll if in CR
+  phys::DiBoson<phys::Lepton  , phys::Lepton> *ZZ; TBranch *b_ZZ;
 
   // GenParticle 
   std::vector<phys::Particle>               *genParticles;   TBranch *b_genParticles;
