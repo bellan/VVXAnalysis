@@ -33,6 +33,8 @@ class TTree;
 namespace pat{class Jet;}
 class MCHistoryTools;
 class JetCorrectionUncertainty;
+//class JetCorrectorParameters;
+//class SimpleJetResolution;
 
 class TreePlanter: public edm::EDAnalyzer {
   
@@ -78,13 +80,11 @@ class TreePlanter: public edm::EDAnalyzer {
 
 
   template<typename T1, typename T2>
-    phys::DiBoson<phys::Lepton,phys::Lepton> fillDiBoson(Channel channel, const pat::CompositeCandidate& edmDiBosons) const;
+    phys::DiBoson<phys::Lepton,phys::Lepton> fillDiBoson(const pat::CompositeCandidate& edmDiBosons) const;
 
   std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > fillDiBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const;
 
-  std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > fillZll(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const;
-
-  int computeCRFlag(Channel channel, const pat::CompositeCandidate & vv) const;
+  int computeRegionFlag(const pat::CompositeCandidate & vv) const;
 
  private:
   struct MinPairComparator{
@@ -105,6 +105,8 @@ class TreePlanter: public edm::EDAnalyzer {
   // To get Lepton efficiency scale factors. Temporary here!
   LeptonScaleFactors leptonScaleFactors_;
   Int_t signalDefinition_;
+  //JetCorrectorParameters *jetCorrectorParameters_;
+  //SimpleJetResolution    *jetResolution_;
 
   // ------------------- Event info in the tree ------------------- //
   Int_t event_;
@@ -140,9 +142,6 @@ class TreePlanter: public edm::EDAnalyzer {
   // jets which do not contains leptons from ZZ or other good isolated leptons
   std::vector<phys::Jet>                    jets_;
 
-  // Z --> ll
-  std::vector<phys::Boson<phys::Lepton>   > Z_;
-
   // V --> jj, with V = W,Z
   std::vector<phys::Boson<phys::Jet>      > Vhad_;
 
@@ -157,10 +156,8 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::InputTag theMuonLabel;
   edm::InputTag theElectronLabel;
   edm::InputTag theJetLabel;
-  edm::InputTag theZLabel;
   edm::InputTag theVhadLabel;
   edm::InputTag theZZLabel;
-  edm::InputTag theZllLabel;
   edm::InputTag theMETLabel;
   edm::InputTag theVertexLabel;
   edm::InputTag thePUInfoLabel;
@@ -192,6 +189,7 @@ class TreePlanter: public edm::EDAnalyzer {
   Int_t theNumberOfAnalyzedEvents;
   Int_t eventsInEtaAcceptance_;
   Int_t eventsInEtaPtAcceptance_;
+  Int_t eventsInSR_;
   Int_t eventsIn2P2FCR_;
   Int_t eventsIn3P1FCR_;
 
