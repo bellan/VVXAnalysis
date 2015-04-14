@@ -102,7 +102,7 @@ class TreePlanter: public edm::EDAnalyzer {
   LeptonScaleFactors leptonScaleFactors_;
   Int_t signalDefinition_;
   JetCorrectorParameters *jetCorrectorParameters_;
-  SimpleJetResolution    *jetResolution_;
+  SimpleJetResolution    *JER_;
 
   // ------------------- Event info in the tree ------------------- //
   Int_t event_;
