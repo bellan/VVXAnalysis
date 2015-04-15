@@ -29,6 +29,16 @@ class Histogrammer{
   
   ~Histogrammer(){}
 
+  TH1 *GetHisto(std::string name){
+   TH1map::iterator f = thePlots.find(name);
+    if(f != thePlots.end()) return dynamic_cast<TH1*>(f->second); 
+    else{
+      std::cout<<"ERROR: Histogram "<<name.c_str()<<" not found"<<std::endl;
+      return nullptr;
+    }
+  }
+
+
   // Methods for 1D histograms
   template<typename H>
     TH1* book(const std::string& name, const std::string& title, int bins, const double& min, const double& max){

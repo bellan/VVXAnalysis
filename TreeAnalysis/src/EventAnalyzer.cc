@@ -18,7 +18,7 @@
 #include <TH1I.h>
 #include <TString.h>
 
-#include <algorithm> 
+#include <algorithm>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
@@ -237,9 +237,10 @@ void EventAnalyzer::loop(const std::string outputfile){
 
   TFile fout(TString(outputfile),"RECREATE");
   fout.cd(); 
-  theHistograms.write(fout);
 
   end(fout);
+  theHistograms.write(fout);
+
   fout.Close();
   //cout<<"Events in input: " << Green(theInputWeightedEvents)<< endl;
   cout<<"Events passing all cuts: "<< Green(theCutCounter) << endl;
