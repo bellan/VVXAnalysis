@@ -43,6 +43,11 @@ try:
 except NameError:
     XSEC = -1
 
+try:
+    FULL_NOCUTS
+except NameError:
+    FULL_NOCUTS = False
+
 
 
 # Get absolute path
@@ -261,9 +266,9 @@ process.EEMMFiltered = cms.EDFilter("PATCompositeCandidateSelector",
 # Z1MASS_LARGE is used to define the best Z1 candidate, to be aligned with what done for Higgs studies.
 # Z1MASS is then used for the actual cut.
 
-Z1MASS_LARGE  = "daughter(0).mass>40 && daughter(0).mass<120"
-Z1MASS  = "daughter(0).mass>60 && daughter(0).mass<120"
-Z2MASS  = "daughter(1).mass>60 && daughter(1).mass<120"
+CR_Z1MASS_LARGE  = "daughter(0).mass>40 && daughter(0).mass<120"
+CR_Z1MASS  = "daughter(0).mass>60 && daughter(0).mass<120"
+CR_Z2MASS  = "daughter(1).mass>60 && daughter(1).mass<120"
 # Value here below are the ones used for the H->ZZ analysis and here for cross-check for dedicated studies. 
 #Z1MASS  = "daughter(0).mass>40 && daughter(0).mass<120"
 #Z2MASS  = "daughter(1).mass>12 && daughter(1).mass<120"
@@ -281,7 +286,7 @@ PASSD0_OR_PASSD1  = "(" + PASSD0 + "||" + PASSD1 + ")"
 
 # CR Base
 CR_BESTZLLos = (CR_BESTCANDBASE       + "&&" +  
-                Z1MASS_LARGE          + "&&" +  
+                CR_Z1MASS_LARGE       + "&&" +  
                 "userFloat('d0.isBestZ') &&" + 
                 Z2LL_OS               + "&&" +  
                 Z2SIP)
@@ -291,14 +296,14 @@ CR_BESTZLLos = (CR_BESTCANDBASE       + "&&" +
 CR_BESTZLLos_3P1F = (CR_BESTZLLos    + "&&" +  
                      PASSD0_OR_PASSD1)
 
-CR_ZLLosSEL_3P1F  = (CR_BASESEL + "&&" + PASSD0_XOR_PASSD1 + "&&" + Z1MASS + "&&" + Z2MASS)
+CR_ZLLosSEL_3P1F  = (CR_BASESEL + "&&" + PASSD0_XOR_PASSD1 + "&&" + CR_Z1MASS + "&&" + CR_Z2MASS)
 
 
 
 # CR 2P2F
 CR_BESTZLLos_2P2F = (CR_BESTZLLos)
 
-CR_ZLLosSEL_2P2F  = (CR_BASESEL + "&&" + BOTHFAIL + "&&" + Z1MASS + "&&" + Z2MASS)
+CR_ZLLosSEL_2P2F  = (CR_BASESEL + "&&" + BOTHFAIL + "&&" + CR_Z1MASS + "&&" + CR_Z2MASS)
 
 
 process.ZLLCand.bestCandAmong.isBestCRZLLos_3P1F = cms.string(CR_BESTZLLos_3P1F)
@@ -417,7 +422,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      sampleType   = cms.int32(SAMPLE_TYPE),
                                      PD           = cms.string(PD),
                                      skimPaths    = cms.vstring(SkimPaths),
-                                     #SkimRequired = cms.untracked.bool(False),
+                                     SkimRequired = cms.untracked.bool(FULL_NOCUTS),
                                      MCFilterPath = cms.string(MCFILTER),
                                      isMC         = cms.untracked.bool(IsMC),
                                      signalDefinition = cms.int32(SIGNALDEFINITION),

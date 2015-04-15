@@ -215,10 +215,12 @@ class MyBatchManager( BatchManager ):
 
            #FIXME: should check tunes for consistency
        XSEC = xsec
+       FULL_NOCUTS = splitComponents[value].nocuts
+       
        print SAMPLENAME, "parameters:", tune, IsMC, PD, MCFILTER, SUPERMELA_MASS, XSEC
 
        # Read CFG file so that it is customized with the above globals
-       namespace = {'IsMC':IsMC, 'PD':PD, 'MCFILTER':MCFILTER, 'SUPERMELA_MASS':SUPERMELA_MASS, 'SAMPLENAME':SAMPLENAME, 'XSEC':XSEC}
+       namespace = {'IsMC':IsMC, 'PD':PD, 'MCFILTER':MCFILTER, 'SUPERMELA_MASS':SUPERMELA_MASS, 'SAMPLENAME':SAMPLENAME, 'XSEC':XSEC, 'FULL_NOCUTS':FULL_NOCUTS}
        execfile(cfgFileName,namespace)
 #       handle = open(cfgFileName, 'r')
 #       cfo = imp.load_source("pycfg", cfgFileName, handle)
@@ -300,7 +302,7 @@ class MyBatchManager( BatchManager ):
 
 class Component(object):
 
-    def __init__(self, name, user, dataset, pattern, splitFactor, tune, xsec, setup, pdfstep ):
+    def __init__(self, name, user, dataset, pattern, splitFactor, tune, xsec, setup, pdfstep, nocuts ):
         self.name = name
         print "checking "+self.name
         self.source = datasetToSource( user, dataset, pattern) # , True for readCache (?)
@@ -313,6 +315,7 @@ class Component(object):
         if self.pdfstep <0 or self.pdfstep>2:
             print "Unknown PDF step", pdfstep
             sys.exit(1)
+        self.nocuts = bool(nocuts)
         
       
 if __name__ == '__main__':
@@ -342,7 +345,7 @@ if __name__ == '__main__':
         if settings['execute']:
             pdfstep = batchManager.options_.PDFstep
             if pdfstep == 0 or ((not pdfstep == 0) and settings['pdf']):
-                components.append(Component(sample, settings['user'], settings['dataset'], settings['pattern'], settings['splitLevel'], settings['tune'],settings['crossSection'], setup, pdfstep))
+                components.append(Component(sample, settings['user'], settings['dataset'], settings['pattern'], settings['splitLevel'], settings['tune'],settings['crossSection'], setup, pdfstep, not bool(settings['pdf']))) #settings['pdf'] used here as full sel, without cuts.
 
     handle.close()
 
