@@ -3,6 +3,7 @@
 #include "VVXAnalysis/TreeAnalysis/interface/ZZWAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZSAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZjAnalyzer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/CrossAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZWSRDefinition.h"
 
 AnalysisFactory::AnalysisFactory(){
@@ -10,7 +11,9 @@ AnalysisFactory::AnalysisFactory(){
   Register("ZZWAnalyzer", &RegistrableAnalysis<ZZWAnalyzer>::create);
   Register("ZZSAnalyzer", &RegistrableAnalysis<ZZSAnalyzer>::create);
   Register("ZZjAnalyzer", &RegistrableAnalysis<ZZjAnalyzer>::create);
+  Register("CrossAnalyzer", &RegistrableAnalysis<CrossAnalyzer>::create);  
   Register("ZZWSRDefinition", &RegistrableAnalysis<ZZWSRDefinition>::create);
+
 }
 
 void AnalysisFactory::Register(const std::string &analysisName, CreateAnFn pfnCreate)
@@ -27,3 +30,4 @@ EventAnalyzer *AnalysisFactory::createAnalysis(const AnalysisConfiguration &anal
  
   return NULL;
 }
+
