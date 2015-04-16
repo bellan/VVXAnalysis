@@ -33,8 +33,8 @@
 #pragma link C++ class  std::vector<phys::DiBoson<phys::Electron, phys::Lepton > >;
 #pragma link C++ class  std::vector<phys::DiBoson<phys::Lepton  , phys::Electron > >;
 #pragma link C++ class  std::vector<phys::DiBoson<phys::Electron, phys::Electron > >;
-
-
+#pragma link C++ class  std::pair<phys::Boson<phys::Lepton>, phys::Lepton>+;
+#pragma link C++ class  std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> >;
 
 
 #endif
