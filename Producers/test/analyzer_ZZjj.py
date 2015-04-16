@@ -93,7 +93,7 @@ process.source.fileNames = cms.untracked.vstring(
 
     )
 
-process.maxEvents.input = -1
+process.maxEvents.input = 1000
 
 # Silence output
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -430,7 +430,8 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      electrons    = cms.InputTag("postCleaningElectrons"), # all good isolated electrons BUT the ones coming from ZZ decay
                                      jets         = cms.InputTag("disambiguatedJets"),     # jets which contains leptons from ZZ or other good isolated leptons are removed
                                      Vhad         = cms.InputTag("VhadCand"),
-                                     ZZ           = cms.InputTag("ZZFiltered"),          # only the best ZZ candidate that pass the FULL selection
+                                     ZZ           = cms.InputTag("ZZFiltered"),            # only the best ZZ candidate that pass the FULL selection
+                                     ZL           = cms.InputTag("ZlCand"),    
                                      MET          = cms.InputTag("cmgPFMET"),
                                      Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
                                      XSection     = cms.untracked.double(XSEC)
