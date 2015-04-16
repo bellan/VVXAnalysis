@@ -44,9 +44,9 @@ except NameError:
     XSEC = -1
 
 try:
-    FULL_NOCUTS
+    SKIM_REQUIRED
 except NameError:
-    FULL_NOCUTS = False
+    SKIM_REQUIRED = True
 
 
 
@@ -330,6 +330,14 @@ process.ZZFiltered = cms.EDProducer("PATCompositeCandidateMergerWithPriority",
                                     priority = cms.vint32(1,1,1,0,0)
                                     )
 
+### Z+L control region
+
+#process.ZlCandFiltered = cms.EDFilter("PATCompositeCandidateSelector",
+#                                      src = cms.InputTag("ZlCand"),
+#                                      cut = cms.string("(daughter(0).daughter(0).pt > 20 && daughter(0).daughter(1).pt > 10) || (daughter(0).daughter(0).pt > 10 && daughter(0).daughter(1).pt > 20)")
+#                                      )
+
+
 ### ------------------------------------------------------------------------- ###
 ### Define the post reconstruction cleaning sequence
 ### ------------------------------------------------------------------------- ###
@@ -340,6 +348,7 @@ process.postRecoCleaning = cms.Sequence( process.MMMMFiltered
                                          + process.ZLLFiltered2P2F
                                          + process.ZLLFiltered3P1F
                                          + process.ZZFiltered
+#                                         + process.ZlCandFiltered
                                          + process.muonsFromZZ*process.postCleaningMuons 
                                          + process.electronsFromZZ*process.postCleaningElectrons
                                          + process.disambiguatedJets
@@ -366,11 +375,14 @@ process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTa
 # Select only events with one such candidate
 process.zzCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZZFiltered"), minNumber = cms.uint32(1))
 
+# Looser preselection: ask only for a at least a Z + 1 soft lepton
+process.zlCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZlCand"), minNumber = cms.uint32(0))
+
 ### Path that pre-select the higher level objects that will input the TreePlanter
 process.preselection = cms.Path( process.prePreselectionCounter
                                  * process.CR
                                  * process.postRecoCleaning 
-                                 * process.zzCounterFilter * process.jetCounterFilter
+                                 * process.zlCounterFilter * process.zzCounterFilter * process.jetCounterFilter
                                  * process.postPreselectionCounter)
 
 
@@ -422,7 +434,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      sampleType   = cms.int32(SAMPLE_TYPE),
                                      PD           = cms.string(PD),
                                      skimPaths    = cms.vstring(SkimPaths),
-                                     SkimRequired = cms.untracked.bool(FULL_NOCUTS),
+                                     SkimRequired = cms.untracked.bool(SKIM_REQUIRED),
                                      MCFilterPath = cms.string(MCFILTER),
                                      isMC         = cms.untracked.bool(IsMC),
                                      signalDefinition = cms.int32(SIGNALDEFINITION),
@@ -431,7 +443,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      jets         = cms.InputTag("disambiguatedJets"),     # jets which contains leptons from ZZ or other good isolated leptons are removed
                                      Vhad         = cms.InputTag("VhadCand"),
                                      ZZ           = cms.InputTag("ZZFiltered"),            # only the best ZZ candidate that pass the FULL selection
-                                     ZL           = cms.InputTag("ZlCand"),    
+                                     ZL           = cms.InputTag("ZlCand"),
                                      MET          = cms.InputTag("cmgPFMET"),
                                      Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
                                      XSection     = cms.untracked.double(XSEC)
