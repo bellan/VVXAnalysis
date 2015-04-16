@@ -413,6 +413,9 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   // The bosons have NOT any requirement on the quality of their daughters, only the flag is set (because of the same code is usd for CR too)
   std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > ZZs = fillDiBosons(ZZ);
 
+  // Fill Z+l pairs for fake rate measurements
+  ZL_ = fillZLCandidates(ZL);
+
   if(ZZ->size() > 1) {
     cout << "----------------------------------------------------" << endl;
     cout << "More than one ZZ candidate!! " << ZZ->size() << endl;  
@@ -432,9 +435,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
     cout << "----------------------------------------------------" << endl;
   }
   if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();     
-  else if(applySkim_) return;
-
-  ZL_ = fillZLCandidates(ZL);
+  else if(ZL_.empty() && applySkim_) return;
 
   theTree->Fill();
 }
