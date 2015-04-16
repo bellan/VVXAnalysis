@@ -215,12 +215,12 @@ class MyBatchManager( BatchManager ):
 
            #FIXME: should check tunes for consistency
        XSEC = xsec
-       FULL_NOCUTS = splitComponents[value].nocuts
+       SKIM_REQUIRED = splitComponents[value].doskim
        
        print SAMPLENAME, "parameters:", tune, IsMC, PD, MCFILTER, SUPERMELA_MASS, XSEC
 
        # Read CFG file so that it is customized with the above globals
-       namespace = {'IsMC':IsMC, 'PD':PD, 'MCFILTER':MCFILTER, 'SUPERMELA_MASS':SUPERMELA_MASS, 'SAMPLENAME':SAMPLENAME, 'XSEC':XSEC, 'FULL_NOCUTS':FULL_NOCUTS}
+       namespace = {'IsMC':IsMC, 'PD':PD, 'MCFILTER':MCFILTER, 'SUPERMELA_MASS':SUPERMELA_MASS, 'SAMPLENAME':SAMPLENAME, 'XSEC':XSEC, 'SKIM_REQUIRED':SKIM_REQUIRED}
        execfile(cfgFileName,namespace)
 #       handle = open(cfgFileName, 'r')
 #       cfo = imp.load_source("pycfg", cfgFileName, handle)
@@ -302,7 +302,7 @@ class MyBatchManager( BatchManager ):
 
 class Component(object):
 
-    def __init__(self, name, user, dataset, pattern, splitFactor, tune, xsec, setup, pdfstep, nocuts ):
+    def __init__(self, name, user, dataset, pattern, splitFactor, tune, xsec, setup, pdfstep, doskim ):
         self.name = name
         print "checking "+self.name
         self.source = datasetToSource( user, dataset, pattern) # , True for readCache (?)
@@ -315,7 +315,7 @@ class Component(object):
         if self.pdfstep <0 or self.pdfstep>2:
             print "Unknown PDF step", pdfstep
             sys.exit(1)
-        self.nocuts = bool(nocuts)
+        self.doskim = bool(doskim)
         
       
 if __name__ == '__main__':
