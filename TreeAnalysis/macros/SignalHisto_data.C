@@ -95,7 +95,7 @@ void SignalHisto_data(string finalstate = "4m")
  
 }
 
-void MakeAllFinalState(){
+void MakeAllFinalStates(){
   SignalHisto_data("4m");
   SignalHisto_data("4e");
   SignalHisto_data("2e2m"); 
