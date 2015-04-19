@@ -24,7 +24,7 @@ public:
   
   virtual ~ZZMCAnalyzer(){}
 
-  void ZZplots(int id = -1);
+  void ZZplots(std::string decay);
 
   virtual void analyze();
 
