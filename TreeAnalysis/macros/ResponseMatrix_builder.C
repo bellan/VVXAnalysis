@@ -36,21 +36,20 @@ void ResponseMatrix_builder(string dataset = "01", string finalstate = "4l", int
 
   TFile *output = new TFile("output.root", "UPDATE");
  
-
-  //Reco samples (signal region distributions) //ZZRecoAnalyzer not yet done
+  //Reco samples (response matrices and signal region distributions) //ZZRecoAnalyzer not yet done
   TFile *ggZZTo2e2mu_r = new TFile("../results/ZZRecoAnalyzer_SR/ggTo2e2mu_SMHContinInterf-MCFM67_H125.6.root");
   TFile *ggZZTo4e_r = new TFile("../results/ZZRecoAnalyzer_SR/ggTo4e_SMHContinInterf-MCFM67_H125.6.root");
   TFile *ggZZTo4mu_r = new TFile("../results/ZZRecoAnalyzer_SR/ggTo4mu_SMHContinInterf-MCFM67_H125.6.root");
   TFile *ZZJetsTo4l_r = new TFile("../results/ZZRecoAnalyzer_SR/ZZJetsTo4L.root");
   
-  //Truth samples (response matrices and signal definition distributions) 
-  TFile *ggZZTo2e2mu_g = new TFile("../results/ZZMCAnalyzer_SR/ggTo2e2mu_SMHContinInterf-MCFM67_H125.6.root");
-  TFile *ggZZTo4e_g = new TFile("../results/ZZMCAnalyzer_SR/ggTo4e_SMHContinInterf-MCFM67_H125.6.root");
-  TFile *ggZZTo4mu_g = new TFile("../results/ZZMCAnalyzer_SR/ggTo4mu_SMHContinInterf-MCFM67_H125.6.root");
-  TFile *ZZJetsTo4l_g = new TFile("../results/ZZMCAnalyzer_SR/ZZJetsTo4L.root");
+  //Truth samples (signal definition distributions) 
+  TFile *ggZZTo2e2mu_g = new TFile("../results/ZZMCAnalyzer_MC/ggTo2e2mu_SMHContinInterf-MCFM67_H125.6.root");
+  TFile *ggZZTo4e_g = new TFile("../results/ZZMCAnalyzer_MC/ggTo4e_SMHContinInterf-MCFM67_H125.6.root");
+  TFile *ggZZTo4mu_g = new TFile("../results/ZZMCAnalyzer_MC/ggTo4mu_SMHContinInterf-MCFM67_H125.6.root");
+  TFile *ZZJetsTo4l_g = new TFile("../results/ZZMCAnalyzer_MC/ZZJetsTo4L.root");
   
   //rescue file
-  TFile *rescue = new TFile("../results/ZZMCAnalyzer_SR/tt.root");
+  TFile *rescue = new TFile("../results/ZZRecoAnalyzer_SR/tt.root");
 
   TH2 * h_Resmat;
   TH2 * h_Resmat_4l;
@@ -84,7 +83,7 @@ void ResponseMatrix_builder(string dataset = "01", string finalstate = "4l", int
   h_safe_tmp = (TH1*) rescue->Get(safeHistoName.c_str()); 
   h_Resmat_safe = (TH2*)h_Resmat_safe_tmp->Clone(safeMatrixName.c_str()); 
   h_safe = (TH1*)h_safe_tmp->Clone(safeHistoName.c_str());
- 
+
   for(int k=1; k<10; k++){
     for(int l=1; l<10; l++){
       h_safe->SetBinContent(l,0.); 
@@ -100,10 +99,10 @@ void ResponseMatrix_builder(string dataset = "01", string finalstate = "4l", int
   string histoName_reco = "ZZTo" + finalstate + "_Mass_" +dataset;
   string histoName_gen =  "ZZTo" + finalstate + "_MassGen_" +dataset;
 
-  h_Resmat_gg4mu = (TH2*) ggZZTo4mu_g->Get(matrixName.c_str()); 
-  h_Resmat_gg4e = (TH2*) ggZZTo4e_g->Get(matrixName.c_str()); 
-  h_Resmat_gg2e2mu = (TH2*) ggZZTo2e2mu_g->Get(matrixName.c_str()); 
-  h_Resmat_4l = (TH2*) ZZJetsTo4l_g->Get(matrixName.c_str());
+  h_Resmat_gg4mu = (TH2*) ggZZTo4mu_r->Get(matrixName.c_str()); 
+  h_Resmat_gg4e = (TH2*) ggZZTo4e_r->Get(matrixName.c_str()); 
+  h_Resmat_gg2e2mu = (TH2*) ggZZTo2e2mu_r->Get(matrixName.c_str()); 
+  h_Resmat_4l = (TH2*) ZZJetsTo4l_r->Get(matrixName.c_str());
 
   h_gg4mu = (TH1*) ggZZTo4mu_r->Get(histoName_reco.c_str()); 
   h_gg4e = (TH1*) ggZZTo4e_r->Get(histoName_reco.c_str()); 
@@ -239,7 +238,7 @@ void BuildAllMatrices(string dataset = "01"){
   
   for(int i=-1; i<2; i++){
     for(int j=-1; j<2; j++){
-      ResponseMatrix_builder(dataset.c_str(),"4l", i, j);
+      //ResponseMatrix_builder(dataset.c_str(),"4l", i, j);
       ResponseMatrix_builder(dataset.c_str(),"4m", i, j);
       ResponseMatrix_builder(dataset.c_str(),"4e", i, j);
       ResponseMatrix_builder(dataset.c_str(),"2e2m", i, j);

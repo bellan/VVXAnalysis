@@ -16,13 +16,13 @@ void SignalHisto_data(string finalstate = "4m")
   
   TFile *output = new TFile("DataToUnfold.root", "UPDATE");
   //Data (ZZRecoAnalyzer not yet done FIXME)
-  TFile *data = new TFile("/afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/results/ZZRecoAnalyzer_SR/data.root");
+  TFile *data = new TFile("../results/ZZRecoAnalyzer_SR/data.root");
   //reducible background
-  TFile *red = new TFile("/afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/results/ZZRecoAnalyzer_CR/data.root"); 
+  TFile *red = new TFile("../results/ZZRecoAnalyzer_CR/data.root"); 
   //irreducible backgrounds
-  TFile *ttZ = new TFile("/afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/results/ZZRecoAnalyzer_SR/TTZJets.root");
-  TFile *ttWW = new TFile("/afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/results/ZZRecoAnalyzer_SR/TTWWJets.root");
-  TFile *WWZ = new TFile("/afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/results/ZZRecoAnalyzer_SR/WWZJets.root");
+  TFile *ttZ = new TFile("../results/ZZRecoAnalyzer_SR/TTZJets.root");
+  TFile *ttWW = new TFile("../results/ZZRecoAnalyzer_SR/TTWWJets.root");
+  TFile *WWZ = new TFile("../results/ZZRecoAnalyzer_SR/WWZJets.root");
   
   TH1 * h_data;
   TH1 * h_totdata;
