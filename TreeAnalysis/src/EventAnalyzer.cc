@@ -18,6 +18,8 @@
 #include <TH1I.h>
 #include <TString.h>
 
+#include <algorithm>
+
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
