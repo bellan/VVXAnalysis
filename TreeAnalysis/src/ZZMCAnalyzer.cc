@@ -19,30 +19,28 @@ using std::endl;
 
 using namespace phys;
 
-void ZZMCAnalyzer::ZZplots(int id){
+void ZZMCAnalyzer::ZZplots(string decay){
 
-  if(ZZ->id() != id && id != -1) return; // -1 here means generic 4l final state
-
-  string decay  = "4l";
-  string sample = "01";
-
-  if      (id == 52) {decay = "4m";}
-  else if (id == 48) {decay = "2e2m";}
-  else if (id == 44) {decay = "4e";}
-
-  // if(e < nentries/2) {sample = "0";} 
-  // else {sample = "1";}
+ if(decay == "None"){
+   std::cout<<"Check decay channel"<<std::endl;
+   return;
+ }
+ 
+ string sample = "01";
+ 
+ // if(e < nentries/2) {sample = "0";} 
+ // else {sample = "1";}
 
   m4L_gen = sqrt((genVBParticles->at(0).p4()+genVBParticles->at(1).p4())*(genVBParticles->at(0).p4()+genVBParticles->at(1).p4()));
   
   Int_t njets = genJets->size();
   if (njets>3) njets=3;
   
-  theHistograms.fill(std::string("ZZAllTo")+decay+"_JetsGen", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,3,njets,theWeight);  
+  theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,3,njets,theWeight);  
   theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theWeight);
   
   if(passSkim) {
-    theHistograms.fill(std::string("ZZAllTo")+decay+"_JetsGenReco", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,3,njets,theWeight);  
+    theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenReco_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,3,njets,theWeight);  
     theHistograms.fill(std::string("ZZTo")+decay+"_MassGenReco_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay+"of reco events" , Xbins, m4L_gen,theWeight);    
   }
 }
@@ -53,12 +51,24 @@ void ZZMCAnalyzer::analyze(){
   //cout << "n event: " << e << endl;
   nentries =  tree()->GetEntries();
 
-  if(topology.test(0)){
-    ZZplots();   // ZZ --> 4l
-    ZZplots(52); // ZZ --> 4m
-    ZZplots(48); // ZZ --> 2e2m
-    ZZplots(44); // ZZ --> 4e
-  }
+    bool Ele  = 0;
+    bool Muon = 0;
+    // std::cout<<"\n";
+    foreach(const phys::Particle &gen, *genParticles)
+    
+      if(abs(gen.id())==13) Muon = 1;
+      else if(abs(gen.id())==11) Ele = 1; 
+     
+    std::string decay="None";
+    
+    if(Ele&Muon)       {decay = "2e2m";} 
+    else if(!Ele&Muon) {decay = "4m";}    
+    else if(Ele&!Muon) {decay = "4e";}   
+    else std::cout<<"NO FINALSTATE"<<std::endl;
+   
+      if(topology.test(0)){
+	ZZplots(decay);
+      }
 }
 
 
