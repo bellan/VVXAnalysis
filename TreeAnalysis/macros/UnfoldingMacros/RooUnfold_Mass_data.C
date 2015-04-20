@@ -25,7 +25,7 @@ void RooUnfold_Mass_data(string finalstate = "4e", string matrix = "4e", bool ba
 {
   
 #ifdef __CINT__
-  gSystem->Load("libRooUnfold");
+  gSystem->Load("../RooUnfold-1.1.1/libRooUnfold");
 #endif 
   
   gROOT->SetStyle("Plain");  
