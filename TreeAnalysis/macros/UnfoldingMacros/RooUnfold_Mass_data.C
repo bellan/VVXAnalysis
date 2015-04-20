@@ -112,9 +112,9 @@ void RooUnfold_Mass_data(string finalstate = "4e", string matrix = "4e", bool ba
   leg->AddEntry(h_measured_unf,"reco distribution","l"); 
   leg->Draw("SAME");
 
-  string UnfHistoName = "ZZTo"+ finalstate +"_Mass";
-  string HistoName = "ZZTo"+ finalstate +"_Mass_RECO_MC";
-  string TrueHistoName = "ZZTo"+ finalstate +"_Mass_GEN";
+  string UnfHistoName = "ZZTo"+ finalstate +"_Mass_01";
+  string HistoName = "ZZTo"+ finalstate +"_Mass_RECO_MC_01";
+  string TrueHistoName = "ZZTo"+ finalstate +"_Mass_GEN_01";
   
   output->cd();   
   hReco->Write(UnfHistoName.c_str());
