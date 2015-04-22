@@ -44,7 +44,7 @@ void RooUnfold_Mass_data(string finalstate = "4e", string matrix = "4e", bool ba
   
   // TFile *file = new TFile("/afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/output.root");
   // TFile *data = new TFile("/afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/DataToUnfold.root");
-  TFile *file = new TFile("../output.root");
+  TFile *file = new TFile("../matrices.root");
   TFile *data = new TFile("../DataToUnfold.root");
   TFile *output = new TFile("testUnfoldData.root", "UPDATE");
  
