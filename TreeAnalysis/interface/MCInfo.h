@@ -75,6 +75,7 @@ class MCInfo {
   int eventsInEtaAcceptance_;
   int eventsInEtaPtAcceptance_;
 
+  int eventsInSR_;
   int eventsIn2P2FCR_;
   int eventsIn3P1FCR_;
 };

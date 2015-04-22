@@ -29,6 +29,7 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   , postSkimSignalEvents_(0)
   , eventsInEtaAcceptance_(0)
   , eventsInEtaPtAcceptance_(0)
+  , eventsInSR_(0)
   , eventsIn2P2FCR_(0)
   , eventsIn3P1FCR_(0)
 {
@@ -38,12 +39,15 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
 
   if (tree == 0) return;
 
-  TBranch *b_eventsIn2P2FCR   = 0;
-  TBranch *b_eventsIn3P1FCR   = 0;
+  TBranch *b_eventsInSR     = 0;
+  TBranch *b_eventsIn2P2FCR = 0;
+  TBranch *b_eventsIn3P1FCR = 0;
 
+  tree->SetBranchAddress("eventsInSR"    , &eventsInSR_    , &b_eventsInSR);
   tree->SetBranchAddress("eventsIn2P2FCR", &eventsIn2P2FCR_, &b_eventsIn2P2FCR);
   tree->SetBranchAddress("eventsIn3P1FCR", &eventsIn3P1FCR_, &b_eventsIn3P1FCR);
 
+  int totalEventsInSR = 0;
   int totalEventsIn2P2FCR = 0;
   int totalEventsIn3P1FCR = 0;
 
@@ -52,10 +56,12 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   for (Long64_t jentry=0; jentry<nentries; ++jentry){
     tree->LoadTree(jentry); tree->GetEntry(jentry);
 
+    totalEventsInSR     += eventsInSR_;
     totalEventsIn2P2FCR += eventsIn2P2FCR_;
     totalEventsIn3P1FCR += eventsIn3P1FCR_;
   }
 
+  eventsInSR_ = totalEventsInSR;
   eventsIn2P2FCR_ = totalEventsIn2P2FCR;
   eventsIn3P1FCR_ = totalEventsIn3P1FCR;
 
