@@ -39,6 +39,10 @@ class MCInfo {
 
   int    signalDefinition()           const {return signalDefinition_;}
 
+  int eventsInSR()     const {return eventsInSR_;}
+  int eventsIn2P2FCR() const {return eventsIn2P2FCR_;}
+  int eventsIn3P1FCR() const {return eventsIn3P1FCR_;}
+
  private:
   friend class EventAnalyzer;
   
