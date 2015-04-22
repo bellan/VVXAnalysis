@@ -88,6 +88,9 @@ void EventAnalyzer::Init(TTree *tree)
   // DiBoson, if in SR, or Z+ll if in CR
   ZZ   = new phys::DiBoson<phys::Lepton, phys::Lepton>(); b_ZZ   = 0; theTree->SetBranchAddress("ZZCand"  , &ZZ  , &b_ZZ  );
 
+  // Z+L 
+  ZLCand = new ZLCompositeCandidates()    ; ZLCand = 0; b_ZLCand = 0; theTree->SetBranchAddress("ZLCand", &ZLCand, &b_ZLCand);
+
 
   // Gen Particles   
   genParticles   = 0;                                                b_genParticles   = 0; theTree->SetBranchAddress("genParticles"  , &genParticles  , &b_genParticles);
@@ -167,6 +170,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
 
   stable_sort(Vhad->begin(), Vhad->end(), phys::PtComparator());
   
+
   if(region_ == phys::MC) ZZ = new phys::DiBoson<phys::Lepton, phys::Lepton>();
   
   // Check if the request on region tye matches with the categorization of the event
@@ -190,7 +194,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   
   theInputWeightedEvents += theWeight;
 
-     topology = std::bitset<16>(genCategory);
+  topology = std::bitset<16>(genCategory);
 
 
   return e;

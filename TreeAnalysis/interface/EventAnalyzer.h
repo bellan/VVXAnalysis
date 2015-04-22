@@ -58,6 +58,8 @@ class EventAnalyzer {
 public:
   
   enum METType {Std,NoMu,NoEl};
+  typedef std::pair<phys::Boson<phys::Lepton>, phys::Lepton> ZLCompositeCandidate;
+  typedef std::vector<ZLCompositeCandidate> ZLCompositeCandidates;
 
   EventAnalyzer(SelectorBase& aSelector, const AnalysisConfiguration& configuration);
 
@@ -183,7 +185,6 @@ public:
   std::vector<phys::Jet> *centralJets;
 
   // Bosons Candidate
-  std::vector<phys::Boson<phys::Lepton> >   *ZCand   ; TBranch *b_ZCand;
   std::vector<phys::Boson<phys::Jet> >      *VhadCand; TBranch *b_VhadCand;
   
   // Bosons (Not in the tree)
@@ -191,6 +192,10 @@ public:
 
   // DiBoson, if in SR, or Z+ll if in CR
   phys::DiBoson<phys::Lepton  , phys::Lepton> *ZZ; TBranch *b_ZZ;
+
+  // Z+L 
+  ZLCompositeCandidates *ZLCand; TBranch *b_ZLCand;
+
 
   // GenParticle 
   std::vector<phys::Particle>               *genParticles;   TBranch *b_genParticles;
