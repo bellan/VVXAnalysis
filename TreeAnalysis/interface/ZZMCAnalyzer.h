@@ -1,14 +1,7 @@
 #ifndef ZZMCAnalyzer_h
 #define ZZMCAnalyzer_h
 
-/** \class ZZMCAnalyzer
- *  Concrete class for ZZMC analysis
- *
- *  $Date: 2013/03/15 13:37:31 $
- *  $Revision: 1.4 $
- *  \author R. Bellan - UNITO <riccardo.bellan@cern.ch>
- */
-
+//Analyzer for MC puropose. Generate plots for MC CrossSection and Acceptance
 
 #include "EventAnalyzer.h"
 #include "RegistrableAnalysis.h"
@@ -32,17 +25,17 @@ public:
 
   virtual void end( TFile &);
 
-  Long64_t nentries = 0;
-  float m4L_gen = 0;
-  int e =0;
- 
+  Long64_t nentries;
+  float m4L_gen;
+  int PreCounter;
+
  private:
 
   friend class Selector<ZZMCAnalyzer>;
 
   std::vector<double> Xbins; 
   std::vector<double> Ybins; 
- 
+
   template< class PAR >
     bool ZBosonDefinition(phys::Boson<PAR> cand) const{
     return fabs(cand.p4().M() - phys::ZMASS) < 20;

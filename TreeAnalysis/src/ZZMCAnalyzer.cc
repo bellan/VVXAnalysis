@@ -28,7 +28,7 @@ void ZZMCAnalyzer::ZZplots(string decay){
  
  string sample = "01";
  
- // if(e < nentries/2) {sample = "0";} 
+ // if(PreCounter < nentries/2) {sample = "0";} 
  // else {sample = "1";}
 
   m4L_gen = sqrt((genVBParticles->at(0).p4()+genVBParticles->at(1).p4())*(genVBParticles->at(0).p4()+genVBParticles->at(1).p4()));
@@ -36,24 +36,30 @@ void ZZMCAnalyzer::ZZplots(string decay){
   Int_t njets = genJets->size();
   if (njets>3) njets=3;
   
-  theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,3,njets,theWeight);  
+  theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight);  
   theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theWeight);
   
+  theHistograms.fill(std::string("ZZTo")+decay+"_NoWeight_JetsGen_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,1);  
+  theHistograms.fill(std::string("ZZTo")+decay+"_NoWeight_MassGen_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,1);
+  
   if(passSkim) {
-    theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenReco_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,3,njets,theWeight);  
+    theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenReco_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight);  
     theHistograms.fill(std::string("ZZTo")+decay+"_MassGenReco_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay+"of reco events" , Xbins, m4L_gen,theWeight);    
+
+    theHistograms.fill(std::string("ZZTo")+decay+"_NoWeight_JetsGenReco_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight);  
+    theHistograms.fill(std::string("ZZTo")+decay+"_NoWeight_MassGenReco_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay+"of reco events" , Xbins, m4L_gen,1);    
   }
 }
 
 void ZZMCAnalyzer::analyze(){
  
-   e++; 
-  //cout << "n event: " << e << endl;
-  nentries =  tree()->GetEntries();
+  PreCounter+=1;
+
+  if (topology.test(0)){
 
     bool Ele  = 0;
     bool Muon = 0;
-    // std::cout<<"\n";
+ 
     foreach(const phys::Particle &gen, *genParticles)
     
       if(abs(gen.id())==13) Muon = 1;
@@ -66,20 +72,22 @@ void ZZMCAnalyzer::analyze(){
     else if(Ele&!Muon) {decay = "4e";}   
     else std::cout<<"NO FINALSTATE"<<std::endl;
    
-      if(topology.test(0)){
+	ZZplots("4l");
 	ZZplots(decay);
-      }
+  }  
 }
-
 
 void ZZMCAnalyzer::begin() {
 
+  nentries =  tree()->GetEntries();
+  PreCounter = 0;
   Xbins += 100,200,250,300,350,400,500,600,800;
-  m4L_gen =0;
- 
+  m4L_gen = 0;
+
 }
 
 void ZZMCAnalyzer::end( TFile &) {
-  cout <<nentries<< endl;
-  cout << e << endl;
+  cout <<"Tree Entries"<<nentries<< endl;
+  cout <<PreCounter<< endl;
+
 }  
