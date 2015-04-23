@@ -13,13 +13,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 using std::cout;
 using std::endl;
 
-
 using namespace phys;
-
-// Int_t VVXAnalyzer::cut() {
-  
-//   return 1;
-// }
 
 void ZZRecoAnalyzer::ZZplots(int id){
 
@@ -31,31 +25,28 @@ void ZZRecoAnalyzer::ZZplots(int id){
   else if (id == 48) {decay = "2e2m";}
   else if (id == 44) {decay = "4e";}
     
-  theHistograms.fill(std::string("ZZTo")+decay+"_Mass_01" , std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, ZZ->mass(),theWeight);
+
+
+  Int_t njets = jets->size();
+  if (njets>3) njets=3;
   
-  if (topology.test(0)){
-    m4L_gen = sqrt((genVBParticles->at(0).p4()+genVBParticles->at(1).p4())*(genVBParticles->at(0).p4()+genVBParticles->at(1).p4()));
-    theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Mass_01", std::string("Response matrix invariant mass of ZZ_{1}#rightarrow ")+decay, Xbins, Xbins, ZZ->mass() ,m4L_gen , theWeight);
+  theHistograms.fill(std::string("ZZTo")+decay+"_Jets_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight);  
+  theHistograms.fill(std::string("ZZTo")+decay+"_Mass_01", std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, ZZ->mass(),theWeight);
+  
+  if(region_ == phys::CR3P1F || region_ == phys::CR2P2F) {
+  theHistograms.fill(std::string("ZZTo")+decay+"_Mass"+"_FRVar", std::string("Var From FR Invariant mass of ZZ_{1}#rightarrow ")+decay, Xbins, ZZ->mass(),ZZ->fakeRateSFVar());
+  theHistograms.fill(std::string("ZZTo")+decay+"_Jets"+"_FRVar", std::string("Var From FR Invariant mass of ZZ_{1}#rightarrow ")+decay ,4,0,4,njets,ZZ->fakeRateSFVar());
   }
-  
- theHistograms.fill(std::string("ZZTo")+decay+"_Mass"+"_FRVar", std::string("Var From FR Invariant mass of ZZ_{1}#rightarrow ")+decay, Xbins, ZZ->mass(),ZZ->fakeRateSFVar());
-
- 
-
 }
 
 
 void ZZRecoAnalyzer::analyze(){
-
+  
   ZZplots();   // ZZ --> 4l
   ZZplots(52); // ZZ --> 4m
   ZZplots(48); // ZZ --> 2e2m
   ZZplots(44); // ZZ --> 4e
-  
-  if (topology.test(0)) theHistograms.fill("PassDef", "Number of events passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight);
-
-  else theHistograms.fill("NoPassDef", "Number of events not passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight);
-
+ 
 }
 
 
@@ -63,6 +54,7 @@ void ZZRecoAnalyzer::begin() {
 
   Xbins += 100,200,250,300,350,400,500,600,800;
   m4L_gen =0;
+
 }
 
 void ZZRecoAnalyzer::end( TFile &) {
