@@ -31,7 +31,7 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
   
   virtual void end( TFile &);
   
-  float m4L_gen =0;
+  float m4L_gen;
   
  private:
   

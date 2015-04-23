@@ -32,9 +32,9 @@ public:
 
   virtual void end( TFile &);
 
-  Long64_t nentries = 0;
-  float m4L_gen = 0;
-  int e =0;
+  Long64_t nentries;
+  float m4L_gen;
+  int e;
  
  private:
 
