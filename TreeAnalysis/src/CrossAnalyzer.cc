@@ -68,10 +68,10 @@ void CrossAnalyzer::end( TFile &) {
   for (std::vector<std::string>::iterator it = FinalState.begin() ; it != FinalState.end(); ++it){
     
     TH1 *hvar =  new TH1F();
-    hvar =  theHistograms.GetHisto(("ZZTo"+*it+"_Mass_FRVar").c_str());
+    hvar =  theHistograms.get(("ZZTo"+*it+"_Mass_FRVar").c_str());
     
     TH1 *h =  new TH1F();
-    h =  theHistograms.GetHisto(("ZZTo"+*it+"_Mass").c_str());
+    h =  theHistograms.get(("ZZTo"+*it+"_Mass").c_str());
     
     if(!h) continue;
     for(int i = 1; i<=h->GetNbinsX();i++){
