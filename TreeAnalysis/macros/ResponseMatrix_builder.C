@@ -34,7 +34,7 @@ void ResponseMatrix_builder(string dataset = "01", string finalstate = "4l", int
   
   gStyle->SetOptStat(0);
 
-  TFile *output = new TFile("output.root", "UPDATE");
+  TFile *output = new TFile("matrices.root", "UPDATE");
  
   //Reco samples (response matrices and signal region distributions) //ZZRecoAnalyzer not yet done
   TFile *ggZZTo2e2mu_r = new TFile("../results/ZZRecoAnalyzer_SR/ggTo2e2mu_SMHContinInterf-MCFM67_H125.6.root");
