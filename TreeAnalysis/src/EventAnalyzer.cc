@@ -89,7 +89,7 @@ void EventAnalyzer::Init(TTree *tree)
   ZZ   = new phys::DiBoson<phys::Lepton, phys::Lepton>(); b_ZZ   = 0; theTree->SetBranchAddress("ZZCand"  , &ZZ  , &b_ZZ  );
 
   // Z+L 
-  ZLCand = new ZLCompositeCandidates()    ; ZLCand = 0; b_ZLCand = 0; theTree->SetBranchAddress("ZLCand", &ZLCand, &b_ZLCand);
+  ZL = new ZLCompositeCandidates()    ; ZLCand = 0; b_ZLCand = 0; theTree->SetBranchAddress("ZLCand", &ZLCand, &b_ZLCand);
 
 
   // Gen Particles   
@@ -170,11 +170,21 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
 
   stable_sort(Vhad->begin(), Vhad->end(), phys::PtComparator());
   
+  ZL->clear();
+  foreach(const ZLCompositeCandidate& zl, *ZLCand)
+    if(fabs(zl.first.mass()-phys::ZMASS) < 10 && zl.second.sip() < 4)
+      ZL->push_back(zl);
 
-  if(region_ == phys::MC) ZZ = new phys::DiBoson<phys::Lepton, phys::Lepton>();
-  
+  if(region_ == phys::MC){
+    if(!ZZ->isValid()){
+      if(ZZ) delete ZZ;
+      ZZ = new phys::DiBoson<phys::Lepton, phys::Lepton>();
+    }
+  }  
+
+
   // Check if the request on region tye matches with the categorization of the event
-  std::bitset<128> regionWord = std::bitset<128>(ZZ->region());
+  regionWord = std::bitset<128>(ZZ->region());
   // check bits accordingly to ZZAnalysis/AnalysisStep/interface/FinalStates.h
   if(region_  == phys::SR                                     && !regionWord.test(3))  return 0;
   if((region_ == phys::CR2P2F || region_ == phys::CR2P2F_HZZ) && !regionWord.test(22)) return 0;

@@ -165,6 +165,7 @@ public:
   Bool_t  passSkim   ; TBranch *b_passSkim;
   Short_t triggerWord; TBranch *b_triggerWord;
   
+  std::bitset<128> regionWord;
 
   //MET
   phys::Particle *met   ; TBranch *b_met;
@@ -195,6 +196,9 @@ public:
 
   // Z+L 
   ZLCompositeCandidates *ZLCand; TBranch *b_ZLCand;
+
+  // Z+L  (Not in the tree)
+  ZLCompositeCandidates *ZL;
 
 
   // GenParticle 
