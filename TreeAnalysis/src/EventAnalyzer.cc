@@ -172,7 +172,9 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   
   ZL->clear();
   foreach(const ZLCompositeCandidate& zl, *ZLCand)
-    if(fabs(zl.first.mass()-phys::ZMASS) < 10 && zl.second.sip() < 4)
+    if( ((zl.first.daughter(0).pt() > 20 && zl.first.daughter(0).pt() > 10) ||
+	 (zl.first.daughter(0).pt() > 10 && zl.first.daughter(0).pt() > 20)) &&
+	fabs(zl.first.mass()-phys::ZMASS) < 10 && zl.second.sip() < 4)
       ZL->push_back(zl);
 
   if(region_ == phys::MC){
@@ -181,7 +183,8 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
       ZZ = new phys::DiBoson<phys::Lepton, phys::Lepton>();
     }
   }  
-
+  
+  addOptions();
 
   // Check if the request on region tye matches with the categorization of the event
   regionWord = std::bitset<128>(ZZ->region());
