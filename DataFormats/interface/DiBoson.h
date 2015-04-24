@@ -50,10 +50,9 @@ namespace phys {
 	for(unsigned int i = 0; i < 2; ++i){
 	  id_ += abs(daughter0_.daughter(i).id()) + abs(daughter1_.daughter(i).id()) + daughter0_.daughter(i).id() + daughter1_.daughter(i).id();
 	}
-	efficiencySF_  = daughter0_.efficiencySF() * daughter1_.efficiencySF();
-	fakeRateSF_    = daughter0_.fakeRateSF() * daughter1_.fakeRateSF();
-	fakeRateSFUnc_ = sqrt(pow(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUnc(),2) +  
-			      pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc(),2));
+	efficiencySF_  = -1;
+	fakeRateSF_    = -1;
+	fakeRateSFUnc_ = -1;
 
 
       }
@@ -78,6 +77,9 @@ namespace phys {
 
     Boson<P1> first()  const {return daughter0_;}
     Boson<P2> second() const {return daughter1_;}
+
+    Boson<P1> *firstPtr()  {return &daughter0_;}
+    Boson<P2> *secondPtr() {return &daughter1_;}
 
 
     // Best candidate in the Control/Search region
@@ -114,6 +116,14 @@ namespace phys {
       double fakeRateSF = daughter0_.fakeRateSF() * daughter1_.fakeRateSF();
       return numberOfGoodGrandDaughters() == 2 ? -1*fakeRateSF : fakeRateSF;
     }
+
+    double efficiencySF() const{return daughter0_.efficiencySF() * daughter1_.efficiencySF();}
+    
+    double fakeRateSFUnc() const{
+      return sqrt(pow(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUnc(),2) +  
+		  pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc(),2));
+    }
+
 
   private:
 

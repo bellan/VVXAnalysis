@@ -65,6 +65,7 @@ namespace phys {
     // The fake rate is set to a value different from 1 even for true leptons.
     void setFakeRateSF(const std::pair<double,double> & sf) {
       fakeRateSF_    =  sf.first; fakeRateSFUnc_ =  sf.second;
+      realignFakeRate();
     }
     
     Double_t fakeRateSF()    const {return passFullSel() ? 1. : fakeRateSF_;}

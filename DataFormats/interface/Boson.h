@@ -75,6 +75,14 @@ namespace phys {
       else { std::cout << "*** Boson's daughter not found! ***" << " " << i << std::endl; abort();}
     }
 
+
+    P *daughterPtr(int i) {
+      if(i == 0) return &daughter0_;
+      else if(i == 1) return &daughter1_;
+      else { std::cout << "*** Boson's daughter not found! ***" << " " << i << std::endl; abort();}
+    }
+
+
     void addFSR(int daughter_index, const Particle &photon){
       indexFSR_ = daughter_index;
       fsrPhoton_ = photon;
@@ -93,6 +101,13 @@ namespace phys {
     // Number of good daughters
     int numberOfGoodDaughters() const {return int(daughter0_.passFullSel()) + int(daughter1_.passFullSel());}
 
+    double fakeRateSF()    const {return daughter0_.fakeRateSF() * daughter1_.fakeRateSF();}
+    double fakeRateSFUnc() const {return sqrt(pow(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUnc(),2) +  
+					      pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc(),2));}
+    
+    double efficiencySF() const {return daughter0_.efficiencySF() * daughter1_.efficiencySF();}
+    
+
   protected:
     
   private:
@@ -105,10 +120,9 @@ namespace phys {
     Bool_t hasGoodDaughters_;
 
     void init(){
-      efficiencySF_  = daughter0_.efficiencySF() * daughter1_.efficiencySF();
-      fakeRateSF_    = daughter0_.fakeRateSF() * daughter1_.fakeRateSF();
-      fakeRateSFUnc_ = sqrt(pow(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUnc(),2) +  
-			    pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc(),2));
+      efficiencySF_  = -1;
+      fakeRateSF_    = -1;
+      fakeRateSFUnc_ = -1;
       
       charge_ = daughter0_.charge() + daughter1_.charge();
       if(indexFSR_ >=0)  p4_ = p4_ + fsrPhoton_.p4();
