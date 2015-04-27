@@ -172,8 +172,8 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   
   ZL->clear();
   foreach(const ZLCompositeCandidate& zl, *ZLCand)
-    if( ((zl.first.daughter(0).pt() > 20 && zl.first.daughter(0).pt() > 10) ||
-	 (zl.first.daughter(0).pt() > 10 && zl.first.daughter(0).pt() > 20)) &&
+    if( ((zl.first.daughter(0).pt() > 20 && zl.first.daughter(1).pt() > 10) ||
+	 (zl.first.daughter(0).pt() > 10 && zl.first.daughter(1).pt() > 20)) &&
 	fabs(zl.first.mass()-phys::ZMASS) < 10 && zl.second.sip() < 4)
       ZL->push_back(zl);
 
