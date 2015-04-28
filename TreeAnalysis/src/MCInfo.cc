@@ -37,37 +37,13 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   TChain *tree = new TChain("treePlanter/HollyTree");
   tree->Add(filename.c_str());
 
-  if (tree == 0) return;
-
-  TBranch *b_eventsInSR     = 0;
-  TBranch *b_eventsIn2P2FCR = 0;
-  TBranch *b_eventsIn3P1FCR = 0;
-
-  tree->SetBranchAddress("eventsInSR"    , &eventsInSR_    , &b_eventsInSR);
-  tree->SetBranchAddress("eventsIn2P2FCR", &eventsIn2P2FCR_, &b_eventsIn2P2FCR);
-  tree->SetBranchAddress("eventsIn3P1FCR", &eventsIn3P1FCR_, &b_eventsIn3P1FCR);
-
-  int totalEventsInSR = 0;
-  int totalEventsIn2P2FCR = 0;
-  int totalEventsIn3P1FCR = 0;
+  if(tree == 0 || lumi <= 0) return;
 
   Long64_t nentries = tree->GetEntries();  
 
-  for (Long64_t jentry=0; jentry<nentries; ++jentry){
-    tree->LoadTree(jentry); tree->GetEntry(jentry);
-
-    totalEventsInSR     += eventsInSR_;
-    totalEventsIn2P2FCR += eventsIn2P2FCR_;
-    totalEventsIn3P1FCR += eventsIn3P1FCR_;
-  }
-
-  eventsInSR_ = totalEventsInSR;
-  eventsIn2P2FCR_ = totalEventsIn2P2FCR;
-  eventsIn3P1FCR_ = totalEventsIn3P1FCR;
-
-  if(lumi <= 0) return; // FIXME: access here CR info
-  
-  
+  TBranch *b_eventsInSR              = 0;
+  TBranch *b_eventsIn2P2FCR          = 0;
+  TBranch *b_eventsIn3P1FCR          = 0;
   TBranch *b_signalDefinition        = 0;
   TBranch *b_genEvents               = 0;
   TBranch *b_analyzedEvents          = 0;
@@ -82,6 +58,10 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   TBranch *b_postSkimSignalEvents    = 0;
   TBranch *b_eventsInEtaAcceptance   = 0;
   TBranch *b_eventsInEtaPtAcceptance = 0;
+
+  tree->SetBranchAddress("eventsInSR"    , &eventsInSR_    , &b_eventsInSR);
+  tree->SetBranchAddress("eventsIn2P2FCR", &eventsIn2P2FCR_, &b_eventsIn2P2FCR);
+  tree->SetBranchAddress("eventsIn3P1FCR", &eventsIn3P1FCR_, &b_eventsIn3P1FCR);
 
   tree->SetBranchAddress("signalDefinition"       , &signalDefinition_       , &b_signalDefinition       );
   tree->SetBranchAddress("genEvents"              , &genEvents_              , &b_genEvents              );
@@ -99,10 +79,15 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   tree->SetBranchAddress("eventsInEtaPtAcceptance", &eventsInEtaPtAcceptance_, &b_eventsInEtaPtAcceptance);
     
 
-
-  
+ 
   // temp variables
+
+  int    totalEventsInSR     = 0;
+  int    totalEventsIn2P2FCR = 0;
+  int    totalEventsIn3P1FCR = 0;
+
   double meanIntCrossSection = 0.;
+  int    totalPreSkimCounter = 0 ;
   int    totalAnEvents       = 0 ;
   int    totalGenEvents      = 0 ;
   double totalSumMCProc      = 0.;
@@ -115,11 +100,11 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   for (Long64_t jentry=0; jentry<nentries; ++jentry){
     tree->LoadTree(jentry); tree->GetEntry(jentry);
     
-    if(genEvents_ != preSkimCounter_)
-      std::cout << colour::Warning("WARNING! The number of skimmed events differs from the total generated events. Make sure you are properly weighting the events.") 
-		<< " Generated events: " <<  genEvents_ << " Pre-skimmed events: " << preSkimCounter_ 
-		<< std::endl;
-    
+    totalEventsInSR     += eventsInSR_;
+    totalEventsIn2P2FCR += eventsIn2P2FCR_;
+    totalEventsIn3P1FCR += eventsIn3P1FCR_;
+
+    totalPreSkimCounter += preSkimCounter_;
     totalAnEvents       += analyzedEvents_;
     totalGenEvents      += genEvents_;
     totalSumMCProc      += summcprocweight_;
@@ -135,7 +120,21 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   delete tree;
   
   // ... and the variables used to set the branch address can be overwritten too
+  eventsInSR_     = totalEventsInSR;
+  eventsIn2P2FCR_ = totalEventsIn2P2FCR;
+  eventsIn3P1FCR_ = totalEventsIn3P1FCR;
+
   genEvents_               = totalGenEvents;
+  preSkimCounter_          = totalPreSkimCounter;
+
+  if(genEvents_ != preSkimCounter_)
+    std::cout << "\n" << colour::Warning("WARNING! The number of events before any skim (") << colour::Warning(preSkimCounter_) 
+	      << colour::Warning(") differs from the total generated events (") <<colour::Warning(genEvents_) 
+	      << colour::Warning("). Make sure you are properly weighting the events.") << std::endl
+	      << "If you are running on ZZJetsTo4L without taus in the samples, you can safely ignore this message."
+	      << std::endl;
+  
+
   analyzedEvents_          = totalAnEvents;
   summcprocweight_         = totalSumMCProc;
   sumpumcprocweight_       = totalSumPUMCProc;
@@ -160,7 +159,7 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   
   double signalFraction     = double(signalCounter_)/genEvents_;
   double signalCrossSection = signalFraction * crossSection();
-  signalEfficiency_         = double(postSkimSignalEvents_)/signalCounter_; // FIXME: double check this. That does not account for fakes.
+  signalEfficiency_         = double(eventsInSR_)/signalCounter_; // FIXME: double check this. That does not account for fakes nor trigger selections.
 
   std::cout<<"\nThis sample has been made out of a dataset containing " << Green(genEvents()) << " generated events."   << std::endl
 	   <<"Out of them, " << Green(analyzedEvents()) << " events have been used to produce the main tree."           << std::endl
@@ -168,12 +167,16 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
 	   <<" and the integrated luminosity scenario is "<< Green(luminosity_) << Green("/pb.")                        << std::endl
 	   <<"The MC process event normalization is " << Green(mcProcWeightNormalization())
 	   <<" and the sample weight is " << Green(sampleWeight()) 
-	   <<". The number of weighted events in the sample is (approx.) " << Green(analyzedEventsWeighted()) << "."              << std::endl
+	   <<". The number of weighted events in the sample is (approx.) " << Green(analyzedEventsWeighted()) << "."    << std::endl
 	   << "The signal definition adopted for this analysis is " << Green(signalDefinition()) 
-	   << " (" << Green(std::bitset<16>(signalDefinition())) << ")."                                                        << std::endl
+	   << " (" << Green(std::bitset<16>(signalDefinition())) << ")."                                                << std::endl
 	   <<"The fraction of the signal in the sample is " << Green(signalFraction)  
 	   <<", that corresponds to a cross section of " <<  Green(signalCrossSection) << Green(" pb.")                 << std::endl
-	   <<"The signal efficiency for the baseline selection is " << Green(signalEfficiency()) << "."
+	   <<"The approximate signal efficiency for the baseline selection is " << eventsInSR_  <<"/"<< signalCounter_ << " = " << Green(signalEfficiency()) << ".\n"
+	   <<"Events (before trigger requirements) in the SR = "    << Green(eventsInSR_) 
+	   <<", in the 2P2F CR = " << Green(eventsIn2P2FCR_)
+	   <<", in the 3P1F CR = " << Green(eventsIn3P1FCR_)
+	   <<"."
 	   <<std::endl;
 	   
 }
