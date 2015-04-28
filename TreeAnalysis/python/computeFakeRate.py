@@ -6,13 +6,30 @@ from ROOT import TH1F
 
 
 def write(particle,region,outname,fout):
-    f = ROOT.TFile("results_1/VVXAnalyzer_MC/data.root")
+    f = ROOT.TFile("results/VVXAnalyzer_MC/data.root")
     hn = f.Get("FakeRate_num_"+particle+"_"+region+"_pt")
     hd = f.Get("FakeRate_denom_"+particle+"_"+region+"_pt")
-    hn.Divide(hd)
-    hn.SetTitle(outname)
+
+    
+    fWZ = ROOT.TFile("results_1/VVXAnalyzer_MC/WZ.root")
+    hnWZ = fWZ.Get("FakeRate_num_"+particle+"_"+region+"_pt")
+    hdWZ = fWZ.Get("FakeRate_denom_"+particle+"_"+region+"_pt")
+
+    hFake = hn.Clone("FakeRate_"+outname)
+    hFake.Divide(hd)
+    hFake.SetTitle("FakeRate_"+outname)
     fout.cd()
-    hn.Write(outname)
+    hFake.Write("FakeRate_"+outname)
+
+    hFake_NoWZ = hn.Clone("FakeRate_NoWZ_"+outname)
+    hFake_NoWZ.Add(hnWZ,-1)
+
+    hDen_NoWZ = hd.Clone("Den_NoWZ_"+outname)
+    hDen_NoWZ.Add(hdWZ,-1)
+    
+    hFake_NoWZ.Divide(hDen_NoWZ)
+    hFake_NoWZ.SetTitle("FakeRate_NoWZ_"+outname)
+    hFake_NoWZ.Write("FakeRate_NoWZ_"+outname)
 
 
 particles = ['muons','electrons']
