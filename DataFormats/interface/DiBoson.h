@@ -102,7 +102,7 @@ namespace phys {
     void setRegionWord (Int_t   rw) {regionWord_  = rw;} 
     void setIsBestCand (Bool_t  bc) {isBestCand_  = bc;} 
     void setPassFullSel(Bool_t  fs) {passFullSel_ = fs;}
-    void setPassTrigger(Bool_t  pt) {passTrigger_ = pt;}
+    void setPassTrigger(Bool_t  passt) {passTrigger_ = passt;}
 
     int numberOfGoodGrandDaughters() const {
       if(!isValid()) return 0;
@@ -113,8 +113,8 @@ namespace phys {
 
     double fakeRateSF() const {
       if(id_ == 0) return 1.; // To be checked
-      double fakeRateSF = daughter0_.fakeRateSF() * daughter1_.fakeRateSF();
-      return numberOfGoodGrandDaughters() == 2 ? -1*fakeRateSF : fakeRateSF;
+      double ifakeRateSF = daughter0_.fakeRateSF() * daughter1_.fakeRateSF();
+      return numberOfGoodGrandDaughters() == 2 ? -1*ifakeRateSF : ifakeRateSF;
     }
 
     double efficiencySF() const{return daughter0_.efficiencySF() * daughter1_.efficiencySF();}

@@ -23,8 +23,8 @@ namespace phys {
   public:
     
     /// Constructor
-    Lepton(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), float q =0, int pid = 0)
-      : Particle(p,q, pid)
+    Lepton(const TLorentzVector& pin = TLorentzVector(0.,0.,0.,0.), float q =0, int pid = 0)
+      : Particle(pin,q, pid)
       , dxy_(-9999.)               
       , dz_(-9999.)                
       , sip_(-9999.)
