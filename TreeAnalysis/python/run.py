@@ -181,6 +181,34 @@ def run(executable, analysis, typeofsample, region, luminosity):
     return output
 
 
+
+def mergeDataSamples(outputLocations):
+    failure, basename = commands.getstatusoutput('basename {0:s}'.format(outputLocations[0]))
+    outputdir = outputLocations[0].replace(basename,'')
+    hadd = 'hadd {0:s}/data.root '.format(outputdir)
+    for result in outputLocations:
+        hadd = '{0:s} {1:s}'.format(hadd, result)
+    if os.path.exists('{0:s}/data.root'.format(outputdir)):
+        os.popen('rm {0:s}/data.root'.format(outputdir))
+    print "Command going to be executed:", Violet(hadd)
+    failure, output = commands.getstatusoutput(hadd)
+
+
+def runOverCRs(executable, analysis, sample, luminosity, outputLocations = []):
+    outputCR2P2F = run(executable, analysis, sample, 'CR2P2F', luminosity)    # runs over all samples in the CR2P2F control reagion
+    outputCR3P1F = run(executable, analysis, sample, 'CR3P1F', luminosity)    # runs over all samples in the CR3P1F control reagion
+
+    if not os.path.exists('results/"%s"_CR' %analysis): os.popen('mkdir results/"%s"_CR' %analysis)
+    outputRedBkg = 'results/{0:s}_CR/reducible_background_from_{1:s}.root'.format(analysis, sample)
+    hadd = 'hadd {0:s} {1:s} {2:s}'.format(outputRedBkg, outputCR2P2F, outputCR3P1F)
+    if os.path.exists('{0:s}'.format(outputRedBkg)):
+        os.popen('rm {0:s}'.format(outputRedBkg))
+    print "Command going to be executed:", Violet(hadd)
+    failure, output = commands.getstatusoutput(hadd)
+    outputLocations.append(outputRedBkg)
+
+
+
 if typeofsample == 'all' or typeofsample == 'data':
     outputLocations = []
     for sample in typeofsamples:
@@ -189,38 +217,22 @@ if typeofsample == 'all' or typeofsample == 'data':
                 for cr in regions:
                     run(executable, analysis, sample, cr, luminosity)    # runs over all samples in all control reagions
             elif region == 'CR':
-                outputCR2P2F = run(executable, analysis, sample, 'CR2P2F', luminosity)    # runs over all samples in the CR2P2F control reagion
-                outputCR3P1F = run(executable, analysis, sample, 'CR3P1F', luminosity)    # runs over all samples in the CR3P1F control reagion
-
-                if not os.path.exists('results/"%s"_CR' %analysis): os.popen('mkdir results/"%s"_CR' %analysis)
-                outputRedBkg = 'results/{0:s}_CR/reducible_background_from_{1:s}.root'.format(analysis, sample)
-                hadd = 'hadd {0:s} {1:s} {2:s}'.format(outputRedBkg, outputCR2P2F, outputCR3P1F)
-                if os.path.exists('{0:s}'.format(outputRedBkg)):
-                    os.popen('rm {0:s}'.format(outputRedBkg))
-                print "Command going to be executed:", Violet(hadd)
-                failure, output = commands.getstatusoutput(hadd)
-                outputLocations.append(outputRedBkg)
-
+                runOverCRs(executable, analysis, sample, luminosity, outputLocations)
+         
             else:
                 outputLocations.append(run(executable, analysis, sample, region, luminosity))   # runs over all samples in a specific control reagions
     if typeofsample == 'data':
-        failure, basename = commands.getstatusoutput('basename {0:s}'.format(outputLocations[0]))
-        outputdir = outputLocations[0].replace(basename,'')
-        hadd = 'hadd {0:s}/data.root '.format(outputdir)
-        for result in outputLocations:
-            hadd = '{0:s} {1:s}'.format(hadd, result)
-        if os.path.exists('{0:s}/data.root'.format(outputdir)):
-            os.popen('rm {0:s}/data.root'.format(outputdir))
-        print "Command going to be executed:", Violet(hadd)
-        failure, output = commands.getstatusoutput(hadd)
-
-
+        mergeDataSamples(outputLocations)
 
             
 else:
     if region == 'all':
         for cr in range(0,4):     
             run(executable, analysis, typeofsample, cr, luminosity)  # runs over a specific sample in all control regions
+
+    elif region == 'CR':
+        runOverCRs(executable, analysis, typeofsample, luminosity)
+        
     else:
         run(executable, analysis, typeofsample, region, luminosity) # runs over a specific sample in a specific region
 
