@@ -263,7 +263,7 @@ void EventAnalyzer::loop(const std::string outputfile){
   theHistograms.write(fout);
 
   fout.Close();
-  cout<<"Events originally in input for the choosen region (" << Blue(regionType(region_)) << "): " << Green(theInputWeightedEvents)<< endl;
+  cout<<"Events originally in input for the chosen region (" << Blue(regionType(region_)) << "): " << Green(theInputWeightedEvents)<< endl;
   cout<<"Events passing all cuts: "<< Green(theCutCounter) << endl;
 }
 
