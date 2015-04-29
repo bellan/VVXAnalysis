@@ -151,6 +151,12 @@ public:
   double theCutCounter;
   double theInputWeightedEvents;
 
+  // Counters about SR and CRs, with trigger requirements too. The numbers are unweighted.
+  int unweightedEventsInSR;
+  int unweightedEventsIn2P2FCR;
+  int unweightedEventsIn3P1FCR;
+
+
   // Access to the branches
   Int_t    event     ; TBranch *b_event;
   Int_t    run       ; TBranch *b_run;

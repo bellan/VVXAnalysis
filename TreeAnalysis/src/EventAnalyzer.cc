@@ -47,6 +47,9 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
   , theWeight(1.)
   , theCutCounter(0.)
   , theInputWeightedEvents(0.)
+  , unweightedEventsInSR(0)
+  , unweightedEventsIn2P2FCR(0)
+  , unweightedEventsIn3P1FCR(0)
   , genCategory(-128){
 
   TChain *tree = new TChain("treePlanter/ElderTree");
@@ -193,8 +196,6 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   if((region_ == phys::CR2P2F || region_ == phys::CR2P2F_HZZ) && !regionWord.test(22)) return 0;
   if((region_ == phys::CR3P1F || region_ == phys::CR3P1F_HZZ) && !regionWord.test(23)) return 0;
 
-  //if(!ZZ) return 0;
-
   theWeight = theMCInfo.weight(*ZZ);
 
   theHistograms.fill("weight_full"  , "All weights applied"                                    , 1200, -2, 10, theWeight);
@@ -236,6 +237,9 @@ void EventAnalyzer::loop(const std::string outputfile){
   if (theTree == 0) return;
 
   Long64_t nentries = theTree->GetEntries();  
+  unweightedEventsInSR     = tree()->GetEntries("ZZCand.passFullSel_");
+  unweightedEventsIn2P2FCR = tree()->GetEntries("ZZCand.passSelZLL_2P2F_");
+  unweightedEventsIn3P1FCR = tree()->GetEntries("ZZCand.passSelZLL_3P1F_");
 
   begin();
 
@@ -259,7 +263,7 @@ void EventAnalyzer::loop(const std::string outputfile){
   theHistograms.write(fout);
 
   fout.Close();
-  //cout<<"Events in input: " << Green(theInputWeightedEvents)<< endl;
+  cout<<"Events originally in input for the choosen region (" << Blue(regionType(region_)) << "): " << Green(theInputWeightedEvents)<< endl;
   cout<<"Events passing all cuts: "<< Green(theCutCounter) << endl;
 }
 
