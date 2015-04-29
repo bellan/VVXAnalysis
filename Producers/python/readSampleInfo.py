@@ -42,7 +42,8 @@ def readSamplesInfo(infoFilePath = 'samples_8TeV.csv', indexBy = 'identifier'):
             value           = []
           else:
             value           = map(string.strip, value.split(";"))
-        info[key]           = value
+
+        info[key]           = value.strip()
 
       index                 = info[indexBy]
       if index in database:
