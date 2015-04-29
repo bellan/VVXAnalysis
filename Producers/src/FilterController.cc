@@ -70,7 +70,7 @@ FilterController::passSkim(const edm::Event & event, short& trigworld, bool make
     for (vector<string>::const_iterator name = skimPaths.begin(); name!= skimPaths.end(); ++name) 
       evtPassSkim = makeAnd ? evtPassSkim && passFilter(event, *name) : evtPassSkim || passFilter(event, *name);
   
-  if (evtPassSkim) set_bit_16(trigworld,8);
+  if (evtPassSkim) set_bit_16(trigworld,9);
   return evtPassSkim;
 }
 
