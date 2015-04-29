@@ -282,9 +282,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     mcHistoryTools_ = new MCHistoryTools(event, sampleName_);
     bool gen_ZZ4lInEtaAcceptance   = false; // All 4 gen leptons in eta acceptance
     bool gen_ZZ4lInEtaPtAcceptance = false; // All 4 gen leptons in eta,pT acceptance
-    bool gen_m4l_180               = false; // gen_m4l > 180
-    bool gen_ZZInAcceptance        = false; // Unused; old ZZ phase space
-    mcHistoryTools_->genAcceptance(gen_ZZInAcceptance, gen_ZZ4lInEtaAcceptance, gen_ZZ4lInEtaPtAcceptance, gen_m4l_180);
+    mcHistoryTools_->genAcceptance(gen_ZZ4lInEtaAcceptance, gen_ZZ4lInEtaPtAcceptance);
     if (gen_ZZ4lInEtaAcceptance)   ++eventsInEtaAcceptance_;  
     if (gen_ZZ4lInEtaPtAcceptance) ++eventsInEtaPtAcceptance_;
 
@@ -756,14 +754,11 @@ int TreePlanter::computeRegionFlag(const pat::CompositeCandidate & vv) const{
   if (isMC_ && test_bit(REGIONFLAG,ZZ)) {
     bool gen_ZZ4lInEtaAcceptance   = false; // All 4 gen leptons in eta acceptance
     bool gen_ZZ4lInEtaPtAcceptance = false; // All 4 gen leptons in eta,pT acceptance
-    bool gen_m4l_180               = false; // gen_m4l > 180
-    bool gen_ZZInAcceptance        = false; // Unused; old ZZ phase space
 
-    mcHistoryTools_->genAcceptance(gen_ZZInAcceptance, gen_ZZ4lInEtaAcceptance, gen_ZZ4lInEtaPtAcceptance, gen_m4l_180);
+    mcHistoryTools_->genAcceptance(gen_ZZ4lInEtaAcceptance, gen_ZZ4lInEtaPtAcceptance);
 
     if (gen_ZZ4lInEtaAcceptance)   set_bit(REGIONFLAG,28);
     if (gen_ZZ4lInEtaPtAcceptance) set_bit(REGIONFLAG,29);
-    if (gen_m4l_180)               set_bit(REGIONFLAG,30);
   }
   return REGIONFLAG;
 }
