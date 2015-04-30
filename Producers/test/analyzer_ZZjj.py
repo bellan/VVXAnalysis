@@ -41,6 +41,11 @@ try:
 except NameError:
     XSEC = -1
 
+try:
+    SKIM_REQUIRED
+except NameError:
+    SKIM_REQUIRED = True
+
 
 
 # Get absolute path
@@ -225,17 +230,17 @@ process.ZZSelectedCand = cms.EDFilter("PATCompositeCandidateSelector",
 ### ......................................................................... ###
 
 
-Z1MASS_LARGE  = "daughter(0).mass>40 && daughter(0).mass<120"
-Z1MASS  = "daughter(0).mass>60 && daughter(0).mass<120"
-Z2MASS  = "daughter(1).mass>60 && daughter(1).mass<120"
+CR_Z1MASS_LARGE  = "daughter(0).mass>40 && daughter(0).mass<120"
+CR_Z1MASS  = "daughter(0).mass>60 && daughter(0).mass<120"
+CR_Z2MASS  = "daughter(1).mass>60 && daughter(1).mass<120"
 # Value here below are the ones used for the H->ZZ analysis and here for cross-check for dedicated studies. 
-#Z1MASS  = "daughter(0).mass>40 && daughter(0).mass<120"
-#Z2MASS  = "daughter(1).mass>12 && daughter(1).mass<120"
+#CR_Z1MASS  = "daughter(0).mass>40 && daughter(0).mass<120"
+#CR_Z2MASS  = "daughter(1).mass>12 && daughter(1).mass<120"
 
 
 CR_BESTZLLos_ONSHELL = (CR_BESTZLLos + "&&" +  
-                        Z1MASS       + "&&" + 
-                        Z2MASS)
+                        CR_Z1MASS    + "&&" + 
+                        CR_Z2MASS)
 
 
 # CR 3P1F
@@ -272,6 +277,16 @@ process.ZZFiltered = cms.EDProducer("PATCompositeCandidateMergerWithPriority",
                                     )
 
 
+
+### Z+L control region
+# FIXME! To be uncommented!
+#process.ZlCandFiltered = cms.EDFilter("PATCompositeCandidateSelector",
+#                                      src = cms.InputTag("ZlCand"),
+#                                      cut = cms.string("(daughter(0).daughter(0).pt > 20 && daughter(0).daughter(1).pt > 10) || (daughter(0).daughter(0).pt > 10 && daughter(0).daughter(1).pt > 20)")
+#                                      )
+
+
+
 ### ------------------------------------------------------------------------- ###
 ### Define the post reconstruction cleaning sequence
 ### ------------------------------------------------------------------------- ###
@@ -280,6 +295,7 @@ process.postRecoCleaning = cms.Sequence( process.ZZSelectedCand
                                          + process.ZLLFiltered2P2F
                                          + process.ZLLFiltered3P1F
                                          + process.ZZFiltered
+#                                        + process.ZlCandFiltered
                                          + process.muonsFromZZ*process.postCleaningMuons 
                                          + process.electronsFromZZ*process.postCleaningElectrons
                                          + process.disambiguatedJets
@@ -304,13 +320,16 @@ process.postPreselectionCounter      = cms.EDProducer("EventCountProducer")
 process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("disambiguatedJets"), minNumber = cms.uint32(0))
 
 # Select only events with one such candidate
-process.zzCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZZFiltered"), minNumber = cms.uint32(1))
+process.zzCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZZFiltered"), minNumber = cms.uint32(0))
+
+# Looser preselection: ask only for a at least a Z + 1 soft lepton
+process.zlCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZlCand"), minNumber = cms.uint32(1))
 
 ### Path that pre-select the higher level objects that will input the TreePlanter
 process.preselection = cms.Path( process.prePreselectionCounter
                                  * process.CR
                                  * process.postRecoCleaning 
-                                 * process.zzCounterFilter * process.jetCounterFilter
+                                 * process.zlCounterFilter * process.zzCounterFilter * process.jetCounterFilter
                                  * process.postPreselectionCounter)
 
 
@@ -362,16 +381,17 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      sampleType   = cms.int32(SAMPLE_TYPE),
                                      PD           = cms.string(PD),
                                      skimPaths    = cms.vstring(SkimPaths),
-                                     #SkimRequired = cms.untracked.bool(False),
+                                     SkimRequired = cms.untracked.bool(SKIM_REQUIRED),
                                      MCFilterPath = cms.string(MCFILTER),
                                      isMC         = cms.untracked.bool(IsMC),
                                      signalDefinition = cms.int32(SIGNALDEFINITION),
                                      JECFileName  = cms.string("VVXAnalysis/Producers/test/Winter14_V5_DATA_Uncertainty_AK5PF.txt"),
                                      muons        = cms.InputTag("postCleaningMuons"),     # all good isolated muons BUT the ones coming from ZZ decay
                                      electrons    = cms.InputTag("postCleaningElectrons"), # all good isolated electrons BUT the ones coming from ZZ decay
-                                     jets         = cms.InputTag("disambiguatedJets"),     # jets which do not contains leptons from ZZ or other good isolated leptons
+                                     jets         = cms.InputTag("disambiguatedJets"),     # jets which do not contains leptons from ZZ or other good isolated leptons are removed
                                      Vhad         = cms.InputTag("VhadCand"),
                                      ZZ           = cms.InputTag("ZZFiltered"),            # only the best ZZ->4l candidate that pass the FULL selection
+                                     ZL           = cms.InputTag("ZlCand"),
                                      MET          = cms.InputTag("slimmedMETs"),
                                      Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
                                      XSection     = cms.untracked.double(XSEC)
@@ -382,7 +402,6 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
 ### ------------------------------------------------------------------------- ###
 ### Run the TreePlanter
 ### ------------------------------------------------------------------------- ###
-
 
 process.filltrees = cms.EndPath(process.srCounter + process.cr2P2FCounter + process.cr3P1FCounter + process.treePlanter)
 

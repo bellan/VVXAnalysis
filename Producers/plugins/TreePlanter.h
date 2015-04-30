@@ -84,6 +84,8 @@ class TreePlanter: public edm::EDAnalyzer {
 
   std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > fillDiBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const;
 
+  std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > fillZLCandidates(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmZLs) const;
+
   int computeRegionFlag(const pat::CompositeCandidate & vv) const;
 
  private:
@@ -147,6 +149,9 @@ class TreePlanter: public edm::EDAnalyzer {
 
   // ZZ in the SR, Z + ll in the CR
   phys::DiBoson<phys::Lepton  , phys::Lepton> ZZ_;
+  
+  // Z + 1 loose lepton, for fake rate studies
+  std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > ZL_;
 
   std::vector<phys::Particle>               genParticles_;
   std::vector<phys::Boson<phys::Particle> > genVBParticles_;
@@ -158,6 +163,7 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::InputTag theJetLabel;
   edm::InputTag theVhadLabel;
   edm::InputTag theZZLabel;
+  edm::InputTag theZLLabel;
   edm::InputTag theMETLabel;
   edm::InputTag theVertexLabel;
   edm::InputTag thePUInfoLabel;
