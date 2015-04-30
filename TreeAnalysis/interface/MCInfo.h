@@ -39,6 +39,11 @@ class MCInfo {
 
   int    signalDefinition()           const {return signalDefinition_;}
 
+  // Approximate number of events in SR and CRs. It is an approx number because the trigger requirement is not asked.
+  int approximateNeventsInSR()     const {return eventsInSR_;}
+  int approximateNeventsIn2P2FCR() const {return eventsIn2P2FCR_;}
+  int approximateNeventsIn3P1FCR() const {return eventsIn3P1FCR_;}
+
  private:
   friend class EventAnalyzer;
   
@@ -75,6 +80,7 @@ class MCInfo {
   int eventsInEtaAcceptance_;
   int eventsInEtaPtAcceptance_;
 
+  int eventsInSR_;
   int eventsIn2P2FCR_;
   int eventsIn3P1FCR_;
 };
