@@ -58,6 +58,8 @@ class EventAnalyzer {
 public:
   
   enum METType {Std,NoMu,NoEl};
+  typedef std::pair<phys::Boson<phys::Lepton>, phys::Lepton> ZLCompositeCandidate;
+  typedef std::vector<ZLCompositeCandidate> ZLCompositeCandidates;
 
   EventAnalyzer(SelectorBase& aSelector, const AnalysisConfiguration& configuration);
 
@@ -111,8 +113,9 @@ public:
   virtual Int_t cut();
   virtual void  analyze() = 0;
   virtual void  end(TFile &) {};  
+  virtual void  addOptions(){};
   TTree * tree() const {return theTree;}
-
+  
  private:
   // Structural functions to access the tree branches. User is not supposed to change these.
   virtual Int_t    GetEntry(Long64_t entry);
@@ -148,6 +151,12 @@ public:
   double theCutCounter;
   double theInputWeightedEvents;
 
+  // Counters about SR and CRs, with trigger requirements too. The numbers are unweighted.
+  int unweightedEventsInSR;
+  int unweightedEventsIn2P2FCR;
+  int unweightedEventsIn3P1FCR;
+
+
   // Access to the branches
   Int_t    event     ; TBranch *b_event;
   Int_t    run       ; TBranch *b_run;
@@ -163,6 +172,7 @@ public:
   Bool_t  passSkim   ; TBranch *b_passSkim;
   Short_t triggerWord; TBranch *b_triggerWord;
   
+  std::bitset<128> regionWord;
 
   //MET
   phys::Particle *met   ; TBranch *b_met;
@@ -183,7 +193,6 @@ public:
   std::vector<phys::Jet> *centralJets;
 
   // Bosons Candidate
-  std::vector<phys::Boson<phys::Lepton> >   *ZCand   ; TBranch *b_ZCand;
   std::vector<phys::Boson<phys::Jet> >      *VhadCand; TBranch *b_VhadCand;
   
   // Bosons (Not in the tree)
@@ -191,6 +200,13 @@ public:
 
   // DiBoson, if in SR, or Z+ll if in CR
   phys::DiBoson<phys::Lepton  , phys::Lepton> *ZZ; TBranch *b_ZZ;
+
+  // Z+L 
+  ZLCompositeCandidates *ZLCand; TBranch *b_ZLCand;
+
+  // Z+L  (Not in the tree)
+  ZLCompositeCandidates *ZL;
+
 
   // GenParticle 
   std::vector<phys::Particle>               *genParticles;   TBranch *b_genParticles;

@@ -47,6 +47,9 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
   , theWeight(1.)
   , theCutCounter(0.)
   , theInputWeightedEvents(0.)
+  , unweightedEventsInSR(0)
+  , unweightedEventsIn2P2FCR(0)
+  , unweightedEventsIn3P1FCR(0)
   , genCategory(-128){
 
   TChain *tree = new TChain("treePlanter/ElderTree");
@@ -87,6 +90,9 @@ void EventAnalyzer::Init(TTree *tree)
 
   // DiBoson, if in SR, or Z+ll if in CR
   ZZ   = new phys::DiBoson<phys::Lepton, phys::Lepton>(); b_ZZ   = 0; theTree->SetBranchAddress("ZZCand"  , &ZZ  , &b_ZZ  );
+
+  // Z+L 
+  ZL = new ZLCompositeCandidates()    ; ZLCand = 0; b_ZLCand = 0; theTree->SetBranchAddress("ZLCand", &ZLCand, &b_ZLCand);
 
 
   // Gen Particles   
@@ -167,16 +173,28 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
 
   stable_sort(Vhad->begin(), Vhad->end(), phys::PtComparator());
   
-  if(region_ == phys::MC) ZZ = new phys::DiBoson<phys::Lepton, phys::Lepton>();
+  ZL->clear();
+  foreach(const ZLCompositeCandidate& zl, *ZLCand)
+    if( ((zl.first.daughter(0).pt() > 20 && zl.first.daughter(1).pt() > 10) ||
+	 (zl.first.daughter(0).pt() > 10 && zl.first.daughter(1).pt() > 20)) &&
+	fabs(zl.first.mass()-phys::ZMASS) < 10 && zl.second.sip() < 4)
+      ZL->push_back(zl);
+
+  if(region_ == phys::MC){
+    if(!ZZ->isValid()){
+      if(ZZ) delete ZZ;
+      ZZ = new phys::DiBoson<phys::Lepton, phys::Lepton>();
+    }
+  }  
   
+  addOptions();
+
   // Check if the request on region tye matches with the categorization of the event
-  std::bitset<128> regionWord = std::bitset<128>(ZZ->region());
+  regionWord = std::bitset<128>(ZZ->region());
   // check bits accordingly to ZZAnalysis/AnalysisStep/interface/FinalStates.h
   if(region_  == phys::SR                                     && !regionWord.test(3))  return 0;
   if((region_ == phys::CR2P2F || region_ == phys::CR2P2F_HZZ) && !regionWord.test(22)) return 0;
   if((region_ == phys::CR3P1F || region_ == phys::CR3P1F_HZZ) && !regionWord.test(23)) return 0;
-
-  //if(!ZZ) return 0;
 
   theWeight = theMCInfo.weight(*ZZ);
 
@@ -190,7 +208,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   
   theInputWeightedEvents += theWeight;
 
-     topology = std::bitset<16>(genCategory);
+  topology = std::bitset<16>(genCategory);
 
 
   return e;
@@ -219,6 +237,9 @@ void EventAnalyzer::loop(const std::string outputfile){
   if (theTree == 0) return;
 
   Long64_t nentries = theTree->GetEntries();  
+  unweightedEventsInSR     = tree()->GetEntries("ZZCand.passFullSel_");
+  unweightedEventsIn2P2FCR = tree()->GetEntries("ZZCand.passSelZLL_2P2F_");
+  unweightedEventsIn3P1FCR = tree()->GetEntries("ZZCand.passSelZLL_3P1F_");
 
   begin();
 
@@ -242,7 +263,7 @@ void EventAnalyzer::loop(const std::string outputfile){
   theHistograms.write(fout);
 
   fout.Close();
-  //cout<<"Events in input: " << Green(theInputWeightedEvents)<< endl;
+  cout<<"Events originally in input for the chosen region (" << Blue(regionType(region_)) << "): " << Green(theInputWeightedEvents)<< endl;
   cout<<"Events passing all cuts: "<< Green(theCutCounter) << endl;
 }
 
