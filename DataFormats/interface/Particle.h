@@ -95,10 +95,10 @@ namespace phys {
 
     bool isValid() const {return id_ != 0 && p() > 0;}
 
-    Double_t efficiencySF()  const {return efficiencySF_;}
-    Double_t fakeRateSF()    const {return fakeRateSF_;}
-    Double_t fakeRateSFUnc() const {return fakeRateSFUnc_;}
-    Double_t fakeRateSFVar() const {return fakeRateSFUnc_*fakeRateSFUnc_;}
+    virtual Double_t efficiencySF()  const {return efficiencySF_;}
+    virtual Double_t fakeRateSF()    const {return fakeRateSF_;}
+    virtual Double_t fakeRateSFUnc() const {return fakeRateSFUnc_;}
+    virtual Double_t fakeRateSFVar() const {return fakeRateSFUnc()*fakeRateSFUnc();}
 
     Bool_t   passFullSel() const {return true;}
  
