@@ -13,6 +13,7 @@
 #include "EventAnalyzer.h"
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
+#include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 
 class VVXAnalyzer: public EventAnalyzer, RegistrableAnalysis<VVXAnalyzer>{
 
@@ -22,8 +23,12 @@ public:
 
  VVXAnalyzer(const AnalysisConfiguration& configuration)
    : EventAnalyzer(*(new Selector<VVXAnalyzer>(*this)), 
-		   configuration){
-    theHistograms.profile(genCategory);
+		   configuration)
+    , lepSF("/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root","/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root",
+	    "/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root","/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root")
+
+{
+    //theHistograms.profile(genCategory);
   }
 
   virtual ~VVXAnalyzer(){}
@@ -33,7 +38,10 @@ public:
   virtual Int_t cut();
 
   void ZZplots(int id = -1);
-  
+
+  virtual void end( TFile &);
+  virtual void addOptions();
+
  private:
   friend class Selector<VVXAnalyzer>;
   template< class PAR >
@@ -67,6 +75,11 @@ public:
     return false;
 
   }
+
+  LeptonScaleFactors lepSF;
+
+
+
 };
 #endif
 

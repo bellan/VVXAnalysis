@@ -5,6 +5,9 @@
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
+#include <boost/assign/std/vector.hpp> 
+using namespace boost::assign;
+
 using std::cout;
 using std::endl;
 
@@ -12,8 +15,24 @@ using std::endl;
 using namespace phys;
 
 Int_t VVXAnalyzer::cut() {
-  
   return 1;
+}
+
+void VVXAnalyzer::addOptions(){
+  //if(!ZZ->isValid()) return;
+  
+  //cout << "SF before: " <<  ZZ1.fakeRateSF() << std::endl;
+  //cout << ZZ1.firstPtr() ->daughterPtr(0)->fakeRateSF() << " " << lepSF.fakeRateScaleFactor(ZZ1.first() .daughter(0)).first << " " 
+  //     << ZZ1.firstPtr() ->daughterPtr(1)->fakeRateSF() << " " << lepSF.fakeRateScaleFactor(ZZ1.first() .daughter(1)).first << " " 
+  //     << ZZ1.secondPtr()->daughterPtr(0)->fakeRateSF() << " " << lepSF.fakeRateScaleFactor(ZZ1.second().daughter(0)).first << " " 
+  //     << ZZ1.secondPtr()->daughterPtr(1)->fakeRateSF() << " " << lepSF.fakeRateScaleFactor(ZZ1.second().daughter(1)).first << endl;
+
+  //ZZ->firstPtr()->daughterPtr(0)->setFakeRateSF (lepSF.fakeRateScaleFactor(ZZ->first().daughter(0)));
+  //ZZ->firstPtr()->daughterPtr(1)->setFakeRateSF (lepSF.fakeRateScaleFactor(ZZ->first().daughter(1)));
+  //ZZ->secondPtr()->daughterPtr(0)->setFakeRateSF(lepSF.fakeRateScaleFactor(ZZ->second().daughter(0)));
+  //ZZ->secondPtr()->daughterPtr(1)->setFakeRateSF(lepSF.fakeRateScaleFactor(ZZ->second().daughter(1)));
+
+  //cout << " after: " <<  ZZ->fakeRateSF() << endl;
 }
 
 void VVXAnalyzer::ZZplots(int id){
@@ -60,7 +79,73 @@ void VVXAnalyzer::analyze(){
   ZZplots(52); // ZZ --> 4m
   ZZplots(48); // ZZ --> 2e2m
   ZZplots(44); // ZZ --> 4e
+
+  
+  theHistograms.fill("NumberOfZLCandidates","Number of ZL candidates",10, 0, 10, ZLCand->size(), theWeight);
+  theHistograms.fill("NumberOfZLCandidatesVsMET","Number of ZL candidates vs MET",200,0,800,10, 0, 10, met->pt(), ZLCand->size(), theWeight);
+  theHistograms.fill("NumberOfZLCandidatesVsRegion","Number of ZL candidates vs region type",4,0,4,10, 0, 10,
+		     regionWord.test(3) ? 0 : (regionWord.test(22) ? 1 : (regionWord.test(23) ? 2 : 3 ))
+		     , ZLCand->size(), theWeight);
+
+  theHistograms.fill("NumberOfZL","Number of selected ZL",10, 0, 10, ZL->size(), theWeight);
+  theHistograms.fill("NumberOfZLVsMET","Number of selected ZL vs MET",200,0,800,10, 0, 10, met->pt(), ZL->size(), theWeight);
+  theHistograms.fill("NumberOfZLVsRegion","Number of selected ZL vs region type",4,0,4,10, 0, 10,
+		     regionWord.test(3) ? 0 : (regionWord.test(22) ? 1 : (regionWord.test(23) ? 2 : 3 ))
+		     , ZL->size(), theWeight);
+
+  if(met->pt()<25){
+
+  theHistograms.fill("MET25_NumberOfZLCandidates","Number of ZL candidates MET<25",10, 0, 10, ZLCand->size(), theWeight);
+  theHistograms.fill("MET25_NumberOfZLCandidatesVsMET","Number of ZL candidates vs MET MET<25",200,0,800,10, 0, 10, met->pt(), ZLCand->size(), theWeight);
+  theHistograms.fill("MET25_NumberOfZLCandidatesVsRegion","Number of ZL candidates vs region type MET<25",4,0,4,10, 0, 10,
+		     regionWord.test(3) ? 0 : (regionWord.test(22) ? 1 : (regionWord.test(23) ? 2 : 3 ))
+		     , ZLCand->size(), theWeight);
+
+  theHistograms.fill("MET25_NumberOfZL","Number of selected ZL MET<25",10, 0, 10, ZL->size(), theWeight);
+  theHistograms.fill("MET25_NumberOfZLVsMET","Number of selected ZL vs MET MET<25",200,0,800,10, 0, 10, met->pt(), ZL->size(), theWeight);
+  theHistograms.fill("MET25_NumberOfZLVsRegion","Number of selected ZL vs region type MET<25",4,0,4,10, 0, 10,
+		     regionWord.test(3) ? 0 : (regionWord.test(22) ? 1 : (regionWord.test(23) ? 2 : 3 ))
+		     , ZL->size(), theWeight);
+
+  
+  std::bitset<16> trigger(triggerWord);
+  if(ZL->size() == 1 && trigger.test(8)){
+    std::vector<double> xbins;xbins += 5,7,10,20,30,40,50,80;
+    if(abs(ZL->front().second.id()) == 13){
+      if(fabs(ZL->front().second.eta()) < 1.2)   theHistograms.fill("FakeRate_denom_muons_barrel_pt","Total number of soft leptons in the barrel",xbins,ZL->front().second.pt(),theWeight);
+      else                        theHistograms.fill("FakeRate_denom_muons_endcap_pt","Total number of soft leptons in the endcaps",xbins,ZL->front().second.pt(),theWeight);
+      if(ZL->front().second.passFullSelNoFSRCorr()){
+	if(fabs(ZL->front().second.eta()) < 1.2) theHistograms.fill("FakeRate_num_muons_barrel_pt","Number of tight leptons in the barrel",xbins,ZL->front().second.pt(),theWeight);
+	else theHistograms.fill("FakeRate_num_muons_endcap_pt","Number of tight leptons in the endcaps",xbins,ZL->front().second.pt(),theWeight);
+      }
+    }
+
+    if(abs(ZL->front().second.id()) == 11){
+      if(fabs(ZL->front().second.eta()) < 1.45)   theHistograms.fill("FakeRate_denom_electrons_barrel_pt","Total number of soft leptons in the barrel",xbins,ZL->front().second.pt(),theWeight);
+      else                         theHistograms.fill("FakeRate_denom_electrons_endcap_pt","Total number of soft leptons in the endcaps",xbins,ZL->front().second.pt(),theWeight);
+      if(ZL->front().second.passFullSelNoFSRCorr()){
+	if(fabs(ZL->front().second.eta()) < 1.45) theHistograms.fill("FakeRate_num_electrons_barrel_pt","Number of tight leptons in the barrel",xbins,ZL->front().second.pt(),theWeight);
+	else                       theHistograms.fill("FakeRate_num_electrons_endcap_pt","Number of tight leptons in the endcaps",xbins,ZL->front().second.pt(),theWeight);
+      }
+    }
+  }
+  
+  }
+  
 }
 
 
 
+void VVXAnalyzer::end( TFile &){
+  // theHistograms.clone("FakeRate_num_muons_barrel_pt","FakeRate_muons_barrel_pt");
+  // theHistograms.get("FakeRate_muons_barrel_pt")->Divide(theHistograms.get("FakeRate_denom_muons_barrel_pt"));
+
+  // theHistograms.clone("FakeRate_num_muons_endcap_pt","FakeRate_muons_endcap_pt");
+  // theHistograms.get("FakeRate_muons_endcap_pt")->Divide(theHistograms.get("FakeRate_denom_muons_endcap_pt"));
+
+  // theHistograms.clone("FakeRate_num_electrons_barrel_pt","FakeRate_electrons_barrel_pt");
+  // theHistograms.get("FakeRate_electrons_barrel_pt")->Divide(theHistograms.get("FakeRate_denom_electrons_barrel_pt"));
+
+  // theHistograms.clone("FakeRate_num_electrons_endcap_pt","FakeRate_electrons_endcap_pt");
+  // theHistograms.get("FakeRate_electrons_endcap_pt")->Divide(theHistograms.get("FakeRate_denom_electrons_endcap_pt"));
+}
