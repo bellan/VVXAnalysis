@@ -178,7 +178,6 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
                                            Muons     = cms.InputTag("postCleaningMuons"),
                                            Electrons = cms.InputTag("postCleaningElectrons"),
                                            Diboson   = cms.InputTag("ZZFiltered"),
-                                           EnergyFractionAllowed = cms.double(0), # maximum energy fraction carried by the lepton in the jet, to accept a jet as non from lepton                             
                                            DebugPlots= cms.untracked.bool(False)
                                            )
 
