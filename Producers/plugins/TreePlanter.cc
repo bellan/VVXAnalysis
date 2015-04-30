@@ -778,7 +778,7 @@ int TreePlanter::computeRegionFlag(const pat::CompositeCandidate & vv) const{
   
   if(vv.userFloat("isBestCand") && vv.userFloat("FullSel"))
     set_bit(REGIONFLAG,ZZ);
-   if(vv.userFloat("isBestCRZLLos_2P2F") && vv.userFloat("SelZLL_2P2F"))
+  if(vv.userFloat("isBestCRZLLos_2P2F") && vv.userFloat("SelZLL_2P2F"))
     set_bit(REGIONFLAG,CRZLLos_2P2F);
   if(vv.userFloat("isBestCRZLLos_3P1F") && vv.userFloat("SelZLL_3P1F"))
     set_bit(REGIONFLAG,CRZLLos_3P1F);
