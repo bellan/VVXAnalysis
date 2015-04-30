@@ -3,8 +3,7 @@ identifier,process,crossSection = -1,totalEvents = -1,luminosity = -1,execute=Tr
 ZZTo4eJJ_SMHContinInterf_H125.6,qq_4l2j,2.484688144236787E-004,,,,/ZZTo4eJJ_SMHContinInterf_M-125p6_8TeV-phantom-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,1,,True
 ZZTo2e2muJJ_SMHContinInterf_H125.6,qq_4l2j,5.434945696873235E-004,,,,/ZZTo2e2muJJ_SMHContinInterf_M-125p6_8TeV-phantom-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,1,,True
 ZZTo4muJJ_SMHContinInterf_H125.6,qq_4l2j,2.487975936891337E-004,,,,/ZZTo4muJJ_SMHContinInterf_M-125p6_8TeV-phantom-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,1,,True
-ZZJetsTo4L_withTaus,,0.1733,,,,/ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,6,,
-ZZJetsTo4L,,0.077,,,,/ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,6,NoTaus,True
+ZZJetsTo4L,ZZj,0.077,,,,/ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,6,NoTaus,True
 
 ggTo4e_SMHContinInterf-MCFM67_H125.6,gg_4l,0.000592000,,,,/GluGluTo4e_SMHContinInterf_M-125p6_8TeV-MCFM67-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,1,,True
 ggTo4mu_SMHContinInterf-MCFM67_H125.6,gg_4l,0.000592340,,,,/GluGluTo4mu_SMHContinInterf_M-125p6_8TeV-MCFM67-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM/PAT_CMG_V5_15_0/,cmgtools,cmgTuple.*root,1,,True
