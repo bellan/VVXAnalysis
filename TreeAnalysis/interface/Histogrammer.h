@@ -29,14 +29,21 @@ class Histogrammer{
   
   ~Histogrammer(){}
 
-  TH1 *GetHisto(std::string name){
+  TH1 *get(const std::string& name){
    TH1map::iterator f = thePlots.find(name);
     if(f != thePlots.end()) return dynamic_cast<TH1*>(f->second); 
     else{
-      std::cout<<"ERROR: Histogram "<<name.c_str()<<" not found"<<std::endl;
+      std::cout << "ERROR: Histogram " << name << " not found" << std::endl;
       return nullptr;
     }
   }
+  
+  void clone(const std::string& name, const std::string& newname){
+    TH1map::iterator f = thePlots.find(newname);
+    if(f != thePlots.end()) std::cout << newname << " already exists." << std::endl;
+    else thePlots[newname] = dynamic_cast<TH1*>(get(name)->Clone(newname.c_str()));
+  }
+
 
 
   // Methods for 1D histograms
