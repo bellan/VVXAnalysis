@@ -10,7 +10,7 @@ import sys
 import math
 import operator
 from PDFSysEvaluationTools import *
-from readSampleInfo import *
+from ZZAnalysis.AnalysisStep.readSampleInfo import *
 
 
 folder = sys.argv[1]

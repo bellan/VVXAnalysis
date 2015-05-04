@@ -57,7 +57,7 @@ cd VVXAnalysis/TreeAnalysis
 cmake CMakeLists.txt
 make
 cd python/
-ln -s ../../Producers/python/readSampleInfo.py
+ln -s ../../../ZZAnalysis/AnalysisStep/python/readSampleInfo.py
 ```
 
 - In an environment with SCRAM installed:
@@ -77,7 +77,7 @@ scram b
 cd VVXAnalysis/TreeAnalysis/bin/
 ln -s $CMSSW_BASE/bin/slc5_amd64_gcc462/eventAnalyzer
 cd ../python/
-ln -s ../../Producers/python/readSampleInfo.py
+ln -s ../../../ZZAnalysis/AnalysisStep/python/readSampleInfo.py
 cd ..
 ln -s <samples-location> samples/
 
