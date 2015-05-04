@@ -69,7 +69,7 @@ ln -s ../../../ZZAnalysis/AnalysisStep/python/readSampleInfo.py
   - Make a soft link to readSampleInfo python module (hack, to be fixed).
   - Make a soft link to the directory containing the sample (optional).
 
-For 53X
+For 53X do:
 
 ```
 cmsrel CMSSW_X_Y_Z
@@ -87,14 +87,14 @@ cd ../python/
 ln -s ../../../ZZAnalysis/AnalysisStep/python/readSampleInfo.py
 cd ..
 ln -s <samples-location> samples/
-
 ```
 
-For 72X the recipe is very similar, for ZZAnalysis instead of doing a checkout from "master" do it from "miniAOD". Also, to be 100% sure you are running a compatibel code, before running scram b do:
+For 72X the recipe is very similar, for ```ZZAnalysis``` instead of doing a checkout from ```master``` do it from ```miniAOD```. Also, to be 100% sure you are running a compatible code, before running scram b do:
+```
 cd VVXAnalysis
 git checkout miniAOD
 cd ..
-
+```
 
 - To run the code, please use ```./python/run.py``` and follow the instruction therein written. The normal usage is;
   
