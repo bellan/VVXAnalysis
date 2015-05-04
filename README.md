@@ -89,7 +89,7 @@ cd ..
 ln -s <samples-location> samples/
 ```
 
-For 72X the recipe is very similar, for ```ZZAnalysis``` instead of doing a checkout from ```master``` do it from ```miniAOD```. Also, to be 100% sure you are running a compatible code, before running scram b do:
+For 72X the recipe is very similar, for ```ZZAnalysis``` instead of doing a checkout from ```master``` do it from ```miniAOD```. Also, to be 100% sure you are running a compatible code, before running ```scram b``` add also:
 ```
 cd VVXAnalysis
 git checkout miniAOD
