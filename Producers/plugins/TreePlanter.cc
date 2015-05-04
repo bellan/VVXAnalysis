@@ -381,12 +381,12 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
 
   // Load a bunch of objects from the event
-  edm::Handle<pat::MuonCollection>       muons            ; event.getByLabel(theMuonLabel    ,     muons);
-  edm::Handle<pat::ElectronCollection>   electrons        ; event.getByLabel(theElectronLabel, electrons);
-  edm::Handle<std::vector<cmg::PFJet> >  jets             ; event.getByLabel(theJetLabel     ,      jets);
-  edm::Handle<edm::View<pat::CompositeCandidate> > Vhad   ; event.getByLabel(theVhadLabel    ,      Vhad);
-  edm::Handle<edm::View<pat::CompositeCandidate> > ZZ     ; event.getByLabel(theZZLabel      ,        ZZ);
-  edm::Handle<edm::View<pat::CompositeCandidate> > ZL     ; event.getByLabel(theZLLabel      ,        ZL);
+  edm::Handle<pat::MuonCollection>       muons          ; event.getByLabel(theMuonLabel    ,     muons);
+  edm::Handle<pat::ElectronCollection>   electrons      ; event.getByLabel(theElectronLabel, electrons);
+  edm::Handle<std::vector<cmg::PFJet> >  jets           ; event.getByLabel(theJetLabel     ,      jets);
+  edm::Handle<edm::View<pat::CompositeCandidate> > Vhad ; event.getByLabel(theVhadLabel    ,      Vhad);
+  edm::Handle<edm::View<pat::CompositeCandidate> > ZZ   ; event.getByLabel(theZZLabel      ,        ZZ);
+  edm::Handle<edm::View<pat::CompositeCandidate> > ZL   ; event.getByLabel(theZLLabel      ,        ZL);
 
   foreach(const pat::Muon& muon, *muons){
     //if(!muon.userFloat("isGood") || muon.userFloat("CombRelIsoPF") >= 4) continue;  // commented because the combination of the two flags is more restrictive than Z.userfloat("goodLeptons"), hence the matching can fail.
@@ -436,7 +436,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   }
   if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();     
   else if(ZL_.empty() && applySkim_) return;
-
+  
   theTree->Fill();
 }
 
@@ -463,7 +463,6 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
 
   return output; 
 }
-
 
 phys::Lepton TreePlanter::fill(const pat::Electron &electron) const{
 

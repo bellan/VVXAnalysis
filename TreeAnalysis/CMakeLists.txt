@@ -40,7 +40,7 @@ include_directories(${CMAKE_INCLUDE_PATH})
 set(EventAnalyzer_SRCS ${EventDF_DICTIONARY} ${SRC}/MCInfo.cc ${SRC}/EventAnalyzer.cc ${Commons_src}/SignalDefinitions.cc ${Commons_src}/LeptonScaleFactors.cc ${Commons_src}/RegionTypes.cc)
 
 #Set here the location of the source code of your analysis
-set(VVXAnalyzer_SRCS ${EventAnalyzer_SRCS} ${SRC}/VVXAnalyzer.cc ${SRC}/ZZWAnalyzer.cc ${SRC}/ZZSAnalyzer.cc ${SRC}/ZZjAnalyzer.cc ${SRC}/ZZWSRDefinition.cc ${SRC}/ZZMCAnalyzer ${SRC}/CrossAnalyzer ${SRC}/ZZRecoAnalyzer)
+set(VVXAnalyzer_SRCS ${EventAnalyzer_SRCS} ${SRC}/VVXAnalyzer.cc ${SRC}/ZZWAnalyzer.cc ${SRC}/ZZSAnalyzer.cc ${SRC}/ZZjAnalyzer.cc ${SRC}/ZZWSRDefinition.cc ${SRC}/ZZMCAnalyzer.cc ${SRC}/CrossAnalyzer.cc ${SRC}/ZZRecoAnalyzer.cc)
 
 add_executable(${BIN}/eventAnalyzer ${BIN}/eventAnalyzer.cpp ${SRC}/AnalysisFactory.cc ${VVXAnalyzer_SRCS})
 target_link_libraries(bin/eventAnalyzer ${ROOT_LIBS})
