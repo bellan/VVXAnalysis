@@ -53,6 +53,7 @@ Recipe for tree analysis step
 
 ```
 git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis
+git clone https://github.com/CJLST/ZZAnalysis.git ZZAnalysis
 cd VVXAnalysis/TreeAnalysis
 cmake CMakeLists.txt
 make
@@ -68,11 +69,17 @@ ln -s ../../../ZZAnalysis/AnalysisStep/python/readSampleInfo.py
   - Make a soft link to readSampleInfo python module (hack, to be fixed).
   - Make a soft link to the directory containing the sample (optional).
 
+For 53X
+
 ```
 cmsrel CMSSW_X_Y_Z
 cd CMSSW_X_Y_Z/src/
 cmsenv
 git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis
+git clone -n https://github.com/CJLST/ZZAnalysis ZZAnalysis
+cd ZZAnalysis
+git checkout master -- AnalysisStep/python/readSampleInfo.py
+cd -
 scram b
 cd VVXAnalysis/TreeAnalysis/bin/
 ln -s $CMSSW_BASE/bin/slc5_amd64_gcc462/eventAnalyzer
@@ -82,6 +89,7 @@ cd ..
 ln -s <samples-location> samples/
 
 ```
+
 
 - To run the code, please use ```./python/run.py``` and follow the instruction therein written. The normal usage is;
   
