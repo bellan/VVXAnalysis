@@ -495,7 +495,7 @@ std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::
   if(Z0.mass() > 120. || Z0.mass() < 60. || Z1.mass() > 120. || Z1.mass() < 60.)
     inZMassWindow = false;
 
-  if(!passllLowMass || !inZMassWindow) return std::make_tuple(false, phys::Boson<phys::Particle>(), phys::Boson<phys::Particle>());
+  if(!passllLowMass || !inZMassWindow) return std::make_tuple(false, Z0, Z1);
   else return std::make_tuple(true, Z0, Z1);
 }
 
