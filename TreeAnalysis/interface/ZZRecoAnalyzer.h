@@ -23,23 +23,33 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
   
   virtual ~ZZRecoAnalyzer(){}
   
-  void ZZplots(int id = -1);
+  void ZZplots(int id = -1, int e = 0);
   
   virtual void analyze();
   
   virtual void begin();
   
   virtual void end( TFile &);
-  
+
+  int e;
+
+  Long64_t nentries = 0;
+
   float m4L_gen;
-  
+
+  double JER_PtSmear(double pt, double width);
+  // Jets obtained by gaussian JER smearing
+  std::vector<phys::Jet> *centralJER_jets;
+  std::vector<phys::Jet> *centralJER_jets_up;
+  std::vector<phys::Jet> *centralJER_jets_down;
+ 
  private:
   
   friend class Selector<ZZRecoAnalyzer>;
   
   std::vector<double> Xbins; 
   std::vector<double> Ybins; 
-
+  
   template< class PAR >
     bool ZBosonDefinition(phys::Boson<PAR> cand) const{
     return fabs(cand.p4().M() - phys::ZMASS) < 20;
