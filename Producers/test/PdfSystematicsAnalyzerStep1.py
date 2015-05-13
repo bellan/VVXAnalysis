@@ -4,18 +4,16 @@
 
 import FWCore.ParameterSet.Config as cms
 
-### ----------------------------------------------------------------------
-### Based on ZZ->4l strategy.
-###----------------------------------------------------------------------
-LEPTON_SETUP = 2012
-JET_SETUP = 2012
+
+LEPTON_SETUP = 2015
 #PD = ""
 #MCFILTER = ""
-ELECORRTYPE = "Paper" # "None", "Moriond", or "Paper"
-ELEREGRESSION = "Paper" # "None", "Moriond", "PaperNoComb", or "Paper"
-APPLYMUCORR = True
-#MCFILTER = "signaldefinition"
-SIGNALDEFINITION = int('1',2) # -1 means get everything, 1 means the request of having a ZZ pair with the mass in the choosedn windows. For other topology see the README under VVXAnalysis/Commons.
+ELECORRTYPE   = "None" # "None", "Moriond", or "Paper"
+ELEREGRESSION = "None" # "None", "Moriond", "PaperNoComb", or "Paper" 
+APPLYMUCORR = False # ??? FIXME
+
+SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the chosen windows. For other topology see the README under VVXAnalysis/Commons.
+
 try:
     IsMC
 except NameError:
@@ -24,7 +22,7 @@ except NameError:
 try:
     LEPTON_SETUP
 except NameError:
-    LEPTON_SETUP = 2012 # define the set of effective areas, rho corrections, etc.
+    LEPTON_SETUP = 2015
 
 try:
     JET_SETUP
@@ -34,7 +32,7 @@ except NameError:
 try:
     PD
 except NameError:
-    PD = "" # "" for MC, "DoubleEle", "DoubleMu", or "MuEG" for data
+    PD = ""             # "" for MC, "DoubleEle", "DoubleMu", or "MuEG" for data 
 
 try:
     MCFILTER
@@ -46,11 +44,14 @@ try:
 except NameError:
     XSEC = -1
 
+try:
+    SKIM_REQUIRED
+except NameError:
+    SKIM_REQUIRED = True
 
 
 #Process name
 process = cms.Process("PDFWEIGHT")
-#process = cms.Process("Sequence")
 
 
 # Max events
@@ -61,17 +62,8 @@ process.maxEvents = cms.untracked.PSet(
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
-#process.TFileService=cms.Service('TFileService',
-#fileName=cms.string('PDFStudies.root')
-#)
-
-infile1='/store/cmst3/user/cmgtools/CMG/ZZTo4mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_UR6.root'
-infile2= '/store/cmst3/user/cmgtools/CMG/ZZTo2e2mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_irQ.root'
-infile3='/store/cmst3/group/cmgtools/CMG/ZZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_10_1_UV1.root'
-# Input files (on disk)
 process.source = cms.Source("PoolSource",
-      
-                            fileNames = cms.untracked.vstring(infile2)
+                            fileNames = cms.untracked.vstring()
                             
 )
 
@@ -98,10 +90,10 @@ process.weightout = cms.OutputModule("PoolOutputModule",
                                      )
 
 process.zzGenCategory = cms.EDFilter("ZZGenFilterCategory",
-                                     Topology = cms.int32(1), # -1 means get everything
+                                     Topology = cms.int32(SIGNALDEFINITION), # -1 means get everything
                                      ParticleStatus = cms.int32(1), 
-                                     src            = cms.InputTag("genParticlesPruned"),
-                                     GenJets        = cms.InputTag("genJetSel")
+                                     src            = cms.InputTag("prunedGenParticles"),
+                                     GenJets        = cms.InputTag("slimmedGenJets")
                                      )
 
 

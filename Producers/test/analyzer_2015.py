@@ -9,7 +9,7 @@ ELECORRTYPE   = "None" # "None", "Moriond", or "Paper"
 ELEREGRESSION = "None" # "None", "Moriond", "PaperNoComb", or "Paper" 
 APPLYMUCORR = False # ??? FIXME
 
-SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the choosedn windows. For other topology see the README under VVXAnalysis/Commons.
+SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the chosen windows. For other topology see the README under VVXAnalysis/Commons.
 
 try:
     IsMC
