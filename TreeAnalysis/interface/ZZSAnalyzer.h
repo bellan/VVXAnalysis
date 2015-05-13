@@ -13,6 +13,10 @@
 #include "EventAnalyzer.h"
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
+#include <vector>
+#include <boost/assign/std/vector.hpp> // for 'operator+=()'
+#include <boost/assert.hpp>
+using namespace boost::assign;
 
 class ZZSAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZSAnalyzer>{
 
@@ -24,9 +28,42 @@ public:
   virtual ~ZZSAnalyzer(){}
 
   virtual void analyze();
-  virtual Int_t cut();
+  virtual void end(TFile &);
+  /* virtual Int_t cut(); */
 
-  void ZZplots(int id =-1);
+  /* void ZZplots(int id =-1); */
+  int sig = 0;
+  int bkg = 0;
+  int e =0;
+  Long64_t nentries = 0;
+  int tot_gen = 0;
+  int sig_def = 0;
+  /* int sig_100 = 0; */
+  /* int bkg_100= 0; */
+  /* int sig_200 = 0; */
+  /* int bkg_200 = 0; */
+
+  /* int sig_250 = 0; */
+  /* int bkg_250 = 0; */
+  /* int sig_300 = 0; */
+  /* int bkg_300 = 0; */
+  /* int sig_350 = 0; */
+  /* int bkg_350 = 0; */
+  /* int sig_400 = 0; */
+  /* int bkg_400 = 0; */
+  /* int sig_500 = 0; */
+  /* int bkg_500 = 0; */
+  /* int sig_600 = 0; */
+  /* int bkg_600 = 0;  */
+  /* int sig_800 = 0; */
+  /* int bkg_800 = 0; */
+
+  float m4L_r = 0;
+  float m4L_g = 0; 
+  float m4L_g_tot = 0;
+
+  std::vector<double> bins;
+  //std::vector<double> ybins;
 
  private:
   friend class Selector<ZZSAnalyzer>;
