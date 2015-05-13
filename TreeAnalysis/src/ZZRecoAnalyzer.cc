@@ -32,51 +32,38 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
   
   Int_t njets = jets->size();
   if (njets>3) njets=3;
+  
+  //1D Reco nJet Distributions (no JER smearing)
   theHistograms.fill(std::string("ZZTo")+decay+"_Jets_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight); 
   theHistograms.fill(std::string("ZZTo")+decay+"_Jets_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight);  
+  
+  //1D Reco Mass Distributions
   theHistograms.fill(std::string("ZZTo")+decay+"_Mass_01", std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, ZZ->mass(),theWeight);
   theHistograms.fill(std::string("ZZTo")+decay+"_Mass_"+sample, std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, ZZ->mass(),theWeight);
   
+  //if MC
   if (genCategory !=-1 && topology.test(0)){
+    
     Int_t ngenjets =  genJets->size(); 
     if (ngenjets>3) ngenjets=3;
+    
+    //Response Matrix nJets (Reco&Gen) - No JER smearing
     theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Jets_"+sample, std::string("Response matrix number of jets of ZZ_{1}#rightarrow ")+decay, 4,0,4,4,0,4, njets,ngenjets, theWeight); 
     theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Jets_01", std::string("Response matrix number of jets of ZZ_{1}#rightarrow ")+decay, 4,0,4,4,0,4, njets,ngenjets, theWeight); 
-    
+     
+    //Response Matrix Mass (Reco&Gen) 
     m4L_gen = sqrt((genVBParticles->at(0).p4()+genVBParticles->at(1).p4())*(genVBParticles->at(0).p4()+genVBParticles->at(1).p4()));
     theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Mass_"+sample, std::string("Response matrix invariant mass of ZZ_{1}#rightarrow ")+decay, Xbins, Xbins, ZZ->mass() ,m4L_gen , theWeight); 
     theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Mass_01", std::string("Response matrix invariant mass of ZZ_{1}#rightarrow ")+decay, Xbins, Xbins, ZZ->mass() ,m4L_gen , theWeight);
-  }
-  
-  if(region_ == phys::CR3P1F || region_ == phys::CR2P2F) {
-    theHistograms.fill(std::string("ZZTo")+decay+"_Mass"+"_FRVar", std::string("Var From FR Invariant mass of ZZ_{1}#rightarrow ")+decay, Xbins, ZZ->mass(),ZZ->fakeRateSFVar());
-    theHistograms.fill(std::string("ZZTo")+decay+"_Jets"+"_FRVar", std::string("Var From FR Invariant mass of ZZ_{1}#rightarrow ")+decay ,4,0,4,njets,ZZ->fakeRateSFVar());
-  }
-}
-
-double ZZRecoAnalyzer::JER_PtSmear(double pt, double width)
-{
-  double ptsmear= gRandom->Gaus(pt,width);    
-  return ptsmear;
-}
-
-void ZZRecoAnalyzer::analyze(){
-  
-  e++;
-  
-  ZZplots();   // ZZ --> 4l
-  ZZplots(52,e); // ZZ --> 4m
-  ZZplots(48,e); // ZZ --> 2e2m
-  ZZplots(44,e); // ZZ --> 4e
-  
-  if (genCategory !=-1 && topology.test(0)){     
-    centralJER_jets  = new std::vector<phys::Jet>();
-    centralJER_jets_up  = new std::vector<phys::Jet>();
-    centralJER_jets_down  = new std::vector<phys::Jet>();
     
-    centralJER_jets->clear();
-    centralJER_jets_up->clear();
-    centralJER_jets_down->clear();
+    //Smearing jet pt (Up and Down distributions just for systematic uncertainty estimate)
+    CentralJER_jets  = new std::vector<phys::Jet>();
+    UpJER_jets  = new std::vector<phys::Jet>();
+    DownJER_jets  = new std::vector<phys::Jet>();
+    
+    CentralJER_jets->clear();
+    UpJER_jets->clear();
+    DownJER_jets->clear();
     
     foreach(const phys::Jet &jet, *pjets){
       double jetPt = 0;
@@ -96,30 +83,61 @@ void ZZRecoAnalyzer::analyze(){
       newJetPt_up = JER_PtSmear(jetPt, width_up);  
       newJetPt_down = JER_PtSmear(jetPt, width_down);
       
-      if(newJetPt > 30) centralJER_jets->push_back(jet);
-      if(newJetPt_up > 30) centralJER_jets_up->push_back(jet); 
-      if(newJetPt_down > 30) centralJER_jets_down->push_back(jet);
+      if(newJetPt > 30) CentralJER_jets->push_back(jet);
+      if(newJetPt_up > 30) UpJER_jets->push_back(jet); 
+      if(newJetPt_down > 30) DownJER_jets->push_back(jet);
       
     }
-    
-    
-    std::string decay  = "4l";
-    std::string sample;
-    if      (ZZ->id() == 52) {decay = "4m";}
-    else if (ZZ->id() == 48) {decay = "2e2m";}
-    else if (ZZ->id() == 44) {decay = "4e";}
 
-    if(e < nentries/2){sample = "0";}
-    else {sample = "1";}
-    
-    theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERCentralSmear_"+sample, "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4,centralJER_jets->size() , theWeight);
-    theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERUpSmear_"+sample, "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4,centralJER_jets_up->size() , theWeight);
-    theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERDownSmear_"+sample, "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4,centralJER_jets_down->size() , theWeight);
-    theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERCentralSmear_01", "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4,centralJER_jets->size() , theWeight);
-    theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERUpSmear_01", "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4,centralJER_jets_up->size() , theWeight);
-    theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERDownSmear_01", "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4,centralJER_jets_down->size() , theWeight);
+    Int_t nCentralJERjets = CentralJER_jets->size();
+    Int_t nUpJERjets = UpJER_jets->size();
+    Int_t nDownJERjets = DownJER_jets->size();
+
+    if (nCentralJERjets>3) nCentralJERjets=3;
+    if (nUpJERjets>3) nUpJERjets=3;
+    if (nDownJERjets>3) nDownJERjets=3;
+
+    //1D Reco nJet Distributions - JER smearing (Jets_JERCentralSmear to be used in the standard analysis)
+    theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERCentralSmear_"+sample, "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4,nCentralJERjets , theWeight);
+    theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERUpSmear_"+sample, "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4,nUpJERjets , theWeight);
+    theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERDownSmear_"+sample, "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4,nDownJERjets , theWeight);
+    theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERCentralSmear_01", "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4,nCentralJERjets , theWeight);
+    theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERUpSmear_01", "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4,nUpJERjets , theWeight);
+    theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERDownSmear_01", "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4,nDownJERjets , theWeight);
+ 
+    //Response Matrix nJets (Reco&Gen) - JER smearing (Jets_JERCentralSmear to be used in the standard analysis)
+    theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Jets_JERCentralSmear_"+sample, std::string("Response matrix number of jets of ZZ_{1}#rightarrow ")+decay, 4,0,4,4,0,4,nCentralJERjets,ngenjets, theWeight); 
+    theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Jets_JERCentralSmear_01", std::string("Response matrix number of jets of ZZ_{1}#rightarrow ")+decay, 4,0,4,4,0,4,nCentralJERjets,ngenjets, theWeight); 
+    theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Jets_JERUpSmear_"+sample, std::string("Response matrix number of jets of ZZ_{1}#rightarrow ")+decay, 4,0,4,4,0,4,nUpJERjets,ngenjets, theWeight); 
+    theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Jets_JERUpSmear_01", std::string("Response matrix number of jets of ZZ_{1}#rightarrow ")+decay, 4,0,4,4,0,4,nUpJERjets,ngenjets, theWeight); 
+theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Jets_JERDownSmear_"+sample, std::string("Response matrix number of jets of ZZ_{1}#rightarrow ")+decay, 4,0,4,4,0,4,nDownJERjets,ngenjets, theWeight); 
+    theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Jets_JERDownSmear_01", std::string("Response matrix number of jets of ZZ_{1}#rightarrow ")+decay, 4,0,4,4,0,4,nDownJERjets,ngenjets, theWeight); 
+}
+
+  
+  if(region_ == phys::CR3P1F || region_ == phys::CR2P2F) {
+    theHistograms.fill(std::string("ZZTo")+decay+"_Mass"+"_FRVar", std::string("Var From FR Invariant mass of ZZ_{1}#rightarrow ")+decay, Xbins, ZZ->mass(),ZZ->fakeRateSFVar());
+    theHistograms.fill(std::string("ZZTo")+decay+"_Jets"+"_FRVar", std::string("Var From FR Invariant mass of ZZ_{1}#rightarrow ")+decay ,4,0,4,njets,ZZ->fakeRateSFVar());
   }
 }
+
+//Smearing function
+double ZZRecoAnalyzer::JER_PtSmear(double pt, double width)
+{
+  double ptsmear= gRandom->Gaus(pt,width);    
+  return ptsmear;
+}
+
+void ZZRecoAnalyzer::analyze(){
+  
+  e++;
+  
+  ZZplots();   // ZZ --> 4l
+  ZZplots(52,e); // ZZ --> 4m
+  ZZplots(48,e); // ZZ --> 2e2m
+  ZZplots(44,e); // ZZ --> 4e
+  
+ }
 
 void ZZRecoAnalyzer::begin() {
   nentries = tree()->GetEntries("ZZCand.passFullSel_");

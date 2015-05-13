@@ -39,9 +39,9 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
 
   double JER_PtSmear(double pt, double width);
   // Jets obtained by gaussian JER smearing
-  std::vector<phys::Jet> *centralJER_jets;
-  std::vector<phys::Jet> *centralJER_jets_up;
-  std::vector<phys::Jet> *centralJER_jets_down;
+  std::vector<phys::Jet> *CentralJER_jets;
+  std::vector<phys::Jet> *UpJER_jets;
+  std::vector<phys::Jet> *DownJER_jets;
  
  private:
   
