@@ -116,7 +116,7 @@ theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Jets_JERDownSmear_"+sample
 
   
   if(region_ == phys::CR3P1F || region_ == phys::CR2P2F) {
-    theHistograms.fill(std::string("ZZTo")+decay+"_Mass"+"_FRVar", std::string("Var From FR Invariant mass of ZZ_{1}#rightarrow ")+decay, Xbins, ZZ->mass(),ZZ->fakeRateSFVar());
+     theHistograms.fill(std::string("ZZTo")+decay+"_Mass"+"_FRVar", std::string("Var From FR Invariant mass of ZZ_{1}#rightarrow ")+decay, Xbins, ZZ->mass(),ZZ->fakeRateSFVar());
     theHistograms.fill(std::string("ZZTo")+decay+"_Jets"+"_FRVar", std::string("Var From FR Invariant mass of ZZ_{1}#rightarrow ")+decay ,4,0,4,njets,ZZ->fakeRateSFVar());
   }
 }
@@ -132,7 +132,7 @@ void ZZRecoAnalyzer::analyze(){
   
   e++;
   
-  ZZplots();   // ZZ --> 4l
+  // ZZplots();   // ZZ --> 4l
   ZZplots(52,e); // ZZ --> 4m
   ZZplots(48,e); // ZZ --> 2e2m
   ZZplots(44,e); // ZZ --> 4e
@@ -141,7 +141,7 @@ void ZZRecoAnalyzer::analyze(){
 
 void ZZRecoAnalyzer::begin() {
   nentries = tree()->GetEntries("ZZCand.passFullSel_");
-  Xbins += 100,200,250,300,350,400,500,600,800,1000;
+  Xbins += 100,200,250,300,350,400,500,600,800;
   m4L_gen =0;
   
 }

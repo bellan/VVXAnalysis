@@ -27,8 +27,8 @@ void ZZMCAnalyzer::ZZplots(string decay){
  }
  
  string sample = "01";
- // if(PreCounter < nentries/2) {sample = "0";} 
- //else {sample = "1";}
+ if(PreCounter < nentries/2) {sample = "0";} 
+ else {sample = "1";}
  
  m4L_gen = sqrt((genVBParticles->at(0).p4()+genVBParticles->at(1).p4())*(genVBParticles->at(0).p4()+genVBParticles->at(1).p4()));
  
@@ -36,15 +36,15 @@ void ZZMCAnalyzer::ZZplots(string decay){
  if (njets>3) njets=3;
  
 
- //theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight());  
+ theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight());  
  theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight());
 
- //theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight());
+ theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight());
  theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_01", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight());
  
 
- //theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenPU_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.weight());  
- //theHistograms.fill(std::string("ZZTo")+decay+"_MassGenPU_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.weight());
+ theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenPU_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.weight());  
+ theHistograms.fill(std::string("ZZTo")+decay+"_MassGenPU_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.weight());
   
   if(regionWord.test(3)) {
     theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenReco_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight);  
@@ -87,7 +87,7 @@ void ZZMCAnalyzer::begin() {
 
   nentries =  tree()->GetEntries();
   PreCounter = 0;
-  Xbins += 100,200,250,300,350,400,500,600,800,1000;
+  Xbins += 100,200,250,300,350,400,500,600,800;
   m4L_gen = 0;
 
 }
