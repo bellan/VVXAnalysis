@@ -33,7 +33,7 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
 
   int e;
 
-  Long64_t nentries = 0;
+  Long64_t nentries;
 
   float m4L_gen;
 
