@@ -24,8 +24,8 @@ public:
  VVXAnalyzer(const AnalysisConfiguration& configuration)
    : EventAnalyzer(*(new Selector<VVXAnalyzer>(*this)), 
 		   configuration)
-    , lepSF("/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root","/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root",
-	    "/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root","/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root")
+    //, lepSF("/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root","/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root",
+   //	    "/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root","/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root")
 
 {
     //theHistograms.profile(genCategory);
@@ -64,7 +64,7 @@ public:
 
   }
 
-  LeptonScaleFactors lepSF;
+  //LeptonScaleFactors lepSF;
 
 
 
