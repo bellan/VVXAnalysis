@@ -14,6 +14,7 @@
 #include <map>
 
 #include "VVXAnalysis/DataFormats/interface/Particle.h"
+#include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
 //#include "VVXAnalysis/TreeAnalysis/interface/GenMCInfo.h"
 
@@ -70,10 +71,18 @@ public:
 /*   double theInputWeightedEvents; */
   
   // Access to the branches
+
+  //std::vector<phys::Particle> *genParticlesIn; TBranch * b_genParticlesIn;  
+  std::vector<phys::Particle>               *genParticles;   TBranch *b_genParticles;
+  std::vector<phys::Boson<phys::Particle> > *genVBParticles; TBranch *b_genVBParticles;
+  std::vector<phys::Particle>               *pgenJets;       TBranch *b_pgenJets;
+
+  // Jets with pT > 30 GeV and |eta| < 4.7 (not in the tree)
+  std::vector<phys::Particle> *genJets;
   
-  std::vector<phys::Particle> *genParticles; TBranch *b_genParticles;
-  std::vector<phys::Particle> *genParticlesIn; TBranch * b_genParticlesIn;
-  
+  // Central jets (not in the tree)
+  std::vector<phys::Particle> *centralGenJets;
+
 };
 
 #endif
