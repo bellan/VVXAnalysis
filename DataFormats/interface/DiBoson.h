@@ -59,7 +59,7 @@ namespace phys {
     
     template<typename T1, typename T2>
       DiBoson<T1,T2> clone() const {
-      DiBoson<T1,T2> newdiboson(daughter0_.clone<T1>(), daughter1_.clone<T2>());
+      DiBoson<T1,T2> newdiboson(daughter0_.template clone<T1>(), daughter1_.template clone<T2>());
       newdiboson.setTriggerWord(triggerWord_);
       newdiboson.setRegionWord (regionWord_ );
       newdiboson.setIsBestCand (isBestCand_ );
