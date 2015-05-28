@@ -56,6 +56,11 @@ namespace zz{
 
   SignalTopology getSignalTopologyStatus3(const std::vector<phys::Particle> &theGenl, const std::vector<phys::Particle> &theGenj);			    
   SignalTopology getSignalTopology       (const std::vector<phys::Particle> &theGenl, std::vector<phys::Particle> &theGenj);			    
+
+  bool checkLeptonAcceptance(const phys::Particle &lepton);
+  bool inTightFiducialRegion(const zz::SignalTopology &topology);
+  bool inHiggsFiducialRegion(const zz::SignalTopology &topology);
+
 }
 
 
