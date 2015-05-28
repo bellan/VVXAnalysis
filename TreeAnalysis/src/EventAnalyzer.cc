@@ -158,7 +158,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
     if(jet.pt() > 30){
       bool leptonMatch = false;
       foreach(const phys::Particle &gen, *genParticles)
-	if(physmath::deltaR(gen,jet) < 0.5 && (abs(gen.id()) == 11 || abs(gen.id()) == 13)) leptonMatch = true;
+	if(physmath::deltaR(gen,jet) < 0.5 && (abs(gen.id()) == 11 || abs(gen.id()) == 13)) leptonMatch = true; // FIXME for RUN II 0.5 --> 0.4
       
       if(!leptonMatch){
 	if(fabs(jet.eta()) < 4.7) genJets->push_back(jet);
