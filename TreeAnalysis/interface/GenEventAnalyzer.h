@@ -17,7 +17,7 @@
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
 //#include "VVXAnalysis/TreeAnalysis/interface/GenMCInfo.h"
-
+#include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
 
 class TFile;
 class TTree;
@@ -46,13 +46,17 @@ public:
   virtual Int_t    GetEntry(Long64_t entry);
   virtual Long64_t LoadTree(Long64_t entry);
   virtual void     Init(TTree *tree);
-  
+
+  void makeBasicPlots(const std::string &selection, const zz::SignalTopology& zzSignalTopology);
+
  private:
   TTree *theTree;
   int fCurrent;
   double lumi_;
   float xsec_;
   float theWeight;
+  int numberOfAnalyzedEvents_;
+  int numberOfInputEvents_;
   
  protected:
   /*   static const double ZMASS; */
