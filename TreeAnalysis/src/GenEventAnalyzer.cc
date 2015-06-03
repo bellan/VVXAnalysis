@@ -184,6 +184,8 @@ void GenEventAnalyzer::makeBasicPlots(const std::string &selection, const zz::Si
 
   phys::BosonParticle Z0 = std::get<1>(zzSignalTopology);
   phys::BosonParticle Z1 = std::get<2>(zzSignalTopology);
+  if(!Z0.isValid() or !Z1.isValid()) return;
+
   phys::DiBoson<phys::Particle,phys::Particle> ZZ(Z0,Z1);
   
   theHistograms.fill(selection+"_Z0mass"    , selection+" Z0 mass", 100,  0,150,  Z0.mass(), theWeight);
@@ -200,9 +202,11 @@ void GenEventAnalyzer::makeBasicPlots(const std::string &selection, const zz::Si
   if(genJets->size() > 1)        theHistograms.fill(selection+"_DeltaEtaJJ", selection+" #Delta #eta(j,j)", 25,0,7.5, abs(genJets->at(0).eta()-genJets->at(1).eta()), theWeight);
   if(centralGenJets->size() > 1) theHistograms.fill(selection+"_mJJ"       , selection+" m_{jj}"          , 20,0,400, (centralGenJets->at(0).p4()+centralGenJets->at(1).p4()).M(), theWeight);
   
-  theHistograms.fill(selection+"_DeltaPhiZ0Z1", selection+" #Delta #Phi", 30,  0, M_PI, physmath::deltaPhi(Z0.phi(),Z1.phi()),theWeight);
-  theHistograms.fill(selection+"_DeltaRZ0Z1"  , selection+" #Delta R"   , 100, 0,10   , physmath::deltaR(Z0,Z1), theWeight);
+  theHistograms.fill(selection+"_DeltaPhiZ0Z1", selection+" #Delta #Phi", 30,  0, M_PI, fabs(physmath::deltaPhi(Z0.phi(),Z1.phi())),theWeight);
+  theHistograms.fill(selection+"_DeltaRZ0Z1"  , selection+" #Delta R"   , 100, 0,10   , fabs(physmath::deltaR(Z0,Z1)), theWeight);
   
+     
+
   std::vector<phys::Particle>  leptons;
   for(int i = 0; i < 2; ++i) {leptons.push_back(Z0.daughter(i));leptons.push_back(Z1.daughter(i));}
   stable_sort(leptons.begin(),  leptons.end(),  phys::PtComparator());
