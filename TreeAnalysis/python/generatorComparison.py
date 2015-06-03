@@ -25,7 +25,9 @@ def plot(plotName, log = False):
     hPowheg = getPlot("powheg.root",plotName,ROOT.kBlue,24)
     hMGLO   = getPlot("mglo.root",plotName,8,21)
 
-    legend = ROOT.TLegend(0.25,0.73,0.50,0.86)
+    legend = ROOT.TLegend(0.54,0.78,0.79,0.91)
+    if 'Z0mass' in plotName or 'Z1mass' in plotName: legend = ROOT.TLegend(0.20,0.78,0.45,0.91)
+
     legend.AddEntry(hMGNLO,"MadGraph (NLO)","lp")
     legend.AddEntry(hMGLO,"MadGraph (LO)","lp")
     legend.AddEntry(hPowheg,"Powheg (NLO)","lp")
@@ -35,6 +37,7 @@ def plot(plotName, log = False):
     legend.SetFillColor(ROOT.kWhite)
     legend.SetLineColor(ROOT.kWhite)
     legend.SetShadowColor(ROOT.kWhite)
+    
     
 
     c1 = ROOT.TCanvas(plotName,plotName)
@@ -62,6 +65,7 @@ def plot(plotName, log = False):
     hRatio_MGNLO_Powheg.SetLineColor(ROOT.kBlack) 
     hRatio_MGNLO_Powheg.SetMarkerColor(ROOT.kBlack) 
     hRatio_MGNLO_Powheg.SetMarkerStyle(21) 
+    hRatio_MGNLO_Powheg.GetYaxis().SetRangeUser(0,5)
     hRatio_MGNLO_Powheg.Draw()
     line.Draw("same")
     l.DrawLatex(0.25,0.75,"MadGraph (NLO) / Powheg")
@@ -73,6 +77,7 @@ def plot(plotName, log = False):
     hRatio_MGNLO_MGLO.SetLineColor(ROOT.kBlack) 
     hRatio_MGNLO_MGLO.SetMarkerColor(ROOT.kBlack) 
     hRatio_MGNLO_MGLO.SetMarkerStyle(21) 
+    hRatio_MGNLO_MGLO.GetYaxis().SetRangeUser(0,5)
     hRatio_MGNLO_MGLO.Draw()
     line.Draw("same")
     l.DrawLatex(0.25,0.75,"MadGraph (NLO) / MadGrap (LO)")
@@ -84,6 +89,7 @@ def plot(plotName, log = False):
     hRatio_Powheg_MGLO.SetLineColor(ROOT.kBlack) 
     hRatio_Powheg_MGLO.SetMarkerColor(ROOT.kBlack) 
     hRatio_Powheg_MGLO.SetMarkerStyle(21) 
+    hRatio_Powheg_MGLO.GetYaxis().SetRangeUser(0,5)
     hRatio_Powheg_MGLO.Draw()
     line.Draw("same")
     l.DrawLatex(0.25,0.75,"Powheg / MadGraph (LO)")
@@ -96,12 +102,12 @@ def plot(plotName, log = False):
     if log: 
         minYtmp = hMGLO.GetMinimum() if hMGLO.GetMinimum() > hPowheg.GetMinimum() else hPowheg.GetMinimum()
         minY = hMGNLO.GetMinimum() if hMGNLO.GetMinimum() > minYtmp else minYtmp
-        hMGNLO.GetYaxis().SetRangeUser(minY+0.01,maxY*1.20)
+        hMGNLO.GetYaxis().SetRangeUser(minY if not minY == 0 else 0.0001, maxY*1.20)
         c1.GetPad(1).SetLogy()
 
     c1.Update()
     c1.SaveAs('{0:s}{1:s}.png'.format(plotName, '_log' if log else ''))
-    input()
+    #input()
 
 if __name__ == '__main__':
     setTDRStyle()
