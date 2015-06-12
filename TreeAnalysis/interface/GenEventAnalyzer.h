@@ -39,7 +39,7 @@ public:
   virtual void  begin() {};
   virtual Int_t cut();
   virtual void  analyze();
-  virtual void  end(TFile &) {};
+  virtual void  end(TFile &);
   
  private:
   // Structural functions to access the tree branches. User is not supposed to change these.
@@ -86,6 +86,10 @@ public:
   
   // Central jets (not in the tree)
   std::vector<phys::Particle> *centralGenJets;
+
+  int passSignal;
+  int passSignalTightFiducialRegion;
+  int passHiggsFiducialRegion;
 
 };
 

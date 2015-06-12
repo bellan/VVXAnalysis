@@ -44,6 +44,9 @@ GenEventAnalyzer::GenEventAnalyzer(std::string filename,
 				   )
   : lumi_(lumi)
   , xsec_(xsec)
+  , passSignal(0)
+  , passSignalTightFiducialRegion(0)
+  , passHiggsFiducialRegion(0)
 
 {
 
@@ -184,6 +187,7 @@ void GenEventAnalyzer::makeBasicPlots(const std::string &selection, const zz::Si
 
   phys::BosonParticle Z0 = std::get<1>(zzSignalTopology);
   phys::BosonParticle Z1 = std::get<2>(zzSignalTopology);
+  
   if(!Z0.isValid() or !Z1.isValid()) return;
 
   phys::DiBoson<phys::Particle,phys::Particle> ZZ(Z0,Z1);
@@ -196,22 +200,21 @@ void GenEventAnalyzer::makeBasicPlots(const std::string &selection, const zz::Si
   theHistograms.fill(selection+"_ZZmassZoom", selection+" ZZ mass", 10, 100,140,  ZZ.mass(), theWeight);
   theHistograms.fill(selection+"_ZZpt"      , selection+" ZZ pT"  , 50,   0,500,  ZZ.pt(), theWeight);
   
-  
-  theHistograms.fill(selection+"_nJets"       , selection+" number of jets", 10, 0, 10, genJets->size(), theWeight);
-  theHistograms.fill(selection+"_nCentralJets", selection+" number of jets", 10, 0, 10, centralGenJets->size(), theWeight);
-  if(genJets->size() > 1)        theHistograms.fill(selection+"_DeltaEtaJJ", selection+" #Delta #eta(j,j)", 25,0,7.5, abs(genJets->at(0).eta()-genJets->at(1).eta()), theWeight);
-  if(centralGenJets->size() > 1) theHistograms.fill(selection+"_mJJ"       , selection+" m_{jj}"          , 20,0,400, (centralGenJets->at(0).p4()+centralGenJets->at(1).p4()).M(), theWeight);
-  
   theHistograms.fill(selection+"_DeltaPhiZ0Z1", selection+" #Delta #Phi", 30,  0, M_PI, fabs(physmath::deltaPhi(Z0.phi(),Z1.phi())),theWeight);
   theHistograms.fill(selection+"_DeltaRZ0Z1"  , selection+" #Delta R"   , 100, 0,10   , fabs(physmath::deltaR(Z0,Z1)), theWeight);
-  
-     
 
   std::vector<phys::Particle>  leptons;
   for(int i = 0; i < 2; ++i) {leptons.push_back(Z0.daughter(i));leptons.push_back(Z1.daughter(i));}
   stable_sort(leptons.begin(),  leptons.end(),  phys::PtComparator());
   theHistograms.fill(selection+"_leadingLeptonPt", selection+"_Leading lepton pt", 30,0,300, leptons.at(0).pt(), theWeight);
   
+
+  theHistograms.fill(selection+"_nJets"       , selection+" number of jets", 10, 0, 10, genJets->size(), theWeight);
+  theHistograms.fill(selection+"_nCentralJets", selection+" number of jets", 10, 0, 10, centralGenJets->size(), theWeight);
+  if(genJets->size() > 1)        theHistograms.fill(selection+"_DeltaEtaJJ", selection+" #Delta #eta(j,j)", 25,0,7.5, abs(genJets->at(0).eta()-genJets->at(1).eta()), theWeight);
+  if(centralGenJets->size() > 1) theHistograms.fill(selection+"_mJJ"       , selection+" m_{jj}"          , 20,0,400, (centralGenJets->at(0).p4()+centralGenJets->at(1).p4()).M(), theWeight);
+
+
 }
 
 
@@ -221,10 +224,10 @@ void GenEventAnalyzer::analyze() {
   zz::SignalTopology zzSignalTopology = zz::getSignalTopology(*genParticles, *genJets);
   
                                                     makeBasicPlots("All",zzSignalTopology);
-  if(std::get<0>(zzSignalTopology) > 0)             makeBasicPlots("Signal",zzSignalTopology);
-  if(zz::inTightFiducialRegion(zzSignalTopology))   makeBasicPlots("SignalTightFiducialRegion",zzSignalTopology);
+  if(std::get<0>(zzSignalTopology) > 0)            {makeBasicPlots("Signal",zzSignalTopology);                    ++passSignal;}
+  if(zz::inTightFiducialRegion(zzSignalTopology))  {makeBasicPlots("SignalTightFiducialRegion",zzSignalTopology); ++passSignalTightFiducialRegion;}
   if(std::get<0>(zzSignalTopology) == 0)            makeBasicPlots("NonSignal",zzSignalTopology);
-  if(zz::inHiggsFiducialRegion(zzSignalTopology))   makeBasicPlots("HiggsFiducialRegion",zzSignalTopology);
+  if(zz::inHiggsFiducialRegion(zzSignalTopology))  {makeBasicPlots("HiggsFiducialRegion",zzSignalTopology);       ++passHiggsFiducialRegion;}
 
 }
 
@@ -245,4 +248,9 @@ Int_t GenEventAnalyzer::cut() {
 
 
 
+void GenEventAnalyzer::end(TFile &){
+  cout << "Signal cross section: "                       << passSignal/float(numberOfAnalyzedEvents_)*xsec_                    << " pb" << endl
+       << "Signal Tight Fiducial Region cross section: " << passSignalTightFiducialRegion/float(numberOfAnalyzedEvents_)*xsec_ << " pb" << endl
+       << "Higgs Fiducial Region cross section: "        << passHiggsFiducialRegion/float(numberOfAnalyzedEvents_)*xsec_       << " pb" << endl;
 
+}
