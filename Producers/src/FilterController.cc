@@ -2,6 +2,8 @@
 #include <ZZAnalysis/AnalysisStep/interface/bitops.h>
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
+#include <iostream>
+
 using namespace std;
 
 FilterController::FilterController(const edm::ParameterSet& pset) :

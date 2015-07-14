@@ -6,6 +6,7 @@
 #include "TH2F.h"
 #include "ZZAnalysis/AnalysisStep/interface/bitops.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
+#include <iostream>
 
 class PdfSystematicsAnalyzerZZ: public edm::EDAnalyzer {
 public:
