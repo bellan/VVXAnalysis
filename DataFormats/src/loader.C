@@ -1,4 +1,5 @@
 #include "../interface/Particle.h"
+#include "../interface/GenStatusBit.h"
 // #include "../DataFormats/interface/Lepton.h"
 // #include "../DataFormats/interface/Jet.h"
 // #include "../DataFormats/interface/Electron.h"
@@ -19,6 +20,8 @@
 // #pragma link C++ class  phys::DiBoson<phys::Electron, phys::Lepton >+;
 // #pragma link C++ class  phys::DiBoson<phys::Lepton  , phys::Electron >+;
 // #pragma link C++ class  phys::DiBoson<phys::Electron, phys::Electron >+;
+
+#pragma link C++ enum GenStatusBits;
 
 #pragma link C++ class  std::vector<phys::Particle>;
 // #pragma link C++ class  std::vector<phys::Lepton>;
