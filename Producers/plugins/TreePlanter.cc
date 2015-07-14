@@ -306,7 +306,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     
     mcprocweight_ = mcHistoryTools_->gethepMCweight();
     
-    // Sum of weight, particularly imprtant for MCs that return also negative weights
+    // Sum of weight, particularly important for MCs that return also negative weights
     // or, in general, weighted events
     sumpuweights_       += puweight_;
     summcprocweights_   += mcprocweight_;
