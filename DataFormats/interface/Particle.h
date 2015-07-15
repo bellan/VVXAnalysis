@@ -12,6 +12,9 @@
 #include <TObject.h>
 #include <TLorentzVector.h> 
 #include "Math/GenVector/LorentzVector.h"
+#include <bitset>
+
+#include "GenStatusBit.h"
 
 #include <iostream>
 #include <cmath>
@@ -36,18 +39,20 @@ namespace phys {
       : p4_(mom)
       , charge_(q)
       , id_(i)
-      , motherId_(-99.)
+      , motherId_(-99)
       , efficiencySF_(1.)
       , fakeRateSF_(1.)
+      , genStatusFlags_(-99)
       {}
 
       Particle(const LorentzVector& l, float q =0, int i = 0)
 	:p4_(convert(l))
 	, charge_(q)
 	, id_(i)
-	, motherId_(-99.)
+	, motherId_(-99)
         , efficiencySF_(1.)
         , fakeRateSF_(1.)
+        , genStatusFlags_(-99)
       {}
 
 	
@@ -102,6 +107,11 @@ namespace phys {
 
     Bool_t   passFullSel() const {return true;}
  
+    // Gen info, in case they are meaningfull
+    std::bitset<15> genStatusFlags() const {return genStatusFlags_;}
+    void setGenStatusBit(GenStatusBit bit, int val = 1) {genStatusFlags_.set(bit, val);}
+    
+
   protected:
     TLorentzVector p4_;
     Float_t charge_;
@@ -110,6 +120,7 @@ namespace phys {
     Double_t efficiencySF_;
     Double_t fakeRateSF_;
     Double_t fakeRateSFUnc_;
+    std::bitset<15> genStatusFlags_;
 
   public:
     friend std::ostream&  operator<<(std::ostream& os, const Particle& obj){

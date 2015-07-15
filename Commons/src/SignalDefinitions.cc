@@ -7,6 +7,7 @@
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 #include "VVXAnalysis/Commons/interface/Comparators.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
+#include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 #include <bitset>
 
 
@@ -478,7 +479,7 @@ std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::
     }
   }  
  
-  if(Z1.id() == 0) return std::make_tuple(false, phys::Boson<phys::Particle>(), phys::Boson<phys::Particle>());
+  if(Z1.id() == 0) return std::make_tuple(false, Z0, phys::Boson<phys::Particle>());
   
   // Now check that the 4 leptons are not mismatched due to the presence of low mass resonances 
   
@@ -692,14 +693,15 @@ zz::SignalTopology zz::getSignalTopologyStatus3(const std::vector<phys::Particle
 
 zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theGenl, std::vector<phys::Particle> &theGenj){
   
-  bitset<16>  topology;   
+  bitset<16>  topology(0);   
   
   std::vector<phys::Particle> theGenlm, theGenlp;
 
-  foreach(const phys::Particle &p, theGenl)
+  foreach(const phys::Particle &p, theGenl){
+    if(abs(p.id()) != 11 && abs(p.id()) != 13) continue;
     if (p.id() > 0) theGenlm.push_back(p); // negative leptons                                          
     else            theGenlp.push_back(p); // positive leptons 
-  
+  }
   
   // Creation and filling of the vector of Z boson candidates
   std::vector<phys::Boson<phys::Particle> > Z;
@@ -715,22 +717,17 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   if ( Z.size() < 2) return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1);
   
   std::tuple<bool, phys::Boson<phys::Particle>,phys::Boson<phys::Particle> > Zpair = zz::getZZ(Z);
+  Z0 = std::get<1>(Zpair); 
+  Z1 = std::get<2>(Zpair); 
     
   // Not enough Zs with good quality 
   if(!std::get<0>(Zpair)) return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1); 
 
-     
-  Z0 = std::get<1>(Zpair); 
-  Z1 = std::get<2>(Zpair); 
-
-
-  int Z0DaugID = Z0.daughter(0).id();  
-  int Z1DaugID = Z1.daughter(1).id();
 
   // Clean the gen jet collection properly
   std::vector<phys::Particle> tmp;
   foreach(const phys::Particle& jet, theGenj)
-    if(physmath::deltaR(Z0.daughter(0),jet) > 0.5 &&
+    if(physmath::deltaR(Z0.daughter(0),jet) > 0.5 && // FIXME: for RUN II 0.5 --> 0.4
        physmath::deltaR(Z0.daughter(1),jet) > 0.5 &&
        physmath::deltaR(Z1.daughter(0),jet) > 0.5 &&
        physmath::deltaR(Z1.daughter(1),jet) > 0.5)
@@ -815,6 +812,9 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   
   if(has5leptons)      topology.set(6);    //ZZ4l + 1lepton
 
+  
+  int Z0DaugID = Z0.daughter(0).id();  
+  int Z1DaugID = Z1.daughter(1).id();
 
   if(abs(Z0DaugID) == 13 || abs(Z1DaugID) == 13) topology.set(7);
   if(abs(Z0DaugID) == 11 || abs(Z1DaugID) == 11) topology.set(8);
@@ -837,3 +837,70 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
 }
 
 
+
+bool zz::checkLeptonAcceptance(const phys::Particle &lepton){
+
+  if(abs(lepton.id()) == 11 && lepton.pt() > 7 && fabs(lepton.eta()) < 2.5) return true;
+
+  if(abs(lepton.id()) == 13 && lepton.pt() > 5 && fabs(lepton.eta()) < 2.4) return true;
+
+  return false;
+}
+
+
+bool zz::inTightFiducialRegion(const zz::SignalTopology &topology){
+
+  if(std::get<0>(topology) <= 0) return false;
+
+  int pt10 = 0; 
+  int pt20 = 0;
+
+  bool acceptance = false;
+
+  // Ask for leptons within eta and pt acceptance
+  if(std::get<1>(topology).isValid() && std::get<2>(topology).isValid()) 
+    acceptance = checkLeptonAcceptance(std::get<1>(topology).daughter(0)) && checkLeptonAcceptance(std::get<1>(topology).daughter(1)) &&
+      checkLeptonAcceptance(std::get<2>(topology).daughter(0)) && checkLeptonAcceptance(std::get<2>(topology).daughter(1));
+  
+  for(int i = 0; i < 2; ++i){
+      if(std::get<1>(topology).daughter(i).pt() > 10) ++pt10; 
+      if(std::get<1>(topology).daughter(i).pt() > 20) ++pt20;
+      if(std::get<2>(topology).daughter(i).pt() > 10) ++pt10; 
+      if(std::get<2>(topology).daughter(i).pt() > 20) ++pt20;
+     }
+  bool trigger = false;
+  if(pt10 > 0 && pt20 > 0) trigger = true;
+  return acceptance && trigger;
+}
+
+
+bool zz::inHiggsFiducialRegion(const zz::SignalTopology &topology){
+
+  if(!std::get<1>(topology).isValid() || !std::get<2>(topology).isValid()) return false;
+
+  phys::Boson<phys::Particle> Z0 = std::get<1>(topology);
+  phys::Boson<phys::Particle> Z1 = std::get<2>(topology);
+  phys::DiBoson<phys::Particle,phys::Particle> ZZ(Z0,Z1);
+
+  bool massrequirements =  Z0.mass() > 40 && Z0.mass() < 120 && Z1.mass() > 12 && Z1.mass() < 120 &&  ZZ.mass() > 100;
+  
+  int pt10 = 0; 
+  int pt20 = 0;
+
+  bool acceptance = false;
+
+  // Ask for leptons within eta and pt acceptance
+  if(std::get<1>(topology).isValid() && std::get<2>(topology).isValid()) 
+    acceptance = checkLeptonAcceptance(std::get<1>(topology).daughter(0)) && checkLeptonAcceptance(std::get<1>(topology).daughter(1)) &&
+      checkLeptonAcceptance(std::get<2>(topology).daughter(0)) && checkLeptonAcceptance(std::get<2>(topology).daughter(1));
+  
+  for(int i = 0; i < 2; ++i){
+      if(std::get<1>(topology).daughter(i).pt() > 10) ++pt10; 
+      if(std::get<1>(topology).daughter(i).pt() > 20) ++pt20;
+      if(std::get<2>(topology).daughter(i).pt() > 10) ++pt10; 
+      if(std::get<2>(topology).daughter(i).pt() > 20) ++pt20;
+     }
+  bool trigger = false;
+  if(pt10 > 0 && pt20 > 0) trigger = true;
+  return massrequirements && acceptance && trigger;
+}

@@ -1,7 +1,7 @@
-#ifndef VVXAnalyzer_h
-#define VVXAnalyzer_h
+#ifndef FakeRateAnalyzer_h
+#define FakeRateAnalyzer_h
 
-/** \class VVXAnalyzer
+/** \class FakeRateAnalyzer
  *  Concrete class for VVX analysis
  *
  *  $Date: 2013/03/15 13:37:31 $
@@ -15,23 +15,23 @@
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 
-class VVXAnalyzer: public EventAnalyzer, RegistrableAnalysis<VVXAnalyzer>{
+class FakeRateAnalyzer: public EventAnalyzer, RegistrableAnalysis<FakeRateAnalyzer>{
 
 public:
 
   //, const std::string& filename, const double& lumi = 1., const double& externalXSection = -1., bool doBasicPlots = false
 
- VVXAnalyzer(const AnalysisConfiguration& configuration)
-   : EventAnalyzer(*(new Selector<VVXAnalyzer>(*this)), 
+ FakeRateAnalyzer(const AnalysisConfiguration& configuration)
+   : EventAnalyzer(*(new Selector<FakeRateAnalyzer>(*this)), 
 		   configuration)
-    //, lepSF("/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root","/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root",
-   //	    "/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root","/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root")
+    , lepSF("/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root","/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root",
+	    "/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root","/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root")
 
 {
     //theHistograms.profile(genCategory);
   }
 
-  virtual ~VVXAnalyzer(){}
+  virtual ~FakeRateAnalyzer(){}
 
   virtual void analyze();
   
@@ -39,13 +39,25 @@ public:
 
   void ZZplots(int id = -1);
 
+  virtual void end( TFile &);
+  virtual void addOptions();
+
  private:
-  friend class Selector<VVXAnalyzer>;
+  friend class Selector<FakeRateAnalyzer>;
   template< class PAR >
     bool ZBosonDefinition(phys::Boson<PAR> cand) const{
     bool checkCharge = cand.daughter(0).charge() + cand.daughter(1).charge() == 0;
     return checkCharge && fabs(cand.p4().M() - phys::ZMASS) < 30;
   }
+  /* bool ZBosonDefinition(phys::Boson<phys::Lepton> cand) const{ */
+  /*   return fabs(cand.p4().M() - ZMASS) < 15; */
+  /* } */
+  
+  /* bool ZBosonDefinition(phys::Boson<phys::Electron> cand) const{ */
+
+  /*   return fabs(cand.p4().M() - ZMASS) < 15; */
+  /* } */
+
 
 
   template< class PAR >
@@ -64,7 +76,7 @@ public:
 
   }
 
-  //LeptonScaleFactors lepSF;
+  LeptonScaleFactors lepSF;
 
 
 

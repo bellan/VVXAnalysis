@@ -8,7 +8,9 @@
 #include "VVXAnalysis/Commons/interface/Colours.h"
 #include "VVXAnalysis/Commons/interface/Comparators.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
-
+#include "VVXAnalysis/Commons/interface/Utilities.h"
+#include "VVXAnalysis/DataFormats/interface/TypeDefs.h"
+#include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 
 #include <TChain.h>
 #include <TFile.h>
@@ -42,6 +44,9 @@ GenEventAnalyzer::GenEventAnalyzer(std::string filename,
 				   )
   : lumi_(lumi)
   , xsec_(xsec)
+  , passSignal(0)
+  , passSignalTightFiducialRegion(0)
+  , passHiggsFiducialRegion(0)
 
 {
 
@@ -49,8 +54,19 @@ GenEventAnalyzer::GenEventAnalyzer(std::string filename,
   tree->Add(filename.c_str());
 
   if (tree == 0) std::cout<<Important("Error in GenEventAnalyzer ctor:")<<" The tree has a null pointer."<<std::endl;
-
   Init(tree);
+
+  TFile *in = new TFile(filename.c_str());
+  TH1F *hNInputEvents = (TH1F*)in->Get("NumberOfEvents");
+  numberOfAnalyzedEvents_ = hNInputEvents->GetBinContent(1);
+  numberOfInputEvents_    = hNInputEvents->GetBinContent(2);
+  theWeight = lumi_*xsec_/numberOfAnalyzedEvents_;
+  cout << "Number of analyzed events: "          << Green(numberOfAnalyzedEvents_) << endl
+       << "Number of selected events in input: " << Green(numberOfInputEvents_)    << endl
+       << "Cross section: " << Green(xsec_) << Green(" pb") << " luminosity: " << Green(lumi_) << Green("/pb") << " sample weight: " << Green(theWeight) << endl;
+
+  delete hNInputEvents;
+  delete in;
 }
 
 
@@ -62,8 +78,8 @@ GenEventAnalyzer::~GenEventAnalyzer(){
 
 
 
-void GenEventAnalyzer::Init(TTree *tree)
-{
+void GenEventAnalyzer::Init(TTree *tree){
+
   
   // Set branch addresses and branch pointers
   if (!tree) return;
@@ -71,12 +87,13 @@ void GenEventAnalyzer::Init(TTree *tree)
   fCurrent = -1;
  
   // Gen Particles   
-  genParticles     = 0; 
-  b_genParticles   = 0; 
-  theTree->SetBranchAddress("genParticles"  , &genParticles  , &b_genParticles);
-  genParticlesIn   = 0; 
-  b_genParticlesIn = 0; 
-  theTree->SetBranchAddress("genParticlesIn", &genParticlesIn, &b_genParticlesIn);
+
+  //genParticlesIn   = 0; b_genParticlesIn = 0; theTree->SetBranchAddress("genParticlesIn", &genParticlesIn, &b_genParticlesIn);
+  genParticles   = 0;                                                b_genParticles   = 0; theTree->SetBranchAddress("genParticles"  , &genParticles  , &b_genParticles);
+  genVBParticles = new std::vector<phys::Boson<phys::Particle> > (); b_genVBParticles = 0; theTree->SetBranchAddress("genVBParticles", &genVBParticles, &b_genVBParticles);
+  pgenJets       = 0;                                                b_pgenJets       = 0; theTree->SetBranchAddress("genJets"       , &pgenJets      , &b_pgenJets);
+
+  genJets  = new std::vector<phys::Particle>(); centralGenJets  = new std::vector<phys::Particle>();
  
 }
 
@@ -94,6 +111,21 @@ Int_t GenEventAnalyzer::GetEntry(Long64_t entry){
   if (!theTree) return 0;
   
   int e =  theTree->GetEntry(entry);
+
+  stable_sort(pgenJets->begin(),  pgenJets->end(),  phys::PtComparator());
+  genJets->clear(); centralGenJets->clear();
+  foreach(const phys::Particle &jet, *pgenJets)
+    if(jet.pt() > 30){
+      bool leptonMatch = false;
+      foreach(const phys::Particle &gen, *genParticles)
+	if(physmath::deltaR(gen,jet) < 0.4 && (abs(gen.id()) == 11 || abs(gen.id()) == 13)) leptonMatch = true;
+      
+      if(!leptonMatch){
+	if(fabs(jet.eta()) < 4.7) genJets->push_back(jet);
+	if(fabs(jet.eta()) < 2.4) centralGenJets->push_back(jet);
+      }
+    }
+
 
   return e;
 }
@@ -126,13 +158,12 @@ void GenEventAnalyzer::loop(const std::string outputfile){
   begin();
 
   for (Long64_t jentry=0; jentry<nentries; ++jentry) {
-
     Long64_t ientry = LoadTree(jentry);
     if (ientry < 0) break;
+
     nb = GetEntry(jentry);  nbytes += nb; 
 
     if (cut() < 0) continue;
-
     analyze();
   }
 
@@ -151,127 +182,53 @@ void GenEventAnalyzer::loop(const std::string outputfile){
 // ------------------------------------------------------------------------------------------ //
 
 
+
+void GenEventAnalyzer::makeBasicPlots(const std::string &selection, const zz::SignalTopology& zzSignalTopology){
+
+  phys::BosonParticle Z0 = std::get<1>(zzSignalTopology);
+  phys::BosonParticle Z1 = std::get<2>(zzSignalTopology);
+  
+  if(!Z0.isValid() or !Z1.isValid()) return;
+
+  phys::DiBoson<phys::Particle,phys::Particle> ZZ(Z0,Z1);
+  
+  theHistograms.fill(selection+"_Z0mass"    , selection+" Z0 mass", 100,  0,150,  Z0.mass(), theWeight);
+  theHistograms.fill(selection+"_Z1mass"    , selection+" Z1 mass", 100,  0,150,  Z1.mass(), theWeight);
+  theHistograms.fill(selection+"_Z0pt"      , selection+" Z0 pT"  , 30,   0,300,  Z0.pt(), theWeight);
+  theHistograms.fill(selection+"_Z1pt"      , selection+" Z1 pT"  , 30,   0,300,  Z1.pt(), theWeight);
+  theHistograms.fill(selection+"_ZZmass"    , selection+" ZZ mass", 75, 100,1000, ZZ.mass(), theWeight);
+  theHistograms.fill(selection+"_ZZmassZoom", selection+" ZZ mass", 10, 100,140,  ZZ.mass(), theWeight);
+  theHistograms.fill(selection+"_ZZpt"      , selection+" ZZ pT"  , 50,   0,500,  ZZ.pt(), theWeight);
+  
+  theHistograms.fill(selection+"_DeltaPhiZ0Z1", selection+" #Delta #Phi", 30,  0, M_PI, fabs(physmath::deltaPhi(Z0.phi(),Z1.phi())),theWeight);
+  theHistograms.fill(selection+"_DeltaRZ0Z1"  , selection+" #Delta R"   , 100, 0,10   , fabs(physmath::deltaR(Z0,Z1)), theWeight);
+
+  std::vector<phys::Particle>  leptons;
+  for(int i = 0; i < 2; ++i) {leptons.push_back(Z0.daughter(i));leptons.push_back(Z1.daughter(i));}
+  stable_sort(leptons.begin(),  leptons.end(),  phys::PtComparator());
+  theHistograms.fill(selection+"_leadingLeptonPt", selection+"_Leading lepton pt", 30,0,300, leptons.at(0).pt(), theWeight);
+  
+
+  theHistograms.fill(selection+"_nJets"       , selection+" number of jets", 10, 0, 10, genJets->size(), theWeight);
+  theHistograms.fill(selection+"_nCentralJets", selection+" number of jets", 10, 0, 10, centralGenJets->size(), theWeight);
+  if(genJets->size() > 1)        theHistograms.fill(selection+"_DeltaEtaJJ", selection+" #Delta #eta(j,j)", 25,0,7.5, abs(genJets->at(0).eta()-genJets->at(1).eta()), theWeight);
+  if(centralGenJets->size() > 1) theHistograms.fill(selection+"_mJJ"       , selection+" m_{jj}"          , 20,0,400, (centralGenJets->at(0).p4()+centralGenJets->at(1).p4()).M(), theWeight);
+
+
+}
+
+
 void GenEventAnalyzer::analyze() {
   
-  //  cout << "GenParticlesIn size = " << genParticlesIn->size() << endl;
- theWeight = lumi_*xsec_/200000.;
+  
+  zz::SignalTopology zzSignalTopology = zz::getSignalTopology(*genParticles, *genJets);
+  
+                                                    makeBasicPlots("All",zzSignalTopology);
+  if(std::get<0>(zzSignalTopology) > 0)            {makeBasicPlots("Signal",zzSignalTopology);                    ++passSignal;}
+  if(zz::inTightFiducialRegion(zzSignalTopology))  {makeBasicPlots("SignalTightFiducialRegion",zzSignalTopology); ++passSignalTightFiducialRegion;}
+  if(std::get<0>(zzSignalTopology) == 0)            makeBasicPlots("NonSignal",zzSignalTopology);
+  if(zz::inHiggsFiducialRegion(zzSignalTopology))  {makeBasicPlots("HiggsFiducialRegion",zzSignalTopology);       ++passHiggsFiducialRegion;}
 
- if (genParticles->size() >= 3) {
-
-  theHistograms.fill("Number of events", "Number of events", 10, 0, 10, 0, theWeight);
-
-   std::vector<const Particle* > Genj;
-   std::vector<const Particle* > Genq;
-   std::vector<const Particle* > Genl;
-   std::vector<const Particle* > GenZ;
-   std::vector<const Particle* > GenW;
-   
-   
-   foreach(const Particle& b, *genParticles) {
-     
-     int s_id = b.id();
-     int id   = abs(s_id);
-     
-     if ( id < 7 || id == 21 ) Genj.push_back(&b);  //quark and gluons
-     
-     if ( id < 7 ) Genq.push_back(&b);               //quark
-     
-     else if ( id >= 11 && id <= 16 ) Genl.push_back(&b);        //leptons
-     
-     else if (id == 23)  GenZ.push_back(&b);                     // Z
-     
-     else if ( id == 24 ) GenW.push_back(&b);                    // W
-
-     else cout << "!!!!!!! I've found id = " << id << endl;
-
-     if ( id == 21 ) cout << "I'VE FOUND A GLUON!!!" << endl;  
-      
-   } 
-
-    cout << "---------- genParticles: history information ----------" << endl; 
-    cout << "Number of generated Z= "        << GenZ.size() << endl;
-    cout << "Number of generated W= "        << GenW.size() << endl;
-    cout << "Number of generated q = "       << Genq.size() << endl;
-    cout << "Number of generated q and g = " << Genj.size() << endl;
-    cout << "Number of generated l = "       << Genl.size() << endl;
-    cout << "Weight = " << theWeight << endl;
-    
- 
-    if ( GenZ.size() >= 2 && GenW.size() >= 1 ) {
-	
-      const Particle* Z0 = GenZ.at(0);
-      const Particle* Z1 = GenZ.at(1);
-      const Particle* W  = GenW.at(0);
-      
-      const Particle* l0 = Genl.at(0);
-      const Particle* l1 = Genl.at(1);
-      const Particle* l2 = Genl.at(2);
-      const Particle* l3 = Genl.at(3);
-      
-      const Particle* j0 = Genq.at(0);
-      const Particle* j1 = Genq.at(1);
-
-      TLorentzVector p_Z0 = Z0->p4();
-      TLorentzVector p_Z1 = Z1->p4();
-      TLorentzVector p_W  = W->p4();
-      
-      TLorentzVector p_l0 = l0->p4();
-      TLorentzVector p_l1 = l1->p4();
-      TLorentzVector p_l2 = l2->p4();
-      TLorentzVector p_l3 = l3->p4();
-      
-      TLorentzVector p_j0 = j0->p4();
-      TLorentzVector p_j1 = j1->p4();
-      
-      TLorentzVector p_4l = p_l0 + p_l1 + p_l2 + p_l3;
-      TLorentzVector p_jj = p_j0 + p_j1;
-      TLorentzVector p_6f = p_4l + p_jj;
-
-      double Detajj = p_j0.Eta() - p_j1.Eta();
-      
-      
-      //------------Mass--------------
-
-      theHistograms.fill("M_Z0", "M_Z0", 100, 40, 140, p_Z0.M(), theWeight);
-      theHistograms.fill("M_Z1", "M_Z1", 100, 40, 140, p_Z1.M(), theWeight);
-      theHistograms.fill("M_W" , "M_W" , 100, 40, 140, p_W.M() , theWeight);
-      
-    
-      theHistograms.fill("M_ll0", "M_ll0", 100, 40, 140, (p_l0 + p_l1).M(), theWeight);
-      theHistograms.fill("M_ll1", "M_ll1", 100, 40, 140, (p_l2 + p_l3).M(), theWeight);
-      theHistograms.fill("M_jj" , "M_jj" , 100, 40, 140, (p_j0 + p_j1).M(), theWeight);
-      theHistograms.fill("M_4l" , "M_4l" , 1000, 0, 1000, p_4l.M()        , theWeight);
-      theHistograms.fill("M_6f" , "M_6f" , 3000, 0, 3000, p_6f.M()        , theWeight);
-      
-      
-      
-      //------------Pt--------------
-
-      theHistograms.fill("Pt_Z0", "Pt_Z0", 500, 0, 500, Z0->pt(), theWeight);
-      theHistograms.fill("Pt_Z1", "Pt_Z1", 500, 0, 500, Z1->pt(), theWeight);
-      theHistograms.fill("Pt_W" , "Pt_W" , 500, 0, 500, W->pt() , theWeight);
-      
-      
-      theHistograms.fill("Pt_l0", "Pt_l0", 1000, 0, 1000, l0->pt() , theWeight);
-      theHistograms.fill("Pt_l1", "Pt_l1", 1000, 0, 1000, l1->pt() , theWeight);
-      theHistograms.fill("Pt_l2", "Pt_l2", 1000, 0, 1000, l2->pt() , theWeight);
-      theHistograms.fill("Pt_l3", "Pt_l3", 1000, 0, 1000, l3->pt() , theWeight);
-      theHistograms.fill("Pt_j0", "Pt_j0", 1000, 0, 1000, j0->pt() , theWeight);
-      theHistograms.fill("Pt_j1", "Pt_j1", 1000, 0, 1000, j1->pt() , theWeight);
-      theHistograms.fill("Pt_4l", "Pt_4l", 1000, 0, 1000, p_4l.Pt(), theWeight);
-
-
-
-      //------------Deta--------------
-      
-      theHistograms.fill("Deta_jj", "Deta_jj", 100, 0, 5, Detajj , theWeight);
-      
-    }
-    
- }
- 
- // else cout << "GenParticles size < 3. It is  = " << genParticles->size() <<endl;
- 
 }
 
 
@@ -291,4 +248,9 @@ Int_t GenEventAnalyzer::cut() {
 
 
 
+void GenEventAnalyzer::end(TFile &){
+  cout << "Signal cross section: "                       << passSignal/float(numberOfAnalyzedEvents_)*xsec_                    << " pb" << endl
+       << "Signal Tight Fiducial Region cross section: " << passSignalTightFiducialRegion/float(numberOfAnalyzedEvents_)*xsec_ << " pb" << endl
+       << "Higgs Fiducial Region cross section: "        << passHiggsFiducialRegion/float(numberOfAnalyzedEvents_)*xsec_       << " pb" << endl;
 
+}

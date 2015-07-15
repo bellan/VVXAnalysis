@@ -32,12 +32,12 @@ public:
   /* virtual Int_t cut(); */
 
   /* void ZZplots(int id =-1); */
-  int sig = 0;
-  int bkg = 0;
-  int e =0;
-  Long64_t nentries = 0;
-  int tot_gen = 0;
-  int sig_def = 0;
+  int sig;
+  int bkg;
+  int e;
+  Long64_t nentries;
+  int tot_gen;
+  int sig_def;
   /* int sig_100 = 0; */
   /* int bkg_100= 0; */
   /* int sig_200 = 0; */
@@ -58,9 +58,9 @@ public:
   /* int sig_800 = 0; */
   /* int bkg_800 = 0; */
 
-  float m4L_r = 0;
-  float m4L_g = 0; 
-  float m4L_g_tot = 0;
+  float m4L_r;
+  float m4L_g;
+  float m4L_g_tot;
 
   std::vector<double> bins;
   //std::vector<double> ybins;

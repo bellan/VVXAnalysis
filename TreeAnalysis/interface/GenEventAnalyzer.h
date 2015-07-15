@@ -14,9 +14,10 @@
 #include <map>
 
 #include "VVXAnalysis/DataFormats/interface/Particle.h"
+#include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
 //#include "VVXAnalysis/TreeAnalysis/interface/GenMCInfo.h"
-
+#include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
 
 class TFile;
 class TTree;
@@ -38,20 +39,24 @@ public:
   virtual void  begin() {};
   virtual Int_t cut();
   virtual void  analyze();
-  virtual void  end(TFile &) {};
+  virtual void  end(TFile &);
   
  private:
   // Structural functions to access the tree branches. User is not supposed to change these.
   virtual Int_t    GetEntry(Long64_t entry);
   virtual Long64_t LoadTree(Long64_t entry);
   virtual void     Init(TTree *tree);
-  
+
+  void makeBasicPlots(const std::string &selection, const zz::SignalTopology& zzSignalTopology);
+
  private:
   TTree *theTree;
   int fCurrent;
   double lumi_;
   float xsec_;
   float theWeight;
+  int numberOfAnalyzedEvents_;
+  int numberOfInputEvents_;
   
  protected:
   /*   static const double ZMASS; */
@@ -70,10 +75,22 @@ public:
 /*   double theInputWeightedEvents; */
   
   // Access to the branches
+
+  //std::vector<phys::Particle> *genParticlesIn; TBranch * b_genParticlesIn;  
+  std::vector<phys::Particle>               *genParticles;   TBranch *b_genParticles;
+  std::vector<phys::Boson<phys::Particle> > *genVBParticles; TBranch *b_genVBParticles;
+  std::vector<phys::Particle>               *pgenJets;       TBranch *b_pgenJets;
+
+  // Jets with pT > 30 GeV and |eta| < 4.7 (not in the tree)
+  std::vector<phys::Particle> *genJets;
   
-  std::vector<phys::Particle> *genParticles; TBranch *b_genParticles;
-  std::vector<phys::Particle> *genParticlesIn; TBranch * b_genParticlesIn;
-  
+  // Central jets (not in the tree)
+  std::vector<phys::Particle> *centralGenJets;
+
+  int passSignal;
+  int passSignalTightFiducialRegion;
+  int passHiggsFiducialRegion;
+
 };
 
 #endif
