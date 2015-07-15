@@ -3,6 +3,9 @@
 <bin file="eventAnalyzer.cpp" name="eventAnalyzer">
 </bin>
 
+<bin file="treeFilter.cpp" name="treeFilter">
+</bin>
+
 
 <bin file="genEventAnalyzer.cpp" name="genEventAnalyzer">
 </bin>
