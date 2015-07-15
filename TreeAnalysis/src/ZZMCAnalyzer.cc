@@ -31,20 +31,34 @@ void ZZMCAnalyzer::ZZplots(string decay){
  else {sample = "1";}
  
  m4L_gen = sqrt((genVBParticles->at(0).p4()+genVBParticles->at(1).p4())*(genVBParticles->at(0).p4()+genVBParticles->at(1).p4()));
- 
- Int_t njets = genJets->size();
+
+ njets = genJets->size();
  if (njets>3) njets=3;
  
-
  theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight());  
  theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight());
-
  theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight());
  theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_01", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight());
- 
-
  theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenPU_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.weight());  
  theHistograms.fill(std::string("ZZTo")+decay+"_MassGenPU_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.weight());
+
+
+ //To calculate distributions weighted for the ratio between the unfolded data and the generator MC (an early unfolding is required)
+ // string UnfOverMC_Jets = "ZZTo"+decay+"_Jets_Ratio"; 
+ // h_UnfOverMC_Jets = (TH1*) UnfOverMC->Get(UnfOverMC_Jets.c_str()); 
+ // int bin_Jets = h_UnfOverMC_Jets->FindBin(njets); 
+ // float w_Jets = h_UnfOverMC_Jets->GetBinContent(bin_Jets);
+ //  theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_W_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight()*w_Jets);  
+ // theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_W_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight()*w_Jets);
+ 
+ // string UnfOverMC_Mass = "ZZTo"+decay+"_Mass_Ratio"; 
+ // h_UnfOverMC_Mass = (TH1*) UnfOverMC->Get(UnfOverMC_Mass.c_str()); 
+ // int bin_Mass = h_UnfOverMC_Mass->FindBin(m4L_gen); 
+ // float w_Mass = h_UnfOverMC_Mass->GetBinContent(bin_Mass); 
+ // cout  << m4L_gen << " " << bin_Mass << " " << w_Mass << " " <<  theMCInfo.sampleWeight()<< " " << theMCInfo.sampleWeight()*w_Mass << endl;
+ // theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_W_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_Mass);
+ // theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_W_01", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_Mass);
+
   
   if(regionWord.test(3)) {
     theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenReco_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight);  
@@ -77,19 +91,19 @@ if (topology.test(0)){
     else if(Ele&!Muon) {decay = "4e";}   
     else std::cout<<"NO FINALSTATE"<<std::endl;
    
-	ZZplots("4l");
-	ZZplots(decay);
- 
+    ZZplots("4l");
+    ZZplots(decay);
+    
  }  
 }
 
 void ZZMCAnalyzer::begin() {
-
+  //UnfOverMC = new TFile("/macros/UnfoldingMacros/Ratio_UnfoldedDataOverGenMC.root");
   nentries =  tree()->GetEntries();
   PreCounter = 0;
   Xbins += 100,200,250,300,350,400,500,600,800;
   m4L_gen = 0;
-
+  njets = 0;
 }
 
 void ZZMCAnalyzer::end( TFile &) {
