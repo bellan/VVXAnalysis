@@ -27,7 +27,12 @@ public:
 
   Long64_t nentries;
   float m4L_gen;
+  int njets;
   int PreCounter;
+
+  TFile * UnfOverMC;
+  TH1 * h_UnfOverMC_Mass; 
+  TH1 * h_UnfOverMC_Jets;
 
  private:
 
