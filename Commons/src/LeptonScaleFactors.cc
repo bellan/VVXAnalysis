@@ -35,13 +35,14 @@ double LeptonScaleFactors::efficiencyScaleFactor(const double& pt, const double&
   }
   
   double sFactor = 1.;
+
   int ptbin  = hDataMCSF->GetXaxis()->FindBin(pt);
   int etabin = hDataMCSF->GetYaxis()->FindBin(eta);
 
   if(pt >= hDataMCSF->GetXaxis()->GetXmax()) ptbin = hDataMCSF->GetXaxis()->GetLast();
   
   sFactor  = hDataMCSF->GetBinContent(ptbin,etabin);
-  
+
   if(sFactor < 0.001 || sFactor > 10.){
     std::cout << colour::Warning("Efficiency scale factor out of range") << " Lepton ID = " << id << ", pt =  " << pt << ", eta = " << eta << ", scale factor = " << sFactor << std::endl;
   }
