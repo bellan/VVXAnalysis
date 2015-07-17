@@ -35,6 +35,9 @@ parser.add_option("-d", "--directory", dest="directory",
                   default="samples",
                   help="Sample location, default is ./samples")
 
+parser.add_option("-c", "--csv", dest="csvfile",
+                  default="../Producers/python/samples_8TeV.csv",
+                  help="csv path, default is ../Producers/python/samples_8TeV.csv")
 
 
 (options, args) = parser.parse_args()
@@ -51,7 +54,7 @@ getExternalCrossSectionFromFile = False if options.getExternalCrossSectionFromFi
 
 luminosity = options.luminosity
 baseinputdir = options.directory
-
+csvfile = options.csvfile
 
 
 ###########################################################################
@@ -69,7 +72,6 @@ print "\n\n"
 ###########################################################################
 
 executable = "eventAnalyzer" 
-csvfile = '../Producers/python/samples_8TeV.csv'
 
 typeofsamples = typeOfSamples(csvfile)
 typeofsamples.append('test')
