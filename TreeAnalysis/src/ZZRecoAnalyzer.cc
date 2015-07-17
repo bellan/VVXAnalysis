@@ -200,42 +200,42 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
       theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Jets_JESDownSmear_"+sample, std::string("Response matrix number of jets of ZZ_{1}#rightarrow ")+decay, 4,0,4,4,0,4,nDownJESjets,ngenjets, theWeight); 
       theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Jets_JESDownSmear_01", std::string("Response matrix number of jets of ZZ_{1}#rightarrow ")+decay, 4,0,4,4,0,4,nDownJESjets,ngenjets, theWeight);
       
-      //Matrix and reco distribution weighted for the ratio between the unfolded data and the generator level information in order to compute the relative systematic uncertainty
-      //distributions to evaluate data/MC systematic uncertainty
-      string UnfOverMC_Jets = "ZZTo"+decay+"_Jets_Ratio";
-      h_UnfOverMC_Jets = (TH1*) UnfOverMC->Get(UnfOverMC_Jets.c_str()); 
-      int bin_Jets = h_UnfOverMC_Jets->FindBin(nCentralJERjets);
-      float w_Jets =  h_UnfOverMC_Jets->GetBinContent(bin_Jets);
+      // //Matrix and reco distribution weighted for the ratio between the unfolded data and the generator level information in order to compute the relative systematic uncertainty
+      // //distributions to evaluate data/MC systematic uncertainty
+      // string UnfOverMC_Jets = "ZZTo"+decay+"_Jets_Ratio";
+      // h_UnfOverMC_Jets = (TH1*) UnfOverMC->Get(UnfOverMC_Jets.c_str()); 
+      // int bin_Jets = h_UnfOverMC_Jets->FindBin(nCentralJERjets);
+      // float w_Jets =  h_UnfOverMC_Jets->GetBinContent(bin_Jets);
        
-      //1D reco distribution built not for all reco events, but only events gen&reco
-      theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERCentralSmear_W_"+sample, "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4,nCentralJERjets , theWeight*w_Jets);
-      theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERCentralSmear_W_01", "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4, nCentralJERjets, theWeight*w_Jets);
-      theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Jets_JERCentralSmear_W_"+sample, std::string("Response matrix number of jets of ZZ_{1}#rightarrow ")+decay, 4,0,4,4,0,4,nCentralJERjets,ngenjets, theWeight*w_Jets); 
-      theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Jets_JERCentralSmear_W_01", std::string("Response matrix number of jets of ZZ_{1}#rightarrow ")+decay, 4,0,4,4,0,4,nCentralJERjets,ngenjets, theWeight*w_Jets);
+      // //1D reco distribution built not for all reco events, but only events gen&reco
+      // theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERCentralSmear_W_"+sample, "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4,nCentralJERjets , theWeight*w_Jets);
+      // theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERCentralSmear_W_01", "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4, nCentralJERjets, theWeight*w_Jets);
+      // theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Jets_JERCentralSmear_W_"+sample, std::string("Response matrix number of jets of ZZ_{1}#rightarrow ")+decay, 4,0,4,4,0,4,nCentralJERjets,ngenjets, theWeight*w_Jets); 
+      // theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Jets_JERCentralSmear_W_01", std::string("Response matrix number of jets of ZZ_{1}#rightarrow ")+decay, 4,0,4,4,0,4,nCentralJERjets,ngenjets, theWeight*w_Jets);
       
-      //Matrix and reco distribution weighted for the ratio between the unfolded data and the generator level information in order to compute the relative systematic uncertainty (an early unfolding is required)
-      string UnfOverMC_Mass = "ZZTo"+decay+"_Mass_Ratio";
-      h_UnfOverMC_Mass = (TH1*) UnfOverMC->Get(UnfOverMC_Mass.c_str()); 
-      int bin_Mass = h_UnfOverMC_Mass->FindBin(m4L_gen);
-      float w_Mass =  h_UnfOverMC_Mass->GetBinContent(bin_Mass);
+      // //Matrix and reco distribution weighted for the ratio between the unfolded data and the generator level information in order to compute the relative systematic uncertainty (an early unfolding is required)
+      // string UnfOverMC_Mass = "ZZTo"+decay+"_Mass_Ratio";
+      // h_UnfOverMC_Mass = (TH1*) UnfOverMC->Get(UnfOverMC_Mass.c_str()); 
+      // int bin_Mass = h_UnfOverMC_Mass->FindBin(m4L_gen);
+      // float w_Mass =  h_UnfOverMC_Mass->GetBinContent(bin_Mass);
       
-      //1D reco distribution built not for all reco events, but only events gen&reco.
-      theHistograms.fill(std::string("ZZTo")+decay+"_Mass_W_01", std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, ZZ->mass(),theWeight*w_Mass);
-      theHistograms.fill(std::string("ZZTo")+decay+"_Mass_W_"+sample, std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, ZZ->mass(),theWeight*w_Mass);
-      theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Mass_W_"+sample, std::string("Response matrix invariant mass of ZZ_{1}#rightarrow ")+decay, Xbins, Xbins, ZZ->mass() ,m4L_gen , theWeight*w_Mass); 
-      theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Mass_W_01", std::string("Response matrix invariant mass of ZZ_{1}#rightarrow ")+decay, Xbins, Xbins, ZZ->mass() ,m4L_gen , theWeight*w_Mass);
+      // //1D reco distribution built not for all reco events, but only events gen&reco.
+      // theHistograms.fill(std::string("ZZTo")+decay+"_Mass_W_01", std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, ZZ->mass(),theWeight*w_Mass);
+      // theHistograms.fill(std::string("ZZTo")+decay+"_Mass_W_"+sample, std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, ZZ->mass(),theWeight*w_Mass);
+      // theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Mass_W_"+sample, std::string("Response matrix invariant mass of ZZ_{1}#rightarrow ")+decay, Xbins, Xbins, ZZ->mass() ,m4L_gen , theWeight*w_Mass); 
+      // theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Mass_W_01", std::string("Response matrix invariant mass of ZZ_{1}#rightarrow ")+decay, Xbins, Xbins, ZZ->mass() ,m4L_gen , theWeight*w_Mass);
       
       // cout << decay.c_str() << " " << ZZ->mass() << " " << m4L_gen << " " << w_Mass << endl;
       
     }
 
     // if the event is reconstructed but not generated as signal, put the w_Mass=1
-    else{
-     theHistograms.fill(std::string("ZZTo")+decay+"_Mass_W_01", std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, ZZ->mass(),theWeight);
-     theHistograms.fill(std::string("ZZTo")+decay+"_Mass_W_"+sample, std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, ZZ->mass(),theWeight);
-      theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERCentralSmear_W_"+sample, "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4,nCentralJERjets , theWeight);
-      theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERCentralSmear_W_01", "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4, nCentralJERjets, theWeight);
-    }
+    // else{
+    //  theHistograms.fill(std::string("ZZTo")+decay+"_Mass_W_01", std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, ZZ->mass(),theWeight);
+    //  theHistograms.fill(std::string("ZZTo")+decay+"_Mass_W_"+sample, std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, ZZ->mass(),theWeight);
+    //   theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERCentralSmear_W_"+sample, "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4,nCentralJERjets , theWeight);
+    //   theHistograms.fill(std::string("ZZTo")+decay+"_Jets_JERCentralSmear_W_01", "Number of reco jets (|#eta|<4.7 and p_T > 30", 4,0,4, nCentralJERjets, theWeight);
+    // }
   }
   
   // stable_sort(CentralJER_jets->begin(), CentralJER_jets->end(), PtComparator());
@@ -270,7 +270,7 @@ void ZZRecoAnalyzer::analyze(){
  }
 
 void ZZRecoAnalyzer::begin() {
-  UnfOverMC = new TFile("/afs/cern.ch/user/l/lfinco/work/RooUnfold-1.1.1/RooUnfold/Ratio_UnfoldedDataOverGenMC.root");
+  //UnfOverMC = new TFile("/afs/cern.ch/user/l/lfinco/work/RooUnfold-1.1.1/RooUnfold/Ratio_UnfoldedDataOverGenMC.root");
   //UnfOverMC = new TFile("macros/UnfoldingMacros/Ratio_UnfoldedDataOverGenMC.root");
   nentries = tree()->GetEntries("ZZCand.passFullSel_");
   Xbins += 100,200,250,300,350,400,500,600,800;
