@@ -36,13 +36,26 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
   Long64_t nentries;
 
   float m4L_gen;
+  int ngenjets;
 
   double JER_PtSmear(double pt, double width);
   // Jets obtained by gaussian JER smearing
   std::vector<phys::Jet> *CentralJER_jets;
   std::vector<phys::Jet> *UpJER_jets;
   std::vector<phys::Jet> *DownJER_jets;
- 
+  
+  // Jets obtained correcting up and down for the JES uncertainty
+  std::vector<phys::Jet> *UpJES_jets;
+  std::vector<phys::Jet> *DownJES_jets;
+
+  // Jets obtained correcting up and down for the JES uncertainty (data distributions = no JER correction applied)
+  std::vector<phys::Jet> *UpJESData_jets;
+  std::vector<phys::Jet> *DownJESData_jets;
+
+  TFile * UnfOverMC;
+  TH1 * h_UnfOverMC_Mass; 
+  TH1 * h_UnfOverMC_Jets; 
+
  private:
   
   friend class Selector<ZZRecoAnalyzer>;
