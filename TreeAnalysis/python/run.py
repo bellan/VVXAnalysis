@@ -8,7 +8,7 @@
 
 import sys, os, commands, math
 from optparse import OptionParser
-from readSampleInfo import *
+from ZZAnalysis.AnalysisStep.readSampleInfo import *
 from Colours import *
 
 
