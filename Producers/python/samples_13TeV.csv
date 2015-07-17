@@ -1,0 +1,45 @@
+identifier,process,crossSection=-1,BR=1,execute=True,dataset,prefix,pattern,splitLevel,::variables,::pyFragments,comment
+
+
+### 50 ns samples
+# ZZTo4L_powheg_50ns,,,,,/ZZTo4L_13TeV_powheg_pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/,/store/mc/RunIISpring15DR74,,2,,,
+
+# ggZZ4e_50ns,,            -1,     ,,/GluGluToZZTo4e_BackgroundOnly_13TeV_MCFM/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/,/store/mc/RunIISpring15DR74,,2,,,
+# ggZZ4mu_50ns,,           -1,     ,,/GluGluToZZTo4mu_BackgroundOnly_13TeV_MCFM/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/,/store/mc/RunIISpring15DR74,,2,,,
+# ggZZ4tau_50ns,,          -1,     ,,/GluGluToZZTo4tau_BackgroundOnly_13TeV_MCFM/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/,/store/mc/RunIISpring15DR74,,2,,,
+# ggZZ2e2mu_50ns,,         -1,     ,,/GluGluToZZTo2e2mu_BackgroundOnly_13TeV_MCFM/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/,/store/mc/RunIISpring15DR74,,2,,,
+# ggZZ2e2tau_50ns,,        -1,     ,,/GluGluToZZTo2e2tau_BackgroundOnly_13TeV_MCFM/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/,/store/mc/RunIISpring15DR74,,2,,,
+# ggZZ2mu2tau_50ns,,       -1,     ,,/GluGluToZZTo2mu2tau_BackgroundOnly_13TeV_MCFM/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/,/store/mc/RunIISpring15DR74,,2,,,
+
+# DYJetsToLLTuneCM50_50ns,,-1,     ,,/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v2/,/store/mc/RunIISpring15DR74,,2,,,
+
+# TTTo2L2Nu2B_50ns,,       -1,     ,,/TTTo2L2Nu_13TeV-powheg/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v2/,/store/mc/RunIISpring15DR74,,2,,,
+
+# ### 25 ns samples
+# ggH125,,          0.01212,      ,,/GluGluHToZZTo4L_M125_13TeV_powheg_JHUgen_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,### Official Spring15 samples
+# VBFH125,,         0.001034,     ,,/VBF_HToZZTo4L_M125_13TeV_powheg_JHUgen_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,
+# WplusH125,,       0.0002339,    ,,/WplusH_HToZZTo4L_M125_13TeV_powheg-minlo-HWJ_JHUgen_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,# Total (W+H)+(W-H)=0.000381; sigma(W+H)/sigma(W-H) = 1.59
+# WminusH125,,      0.0001471,    ,,/WminusH_HToZZTo4L_M125_13TeV_powheg-minlo-HWJ_JHUgen_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v2/,/store/mc/RunIISpring15DR74,,2,,,# (ditto)
+# ZH125,,           0.000652,     ,,/ZH_HToZZ_4LFilter_M125_13TeV_powheg-minlo-HZJ_JHUgen_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,# crossSection includes filter eff=0.15038
+
+# ZZTo4l,,            -1,          ,,/ZZTo4L_13TeV_powheg_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,
+# ZZTo4lamcatnlo,,    -1,          ,,/ZZTo4L_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25nsRaw_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,
+
+# ggZZ4e,,            -1,          ,,/GluGluToZZTo4e_BackgroundOnly_13TeV_MCFM/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,
+# ggZZ4mu,,           -1,          ,,/GluGluToZZTo4mu_BackgroundOnly_13TeV_MCFM/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,
+# ggZZ4tau,,          -1,          ,,/GluGluToZZTo4tau_BackgroundOnly_13TeV_MCFM/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,
+# ggZZ2e2mu,,         -1,          ,,/GluGluToZZTo2e2mu_BackgroundOnly_13TeV_MCFM/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,
+# ggZZ2e2tau,,        -1,          ,,/GluGluToZZTo2e2tau_BackgroundOnly_13TeV_MCFM/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,
+# ggZZ2mu2tau,,       -1,          ,,/GluGluToZZTo2mu2tau_BackgroundOnly_13TeV_MCFM/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,
+
+# DYJetsToLLTuneCM50,,-1,     ,,/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v3/,/store/mc/RunIISpring15DR74,,2,,,
+# TTTo2L2Nu2B,,       -1,     ,,/TTTo2L2Nu_13TeV-powheg/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,
+# WZ,,       -1,     ,,/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,
+
+
+
+### Data
+DoubleMu2015B,, -1, ,, /DoubleMuon/MINIAOD/PromptReco-v1/,/store/data/Run2015B,,2,PD=DoubleMu,,
+DoubleEG2015B,, -1, ,, /DoubleEG/MINIAOD/PromptReco-v1/,/store/data/Run2015B,,2,PD=DoubleEle,,
+MuonEG2015B,, -1, ,, /MuonEG/MINIAOD/PromptReco-v1/,/store/data/Run2015B,,2,PD=MuEG,,
+
