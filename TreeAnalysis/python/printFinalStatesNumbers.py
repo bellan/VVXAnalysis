@@ -5,7 +5,7 @@ import ROOT, copy, sys
 from ROOT import TH1F
 
 analysis = "VVXAnalyzer"
-cregion = "SR"
+cregion = "CR2P2F"
 
 runs = ['A','B','C','D']
 datasets = ['DoubleMu','DoubleEle','MuEG']
@@ -30,10 +30,12 @@ for finalstate in finalstates:
     counter = 0
     for line in tableline:
         if line[2] == finalstate:
-            print "{0:s}{1:s}\t{2:.0f}".format(line[0],line[1],line[3])
+            print "{0:s}{1:s}\t{2:.5f}".format(line[0],line[1],line[3])
             counter += line[3]
-    print "TOTAL \t\t{0:.0f}\n".format(counter)
+    print "TOTAL \t\t{0:.5f}\n".format(counter)
 
+print "STOP here, uncomment to run over MC too"
+sys.exit(0)
 
 print "MC"
 
