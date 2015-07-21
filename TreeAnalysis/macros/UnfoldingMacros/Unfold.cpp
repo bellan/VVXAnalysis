@@ -93,8 +93,8 @@ void Unfold_data(std::string var = "Mass", std::string fs = "4e"){
   gStyle->SetOptStat(0);
   gStyle->SetPalette(1,0);
 
-  system("mkdir /afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/UnfoldingMacros/UnfoldFolder/");  
-  filePath = "/afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/";
+  system("mkdir ../../UnfoldingMacros/UnfoldFolder/");  
+  filePath = "../../";
   matrixFileName = filePath + var + "_test/matrices.root";
   dataFileName = filePath +var + "_test/DataToUnfold.root";
   string outputFolderName =  filePath+"UnfoldingMacros/UnfoldFolder";
@@ -256,8 +256,8 @@ void Unfold_data_All(std::string var = "Mass"){
 
 void DoUnfoldedDataOverGenMCRatio(string var = "Mass", string fs = "4e"){
   
-  system("mkdir /afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/UnfoldingMacros/UnfoldFolder/");  
-  filePath = "/afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/"; 
+  system("mkdir ../../UnfoldingMacros/UnfoldFolder/");  
+  filePath = "../../"; 
   dataFileName = filePath+"UnfoldingMacros/UnfoldFolder/UnfoldData_"+ var + ".root";
   outputFileName =filePath+"/UnfoldingMacros/UnfoldFolder/Ratio_UnfoldedDataOverGenMC.root"; 
  
@@ -329,8 +329,8 @@ void DoAllRatios(string var = "Mass"){
  }
 void DoMCGenSystematic(string var = "Mass", string fs = "4e"){
 
- system("mkdir /afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/UnfoldingMacros/UnfoldFolder/");  
-  filePath = "/afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/";
+ system("mkdir ../../UnfoldingMacros/UnfoldFolder/");  
+  filePath = "../../";
   matrixFileName = filePath + var + "_test/matrices_Pow.root";
   dataFileName = filePath +var + "_test/DataToUnfold.root";
   outputFileName = filePath+"UnfoldingMacros/UnfoldFolder/UnfoldData_"+ var + "_MCgen.root";
@@ -366,8 +366,8 @@ void DoMCGenSystematic(string var = "Mass", string fs = "4e"){
 
 void DoQqggSystematic(string var = "Mass", string fs = "4e"){
  
-  system("mkdir /afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/UnfoldingMacros/UnfoldFolder/");  
-  filePath = "/afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/";
+  system("mkdir ../../UnfoldingMacros/UnfoldFolder/");  
+  filePath = "../../";
   matrixFileName = filePath + var + "_test/matrices.root";
   dataFileName = filePath +var + "_test/DataToUnfold.root";
   outputFileName = filePath+"UnfoldingMacros/UnfoldFolder/UnfoldData_"+ var + "_qqgg.root";
@@ -431,8 +431,8 @@ void DoIrrBkgSystematic(string var = "Mass", string fs = "4e"){
   gStyle->SetOptStat(0);
   gStyle->SetPalette(1,0);
 
-  system("mkdir /afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/UnfoldingMacros/UnfoldFolder/");  
-  filePath = "/afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/";
+  system("mkdir ../../UnfoldingMacros/UnfoldFolder/");  
+  filePath = "../../";
   matrixFileName = filePath + var + "_test/matrices.root";
   dataFileName = filePath +var + "_test/DataToUnfold_syst.root";
   outputFileName = filePath+"UnfoldingMacros/UnfoldFolder/UnfoldData_"+ var + "_IrrBkg.root";
@@ -488,8 +488,8 @@ void DoRedBkgSystematic(string var = "Mass", string fs = "4e"){
   gStyle->SetOptStat(0);
   gStyle->SetPalette(1,0);
  
-  system("mkdir /afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/UnfoldingMacros/UnfoldFolder/");  
-  filePath = "/afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/";
+  system("mkdir ../../UnfoldingMacros/UnfoldFolder/");  
+  filePath = "../../";
   matrixFileName = filePath + var + "_test/matrices.root";
   dataFileName = filePath +var + "_test/DataToUnfold_syst.root";
   outputFileName = filePath+"UnfoldingMacros/UnfoldFolder/UnfoldData_"+ var + "_RedBkg.root";
@@ -538,8 +538,8 @@ void DoRedBkgSystematic(string var = "Mass", string fs = "4e"){
 
 void DoUnfOverGenSystematic(string var = "Mass", string fs = "4e"){
   
-  system("mkdir /afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/UnfoldingMacros/UnfoldFolder/");  
-  filePath = "/afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/";
+  system("mkdir ../../UnfoldingMacros/UnfoldFolder/");  
+  filePath = "../../";
   matrixFileName = filePath + var + "/weightedMatrices.root";
   dataFileName = filePath +var + "_test/DataToUnfold.root";
   outputFileName = filePath+"UnfoldingMacros/UnfoldFolder/UnfoldData_"+ var + "_UnfDataOverGenMC.root";
@@ -583,8 +583,8 @@ void DoJERSystematic(string var = "Jets", string fs = "4e"){
   gStyle->SetOptStat(0);
   gStyle->SetPalette(1,0);
 
-  system("mkdir /afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/UnfoldingMacros/UnfoldFolder/");  
-  filePath = "/afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/";
+  system("mkdir ../../UnfoldingMacros/UnfoldFolder/");  
+  filePath = "../../";
   matrixFileName = filePath + var + "_test/matrices_JESJER.root";
   dataFileName = filePath +var + "_test/DataToUnfold.root";
   outputFileName = filePath+"UnfoldingMacros/UnfoldFolder/UnfoldData_"+ var + "_JER.root";
@@ -648,8 +648,8 @@ void DoJESSystematic_ModMat(string var = "Jets", string fs = "4e"){
   gStyle->SetOptStat(0);
   gStyle->SetPalette(1,0);
 
-  system("mkdir /afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/UnfoldingMacros/UnfoldFolder/");  
-  filePath = "/afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/";
+  system("mkdir ../../UnfoldingMacros/UnfoldFolder/");  
+  filePath = "../../";
   matrixFileName = filePath + var + "_test/matrices_JESJER.root";
   dataFileName = filePath +var + "_test/DataToUnfold.root";
   outputFileName = filePath+"UnfoldingMacros/UnfoldFolder/UnfoldData_"+ var + "_JES_ModMat.root";
@@ -712,8 +712,8 @@ void DoJESSystematic_ModData(string var = "Jets", string fs = "4e"){
   gStyle->SetOptStat(0);
   gStyle->SetPalette(1,0);
 
-  system("mkdir /afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/UnfoldingMacros/UnfoldFolder/");  
-  filePath = "/afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/";
+  system("mkdir ../../UnfoldingMacros/UnfoldFolder/");  
+  filePath = "../../";
   matrixFileName = filePath + var + "_test/matrices.root";
   dataFileName = filePath +var + "_test/DataToUnfold_JES.root";
   outputFileName = filePath+"UnfoldingMacros/UnfoldFolder/UnfoldData_"+ var + "_JES_ModData.root";
@@ -816,8 +816,8 @@ void PlotResults(string var = "Jets", string fs = "4e", string syst = "MCgen"){
   string systHistoName_m;
   TH1 *h_true_pow;
   
-  system("mkdir /afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/UnfoldingMacros/UnfoldFolder/");  
-  filePath = "/afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/";
+  system("mkdir ../../UnfoldingMacros/UnfoldFolder/");  
+  filePath = "../../";
   matrixFileName = filePath + var + "_test/matrices_Pow.root";
   dataFileName = filePath+"UnfoldingMacros/UnfoldFolder/UnfoldData_"+ var + ".root";
   systFileName =  filePath+"UnfoldingMacros/UnfoldFolder/UnfoldData_"+ var + "_"+syst + ".root";

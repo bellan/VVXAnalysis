@@ -39,25 +39,22 @@ void ZZMCAnalyzer::ZZplots(string decay){
  theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight());
  theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight());
  theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_01", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight());
- theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenPU_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.weight());  
- theHistograms.fill(std::string("ZZTo")+decay+"_MassGenPU_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.weight());
-
 
  //To calculate distributions weighted for the ratio between the unfolded data and the generator MC (an early unfolding is required)
- string UnfOverMC_Jets = "ZZTo"+decay+"_Jets_Ratio"; 
- h_UnfOverMC_Jets = (TH1*) UnfOverMC->Get(UnfOverMC_Jets.c_str()); 
- int bin_Jets = h_UnfOverMC_Jets->FindBin(njets); 
- float w_Jets = h_UnfOverMC_Jets->GetBinContent(bin_Jets);
-  theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_W_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight()*w_Jets);  
- theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_W_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight()*w_Jets);
+ // string UnfOverMC_Jets = "ZZTo"+decay+"_Jets_Ratio"; 
+ // h_UnfOverMC_Jets = (TH1*) UnfOverMC->Get(UnfOverMC_Jets.c_str()); 
+ // int bin_Jets = h_UnfOverMC_Jets->FindBin(njets); 
+ // float w_Jets = h_UnfOverMC_Jets->GetBinContent(bin_Jets);
+ //  theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_W_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight()*w_Jets);  
+ // theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_W_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight()*w_Jets);
  
- string UnfOverMC_Mass = "ZZTo"+decay+"_Mass_Ratio"; 
- h_UnfOverMC_Mass = (TH1*) UnfOverMC->Get(UnfOverMC_Mass.c_str()); 
- int bin_Mass = h_UnfOverMC_Mass->FindBin(m4L_gen); 
- float w_Mass = h_UnfOverMC_Mass->GetBinContent(bin_Mass); 
- cout  << m4L_gen << " " << bin_Mass << " " << w_Mass << " " <<  theMCInfo.sampleWeight()<< " " << theMCInfo.sampleWeight()*w_Mass << endl;
- theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_W_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_Mass);
- theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_W_01", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_Mass);
+ // string UnfOverMC_Mass = "ZZTo"+decay+"_Mass_Ratio"; 
+ // h_UnfOverMC_Mass = (TH1*) UnfOverMC->Get(UnfOverMC_Mass.c_str()); 
+ // int bin_Mass = h_UnfOverMC_Mass->FindBin(m4L_gen); 
+ // float w_Mass = h_UnfOverMC_Mass->GetBinContent(bin_Mass); 
+ // cout  << m4L_gen << " " << bin_Mass << " " << w_Mass << " " <<  theMCInfo.sampleWeight()<< " " << theMCInfo.sampleWeight()*w_Mass << endl;
+ // theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_W_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_Mass);
+ // theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_W_01", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_Mass);
 
   
  if(regionWord.test(3)) {
@@ -85,9 +82,10 @@ void ZZMCAnalyzer::ZZplots(string decay){
    Float_t  SFLep3 =  lepSF.efficiencyScaleFactorErr(Lep3Pt,Lep3Eta,Lep3ID,errSFLep3);
    Float_t  SFLep4 =  lepSF.efficiencyScaleFactorErr(Lep4Pt,Lep4Eta,Lep4ID,errSFLep4);
 
-    Float_t scaleFacErrSq = 0;
+   Float_t scaleFacErrSq = 0;
+   //   Float_t scaleFacErr = 0;
 
- Float_t errCorrSyst = 0;
+   Float_t errCorrSyst = 0;
       if(Lep1ID == 13){
 	  if(Lep1Pt >= 15.) errCorrSyst = 0.000025;
 	  else errCorrSyst = 0.000225;
@@ -113,31 +111,55 @@ void ZZMCAnalyzer::ZZplots(string decay){
 	  }
       
       scaleFacErrSq = sqrt((errSFLep1*errSFLep1)/(SFLep1*SFLep1)+(errSFLep2*errSFLep2)/(SFLep2*SFLep2)+(errSFLep3*errSFLep3)/(SFLep3*SFLep3)+(errSFLep4*errSFLep4)/(SFLep4*SFLep4));
-      
-      
+      // scaleFacErr = errSFLep1/SFLep1+errSFLep2/SFLep2+errSFLep3/SFLep3+errSFLep4/(SFLep4);
+
+
       theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenReco_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight);  
       theHistograms.fill(std::string("ZZTo")+decay+"_MassGenReco_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay+"of reco events" , Xbins , m4L_gen,theWeight);      
-      
+
       theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenRecoSFErrSqMinus_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight*(1-scaleFacErrSq));  
       theHistograms.fill(std::string("ZZTo")+decay+"_MassGenRecoSFErrSqMinus_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay+"of reco events" , Xbins , m4L_gen, theWeight*(1-scaleFacErrSq));   
       
-      
       theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenRecoSFErrSqPlus_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight*(1+scaleFacErrSq));  
       theHistograms.fill(std::string("ZZTo")+decay+"_MassGenRecoSFErrSqPlus_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay+"of reco events" , Xbins , m4L_gen, theWeight*(1+scaleFacErrSq));   
+
+
+      theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenReco_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight);  
+      theHistograms.fill(std::string("ZZTo")+decay+"_MassGenReco_01", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay+"of reco events" , Xbins , m4L_gen,theWeight);      
+
+      theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenRecoSFErrSqMinus_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight*(1-scaleFacErrSq));  
+      theHistograms.fill(std::string("ZZTo")+decay+"_MassGenRecoSFErrSqMinus_01", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay+"of reco events" , Xbins , m4L_gen, theWeight*(1-scaleFacErrSq));   
       
+      theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenRecoSFErrSqPlus_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight*(1+scaleFacErrSq));  
+      theHistograms.fill(std::string("ZZTo")+decay+"_MassGenRecoSFErrSqPlus_01", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay+"of reco events" , Xbins , m4L_gen, theWeight*(1+scaleFacErrSq));   
+
+      //Histograms for scale factor correlated errors
+
+      // theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenRecoSFErrMinus_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight*(1-scaleFacErrSq));  
+      // theHistograms.fill(std::string("ZZTo")+decay+"_MassGenRecoSFErrMinus_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay+"of reco events" , Xbins , m4L_gen, theWeight*(1-scaleFacErr));   
       
- }
- 
+      // theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenRecoSFErrPlus_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight*(1+scaleFacErrSq));  
+      // theHistograms.fill(std::string("ZZTo")+decay+"_MassGenRecoSFErrPlus_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay+"of reco events" , Xbins , m4L_gen, theWeight*(1+scaleFacErr));   
+
+
+      // theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenRecoSFErrMinus_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight*(1-scaleFacErrSq));  
+      // theHistograms.fill(std::string("ZZTo")+decay+"_MassGenRecoSFErrMinus_01", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay+"of reco events" , Xbins , m4L_gen, theWeight*(1-scaleFacErr));   
+      
+      // theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenRecoSFErrPlus_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight*(1+scaleFacErrSq));  
+      // theHistograms.fill(std::string("ZZTo")+decay+"_MassGenRecoSFErrPlus_01", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay+"of reco events" , Xbins , m4L_gen, theWeight*(1+scaleFacErr));  
+
+}
+
 }
 void ZZMCAnalyzer::analyze(){
-  
+ 
   PreCounter+=1;
-  
-  
+
+
 if (topology.test(0)){
 
     bool Ele  = 0;
-    bool Muon = 0;
+    bool Muon = 0; 
 
 
     foreach(const phys::Particle &gen, *genParticles)
@@ -161,7 +183,7 @@ if (topology.test(0)){
 }
 
 void ZZMCAnalyzer::begin() {
-  //UnfOverMC = new TFile("/macros/UnfoldingMacros/UnfoldFolder/Ratio_UnfoldedDataOverGenMC.root");
+  //UnfOverMC = new TFile("/macros/UnfoldingMacros/Ratio_UnfoldedDataOverGenMC.root");
   nentries =  tree()->GetEntries();
   PreCounter = 0;
   Xbins += 100,200,250,300,350,400,500,600,800;
