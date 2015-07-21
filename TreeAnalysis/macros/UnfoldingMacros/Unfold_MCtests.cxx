@@ -45,7 +45,7 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
   // TMatrixD * cov;
   // TVectorD * Vcov_stat; 
   // TVectorD * Vcov_unf; 
-  string  filePath = "/afs/cern.ch/user/l/lfinco/work/VVScattering/CMSSW_5_3_11/src/VVXAnalysis/TreeAnalysis/macros/";
+  string  filePath = "/../../";
   string fileName = filePath+var+"_test/matrices.root";
   string fileName_Pow =filePath +var+"_test/matrices_Pow.root"; 
 
