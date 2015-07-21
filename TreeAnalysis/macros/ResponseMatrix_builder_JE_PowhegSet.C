@@ -23,6 +23,7 @@ void ResponseMatrix_builder(string dataset = "01", string finalstate = "4e", str
   gROOT->Reset();  
   gROOT->SetStyle("Plain");   
   gStyle->SetOptStat(0);
+  system(("mkdir Jets_test").c_str());  
 
   TFile *output = new TFile("Jets_test/matrices_JESJER_Pow.root", "UPDATE");
  

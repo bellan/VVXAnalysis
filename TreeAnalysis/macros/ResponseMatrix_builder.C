@@ -36,6 +36,7 @@ void ResponseMatrix_builder(string var = "Mass", string dataset = "01", string f
   string outputName = var+"_test/matrices.root";
   string outputName_W = var+"_test/weightedMatrices.root";
   TFile *output;
+  system(("mkdir "+var+"_test").c_str());  
 
   if(weight ==0)  output = new TFile(outputName.c_str(), "UPDATE");
   else  output = new TFile(outputName_W.c_str(), "UPDATE");
