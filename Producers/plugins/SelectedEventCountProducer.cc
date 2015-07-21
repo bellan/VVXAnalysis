@@ -24,16 +24,20 @@
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
-class SelectedEventCountProducer : public edm::EDProducer {
-
+class SelectedEventCountProducer : public edm::one::EDProducer<edm::one::WatchLuminosityBlocks,
+							       edm::EndLuminosityBlockProducer> {
+  
 public:
   explicit SelectedEventCountProducer(const edm::ParameterSet&);
   ~SelectedEventCountProducer(){};
 
 private:
-  virtual void produce(edm::Event &, const edm::EventSetup &);
-  virtual void beginLuminosityBlock(edm::LuminosityBlock &, const edm::EventSetup &);
-  virtual void endLuminosityBlock(edm::LuminosityBlock &, const edm::EventSetup &);
+  virtual void produce(edm::Event &, const edm::EventSetup &) override;
+  virtual void beginLuminosityBlock(const edm::LuminosityBlock &, const edm::EventSetup&) override;
+  virtual void endLuminosityBlock(edm::LuminosityBlock const&, const edm::EventSetup&) {};
+  virtual void endLuminosityBlockProduce(edm::LuminosityBlock &, const edm::EventSetup&) override;
+
+
 
   // ----------member data ---------------------------
   unsigned int eventsProcessedInLumi_;
@@ -44,7 +48,8 @@ using namespace edm;
 using namespace std;
 
 SelectedEventCountProducer::SelectedEventCountProducer(const edm::ParameterSet& iConfig)
-  : filterNames_(iConfig.getParameter<std::vector<std::string> >("names")){
+  : eventsProcessedInLumi_(0)
+  , filterNames_(iConfig.getParameter<std::vector<std::string> >("names")){
   
   produces<edm::MergeableCounter, edm::InLumi>();
 }
@@ -78,13 +83,14 @@ void SelectedEventCountProducer::produce(edm::Event& iEvent, const edm::EventSet
   if(passAllRequirements) ++eventsProcessedInLumi_;
 }
 
-void SelectedEventCountProducer::beginLuminosityBlock(LuminosityBlock & theLuminosityBlock, const EventSetup & theSetup) {
+void SelectedEventCountProducer::beginLuminosityBlock(const edm::LuminosityBlock &theLuminosityBlock, const edm::EventSetup& theSetup) {
   
   eventsProcessedInLumi_ = 0;
 }
 
-void SelectedEventCountProducer::endLuminosityBlock(LuminosityBlock & theLuminosityBlock, const EventSetup & theSetup) {
+void SelectedEventCountProducer::endLuminosityBlockProduce(LuminosityBlock & theLuminosityBlock, const EventSetup & theSetup) {
 
+  
   LogTrace("SelectedEventCounting") << "endLumi: adding " << eventsProcessedInLumi_ << " events" << endl;
   auto_ptr<edm::MergeableCounter> numEventsPtr(new edm::MergeableCounter);
   numEventsPtr->value = eventsProcessedInLumi_;
