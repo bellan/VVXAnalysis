@@ -24,6 +24,7 @@ void ResponseMatrix_builder(string var = "Mass", string dataset = "01", string f
   gROOT->SetStyle("Plain");   
   gStyle->SetOptStat(0);
  
+  system(("mkdir "+var+"_test").c_str());  
   string outputName = var+"_test/matrices_Pow.root";
   string outputName_W = var+"_test/weightedMatrices_Pow.root";
   TFile *output;
