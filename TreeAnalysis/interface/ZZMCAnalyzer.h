@@ -6,7 +6,7 @@
 #include "EventAnalyzer.h"
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
-#include "VVXAnalysis/Commons/interface/LeptonScaleFactorsErr.h"
+#include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 #include <TTree.h>
 
 class ZZMCAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZMCAnalyzer>{
@@ -46,7 +46,7 @@ public:
   std::vector<double> Xbins; 
   std::vector<double> Ybins; 
 
-  LeptonScaleFactorsErr lepSF;
+  LeptonScaleFactors lepSF;
 
   template< class PAR >
     bool ZBosonDefinition(phys::Boson<PAR> cand) const{

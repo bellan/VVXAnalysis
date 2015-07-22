@@ -59,7 +59,7 @@ void ZZMCAnalyzer::ZZplots(string decay){
   
  if(regionWord.test(3)) {
 
-   Float_t errSFLep1 =0;  Float_t errSFLep2 = 0;  Float_t errSFLep3 =0 ;  Float_t errSFLep4 = 0;   
+   //Float_t errSFLep1 =0;  Float_t errSFLep2 = 0;  Float_t errSFLep3 =0 ;  Float_t errSFLep4 = 0;   
 
    Float_t Lep1ID = ZZ->first().daughter(0).id();
    Float_t Lep1Pt = ZZ->first().daughter(0).pt();
@@ -77,15 +77,26 @@ void ZZMCAnalyzer::ZZplots(string decay){
    Float_t Lep4Pt = ZZ->second().daughter(1).pt();
    Float_t Lep4Eta = ZZ->second().daughter(1).eta();
    
-   Float_t  SFLep1 =  lepSF.efficiencyScaleFactorErr(Lep1Pt,Lep1Eta,Lep1ID,errSFLep1);
-   Float_t  SFLep2 =  lepSF.efficiencyScaleFactorErr(Lep2Pt,Lep2Eta,Lep2ID,errSFLep2);
-   Float_t  SFLep3 =  lepSF.efficiencyScaleFactorErr(Lep3Pt,Lep3Eta,Lep3ID,errSFLep3);
-   Float_t  SFLep4 =  lepSF.efficiencyScaleFactorErr(Lep4Pt,Lep4Eta,Lep4ID,errSFLep4);
+   // Float_t  SFLep1 =  lepSF.efficiencyScaleFactorErr(Lep1Pt,Lep1Eta,Lep1ID,errSFLep1);
+   // Float_t  SFLep2 =  lepSF.efficiencyScaleFactorErr(Lep2Pt,Lep2Eta,Lep2ID,errSFLep2);
+   // Float_t  SFLep3 =  lepSF.efficiencyScaleFactorErr(Lep3Pt,Lep3Eta,Lep3ID,errSFLep3);
+   // Float_t  SFLep4 =  lepSF.efficiencyScaleFactorErr(Lep4Pt,Lep4Eta,Lep4ID,errSFLep4);
+   
+   Float_t  SFLep1 =  lepSF.efficiencyScaleFactor(Lep1Pt,Lep1Eta,Lep1ID);
+   Float_t  SFLep2 =  lepSF.efficiencyScaleFactor(Lep2Pt,Lep2Eta,Lep2ID);
+   Float_t  SFLep3 =  lepSF.efficiencyScaleFactor(Lep3Pt,Lep3Eta,Lep3ID);
+   Float_t  SFLep4 =  lepSF.efficiencyScaleFactor(Lep4Pt,Lep4Eta,Lep4ID);
+   
+   Float_t errSFLep1 =  lepSF.efficiencyScaleFactorErr(Lep1Pt,Lep1Eta,Lep1ID);
+   Float_t errSFLep2 =  lepSF.efficiencyScaleFactorErr(Lep2Pt,Lep2Eta,Lep2ID);
+   Float_t errSFLep3 =  lepSF.efficiencyScaleFactorErr(Lep3Pt,Lep3Eta,Lep3ID);
+   Float_t errSFLep4 =  lepSF.efficiencyScaleFactorErr(Lep4Pt,Lep4Eta,Lep4ID);
+   
+//   Float_t scaleFacErr = 0;
 
-   Float_t scaleFacErrSq = 0;
-   //   Float_t scaleFacErr = 0;
-
-   Float_t errCorrSyst = 0;
+ Float_t scaleFacErrSq = 0;
+ 
+ Float_t errCorrSyst = 0;
       if(Lep1ID == 13){
 	  if(Lep1Pt >= 15.) errCorrSyst = 0.000025;
 	  else errCorrSyst = 0.000225;
