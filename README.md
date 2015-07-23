@@ -69,7 +69,7 @@ ln -s ../../../ZZAnalysis/AnalysisStep/python/readSampleInfo.py
   - Make a soft link to readSampleInfo python module (hack, to be fixed).
   - Make a soft link to the directory containing the sample (optional).
 
-For 53X do:
+For 53X (e.g., 5_3_20) do:
 
 ```
 cmsrel CMSSW_X_Y_Z
