@@ -79,6 +79,11 @@ git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis
 git clone -n https://github.com/CJLST/ZZAnalysis ZZAnalysis
 cd ZZAnalysis
 git checkout master -- AnalysisStep/python/readSampleInfo.py
+git checkout master -- AnalysisStep/interface/FinalStates.h
+git checkout master -- AnalysisStep/src/FinalStates.cc
+git checkout master -- AnalysisStep/interface/bitops.h
+git checkout master -- AnalysisStep/src/bitops.cc
+git checkout master -- AnalysisStep/BuildFile.xml
 cd -
 scram b
 cd VVXAnalysis/TreeAnalysis/bin/
