@@ -59,6 +59,8 @@ public:
   int numberOfInputEvents_;
   
  protected:
+  double weight() {return theWeight * mcprocweight_;}
+
   /*   static const double ZMASS; */
   /*   static const double WMASS; */
   /*   static const double HMASS; */
@@ -86,6 +88,9 @@ public:
   
   // Central jets (not in the tree)
   std::vector<phys::Particle> *centralGenJets;
+
+  int mcprocweight_;
+  TBranch *b_mcprocweight;
 
   int passSignal;
   int passSignalTightFiducialRegion;

@@ -48,6 +48,8 @@ target_link_libraries(bin/eventAnalyzer ${ROOT_LIBS})
 add_executable(${BIN}/treeFilter ${BIN}/treeFilter.cpp ${EventDF_DICTIONARY})
 target_link_libraries(bin/treeFilter ${ROOT_LIBS})
 
+add_executable(${BIN}/genEventAnalyzer ${BIN}/genEventAnalyzer.cpp ${SRC}/GenEventAnalyzer.cc ${EventAnalyzer_SRCS})
+target_link_libraries(bin/genEventAnalyzer ${ROOT_LIBS})
 
 
 

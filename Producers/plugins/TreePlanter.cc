@@ -366,7 +366,6 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
 }
 
 
-
 void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup){
 
   initTree();
@@ -377,7 +376,6 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
   //// For Z+L CRs, we want only events with exactly 1 Z+l candidate.
   ////if (filterController_.channel() == ZL && ???size() != 1) return;
-
 
   // Load a bunch of objects from the event
   edm::Handle<pat::MuonCollection>       muons          ; event.getByLabel(theMuonLabel    ,     muons);
@@ -666,7 +664,7 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   else {cout << "Do not know what to do when setting trigger bit in TreePlanter. Unknown ZZ id: " << VV.id() << endl; abort();}
   
   VV.isBestCand_         = edmVV.userFloat("isBestCand");
-  VV.passFullSel_        = edmVV.userFloat("FullSelTight");
+  VV.passFullSel_        = edmVV.userFloat("FullSel");
   VV.isBestCRZLLos_2P2F_ = edmVV.userFloat("isBestCRZLLos_2P2F");
   VV.passSelZLL_2P2F_    = edmVV.userFloat("SelZLL_2P2F");
   VV.isBestCRZLLos_3P1F_ = edmVV.userFloat("isBestCRZLLos_3P1F");
