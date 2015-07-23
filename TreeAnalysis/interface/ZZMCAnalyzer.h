@@ -15,9 +15,9 @@ public:
  ZZMCAnalyzer(const AnalysisConfiguration& configuration)
    : EventAnalyzer(*(new Selector<ZZMCAnalyzer>(*this)),
 		   configuration),lepSF("../../ZZAnalysis/AnalysisStep/test/Macros/scale_factors_muons2012.root",
-  			   "../../ZZAnalysis/AnalysisStep/test/Macros/scale_factors_ele2012.root",
-  			   "../data/fakeRates_mu.root",
-  			   "../data/fakeRates_el.root"){}
+					"../../ZZAnalysis/AnalysisStep/test/Macros/scale_factors_ele2012.root",
+					"../Commons/data/fakeRates_mu.root",
+					"../Commons/data/fakeRates_el.root"){}
   
   
   virtual ~ZZMCAnalyzer(){}
