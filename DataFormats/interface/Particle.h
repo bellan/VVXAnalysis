@@ -125,7 +125,7 @@ namespace phys {
   public:
     friend std::ostream&  operator<<(std::ostream& os, const Particle& obj){
       
-      os << "ID = " << obj.id() << " p = (" << obj.e() << "," << obj.p4().X() << "," << obj.p4().Py() << "," << obj.p4().Pz() << "), pT = " << obj.pt() << " eta = " << (obj.p() != 0 ? obj.eta() : 0.) << " phi = " << obj.phi() << " mass = " << obj.mass();    
+      os << "ID = " << obj.id() << " p = (" << obj.p4().X() << "," << obj.p4().Py() << "," << obj.p4().Pz() << "," << obj.e() << "), pT = " << obj.pt() << " eta = " << (obj.p() != 0 ? obj.eta() : 0.) << " phi = " << obj.phi() << " mass = " << obj.mass();    
       // write obj to stream
       return os;
     }

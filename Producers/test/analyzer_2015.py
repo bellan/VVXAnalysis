@@ -224,7 +224,7 @@ ZZWITHONSHELLZS   = (BESTCAND_AMONG + "&&" + Z1MASS + "&&" + Z2MASS)
 
 process.ZZCand.flags.FullSel = cms.string(FULLSEL + "&&" + ZZWITHONSHELLZS)
 
-process.ZZCand.bestCandAmong = cms.PSet(isBestCand = cms.string(ZZWITHONSHELLZS))
+#process.ZZCand.bestCandAmong = cms.PSet(isBestCand = cms.string(ZZWITHONSHELLZS))
 
 process.ZZSelectedCand = cms.EDFilter("PATCompositeCandidateSelector",
                                       src = cms.InputTag("ZZCand"),
@@ -244,23 +244,25 @@ CR_Z2MASS  = "daughter(1).mass>60 && daughter(1).mass<120"
 #CR_Z2MASS  = "daughter(1).mass>12 && daughter(1).mass<120"
 
 
-CR_BESTZLLos_ONSHELL = (CR_BESTZLLos + "&&" +  
-                        CR_Z1MASS    + "&&" + 
-                        CR_Z2MASS)
+#CR_BESTZLLos_ONSHELL = (CR_BESTZLLos + "&&" +  
+#                        CR_Z1MASS    + "&&" + 
+#                        CR_Z2MASS)
 
 
 # CR 3P1F
-CR_BESTZLLos_3P1F   = (CR_BESTZLLos_ONSHELL + "&&" + PASSD0_OR_PASSD1)                 
-CR_ZLLSELos_3P1F  = (CR_BASESEL + "&&" + PASSD0_XOR_PASSD1)
+#CR_BESTZLLos_3P1F   = (CR_BESTZLLos_ONSHELL + "&&" + PASSD0_OR_PASSD1)                 
+CR_ZLLSELos_3P1F  = (CR_BESTZLLos + "&&" + PASSD0_OR_PASSD1 + "&&" + CR_Z1MASS + "&&" + CR_Z2MASS)
 
 
 # CR 2P2F
-CR_BESTZLLos_2P2F   = (CR_BESTZLLos_ONSHELL)
-CR_ZLLSELos_2P2F  = (CR_BASESEL + "&&" + BOTHFAIL)
+#CR_BESTZLLos_2P2F   = (CR_BESTZLLos_ONSHELL)
+CR_ZLLSELos_2P2F  = (CR_BESTZLLos + "&&" + BOTHFAIL + "&&" + CR_Z1MASS + "&&" + CR_Z2MASS)
 
+# FIXME! Use larger region!
 process.ZLLCand.bestCandAmong.isBestCRZLLos_3P1F = cms.string(CR_BESTZLLos_3P1F)
 process.ZLLCand.flags.SelZLL_3P1F = cms.string(CR_ZLLosSEL_3P1F)
 
+# FIXME! Use larger region!
 process.ZLLCand.bestCandAmong.isBestCRZLLos_2P2F = cms.string(CR_BESTZLLos_2P2F)
 process.ZLLCand.flags.SelZLL_2P2F = cms.string(CR_ZLLosSEL_2P2F)
 

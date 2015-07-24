@@ -38,6 +38,8 @@ public:
   virtual Int_t cut();
 
   void ZZplots(int id = -1);
+  
+  int pairing(const phys::Particle &, const phys::Boson<phys::Particle> &, const phys::Boson<phys::Particle>&);
 
  private:
   friend class Selector<VVXAnalyzer>;
