@@ -6,12 +6,12 @@ from ROOT import TH1F
 
 
 def write(particle,region,outname,fout):
-    f = ROOT.TFile("results/VVXAnalyzer_MC/data.root")
+    f = ROOT.TFile("results/FakeRateAnalyzer_MC/data.root")
     hn = f.Get("FakeRate_num_"+particle+"_"+region+"_pt")
     hd = f.Get("FakeRate_denom_"+particle+"_"+region+"_pt")
 
     
-    fWZ = ROOT.TFile("results_1/VVXAnalyzer_MC/WZ.root")
+    fWZ = ROOT.TFile("results/FakeRateAnalyzer_MC/WZ.root")
     hnWZ = fWZ.Get("FakeRate_num_"+particle+"_"+region+"_pt")
     hdWZ = fWZ.Get("FakeRate_denom_"+particle+"_"+region+"_pt")
 
