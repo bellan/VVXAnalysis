@@ -55,8 +55,8 @@ process = cms.Process("PDFWEIGHT")
 
 # Max events
 process.maxEvents = cms.untracked.PSet(
-    #input = cms.untracked.int32(-1)
     input = cms.untracked.int32(-1)
+    #input = cms.untracked.int32(1000)
 )
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -71,7 +71,7 @@ infile3='/store/cmst3/group/cmgtools/CMG/ZZZNoGstarJets_8TeV-madgraph/Summer12_D
 # Input files (on disk)
 process.source = cms.Source("PoolSource",
       
-                            fileNames = cms.untracked.vstring(infile2)
+                            fileNames = cms.untracked.vstring(infile1)
                             
 )
 
@@ -97,31 +97,11 @@ process.weightout = cms.OutputModule("PoolOutputModule",
                                      fileName = cms.untracked.string('PdfWeight.root')
                                      )
 
-process.zzGenCategory = cms.EDFilter("ZZGenFilterCategory",
-                                     Topology = cms.int32(1), # -1 means get everything
-                                     ParticleStatus = cms.int32(1), 
-                                     src            = cms.InputTag("genParticlesPruned"),
-                                     GenJets        = cms.InputTag("genJetSel")
-                                     )
-
-
-# Collect uncertainties for rate and acceptance
-#process.pdfSystematics = cms.EDFilter("PdfSystematicsAnalyzer",
-      #SelectorPath = cms.untracked.string('preselection'),
-    # SelectorPath = cms.untracked.string('pdfana'), 
-      #PdfWeightTags = cms.untracked.VInputTag(
-       #       "pdfWeights:CT10"
-        #    , "pdfWeights:MSTW2008nlo68cl"
-         #   , "pdfWeights:NNPDF20"
-     # )
-#)
-
+from VVXAnalysis.Producers.analyzer_ZZjj import genCategory
+process.genCategory   = genCategory
+process.signalFilters = cms.Sequence(process.genCategory)
 
 # Main path
-process.pdfana = cms.Sequence(process.zzGenCategory*process.pdfWeights)
-#process.pdfana = cms.Sequence(process.pdfWeights)
+process.weightpath = cms.Path(process.signalFilters*process.pdfWeights)
+process.outpath    = cms.EndPath(process.weightout)
 
-process.weightpath = cms.Path(process.pdfana)
-process.outpath = cms.EndPath(process.weightout)
-
-#process.end = cms.EndPath(process.pdfSystematics)
