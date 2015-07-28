@@ -73,13 +73,20 @@ void SelectedEventCountProducer::produce(edm::Event& iEvent, const edm::EventSet
 
   foreach(const std::string &filterName, filterNames_){
     unsigned i = triggerNames.triggerIndex(filterName);
-    if (i == triggerNames.size()){
-      cout << "ERROR: FilterController::isTriggerBit: path does not exist! " << filterName << endl;
+    // Search also if a producer put the result inside the event, insteadof into the trigger results
+    edm::Handle<bool> filterResult;
+    bool foundIntoTheEvent = iEvent.getByLabel(filterName, filterResult);
+    
+    if (i == triggerNames.size() && !foundIntoTheEvent){
+      cout << "ERROR: SelectedEventCountProducer::isTriggerBit: path does not exist anywhere! " << filterName << endl;
       abort();
     }
-    passAllRequirements &= triggerResults->accept(i);
-  }
 
+    if (i != triggerNames.size()) passAllRequirements &=  triggerResults->accept(i);
+    else                          passAllRequirements &= *filterResult;
+
+  }
+  
   if(passAllRequirements) ++eventsProcessedInLumi_;
 }
 
