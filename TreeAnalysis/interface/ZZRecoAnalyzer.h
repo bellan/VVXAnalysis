@@ -37,7 +37,9 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
 
   float m4L_gen;
   int ngenjets;
-
+  float mjj_gen;
+  float deta_gen;
+  
   double JER_PtSmear(double pt, double width);
   // Jets obtained by gaussian JER smearing
   std::vector<phys::Jet> *CentralJER_jets;
@@ -53,8 +55,11 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
   std::vector<phys::Jet> *DownJESData_jets;
 
   TFile * UnfOverMC;
+  TFile * UnfOverMC_Pow;
   TH1 * h_UnfOverMC_Mass; 
   TH1 * h_UnfOverMC_Jets; 
+  TH1 * h_UnfOverMC_Mjj; 
+  TH1 * h_UnfOverMC_Deta; 
 
  private:
   
@@ -62,7 +67,9 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
   
   std::vector<double> Xbins; 
   std::vector<double> Ybins; 
-  
+  std::vector<double> Xbins_deta;
+  std::vector<double> Xbins_mjj;
+
   template< class PAR >
     bool ZBosonDefinition(phys::Boson<PAR> cand) const{
     return fabs(cand.p4().M() - phys::ZMASS) < 20;

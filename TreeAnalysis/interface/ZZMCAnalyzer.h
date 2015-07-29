@@ -32,18 +32,25 @@ public:
 
   Long64_t nentries;
   float m4L_gen;
+  float mjj_gen;
+  float deta_gen;
   int njets;
   int PreCounter;
 
   TFile * UnfOverMC;
+  TFile * UnfOverMC_Pow;
+
   TH1 * h_UnfOverMC_Mass; 
   TH1 * h_UnfOverMC_Jets;
-
+  TH1 * h_UnfOverMC_Mjj; 
+  TH1 * h_UnfOverMC_Deta;
  private:
 
   friend class Selector<ZZMCAnalyzer>;
 
-  std::vector<double> Xbins; 
+  std::vector<double> Xbins;
+  std::vector<double> Xbins_mjj;  
+  std::vector<double> Xbins_deta;
   std::vector<double> Ybins; 
 
   LeptonScaleFactors lepSF;

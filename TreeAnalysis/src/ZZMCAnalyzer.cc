@@ -40,24 +40,56 @@ void ZZMCAnalyzer::ZZplots(string decay){
  theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight());
  theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_01", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight());
 
- //To calculate distributions weighted for the ratio between the unfolded data and the generator MC (an early unfolding is required)
- // string UnfOverMC_Jets = "ZZTo"+decay+"_Jets_Ratio"; 
- // h_UnfOverMC_Jets = (TH1*) UnfOverMC->Get(UnfOverMC_Jets.c_str()); 
- // int bin_Jets = h_UnfOverMC_Jets->FindBin(njets); 
- // float w_Jets = h_UnfOverMC_Jets->GetBinContent(bin_Jets);
- //  theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_W_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight()*w_Jets);  
- // theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_W_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight()*w_Jets);
  
- // string UnfOverMC_Mass = "ZZTo"+decay+"_Mass_Ratio"; 
- // h_UnfOverMC_Mass = (TH1*) UnfOverMC->Get(UnfOverMC_Mass.c_str()); 
- // int bin_Mass = h_UnfOverMC_Mass->FindBin(m4L_gen); 
- // float w_Mass = h_UnfOverMC_Mass->GetBinContent(bin_Mass); 
- // cout  << m4L_gen << " " << bin_Mass << " " << w_Mass << " " <<  theMCInfo.sampleWeight()<< " " << theMCInfo.sampleWeight()*w_Mass << endl;
- // theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_W_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_Mass);
- // theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_W_01", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_Mass);
 
-  
- if(regionWord.test(3)) {
+ //To calculate distributions weighted for the ratio between the unfolded data and the generator MC (an early unfolding is required)
+ //UnfOverMC = new TFile("macros/UnfoldingMacros/UnfoldFolder/Ratio_UnfoldedDataOverGenMC.root");
+ string UnfOverMC_Jets = "ZZTo"+decay+"_Jets_Ratio"; 
+ h_UnfOverMC_Jets = (TH1*) UnfOverMC->Get(UnfOverMC_Jets.c_str());  
+ h_UnfOverMC_Jets->Draw();
+ int bin_Jets = h_UnfOverMC_Jets->FindBin(njets);
+  float w_Jets = h_UnfOverMC_Jets->GetBinContent(bin_Jets);
+  theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_W_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight()*w_Jets);  
+ theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_W_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight()*w_Jets);
+ 
+ string UnfOverMC_Mass = "ZZTo"+decay+"_Mass_Ratio"; 
+ h_UnfOverMC_Mass = (TH1*) UnfOverMC_Pow->Get(UnfOverMC_Mass.c_str()); 
+ int bin_Mass = h_UnfOverMC_Mass->FindBin(m4L_gen); 
+ float w_Mass = h_UnfOverMC_Mass->GetBinContent(bin_Mass); 
+ cout  << m4L_gen << " " << bin_Mass << " " << w_Mass << " " <<  theMCInfo.sampleWeight()<< " " << theMCInfo.sampleWeight()*w_Mass << endl;
+ theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_W_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_Mass);
+ theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_W_01", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_Mass);
+
+ if(njets>=2){  
+   
+   deta_gen = fabs(genJets->at(0).eta() - genJets->at(1).eta());
+   mjj_gen =  (genJets->at(0).p4() + genJets->at(1).p4()).M();
+   
+   theHistograms.fill(std::string("ZZTo")+decay+"_MjjGen_"+sample, std::string("m_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen,theMCInfo.sampleWeight());  
+   theHistograms.fill(std::string("ZZTo")+decay+"_MjjGen_01", std::string("m_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen,theMCInfo.sampleWeight());  
+   
+   theHistograms.fill(std::string("ZZTo")+decay+"_DetaGen_"+sample, std::string("#Delta#eta_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_deta,deta_gen,theMCInfo.sampleWeight());  
+   theHistograms.fill(std::string("ZZTo")+decay+"_DetaGen_01", std::string("#Delta#eta__{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_deta,deta_gen,theMCInfo.sampleWeight());
+ 
+   string UnfOverMC_Mjj = "ZZTo"+decay+"_Mjj_Ratio"; 
+   h_UnfOverMC_Mjj = (TH1*) UnfOverMC->Get(UnfOverMC_Mjj.c_str());  
+   h_UnfOverMC_Mjj->Draw();
+   int bin_Mjj = h_UnfOverMC_Mjj->FindBin(mjj_gen);
+   float w_Mjj = h_UnfOverMC_Mjj->GetBinContent(bin_Mjj);
+   theHistograms.fill(std::string("ZZTo")+decay+"_MjjGen_W_"+sample, std::string("m_{jj}of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen,theMCInfo.sampleWeight()*w_Mjj);  
+   theHistograms.fill(std::string("ZZTo")+decay+"_MjjGen_W_01", std::string("m_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen,theMCInfo.sampleWeight()*w_Mjj);  
+   
+   string UnfOverMC_Deta = "ZZTo"+decay+"_Deta_Ratio"; 
+   h_UnfOverMC_Deta = (TH1*) UnfOverMC->Get(UnfOverMC_Deta.c_str());  
+   h_UnfOverMC_Deta->Draw();
+   int bin_Deta = h_UnfOverMC_Deta->FindBin(deta_gen);
+   float w_Deta = h_UnfOverMC_Deta->GetBinContent(bin_Deta);
+   theHistograms.fill(std::string("ZZTo")+decay+"_DetaGen_W_"+sample, std::string("#Delta#eta_{jj}of ZZ_{1}#rightarrow ")+decay,Xbins_deta,deta_gen,theMCInfo.sampleWeight()*w_Deta);  
+   theHistograms.fill(std::string("ZZTo")+decay+"_DetaGen_W_01", std::string("#Delta#eta_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_deta,deta_gen,theMCInfo.sampleWeight()*w_Deta);  
+ 
+}
+
+  if(regionWord.test(3)) {
 
    //Float_t errSFLep1 =0;  Float_t errSFLep2 = 0;  Float_t errSFLep3 =0 ;  Float_t errSFLep4 = 0;   
 
@@ -187,19 +219,24 @@ if (topology.test(0)){
     else if(Ele&!Muon) {decay = "4e";}   
     else std::cout<<"NO FINALSTATE"<<std::endl;
    
-    ZZplots("4l");
+    //ZZplots("4l");
     ZZplots(decay);
     
  }  
 }
 
 void ZZMCAnalyzer::begin() {
-  //UnfOverMC = new TFile("/macros/UnfoldingMacros/Ratio_UnfoldedDataOverGenMC.root");
+  UnfOverMC = new TFile("macros/UnfoldingMacros/UnfoldFolder/Ratio_UnfoldedDataOverGenMC.root");
+  UnfOverMC_Pow = new TFile("macros/UnfoldingMacros/UnfoldFolder_Pow/Ratio_UnfoldedDataOverGenMC.root");
   nentries =  tree()->GetEntries();
   PreCounter = 0;
-  Xbins += 100,200,250,300,350,400,500,600,800;
+  Xbins += 100,200,250,300,350,400,500,600,800; 
+  Xbins_deta += 0,2.4,4.7;
+  Xbins_mjj += 0.,200,800;
   m4L_gen = 0;
   njets = 0;
+  mjj_gen = 0;
+  deta_gen = 0;
 }
 
 void ZZMCAnalyzer::end( TFile &) {
