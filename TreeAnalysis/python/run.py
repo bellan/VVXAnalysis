@@ -144,7 +144,7 @@ def run(executable, analysis, typeofsample, region, luminosity):
 
     #################################################################################
     isData = False
-    if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:4] == 'MuEG' or typeofsample[0:4] == 'test':
+    if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:4] == 'MuEG' or typeofsample[0:4] == 'test' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:8] == 'DoubleEG' :
         luminosity = -1
         isData = True
         
