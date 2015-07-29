@@ -56,8 +56,9 @@ except NameError:
 
 
 import os
-PyFilePath = os.environ['CMSSW_BASE'] + "/src/VVXAnalysis/Producers/test/"
-execfile(PyFilePath + "analyzer_2015.py")
+PyFilePath = os.environ['CMSSW_BASE'] + "/src/VVXAnalysis/Producers/python/"
+execfile(PyFilePath + "analyzer_ZZjj.py")
+process.filltrees = cms.EndPath()
 
 # Max events
 process.maxEvents = cms.untracked.PSet(
@@ -71,36 +72,30 @@ process.source = cms.Source("PoolSource",
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 
-process.TFileService=cms.Service('TFileService',
-                                 fileName=cms.string('PDFStudies.root')
-                                 
-)
+process.TFileService=cms.Service('TFileService', fileName=cms.string('PDFStudies.root'))
 
-process.zzGenCategory = cms.EDFilter("ZZGenFilterCategory",
-                                     Topology       = cms.int32(SIGNALDEFINITION), 
-                                     ParticleStatus = cms.int32(1), 
-                                     src            = cms.InputTag("prunedGenParticles"),
-                                     GenJets        = cms.InputTag("slimmedGenJets"),
-                                     )
-
-process.signalFilters += process.zzGenCategory
+process.signalFilters += process.genCategory
 
 # Collect uncertainties for rate and acceptance
 process.pdfSystematics = cms.EDAnalyzer("PdfSystematicsAnalyzerZZ",
-                                        SelectorPath = cms.untracked.string('preselection'),
-                                        PdfWeightTags = cms.untracked.VInputTag(
-        "pdfWeights:CT10"
-        , "pdfWeights:MSTW2008nlo68cl"
-        , "pdfWeights:NNPDF20"
-        )
-)
+                                        isMC         = cms.untracked.bool(IsMC),
+                                        setup        = cms.int32(LEPTON_SETUP),
+                                        sampleType   = cms.int32(SAMPLE_TYPE),
+                                        PD           = cms.string(PD),
+                                        skimPaths    = cms.vstring(SkimPaths),
+                                        MCFilterPath = cms.string(MCFILTER),
+                                        FilterNames = cms.vstring('sr','preselection','zzTrigger'),
+                                        PdfWeightTags = cms.untracked.VInputTag("pdfWeights:CT10"
+                                                                                , "pdfWeights:MSTW2008nlo68cl"
+                                                                                , "pdfWeights:NNPDF20"
+                                                                                )
+                                        )
 
 process.genEventCounter  = cms.EDProducer("EventCountProducer")
-# Main path
-#process.pdfana = cms.Sequence(process.genEventCounter*process.zzGenCategory*process.pdfWeights)
 
-process.thisIsTheEnd = cms.EndPath(process.genEventCounter*process.zzGenCategory*process.pdfSystematics)
-#process.end = cms.EndPath(process.pdfSystematics)
+process.theEnd = cms.EndPath(process.genEventCounter*cms.ignore(process.zzTrigger)*process.pdfSystematics)
+
+
 
 
 # Printouts
