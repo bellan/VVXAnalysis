@@ -83,6 +83,8 @@ process.source.fileNames = cms.untracked.vstring(
     #'/store/cmst3/user/cmgtools/CMG/ZZTo2e2tau_8TeV_ext-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_6_1_EfC.root'
     '/store/cmst3/user/cmgtools/CMG//ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_6_1_zVE.root'
     #'file:/tmp/bellan/cmgTuple_6_1_zVE.root'
+    #'/store/cmst3/user/cmgtools/CMG/ZZTo4mu_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_100_1_UR6.root'
+
 
     # '/store/cmst3/user/cmgtools/CMG/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_1006_0_kDH.root',
     # '/store/cmst3/user/cmgtools/CMG/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM/PAT_CMG_V5_15_0/cmgTuple_1015_0_zrA.root',
@@ -93,7 +95,10 @@ process.source.fileNames = cms.untracked.vstring(
 
     )
 
-process.maxEvents.input = -1
+process.maxEvents.input = 100
+#process.source.skipEvents = cms.untracked.uint32(4000)
+#process.source.eventsToProcess = cms.untracked.VEventRange("1:626939")
+
 
 # Silence output
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -199,7 +204,7 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
                                            Electrons = cms.InputTag("postCleaningElectrons"),
                                            Diboson   = cms.InputTag("ZZFiltered"),
                                            EnergyFractionAllowed = cms.double(0), # maximum energy fraction carried by the lepton in the jet, to accept a jet as non from lepton                             
-                                           DebugPlots= cms.untracked.bool(False)
+                                           DebugPlots= cms.untracked.bool(True)
                                            )
 
 
@@ -330,12 +335,15 @@ process.ZZFiltered = cms.EDProducer("PATCompositeCandidateMergerWithPriority",
                                     priority = cms.vint32(1,1,1,0,0)
                                     )
 
-### Z+L control region
 
+
+### Z+L control region
+# FIXME! To be uncommented!
 #process.ZlCandFiltered = cms.EDFilter("PATCompositeCandidateSelector",
 #                                      src = cms.InputTag("ZlCand"),
 #                                      cut = cms.string("(daughter(0).daughter(0).pt > 20 && daughter(0).daughter(1).pt > 10) || (daughter(0).daughter(0).pt > 10 && daughter(0).daughter(1).pt > 20)")
 #                                      )
+
 
 
 ### ------------------------------------------------------------------------- ###
@@ -388,20 +396,32 @@ process.preselection = cms.Path( process.prePreselectionCounter
 
 # Some counters and paths functional to the fake lepton background estimation and signal region check
 
+process.zzTrigger = cms.EDFilter("ZZTriggerFilter", src = cms.InputTag("ZZFiltered"),
+                                 isMC         = cms.untracked.bool(IsMC),
+                                 setup        = cms.int32(LEPTON_SETUP),
+                                 sampleType   = cms.int32(SAMPLE_TYPE),
+                                 PD           = cms.string(PD),
+                                 skimPaths    = cms.vstring(SkimPaths),
+                                 MCFilterPath = cms.string(MCFILTER)
+                                 )
+
 process.cand2P2F       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("ZZFiltered"), cut = cms.string(BOTHFAIL))
 process.cand2P2FFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand2P2F"), minNumber = cms.uint32(1))
 process.cr2P2F         = cms.Path(process.cand2P2F * process.cand2P2FFilter)
-process.cr2P2FCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("cr2P2F","preselection"))
+#process.cr2P2FCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("cr2P2F","preselection"))
+process.cr2P2FCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("cr2P2F","preselection","zzTrigger"))
 
 process.cand3P1F       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("ZZFiltered"), cut = cms.string(PASSD0_XOR_PASSD1))
 process.cand3P1FFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand3P1F"), minNumber = cms.uint32(1))
 process.cr3P1F         = cms.Path(process.cand3P1F * process.cand3P1FFilter)
-process.cr3P1FCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("cr3P1F","preselection"))
+#process.cr3P1FCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("cr3P1F","preselection"))
+process.cr3P1FCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("cr3P1F","preselection","zzTrigger"))
 
 process.candSR       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("ZZFiltered"), cut = cms.string(BOTHPASS))
 process.candSRFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("candSR"), minNumber = cms.uint32(1))
 process.sr           = cms.Path(process.candSR * process.candSRFilter)
-process.srCounter    = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("sr","preselection"))
+process.srCounter    = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("sr","preselection","zzTrigger"))
+#process.srCounter    = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("sr","preselection"))
 
 
 ### If it is MC, run also the signal definition path
@@ -412,12 +432,14 @@ if IsMC:
     process.mcSelection   = cms.Path(process.signalFilters)
     MCFILTER = "mcSelection"
 
-    process.genCategory =  cms.EDFilter("ZZGenFilterCategory",
-                                        Topology       = cms.int32(SIGNALDEFINITION), 
-                                        ParticleStatus = cms.int32(1), 
-                                        src            = cms.InputTag("genParticlesPruned"),
-                                        GenJets        = cms.InputTag("genJetSel"),
-                                        )
+    genCategory =  cms.EDFilter("ZZGenFilterCategory",
+                                Topology       = cms.int32(SIGNALDEFINITION), 
+                                ParticleStatus = cms.int32(1), 
+                                src            = cms.InputTag("genParticlesPruned"),
+                                GenJets        = cms.InputTag("genJetSel"),
+                                )
+    process.genCategory = genCategory
+
     process.signalCounter    = cms.EDProducer("EventCountProducer")
     process.signalDefinition = cms.Path(process.genCategory * process.signalCounter)
 
@@ -455,7 +477,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
 ### Run the TreePlanter
 ### ------------------------------------------------------------------------- ###
 
-process.filltrees = cms.EndPath(process.srCounter + process.cr2P2FCounter + process.cr3P1FCounter + process.treePlanter)
+#process.filltrees = cms.EndPath(process.srCounter + process.cr2P2FCounter + process.cr3P1FCounter + process.treePlanter)
 
 
 ########################################################################################################################################################################
@@ -487,6 +509,7 @@ process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
                                                                  )
                                        )
 
+process.filltrees = cms.EndPath(cms.ignore(process.zzTrigger) + process.srCounter + process.cr2P2FCounter + process.cr3P1FCounter + process.treePlanter)
 #process.filltrees = cms.Path(process.preselection * process.genCategory * process.treePlanter * process.printTree)
 #process.filltrees = cms.EndPath(process.srCounter + process.cr2P2FCounter + process.cr3P1FCounter +process.treePlanter *process.dumpUserData)
 #process.filltrees = cms.EndPath(process.treePlanter *process.printTree)

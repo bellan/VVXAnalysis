@@ -6,6 +6,11 @@
 #include "TH2F.h"
 #include "ZZAnalysis/AnalysisStep/interface/bitops.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
+#include "VVXAnalysis/Producers/interface/FilterController.h"
+
+#include <boost/foreach.hpp>
+#define foreach BOOST_FOREACH
+
 
 class PdfSystematicsAnalyzerZZ: public edm::EDAnalyzer {
 public:
@@ -22,7 +27,9 @@ public:
 
 private:
   
-  std::string selectorPath_;
+  FilterController filterController_;
+
+  std::vector<std::string> filterNames_;
   Int_t genCategory_;
   std::vector<edm::InputTag> pdfWeightTags_;
   unsigned int originalEvents_;
@@ -101,7 +108,8 @@ void PdfSystematicsAnalyzerZZ::book(TFileService * fs)
 
 PdfSystematicsAnalyzerZZ::PdfSystematicsAnalyzerZZ(const edm::ParameterSet& pset) :
   //finstate_ (pset.getParameter<int>("FinalState")),
-  selectorPath_(pset.getUntrackedParameter<std::string> ("SelectorPath","")),
+  filterController_(pset),
+  filterNames_(pset.getParameter<std::vector<std::string> > ("FilterNames")),
   pdfWeightTags_(pset.getUntrackedParameter<std::vector<edm::InputTag> > ("PdfWeightTags")) { 
 
   theGenCategoryLabel = pset.getUntrackedParameter<edm::InputTag>("GenCategory" , edm::InputTag("genCategory"));
@@ -326,6 +334,8 @@ void PdfSystematicsAnalyzerZZ::endJob(){
 /////////////////////////////////////////////////////////////////////////////////////
 void PdfSystematicsAnalyzerZZ::analyze(const edm::Event & ev, const edm::EventSetup&){
   
+  if (!filterController_.passMCFilter(ev)) return;
+
   edm::Handle<std::vector<double> > weightHandle;
   for (unsigned int i=0; i<pdfWeightTags_.size(); ++i) {
     if (!ev.getByLabel(pdfWeightTags_[i], weightHandle)) {
@@ -343,6 +353,7 @@ void PdfSystematicsAnalyzerZZ::analyze(const edm::Event & ev, const edm::EventSe
   edm::Handle<int> genCategory;
   ev.getByLabel(theGenCategoryLabel, genCategory);
   genCategory_ = *genCategory;
+  //if(genCategory_ == 0) return; // fixme!!
   // std::cout<<"genCategory "<<genCategory_<<std::endl;
   int FinStat=0;
   if     (test_bit(genCategory_,7) && !test_bit(genCategory_,8)) FinStat = 1; //4mu
@@ -354,23 +365,34 @@ void PdfSystematicsAnalyzerZZ::analyze(const edm::Event & ev, const edm::EventSe
 
 
   originalEvents_++;
+  
+  bool selectedEvent = true;
+  edm::Handle<edm::TriggerResults> triggerResults;
+  if (!ev.getByLabel(edm::InputTag("TriggerResults"), triggerResults)) {
+    edm::LogError("PDFAnalysis") << ">>> TRIGGER collection does not exist !!!";
+    
+    return;
+  }
+  
+  const edm::TriggerNames & triggerNames = ev.triggerNames(*triggerResults);
+  foreach(const std::string &filterName, filterNames_){
+    unsigned i = triggerNames.triggerIndex(filterName);
+    // Search also if a producer put the result inside the event, insteadof into the trigger results
+    edm::Handle<bool> filterResult;
+    bool foundIntoTheEvent = ev.getByLabel(filterName, filterResult);
+    
+    if (i == triggerNames.size() && !foundIntoTheEvent){
+      std::cout << "ERROR: PdfSystematicsAnalyzerZZ::isTriggerBit: path does not exist anywhere! " << filterName << std::endl;
+      abort();
+    }
+    
+    if (i != triggerNames.size()) selectedEvent &=  triggerResults->accept(i);
+    else                          selectedEvent &= *filterResult;
+	
+  }
+  
 
-      bool selectedEvent = false;
-      edm::Handle<edm::TriggerResults> triggerResults;
-      if (!ev.getByLabel(edm::InputTag("TriggerResults"), triggerResults)) {
-            edm::LogError("PDFAnalysis") << ">>> TRIGGER collection does not exist !!!";
 
-	    return;
-      }
-
-      const edm::TriggerNames & trigNames = ev.triggerNames(*triggerResults);
-      unsigned int pathIndex = trigNames.triggerIndex(selectorPath_);
-      bool pathFound = (pathIndex<trigNames.size()); // pathIndex >= 0, since pathIndex is unsigned
-      if (pathFound) {
-
-	if (triggerResults->accept(pathIndex)) selectedEvent = true;
-      }
-      //edm::LogVerbatim("PDFAnalysis") << ">>>> Path Name: " << selectorPath_ << ", selected? " << selectedEvent;
 
       if (selectedEvent) selectedEvents_++;
 

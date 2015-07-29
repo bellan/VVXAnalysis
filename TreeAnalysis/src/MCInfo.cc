@@ -172,8 +172,8 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
 	   << " (" << Green(std::bitset<16>(signalDefinition())) << ")."                                                << std::endl
 	   <<"The fraction of the signal in the sample is " << Green(signalFraction)  
 	   <<", that corresponds to a cross section of " <<  Green(signalCrossSection) << Green(" pb.")                 << std::endl
-	   <<"The approximate signal efficiency for the baseline selection is " << eventsInSR_  <<"/"<< signalCounter_ << " = " << Green(signalEfficiency()) << ".\n"
-	   <<"Events (before trigger requirements) in the SR = "    << Green(eventsInSR_) 
+	   <<"The efficiency for the baseline selection is " << eventsInSR_  <<"/"<< signalCounter_ << " = " << Green(signalEfficiency()) << ".\n"
+	   <<"Events in the SR = "    << Green(eventsInSR_) 
 	   <<", in the 2P2F CR = " << Green(eventsIn2P2FCR_)
 	   <<", in the 3P1F CR = " << Green(eventsIn3P1FCR_)
 	   <<"."
