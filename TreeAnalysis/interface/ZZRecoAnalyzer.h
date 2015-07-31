@@ -35,11 +35,17 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
 
   Long64_t nentries;
 
+  float m4L;
   float m4L_gen;
   int ngenjets;
   float mjj_gen;
   float deta_gen;
-  
+  Int_t nCentralJERjets;
+  Int_t nUpJERjets;
+  Int_t nDownJERjets; 
+  Int_t nUpJESjets; 
+  Int_t nDownJESjets;
+
   double JER_PtSmear(double pt, double width);
   // Jets obtained by gaussian JER smearing
   std::vector<phys::Jet> *CentralJER_jets;
