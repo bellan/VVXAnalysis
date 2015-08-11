@@ -22,7 +22,7 @@ identifier,process,crossSection=-1,BR=1,execute=True,dataset,prefix,pattern,spli
 #WminusH125,,      0.0001471,    ,,/WminusH_HToZZTo4L_M125_13TeV_powheg-minlo-HWJ_JHUgen_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v2/,/store/mc/RunIISpring15DR74,,2,,,# (ditto)
 #ZH125,,           0.000652,     ,,/ZH_HToZZ_4LFilter_M125_13TeV_powheg-minlo-HZJ_JHUgen_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,# crossSection includes filter eff=0.15038
 
-ZZTo4l,,            -1,          ,,/ZZTo4L_13TeV_powheg_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,SKIM_REQUIRED=False,,
+#ZZTo4l,,            -1,          ,,/ZZTo4L_13TeV_powheg_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,SKIM_REQUIRED=False,,
 
 #ZZTo4lamcatnlo,,    -1,          ,,/ZZTo4L_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25nsRaw_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,
 
@@ -33,15 +33,15 @@ ZZTo4l,,            -1,          ,,/ZZTo4L_13TeV_powheg_pythia8/MINIAODSIM/Asymp
 #ggZZ2e2tau,,        0.00319364,          ,,/GluGluToZZTo2e2tau_BackgroundOnly_13TeV_MCFM/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,
 #ggZZ2mu2tau,,       0.00319364,          ,,/GluGluToZZTo2mu2tau_BackgroundOnly_13TeV_MCFM/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,
 
-DYJetsToLLTuneCM50,,-1,     ,,/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v3/,/store/mc/RunIISpring15DR74,,2,SKIM_REQUIRED=False,,
-TTTo2L2Nu2B,,       -1,     ,,/TTTo2L2Nu_13TeV-powheg/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,SKIM_REQUIRED=False,,
-WZ,,       -1,     ,,/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,SKIM_REQUIRED=False,,
+#DYJetsToLLTuneCM50,,-1,     ,,/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v3/,/store/mc/RunIISpring15DR74,,2,SKIM_REQUIRED=False,,
+#TTTo2L2Nu2B,,       -1,     ,,/TTTo2L2Nu_13TeV-powheg/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,SKIM_REQUIRED=False,,
+#WZ,,       -1,     ,,/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,SKIM_REQUIRED=False,,
 
 
 
 ### Data
-#DoubleMu2015B,, -1, ,, /DoubleMuon/MINIAOD/PromptReco-v1/,/store/data/Run2015B,,2,PD=DoubleMu,,
-#DoubleEG2015B,, -1, ,, /DoubleEG/MINIAOD/PromptReco-v1/,/store/data/Run2015B,,2,PD=DoubleEle,,
-#MuonEG2015B,, -1, ,, /MuonEG/MINIAOD/PromptReco-v1/,/store/data/Run2015B,,2,PD=MuEG,,
+DoubleMu2015B,, -1, ,, /DoubleMuon/MINIAOD/PromptReco-v1/,/store/data/Run2015B,,2,PD=DoubleMu,json_2015.py,
+DoubleEG2015B,, -1, ,, /DoubleEG/MINIAOD/PromptReco-v1/,/store/data/Run2015B,,2,PD=DoubleEle,json_2015.py,
+MuonEG2015B,, -1, ,, /MuonEG/MINIAOD/PromptReco-v1/,/store/data/Run2015B,,2,PD=MuEG,json_2015.py,
 
 	      
