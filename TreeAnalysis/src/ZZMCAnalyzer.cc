@@ -35,9 +35,14 @@ void ZZMCAnalyzer::ZZplots(string decay){
  
  njets = genJets->size();
  if (njets>3) njets=3;
+
+ ncentraljets = centralGenJets->size();
+ if (ncentraljets>3) ncentraljets=3;
  
  theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight());  
  theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight());
+theHistograms.fill(std::string("ZZTo")+decay+"_CentralJetsGen_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,ncentraljets,theMCInfo.sampleWeight());  
+ theHistograms.fill(std::string("ZZTo")+decay+"_CentralJetsGen_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,ncentraljets,theMCInfo.sampleWeight());
  theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight());
  theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_01", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight());
 
@@ -90,6 +95,21 @@ void ZZMCAnalyzer::ZZplots(string decay){
    // theHistograms.fill(std::string("ZZTo")+decay+"_DetaGen_W_01", std::string("#Delta#eta_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_deta,deta_gen,theMCInfo.sampleWeight()*w_Deta);  
  
 }
+
+ if(ncentraljets>=2){  
+   
+   deta_gen_cj = fabs(centralGenJets->at(0).eta() - centralGenJets->at(1).eta());
+   mjj_gen_cj =  (centralGenJets->at(0).p4() + centralGenJets->at(1).p4()).M();
+   if (deta_gen_cj>=4.7) deta_gen_cj = 4.6;
+   if (mjj_gen_cj>=800) mjj_gen_cj = 799;
+   
+   theHistograms.fill(std::string("ZZTo")+decay+"_CentralMjjGen_"+sample, std::string("m_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen_cj,theMCInfo.sampleWeight());  
+   theHistograms.fill(std::string("ZZTo")+decay+"_CentralMjjGen_01", std::string("m_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen_cj,theMCInfo.sampleWeight());  
+   
+   theHistograms.fill(std::string("ZZTo")+decay+"_CentralDetaGen_"+sample, std::string("#Delta#eta_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_deta,deta_gen_cj,theMCInfo.sampleWeight());  
+   theHistograms.fill(std::string("ZZTo")+decay+"_CentralDetaGen_01", std::string("#Delta#eta__{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_deta,deta_gen_cj,theMCInfo.sampleWeight());
+ 
+ }
 
   if(regionWord.test(3)) {
 
@@ -239,6 +259,9 @@ void ZZMCAnalyzer::begin() {
   njets = 0;
   mjj_gen = 0;
   deta_gen = 0;
+  ncentraljets = 0;
+  mjj_gen_cj = 0;
+  deta_gen_cj = 0;
 }
 
 void ZZMCAnalyzer::end( TFile &) {
