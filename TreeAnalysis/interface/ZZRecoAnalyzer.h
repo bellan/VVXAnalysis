@@ -35,24 +35,49 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
 
   Long64_t nentries;
 
+  float m4L;
   float m4L_gen;
   int ngenjets;
   float mjj_gen;
   float deta_gen;
-  
+  int ngencentraljets;
+  float mjj_gen_cj;
+  float deta_gen_cj;
+  Int_t nUpJESDatajets;
+  Int_t  nDownJESDatajets;
+  Int_t nUpJESDatacentraljets;
+  Int_t nDownJESDatacentraljets;
+  Int_t nCentralJERjets;
+  Int_t nUpJERjets;
+  Int_t nDownJERjets; 
+  Int_t nUpJESjets; 
+  Int_t nDownJESjets;
+  Int_t nCentralJERcentraljets;
+  Int_t nUpJERcentraljets;
+  Int_t nDownJERcentraljets; 
+  Int_t nUpJEScentraljets; 
+  Int_t nDownJEScentraljets;
+
   double JER_PtSmear(double pt, double width);
   // Jets obtained by gaussian JER smearing
   std::vector<phys::Jet> *CentralJER_jets;
   std::vector<phys::Jet> *UpJER_jets;
   std::vector<phys::Jet> *DownJER_jets;
-  
+  std::vector<phys::Jet> *CentralJER_centraljets;
+  std::vector<phys::Jet> *UpJER_centraljets;
+  std::vector<phys::Jet> *DownJER_centraljets;
+
   // Jets obtained correcting up and down for the JES uncertainty
   std::vector<phys::Jet> *UpJES_jets;
   std::vector<phys::Jet> *DownJES_jets;
+  std::vector<phys::Jet> *UpJES_centraljets;
+  std::vector<phys::Jet> *DownJES_centraljets;
 
   // Jets obtained correcting up and down for the JES uncertainty (data distributions = no JER correction applied)
   std::vector<phys::Jet> *UpJESData_jets;
   std::vector<phys::Jet> *DownJESData_jets;
+  std::vector<phys::Jet> *UpJESData_centraljets;
+  std::vector<phys::Jet> *DownJESData_centraljets;
 
   TFile * UnfOverMC;
   TFile * UnfOverMC_Pow;

@@ -34,7 +34,10 @@ public:
   float m4L_gen;
   float mjj_gen;
   float deta_gen;
+  float mjj_gen_cj;
+  float deta_gen_cj;
   int njets;
+  int ncentraljets;
   int PreCounter;
 
   TFile * UnfOverMC;
