@@ -406,7 +406,72 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
   if (genCategory !=-1){
     if(topology.test(0)){
       
-      // stable_sort(genJets->begin(), genJets->end(), PtComparator());
+
+   Float_t Lep1ID = ZZ->first().daughter(0).id();
+   Float_t Lep1Pt = ZZ->first().daughter(0).pt();
+   Float_t Lep1Eta = ZZ->first().daughter(0).eta();
+   
+   Float_t Lep2ID = ZZ->first().daughter(1).id();
+   Float_t Lep2Pt = ZZ->first().daughter(1).pt();
+   Float_t Lep2Eta = ZZ->first().daughter(1).eta();
+   
+   Float_t Lep3ID = ZZ->second().daughter(0).id();
+   Float_t Lep3Pt = ZZ->second().daughter(0).pt();
+   Float_t Lep3Eta = ZZ->second().daughter(0).eta();
+   
+   Float_t Lep4ID = ZZ->second().daughter(1).id();
+   Float_t Lep4Pt = ZZ->second().daughter(1).pt();
+   Float_t Lep4Eta = ZZ->second().daughter(1).eta();
+
+
+   
+   Float_t  SFLep1 =  lepSF.efficiencyScaleFactor(Lep1Pt,Lep1Eta,Lep1ID);
+   Float_t  SFLep2 =  lepSF.efficiencyScaleFactor(Lep2Pt,Lep2Eta,Lep2ID);
+   Float_t  SFLep3 =  lepSF.efficiencyScaleFactor(Lep3Pt,Lep3Eta,Lep3ID);
+   Float_t  SFLep4 =  lepSF.efficiencyScaleFactor(Lep4Pt,Lep4Eta,Lep4ID);
+   
+   Float_t errSFLep1 =  lepSF.efficiencyScaleFactorErr(Lep1Pt,Lep1Eta,Lep1ID);
+   Float_t errSFLep2 =  lepSF.efficiencyScaleFactorErr(Lep2Pt,Lep2Eta,Lep2ID);
+   Float_t errSFLep3 =  lepSF.efficiencyScaleFactorErr(Lep3Pt,Lep3Eta,Lep3ID);
+   Float_t errSFLep4 =  lepSF.efficiencyScaleFactorErr(Lep4Pt,Lep4Eta,Lep4ID);
+   
+//   Float_t scaleFacErr = 0;
+
+ Float_t scaleFacErrSq = 0;
+ 
+ Float_t errCorrSyst = 0;
+      if(Lep1ID == 13){
+	  if(Lep1Pt >= 15.) errCorrSyst = 0.000025;
+	  else errCorrSyst = 0.000225;
+      	  errSFLep1 = sqrt(errCorrSyst+errSFLep1*errSFLep1);
+	 }
+
+      if(Lep2ID == 13){
+	if(Lep2Pt >= 15.) errCorrSyst = 0.000025;
+	else errCorrSyst = 0.000225;
+	errSFLep2 = sqrt(errCorrSyst+errSFLep2*errSFLep2);
+	  }
+      
+      if(Lep3ID == 13){
+	if(Lep3Pt >= 15.) errCorrSyst = 0.000025;
+	else errCorrSyst = 0.000225;
+	errSFLep3 = sqrt(errCorrSyst+errSFLep3*errSFLep3);
+	  }
+      
+      if(Lep4ID == 13){
+	if(Lep4Pt >= 15.) errCorrSyst = 0.000025;
+	else errCorrSyst = 0.000225;
+	errSFLep4 = sqrt(errCorrSyst+errSFLep4*errSFLep4);
+	  }
+      
+      scaleFacErrSq = sqrt((errSFLep1*errSFLep1)/(SFLep1*SFLep1)+(errSFLep2*errSFLep2)/(SFLep2*SFLep2)+(errSFLep3*errSFLep3)/(SFLep3*SFLep3)+(errSFLep4*errSFLep4)/(SFLep4*SFLep4));
+ 
+      theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenRecoSFErrSqPlus_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight*(1+scaleFacErrSq));  
+
+      theHistograms.fill(std::string("ZZTo")+decay+"_JetsGenRecoSFErrSqMinus_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theWeight*(1-scaleFacErrSq));   
+
+
+     // stable_sort(genJets->begin(), genJets->end(), PtComparator());
       
       ngenjets =  genJets->size(); 
       if (ngenjets>3) ngenjets=3;

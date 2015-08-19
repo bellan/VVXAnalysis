@@ -13,13 +13,17 @@
 #include "EventAnalyzer.h"
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
+#include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 
 class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
   
  public:
  ZZRecoAnalyzer(const AnalysisConfiguration& configuration)
    : EventAnalyzer(*(new Selector<ZZRecoAnalyzer>(*this)),
-		   configuration){}
+		   configuration),lepSF("../../ZZAnalysis/AnalysisStep/test/Macros/scale_factors_muons2012.root",
+					"../../ZZAnalysis/AnalysisStep/test/Macros/scale_factors_ele2012.root",
+					"../Commons/data/fakeRates_mu.root",
+					"../Commons/data/fakeRates_el.root"){}
   
   virtual ~ZZRecoAnalyzer(){}
   
@@ -94,6 +98,8 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
   std::vector<double> Ybins; 
   std::vector<double> Xbins_deta;
   std::vector<double> Xbins_mjj;
+
+  LeptonScaleFactors lepSF;
 
   template< class PAR >
     bool ZBosonDefinition(phys::Boson<PAR> cand) const{
