@@ -16,6 +16,9 @@ import math
 import operator
 import textwrap
 
+#parser = OptionParser(usage="usage: %prog  arg1 Type [Mass,Jets,CentralJets,Deta,CentralDeta,Mjj,CentalMjj,PtJet1,PtJet2]  arg2 isUnfold [True,False] arg3 MC Set [Pow,Mad]")
+#(options, args) = parser.parse_args()
+
 ##################################################################################################################
 
 ####################  Get, sum and set histograms from data or from MC reco as they were data ####################
@@ -80,8 +83,8 @@ def getHisto(Type,isData,Sign,sist):
                 
 
     if isData:
-
-        if Type=="Jets":         TypeString=Type+"_JERCentralSmear"
+        #if Type=="Jets" or Type=="Deta" or Type=="Mjj" or : TypeString=Type+"_JERCentralSmear"
+        if "Jet" in Type or "Deta" in Type or "Mjj" in Type : TypeString=Type+"_JERCentralSmear"
         else: TypeString=Type
 
         if Sign==0: print Red("\n######### Contribution to Irreducible background  #########\n")
@@ -136,14 +139,10 @@ def getHisto(Type,isData,Sign,sist):
             ErrStat=ROOT.Double(0.)                
 
             #            print "Before",i["state"].IntegralAndError(1,-1,ErrStat)
-            #            print ErrStat
           
             
         hAcc = AccFile.Get("HAcc_"+i["name"]+"_"+Type)
         i["state"].Divide(hAcc)
-
-#            print "After",i["state"].IntegralAndError(1,Nbins+1,ErrStat)
-#            print ErrStat
 
             #print i["state"].Integral(),i["state"].Integral(Nbins,Nbins+1)
             #print i["state"].Integral(),i["state"].Integral(0,Nbins+1)
@@ -183,9 +182,9 @@ def addSist(h,Sign):
 ##################################################################################################################
 
 def getHistoUnfold(Sign,sist):
-
     if sist != "": sist = "_"+sist
-    fileUnfold = ROOT.TFile("./macros/UnfoldingMacros/UnfoldFolder_"+Set+"/UnfoldData_"+Type+sist+".root")
+
+    fileUnfold = ROOT.TFile("./UnfoldFolder_"+Set+"/UnfoldData_"+Type+sist+".root") 
     hsum2e2mu = ROOT.TH1F()
     hsum4e    = ROOT.TH1F()
     hsum4mu   = ROOT.TH1F()
@@ -197,6 +196,7 @@ def getHistoUnfold(Sign,sist):
     else: Signs = ""
 
     for h in hSum:        
+        #print "ZZTo"+h["name"]+"_"+Type+Signs
         h["state"] = copy.deepcopy(fileUnfold.Get("ZZTo"+h["name"]+"_"+Type+Signs))
 
         # take same histogram for not plus/minus systemtic.
@@ -260,7 +260,12 @@ def getPlot_MC(Type):
     print Red("\n############################ MC SIGNAL ############################\n")
 
     files={}
-    
+
+    fileUnfold = ROOT.TFile("./UnfoldFolder_"+Set+"/UnfoldData_"+Type+".root")     
+
+    if fileUnfold.IsZombie():
+        sys.exit("Errors! File dosn't exist")
+        
     inputdir = inputdir_MC
     CrossType = Type+"Gen"
 
@@ -279,21 +284,29 @@ def getPlot_MC(Type):
   
     hSum = [{"state":hsum2e2mu,"name":'2e2m'},{"state":hsum4e,"name":'4e'},{"state":hsum4mu,"name":'4m'}]
 
+    isFromUnfold = True
+
     for h in hSum:
         print Blue(h["name"])
-        isFirst=1
-        for s in Samples:
-           h1 = files[s["sample"]].Get("ZZTo"+h["name"]+"_"+CrossType+"_01")  
-           if h1==None:
+
+        if isFromUnfold:
+            h["state"] = copy.deepcopy(fileUnfold.Get("ZZTo"+h["name"]+"_"+Type+"_GEN"))
+            h["state"].SetName( "ZZTo"+h["name"]+"_"+Type+"Gen_01")
+        else:
+            isFirst=1
+            for s in Samples:
+                
+                h1 = files[s["sample"]].Get("ZZTo"+h["name"]+"_"+CrossType+"_01")  
+                if h1==None:
                #print "For sample ", s["sample"], "h"+h["name"],"has no enetries or is a zombie"       
-               continue
-           if isFirst:
-               h["state"]=copy.deepcopy(h1)           
-               print "{0} {1}-> {2:.2f} ".format(s["sample"],(61-len(s["sample"]))*"-",h1.Integral(0,-1))
-               isFirst=0
-               continue
-           h["state"].Add(h1) 
-           print "{0} {1}-> {2:.2f} ".format(s["sample"],(61-len(s["sample"]))*"-",h1.Integral(0,-1))
+                    continue
+                if isFirst:
+                    h["state"]=copy.deepcopy(h1)           
+                    print "{0} {1}-> {2:.2f} ".format(s["sample"],(61-len(s["sample"]))*"-",h1.Integral(0,-1))
+                    isFirst=0
+                    continue
+                h["state"].Add(h1) 
+                print "{0} {1}-> {2:.2f} ".format(s["sample"],(61-len(s["sample"]))*"-",h1.Integral(0,-1))
         print "\nTotal integral {0} contribution {1}> {2:.2f}\n\n".format(h["name"],(3-len(h["name"]))*"-",h["state"].Integral(0,-1))
 
 
@@ -301,17 +314,23 @@ def getPlot_MC(Type):
 
 
 Type= sys.argv[1]
+
 isUnfold = sys.argv[2]
 isUnfold = ast.literal_eval(isUnfold)
 
 Set = sys.argv[3]
 
-# Sistematic lists defined in CrossInfo.py
+try:
+    os.stat("./FinalResults_"+Set)
+except:
+    os.mkdir("./FinalResults_"+Set)       
+
+
+# Set sistematic lists defined in CrossInfo.py
 if isUnfold:
     SistList = DiffSistListUnfold
-    if Type=="Jets": SistList = SistList+DiffSistListJetsUnfold
+    if "Jets" in Type or "Deta" in Type or "Mjj" in Type: SistList = SistList+DiffSistListJetsUnfold #Add Jet systematic
 else: SistList = DiffSistList
-
 
 
 hMC =  getPlot_MC(Type)
@@ -322,21 +341,14 @@ for i in hMC:
     i["state"].Write("",i["state"].kOverwrite)
 
 
-hMCReco =  getHisto(Type,False,0,"")
-
-try:
-    os.stat("./FinalResults_"+Set)
-except:
-    os.mkdir("./FinalResults_"+Set)       
-
-FileOutMCReco =  ROOT.TFile("./FinalResults_"+Set+"/MCReco.root","update") 
-
-for i in hMCReco:
-    i["state"].Write("",i["state"].kOverwrite)
+# For MC Reco. To be chek and fix
+#hMCReco =  getHisto(Type,False,0,"")
+#FileOutMCReco =  ROOT.TFile("./FinalResults_"+Set+"/MCReco.root","update") 
+#for i in hMCReco:
+#    i["state"].Write("",i["state"].kOverwrite)
     
     
 if isUnfold:
-
     hData =  getHistoUnfold(0,"")
 
     hDataUp = getSist(1,isUnfold,hData)
@@ -393,11 +405,7 @@ else:
 
     print Red("\n##############################  MC RECO  #############################")               
          
-    FileOutMCREco =  ROOT.TFile("./FinalResults_"+Set+"/DataMCReco.root","update") 
-    for i in hMCReco:
-        i["state"].Write("",i["state"].kOverwrite)
-        print "\n Total integral {0} contribution {1}> {2:.2f}".format(i["name"],(32-len(i["name"]))*"-",i["state"].Integral(0,-1))
-
-
-
-    
+    # FileOutMCREco =  ROOT.TFile("./FinalResults_"+Set+"/DataMCReco.root","update") 
+    # for i in hMCReco:
+    #     i["state"].Write("",i["state"].kOverwrite)
+    #     print "\n Total integral {0} contribution {1}> {2:.2f}".format(i["name"],(32-len(i["name"]))*"-",i["state"].Integral(0,-1))
