@@ -15,19 +15,6 @@ import math
 import operator
 from Colours import *
 
-
-fInCenter  = ROOT.TFile(CenterData)
-fInUp  =  ROOT.TFile(UpData)
-fInDown  = ROOT.TFile(DownData)  
-
-fInCenterUF  = ROOT.TFile(CenterDataUF)
-fInUpUF  =  ROOT.TFile(UpDataUF)
-fInDownUF  = ROOT.TFile(DownDataUF)  
-
-fInMC  = ROOT.TFile(MCSample)  
-fInMCReco  = ROOT.TFile(MCRecoSample)  
-
-
 ##################################################################################################################
 
 ########################################### Add inclusive systematic #############################################
@@ -38,7 +25,6 @@ def addGlobSist(hCent,hUp,hDown):
       
     Nbins = hCent.GetNbinsX()
     for i in range(1,Nbins+1):
-        #print "bin",i,"\n Up value",hUp.GetBinContent(i),hCent.GetBinContent(i), hUp.GetBinContent(i)-hCent.GetBinContent(i)
         valUp = (hUp.GetBinContent(i)-hCent.GetBinContent(i))**2
         valDown = (hCent.GetBinContent(i)-hDown.GetBinContent(i))**2
         #print "i",i, math.sqrt(valUp)      
@@ -72,11 +58,16 @@ def getSistGraph(HCent,HUp,HDown):
 
 ##############################################################################################################
 
-def getCrossPlot_MC(Type):
+def getCrossPlot_MC(MCSet,Type):
 
+   
+    #MCRecoSample = "./FinalResults_"+MCSet+"/MCReco.root"
+
+    fInMC  = ROOT.TFile("./FinalResults_"+MCSet+"/MC.root")  
+   
     print Red("######################### Monte Carlo #######################\n")
 
-    Type=Type+"Gen"
+#    Type=Type+"Gen"
     hsum2e2mu = ROOT.TH1F()
     hsum4e    = ROOT.TH1F()
     hsum4mu   = ROOT.TH1F()
@@ -84,7 +75,8 @@ def getCrossPlot_MC(Type):
     hSum = [{"state":hsum2e2mu,"name":'2e2m'},{"state":hsum4e,"name":'4e'},{"state":hsum4mu,"name":'4m'}]    
 
     for h in hSum:
-        h["state"] = fInMC.Get("ZZTo"+h["name"]+"_"+Type+"_01")
+        h["state"] = copy.deepcopy(fInMC.Get("ZZTo"+h["name"]+"_"+Type+"Gen_01"))
+
         if h==None:
             print "ERROR no data for",h["name"]
             break
@@ -98,7 +90,7 @@ def getCrossPlot_MC(Type):
     return hSum
 
 ##############################################################################################################
-def getCrossPlot_Data(UseUnfold,Type,Sign,UseMCReco):
+def getCrossPlot_Data(MCSet,UseUnfold,Type,Sign,UseMCReco):
 
     if UseMCReco:  print Red("########################### MC RECO ########################\n")
     else: print Red("############################ DATA  #########################\n".format(Sign))
@@ -122,25 +114,72 @@ def getCrossPlot_Data(UseUnfold,Type,Sign,UseMCReco):
     hSumDown = [{"state":hsum2e2muDown,"name":'2e2m'},{"state":hsum4eDown,"name":'4e'},{"state":hsum4muDown,"name":'4m'}]    
 
 
+
+# CenterData = "./FinalResults_"+MCSet+"/Data.root"
+# UpData = "./FinalResults_"+MCSet+"/DataUp.root"
+# DownData =  "./FinalResults_"+MCSet+"/DataDown.root"
+
+# CenterDataUF = "./FinalResults_"+MCSet+"/DataUnfold.root"
+# UpDataUF = "./FinalResults_"+MCSet+"/DataUnfoldUp.root"
+# DownDataUF = "./FinalResults_"+MCSet+"/DataUnfoldDown.root"
+
+# fInCenter  = ROOT.TFile(CenterData)
+# fInUp  =  ROOT.TFile(UpData)
+# fInDown  = ROOT.TFile(DownData)  
+
+# fInCenterUF  = ROOT.TFile(CenterDataUF)
+# fInUpUF  =  ROOT.TFile(UpDataUF)
+# fInDownUF  = ROOT.TFile(DownDataUF)  
+
+# fInMC  = ROOT.TFile(MCSample)  
+# fInMCReco  = ROOT.TFile(MCRecoSample)
+
+# fInCenter  = ROOT.TFile("./FinalResults_"+MCSet+"/Data.root")
+# fInUp  =  ROOT.TFile("./FinalResults_"+MCSet+"/DataUp.root")
+# fInDown  = ROOT.TFile( "./FinalResults_"+MCSet+"/DataDown.root")  
+
+# fInCenterUF  = ROOT.TFile("./FinalResults_"+MCSet+"/DataUnfold.root")
+# fInUpUF  =  ROOT.TFile( "./FinalResults_"+MCSet+"/DataUnfoldUp.root")
+# fInDownUF  = ROOT.TFile( "./FinalResults_"+MCSet+"/DataUnfoldDown.root")  
+
+# fInMC  = ROOT.TFile(MCSample)  
+# fInMCReco  = ROOT.TFile(MCRecoSample)
+
+#     if UseMCReco:
+#         FInCenter = fInMCReco
+#         FInUp=fInUp
+#         FInDown=fInDown
+#     else:
+#         if UseUnfold:
+#             FInCenter=fInCenterUF                    
+#             FInUp=fInUpUF
+#             FInDown=fInDownUF
+#         else: 
+#             FInCenter=fInCenter
+#             FInUp=fInUp
+#             FInDown=fInDown
+
+  
     if UseMCReco:
-        FInCenter = fInMCReco
-        FInUp=fInUp
-        FInDown=fInDown
+        FInCenter = ROOT.TFile("./FinalResults_"+MCSet+"/MCReco.root")
+        FInUp     = ROOT.TFile("./FinalResults_"+MCSet+"/DataUp.root") 
+        FInDown   = ROOT.TFile("./FinalResults_"+MCSet+"/DataDown.root")  
     else:
         if UseUnfold:
-            FInCenter=fInCenterUF                    
-            FInUp=fInUpUF
-            FInDown=fInDownUF
+            FInCenter =  ROOT.TFile("./FinalResults_"+MCSet+"/DataUnfold.root")
+            FInUp     =  ROOT.TFile( "./FinalResults_"+MCSet+"/DataUnfoldUp.root")
+            FInDown   =  ROOT.TFile( "./FinalResults_"+MCSet+"/DataUnfoldDown.root")  
         else: 
-            FInCenter=fInCenter
-            FInUp=fInUp
-            FInDown=fInDown
-
+            FInCenter = ROOT.TFile("./FinalResults_"+MCSet+"/Data.root") 
+            FInUp     = ROOT.TFile("./FinalResults_"+MCSet+"/DataUp.root")
+            FInDown   = ROOT.TFile( "./FinalResults_"+MCSet+"/DataDown.root")  
 
     for h,hup,hdown in zip(hSum,hSumUp,hSumDown):
-        h["state"] = FInCenter.Get("ZZTo"+h["name"]+"_"+Type+"_01")
-        hup["state"] = FInUp.Get("ZZTo"+h["name"]+"_"+Type+"_01")
-        hdown["state"] = FInDown.Get("ZZTo"+h["name"]+"_"+Type+"_01")
+
+        h["state"] = copy.deepcopy(FInCenter.Get("ZZTo"+h["name"]+"_"+Type+"_01"))
+        hup["state"] = copy.deepcopy(FInUp.Get("ZZTo"+h["name"]+"_"+Type+"_01"))
+        hdown["state"] = copy.deepcopy(FInDown.Get("ZZTo"+h["name"]+"_"+Type+"_01"))
+
         if h==None:
             print "ERROR no data for",h["name"]
             break
@@ -156,7 +195,6 @@ def getCrossPlot_Data(UseUnfold,Type,Sign,UseMCReco):
     (hTOTCross,hTOTCrossUp,hTOTCrossDown)=combineCross(hSum,hSumUp,hSumDown)   
     
 
-
     for hTot,h4lTot,sistSt in zip([hSum,hSumUp,hSumDown],[hTOTCross,hTOTCrossUp,hTOTCrossDown],["central","Sist Up","Sist Down"]):
         hTOTElem = {"state":h4lTot,"name":'4l'}
         print Blue(sistSt)+(" "*(9-len(sistSt))),
@@ -166,10 +204,8 @@ def getCrossPlot_Data(UseUnfold,Type,Sign,UseMCReco):
         for i in hTot:
             if i["state"]==None:
                 print i["state"]," has no enetries" 
-
-            if Type != "Jets": 
+            if "Jets" not in Type:
                 i["state"].Scale(1.,"width")
-
     return hSum,hSumUp,hSumDown
 
 
@@ -205,11 +241,20 @@ def setCrossSectionMC(h1,FinState,Type):
     #Use integral with overflows entries to scale with theoretical value which include also the overflow entries.
 
     Integral = h1.Integral(0,-1) 
-    if Type != "Jets":   
+   # print "Intagral before",Integral
+    if Type == "Mass":   
         h1.Scale(7.5/Integral,"width") 
- 
-    else: h1.Scale(7.5/Integral)
-     
+    elif "Jets" in Type: 
+        h1.Scale(7.5/Integral)     
+       # print "Int34",h1.Integral(3,4)
+    elif "PtJet1" in Type:
+        h1.Scale(2.97096294176353171/Integral,"width") # Mjj and Deta don't contain all the events of theoretical cross section 7,5. 
+    else:
+        #h1.Scale(1/(BR*Lumi),"width") # Mjj and Deta don't contain all the events of theoretical cross section 7,5.
+        #print "Int before",h1.Integral()
+        h1.Scale(6.20670780539512634e-01/Integral,"width") # Mjj and Deta don't contain all the events of theoretical cross section 7,5. 
+        #h1.Scale(6.20670780539512634e-01/Integral) # Mjj and Deta don't contain all the events of theoretical cross section 7,5. 
+        print "Int",h1.Integral(0,-1)
 
 
 ##################################################################################################################
