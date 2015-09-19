@@ -200,12 +200,13 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,Sign,UseMCReco):
         print Blue(sistSt)+(" "*(9-len(sistSt))),
         print "{0} Tot Cross {1} {2:.2f} \n".format("4l",(15-len("4l"))*" ", hTOTElem["state"].Integral(1,-1)) 
         hTot.append(hTOTElem)
-    
+        
         for i in hTot:
             if i["state"]==None:
                 print i["state"]," has no enetries" 
-            if "Jets" not in Type:
-                i["state"].Scale(1.,"width")
+            if "Jets" not in Type: 
+                #i["state"].Scale(1.,"width")
+                i["state"].Scale(1./i["state"].Integral(1,-1),"width")#normalization to the total integral of data distribution
     return hSum,hSumUp,hSumDown
 
 
@@ -213,17 +214,18 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,Sign,UseMCReco):
 ################# Set Cros Section ######################
 
 def setCrossSectionData(h1,FinState):
-
+    
     if FinState=='4e':     BR=BRele*BRele
-      
+
     elif FinState=='4m':   BR=BRmu*BRmu
 
     elif FinState=='2e2m': BR=2*BRmu*BRele
-
-    h1.Scale(1/(Lumi*BR))
-
+    
+    #h1.Scale(1./(Lumi*BR))
+    h1.Scale(1./h1.Integral(-1,1))#normalization to the total integral of data distribution
+    
     print "{0} Tot Cross {1} {2:.2f} \n".format(FinState,(15-len(FinState))*" ", h1.Integral(1,-1))
-
+    
 
 #####################################################
 def setCrossSectionMC(h1,FinState,Type):
@@ -237,24 +239,34 @@ def setCrossSectionMC(h1,FinState,Type):
     print "{0} Tot Cross {1} {2:.2f} \n".format(FinState,(25-len(FinState))*" ", (h1.Integral(1,-1))/(Lumi*BR)) # Check total cross section without normalization
     
     #h1.Scale(1/(Lumi*BR),"width") # If you don't want to normalize at the official cross section value.
-
+    
     #Use integral with overflows entries to scale with theoretical value which include also the overflow entries.
-
-    Integral = h1.Integral(0,-1) 
-   # print "Intagral before",Integral
-    if Type == "Mass":   
-        h1.Scale(7.5/Integral,"width") 
-    elif "Jets" in Type: 
-        h1.Scale(7.5/Integral)     
-       # print "Int34",h1.Integral(3,4)
-    elif "PtJet1" in Type:
-        h1.Scale(2.97096294176353171/Integral,"width") # Mjj and Deta don't contain all the events of theoretical cross section 7,5. 
-    else:
+    
+    Integral = h1.Integral(0,-1) #why (0,1) and not (-1,1)?
+    # print "Intagral before",Integral
+    
+#normalization to the MC calculation of 7.5
+    #if Type == "Mass":   
+     #   h1.Scale(7.5/Integral,"width") 
+    #elif "Jets" in Type: 
+     #   h1.Scale(7.5/Integral)     
+    # print "Int34",h1.Integral(3,4)
+    #elif "Jet1" in Type:
+     #   h1.Scale(2.97096294176353171/Integral,"width") # Mjj and Deta don't contain all the events of theoretical cross section 7,5. 
+    #else:
         #h1.Scale(1/(BR*Lumi),"width") # Mjj and Deta don't contain all the events of theoretical cross section 7,5.
         #print "Int before",h1.Integral()
-        h1.Scale(6.20670780539512634e-01/Integral,"width") # Mjj and Deta don't contain all the events of theoretical cross section 7,5. 
-        #h1.Scale(6.20670780539512634e-01/Integral) # Mjj and Deta don't contain all the events of theoretical cross section 7,5. 
-        print "Int",h1.Integral(0,-1)
+     #   h1.Scale(6.20670780539512634e-01/Integral,"width") # Mjj and Deta don't contain all the events of theoretical cross section 7,5. 
+     #   h1.Scale(6.20670780539512634e-01/Integral) # Mjj and Deta don't contain all the events of theoretical cross section 7,5.
+        
+        #normalization to 1:
+       
+    if "Jets" in Type:   
+        h1.Scale(1/Integral)      
+    else:
+        h1.Scale(1/Integral,"width")
+        
+    #print "Int",h1.Integral(0,-1)
 
 
 ##################################################################################################################
@@ -300,6 +312,8 @@ def combineCross(HList,HListUp,HListDown):
             
           
             if Entries == 0.:  break   # Because of sorting also others final state will be 0 so use break and no continue
+            
+            print elem[0]["state"].GetBinContent(i),elem[1]["state"].GetBinContent(i),elem[2]["state"].GetBinContent(i)
 
             errStatSq = (elem[0]["state"].GetBinError(i))**2
             errSistUpSq = (elem[1]["state"].GetBinContent(i)-Entries)**2

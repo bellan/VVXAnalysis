@@ -30,9 +30,9 @@ def getHisto(Type,isData,Sign,sist):
         Samples=DataSamples
     else:
         if not isData: print Red("\n######################## MC RECO ########################\n")
-        if Set=="Pow":
+        if "Pow" in Set:
             Samples=SignalSamples_Pow
-        elif Set=="Mad":
+        elif "Mad" in Set:
             Samples=SignalSamples_Mad
 
     files={}
@@ -269,9 +269,9 @@ def getPlot_MC(Type):
     inputdir = inputdir_MC
     CrossType = Type+"Gen"
 
-    if Set=="Pow":
+    if "Pow" in Set:
         Samples=SignalSamples_Pow
-    elif Set=="Mad":
+    elif "Mad" in Set:
         Samples=SignalSamples_Mad
 
     for s in Samples:

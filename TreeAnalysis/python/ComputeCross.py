@@ -53,10 +53,13 @@ MCSetIn = options.MCSetIn
 Type = options.Type
 
 try:
-    os.stat("./Plot/CrossSection/")
+    os.stat("./Plot")
 except:
-    os.mkdir("./Plot/CrossSection/")
-
+    os.mkdir("./Plot")
+try:
+    os.stat("./Plot/CrossSection")
+except:
+    os.mkdir("./Plot/CrossSection")
 
 if DoInclusive:
     print Red("\n\n##############################################################\n################# ZZ4l Inclusive Cross Section ###############\n##############################################################\n")
@@ -141,6 +144,11 @@ for i in range(0,4):
         hMCList[i]["state"].GetXaxis().SetTitle("p_{T}")
         hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d p_{T}^{jet} [pb/GeV]")        
 
+    elif "EtaJet" in Type:
+        xName = "#eta [Gev|"
+        hRatio.GetXaxis().SetTitle("#Jets")
+        hMCList[i]["state"].GetXaxis().SetTitle("#eta")
+        hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d #eta^{jet} [pb/GeV]")  
 
     hRatio.GetXaxis().SetTitle(xName)
     
@@ -172,11 +180,17 @@ for i in range(0,4):
         Max=0.0026
 
     elif Type=="PtJet1":
-        Max=0.05
+        Max=0.07
 
     elif Type=="PtJet2":
-        Max=0.018
-    
+        Max=0.015
+
+    elif Type=="EtaJet1":
+        Max=2.
+
+    elif Type=="EtaJet2":
+        Max=0.50
+
     else: Max=Max+Max/9.
 
     
@@ -237,6 +251,8 @@ for i in range(0,4):
     MCSetStr = ""
     if MCSetIn == "Pow":     MCSetStr = "Powheg"
     elif MCSetIn == "Mad":     MCSetStr = "MadGraph"
+    elif MCSetIn == "fr_Mad":     MCSetStr = "fr_MadGraph"
+    elif MCSetIn == "fr_Pow":     MCSetStr = "fr_Powheg"
 
     if SavePlot:
         c1.SaveAs("Plot/CrossSection/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".png")        
@@ -245,10 +261,11 @@ for i in range(0,4):
         c1.SaveAs("Plot/CrossSection/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".root")        
 
         
-        # c1.SaveAs("~/www/YourWebFolderPath/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".png")        
-        # c1.SaveAs("~/www/YourWebFolderPath/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".eps")        
-        # c1.SaveAs("~/www/YourWebFolderPath/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".pdf")        
-        # c1.SaveAs("~/www/YourWebFolderPath/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".root")        
+        c1.SaveAs("~/www/VBS/CrossSections/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".png")        
+        c1.SaveAs("~/www/VBS/CrossSections/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".eps")        
+        c1.SaveAs("~/www/VBS/CrossSections/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".pdf")        
+        c1.SaveAs("~/www/VBS/CrossSections/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".root")       
+
 
    
      
