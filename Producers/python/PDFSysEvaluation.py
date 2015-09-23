@@ -39,20 +39,44 @@ def evaluateMin(a,b,c):
             min = b
         else :
             min = c
-#    if not min == 0 : print "For the MIN. There are {0:.3f}, {1:.3f}, {2:.3f}. The MIN is {3:.3f}".format(a,b,c,min)
+#    if not min == 0 : print "For the MIN. There are {0:.3f}, {1:.3f}, {2:.3f}. The MIN is {3:.3f}".format(a,b,c,min)    return min
     return min
 
 def Prec(prec,a):
     Corr = int((a * prec) + 0.5) /prec
     return Corr
 
-def GetPdfResult(fileIn,i):
+def GetPdfResult(fileIn,i,FinState):
 
     nnpdfFlag = False
-    if i==1: h1 = file.Get("pdfSystematics/hPdf_CT10")
-    elif i==2: h1 = file.Get("pdfSystematics/hPdf_MSTW2008nlo68cl")
-    elif i==3: h1 = file.Get("pdfSystematics/hPdf_NNPDF20")
+
     
+
+
+    if FinState=='4l':
+        if i==1: h1 = file.Get("pdfSystematics/hPdfTotSet1_CT10")
+        elif i==2: h1 = file.Get("pdfSystematics/hPdfTotSet2_MSTW2008nlo68cl")
+        elif i==3: h1 = file.Get("pdfSystematics/hPdfTotSet3_NNPDF20")
+    elif FinState=='4mu':
+        if i==1: h1 = file.Get("pdfSystematics/hPdf4muSet1_CT10")
+        elif i==2: h1 = file.Get("pdfSystematics/hPdf4muSet2_MSTW2008nlo68cl")
+        elif i==3: h1 = file.Get("pdfSystematics/hPdf4muSet3_NNPDF20")
+    elif FinState=='4e':
+        if i==1: h1 = file.Get("pdfSystematics/hPdf4eSet1_CT10")
+        elif i==2: h1 = file.Get("pdfSystematics/hPdf4eSet2_MSTW2008nlo68cl")
+        elif i==3: h1 = file.Get("pdfSystematics/hPdf4eSet3_NNPDF20")
+    elif FinState=='2e2mu':
+        if i==1: h1 = file.Get("pdfSystematics/hPdf2e2muSet1_CT10")
+        elif i==2: h1 = file.Get("pdfSystematics/hPdf2e2muSet2_MSTW2008nlo68cl")
+        elif i==3: h1 = file.Get("pdfSystematics/hPdf2e2muSet3_NNPDF20")
+    
+        
+#    if i==1: h1 = file.Get("pdfSystematics/hPdf_CT10")
+ #   elif i==2: h1 = file.Get("pdfSystematics/hPdf_MSTW2008nlo68cl")
+  #  elif i==3: h1 = file.Get("pdfSystematics/hPdf_NNPDF20")
+
+    if h1==None: print " histo",h1.GetName() ," is empty"
+
     Wh1=[]
     WhSel1=[]
     Wh2=[]
@@ -134,10 +158,11 @@ def GetPdfResult(fileIn,i):
     return listAcc
 
 file =  ROOT.TFile(sys.argv[1])
+FinState = sys.argv[2]
 
-Acc1 = GetPdfResult(file,1)
-Acc2 = GetPdfResult(file,2)
-Acc3 = GetPdfResult(file,3)
+Acc1 = GetPdfResult(file,1,FinState)
+Acc2 = GetPdfResult(file,2,FinState)
+Acc3 = GetPdfResult(file,3,FinState)
 
 print " opening ",sys.argv[1]
 prec = math.pow(10,-1+abs(int(math.log10(abs(Acc1[5]/1.645)*Acc1[5]))))
@@ -145,11 +170,17 @@ prec = math.pow(10,-1+abs(int(math.log10(abs(Acc1[5]/1.645)*Acc1[5]))))
 print "\n","######################################## \n","######### PDF Systematic Errors ######## \n","######################################## \n \n"
 print "######### Pdf ",Acc1[0],"######### \n Original Events  = ",Acc1[2]," \n Selected Events  = ",Acc1[3] ,"\n Acceptance      = ",Prec(prec,Acc1[4])," + ", Prec(prec,Acc1[5]/1.645*Acc1[4])," - ", Prec(prec,Acc1[6]/1.645*Acc1[4]),"  \n"
 print "######### Pdf ",Acc2[0],"######### \n Original Events  = ",Acc2[2]," \n Selected Events  = ",Acc2[3] ,"\n Acceptance      = ", Prec(prec,Acc2[4])," + ", Prec(prec,Acc2[5]*Acc2[4])," - ", Prec(prec,Acc2[6]*Acc2[4]),"  \n"
-print "######### Pdf ",Acc3[0],"######### \n Original Events  = ",Acc3[2]," \n Selected Events  = ",Acc2[3] ,"\n Acceptance      = ", Prec(prec,Acc3[4])," + ", Prec(prec,Acc3[5]*Acc3[4])," - ", Prec(prec,Acc3[6]*Acc3[4]),"  \n"
+print "######### Pdf ",Acc3[0],"######### \n Original Events  = ",Acc3[2]," \n Selected Events  = ",Acc3[3] ,"\n Acceptance      = ", Prec(prec,Acc3[4])," + ", Prec(prec,Acc3[5]*Acc3[4])," - ", Prec(prec,Acc3[6]*Acc3[4]),"  \n"
+
+
+#print Acc3[4]*( 1- Acc3[5]),Acc2[4]*(1 - Acc2[5]), Acc1[4]*(1 - Acc1[5]/1.645), evaluateMin(1,2,3)
 
 CentralValue = 0.5*( evaluateMax(Acc1[4]*(1 + Acc1[5]/1.645) ,Acc2[4]*( 1 + Acc2[5]) , Acc3[4]*(1+Acc3[5]) ) + evaluateMin(Acc1[4]*(1 - Acc1[5]/1.645),Acc2[4]*(1 - Acc2[5]) , Acc3[4]*( 1- Acc3[5])))
 
 Err = 0.5*( evaluateMax(Acc1[4]*(1 + Acc1[5]/1.645) ,Acc2[4]*( 1 + Acc2[5]) , Acc3[4]*(1+Acc3[5]) ) - evaluateMin(Acc1[4]*(1 - Acc1[5]/1.645),Acc2[4]*(1 - Acc2[5]) , Acc3[4]*( 1- Acc3[5])))
+
+
+print 'prec',prec,'Centr',CentralValue,'\n'
 
 print "Envelope Value = ", Prec(prec,CentralValue)," +/- ", Prec(prec,Err),"\n "
 
