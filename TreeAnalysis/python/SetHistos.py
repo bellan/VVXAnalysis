@@ -111,9 +111,11 @@ def getHisto(Type,isData,Sign,sist):
                 if Sign==0: print "\nTotal integral {0} contribution {1}> {2:.2f}\n\n".format(h["name"],(33-len(h["name"]))*"-",h["state"].Integral(0,-1))
                 
     if sist=="sFactor":
-        if Sign==1: AccFile = ROOT.TFile("AcceptanceSFactorSqPlus_"+Set+".root")
-        elif Sign==-1:  AccFile = ROOT.TFile("AcceptanceSFactorSqMinus_"+Set+".root")
-        
+        if Sign==1: AccFile = ROOT.TFile("AcceptanceSFactorSqPlus_"+Set+".root")#SF errors non-correlated
+        elif Sign==-1:  AccFile = ROOT.TFile("AcceptanceSFactorSqMinus_"+Set+".root")#SF errors non-correlated
+        #if Sign==1: AccFile = ROOT.TFile("AcceptanceSFactorPlus_"+Set+".root")
+        #elif Sign==-1:  AccFile = ROOT.TFile("AcceptanceSFactorMinus_"+Set+".root")
+
     else: AccFile = ROOT.TFile("Acceptance_"+Set+".root")
     for i,j,k in zip(hSum,hIrredSum,hFakeSum):
         
@@ -130,15 +132,14 @@ def getHisto(Type,isData,Sign,sist):
             i["state"].Add(j["state"],-1)
             i["state"].Add(k["state"],-1)
             
-            Nbins = i["state"].GetNbinsX()      
-          
+            Nbins = i["state"].GetNbinsX()            
             
             for l in range(1,Nbins+2):
                 if i["state"].GetBinContent(l)<0:  i["state"].SetBinContent(l,0.)  
 
             ErrStat=ROOT.Double(0.)                
 
-            #            print "Before",i["state"].IntegralAndError(1,-1,ErrStat)
+            print "Before",i["state"].IntegralAndError(1,-1,ErrStat)
           
             
         hAcc = AccFile.Get("HAcc_"+i["name"]+"_"+Type)
@@ -329,7 +330,7 @@ except:
 # Set sistematic lists defined in CrossInfo.py
 if isUnfold:
     SistList = DiffSistListUnfold
-    if "Jets" in Type or "Deta" in Type or "Mjj" in Type: SistList = SistList+DiffSistListJetsUnfold #Add Jet systematic
+    if "Jet" in Type or "Deta" in Type or "Mjj" in Type: SistList = SistList+DiffSistListJetsUnfold #Add Jet systematic
 else: SistList = DiffSistList
 
 

@@ -41,6 +41,9 @@ parser.add_option("-m", "--MCSet", dest="MCSetIn",
                   default="Pow",
                   help="Choose MC Set between Pow (Powheg) and Mad (MadGraph). Default is Pow")
 
+parser.add_option("-n", "--Normalized", dest="DoNormalized",
+                  default="True",
+                  help="Compute normilized cross section. Default is True")
 
 (options, args) = parser.parse_args()
 
@@ -51,6 +54,7 @@ UseMCReco =ast.literal_eval(options.UseMCReco)
 DoInclusive =ast.literal_eval(options.DoInclusive)
 MCSetIn = options.MCSetIn
 Type = options.Type
+DoNormalized =ast.literal_eval(options.DoNormalized)
 
 try:
     os.stat("./Plot")
@@ -74,17 +78,17 @@ else:
 #import CrossInfo
 #from CrossInfo import*
 
-hMCList = getCrossPlot_MC(MCSetIn,Type)
+hMCList = getCrossPlot_MC(MCSetIn,Type,DoNormalized)
 
 if DoInclusive:
-    TotalCross()
+    TotalCross(MCSetIn,Type)
     sys.exit(0)
 
 if UseMCReco:
-    (hDataList,hDataListUp,hDataListDown) = getCrossPlot_Data(MCSetIn,UseUnfold,Type,0,True) 
+    (hDataList,hDataListUp,hDataListDown) = getCrossPlot_Data(MCSetIn,UseUnfold,Type,0,True,DoNormalized) 
 
 else:
-    (hDataList,hDataListUp,hDataListDown)  = getCrossPlot_Data(MCSetIn,UseUnfold,Type,0,False) 
+    (hDataList,hDataListUp,hDataListDown)  = getCrossPlot_Data(MCSetIn,UseUnfold,Type,0,False,DoNormalized) 
 
 
 for i in range(0,4):
@@ -108,7 +112,8 @@ for i in range(0,4):
    
     if Type=="Mass":
         xName = "M_{4l} [GeV]"
-        hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d M_{ZZ} [pb/GeV]")
+        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("frac{1}{#sigma_{fid}}#frac{d#sigma_{fid}}{d M_{ZZ}} [1/GeV]")
+        else: hMCList[i]["state"].GetYaxis().SetTitle("#frac{d#sigma}{d M_{ZZ}} [pb/GeV]")
 
     elif "Jets" in Type:
         xName = "#Jets"
@@ -123,32 +128,37 @@ for i in range(0,4):
         hMCList[i]["state"].GetXaxis().SetBinLabel(2,"1 Jets")
         hMCList[i]["state"].GetXaxis().SetBinLabel(3,"2 Jets")
         hMCList[i]["state"].GetXaxis().SetBinLabel(4,">2 Jets")
-
-        hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d #jets [pb]")        
+        
+        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}}#frac{d#sigma_{fid}}{d #jets}")        
+        else: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d #jets [pb]") 
 
     elif "Deta" in Type:
         xName = "#Delta #eta_{jj}"
         hRatio.GetXaxis().SetTitle(xName)
         hMCList[i]["state"].GetXaxis().SetTitle(xName)
-        hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d #Delta #eta_{jj}[pb]")        
+        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}}#frac{d#sigma_{fid}}{d #Delta #eta_{jj}} [1/GeV]")
+        else: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d #Delta #eta_{jj}[pb]")  
 
     elif "Mjj" in Type:
         xName = "m_{jj} [Gev|"
         hRatio.GetXaxis().SetTitle("#Jets")
         hMCList[i]["state"].GetXaxis().SetTitle("m_{jj}")
-        hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d m_{jj} [pb/GeV]")        
+        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}}#frac{d#sigma_{fid}}{d  m_{jj}} [1/GeV]")      
+        else: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d m_{jj} [pb/GeV]")  
 
     elif "PtJet" in Type:
         xName = "p_{T} [Gev|"
         hRatio.GetXaxis().SetTitle("#Jets")
         hMCList[i]["state"].GetXaxis().SetTitle("p_{T}")
-        hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d p_{T}^{jet} [pb/GeV]")        
+        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{d p_{T}^{jet}} [1/GeV]")             
+        else:  hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d p_{T}^{jet} [pb/GeV]") 
 
     elif "EtaJet" in Type:
         xName = "#eta [Gev|"
         hRatio.GetXaxis().SetTitle("#Jets")
         hMCList[i]["state"].GetXaxis().SetTitle("#eta")
-        hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d #eta^{jet} [pb/GeV]")  
+        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}}#frac{d#sigma_{fid}}{d #eta^{jet}} [1/GeV]")             
+        else: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d #eta^{jet} [pb/GeV]")
 
     hRatio.GetXaxis().SetTitle(xName)
     
@@ -158,38 +168,39 @@ for i in range(0,4):
     MaxMC=hMCList[i]["state"].GetMaximum()
 
 
-    if Type == "Mass": Max=0.08 #Max=Max+Max/5.
-    elif  Type =="Mjj": 
-        #Max = max(Max,MaxMC)
-        #Max=Max+Max/9.;
-        Max=0.0030
+    if Type == "Mass": 
+        if DoNormalized:
+            if "fr" in MCSetIn: Max=0.011 #Max=Max+Max/5.
+            else: Max = 0.011
+        else: 
+            if "fr" in MCSetIn: Max=0.0002 #Max=Max+Max/5.
+            else: Max = 0.1
+    elif "Mjj" in Type: 
+        if DoNormalized:
+            Max=0.0060 
+    elif "Deta" in Type: 
+        if DoNormalized:
+            Max=1.
+        else: Max=0.4
         #hRatio.SetMinimum(hRatio.GetMinimum()-hRatio.GetMinimum()/8.)
         #hRatio.SetMinimum(0.)
         #hRatio.SetMaximum(hRatio.GetMaximum()+hRatio.GetMaximum()/8.)
-        hRatio.SetMaximum(1.5)
-    elif Type=="Deta":
-        Max=0.305
-    
-    elif Type=="CentralDeta":
-        Max=0.305
-
-    elif Type=="CentralMjj":
-        Max=0.0026
-
-    elif Type=="CentralMjj":
-        Max=0.0026
-
+        #hRatio.SetMaximum(1.5)
+        
     elif Type=="PtJet1":
-        Max=0.07
-
+        if DoNormalized: Max=0.04
+        else: Max=0.1
+        
     elif Type=="PtJet2":
-        Max=0.015
+        if DoNormalized: Max=0.020
+        else: Max=0.015
 
     elif Type=="EtaJet1":
         Max=2.
 
     elif Type=="EtaJet2":
-        Max=0.50
+        if DoNormalized:Max = 1.
+        else: Max=0.50
 
     else: Max=Max+Max/9.
 
@@ -260,15 +271,15 @@ for i in range(0,4):
         c1.SaveAs("Plot/CrossSection/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".pdf")        
         c1.SaveAs("Plot/CrossSection/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".root")        
 
-        
-        c1.SaveAs("~/www/VBS/CrossSections/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".png")        
-        c1.SaveAs("~/www/VBS/CrossSections/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".eps")        
-        c1.SaveAs("~/www/VBS/CrossSections/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".pdf")        
-        c1.SaveAs("~/www/VBS/CrossSections/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".root")       
-
-
+        if DoNormalized:
+            c1.SaveAs("~/www/VBS/CrossSections/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+"_norm.png")        
+            c1.SaveAs("~/www/VBS/CrossSections/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+"_norm.eps")        
+            c1.SaveAs("~/www/VBS/CrossSections/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+"_norm.pdf")        
+            c1.SaveAs("~/www/VBS/CrossSections/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+"_norm.root")       
+        else:
+            c1.SaveAs("~/www/VBS/CrossSections/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".png")        
+            c1.SaveAs("~/www/VBS/CrossSections/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".eps")        
+            c1.SaveAs("~/www/VBS/CrossSections/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".pdf")        
+            c1.SaveAs("~/www/VBS/CrossSections/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+".root")  
    
      
-
-
-

@@ -50,6 +50,7 @@ def getSistGraph(HCent,HUp,HDown):
     grSist = ROOT.TGraphAsymmErrors(HCent)
     NBins = HCent.GetNbinsX()
     for i in range(1,NBins+1):
+        print i,HCent.GetBinContent(i),"+-", HCent.GetBinError(i),"+",HUp.GetBinContent(i)-HCent.GetBinContent(i),"-",HCent.GetBinContent(i)- HDown.GetBinContent(i)
         grSist.SetPointEYhigh(i-1,HUp.GetBinContent(i)-HCent.GetBinContent(i))
         grSist.SetPointEYlow(i-1,HCent.GetBinContent(i)- HDown.GetBinContent(i))
 
@@ -58,7 +59,7 @@ def getSistGraph(HCent,HUp,HDown):
 
 ##############################################################################################################
 
-def getCrossPlot_MC(MCSet,Type):
+def getCrossPlot_MC(MCSet,Type,DoNormalized):
 
    
     #MCRecoSample = "./FinalResults_"+MCSet+"/MCReco.root"
@@ -81,16 +82,19 @@ def getCrossPlot_MC(MCSet,Type):
             print "ERROR no data for",h["name"]
             break
     
-        setCrossSectionMC(h["state"],h["name"],Type)
+        #setCrossSectionMC(h["state"],h["name"],Type,DoNormalized,MCSet)
 
     hTOTCross = copy.deepcopy(hSum[1]["state"])
     hTOTElem = {"state":hTOTCross,"color":ROOT.kAzure-6,"name":'4l'}
     hSum.append(hTOTElem)
-
+    
+    for h in hSum:
+        setCrossSectionMC(h["state"],h["name"],Type,DoNormalized,MCSet)
+        
     return hSum
 
 ##############################################################################################################
-def getCrossPlot_Data(MCSet,UseUnfold,Type,Sign,UseMCReco):
+def getCrossPlot_Data(MCSet,UseUnfold,Type,Sign,UseMCReco,DoNormalized):
 
     if UseMCReco:  print Red("########################### MC RECO ########################\n")
     else: print Red("############################ DATA  #########################\n".format(Sign))
@@ -180,20 +184,26 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,Sign,UseMCReco):
         hup["state"] = copy.deepcopy(FInUp.Get("ZZTo"+h["name"]+"_"+Type+"_01"))
         hdown["state"] = copy.deepcopy(FInDown.Get("ZZTo"+h["name"]+"_"+Type+"_01"))
 
+
         if h==None:
             print "ERROR no data for",h["name"]
             break
+
+        NormUp   =   hup["state"].Integral(1,-1)/h["state"].Integral(1,-1)
+        NormDown = hdown["state"].Integral(1,-1)/h["state"].Integral(1,-1)
+
         print Blue("Central  "),
-        setCrossSectionData(h["state"],h["name"])
+        setCrossSectionData(h["state"],h["name"],1.,DoNormalized,MCSet)
         print Blue("Sist Up  "),
-        setCrossSectionData(hup["state"],hup["name"])
+        setCrossSectionData(hup["state"],hup["name"],NormUp,DoNormalized,MCSet)
         print Blue("Sist Down"),
-        setCrossSectionData(hdown["state"],hdown["name"])
+        setCrossSectionData(hdown["state"],hdown["name"],NormDown,DoNormalized,MCSet)
         
     hTOTCross= ROOT.TH1F()
     
-    (hTOTCross,hTOTCrossUp,hTOTCrossDown)=combineCross(hSum,hSumUp,hSumDown)   
-    
+    #if (DoNormalized == False) and ("fr" in MCSet): (hTOTCross,hTOTCrossUp,hTOTCrossDown)=combineCrossTight(hSum,hSumUp,hSumDown)   
+    if "fr" in MCSet: (hTOTCross,hTOTCrossUp,hTOTCrossDown)=combineCrossTight(hSum,hSumUp,hSumDown)   
+    else: (hTOTCross,hTOTCrossUp,hTOTCrossDown)=combineCross(hSum,hSumUp,hSumDown) 
 
     for hTot,h4lTot,sistSt in zip([hSum,hSumUp,hSumDown],[hTOTCross,hTOTCrossUp,hTOTCrossDown],["central","Sist Up","Sist Down"]):
         hTOTElem = {"state":h4lTot,"name":'4l'}
@@ -204,71 +214,81 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,Sign,UseMCReco):
         for i in hTot:
             if i["state"]==None:
                 print i["state"]," has no enetries" 
-            if "Jets" not in Type: 
-                #i["state"].Scale(1.,"width")
-                i["state"].Scale(1./i["state"].Integral(1,-1),"width")#normalization to the total integral of data distribution
+            #if "Jets" not in Type: 
+            if DoNormalized: i["state"].Scale(1./i["state"].Integral(0,-1),"width")#normalization to the total integral of data distribution           
+            else:  i["state"].Scale(1.,"width")#normalization to 7.5
+           
     return hSum,hSumUp,hSumDown
 
 
 #########################################################
 ################# Set Cros Section ######################
 
-def setCrossSectionData(h1,FinState):
+def setCrossSectionData(h1,FinState,Norm,DoNormalized,MCSet):
     
     if FinState=='4e':     BR=BRele*BRele
-
     elif FinState=='4m':   BR=BRmu*BRmu
-
     elif FinState=='2e2m': BR=2*BRmu*BRele
-    
-    #h1.Scale(1./(Lumi*BR))
-    h1.Scale(1./h1.Integral(-1,1))#normalization to the total integral of data distribution
+       
+    if DoNormalized: h1.Scale(Norm/h1.Integral(0,-1))#normalization to the total integral of data distribution
+    else:  
+        if "fr" in MCSet: h1.Scale(1./(Lumi))#normalization to 7.5 
+        else: h1.Scale(1./(Lumi*BR))#normalization to 7.5 
     
     print "{0} Tot Cross {1} {2:.2f} \n".format(FinState,(15-len(FinState))*" ", h1.Integral(1,-1))
+    #print "{0} Tot Cross {1} {2:.2f} \n".format(FinState,(15-len(FinState))*" ", h1.Integral(0,-1))
+    #print "{0} Tot Cross {1} {2:.2f} \n".format(FinState,(15-len(FinState))*" ", h1.Integral(-1,1))
     
+   
 
 #####################################################
-def setCrossSectionMC(h1,FinState,Type):
+def setCrossSectionMC(h1,FinState,Type,DoNormalized,MCSet):
     
-    if FinState=='4e':      BR=BRele*BRele
+    if "fr" in MCSet: BR = 1
+    else:
+        if FinState=='4e':     BR=BRele*BRele
+        elif FinState=='4m':   BR=BRmu*BRmu
+        elif FinState=='2e2m': BR=2*BRmu*BRele
+        else: BR=2*BRmu*BRele
 
-    elif FinState=='4m':   BR=BRmu*BRmu
-
-    elif FinState=='2e2m': BR=2*BRmu*BRele
-
-    print "{0} Tot Cross {1} {2:.2f} \n".format(FinState,(25-len(FinState))*" ", (h1.Integral(1,-1))/(Lumi*BR)) # Check total cross section without normalization
+    print "{0} Tot Cross {1} {2:.6f} \n".format(FinState,(25-len(FinState))*" ", (h1.Integral(1,-1))/(Lumi*BR)) # Check total cross section without normalization
     
-    #h1.Scale(1/(Lumi*BR),"width") # If you don't want to normalize at the official cross section value.
-    
-    #Use integral with overflows entries to scale with theoretical value which include also the overflow entries.
+    ##h1.Scale(1/(Lumi*BR),"width") # If you don't want to normalize at the official cross section value.
+
+    ##Use integral with overflows entries to scale with theoretical value which include also the overflow entries.
     
     Integral = h1.Integral(0,-1) #why (0,1) and not (-1,1)?
-    # print "Intagral before",Integral
+    print "Integral before",Integral
+
+    if "fr" in MCSet: 
+        if FinState=='4e':     normalization = 0.004734#0.00425
+        elif FinState=='4m':   normalization = 0.004485#0.00425
+        elif FinState=='2e2m': normalization = 0.009257#0.0085
+        else: normalization = 1.8476e-02#0.017
+        
+    else: normalization = 7.5 
     
+   
 #normalization to the MC calculation of 7.5
-    #if Type == "Mass":   
-     #   h1.Scale(7.5/Integral,"width") 
-    #elif "Jets" in Type: 
-     #   h1.Scale(7.5/Integral)     
-    # print "Int34",h1.Integral(3,4)
-    #elif "Jet1" in Type:
-     #   h1.Scale(2.97096294176353171/Integral,"width") # Mjj and Deta don't contain all the events of theoretical cross section 7,5. 
-    #else:
+    if DoNormalized: h1.Scale(1/Integral,"width")
+        #if "Jets" in Type: h1.Scale(1/Integral)      
+        #else: h1.Scale(1/Integral,"width")
+    else:
+        if Type == "Mass":   
+            h1.Scale(normalization/Integral,"width") 
+        elif "Jets" in Type: 
+            h1.Scale(normalization/Integral)     
+            print "Int34",h1.Integral(3,4)
+        elif "Jet1" in Type:
+            h1.Scale(2.97096294176353171/Integral,"width") # Mjj and Deta don't contain all the events of theoretical cross section 7,5. ho qualche dubbio sul valore messo... non dovrebbe essere  
+        else:
         #h1.Scale(1/(BR*Lumi),"width") # Mjj and Deta don't contain all the events of theoretical cross section 7,5.
         #print "Int before",h1.Integral()
-     #   h1.Scale(6.20670780539512634e-01/Integral,"width") # Mjj and Deta don't contain all the events of theoretical cross section 7,5. 
-     #   h1.Scale(6.20670780539512634e-01/Integral) # Mjj and Deta don't contain all the events of theoretical cross section 7,5.
-        
-        #normalization to 1:
-       
-    if "Jets" in Type:   
-        h1.Scale(1/Integral)      
-    else:
-        h1.Scale(1/Integral,"width")
-        
-    #print "Int",h1.Integral(0,-1)
+            h1.Scale(6.20670780539512634e-01/Integral,"width") # Mjj and Deta don't contain all the events of theoretical cross section 7,5. 
+            
+        #h1.Scale(6.20670780539512634e-01/Integral) # Mjj and Deta don't contain all the events of theoretical cross section 7,5.
 
-
+    #print h1.Integral(3,4)*7.5/(Integral)
 ##################################################################################################################
 
 ##################### Combine different final state cross section distribution for final 4l ######################
@@ -313,7 +333,7 @@ def combineCross(HList,HListUp,HListDown):
           
             if Entries == 0.:  break   # Because of sorting also others final state will be 0 so use break and no continue
             
-            print elem[0]["state"].GetBinContent(i),elem[1]["state"].GetBinContent(i),elem[2]["state"].GetBinContent(i)
+            #print elem[0]["state"].GetBinContent(i),elem[1]["state"].GetBinContent(i),elem[2]["state"].GetBinContent(i)
 
             errStatSq = (elem[0]["state"].GetBinError(i))**2
             errSistUpSq = (elem[1]["state"].GetBinContent(i)-Entries)**2
@@ -329,7 +349,7 @@ def combineCross(HList,HListUp,HListDown):
             else:  weightSistDown =  1./errSistDownSq
 
             weightTot = 1./(errStatSq+errSistSq)
-           
+            print weightTot
             WeightStat += weightStat
             WeightTot += weightTot
             WeightSistUp += weightSistUp
@@ -349,36 +369,117 @@ def combineCross(HList,HListUp,HListDown):
  
     return HCross,HCrossUp,HCrossDown
 
+def combineCrossTight(HList,HListUp,HListDown):
 
-def getHisto(Sign):
+    HCross=ROOT.TH1F()
+    HCrossUp=ROOT.TH1F()
+    HCrossDown=ROOT.TH1F()
+
+#just equal to one
+    HCross=copy.deepcopy(HList[1]["state"])
+    HCrossUp=copy.deepcopy(HListUp[1]["state"])
+    HCrossDown=copy.deepcopy(HListDown[1]["state"])
+
+    Nbins= HList[1]["state"].GetNbinsX()
+
+    for i in range(1,Nbins+1):
+
+        Hlist  = zip(HList, HListUp,HListDown)
+        #Sort List by entries magnitude, from higher to lower  to skip 0 entries bins
+        SortedHlist = sorted(Hlist,key=lambda value: value[0]["state"].GetBinContent(i),reverse = True)        
+
+        Cross = 0
+        ErrSistUp = 0
+        ErrSistDown = 0
+        ErrStat = 0
+
+        #WeightStat = 0.
+        #WeightTot = 0.
+        #WeightSistUp = 0.
+        #WeightSistDown = 0.
+
+        for elem in SortedHlist:
+            Entries = elem[0]["state"].GetBinContent(i)
+            
+          
+            if Entries == 0.:  break   # Because of sorting also others final state will be 0 so use break and no continue
+            
+            #print elem[0]["state"].GetBinContent(i),elem[1]["state"].GetBinContent(i),elem[2]["state"].GetBinContent(i)
+
+            errStatSq = (elem[0]["state"].GetBinError(i))**2
+            errSistUp = (elem[1]["state"].GetBinContent(i)-Entries)#**2
+            errSistDown = (elem[2]["state"].GetBinContent(i)-Entries)#**2
+            errSistSq =  ((elem[1]["state"].GetBinContent(i)-elem[2]["state"].GetBinContent(i))/2.)**2 #Use the average of sistematic up and down
+
+            #weightStat =  1./errStatSq
+
+            #if errSistUpSq==0:  weightSistUp = 0.
+            #else:  weightSistUp =  1./errSistUpSq
+
+            #if errSistDownSq==0:  weightSistDown = 0.
+            #else:  weightSistDown =  1./errSistDownSq
+
+            #weightTot = 1./(errStatSq+errSistSq)
+           
+            #WeightStat += weightStat
+            #WeightTot += weightTot
+            #WeightSistUp += weightSistUp
+            #WeightSistDown += weightSistDown 
+            Cross +=  Entries #Giusto?? FIXME
+            ErrStat += errStatSq 
+            ErrSistUp += errSistUp
+            ErrSistDown += errSistDown
+        #Cross = Cross/WeightTot
+
+        ErrStatSq = math.sqrt(ErrStat)        
+        #ErrSistUp =math.sqrt(1./WeightSistUp)
+        #ErrSistDown =math.sqrt(1./WeightSistDown)
+
+        HCrossUp.SetBinContent(i,Cross+ErrSistUp)
+        HCrossDown.SetBinContent(i,Cross-ErrSistDown)
+        HCross.SetBinContent(i,Cross)
+        HCross.SetBinError(i,ErrStatSq)      
+ 
+    return HCross,HCrossUp,HCrossDown
+
+
+def getHisto(Sign,MCSet,Type):
     
-    fIn = ROOT.TFile()
-    if Sign==0:    fIn=fInCenter
-    elif Sign==1:  fIn=fInUp
-    elif Sign==-1: fIn=fInDown
+    fIn = ROOT.TFile() 
+  
+    if Sign==0: fIn = ROOT.TFile("./FinalResults_"+MCSet+"/Data.root") 
+    elif Sign==1: fIn= ROOT.TFile("./FinalResults_"+MCSet+"/DataUp.root") 
+    elif Sign==-1: fIn= ROOT.TFile( "./FinalResults_"+MCSet+"/DataDown.root")
+  
+    # if Sign==0:    fIn=fInCenter
+    # elif Sign==1:  fIn=fInUp
+    # elif Sign==-1: fIn=fInDown
 
     hsum2e2mu = ROOT.TH1F()
     hsum4e    = ROOT.TH1F()
     hsum4mu   = ROOT.TH1F()
-    
+   
     hSum = [{"state":hsum2e2mu,"name":'2e2m'},{"state":hsum4e,"name":'4e'},{"state":hsum4mu,"name":'4m'}]    
     for h in hSum:
-        h1 = fIn.Get("ZZTo"+h["name"]+"_Mass_01")
-        h["state"] = copy.deepcopy(h1)
+        if (Type == "Mass") or (Type == "Jets"):
+            h1 = fIn.Get("ZZTo"+h["name"]+"_"+Type+"_01")
+            h["state"] = copy.deepcopy(h1)
+        else:
+            print Red("\n WRONG TYPE: Mass or Jets only\n") 
        
     return hSum
 
 
-def TotalCross():
+def TotalCross(MCSet,Type):
 
-    hData = getHisto(0)
-    hDataUp = getHisto(1)
-    hDataDown = getHisto(-1)
-    
+    hData = getHisto(0,MCSet,Type)
+    hDataUp = getHisto(1,MCSet,Type)
+    hDataDown = getHisto(-1,MCSet,Type)
+   
     list2e2m = [0,0,0,0,0]
     list4e = [0,0,0,0,0]
     list4m = [0,0,0,0,0]
-    
+ 
     CrossDic = collections.OrderedDict()
     CrossDic["2e2m"]=list2e2m
     CrossDic["4e"]=list4e
@@ -387,23 +488,28 @@ def TotalCross():
 
     for i,j,k in zip(hData,hDataUp,hDataDown):
 
-        if i["name"]=='4e':     BR=BRele*BRele
-        elif i["name"]=='4m':   BR=BRmu*BRmu
-        elif i["name"]=='2e2m': BR=2*BRmu*BRele
-        if i["name"]=='4l': break
-
+        if "fr" in MCSet: BR = 1
+        else:
+            if i["name"]=='4e':     BR=BRele*BRele
+            elif i["name"]=='4m':   BR=BRmu*BRmu
+            elif i["name"]=='2e2m': BR=2*BRmu*BRele
+            if i["name"]=='4l': break
+        
+        #i["state"].Draw()
+    #hsum4mu.Draw()
+    #hsum4e.Draw()
         ErrStat=ROOT.Double(0.)
+        print ErrStat
         CrossDic[i["name"]][0] = i["state"].IntegralAndError(0,-1,ErrStat)/(BR*Lumi) 
         CrossDic[i["name"]][1] = ErrStat/(BR*Lumi)
-       
         CrossDic[i["name"]][2] = j["state"].Integral(0,-1)/(BR*Lumi) - CrossDic[i["name"]][0]     
         CrossDic[i["name"]][3] = CrossDic[i["name"]][0] - k["state"].Integral(0,-1)/(BR*Lumi)
-        MidSist =  (CrossDic[i["name"]][2]+ CrossDic[i["name"]][3])/2.
         
+        MidSist =  (CrossDic[i["name"]][2]+ CrossDic[i["name"]][3])/2.
         CrossDic[i["name"]][4] = math.sqrt(CrossDic[i["name"]][1]**2+MidSist**2)
     
-    list4l = combineInclusiveCross(CrossDic)
-
+    if "fr" in MCSet: list4l = combineInclusiveCrossTight(CrossDic)
+    else: list4l = combineInclusiveCross(CrossDic)
     dic4l = {"4l":list4l}
     CrossDic.update(dic4l)
  
@@ -418,12 +524,12 @@ def TotalCross():
         value[2]=math.sqrt(value[2])
         value[3]=math.sqrt(value[3])
 
-
         print Blue("{0}".format(fin)),
-        print " {0:.2f} +- {1:.2f} (stat) + {2:.2f} (sist) - {3:.2f} (sist) +- {4:.2f} (Total)\n".format(value[0],value[1],value[2],value[3],value[4])
-    
+        if "fr" in MCSet: print  " {0:.2f} +- {1:.2f} (stat) + {2:.2f} (sist) - {3:.2f} (sist) +- {4:.2f} (Total) [fb]\n".format(value[0]*1000,value[1]*1000,value[2]*1000,value[3]*1000,value[4]*1000)
+        else: print " {0:.2f} +- {1:.2f} (stat) + {2:.2f} (sist) - {3:.2f} (sist) +- {4:.2f} (Total) [pb] \n".format(value[0],value[1],value[2],value[3],value[4])
 
 def combineInclusiveCross(Dic):
+
 
     TotStat= math.sqrt(1./(1./(Dic["2e2m"][1]*Dic["2e2m"][1])+ 1./(Dic["4e"][1]*Dic["4e"][1])+ 1./(Dic["4m"][1]*Dic["4m"][1])))
 
@@ -440,5 +546,21 @@ def combineInclusiveCross(Dic):
     return [TotCross,TotStat,TotSistUp,TotSistDown,TotErr]
 
 
+def combineInclusiveCrossTight(Dic):
+
+
+    TotStat= math.sqrt((Dic["2e2m"][1]*Dic["2e2m"][1])+(Dic["4e"][1]*Dic["4e"][1])+(Dic["4m"][1]*Dic["4m"][1]))
+
+    TotSistUp= Dic["2e2m"][2]+Dic["4e"][2]+Dic["4m"][2]
+
+    TotSistDown= Dic["2e2m"][3]+Dic["4e"][3]+Dic["4m"][3]
+          
+    TotErr= math.sqrt(TotStat*TotStat+(TotSistUp+TotSistDown)/2)
+
+    TotCross= Dic["2e2m"][0]+Dic["4e"][0]+Dic["4m"][0]
+
+    return [TotCross,TotStat,TotSistUp,TotSistDown,TotErr]
+
 
    
+

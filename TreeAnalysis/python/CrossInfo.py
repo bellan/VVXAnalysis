@@ -51,13 +51,25 @@ BRele = 0.03363
 BRmu = 0.03366
 Lumi=19712 #pb-1
 
-GlobSistList = [{"name":"Trig","value":0.015},{"name":"IsoId","value":0.015},{"name":"Lumi","value":0.026},{"name":"Acc","value":0.05},{"name":"Eff","value":0.015}]
-#GlobSistList = [{"name":"Trig","value":0.015},{"name":"Lumi","value":0.026},{"name":"Acc","value":0.05}]
+# #inclusive cross-section in the normal fiducial region:
+# GlobSistList = [{"name":"Trig","value":0.015},{"name":"Lumi","value":0.026},{"name":"Acc","value":0.012}] 
+# DiffSistList = ("Red","Irr","sFactor")
 
-#DiffSistListUnfold = ("RedBkg","IrrBkg","qqgg","MCgen","UnfDataOverGenMC")
-DiffSistListUnfold = ("RedBkg","IrrBkg","qqgg","MCgen")
+##inclusive cross-section in the tight fiducial region (pdf uncertainty is negligible):
+#GlobSistList = [{"name":"Trig","value":0.015},{"name":"Lumi","value":0.026}] 
+#DiffSistList = ("Red","Irr","sFactor")
 
-DiffSistListJetsUnfold = ("JES_ModData","JER")
-
+#differential cross-section in the normal fiducial region (scale factor uncertainties are not implemented in the unfolding):
+GlobSistList = [{"name":"Trig","value":0.015},{"name":"IsoId","value":0.015},{"name":"Lumi","value":0.026},{"name":"Acc","value":0.012},{"name":"Eff","value":0.015}]
 DiffSistList = ("Red","Irr") 
-#DiffSistList = ("Red","Irr","sFactor") 
+
+##differential cross-section in the tight fiducial region (pdf uncertainty is negligible):
+#GlobSistList = [{"name":"Trig","value":0.015},{"name":"IsoId","value":0.015},{"name":"Lumi","value":0.026},{"name":"Eff","value":0.015}]
+#DiffSistList = ("Red","Irr") 
+
+
+
+DiffSistListUnfold = ("RedBkg","IrrBkg","qqgg","MCgen","UnfDataOverGenMC")
+#DiffSistListUnfold = ("RedBkg","IrrBkg","qqgg","MCgen")
+DiffSistListJetsUnfold = ("JES_ModData","JES_ModMat","JER")
+
