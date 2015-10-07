@@ -37,6 +37,21 @@ def addGlobSist(hCent,hUp,hDown):
         #print hCent.GetBinContent(i)+math.sqrt(valUp),"\n"
         hDown.SetBinContent(i,hCent.GetBinContent(i)-math.sqrt(valDown))
 
+#######################for the tight region
+def addGlobSist4lTight(hCent,hUp,hDown):
+      
+    Nbins = hCent.GetNbinsX()
+    for i in range(1,Nbins+1):
+        valGlobal = (hCent.GetBinContent(i)*(0.026))**2 #lumi
+        valUp = (hUp.GetBinContent(i)-hCent.GetBinContent(i))**2 + valGlobal
+        valDown = (hCent.GetBinContent(i)-hDown.GetBinContent(i))**2 + valGlobal
+        #print "i",i, math.sqrt(valUp)      
+      
+        #print i, math.sqrt(valUp)
+        hUp.SetBinContent(i,hCent.GetBinContent(i)+math.sqrt(valUp))
+        #print hCent.GetBinContent(i)+math.sqrt(valUp),"\n"
+        hDown.SetBinContent(i,hCent.GetBinContent(i)-math.sqrt(valDown))
+
 ##################################################################################################################
 
 ##################### Create TGraphAsymmetricError from up and down systematic distributions #####################
@@ -44,9 +59,10 @@ def addGlobSist(hCent,hUp,hDown):
 ##################################################################################################################
 
 
-def getSistGraph(HCent,HUp,HDown):
+def getSistGraph(HCent,HUp,HDown,MCSet,FinState):
 
-    addGlobSist(HCent,HUp,HDown)
+    if "fr" in MCSet and FinState == '4l': addGlobSist4lTight(HCent,HUp,HDown)
+    else: addGlobSist(HCent,HUp,HDown)
     grSist = ROOT.TGraphAsymmErrors(HCent)
     NBins = HCent.GetNbinsX()
     for i in range(1,NBins+1):
@@ -55,7 +71,6 @@ def getSistGraph(HCent,HUp,HDown):
         grSist.SetPointEYlow(i-1,HCent.GetBinContent(i)- HDown.GetBinContent(i))
 
     return copy.deepcopy(grSist)
-
 
 ##############################################################################################################
 
@@ -222,7 +237,7 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,Sign,UseMCReco,DoNormalized):
 
 
 #########################################################
-################# Set Cros Section ######################
+################# Set Cross Section ######################
 
 def setCrossSectionData(h1,FinState,Norm,DoNormalized,MCSet):
     
@@ -230,17 +245,13 @@ def setCrossSectionData(h1,FinState,Norm,DoNormalized,MCSet):
     elif FinState=='4m':   BR=BRmu*BRmu
     elif FinState=='2e2m': BR=2*BRmu*BRele
        
-    if DoNormalized: h1.Scale(Norm/h1.Integral(0,-1))#normalization to the total integral of data distribution
-    else:  
-        if "fr" in MCSet: h1.Scale(1./(Lumi))#normalization to 7.5 
-        else: h1.Scale(1./(Lumi*BR))#normalization to 7.5 
+    #if DoNormalized: h1.Scale(Norm/h1.Integral(0,-1))#useless because you normalize at the end of getCrossPlotData!
+    #else:  
+    if "fr" in MCSet: h1.Scale(1./(Lumi))#normalization to 7.5 
+    else: h1.Scale(1./(Lumi*BR))#normalization to 7.5 
     
-    print "{0} Tot Cross {1} {2:.2f} \n".format(FinState,(15-len(FinState))*" ", h1.Integral(1,-1))
-    #print "{0} Tot Cross {1} {2:.2f} \n".format(FinState,(15-len(FinState))*" ", h1.Integral(0,-1))
-    #print "{0} Tot Cross {1} {2:.2f} \n".format(FinState,(15-len(FinState))*" ", h1.Integral(-1,1))
-    
-   
-
+    print "{0} Tot Cross {1} {2:.2f} \n".format(FinState,(15-len(FinState))*" ", h1.Integral(0,-1))
+  
 #####################################################
 def setCrossSectionMC(h1,FinState,Type,DoNormalized,MCSet):
     
@@ -254,11 +265,9 @@ def setCrossSectionMC(h1,FinState,Type,DoNormalized,MCSet):
     print "{0} Tot Cross {1} {2:.6f} \n".format(FinState,(25-len(FinState))*" ", (h1.Integral(1,-1))/(Lumi*BR)) # Check total cross section without normalization
     
     ##h1.Scale(1/(Lumi*BR),"width") # If you don't want to normalize at the official cross section value.
-
-    ##Use integral with overflows entries to scale with theoretical value which include also the overflow entries.
     
-    Integral = h1.Integral(0,-1) #why (0,1) and not (-1,1)?
-    print "Integral before",Integral
+    Integral = h1.Integral(0,-1) #Use integral with overflows entries to scale with theoretical value which include also the overflow entries.
+    print "Integral before ",Integral
 
     if "fr" in MCSet: 
         if FinState=='4e':     normalization = 0.004734#0.00425
@@ -269,10 +278,8 @@ def setCrossSectionMC(h1,FinState,Type,DoNormalized,MCSet):
     else: normalization = 7.5 
     
    
-#normalization to the MC calculation of 7.5
+    #normalization to the MC calculation of 7.5
     if DoNormalized: h1.Scale(1/Integral,"width")
-        #if "Jets" in Type: h1.Scale(1/Integral)      
-        #else: h1.Scale(1/Integral,"width")
     else:
         if Type == "Mass":   
             h1.Scale(normalization/Integral,"width") 
@@ -282,13 +289,9 @@ def setCrossSectionMC(h1,FinState,Type,DoNormalized,MCSet):
         elif "Jet1" in Type:
             h1.Scale(2.97096294176353171/Integral,"width") # Mjj and Deta don't contain all the events of theoretical cross section 7,5. ho qualche dubbio sul valore messo... non dovrebbe essere  
         else:
-        #h1.Scale(1/(BR*Lumi),"width") # Mjj and Deta don't contain all the events of theoretical cross section 7,5.
-        #print "Int before",h1.Integral()
             h1.Scale(6.20670780539512634e-01/Integral,"width") # Mjj and Deta don't contain all the events of theoretical cross section 7,5. 
-            
-        #h1.Scale(6.20670780539512634e-01/Integral) # Mjj and Deta don't contain all the events of theoretical cross section 7,5.
-
     #print h1.Integral(3,4)*7.5/(Integral)
+
 ##################################################################################################################
 
 ##################### Combine different final state cross section distribution for final 4l ######################
@@ -304,7 +307,7 @@ def combineCross(HList,HListUp,HListDown):
     HCrossUp=ROOT.TH1F()
     HCrossDown=ROOT.TH1F()
 
-#just equal to one
+    #just equal to one
     HCross=copy.deepcopy(HList[1]["state"])
     HCrossUp=copy.deepcopy(HListUp[1]["state"])
     HCrossDown=copy.deepcopy(HListDown[1]["state"])
@@ -314,7 +317,7 @@ def combineCross(HList,HListUp,HListDown):
     for i in range(1,Nbins+1):
 
         Hlist  = zip(HList, HListUp,HListDown)
-        #Sort List by entries magnitude, from higher to lower  to skip 0 entries bins
+        #Sort List by entries magnitude, from higher to lower to skip 0 entries bins
         SortedHlist = sorted(Hlist,key=lambda value: value[0]["state"].GetBinContent(i),reverse = True)        
 
         Cross = 0
@@ -329,8 +332,7 @@ def combineCross(HList,HListUp,HListDown):
 
         for elem in SortedHlist:
             Entries = elem[0]["state"].GetBinContent(i)
-            
-          
+                      
             if Entries == 0.:  break   # Because of sorting also others final state will be 0 so use break and no continue
             
             #print elem[0]["state"].GetBinContent(i),elem[1]["state"].GetBinContent(i),elem[2]["state"].GetBinContent(i)
@@ -338,7 +340,7 @@ def combineCross(HList,HListUp,HListDown):
             errStatSq = (elem[0]["state"].GetBinError(i))**2
             errSistUpSq = (elem[1]["state"].GetBinContent(i)-Entries)**2
             errSistDownSq = (elem[2]["state"].GetBinContent(i)-Entries)**2
-            errSistSq =  ((elem[1]["state"].GetBinContent(i)-elem[2]["state"].GetBinContent(i))/2.)**2 #Use the average of sistematic up and down
+            errSistSq =  ((elem[1]["state"].GetBinContent(i)+elem[2]["state"].GetBinContent(i))/2.)**2 #Use the average of sistematic up and down. is it a +, right?
 
             weightStat =  1./errStatSq
 
@@ -393,50 +395,41 @@ def combineCrossTight(HList,HListUp,HListDown):
         ErrSistDown = 0
         ErrStat = 0
 
-        #WeightStat = 0.
-        #WeightTot = 0.
-        #WeightSistUp = 0.
-        #WeightSistDown = 0.
-
         for elem in SortedHlist:
             Entries = elem[0]["state"].GetBinContent(i)
-            
-          
             if Entries == 0.:  break   # Because of sorting also others final state will be 0 so use break and no continue
             
             #print elem[0]["state"].GetBinContent(i),elem[1]["state"].GetBinContent(i),elem[2]["state"].GetBinContent(i)
 
             errStatSq = (elem[0]["state"].GetBinError(i))**2
-            errSistUp = (elem[1]["state"].GetBinContent(i)-Entries)#**2
-            errSistDown = (elem[2]["state"].GetBinContent(i)-Entries)#**2
-            errSistSq =  ((elem[1]["state"].GetBinContent(i)-elem[2]["state"].GetBinContent(i))/2.)**2 #Use the average of sistematic up and down
+            errSistUp = (elem[1]["state"].GetBinContent(i)-Entries)**2
+            errSistDown = (elem[2]["state"].GetBinContent(i)-Entries)**2
+            errSistSq =  ((elem[1]["state"].GetBinContent(i)+elem[2]["state"].GetBinContent(i))/2.)**2 #Use the average of sistematic up and down
 
-            #weightStat =  1./errStatSq
-
-            #if errSistUpSq==0:  weightSistUp = 0.
-            #else:  weightSistUp =  1./errSistUpSq
-
-            #if errSistDownSq==0:  weightSistDown = 0.
-            #else:  weightSistDown =  1./errSistDownSq
-
-            #weightTot = 1./(errStatSq+errSistSq)
-           
-            #WeightStat += weightStat
-            #WeightTot += weightTot
-            #WeightSistUp += weightSistUp
-            #WeightSistDown += weightSistDown 
             Cross +=  Entries #Giusto?? FIXME
             ErrStat += errStatSq 
             ErrSistUp += errSistUp
             ErrSistDown += errSistDown
-        #Cross = Cross/WeightTot
+       
+        sigma_4e = Hlist[0][1]["state"].GetBinContent(i)
+        sigma_4m = Hlist[0][2]["state"].GetBinContent(i)
+        sigma_2e2m = Hlist[0][0]["state"].GetBinContent(i)
+        
+        sigma_4l_corrunc = math.sqrt(sigma_4e*sigma_4e +sigma_4m*sigma_4m) +sigma_2e2m 
+        corrunc_4l = (0.015*sigma_4l_corrunc)**2 + (0.03*sigma_4l_corrunc)**2 #trigger unc plus scale factor unc
 
-        ErrStatSq = math.sqrt(ErrStat)        
-        #ErrSistUp =math.sqrt(1./WeightSistUp)
-        #ErrSistDown =math.sqrt(1./WeightSistDown)
+        
+        print sigma_4e,sigma_4m, sigma_2e2m,sigma_4l_corrunc,corrunc_4l
+        
+        ErrStatSq = math.sqrt(ErrStat)  
+        ErrSistUpSq =math.sqrt(ErrSistUp + corrunc_4l) 
+        ErrSistDownSq =math.sqrt(ErrSistDown + corrunc_4l)
 
-        HCrossUp.SetBinContent(i,Cross+ErrSistUp)
-        HCrossDown.SetBinContent(i,Cross-ErrSistDown)
+        #ErrSistUpSq =math.sqrt(ErrSistUp+((0.078+0.029+0.044)*Cross)**2)#uncertainties coming from the unfolding summed in quadrature + lumi 7.8% (2.6*3), Triggher 2,9% (sqrt(2*(0.015)^2)+ 0.015), SF 4.4% (sqrt(2*(0.03)^2)+ 0.03)
+        #ErrSistDownSq =math.sqrt(ErrSistDown+((0.078+0.029+0.044)*Cross)**2)
+
+        HCrossUp.SetBinContent(i,Cross+ErrSistUpSq)
+        HCrossDown.SetBinContent(i,Cross-ErrSistDownSq)
         HCross.SetBinContent(i,Cross)
         HCross.SetBinError(i,ErrStatSq)      
  
@@ -516,11 +509,15 @@ def TotalCross(MCSet,Type):
     print Red("\n##################### RESULTS FOR INCLUSIVE CROSS SECTION ####################\n") 
     for fin,value in CrossDic.iteritems():
         value[2]=value[2]**2
-        value[3]=value[3]**2
-        for sist in GlobSistList: #Add inclusive systematic errors
-            value[2]+=(value[0]*sist["value"])**2
-            value[3]+=(value[0]*sist["value"])**2 #CHEC
-        value[4]= math.sqrt(value[2]+value[3])
+        value[3]=value[3]**2 
+        if "fr" in MCSet and fin == "4l":#only lumi is added
+            value[2]= value[2]+(value[0]*0.026)**2
+            value[3]= value[3]+(value[0]*0.026)**2
+        else:            
+            for sist in GlobSistList: #Add inclusive systematic errors
+                value[2]+=(value[0]*sist["value"])**2
+                value[3]+=(value[0]*sist["value"])**2 #CHECK
+        value[4]= math.sqrt(value[2]+value[3])#siamo sicuri??
         value[2]=math.sqrt(value[2])
         value[3]=math.sqrt(value[3])
 
@@ -551,11 +548,15 @@ def combineInclusiveCrossTight(Dic):
 
     TotStat= math.sqrt((Dic["2e2m"][1]*Dic["2e2m"][1])+(Dic["4e"][1]*Dic["4e"][1])+(Dic["4m"][1]*Dic["4m"][1]))
 
-    TotSistUp= Dic["2e2m"][2]+Dic["4e"][2]+Dic["4m"][2]
+    TriggerUnc =  (0.015*(math.sqrt(Dic["4e"][0]*Dic["4e"][0]+Dic["4m"][0]*+Dic["4m"][0]) + Dic["2e2m"][0]))**2
 
-    TotSistDown= Dic["2e2m"][3]+Dic["4e"][3]+Dic["4m"][3]
-          
-    TotErr= math.sqrt(TotStat*TotStat+(TotSistUp+TotSistDown)/2)
+    TotSistUp= math.sqrt((Dic["2e2m"][2])**2+(Dic["4e"][2])**2+(Dic["4m"][2])**2 +TriggerUnc)
+
+    TotSistDown= math.sqrt((Dic["2e2m"][3])**2+(Dic["4e"][3])**2+(Dic["4m"][3])**2 +TriggerUnc)
+
+    TotSist = (TotSistUp + TotSistDown)/2          
+
+    TotErr= math.sqrt(TotStat*TotStat+TotSist*TotSist)
 
     TotCross= Dic["2e2m"][0]+Dic["4e"][0]+Dic["4m"][0]
 
