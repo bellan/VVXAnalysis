@@ -56,6 +56,3 @@ MuonEG2015D_v3,, -1, ,, /MuonEG/MINIAOD/PromptReco-v3/,/store/data/Run2015D,,2,P
 DoubleMu2015D_v4,, -1, ,, /DoubleMuon/MINIAOD/PromptReco-v4/,/store/data/Run2015D,,2,PD=DoubleMu,json_2015_25ns.py,
 DoubleEG2015D_v4,, -1, ,, /DoubleEG/MINIAOD/PromptReco-v4/,/store/data/Run2015D,,2,PD=DoubleEle,json_2015_25ns.py,
 MuonEG2015D_v4,, -1, ,, /MuonEG/MINIAOD/PromptReco-v4/,/store/data/Run2015D,,2,PD=MuEG,json_2015_25ns.py,
-
-
-	      
