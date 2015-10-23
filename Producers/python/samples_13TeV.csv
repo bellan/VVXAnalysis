@@ -1,6 +1,6 @@
 identifier,process,crossSection=-1,BR=1,execute=True,dataset,prefix,pattern,splitLevel,::variables,::pyFragments,comment
 
-### 50 ns samples,,,,,,,,,,
+### 50 ns samples,,,,,,,,,,,
 #ZZTo4L_powheg_50ns,,,,,/ZZTo4L_13TeV_powheg_pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/,/store/mc/RunIISpring15DR74,,2,,,
 
 #ggZZ4e_50ns,,            0.00158582,     ,,/GluGluToZZTo4e_BackgroundOnly_13TeV_MCFM/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/,/store/mc/RunIISpring15DR74,,2,,,
@@ -14,7 +14,7 @@ identifier,process,crossSection=-1,BR=1,execute=True,dataset,prefix,pattern,spli
 
 #TTTo2L2Nu2B_50ns,,       -1,     ,,/TTTo2L2Nu_13TeV-powheg/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v2/,/store/mc/RunIISpring15DR74,,2,,,
 
-### 25 ns samples ,,,,,,,,,,
+### 25 ns samples ,,,,,,,,,,,,
 ggH125,,          0.01212,      ,,/GluGluHToZZTo4L_M125_13TeV_powheg_JHUgen_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,### Official Spring15 samples
 VBFH125,,         0.001034,     ,,/VBF_HToZZTo4L_M125_13TeV_powheg_JHUgen_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,
 WplusH125,,       0.0002339,    ,,/WplusH_HToZZTo4L_M125_13TeV_powheg-minlo-HWJ_JHUgen_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/,/store/mc/RunIISpring15DR74,,2,,,# Total (W+H)+(W-H)=0.000381; sigma(W+H)/sigma(W-H) = 1.59
