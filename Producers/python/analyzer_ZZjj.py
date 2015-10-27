@@ -320,16 +320,19 @@ process.postPreselectionCounter      = cms.EDProducer("EventCountProducer")
 process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("disambiguatedJets"), minNumber = cms.uint32(0))
 
 # Select only events with one such candidate
-process.zzCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZZFiltered"), minNumber = cms.uint32(0))
+#process.zzCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZZFiltered"), minNumber = cms.uint32(0))
 
 # Looser preselection: ask only for a at least a Z + 1 soft lepton
-process.zlCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZlCand"), minNumber = cms.uint32(1))
+#process.zlCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZlCand"), minNumber = cms.uint32(1))
+
+process.zzAndzlFilterCombiner = cms.EDFilter("ZLFilter", ZLL = cms.InputTag("ZZFiltered"), ZL = cms.InputTag("ZlCand"))
+
 
 ### Path that pre-select the higher level objects that will input the TreePlanter
 process.preselection = cms.Path( process.prePreselectionCounter
                                  * process.CR
                                  * process.postRecoCleaning 
-                                 * process.zlCounterFilter * process.zzCounterFilter * process.jetCounterFilter
+                                 * process.zzAndzlFilterCombiner * process.jetCounterFilter
                                  * process.postPreselectionCounter)
 
 
