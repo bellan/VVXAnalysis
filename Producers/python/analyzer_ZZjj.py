@@ -222,14 +222,15 @@ Z1MASS            = "daughter('Z1').mass>60 && daughter('Z1').mass<120"
 Z2MASS            = "daughter('Z2').mass>60 && daughter('Z2').mass<120"
 ZZWITHONSHELLZS   = (BESTCAND_AMONG + "&&" + Z1MASS + "&&" + Z2MASS)
 
-process.ZZCand.flags.FullSel = cms.string(FULLSEL + "&&" + ZZWITHONSHELLZS)
+process.ZZCand.flags.SR_ZZOnShell = cms.string(SR + "&&" + ZZWITHONSHELLZS)
 # Uncomment the lines below if you want a smaller finding region!
-# process.ZZCand.bestCandAmong = cms.PSet(isBestCand = cms.string(ZZWITHONSHELLZS))
+#process.ZZCand.bestCandAmong = cms.PSet(isBestCand = cms.string(ZZWITHONSHELLZS))
 
 
 process.ZZSelectedCand = cms.EDFilter("PATCompositeCandidateSelector",
                                       src = cms.InputTag("ZZCand"),
-                                      cut = cms.string("userFloat('isBestCand') && userFloat('FullSel')")
+                                      cut = cms.string("userFloat('isBestCand') && userFloat('SR')")
+#                                      cut = cms.string("userFloat('isBestCand') && userFloat('SR_ZZOnShell')")
                                       )
 
 ### ......................................................................... ###
@@ -246,23 +247,23 @@ CR_Z2MASS  = "daughter(1).mass>60 && daughter(1).mass<120"
 CR_ZLLos_MASSWINDOW = (CR_Z1MASS    + "&&" + CR_Z2MASS)
 
 # CR 3P1F
-process.ZLLCand.flags.SelZLL_3P1F = cms.string(CR_ZLLosSEL_3P1F + "&&" + CR_ZLLos_MASSWINDOW)
+process.ZLLCand.flags.CRZLLos_3P1F_ZZOnShell = cms.string(CR_ZLLosSEL_3P1F + "&&" + CR_ZLLos_MASSWINDOW)
 # Uncomment the lines below if you want a smaller finding region!
 # process.ZLLCand.bestCandAmong.isBestCRZLLos_3P1F = cms.string(CR_BESTZLLos_3P1F + CR_ZLLos_MASSWINDOW)
 
 # CR 2P2F
-process.ZLLCand.flags.SelZLL_2P2F = cms.string(CR_ZLLosSEL_2P2F + "&&" + CR_ZLLos_MASSWINDOW)
+process.ZLLCand.flags.CRZLLos_2P2F_ZZOnShell = cms.string(CR_ZLLosSEL_2P2F + "&&" + CR_ZLLos_MASSWINDOW)
 # Uncomment the lines below if you want a smaller finding region!
 # process.ZLLCand.bestCandAmong.isBestCRZLLos_2P2F = cms.string(CR_BESTZLLos_2P2F + CR_ZLLos_MASSWINDOW)
 
 process.ZLLFiltered3P1F = cms.EDFilter("PATCompositeCandidateSelector",
                                        src = cms.InputTag("ZLLCand"),
-                                       cut = cms.string("userFloat('isBestCRZLLos_3P1F') && userFloat('SelZLL_3P1F')")
+                                       cut = cms.string("userFloat('isBestCRZLLos_3P1F') && userFloat('CRZLLos_3P1F')")
                                        )
 
 process.ZLLFiltered2P2F = cms.EDFilter("PATCompositeCandidateSelector",
                                        src = cms.InputTag("ZLLCand"),
-                                       cut = cms.string("userFloat('isBestCRZLLos_2P2F') && userFloat('SelZLL_2P2F')")
+                                       cut = cms.string("userFloat('isBestCRZLLos_2P2F') && userFloat('CRZLLos_2P2F')")
                                        )
 
 

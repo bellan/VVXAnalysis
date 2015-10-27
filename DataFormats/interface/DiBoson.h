@@ -47,6 +47,7 @@ namespace phys {
       , isBestCRZLLos_3P1F_(false)      
       , passSelZLL_3P1F_(false)         
       {
+	
 	for(unsigned int i = 0; i < 2; ++i){
 	  id_ += abs(daughter0_.daughter(i).id()) + abs(daughter1_.daughter(i).id()) + daughter0_.daughter(i).id() + daughter1_.daughter(i).id();
 	}
@@ -141,6 +142,9 @@ namespace phys {
     Bool_t isBestCRZLLos_3P1F_;
     Bool_t passSelZLL_3P1F_;   
 
+    Bool_t passSRZZOnShell_;
+    Bool_t passSelZLL_2P2F_ZZOnShell_ ;
+    Bool_t passSelZLL_3P1F_ZZOnShell_;
 
     ClassDef(DiBoson, 1) //
   };

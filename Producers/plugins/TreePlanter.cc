@@ -626,8 +626,8 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   int regionWord = computeRegionFlag(edmVV);
 
   Channel channel = NONE;
-  if(test_bit(regionWord,ZZ)) channel = ZZ;
-  else if(test_bit(regionWord,CRZLLos_2P2F) || test_bit(regionWord,CRZLLos_3P1F)) channel = ZLL;
+  if(test_bit(regionWord,ZZ) || test_bit(regionWord,ZZOnShell)) channel = ZZ;
+  else if(test_bit(regionWord,CRZLLos_2P2F) || test_bit(regionWord,CRZLLos_3P1F) || test_bit(regionWord,CRZLLos_2P2F_ZZOnShell) || test_bit(regionWord,CRZLLos_3P1F_ZZOnShell)) channel = ZLL;
   
   if(channel == NONE) {cout << "Channel cannot be identified, aborting..." << endl; abort();}
   
@@ -663,12 +663,15 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   else if (VV.id() == 52) effectiveChannel = MMMM;  // ZZ->4mu
   else {cout << "Do not know what to do when setting trigger bit in TreePlanter. Unknown ZZ id: " << VV.id() << endl; abort();}
   
-  VV.isBestCand_         = edmVV.userFloat("isBestCand");
-  VV.passFullSel_        = edmVV.userFloat("FullSel");
-  VV.isBestCRZLLos_2P2F_ = edmVV.userFloat("isBestCRZLLos_2P2F");
-  VV.passSelZLL_2P2F_    = edmVV.userFloat("SelZLL_2P2F");
-  VV.isBestCRZLLos_3P1F_ = edmVV.userFloat("isBestCRZLLos_3P1F");
-  VV.passSelZLL_3P1F_    = edmVV.userFloat("SelZLL_3P1F");   
+  VV.isBestCand_                = edmVV.userFloat("isBestCand");
+  VV.passFullSel_               = edmVV.userFloat("SR");
+  VV.isBestCRZLLos_2P2F_        = edmVV.userFloat("isBestCRZLLos_2P2F");
+  VV.passSelZLL_2P2F_           = edmVV.userFloat("CRZLLos_2P2F");
+  VV.isBestCRZLLos_3P1F_        = edmVV.userFloat("isBestCRZLLos_3P1F");
+  VV.passSelZLL_3P1F_           = edmVV.userFloat("CRZLLos_3P1F");   
+  VV.passSRZZOnShell_           = edmVV.userFloat("SR_ZZOnShell");
+  VV.passSelZLL_2P2F_ZZOnShell_ = edmVV.userFloat("CRZLLos_2P2F_ZZOnShell");
+  VV.passSelZLL_3P1F_ZZOnShell_ = edmVV.userFloat("CRZLLos_3P1F_ZZOnShell");   
 
   VV.regionWord_  = regionWord;
   VV.triggerWord_ = triggerWord_;
@@ -774,12 +777,22 @@ std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > TreePlanter::fi
 int TreePlanter::computeRegionFlag(const pat::CompositeCandidate & vv) const{
   int REGIONFLAG=0;
   
-  if(vv.userFloat("isBestCand") && vv.userFloat("FullSel"))
+  if(vv.userFloat("isBestCand") && vv.userFloat("SR"))
     set_bit(REGIONFLAG,ZZ);
-  if(vv.userFloat("isBestCRZLLos_2P2F") && vv.userFloat("SelZLL_2P2F"))
+  if(vv.userFloat("isBestCRZLLos_2P2F") && vv.userFloat("CRZLLos_2P2F"))
     set_bit(REGIONFLAG,CRZLLos_2P2F);
-  if(vv.userFloat("isBestCRZLLos_3P1F") && vv.userFloat("SelZLL_3P1F"))
+  if(vv.userFloat("isBestCRZLLos_3P1F") && vv.userFloat("CRZLLos_3P1F"))
     set_bit(REGIONFLAG,CRZLLos_3P1F);
+
+
+  if(vv.userFloat("isBestCand") && vv.userFloat("SR_ZZOnShell"))
+    set_bit(REGIONFLAG,ZZOnShell);
+  if(vv.userFloat("isBestCRZLLos_2P2F") && vv.userFloat("CRZLLos_2P2F_ZZOnShell"))
+    set_bit(REGIONFLAG,CRZLLos_2P2F_ZZOnShell);
+  if(vv.userFloat("isBestCRZLLos_3P1F") && vv.userFloat("CRZLLos_3P1F_ZZOnShell"))
+    set_bit(REGIONFLAG,CRZLLos_3P1F_ZZOnShell);
+
+
 
   //For the SR, also fold information about acceptance in CRflag 
   if (isMC_ && test_bit(REGIONFLAG,ZZ)) {
