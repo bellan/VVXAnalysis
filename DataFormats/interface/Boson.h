@@ -10,6 +10,7 @@
  */
 
 #include "Particle.h"
+#include <bitset>
 
 namespace phys {
 
@@ -41,7 +42,8 @@ namespace phys {
       , daughter0_(vb.daughter(0))
       , daughter1_(vb.daughter(1))
       , indexFSR_(vb.daughterWithFSR())
-      , fsrPhoton_(vb.fsrPhoton())
+      , fsrPhoton0_(vb.fsrPhoton(0))
+      , fsrPhoton1_(vb.fsrPhoton(1))
       , hasGoodDaughters_(vb.hasGoodDaughters()){
 
       init();
@@ -51,7 +53,11 @@ namespace phys {
     template<typename T>
       Boson<T> clone() const {
       Boson<T> newboson(daughter0_,daughter1_,id_);
-      if(indexFSR_ >=0) newboson.addFSR(indexFSR_,fsrPhoton_);
+      std::bitset<4> index = std::bitset<4>(indexFSR_);
+
+      if(index.test(0)) newboson.addFSR(0,fsrPhoton0_);
+      if(index.test(1)) newboson.addFSR(1,fsrPhoton1_);
+
       return newboson;
     }
 
@@ -84,14 +90,23 @@ namespace phys {
 
 
     void addFSR(int daughter_index, const Particle &photon){
-      indexFSR_ = daughter_index;
-      fsrPhoton_ = photon;
-      p4_ = p4_ + fsrPhoton_.p4();
+      std::bitset<4> index = std::bitset<4>(indexFSR_);
+      index.set(daughter_index);
+      indexFSR_ = index.to_ulong();
+
+      if(daughter_index == 0) fsrPhoton0_ = photon;
+      else if(daughter_index == 1) fsrPhoton1_ = photon;
+      else { std::cout << "*** (FSR) Boson's daughter not found! ***" << " " << daughter_index << std::endl; abort();}
+      p4_ = p4_ + photon.p4();
     }
 
     
 
-    Particle fsrPhoton() const {return fsrPhoton_;}
+    Particle fsrPhoton(int d) const {
+      if(d == 0) return fsrPhoton0_;
+      else if(d == 1) return fsrPhoton1_;
+      else { std::cout << "*** (FSR) Boson's daughter not found! ***" << " " << d << std::endl; abort();}
+    }
 
     int daughterWithFSR() const {return indexFSR_;}
    
@@ -115,7 +130,8 @@ namespace phys {
     P daughter1_;
 
     Int_t indexFSR_;     // daughter with FSR, -1 if no one radiated
-    Particle fsrPhoton_;
+    Particle fsrPhoton0_;
+    Particle fsrPhoton1_;
 
     Bool_t hasGoodDaughters_;
 
@@ -125,7 +141,7 @@ namespace phys {
       fakeRateSFUnc_ = -1;
       
       charge_ = daughter0_.charge() + daughter1_.charge();
-      if(indexFSR_ >=0)  p4_ = p4_ + fsrPhoton_.p4();
+      if(indexFSR_ >=0)  { p4_ = p4_ + fsrPhoton0_.p4() + fsrPhoton1_.p4();}
     }
 
     ClassDef(Boson, 1) //
