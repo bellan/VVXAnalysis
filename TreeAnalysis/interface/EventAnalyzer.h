@@ -158,7 +158,7 @@ public:
 
 
   // Access to the branches
-  ULong_t  event     ; TBranch *b_event;
+  Int_t    event     ; TBranch *b_event;
   Int_t    run       ; TBranch *b_run;
   Int_t    lumiBlock ; TBranch *b_lumiBlock;
   Int_t    nvtx      ; TBranch *b_nvtx;

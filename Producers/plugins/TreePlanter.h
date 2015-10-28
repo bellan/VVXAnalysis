@@ -107,7 +107,7 @@ class TreePlanter: public edm::EDAnalyzer {
   //SimpleJetResolution    *jetResolution_;
 
   // ------------------- Event info in the tree ------------------- //
-  ULong_t event_;
+  Int_t event_;
   Int_t run_;
   Int_t lumiBlock_;
   
