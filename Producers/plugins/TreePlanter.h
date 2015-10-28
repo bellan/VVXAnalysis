@@ -67,10 +67,6 @@ class TreePlanter: public edm::EDAnalyzer {
 
   phys::Jet fill(const pat::Jet &jet) const;
 
-  void addExtras(phys::Jet &jet, const pat::CompositeCandidate & v, const std::string& userFloatName) const;
-  void addExtras(phys::Lepton& mu, const pat::CompositeCandidate & v, const std::string& userFloatName) const;
-
-  
   std::vector<phys::Boson<phys::Lepton> > fillLepBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const;
   std::vector<phys::Boson<phys::Jet> >    fillHadBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const;
 
@@ -111,7 +107,7 @@ class TreePlanter: public edm::EDAnalyzer {
   //SimpleJetResolution    *jetResolution_;
 
   // ------------------- Event info in the tree ------------------- //
-  Int_t event_;
+  ULong_t event_;
   Int_t run_;
   Int_t lumiBlock_;
   

@@ -452,6 +452,7 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
   output.pfNeutralHadIso_ = lepton.userFloat("PFNeutralHadIso"  );
   output.pfPhotonIso_     = lepton.userFloat("PFPhotonIso"      );
   output.pfCombRelIso_    = lepton.userFloat("combRelIsoPF"     );  
+  output.pfCombRelIsoFSRCorr_ = lepton.userFloat("combRelIsoPFFSRCorr");
   output.rho_             = lepton.userFloat("rho"              );
   output.isPF_            = lepton.userFloat("isPFMuon"         );
   output.matchHLT_        = lepton.userFloat("HLTMatch"         );
@@ -578,19 +579,6 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   return output; 
 }
 
-
-void TreePlanter::addExtras(phys::Jet &jet, const pat::CompositeCandidate & v, const std::string& userFloatName) const{}
-
-void TreePlanter::addExtras(phys::Lepton& l, const pat::CompositeCandidate & v, const std::string& userFloatName) const {
-  // in the future it could become a map inside the phys::Particle class. Right now there is not a realy need to
-  // make such a complication.
-  if(v.hasUserFloat(userFloatName)){
-    l.pfCombRelIsoFSRCorr_ = v.userFloat(userFloatName);
-    l.realignFakeRate();
-  }
-}
-
-
 template<typename T, typename PAR>
 phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int type, bool requireQualityCriteria) const {
 
@@ -598,18 +586,16 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
   if(requireQualityCriteria && v.hasUserFloat("GoodLeptons") && !v.userFloat("GoodLeptons")) return phys::Boson<PAR>();
 
   PAR d0 = fill(*dynamic_cast<const T*>(v.daughter(0)->masterClone().get()));
-  addExtras(d0, v ,"d0.combRelIsoPFFSRCorr");
   PAR d1 = fill(*dynamic_cast<const T*>(v.daughter(1)->masterClone().get()));
-  addExtras(d1, v ,"d1.combRelIsoPFFSRCorr");
 
   if(d0.id() == 0 || d1.id() == 0) edm::LogError("TreePlanter") << "TreePlanter: VB candidate does not have a matching good particle!";
   
   phys::Boson<PAR> physV(d0, d1, type);
   
   // Add FSR
-  if(v.hasUserFloat("dauWithFSR") && v.userFloat("dauWithFSR") >= 0){
-    phys::Particle photon(phys::Particle::convert(v.daughter(2)->p4()), 0, 22);
-    physV.addFSR(v.userFloat("dauWithFSR"), photon);
+  for(unsigned int i = 2; i < v.numberOfDaughters(); ++i){
+    phys::Particle photon(phys::Particle::convert(v.daughter(i)->p4()), 0, 22);
+    physV.addFSR(v.userFloat("leptIdx"), photon);
   }
   
   // Add quality of daughters, right now only for ll pairs
