@@ -172,6 +172,7 @@ process.postCleaningElectrons = cms.EDProducer("PATElectronCleaner",
 # The jets, to be stored in the event, must pass the preselction (specified below by the user) AND the looseID + PU veto that is implemented in the code (same algo as for H->ZZ VBF selection)
 ### ......................................................................... ###
 
+## FIXME: Logic need to be recheck as of new FSR strategy has been implemented
 process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
                                            Setup                = cms.int32(JET_SETUP),
                                            JetPreselection      = cms.string("pt > 10"),
@@ -183,6 +184,7 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
                                            Muons     = cms.InputTag("postCleaningMuons"),
                                            Electrons = cms.InputTag("postCleaningElectrons"),
                                            Diboson   = cms.InputTag("ZZFiltered"),
+                                           cleanFSRFromLeptons = cms.bool(True),
                                            DebugPlots= cms.untracked.bool(False)
                                            )
 
