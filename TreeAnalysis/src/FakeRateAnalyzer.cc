@@ -114,7 +114,7 @@ void FakeRateAnalyzer::analyze(){
     if(abs(ZL->front().second.id()) == 13){
       if(fabs(ZL->front().second.eta()) < 1.2)   theHistograms.fill("FakeRate_denom_muons_barrel_pt","Total number of soft leptons in the barrel",xbins,ZL->front().second.pt(),theWeight);
       else                        theHistograms.fill("FakeRate_denom_muons_endcap_pt","Total number of soft leptons in the endcaps",xbins,ZL->front().second.pt(),theWeight);
-      if(ZL->front().second.passFullSelNoFSRCorr()){
+      if(ZL->front().second.passFullSel()){
 	if(fabs(ZL->front().second.eta()) < 1.2) theHistograms.fill("FakeRate_num_muons_barrel_pt","Number of tight leptons in the barrel",xbins,ZL->front().second.pt(),theWeight);
 	else theHistograms.fill("FakeRate_num_muons_endcap_pt","Number of tight leptons in the endcaps",xbins,ZL->front().second.pt(),theWeight);
       }
@@ -123,7 +123,7 @@ void FakeRateAnalyzer::analyze(){
     if(abs(ZL->front().second.id()) == 11){
       if(fabs(ZL->front().second.eta()) < 1.45)   theHistograms.fill("FakeRate_denom_electrons_barrel_pt","Total number of soft leptons in the barrel",xbins,ZL->front().second.pt(),theWeight);
       else                         theHistograms.fill("FakeRate_denom_electrons_endcap_pt","Total number of soft leptons in the endcaps",xbins,ZL->front().second.pt(),theWeight);
-      if(ZL->front().second.passFullSelNoFSRCorr()){
+      if(ZL->front().second.passFullSel()){
 	if(fabs(ZL->front().second.eta()) < 1.45) theHistograms.fill("FakeRate_num_electrons_barrel_pt","Number of tight leptons in the barrel",xbins,ZL->front().second.pt(),theWeight);
 	else                       theHistograms.fill("FakeRate_num_electrons_endcap_pt","Number of tight leptons in the endcaps",xbins,ZL->front().second.pt(),theWeight);
       }
