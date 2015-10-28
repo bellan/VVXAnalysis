@@ -47,7 +47,7 @@ bool ZLFilter::filter(edm::Event& event, const edm::EventSetup& setup){
   // if there is only one ZL candidate --> want to keep it if it passes trigger requirements
   if(ZL->size() == 1) 
     if((ZL->at(0).daughter(0)->daughter(0)->pt() > 20 && ZL->at(0).daughter(0)->daughter(1)->pt() > 10) || (ZL->at(0).daughter(0)->daughter(0)->pt() > 10 && ZL->at(0).daughter(0)->daughter(1)->pt() > 20))
-      if(fabs(ZL->at(0).daughter(0).mass()-91.19) <= 10 && ZL->at(0).daughter(1).userFloat("SIP") < 4) return true;
+      if(fabs(ZL->at(0).daughter(0)->mass()-91.19) <= 10) return true; // && ZL->at(0).daughter(1)->userFloat("SIP") < 4) return true;
 
   return false;
 
