@@ -192,9 +192,15 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   // Check if the request on region tye matches with the categorization of the event
   regionWord = std::bitset<128>(ZZ->region());
   // check bits accordingly to ZZAnalysis/AnalysisStep/interface/FinalStates.h
-  if(region_  == phys::SR                                     && !regionWord.test(3))  return 0;
-  if((region_ == phys::CR2P2F || region_ == phys::CR2P2F_HZZ) && !regionWord.test(22)) return 0;
-  if((region_ == phys::CR3P1F || region_ == phys::CR3P1F_HZZ) && !regionWord.test(23)) return 0;
+  //  if(region_  == phys::SR                                     && !regionWord.test(3))  return 0;
+  // if((region_ == phys::CR2P2F || region_ == phys::CR2P2F_HZZ) && !regionWord.test(22)) return 0;
+  //if((region_ == phys::CR3P1F || region_ == phys::CR3P1F_HZZ) && !regionWord.test(23)) return 0;
+
+  if(region_  == phys::SR                                     && !regionWord.test(26))  return 0;
+  if((region_ == phys::CR2P2F || region_ == phys::CR2P2F_HZZ) && !regionWord.test(24)) return 0;
+  if((region_ == phys::CR3P1F || region_ == phys::CR3P1F_HZZ) && !regionWord.test(25)) return 0;
+
+
 
   theWeight = theMCInfo.weight(*ZZ);
 
