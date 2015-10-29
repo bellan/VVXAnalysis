@@ -20,11 +20,63 @@ void ZZjAnalyzer::ZZplots(int id){
 
   if(ZZ->id() != id && id != -1) return; // -1 here means generic 4l final state
 
+  std::string eventstr=std::to_string(run)+":"+std::to_string(lumiBlock)+":"+std::to_string(event);
+
   std::string decay  = "4l";
   
-  if      (id == 52) {decay = "4m";}
-  else if (id == 48) {decay = "2e2m";}
-  else if (id == 44) {decay = "4e";}
+  if      (id == 52) {
+    decay = "4m";
+    events4mu.push_back(eventstr);
+  }
+  
+  else if (id == 48) {
+    decay = "2e2m";
+    events2e2mu.push_back(eventstr);
+  }
+  else if (id == 44) {
+    decay = "4e";
+    events4e.push_back(eventstr);
+}
+
+
+ theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep0_sip"         , std::string("sip of  Z0 lep0 of ZZ_{1}#rightarrow ")+decay            , 200, 0,5,ZZ->first().daughterPtr(0)->sip(),theWeight);
+
+ theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep1_sip"         , std::string("sip of  Z0 lep1 of ZZ_{1}#rightarrow ")+decay            , 200, 0,5,ZZ->first().daughterPtr(1)->sip(),theWeight);
+
+
+  theHistograms.fill(std::string("ZZTo")+decay+"_Z1lep0_sip"         , std::string("sip of  Z1 lep0 of ZZ_{1}#rightarrow ")+decay            , 200, 0,5,ZZ->second().daughterPtr(0)->sip(),theWeight);
+
+  theHistograms.fill(std::string("ZZTo")+decay+"_Z1lep1_sip"         , std::string("sip of  Z1 lep1 of ZZ_{1}#rightarrow ")+decay            , 200, 0,5,ZZ->second().daughterPtr(1)->sip(),theWeight);
+
+
+
+  theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep0_pt"         , std::string("pt of  Z0 lep0 of ZZ_{1}#rightarrow ")+decay            ,  300, 0,  300,ZZ->first().daughterPtr(0)->pt(),theWeight);
+
+ theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep1_pt"         , std::string("pt of  Z0 lep1 of ZZ_{1}#rightarrow ")+decay            ,  300, 0,  300,ZZ->first().daughterPtr(1)->pt(),theWeight);
+
+
+  theHistograms.fill(std::string("ZZTo")+decay+"_Z1lep0_pt"         , std::string("pt of  Z1 lep0 of ZZ_{1}#rightarrow ")+decay            ,  300, 0,  300,ZZ->second().daughterPtr(0)->pt(),theWeight);
+
+  theHistograms.fill(std::string("ZZTo")+decay+"_Z1lep1_pt"         , std::string("pt of  Z1 lep1 of ZZ_{1}#rightarrow ")+decay            ,  300, 0,  300,ZZ->second().daughterPtr(1)->pt(),theWeight);
+
+
+
+
+  theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep0_iso"         , std::string("iso of  Z0 lep0 of ZZ_{1}#rightarrow ")+decay            ,  100, 0, 2,ZZ->first().daughterPtr(0)->pfCombRelIsoFSRCorr(),theWeight);
+
+ theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep1_iso"         , std::string("iso of  Z0 lep1 of ZZ_{1}#rightarrow ")+decay            ,  100, 0, 2,ZZ->first().daughterPtr(1)->pfCombRelIsoFSRCorr(),theWeight);
+
+
+  theHistograms.fill(std::string("ZZTo")+decay+"_Z1lep0_iso"         , std::string("iso of  Z1 lep0 of ZZ_{1}#rightarrow ")+decay            ,  100, 0, 2,ZZ->second().daughterPtr(0)->pfCombRelIsoFSRCorr(),theWeight);
+
+  theHistograms.fill(std::string("ZZTo")+decay+"_Z1lep1_iso"         , std::string("iso of  Z1 lep1 of ZZ_{1}#rightarrow ")+decay            ,  100, 0, 2,ZZ->second().daughterPtr(1)->pfCombRelIsoFSRCorr(),theWeight);
+
+
+
+
+ 
+
+  theHistograms.fill(std::string("ZZTo")+decay+"_Met"         , std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay            ,  200, 0,  800, met->pt(),theWeight);
 
   theHistograms.fill(std::string("ZZTo")+decay+"_Mass"         , std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay            ,  200, 50,  1000, ZZ->mass(),theWeight);
   theHistograms.fill(std::string("ZZTo")+decay+"_Mass"+"_FRVar", std::string("Var From FR Invariant mass of ZZ_{1}#rightarrow ")+decay,  200, 50,  1000, ZZ->mass(),ZZ->fakeRateSFVar());
@@ -70,25 +122,46 @@ void ZZjAnalyzer::ZZplots(int id){
 
 void ZZjAnalyzer::analyze(){
 
-  // theHistograms.fill("fakeRateWeight", "FakeRate",  100, -2, 2, ZZ->fakeRateSF() , 1); 
-  // if(ZZ->numberOfGoodGrandDaughters() == 3) theHistograms.fill("fakeRateWeight_3p1F", "FakeRate 3P1F",  100, -2, 2, ZZ->fakeRateSF() , 1); 
-  // if(ZZ->numberOfGoodGrandDaughters() == 2) theHistograms.fill("fakeRateWeight_2p2F", "FakeRate 2P2F",  100, -2, 2, ZZ->fakeRateSF() , 1); 
 
-  theHistograms.fill("ZZMass","Invariant Mass ",200,55,1000,ZZ->mass(),theWeight);
-  theHistograms.fill("ZZMass_FRVar","Var From FR Invariant Mass ",200,55,1000,ZZ->mass(), ZZ->fakeRateSFVar());
+  bool isZZRegion = 0;
 
-  // Some basic plots on ZZ
-  ZZplots();   // ZZ --> 4l
-  ZZplots(52); // ZZ --> 4m
-  ZZplots(48); // ZZ --> 2e2m
-  ZZplots(44); // ZZ --> 4e
+  if((region_ == phys::SR)&&(ZZ->first().daughterPtr(0)->pt() >10) && (ZZ->first().daughterPtr(1)->pt() >10)&& (ZZ->second().daughterPtr(0)->pt()>10) && (ZZ->second().daughterPtr(1)->pt()>10)) isZZRegion =1;
+  else if((region_ == phys::CR3P1F) && ((ZZ->second().daughterPtr(0)->pt()>10) || (ZZ->second().daughterPtr(0)->pt()>10))) isZZRegion =1;
+  else if(region_ == phys::CR2P2F) isZZRegion=1;
 
-  if (topology.test(0)) theHistograms.fill("PassDef", "Number of events passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight);
+  if(isZZRegion){
+    
+    
+    theHistograms.fill("ZZMass","Invariant Mass ",200,55,1000,ZZ->mass(),theWeight);
+    theHistograms.fill("ZZMass_FRVar","Var From FR Invariant Mass ",200,55,1000,ZZ->mass(), ZZ->fakeRateSFVar());
+    
+    //if( std::cout<<" Z mass 1  "<<ZZ->first().mass()<<" Z mass 2 "<<ZZ->second().mass()<<std::endl;
 
-  else theHistograms.fill("NoPassDef", "Number of events not passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight);
-
+    // Some basic plots on ZZ    
+    ZZplots();   // ZZ --> 4l
+    ZZplots(52); // ZZ --> 4m
+    ZZplots(48); // ZZ --> 2e2m
+    ZZplots(44); // ZZ --> 4e
+    
+    if (topology.test(0)) theHistograms.fill("PassDef", "Number of events passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight); 
+    else theHistograms.fill("NoPassDef", "Number of events not passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight);
+    
+  }
 }
 
+void ZZjAnalyzer::end( TFile &) {
+  
 
+  
+    std::cout<<"eeee"<<std::endl;
+    for (std::vector<std::string>::iterator it = events4e.begin() ; it != events4e.end(); ++it) std::cout<<*it<<std::endl;
+    std::cout<<"eemm"<<std::endl;
+    for (std::vector<std::string>::iterator it = events2e2mu.begin() ; it != events2e2mu.end(); ++it) std::cout<<*it<<std::endl;
+    std::cout<<"mmmm"<<std::endl;
+    for (std::vector<std::string>::iterator it = events4mu.begin() ; it != events4mu.end(); ++it) std::cout<<*it<<std::endl;
+
+    std::cout<<"Final \n eeee "<<events4e.size()<<std::endl<<"eemm "<<events2e2mu.size()<<std::endl<<"mmmm "<<events4mu.size()<<std::endl;
+    
+}
 
   

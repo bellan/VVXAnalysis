@@ -27,6 +27,9 @@ public:
 
   virtual void analyze();
 
+  virtual void end( TFile &);
+ 
+
  private:
   friend class Selector<ZZjAnalyzer>;
   template< class PAR >
@@ -37,6 +40,12 @@ public:
     bool WBosonDefinition(phys::Boson<PAR> cand) const{
     return fabs(cand.p4().M() - phys::WMASS) < 40;
   }
+
+  std::vector<std::string> events2e2mu; 
+  std::vector<std::string> events4e; 
+  std::vector<std::string> events4mu;
+
+
 };
 #endif
 
