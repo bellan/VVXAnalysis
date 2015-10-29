@@ -729,6 +729,8 @@ std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > TreePlanter::fi
 
   std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > physZLs;
 
+  if(edmZLs->size() != 1) return physZLs; // FIXME: make physZLs an obj not a container.
+
   if(!filterController_.passTrigger(ZL, triggerWord_)) return physZLs;
 
   foreach(const pat::CompositeCandidate& edmZL, *edmZLs){
