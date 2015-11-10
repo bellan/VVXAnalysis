@@ -1,5 +1,4 @@
 #include "VVXAnalysis/Producers/plugins/TreePlanter.h"
-
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
@@ -45,10 +44,16 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   : PUWeighter_      ()
   , filterController_(config)
   , mcHistoryTools_  (0)
+  // , leptonScaleFactors_(edm::FileInPath("VVXAnalysis/Commons/data/scale_factors_muons2015.root").fullPath(),
+  // 			edm::FileInPath("VVXAnalysis/Commons/data/scale_factors_ele2015.root").fullPath(),
+  // 			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates_mu.root").fullPath(),
+  // 			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates_el.root").fullPath())
+
   , leptonScaleFactors_(edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/scale_factors_muons2012.root").fullPath(),
 			edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/scale_factors_ele2012.root").fullPath(),
 			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates_mu.root").fullPath(),
 			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates_el.root").fullPath())
+
   , signalDefinition_(config.getParameter<int>("signalDefinition"   ))
   , passTrigger_(false)
   , passSkim_(false)
@@ -290,8 +295,12 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     if (gen_ZZ4lInEtaAcceptance)   ++eventsInEtaAcceptance_;  
     if (gen_ZZ4lInEtaPtAcceptance) ++eventsInEtaPtAcceptance_;
 
+    std::vector<edm::Handle<std::vector< PileupSummaryInfo > > >  PupInfos; 
+    event.getManyByType(PupInfos);
+    edm::Handle<std::vector< PileupSummaryInfo > > puInfo = PupInfos.front(); 
 
-    edm::Handle<std::vector<PileupSummaryInfo> > puInfo; event.getByLabel(thePUInfoLabel, puInfo);
+
+    //edm::Handle<std::vector<PileupSummaryInfo> > puInfo; event.getByLabel(thePUInfoLabel, puInfo);
     foreach(const PileupSummaryInfo& pui, *puInfo)
       if(pui.getBunchCrossing() == 0) { 
 	nobservedPUInt_  = pui.getPU_NumInteractions();
@@ -409,6 +418,8 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
 
   // The bosons have NOT any requirement on the quality of their daughters, only the flag is set (because of the same code is usd for CR too)
+
+  // cout <<" event "<<event_<< endl; //DEL
   std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > ZZs = fillDiBosons(ZZ);
 
   // Fill Z+l pairs for fake rate measurements
@@ -441,6 +452,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
 template<typename LEP>
 phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
+
 
   phys::Lepton output(phys::Particle::convert(lepton.p4()),lepton.charge(),lepton.pdgId());
   
@@ -588,7 +600,12 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
   PAR d0 = fill(*dynamic_cast<const T*>(v.daughter(0)->masterClone().get()));
   PAR d1 = fill(*dynamic_cast<const T*>(v.daughter(1)->masterClone().get()));
 
-  if(d0.id() == 0 || d1.id() == 0) edm::LogError("TreePlanter") << "TreePlanter: VB candidate does not have a matching good particle!";
+  //Correct muon Id for PF charge change
+  
+  if(abs(d0.id())==13) d0.setId(abs(d0.id())*(d0.charge())*(-1)); 
+  if(abs(d1.id())==13) d1.setId(abs(d1.id())*(d1.charge())*(-1));
+    
+    if(d0.id() == 0 || d1.id() == 0) edm::LogError("TreePlanter") << "TreePlanter: VB candidate does not have a matching good particle!";
   
   phys::Boson<PAR> physV(d0, d1, type);
   
@@ -647,7 +664,7 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   if      (VV.id() == 44) effectiveChannel = EEEE;  // ZZ->4e
   else if (VV.id() == 48) effectiveChannel = EEMM;  // ZZ->2e2mu
   else if (VV.id() == 52) effectiveChannel = MMMM;  // ZZ->4mu
-  else {cout << "Do not know what to do when setting trigger bit in TreePlanter. Unknown ZZ id: " << VV.id() << endl; abort();}
+  else{ cout << "Do not know what to do when setting trigger bit in TreePlanter. Unknown ZZ id: " << VV.id() << endl; abort();}
   
   VV.isBestCand_                = edmVV.userFloat("isBestCand");
   VV.passFullSel_               = edmVV.userFloat("SR");
