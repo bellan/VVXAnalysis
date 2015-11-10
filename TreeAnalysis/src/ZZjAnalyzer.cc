@@ -8,13 +8,7 @@
 using std::cout;
 using std::endl;
 
-
 using namespace phys;
-
-// Int_t VVXAnalyzer::cut() {
-  
-//   return 1;
-// }
 
 void ZZjAnalyzer::ZZplots(int id){
 
@@ -37,7 +31,6 @@ void ZZjAnalyzer::ZZplots(int id){
     decay = "4e";
     events4e.push_back(eventstr);
 }
-
 
  theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep0_sip"         , std::string("sip of  Z0 lep0 of ZZ_{1}#rightarrow ")+decay            , 200, 0,5,ZZ->first().daughterPtr(0)->sip(),theWeight);
 
@@ -70,9 +63,6 @@ void ZZjAnalyzer::ZZplots(int id){
   theHistograms.fill(std::string("ZZTo")+decay+"_Z1lep0_iso"         , std::string("iso of  Z1 lep0 of ZZ_{1}#rightarrow ")+decay            ,  100, 0, 2,ZZ->second().daughterPtr(0)->pfCombRelIsoFSRCorr(),theWeight);
 
   theHistograms.fill(std::string("ZZTo")+decay+"_Z1lep1_iso"         , std::string("iso of  Z1 lep1 of ZZ_{1}#rightarrow ")+decay            ,  100, 0, 2,ZZ->second().daughterPtr(1)->pfCombRelIsoFSRCorr(),theWeight);
-
-
-
 
  
 
@@ -120,22 +110,93 @@ void ZZjAnalyzer::ZZplots(int id){
 }
 
 
+
+
+
 void ZZjAnalyzer::analyze(){
 
 
+  std::string eventstr=std::to_string(run)+":"+std::to_string(lumiBlock)+":"+std::to_string(event);
+
+  // Uncomment to look into a en event details
+
+  // if(eventstr=="258448:311:374222263") 
+  //   std::cout<<"\n"<<eventstr<<" ZZMass "<<ZZ->mass()<<" Z0m "<<ZZ->first().mass()<<" Z1m "<<ZZ->second().mass()<<" id Z0 "<<ZZ->first().daughterPtr(0)->id()<<" id Z1 "<<ZZ->second().daughterPtr(0)->id()<<"\n"
+
+  // 	     <<" pt z0l0 "<<ZZ->first().daughterPtr(0)->pt()<<" pt z0l1 "<<ZZ->first().daughterPtr(1)->pt()<<" pt z1l0 "<<ZZ->second().daughterPtr(0)->pt()<<" pt z1l1 "<<ZZ->second().daughterPtr(1)->pt()<<"\n"
+  // 	     <<" eta z0l0 "<<ZZ->first().daughterPtr(0)->eta()<<" eta z0l1 "<<ZZ->first().daughterPtr(1)->eta()<<" eta z1l0 "<<ZZ->second().daughterPtr(0)->eta()<<" eta z1l1 "<<ZZ->second().daughterPtr(1)->eta()<<"\n"
+  // 	  <<" sip z0l0 "<<ZZ->first().daughterPtr(0)->sip()<<" sip z0l1 "<<ZZ->first().daughterPtr(1)->sip()<<" sip z1l0 "<<ZZ->second().daughterPtr(0)->sip()<<" sip z1l1 "<<ZZ->second().daughterPtr(1)->sip()<<"\n"
+  // 	  <<" iso z0l0 "<<ZZ->first().daughterPtr(0)->pfCombRelIsoFSRCorr()<<" iso z0l1 "<<ZZ->first().daughterPtr(1)->pfCombRelIsoFSRCorr()<<" iso z1l0 "<<ZZ->second().daughterPtr(0)->pfCombRelIsoFSRCorr()<<" iso z1l1 "<<ZZ->second().daughterPtr(1)->pfCombRelIsoFSRCorr()<<"\n"
+  // 	  <<" iso noFSR z0l0 "<<ZZ->first().daughterPtr(0)->pfCombRelIso()<<" iso noFSR z0l1 "<<ZZ->first().daughterPtr(1)->pfCombRelIso()<<" iso noFSR z1l0 "<<ZZ->second().daughterPtr(0)->pfCombRelIso()<<" iso noFSR z1l1 "<<ZZ->second().daughterPtr(1)->pfCombRelIso()<<"\n"
+  // 	     <<" isgood z0l0 "<<ZZ->first().daughterPtr(0)->isGood()<<" isgood z0l1 "<<ZZ->first().daughterPtr(1)->isGood()<<" isgood z1l0 "<<ZZ->second().daughterPtr(0)->isGood()<<" isgood z1l1 "<<ZZ->second().daughterPtr(1)->isGood()<<"\n"
+  // 	  <<"FSR\n"<<"fsr pt z0l0 "<<ZZ->first().fsrPhoton(0).pt()<<" fsr pt z0l1 "<<ZZ->first().fsrPhoton(1).pt()<<" fsr pt z1l0 "<<ZZ->second().fsrPhoton(0).pt()<<" fsr pt z1l1 "<<ZZ->second().fsrPhoton(1).pt()<<"\n"
+  // 	     <<"Region Word "<<regionWord<<" is2p2f "<<regionWord.test(24)<<" is3p1f "<<regionWord.test(25)<<" is ZZSR "<<regionWord.test(26)
+  // 	     <<std::endl;
+  // }
+
+
   bool isZZRegion = 0;
+ 
+ 
 
-  if((region_ == phys::SR)&&(ZZ->first().daughterPtr(0)->pt() >10) && (ZZ->first().daughterPtr(1)->pt() >10)&& (ZZ->second().daughterPtr(0)->pt()>10) && (ZZ->second().daughterPtr(1)->pt()>10)) isZZRegion =1;
-  else if((region_ == phys::CR3P1F) && ((ZZ->second().daughterPtr(0)->pt()>10) || (ZZ->second().daughterPtr(0)->pt()>10))) isZZRegion =1;
-  else if(region_ == phys::CR2P2F) isZZRegion=1;
+  //  if(passSRZZOnShell){
+  // if((region_ == phys::SR)&&(ZZ->first().daughterPtr(0)->pt() >10) && (ZZ->first().daughterPtr(1)->pt() >10)&& (ZZ->second().daughterPtr(0)->pt()>10) && (ZZ->second().daughterPtr(1)->pt()>10)) isZZRegion =1;
+  // else if((region_ == phys::CR3P1F) && (((ZZ->second().daughterPtr(0)->pt()>10)&&(ZZ->second().daughterPtr(0)->passFullSel())) || ((ZZ->second().daughterPtr(1)->pt()>10)&&(ZZ->second().daughterPtr(1)->passFullSel()) ))) isZZRegion =1;
+  // else if(region_ == phys::CR2P2F) isZZRegion=1;
 
-  if(isZZRegion){
-    
+
+  // To use the MC region
+  // bool isIn = 0;
+  //if(regionWord.test(25)) isIn=1; //CR3P1F
+  //if(regionWord.test(24)) isIn=1; //CR2P2F
+  //if(regionWord.test(26)) isIn=1; //SR
+
+  // if(isZZRegion & isIn){
+
+
+  // new Pt cuts
+  if ((ZZ->first().daughterPtr(0)->pt() >10) && (ZZ->first().daughterPtr(1)->pt() >10)&& (ZZ->second().daughterPtr(0)->pt()>10) && (ZZ->second().daughterPtr(1)->pt()>10) && ZZ->mass()>100.) isZZRegion =1;
+
+
+  if(isZZRegion) {
+ 
+    //std::cout<<"lep1 "<<ZZ->second().daughterPtr(0)->passFullSel()<<" "<<ZZ->second().daughterPtr(0)->pfCombRelIsoFSRCorr()<<std::endl;
+    //std::cout<<"lep2 "<<ZZ->second().daughterPtr(1)->passFullSel()<<" "<<ZZ->second().daughterPtr(1)->pfCombRelIsoFSRCorr()<<std::endl;
     
     theHistograms.fill("ZZMass","Invariant Mass ",200,55,1000,ZZ->mass(),theWeight);
     theHistograms.fill("ZZMass_FRVar","Var From FR Invariant Mass ",200,55,1000,ZZ->mass(), ZZ->fakeRateSFVar());
     
-    //if( std::cout<<" Z mass 1  "<<ZZ->first().mass()<<" Z mass 2 "<<ZZ->second().mass()<<std::endl;
+
+    // std::cout<<"ev "<<eventstr<<std::endl;
+    
+  if((region_ == phys::CR3P1F) && 
+     ((((abs(ZZ->second().daughterPtr(0)->id())==11) &&  ZZ->second().daughterPtr(0)->pfCombRelIsoFSRCorr() >0.5) || 
+       ((abs(ZZ->second().daughterPtr(0)->id())==13) &&  ZZ->second().daughterPtr(0)->pfCombRelIsoFSRCorr() >0.4) ) && 
+      (((abs(ZZ->second().daughterPtr(1)->id())==11) &&  ZZ->second().daughterPtr(1)->pfCombRelIsoFSRCorr() >0.5) || 
+       ((abs(ZZ->second().daughterPtr(1)->id())==13) &&  ZZ->second().daughterPtr(1)->pfCombRelIsoFSRCorr() >0.4) )))
+     std::cout<<" 2 lep out od iso  ev "<<eventstr<<std::endl; 
+
+  
+  if((region_ == phys::CR3P1F) && ( ( !(ZZ->second().daughterPtr(0)->passFullSel()) ) && ( !(ZZ->second().daughterPtr(1)->passFullSel()) )))  std::cout<<" 2 FullSell "<< " ev "<<eventstr<<std::endl;
+  if((region_ == phys::CR2P2F) && (  (ZZ->second().daughterPtr(0)->passFullSel())  || (ZZ->second().daughterPtr(1)->passFullSel() )))  std::cout<<" some FullSell "<< " ev "<<eventstr<<std::endl;
+  
+  
+  if((abs(ZZ->first().daughterPtr(0)->id())!=(abs(ZZ->second().daughterPtr(0)->id())))  && ( 
+ (deltaR(ZZ->first().daughterPtr(0)->p4().Rapidity(), ZZ->first().daughterPtr(0)->p4().Phi(), ZZ->second().daughterPtr(0)->p4().Rapidity(), ZZ->second().daughterPtr(0)->p4().Phi())<0.05) || 
+ (deltaR(ZZ->first().daughterPtr(0)->p4().Rapidity(), ZZ->first().daughterPtr(0)->p4().Phi(), ZZ->second().daughterPtr(1)->p4().Rapidity(), ZZ->second().daughterPtr(1)->p4().Phi())<0.05) || 
+ (deltaR(ZZ->first().daughterPtr(1)->p4().Rapidity(), ZZ->first().daughterPtr(1)->p4().Phi(), ZZ->second().daughterPtr(0)->p4().Rapidity(), ZZ->second().daughterPtr(0)->p4().Phi())<0.05) || 
+ (deltaR(ZZ->first().daughterPtr(1)->p4().Rapidity(), ZZ->first().daughterPtr(1)->p4().Phi(), ZZ->second().daughterPtr(1)->p4().Rapidity(), ZZ->second().daughterPtr(1)->p4().Phi())<0.05)  )) 
+    std::cout<<" delta R  <0.05 "<< " ev "<<eventstr<<std::endl;
+
+if( 
+ (deltaR(ZZ->first().daughterPtr(0)->p4().Rapidity(), ZZ->first().daughterPtr(0)->p4().Phi(), ZZ->second().daughterPtr(0)->p4().Rapidity(), ZZ->second().daughterPtr(0)->p4().Phi())<0.02) || 
+ (deltaR(ZZ->first().daughterPtr(0)->p4().Rapidity(), ZZ->first().daughterPtr(0)->p4().Phi(), ZZ->second().daughterPtr(1)->p4().Rapidity(), ZZ->second().daughterPtr(1)->p4().Phi())<0.02) || 
+ (deltaR(ZZ->first().daughterPtr(1)->p4().Rapidity(), ZZ->first().daughterPtr(1)->p4().Phi(), ZZ->second().daughterPtr(0)->p4().Rapidity(), ZZ->second().daughterPtr(0)->p4().Phi())<0.02) || 
+ (deltaR(ZZ->first().daughterPtr(1)->p4().Rapidity(), ZZ->first().daughterPtr(1)->p4().Phi(), ZZ->second().daughterPtr(1)->p4().Rapidity(), ZZ->second().daughterPtr(1)->p4().Phi())<0.02)  ) 
+    std::cout<<" delta R  < 0.02 "<<" ev "<<eventstr<<std::endl;
+
+ if( ZZ->mass() < 100.)  std::cout<<" mass < 100 "<<" ev "<<eventstr<<" ZZ mass "<<ZZ->mass()<<std::endl;
+
 
     // Some basic plots on ZZ    
     ZZplots();   // ZZ --> 4l
@@ -151,16 +212,14 @@ void ZZjAnalyzer::analyze(){
 
 void ZZjAnalyzer::end( TFile &) {
   
+  // std::cout<<"eeee:"<<std::endl;
+  //   for (std::vector<std::string>::iterator it = events4e.begin() ; it != events4e.end(); ++it) std::cout<<"    "<<*it<<std::endl;
+  //   std::cout<<"eemm:"<<std::endl;
+  //   for (std::vector<std::string>::iterator it = events2e2mu.begin() ; it != events2e2mu.end(); ++it) std::cout<<"    "<<*it<<std::endl;
+  //   std::cout<<"mmmm:"<<std::endl;
+  //   for (std::vector<std::string>::iterator it = events4mu.begin() ; it != events4mu.end(); ++it) std::cout<<"    "<<*it<<std::endl;
 
-  
-    std::cout<<"eeee"<<std::endl;
-    for (std::vector<std::string>::iterator it = events4e.begin() ; it != events4e.end(); ++it) std::cout<<*it<<std::endl;
-    std::cout<<"eemm"<<std::endl;
-    for (std::vector<std::string>::iterator it = events2e2mu.begin() ; it != events2e2mu.end(); ++it) std::cout<<*it<<std::endl;
-    std::cout<<"mmmm"<<std::endl;
-    for (std::vector<std::string>::iterator it = events4mu.begin() ; it != events4mu.end(); ++it) std::cout<<*it<<std::endl;
-
-    std::cout<<"Final \n eeee "<<events4e.size()<<std::endl<<"eemm "<<events2e2mu.size()<<std::endl<<"mmmm "<<events4mu.size()<<std::endl;
+    std::cout<<"Final \neeee "<<events4e.size()<<std::endl<<"eemm "<<events2e2mu.size()<<std::endl<<"mmmm "<<events4mu.size()<<std::endl;
     
 }
 

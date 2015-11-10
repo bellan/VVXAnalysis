@@ -76,6 +76,19 @@ public:
 
   }
 
+
+  std::vector<std::string> eventsN_eee; 
+  std::vector<std::string> eventsN_eem; 
+  std::vector<std::string> eventsN_mme;
+  std::vector<std::string> eventsN_mmm;
+
+  std::vector<std::string> eventsD_eee; 
+  std::vector<std::string> eventsD_eem; 
+  std::vector<std::string> eventsD_mme;
+  std::vector<std::string> eventsD_mmm;
+
+
+
   //LeptonScaleFactors lepSF;
 
 

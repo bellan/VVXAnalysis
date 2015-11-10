@@ -10,6 +10,9 @@ LeptonScaleFactors::LeptonScaleFactors(const std::string& muonEffFilename, const
   TFile *fEffMu = new TFile(muonEffFilename.c_str());
   TFile *fEffEl = new TFile(electronEffFilename.c_str());
   
+  // hEffMu_ = dynamic_cast<TH2F*>(fEffMu->Get("TH2D_ALL_2015"));
+  // hEffEl_ = dynamic_cast<TH2F*>(fEffEl->Get("TH2D_ALL_2015"));
+
   hEffMu_ = dynamic_cast<TH2F*>(fEffMu->Get("TH2D_ALL_2012"));
   hEffEl_ = dynamic_cast<TH2F*>(fEffEl->Get("h_electronScaleFactor_RecoIdIsoSip"));
 
