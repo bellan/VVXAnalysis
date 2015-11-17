@@ -141,7 +141,7 @@ short FilterController::getTriggerWord(const edm::Event & event){
  // To be matched with channel == ZL final states
   if ((PD=="" && (passAtLeastOneTrigger)) ||
       (PD=="DoubleEle" && passDiEle  && !passTriEle && !passSingleEle) ||
-      (PD=="DoubleMu" && passDiMu && !passDiEle && !passTriEle && !passTriMu && !passSingleEle)) set_bit_16(trigword,9); 
+      (PD=="DoubleMu" && passDiMu && !passDiEle && !passTriMu && !passSingleEle)) set_bit_16(trigword,9); 
 
 
   return trigword;
