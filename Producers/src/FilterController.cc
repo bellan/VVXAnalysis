@@ -25,7 +25,7 @@ FilterController::FilterController(const edm::ParameterSet& pset) :
   }
   
   
-  if ((isMC_&&PD!="") || (!isMC_ && (PD!="DoubleEle" && PD!="DoubleMu" && PD!="MuEG"))) {
+  if ((isMC_&&PD!="") || (!isMC_ && (PD!="DoubleEle" && PD!="DoubleMu" && PD!="MuEG" && PD!= "SingleElectron"))) {
     cout << "ERROR: FilterController: isMC: " << isMC_ << " PD: " << PD << endl;
     abort();
   }
@@ -34,8 +34,7 @@ FilterController::FilterController(const edm::ParameterSet& pset) :
     cout << "ERROR: FilterController: MCFilter= " << MCFilter << " when isMC=0"
 	 << endl;
     abort();
-  }
-  
+  }  
 }
 
 void
@@ -86,6 +85,8 @@ short FilterController::getTriggerWord(const edm::Event & event){
   bool passDiMu  = passFilter(event, "triggerDiMu" );
   bool passDiEle = passFilter(event, "triggerDiEle");
   bool passMuEle = passFilter(event, "triggerMuEle");
+ 
+
   if ((!isMC_) && theSetup == 2011 ) { // follow changes in trigger menu in data 2011 (see wiki)
     int irun=event.id().run();
     if (irun>=175973) {
@@ -95,20 +96,27 @@ short FilterController::getTriggerWord(const edm::Event & event){
     }
   }
   bool passTriEle = false;
-  if (theSetup >= 2012) {
-    passTriEle = passFilter(event, "triggerTriEle");
+  bool passTriMu = false;
+  bool passSingleEle = false;
+
+if (theSetup >= 2012) {
+  //  std::cout<<"hei1"<<std::endl;
+    passTriEle = passFilter(event,"triggerTriEle");
+    passTriMu = passFilter(event,"triggerTriMu");
+    passSingleEle = passFilter(event,"triggerSingleEle");
   }
 
-  bool passAtLeastOneTrigger = passDiMu || passDiEle || passMuEle || passTriEle;
+  bool passAtLeastOneTrigger = passDiMu || passDiEle || passMuEle || passTriEle || passSingleEle || passTriMu;
   
   if (passAtLeastOneTrigger)   set_bit_16(trigword,0);
-  if (passDiMu)                set_bit_16(trigword,1);
+  if (passDiMu || passTriMu)   set_bit_16(trigword,1);
   if (passDiEle)               set_bit_16(trigword,2);
   if (passMuEle)               set_bit_16(trigword,3);
   if (passTriEle)              set_bit_16(trigword,4);
  
   // To be matched with channel == EEEE final state
-  if ((PD=="" || PD=="DoubleEle") && (passDiEle || passTriEle))            set_bit_16(trigword,5); 
+  if ((PD=="" || PD=="DoubleEle") && (passDiEle || passTriEle || passSingleEle))            set_bit_16(trigword,5); 
+  if ((PD=="" || PD=="SingleElectron") && (passSingleEle))                                  set_bit_16(trigword,5); 
   
   // To be matched with channel == EEMM final state
   if ((PD=="" && (passDiEle || passDiMu || passMuEle)) ||
@@ -117,15 +125,15 @@ short FilterController::getTriggerWord(const edm::Event & event){
       (PD=="MuEG" && passMuEle && !passDiMu && !passDiEle ))               set_bit_16(trigword,6);
   
   // To be matched with channel == MMMM final state
-  if ((PD=="" || PD=="DoubleMu") && passDiMu)                              set_bit_16(trigword,7); 
+  if ((PD=="" || PD=="DoubleMu") && (passDiMu  || passTriMu))                              set_bit_16(trigword,7); 
   
-
+  
   // To be matched with channel == ZLL or ZL final states
   if ((PD=="" && (passDiEle || passDiMu || passMuEle || passTriEle)) ||
       (PD=="DoubleEle" && (passDiEle || passTriEle)) ||
       (PD=="DoubleMu" && passDiMu && !passDiEle && !passTriEle) ||
-      (PD=="MuEG" && passMuEle && !passDiMu && !passDiEle && !passTriEle)) set_bit_16(trigword,8);
-    
+      (PD=="MuEG" && passMuEle && !passDiMu && !passDiEle && !passTriEle)  ||
+      (PD=="SingleElectron" && passSingleEle && !passMuEle && !passDiMu && !passTriMu && !passDiEle && !passTriEle)) set_bit_16(trigword,8); 
   return trigword;
 }
 
