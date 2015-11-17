@@ -71,7 +71,7 @@ FilterController::passSkim(const edm::Event & event, short& trigworld, bool make
     for (vector<string>::const_iterator name = skimPaths.begin(); name!= skimPaths.end(); ++name) 
       evtPassSkim = makeAnd ? evtPassSkim && passFilter(event, *name) : evtPassSkim || passFilter(event, *name);
   
-  if (evtPassSkim) set_bit_16(trigworld,10);
+  if (evtPassSkim) set_bit_16(trigworld,9);
   return evtPassSkim;
 }
 
@@ -111,51 +111,45 @@ short FilterController::getTriggerWord(const edm::Event & event){
   bool passAtLeastOneTrigger = passDiMu || passDiEle || passMuEle || passTriEle || passSingleEle || passTriMu;
   
   if (passAtLeastOneTrigger)   set_bit_16(trigword,0);
-  if (passDiMu || passTriMu)   set_bit_16(trigword,1);
+  if (passDiMu)                set_bit_16(trigword,1);
   if (passDiEle)               set_bit_16(trigword,2);
   if (passMuEle)               set_bit_16(trigword,3);
   if (passTriEle)              set_bit_16(trigword,4);
+  if (passTriMu)               set_bit_16(trigword,5);
+  if (passSingleEle)           set_bit_16(trigword,6);
+
  
-  // To be matched with channel == EEEE final state
-  if ((PD=="" || PD=="DoubleEle") && (passDiEle || passTriEle || passSingleEle))           set_bit_16(trigword,5); 
-  if ((PD=="" || PD=="SingleElectron") && passSingleEle && !passDiEle && !passTriEle)      set_bit_16(trigword,5); 
+  //if (theChannel==ZLL || theChannel==ZZ) {
+    if ((PD=="" && (passDiEle || passDiMu || passMuEle || passTriEle || passTriMu || passSingleEle)) || //FIXME: do we want to use the single-ele path and run on the SingleElectron PD ?
+	((PD=="DoubleEle"||PD=="DoubleEG" ) && (passDiEle || passTriEle)) ||
+	((PD=="DoubleMu" ||PD=="DoubleMuon") && (passDiMu || passTriMu) && !passDiEle && !passTriEle) ||
+	((PD=="MuEG" ||PD=="MuonEG" ) && passMuEle && !passDiMu && !passTriMu && !passDiEle && !passTriEle) ||
+	(PD=="SingleElectron" && passSingleEle && !passMuEle && !passDiMu && !passTriMu && !passDiEle && !passTriEle) //FIXME: do we want to use the single-ele path and run on the SingleElectron PD ?
+	) {
+      set_bit_16(trigword,7);
+    }
+    //}
   
-  // To be matched with channel == EEMM final state
-  if ((PD=="" && (passDiEle || passDiMu || passMuEle)) || 
-      (PD=="DoubleEle" && passDiEle) ||
-      (PD=="DoubleMu" && passDiMu && !passDiEle) ||
-      (PD=="MuEG" && passMuEle && !passDiMu && !passDiEle ) ||
-      (PD=="SingleEle" && !passMuEle && !passDiMu && !passDiEle ))                         set_bit_16(trigword,6);
+  //  else if (theChannel==ZL) {
+    if ((PD=="" && (passDiEle || passDiMu || passMuEle || passSingleEle)) || //FIXME: do we want to use the single-ele path and run on the SingleElectron PD ?
+	((PD=="DoubleEle"||PD=="DoubleEG" ) && passDiEle) ||
+	((PD=="DoubleMu" ||PD=="DoubleMuon") && passDiMu && !passDiEle) ||
+	((PD=="MuEG" ||PD=="MuonEG" ) && passMuEle && !passDiMu && !passDiEle) ||
+	(PD=="SingleElectron" && passSingleEle && !passMuEle && !passDiMu && !passDiEle) //FIXME: do we want to use the single-ele path and run on the SingleElectron PD ?
+	) {
+      set_bit_16(trigword,8);
+    }
+    //}
   
-  // To be matched with channel == MMMM final state
-  if ((PD=="" || PD=="DoubleMu") && (passDiMu  || passTriMu))                              set_bit_16(trigword,7); 
-  
-  
-  // To be matched with channel == ZLL final states
-  if ((PD=="" && (passAtLeastOneTrigger)) ||
-      (PD=="DoubleEle" && (passDiEle || passTriEle)) ||
-      (PD=="DoubleMu" && passDiMu && !passDiEle && !passTriEle) ||
-      (PD=="MuEG" && passMuEle && !passDiMu && !passDiEle && !passTriEle)  ||
-      (PD=="SingleElectron" && passSingleEle && !passMuEle && !passDiMu && !passTriMu && !passDiEle && !passTriEle)) set_bit_16(trigword,8); 
-
- // To be matched with channel == ZL final states
-  if ((PD=="" && (passAtLeastOneTrigger)) ||
-      (PD=="DoubleEle" && passDiEle  && !passTriEle && !passSingleEle) ||
-      (PD=="DoubleMu" && passDiMu && !passDiEle && !passTriMu && !passSingleEle)) set_bit_16(trigword,9); 
-
-
   return trigword;
 }
 
 bool
 FilterController::passTrigger(Channel channel, const short& trigword) const{
-
+  
   if(channel == NONE) return test_bit_16(trigword,0);
-  if(channel == EEEE) return test_bit_16(trigword,5);
-  if(channel == EEMM) return test_bit_16(trigword,6);
-  if(channel == MMMM) return test_bit_16(trigword,7);
-  if(channel == ZLL)  return test_bit_16(trigword,8);
-  if(channel == ZL)   return test_bit_16(trigword,9);
+  if(channel == ZZ || channel == ZLL) return test_bit_16(trigword,7);
+  if(channel == ZL) return test_bit_16(trigword,8);
   else{
     edm::LogWarning("FilterController") << "Unknown channel, do not know what to do.";
     return false;

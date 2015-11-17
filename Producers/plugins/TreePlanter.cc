@@ -666,11 +666,12 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   phys::DiBoson<phys::Lepton,phys::Lepton> VV(V0, V1);
 
   // Set the trigger bit. Special care should be put for ZLL CR, for the other channels the code below do not add anything to FilterController:passTrigger
-  Channel effectiveChannel = channel;
-  if      (VV.id() == 44) effectiveChannel = EEEE;  // ZZ->4e
-  else if (VV.id() == 48) effectiveChannel = EEMM;  // ZZ->2e2mu
-  else if (VV.id() == 52) effectiveChannel = MMMM;  // ZZ->4mu
-  else{ cout << "Do not know what to do when setting trigger bit in TreePlanter. Unknown ZZ id: " << VV.id() << endl; abort();}
+  
+  // Channel effectiveChannel = channel;
+  // if      (VV.id() == 44) effectiveChannel = EEEE;  // ZZ->4e
+  // else if (VV.id() == 48) effectiveChannel = EEMM;  // ZZ->2e2mu
+  // else if (VV.id() == 52) effectiveChannel = MMMM;  // ZZ->4mu
+  // else{ cout << "Do not know what to do when setting trigger bit in TreePlanter. Unknown ZZ id: " << VV.id() << endl; abort();}
   
   VV.isBestCand_                = edmVV.userFloat("isBestCand");
   VV.passFullSel_               = edmVV.userFloat("SR");
@@ -684,7 +685,7 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
 
   VV.regionWord_  = regionWord;
   VV.triggerWord_ = triggerWord_;
-  VV.passTrigger_ = filterController_.passTrigger(effectiveChannel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
+  VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
   
   return VV;
 }
