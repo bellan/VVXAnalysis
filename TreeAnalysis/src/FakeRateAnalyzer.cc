@@ -50,6 +50,9 @@ void FakeRateAnalyzer::ZZplots(int id){
 
 
 
+
+  theWeight = theMCInfo.weight(); 
+
   theHistograms.fill(std::string("ZZTo")+decay+std::string("_mZ1To2")+decay1, std::string("Invariant mass of Z_{1}#rightarrow 2")+decay1,  15, 60,  120, ZZ->first().mass() , theWeight); 
   theHistograms.fill(std::string("ZZTo")+decay+std::string("_mZ2To2")+decay2, std::string("Invariant mass of Z_{2}#rightarrow 2")+decay2,  15, 60,  120, ZZ->second().mass(), theWeight); 
   theHistograms.fill(std::string("ZZTo")+decay+std::string("_mZZTo") +decay , std::string("Invariant mass of ZZ#rightarrow ")    +decay ,  40,  0, 1000, ZZ->mass()         , theWeight); 
@@ -122,7 +125,9 @@ void FakeRateAnalyzer::analyze(){
   if((met->pt()<25) && (ZL->front().second.pt()>10)) {
   
     //    std::vector<double> xbins;xbins += 5,7,10,20,30,40,50,80;
-    std::vector<double> xbins;xbins += 5,7,10,20,30,40,80;
+    //    std::vector<double> xbins;xbins += 5,7,10,20,30,80;  
+
+    std::vector<double> xbins;xbins += 0,30,60,200;
 	if(abs(ZL->front().second.id()) == 13){
 	  
 	   
@@ -163,8 +168,8 @@ void FakeRateAnalyzer::analyze(){
       
       std::bitset<16> trigger(triggerWord);
       if(ZL->size() == 1 && trigger.test(8)){
-	std::vector<double> xbins;xbins += 5,7,10,20,30,40,50,80;
-	
+	//std::vector<double> xbins;xbins += 5,7,10,20,30,40,50,80;
+	std::vector<double> xbins;xbins += 0,30,60,200;
 	std::string eventstr=std::to_string(run)+":"+std::to_string(lumiBlock)+":"+std::to_string(event);
 	
 	

@@ -32,6 +32,9 @@ void ZZjAnalyzer::ZZplots(int id){
     events4e.push_back(eventstr);
 }
 
+
+  //theWeight = theMCInfo.weight(); //To have plot without scale factors and fake rate weight"
+
  theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep0_sip"         , std::string("sip of  Z0 lep0 of ZZ_{1}#rightarrow ")+decay            , 200, 0,5,ZZ->first().daughterPtr(0)->sip(),theWeight);
 
  theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep1_sip"         , std::string("sip of  Z0 lep1 of ZZ_{1}#rightarrow ")+decay            , 200, 0,5,ZZ->first().daughterPtr(1)->sip(),theWeight);
