@@ -130,6 +130,7 @@ class TreePlanter: public edm::EDAnalyzer {
   Int_t ntruePUInt_;
 
   phys::Particle  met_;
+  phys::Particle  metNoHF_;
   Int_t           nvtx_;
   
   // ------------------- Objects in the tree ------------------- //
@@ -161,6 +162,7 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::InputTag theZZLabel;
   edm::InputTag theZLLabel;
   edm::InputTag theMETLabel;
+  edm::InputTag theMETNoHFLabel;
   edm::InputTag theVertexLabel;
   edm::InputTag thePUInfoLabel;
   edm::InputTag theGenCategoryLabel;

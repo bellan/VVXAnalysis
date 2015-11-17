@@ -44,15 +44,15 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   : PUWeighter_      ()
   , filterController_(config)
   , mcHistoryTools_  (0)
-  // , leptonScaleFactors_(edm::FileInPath("VVXAnalysis/Commons/data/scale_factors_muons2015.root").fullPath(),
-  // 			edm::FileInPath("VVXAnalysis/Commons/data/scale_factors_ele2015.root").fullPath(),
+  , leptonScaleFactors_(edm::FileInPath("VVXAnalysis/Commons/data/scale_factors_muons2015.root").fullPath(),
+  			edm::FileInPath("VVXAnalysis/Commons/data/scale_factors_ele2015.root").fullPath(),
+  			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates.root").fullPath(),
+  			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates.root").fullPath())
+
+  // , leptonScaleFactors_(edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/scale_factors_muons2012.root").fullPath(),
+  // 			edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/scale_factors_ele2012.root").fullPath(),
   // 			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates_mu.root").fullPath(),
   // 			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates_el.root").fullPath())
-
-  , leptonScaleFactors_(edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/scale_factors_muons2012.root").fullPath(),
-			edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/scale_factors_ele2012.root").fullPath(),
-			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates_mu.root").fullPath(),
-			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates_el.root").fullPath())
 
   , signalDefinition_(config.getParameter<int>("signalDefinition"   ))
   , passTrigger_(false)
@@ -70,6 +70,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theZZLabel       (config.getParameter<edm::InputTag>("ZZ"       ))
   , theZLLabel       (config.getParameter<edm::InputTag>("ZL"       ))
   , theMETLabel      (config.getParameter<edm::InputTag>("MET"      ))
+  , theMETNoHFLabel  (config.getParameter<edm::InputTag>("METNoHF"  ))
   , theVertexLabel   (config.getParameter<edm::InputTag>("Vertices" ))
   , sampleName_      (config.getParameter<std::string>("sampleName"))
   , jecFileName_     (config.getParameter<std::string>("JECFileName"))
@@ -127,6 +128,7 @@ void TreePlanter::beginJob(){
   theTree->Branch("genCategory" , &genCategory_);
 
   theTree->Branch("met"   , &met_);
+  theTree->Branch("metNoHF"   , &metNoHF_);
   theTree->Branch("nvtxs" , &nvtx_);
 
   theTree->Branch("muons"     , &muons_);
@@ -334,8 +336,15 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   event_     = event.id().event(); 
   lumiBlock_ = event.luminosityBlock();
 
-  edm::Handle<pat::METCollection> met;   event.getByLabel(theMETLabel, met);
+  edm::Handle<pat::METCollection> met;      event.getByLabel(theMETLabel, met);
+  edm::Handle<pat::METCollection> metNoHF;  event.getByLabel(theMETNoHFLabel, metNoHF);
+
+
   met_ = phys::Particle(phys::Particle::convert(met->front().p4()));
+  metNoHF_ = phys::Particle(phys::Particle::convert(metNoHF->front().p4()));
+
+ //  Handle<pat::METCollection> metNoHFHandle;
+
 
   edm::Handle<std::vector<reco::Vertex> > vertices; event.getByLabel(theVertexLabel, vertices);
   nvtx_ = vertices->size();
@@ -378,7 +387,6 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
 void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup){
 
   initTree();
-
   bool goodEvent = fillEventInfo(event);
   if(!goodEvent) return;
   ++theNumberOfAnalyzedEvents;
@@ -393,7 +401,6 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   edm::Handle<edm::View<pat::CompositeCandidate> > Vhad ; event.getByLabel(theVhadLabel    ,      Vhad);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZZ   ; event.getByLabel(theZZLabel      ,        ZZ);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZL   ; event.getByLabel(theZLLabel      ,        ZL);
-
   foreach(const pat::Muon& muon, *muons){
     //if(!muon.userFloat("isGood") || muon.userFloat("CombRelIsoPF") >= 4) continue;  // commented because the combination of the two flags is more restrictive than Z.userfloat("goodLeptons"), hence the matching can fail.
     if(!muon.userFloat("isGood")) continue; 
@@ -407,7 +414,6 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
     phys::Electron physelectron =  fill(electron);
     electrons_.push_back(physelectron);
   }
-
   foreach(const pat::Jet& jet, *jets){
     phys::Jet physjet = fill(jet);
     jets_.push_back(physjet);
@@ -422,9 +428,9 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   // cout <<" event "<<event_<< endl; //DEL
   std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > ZZs = fillDiBosons(ZZ);
 
+
   // Fill Z+l pairs for fake rate measurements
   ZL_ = fillZLCandidates(ZL);
-
   if(ZZ->size() > 1) {
     cout << "----------------------------------------------------" << endl;
     cout << "More than one ZZ candidate!! " << ZZ->size() << endl;  
@@ -601,9 +607,9 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
   PAR d1 = fill(*dynamic_cast<const T*>(v.daughter(1)->masterClone().get()));
 
   //Correct muon Id for PF charge change
-  
-  if(abs(d0.id())==13) d0.setId(abs(d0.id())*(d0.charge())*(-1)); 
-  if(abs(d1.id())==13) d1.setId(abs(d1.id())*(d1.charge())*(-1));
+  //DEL FIX  
+  // if(abs(d0.id())==13) d0.setId(abs(d0.id())*(d0.charge())*(-1)); 
+  // if(abs(d1.id())==13) d1.setId(abs(d1.id())*(d1.charge())*(-1));
     
     if(d0.id() == 0 || d1.id() == 0) edm::LogError("TreePlanter") << "TreePlanter: VB candidate does not have a matching good particle!";
   
@@ -747,7 +753,6 @@ std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > TreePlanter::fi
   std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > physZLs;
 
   if(edmZLs->size() != 1) return physZLs; // FIXME: make physZLs an obj not a container.
-
   if(!filterController_.passTrigger(ZL, triggerWord_)) return physZLs;
 
   foreach(const pat::CompositeCandidate& edmZL, *edmZLs){
