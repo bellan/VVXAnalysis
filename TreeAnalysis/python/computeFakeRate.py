@@ -28,7 +28,7 @@ def GetGrEff(hpass, htotal):
         #print  "bin",bin,"pass",hpass.GetBinContent(bin),"total", htotal.GetBinContent(bin)
     hpass_= copy.deepcopy(hpass)
     hpass_.Divide(htotal)
-    for bin in range(1,Nbin+1):   
+    for bin in range(1,Nbin+1):  
         if hpass_.GetBinContent(bin)==0:  hpass_.SetBinContent(bin,0)
     grEff = ROOT.TGraphAsymmErrors(hpass,htotal,"e0")
 
@@ -67,23 +67,38 @@ def write(particle,region,outname,fout):
     hnWZ = fWZ.Get("FakeRate_num_"+particle+"_"+region+"_pt")
     hdWZ = fWZ.Get("FakeRate_denom_"+particle+"_"+region+"_pt")
 
-    
-    hFake = GetGrEff(hn,hd)
-    hFake.SetName("FakeRate_"+outname)   
+    hFake =  copy.deepcopy(hn)
+    hFake.Divide(hd)
 
-    hFake.SetTitle("FakeRate_"+outname)
-    fout.cd()
-    hFake.Write("FakeRate_"+outname)
+    hFake.SetName("hFakeRate_"+outname)   
+    hFake.SetTitle("hFakeRate_"+outname)
+    
+    grFake = GetGrEff(hn,hd)
+    grFake.SetName("grFakeRate_"+outname)   
+    grFake.SetTitle("grFakeRate_"+outname)
+    
 
     hn.Add(hnWZ,-1)
     hd.Add(hdWZ,-1)
-    
-    hFake_NoWZ = GetGrEff(hn,hd)
+
+    hFake_NoWZ = copy.deepcopy(hn)
+    hFake_NoWZ.Divide(hd)
+
     hFake_NoWZ.SetName("FakeRate_NoWZ_"+outname)
-
     hFake_NoWZ.SetTitle("FakeRate_NoWZ_"+outname)
-    hFake_NoWZ.Write("FakeRate_NoWZ_"+outname)
 
+       
+    grFake_NoWZ = GetGrEff(hn,hd)
+    grFake_NoWZ.SetName("grFakeRate_NoWZ_"+outname)
+    grFake_NoWZ.SetTitle("grFakeRate_NoWZ_"+outname)
+
+    fout.cd()
+
+    hFake.Write(outname)
+    grFake.Write("grFakeRate_"+outname)
+
+    hFake_NoWZ.Write("NoWZ_"+outname)
+    grFake_NoWZ.Write("grFakeRate_NoWZ_"+outname)
 
 particles = ['muons','electrons']
 regions   = ['barrel','endcap']
@@ -104,3 +119,4 @@ for particle in particles:
 #write("electrons",'endcap','h1D_FRel_EE',fout)
 #write("muons",'endcap','h1D_FRmu_EE',fout)
 fout.Close()
+
