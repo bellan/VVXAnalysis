@@ -53,7 +53,24 @@ namespace phys {
         , efficiencySF_(1.)
         , fakeRateSF_(1.)
         , genStatusFlags_(-99)
-      {}
+      {
+	// Correct Id for PF charge change
+	if (fabs(id_==13)) id_= fabs(i)*(-1)*q ;
+}
+
+
+      /* Particle(const LorentzVector& l, float q =0, const int &&i = 13) */
+      /* 	:p4_(convert(l)) */
+      /* 	, charge_(q) */
+      /* //, id_(i) */
+      /* 	, motherId_(-99) */
+      /*   , efficiencySF_(1.) */
+      /*   , fakeRateSF_(1.) */
+      /*   , genStatusFlags_(-99) */
+      /* { */
+
+      /* 	id_= fabs(i)*(-1)*q */
+      /* 	  } */
 
 	
     /// Destructor

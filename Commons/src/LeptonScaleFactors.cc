@@ -1,6 +1,5 @@
 #include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 #include "VVXAnalysis/Commons/interface/Colours.h"
-
 #include <TFile.h>
 #include <iostream>
 
@@ -10,19 +9,16 @@ LeptonScaleFactors::LeptonScaleFactors(const std::string& muonEffFilename, const
   TFile *fEffMu = new TFile(muonEffFilename.c_str());
   TFile *fEffEl = new TFile(electronEffFilename.c_str());
   
-  // hEffMu_ = dynamic_cast<TH2F*>(fEffMu->Get("TH2D_ALL_2015"));
-  // hEffEl_ = dynamic_cast<TH2F*>(fEffEl->Get("TH2D_ALL_2015"));
-
-  hEffMu_ = dynamic_cast<TH2F*>(fEffMu->Get("TH2D_ALL_2012"));
-  hEffEl_ = dynamic_cast<TH2F*>(fEffEl->Get("h_electronScaleFactor_RecoIdIsoSip"));
+  hEffMu_ = dynamic_cast<TH2F*>(fEffMu->Get("TH2D_ALL_2015"));
+  hEffEl_ = dynamic_cast<TH2F*>(fEffEl->Get("TH2D_ALL_2015"));
 
   TFile *fFRMu = new TFile(muonFRFilename.c_str());
   TFile *fFREl = new TFile(electronFRFilename.c_str());
 
-  hFRMu_.first  = dynamic_cast<TH1D*>(fFRMu->Get("h1D_FRmu_EB"));
-  hFRMu_.second = dynamic_cast<TH1D*>(fFRMu->Get("h1D_FRmu_EE"));
-  hFREl_.first  = dynamic_cast<TH1D*>(fFREl->Get("h1D_FRel_EB"));
-  hFREl_.second = dynamic_cast<TH1D*>(fFREl->Get("h1D_FRel_EE"));
+  hFRMu_.first  = dynamic_cast<TH1F*>(fFRMu->Get("h1D_FRmu_EB"));                                                 
+  hFRMu_.second = dynamic_cast<TH1F*>(fFRMu->Get("h1D_FRmu_EE"));
+  hFREl_.first  = dynamic_cast<TH1F*>(fFREl->Get("h1D_FRel_EB"));
+  hFREl_.second = dynamic_cast<TH1F*>(fFREl->Get("h1D_FRel_EE"));
 
 }
 
@@ -31,7 +27,8 @@ double LeptonScaleFactors::efficiencyScaleFactor(const double& pt, const double&
   const TH2F *hDataMCSF = 0;
 
   if      (abs(id) == 13) hDataMCSF = hEffMu_;
-  else if (abs(id) == 11) hDataMCSF = hEffEl_;
+  //  else if (abs(id) == 11) hDataMCSF = hEffEl_;
+  else if (abs(id) == 11) return 1.; //FIX ME Electron scal factor are now wrong because of the wrong cone used
   else{
     std::cout << colour::Warning("Efficiency scale factor asked for an unknown particle") << " ID = " << id << std::endl;
     abort();
@@ -39,11 +36,13 @@ double LeptonScaleFactors::efficiencyScaleFactor(const double& pt, const double&
   
   double sFactor = 1.;
   int ptbin  = hDataMCSF->GetXaxis()->FindBin(pt);
-  int etabin = hDataMCSF->GetYaxis()->FindBin(eta);
+  int etabin = hDataMCSF->GetYaxis()->FindBin(fabs(eta)); //CHECK FIX. UW scale factors have just eta absolute value 
+  //  int etabin = hDataMCSF->GetYaxis()->FindBin(eta); //CHECK FIX. UW scale factors have just eta absolute value 
 
   if(pt >= hDataMCSF->GetXaxis()->GetXmax()) ptbin = hDataMCSF->GetXaxis()->GetLast();
+  if(pt<10.) sFactor =1.; //FIX Me UW sacal factor start from pt  = 10GeV
   
-  sFactor  = hDataMCSF->GetBinContent(ptbin,etabin);
+  else sFactor  = hDataMCSF->GetBinContent(ptbin,etabin); 
   
   if(sFactor < 0.001 || sFactor > 10.){
     std::cout << colour::Warning("Efficiency scale factor out of range") << " Lepton ID = " << id << ", pt =  " << pt << ", eta = " << eta << ", scale factor = " << sFactor << std::endl;
