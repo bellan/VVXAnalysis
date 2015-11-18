@@ -119,27 +119,21 @@ short FilterController::getTriggerWord(const edm::Event & event){
   if (passSingleEle)           set_bit_16(trigword,6);
 
  
-  //if (theChannel==ZLL || theChannel==ZZ) {
-    if ((PD=="" && (passDiEle || passDiMu || passMuEle || passTriEle || passTriMu || passSingleEle)) || //FIXME: do we want to use the single-ele path and run on the SingleElectron PD ?
-	((PD=="DoubleEle"||PD=="DoubleEG" ) && (passDiEle || passTriEle)) ||
-	((PD=="DoubleMu" ||PD=="DoubleMuon") && (passDiMu || passTriMu) && !passDiEle && !passTriEle) ||
-	((PD=="MuEG" ||PD=="MuonEG" ) && passMuEle && !passDiMu && !passTriMu && !passDiEle && !passTriEle) ||
-	(PD=="SingleElectron" && passSingleEle && !passMuEle && !passDiMu && !passTriMu && !passDiEle && !passTriEle) //FIXME: do we want to use the single-ele path and run on the SingleElectron PD ?
-	) {
-      set_bit_16(trigword,7);
-    }
-    //}
+  // This is the trigger selection logic to select ZZ and ZLL events
+  if( ( PD == ""                                 &&  passAtLeastOneTrigger)    || 
+      ((PD == "DoubleEle" || PD == "DoubleEG"  ) && (passDiEle || passTriEle)) ||
+      ((PD == "DoubleMu"  || PD == "DoubleMuon") && (passDiMu  || passTriMu)  && !passDiEle && !passTriEle) ||
+      ((PD == "MuEG"      || PD == "MuonEG"    ) &&  passMuEle                && !passDiMu  && !passTriMu && !passDiEle && !passTriEle) ||
+      ( PD == "SingleElectron"                   &&  passSingleEle            && !passMuEle && !passDiMu  && !passTriMu && !passDiEle && !passTriEle)) 
+    set_bit_16(trigword,7);
   
-  //  else if (theChannel==ZL) {
-    if ((PD=="" && (passDiEle || passDiMu || passMuEle || passSingleEle)) || //FIXME: do we want to use the single-ele path and run on the SingleElectron PD ?
-	((PD=="DoubleEle"||PD=="DoubleEG" ) && passDiEle) ||
-	((PD=="DoubleMu" ||PD=="DoubleMuon") && passDiMu && !passDiEle) ||
-	((PD=="MuEG" ||PD=="MuonEG" ) && passMuEle && !passDiMu && !passDiEle) ||
-	(PD=="SingleElectron" && passSingleEle && !passMuEle && !passDiMu && !passDiEle) //FIXME: do we want to use the single-ele path and run on the SingleElectron PD ?
-	) {
-      set_bit_16(trigword,8);
-    }
-    //}
+  
+  // This is the trigger logic to select ZL events
+  if( ( PD == ""                                 && (passDiEle || passDiMu)) ||
+      ((PD == "DoubleEle" || PD == "DoubleEG")   &&  passDiEle)              ||
+      ((PD == "DoubleMu"  || PD == "DoubleMuon") &&  passDiMu && !passDiEle)) 
+    set_bit_16(trigword,8);
+  
   
   return trigword;
 }
@@ -147,9 +141,9 @@ short FilterController::getTriggerWord(const edm::Event & event){
 bool
 FilterController::passTrigger(Channel channel, const short& trigword) const{
   
-  if(channel == NONE) return test_bit_16(trigword,0);
+  if(channel == NONE)                 return test_bit_16(trigword,0);
   if(channel == ZZ || channel == ZLL) return test_bit_16(trigword,7);
-  if(channel == ZL) return test_bit_16(trigword,8);
+  if(channel == ZL)                   return test_bit_16(trigword,8);
   else{
     edm::LogWarning("FilterController") << "Unknown channel, do not know what to do.";
     return false;
