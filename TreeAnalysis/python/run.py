@@ -36,7 +36,7 @@ parser.add_option("-d", "--directory", dest="directory",
                   help="Sample location, default is ./samples")
 
 parser.add_option("-c", "--csv", dest="csvfile",
-                  default="../Producers/python/samples_8TeV.csv",
+                  default="../Producers/python/samples_13TeV.csv",
                   help="csv path, default is ../Producers/python/samples_8TeV.csv")
 
 
