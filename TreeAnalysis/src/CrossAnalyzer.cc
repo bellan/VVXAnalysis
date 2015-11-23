@@ -33,10 +33,9 @@ void CrossAnalyzer::ZZplots(int id){
 
 
   theHistograms.fill(std::string("ZZTo")+decay+"_Mass" , std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, ZZ->mass(),theWeight);
+  theHistograms.fill(std::string("ZZTo")+decay+"_Mass"+"_FRVarHigh", std::string("Var High From FR Invariant mass of ZZ_{1}#rightarrow ")+decay, Xbins, ZZ->mass(),ZZ->fakeRateSFVarHigh());
+  theHistograms.fill(std::string("ZZTo")+decay+"_Mass"+"_FRVarLow", std::string("Var Low From FR Invariant mass of ZZ_{1}#rightarrow ")+decay, Xbins, ZZ->mass(),ZZ->fakeRateSFVarLow());
 
-  theHistograms.fill(std::string("ZZTo")+decay+"_Mass"+"_FRVar", std::string("Var From FR Invariant mass of ZZ_{1}#rightarrow ")+decay, Xbins, ZZ->mass(),ZZ->fakeRateSFVar());
-
- 
 
 }
 
@@ -66,18 +65,19 @@ void CrossAnalyzer::end( TFile &) {
   vector<std::string>  FinalState = {"4m","4e","2e2m"};
   
   for (std::vector<std::string>::iterator it = FinalState.begin() ; it != FinalState.end(); ++it){
-    
-    TH1 *hvar =  new TH1F();
-    hvar =  theHistograms.get(("ZZTo"+*it+"_Mass_FRVar").c_str());
+    //Fixme Add high fR variance     
+
+    TH1 *hvar_high =  new TH1F();
+    hvar_high =  theHistograms.get(("ZZTo"+*it+"_Mass_FRVarHigh").c_str());
     
     TH1 *h =  new TH1F();
-    h =  theHistograms.get(("ZZTo"+*it+"_Mass").c_str());
+    h =  theHistograms.get(("ZZTo"+*it+"_Mass").c_str()); 
     
     if(!h) continue;
     for(int i = 1; i<=h->GetNbinsX();i++){
       
       Float_t Err = h->GetBinError(i);
-      h->SetBinError(i,sqrt(Err*Err+hvar->GetBinContent(i)));
+      h->SetBinError(i,sqrt(Err*Err+hvar_high->GetBinContent(i)));
     }
   }
 }  

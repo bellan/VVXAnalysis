@@ -13,13 +13,16 @@
 #include "EventAnalyzer.h"
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
-
+#include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 class ZZjAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZjAnalyzer>{
 
 public:
  ZZjAnalyzer(const AnalysisConfiguration& configuration)
    : EventAnalyzer(*(new Selector<ZZjAnalyzer>(*this)),
-		   configuration){}
+		   configuration),lepFR("../../ZZAnalysis/AnalysisStep/test/Macros/scale_factors_muons2012.root",
+					"../../ZZAnalysis/AnalysisStep/test/Macros/scale_factors_ele2012.root",
+					"../Commons/data/fakeRates.root",
+					"../Commons/data/fakeRates.root"){}
   
   virtual ~ZZjAnalyzer(){}
 
@@ -40,6 +43,8 @@ public:
     bool WBosonDefinition(phys::Boson<PAR> cand) const{
     return fabs(cand.p4().M() - phys::WMASS) < 40;
   }
+
+ LeptonScaleFactors lepFR;
 
   std::vector<std::string> events2e2mu; 
   std::vector<std::string> events4e; 

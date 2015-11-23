@@ -70,6 +70,13 @@ def write(particle,region,outname,fout):
     hFake =  copy.deepcopy(hn)
     hFake.Divide(hd)
 
+    #Err=ROOT.Double(0.)
+    TotalFakeRate = hn.Integral()/hd.Integral()
+    TotalErrUp = GetError( hd.Integral(), hn.Integral(), True)
+    TotalErrDown = GetError( hd.Integral(), hn.Integral(), False)
+
+    print "Total Fake Rate",TotalFakeRate,"+",TotalErrUp,"(",TotalErrUp/TotalFakeRate,"%)","-",TotalErrDown,"(",TotalErrDown/TotalFakeRate,"%)"
+
     hFake.SetName("hFakeRate_"+outname)   
     hFake.SetTitle("hFakeRate_"+outname)
     
@@ -86,7 +93,6 @@ def write(particle,region,outname,fout):
 
     hFake_NoWZ.SetName("FakeRate_NoWZ_"+outname)
     hFake_NoWZ.SetTitle("FakeRate_NoWZ_"+outname)
-
        
     grFake_NoWZ = GetGrEff(hn,hd)
     grFake_NoWZ.SetName("grFakeRate_NoWZ_"+outname)

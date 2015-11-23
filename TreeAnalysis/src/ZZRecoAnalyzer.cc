@@ -246,8 +246,13 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
   
   
   if(region_ == phys::CR3P1F || region_ == phys::CR2P2F) {
-    theHistograms.fill(std::string("ZZTo")+decay+"_Mass"+"_FRVar", std::string("Var From FR Invariant mass of ZZ_{1}#rightarrow ")+decay, Xbins, ZZ->mass(),ZZ->fakeRateSFVar());
-    theHistograms.fill(std::string("ZZTo")+decay+"_Jets"+"_FRVar", std::string("Var From FR Invariant mass of ZZ_{1}#rightarrow ")+decay ,4,0,4,njets,ZZ->fakeRateSFVar());
+    theHistograms.fill(std::string("ZZTo")+decay+"_Mass"+"_FRVarHigh", std::string("VarHigh From FR Invariant mass of ZZ_{1}#rightarrow ")+decay, Xbins, ZZ->mass(),ZZ->fakeRateSFVarHigh());
+    theHistograms.fill(std::string("ZZTo")+decay+"_Jets"+"_FRVarHigh", std::string("VarHigh From FR Invariant mass of ZZ_{1}#rightarrow ")+decay ,4,0,4,njets,ZZ->fakeRateSFVarHigh());
+
+    theHistograms.fill(std::string("ZZTo")+decay+"_Mass"+"_FRVarLow", std::string("VarLow From FR Invariant mass of ZZ_{1}#rightarrow ")+decay, Xbins, ZZ->mass(),ZZ->fakeRateSFVarLow());
+    theHistograms.fill(std::string("ZZTo")+decay+"_Jets"+"_FRVarLow", std::string("VarLow From FR Invariant mass of ZZ_{1}#rightarrow ")+decay ,4,0,4,njets,ZZ->fakeRateSFVarLow());
+
+
   }
 }
 
@@ -287,7 +292,7 @@ void ZZRecoAnalyzer::end( TFile &) {
     for (std::vector<std::string>::iterator it = FinalState.begin() ; it != FinalState.end(); ++it){
       
       TH1 *hvar =  new TH1F();
-      hvar =  theHistograms.get(("ZZTo"+*it+"_Mass_FRVar").c_str());
+      hvar =  theHistograms.get(("ZZTo"+*it+"_Mass_FRVarHigh").c_str());
       
       TH1 *h =  new TH1F();
       h =  theHistograms.get(("ZZTo"+*it+"_Mass_01").c_str());
