@@ -119,8 +119,10 @@ namespace phys {
 
     virtual Double_t efficiencySF()  const {return efficiencySF_;}
     virtual Double_t fakeRateSF()    const {return fakeRateSF_;}
-    virtual Double_t fakeRateSFUnc() const {return fakeRateSFUnc_;}
-    virtual Double_t fakeRateSFVar() const {return fakeRateSFUnc()*fakeRateSFUnc();}
+    virtual Double_t fakeRateSFUncHigh() const {return fakeRateSFUncHigh_;}
+    virtual Double_t fakeRateSFUncLow() const {return fakeRateSFUncLow_;}
+    virtual Double_t fakeRateSFVarHigh() const {return fakeRateSFUncHigh()*fakeRateSFUncHigh();}
+    virtual Double_t fakeRateSFVarLow() const {return fakeRateSFUncLow()*fakeRateSFUncLow();}
 
     Bool_t   passFullSel() const {return true;}
  
@@ -136,7 +138,8 @@ namespace phys {
     Int_t motherId_;
     Double_t efficiencySF_;
     Double_t fakeRateSF_;
-    Double_t fakeRateSFUnc_;
+    Double_t fakeRateSFUncHigh_;
+    Double_t fakeRateSFUncLow_;
     std::bitset<15> genStatusFlags_;
 
   public:

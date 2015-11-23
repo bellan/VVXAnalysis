@@ -63,19 +63,23 @@ namespace phys {
     Bool_t   passFullSel()         const {return isGood_ && pfCombRelIsoFSRCorr_ < (abs(id_) == 13 ? 0.4 : 0.5);}
 
     // The fake rate is set to a value different from 1 even for true leptons.
-    void setFakeRateSF(const std::pair<double,double> & sf) {
-      fakeRateSF_    =  sf.first; fakeRateSFUnc_ =  sf.second;
+    void setFakeRateSF(const std::pair<double,std::pair<double,double>> & sf) {
+      fakeRateSF_    =  sf.first; 
+      fakeRateSFUncHigh_ =  sf.second.first;
+      fakeRateSFUncLow_ =  sf.second.second;
       realignFakeRate();
     }
     
     Double_t fakeRateSF()    const {return passFullSel() ? 1. : fakeRateSF_;}
-    
-    Double_t fakeRateSFUnc() const {return passFullSel() ? 1. : fakeRateSFUnc_;}
-    
+    Double_t fakeRateSFUncHigh() const {return passFullSel() ? 1. : fakeRateSFUncHigh_;}
+    Double_t fakeRateSFUncLow() const {return passFullSel() ? 1. : fakeRateSFUncLow_;}
+  
+
     // This hack is needed because the FSR-corrected isolation is a property of the boson and if a lepton is really a good lepton is know only a-posteriory (for CRs).
     void realignFakeRate() {
       fakeRateSF_    = fakeRateSF();
-      fakeRateSFUnc_ = fakeRateSFUnc();
+      fakeRateSFUncHigh_ = fakeRateSFUncHigh();
+      fakeRateSFUncLow_ = fakeRateSFUncLow();
     }
 
   protected:

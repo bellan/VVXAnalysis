@@ -117,8 +117,11 @@ namespace phys {
     int numberOfGoodDaughters() const {return int(daughter0_.passFullSel()) + int(daughter1_.passFullSel());}
 
     double fakeRateSF()    const {return daughter0_.fakeRateSF() * daughter1_.fakeRateSF();}
-    double fakeRateSFUnc() const {return sqrt(pow(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUnc(),2) +  
-					      pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc(),2));}
+    double fakeRateSFUncHigh() const {return sqrt(pow(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUncHigh(),2) +  
+					      pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUncHigh(),2));}
+
+    double fakeRateSFUncLow() const {return sqrt(pow(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUncLow(),2) +  
+					      pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUncLow(),2));}
     
     double efficiencySF() const {return daughter0_.efficiencySF() * daughter1_.efficiencySF();}
     
@@ -138,7 +141,8 @@ namespace phys {
     void init(){
       efficiencySF_  = -1;
       fakeRateSF_    = -1;
-      fakeRateSFUnc_ = -1;
+      fakeRateSFUncHigh_ = -1;
+      fakeRateSFUncLow_ = -1;
       
       charge_ = daughter0_.charge() + daughter1_.charge();
       if(indexFSR_ >=0)  { p4_ = p4_ + fsrPhoton0_.p4() + fsrPhoton1_.p4();}
