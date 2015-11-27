@@ -52,11 +52,10 @@ namespace phys {
 	  id_ += abs(daughter0_.daughter(i).id()) + abs(daughter1_.daughter(i).id()) + daughter0_.daughter(i).id() + daughter1_.daughter(i).id();
 	}
 	efficiencySF_  = -1;
+	efficiencySFUnc_  = -1;
 	fakeRateSF_    = -1;
 	fakeRateSFUncHigh_ = -1;
 	fakeRateSFUncLow_ = -1;
-
-
       }
     
     template<typename T1, typename T2>
@@ -121,6 +120,14 @@ namespace phys {
 
     double efficiencySF() const{return daughter0_.efficiencySF() * daughter1_.efficiencySF();}
     
+    double efficiencySFUnc() const {
+      double effSF0 = daughter0_.efficiencySF();
+      double effSF0Unc = daughter0_.efficiencySFUnc();
+      double effSF1 = daughter1_.efficiencySF();
+      double effSF1Unc = daughter1_.efficiencySFUnc();      
+      return sqrt((effSF0Unc*effSF0Unc)/(effSF0*effSF0)+(effSF1Unc*effSF1Unc)/(effSF1*effSF1));  
+  }
+
     double fakeRateSFUncHigh() const{
       return sqrt(pow(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUncHigh(),2) +  
 		  pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUncHigh(),2));

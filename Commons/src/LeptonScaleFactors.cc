@@ -64,6 +64,34 @@ double LeptonScaleFactors::efficiencyScaleFactor(const phys::Lepton& lep) const{
   return efficiencyScaleFactor(lep.pt(), lep.eta(), lep.id()); 
 }
 
+
+double LeptonScaleFactors::efficiencyScaleFactorErr(const double& pt, const double& eta, int id) const {
+
+  const TH2F *hDataMCSF = 0;
+
+  if      (abs(id) == 13) hDataMCSF = hEffMu_;
+  else if (abs(id) == 11) hDataMCSF = hEffEl_;
+  else{
+    std::cout << colour::Warning("Efficiency scale factor asked for an unknown particle") << " ID = " << id << std::endl;
+    abort();
+  }
+  
+  double sErr = 1.;
+
+  int ptbin  = hDataMCSF->GetXaxis()->FindBin(pt);
+  int etabin = hDataMCSF->GetYaxis()->FindBin(eta);
+
+  if(pt >= hDataMCSF->GetXaxis()->GetXmax()) ptbin = hDataMCSF->GetXaxis()->GetLast();
+  
+  sErr =  hDataMCSF->GetBinError(ptbin,etabin);
+
+  return sErr;
+}
+
+double LeptonScaleFactors::efficiencyScaleFactorErr(const phys::Lepton& lep) const{
+  return efficiencyScaleFactorErr(lep.pt(), lep.eta(), lep.id()); 
+}
+
 double LeptonScaleFactors::weight(const phys::Boson<phys::Lepton> &Z) const{
   return efficiencyScaleFactor(Z.daughter(0)) * efficiencyScaleFactor(Z.daughter(1));
 }

@@ -41,6 +41,7 @@ namespace phys {
       , id_(i)
       , motherId_(-99)
       , efficiencySF_(1.)
+      , efficiencySFUnc_(0.)
       , fakeRateSF_(1.)
       , genStatusFlags_(-99)
       {}
@@ -51,6 +52,7 @@ namespace phys {
 	, id_(i)
 	, motherId_(-99)
         , efficiencySF_(1.)
+        , efficiencySFUnc_(0.)
         , fakeRateSF_(1.)
         , genStatusFlags_(-99)
       {
@@ -118,6 +120,7 @@ namespace phys {
     bool isValid() const {return id_ != 0 && p() > 0;}
 
     virtual Double_t efficiencySF()  const {return efficiencySF_;}
+    virtual Double_t efficiencySFUnc()  const {return efficiencySFUnc_;}
     virtual Double_t fakeRateSF()    const {return fakeRateSF_;}
     virtual Double_t fakeRateSFUncHigh() const {return fakeRateSFUncHigh_;}
     virtual Double_t fakeRateSFUncLow() const {return fakeRateSFUncLow_;}
@@ -137,6 +140,7 @@ namespace phys {
     Int_t id_;    
     Int_t motherId_;
     Double_t efficiencySF_;
+    Double_t efficiencySFUnc_;
     Double_t fakeRateSF_;
     Double_t fakeRateSFUncHigh_;
     Double_t fakeRateSFUncLow_;

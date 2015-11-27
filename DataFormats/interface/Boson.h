@@ -124,6 +124,14 @@ namespace phys {
 					      pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUncLow(),2));}
     
     double efficiencySF() const {return daughter0_.efficiencySF() * daughter1_.efficiencySF();}
+
+    double efficiencySFUnc() const {
+      double effSF0 = daughter0_.efficiencySF();
+      double effSF0Unc = daughter0_.efficiencySFUnc();
+      double effSF1 = daughter1_.efficiencySF();
+      double effSF1Unc = daughter1_.efficiencySFUnc();      
+      return sqrt((effSF0Unc*effSF0Unc)/(effSF0*effSF0)+(effSF1Unc*effSF1Unc)/(effSF1*effSF1));
+    }
     
 
   protected:
