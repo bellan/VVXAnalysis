@@ -409,6 +409,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      ZZ           = cms.InputTag("ZZFiltered"),            # only the best ZZ->4l candidate that pass the FULL selection
                                      ZL           = cms.InputTag("ZlCand"),
                                      MET          = cms.InputTag("slimmedMETs"),
+                                     METNoHF      = cms.InputTag("slimmedMETsNoHF"),
                                      Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
                                      XSection     = cms.untracked.double(XSEC)
                                      )
