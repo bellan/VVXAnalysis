@@ -1,7 +1,6 @@
 #include "VVXAnalysis/TreeAnalysis/interface/FakeRateAnalyzer.h"
 #include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
-#include <DataFormats/Math/interface/deltaPhi.h>
 
 
 #include <boost/foreach.hpp>
@@ -110,7 +109,7 @@ void FakeRateAnalyzer::analyze(){
 
   if(ZL->size()){
 
-  Float_t mt = sqrt(2*met->pt()*ZL->front().second.pt()*(1-cos(reco::deltaPhi(ZL->front().second.phi(),met->phi()))));
+  Float_t mt = sqrt(2*met->pt()*ZL->front().second.pt()*(1-cos(physmath::deltaPhi(ZL->front().second.phi(),met->phi()))));
   
 
   if( abs(ZL->front().second.id()) == 13)   theHistograms.fill("MT_mu","Transverse mass",200, 0, 200, mt, theWeight);
