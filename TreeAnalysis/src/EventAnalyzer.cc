@@ -158,7 +158,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
     if(jet.pt() > 30){
       bool leptonMatch = false;
       foreach(const phys::Particle &gen, *genParticles)
-	if(physmath::deltaR(gen,jet) < 0.5 && (abs(gen.id()) == 11 || abs(gen.id()) == 13)) leptonMatch = true; // FIXME for RUN II 0.5 --> 0.4
+	if(physmath::deltaR(gen,jet) < 0.4 && (abs(gen.id()) == 11 || abs(gen.id()) == 13)) leptonMatch = true;
       
       if(!leptonMatch){
 	if(fabs(jet.eta()) < 4.7) genJets->push_back(jet);
@@ -196,9 +196,13 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   // if((region_ == phys::CR2P2F || region_ == phys::CR2P2F_HZZ) && !regionWord.test(22)) return 0;
   //if((region_ == phys::CR3P1F || region_ == phys::CR3P1F_HZZ) && !regionWord.test(23)) return 0;
 
-  if(region_  == phys::SR                                     && !regionWord.test(26))  return 0;
-  if((region_ == phys::CR2P2F || region_ == phys::CR2P2F_HZZ) && !regionWord.test(24)) return 0;
-  if((region_ == phys::CR3P1F || region_ == phys::CR3P1F_HZZ) && !regionWord.test(25)) return 0;
+  if(region_ == phys::SR     && !regionWord.test(26)) return 0;
+  if(region_ == phys::CR2P2F && !regionWord.test(24)) return 0;
+  if(region_ == phys::CR3P1F && !regionWord.test(25)) return 0;
+
+  if(region_ == phys::SR_HZZ     && !regionWord.test(3))  return 0;
+  if(region_ == phys::CR2P2F_HZZ && !regionWord.test(22)) return 0;
+  if(region_ == phys::CR3P1F_HZZ && !regionWord.test(23)) return 0;
 
 
 
@@ -243,9 +247,9 @@ void EventAnalyzer::loop(const std::string outputfile){
   if (theTree == 0) return;
 
   Long64_t nentries = theTree->GetEntries();  
-  unweightedEventsInSR     = tree()->GetEntries("ZZCand.passFullSel_");
-  unweightedEventsIn2P2FCR = tree()->GetEntries("ZZCand.passSelZLL_2P2F_");
-  unweightedEventsIn3P1FCR = tree()->GetEntries("ZZCand.passSelZLL_3P1F_");
+  unweightedEventsInSR     = tree()->GetEntries("ZZCand.passSRZZOnShell_");
+  unweightedEventsIn2P2FCR = tree()->GetEntries("ZZCand.passSelZLL_2P2F_ZZOnShell_");
+  unweightedEventsIn3P1FCR = tree()->GetEntries("ZZCand.passSelZLL_3P1F_ZZOnShell_");
 
   begin();
 

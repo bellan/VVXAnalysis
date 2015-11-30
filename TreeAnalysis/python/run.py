@@ -15,7 +15,7 @@ from Colours import *
 ############################################################################
 ############################## User's inputs ###############################
 ############################################################################
-regions = ['SR','CR','CR2P2F','CR3P1F','CR3P1F_HZZ','CR2P2F_HZZ', 'MC']
+regions = ['SR','CR','CR2P2F','CR3P1F','SR_HZZ','CR_HZZ','CR2P2F_HZZ','CR3P1F_HZZ', 'MC']
 
 parser = OptionParser(usage="usage: %prog <analysis> <sample> [options]")
 parser.add_option("-r", "--region", dest="region",
@@ -196,12 +196,12 @@ def mergeDataSamples(outputLocations):
     failure, output = commands.getstatusoutput(hadd)
 
 
-def runOverCRs(executable, analysis, sample, luminosity, outputLocations = []):
-    outputCR2P2F = run(executable, analysis, sample, 'CR2P2F', luminosity)    # runs over all samples in the CR2P2F control reagion
-    outputCR3P1F = run(executable, analysis, sample, 'CR3P1F', luminosity)    # runs over all samples in the CR3P1F control reagion
+def runOverCRs(executable, analysis, sample, luminosity, postfix = '', outputLocations = []):
+    outputCR2P2F = run(executable, analysis, sample, 'CR2P2F'+postfix, luminosity)    # runs over all samples in the CR2P2F control reagion
+    outputCR3P1F = run(executable, analysis, sample, 'CR3P1F'+postfix, luminosity)    # runs over all samples in the CR3P1F control reagion
 
-    if not os.path.exists('results/"%s"_CR' %analysis): os.popen('mkdir results/"%s"_CR' %analysis)
-    outputRedBkg = 'results/{0:s}_CR/reducible_background_from_{1:s}.root'.format(analysis, sample)
+    if not os.path.exists('results/{0:s}_CR{1:s}'.format(analysis,postfix)): os.popen('mkdir results/{0:s}_CR{1:s}'.format(analysis,postfix))
+    outputRedBkg = 'results/{0:s}_CR{1:s}/reducible_background_from_{2:s}.root'.format(analysis, postfix, sample)
     hadd = 'hadd {0:s} {1:s} {2:s}'.format(outputRedBkg, outputCR2P2F, outputCR3P1F)
     if os.path.exists('{0:s}'.format(outputRedBkg)):
         os.popen('rm {0:s}'.format(outputRedBkg))
@@ -219,7 +219,10 @@ if typeofsample == 'all' or typeofsample == 'data':
                 for cr in regions:
                     run(executable, analysis, sample, cr, luminosity)    # runs over all samples in all control reagions
             elif region == 'CR':
-                runOverCRs(executable, analysis, sample, luminosity, outputLocations)
+                runOverCRs(executable, analysis, sample, luminosity, postfix='',outputLocations)
+            elif region == 'CR_HZZ':
+                runOverCRs(executable, analysis, sample, luminosity, postfix='_HZZ',outputLocations)
+
          
             else:
                 outputLocations.append(run(executable, analysis, sample, region, luminosity))   # runs over all samples in a specific control reagions
@@ -234,7 +237,10 @@ else:
 
     elif region == 'CR':
         runOverCRs(executable, analysis, typeofsample, luminosity)
-        
+    elif region == 'CR_HZZ':
+        runOverCRs(executable, analysis, typeofsample, luminosity, postfix='_HZZ')
+
+
     else:
         run(executable, analysis, typeofsample, region, luminosity) # runs over a specific sample in a specific region
 
