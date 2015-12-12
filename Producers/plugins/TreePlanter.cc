@@ -26,6 +26,7 @@
 
 #include "ZZAnalysis/AnalysisStep/interface/MCHistoryTools.h"
 #include "ZZAnalysis/AnalysisStep/interface/bitops.h"
+#include "VVXAnalysis/DataFormats/interface/GenStatusBit.h"
 
 #include "TTree.h"
 #include "TVectorD.h"
@@ -325,9 +326,11 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     
   // Check trigger request. Actually, it is a very very loose request, not the actual one, that instead should be
   // asked to the specific final state
+
   passTrigger_ = filterController_.passTrigger(NONE, event, triggerWord_);
   if (applyTrigger_ && !passTrigger_) return false;
-  
+
+
   // Check Skim requests
   passSkim_ = filterController_.passSkim(event, triggerWord_);
   if (applySkim_    && !passSkim_)   return false;
@@ -354,11 +357,18 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     edm::Handle<edm::View<reco::Candidate> > genParticles;
     event.getByLabel(theGenCollectionLabel,  genParticles);
     
-    for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) 
-      if (p->status() == 1)
-	genParticles_.push_back(phys::Particle(p->p4(), phys::Particle::computeCharge(p->pdgId()), p->pdgId()));
-         
+    for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p){ 
+      if (p->status() == 1){
+	
+	const reco::Candidate *newp = &(*p);
+	const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(newp);
+
+	phys::Particle prtcl(p->p4(),phys::Particle::computeCharge(p->pdgId()), p->pdgId(),gp->statusFlags().flags_);
+	prtcl.setMotherId(p->mother()->pdgId());
+      	genParticles_.push_back(prtcl);
+      }
   
+    }
     edm::Handle<int> genCategory;
     event.getByLabel(theGenCategoryLabel, genCategory);
     genCategory_ = *genCategory;
@@ -383,7 +393,6 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   return true;
 }
 
-
 void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup){
 
   initTree();
@@ -391,8 +400,9 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   if(!goodEvent) return;
   ++theNumberOfAnalyzedEvents;
 
+
   //// For Z+L CRs, we want only events with exactly 1 Z+l candidate.
-  ////if (filterController_.channel() == ZL && ???size() != 1) return;
+  //// if (filterController_.channel() == ZL && ???size() != 1) return;
 
   // Load a bunch of objects from the event
   edm::Handle<pat::MuonCollection>       muons          ; event.getByLabel(theMuonLabel    ,     muons);
@@ -407,6 +417,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
     phys::Lepton physmuon = fill(muon);
     muons_.push_back(physmuon);
   }
+
 
   foreach(const pat::Electron& electron, *electrons){
     //if(!electron.userFloat("isGood") || electron.userFloat("CombRelIsoPF") >= 4) continue; 
@@ -425,12 +436,11 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
   // The bosons have NOT any requirement on the quality of their daughters, only the flag is set (because of the same code is usd for CR too)
 
-  // cout <<" event "<<event_<< endl; //DEL
   std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > ZZs = fillDiBosons(ZZ);
-
 
   // Fill Z+l pairs for fake rate measurements
   ZL_ = fillZLCandidates(ZL);
+
   if(ZZ->size() > 1) {
     cout << "----------------------------------------------------" << endl;
     cout << "More than one ZZ candidate!! " << ZZ->size() << endl;  
@@ -449,10 +459,12 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
     }
     cout << "----------------------------------------------------" << endl;
   }
+
+
   if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();     
   else if(ZL_.empty() && applySkim_) return;
-  
   theTree->Fill();
+
 }
 
 
@@ -476,9 +488,10 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
   output.matchHLT_        = lepton.userFloat("HLTMatch"         );
   output.isGood_          = lepton.userFloat("isGood"           );
   output.efficiencySF_    = leptonScaleFactors_.efficiencyScaleFactor(output);
+  output.efficiencySFUnc_ = leptonScaleFactors_.efficiencyScaleFactorErr(output);
   output.setFakeRateSF(leptonScaleFactors_.fakeRateScaleFactor(output));
 
-  return output; 
+  return output;
 }
 
 phys::Lepton TreePlanter::fill(const pat::Electron &electron) const{
@@ -501,7 +514,6 @@ phys::Lepton TreePlanter::fill(const pat::Electron &electron) const{
 phys::Lepton TreePlanter::fill(const pat::Muon& mu) const{
   return fillLepton(mu);
 }
-
 
 
 phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
@@ -605,11 +617,6 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
 
   PAR d0 = fill(*dynamic_cast<const T*>(v.daughter(0)->masterClone().get()));
   PAR d1 = fill(*dynamic_cast<const T*>(v.daughter(1)->masterClone().get()));
-
-  //Correct muon Id for PF charge change
-  //DEL FIX  
-  // if(abs(d0.id())==13) d0.setId(abs(d0.id())*(d0.charge())*(-1)); 
-  // if(abs(d1.id())==13) d1.setId(abs(d1.id())*(d1.charge())*(-1));
     
     if(d0.id() == 0 || d1.id() == 0) edm::LogError("TreePlanter") << "TreePlanter: VB candidate does not have a matching good particle!";
   
@@ -633,11 +640,10 @@ template<typename T1, typename T2>
 phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::CompositeCandidate& edmVV) const{
 
   int regionWord = computeRegionFlag(edmVV);
-
   Channel channel = NONE;
   if(test_bit(regionWord,ZZ) || test_bit(regionWord,ZZOnShell)) channel = ZZ;
   else if(test_bit(regionWord,CRZLLos_2P2F) || test_bit(regionWord,CRZLLos_3P1F) || test_bit(regionWord,CRZLLos_2P2F_ZZOnShell) || test_bit(regionWord,CRZLLos_3P1F_ZZOnShell)) channel = ZLL;
-  
+
   if(channel == NONE) {cout << "Channel cannot be identified, aborting..." << endl; abort();}
   
   const pat::CompositeCandidate* edmV0   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z1")->masterClone().get());      
@@ -648,6 +654,7 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   
   // The first boson is always a good Z, also in the CR. For the other particle assign 23 if it is a true Z from SR
   // or 26 if the two additional leptons comes from LL.
+
   int idV1 = channel != ZLL ? 23 : 26;
 
   if(dynamic_cast<const T1*>(edmV0->daughter(0)->masterClone().get()) && dynamic_cast<const T2*>(edmV1->daughter(0)->masterClone().get())){
@@ -674,7 +681,6 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   VV.passSRZZOnShell_           = edmVV.userFloat("SR_ZZOnShell");
   VV.passSelZLL_2P2F_ZZOnShell_ = edmVV.userFloat("CRZLLos_2P2F_ZZOnShell");
   VV.passSelZLL_3P1F_ZZOnShell_ = edmVV.userFloat("CRZLLos_3P1F_ZZOnShell");   
-
   VV.regionWord_  = regionWord;
   VV.triggerWord_ = triggerWord_;
   VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
