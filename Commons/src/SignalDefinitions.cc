@@ -7,6 +7,7 @@
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 #include "VVXAnalysis/Commons/interface/Comparators.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
+#include "VVXAnalysis/DataFormats/interface/GenStatusBit.h"
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 #include <bitset>
 
@@ -697,8 +698,8 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   
   std::vector<phys::Particle> theGenlm, theGenlp;
 
-  foreach(const phys::Particle &p, theGenl){
-    if(abs(p.id()) != 11 && abs(p.id()) != 13) continue;
+  foreach(const phys::Particle &p, theGenl){    
+    if(abs(p.id()) != 11 && abs(p.id()) != 13 && (p.genStatusFlags().test(phys::GenStatusBit::isPrompt))) continue;
     if (p.id() > 0) theGenlm.push_back(p); // negative leptons                                          
     else            theGenlp.push_back(p); // positive leptons 
   }
