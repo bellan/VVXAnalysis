@@ -8,6 +8,7 @@
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/DataFormats/interface/Lepton.h"
 #include "VVXAnalysis/DataFormats/interface/Electron.h"
+#include "VVXAnalysis/DataFormats/interface/GenStatusBit.h"
 #include <tuple>
 
 namespace vvx{
