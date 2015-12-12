@@ -13,6 +13,7 @@
 #include <TLorentzVector.h> 
 #include "Math/GenVector/LorentzVector.h"
 #include <bitset>
+#include "DataFormats/HepMCCandidate/interface/GenStatusFlags.h"
 
 #include "GenStatusBit.h"
 
@@ -46,7 +47,7 @@ namespace phys {
       , genStatusFlags_(-99)
       {}
 
-      Particle(const LorentzVector& l, float q =0, int i = 0)
+  Particle(const LorentzVector& l, float q =0, int i = 0,  std::bitset<15> flags = (-99))
 	:p4_(convert(l))
 	, charge_(q)
 	, id_(i)
@@ -54,7 +55,7 @@ namespace phys {
         , efficiencySF_(1.)
         , efficiencySFUnc_(0.)
         , fakeRateSF_(1.)
-        , genStatusFlags_(-99)
+        , genStatusFlags_(flags)
       {
 	// Correct Id for PF charge change
 	if (fabs(id_==13)) id_= fabs(i)*(-1)*q ;
