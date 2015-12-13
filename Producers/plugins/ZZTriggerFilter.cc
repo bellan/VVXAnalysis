@@ -39,7 +39,6 @@ private:
 
 
 bool ZZTriggerFilter::filter(edm::Event& event, const edm::EventSetup& setup){  
-
   edm::Handle<edm::View<pat::CompositeCandidate> > edmVVs   ; event.getByLabel(src_      ,        edmVVs);
   Short_t triggerWord(0);
   bool passTrigger = filterController_.passTrigger(NONE, event, triggerWord);
@@ -51,19 +50,20 @@ bool ZZTriggerFilter::filter(edm::Event& event, const edm::EventSetup& setup){
   // HACK HERE!! Do not consider cases where there is more than 1 ZZ candidate! 
   // The selection is as the same as in TreePlanter, but here it is not the right place where put the
   // requirement of having 1 and only 1 candidate
-  if(edmVVs->size() != 1) {event.put(output);return false;}
-  const pat::CompositeCandidate& edmVV = edmVVs->front();
+  // if(edmVVs->size() != 1) {event.put(output);return false;}
+  // const pat::CompositeCandidate& edmVV = edmVVs->front();
   
-  int finalStateZ1 = abs(edmVV.daughter(0)->daughter(0)->pdgId())+abs(edmVV.daughter(0)->daughter(1)->pdgId());
-  int finalStateZ2 = abs(edmVV.daughter(1)->daughter(0)->pdgId())+abs(edmVV.daughter(1)->daughter(1)->pdgId());
+  // int finalStateZ1 = abs(edmVV.daughter(0)->daughter(0)->pdgId())+abs(edmVV.daughter(0)->daughter(1)->pdgId());
+  // int finalStateZ2 = abs(edmVV.daughter(1)->daughter(0)->pdgId())+abs(edmVV.daughter(1)->daughter(1)->pdgId());
 
-  int rawchannel = finalStateZ1+finalStateZ2;
+  // int rawchannel = finalStateZ1+finalStateZ2;
 
-  Channel effectiveChannel = NONE;
-  if      (rawchannel == 44) effectiveChannel = EEEE;  // ZZ->4e
-  else if (rawchannel == 48) effectiveChannel = EEMM;  // ZZ->2e2mu
-  else if (rawchannel == 52) effectiveChannel = MMMM;  // ZZ->4mu
-  else {std::cout << "Do not know what to do when setting trigger bit in ZZTriggerFilter. Unknown ZZ id: " << rawchannel << std::endl; abort();}
+  Channel effectiveChannel = ZZ;
+  // if      (rawchannel == 44) effectiveChannel = EEEE;  // ZZ->4e
+  // else if (rawchannel == 48) effectiveChannel = EEMM;  // ZZ->2e2mu
+  // else if (rawchannel == 52) effectiveChannel = MMMM;  // ZZ->4mu
+  // else {std::cout << "Do not know what to do when setting trigger bit in ZZTriggerFilter. Unknown ZZ id: " << rawchannel << std::endl; abort();}
+  // //std::cout <<"channel "<<effectiveChannel<< "  Event: " << event.id().event() << std::endl;
 
   bool result = filterController_.passTrigger(effectiveChannel, triggerWord); 
   *output = result;
@@ -75,5 +75,3 @@ bool ZZTriggerFilter::filter(edm::Event& event, const edm::EventSetup& setup){
 
 #include <FWCore/Framework/interface/MakerMacros.h>
 DEFINE_FWK_MODULE(ZZTriggerFilter);
-
-
