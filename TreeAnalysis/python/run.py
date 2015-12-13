@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 
-
 ##################################
 ## R. Bellan (UNITO) - Feb 2014 ##
 ##################################
@@ -144,7 +143,8 @@ def run(executable, analysis, typeofsample, region, luminosity):
 
     #################################################################################
     isData = False
-    if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:4] == 'MuEG' or typeofsample[0:4] == 'test' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:8] == 'DoubleEG' :
+    if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:4] == 'MuEG' or typeofsample[0:6] == 'Single' or typeofsample[0:4] == 'test' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:8] == 'DoubleEG':
+
         luminosity = -1
         isData = True
         
@@ -219,10 +219,9 @@ if typeofsample == 'all' or typeofsample == 'data':
                 for cr in regions:
                     run(executable, analysis, sample, cr, luminosity)    # runs over all samples in all control reagions
             elif region == 'CR':
-                runOverCRs(executable, analysis, sample, luminosity, postfix='',outputLocations)
+                runOverCRs(executable, analysis, sample, luminosity,outputLocations,postfix='') #CHECK FIX
             elif region == 'CR_HZZ':
-                runOverCRs(executable, analysis, sample, luminosity, postfix='_HZZ',outputLocations)
-
+                runOverCRs(executable, analysis, sample, luminosity,outputLocations,postfix='_HZZ')
          
             else:
                 outputLocations.append(run(executable, analysis, sample, region, luminosity))   # runs over all samples in a specific control reagions
