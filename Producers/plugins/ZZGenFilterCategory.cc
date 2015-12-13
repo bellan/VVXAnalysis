@@ -4,7 +4,6 @@
  *
  */
 
-
 #include <FWCore/Framework/interface/Frameworkfwd.h>
 #include <FWCore/Framework/interface/EDFilter.h>
 #include <FWCore/Framework/interface/ESHandle.h>
@@ -31,7 +30,6 @@
 
 using namespace std;
 using namespace edm;
-
 
 class ZZGenFilterCategory: public edm::EDFilter {
 
@@ -73,7 +71,7 @@ void ZZGenFilterCategory::beginJob() {}
 
 bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) { 
   
-  // cout << "Run: " << event.id().run() << " event: " << event.id().event() << " LS: " << event.luminosityBlock() << endl;
+  //  cout << "\nRun: " << event.id().run() << " event: " << event.id().event() << " LS: " << event.luminosityBlock() << endl;
 
   std::vector<phys::Particle> genLeptons, genJets;
   
@@ -92,6 +90,9 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
     for (View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) {
       
       //cout << std::distance(genParticles->begin(),p) << " ID: " << p->pdgId() << " status: " << p->status() << endl;
+      const reco::Candidate *newp = &(*p);
+      const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(newp);
+      
 
       if (p->status() == 1){
 
@@ -100,19 +101,21 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 	  continue;
 	}
 
-	int id   = abs(p->pdgId());  
-	
-	if( id == 11 || id == 13) { 
+	int id   = abs(p->pdgId());
+
+	if((id == 11 || id == 13) && gp->isPromptFinalState() ) {
 	  bool fromTau = false;
 	  for(unsigned int i = 0; i < p->numberOfMothers(); ++i)
 	    if(abs(p->mother(i)->pdgId() == 15)) fromTau = true;
-	  if(!fromTau)  genLeptons.push_back(phys::convert(*p)); } // leptons     
-	if( id == 22) 
+	  if(!fromTau)  genLeptons.push_back(phys::convert(*p,gp->statusFlags().flags_)); } // leptons     
+	  // if(!fromTau)  genLeptons.push_back(phys::convert(newp)); } // leptons     
+	if( id == 22)
 	  genPhotons.push_back(phys::convert(*p)); 
       }
       if (false && p->status() == 3){
 	int id   = abs(p->pdgId());     
-	if ( id == 11 || id == 13 ) { genLeptons.push_back(phys::convert(*p)); }// leptons   
+	if ( id == 11 || id == 13 ) { genLeptons.push_back(phys::convert(*p,gp->statusFlags().flags_)); }// leptons 
+
       }
     }
     
