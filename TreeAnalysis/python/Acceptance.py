@@ -225,7 +225,7 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr):
                     c2.SaveAs("Plot/Acceptance/Acceptance_for_"+Fin+"_"+SampleType+"_fr.png")
                 else:
                     c2.SaveAs("Plot/Acceptance/Acceptance_for_"+Fin+"_"+SampleType+".png")
-                  
+                    c2.SaveAs("~/www/PlotsVV/13TeV/Acceptance/DiffAcceptance_"+Fin+"_"+SampleType+"_"+Set+".png")
             
             c1.cd()
             
@@ -252,7 +252,7 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr):
             c1.SaveAs("./Plot/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+"_fr.png") 
         else:        
             c1.SaveAs("./Plot/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+".png") 
-
+            c1.SaveAs("~/www/PlotsVV/13TeV/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+".png") 
 
         
     return FinStateAcc
