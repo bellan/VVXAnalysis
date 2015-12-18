@@ -1,7 +1,7 @@
 #include "VVXAnalysis/TreeAnalysis/interface/FakeRateAnalyzer.h"
 #include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
-#include <DataFormats/Math/interface/deltaPhi.h>
+
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
