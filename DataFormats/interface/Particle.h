@@ -13,7 +13,6 @@
 #include <TLorentzVector.h> 
 #include "Math/GenVector/LorentzVector.h"
 #include <bitset>
-#include "DataFormats/HepMCCandidate/interface/GenStatusFlags.h"
 
 #include "GenStatusBit.h"
 
