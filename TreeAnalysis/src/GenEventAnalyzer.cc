@@ -246,8 +246,8 @@ void GenEventAnalyzer::analyze() {
     phys::BosonParticle Z1 = std::get<2>(zzSignalTopology);
     if (Z1.mass() < 1)
       cout << "----------------- "<< Z1.mass()<<" ---------------------------" << endl
-	   << Z1.daughter(0) << " status: " << Z1.daughter(0).genStatusFlags().test(GenStatusBit::fromHardProcessFinalState) << endl
-	   << Z1.daughter(1) << " status: " << Z1.daughter(1).genStatusFlags().test(GenStatusBit::fromHardProcessFinalState) << endl
+	   << Z1.daughter(0) << " status: " << Z1.daughter(0).genStatusFlags().test(GenStatusBit::fromHardProcess) << endl
+	   << Z1.daughter(1) << " status: " << Z1.daughter(1).genStatusFlags().test(GenStatusBit::fromHardProcess) << endl
 	   << endl;
   }
 }

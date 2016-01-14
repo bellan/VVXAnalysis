@@ -691,15 +691,16 @@ zz::SignalTopology zz::getSignalTopologyStatus3(const std::vector<phys::Particle
 
 }
 
-
 zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theGenl, std::vector<phys::Particle> &theGenj){
   
   bitset<16>  topology(0);   
   
   std::vector<phys::Particle> theGenlm, theGenlp;
-
+  //std::cout<<"new ev "<<std::endl<<std::endl; #HOT
   foreach(const phys::Particle &p, theGenl){    
-    if(abs(p.id()) != 11 && abs(p.id()) != 13 && (p.genStatusFlags().test(phys::GenStatusBit::isPrompt))) continue;
+
+    if(abs(p.id()) != 11 && abs(p.id()) != 13 && (p.genStatusFlags().test(phys::GenStatusBit::isPrompt)) && (p.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)) && !checkLeptonPt(p)) continue;
+
     if (p.id() > 0) theGenlm.push_back(p); // negative leptons                                          
     else            theGenlp.push_back(p); // positive leptons 
   }
@@ -787,18 +788,21 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
       if(jet.eta() < 2.4) ++countCentralJets;
     }
   
-  
   bool hasJets = countJets > 0;
   
-  bool hasAtLeast2jets =  countJets > 1;
+  bool hasAtLeast2jets  =  countJets > 1;
   
-  bool hasCentralJets = countCentralJets > 0;
+  bool hasCentralJets   = countCentralJets > 0;
   
-  bool has5leptons    = theGenl.size() == 5;
+  bool has5leptons      = theGenl.size() == 5;
   
+  bool isZZRegion       = ((Z0.daughter(0).pt() > 10) && (Z0.daughter(1).pt() > 10) && (Z1.daughter(0).pt() > 10) && (Z1.daughter(1).pt() > 10)) ;
   
+  bool isFiducialRegion =  ((Z0.daughter(0).eta() < 2.5) && (Z0.daughter(1).eta() < 2.5) && (Z1.daughter(0).eta() < 2.5) && (Z1.daughter(1).eta() < 2.5)); 
+
+
   // Definition of the topologies 
-  
+
   topology.set(0);                         //ZZ4l 
   
   if(hasJets)          topology.set(1);    //ZZ4l + jets (pT>30 GeV and |eta| < 4.7)
@@ -813,13 +817,16 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   
   if(has5leptons)      topology.set(6);    //ZZ4l + 1lepton
 
-  
+  if(isZZRegion)       topology.set(7);     //ZZ4l in ZZ region
+
+  if(isFiducialRegion) topology.set(8);    //ZZ4l in tight fiducial region
+
+
   int Z0DaugID = Z0.daughter(0).id();  
   int Z1DaugID = Z1.daughter(1).id();
 
   if(abs(Z0DaugID) == 13 || abs(Z1DaugID) == 13) topology.set(7);
   if(abs(Z0DaugID) == 11 || abs(Z1DaugID) == 11) topology.set(8);
-
 
   // OLD definition
   //topology.set(0);                             //ZZ4l 
@@ -827,17 +834,16 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   //if(hasAtLeast2jets)      topology.set(2);    //ZZ4l + 2q
   //if(has5leptons)          topology.set(3);    //ZZ4l + 1lepton
   //if(foundWjj) topology.set(4);    //ZZ4l + hadronic W
-  //if(foundZjj) topology.set(5);    //ZZ4l + hadronic Z
-
-
- 
+  //if(foundZjj) topology.set(5);    //ZZ4l + hadronic Z 
   // The leptonic Z and W topologies are missing!! FIXME
-  
   return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1);
-
 }
 
-
+bool zz::checkLeptonPt(const phys::Particle &lepton){
+  if(abs(lepton.id()) == 11 && lepton.pt() > 7) return true;
+  if(abs(lepton.id()) == 13 && lepton.pt() > 5) return true;
+  return false;
+}
 
 bool zz::checkLeptonAcceptance(const phys::Particle &lepton){
 
