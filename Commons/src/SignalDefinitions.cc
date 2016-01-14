@@ -699,7 +699,7 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   //std::cout<<"new ev "<<std::endl<<std::endl; #HOT
   foreach(const phys::Particle &p, theGenl){    
 
-    if(abs(p.id()) != 11 && abs(p.id()) != 13 && (p.genStatusFlags().test(phys::GenStatusBit::isPrompt)) && (p.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)) && !checkLeptonPt(p)) continue;
+    if(abs(p.id()) != 11 && abs(p.id()) != 13 && (p.genStatusFlags().test(phys::GenStatusBit::isPrompt)) && (p.genStatusFlags().test(phys::GenStatusBit::fromHardProcess))) continue;
 
     if (p.id() > 0) theGenlm.push_back(p); // negative leptons                                          
     else            theGenlp.push_back(p); // positive leptons 
@@ -796,9 +796,16 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   
   bool has5leptons      = theGenl.size() == 5;
   
-  bool isZZRegion       = ((Z0.daughter(0).pt() > 10) && (Z0.daughter(1).pt() > 10) && (Z1.daughter(0).pt() > 10) && (Z1.daughter(1).pt() > 10)) ;
-  
-  bool isFiducialRegion =  ((Z0.daughter(0).eta() < 2.5) && (Z0.daughter(1).eta() < 2.5) && (Z1.daughter(0).eta() < 2.5) && (Z1.daughter(1).eta() < 2.5)); 
+  //  bool isZZFiducialRegion =  ((Z0.daughter(0).pt() > 10) && (Z0.daughter(1).pt() > 10) && (Z1.daughter(0).pt() > 10) && (Z1.daughter(1).pt() > 10) && (Z0.daughter(0).eta() < 2.5) && (Z0.daughter(1).eta() < 2.5) && (Z1.daughter(0).eta() < 2.5) && (Z1.daughter(1).eta() < 2.5)); 
+
+  bool isHZZFiducialRegion =  ( (checkLeptonHZZAcceptance(Z0.daughter(0))) && (checkLeptonHZZAcceptance(Z0.daughter(1))) && (checkLeptonHZZAcceptance(Z1.daughter(0))) && (checkLeptonHZZAcceptance(Z1.daughter(1))) ); //To be completed
+
+  bool isZZFiducialRegion =  ( (checkLeptonZZAcceptance(Z0.daughter(0))) && (checkLeptonZZAcceptance(Z0.daughter(1))) && (checkLeptonZZAcceptance(Z1.daughter(0))) && (checkLeptonZZAcceptance(Z1.daughter(1))) ); 
+
+
+  //  if ( ((abs(Z0.daughter(0).id())==13) &&  (Z0.daughter(0).pt() < 5.)) || ((abs(Z0.daughter(1).id())==13) &&  (Z0.daughter(1).pt() < 5.)) || ((abs(Z1.daughter(0).id())==13) &&  (Z1.daughter(0).pt() < 5.)) || ((abs(Z1.daughter(1).id())==13) &&  (Z1.daughter(1).pt() < 5.)) || ((abs(Z0.daughter(0).id())==11) &&  (Z0.daughter(0).pt() < 7.)) || ((abs(Z0.daughter(1).id())==11) &&  (Z0.daughter(1).pt() < 7.)) || ((abs(Z1.daughter(0).id())==11) &&  (Z1.daughter(0).pt() < 7.)) || ((abs(Z1.daughter(1).id())==11) &&  (Z1.daughter(1).pt() < 7.))) std::cout<<"z0d0 "<<Z0.daughter(0).id()<<" pt "<<Z0.daughter(0).pt()<<" z0d1 "<<Z0.daughter(1).id()<<" pt "<<Z0.daughter(1).pt()<<" z1d0 "<<Z1.daughter(0).id()<<" pt "<<Z1.daughter(0).pt()<<" z1d1 "<<Z1.daughter(1).id()<<" pt "<<Z1.daughter(1).pt()<<std::endl;
+ 
+
 
 
   // Definition of the topologies 
@@ -817,16 +824,17 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   
   if(has5leptons)      topology.set(6);    //ZZ4l + 1lepton
 
-  if(isZZRegion)       topology.set(7);     //ZZ4l in ZZ region
-
-  if(isFiducialRegion) topology.set(8);    //ZZ4l in tight fiducial region
-
-
   int Z0DaugID = Z0.daughter(0).id();  
   int Z1DaugID = Z1.daughter(1).id();
 
   if(abs(Z0DaugID) == 13 || abs(Z1DaugID) == 13) topology.set(7);
   if(abs(Z0DaugID) == 11 || abs(Z1DaugID) == 11) topology.set(8);
+
+
+  if(isZZFiducialRegion) topology.set(9);    //ZZ4l in ZZ tight fiducial region
+  if(isHZZFiducialRegion) topology.set(10);    //ZZ4l in HZZ tight fiducial region
+
+
 
   // OLD definition
   //topology.set(0);                             //ZZ4l 
@@ -839,17 +847,18 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1);
 }
 
-bool zz::checkLeptonPt(const phys::Particle &lepton){
-  if(abs(lepton.id()) == 11 && lepton.pt() > 7) return true;
-  if(abs(lepton.id()) == 13 && lepton.pt() > 5) return true;
+
+bool zz::checkLeptonHZZAcceptance(const phys::Particle &lepton){
+
+  if(abs(lepton.id()) == 11 && lepton.pt() > 7 && fabs(lepton.eta()) < 2.5) return true;
+  if(abs(lepton.id()) == 13 && lepton.pt() > 5 && fabs(lepton.eta()) < 2.4) return true;
+
   return false;
 }
 
-bool zz::checkLeptonAcceptance(const phys::Particle &lepton){
+bool zz::checkLeptonZZAcceptance(const phys::Particle &lepton){
 
-  if(abs(lepton.id()) == 11 && lepton.pt() > 7 && fabs(lepton.eta()) < 2.5) return true;
-
-  if(abs(lepton.id()) == 13 && lepton.pt() > 5 && fabs(lepton.eta()) < 2.4) return true;
+  if(lepton.pt() > 10 && fabs(lepton.eta()) < 2.5) return true;
 
   return false;
 }
@@ -866,8 +875,8 @@ bool zz::inTightFiducialRegion(const zz::SignalTopology &topology){
 
   // Ask for leptons within eta and pt acceptance
   if(std::get<1>(topology).isValid() && std::get<2>(topology).isValid()) 
-    acceptance = checkLeptonAcceptance(std::get<1>(topology).daughter(0)) && checkLeptonAcceptance(std::get<1>(topology).daughter(1)) &&
-      checkLeptonAcceptance(std::get<2>(topology).daughter(0)) && checkLeptonAcceptance(std::get<2>(topology).daughter(1));
+    acceptance = checkLeptonHZZAcceptance(std::get<1>(topology).daughter(0)) && checkLeptonHZZAcceptance(std::get<1>(topology).daughter(1)) &&
+      checkLeptonHZZAcceptance(std::get<2>(topology).daughter(0)) && checkLeptonHZZAcceptance(std::get<2>(topology).daughter(1));
   
   for(int i = 0; i < 2; ++i){
       if(std::get<1>(topology).daughter(i).pt() > 10) ++pt10; 
@@ -879,7 +888,6 @@ bool zz::inTightFiducialRegion(const zz::SignalTopology &topology){
   if(pt10 > 0 && pt20 > 0) trigger = true;
   return acceptance && trigger;
 }
-
 
 bool zz::inHiggsFiducialRegion(const zz::SignalTopology &topology){
 
@@ -898,8 +906,8 @@ bool zz::inHiggsFiducialRegion(const zz::SignalTopology &topology){
 
   // Ask for leptons within eta and pt acceptance
   if(std::get<1>(topology).isValid() && std::get<2>(topology).isValid()) 
-    acceptance = checkLeptonAcceptance(std::get<1>(topology).daughter(0)) && checkLeptonAcceptance(std::get<1>(topology).daughter(1)) &&
-      checkLeptonAcceptance(std::get<2>(topology).daughter(0)) && checkLeptonAcceptance(std::get<2>(topology).daughter(1));
+    acceptance = checkLeptonHZZAcceptance(std::get<1>(topology).daughter(0)) && checkLeptonHZZAcceptance(std::get<1>(topology).daughter(1)) &&
+      checkLeptonHZZAcceptance(std::get<2>(topology).daughter(0)) && checkLeptonHZZAcceptance(std::get<2>(topology).daughter(1));
   
   for(int i = 0; i < 2; ++i){
       if(std::get<1>(topology).daughter(i).pt() > 10) ++pt10; 
