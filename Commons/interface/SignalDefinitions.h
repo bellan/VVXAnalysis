@@ -16,7 +16,6 @@ namespace vvx{
 int makeVBosonsFromIds(int j0Id, int j1Id);
 
 
- 
 }
 namespace zzw{
 
@@ -32,8 +31,7 @@ namespace zzw{
  
  GenTopology getGenTopology(int signalDefinition,
 			    const std::vector<phys::Particle> &theGenl, const std::vector<phys::Particle> &theGenj, 
-			    const std::vector<phys::Particle> &theGenZ, const std::vector<phys::Particle> &theGenW);
- 
+			    const std::vector<phys::Particle> &theGenZ, const std::vector<phys::Particle> &theGenW); 
 }
 
 namespace zz{
@@ -57,13 +55,21 @@ namespace zz{
 
   SignalTopology getSignalTopologyStatus3(const std::vector<phys::Particle> &theGenl, const std::vector<phys::Particle> &theGenj);			    
   SignalTopology getSignalTopology       (const std::vector<phys::Particle> &theGenl, std::vector<phys::Particle> &theGenj);			    
-
-  bool checkLeptonPt(const phys::Particle &lepton);
  
-  bool checkLeptonHZZAcceptance(const phys::Particle &lepton);
-  bool checkLeptonZZAcceptance(const phys::Particle &lepton);
+  bool checkLeptonAcceptance(const phys::Particle &lepton);
+
+  bool checkZZLeptonAcceptance(const phys::Particle &lepton);
+
+  bool inLeptonAcceptance(const phys::Boson<phys::Particle> Z0,const phys::Boson<phys::Particle> Z1 );
+
+  bool inZZLeptonAcceptance(const phys::Boson<phys::Particle> Z0,const phys::Boson<phys::Particle> Z1 );
+
+  bool inTriggerPlateau(const phys::Boson<phys::Particle> Z0,const phys::Boson<phys::Particle> Z1);
+
   bool inTightFiducialRegion(const zz::SignalTopology &topology);
+
   bool inHiggsFiducialRegion(const zz::SignalTopology &topology);
+
 
 }
 
