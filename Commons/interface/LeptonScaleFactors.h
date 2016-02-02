@@ -21,10 +21,10 @@ class LeptonScaleFactors{
   LeptonScaleFactors(const std::string& muonEffFilename, const std::string& electronEFFfilename,
 		     const std::string& muonFRFilename, const std::string& electronFRFilename);
 
-  double efficiencyScaleFactor(const double& lepPt, const double& lepEta, int lepId) const;
+  double efficiencyScaleFactor(const double& lepPt, const double& lepEta, int lepId, bool isFullSel = kTRUE) const;
   double efficiencyScaleFactor(const phys::Lepton& lep) const;
 
-  double efficiencyScaleFactorErr(const double& lepPt, const double& lepEta, int lepId) const; 
+  double efficiencyScaleFactorErr(const double& lepPt, const double& lepEta, int lepId, bool isFullSel = kTRUE) const; 
   double efficiencyScaleFactorErr(const phys::Lepton& lep) const;
 
   double weight(const phys::DiBoson<phys::Lepton,phys::Lepton> &ZZ) const;
@@ -33,8 +33,12 @@ class LeptonScaleFactors{
   std::pair<double,std::pair<double,double>> fakeRateScaleFactor(const double& lepPt, const double& lepEta, int lepId) const;
   std::pair<double,std::pair<double,double>> fakeRateScaleFactor(const phys::Lepton& lep) const;
  private:
+
   TH2F *hEffMu_;
   TH2F *hEffEl_;
+
+  TH2F *hEffMuLoose_;
+  TH2F *hEffElLoose_;
 
   std::pair<TH1F*,TH1F*> hFRMu_;
   std::pair<TH1F*,TH1F*> hFREl_;

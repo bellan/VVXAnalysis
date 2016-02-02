@@ -10,7 +10,17 @@ LeptonScaleFactors::LeptonScaleFactors(const std::string& muonEffFilename, const
   TFile *fEffEl = new TFile(electronEffFilename.c_str());
   
   hEffMu_ = dynamic_cast<TH2F*>(fEffMu->Get("TH2D_ALL_2015"));
-  hEffEl_ = dynamic_cast<TH2F*>(fEffEl->Get("TH2D_ALL_2015"));
+  hEffEl_ = dynamic_cast<TH2F*>(fEffEl->Get("hScaleFactors_ID"));
+
+  hEffMuLoose_ = new TH2F("","",1,0,1000,1,0,2.5); //dynamic_cast<TH2F*>(fEffMu->Get("RightName")); //FIXME
+  hEffElLoose_ = new TH2F("","",1,0,1000,1,0,2.5); //dynamic_cast<TH2F*>(fEffEl->Get("RightName")); //FIXME
+  
+  hEffMuLoose_->Fill(1,1); //Just to have SF 1 everywhere. //FIXME
+  hEffElLoose_->Fill(1,1);
+
+  hEffMuLoose_->SetBinError(1,1,0); //Just to have error 0 everywhere. /FIXME
+  hEffElLoose_->SetBinError(1,1,0);
+
 
   TFile *fFRMu = new TFile(muonFRFilename.c_str());
   TFile *fFREl = new TFile(electronFRFilename.c_str());
@@ -29,18 +39,28 @@ LeptonScaleFactors::LeptonScaleFactors(const std::string& muonEffFilename, const
 
 }
 
-double LeptonScaleFactors::efficiencyScaleFactor(const double& pt, const double& eta, int id) const {
+double LeptonScaleFactors::efficiencyScaleFactor(const double& pt, const double& eta, int id, bool isFullSel) const {
 
   const TH2F *hDataMCSF = 0;
 
-  if      (abs(id) == 13) hDataMCSF = hEffMu_;
-  //  else if (abs(id) == 11) hDataMCSF = hEffEl_;
-  else if (abs(id) == 11) return 1.; //FIX ME Electron scal factor are now wrong because of the wrong cone used
-  else{
-    std::cout << colour::Warning("Efficiency scale factor asked for an unknown particle") << " ID = " << id << std::endl;
-    abort();
+  if(isFullSel){
+    if      (abs(id) == 13) hDataMCSF = hEffMu_;
+    else if (abs(id) == 11) hDataMCSF = hEffEl_;
+    else{
+      std::cout << colour::Warning("Efficiency scale factor asked for an unknown particle") << " ID = " << id << std::endl;
+      abort();
+    }
   }
-  
+
+  else{
+    if      (abs(id) == 13) hDataMCSF = hEffMuLoose_;
+    else if (abs(id) == 11) hDataMCSF = hEffElLoose_;
+    else{
+      std::cout << colour::Warning("Efficiency scale factor asked for an unknown particle") << " ID = " << id << std::endl;
+      abort();
+    }
+  }
+
   double sFactor = 1.;
   int ptbin  = hDataMCSF->GetXaxis()->FindBin(pt);
   int etabin = hDataMCSF->GetYaxis()->FindBin(fabs(eta)); //CHECK FIX. UW scale factors have just eta absolute value 
@@ -59,35 +79,45 @@ double LeptonScaleFactors::efficiencyScaleFactor(const double& pt, const double&
 }
 
 double LeptonScaleFactors::efficiencyScaleFactor(const phys::Lepton& lep) const{
-  return efficiencyScaleFactor(lep.pt(), lep.eta(), lep.id()); 
+  return efficiencyScaleFactor(lep.pt(), lep.eta(), lep.id(), lep.passFullSel()); 
 }
 
 
-double LeptonScaleFactors::efficiencyScaleFactorErr(const double& pt, const double& eta, int id) const {
+double LeptonScaleFactors::efficiencyScaleFactorErr(const double& pt, const double& eta, int id, bool isFullSel) const {
 
   const TH2F *hDataMCSF = 0;
 
-  if      (abs(id) == 13) hDataMCSF = hEffMu_;
-  else if (abs(id) == 11) hDataMCSF = hEffEl_;
+
+  if(isFullSel){
+    if      (abs(id) == 13) hDataMCSF = hEffMu_;
+    else if (abs(id) == 11) hDataMCSF = hEffEl_;
+    else{
+      std::cout << colour::Warning("Efficiency scale factor asked for an unknown particle") << " ID = " << id << std::endl;
+      abort();
+    }
+  }
+
   else{
-    std::cout << colour::Warning("Efficiency scale factor asked for an unknown particle") << " ID = " << id << std::endl;
-    abort();
+    if      (abs(id) == 13) hDataMCSF = hEffMuLoose_;
+    else if (abs(id) == 11) hDataMCSF = hEffElLoose_;
+    else{
+      std::cout << colour::Warning("Efficiency scale factor asked for an unknown particle") << " ID = " << id << std::endl;
+      abort();
+    }
   }
   
   double sErr = 1.;
-
   int ptbin  = hDataMCSF->GetXaxis()->FindBin(pt);
   int etabin = hDataMCSF->GetYaxis()->FindBin(eta);
 
   if(pt >= hDataMCSF->GetXaxis()->GetXmax()) ptbin = hDataMCSF->GetXaxis()->GetLast();
-  
-  sErr =  hDataMCSF->GetBinError(ptbin,etabin);
 
+  sErr =  hDataMCSF->GetBinError(ptbin,etabin);
   return sErr;
 }
 
 double LeptonScaleFactors::efficiencyScaleFactorErr(const phys::Lepton& lep) const{
-  return efficiencyScaleFactorErr(lep.pt(), lep.eta(), lep.id()); 
+  return efficiencyScaleFactorErr(lep.pt(), lep.eta(), lep.id(),lep.passFullSel()); 
 }
 
 double LeptonScaleFactors::weight(const phys::Boson<phys::Lepton> &Z) const{
@@ -150,7 +180,7 @@ std::pair<double,std::pair<double,double>> LeptonScaleFactors::fakeRateScaleFact
     std::cout << colour::Warning("Fake rate scale factor out of range") << " Lepton ID = " << lepId << ", pt =  " << pt << ", eta = " << lepEta << ", scale factor = " << fakeRate << std::endl;
 
   return std::make_pair(fakeRate/(1-fakeRate), std::make_pair(fakeRateUncUp/pow(1-fakeRate,2),(fakeRateUncDown/pow(1-fakeRate,2))));
-			}
+}
 
     std::pair<double,std::pair<double,double>> LeptonScaleFactors::fakeRateScaleFactor(const phys::Lepton& lep) const{
   return fakeRateScaleFactor(lep.pt(), lep.eta(), lep.id()); 
