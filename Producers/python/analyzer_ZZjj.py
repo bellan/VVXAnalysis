@@ -224,7 +224,7 @@ Z1MASS            = "daughter('Z1').mass>60 && daughter('Z1').mass<120"
 Z2MASS            = "daughter('Z2').mass>60 && daughter('Z2').mass<120"
 ZZWITHONSHELLZS   = (BESTCAND_AMONG + "&&" + Z1MASS + "&&" + Z2MASS)
 
-process.ZZCand.flags.SR_ZZOnShell = cms.string(SR + "&&" + ZZWITHONSHELLZS)
+process.ZZCand.flags.SR_ZZOnShell = cms.string(SR + "&&" + ZZWITHONSHELLZS) 
 # Uncomment the lines below if you want a smaller finding region!
 #process.ZZCand.bestCandAmong = cms.PSet(isBestCand = cms.string(ZZWITHONSHELLZS))
 
@@ -232,7 +232,7 @@ process.ZZCand.flags.SR_ZZOnShell = cms.string(SR + "&&" + ZZWITHONSHELLZS)
 process.ZZSelectedCand = cms.EDFilter("PATCompositeCandidateSelector",
                                       src = cms.InputTag("ZZCand"),
                                       cut = cms.string("userFloat('isBestCand') && userFloat('SR')")
-#                                      cut = cms.string("userFloat('isBestCand') && userFloat('SR_ZZOnShell')")
+#                                     cut = cms.string("userFloat('isBestCand') && userFloat('SR_ZZOnShell')")
                                       )
 
 ### ......................................................................... ###
@@ -267,8 +267,6 @@ process.ZLLFiltered2P2F = cms.EDFilter("PATCompositeCandidateSelector",
                                        src = cms.InputTag("ZLLCand"),
                                        cut = cms.string("userFloat('isBestCRZLLos_2P2F') && userFloat('CRZLLos_2P2F')")
                                        )
-
-
 
 
 # Merger of all ZZ final states.
