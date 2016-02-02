@@ -46,14 +46,9 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , filterController_(config)
   , mcHistoryTools_  (0)
   , leptonScaleFactors_(edm::FileInPath("VVXAnalysis/Commons/data/scale_factors_muons2015.root").fullPath(),
-  			edm::FileInPath("VVXAnalysis/Commons/data/scale_factors_ele2015.root").fullPath(),
+  			edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/ScaleFactors_ele_ID_2015.root").fullPath(),
   			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates.root").fullPath(),
   			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates.root").fullPath())
-
-  // , leptonScaleFactors_(edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/scale_factors_muons2012.root").fullPath(),
-  // 			edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/scale_factors_ele2012.root").fullPath(),
-  // 			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates_mu.root").fullPath(),
-  // 			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates_el.root").fullPath())
 
   , signalDefinition_(config.getParameter<int>("signalDefinition"   ))
   , passTrigger_(false)
@@ -400,6 +395,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   if(!goodEvent) return;
   ++theNumberOfAnalyzedEvents;
 
+  //  std::cout<<"new ev"<<std::endl;
 
   //// For Z+L CRs, we want only events with exactly 1 Z+l candidate.
   //// if (filterController_.channel() == ZL && ???size() != 1) return;
@@ -417,7 +413,6 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
     phys::Lepton physmuon = fill(muon);
     muons_.push_back(physmuon);
   }
-
 
   foreach(const pat::Electron& electron, *electrons){
     //if(!electron.userFloat("isGood") || electron.userFloat("CombRelIsoPF") >= 4) continue; 
@@ -459,18 +454,15 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
     }
     cout << "----------------------------------------------------" << endl;
   }
-
-
+    
   if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();     
   else if(ZL_.empty() && applySkim_) return;
   theTree->Fill();
 
 }
 
-
 template<typename LEP>
 phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
-
 
   phys::Lepton output(phys::Particle::convert(lepton.p4()),lepton.charge(),lepton.pdgId());
   
@@ -617,9 +609,10 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
 
   PAR d0 = fill(*dynamic_cast<const T*>(v.daughter(0)->masterClone().get()));
   PAR d1 = fill(*dynamic_cast<const T*>(v.daughter(1)->masterClone().get()));
-    
+  
     if(d0.id() == 0 || d1.id() == 0) edm::LogError("TreePlanter") << "TreePlanter: VB candidate does not have a matching good particle!";
   
+
   phys::Boson<PAR> physV(d0, d1, type);
   
   // Add FSR
@@ -685,6 +678,7 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   VV.triggerWord_ = triggerWord_;
   VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
   
+  if(  VV.passSelZLL_2P2F_  ||   VV.passSelZLL_3P1F_  )  std::cout<<"fr "<<VV.fakeRateSF()<<" + "<<VV.fakeRateSFUncHigh()<<" lep 3 pt "<<VV.second().daughter(0).pt()<<" lep 4 pt "<<VV.second().daughter(1).pt()<<std::endl;
   return VV;
 }
 
@@ -741,8 +735,12 @@ std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > TreePlanter::fillDiBosons
     }
     else {cout << "TreePlanter: unexpected diboson final state: " << rawchannel << " ... going to abort.. " << endl; abort();}
     
-    if(physVV.isValid()) physDiBosons.push_back(physVV);
+    if(physVV.isValid()){
+      physDiBosons.push_back(physVV);
+      //std::cout<<"SF diboson "<<physVV.efficiencySF()<<" "<<physVV.efficiencySFUnc()<<std::endl; //Fixme
+    }
   }
+
 
   return physDiBosons;
 }
@@ -792,8 +790,6 @@ int TreePlanter::computeRegionFlag(const pat::CompositeCandidate & vv) const{
     set_bit(REGIONFLAG,CRZLLos_2P2F);
   if(vv.userFloat("isBestCRZLLos_3P1F") && vv.userFloat("CRZLLos_3P1F"))
     set_bit(REGIONFLAG,CRZLLos_3P1F);
-
-
   if(vv.userFloat("isBestCand") && vv.userFloat("SR_ZZOnShell"))
     set_bit(REGIONFLAG,ZZOnShell);
   if(vv.userFloat("isBestCRZLLos_2P2F") && vv.userFloat("CRZLLos_2P2F_ZZOnShell"))
