@@ -48,4 +48,4 @@ ggZZ2mu2tau,,       0.003194,   ,,/GluGluToContinToZZTo2mu2tau_13TeV_MCFM701_pyt
 DYJetsToLL_M50,,     6025.2,    ,,/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True,,#FIXME: not ready yet 
 TTJets,,             831.76,    ,,/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True,,#FIXME: not ready yet
 TTTo2L2nu,,          87.31,     ,,/TTTo2L2Nu_13TeV-powheg/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True,, # xs: 831.76*((3*0.108)**2) 
-WZTo3LNu,,           4.42965,   ,,/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True,,
+WZ,,           4.42965,   ,,/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True,,
