@@ -55,13 +55,13 @@ except NameError:
 # Get absolute path
 import os
 
-#SELSETUP = "allCutsAtOnceButMZ2"
+SELSETUP = "allCutsAtOnceZZFullRange" #Setup for ZZFull
+
 PyFilePath = os.environ['CMSSW_BASE'] + "/src/VVXAnalysis/Producers/python/"
 execfile(PyFilePath + "analyzer_ZZjj.py")
 
 print "SELSETUP",SELSETUP
 print "BESTCAND_AMONG",BESTCAND_AMONG,"\n"
-
 
 ### ----------------------------------------------------------------------
 ### Replace parameters
@@ -73,10 +73,10 @@ SkimPaths.append("preselection")
 ### ----------------------------------------------------------------------
 process.source = cms.Source("PoolSource",fileNames = cms.untracked.vstring(
 
-
+#'/store/mc/RunIISpring15DR74/GluGluToZZTo4mu_BackgroundOnly_13TeV_MCFM/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/10000/1CAF3EBF-9118-E511-8143-02163E0136C2.root'
+#'/store/mc/RunIISpring15MiniAODv2/WWZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/10000/624BC18A-CA6D-E511-A73B-003048F3511E.root'
 #'/store/mc/RunIISpring15MiniAODv2/GluGluToZZTo4e_BackgroundOnly_13TeV_MCFM/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/50000/186EDBC4-DE72-E511-8720-0025905A60A6.root',
 #'/store/mc/RunIIFall15MiniAODv1/ZZTo4L_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/00000/064FDFEF-3DA7-E511-8340-001E6739850C.root'
-
 '/store/mc/RunIISpring15MiniAODv2/ZZTo4L_13TeV_powheg_pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v2/40000/00768931-1C76-E511-81DA-00266CFAEA48.root'
 
 ,'/store/mc/RunIISpring15MiniAODv2/ZZTo4L_13TeV_powheg_pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v2/40000/76E4A530-1C76-E511-A951-00266CFAE764.root'
@@ -88,13 +88,11 @@ process.source = cms.Source("PoolSource",fileNames = cms.untracked.vstring(
 
 #'/store/mc/RunIISpring15MiniAODv2/GluGluToZZTo4e_BackgroundOnly_13TeV_MCFM/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/50000/16D6F7C9-DE72-E511-B3BE-0026189438E2.root'
 
-   
- # Fall 2016
-
- #'/store/mc/RunIIFall15MiniAODv2/GluGluHToZZTo4L_M125_13TeV_powheg2_JHUgenV6_pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/50000/024F30C4-96B9-E511-91A0-24BE05C616C1.root'
+    #news2016
+ #   '/store/mc/RunIIFall15MiniAODv2/GluGluHToZZTo4L_M125_13TeV_powheg2_JHUgenV6_pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/50000/024F30C4-96B9-E511-91A0-24BE05C616C1.root'
 
 #'/store/mc/RunIIFall15MiniAODv1/ZZTo4L_13TeV_powheg_pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/00000/0C0945C1-86B2-E511-B553-0CC47A78A440.root'
-  
+
     ))
-    #),eventsToProcess = cms.untracked.VEventRange('1:31907:6167667','1:31907:6167734')) #To look in singles events
+    #),eventsToProcess = cms.untracked.VEventRange('1:31907:6167667','1:31907:6167734'))
 process.maxEvents.input = -1
