@@ -63,6 +63,20 @@ execfile(PyFilePath + "analyzer_ZZjj.py")
 print "SELSETUP",SELSETUP
 print "BESTCAND_AMONG",BESTCAND_AMONG,"\n"
 
+
+#print "CR_BESTZLLos_3P1F",CR_BESTZLLos_3P1F
+#print "CR_BESTZLLos_2P2F",CR_BESTZLLos_2P2F
+
+# CR 3P1F
+process.ZLLCand.bestCandAmong.isBestCRZLLos_3P1F = cms.string(CR_BESTZLLos_3P1F.replace("daughter(1).mass>12","daughter(1).mass>4"))
+
+# CR 2P2F
+process.ZLLCand.bestCandAmong.isBestCRZLLos_2P2F = cms.string(CR_BESTZLLos_2P2F.replace("daughter(1).mass>12","daughter(1).mass>4"))
+
+
+#print "\nNew CR_BESTZLLos_3P1F",CR_BESTZLLos_3P1F.replace("daughter(1).mass>12","daughter(1).mass>4")
+
+
 ### ----------------------------------------------------------------------
 ### Replace parameters
 ### ----------------------------------------------------------------------
@@ -77,9 +91,9 @@ process.source = cms.Source("PoolSource",fileNames = cms.untracked.vstring(
 #'/store/mc/RunIISpring15MiniAODv2/WWZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/10000/624BC18A-CA6D-E511-A73B-003048F3511E.root'
 #'/store/mc/RunIISpring15MiniAODv2/GluGluToZZTo4e_BackgroundOnly_13TeV_MCFM/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/50000/186EDBC4-DE72-E511-8720-0025905A60A6.root',
 #'/store/mc/RunIIFall15MiniAODv1/ZZTo4L_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/00000/064FDFEF-3DA7-E511-8340-001E6739850C.root'
-'/store/mc/RunIISpring15MiniAODv2/ZZTo4L_13TeV_powheg_pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v2/40000/00768931-1C76-E511-81DA-00266CFAEA48.root'
+#'/store/mc/RunIISpring15MiniAODv2/ZZTo4L_13TeV_powheg_pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v2/40000/00768931-1C76-E511-81DA-00266CFAEA48.root'
 
-,'/store/mc/RunIISpring15MiniAODv2/ZZTo4L_13TeV_powheg_pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v2/40000/76E4A530-1C76-E511-A951-00266CFAE764.root'
+'/store/mc/RunIISpring15MiniAODv2/ZZTo4L_13TeV_powheg_pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v2/40000/76E4A530-1C76-E511-A951-00266CFAE764.root'
 
 
 #'/store/mc/RunIISpring15MiniAODv2/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v3/60000/00181849-176A-E511-8B11-848F69FD4C94.root'
