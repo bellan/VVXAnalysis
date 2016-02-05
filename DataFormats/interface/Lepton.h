@@ -59,28 +59,26 @@ namespace phys {
     Bool_t   matchHLT()            const {return matchHLT_;}
     Bool_t   isGood()              const {return isGood_;}
 
-    Bool_t   passFullSelNoFSRCorr()const {return isGood_ && pfCombRelIso_ < (abs(id_) == 13 ? 0.4 : 0.5);}
-    Bool_t   passFullSel()         const {return isGood_ && pfCombRelIsoFSRCorr_ < (abs(id_) == 13 ? 0.4 : 0.5);}
+    Bool_t   passFullSelNoFSRCorr()const {return isGood_ && pfCombRelIso_ < (abs(id_) == 13 ? 0.35 : 0.35);}
+    Bool_t   passFullSel()         const {return isGood_ && pfCombRelIsoFSRCorr_ < (abs(id_) == 13 ? 0.35 : 0.35);}
 
     // The fake rate is set to a value different from 1 even for true leptons.
     void setFakeRateSF(const std::pair<double,std::pair<double,double>> & sf) {
       fakeRateSF_    =  sf.first; 
       fakeRateSFUncHigh_ =  sf.second.first;
       fakeRateSFUncLow_ =  sf.second.second;
-      realignFakeRate();
     }
     
-    Double_t fakeRateSF()    const {return passFullSel() ? 1. : fakeRateSF_;}
+    Double_t fakeRateSF()        const {return passFullSel() ? 1. : fakeRateSF_;}
     Double_t fakeRateSFUncHigh() const {return passFullSel() ? 1. : fakeRateSFUncHigh_;}
-    Double_t fakeRateSFUncLow() const {return passFullSel() ? 1. : fakeRateSFUncLow_;}
+    Double_t fakeRateSFUncLow()  const {return passFullSel() ? 1. : fakeRateSFUncLow_;}
   
-
-    // This hack is needed because the FSR-corrected isolation is a property of the boson and if a lepton is really a good lepton is know only a-posteriory (for CRs).
-    void realignFakeRate() {
-      fakeRateSF_    = fakeRateSF();
-      fakeRateSFUncHigh_ = fakeRateSFUncHigh();
-      fakeRateSFUncLow_ = fakeRateSFUncLow();
-    }
+    // This hack is needed because the FSR-corrected isolation is a property of the boson and if a lepton is really a good lepton is know only a-posteriory (for CRs). //NOT USED NOW. FSR is now property of lepton.
+    /* void realignFakeRate() { */
+    /*   fakeRateSF_    = fakeRateSF(); */
+    /*   fakeRateSFUncHigh_ = fakeRateSFUncHigh(); */
+    /*   fakeRateSFUncLow_ = fakeRateSFUncLow(); */
+    /* } */
 
   protected:
     
