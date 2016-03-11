@@ -18,7 +18,6 @@
 #include <iostream>
 #include <vector>
 #include <tuple> 
-
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
 #include "VVXAnalysis/Commons/interface/PhysTools.h"
@@ -71,7 +70,7 @@ void ZZGenFilterCategory::beginJob() {}
 
 bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) { 
   
-  //  cout << "\nRun: " << event.id().run() << " event: " << event.id().event() << " LS: " << event.luminosityBlock() << endl;
+  //cout << "\nRun: " << event.id().run() << " event: " << event.id().event() << " LS: " << event.luminosityBlock() << endl;
 
   std::vector<phys::Particle> genLeptons, genJets;
   
@@ -94,7 +93,7 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
       const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(newp);
       
 
-      if (p->status() == 1){
+      if (false && p->status() == 1){
 
 	if(p->p4().P() != p->p4().P()){
 	  cout << "This particle, " << p->pdgId() << ", as NaN in p4 components: " << p->p4().P() << endl;
@@ -102,8 +101,9 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 	}
 
 	int id   = abs(p->pdgId());
-
-	if((id == 11 || id == 13) && gp->isPromptFinalState() ) {
+	//	std::cout<<" from hard process "<< gp->fromHardProcessBeforeFSR();
+	if(gp->fromHardProcessBeforeFSR()) std::cout<<" flag "<<gp->statusFlags().flags_<<" status "<<p->status()<<std::endl;
+	if((id == 11 || id == 13) && gp->isPromptFinalState() && gp->fromHardProcessBeforeFSR()){
 	  bool fromTau = false;
 	  for(unsigned int i = 0; i < p->numberOfMothers(); ++i)
 	    if(abs(p->mother(i)->pdgId() == 15)) fromTau = true;
@@ -112,9 +112,10 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 	if( id == 22)
 	  genPhotons.push_back(phys::convert(*p)); 
       }
-      if (false && p->status() == 3){
+      if (gp->fromHardProcessBeforeFSR()){
 	int id   = abs(p->pdgId());     
-	if ( id == 11 || id == 13 ) { genLeptons.push_back(phys::convert(*p,gp->statusFlags().flags_)); }// leptons 
+	if ( id == 11 || id == 13 ) { 
+	  genLeptons.push_back(phys::convert(*p,gp->statusFlags().flags_)); }// leptons 
 
       }
     }
@@ -186,12 +187,13 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   event.put(output); 
   
   
-  std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl(new std::vector<reco::GenParticle>());
-  
+  std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl(new std::vector<reco::GenParticle>());  
   reco::GenParticleRefProd genRefs = event.getRefBeforePut<std::vector<reco::GenParticle> >("vectorBosons");
 
   // a simple, beautiful loop over the tuple elements is not possible without writing more code than what implemented in this class, for curiosity see
   // http://stackoverflow.com/questions/1198260/iterate-over-tuple, http://stackoverflow.com/questions/18155533/how-to-iterate-through-stdtuple, http://www.metaxcompile.com/blog/2013/03/14/A_cleaner_way_to_do_tuple_iteration.html
+
+
   if(     std::get<1>(zzSignalTopology).id()  > 0) outputGenColl = loadGenBoson(std::get<1>(zzSignalTopology), genRefs, outputGenColl); // Z0 --> ll
   if(     std::get<2>(zzSignalTopology).id()  > 0) outputGenColl = loadGenBoson(std::get<2>(zzSignalTopology), genRefs, outputGenColl); // Z1 --> ll
   if(     std::get<3>(zzSignalTopology).id()  > 0) outputGenColl = loadGenBoson(std::get<3>(zzSignalTopology), genRefs, outputGenColl); // Z2 --> ll
