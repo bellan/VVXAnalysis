@@ -94,9 +94,6 @@ namespace phys {
     Bool_t isBDT_;
     Int_t  missingHit_; 
     Int_t  nCrystals_;
-
-
-
     
     ClassDef(Electron, 1) //
   };

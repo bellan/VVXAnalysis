@@ -38,6 +38,7 @@ namespace phys {
       , isPF_(false)
       , matchHLT_(false)
       , isGood_(false)
+      , isInCracks_(false)
       //, nearestjet(TLorentzVector(0.,0.,0.,0.), 0)
       {}
     
@@ -58,6 +59,8 @@ namespace phys {
     Bool_t   isPF()                const {return isPF_;}
     Bool_t   matchHLT()            const {return matchHLT_;}
     Bool_t   isGood()              const {return isGood_;}
+
+    Bool_t  isInCracks()           const {return isInCracks_;}
 
     Bool_t   passFullSelNoFSRCorr()const {return isGood_ && pfCombRelIso_ < (abs(id_) == 13 ? 0.35 : 0.35);}
     Bool_t   passFullSel()         const {return isGood_ && pfCombRelIsoFSRCorr_ < (abs(id_) == 13 ? 0.35 : 0.35);}
@@ -98,6 +101,8 @@ namespace phys {
     Bool_t isPF_;
     Bool_t matchHLT_;
     Bool_t isGood_;
+
+    Bool_t isInCracks_;
 
     //Jet nearestjet;    
 
