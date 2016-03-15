@@ -20,6 +20,7 @@
 #include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/Utilities/interface/transform.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "DataFormats/Common/interface/CloneTrait.h"
 #include <vector>
@@ -39,18 +40,18 @@ template<typename InputCollection,
  private:
  /// process an event
  virtual void produce( edm::Event&, const edm::EventSetup&) override;
- /// vector of strings
- typedef std::vector<edm::InputTag> vtag;
+ 
+ typedef std::vector<edm::EDGetTokenT<InputCollection> > vtoken;
  /// labels of the collections to be merged
- vtag src_;
+ vtoken srcToken_;
+ 
  std::vector<int> priority_;
-
 };
 
-template<typename InputCollection, typename OutputCollection, typename P>
+  template<typename InputCollection, typename OutputCollection, typename P>
   Merger<InputCollection, OutputCollection, P>::Merger( const edm::ParameterSet& par )
-  : src_( par.template getParameter<vtag>( "src" ) )
-  , priority_( par.template getParameter<std::vector<int> >( "priority" ) ) {
+  : srcToken_( edm::vector_transform(par.template getParameter<std::vector<edm::InputTag> >( "src" ), [this](edm::InputTag const & tag){return consumes<InputCollection>(tag);} ) ) 
+    , priority_( par.template getParameter<std::vector<int> >( "priority" ) ) {
     produces<OutputCollection>();
 }
 
@@ -63,10 +64,10 @@ template<typename InputCollection, typename OutputCollection, typename P>
   std::auto_ptr<OutputCollection> coll( new OutputCollection );
 
   // Fill the collection with labels with priority
-  for( vtag::iterator s = src_.begin(); s != src_.end(); ++ s ) {
-    if(!priority_.at(std::distance(src_.begin(),s))) continue;
+  for( typename vtoken::iterator s = srcToken_.begin(); s != srcToken_.end(); ++ s ) {
+    if(!priority_.at(std::distance(srcToken_.begin(),s))) continue;
     edm::Handle<InputCollection> h;
-    evt.getByLabel( * s, h );
+    evt.getByToken( * s, h );
     for( typename InputCollection::const_iterator c = h->begin(); c != h->end(); ++c ) {
       coll->push_back( P::clone( * c ) );
     }
@@ -74,10 +75,10 @@ template<typename InputCollection, typename OutputCollection, typename P>
   
   // if there are not candidates in the priority list, then proceed with the other labels
   if(coll->empty()){
-    for( vtag::iterator s = src_.begin(); s != src_.end(); ++ s ) {
-      if(priority_.at(std::distance(src_.begin(),s))) continue;
+    for( typename vtoken::iterator s = srcToken_.begin(); s != srcToken_.end(); ++ s ) {
+      if(priority_.at(std::distance(srcToken_.begin(),s))) continue;
       edm::Handle<InputCollection> h;
-      evt.getByLabel( * s, h );
+      evt.getByToken( * s, h );
       for( typename InputCollection::const_iterator c = h->begin(); c != h->end(); ++c ) {
 	coll->push_back( P::clone( * c ) );
       }

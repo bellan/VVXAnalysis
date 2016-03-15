@@ -116,7 +116,7 @@ process.postCleaningMuons = cms.EDProducer("PATMuonCleaner",
                                            # pat electron input source
                                            src = cms.InputTag("appendPhotons:muons"),
                                            # preselection (any string-based cut for pat::Muons)
-                                           preselection = cms.string("pt > 10 && userFloat('isGood') && userFloat('CombRelIsoPF') < 0.4"),
+                                           preselection = cms.string("pt > 10 && userFloat('isGood') && userFloat('combRelIsoPF') < 0.4"),
                                            # overlap checking configurables
                                            checkOverlaps = cms.PSet(
         muons = cms.PSet(
@@ -146,7 +146,7 @@ process.postCleaningElectrons = cms.EDProducer("PATElectronCleaner",
                                                # pat electron input source
                                                src = cms.InputTag("appendPhotons:electrons"),
                                                # preselection (any string-based cut for pat::Electron)
-                                               preselection = cms.string("pt > 10 && userFloat('isGood') && userFloat('CombRelIsoPF') < 0.4"),
+                                               preselection = cms.string("pt > 10 && userFloat('isGood') && userFloat('combRelIsoPF') < 0.4"),
                                                # overlap checking configurables
                                                checkOverlaps = cms.PSet(
         electrons = cms.PSet(

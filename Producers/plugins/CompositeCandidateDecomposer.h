@@ -25,26 +25,24 @@ namespace pat{
   
   private:
   /// Label for input collection
-  edm::InputTag src_;
+  edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > srcToken_;
   int splitLevel_;
-
   };
   
   
   template<class PATObjType>
     pat::CompositeCandidateDecomposer<PATObjType>::CompositeCandidateDecomposer(const edm::ParameterSet & iConfig)
-    : src_           (iConfig.getParameter<edm::InputTag>("src"))
-    , splitLevel_    (iConfig.getParameter<int>("SplitLevel")){
+    : splitLevel_    (iConfig.getParameter<int>("SplitLevel")){
     
     produces<std::vector<PATObjType> >();
-    
+    srcToken_ = consumes<edm::View<pat::CompositeCandidate> >(iConfig.getParameter<edm::InputTag>("src"));
   }
 
   template <class PATObjType>
     void  pat::CompositeCandidateDecomposer<PATObjType>::produce(edm::Event & event, const edm::EventSetup & iSetup) {
     
     
-    edm::Handle<edm::View<pat::CompositeCandidate> > CC   ; event.getByLabel(src_, CC);
+    edm::Handle<edm::View<pat::CompositeCandidate> > CC   ; event.getByToken(srcToken_, CC);
     std::auto_ptr< std::vector<PATObjType> > out(new std::vector<PATObjType>());
       
 

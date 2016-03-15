@@ -40,14 +40,13 @@ class WCandidateFiller : public edm::EDProducer {
   virtual void produce(edm::Event&, const edm::EventSetup&);
   virtual void endJob(){};
   
-  edm::InputTag theCandidateTag;
+  edm::EDGetTokenT<edm::View<reco::CompositeCandidate> > srcToken_;
 };
 
 
-WCandidateFiller::WCandidateFiller(const edm::ParameterSet& iConfig) :
-  theCandidateTag(iConfig.getParameter<edm::InputTag>("src"))
-{
+WCandidateFiller::WCandidateFiller(const edm::ParameterSet& iConfig){
   produces<pat::CompositeCandidateCollection>();
+  srcToken_ = consumes<edm::View<reco::CompositeCandidate> >(iConfig.getParameter<edm::InputTag>("src"));
 }
 
 
@@ -62,7 +61,7 @@ WCandidateFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   //-- Get jj candidates
   Handle<View<reco::CompositeCandidate> > jjCands;
-  iEvent.getByLabel(theCandidateTag, jjCands);
+  iEvent.getByToken(srcToken_, jjCands);
 
 
   //--- Fill user info
