@@ -18,8 +18,9 @@
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
 
+#include <SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h>
+
 #include "VVXAnalysis/DataFormats/interface/Lepton.h"
-#include "VVXAnalysis/DataFormats/interface/Electron.h"
 #include "VVXAnalysis/DataFormats/interface/Jet.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
@@ -137,7 +138,7 @@ class TreePlanter: public edm::EDAnalyzer {
   // all good isolated muons BUT the ones coming from ZZ decay
   std::vector<phys::Lepton>                 muons_;
   // all good isolated electrons BUT the ones coming from ZZ decay
-  std::vector<phys::Electron>               electrons_;
+  std::vector<phys::Lepton>                 electrons_;
   // jets which do not contains leptons from ZZ or other good isolated leptons
   std::vector<phys::Jet>                    jets_;
 
@@ -169,6 +170,13 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::InputTag theGenVBCollectionLabel;
   edm::InputTag	theGenCollectionLabel;
   edm::InputTag	theGenJetCollectionLabel;
+
+  // ------------------- Tokens ------------------------------ //
+  edm::EDGetTokenT<edm::View<reco::Candidate> > genParticleToken;
+  edm::EDGetTokenT<GenEventInfoProduct>         genInfoToken;
+
+
+
 
   // --------------------------------------------------------- //
 

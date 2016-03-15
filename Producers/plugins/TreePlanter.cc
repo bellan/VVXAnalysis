@@ -45,8 +45,9 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   : PUWeighter_      ()
   , filterController_(config)
   , mcHistoryTools_  (0)
-  , leptonScaleFactors_(edm::FileInPath("VVXAnalysis/Commons/data/scale_factors_muons2015.root").fullPath(),
-  			edm::FileInPath("ZZAnalysis/AnalysisStep/test/Macros/ScaleFactors_ele_ID_2015.root").fullPath(),
+  , leptonScaleFactors_(edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_mu_2015.root").fullPath(),
+  			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_ele_2015_IdIsoSip.root").fullPath(),
+			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_ele_2015_IdIsoSip_Cracks.root").fullPath(), 
   			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates.root").fullPath(),
   			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates.root").fullPath())
 
@@ -98,6 +99,10 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     theGenJetCollectionLabel = config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("genCategory","genJets"));
     theGenVBCollectionLabel  = config.getUntrackedParameter<edm::InputTag>("GenVBCollection", edm::InputTag("genCategory","vectorBosons"));
     externalCrossSection_    = config.getUntrackedParameter<double>("XSection",-1);
+
+    genParticleToken = consumes<edm::View<reco::Candidate> >(theGenCollectionLabel);
+    genInfoToken = consumes<GenEventInfoProduct>(edm::InputTag("generator"));
+
   }
    
   skimPaths_ = config.getParameter<std::vector<std::string> >("skimPaths");
@@ -264,7 +269,7 @@ void TreePlanter::initTree(){
   nvtx_   = -1;
 
   muons_     = std::vector<phys::Lepton>();
-  electrons_ = std::vector<phys::Electron>();
+  electrons_ = std::vector<phys::Lepton>();
   jets_      = std::vector<phys::Jet>();
   ZZ_        = phys::DiBoson<phys::Lepton  , phys::Lepton>();
   Vhad_      = std::vector<phys::Boson<phys::Jet>      >();   
@@ -278,15 +283,22 @@ void TreePlanter::initTree(){
 
 
 bool TreePlanter::fillEventInfo(const edm::Event& event){
-
   // Fill some info abut acceptance before cutting away events. Beware: if the signal is defined a-posteriori, we will have a problem. For that case, we need to
   // explicitly check here that we are counting signal and not irreducible background.
+
+  edm::Handle<edm::View<reco::Candidate> > genParticles;
+  edm::Handle<GenEventInfoProduct> genInfo;
+
   if (isMC_) {
     // Apply MC filter
     if (!filterController_.passMCFilter(event)) return false;
 
     if(mcHistoryTools_) delete mcHistoryTools_;
-    mcHistoryTools_ = new MCHistoryTools(event, sampleName_);
+
+    event.getByToken(genParticleToken, genParticles);
+    event.getByToken(genInfoToken, genInfo);
+
+    mcHistoryTools_ = new MCHistoryTools(event, sampleName_, genParticles, genInfo);
     bool gen_ZZ4lInEtaAcceptance   = false; // All 4 gen leptons in eta acceptance
     bool gen_ZZ4lInEtaPtAcceptance = false; // All 4 gen leptons in eta,pT acceptance
     mcHistoryTools_->genAcceptance(gen_ZZ4lInEtaAcceptance, gen_ZZ4lInEtaPtAcceptance);
@@ -348,9 +360,6 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   nvtx_ = vertices->size();
     
   if(isMC_){
-    
-    edm::Handle<edm::View<reco::Candidate> > genParticles;
-    event.getByLabel(theGenCollectionLabel,  genParticles);
     
     for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p){ 
       if (p->status() == 1){
@@ -417,7 +426,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   foreach(const pat::Electron& electron, *electrons){
     //if(!electron.userFloat("isGood") || electron.userFloat("CombRelIsoPF") >= 4) continue; 
     if(!electron.userFloat("isGood")) continue; 
-    phys::Electron physelectron =  fill(electron);
+    phys::Lepton physelectron =  fill(electron);
     electrons_.push_back(physelectron);
   }
   foreach(const pat::Jet& jet, *jets){
@@ -479,8 +488,10 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
   output.isPF_            = lepton.userFloat("isPFMuon"         );
   output.matchHLT_        = lepton.userFloat("HLTMatch"         );
   output.isGood_          = lepton.userFloat("isGood"           );
-  output.efficiencySF_    = leptonScaleFactors_.efficiencyScaleFactor(output);
-  output.efficiencySFUnc_ = leptonScaleFactors_.efficiencyScaleFactorErr(output);
+  output.isInCracks_       = lepton.userFloat("isCrack"          );
+  std::pair<double,double> effSF = leptonScaleFactors_.efficiencyScaleFactor(output); 
+  output.efficiencySF_    = effSF.first;
+  output.efficiencySFUnc_ = effSF.second;
   output.setFakeRateSF(leptonScaleFactors_.fakeRateScaleFactor(output));
 
   return output;
@@ -489,17 +500,7 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
 phys::Lepton TreePlanter::fill(const pat::Electron &electron) const{
 
   return fillLepton(electron);
-  // phys::Electron output(fillLepton(electron));
-  
-  // output.energy_     = electron.userFloat("energy"    );
-  // output.phiWidth_   = electron.userFloat("phiWidth"  );
-  // output.etaWidth_   = electron.userFloat("etaWidth"  );
-  // output.BDT_        = electron.userFloat("BDT"       );
-  // output.isBDT_      = electron.userFloat("isBDT"     );
-  // output.missingHit_ = electron.userInt  ("missingHit");
-  // output.nCrystals_  = electron.userInt  ("nCrystals" );
 
-  // return output;
 }
 
 
