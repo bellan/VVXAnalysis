@@ -19,8 +19,10 @@ class ZZjAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZjAnalyzer>{
 public:
  ZZjAnalyzer(const AnalysisConfiguration& configuration)
    : EventAnalyzer(*(new Selector<ZZjAnalyzer>(*this)),
-		   configuration),lepFR("../../ZZAnalysis/AnalysisStep/test/Macros/scale_factors_muons2012.root",
-					"../../ZZAnalysis/AnalysisStep/test/Macros/scale_factors_ele2012.root",
+		   configuration),lepFR(
+					"../../data/LeptonEffScaleFactors/ScaleFactors_mu_2015.root",
+					"../../data/LeptonEffScaleFactors/ScaleFactors_ele_2015_IdIsoSip.root",
+					"../../data/LeptonEffScaleFactors/ScaleFactors_ele_2015_IdIsoSip_Cracks.root",
 					"../Commons/data/fakeRates.root",
 					"../Commons/data/fakeRates.root"){}
   
