@@ -17,6 +17,7 @@
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
+#include "DataFormats/Common/interface/MergeableCounter.h"
 
 #include <SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h>
 
@@ -174,7 +175,15 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::EDGetTokenT<edm::View<reco::Candidate> > theGenJetCollectionToken;
   edm::EDGetTokenT<GenEventInfoProduct>         theGenInfoToken;
 
-
+  // Tokens for counters
+  edm::EDGetTokenT<edm::MergeableCounter> thePreSkimCounterToken;
+  edm::EDGetTokenT<edm::MergeableCounter> prePreselectionCounterToken_;
+  edm::EDGetTokenT<edm::MergeableCounter> postPreselectionCounterToken_;
+  edm::EDGetTokenT<edm::MergeableCounter> signalCounterToken_;
+  edm::EDGetTokenT<edm::MergeableCounter> postSkimSignalCounterToken_;
+  edm::EDGetTokenT<edm::MergeableCounter> srCounterToken_;
+  edm::EDGetTokenT<edm::MergeableCounter> cr2P2FCounterToken_;
+  edm::EDGetTokenT<edm::MergeableCounter> cr3P1FCounterToken_;          
 
 
   // --------------------------------------------------------- //

@@ -14,7 +14,6 @@
 #include "DataFormats/Common/interface/View.h"
 #include "DataFormats/Common/interface/MergeableCounter.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
-#include "DataFormats/Common/interface/MergeableCounter.h"
 #include "DataFormats/Common/interface/Ptr.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
 
@@ -70,6 +69,14 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theMETToken      (consumes<pat::METCollection>                 (config.getParameter<edm::InputTag>("MET"      )))
   , theMETNoHFToken  (consumes<pat::METCollection>                 (config.getParameter<edm::InputTag>("METNoHF"  )))
   , theVertexToken   (consumes<std::vector<reco::Vertex> >         (config.getParameter<edm::InputTag>("Vertices" )))
+  , thePreSkimCounterToken       (consumes<edm::MergeableCounter>(edm::InputTag("preSkimCounter"              )))
+  , prePreselectionCounterToken_ (consumes<edm::MergeableCounter>(edm::InputTag("prePreselectionCounter"      )))
+  , postPreselectionCounterToken_(consumes<edm::MergeableCounter>(edm::InputTag("postPreselectionCounterToken")))
+  , signalCounterToken_          (consumes<edm::MergeableCounter>(edm::InputTag("signalCounterToken"          )))
+  , postSkimSignalCounterToken_  (consumes<edm::MergeableCounter>(edm::InputTag("postSkimSignalCounterToken"  )))
+  , srCounterToken_              (consumes<edm::MergeableCounter>(edm::InputTag("srCounterToken"              )))
+  , cr2P2FCounterToken_          (consumes<edm::MergeableCounter>(edm::InputTag("cr2P2FCounterToken"          )))
+  , cr3P1FCounterToken_          (consumes<edm::MergeableCounter>(edm::InputTag("cr3P1FCounterToken"          )))
   , sampleName_      (config.getParameter<std::string>("sampleName"))
   , jecFileName_     (config.getParameter<std::string>("JECFileName"))
   , isMC_            (config.getUntrackedParameter<bool>("isMC",false))
@@ -150,12 +157,12 @@ void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::Even
 
   Float_t Nevt_preskim = -1.;
   edm::Handle<edm::MergeableCounter> preSkimCounter;
-  if (lumi.getByLabel("preSkimCounter", preSkimCounter)) { // Counter before skim. Does not exist for non-skimmed samples.
+  if (lumi.getByToken(thePreSkimCounterToken, preSkimCounter)) { // Counter before skim. Does not exist for non-skimmed samples.
     Nevt_preskim = preSkimCounter->value;
   }  
   
   edm::Handle<edm::MergeableCounter> prePathCounter;
-  lumi.getByLabel("prePreselectionCounter", prePathCounter);       // Counter of input events from the input pattuple
+  lumi.getByToken(prePreselectionCounterToken_, prePathCounter);       // Counter of input events from the input pattuple
 
   // Nevt_gen: this is the number before any skim
   if (Nevt_preskim>=0.) {
@@ -166,25 +173,25 @@ void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::Even
 
   // Beware: pre/post Skim here means before/after the preselection path at Tree building level!
   edm::Handle<edm::MergeableCounter> counter;
-  bool found = lumi.getByLabel("prePreselectionCounter", counter);
+  bool found = lumi.getByToken(prePreselectionCounterToken_, counter);
   if(found) preSkimCounter_ += counter->value;
   
-  found = lumi.getByLabel("postPreselectionCounter", counter);
+  found = lumi.getByToken(postPreselectionCounterToken_, counter);
   if(found) postSkimCounter_ += counter->value;
 
-  found = lumi.getByLabel("signalCounter", counter);
+  found = lumi.getByToken(signalCounterToken_, counter);
   if(found) signalCounter_ += counter->value;
 
-  found = lumi.getByLabel("postSkimSignalCounter", counter);
+  found = lumi.getByToken(postSkimSignalCounterToken_, counter);
   if(found) postSkimSignalCounter_ += counter->value;
 
-  found = lumi.getByLabel("srCounter", counter);
+  found = lumi.getByToken(srCounterToken_, counter);
   if(found) eventsInSR_ += counter->value;
 
-  found = lumi.getByLabel("cr2P2FCounter", counter);
+  found = lumi.getByToken(cr2P2FCounterToken_, counter);
   if(found) eventsIn2P2FCR_ += counter->value;
 
-  found = lumi.getByLabel("cr3P1FCounter", counter);
+  found = lumi.getByToken(cr3P1FCounterToken_, counter);
   if(found) eventsIn3P1FCR_ += counter->value;
 }
 
@@ -192,7 +199,7 @@ void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::Even
 void TreePlanter::endRun(const edm::Run& run, const edm::EventSetup& setup){
   if(isMC_){
     edm::Handle<GenRunInfoProduct> genRunInfo;
-    run.getByLabel("generator", genRunInfo);
+    run.getByToken(theGenInfoToken, genRunInfo);
     theXSections.push_back(genRunInfo->crossSection());
   }
 }
