@@ -102,6 +102,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
 
   if(isMC_){
     //thePUInfoLabel           = consumes<>(config.getUntrackedParameter<edm::InputTag>("PUInfo"         , edm::InputTag("addPileupInfo")));
+    consumesMany<std::vector< PileupSummaryInfo > >();
     theGenCategoryToken      = consumes<int>                        (config.getUntrackedParameter<edm::InputTag>("GenCategory"    , edm::InputTag("genCategory")));
     theGenCollectionToken    = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("prunedGenParticles")));
     theGenJetCollectionToken = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("genCategory","genJets")));
