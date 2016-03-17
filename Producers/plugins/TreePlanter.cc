@@ -61,15 +61,15 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , postSkimSignalCounter_(0)
   , signalCounter_(0)
   , postSkimSignalEvents_(0)
-  , theMuonLabel     (config.getParameter<edm::InputTag>("muons"    ))
-  , theElectronLabel (config.getParameter<edm::InputTag>("electrons"))
-  , theJetLabel      (config.getParameter<edm::InputTag>("jets"     ))
-  , theVhadLabel     (config.getParameter<edm::InputTag>("Vhad"     ))
-  , theZZLabel       (config.getParameter<edm::InputTag>("ZZ"       ))
-  , theZLLabel       (config.getParameter<edm::InputTag>("ZL"       ))
-  , theMETLabel      (config.getParameter<edm::InputTag>("MET"      ))
-  , theMETNoHFLabel  (config.getParameter<edm::InputTag>("METNoHF"  ))
-  , theVertexLabel   (config.getParameter<edm::InputTag>("Vertices" ))
+  , theMuonToken     (consumes<pat::MuonCollection>                (config.getParameter<edm::InputTag>("muons"    )))
+  , theElectronToken (consumes<pat::ElectronCollection>            (config.getParameter<edm::InputTag>("electrons")))
+  , theJetToken      (consumes<std::vector<pat::Jet> >             (config.getParameter<edm::InputTag>("jets"     )))
+  , theVhadToken     (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("Vhad"     )))
+  , theZZToken       (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZZ"       )))
+  , theZLToken       (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZL"       )))
+  , theMETToken      (consumes<pat::METCollection>                 (config.getParameter<edm::InputTag>("MET"      )))
+  , theMETNoHFToken  (consumes<pat::METCollection>                 (config.getParameter<edm::InputTag>("METNoHF"  )))
+  , theVertexToken   (consumes<std::vector<reco::Vertex> >         (config.getParameter<edm::InputTag>("Vertices" )))
   , sampleName_      (config.getParameter<std::string>("sampleName"))
   , jecFileName_     (config.getParameter<std::string>("JECFileName"))
   , isMC_            (config.getUntrackedParameter<bool>("isMC",false))
@@ -94,15 +94,13 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   theTree = fs->make<TTree>("ElderTree","ElderTree");
 
   if(isMC_){
-    thePUInfoLabel           = config.getUntrackedParameter<edm::InputTag>("PUInfo"         , edm::InputTag("addPileupInfo"));
-    theGenCategoryLabel      = config.getUntrackedParameter<edm::InputTag>("GenCategory"    , edm::InputTag("genCategory"));
-    theGenCollectionLabel    = config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("prunedGenParticles"));
-    theGenJetCollectionLabel = config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("genCategory","genJets"));
-    theGenVBCollectionLabel  = config.getUntrackedParameter<edm::InputTag>("GenVBCollection", edm::InputTag("genCategory","vectorBosons"));
+    //thePUInfoLabel           = consumes<>(config.getUntrackedParameter<edm::InputTag>("PUInfo"         , edm::InputTag("addPileupInfo")));
+    theGenCategoryToken      = consumes<int>                        (config.getUntrackedParameter<edm::InputTag>("GenCategory"    , edm::InputTag("genCategory")));
+    theGenCollectionToken    = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("prunedGenParticles")));
+    theGenJetCollectionToken = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("genCategory","genJets")));
+    theGenVBCollectionToken  = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenVBCollection", edm::InputTag("genCategory","vectorBosons")));
+    theGenInfoToken          = consumes<GenEventInfoProduct>        (edm::InputTag("generator"));
     externalCrossSection_    = config.getUntrackedParameter<double>("XSection",-1);
-
-    genParticleToken = consumes<edm::View<reco::Candidate> >(theGenCollectionLabel);
-    genInfoToken = consumes<GenEventInfoProduct>(edm::InputTag("generator"));
 
   }
    
@@ -296,8 +294,8 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
 
     if(mcHistoryTools_) delete mcHistoryTools_;
 
-    event.getByToken(genParticleToken, genParticles);
-    event.getByToken(genInfoToken, genInfo);
+    event.getByToken(theGenCollectionToken, genParticles);
+    event.getByToken(theGenInfoToken, genInfo);
 
     mcHistoryTools_ = new MCHistoryTools(event, sampleName_, genParticles, genInfo);
     bool gen_ZZ4lInEtaAcceptance   = false; // All 4 gen leptons in eta acceptance
@@ -347,8 +345,8 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   event_     = event.id().event(); 
   lumiBlock_ = event.luminosityBlock();
 
-  edm::Handle<pat::METCollection> met;      event.getByLabel(theMETLabel, met);
-  edm::Handle<pat::METCollection> metNoHF;  event.getByLabel(theMETNoHFLabel, metNoHF);
+  edm::Handle<pat::METCollection> met;      event.getByToken(theMETToken    , met);
+  edm::Handle<pat::METCollection> metNoHF;  event.getByToken(theMETNoHFToken, metNoHF);
 
 
   met_ = phys::Particle(phys::Particle::convert(met->front().p4()));
@@ -357,7 +355,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
  //  Handle<pat::METCollection> metNoHFHandle;
 
 
-  edm::Handle<std::vector<reco::Vertex> > vertices; event.getByLabel(theVertexLabel, vertices);
+  edm::Handle<std::vector<reco::Vertex> > vertices; event.getByToken(theVertexToken, vertices);
   nvtx_ = vertices->size();
     
   if(isMC_){
@@ -375,11 +373,11 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   
     }
     edm::Handle<int> genCategory;
-    event.getByLabel(theGenCategoryLabel, genCategory);
+    event.getByToken(theGenCategoryToken, genCategory);
     genCategory_ = *genCategory;
     if(((genCategory_ ^ signalDefinition_) & signalDefinition_) == 0) ++postSkimSignalEvents_;
 
-    event.getByLabel(theGenVBCollectionLabel,  genParticles);
+    event.getByToken(theGenVBCollectionToken,  genParticles);
     
     for(edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p)
       if(fabs(p->pdgId()) == 24 || p->pdgId() == 23)
@@ -389,7 +387,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     
     // Get the gen jet collection
     edm::Handle<edm::View<reco::Candidate> > genJets;
-    event.getByLabel(theGenJetCollectionLabel,  genJets);
+    event.getByToken(theGenJetCollectionToken,  genJets);
 
     for(edm::View<reco::Candidate>::const_iterator jet = genJets->begin(); jet != genJets->end(); ++jet)
       genJets_.push_back(phys::Particle(jet->p4(), phys::Particle::computeCharge(jet->pdgId()), jet->pdgId()));
@@ -411,12 +409,12 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   //// if (filterController_.channel() == ZL && ???size() != 1) return;
 
   // Load a bunch of objects from the event
-  edm::Handle<pat::MuonCollection>       muons          ; event.getByLabel(theMuonLabel    ,     muons);
-  edm::Handle<pat::ElectronCollection>   electrons      ; event.getByLabel(theElectronLabel, electrons);
-  edm::Handle<std::vector<pat::Jet> >    jets           ; event.getByLabel(theJetLabel     ,      jets);
-  edm::Handle<edm::View<pat::CompositeCandidate> > Vhad ; event.getByLabel(theVhadLabel    ,      Vhad);
-  edm::Handle<edm::View<pat::CompositeCandidate> > ZZ   ; event.getByLabel(theZZLabel      ,        ZZ);
-  edm::Handle<edm::View<pat::CompositeCandidate> > ZL   ; event.getByLabel(theZLLabel      ,        ZL);
+  edm::Handle<pat::MuonCollection>       muons          ; event.getByToken(theMuonToken    ,     muons);
+  edm::Handle<pat::ElectronCollection>   electrons      ; event.getByToken(theElectronToken, electrons);
+  edm::Handle<std::vector<pat::Jet> >    jets           ; event.getByToken(theJetToken     ,      jets);
+  edm::Handle<edm::View<pat::CompositeCandidate> > Vhad ; event.getByToken(theVhadToken    ,      Vhad);
+  edm::Handle<edm::View<pat::CompositeCandidate> > ZZ   ; event.getByToken(theZZToken      ,        ZZ);
+  edm::Handle<edm::View<pat::CompositeCandidate> > ZL   ; event.getByToken(theZLToken      ,        ZL);
   foreach(const pat::Muon& muon, *muons){
     //if(!muon.userFloat("isGood") || muon.userFloat("CombRelIsoPF") >= 4) continue;  // commented because the combination of the two flags is more restrictive than Z.userfloat("goodLeptons"), hence the matching can fail.
     if(!muon.userFloat("isGood")) continue; 
