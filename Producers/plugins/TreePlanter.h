@@ -29,6 +29,7 @@
 #include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 
 #include "ZZAnalysis/AnalysisStep/interface/PUReweight.h"
+#include "DataFormats/PatCandidates/interface/MET.h"
 
 class TTree;
 namespace pat{class Jet;}
@@ -156,24 +157,22 @@ class TreePlanter: public edm::EDAnalyzer {
   std::vector<phys::Particle>               genJets_;
 
   // ------------------- Input Labels ------------------- //
-  edm::InputTag theMuonLabel;
-  edm::InputTag theElectronLabel;
-  edm::InputTag theJetLabel;
-  edm::InputTag theVhadLabel;
-  edm::InputTag theZZLabel;
-  edm::InputTag theZLLabel;
-  edm::InputTag theMETLabel;
-  edm::InputTag theMETNoHFLabel;
-  edm::InputTag theVertexLabel;
-  edm::InputTag thePUInfoLabel;
-  edm::InputTag theGenCategoryLabel;
-  edm::InputTag theGenVBCollectionLabel;
-  edm::InputTag	theGenCollectionLabel;
-  edm::InputTag	theGenJetCollectionLabel;
+  edm::EDGetTokenT<pat::MuonCollection>                 theMuonToken;
+  edm::EDGetTokenT<pat::ElectronCollection>             theElectronToken;
+  edm::EDGetTokenT<std::vector<pat::Jet> >              theJetToken;
+  edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theVhadToken;
+  edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZZToken;
+  edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZLToken;
+  edm::EDGetTokenT<pat::METCollection>                  theMETToken;
+  edm::EDGetTokenT<pat::METCollection>                  theMETNoHFToken;
+  edm::EDGetTokenT<std::vector<reco::Vertex> >          theVertexToken;
 
-  // ------------------- Tokens ------------------------------ //
-  edm::EDGetTokenT<edm::View<reco::Candidate> > genParticleToken;
-  edm::EDGetTokenT<GenEventInfoProduct>         genInfoToken;
+  // thePUInfoLabel;
+  edm::EDGetTokenT<int>                         theGenCategoryToken;
+  edm::EDGetTokenT<edm::View<reco::Candidate> > theGenVBCollectionToken;
+  edm::EDGetTokenT<edm::View<reco::Candidate> >	theGenCollectionToken;
+  edm::EDGetTokenT<edm::View<reco::Candidate> > theGenJetCollectionToken;
+  edm::EDGetTokenT<GenEventInfoProduct>         theGenInfoToken;
 
 
 
