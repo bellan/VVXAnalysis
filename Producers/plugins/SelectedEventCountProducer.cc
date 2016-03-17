@@ -16,6 +16,7 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Utilities/interface/transform.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/Common/interface/MergeableCounter.h"
 #include <DataFormats/Common/interface/TriggerResults.h>
@@ -41,7 +42,13 @@ private:
 
   // ----------member data ---------------------------
   unsigned int eventsProcessedInLumi_;
-  std::vector<std::string> filterNames_;
+  edm::EDGetTokenT<edm::TriggerResults> triggerToken_;
+  
+  typedef std::pair<std::string, edm::EDGetTokenT<bool> > TokenWihtName;
+  typedef std::vector<TokenWihtName> vtoken;
+  /// labels of the collections to be merged
+  vtoken filterNamesToken_;
+ 
 };
 
 using namespace edm;
@@ -49,7 +56,9 @@ using namespace std;
 
 SelectedEventCountProducer::SelectedEventCountProducer(const edm::ParameterSet& iConfig)
   : eventsProcessedInLumi_(0)
-  , filterNames_(iConfig.getParameter<std::vector<std::string> >("names")){
+  , triggerToken_(consumes<edm::TriggerResults>(edm::InputTag("TriggerResults")))
+  , filterNamesToken_( edm::vector_transform(iConfig.template getParameter<std::vector<std::string> >( "names" ), [this](std::string const & tag){return std::make_pair(tag,consumes<bool>(edm::InputTag(tag)));} ) ) 
+{
   
   produces<edm::MergeableCounter, edm::InLumi>();
 }
@@ -60,7 +69,7 @@ void SelectedEventCountProducer::produce(edm::Event& iEvent, const edm::EventSet
   edm::Handle<edm::TriggerResults> triggerResults;
   edm::TriggerNames triggerNames;
   
-  if (iEvent.getByLabel(edm::InputTag("TriggerResults"), triggerResults)) {
+  if (iEvent.getByToken(triggerToken_, triggerResults)) {
     triggerNames = iEvent.triggerNames(*triggerResults);
   } else {
     cout << "ERROR: failed to get TriggerResults" << endl;
@@ -71,14 +80,14 @@ void SelectedEventCountProducer::produce(edm::Event& iEvent, const edm::EventSet
   
   bool passAllRequirements = true;
 
-  foreach(const std::string &filterName, filterNames_){
-    unsigned i = triggerNames.triggerIndex(filterName);
+  foreach(const TokenWihtName &filterNameToken, filterNamesToken_){
+    unsigned i = triggerNames.triggerIndex(filterNameToken.first);
     // Search also if a producer put the result inside the event, insteadof into the trigger results
     edm::Handle<bool> filterResult;
-    bool foundIntoTheEvent = iEvent.getByLabel(filterName, filterResult);
+    bool foundIntoTheEvent = iEvent.getByToken(filterNameToken.second, filterResult);
     
     if (i == triggerNames.size() && !foundIntoTheEvent){
-      cout << "ERROR: SelectedEventCountProducer::isTriggerBit: path does not exist anywhere! " << filterName << endl;
+      cout << "ERROR: SelectedEventCountProducer::isTriggerBit: path does not exist anywhere! " << filterNameToken.first << endl;
       abort();
     }
 

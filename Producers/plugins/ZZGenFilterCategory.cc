@@ -11,6 +11,7 @@
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
 #include <FWCore/ServiceRegistry/interface/Service.h>
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/Utilities/interface/EDGetToken.h"
 #include <CommonTools/UtilAlgos/interface/TFileService.h>
 #include <DataFormats/HepMCCandidate/interface/GenParticle.h>
 #include "DataFormats/JetReco/interface/GenJet.h"
@@ -39,8 +40,8 @@ public:
   ZZGenFilterCategory(const ParameterSet& pset)
     : sel_             (pset.getParameter<int>("Topology"))
     , particleStatus_  (pset.getParameter<int>("ParticleStatus"))
-    , genLabel_        (pset.getParameter<edm::InputTag>("src"))
-    , genJetsLabel_    (pset.getParameter<edm::InputTag>("GenJets"))
+    , genToken_        (consumes<edm::View<reco::Candidate> >(pset.getParameter<edm::InputTag>("src")))
+    , genJetsToken_    (consumes<std::vector<reco::GenJet>  >(pset.getParameter<edm::InputTag>("GenJets")))
   {
     if(particleStatus_ != 1 && particleStatus_ != 3)
       edm::LogError("ZZGenFilterCategory") << "ZZGenFilterCategory: input for signal definition non available!";
@@ -63,8 +64,8 @@ public:
 private:
   int sel_;
   int particleStatus_;
-  edm::InputTag genLabel_;
-  edm::InputTag genJetsLabel_;
+  edm::EDGetTokenT<edm::View<reco::Candidate> > genToken_;
+  edm::EDGetTokenT<std::vector<reco::GenJet>  > genJetsToken_;
 };
 
 void ZZGenFilterCategory::beginJob() {}
@@ -77,7 +78,7 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   
   // Get the collection of gen particles
   edm::Handle<edm::View<reco::Candidate> > genParticles;
-  event.getByLabel(genLabel_, genParticles);
+  event.getByToken(genToken_, genParticles);
   
 
   switch(particleStatus_){
@@ -132,7 +133,7 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
     
     // Get gen jets
     edm::Handle<std::vector<reco::GenJet> > genJetsH;
-    event.getByLabel(genJetsLabel_,  genJetsH);
+    event.getByToken(genJetsToken_,  genJetsH);
     
     foreach(const reco::GenJet& jet, *genJetsH)
       if(jet.pt() > 30 && fabs(jet.eta()) < 4.7)

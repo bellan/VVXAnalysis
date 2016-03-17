@@ -1,5 +1,6 @@
 ////////// Header section /////////////////////////////////////////////
 #include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
@@ -110,7 +111,7 @@ void PdfSystematicsAnalyzerZZ::book(TFileService * fs)
 
 PdfSystematicsAnalyzerZZ::PdfSystematicsAnalyzerZZ(const edm::ParameterSet& pset) :
   //finstate_ (pset.getParameter<int>("FinalState")),
-  filterController_(pset),
+  filterController_(pset, consumesCollector()),
   filterNames_(pset.getParameter<std::vector<std::string> > ("FilterNames")),
   pdfWeightTags_(pset.getUntrackedParameter<std::vector<edm::InputTag> > ("PdfWeightTags")) { 
 

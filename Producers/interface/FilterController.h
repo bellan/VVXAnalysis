@@ -12,6 +12,7 @@
 
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/Framework/interface/ESHandle.h>
+#include "FWCore/Framework/interface/ConsumesCollector.h"
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
 #include <DataFormats/Common/interface/TriggerResults.h>
 #include <FWCore/Common/interface/TriggerNames.h>
@@ -24,7 +25,7 @@ class FilterController {
   typedef std::map<Trigger,bool> TriggerResults;
 
   /// Constructor
-  FilterController(const edm::ParameterSet& pset);
+  FilterController(const edm::ParameterSet& pset,  edm::ConsumesCollector && consumesCollector);
 
   /// Destructor
   virtual ~FilterController(){}
@@ -52,7 +53,7 @@ class FilterController {
   bool passMCFilter(const edm::Event & event);
   
   /// Pass the specified filter
-  bool passFilter(const edm::Event & event, const std::string& filterPath, bool fromHLT=false);
+  bool passFilter(const edm::Event & event, const std::string& filterPath);
 
   bool isMC() const {return isMC_;};
 
@@ -72,10 +73,9 @@ class FilterController {
   std::string MCFilter;
   edm::EventID cachedEvtId;
   edm::Handle<edm::TriggerResults> triggerResults;
-  edm::Handle<edm::TriggerResults> triggerResultsHLT;
   const edm::TriggerNames* triggerNames;
-  const edm::TriggerNames* triggerNamesHLT;
 
+  edm::EDGetTokenT<edm::TriggerResults> triggerToken_;
   void eventInit(const edm::Event & event);
 
 };

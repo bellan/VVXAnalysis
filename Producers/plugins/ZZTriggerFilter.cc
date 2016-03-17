@@ -8,6 +8,7 @@
  */
 
 #include <FWCore/Framework/interface/Frameworkfwd.h>
+#include "FWCore/Framework/interface/ConsumesCollector.h"
 #include <FWCore/Framework/interface/EDFilter.h>
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
@@ -21,9 +22,11 @@ class ZZTriggerFilter : public edm::EDFilter {
 public:
   /// Constructor
   explicit ZZTriggerFilter(const edm::ParameterSet& config) 
-    : filterController_(config)
-    , src_(config.getParameter<edm::InputTag>("src"))
-  {produces<bool>();}
+    : filterController_(config, consumesCollector())
+    , srcToken_(consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("src")))
+  {
+    consumes<edm::TriggerResults>(edm::InputTag("TriggerResults"));
+    produces<bool>();}
   
   /// Destructor
   ~ZZTriggerFilter(){};  
@@ -34,12 +37,12 @@ public:
   
 private:
   FilterController filterController_;
-  edm::InputTag src_;
+  edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > srcToken_;
 };
 
 
 bool ZZTriggerFilter::filter(edm::Event& event, const edm::EventSetup& setup){  
-  edm::Handle<edm::View<pat::CompositeCandidate> > edmVVs   ; event.getByLabel(src_      ,        edmVVs);
+  edm::Handle<edm::View<pat::CompositeCandidate> > edmVVs   ; event.getByToken(srcToken_      ,        edmVVs);
   Short_t triggerWord(0);
   bool passTrigger = filterController_.passTrigger(NONE, event, triggerWord);
 

@@ -32,10 +32,11 @@ namespace pat{
   
   template<class PATObjType>
     pat::CompositeCandidateDecomposer<PATObjType>::CompositeCandidateDecomposer(const edm::ParameterSet & iConfig)
-    : splitLevel_    (iConfig.getParameter<int>("SplitLevel")){
+    : srcToken_(consumes<edm::View<pat::CompositeCandidate> >(iConfig.getParameter<edm::InputTag>("src")))
+    , splitLevel_    (iConfig.getParameter<int>("SplitLevel")){
     
     produces<std::vector<PATObjType> >();
-    srcToken_ = consumes<edm::View<pat::CompositeCandidate> >(iConfig.getParameter<edm::InputTag>("src"));
+    
   }
 
   template <class PATObjType>

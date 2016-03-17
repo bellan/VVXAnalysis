@@ -1,4 +1,5 @@
 #include "VVXAnalysis/Producers/plugins/TreePlanter.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
@@ -43,7 +44,7 @@ using std::endl;
 
 TreePlanter::TreePlanter(const edm::ParameterSet &config)
   : PUWeighter_      ()
-  , filterController_(config)
+  , filterController_(config,consumesCollector())
   , mcHistoryTools_  (0)
   , leptonScaleFactors_(edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_mu_2015.root").fullPath(),
   			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_ele_2015_IdIsoSip.root").fullPath(),

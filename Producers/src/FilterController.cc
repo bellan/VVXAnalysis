@@ -6,13 +6,14 @@
 
 using namespace std;
 
-FilterController::FilterController(const edm::ParameterSet& pset) :
+FilterController::FilterController(const edm::ParameterSet& pset,  edm::ConsumesCollector && consumesCollector) :
   PD(pset.getParameter<std::string>("PD")),
   isMC_(pset.getUntrackedParameter<bool>("isMC")),
   theSetup(pset.getParameter<int>("setup")),
   theSampleType(pset.getParameter<int>("sampleType")),
   skimPaths(pset.getParameter<std::vector<std::string> >("skimPaths")),
-  MCFilter(pset.getParameter<std::string>("MCFilterPath")){
+  MCFilter(pset.getParameter<std::string>("MCFilterPath")),
+  triggerToken_(consumesCollector.consumes<edm::TriggerResults>(edm::InputTag("TriggerResults"))){
   
   // Check for inconsistent configurations
   if ( ( theSampleType!=2011 && theSampleType!=2012 && theSampleType!=2015 ) ||
@@ -41,17 +42,11 @@ void
 FilterController::eventInit(const edm::Event & event) {
   // Initialize trigger results table
   if (event.id()==cachedEvtId) return;
-  if (event.getByLabel(edm::InputTag("TriggerResults"), triggerResults)) {
+  if (event.getByToken(triggerToken_, triggerResults)) {
     triggerNames = &(event.triggerNames(*triggerResults));
   } else {
     cout << "ERROR: failed to get TriggerResults" << endl;
   }
-
-// if (event.getByLabel(InputTag("TriggerResults","","HLT"), triggerResultsHLT)) {
-// triggerNamesHLT = &(event.triggerNames(*triggerResultsHLT));
-// } else {
-// cout << "ERROR: failed to get TriggerResults:HLT" << endl;
-// }
 
   cachedEvtId = event.id();
 }
@@ -153,25 +148,15 @@ FilterController::passTrigger(Channel channel, const short& trigword) const{
 
 
 bool
-FilterController::passFilter(const edm::Event & event, const string& filterPath, bool fromHLT) {
+FilterController::passFilter(const edm::Event & event, const string& filterPath) {
   eventInit(event);
 
-  edm::Handle<edm::TriggerResults> myTriggerResults;
-  const edm::TriggerNames* myTriggerNames = 0;
 
-  if (fromHLT) {
-// myTriggerNames = triggerNamesHLT;
-// myTriggerResults = triggerResultsHLT;
-  } else {
-    myTriggerNames = triggerNames;
-    myTriggerResults = triggerResults;
-  }
-
-  unsigned i = myTriggerNames->triggerIndex(filterPath);
-  if (i== myTriggerNames->size()){
+  unsigned i = triggerNames->triggerIndex(filterPath);
+  if (i== triggerNames->size()){
     cout << "ERROR: FilterController::isTriggerBit: path does not exist! " << filterPath << endl;
     abort();
   }
-  return myTriggerResults->accept(i);
+  return triggerResults->accept(i);
 }
 

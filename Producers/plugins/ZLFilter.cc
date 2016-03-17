@@ -18,9 +18,10 @@ class ZLFilter : public edm::EDFilter {
 public:
   /// Constructor
   explicit ZLFilter(const edm::ParameterSet& config) 
-    : theZLLLabel(config.getParameter<edm::InputTag>("ZLL"))
-    , theZLLabel(config.getParameter<edm::InputTag>("ZL"))
-  {}
+    : theZLLToken(consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZLL")))
+    , theZLToken(consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZL"))){
+
+  }
   
   /// Destructor
   ~ZLFilter(){};  
@@ -30,16 +31,17 @@ public:
   virtual void endJob(){};
   
 private:
-  edm::InputTag theZLLLabel;
-  edm::InputTag theZLLabel;
+
+  edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZLLToken;
+  edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZLToken;
 };
 
 
 bool ZLFilter::filter(edm::Event& event, const edm::EventSetup& setup){  
 
 
-  edm::Handle<edm::View<pat::CompositeCandidate> > ZLL  ; event.getByLabel(theZLLLabel     ,        ZLL);
-  edm::Handle<edm::View<pat::CompositeCandidate> > ZL   ; event.getByLabel(theZLLabel      ,        ZL);
+  edm::Handle<edm::View<pat::CompositeCandidate> > ZLL  ; event.getByToken(theZLLToken, ZLL);
+  edm::Handle<edm::View<pat::CompositeCandidate> > ZL   ; event.getByToken(theZLToken ,  ZL);
 
 
   // at least a ZZ or a ZLL candidate in the event --> want to keep it

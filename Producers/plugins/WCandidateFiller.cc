@@ -44,9 +44,9 @@ class WCandidateFiller : public edm::EDProducer {
 };
 
 
-WCandidateFiller::WCandidateFiller(const edm::ParameterSet& iConfig){
-  produces<pat::CompositeCandidateCollection>();
-  srcToken_ = consumes<edm::View<reco::CompositeCandidate> >(iConfig.getParameter<edm::InputTag>("src"));
+WCandidateFiller::WCandidateFiller(const edm::ParameterSet& iConfig)
+  : srcToken_ (consumes<edm::View<reco::CompositeCandidate> >(iConfig.getParameter<edm::InputTag>("src"))){
+  produces<pat::CompositeCandidateCollection>();  
 }
 
 
