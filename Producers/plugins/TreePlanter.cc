@@ -18,7 +18,6 @@
 #include "DataFormats/JetReco/interface/GenJet.h"
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
-#include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
@@ -108,7 +107,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     theGenJetCollectionToken = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("genCategory","genJets")));
     theGenVBCollectionToken  = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenVBCollection", edm::InputTag("genCategory","vectorBosons")));
     theGenInfoToken          = consumes<GenEventInfoProduct>          (edm::InputTag("generator"));
-    theGenInfoTokenInRun     = consumes<GenEventInfoProduct,edm::InRun>(edm::InputTag("generator"));
+    theGenInfoTokenInRun     = consumes<GenRunInfoProduct,edm::InRun>(edm::InputTag("generator"));
     externalCrossSection_    = config.getUntrackedParameter<double>("XSection",-1);
 
   }

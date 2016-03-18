@@ -20,6 +20,7 @@
 #include "DataFormats/Common/interface/MergeableCounter.h"
 
 #include <SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h>
+#include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
 
 #include "VVXAnalysis/DataFormats/interface/Lepton.h"
 #include "VVXAnalysis/DataFormats/interface/Jet.h"
@@ -174,7 +175,7 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::EDGetTokenT<edm::View<reco::Candidate> >	theGenCollectionToken;
   edm::EDGetTokenT<edm::View<reco::Candidate> > theGenJetCollectionToken;
   edm::EDGetTokenT<GenEventInfoProduct>         theGenInfoToken;
-  edm::EDGetTokenT<GenEventInfoProduct>         theGenInfoTokenInRun;
+  edm::EDGetTokenT<GenRunInfoProduct>         theGenInfoTokenInRun;
 
   // Tokens for counters
   edm::EDGetTokenT<edm::MergeableCounter> thePreSkimCounterToken;
