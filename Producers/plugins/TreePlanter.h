@@ -133,7 +133,7 @@ class TreePlanter: public edm::EDAnalyzer {
   Int_t ntruePUInt_;
 
   phys::Particle  met_;
-  phys::Particle  metNoHF_;
+  //phys::Particle  metNoHF_;
   Int_t           nvtx_;
   
   // ------------------- Objects in the tree ------------------- //
@@ -165,7 +165,7 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZZToken;
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZLToken;
   edm::EDGetTokenT<pat::METCollection>                  theMETToken;
-  edm::EDGetTokenT<pat::METCollection>                  theMETNoHFToken;
+  //edm::EDGetTokenT<pat::METCollection>                  theMETNoHFToken;
   edm::EDGetTokenT<std::vector<reco::Vertex> >          theVertexToken;
 
   // thePUInfoLabel;
@@ -174,6 +174,7 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::EDGetTokenT<edm::View<reco::Candidate> >	theGenCollectionToken;
   edm::EDGetTokenT<edm::View<reco::Candidate> > theGenJetCollectionToken;
   edm::EDGetTokenT<GenEventInfoProduct>         theGenInfoToken;
+  edm::EDGetTokenT<GenEventInfoProduct>         theGenInfoTokenInRun;
 
   // Tokens for counters
   edm::EDGetTokenT<edm::MergeableCounter> thePreSkimCounterToken;

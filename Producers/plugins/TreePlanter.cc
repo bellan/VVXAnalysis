@@ -67,16 +67,16 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theZZToken       (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZZ"       )))
   , theZLToken       (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZL"       )))
   , theMETToken      (consumes<pat::METCollection>                 (config.getParameter<edm::InputTag>("MET"      )))
-  , theMETNoHFToken  (consumes<pat::METCollection>                 (config.getParameter<edm::InputTag>("METNoHF"  )))
+    //, theMETNoHFToken  (consumes<pat::METCollection>                 (config.getParameter<edm::InputTag>("METNoHF"  )))
   , theVertexToken   (consumes<std::vector<reco::Vertex> >         (config.getParameter<edm::InputTag>("Vertices" )))
-  , thePreSkimCounterToken       (consumes<edm::MergeableCounter>(edm::InputTag("preSkimCounter"              )))
-  , prePreselectionCounterToken_ (consumes<edm::MergeableCounter>(edm::InputTag("prePreselectionCounter"      )))
-  , postPreselectionCounterToken_(consumes<edm::MergeableCounter>(edm::InputTag("postPreselectionCounterToken")))
-  , signalCounterToken_          (consumes<edm::MergeableCounter>(edm::InputTag("signalCounterToken"          )))
-  , postSkimSignalCounterToken_  (consumes<edm::MergeableCounter>(edm::InputTag("postSkimSignalCounterToken"  )))
-  , srCounterToken_              (consumes<edm::MergeableCounter>(edm::InputTag("srCounterToken"              )))
-  , cr2P2FCounterToken_          (consumes<edm::MergeableCounter>(edm::InputTag("cr2P2FCounterToken"          )))
-  , cr3P1FCounterToken_          (consumes<edm::MergeableCounter>(edm::InputTag("cr3P1FCounterToken"          )))
+  , thePreSkimCounterToken       (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("preSkimCounter"              )))
+  , prePreselectionCounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("prePreselectionCounter"      )))
+  , postPreselectionCounterToken_(consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("postPreselectionCounterToken")))
+  , signalCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("signalCounterToken"          )))
+  , postSkimSignalCounterToken_  (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("postSkimSignalCounterToken"  )))
+  , srCounterToken_              (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("srCounterToken"              )))
+  , cr2P2FCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("cr2P2FCounterToken"          )))
+  , cr3P1FCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("cr3P1FCounterToken"          )))
   , sampleName_      (config.getParameter<std::string>("sampleName"))
   , jecFileName_     (config.getParameter<std::string>("JECFileName"))
   , isMC_            (config.getUntrackedParameter<bool>("isMC",false))
@@ -107,7 +107,8 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     theGenCollectionToken    = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("prunedGenParticles")));
     theGenJetCollectionToken = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("genCategory","genJets")));
     theGenVBCollectionToken  = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenVBCollection", edm::InputTag("genCategory","vectorBosons")));
-    theGenInfoToken          = consumes<GenEventInfoProduct>        (edm::InputTag("generator"));
+    theGenInfoToken          = consumes<GenEventInfoProduct>          (edm::InputTag("generator"));
+    theGenInfoTokenInRun     = consumes<GenEventInfoProduct,edm::InRun>(edm::InputTag("generator"));
     externalCrossSection_    = config.getUntrackedParameter<double>("XSection",-1);
 
   }
@@ -136,7 +137,7 @@ void TreePlanter::beginJob(){
   theTree->Branch("genCategory" , &genCategory_);
 
   theTree->Branch("met"   , &met_);
-  theTree->Branch("metNoHF"   , &metNoHF_);
+  //theTree->Branch("metNoHF"   , &metNoHF_);
   theTree->Branch("nvtxs" , &nvtx_);
 
   theTree->Branch("muons"     , &muons_);
@@ -200,7 +201,7 @@ void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::Even
 void TreePlanter::endRun(const edm::Run& run, const edm::EventSetup& setup){
   if(isMC_){
     edm::Handle<GenRunInfoProduct> genRunInfo;
-    run.getByToken(theGenInfoToken, genRunInfo);
+    run.getByToken(theGenInfoTokenInRun, genRunInfo);
     theXSections.push_back(genRunInfo->crossSection());
   }
 }
@@ -354,11 +355,11 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   lumiBlock_ = event.luminosityBlock();
 
   edm::Handle<pat::METCollection> met;      event.getByToken(theMETToken    , met);
-  edm::Handle<pat::METCollection> metNoHF;  event.getByToken(theMETNoHFToken, metNoHF);
+  //edm::Handle<pat::METCollection> metNoHF;  event.getByToken(theMETNoHFToken, metNoHF);
 
 
   met_ = phys::Particle(phys::Particle::convert(met->front().p4()));
-  metNoHF_ = phys::Particle(phys::Particle::convert(metNoHF->front().p4()));
+  //metNoHF_ = phys::Particle(phys::Particle::convert(metNoHF->front().p4()));
 
  //  Handle<pat::METCollection> metNoHFHandle;
 
@@ -485,17 +486,15 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
   output.dxy_             = lepton.userFloat("dxy"              );               
   output.dz_              = lepton.userFloat("dz"               );                
   output.sip_             = lepton.userFloat("SIP"              );
-  output.combRelIso_      = lepton.userFloat("combRelIso"       );
   output.pfChargedHadIso_ = lepton.userFloat("PFChargedHadIso"  );
   output.pfNeutralHadIso_ = lepton.userFloat("PFNeutralHadIso"  );
   output.pfPhotonIso_     = lepton.userFloat("PFPhotonIso"      );
   output.pfCombRelIso_    = lepton.userFloat("combRelIsoPF"     );  
   output.pfCombRelIsoFSRCorr_ = lepton.userFloat("combRelIsoPFFSRCorr");
   output.rho_             = lepton.userFloat("rho"              );
-  output.isPF_            = lepton.userFloat("isPFMuon"         );
   output.matchHLT_        = lepton.userFloat("HLTMatch"         );
   output.isGood_          = lepton.userFloat("isGood"           );
-  output.isInCracks_       = lepton.userFloat("isCrack"          );
+  if(abs(lepton.pdgId())  == 11) output.isInCracks_  = lepton.userFloat("isCrack"          );
   std::pair<double,double> effSF = leptonScaleFactors_.efficiencyScaleFactor(output); 
   output.efficiencySF_    = effSF.first;
   output.efficiencySFUnc_ = effSF.second;
@@ -673,15 +672,15 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   
   phys::DiBoson<phys::Lepton,phys::Lepton> VV(V0, V1);
 
-  VV.isBestCand_                = edmVV.userFloat("isBestCand");
-  VV.passFullSel_               = edmVV.userFloat("SR");
-  VV.isBestCRZLLos_2P2F_        = edmVV.userFloat("isBestCRZLLos_2P2F");
-  VV.passSelZLL_2P2F_           = edmVV.userFloat("CRZLLos_2P2F");
-  VV.isBestCRZLLos_3P1F_        = edmVV.userFloat("isBestCRZLLos_3P1F");
-  VV.passSelZLL_3P1F_           = edmVV.userFloat("CRZLLos_3P1F");   
-  VV.passSRZZOnShell_           = edmVV.userFloat("SR_ZZOnShell");
-  VV.passSelZLL_2P2F_ZZOnShell_ = edmVV.userFloat("CRZLLos_2P2F_ZZOnShell");
-  VV.passSelZLL_3P1F_ZZOnShell_ = edmVV.userFloat("CRZLLos_3P1F_ZZOnShell");   
+  VV.isBestCand_                = edmVV.hasUserFloat("isBestCand")             ? edmVV.userFloat("isBestCand")             : false;
+  VV.passFullSel_               = edmVV.hasUserFloat("SR")                     ? edmVV.userFloat("SR")                     : false;
+  VV.isBestCRZLLos_2P2F_        = edmVV.hasUserFloat("isBestCRZLLos_2P2F")     ? edmVV.userFloat("isBestCRZLLos_2P2F")     : false;
+  VV.passSelZLL_2P2F_           = edmVV.hasUserFloat("CRZLLos_2P2F")           ? edmVV.userFloat("CRZLLos_2P2F")           : false;
+  VV.isBestCRZLLos_3P1F_        = edmVV.hasUserFloat("isBestCRZLLos_3P1F")     ? edmVV.userFloat("isBestCRZLLos_3P1F")     : false;
+  VV.passSelZLL_3P1F_           = edmVV.hasUserFloat("CRZLLos_3P1F")           ? edmVV.userFloat("CRZLLos_3P1F")           : false;
+  VV.passSRZZOnShell_           = edmVV.hasUserFloat("SR_ZZOnShell")           ? edmVV.userFloat("SR_ZZOnShell")           : false;
+  VV.passSelZLL_2P2F_ZZOnShell_ = edmVV.hasUserFloat("CRZLLos_2P2F_ZZOnShell") ? edmVV.userFloat("CRZLLos_2P2F_ZZOnShell") : false;
+  VV.passSelZLL_3P1F_ZZOnShell_ = edmVV.hasUserFloat("CRZLLos_3P1F_ZZOnShell") ? edmVV.userFloat("CRZLLos_3P1F_ZZOnShell") : false;   
   VV.regionWord_  = regionWord;
   VV.triggerWord_ = triggerWord_;
   VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
@@ -792,17 +791,17 @@ std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > TreePlanter::fi
 int TreePlanter::computeRegionFlag(const pat::CompositeCandidate & vv) const{
   int REGIONFLAG=0;
   
-  if(vv.userFloat("isBestCand") && vv.userFloat("SR"))
+  if(vv.hasUserFloat("isBestCand") && vv.hasUserFloat("SR") && vv.userFloat("isBestCand") && vv.userFloat("SR"))
     set_bit(REGIONFLAG,ZZ);
-  if(vv.userFloat("isBestCRZLLos_2P2F") && vv.userFloat("CRZLLos_2P2F"))
+  if(vv.hasUserFloat("isBestCRZLLos_2P2F") && vv.hasUserFloat("CRZLLos_2P2F") && vv.userFloat("isBestCRZLLos_2P2F") && vv.userFloat("CRZLLos_2P2F"))
     set_bit(REGIONFLAG,CRZLLos_2P2F);
-  if(vv.userFloat("isBestCRZLLos_3P1F") && vv.userFloat("CRZLLos_3P1F"))
+  if(vv.hasUserFloat("isBestCRZLLos_3P1F") && vv.hasUserFloat("CRZLLos_3P1F") && vv.userFloat("isBestCRZLLos_3P1F") && vv.userFloat("CRZLLos_3P1F"))
     set_bit(REGIONFLAG,CRZLLos_3P1F);
-  if(vv.userFloat("isBestCand") && vv.userFloat("SR_ZZOnShell"))
+  if(vv.hasUserFloat("isBestCand") && vv.hasUserFloat("SR_ZZOnShell") && vv.userFloat("isBestCand") && vv.userFloat("SR_ZZOnShell"))
     set_bit(REGIONFLAG,ZZOnShell);
-  if(vv.userFloat("isBestCRZLLos_2P2F") && vv.userFloat("CRZLLos_2P2F_ZZOnShell"))
+  if(vv.hasUserFloat("isBestCRZLLos_2P2F") && vv.hasUserFloat("CRZLLos_2P2F_ZZOnShell") && vv.userFloat("isBestCRZLLos_2P2F") && vv.userFloat("CRZLLos_2P2F_ZZOnShell"))
     set_bit(REGIONFLAG,CRZLLos_2P2F_ZZOnShell);
-  if(vv.userFloat("isBestCRZLLos_3P1F") && vv.userFloat("CRZLLos_3P1F_ZZOnShell"))
+  if(vv.hasUserFloat("isBestCRZLLos_3P1F") && vv.hasUserFloat("CRZLLos_3P1F_ZZOnShell") && vv.userFloat("isBestCRZLLos_3P1F") && vv.userFloat("CRZLLos_3P1F_ZZOnShell"))
     set_bit(REGIONFLAG,CRZLLos_3P1F_ZZOnShell);
 
 
