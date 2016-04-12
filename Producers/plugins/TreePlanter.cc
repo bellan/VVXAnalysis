@@ -16,6 +16,7 @@
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/Common/interface/Ptr.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
+#include <DataFormats/PatCandidates/interface/PFParticle.h>
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
@@ -624,7 +625,8 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
   // Add FSR
   for(unsigned int i = 2; i < v.numberOfDaughters(); ++i){
     phys::Particle photon(phys::Particle::convert(v.daughter(i)->p4()), 0, 22);
-    physV.addFSR(v.userFloat("leptIdx"), photon);
+    const pat::PFParticle* fsr = dynamic_cast<const pat::PFParticle*>(v.daughter(i));
+    physV.addFSR(fsr->userFloat("leptIdx"), photon);
   }
   
   // Add quality of daughters, right now only for ll pairs
