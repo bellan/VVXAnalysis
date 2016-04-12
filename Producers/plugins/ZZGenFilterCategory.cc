@@ -103,15 +103,17 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 	}
 
 	int id   = abs(p->pdgId());
+	if(id == 22)
+	  genPhotons.push_back(phys::convert(*p)); 
 
-	if((id == 11 || id == 13) && gp->isPromptFinalState() ) {
-	  bool fromTau = false;
+
+	if((id == 11 || id == 13) &&  (gp->fromHardProcessFinalState())){
+  	  bool fromTau = false;
 	  for(unsigned int i = 0; i < p->numberOfMothers(); ++i)
 	    if(abs(p->mother(i)->pdgId() == 15)) fromTau = true;
 	  if(!fromTau)  genLeptons.push_back(phys::convert(*p,gp->statusFlags().flags_)); } // leptons     
 	  // if(!fromTau)  genLeptons.push_back(phys::convert(newp)); } // leptons     
-	if( id == 22)
-	  genPhotons.push_back(phys::convert(*p)); 
+	
       }
       if (false && p->status() == 3){
 	int id   = abs(p->pdgId());     
@@ -120,9 +122,9 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
       }
     }
     
-    //foreach(phys::Particle &lep, genLeptons)
-    //  foreach(const phys::Particle &pho, genPhotons)
-    //  if(reco::deltaR(lep,pho) < 0.1) lep.setP4(lep.p4()+pho.p4()); // update iteratively, so if there is more than one photon to be associated it will mange it
+    foreach(phys::Particle &lep, genLeptons)
+      foreach(const phys::Particle &pho, genPhotons)
+      if(reco::deltaR(lep,pho) < 0.1) lep.setP4(lep.p4()+pho.p4()); // update iteratively, so if there is more than one photon to be associated it will mange it
                                                                     // Note: right no it does not look at the order in which the photons are added, so there could be some
                                                                     // imperfection in the association. One way to overcome this would be to add the nearest one first.
     
