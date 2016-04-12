@@ -36,9 +36,6 @@
 class TTree;
 namespace pat{class Jet;}
 class MCHistoryTools;
-class JetCorrectionUncertainty;
-//class JetCorrectorParameters;
-//class SimpleJetResolution;
 
 class TreePlanter: public edm::EDAnalyzer {
   
@@ -107,8 +104,6 @@ class TreePlanter: public edm::EDAnalyzer {
   // To get Lepton efficiency scale factors. Temporary here!
   LeptonScaleFactors leptonScaleFactors_;
   Int_t signalDefinition_;
-  //JetCorrectorParameters *jetCorrectorParameters_;
-  //SimpleJetResolution    *jetResolution_;
 
   // ------------------- Event info in the tree ------------------- //
   Int_t event_;
@@ -199,8 +194,6 @@ class TreePlanter: public edm::EDAnalyzer {
   bool applyTrigger_;
   bool applySkim_;
   bool applyMCSel_;
-
-  JetCorrectionUncertainty *JES_;
 
   std::vector<double> theXSections;
   double externalCrossSection_;

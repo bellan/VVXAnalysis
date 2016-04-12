@@ -131,8 +131,8 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
 
     //cout << jet.uncOnFourVectorScale() << endl;
 
-    newJetPtJES_up = newJetPtJER*(1+jet.uncOnFourVectorScale());
-    newJetPtJES_down = newJetPtJER*(1-jet.uncOnFourVectorScale());
+    newJetPtJES_up = newJetPtJER*(1+jet.jecUncertainty());
+    newJetPtJES_down = newJetPtJER*(1-jet.jecUncertainty());
   
     if(newJetPtJES_up > 30) UpJES_jets->push_back(jet); 
     if(newJetPtJES_down > 30) DownJES_jets->push_back(jet);

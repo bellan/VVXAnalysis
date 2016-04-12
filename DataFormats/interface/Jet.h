@@ -44,8 +44,9 @@ namespace phys {
       , secvtxMass_(-9999.)
       , Lxy_(-9999.)
       , LxyErr_(-9999.)
+      , qgLikelihood_ (-99.)
       , rawFactor_(-9999.)
-      , uncOnFourVectorScale_(-9999.)
+      , jecUnc_(-9999.)
       , puMVAFull_(-9999.)
       , puMVASimple_(-9999.)
       , puCutBased_(-9999.)
@@ -101,7 +102,7 @@ namespace phys {
     Double_t rawFactor()     const {return rawFactor_;}
     
     // Uncertainty on four vector energy scale
-    Double_t uncOnFourVectorScale() const {return  uncOnFourVectorScale_;}
+    Double_t jecUncertainty() const {return  jecUnc_;}
 
     // JER
     Double_t sigma_MC()  const {return sigma_MC_;}
@@ -169,7 +170,8 @@ namespace phys {
       return passPU;
     }
 
-    
+    Double_t qgLikelihood() const {return qgLikelihood_;}
+
   protected:
     
   private:
@@ -203,12 +205,14 @@ namespace phys {
     Double_t secvtxMass_;
     Double_t Lxy_;
     Double_t LxyErr_;
+
+    Double_t qgLikelihood_;
       
     // return a correction factor that can be applied to the jet energy or pT to bring it back to the uncorrected value
     Double_t rawFactor_;
     
     // Uncertainty on four vector energy scale
-    Double_t uncOnFourVectorScale_;
+    Double_t jecUnc_;
 
     // PU ID:
     Double_t puMVAFull_;

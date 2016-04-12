@@ -2,29 +2,7 @@
 ### Based on ZZ->4l strategy.
 ###----------------------------------------------------------------------
 
-LEPTON_SETUP = 2015
-#PD = ""
-#MCFILTER = ""
-ELECORRTYPE   = "None" # "None", "Moriond", or "Paper"
-ELEREGRESSION = "None" # "None", "Moriond", "PaperNoComb", or "Paper" 
-APPLYMUCORR = False # ??? FIXME
-
 SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the chosen windows. For other topology see the README under VVXAnalysis/Commons.
-
-try:
-    IsMC
-except NameError:
-    IsMC = True
-
-try:
-    LEPTON_SETUP
-except NameError:
-    LEPTON_SETUP = 2015
-
-try:
-    JET_SETUP
-except NameError:
-    JET_SETUP = 2012 # define the MVA for the jet PU Id
 
 try:
     PD
@@ -32,20 +10,21 @@ except NameError:
     PD = ""             # "" for MC, "DoubleEle", "DoubleMu", or "MuEG" for data 
 
 try:
+    XSEC
+except NameError:
+    XSEC = -1
+
+
+try:
     MCFILTER
 except NameError:
     MCFILTER = ""
 
-try:
-    XSEC
-except NameError:
-    XSEC = -1
 
 try:
     SKIM_REQUIRED
 except NameError:
     SKIM_REQUIRED = True
-
 
 
 # Get absolute path
@@ -174,13 +153,12 @@ process.postCleaningElectrons = cms.EDProducer("PATElectronCleaner",
 
 ## FIXME: Logic need to be recheck as of new FSR strategy has been implemented
 process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
-                                           Setup                = cms.int32(JET_SETUP),
                                            JetPreselection      = cms.string("pt > 10"),
                                            DiBosonPreselection  = cms.string(""),
                                            MuonPreselection     = cms.string(""),
                                            ElectronPreselection = cms.string(""),
                                            MatchingType         = cms.string("byDeltaR"), 
-                                           Jets      = cms.InputTag("slimmedJets"),
+                                           Jets      = cms.InputTag("dressedJets"),
                                            Muons     = cms.InputTag("postCleaningMuons"),
                                            Electrons = cms.InputTag("postCleaningElectrons"),
                                            Diboson   = cms.InputTag("ZZFiltered"),

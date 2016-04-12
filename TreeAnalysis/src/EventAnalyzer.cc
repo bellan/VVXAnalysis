@@ -383,7 +383,7 @@ void EventAnalyzer::fillJetPlots(const std::string &type, const phys::Jet      &
   theHistograms.fill(type+"_LxyErr"       ,  50,  0, 1.5 , jet.LxyErr       (), theWeight);
   theHistograms.fill(type+"_rawFactor"    ,  50,  0, 2.5 , jet.rawFactor    (), theWeight);
 
-  theHistograms.fill(type+"_uncOnFourVectorScale", 50, 0, 0.1, jet.uncOnFourVectorScale(), theWeight);
+  theHistograms.fill(type+"_uncOnFourVectorScale", 50, 0, 0.1, jet.jecUncertainty(), theWeight);
   theHistograms.fill(type+"_puMVAFull"  , 100, -1, 1, jet.puMVAFull  (), theWeight);
   theHistograms.fill(type+"_puMVASimple", 100, -1, 1, jet.puMVASimple(), theWeight);
   theHistograms.fill(type+"_puCutBased" , 100, -1, 1, jet.puCutBased (), theWeight); // void??

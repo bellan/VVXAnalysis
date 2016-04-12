@@ -6,7 +6,6 @@
 #include "FWCore/Framework/interface/Run.h"
 #include "FWCore/Common/interface/TriggerNames.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
-#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/Math/interface/deltaR.h"
@@ -115,9 +114,6 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
    
   skimPaths_ = config.getParameter<std::vector<std::string> >("skimPaths");
 
-  JES_ = new JetCorrectionUncertainty(edm::FileInPath(jecFileName_).fullPath());
-  //jetCorrectorParameters_ = new JetCorrectorParameters(edm::FileInPath("CondFormats/JetMETObjects/data/JetResolutionInputAK5PFCHS.txt").fullPath());
-  //JER__ = new  SimpleJetResolution(*jetCorrectorParameters_);
 
   initTree();
 }
@@ -208,11 +204,8 @@ void TreePlanter::endRun(const edm::Run& run, const edm::EventSetup& setup){
 
 void TreePlanter::endJob(){
 
-  //if(jetCorrectorParameters_) delete jetCorrectorParameters_;
-  //if(JER_) delete JER_;
 
   if(mcHistoryTools_) delete mcHistoryTools_;
-  if(JES_) delete JES_;
 
   edm::Service<TFileService> fs;
   TTree *countTree = fs->make<TTree>("HollyTree","HollyTree");
@@ -529,7 +522,8 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   output.neutralEmEnergyFraction_     = jet.neutralEmEnergyFraction();  
   output.muonEnergyFraction_          = jet.muonEnergyFraction();        
   
-  if(jet.hasUserFloat("combinedInclusiveSecondaryVertexV2BJetTags")) output.csvtagger_               = jet.bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags");
+  output.csvtagger_ = jet.userFloat("bTagger");
+  output.qgLikelihood_ = jet.userFloat("qgLikelihood");
 
 
   //girth - See http://arxiv.org/abs/1106.3076v2 - eqn (2)
@@ -555,20 +549,18 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   output.ptd_ = sqrt( sumpt2 ) / sumpt; 
   
   output.jetArea_                 = jet.jetArea();
-  if(jet.hasUserFloat("vtxMass")) output.secvtxMass_ = jet.userFloat("vtxMass");
-  if(jet.hasUserFloat("Lxy") )    output.Lxy_        = jet.userFloat("Lxy");
-  if(jet.hasUserFloat("LxyErr") ) output.LxyErr_      = jet.userFloat("LxyErr"); 
+  output.secvtxMass_ = jet.userFloat("vtxMass");
+  output.Lxy_        = jet.userFloat("Lxy");
+  output.LxyErr_      = jet.userFloat("LxyErr"); 
   
-  if(jet.hasUserFloat("pileupJetId:fullDiscriminant")) output.puMVAFull_ = jet.userFloat("pileupJetId:fullDiscriminant");
+  output.puMVAFull_ = jet.userFloat("pileupJetId:fullDiscriminant");
   
   output.mcPartonFlavour_ = jet.partonFlavour();
   
   // JEC
   output.rawFactor_               = jet.jecFactor(0);
   // JES
-  JES_->setJetEta(jet.eta());
-  JES_->setJetPt(jet.pt());
-  output.uncOnFourVectorScale_    = JES_->getUncertainty(true);
+  output.jecUnc_    = jet.userFloat("jec_unc");
 
   // JER
   // if(isMC_){
@@ -576,17 +568,23 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   //   fx.push_back(output.eta()); // Jet Eta
   //   fY.push_back(output.pt());  // Jet PT
   //   fY.push_back(ntruePUInt_);  // Number of truth pileup
-  //   output.sigma_MC_ = JER_->resolution(fx,fY);
-    
-  //   // From: https://twiki.cern.ch/twiki/bin/view/CMS/JetResolution 8 TeV numbers!!! To be fixed!
-  //   if      (abs(output.eta()) < 0.5) {output.jer_c_ = 1.079; output.jer_cdown_ = 1.053; output.jer_cup_ = 1.105;}
-  //   else if (abs(output.eta()) < 1.1) {output.jer_c_ = 1.099; output.jer_cdown_ = 1.071; output.jer_cup_ = 1.127;}
-  //   else if (abs(output.eta()) < 1.7) {output.jer_c_ = 1.121; output.jer_cdown_ = 1.092; output.jer_cup_ = 1.150;}
-  //   else if (abs(output.eta()) < 2.3) {output.jer_c_ = 1.208; output.jer_cdown_ = 1.162; output.jer_cup_ = 1.254;}
-  //   else if (abs(output.eta()) < 2.8) {output.jer_c_ = 1.254; output.jer_cdown_ = 1.192; output.jer_cup_ = 1.316;}
-  //   else if (abs(output.eta()) < 3.2) {output.jer_c_ = 1.395; output.jer_cdown_ = 1.332; output.jer_cup_ = 1.458;}
-  //   else if (abs(output.eta()) < 5.0) {output.jer_c_ = 1.056; output.jer_cdown_ = 0.865; output.jer_cup_ = 1.247;}
-  // }
+  //    output.sigma_MC_ = JER_->resolution(fx,fY);
+     
+  //    // From: https://twiki.cern.ch/twiki/bin/view/CMS/JetResolution 8 TeV numbers!!! To be fixed!
+  //    if      (abs(output.eta()) < 0.5) {output.jer_ = 1.095; output.jerUnc_ = 0.018;}
+  //    else if (abs(output.eta()) < 0.8) {output.jer_ = 1.120; output.jerUnc_ = 0.028;}
+  //    else if (abs(output.eta()) < 1.1) {output.jer_ = 1.097; output.jerUnc_ = 0.017;}
+  //    else if (abs(output.eta()) < 1.3) {output.jer_ = 1.103; output.jerUnc_ = 0.033;}
+  //    else if (abs(output.eta()) < 1.7) {output.jer_ = 1.118; output.jerUnc_ = 0.014;}
+  //    else if (abs(output.eta()) < 1.9) {output.jer_ = 1.100; output.jerUnc_ = 0.033;}
+  //    else if (abs(output.eta()) < 2.1) {output.jer_ = 1.162; output.jerUnc_ = 0.044;}
+  //    else if (abs(output.eta()) < 2.3) {output.jer_ = 1.160; output.jerUnc_ = 0.048;}
+  //    else if (abs(output.eta()) < 2.5) {output.jer_ = 1.161; output.jerUnc_ = 0.060;}
+  //    else if (abs(output.eta()) < 2.8) {output.jer_ = 1.209; output.jerUnc_ = 0.059;}
+  //    else if (abs(output.eta()) < 3.0) {output.jer_ = 1.564; output.jerUnc_ = 0.321;}
+  //    else if (abs(output.eta()) < 3.2) {output.jer_ = 1.384; output.jerUnc_ = 0.033;}
+  //    else if (abs(output.eta()) < 5.0) {output.jer_ = 1.216; output.jerUnc_ = 0.050;}
+  //  }
 
 
   // To be removed (also the memebers in jet class
