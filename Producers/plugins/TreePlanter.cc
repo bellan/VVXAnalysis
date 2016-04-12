@@ -686,7 +686,6 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   VV.triggerWord_ = triggerWord_;
   VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
   
-  if(  VV.passSelZLL_2P2F_  ||   VV.passSelZLL_3P1F_  )  std::cout<<"fr "<<VV.fakeRateSF()<<" + "<<VV.fakeRateSFUncHigh()<<" lep 3 pt "<<VV.second().daughter(0).pt()<<" lep 4 pt "<<VV.second().daughter(1).pt()<<std::endl;
   return VV;
 }
 
