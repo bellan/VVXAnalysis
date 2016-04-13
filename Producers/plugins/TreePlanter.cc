@@ -432,6 +432,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   // Fill Z+l pairs for fake rate measurements
   ZL_ = fillZLCandidates(ZL);
 
+  // FIXME
   if(ZZ->size() > 1) {
     cout << "----------------------------------------------------" << endl;
     cout << "More than one ZZ candidate!! " << ZZ->size() << endl;  
@@ -499,8 +500,8 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   phys::Jet output(phys::Particle::convert(jet.p4()),jet.charge(),1);
   
   output.nConstituents_ = jet.numberOfDaughters();
-  output.nCharged_ = jet.chargedMultiplicity();
-  output.nNeutral_ = jet.neutralMultiplicity();
+  output.nCharged_      = jet.chargedMultiplicity();
+  output.nNeutral_      = jet.neutralMultiplicity();
     
   output.neutralHadronEnergyFraction_ = jet.neutralHadronEnergyFraction();
   output.chargedHadronEnergyFraction_ = jet.chargedHadronEnergyFraction();
@@ -508,7 +509,7 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   output.neutralEmEnergyFraction_     = jet.neutralEmEnergyFraction();  
   output.muonEnergyFraction_          = jet.muonEnergyFraction();        
   
-  output.csvtagger_ = jet.userFloat("bTagger");
+  output.csvtagger_    = jet.userFloat("bTagger");
   output.qgLikelihood_ = jet.userFloat("qgLikelihood");
 
 
@@ -534,13 +535,13 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   //end girth
   output.ptd_ = sqrt( sumpt2 ) / sumpt; 
   
-  output.jetArea_                 = jet.jetArea();
+  output.jetArea_    = jet.jetArea();
   output.secvtxMass_ = jet.userFloat("vtxMass");
   
   output.mcPartonFlavour_ = jet.partonFlavour();
   
   // JEC
-  output.rawFactor_               = jet.jecFactor(0);
+  output.rawFactor_ = jet.jecFactor(0);
   // JES
   output.jecUnc_    = jet.userFloat("jec_unc");
 
@@ -705,10 +706,8 @@ std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > TreePlanter::fillDiBosons
     }
     else {cout << "TreePlanter: unexpected diboson final state: " << rawchannel << " ... going to abort.. " << endl; abort();}
     
-    if(physVV.isValid()){
-      physDiBosons.push_back(physVV);
-      //std::cout<<"SF diboson "<<physVV.efficiencySF()<<" "<<physVV.efficiencySFUnc()<<std::endl; //Fixme
-    }
+    if(physVV.isValid()) physDiBosons.push_back(physVV);
+    
   }
 
 
@@ -754,13 +753,13 @@ std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > TreePlanter::fi
 int TreePlanter::computeRegionFlag(const pat::CompositeCandidate & vv) const{
   int REGIONFLAG=0;
   
-  if(vv.hasUserFloat("isBestCand") && vv.hasUserFloat("SR") && vv.userFloat("isBestCand") && vv.userFloat("SR"))
+  if(vv.hasUserFloat("isBestCand")         && vv.hasUserFloat("SR")                     && vv.userFloat("isBestCand")         && vv.userFloat("SR"))
     set_bit(REGIONFLAG,ZZ);
-  if(vv.hasUserFloat("isBestCRZLLos_2P2F") && vv.hasUserFloat("CRZLLos_2P2F") && vv.userFloat("isBestCRZLLos_2P2F") && vv.userFloat("CRZLLos_2P2F"))
+  if(vv.hasUserFloat("isBestCRZLLos_2P2F") && vv.hasUserFloat("CRZLLos_2P2F")           && vv.userFloat("isBestCRZLLos_2P2F") && vv.userFloat("CRZLLos_2P2F"))
     set_bit(REGIONFLAG,CRZLLos_2P2F);
-  if(vv.hasUserFloat("isBestCRZLLos_3P1F") && vv.hasUserFloat("CRZLLos_3P1F") && vv.userFloat("isBestCRZLLos_3P1F") && vv.userFloat("CRZLLos_3P1F"))
+  if(vv.hasUserFloat("isBestCRZLLos_3P1F") && vv.hasUserFloat("CRZLLos_3P1F")           && vv.userFloat("isBestCRZLLos_3P1F") && vv.userFloat("CRZLLos_3P1F"))
     set_bit(REGIONFLAG,CRZLLos_3P1F);
-  if(vv.hasUserFloat("isBestCand") && vv.hasUserFloat("SR_ZZOnShell") && vv.userFloat("isBestCand") && vv.userFloat("SR_ZZOnShell"))
+  if(vv.hasUserFloat("isBestCand")         && vv.hasUserFloat("SR_ZZOnShell")           && vv.userFloat("isBestCand")         && vv.userFloat("SR_ZZOnShell"))
     set_bit(REGIONFLAG,ZZOnShell);
   if(vv.hasUserFloat("isBestCRZLLos_2P2F") && vv.hasUserFloat("CRZLLos_2P2F_ZZOnShell") && vv.userFloat("isBestCRZLLos_2P2F") && vv.userFloat("CRZLLos_2P2F_ZZOnShell"))
     set_bit(REGIONFLAG,CRZLLos_2P2F_ZZOnShell);
