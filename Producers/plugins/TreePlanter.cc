@@ -66,7 +66,6 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theZZToken       (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZZ"       )))
   , theZLToken       (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZL"       )))
   , theMETToken      (consumes<pat::METCollection>                 (config.getParameter<edm::InputTag>("MET"      )))
-    //, theMETNoHFToken  (consumes<pat::METCollection>                 (config.getParameter<edm::InputTag>("METNoHF"  )))
   , theVertexToken   (consumes<std::vector<reco::Vertex> >         (config.getParameter<edm::InputTag>("Vertices" )))
   , thePreSkimCounterToken       (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("preSkimCounter"              )))
   , prePreselectionCounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("prePreselectionCounter"      )))
@@ -77,7 +76,6 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , cr2P2FCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("cr2P2FCounterToken"          )))
   , cr3P1FCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("cr3P1FCounterToken"          )))
   , sampleName_      (config.getParameter<std::string>("sampleName"))
-  , jecFileName_     (config.getParameter<std::string>("JECFileName"))
   , isMC_            (config.getUntrackedParameter<bool>("isMC",false))
   , sampleType_      (config.getParameter<int>("sampleType"))
   , setup_           (config.getParameter<int>("setup"))
@@ -100,7 +98,6 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   theTree = fs->make<TTree>("ElderTree","ElderTree");
 
   if(isMC_){
-    //thePUInfoLabel           = consumes<>(config.getUntrackedParameter<edm::InputTag>("PUInfo"         , edm::InputTag("addPileupInfo")));
     consumesMany<std::vector< PileupSummaryInfo > >();
     theGenCategoryToken      = consumes<int>                        (config.getUntrackedParameter<edm::InputTag>("GenCategory"    , edm::InputTag("genCategory")));
     theGenCollectionToken    = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("prunedGenParticles")));
@@ -310,8 +307,6 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     event.getManyByType(PupInfos);
     edm::Handle<std::vector< PileupSummaryInfo > > puInfo = PupInfos.front(); 
 
-
-    //edm::Handle<std::vector<PileupSummaryInfo> > puInfo; event.getByLabel(thePUInfoLabel, puInfo);
     foreach(const PileupSummaryInfo& pui, *puInfo)
       if(pui.getBunchCrossing() == 0) { 
 	nobservedPUInt_  = pui.getPU_NumInteractions();
@@ -348,13 +343,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   lumiBlock_ = event.luminosityBlock();
 
   edm::Handle<pat::METCollection> met;      event.getByToken(theMETToken    , met);
-  //edm::Handle<pat::METCollection> metNoHF;  event.getByToken(theMETNoHFToken, metNoHF);
-
-
   met_ = phys::Particle(phys::Particle::convert(met->front().p4()));
-  //metNoHF_ = phys::Particle(phys::Particle::convert(metNoHF->front().p4()));
-
- //  Handle<pat::METCollection> metNoHFHandle;
 
 
   edm::Handle<std::vector<reco::Vertex> > vertices; event.getByToken(theVertexToken, vertices);
@@ -405,11 +394,6 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   if(!goodEvent) return;
   ++theNumberOfAnalyzedEvents;
 
-  //  std::cout<<"new ev"<<std::endl;
-
-  //// For Z+L CRs, we want only events with exactly 1 Z+l candidate.
-  //// if (filterController_.channel() == ZL && ???size() != 1) return;
-
   // Load a bunch of objects from the event
   edm::Handle<pat::MuonCollection>       muons          ; event.getByToken(theMuonToken    ,     muons);
   edm::Handle<pat::ElectronCollection>   electrons      ; event.getByToken(theElectronToken, electrons);
@@ -417,19 +401,21 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   edm::Handle<edm::View<pat::CompositeCandidate> > Vhad ; event.getByToken(theVhadToken    ,      Vhad);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZZ   ; event.getByToken(theZZToken      ,        ZZ);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZL   ; event.getByToken(theZLToken      ,        ZL);
+
+
+  // No further selection on muons, all is made in the .py file
   foreach(const pat::Muon& muon, *muons){
-    //if(!muon.userFloat("isGood") || muon.userFloat("CombRelIsoPF") >= 4) continue;  // commented because the combination of the two flags is more restrictive than Z.userfloat("goodLeptons"), hence the matching can fail.
-    if(!muon.userFloat("isGood")) continue; 
     phys::Lepton physmuon = fill(muon);
     muons_.push_back(physmuon);
   }
 
+  // No further selection on electrons, all is made in the .py file
   foreach(const pat::Electron& electron, *electrons){
-    //if(!electron.userFloat("isGood") || electron.userFloat("CombRelIsoPF") >= 4) continue; 
-    if(!electron.userFloat("isGood")) continue; 
     phys::Lepton physelectron =  fill(electron);
     electrons_.push_back(physelectron);
   }
+
+  // No further selection on jets, all is made in the .py file
   foreach(const pat::Jet& jet, *jets){
     phys::Jet physjet = fill(jet);
     jets_.push_back(physjet);

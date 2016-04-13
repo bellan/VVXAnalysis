@@ -351,7 +351,6 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      MCFilterPath = cms.string(MCFILTER),
                                      isMC         = cms.untracked.bool(IsMC),
                                      signalDefinition = cms.int32(SIGNALDEFINITION),
-                                     JECFileName  = cms.string("VVXAnalysis/Producers/test/Winter14_V5_DATA_Uncertainty_AK5PF.txt"),
                                      muons        = cms.InputTag("postCleaningMuons"),     # all good isolated muons BUT the ones coming from ZZ decay
                                      electrons    = cms.InputTag("postCleaningElectrons"), # all good isolated electrons BUT the ones coming from ZZ decay
                                      jets         = cms.InputTag("disambiguatedJets"),     # jets which do not contains leptons from ZZ or other good isolated leptons are removed
@@ -359,7 +358,6 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      ZZ           = cms.InputTag("ZZFiltered"),            # only the best ZZ->4l candidate that pass the FULL selection
                                      ZL           = cms.InputTag("ZlCand"),
                                      MET          = cms.InputTag("slimmedMETs"),
-                                     METNoHF      = cms.InputTag("slimmedMETsNoHF"),
                                      Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
                                      XSection     = cms.untracked.double(XSEC)
                                      )
