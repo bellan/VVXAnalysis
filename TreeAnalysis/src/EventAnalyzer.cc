@@ -375,30 +375,11 @@ void EventAnalyzer::fillJetPlots(const std::string &type, const phys::Jet      &
   theHistograms.fill(type+"_girth"        , 200,  0, 1   , jet.girth        (), theWeight);
   theHistograms.fill(type+"_girth_charged", 200,  0, 1   , jet.girth_charged(), theWeight);
   theHistograms.fill(type+"_ptd"          , 100,  0, 1   , jet.ptd          (), theWeight);
-  theHistograms.fill(type+"_rms"          ,  50,  0, 0.15, jet.rms          (), theWeight);
-  theHistograms.fill(type+"_beta"         ,  50,  0, 1   , jet.beta         (), theWeight);
   theHistograms.fill(type+"_jetArea"      ,  60,  0, 1.2 , jet.jetArea      (), theWeight);
   theHistograms.fill(type+"_secvtxMass"   ,  50,  0, 5   , jet.secvtxMass   (), theWeight);
-  theHistograms.fill(type+"_Lxy"          ,  50,  0, 10  , jet.Lxy          (), theWeight);
-  theHistograms.fill(type+"_LxyErr"       ,  50,  0, 1.5 , jet.LxyErr       (), theWeight);
   theHistograms.fill(type+"_rawFactor"    ,  50,  0, 2.5 , jet.rawFactor    (), theWeight);
 
-  theHistograms.fill(type+"_uncOnFourVectorScale", 50, 0, 0.1, jet.jecUncertainty(), theWeight);
-  theHistograms.fill(type+"_puMVAFull"  , 100, -1, 1, jet.puMVAFull  (), theWeight);
-  theHistograms.fill(type+"_puMVASimple", 100, -1, 1, jet.puMVASimple(), theWeight);
-  theHistograms.fill(type+"_puCutBased" , 100, -1, 1, jet.puCutBased (), theWeight); // void??
-
-  theHistograms.fill<TH1I>(type+"_pass_puMVAFull_loose"   , 2, 0, 2, jet.pass_puMVAFull_loose   (), theWeight);
-  theHistograms.fill<TH1I>(type+"_pass_pUMVAFull_medium"  , 2, 0, 2, jet.pass_pUMVAFull_medium  (), theWeight);
-  theHistograms.fill<TH1I>(type+"_pass_pUMVAFull_tight"   , 2, 0, 2, jet.pass_pUMVAFull_tight   (), theWeight);
-				                          	                             
-  theHistograms.fill<TH1I>(type+"_pass_puMVASimple_loose" , 2, 0, 2, jet.pass_puMVASimple_loose (), theWeight);
-  theHistograms.fill<TH1I>(type+"_pass_puMVASimple_medium", 2, 0, 2, jet.pass_puMVASimple_medium(), theWeight);
-  theHistograms.fill<TH1I>(type+"_pass_puMVASimple_tight" , 2, 0, 2, jet.pass_puMVASimple_tight (), theWeight);
-				                          	                             
-  theHistograms.fill<TH1I>(type+"_pass_puCutBased_loose"  , 2, 0, 2, jet.pass_puCutBased_loose  (), theWeight); // void??
-  theHistograms.fill<TH1I>(type+"_pass_puCutBased_medium" , 2, 0, 2, jet.pass_puCutBased_medium (), theWeight); // void??
-  theHistograms.fill<TH1I>(type+"_pass_puCutBased_tight"  , 2, 0, 2, jet.pass_puCutBased_tight  (), theWeight); // void??
+  theHistograms.fill(type+"_jecUncertainty", 50, 0, 0.1, jet.jecUncertainty(), theWeight);
 }
 
 
