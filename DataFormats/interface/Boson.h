@@ -60,11 +60,9 @@ namespace phys {
 
       return newboson;
     }
-
     
     /// Destructor
     virtual ~Boson(){};
-
 
     
     void setDaughter(int i, const P& d){
@@ -94,8 +92,15 @@ namespace phys {
       index.set(daughter_index);
       indexFSR_ = index.to_ulong();
 
-      if(daughter_index == 0) fsrPhoton0_ = photon;
-      else if(daughter_index == 1) fsrPhoton1_ = photon;
+      if(daughter_index == 0){
+	if(fsrPhoton0_.p4().P() == 0) fsrPhoton0_ = photon;
+	else  fsrPhoton0_.setP4(fsrPhoton0_.p4()+photon.p4());
+      }
+      else if(daughter_index == 1){ 
+	if(fsrPhoton0_.p4().P() == 0) fsrPhoton1_ = photon;
+	else  fsrPhoton0_.setP4(fsrPhoton1_.p4()+photon.p4());
+      }
+
       else { std::cout << "*** (FSR) Boson's daughter not found! ***" << " " << daughter_index << std::endl; abort();}
       p4_ = p4_ + photon.p4();
     }
@@ -118,18 +123,19 @@ namespace phys {
 
     double fakeRateSF()    const {return daughter0_.fakeRateSF() * daughter1_.fakeRateSF();}
     double fakeRateSFUncHigh() const {return sqrt(pow(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUncHigh(),2) +  
-					      pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUncHigh(),2));}
-
+						  pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUncHigh(),2));}
+    
     double fakeRateSFUncLow() const {return sqrt(pow(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUncLow(),2) +  
-					      pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUncLow(),2));}
+						 pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUncLow(),2));}
     
     double efficiencySF() const {return daughter0_.efficiencySF() * daughter1_.efficiencySF();}
-
+    
     double efficiencySFUnc() const {
-      double effSF0 = daughter0_.efficiencySF();
+      double effSF0    = daughter0_.efficiencySF();
       double effSF0Unc = daughter0_.efficiencySFUnc();
-      double effSF1 = daughter1_.efficiencySF();
+      double effSF1    = daughter1_.efficiencySF();
       double effSF1Unc = daughter1_.efficiencySFUnc();      
+      
       return sqrt((effSF0Unc*effSF0Unc)/(effSF0*effSF0)+(effSF1Unc*effSF1Unc)/(effSF1*effSF1));
     }
     
@@ -147,13 +153,17 @@ namespace phys {
     Bool_t hasGoodDaughters_;
 
     void init(){
+
       efficiencySF_  = -1;
       fakeRateSF_    = -1;
       fakeRateSFUncHigh_ = -1;
       fakeRateSFUncLow_ = -1;
       
       charge_ = daughter0_.charge() + daughter1_.charge();
-      if(indexFSR_ >=0)  { p4_ = p4_ + fsrPhoton0_.p4() + fsrPhoton1_.p4();}
+
+      if(indexFSR_ >=0)  {
+	p4_ = p4_ + fsrPhoton0_.p4() + fsrPhoton1_.p4();}
+      
     }
 
     ClassDef(Boson, 1) //
