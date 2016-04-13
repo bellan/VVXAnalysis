@@ -550,10 +550,6 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   
   output.jetArea_                 = jet.jetArea();
   output.secvtxMass_ = jet.userFloat("vtxMass");
-  output.Lxy_        = jet.userFloat("Lxy");
-  output.LxyErr_      = jet.userFloat("LxyErr"); 
-  
-  output.puMVAFull_ = jet.userFloat("pileupJetId:fullDiscriminant");
   
   output.mcPartonFlavour_ = jet.partonFlavour();
   
@@ -585,23 +581,6 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   //    else if (abs(output.eta()) < 3.2) {output.jer_ = 1.384; output.jerUnc_ = 0.033;}
   //    else if (abs(output.eta()) < 5.0) {output.jer_ = 1.216; output.jerUnc_ = 0.050;}
   //  }
-
-
-  // To be removed (also the memebers in jet class
-  // output.puMVASimple_             = jet.puMva("simple");
-  // output.puCutBased_              = jet.puMva("cut-based");
-  // output.pass_puMVAFull_loose_    = jet.passPuJetId("full53x"  , PileupJetIdentifier::kLoose);
-  // output.pass_pUMVAFull_medium_   = jet.passPuJetId("full53x"  , PileupJetIdentifier::kMedium);
-  // output.pass_pUMVAFull_tight_    = jet.passPuJetId("full53x"  , PileupJetIdentifier::kTight); 
-  // output.pass_puMVASimple_loose_  = jet.passPuJetId("simple"   , PileupJetIdentifier::kLoose); 
-  // output.pass_puMVASimple_medium_ = jet.passPuJetId("simple"   , PileupJetIdentifier::kMedium); 
-  // output.pass_puMVASimple_tight_  = jet.passPuJetId("simple"   , PileupJetIdentifier::kTight); 
-  // output.pass_puCutBased_loose_   = jet.passPuJetId("cut-based", PileupJetIdentifier::kLoose); 
-  // output.pass_puCutBased_medium_  = jet.passPuJetId("cut-based", PileupJetIdentifier::kMedium);
-  // output.pass_puCutBased_tight_   = jet.passPuJetId("cut-based", PileupJetIdentifier::kTight);
-  // output.rms_                     = jet.rms();
-  // output.beta_                    = jet.beta();
-
 
   return output; 
 }

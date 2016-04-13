@@ -38,27 +38,11 @@ namespace phys {
       , girth_(-9999.)
       , girth_charged_(-9999.)
       , ptd_(-9999.)
-      , rms_(-9999.)
-      , beta_(-9999.)
       , jetArea_(-9999.)
       , secvtxMass_(-9999.)
-      , Lxy_(-9999.)
-      , LxyErr_(-9999.)
       , qgLikelihood_ (-99.)
       , rawFactor_(-9999.)
       , jecUnc_(-9999.)
-      , puMVAFull_(-9999.)
-      , puMVASimple_(-9999.)
-      , puCutBased_(-9999.)
-      , pass_puMVAFull_loose_(false)
-      , pass_pUMVAFull_medium_(false)
-      , pass_pUMVAFull_tight_(false) 
-      , pass_puMVASimple_loose_(false) 
-      , pass_puMVASimple_medium_(false)
-      , pass_puMVASimple_tight_(false) 
-      , pass_puCutBased_loose_(false) 
-      , pass_puCutBased_medium_(false)
-      , pass_puCutBased_tight_(false) 
       , mcPartonFlavour_(-1)
       , sigma_MC_(-9999.)
     {}           
@@ -86,17 +70,11 @@ namespace phys {
     Double_t girth_charged() const {return girth_charged_;}
     // sum pt^2 / (sum pt)^2
     Double_t ptd()           const {return ptd_;}
-    // jet width
-    Double_t rms()           const {return rms_;}
-    // fraction of charged hadron sum pt from charged hadrons from the primary vertex
-    Double_t beta()          const {return beta_;}
     // return the jet area 
     Double_t jetArea()       const {return jetArea_;}
 
     // return secondary vertex b-tagging information
     Double_t secvtxMass()    const {return secvtxMass_;}
-    Double_t Lxy()           const {return Lxy_;}	 
-    Double_t LxyErr()        const {return LxyErr_;}    
       
     // return a correction factor that can be applied to the jet energy or pT to bring it back to the uncorrected value
     Double_t rawFactor()     const {return rawFactor_;}
@@ -120,57 +98,26 @@ namespace phys {
     Double_t jer_width(JERVariations jervar) const {return sqrt(pow(jer_c(jervar),2)-1)*sigma_MC();}
     
 
-    // PU ID:
-    Double_t puMVAFull()     const {return puMVAFull_;}	      
-    Double_t puMVASimple()   const {return puMVASimple_;}	      
-    Double_t puCutBased()    const {return puCutBased_;}	      
-   
-    Bool_t   pass_puMVAFull_loose()    const {return pass_puMVAFull_loose_;}   
-    Bool_t   pass_pUMVAFull_medium()   const {return pass_pUMVAFull_medium_;}  
-    Bool_t   pass_pUMVAFull_tight()    const {return pass_pUMVAFull_tight_;}   
-					 				      
-    Bool_t   pass_puMVASimple_loose()  const {return pass_puMVASimple_loose_;} 
-    Bool_t   pass_puMVASimple_medium() const {return pass_puMVASimple_medium_;}
-    Bool_t   pass_puMVASimple_tight()  const {return pass_puMVASimple_tight_;} 
-					 	    		      
-    Bool_t   pass_puCutBased_loose()   const {return pass_puCutBased_loose_;}  
-    Bool_t   pass_puCutBased_medium()  const {return pass_puCutBased_medium_;} 
-    Bool_t   pass_puCutBased_tight()   const {return pass_puCutBased_tight_;}  
-
     // return the matched MC parton flavour
     Int_t mcPartonFlavour() const {return mcPartonFlavour_;}
 
     bool    passLooseJetID() const {
       return 
-	neutralHadronEnergyFraction_  < 0.99                    &&
-	neutralEmEnergyFraction_      < 0.99                    &&
-	nConstituents_                > 1                       &&
-	(chargedHadronEnergyFraction_ > 0 || fabs(eta()) > 2.4) &&
-	(nCharged_                    > 0 || fabs(eta()) > 2.4) &&
-	(chargedEmEnergyFraction_ < 0.99  || fabs(eta()) > 2.4);
-    }
-
-    bool passPUID() const {
-      bool passPU = true;
-      float jpt    = pt();
-      float jeta   = fabs(eta());
-      float jpumva = puMVAFull();
-      if(jpt > 20){
-	if(jeta > 3.)          { if(jpumva <= -0.45) passPU = false;} 
-	else if(jeta > 2.75)   { if(jpumva <= -0.55) passPU = false;}
-	else if(jeta > 2.5)    { if(jpumva <= -0.60) passPU = false;}
-	else                   { if(jpumva <= -0.63) passPU = false;}
-      }
-      else{
-	if(jeta>3.)            { if(jpumva <= -0.95) passPU = false;}
-	else if(jeta > 2.75)   { if(jpumva <= -0.94) passPU = false;}
-	else if(jeta > 2.5)    { if(jpumva <= -0.96) passPU = false;}
-	else                   { if(jpumva <= -0.95) passPU = false;}
-      }
-      return passPU;
+	( fabs(eta()) <= 3 &&
+	 (neutralHadronEnergyFraction_   < 0.99                        &&
+	  neutralEmEnergyFraction_       < 0.99                        &&
+	  nConstituents_                 > 1                           &&
+	  (chargedHadronEnergyFraction_  > 0    || fabs(eta()) > 2.4)  &&
+	  (nCharged_                     > 0    || fabs(eta()) > 2.4)  &&
+	  (chargedEmEnergyFraction_      < 0.99 || fabs(eta()) > 2.4)))
+	||
+	(fabs(eta()) > 3 && neutralEmEnergyFraction_ < 0.90 && nNeutral_ > 10);
     }
 
     Double_t qgLikelihood() const {return qgLikelihood_;}
+
+
+    bool  passPUID() const {return true;}
 
   protected:
     
@@ -195,16 +142,11 @@ namespace phys {
     // sum pt^2 / (sum pt)^2
     Double_t ptd_;
     // jet width
-    Double_t rms_;
-    // fraction of charged hadron sum pt from charged hadrons from the primary vertex
-    Double_t beta_;
     // return the jet area 
     Double_t jetArea_;
 
     // return secondary vertex b-tagging information
     Double_t secvtxMass_;
-    Double_t Lxy_;
-    Double_t LxyErr_;
 
     Double_t qgLikelihood_;
       
@@ -213,23 +155,6 @@ namespace phys {
     
     // Uncertainty on four vector energy scale
     Double_t jecUnc_;
-
-    // PU ID:
-    Double_t puMVAFull_;
-    Double_t puMVASimple_;
-    Double_t puCutBased_;
-
-    Bool_t   pass_puMVAFull_loose_;
-    Bool_t   pass_pUMVAFull_medium_;
-    Bool_t   pass_pUMVAFull_tight_; 
-
-    Bool_t   pass_puMVASimple_loose_; 
-    Bool_t   pass_puMVASimple_medium_;
-    Bool_t   pass_puMVASimple_tight_; 
-
-    Bool_t   pass_puCutBased_loose_; 
-    Bool_t   pass_puCutBased_medium_;
-    Bool_t   pass_puCutBased_tight_; 
 
     // return the matched MC parton flavour
     Int_t mcPartonFlavour_;
