@@ -90,7 +90,7 @@ namespace phys {
 
 
     void addFSR(int daughter_index, const Particle &photon){
-      std::bitset<4> index = std::bitset<4>(indexFSR_);
+      std::bitset<2> index = std::bitset<2>(indexFSR_);
       index.set(daughter_index);
       indexFSR_ = index.to_ulong();
 
