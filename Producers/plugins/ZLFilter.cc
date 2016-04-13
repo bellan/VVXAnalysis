@@ -12,14 +12,16 @@
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
 #include <DataFormats/PatCandidates/interface/CompositeCandidate.h>
-
+#include "CommonTools/Utils/interface/StringCutObjectSelector.h"
 
 class ZLFilter : public edm::EDFilter {
 public:
   /// Constructor
   explicit ZLFilter(const edm::ParameterSet& config) 
     : theZLLToken(consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZLL")))
-    , theZLToken(consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZL"))){
+    , theZLToken(consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZL")))
+    , selectionZL_(config.getParameter<std::string>("ZLSelection"))
+  {
 
   }
   
@@ -34,6 +36,8 @@ private:
 
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZLLToken;
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZLToken;
+
+  StringCutObjectSelector<pat::CompositeCandidate> selectionZL_;
 };
 
 
@@ -47,10 +51,8 @@ bool ZLFilter::filter(edm::Event& event, const edm::EventSetup& setup){
   // at least a ZZ or a ZLL candidate in the event --> want to keep it
   if(ZLL->size() > 0) return true;
   // if there is only one ZL candidate --> want to keep it if it passes trigger requirements
-  if(ZL->size() == 1) 
-    if((ZL->at(0).daughter(0)->daughter(0)->pt() > 20 && ZL->at(0).daughter(0)->daughter(1)->pt() > 10) || (ZL->at(0).daughter(0)->daughter(0)->pt() > 10 && ZL->at(0).daughter(0)->daughter(1)->pt() > 20))
-      if(fabs(ZL->at(0).daughter(0)->mass()-91.19) <= 10) return true; // && ZL->at(0).daughter(1)->userFloat("SIP") < 4) return true;
-
+  if(ZL->size() == 1 && selectionZL_(ZL->at(0))) return true; 
+    
   return false;
 
 

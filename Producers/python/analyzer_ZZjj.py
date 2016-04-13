@@ -43,23 +43,7 @@ execfile(PyFilePath + "MasterPy/ZZ4lAnalysis.py")         # 2012 reference analy
 ### ----------------------------------------------------------------------
 SkimPaths.append("preselection")
 
-### ----------------------------------------------------------------------
-  ### Replace parameters
-### ----------------------------------------------------------------------
-process.source.fileNames = cms.untracked.vstring(
-#    '/store/mc/RunIISpring15DR74/GluGluToZZTo4mu_BackgroundOnly_13TeV_MCFM/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/10000/1CAF3EBF-9118-E511-8143-02163E0136C2.root'
-    '/store/mc/RunIISpring15DR74/ZZTo4L_13TeV_powheg_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/70000/02B9AF23-1B1A-E511-937A-0025905B8576.root'
 
-    #'/store/mc/Phys14DR/ZZTo4L_Tune4C_13TeV-powheg-pythia8/MINIAODSIM/PU20bx25_PHYS14_25_V1-v1/00000/04CD96C9-E269-E411-9D64-00266CF9ADA0.root'
-    #'/store/mc/Phys14DR/GluGluToHToZZTo4L_M-125_13TeV-powheg-pythia6/MINIAODSIM/PU20bx25_tsg_PHYS14_25_V1-v1/00000/3295EF7C-2070-E411-89C4-7845C4FC35DB.root'
-    #'/store/mc/Spring14miniaod/WH_ZH_HToZZ_4LFilter_M-125_13TeV_pythia6/MINIAODSIM/PU20bx25_POSTLS170_V5-v1/00000/0ABFFCEF-AA09-E411-8022-001E673970FD.root'
-    )
-
-process.maxEvents.input = -1
-
-# Silence output
-process.load("FWCore.MessageService.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 
 ### ----------------------------------------------------------------------
 ### Output root file
@@ -95,7 +79,7 @@ process.postCleaningMuons = cms.EDProducer("PATMuonCleaner",
                                            # pat electron input source
                                            src = cms.InputTag("appendPhotons:muons"),
                                            # preselection (any string-based cut for pat::Muons)
-                                           preselection = cms.string("pt > 10 && userFloat('isGood') && userFloat('combRelIsoPF') < 0.4"),
+                                           preselection = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"),
                                            # overlap checking configurables
                                            checkOverlaps = cms.PSet(
         muons = cms.PSet(
@@ -125,7 +109,7 @@ process.postCleaningElectrons = cms.EDProducer("PATElectronCleaner",
                                                # pat electron input source
                                                src = cms.InputTag("appendPhotons:electrons"),
                                                # preselection (any string-based cut for pat::Electron)
-                                               preselection = cms.string("pt > 10 && userFloat('isGood') && userFloat('combRelIsoPF') < 0.4"),
+                                               preselection = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"),
                                                # overlap checking configurables
                                                checkOverlaps = cms.PSet(
         electrons = cms.PSet(
@@ -153,7 +137,7 @@ process.postCleaningElectrons = cms.EDProducer("PATElectronCleaner",
 
 ## FIXME: Logic need to be recheck as of new FSR strategy has been implemented
 process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
-                                           JetPreselection      = cms.string("pt > 10"),
+                                           JetPreselection      = cms.string("pt > 20"),
                                            DiBosonPreselection  = cms.string(""),
                                            MuonPreselection     = cms.string(""),
                                            ElectronPreselection = cms.string(""),
@@ -254,17 +238,6 @@ process.ZZFiltered = cms.EDProducer("PATCompositeCandidateMergerWithPriority",
                                     priority = cms.vint32(1,0,0)
                                     )
 
-
-
-### Z+L control region
-# FIXME! To be uncommented!
-#process.ZlCandFiltered = cms.EDFilter("PATCompositeCandidateSelector",
-#                                      src = cms.InputTag("ZlCand"),
-#                                      cut = cms.string("(daughter(0).daughter(0).pt > 20 && daughter(0).daughter(1).pt > 10) || (daughter(0).daughter(0).pt > 10 && daughter(0).daughter(1).pt > 20)")
-#                                      )
-
-
-
 ### ------------------------------------------------------------------------- ###
 ### Define the post reconstruction cleaning sequence
 ### ------------------------------------------------------------------------- ###
@@ -273,7 +246,6 @@ process.postRecoCleaning = cms.Sequence( process.ZZSelectedCand
                                          + process.ZLLFiltered2P2F
                                          + process.ZLLFiltered3P1F
                                          + process.ZZFiltered
-#                                        + process.ZlCandFiltered
                                          + process.muonsFromZZ*process.postCleaningMuons 
                                          + process.electronsFromZZ*process.postCleaningElectrons
                                          + process.disambiguatedJets
@@ -303,7 +275,9 @@ process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTa
 # Looser preselection: ask only for a at least a Z + 1 soft lepton
 #process.zlCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZlCand"), minNumber = cms.uint32(1))
 
-process.zzAndzlFilterCombiner = cms.EDFilter("ZLFilter", ZLL = cms.InputTag("ZZFiltered"), ZL = cms.InputTag("ZlCand"))
+process.zzAndzlFilterCombiner = cms.EDFilter("ZLFilter", ZLL = cms.InputTag("ZZFiltered"), ZL = cms.InputTag("ZlCand"),
+                                             ZLSelection = cms.string("((daughter(0).daughter(0).pt > 20 && daughter(0).daughter(1).pt > 10) || (daughter(0).daughter(0).pt() > 10 && daughter(0).daughter(1).pt > 20)) && abs(daughter(0).mass -91.19) <= 10")
+                                             )
 
 
 ### Path that pre-select the higher level objects that will input the TreePlanter
