@@ -44,7 +44,8 @@ namespace phys {
       , rawFactor_(-9999.)
       , jecUnc_(-9999.)
       , mcPartonFlavour_(-1)
-      , sigma_MC_(-9999.)
+      , sigma_MC_pt_(-9999.)
+      , sigma_MC_phi_(-9999.)
     {}           
     
     /// Destructor
@@ -83,7 +84,8 @@ namespace phys {
     Double_t jecUncertainty() const {return  jecUnc_;}
 
     // JER
-    Double_t sigma_MC()  const {return sigma_MC_;}
+    Double_t sigma_MC_pt()  const {return sigma_MC_pt_;}
+    Double_t sigma_MC_phi()  const {return sigma_MC_phi_;}
 
     // Values from https://twiki.cern.ch/twiki/bin/view/CMS/JetResolution
     Double_t jer_c(JERVariations jervar)     const {
@@ -95,7 +97,7 @@ namespace phys {
       }
     }
 
-    Double_t jer_width(JERVariations jervar) const {return sqrt(pow(jer_c(jervar),2)-1)*sigma_MC();}
+    Double_t jer_width(JERVariations jervar) const {return sqrt(pow(jer_c(jervar),2)-1)*sigma_MC_pt();}
     
 
     // return the matched MC parton flavour
@@ -160,7 +162,8 @@ namespace phys {
     Int_t mcPartonFlavour_;
     
     // Jet MC resolution, for JER determination. 
-    Double_t sigma_MC_;
+    Double_t sigma_MC_pt_;
+    Double_t sigma_MC_phi_;
     Double_t jer_c_;
     Double_t jer_cup_;
     Double_t jer_cdown_;
