@@ -3,6 +3,7 @@
   <use name="FWCore/PluginManager"/>
   <use name="FWCore/ParameterSet"/>
   <use name="CommonTools/UtilAlgos"/>
+  <use name="JetMETCorrections/Modules"/>
   <use name="TrackingTools/Records"/>
   <use name="TrackingTools/TransientTrack"/>
   <use name="DataFormats/PatCandidates"/>
