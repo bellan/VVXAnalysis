@@ -22,16 +22,14 @@ namespace phys {
     /// Constructor
   Boson(const TLorentzVector& pi = TLorentzVector(0.,0.,0.,0.), int pid = 0)
     : Particle(pi,0,pid)
-      , indexFSR_(-1)
-      , hasGoodDaughters_(false){}
+      , indexFSR_(-1){}
 
     
   Boson(const P& daughter0, const P& daughter1, int pid = 0)
     : Particle(daughter0.p4()+daughter1.p4(), daughter0.charge()+daughter1.charge(), pid)
       , daughter0_(daughter0)
       , daughter1_(daughter1)
-      , indexFSR_(-1)
-      , hasGoodDaughters_(false){
+      , indexFSR_(-1){
 
       init();
 
@@ -43,8 +41,7 @@ namespace phys {
       , daughter1_(vb.daughter(1))
       , indexFSR_(vb.daughterWithFSR())
       , fsrPhoton0_(vb.fsrPhoton(0))
-      , fsrPhoton1_(vb.fsrPhoton(1))
-      , hasGoodDaughters_(vb.hasGoodDaughters()){
+      , fsrPhoton1_(vb.fsrPhoton(1)){
 
       init();
     }
@@ -53,7 +50,7 @@ namespace phys {
     template<typename T>
       Boson<T> clone() const {
       Boson<T> newboson(daughter0_,daughter1_,id_);
-      std::bitset<4> index = std::bitset<4>(indexFSR_);
+      std::bitset<2> index = std::bitset<2>(indexFSR_);
 
       if(index.test(0)) newboson.addFSR(0,fsrPhoton0_);
       if(index.test(1)) newboson.addFSR(1,fsrPhoton1_);
@@ -89,19 +86,22 @@ namespace phys {
 
     void addFSR(int daughter_index, const Particle &photon){
       std::bitset<2> index = std::bitset<2>(indexFSR_);
+
+      if(index.test(daughter_index)){
+	std::cout<<"This lepton: " << daughter_index << " aleady has a photon associated to it"<<std::endl;
+	abort();
+      }
+
       index.set(daughter_index);
       indexFSR_ = index.to_ulong();
 
-      if(daughter_index == 0){
-	if(fsrPhoton0_.p4().P() == 0) fsrPhoton0_ = photon;
-	else  fsrPhoton0_.setP4(fsrPhoton0_.p4()+photon.p4());
-      }
-      else if(daughter_index == 1){ 
-	if(fsrPhoton0_.p4().P() == 0) fsrPhoton1_ = photon;
-	else  fsrPhoton0_.setP4(fsrPhoton1_.p4()+photon.p4());
-      }
-
-      else { std::cout << "*** (FSR) Boson's daughter not found! ***" << " " << daughter_index << std::endl; abort();}
+      if(daughter_index == 0)      fsrPhoton0_ = photon;
+    
+      else if(daughter_index == 1) fsrPhoton1_ = photon;
+      else { 
+	std::cout << "*** (FSR) Boson's daughter not found! ***" << " " << daughter_index << std::endl; 
+	abort();}
+      
       p4_ = p4_ + photon.p4();
     }
 
@@ -115,9 +115,6 @@ namespace phys {
 
     int daughterWithFSR() const {return indexFSR_;}
    
-    // the daughters pass the quality criteria
-    bool hasGoodDaughters() const {return hasGoodDaughters_;}
-    
     // Number of good daughters
     int numberOfGoodDaughters() const {return int(daughter0_.passFullSel()) + int(daughter1_.passFullSel());}
 
@@ -149,8 +146,6 @@ namespace phys {
     Int_t indexFSR_;     // daughter with FSR, -1 if no one radiated
     Particle fsrPhoton0_;
     Particle fsrPhoton1_;
-
-    Bool_t hasGoodDaughters_;
 
     void init(){
 

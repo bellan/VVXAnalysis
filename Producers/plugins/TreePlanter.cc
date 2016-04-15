@@ -593,9 +593,6 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
     physV.addFSR(fsr->userFloat("leptIdx"), photon);
   }
   
-  // Add quality of daughters, right now only for ll pairs
-  if(v.hasUserFloat("GoodLeptons")) physV.hasGoodDaughters_ = v.userFloat("GoodLeptons");
-  
   return physV;
 }
 
