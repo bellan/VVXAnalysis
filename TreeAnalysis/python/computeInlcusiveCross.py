@@ -106,23 +106,22 @@ hIrredBkg4e = ROOT.TH1F()
 hIrredSum = [{"hist":hIrredBkg2e2mu,"name":'2e2m'},{"hist":hIrredBkg4e,"name":'4e'},{"hist":hIrredBkg4mu,"name":'4m'}]         
 
 
-# for b in BkgSamples:
-#     filesbkg[b["sample"]] = ROOT.TFile(inputdir+b["sample"]+".root") 
+for b in BkgSamples:
+    filesbkg[b["sample"]] = ROOT.TFile(inputdir+b["sample"]+".root") 
     
-#     for h in hIrredSum:
-#         isFirst=1
-#         for b in BkgSamples:
-#             h1 = filesbkg[b["sample"]].Get("ZZTo"+h["name"]+"_"+TypeString+"_01")
-#             if h1==None:
-#                 print "For sample ", b["sample"], "h"+h["name"],"has no enetries or is a zombie"      
-#                 continue
-#             if isFirst:
-#                 h["hist"]=copy.deepcopy(h1) 
-#                 isFirst=0
-#                 continue
-#             print "\nTotal integral {0} contribution {1}> {2:.2f}\n\n".format(h["name"],(33-len(h["name"]))*"-",h["hist"].Integral(0,-1))
-#             h["hist"].Add(h1)     
-
+    for h in hIrredSum:
+        isFirst=1
+        for b in BkgSamples:
+            h1 = filesbkg[b["sample"]].Get("ZZTo"+h["name"]+"_"+TypeString+"_01")
+            if h1==None:
+                print "For sample ", b["sample"], "h"+h["name"],"has no enetries or is a zombie"      
+                continue
+            if isFirst:
+                h["hist"]=copy.deepcopy(h1) 
+                isFirst=0
+                continue
+            print "\nTotal integral {0} contribution {1}> {2:.2f}\n\n".format(h["name"],(33-len(h["name"]))*"-",h["hist"].Integral(0,-1))
+            h["hist"].Add(h1)     
 
 
 hRed2e2mu=getRedBkg("2e2m",0)
@@ -156,17 +155,23 @@ AccFile_Low = ROOT.TFile("./Acceptance/AcceptanceSFactorSqMinus_"+Set+".root")
 wspace = ROOT.RooWorkspace("w")
 
 
-for hData,hRed,hRed_Hi,hRed_Low in zip(hSum,hRedSum,hRedSum_Hi,hRedSum_Low):
+for hData,hRed,hRed_Hi,hRed_Low,hIrr in zip(hSum,hRedSum,hRedSum_Hi,hRedSum_Low,hIrredSum):
+
+    ErrIrr=ROOT.Double(0.)
 
     print "nobs_" +hData["name"],hData["hist"].Integral(0,-1)
     wspace.factory("nobs_"+hData["name"]+"["+str(hData["hist"].Integral(0,-1))+",0,50]")
 
-    wspace.factory("bkg_"+ hData["name"]+"["+str(hRed["hist"].Integral(0,-1))+"]")
-    wspace.factory("bkg0_"+ hData["name"]+"["+str(hRed["hist"].Integral(0,-1))+",0,10]")
-    wspace.factory("sigmaBkg_"+hData["name"]+"["+str(-hRed["hist"].Integral(0,-1)+hRed_Low["hist"].Integral(0,-1))+"]")
-    
+    wspace.factory("bkg_red_"+ hData["name"]+"["+str(hRed["hist"].Integral(0,-1))+"]")
+    wspace.factory("bkg0_red_"+ hData["name"]+"["+str(hRed["hist"].Integral(0,-1))+",0,10]")
+    wspace.factory("sigmaBkg_Red_"+hData["name"]+"["+str(-hRed["hist"].Integral(0,-1)+hRed_Low["hist"].Integral(0,-1))+"]")
+
     # Use diffent funcion to for nuisance parameter?
-    # wspace.factory("sigmaBkg_"+hData["name"]+"["+str(hRed_Hi["hist"].Integral(0,-1)-hRed["hist"].Integral(0,-1))+"]") 
+    # wspace.factory("sigmaBkg_Red_"+hData["name"]+"["+str(hRed_Hi["hist"].Integral(0,-1)-hRed["hist"].Integral(0,-1))+"]") 
+
+    wspace.factory("bkg_irr_"+ hData["name"]+"["+str(hIrr["hist"].Integral(0,-1))+"]")
+    wspace.factory("bkg0_irr_"+ hData["name"]+"["+str(-hIrr["hist"].IntegralAndError(0,-1,ErrIrr))+",0,10]")
+    wspace.factory("sigmaBkg_Irr_"+hData["name"]+"["+str(ErrIrr)+"]")
     
     print "red_" +hData["name"],hRed["hist"].Integral(0,-1)
     print "redHi_" +hData["name"],hRed_Hi["hist"].Integral(0,-1)
