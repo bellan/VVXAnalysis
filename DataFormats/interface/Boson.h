@@ -22,14 +22,14 @@ namespace phys {
     /// Constructor
   Boson(const TLorentzVector& pi = TLorentzVector(0.,0.,0.,0.), int pid = 0)
     : Particle(pi,0,pid)
-      , indexFSR_(-1){}
+      , indexFSR_(0){}
 
     
   Boson(const P& daughter0, const P& daughter1, int pid = 0)
     : Particle(daughter0.p4()+daughter1.p4(), daughter0.charge()+daughter1.charge(), pid)
       , daughter0_(daughter0)
       , daughter1_(daughter1)
-      , indexFSR_(-1){
+      , indexFSR_(0){
 
       init();
 
@@ -39,7 +39,7 @@ namespace phys {
     : Particle(vb.daughter(0).p4() + vb.daughter(1).p4(), vb.charge(), vb.id())
       , daughter0_(vb.daughter(0))
       , daughter1_(vb.daughter(1))
-      , indexFSR_(vb.daughterWithFSR())
+      , indexFSR_(vb.daughtersWithFSR())
       , fsrPhoton0_(vb.fsrPhoton(0))
       , fsrPhoton1_(vb.fsrPhoton(1)){
 
@@ -50,8 +50,8 @@ namespace phys {
     template<typename T>
       Boson<T> clone() const {
       Boson<T> newboson(daughter0_,daughter1_,id_);
-      std::bitset<2> index = std::bitset<2>(indexFSR_);
 
+      std::bitset<2> index = std::bitset<2>(indexFSR_);
       if(index.test(0)) newboson.addFSR(0,fsrPhoton0_);
       if(index.test(1)) newboson.addFSR(1,fsrPhoton1_);
 
@@ -113,7 +113,7 @@ namespace phys {
       else { std::cout << "*** (FSR) Boson's daughter not found! ***" << " " << d << std::endl; abort();}
     }
 
-    int daughterWithFSR() const {return indexFSR_;}
+    int daughtersWithFSR() const {return indexFSR_;}
    
     // Number of good daughters
     int numberOfGoodDaughters() const {return int(daughter0_.passFullSel()) + int(daughter1_.passFullSel());}

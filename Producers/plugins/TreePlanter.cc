@@ -622,12 +622,9 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
   phys::Boson<PAR> physV(d0, d1, type);
   
   // Add FSR
-  cout << "Number of daughters: " << v.numberOfDaughters() << endl;
   for(unsigned int i = 2; i < v.numberOfDaughters(); ++i){
     phys::Particle photon(phys::Particle::convert(v.daughter(i)->p4()), 0, 22);
     const pat::PFParticle* fsr = dynamic_cast<const pat::PFParticle*>(v.daughter(i));
-    // FIXME
-    cout << "Adding a FSR photon: " << fsr->pt() << " associated to: " << fsr->userFloat("leptIdx") << endl;
     physV.addFSR(fsr->userFloat("leptIdx"), photon);
   }
   
