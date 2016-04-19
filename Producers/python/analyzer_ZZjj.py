@@ -69,7 +69,6 @@ process.TFileService=cms.Service('TFileService', fileName=cms.string('ZZ4lAnalys
 ### ......................................................................... ###
 
 
-
 # Muons cleaning. First, create a muon collection from the best ZZ candidate grand daughters
 process.muonsFromZZ = cms.EDProducer("PATMuonsFromCompositeCandidates", src =  cms.InputTag("ZZFiltered"), SplitLevel = cms.int32(1))
 
@@ -95,9 +94,33 @@ process.postCleaningMuons = cms.EDProducer("PATMuonCleaner",
                                            # finalCut (any string-based cut for pat::Muons)
                                            finalCut = cms.string(''),
                                            )
+# To be added to update DB for JER. phi part is missing
 
+# process.load('Configuration.StandardSequences.Services_cff')
+# process.load("JetMETCorrections.Modules.JetResolutionESProducer_cfi")
+# from CondCore.DBCommon.CondDBSetup_cfi import *
 
+# process.jer = cms.ESSource("PoolDBESSource",
+#         CondDBSetup,
+#         toGet = cms.VPSet(
+#             # Resolution
+#             cms.PSet(
+#                 record = cms.string('JetResolutionRcd'),
+#                 tag    = cms.string('Fall15_25nsV2_MC_PhiResolution_AK4PFchs'),
+#                 label  = cms.untracked.string('AK4PFchs_pt')
+#                 ),
 
+#             # Scale factors
+#             cms.PSet(
+#                 record = cms.string('JetResolutionScaleFactorRcd'),
+#                 tag    = cms.string('Fall15_25nsV2_MC_SF_AK8PF.txt'),
+#                 label  = cms.untracked.string('AK4PFchs')
+#                 ),
+#             ),
+#         connect = cms.string('sqlite:Fall15_25nsV2_MC.db')
+#         )
+
+# process.es_prefer_jer = cms.ESPrefer('PoolDBESSource', 'jer')
 
 
 # Electrons cleaning. First, create a electron collection from the best ZZ candidate grand daughters
@@ -351,6 +374,10 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      MCFilterPath = cms.string(MCFILTER),
                                      isMC         = cms.untracked.bool(IsMC),
                                      signalDefinition = cms.int32(SIGNALDEFINITION),
+                                     JetAlgo      = cms.string("AK4PFchs"),        
+                                     jetResFile_pt = cms.FileInPath('VVXAnalysis/Commons/data/Fall15_25nsV2_MC_PtResolution_AK4PFchs.txt'),
+                                     jetResFile_phi = cms.FileInPath('VVXAnalysis/Commons/data/Fall15_25nsV2_MC_PhiResolution_AK4PFchs.txt'),
+                                     jetResFile_SF = cms.FileInPath('VVXAnalysis/Commons/data/Fall15_25nsV2_MC_SF_AK4PFchs.txt'),
                                      muons        = cms.InputTag("postCleaningMuons"),     # all good isolated muons BUT the ones coming from ZZ decay
                                      electrons    = cms.InputTag("postCleaningElectrons"), # all good isolated electrons BUT the ones coming from ZZ decay
                                      jets         = cms.InputTag("disambiguatedJets"),     # jets which do not contains leptons from ZZ or other good isolated leptons are removed

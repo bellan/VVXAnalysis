@@ -32,6 +32,7 @@
 
 #include "ZZAnalysis/AnalysisStep/interface/PUReweight.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
+#include <JetMETCorrections/Modules/interface/JetResolution.h>
 
 class TTree;
 namespace pat{class Jet;}
@@ -58,7 +59,7 @@ class TreePlanter: public edm::EDAnalyzer {
   bool fillEventInfo(const edm::Event& event);
   
   template<typename LEP>
-    phys::Lepton fillLepton(const LEP& particle) const;
+  phys::Lepton fillLepton(const LEP& particle) const;
 
   phys::Lepton fill(const pat::Muon &muon) const;
 
@@ -161,6 +162,7 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZZToken;
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZLToken;
   edm::EDGetTokenT<pat::METCollection>                  theMETToken;
+  edm::EDGetTokenT<double>                              theRhoToken;
   //edm::EDGetTokenT<pat::METCollection>                  theMETNoHFToken;
   edm::EDGetTokenT<std::vector<reco::Vertex> >          theVertexToken;
 
@@ -182,11 +184,19 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::EDGetTokenT<edm::MergeableCounter> cr2P2FCounterToken_;
   edm::EDGetTokenT<edm::MergeableCounter> cr3P1FCounterToken_;          
 
-
+  // jet utilities
+  JME::JetResolutionScaleFactor jetRes_sf;
+  JME::JetResolution jetRes_pt;
+  JME::JetResolution jetRes_phi;
   // --------------------------------------------------------- //
 
   // Ordinary data members
   std::string sampleName_;
+  std::string jetAlgo_;
+  std::string jetRes_file_pt;
+  std::string jetRes_file_phi;
+  std::string jetRes_file_sf;
+
   bool isMC_;
   int  sampleType_;
   int  setup_;
@@ -195,6 +205,7 @@ class TreePlanter: public edm::EDAnalyzer {
   bool applyMCSel_;
 
   std::vector<double> theXSections;
+  double rho_;
   double externalCrossSection_;
   Double_t summcprocweights_;
   Double_t sumpuweights_;

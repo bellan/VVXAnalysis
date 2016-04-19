@@ -15,6 +15,7 @@
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/Common/interface/Ptr.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
+#include <JetMETCorrections/Modules/interface/JetResolution.h>
 #include <DataFormats/PatCandidates/interface/PFParticle.h>
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
@@ -66,6 +67,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theZZToken       (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZZ"       )))
   , theZLToken       (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZL"       )))
   , theMETToken      (consumes<pat::METCollection>                 (config.getParameter<edm::InputTag>("MET"      )))
+  , theRhoToken      (consumes<double>                             (edm::InputTag("fixedGridRhoFastjetAll","")))
   , theVertexToken   (consumes<std::vector<reco::Vertex> >         (config.getParameter<edm::InputTag>("Vertices" )))
   , thePreSkimCounterToken       (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("preSkimCounter"              )))
   , prePreselectionCounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("prePreselectionCounter"      )))
@@ -76,6 +78,10 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , cr2P2FCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("cr2P2FCounterToken"          )))
   , cr3P1FCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("cr3P1FCounterToken"          )))
   , sampleName_      (config.getParameter<std::string>("sampleName"))
+  , jetAlgo_         (config.getParameter<std::string>("JetAlgo"       )) //To use DB. to be fixed
+  , jetRes_file_pt   (config.getParameter<edm::FileInPath>("jetResFile_pt").fullPath())
+  , jetRes_file_phi  (config.getParameter<edm::FileInPath>("jetResFile_phi").fullPath())
+  , jetRes_file_sf   (config.getParameter<edm::FileInPath>("jetResFile_SF").fullPath())
   , isMC_            (config.getUntrackedParameter<bool>("isMC",false))
   , sampleType_      (config.getParameter<int>("sampleType"))
   , setup_           (config.getParameter<int>("setup"))
@@ -349,6 +355,11 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   edm::Handle<std::vector<reco::Vertex> > vertices; event.getByToken(theVertexToken, vertices);
   nvtx_ = vertices->size();
     
+  edm::Handle<double> rhoHandle;   
+  event.getByToken(theRhoToken, rhoHandle);
+
+  rho_ = *rhoHandle;
+
   if(isMC_){
     
     for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p){ 
@@ -414,6 +425,14 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
     phys::Lepton physelectron =  fill(electron);
     electrons_.push_back(physelectron);
   }
+
+  //  jetRes_sf = JME::JetResolutionScaleFactor::get(setup,jetAlgo_); //To use DB. To be fixed
+  //  jetRes_pt = JME::JetResolution::get(setup,jetAlgo_+"_pt");                                                                            
+  //  jetRes_phi = JME::JetResolution::get(setup,jetAlgo_+"_phi");                                                                          
+
+  jetRes_pt  = JME::JetResolution(jetRes_file_pt);
+  jetRes_phi = JME::JetResolution(jetRes_file_phi);
+  jetRes_sf  = JME::JetResolutionScaleFactor(jetRes_file_sf);
 
   // No further selection on jets, all is made in the .py file
   foreach(const pat::Jet& jet, *jets){
@@ -548,6 +567,20 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   output.jecUnc_    = jet.userFloat("jec_unc");
 
   // JER
+  if(isMC_){                                                                                                                                              
+
+    JME::JetParameters jetParam;                                                                                                                      
+    jetParam.setJetPt(output.pt());                                                                                                             jetParam.setJetEta(output.eta());                                                                                                           jetParam.setRho(rho_);                                                                                                                 
+
+    JME::JetParameters jetParam_sf = {{JME::Binning::JetEta, output.eta()}, {JME::Binning::Rho, rho_}};
+
+    output.sigma_MC_pt_   = jetRes_pt.getResolution(jetParam);
+    output.sigma_MC_phi_  = jetRes_phi.getResolution(jetParam);
+    output.jer_c_         = jetRes_sf.getScaleFactor(jetParam_sf);
+    output.jer_cup_       = jetRes_sf.getScaleFactor(jetParam_sf, Variation::UP);
+    output.jer_cdown_     = jetRes_sf.getScaleFactor(jetParam_sf, Variation::DOWN);  
+ }  
+
   // if(isMC_){
   //   std::vector<float> fx, fY;
   //   fx.push_back(output.eta()); // Jet Eta
