@@ -29,6 +29,8 @@ Recipe for the tree production step
   - ```git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis```
   - cd VVXAnalysis
   - git checkout miniAOD
+- Check-out the jet resolution constabts
+  - ```git clone https://github.com/cms-jet/JRDatabase.git JRDatabase```
 - Compile the code with ```scram b```
 - in ```VVXAnalysis/Producers/test/analysis_ZZW.py``` there is an example on cmsRun configuration for an interactive run.
 - in ```ZZAnalysis/AnalysisStep/test/prod``` there are queue tools useful for submission/check-status/resubmission/merging.
