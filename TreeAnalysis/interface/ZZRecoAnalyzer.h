@@ -41,12 +41,20 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
 
   float m4L;
   float m4L_gen;
+  float drzz;
+  float drzz_gen;
   int ngenjets;
   float mjj_gen;
   float deta_gen;
   int ngencentraljets;
   float mjj_gen_cj;
   float deta_gen_cj;
+  float ptjet1_gen;
+  float ptjet2_gen; 
+  float etajet1_gen;
+  float etajet2_gen;
+  float ptZZ;
+  float min_dR;
   Int_t nUpJESDatajets;
   Int_t  nDownJESDatajets;
   Int_t nUpJESDatacentraljets;
@@ -61,9 +69,18 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
   Int_t nDownJERcentraljets; 
   Int_t nUpJEScentraljets; 
   Int_t nDownJEScentraljets;
+  Int_t jet_count;
+  Int_t inFiducialRegion;
+  Int_t inGenAndReco;
+  float w_kf;
+  float dphizz;
+  float dphizz_gen;
+  float ptzz;
+  float ptzz_gen;
+  int nEvent;
 
   double JER_PtSmear(double pt, double width);
-  // Jets obtained by gaussian JER smearing
+ // Jets obtained by gaussian JER smearing
   std::vector<phys::Jet> *CentralJER_jets;
   std::vector<phys::Jet> *UpJER_jets;
   std::vector<phys::Jet> *DownJER_jets;
@@ -83,12 +100,22 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
   std::vector<phys::Jet> *UpJESData_centraljets;
   std::vector<phys::Jet> *DownJESData_centraljets;
 
+  std::vector<double> *CentralJER_jetPt;
+  std::vector<double> *UpJER_jetPt;
+  std::vector<double> *DownJER_jetPt;
+  std::vector<double> *UpJES_jetPt;
+  std::vector<double> *DownJES_jetPt;
+  std::vector<double> *UpJESData_jetPt;
+  std::vector<double> *DownJESData_jetPt;
+
+
   TFile * UnfOverMC;
   TFile * UnfOverMC_Pow;
   TH1 * h_UnfOverMC_Mass; 
   TH1 * h_UnfOverMC_Jets; 
   TH1 * h_UnfOverMC_Mjj; 
   TH1 * h_UnfOverMC_Deta; 
+  
 
  private:
   
@@ -98,9 +125,17 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
   std::vector<double> Ybins; 
   std::vector<double> Xbins_deta;
   std::vector<double> Xbins_mjj;
-
+  std::vector<double> Xbins_ptjet1;
+  std::vector<double> Xbins_ptjet2;
+  std::vector<double> Xbins_etajet1;
+  std::vector<double> Xbins_etajet2;
+  std::vector<double> Xbins_ptZZ;
+  std::vector<double> Xbins_dphi; 
+  std::vector<double> Xbins_drzz; 
+  std::vector<double> Xbins_ptzz;
+  std::vector<double> Xbins_dphizz;
   LeptonScaleFactors lepSF;
-
+ 
   template< class PAR >
     bool ZBosonDefinition(phys::Boson<PAR> cand) const{
     return fabs(cand.p4().M() - phys::ZMASS) < 20;

@@ -36,17 +36,20 @@ public:
   float deta_gen;
   float mjj_gen_cj;
   float deta_gen_cj;
+  float ptjet1_gen;
+  float ptjet2_gen;
+  float etajet1_gen;
+  float etajet2_gen; 
+  float drzz_gen;
   int njets;
   int ncentraljets;
   int PreCounter;
-
-  TFile * UnfOverMC;
-  TFile * UnfOverMC_Pow;
-
-  TH1 * h_UnfOverMC_Mass; 
-  TH1 * h_UnfOverMC_Jets;
-  TH1 * h_UnfOverMC_Mjj; 
-  TH1 * h_UnfOverMC_Deta;
+  int inFiducialRegion;
+  int nEvent;
+  float w_kf;
+  float dphizz_gen;
+  float ptzz_gen;
+  
  private:
 
   friend class Selector<ZZMCAnalyzer>;
@@ -55,6 +58,13 @@ public:
   std::vector<double> Xbins_mjj;  
   std::vector<double> Xbins_deta;
   std::vector<double> Ybins; 
+  std::vector<double> Xbins_ptjet1;
+  std::vector<double> Xbins_ptjet2;
+  std::vector<double> Xbins_etajet1;
+  std::vector<double> Xbins_etajet2; 
+  std::vector<double> Xbins_drzz;
+  std::vector<double> Xbins_ptzz;
+  std::vector<double> Xbins_dphizz;
 
   LeptonScaleFactors lepSF;
 
