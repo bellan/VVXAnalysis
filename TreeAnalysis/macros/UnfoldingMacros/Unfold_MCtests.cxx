@@ -5,13 +5,11 @@
 using std::cout;
 using std::endl;
 
-//#include "TRandom.h"
 #include <TROOT.h>
 #include <TFile.h>
 #include <TStyle.h>
 #include "TH1D.h"
 #include "TMatrix.h"
-//#include "TArray.h"
 #include "TH2.h"
 #include "TLegend.h"
 #include "RooUnfoldResponse.h"
@@ -19,40 +17,60 @@ using std::endl;
 #include "RooUnfoldSvd.h"
 #include "RooUnfoldTUnfold.h"
 #include "TCanvas.h"
-//#include "../RooUnfold-1.1.1/src/TSVDUnfold.h"
+#include "TFrame.h"
 #include "TPad.h"
+#include "tdrstyle.C"
+#include "CMS_lumi.C"
 #endif
 
 //This macro tests the unfolding procedure on MC samples
 
-void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0, int it = 4, bool MadMatrix =1, bool MadDistribution = 1, bool FullSample = 0)
+void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0, int it = 4, bool MadMatrix =1, bool MadDistribution = 1, bool FullSample = 0,bool tightregion = 0, string date = "test")
 {
   
 #ifdef __CINT__
   gSystem->Load("libRooUnfold");
 #endif 
+  system(("mkdir ~/www/VBS/"+date+"/").c_str()); 
+  system(("cp ~/www/VBS/index.php ~/www/VBS/"+date+"/").c_str()); 
+  system(("mkdir ~/www/VBS/"+date+"/"+ var+"/").c_str()); 
+  system(("cp ~/www/VBS/index.php ~/www/VBS/"+date+"/"+ var+"/").c_str());
+  system(("mkdir ~/www/VBS/"+date+"/"+ var+"/MCTests").c_str()); 
+  system(("cp ~/www/VBS/index.php ~/www/VBS/"+date+"/"+ var+"/MCTests").c_str());
+  
+  setTDRStyle();
+  string fs;
+  if(finalstate == "4m") fs = "4#mu";
+  else if(finalstate == "2e2m") fs = "2e2#mu";
+  else fs = finalstate;
+  
+  string label = fs + " channel";
+  int iPeriod = 2; 
+  int iPos = 11; 
+  writeExtraText = true;    
+  extraText  = "Simulation";
+  extraText2  = label.c_str();
+  string tightfr;
+  if(tightregion == 1) tightfr = "_fr";
+  else tightfr = "";
   
   gROOT->SetStyle("Plain");  
   gStyle->SetOptStat(0);
   gStyle->SetPalette(1,0);
-  
+   
   TH1 * h_true; 
   TH1 * h_measured; 
   TH1 * h_measured_unf; 
   TH1 * h_true_unf; 
   TH2 * h_Resmat;
   TH1 * hReco;
-  // TMatrixD * cov;
-  // TVectorD * Vcov_stat; 
-  // TVectorD * Vcov_unf; 
-  string  filePath = "/../../";
-  string fileName = filePath+var+"_test/matrices.root";
-  string fileName_Pow =filePath +var+"_test/matrices_Pow.root"; 
+ 
+  string  filePath = "../../test/";
+  string fileName = filePath+var+"_test/matrices"+tightfr+"_Mad.root";
+  string fileName_Pow =filePath +var+"_test/matrices"+tightfr+"_Pow.root"; 
 
   TFile *file_mad = new TFile(fileName.c_str());
   TFile *file_pow = new TFile(fileName_Pow.c_str());
- 
-  //TFile *output = new TFile("testUnfoldData.root", "UPDATE");
  
   string matrixName; 
   string histoName; 
@@ -64,7 +82,7 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
    matrixName = "ResMat_qqggJJ_"+var+"_ZZTo" + finalstate + "_st_0";
    histoName = var+"_qqggJJ_ZZTo" + finalstate + "_st_0";
    histoNamegen = var+"Gen_qqggJJ_ZZTo" + finalstate + "_st_0";
-   histoName_unf =  var+"_qqggJJ_ZZTo" + finalstate + "_st_1"; //same as histoName, MC test n1
+   histoName_unf =  var+"_qqggJJ_ZZTo" + finalstate + "_st_1"; 
    histoNameGen_unf = var+"Gen_qqggJJ_ZZTo" + finalstate + "_st_1";
  }
  
@@ -72,7 +90,7 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
    matrixName = "ResMat_qqggJJ_"+var+"_ZZTo" + finalstate + "_st_01";
    histoName = var+"_qqggJJ_ZZTo" + finalstate + "_st_01";
    histoNamegen = var+"Gen_qqggJJ_ZZTo" + finalstate + "_st_01";
-   histoName_unf =  var+"_qqggJJ_ZZTo" + finalstate + "_st_01"; //same as histoName, MC test n1
+   histoName_unf =  var+"_qqggJJ_ZZTo" + finalstate + "_st_01"; 
    histoNameGen_unf = var+"Gen_qqggJJ_ZZTo" + finalstate + "_st_01";
  } 
   
@@ -110,19 +128,24 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
     hReco= (TH1*) unfold_svd.Hreco(RooUnfold::kCovariance);
   }
 
-  string fs;
   string XaxisTitle;
-  if(finalstate == "4m") fs = "4#mu";
-  else if(finalstate == "2e2m") fs = "2e2#mu";
-  else fs = finalstate;
-  
-  if(var == "Mass") XaxisTitle = "m_{" + fs + "}"; 
-  else if(var == "Jets")  XaxisTitle = "N Jets (" + fs + " final state)";
-
+  if(var == "Mass") XaxisTitle = "m_{4l} [GeV]"; 
+  else if(var == "Jets")  XaxisTitle = "N jets (|#eta^{jet}| < 4.7)";
+  else if(var == "CentralJets")  XaxisTitle = "N jets (|#eta^{jet}| < 2.4)"; 
+  else if(var == "Mjj") {XaxisTitle ="m_{jj} (|#eta^{jet}| < 4.7) [GeV]";}
+  else if(var == "CentralMjj") {XaxisTitle ="m_{jj} (|#eta^{jet}| < 2.4) [GeV]";}
+  else if( var == "Deta"){ XaxisTitle ="#Delta#eta_{jj} (|#eta^{jet}| < 4.7)";}
+  else if(var == "CentralDeta"){ XaxisTitle ="#Delta#eta_{jj} (|#eta^{jet}| < 2.4)";}
+  else if(var =="PtJet1")  XaxisTitle = "p_{T}^{jet1} [GeV]";
+  else if(var =="PtJet2")  XaxisTitle = "p_{T}^{jet2} [GeV]";
+  else if(var =="EtaJet1")  XaxisTitle = "|#eta^{jet1}|";
+  else if(var =="EtaJet2")  XaxisTitle = "|#eta^{jet2}|";
+  else if(var =="dRZZ")  XaxisTitle = "#DeltaR(Z_{1},Z_{2})";
+ 
   string YaxisTitle = "Events";
   string YaxisTitle2 = "Unfolded/True";
   TCanvas *c = new TCanvas ("c","c");
-  TLegend *leg = new TLegend(0.65,0.65,0.45,0.85); 
+  TLegend *leg = new TLegend(0.80,0.65,0.60,0.85); 
   leg->SetFillColor(kWhite);
   leg->SetBorderSize(0);
   leg->SetTextSize(0.03);
@@ -131,34 +154,51 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
 
   c->cd();
   
-  TPad  *pad1 = new TPad("pad1","", 0., 0.2, 1.0, 1.0);
+  TPad  *pad1 = new TPad("pad1","", 0., 0.22, 1.0, 1.0);
   pad1->SetTopMargin (0.10);
   pad1->SetRightMargin (0.10);
   pad1->SetLeftMargin (0.10);
   pad1->Draw();
   
-  c->cd();
-  TPad  *pad2 = new TPad("pad2", "", 0., 0.0,  1.0, 0.2);
+  c->cd(); 
+  TPad  *pad2 = new TPad("pad2", "", 0., 0.0,  1.0, 0.28);
   pad2->SetTopMargin (0.10);
   pad2->SetRightMargin (0.10);
   pad2->SetLeftMargin (0.10);
+  pad2->SetBottomMargin (0.35);
   pad2->Draw(); 
     
   pad1->cd();
-  //h_true_unf->SetTitle(title.c_str());
   h_true_unf->SetTitle("");
   h_true_unf->GetXaxis()->SetRange(0,25);
   h_true_unf->GetXaxis()->SetTitle(XaxisTitle.c_str()); 
   h_true_unf->GetYaxis()->SetTitle(YaxisTitle.c_str());
-  // float max = h_true_unf->GetBinContent(2)+20;
-  // h_true_unf->SetMaximum(max);
+  
+  float max = 0;
+
+  if(var == "Mjj" ||var == "CentralMjj" ||var == "Deta" ||var == "CentralDeta"){ 
+    //max = h_true_unf->GetMaximum()+2;
+    //h_true_unf->SetMaximum(max);
+  }
+  else if(var == "PtJet1"||var == "PtJet2"){
+    //max = hReco->GetMaximum()+5;
+    //h_true_unf->SetMaximum(max);
+  }
+  else if(var == "EtaJet1"||var == "EtaJet2"){
+    // max = hReco->GetMaximum()+5;
+    //h_true_unf->SetMaximum(max);
+  }
   h_true_unf->SetMinimum(0); 
   h_true_unf->SetMarkerColor(8);
   h_true_unf->SetMarkerStyle(8);
   h_true_unf->SetLineColor(8); 
   h_true_unf->SetLineWidth(1);
-  h_true_unf->Draw("HIST E");
-  
+  h_true_unf->Draw("HIST");
+  h_true_unf->GetXaxis()->SetLabelOffset(0.5); 
+  max = h_true_unf->GetMaximum()*1.5;
+  h_true_unf->SetMaximum(max);
+   h_true_unf->GetYaxis()->SetTitleSize(0.04); 
+  h_true_unf->Draw("HIST");
   hReco->SetLineColor(kBlue);
   hReco->SetLineWidth(1);
   hReco->SetMarkerColor(kBlue);
@@ -195,17 +235,43 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
     hReco_r->SetBinContent(k,ratio); 
     hReco_r->SetBinError(k,err_ratio);
   }
-
+  
   pad2->cd();
   hReco_r->SetTitle(""); 
+  hReco_r->GetXaxis()->SetLabelSize(0.13); 
+  if(var == "Jets" || var == "CentralJets"){
+   hReco_r->GetXaxis()->SetBinLabel(1,"0");
+   hReco_r->GetXaxis()->SetBinLabel(2,"1");
+   hReco_r->GetXaxis()->SetBinLabel(3,"2");
+   hReco_r->GetXaxis()->SetBinLabel(4,">2");  
+   hReco_r->GetXaxis()->SetLabelFont(42);
+    //h_true->GetXaxis()->SetLabelOffset(0.02);
+   hReco_r->GetXaxis()->SetLabelSize(0.17);
+  }
+
+  hReco_r->GetYaxis()->SetLabelSize(0.10);  
+  hReco_r->GetYaxis()->SetNdivisions(306); 
+  hReco_r->GetXaxis()->SetLabelOffset(0.05);
+  hReco_r->GetXaxis()->SetTitleOffset(1.3); 
+  hReco_r->GetYaxis()->SetTitleOffset(0.4);
+  hReco_r->GetYaxis()->SetTitleSize(0.10);
+  hReco_r->GetXaxis()->SetTitleSize(0.13);
   hReco_r->SetMarkerColor(1);
   hReco_r->SetLineColor(1); 
   hReco_r->GetXaxis()->SetTitle(XaxisTitle.c_str()); 
   hReco_r->GetYaxis()->SetTitle(YaxisTitle2.c_str());
-  hReco_r-> SetMaximum(1.5); 
-  hReco_r-> SetMinimum(0.5);
+  hReco_r-> SetMaximum(2.); 
+  hReco_r-> SetMinimum(0.);
   hReco_r->Draw("E");
 
+  lumiTextSize     = 0.4;
+  cmsTextSize      = 0.48;
+  extraOverCmsTextSize  = 0.80;//0.63;
+  CMS_lumi(pad1, iPeriod, iPos );
+  //pad1->Update();
+  //pad1->RedrawAxis();
+  //pad1->GetFrame()->Draw();
+  
   string pdf;
   string png;
   string sample;
@@ -220,35 +286,61 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
  if(MadDistribution == 1)distr = "MadDistr";
  else distr = "PowDistr";
 
-  pdf = var+"_ZZTo" + finalstate + "_" +var+"_"+ matrix + "_" + distr + "_" + sample + ".pdf";
-  png = var+"_ZZTo" + finalstate + "_" +var+"_"+ matrix + "_" + distr + "_" + sample + ".png";
-  // c->Print(pdf.c_str());
-  // c->Print(png.c_str());
-   // // // output->cd();   
-  // // // hReco->Write(UnfHistoName.c_str());
-  // // // h_measured_unf->Write(HistoName.c_str());
-  // // // h_true_unf->Write(TrueHistoName.c_str());
-  // // // output->Close();
-
-
-}
-
-void MakeAllTest(string var = "Mass",string finalstate = "4e"){
+  pdf = "~/www/VBS/"+date+"/"+ var+"/MCTests/"+var+"_ZZTo" + finalstate + "_"+ matrix + "_" + distr + "_" + sample + tightfr +".pdf";
+  png = "~/www/VBS/"+date+"/"+ var+"/MCTests/"+var+"_ZZTo" + finalstate + "_"+ matrix + "_" + distr + "_" + sample + tightfr +".png";
+  c->Print(pdf.c_str());
+  c->Print(png.c_str());
   
-  Unfold_MCtest(var.c_str(),finalstate.c_str(), 0, 4,1, 1, 1);
-  Unfold_MCtest(var.c_str(),finalstate.c_str(), 0, 4,1, 1, 0);
-  Unfold_MCtest(var.c_str(),finalstate.c_str(), 0, 4,1, 0, 1);
-  Unfold_MCtest(var.c_str(),finalstate.c_str(), 0, 4,0, 1, 1);
-  Unfold_MCtest(var.c_str(),finalstate.c_str(), 0, 4,0, 0, 1);
-  Unfold_MCtest(var.c_str(),finalstate.c_str(), 0, 4,0, 0, 0); 
+  //output->cd();   
+  //hReco->Write(UnfHistoName.c_str());
+  //h_measured_unf->Write(HistoName.c_str());
+  //h_true_unf->Write(TrueHistoName.c_str());
+  //output->Close();
+
+
 }
 
-void MakeAllFinalStates (string var = "Mass"){//,bool MadOnPow =0,bool PowOnMad =0){
-  MakeAllTest(var.c_str(),"4e");
-  MakeAllTest(var.c_str(),"4m");
-  MakeAllTest(var.c_str(),"2e2m");
+void MakeAllTest(string var = "Mass",string finalstate = "4e",bool bayes = 0, int it = 4, bool tightregion = 0, string date = "test"){
+  
+  Unfold_MCtest(var.c_str(),finalstate.c_str(), bayes, it,1, 1, 1,tightregion,date);
+  Unfold_MCtest(var.c_str(),finalstate.c_str(), bayes, it,1, 1, 0,tightregion,date);
+  Unfold_MCtest(var.c_str(),finalstate.c_str(), bayes, it,1, 0, 1,tightregion,date);
+  Unfold_MCtest(var.c_str(),finalstate.c_str(), bayes, it,0, 1, 1,tightregion,date);
+  Unfold_MCtest(var.c_str(),finalstate.c_str(), bayes, it,0, 0, 1,tightregion,date);
+  Unfold_MCtest(var.c_str(),finalstate.c_str(), bayes, it,0, 0, 0,tightregion,date); 
+ 
 }
 
+void MakeAllFinalStates (string var = "Mass",bool bayes = 0, int it = 4, bool tightregion = 0, string date = "test"){
+  MakeAllTest(var.c_str(),"4e",bayes,it,tightregion,date);
+  MakeAllTest(var.c_str(),"4m",bayes,it,tightregion,date);
+  MakeAllTest(var.c_str(),"2e2m",bayes,it,tightregion,date);
+}
+
+void MakeAllTests (bool bayes = 0, int it = 4, string date = "test"){
+  MakeAllFinalStates("Mass",bayes,it,0,date);
+  MakeAllFinalStates("Mass",bayes,it,1,date);
+  MakeAllFinalStates("Jets",bayes,it,0,date);
+  MakeAllFinalStates("Jets",bayes,it,1,date);
+  MakeAllFinalStates("CentralJets",bayes,it,0,date);
+  MakeAllFinalStates("CentralJets",bayes,it,1,date);
+  MakeAllFinalStates("CentralMjj",bayes,it,0,date);
+  MakeAllFinalStates("CentralMjj",bayes,it,1,date);  
+  MakeAllFinalStates("CentralDeta",bayes,it,0,date);
+  MakeAllFinalStates("CentralDeta",bayes,it,1,date); 
+  MakeAllFinalStates("Mjj",bayes,it,0,date);
+  MakeAllFinalStates("Mjj",bayes,it,1,date);  
+  MakeAllFinalStates("Deta",bayes,it,0,date);
+  MakeAllFinalStates("Deta",bayes,it,1,date);
+  MakeAllFinalStates("PtJet1",bayes,it,0,date);
+  MakeAllFinalStates("PtJet1",bayes,it,1,date);
+  MakeAllFinalStates("PtJet2",bayes,it,0,date);
+  MakeAllFinalStates("PtJet2",bayes,it,1,date);
+  MakeAllFinalStates("EtaJet1",bayes,it,0,date);
+  MakeAllFinalStates("EtaJet1",bayes,it,1,date);
+  MakeAllFinalStates("EtaJet2",bayes,it,0,date);
+  MakeAllFinalStates("EtaJet2",bayes,it,1,date);
+}
 #ifndef __CINT__
 int main () { Unfold_MCtest(); return 0; }  // Main program when run stand-alone
 #endif
