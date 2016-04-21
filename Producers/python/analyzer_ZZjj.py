@@ -4,27 +4,13 @@
 
 SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the chosen windows. For other topology see the README under VVXAnalysis/Commons.
 
-try:
-    PD
-except NameError:
-    PD = ""             # "" for MC, "DoubleEle", "DoubleMu", or "MuEG" for data 
+declareDefault("PD","",globals())
 
-try:
-    XSEC
-except NameError:
-    XSEC = -1
+declareDefault("XSEC",-1.,globals())
 
+declareDefault("MCFILTER","",globals())
 
-try:
-    MCFILTER
-except NameError:
-    MCFILTER = ""
-
-
-try:
-    SKIM_REQUIRED
-except NameError:
-    SKIM_REQUIRED = True
+declareDefault(SKIM_REQUIRED,True,globals())
 
 
 # Get absolute path

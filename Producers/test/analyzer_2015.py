@@ -20,8 +20,6 @@ import os
 PyFilePath = os.environ['CMSSW_BASE'] + "/src/VVXAnalysis/Producers/python/"
 execfile(PyFilePath + "analyzer_ZZjj.py")
 
-print "SELSETUP",SELSETUP
-print "BESTCAND_AMONG",BESTCAND_AMONG,"\n"
 ### ----------------------------------------------------------------------
 
 
@@ -39,4 +37,4 @@ process.source = cms.Source("PoolSource",fileNames = cms.untracked.vstring(
         ))
     #),eventsToProcess = cms.untracked.VEventRange('1:31907:6167667','1:31907:6167734')) #To look in singles events
 
-process.maxEvents.input = 100
+process.maxEvents.input = -1
