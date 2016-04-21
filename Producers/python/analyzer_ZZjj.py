@@ -354,8 +354,17 @@ if IsMC:
                                 )
     process.genCategory = genCategory
 
+    process.kFactor = cms.EDProducer('kfactorProducer',
+                                     isMC  = cms.untracked.bool(IsMC),
+                                     src            = cms.InputTag("prunedGenParticles"))
+    
+ 
     process.signalCounter    = cms.EDProducer("EventCountProducer")
-    process.signalDefinition = cms.Path(process.genCategory * process.signalCounter)
+    process.signalDefinition = cms.Path(process.genCategory * process.kFactor * process.signalCounter)
+    
+    
+
+#    process.signalDefinition = cms.Path(process.genCategory * process.signalCounter)
 
 
 

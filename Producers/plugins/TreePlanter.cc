@@ -35,6 +35,10 @@
 #define foreach BOOST_FOREACH
 
 #include <boost/assign/std/vector.hpp>
+
+#include <typeinfo>
+
+
 using namespace boost::assign;
 
 using std::cout;
@@ -68,6 +72,11 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theZLToken       (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZL"       )))
   , theMETToken      (consumes<pat::METCollection>                 (config.getParameter<edm::InputTag>("MET"      )))
   , theRhoToken      (consumes<double>                             (edm::InputTag("fixedGridRhoFastjetAll","")))
+  , thekfactorToken_ggZZ     (consumes<float>                              (edm::InputTag("kFactor","ggZZ")))
+  , thekfactorToken_qqZZM    (consumes<float>                              (edm::InputTag("kFactor","qqZZM")))
+  , thekfactorToken_qqZZPt   (consumes<float>                              (edm::InputTag("kFactor","qqZZPt")))
+  , thekfactorToken_qqZZdPhi (consumes<float>                              (edm::InputTag("kFactor","qqZZdPhi")))
+  , thekfactorToken_EWKqqZZ  (consumes<float>                              (edm::InputTag("kFactor","EWKqqZZ")))
   , theVertexToken   (consumes<std::vector<reco::Vertex> >         (config.getParameter<edm::InputTag>("Vertices" )))
   , thePreSkimCounterToken       (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("preSkimCounter"              )))
   , prePreselectionCounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("prePreselectionCounter"      )))
@@ -246,11 +255,15 @@ void TreePlanter::endJob(){
     countTree->Branch("postSkimSignalEvents"  , &postSkimSignalEvents_);
     countTree->Branch("eventsInEtaAcceptance"   , &eventsInEtaAcceptance_);
     countTree->Branch("eventsInEtaPtAcceptance" , &eventsInEtaPtAcceptance_);
-  }
+    countTree->Branch("kFactor_ggZZ"          , &kFactor_ggZZ_);
+    countTree->Branch("kFactor_qqZZM"         , &kFactor_qqZZM_);
+    countTree->Branch("kFactor_qqZZPt"        , &kFactor_qqZZPt_);
+    countTree->Branch("kFactor_qqZZdPhi"      , &kFactor_qqZZdPhi_);
+    countTree->Branch("kFactor_EWKqqZZ"       , &kFactor_EWKqqZZ_);  
+}
   
   countTree->Fill();
 }
-
 
 
 void TreePlanter::initTree(){
@@ -283,7 +296,14 @@ void TreePlanter::initTree(){
   genParticles_ = std::vector<phys::Particle>();
   genVBParticles_ = std::vector<phys::Boson<phys::Particle> >();
   genJets_ = std::vector<phys::Particle>();
- }
+
+  kFactor_ggZZ_     = 1; 
+  kFactor_qqZZM_    = 1; 
+  kFactor_qqZZPt_   = 1;
+  kFactor_qqZZdPhi_ = 1;
+  kFactor_EWKqqZZ_  = 1;
+
+}
 
 
 bool TreePlanter::fillEventInfo(const edm::Event& event){
@@ -296,7 +316,6 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   if (isMC_) {
     // Apply MC filter
     if (!filterController_.passMCFilter(event)) return false;
-
     if(mcHistoryTools_) delete mcHistoryTools_;
 
     event.getByToken(theGenCollectionToken, genParticles);
@@ -339,11 +358,9 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   passTrigger_ = filterController_.passTrigger(NONE, event, triggerWord_);
   if (applyTrigger_ && !passTrigger_) return false;
 
-
   // Check Skim requests
   passSkim_ = filterController_.passSkim(event, triggerWord_);
   if (applySkim_    && !passSkim_)   return false;
-
   run_       = event.id().run();
   event_     = event.id().event(); 
   lumiBlock_ = event.luminosityBlock();
@@ -357,11 +374,25 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     
   edm::Handle<double> rhoHandle;   
   event.getByToken(theRhoToken, rhoHandle);
-
+  
   rho_ = *rhoHandle;
 
   if(isMC_){
+
+    edm::Handle<float> kFactorHandle_ggZZ     ;   
+    edm::Handle<float> kFactorHandle_qqZZM    ;   
+    edm::Handle<float> kFactorHandle_qqZZPt   ;   
+    edm::Handle<float> kFactorHandle_qqZZdPhi ;   
+    edm::Handle<float> kFactorHandle_EWKqqZZ  ;   
+
+    if( event.getByToken( thekfactorToken_ggZZ    ,  kFactorHandle_ggZZ    ))  kFactor_ggZZ_     = *kFactorHandle_ggZZ    ;
+    if( event.getByToken( thekfactorToken_qqZZM   ,  kFactorHandle_qqZZM   ))  kFactor_qqZZM_    = *kFactorHandle_qqZZM   ;
+    if( event.getByToken( thekfactorToken_qqZZPt  ,  kFactorHandle_qqZZPt  ))  kFactor_qqZZPt_   = *kFactorHandle_qqZZPt  ;
+    if( event.getByToken( thekfactorToken_qqZZdPhi,  kFactorHandle_qqZZdPhi))  kFactor_qqZZdPhi_ = *kFactorHandle_qqZZdPhi;
+    if( event.getByToken( thekfactorToken_EWKqqZZ ,  kFactorHandle_EWKqqZZ ))  kFactor_EWKqqZZ_  = *kFactorHandle_EWKqqZZ ;
+
     
+
     for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p){ 
       if (p->status() == 1){
 	
@@ -570,8 +601,10 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   if(isMC_){                                                                                                                                              
 
     JME::JetParameters jetParam;                                                                                                                      
-    jetParam.setJetPt(output.pt());                                                                                                             jetParam.setJetEta(output.eta());                                                                                                           jetParam.setRho(rho_);                                                                                                                 
-
+    jetParam.setJetPt(output.pt());        
+    jetParam.setJetEta(output.eta());                                                                                     
+    jetParam.setRho(rho_);                                                                                                                 
+    
     JME::JetParameters jetParam_sf = {{JME::Binning::JetEta, output.eta()}, {JME::Binning::Rho, rho_}};
 
     output.sigma_MC_pt_   = jetRes_pt.getResolution(jetParam);
