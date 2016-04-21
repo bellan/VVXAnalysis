@@ -107,7 +107,7 @@ class TreePlanter: public edm::EDAnalyzer {
   Int_t signalDefinition_;
 
   // ------------------- Event info in the tree ------------------- //
-  Int_t event_;
+  Long64_t event_;
   Int_t run_;
   Int_t lumiBlock_;
   
