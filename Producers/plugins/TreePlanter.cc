@@ -159,6 +159,13 @@ void TreePlanter::beginJob(){
   theTree->Branch("genParticles"  , &genParticles_);
   theTree->Branch("genVBParticles", &genVBParticles_);
   theTree->Branch("genJets"       , &genJets_);
+
+  theTree->Branch("kFactor_ggZZ"          , &kFactor_ggZZ_);
+  theTree->Branch("kFactor_qqZZM"         , &kFactor_qqZZM_);
+  theTree->Branch("kFactor_qqZZPt"        , &kFactor_qqZZPt_);
+  theTree->Branch("kFactor_qqZZdPhi"      , &kFactor_qqZZdPhi_);
+  theTree->Branch("kFactor_EWKqqZZ"       , &kFactor_EWKqqZZ_);
+  
 }
 
 void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
@@ -255,11 +262,7 @@ void TreePlanter::endJob(){
     countTree->Branch("postSkimSignalEvents"  , &postSkimSignalEvents_);
     countTree->Branch("eventsInEtaAcceptance"   , &eventsInEtaAcceptance_);
     countTree->Branch("eventsInEtaPtAcceptance" , &eventsInEtaPtAcceptance_);
-    countTree->Branch("kFactor_ggZZ"          , &kFactor_ggZZ_);
-    countTree->Branch("kFactor_qqZZM"         , &kFactor_qqZZM_);
-    countTree->Branch("kFactor_qqZZPt"        , &kFactor_qqZZPt_);
-    countTree->Branch("kFactor_qqZZdPhi"      , &kFactor_qqZZdPhi_);
-    countTree->Branch("kFactor_EWKqqZZ"       , &kFactor_EWKqqZZ_);  
+  
 }
   
   countTree->Fill();
