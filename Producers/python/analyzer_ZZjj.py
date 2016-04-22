@@ -1,6 +1,7 @@
 ### ----------------------------------------------------------------------
 ### Based on ZZ->4l strategy.
 ###----------------------------------------------------------------------
+from ZZAnalysis.AnalysisStep.defaults import declareDefault
 
 SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the chosen windows. For other topology see the README under VVXAnalysis/Commons.
 
@@ -10,7 +11,7 @@ declareDefault("XSEC",-1.,globals())
 
 declareDefault("MCFILTER","",globals())
 
-declareDefault(SKIM_REQUIRED,True,globals())
+declareDefault("SKIM_REQUIRED",True,globals())
 
 
 # Get absolute path
