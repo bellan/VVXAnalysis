@@ -163,6 +163,12 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZLToken;
   edm::EDGetTokenT<pat::METCollection>                  theMETToken;
   edm::EDGetTokenT<double>                              theRhoToken;
+  edm::EDGetTokenT<float>                               thekfactorToken_ggZZ    ;
+  edm::EDGetTokenT<float>                               thekfactorToken_qqZZM   ;
+  edm::EDGetTokenT<float>                               thekfactorToken_qqZZPt  ;
+  edm::EDGetTokenT<float>                               thekfactorToken_qqZZdPhi;
+  edm::EDGetTokenT<float>                               thekfactorToken_EWKqqZZ ;
+
   //edm::EDGetTokenT<pat::METCollection>                  theMETNoHFToken;
   edm::EDGetTokenT<std::vector<reco::Vertex> >          theVertexToken;
 
@@ -206,6 +212,12 @@ class TreePlanter: public edm::EDAnalyzer {
 
   std::vector<double> theXSections;
   double rho_;
+  float kFactor_ggZZ_;
+  float kFactor_qqZZM_;
+  float kFactor_qqZZPt_;
+  float kFactor_qqZZdPhi_;
+  float kFactor_EWKqqZZ_;
+
   double externalCrossSection_;
   Double_t summcprocweights_;
   Double_t sumpuweights_;
