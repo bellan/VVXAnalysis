@@ -156,9 +156,8 @@ public:
   int unweightedEventsIn2P2FCR;
   int unweightedEventsIn3P1FCR;
 
-
   // Access to the branches
-  Int_t    event     ; TBranch *b_event;
+  Long64_t event     ; TBranch *b_event;
   Int_t    run       ; TBranch *b_run;
   Int_t    lumiBlock ; TBranch *b_lumiBlock;
   Int_t    nvtx      ; TBranch *b_nvtx;
@@ -181,7 +180,7 @@ public:
   std::vector<phys::Lepton> *muons; TBranch *b_muons;    
 
   //Electrons
-  std::vector<phys::Electron> *electrons; TBranch *b_electrons;
+  std::vector<phys::Lepton> *electrons; TBranch *b_electrons;
 
   // Persistent Jets (no eta cut, pT > 20 GeV)  
   std::vector<phys::Jet> *pjets; TBranch *b_pjets;
