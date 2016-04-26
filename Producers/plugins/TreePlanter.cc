@@ -80,12 +80,12 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theVertexToken   (consumes<std::vector<reco::Vertex> >         (config.getParameter<edm::InputTag>("Vertices" )))
   , thePreSkimCounterToken       (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("preSkimCounter"              )))
   , prePreselectionCounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("prePreselectionCounter"      )))
-  , postPreselectionCounterToken_(consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("postPreselectionCounterToken")))
-  , signalCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("signalCounterToken"          )))
-  , postSkimSignalCounterToken_  (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("postSkimSignalCounterToken"  )))
-  , srCounterToken_              (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("srCounterToken"              )))
-  , cr2P2FCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("cr2P2FCounterToken"          )))
-  , cr3P1FCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("cr3P1FCounterToken"          )))
+  , postPreselectionCounterToken_(consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("postPreselectionCounter")))
+  , signalCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("signalCounter"          )))
+  , postSkimSignalCounterToken_  (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("postSkimSignalCounter"  )))
+  , srCounterToken_              (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("signalCounter"              )))
+  , cr2P2FCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("cr2P2FCounter"          )))
+  , cr3P1FCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("cr3P1FCounter"          )))
   , sampleName_      (config.getParameter<std::string>("sampleName"))
   , jetAlgo_         (config.getParameter<std::string>("JetAlgo"       )) //To use DB. to be fixed
   , jetRes_file_pt   (config.getParameter<edm::FileInPath>("jetResFile_pt").fullPath())
@@ -300,11 +300,11 @@ void TreePlanter::initTree(){
   genVBParticles_ = std::vector<phys::Boson<phys::Particle> >();
   genJets_ = std::vector<phys::Particle>();
 
-  kFactor_ggZZ_     = 1; 
-  kFactor_qqZZM_    = 1; 
-  kFactor_qqZZPt_   = 1;
-  kFactor_qqZZdPhi_ = 1;
-  kFactor_EWKqqZZ_  = 1;
+  kFactor_ggZZ_     = 1.; 
+  kFactor_qqZZM_    = 1.; 
+  kFactor_qqZZPt_   = 1.;
+  kFactor_qqZZdPhi_ = 1.;
+  kFactor_EWKqqZZ_  = 1.;
 
 }
 
