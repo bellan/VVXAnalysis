@@ -83,7 +83,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , postPreselectionCounterToken_(consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("postPreselectionCounter")))
   , signalCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("signalCounter"          )))
   , postSkimSignalCounterToken_  (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("postSkimSignalCounter"  )))
-  , srCounterToken_              (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("signalCounter"              )))
+  , srCounterToken_              (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("srCounter" ))) 
   , cr2P2FCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("cr2P2FCounter"          )))
   , cr3P1FCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("cr3P1FCounter"          )))
   , sampleName_      (config.getParameter<std::string>("sampleName"))
@@ -347,7 +347,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     puweight_ = PUWeighter_.weight(sampleType_, setup_, ntruePUInt_);
     
     mcprocweight_ = mcHistoryTools_->gethepMCweight();
-    
+
     // Sum of weight, particularly imprtant for MCs that return also negative weights
     // or, in general, weighted events
     sumpuweights_       += puweight_;
