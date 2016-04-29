@@ -104,12 +104,12 @@ void VVXAnalyzer::analyze(){
   theHistograms.fill("Z2MassResolution","Resolution on Z2 mass", 100, -50, 50, genZ2.mass()-ZZ->second().mass());
   theHistograms.fill("ZZMassResolution","Resolution on ZZ mass", 100, -50, 50, genZZ.mass()-ZZ->mass());
 
-  if(topology.test(0)){
+  if(topology.test(2)){
       theHistograms.fill("Z1MassResolution_Signal","Resolution on Z1 mass", 100, -50, 50, genZ1.mass()-ZZ->first().mass());
       theHistograms.fill("Z2MassResolution_Signal","Resolution on Z2 mass", 100, -50, 50, genZ2.mass()-ZZ->second().mass());
       theHistograms.fill("ZZMassResolution_Signal","Resolution on ZZ mass", 100, -50, 50, genZZ.mass()-ZZ->mass());
     }
-  if(!topology.test(0)){
+  if(!topology.test(2)){
       theHistograms.fill("Z1MassResolution_NoSignal","Resolution on Z1 mass", 100, -50, 50, genZ1.mass()-ZZ->first().mass());
       theHistograms.fill("Z2MassResolution_NoSignal","Resolution on Z2 mass", 100, -50, 50, genZ2.mass()-ZZ->second().mass());
       theHistograms.fill("ZZMassResolution_NoSignal","Resolution on ZZ mass", 100, -50, 50, genZZ.mass()-ZZ->mass());

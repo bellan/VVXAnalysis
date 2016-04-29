@@ -492,8 +492,7 @@ std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::
   
   bool inZMassWindow = true;
 
-  //  if(Z0.mass() > 120. || Z0.mass() < 60. || Z1.mass() > 120. || Z1.mass() < 60.) #DEL #HOT
-  if(Z0.mass() > 120. || Z0.mass() < 40. || Z1.mass() > 120. || Z1.mass() < 4.)
+  if(Z0.mass() > 120. || Z0.mass() < 40. || Z1.mass() > 120. || Z1.mass() < 60.) //Higgs range mass. ZZ range is selected with a specific bit.
       inZMassWindow = false;
 
   if(!passllLowMass || !inZMassWindow) return std::make_tuple(false, Z0, Z1);
@@ -795,53 +794,47 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   
   bool has5leptons      = theGenl.size() == 5;
 
-  bool isLeptonAcceptance = inLeptonAcceptance(Z0,Z1);  
+  bool isLeptonAcceptance   = inLeptonAcceptance(Z0,Z1);  
 
   bool isZZLeptonAcceptance = inZZLeptonAcceptance(Z0,Z1);  
 
-  bool isHZZMassRange =  (Z0.mass() > 40 && Z0.mass() < 120 && Z1.mass() > 12 && Z1.mass() < 120 &&  ZZ.mass() > 100);
+  bool isInTriggerPlateau   = inTriggerPlateau(Z0,Z1);
 
-  bool isZZFullMassRange =  (Z0.mass() > 40 && Z0.mass() < 120 && Z1.mass() > 4. && Z1.mass() < 120 &&  ZZ.mass() > 50);
+  bool isZZTightFidRegion   =  (isZZLeptonAcceptance && isInTriggerPlateau);
 
-  bool isZZMassRange  =     (Z0.mass() > 60 && Z0.mass() < 120 && Z1.mass() > 60. && Z1.mass() < 120 &&  ZZ.mass() > 100);//isHZZMassRange ? 0 : (Z0.mass() > 60 && Z1.mass() > 60);
+  bool isHZZTightFidRegion  =  (isLeptonAcceptance && isInTriggerPlateau);
 
-  bool isInTriggerPlateau = inTriggerPlateau(Z0,Z1);
-
-  bool isZZFullTightFidRegion =  (isZZLeptonAcceptance && isInTriggerPlateau && isZZFullMassRange);
-
-  bool isHZZTightFidRegion    =  (isLeptonAcceptance && isInTriggerPlateau && isHZZMassRange);
-
-  bool isZZTightFidRegion     =  (isZZLeptonAcceptance && isInTriggerPlateau && isZZMassRange);
+  bool isZZMassRange = (Z0.mass() > 60 && Z0.mass() < 120 && Z1.mass() > 60. && Z1.mass() < 120 && ZZ.mass() > 100);
 
   // Definition of the topologies 
 
-  topology.set(0);                         //ZZ4l 
+  topology.set(0);                            //ZZ4l in HZZ fiducial region
+
+  if(isHZZTightFidRegion) topology.set(1);    //ZZ4l with leptons in  HZZ tight fiducial region
   
-  if(hasJets)          topology.set(1);    //ZZ4l + jets (pT>30 GeV and |eta| < 4.7)
+  if(isZZMassRange) topology.set(2);          //ZZ4l in ZZ fiducial region
+
+  if(isZZTightFidRegion) topology.set(3);     //ZZ4l with leptons in ZZ tight fiducial region
+
+  if(hasJets)          topology.set(4);       //ZZ4l + jets (pT>30 GeV and |eta| < 4.7)
   
-  if(hasAtLeast2jets)  topology.set(2);    //ZZ4l + 2jets
+  if(hasAtLeast2jets)  topology.set(5);       //ZZ4l + 2jets
   
-  if(hasCentralJets)   topology.set(3);    //ZZ4l + jets (pT>30 GeV and |eta| < 2.4)
+  if(hasCentralJets)   topology.set(6);       //ZZ4l + jets (pT>30 GeV and |eta| < 2.4)
   
-  if(foundWjj)         topology.set(4);    //ZZ4l + hadronic W
+  if(foundWjj)         topology.set(7);       //ZZ4l + hadronic W
   
-  if(foundZjj)         topology.set(5);    //ZZ4l + hadronic Z
+  if(foundZjj)         topology.set(8);       //ZZ4l + hadronic Z
   
-  if(has5leptons)      topology.set(6);    //ZZ4l + 1lepton
+  if(has5leptons)      topology.set(9);       //ZZ4l + 1lepton
 
   int Z0DaugID = Z0.daughter(0).id();  
   int Z1DaugID = Z1.daughter(1).id();
 
-  if(abs(Z0DaugID) == 13 || abs(Z1DaugID) == 13) topology.set(7);
-  if(abs(Z0DaugID) == 11 || abs(Z1DaugID) == 11) topology.set(8);
+  if(abs(Z0DaugID) == 13 || abs(Z1DaugID) == 13) topology.set(10);
+  if(abs(Z0DaugID) == 11 || abs(Z1DaugID) == 11) topology.set(11);
 
 
-  if(isZZFullMassRange) topology.set(9);       //ZZ4l in ZZ Full range fiducial region
-  if(isZZFullTightFidRegion) topology.set(10); //ZZ4l in ZZ Full range tight fiducial region
-  if(isHZZMassRange) topology.set(11);         //ZZ4l in HZZ Fiducial Region
-  if(isHZZTightFidRegion) topology.set(12);    //ZZ4l in HZZ tight fiducial region
-  if(isZZMassRange) topology.set(13);          //ZZ4l in ZZ Fiducial Region
-  if(isZZTightFidRegion) topology.set(14);     //ZZ4l in HZZ tight fiducial region
 
 
   // OLD definition

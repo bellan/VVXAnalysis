@@ -3,7 +3,7 @@
 ###----------------------------------------------------------------------
 from ZZAnalysis.AnalysisStep.defaults import declareDefault
 
-SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the chosen windows. For other topology see the README under VVXAnalysis/Commons.
+SIGNALDEFINITION = int('101',2)  # -1 means get everything, 1 means the request of having a HZZ pair with the  mass in the chosen windows. 11 means the request of having a ZZ pair with the  mass in the chosen windows. For other topology see the README under VVXAnalysis/Commons.
 
 declareDefault("PD","",globals())
 
@@ -12,6 +12,7 @@ declareDefault("XSEC",-1.,globals())
 declareDefault("MCFILTER","",globals())
 
 declareDefault("SKIM_REQUIRED",True,globals())
+
 
 
 # Get absolute path
@@ -81,33 +82,6 @@ process.postCleaningMuons = cms.EDProducer("PATMuonCleaner",
                                            # finalCut (any string-based cut for pat::Muons)
                                            finalCut = cms.string(''),
                                            )
-# To be added to update DB for JER. phi part is missing
-
-# process.load('Configuration.StandardSequences.Services_cff')
-# process.load("JetMETCorrections.Modules.JetResolutionESProducer_cfi")
-# from CondCore.DBCommon.CondDBSetup_cfi import *
-
-# process.jer = cms.ESSource("PoolDBESSource",
-#         CondDBSetup,
-#         toGet = cms.VPSet(
-#             # Resolution
-#             cms.PSet(
-#                 record = cms.string('JetResolutionRcd'),
-#                 tag    = cms.string('Fall15_25nsV2_MC_PhiResolution_AK4PFchs'),
-#                 label  = cms.untracked.string('AK4PFchs_pt')
-#                 ),
-
-#             # Scale factors
-#             cms.PSet(
-#                 record = cms.string('JetResolutionScaleFactorRcd'),
-#                 tag    = cms.string('Fall15_25nsV2_MC_SF_AK8PF.txt'),
-#                 label  = cms.untracked.string('AK4PFchs')
-#                 ),
-#             ),
-#         connect = cms.string('sqlite:Fall15_25nsV2_MC.db')
-#         )
-
-# process.es_prefer_jer = cms.ESPrefer('PoolDBESSource', 'jer')
 
 
 # Electrons cleaning. First, create a electron collection from the best ZZ candidate grand daughters
@@ -348,11 +322,6 @@ if IsMC:
  
     process.signalCounter    = cms.EDProducer("EventCountProducer")
     process.signalDefinition = cms.Path(process.genCategory * process.kFactor * process.signalCounter)
-    
-    
-
-#    process.signalDefinition = cms.Path(process.genCategory * process.signalCounter)
-
 
 
 ### ------------------------------------------------------------------------- ###
