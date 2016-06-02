@@ -19,7 +19,7 @@ class MCInfo {
   double internalCrossSection() const {return internalCrossSection_;}
   double externalCrossSection() const {return externalCrossSection_;}
   double crossSection()         const {return *crossSection_;}
-  double sampleWeight()         const {return sampleWeight_;}
+  double sampleWeight()         const {return sampleWeight_*mcProcWeight();}
   double mcProcWeight()         const {return mcprocweight_*genEvents_/summcprocweight_;}
   //double mcProcWeight()         const {return 1.;}
   double mcProcWeightNormalization() const {return genEvents_/summcprocweight_;}
@@ -28,7 +28,7 @@ class MCInfo {
   double puWeight()             const {return puweight_;}
 
   // Total MC weight of the event. Beware, it does not include DATA/MC correction! See instead below.
-  double weight()               const {return luminosity_ >= 0 ? sampleWeight()*mcProcWeight()*puWeight() : 1.;}
+  double weight()               const {return luminosity_ >= 0 ? sampleWeight()*puWeight() : 1.;}
 
   // Total weight of the event, including efficiency scale factors.
   double weight(const phys::DiBoson<phys::Lepton, phys::Lepton> &ZZ) const {return ZZ.fakeRateSF() * (luminosity_ >= 0 ? weight() * ZZ.efficiencySF() : 1.);}
@@ -44,9 +44,15 @@ class MCInfo {
   int approximateNeventsIn2P2FCR() const {return eventsIn2P2FCR_;}
   int approximateNeventsIn3P1FCR() const {return eventsIn3P1FCR_;}
 
+  bool isMC() const {return isMC_;}
+
+  std::string fileName() const {return filename_; }
+   //std::string fileName() const {return filename_;}
+
  private:
   friend class EventAnalyzer;
-  
+
+  std::string filename_;  
   // integrated luminosity
   double luminosity_;
   double internalCrossSection_;
@@ -83,6 +89,9 @@ class MCInfo {
   int eventsInSR_;
   int eventsIn2P2FCR_;
   int eventsIn3P1FCR_;
+
+  //others utilities
+  bool isMC_;
 };
 
 

@@ -78,8 +78,14 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   tree->SetBranchAddress("eventsInEtaAcceptance"  , &eventsInEtaAcceptance_  , &b_eventsInEtaAcceptance  );
   tree->SetBranchAddress("eventsInEtaPtAcceptance", &eventsInEtaPtAcceptance_, &b_eventsInEtaPtAcceptance);
     
+  filename_ = filename;
+  filename_.erase(0, filename_.find("/")+1); 
+  filename_.erase(filename_.find(".root")); 
 
- 
+  std::cout<<filename<<std::endl;
+  if((filename_.find("Single") != std::string::npos) || (filename_.find("Double") != std::string::npos) || (filename_.find("MuonEG") != std::string::npos)) isMC_ = kFALSE;
+  else isMC_=kTRUE;
+
   // temp variables
 
   int    totalEventsInSR     = 0;
