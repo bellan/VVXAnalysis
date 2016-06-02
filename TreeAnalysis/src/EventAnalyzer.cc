@@ -55,9 +55,11 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
   TChain *tree = new TChain("treePlanter/ElderTree");
   tree->Add(configuration.getParameter<std::string>("filename").c_str());
 
+
   if (tree == 0) std::cout<<Important("Error in EventAnalyzer ctor:")<<" The tree has a null pointer."<<std::endl;
 
   Init(tree);
+
 }
 
 
@@ -74,7 +76,9 @@ void EventAnalyzer::Init(TTree *tree)
   if (!tree) return;
   theTree = tree;
   fCurrent = -1;
-  
+
+
+
   // Muons   
   muons     = 0; b_muons     = 0; theTree->SetBranchAddress("muons"    , &muons    , &b_muons    );
   
@@ -123,9 +127,16 @@ void EventAnalyzer::Init(TTree *tree)
   b_passTrigger = 0; theTree->SetBranchAddress("passTrigger", &passTrigger, &b_passTrigger); 
   b_passSkim    = 0; theTree->SetBranchAddress("passSkim"   , &passSkim   , &b_passSkim   ); 
   b_triggerWord = 0; theTree->SetBranchAddress("triggerWord", &triggerWord, &b_triggerWord); 
+  
+  //K factors
+  
+  b_kFactor_ggZZ     =0;  theTree->SetBranchAddress("kFactor_ggZZ"    ,  &kFactor_ggZZ          , &b_kFactor_ggZZ);
+  b_kFactor_qqZZM    =0;  theTree->SetBranchAddress("kFactor_qqZZM"   ,  &kFactor_qqZZM         , &b_kFactor_qqZZM);
+  b_kFactor_qqZZPt   =0;  theTree->SetBranchAddress("kFactor_qqZZPt"  ,  &kFactor_qqZZPt        , &b_kFactor_qqZZPt);
+  b_kFactor_qqZZdPhi =0;  theTree->SetBranchAddress("kFactor_qqZZdPhi",  &kFactor_qqZZdPhi      , &b_kFactor_qqZZdPhi);
+  b_kFactor_EWKqqZZ  =0;  theTree->SetBranchAddress("kFactor_EWKqqZZ" ,  &kFactor_EWKqqZZ       , &b_kFactor_EWKqqZZ);
+  
 }
-
-
 
 // ------------------------------------------------------------------------------------------ //
 // ------------------------------------- Master the loop ------------------------------------ //
@@ -135,9 +146,7 @@ void EventAnalyzer::Init(TTree *tree)
 
 Int_t EventAnalyzer::GetEntry(Long64_t entry){
   // Read contents of entry.
-      
   if (!theTree) return 0;
-  
   int e =  theTree->GetEntry(entry);
 
   stable_sort(muons->begin(),     muons->end(),     phys::PtComparator());
@@ -192,9 +201,6 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   // Check if the request on region tye matches with the categorization of the event
   regionWord = std::bitset<128>(ZZ->region());
   // check bits accordingly to ZZAnalysis/AnalysisStep/interface/FinalStates.h
-  //  if(region_  == phys::SR                                     && !regionWord.test(3))  return 0;
-  // if((region_ == phys::CR2P2F || region_ == phys::CR2P2F_HZZ) && !regionWord.test(22)) return 0;
-  //if((region_ == phys::CR3P1F || region_ == phys::CR3P1F_HZZ) && !regionWord.test(23)) return 0;
 
   if(region_ == phys::SR     && !regionWord.test(26)) return 0;
   if(region_ == phys::CR2P2F && !regionWord.test(24)) return 0;
@@ -230,13 +236,10 @@ Long64_t EventAnalyzer::LoadTree(Long64_t entry){
 
   if (!theTree) return -5;
   Long64_t centry = theTree->LoadTree(entry);
-
   if (centry < 0) return centry;
   if (!theTree->InheritsFrom(TChain::Class()))  return centry;
-
   TChain *chain = (TChain*)theTree;
   if (chain->GetTreeNumber() != fCurrent) fCurrent = chain->GetTreeNumber();
-  
   return centry;
 }
 
@@ -250,7 +253,6 @@ void EventAnalyzer::loop(const std::string outputfile){
   unweightedEventsInSR     = tree()->GetEntries("ZZCand.passSRZZOnShell_");
   unweightedEventsIn2P2FCR = tree()->GetEntries("ZZCand.passSelZLL_2P2F_ZZOnShell_");
   unweightedEventsIn3P1FCR = tree()->GetEntries("ZZCand.passSelZLL_3P1F_ZZOnShell_");
-
   begin();
 
   for (Long64_t jentry=0; jentry<nentries; ++jentry) {
@@ -258,10 +260,8 @@ void EventAnalyzer::loop(const std::string outputfile){
     Long64_t ientry = LoadTree(jentry);
     if (ientry < 0) break;
     if (!GetEntry(jentry)) continue;
-
     if (cut() < 0) continue;
     theCutCounter += theWeight;
-
     if(doBasicPlots_) fillBasicPlots();
     analyze();
   }

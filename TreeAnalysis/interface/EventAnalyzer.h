@@ -165,14 +165,23 @@ public:
 		      TBranch *b_puweight;
   		      TBranch *b_mcprocweight;
   Int_t genCategory  ; TBranch *b_genCategory;
+
   std::bitset<16> topology;
 
   Bool_t  passTrigger; TBranch *b_passTrigger;
   Bool_t  passSkim   ; TBranch *b_passSkim;
   Short_t triggerWord; TBranch *b_triggerWord;
   
-  std::bitset<128> regionWord;
+  //K factors
+  
+  Float_t kFactor_ggZZ ;      TBranch *b_kFactor_ggZZ ;  
+  Float_t kFactor_qqZZM;      TBranch *b_kFactor_qqZZM;  
+  Float_t kFactor_qqZZPt;     TBranch *b_kFactor_qqZZPt; 
+  Float_t kFactor_qqZZdPhi;   TBranch *b_kFactor_qqZZdPhi;
+  Float_t kFactor_EWKqqZZ;    TBranch *b_kFactor_EWKqqZZ;  
+  
 
+  std::bitset<128> regionWord;
   //MET
   phys::Particle *met   ; TBranch *b_met;
 
