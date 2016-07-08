@@ -9,12 +9,13 @@ import sys, os, commands, math
 from optparse import OptionParser
 from readSampleInfo import *
 from Colours import *
+import time;  # This is required to include time module.
 
 
 ############################################################################
 ############################## User's inputs ###############################
 ############################################################################
-regions = ['SR','CR','CR2P2F','CR3P1F','SR_HZZ','CR_HZZ','CR2P2F_HZZ','CR3P1F_HZZ', 'MC']
+regions = ['SR','CR','CR2P2F','CR3P1F','SR_HZZ','CR_HZZ','CR2P2F_HZZ','CR3P1F_HZZ', 'MC','MC_HZZ']
 
 parser = OptionParser(usage="usage: %prog <analysis> <sample> [options]")
 parser.add_option("-r", "--region", dest="region",
@@ -27,8 +28,8 @@ parser.add_option("-e", "--external-cross-section", dest="getExternalCrossSectio
 
 parser.add_option("-l", "--luminosity", dest="luminosity",
                   type='int',
-                  default=19712,
-                  help="Set luminosity scenario from command line. Default is 19712/pb.")
+                  default=2658,
+                  help="Set luminosity scenario from command line. Default is 2630/pb.")
 
 parser.add_option("-d", "--directory", dest="directory",
                   default="samples",
@@ -36,7 +37,7 @@ parser.add_option("-d", "--directory", dest="directory",
 
 parser.add_option("-c", "--csv", dest="csvfile",
                   default="../Producers/python/samples_13TeV.csv",
-                  help="csv path, default is ../Producers/python/samples_8TeV.csv")
+                  help="csv path, default is ../Producers/python/samples_13TeV.csv")
 
 
 (options, args) = parser.parse_args()
@@ -113,6 +114,9 @@ print "\n"
 
 
 def run(executable, analysis, typeofsample, region, luminosity):
+
+
+    print time.localtime(time.time())
     inputdir = baseinputdir
     
     outputdir = 'results'
@@ -180,11 +184,13 @@ def run(executable, analysis, typeofsample, region, luminosity):
 
     output = '{0:s}/{1:s}.root'.format(outputdir,typeofsample)
     print "The output is in", Green(output)
+    print time.localtime(time.time())
     return output
 
 
 
 def mergeDataSamples(outputLocations):
+    print outputLocations
     failure, basename = commands.getstatusoutput('basename {0:s}'.format(outputLocations[0]))
     outputdir = outputLocations[0].replace(basename,'')
     hadd = 'hadd {0:s}/data.root '.format(outputdir)
@@ -214,15 +220,14 @@ def runOverCRs(executable, analysis, sample, luminosity, postfix = '', outputLoc
 if typeofsample == 'all' or typeofsample == 'data':
     outputLocations = []
     for sample in typeofsamples:
-        if typeofsample == 'all' or sample[0:8] == 'DoubleMu' or sample[0:9] == 'DoubleEle' or sample[0:5] == 'MuEG':
+        if typeofsample == 'all' or sample[0:8] == 'DoubleMu' or sample[0:9] == 'DoubleEG' or sample[0:5] == 'MuonEG' or sample[0:9]== "SingleEG":
             if region == 'all':
                 for cr in regions:
                     run(executable, analysis, sample, cr, luminosity)    # runs over all samples in all control reagions
             elif region == 'CR':
                 runOverCRs(executable, analysis, sample, luminosity,outputLocations,postfix='') #CHECK FIX
-            elif region == 'CR_HZZ':
+            elif region == 'CR_HZZ': 
                 runOverCRs(executable, analysis, sample, luminosity,outputLocations,postfix='_HZZ')
-         
             else:
                 outputLocations.append(run(executable, analysis, sample, region, luminosity))   # runs over all samples in a specific control reagions
     if typeofsample == 'data':
@@ -238,8 +243,6 @@ else:
         runOverCRs(executable, analysis, typeofsample, luminosity)
     elif region == 'CR_HZZ':
         runOverCRs(executable, analysis, typeofsample, luminosity, postfix='_HZZ')
-
-
     else:
         run(executable, analysis, typeofsample, region, luminosity) # runs over a specific sample in a specific region
 
