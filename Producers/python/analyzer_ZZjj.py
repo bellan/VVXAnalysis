@@ -13,7 +13,7 @@ declareDefault("MCFILTER","",globals())
 
 declareDefault("SKIM_REQUIRED",True,globals())
 
-
+declareDefault("KINREFIT", False, globals())
 
 # Get absolute path
 import os
@@ -178,7 +178,7 @@ process.ZZCand.flags.SR_ZZOnShell = cms.string(SR + "&&" + ZZWITHONSHELLZS)
 process.ZZSelectedCand = cms.EDFilter("PATCompositeCandidateSelector",
                                       src = cms.InputTag("ZZCand"),
                                       cut = cms.string("userFloat('isBestCand') && userFloat('SR')")
-#                                     cut = cms.string("userFloat('isBestCand') && userFloat('SR_ZZOnShell')")
+                                      #cut = cms.string("userFloat('isBestCand') && userFloat('SR_ZZOnShell')")
                                       )
 
 ### ......................................................................... ###
