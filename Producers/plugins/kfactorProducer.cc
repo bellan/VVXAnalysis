@@ -152,8 +152,9 @@ kfactorProducer::produce(edm::Event& event, const edm::EventSetup& iSetup)
 
      bool sameflavor=(genVBParticles->at(0).daughter(0)->pdgId()*genVBParticles->at(0).daughter(1)->pdgId() == genVBParticles->at(3).daughter(0)->pdgId()*genVBParticles->at(3).daughter(1)->pdgId());
      
-     KFactorQCDqqZZ_dPhi = kfactor_qqZZ_qcd_dPhi( fabs(genVBParticles->at(0).phi() - genVBParticles->at(3).phi()), (sameflavor)?1:2 );
-     KFactorQCDqqZZ_M    = kfactor_qqZZ_qcd_M   ( m4l, (sameflavor)?1:2 );
+     // last argument is the order. Check it.
+     KFactorQCDqqZZ_dPhi = kfactor_qqZZ_qcd_dPhi( fabs(genVBParticles->at(0).phi() - genVBParticles->at(3).phi()), (sameflavor)?1:2);  
+     KFactorQCDqqZZ_M    = kfactor_qqZZ_qcd_M   ( m4l, (sameflavor)?1:2 ,2);
      KFactorQCDqqZZ_Pt   = kfactor_qqZZ_qcd_Pt  ( pt4l, (sameflavor)?1:2 );
      
    }
