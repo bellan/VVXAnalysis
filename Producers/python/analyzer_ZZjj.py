@@ -15,6 +15,7 @@ declareDefault("SKIM_REQUIRED",True,globals())
 
 declareDefault("KINREFIT", False, globals())
 
+declareDefault("BESTCANDCOMPARATOR", "byBestZ1bestZ2", globals())
 # Get absolute path
 import os
 PyFilePath = os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/"
@@ -24,6 +25,8 @@ PyFilePath = os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/"
 ### ----------------------------------------------------------------------
 
 execfile(PyFilePath + "MasterPy/ZZ4lAnalysis.py")         # 2012 reference analysis
+
+print BESTCANDCOMPARATOR, byBestZ1bestZ2
 
 
 ### ----------------------------------------------------------------------
