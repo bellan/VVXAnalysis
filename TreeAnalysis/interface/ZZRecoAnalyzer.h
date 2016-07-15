@@ -4,15 +4,16 @@
 /** \class ZZRecoAnalyzer
  *  Concrete class for ZZReco analysis
  *
- *  $Date: 2013/03/15 13:37:31 $
+ *  $Date: 2016/06/09 $
  *  $Revision: 1.4 $
- *  \author R. Bellan - UNITO <riccardo.bellan@cern.ch>
+ *  \author G. L. Pinna Angioni - UNITO <Gian.Luca.Pinna.Angioni@cern.ch>
  */
 
 
 #include "EventAnalyzer.h"
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
+#include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 
 class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
   
@@ -23,8 +24,14 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
   
   virtual ~ZZRecoAnalyzer(){}
   
-  void ZZplots(int id = -1, int e = 0);
   
+  void FillHistosBase(std::string decay, float Wh, std::string type );
+  
+  void FillHistosJets(std::string decay, float Wh, std::vector<phys::Jet> *jetsVec ,std::string type);
+  
+  void FillMatrixHistosBase(std::string decay, float Wh,std::string type );  
+  
+  void FillMatrixHistosJets(std::string decay, float Wh,std::vector<phys::Jet> *jetsVec,std::vector<phys::Particle> *jetsGenVec,std::string type); 
   virtual void analyze();
   
   virtual void begin();
@@ -35,26 +42,89 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
 
   Long64_t nentries;
 
+  float m4L;
   float m4L_gen;
-  int ngenjets;
+  float drzz;
+
+  int njets;
+  float ptJet1;
+  float ptJet2;
+  float ptJet3;
+  float etaJet1;
+  float etaJet2;
+  float deta;
+  float mjj;
+
+  float drzz_gen;
+  int njets_gen;
+  float mjj_gen;
+  float deta_gen;
+  int ngencentraljets;
+  float mjj_gen_cj;
+  float deta_gen_cj;
+  float ptJet1_gen;
+  float ptJet2_gen; 
+  float etaJet1_gen;
+  float etaJet2_gen;
+  float ptZZ;
+  float min_dR;
+  Int_t nCentralJERjets;
+  Int_t nUpJERjets;
+  Int_t nDownJERjets; 
+  Int_t nCentralJERcentraljets;
+  Int_t nUpJERcentraljets;
+  Int_t nDownJERcentraljets; 
+
+  float dphi;
+  float dphi_gen;
+
+  Int_t inFiducialRegion;
+  float w_kf;
+  float dphizz;
+  float dphizz_gen;
+  float ptzz;
+  float ptzz_gen;
+  int nEvent;
+
+  TStopwatch *st;
 
   double JER_PtSmear(double pt, double width);
-  // Jets obtained by gaussian JER smearing
+ // Jets obtained by gaussian JER smearing
   std::vector<phys::Jet> *CentralJER_jets;
   std::vector<phys::Jet> *UpJER_jets;
   std::vector<phys::Jet> *DownJER_jets;
-  
+  std::vector<phys::Jet> *CentralJER_centraljets;
+  std::vector<phys::Jet> *UpJER_centraljets;
+  std::vector<phys::Jet> *DownJER_centraljets;
+
   // Jets obtained correcting up and down for the JES uncertainty
   std::vector<phys::Jet> *UpJES_jets;
   std::vector<phys::Jet> *DownJES_jets;
+  std::vector<phys::Jet> *UpJES_centraljets;
+  std::vector<phys::Jet> *DownJES_centraljets;
 
-  // Jets obtained correcting up and down for the JES uncertainty (data distributions = no JER correction applied)
+  //  Jets obtained correcting up and down for the JES uncertainty (data distributions = no JER correction applied)
   std::vector<phys::Jet> *UpJESData_jets;
   std::vector<phys::Jet> *DownJESData_jets;
+  std::vector<phys::Jet> *UpJESData_centraljets;
+  std::vector<phys::Jet> *DownJESData_centraljets;
+
+  /* std::vector<double> *CentralJER_jetPt; */
+  /* std::vector<double> *UpJER_jetPt; */
+  /* std::vector<double> *DownJER_jetPt; */
+  /* std::vector<double> *UpJES_jetPt; */
+  /* std::vector<double> *DownJES_jetPt; */
+  /* std::vector<double> *UpJESData_jetPt; */
+  /* std::vector<double> *DownJESData_jetPt; */
+
 
   TFile * UnfOverMC;
+  TFile * UnfOverMC_Pow;
   TH1 * h_UnfOverMC_Mass; 
   TH1 * h_UnfOverMC_Jets; 
+  TH1 * h_UnfOverMC_Mjj; 
+  TH1 * h_UnfOverMC_Deta; 
+  
 
  private:
   
@@ -62,7 +132,19 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
   
   std::vector<double> Xbins; 
   std::vector<double> Ybins; 
-  
+  std::vector<double> Xbins_deta;
+  std::vector<double> Xbins_mjj;
+  std::vector<double> Xbins_ptJet1;
+  std::vector<double> Xbins_ptJet2;
+  std::vector<double> Xbins_ptJet3;
+  std::vector<double> Xbins_etaJet1;
+  std::vector<double> Xbins_etaJet2;
+  std::vector<double> Xbins_ptZZ;
+  std::vector<double> Xbins_dphi; 
+  std::vector<double> Xbins_drzz; 
+  std::vector<double> Xbins_ptzz;
+  std::vector<double> Xbins_dphizz;
+ 
   template< class PAR >
     bool ZBosonDefinition(phys::Boson<PAR> cand) const{
     return fabs(cand.p4().M() - phys::ZMASS) < 20;
@@ -72,5 +154,6 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
     return fabs(cand.p4().M() - phys::WMASS) < 40;
   }
 };
+
 #endif
 

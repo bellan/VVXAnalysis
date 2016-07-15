@@ -9,7 +9,7 @@
  *  \author R. Bellan - UNITO <riccardo.bellan@cern.ch>
  */
 
-
+#include "TRandom.h"
 #include "EventAnalyzer.h"
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
@@ -19,12 +19,7 @@ class ZZjAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZjAnalyzer>{
 public:
  ZZjAnalyzer(const AnalysisConfiguration& configuration)
    : EventAnalyzer(*(new Selector<ZZjAnalyzer>(*this)),
-		   configuration),lepFR(
-					"../../data/LeptonEffScaleFactors/ScaleFactors_mu_2015.root",
-					"../../data/LeptonEffScaleFactors/ScaleFactors_ele_2015_IdIsoSip.root",
-					"../../data/LeptonEffScaleFactors/ScaleFactors_ele_2015_IdIsoSip_Cracks.root",
-					"../Commons/data/fakeRates.root",
-					"../Commons/data/fakeRates.root"){}
+		   configuration){}
   
   virtual ~ZZjAnalyzer(){}
 
@@ -33,7 +28,11 @@ public:
   virtual void analyze();
 
   virtual void end( TFile &);
- 
+
+  double JER_PtSmear(double pt, double width);
+  // Jets obtained by gaussian JER smearing
+  std::vector<phys::Jet> *CentralJER_jets;
+  std::vector<double> *CentralJER_jetPt;
 
  private:
   friend class Selector<ZZjAnalyzer>;
@@ -46,12 +45,10 @@ public:
     return fabs(cand.p4().M() - phys::WMASS) < 40;
   }
 
- LeptonScaleFactors lepFR;
-
   std::vector<std::string> events2e2mu; 
   std::vector<std::string> events4e; 
   std::vector<std::string> events4mu;
-
+  std::vector<std::string> events4l;
 
 };
 #endif
