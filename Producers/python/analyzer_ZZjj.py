@@ -26,9 +26,6 @@ PyFilePath = os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/"
 
 execfile(PyFilePath + "MasterPy/ZZ4lAnalysis.py")         # 2012 reference analysis
 
-print BESTCANDCOMPARATOR, byBestZ1bestZ2
-
-
 ### ----------------------------------------------------------------------
 ### Replace parameters
 ### ----------------------------------------------------------------------
