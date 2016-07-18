@@ -9,7 +9,6 @@ DoubleEG2016B,DoubleEle, -1,         ,, /DoubleEG/Run2016B-PromptReco-v2/MINIAOD
 MuonEG2016B,MuEG,        -1,         ,, /MuonEG/Run2016B-PromptReco-v2/MINIAOD,dbs,,2,PD=MuEG,json_2016.py,
 SingleEle2016B,SingEle,  -1,         ,, /SingleElectron/Run2016B-PromptReco-v2/MINIAOD,dbs,,5,PD=SingleElectron,json_2016.py,
 
-
 DoubleMu2016C,DoubleMu,  -1,         ,, /DoubleMuon/Run2016C-PromptReco-v2/MINIAOD,dbs,,2,PD=DoubleMu;ADDLOOSEELE=True,json_2016.py,
 DoubleEG2016C,DoubleEle, -1,         ,, /DoubleEG/Run2016C-PromptReco-v2/MINIAOD,dbs,,2,PD=DoubleEle;ADDLOOSEELE=True,json_2016.py,
 MuonEG2016C,MuEG,        -1,         ,, /MuonEG/Run2016C-PromptReco-v2/MINIAOD,dbs,,2,PD=MuEG;ADDLOOSEELE=True,json_2016.py,
@@ -58,8 +57,8 @@ ZGTo2LG,ZG,              117.864,     ,,/ZGTo2LG_TuneCUETP8M1_13TeV-amcatnloFXFX
 
 
 ####,,,,,,,,,,,Irreducible background
-#TTZToLL,,               -1,          ,,/TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,4,PROCESS_CR=False,,
+TTZToLL,,                -1,          ,,/TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,4,PROCESS_CR=False,,
 WWZ,triboson,            -1,          ,,/WWZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,4,PROCESS_CR=False,,                                       
-TTZJets,tt,              -1,          ,,/ttZJets_13TeV_madgraphMLM/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,4,PROCESS_CR=False,,
+
 
 
