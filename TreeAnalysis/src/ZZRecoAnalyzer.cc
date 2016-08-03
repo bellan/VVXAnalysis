@@ -226,7 +226,7 @@ void ZZRecoAnalyzer::analyze(){
     FillMatrixHistosJets(decay,theWeight*(1+scaleFacErrSq),centralJets,centralGenJets,"Central_SFErrSqPlus_01");
    }
 
-    if((region_ == phys::SR && topology.test(3)) || (region_ == phys::SR_HZZ && topology.test(2))){
+    if((region_ == phys::SR && topology.test(1)) || (region_ == phys::SR_HZZ && topology.test(1))){
 
        inFiducialRegion ++;
        

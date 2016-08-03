@@ -2,8 +2,6 @@
 #include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 #include "VVXAnalysis/Commons/interface/Comparators.h"
-
-
 #include <boost/assign/std/vector.hpp> 
 #include <boost/assert.hpp> 
 using namespace std;
@@ -129,8 +127,8 @@ void ZZMCAnalyzer::ZZplots(string decay){
  //To run in the fiducial region (otherwise to be commented): 
 
 
- if(region_ == phys::MC && topology.test(3))              isTightFr = kTRUE; 
- else if (region_ == phys::MC_HZZ && topology.test(2))    isTightFr = kTRUE;        
+ if(region_ == phys::MC && topology.test(1))              isTightFr = kTRUE; 
+ else if (region_ == phys::MC_HZZ && topology.test(1))    isTightFr = kTRUE;        
  
  
  if(isTightFr){
@@ -481,9 +479,12 @@ if((region_ == phys::MC && regionWord.test(26)) || ((region_ == phys::MC_HZZ) &&
 void ZZMCAnalyzer::analyze(){
   
   PreCounter+=1;
-   
+  std::cout<<" hei "<<topology<<std::endl;
+  //  std::cout<<" hei "<< genVBParticles->at(0).p4().Pt()<<std::endl;
+
   if((region_ == phys::MC && topology.test(2)) || (region_ == phys::MC_HZZ && topology.test(0) ) ){       
 
+  std::cout<<" hei "<< genVBParticles->at(0).p4().Pt()<<std::endl;
   int Ele  = 0;
   int Muon = 0; 
   int lep = 0;
