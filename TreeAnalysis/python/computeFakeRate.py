@@ -77,16 +77,15 @@ def write(particle,region,outname,fout):
 
     print "\nData before WZ subtraction\n"
     for bin in range(1,Nbin+1):
-        print "bin",bin
-        print "pass",hn.GetBinContent(bin)
-        print "total",hd.GetBinContent(bin)
+        # print "bin",bin
+        # print "pass",hn.GetBinContent(bin)
+        # print "total",hd.GetBinContent(bin)
 
     print "\nWZ\n"
     for bin in range(1,Nbin+1):
-        print "bin",bin
-        print "pass",hnWZ.GetBinContent(bin)
-        print "total",hdWZ.GetBinContent(bin)
-        
+        # print "bin",bin
+        # print "pass",hnWZ.GetBinContent(bin)
+        # print "total",hdWZ.GetBinContent(bin)        
 
     # To avoid problems such passed bin content > total bin content
     hn.SetBinContent(Nbin+1,0)
