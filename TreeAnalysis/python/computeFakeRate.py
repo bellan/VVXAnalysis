@@ -43,8 +43,8 @@ def GetGrEff(hpass, htotal):
             grEff.SetPointEYhigh(bin-1, 0)
             grEff.SetPointEYlow(bin-1, 0)
         else:
-            grEff.SetPointEYhigh(bin-1, GetError(htotal.GetBinContent(bin), hpass.GetBinContent(bin),1))
-            grEff.SetPointEYlow(bin-1, GetError(htotal.GetBinContent(bin), hpass.GetBinContent(bin),0))
+            grEff.SetPointEYhigh(bin-1,-YVal+GetError(htotal.GetBinContent(bin), hpass.GetBinContent(bin),1))
+            grEff.SetPointEYlow(bin-1, YVal-GetError(htotal.GetBinContent(bin), hpass.GetBinContent(bin),0))
 
         grEff.GetPoint(bin-1,XVal,YVal)
         grEff.SetMarkerStyle(20)
@@ -73,9 +73,36 @@ def write(particle,region,outname,fout):
     grFake.SetName("grFakeRate_"+outname)   
     grFake.SetTitle("grFakeRate_"+outname)
     
+    Nbin= hn.GetNbinsX()
+
+    print "\nData before WZ subtraction\n"
+    for bin in range(1,Nbin+1):
+        print "bin",bin
+        print "pass",hn.GetBinContent(bin)
+        print "total",hd.GetBinContent(bin)
+
+    print "\nWZ\n"
+    for bin in range(1,Nbin+1):
+        print "bin",bin
+        print "pass",hnWZ.GetBinContent(bin)
+        print "total",hdWZ.GetBinContent(bin)
+        
+
+    # To avoid problems such passed bin content > total bin content
+    hn.SetBinContent(Nbin+1,0)
+    hd.SetBinContent(Nbin+1,0) 
 
     hn.Add(hnWZ,-1)
     hd.Add(hdWZ,-1)
+
+    print hn.Integral(0,-1),hd.Integral(0,-1)
+
+    print "\ndata after WZ subtraction\n"
+    for bin in range(1,Nbin+1):
+        print "bin",bin
+        print "pass",hn.GetBinContent(bin)
+        print "total",hd.GetBinContent(bin)
+
 
     hFake_NoWZ = copy.deepcopy(hn)
     hFake_NoWZ.Divide(hd)
@@ -95,10 +122,62 @@ def write(particle,region,outname,fout):
     hFake_NoWZ.Write("NoWZ_"+outname)
     grFake_NoWZ.Write("grFakeRate_NoWZ_"+outname)
 
+
+def write_MC(particle,region,outname,fout):
+    print "\n",particle,region
+
+    mclist = [{"sample":'TTJets',"color":ROOT.kRed-2,"name":'tt'},{"sample":'DYJetsToLL_M50',"color":ROOT.kGreen-5,"name":'DY'}]
+
+    stack_n = ROOT.THStack("stack_num","Stack_"+"FakeRate_num_"+particle+"_"+region+"_pt")   
+    stack_d = ROOT.THStack("stack_den","Stack_"+"FakeRate_denom_"+particle+"_"+region+"_pt")   
+    
+    for sample in mclist:
+        print sample["sample"]
+        fMC = ROOT.TFile("results/FakeRateAnalyzer_MC/"+sample["sample"]+".root")
+        h_mc_n = fMC.Get("FakeRate_num_"+particle+"_"+region+"_pt")
+        h_mc_d = fMC.Get("FakeRate_denom_"+particle+"_"+region+"_pt")
+        #h_mc = copy.deepcopy(h_mc_or)
+        stack_n.Add(h_mc_n)
+        stack_d.Add(h_mc_d)
+
+    hFake =  copy.deepcopy(stack_n.GetStack().Last())
+    hFake_d = copy.deepcopy(stack_d.GetStack().Last())
+
+    grFake = GetGrEff(hFake,hFake_d)
+
+    hFake.Divide(hFake_d)
+
+    Nbin= hFake_d.GetNbinsX()
+
+    # print "\ndata first\n"
+    # for bin in range(1,Nbin+2):
+    #     print "bin",bin
+    #     print "pass",hn.GetBinContent(bin)
+    #     print "total",hd.GetBinContent(bin)
+
+
+    # print "\nWZ\n"
+    # for bin in range(1,Nbin+2):
+    #     print "bin",bin
+    #     print "pass",hnWZ.GetBinContent(bin)
+    #     print "total",hdWZ.GetBinContent(bin)        
+
+    hFake.SetName("FakeRate_NoWZ_"+outname)
+    hFake.SetTitle("FakeRate_NoWZ_"+outname)
+       
+    grFake.SetName("grFakeRate_NoWZ_"+outname)
+    grFake.SetTitle("grFakeRate_NoWZ_"+outname)
+
+    fout.cd()
+
+    hFake.Write("NoWZ_"+outname)
+    grFake.Write("grFakeRate_NoWZ_"+outname)
+
 particles = ['muons','electrons']
 regions   = ['barrel','endcap']
 
 fout = ROOT.TFile("fakeRates.root", "RECREATE")
+fout_MC = ROOT.TFile("fakeRates_MC.root", "RECREATE")
 
 
 for particle in particles:
@@ -110,6 +189,7 @@ for particle in particles:
         if region   == 'barrel': r = 'B'
         if region   == 'endcap': r = 'E'
         write(particle,region,'h1D_FR'+p+'_E'+r,fout)
+        write_MC(particle,region,'h1D_FR'+p+'_E'+r,fout_MC)
 
 #write("electrons",'endcap','h1D_FRel_EE',fout)
 #write("muons",'endcap','h1D_FRmu_EE',fout)
