@@ -161,7 +161,7 @@ void FakeRateAnalyzer::analyze(){
       std::bitset<16> trigger(triggerWord);
       if(ZL->size() == 1 && trigger.test(9)){
 	//std::vector<double> xbins;xbins += 5,7,10,20,30,40,50,80; //HZZ?
-        std::vector<double> xbins;xbins += 0,30,60,200; //UW binning
+        std::vector<double> xbins;xbins += 0,30,60,100,200; //UW binning
 	// std::vector<double> xbins;xbins += 5,7,10,20,30,80;  
 	std::string eventstr=std::to_string(run)+":"+std::to_string(lumiBlock)+":"+std::to_string(event);
 	
