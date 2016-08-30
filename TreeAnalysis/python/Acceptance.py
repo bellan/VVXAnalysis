@@ -2,7 +2,7 @@
 from optparse import OptionParser
 import ROOT,copy
 ROOT.PyConfig.IgnoreCommandLineOptions = True
-from ROOT import TH1F,TCanvas, TLegend, TParameter
+from ROOT import TH1F,TCanvas, TLegend, TParameter,TList
 import CrossInfo
 from CrossInfo import*
 from array import*
@@ -13,67 +13,75 @@ import collections
 from Colours import *
 
 
-parser = OptionParser(usage="usage: %prog <final state> [options]")
 
+parser = OptionParser(usage="usage: %prog <final state> [options]")
 
 parser.add_option("-t", "--type", dest="Type",
                   default="Mass",
-                  help="Mass,Total or Jets.")
+                  help="Mass, or Jets.")
 
 parser.add_option("-s", "--save", dest="SavePlot",
-                  default="False",
+                  action="store_true",
+                  default=False,
                   help="Save plot option, default is False")
 
 parser.add_option("-S", "--Set", dest="Set",
-                  default="Pow",
-                  help="MC samples Set, default is Pow (Powheg) the other one is Amc (Amcatnlo)")
+                  default="Mad",
+                  help="MC samples Set, default is Mad (Amcatnlo) the other one is Pow (Powheg)")
+
+parser.add_option("-A", "--Analysis", dest="Analysis",
+                  default="ZZ",
+                  help="Analysis, default is  ZZ, others are ZZFull and HZZ")
+
 
 (options, args) = parser.parse_args()
 
 Type = options.Type
 Set = options.Set
-SavePlot  = ast.literal_eval(options.SavePlot)
+SavePlot  = options.SavePlot
+Analysis  = options.Analysis
+
+if Analysis=="ZZ": Analysis=""
+else: Analysis="_"+Analysis
+
 
 if "Pow" in Set: SignalSamples = SignalSamples_Pow
-#elif "Mad" in Set: SignalSamples = SignalSamples_Mad
-elif "Amc" in Set: SignalSamples = SignalSamples_Amc
-else: sys.exit(Set,"is a wrong MC set, chose between Pow and Amc")
+elif "Mad" in Set: SignalSamples = SignalSamples_Mad
+else: sys.exit(Set,"is a wrong MC set, chose between Pow and Mad")
+
+#if Type != "Mass" and Type != "Jets": sys.exit("ERROR \nWrong Type, choose between Mass or Jets.")
 
 try:
     os.stat("./Plot/Acceptance/")
 except:
     os.mkdir("./Plot/Acceptance/")
-    
-def SetAcceptance(inputdir,SampleType, SavePlot,SistErr):
 
-    if Set=="Pow": print "\nPowheg Monte Carlo set"
-    elif  Set=="Amc": print "\nAmcatNLO Monte Carlo set"  
+try:
+    os.stat("./Acceptance/")
+except:
+    os.mkdir("./Acceptance/")
 
-    if SistErr == "0":     FileOut =  ROOT.TFile("Acceptance_"+Set+".root","UPDATE") 
-    elif  SistErr == "1":     FileOut =  ROOT.TFile("AcceptanceSFactorPlus_"+Set+".root","UPDATE") 
-    elif  SistErr == "-1":     FileOut =  ROOT.TFile("AcceptanceSFactorMinus_"+Set+".root","UPDATE") 
-    elif  SistErr == "+Sq":     FileOut =  ROOT.TFile("AcceptanceSFactorSqPlus_"+Set+".root","UPDATE") 
-    elif  SistErr == "-Sq":     FileOut =  ROOT.TFile("AcceptanceSFactorSqMinus_"+Set+".root","UPDATE") 
     
+FileOut_0   =  ROOT.TFile("./Acceptance/Acceptance_"+Set+Analysis+"_"+Type+".root","RECREATE") 
+FileOut_1   =  ROOT.TFile("./Acceptance/AcceptanceSFactorPlus_"+Set+Analysis+"_"+Type+".root","RECREATE") 
+FileOut_m1  =  ROOT.TFile("./Acceptance/AcceptanceSFactorMinus_"+Set+Analysis+"_"+Type+".root","RECREATE") 
+FileOut_Sq  =  ROOT.TFile("./Acceptance/AcceptanceSFactorSqPlus_"+Set+Analysis+"_"+Type+".root","RECREATE") 
+FileOut_mSq =  ROOT.TFile("./Acceptance/AcceptanceSFactorSqMinus_"+Set+Analysis+"_"+Type+".root","RECREATE") 
+    
+
+def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
+
+    
+    if    SistErr == "0":     FileOut = FileOut_0 
+    elif  SistErr == "+Sq":   FileOut = FileOut_Sq 
+    elif  SistErr == "-Sq":   FileOut = FileOut_mSq 
+    elif  SistErr == "1":     FileOut = FileOut_1 
+    elif  SistErr == "-1":    FileOut = FileOut_m1 
+
+
+    if    Set=="Pow": print "\nPowheg Monte Carlo set"
+    elif  Set=="Mad": print "\nMadgraph Monte Carlo set"  
  
-    if SampleType=="Mass" or SampleType=="Total":
-        Xbins = sorted([100,200,250,300,350,400,500,600,800])
-    elif "Jets" in SampleType:
-        Xbins = sorted([0,1,2,3,4]) 
-    elif SampleType=="PtJet1":
-        Xbins = sorted([30,50,100,200,300,500])
-    elif SampleType=="PtJet2":
-        Xbins = sorted([30,100,200,300,500]) 
-    elif "EtaJet" in SampleType:
-        Xbins = sorted([0,2,4,6])
-    elif "Deta" in SampleType:
-        Xbins = sorted([0,2.4,4.7])
-    elif "Mjj" in SampleType:
-        Xbins = sorted([0.,200,800])
-    else: 
-        print "Wrong Type"
-
-    runArrayX = array('d',Xbins)
 
     c1 = TCanvas( 'c1', 'c1', 200, 10, 900, 700 )
     ROOT.gStyle.SetOptStat(0) 
@@ -81,7 +89,7 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr):
     if SampleType=="Mass":
         leg = ROOT.TLegend(.15,.15,.30,.29); 
     else:
-        if "fr" in Set:
+        if Fr=="Eff_Tight_noOut":
             leg = ROOT.TLegend(.15,.15,.30,.29);    
         else:        
             leg = ROOT.TLegend(.15,.70,.30,.84);    
@@ -90,68 +98,87 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr):
     Acc2=0.
     Acc3=0.
 
-
     FinStateAcc ={"2e2m":Acc1,"4m":Acc2,"4e":Acc3}
     for Fin in ("2e2m","4m","4e"):
         print Red("\n#### FINAL STATE {0:s} Scale factor sist {1} ####\n".format(Fin,SistErr))
 
-        hMergReco = ROOT.TH1F("HAcc_"+Fin+"_"+SampleType,"Acceptance for "+Fin+" vs "+SampleType, len(runArrayX)-1, runArrayX)
-        hMergGen = ROOT.TH1F("HGen_"+Fin+"_"+SampleType,"Gen events for "+Fin+" vs "+SampleType, len(runArrayX)-1, runArrayX)
+        hMergReco = ROOT.TH1F()
+        hMergGen  = ROOT.TH1F()
+        
         print Blue("Sample                                         Acceptance \n")
+        isFirst=True            
         for sample in SignalSamples:
-            #print "sample ",sample
             fileIn = ROOT.TFile(inputdir+sample["sample"]+".root")
-            
-            if "fr" in Set:
-                hGen_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"Gen_01_fr") #if tighter fiducial region
-                if SistErr=="0":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenReco_01_fr")
-                elif SistErr=="1":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrPlus_01_fr")
-                elif SistErr=="-1":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrMinus_01_fr")
-                elif SistErr=="+Sq":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrSqPlus_01_fr")
-                elif SistErr=="-Sq":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrSqMinus_01_fr") 
-                else:          
-                    sys.exit("Wrong value for scale factor sistematic")
-            
-            else:
+
+            if Fr=="Tot":
                 hGen_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"Gen_01")
-                if SistErr=="0":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenReco_01")
-                elif SistErr=="1":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrPlus_01")
-                elif SistErr=="-1":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrMinus_01")
+                if SistErr=="0":      hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenReco_01")
+                elif SistErr=="1":    hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrPlus_01")
+                elif SistErr=="-1":   hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrMinus_01")
                 elif SistErr=="+Sq":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrSqPlus_01")
                 elif SistErr=="-Sq":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrSqMinus_01") 
                 else:          
                     sys.exit("Wrong value for scale factor sistematic")
 
+            
+            elif Fr=="Eff_Tight":
+                hGen_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"Gen_01_fr")
+                if SistErr=="0":      hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenReco_01")
+                elif SistErr=="1":    hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrPlus_01")
+                elif SistErr=="-1":   hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrMinus_01")
+                elif SistErr=="+Sq":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrSqPlus_01")
+                elif SistErr=="-Sq":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrSqMinus_01") 
+                else:          
+                    sys.exit("Wrong value for scale factor sistematic")
+
+            elif Fr=="Acc":                    
+                hGen_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"Gen_01")
+                if SistErr=="0":      hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"Gen_01_fr")
+
             hGen  = copy.deepcopy(hGen_)          
             hReco = copy.deepcopy(hRec_)
             if hGen==None: 
-                # print "in sample",sample["sample"],"ZZTo"+Fin+"_"+SampleType+"Gen_01"+"   Not found"
+                #print "in sample",sample["sample"],"ZZTo"+Fin+"_"+SampleType+"Gen_01"+"   Not found"
                 continue
             if hReco==None:
                 print sample["sample"],"No events in reco sample but events in gen sample"
                 continue
+  
             n = len(sample["sample"])
             spacestring = (45-n)*" "
-            print "{0} {1} {2:.2f}".format(sample["sample"],spacestring,hReco.Integral(1,-1)/hGen.Integral(1,-1))
-
-            hMergReco.Add(hReco)
-            hMergGen.Add(hGen)             
-
+            print "{0} {1} {2:.4f}".format(sample["sample"],spacestring,hReco.Integral(1,-1)/hGen.Integral(1,-1))
+            #print "{0} {1} {2:.4f}, reco {3}, total {4}".format(sample["sample"],spacestring,hReco.Integral(1,-1)/hGen.Integral(1,-1),hReco.Integral(1,-1),hGen.Integral(1,-1))
+            
+            if isFirst:
+                hMergReco = hReco
+                hMergGen  = hGen
+                isFirst=False            
+            else:
+                hMergReco.Add(hReco)
+                hMergGen.Add(hGen)             
+           
         Nbins= hMergGen.GetNbinsX()
-        
-        NTotEv  = hMergGen.Integral(1,-1)
-        NRecoEv = hMergReco.Integral(1,-1)
-        Acc=NRecoEv/NTotEv
-        FinStateAcc[Fin]=Acc
+        NTotEv  = hMergGen.Integral(0,-1)
+        NRecoEv = hMergReco.Integral(0,-1)
 
+        Acc= NRecoEv/NTotEv
+ #       print "Tot",NTotEv,"Reco",NRecoEv
+
+        FinStateAcc[Fin]=Acc
         
         print Blue("Total Acceptance {0} {1:.2f} \n".format(29*" ",Acc))
-       
         hMergReco.Divide(hMergGen)
         FileOut.cd()
         if SampleType=="Mass": 
-            TotAcc = TParameter(float)("TotAcc"+Fin,Acc)
+            if Fr=="Eff_Tight":          TotAcc = TParameter(float)("TotAcc"+Fin+"_fr",Acc)
+            elif Fr=="Tot":              TotAcc = TParameter(float)("TotAcc"+Fin+"_Tot",Acc)
+            elif Fr=="Acc":              TotAcc = TParameter(float)("TotAcc"+Fin+"_Acc",Acc)
+            else: sys.exit("Error: Wrong region ")
+           
             TotAcc.Write("",TotAcc.kOverwrite)
+
+        hMergReco.SetNameTitle("HAcc_"+Fin+"_"+SampleType,"Acceptance for "+Fin+" vs "+SampleType)
+        hMergReco.SetName("H"+Fr+"_"+Fin+"_"+SampleType)
         hMergReco.Write("",hMergReco.kOverwrite)
 
         if SavePlot:
@@ -167,7 +194,7 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr):
                 hMergReco.GetXaxis().SetBinLabel(3,"2 Jets")
                 hMergReco.GetXaxis().SetBinLabel(4,">2 Jets")
                
-            elif SampleType=="CentralJets": 
+            elif SampleType=="Jets_Central": 
                 hMergReco.SetXTitle("# Central Jets")
                 hMergReco.GetXaxis().SetTitle("#CentralJets")
                 hMergReco.GetXaxis().SetBinLabel(1,"0 Jets")
@@ -184,7 +211,7 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr):
             elif SampleType == "Mjj":
                 hMergReco.SetXTitle("gen M_{jj}")
               
-            elif SampleType == "CentralMjj":
+            elif SampleType == "Mjj_Central":
                 hMergReco.SetXTitle("gen M_{jj} (|#eta^{jet}|<2.4)")
                           
             elif SampleType == "PtJet1":
@@ -200,17 +227,21 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr):
                 hMergReco.SetXTitle("gen #eta^{jet2}") 
              
             
-            if "fr" in Set: 
+            if "Eff_Tight" in Fr: 
                 hMergReco.SetMaximum(1.);
                 hMergReco.SetMinimum(0.29);   
                 hMergReco.SetYTitle("#epsilon") 
             
+            elif Fr=="Acc":
+                hMergReco.SetMaximum(0.9);
+                hMergReco.SetMinimum(0.29);  
+                hMergReco.SetYTitle("ACC.") 
             else:
                 if SampleType == "Mass":
-                    hMergReco.SetMaximum(0.8); 
+                    hMergReco.SetMaximum(0.9); 
                     hMergReco.SetMinimum(0.20);
                 else:
-                    hMergReco.SetMaximum(0.8);
+                    hMergReco.SetMaximum(0.9);
                     hMergReco.SetMinimum(0.29);  
                 hMergReco.SetYTitle("A #upoint #epsilon") 
             
@@ -220,12 +251,9 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr):
             hMergReco.SetFillColor(ROOT.kAzure-4)
             hMergReco.Draw("hist");
          
-            if SistErr=="0": 
-                if "fr" in Set:  
-                    c2.SaveAs("Plot/Acceptance/Acceptance_for_"+Fin+"_"+SampleType+"_fr.png")
-                else:
-                    c2.SaveAs("Plot/Acceptance/Acceptance_for_"+Fin+"_"+SampleType+".png")
-                    c2.SaveAs("~/www/PlotsVV/13TeV/Acceptance/DiffAcceptance_"+Fin+"_"+SampleType+"_"+Set+".png")
+#            if SistErr=="0": 
+            c2.SaveAs("Plot/Acceptance/DiffAcceptance_"+Fin+"_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".png")
+ #              c2.SaveAs("~/www/PlotsVV/13TeV/Acceptance/DiffAcceptance_"+Fin+"_"+SampleType+"_"+Set+Analysis+"_"+Fr+".png")
             
             c1.cd()
             
@@ -234,38 +262,57 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr):
                 hcopy1.SetMarkerColor(2)
                 hcopy1.SetNameTitle("TotAcc","Differential Acceptance "+SampleType)
                 leg.AddEntry(hcopy1,"ZZ #rightarrow 2e2#mu","lep")
-                hcopy1.Draw()
+                hcopy1.Draw("E1")
             elif Fin=="4m":
                 hcopy2 = copy.deepcopy(hMergReco)
                 hcopy2.SetMarkerColor(3)
                 leg.AddEntry(hcopy2,"ZZ #rightarrow 4#mu","lep")
-                hcopy2.Draw("same");
+                hcopy2.Draw("sameE1");
             elif Fin=="4e":
                 hcopy3 = copy.deepcopy(hMergReco)
                 hcopy3.SetMarkerColor(4)
                 leg.AddEntry(hcopy3,"ZZ #rightarrow 4e","lep")
-                hcopy3.Draw("same");
+                hcopy3.Draw("sameE1");
                 leg.Draw("same")
         
     if SistErr=="0":
-        if "fr" in Set: 
-            c1.SaveAs("./Plot/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+"_fr.png") 
-        else:        
-            c1.SaveAs("./Plot/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+".png") 
-            c1.SaveAs("~/www/PlotsVV/13TeV/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+".png") 
-
+        c1.SaveAs("./Plot/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+".png") 
+    #    c1.SaveAs("~/www/PlotsVV/13TeV/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+".png") 
+    c1.SaveAs("~/www/PlotsVV/13TeV/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+"Del.png") #DEL
         
     return FinStateAcc
+
 
 #PlusAcc    = SetAcceptance("results/ZZMCAnalyzer_MC/",Type,SavePlot,"1")  # Correlated Errors //To be added again
 #MinusAcc   = SetAcceptance("results/ZZMCAnalyzer_MC/",Type,SavePlot,"-1") # Correlated Errors
 
-PlusSqAcc   = SetAcceptance("results/ZZMCAnalyzer_MC/",Type,SavePlot,"+Sq")
-MinusSqAcc  = SetAcceptance("results/ZZMCAnalyzer_MC/",Type,SavePlot,"-Sq")
-CentralAcc  = SetAcceptance("results/ZZMCAnalyzer_MC/",Type,SavePlot,"0")
 
+print Yellow("Total")
+PlusSqAcc   = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"+Sq","Tot")            
+MinusSqAcc  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"-Sq","Tot")
+CentralAcc  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"0","Tot")
+
+print Yellow("\n Fiducial")
+PlusSqAcc_fr   = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"+Sq","Eff_Tight")
+MinusSqAcc_fr  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"-Sq","Eff_Tight")
+CentralAcc_fr  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"0","Eff_Tight")
+
+print Yellow("\n Acceptance Tr->Fr")
+CentralAcc_Acc  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"0","Acc")
 
 print Red(("Final total results for MC set {0} \n").format(Set))
+print Red("Total Region \nAcceptance x efficency")
 for fin in ("2e2m","4m","4e"):
-    print "acceptance for {0} {1} {2:.2f} + {3:.3f} %  - {4:.3f} % ".format(fin, (4-len(fin))*" ", CentralAcc[fin],(-1+PlusSqAcc[fin]/CentralAcc[fin])*100,(1-MinusSqAcc[fin]/CentralAcc[fin])*100)
+    print "{0} {1} {2:.3f} + {3:.3f} %  - {4:.3f} % ".format(fin, (6-len(fin))*" ", CentralAcc[fin],(-1+PlusSqAcc[fin]/CentralAcc[fin])*100,(1-MinusSqAcc[fin]/CentralAcc[fin])*100)
     # print "Correlated errors {0} + {1:.5f} % - {2:.5f} %".format(10*" ",(-1+PlusAcc[fin]/CentralAcc[fin])*100,(1-MinusAcc[fin]/CentralAcc[fin])*100)
+
+print Red("Fiducial Region \nEfficency ")
+for fin in ("2e2m","4m","4e"):
+#    print "{0} {1} {2:.4f} + {3:.3f} %  - {4:.3f} % ".format(fin, (6-len(fin))*" ", CentralAcc_fr[fin],(-1+PlusSqAcc_fr[fin]/CentralAcc_fr[fin])*100,(1-MinusSqAcc_fr[fin]/CentralAcc_fr[fin])*100)
+    print "{0} {1} {2:.4f} + {3:.3f}  - {4:.3f}".format(fin, (6-len(fin))*" ", CentralAcc_fr[fin],(PlusSqAcc_fr[fin]-CentralAcc_fr[fin]),(-MinusSqAcc_fr[fin]+CentralAcc_fr[fin]))
+    #print "acceptance for {0}  {1} {2:.2f} + {3:.3f}  - {4:.3f} % ".format(fin, (6-len(fin))*" ", CentralAcc_fr[fin]*100,(PlusSqAcc_fr[fin]-CentralAcc_fr[fin])*100,(-MinusSqAcc_fr[fin]+CentralAcc_fr[fin])*100)
+
+
+print Red("From Tight to Total \nAcceptance ")
+for fin in ("2e2m","4m","4e"):
+    print "{0} {1} {2:.4f}".format(fin, (6-len(fin))*" ", CentralAcc_Acc[fin])
