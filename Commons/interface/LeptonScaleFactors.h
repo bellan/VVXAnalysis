@@ -18,7 +18,8 @@
 
 class LeptonScaleFactors{
  public:
-  LeptonScaleFactors(const std::string& muonEffFilename, const std::string& electronEFFfilename, const std::string& electronEFFCracksfilename,
+  //  LeptonScaleFactors(const std::string& muonEffFilename, const std::string& electronEFFfilename, const std::string& electronEFFCracksfilename,
+  LeptonScaleFactors(const std::string& muonEffFilename, const std::string& electronEFFfilename,
 		     const std::string& muonFRFilename, const std::string& electronFRFilename);
 
   std::pair<double, double> efficiencyScaleFactor(const double& lepPt, const double& lepEta, int lepId, bool isInCracks = false) const;
@@ -33,7 +34,9 @@ class LeptonScaleFactors{
 
   TH2F *hEffMu_;
   TH2F *hEffEl_;
+  TH2F *hEffEl_Unc_;
   TH2F *hEffElCracks_;
+  TH2F *hEffElCracks_Unc_;
 
   TH2F *hEffMuLoose_;
   TH2F *hEffElLoose_;
@@ -43,6 +46,7 @@ class LeptonScaleFactors{
  
   std::pair<TGraphAsymmErrors*,TGraphAsymmErrors*> grFRMu_;
   std::pair<TGraphAsymmErrors*,TGraphAsymmErrors*> grFREl_;
+  std::string year;
 };
 
 
