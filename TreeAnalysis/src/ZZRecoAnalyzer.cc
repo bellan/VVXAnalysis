@@ -90,7 +90,6 @@ void ZZRecoAnalyzer::analyze(){
       if(newJetPtJESData_down > 30 && fabs(dataJet.eta())<2.4) DownJESData_centraljets->push_back(dataJet);      
     }
 
-    FillHistosJets(decay,theWeight,jets,"01");
     FillHistosJets(decay,theWeight,UpJESData_jets,"JESDataUpSmear_01");
     FillHistosJets(decay,theWeight,DownJESData_jets,"JESDataDownSmear_01");
     FillHistosJets(decay,theWeight,UpJESData_centraljets,"Central_JESDataUpSmear_01");
@@ -269,11 +268,11 @@ void ZZRecoAnalyzer::analyze(){
 
   if(region_ == phys::CR3P1F || region_ == phys::CR2P2F) {
     FillHistosBase(decay,ZZ->fakeRateSFVarHigh(),"FRVarHigh");
-    FillHistosJets(decay,theWeight,jets,"FRVarHigh");
+    FillHistosJets(decay,ZZ->fakeRateSFVarHigh(),jets,"FRVarHigh");
     FillHistosJets(decay,ZZ->fakeRateSFVarHigh(),centralJets,"Central_FRVarHigh");
     
     FillHistosBase(decay,ZZ->fakeRateSFVarLow(),"FRVarLow");
-    FillHistosJets(decay,theWeight,jets,"FRVarLow");
+    FillHistosJets(decay,ZZ->fakeRateSFVarLow(),jets,"FRVarLow");
     FillHistosJets(decay,ZZ->fakeRateSFVarLow(),centralJets,"Central_FRVarLow");
   }
 }
@@ -519,14 +518,15 @@ void ZZRecoAnalyzer::end( TFile &) {
     for (std::vector<std::string>::iterator var = Variable.begin() ; var != Variable.end(); ++var){
       for (std::vector<std::string>::iterator it = FinalState.begin() ; it != FinalState.end(); ++it){
 
-  	TH1 *hvar =  theHistograms.get(("ZZTo"+*it+"_"+*var+"_FRVarHigh").c_str());
-	//	TH1 *hvar =  theHistograms.get(("ZZTo"+*it+"_"+*var+"_FRVarLow").c_str());	
+  	//TH1 *hvar =  theHistograms.get(("ZZTo"+*it+"_"+*var+"_FRVarHigh").c_str());
+	TH1 *hvar =  theHistograms.get(("ZZTo"+*it+"_"+*var+"_FRVarLow").c_str());	
   	TH1 *h = theHistograms.get(("ZZTo"+*it+"_"+*var+"_01").c_str());
-	
+	std::cout<<*it<<" "<<*var<<std::endl;	
   	if(!h || !hvar) continue;
   	for(int i = 1; i<=h->GetNbinsX();i++){
 	  
   	  Float_t Err = h->GetBinError(i);
+	  std::cout<<"Err "<<Err<<" var "<<Err*Err+hvar->GetBinContent(i)<<" tot "<<Err*Err+hvar->GetBinContent(i)<<std::endl;
   	  h->SetBinError(i,sqrt(Err*Err+hvar->GetBinContent(i)));
   	}
       }
