@@ -49,9 +49,10 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   : PUWeighter_      ()
   , filterController_(config,consumesCollector())
   , mcHistoryTools_  (0)
-  , leptonScaleFactors_(edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_mu_2015.root").fullPath(),
-  			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_ele_2015_IdIsoSip.root").fullPath(),
-			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_ele_2015_IdIsoSip_Cracks.root").fullPath(), 
+  , leptonScaleFactors_(edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_mu_2016.root").fullPath(),
+  			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_ele_2016_v3.root").fullPath(),
+			//  			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_ele_2015_IdIsoSip.root").fullPath(),
+			//edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_ele_2015_IdIsoSip_Cracks.root").fullPath(), FIXME
   			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates.root").fullPath(),
   			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates.root").fullPath())
 
@@ -153,7 +154,6 @@ void TreePlanter::beginJob(){
   theTree->Branch("jets"      , &jets_); 
   theTree->Branch("VhadCand"  , &Vhad_);
   theTree->Branch("ZZCand"    , &ZZ_); 
-
   theTree->Branch("ZLCand"    , &ZL_); 
 
   theTree->Branch("genParticles"  , &genParticles_);
@@ -359,11 +359,17 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   // asked to the specific final state
 
   passTrigger_ = filterController_.passTrigger(NONE, event, triggerWord_);
+
+
+
   if (applyTrigger_ && !passTrigger_) return false;
 
   // Check Skim requests
   passSkim_ = filterController_.passSkim(event, triggerWord_);
+
+  //     std::cout<<"pass tr "<<applyTrigger_<<" "<<passTrigger_<<" passSkim_ "<<applySkim_<<" "<<passSkim_<<std::endl;
   if (applySkim_    && !passSkim_)   return false;
+
   run_       = event.id().run();
   event_     = event.id().event(); 
   lumiBlock_ = event.luminosityBlock();
@@ -397,6 +403,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     
 
     for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p){ 
+      //      std::cout<<"id "<<p->pdgId()<<" status "<<p->status()<<std::endl;
       if (p->status() == 1){
 	
 	const reco::Candidate *newp = &(*p);
@@ -408,6 +415,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
       }
   
     }
+
     edm::Handle<int> genCategory;
     event.getByToken(theGenCategoryToken, genCategory);
     genCategory_ = *genCategory;
@@ -415,12 +423,17 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
 
     event.getByToken(theGenVBCollectionToken,  genParticles);
     
+    //    std::cout<"size genvb "<<genParticles->size()<<satd::endl;
     for(edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p)
-      if(fabs(p->pdgId()) == 24 || p->pdgId() == 23)
-	genVBParticles_.push_back(phys::Boson<phys::Particle>(phys::Particle(p->daughter(0)->p4(), phys::Particle::computeCharge(p->daughter(0)->pdgId()), p->daughter(0)->pdgId()),
+      { 
+	//	cout<<"genvb id "<<p->pdgId()<<std::endl;
+	if(fabs(p->pdgId()) == 24 || p->pdgId() == 23)
+	  genVBParticles_.push_back(phys::Boson<phys::Particle>(phys::Particle(p->daughter(0)->p4(), phys::Particle::computeCharge(p->daughter(0)->pdgId()), p->daughter(0)->pdgId()),
 							      phys::Particle(p->daughter(1)->p4(), phys::Particle::computeCharge(p->daughter(1)->pdgId()), p->daughter(1)->pdgId()),
-							      p->pdgId()));
-    
+
+   							      p->pdgId()));
+   }
+    //    std::cout<<"genVBpart "<<genVBParticles_.size()<<std::endl;   
     // Get the gen jet collection
     edm::Handle<edm::View<reco::Candidate> > genJets;
     event.getByToken(theGenJetCollectionToken,  genJets);
@@ -718,6 +731,7 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   VV.triggerWord_ = triggerWord_;
   VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
   
+  //  std::cout<<"best cand "<<VV.isBestCand_<<" SR "<<VV.passFullSel_<<" RW "<<regionWord<<std::endl;
   return VV;
 }
 
