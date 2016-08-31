@@ -12,8 +12,10 @@ import collections
 from optparse import OptionParser
 import sys
 import math
+import json
 import operator
 from Colours import *
+import os.path
 
 ##################################################################################################################
 
@@ -106,7 +108,6 @@ def getCrossPlot_MC(MCSet,Type,analysis,DoNormalized,DoFiducial):
     
     for h in hSum:
         setCrossSectionMC(h["state"],h["name"],Type,DoNormalized,MCSet,DoFiducial)
-
     return hSum
 
 ##############################################################################################################
@@ -215,6 +216,7 @@ def setCrossSectionMC(h1,FinState,Type,DoNormalized,MCSet,doFiducial):
         elif FinState=='4m':   BR=BRmu*BRmu
         elif FinState=='2e2m': BR=2*BRmu*BRele
         else: BR=2*BRmu*BRele
+
     if doFiducial:
         print "{0} Tot Cross {1} {2:.6f} [fb]\n".format(FinState,(25-len(FinState))*" ",1000*(h1.Integral(1,-1))/(Lumi)) # Check total cross section withou
         if FinState=="4l" and Type=="Total":
@@ -224,31 +226,19 @@ def setCrossSectionMC(h1,FinState,Type,DoNormalized,MCSet,doFiducial):
     else:
         print "{0} Tot Cross {1} {2:.6f} [pb]\n".format(FinState,(25-len(FinState))*" ", (h1.Integral(1,-1))/(Lumi*BR)) # Check total cross section witho
     
-    #h1.Scale(1/(Lumi*BR),"width") # If you don't want to normalize at the official cross section value.
     
     Integral = h1.Integral(0,-1) #Use integral with overflows entries to scale with theoretical value which include also the overflow entries.
-
-    if doFiducial:  #FIX
-        if FinState   =='4e':   normalization = xs_4e #FIX #HOT
-        elif FinState =='4m':   normalization = xs_4m
-        elif FinState =='2e2m': normalization = xs_2e2m
-        else: normalization = xs_4m +xs_4e +xs_2e2m
-        
-    else: normalization = xs_wide #FIX 
     
-    #normalization to the MC calculation of 7.5
-    if DoNormalized: h1.Scale(1./Integral,"width")
+    #h1.Scale(1/(Lumi*BR),"width") # If you don't want to normalize at the official cross section value.
+    if DoNormalized: h1.Scale(1./Integral,"width") #Check
     else:
-        if Type == "Mass":   
-            h1.Scale(normalization/Integral,"width") 
-        elif "Jets" in Type:
-            h1.Scale(normalization/Integral)     
-            print "Integral jets > 0",h1.Integral(2,4),"Integral jets > 1",h1.Integral(3,4)
-        elif "Jet1" in Type:
-            h1.Scale(5.35732409358/Integral,"width") # Mjj and Deta don't contain all the events of theoretical cross section 7,5. ho qualche dubbio sul valore messo... non dovrebbe essere  
-        else:
-            h1.Scale(1.64281865954/Integral,"width") # Mjj and Deta don't contain all the events of theoretical cross section 7,5. 
-    #print h1.Integral(3,4)*7.5/(Integral) //FIXME
+        norm = GetNorm(FinState,Type,doFiducial)
+   
+    if doFiducial and ("Mass" in Type or "Jets" in Type):
+        h1.Scale(1000./(Lumi),"width")  #FIXME. Use h1.Scale(norm/Integral,"width") as far as the MCFM values are available 
+        print h1.Integral()
+    else:h1.Scale(norm/Integral,"width")        
+      
         
 ##################################################################################################################
 
@@ -546,9 +536,51 @@ def combineInclusiveCrossFiducial(Dic):
 
     
     
-def WriteJetsNorm(hMCList):
-    out_file = open("test.txt","w")    
+def WriteJetsNorm(hMCList,Type,DoFid):
+
+    if "Central" in Type:
+        if DoFid:  out_file = open("JetsNorm_Central_tight.json","w")    
+        else:      out_file = open("JetsNorm_Central.json","w")    
+    else:
+        if DoFid:  out_file = open("JetsNorm_tight.json","w")    
+        else:      out_file = open("JetsNorm.json","w")    
+    out_file.write("{\n")
     for i in range(0,4):
-        out_file.write(hMCList[i]["name"]+" "+str(hMCList[i]["state"].Integral(2,4))+" "+str(hMCList[i]["state"].Integral(3,4))+"\n")
+        out_file.write('"'+hMCList[i]["name"]+'":')
+        json.dump([hMCList[i]["state"].Integral(2,4),hMCList[i]["state"].Integral(3,4)],out_file)
+        if i == 3: out_file.write("\n")
+        else:     out_file.write(",\n")
+    out_file.write("}")
     out_file.close()
-    
+
+def GetNorm(finState,Type,doFid):
+
+    if "Jets" in Type or "Mass" in Type:
+        if doFid:
+            return xs_tight[finState]
+        else: return xs_wide 
+    else:
+        FileName = "JetsNorm_"
+        CommandName = "./python/ComputeCross.py -t Jets"
+        if doFid:
+            if "Central" in Type: 
+                FileName += "Central_tight.json"
+                CommandName += "_Central -f"
+            else:                 
+                FileName += "_tight.json"
+                CommandName += " -f"
+        else:
+            if "Central" in Type: 
+                FileName += "_Central.json"
+                CommandName += "_Central"
+            else:                 
+                FileName += ".json"
+
+        if not os.path.exists(FileName): 
+                sys.exit("ERROR: "+FileName+" doesn't exist yet. You need to run '"+CommandName+"' first to put normalization values to file")
+
+        File = open(FileName,"r") 
+        normjson = json.load(File)
+        if "Jet1" in Type: return normjson[finState][0]
+        elif "Jet2" in Type or "Deta" in Type or "Mjj" in Type: return normjson[finState][1]
+

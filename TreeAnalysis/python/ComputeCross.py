@@ -140,7 +140,7 @@ for i in range(0,4):
         
         if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}}#frac{d#sigma_{fid}}{d #jets}")        
         else: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d #jets [pb]") 
-        if DoFiducial:  WriteJetsNorm(hMCList) #Write partial xsec for variable with jet>0
+        WriteJetsNorm(hMCList,Type,DoFiducial) #Write partial xsec for variable with jet>0
 
     elif "Deta" in Type:
         xName = "#Delta #eta_{jj}"

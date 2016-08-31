@@ -36,9 +36,7 @@ xs_wide = 16.5
 
 # Theoretic xs for the tight fiducial region MCFM
 
-xs_2e2m =  32.64
-xs_4m   =  16.32
-xs_4e   =  16.32
+xs_tight = {"2e2m":16.37,"4m":8.19,"4e":8.19,"4l":32.75} #To be corrected with MCFM values
 
 GlobSistList = [{"name":"Trig","value":0.02},{"name":"Lumi","value": 0.062}] 
 DiffSistList = ("Red","Irr","sFactor")
