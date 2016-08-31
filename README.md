@@ -77,7 +77,7 @@ cmsenv
 git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis
 scram b
 cd VVXAnalysis/TreeAnalysis/bin/
-ln -s $CMSSW_BASE/bin/slc5_amd64_gcc462/eventAnalyzer
+ln -s $CMSSW_BASE/bin/slc6_amd64_gcc530/eventAnalyzer
 cd ../python/
 ln -s ../../../ZZAnalysis/AnalysisStep/python/readSampleInfo.py
 cd ..
@@ -107,3 +107,21 @@ To make more clear the procedure I have put an example (that it is not supposed 
 
 Note that the histogrammer utility (a member of the ```EventAnalyzer``` class) allows you to fill plots without bothering 
 about histograms booking or writing (see some examples in the EventAnalyzer class).
+
+
+Recipe for unfolding step
+-----------------------------
+
+- you can find documentation about RooUnfold here: http://hepunx.rl.ac.uk/~adye/software/unfold/RooUnfold.html
+
+cd macros/UnfoldingMacros
+svn co https://svnsrv.desy.de/public/unfolding/RooUnfold/trunk RooUnfold
+
+cd RooUnfold
+cmsenv
+make
+
+- To test the RooUnfold code try one of the example. 
+
+root -l
+.x examples/RooUnfoldExample.cxx
