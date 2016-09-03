@@ -14,16 +14,22 @@ DoubleEG2016C, DoubleEle,  -1,          ,, /DoubleEG/Run2016C-PromptReco-v2/MINI
 MuonEG2016C,   MuEG     ,   1,          ,, /MuonEG/Run2016C-PromptReco-v2/MINIAOD,dbs,,2,PD=MuEG;,json_2016.py,
 SingleEle2016C,SingEle  ,  -1,          ,, /SingleElectron/Run2016C-PromptReco-v2/MINIAOD,dbs,,5,PD=SingleElectron;,json_2016.py,
 
-DoubleMu2016D  ,DoubleMu ,          -1, ,, /DoubleMuon/Run2016D-PromptReco-v2/MINIAOD,dbs,,2,PD=DoubleMu;,json_2016.py,
+DoubleMu2016D  ,DoubleMu ,          -1, ,, /DoubleMuon/Run2016D-PromptReco-v2/MINIAOD,dbs,,2,PD=DoubleMu;,json_2016.py,                                          
 DoubleEG2016D  ,DoubleEle,          -1, ,, /DoubleEG/Run2016D-PromptReco-v2/MINIAOD,dbs,,2,PD=DoubleEle;,json_2016.py,
 MuonEG2016D    ,MuEG     ,            -1, ,, /MuonEG/Run2016D-PromptReco-v2/MINIAOD,dbs,,2,PD=MuEG;,json_2016.py,
 SingleEle2016D ,SingEle  ,         -1, ,, /SingleElectron/Run2016D-PromptReco-v2/MINIAOD,dbs,,5,PD=SingleElectron;,json_2016.py,
-
 
 DoubleMu2016E  ,DoubleMu ,          -1, ,, /DoubleMuon/Run2016E-PromptReco-v2/MINIAOD,dbs,,2,PD=DoubleMu;,json_2016.py,
 DoubleEG2016E  ,DoubleEle,          -1, ,, /DoubleEG/Run2016E-PromptReco-v2/MINIAOD,dbs,,2,PD=DoubleEle;,json_2016.py,
 MuonEG2016E    ,MuEG     ,            -1, ,, /MuonEG/Run2016E-PromptReco-v2/MINIAOD,dbs,,2,PD=MuEG;,json_2016.py,
 SingleEle2016E ,SingEle  ,         -1, ,, /SingleElectron/Run2016E-PromptReco-v2/MINIAOD,dbs,,5,PD=SingleElectron;,json_2016.py,
+
+DoubleMu2016F  ,DoubleMu ,          -1, ,, /DoubleMuon/Run2016F-PromptReco-v1/MINIAOD,dbs,,2,PD=DoubleMu;,json_2016.py,
+DoubleEG2016F  ,DoubleEle,          -1, ,, /DoubleEG/Run2016F-PromptReco-v1/MINIAOD,dbs,,2,PD=DoubleEle;,json_2016.py,
+MuonEG2016F    ,MuEG     ,            -1, ,, /MuonEG/Run2016F-PromptReco-v1/MINIAOD,dbs,,2,PD=MuEG;,json_2016.py,
+SingleEle2016F ,SingEle  ,         -1, ,, /SingleElectron/Run2016F-PromptReco-v1/MINIAOD,dbs,,5,PD=SingleElectron;,json_2016.py,
+
+Data ,SingEle  ,         -1, ,, /SingleElectron/Run2016F-PromptReco-v1/MINIAOD,dbs,,5,PD=SingleElectron;,json_2016.py,
 
 
 # DoubleMu2015C,DoubleMu,  -1,          ,, /DoubleMuon/Run2015C_25ns-27Jan2016-v2/MINIAOD,dbs,,2,PD=DoubleMu,json_2015_25ns_Silver.py,
@@ -53,7 +59,7 @@ ZZTo2e2muJJ,qq_4l2j,     6.429E-04,   ,,/VBFToContinZZTo2e2muJJ_13TeV_phantom_py
 ggZZ4e,gg_4l,            0.00158549,  ,,/GluGluToContinToZZTo4e_13TeV_MCFM701_pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,,
 ggZZ4mu,gg_4l,           0.00158549,  ,,/GluGluToContinToZZTo4mu_13TeV_MCFM701_pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,,
 ggZZ4tau,gg_4l,          0.00158549,  ,,/GluGluToContinToZZTo4tau_13TeV_MCFM701_pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,4,PROCESS_CR=False;SKIM_REQUIRED=False,,
-ggZZ2e2mu,gg_4l,         0.0031942,   ,,/GluGluToContinToZZTo2e2mu_13TeV_MCFM701_pythia8/RunIISpring16MiniAODv1-PUSpring16_80X_mcRun2_asymptotic_2016_v3-v4/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,,
+ggZZ2e2mu,gg_4l,         0.0031942,   ,,/GluGluToContinToZZTo2e2mu_13TeV_MCFM701_pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,,
 ggZZ2e2tau,gg_4l,        0.0031942,   ,,/GluGluToContinToZZTo2e2tau_13TeV_MCFM701_pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,2,PROCESS_CR=False;SKIM_REQUIRED=False,,
 ggZZ2mu2tau,gg_4l,       0.0031942,   ,,/GluGluToContinToZZTo2mu2tau_13TeV_MCFM701_pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,3,PROCESS_CR=False;SKIM_REQUIRED=False,,
 
@@ -68,7 +74,7 @@ TTTo2L2Nu,tt,            87.31,       ,,/TTTo2L2Nu_13TeV-powheg/RunIISpring16Min
 TTGJets,tt,              -1,          ,,/TTGJets_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True,,
 TTWJets,tt,              -1,          ,,/TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True,,
 WWW,triboson,            -1,          ,,/WWW_4F_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True,,
-WZ,WZ,                   4.42965,     ,,/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring16MiniAODv1-PUSpring16_80X_mcRun2_asymptotic_2016_v3-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True,,
+WZ,WZ,                   4.42965,     ,,/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True,,
 ZGTo2LG,ZG,              117.864,     ,,/ZGTo2LG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True,,
 
 
@@ -79,6 +85,6 @@ WWZ,triboson,            -1,          ,,/WWZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8
 
 ####,,,,,,,,,,,For test
 
-#ZZ4lAnalysis,,            -1,          ,,/test_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,4,PROCESS_CR=False,,       # To test small  local production                                
+ZZ4lAnalysis,,            -1,          ,,/test_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,4,PROCESS_CR=False,,       # To test small  local production                                
 
 
