@@ -581,8 +581,6 @@ void ResponseMatrix::Build_JE(string var, string dataset, string finalstate, str
   histoName_reco = "ZZTo" + finalstate + "_"+var+"_"+unc+"Smear_" + dataset;
   histoName_gen =  "ZZTo" + finalstate + "_"+var+"Gen_"+ dataset + tightfr;
 
-  std::cout<<matrixName<<" "<<histoName_reco<<" "<<histoName_gen<<std::endl;
-  
   h_Resmat_safe_tmp = (TH2*) rescue->Get(safeMatrixName.c_str()); 
   h_safe_tmp = (TH1*) rescue->Get(safeHistoName.c_str()); 
   h_Resmat_safe = (TH2*)h_Resmat_safe_tmp->Clone(safeMatrixName.c_str()); 

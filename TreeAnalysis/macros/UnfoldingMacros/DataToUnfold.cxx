@@ -30,12 +30,10 @@ DataToUnfold::~DataToUnfold(){}
 //Build data distributions to estimate the reducible and irreducible background systematic uncertainties 
 void DataToUnfold::Build(string var, string finalstate)
 {
-  std::cout<<"HHeidata 1"<<std::endl;
   output = new TFile((var+"_test/DataToUnfold.root").c_str(), "UPDATE");
   output_syst =   new TFile((var+"_test/DataToUnfold_syst.root").c_str(), "UPDATE");
 //system(("mkdir "+var+"_test").c_str()); 
   int b = 0;  
-  std::cout<<"HHeidata 2"<<std::endl;
   if(var == "Mass" || var == "dRZZ")  variable = var;
   else  variable = var + "_JERSmear";
  
@@ -59,20 +57,18 @@ void DataToUnfold::Build(string var, string finalstate)
   dataIrrmName       = "DataminusBkg_irrm_"+var+"_ZZTo"+finalstate; 
   dataRedpName       = "DataminusBkg_redp_"+var+"_ZZTo"+finalstate; 
   dataRedmName       = "DataminusBkg_redm_"+var+"_ZZTo"+finalstate;
-  std::cout<<"HHeidata 3 "<<histoName<<" a "<<histoMCName<<" "<<safeHistoName<<std::endl;
+
   h_totdata = (TH1*) data->Get(histoName.c_str()); 
   h_data    = (TH1*) h_totdata->Clone("h_totdata");
   h_red     = (TH1*) red->Get(histoName.c_str()); 
-  std::cout<<"HHeidata 3.1"<<std::endl;
-  //  h_Irr     = (TH1*) Irr->Get(histoName.c_str()); 
+
   h_ttZ = (TH1*) ttZ->Get(histoMCName.c_str()); 
   // h_ttWW = (TH1*) ttWW->Get(histoMCName.c_str()); 
   h_WWZ = (TH1*) WWZ->Get(histoMCName.c_str()); 
-  std::cout<<"HHeidata 3.2"<<std::endl;
   h_safe_tmp = (TH1*) rescue->Get(safeHistoName_mass.c_str());
   h_safe     = (TH1*) h_safe_tmp->Clone(safeHistoName.c_str());
 
-  std::cout<<"HHeidata 4"<<std::endl;
+
   for(int l=1; l<b; l++){
     h_safe->SetBinContent(l,0.);
     h_safe->SetBinError(l,0.);  
