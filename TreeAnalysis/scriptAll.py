@@ -29,7 +29,7 @@ if What=="All" or What=="Set":
     for t in InfoType:
         for f in (" -f",""):
             print Blue("\n"+Command+t+f+Unfold)
-            os.system(Command+t+f)
+            os.system(Command+t+f+Unfold)
             print Blue("\n"+Command+t+" -S Pow"+f+Unfold)
             os.system(Command+t+" -S Pow"+f+Unfold)
 
