@@ -6,7 +6,6 @@
 #include "TTree.h"
 #include <boost/assign/std/vector.hpp> 
 #include <boost/assert.hpp> 
-#include "TStopwatch.h"
 using namespace std;
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -20,7 +19,8 @@ using namespace phys;
 
 
 void ZZRecoAnalyzer::analyze(){
-  
+
+
   CentralJER_jets->clear();
   UpJER_jets->clear();
   DownJER_jets->clear();
@@ -31,6 +31,11 @@ void ZZRecoAnalyzer::analyze(){
   DownJES_jets->clear();
   UpJES_centraljets->clear();
   DownJES_centraljets->clear();
+
+  UpJESData_jets->clear();
+  DownJESData_jets->clear();
+  UpJESData_centraljets->clear();
+  DownJESData_centraljets->clear();
   
   e++;
   
@@ -43,8 +48,8 @@ void ZZRecoAnalyzer::analyze(){
   if      (id == 52) {decay = "4m";}
   else if (id == 48) {decay = "2e2m";}
   else if (id == 44) {decay = "4e";}
-  
-  if(e < nentries/2){sample = "0";}
+
+    if(e < nentries/2){sample = "0";}
   else {sample = "1";}
 
   m4L = ZZ->mass();  
@@ -75,28 +80,26 @@ void ZZRecoAnalyzer::analyze(){
       double newJetPtJESData_up   =0;  
       double newJetPtJESData_down =0;
       
-      newJetPtJESData_up   = dataJetPt*(1+dataJet.jecUncertainty());
-      newJetPtJESData_down = dataJetPt*(1-dataJet.jecUncertainty());
-      
-      if(newJetPtJESData_up > 30) {
-	UpJESData_jets->push_back(dataJet); 
+      newJetPtJESData_up   = dataJetPt*(1 + dataJet.jecUncertainty());
+      newJetPtJESData_down = dataJetPt*(1 - dataJet.jecUncertainty());
 
-      }
-      if(newJetPtJESData_down > 30) {
-	DownJESData_jets->push_back(dataJet);
+      if(newJetPtJESData_up > 30)     UpJESData_jets->push_back(dataJet);       
+      if(newJetPtJESData_down > 30)   DownJESData_jets->push_back(dataJet);
 
-      }    
-      if(newJetPtJESData_up > 30 && fabs(dataJet.eta())<2.4) UpJESData_centraljets->push_back(dataJet); 
+      if(newJetPtJESData_up > 30 && fabs(dataJet.eta())<2.4)   UpJESData_centraljets->push_back(dataJet); 
       if(newJetPtJESData_down > 30 && fabs(dataJet.eta())<2.4) DownJESData_centraljets->push_back(dataJet);      
     }
+
 
     FillHistosJets(decay,theWeight,UpJESData_jets,"JESDataUpSmear_01");
     FillHistosJets(decay,theWeight,DownJESData_jets,"JESDataDownSmear_01");
     FillHistosJets(decay,theWeight,UpJESData_centraljets,"Central_JESDataUpSmear_01");
     FillHistosJets(decay,theWeight,DownJESData_centraljets,"Central_JESDataDownSmear_01");
-}
+
+ }
   
-  else{    
+  else{
+
     foreach(const phys::Jet &jet, *pjets){
       
       double jetPt = 0;
@@ -297,7 +300,7 @@ void ZZRecoAnalyzer::FillHistosJets(std::string decay,float Wh,std::vector<phys:
   njets =  jetsVec->size(); 
   
   if (njets>3) njets=3;
-  
+
   theHistograms.fill("ZZTo"+decay+"_Jets_"+type, "", 4,0,4,njets, Wh);   
   
   if(njets>0){  
@@ -421,9 +424,6 @@ void ZZRecoAnalyzer::FillMatrixHistosBase(std::string decay, float Wh,std::strin
 
 void ZZRecoAnalyzer::begin() {
 
-  st= new TStopwatch();
-  st->Start();
-
   nentries = tree()->GetEntries("ZZCand.regionWord_ & (1<<26)"); 
 
   UpJESData_jets           = new std::vector<phys::Jet>();
@@ -521,18 +521,13 @@ void ZZRecoAnalyzer::end( TFile &) {
   	//TH1 *hvar =  theHistograms.get(("ZZTo"+*it+"_"+*var+"_FRVarHigh").c_str());
 	TH1 *hvar =  theHistograms.get(("ZZTo"+*it+"_"+*var+"_FRVarLow").c_str());	
   	TH1 *h = theHistograms.get(("ZZTo"+*it+"_"+*var+"_01").c_str());
-	std::cout<<*it<<" "<<*var<<std::endl;	
   	if(!h || !hvar) continue;
-  	for(int i = 1; i<=h->GetNbinsX();i++){
-	  
+  	for(int i = 1; i<=h->GetNbinsX();i++){  
   	  Float_t Err = h->GetBinError(i);
-	  std::cout<<"Err "<<Err<<" var "<<Err*Err+hvar->GetBinContent(i)<<" tot "<<Err*Err+hvar->GetBinContent(i)<<std::endl;
+	  //std::cout<<"Err "<<Err<<" var "<<Err*Err+hvar->GetBinContent(i)<<" tot "<<Err*Err+hvar->GetBinContent(i)<<std::endl;
   	  h->SetBinError(i,sqrt(Err*Err+hvar->GetBinContent(i)));
   	}
       }
     }  
   }
-
-  st->Stop();
-  std::cout<<" cptime "<<st->CpuTime()<<std::endl;  
 }
