@@ -9,10 +9,10 @@ An = sys.argv[2]
 
 if An == "fake":
     AnalyzerList = [{"analyzer":"FakeRateAnalyzer","region":"MC"}]
-
+    
 elif An == "MC":
     AnalyzerList = [{"analyzer":"ZZMCAnalyzer","region":"MC"}]
-
+    
 elif An == "ZZj":
     AnalyzerList = [{"analyzer":"ZZjAnalyzer","region":"SR"}]#,{"analyzer":"ZZjAnalyzer","region":"CR"}]
 
@@ -24,6 +24,8 @@ elif An == "Data":
 
 elif  An == "RedBkg": 
     AnalyzerList = [{"analyzer":"ZZRecoAnalyzer","region":"CR"}]
+
+else: sys.exit(An+" doesn't exist. Chose between fake, MC, ZZj, Reco, Data and RedBkg")
 
 datalist    = ["DoubleEG2016B","DoubleMu2016B","MuonEG2016B","SingleEle2016B","DoubleEG2016C","DoubleMu2016C","MuonEG2016C","SingleEle2016C","DoubleEG2016D","DoubleMu2016D","MuonEG2016D","SingleEle2016D","DoubleEG2016E","DoubleMu2016E","MuonEG2016E","SingleEle2016E","DoubleEG2016F","DoubleMu2016F","MuonEG2016F","SingleEle2016F"]
 
