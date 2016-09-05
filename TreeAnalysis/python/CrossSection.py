@@ -473,16 +473,16 @@ def TotalCross(MCSet,Type,analysis,doFiducial,UseMCReco):
         value[2]=value[2]**2
         value[3]=value[3]**2 
 #        value[4]=value[4]**2 
-        if DoFiducial and fin == "4l": #only lumi is added #HOT
+        if doFiducial and fin == "4l": #only lumi is added #HOT
             value[2]= value[2]+(value[0]*0.026)**2
             value[3]= value[3]+(value[0]*0.026)**2
         else:            
             for sist in GlobSistList: #Add inclusive systematic errors
                 value[2]+=(value[0]*sist["value"])**2
                 value[3]+=(value[0]*sist["value"])**2 #CHECK
-                # value[4]+=(value[0]*sist["value"])**2 #CHECK #HOT #FIX
-        #value[4]= math.sqrt(value[2]+value[3])#CHECK
-        value[4]= math.sqrt(value[4])
+                #value[4]+=(value[0]*sist["value"])**2 #CHECK #HOT #FIX
+        value[4]= math.sqrt(value[2]+value[3])#CHECK
+        #value[4]= math.sqrt(value[4])
         value[2]= math.sqrt(value[2])
         value[3]= math.sqrt(value[3])
 
@@ -490,7 +490,7 @@ def TotalCross(MCSet,Type,analysis,doFiducial,UseMCReco):
         if doFiducial:
             print  " {0:.2f} +- {1:.2f} (stat) + {2:.2f} (sist) - {3:.2f} (sist) +- {4:.2f} (Total) [fb]\n".format(value[0]*1000,value[1]*1000,value[2]*1000,value[3]*1000,value[4]*1000)
             if fin=="4l":
-                AccFile = ROOT.TFile("./Acceptance/Acceptance_"+MCSet+"_"+Type+".root")
+                AccFile = ROOT.TFile("./Acceptance/Acceptance_"+MCSet+"_Mass.root")
                 Acc = (AccFile.Get("TotAcc2e2m_Acc").GetVal()+AccFile.Get("TotAcc4e_Acc").GetVal()+AccFile.Get("TotAcc4m_Acc").GetVal())/3. 
                 print "Wide Region",value[0]/(Acc*(BRele*BRele+2*BRele*BRmu+BRmu*BRmu)),"Acc",Acc 
 
