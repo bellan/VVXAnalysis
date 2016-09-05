@@ -74,7 +74,7 @@ def getSistGraph(HCent,HUp,HDown,DoFiducial,FinState):
 
     return copy.deepcopy(grSist)
 
-##############################################################################################################
+##################################################################################################################
 
 def getCrossPlot_MC(MCSet,Type,analysis,DoNormalized,DoFiducial):
 
@@ -101,7 +101,6 @@ def getCrossPlot_MC(MCSet,Type,analysis,DoNormalized,DoFiducial):
     if DoFiducial:
         hTOTCross.Add(hSum[1]["state"])
         hTOTCross.Add(hSum[2]["state"])
-
 
     hTOTElem = {"state":hTOTCross,"color":ROOT.kAzure-6,"name":'4l'}
     hSum.append(hTOTElem)
@@ -179,17 +178,17 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,DoNormalized,
         print Blue(sistSt)+(" "*(9-len(sistSt))),
         print "{0} Tot Cross {1} {2:.2f} \n".format("4l",(15-len("4l"))*" ", hTOTElem["state"].Integral(1,-1)) 
         hTot.append(hTOTElem)
-        
         for i in hTot:
             if i["state"]==None:
                 print i["state"]," has no enetries" 
                 
             if  "Jets" not in Type:  
-                if DoNormalized: i["state"].Scale(1./i["state"].Integral(0,-1),"width")#normalization to the total integral of data distribution          
-                else:  i["state"].Scale(1.,"width") #FIX #CHECK
+                if DoNormalized: 
+                    i["state"].Scale(1./i["state"].Integral(0,-1),"width")
+                else:  i["state"].Scale(1.,"width") 
             else:
-                if DoNormalized: i["state"].Scale(1./i["state"].Integral(0,-1),"width")#normalization to the total integral of data distribution          
-                                
+                if DoNormalized: 
+                    i["state"].Scale(1./i["state"].Integral(0,-1),"width")#normalization to the total integral of data distribution          
     return hSum,hSumUp,hSumDown
 
 
@@ -230,14 +229,14 @@ def setCrossSectionMC(h1,FinState,Type,DoNormalized,MCSet,doFiducial):
     Integral = h1.Integral(0,-1) #Use integral with overflows entries to scale with theoretical value which include also the overflow entries.
     
     #h1.Scale(1/(Lumi*BR),"width") # If you don't want to normalize at the official cross section value.
-    if DoNormalized: h1.Scale(1./Integral,"width") #Check
+    if DoNormalized: 
+        h1.Scale(1./Integral,"width") 
     else:
-        norm = GetNorm(FinState,Type,doFiducial)
-   
-    if doFiducial and ("Mass" in Type or "Jets" in Type):
-        h1.Scale(1000./(Lumi),"width")  #FIXME. Use h1.Scale(norm/Integral,"width") as far as the MCFM values are available 
-        print h1.Integral()
-    else:h1.Scale(norm/Integral,"width")        
+        if doFiducial and ("Mass" in Type or "Jets" in Type):
+            h1.Scale(1000./(Lumi),"width")  #FIXME. Use h1.Scale(norm/Integral,"width") as far as the MCFM values are available    
+        else:
+            norm = GetNorm(FinState,Type,doFiducial)
+            h1.Scale(norm/Integral,"width")        
       
         
 ##################################################################################################################
