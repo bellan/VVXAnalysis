@@ -559,11 +559,11 @@ def GetNorm(finState,Type,doFid):
             return xs_tight[finState]
         else: return xs_wide 
     else:
-        FileName = "JetsNorm_"
+        FileName = "JetsNorm"
         CommandName = "./python/ComputeCross.py -t Jets"
         if doFid:
             if "Central" in Type: 
-                FileName += "Central_tight.json"
+                FileName += "_Central_tight.json"
                 CommandName += "_Central -f"
             else:                 
                 FileName += "_tight.json"
