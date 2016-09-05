@@ -113,15 +113,16 @@ Recipe for unfolding step
 -----------------------------
 
 - you can find documentation about RooUnfold here: http://hepunx.rl.ac.uk/~adye/software/unfold/RooUnfold.html
-
+```
 cd macros/UnfoldingMacros
 svn co https://svnsrv.desy.de/public/unfolding/RooUnfold/trunk RooUnfold
-
 cd RooUnfold
 cmsenv
 make
+```
 
 - To test the RooUnfold code try one of the example. 
-
+```
 root -l
 .x examples/RooUnfoldExample.cxx
+```
