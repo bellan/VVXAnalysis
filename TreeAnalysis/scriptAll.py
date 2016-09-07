@@ -45,25 +45,8 @@ if What=="All" or What=="Cross":
                 os.system(Command+t+" -S Pow"+f+n+Unfold)
 
 
+else: sys.exit("Choose betwewn, All, Acc, Set, Cross")
+
+    
 
 
-# ./python/Acceptance.py  -s -t Jets
-# ./python/Acceptance.py  -s -t Jets  -S Pow
-
-# ./python/Acceptance.py  -s -t Mjj_Central
-# ./python/Acceptance.py  -s -t Mjj_Central  -S Pow
-
-# ./python/Acceptance.py  -s -t Deta
-# ./python/Acceptance.py  -s -t Deta  -S Pow
-
-# ./python/Acceptance.py  -s -t Deta_Central
-# ./python/Acceptance.py  -s -t Deta_Central  -S Pow
-
-
-# #"Mass","Jets","Jets_Central","PtJet1","EtaJet1","PtJet2","EtaJet2","Deta","Mjj","Deta_Central","Mjj_Central","dRZZ", "PtZZ","DphiZZ"                                                
-
-# ./python/Acceptance.py  -s -t PtJet1  -S Pow
-# ./python/Acceptance.py  -s -t PtJet1
-
-# ./python/Acceptance.py  -s -t EtaJet1  -S Pow
-# ./python/Acceptance.py  -s -t EtaJet1
