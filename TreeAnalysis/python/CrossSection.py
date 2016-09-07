@@ -281,8 +281,7 @@ def combineCross(HList,HListUp,HListDown):
 
         for elem in SortedHlist:
             Entries = elem[0]["state"].GetBinContent(i)
-            print elem[0]["name"],Entries
-
+        
             if Entries == 0.:   break   # Because of sorting also others final state will be 0 so use break and no continue
 
             errStatSq     = (elem[0]["state"].GetBinError(i))**2
