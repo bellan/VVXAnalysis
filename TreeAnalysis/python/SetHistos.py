@@ -127,10 +127,8 @@ def getHisto(Type,isData,Sign,sist,isTot,isFiducial):
 
         for hfake in hFakeSum:
             hfake["state"] = getRedBkg(hfake["name"],Sign,sist)
-        # hfake4e    = getRedBkg("4e",Sign,sist)
-        # hfake4mu   = getRedBkg("4m",Sign,sist)
 
-#        if "Jet" in Type or "Deta" in Type or "Mjj" in Type : TypeString=Type+"_JERSmear"
+#        if "Jet" in Type or "Deta" in Type or "Mjj" in Type : TypeString=Type+"_JERSmear" #Check
 #        else: 
         TypeString=Type       
        
@@ -190,37 +188,40 @@ def getHisto(Type,isData,Sign,sist,isTot,isFiducial):
             if sist=="Red":
                 k["state"]=addSist(k["state"],Sign)
 
-            i["state"].Add(j["state"],-1)
- 
-            for l in range(0,Nbins+2):
-                  
-                if k["state"].GetBinContent(l)<0 or math.isnan(k["state"].GetBinContent(l)): 
-                    #print "negative or nan content in bin ",l,k["state"].GetBinContent(l)   
-                    k["state"].SetBinContent(l,0.)  #To avoid negative bin.
-                    k["state"].SetBinError(l,0.)  #To avoid negative bin.
-                    
+            i["state"].Add(j["state"],-1)                    
             i["state"].Add(k["state"],-1)
 
+            for l in range(0,Nbins+2):
+                if sist=="" and Sign ==0 and isData:   print "bin",l,i["state"].GetBinContent(l)
+                if k["state"].GetBinContent(l)<0 or math.isnan(k["state"].GetBinContent(l)): 
+                    print "negative or nan content in bin ",l,k["state"].GetBinContent(l)   
+                    k["state"].SetBinContent(l,0.)  #To avoid negative bin.
+                    k["state"].SetBinError(l,0.)    #To avoid negative bin.
+                    if sist=="": print "corr", i["state"].GetBinContent(l)
+                if i["state"].GetBinContent(l)<0 or math.isnan(k["state"].GetBinContent(l)): 
+                    print "negative or nan content in bin ",l,i["state"].GetBinContent(l)   
+                    i["state"].SetBinContent(l,0.)  #To avoid negative bin.                    i["state"].SetBinError(l,0.)    #To avoid negative bin.
+                    
+
+
             Nbins = i["state"].GetNbinsX()        
-            
-            #for l in range(1,Nbins+2):
-             #   if i["state"].GetBinContent(l)<0:  i["state"].SetBinContent(l,0.)  
+        
 
             ErrStat=ROOT.Double(0.)                
-  #          if sist=="": print "Integral after background subtraction {0}> {1:.2f} +- {2:.2f}\n ".format((26-len(i["name"]))*"-",i["state"].IntegralAndError(0,-1,ErrStat),ErrStat)
             if sist=="": print "Integral after background subtraction {0}> {1:.2f} +- {2:.2f}\n ".format(23*"-",i["state"].IntegralAndError(0,-1,ErrStat),ErrStat)
         if isTot:
             if isFiducial:   Acc = AccFile.Get("TotAcc"+i["name"]+"_fr").GetVal()
             else:            Acc = AccFile.Get("TotAcc"+i["name"]+"_Tot").GetVal() #FIXME
-#            print Acc
             i["state"].Scale(1./Acc)
 
         else:
             if isFiducial:         hAcc = AccFile.Get("HEff_Tight"+i["name"]+"_"+Type)
-            else:                  hAcc = AccFile.Get("HTot_"+i["name"]+"_"+Type)
-
+            else:  
+                hAcc = AccFile.Get("HTot_"+i["name"]+"_"+Type)
+                print "HTot_"+i["name"]+"_"+Type
             if hAcc== None: sys.exit("HAcc_"+i["name"]+"_"+Type+" is Null or doesn't exist")
             i["state"].Divide(hAcc)
+            if sist=="" and Sign ==0 and isData: print "acc corr ", i["state"].GetBinContent(2),i["name"]
         if sist=="": print "Integral after acceptance correction {0}> {1:.2f} +- {2:.2f}\n ".format((27-len(i["name"]))*"-",i["state"].IntegralAndError(0,-1,ErrStat),ErrStat)
     return hSum
 
