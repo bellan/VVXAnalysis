@@ -479,7 +479,7 @@ if((region_ == phys::MC && regionWord.test(26)) || ((region_ == phys::MC_HZZ) &&
 void ZZMCAnalyzer::analyze(){
   
   PreCounter+=1;
-  std::cout<<" hei "<<topology<<std::endl;
+
   //  std::cout<<" hei "<< genVBParticles->at(0).p4().Pt()<<std::endl;
 
   if((region_ == phys::MC && topology.test(2)) || (region_ == phys::MC_HZZ && topology.test(0) ) ){       
