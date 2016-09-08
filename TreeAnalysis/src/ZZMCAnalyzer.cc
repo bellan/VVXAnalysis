@@ -480,11 +480,9 @@ void ZZMCAnalyzer::analyze(){
   
   PreCounter+=1;
 
-  //  std::cout<<" hei "<< genVBParticles->at(0).p4().Pt()<<std::endl;
 
   if((region_ == phys::MC && topology.test(2)) || (region_ == phys::MC_HZZ && topology.test(0) ) ){       
-
-  std::cout<<" hei "<< genVBParticles->at(0).p4().Pt()<<std::endl;
+   
   int Ele  = 0;
   int Muon = 0; 
   int lep = 0;
