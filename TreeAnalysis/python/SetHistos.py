@@ -374,9 +374,9 @@ def getPlot_MC(Type,isFiducial):
 
     files={}
 
-    fileUnfold = ROOT.TFile("./UnfoldFolder_"+Set+"/UnfoldData_"+Type+".root")     
-    if fileUnfold.IsZombie():
-        sys.exit("Errors! File dosn't exist")
+    # fileUnfold = ROOT.TFile("./UnfoldFolder_"+Set+"/UnfoldData_"+Type+".root")     
+    # if fileUnfold.IsZombie():
+    #     sys.exit("Errors! File dosn't exist")
     
     inputdir = inputdir_MC
     CrossType = Type+"Gen"
@@ -396,7 +396,7 @@ def getPlot_MC(Type,isFiducial):
   
     hSum = [{"state":hsum2e2mu,"name":'2e2m'},{"state":hsum4e,"name":'4e'},{"state":hsum4mu,"name":'4m'}]
 
-    isFromUnfold = True
+    isFromUnfold = False
 
     for h in hSum:
         print Blue(h["name"])
