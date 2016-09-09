@@ -19,14 +19,11 @@ SignalZZ_VBS = [{"sample":'ZZTo2e2muJJ_SMHContinInterf_H125.6',"name":'qq/qg #ri
 
 SignalZZ_gg=[{"sample":'ggTo2e2mu_SMHContinInterf-MCFM67_H125.6',"color":ROOT.kAzure-5,"name":'gg #rightarrow ZZ(+jets)'},{"sample":'ggTo4e_SMHContinInterf-MCFM67_H125.6',"color":ROOT.kAzure-5,"name":'gg #rightarrow ZZ(+jets)'},{"sample":'ggTo4mu_SMHContinInterf-MCFM67_H125.6',"color":ROOT.kAzure-5,"name":'gg #rightarrow ZZ(+jets)'}]
 
-#Signal_Others = [{"sample":'ZZZJets',"color":ROOT.kAzure-6,"name":'Other ZZ processes'},{"sample":'WZZJets',"color":ROOT.kAzure-6,"name":'Other ZZ processes'},{"sample":'WH126',"color":ROOT.kAzure-6,"name":'Other ZZ processes'},{"sample":'ZH126',"color":ROOT.kAzure-6,"name":'Other ZZ processes'},{"sample":'ttH126',"color":ROOT.kAzure-6,"name":'Other ZZ processes'}] 
-
 Signal_Others = [{"sample":'ZZZJets',"color":ROOT.kAzure-6,"name":'Other ZZ processes'},{"sample":'WZZJets',"color":ROOT.kAzure-6,"name":'Other ZZ processes'},{"sample":'ttH126',"color":ROOT.kAzure-6,"name":'Other ZZ processes'}] 
 
 SignalZZ_qq_Mad =  [{"sample":'ZZJetsTo4L',"name":'qq/qg #rightarrow ZZ(+jets)'}]
-#SignalZZ_qq_Mad =  [{"sample":'ZZJetsTo4L_Normal',"name":'qq/qg #rightarrow ZZ(+jets)'}]
 
-#Powheg set
+#MadGraph and Powheg sets of samples
 SignalSamples_Mad =  SignalZZ_qq_Mad + SignalZZ_gg + SignalZZ_VBS + Signal_Others
 SignalSamples_Pow =  SignalZZ_qq_Pow + SignalZZ_gg + SignalZZ_VBS + Signal_Others
 
@@ -34,42 +31,30 @@ DataSamples =  [{"sample":'data',"name":'Data'}]
 
 inputdir_RMC="./results/ZZRecoAnalyzer_SR/"
 inputdir_MC = "./results/ZZMCAnalyzer_MC/"
-inputdir_CR="./results/ZZRecoAnalyzer_CR/" #DEL
-
-# CenterData = "./FinalResults_"+MCSet+"/Data.root"
-# UpData = "./FinalResults_"+MCSet+"/DataUp.root"
-# DownData = "./FinalResults_"+MCSet+"/DataDown.root"
-
-# CenterDataUF = "./FinalResults_"+MCSet+"/DataUnfold.root"
-# UpDataUF = "./FinalResults_"+MCSet+"/DataUnfoldUp.root"
-# DownDataUF = "./FinalResults_"+MCSet+"/DataUnfoldDown.root"
-
-# MCSample = "./FinalResults_"+MCSet+"/MC.root"
-# MCRecoSample = "./FinalResults_"+MCSet+"/MCReco.root"
+inputdir_CR="./results/ZZRecoAnalyzer_CR/" 
 
 BRele = 0.03363
 BRmu = 0.03366
 Lumi=19712 #pb-1
 
-# #inclusive cross-section in the normal fiducial region:
-# GlobSistList = [{"name":"Trig","value":0.015},{"name":"Lumi","value":0.026},{"name":"Acc","value":0.012}] 
-# DiffSistList = ("Red","Irr","sFactor")
+#List of global systematic uncertainties in the normal (wide) fiducial region:
+#GlobSistList = [{"name":"Trig","value":0.015},{"name":"Lumi","value":0.026},{"name":"Acc","value":0.05}] 
 
-##inclusive cross-section in the tight fiducial region (pdf uncertainty is negligible):
-#GlobSistList = [{"name":"Trig","value":0.015},{"name":"Lumi","value":0.026}] 
-#DiffSistList = ("Red","Irr","sFactor")
+#List of global systematic uncertainties in the tight fiducial region (the only difference is in the acceptance value):
+GlobSistList = [{"name":"Trig","value":0.015},{"name":"Lumi","value":0.026},{"name":"Acc","value":0.01}] 
 
-#differential cross-section in the normal fiducial region (scale factor uncertainties are not implemented in the unfolding):
-GlobSistList = [{"name":"Trig","value":0.015},{"name":"IsoId","value":0.015},{"name":"Lumi","value":0.026},{"name":"Acc","value":0.012},{"name":"Eff","value":0.015}]
-DiffSistList = ("Red","Irr") 
+#List used if Unfold == False 
+DiffSistList = ("Red","Irr","sFactor")
 
-##differential cross-section in the tight fiducial region (pdf uncertainty is negligible):
-#GlobSistList = [{"name":"Trig","value":0.015},{"name":"IsoId","value":0.015},{"name":"Lumi","value":0.026},{"name":"Eff","value":0.015}]
-#DiffSistList = ("Red","Irr") 
+#List of systematic uncertainties propagated through the unfolding procedure
+DiffSistListUnfold = ("RedBkg","IrrBkg","qqgg","MCgen","UnfDataOverGenMC","SFSq") 
+DiffSistListJetsUnfold = ("JES_ModData","JES_ModMat","JER")#not to include for the estimate of the inclusive cross-section as the integral of the jet multiplicity.
 
+#The following numbers are used to estimate the inclusive cross-section using the likelihood method
+xs_2e2m = 10.15 #taken from 1507.06257v1 at NNLO (for tight region)
+xs_4m = 4.90 #taken from 1507.06257v1 at NNLO (for tight region)
+xs_4e =5.16 #taken from 1507.06257v1 at NNLO (for tight region)
 
-
-DiffSistListUnfold = ("RedBkg","IrrBkg","qqgg","MCgen","UnfDataOverGenMC")
-#DiffSistListUnfold = ("RedBkg","IrrBkg","qqgg","MCgen")
-DiffSistListJetsUnfold = ("JES_ModData","JES_ModMat","JER")
-
+xs_OS_2e2m =  1.#FIXME
+xs_OS_4m   =  1.#FIXME
+xs_OS_4e   =  1.#FIXME
