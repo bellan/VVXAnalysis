@@ -60,6 +60,11 @@ else: sys.exit(Set,"is a wrong MC set, chose between Pow and Mad")
 #if Type != "Mass" and Type != "Jets": sys.exit("ERROR \nWrong Type, choose between Mass or Jets.")
 
 try:
+    os.stat("./Plot")
+except:
+    os.mkdir("./Plot")
+
+try:
     os.stat("./Plot/Acceptance/")
 except:
     os.mkdir("./Plot/Acceptance/")
