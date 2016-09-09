@@ -13,6 +13,7 @@ from CrossSection import*
 import sys,ast,os
 import math
 import operator
+from  PersonalInfo import*
 
 parser = OptionParser(usage="usage: %prog [options]")
 
@@ -59,6 +60,10 @@ parser.add_option("-f", "--Fiducial", dest="doFiducial",
                   default = False,
                   help="Compute fiducial cross section. Default is False")
 
+parser.add_option("-d", "--Dir", dest="Dir",
+                  default = "test",
+                  help="Choose a specific directory name for save plots. Default is ''")
+
 (options, args) = parser.parse_args()
 
 
@@ -71,6 +76,9 @@ Type         =  options.Type
 DoNormalized =  options.DoNormalized
 DoFiducial   =  options.doFiducial
 analysis     =  options.analysis
+Dir          =  options.Dir
+
+Dir+="/"
 
 try:
     os.stat("./Plot")
@@ -80,6 +88,20 @@ try:
     os.stat("./Plot/CrossSection")
 except:
     os.mkdir("./Plot/CrossSection")
+
+if SavePlot:
+    try:
+        os.stat(PersonalFolder+Dir)
+    except:
+        os.mkdir(PersonalFolder+Dir)
+        os.system("cp "+PersonalFolder+"index.php "+PersonalFolder+Dir )
+
+    try:
+        os.stat(PersonalFolder+Dir+"/CrossSection/")
+    except:
+        os.mkdir(PersonalFolder+Dir+"/CrossSection/")
+        os.system("cp "+PersonalFolder+"index.php "+PersonalFolder+Dir+"/CrossSection/" )
+
 
 if DoInclusive:
     print Red("\n\n##############################################################\n################# ZZ4l Inclusive Cross Section ###############\n##############################################################\n")
@@ -176,7 +198,7 @@ for i in range(0,4):
     
 
     # "Type":{fr:{norm,notnorm},notfr:{norm,notnorm}}
-    MaxList = {"Mass":{True:{True:0.009,False:0.35},False:{True:0.009,False:0.15}},"Jets":{True:{True:0.8,False:46.4},False:{True:0.85,False:13}},"Jets_Central":{True:{True:.82,False:50},False:{True:0.85,False:13}},"Mjj":{True:{True:0.004,False:0.02},False:{True:0.004,False:0.004}},"Mjj_Central":{True:{True:0.005,False:0.018},False:{True:0.005,False:0.006}},"Deta":{True:{True:0.6,False:2.2},False:{True:0.45,False:1.2}},"Deta_Central":{True:{True:0.6,False:1.98},False:{True:0.7,False:.9}} ,"PtJet1":{True:{True:0.03,False:0.48},False:{True:0.06,False:0.16}},"PtJet2":{True:{True:0.016,False:0.08},False:{True:0.016,False:0.025}},"EtaJet1":{True:{True:0.5,False:7.4},False:{True:0.6,False:2.5}},"EtaJet2":{True:{True:0.5,False:2.6},False:{True:0.58,False:0.9}}}
+    MaxList = {"Mass":{True:{True:0.009,False:0.35},False:{True:0.009,False:0.15}},"Jets":{True:{True:0.8,False:46.4},False:{True:0.85,False:13}},"Jets_Central":{True:{True:.82,False:50},False:{True:0.85,False:13}},"Mjj":{True:{True:0.004,False:0.02},False:{True:0.004, False:0.0086}},"Mjj_Central":{True:{True:0.005,False:0.018},False:{True:0.005,False:0.006}},"Deta":{True:{True:0.6,False:2.2},False:{True:0.45,False:1.2}},"Deta_Central":{True:{True:0.6,False:1.98},False:{True:0.7,False:.9}} ,"PtJet1":{True:{True:0.03,False:0.48},False:{True:0.06,False:0.16}},"PtJet2":{True:{True:0.016,False:0.08},False:{True:0.016,False:0.025}},"EtaJet1":{True:{True:0.5,False:7.4},False:{True:0.6,False:2.8}},"EtaJet2":{True:{True:0.5,False:2.6},False:{True:0.58,False:0.9}}}
 
     # Max   = hDataList[i]["state"].GetMaximum()+hDataList[i]["state"].GetBinError(hDataList[i]["state"].GetMaximumBin()) #Automatic max
     Max = MaxList[Type][DoFiducial][DoNormalized]
@@ -242,18 +264,15 @@ for i in range(0,4):
 
 
     Kind = ""
-    if DoFiducial: Kind += "_tight"
+    if DoFiducial:   Kind += "_tight"
     if DoNormalized: Kind += "_norm"
 
     if SavePlot:
-
         c1.SaveAs("Plot/CrossSection/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+Kind+".png")
         c1.SaveAs("Plot/CrossSection/DiffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+Kind+".root")
-
-        PersonalFolder = "~/www/PlotsVV/13TeV/CrossSections/"
-        c1.SaveAs(PersonalFolder+"diffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+Kind+".png")        
-        c1.SaveAs(PersonalFolder+"diffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+Kind+".eps")        
-        c1.SaveAs(PersonalFolder+"diffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+Kind+".pdf")        
-        c1.SaveAs(PersonalFolder+"diffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+Kind+".root")       
+        c1.SaveAs(PersonalFolder+Dir+"CrossSection/diffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+Kind+".png")        
+        c1.SaveAs(PersonalFolder+Dir+"CrossSection/diffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+Kind+".eps")        
+        c1.SaveAs(PersonalFolder+Dir+"CrossSection/diffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+Kind+".pdf")        
+        c1.SaveAs(PersonalFolder+Dir+"CrossSection/diffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+Kind+".root")       
    
      
