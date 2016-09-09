@@ -18,7 +18,7 @@ void GenerateDistributions(string var, bool madgraph, bool tightregion)
   if(stat((var+"_test").c_str(),&st) != 0)  system(("mkdir "+var+"_test").c_str());
   ResponseMatrix *matrix_jesf = new ResponseMatrix(0,madgraph,tightregion);
   DataToUnfold *datatounfold = new DataToUnfold(); 
-  // PurityAndStability *pas = new PurityAndStability(madgraph); 
+  PurityAndStability *pas = new PurityAndStability(madgraph); 
   ResponseMatrix *matrix = new ResponseMatrix(0,madgraph,tightregion);
   
   for(int p=-1; p<2; p++){
@@ -39,10 +39,11 @@ void GenerateDistributions(string var, bool madgraph, bool tightregion)
     datatounfold->Build(var,"4e");
     datatounfold->Build(var,"4m");
     datatounfold->Build(var,"2e2m");
-    // pas->Build(var,"4e");
-    //pas->Build(var,"4m");
-    //pas->Build(var,"2e2m");
+    pas->Build(var,"4e");
+    pas->Build(var,"4m");
+    pas->Build(var,"2e2m");
   }
+
   matrix_jesf->Build_SF(var,"01","4e","SFErrSqMinus",madgraph);
   matrix_jesf->Build_SF(var,"01","4e","SFErrSqPlus",madgraph);
   matrix_jesf->Build_SF(var,"01","4m","SFErrSqMinus",madgraph);
