@@ -160,7 +160,11 @@ def getHisto(Type,isData,Sign,sist,isTot,isFiducial):
                 hData["state"].Rebin(4)
                 hIrr["state"].Rebin(4)
 
-    if sist=="sFactor":
+
+    if sist=="MCgen":
+        if Set=="Pow":   AccFile = ROOT.TFile("./Acceptance/Acceptance_Mad_"+Type+".root")
+        else:  AccFile = ROOT.TFile("./Acceptance/Acceptance_Pow_"+Type+".root")
+    elif sist=="sFactor":
         if   Sign==-1:  AccFile = ROOT.TFile("./Acceptance/AcceptanceSFactorSqPlus_"+Set+"_"+Type+".root")#SF errors non-correlated #Check
         elif Sign==+1:  AccFile = ROOT.TFile("./Acceptance/AcceptanceSFactorSqMinus_"+Set+"_"+Type+".root")#SF errors non-correlated
         #if Sign==1: AccFile = ROOT.TFile("AcceptanceSFactorPlus_"+Set+".root")
@@ -190,17 +194,15 @@ def getHisto(Type,isData,Sign,sist,isTot,isFiducial):
             i["state"].Add(k["state"],-1)
 
             for l in range(0,Nbins+2):
-                if sist=="" and Sign ==0 and isData:   print "bin",l,i["state"].GetBinContent(l)
                 if k["state"].GetBinContent(l)<0 or math.isnan(k["state"].GetBinContent(l)): 
                     print "negative or nan content in bin ",l,k["state"].GetBinContent(l)   
                     k["state"].SetBinContent(l,0.)  #To avoid negative bin.
                     k["state"].SetBinError(l,0.)    #To avoid negative bin.
-                    if sist=="": print "corr", i["state"].GetBinContent(l)
+               
                 if i["state"].GetBinContent(l)<0 or math.isnan(k["state"].GetBinContent(l)): 
                     print "negative or nan content in bin ",l,i["state"].GetBinContent(l)   
-                    i["state"].SetBinContent(l,0.)  #To avoid negative bin.                    i["state"].SetBinError(l,0.)    #To avoid negative bin.
-                    
-
+                    i["state"].SetBinContent(l,0.)  #To avoid negative bin.                  
+                    #i["state"].SetBinError(l,0.)    #To avoid negative bin.
 
             Nbins = i["state"].GetNbinsX()        
         
@@ -214,12 +216,9 @@ def getHisto(Type,isData,Sign,sist,isTot,isFiducial):
 
         else:
             if isFiducial:         hAcc = AccFile.Get("HEff_Tight"+i["name"]+"_"+Type)
-            else:  
-                hAcc = AccFile.Get("HTot_"+i["name"]+"_"+Type)
-                print "HTot_"+i["name"]+"_"+Type
+            else:                  hAcc = AccFile.Get("HTot_"+i["name"]+"_"+Type)
             if hAcc== None: sys.exit("HAcc_"+i["name"]+"_"+Type+" is Null or doesn't exist")
             i["state"].Divide(hAcc)
-            if sist=="" and Sign ==0 and isData: print "acc corr ", i["state"].GetBinContent(2),i["name"]
         if sist=="": print "Integral after acceptance correction {0}> {1:.2f} +- {2:.2f}\n ".format((27-len(i["name"]))*"-",i["state"].IntegralAndError(0,-1,ErrStat),ErrStat)
     return hSum
 
@@ -331,8 +330,14 @@ def getSist(Sign,isUnfold,HData,isTot,isFiducial):
         print  hSistList[sist][i]["name"]
         for sist in SistList:    
             if Sign==-1: 
+                if (hSistList[sist][i]["state"].Integral(0,-1)/hFinSist[i]["state"].Integral(0,-1)) > 1: 
+                    print sist,"is negative.If is MCgen is ok"
+                    continue
                 print "Error from {0} {1}-> {2:.3f} %".format(sist,(15-len(sist))*"-",(1-hSistList[sist][i]["state"].Integral(0,-1)/hFinSist[i]["state"].Integral(0,-1))*100)
             else: 
+                if (hFinSist[i]["state"].Integral(0,-1)/hSistList[sist][i]["state"].Integral(0,-1)) > 1:
+                    print sist,"is negative. If si MCgen is ok"
+                    continue
                 print "Error from {0} {1}-> {2:.3f} %".format(sist,(15-len(sist))*"-",(1-hFinSist[i]["state"].Integral(0,-1)/hSistList[sist][i]["state"].Integral(0,-1))*100)
 
         NBin = hFinSist[i]["state"].GetNbinsX()
@@ -343,6 +348,9 @@ def getSist(Sign,isUnfold,HData,isTot,isFiducial):
             # loop over histograms bins with systematics
             for sist in SistList:    
                 
+                if Sign==-1 and (hSistList[sist][i]["state"].Integral(0,-1)/hFinSist[i]["state"].Integral(0,-1)) > 1: continue
+                elif Sign==+1 and (hFinSist[i]["state"].Integral(0,-1)/hSistList[sist][i]["state"].Integral(0,-1)) > 1: continue
+
                 #print sist,hSistList[sist][i]["state"].GetBinContent(b),"diff",hSistList[sist][i]["state"].GetBinContent(b)-hFinSist[i]["state"].GetBinContent(b)
 
                 #square sum of systematics  
