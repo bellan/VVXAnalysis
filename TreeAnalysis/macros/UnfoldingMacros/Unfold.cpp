@@ -1651,7 +1651,7 @@ void PlotUnfoldData4L(string var = "Jets", bool mad =1,bool tightregion =0, stri
   gStyle->SetOptStat(0);
   gStyle->SetPalette(1,0);
   setTDRStyle();
-  int iPeriod = 2; 
+  int iPeriod = 4; 
   int iPos = 11; 
   writeExtraText = true;    
   extraText  = "Preliminary";

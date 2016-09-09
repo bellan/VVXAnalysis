@@ -57,7 +57,7 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
   else fs = finalstate;
   
   string label = fs + " channel";
-  int iPeriod = 2; 
+  int iPeriod = 4; 
   int iPos = 11; 
   writeExtraText = true;    
   extraText  = "Simulation";
