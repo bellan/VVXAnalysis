@@ -32,7 +32,6 @@ parser.add_option("-u", "--unfold", dest="isUnfold",
                   default=False,
                   help="is Unfold distribution")
 
-
 parser.add_option("-S", "--Set", dest="Set",
                   default="Mad",
                   help="MC samples Set, default is Mad (MadGraph) the other one is Pow (Powheg)")
@@ -44,11 +43,11 @@ parser.add_option("-A", "--Analysis", dest="Analysis",
 
 (options, args) = parser.parse_args()
 
-Type = options.Type
-Set = options.Set
-Analysis  = options.Analysis
+Type       = options.Type
+Set        = options.Set
+Analysis   = options.Analysis
 isFiducial = options.isFiducial
-isUnfold = options.isUnfold
+isUnfold   = options.isUnfold
 
 
 if Analysis!="ZZ":
@@ -72,8 +71,7 @@ def getHisto(Type,isData,Sign,sist,isTot,isFiducial):
             Samples=SignalSamples_Pow
         elif "Mad" in Set:
             Samples=SignalSamples_Mad
-        elif "Mad" in Set:
-            Samples=SignalSamples_Mad
+        else: sys.exit("Wrong Mont Carlo Set in GetHisto") 
             
     files={}
     filesbkg ={}
@@ -368,9 +366,9 @@ def getPlot_MC(Type,isFiducial):
 
     files={}
 
-    # fileUnfold = ROOT.TFile("./UnfoldFolder_"+Set+"/UnfoldData_"+Type+".root")     
-    # if fileUnfold.IsZombie():
-    # sys.exit("Errors! File dosn't exist")
+    fileUnfold = ROOT.TFile("./UnfoldFolder_"+Set+"/UnfoldData_"+Type+".root")     
+    if fileUnfold.IsZombie():
+        sys.exit("Errors! File dosn't exist")
     
     inputdir = inputdir_MC
     CrossType = Type+"Gen"
@@ -390,17 +388,16 @@ def getPlot_MC(Type,isFiducial):
   
     hSum = [{"state":hsum2e2mu,"name":'2e2m'},{"state":hsum4e,"name":'4e'},{"state":hsum4mu,"name":'4m'}]
 
-    isFromUnfold = False
+    isFromUnfold = True
 
     for h in hSum:
         print Blue(h["name"])
-
         if isFromUnfold:
             h["state"] = copy.deepcopy(fileUnfold.Get("ZZTo"+h["name"]+"_"+Type+"_GEN"))
             if isFiducial:
-                h["state"].SetName( "ZZTo"+h["name"]+"_"+Type+"Gen_01")
+                h["state"].SetName( "ZZTo"+h["name"]+"_"+Type+"Gen_01_fr")
             else:
-                h["state"].SetName( "ZZTo"+h["name"]+"_"+Type+"Gen_01_fr") 
+                h["state"].SetName( "ZZTo"+h["name"]+"_"+Type+"Gen_01") 
         else:
             isFirst=1
             for s in Samples:
