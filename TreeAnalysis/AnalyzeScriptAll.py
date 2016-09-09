@@ -30,12 +30,12 @@ else: sys.exit(An+" doesn't exist. Chose between fake, MC, ZZj, Reco, Data and R
 datalist    = ["DoubleEG2016B","DoubleMu2016B","MuonEG2016B","SingleEle2016B","DoubleEG2016C","DoubleMu2016C","MuonEG2016C","SingleEle2016C","DoubleEG2016D","DoubleMu2016D","MuonEG2016D","SingleEle2016D","DoubleEG2016E","DoubleMu2016E","MuonEG2016E","SingleEle2016E","DoubleEG2016F","DoubleMu2016F","MuonEG2016F","SingleEle2016F"]
 
 MClist_bkg  = ["DYJetsToLL_M50","TTTo2L2Nu","WZ","WWZ","TTZToLL"]
-MClist_sig = ["ZZTo4l","ggZZ2e2mu","ggZZ4mu","ggZZ4e","ZZTo4lamcatnlo","ZZTo2e2muJJ","ZZTo4muJJ","ZZTo4eJJ","ggH126","ZZTo4lamcatnlo"]
+MClist_sig = ["ZZTo4l","ggZZ2e2mu","ggZZ4mu","ggZZ4e","ZZTo4lamcatnlo","ZZTo2e2muJJ","ZZTo4muJJ","ZZTo4eJJ","ggH126"]
 
 
 MClist = MClist_sig+MClist_bkg
 
-Data_Directory = "samples"
+Data_Directory = "samples/Data12"
 MC_Directory   = "samples"
 
 Csv = "../Producers/python/samples_13TeV_2016.csv"
@@ -129,9 +129,13 @@ for analyzer in AnalyzerList:
     if(What=="MC" or What=="All"):
 
         for MCset in MClist:
-            
-            print bashCommand+" "+analyzer["analyzer"]+" "+MCset+" -r "+analyzer["region"]+" -d "+MC_Directory+" -l "+str(Lumi)+" -c"+Csv                
-            os.system(bashCommand+" "+analyzer["analyzer"]+" "+MCset+" -r "+analyzer["region"]+" -d "+MC_Directory+" -l "+str(Lumi)+" -c"+Csv)
+
+            print "MCSET",MCset
+            if "ZZTo4l" in MCset: 
+                CrossCmd = " -e"
+            else: CrossCmd = ""
+            print bashCommand+" "+analyzer["analyzer"]+" "+MCset+" -r "+analyzer["region"]+" -d "+MC_Directory+" -l "+str(Lumi)+" -c"+Csv+CrossCmd                
+            os.system(bashCommand+" "+analyzer["analyzer"]+" "+MCset+" -r "+analyzer["region"]+" -d "+MC_Directory+" -l "+str(Lumi)+" -c"+Csv+CrossCmd)
 
 
 
