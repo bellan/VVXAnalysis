@@ -52,7 +52,7 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
 
   setTDRStyle();
   string fs;
-  if(finalstate == "4m") fs = "4#mu";
+  if(finalstate == "4m")        fs = "4#mu";
   else if(finalstate == "2e2m") fs = "2e2#mu";
   else fs = finalstate;
   
@@ -298,8 +298,12 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
  if(MadDistribution == 1)distr = "MadDistr";
  else distr = "PowDistr";
 
-  pdf = "~/www/VBS/"+date+"/"+ var+"/MCTests/"+var+"_ZZTo" + finalstate + "_"+ matrix + "_" + distr + "_" + sample + tightfr +".pdf";
-  png = "~/www/VBS/"+date+"/"+ var+"/MCTests/"+var+"_ZZTo" + finalstate + "_"+ matrix + "_" + distr + "_" + sample + tightfr +".png";
+ string Algo = "";
+ if(bayes) Algo = "_Bayes";
+ else Algo = "_SVD";
+
+  pdf = "~/www/VBS/"+date+"/"+ var+"/MCTests/"+var+"_ZZTo" + finalstate + "_"+ matrix + "_" + distr + "_" + sample + tightfr +Algo+".pdf";
+  png = "~/www/VBS/"+date+"/"+ var+"/MCTests/"+var+"_ZZTo" + finalstate + "_"+ matrix + "_" + distr + "_" + sample + tightfr +Algo+".png";
   c->Print(pdf.c_str());
   c->Print(png.c_str());
   
