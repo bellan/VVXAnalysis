@@ -5,13 +5,14 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 from ROOT import TH1F,TCanvas, TLegend, TParameter,TList
 import CrossInfo
 from CrossInfo import*
+from PersonalInfo import*
 from array import*
 import sys,ast,os
 import math
 import operator
 import collections
 from Colours import *
-
+from os.path import expanduser
 
 
 parser = OptionParser(usage="usage: %prog <final state> [options]")
@@ -33,6 +34,10 @@ parser.add_option("-A", "--Analysis", dest="Analysis",
                   default="ZZ",
                   help="Analysis, default is  ZZ, others are ZZFull and HZZ")
 
+parser.add_option("-d", "--Dir", dest="Dir",
+                  default = "test",
+                  help="Choose a specific directory name for save plots. Default is ''")
+
 
 (options, args) = parser.parse_args()
 
@@ -40,6 +45,9 @@ Type = options.Type
 Set = options.Set
 SavePlot  = options.SavePlot
 Analysis  = options.Analysis
+Dir       = options.Dir
+
+Dir+="/"
 
 if Analysis=="ZZ": Analysis=""
 else: Analysis="_"+Analysis
@@ -60,6 +68,19 @@ try:
     os.stat("./Acceptance/")
 except:
     os.mkdir("./Acceptance/")
+
+if SavePlot:
+    try:
+        os.stat(PersonalFolder+Dir)
+    except:
+        os.mkdir(PersonalFolder+Dir)
+        os.system("cp "+PersonalFolder+"index.php "+PersonalFolder+Dir )
+    try:
+        os.stat(PersonalFolder+Dir+"/Acceptance/")
+    except:
+        os.mkdir(PersonalFolder+Dir+"/Acceptance/")
+        os.system("cp "+PersonalFolder+"index.php "+PersonalFolder+Dir+"/Acceptance/" )
+
 
     
 FileOut_0   =  ROOT.TFile("./Acceptance/Acceptance_"+Set+Analysis+"_"+Type+".root","RECREATE") 
@@ -253,7 +274,6 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
          
 #            if SistErr=="0": 
             c2.SaveAs("Plot/Acceptance/DiffAcceptance_"+Fin+"_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".png")
- #              c2.SaveAs("~/www/PlotsVV/13TeV/Acceptance/DiffAcceptance_"+Fin+"_"+SampleType+"_"+Set+Analysis+"_"+Fr+".png")
             
             c1.cd()
             
@@ -275,11 +295,12 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
                 hcopy3.Draw("sameE1");
                 leg.Draw("same")
         
+
+
     if SistErr=="0":
         c1.SaveAs("./Plot/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+".png") 
-    #    c1.SaveAs("~/www/PlotsVV/13TeV/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+".png") 
-    c1.SaveAs("~/www/PlotsVV/13TeV/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+"Del.png") #DEL
-        
+        c1.SaveAs(PersonalFolder+Dir+"Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".png") 
+        c1.SaveAs(PersonalFolder+Dir+"Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".pdf") 
     return FinStateAcc
 
 
@@ -311,7 +332,6 @@ for fin in ("2e2m","4m","4e"):
 #    print "{0} {1} {2:.4f} + {3:.3f} %  - {4:.3f} % ".format(fin, (6-len(fin))*" ", CentralAcc_fr[fin],(-1+PlusSqAcc_fr[fin]/CentralAcc_fr[fin])*100,(1-MinusSqAcc_fr[fin]/CentralAcc_fr[fin])*100)
     print "{0} {1} {2:.4f} + {3:.3f}  - {4:.3f}".format(fin, (6-len(fin))*" ", CentralAcc_fr[fin],(PlusSqAcc_fr[fin]-CentralAcc_fr[fin]),(-MinusSqAcc_fr[fin]+CentralAcc_fr[fin]))
     #print "acceptance for {0}  {1} {2:.2f} + {3:.3f}  - {4:.3f} % ".format(fin, (6-len(fin))*" ", CentralAcc_fr[fin]*100,(PlusSqAcc_fr[fin]-CentralAcc_fr[fin])*100,(-MinusSqAcc_fr[fin]+CentralAcc_fr[fin])*100)
-
 
 print Red("From Tight to Total \nAcceptance ")
 for fin in ("2e2m","4m","4e"):
