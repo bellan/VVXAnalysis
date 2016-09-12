@@ -87,7 +87,6 @@ def getHisto(Type,isData,Sign,sist,isTot,isFiducial):
 
     hSum = [{"state":hsum2e2mu,"name":'2e2m'},{"state":hsum4e,"name":'4e'},{"state":hsum4mu,"name":'4m'}]
 
-
     for h in hSum:
         if not isData: print Blue(h["name"])
         isFirst=1
@@ -153,7 +152,6 @@ def getHisto(Type,isData,Sign,sist,isTot,isFiducial):
                 if Sign==0: print "{0} {1}> {2:.2f}".format(b["sample"],(61-len(b["sample"]))*"-",h1.Integral(0,-1))
                 h["state"].Add(h1)     
             if Sign==0: print "\nTotal integral {0} contribution {1}> {2:.2f}\n\n".format(h["name"],(33-len(h["name"]))*"-",h["state"].Integral(0,-1))
-
         if isTot:
             for hRed,hIrr,hData in zip(hFakeSum,hSum,hIrredSum):
                 hRed["state"].Rebin(4)
@@ -167,6 +165,7 @@ def getHisto(Type,isData,Sign,sist,isTot,isFiducial):
     elif sist=="sFactor":
         if   Sign==-1:  AccFile = ROOT.TFile("./Acceptance/AcceptanceSFactorSqPlus_"+Set+"_"+Type+".root")#SF errors non-correlated #Check
         elif Sign==+1:  AccFile = ROOT.TFile("./Acceptance/AcceptanceSFactorSqMinus_"+Set+"_"+Type+".root")#SF errors non-correlated
+
         #if Sign==1: AccFile = ROOT.TFile("AcceptanceSFactorPlus_"+Set+".root")
         #elif Sign==-1:  AccFile = ROOT.TFile("AcceptanceSFactorMinus_"+Set+".root")
     else: AccFile = ROOT.TFile("./Acceptance/Acceptance_"+Set+"_"+Type+".root")
@@ -195,12 +194,12 @@ def getHisto(Type,isData,Sign,sist,isTot,isFiducial):
 
             for l in range(0,Nbins+2):
                 if k["state"].GetBinContent(l)<0 or math.isnan(k["state"].GetBinContent(l)): 
-                    print "negative or nan content in bin ",l,k["state"].GetBinContent(l)   
+#                    print k["name"],"Reducible bkg negative or nan content in bin ",l,k["state"].GetBinContent(l)   
                     k["state"].SetBinContent(l,0.)  #To avoid negative bin.
                     k["state"].SetBinError(l,0.)    #To avoid negative bin.
                
                 if i["state"].GetBinContent(l)<0 or math.isnan(k["state"].GetBinContent(l)): 
-                    print "negative or nan content in bin ",l,i["state"].GetBinContent(l)   
+ #                   print i["name"],"Data negative or nan content in bin ",l,i["state"].GetBinContent(l)   
                     i["state"].SetBinContent(l,0.)  #To avoid negative bin.                  
                     #i["state"].SetBinError(l,0.)    #To avoid negative bin.
 
@@ -331,12 +330,12 @@ def getSist(Sign,isUnfold,HData,isTot,isFiducial):
         for sist in SistList:    
             if Sign==-1: 
                 if (hSistList[sist][i]["state"].Integral(0,-1)/hFinSist[i]["state"].Integral(0,-1)) > 1: 
-                    print sist,"is negative.If is MCgen is ok"
+#                    print sist,"is negative.If is MCgen is ok"
                     continue
                 print "Error from {0} {1}-> {2:.3f} %".format(sist,(15-len(sist))*"-",(1-hSistList[sist][i]["state"].Integral(0,-1)/hFinSist[i]["state"].Integral(0,-1))*100)
             else: 
                 if (hFinSist[i]["state"].Integral(0,-1)/hSistList[sist][i]["state"].Integral(0,-1)) > 1:
-                    print sist,"is negative. If si MCgen is ok"
+ #                   print sist,"is negative. If si MCgen is ok"
                     continue
                 print "Error from {0} {1}-> {2:.3f} %".format(sist,(15-len(sist))*"-",(1-hFinSist[i]["state"].Integral(0,-1)/hSistList[sist][i]["state"].Integral(0,-1))*100)
 
@@ -344,14 +343,12 @@ def getSist(Sign,isUnfold,HData,isTot,isFiducial):
 
         for b in range(1,NBin+1):
             Content = 0
-
+ 
             # loop over histograms bins with systematics
             for sist in SistList:    
-                
-                if Sign==-1 and (hSistList[sist][i]["state"].Integral(0,-1)/hFinSist[i]["state"].Integral(0,-1)) > 1: continue
-                elif Sign==+1 and (hFinSist[i]["state"].Integral(0,-1)/hSistList[sist][i]["state"].Integral(0,-1)) > 1: continue
 
-                #print sist,hSistList[sist][i]["state"].GetBinContent(b),"diff",hSistList[sist][i]["state"].GetBinContent(b)-hFinSist[i]["state"].GetBinContent(b)
+                if   Sign==-1 and hFinSist[i]["state"].GetBinContent(b) != 0 and  (hSistList[sist][i]["state"].GetBinContent(b)/hFinSist[i]["state"].GetBinContent(b)) > 1: continue
+                elif Sign==+1 and hSistList[sist][i]["state"].GetBinContent(b) !=0 and (hFinSist[i]["state"].GetBinContent(b)/hSistList[sist][i]["state"].GetBinContent(b)) > 1: continue
 
                 #square sum of systematics  
                 Content += (hSistList[sist][i]["state"].GetBinContent(b)-hFinSist[i]["state"].GetBinContent(b))**2.
@@ -393,8 +390,11 @@ def getPlot_MC(Type,isFiducial):
     hsum4e    = ROOT.TH1F()
     hsum4mu   = ROOT.TH1F()
 
+    list2e2mu = []
+    list4mu   = []
+    list4e    = []
   
-    hSum = [{"state":hsum2e2mu,"name":'2e2m'},{"state":hsum4e,"name":'4e'},{"state":hsum4mu,"name":'4m'}]
+    hSum = [{"state":hsum2e2mu,"name":'2e2m',"samples":list2e2mu},{"state":hsum4e,"name":'4e',"samples":list4e},{"state":hsum4mu,"name":'4m',"samples":list4mu}]
 
     isFromUnfold = False
 
@@ -416,11 +416,15 @@ def getPlot_MC(Type,isFiducial):
                     continue
                 if isFirst:
                     h["state"]=copy.deepcopy(h1)           
-        
+                    h1.SetName(s["sample"]+"_"+h["name"])
+                    h["samples"].append(h1)
                     print "{0} {1}-> {2:.2f} ".format(s["sample"],(61-len(s["sample"]))*"-",h1.Integral(0,-1))
                     isFirst=0
                     continue
                 h["state"].Add(h1) 
+                h1.SetName(s["sample"]+"_"+h["name"])
+                h["samples"].append(h1)
+  
                 print "{0} {1}-> {2:.2f} ".format(s["sample"],(61-len(s["sample"]))*"-",h1.Integral(0,-1))
         
        # if isFiducial: h["state"].SetName( h["state"].GetName()+"_fr" )
@@ -449,10 +453,19 @@ if isUnfold:
 else: SistList = DiffSistList
 
 hMC =  getPlot_MC(Type,isFiducial)
-FileOutMC =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/MC.root","update") 
+#FileOutMC =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/MC.root","update") 
+
+
+Fr = ""
+if isFiducial: Fr="_fr"
+
+if isTot: FileOutMC =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/MC_Total"+Fr+".root","RECREATE") 
+else:     FileOutMC =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/MC_"+Type+Fr+".root","RECREATE") 
 
 for i in hMC:
     i["state"].Write("",i["state"].kOverwrite)
+    for h in i["samples"]:
+        h.Write("",i["state"].kOverwrite)
     
     
 if isUnfold:

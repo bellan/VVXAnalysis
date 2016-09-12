@@ -78,21 +78,38 @@ def getSistGraph(HCent,HUp,HDown,DoFiducial,FinState):
 
 def getCrossPlot_MC(MCSet,Type,analysis,DoNormalized,DoFiducial):
 
-    fInMC  = ROOT.TFile("./FinalResults_"+MCSet+"_"+analysis+"/MC.root")  
-   
+    if DoFiducial:    fInMC  = ROOT.TFile("./FinalResults_"+MCSet+"_"+analysis+"/MC_"+Type+"_fr.root")  
+    else:             fInMC  = ROOT.TFile("./FinalResults_"+MCSet+"_"+analysis+"/MC_"+Type+".root")  
+
+    if Type == "Total": Type = "Mass"
+
     print Red("######################### Monte Carlo #######################\n")
 
     hsum2e2mu = ROOT.TH1F()
     hsum4e    = ROOT.TH1F()
     hsum4mu   = ROOT.TH1F()
 
-    hSum = [{"state":hsum2e2mu,"name":'2e2m'},{"state":hsum4e,"name":'4e'},{"state":hsum4mu,"name":'4m'}]    
+    list2e2mu = []
+    list4mu   = []
+    list4e    = []
 
+    #hSum = [{"state":hsum2e2mu,"name":'2e2m'},{"state":hsum4e,"name":'4e'},{"state":hsum4mu,"name":'4m'}]    
+    
+    hSum = [{"state":hsum2e2mu,"name":'2e2m',"samples":list2e2mu},{"state":hsum4e,"name":'4e',"samples":list4e},{"state":hsum4mu,"name":'4m',"samples":list4mu}]
+    
     for h in hSum:
         if DoFiducial:
             h["state"]    = copy.deepcopy(fInMC.Get("ZZTo"+h["name"]+"_"+Type+"Gen_01_fr"))
         else:  h["state"] = copy.deepcopy(fInMC.Get("ZZTo"+h["name"]+"_"+Type+"Gen_01"))
 
+        if MCSet == "Mad":SignalSamples = SignalSamples_Mad
+        else: SignalSamples = SignalSamples_Pow 
+
+        for i in SignalSamples:
+#            print i["sample"]+"_"+h["name"]
+            h_s = copy.deepcopy(fInMC.Get(i["sample"]+"_"+h["name"]))
+            if h_s==None: continue
+            h["samples"].append(h_s)
         if h==None:
             print "ERROR no data for",h["name"]
             break
@@ -106,7 +123,11 @@ def getCrossPlot_MC(MCSet,Type,analysis,DoNormalized,DoFiducial):
     hSum.append(hTOTElem)
     
     for h in hSum:
-        setCrossSectionMC(h["state"],h["name"],Type,DoNormalized,MCSet,DoFiducial)
+        print Red(h["name"])
+        if h["name"]!="4l":
+            for h_s in h["samples"]: 
+                setCrossSectionMC(h_s,h["name"],Type,DoNormalized,MCSet,DoFiducial)
+        setCrossSectionMC(h["state"],h["name"],Type,DoNormalized,MCSet,DoFiducial) 
     return hSum
 
 ##############################################################################################################
@@ -217,14 +238,17 @@ def setCrossSectionMC(h1,FinState,Type,DoNormalized,MCSet,doFiducial):
         elif FinState=='2e2m': BR=2*BRmu*BRele
         else: BR=2*BRmu*BRele
 
+    name = (h1.GetName()).replace("_"+FinState,"")
+    if "MassGen" in name: name = "Total"
     if doFiducial:
-        print "{0} Tot Cross {1} {2:.6f} [fb]\n".format(FinState,(25-len(FinState))*" ",1000*(h1.Integral(1,-1))/(Lumi)) # Check total cross section withou
+
+        print "{0} {1} {2:.6f} [fb]\n".format(name,((25-len(name))*" "),1000*(h1.Integral(1,-1))/(Lumi) )
         if FinState=="4l" and Type=="Total":
             AccFile = ROOT.TFile("./Acceptance/Acceptance_"+MCSet+"_"+Type+".root")
             Acc = AccFile.Get("TotAcc2e2m_Acc").GetVal() #FIXME Use a weightd avarage?
             print " Wide region",(h1.Integral(1,-1))/(Lumi*Acc*(BRele*BRele+2*BRele*BRmu+BRmu*BRmu)),"[pb]"              
     else:
-        print "{0} Tot Cross {1} {2:.6f} [pb]\n".format(FinState,(25-len(FinState))*" ", (h1.Integral(1,-1))/(Lumi*BR)) # Check total cross section witho
+        print "{0} {1} {2:.6f} [pb]\n".format(name,((25-len(name))*" "),(h1.Integral(1,-1))/(Lumi*BR)) # Check total cross section witho
     
     
     Integral = h1.Integral(0,-1) #Use integral with overflows entries to scale with theoretical value which include also the overflow entries.
