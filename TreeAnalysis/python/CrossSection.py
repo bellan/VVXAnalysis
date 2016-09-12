@@ -239,7 +239,7 @@ def setCrossSectionMC(h1,FinState,Type,DoNormalized,MCSet,doFiducial):
         else: BR=2*BRmu*BRele
 
     name = (h1.GetName()).replace("_"+FinState,"")
-    if "MassGen" in name: name = "Total"
+    if "Gen" in name: name = "Total"
     if doFiducial:
 
         print "{0} {1} {2:.6f} [fb]\n".format(name,((25-len(name))*" "),1000*(h1.Integral(1,-1))/(Lumi) )
