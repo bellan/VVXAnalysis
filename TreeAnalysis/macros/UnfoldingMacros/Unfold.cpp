@@ -146,14 +146,16 @@ void Unfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tightre
   RooUnfoldBayes unfold_bayes(&response, h_measured_unf,4);  
   RooUnfoldBayes unfold_bayes4(&response, h_measured_unf,4); 
     
-  if(var == "Mass") h_unfolded= (TH1*) unfold_svd.Hreco(RooUnfold::kCovariance);
-  else if  (var == "dRZZ")  h_unfolded= (TH1*) unfold_bayes4.Hreco(RooUnfold::kCovariance);
-  else h_unfolded= (TH1*) unfold_bayes.Hreco(RooUnfold::kCovariance);
+  if(var == "Mass")       h_unfolded= (TH1*) unfold_svd.Hreco(RooUnfold::kCovariance);
+  //  if(var == "Mass")         h_unfolded= (TH1*) unfold_bayes4.Hreco(RooUnfold::kCovariance);
+  else if(var == "dRZZ")  h_unfolded= (TH1*) unfold_bayes4.Hreco(RooUnfold::kCovariance);
+  else                    h_unfolded= (TH1*) unfold_bayes4.Hreco(RooUnfold::kCovariance);
  
-  unfHistoName = "ZZTo"+ fs +"_" + var;
-  recoHistoName = "ZZTo"+ fs +"_"+var+"_RECO"; 
+
+  unfHistoName    = "ZZTo"+ fs +"_" + var;
+  recoHistoName   = "ZZTo"+ fs +"_"+var+"_RECO"; 
   recoMCHistoName = "ZZTo"+ fs +"_"+var+"_RECO_MC";
-  trueHistoName = "ZZTo"+ fs +"_"+var+"_GEN";
+  trueHistoName   = "ZZTo"+ fs +"_"+var+"_GEN";
   string finalstate;
   if(fs == "4m") finalstate = "4#mu";
   else if(fs == "2e2m") finalstate = "2e2#mu";
@@ -284,7 +286,7 @@ void Unfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tightre
     h_unfolded_r-> SetMaximum(2.5); 
   h_unfolded_r-> SetMinimum(-0.5);
   h_unfolded_r->Draw("E");
-  TLine *line;
+  TLine *line = new TLine();
 
   if(var == "Mass")line = new TLine(100,1,800,1);
   else if(var == "Jets" ||var == "Jets_Central") line =  new TLine(0,1,4,1);
@@ -1321,16 +1323,16 @@ void PlotResults(string var = "Jets", string fs = "4e", string syst = "MCgen", b
     systFileName =  filePath+"UnfoldFolder"+tightfr+"_Pow/UnfoldData_"+ var + "_"+syst + ".root";
     MCgen = "_Pow";
   }
-  data = new TFile(dataFileName.c_str());
+  data    = new TFile(dataFileName.c_str());
   unfSyst = new TFile(systFileName.c_str());
-  matrix = new TFile(matrixFileName.c_str());
-  std::cout<<"HHHE"<<std::endl;
-  unfHistoName = "ZZTo"+ fs +"_" + var;
-  recoHistoName = "ZZTo"+ fs +"_"+var+"_RECO";
-  trueHistoName = "ZZTo"+ fs +"_"+var+"_GEN";
+  matrix  = new TFile(matrixFileName.c_str());
+
+  unfHistoName    = "ZZTo"+ fs +"_" + var;
+  recoHistoName   = "ZZTo"+ fs +"_" + var + "_RECO";
+  trueHistoName   = "ZZTo"+ fs +"_" + var + "_GEN";
   systHistoName_p = "ZZTo"+ fs +"_" + var + "_p";
-  systHistoName_m =  "ZZTo"+ fs +"_" + var + "_m";
-  histoNameGen = var + "Gen_qqggJJ_ZZTo" + fs + "_st_01";
+  systHistoName_m = "ZZTo"+ fs +"_" + var + "_m";
+  histoNameGen    = var + "Gen_qqggJJ_ZZTo" + fs + "_st_01";
   
   h_true_othMC = (TH1*) matrix->Get(histoNameGen.c_str());
   h_true = (TH1*) data->Get(trueHistoName.c_str());
@@ -1339,8 +1341,9 @@ void PlotResults(string var = "Jets", string fs = "4e", string syst = "MCgen", b
  
   float max;
   float min;
-  TH1* h_max; 
-  TH1* h_min; 
+
+  TH1* h_max = new TH1F(); 
+  TH1* h_min = new TH1F(); 
   float syst_percentage[9];
 
   std::cout << "===================================================================================" << std::endl;
@@ -1888,7 +1891,7 @@ void PlotUnfoldData4L(string var = "Jets", bool mad =1,bool tightregion =0, stri
   h_unfdata4e_r-> SetMaximum(3.); 
   h_unfdata4e_r-> SetMinimum(-1.);
   h_unfdata4e_r->Draw("E");
-  TLine *line;
+  TLine *line = new TLine();
   
   if(var == "Mass")line = new TLine(100,1,800,1);
   else if(var == "Jets" ||var == "Jets_Central" ) line =  new TLine(0,1,4,1);
@@ -2161,7 +2164,7 @@ void PlotUnfoldData(string var = "Jets", string fs = "4e", bool mad =1,bool tigh
     h_unfdata_r->GetXaxis()->SetLabelFont(42);
   }
 
-  TLine *line;
+  TLine *line = new TLine();
 
   if(var == "Mass")line = new TLine(100,1,800,1);
   else if(var == "Jets" ||var == "Jets_Central" ) line =  new TLine(0,1,4,1);
@@ -2503,8 +2506,8 @@ void Systematics_value(string var = "Jets", string fs = "4e", string syst = "MCg
  
   float max;
   float min;
-  TH1* h_max; 
-  TH1* h_min; 
+  TH1* h_max = new TH1D(); 
+  TH1* h_min = new TH1D(); ; 
   float syst_percentage[9];
   if(syst == "MCgen" || syst == "UnfDataOverGenMC"){
     h_unfolded_p = (TH1*) unfSyst->Get(unfHistoName.c_str());
@@ -2687,25 +2690,25 @@ void PlotResults_4l(string var = "Jets", string syst = "MCgen", bool mad =1,bool
   systHistoName_2e2m_m =  "ZZTo2e2m_" + var + "_m";
   histoNameGen_2e2m = var + "Gen_qqggJJ_ZZTo2e2m_st_01";
 
-  TH1 * h_true_othMC_4e;
-  TH1 *h_true_4e;
-  TH1 *h_measured_unf_4e;
-  TH1 *h_unfolded_4e;
-  TH1 * h_true_othMC_4m;
-  TH1 *h_true_4m;
-  TH1 *h_measured_unf_4m;
-  TH1 *h_unfolded_4m;
-  TH1 *h_true_othMC_2e2m;
-  TH1 *h_true_2e2m;
-  TH1 *h_measured_unf_2e2m;
-  TH1 *h_unfolded_2e2m;
+  TH1 *h_true_othMC_4e     = new TH1F();
+  TH1 *h_true_4e           = new TH1F();
+  TH1 *h_measured_unf_4e   = new TH1F();
+  TH1 *h_unfolded_4e       = new TH1F();
+  TH1 *h_true_othMC_4m     = new TH1F();
+  TH1 *h_true_4m           = new TH1F();
+  TH1 *h_measured_unf_4m   = new TH1F();
+  TH1 *h_unfolded_4m       = new TH1F();
+  TH1 *h_true_othMC_2e2m   = new TH1F();
+  TH1 *h_true_2e2m         = new TH1F();
+  TH1 *h_measured_unf_2e2m = new TH1F();
+  TH1 *h_unfolded_2e2m     = new TH1F();
 
-  TH1* h_unfolded_4e_p;
-  TH1* h_unfolded_4e_m;
-  TH1* h_unfolded_4m_p;
-  TH1* h_unfolded_4m_m;
-  TH1* h_unfolded_2e2m_p;
-  TH1* h_unfolded_2e2m_m;
+  TH1* h_unfolded_4e_p     = new TH1F();
+  TH1* h_unfolded_4e_m     = new TH1F();
+  TH1* h_unfolded_4m_p     = new TH1F();
+  TH1* h_unfolded_4m_m     = new TH1F();
+  TH1* h_unfolded_2e2m_p   = new TH1F();
+  TH1* h_unfolded_2e2m_m   = new TH1F();
 
   h_true_othMC_4e = (TH1*) matrix->Get(histoNameGen_4e.c_str());
   h_true_4e = (TH1*) data->Get(trueHistoName_4e.c_str());
@@ -2726,8 +2729,9 @@ void PlotResults_4l(string var = "Jets", string syst = "MCgen", bool mad =1,bool
   float dxmin_4m[9];
   float dxmax_2e2m[9];
   float dxmin_2e2m[9];
-  TH1* h_max; 
-  TH1* h_min; 
+
+  TH1* h_max = new TH1D(); 
+  TH1* h_min = new TH1D(); 
 
   std::cout << "===================================================================================" << std::endl;
   std::cout << "                                 " << syst.c_str() << std::endl;
@@ -2755,11 +2759,11 @@ void PlotResults_4l(string var = "Jets", string syst = "MCgen", bool mad =1,bool
     }
   }
   else if(syst=="qqgg"||syst=="IrrBkg"||syst=="RedBkg"||syst=="JER"||syst=="JES_ModMat"||syst=="JES_ModData"||syst=="SF"||syst=="SFSq"){
-    h_unfolded_4e_p = (TH1*) unfSyst->Get(systHistoName_4e_p.c_str());
-    h_unfolded_4m_p = (TH1*) unfSyst->Get(systHistoName_4m_p.c_str());
+    h_unfolded_4e_p   = (TH1*) unfSyst->Get(systHistoName_4e_p.c_str());
+    h_unfolded_4m_p   = (TH1*) unfSyst->Get(systHistoName_4m_p.c_str());
     h_unfolded_2e2m_p = (TH1*) unfSyst->Get(systHistoName_2e2m_p.c_str());
-    h_unfolded_4e_m = (TH1*) unfSyst->Get(systHistoName_4e_m.c_str());
-    h_unfolded_4m_m = (TH1*) unfSyst->Get(systHistoName_4m_m.c_str());
+    h_unfolded_4e_m   = (TH1*) unfSyst->Get(systHistoName_4e_m.c_str());
+    h_unfolded_4m_m   = (TH1*) unfSyst->Get(systHistoName_4m_m.c_str());
     h_unfolded_2e2m_m = (TH1*) unfSyst->Get(systHistoName_2e2m_m.c_str());
 
     for(int i = 1; i<9; i++){
