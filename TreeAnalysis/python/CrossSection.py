@@ -242,13 +242,13 @@ def setCrossSectionMC(h1,FinState,Type,DoNormalized,MCSet,doFiducial):
     if "Gen" in name: name = "Total"
     if doFiducial:
 
-        print "{0} {1} {2:.6f} [fb]\n".format(name,((25-len(name))*" "),1000*(h1.Integral(1,-1))/(Lumi) )
+        print "{0} {1} {2:.2f} [fb]\n".format(name,((25-len(name))*" "),1000*(h1.Integral(1,-1))/(Lumi) )
         if FinState=="4l" and Type=="Total":
             AccFile = ROOT.TFile("./Acceptance/Acceptance_"+MCSet+"_"+Type+".root")
             Acc = AccFile.Get("TotAcc2e2m_Acc").GetVal() #FIXME Use a weightd avarage?
             print " Wide region",(h1.Integral(1,-1))/(Lumi*Acc*(BRele*BRele+2*BRele*BRmu+BRmu*BRmu)),"[pb]"              
     else:
-        print "{0} {1} {2:.6f} [pb]\n".format(name,((25-len(name))*" "),(h1.Integral(1,-1))/(Lumi*BR)) # Check total cross section witho
+        print "{0} {1} {2:.2f} [pb]\n".format(name,((25-len(name))*" "),(h1.Integral(1,-1))/(Lumi*BR)) # Check total cross section witho
     
     
     Integral = h1.Integral(0,-1) #Use integral with overflows entries to scale with theoretical value which include also the overflow entries.
