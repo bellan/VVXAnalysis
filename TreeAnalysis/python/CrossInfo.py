@@ -38,8 +38,12 @@ xs_wide = 16.5
 
 xs_tight = {"2e2m":16.37,"4m":8.19,"4e":8.19,"4l":32.75} #To be corrected with MCFM values
 
-GlobSistList = [{"name":"Trig","value":0.02},{"name":"Lumi","value": 0.062}] 
-DiffSistList           = ("Red","Irr","sFactor","MCgen")
-DiffSistListUnfold     = ("RedBkg","IrrBkg","qqgg","MCgen","SFSq")
-DiffSistListJetsUnfold = ("JES_ModData","JES_ModMat","JER")
-#DiffSistListUnfold     = ("RedBkg","IrrBkg","qqgg","MCgen","UnfDataOverGenMC","SFSq")
+GlobSystList           = [{"name":"Trig","value":0.02},{"name":"Lumi","value": 0.062}] 
+DiffSystList           = [{"name":"Red","longname":"Reducible background"},{"name":"Irr","longname":"Irreducible background"},{"name":"sFactor","longname":"Scale Factor"},{"name":"MCgen","longname":"Monte Carlo choice"}]
+
+DiffSystList           = [{"name":"Red","longname":"Reducible background"},{"name":"Irr","longname":"Irreducible background"},{"name":"sFactor","longname":"Scale Factor"},{"name":"MCgen","longname":"Monte Carlo choice"}]
+
+DiffSystListUnfold           = [{"name":"RedBkg","longname":"Reducible background"},{"name":"IrrBkg","longname":"Irreducible background"},{"name":"SFSq","longname":"Scale Factor"},{"name":"MCgen","longname":"Monte Carlo choice"}]
+#DiffSystListUnfold     = ("RedBkg","IrrBkg","qqgg","MCgen","SFSq")
+DiffSystListJetsUnfold = [{"name":"JES_ModData","longname":"JES data correction"},{"name":"JES_ModMat","longname":"JES Mat correction"},{"name":"JER","longname":"Jet energy resolution"}]
+#DiffSystListUnfold     = ("RedBkg","IrrBkg","qqgg","MCgen","UnfDataOverGenMC","SFSq")
