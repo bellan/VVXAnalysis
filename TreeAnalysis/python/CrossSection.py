@@ -133,6 +133,9 @@ def getCrossPlot_MC(MCSet,Type,analysis,DoNormalized,DoFiducial):
 ##############################################################################################################
 def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,DoNormalized,doFiducial):
 
+    Fr = ""
+    if doFiducial: Fr="_fr"
+
     if UseMCReco:  print Red("########################### MC RECO ########################\n")
     else: print Red("############################ DATA  #########################\n".format(Sign))
     
@@ -160,13 +163,13 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,DoNormalized,
         FInDown   = ROOT.TFile("./FinalResults_"+MCSet+"_"+analysis+"/DataDown.root")  
     else:
         if UseUnfold:
-            FInCenter =  ROOT.TFile("./FinalResults_"+MCSet+"_"+analysis+"/DataUnfold.root")
-            FInUp     =  ROOT.TFile( "./FinalResults_"+MCSet+"_"+analysis+"/DataUnfoldUp.root")
-            FInDown   =  ROOT.TFile( "./FinalResults_"+MCSet+"_"+analysis+"/DataUnfoldDown.root")  
+            FInCenter =  ROOT.TFile("./FinalResults_"+MCSet+"_"+analysis+"/DataUnfold"+Fr+".root")
+            FInUp     =  ROOT.TFile( "./FinalResults_"+MCSet+"_"+analysis+"/DataUnfoldUp"+Fr+".root")
+            FInDown   =  ROOT.TFile( "./FinalResults_"+MCSet+"_"+analysis+"/DataUnfoldDown"+Fr+".root")  
         else: 
-            FInCenter = ROOT.TFile("./FinalResults_"+MCSet+"_"+analysis+"/Data.root") 
-            FInUp     = ROOT.TFile("./FinalResults_"+MCSet+"_"+analysis+"/DataUp.root")
-            FInDown   = ROOT.TFile( "./FinalResults_"+MCSet+"_"+analysis+"/DataDown.root")  
+            FInCenter = ROOT.TFile("./FinalResults_"+MCSet+"_"+analysis+"/Data"+Fr+".root") 
+            FInUp     = ROOT.TFile("./FinalResults_"+MCSet+"_"+analysis+"/DataUp"+Fr+".root")
+            FInDown   = ROOT.TFile( "./FinalResults_"+MCSet+"_"+analysis+"/DataDown"+Fr+".root")  
 
     for h,hup,hdown in zip(hSum,hSumUp,hSumDown):
 
@@ -177,7 +180,6 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,DoNormalized,
         if h==None:
             print "ERROR no data for",h["name"]
             break
-
         NormUp   =   hup["state"].Integral(1,-1)/h["state"].Integral(1,-1)
         NormDown = hdown["state"].Integral(1,-1)/h["state"].Integral(1,-1)
 
@@ -246,7 +248,7 @@ def setCrossSectionMC(h1,FinState,Type,DoNormalized,MCSet,doFiducial):
         if FinState=="4l" and Type=="Total":
             AccFile = ROOT.TFile("./Acceptance/Acceptance_"+MCSet+"_"+Type+".root")
             Acc = AccFile.Get("TotAcc2e2m_Acc").GetVal() #FIXME Use a weightd avarage?
-            print " Wide region",(h1.Integral(1,-1))/(Lumi*Acc*(BRele*BRele+2*BRele*BRmu+BRmu*BRmu)),"[pb]"              
+            print "Cross section Wide region",(h1.Integral(1,-1))/(Lumi*Acc*(BRele*BRele+2*BRele*BRmu+BRmu*BRmu)),"[pb]"              
     else:
         print "{0} {1} {2:.2f} [pb]\n".format(name,((25-len(name))*" "),(h1.Integral(1,-1))/(Lumi*BR)) # Check total cross section witho
     
@@ -510,7 +512,7 @@ def TotalCross(MCSet,Type,analysis,doFiducial,UseMCReco):
             if fin=="4l":
                 AccFile = ROOT.TFile("./Acceptance/Acceptance_"+MCSet+"_Mass.root")
                 Acc = (AccFile.Get("TotAcc2e2m_Acc").GetVal()+AccFile.Get("TotAcc4e_Acc").GetVal()+AccFile.Get("TotAcc4m_Acc").GetVal())/3. 
-                print "Wide Region",value[0]/(Acc*(BRele*BRele+2*BRele*BRmu+BRmu*BRmu)),"Acc",Acc 
+                print "Cross Section in wide Region",value[0]/(Acc*(BRele*BRele+2*BRele*BRmu+BRmu*BRmu)),"\nAcceptance",Acc,"\n" 
 
         else: print " {0:.2f} +- {1:.2f} (stat) + {2:.2f} (syst) - {3:.2f} (syst) +- {4:.2f} (Total) [pb] \n".format(value[0],value[1],value[2],value[3],value[4])
 

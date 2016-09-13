@@ -214,9 +214,12 @@ def getHisto(Type,isData,Sign,syst,isTot,isFiducial):
             i["state"].Scale(1./Acc)
 
         else:
-            if isFiducial:         hAcc = AccFile.Get("HEff_Tight"+i["name"]+"_"+Type)
-            else:                  hAcc = AccFile.Get("HTot_"+i["name"]+"_"+Type)
-            if hAcc== None: sys.exit("HAcc_"+i["name"]+"_"+Type+" is Null or doesn't exist")
+            if isFiducial:  
+                hAcc = AccFile.Get("HEff_Tight_"+i["name"]+"_"+Type)
+                if hAcc== None: sys.exit("HEff_Tight_"+i["name"]+"_"+Type+" is Null or doesn't exist")
+            else:                 
+                hAcc = AccFile.Get("HTot_"+i["name"]+"_"+Type)
+                if hAcc== None: sys.exit("HTot_"+i["name"]+"_"+Type+" is Null or doesn't exist")
             i["state"].Divide(hAcc)
         if syst=="": print "Integral after acceptance correction {0}> {1:.2f} +- {2:.2f}\n ".format((27-len(i["name"]))*"-",i["state"].IntegralAndError(0,-1,ErrStat),ErrStat)
     return hSum
@@ -479,21 +482,21 @@ if isUnfold:
     print Red("\n#############################  UNFOLD DATA  ############################")  
     
 
-    FileOutData =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/DataUnfold.root","update") 
+    FileOutData =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/DataUnfold"+Fr+".root","update") 
     for i in hData:
         i["state"].Write("",i["state"].kOverwrite)
         print "\n Total integral {0} contribution {1}> {2:.2f}".format(i["name"],(32-len(i["name"]))*"-",i["state"].Integral(0,-1))
         
     print Red("\n#########################  DATA UNFOLD SYST UP #########################")  
     
-    FileOutDataUp =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/DataUnfoldUp.root","update")      
+    FileOutDataUp =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/DataUnfoldUp"+Fr+".root","update")      
     for i in hDataUp:
         i["state"].Write("",i["state"].kOverwrite)
         print "\n Total integral {0} contribution {1}> {2:.2f}".format(i["name"],(32-len(i["name"]))*"-",i["state"].Integral(0,-1)) 
 
     print Red("\n########################  DATA UNFOLD SYST DOWN ########################")              
 
-    FileOutDataDown =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/DataUnfoldDown.root","update") 
+    FileOutDataDown =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/DataUnfoldDown"+Fr+".root","update") 
     for i in hDataDown:
         i["state"].Write("",i["state"].kOverwrite)
         print "\n Total integral {0} contribution {1}> {2:.2f}".format(i["name"],(32-len(i["name"]))*"-",i["state"].Integral(0,-1))
@@ -502,21 +505,15 @@ if isUnfold:
     
 else:
     if isTot:
-        if isFiducial:
-            hDataTot     = getHisto("Mass",True,0,"",True,True)
-            hDataUpTot   = getSyst(1,isUnfold,hDataTot,True,True)
-            hDataDownTot = getSyst(-1,isUnfold,hDataTot,True,True)
-            hMCRecoTot   = getHisto("Mass",False,0,"",True,True)
-        else:
-            hDataTot     = getHisto("Mass",True,0,"",True,False)
-            hDataUpTot   = getSyst(1,isUnfold,hDataTot,True,False)
-            hDataDownTot = getSyst(-1,isUnfold,hDataTot,True,False)
-            hMCRecoTot   = getHisto("Mass",False,0,"",True,False)
+        hDataTot     = getHisto("Mass",True,0,"",True,isFiducial)
+        hDataUpTot   = getSyst(1,isUnfold,hDataTot,True,isFiducial)
+        hDataDownTot = getSyst(-1,isUnfold,hDataTot,True,isFiducial)
+        hMCRecoTot   = getHisto("Mass",False,0,"",True,isFiducial)
     else:
-        hData      = getHisto(Type,True,0,"",False,False)
-        hDataUp    = getSyst(1,isUnfold,hData,False,False)
-        hDataDown  = getSyst(-1,isUnfold,hData,False,False)
-        hMCReco    = getHisto(Type,False,0,"",False,False)
+        hData      = getHisto(Type,True,0,"",False,isFiducial) 
+        hDataUp    = getSyst(1,isUnfold,hData,False,isFiducial)
+        hDataDown  = getSyst(-1,isUnfold,hData,False,isFiducial)
+        hMCReco    = getHisto(Type,False,0,"",False,isFiducial)
  
     print Red("\n##############################  SUMMARY  #############################")  
 
@@ -536,7 +533,7 @@ else:
     print Red("\n###############################  DATA  ###############################")  
 
 
-    FileOutData =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/Data.root","update") 
+    FileOutData =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/Data"+Fr+".root","update") 
     if isTot:
         for i in hDataTot:
             if isFiducial:  i["state"].Write("ZZTo"+i["name"]+"_Tot_fr",i["state"].kOverwrite)
@@ -549,7 +546,7 @@ else:
  
 
     print Red("\n###########################  DATA SYST UP ############################")  
-    FileOutDataUp =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/DataUp.root","update") 
+    FileOutDataUp =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/DataUp"+Fr+".root","update") 
     
     if isTot: 
         for i in hDataUpTot:
@@ -562,7 +559,7 @@ else:
             print "\n Total integral {0} contribution {1}> {2:.3f}".format(i["name"],(32-len(i["name"]))*"-",i["state"].Integral(0,-1))
 
     print Red("\n##########################  DATA SYST DOWN ###########################")              
-    FileOutDataDown =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/DataDown.root","update") 
+    FileOutDataDown =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/DataDown"+Fr+".root","update") 
  
     if isTot:
         for i in hDataDownTot:
