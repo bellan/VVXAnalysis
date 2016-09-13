@@ -109,11 +109,14 @@ else:
     print Red("\n\n#################################################################################\n############## ZZ4l Differential Cross Section as function of {0} ##############\n#################################################################################\n".format(Type))
 
 
-hMCList = getCrossPlot_MC(MCSetIn,Type,analysis,DoNormalized,DoFiducial)
+
 
 if DoInclusive:
+    hMCList = getCrossPlot_MC(MCSetIn,"Total",analysis,DoNormalized,DoFiducial)
     TotalCross(MCSetIn,"Tot",analysis,DoFiducial,UseMCReco)
     sys.exit(0)
+
+hMCList = getCrossPlot_MC(MCSetIn,Type,analysis,DoNormalized,DoFiducial)
 
 if UseMCReco:
     (hDataList,hDataListUp,hDataListDown) = getCrossPlot_Data(MCSetIn,UseUnfold,Type,analysis,0,True,DoNormalized,DoFiducial) 
@@ -122,15 +125,16 @@ else:
     (hDataList,hDataListUp,hDataListDown)  = getCrossPlot_Data(MCSetIn,UseUnfold,Type,analysis,0,False,DoNormalized,DoFiducial) 
 
 
+
 for i in range(0,4):
     hDataList[i]["state"].SetMarkerSize(1.2)
     hDataList[i]["state"].SetMarkerColor(1)
     hDataList[i]["state"].SetMarkerStyle(20)
     hDataList[i]["state"].SetLineColor(1)
     
-    grSist = getSistGraph(hDataList[i]["state"],hDataListUp[i]["state"],hDataListDown[i]["state"],DoFiducial,hDataListDown[i]["name"])
-    grSist.SetFillStyle(3001)
-    grSist.SetFillColor(ROOT.kRed)
+    grSyst = getSystGraph(hDataList[i]["state"],hDataListUp[i]["state"],hDataListDown[i]["state"],DoFiducial,hDataListDown[i]["name"])
+    grSyst.SetFillStyle(3001)
+    grSyst.SetFillColor(ROOT.kRed)
  
     Err=ROOT.Double(0.)
     
@@ -215,7 +219,7 @@ for i in range(0,4):
 
     leg = ROOT.TLegend(.65,.52,.85,.66);
 
-    leg.AddEntry(grSist,"Syst","f")
+    leg.AddEntry(grSyst,"Syst","f")
     leg.AddEntry(hDataList[i]["state"],"Data + Stat","lep")
     leg.AddEntry(hMCList[i]["state"],"MC","lpf")
 
@@ -240,7 +244,7 @@ for i in range(0,4):
     hMCList[i]["state"].Draw("hist")
 
     if not UseMCReco:
-        grSist.Draw("same2")
+        grSyst.Draw("same2")
     hDataList[i]["state"].Draw("sameE1")
     leg.Draw("same")
     
