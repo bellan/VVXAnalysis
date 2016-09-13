@@ -1,4 +1,4 @@
-import ROOT
+iCrmport ROOT
 from ROOT import gSystem
 
 
@@ -30,7 +30,7 @@ inputdir_CR  ="./results/ZZRecoAnalyzer_CR/"
 
 BRele = 0.03363
 BRmu  = 0.03366
-Lumi   = 15941
+Lumi  = 12892
 
 xs_wide = 16.5
 
