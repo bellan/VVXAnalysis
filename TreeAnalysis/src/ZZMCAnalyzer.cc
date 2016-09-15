@@ -47,10 +47,23 @@ void ZZMCAnalyzer::ZZplots(string decay){
  ptzz_gen =  (genVBParticles->at(0).p4()+genVBParticles->at(1).p4()).Pt();
  if (ptzz_gen>300) ptzz_gen=299;
 
+ //NNLO/NLO k_factor
+ string sampleName;
+ //if powheg samples
+ sampleName = "ZZTo4mu";
+ //else
+ //sampleName = "oth";
+ w_kf = 0;
  dphizz_gen = 0;
  dphizz_gen = fabs(physmath::deltaPhi(genVBParticles->at(0).phi(),genVBParticles->at(1).phi())); 
+ //w_kf = kfNNLO.weight(sampleName.c_str(), decay.c_str(), dphizz_gen,nEvent);
+ //w_kf = kfNNLO.weight(sampleName.c_str(), dphizz_gen, nEvent);
  w_kf = 1; 
- 
+ //if(dphizz_gen >=3.1 && dphizz_gen <= TMath::Pi()) cout << dphizz_gen << endl;
+ //if(w_kf==0 || w_kf < 0) cout << "********************" <<endl;
+ //cout << dphizz_gen << " " << w_kf << " " << genVBParticles->at(0).phi() << " " << genVBParticles->at(1).phi() <<endl; 
+ //w_kf = 1.15;
+
  theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight()*w_kf);  
  theHistograms.fill(std::string("ZZTo")+decay+"_JetsGen_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,njets,theMCInfo.sampleWeight()*w_kf);
  theHistograms.fill(std::string("ZZTo")+decay+"_CentralJetsGen_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,4,0,4,ncentraljets,theMCInfo.sampleWeight()*w_kf);  
@@ -66,7 +79,7 @@ void ZZMCAnalyzer::ZZplots(string decay){
 
  if(njets >=1){
    ptjet1_gen = genJets->at(0).pt();
-   if(ptjet1_gen>=500) ptjet1_gen=499;
+   if(ptjet1_gen>=300) ptjet1_gen=299; //if(ptjet1_gen>=500) ptjet1_gen=499;
    theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1Gen_"+sample,"",Xbins_ptjet1,ptjet1_gen,theMCInfo.sampleWeight()*w_kf);  
    theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1Gen_01","",Xbins_ptjet1,ptjet1_gen,theMCInfo.sampleWeight()*w_kf);
    etajet1_gen = fabs(genJets->at(0).eta());
@@ -84,7 +97,7 @@ void ZZMCAnalyzer::ZZplots(string decay){
    
    if (deta_gen>=4.7) deta_gen = 4.6;
    if (mjj_gen>=800) mjj_gen = 799;
-   if(ptjet2_gen>=500) ptjet2_gen=499; 
+   if(ptjet2_gen>=200) ptjet2_gen=199; //if(ptjet2_gen>=500) ptjet2_gen=499; 
    if(etajet2_gen>=4.7) etajet2_gen=4.6;
 
    theHistograms.fill(std::string("ZZTo")+decay+"_MjjGen_"+sample, std::string("m_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen,theMCInfo.sampleWeight()*w_kf);  
@@ -136,7 +149,7 @@ void ZZMCAnalyzer::ZZplots(string decay){
 
    if(njets >=1){
      ptjet1_gen = genJets->at(0).pt();
-     if(ptjet1_gen>=500) ptjet1_gen=499;
+     if(ptjet1_gen>=300) ptjet1_gen=299; //if(ptjet1_gen>=500) ptjet1_gen=499;
      theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1Gen_"+sample+region,"",Xbins_ptjet1,ptjet1_gen,theMCInfo.sampleWeight()*w_kf);  
      theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1Gen_01"+region,"",Xbins_ptjet1,ptjet1_gen,theMCInfo.sampleWeight()*w_kf);
      etajet1_gen = fabs(genJets->at(0).eta()); 
@@ -155,7 +168,7 @@ void ZZMCAnalyzer::ZZplots(string decay){
      
      if (deta_gen>=4.7) deta_gen = 4.6;
      if (mjj_gen>=800) mjj_gen = 799;
-     if(ptjet2_gen>=500) ptjet2_gen=499; 
+     if(ptjet2_gen>=200) ptjet2_gen=199; //if(ptjet2_gen>=500) ptjet2_gen=499; 
      if(etajet2_gen>=4.7) etajet2_gen=4.6;
  
      theHistograms.fill(std::string("ZZTo")+decay+"_MjjGen_"+sample+region, std::string("m_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen,theMCInfo.sampleWeight()*w_kf);  
@@ -696,8 +709,8 @@ void ZZMCAnalyzer::begin() {
   Xbins += 100,200,250,300,350,400,500,600,800; 
   Xbins_deta += 0,2.4,4.7;
   Xbins_mjj += 0.,200,800;
-  Xbins_ptjet1 += 30,50,100,200,300,500;
-  Xbins_ptjet2 += 30,100,200,500;
+  Xbins_ptjet1 += 30,50,100,200,300; //30,50,100,200,300,500;
+  Xbins_ptjet2 += 30,100,200; //30,100,200,500; 
   Xbins_etajet1 += 0,1.5,3,4.7;
   Xbins_etajet2 += 0,1.5,3,4.7; 
   Xbins_drzz += 0,1,2,3,4,5,6;

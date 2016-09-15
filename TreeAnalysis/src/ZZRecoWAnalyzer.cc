@@ -24,11 +24,40 @@ void ZZRecoWAnalyzer::ZZplots(int id, int e){
   
   std::string decay  = "4l";
   std::string sample;
+  //cout << "0" << endl;
+  if(id == 52) {
+    decay = "4m";
+    // h_UnfOverMC_Mass = (TH1*) h_UnfOverMC_Mass_4m->Clone("h_UnfOverMC_Mass_4m"); //cout << "1a" << endl;
+    // h_UnfOverMC_Jets = (TH1*)h_UnfOverMC_Jets_4m->Clone("h_UnfOverMC_Jets_4m"); //cout << "2a" << endl;
+    // h_UnfOverMC_Mjj = (TH1*)h_UnfOverMC_Mjj_4m->Clone("h_UnfOverMC_Mjj_4m"); //cout << "3a" << endl;
+    // h_UnfOverMC_Deta = (TH1*)h_UnfOverMC_Deta_4m->Clone("h_UnfOverMC_Deta_4m"); //cout << "4a" << endl;
+    // h_UnfOverMC_CentralJets = (TH1*)h_UnfOverMC_CentralJets_4m->Clone("h_UnfOverMC_CentralJets_4m"); //cout << "5a" << endl;
+    // h_UnfOverMC_CentralMjj = (TH1*)h_UnfOverMC_CentralMjj_4m->Clone("h_UnfOverMC_CentralMjj_4m"); //cout << "6a" << endl;
+    // h_UnfOverMC_CentralDeta = (TH1*)h_UnfOverMC_CentralDeta_4m->Clone("h_UnfOverMC_CentralDeta_4m"); //cout << "7a" << endl;
+  
+  }
+  else if (id == 48) {
+    decay = "2e2m";
+    // h_UnfOverMC_Mass = (TH1*) h_UnfOverMC_Mass_2e2m->Clone("h_UnfOverMC_Mass_2e2m");//cout << "1b" <<endl;
+    // h_UnfOverMC_Jets = (TH1*)h_UnfOverMC_Jets_2e2m->Clone("h_UnfOverMC_Jets_2e2m");//cout << "2b" <<endl;
+    // h_UnfOverMC_Mjj = (TH1*)h_UnfOverMC_Mjj_2e2m->Clone("h_UnfOverMC_Mjj_2e2m");//cout << "3b" <<endl;
+    // h_UnfOverMC_Deta = (TH1*)h_UnfOverMC_Deta_2e2m->Clone("h_UnfOverMC_Deta_2e2m");//cout << "4b" <<endl;
+    // h_UnfOverMC_CentralJets = (TH1*)h_UnfOverMC_CentralJets_2e2m->Clone("h_UnfOverMC_CentralJets_2e2m");//cout << "5b" <<endl;
+    // h_UnfOverMC_CentralMjj = (TH1*)h_UnfOverMC_CentralMjj_2e2m->Clone("h_UnfOverMC_CentralMjj_2e2m");//cout << "6b" <<endl;
+    // h_UnfOverMC_CentralDeta = (TH1*)h_UnfOverMC_CentralDeta_2e2m->Clone("h_UnfOverMC_CentralDeta_2e2m");//cout << "7b" <<endl;
+  } 
+  else if (id == 44) {
+    decay = "4e";
+    // h_UnfOverMC_Mass = (TH1*) h_UnfOverMC_Mass_4e->Clone("h_UnfOverMC_Mass_4e");//cout << "1c" <<endl;
+    // h_UnfOverMC_Jets = (TH1*)h_UnfOverMC_Jets_4e->Clone("h_UnfOverMC_Jets_4e");//cout << "2c" <<endl;
+    // h_UnfOverMC_Mjj = (TH1*)h_UnfOverMC_Mjj_4e->Clone("h_UnfOverMC_Mjj_4e");//cout << "3c" <<endl;
+    // h_UnfOverMC_Deta = (TH1*)h_UnfOverMC_Deta_4e->Clone("h_UnfOverMC_Deta_4e");//cout << "4c" <<endl;
+    // h_UnfOverMC_CentralJets = (TH1*)h_UnfOverMC_CentralJets_4e->Clone("h_UnfOverMC_CentralJets_4e");//coutyes << "5c" <<endl;
+    // h_UnfOverMC_CentralMjj = (TH1*)h_UnfOverMC_CentralMjj_4e->Clone("h_UnfOverMC_CentralMjj_4e");//cout << "6c" <<endl;
+    // h_UnfOverMC_CentralDeta = (TH1*)h_UnfOverMC_CentralDeta_4e->Clone("h_UnfOverMC_CentralDeta_4e");//cout << "7c" <<endl;
+    }
+   //cout << "1" << endl;
  
-  if(id == 52) decay = "4m";
-  else if (id == 48) decay = "2e2m";
-  else if (id == 44) decay = "4e";
-    
   if(e < nentries/2){sample = "0";}
   else {sample = "1";}
   
@@ -53,7 +82,7 @@ void ZZRecoWAnalyzer::ZZplots(int id, int e){
   // cout << "1" << endl; 
   if(nCentralJERjets>=1){
     centralPtJet1 = CentralJER_jetPt->at(0);
-    if (centralPtJet1>=500) centralPtJet1 = 499; 
+    if (centralPtJet1>=400) centralPtJet1 = 399; 
     centralEtaJet1 = fabs(CentralJER_jets->at(0).eta());
     if (centralEtaJet1>=6) centralEtaJet1 = 5;
   }
@@ -69,7 +98,7 @@ void ZZRecoWAnalyzer::ZZplots(int id, int e){
      
      if (centralDeta>=4.7) centralDeta = 4.6;
      if (centralMjj>=800) centralMjj = 799;
-     if (centralPtJet2>=500) centralPtJet2 = 499; 
+     if (centralPtJet2>=400) centralPtJet2 = 399; 
      if (centralEtaJet2>=6) centralEtaJet2 = 5;
    }
   
@@ -77,7 +106,7 @@ void ZZRecoWAnalyzer::ZZplots(int id, int e){
 
   float centralDeta_cj = 0;
   float centralMjj_cj = 0;
- 
+  //cout << "2" << endl;
   //1D Reco DeltaEta and mJJ Distributions - JER smearing (Jets_JERCentralSmear to be used in the standard analysis)
   if(nCentralJERcentraljets>=2){
   
@@ -88,7 +117,7 @@ void ZZRecoWAnalyzer::ZZplots(int id, int e){
     if (centralMjj_cj>=800) centralMjj_cj = 799;
     
   }
- 
+  //cout << "3" << endl;
   //if MC gen (for response matrices only)
   if (genCategory !=-1){
     if(topology.test(0)){
@@ -154,9 +183,9 @@ void ZZRecoWAnalyzer::ZZplots(int id, int e){
 
       //PTJET1 and ETAJET1
       if(ngenjets>=1){ 
-
+	//cout << "4" << endl;
 	ptjet1_gen = genJets->at(0).pt();
-	if(ptjet1_gen >=500) ptjet1_gen =499;
+	if(ptjet1_gen >=400) ptjet1_gen =399;
 	etajet1_gen = fabs(genJets->at(0).eta());
 	if(etajet1_gen >=6) etajet1_gen =5;
 
@@ -203,7 +232,7 @@ void ZZRecoWAnalyzer::ZZplots(int id, int e){
 
  	if (deta_gen>=4.7) deta_gen = 4.6;
  	if (mjj_gen>=800) mjj_gen = 799;
-	if(ptjet2_gen >=500) ptjet2_gen =499;
+	if(ptjet2_gen >=400) ptjet2_gen =399;
 	if(etajet2_gen >=6) etajet2_gen =5;
 	
 	if(nCentralJERjets>=2){
@@ -262,7 +291,7 @@ void ZZRecoWAnalyzer::ZZplots(int id, int e){
 	  theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet2_JERCentralSmear_W_01", "#eta^{jet2}", Xbins_etajet2, centralEtaJet2,theWeight*w_EtaJet2);
 	  theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_EtaJet2_JERCentralSmear_W_"+sample, std::string("Response matrix #eta^{jet2} of ZZ_{1}#rightarrow ")+decay, Xbins_etajet2,Xbins_etajet2, centralEtaJet2,etajet2_gen,theWeight*w_EtaJet2);
 	  theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_EtaJet2_JERCentralSmear_W_01", std::string("Response matrix  #eta^{jet2} of ZZ_{1}#rightarrow ")+decay,Xbins_etajet2,Xbins_etajet2, centralEtaJet2,etajet2_gen,theWeight*w_EtaJet2);
-	} 
+	} //cout << "8" << endl;
       }
                 
       //CENTRALMJJ AND CENTRALDETA
@@ -294,7 +323,6 @@ void ZZRecoWAnalyzer::ZZplots(int id, int e){
 	    bin_CentralDeta = h_UnfOverMC_CentralDeta_2e2m->FindBin(deta_gen_cj);  
 	    w_CentralDeta =  h_UnfOverMC_CentralDeta_2e2m->GetBinContent(bin_CentralDeta);
 	  }  
-
 	  //CENTRALMJJ
 	  theHistograms.fill(std::string("ZZTo")+decay+"_CentralMjj_JERCentralSmear_W_"+sample, "m_{jj}", Xbins_mjj,centralMjj_cj,theWeight*w_CentralMjj);
 	  theHistograms.fill(std::string("ZZTo")+decay+"_CentralMjj_JERCentralSmear_W_01", "m_{jj}", Xbins_mjj, centralMjj_cj,theWeight*w_CentralMjj);
@@ -458,7 +486,7 @@ void ZZRecoWAnalyzer::ZZplots(int id, int e){
 	      w_EtaJet2_fr =  h_UnfOverMC_fr_EtaJet2_2e2m->GetBinContent(bin_EtaJet2_fr);
 	    }  
 	    
-	    //MJJ
+	    //MJJ cout << "10" << endl;
 	    theHistograms.fill(std::string("ZZTo")+decay+"_Mjj_JERCentralSmear_W_"+sample+region, "m_{jj}", Xbins_mjj,centralMjj,theWeight*w_Mjj_fr);
 	    theHistograms.fill(std::string("ZZTo")+decay+"_Mjj_JERCentralSmear_W_01"+region, "m_{jj}", Xbins_mjj, centralMjj,theWeight*w_Mjj_fr);
 	    theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Mjj_JERCentralSmear_W_"+sample+region, std::string("Response matrix m_{jj} of ZZ_{1}#rightarrow ")+decay, Xbins_mjj,Xbins_mjj, centralMjj,mjj_gen,theWeight*w_Mjj_fr);
@@ -481,7 +509,7 @@ void ZZRecoWAnalyzer::ZZplots(int id, int e){
 	    theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet2_JERCentralSmear_W_01"+region, "#eta^{jet2}", Xbins_etajet2, centralEtaJet2,theWeight*w_EtaJet2_fr);
 	    theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_EtaJet2_JERCentralSmear_W_"+sample+region, std::string("Response matrix #eta^{jet2} of ZZ_{1}#rightarrow ")+decay, Xbins_etajet2,Xbins_etajet2, centralEtaJet2,etajet2_gen,theWeight*w_EtaJet2_fr);
 	    theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_EtaJet2_JERCentralSmear_W_01"+region, std::string("Response matrix  #eta^{jet2} of ZZ_{1}#rightarrow ")+decay,Xbins_etajet2,Xbins_etajet2, centralEtaJet2,etajet2_gen,theWeight*w_EtaJet2_fr);
-	  } 
+	  } //cout << "8" << endl;
 	}
 	
 	//CENTRALMJJ AND CENTRALDETA
@@ -627,6 +655,14 @@ void ZZRecoWAnalyzer::begin() {
   UnfOverMC_fr = new TFile("macros/test/UnfoldFolder_fr_Mad/Ratio_UnfoldedDataOverGenMC.root"); 
   UnfOverMC_fr_Pow = new TFile("macros/test/UnfoldFolder_fr_Pow/Ratio_UnfoldedDataOverGenMC.root");
 
+  // h_UnfOverMC_Mass = (TH1*) UnfOverMC_Pow->Get("ZZTo4e_Mass_Ratio"); 
+  // h_UnfOverMC_Jets = (TH1*) UnfOverMC->Get("ZZTo4e_Jets_Ratio"); 
+  // h_UnfOverMC_Mjj = (TH1*) UnfOverMC->Get("ZZTo4e_Mjj_Ratio"); 
+  // h_UnfOverMC_Deta = (TH1*) UnfOverMC->Get("ZZTo4e_Deta_Ratio"); 
+  // h_UnfOverMC_CentralJets = (TH1*) UnfOverMC->Get("ZZTo4e_CentralJets_Ratio"); 
+  // h_UnfOverMC_CentralMjj = (TH1*) UnfOverMC->Get("ZZTo4e_CentralMjj_Ratio"); 
+  // h_UnfOverMC_CentralDeta = (TH1*) UnfOverMC->Get("ZZTo4e_CentralDeta_Ratio"); 
+
   h_UnfOverMC_Mass_4e = (TH1*) UnfOverMC_Pow->Get("ZZTo4e_Mass_Ratio"); 
   h_UnfOverMC_Mass_4m = (TH1*) UnfOverMC_Pow->Get("ZZTo4m_Mass_Ratio"); 
   h_UnfOverMC_Mass_2e2m = (TH1*) UnfOverMC_Pow->Get("ZZTo2e2m_Mass_Ratio");
@@ -700,11 +736,15 @@ void ZZRecoWAnalyzer::begin() {
   Xbins += 100,200,250,300,350,400,500,600,800;
   Xbins_deta += 0,2.4,4.7;
   Xbins_mjj += 0.,200,800;
-  Xbins_ptjet1 += 30,50,100,200,300,500;
-  Xbins_ptjet2 += 30,100,200,500;  
+  Xbins_ptjet1 += 30,50,100,200,400; //30,50,100,200,300,500;
+  Xbins_ptjet2 += 30,100,400;  //30,100,200,500; 
   Xbins_etajet1 += 0,1.5,3,4.7;
   Xbins_etajet2 +=0,1.5,3,4.7;
- 
+  //Xbins_dphi +=  0,2,3,4; 
+  //Xbins_drzz += 0,1,2,3,4,5,6;
+  //Xbins_ptzz += 0,25,50,75,100,150,200,300;
+  //Xbins_dphizz += 0,1.5,2.,2.25,2.5,2.75,3,3.25;
+
   m4L = 0;
   m4L_gen = 0; 
   ngenjets = 0;

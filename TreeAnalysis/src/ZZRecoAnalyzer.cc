@@ -39,6 +39,9 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
   Int_t npjets = pjets->size();
   if (npjets>3) npjets=3;
  
+
+
+ // cout << npjets << endl;
   
   //////////////////////////////////////////////DATA ONLY///////////////////////////////////////////////////////
   
@@ -68,9 +71,11 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
   //1D Reco PtJet1 distributions  - JER smearing (Jets_JERCentralSmear to be used in the standard analysis)
   if(njets>=1){
     ptJet1 = jets->at(0).pt();
-    if (ptJet1>=500) ptJet1 = 499;
+    if (ptJet1>=300) ptJet1 = 299; //if (ptJet1>=500) ptJet1 = 499;
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_"+sample, "", Xbins_ptjet1, ptJet1, theWeight);
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_01", "", Xbins_ptjet1, ptJet1, theWeight);
+    // theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_"+sample, "", 100,0,500, ptJet1, theWeight);
+    // theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_01", "", 100,0,500, ptJet1, theWeight); 
     etaJet1 = fabs(jets->at(0).eta());
     if (etaJet1>=4.7) etaJet1 = 4.6;
     theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet1_"+sample, "", Xbins_etajet1, etaJet1, theWeight);
@@ -80,7 +85,7 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
   //1D Reco PtJet1 Distributions - JER/JES smearing Up and Down (To be used in the evaluation of JER systematics uncertainties)
   if(nUpJESDatajets>=1){
     upPtJet1JESData = UpJESData_jetPt->at(0);
-    if (upPtJet1JESData>=500) upPtJet1JESData = 499;
+    if (upPtJet1JESData>=300) upPtJet1JESData = 299;  //if (upPtJet1JESData>=500) upPtJet1JESData = 499;
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_JESDataUpSmear_"+sample, "", Xbins_ptjet1, upPtJet1JESData, theWeight);
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_JESDataUpSmear_01", "", Xbins_ptjet1, upPtJet1JESData, theWeight); 
     upEtaJet1JESData = fabs(UpJESData_jets->at(0).eta());
@@ -90,7 +95,7 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
   }
   if(nDownJESDatajets>=1){
     downPtJet1JESData = DownJESData_jetPt->at(0);
-    if (downPtJet1JESData>=500) downPtJet1JESData = 499;
+    if (downPtJet1JESData>=300) downPtJet1JESData = 299; //if (downPtJet1JESData>=500) downPtJet1JESData = 499;
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_JESDataDownSmear_"+sample, "", Xbins_ptjet1, downPtJet1JESData, theWeight);
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_JESDataDownSmear_01", "", Xbins_ptjet1, downPtJet1JESData, theWeight); 
     downEtaJet1JESData = fabs(DownJESData_jets->at(0).eta());
@@ -106,12 +111,14 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
     mjj =  (jets->at(0).p4() + jets->at(1).p4()).M();
     if (mjj>=800) mjj = 799;
     ptJet2 = jets->at(1).pt();
-    if (ptJet2>=500) ptJet2 = 499;
+    if (ptJet2>=200) ptJet2 = 199; //if (ptJet2>=500) ptJet2 = 499;
     float dphi = deltaPhi(jets->at(0).phi(),jets->at(1).phi());
     if (dphi>=6) dphi = 5;
     
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet2_"+sample, "", Xbins_ptjet2, ptJet2, theWeight);
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet2_01", "", Xbins_ptjet2, ptJet2, theWeight);
+    // theHistograms.fill(std::string("ZZTo")+decay+"_PtJet2_"+sample, "", 100,0,500, ptJet2, theWeight);
+    // theHistograms.fill(std::string("ZZTo")+decay+"_PtJet2_01", "",100,0,500 , ptJet2, theWeight);
     etaJet2 = fabs(jets->at(1).eta());
     if (etaJet2>=4.7) etaJet2 = 4.6;
     theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet2_"+sample, "", Xbins_etajet2, etaJet2, theWeight);
@@ -135,7 +142,7 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
     upEtaJet2JESData = fabs(UpJESData_jets->at(1).eta());
     if(upDetaJESData>=4.7)upDetaJESData= 4.6;
     if(upMjjJESData>=800) upMjjJESData = 799;
-    if (upPtJet2JESData>=500) upPtJet2JESData = 499;
+    if (upPtJet2JESData>=200) upPtJet2JESData = 199;// if (upPtJet2JESData>=500) upPtJet2JESData = 499;
     if (upEtaJet2JESData>=4.7) upEtaJet2JESData = 4.6;
     
     theHistograms.fill(std::string("ZZTo")+decay+"_Mjj_JESDataUpSmear_"+sample,"",Xbins_mjj,upMjjJESData,theWeight); 
@@ -154,7 +161,7 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
     downEtaJet2JESData = fabs(DownJESData_jets->at(1).eta());
     if(downDetaJESData>=4.7)downDetaJESData= 4.6;
     if(downMjjJESData>=800) downMjjJESData = 799;
-    if (downPtJet2JESData>=500) downPtJet2JESData = 499; 
+    if (downPtJet2JESData>=200) downPtJet2JESData = 199; // if (downPtJet2JESData>=500) downPtJet2JESData = 499; 
     if (downEtaJet2JESData>=4.7) downEtaJet2JESData = 4.6;
     
     theHistograms.fill(std::string("ZZTo")+decay+"_Mjj_JESDataDownSmear_"+sample,"",Xbins_mjj,downMjjJESData,theWeight); 
@@ -214,18 +221,45 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
   // ***********************************************************************************************************************************************************
   
   ////////////////////////////////////////////////////DATA AND MONTECARLO/////////////////////////////////////////////////
-   
+  
+  //NNLO/NLO k_factor w_kf = 0;
+ 
   string sampleName;
   //if powheg samples
-  //sampleName = "ZZTo4mu";
+  sampleName = "ZZTo4mu";
   //else FIXME
   //sampleName = "oth";
   
-  // w_kf = 0;
+  w_kf = 0;
   dphizz_gen = 0;
   dphizz = 0;
   dphizz = fabs(physmath::deltaPhi(ZZ->first().phi(),ZZ->second().phi()));
   w_kf = 1;
+
+  // if (genCategory !=-1){
+  //   if(topology.test(0)){  
+  //     dphizz_gen = fabs(physmath::deltaPhi(genVBParticles->at(0).phi(),genVBParticles->at(1).phi())); 
+  //     //w_kf = kfNNLO.weight(sampleName.c_str(), decay.c_str(), dphizz_gen,nEvent); 
+  //     w_kf = kfNNLO.weight(sampleName.c_str(), dphizz_gen, nEvent); 
+
+  //     //if(dphizz_gen >=3.1 && dphizz_gen <= TMath::Pi()) cout << dphizz_gen << endl;
+  //     // cout << "GEN OK: "<< ZZ->first().phi()<< " " << ZZ->second().phi() << " " <<dphizz << " " << genVBParticles->at(0).phi() << " " << genVBParticles->at(1).phi() << " " << dphizz_gen << " " << w_kf << " " << endl;
+  //   }
+  //   else {
+  //     w_kf =1;
+  //     // cout << "NO GEN: " <<ZZ->first().phi()<< " " << ZZ->second().phi() << " " <<dphizz << " " << w_kf << endl; 
+  //   }
+  // }
+  // else  {
+  //   w_kf =1;
+  //   //cout << w_kf << endl;
+  // }
+
+  // //if(w_kf==0 || w_kf < 0) cout << "******************** " << w_kf << endl;
+
+  // w_kf = 1.15;
+
+
 
   //1D Reco Mass Distributions
   m4L = ZZ->mass();  
@@ -348,7 +382,7 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
   //1D Reco PtJet1 distributions  - JER smearing (Jets_JERCentralSmear to be used in the standard analysis)
   if(nCentralJERjets>=1){
     centralPtJet1 = CentralJER_jetPt->at(0);
-    if (centralPtJet1>=500) centralPtJet1 = 499;
+    if (centralPtJet1>=300) centralPtJet1 = 299; //if (centralPtJet1>=500) centralPtJet1 = 499;
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_JERCentralSmear_"+sample, "", Xbins_ptjet1, centralPtJet1, theWeight*w_kf);
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_JERCentralSmear_01", "", Xbins_ptjet1, centralPtJet1, theWeight*w_kf); 
     centralEtaJet1 = fabs(CentralJER_jets->at(0).eta());  
@@ -361,7 +395,7 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
   //1D Reco DeltaEta and mJJ Distributions - JER/JES smearing Up and Down (To be used in the evaluation of JER systematics uncertainties)
   if(nUpJERjets>=1){
     upPtJet1JER = UpJER_jetPt->at(0);
-    if (upPtJet1JER>=500) upPtJet1JER = 499;
+    if (upPtJet1JER>=300) upPtJet1JER = 299;//if (upPtJet1JER>=500) upPtJet1JER = 499;
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_JERUpSmear_"+sample, "", Xbins_ptjet1, upPtJet1JER, theWeight*w_kf);
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_JERUpSmear_01", "", Xbins_ptjet1, upPtJet1JER, theWeight*w_kf); 
     upEtaJet1JER = fabs(UpJER_jets->at(0).eta());
@@ -371,7 +405,7 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
   }
   if(nDownJERjets>=1){
     downPtJet1JER = DownJER_jetPt->at(0);
-    if (downPtJet1JER>=500) downPtJet1JER = 499;
+    if (downPtJet1JER>=300) downPtJet1JER = 299; //if (downPtJet1JER>=500) downPtJet1JER = 499;
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_JERDownSmear_"+sample, "", Xbins_ptjet1, downPtJet1JER, theWeight*w_kf);
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_JERDownSmear_01", "", Xbins_ptjet1, downPtJet1JER, theWeight*w_kf); 
     downEtaJet1JER = fabs( DownJER_jets->at(0).eta());
@@ -381,7 +415,7 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
   }
   if(nUpJESjets>=1){
     upPtJet1JES = UpJES_jetPt->at(0);
-    if (upPtJet1JES>=500) upPtJet1JES= 499;
+    if (upPtJet1JES>=300) upPtJet1JES= 299;
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_JESUpSmear_"+sample, "", Xbins_ptjet1, upPtJet1JES, theWeight*w_kf);
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_JESUpSmear_01", "", Xbins_ptjet1, upPtJet1JES, theWeight*w_kf); 
     upEtaJet1JES =  fabs(UpJES_jets->at(0).eta());
@@ -391,7 +425,7 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
   }
   if(nDownJESjets>=1){
     downPtJet1JES = DownJES_jetPt->at(0);
-    if (downPtJet1JES>=500) downPtJet1JES = 499;
+    if (downPtJet1JES>=300) downPtJet1JES = 299;
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_JESDownSmear_"+sample, "", Xbins_ptjet1, downPtJet1JES, theWeight*w_kf);
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_JESDownSmear_01", "", Xbins_ptjet1, downPtJet1JES, theWeight*w_kf);
     downEtaJet1JES = fabs( DownJES_jets->at(0).eta());
@@ -411,7 +445,7 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
    
     if (centralDeta>=4.7) centralDeta = 4.6;
     if (centralMjj>=800) centralMjj = 799;
-    if (centralPtJet2>=500) centralPtJet2 = 499; 
+    if (centralPtJet2>=200) centralPtJet2 = 199; 
     if (centralEtaJet2>=4.7) centralEtaJet2 = 4.6;
     if (centralDphi>=6)  centralDphi= 5;
 
@@ -437,7 +471,7 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
 
     if (upDetaJER>=4.7) upDetaJER = 4.6;
     if (upMjjJER>=800) upMjjJER = 799;
-    if (upPtJet2JER>=500) upPtJet2JER = 499; 
+    if (upPtJet2JER>=200) upPtJet2JER = 199; 
     if (upEtaJet2JER>=4.7) upEtaJet2JER = 4.6;
 
     theHistograms.fill(std::string("ZZTo")+decay+"_Mjj_JERUpSmear_"+sample, "reco m_{jj}", Xbins_mjj, upMjjJER, theWeight*w_kf);
@@ -459,7 +493,7 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
 
     if (downDetaJER>=4.7) downDetaJER = 4.6;
     if (downMjjJER>=800) downMjjJER = 799;
-    if (downPtJet2JER>=500) downPtJet2JER = 499; 
+    if (downPtJet2JER>=200) downPtJet2JER = 199; 
     if (downEtaJet2JER>=4.7) downEtaJet2JER = 4.6;
 
     theHistograms.fill(std::string("ZZTo")+decay+"_Mjj_JERDownSmear_"+sample, "reco m_{jj}", Xbins_mjj, downMjjJER, theWeight*w_kf);
@@ -483,7 +517,7 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
 
     if (upDetaJES>=4.7) upDetaJES = 4.6;
     if (upMjjJES>=800) upMjjJES = 799;
-    if (upPtJet2JES>=500) upPtJet2JES = 499; 
+    if (upPtJet2JES>=200) upPtJet2JES = 199; 
     if (upEtaJet2JES>=4.7) upEtaJet2JES = 4.6;
 
     theHistograms.fill(std::string("ZZTo")+decay+"_Mjj_JESUpSmear_"+sample, "reco m_{jj}", Xbins_mjj, upMjjJES, theWeight*w_kf);
@@ -505,7 +539,7 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
 
     if (downDetaJES>=4.7) downDetaJES = 4.6;
     if (downMjjJES>=800) downMjjJES = 799;
-    if (downPtJet2JES>=500) downPtJet2JES = 499; 
+    if (downPtJet2JES>=200) downPtJet2JES = 199; 
     if (downEtaJet2JES>=4.7) downEtaJet2JES = 4.6;
 
     theHistograms.fill(std::string("ZZTo")+decay+"_Mjj_JESDownSmear_"+sample, "reco m_{jj}", Xbins_mjj, downMjjJES, theWeight*w_kf);
@@ -870,8 +904,9 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
       drzz_gen =physmath::deltaR(genVBParticles->at(0),genVBParticles->at(1));
       ptzz_gen =  (genVBParticles->at(0).p4()+genVBParticles->at(1).p4()).Pt();
       if (ptzz_gen>300) ptzz_gen=299;
+      // dphizz_gen = fabs(genVBParticles->at(0).phi()-genVBParticles->at(1).phi());
+      //if(dphizz_gen > TMath::Pi()) dphizz_gen = (TMath::TwoPi()) - dphizz_gen;
       dphizz_gen = fabs(physmath::deltaPhi(genVBParticles->at(0).phi(),genVBParticles->at(1).phi())); 
-      
       //Response Matrix Mass (Reco&Gen) 
       theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Mass_"+sample,"", Xbins, Xbins, m4L ,m4L_gen , theWeight*w_kf); 
       theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Mass_01","", Xbins, Xbins, m4L ,m4L_gen , theWeight*w_kf); 
@@ -881,8 +916,7 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
       theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_PtZZ_01","", Xbins_ptzz, Xbins_ptzz, ptzz ,ptzz_gen , theWeight*w_kf); 
       theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_DphiZZ_"+sample,"", Xbins_dphizz, Xbins_dphizz,dphizz ,dphizz_gen , theWeight*w_kf); 
       theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_DphiZZ_01","", Xbins_dphizz, Xbins_dphizz, dphizz ,dphizz_gen , theWeight*w_kf);
-   
-   //********************************************************************RECO&GEN JETS*********************************************************************************
+      //********************************************************************RECO&GEN JETS*********************************************************************************
       
       //Response Matrix nJets (Reco&Gen) - No JER smearing
       theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_Jets_"+sample,"", 4,0,4,4,0,4, njets,ngenjets, theWeight*w_kf); 
@@ -906,7 +940,7 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
       
       if(ngenjets >=1){
 	ptjet1_gen = genJets->at(0).pt();
-	if(ptjet1_gen >=500) ptjet1_gen =499;
+	if(ptjet1_gen >=300) ptjet1_gen =299;
 	etajet1_gen =  fabs(genJets->at(0).eta());
 	if(etajet1_gen >=4.7) etajet1_gen =4.6;
 	
@@ -948,7 +982,7 @@ void ZZRecoAnalyzer::ZZplots(int id, int e){
 	ptjet2_gen = genJets->at(1).pt(); 
 	etajet2_gen =  fabs(genJets->at(1).eta());
 	
-	if(ptjet2_gen >=500) ptjet2_gen =499;
+	if(ptjet2_gen >=200) ptjet2_gen =199;
 	if(etajet2_gen >=4.7) etajet2_gen =4.6;
 	if (deta_gen>=4.7) deta_gen = 4.6;
 	if (mjj_gen>=800) mjj_gen = 799;
@@ -1287,7 +1321,7 @@ theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_PtZZSFErrSqMinus_"+sample,
 	
 	if(ngenjets >=1){
 	  ptjet1_gen = genJets->at(0).pt();
-	  if(ptjet1_gen >=500) ptjet1_gen =499;
+	  if(ptjet1_gen >=300) ptjet1_gen =299;
 	  etajet1_gen = fabs(genJets->at(0).eta());
 	  if(etajet1_gen >=4.7) etajet1_gen =4.6;
 	  
@@ -1329,7 +1363,7 @@ theHistograms.fill(std::string("ResMat_ZZTo")+decay+"_PtZZSFErrSqMinus_"+sample,
 	  ptjet2_gen = genJets->at(1).pt(); 
 	  etajet2_gen = fabs(genJets->at(1).eta());
 	  
-	  if(ptjet2_gen >=500) ptjet2_gen =499;
+	  if(ptjet2_gen >=200) ptjet2_gen =199;
 	  if(etajet2_gen >=4.7) etajet2_gen =4.6;
 	  if (deta_gen>=4.7) deta_gen = 4.6;
 	  if (mjj_gen>=800) mjj_gen = 799;
@@ -1935,8 +1969,8 @@ void ZZRecoAnalyzer::begin() {
   Xbins += 100,200,250,300,350,400,500,600,800;
   Xbins_deta += 0,2.4,4.7;
   Xbins_mjj += 0.,200,800;
-  Xbins_ptjet1 += 30,50,100,200,300,500;
-  Xbins_ptjet2 += 30,100,200,500;  
+  Xbins_ptjet1 += 30,50,100,200,300; //30,50,100,200,300,500;
+  Xbins_ptjet2 += 30,100,200; //30,100,200,500;  
   Xbins_etajet1 += 0,1.5,3,4.7;
   Xbins_etajet2 +=0,1.5,3,4.7;
   Xbins_dphi +=  0,2,3,4; 

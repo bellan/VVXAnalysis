@@ -81,7 +81,7 @@ void ZZMCWAnalyzer::ZZplots(string decay){
  //PTJET1 and ETAJET1
  if(njets>=1){ 
    ptjet1_gen = genJets->at(0).pt();
-   if(ptjet1_gen >=500) ptjet1_gen =499;
+   if(ptjet1_gen >=400) ptjet1_gen =399;
    etajet1_gen = fabs(genJets->at(0).eta());
    if(etajet1_gen >=6) etajet1_gen =5;
    
@@ -123,7 +123,7 @@ void ZZMCWAnalyzer::ZZplots(string decay){
    etajet2_gen = fabs(genJets->at(1).eta());
    if (deta_gen>=4.7) deta_gen = 4.6;
    if (mjj_gen>=800) mjj_gen = 799;
-   if(ptjet2_gen >=500) ptjet2_gen =499;
+   if(ptjet2_gen >=400) ptjet2_gen =399;
    if(etajet2_gen >=6) etajet2_gen =5;
 
    if(decay == "4m"){
@@ -483,11 +483,13 @@ void ZZMCWAnalyzer::begin() {
   Xbins += 100,200,250,300,350,400,500,600,800; 
   Xbins_deta += 0,2.4,4.7;
   Xbins_mjj += 0.,200,800; 
-  Xbins_ptjet1 += 30,50,100,200,300,500;
-  Xbins_ptjet2 += 30,100,200,500;
+  Xbins_ptjet1 += 30,50,100,200,400;//30,50,100,200,300,500;
+  //Xbins_ptjet2 += 30,100,200,300,500; 
+  Xbins_ptjet2 += 30,100,400; //30,100,200,500;
   Xbins_etajet1 += 0,1.5,3,4.7;
   Xbins_etajet2 +=0,1.5,3,4.7;
-  
+  //Xbins_etajet1 += 0,2,4,6;
+  //Xbins_etajet2 += 0,2,4,6;
   m4L_gen = 0;
   njets = 0;
   mjj_gen = 0;
