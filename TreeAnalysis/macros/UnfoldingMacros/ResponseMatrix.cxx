@@ -451,28 +451,27 @@ void ResponseMatrix::Build_SF(string var, string dataset, string finalstate, str
   h_4lmad_gen      = (TH1*) ZZTo4lmad_g->Get(histoName_gen.c_str());
   h_4lpow_gen      = (TH1*) ZZTo4lpow_g->Get(histoName_gen.c_str()); 
   
-  if(h_Resmat_gg4mu == NULL) h_Resmat_gg4mu = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
-  if(h_Resmat_gg4e == NULL) h_Resmat_gg4e = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
+  if(h_Resmat_gg4mu == NULL)   h_Resmat_gg4mu = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
+  if(h_Resmat_gg4e == NULL)    h_Resmat_gg4e = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
   if(h_Resmat_gg2e2mu == NULL) h_Resmat_gg2e2mu = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe"); 
-  if(h_Resmat_4muJJ == NULL) h_Resmat_4muJJ = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
-  if(h_Resmat_4eJJ == NULL) h_Resmat_4eJJ = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
+  if(h_Resmat_4muJJ == NULL)   h_Resmat_4muJJ = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
+  if(h_Resmat_4eJJ == NULL)    h_Resmat_4eJJ = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
   if(h_Resmat_2e2muJJ == NULL) h_Resmat_2e2muJJ = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
-  if(h_gg4mu == NULL) h_gg4mu = (TH1*) h_safe->Clone("h_safe");
-  if(h_gg4e == NULL) h_gg4e = (TH1*) h_safe->Clone("h_safe");
-  if(h_gg2e2mu == NULL) h_gg2e2mu = (TH1*) h_safe->Clone("h_safe"); 
-  if(h_4muJJ == NULL) h_4muJJ = (TH1*) h_safe->Clone("h_safe");
-  if(h_4eJJ == NULL) h_4eJJ = (TH1*) h_safe->Clone("h_safe");
-  if(h_2e2muJJ == NULL) h_2e2muJJ = (TH1*) h_safe->Clone("h_safe");
-  if(h_gg4mu_gen == NULL) h_gg4mu_gen = (TH1*) h_safe->Clone("h_safe");
-  if(h_gg4e_gen == NULL) h_gg4e_gen = (TH1*) h_safe->Clone("h_safe");
-  if(h_gg2e2mu_gen == NULL) h_gg2e2mu_gen = (TH1*) h_safe->Clone("h_safe");
-  if(h_4muJJ_gen == NULL) h_4muJJ_gen = (TH1*) h_safe->Clone("h_safe");
-  if(h_4eJJ_gen == NULL) h_4eJJ_gen = (TH1*) h_safe->Clone("h_safe");
-  if(h_2e2muJJ_gen == NULL) h_2e2muJJ_gen = (TH1*) h_safe->Clone("h_safe");
- 
-  if(h_Resmat_4lpow == NULL) h_Resmat_4lpow = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
-  if(h_4lpow == NULL) h_4lpow = (TH2*) h_safe->Clone("h_safe");
-  if(h_4lpow_gen == NULL) h_4lpow_gen = (TH2*) h_safe->Clone("h_safe");
+  if(h_gg4mu == NULL)          h_gg4mu = (TH1*) h_safe->Clone("h_safe");
+  if(h_gg4e == NULL)           h_gg4e = (TH1*) h_safe->Clone("h_safe");
+  if(h_gg2e2mu == NULL)        h_gg2e2mu = (TH1*) h_safe->Clone("h_safe"); 
+  if(h_4muJJ == NULL)          h_4muJJ = (TH1*) h_safe->Clone("h_safe");
+  if(h_4eJJ == NULL)           h_4eJJ = (TH1*) h_safe->Clone("h_safe");
+  if(h_2e2muJJ == NULL)        h_2e2muJJ = (TH1*) h_safe->Clone("h_safe");
+  if(h_gg4mu_gen == NULL)      h_gg4mu_gen = (TH1*) h_safe->Clone("h_safe");
+  if(h_gg4e_gen == NULL)       h_gg4e_gen = (TH1*) h_safe->Clone("h_safe");
+  if(h_gg2e2mu_gen == NULL)    h_gg2e2mu_gen = (TH1*) h_safe->Clone("h_safe");
+  if(h_4muJJ_gen == NULL)      h_4muJJ_gen = (TH1*) h_safe->Clone("h_safe");
+  if(h_4eJJ_gen == NULL)       h_4eJJ_gen = (TH1*) h_safe->Clone("h_safe");
+  if(h_2e2muJJ_gen == NULL)    h_2e2muJJ_gen = (TH1*) h_safe->Clone("h_safe");
+  if(h_Resmat_4lpow == NULL)   h_Resmat_4lpow = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
+  if(h_4lpow == NULL)          h_4lpow = (TH2*) h_safe->Clone("h_safe");
+  if(h_4lpow_gen == NULL)      h_4lpow_gen = (TH2*) h_safe->Clone("h_safe");
  
   h_gg4mu->Add(h_gg4e);
   h_gg4mu->Add(h_gg2e2mu);
@@ -498,8 +497,8 @@ void ResponseMatrix::Build_SF(string var, string dataset, string finalstate, str
   }
   else{
     h_Resmat_4lTot = (TH2*)h_Resmat_4lpow->Clone("h_Resmat_4lpow");
-    h_4lTot = (TH1*) h_4lpow->Clone("h_4lpow");
-    h_4lTot_gen = (TH1*) h_4lpow_gen->Clone("h_4lpow");
+    h_4lTot        = (TH1*) h_4lpow->Clone("h_4lpow");
+    h_4lTot_gen    = (TH1*) h_4lpow_gen->Clone("h_4lpow");
   }
 
   h_Resmat_ggTot = (TH2*)h_Resmat_gg4mu->Clone("h_Resmat_gg"); 
@@ -842,15 +841,29 @@ void ResponseMatrix::Plot(string var,string fs, string dataset, string unc, stri
     matrix->GetXaxis()->SetBinLabel(4,">2");  
     matrix->GetXaxis()->SetLabelSize(0.05);
  }
-  matrix->SetMaximum(max);
-  matrix->GetXaxis()->SetTitle(xAxis.c_str());
-  matrix->GetYaxis()->SetTitle(yAxis.c_str());
-  matrix->Draw("COLZ");
-  matrix->GetXaxis()->SetTitleOffset(1.2);
-  matrix->GetYaxis()->SetTitleOffset(1.5);
-   
-  lumiTextSize     = 0.7;
-  cmsTextSize      = 0.7;
+
+ gStyle->SetPaintTextFormat("4.1f");
+ // // PrecisionMatrix(matrix);
+ // Int_t nbinsx = matrix->GetNbinsX();
+ // Int_t nbinsy = matrix->GetNbinsY();
+ // for(Int_t bx=1; bx <=nbinsx; bx++){
+ //   for(Int_t by=1; by <=nbinsy; by++){
+ //     Float_t NewVal = static_cast<int>(matrix->GetBinContent(bx,by) * 100) / 100.0f;
+ //     matrix->SetBinContent(bx,by,NewVal);      
+ //   }
+ // }
+
+ matrix->SetMaximum(max);
+ matrix->GetXaxis()->SetTitle(xAxis.c_str());
+ matrix->GetYaxis()->SetTitle(yAxis.c_str());
+ matrix->SetMarkerColor(kGray+1);
+ matrix->SetMarkerSize(1.4);
+ matrix->Draw("COLZTEXT");
+ matrix->GetXaxis()->SetTitleOffset(1.2);
+ matrix->GetYaxis()->SetTitleOffset(1.5);
+ 
+ lumiTextSize     = 0.7;
+ cmsTextSize      = 0.7;
   extraOverCmsTextSize  = 0.80;//0.63; 
   CMS_lumi(pad1,iPeriod,0);
  
@@ -860,7 +873,6 @@ void ResponseMatrix::Plot(string var,string fs, string dataset, string unc, stri
   c->Print(png.c_str());
   c->Print(pdf.c_str());
 }
-
 
 //Build response matrix, reco and gen distributions needed for the theoretical uncertainty on Powheg
 void ResponseMatrix::GenMCSystDistributions(string var, string dataset, string finalstate, bool mad)
@@ -912,7 +924,7 @@ void ResponseMatrix::GenMCSystDistributions(string var, string dataset, string f
   h_gg4mu_gen   = (TH1*) ggZZTo4mu_g->Get(histoName_gen.c_str()); 
   h_gg4e_gen    = (TH1*) ggZZTo4e_g->Get(histoName_gen.c_str()); 
   h_gg2e2mu_gen = (TH1*) ggZZTo2e2mu_g->Get(histoName_gen.c_str()); 
- h_4muJJ_gen   = (TH1*) ZZTo4muJJ_g->Get(histoName_gen.c_str()); 
+  h_4muJJ_gen   = (TH1*) ZZTo4muJJ_g->Get(histoName_gen.c_str()); 
   h_4eJJ_gen    = (TH1*) ZZTo4eJJ_g->Get(histoName_gen.c_str()); 
   h_2e2muJJ_gen = (TH1*) ZZTo2e2muJJ_g->Get(histoName_gen.c_str()); 
   h_4lmad_gen   = (TH1*) ZZTo4lmad_g->Get(histoName_gen.c_str());
