@@ -7,8 +7,8 @@
 import ROOT,copy
 from ROOT import gSystem, TCanvas, TH1,  TPad, gStyle, TLegend,TGraphAsymmErrors,Math,TArrayD
 import collections 
-import CrossInfo
-from CrossInfo import*
+import CrossInfo_copy
+from CrossInfo_copy import*
 from Colours import *
 from optparse import OptionParser
 import sys,ast,os
@@ -16,7 +16,7 @@ import math
 import operator
 import textwrap
 
-#parser = OptionParser(usage="usage: %prog  arg1 Type [Mass,Jets,CentralJets,Deta,CentralDeta,Mjj,CentalMjj,PtJet1,PtJet2]  arg2 isUnfold [True,False] arg3 MC Set [Pow,Mad]")
+#parser = OptionParser(usage="usage: %prog  arg1 Type [Mass,Jets,CentralJets,Deta,CentralDeta,Mjj,CentalMjj,PtJet1,PtJet2]  arg2 isUnfold [True,False] arg3 MC Set [Pow,Mad] arg4 DoInclInt [True, False]")
 #(options, args) = parser.parse_args()
 
 ##################################################################################################################
@@ -83,7 +83,6 @@ def getHisto(Type,isData,Sign,sist):
                 
 
     if isData:
-        #if Type=="Jets" or Type=="Deta" or Type=="Mjj" or : TypeString=Type+"_JERCentralSmear"
         if "Jet" in Type or "Deta" in Type or "Mjj" in Type : TypeString=Type+"_JERCentralSmear"
         else: TypeString=Type
 
@@ -111,8 +110,8 @@ def getHisto(Type,isData,Sign,sist):
                 if Sign==0: print "\nTotal integral {0} contribution {1}> {2:.2f}\n\n".format(h["name"],(33-len(h["name"]))*"-",h["state"].Integral(0,-1))
                 
     if sist=="sFactor":
-        if Sign==1: AccFile = ROOT.TFile("AcceptanceSFactorSqPlus_"+Set+".root")#SF errors non-correlated
-        elif Sign==-1:  AccFile = ROOT.TFile("AcceptanceSFactorSqMinus_"+Set+".root")#SF errors non-correlated
+        if Sign==1: AccFile = ROOT.TFile("AcceptanceSFactorSqPlus_"+Set+".root")#SF errors non-correlated (among the four leptons)
+        elif Sign==-1:  AccFile = ROOT.TFile("AcceptanceSFactorSqMinus_"+Set+".root")#SF errors non-correlated (among the four leptons)
         #if Sign==1: AccFile = ROOT.TFile("AcceptanceSFactorPlus_"+Set+".root")
         #elif Sign==-1:  AccFile = ROOT.TFile("AcceptanceSFactorMinus_"+Set+".root")
 
@@ -200,7 +199,7 @@ def getHistoUnfold(Sign,sist):
         #print "ZZTo"+h["name"]+"_"+Type+Signs
         h["state"] = copy.deepcopy(fileUnfold.Get("ZZTo"+h["name"]+"_"+Type+Signs))
 
-        # take same histogram for not plus/minus systemtic.
+        # take same histogram for not plus/minus systemtics.
         if h["state"]==None:
             h["state"] = copy.deepcopy(fileUnfold.Get("ZZTo"+h["name"]+"_"+Type))
         h["state"].SetName("ZZTo"+h["name"]+"_"+Type+"_01")
@@ -256,16 +255,19 @@ def getSist(Sign,isUnfold,HData):
 ##################################################################################################################
 
 
-def getPlot_MC(Type):
+def getPlot_MC(Type,MCvar):
 
     print Red("\n############################ MC SIGNAL ############################\n")
 
     files={}
 
-    fileUnfold = ROOT.TFile("./UnfoldFolder_"+Set+"/UnfoldData_"+Type+".root")     
-
+  
+    if MCvar == "central": fileUnfold = ROOT.TFile("./UnfoldFolder_"+Set+"/UnfoldData_"+Type+".root")
+    else:
+        fileUnfold = ROOT.TFile("./GenMCUpDownDistributions_"+Set+"/MCSystDistributions_"+Type+".root") 
+    
     if fileUnfold.IsZombie():
-        sys.exit("Errors! File dosn't exist")
+        sys.exit("Errors! File doesn't exist")
         
     inputdir = inputdir_MC
     CrossType = Type+"Gen"
@@ -274,14 +276,13 @@ def getPlot_MC(Type):
         Samples=SignalSamples_Pow
     elif "Mad" in Set:
         Samples=SignalSamples_Mad
-
+   
     for s in Samples:
         files[s["sample"]] = ROOT.TFile(inputdir+s["sample"]+".root")
 
     hsum2e2mu = ROOT.TH1F()
     hsum4e    = ROOT.TH1F()
     hsum4mu   = ROOT.TH1F()
-
   
     hSum = [{"state":hsum2e2mu,"name":'2e2m'},{"state":hsum4e,"name":'4e'},{"state":hsum4mu,"name":'4m'}]
 
@@ -291,8 +292,16 @@ def getPlot_MC(Type):
         print Blue(h["name"])
 
         if isFromUnfold:
-            h["state"] = copy.deepcopy(fileUnfold.Get("ZZTo"+h["name"]+"_"+Type+"_GEN"))
-            h["state"].SetName( "ZZTo"+h["name"]+"_"+Type+"Gen_01")
+            if MCvar == "central": 
+                h["state"] = copy.deepcopy(fileUnfold.Get("ZZTo"+h["name"]+"_"+Type+"_GEN"))
+                h["state"].SetName( "ZZTo"+h["name"]+"_"+Type+"Gen_01")
+            elif MCvar == "up":
+                h["state"] = copy.deepcopy(fileUnfold.Get(Type+"Gen_qqggJJ_ZZTo"+h["name"]+"_up_01"))
+                h["state"].SetName( "ZZTo"+h["name"]+"_"+Type+"Gen_01_up")
+            elif MCvar == "down":
+                h["state"] = copy.deepcopy(fileUnfold.Get(Type+"Gen_qqggJJ_ZZTo"+h["name"]+"_down_01"))
+                h["state"].SetName( "ZZTo"+h["name"]+"_"+Type+"Gen_01_down")
+            else:  print "Wrong name of systematic distributions!!"
         else:
             isFirst=1
             for s in Samples:
@@ -313,13 +322,81 @@ def getPlot_MC(Type):
 
     return copy.deepcopy(hSum) 
 
+def getPlot_MGatNLO(Type,MCvar,istight):
+
+    print Red("\n############################ MGatNLO Distributions ############################\n")
+
+    files={}
+   
+    if istight ==0: fileUnfold = ROOT.TFile("./GenMCUpDownDistributions_MGatNLO/MCSystDistributions_"+Type+".root") 
+    else:  fileUnfold = ROOT.TFile("./GenMCUpDownDistributions_fr_MGatNLO/MCSystDistributions_"+Type+".root") 
+    
+    if fileUnfold.IsZombie():
+        sys.exit("Errors! File doesn't exist")
+        
+    # inputdir = inputdir_MC
+    # CrossType = Type+"Gen"
+
+    # if "Pow" in Set:
+    #     Samples=SignalSamples_Pow
+    # elif "Mad" in Set:
+    #     Samples=SignalSamples_Mad
+   
+    # for s in Samples:
+    #     files[s["sample"]] = ROOT.TFile(inputdir+s["sample"]+".root")
+
+    hsum2e2mu = ROOT.TH1F()
+    hsum4e    = ROOT.TH1F()
+    hsum4mu   = ROOT.TH1F()
+  
+    hSum = [{"state":hsum2e2mu,"name":'2e2m'},{"state":hsum4e,"name":'4e'},{"state":hsum4mu,"name":'4m'}]
+
+    isFromUnfold = True
+
+    for h in hSum:
+        print Blue(h["name"])
+
+        if isFromUnfold:
+            if MCvar == "central": 
+                h["state"] = copy.deepcopy(fileUnfold.Get(Type+"Gen_qqggJJ_ZZTo"+h["name"]+"_central_01"))
+                h["state"].SetName( "ZZTo"+h["name"]+"_"+Type+"Gen_01")
+            elif MCvar == "up":
+                h["state"]  =copy.deepcopy(fileUnfold.Get(Type+"Gen_qqggJJ_ZZTo"+h["name"]+"_up_01"))
+                h["state"].SetName( "ZZTo"+h["name"]+"_"+Type+"Gen_01_up")
+            elif MCvar == "down":
+                h["state"] = copy.deepcopy(fileUnfold.Get(Type+"Gen_qqggJJ_ZZTo"+h["name"]+"_down_01"))
+                h["state"].SetName( "ZZTo"+h["name"]+"_"+Type+"Gen_01_down")
+            else:  print "Wrong name of systematic distributions!!"
+        else:
+            close = input("stop!")
+
+            # isFirst=1
+            # for s in Samples:
+                
+            #     h1 = files[s["sample"]].Get("ZZTo"+h["name"]+"_"+CrossType+"_01")  
+            #     if h1==None:
+            #    #print "For sample ", s["sample"], "h"+h["name"],"has no enetries or is a zombie"       
+            #         continue
+            #     if isFirst:
+            #         h["state"]=copy.deepcopy(h1)           
+            #         print "{0} {1}-> {2:.2f} ".format(s["sample"],(61-len(s["sample"]))*"-",h1.Integral(0,-1))
+            #         isFirst=0
+            #         continue
+            #     h["state"].Add(h1) 
+            #     print "{0} {1}-> {2:.2f} ".format(s["sample"],(61-len(s["sample"]))*"-",h1.Integral(0,-1))
+        print "\nTotal integral {0} contribution {1}> {2:.2f}\n\n".format(h["name"],(3-len(h["name"]))*"-",h["state"].Integral(0,-1))
+
+
+    return copy.deepcopy(hSum) 
 
 Type= sys.argv[1]
 
 isUnfold = sys.argv[2]
 isUnfold = ast.literal_eval(isUnfold)
-
 Set = sys.argv[3]
+MCvar = sys.argv[4]
+DoInclInt = sys.argv[5]
+DoInclInt = ast.literal_eval(DoInclInt)
 
 try:
     os.stat("./FinalResults_"+Set)
@@ -329,18 +406,44 @@ except:
 
 # Set sistematic lists defined in CrossInfo.py
 if isUnfold:
-    SistList = DiffSistListUnfold
-    if "Jet" in Type or "Deta" in Type or "Mjj" in Type: SistList = SistList+DiffSistListJetsUnfold #Add Jet systematic
+    print "isUnfold = ",isUnfold
+    SistList = DiffSistListUnfold  
+   
+    if "Jet" in Type or "Deta" in Type or "Mjj" in Type:  
+        if DoInclInt: 
+            SistList = SistList #Jet systematics not included for the estimate of the inclusive cross-section as the integral of the distribution (in particular for jet multiplicity) 
+        else:  
+            SistList = SistList+DiffSistListJetsUnfold #Add Jet systematics
+
 else: SistList = DiffSistList
 
 
-hMC =  getPlot_MC(Type)
+hMC =  getPlot_MC(Type,MCvar)
 
 FileOutMC =  ROOT.TFile("./FinalResults_"+Set+"/MC.root","update") 
 
 for i in hMC:
     i["state"].Write("",i["state"].kOverwrite)
 
+if "fr" in Set:
+    try:
+        os.stat("./FinalResults_fr_MGatNLO")
+    except:
+        os.mkdir("./FinalResults_fr_MGatNLO") 
+    hMC_MGatNLO =  getPlot_MGatNLO(Type,MCvar,1)
+    FileOutMGatNLO =  ROOT.TFile("./FinalResults_fr_MGatNLO/MC.root","update") 
+
+else: 
+    try:
+        os.stat("./FinalResults_MGatNLO")
+    except:
+        os.mkdir("./FinalResults_MGatNLO") 
+    hMC_MGatNLO =  getPlot_MGatNLO(Type,MCvar,0)
+    FileOutMGatNLO =  ROOT.TFile("./FinalResults_MGatNLO/MC.root","update") 
+
+
+for i in hMC_MGatNLO:
+    i["state"].Write("",i["state"].kOverwrite)
 
 # For MC Reco. To be chek and fix
 #hMCReco =  getHisto(Type,False,0,"")

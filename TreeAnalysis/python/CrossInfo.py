@@ -37,11 +37,15 @@ BRele = 0.03363
 BRmu = 0.03366
 Lumi=19712 #pb-1
 
-#List of global systematic uncertainties in the normal (wide) fiducial region:
-#GlobSistList = [{"name":"Trig","value":0.015},{"name":"Lumi","value":0.026},{"name":"Acc","value":0.05}] 
 
-#List of global systematic uncertainties in the tight fiducial region (the only difference is in the acceptance value):
-GlobSistList = [{"name":"Trig","value":0.015},{"name":"Lumi","value":0.026},{"name":"Acc","value":0.01}] 
+
+#List of global systematic uncertainties in the normal (wide) fiducial region:
+#GlobSistList_wide = [{"name":"Trig","value":0.015},{"name":"Lumi","value":0.026},{"name":"Acc","value":0.05}] 
+
+#List of global systematic uncertainties in the tight fiducial region for plots(the only difference is in the acceptance value):
+#GlobSistList_tight = [{"name":"Trig","value":0.015},{"name":"Lumi","value":0.026},{"name":"Acc","value":0.01}] 
+
+lumiErr_perc = 0.026 #8 TeV value
 
 #List used if Unfold == False 
 DiffSistList = ("Red","Irr","sFactor")
