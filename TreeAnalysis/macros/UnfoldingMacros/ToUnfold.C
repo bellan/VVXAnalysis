@@ -235,3 +235,67 @@ void GenerateGenMGatNLOUpDown_All()
   GenerateGenMGatNLOUpDownDistributions("EtaJet1",1);
   GenerateGenMGatNLOUpDownDistributions("EtaJet2",1);
 }
+void GenerateAll_step1(){
+  cout<<"Mass"<<endl;
+  GenerateDistributions("Mass",0,0);
+  GenerateDistributions("Mass",0,1);
+  GenerateDistributions("Mass",1,0);
+  GenerateDistributions("Mass",1,1);
+  cout<<"Jets"<<endl;
+  GenerateDistributions("Jets",0,0);
+  GenerateDistributions("Jets",0,1);
+  GenerateDistributions("Jets",1,0);
+  GenerateDistributions("Jets",1,1);
+  cout<<"Jets Central"<<endl;  
+  GenerateDistributions("Jets_Central",0,0);
+  GenerateDistributions("Jets_Central",0,1);
+  GenerateDistributions("Jets_Central",1,0);
+  GenerateDistributions("Jets_Central",1,1);
+  cout<<"Mjj"<<endl;
+  GenerateDistributions("Mjj",0,0);
+  GenerateDistributions("Mjj",0,1);
+  GenerateDistributions("Mjj",1,0);
+  GenerateDistributions("Mjj",1,1);
+  cout<<"Mjj Central"<<endl;
+  GenerateDistributions("Mjj_Central",0,0);
+  GenerateDistributions("Mjj_Central",0,1);
+  GenerateDistributions("Mjj_Central",1,0);
+  GenerateDistributions("Mjj_Central",1,1);
+  cout<<"PtJet1"<<endl;
+  GenerateDistributions("PtJet1",0,0);
+  GenerateDistributions("PtJet1",0,1);
+  GenerateDistributions("PtJet1",1,0);
+  GenerateDistributions("PtJet1",1,1);
+}
+void GenerateAll_step2(){
+  cout<<"Deta"<<endl;
+  GenerateDistributions("Deta",0,0);
+  GenerateDistributions("Deta",0,1);
+  GenerateDistributions("Deta",1,0);
+  GenerateDistributions("Deta",1,1);
+  cout<<"Deta_Central"<<endl;
+  GenerateDistributions("Deta_Central",0,0);
+  GenerateDistributions("Deta_Central",0,1);
+  GenerateDistributions("Deta_Central",1,0);
+  GenerateDistributions("Deta_Central",1,1);
+  cout<<"EtaJet1"<<endl;
+  GenerateDistributions("EtaJet1",0,0);
+  GenerateDistributions("EtaJet1",0,1);
+  GenerateDistributions("EtaJet1",1,0);
+  GenerateDistributions("EtaJet1",1,1);
+  cout<<"PtJet2"<<endl;
+  GenerateDistributions("PtJet2",0,0);
+  GenerateDistributions("PtJet2",0,1);
+  GenerateDistributions("PtJet2",1,0);
+  GenerateDistributions("PtJet2",1,1);
+  cout<<"EtaJet2"<<endl;
+  GenerateDistributions("EtaJet2",0,0);
+  GenerateDistributions("EtaJet2",0,1);
+  GenerateDistributions("EtaJet2",1,0);
+  GenerateDistributions("EtaJet2",1,1);
+  cout<<"dRZZ"<<endl;
+  GenerateDistributions("dRZZ",0,0);
+  GenerateDistributions("dRZZ",0,1);
+  GenerateDistributions("dRZZ",1,0);
+  GenerateDistributions("dRZZ",1,1);
+}

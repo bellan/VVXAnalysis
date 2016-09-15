@@ -51,7 +51,7 @@ TVectorD * Vcov_unf;
 
 TFile *data;
 TFile *matrix;
-TFile * output;
+TFile *output;
 
 std::string filePath;
 std::string matrixFileName;
@@ -122,20 +122,20 @@ void Unfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tightre
   system(("cp ~/www/VBS/index.php ~/www/VBS/"+date+"/"+ var).c_str());
 
   dataFileName = "../" +var + "_test/DataToUnfold.root";
-  //dataFileName = filePath +var + "_test/DataToUnfoldFake.root";
+  //  dataFileName = "../" +var + "_test/DataToUnfoldFake.root";
   
   matrix = new TFile(matrixFileName.c_str());
-  data = new TFile(dataFileName.c_str());
+  data   = new TFile(dataFileName.c_str());
   output = new TFile(outputFileName.c_str(), "UPDATE");
   
-  matrixName = "ResMat_qqggJJ_" + var + "_ZZTo" + fs + "_st_01";
-  histoName = var +"_qqggJJ_ZZTo" + fs + "_st_01";
-  histoNameGen = var + "Gen_qqggJJ_ZZTo" + fs + "_st_01";
+  matrixName    = "ResMat_qqggJJ_" + var + "_ZZTo" + fs + "_st_01";
+  histoName     = var +"_qqggJJ_ZZTo" + fs + "_st_01";
+  histoNameGen  = var + "Gen_qqggJJ_ZZTo" + fs + "_st_01";
   histoName_unf = "DataminusBkg_" + var + "_ZZTo"+fs;
  
-  h_measured = (TH1*) matrix->Get(histoName.c_str());  
-  h_true = (TH1*) matrix->Get(histoNameGen.c_str());
-  h_Resmat = (TH2*)matrix->Get(matrixName.c_str()); 
+  h_measured     = (TH1*) matrix->Get(histoName.c_str());  
+  h_true         = (TH1*) matrix->Get(histoNameGen.c_str());
+  h_Resmat       = (TH2*) matrix->Get(matrixName.c_str()); 
   h_measured_unf = (TH1*) data->Get(histoName_unf.c_str());  
 
   // h_measured->Draw();
@@ -146,11 +146,11 @@ void Unfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tightre
   RooUnfoldBayes unfold_bayes(&response, h_measured_unf,4);  
   RooUnfoldBayes unfold_bayes4(&response, h_measured_unf,4); 
     
-  if(var == "Mass")       h_unfolded= (TH1*) unfold_svd.Hreco(RooUnfold::kCovariance);
+  // if(var == "Mass")       h_unfolded= (TH1*) unfold_svd.Hreco(RooUnfold::kCovariance);
   //  if(var == "Mass")         h_unfolded= (TH1*) unfold_bayes4.Hreco(RooUnfold::kCovariance);
-  else if(var == "dRZZ")  h_unfolded= (TH1*) unfold_bayes4.Hreco(RooUnfold::kCovariance);
-  else                    h_unfolded= (TH1*) unfold_bayes4.Hreco(RooUnfold::kCovariance);
- 
+  //else if(var == "dRZZ")  h_unfolded= (TH1*) unfold_bayes4.Hreco(RooUnfold::kCovariance);
+  //  else
+  h_unfolded= (TH1*) unfold_bayes.Hreco(RooUnfold::kCovariance);
 
   unfHistoName    = "ZZTo"+ fs +"_" + var;
   recoHistoName   = "ZZTo"+ fs +"_"+var+"_RECO"; 
@@ -310,6 +310,9 @@ void Unfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tightre
   h_measured->Write(recoMCHistoName.c_str());
   h_true->Write(trueHistoName.c_str());
   output->Close();
+  matrix->Close();
+  data->Close();
+
 }
 
 void Unfold_data_All(std::string var = "Mass", bool mad = 1,bool tightregion = 0, string date = "test"){
@@ -485,6 +488,10 @@ void DoMCGenSystematic(string var = "Mass", string fs = "4e",bool mad =1 ,bool t
   output->cd();   
   h_unfolded->Write(unfHistoName.c_str());
   output->Close();
+
+  matrix->Close();
+  data->Close();
+
 }
 
 
@@ -580,7 +587,8 @@ void DoQqggSystematic(string var = "Mass", string fs = "4e", bool mad =1 ,bool t
   h_max->Write(UnfHistoName_p.c_str());
   h_min->Write(UnfHistoName_m.c_str());
   output->Close();
-
+  matrix->Close();
+  data->Close();
  }
 
 
@@ -672,7 +680,8 @@ void DoIrrBkgSystematic(string var = "Mass", string fs = "4e", bool mad = 1,bool
   h_max->Write(UnfHistoName_p.c_str());
   h_min->Write(UnfHistoName_m.c_str());
   output->Close();
-
+  matrix->Close();
+  data->Close();
 }
 
 
@@ -765,6 +774,9 @@ void DoRedBkgSystematic(string var = "Mass", string fs = "4e", bool mad = 1,bool
   h_max->Write(UnfHistoName_p.c_str());
   h_min->Write(UnfHistoName_m.c_str());
   output->Close();
+  matrix->Close();
+  data->Close();
+  output->Close();
 
 }
 
@@ -817,6 +829,9 @@ void DoUnfOverGenSystematic(string var = "Mass", string fs = "4e", bool mad = 1,
   
   output->cd();   
   h_unfolded->Write(unfHistoName.c_str());
+
+  matrix->Close();
+  data->Close();
   output->Close();
 
 }
@@ -917,7 +932,8 @@ void DoJERSystematic(string var = "Jets", string fs = "4e", bool mad = 1,bool ti
   h_max->Write(UnfHistoName_p.c_str());
   h_min->Write(UnfHistoName_m.c_str());
   output->Close();
-   
+  matrix->Close();
+  data->Close();
 }
 
 void DoJESSystematic_ModMat(string var = "Jets", string fs = "4e", bool mad = 1,bool tightregion = 0){
@@ -1015,8 +1031,9 @@ void DoJESSystematic_ModMat(string var = "Jets", string fs = "4e", bool mad = 1,
   output->cd();
   h_max->Write(UnfHistoName_p.c_str());
   h_min->Write(UnfHistoName_m.c_str());
+  matrix->Close();
+  data->Close();
   output->Close();
-
 }
 
 void DoJESSystematic_ModData(string var = "Jets", string fs = "4e",bool mad = 1,bool tightregion = 0){
@@ -1109,7 +1126,8 @@ void DoJESSystematic_ModData(string var = "Jets", string fs = "4e",bool mad = 1,
   h_max->Write(UnfHistoName_p.c_str());
   h_min->Write(UnfHistoName_m.c_str());
   output->Close();
-
+  matrix->Close();
+  data->Close();
 }
 
 void DoSFSystematic(string var = "Jets", string fs = "4e", bool mad = 1,bool tightregion = 0, bool corr = 0){
@@ -1226,6 +1244,8 @@ void DoSFSystematic(string var = "Jets", string fs = "4e", bool mad = 1,bool tig
   h_max->Write(UnfHistoName_p.c_str());
   h_min->Write(UnfHistoName_m.c_str());
   output->Close();
+  matrix->Close();
+  data->Close();
 }
 
 void  DoAllSystematics(string var = "Mass", bool mad =1, bool tightregion =0){
@@ -1281,9 +1301,9 @@ void PlotResults(string var = "Jets", string fs = "4e", string syst = "MCgen", b
   setTDRStyle();
 
   string finalstate;
-  if(fs == "4m") finalstate = "4#mu";
+  if(fs == "4m")        finalstate = "4#mu";
   else if(fs == "2e2m") finalstate = "2e2#mu";
-  else finalstate = fs;
+  else                  finalstate = fs;
   
   string label = finalstate + " channel";
   int iPeriod = 4; 
@@ -1621,9 +1641,9 @@ void AllSystematicPlotsForAllVariables(bool mad =1,bool tightregion =0,string da
   AllPlots("EtaJet2",mad, tightregion, date);
 }
 void AllYouNeed(bool mad =1, bool tightregion = 0){
-  //Unfold_data_All("Mass",mad,tightregion);
-  //DoAllRatios("Mass",mad,tightregion);
-  //DoAllSystematics("Mass",mad,tightregion);
+  Unfold_data_All("Mass",mad,tightregion);
+  DoAllRatios("Mass",mad,tightregion);
+  DoAllSystematics("Mass",mad,tightregion);
   Unfold_data_All("Jets",mad,tightregion);
   DoAllRatios("Jets",mad,tightregion);
   DoAllSystematics("Jets",mad,tightregion);

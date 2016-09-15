@@ -114,7 +114,22 @@ ResponseMatrix::ResponseMatrix(bool weight, bool madgraph, bool tightregion): TO
      W = "W_";
   }
 
- 
+  // ggZZTo2e2mu_r->Close();
+  // ggZZTo4e_r->Close();
+  // ggZZTo4mu_r->Close();  
+  // ZZTo4lpow_r->Close();  
+  // ZZTo4lmad_r->Close();
+  // ZZTo2e2muJJ_r->Close();
+  // ZZTo4eJJ_r->Close();
+  // ZZTo4muJJ_r->Close();  
+  // ggZZTo2e2mu_g->Close();
+  // ggZZTo4e_g->Close();
+  // ggZZTo4mu_g->Close();
+  // ZZTo4lpow_g->Close();
+  // ZZTo4lmad_g->Close();
+  // ZZTo2e2muJJ_g->Close();
+  // ZZTo4eJJ_g->Close();
+  // ZZTo4muJJ_g->Close();
 }
 
 
@@ -620,28 +635,27 @@ void ResponseMatrix::Build_JE(string var, string dataset, string finalstate, str
   h_4lmad_gen   = (TH1*) ZZTo4lmad_g->Get(histoName_gen.c_str()); 
   h_4lpow_gen   = (TH1*) ZZTo4lpow_g->Get(histoName_gen.c_str()); 
  
-  if(h_Resmat_gg4mu == NULL) h_Resmat_gg4mu = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
-  if(h_Resmat_gg4e == NULL) h_Resmat_gg4e = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
+  if(h_Resmat_gg4mu == NULL)   h_Resmat_gg4mu = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
+  if(h_Resmat_gg4e == NULL)    h_Resmat_gg4e = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
   if(h_Resmat_gg2e2mu == NULL) h_Resmat_gg2e2mu = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe"); 
-  if(h_Resmat_4muJJ == NULL) h_Resmat_4muJJ = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
-  if(h_Resmat_4eJJ == NULL) h_Resmat_4eJJ = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
+  if(h_Resmat_4muJJ == NULL)   h_Resmat_4muJJ = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
+  if(h_Resmat_4eJJ == NULL)    h_Resmat_4eJJ = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
   if(h_Resmat_2e2muJJ == NULL) h_Resmat_2e2muJJ = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
-  if(h_gg4mu == NULL) h_gg4mu = (TH1*) h_safe->Clone("h_safe");
-  if(h_gg4e == NULL) h_gg4e = (TH1*) h_safe->Clone("h_safe");
-  if(h_gg2e2mu == NULL) h_gg2e2mu = (TH1*) h_safe->Clone("h_safe"); 
-  if(h_4muJJ == NULL) h_4muJJ = (TH1*) h_safe->Clone("h_safe");
-  if(h_4eJJ == NULL) h_4eJJ = (TH1*) h_safe->Clone("h_safe");
-  if(h_2e2muJJ == NULL) h_2e2muJJ = (TH1*) h_safe->Clone("h_safe");
-  if(h_gg4mu_gen == NULL) h_gg4mu_gen = (TH1*) h_safe->Clone("h_safe");
-  if(h_gg4e_gen == NULL) h_gg4e_gen = (TH1*) h_safe->Clone("h_safe");
-  if(h_gg2e2mu_gen == NULL) h_gg2e2mu_gen = (TH1*) h_safe->Clone("h_safe");
-  if(h_4muJJ_gen == NULL) h_4muJJ_gen = (TH1*) h_safe->Clone("h_safe");
-  if(h_4eJJ_gen == NULL) h_4eJJ_gen = (TH1*) h_safe->Clone("h_safe");
-  if(h_2e2muJJ_gen == NULL) h_2e2muJJ_gen = (TH1*) h_safe->Clone("h_safe");
- 
-  if(h_Resmat_4lpow == NULL) h_Resmat_4lpow = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
-  if(h_4lpow == NULL) h_4lpow = (TH2*) h_safe->Clone("h_safe");
-  if(h_4lpow_gen == NULL) h_4lpow_gen = (TH2*) h_safe->Clone("h_safe");
+  if(h_gg4mu == NULL)          h_gg4mu = (TH1*) h_safe->Clone("h_safe");
+  if(h_gg4e == NULL)           h_gg4e = (TH1*) h_safe->Clone("h_safe");
+  if(h_gg2e2mu == NULL)        h_gg2e2mu = (TH1*) h_safe->Clone("h_safe"); 
+  if(h_4muJJ == NULL)          h_4muJJ = (TH1*) h_safe->Clone("h_safe");
+  if(h_4eJJ == NULL)           h_4eJJ = (TH1*) h_safe->Clone("h_safe");
+  if(h_2e2muJJ == NULL)        h_2e2muJJ = (TH1*) h_safe->Clone("h_safe");
+  if(h_gg4mu_gen == NULL)      h_gg4mu_gen = (TH1*) h_safe->Clone("h_safe");
+  if(h_gg4e_gen == NULL)       h_gg4e_gen = (TH1*) h_safe->Clone("h_safe");
+  if(h_gg2e2mu_gen == NULL)    h_gg2e2mu_gen = (TH1*) h_safe->Clone("h_safe");
+  if(h_4muJJ_gen == NULL)      h_4muJJ_gen = (TH1*) h_safe->Clone("h_safe");
+  if(h_4eJJ_gen == NULL)       h_4eJJ_gen = (TH1*) h_safe->Clone("h_safe");
+  if(h_2e2muJJ_gen == NULL)    h_2e2muJJ_gen = (TH1*) h_safe->Clone("h_safe");
+  if(h_Resmat_4lpow == NULL)   h_Resmat_4lpow = (TH2*) h_Resmat_safe->Clone("h_Resmat_safe");
+  if(h_4lpow == NULL)          h_4lpow = (TH2*) h_safe->Clone("h_safe");
+  if(h_4lpow_gen == NULL)      h_4lpow_gen = (TH2*) h_safe->Clone("h_safe");
  
   h_gg4mu->Add(h_gg4e);
   h_gg4mu->Add(h_gg2e2mu);
