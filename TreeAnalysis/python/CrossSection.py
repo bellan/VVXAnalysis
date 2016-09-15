@@ -184,11 +184,11 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,DoNormalized,
         NormDown = hdown["state"].Integral(1,-1)/h["state"].Integral(1,-1)
 
         print Blue("Central  "),
-        setCrossSectionData(h["state"],h["name"],MCSet,False)
+        setCrossSectionData(h["state"],h["name"],MCSet,doFiducial)
         print Blue("Syst Up  "),
-        setCrossSectionData(hup["state"],hup["name"],MCSet,False)
+        setCrossSectionData(hup["state"],hup["name"],MCSet,doFiducial)
         print Blue("Syst Down"),
-        setCrossSectionData(hdown["state"],hdown["name"],MCSet,False)
+        setCrossSectionData(hdown["state"],hdown["name"],MCSet,doFiducial)
         
     hTOTCross= ROOT.TH1F()
     
@@ -225,8 +225,9 @@ def setCrossSectionData(h1,FinState,MCSet,doFiducial):
     elif FinState=='4m':   BR=BRmu*BRmu
     elif FinState=='2e2m': BR=2*BRmu*BRele
     
-    if doFiducial: h1.Scale(1./(Lumi)) 
-    else:          h1.Scale(1./(Lumi*BR))
+    if doFiducial: 
+        h1.Scale(1000./(Lumi)) 
+    else:   h1.Scale(1./(Lumi*BR))
     
     print "{0} Tot Cross {1} {2:.2f} \n".format(FinState,(15-len(FinState))*" ", h1.Integral(0,-1))
   
@@ -256,14 +257,19 @@ def setCrossSectionMC(h1,FinState,Type,DoNormalized,MCSet,doFiducial):
     Integral = h1.Integral(0,-1) #Use integral with overflows entries to scale with theoretical value which include also the overflow entries.
     
     #h1.Scale(1/(Lumi*BR),"width") # If you don't want to normalize at the official cross section value.
-    if DoNormalized: 
-        h1.Scale(1./Integral,"width") 
+    if DoNormalized:   h1.Scale(1./Integral,"width") 
+    ## MC normaliztion
+    elif doFiducial:   h1.Scale(1000./(Lumi),"width")  
     else:
-        if doFiducial and ("Mass" in Type or "Jets" in Type):
-            h1.Scale(1000./(Lumi),"width")  #FIXME. Use h1.Scale(norm/Integral,"width") as far as the MCFM values are available    
-        else:
-            norm = GetNorm(FinState,Type,doFiducial)
-            h1.Scale(norm/Integral,"width")        
+        h1.Scale(1./(Lumi*BR),"width")  
+
+    ## If you want to use an exteranl value for the normalization
+        # if doFiducial and ("Mass" in Type or "Jets" in Type):
+        #     h1.Scale(1000./(Lumi),"width")  
+        # else:
+        #     h1.Scale(1000./(Lumi),"width")  
+        #     norm = GetNorm(FinState,Type,doFiducial) 
+        #     h1.Scale(norm/Integral,"width")        
       
         
 ##################################################################################################################
@@ -332,10 +338,14 @@ def combineCross(HList,HListUp,HListDown):
 
         Cross = Cross/WeightTot
 
+
         ErrStat     = math.sqrt(1./WeightStat)        
         ErrSystUp   = math.sqrt(1./WeightSystUp)
-        ErrSystDown = math.sqrt(1./WeightSystDown)
-
+        if WeightSystDown ==0:  
+            ErrSystDown = 0 #FIXME
+            print "ErrSystDown for bin",i,"is 0. Check it"
+        else: ErrSystDown = math.sqrt(1./WeightSystDown)
+        
         HCrossUp.SetBinContent(i,Cross+ErrSystUp)
         HCrossDown.SetBinContent(i,Cross-ErrSystDown)
         HCross.SetBinContent(i,Cross)

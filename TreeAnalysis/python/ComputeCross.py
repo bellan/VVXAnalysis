@@ -148,7 +148,8 @@ for i in range(0,4):
     if Type=="Mass":
         xName = "M_{4l} [GeV]"
         if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("frac{1}{#sigma_{fid}}#frac{d#sigma_{fid}}{d M_{ZZ}} [1/GeV]")
-        else: hMCList[i]["state"].GetYaxis().SetTitle("#frac{d#sigma}{d M_{ZZ}} [pb/GeV]")
+        elif DoFiducial: hMCList[i]["state"].GetYaxis().SetTitle("#frac{d#sigma}{d M_{ZZ}} [fb/GeV]")
+        else:  hMCList[i]["state"].GetYaxis().SetTitle("#frac{d#sigma}{d M_{ZZ}} [pb/GeV]")
 
     elif "Jets" in Type:
         xName = "#Jets"
@@ -165,6 +166,7 @@ for i in range(0,4):
         hMCList[i]["state"].GetXaxis().SetBinLabel(4,">2 Jets")
         
         if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}}#frac{d#sigma_{fid}}{d #jets}")        
+        elif DoFiducial: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d #jets [fb]") 
         else: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d #jets [pb]") 
         WriteJetsNorm(hMCList,Type,DoFiducial) #Write partial xsec for variable with jet>0
 
@@ -173,7 +175,8 @@ for i in range(0,4):
         hRatio.GetXaxis().SetTitle(xName)
         hMCList[i]["state"].GetXaxis().SetTitle(xName)
         if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}}#frac{d#sigma_{fid}}{d #Delta #eta_{jj}} [1/GeV]")
-        else: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d #Delta #eta_{jj}[pb]")  
+        elif DoFiducial: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d #Delta #eta_{jj}[fb]")  
+        else:            hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d #Delta #eta_{jj}[pb]")  
 
     elif "Mjj" in Type:
         xName = "m_{jj} [Gev|"
@@ -187,14 +190,25 @@ for i in range(0,4):
         hRatio.GetXaxis().SetTitle("#Jets")
         hMCList[i]["state"].GetXaxis().SetTitle("p_{T}")
         if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{d p_{T}^{jet}} [1/GeV]")             
+        elif DoFiducial: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d p_{T}^{jet} [fb/GeV]") 
         else:  hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d p_{T}^{jet} [pb/GeV]") 
 
     elif "EtaJet" in Type:
-        xName = "#eta [Gev|"
-        hRatio.GetXaxis().SetTitle("#Jets")
+        xName = "#eta"
+        hRatio.GetXaxis().SetTitle("#eta")
         hMCList[i]["state"].GetXaxis().SetTitle("#eta")
         if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}}#frac{d#sigma_{fid}}{d #eta^{jet}} [1/GeV]")             
-        else: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d #eta^{jet} [pb/GeV]")
+        elif DoFiducial: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d #eta^{jet} [fb/GeV]")
+        else:            hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d #eta^{jet} [pb/GeV]")
+
+    elif "dRZZ" in Type:
+        xName = "#Delta R_{ZZ}"
+        hRatio.GetXaxis().SetTitle("#Delta R_{ZZ}")
+        hMCList[i]["state"].GetXaxis().SetTitle("#Delta R_{ZZ}")
+        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}}#frac{d#sigma_{fid}}{d #Delta r^{jets}} [1/GeV]")             
+        elif DoFiducial: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d #Delta R_{ZZ} [fb/GeV]")
+        else:            hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d #Delta R_{ZZ} [pb/GeV]")
+
 
     hRatio.GetXaxis().SetTitle(xName)
     
@@ -202,7 +216,7 @@ for i in range(0,4):
     
 
     # "Type":{fr:{norm,notnorm},notfr:{norm,notnorm}}
-    MaxList = {"Mass":{True:{True:0.009,False:0.35},False:{True:0.009,False:0.15}},"Jets":{True:{True:0.8,False:46.4},False:{True:0.85,False:13}},"Jets_Central":{True:{True:.82,False:50},False:{True:0.85,False:13}},"Mjj":{True:{True:0.004,False:0.02},False:{True:0.004, False:0.0086}},"Mjj_Central":{True:{True:0.005,False:0.018},False:{True:0.005,False:0.006}},"Deta":{True:{True:0.6,False:2.2},False:{True:0.45,False:1.2}},"Deta_Central":{True:{True:0.6,False:1.98},False:{True:0.7,False:.9}} ,"PtJet1":{True:{True:0.03,False:0.48},False:{True:0.06,False:0.16}},"PtJet2":{True:{True:0.016,False:0.08},False:{True:0.016,False:0.025}},"EtaJet1":{True:{True:0.5,False:7.4},False:{True:0.6,False:2.8}},"EtaJet2":{True:{True:0.5,False:2.6},False:{True:0.58,False:0.9}}}
+    MaxList = {"Mass":{True:{True:0.009,False:0.35},False:{True:0.009,False:0.15}},"Jets":{True:{True:0.8,False:46.4},False:{True:0.85,False:13}},"Jets_Central":{True:{True:.82,False:50},False:{True:0.85,False:13}},"Mjj":{True:{True:0.004,False:0.02},False:{True:0.004, False:0.0086}},"Mjj_Central":{True:{True:0.005,False:0.018},False:{True:0.005,False:0.006}},"Deta":{True:{True:0.6,False:2.2},False:{True:0.45,False:1.2}},"Deta_Central":{True:{True:0.6,False:1.98},False:{True:0.7,False:.9}} ,"PtJet1":{True:{True:0.03,False:0.48},False:{True:0.06,False:0.16}},"PtJet2":{True:{True:0.016,False:0.08},False:{True:0.016,False:0.025}},"EtaJet1":{True:{True:0.5,False:7.4},False:{True:0.6,False:2.8}},"EtaJet2":{True:{True:0.5,False:2.6},False:{True:0.58,False:0.9}},"dRZZ":{True:{True:0.65,False:23.6},False:{True:0.7,False:12.}}}
 
     # Max   = hDataList[i]["state"].GetMaximum()+hDataList[i]["state"].GetBinError(hDataList[i]["state"].GetMaximumBin()) #Automatic max
     Max = MaxList[Type][DoFiducial][DoNormalized]
