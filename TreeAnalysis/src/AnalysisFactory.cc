@@ -7,7 +7,6 @@
 //#include "VVXAnalysis/TreeAnalysis/interface/JetAnalyzer.h"
 //#include "VVXAnalysis/TreeAnalysis/interface/ZZSDataAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZMCAnalyzer.h"
-#include "VVXAnalysis/TreeAnalysis/interface/CrossAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZRecoAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/FakeRateAnalyzer.h"
 AnalysisFactory::AnalysisFactory(){
@@ -19,7 +18,6 @@ AnalysisFactory::AnalysisFactory(){
   //Register("JetAnalyzer", &RegistrableAnalysis<JetAnalyzer>::create);
   //Register("ZZSDataAnalyzer", &RegistrableAnalysis<ZZSDataAnalyzer>::create); 
   Register("ZZMCAnalyzer", &RegistrableAnalysis<ZZMCAnalyzer>::create);
-  Register("CrossAnalyzer", &RegistrableAnalysis<CrossAnalyzer>::create); 
   Register("ZZRecoAnalyzer", &RegistrableAnalysis<ZZRecoAnalyzer>::create);
   Register("FakeRateAnalyzer", &RegistrableAnalysis<FakeRateAnalyzer>::create);
 }
