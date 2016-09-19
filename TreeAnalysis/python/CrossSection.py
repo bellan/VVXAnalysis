@@ -132,19 +132,19 @@ def getCrossPlot_MC(MCSet,Type,analysis,DoNormalized,DoFiducial):
 
 ##############################################################################################################
 def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,DoNormalized,doFiducial):
-
+    
     Fr = ""
     if doFiducial: Fr="_fr"
-
+    
     if UseMCReco:  print Red("########################### MC RECO ########################\n")
     else: print Red("############################ DATA  #########################\n".format(Sign))
     
     hsum2e2mu = ROOT.TH1F()
     hsum4e    = ROOT.TH1F()
     hsum4mu   = ROOT.TH1F()
-
+    
     hSum = [{"state":hsum2e2mu,"name":'2e2m'},{"state":hsum4e,"name":'4e'},{"state":hsum4mu,"name":'4m'}]    
-
+    
     hsum2e2muUp = ROOT.TH1F()
     hsum4eUp    = ROOT.TH1F()
     hsum4muUp   = ROOT.TH1F()
@@ -196,7 +196,7 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,DoNormalized,
     if doFiducial: (hTOTCross,hTOTCrossUp,hTOTCrossDown)=combineCrossFiducial(hSum,hSumUp,hSumDown)   
     else: 
         (hTOTCross,hTOTCrossUp,hTOTCrossDown)=combineCross(hSum,hSumUp,hSumDown) 
-
+        print hTOTCross,hTOTCrossUp,hTOTCrossDown
     for hTot,h4lTot,systSt in zip([hSum,hSumUp,hSumDown],[hTOTCross,hTOTCrossUp,hTOTCrossDown],["central","Syst Up","Syst Down"]):
         hTOTElem = {"state":h4lTot,"name":'4l'}
         print Blue(systSt)+(" "*(9-len(systSt))),
@@ -295,7 +295,7 @@ def combineCross(HList,HListUp,HListDown):
     Nbins= HList[1]["state"].GetNbinsX()
 
     for i in range(1,Nbins+1):
-
+        print "\nbin",i
         Hlist  = zip(HList, HListUp,HListDown)
         #Sort List by entries magnitude, from higher to lower to skip 0 entries bins
         SortedHlist = sorted(Hlist,key=lambda value: value[0]["state"].GetBinContent(i),reverse = True)        
@@ -313,13 +313,12 @@ def combineCross(HList,HListUp,HListDown):
 
         for elem in SortedHlist:
             Entries = elem[0]["state"].GetBinContent(i)
-
             if Entries == 0.:   break   # Because of sorting also others final state will be 0 so use break and no continue
 
             errStatSq     = (elem[0]["state"].GetBinError(i))**2
             errSystUpSq   = (elem[1]["state"].GetBinContent(i)-Entries)**2
             errSystDownSq = (elem[2]["state"].GetBinContent(i)-Entries)**2
-            errSystSq     = ((elem[1]["state"].GetBinContent(i)+elem[2]["state"].GetBinContent(i))/2.)**2 #Use the average of systematic up and down. is it a +, right?
+            errSystSq     = ((elem[1]["state"].GetBinContent(i)-elem[2]["state"].GetBinContent(i) )/2.)**2 #Use the average of systematic up and down. is it a +, right?
 
             weightStat =  1./errStatSq
 
@@ -334,10 +333,10 @@ def combineCross(HList,HListUp,HListDown):
             WeightTot      += weightTot
             WeightSystUp   += weightSystUp
             WeightSystDown += weightSystDown 
-            Cross          +=  weightTot*Entries
+            Cross          += weightTot*Entries
 
         Cross = Cross/WeightTot
-
+        print Cross
 
         ErrStat     = math.sqrt(1./WeightStat)        
         ErrSystUp   = math.sqrt(1./WeightSystUp)
@@ -489,7 +488,7 @@ def TotalCross(MCSet,Type,analysis,doFiducial,UseMCReco):
         CrossDic[i["name"]][2] = j["state"].Integral(0,-1)/(BR*Lumi) - CrossDic[i["name"]][0]     
         CrossDic[i["name"]][3] = CrossDic[i["name"]][0] - k["state"].Integral(0,-1)/(BR*Lumi)
         
-        MidSyst =  (abs(CrossDic[i["name"]][2])+ abs(CrossDic[i["name"]][3]))/2.
+        MidSyst =  (abs(CrossDic[i["name"]][2]) + abs(CrossDic[i["name"]][3]))/2.
         CrossDic[i["name"]][4] = math.sqrt(CrossDic[i["name"]][1]**2+MidSyst**2) #HOT
 
     print Red("\n##################### RESULTS FOR INCLUSIVE CROSS SECTION ####################\n") 
@@ -519,13 +518,14 @@ def TotalCross(MCSet,Type,analysis,doFiducial,UseMCReco):
         print Blue("{0}".format(fin))
         if doFiducial:
             print  " {0:.2f} +- {1:.2f} (stat) + {2:.2f} (syst) - {3:.2f} (syst) +- {4:.2f} (Total) [fb]\n".format(value[0]*1000,value[1]*1000,value[2]*1000,value[3]*1000,value[4]*1000)
-            if fin=="4l":
+        #   print  " {0:.2f} $\\pm$ {1:.2f} (stat) + {2:.2f} (syst) - {3:.2f} (syst) $\\pm$ {4:.2f} (Total) [fb]\n".format(value[0]*1000,value[1]*1000,value[2]*1000,value[3]*1000,value[4]*1000)
+           if fin=="4l":
                 AccFile = ROOT.TFile("./Acceptance/Acceptance_"+MCSet+"_Mass.root")
                 Acc = (AccFile.Get("TotAcc2e2m_Acc").GetVal()+AccFile.Get("TotAcc4e_Acc").GetVal()+AccFile.Get("TotAcc4m_Acc").GetVal())/3. 
                 print "Cross Section in wide Region",value[0]/(Acc*(BRele*BRele+2*BRele*BRmu+BRmu*BRmu)),"\nAcceptance",Acc,"\n" 
 
         else: print " {0:.2f} +- {1:.2f} (stat) + {2:.2f} (syst) - {3:.2f} (syst) +- {4:.2f} (Total) [pb] \n".format(value[0],value[1],value[2],value[3],value[4])
-
+        #else: print " {0:.2f} $\\pm$ {1:.2f}(stat) + {2:.2f} (syst) - {3:.2f} (syst) $\\pm$ {4:.2f} (Total) [pb] \n".format(value[0],value[1],value[2],value[3],value[4])
 
 def combineInclusiveCross(Dic):
 
@@ -547,19 +547,19 @@ def combineInclusiveCross(Dic):
 def combineInclusiveCrossFiducial(Dic):
 
 
-    TotStat= math.sqrt((Dic["2e2m"][1]*Dic["2e2m"][1])+(Dic["4e"][1]*Dic["4e"][1])+(Dic["4m"][1]*Dic["4m"][1]))
+    TotStat     = math.sqrt((Dic["2e2m"][1]*Dic["2e2m"][1])+(Dic["4e"][1]*Dic["4e"][1])+(Dic["4m"][1]*Dic["4m"][1]))
 
-    TriggerUnc = (0.015*(math.sqrt(Dic["4e"][0]*Dic["4e"][0]+Dic["4m"][0]*+Dic["4m"][0]) + Dic["2e2m"][0]))**2
+    TriggerUnc  = (0.015*(math.sqrt(Dic["4e"][0]*Dic["4e"][0]+Dic["4m"][0]*+Dic["4m"][0]) + Dic["2e2m"][0]))**2
 
-    TotSystUp  = math.sqrt((Dic["2e2m"][2])**2+(Dic["4e"][2])**2+(Dic["4m"][2])**2 +TriggerUnc)
+    TotSystUp   = math.sqrt((Dic["2e2m"][2])**2+(Dic["4e"][2])**2+(Dic["4m"][2])**2 +TriggerUnc)
 
-    TotSystDown= math.sqrt((Dic["2e2m"][3])**2+(Dic["4e"][3])**2+(Dic["4m"][3])**2 +TriggerUnc)
+    TotSystDown = math.sqrt((Dic["2e2m"][3])**2+(Dic["4e"][3])**2+(Dic["4m"][3])**2 +TriggerUnc)
 
-    TotSyst = (TotSystUp + TotSystDown)/2          
+    TotSyst     = (TotSystUp + TotSystDown)/2.          
 
-    TotErr= math.sqrt(TotStat*TotStat+TotSyst*TotSyst)
+    TotErr      = math.sqrt(TotStat*TotStat+TotSyst*TotSyst)
 
-    TotCross= Dic["2e2m"][0]+Dic["4e"][0]+Dic["4m"][0]
+    TotCross    = Dic["2e2m"][0]+Dic["4e"][0]+Dic["4m"][0]
 
     return [TotCross,TotStat,TotSystUp,TotSystDown,TotErr]
 
