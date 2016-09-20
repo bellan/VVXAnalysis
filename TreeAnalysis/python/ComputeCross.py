@@ -359,21 +359,6 @@ for i in range(0,4):
     line_op.SetLineWidth(1);
 
 
-
-    # c1.cd()
-    # pad1 = ROOT.TPad ('hist', '', 0., 0.30, 1.0, 1.0)
-    # pad1.SetTopMargin (0.10)
-    # pad1.SetRightMargin (0.10)
-    # pad1.SetLeftMargin (0.10)
-    # pad1.Draw()
-        
-    # c1.cd()
-    # pad2 = ROOT.TPad ('rat', 'Data/MC ratio', 0., 0.0,  1., 0.3)
-    # pad2.SetTopMargin (0.10)
-    # pad2.SetRightMargin (0.10)
-    # pad2.SetLeftMargin (0.10)
-    # pad2.Draw()
-    
     c1.cd()
     pad1 = ROOT.TPad ('hist', '', 0., 0.51, 1.0, 1.0)#0.35
     pad1.SetTopMargin (0.10)
@@ -397,6 +382,15 @@ for i in range(0,4):
     pad3.SetLeftMargin (0.17)
     pad3.SetBottomMargin(0.35);
     pad3.Draw()
+
+    #needed because of strange effects on pdf plots
+    c1.cd()
+    pad5 = ROOT.TPad ('space', 'space', 0.5, 0.13,  1., 0.20)#0.02-0.22
+    pad5.SetTopMargin (0.0)
+    pad5.SetRightMargin (0.03)#0.10
+    pad5.SetLeftMargin (0.17)
+    pad5.SetBottomMargin(0.60)#0.35
+    pad5.Draw()
   
     pad1.cd() 
     hMCList[i]["state"].Draw("hist")
@@ -484,7 +478,16 @@ for i in range(0,4):
     grSist_ratio_op.Draw("same2") 
     grStat_ratio_op.Draw("P same")
     ROOT.gStyle.SetOptStat(0);   
-
+ 
+    pad5.cd()
+    ratioTitle = ROOT.TLatex(0.94,0.48,xName);
+    ratioTitle.SetNDC();
+    ratioTitle.SetTextColor(1);
+    ratioTitle.SetTextSize(0.51); 
+    ratioTitle.SetTextFont(42);
+    ratioTitle.SetTextAlign(32);
+    ratioTitle.SetTextAngle(0);
+    ratioTitle.Draw();
     #write CMS Preliminary and luminosity
     CMS_lumi.CMS_lumi(pad1, iPeriod, iPos)
     
