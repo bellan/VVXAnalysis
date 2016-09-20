@@ -22,37 +22,116 @@ import os.path
 ########################################### Add inclusive systematic #############################################
 
 ##################################################################################################################
+def whichGlobSystList(MCSet):
 
-def addGlobSyst(hCent,hUp,hDown):
-      
+     List = [{"name":"Trig","value":0.015},{"name":"Lumi","value":0.026},{"name":"Acc","value":0.0}] 
+   
+     if "fr" in MCSet:  List[2]["value"]= 0.01
+     else:  List[2]["value"]= 0.05
+
+     #if optInt == True:  List[1]["value"]= 0. #optInt = True if DoInclInt or DoDiffInt are True (xs from the integral of the distribution or xs as a function of #bins)
+
+     return  copy.deepcopy(List)
+
+
+def addGlobSist(hCent,hUp,hDown,MCSet,FinState):
+  
+    GlobSistList = [{"name":"Trig","value":0.},{"name":"Lumi","value":0.},{"name":"Acc","value":0.}] 
+    GlobSistList = whichGlobSystList(MCSet)
+    
     Nbins = hCent.GetNbinsX()
     for i in range(1,Nbins+1):
         valUp = (hUp.GetBinContent(i)-hCent.GetBinContent(i))**2
         valDown = (hCent.GetBinContent(i)-hDown.GetBinContent(i))**2
-        #print "i",i, math.sqrt(valUp)      
-        for syst in GlobSystList:
-            valUp+=(hCent.GetBinContent(i)*syst["value"])**2
-            valDown+=(hCent.GetBinContent(i)*syst["value"])**2
+       
+        for sist in GlobSistList:
+            #for the tight region the trigger uncertainty is added when the 4l cross-section is computed
+            if "fr" in MCSet and FinState == '4l' and sist["name"] == "Trig":
+                valUp+= 0.
+                valDown+= 0.
+            else:
+                valUp+=(hCent.GetBinContent(i)*sist["value"])**2
+                valDown+=(hCent.GetBinContent(i)*sist["value"])**2
 
-        #print i, math.sqrt(valUp)
         hUp.SetBinContent(i,hCent.GetBinContent(i)+math.sqrt(valUp))
-        #print hCent.GetBinContent(i)+math.sqrt(valUp),"\n"
         hDown.SetBinContent(i,hCent.GetBinContent(i)-math.sqrt(valDown))
 
-#######################for the Fiducial region
-def addGlobSyst4lFiducial(hCent,hUp,hDown):
+# def addGlobSyst(hCent,hUp,hDown):
       
-    Nbins = hCent.GetNbinsX()
-    for i in range(1,Nbins+1):
-        valGlobal = (hCent.GetBinContent(i)*(0.026))**2 #lumi
-        valUp = (hUp.GetBinContent(i)-hCent.GetBinContent(i))**2 + valGlobal
-        valDown = (hCent.GetBinContent(i)-hDown.GetBinContent(i))**2 + valGlobal
-        #print "i",i, math.sqrt(valUp)      
+#     Nbins = hCent.GetNbinsX()
+#     for i in range(1,Nbins+1):
+#         valUp = (hUp.GetBinContent(i)-hCent.GetBinContent(i))**2
+#         valDown = (hCent.GetBinContent(i)-hDown.GetBinContent(i))**2
+#         #print "i",i, math.sqrt(valUp)      
+#         for syst in GlobSystList:
+#             valUp+=(hCent.GetBinContent(i)*syst["value"])**2
+#             valDown+=(hCent.GetBinContent(i)*syst["value"])**2
+
+#         #print i, math.sqrt(valUp)
+#         hUp.SetBinContent(i,hCent.GetBinContent(i)+math.sqrt(valUp))
+#         #print hCent.GetBinContent(i)+math.sqrt(valUp),"\n"
+#         hDown.SetBinContent(i,hCent.GetBinContent(i)-math.sqrt(valDown))
+
+# #######################for the Fiducial region
+# def addGlobSyst4lFiducial(hCent,hUp,hDown):
       
-        #print i, math.sqrt(valUp)
-        hUp.SetBinContent(i,hCent.GetBinContent(i)+math.sqrt(valUp))
-        #print hCent.GetBinContent(i)+math.sqrt(valUp),"\n"
-        hDown.SetBinContent(i,hCent.GetBinContent(i)-math.sqrt(valDown))
+#     Nbins = hCent.GetNbinsX()
+#     for i in range(1,Nbins+1):
+#         valGlobal = (hCent.GetBinContent(i)*(0.026))**2 #lumi
+#         valUp = (hUp.GetBinContent(i)-hCent.GetBinContent(i))**2 + valGlobal
+#         valDown = (hCent.GetBinContent(i)-hDown.GetBinContent(i))**2 + valGlobal
+#         #print "i",i, math.sqrt(valUp)      
+      
+#         #print i, math.sqrt(valUp)
+#         hUp.SetBinContent(i,hCent.GetBinContent(i)+math.sqrt(valUp))
+#         #print hCent.GetBinContent(i)+math.sqrt(valUp),"\n"
+#         hDown.SetBinContent(i,hCent.GetBinContent(i)-math.sqrt(valDown))
+
+##################################################################################################################
+
+##################### Create TGraphAsymmetricError from up and down systematic distributions #####################
+
+##################################################################################################################
+
+
+def getUncGraph(HCent,HUp,HDown,MCSet,FinState,Data,Err):
+    
+    NBins = HCent.GetNbinsX()
+    
+    #Add global systematic uncertainties: acceptance, luminosity and (if not tight region and not 4l) trigger  
+    if Data == True:
+        addGlobSist(HCent,HUp,HDown,MCSet,FinState)
+  
+    grErr = ROOT.TGraphAsymmErrors(HCent)
+    NBins = HCent.GetNbinsX()
+    
+    for i in range(1,NBins+1):
+            
+        statUnc = 0     
+        sistUnc_up = 0 
+        sistUnc_down = 0 
+        totUnc_up = 0 
+        totUnc_down = 0
+        if Data == True:
+            statUnc_up =  HCent.GetBinErrorUp(i)#g.GetErrorYhigh(i) - HCent.GetBinContent(i)
+            statUnc_down = HCent.GetBinErrorLow(i)#HCent.GetBinContent(i) - g.GetErrorYlow(i)
+        else:
+            statUnc_up = HCent.GetBinError(i)
+            statUnc_down = HCent.GetBinError(i)
+
+        sistUnc_up = HUp.GetBinContent(i)-HCent.GetBinContent(i)
+        sistUnc_down = HCent.GetBinContent(i)- HDown.GetBinContent(i)
+        if Err == "syst":
+            totUnc_up = sistUnc_up
+            totUnc_down = sistUnc_down 
+        elif Err == "statsyst":
+            totUnc_up = math.sqrt(statUnc_up*statUnc_up + sistUnc_up*sistUnc_up)
+            totUnc_down = math.sqrt(statUnc_down*statUnc_down + sistUnc_down*sistUnc_down)
+        
+        grErr.SetPointEYhigh(i-1,totUnc_up) 
+        grErr.SetPointEYlow(i-1,totUnc_down)
+       
+    return copy.deepcopy(grErr)
 
 ##################################################################################################################
 
