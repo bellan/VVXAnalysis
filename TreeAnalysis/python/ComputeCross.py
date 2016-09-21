@@ -449,7 +449,7 @@ for i in range(0,4):
     ratioTitle.SetTextAlign(22);
     ratioTitle.SetTextAngle(0);
     if "Pow" in MCSetIn: ratioTitle.DrawText(0.345, 0.90,mcref_entry);
-    else: ratioTitle.DrawText(0.36, 0.90,mcref_entry);  
+    else: ratioTitle.DrawText(0.435, 0.90,mcref_entry);  
     hRatio.Draw("same")
     grStat_ratio.Draw("P same")
   
@@ -484,7 +484,7 @@ for i in range(0,4):
     ratioTitle_op.SetTextSize(0.10);
     ratioTitle_op.SetTextAlign(22);
     ratioTitle_op.SetTextAngle(0);
-    if "Pow" in MCSetIn: ratioTitle_op.DrawText(0.36, 0.90,mcop_entry);
+    if "Pow" in MCSetIn: ratioTitle_op.DrawText(0.435, 0.90,mcop_entry);
     else: ratioTitle_op.DrawText(0.345, 0.90,mcop_entry); 
     hRatio_op.Draw("same")
     grSist_ratio_op.Draw("same2") 
