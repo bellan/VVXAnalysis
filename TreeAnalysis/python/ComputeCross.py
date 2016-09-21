@@ -208,7 +208,9 @@ for i in range(0,4):
     maxtot_op =  hRatio_op_up_ss.GetMaximum() 
     maxratios_op = max(maxtot,maxtot_op)
 
-    
+
+    if DoFiducial: Unit = "fb"
+    else:          Unit = "pb"
 
     if "Central" in Type: eta_cut = " (|#eta^{jet}| < 2.4)"
     else: eta_cut = " (|#eta^{jet}| < 4.7)"
@@ -217,7 +219,7 @@ for i in range(0,4):
         xName = "m_{4l} [GeV]"
         hRatio.GetXaxis().SetTitle(xName)
         if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{dm_{4l}} [1/GeV]")
-        else: hMCList[i]["state"].GetYaxis().SetTitle("#frac{d#sigma}{dm_{4l}} [pb/GeV]")
+        else: hMCList[i]["state"].GetYaxis().SetTitle("#frac{d#sigma}{dm_{4l}} ["+Unit+"/GeV]")
 
     elif "Jets" in Type:
         hRatio_op.GetXaxis().SetBinLabel(1,"0")
@@ -236,39 +238,46 @@ for i in range(0,4):
         hMCList[i]["state"].GetXaxis().SetTitle(xName)
 
         if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{dN_{jets}}")        
-        else: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/dN_{jets} [pb]") 
+        else: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/dN_{jets} ["+Unit+"]") 
 
     elif "Deta" in Type:
         xName = "#Delta#eta_{jj}" + eta_cut
         if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{d#Delta#eta_{jj}}")
-        else: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d#Delta#eta_{jj}[pb]")  
+        else: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d#Delta#eta_{jj}["+Unit+"]")  
 
     elif "Mjj" in Type:
         xName = "m_{jj}" + eta_cut+ " [GeV]"
         hMCList[i]["state"].GetXaxis().SetTitle(xName)
         if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{dm_{jj}} [1/GeV]")      
-        else: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/dm_{jj} [pb/GeV]")  
+        else: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/dm_{jj} ["+Unit+"/GeV]")  
 
     elif "PtJet1" in Type:
         xName = "p_{T}^{jet1} [GeV]"
         hMCList[i]["state"].GetXaxis().SetTitle(xName)
         if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{dp_{T}^{jet1}} [1/GeV]")             
-        else:  hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/dp_{T}^{jet1} [pb/GeV]") 
+        else:  hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/dp_{T}^{jet1} ["+Unit+"/GeV]") 
     elif "PtJet2" in Type:
         xName = "p_{T}^{jet2} [GeV]"
         hMCList[i]["state"].GetXaxis().SetTitle(xName)
         if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{dp_{T}^{jet2}} [1/GeV]")             
-        else:  hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/dp_{T}^{jet2} [pb/GeV]") 
+        else:  hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/dp_{T}^{jet2} ["+Unit+"/GeV]") 
     elif "EtaJet1" in Type:
         xName = "|#eta^{jet1}|"
         hMCList[i]["state"].GetXaxis().SetTitle(xName)
         if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{d|#eta^{jet1}|}")             
-        else: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d|#eta^{jet1}| [pb]") 
+        else: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d|#eta^{jet1}| ["+Unit+"]") 
     elif "EtaJet2" in Type:
         xName = "|#eta^{jet2}|"
         hMCList[i]["state"].GetXaxis().SetTitle(xName)
         if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{d|#eta^{jet2}|}")             
-        else: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d|#eta^{jet2}| [pb]")
+        else: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d|#eta^{jet2}| ["+Unit+"]")
+    elif "dRZZ" in Type:
+        xName = "#Delta R_{ZZ}"
+        hMCList[i]["state"].GetXaxis().SetTitle(xName)
+        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{d #Delta R_{ZZ}}")             
+        else: hMCList[i]["state"].GetYaxis().SetTitle("d#sigma/d #Delta R_{ZZ} ["+Unit+"]")
+
+
 
     hRatio.GetXaxis().SetTitle(xName) 
     hRatio_op.GetXaxis().SetTitle(xName)
@@ -333,13 +342,13 @@ for i in range(0,4):
     if(Type == "Mass"): 
         line = ROOT.TLine(100,1,800,1)
         line_op = ROOT.TLine(100,1,800,1)
-    elif(Type == "Jets" or Type == "CentralJets"): 
+    elif(Type == "Jets" or Type == "Jets_Central"): 
         line =  ROOT.TLine(0,1,4,1)
         line_op =  ROOT.TLine(0,1,4,1)
-    elif(Type == "Mjj" or Type == "CentralMjj"): 
+    elif(Type == "Mjj" or Type == "Mjj_Central"): 
         line =  ROOT.TLine(0,1,800,1)
         line_op =  ROOT.TLine(0,1,800,1)
-    elif(Type == "Deta"  or Type == "CentralDeta"): 
+    elif(Type == "Deta"  or Type == "Deta_Central"): 
         line =  ROOT.TLine(0,1,4.7,1)
         line_op =  ROOT.TLine(0,1,4.7,1) 
     elif(Type =="PtJet1"):  
@@ -351,6 +360,9 @@ for i in range(0,4):
     elif(Type =="EtaJet1"or Type =="EtaJet2" ):  
         line =  ROOT.TLine(0,1,4.7,1)
         line_op =  ROOT.TLine(0,1,4.7,1) 
+    elif(Type =="dRZZ" ):  
+        line =  ROOT.TLine(30,1,200,1)  #FIXME
+        line_op =  ROOT.TLine(30,1,200,1) 
     #line.SetLineColor(852);
     line.SetLineColor(ROOT.kBlack);
     line.SetLineWidth(1);
@@ -420,7 +432,7 @@ for i in range(0,4):
     if maxratios > 1.9: hRatio.SetMaximum(maxratios); 
     else: hRatio.SetMaximum(1.9); 
     if Type == "Mass": hRatio.SetMinimum(0.1); 
-    elif Type == "CentralMjj" or "Pt" in Type: hRatio.SetMinimum(-1.);
+    elif Type == "Central_Mjj" or "Pt" in Type: hRatio.SetMinimum(-1.);
     else: hRatio.SetMinimum(-0.5);
 #fInt.Draw("same")
    
@@ -455,7 +467,7 @@ for i in range(0,4):
     if maxratios > 1.9: hRatio_op.SetMaximum(maxratios); 
     else: hRatio_op.SetMaximum(1.9); 
     if Type == "Mass": hRatio_op.SetMinimum(0.1); 
-    elif Type == "CentralMjj" or "Pt" in Type: hRatio_op.SetMinimum(-1.);
+    elif Type == "Central_Mjj" or "Pt" in Type: hRatio_op.SetMinimum(-1.);
     else: hRatio_op.SetMinimum(-0.5);
     
     hRatio_op.Draw()
