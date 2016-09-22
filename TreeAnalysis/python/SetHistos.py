@@ -14,7 +14,8 @@ import sys,ast,os
 import math
 import operator
 import textwrap
-
+import LatexUtils
+from LatexUtils import*
 
 parser = OptionParser(usage="usage: %prog [options]")
 
@@ -40,6 +41,12 @@ parser.add_option("-A", "--Analysis", dest="Analysis",
                   default="ZZ",
                   help="Analysis, default is  ZZ, other is HZZ")
 
+parser.add_option("-L", "--printLatex", dest="printLatex",
+                  action="store_true",
+                  default=False,
+                  help="Print LateX code of tabulars")
+
+
 
 (options, args) = parser.parse_args()
 
@@ -48,7 +55,15 @@ Set        = options.Set
 Analysis   = options.Analysis
 isFiducial = options.isFiducial
 isUnfold   = options.isUnfold
+printLatex = options.printLatex
 
+SampleDic = collections.OrderedDict()
+RedDic    = collections.OrderedDict()
+IrrDic    = collections.OrderedDict()
+DataDic   = collections.OrderedDict()
+TotDic    = collections.OrderedDict()
+SystDicUp = collections.OrderedDict()
+SystDicDown = collections.OrderedDict()
 
 if Analysis!="ZZ":
     inputdir_RMC = "./results/ZZRecoAnalyzer_SR_"+Analysis+"/"
@@ -78,9 +93,13 @@ def getHisto(Type,isData,Sign,syst,isTot,isFiducial):
     
     inputdir = inputdir_RMC
 
+
     for s in Samples:
         files[s["sample"]] = ROOT.TFile(inputdir+s["sample"]+".root")
-
+        if isData:  DataDic[s["sample"]] = {}
+        else:       SampleDic[s["sample"]] = {}
+    if not isData:    SampleDic["Total Signal"]={}
+    
     hsum2e2mu = ROOT.TH1F()
     hsum4e    = ROOT.TH1F()
     hsum4mu   = ROOT.TH1F()
@@ -91,21 +110,40 @@ def getHisto(Type,isData,Sign,syst,isTot,isFiducial):
         if not isData: print Blue(h["name"])
         isFirst=1
         for s in Samples:
+            sDic={}
             h1 = files[s["sample"]].Get("ZZTo"+h["name"]+"_"+Type+"_01")
             if h1==None:
+                sDic["yield"]="-"
+                sDic["Err"]="-"
+                if isData: DataDic[s["sample"]][h["name"]]=sDic
+                else:      SampleDic[s["sample"]][h["name"]]=sDic
                #print "For sample ", s["sample"], "h"+h["name"],"has no enetries or is a zombie"       
                 continue
             if isFirst:
                 h["state"]=copy.deepcopy(h1) 
                 isFirst=0
+                sDic["yield"]="{0:.2f}".format(h1.Integral(0,-1))
+                sDic["Err"]="{0:.2f}".format(math.sqrt(h1.Integral(0,-1)))
+                if isData: DataDic[s["sample"]][h["name"]]=sDic
+                else:      SampleDic[s["sample"]][h["name"]]=sDic
                 if not isData: print "{0} {1}> {2:.2f}".format(s["sample"],(61-len(s["sample"]))*"-",h1.Integral(0,-1))
                 continue
-            if not isData: 
+            if not isData:
+                sDic["yield"]="{0:.2f}".format(h1.Integral(0,-1))
+                sDic["Err"]="{0:.2f}".format(math.sqrt(h1.Integral(0,-1)))
+                SampleDic[s["sample"]][h["name"]]=sDic
                 print "{0} {1}> {2:.2f}".format(s["sample"],(61-len(s["sample"]))*"-",h1.Integral(0,-1))
-            h["state"].Add(h1) 
+
+            h["state"].Add(h1)
+
         if not isData:print "\nTotal integral {0} contribution {1}> {2:.2f}\n\n".format(h["name"],(33-len(h["name"]))*"-",h["state"].Integral(0,-1))
         if isTot: h["state"].SetName((h["state"].GetName()).replace("Mass", "Total"))
-            
+        sDic={}
+        sDic["yield"]="{0:.2f}".format(h["state"].Integral(0,-1))
+        sDic["Err"]="{0:.2f}".format(math.sqrt(h["state"].Integral(0,-1)))
+        if not isData:  SampleDic["Total Signal"][h["name"]]=sDic
+    
+#    print SampleDic
     hIrredBkg2e2mu = ROOT.TH1F() 
     hIrredBkg4mu   = ROOT.TH1F() 
     hIrredBkg4e    = ROOT.TH1F() 
@@ -118,13 +156,19 @@ def getHisto(Type,isData,Sign,syst,isTot,isFiducial):
 
     hFakeSum = [{"state":hfake2e2mu,"name":'2e2m'},{"state":hfake4e,"name":'4e'},{"state":hfake4mu,"name":'4m'}]
 
-    if isData:                
+    if True: #fIXME                
 
         if Sign==0: print  Red("\n####################### Contribution to reducible background #######################\n")
 
+        RedDic["Reducible background"]={}
         for hfake in hFakeSum:
+            sDic = {}
+            ErrFake=ROOT.Double(0.)
             hfake["state"] = getRedBkg(hfake["name"],Sign,syst)
-
+            sDic["yield"]="{0:.2f}".format(hfake["state"].IntegralAndError(0,-1,ErrFake))
+            sDic["Err"]="{0:.2f}".format(ErrFake)
+            RedDic["Reducible background"][hfake["name"]]=sDic
+#        print RedDic
 #        if "Jet" in Type or "Deta" in Type or "Mjj" in Type : TypeString=Type+"_JERSmear" #Check
 #        else: 
         TypeString=Type       
@@ -133,31 +177,62 @@ def getHisto(Type,isData,Sign,syst,isTot,isFiducial):
             
         for b in BkgSamples:
             filesbkg[b["sample"]] = ROOT.TFile(inputdir+b["sample"]+".root") 
-                
+            IrrDic[b["sample"]] = {}                
+        IrrDic["Total Irreducible"]={}    
         for h in hIrredSum:
             if Sign==0: print Blue(h["name"])
             isFirst=1
             for b in BkgSamples:
-                    
+                sDic = {}                    
                 h1 = filesbkg[b["sample"]].Get("ZZTo"+h["name"]+"_"+TypeString+"_01")
                 if h1==None:
+                    sDic["yield"]="-"
+                    sDic["Err"]="-"
+                    IrrDic[b["sample"]][h["name"]]=sDic
                     print "For sample ", b["sample"], "h"+h["name"],"has no enetries or is a zombie"       
                     continue
                 #print "\n",h["name"],"Total integral contribution ----------> ",h1.Integral(0,-1)
                 if isFirst:
+                    sDic["yield"]="{0:.2f}".format(h1.Integral(0,-1))
+                    sDic["Err"]="{0:.2f}".format(math.sqrt(h1.Integral(0,-1)))
+                    IrrDic[b["sample"]][h["name"]]=sDic
                     h["state"]=copy.deepcopy(h1) 
                     isFirst=0
                     if Sign==0: print "{0} {1}> {2:.2f}".format(b["sample"],(61-len(b["sample"]))*"-",h1.Integral(0,-1))
                     continue
                 if Sign==0: print "{0} {1}> {2:.2f}".format(b["sample"],(61-len(b["sample"]))*"-",h1.Integral(0,-1))
+                sDic["yield"]="{0:.2f}".format(h1.Integral(0,-1))
+                sDic["Err"]="{0:.2f}".format(math.sqrt(h1.Integral(0,-1)))
+                IrrDic[b["sample"]][h["name"]]=sDic
                 h["state"].Add(h1)     
-            if Sign==0: print "\nTotal integral {0} contribution {1}> {2:.2f}\n\n".format(h["name"],(33-len(h["name"]))*"-",h["state"].Integral(0,-1))
+            sDic={}
+            sDic["yield"]="{0:.2f}".format(h["state"].Integral(0,-1))
+            sDic["Err"]="{0:.2f}".format(math.sqrt(h["state"].Integral(0,-1)))
+            IrrDic["Total Irreducible"][h["name"]]=sDic
+            if Sign==0:
+                print "\nTotal integral {0} contribution {1}> {2:.2f}\n\n".format(h["name"],(33-len(h["name"]))*"-",h["state"].Integral(0,-1))
+                #print IrrDic
         if isTot:
             for hRed,hIrr,hData in zip(hFakeSum,hSum,hIrredSum):
                 hRed["state"].Rebin(4)
                 hData["state"].Rebin(4)
                 hIrr["state"].Rebin(4)
 
+    if not isData:
+        hTot2e2mu = ROOT.TH1F() 
+        hTot4e    = ROOT.TH1F() 
+        hTot4mu   = ROOT.TH1F() 
+        
+        hTotSum = [{"state":hTot2e2mu,"name":'2e2m'},{"state":hTot4e,"name":'4e'},{"state":hTot4mu,"name":'4m'}]         
+        TotDic["Total expected"] = {}
+        for h,hmc,hirr,hred in zip(hTotSum,hSum,hIrredSum,hFakeSum):
+            h["state"]=hmc["state"]
+            h["state"].Add(hirr["state"])
+            h["state"].Add(hred["state"])
+            sDic={}
+            sDic["yield"]="{0:.2f}".format(h["state"].Integral(0,-1))
+            sDic["Err"]="{0:.2f}".format(math.sqrt(h["state"].Integral(0,-1)))
+            TotDic["Total expected"][h["name"]]=sDic
 
     if syst=="MCgen":
         if Set=="Pow":   AccFile = ROOT.TFile("./Acceptance/Acceptance_Mad_"+Type+".root")
@@ -173,7 +248,12 @@ def getHisto(Type,isData,Sign,syst,isTot,isFiducial):
     if syst=="" and isData:  print Red("\n###############################  DATA  ###############################")  
     for i,j,k in zip(hSum,hIrredSum,hFakeSum):
         
-        Nbins = i["state"].GetNbinsX()      
+        Nbins = i["state"].GetNbinsX()  
+
+        # if syst=="":
+        #     for l in range(0,Nbins+2):
+        #         print l,i["state"].GetBinContent(l)
+    
         if i["state"]==None:
                 print i["state"]," has no enetries" 
                 continue
@@ -185,10 +265,10 @@ def getHisto(Type,isData,Sign,syst,isTot,isFiducial):
         if isData:
             if syst=="Irr":
                 j["state"]=addSyst(j["state"],Sign)
-
+             
             if syst=="Red":
                 k["state"]=addSyst(k["state"],Sign)
-
+#                print "Integral",k["state"].Integral(0,-1)
             i["state"].Add(j["state"],-1)                    
             i["state"].Add(k["state"],-1)
 
@@ -239,16 +319,16 @@ def setErrorsEntries(hVar):
     
 #################################################################################################################
 
-def getRedBkg(FinState,Sign,syst):
+def getRedBkg(FinState,Sign,syst): #FIX
 
     fileFake = ROOT.TFile(inputdir_CR+"data.root")
     hFakeRate=ROOT.TH1F()
     if syst=="Red" and Sign==1:
         hFakeRate = fileFake.Get("ZZTo"+FinState+"_"+Type+"_01")
-        hFakeRate.Add(setErrorsEntries(fileFake.Get("ZZTo"+FinState+"_"+Type+"_FRVarLow")),-1) 
+        #hFakeRate.Add(setErrorsEntries(fileFake.Get("ZZTo"+FinState+"_"+Type+"_FRVarLow")),-1) 
     if syst=="Red" and Sign==-1:
         hFakeRate = fileFake.Get("ZZTo"+FinState+"_"+Type+"_01")
-        hFakeRate.Add(setErrorsEntries(fileFake.Get("ZZTo"+FinState+"_"+Type+"_FRVarHigh")),1)
+        ##hFakeRate.Add(setErrorsEntries(fileFake.Get("ZZTo"+FinState+"_"+Type+"_FRVarHigh")),1)
     else:
         hFakeRate = fileFake.Get("ZZTo"+FinState+"_"+Type+"_01")
     Err=ROOT.Double(0.)
@@ -264,9 +344,9 @@ def getRedBkg(FinState,Sign,syst):
 ##################################################################################################################
 
 def addSyst(h,Sign):
-    NBin = h.GetNbinsX()
-    
+    NBin = h.GetNbinsX()    
     for i in range(1,NBin+1):
+        #print i,h.GetBinContent(i),"+-",h.GetBinError(i)
         h.AddBinContent(i,-Sign*h.GetBinError(i))
         if h.GetBinContent(i)<0: h.SetBinContent(i,0)
       
@@ -324,26 +404,46 @@ def getSyst(Sign,isUnfold,HData,isTot,isFiducial):
             hSystList[syst["name"]] =  getHistoUnfold(Sign,syst["name"],isFiducial)
     else:
         for syst in SystList:
+            if Sign==+1:    SystDicUp[syst["longname"]] = {}   
+            else:           SystDicDown[syst["longname"]] = {}   
             hSystList[syst["name"]] =  getHisto(Type,True,Sign,syst["name"],isTot,isFiducial)
 
 #            hSystList[syst].SetName((hSystList[syst].GetName()).replace("Mass", "Total"))
 
+#HHOT
+#            sDic["yield"]="{0:.2f}".format(h1.Integral(0,-1))
+# SampleDic[s["sample"]] = {} 
 
     for i in range(0,3):
         print  Blue(hSystList[syst["name"]][i]["name"])
         for syst in SystList:    
+            sDic = {}
             if Sign==-1: 
                 if (hSystList[syst["name"]][i]["state"].Integral(0,-1)/hFinSyst[i]["state"].Integral(0,-1)) > 1: 
 #                    print syst,"is negative.If is MCgen is ok"
+                    sDic["yield"]="-"
+                    SystDicDown[syst["longname"]][hSystList[syst["name"]][i]["name"]]=sDic
                     continue
+                sDic["yield"]="{0:.1f}".format((1-hSystList[syst["name"]][i]["state"].Integral(0,-1)/hFinSyst[i]["state"].Integral(0,-1))*100)
                 print "{0} {1}-> {2:.3f} %".format(syst["longname"],(30-len(syst["longname"]))*"-",(1-hSystList[syst["name"]][i]["state"].Integral(0,-1)/hFinSyst[i]["state"].Integral(0,-1))*100)
+                SystDicDown[syst["longname"]][hSystList[syst["name"]][i]["name"]]=sDic
+                print hSystList[syst["name"]][i]["name"]
             else: 
                 if (hFinSyst[i]["state"].Integral(0,-1)/hSystList[syst["name"]][i]["state"].Integral(0,-1)) > 1:
- #                   print syst,"is negative. If si MCgen is ok"
+                    #                   print syst,"is negative. If si MCgen is ok"
+                    sDic["yield"]="-"
+                    SystDicUp[syst["longname"]][hSystList[syst["name"]][i]["name"]]=sDic
                     continue
+                sDic["yield"]="{0:.1f}".format((1-hFinSyst[i]["state"].Integral(0,-1)/hSystList[syst["name"]][i]["state"].Integral(0,-1))*100)
+                print "sDic",sDic
                 print "{0} {1}-> {2:.3f} %".format(syst["longname"],(30-len(syst["longname"]))*"-",(1-hFinSyst[i]["state"].Integral(0,-1)/hSystList[syst["name"]][i]["state"].Integral(0,-1))*100)
+                SystDicUp[syst["longname"]][hSystList[syst["name"]][i]["name"]]=sDic
+                print SystDicUp[syst["longname"]]
+
 
         NBin = hFinSyst[i]["state"].GetNbinsX()
+        print "SystDicUp",SystDicUp
+      #  print "SystDicDown",SystDicDown
 
         for b in range(1,NBin+1):
             Content = 0
@@ -383,7 +483,7 @@ def getPlot_MC(Type,isFiducial):
     CrossType = Type+"Gen"
 
     if "Pow" in Set:
-        Samples=SignalSamples_Pow
+        Sample=SignalSamples_Pow
     elif "Mad" in Set:
         Samples=SignalSamples_Mad
 
@@ -514,7 +614,7 @@ else:
         hDataUp    = getSyst(1,isUnfold,hData,False,isFiducial)
         hDataDown  = getSyst(-1,isUnfold,hData,False,isFiducial)
         hMCReco    = getHisto(Type,False,0,"",False,isFiducial)
- 
+
     print Red("\n##############################  SUMMARY  #############################")  
 
     print Red("\n###############################  MC RECO  ###############################")  
@@ -571,3 +671,11 @@ else:
         for i in hDataDown:
             i["state"].Write("",i["state"].kOverwrite)
             print "\n Total integral {0} contribution {1}> {2:.3f}".format(i["name"],(32-len(i["name"]))*"-",i["state"].Integral(0,-1))
+
+if printLatex: 
+    print "\nYields tabular:\n"
+    Text =("Sample","2e2mu" ,"4mu" ,"4e")
+    YieldLatex(Text,SampleDic,RedDic,IrrDic,TotDic,DataDic)
+    print "\n\nSyst tabular:\n"
+    Text =("Systematic","2e2mu" ,"4mu" ,"4e")
+    SystLatex(Text,SystDicUp,SystDicDown)
