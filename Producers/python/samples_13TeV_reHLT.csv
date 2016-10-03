@@ -1,0 +1,28 @@
+identifier,process,crossSection=-1,BR=1,execute=True,dataset,prefix,pattern,splitLevel,::variables,::pyFragments,comment
+
+###,,,,,,,,,,,Official Spring 2016 samples
+
+
+ZZTo4lamcatnlo,qq_ZZ,    1.212,             ,,/ZZTo4L_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM,dbs,,5,PROCESS_CR=False;SKIM_REQUIRED=False,, # Xsection from the gen: 1.218
+
+ZZTo4eJJ,qq_4l2j,         0.00319,   ,,/VBFToHiggs0PMContinToZZTo4eJJ_M125_GaSM_13TeV_phantom_pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,,
+ZZTo4muJJ,qq_4l2j,        0.00319,   ,,/VBFToHiggs0PMContinToZZTo4muJJ_M125_GaSM_13TeV_phantom_pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,,
+ZZTo2e2muJJ,qq_4l2j,      0.00638,   ,,/VBFToHiggs0PMContinToZZTo2e2muJJ_M125_GaSM_13TeV_phantom_pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,, #FIX xs. set now twice of others.
+
+
+ggZZ2e2mu,gg_4l,          0.00380717 ,  ,,/GluGluToHiggs0MContinToZZTo2e2mu_M125_GaSM_13TeV_MCFM701_pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,,
+ggZZ4mu,gg_4l,            0.00192701,   ,,/GluGluToHiggs0MContinToZZTo4mu_M125_GaSM_13TeV_MCFM701_pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,,
+ggZZ4e,gg_4l,             0.00192701,  ,,/GluGluToHiggs0MContinToZZTo4e_M125_GaSM_13TeV_MCFM701_pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,,
+
+
+# ###,,,,,,,,,,,Reducible background
+
+
+DYJetsToLL_M50,Z,         6025.2,      ,,/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True,,
+
+
+
+
+
+
+

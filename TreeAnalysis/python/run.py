@@ -28,16 +28,16 @@ parser.add_option("-e", "--external-cross-section", dest="getExternalCrossSectio
 
 parser.add_option("-l", "--luminosity", dest="luminosity",
                   type='int',
-                  default=15941,
-                  help="Set luminosity scenario from command line. Default is 2630/pb.")
+                  default=12892,
+                  help="Set luminosity scenario from command line. Default is 12892/pb.")
 
 parser.add_option("-d", "--directory", dest="directory",
                   default="samples",
                   help="Sample location, default is ./samples")
 
 parser.add_option("-c", "--csv", dest="csvfile",
-                  default="../Producers/python/samples_13TeV_2016.csv",
-                  help="csv path, default is ../Producers/python/samples_13TeV_2016.csv")
+                  default="../Producers/python/samples_13TeV.csv",
+                  help="csv path, default is ../Producers/python/samples_13TeV.csv")
 
 
 (options, args) = parser.parse_args()
