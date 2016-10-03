@@ -614,44 +614,11 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   output.jecUnc_    = jet.userFloat("jec_unc");
 
   // JER
-  if(isMC_){                                                                                                                                              
-
-    JME::JetParameters jetParam;                                                                                                                      
-    jetParam.setJetPt(output.pt());        
-    jetParam.setJetEta(output.eta());                                                                                     
-    jetParam.setRho(rho_);                                                                                                                 
-    
-    JME::JetParameters jetParam_sf = {{JME::Binning::JetEta, output.eta()}, {JME::Binning::Rho, rho_}};
-
-    output.sigma_MC_pt_   = jetRes_pt.getResolution(jetParam);
-    output.sigma_MC_phi_  = jetRes_phi.getResolution(jetParam);
-    output.jer_c_         = jetRes_sf.getScaleFactor(jetParam_sf);
-    output.jer_cup_       = jetRes_sf.getScaleFactor(jetParam_sf, Variation::UP);
-    output.jer_cdown_     = jetRes_sf.getScaleFactor(jetParam_sf, Variation::DOWN);  
+  if(isMC_){                                                                                                         
+    output.pt_nojer_    = jet.userFloat("pt_nojer");
+    output.pt_jerup_    = jet.userFloat("pt_jerup");
+    output.pt_jerdn_    = jet.userFloat("pt_jerdn");
  }  
-
-  // if(isMC_){
-  //   std::vector<float> fx, fY;
-  //   fx.push_back(output.eta()); // Jet Eta
-  //   fY.push_back(output.pt());  // Jet PT
-  //   fY.push_back(ntruePUInt_);  // Number of truth pileup
-  //    output.sigma_MC_ = JER_->resolution(fx,fY);
-     
-  //    // From: https://twiki.cern.ch/twiki/bin/view/CMS/JetResolution 8 TeV numbers!!! To be fixed!
-  //    if      (abs(output.eta()) < 0.5) {output.jer_ = 1.095; output.jerUnc_ = 0.018;}
-  //    else if (abs(output.eta()) < 0.8) {output.jer_ = 1.120; output.jerUnc_ = 0.028;}
-  //    else if (abs(output.eta()) < 1.1) {output.jer_ = 1.097; output.jerUnc_ = 0.017;}
-  //    else if (abs(output.eta()) < 1.3) {output.jer_ = 1.103; output.jerUnc_ = 0.033;}
-  //    else if (abs(output.eta()) < 1.7) {output.jer_ = 1.118; output.jerUnc_ = 0.014;}
-  //    else if (abs(output.eta()) < 1.9) {output.jer_ = 1.100; output.jerUnc_ = 0.033;}
-  //    else if (abs(output.eta()) < 2.1) {output.jer_ = 1.162; output.jerUnc_ = 0.044;}
-  //    else if (abs(output.eta()) < 2.3) {output.jer_ = 1.160; output.jerUnc_ = 0.048;}
-  //    else if (abs(output.eta()) < 2.5) {output.jer_ = 1.161; output.jerUnc_ = 0.060;}
-  //    else if (abs(output.eta()) < 2.8) {output.jer_ = 1.209; output.jerUnc_ = 0.059;}
-  //    else if (abs(output.eta()) < 3.0) {output.jer_ = 1.564; output.jerUnc_ = 0.321;}
-  //    else if (abs(output.eta()) < 3.2) {output.jer_ = 1.384; output.jerUnc_ = 0.033;}
-  //    else if (abs(output.eta()) < 5.0) {output.jer_ = 1.216; output.jerUnc_ = 0.050;}
-  //  }
 
   return output; 
 }
