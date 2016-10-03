@@ -21,7 +21,7 @@ namespace phys {
     
   public:
     
-    enum JERVariations{central,up,down};
+    //    enum JERVariations{central,up,down}; /DEL
 
     /// Constructor
     Jet(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), float q =0, int pid = 0)
@@ -44,8 +44,6 @@ namespace phys {
       , rawFactor_(-9999.)
       , jecUnc_(-9999.)
       , mcPartonFlavour_(-1)
-      , sigma_MC_pt_(-9999.)
-      , sigma_MC_phi_(-9999.)
     {}           
     
     /// Destructor
@@ -84,20 +82,25 @@ namespace phys {
     Double_t jecUncertainty() const {return  jecUnc_;}
 
     // JER
-    Double_t sigma_MC_pt()  const {return sigma_MC_pt_;}
-    Double_t sigma_MC_phi()  const {return sigma_MC_phi_;}
+    //    Double_t sigma_MC_pt()  const {return sigma_MC_pt_;}
+    //Double_t sigma_MC_phi()  const {return sigma_MC_phi_;}
 
     // Values from https://twiki.cern.ch/twiki/bin/view/CMS/JetResolution
-    Double_t jer_c(JERVariations jervar)     const {
-      switch(jervar){
-      case(central): return jer_c_;
-      case(up):      return jer_cup_;
-      case(down):    return jer_cdown_;
-      default:       return -9999.;
-      }
-    }
 
-    Double_t jer_width(JERVariations jervar) const {return sqrt(pow(jer_c(jervar),2)-1)*sigma_MC_pt();}
+    Double_t ptJerUp() const {return  pt_jerup_;}
+    Double_t ptJerDn() const {return  pt_jerdn_;}
+    Double_t ptNoJer() const {return  pt_nojer_;}
+
+    /* Double_t jer_c(JERVariations jervar)     const { */ //DEL
+    /*   switch(jervar){ */
+    /*   case(central): return jer_c_; */
+    /*   case(up):      return jer_cup_; */
+    /*   case(down):    return jer_cdown_; */
+    /*   default:       return -9999.; */
+    /*   } */
+    /* } */
+
+    //    Double_t jer_width(JERVariations jervar) const {return sqrt(pow(jer_c(jervar),2)-1)*sigma_MC_pt();} //DEL
     
 
     // return the matched MC parton flavour
@@ -162,11 +165,12 @@ namespace phys {
     Int_t mcPartonFlavour_;
     
     // Jet MC resolution, for JER determination. 
-    Double_t sigma_MC_pt_;
-    Double_t sigma_MC_phi_;
-    Double_t jer_c_;
-    Double_t jer_cup_;
-    Double_t jer_cdown_;
+    /* Double_t sigma_MC_pt_; */ //DEL
+    /* Double_t sigma_MC_phi_; */ //DEL
+
+    Double_t pt_nojer_;
+    Double_t pt_jerup_;
+    Double_t pt_jerdn_;
 
     ClassDef(Jet, 1) //
   };
