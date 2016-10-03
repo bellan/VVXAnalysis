@@ -60,7 +60,6 @@ namespace phys {
 	if (fabs(id_==13)) id_= fabs(i)*(-1)*q ;
 }
 
-
       /* Particle(const LorentzVector& l, float q =0, const int &&i = 13) */
       /* 	:p4_(convert(l)) */
       /* 	, charge_(q) */
@@ -122,11 +121,8 @@ namespace phys {
     virtual Double_t efficiencySF()  const {return efficiencySF_;}
     virtual Double_t efficiencySFUnc()  const {return efficiencySFUnc_;}
     virtual Double_t fakeRateSF()    const {return fakeRateSF_;}
-    virtual Double_t fakeRateSFUncHigh() const {return fakeRateSFUncHigh_;}
-    virtual Double_t fakeRateSFUncLow() const {return fakeRateSFUncLow_;}
-    virtual Double_t fakeRateSFVarHigh() const {return fakeRateSFUncHigh()*fakeRateSFUncHigh();}
-    virtual Double_t fakeRateSFVarLow() const {return fakeRateSFUncLow()*fakeRateSFUncLow();}
-
+    virtual Double_t fakeRateSFUnc() const {return fakeRateSFUnc_;} 
+    virtual Double_t fakeRateSFVar() const {return fakeRateSFUnc()*fakeRateSFUnc();}
     Bool_t   passFullSel() const {return true;}
  
     // Gen info, in case they are meaningfull
@@ -142,8 +138,7 @@ namespace phys {
     Double_t efficiencySF_;
     Double_t efficiencySFUnc_;
     Double_t fakeRateSF_;
-    Double_t fakeRateSFUncHigh_;
-    Double_t fakeRateSFUncLow_;
+    Double_t fakeRateSFUnc_;
     std::bitset<15> genStatusFlags_;
 
   public:

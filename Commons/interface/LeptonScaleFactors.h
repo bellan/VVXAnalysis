@@ -28,8 +28,8 @@ class LeptonScaleFactors{
   double weight(const phys::DiBoson<phys::Lepton,phys::Lepton> &ZZ) const;
   double weight(const phys::Boson<phys::Lepton> &Z) const;
 
-  std::pair<double,std::pair<double,double> > fakeRateScaleFactor(const double& lepPt, const double& lepEta, int lepId) const;
-  std::pair<double,std::pair<double,double> > fakeRateScaleFactor(const phys::Lepton& lep) const;
+  std::pair<double,double > fakeRateScaleFactor(const double& lepPt, const double& lepEta, int lepId) const;
+  std::pair<double,double > fakeRateScaleFactor(const phys::Lepton& lep) const;
  private:
 
   TH2F *hEffMu_;
@@ -43,9 +43,6 @@ class LeptonScaleFactors{
 
   std::pair<TH1F*,TH1F*> hFRMu_;
   std::pair<TH1F*,TH1F*> hFREl_;
- 
-  std::pair<TGraphAsymmErrors*,TGraphAsymmErrors*> grFRMu_;
-  std::pair<TGraphAsymmErrors*,TGraphAsymmErrors*> grFREl_;
   std::string year;
 };
 
