@@ -29,10 +29,10 @@ public:
 
   virtual void end( TFile &);
 
-  double JER_PtSmear(double pt, double width);
   // Jets obtained by gaussian JER smearing
-  std::vector<phys::Jet> *CentralJER_jets;
-  std::vector<double> *CentralJER_jetPt;
+
+  std::vector<phys::Jet> *  noJerJets;
+  std::vector<double>    *  noJerPt;
 
  private:
   friend class Selector<ZZjAnalyzer>;

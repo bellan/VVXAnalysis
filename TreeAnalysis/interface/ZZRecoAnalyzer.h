@@ -68,10 +68,8 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
   float etaJet2_gen;
   float ptZZ;
   float min_dR;
-  Int_t nCentralJERjets;
   Int_t nUpJERjets;
   Int_t nDownJERjets; 
-  Int_t nCentralJERcentraljets;
   Int_t nUpJERcentraljets;
   Int_t nDownJERcentraljets; 
 
@@ -88,12 +86,10 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
 
   TStopwatch *st;
 
-  double JER_PtSmear(double pt, double width);
+
  // Jets obtained by gaussian JER smearing
-  std::vector<phys::Jet> *CentralJER_jets;
   std::vector<phys::Jet> *UpJER_jets;
   std::vector<phys::Jet> *DownJER_jets;
-  std::vector<phys::Jet> *CentralJER_centraljets;
   std::vector<phys::Jet> *UpJER_centraljets;
   std::vector<phys::Jet> *DownJER_centraljets;
 
@@ -108,14 +104,6 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
   std::vector<phys::Jet> *DownJESData_jets;
   std::vector<phys::Jet> *UpJESData_centraljets;
   std::vector<phys::Jet> *DownJESData_centraljets;
-
-  /* std::vector<double> *CentralJER_jetPt; */
-  /* std::vector<double> *UpJER_jetPt; */
-  /* std::vector<double> *DownJER_jetPt; */
-  /* std::vector<double> *UpJES_jetPt; */
-  /* std::vector<double> *DownJES_jetPt; */
-  /* std::vector<double> *UpJESData_jetPt; */
-  /* std::vector<double> *DownJESData_jetPt; */
 
 
   TFile * UnfOverMC;

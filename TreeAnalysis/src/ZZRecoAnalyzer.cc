@@ -20,18 +20,14 @@ using namespace phys;
 
 void ZZRecoAnalyzer::analyze(){
 
-
-  CentralJER_jets->clear();
   UpJER_jets->clear();
   DownJER_jets->clear();
-  CentralJER_centraljets->clear();
   UpJER_centraljets->clear();
   DownJER_centraljets->clear();
   UpJES_jets->clear();
   DownJES_jets->clear();
   UpJES_centraljets->clear();
   DownJES_centraljets->clear();
-
   UpJESData_jets->clear();
   DownJESData_jets->clear();
   UpJESData_centraljets->clear();
@@ -49,7 +45,7 @@ void ZZRecoAnalyzer::analyze(){
   else if (id == 48) {decay = "2e2m";}
   else if (id == 44) {decay = "4e";}
 
-    if(e < nentries/2){sample = "0";}
+  if(e < nentries/2){sample = "0";}
   else {sample = "1";}
 
   m4L = ZZ->mass();  
@@ -79,7 +75,7 @@ void ZZRecoAnalyzer::analyze(){
       //JES correction: Up and down velues used to assess systematic uncertainty on jet energy resolution
       double newJetPtJESData_up   =0;  
       double newJetPtJESData_down =0;
-      
+
       newJetPtJESData_up   = dataJetPt*(1 + dataJet.jecUncertainty());
       newJetPtJESData_down = dataJetPt*(1 - dataJet.jecUncertainty());
 
@@ -88,6 +84,10 @@ void ZZRecoAnalyzer::analyze(){
 
       if(newJetPtJESData_up > 30 && fabs(dataJet.eta())<2.4)   UpJESData_centraljets->push_back(dataJet); 
       if(newJetPtJESData_down > 30 && fabs(dataJet.eta())<2.4) DownJESData_centraljets->push_back(dataJet);      
+   
+      stable_sort(UpJESData_jets->begin(), UpJESData_jets->end(), PtComparator());
+      stable_sort(DownJESData_jets->begin(), DownJESData_jets->end(), PtComparator());
+
     }
 
 
@@ -101,41 +101,20 @@ void ZZRecoAnalyzer::analyze(){
   else{
 
     foreach(const phys::Jet &jet, *pjets){
-      
-      double jetPt = 0;
-      jetPt = jet.pt();
-      
-      //JER correction (applied only on MC reco). Up and down velues used to assess systematic uncertainty on jet energy resolution
-      double newJetPtJER =0; 
-      double newJetPtJER_up =0;  
-      double newJetPtJER_down =0;
-      double width = 0;
-      double width_up = 0; 
-      double width_down = 0;
-      
-      width = jet.jer_width(phys::Jet::central);
-      width_up = jet.jer_width(phys::Jet::up); 
-      width_down = jet.jer_width(phys::Jet::down);
-      
-      newJetPtJER      = JER_PtSmear(jetPt, width);
-      newJetPtJER_up   = JER_PtSmear(jetPt, width_up);  
-      newJetPtJER_down = JER_PtSmear(jetPt, width_down);
-      
-      if(newJetPtJER > 30)	CentralJER_jets->push_back(jet);      
-      if(newJetPtJER_up > 30) 	UpJER_jets->push_back(jet); 
-      if(newJetPtJER_down > 30)	DownJER_jets->push_back(jet);
+         
+      if(jet.ptJerUp() > 30.) 	UpJER_jets->push_back(jet); 
+      if(jet.ptJerDn() > 30.)	DownJER_jets->push_back(jet);
 
- 
-      if(newJetPtJER > 30 && fabs(jet.eta())<2.4)      CentralJER_centraljets->push_back(jet);
-      if(newJetPtJER_up > 30 && fabs(jet.eta())<2.4)   UpJER_centraljets->push_back(jet); 
-      if(newJetPtJER_down > 30 && fabs(jet.eta())<2.4) DownJER_centraljets->push_back(jet);
+
+      if(jet.ptJerDn()  > 30. && fabs(jet.eta())<2.4)   UpJER_centraljets->push_back(jet); 
+      if(jet.ptJerDn()  > 30. && fabs(jet.eta())<2.4) DownJER_centraljets->push_back(jet);
       
       //JES correction: Up and down velues used to assess systematic uncertainty on jet energy resolution
       double newJetPtJES_up   = 0;  
       double newJetPtJES_down = 0;
            
-      newJetPtJES_up = newJetPtJER*(1+jet.jecUncertainty());
-      newJetPtJES_down = newJetPtJER*(1-jet.jecUncertainty());
+      newJetPtJES_up   = jet.pt()*(1+jet.jecUncertainty());
+      newJetPtJES_down = jet.pt()*(1-jet.jecUncertainty());
       
       if(newJetPtJES_up > 30)  	  UpJES_jets->push_back(jet);
       if(newJetPtJES_down > 30)   DownJES_jets->push_back(jet);
@@ -145,15 +124,11 @@ void ZZRecoAnalyzer::analyze(){
 
     FillHistosBase(decay,theWeight,sample);
     FillHistosJets(decay,theWeight,jets,sample);
-    FillHistosJets(decay,theWeight,jets,"JERSmear_"+sample);
     FillHistosJets(decay,theWeight,centralJets,"Central_"+sample);   
-    FillHistosJets(decay,theWeight,CentralJER_jets,"Central_JERSmear_"+sample);
 
-    FillHistosJets(decay,theWeight,CentralJER_jets,"JERSmear_01");
     FillHistosJets(decay,theWeight,UpJER_jets,"JERUpSmear_01");
     FillHistosJets(decay,theWeight,DownJER_jets,"JERDownSmear_01");
 
-    FillHistosJets(decay,theWeight,CentralJER_centraljets,"Central_JERSmear_01");
     FillHistosJets(decay,theWeight,UpJER_centraljets,"Central_JERUpSmear_01");
     FillHistosJets(decay,theWeight,DownJER_centraljets,"Central_JERDownSmear_01");
 
@@ -199,18 +174,11 @@ void ZZRecoAnalyzer::analyze(){
     FillMatrixHistosJets(decay,theWeight,jets,genJets,"01");
     FillMatrixHistosJets(decay,theWeight,centralJets,centralGenJets,"Central_01");
 
-    FillMatrixHistosJets(decay,theWeight,CentralJER_jets,genJets,"JERSmear_01");
     FillMatrixHistosJets(decay,theWeight,UpJER_jets,genJets,"JERUpSmear_01");
     FillMatrixHistosJets(decay,theWeight,DownJER_jets,genJets,"JERDownSmear_01");
 
-    FillMatrixHistosJets(decay,theWeight,CentralJER_jets,genJets,"JERSmear_"+sample);
-
-    FillMatrixHistosJets(decay,theWeight,CentralJER_centraljets,centralGenJets,"Central_JERSmear_01");
     FillMatrixHistosJets(decay,theWeight,UpJER_centraljets,centralGenJets,"Central_JERUpSmear_01");
     FillMatrixHistosJets(decay,theWeight,DownJER_centraljets,centralGenJets,"Central_JERDownSmear_01");
-
-    FillMatrixHistosJets(decay,theWeight,CentralJER_centraljets,centralGenJets,"Central_JERSmear_"+sample);
-    FillMatrixHistosJets(decay,theWeight,CentralJER_centraljets,centralGenJets,"JERSmear_"+sample);
 
     FillMatrixHistosJets(decay,theWeight,UpJES_jets,genJets,"JESUpSmear_01");
     FillMatrixHistosJets(decay,theWeight,DownJES_jets,genJets,"JESDownSmear_01");
@@ -228,7 +196,7 @@ void ZZRecoAnalyzer::analyze(){
     FillMatrixHistosJets(decay,theWeight*(1+scaleFacErrSq),centralJets,centralGenJets,"Central_SFErrSqPlus_01");
    }
 
-    if((region_ == phys::SR && topology.test(1)) || (region_ == phys::SR_HZZ && topology.test(1))){
+    if((region_ == phys::SR && topology.test(3)) || (region_ == phys::SR_HZZ && topology.test(1))){
 
        inFiducialRegion ++;
        
@@ -238,12 +206,9 @@ void ZZRecoAnalyzer::analyze(){
        FillMatrixHistosJets(decay,theWeight,centralJets,centralGenJets,"Central_"+sample+"_fr");
        FillMatrixHistosBase(decay,theWeight,"01_fr");
        FillMatrixHistosJets(decay,theWeight,jets,genJets,"01_fr");
-       FillMatrixHistosJets(decay,theWeight,centralJets,centralGenJets,"Central_01_fr");
-       FillMatrixHistosJets(decay,theWeight,CentralJER_jets,genJets,"JERSmear_01_fr");
        FillMatrixHistosJets(decay,theWeight,UpJER_jets,genJets,"JERUpSmear_01_fr");
        FillMatrixHistosJets(decay,theWeight,DownJER_jets,genJets,"JERDownSmear_01_fr");
        
-       FillMatrixHistosJets(decay,theWeight,CentralJER_centraljets,centralGenJets,"Central_JERSmear_01_fr");
        FillMatrixHistosJets(decay,theWeight,UpJER_centraljets,centralGenJets,"Central_JERUpSmear_01_fr");
        FillMatrixHistosJets(decay,theWeight,DownJER_centraljets,centralGenJets,"Central_JERDownSmear_01_fr");
        
@@ -270,21 +235,12 @@ void ZZRecoAnalyzer::analyze(){
   FillHistosJets(decay,theWeight,jets,"01");
 
   if(region_ == phys::CR3P1F || region_ == phys::CR2P2F) {
-    FillHistosBase(decay,ZZ->fakeRateSFVarHigh(),"FRVarHigh");
-    FillHistosJets(decay,ZZ->fakeRateSFVarHigh(),jets,"FRVarHigh");
-    FillHistosJets(decay,ZZ->fakeRateSFVarHigh(),centralJets,"Central_FRVarHigh");
-    
-    FillHistosBase(decay,ZZ->fakeRateSFVarLow(),"FRVarLow");
-    FillHistosJets(decay,ZZ->fakeRateSFVarLow(),jets,"FRVarLow");
-    FillHistosJets(decay,ZZ->fakeRateSFVarLow(),centralJets,"Central_FRVarLow");
+    FillHistosBase(decay,ZZ->fakeRateSFVar(),"FRVar");
+    FillHistosJets(decay,ZZ->fakeRateSFVar(),jets,"FRVar");
+    FillHistosJets(decay,ZZ->fakeRateSFVar(),centralJets,"Central_FRVar");
   }
 }
 
-double ZZRecoAnalyzer::JER_PtSmear(double pt, double width)
-{
-  double ptsmear= gRandom->Gaus(pt,width);    
-  return ptsmear;
-}
 
  void ZZRecoAnalyzer::FillHistosBase(std::string decay, float Wh,std::string type ){
 
@@ -301,10 +257,10 @@ void ZZRecoAnalyzer::FillHistosJets(std::string decay,float Wh,std::vector<phys:
   
   if (njets>3) njets=3;
 
-  theHistograms.fill("ZZTo"+decay+"_Jets_"+type, "", 4,0,4,njets, Wh);   
+  theHistograms.fill("ZZTo"+decay+"_nJets_"+type, "", 5,0,5,njets, Wh);   
   
   if(njets>0){  
-    
+  
     stable_sort(jetsVec->begin(), jetsVec->end(), PtComparator());
     ptJet1 = jetsVec->at(0).pt();
     if (ptJet1>=500) ptJet1 = 499;    
@@ -356,12 +312,12 @@ void ZZRecoAnalyzer::FillMatrixHistosBase(std::string decay, float Wh,std::strin
  void ZZRecoAnalyzer::FillMatrixHistosJets(std::string decay,float Wh,std::vector<phys::Jet> *jetsVec,std::vector<phys::Particle> *jetsGenVec,std::string type){
 
 
-   njets_gen =  jetsGenVec->size();    
-   if (njets_gen>3) njets_gen=3;
-   njets =  jetsVec->size(); 
-   if (njets>3) njets=3;
+   njets_gen = jetsGenVec->size();    
+   njets     = jetsVec->size(); 
+   if (njets_gen>3) njets_gen=4;
+   if (njets>3)     njets=4;
    
-   theHistograms.fill("ResMat_ZZTo"+decay+"_Jets_"+type, "", 4,0,4,4,0,4,njets,njets_gen, Wh);   
+   theHistograms.fill("ResMat_ZZTo"+decay+"_nJets_"+type, "", 5,0,5,5,0,5,njets,njets_gen, Wh);   
    if(njets>0) {
      stable_sort(jetsVec->begin(), jetsVec->end(), PtComparator());
      ptJet1 = jetsVec->at(0).pt();
@@ -431,10 +387,8 @@ void ZZRecoAnalyzer::begin() {
   UpJESData_centraljets    = new std::vector<phys::Jet>();
   DownJESData_centraljets  = new std::vector<phys::Jet>();
   
-  CentralJER_jets          = new std::vector<phys::Jet>();
   UpJER_jets               = new std::vector<phys::Jet>();
   DownJER_jets             = new std::vector<phys::Jet>();
-  CentralJER_centraljets   = new std::vector<phys::Jet>();
   UpJER_centraljets        = new std::vector<phys::Jet>();
   DownJER_centraljets      = new std::vector<phys::Jet>();
 
@@ -449,10 +403,8 @@ void ZZRecoAnalyzer::begin() {
   UpJESData_centraljets->reserve(2);    
   DownJESData_centraljets->reserve(2);  
   
-  CentralJER_jets->reserve(2);          
   UpJER_jets->reserve(2);               
   DownJER_jets->reserve(2);             
-  CentralJER_centraljets->reserve(2);   
   UpJER_centraljets->reserve(2);        
   DownJER_centraljets->reserve(2);      
 
@@ -513,13 +465,12 @@ void ZZRecoAnalyzer::end( TFile &) {
   
   if(region_ == phys::CR3P1F || region_ == phys::CR2P2F) {
     vector<std::string>  FinalState = {"4m","4e","2e2m"};
-    vector<std::string>  Variable = {"Mass","Jets","Jets_Central","PtJet1","EtaJet1","PtJet2","EtaJet2","Deta","Mjj","Deta_Central","Mjj_Central","dRZZ", "PtZZ","DphiZZ"};
+    vector<std::string>  Variable = {"Mass","nJets","nJets_Central","PtJet1","EtaJet1","PtJet2","EtaJet2","Deta","Mjj","Deta_Central","Mjj_Central","dRZZ", "PtZZ","DphiZZ"};
     
     for (std::vector<std::string>::iterator var = Variable.begin() ; var != Variable.end(); ++var){
       for (std::vector<std::string>::iterator it = FinalState.begin() ; it != FinalState.end(); ++it){
 
-  	//TH1 *hvar =  theHistograms.get(("ZZTo"+*it+"_"+*var+"_FRVarHigh").c_str());
-	TH1 *hvar =  theHistograms.get(("ZZTo"+*it+"_"+*var+"_FRVarLow").c_str());	
+	TH1 *hvar =  theHistograms.get(("ZZTo"+*it+"_"+*var+"_FRVar").c_str());	
   	TH1 *h = theHistograms.get(("ZZTo"+*it+"_"+*var+"_01").c_str());
   	if(!h || !hvar) continue;
   	for(int i = 1; i<=h->GetNbinsX();i++){  

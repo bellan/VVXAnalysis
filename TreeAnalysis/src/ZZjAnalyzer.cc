@@ -14,8 +14,8 @@ void ZZjAnalyzer::ZZplots(int id){
 
   if(ZZ->id() != id && id != -1) return; // -1 here means generic 4l final state
 
-  std::string eventstr=std::to_string(run)+":"+std::to_string(lumiBlock)+":"+std::to_string(event);
-
+  std::string eventstr=std::to_string(run)+":"+std::to_string(lumiBlock)+":"+std::to_string(event)+" "+std::to_string(jets->size());
+  //  std::string jetsSize=std::to_string(jets->size());
   std::string decay  = "4l";
   
   if  (id == 52) {
@@ -35,18 +35,51 @@ void ZZjAnalyzer::ZZplots(int id){
     events4l.push_back(eventstr);
   }
 
+  if(jets->size()==1 && genJets->size()==0){
+
+    theHistograms.fill(std::string("ZZTo")+decay+"_fake_nConst"       , " "  ,  50, 0, 50,jets->at(0).nConstituents(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_fake_nCharg"       , " "  ,  50, 0, 50,jets->at(0).nCharged(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_fake_nNeutral"     , " "  ,  50, 0, 50,jets->at(0).nNeutral(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_fake_ptJet"        , " "  ,  50, 20, 400,jets->at(0).pt(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_fake_etaJet"       , " "  ,  50, -5., 5.,jets->at(0).eta(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_fake_neutralHadfracJet"     , " "  ,  50, 0, 1,  jets->at(0).neutralHadronEnergyFraction(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_fake_chargedHadfracJet"     , " "  ,  50, 0, 1,  jets->at(0).chargedHadronEnergyFraction(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_fake_chardedEmfracJet"      , " "  ,  50, 0, 1,  jets->at(0).chargedEmEnergyFraction(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_fake_neutralEmfracJet"      , " "  ,  50, 0, 1,  jets->at(0).neutralEmEnergyFraction(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_fake_muonEmfracJet"         , " "  ,  50, 0, 1,  jets->at(0).muonEnergyFraction(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_fake_Z0pt"         , std::string("Z0  p_{T}  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->first().pt(),theWeight);  
+    theHistograms.fill(std::string("ZZTo")+decay+"_fake_Z1pt"         , std::string("Z1  p_{T}  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->second().pt(),theWeight);
+  
+  }
+
+  else if(jets->size()==1 && genJets->size()==1){
+    theHistograms.fill(std::string("ZZTo")+decay+"_true_nConst"       , " "  ,  50, 0, 50,jets->at(0).nConstituents(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_true_nCharg"       , " "  ,  50, 0, 50,jets->at(0).nCharged(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_true_nNeutral"     , " "  ,  50, 0, 50,jets->at(0).nNeutral(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_true_ptJet"        , " "  ,  50, 20, 400,jets->at(0).pt(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_true_etaJet"       , " "  ,  50, -5., 5.,jets->at(0).eta(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_true_neutralHadfracJet"     , " "  ,  50, 0, 1,  jets->at(0).neutralHadronEnergyFraction(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_true_chargedHadfracJet"     , " "  ,  50, 0, 1,  jets->at(0).chargedHadronEnergyFraction(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_true_chardedEmfracJet"      , " "  ,  50, 0, 1,  jets->at(0).chargedEmEnergyFraction(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_true_neutralEmfracJet"      , " "  ,  50, 0, 1,  jets->at(0).neutralEmEnergyFraction(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_true_muonEmfracJet"         , " "  ,  50, 0, 1,  jets->at(0).muonEnergyFraction(), theWeight);     
+    theHistograms.fill(std::string("ZZTo")+decay+"_true_Z0pt"         , std::string("Z0  p_{T}  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->first().pt(),theWeight);  
+    theHistograms.fill(std::string("ZZTo")+decay+"_true_Z1pt"         , std::string("Z1  p_{T}  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->second().pt(),theWeight);
+  }
+
+
+
 
   theHistograms.fill(std::string("ZZTo")+decay+"_Z0Mass"         , std::string("Z0  mass  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->first().mass(),theWeight);
   theHistograms.fill(std::string("ZZTo")+decay+"_Z1Mass"         , std::string("Z1  mass  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->second().mass(),theWeight);
 
   theHistograms.fill(std::string("ZZTo")+decay+"_Z0pt"         , std::string("Z0  p_{T}  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->first().pt(),theWeight);
+  
   theHistograms.fill(std::string("ZZTo")+decay+"_Z1pt"         , std::string("Z1  p_{T}  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->second().pt(),theWeight);
 
   theHistograms.fill(std::string("ZZTo")+decay+"_Mass"         , std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay            ,  200, 50,  1000, ZZ->mass(), theWeight);
   
-  theHistograms.fill(std::string("ZZTo")+decay+"_Mass"+"_FRVarHigh", std::string("Var From FR Invariant mass of ZZ_{1}#rightarrow ")+decay,  200, 50,  1000, ZZ->mass(),ZZ->fakeRateSFVarHigh());
-
-  theHistograms.fill(std::string("ZZTo")+decay+"_Mass"+"_FRVarLow", std::string("Var From FR Invariant mass of ZZ_{1}#rightarrow ")+decay,  200, 50,  1000, ZZ->mass(),ZZ->fakeRateSFVarLow());
+  theHistograms.fill(std::string("ZZTo")+decay+"_Mass"+"_FRVar", std::string("Var From FR Invariant mass of ZZ_{1}#rightarrow ")+decay,  200, 50,  1000, ZZ->mass(),ZZ->fakeRateSFVar());
 
   theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep0_sip"         , std::string("sip of  Z0 lep0 of ZZ_{1}#rightarrow ")+decay            , 200, 0,5,ZZ->first().daughterPtr(0)->sip(),theWeight);
   
@@ -79,60 +112,43 @@ void ZZjAnalyzer::ZZplots(int id){
   Float_t   nJets = 0;
   Float_t   nJetsNoJer = 0;
 
-
+  stable_sort(jets->begin(), jets->end(), PtComparator());
+  
   if(theMCInfo.isMC()){
     //JER
 
-    //Smearing jet pt (Up and Down distributions just for systematic uncertainty estimate, Central for the standard analysis) without requiring it is signal (1D distributions made of ALL reco events)
-    CentralJER_jets  = new std::vector<phys::Jet>();
-    CentralJER_jetPt = new std::vector<Double_t>();
-    
-    CentralJER_jets->clear();
-    CentralJER_jetPt->clear();
-    
-    
+    noJerJets  = new std::vector<phys::Jet>();
+    noJerPt    = new std::vector<Double_t>();
+
     foreach(const phys::Jet &jet, *pjets){
-      double jetPt = 0;
-      jetPt = jet.pt();
+      double jetPt = jet.ptNoJer();
       
-      //JER correction (applied only on MC reco). Up and down velues used to assess systematic uncertainty on jet energy resolution
-      double newJetPtJER =0; 
-      double width = 0;
+      if(jetPt > 30.){
+   	noJerJets->push_back(jet);
+   	noJerPt->push_back(jet.ptNoJer());
+      } 
+    }   
 
-      width = jet.jer_width(phys::Jet::central);
-      
-      newJetPtJER = JER_PtSmear(jetPt, width);
-       
-      if(newJetPtJER > 30){
-	CentralJER_jets->push_back(jet);
-	CentralJER_jetPt->push_back(newJetPtJER);
-      }      
+    stable_sort(noJerJets->begin(), noJerJets->end(), PtComparator());
+    stable_sort(noJerPt->begin(), noJerPt->end(), std::greater<float>());
+    nJets = jets->size();
+    nJetsNoJer = noJerJets->size();
+
     }
+
+    else nJetsNoJer = jets->size();
     
- 
-    Int_t nCentralJERjets = CentralJER_jets->size();
-
-    if (nCentralJERjets>3) nCentralJERjets=3;
+  if(nJets>3)      nJets=4;
+  if(nJetsNoJer>3) nJets=4;    
     
-    stable_sort(jets->begin(), jets->end(), PtComparator());
-    stable_sort(CentralJER_jetPt->begin(), CentralJER_jetPt->end(), std::greater<float>());
-    stable_sort(CentralJER_jets->begin(), CentralJER_jets->end(), PtComparator());
-   
-    nJetsNoJer = jets->size();
-    jets = CentralJER_jets;
-    nJets = CentralJER_jets->size();
-  }
 
-  else  nJets = jets->size();
+  Int_t  njets_gen = genJets->size();
 
-  if(nJets>3) nJets=3;
+  theHistograms.fill("ResMat_ZZTo"+decay+"_nJets", "", 5,0,5,5,0,5,nJetsNoJer,njets_gen, theWeight);   
 
   theHistograms.fill(std::string("ZZTo")+decay+"_nJets"      , "Number of jets (|#eta|<4.7 and p_T > 30 GeV)"            , 4, 0, 4, nJets, theWeight); 
   theHistograms.fill(std::string("ZZTo")+decay+"_nJetsNoJer"      , "Number of jets (|#eta|<4.7 and p_T > 30 GeV)"            , 4, 0, 4, nJetsNoJer, theWeight); 
-
-  theHistograms.fill(std::string("ZZTo")+decay+"_nJets_FRVarHigh", " Var High From FR Number of jets (|#eta|<4.7 and p_T > 30 GeV)", 4, 0, 4, nJets, ZZ->fakeRateSFVarHigh());
-  theHistograms.fill(std::string("ZZTo")+decay+"_nJets_FRVarLow", " Var Low From FR Number of jets (|#eta|<4.7 and p_T > 30 GeV)", 4, 0, 4, nJets, ZZ->fakeRateSFVarLow());
-  
+  theHistograms.fill(std::string("ZZTo")+decay+"_nJets_FRVar", " Var Low From FR Number of jets (|#eta|<4.7 and p_T > 30 GeV)", 4, 0, 4, nJets, ZZ->fakeRateSFVar());
 
   if(jets->size()>0){
     theHistograms.fill(std::string("ZZTo")+decay+"_ptJet"      , "#Delta Y(j,j) between the two most energetyc central jets"            ,  100, 20, 400,jets->at(0).pt(), theWeight);     
@@ -142,7 +158,6 @@ void ZZjAnalyzer::ZZplots(int id){
 
   if(jets->size() >= 2) {
   
-
     //  Float_t zZ1 = (jets->at(2).eta()-(jets->at(0).eta() + jets->at(1).eta()))/fabs(jets->at(0).eta() - jets ->at(1).eta());
     Float_t zZ1 = ZZ->first().eta()-(jets->at(0).eta() + jets->at(1).eta())/2;
     Float_t zZ2 = ZZ->second().eta()-(jets->at(0).eta() + jets->at(1).eta())/2;
@@ -164,25 +179,20 @@ void ZZjAnalyzer::ZZplots(int id){
 
     theHistograms.fill(std::string("ZZTo")+decay+"_deltaEtaJJ"      , "#Delta #eta(j,j) between the two most energetic jets"            ,  10, 0, 8, fabs(jets->at(0).eta() - jets->at(1).eta()), theWeight); 
 
-    theHistograms.fill(std::string("ZZTo")+decay+"_deltaEtaJJ_FRVarHigh", "VarHigh From FR #Delta #eta(j,j) between the two most energetic jets",  10, 0, 8, fabs(jets->at(0).eta() - jets->at(1).eta()),ZZ->fakeRateSFVarHigh());
-
-    theHistograms.fill(std::string("ZZTo")+decay+"_deltaEtaJJ_FRVarLow", "VarLow From FR #Delta #eta(j,j) between the two most energetic jets",  10, 0, 8, fabs(jets->at(0).eta() - jets->at(1).eta()),ZZ->fakeRateSFVarLow());
+   
+    theHistograms.fill(std::string("ZZTo")+decay+"_deltaEtaJJ_FRVarLow", "VarLow From FR #Delta #eta(j,j) between the two most energetic jets",  10, 0, 8, fabs(jets->at(0).eta() - jets->at(1).eta()),ZZ->fakeRateSFVar());
 
     theHistograms.fill(std::string("ZZTo")+decay+"_deltaYJJ"           , "#Delta Y(j,j) between the two most energetic jets"            ,  10, 0, 8, fabs(jets->at(0).rapidity() - jets->at(1).rapidity()), theWeight); 
 
-    theHistograms.fill(std::string("ZZTo")+decay+"_deltaYJJ_FRVarHigh"  ,"VarHigh From FR #Delta Y(j,j) between the two most energetic jets",  10, 0, 8, fabs(jets->at(0).rapidity() - jets->at(1).rapidity()),ZZ->fakeRateSFVarHigh());
 
-    theHistograms.fill(std::string("ZZTo")+decay+"_deltaYJJ_FRVarLow", "VarLow From FR #Delta Y(j,j) between the two most energetic jets",  10, 0, 8, fabs(jets->at(0).rapidity() - jets->at(1).rapidity()),ZZ->fakeRateSFVarLow());
+    theHistograms.fill(std::string("ZZTo")+decay+"_deltaYJJ_FRVarLow", "VarLow From FR #Delta Y(j,j) between the two most energetic jets",  10, 0, 8, fabs(jets->at(0).rapidity() - jets->at(1).rapidity()),ZZ->fakeRateSFVar());
   
 }
 
-
-  if(nJets >= 3){
-    Float_t z =  (jets->at(2).eta()-(jets->at(0).eta() + jets->at(1).eta()))/fabs(jets->at(0).eta() - jets ->at(1).eta());
-
-    //      std::cout<<<z1<<std::endl;
-    theHistograms.fill(std::string("ZZTo")+decay+"_z"      , "z between the two most energetic jets"            ,  21, -10, 10, z, theWeight); 
-  }
+  // if(nJets >= 3){ //Check fix
+  //   Float_t z =  (jets->at(2).eta()-(jets->at(0).eta() + jets->at(1).eta()))/fabs(jets->at(0).eta() - jets ->at(1).eta());
+  //   theHistograms.fill(std::string("ZZTo")+decay+"_z"      , "z between the two most energetic jets"            ,  21, -10, 10, z, theWeight); 
+  // }
 
   theHistograms.fill(std::string("ZZTo")+decay+"_nExtraMuons"    , "Number of extra muons in the event"    , 10, 0, 10, muons->size(), theWeight); 
   theHistograms.fill(std::string("ZZTo")+decay+"_nExtraElectrons", "Number of extra electrons in the event", 10, 0, 10, electrons->size(), theWeight); 
@@ -196,50 +206,60 @@ void ZZjAnalyzer::analyze(){
 
   // Uncomment to look into a en event details
 
-  // if(ZZ->second().mass()>60) {
-  //   //  if(eventstr=="258448:311:374222263") 
+    bool printDet = kFALSE;
+  //  bool printDet = kTRUE;
+
+  // if(eventstr=="274388:1503:2681886984"){
 
 
-  //   std::cout<<"\n"<<eventstr<<" ZZMass "<<ZZ->mass()<<" Z0m "<<ZZ->first().mass()<<" Z1m "<<ZZ->second().mass()<<" id Z0 "<<ZZ->first().daughterPtr(0)->id()<<" id Z1 "<<ZZ->second().daughterPtr(0)->id()<<"\n"
+  if(printDet && ((jets->size()==1 && genJets->size()==0) || (jets->size()==1 && genJets->size()==1))){
+    if(jets->size()==1 && genJets->size()==0) cout<<"\n\n##FAKE##\n"<<eventstr<<"\n"<<std::endl;
+    else                                      cout<<"\n\n##TRUE##\n"<<eventstr<<"\n"<<std::endl;
+    
+    std::cout<<"Region Word "<<regionWord<<"\n"
+	     <<"ZZMass "<<ZZ->mass()<<"\n"
+	     <<"Z0) Mass = "<<ZZ->first().mass()<<" pt = "<<ZZ->first().pt()<<"\n"
+	     <<"Z1) Msss = "<<ZZ->second().mass()<<" pt = "<<ZZ->second().pt()<<"\n"
 
-  // 	     <<" pt z0l0 "<<ZZ->first().daughterPtr(0)->pt()<<" pt z0l1 "<<ZZ->first().daughterPtr(1)->pt()<<" pt z1l0 "<<ZZ->second().daughterPtr(0)->pt()<<" pt z1l1 "<<ZZ->second().daughterPtr(1)->pt()<<"\n"
-  // 	     <<" eta z0l0 "<<ZZ->first().daughterPtr(0)->eta()<<" eta z0l1 "<<ZZ->first().daughterPtr(1)->eta()<<" eta z1l0 "<<ZZ->second().daughterPtr(0)->eta()<<" eta z1l1 "<<ZZ->second().daughterPtr(1)->eta()<<"\n"
-  // 	  <<" sip z0l0 "<<ZZ->first().daughterPtr(0)->sip()<<" sip z0l1 "<<ZZ->first().daughterPtr(1)->sip()<<" sip z1l0 "<<ZZ->second().daughterPtr(0)->sip()<<" sip z1l1 "<<ZZ->second().daughterPtr(1)->sip()<<"\n"
-  // 	  <<" iso z0l0 "<<ZZ->first().daughterPtr(0)->pfCombRelIsoFSRCorr()<<" iso z0l1 "<<ZZ->first().daughterPtr(1)->pfCombRelIsoFSRCorr()<<" iso z1l0 "<<ZZ->second().daughterPtr(0)->pfCombRelIsoFSRCorr()<<" iso z1l1 "<<ZZ->second().daughterPtr(1)->pfCombRelIsoFSRCorr()<<"\n"
-  // 	  <<" iso noFSR z0l0 "<<ZZ->first().daughterPtr(0)->pfCombRelIso()<<" iso noFSR z0l1 "<<ZZ->first().daughterPtr(1)->pfCombRelIso()<<" iso noFSR z1l0 "<<ZZ->second().daughterPtr(0)->pfCombRelIso()<<" iso noFSR z1l1 "<<ZZ->second().daughterPtr(1)->pfCombRelIso()<<"\n"
-  // 	     <<" isgood z0l0 "<<ZZ->first().daughterPtr(0)->isGood()<<" isgood z0l1 "<<ZZ->first().daughterPtr(1)->isGood()<<" isgood z1l0 "<<ZZ->second().daughterPtr(0)->isGood()<<" isgood z1l1 "<<ZZ->second().daughterPtr(1)->isGood()<<"\n"
-  // 	  <<"FSR\n"<<"fsr pt z0l0 "<<ZZ->first().fsrPhoton(0).pt()<<" fsr pt z0l1 "<<ZZ->first().fsrPhoton(1).pt()<<" fsr pt z1l0 "<<ZZ->second().fsrPhoton(0).pt()<<" fsr pt z1l1 "<<ZZ->second().fsrPhoton(1).pt()<<"\n"
-  // 	     <<"Region Word "<<regionWord<<" is2p2f "<<regionWord.test(24)<<" is3p1f "<<regionWord.test(25)<<" is ZZSR "<<regionWord.test(26)
-  // 	     <<std::endl;
-  // }
+             <<"Z0 l0) pt = "<<ZZ->first().daughterPtr(0)->pt()<<" eta = "<<ZZ->first().daughterPtr(0)->eta()<<" sip = "<<ZZ->first().daughterPtr(0)->sip()<<" iso = "<<ZZ->first().daughterPtr(0)->pfCombRelIsoFSRCorr()
+	     <<" iso noFSR = "<<ZZ->first().daughterPtr(0)->pfCombRelIso()<<"\n"
+	     <<"       is good "<<ZZ->first().daughterPtr(0)->isGood()<<" FSR photon pt = "<<ZZ->first().fsrPhoton(0).pt()<<"\n"     
 
- 
- 
+             <<"Z0 l1) pt = "<<ZZ->first().daughterPtr(1)->pt()<<" eta = "<<ZZ->first().daughterPtr(1)->eta()<<" sip = "<<ZZ->first().daughterPtr(1)->sip()<<" iso = "<<ZZ->first().daughterPtr(1)->pfCombRelIsoFSRCorr()
+	     <<" iso noFSR = "<<ZZ->first().daughterPtr(1)->pfCombRelIso()<<"\n"
+	     <<"       is good "<<ZZ->first().daughterPtr(1)->isGood()<<" FSR photon pt = "<<ZZ->first().fsrPhoton(0).pt()<<"\n"     
 
-  //  if(passSRZZOnShell){
-  // if((region_ == phys::SR)&&(ZZ->first().daughterPtr(0)->pt() >10) && (ZZ->first().daughterPtr(1)->pt() >10)&& (ZZ->second().daughterPtr(0)->pt()>10) && (ZZ->second().daughterPtr(1)->pt()>10)) isZZRegion =1;
-  // else if((region_ == phys::CR3P1F) && (((ZZ->second().daughterPtr(0)->pt()>10)&&(ZZ->second().daughterPtr(0)->passFullSel())) || ((ZZ->second().daughterPtr(1)->pt()>10)&&(ZZ->second().daughterPtr(1)->passFullSel()) ))) isZZRegion =1;
-  // else if(region_ == phys::CR2P2F) isZZRegion=1;
+             <<"Z1 l0) pt = "<<ZZ->second().daughterPtr(0)->pt()<<" eta = "<<ZZ->second().daughterPtr(0)->eta()<<" sip = "<<ZZ->second().daughterPtr(0)->sip()<<" iso = "<<ZZ->second().daughterPtr(0)->pfCombRelIsoFSRCorr()
+	     <<" iso noFSR = "<<ZZ->second().daughterPtr(0)->pfCombRelIso()<<"\n"
+	     <<"       is good "<<ZZ->second().daughterPtr(0)->isGood()<<" FSR photon pt = "<<ZZ->second().fsrPhoton(0).pt()<<"\n"     
 
-  // To use the MC region
-  // bool isIn = 0;
-  //if(regionWord.test(25)) isIn=1; //CR3P1F
-  //if(regionWord.test(24)) isIn=1; //CR2P2F
-  //if(regionWord.test(26)) isIn=1; //SR
+             <<"Z1 l1) pt = "<<ZZ->second().daughterPtr(1)->pt()<<" eta = "<<ZZ->second().daughterPtr(1)->eta()<<" sip = "<<ZZ->second().daughterPtr(1)->sip()<<" iso = "<<ZZ->second().daughterPtr(1)->pfCombRelIsoFSRCorr()
+	     <<" iso noFSR = "<<ZZ->second().daughterPtr(1)->pfCombRelIso()<<"\n"
+	     <<"       is good "<<ZZ->second().daughterPtr(1)->isGood()<<" FSR photon pt = "<<ZZ->second().fsrPhoton(0).pt()<<"\n"     
 
-  
-  //std::cout<<"lep1 "<<ZZ->second().daughterPtr(0)->passFullSel()<<" "<<ZZ->second().daughterPtr(0)->pfCombRelIsoFSRCorr()<<std::endl;
-  //std::cout<<"lep2 "<<ZZ->second().daughterPtr(1)->passFullSel()<<" "<<ZZ->second().daughterPtr(1)->pfCombRelIsoFSRCorr()<<std::endl;
+	     <<"is2p2f "<<regionWord.test(24)<<" is3p1f "<<regionWord.test(25)<<" is ZZSR "<<regionWord.test(26)
+	     <<std::endl; 
+    int i = 0;
+    foreach(const phys::Jet &jet, *jets){
+      cout<<"jet "<<i<<") pt "<<jet.pt()<<"    eta "<<jet.eta()
+          <<"  nConstituents = "<< jet.nConstituents()
+          <<"  nCharged = "<<jet.nCharged()
+          <<"  Neutral = "<<jet.nNeutral()
+          <<"  neutralHadronEnergyFraction = "<<jet.neutralHadronEnergyFraction()
+          <<"  chargedHadronEnergyFraction = "<<jet.chargedHadronEnergyFraction()<<"\n"
+          <<"     chargedEmEnergyFraction = "<<jet.chargedEmEnergyFraction()
+          <<"  neutralEmEnergyFraction = "<<jet.neutralEmEnergyFraction()
+          <<"  muonEnergyFraction  = "<<jet.muonEnergyFraction()
+	  <<"  sum pt^2 = "<<jet.ptd()  
+	  <<"  jetArea = "<<jet.jetArea()<<std::endl;
+    }  
+  }
   
   Float_t scaleFacErrSq = ZZ->efficiencySFUnc(); 
   theHistograms.fill("SFErr","Invariant Mass ",200,0,5.,scaleFacErrSq,1);
-
   theHistograms.fill("ZZMass","Invariant Mass ",200,55,1000,ZZ->mass(),theWeight);
-  theHistograms.fill("ZZMass_FRVarHigh","VarHigh From FR Invariant Mass ",200,55,1000,ZZ->mass(), ZZ->fakeRateSFVarHigh());
-  theHistograms.fill("ZZMass_FRVarLow","VarLow From FR Invariant Mass ",200,55,1000,ZZ->mass(), ZZ->fakeRateSFVarLow());
+  theHistograms.fill("ZZMass_FRVar","Var From FR Invariant Mass ",200,55,1000,ZZ->mass(), ZZ->fakeRateSFVar());
   
-  
-  // std::cout<<"ev "<<eventstr<<std::endl;
   
   if((region_ == phys::CR3P1F) && 
      ((((abs(ZZ->second().daughterPtr(0)->id())==11) &&  ZZ->second().daughterPtr(0)->pfCombRelIsoFSRCorr() >0.5) || 
@@ -277,8 +297,7 @@ if(
 
  theWeight*=w_kf;
  
- 
-    // Some basic plots on ZZ    
+     // Some basic plots on ZZ    
     ZZplots();   // ZZ --> 4l
     ZZplots(52); // ZZ --> 4m
     ZZplots(48); // ZZ --> 2e2m
@@ -303,9 +322,4 @@ void ZZjAnalyzer::end( TFile &) {
     
 }
 
-  
-double ZZjAnalyzer::JER_PtSmear(double pt, double width)
-{
-  double ptsmear= gRandom->Gaus(pt,width);    
-  return ptsmear;
-}
+ 

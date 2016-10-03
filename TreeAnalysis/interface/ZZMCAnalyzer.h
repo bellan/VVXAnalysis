@@ -37,14 +37,15 @@ public:
   float etajet1_gen;
   float etajet2_gen; 
   float drzz_gen;
-  int njets;
-  int ncentraljets;
-  int PreCounter;
-  int inFiducialRegion;
-  int nEvent;
   float w_kf;
   float dphizz_gen;
   float ptzz_gen;
+
+  int   njets;
+  int   ncentraljets;
+  int   PreCounter;
+  int   inFiducialRegion;
+  int   nEvent;
   
  private:
 
