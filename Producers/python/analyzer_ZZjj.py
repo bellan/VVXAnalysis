@@ -16,6 +16,9 @@ declareDefault("SKIM_REQUIRED",True,globals())
 declareDefault("KINREFIT", False, globals())
 
 declareDefault("BESTCANDCOMPARATOR", "byBestZ1bestZ2", globals())
+
+# uncomment for MINIAOD v2 with no rehlt.
+#declareDefault("APPLYTRIG", False, globals()) 
 # Get absolute path
 import os
 PyFilePath = os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/"
@@ -30,8 +33,6 @@ execfile(PyFilePath + "MasterPy/ZZ4lAnalysis.py")         # 2012 reference analy
 ### Replace parameters
 ### ----------------------------------------------------------------------
 SkimPaths.append("preselection")
-
-
 
 ### ----------------------------------------------------------------------
 ### Output root file
