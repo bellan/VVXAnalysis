@@ -36,7 +36,7 @@ void PurityAndStability::Build(string var, string finalstate)
   int b = 0;
 
   if(var == "Mass")  b = 9;
-  else if(var == "Jets" || var == "Jets_Central") b = 5;
+  else if(var == "nJets" || var == "nJets_Central") b = 5;
   else if(var == "Mjj" || var == "CentralMjj" || var == "Deta" || var == "CentralDeta") b = 3;
   else if(var == "PtJet1") b = 6;
   else if(var == "PtJet2") b = 5;
@@ -131,7 +131,7 @@ void PurityAndStability::Plot(string var,string finalstate, string path)
   if(var =="Mass"){
     xAxis = "reco m_{"+fs+"}";
    }
-  else if(var =="Jets"){
+  else if(var =="nJets"){
     xAxis = "reco Njets";
   }
   else if(var =="Mjj"){
@@ -140,7 +140,7 @@ void PurityAndStability::Plot(string var,string finalstate, string path)
   else if(var =="Deta"){
     xAxis = "reco #Delta#eta_{jj}";
   }
-  else if(var =="Jets_Central"){
+  else if(var =="nJets_Central"){
     xAxis = "reco Ncentraljets";
   }
   else if(var =="Mjj_Central"){
@@ -247,7 +247,7 @@ void PurityAndStability::Plot_PAS(string var,string finalstate, string path)
   else if(finalstate == "2e2m") fs = "2e2#mu";
   else fs = finalstate;
   
-  if(var == "Jets" || var == "Jets_Central"){
+  if(var == "nJets" || var == "nJets_Central"){
     p_mad->GetXaxis()->SetBinLabel(1,"0");
     p_mad->GetXaxis()->SetBinLabel(2,"1");
     p_mad->GetXaxis()->SetBinLabel(3,"2");
@@ -260,7 +260,7 @@ void PurityAndStability::Plot_PAS(string var,string finalstate, string path)
   if(var =="Mass"){
     xAxis = "reco m_{"+fs+"} [GeV]";
    }
-  else if(var =="Jets"){
+  else if(var =="nJets"){
     xAxis = "reco N jets (|#eta^{jet}|<4.7)";
   }
   else if(var =="Mjj"){
@@ -269,7 +269,7 @@ void PurityAndStability::Plot_PAS(string var,string finalstate, string path)
   else if(var =="Deta"){
     xAxis = "reco #Delta#eta_{jj} (|#eta^{jet}|<4.7)";
   }
-  else if(var =="Jets_Central"){
+  else if(var =="nJets_Central"){
     xAxis = "reco N jets (|#eta^{jet}|<2.4)";
   }
   else if(var =="Mjj_Central"){

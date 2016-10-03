@@ -174,8 +174,8 @@ void GenerateGenMCUpDown_Var(string var)
 }
 void GenerateGenMCUpDown_All()
 {   
-  GenerateGenMCUpDown_Var("Jets");
-  GenerateGenMCUpDown_Var("Jets_Central"); 
+  GenerateGenMCUpDown_Var("nJets");
+  GenerateGenMCUpDown_Var("nJets_Central"); 
   GenerateGenMCUpDown_Var("Mjj_Central"); 
   GenerateGenMCUpDown_Var("Deta_Central");
   GenerateGenMCUpDown_Var("Mjj"); 
@@ -212,8 +212,8 @@ void GenerateGenMGatNLOUpDownDistributions(string var, bool tightregion)
 }
 void GenerateGenMGatNLOUpDown_All()
 {   
-  GenerateGenMGatNLOUpDownDistributions("Jets",0);
-  GenerateGenMGatNLOUpDownDistributions("Jets_Central",0); 
+  GenerateGenMGatNLOUpDownDistributions("nJets",0);
+  GenerateGenMGatNLOUpDownDistributions("nJets_Central",0); 
   GenerateGenMGatNLOUpDownDistributions("Mjj_Central",0); 
   GenerateGenMGatNLOUpDownDistributions("Deta_Central",0);
   GenerateGenMGatNLOUpDownDistributions("Mjj",0); 
@@ -223,8 +223,8 @@ void GenerateGenMGatNLOUpDown_All()
   GenerateGenMGatNLOUpDownDistributions("PtJet2",0); 
   GenerateGenMGatNLOUpDownDistributions("EtaJet1",0);
   GenerateGenMGatNLOUpDownDistributions("EtaJet2",0); 
-  GenerateGenMGatNLOUpDownDistributions("Jets",1);
-  GenerateGenMGatNLOUpDownDistributions("Jets_Central",1); 
+  GenerateGenMGatNLOUpDownDistributions("nJets",1);
+  GenerateGenMGatNLOUpDownDistributions("nJets_Central",1); 
   GenerateGenMGatNLOUpDownDistributions("Mjj_Central",1); 
   GenerateGenMGatNLOUpDownDistributions("Deta_Central",1);
   GenerateGenMGatNLOUpDownDistributions("Mjj",1); 
@@ -241,16 +241,16 @@ void GenerateAll_step1(){
   GenerateDistributions("Mass",0,1);
   GenerateDistributions("Mass",1,0);
   GenerateDistributions("Mass",1,1);
-  cout<<"Jets"<<endl;
-  GenerateDistributions("Jets",0,0);
-  GenerateDistributions("Jets",0,1);
-  GenerateDistributions("Jets",1,0);
-  GenerateDistributions("Jets",1,1);
-  cout<<"Jets Central"<<endl;  
-  GenerateDistributions("Jets_Central",0,0);
-  GenerateDistributions("Jets_Central",0,1);
-  GenerateDistributions("Jets_Central",1,0);
-  GenerateDistributions("Jets_Central",1,1);
+  cout<<"nJets"<<endl;
+  GenerateDistributions("nJets",0,0);
+  GenerateDistributions("nJets",0,1);
+  GenerateDistributions("nJets",1,0);
+  GenerateDistributions("nJets",1,1);
+  cout<<"nJets Central"<<endl;  
+  GenerateDistributions("nJets_Central",0,0);
+  GenerateDistributions("nJets_Central",0,1);
+  GenerateDistributions("nJets_Central",1,0);
+  GenerateDistributions("nJets_Central",1,1);
   cout<<"Mjj"<<endl;
   GenerateDistributions("Mjj",0,0);
   GenerateDistributions("Mjj",0,1);

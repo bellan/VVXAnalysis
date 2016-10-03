@@ -142,8 +142,8 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
 
   string XaxisTitle;
   if(var == "Mass") XaxisTitle = "m_{4l} [GeV]"; 
-  else if(var == "Jets")  XaxisTitle = "N jets (|#eta^{jet}| < 4.7)";
-  else if(var == "Jets_Central")  XaxisTitle = "N jets (|#eta^{jet}| < 2.4)"; 
+  else if(var == "nJets")  XaxisTitle = "N jets (|#eta^{jet}| < 4.7)";
+  else if(var == "nJets_Central")  XaxisTitle = "N jets (|#eta^{jet}| < 2.4)"; 
   else if(var == "Mjj") {XaxisTitle ="m_{jj} (|#eta^{jet}| < 4.7) [GeV]";}
   else if(var == "Mjj_Central") {XaxisTitle ="m_{jj} (|#eta^{jet}| < 2.4) [GeV]";}
   else if( var == "Deta"){ XaxisTitle ="#Delta#eta_{jj} (|#eta^{jet}| < 4.7)";}
@@ -251,11 +251,12 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
   pad2->cd();
   hReco_r->SetTitle(""); 
   hReco_r->GetXaxis()->SetLabelSize(0.13); 
-  if(var == "Jets" || var == "Jets_Central"){
+  if(var == "nJets" || var == "nJets_Central"){
    hReco_r->GetXaxis()->SetBinLabel(1,"0");
    hReco_r->GetXaxis()->SetBinLabel(2,"1");
    hReco_r->GetXaxis()->SetBinLabel(3,"2");
-   hReco_r->GetXaxis()->SetBinLabel(4,">2");  
+   hReco_r->GetXaxis()->SetBinLabel(3,"3");
+   hReco_r->GetXaxis()->SetBinLabel(4,">3");  
    hReco_r->GetXaxis()->SetLabelFont(42);
     //h_true->GetXaxis()->SetLabelOffset(0.02);
    hReco_r->GetXaxis()->SetLabelSize(0.17);
@@ -336,10 +337,10 @@ void MakeAllFinalStates (string var = "Mass",bool bayes = 0, int it = 4, bool ti
 void MakeAllTests (bool bayes = 0, int it = 4, string date = "test"){
   MakeAllFinalStates("Mass",bayes,it,0,date);
   MakeAllFinalStates("Mass",bayes,it,1,date);
-  MakeAllFinalStates("Jets",bayes,it,0,date);
-  MakeAllFinalStates("Jets",bayes,it,1,date);
-  MakeAllFinalStates("Jets_Central",bayes,it,0,date);
-  MakeAllFinalStates("Jets_Central",bayes,it,1,date);
+  MakeAllFinalStates("nJets",bayes,it,0,date);
+  MakeAllFinalStates("nJets",bayes,it,1,date);
+  MakeAllFinalStates("nJets_Central",bayes,it,0,date);
+  MakeAllFinalStates("nJets_Central",bayes,it,1,date);
   MakeAllFinalStates("Mjj_Central",bayes,it,0,date);
   MakeAllFinalStates("Mjj_Central",bayes,it,1,date);  
   MakeAllFinalStates("Deta_Central",bayes,it,0,date);

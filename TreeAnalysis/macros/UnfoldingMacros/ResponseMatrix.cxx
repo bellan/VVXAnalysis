@@ -151,7 +151,7 @@ void ResponseMatrix::Build(string var, string dataset, string finalstate, int xs
     variable = var;
     b=7;
   }
-  else if(var == "Jets" ||var == "Jets_Central"){
+  else if(var == "nJets" ||var == "nJets_Central"){
     variable = var + "_JERSmear";
     b=6;
   }
@@ -408,7 +408,7 @@ void ResponseMatrix::Build_SF(string var, string dataset, string finalstate, str
    
   int b = 0;  
 
-  if(var == "Jets" ||var == "Jets_Central")b =6;
+  if(var == "nJets" ||var == "nJets_Central")b =6;
   else if(var == "PtJet1" ||var =="PtJet2"||var == "EtaJet1" ||var == "EtaJet2") b =6;   
   else if(var == "Mass") b = 9;
   else if(var == "dRZZ") b = 7;  
@@ -584,7 +584,7 @@ void ResponseMatrix::Build_JE(string var, string dataset, string finalstate, str
 
   int b = 0;  
   
-  if(var == "Jets" ||var == "Jets_Central")b =6;
+  if(var == "nJets" ||var == "nJets_Central")b =6;
   else if(var == "PtJet1" ||var =="PtJet2"||var == "EtaJet1" ||var == "EtaJet2") b =6;     
   else  b=3;
 
@@ -792,7 +792,7 @@ void ResponseMatrix::Plot(string var,string fs, string dataset, string unc, stri
     yAxis = "gen  #DeltaR(Z_1,Z_2)";
     max = matrix->GetBinContent(4,4)/2+3;
   }
-  else if(var =="Jets"){
+  else if(var =="nJets"){
     xAxis = "reco N jets (|#eta^{jet}|<4.7)";
     yAxis = "gen N jets (|#eta^{jet}|<4.7)"; 
     max = matrix->GetBinContent(1,1)/2;
@@ -808,7 +808,7 @@ void ResponseMatrix::Plot(string var,string fs, string dataset, string unc, stri
     yAxis = "gen #Delta#eta_{jj} (|#eta^{jet}|<4.7)"; 
     max = matrix->GetBinContent(2,2)*1.5;
   }
-  else if(var =="Jets_Central"){
+  else if(var =="nJets_Central"){
     xAxis = "reco N jets (|#eta^{jet}|<2.4)";
     yAxis = "gen N jets (|#eta^{jet}|<2.4)"; 
     max = matrix->GetBinContent(1,1)/3;
@@ -848,7 +848,7 @@ void ResponseMatrix::Plot(string var,string fs, string dataset, string unc, stri
     yAxis = "gen |#eta^{jet2}|";
     max = matrix->GetBinContent(2,2)/2;
  }
- if(var == "Jets" || var == "Jets_Central"){
+ if(var == "nJets" || var == "nJets_Central"){
     matrix->GetXaxis()->SetBinLabel(1,"0");
     matrix->GetXaxis()->SetBinLabel(2,"1");
     matrix->GetXaxis()->SetBinLabel(3,"2");
@@ -906,7 +906,7 @@ void ResponseMatrix::GenMCSystDistributions(string var, string dataset, string f
     variable = var;
     b=7;
   }
-  else if(var == "Jets" ||var == "Jets_Central"){
+  else if(var == "nJets" ||var == "nJets_Central"){
     variable = var + "_JERSmear";
     b=6;
   }
@@ -1033,7 +1033,7 @@ void ResponseMatrix::GenMGatNLOSystDistributions(string var, string dataset, str
     variable = var;
     b=7;
   }
-  else if(var == "Jets" ||var == "Jets_Central"){
+  else if(var == "nJets" ||var == "nJets_Central"){
     variable = var + "_JERSmear";
     b=6;
   }

@@ -162,8 +162,8 @@ void Unfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tightre
   else finalstate = fs;
 
   if(var == "Mass") XaxisTitle = "m_{" + finalstate + "} [GeV]"; 
-  else if(var == "Jets")  XaxisTitle = "N Jets (" + finalstate + " final state)";
-  else if(var == "Jets_Central")  XaxisTitle = "N Central Jets (" + finalstate + " final state)";
+  else if(var == "nJets")  XaxisTitle = "N nJets (" + finalstate + " final state)";
+  else if(var == "nJets_Central")  XaxisTitle = "N Central nJets (" + finalstate + " final state)";
   else if(var == "Mjj" ||var == "Mjj_Central")  XaxisTitle = "m_{jj} (" + finalstate + " final state) [GeV]";
   else if(var == "Deta"||var == "Deta_Central")  XaxisTitle = "#Delta#eta_{jj} (" + finalstate + " final state)";
   else if(var =="PtJet1")  XaxisTitle = "p_{T}^{jet1} ("+ finalstate+" final state) [GeV]";
@@ -176,7 +176,7 @@ void Unfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tightre
  
   float max = 0;
   if(var == "Mass") max =  h_unfolded->GetBinContent(2)+h_unfolded->GetBinContent(2)*0.15+h_unfolded->GetBinError(2); 
-  else if(var == "Jets"||var == "Jets_Central")  max =  h_unfolded->GetBinContent(1)+h_unfolded->GetBinContent(1)*0.15+h_unfolded->GetBinError(1); 
+  else if(var == "nJets"||var == "nJets_Central")  max =  h_unfolded->GetBinContent(1)+h_unfolded->GetBinContent(1)*0.15+h_unfolded->GetBinError(1); 
   else if(var == "Mjj"|| var == "Mjj_Central") max =  h_true->GetBinContent(1)+h_true->GetBinContent(1)*0.20+h_unfolded->GetBinError(1); 
   else if(var == "Deta"|| var == "Deta_Central" ) max =  h_true->GetBinContent(1)+h_true->GetBinContent(1)*0.15+h_unfolded->GetBinError(1); 
   else if(var == "PtJet1") max =  h_true->GetBinContent(1)+h_true->GetBinContent(1)*0.15+h_unfolded->GetBinError(1); 
@@ -289,7 +289,7 @@ void Unfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tightre
   TLine *line = new TLine();
 
   if(var == "Mass")line = new TLine(100,1,800,1);
-  else if(var == "Jets" ||var == "Jets_Central") line =  new TLine(0,1,4,1);
+  else if(var == "nJets" ||var == "nJets_Central") line =  new TLine(0,1,4,1);
   else if(var == "Mjj" || var == "Mjj_Central") line =  new TLine(0,1,800,1);
   else if(var == "Deta"  || var == "Deta_Central") line =  new TLine(0,1,4.7,1);
   else if(var =="PtJet1"||var =="PtJet2" )  line =  new TLine(30,1,500,1); 
@@ -368,11 +368,11 @@ void DoUnfoldedDataOverGenMCRatio(string var = "Mass", string fs = "4e", bool ma
     b=9;
     XaxisTitle = "m_{"+finalstate+"}";
   }
-  else if(var =="Jets"){
+  else if(var =="nJets"){
     b=5;
     XaxisTitle = "Njets ("+finalstate+"-final state)";
   }
- else if(var =="Jets_Central"){
+ else if(var =="nJets_Central"){
     b=5;
     XaxisTitle = "N central jets ("+finalstate+"-final state)";
  }
@@ -836,7 +836,7 @@ void DoUnfOverGenSystematic(string var = "Mass", string fs = "4e", bool mad = 1,
 
 }
 
-void DoJERSystematic(string var = "Jets", string fs = "4e", bool mad = 1,bool tightregion = 0){
+void DoJERSystematic(string var = "nJets", string fs = "4e", bool mad = 1,bool tightregion = 0){
   
   string tightfr;
   if(tightregion == 1) tightfr = "_fr";
@@ -936,7 +936,7 @@ void DoJERSystematic(string var = "Jets", string fs = "4e", bool mad = 1,bool ti
   data->Close();
 }
 
-void DoJESSystematic_ModMat(string var = "Jets", string fs = "4e", bool mad = 1,bool tightregion = 0){
+void DoJESSystematic_ModMat(string var = "nJets", string fs = "4e", bool mad = 1,bool tightregion = 0){
   
   string tightfr;
   if(tightregion == 1) tightfr = "_fr";
@@ -1036,7 +1036,7 @@ void DoJESSystematic_ModMat(string var = "Jets", string fs = "4e", bool mad = 1,
   output->Close();
 }
 
-void DoJESSystematic_ModData(string var = "Jets", string fs = "4e",bool mad = 1,bool tightregion = 0){
+void DoJESSystematic_ModData(string var = "nJets", string fs = "4e",bool mad = 1,bool tightregion = 0){
   
   string tightfr;
   if(tightregion == 1) tightfr = "_fr";
@@ -1130,7 +1130,7 @@ void DoJESSystematic_ModData(string var = "Jets", string fs = "4e",bool mad = 1,
   data->Close();
 }
 
-void DoSFSystematic(string var = "Jets", string fs = "4e", bool mad = 1,bool tightregion = 0, bool corr = 0){
+void DoSFSystematic(string var = "nJets", string fs = "4e", bool mad = 1,bool tightregion = 0, bool corr = 0){
   
   string tightfr;
   string errtype;
@@ -1267,7 +1267,7 @@ void  DoAllSystematics(string var = "Mass", bool mad =1, bool tightregion =0){
   //DoUnfOverGenSystematic(var.c_str(), "4m",mad,tightregion);
   //sDoUnfOverGenSystematic(var.c_str(), "2e2m",mad,tightregion);
   
-  if(var == "Jets"||var == "Mjj"||var == "Deta" || var == "Jets_Central"||var == "Mjj_Central"||var == "Deta_Central"||var == "PtJet1"||var == "PtJet2"||var == "EtaJet1"||var == "EtaJet2"){
+  if(var == "nJets"||var == "Mjj"||var == "Deta" || var == "nJets_Central"||var == "Mjj_Central"||var == "Deta_Central"||var == "PtJet1"||var == "PtJet2"||var == "EtaJet1"||var == "EtaJet2"){
     DoJERSystematic(var.c_str(), "4e",mad,tightregion); 
     DoJERSystematic(var.c_str(), "4m",mad,tightregion);
     DoJERSystematic(var.c_str(), "2e2m",mad,tightregion);
@@ -1289,7 +1289,7 @@ void  DoAllSystematics(string var = "Mass", bool mad =1, bool tightregion =0){
   // DoSFSystematic(var.c_str(),"2e2m",mad,tightregion,1); 
 }
 
-void PlotResults(string var = "Jets", string fs = "4e", string syst = "MCgen", bool mad =1,bool tightregion =0, string date = "test"){
+void PlotResults(string var = "nJets", string fs = "4e", string syst = "MCgen", bool mad =1,bool tightregion =0, string date = "test"){
   
 #ifdef __CINT__
   gSystem->Load("libRooUnfold");
@@ -1448,13 +1448,13 @@ void PlotResults(string var = "Jets", string fs = "4e", string syst = "MCgen", b
     if (tightregion == 1)max_y = 125;
     else max_y = 350;
   }
-  else if(var == "Jets")  {
+  else if(var == "nJets")  {
     XaxisTitle = "N jets (|#eta^{jet}| < 4.7)";
     YaxisTitle = "Events";
     if (tightregion == 1)  max_y = 300;
     else max_y = 700; 
   }
-  else if(var == "Jets_Central")  {
+  else if(var == "nJets_Central")  {
     XaxisTitle = "N jets (|#eta^{jet}| < 2.4)"; 
     YaxisTitle = "Events"; 
     if (tightregion == 1)  max_y = 300;
@@ -1602,7 +1602,7 @@ void PlotResults(string var = "Jets", string fs = "4e", string syst = "MCgen", b
 
 }
 
-void AllPlots_fs(string var = "Jets", string fs = "4e", bool mad =1,bool tightregion =0,string date = "test"){
+void AllPlots_fs(string var = "nJets", string fs = "4e", bool mad =1,bool tightregion =0,string date = "test"){
   std::cout << "===================================================================================" << std::endl;
   std::cout << "===================================================================================" << std::endl;
   std::cout << "                                 " << fs.c_str() << std::endl;
@@ -1613,7 +1613,7 @@ void AllPlots_fs(string var = "Jets", string fs = "4e", bool mad =1,bool tightre
   PlotResults(var.c_str(),fs.c_str(),"RedBkg",mad, tightregion, date.c_str());
   //  PlotResults(var.c_str(),fs.c_str(),"UnfDataOverGenMC",mad,tightregion, date.c_str());
 
-  if(var == "Jets"||var == "Mjj"||var == "Deta"||var == "Jets_Central"||var == "Mjj_Central"||var == "Deta_Central"||var == "PtJet1"||var == "PtJet2"||var == "EtaJet1"||var == "EtaJet2"){
+  if(var == "nJets"||var == "Mjj"||var == "Deta"||var == "nJets_Central"||var == "Mjj_Central"||var == "Deta_Central"||var == "PtJet1"||var == "PtJet2"||var == "EtaJet1"||var == "EtaJet2"){
     PlotResults(var.c_str(),fs.c_str(),"JER",mad, tightregion, date.c_str()); 
     PlotResults(var.c_str(),fs.c_str(),"JES_ModMat",mad, tightregion, date.c_str()); 
     PlotResults(var.c_str(),fs.c_str(),"JES_ModData",mad, tightregion, date.c_str()); 
@@ -1622,15 +1622,15 @@ void AllPlots_fs(string var = "Jets", string fs = "4e", bool mad =1,bool tightre
   //  PlotResults(var.c_str(),fs.c_str(),"SF",mad, tightregion, date.c_str());
 }
 
-void AllPlots(string var = "Jets", bool mad =1,bool tightregion =0,string date = "test"){
+void AllPlots(string var = "nJets", bool mad =1,bool tightregion =0,string date = "test"){
   AllPlots_fs(var.c_str(),"4e",mad, tightregion, date.c_str());
   AllPlots_fs(var.c_str(),"4m",mad, tightregion, date.c_str());
   AllPlots_fs(var.c_str(),"2e2m",mad, tightregion, date.c_str());
 }
 void AllSystematicPlotsForAllVariables(bool mad =1,bool tightregion =0,string date = "test"){
   
-  AllPlots("Jets",mad, tightregion, date);
-  AllPlots("Jets_Central",mad, tightregion, date);
+  AllPlots("nJets",mad, tightregion, date);
+  AllPlots("nJets_Central",mad, tightregion, date);
   AllPlots("Mjj",mad, tightregion, date);
   AllPlots("Mjj_Central",mad, tightregion, date);
   AllPlots("Deta",mad, tightregion, date);
@@ -1644,18 +1644,18 @@ void AllYouNeed(bool mad =1, bool tightregion = 0){
   Unfold_data_All("Mass",mad,tightregion);
   DoAllRatios("Mass",mad,tightregion);
   DoAllSystematics("Mass",mad,tightregion);
-  Unfold_data_All("Jets",mad,tightregion);
-  DoAllRatios("Jets",mad,tightregion);
-  DoAllSystematics("Jets",mad,tightregion);
+  Unfold_data_All("nJets",mad,tightregion);
+  DoAllRatios("nJets",mad,tightregion);
+  DoAllSystematics("nJets",mad,tightregion);
   Unfold_data_All("Mjj",mad,tightregion);
   DoAllRatios("Mjj",mad,tightregion);
   DoAllSystematics("Mjj",mad,tightregion);
   Unfold_data_All("Deta",mad,tightregion);
   DoAllRatios("Deta",mad,tightregion);
   DoAllSystematics("Deta",mad,tightregion);
-  Unfold_data_All("Jets_Central",mad,tightregion);
-  DoAllRatios("Jets_Central",mad,tightregion);
-  DoAllSystematics("Jets_Central",mad,tightregion);
+  Unfold_data_All("nJets_Central",mad,tightregion);
+  DoAllRatios("nJets_Central",mad,tightregion);
+  DoAllSystematics("nJets_Central",mad,tightregion);
   Unfold_data_All("Mjj_Central",mad,tightregion);
   DoAllRatios("Mjj_Central",mad,tightregion);
   DoAllSystematics("Mjj_Central",mad,tightregion);
@@ -1664,7 +1664,7 @@ void AllYouNeed(bool mad =1, bool tightregion = 0){
   DoAllSystematics("Deta_Central",mad,tightregion);
 }
 
-void PlotUnfoldData4L(string var = "Jets", bool mad =1,bool tightregion =0, string date = "test"){
+void PlotUnfoldData4L(string var = "nJets", bool mad =1,bool tightregion =0, string date = "test"){
   
 #ifdef __CINT__
   gSystem->Load("libRooUnfold");
@@ -1734,11 +1734,11 @@ void PlotUnfoldData4L(string var = "Jets", bool mad =1,bool tightregion =0, stri
     XaxisTitle = "m_{4l} [GeV]";
     YaxisTitle = "Events/GeV"; 
   }
-  else if(var == "Jets")  {
+  else if(var == "nJets")  {
     XaxisTitle = "N jets (|#eta^{jet}| < 4.7)";
     YaxisTitle = "Events"; 
   }
-  else if(var == "Jets_Central")  {
+  else if(var == "nJets_Central")  {
     XaxisTitle = "N jets (|#eta^{jet}| < 2.4)"; 
     YaxisTitle = "Events"; 
   }
@@ -1822,7 +1822,7 @@ void PlotUnfoldData4L(string var = "Jets", bool mad =1,bool tightregion =0, stri
     if (tightregion == 1)max = 4.5;
     else max = 9;
   }
-  else if(var == "Jets" || var == "Jets_Central"){
+  else if(var == "nJets" || var == "nJets_Central"){
     if (tightregion == 1)  max = 450;
     else max = 900;
   } 
@@ -1901,11 +1901,12 @@ void PlotUnfoldData4L(string var = "Jets", bool mad =1,bool tightregion =0, stri
   h_unfdata4e_r->GetYaxis()->SetTitleSize(0.10);
   h_unfdata4e_r->GetXaxis()->SetTitleSize(0.13);
   
-  if(var == "Jets" || var == "Jets_Central"){
+  if(var == "nJets" || var == "nJets_Central"){
     h_unfdata4e_r->GetXaxis()->SetBinLabel(1,"0");
     h_unfdata4e_r->GetXaxis()->SetBinLabel(2,"1");
     h_unfdata4e_r->GetXaxis()->SetBinLabel(3,"2");
-    h_unfdata4e_r->GetXaxis()->SetBinLabel(4,">2");  
+    h_unfdata4e_r->GetXaxis()->SetBinLabel(3,"3");
+±    h_unfdata4e_r->GetXaxis()->SetBinLabel(4,">3");  
     h_unfdata4e_r->GetXaxis()->SetLabelFont(42);
   }
   h_unfdata4e_r-> SetMaximum(3.); 
@@ -1914,7 +1915,7 @@ void PlotUnfoldData4L(string var = "Jets", bool mad =1,bool tightregion =0, stri
   TLine *line = new TLine();
   
   if(var == "Mass")line = new TLine(100,1,800,1);
-  else if(var == "Jets" ||var == "Jets_Central" ) line =  new TLine(0,1,4,1);
+  else if(var == "nJets" ||var == "nJets_Central" ) line =  new TLine(0,1,4,1);
   else if(var == "Mjj"||var == "Mjj_Central") line =  new TLine(0,1,800,1);
   else if(var == "Deta"||var == "Deta_Central") line =  new TLine(0,1,4.7,1);
   else if(var =="PtJet1"||var =="PtJet2" )  line =  new TLine(30,1,500,1); 
@@ -1940,8 +1941,8 @@ void PlotUnfoldData4L(string var = "Jets", bool mad =1,bool tightregion =0, stri
 
 void AllPlot4L(bool mad =1, bool tightregion =0,string date = "test")
 {
-  PlotUnfoldData4L("Jets",mad, tightregion, date);
-  PlotUnfoldData4L("Jets_Central",mad, tightregion, date);
+  PlotUnfoldData4L("nJets",mad, tightregion, date);
+  PlotUnfoldData4L("nJets_Central",mad, tightregion, date);
   PlotUnfoldData4L("Mjj",mad, tightregion, date);
   PlotUnfoldData4L("Mjj_Central",mad, tightregion, date);
   PlotUnfoldData4L("Deta",mad, tightregion, date);
@@ -1951,7 +1952,7 @@ void AllPlot4L(bool mad =1, bool tightregion =0,string date = "test")
   PlotUnfoldData4L("EtaJet1",mad, tightregion, date);
   PlotUnfoldData4L("EtaJet2",mad, tightregion, date);
   }
-void PlotUnfoldData(string var = "Jets", string fs = "4e", bool mad =1,bool tightregion =0, string date = "test"){
+void PlotUnfoldData(string var = "nJets", string fs = "4e", bool mad =1,bool tightregion =0, string date = "test"){
   
 #ifdef __CINT__
   gSystem->Load("libRooUnfold");
@@ -2017,11 +2018,11 @@ void PlotUnfoldData(string var = "Jets", string fs = "4e", bool mad =1,bool tigh
     XaxisTitle = "m_{4l} [GeV]";
     YaxisTitle = "Events/GeV"; 
   }
-  else if(var == "Jets")  {
+  else if(var == "nJets")  {
     XaxisTitle = "N jets (|#eta^{jet}| < 4.7)";
     YaxisTitle = "Events"; 
   }
-  else if(var == "Jets_Central")  {
+  else if(var == "nJets_Central")  {
     XaxisTitle = "N jets (|#eta^{jet}| < 2.4)"; 
     YaxisTitle = "Events"; 
   }
@@ -2100,7 +2101,7 @@ void PlotUnfoldData(string var = "Jets", string fs = "4e", bool mad =1,bool tigh
   
   float max = 0;
   if(var == "Mass") max =  h_unfdata->GetBinContent(2)+h_unfdata->GetBinContent(2)*0.50+h_unfdata->GetBinError(2); 
-  else if(var == "Jets"||var == "Jets_Central")  max =  h_unfdata->GetBinContent(1)+h_unfdata->GetBinContent(1)*0.50+h_unfdata->GetBinError(1); 
+  else if(var == "nJets"||var == "nJets_Central")  max =  h_unfdata->GetBinContent(1)+h_unfdata->GetBinContent(1)*0.50+h_unfdata->GetBinError(1); 
   else if(var == "Mjj"|| var == "Mjj_Central") max =  h_gen->GetBinContent(1)+h_gen->GetBinContent(1)*0.50+h_unfdata->GetBinError(1); 
   else if(var == "Deta"|| var == "Deta_Central" ) max =  h_gen->GetBinContent(1)+h_gen->GetBinContent(1)*0.50+h_unfdata->GetBinError(1); 
   else if(var == "PtJet1") max =  h_gen->GetBinContent(1)+h_gen->GetBinContent(1)*0.50+h_unfdata->GetBinError(1); 
@@ -2176,7 +2177,7 @@ void PlotUnfoldData(string var = "Jets", string fs = "4e", bool mad =1,bool tigh
   h_unfdata_r-> SetMinimum(-1.);
   h_unfdata_r->Draw("E");
   
-  if(var == "Jets" || var == "Jets_Central"){
+  if(var == "nJets" || var == "nJets_Central"){
     h_unfdata_r->GetXaxis()->SetBinLabel(1,"0");
     h_unfdata_r->GetXaxis()->SetBinLabel(2,"1");
     h_unfdata_r->GetXaxis()->SetBinLabel(3,"2");
@@ -2187,7 +2188,7 @@ void PlotUnfoldData(string var = "Jets", string fs = "4e", bool mad =1,bool tigh
   TLine *line = new TLine();
 
   if(var == "Mass")line = new TLine(100,1,800,1);
-  else if(var == "Jets" ||var == "Jets_Central" ) line =  new TLine(0,1,4,1);
+  else if(var == "nJets" ||var == "nJets_Central" ) line =  new TLine(0,1,4,1);
   else if(var == "Mjj"||var == "Mjj_Central") line =  new TLine(0,1,800,1);
   else if(var == "Deta"||var == "Deta_Central") line =  new TLine(0,1,4.7,1);
   else if(var =="PtJet1"||var =="PtJet2" )  line =  new TLine(30,1,500,1); 
@@ -2214,8 +2215,8 @@ void PlotUnfoldData(string var = "Jets", string fs = "4e", bool mad =1,bool tigh
 void AllPlotBinWidth(bool mad =1, bool tightregion =0,string date = "test")
 {
   PlotUnfoldData4L("Mass",0, tightregion, date);
-  PlotUnfoldData4L("Jets",mad, tightregion, date);
-  PlotUnfoldData4L("Jets_Central",mad, tightregion, date);
+  PlotUnfoldData4L("nJets",mad, tightregion, date);
+  PlotUnfoldData4L("nJets_Central",mad, tightregion, date);
   PlotUnfoldData4L("Mjj",mad, tightregion, date);
   PlotUnfoldData4L("Mjj_Central",mad, tightregion, date);
   PlotUnfoldData4L("Deta",mad, tightregion, date);
@@ -2227,8 +2228,8 @@ void AllPlotBinWidth(bool mad =1, bool tightregion =0,string date = "test")
   //PlotUnfoldData4L("dRZZ",mad, tightregion, date); 
    
   PlotUnfoldData("Mass","4e",0, tightregion, date);
-  PlotUnfoldData("Jets","4e",mad, tightregion, date);
-  PlotUnfoldData("Jets_Central","4e",mad, tightregion, date);
+  PlotUnfoldData("nJets","4e",mad, tightregion, date);
+  PlotUnfoldData("nJets_Central","4e",mad, tightregion, date);
   PlotUnfoldData("Mjj","4e",mad, tightregion, date);
   PlotUnfoldData("Mjj_Central","4e",mad, tightregion, date);
   PlotUnfoldData("Deta","4e",mad, tightregion, date);
@@ -2240,8 +2241,8 @@ void AllPlotBinWidth(bool mad =1, bool tightregion =0,string date = "test")
   //PlotUnfoldData("dRZZ","4e",mad, tightregion, date);
 
   PlotUnfoldData("Mass","4m",0, tightregion, date);
-  PlotUnfoldData("Jets","4m",mad, tightregion, date);
-  PlotUnfoldData("Jets_Central","4m",mad, tightregion, date);
+  PlotUnfoldData("nJets","4m",mad, tightregion, date);
+  PlotUnfoldData("nJets_Central","4m",mad, tightregion, date);
   PlotUnfoldData("Mjj","4m",mad, tightregion, date);
   PlotUnfoldData("Mjj_Central","4m",mad, tightregion, date);
   PlotUnfoldData("Deta","4m",mad, tightregion, date);
@@ -2253,8 +2254,8 @@ void AllPlotBinWidth(bool mad =1, bool tightregion =0,string date = "test")
   //PlotUnfoldData("dRZZ","4m",mad, tightregion, date);
 
   PlotUnfoldData("Mass","2e2m",0, tightregion, date);
-  PlotUnfoldData("Jets","2e2m",mad, tightregion, date);
-  PlotUnfoldData("Jets_Central","2e2m",mad, tightregion, date);
+  PlotUnfoldData("nJets","2e2m",mad, tightregion, date);
+  PlotUnfoldData("nJets_Central","2e2m",mad, tightregion, date);
   PlotUnfoldData("Mjj","2e2m",mad, tightregion, date);
   PlotUnfoldData("Mjj_Central","2e2m",mad, tightregion, date);
   PlotUnfoldData("Deta","2e2m",mad, tightregion, date);
@@ -2266,13 +2267,13 @@ void AllPlotBinWidth(bool mad =1, bool tightregion =0,string date = "test")
   //PlotUnfoldData("dRZZ","2e2m",mad, tightregion, date);
   }
 
-void PlotUnfoldData_fs(string var = "Jets", bool mad =1,bool tightregion =0, string date = "test"){ 
+void PlotUnfoldData_fs(string var = "nJets", bool mad =1,bool tightregion =0, string date = "test"){ 
   PlotUnfoldData(var,"4e",mad, tightregion, date);
   PlotUnfoldData(var,"4m",mad, tightregion, date);
   PlotUnfoldData(var,"2e2m",mad, tightregion, date);
 }
 
-void AllYouNeed_Var1(string var = "Jets", bool mad =1 ,bool tightregion =0, string date ="test")
+void AllYouNeed_Var1(string var = "nJets", bool mad =1 ,bool tightregion =0, string date ="test")
 {  
   cout << "********************** UNFOLDING DATA *************************" <<endl;
   Unfold_data_All(var,mad,tightregion,date);
@@ -2288,7 +2289,7 @@ void AllYouNeed_Var1(string var = "Jets", bool mad =1 ,bool tightregion =0, stri
   AllPlots(var,mad,tightregion,date);
 }
 
-void AllYouNeed_Var2(string var = "Jets", string date ="test"){
+void AllYouNeed_Var2(string var = "nJets", string date ="test"){
   AllYouNeed_Var1(var,1,0,date);
   AllYouNeed_Var1(var,0,0,date);
   AllYouNeed_Var1(var,0,1,date);
@@ -2375,8 +2376,8 @@ void FakeUnfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tig
   trueHistoName = "ZZTo"+ fs +"_"+var+"_GEN";
   
   if(var == "Mass") XaxisTitle = "m_{" + finalstate + "} [GeV]"; 
-  else if(var == "Jets")  XaxisTitle = "N jets (|#eta^{jet}|<4.7)";
-  else if(var == "Jets_Central")  XaxisTitle = "N Central Jets (|#eta^{jet}|<2.4)";
+  else if(var == "nJets")  XaxisTitle = "N jets (|#eta^{jet}|<4.7)";
+  else if(var == "nJets_Central")  XaxisTitle = "N Central nJets (|#eta^{jet}|<2.4)";
   else if(var == "Mjj")  XaxisTitle = "m_{jj} (|#eta^{jet}|<4.7) [GeV]";
   else if(var == "Deta")  XaxisTitle = "#Delta#eta_{jj}(|#eta^{jet}|<4.7) "; 
   else if(var == "Mjj_Central")  XaxisTitle = "m_{jj} (|#eta^{jet}|<2.4) [GeV]";
@@ -2410,7 +2411,7 @@ void FakeUnfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tig
   h_true->SetMaximum(max);
   h_true->SetMinimum(0);   
   h_true->Draw("HIST E");
-  if(var == "Jets" || var == "Jets_Central"){
+  if(var == "nJets" || var == "nJets_Central"){
     h_true->GetXaxis()->SetBinLabel(1,"0");
     h_true->GetXaxis()->SetBinLabel(2,"1");
     h_true->GetXaxis()->SetBinLabel(3,"2");
@@ -2477,7 +2478,7 @@ void FakePlot(string var = "Mass", bool mad =1, string date = "test", bool bayes
   }
 
 
-void Systematics_value(string var = "Jets", string fs = "4e", string syst = "MCgen", bool mad =1,bool tightregion =0){
+void Systematics_value(string var = "nJets", string fs = "4e", string syst = "MCgen", bool mad =1,bool tightregion =0){
   
 #ifdef __CINT__
   gSystem->Load("libRooUnfold");
@@ -2594,7 +2595,7 @@ void Systematics_value(string var = "Jets", string fs = "4e", string syst = "MCg
 
  }
 
-void AllSystematicsValues(string var = "Jets", string fs = "4e", bool mad =1,bool tightregion =0){
+void AllSystematicsValues(string var = "nJets", string fs = "4e", bool mad =1,bool tightregion =0){
 
   std::cout << "===========================================" << std::endl;
   std::cout << "                    " << fs.c_str() << std::endl;
@@ -2605,7 +2606,7 @@ void AllSystematicsValues(string var = "Jets", string fs = "4e", bool mad =1,boo
   Systematics_value(var.c_str(),fs.c_str(),"RedBkg",mad, tightregion);
   Systematics_value(var.c_str(),fs.c_str(),"UnfDataOverGenMC",mad,tightregion);
 
-  if(var == "Jets"||var == "Mjj"||var == "Deta"||var == "Jets_Central"||var == "Mjj_Central"||var == "Deta_Central"||var == "PtJet1"||var == "PtJet2"||var == "EtaJet1"||var == "EtaJet2"){
+  if(var == "nJets"||var == "Mjj"||var == "Deta"||var == "nJets_Central"||var == "Mjj_Central"||var == "Deta_Central"||var == "PtJet1"||var == "PtJet2"||var == "EtaJet1"||var == "EtaJet2"){
     Systematics_value(var.c_str(),fs.c_str(),"JER",mad, tightregion); 
     Systematics_value(var.c_str(),fs.c_str(),"JES_ModMat",mad, tightregion); 
     Systematics_value(var.c_str(),fs.c_str(),"JES_ModData",mad, tightregion); 
@@ -2614,7 +2615,7 @@ void AllSystematicsValues(string var = "Jets", string fs = "4e", bool mad =1,boo
   Systematics_value(var.c_str(),fs.c_str(),"SF",mad, tightregion);
 }
 
-void AllSystematicsValues_fs(string var = "Jets", bool mad =1,bool tightregion =0){
+void AllSystematicsValues_fs(string var = "nJets", bool mad =1,bool tightregion =0){
   std::cout << "===========================================" << std::endl;
   std::cout << "                    " << var.c_str() << std::endl;
   AllSystematicsValues(var,"4e",mad,tightregion);
@@ -2622,7 +2623,7 @@ void AllSystematicsValues_fs(string var = "Jets", bool mad =1,bool tightregion =
   AllSystematicsValues(var,"2e2m",mad,tightregion);
 }
 
-void PlotResults_4l(string var = "Jets", string syst = "MCgen", bool mad =1,bool tightregion =0, string date = "test"){
+void PlotResults_4l(string var = "nJets", string syst = "MCgen", bool mad =1,bool tightregion =0, string date = "test"){
   
 #ifdef __CINT__
   gSystem->Load("libRooUnfold");
@@ -2875,12 +2876,12 @@ void PlotResults_4l(string var = "Jets", string syst = "MCgen", bool mad =1,bool
     YaxisTitle = "Events/GeV";
     // max_y = h_max->GetBinContent(2)+20;//*2+100;
   }
-  else if(var == "Jets"){
+  else if(var == "nJets"){
     XaxisTitle = "N jets (|#eta^{jet}| < 4.7)"; 
     YaxisTitle = "Events";
     //max_y = h_max->GetBinContent(1)+100;//*2+100;
   } 
-  else if(var == "Jets_Central"){
+  else if(var == "nJets_Central"){
     XaxisTitle = "N jets (|#eta^{jet}| < 2.4)";
     YaxisTitle = "Events";
     // max_y = h_max->GetBinContent(1)+100;//*2+100;
@@ -2953,7 +2954,7 @@ void PlotResults_4l(string var = "Jets", string syst = "MCgen", bool mad =1,bool
   h_max->SetMaximum(max_y/binwidth);
   h_max->SetMinimum(0.);
  
-  if(var == "Jets" || var == "Jets_Central"){
+  if(var == "nJets" || var == "nJets_Central"){
    h_max->GetXaxis()->SetBinLabel(1,"0");
    h_max->GetXaxis()->SetBinLabel(2,"1");
    h_max->GetXaxis()->SetBinLabel(3,"2");
@@ -3027,7 +3028,7 @@ void PlotResults_4l(string var = "Jets", string syst = "MCgen", bool mad =1,bool
 
 }
 
-void AllPlots_4l(string var = "Jets", bool mad =1,bool tightregion =0,string date = "test"){
+void AllPlots_4l(string var = "nJets", bool mad =1,bool tightregion =0,string date = "test"){
   
   PlotResults_4l(var.c_str(),"MCgen",mad, tightregion, date.c_str());
   PlotResults_4l(var.c_str(),"qqgg",mad, tightregion, date.c_str());
@@ -3035,7 +3036,7 @@ void AllPlots_4l(string var = "Jets", bool mad =1,bool tightregion =0,string dat
   PlotResults_4l(var.c_str(),"RedBkg",mad, tightregion, date.c_str());
   //  PlotResults_4l(var.c_str(),"UnfDataOverGenMC",mad,tightregion, date.c_str());
   
-  if(var == "Jets"||var == "Mjj"||var == "Deta"||var == "Jets_Central"||var == "Mjj_Central"||var == "Deta_Central"||var == "PtJet1"||var == "PtJet2"||var == "EtaJet1"||var == "EtaJet2"){
+  if(var == "nJets"||var == "Mjj"||var == "Deta"||var == "nJets_Central"||var == "Mjj_Central"||var == "Deta_Central"||var == "PtJet1"||var == "PtJet2"||var == "EtaJet1"||var == "EtaJet2"){
     PlotResults_4l(var.c_str(),"JER",mad, tightregion, date.c_str()); 
     PlotResults_4l(var.c_str(),"JES_ModMat",mad, tightregion, date.c_str()); 
     PlotResults_4l(var.c_str(),"JES_ModData",mad, tightregion, date.c_str()); 
@@ -3044,7 +3045,7 @@ void AllPlots_4l(string var = "Jets", bool mad =1,bool tightregion =0,string dat
   //  PlotResults_4l(var.c_str(),"SF",mad, tightregion, date.c_str());
 }
 
-void PlotAllSyst_4l(string var = "Jets", string date = "test"){
+void PlotAllSyst_4l(string var = "nJets", string date = "test"){
   AllPlots_4l(var.c_str(),1,0, date.c_str());
   AllPlots_4l(var.c_str(),1,1, date.c_str());
   AllPlots_4l(var.c_str(),0,1, date.c_str());

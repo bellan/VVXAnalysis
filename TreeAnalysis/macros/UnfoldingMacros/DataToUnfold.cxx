@@ -38,7 +38,7 @@ void DataToUnfold::Build(string var, string finalstate)
   else  variable = var + "_JERSmear";
  
   if(var == "Mass")  b = 9;
-  else if(var == "Jets" || var == "Jets_Central") b = 5;
+  else if(var == "nJets" || var == "nJets_Central") b = 5;
   else if(var == "Mjj" || var == "Mjj_Central" || var == "Deta" || var == "Deta_Central") b = 3;
   else if(var == "PtJet1") b = 6;
   else if(var == "PtJet2") b = 5;
@@ -177,7 +177,7 @@ void DataToUnfold::Build_JE(string var, string finalstate)
   int b = 0;  
 
   if(var == "Mass")  b = 9;
-  else if(var == "Jets" || var == "Jets_Central") b = 5;
+  else if(var == "nJets" || var == "nJets_Central") b = 5;
   else if(var == "Mjj" || var == "Mjj_Central" || var == "Deta" || var == "Deta_Central") b = 3;
   else if(var == "PtJet1") b = 6;
   else if(var == "PtJet2") b = 5;
@@ -286,7 +286,7 @@ void DataToUnfold::Plot(string var,string finalstate, string path)
     xAxis = "reco m_{"+fs+"}";
     //max = matrix->GetBinContent(2,2)/2+3;
   }
-  else if(var =="Jets"){
+  else if(var =="nJets"){
     xAxis = "reco Njets";
     // max = matrix->GetBinContent(1,1)/2;
   }
@@ -298,7 +298,7 @@ void DataToUnfold::Plot(string var,string finalstate, string path)
     xAxis = "reco #Delta#eta_{jj}";
     //max = matrix->GetBinContent(2,2)*1.5;
   }
-  else if(var =="Jets_Central"){
+  else if(var =="nJets_Central"){
     xAxis = "reco Ncentraljets";
     //    max = matrix->GetBinContent(1,1)/3;
   }
