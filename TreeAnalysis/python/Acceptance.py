@@ -19,7 +19,7 @@ parser = OptionParser(usage="usage: %prog <final state> [options]")
 
 parser.add_option("-t", "--type", dest="Type",
                   default="Mass",
-                  help="Mass, or Jets.")
+                  help="Mass, or nJets.")
 
 parser.add_option("-s", "--save", dest="SavePlot",
                   action="store_true",
@@ -41,8 +41,8 @@ parser.add_option("-d", "--Dir", dest="Dir",
 
 (options, args) = parser.parse_args()
 
-Type = options.Type
-Set = options.Set
+Type      = options.Type
+Set       = options.Set
 SavePlot  = options.SavePlot
 Analysis  = options.Analysis
 Dir       = options.Dir
@@ -57,7 +57,7 @@ if "Pow" in Set: SignalSamples = SignalSamples_Pow
 elif "Mad" in Set: SignalSamples = SignalSamples_Mad
 else: sys.exit(Set,"is a wrong MC set, chose between Pow and Mad")
 
-#if Type != "Mass" and Type != "Jets": sys.exit("ERROR \nWrong Type, choose between Mass or Jets.")
+#if Type != "Mass" and Type != "nJets": sys.exit("ERROR \nWrong Type, choose between Mass or nJets.")
 
 try:
     os.stat("./Plot")
@@ -212,21 +212,23 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
             if SampleType=="Mass":
                 hMergReco.SetXTitle("gen M_{ZZ} [Gev]")
                                              
-            elif SampleType=="Jets": 
-                hMergReco.SetXTitle("# Jets")
-                hMergReco.GetXaxis().SetTitle("#Jets")
+            elif SampleType=="nJets": 
+                hMergReco.SetXTitle("# nJets")
+                hMergReco.GetXaxis().SetTitle("#nJets")
                 hMergReco.GetXaxis().SetBinLabel(1,"0 Jets")
                 hMergReco.GetXaxis().SetBinLabel(2,"1 Jets")
                 hMergReco.GetXaxis().SetBinLabel(3,"2 Jets")
-                hMergReco.GetXaxis().SetBinLabel(4,">2 Jets")
+                hMergReco.GetXaxis().SetBinLabel(4,"3 Jets")
+                hMergReco.GetXaxis().SetBinLabel(4,">3 Jets")
                
-            elif SampleType=="Jets_Central": 
-                hMergReco.SetXTitle("# Central Jets")
-                hMergReco.GetXaxis().SetTitle("#CentralJets")
+            elif SampleType=="nJets_Central": 
+                hMergReco.SetXTitle("# Central nJets")
+                hMergReco.GetXaxis().SetTitle("#CentralnJets")
                 hMergReco.GetXaxis().SetBinLabel(1,"0 Jets")
                 hMergReco.GetXaxis().SetBinLabel(2,"1 Jets")
                 hMergReco.GetXaxis().SetBinLabel(3,"2 Jets")
-                hMergReco.GetXaxis().SetBinLabel(4,">2 Jets")
+                hMergReco.GetXaxis().SetBinLabel(3,"3 Jets")
+                hMergReco.GetXaxis().SetBinLabel(4,">3 Jets")
                
             elif SampleType == "Deta":
                 hMergReco.SetXTitle("gen #Delta#eta_{jj}")
@@ -300,12 +302,11 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
                 hcopy3.Draw("sameE1");
                 leg.Draw("same")
         
-
-
     if SistErr=="0":
         c1.SaveAs("./Plot/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+".png") 
-        c1.SaveAs(PersonalFolder+Dir+"Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".png") 
-        c1.SaveAs(PersonalFolder+Dir+"Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".pdf") 
+        if SavePlot:
+            c1.SaveAs(PersonalFolder+Dir+"Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".png") 
+            c1.SaveAs(PersonalFolder+Dir+"Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".pdf") 
     return FinStateAcc
 
 

@@ -31,7 +31,8 @@ parser.add_option("-c", "--category", dest="category",
                   help="Category type are All, Sig, IrrBkg, RedBkg, or combination like IsSig+IrrBkg")
 
 parser.add_option("-d", "--data", dest="DoData",
-                  default="True",
+                  action="store_true",
+                  default=True,
                   help="Data is True or False to plot or not the data. Default is True")
 
 parser.add_option("-t", "--type", dest="Type",
@@ -65,7 +66,7 @@ parser.add_option("-l", "--lumiProj", dest="LumiProj",
 
 (options, args) = parser.parse_args()
 
-DoData=ast.literal_eval(options.DoData)
+DoData=options.DoData
 region =options.region
 state = options.state
 category = options.category
@@ -91,23 +92,11 @@ try:
     os.stat("./Plot/RecoPlots/")
 except:
     os.mkdir("./Plot/RecoPlots/")
-
-if Type=="Mass": 
-    Var = "Mass"
-    InputDir = "ZZjAnalyzer_"
     
-elif Type=="Jets":
-    #    Var = "Jets_01"
-    Var = "Jets_JERCentralSmear_01"
-    InputDir = "ZZRecoAnalyzer_"
-
-else:
-    Var = Type
-    InputDir = "ZZjAnalyzer_"
-
+Var = Type
+InputDir = "ZZjAnalyzer_"
+    
 if LumiProj!="":  InputDir+=LumiProj+"fbm1_"
-
-print "folder",InputDir
 
 #if region=="SR" and  category =="All" and state=="Is":  category =  "AllIs"
 
@@ -168,8 +157,8 @@ if Type=="nJets":
     hMC.GetHistogram().GetXaxis().SetBinLabel(1,"0 Jets")
     hMC.GetHistogram().GetXaxis().SetBinLabel(2,"1 Jets")
     hMC.GetHistogram().GetXaxis().SetBinLabel(3,"2 Jets")
-    hMC.GetHistogram().GetXaxis().SetBinLabel(4,">2 Jets")
-
+    hMC.GetHistogram().GetXaxis().SetBinLabel(4,"3 Jets")
+    hMC.GetHistogram().GetXaxis().SetBinLabel(4,">3 Jets")
 
 
 leg.Draw("same")    

@@ -497,27 +497,25 @@ def combineCrossFiducial(HList,HListUp,HListDown):
 
 def getHisto(Sign,MCSet,analysis,Type,doFiducial,UseMCReco):
     
-
     fIn = ROOT.TFile() 
-  
 
+    doFid = ""
+    if doFiducial: doFid = "_fr" 
+    
     if Sign==0: 
         if UseMCReco:
             fIn = ROOT.TFile("./FinalResults_"+MCSet+"_"+analysis+"/MCReco.root")
         else:
-            fIn = ROOT.TFile("./FinalResults_"+MCSet+"_"+analysis+"/Data.root") 
+            fIn = ROOT.TFile("./FinalResults_"+MCSet+"_"+analysis+"/Data"+doFid+".root") 
 
-    elif Sign==1: fIn= ROOT.TFile("./FinalResults_"+MCSet+"_"+analysis+"/DataUp.root") 
-    elif Sign==-1: fIn= ROOT.TFile( "./FinalResults_"+MCSet+"_"+analysis+"/DataDown.root")
+    elif Sign==1: fIn= ROOT.TFile("./FinalResults_"+MCSet+"_"+analysis+"/DataUp"+doFid+".root") 
+    elif Sign==-1: fIn= ROOT.TFile( "./FinalResults_"+MCSet+"_"+analysis+"/DataDown"+doFid+".root")
   
     hsum2e2mu = ROOT.TH1F()
     hsum4e    = ROOT.TH1F()
     hsum4mu   = ROOT.TH1F()
    
     hSum = [{"state":hsum2e2mu,"name":'2e2m'},{"state":hsum4e,"name":'4e'},{"state":hsum4mu,"name":'4m'}]    
-
-    doFid = ""
-    if doFiducial: doFid = "_fr" 
 
     for h in hSum:
         if (Type == "Mass") or (Type == "Jets"):

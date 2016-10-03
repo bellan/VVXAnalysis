@@ -41,7 +41,7 @@ parser.add_option("-r", "--recoMC", dest="UseMCReco",
 
 parser.add_option("-t", "--Type", dest="Type",
                   default="Mass",
-                  help="Type of differential Cross secion. ['Mass','Jets','Mjj','Deta',CentralJets,CentralMjj,CentralDeta]. Default is Mass")
+                  help="Type of differential Cross secion. ['Mass','nJets','Mjj','Deta',CentralnJets,CentralMjj,CentralDeta]. Default is Mass")
 
 parser.add_option("-i", "--Inclusive", dest="DoInclusive",
                   action= "store_true",
@@ -221,16 +221,18 @@ for i in range(0,4):
         if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{dm_{4l}} [1/GeV]")
         else: hMCList[i]["state"].GetYaxis().SetTitle("#frac{d#sigma}{dm_{4l}} ["+Unit+"/GeV]")
 
-    elif "Jets" in Type:
+    elif "nJets" in Type:
         hRatio_op.GetXaxis().SetBinLabel(1,"0")
         hRatio_op.GetXaxis().SetBinLabel(2,"1")
         hRatio_op.GetXaxis().SetBinLabel(3,"2")
-        hRatio_op.GetXaxis().SetBinLabel(4,"#geq 3")
+        hRatio_op.GetXaxis().SetBinLabel(3,"3")
+        hRatio_op.GetXaxis().SetBinLabel(4,"#geq 4")
 
         hMCList[i]["state"].GetXaxis().SetBinLabel(1,"0")
         hMCList[i]["state"].GetXaxis().SetBinLabel(2,"1")
         hMCList[i]["state"].GetXaxis().SetBinLabel(3,"2")
-        hMCList[i]["state"].GetXaxis().SetBinLabel(4,"#geq 3")
+        hMCList[i]["state"].GetXaxis().SetBinLabel(3,"3")
+        hMCList[i]["state"].GetXaxis().SetBinLabel(4,"#geq 4")
         
         xName = "N_{jets}"+eta_cut
        
@@ -295,7 +297,7 @@ for i in range(0,4):
  
 
     # "Type":{fr:{norm,notnorm},notfr:{norm,notnorm}}
-    MaxList = {"Mass":{True:{True:0.009,False:0.35},False:{True:0.009,False:0.15}},"Jets":{True:{True:0.8,False:28.5},False:{True:0.85,False:13}},"Jets_Central":{True:{True:.82,False:50},False:{True:0.85,False:13}},"Mjj":{True:{True:0.004,False:0.02},False:{True:0.004, False:0.0086}},"Mjj_Central":{True:{True:0.005,False:0.018},False:{True:0.005,False:0.006}},"Deta":{True:{True:0.6,False:2.2},False:{True:0.45,False:1.2}},"Deta_Central":{True:{True:0.6,False:1.98},False:{True:0.7,False:.9}} ,"PtJet1":{True:{True:0.03,False:0.48},False:{True:0.06,False:0.16}},"PtJet2":{True:{True:0.016,False:0.08},False:{True:0.016,False:0.025}},"EtaJet1":{True:{True:0.5,False:7.4},False:{True:0.6,False:2.8}},"EtaJet2":{True:{True:0.5,False:2.6},False:{True:0.58,False:0.9}},"dRZZ":{True:{True:0.65,False:23.6},False:{True:0.7,False:12.}}}
+    MaxList = {"Mass":{True:{True:0.009,False:0.35},False:{True:0.009,False:0.15}},"nJets":{True:{True:0.8,False:28.5},False:{True:0.85,False:13}},"nJets_Central":{True:{True:.82,False:50},False:{True:0.85,False:13}},"Mjj":{True:{True:0.004,False:0.02},False:{True:0.004, False:0.0086}},"Mjj_Central":{True:{True:0.005,False:0.018},False:{True:0.005,False:0.006}},"Deta":{True:{True:0.6,False:2.2},False:{True:0.45,False:1.2}},"Deta_Central":{True:{True:0.6,False:1.98},False:{True:0.7,False:.9}} ,"PtJet1":{True:{True:0.03,False:0.48},False:{True:0.06,False:0.16}},"PtJet2":{True:{True:0.016,False:0.08},False:{True:0.016,False:0.025}},"EtaJet1":{True:{True:0.5,False:7.4},False:{True:0.6,False:2.8}},"EtaJet2":{True:{True:0.5,False:2.6},False:{True:0.58,False:0.9}},"dRZZ":{True:{True:0.65,False:23.6},False:{True:0.7,False:12.}}}
 
     # Max   = hDataList[i]["state"].GetMaximum()+hDataList[i]["state"].GetBinError(hDataList[i]["state"].GetMaximumBin()) #Automatic max
     Max = MaxList[Type][DoFiducial][DoNormalized]*1.5
@@ -342,7 +344,7 @@ for i in range(0,4):
     if(Type == "Mass"): 
         line = ROOT.TLine(100,1,800,1)
         line_op = ROOT.TLine(100,1,800,1)
-    elif(Type == "Jets" or Type == "Jets_Central"): 
+    elif(Type == "nJets" or Type == "nJets_Central"): 
         line =  ROOT.TLine(0,1,4,1)
         line_op =  ROOT.TLine(0,1,4,1)
     elif(Type == "Mjj" or Type == "Mjj_Central"): 
