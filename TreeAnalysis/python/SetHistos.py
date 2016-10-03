@@ -143,7 +143,6 @@ def getHisto(Type,isData,Sign,syst,isTot,isFiducial):
         sDic["Err"]="{0:.2f}".format(math.sqrt(h["state"].Integral(0,-1)))
         if not isData:  SampleDic["Total Signal"][h["name"]]=sDic
     
-#    print SampleDic
     hIrredBkg2e2mu = ROOT.TH1F() 
     hIrredBkg4mu   = ROOT.TH1F() 
     hIrredBkg4e    = ROOT.TH1F() 
@@ -156,67 +155,66 @@ def getHisto(Type,isData,Sign,syst,isTot,isFiducial):
 
     hFakeSum = [{"state":hfake2e2mu,"name":'2e2m'},{"state":hfake4e,"name":'4e'},{"state":hfake4mu,"name":'4m'}]
 
-    if True: #fIXME                
+    #if True: #fIXME                
 
-        if Sign==0: print  Red("\n####################### Contribution to reducible background #######################\n")
+    if Sign==0: print  Red("\n####################### Contribution to reducible background #######################\n")
 
-        RedDic["Reducible background"]={}
-        for hfake in hFakeSum:
-            sDic = {}
-            ErrFake=ROOT.Double(0.)
-            hfake["state"] = getRedBkg(hfake["name"],Sign,syst)
-            sDic["yield"]="{0:.2f}".format(hfake["state"].IntegralAndError(0,-1,ErrFake))
-            sDic["Err"]="{0:.2f}".format(ErrFake)
-            RedDic["Reducible background"][hfake["name"]]=sDic
-#        print RedDic
-#        if "Jet" in Type or "Deta" in Type or "Mjj" in Type : TypeString=Type+"_JERSmear" #Check
-#        else: 
-        TypeString=Type       
-       
-        if Sign==0: print Red("\n######### Contribution to Irreducible background  #########\n")
+    RedDic["Reducible background"]={}
+    for hfake in hFakeSum:
+        sDic = {}
+        ErrFake=ROOT.Double(0.)
+        hfake["state"] = getRedBkg(hfake["name"],Sign,syst)
+        sDic["yield"]="{0:.2f}".format(hfake["state"].IntegralAndError(0,-1,ErrFake))
+        sDic["Err"]="{0:.2f}".format(ErrFake)
+        RedDic["Reducible background"][hfake["name"]]=sDic
+
+    TypeString=Type       
+    
+    if Sign==0: print Red("\n######### Contribution to Irreducible background  #########\n")
             
-        for b in BkgSamples:
-            filesbkg[b["sample"]] = ROOT.TFile(inputdir+b["sample"]+".root") 
-            IrrDic[b["sample"]] = {}                
+    for b in BkgSamples:
+        filesbkg[b["sample"]] = ROOT.TFile(inputdir+b["sample"]+".root") 
+        IrrDic[b["sample"]] = {}                
         IrrDic["Total Irreducible"]={}    
-        for h in hIrredSum:
-            if Sign==0: print Blue(h["name"])
-            isFirst=1
-            for b in BkgSamples:
-                sDic = {}                    
-                h1 = filesbkg[b["sample"]].Get("ZZTo"+h["name"]+"_"+TypeString+"_01")
-                if h1==None:
-                    sDic["yield"]="-"
-                    sDic["Err"]="-"
-                    IrrDic[b["sample"]][h["name"]]=sDic
-                    print "For sample ", b["sample"], "h"+h["name"],"has no enetries or is a zombie"       
-                    continue
+    for h in hIrredSum:
+        if Sign==0: print Blue(h["name"])
+        isFirst=1
+        for b in BkgSamples:
+            sDic = {}                    
+            h1 = filesbkg[b["sample"]].Get("ZZTo"+h["name"]+"_"+TypeString+"_01")
+            if h1==None:
+                sDic["yield"]="-"
+                sDic["Err"]="-"
+                IrrDic[b["sample"]][h["name"]]=sDic
+                print "For sample ", b["sample"], "h"+h["name"],"has no enetries or is a zombie"       
+                continue
                 #print "\n",h["name"],"Total integral contribution ----------> ",h1.Integral(0,-1)
-                if isFirst:
-                    sDic["yield"]="{0:.2f}".format(h1.Integral(0,-1))
-                    sDic["Err"]="{0:.2f}".format(math.sqrt(h1.Integral(0,-1)))
-                    IrrDic[b["sample"]][h["name"]]=sDic
-                    h["state"]=copy.deepcopy(h1) 
-                    isFirst=0
-                    if Sign==0: print "{0} {1}> {2:.2f}".format(b["sample"],(61-len(b["sample"]))*"-",h1.Integral(0,-1))
-                    continue
-                if Sign==0: print "{0} {1}> {2:.2f}".format(b["sample"],(61-len(b["sample"]))*"-",h1.Integral(0,-1))
+            if isFirst:
                 sDic["yield"]="{0:.2f}".format(h1.Integral(0,-1))
                 sDic["Err"]="{0:.2f}".format(math.sqrt(h1.Integral(0,-1)))
                 IrrDic[b["sample"]][h["name"]]=sDic
-                h["state"].Add(h1)     
-            sDic={}
-            sDic["yield"]="{0:.2f}".format(h["state"].Integral(0,-1))
-            sDic["Err"]="{0:.2f}".format(math.sqrt(h["state"].Integral(0,-1)))
-            IrrDic["Total Irreducible"][h["name"]]=sDic
-            if Sign==0:
-                print "\nTotal integral {0} contribution {1}> {2:.2f}\n\n".format(h["name"],(33-len(h["name"]))*"-",h["state"].Integral(0,-1))
-                #print IrrDic
+                h["state"]=copy.deepcopy(h1) 
+                isFirst=0
+                if Sign==0: print "{0} {1}> {2:.2f}".format(b["sample"],(61-len(b["sample"]))*"-",h1.Integral(0,-1))
+                continue
+            if Sign==0: print "{0} {1}> {2:.2f}".format(b["sample"],(61-len(b["sample"]))*"-",h1.Integral(0,-1))
+            sDic["yield"]="{0:.2f}".format(h1.Integral(0,-1))
+            sDic["Err"]="{0:.2f}".format(math.sqrt(h1.Integral(0,-1)))
+            IrrDic[b["sample"]][h["name"]]=sDic
+            h["state"].Add(h1)     
+        isDic={}
+        sDic["yield"]="{0:.2f}".format(h["state"].Integral(0,-1))
+        sDic["Err"]="{0:.2f}".format(math.sqrt(h["state"].Integral(0,-1)))
+        IrrDic["Total Irreducible"][h["name"]]=sDic
+        if Sign==0:
+            print "\nTotal integral {0} contribution {1}> {2:.2f}\n\n".format(h["name"],(33-len(h["name"]))*"-",h["state"].Integral(0,-1))
+        
         if isTot:
+            Rebin = 8
             for hRed,hIrr,hData in zip(hFakeSum,hSum,hIrredSum):
-                hRed["state"].Rebin(4)
-                hData["state"].Rebin(4)
-                hIrr["state"].Rebin(4)
+                hRed["state"].Rebin(Rebin)
+                hData["state"].Rebin(Rebin)
+                hIrr["state"].Rebin(Rebin)
 
     if not isData:
         hTot2e2mu = ROOT.TH1F() 
@@ -410,7 +408,7 @@ def getSyst(Sign,isUnfold,HData,isTot,isFiducial):
 
 #            hSystList[syst].SetName((hSystList[syst].GetName()).replace("Mass", "Total"))
 
-#HHOT
+
 #            sDic["yield"]="{0:.2f}".format(h1.Integral(0,-1))
 # SampleDic[s["sample"]] = {} 
 
@@ -427,7 +425,6 @@ def getSyst(Sign,isUnfold,HData,isTot,isFiducial):
                 sDic["yield"]="{0:.1f}".format((1-hSystList[syst["name"]][i]["state"].Integral(0,-1)/hFinSyst[i]["state"].Integral(0,-1))*100)
                 print "{0} {1}-> {2:.3f} %".format(syst["longname"],(30-len(syst["longname"]))*"-",(1-hSystList[syst["name"]][i]["state"].Integral(0,-1)/hFinSyst[i]["state"].Integral(0,-1))*100)
                 SystDicDown[syst["longname"]][hSystList[syst["name"]][i]["name"]]=sDic
-                print hSystList[syst["name"]][i]["name"]
             else: 
                 if (hFinSyst[i]["state"].Integral(0,-1)/hSystList[syst["name"]][i]["state"].Integral(0,-1)) > 1:
                     #                   print syst,"is negative. If si MCgen is ok"
@@ -435,15 +432,11 @@ def getSyst(Sign,isUnfold,HData,isTot,isFiducial):
                     SystDicUp[syst["longname"]][hSystList[syst["name"]][i]["name"]]=sDic
                     continue
                 sDic["yield"]="{0:.1f}".format((1-hFinSyst[i]["state"].Integral(0,-1)/hSystList[syst["name"]][i]["state"].Integral(0,-1))*100)
-                print "sDic",sDic
                 print "{0} {1}-> {2:.3f} %".format(syst["longname"],(30-len(syst["longname"]))*"-",(1-hFinSyst[i]["state"].Integral(0,-1)/hSystList[syst["name"]][i]["state"].Integral(0,-1))*100)
                 SystDicUp[syst["longname"]][hSystList[syst["name"]][i]["name"]]=sDic
-                print SystDicUp[syst["longname"]]
 
 
         NBin = hFinSyst[i]["state"].GetNbinsX()
-        print "SystDicUp",SystDicUp
-      #  print "SystDicDown",SystDicDown
 
         for b in range(1,NBin+1):
             Content = 0
