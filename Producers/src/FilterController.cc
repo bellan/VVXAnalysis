@@ -26,7 +26,7 @@ FilterController::FilterController(const edm::ParameterSet& pset,  edm::Consumes
   }
   
   
-  if ((isMC_&&PD!="") || (!isMC_ && (PD!="DoubleEle" && PD!="DoubleMu" && PD!="MuEG" && PD!= "SingleElectron"))) {
+  if ((isMC_&&PD!="") || (!isMC_ && (PD!="DoubleEle" && PD!="DoubleMu" && PD!="MuEG" && PD!= "SingleElectron" && PD!= "SingleMuon" ))) {
     cout << "ERROR: FilterController: isMC: " << isMC_ << " PD: " << PD << endl;
     abort();
   }
@@ -71,10 +71,7 @@ FilterController::passSkim(const edm::Event & event, short& trigworld, bool make
 }
 
 
-
-
 short FilterController::getTriggerWord(const edm::Event & event){
-  // FIXME // FIXME
   short trigword = 0;
 
   bool passDiMu  = passFilter(event, "triggerDiMu" );
@@ -91,19 +88,20 @@ short FilterController::getTriggerWord(const edm::Event & event){
     }
   }
 
-  bool passTriEle = false;
-  bool passTriMu = false;
+  bool passTriEle    = false;
+  bool passTriMu     = false;
   bool passSingleEle = false;
+  bool passSingleMu  = false;
 
-  if (theSetup >= 2012) {
-    passTriEle = passFilter(event,"triggerTriEle");
-  }
+  if (theSetup >= 2012) {  passTriEle = passFilter(event,"triggerTriEle"); }
   if (theSetup >= 2015) {
-    passTriMu = passFilter(event,"triggerTriMu");
+    passTriMu     = passFilter(event,"triggerTriMu");
     passSingleEle = passFilter(event,"triggerSingleEle");
   }
 
-  bool passAtLeastOneTrigger = passDiMu || passDiEle || passMuEle || passTriEle || passSingleEle || passTriMu;
+  if (theSetup >= 2016) { passSingleMu  = passFilter(event,"triggerSingleMu"); }
+
+  bool passAtLeastOneTrigger = passDiMu || passDiEle || passMuEle || passTriEle || passSingleEle || passTriMu || passSingleMu ;
   
   if (passAtLeastOneTrigger)   set_bit_16(trigword,0);
   if (passDiMu)                set_bit_16(trigword,1);
@@ -112,6 +110,7 @@ short FilterController::getTriggerWord(const edm::Event & event){
   if (passTriEle)              set_bit_16(trigword,4);
   if (passTriMu)               set_bit_16(trigword,5);
   if (passSingleEle)           set_bit_16(trigword,6);
+  if (passSingleMu)            set_bit_16(trigword,7);
 
  
   // This is the trigger selection logic to select ZZ and ZLL events
@@ -119,15 +118,15 @@ short FilterController::getTriggerWord(const edm::Event & event){
       ((PD == "DoubleEle" || PD == "DoubleEG"  ) && (passDiEle || passTriEle)) ||
       ((PD == "DoubleMu"  || PD == "DoubleMuon") && (passDiMu  || passTriMu)  && !passDiEle && !passTriEle) ||
       ((PD == "MuEG"      || PD == "MuonEG"    ) &&  passMuEle                && !passDiMu  && !passTriMu && !passDiEle && !passTriEle) ||
-      ( PD == "SingleElectron"                   &&  passSingleEle            && !passMuEle && !passDiMu  && !passTriMu && !passDiEle && !passTriEle)) 
-    set_bit_16(trigword,7);
-  
-  
+      ( PD == "SingleElectron"                   &&  passSingleEle            && !passMuEle && !passDiMu  && !passTriMu && !passDiEle && !passTriEle) ||
+      ( PD == "SingleMuon"                       &&  passSingleMu             && !passMuEle && !passDiMu  && !passTriMu && !passDiEle && !passTriEle && !passSingleEle))
+    set_bit_16(trigword,8);
+
   // This is the trigger logic to select ZL events
   if( ( PD == ""                                 && (passDiEle || passDiMu)) ||
       ((PD == "DoubleEle" || PD == "DoubleEG")   &&  passDiEle)              ||
       ((PD == "DoubleMu"  || PD == "DoubleMuon") &&  passDiMu && !passDiEle)) 
-    set_bit_16(trigword,8);
+    set_bit_16(trigword,9);
   
   
   return trigword;
@@ -137,8 +136,8 @@ bool
 FilterController::passTrigger(Channel channel, const short& trigword) const{
   
   if(channel == NONE)                 return test_bit_16(trigword,0);
-  if(channel == ZZ || channel == ZLL) return test_bit_16(trigword,7);
-  if(channel == ZL)                   return test_bit_16(trigword,8);
+  if(channel == ZZ || channel == ZLL) return test_bit_16(trigword,8);
+  if(channel == ZL)                   return test_bit_16(trigword,9);
   else{
     edm::LogWarning("FilterController") << "Unknown channel, do not know what to do.";
     return false;

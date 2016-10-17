@@ -21,8 +21,8 @@
 class FilterController {
  public:
   
-  enum Trigger{DiMu, DiEle, MuEle, TriEle};
-  typedef std::map<Trigger,bool> TriggerResults;
+  //  enum Trigger{DiMu, DiEle, MuEle, TriEle, TriMu,SingEle, SingMu};
+  // typedef std::map<Trigger,bool> TriggerResults;
 
   /// Constructor
   FilterController(const edm::ParameterSet& pset,  edm::ConsumesCollector && consumesCollector);
