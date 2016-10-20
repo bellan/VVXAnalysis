@@ -476,10 +476,9 @@ def getPlot_MC(Type,isFiducial):
     CrossType = Type+"Gen"
 
     if "Pow" in Set:
-        Sample=SignalSamples_Pow
+        Samples=SignalSamples_Pow
     elif "Mad" in Set:
         Samples=SignalSamples_Mad
-
     for s in Samples:
         files[s["sample"]] = ROOT.TFile(inputdir+s["sample"]+".root")
 
