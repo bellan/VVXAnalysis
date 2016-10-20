@@ -51,8 +51,6 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , mcHistoryTools_  (0)
   , leptonScaleFactors_(edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_mu_2016.root").fullPath(),
   			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_ele_2016_v3.root").fullPath(),
-			//  			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_ele_2015_IdIsoSip.root").fullPath(),
-			//edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_ele_2015_IdIsoSip_Cracks.root").fullPath(), FIXME
   			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates.root").fullPath(),
   			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates.root").fullPath())
 
@@ -360,14 +358,11 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
 
   passTrigger_ = filterController_.passTrigger(NONE, event, triggerWord_);
 
-
-
   if (applyTrigger_ && !passTrigger_) return false;
 
   // Check Skim requests
   passSkim_ = filterController_.passSkim(event, triggerWord_);
 
-  //     std::cout<<"pass tr "<<applyTrigger_<<" "<<passTrigger_<<" passSkim_ "<<applySkim_<<" "<<passSkim_<<std::endl;
   if (applySkim_    && !passSkim_)   return false;
 
   run_       = event.id().run();
@@ -485,7 +480,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   foreach(const pat::Jet& jet, *jets){
     phys::Jet physjet = fill(jet);
     jets_.push_back(physjet);
-  }
+   }
 
   // The bosons are selected requiring that their daughters pass the quality criteria to be good daughters
   Vhad_ = fillHadBosons(Vhad, 24);
@@ -579,7 +574,7 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   
   output.csvtagger_    = jet.userFloat("bTagger");
   output.qgLikelihood_ = jet.userFloat("qgLikelihood");
-
+  output.fullPuId_     = jet.userInt("pileupJetIdUpdated:fullId");
 
   //girth - See http://arxiv.org/abs/1106.3076v2 - eqn (2)
   double gsumcharged = 0.0;
@@ -634,7 +629,6 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
   
     if(d0.id() == 0 || d1.id() == 0) edm::LogError("TreePlanter") << "TreePlanter: VB candidate does not have a matching good particle!";
   
-
   phys::Boson<PAR> physV(d0, d1, type);
   
   // Add FSR
@@ -698,7 +692,6 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   VV.triggerWord_ = triggerWord_;
   VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
   
-  //  std::cout<<"best cand "<<VV.isBestCand_<<" SR "<<VV.passFullSel_<<" RW "<<regionWord<<std::endl;
   return VV;
 }
 
@@ -755,6 +748,7 @@ std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > TreePlanter::fillDiBosons
     }
     else {cout << "TreePlanter: unexpected diboson final state: " << rawchannel << " ... going to abort.. " << endl; abort();}
     
+    //    cout<<"physVV.isValid() "<<physVV.isValid()<<endl;
     if(physVV.isValid()) physDiBosons.push_back(physVV);
     
   }
