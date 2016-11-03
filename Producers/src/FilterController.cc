@@ -66,7 +66,7 @@ FilterController::passSkim(const edm::Event & event, short& trigworld, bool make
     for (vector<string>::const_iterator name = skimPaths.begin(); name!= skimPaths.end(); ++name) 
       evtPassSkim = makeAnd ? evtPassSkim && passFilter(event, *name) : evtPassSkim || passFilter(event, *name);
   
-  if (evtPassSkim) set_bit_16(trigworld,9);
+  if (evtPassSkim) set_bit_16(trigworld,10); //not use
   return evtPassSkim;
 }
 
@@ -119,16 +119,15 @@ short FilterController::getTriggerWord(const edm::Event & event){
       ((PD == "DoubleMu"  || PD == "DoubleMuon") && (passDiMu  || passTriMu)  && !passDiEle && !passTriEle) ||
       ((PD == "MuEG"      || PD == "MuonEG"    ) &&  passMuEle                && !passDiMu  && !passTriMu && !passDiEle && !passTriEle) ||
       ( PD == "SingleElectron"                   &&  passSingleEle            && !passMuEle && !passDiMu  && !passTriMu && !passDiEle && !passTriEle) ||
-      ( PD == "SingleMuon"                       &&  passSingleMu             && !passMuEle && !passDiMu  && !passTriMu && !passDiEle && !passTriEle && !passSingleEle))
-    set_bit_16(trigword,8);
+      ( PD == "SingleMuon"                       &&  passSingleMu             && !passMuEle && !passDiMu  && !passTriMu && !passDiEle && !passTriEle && !passSingleEle)) 
+    set_bit_16(trigword,8); 
 
   // This is the trigger logic to select ZL events
+
   if( ( PD == ""                                 && (passDiEle || passDiMu)) ||
       ((PD == "DoubleEle" || PD == "DoubleEG")   &&  passDiEle)              ||
       ((PD == "DoubleMu"  || PD == "DoubleMuon") &&  passDiMu && !passDiEle)) 
-    set_bit_16(trigword,9);
-  
-  
+      set_bit_16(trigword,9);
   return trigword;
 }
 
