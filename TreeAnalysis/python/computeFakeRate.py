@@ -1,8 +1,18 @@
 #! /usr/bin/env python
-
 import ROOT, copy
-
 from ROOT import TH1F
+from optparse import OptionParser
+
+parser = OptionParser(usage="usage: %prog [options]")
+
+parser.add_option("-m", "--MC", dest="doMC",
+                  action="store_true",
+                  default=False,
+                  help="Do MC fakerate")
+
+(options, args) = parser.parse_args()
+
+doMC       = options.doMC
 
 def GetError(n, k, isUp, level=0.68540158589942957):
 
@@ -125,7 +135,7 @@ def write(particle,region,outname,fout):
 def write_MC(particle,region,outname,fout):
     print "\n",particle,region
 
-    mclist = [{"sample":'TTJets',"color":ROOT.kRed-2,"name":'tt'},{"sample":'DYJetsToLL_M50',"color":ROOT.kGreen-5,"name":'DY'}]
+    mclist = [{"sample":'TTZToLL',"color":ROOT.kRed-2,"name":'tt'},{"sample":'DYJetsToLL_M50',"color":ROOT.kGreen-5,"name":'DY'}]
 
     stack_n = ROOT.THStack("stack_num","Stack_"+"FakeRate_num_"+particle+"_"+region+"_pt")   
     stack_d = ROOT.THStack("stack_den","Stack_"+"FakeRate_denom_"+particle+"_"+region+"_pt")   
@@ -188,7 +198,7 @@ for particle in particles:
         if region   == 'barrel': r = 'B'
         if region   == 'endcap': r = 'E'
         write(particle,region,'h1D_FR'+p+'_E'+r,fout)
-        write_MC(particle,region,'h1D_FR'+p+'_E'+r,fout_MC)
+        if doMC: write_MC(particle,region,'h1D_FR'+p+'_E'+r,fout_MC)
 
 #write("electrons",'endcap','h1D_FRel_EE',fout)
 #write("muons",'endcap','h1D_FRmu_EE',fout)
