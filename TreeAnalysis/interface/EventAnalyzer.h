@@ -30,6 +30,7 @@
 #include "VVXAnalysis/TreeAnalysis/interface/MCInfo.h"
 
 #include "VVXAnalysis/Commons/interface/RegionTypes.h"
+//#include "VVXAnalysis/Commons/interface/Utilities.h"
 
 class TFile;
 class TTree;
@@ -228,6 +229,9 @@ public:
   
   // Central jets (not in the tree)
   std::vector<phys::Particle> *centralGenJets;
+
+  // not passing pile-up id idx for pjets 
+  std::vector<Int_t> *pileUpIds;
 };
 
 #endif

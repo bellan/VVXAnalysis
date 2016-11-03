@@ -88,6 +88,7 @@ void EventAnalyzer::Init(TTree *tree)
   // Jets   
   pjets = 0;      b_pjets = 0;    theTree->SetBranchAddress("jets", &pjets, &b_pjets);
   jets  = new std::vector<phys::Jet>(); centralJets  = new std::vector<phys::Jet>();
+  pileUpIds  = new std::vector<Int_t>();
 
   // Bosons   
   Vhad = new std::vector<phys::Boson<phys::Jet> > ()    ; VhadCand = 0; b_VhadCand = 0; theTree->SetBranchAddress("VhadCand", &VhadCand, &b_VhadCand);
@@ -155,13 +156,19 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   stable_sort(pgenJets->begin(),  pgenJets->end(),  phys::PtComparator());
 
   // Some selection on jets
-  jets->clear(); centralJets->clear();
-  foreach(const phys::Jet &jet, *pjets)
-    if(jet.pt() > 30){
-      if(fabs(jet.eta()) < 4.7) jets->push_back(jet);
-      if(fabs(jet.eta()) < 2.4) centralJets->push_back(jet);
-    }
+  Int_t idx = 0;
+  jets->clear(); centralJets->clear(); pileUpIds->clear();
 
+  foreach(const phys::Jet &jet, *pjets){
+    if(jet.fullPuId() & (1 << 0)){
+      if(jet.pt() > 30){
+	if(fabs(jet.eta()) < 4.7) jets->push_back(jet);
+	if(fabs(jet.eta()) < 2.4) centralJets->push_back(jet);
+      }
+    }
+    else pileUpIds->push_back(idx);   
+    idx++; 
+  }
   genJets->clear(); centralGenJets->clear();
   foreach(const phys::Particle &jet, *pgenJets)
     if(jet.pt() > 30){
