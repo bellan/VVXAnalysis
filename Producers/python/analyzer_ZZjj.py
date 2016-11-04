@@ -17,8 +17,7 @@ declareDefault("KINREFIT", False, globals())
 
 declareDefault("BESTCANDCOMPARATOR", "byBestZ1bestZ2", globals())
 
-# uncomment for MINIAOD v2 with no rehlt.
-#declareDefault("APPLYTRIG", False, globals()) 
+declareDefault("APPLYTRIG", True, globals()) # set false for no rehlt samples
 # Get absolute path
 import os
 PyFilePath = os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/"
@@ -113,7 +112,6 @@ process.postCleaningElectrons = cms.EDProducer("PATElectronCleaner",
 
 
 
-
 ### ......................................................................... ###
 # Remove from the event the jets that have leptons from the ZZ best candidate.
 # Jets are also checked against other good isolated leptons not coming from the ZZ best candidate. 
@@ -134,8 +132,6 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
                                            cleanFSRFromLeptons = cms.bool(True),
                                            DebugPlots= cms.untracked.bool(False)
                                            )
-
-
 
 
 ### ......................................................................... ###
@@ -261,7 +257,7 @@ process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTa
 #process.zlCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZlCand"), minNumber = cms.uint32(1))
 
 process.zzAndzlFilterCombiner = cms.EDFilter("ZLFilter", ZLL = cms.InputTag("ZZFiltered"), ZL = cms.InputTag("ZlCand"),
-                                             ZLSelection = cms.string("((daughter(0).daughter(0).pt > 20 && daughter(0).daughter(1).pt > 10) || (daughter(0).daughter(0).pt() > 10 && daughter(0).daughter(1).pt > 20)) && abs(daughter(0).mass -91.19) <= 10")
+                                             ZLSelection = cms.string("((daughter(0).daughter(0).pt > 20 && daughter(0).daughter(1).pt > 10) || (daughter(0).daughter(0).pt() > 10 && daughter(0).daughter(1).pt > 20)) && abs(daughter(0).mass -91.19) <= 10 && daughter(1).masterClone.userFloat('SIP') < 4 ") # Add SIP cut here and remove it in eventanalyzer.cc
                                              )
 
 
@@ -354,7 +350,6 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
                                      XSection     = cms.untracked.double(XSEC)
                                      )
-
 
 
 ### ------------------------------------------------------------------------- ###
