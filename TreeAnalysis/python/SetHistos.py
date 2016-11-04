@@ -174,8 +174,8 @@ def getHisto(Type,isData,Sign,syst,isTot,isFiducial):
             
     for b in BkgSamples:
         filesbkg[b["sample"]] = ROOT.TFile(inputdir+b["sample"]+".root") 
-        IrrDic[b["sample"]] = {}                
-        IrrDic["Total Irreducible"]={}    
+        IrrDic[b["sample"]]   = {}                
+    IrrDic["Total Irreducible"]={}        
     for h in hIrredSum:
         if Sign==0: print Blue(h["name"])
         isFirst=1
@@ -197,24 +197,24 @@ def getHisto(Type,isData,Sign,syst,isTot,isFiducial):
                 isFirst=0
                 if Sign==0: print "{0} {1}> {2:.2f}".format(b["sample"],(61-len(b["sample"]))*"-",h1.Integral(0,-1))
                 continue
-            if Sign==0: print "{0} {1}> {2:.2f}".format(b["sample"],(61-len(b["sample"]))*"-",h1.Integral(0,-1))
+            if Sign==0: print "h {0} {1}> {2:.2f}".format(b["sample"],(61-len(b["sample"]))*"-",h1.Integral(0,-1))
             sDic["yield"]="{0:.2f}".format(h1.Integral(0,-1))
             sDic["Err"]="{0:.2f}".format(math.sqrt(h1.Integral(0,-1)))
             IrrDic[b["sample"]][h["name"]]=sDic
             h["state"].Add(h1)     
-        isDic={}
+        sDic={}
         sDic["yield"]="{0:.2f}".format(h["state"].Integral(0,-1))
         sDic["Err"]="{0:.2f}".format(math.sqrt(h["state"].Integral(0,-1)))
         IrrDic["Total Irreducible"][h["name"]]=sDic
         if Sign==0:
             print "\nTotal integral {0} contribution {1}> {2:.2f}\n\n".format(h["name"],(33-len(h["name"]))*"-",h["state"].Integral(0,-1))
         
-        if isTot:
-            Rebin = 8
-            for hRed,hIrr,hData in zip(hFakeSum,hSum,hIrredSum):
-                hRed["state"].Rebin(Rebin)
-                hData["state"].Rebin(Rebin)
-                hIrr["state"].Rebin(Rebin)
+    if isTot:
+        Rebin = 8
+        for hRed,hIrr,hData in zip(hFakeSum,hSum,hIrredSum):
+            hRed["state"].Rebin(Rebin)
+            hData["state"].Rebin(Rebin)
+            hIrr["state"].Rebin(Rebin)
 
     if not isData:
         hTot2e2mu = ROOT.TH1F() 
