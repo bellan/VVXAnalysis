@@ -725,16 +725,15 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   // Clean the gen jet collection properly
   std::vector<phys::Particle> tmp;
   foreach(const phys::Particle& jet, theGenj)
-    if(physmath::deltaR(Z0.daughter(0),jet) > 0.5 && // FIXME: for RUN II 0.5 --> 0.4
-       physmath::deltaR(Z0.daughter(1),jet) > 0.5 &&
-       physmath::deltaR(Z1.daughter(0),jet) > 0.5 &&
-       physmath::deltaR(Z1.daughter(1),jet) > 0.5)
+    if(physmath::deltaR(Z0.daughter(0),jet) > 0.4 && 
+       physmath::deltaR(Z0.daughter(1),jet) > 0.4 &&
+       physmath::deltaR(Z1.daughter(0),jet) > 0.4 &&
+       physmath::deltaR(Z1.daughter(1),jet) > 0.4)
       tmp.push_back(jet);
   theGenj = tmp;
-
+  
   bool foundWjj(false), foundZjj(false);
-
-
+ 
 
   // Now check if there are  additional W/Z boson candidates which decays into hadrons
   if(theGenj.size() >= 2) {
@@ -780,10 +779,10 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   int countCentralJets = 0;
   foreach(const phys::Particle& jet, theGenj)
     if(jet.pt() > 30.){
-      if(jet.eta() < 4.7) ++countJets;
-      if(jet.eta() < 2.4) ++countCentralJets;
+      if(abs(jet.eta()) < 4.7) ++countJets;
+      if(abs(jet.eta()) < 2.4) ++countCentralJets;
     }
-  
+
   phys::DiBoson<phys::Particle,phys::Particle> ZZ(Z0,Z1);
 
   bool hasJets = countJets > 0;
