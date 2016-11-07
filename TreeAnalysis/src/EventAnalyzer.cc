@@ -160,7 +160,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   jets->clear(); centralJets->clear(); pileUpIds->clear();
 
   foreach(const phys::Jet &jet, *pjets){
-    if(jet.fullPuId() & (1 << 1)){//{ (1 << 0)tight (1 << 1) medium (1 << 2) loose
+    if(jet.fullPuId(1)){//2 tight, 1 medium, 0 loose
       if(jet.pt() > 30){
 	if(fabs(jet.eta()) < 4.7) jets->push_back(jet);
 	if(fabs(jet.eta()) < 2.4) centralJets->push_back(jet);
@@ -175,32 +175,31 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
       //  bool leptonMatch = false; //Already done in signaldefinition. Here leptons are also loose. 
       //foreach(const phys::Particle &gen, *genParticles){
       //	if(physmath::deltaR(gen,jet) < 0.4 && (abs(gen.id()) == 11 || abs(gen.id()) == 13)) leptonMatch = true;
-      //      if(physmath::deltaR(gen,jet) < 0.4 && ((abs(gen.id()) == 11 && gen.pt()>7.) || ( abs(gen.id()) == 13 &&  gen.pt()>5.)) ) leptonMatch = true;
       //}
       // if(!leptonMatch){
 	if(fabs(jet.eta()) < 4.7) genJets->push_back(jet);
 	if(fabs(jet.eta()) < 2.4) centralGenJets->push_back(jet);
-      }
     }
+  //}
 
-  Vhad->clear();
+Vhad->clear();
 
-  foreach(const phys::Boson<phys::Jet> v, *VhadCand)
-    if(select(v)) Vhad->push_back(v);
+foreach(const phys::Boson<phys::Jet> v, *VhadCand)
+if(select(v)) Vhad->push_back(v);
 
-  stable_sort(Vhad->begin(), Vhad->end(), phys::PtComparator());
-  
-  ZL->clear();
-  foreach(const ZLCompositeCandidate& zl, *ZLCand)
-    if( zl.second.sip() < 4) ZL->push_back(zl); //To be moved in cfg
-  if(region_ == phys::MC){
-    if(!ZZ->isValid()){
-      if(ZZ) delete ZZ;
-      ZZ = new phys::DiBoson<phys::Lepton, phys::Lepton>();
-    }
-  }  
-  
-  addOptions();
+stable_sort(Vhad->begin(), Vhad->end(), phys::PtComparator());
+
+ZL->clear();
+foreach(const ZLCompositeCandidate& zl, *ZLCand)
+if( zl.second.sip() < 4) ZL->push_back(zl); //To be moved in cfg
+if(region_ == phys::MC){
+  if(!ZZ->isValid()){
+    if(ZZ) delete ZZ;
+    ZZ = new phys::DiBoson<phys::Lepton, phys::Lepton>();
+  }
+ }  
+
+addOptions();
 
   // Check if the request on region tye matches with the categorization of the event
   regionWord = std::bitset<128>(ZZ->region());
