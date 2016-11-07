@@ -69,6 +69,7 @@ void ZZRecoAnalyzer::analyze(){
   if(!theMCInfo.isMC()){    
      
     foreach(const phys::Jet &dataJet, *pjets){
+      if(!dataJet.fullPuId()) continue;
       double dataJetPt = 0;
       dataJetPt = dataJet.pt();
       
@@ -101,10 +102,10 @@ void ZZRecoAnalyzer::analyze(){
   else{
 
     foreach(const phys::Jet &jet, *pjets){
-         
+      if(!jet.fullPuId()) continue;
+
       if(jet.ptJerUp() > 30.) 	UpJER_jets->push_back(jet); 
       if(jet.ptJerDn() > 30.)	DownJER_jets->push_back(jet);
-
 
       if(jet.ptJerDn()  > 30. && fabs(jet.eta())<2.4)   UpJER_centraljets->push_back(jet); 
       if(jet.ptJerDn()  > 30. && fabs(jet.eta())<2.4) DownJER_centraljets->push_back(jet);
@@ -196,16 +197,19 @@ void ZZRecoAnalyzer::analyze(){
     FillMatrixHistosJets(decay,theWeight*(1+scaleFacErrSq),centralJets,centralGenJets,"Central_SFErrSqPlus_01");
    }
 
-    if((region_ == phys::SR && topology.test(3)) || (region_ == phys::SR_HZZ && topology.test(1))){
+    if((region_ == phys::SR && topology.test(1)) || (region_ == phys::SR_HZZ && topology.test(1))){
 
        inFiducialRegion ++;
        
        FillMatrixHistosBase(decay,theWeight,"01_fr");     
        FillMatrixHistosBase(decay,theWeight,sample+"_fr");
-       FillMatrixHistosJets(decay,theWeight,jets,genJets,sample+"_fr");
-       FillMatrixHistosJets(decay,theWeight,centralJets,centralGenJets,"Central_"+sample+"_fr");
-       FillMatrixHistosBase(decay,theWeight,"01_fr");
+
        FillMatrixHistosJets(decay,theWeight,jets,genJets,"01_fr");
+       FillMatrixHistosJets(decay,theWeight,jets,genJets,sample+"_fr");
+
+       FillMatrixHistosJets(decay,theWeight,jets,genJets,"Central_01_fr");
+       FillMatrixHistosJets(decay,theWeight,centralJets,centralGenJets,"Central_"+sample+"_fr");
+
        FillMatrixHistosJets(decay,theWeight,UpJER_jets,genJets,"JERUpSmear_01_fr");
        FillMatrixHistosJets(decay,theWeight,DownJER_jets,genJets,"JERDownSmear_01_fr");
        
@@ -255,7 +259,7 @@ void ZZRecoAnalyzer::FillHistosJets(std::string decay,float Wh,std::vector<phys:
   
   njets =  jetsVec->size(); 
   
-  if (njets>3) njets=3;
+  if (njets>3) njets=4;
 
   theHistograms.fill("ZZTo"+decay+"_nJets_"+type, "", 5,0,5,njets, Wh);   
   
