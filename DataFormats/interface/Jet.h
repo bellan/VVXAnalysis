@@ -44,6 +44,7 @@ namespace phys {
       , rawFactor_(-9999.)
       , jecUnc_(-9999.)
       , mcPartonFlavour_(-1)
+      , fullPuId_(-1)
     {}           
     
     /// Destructor
@@ -81,26 +82,26 @@ namespace phys {
     // Uncertainty on four vector energy scale
     Double_t jecUncertainty() const {return  jecUnc_;}
 
+    // Pile-up full-id
+    Bool_t fullPuId(int level = 1) const {
+      if(level == 1)       return (fullPuId_ & (1 << 1));
+      else if(level == 0)  return (fullPuId_ & (1 << 2));
+      else if(level == 2)  return (fullPuId_ & (1 << 0));
+      else { 
+	std::cout<<"Error in Pu-id request. the level value "<<level<<" is uncorrect. Choose between 0 for loose, 1 for medium or 2 fot tight"<<std::endl;  
+	abort();
+      } 
+    } 
+    
+
     // JER
-    //    Double_t sigma_MC_pt()  const {return sigma_MC_pt_;}
-    //Double_t sigma_MC_phi()  const {return sigma_MC_phi_;}
+
 
     // Values from https://twiki.cern.ch/twiki/bin/view/CMS/JetResolution
 
     Double_t ptJerUp() const {return  pt_jerup_;}
     Double_t ptJerDn() const {return  pt_jerdn_;}
     Double_t ptNoJer() const {return  pt_nojer_;}
-
-    /* Double_t jer_c(JERVariations jervar)     const { */ //DEL
-    /*   switch(jervar){ */
-    /*   case(central): return jer_c_; */
-    /*   case(up):      return jer_cup_; */
-    /*   case(down):    return jer_cdown_; */
-    /*   default:       return -9999.; */
-    /*   } */
-    /* } */
-
-    //    Double_t jer_width(JERVariations jervar) const {return sqrt(pow(jer_c(jervar),2)-1)*sigma_MC_pt();} //DEL
     
 
     // return the matched MC parton flavour
@@ -131,6 +132,7 @@ namespace phys {
     Int_t nConstituents_;
     Int_t nCharged_;
     Int_t nNeutral_;
+    Int_t pileUpId_;
 
     Double_t neutralHadronEnergyFraction_;    
     Double_t chargedHadronEnergyFraction_;
@@ -163,6 +165,9 @@ namespace phys {
 
     // return the matched MC parton flavour
     Int_t mcPartonFlavour_;
+
+    // full Pile up ID
+    Int_t fullPuId_;
     
     // Jet MC resolution, for JER determination. 
     /* Double_t sigma_MC_pt_; */ //DEL
