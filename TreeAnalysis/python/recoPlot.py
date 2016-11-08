@@ -2,13 +2,13 @@
 from optparse import OptionParser
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
+
 from ROOT import TH1F,TCanvas, TLegend
-#from ZZj4lReco_Mods_New import*
 from recoPlotUtils import*
 import sys,ast
 import math
 import operator
-
+from PersonalInfo import*
 
 regions = ['SR','CR','CR2P2F','CR3P1F','SR_HZZ','CR3P1F_HZZ','CR2P2F_HZZ']
 
@@ -52,13 +52,13 @@ parser.add_option("-m", "--mcset", dest="mcSet",
                   default="pow",
                   help= "Monte Carlo Set, pow for Powheg, mad for amcatnlo")
 
-parser.add_option("-v", "--visual", dest="doVisulize",
-                  default="True",
-                  help= "Monte Carlo Set, pow for Powheg, mad for amcatnlo")
-
 parser.add_option("-l", "--lumiProj", dest="LumiProj",
                   default="",
                   help="Lumi projection")
+
+parser.add_option("-D", "--Dir", dest="Dir",
+                  default="test",
+                  help="Directory where save plots")
 
 
 #REMEMBER ADD DEFINTION PLOT
@@ -66,17 +66,15 @@ parser.add_option("-l", "--lumiProj", dest="LumiProj",
 
 (options, args) = parser.parse_args()
 
-DoData=options.DoData
-region =options.region
-state = options.state
-category = options.category
-Type = options.Type
-Save = options.SavePlot
-mcSet = options.mcSet
-doVisulize = ast.literal_eval(options.doVisulize)
-LumiProj = options.LumiProj
-
-print mcSet
+DoData     = options.DoData
+region     = options.region
+state      = options.state
+category   = options.category
+Type       = options.Type
+Save       = options.SavePlot
+mcSet      = options.mcSet
+LumiProj   = options.LumiProj
+Dir        = options.Dir
 
 c1 = TCanvas( 'c1', 'Reco Plots', 200, 10, 900, 700 )
 leg = ROOT.TLegend(.78,.10,.92,.22);
@@ -135,12 +133,9 @@ if YMaxData>YMaxMC and DoData:
     YMax = YMaxData
 else: YMax = YMaxMC
 
-print Type,len(InfoType[Type])
 if len(InfoType[Type])>3: 
     hMC.SetMaximum(InfoType[Type][3])
 else: hMC.SetMaximum(YMax+YMax*0.2)
-
-print "MAX",YMax
 
 hMC.Draw("hist")
 
@@ -160,10 +155,7 @@ if Type=="nJets":
     hMC.GetHistogram().GetXaxis().SetBinLabel(4,"3 Jets")
     hMC.GetHistogram().GetXaxis().SetBinLabel(4,">3 Jets")
 
-
 leg.Draw("same")    
-
-print category
 
 if category == 'All':
     Title= "All"
@@ -199,18 +191,34 @@ c1.SaveAs("Plot/RecoPlots/"+Title+".png")
 c1.SaveAs("Plot/RecoPlots/"+Title+".eps")        
 c1.SaveAs("Plot/RecoPlots/"+Title+".pdf")  
 
+
 if Save:
+
+    Dir+="/"
+
+    try:
+        os.stat(PersonalFolder+Dir)
+    except:
+        os.mkdir(PersonalFolder+Dir)
+        os.system("cp "+PersonalFolder+"index.php "+PersonalFolder+Dir )
+    try:
+        os.stat(PersonalFolder+Dir+"/Reco/")
+    except:
+        os.mkdir(PersonalFolder+Dir+"/Reco/")
+        os.system("cp "+PersonalFolder+"index.php "+PersonalFolder+Dir+"/Reco/" )
+
     if(LumiProj!=""): 
         c1.SaveAs("~/www/PlotsVV/13TeV_"+LumiProj+"fb/"+Title+".png")        
         c1.SaveAs("~/www/PlotsVV/13TeV_"+LumiProj+"fb/"+Title+".pdf")        
     else:
-        c1.SaveAs("~/www/PlotsVV/13TeV/"+Title+".png")        
-        c1.SaveAs("~/www/PlotsVV/13TeV/"+Title+".pdf")        
+        c1.SaveAs(PersonalFolder+Dir+"Reco/"+Title+".png")        
+        c1.SaveAs(PersonalFolder+Dir+"Reco/"+Title+".pdf")        
+
+#        c1.SaveAs("~/www/PlotsVV/13TeV/"+Title+".pdf")        
 
 
-fout  = ROOT.TFile("results/data/"+Title+".root","update")
-hwrite  = copy.deepcopy(hMC.GetStack().Last())
-hwrite.SetName(Type+"_"+LumiProj)
-hwrite.Write()
+#fout  = ROOT.TFile("results/data/"+Title+".root","update")
+#hwrite  = copy.deepcopy(hMC.GetStack().Last())
+#hwrite.SetName(Type+"_"+LumiProj)
+#hwrite.Write()
 
-if doVisulize: CloseVar=input("digit anything you want to end the script \n")        

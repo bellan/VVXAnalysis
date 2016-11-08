@@ -16,13 +16,13 @@ def GetTypeofsamples(category,Set):
     elif Set=="mad": signal_qq = signal_qq_mad
     else: sys.exit("Wrong Set, choose pow or mad")
  
-    signal_gg = [{"sample":'ggZZ4e',"color":ROOT.kAzure-5,"name":'gg #rightarrow ZZ(+jets)'},{"sample":'ggZZ2e2mu',"color":ROOT.kAzure-5,"name":'ZZ processes'},{"sample":'ggZZ4mu',"color":ROOT.kAzure-5,"name":'gg #rightarrow ZZ(+jets)'},{"sample":'ggH126',"color":ROOT.kAzure-5,"name":'gg #rightarrow ZZ(+jets)'}]
+    signal_gg = [{"sample":'ggZZ4e',"color":ROOT.kAzure-5,"name":'gg #rightarrow ZZ(+jets)'},{"sample":'ggZZ2e2mu',"color":ROOT.kAzure-5,"name":'ZZ processes'},{"sample":'ggZZ4mu',"color":ROOT.kAzure-5,"name":'gg #rightarrow ZZ(+jets)'}]
     signal_VBS = [{"sample":'ZZTo4eJJ',"color":ROOT.kAzure-6,"name":'VBS'},{"sample":'ZZTo2e2muJJ',"color":ROOT.kAzure-6,"name":'VBS'},{"sample":'ZZTo4muJJ',"color":ROOT.kAzure-6,"name":'VBS'}]
 
-  #  signal_others =  [{"sample":'ZH125',"color":ROOT.kAzure-6,"name":'other ZZ processes'},{"sample":'ZH125',"color":ROOT.kAzure-6,"name":'other ZZ processes'},}]#,{"sample":'ggH125',"color":ROOT.kAzure-6,"name":'other ZZ processes'},{"sample":'VBFH125',"color":ROOT.kAzure-6,"name":'other ZZ processes'}]
-
- #   bkg_red = [{"sample":'WZ',"color":ROOT.kOrange,"name":'WZ'},{"sample":'TTTo2L2Nu2B',"color":ROOT.kRed-2,"name":'TT'},{"sample":'TTJets',"color":ROOT.kRed-2,"name":'TT'},{"sample":'DYJetsToLL_M50',"color":ROOT.kGreen-5,"name":'DY'}]
-    bkg_red = [{"sample":'WZ',"color":ROOT.kRed+2,"name":'WZ'},{"sample":'TTTo2L2Nu',"color":ROOT.kRed-4,"name":'TT'},{"sample":'TTWJets',"color":ROOT.kRed-4,"name":'TT'},{"sample":'TTGJets',"color":ROOT.kRed-4,"name":'TT'},{"sample":'DYJetsToLL_M50',"color":ROOT.kGreen-5,"name":'DY'},{"sample":'WWW',"color":ROOT.kMagenta,"name":'others'}]
+#signal_others =  [{"sample":'ZH125',"color":ROOT.kAzure-6,"name":'other ZZ processes'},{"sample":'ZH125',"color":ROOT.kAzure-6,"name":'other ZZ processes'},}]#,{"sample":'ggH125',"color":ROOT.kAzure-6,"name":'other ZZ processes'},{"sample":'VBFH125',"color":ROOT.kAzure-6,"name":'other ZZ processes'}]
+    
+    #bkg_red = [{"sample":'WZ',"color":ROOT.kOrange,"name":'WZ'},{"sample":'TTTo2L2Nu2B',"color":ROOT.kRed-2,"name":'TT'},{"sample":'TTJets',"color":ROOT.kRed-2,"name":'TT'},{"sample":'DYJetsToLL_M50',"color":ROOT.kGreen-5,"name":'DY'}]
+    bkg_red = [{"sample":'WZ',"color":ROOT.kRed+2,"name":'WZ'},{"sample":'TTJets',"color":ROOT.kRed-4,"name":'TT'},{"sample":'TTWJets',"color":ROOT.kRed-4,"name":'TT'},{"sample":'TTGJets',"color":ROOT.kRed-4,"name":'TT'},{"sample":'DYJetsToLL_M50',"color":ROOT.kGreen-5,"name":'DY'},{"sample":'WWW',"color":ROOT.kMagenta,"name":'others'}]
 
     bkg_irr = [{"sample":'WWZ',"color":ROOT.kOrange,"name":'WWZ'},{"sample":'TTZToLL',"color":ROOT.kOrange,"name":'TTZ'}]
     bkg_irr_divided = [{"sample":'WWZ',"color":ROOT.kOrange,"name":'WWZ'},{"sample":'TTZToLL',"color":ROOT.kOrange-5,"name":'TTZ'}]
@@ -192,7 +192,7 @@ def GetDataPlot(inputdir, plot, Region,rebin):
     if rebin!=1: hdata.Rebin(rebin) 
 
     print "Total data ..........................",hdata.Integral(0,-1)
-    print " __________________ "   
+    print "_________________________ "   
     DataGraph=SetError(hdata,Region,False)
     DataGraph.SetMarkerStyle(20)
     DataGraph.SetMarkerSize(.9)
