@@ -17,7 +17,7 @@ declareDefault("KINREFIT", False, globals())
 
 declareDefault("BESTCANDCOMPARATOR", "byBestZ1bestZ2", globals())
 
-declareDefault("APPLYTRIG", True, globals()) # set false for no rehlt samples
+declareDefault("APPLYTRIG", False, globals()) # set false for no rehlt samples
 # Get absolute path
 import os
 PyFilePath = os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/"
@@ -47,9 +47,6 @@ process.TFileService=cms.Service('TFileService', fileName=cms.string('ZZ4lAnalys
 ### ------------------------------------------------------------------------- ###
 ### Activate some skimming and cleaning of the collections
 ### ------------------------------------------------------------------------- ###
-
-
-
 
 
 ### ......................................................................... ###
@@ -257,7 +254,7 @@ process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTa
 #process.zlCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZlCand"), minNumber = cms.uint32(1))
 
 process.zzAndzlFilterCombiner = cms.EDFilter("ZLFilter", ZLL = cms.InputTag("ZZFiltered"), ZL = cms.InputTag("ZlCand"),
-                                             ZLSelection = cms.string("((daughter(0).daughter(0).pt > 20 && daughter(0).daughter(1).pt > 10) || (daughter(0).daughter(0).pt() > 10 && daughter(0).daughter(1).pt > 20)) && abs(daughter(0).mass -91.19) <= 10 && daughter(1).masterClone.userFloat('SIP') < 4 ") # Add SIP cut here and remove it in eventanalyzer.cc
+                                             ZLSelection = cms.string("((daughter(0).daughter(0).pt > 20 && daughter(0).daughter(1).pt > 10) || (daughter(0).daughter(0).pt() > 10 && daughter(0).daughter(1).pt > 20)) && abs(daughter(0).mass -91.19) <= 10") # Add SIP cut here and remove it in eventanalyzer.cc
                                              )
 
 
@@ -271,6 +268,7 @@ process.preselection = cms.Path( process.prePreselectionCounter
 
 # Some counters and paths functional to the fake lepton background estimation and signal region check
 
+
 process.zzTrigger = cms.EDFilter("ZZTriggerFilter", src = cms.InputTag("ZZFiltered"),
                                  isMC         = cms.untracked.bool(IsMC),
                                  setup        = cms.int32(LEPTON_SETUP),
@@ -279,7 +277,6 @@ process.zzTrigger = cms.EDFilter("ZZTriggerFilter", src = cms.InputTag("ZZFilter
                                  skimPaths    = cms.vstring(SkimPaths),
                                  MCFilterPath = cms.string(MCFILTER)
                                  )
-
 
 process.cand2P2F       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("ZZFiltered"), cut = cms.string(BOTHFAIL))
 process.cand2P2FFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand2P2F"), minNumber = cms.uint32(1))
@@ -298,6 +295,7 @@ process.srCounter    = cms.EDProducer("SelectedEventCountProducer", names = cms.
 
 ### If it is MC, run also the signal definition path
 if IsMC:
+    print "HEI" #DEL
     # Empty sequence to attach the signal filter (if specified in the CSV file)
     process.mcSelectionCounter = cms.EDProducer("EventCountProducer") # not really needeed... it is mainly an hack to get the path executed
     process.signalFilters = cms.Sequence(process.mcSelectionCounter) 
@@ -373,17 +371,33 @@ process.printTree = cms.EDAnalyzer("ParticleListDrawer",
                                    src = cms.InputTag("prunedGenParticles")
                                    )
 
+
 process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
-                                       dumpTrigger = cms.untracked.bool(True),
-                                       muonSrc = cms.InputTag("appendPhotons:muons"), 
-                                       electronSrc = cms.InputTag("appendPhotons:electrons"),
-                                       candidateSrcs = cms.PSet( Zmm   = cms.InputTag("MMCand"),
-                                                                 Zee   = cms.InputTag("EECand"),
-                                                                 MMMM  = cms.InputTag("MMMMCand"),
-                                                                 EEEE  = cms.InputTag("EEEECand"),
-                                                                 EEMM  = cms.InputTag("EEMMCand"),
-                                                                 )
-                                       )
+     dumpTrigger = cms.untracked.bool(True),
+
+     muonSrcs =  cms.PSet(
+        slimmedMuons = cms.InputTag("slimmedMuons"),
+#        calibratedMuons   = cms.InputTag("calibratedMuons"),
+#        muons        = cms.InputTag("appendPhotons:muons"),
+     ),
+
+     electronSrcs = cms.PSet(
+        slimmedElectron        = cms.InputTag("slimmedElectrons"),
+#        calibratedPatElectrons = cms.InputTag("calibratedPatElectrons"),
+#        electrons              = cms.InputTag("appendPhotons:electrons"),
+     ),
+     candidateSrcs = cms.PSet(
+        Z   = cms.InputTag("ZCand"),
+        ZZ  = cms.InputTag("ZZCand"),
+#        ZLL = cms.InputTag("ZLLCand"),  
+#        ZL  = cms.InputTag("ZlCand") 
+        ),
+      jetSrc = cms.PSet(
+        cleanJets          = cms.InputTag("cleanJets"),
+#        JetsWithLeptonsRemover = cms.InputTag("JetsWithLeptonsRemover"),
+#        disambiguatedJets = cms.InputTag("disambiguatedJets")
+        )
+)
 
 #process.filltrees = cms.Path(process.preselection * process.genCategory * process.treePlanter * process.printTree)
 #process.filltrees = cms.EndPath(process.treePlanter *process.dumpUserData)
