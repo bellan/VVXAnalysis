@@ -10,7 +10,7 @@ Dir = sys.argv[3]
 
 isUnfold = ast.literal_eval(isUnfold)
 
-InfoType = ["Mass","Jets","Jets_Central","Mjj","Mjj_Central","Deta","Deta_Central","PtJet1","EtaJet1","PtJet2","EtaJet2"]
+InfoType = ["Mass","nJets","nJets_Central","Mjj","Mjj_Central","Deta","Deta_Central","PtJet1","EtaJet1","PtJet2","EtaJet2","PtZZ"]
 
 CmdDir = " -d "+Dir
 
