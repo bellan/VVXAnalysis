@@ -123,10 +123,14 @@ short FilterController::getTriggerWord(const edm::Event & event){
     set_bit_16(trigword,8); 
 
   // This is the trigger logic to select ZL events
-
-  if( ( PD == ""                                 && (passDiEle || passDiMu)) ||
+  
+  if( ( PD == ""                                 && (passDiEle || passDiMu )) ||
+      //					     || (passSingleEle && !passMuEle && !passDiMu  && !passTriMu && !passDiEle && !passTriEle)  //Add single lepton only with a proper matching of triggered lepton and Z lepton 
+      //					     || (passSingleMu  && !passMuEle && !passDiMu  && !passTriMu && !passDiEle && !passTriEle && !passSingleEle))) ||
       ((PD == "DoubleEle" || PD == "DoubleEG")   &&  passDiEle)              ||
-      ((PD == "DoubleMu"  || PD == "DoubleMuon") &&  passDiMu && !passDiEle)) 
+      ((PD == "DoubleMu"  || PD == "DoubleMuon") &&  passDiMu && !passDiEle) ) 
+      // ( PD == "SingleElectron"                   &&  passSingleEle            && !passMuEle && !passDiMu  && !passTriMu && !passDiEle && !passTriEle) ||
+      // ( PD == "SingleMuon"                       &&  passSingleMu             && !passMuEle && !passDiMu  && !passTriMu && !passDiEle && !passTriEle && !passSingleEle)) 
       set_bit_16(trigword,9);
   return trigword;
 }
