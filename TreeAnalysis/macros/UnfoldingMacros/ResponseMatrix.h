@@ -36,29 +36,18 @@ class ResponseMatrix : public TObject
   void GenMGatNLOSystDistributions(string var, string dataset, string finalstate);
   
   TFile *output; 
-  TFile *ggZZTo2e2mu_r;
-  TFile *ggZZTo4e_r;
-  TFile *ggZZTo4mu_r;
+  TFile *gg4l_r;
   TFile *ZZTo4lpow_r;
   TFile *ZZTo4lmad_r;
-  TFile *ZZTo2e2muJJ_r;
-  TFile *ZZTo4eJJ_r;
-  TFile *ZZTo4muJJ_r;
+  TFile *qq4l2j_r;
  
   //Truth samples (signal definition distributions)
-  TFile *ggZZTo2e2mu_g;
-  TFile *ggZZTo4e_g;
-  TFile *ggZZTo4mu_g;
+  TFile *gg4l_g;
   TFile *ZZTo4lpow_g;
   TFile *ZZTo4lmad_g;
-  TFile *ZZTo2e2muJJ_g;
-  TFile *ZZTo4eJJ_g;
-  TFile *ZZTo4muJJ_g;
+  TFile *qq4l2j_g;
   TFile *ZZMCsystPow_g;
   TFile *ZZMCsystMGatNLO_g;
-
-  //rescue file
-  TFile *rescue;
 
   TFile *file;
   string fileName;
@@ -70,63 +59,35 @@ class ResponseMatrix : public TObject
   TH2 * h_Resmat_4lpow;
   TH2 * h_Resmat_4lmad;
 
-  TH2 * h_Resmat_gg4mu;
-  TH2 * h_Resmat_gg4e;
-  TH2 * h_Resmat_gg2e2mu;
-
-  TH2 * h_Resmat_4muJJ;
-  TH2 * h_Resmat_4eJJ;
-  TH2 * h_Resmat_2e2muJJ;
-  
-  
+  TH2 * h_Resmat_gg4l;
+  TH2 * h_Resmat_qq4l2j;  
   TH2 * h_Resmat_4lTot;
   TH2 * h_Resmat_ggTot;
   TH2 * h_Resmat_JJTot;
-  
-  
+    
   TH1 * h_4lpow;
   TH1 * h_4lmad;
-  TH1 * h_gg4mu;
-  TH1 * h_gg4e;
-  TH1 * h_gg2e2mu;
-  TH1 * h_4muJJ;
-  TH1 * h_4eJJ;
-  TH1 * h_2e2muJJ;
+  TH1 * h_gg4l;
+  TH1 * h_qq4l2j;
   TH1 * h_4lTot;
-
 
   TH1 * h_4lpow_gen;
   TH1 * h_4lmad_gen;
-  TH1 * h_gg4mu_gen;
-  TH1 * h_gg4e_gen;
-  TH1 * h_gg2e2mu_gen;
-  TH1 * h_4muJJ_gen;
-  TH1 * h_4eJJ_gen;
-  TH1 * h_2e2muJJ_gen;
-
- 
+  TH1 * h_gg4l_gen;
+  TH1 * h_qq4l2j_gen;
+   
   TH1 * h_4lTot_gen;
   TH1 * h_4lTot_up_gen; 
   TH1 * h_4lTot_down_gen; 
-
   TH1 * h_4lpow_up_gen; 
   TH1 * h_4lpow_down_gen; 
-
   TH1 * h_4lpowSist_up_gen;
   TH1 * h_4lpowSist_down_gen;
 
   TH1 * h_4lTot_c;
-  TH1 * h_4lTot_gen_c; 
- 
+  TH1 * h_4lTot_gen_c;  
   TH2 * h_Resmat_normTot;
 
-  TH1 *h_safe;
-  TH1 *h_safe_tmp;
-  TH2 *h_Resmat_safe;
-  TH2 *h_Resmat_safe_tmp;
-  
-  string safeMatrixName;
-  string safeHistoName;
   string matrixName;
   string histoName_reco;
   string histoName_gen;
