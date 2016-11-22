@@ -18,6 +18,9 @@ declareDefault("KINREFIT", False, globals())
 declareDefault("BESTCANDCOMPARATOR", "byBestZ1bestZ2", globals())
 
 declareDefault("APPLYTRIG", True, globals()) 
+# Get absolute path
+import os
+PyFilePath = os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/"
 
 ### ----------------------------------------------------------------------
 ### Standard sequence
