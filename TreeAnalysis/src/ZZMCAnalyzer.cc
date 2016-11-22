@@ -34,8 +34,7 @@ void ZZMCAnalyzer::ZZplots(string decay){
  if(PreCounter < nentries/2) {sample = "0";} 
  else {sample = "1";}
  
- m4L_gen = sqrt((genVBParticles->at(0).p4()+genVBParticles->at(1).p4())*(genVBParticles->at(0).p4()+genVBParticles->at(1).p4()));
-
+ m4L_gen  = sqrt((genVBParticles->at(0).p4()+genVBParticles->at(1).p4())*(genVBParticles->at(0).p4()+genVBParticles->at(1).p4()));
 
  if (m4L_gen>=800) m4L_gen = 799;
  
@@ -55,20 +54,18 @@ void ZZMCAnalyzer::ZZplots(string decay){
  dphizz_gen = fabs(physmath::deltaPhi(genVBParticles->at(0).phi(),genVBParticles->at(1).phi())); 
 
  w_kf = 1; 
- if((theMCInfo.fileName()=="ggZZ2e2mu") || (theMCInfo.fileName()=="ggZZ4e") || (theMCInfo.fileName()=="ggZZ4mu"))   w_kf = kFactor_ggZZ ; 
- else if((theMCInfo.fileName()=="ZZTo4l") || (theMCInfo.fileName()=="ZZTo4lamcatnlo")) w_kf = kFactor_qqZZM * kFactor_EWKqqZZ ; 
+ // if((theMCInfo.fileName()=="ggZZ2e2mu") || (theMCInfo.fileName()=="ggZZ4e") || (theMCInfo.fileName()=="ggZZ4mu"))   w_kf = kFactor_ggZZ ; 
+ //else if((theMCInfo.fileName()=="ZZTo4l") || (theMCInfo.fileName()=="ZZTo4lamcatnlo")) w_kf = kFactor_qqZZM * kFactor_EWKqqZZ ; 
  
  
- theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGen_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,5,0,5,njets,theMCInfo.sampleWeight()*w_kf);  
- theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGen_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,5,0,5,njets,theMCInfo.sampleWeight()*w_kf);
- theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGen_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,5,0,5,ncentraljets,theMCInfo.sampleWeight()*w_kf);  
- theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGen_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,5,0,5,ncentraljets,theMCInfo.sampleWeight()*w_kf);
+ theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGen_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,njets,theMCInfo.sampleWeight()*w_kf);  
+ theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGen_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,njets,theMCInfo.sampleWeight()*w_kf);
+ theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGen_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,ncentraljets,theMCInfo.sampleWeight()*w_kf);  
+ theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGen_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,ncentraljets,theMCInfo.sampleWeight()*w_kf);
  theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_kf);
  theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_01", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_kf);
  theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGen_"+sample,"", Xbins_drzz, drzz_gen,theMCInfo.sampleWeight()*w_kf);
  theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGen_01","", Xbins_drzz, drzz_gen,theMCInfo.sampleWeight()*w_kf);
- theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGen_"+sample,"", Xbins_ptzz, ptzz_gen,theMCInfo.sampleWeight()*w_kf);
- theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGen_01","", Xbins_ptzz, ptzz_gen,theMCInfo.sampleWeight()*w_kf);
  theHistograms.fill(std::string("ZZTo")+decay+"_DphiZZGen_"+sample,"", Xbins_dphizz, dphizz_gen,theMCInfo.sampleWeight()*w_kf);
  theHistograms.fill(std::string("ZZTo")+decay+"_DphiZZGen_01","", Xbins_dphizz, dphizz_gen,theMCInfo.sampleWeight()*w_kf);
 
@@ -97,14 +94,15 @@ void ZZMCAnalyzer::ZZplots(string decay){
 
    theHistograms.fill(std::string("ZZTo")+decay+"_MjjGen_"+sample, std::string("m_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen,theMCInfo.sampleWeight()*w_kf);  
    theHistograms.fill(std::string("ZZTo")+decay+"_MjjGen_01", std::string("m_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen,theMCInfo.sampleWeight()*w_kf);  
-   
    theHistograms.fill(std::string("ZZTo")+decay+"_DetaGen_"+sample, std::string("#Delta#eta_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_deta,deta_gen,theMCInfo.sampleWeight()*w_kf);  
    theHistograms.fill(std::string("ZZTo")+decay+"_DetaGen_01", std::string("#Delta#eta__{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_deta,deta_gen,theMCInfo.sampleWeight()*w_kf);
-
    theHistograms.fill(std::string("ZZTo")+decay+"_PtJet2Gen_"+sample,"",Xbins_ptjet2,ptjet2_gen,theMCInfo.sampleWeight()*w_kf);  
    theHistograms.fill(std::string("ZZTo")+decay+"_PtJet2Gen_01","",Xbins_ptjet2,ptjet2_gen,theMCInfo.sampleWeight()*w_kf);
    theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet2Gen_"+sample,"",Xbins_etajet2,etajet2_gen,theMCInfo.sampleWeight()*w_kf);  
    theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet2Gen_01","",Xbins_etajet2,etajet2_gen,theMCInfo.sampleWeight()*w_kf);
+   theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGen_"+sample,"", Xbins_ptzz, ptzz_gen,theMCInfo.sampleWeight()*w_kf);
+   theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGen_01","", Xbins_ptzz, ptzz_gen,theMCInfo.sampleWeight()*w_kf);
+
 }
 
  if(ncentraljets>=2){  
@@ -113,7 +111,7 @@ void ZZMCAnalyzer::ZZplots(string decay){
    mjj_gen_cj =  (centralGenJets->at(0).p4() + centralGenJets->at(1).p4()).M();
    if (deta_gen_cj>=4.7) deta_gen_cj = 4.6;
    if (mjj_gen_cj>=800) mjj_gen_cj = 799;
-   
+
    theHistograms.fill(std::string("ZZTo")+decay+"_Mjj_CentralGen_"+sample, std::string("m_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen_cj,theMCInfo.sampleWeight()*w_kf);  
    theHistograms.fill(std::string("ZZTo")+decay+"_Mjj_CentralGen_01", std::string("m_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen_cj,theMCInfo.sampleWeight()*w_kf);  
    
@@ -132,91 +130,89 @@ void ZZMCAnalyzer::ZZplots(string decay){
  
  
  if(isTightFr){
-  region = "_fr";
-  inFiducialRegion ++;
+   region = "_fr";
+   inFiducialRegion ++;
+   
+  theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGen_"+sample+region, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,njets,theMCInfo.sampleWeight()*w_kf);  
+  theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGen_01"+region, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,njets,theMCInfo.sampleWeight()*w_kf);
+  theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGen_"+sample+region, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,ncentraljets,theMCInfo.sampleWeight()*w_kf);  
+  theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGen_01"+region, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,ncentraljets,theMCInfo.sampleWeight()*w_kf);
+  theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_"+sample+region, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_kf);
+  theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_01"+region, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_kf);
+  theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGen_"+sample+region,"", Xbins_drzz, drzz_gen,theMCInfo.sampleWeight()*w_kf);
+  theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGen_01"+region,"", Xbins_drzz, drzz_gen,theMCInfo.sampleWeight()*w_kf);
+  theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGen_"+sample+region,"", Xbins_ptzz, ptzz_gen,theMCInfo.sampleWeight()*w_kf);
+  theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGen_01"+region,"", Xbins_ptzz, ptzz_gen,theMCInfo.sampleWeight()*w_kf);
+  theHistograms.fill(std::string("ZZTo")+decay+"_DphiZZGen_"+sample+region,"", Xbins_dphizz, dphizz_gen,theMCInfo.sampleWeight()*w_kf);
+  theHistograms.fill(std::string("ZZTo")+decay+"_DphiZZGen_01"+region,"", Xbins_dphizz, dphizz_gen,theMCInfo.sampleWeight()*w_kf);
   
-  theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGen_"+sample+region, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,5,0,5,njets,theMCInfo.sampleWeight()*w_kf);  
-   theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGen_01"+region, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,5,0,5,njets,theMCInfo.sampleWeight()*w_kf);
-   theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGen_"+sample+region, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,5,0,5,ncentraljets,theMCInfo.sampleWeight()*w_kf);  
-   theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGen_01"+region, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,5,0,5,ncentraljets,theMCInfo.sampleWeight()*w_kf);
-   theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_"+sample+region, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_kf);
-   theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_01"+region, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_kf);
- theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGen_"+sample+region,"", Xbins_drzz, drzz_gen,theMCInfo.sampleWeight()*w_kf);
- theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGen_01"+region,"", Xbins_drzz, drzz_gen,theMCInfo.sampleWeight()*w_kf);
-   theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGen_"+sample+region,"", Xbins_ptzz, ptzz_gen,theMCInfo.sampleWeight()*w_kf);
- theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGen_01"+region,"", Xbins_ptzz, ptzz_gen,theMCInfo.sampleWeight()*w_kf);
- theHistograms.fill(std::string("ZZTo")+decay+"_DphiZZGen_"+sample+region,"", Xbins_dphizz, dphizz_gen,theMCInfo.sampleWeight()*w_kf);
- theHistograms.fill(std::string("ZZTo")+decay+"_DphiZZGen_01"+region,"", Xbins_dphizz, dphizz_gen,theMCInfo.sampleWeight()*w_kf);
-
-   if(njets >=1){
-     ptjet1_gen = genJets->at(0).pt();
-     if(ptjet1_gen>=500) ptjet1_gen=499;
-     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1Gen_"+sample+region,"",Xbins_ptjet1,ptjet1_gen,theMCInfo.sampleWeight()*w_kf);  
-     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1Gen_01"+region,"",Xbins_ptjet1,ptjet1_gen,theMCInfo.sampleWeight()*w_kf);
-     etajet1_gen = fabs(genJets->at(0).eta()); 
-     
-     if(etajet1_gen>=4.7) etajet1_gen=4.6;
-     theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet1Gen_"+sample+region,"",Xbins_etajet1,etajet1_gen,theMCInfo.sampleWeight()*w_kf);  
-     theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet1Gen_01"+region,"",Xbins_etajet1,etajet1_gen,theMCInfo.sampleWeight()*w_kf);
-   } 
-   
-   if(njets>=2){  
-     
-     deta_gen = fabs(genJets->at(0).eta() - genJets->at(1).eta());
-     mjj_gen =  (genJets->at(0).p4() + genJets->at(1).p4()).M();
-     ptjet2_gen = genJets->at(1).pt();
-     etajet2_gen = fabs(genJets->at(1).eta());
-     
-     if (deta_gen>=4.7) deta_gen = 4.6;
-     if (mjj_gen>=800) mjj_gen = 799;
-     if(ptjet2_gen>=500) ptjet2_gen=499; 
-     if(etajet2_gen>=4.7) etajet2_gen=4.6;
- 
-     theHistograms.fill(std::string("ZZTo")+decay+"_MjjGen_"+sample+region, std::string("m_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen,theMCInfo.sampleWeight()*w_kf);  
-     theHistograms.fill(std::string("ZZTo")+decay+"_MjjGen_01"+region, std::string("m_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen,theMCInfo.sampleWeight()*w_kf);  
-     
-     theHistograms.fill(std::string("ZZTo")+decay+"_DetaGen_"+sample+region, std::string("#Delta#eta_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_deta,deta_gen,theMCInfo.sampleWeight()*w_kf);  
-     theHistograms.fill(std::string("ZZTo")+decay+"_DetaGen_01"+region, std::string("#Delta#eta__{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_deta,deta_gen,theMCInfo.sampleWeight()*w_kf);
-     
-     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet2Gen_"+sample+region,"",Xbins_ptjet2,ptjet2_gen,theMCInfo.sampleWeight()*w_kf);  
-     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet2Gen_01"+region,"",Xbins_ptjet2,ptjet2_gen,theMCInfo.sampleWeight()*w_kf);
-     theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet2Gen_"+sample+region,"",Xbins_etajet2,etajet2_gen,theMCInfo.sampleWeight()*w_kf);  
-     theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet2Gen_01"+region,"",Xbins_etajet2,etajet2_gen,theMCInfo.sampleWeight()*w_kf);
-   }
-   
-   if(ncentraljets>=2){  
-     
-     deta_gen_cj = fabs(centralGenJets->at(0).eta() - centralGenJets->at(1).eta());
-     mjj_gen_cj =  (centralGenJets->at(0).p4() + centralGenJets->at(1).p4()).M();
-     if (deta_gen_cj>=4.7) deta_gen_cj = 4.6;
-     if (mjj_gen_cj>=800) mjj_gen_cj = 799;
-     
-     theHistograms.fill(std::string("ZZTo")+decay+"_Mjj_CentralGen_"+sample+region, std::string("m_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen_cj,theMCInfo.sampleWeight()*w_kf);  
-     theHistograms.fill(std::string("ZZTo")+decay+"_Mjj_CentralGen_01"+region, std::string("m_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen_cj,theMCInfo.sampleWeight()*w_kf);  
-     
-     theHistograms.fill(std::string("ZZTo")+decay+"_Deta_CentralGen_"+sample+region, std::string("#Delta#eta_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_deta,deta_gen_cj,theMCInfo.sampleWeight()*w_kf);  
-     theHistograms.fill(std::string("ZZTo")+decay+"_Deta_CentralGen_01"+region, std::string("#Delta#eta__{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_deta,deta_gen_cj,theMCInfo.sampleWeight()*w_kf);
-     
-   }
+  if(njets >=1){
+    ptjet1_gen = genJets->at(0).pt();
+    if(ptjet1_gen>=500) ptjet1_gen=499;
+    theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1Gen_"+sample+region,"",Xbins_ptjet1,ptjet1_gen,theMCInfo.sampleWeight()*w_kf);  
+    theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1Gen_01"+region,"",Xbins_ptjet1,ptjet1_gen,theMCInfo.sampleWeight()*w_kf);
+    etajet1_gen = fabs(genJets->at(0).eta()); 
+    
+    if(etajet1_gen>=4.7) etajet1_gen=4.6;
+    theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet1Gen_"+sample+region,"",Xbins_etajet1,etajet1_gen,theMCInfo.sampleWeight()*w_kf);  
+    theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet1Gen_01"+region,"",Xbins_etajet1,etajet1_gen,theMCInfo.sampleWeight()*w_kf);
+  } 
+  
+  if(njets>=2){  
+    
+    deta_gen = fabs(genJets->at(0).eta() - genJets->at(1).eta());
+    mjj_gen =  (genJets->at(0).p4() + genJets->at(1).p4()).M();
+    ptjet2_gen = genJets->at(1).pt();
+    etajet2_gen = fabs(genJets->at(1).eta());
+    
+    if (deta_gen>=4.7) deta_gen = 4.6;
+    if (mjj_gen>=800) mjj_gen = 799;
+    if (ptjet2_gen>=500) ptjet2_gen=499; 
+    if (etajet2_gen>=4.7) etajet2_gen=4.6;
+    
+    theHistograms.fill(std::string("ZZTo")+decay+"_MjjGen_"+sample+region, std::string("m_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen,theMCInfo.sampleWeight()*w_kf);  
+    theHistograms.fill(std::string("ZZTo")+decay+"_MjjGen_01"+region, std::string("m_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen,theMCInfo.sampleWeight()*w_kf);  
+    
+    theHistograms.fill(std::string("ZZTo")+decay+"_DetaGen_"+sample+region, std::string("#Delta#eta_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_deta,deta_gen,theMCInfo.sampleWeight()*w_kf);  
+    theHistograms.fill(std::string("ZZTo")+decay+"_DetaGen_01"+region, std::string("#Delta#eta__{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_deta,deta_gen,theMCInfo.sampleWeight()*w_kf);
+    
+    theHistograms.fill(std::string("ZZTo")+decay+"_PtJet2Gen_"+sample+region,"",Xbins_ptjet2,ptjet2_gen,theMCInfo.sampleWeight()*w_kf);  
+    theHistograms.fill(std::string("ZZTo")+decay+"_PtJet2Gen_01"+region,"",Xbins_ptjet2,ptjet2_gen,theMCInfo.sampleWeight()*w_kf);
+    theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet2Gen_"+sample+region,"",Xbins_etajet2,etajet2_gen,theMCInfo.sampleWeight()*w_kf);  
+    theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet2Gen_01"+region,"",Xbins_etajet2,etajet2_gen,theMCInfo.sampleWeight()*w_kf);
+  }
+  
+  if(ncentraljets>=2){  
+    
+    deta_gen_cj = fabs(centralGenJets->at(0).eta() - centralGenJets->at(1).eta());
+    mjj_gen_cj =  (centralGenJets->at(0).p4() + centralGenJets->at(1).p4()).M();
+    if (deta_gen_cj>=4.7) deta_gen_cj = 4.6;
+    if (mjj_gen_cj>=800) mjj_gen_cj = 799;
+    
+    theHistograms.fill(std::string("ZZTo")+decay+"_Mjj_CentralGen_"+sample+region, std::string("m_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen_cj,theMCInfo.sampleWeight()*w_kf);  
+    theHistograms.fill(std::string("ZZTo")+decay+"_Mjj_CentralGen_01"+region, std::string("m_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_mjj,mjj_gen_cj,theMCInfo.sampleWeight()*w_kf);  
+    
+    theHistograms.fill(std::string("ZZTo")+decay+"_Deta_CentralGen_"+sample+region, std::string("#Delta#eta_{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_deta,deta_gen_cj,theMCInfo.sampleWeight()*w_kf);  
+    theHistograms.fill(std::string("ZZTo")+decay+"_Deta_CentralGen_01"+region, std::string("#Delta#eta__{jj} of ZZ_{1}#rightarrow ")+decay,Xbins_deta,deta_gen_cj,theMCInfo.sampleWeight()*w_kf);
+  }
  }
  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-if((region_ == phys::MC && regionWord.test(26)) || ((region_ == phys::MC_HZZ) && regionWord.test(3))){
-
-
-   theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenReco_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,5,0,5,njets,theWeight*w_kf); 
-   theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenReco_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,5,0,5,ncentraljets,theWeight*w_kf);   
+ 
+ 
+ if((region_ == phys::MC && regionWord.test(26)) || ((region_ == phys::MC_HZZ) && regionWord.test(3))){
+   
+   theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenReco_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,njets,theWeight*w_kf); 
+   theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenReco_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,ncentraljets,theWeight*w_kf);   
    theHistograms.fill(std::string("ZZTo")+decay+"_MassGenReco_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay+"of reco events" , Xbins , m4L_gen,theWeight*w_kf);  
    theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGenReco_"+sample,"", Xbins_drzz , drzz_gen,theWeight*w_kf);      
-   theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGenReco_"+sample,"", Xbins_ptzz , ptzz_gen,theWeight*w_kf);
    theHistograms.fill(std::string("ZZTo")+decay+"_DphiZZGenReco_"+sample,"", Xbins_dphizz , dphizz_gen,theWeight*w_kf);
-   theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenReco_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,5,0,5,njets,theWeight*w_kf);  
+   theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenReco_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,njets,theWeight*w_kf);  
    theHistograms.fill(std::string("ZZTo")+decay+"_MassGenReco_01", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay+"of reco events" , Xbins , m4L_gen,theWeight*w_kf); 
-   theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenReco_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,5,0,5,ncentraljets,theWeight*w_kf);      
+   theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenReco_01", std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,ncentraljets,theWeight*w_kf);      
    theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGenReco_01","", Xbins_drzz , drzz_gen,theWeight*w_kf);        
-   theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGenReco_01","", Xbins_ptzz , ptzz_gen,theWeight*w_kf);       
    theHistograms.fill(std::string("ZZTo")+decay+"_DphiZZGenReco_01","", Xbins_dphizz , dphizz_gen,theWeight*w_kf);        
+   theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGenReco_"+sample,"", Xbins_ptzz , ptzz_gen,theWeight*w_kf);
+   theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGenReco_01","", Xbins_ptzz , ptzz_gen,theWeight*w_kf);       
 
    if(njets >=1){
      theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1GenReco_"+sample,"",Xbins_ptjet1,ptjet1_gen,theWeight*w_kf);  
@@ -257,15 +253,15 @@ if((region_ == phys::MC && regionWord.test(26)) || ((region_ == phys::MC_HZZ) &&
  theHistograms.fill(std::string("ZZTo")+decay+"_MassGenRecoSFErrSqPlus_"+sample, "", Xbins , m4L_gen, theWeight*w_kf*(1+scaleFacErrSq));   
  theHistograms.fill(std::string("ZZTo")+decay+"_MassGenRecoSFErrSqPlus_01","", Xbins , m4L_gen, theWeight*w_kf*(1+scaleFacErrSq));
  
- theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenRecoSFErrSqMinus_"+sample,"",5,0,5,njets,theWeight*w_kf*(1-scaleFacErrSq)); 
- theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenRecoSFErrSqMinus_01","",5,0,5,njets,theWeight*w_kf*(1-scaleFacErrSq));   
- theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenRecoSFErrSqPlus_"+sample,"",5,0,5,njets,theWeight*w_kf*(1+scaleFacErrSq));  
- theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenRecoSFErrSqPlus_01","",5,0,5,njets,theWeight*w_kf*(1+scaleFacErrSq)); 
+ theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenRecoSFErrSqMinus_"+sample,"",Xbins_nJets,njets,theWeight*w_kf*(1-scaleFacErrSq)); 
+ theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenRecoSFErrSqMinus_01","",Xbins_nJets,njets,theWeight*w_kf*(1-scaleFacErrSq));   
+ theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenRecoSFErrSqPlus_"+sample,"",Xbins_nJets,njets,theWeight*w_kf*(1+scaleFacErrSq));  
+ theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenRecoSFErrSqPlus_01","",Xbins_nJets,njets,theWeight*w_kf*(1+scaleFacErrSq)); 
  
- theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenRecoSFErrSqMinus_"+sample,"",5,0,5,ncentraljets,theWeight*w_kf*(1-scaleFacErrSq)); 
- theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenRecoSFErrSqMinus_01","",5,0,5,ncentraljets,theWeight*w_kf*(1-scaleFacErrSq));   
- theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenRecoSFErrSqPlus_"+sample,"",5,0,5,ncentraljets,theWeight*w_kf*(1+scaleFacErrSq));  
- theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenRecoSFErrSqPlus_01", "",5,0,5,ncentraljets,theWeight*w_kf*(1+scaleFacErrSq));  
+ theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenRecoSFErrSqMinus_"+sample,"",Xbins_nJets,ncentraljets,theWeight*w_kf*(1-scaleFacErrSq)); 
+ theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenRecoSFErrSqMinus_01","",Xbins_nJets,ncentraljets,theWeight*w_kf*(1-scaleFacErrSq));   
+ theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenRecoSFErrSqPlus_"+sample,"",Xbins_nJets,ncentraljets,theWeight*w_kf*(1+scaleFacErrSq));  
+ theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenRecoSFErrSqPlus_01", "",Xbins_nJets,ncentraljets,theWeight*w_kf*(1+scaleFacErrSq));  
  theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGenRecoSFErrSqMinus_"+sample, "", Xbins_drzz , drzz_gen, theWeight*w_kf*(1-scaleFacErrSq));   
  theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGenRecoSFErrSqMinus_01", "", Xbins_drzz , drzz_gen, theWeight*w_kf*(1-scaleFacErrSq));   
  theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGenRecoSFErrSqPlus_"+sample, "", Xbins_drzz , drzz_gen, theWeight*w_kf*(1+scaleFacErrSq));   
@@ -343,15 +339,15 @@ if((region_ == phys::MC && regionWord.test(26)) || ((region_ == phys::MC_HZZ) &&
 
   if(isTightFr){
    
-   theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenReco_"+sample+region, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,5,0,5,njets,theWeight*w_kf);  
-   theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenReco_01"+region, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,5,0,5,njets,theWeight*w_kf);
-   theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenReco_"+sample+region, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,5,0,5,ncentraljets,theWeight*w_kf);  
-   theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenReco_01"+region, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,5,0,5,ncentraljets,theWeight*w_kf);
+   theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenReco_"+sample+region, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,njets,theWeight*w_kf);  
+   theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenReco_01"+region, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,njets,theWeight*w_kf);
+   theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenReco_"+sample+region, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,ncentraljets,theWeight*w_kf);  
+   theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenReco_01"+region, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,ncentraljets,theWeight*w_kf);
    theHistograms.fill(std::string("ZZTo")+decay+"_MassGenReco_"+sample+region, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theWeight*w_kf);
    theHistograms.fill(std::string("ZZTo")+decay+"_MassGenReco_01"+region, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theWeight*w_kf);
    theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGenReco_"+sample+region, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins_drzz, drzz_gen,theWeight*w_kf);
    theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGenReco_01"+region, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins_drzz, drzz_gen,theWeight*w_kf);
-    theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGenReco_"+sample+region, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins_ptzz, ptzz_gen,theWeight*w_kf);
+   theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGenReco_"+sample+region, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins_ptzz, ptzz_gen,theWeight*w_kf);
    theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGenReco_01"+region, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins_ptzz, ptzz_gen,theWeight*w_kf); 
    theHistograms.fill(std::string("ZZTo")+decay+"_DphiZZGenReco_"+sample+region, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins_dphizz, dphizz_gen,theWeight*w_kf);
    theHistograms.fill(std::string("ZZTo")+decay+"_DphiZZGenReco_01"+region, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins_dphizz, dphizz_gen,theWeight*w_kf);
@@ -393,32 +389,32 @@ if((region_ == phys::MC && regionWord.test(26)) || ((region_ == phys::MC_HZZ) &&
    theHistograms.fill(std::string("ZZTo")+decay+"_MassGenRecoSFErrSqPlus_"+sample+region, "", Xbins , m4L_gen, theWeight*w_kf*(1+scaleFacErrSq));   
    theHistograms.fill(std::string("ZZTo")+decay+"_MassGenRecoSFErrSqPlus_01_fr","", Xbins , m4L_gen, theWeight*w_kf*(1+scaleFacErrSq));
    
-   theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenRecoSFErrSqMinus_"+sample+region,"",5,0,5,njets,theWeight*w_kf*(1-scaleFacErrSq)); 
-   theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenRecoSFErrSqMinus_01_fr","",5,0,5,njets,theWeight*w_kf*(1-scaleFacErrSq));   
-   theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenRecoSFErrSqPlus_"+sample+region,"",5,0,5,njets,theWeight*w_kf*(1+scaleFacErrSq));  
-   theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenRecoSFErrSqPlus_01_fr","",5,0,5,njets,theWeight*w_kf*(1+scaleFacErrSq)); 
+   theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenRecoSFErrSqMinus_"+sample+region,"",Xbins_nJets,njets,theWeight*w_kf*(1-scaleFacErrSq)); 
+   theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenRecoSFErrSqMinus_01_fr","",Xbins_nJets,njets,theWeight*w_kf*(1-scaleFacErrSq));   
+   theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenRecoSFErrSqPlus_"+sample+region,"",Xbins_nJets,njets,theWeight*w_kf*(1+scaleFacErrSq));  
+   theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGenRecoSFErrSqPlus_01_fr","",Xbins_nJets,njets,theWeight*w_kf*(1+scaleFacErrSq)); 
    
-   theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenRecoSFErrSqMinus_"+sample+region,"",5,0,5,ncentraljets,theWeight*w_kf*(1-scaleFacErrSq)); 
-   theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenRecoSFErrSqMinus_01_fr","",5,0,5,ncentraljets,theWeight*w_kf*(1-scaleFacErrSq));   
-   theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenRecoSFErrSqPlus_"+sample+region,"",5,0,5,ncentraljets,theWeight*w_kf*(1+scaleFacErrSq));  
-   theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenRecoSFErrSqPlus_01_fr", "",5,0,5,ncentraljets,theWeight*w_kf*(1+scaleFacErrSq));  
-
+   theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenRecoSFErrSqMinus_"+sample+region,"",Xbins_nJets,ncentraljets,theWeight*w_kf*(1-scaleFacErrSq)); 
+   theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenRecoSFErrSqMinus_01_fr","",Xbins_nJets,ncentraljets,theWeight*w_kf*(1-scaleFacErrSq));   
+   theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenRecoSFErrSqPlus_"+sample+region,"",Xbins_nJets,ncentraljets,theWeight*w_kf*(1+scaleFacErrSq));  
+   theHistograms.fill(std::string("ZZTo")+decay+"_nJets_CentralGenRecoSFErrSqPlus_01_fr", "",Xbins_nJets,ncentraljets,theWeight*w_kf*(1+scaleFacErrSq));  
+   
    theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGenRecoSFErrSqMinus_"+sample+region, "", Xbins_drzz , drzz_gen, theWeight*w_kf*(1-scaleFacErrSq));   
- theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGenRecoSFErrSqMinus_01_fr", "", Xbins_drzz , drzz_gen, theWeight*w_kf*(1-scaleFacErrSq));   
- theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGenRecoSFErrSqPlus_"+sample+region, "", Xbins_drzz , drzz_gen, theWeight*w_kf*(1+scaleFacErrSq));   
- theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGenRecoSFErrSqPlus_01_fr","", Xbins_drzz , drzz_gen, theWeight*w_kf*(1+scaleFacErrSq));   
-
- theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGenRecoSFErrSqMinus_"+sample+region, "", Xbins_ptzz , ptzz_gen, theWeight*w_kf*(1-scaleFacErrSq));   
- theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGenRecoSFErrSqMinus_01_fr", "", Xbins_ptzz , ptzz_gen, theWeight*w_kf*(1-scaleFacErrSq));   
- theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGenRecoSFErrSqPlus_"+sample+region, "", Xbins_ptzz , ptzz_gen, theWeight*w_kf*(1+scaleFacErrSq));   
- theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGenRecoSFErrSqPlus_01_fr","", Xbins_ptzz , ptzz_gen, theWeight*w_kf*(1+scaleFacErrSq)); 
-
- theHistograms.fill(std::string("ZZTo")+decay+"_DphiZZGenRecoSFErrSqMinus_"+sample+region, "", Xbins_dphizz , dphizz_gen, theWeight*w_kf*(1-scaleFacErrSq));   
- theHistograms.fill(std::string("ZZTo")+decay+"_DphiZZGenRecoSFErrSqMinus_01_fr", "", Xbins_dphizz , dphizz_gen, theWeight*w_kf*(1-scaleFacErrSq));   
- theHistograms.fill(std::string("ZZTo")+decay+"_DphiZZGenRecoSFErrSqPlus_"+sample+region, "", Xbins_dphizz , dphizz_gen, theWeight*w_kf*(1+scaleFacErrSq));   
- theHistograms.fill(std::string("ZZTo")+decay+"_DphiZZGenRecoSFErrSqPlus_01_fr","", Xbins_dphizz , dphizz_gen, theWeight*w_kf*(1+scaleFacErrSq)); 
-
-
+   theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGenRecoSFErrSqMinus_01_fr", "", Xbins_drzz , drzz_gen, theWeight*w_kf*(1-scaleFacErrSq));   
+   theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGenRecoSFErrSqPlus_"+sample+region, "", Xbins_drzz , drzz_gen, theWeight*w_kf*(1+scaleFacErrSq));   
+   theHistograms.fill(std::string("ZZTo")+decay+"_dRZZGenRecoSFErrSqPlus_01_fr","", Xbins_drzz , drzz_gen, theWeight*w_kf*(1+scaleFacErrSq));   
+   
+   theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGenRecoSFErrSqMinus_"+sample+region, "", Xbins_ptzz , ptzz_gen, theWeight*w_kf*(1-scaleFacErrSq));   
+   theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGenRecoSFErrSqMinus_01_fr", "", Xbins_ptzz , ptzz_gen, theWeight*w_kf*(1-scaleFacErrSq));   
+   theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGenRecoSFErrSqPlus_"+sample+region, "", Xbins_ptzz , ptzz_gen, theWeight*w_kf*(1+scaleFacErrSq));   
+   theHistograms.fill(std::string("ZZTo")+decay+"_PtZZGenRecoSFErrSqPlus_01_fr","", Xbins_ptzz , ptzz_gen, theWeight*w_kf*(1+scaleFacErrSq)); 
+   
+   theHistograms.fill(std::string("ZZTo")+decay+"_DphiZZGenRecoSFErrSqMinus_"+sample+region, "", Xbins_dphizz , dphizz_gen, theWeight*w_kf*(1-scaleFacErrSq));   
+   theHistograms.fill(std::string("ZZTo")+decay+"_DphiZZGenRecoSFErrSqMinus_01_fr", "", Xbins_dphizz , dphizz_gen, theWeight*w_kf*(1-scaleFacErrSq));   
+   theHistograms.fill(std::string("ZZTo")+decay+"_DphiZZGenRecoSFErrSqPlus_"+sample+region, "", Xbins_dphizz , dphizz_gen, theWeight*w_kf*(1+scaleFacErrSq));   
+   theHistograms.fill(std::string("ZZTo")+decay+"_DphiZZGenRecoSFErrSqPlus_01_fr","", Xbins_dphizz , dphizz_gen, theWeight*w_kf*(1+scaleFacErrSq)); 
+   
+   
    if(njets >=1){
      theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1GenRecoSFErrSqMinus_"+sample+region,"",Xbins_ptjet1,ptjet1_gen,theWeight*w_kf*(1-scaleFacErrSq));  
      theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1GenRecoSFErrSqMinus_01_fr","",Xbins_ptjet1,ptjet1_gen,theWeight*w_kf*(1-scaleFacErrSq));
@@ -479,37 +475,18 @@ if((region_ == phys::MC && regionWord.test(26)) || ((region_ == phys::MC_HZZ) &&
 void ZZMCAnalyzer::analyze(){
   
   PreCounter+=1;
-
-
   if((region_ == phys::MC && topology.test(2)) || (region_ == phys::MC_HZZ && topology.test(0) ) ){       
-   
-  int Ele  = 0;
-  int Muon = 0; 
-  int lep = 0;
-  
-  foreach(const phys::Particle &gen, *genParticles){
-    if((!gen.genStatusFlags().test(GenStatusBit::isPrompt)) || (!gen.genStatusFlags().test(GenStatusBit::fromHardProcess)))  continue;
-    if(abs(gen.id())==13){	
-      Muon += 1; 
-      lep +=1;
-      }
-      else if(abs(gen.id())==11){
-	Ele += 1;
-	lep+=1; 
-      }
-     }
 
-    std::string decay="None";
-    if(Ele==Muon && Ele!=0)  {decay = "2e2m";} 
-    else if(Ele<Muon) {decay = "4m";}    
-    else if(Ele>Muon) {decay = "4e";}   
-    else if(Ele==Muon && Ele == 0) std::cout<<"NO FINALSTATE"<<std::endl;
-    else std::cout<<"NO FINALSTATE"<<std::endl;   
+  int z1 = abs(genVBParticles->at(0).daughter(0).id()); 
+  int z2 = abs(genVBParticles->at(1).daughter(0).id()); 
 
-    if(lep>4) std::cout<<"To many leptons: "<<lep<<std::endl; 
-    else if(lep<4)  std::cout<<"To few leptons: "<<lep<<std::endl; 
+  std::string decay="None";                                                                                                                                                                                
 
-    //ZZplots("4l");
+  if((z1==11 && z2==13) || (z1==13 && z2==11)) {decay = "2e2m";} 
+  else if(z1==13 && z2==13) {decay = "4m";} 
+  else if(z1==11 && z2==11) {decay = "4e";}
+  else {cout<<"Wrong decay, check z doughters: Z0 l0"<<genVBParticles->at(0).daughter(0).id()<<" Z0 l1 "<<genVBParticles->at(0).daughter(1).id()<<" Z1 l0 "<<genVBParticles->at(1).daughter(0).id()<<" Z1 l1 "<<genVBParticles->at(1).daughter(1).id()<<endl; abort();} 
+ 
     ZZplots(decay);   
  }  
 }
@@ -519,6 +496,8 @@ void ZZMCAnalyzer::begin() {
   PreCounter = 0;
   nEvent = 0;
   inFiducialRegion=0;
+
+  Xbins_nJets += 0,1,2,3,4;
   Xbins += 100,200,250,300,350,400,500,600,800; 
   Xbins_deta += 0,2.4,4.7;
   Xbins_mjj += 0.,200,800;
