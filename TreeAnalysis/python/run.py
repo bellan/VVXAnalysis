@@ -4,12 +4,10 @@
 ## R. Bellan (UNITO) - Feb 2014 ##
 ##################################
 
-
 import sys, os, commands, math
 from optparse import OptionParser
 from readSampleInfo import *
 from Colours import *
-import time;  # This is required to include time module.
 
 
 ############################################################################
@@ -116,7 +114,6 @@ print "\n"
 def run(executable, analysis, typeofsample, region, luminosity):
 
 
-    print time.localtime(time.time())
     inputdir = baseinputdir
     
     outputdir = 'results'
@@ -147,6 +144,9 @@ def run(executable, analysis, typeofsample, region, luminosity):
 
     #################################################################################
     isData = False
+
+#        if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:4] == 'MuEG' or typeofsample[0:9]== "SingleEle" or typeofsample[0:8]== "SingleMu" or typeofsample[0:4] == 'test' :
+
     if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:4] == 'MuEG' or typeofsample[0:6] == 'Single' or typeofsample[0:4] == 'test' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:8] == 'DoubleEG':
 
         luminosity = -1
@@ -184,7 +184,6 @@ def run(executable, analysis, typeofsample, region, luminosity):
 
     output = '{0:s}/{1:s}.root'.format(outputdir,typeofsample)
     print "The output is in", Green(output)
-    print time.localtime(time.time())
     return output
 
 
@@ -216,18 +215,17 @@ def runOverCRs(executable, analysis, sample, luminosity, postfix = '', outputLoc
     outputLocations.append(outputRedBkg)
 
 
-
 if typeofsample == 'all' or typeofsample == 'data':
     outputLocations = []
     for sample in typeofsamples:
-        if typeofsample == 'all' or sample[0:8] == 'DoubleMu' or sample[0:9] == 'DoubleEG' or sample[0:5] == 'MuonEG' or sample[0:9]== "SingleEG":
+        if typeofsample == 'all' or sample[0:8] == 'DoubleMu' or sample[0:9] == 'DoubleEle' or sample[0:4] == 'MuEG' or sample[0:9]== "SingleEle" or sample[0:8]== "SingleMu":
             if region == 'all':
                 for cr in regions:
                     run(executable, analysis, sample, cr, luminosity)    # runs over all samples in all control reagions
             elif region == 'CR':
-                runOverCRs(executable, analysis, sample, luminosity,outputLocations,postfix='') #CHECK FIX
+                runOverCRs(executable, analysis, sample, luminosity,"",outputLocations)
             elif region == 'CR_HZZ': 
-                runOverCRs(executable, analysis, sample, luminosity,outputLocations,postfix='_HZZ')
+                runOverCRs(executable, analysis, sample, luminosity,'_HZZ',outputLocations)
             else:
                 outputLocations.append(run(executable, analysis, sample, region, luminosity))   # runs over all samples in a specific control reagions
     if typeofsample == 'data':
