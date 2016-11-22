@@ -14,10 +14,13 @@ elif An == "MC":
     AnalyzerList = [{"analyzer":"ZZMCAnalyzer","region":"MC"}]
     
 elif An == "ZZj":
-    AnalyzerList = [{"analyzer":"ZZjAnalyzer","region":"SR"}]#,{"analyzer":"ZZjAnalyzer","region":"CR"}]
+    AnalyzerList = [{"analyzer":"ZZjAnalyzer","region":"SR"},{"analyzer":"ZZjAnalyzer","region":"CR"}]
 
 elif An == "Reco":
     AnalyzerList = [{"analyzer":"ZZRecoAnalyzer","region":"SR"},{"analyzer":"ZZRecoAnalyzer","region":"CR"}]
+
+elif An == "VBS":
+    AnalyzerList = [{"analyzer":"VBSAnalyzer","region":"SR"},{"analyzer":"VBSAnalyzer","region":"CR"}]
 
 elif An == "Data":
     AnalyzerList = [{"analyzer":"ZZRecoAnalyzer","region":"SR"},{"analyzer":"ZZRecoAnalyzer","region":"CR"},{"analyzer":"ZZjAnalyzer","region":"SR"},{"analyzer":"ZZjAnalyzer","region":"CR"}]
@@ -27,18 +30,22 @@ elif  An == "RedBkg":
 
 else: sys.exit(An+" doesn't exist. Chose between fake, MC, ZZj, Reco, Data and RedBkg")
 
-datalist    = ["DoubleEG2016B","DoubleMu2016B","MuonEG2016B","SingleEle2016B","DoubleEG2016C","DoubleMu2016C","MuonEG2016C","SingleEle2016C","DoubleEG2016D","DoubleMu2016D","MuonEG2016D","SingleEle2016D","DoubleEG2016E","DoubleMu2016E","MuonEG2016E","SingleEle2016E","DoubleEG2016F","DoubleMu2016F","MuonEG2016F","SingleEle2016F"]
+datalist    = ["DoubleEG2016B","DoubleMu2016B","MuonEG2016B","SingleEle2016B","SingleMuon2016B","DoubleEG2016C","DoubleMu2016C","MuonEG2016C","SingleEle2016C","SingleMuon2016C","DoubleEG2016D","DoubleMu2016D","MuonEG2016D","SingleEle2016D","SingleMuon2016D"]
 
-MClist_bkg  = ["DYJetsToLL_M50","TTTo2L2Nu","WZ","WWZ","TTZToLL"]
-MClist_sig = ["ZZTo4l","ggZZ2e2mu","ggZZ4mu","ggZZ4e","ZZTo4lamcatnlo","ZZTo2e2muJJ","ZZTo4muJJ","ZZTo4eJJ","ggH126"]
+#,"DoubleEG2016E","DoubleMu2016E","MuonEG2016E","SingleEle2016E"]#,"DoubleEG2016F","DoubleMu2016F","MuonEG2016F","SingleEle2016F"]
+
+MClist_Irr  = ["WWZ","TTZToLL"]
+MClist_Red  = ["DYJetsToLL_M50","TTTo2L2Nu","WZ"]
+MClist_bkg  = MClist_Irr + MClist_Red 
+MClist_sig = ["ZZTo4lamcatnlo","ggZZ2e2mu","ggZZ4mu","ggZZ4e","ZZTo2e2muJJ","ZZTo4muJJ","ZZTo4eJJ","ZZTo4l"]
 
 
 MClist = MClist_sig+MClist_bkg
 
-Data_Directory = "samples/Data12"
-MC_Directory   = "samples"
+Data_Directory = "samples/"
+MC_Directory   = "samples/"
 
-Csv = "../Producers/python/samples_13TeV_2016.csv"
+Csv = "../Producers/python/samples_13TeV.csv"
 bashCommand="./python/run.py"
 
 for analyzer in AnalyzerList:
