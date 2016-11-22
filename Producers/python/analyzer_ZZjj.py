@@ -17,10 +17,7 @@ declareDefault("KINREFIT", False, globals())
 
 declareDefault("BESTCANDCOMPARATOR", "byBestZ1bestZ2", globals())
 
-declareDefault("APPLYTRIG", False, globals()) # set false for no rehlt samples
-# Get absolute path
-import os
-PyFilePath = os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/"
+declareDefault("APPLYTRIG", True, globals()) 
 
 ### ----------------------------------------------------------------------
 ### Standard sequence
@@ -295,7 +292,6 @@ process.srCounter    = cms.EDProducer("SelectedEventCountProducer", names = cms.
 
 ### If it is MC, run also the signal definition path
 if IsMC:
-    print "HEI" #DEL
     # Empty sequence to attach the signal filter (if specified in the CSV file)
     process.mcSelectionCounter = cms.EDProducer("EventCountProducer") # not really needeed... it is mainly an hack to get the path executed
     process.signalFilters = cms.Sequence(process.mcSelectionCounter) 
@@ -377,25 +373,25 @@ process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
 
      muonSrcs =  cms.PSet(
         slimmedMuons = cms.InputTag("slimmedMuons"),
-#        calibratedMuons   = cms.InputTag("calibratedMuons"),
-#        muons        = cms.InputTag("appendPhotons:muons"),
+        calibratedMuons   = cms.InputTag("calibratedMuons"),
+        muons        = cms.InputTag("appendPhotons:muons"),
      ),
 
      electronSrcs = cms.PSet(
         slimmedElectron        = cms.InputTag("slimmedElectrons"),
-#        calibratedPatElectrons = cms.InputTag("calibratedPatElectrons"),
-#        electrons              = cms.InputTag("appendPhotons:electrons"),
+        calibratedPatElectrons = cms.InputTag("calibratedPatElectrons"),
+        electrons              = cms.InputTag("appendPhotons:electrons"),
      ),
      candidateSrcs = cms.PSet(
         Z   = cms.InputTag("ZCand"),
         ZZ  = cms.InputTag("ZZCand"),
-#        ZLL = cms.InputTag("ZLLCand"),  
-#        ZL  = cms.InputTag("ZlCand") 
+        ZLL = cms.InputTag("ZLLCand"),  
+        ZL  = cms.InputTag("ZlCand") 
         ),
       jetSrc = cms.PSet(
         cleanJets          = cms.InputTag("cleanJets"),
-#        JetsWithLeptonsRemover = cms.InputTag("JetsWithLeptonsRemover"),
-#        disambiguatedJets = cms.InputTag("disambiguatedJets")
+        JetsWithLeptonsRemover = cms.InputTag("JetsWithLeptonsRemover"),
+        disambiguatedJets = cms.InputTag("disambiguatedJets")
         )
 )
 
