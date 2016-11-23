@@ -42,6 +42,7 @@ public:
   virtual void end( TFile &);
   virtual void addOptions();
 
+
  private:
   friend class Selector<FakeRateAnalyzer>;
   template< class PAR >
@@ -77,6 +78,7 @@ public:
   }
 
 
+  std::vector<std::string> eventsStr; 
   std::vector<std::string> eventsN_eee; 
   std::vector<std::string> eventsN_eem; 
   std::vector<std::string> eventsN_mme;
@@ -87,11 +89,7 @@ public:
   std::vector<std::string> eventsD_mme;
   std::vector<std::string> eventsD_mmm;
 
-
-
   //LeptonScaleFactors lepSF;
-
-
 
 };
 #endif

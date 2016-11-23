@@ -1,8 +1,8 @@
 #include "VVXAnalysis/TreeAnalysis/interface/FakeRateAnalyzer.h"
 #include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
-
-
+#include <boost/format.hpp>
+#include "VVXAnalysis/Commons/interface/StringTools.h"
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
@@ -13,6 +13,7 @@ using std::cout;
 using std::endl;
 
 using namespace phys;
+
 
 Int_t FakeRateAnalyzer::cut() {
   return 1;
@@ -46,9 +47,6 @@ void FakeRateAnalyzer::ZZplots(int id){
   else if (id == 48) {decay = "2e2m"; decay1 = "e"; decay2 = "m";}
   else if (id == 44) {decay = "4e"  ; decay1 = "e"; decay2 = "e";}
 
-
-
-  //theWeight = theMCInfo.weight(); //Check
 
   theHistograms.fill(std::string("ZZTo")+decay+std::string("_mZ1To2")+decay1, std::string("Invariant mass of Z_{1}#rightarrow 2")+decay1,  15, 60,  120, ZZ->first().mass() , theWeight); 
   theHistograms.fill(std::string("ZZTo")+decay+std::string("_mZ2To2")+decay2, std::string("Invariant mass of Z_{2}#rightarrow 2")+decay2,  15, 60,  120, ZZ->second().mass(), theWeight); 
@@ -96,11 +94,10 @@ void FakeRateAnalyzer::analyze(){
 		     regionWord.test(3) ? 0 : (regionWord.test(22) ? 1 : (regionWord.test(23) ? 2 : 3 ))
 		     , ZL->size(), theWeight);
   
-  
   if(ZL->size()){
     
     Float_t mt = sqrt(2*met->pt()*ZL->front().second.pt()*(1-cos(physmath::deltaPhi(ZL->front().second.phi(),met->phi()))));
-    
+
     if( abs(ZL->front().second.id()) == 13)   theHistograms.fill("MT_mu","Transverse mass",200, 0, 200, mt, theWeight);
     else if( abs(ZL->front().second.id()) == 11)   theHistograms.fill("MT_ele","Transverse mass",200, 0, 200, mt, theWeight);
     else std::cout<<"ERROR check lepton id"<<std::endl;
@@ -108,42 +105,12 @@ void FakeRateAnalyzer::analyze(){
 
     std::string eventstr=std::to_string(run)+":"+std::to_string(lumiBlock)+":"+std::to_string(event);
     
-    
-
-
-
-    // std::vector<double> xbins;xbins += 5,7,10,20,30,40,50,80;    
-    // std::vector<double> xbins;xbins += 0,30,60,200;
-    
-
     theWeight=theMCInfo.weight(); //TheWeight have problems
 
 
-    if((met->pt()<25) && (mt < 30) && (ZL->front().second.pt()>10)) { //ZZ
-    // if(met->pt()<25) {  //HZZ4L
-      
-     
-      if(fabs(ZL->front().first.daughterPtr(0)->id())==11){ 
-	
-	if((ZL->front().first.daughterPtr(0)->pfCombRelIsoFSRCorr()>0.5) && (ZL->front().first.daughterPtr(1)->pfCombRelIsoFSRCorr()>0.5)){// isIso = 1; 
-	  std::cout<<"No Iso lep1 id "<<ZL->front().first.daughterPtr(0)->id()<<" "<<ZL->front().first.daughterPtr(0)->pfCombRelIso()<<" lep 2 "<<ZL->front().first.daughterPtr(1)->id()<<" "<<ZL->front().first.daughterPtr(1)->pfCombRelIso()<<std::endl;  
-	}
-      }
-      
-      else if(fabs(ZL->front().first.daughterPtr(0)->id())==13){ 
-	
-	if((ZL->front().first.daughterPtr(0)->pfCombRelIsoFSRCorr()>0.4) && (ZL->front().first.daughterPtr(1)->pfCombRelIsoFSRCorr()>0.4)){ //isIso = 1; 
-	  std::cout<<"No Iso lep1 id "<<ZL->front().first.daughterPtr(0)->id()<<" "<<ZL->front().first.daughterPtr(0)->pfCombRelIso()<<" lep 2 "<<ZL->front().first.daughterPtr(1)->id()<<" "<<ZL->front().first.daughterPtr(1)->pfCombRelIso()<<std::endl;
-	}
-      }
-      else std::cout<<"CHECK lepton ID"<<std::endl;
-      
-      
-      // if(!isIso) std::cout<<"not iso"<<std::endl; 
-      
-      
-      //     if(ZL->front().second.sip()>4) std::cout<<"bad sip "<<ZL->front().second.sip()<<std::endl;
-      
+        if((met->pt()<25) && (mt < 30)) { //ZZ
+	  //   if(met->pt()<25) {  //HZZ4L
+
       
       theHistograms.fill("MET25_NumberOfZLCandidates","Number of ZL candidates MET<25",10, 0, 10, ZLCand->size(), theWeight);
       theHistograms.fill("MET25_NumberOfZLCandidatesVsMET","Number of ZL candidates vs MET MET<25",200,0,800,10, 0, 10, met->pt(), ZLCand->size(), theWeight);
@@ -160,19 +127,26 @@ void FakeRateAnalyzer::analyze(){
 
       std::bitset<16> trigger(triggerWord);
       if(ZL->size() == 1 && trigger.test(9)){
-	//std::vector<double> xbins;xbins += 5,7,10,20,30,40,50,80; //HZZ?
-        std::vector<double> xbins;xbins += 0,30,60,100,200; //UW binning
+ 
+	std::vector<double> xbins;xbins += 0,10,20,30,40,50,60,70,80,100,200;
+	// std::vector<double> xbins;xbins += 5,7,10,20,30,40,50,80; //HZZ?
+	// std::vector<double> xbins;xbins += 5,10,30,60,200; //UW binning
 	// std::vector<double> xbins;xbins += 5,7,10,20,30,80;  
 	std::string eventstr=std::to_string(run)+":"+std::to_string(lumiBlock)+":"+std::to_string(event);
 	
+	
+	Float_t	m3L = sqrt(((ZL->front().first.p4())+(ZL->front().second.p4()))*((ZL->front().first.p4())+(ZL->front().second.p4())));
+	
+	std::string  eventStrInf = strtool::sRound(m3L)+":"+strtool::sRound(ZL->front().first.mass())+":"+strtool::sRound(ZL->front().second.pt());
+	   
 	if(abs(ZL->front().second.id()) == 13){
 	  
 	  theHistograms.fill("ZL_Muon_pt","Pt of the loose lepton",150,0,300,ZL->front().second.pt(),theWeight);	  
 	  theHistograms.fill("ZL_Muon_Iso","Iso of the loose lepton",50,0,0.5,ZL->front().second.pfCombRelIso(),theWeight);
 	  theHistograms.fill("ZL_Muon_sip","Sip of the loose lepton",50,0,4.5,ZL->front().second.sip(),theWeight);	  
 	  
-	  if(abs(ZL->front().first.daughterPtr(0)->id()) == 13)  eventsD_mmm.push_back(eventstr);  //eventcouting
-	  else  eventsD_eem.push_back(eventstr);
+	  if(abs(ZL->front().first.daughterPtr(0)->id()) == 13) { eventsD_mmm.push_back(eventstr); eventsStr.push_back(eventstr+":mmm:"+eventStrInf+":"+std::to_string(ZL->front().second.passFullSel()));} //eventcouting
+	  else { eventsD_eem.push_back(eventstr); eventsStr.push_back(eventstr+":eem:"+eventStrInf+":"+std::to_string(ZL->front().second.passFullSel()));} 
 	  
 	  if(fabs(ZL->front().second.eta()) < 1.2)   theHistograms.fill("FakeRate_denom_muons_barrel_pt","Total number of soft leptons in the barrel",xbins,ZL->front().second.pt(),theWeight);
 	  else                        theHistograms.fill("FakeRate_denom_muons_endcap_pt","Total number of soft leptons in the endcaps",xbins,ZL->front().second.pt(),theWeight);
@@ -193,8 +167,8 @@ void FakeRateAnalyzer::analyze(){
 	  theHistograms.fill("ZL_Ele_Iso","Iso of the loose lepton",50,0,0.5,ZL->front().second.pfCombRelIso(),theWeight);
 	  theHistograms.fill("ZL_Ele_sip","Sip of the loose lepton",50,0,4.5,ZL->front().second.sip(),theWeight);
 	   
-	  if(abs(ZL->front().first.daughterPtr(0)->id()) == 13)  eventsD_mme.push_back(eventstr); //eventcounting
-	  else  eventsD_eee.push_back(eventstr);
+	  if(abs(ZL->front().first.daughterPtr(0)->id()) == 13) { eventsD_mme.push_back(eventstr); eventsStr.push_back(eventstr+":mme:"+eventStrInf+":"+std::to_string(ZL->front().second.passFullSel()));} //eventcounting
+	  else  {eventsD_eee.push_back(eventstr); eventsStr.push_back(eventstr+":mmm:"+eventStrInf+":"+std::to_string(ZL->front().second.passFullSel()));}
 	  
 	  if(fabs(ZL->front().second.eta()) < 1.45)   theHistograms.fill("FakeRate_denom_electrons_barrel_pt","Total number of soft leptons in the barrel",xbins,ZL->front().second.pt(),theWeight);
 	  else                         theHistograms.fill("FakeRate_denom_electrons_endcap_pt","Total number of soft leptons in the endcaps",xbins,ZL->front().second.pt(),theWeight);
@@ -214,47 +188,33 @@ void FakeRateAnalyzer::analyze(){
 }
 
 void FakeRateAnalyzer::end( TFile &){
-      // theHistograms.clone("FakeRate_num_muons_barrel_pt","FakeRate_muons_barrel_pt");
-      // theHistograms.get("FakeRate_muons_barrel_pt")->Divide(theHistograms.get("FakeRate_denom_muons_barrel_pt"));
-      
-      // theHistograms.clone("FakeRate_num_muons_endcap_pt","FakeRate_muons_endcap_pt");
-      // theHistograms.get("FakeRate_muons_endcap_pt")->Divide(theHistograms.get("FakeRate_denom_muons_endcap_pt"));
-      
-      // theHistograms.clone("FakeRate_num_electrons_barrel_pt","FakeRate_electrons_barrel_pt");
-      // theHistograms.get("FakeRate_electrons_barrel_pt")->Divide(theHistograms.get("FakeRate_denom_electrons_barrel_pt"));
-      
-      // theHistograms.clone("FakeRate_num_electrons_endcap_pt","FakeRate_electrons_endcap_pt");
-      // theHistograms.get("FakeRate_electrons_endcap_pt")->Divide(theHistograms.get("FakeRate_denom_electrons_endcap_pt"));
+  // theHistograms.clone("FakeRate_num_muons_barrel_pt","FakeRate_muons_barrel_pt");
+  // theHistograms.get("FakeRate_muons_barrel_pt")->Divide(theHistograms.get("FakeRate_denom_muons_barrel_pt"));
+  
+  // theHistograms.clone("FakeRate_num_muons_endcap_pt","FakeRate_muons_endcap_pt");
+  // theHistograms.get("FakeRate_muons_endcap_pt")->Divide(theHistograms.get("FakeRate_denom_muons_endcap_pt"));
+  
+  // theHistograms.clone("FakeRate_num_electrons_barrel_pt","FakeRate_electrons_barrel_pt");
+  // theHistograms.get("FakeRate_electrons_barrel_pt")->Divide(theHistograms.get("FakeRate_denom_electrons_barrel_pt"));
+  
+  // theHistograms.clone("FakeRate_num_electrons_endcap_pt","FakeRate_electrons_endcap_pt");
+  // theHistograms.get("FakeRate_electrons_endcap_pt")->Divide(theHistograms.get("FakeRate_denom_electrons_endcap_pt"));
+  
+  std::sort (eventsStr.begin(), eventsStr.end(), strtool::sortEvents);
+  
+  std::cout<<"eee:"<<std::endl;  
+  std::cout<<"Num: "<< eventsN_eee.size()<<std::endl;
+  std::cout<<"Den: "<<eventsD_eee.size()<<std::endl;
+  std::cout<<"eem:"<<std::endl;
+  std::cout<<"Num: "<<eventsN_eem.size()<<std::endl;
+  std::cout<<"Den: "<<eventsD_eem.size()<<std::endl;
+  std::cout<<"mme:"<<std::endl;
+  std::cout<<"Num: "<<eventsN_mme.size()<<std::endl;
+  std::cout<<"Den: "<<eventsD_mme.size()<<std::endl;
+  std::cout<<"mmm:"<<std::endl;
+  std::cout<<"Num: "<<eventsN_mmm.size()<<std::endl;
+  std::cout<<"Den: "<<eventsD_mmm.size()<<std::endl;
+  std::cout<<"Sum "<<eventsD_eee.size()+eventsD_eem.size()+eventsD_mme.size()+eventsD_mmm.size()<<std::endl;
+  for (std::vector<std::string>::iterator it = eventsStr.begin() ; it != eventsStr.end(); ++it) std::cout<<*it<<std::endl;
 
-    
-    std::cout<<"eee:"<<std::endl;
-
-    std::cout<<"Num: "<< eventsN_eee.size()<<std::endl;
-    //    for (std::vector<std::string>::iterator it = eventsN_eee.begin() ; it != eventsN_eee.end(); ++it) std::cout<<*it<<std::endl;
-    std::cout<<"Den: "<<eventsD_eee.size()<<std::endl;
-
-    //for (std::vector<std::string>::iterator it = eventsD_eee.begin() ; it != eventsD_eee.end(); ++it) std::cout<<*it<<std::endl;
-
-    std::cout<<"eem:"<<std::endl;
-
-    std::cout<<"Num: "<<eventsN_eem.size()<<std::endl;
-    //for (std::vector<std::string>::iterator it = eventsN_eem.begin() ; it != eventsN_eem.end(); ++it) std::cout<<*it<<std::endl;
-    std::cout<<"Den: "<<eventsD_eem.size()<<std::endl;
-    //for (std::vector<std::string>::iterator it = eventsD_eem.begin() ; it != eventsD_eem.end(); ++it) std::cout<<*it<<std::endl;
-
-
-    std::cout<<"mme:"<<std::endl;
-
-    std::cout<<"Num: "<<eventsN_mme.size()<<std::endl;
-    //for (std::vector<std::string>::iterator it = eventsN_mme.begin() ; it != eventsN_mme.end(); ++it) std::cout<<*it<<std::endl;
-    std::cout<<"Den: "<<eventsD_mme.size()<<std::endl;
-    //for (std::vector<std::string>::iterator it = eventsD_mme.begin() ; it != eventsD_mme.end(); ++it) std::cout<<*it<<std::endl;
-    
-    cout<<"mmm:"<<std::endl;
-
-    std::cout<<"Num: "<<eventsN_mmm.size()<<std::endl;
-    //for (std::vector<std::string>::iterator it = eventsN_mmm.begin() ; it != eventsN_mmm.end(); ++it) std::cout<<*it<<std::endl;
-    std::cout<<"Den: "<<eventsD_mmm.size()<<std::endl;
-    //for (std::vector<std::string>::iterator it = eventsD_mmm.begin() ; it != eventsD_mmm.end(); ++it) std::cout<<*it<<std::endl;
-    
 }
