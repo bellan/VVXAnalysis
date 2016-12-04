@@ -28,6 +28,7 @@ public:
 
   Long64_t nentries;
   float m4L_gen;
+  float pt4l_gen; 
   float mjj_gen;
   float deta_gen;
   float mjj_gen_cj;
@@ -52,6 +53,7 @@ public:
   friend class Selector<ZZMCAnalyzer>;
 
   std::vector<double> Xbins;
+  std::vector<double> Xbins_nJets;
   std::vector<double> Xbins_mjj;  
   std::vector<double> Xbins_deta;
   std::vector<double> Ybins; 
