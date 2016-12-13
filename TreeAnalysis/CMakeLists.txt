@@ -37,19 +37,21 @@ include(FindROOT.cmake)
 ROOT_GENERATE_DICTIONARY("${EventDF_HEADERS}" "${EventDF_LINKDEF}" "${EventDF_DICTIONARY}" "${include_directories}")
 
 include_directories(${CMAKE_INCLUDE_PATH})
-set(EventAnalyzer_SRCS ${EventDF_DICTIONARY} ${SRC}/MCInfo.cc ${SRC}/EventAnalyzer.cc ${Commons_src}/SignalDefinitions.cc ${Commons_src}/LeptonScaleFactors.cc ${Commons_src}/RegionTypes.cc)
+set(EventAnalyzer_SRCS ${EventDF_DICTIONARY} ${SRC}/MCInfo.cc ${SRC}/EventAnalyzer.cc ${Commons_src}/SignalDefinitions.cc ${Commons_src}/LeptonScaleFactors.cc ${Commons_src}/RegionTypes.cc ${Commons_src}/StringTools.cc)
 
 #Set here the location of the source code of your analysis
 set(VVXAnalyzer_SRCS ${EventAnalyzer_SRCS} ${SRC}/VVXAnalyzer.cc ${SRC}/ZZWAnalyzer.cc ${SRC}/ZZSAnalyzer.cc ${SRC}/ZZjAnalyzer.cc ${SRC}/ZZWSRDefinition.cc ${SRC}/ZZMCAnalyzer.cc ${SRC}/ZZRecoAnalyzer.cc ${SRC}/FakeRateAnalyzer.cc)
 
-add_executable(${BIN}/eventAnalyzer ${BIN}/eventAnalyzer.cpp ${SRC}/AnalysisFactory.cc ${VVXAnalyzer_SRCS})
-target_link_libraries(bin/eventAnalyzer ${ROOT_LIBS})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN})
 
-add_executable(${BIN}/treeFilter ${BIN}/treeFilter.cpp ${EventDF_DICTIONARY})
-target_link_libraries(bin/treeFilter ${ROOT_LIBS})
+add_executable(eventAnalyzer ${BIN}/eventAnalyzer.cpp ${SRC}/AnalysisFactory.cc ${VVXAnalyzer_SRCS})
+target_link_libraries(eventAnalyzer ${ROOT_LIBS})
 
-add_executable(${BIN}/genEventAnalyzer ${BIN}/genEventAnalyzer.cpp ${SRC}/GenEventAnalyzer.cc ${EventAnalyzer_SRCS})
-target_link_libraries(bin/genEventAnalyzer ${ROOT_LIBS})
+add_executable(treeFilter ${BIN}/treeFilter.cpp ${EventDF_DICTIONARY})
+target_link_libraries(treeFilter ${ROOT_LIBS})
+
+add_executable(genEventAnalyzer ${BIN}/genEventAnalyzer.cpp ${SRC}/GenEventAnalyzer.cc ${EventAnalyzer_SRCS})
+target_link_libraries(genEventAnalyzer ${ROOT_LIBS})
 
 
 
