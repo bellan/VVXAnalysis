@@ -26,8 +26,8 @@ parser.add_option("-e", "--external-cross-section", dest="getExternalCrossSectio
 
 parser.add_option("-l", "--luminosity", dest="luminosity",
                   type='int',
-                  default=12892,
-                  help="Set luminosity scenario from command line. Default is 12892/pb.")
+                  default= 15941,
+                  help="Set luminosity scenario from command line. Default is  15941/pb.")
 
 parser.add_option("-d", "--directory", dest="directory",
                   default="samples",
