@@ -19,7 +19,7 @@
 class LeptonScaleFactors{
  public:
   //  LeptonScaleFactors(const std::string& muonEffFilename, const std::string& electronEFFfilename, const std::string& electronEFFCracksfilename,
-  LeptonScaleFactors(const std::string& muonEffFilename, const std::string& electronEFFfilename,
+  LeptonScaleFactors(const std::string& muonEffFilename, const std::string& electronEFFfilename, const std::string& electronGSFEffFilename,
 		     const std::string& muonFRFilename, const std::string& electronFRFilename);
 
   std::pair<double, double> efficiencyScaleFactor(const double& lepPt, const double& lepEta, int lepId, bool isInCracks = false) const;
@@ -37,6 +37,7 @@ class LeptonScaleFactors{
   TH2F *hEffEl_Unc_;
   TH2F *hEffElCracks_;
   TH2F *hEffElCracks_Unc_;
+  TH2F *hEffGSEl_;
 
   TH2F *hEffMuLoose_;
   TH2F *hEffElLoose_;

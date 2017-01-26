@@ -4,11 +4,12 @@
 #include <iostream>
 
 //LeptonScaleFactors::LeptonScaleFactors(const std::string& muonEffFilename, const std::string& electronEffFilename, const std::string& electronEffCracksfilename,
-LeptonScaleFactors::LeptonScaleFactors(const std::string& muonEffFilename, const std::string& electronEffFilename,
+LeptonScaleFactors::LeptonScaleFactors(const std::string& muonEffFilename, const std::string& electronEffFilename, const std::string& electronGSFEffFilename,
 				       const std::string& muonFRFilename, const std::string& electronFRFilename){
 
-  TFile *fEffMu = new TFile(muonEffFilename.c_str());
-  TFile *fEffEl = new TFile(electronEffFilename.c_str());
+  TFile *fEffMu   = new TFile(muonEffFilename.c_str());
+  TFile *fEffEl   = new TFile(electronEffFilename.c_str());
+  TFile *fGSEffEl = new TFile(electronGSFEffFilename.c_str());
   //  TFile *fEffElCracks = new TFile(electronEffCracksfilename.c_str());
   
   hEffMu_       = dynamic_cast<TH2F*>(fEffMu->Get("FINAL"));
@@ -17,10 +18,9 @@ LeptonScaleFactors::LeptonScaleFactors(const std::string& muonEffFilename, const
 
   hEffEl_Unc_       = dynamic_cast<TH2F*>(fEffEl->Get("ele_scale_factors_uncertainties"));
   hEffElCracks_Unc_ = dynamic_cast<TH2F*>(fEffEl->Get("ele_scale_factors_gap_uncertainties"));
-
-
+  hEffGSEl_         = dynamic_cast<TH2F*>(fGSEffEl->Get("EGamma_SF2D"));
   //2015
-  // hEffEl_      = dynamic_cast<TH2F*>(fEffEl->Get("hScaleFactors_IdIsoSip"));
+  // hEffEl_       = dynamic_cast<TH2F*>(fEffEl->Get("hScaleFactors_IdIsoSip"));
   // hEffElCracks_ = dynamic_cast<TH2F*>(fEffElCracks->Get("hScaleFactors_IdIsoSip_Cracks"));
 
   TFile *fFRMu = new TFile(muonFRFilename.c_str());
@@ -82,13 +82,15 @@ std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double
     else if(year=="2016"){
       xbin = hDataMCSF->GetXaxis()->FindBin(abs(eta));
       ybin = hDataMCSF->GetYaxis()->FindBin(pt);
-      if(pt >= hDataMCSF->GetXaxis()->GetXmax()) ybin = hDataMCSF->GetXaxis()->GetLast();
-      else if (pt < hDataMCSF->GetXaxis()->GetXmin()) ybin = hDataMCSF->GetXaxis()->GetFirst();   // ...should never happen
-
+      if(pt >= hDataMCSF->GetYaxis()->GetXmax()) ybin = hDataMCSF->GetYaxis()->GetLast();
+      else if (pt < hDataMCSF->GetYaxis()->GetXmin()) ybin = hDataMCSF->GetYaxis()->GetFirst();   // ...should never happen
     }
 
     sFactor    = hDataMCSF->GetBinContent(xbin,ybin); 
-    sFactorErr = hDataMCSF_Unc->GetBinError(xbin,ybin); //in 2016 ele_scale_factors_uncertainties content and errors are equals 
+    //    sFactorErr = hDataMCSF_Unc->GetBinError(xbin,ybin); //in 2016 ele_scale_factors_uncertainties content and errors are equals 
+    sFactorErr = TMath::Sqrt(TMath::Power(hDataMCSF_Unc->GetBinError(xbin,ybin),2)+TMath::Power(hEffGSEl_->GetBinError(eta,20),2)); 
+
+    sFactor*=  hEffGSEl_->GetBinContent(hEffGSEl_->FindBin(eta,20)); // The histogram depend only on eta so 20 is just a value inside the range. 
   }
   else{
     std::cout << colour::Warning("Efficiency scale factor asked for an unknown particle") << " ID = " << id << std::endl;

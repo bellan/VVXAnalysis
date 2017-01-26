@@ -50,7 +50,8 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , filterController_(config,consumesCollector())
   , mcHistoryTools_  (0)
   , leptonScaleFactors_(edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_mu_2016.root").fullPath(),
-  			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_ele_2016_v3.root").fullPath(),
+			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_ele_2016_v4.root").fullPath(),
+                        edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/egammaEffi.txt_SF2D.root").fullPath(),
   			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates.root").fullPath(),
   			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates.root").fullPath())
 

@@ -18,29 +18,37 @@ ELEREGRESSION = "None"
 ### ----------------------------------------------------------------------
 import os
 
+declareDefault("APPLYTRIG", False, globals())
 declareDefault("SKIM_REQUIRED",False,globals()) # To look into events outside SR and CRs. e.g. Look into MC signal at gen level.
-declareDefault("IsMC",False,globals())  # To run data. Remember that you sholu need the json file for run only the right events.
-PD= "DoubleMu" # Choose the right one. Look the data you are running. "DoubleEle","DoubleMu","MuEG","SingleElectron","SingleMuon" 
+#declareDefault("IsMC",False,globals())  # To run data. Remember that you sholu need the json file for run only the right events.
+#PD= "DoubleEle" # Choose the right one. Look the data you are running. "DoubleEle","DoubleMu","MuEG","SingleElectron","SingleMuon" 
 
 PyFilePath = os.environ['CMSSW_BASE'] + "/src/VVXAnalysis/Producers/python/"
 execfile(PyFilePath + "analyzer_ZZjj.py")
 
 
-### ----------------------------------------------------------------------
-
+process.calibratedPatElectrons.isSynchronization = cms.bool(True)
+process.calibratedMuons.isSynchronization = cms.bool(True)
 
 ### ----------------------------------------------------------------------
 ### Replace module prameters
 ### ----------------------------------------------------------------------
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 10000
-
 process.source = cms.Source("PoolSource",fileNames = cms.untracked.vstring(
 
- 
-#Data
-'/store/data/Run2016B/DoubleMuon/MINIAOD/PromptReco-v2/000/273/158/00000/FC69F6B0-F019-E611-90A4-02163E0142B5.root'
 
+#2017
+#data
+#'/store/data/Run2016B/DoubleEG/MINIAOD/23Sep2016-v3/00000/0060C751-C097-E611-9FE6-FA163EFD4308.root'
+#MC
+' /store/mc/RunIISummer16MiniAODv2/WZTo3LNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/120000/040B9D16-B5BD-E611-A70F-0CC47A78A3F8.root'
+#'/store/mc/RunIISummer16MiniAODv2/ZZTo4L_13TeV_powheg_pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/120000/221CC46F-2FC6-E611-8FFC-0CC47A1E0488.root'
+ 
+#2016
+#Data
+#'/store/data/Run2016B/DoubleMuon/MINIAOD/PromptReco-v2/000/273/158/00000/FC69F6B0-F019-E611-90A4-02163E0142B5.root'
+#'/store/data/Run2016B/DoubleEG/MINIAOD/23Sep2016-v3/00000/0060C751-C097-E611-9FE6-FA163EFD4308.root'
 #MC
 #'/store/mc/RunIISpring16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/40000/00200284-F15C-E611-AA9B-002590574776.root'
 #'/store/mc/RunIISpring16MiniAODv2/ZZJJTo4L_EWK_13TeV-madgraph-pythia8/MINIAODSIM/premix_withHLT_80X_mcRun2_asymptotic_v14-v1/80000/403C4E51-2A72-E611-B589-002590DE7230.root'
@@ -56,12 +64,12 @@ process.source = cms.Source("PoolSource",fileNames = cms.untracked.vstring(
 # '/store/mc/RunIISpring16MiniAODv1/VBFToContinZZTo4eJJ_13TeV_phantom_pythia8/MINIAODSIM/PUSpring16RAWAODSIM_80X_mcRun2_asymptotic_2016_v3-v1/10000/1431B7BB-6D33-E611-B3BC-0017A4770C00.root'
 # '/store/mc/RunIISpring16MiniAODv1/ZZTo4L_13TeV_powheg_pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_v3-v1/00000/046E1689-FD0D-E611-BE90-002590791D60.root'
 # '/store/mc/RunIISpring16MiniAODv2/WZTo3LNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/00000/0CD58AA0-D12A-E611-850E-00266CFCCD94.root'
-#))
+))
 #    ),eventsToProcess = cms.untracked.VEventRange('1:31907:6167667','1:31907:6167734')) #To look in singles events
 #),eventsToProcess = cms.untracked.VEventRange('1:4103554')) #To look in singles events
-    ),eventsToProcess = cms.untracked.VEventRange('273158:37:57587558')) #To look in singles events
+#    ),eventsToProcess = cms.untracked.VEventRange('273158:37:57587558')) #To look in singles events
 
 
 #process.filltrees = cms.EndPath(process.treePlanter *process.dumpUserData *process.printTree)
-process.analysis = cms.EndPath(process.dumpUserData)
+#process.analysis = cms.EndPath(process.dumpUserData)
 #process.filltrees = cms.EndPath(process.treePlanter *process.printTree)
