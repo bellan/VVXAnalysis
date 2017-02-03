@@ -16,8 +16,6 @@ LeptonScaleFactors::LeptonScaleFactors(const std::string& muonEffFilename, const
   hEffEl_       = dynamic_cast<TH2F*>(fEffEl->Get("ele_scale_factors"));
   hEffElCracks_ = dynamic_cast<TH2F*>(fEffEl->Get("ele_scale_factors_gap"));
 
-  hEffEl_Unc_       = dynamic_cast<TH2F*>(fEffEl->Get("ele_scale_factors_uncertainties"));
-  hEffElCracks_Unc_ = dynamic_cast<TH2F*>(fEffEl->Get("ele_scale_factors_gap_uncertainties"));
   hEffGSEl_         = dynamic_cast<TH2F*>(fGSEffEl->Get("EGamma_SF2D"));
   //2015
   // hEffEl_       = dynamic_cast<TH2F*>(fEffEl->Get("hScaleFactors_IdIsoSip"));
@@ -44,7 +42,7 @@ std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double
   std::string  year = "2016"; //To be added in argument constructor
 
   const TH2F *hDataMCSF = 0;
-  const TH2F *hDataMCSF_Unc = 0;
+  //  const TH2F *hDataMCSF_Unc = 0; del
 
   int xbin = -2;
   int ybin = -2;
@@ -66,11 +64,11 @@ std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double
   else if (abs(id) == 11) {
     if(!isInCracks){
       hDataMCSF = hEffEl_;
-      hDataMCSF_Unc = hEffEl_Unc_;
+      //      hDataMCSF_Unc = hEffEl_Unc_;
     }
     else {
       hDataMCSF = hEffElCracks_;
-      hDataMCSF_Unc = hEffElCracks_Unc_;
+      //    hDataMCSF_Unc = hEffElCracks_Unc_;
     }
     if(year =="2015"){
       xbin = hDataMCSF->GetXaxis()->FindBin(pt);
@@ -88,7 +86,7 @@ std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double
 
     sFactor    = hDataMCSF->GetBinContent(xbin,ybin); 
     //    sFactorErr = hDataMCSF_Unc->GetBinError(xbin,ybin); //in 2016 ele_scale_factors_uncertainties content and errors are equals 
-    sFactorErr = TMath::Sqrt(TMath::Power(hDataMCSF_Unc->GetBinError(xbin,ybin),2)+TMath::Power(hEffGSEl_->GetBinError(eta,20),2)); 
+    sFactorErr = TMath::Sqrt(TMath::Power(hDataMCSF->GetBinError(xbin,ybin),2)+TMath::Power(hEffGSEl_->GetBinError(eta,20),2)); 
 
     sFactor*=  hEffGSEl_->GetBinContent(hEffGSEl_->FindBin(eta,20)); // The histogram depend only on eta so 20 is just a value inside the range. 
   }
