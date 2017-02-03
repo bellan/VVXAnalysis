@@ -164,7 +164,17 @@ Z1MASS            = "daughter('Z1').mass>60 && daughter('Z1').mass<120"
 Z2MASS            = "daughter('Z2').mass>60 && daughter('Z2').mass<120"
 ZZWITHONSHELLZS   = (BESTCAND_AMONG + "&&" + Z1MASS + "&&" + Z2MASS)
 
-process.ZZCand.flags.SR_ZZOnShell = cms.string(SR + "&&" + ZZWITHONSHELLZS) 
+
+
+NOGHOST4lOF = (" ( ( (abs(daughter(0).daughter(0).pdgId) != abs(daughter(1).daughter(0).pdgId)) && "+
+                    "( (deltaR(daughter(0).daughter(0).eta, daughter(0).daughter(0).phi, daughter(1).daughter(0).eta, daughter(1).daughter(0).phi)>0.05 ) && " +
+                      "(deltaR(daughter(0).daughter(0).eta, daughter(0).daughter(0).phi, daughter(1).daughter(1).eta, daughter(1).daughter(1).phi)>0.05 ) && " +
+                      "(deltaR(daughter(0).daughter(1).eta, daughter(0).daughter(1).phi, daughter(1).daughter(0).eta, daughter(1).daughter(0).phi)>0.05 ) && " +
+                      "(deltaR(daughter(0).daughter(1).eta, daughter(0).daughter(1).phi, daughter(1).daughter(1).eta, daughter(1).daughter(1).phi)>0.05 ) ) ) || " + 
+                  "(abs(daughter(0).daughter(0).pdgId)==abs(daughter(1).daughter(0).pdgId) )  )") 
+
+
+process.ZZCand.flags.SR_ZZOnShell = cms.string(SR + "&&" + ZZWITHONSHELLZS + "&&" + NOGHOST4lOF) 
 # Uncomment the lines below if you want a smaller finding region!
 #process.ZZCand.bestCandAmong = cms.PSet(isBestCand = cms.string(ZZWITHONSHELLZS))
 
