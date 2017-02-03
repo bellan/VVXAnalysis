@@ -197,7 +197,19 @@ if(region_ == phys::MC){
     if(ZZ) delete ZZ;
     ZZ = new phys::DiBoson<phys::Lepton, phys::Lepton>();
   }
- }  
+ }
+
+
+ std::vector<phys::Lepton> Leps;
+
+ Leps.push_back(*ZZ->first().daughterPtr(0));
+ Leps.push_back(*ZZ->first().daughterPtr(1));
+ Leps.push_back(*ZZ->second().daughterPtr(0));
+ Leps.push_back(*ZZ->second().daughterPtr(1));
+
+ stable_sort(Leps.begin(),     Leps.end(),     phys::PtComparator());
+ 
+ if((abs(Leps.at(1).id())==11) && (Leps.at(1).pt()<12))  return 0;
 
 addOptions();
 
@@ -212,7 +224,6 @@ addOptions();
   if(region_ == phys::SR_HZZ     && !regionWord.test(3))  return 0;
   if(region_ == phys::CR2P2F_HZZ && !regionWord.test(22)) return 0;
   if(region_ == phys::CR3P1F_HZZ && !regionWord.test(23)) return 0;
-
 
 
   theWeight = theMCInfo.weight(*ZZ);
