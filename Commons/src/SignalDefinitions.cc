@@ -15,10 +15,8 @@
 
 using namespace std;
 
-
 typedef std::tuple<uint,uint,int,double> QuarkPairFeatures;
 typedef std::vector<QuarkPairFeatures> QuarkPairsFeatures;
-
 
 
 std::pair<phys::Boson<phys::Particle> ,phys::Boson<phys::Particle> > zzw::makeZBosonsFromLeptons(const std::vector<phys::Particle>& lm, const std::vector<phys::Particle>& lp, int leptonCode, float mZ){
@@ -483,19 +481,26 @@ std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::
   // Now check that the 4 leptons are not mismatched due to the presence of low mass resonances 
   
   bool passllLowMass = true;
+  bool passDeltaR    = true;
   
   for(int i = 0; i <=1; ++i) {
+
     if ( Z0.daughter(0).charge() != Z1.daughter(i).charge() ) {
       if ( (Z0.daughter(0).p4() + Z1.daughter(i).p4()).M() < 4 || (Z0.daughter(1).p4() + Z1.daughter((i+1)%2).p4()).M() < 4 ) passllLowMass = false;
     }
-  }
+
+    //Check deltaR > 0.4 between same flavour leptons.
+    if( ( (physmath::deltaR(Z0.daughter(i), Z0.daughter((i+1)%2)) < 0.4 ) || (physmath::deltaR(Z1.daughter(i), Z1.daughter((i+1)%2)) < 0.4 ) )  || 
+    ( (abs(Z0.daughter(0).id())==abs(Z1.daughter(0).id()))  && 
+    	( (physmath::deltaR(Z0.daughter(0), Z1.daughter(i)) < 0.4 ) || (physmath::deltaR(Z0.daughter(1), Z1.daughter(i)) < 0.4 ) ) ) ) passDeltaR = false;        
+ }
   
   bool inZMassWindow = true;
 
-  if(Z0.mass() > 120. || Z0.mass() < 40. || Z1.mass() > 120. || Z1.mass() < 60.) //Higgs range mass. ZZ range is selected with a specific bit.
+  if(Z0.mass() > 120. || Z0.mass() < 40. || Z1.mass() > 120. || Z1.mass() < 12.) //Higgs range mass. ZZ range is selected with a specific bit.
       inZMassWindow = false;
 
-  if(!passllLowMass || !inZMassWindow) return std::make_tuple(false, Z0, Z1);
+  if(!passllLowMass || !inZMassWindow || !passDeltaR) return std::make_tuple(false, Z0, Z1);
   else return std::make_tuple(true, Z0, Z1);
 }
 
