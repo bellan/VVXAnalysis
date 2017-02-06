@@ -56,6 +56,9 @@ void ZZMCAnalyzer::ZZplots(string decay){
  w_kf = 1; 
  // if((theMCInfo.fileName()=="ggZZ2e2mu") || (theMCInfo.fileName()=="ggZZ4e") || (theMCInfo.fileName()=="ggZZ4mu"))   w_kf = kFactor_ggZZ ; 
  //else if((theMCInfo.fileName()=="ZZTo4l") || (theMCInfo.fileName()=="ZZTo4lamcatnlo")) w_kf = kFactor_qqZZM * kFactor_EWKqqZZ ; 
+  if((theMCInfo.fileName()=="ggZZ2e2mu") || (theMCInfo.fileName()=="ggZZ4e") || (theMCInfo.fileName()=="ggZZ4mu") || (theMCInfo.fileName()=="ggTo2e2mu_Contin_MCFM701") || (theMCInfo.fileName()=="ggTo4e_Contin_MCFM701") || (theMCInfo.fileName()=="ggTo4mu_Contin_MCFM701"))  w_kf = 1.7 ;
+  else if(theMCInfo.fileName()=="ZZTo4l") w_kf = 1.1;
+
  
  
  theHistograms.fill(std::string("ZZTo")+decay+"_nJetsGen_"+sample, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,njets,theMCInfo.sampleWeight()*w_kf);  
@@ -466,7 +469,7 @@ void ZZMCAnalyzer::ZZplots(string decay){
      theHistograms.fill(std::string("ZZTo")+decay+"_Deta_CentralGenRecoSFErrSqMinus_01_fr","",Xbins_deta,deta_gen_cj,theWeight*w_kf*(1-scaleFacErrSq));
      theHistograms.fill(std::string("ZZTo")+decay+"_Deta_CentralGenRecoSFErrSqPlus_"+sample+region,"",Xbins_deta,deta_gen_cj,theWeight*w_kf*(1+scaleFacErrSq));  
      theHistograms.fill(std::string("ZZTo")+decay+"_Deta_CentralGenRecoSFErrSqPlus_01_fr","",Xbins_deta,deta_gen_cj,theWeight*w_kf*(1+scaleFacErrSq)); 
-     
+ 
    }
   }
  }
