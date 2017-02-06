@@ -262,13 +262,7 @@ addOptions();
 
  }
 
-
-
 }
-
-
-
-
 
   theHistograms.fill("weight_full"  , "All weights applied"                                    , 1200, -2, 10, theWeight);
   theHistograms.fill("weight_bare"  , "All weights, but efficiency and fake rate scale factors", 1200, -2, 10, theMCInfo.weight());

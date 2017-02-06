@@ -30,6 +30,7 @@
 #include "VVXAnalysis/TreeAnalysis/interface/MCInfo.h"
 
 #include "VVXAnalysis/Commons/interface/RegionTypes.h"
+#include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 //#include "VVXAnalysis/Commons/interface/Utilities.h"
 
 class TFile;
@@ -133,9 +134,11 @@ public:
 
  private:
   TTree *theTree;
+  LeptonScaleFactors leptonScaleFactors_;
   int fCurrent; 
   bool doBasicPlots_;
-  
+  bool doSF;
+
  protected:
 
   // Region
