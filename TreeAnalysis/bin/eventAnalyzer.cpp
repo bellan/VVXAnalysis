@@ -26,11 +26,15 @@ int main (int argc, char ** argv){
   analysisConfig.addParameter("externalXSection", atof(argv[6]));
   analysisConfig.addParameter("doBasicPlots"    , false);
   analysisConfig.addParameter("test"    , phys::RegionTypes::CR3P1F);
+  
 
+  if(atof(argv[7]))   analysisConfig.addParameter("doSF"    , true);
+  else   analysisConfig.addParameter("doSF"    , false);
 
   cout<<Yellow("Analyzing "+analysisConfig.getParameter<std::string>("filename")+" ... please wait... ")<<endl ;
 
   EventAnalyzer *analysis = AnalysisFactory::get()->createAnalysis(analysisConfig);
+
   analysis->loop(analysisConfig.getParameter<std::string>("outputfile"));
 
   cout<<"Output saved in --> "<<Green(analysisConfig.getParameter<std::string>("outputfile"))<<endl;

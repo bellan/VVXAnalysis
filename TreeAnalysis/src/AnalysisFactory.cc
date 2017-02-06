@@ -31,9 +31,9 @@ void AnalysisFactory::Register(const std::string &analysisName, CreateAnFn pfnCr
 EventAnalyzer *AnalysisFactory::createAnalysis(const AnalysisConfiguration &analysisConfiguration)
 {
   FactoryMap::iterator it = m_FactoryMap.find(analysisConfiguration.getParameter<std::string>("analysisName"));
-  if( it != m_FactoryMap.end() )
+  if( it != m_FactoryMap.end() ){
     return it->second(analysisConfiguration);
- 
+  }
   return NULL;
 }
 

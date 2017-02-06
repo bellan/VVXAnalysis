@@ -39,7 +39,13 @@ using namespace colour;
 EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 			     const AnalysisConfiguration& configuration)
   : select(aSelector)
+  ,  leptonScaleFactors_("../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_mu_Moriond2017.root",
+			 "../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_ele_2016_v4.root",
+			 "../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/egammaEffi_EGM2D_Moriond2017.root",
+			 "../../VVXAnalysis/Commons/data/fakeRates.root",
+			 "../../VVXAnalysis/Commons/data/fakeRates.root")
   , doBasicPlots_(configuration.getParameter<bool>("doBasicPlots"))
+  , doSF         (configuration.getParameter<bool>("doSF"))
   , region_      (configuration.getParameter<phys::RegionTypes>("region"))
   , theMCInfo    (configuration.getParameter<std::string>("filename"), 
 		  configuration.getParameter<double>("lumi"), 
@@ -63,11 +69,9 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 }
 
 
-
 EventAnalyzer::~EventAnalyzer(){
   delete theTree->GetCurrentFile();
 }
-
 
 
 void EventAnalyzer::Init(TTree *tree)
@@ -76,8 +80,6 @@ void EventAnalyzer::Init(TTree *tree)
   if (!tree) return;
   theTree = tree;
   fCurrent = -1;
-
-
 
   // Muons   
   muons     = 0; b_muons     = 0; theTree->SetBranchAddress("muons"    , &muons    , &b_muons    );
@@ -225,8 +227,48 @@ addOptions();
   if(region_ == phys::CR2P2F_HZZ && !regionWord.test(22)) return 0;
   if(region_ == phys::CR3P1F_HZZ && !regionWord.test(23)) return 0;
 
+ 
+  if(!doSF)  theWeight = theMCInfo.weight(*ZZ);
+  else{
+  
+  theWeight = theMCInfo.weight();
 
-  theWeight = theMCInfo.weight(*ZZ);
+  std::pair<double,double> lepSF;
+
+ lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->first().daughterPtr(0));	
+ (ZZ->first().daughterPtr(0))->setEfficenySFUnc(lepSF.second);
+ theWeight*=lepSF.first;
+
+ lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->first().daughterPtr(1));	
+ (ZZ->first().daughterPtr(1))->setEfficenySFUnc(lepSF.second);
+ theWeight*=lepSF.first;
+
+ lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->second().daughterPtr(0));
+ ( ZZ->second().daughterPtr(0))->setEfficenySFUnc(lepSF.second);
+ theWeight*=lepSF.first;
+
+ lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->second().daughterPtr(1)); 
+ (ZZ->second().daughterPtr(1))->setEfficenySFUnc(lepSF.second);
+ theWeight*=lepSF.first;
+ 
+ if(region_ == phys::CR2P2F || region_ == phys::CR3P1F || region_ == phys::CR2P2F_HZZ || region_ == phys::CR3P1F_HZZ){
+
+   //if(ZZ->first().daughterPtr(0)->passFullSel() && ZZ->first().daughterPtr(1)->passFullSel() && ZZ->second().daughterPtr(0)->passFullSel() && ZZ->second().daughterPtr(1)->passFullSel()) cout<<"alt   !!!"<<endl;
+
+   if(!ZZ->first().daughterPtr(0)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(0))).first;	
+   if(!ZZ->first().daughterPtr(1)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(1))).first;	
+   if(!ZZ->second().daughterPtr(0)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(0))).first;
+   if(!ZZ->second().daughterPtr(1)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(1))).first;
+
+ }
+
+
+
+}
+
+
+
+
 
   theHistograms.fill("weight_full"  , "All weights applied"                                    , 1200, -2, 10, theWeight);
   theHistograms.fill("weight_bare"  , "All weights, but efficiency and fake rate scale factors", 1200, -2, 10, theMCInfo.weight());
@@ -263,6 +305,7 @@ void EventAnalyzer::loop(const std::string outputfile){
 
   if (theTree == 0) return;
 
+
   Long64_t nentries = theTree->GetEntries();  
   unweightedEventsInSR     = tree()->GetEntries("ZZCand.passSRZZOnShell_");
   unweightedEventsIn2P2FCR = tree()->GetEntries("ZZCand.passSelZLL_2P2F_ZZOnShell_");
@@ -279,6 +322,7 @@ void EventAnalyzer::loop(const std::string outputfile){
     if(doBasicPlots_) fillBasicPlots();
     analyze();
   }
+
 
   TFile fout(TString(outputfile),"RECREATE");
   fout.cd(); 
