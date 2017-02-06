@@ -118,6 +118,8 @@ namespace phys {
 
     bool isValid() const {return id_ != 0 && p() > 0;}
 
+    void setEfficenySFUnc(float effSfUnc ) {efficiencySFUnc_ = effSfUnc;}
+
     virtual Double_t efficiencySF()  const {return efficiencySF_;}
     virtual Double_t efficiencySFUnc()  const {return efficiencySFUnc_;}
     virtual Double_t fakeRateSF()    const {return fakeRateSF_;}
