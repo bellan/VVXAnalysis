@@ -82,13 +82,13 @@ std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double
       ybin = hDataMCSF->GetYaxis()->FindBin(pt);
       if(pt >= hDataMCSF->GetYaxis()->GetXmax()) ybin = hDataMCSF->GetYaxis()->GetLast();
       else if (pt < hDataMCSF->GetYaxis()->GetXmin()) ybin = hDataMCSF->GetYaxis()->GetFirst();   // ...should never happen
-    }
+ }
 
     sFactor    = hDataMCSF->GetBinContent(xbin,ybin); 
     //    sFactorErr = hDataMCSF_Unc->GetBinError(xbin,ybin); //in 2016 ele_scale_factors_uncertainties content and errors are equals 
-    sFactorErr = TMath::Sqrt(TMath::Power(hDataMCSF->GetBinError(xbin,ybin),2)+TMath::Power(hEffGSEl_->GetBinError(eta,20),2)); 
+    sFactorErr = TMath::Sqrt(TMath::Power(hDataMCSF->GetBinError(xbin,ybin),2)+TMath::Power(hEffGSEl_->GetBinError(hEffGSEl_->FindBin(eta,50)),2)); 
 
-    sFactor*=  hEffGSEl_->GetBinContent(hEffGSEl_->FindBin(eta,20)); // The histogram depend only on eta so 20 is just a value inside the range. 
+    sFactor*=  hEffGSEl_->GetBinContent(hEffGSEl_->FindBin(eta,50)); // The histogram depend only on eta so 50 is just a value inside the range. 
   }
   else{
     std::cout << colour::Warning("Efficiency scale factor asked for an unknown particle") << " ID = " << id << std::endl;
