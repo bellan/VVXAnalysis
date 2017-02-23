@@ -34,9 +34,11 @@ namespace phys {
       , pfCombRelIso_(-9999.)
       , pfCombRelIsoFSRCorr_(-9999.)
       , rho_(-9999.) 
+      , scEta_(-9999.)
       , matchHLT_(false)
       , isGood_(false)
       , isInCracks_(false)
+
       //, nearestjet(TLorentzVector(0.,0.,0.,0.), 0)
       {}
     
@@ -53,6 +55,7 @@ namespace phys {
     Double_t pfCombRelIso()        const {return pfCombRelIso_;}   
     Double_t pfCombRelIsoFSRCorr() const {return pfCombRelIsoFSRCorr_;}   
     Double_t rho()                 const {return rho_;}             
+    Double_t scEta()               const {return scEta_;}             
     Bool_t   matchHLT()            const {return matchHLT_;}
     Bool_t   isGood()              const {return isGood_;}
 
@@ -83,6 +86,7 @@ namespace phys {
     Double_t pfCombRelIso_;
     Double_t pfCombRelIsoFSRCorr_;
     Double_t rho_;
+    Double_t scEta_;
 
     Bool_t matchHLT_;
     Bool_t isGood_;
