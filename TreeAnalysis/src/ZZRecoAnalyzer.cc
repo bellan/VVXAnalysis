@@ -69,7 +69,10 @@ void ZZRecoAnalyzer::analyze(){
   
   Float_t scaleFacErrSq = ZZ->efficiencySFUnc(); 
 
-  //Data  
+  Float_t scaleFacMuErrSq = ZZ->muEffSFUnc(); 
+  Float_t scaleFacEleErrSq = ZZ->eleEffSFUnc(); 
+
+  //Data 
   if(!theMCInfo.isMC()){    
      
     foreach(const phys::Jet &dataJet, *pjets){
@@ -152,6 +155,24 @@ void ZZRecoAnalyzer::analyze(){
     FillHistosJets(decay,theWeight*(1-scaleFacErrSq),centralJets,"Central_SFErrSqMinus_01");
     FillHistosJets(decay,theWeight*(1+scaleFacErrSq),centralJets,"Central_SFErrSqPlus_01");
 
+    FillHistosBase(decay,theWeight*(1-scaleFacMuErrSq),"MuSFErrSqMinus_01");
+    FillHistosBase(decay,theWeight*(1+scaleFacMuErrSq),"MuSFErrSqPlus_01");
+
+    FillHistosJets(decay,theWeight*(1-scaleFacMuErrSq),jets,"MuSFErrSqMinus_01");
+    FillHistosJets(decay,theWeight*(1+scaleFacMuErrSq),jets,"MuSFErrSqPlus_01");
+
+    FillHistosJets(decay,theWeight*(1-scaleFacMuErrSq),centralJets,"Central_MuSFErrSqMinus_01");
+    FillHistosJets(decay,theWeight*(1+scaleFacMuErrSq),centralJets,"Central_MuSFErrSqPlus_01");
+
+    FillHistosBase(decay,theWeight*(1-scaleFacEleErrSq),"EleSFErrSqMinus_01");
+    FillHistosBase(decay,theWeight*(1+scaleFacEleErrSq),"EleSFErrSqPlus_01");
+
+    FillHistosJets(decay,theWeight*(1-scaleFacEleErrSq),jets,"EleSFErrSqMinus_01");
+    FillHistosJets(decay,theWeight*(1+scaleFacEleErrSq),jets,"EleSFErrSqPlus_01");
+
+    FillHistosJets(decay,theWeight*(1-scaleFacEleErrSq),centralJets,"Central_EleSFErrSqMinus_01");
+    FillHistosJets(decay,theWeight*(1+scaleFacEleErrSq),centralJets,"Central_EleSFErrSqPlus_01");
+
     //    std::cout<<"scaleFacErrSq "<<scaleFacErrSq<<std::endl;
 
     //ADD JER SF err?
@@ -199,7 +220,30 @@ void ZZRecoAnalyzer::analyze(){
 
     FillMatrixHistosJets(decay,theWeight*(1-scaleFacErrSq),centralJets,centralGenJets,"Central_SFErrSqMinus_01");
     FillMatrixHistosJets(decay,theWeight*(1+scaleFacErrSq),centralJets,centralGenJets,"Central_SFErrSqPlus_01");
+
+    FillMatrixHistosBase(decay,theWeight*(1-scaleFacMuErrSq),"MuSFErrSqMinus_01");
+    FillMatrixHistosBase(decay,theWeight*(1+scaleFacMuErrSq),"MuSFErrSqPlus_01");
+
+    FillMatrixHistosJets(decay,theWeight*(1-scaleFacMuErrSq),jets,genJets,"MuSFErrSqMinus_01");
+    FillMatrixHistosJets(decay,theWeight*(1+scaleFacMuErrSq),jets,genJets,"MuSFErrSqPlus_01");
+
+    FillMatrixHistosJets(decay,theWeight*(1-scaleFacMuErrSq),centralJets,centralGenJets,"Central_MuSFErrSqMinus_01");
+    FillMatrixHistosJets(decay,theWeight*(1+scaleFacMuErrSq),centralJets,centralGenJets,"Central_MuSFErrSqPlus_01");
+
+    FillMatrixHistosBase(decay,theWeight*(1-scaleFacEleErrSq),"EleSFErrSqMinus_01");
+    FillMatrixHistosBase(decay,theWeight*(1+scaleFacEleErrSq),"EleSFErrSqPlus_01");
+
+    FillMatrixHistosJets(decay,theWeight*(1-scaleFacEleErrSq),jets,genJets,"EleSFErrSqMinus_01");
+    FillMatrixHistosJets(decay,theWeight*(1+scaleFacEleErrSq),jets,genJets,"EleSFErrSqPlus_01");
+
+    FillMatrixHistosJets(decay,theWeight*(1-scaleFacEleErrSq),centralJets,centralGenJets,"Central_EleSFErrSqMinus_01");
+    FillMatrixHistosJets(decay,theWeight*(1+scaleFacEleErrSq),centralJets,centralGenJets,"Central_EleSFErrSqPlus_01");
+
    }
+
+
+
+
 
     if((region_ == phys::SR && topology.test(1)) || (region_ == phys::SR_HZZ && topology.test(1))){
 
@@ -234,6 +278,45 @@ void ZZRecoAnalyzer::analyze(){
        
        FillMatrixHistosJets(decay,theWeight*(1-scaleFacErrSq),centralJets,centralGenJets,"Central_SFErrSqMinus_01_fr");
        FillMatrixHistosJets(decay,theWeight*(1+scaleFacErrSq),centralJets,centralGenJets,"Central_SFErrSqPlus_01_fr");
+
+
+       FillMatrixHistosBase(decay,theWeight*(1-scaleFacMuErrSq),"MuSFErrSqMinus_01_fr");
+       FillMatrixHistosBase(decay,theWeight*(1+scaleFacMuErrSq),"MuSFErrSqPlus_01_fr");
+       
+       FillMatrixHistosJets(decay,theWeight*(1-scaleFacMuErrSq),jets,genJets,"MuSFErrSqMinus_01_fr");
+       FillMatrixHistosJets(decay,theWeight*(1+scaleFacMuErrSq),jets,genJets,"MuSFErrSqPlus_01_fr");
+       
+       FillMatrixHistosJets(decay,theWeight*(1-scaleFacMuErrSq),centralJets,centralGenJets,"Central_MuSFErrSqMinus_01_fr");
+       FillMatrixHistosJets(decay,theWeight*(1+scaleFacMuErrSq),centralJets,centralGenJets,"Central_MuSFErrSqPlus_01_fr");
+       
+       FillMatrixHistosBase(decay,theWeight*(1-scaleFacEleErrSq),"EleSFErrSqMinus_01_fr");
+       FillMatrixHistosBase(decay,theWeight*(1+scaleFacEleErrSq),"EleSFErrSqPlus_01_fr");
+       
+       FillMatrixHistosJets(decay,theWeight*(1-scaleFacEleErrSq),jets,genJets,"EleSFErrSqMinus_01_fr");
+       FillMatrixHistosJets(decay,theWeight*(1+scaleFacEleErrSq),jets,genJets,"EleSFErrSqPlus_01_fr");
+       
+       FillMatrixHistosJets(decay,theWeight*(1-scaleFacEleErrSq),centralJets,centralGenJets,"Central_EleSFErrSqMinus_01_fr");
+       FillMatrixHistosJets(decay,theWeight*(1+scaleFacEleErrSq),centralJets,centralGenJets,"Central_EleSFErrSqPlus_01_fr");
+       
+
+       FillHistosBase(decay,theWeight*(1-scaleFacMuErrSq),"MuSFErrSqMinus_01_fr");
+       FillHistosBase(decay,theWeight*(1+scaleFacMuErrSq),"MuSFErrSqPlus_01_fr");
+       
+       FillHistosJets(decay,theWeight*(1-scaleFacMuErrSq),jets,"MuSFErrSqMinus_01_fr");
+       FillHistosJets(decay,theWeight*(1+scaleFacMuErrSq),jets,"MuSFErrSqPlus_01_fr");
+       
+       FillHistosJets(decay,theWeight*(1-scaleFacMuErrSq),centralJets,"Central_MuSFErrSqMinus_01_fr");
+       FillHistosJets(decay,theWeight*(1+scaleFacMuErrSq),centralJets,"Central_MuSFErrSqPlus_01_fr");
+       
+       FillHistosBase(decay,theWeight*(1-scaleFacEleErrSq),"EleSFErrSqMinus_01_fr");
+       FillHistosBase(decay,theWeight*(1+scaleFacEleErrSq),"EleSFErrSqPlus_01_fr");
+       
+       FillHistosJets(decay,theWeight*(1-scaleFacEleErrSq),jets,"EleSFErrSqMinus_01_fr");
+       FillHistosJets(decay,theWeight*(1+scaleFacEleErrSq),jets,"EleSFErrSqPlus_01_fr");
+       
+       FillHistosJets(decay,theWeight*(1-scaleFacEleErrSq),centralJets,"Central_EleSFErrSqMinus_01_fr");
+       FillHistosJets(decay,theWeight*(1+scaleFacEleErrSq),centralJets,"Central_EleSFErrSqPlus_01_fr");
+
     } // end fiducial region
   } //end is MC
   

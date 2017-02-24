@@ -35,13 +35,13 @@ using namespace colour;
 // ------------------------------------------------------------------------------------------ //
 
 
-
 EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 			     const AnalysisConfiguration& configuration)
   : select(aSelector)
   ,  leptonScaleFactors_("../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_mu_Moriond2017.root",
-			 "../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_ele_2016_v4.root",
-			 "../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/egammaEffi_EGM2D_Moriond2017.root",
+			 "../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_non_gap_ele_Moriond2017_v2.root",
+			 "../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_gap_ele_Moriond2017_v2.root",
+			 "../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_RECO_ele_Moriond2017_v1.root",
 			 "../../VVXAnalysis/Commons/data/fakeRates.root",
 			 "../../VVXAnalysis/Commons/data/fakeRates.root")
   , doBasicPlots_(configuration.getParameter<bool>("doBasicPlots"))
@@ -162,11 +162,11 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   jets->clear(); centralJets->clear(); pileUpIds->clear();
 
   foreach(const phys::Jet &jet, *pjets){
-    if(jet.fullPuId(1)){//2 tight, 1 medium, 0 loose
+    //    if(jet.fullPuId(1)){//2 tight, 1 medium, 0 loose
       if(jet.pt() > 30){
 	if(fabs(jet.eta()) < 4.7) jets->push_back(jet);
 	if(fabs(jet.eta()) < 2.4) centralJets->push_back(jet);
-      }
+	// }
     }
     else pileUpIds->push_back(idx);   
     idx++; 
@@ -201,7 +201,6 @@ if(region_ == phys::MC){
   }
  }
 
-
  std::vector<phys::Lepton> Leps;
 
  Leps.push_back(*ZZ->first().daughterPtr(0));
@@ -230,40 +229,38 @@ addOptions();
  
   if(!doSF)  theWeight = theMCInfo.weight(*ZZ);
   else{
+    
+    theWeight = theMCInfo.weight();
+    
+    std::pair<double,double> lepSF;
+    
+    lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->first().daughterPtr(0));
+    (ZZ->first().daughterPtr(0))->setEfficenySFUnc(lepSF.second);
+    theWeight*=lepSF.first;
+    
+    lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->first().daughterPtr(1));
+    (ZZ->first().daughterPtr(1))->setEfficenySFUnc(lepSF.second);
+    theWeight*=lepSF.first;
+    
+    lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->second().daughterPtr(0));
+    ( ZZ->second().daughterPtr(0))->setEfficenySFUnc(lepSF.second);
+    theWeight*=lepSF.first;
+    
+    lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->second().daughterPtr(1));
+    (ZZ->second().daughterPtr(1))->setEfficenySFUnc(lepSF.second);
+    theWeight*=lepSF.first;
+    
+    if(region_ == phys::CR2P2F || region_ == phys::CR3P1F || region_ == phys::CR2P2F_HZZ || region_ == phys::CR3P1F_HZZ){
+      
+      //if(ZZ->first().daughterPtr(0)->passFullSel() && ZZ->first().daughterPtr(1)->passFullSel() && ZZ->second().daughterPtr(0)->passFullSel() && ZZ->second().daughterPtr(1)->passFullSel()) cout<<"alt   !!!"<<endl;
+      
+      if(!ZZ->first().daughterPtr(0)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(0))).first;	
+      if(!ZZ->first().daughterPtr(1)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(1))).first;	
+      if(!ZZ->second().daughterPtr(0)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(0))).first;
+      if(!ZZ->second().daughterPtr(1)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(1))).first; 
+    }
+  }
   
-  theWeight = theMCInfo.weight();
-
-  std::pair<double,double> lepSF;
-
- lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->first().daughterPtr(0));	
- (ZZ->first().daughterPtr(0))->setEfficenySFUnc(lepSF.second);
- theWeight*=lepSF.first;
-
- lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->first().daughterPtr(1));	
- (ZZ->first().daughterPtr(1))->setEfficenySFUnc(lepSF.second);
- theWeight*=lepSF.first;
-
- lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->second().daughterPtr(0));
- ( ZZ->second().daughterPtr(0))->setEfficenySFUnc(lepSF.second);
- theWeight*=lepSF.first;
-
- lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->second().daughterPtr(1)); 
- (ZZ->second().daughterPtr(1))->setEfficenySFUnc(lepSF.second);
- theWeight*=lepSF.first;
- 
- if(region_ == phys::CR2P2F || region_ == phys::CR3P1F || region_ == phys::CR2P2F_HZZ || region_ == phys::CR3P1F_HZZ){
-
-   //if(ZZ->first().daughterPtr(0)->passFullSel() && ZZ->first().daughterPtr(1)->passFullSel() && ZZ->second().daughterPtr(0)->passFullSel() && ZZ->second().daughterPtr(1)->passFullSel()) cout<<"alt   !!!"<<endl;
-
-   if(!ZZ->first().daughterPtr(0)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(0))).first;	
-   if(!ZZ->first().daughterPtr(1)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(1))).first;	
-   if(!ZZ->second().daughterPtr(0)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(0))).first;
-   if(!ZZ->second().daughterPtr(1)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(1))).first;
-
- }
-
-}
-
   theHistograms.fill("weight_full"  , "All weights applied"                                    , 1200, -2, 10, theWeight);
   theHistograms.fill("weight_bare"  , "All weights, but efficiency and fake rate scale factors", 1200, -2, 10, theMCInfo.weight());
   theHistograms.fill("weight_pu"    , "Weight from PU reweighting procedure"                   , 1200, -2, 10, theMCInfo.puWeight());
