@@ -27,7 +27,8 @@ bool strtool::sortEvents(std::string i, std::string j){
 }
 
 
-std::string strtool::sRound(float val)
+std::string strtool::sRound(float val,std::string digit)
 {
-  return  str( boost::format("%.2f") % val );
+  //  return  str( boost::format("%.2f") % val );
+  return  str( boost::format("%"+digit+"f") % val );
 }
