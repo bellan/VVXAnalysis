@@ -39,7 +39,6 @@ LeptonScaleFactors::LeptonScaleFactors(const std::string& muonEffFilename, const
 }
 
 
-
 std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double& pt, const double& eta, int id, bool isInCracks) const {
 
   std::string  year = "2017"; //To be added in argument constructor
@@ -67,7 +66,7 @@ std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double
 
   else if (abs(id) == 11) {
     if(!isInCracks){
-      //      std::cout<<"no crack"<<std::endl;
+      // std::cout<<"no crack"<<std::endl;
       hDataMCSF = hEffEl_;
     }
     else {
@@ -76,9 +75,9 @@ std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double
     if(year =="2017"){
       xbin = hDataMCSF->GetXaxis()->FindBin(eta);
       ybin = hDataMCSF->GetYaxis()->FindBin(pt);
-      //      std::cout<<"eta "<<eta<<" pt "<<pt<<std::endl;
-      if(pt >= hDataMCSF->GetXaxis()->GetXmax())      ybin = hDataMCSF->GetXaxis()->GetLast();
-      else if (pt < hDataMCSF->GetXaxis()->GetXmin()) ybin = hDataMCSF->GetXaxis()->GetFirst();   // ...should never happen
+      //      std::cout<<"eta "<<eta<<" pt "<<pt<<" xbin "<<xbin<<std::endl;
+      if(pt >= hDataMCSF->GetXaxis()->GetXmax())      ybin = hDataMCSF->GetYaxis()->GetLast();
+      else if (pt < hDataMCSF->GetXaxis()->GetXmin()) ybin = hDataMCSF->GetYaxis()->GetFirst();   // ...should never happen
     }
       else if(year=="2016"){
       xbin = hDataMCSF->GetXaxis()->FindBin(abs(eta));
