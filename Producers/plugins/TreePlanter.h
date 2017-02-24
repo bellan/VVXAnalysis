@@ -29,8 +29,7 @@
 
 #include "VVXAnalysis/Producers/interface/FilterController.h"
 #include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
-
-#include "ZZAnalysis/AnalysisStep/interface/PUReweight.h"
+#include "ZZAnalysis/AnalysisStep/interface/PileUpWeight.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include <JetMETCorrections/Modules/interface/JetResolution.h>
 
@@ -99,7 +98,7 @@ class TreePlanter: public edm::EDAnalyzer {
 
   TTree *theTree;
 
-  PUReweight       PUWeighter_;
+  PileUpWeight     PUWeighter_; 
   FilterController filterController_;
   MCHistoryTools   *mcHistoryTools_;
   // To get Lepton efficiency scale factors. Temporary here!
