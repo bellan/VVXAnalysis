@@ -123,6 +123,8 @@ class TreePlanter: public edm::EDAnalyzer {
 
   Double_t mcprocweight_;
   Double_t puweight_;
+  Double_t puweightUp_;
+  Double_t puweightDn_;
 
   Int_t genCategory_;
   Int_t nobservedPUInt_; 

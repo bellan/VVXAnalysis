@@ -143,6 +143,8 @@ void TreePlanter::beginJob(){
 
   theTree->Branch("mcprocweight"     , &mcprocweight_);
   theTree->Branch("puweight"         , &puweight_);
+  theTree->Branch("puweightUp"         , &puweightUp_);
+  theTree->Branch("puweightDn"         , &puweightDn_);
   theTree->Branch("genCategory" , &genCategory_);
 
   theTree->Branch("met"   , &met_);
@@ -280,6 +282,8 @@ void TreePlanter::initTree(){
 
   mcprocweight_       = 1.;
   puweight_           = 1.; 
+  puweightUp_        = 0.; 
+  puweightDn_        = 0.; 
 
   genCategory_    = -1;
   nobservedPUInt_ = -1;
@@ -345,9 +349,8 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
 
     // Info about the MC weight
     puweight_ = PUWeighter_.weight(ntruePUInt_);
-
-    // pueight_Up = pileUpReweight.weight(ntruePUInt_, PileUpWeight::PUvar::VARUP);
-    // pueight_Dn = pileUpReweight.weight(ntryePUInt_, PileUpWeight::PUvar::VARDOWN);
+    puweightUp_ = PUWeighter_.weight(ntruePUInt_, PileUpWeight::PUvar::VARUP);
+    puweightDn_ = PUWeighter_.weight(ntruePUInt_, PileUpWeight::PUvar::VARDOWN);
 
     mcprocweight_ = mcHistoryTools_->gethepMCweight();
 
