@@ -28,7 +28,8 @@ public:
   virtual void analyze();
 
   virtual void end( TFile &);
-
+  virtual void begin();
+  
   // Jets obtained by gaussian JER smearing
 
   std::vector<phys::Jet> *  noJerJets;
@@ -49,6 +50,11 @@ public:
   std::vector<std::string> events4e; 
   std::vector<std::string> events4mu;
   std::vector<std::string> events4l;
+  std::vector<std::string> eventsFull;
+
+  std::vector<double> Xbins_pt; 
+  std::vector<double> Xbins_eta; 
+
 
 };
 #endif
