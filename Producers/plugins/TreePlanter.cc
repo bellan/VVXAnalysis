@@ -46,7 +46,7 @@ using std::endl;
 
 
 TreePlanter::TreePlanter(const edm::ParameterSet &config)
-  : PUWeighter_      ()
+  : PUWeighter_      (2017,2017)
   , filterController_(config,consumesCollector())
   , mcHistoryTools_  (0)
   , leptonScaleFactors_(edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_mu_Moriond2017.root").fullPath(),
@@ -344,8 +344,11 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     
 
     // Info about the MC weight
-    puweight_ = PUWeighter_.weight(sampleType_, setup_, ntruePUInt_);
-    
+    puweight_ = PUWeighter_.weight(ntruePUInt_);
+
+    // pueight_Up = pileUpReweight.weight(ntruePUInt_, PileUpWeight::PUvar::VARUP);
+    // pueight_Dn = pileUpReweight.weight(ntryePUInt_, PileUpWeight::PUvar::VARDOWN);
+
     mcprocweight_ = mcHistoryTools_->gethepMCweight();
 
     // Sum of weight, particularly imprtant for MCs that return also negative weights
