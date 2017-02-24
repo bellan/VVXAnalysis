@@ -50,8 +50,9 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , filterController_(config,consumesCollector())
   , mcHistoryTools_  (0)
   , leptonScaleFactors_(edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_mu_Moriond2017.root").fullPath(),
-			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_ele_2016_v4.root").fullPath(),
-                        edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/egammaEffi_EGM2D_Moriond2017.root").fullPath(),
+			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_gap_ele_Moriond2017_v2.root").fullPath(),
+			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_non_gap_ele_Moriond2017_v2.root").fullPath(),
+		        edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_RECO_ele_Moriond2017_v1.root").fullPath(),		     
   			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates.root").fullPath(),
   			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates.root").fullPath())
 
@@ -526,19 +527,23 @@ template<typename LEP>
 phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
 
   phys::Lepton output(phys::Particle::convert(lepton.p4()),lepton.charge(),lepton.pdgId());
-  
-  output.dxy_             = lepton.userFloat("dxy"              );               
-  output.dz_              = lepton.userFloat("dz"               );                
-  output.sip_             = lepton.userFloat("SIP"              );
-  output.pfChargedHadIso_ = lepton.userFloat("PFChargedHadIso"  );
-  output.pfNeutralHadIso_ = lepton.userFloat("PFNeutralHadIso"  );
-  output.pfPhotonIso_     = lepton.userFloat("PFPhotonIso"      );
-  output.pfCombRelIso_    = lepton.userFloat("combRelIsoPF"     );  
+ 
+
+  output.dxy_                 = lepton.userFloat("dxy"              );               
+  output.dz_                  = lepton.userFloat("dz"               );                
+  output.sip_                 = lepton.userFloat("SIP"              );
+  output.pfChargedHadIso_     = lepton.userFloat("PFChargedHadIso"  );
+  output.pfNeutralHadIso_     = lepton.userFloat("PFNeutralHadIso"  );
+  output.pfPhotonIso_         = lepton.userFloat("PFPhotonIso"      );
+  output.pfCombRelIso_        = lepton.userFloat("combRelIsoPF"     );  
   output.pfCombRelIsoFSRCorr_ = lepton.userFloat("combRelIsoPFFSRCorr");
-  output.rho_             = lepton.userFloat("rho"              );
-  output.matchHLT_        = lepton.userFloat("HLTMatch"         );
-  output.isGood_          = lepton.userFloat("isGood"           );
-  if(abs(lepton.pdgId())  == 11) output.isInCracks_  = lepton.userFloat("isCrack"          );
+  output.rho_                 = lepton.userFloat("rho"              );
+  output.matchHLT_            = lepton.userFloat("HLTMatch"         );
+  output.isGood_              = lepton.userFloat("isGood"           );
+  if(abs(lepton.pdgId())      == 11){ 
+    output.isInCracks_        = lepton.userFloat("isCrack"          );
+    output.scEta_             = lepton.userFloat("SCeta"            );
+  }
   std::pair<double,double> effSF = leptonScaleFactors_.efficiencyScaleFactor(output); 
   output.efficiencySF_    = effSF.first;
   output.efficiencySFUnc_ = effSF.second;

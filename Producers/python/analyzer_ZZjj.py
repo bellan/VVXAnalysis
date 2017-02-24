@@ -37,7 +37,6 @@ SkimPaths.append("preselection")
 ### Output root file
 ### ----------------------------------------------------------------------
 
-
 process.TFileService=cms.Service('TFileService', fileName=cms.string('ZZ4lAnalysis.root'))
 
 
@@ -108,7 +107,6 @@ process.postCleaningElectrons = cms.EDProducer("PATElectronCleaner",
                                                )
 
 
-
 ### ......................................................................... ###
 # Remove from the event the jets that have leptons from the ZZ best candidate.
 # Jets are also checked against other good isolated leptons not coming from the ZZ best candidate. 
@@ -127,6 +125,7 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
                                            Electrons = cms.InputTag("postCleaningElectrons"),
                                            Diboson   = cms.InputTag("ZZFiltered"),
                                            cleanFSRFromLeptons = cms.bool(True),
+                                           DebugPrintOuts      =  cms.untracked.bool(False),
                                            DebugPlots= cms.untracked.bool(False)
                                            )
 
@@ -367,9 +366,6 @@ process.filltrees = cms.EndPath(cms.ignore(process.zzTrigger) + process.srCounte
 
 ########################################################################################################################################################################
 
-
-
-
 ########################################################
 ### Tools for further debuging                       ###
 ########################################################
@@ -388,12 +384,14 @@ process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
         slimmedMuons = cms.InputTag("slimmedMuons"),
         calibratedMuons   = cms.InputTag("calibratedMuons"),
         muons        = cms.InputTag("appendPhotons:muons"),
+        postCleaningMuons  = cms.InputTag("postCleaningMuons")
      ),
 
      electronSrcs = cms.PSet(
         slimmedElectron        = cms.InputTag("slimmedElectrons"),
-        calibratedPatElectrons = cms.InputTag("calibratedPatElectrons"),
+       calibratedPatElectrons = cms.InputTag("calibratedPatElectrons"),
         electrons              = cms.InputTag("appendPhotons:electrons"),
+        postCleaningElectrons  = cms.InputTag("postCleaningElectrons")
      ),
      candidateSrcs = cms.PSet(
         Z   = cms.InputTag("ZCand"),
@@ -407,6 +405,7 @@ process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
         disambiguatedJets = cms.InputTag("disambiguatedJets")
         )
 )
+
 
 #process.filltrees = cms.Path(process.preselection * process.genCategory * process.treePlanter * process.printTree)
 #process.filltrees = cms.EndPath(process.treePlanter *process.dumpUserData)

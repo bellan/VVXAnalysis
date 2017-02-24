@@ -60,7 +60,6 @@ namespace phys {
     
     /// Destructor
     virtual ~Boson(){};
-
     
     void setDaughter(int i, const P& d){
       if(i == 0) daughter0_ = d;
@@ -120,19 +119,27 @@ namespace phys {
 
     double fakeRateSF()    const {return daughter0_.fakeRateSF() * daughter1_.fakeRateSF();}
     double fakeRateSFUnc() const {return sqrt(pow(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUnc(),2) +
-    						  pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc(),2));}
-    
+					      pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc(),2));}    
     double efficiencySF() const {return daughter0_.efficiencySF() * daughter1_.efficiencySF();}
     
-    double efficiencySFUnc() const {
-      double effSF0    = daughter0_.efficiencySF();
-      double effSF0Unc = daughter0_.efficiencySFUnc();
-      double effSF1    = daughter1_.efficiencySF();
-      double effSF1Unc = daughter1_.efficiencySFUnc();      
-      
-      return sqrt((effSF0Unc*effSF0Unc)/(effSF0*effSF0)+(effSF1Unc*effSF1Unc)/(effSF1*effSF1));
+    double muEffSFUnc() const {
+      if(abs(daughter0_.id())==13){
+	double effSF0Unc = daughter0_.efficiencySFUnc();
+	double effSF1Unc = daughter1_.efficiencySFUnc();      
+	return  effSF0Unc+effSF1Unc;
+      }
+      else return 0;
     }
     
+    double eleEffSFUnc() const {
+      if(abs(daughter0_.id())==11){
+	double effSF0Unc = daughter0_.efficiencySFUnc();
+	double effSF1Unc = daughter1_.efficiencySFUnc();      
+	return  effSF0Unc+effSF1Unc;
+      }
+      else return 0;
+    }
+
   protected:
   private:
     P daughter0_;

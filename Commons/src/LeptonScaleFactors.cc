@@ -3,20 +3,21 @@
 #include <TFile.h>
 #include <iostream>
 
-//LeptonScaleFactors::LeptonScaleFactors(const std::string& muonEffFilename, const std::string& electronEffFilename, const std::string& electronEffCracksfilename,
-LeptonScaleFactors::LeptonScaleFactors(const std::string& muonEffFilename, const std::string& electronEffFilename, const std::string& electronGSFEffFilename,
+LeptonScaleFactors::LeptonScaleFactors(const std::string& muonEffFilename, const std::string& electronEffFilename, const std::string& electronEffCracksfilename,
+				       const std::string& electronEffRecoFilename,
 				       const std::string& muonFRFilename, const std::string& electronFRFilename){
 
-  TFile *fEffMu   = new TFile(muonEffFilename.c_str());
-  TFile *fEffEl   = new TFile(electronEffFilename.c_str());
-  TFile *fGSEffEl = new TFile(electronGSFEffFilename.c_str());
-  //  TFile *fEffElCracks = new TFile(electronEffCracksfilename.c_str());
+  TFile *fEffMu     = new TFile(muonEffFilename.c_str());
+  TFile *fEffEl     = new TFile(electronEffFilename.c_str());
+  TFile *fEffElCracks = new TFile(electronEffCracksfilename.c_str());  
+  TFile *fEffElReco   = new TFile(electronEffRecoFilename.c_str());
+  
   
   hEffMu_       = dynamic_cast<TH2F*>(fEffMu->Get("FINAL"));
-  hEffEl_       = dynamic_cast<TH2F*>(fEffEl->Get("ele_scale_factors"));
-  hEffElCracks_ = dynamic_cast<TH2F*>(fEffEl->Get("ele_scale_factors_gap"));
+  hEffEl_       = dynamic_cast<TH2F*>(fEffEl->Get("EGamma_SF2D"));
+  hEffElCracks_ = dynamic_cast<TH2F*>(fEffElCracks->Get("EGamma_SF2D"));
+  hEffElReco_   = dynamic_cast<TH2F*>(fEffElReco->Get("EGamma_SF2D"));
 
-  hEffGSEl_         = dynamic_cast<TH2F*>(fGSEffEl->Get("EGamma_SF2D"));
   //2015
   // hEffEl_       = dynamic_cast<TH2F*>(fEffEl->Get("hScaleFactors_IdIsoSip"));
   // hEffElCracks_ = dynamic_cast<TH2F*>(fEffElCracks->Get("hScaleFactors_IdIsoSip_Cracks"));
@@ -37,9 +38,11 @@ LeptonScaleFactors::LeptonScaleFactors(const std::string& muonEffFilename, const
 
 }
 
+
+
 std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double& pt, const double& eta, int id, bool isInCracks) const {
 
-  std::string  year = "2016"; //To be added in argument constructor
+  std::string  year = "2017"; //To be added in argument constructor
 
   const TH2F *hDataMCSF = 0;
   //  const TH2F *hDataMCSF_Unc = 0; del
@@ -48,6 +51,7 @@ std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double
   int ybin = -2;
 
   double sFactor    = 0; 
+  double recoSfactor    = 0; 
   double sFactorErr = 0;
 
   if(abs(id) == 13){
@@ -63,32 +67,32 @@ std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double
 
   else if (abs(id) == 11) {
     if(!isInCracks){
+      //      std::cout<<"no crack"<<std::endl;
       hDataMCSF = hEffEl_;
-      //      hDataMCSF_Unc = hEffEl_Unc_;
     }
     else {
       hDataMCSF = hEffElCracks_;
-      //    hDataMCSF_Unc = hEffElCracks_Unc_;
     }
-    if(year =="2015"){
-      xbin = hDataMCSF->GetXaxis()->FindBin(pt);
-      ybin = hDataMCSF->GetYaxis()->FindBin(eta);
-      if(pt >= hDataMCSF->GetXaxis()->GetXmax()) xbin = hDataMCSF->GetXaxis()->GetLast();
-      else if (pt < hDataMCSF->GetXaxis()->GetXmin()) xbin = hDataMCSF->GetXaxis()->GetFirst();   // ...should never happen
-      
+    if(year =="2017"){
+      xbin = hDataMCSF->GetXaxis()->FindBin(eta);
+      ybin = hDataMCSF->GetYaxis()->FindBin(pt);
+      //      std::cout<<"eta "<<eta<<" pt "<<pt<<std::endl;
+      if(pt >= hDataMCSF->GetXaxis()->GetXmax())      ybin = hDataMCSF->GetXaxis()->GetLast();
+      else if (pt < hDataMCSF->GetXaxis()->GetXmin()) ybin = hDataMCSF->GetXaxis()->GetFirst();   // ...should never happen
     }
-    else if(year=="2016"){
+      else if(year=="2016"){
       xbin = hDataMCSF->GetXaxis()->FindBin(abs(eta));
       ybin = hDataMCSF->GetYaxis()->FindBin(pt);
-      if(pt >= hDataMCSF->GetYaxis()->GetXmax()) ybin = hDataMCSF->GetYaxis()->GetLast();
+      if(pt >= hDataMCSF->GetYaxis()->GetXmax())      ybin = hDataMCSF->GetYaxis()->GetLast();
       else if (pt < hDataMCSF->GetYaxis()->GetXmin()) ybin = hDataMCSF->GetYaxis()->GetFirst();   // ...should never happen
- }
+    }
 
-    sFactor    = hDataMCSF->GetBinContent(xbin,ybin); 
-    //    sFactorErr = hDataMCSF_Unc->GetBinError(xbin,ybin); //in 2016 ele_scale_factors_uncertainties content and errors are equals 
-    sFactorErr = TMath::Sqrt(TMath::Power(hDataMCSF->GetBinError(xbin,ybin),2)+TMath::Power(hEffGSEl_->GetBinError(hEffGSEl_->FindBin(eta,50)),2)); 
+    sFactor      =  hDataMCSF->GetBinContent(xbin,ybin); 
+    recoSfactor  =  hEffElReco_->GetBinContent(hEffElReco_->FindBin(eta,50)); // The histogram depend only on eta so 50 is just a value inside the range. 
+    sFactorErr   = TMath::Sqrt(TMath::Power(hDataMCSF->GetBinError(xbin,ybin)/sFactor,2)+TMath::Power(hEffElReco_->GetBinError(hEffElReco_->FindBin(eta,50))/recoSfactor,2)); 
+    //    std::cout<<"x "<<xbin<<" y "<<ybin<<" sFactor "<<sFactor<<" recoSfactor "<<recoSfactor<<std::endl;
+    sFactor      *= recoSfactor;
 
-    sFactor*=  hEffGSEl_->GetBinContent(hEffGSEl_->FindBin(eta,50)); // The histogram depend only on eta so 50 is just a value inside the range. 
   }
   else{
     std::cout << colour::Warning("Efficiency scale factor asked for an unknown particle") << " ID = " << id << std::endl;
@@ -104,8 +108,10 @@ std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double
 }
 
 std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const phys::Lepton& lep) const{
-  
-  return lep.passFullSel() ? efficiencyScaleFactor(lep.pt(), lep.eta(), lep.id(), lep.isInCracks()) : std::make_pair(1.,0.); 
+
+  float eta = abs(lep.id())==11 ? lep.scEta() : lep.eta();
+  return lep.passFullSel() ? efficiencyScaleFactor(lep.pt(), eta, lep.id(), lep.isInCracks()) : std::make_pair(1.,0.); 
+
 }
 
 
@@ -117,8 +123,6 @@ double LeptonScaleFactors::weight(const phys::DiBoson<phys::Lepton,phys::Lepton>
   return weight(ZZ.first()) * weight(ZZ.second());
 }
 
-
-//std::pair<double,std::pair<double,double>> LeptonScaleFactors::fakeRateScaleFactor(const double& lepPt, const double& lepEta, int lepId) const {
 std::pair<double,double> LeptonScaleFactors::fakeRateScaleFactor(const double& lepPt, const double& lepEta, int lepId) const {
   
   double fakeRate    = 1.;

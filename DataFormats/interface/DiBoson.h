@@ -120,17 +120,22 @@ namespace phys {
     double efficiencySF() const{return daughter0_.efficiencySF() * daughter1_.efficiencySF();}
     
     double efficiencySFUnc() const {
-      double effSF0 = daughter0_.efficiencySF();
-      double effSF0Unc = daughter0_.efficiencySFUnc();
-      double effSF1 = daughter1_.efficiencySF();
-      double effSF1Unc = daughter1_.efficiencySFUnc();      
-      return sqrt((effSF0Unc*effSF0Unc)/(effSF0*effSF0)+(effSF1Unc*effSF1Unc)/(effSF1*effSF1));  
-  }
+      return daughter0_.muEffSFUnc()+daughter1_.muEffSFUnc()+daughter0_.eleEffSFUnc()+daughter1_.eleEffSFUnc();
+    }
+    
+    double muEffSFUnc() const {
+      return daughter0_.muEffSFUnc()+daughter1_.muEffSFUnc();
+    }
+    double eleEffSFUnc() const {
+      return daughter0_.eleEffSFUnc()+daughter1_.eleEffSFUnc();
+    }
+    
+    
     double fakeRateSFUnc() const{
       return sqrt(pow(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUnc(),2) +
     		  pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc(),2));
     }
-
+    
 
   private:
 
