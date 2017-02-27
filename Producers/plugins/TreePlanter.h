@@ -33,6 +33,8 @@
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include <JetMETCorrections/Modules/interface/JetResolution.h>
 
+#include "ZZAnalysis/AnalysisStep/interface/LHEHandler.h"
+
 class TTree;
 namespace pat{class Jet;}
 class MCHistoryTools;
@@ -179,7 +181,7 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::EDGetTokenT<edm::View<reco::Candidate> >	theGenCollectionToken;
   edm::EDGetTokenT<edm::View<reco::Candidate> > theGenJetCollectionToken;
   edm::EDGetTokenT<GenEventInfoProduct>         theGenInfoToken;
-  edm::EDGetTokenT<GenRunInfoProduct>         theGenInfoTokenInRun;
+  edm::EDGetTokenT<GenRunInfoProduct>           theGenInfoTokenInRun;
 
   // Tokens for counters
   edm::EDGetTokenT<edm::MergeableCounter> thePreSkimCounterToken;
@@ -218,6 +220,23 @@ class TreePlanter: public edm::EDAnalyzer {
   float kFactor_qqZZPt_;
   float kFactor_qqZZdPhi_;
   float kFactor_EWKqqZZ_;
+
+  LHEHandler* lheHandler;
+
+  Float_t LHEPDFScale_;
+  Float_t LHEweight_QCDscale_muR1_muF1_ ;
+  Float_t LHEweight_QCDscale_muR1_muF2_ ;
+  Float_t LHEweight_QCDscale_muR1_muF0p5_ ;
+  Float_t LHEweight_QCDscale_muR2_muF1_ ;
+  Float_t LHEweight_QCDscale_muR2_muF2_ ;
+  Float_t LHEweight_QCDscale_muR2_muF0p5_ ;
+  Float_t LHEweight_QCDscale_muR0p5_muF1_ ;
+  Float_t LHEweight_QCDscale_muR0p5_muF2_ ;
+  Float_t LHEweight_QCDscale_muR0p5_muF0p5_ ;
+  Float_t LHEweight_PDFVariation_Up_;
+  Float_t LHEweight_PDFVariation_Dn_;
+  Float_t LHEweight_AsMZ_Up_;
+  Float_t LHEweight_AsMZ_Dn_;
 
   double externalCrossSection_;
   Double_t summcprocweights_;

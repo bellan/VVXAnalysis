@@ -20,6 +20,9 @@
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
+#include "SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h"
+#include <SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h>
+
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
@@ -115,6 +118,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
 
   if(isMC_){
     consumesMany<std::vector< PileupSummaryInfo > >();
+    consumesMany<LHEEventProduct>();
     theGenCategoryToken      = consumes<int>                        (config.getUntrackedParameter<edm::InputTag>("GenCategory"    , edm::InputTag("genCategory")));
     theGenCollectionToken    = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("prunedGenParticles")));
     theGenJetCollectionToken = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("genCategory","genJets")));
@@ -122,7 +126,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     theGenInfoToken          = consumes<GenEventInfoProduct>          (edm::InputTag("generator"));
     theGenInfoTokenInRun     = consumes<GenRunInfoProduct,edm::InRun>(edm::InputTag("generator"));
     externalCrossSection_    = config.getUntrackedParameter<double>("XSection",-1);
-
+    lheHandler               = new LHEHandler(config.getParameter<int>("VVMode"), config.getParameter<int>("VVDecayMode"), true); //fix
   }
    
   skimPaths_ = config.getParameter<std::vector<std::string> >("skimPaths");
@@ -167,7 +171,23 @@ void TreePlanter::beginJob(){
   theTree->Branch("kFactor_qqZZPt"        , &kFactor_qqZZPt_);
   theTree->Branch("kFactor_qqZZdPhi"      , &kFactor_qqZZdPhi_);
   theTree->Branch("kFactor_EWKqqZZ"       , &kFactor_EWKqqZZ_);
-  
+
+
+  theTree->Branch("LHEPDFScale", &LHEPDFScale_);
+  theTree->Branch("LHEweight_QCDscale_muR1_muF1", &LHEweight_QCDscale_muR1_muF1_);
+  theTree->Branch("LHEweight_QCDscale_muR1_muF2", &LHEweight_QCDscale_muR1_muF2_);
+  theTree->Branch("LHEweight_QCDscale_muR1_muF0p5", &LHEweight_QCDscale_muR1_muF0p5_);
+  theTree->Branch("LHEweight_QCDscale_muR2_muF1", &LHEweight_QCDscale_muR2_muF1_);
+  theTree->Branch("LHEweight_QCDscale_muR2_muF2", &LHEweight_QCDscale_muR2_muF2_);
+  theTree->Branch("LHEweight_QCDscale_muR2_muF0p5", &LHEweight_QCDscale_muR2_muF0p5_);
+  theTree->Branch("LHEweight_QCDscale_muR0p5_muF1", &LHEweight_QCDscale_muR0p5_muF1_);
+  theTree->Branch("LHEweight_QCDscale_muR0p5_muF2", &LHEweight_QCDscale_muR0p5_muF2_);
+  theTree->Branch("LHEweight_QCDscale_muR0p5_muF0p5", &LHEweight_QCDscale_muR0p5_muF0p5_);
+  theTree->Branch("LHEweight_PDFVariation_Up", &LHEweight_PDFVariation_Up_);
+  theTree->Branch("LHEweight_PDFVariation_Dn", &LHEweight_PDFVariation_Dn_);
+  theTree->Branch("LHEweight_AsMZ_Up", &LHEweight_AsMZ_Up_);
+  theTree->Branch("LHEweight_AsMZ_Dn", &LHEweight_AsMZ_Dn_);
+
 }
 
 void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
@@ -309,6 +329,23 @@ void TreePlanter::initTree(){
   kFactor_qqZZPt_   = 1.;
   kFactor_qqZZdPhi_ = 1.;
   kFactor_EWKqqZZ_  = 1.;
+
+
+   LHEPDFScale_ = 0;
+   LHEweight_QCDscale_muR1_muF1_ = 0;
+   LHEweight_QCDscale_muR1_muF2_ = 0;
+   LHEweight_QCDscale_muR1_muF0p5_ = 0;
+   LHEweight_QCDscale_muR2_muF1_ = 0;
+   LHEweight_QCDscale_muR2_muF2_ = 0;
+   LHEweight_QCDscale_muR2_muF0p5_ = 0;
+   LHEweight_QCDscale_muR0p5_muF1_ = 0;
+   LHEweight_QCDscale_muR0p5_muF2_ = 0;
+   LHEweight_QCDscale_muR0p5_muF0p5_ = 0;  
+   LHEweight_PDFVariation_Up_ = 0;
+   LHEweight_PDFVariation_Dn_ = 0;
+   LHEweight_AsMZ_Up_ = 0;
+   LHEweight_AsMZ_Dn_ = 0;
+
 
 }
 
@@ -462,6 +499,41 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   edm::Handle<edm::View<pat::CompositeCandidate> > Vhad ; event.getByToken(theVhadToken    ,      Vhad);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZZ   ; event.getByToken(theZZToken      ,        ZZ);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZL   ; event.getByToken(theZLToken      ,        ZL);
+
+
+
+
+  // LHE information
+  edm::Handle<LHEEventProduct> lhe_evt;
+  vector<edm::Handle<LHEEventProduct> > lhe_handles;
+  event.getManyByType(lhe_handles);
+  if (lhe_handles.size()>0){
+    lhe_evt = lhe_handles.front();
+    lheHandler->setHandle(&lhe_evt);
+    lheHandler->extract();
+    //    FillLHECandidate();
+
+    LHEPDFScale_ = lheHandler->getPDFScale();
+    LHEweight_QCDscale_muR1_muF1_ = lheHandler->getLHEWeight(0, 1.);
+    LHEweight_QCDscale_muR1_muF2_ = lheHandler->getLHEWeight(1, 1.);
+    LHEweight_QCDscale_muR1_muF0p5_ = lheHandler->getLHEWeight(2, 1.);
+    LHEweight_QCDscale_muR2_muF1_ = lheHandler->getLHEWeight(3, 1.);
+    LHEweight_QCDscale_muR2_muF2_ = lheHandler->getLHEWeight(4, 1.);
+    LHEweight_QCDscale_muR2_muF0p5_ = lheHandler->getLHEWeight(5, 1.);
+    LHEweight_QCDscale_muR0p5_muF1_ = lheHandler->getLHEWeight(6, 1.);
+    LHEweight_QCDscale_muR0p5_muF2_ = lheHandler->getLHEWeight(7, 1.);
+    LHEweight_QCDscale_muR0p5_muF0p5_ = lheHandler->getLHEWeight(8, 1.);
+    LHEweight_PDFVariation_Up_ = lheHandler->getLHEWeight_PDFVariationUpDn(1, 1.);
+    LHEweight_PDFVariation_Dn_ = lheHandler->getLHEWeight_PDFVariationUpDn(-1, 1.);
+    LHEweight_AsMZ_Up_ = lheHandler->getLHEWeigh_AsMZUpDn(1, 1.);
+    LHEweight_AsMZ_Dn_ = lheHandler->getLHEWeigh_AsMZUpDn(-1, 1.);
+
+    lheHandler->clear();
+  }
+
+
+
+
 
 
   // No further selection on muons, all is made in the .py file

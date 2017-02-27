@@ -6,18 +6,16 @@ from ZZAnalysis.AnalysisStep.defaults import declareDefault
 SIGNALDEFINITION = int('101',2)  # -1 means get everything, 1 means the request of having a HZZ pair with the  mass in the chosen windows. 11 means the request of having a ZZ pair with the  mass in the chosen windows. For other topology see the README under VVXAnalysis/Commons.
 
 declareDefault("PD","",globals())
-
 declareDefault("XSEC",-1.,globals())
-
 declareDefault("MCFILTER","",globals())
-
 declareDefault("SKIM_REQUIRED",True,globals())
-
 declareDefault("KINREFIT", False, globals())
-
 declareDefault("BESTCANDCOMPARATOR", "byBestZ1bestZ2", globals())
-
 declareDefault("APPLYTRIG", True, globals()) 
+declareDefault("VVMODE", 1, globals())
+declareDefault("VVDECAYMODE", 0, globals())
+declareDefault("ADDLHEKINEMATICS", False, globals())
+
 # Get absolute path
 import os
 PyFilePath = os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/"
@@ -89,7 +87,7 @@ process.postCleaningElectrons = cms.EDProducer("PATElectronCleaner",
                                                # pat electron input source
                                                src = cms.InputTag("appendPhotons:electrons"),
                                                # preselection (any string-based cut for pat::Electron)
-                                               preselection = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"),
+                                              preselection = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"),
                                                # overlap checking configurables
                                                checkOverlaps = cms.PSet(
         electrons = cms.PSet(
@@ -341,6 +339,8 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      SkimRequired = cms.untracked.bool(SKIM_REQUIRED),
                                      MCFilterPath = cms.string(MCFILTER),
                                      isMC         = cms.untracked.bool(IsMC),
+                                     VVMode = cms.int32(int(VVMODE)),
+                                     VVDecayMode = cms.int32(int(VVDECAYMODE)),
                                      signalDefinition = cms.int32(SIGNALDEFINITION),
                                      JetAlgo        = cms.string("AK4PFchs"),        
                                      jetResFile_pt  = cms.FileInPath('JRDatabase/textFiles/Fall15_25nsV2_MC/Fall15_25nsV2_MC_PtResolution_AK4PFchs.txt'),
@@ -355,7 +355,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      MET          = cms.InputTag("slimmedMETs"),
                                      Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
                                      XSection     = cms.untracked.double(XSEC)
-                                     )
+     )
 
 
 ### ------------------------------------------------------------------------- ###
