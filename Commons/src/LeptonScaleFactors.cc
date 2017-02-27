@@ -50,8 +50,11 @@ std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double
   int ybin = -2;
 
   double sFactor    = 0; 
+  double sFactorUnc = 0;
+
   double recoSfactor    = 0; 
-  double sFactorErr = 0;
+  double recoSfactorUnc = 0; 
+
 
   if(abs(id) == 13){
     hDataMCSF = hEffMu_;
@@ -60,13 +63,11 @@ std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double
     if(pt >= hDataMCSF->GetYaxis()->GetXmax()) ybin = hDataMCSF->GetYaxis()->GetLast();
     else if (pt < hDataMCSF->GetYaxis()->GetXmin()) ybin = hDataMCSF->GetYaxis()->GetFirst();   // ...should never happen
     sFactor    = hDataMCSF->GetBinContent(xbin,ybin); 
-    sFactorErr = hDataMCSF->GetBinError(xbin,ybin);
-
+    sFactorUnc = hDataMCSF->GetBinError(xbin,ybin);
   }
 
   else if (abs(id) == 11) {
     if(!isInCracks){
-      // std::cout<<"no crack"<<std::endl;
       hDataMCSF = hEffEl_;
     }
     else {
@@ -75,9 +76,8 @@ std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double
     if(year =="2017"){
       xbin = hDataMCSF->GetXaxis()->FindBin(eta);
       ybin = hDataMCSF->GetYaxis()->FindBin(pt);
-      //      std::cout<<"eta "<<eta<<" pt "<<pt<<" xbin "<<xbin<<std::endl;
-      if(pt >= hDataMCSF->GetXaxis()->GetXmax())      ybin = hDataMCSF->GetYaxis()->GetLast();
-      else if (pt < hDataMCSF->GetXaxis()->GetXmin()) ybin = hDataMCSF->GetYaxis()->GetFirst();   // ...should never happen
+      if(pt >= hDataMCSF->GetYaxis()->GetXmax())      ybin = hDataMCSF->GetYaxis()->GetLast();
+      else if (pt < hDataMCSF->GetYaxis()->GetXmin()) ybin = hDataMCSF->GetYaxis()->GetFirst();   // ...should never happen
     }
       else if(year=="2016"){
       xbin = hDataMCSF->GetXaxis()->FindBin(abs(eta));
@@ -88,8 +88,11 @@ std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double
 
     sFactor      =  hDataMCSF->GetBinContent(xbin,ybin); 
     recoSfactor  =  hEffElReco_->GetBinContent(hEffElReco_->FindBin(eta,50)); // The histogram depend only on eta so 50 is just a value inside the range. 
-    sFactorErr   = TMath::Sqrt(TMath::Power(hDataMCSF->GetBinError(xbin,ybin)/sFactor,2)+TMath::Power(hEffElReco_->GetBinError(hEffElReco_->FindBin(eta,50))/recoSfactor,2)); 
-    //    std::cout<<"x "<<xbin<<" y "<<ybin<<" sFactor "<<sFactor<<" recoSfactor "<<recoSfactor<<std::endl;
+    recoSfactorUnc = hEffElReco_->GetBinError(hEffElReco_->FindBin(eta,50));
+
+    if(pt < 20. || pt > 80.) recoSfactorUnc += 0.01;
+
+    sFactorUnc   = TMath::Sqrt(TMath::Power(hDataMCSF->GetBinError(xbin,ybin)/sFactor,2)+TMath::Power(recoSfactorUnc/recoSfactor,2)); 
     sFactor      *= recoSfactor;
 
   }
@@ -98,16 +101,14 @@ std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double
     abort();
   }
 
-
   if(sFactor < 0.001 || sFactor > 10.){
     std::cout << colour::Warning("Efficiency scale factor out of range") << " Lepton ID = " << id << ", pt =  " << pt << ", eta = " << eta << ", scale factor = " << sFactor << std::endl;
   }
 
-  return std::make_pair(sFactor, sFactorErr) ;
+  return std::make_pair(sFactor, sFactorUnc) ;
 }
 
 std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const phys::Lepton& lep) const{
-
   float eta = abs(lep.id())==11 ? lep.scEta() : lep.eta();
   return lep.passFullSel() ? efficiencyScaleFactor(lep.pt(), eta, lep.id(), lep.isInCracks()) : std::make_pair(1.,0.); 
 
@@ -130,7 +131,6 @@ std::pair<double,double> LeptonScaleFactors::fakeRateScaleFactor(const double& l
   Int_t bin = -1;
   double pt  = lepPt < 200 ? lepPt : 199;
 
-  
   if(abs(lepId) == 13){
     if(fabs(lepEta) <= 1.2){
       bin = hFRMu_.first->GetXaxis()->FindBin(pt);
