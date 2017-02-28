@@ -187,8 +187,20 @@ void TreePlanter::beginJob(){
   theTree->Branch("LHEweight_PDFVariation_Dn", &LHEweight_PDFVariation_Dn_);
   theTree->Branch("LHEweight_AsMZ_Up", &LHEweight_AsMZ_Up_);
   theTree->Branch("LHEweight_AsMZ_Dn", &LHEweight_AsMZ_Dn_);
+  
+  
+  theTree->Branch("p_JJVBF_BKG_MCFM_JECNominal",  &p_JJVBF_BKG_MCFM_JECNominal_);
+  theTree->Branch("p_JJQCD_BKG_MCFM_JECNominal",  &p_JJQCD_BKG_MCFM_JECNominal_);
+  theTree->Branch("p_JJVBF_BKG_MCFM_JECUp",       &p_JJVBF_BKG_MCFM_JECUp_);     
+  theTree->Branch("p_JJQCD_BKG_MCFM_JECUp",       &p_JJQCD_BKG_MCFM_JECUp_);     
+  theTree->Branch("p_JJVBF_BKG_MCFM_JECDn",       &p_JJVBF_BKG_MCFM_JECDn_);     
+  theTree->Branch("p_JJQCD_BKG_MCFM_JECDn",       &p_JJQCD_BKG_MCFM_JECDn_);     
+  theTree->Branch("p_JJEW_BKG_MCFM_JECNominal",   &p_JJEW_BKG_MCFM_JECNominal_);  
+  theTree->Branch("p_JJEW_BKG_MCFM_JECUp",        &p_JJEW_BKG_MCFM_JECUp_);     
+  theTree->Branch("p_JJEW_BKG_MCFM_JECDn",        &p_JJEW_BKG_MCFM_JECDn_);     
+  
 
-}
+     }
 
 void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
 {
@@ -331,25 +343,32 @@ void TreePlanter::initTree(){
   kFactor_EWKqqZZ_  = 1.;
 
 
-   LHEPDFScale_ = 0;
-   LHEweight_QCDscale_muR1_muF1_ = 0;
-   LHEweight_QCDscale_muR1_muF2_ = 0;
-   LHEweight_QCDscale_muR1_muF0p5_ = 0;
-   LHEweight_QCDscale_muR2_muF1_ = 0;
-   LHEweight_QCDscale_muR2_muF2_ = 0;
-   LHEweight_QCDscale_muR2_muF0p5_ = 0;
-   LHEweight_QCDscale_muR0p5_muF1_ = 0;
-   LHEweight_QCDscale_muR0p5_muF2_ = 0;
-   LHEweight_QCDscale_muR0p5_muF0p5_ = 0;  
-   LHEweight_PDFVariation_Up_ = 0;
-   LHEweight_PDFVariation_Dn_ = 0;
-   LHEweight_AsMZ_Up_ = 0;
-   LHEweight_AsMZ_Dn_ = 0;
-
+  LHEPDFScale_ = 0;
+  LHEweight_QCDscale_muR1_muF1_ = 0;
+  LHEweight_QCDscale_muR1_muF2_ = 0;
+  LHEweight_QCDscale_muR1_muF0p5_ = 0;
+  LHEweight_QCDscale_muR2_muF1_ = 0;
+  LHEweight_QCDscale_muR2_muF2_ = 0;
+  LHEweight_QCDscale_muR2_muF0p5_ = 0;
+  LHEweight_QCDscale_muR0p5_muF1_ = 0;
+  LHEweight_QCDscale_muR0p5_muF2_ = 0;
+  LHEweight_QCDscale_muR0p5_muF0p5_ = 0;  
+  LHEweight_PDFVariation_Up_ = 0;
+  LHEweight_PDFVariation_Dn_ = 0;
+  LHEweight_AsMZ_Up_ = 0;
+  LHEweight_AsMZ_Dn_ = 0;
+  
+  p_JJVBF_BKG_MCFM_JECNominal_ = 0.;
+  p_JJQCD_BKG_MCFM_JECNominal_ = 0.;
+  p_JJVBF_BKG_MCFM_JECUp_ = 0.;     
+  p_JJQCD_BKG_MCFM_JECUp_ = 0.;     
+  p_JJVBF_BKG_MCFM_JECDn_ = 0.;     
+  p_JJQCD_BKG_MCFM_JECDn_ = 0.;     
+  p_JJEW_BKG_MCFM_JECNominal_ = 0.;  
+  p_JJEW_BKG_MCFM_JECUp_ = 0.;     
+  p_JJEW_BKG_MCFM_JECDn_ = 0.;     
 
 }
-
-
 bool TreePlanter::fillEventInfo(const edm::Event& event){
   // Fill some info abut acceptance before cutting away events. Beware: if the signal is defined a-posteriori, we will have a problem. For that case, we need to
   // explicitly check here that we are counting signal and not irreducible background.
@@ -502,8 +521,8 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
 
 
-
   // LHE information
+  if(isMC_){
   edm::Handle<LHEEventProduct> lhe_evt;
   vector<edm::Handle<LHEEventProduct> > lhe_handles;
   event.getManyByType(lhe_handles);
@@ -529,9 +548,10 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
     LHEweight_AsMZ_Dn_ = lheHandler->getLHEWeigh_AsMZUpDn(-1, 1.);
 
     lheHandler->clear();
+
   }
 
-
+}
 
 
 
@@ -597,6 +617,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
     
   if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();     
   else if(ZL_.empty() && applySkim_) return;
+
   theTree->Fill();
 
 }
@@ -742,7 +763,29 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   
   phys::Boson<phys::Lepton> V0;
   phys::Boson<phys::Lepton> V1;
-  
+
+
+  p_JJVBF_BKG_MCFM_JECNominal_ = edmVV.userFloat("p_JJVBF_BKG_MCFM_JECNominal");
+  p_JJQCD_BKG_MCFM_JECNominal_ = edmVV.userFloat("p_JJQCD_BKG_MCFM_JECNominal");
+  p_JJVBF_BKG_MCFM_JECUp_      = edmVV.userFloat("p_JJVBF_BKG_MCFM_JECUp"     );
+  p_JJQCD_BKG_MCFM_JECUp_      = edmVV.userFloat("p_JJQCD_BKG_MCFM_JECUp"     );
+  p_JJVBF_BKG_MCFM_JECDn_      = edmVV.userFloat("p_JJVBF_BKG_MCFM_JECDn"     );
+  p_JJQCD_BKG_MCFM_JECDn_      = edmVV.userFloat("p_JJQCD_BKG_MCFM_JECDn"     );
+  p_JJEW_BKG_MCFM_JECNominal_  = edmVV.userFloat("p_JJEW_BKG_MCFM_JECNominal" );
+  p_JJEW_BKG_MCFM_JECUp_       = edmVV.userFloat("p_JJEW_BKG_MCFM_JECUp"      );
+  p_JJEW_BKG_MCFM_JECDn_       = edmVV.userFloat("p_JJEW_BKG_MCFM_JECDn"      );
+     
+  // cout<<"zz userfloat "<<edmVV.userFloat("p_JJVBF_BKG_MCFM_JECNominal")<<endl;
+  // cout<<"zz userfloat "<<edmVV.userFloat("p_JJQCD_BKG_MCFM_JECNominal")<<endl;
+  // cout<<"zz userfloat "<<edmVV.userFloat("p_JJVBF_BKG_MCFM_JECUp"     )<<endl;
+  // cout<<"zz userfloat "<<edmVV.userFloat("p_JJQCD_BKG_MCFM_JECUp"     )<<endl;
+  // cout<<"zz userfloat "<<edmVV.userFloat("p_JJVBF_BKG_MCFM_JECDn"     )<<endl;
+  // cout<<"zz userfloat "<<edmVV.userFloat("p_JJQCD_BKG_MCFM_JECDn"     )<<endl;
+  // cout<<"zz userfloat ew "<<edmVV.userFloat("p_JJEW_BKG_MCFM_JECNominal"     )<<endl;
+  // cout<<"zz userfloat ew "<<edmVV.userFloat("p_JJEW_BKG_MCFM_JECUp"          )<<endl;
+  // cout<<"zz userfloat ew "<<edmVV.userFloat("p_JJEW_BKG_MCFM_JECDn"          )<<endl;
+
+
   // The first boson is always a good Z, also in the CR. For the other particle assign 23 if it is a true Z from SR
   // or 26 if the two additional leptons comes from LL.
 
@@ -775,9 +818,10 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   VV.regionWord_  = regionWord;
   VV.triggerWord_ = triggerWord_;
   VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
-  
+ 
+
   return VV;
-}
+} //filldibosons end
 
 
 
@@ -907,8 +951,6 @@ int TreePlanter::computeRegionFlag(const pat::CompositeCandidate & vv) const{
   }
   return REGIONFLAG;
 }
-
-
 
 #include "FWCore/Framework/interface/MakerMacros.h"
 // ---- define this as a plug-in ----------------------------------------
