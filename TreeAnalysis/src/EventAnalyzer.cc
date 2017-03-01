@@ -138,6 +138,24 @@ void EventAnalyzer::Init(TTree *tree)
   b_kFactor_qqZZPt   =0;  theTree->SetBranchAddress("kFactor_qqZZPt"  ,  &kFactor_qqZZPt        , &b_kFactor_qqZZPt);
   b_kFactor_qqZZdPhi =0;  theTree->SetBranchAddress("kFactor_qqZZdPhi",  &kFactor_qqZZdPhi      , &b_kFactor_qqZZdPhi);
   b_kFactor_EWKqqZZ  =0;  theTree->SetBranchAddress("kFactor_EWKqqZZ" ,  &kFactor_EWKqqZZ       , &b_kFactor_EWKqqZZ);
+
+  //theretican uncertainties
+
+  b_LHEPDFScale                       =0; theTree->SetBranchAddress("LHEPDFScale"                     , &LHEPDFScale                      , &b_LHEPDFScale                     );
+  b_LHEweight_QCDscale_muR1_muF1      =0; theTree->SetBranchAddress("LHEweight_QCDscale_muR1_muF1"    , &LHEweight_QCDscale_muR1_muF1     , &b_LHEweight_QCDscale_muR1_muF1    );
+  b_LHEweight_QCDscale_muR1_muF2      =0; theTree->SetBranchAddress("LHEweight_QCDscale_muR1_muF2"    , &LHEweight_QCDscale_muR1_muF2     , &b_LHEweight_QCDscale_muR1_muF2    );
+  b_LHEweight_QCDscale_muR1_muF0p5    =0; theTree->SetBranchAddress("LHEweight_QCDscale_muR1_muF0p5"  , &LHEweight_QCDscale_muR1_muF0p5   , &b_LHEweight_QCDscale_muR1_muF0p5  );
+  b_LHEweight_QCDscale_muR2_muF1      =0; theTree->SetBranchAddress("LHEweight_QCDscale_muR2_muF1"    , &LHEweight_QCDscale_muR2_muF1     , &b_LHEweight_QCDscale_muR2_muF1    );
+  b_LHEweight_QCDscale_muR2_muF2      =0; theTree->SetBranchAddress("LHEweight_QCDscale_muR2_muF2"    , &LHEweight_QCDscale_muR2_muF2     , &b_LHEweight_QCDscale_muR2_muF2    );
+  b_LHEweight_QCDscale_muR2_muF0p5    =0; theTree->SetBranchAddress("LHEweight_QCDscale_muR2_muF0p5"  , &LHEweight_QCDscale_muR2_muF0p5   , &b_LHEweight_QCDscale_muR2_muF0p5  );
+  b_LHEweight_QCDscale_muR0p5_muF1    =0; theTree->SetBranchAddress("LHEweight_QCDscale_muR0p5_muF1"  , &LHEweight_QCDscale_muR0p5_muF1   , &b_LHEweight_QCDscale_muR0p5_muF1  );
+  b_LHEweight_QCDscale_muR0p5_muF2    =0; theTree->SetBranchAddress("LHEweight_QCDscale_muR0p5_muF2"  , &LHEweight_QCDscale_muR0p5_muF2   , &b_LHEweight_QCDscale_muR0p5_muF2  );
+  b_LHEweight_QCDscale_muR0p5_muF0p5  =0; theTree->SetBranchAddress("LHEweight_QCDscale_muR0p5_muF0p5", &LHEweight_QCDscale_muR0p5_muF0p5 , &b_LHEweight_QCDscale_muR0p5_muF0p5);
+  b_LHEweight_PDFVariation_Up         =0; theTree->SetBranchAddress("LHEweight_PDFVariation_Up"       , &LHEweight_PDFVariation_Up        , &b_LHEweight_PDFVariation_Up       );
+  b_LHEweight_PDFVariation_Dn         =0; theTree->SetBranchAddress("LHEweight_PDFVariation_Dn"       , &LHEweight_PDFVariation_Dn        , &b_LHEweight_PDFVariation_Dn       );
+  b_LHEweight_AsMZ_Up                 =0; theTree->SetBranchAddress("LHEweight_AsMZ_Up"               , &LHEweight_AsMZ_Up                , &b_LHEweight_AsMZ_Up               );
+  b_LHEweight_AsMZ_Dn                 =0; theTree->SetBranchAddress("LHEweight_AsMZ_Dn"               , &LHEweight_AsMZ_Dn                , &b_LHEweight_AsMZ_Dn               );
+  
   
 }
 
