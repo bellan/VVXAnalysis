@@ -38,6 +38,8 @@ else:
     elif  Type == "mZ2":    Index = 6
     elif  Type == "jet1pt": Index = 8
     elif  Type == "jet2pt": Index = 9
+    elif  Type == "mjj":    Index = 10
+    elif  Type == "weight": Index = 11
     elif  Type != "":       sys.exit("wrong type, look option in help -h")
 
 def channels(listIn):
