@@ -54,22 +54,39 @@ Data ,,                    -1,   ,, ,, ,,,,# To run merge of data
 
 ##Official Spring 2016 samples##,,,,,,,,,,,  
 
+## qq 4l samples##,,,,,,,,,,,  
+
 ZZTo4l         ,qq_ZZ,    1.256,       ,,/ZZTo4L_13TeV_powheg_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True;SKIM_REQUIRED=False APPLYTRIG=False ,RecoProbabilities_VBS.py,
 ZZTo4lamcatnlo ,qq_ZZ,    1.212,       ,,/ZZTo4L_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM,dbs,,4,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py, 
 
+ZZTo4laTGC       ,qq_4l,   0.455985,   ,,/ZZTo4L_13TeV-sherpa/RunIISummer16MiniAODv2-PUMoriond17_v2_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
 
-#ZZTo4eJJ       ,qq_4l2j,  4.180E-04,   ,,/VBFToHiggs0PMContinToZZTo4eJJ_M125_GaSM_13TeV_phantom_pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
-#ZZTo4muJJ      ,qq_4l2j,  4.180E-04,   ,,/VBFToHiggs0PMContinToZZTo4muJJ_M125_GaSM_13TeV_phantom_pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
-#ZZTo2e2muJJ    ,qq_4l2j,  8.357E-04, ,,/VBFToHiggs0PMContinToZZTo2e2muJJ_M125_GaSM_13TeV_phantom_pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
+
+#ggZZ2e2mu      ,gg_4l,     0.00380717 ,  ,,/GluGluToHiggs0MContinToZZTo2e2mu_M125_GaSM_13TeV_MCFM701_pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
+#ggZZ4mu        ,gg_4l,     0.00192701,   ,,/GluGluToHiggs0MContinToZZTo4mu_M125_GaSM_13TeV_MCFM701_pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
+#ggZZ4e         ,gg_4l,     0.00192701,  ,,/GluGluToHiggs0MContinToZZTo4e_M125_GaSM_13TeV_MCFM701_pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
+
+
+ggZZ2e2mu      ,gg_4l,     0.00319364 , ,,/GluGluToContinZZTo2e2mu_13TeV_DefaultShower_MCFM701_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v2/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
+ggZZ4mu        ,gg_4l,     0.001586,   ,,/GluGluToContinToZZTo4mu_13TeV_DefaultShower_MCFM701_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v2/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
+ggZZ4e         ,gg_4l,     0.001586,   ,,/GluGluToContinToZZTo4e_13TeV_DefaultShower_MCFM701_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v2/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
+
+ggH            ,h,       0.01212 , ,,/GluGluHToZZTo4L_M125_13TeV_powheg2_JHUgenV6_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
+
+
+## EWK samples##,,,,,,,,,,,  
+
+
+ZZTo4eJJ       ,qq_4l2j,  4.180E-04,   ,,/VBFToHiggs0PMContinToZZTo4eJJ_M125_GaSM_13TeV_phantom_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
+ZZTo4muJJ      ,qq_4l2j,  4.180E-04,   ,,/VBFToHiggs0PMContinToZZTo4muJJ_M125_GaSM_13TeV_phantom_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
+ZZTo2e2muJJ    ,qq_4l2j,  8.357E-04, ,,//VBFToHiggs0PMContinToZZTo2e2muJJ_M125_GaSM_13TeV_phantom_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
+
+#ZZTo4l_onshell  ,qq_4l,   -1,   ,,/ZZTo4L_*Jets_ZZOnShell_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
 
 #ZZJJTo4L       ,,          0.00974,      ,,/ZZJJTo4L_13TeV-madgraph-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
 ZZJJTo4L_ewk   ,,          0.0004404,    ,,/ZZJJTo4L_EWK_13TeV-madgraph-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
 ZZJJTo4L_qcd   ,,          0.009335,     ,,/ZZJJTo4L_QCD_13TeV-madgraph-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
 
-
-ggZZ2e2mu      ,gg_4l,     0.00380717 ,  ,,/GluGluToHiggs0MContinToZZTo2e2mu_M125_GaSM_13TeV_MCFM701_pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
-#ggZZ4mu        ,gg_4l,     0.00192701,   ,,/GluGluToHiggs0MContinToZZTo4mu_M125_GaSM_13TeV_MCFM701_pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
-#ggZZ4e         ,gg_4l,     0.00192701,  ,,/GluGluToHiggs0MContinToZZTo4e_M125_GaSM_13TeV_MCFM701_pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,RecoProbabilities_VBS.py,
 
 
 #Other signal processes##,,,,,,,,,,,  
@@ -80,20 +97,20 @@ ggZZ2e2mu      ,gg_4l,     0.00380717 ,  ,,/GluGluToHiggs0MContinToZZTo2e2mu_M12
 #Reducible background##,,,,,,,,,,,  
 
 DYJetsToLL_M50  ,Z,        5765.4,      ,,/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v2/MINIAODSIM,dbs,,4,PROCESS_CR=True,RecoProbabilities_VBS.py,
-TTTo2L2Nu       ,tt,       87.31,       ,,/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM ,dbs,,4,PROCESS_CR=True; APPLYTRIG=False ,RecoProbabilities_VBS.py, 
-TTJets          ,tt,       670.3,      ,,/TTJets_TuneCUETP8M2T4_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_backup_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True; ,RecoProbabilities_VBS.py,			     
+#TTTo2L2Nu       ,tt,       87.31,       ,,/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM ,dbs,,4,PROCESS_CR=True; APPLYTRIG=False ,RecoProbabilities_VBS.py, 
+TTJets          ,tt,       670.3,      ,,/TTJets_TuneCUETP8M2T4_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_backup_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True; ,RecoProbabilities_VBS.py, #Inclusive. xsec might be ~830. sources disagree
 #TTWJets        ,tt,       -1,          ,,/TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True; APPLYTRIG=False,RecoProbabilities_VBS.py, 
 #TTGJets        ,tt,       -1,          ,,/TTGJets_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True; APPLYTRIG=False,RecoProbabilities_VBS.py, 
 #WWW            ,triboson, -1,          ,,/WWW_4F_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True; APPLYTRIG=False,RecoProbabilities_VBS.py, 
 
 #WZ              ,WZ,       4.42965,     ,,/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True; ,RecoProbabilities_VBS.py,
 WZ               ,WZ,       4.71,        ,,/WZTo3LNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True,RecoProbabilities_VBS.py,
-#ZGTo2LG         ,ZG,       117.864,     ,,/ZGTo2LG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True; APPLYTRIG=False,RecoProbabilities_VBS.py, 
+
 
 ## Irreducible background ##,,,,,,,,,,,  
 
-TTZToLL         ,Irr,      -1,          ,,/TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM,dbs,,4,PROCESS_CR=False; APPLYTRIG=False,RecoProbabilities_VBS.py, 
-WWZ             ,Irr,      -1,          ,,/WWZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,4,PROCESS_CR=False; APPLYTRIG=False,RecoProbabilities_VBS.py, 
+TTZToLL         ,Irr,      0.2529,          ,,/TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM,dbs,,4,PROCESS_CR=False; APPLYTRIG=False,RecoProbabilities_VBS.py, 
+WWZ             ,Irr,      0.1651,          ,,/WWZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,4,PROCESS_CR=False; APPLYTRIG=False,RecoProbabilities_VBS.py, 
 
 ##For test##,,,,,,,,,,,  
 
