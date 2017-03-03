@@ -260,9 +260,48 @@ process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTa
 # Looser preselection: ask only for a at least a Z + 1 soft lepton
 #process.zlCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZlCand"), minNumber = cms.uint32(1))
 
+
+
+
+
+
+
+### If it is MC, run also the signal definition path
+if IsMC:
+    # Empty sequence to attach the signal filter (if specified in the CSV file)
+    process.mcSelectionCounter = cms.EDProducer("EventCountProducer") # not really needeed... it is mainly an hack to get the path executed
+    process.signalFilters = cms.Sequence(process.mcSelectionCounter) 
+    process.mcSelection   = cms.Path(process.signalFilters)
+    MCFILTER = "mcSelection"
+
+    genCategory =  cms.EDFilter("ZZGenFilterCategory",
+                                Topology       = cms.int32(SIGNALDEFINITION), 
+                                ParticleStatus = cms.int32(1), 
+                                src            = cms.InputTag("prunedGenParticles"),
+                                GenJets        = cms.InputTag("slimmedGenJets"),
+                                )
+    process.genCategory = genCategory
+
+    process.kFactor = cms.EDProducer('kfactorProducer',
+                                     isMC  = cms.untracked.bool(IsMC),
+                                     src            = cms.InputTag("prunedGenParticles"))
+    
+ 
+    process.signalCounter    = cms.EDProducer("EventCountProducer")
+    process.signalDefinition = cms.Path(process.genCategory * process.kFactor * process.signalCounter)
+
+
+
+
+
+
+
+
 process.zzAndzlFilterCombiner = cms.EDFilter("ZLFilter", ZLL = cms.InputTag("ZZFiltered"), ZL = cms.InputTag("ZlCand"),
+                                             isMC         = cms.untracked.bool(IsMC),                                            
                                              ZLSelection = cms.string("((daughter(0).daughter(0).pt > 20 && daughter(0).daughter(1).pt > 10) || (daughter(0).daughter(0).pt() > 10 && daughter(0).daughter(1).pt > 20)) && abs(daughter(0).mass -91.19) <= 10") # Add SIP cut here and remove it in eventanalyzer.cc
-                                             )
+                                             #is MC, topology,  SR, CRs,  
+                                                               )
 
 
 ### Path that pre-select the higher level objects that will input the TreePlanter
@@ -300,29 +339,6 @@ process.candSRFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("c
 process.sr           = cms.Path(process.candSR * process.candSRFilter)
 process.srCounter    = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("sr","preselection","zzTrigger"))
 
-### If it is MC, run also the signal definition path
-if IsMC:
-    # Empty sequence to attach the signal filter (if specified in the CSV file)
-    process.mcSelectionCounter = cms.EDProducer("EventCountProducer") # not really needeed... it is mainly an hack to get the path executed
-    process.signalFilters = cms.Sequence(process.mcSelectionCounter) 
-    process.mcSelection   = cms.Path(process.signalFilters)
-    MCFILTER = "mcSelection"
-
-    genCategory =  cms.EDFilter("ZZGenFilterCategory",
-                                Topology       = cms.int32(SIGNALDEFINITION), 
-                                ParticleStatus = cms.int32(1), 
-                                src            = cms.InputTag("prunedGenParticles"),
-                                GenJets        = cms.InputTag("slimmedGenJets"),
-                                )
-    process.genCategory = genCategory
-
-    process.kFactor = cms.EDProducer('kfactorProducer',
-                                     isMC  = cms.untracked.bool(IsMC),
-                                     src            = cms.InputTag("prunedGenParticles"))
-    
- 
-    process.signalCounter    = cms.EDProducer("EventCountProducer")
-    process.signalDefinition = cms.Path(process.genCategory * process.kFactor * process.signalCounter)
 
 
 ### ------------------------------------------------------------------------- ###
@@ -389,7 +405,7 @@ process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
 
      electronSrcs = cms.PSet(
         slimmedElectron        = cms.InputTag("slimmedElectrons"),
-       calibratedPatElectrons = cms.InputTag("calibratedPatElectrons"),
+        calibratedPatElectrons = cms.InputTag("calibratedPatElectrons"),
         electrons              = cms.InputTag("appendPhotons:electrons"),
         postCleaningElectrons  = cms.InputTag("postCleaningElectrons")
      ),
