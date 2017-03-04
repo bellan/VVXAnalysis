@@ -45,6 +45,7 @@ private:
   StringCutObjectSelector<pat::CompositeCandidate> selectionZL_;
 
   bool isMC_;
+ 
 
 };
 
