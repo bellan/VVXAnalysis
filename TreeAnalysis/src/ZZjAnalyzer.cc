@@ -117,9 +117,9 @@ void ZZjAnalyzer::ZZplots(int id){
   else{
     eventStr+=":-1.00:-1.00";
   }
-  cout<<" theweight "<<theWeight<<" SF "<<ZZ->efficiencySF()<<" PU "<<theMCInfo.puWeight()<<endl;
+  //  cout<<" theweight "<<theWeight<<" SF "<<ZZ->efficiencySF()<<" PU "<<theMCInfo.puWeight()<<endl;
   eventStr+=":";
-  eventStr+=strtool::sRound(ZZ->efficiencySF()*theMCInfo.puWeight());
+  eventStr+=strtool::sRound(ZZ->efficiencySF()*theMCInfo.puWeight(),".4");
 
    if(nJets>1) {
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet2"      , "#p_{T} of the second  most energetic jet"            ,  100, 20, 400,jets->at(1).pt(), theWeight);     
