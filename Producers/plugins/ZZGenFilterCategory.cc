@@ -138,7 +138,7 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
     event.getByToken(genJetsToken_,  genJetsH);
     
     foreach(const reco::GenJet& jet, *genJetsH)
-      if(jet.pt() > 30 && fabs(jet.eta()) < 4.7)
+      if(jet.pt() > 20 && fabs(jet.eta()) < 4.7) //pt not set to 30 in order to make study on jets.
 	genJets.push_back(phys::Particle(jet.p4(), phys::Particle::computeCharge(jet.pdgId()), jet.pdgId()));
 
     //cout << "# Leptons: " << genLeptons.size() << " # genjets:  " << genJets.size() << endl;     

@@ -427,8 +427,6 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   // Check Skim requests
   passSkim_ = filterController_.passSkim(event, triggerWord_);
 
-  if (applySkim_    && !passSkim_)   return false;
-
   run_       = event.id().run();
   event_     = event.id().event(); 
   lumiBlock_ = event.luminosityBlock();
@@ -459,7 +457,6 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     if( event.getByToken( thekfactorToken_qqZZdPhi,  kFactorHandle_qqZZdPhi))  kFactor_qqZZdPhi_ = *kFactorHandle_qqZZdPhi;
     if( event.getByToken( thekfactorToken_EWKqqZZ ,  kFactorHandle_EWKqqZZ ))  kFactor_EWKqqZZ_  = *kFactorHandle_EWKqqZZ ;
 
-    
 
     for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p){ 
       //      std::cout<<"id "<<p->pdgId()<<" status "<<p->status()<<std::endl;
@@ -500,7 +497,6 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
     for(edm::View<reco::Candidate>::const_iterator jet = genJets->begin(); jet != genJets->end(); ++jet)
       genJets_.push_back(phys::Particle(jet->p4(), phys::Particle::computeCharge(jet->pdgId()), jet->pdgId()));
   }
-
   return true;
 }
 
@@ -508,6 +504,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
   initTree();
   bool goodEvent = fillEventInfo(event);
+
   if(!goodEvent) return;
   ++theNumberOfAnalyzedEvents;
 
@@ -518,7 +515,6 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   edm::Handle<edm::View<pat::CompositeCandidate> > Vhad ; event.getByToken(theVhadToken    ,      Vhad);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZZ   ; event.getByToken(theZZToken      ,        ZZ);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZL   ; event.getByToken(theZLToken      ,        ZL);
-
 
 
   // LHE information
@@ -552,7 +548,6 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   }
 
 }
-
 
 
 
@@ -616,7 +611,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   }
     
   if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();     
-  else if(ZL_.empty() && applySkim_) return;
+  else if( ZL_.empty() &&  !test_bit(genCategory_,2)  && applySkim_ ) return;
 
   theTree->Fill();
 
@@ -775,16 +770,6 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   p_JJEW_BKG_MCFM_JECUp_       = edmVV.userFloat("p_JJEW_BKG_MCFM_JECUp"      );
   p_JJEW_BKG_MCFM_JECDn_       = edmVV.userFloat("p_JJEW_BKG_MCFM_JECDn"      );
      
-  // cout<<"zz userfloat "<<edmVV.userFloat("p_JJVBF_BKG_MCFM_JECNominal")<<endl;
-  // cout<<"zz userfloat "<<edmVV.userFloat("p_JJQCD_BKG_MCFM_JECNominal")<<endl;
-  // cout<<"zz userfloat "<<edmVV.userFloat("p_JJVBF_BKG_MCFM_JECUp"     )<<endl;
-  // cout<<"zz userfloat "<<edmVV.userFloat("p_JJQCD_BKG_MCFM_JECUp"     )<<endl;
-  // cout<<"zz userfloat "<<edmVV.userFloat("p_JJVBF_BKG_MCFM_JECDn"     )<<endl;
-  // cout<<"zz userfloat "<<edmVV.userFloat("p_JJQCD_BKG_MCFM_JECDn"     )<<endl;
-  // cout<<"zz userfloat ew "<<edmVV.userFloat("p_JJEW_BKG_MCFM_JECNominal"     )<<endl;
-  // cout<<"zz userfloat ew "<<edmVV.userFloat("p_JJEW_BKG_MCFM_JECUp"          )<<endl;
-  // cout<<"zz userfloat ew "<<edmVV.userFloat("p_JJEW_BKG_MCFM_JECDn"          )<<endl;
-
 
   // The first boson is always a good Z, also in the CR. For the other particle assign 23 if it is a true Z from SR
   // or 26 if the two additional leptons comes from LL.
