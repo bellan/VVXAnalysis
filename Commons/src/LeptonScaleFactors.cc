@@ -18,23 +18,12 @@ LeptonScaleFactors::LeptonScaleFactors(const std::string& muonEffFilename, const
   hEffElCracks_ = dynamic_cast<TH2F*>(fEffElCracks->Get("EGamma_SF2D"));
   hEffElReco_   = dynamic_cast<TH2F*>(fEffElReco->Get("EGamma_SF2D"));
 
-  //2015
-  // hEffEl_       = dynamic_cast<TH2F*>(fEffEl->Get("hScaleFactors_IdIsoSip"));
-  // hEffElCracks_ = dynamic_cast<TH2F*>(fEffElCracks->Get("hScaleFactors_IdIsoSip_Cracks"));
 
   TFile *fFRMu = new TFile(muonFRFilename.c_str());
   TFile *fFREl = new TFile(electronFRFilename.c_str());
 
-  hFRMu_.first  = dynamic_cast<TH1F*>(fFRMu->Get("h1D_FRmu_EB"));                                                 
-  hFRMu_.second = dynamic_cast<TH1F*>(fFRMu->Get("h1D_FRmu_EE"));
-  hFREl_.first  = dynamic_cast<TH1F*>(fFREl->Get("h1D_FRel_EB"));
-  hFREl_.second = dynamic_cast<TH1F*>(fFREl->Get("h1D_FRel_EE"));
-
-  //TGraphAsym for binomial error
-  // grFRMu_.first  = dynamic_cast<TGraphAsymmErrors*>(fFRMu->Get("grFakeRate_NoWZ_h1D_FRmu_EB"));                                                 
-  // grFRMu_.second = dynamic_cast<TGraphAsymmErrors*>(fFRMu->Get("grFakeRate_NoWZ_h1D_FRmu_EE"));
-  // grFREl_.first  = dynamic_cast<TGraphAsymmErrors*>(fFREl->Get("grFakeRate_NoWZ_h1D_FRel_EB"));
-  // grFREl_.second = dynamic_cast<TGraphAsymmErrors*>(fFREl->Get("grFakeRate_NoWZ_h1D_FRel_EE"));
+  hFRMu_  = dynamic_cast<TH2F*>(fFRMu->Get("h1D_FRmu"));                                                 
+  hFREl_  = dynamic_cast<TH2F*>(fFREl->Get("h1D_FRel"));
 
 }
 
@@ -44,7 +33,6 @@ std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double
   std::string  year = "2017"; //To be added in argument constructor
 
   const TH2F *hDataMCSF = 0;
-  //  const TH2F *hDataMCSF_Unc = 0; del
 
   int xbin = -2;
   int ybin = -2;
@@ -127,41 +115,25 @@ std::pair<double,double> LeptonScaleFactors::fakeRateScaleFactor(const double& l
   
   double fakeRate    = 1.;
   double fakeRateUnc = 0.;
-  //  double  ptvalue = 0;  
-  Int_t bin = -1;
-  double pt  = lepPt < 200 ? lepPt : 199;
 
   if(abs(lepId) == 13){
-    if(fabs(lepEta) <= 1.2){
-      bin = hFRMu_.first->GetXaxis()->FindBin(pt);
-      fakeRate    = hFRMu_.first->GetBinContent(bin);
-      fakeRateUnc = hFRMu_.first->GetBinError(bin);
-    }
-    else{
-      bin = hFRMu_.second->GetXaxis()->FindBin(pt);
-      fakeRate    = hFRMu_.second->GetBinContent(bin);
-      fakeRateUnc = hFRMu_.second->GetBinError(bin);
-    }
+    double pt  = lepPt < 200 ? lepPt : 199;
+    fakeRate      =  hFRMu_->GetBinContent( hFRMu_->FindBin(fabs(lepEta),pt)); 
+    fakeRateUnc   =  hFRMu_->GetBinError( hFRMu_->FindBin(fabs(lepEta),pt)); 
   }
-  else if(abs(lepId) == 11){
-    if(fabs(lepEta) <= 1.45){
-      bin = hFREl_.first->GetXaxis()->FindBin(pt);
-      fakeRate    = hFREl_.first->GetBinContent(bin);
-      fakeRateUnc = hFREl_.first->GetBinError(bin);
-    }
-    else{
-      bin = hFREl_.second->GetXaxis()->FindBin(pt);
 
-      fakeRate    = hFREl_.second->GetBinContent(bin);
-      fakeRateUnc = hFREl_.second->GetBinError(bin);
-    }
+  else if (abs(lepId) == 11){
+  double pt  = lepPt < 80 ? lepPt : 79;
+  fakeRate   =  hFREl_->GetBinContent( hFREl_->FindBin(fabs(lepEta),pt)); 
+  fakeRateUnc   =  hFREl_->GetBinError( hFREl_->FindBin(fabs(lepEta),pt)); 
   }
+
   else {
     abort();
   }
   
   if(fakeRate < 0.001 || fakeRate > 10.)
-    std::cout << colour::Warning("Fake rate scale factor out of range") << " Lepton ID = " << lepId << ", pt =  " << pt << ", eta = " << lepEta << ", scale factor = " << fakeRate << std::endl;
+    std::cout << colour::Warning("Fake rate scale factor out of range") << " Lepton ID = " << lepId << ", pt =  " << lepPt << ", eta = " << lepEta << ", scale factor = " << fakeRate << std::endl;
 
   return std::make_pair(fakeRate/(1-fakeRate), fakeRateUnc/pow(1-fakeRate,2));
 }
