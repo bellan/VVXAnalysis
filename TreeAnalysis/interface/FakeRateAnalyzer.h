@@ -39,6 +39,7 @@ public:
 
   void ZZplots(int id = -1);
 
+  virtual void begin();
   virtual void end( TFile &);
   virtual void addOptions();
 
@@ -59,6 +60,10 @@ public:
   /*   return fabs(cand.p4().M() - ZMASS) < 15; */
   /* } */
 
+  std::vector<double> xbins_ele;
+  std::vector<double> ybins_ele;
+  std::vector<double> xbins_mu;
+  std::vector<double> ybins_mu;
 
 
   template< class PAR >
