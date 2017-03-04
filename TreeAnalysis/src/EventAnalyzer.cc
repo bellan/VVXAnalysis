@@ -245,7 +245,9 @@ addOptions();
   if(region_ == phys::CR3P1F_HZZ && !regionWord.test(23)) return 0;
 
  
-  if(!doSF)  theWeight = theMCInfo.weight(*ZZ);
+
+
+  if(!doSF || !theMCInfo.isMC() )  theWeight = theMCInfo.weight(*ZZ);
   else{
     
     theWeight = theMCInfo.weight();
@@ -267,8 +269,9 @@ addOptions();
     lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->second().daughterPtr(1));
     (ZZ->second().daughterPtr(1))->setEfficenySFUnc(lepSF.second);
     theWeight*=lepSF.first;
-    
-    if(region_ == phys::CR2P2F || region_ == phys::CR3P1F || region_ == phys::CR2P2F_HZZ || region_ == phys::CR3P1F_HZZ){
+  }
+
+  if(!doSF && (region_ == phys::CR2P2F || region_ == phys::CR3P1F || region_ == phys::CR2P2F_HZZ || region_ == phys::CR3P1F_HZZ)){
       
       //if(ZZ->first().daughterPtr(0)->passFullSel() && ZZ->first().daughterPtr(1)->passFullSel() && ZZ->second().daughterPtr(0)->passFullSel() && ZZ->second().daughterPtr(1)->passFullSel()) cout<<"alt   !!!"<<endl;
       
@@ -277,7 +280,6 @@ addOptions();
       if(!ZZ->second().daughterPtr(0)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(0))).first;
       if(!ZZ->second().daughterPtr(1)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(1))).first; 
     }
-  }
   
   theHistograms.fill("weight_full"  , "All weights applied"                                    , 1200, -2, 10, theWeight);
   theHistograms.fill("weight_bare"  , "All weights, but efficiency and fake rate scale factors", 1200, -2, 10, theMCInfo.weight());
