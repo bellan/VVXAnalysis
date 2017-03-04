@@ -3,6 +3,7 @@
 #include "VVXAnalysis/TreeAnalysis/interface/ZZWAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZSAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZjAnalyzer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/ZZjGenAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZWSRDefinition.h"
 //#include "VVXAnalysis/TreeAnalysis/interface/JetAnalyzer.h"
 //#include "VVXAnalysis/TreeAnalysis/interface/ZZSDataAnalyzer.h"
@@ -14,6 +15,7 @@ AnalysisFactory::AnalysisFactory(){
   Register("ZZWAnalyzer", &RegistrableAnalysis<ZZWAnalyzer>::create);
   Register("ZZSAnalyzer", &RegistrableAnalysis<ZZSAnalyzer>::create);
   Register("ZZjAnalyzer", &RegistrableAnalysis<ZZjAnalyzer>::create);
+  Register("ZZjGenAnalyzer", &RegistrableAnalysis<ZZjGenAnalyzer>::create);
   Register("ZZWSRDefinition", &RegistrableAnalysis<ZZWSRDefinition>::create);
   //Register("JetAnalyzer", &RegistrableAnalysis<JetAnalyzer>::create);
   //Register("ZZSDataAnalyzer", &RegistrableAnalysis<ZZSDataAnalyzer>::create); 
