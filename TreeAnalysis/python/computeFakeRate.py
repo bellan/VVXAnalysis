@@ -68,7 +68,8 @@ def write(particle,region,outname,fout):
     f = ROOT.TFile("results/FakeRateAnalyzer_MC/data.root")
     hn = f.Get("FakeRate_num_"+particle+"_"+region+"_pt")
     hd = f.Get("FakeRate_denom_"+particle+"_"+region+"_pt")
-    
+    print "FakeRate_num_"+particle+"_"+region+"_pt"
+   
     fWZ = ROOT.TFile("results/FakeRateAnalyzer_MC/WZ.root")
     hnWZ = fWZ.Get("FakeRate_num_"+particle+"_"+region+"_pt")
     hdWZ = fWZ.Get("FakeRate_denom_"+particle+"_"+region+"_pt")
@@ -131,6 +132,52 @@ def write(particle,region,outname,fout):
     hFake_NoWZ.Write("NoWZ_"+outname)
     grFake_NoWZ.Write("grFakeRate_NoWZ_"+outname)
 
+def write2D(particle,outname,fout):
+    f = ROOT.TFile("results/FakeRateAnalyzer_MC/data.root")
+    hn =   copy.deepcopy(f.Get("FakeRate_num_"+particle))
+    hd =   copy.deepcopy(f.Get("FakeRate_denom_"+particle))
+    
+    fWZ = ROOT.TFile("results/FakeRateAnalyzer_MC/WZ.root")
+    hnWZ = fWZ.Get("FakeRate_num_"+particle)
+    hdWZ = fWZ.Get("FakeRate_denom_"+particle)
+
+    hFake =  copy.deepcopy(hn)
+    hFake.Divide(hd)
+
+    hFake.SetName("hFakeRate_"+outname)   
+    hFake.SetTitle("hFakeRate_"+outname)
+    
+    
+#    hn.SetBinContent(Nbin+1,0)
+ #   hd.SetBinContent(Nbin+1,0) 
+
+    hn.Add(hnWZ,-1)
+    hd.Add(hdWZ,-1)
+   
+    hn.SetName("hFakeRate_"+outname+"_num")
+    hd.SetName("hFakeRate_"+outname+"_denom")
+ 
+    hn.Write("NoWZ_"+outname+"_num")
+    hd.Write("NoWZ_"+outname+"_den")
+ 
+    print "\ndata after WZ subtraction\n"
+  
+
+    hFake_NoWZ = copy.deepcopy(hn)
+#    hFake_NoWZ.Write("NoWZ_"+outname+"_num")
+
+
+    hFake_NoWZ.Divide(hd)
+
+    hFake_NoWZ.SetName("FakeRate_NoWZ_"+outname)
+    hFake_NoWZ.SetTitle("FakeRate_NoWZ_"+outname)
+       
+    fout.cd()
+
+    hFake.Write(outname)
+    hFake_NoWZ.Write("NoWZ_"+outname)
+  
+
 
 def write_MC(particle,region,outname,fout):
     print "\n",particle,region
@@ -190,6 +237,10 @@ fout_MC = ROOT.TFile("fakeRates_MC.root", "RECREATE")
 
 
 for particle in particles:
+    if particle == 'muons': p = 'mu'
+    if particle == 'electrons': p = 'el'
+    write2D(particle,'h1D_FR'+p,fout)
+
     for region in regions:
         p = ''
         r = ''
