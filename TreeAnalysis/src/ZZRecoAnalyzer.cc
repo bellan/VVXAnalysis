@@ -58,10 +58,11 @@ void ZZRecoAnalyzer::analyze(){
   if(ptzz>=300) ptzz = 299;
 
   Float_t w_kf = 1.;
+
   //  if((theMCInfo.fileName()=="ggZZ2e2mu") || (theMCInfo.fileName()=="ggZZ4e") || (theMCInfo.fileName()=="ggZZ4mu"))   w_kf = kFactor_ggZZ ; 
   //  else if((theMCInfo.fileName()=="ZZTo4l") || (theMCInfo.fileName()=="ZZTo4lamcatnlo")) w_kf = kFactor_qqZZM * kFactor_EWKqqZZ ; 
 
-  if((theMCInfo.fileName()=="ggZZ2e2mu") || (theMCInfo.fileName()=="ggZZ4e") || (theMCInfo.fileName()=="ggZZ4mu") || (theMCInfo.fileName()=="ggTo2e2mu_Contin_MCFM701") || (theMCInfo.fileName()=="ggTo4e_Contin_MCFM701") || (theMCInfo.fileName()=="ggTo4mu_Contin_MCFM701"))  w_kf = 1.7 ;
+  if((theMCInfo.fileName()=="ggZZ2e2mu") || (theMCInfo.fileName()=="ggZZ4e") || (theMCInfo.fileName()=="ggZZ4mu"))  w_kf = 1.7 ;
   else if(theMCInfo.fileName()=="ZZTo4l") w_kf = 1.1;
 
 
@@ -76,7 +77,7 @@ void ZZRecoAnalyzer::analyze(){
   if(!theMCInfo.isMC()){    
      
     foreach(const phys::Jet &dataJet, *pjets){
-      if(!dataJet.fullPuId()) continue;
+      //      if(!dataJet.fullPuId()) continue; //to activate Pu id
       double dataJetPt = 0;
       dataJetPt = dataJet.pt();
       
@@ -245,7 +246,7 @@ void ZZRecoAnalyzer::analyze(){
 
 
 
-    if((region_ == phys::SR && topology.test(1)) || (region_ == phys::SR_HZZ && topology.test(1))){
+    if((region_ == phys::SR && topology.test(3)) || (region_ == phys::SR_HZZ && topology.test(1))){
 
        inFiducialRegion ++;
        
@@ -255,7 +256,7 @@ void ZZRecoAnalyzer::analyze(){
        FillMatrixHistosJets(decay,theWeight,jets,genJets,"01_fr");
        FillMatrixHistosJets(decay,theWeight,jets,genJets,sample+"_fr");
 
-       FillMatrixHistosJets(decay,theWeight,jets,genJets,"Central_01_fr");
+       FillMatrixHistosJets(decay,theWeight,centralJets,centralGenJets,"Central_01_fr");
        FillMatrixHistosJets(decay,theWeight,centralJets,centralGenJets,"Central_"+sample+"_fr");
 
        FillMatrixHistosJets(decay,theWeight,UpJER_jets,genJets,"JERUpSmear_01_fr");
@@ -346,9 +347,8 @@ void ZZRecoAnalyzer::FillHistosJets(std::string decay,float Wh,std::vector<phys:
   
   njets =  jetsVec->size(); 
   
-  if (njets>3) njets=4;
-
-  theHistograms.fill("ZZTo"+decay+"_nJets_"+type, "", 5,0,5,njets, Wh);   
+  if (njets>3) njets=3;
+  theHistograms.fill("ZZTo"+decay+"_nJets_"+type, "", Xbins_nJets,njets, Wh);
   
   if(njets>0){  
   
@@ -405,10 +405,10 @@ void ZZRecoAnalyzer::FillMatrixHistosBase(std::string decay, float Wh,std::strin
 
    njets_gen = jetsGenVec->size();    
    njets     = jetsVec->size(); 
-   if (njets_gen>3) njets_gen=4;
-   if (njets>3)     njets=4;
-   
-   theHistograms.fill("ResMat_ZZTo"+decay+"_nJets_"+type, "", 5,0,5,5,0,5,njets,njets_gen, Wh);   
+   if (njets_gen>3) njets_gen=3;
+   if (njets>3)     njets=3;
+
+   theHistograms.fill("ResMat_ZZTo"+decay+"_nJets_"+type, "", Xbins_nJets,Xbins_nJets,njets,njets_gen, Wh);      
    if(njets>0) {
      stable_sort(jetsVec->begin(), jetsVec->end(), PtComparator());
      ptJet1 = jetsVec->at(0).pt();
@@ -517,6 +517,7 @@ void ZZRecoAnalyzer::begin() {
   Xbins_drzz += 0,1,2,3,4,5,6;
   Xbins_ptzz += 0,25,50,75,100,150,200,300;
   Xbins_dphizz += 0,1.5,2.,2.25,2.5,2.75,3,3.25;
+  Xbins_nJets += 0,1,2,3,4;
 
   m4L = 0; 
   drzz= 0;

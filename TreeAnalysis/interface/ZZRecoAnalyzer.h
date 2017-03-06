@@ -132,6 +132,7 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
   std::vector<double> Xbins_drzz; 
   std::vector<double> Xbins_ptzz;
   std::vector<double> Xbins_dphizz;
+  std::vector<double> Xbins_nJets;
  
   template< class PAR >
     bool ZBosonDefinition(phys::Boson<PAR> cand) const{
