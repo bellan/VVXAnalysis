@@ -9,6 +9,8 @@
 //#include "VVXAnalysis/TreeAnalysis/interface/ZZSDataAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZMCAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZRecoAnalyzer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/VBSMCAnalyzer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/VBSRecoAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/FakeRateAnalyzer.h"
 AnalysisFactory::AnalysisFactory(){
   Register("VVXAnalyzer", &RegistrableAnalysis<VVXAnalyzer>::create);
@@ -21,6 +23,8 @@ AnalysisFactory::AnalysisFactory(){
   //Register("ZZSDataAnalyzer", &RegistrableAnalysis<ZZSDataAnalyzer>::create); 
   Register("ZZMCAnalyzer", &RegistrableAnalysis<ZZMCAnalyzer>::create);
   Register("ZZRecoAnalyzer", &RegistrableAnalysis<ZZRecoAnalyzer>::create);
+  Register("VBSMCAnalyzer", &RegistrableAnalysis<VBSMCAnalyzer>::create);
+  Register("VBSRecoAnalyzer", &RegistrableAnalysis<VBSRecoAnalyzer>::create);
   Register("FakeRateAnalyzer", &RegistrableAnalysis<FakeRateAnalyzer>::create);
 }
 
