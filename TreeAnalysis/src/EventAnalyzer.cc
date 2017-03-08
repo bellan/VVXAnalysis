@@ -168,6 +168,7 @@ void EventAnalyzer::Init(TTree *tree)
 Int_t EventAnalyzer::GetEntry(Long64_t entry){
   // Read contents of entry.
   if (!theTree) return 0;
+
   int e =  theTree->GetEntry(entry);
 
   stable_sort(muons->begin(),     muons->end(),     phys::PtComparator());
@@ -201,7 +202,6 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
 	if(fabs(jet.eta()) < 2.4) centralGenJets->push_back(jet);
     }
   //}
-
 Vhad->clear();
 
 foreach(const phys::Boson<phys::Jet> v, *VhadCand)
@@ -228,6 +228,7 @@ if(region_ == phys::MC){
 
  stable_sort(Leps.begin(),     Leps.end(),     phys::PtComparator());
  
+
  if((abs(Leps.at(1).id())==11) && (Leps.at(1).pt()<12))  return 0;
 
 addOptions();
@@ -244,7 +245,6 @@ addOptions();
   if(region_ == phys::CR2P2F_HZZ && !regionWord.test(22)) return 0;
   if(region_ == phys::CR3P1F_HZZ && !regionWord.test(23)) return 0;
 
- 
 
 
   if(!doSF || !theMCInfo.isMC() )  theWeight = theMCInfo.weight(*ZZ);
@@ -271,14 +271,16 @@ addOptions();
     theWeight*=lepSF.first;
   }
 
-  if(!doSF && (region_ == phys::CR2P2F || region_ == phys::CR3P1F || region_ == phys::CR2P2F_HZZ || region_ == phys::CR3P1F_HZZ)){
+  if(doSF && (region_ == phys::CR2P2F || region_ == phys::CR3P1F || region_ == phys::CR2P2F_HZZ || region_ == phys::CR3P1F_HZZ)){
       
-      //if(ZZ->first().daughterPtr(0)->passFullSel() && ZZ->first().daughterPtr(1)->passFullSel() && ZZ->second().daughterPtr(0)->passFullSel() && ZZ->second().daughterPtr(1)->passFullSel()) cout<<"alt   !!!"<<endl;
+    //if(ZZ->first().daughterPtr(0)->passFullSel() && ZZ->first().daughterPtr(1)->passFullSel() && ZZ->second().daughterPtr(0)->passFullSel() && ZZ->second().daughterPtr(1)->passFullSel()) cout<<"alt   !!!"<<endl;
       
       if(!ZZ->first().daughterPtr(0)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(0))).first;	
       if(!ZZ->first().daughterPtr(1)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(1))).first;	
       if(!ZZ->second().daughterPtr(0)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(0))).first;
       if(!ZZ->second().daughterPtr(1)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(1))).first; 
+     
+      //      cout<<" id "<<ZZ->first().daughterPtr(0)->id()<<" pt "<<ZZ->first().daughterPtr(0)->pt()<<" eta "<<ZZ->first().daughterPtr(0)->eta()<<" fr "<<(leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(0))).first <<endl;
     }
   
   theHistograms.fill("weight_full"  , "All weights applied"                                    , 1200, -2, 10, theWeight);
@@ -300,7 +302,6 @@ addOptions();
 
 
 Long64_t EventAnalyzer::LoadTree(Long64_t entry){
-
   if (!theTree) return -5;
   Long64_t centry = theTree->LoadTree(entry);
   if (centry < 0) return centry;
@@ -324,7 +325,6 @@ void EventAnalyzer::loop(const std::string outputfile){
   begin();
 
   for (Long64_t jentry=0; jentry<nentries; ++jentry) {
-
     Long64_t ientry = LoadTree(jentry);
     if (ientry < 0) break;
     if (!GetEntry(jentry)) continue;
