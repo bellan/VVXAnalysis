@@ -503,7 +503,6 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
   initTree();
   bool goodEvent = fillEventInfo(event);
-
   if(!goodEvent) return;
   ++theNumberOfAnalyzedEvents;
 
@@ -545,7 +544,6 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
     lheHandler->clear();
 
   }
-
 }
 
 
@@ -587,15 +585,25 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   // Fill Z+l pairs for fake rate measurements
   ZL_ = fillZLCandidates(ZL);
 
+
+
+  
+
+  bool oneInSR = false;
+
   // FIXME
   if(ZZ->size() > 1) {
+
+    //  cout<<"ZZs.size() "<<ZZs.size()<<" ZZs.front().passTrigger() "<<ZZs.front().passTrigger()<<" applySkim_ "<<applySkim_<< " SR? " << test_bit(ZZs.front().regionWord_,Channel::ZZ) << " CR2P2F? " << test_bit(ZZs.front().regionWord_,CRZLLos_2P2F) << " CR3P1F? " << test_bit(ZZs.front().regionWord_,CRZLLos_3P1F) <<" mass "<< ZZs.front().mass() <<endl;;
+
+
     cout << "----------------------------------------------------" << endl;
     cout << "More than one ZZ candidate!! " << ZZ->size() << endl;  
     cout << "Event: " << event_ << endl;
     typedef phys::DiBoson<phys::Lepton,phys::Lepton> ZZlep;
     foreach(const ZZlep& zz , ZZs){
       cout << "....................." << endl;
-      cout << zz << " SR? " << test_bit(zz.regionWord_,Channel::ZZ) << " CR2P2F? " << test_bit(zz.regionWord_,CRZLLos_2P2F) << " CR3P1F? " << test_bit(zz.regionWord_,CRZLLos_3P1F) << endl;
+      cout << zz << " SR? " << test_bit(zz.regionWord_,Channel::ZZ) << " CR2P2F? " << test_bit(zz.regionWord_,CRZLLos_2P2F) << " CR3P1F? " << test_bit(zz.regionWord_,CRZLLos_3P1F) << " ZZOnShell " <<test_bit(zz.regionWord_,Channel::ZZOnShell)<<endl;
       cout << "daughter 0: "   << zz.first() << endl;
       cout << "daughter 0.1: " << zz.first().daughter(0) << " is good? " <<  zz.first().daughter(0).isGood() << " pass full sel? " << zz.first().daughter(0).passFullSel() <<  endl;
       cout << "daughter 0.1: " << zz.first().daughter(1) << " is good? " <<  zz.first().daughter(1).isGood() << " pass full sel? " << zz.first().daughter(1).passFullSel() <<  endl;
@@ -603,14 +611,31 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
       cout << "daughter 1.1: " << zz.second().daughter(0) << " is good? " <<  zz.second().daughter(0).isGood() << " pass full sel? " << zz.second().daughter(0).passFullSel() <<  endl;
       cout << "daughter 1.1: " << zz.second().daughter(1) << " is good? " <<  zz.second().daughter(1).isGood() << " pass full sel? " << zz.second().daughter(1).passFullSel() <<  endl;
       cout << "....................." << endl;
-      if(zz.passTrigger() && (test_bit(zz.regionWord_,Channel::ZZ) || test_bit(zz.regionWord_,Channel::ZZOnShell)))
-	ZZ_ = zz;      
+      
+      if(zz.passTrigger() && (test_bit(zz.regionWord_,Channel::ZZ) || test_bit(zz.regionWord_,Channel::ZZOnShell))){
+	
+	//if(!oneInSR)
+	//	else if((abs(zz.first().mass() - 91.19) < abs(ZZ_.first().mass() - 91.19)) || ( (zz.first().mass() == ZZ_.first().mass() ) && (zz.pt() > ZZ_.pt()) ) )  ZZ_ = zz;      	
+	ZZ_ = zz;   
+	oneInSR = true;
+
+      }
+      else if(!oneInSR){
+	//	cout<<" mass s "<<ZZ_.first().mass()<<" (abs(zz.first().mass() - 91.19) < abs(ZZ_.first().mass() - 91.19))  "<<(abs(zz.first().mass() - 91.19) < abs(ZZ_.first().mass() - 91.19))<<" | ( (zz.first().mass() == ZZ_.first().mass() ) && zz.second().pt() > ZZ_.second().pt() )  "<< ( (zz.first().mass() == ZZ_.first().mass() ) && zz.second().pt() > ZZ_.second().pt() ) <<endl;
+	if((abs(zz.first().mass() - 91.19) < abs(ZZ_.first().mass() - 91.19)) || ( (zz.first().mass() == ZZ_.first().mass() ) && (zz.pt() > ZZ_.pt()) ) ){
+	  //  cout<<" change Z CR"<<endl;
+	    ZZ_ = zz;      	
+	}
+      }
     }
+
+
+
+
     cout << "----------------------------------------------------" << endl;
   }
 
-
-  if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();
+  else if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();
   else if(isMC_ && ZL_.empty() && !test_bit(genCategory_,2) && applySkim_ ) return;
   else if(!isMC_  && ZL_.empty() && applySkim_ ) return;
 
