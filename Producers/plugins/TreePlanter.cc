@@ -421,7 +421,6 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   // asked to the specific final state
 
   passTrigger_ = filterController_.passTrigger(NONE, event, triggerWord_);
-
   if (applyTrigger_ && !passTrigger_) return false;
 
   // Check Skim requests
@@ -609,9 +608,11 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
     }
     cout << "----------------------------------------------------" << endl;
   }
-    
-  if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();     
-  else if( ZL_.empty() &&  !test_bit(genCategory_,2)  && applySkim_ ) return;
+
+
+  if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();
+  else if(isMC_ && ZL_.empty() && !test_bit(genCategory_,2) && applySkim_ ) return;
+  else if(!isMC_  && ZL_.empty() && applySkim_ ) return;
 
   theTree->Fill();
 
@@ -803,7 +804,6 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   VV.regionWord_  = regionWord;
   VV.triggerWord_ = triggerWord_;
   VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
- 
 
   return VV;
 } //filldibosons end
@@ -861,7 +861,6 @@ std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > TreePlanter::fillDiBosons
     }
     else {cout << "TreePlanter: unexpected diboson final state: " << rawchannel << " ... going to abort.. " << endl; abort();}
     
-    //    cout<<"physVV.isValid() "<<physVV.isValid()<<endl;
     if(physVV.isValid()) physDiBosons.push_back(physVV);
     
   }
