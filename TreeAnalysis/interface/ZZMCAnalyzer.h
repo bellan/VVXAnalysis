@@ -18,7 +18,7 @@ public:
     
   virtual ~ZZMCAnalyzer(){}
 
-  void ZZplots(std::string decay);
+  void FillHistosBase(std::string decay, float Wh, std::string type );
 
   virtual void analyze();
 
@@ -41,13 +41,24 @@ public:
   float w_kf;
   float dphizz_gen;
   float ptzz_gen;
+  Float_t scaleFacErrSq;
+  Float_t scaleFacMuErrSq;
+  Float_t scaleFacEleErrSq;
+
 
   int   njets;
   int   ncentraljets;
   int   PreCounter;
   int   inFiducialRegion;
   int   nEvent;
-  
+
+  std::string region;
+  std::string sample;
+
+  bool isTightFr;  
+  std::vector<Float_t>  ScalVarVal;
+  std::vector<std::string>  ScalVar;
+
  private:
 
   friend class Selector<ZZMCAnalyzer>;
