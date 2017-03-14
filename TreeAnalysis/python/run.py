@@ -156,6 +156,7 @@ def run(executable, analysis, typeofsample, region, luminosity, doSF):
 
     if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:4] == 'MuEG' or typeofsample[0:6] == 'Single' or typeofsample[0:4] == 'test' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:8] == 'DoubleEG':
 
+
         luminosity = -1
         isData = True
         
@@ -226,6 +227,7 @@ if typeofsample == 'all' or typeofsample == 'data':
     outputLocations = []
     for sample in typeofsamples:
         if typeofsample == 'all' or sample[0:8] == 'DoubleMu' or sample[0:9] == 'DoubleEle' or sample[0:4] == 'MuEG' or sample[0:9]== "SingleEle" or sample[0:8]== "SingleMu":
+
             if region == 'all':
                 for cr in regions:
                     run(executable, analysis, sample, cr, luminosity, doSF)    # runs over all samples in all control reagions
