@@ -10,12 +10,13 @@ Dir = sys.argv[3]
 
 isUnfold = ast.literal_eval(isUnfold)
 
-InfoType = ["Mass","nJets","nJets_Central","Mjj","Mjj_Central","Deta","Deta_Central","PtJet1","EtaJet1","PtJet2","EtaJet2","PtZZ"]
+InfoType = ["Mass","nJets","nJets_Central","Mjj","Mjj_Central","Deta","Deta_Central","PtJet1","EtaJet1","PtJet2","EtaJet2","PtZZ","dRZZ"]
+#InfoType = ["PtJet2","EtaJet2","PtZZ"]
 
 CmdDir = " -d "+Dir
 
 # Acceptance
-if What=="All" or What=="Acc" and not isUnfold: 
+if (What=="All" or What=="Acc") and not isUnfold: 
     Command = "./python/Acceptance.py -s "+CmdDir+" -t "
     for t in InfoType:
         print Blue("\n"+Command+t+CmdDir)
@@ -46,6 +47,12 @@ if What=="All" or What=="Cross":
                 os.system(Command+t+f+n+Unfold)
                 print Blue("\n"+Command+t+" -S Pow"+f+n+Unfold)
                 os.system(Command+t+" -S Pow"+f+n+Unfold)
+                if f==" -f":
+                    for n in (" -n  -l "," -l "):
+                        print Blue("\n"+Command+t+f+n+Unfold)
+                        os.system(Command+t+f+n+Unfold)
+                        print Blue("\n"+Command+t+" -S Pow"+f+n+Unfold)
+                        os.system(Command+t+" -S Pow"+f+n+Unfold)
 
 
 else: sys.exit("Choose betwewn, All, Acc, Set, Cross")
