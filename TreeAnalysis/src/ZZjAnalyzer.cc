@@ -62,7 +62,7 @@ void ZZjAnalyzer::ZZplots(int id){
   theHistograms.fill(std::string("ZZTo")+decay+"_Z1lep0_sip"         , std::string("sip of  Z1 lep0 of ZZ_{1}#rightarrow ")+decay            , 100, 0,4,ZZ->second().daughterPtr(0)->sip(),theWeight);
   theHistograms.fill(std::string("ZZTo")+decay+"_Z1lep1_sip"         , std::string("sip of  Z1 lep1 of ZZ_{1}#rightarrow ")+decay            , 100, 0,4,ZZ->second().daughterPtr(1)->sip(),theWeight);
   theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep0_pt"         , std::string("pt of  Z0 lep0 of ZZ_{1}#rightarrow ")+decay            ,  150, 0,  300,ZZ->first().daughterPtr(0)->pt(),theWeight);
- theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep1_pt"         , std::string("pt of  Z0 lep1 of ZZ_{1}#rightarrow ")+decay            ,  150, 0,  300,ZZ->first().daughterPtr(1)->pt(),theWeight);
+  theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep1_pt"         , std::string("pt of  Z0 lep1 of ZZ_{1}#rightarrow ")+decay            ,  150, 0,  300,ZZ->first().daughterPtr(1)->pt(),theWeight);
   theHistograms.fill(std::string("ZZTo")+decay+"_Z1lep0_pt"         , std::string("pt of  Z1 lep0 of ZZ_{1}#rightarrow ")+decay            ,  150, 0,  300,ZZ->second().daughterPtr(0)->pt(),theWeight);
   theHistograms.fill(std::string("ZZTo")+decay+"_Z1lep1_pt"         , std::string("pt of  Z1 lep1 of ZZ_{1}#rightarrow ")+decay            ,  150, 0,  300,ZZ->second().daughterPtr(1)->pt(),theWeight);
   theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep0_iso"         , std::string("iso of  Z0 lep0 of ZZ_{1}#rightarrow ")+decay            ,  60, 0, 0.6,ZZ->first().daughterPtr(0)->pfCombRelIsoFSRCorr(),theWeight);
@@ -100,6 +100,11 @@ void ZZjAnalyzer::ZZplots(int id){
     eventStr+=strtool::sRound(jets->at(0).pt());
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1"      , "#p_{T} of the most energetic jet"            ,  100, 20, 400,jets->at(0).pt(), theWeight);
     theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet1"      , "#eta  of the most energetic jet"            ,  100, -5, 5,jets->at(0).eta(), theWeight); 
+
+    if(abs(jets->at(0).eta()) > 2.4){
+    theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_noCentral"      , "#p_{T} of the most energetic jet"            ,  100, 20, 400,jets->at(0).pt(), theWeight);
+    theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet1_noCentral"      , "#eta  of the most energetic jet"            ,  100, -5, 5,jets->at(0).eta(), theWeight); 
+    }
   }
 
   else{
@@ -126,23 +131,30 @@ void ZZjAnalyzer::ZZplots(int id){
     theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet2"      , "#eta  of the second most energetic jet"            ,  100, -5, 5,jets->at(1).eta(), theWeight);     
     Float_t  mjj =  (jets->at(0).p4() + jets->at(1).p4()).M();
     Float_t  deta = fabs(jets->at(0).eta() - jets->at(1).eta());
+
     //  Float_t zZ1 = (jets->at(2).eta()-(jets->at(0).eta() + jets->at(1).eta()))/fabs(jets->at(0).eta() - jets ->at(1).eta());
     Float_t zZ1 = ZZ->first().eta()-(jets->at(0).eta() + jets->at(1).eta())/2;
-    Float_t zZ2 = ZZ->second().eta()-(jets->at(0).eta() + jets->at(1).eta())/2;
-        
+    Float_t zZ2 = ZZ->second().eta()-(jets->at(0).eta() + jets->at(1).eta())/2;        
     Float_t PtRatio = ((ZZ->first().p4()+ZZ->second().p4()+jets->at(0).p4()+jets->at(1).p4()).Pt())/(ZZ->first().pt()+ZZ->second().pt()+jets->at(0).pt()+jets->at(1).pt());
     Float_t PtJRatio = ((jets->at(0).p4()+jets->at(1).p4()).Pt())/(jets->at(0).pt()+jets->at(1).pt());
     Float_t Dphi = physmath::deltaPhi(jets->at(0).phi(),jets->at(1).phi());    
   
     theHistograms.fill(std::string("ZZTo")+decay+"_Dphi"     , "Delta phi of the two leading jets",  100, 0, 3.20, Dphi, theWeight); 
     theHistograms.fill("ZZTo"+decay+"_Mjj","Invariant mass of the two leading jet",100,0,900,mjj,theWeight);
-    theHistograms.fill("ZZTo"+decay+"_Deta","Delta eta of the two leading jet",30,0,6,deta,theWeight);
+    theHistograms.fill("ZZTo"+decay+"_Deta","Delta eta of the two leading jet",30,0,9,deta,theWeight);
+
     theHistograms.fill(std::string("ZZTo")+decay+"_ptRatio"      , "The ratio of transverse momentum of the vector sum of Z1, Z2, tj1, tj2 to the sum of pTs"        ,  50, 0, 0.8, PtRatio, theWeight); 
     theHistograms.fill(std::string("ZZTo")+decay+"_ptJRatio"      , "The ratio of transverse momentum of the vector sum of tj1, tj2 to the sum of pTs"        ,  50, 0, 1., PtJRatio, theWeight); 
     theHistograms.fill(std::string("ZZTo")+decay+"_Z1z"      , "Zeppenfeld Variable fo Z1 wrt the two leading jets"            ,  49, -6, 6, zZ1, theWeight);
     theHistograms.fill(std::string("ZZTo")+decay+"_Z2z"      , "Zeppenfeld Variable fo Z2 wrt the two leading jets"            ,  49, -6, 6, zZ2, theWeight); 
-    theHistograms.fill(std::string("ZZTo")+decay+"_deltaEtaJJ"      , "#Delta #eta(j,j) between the two most energetic jets"            ,  10, 0, 8, fabs(jets->at(0).eta() - jets->at(1).eta()), theWeight); 
+
     theHistograms.fill(std::string("ZZTo")+decay+"_deltaYJJ"           , "#Delta Y(j,j) between the two most energetic jets"            ,  10, 0, 8, fabs(jets->at(0).rapidity() - jets->at(1).rapidity()), theWeight); 
+
+    if(nJets==2) theHistograms.fill("ZZTo"+decay+"_Deta2Jet","Delta eta of the two leading jet",30,0,9,deta,theWeight);
+    if(nJets>2)  theHistograms.fill("ZZTo"+decay+"_Deta3Jet","Delta eta of the two leading jet",30,0,9,deta,theWeight);
+
+    if( (abs(jets->at(0).eta()) > 2.4) || (abs(jets->at(1).eta()) > 2.4) )    theHistograms.fill("ZZTo"+decay+"_Deta_1noCentral","Delta eta of the two leading jet",30,0,9,deta,theWeight); 
+    if( (abs(jets->at(0).eta()) > 2.4) && (abs(jets->at(1).eta()) > 2.4) )    theHistograms.fill("ZZTo"+decay+"_Deta_noCentral","Delta eta of the two leading jet",30,0,9,deta,theWeight); 
   }
     
 
@@ -165,7 +177,7 @@ void ZZjAnalyzer::ZZplots(int id){
 }
 
 void ZZjAnalyzer::analyze(){
-  
+
   std::string eventstr=std::to_string(run)+":"+std::to_string(lumiBlock)+":"+std::to_string(event);
 
 
@@ -304,6 +316,8 @@ if(
  
  
  if((abs(Leps.at(1).id())==11) && (Leps.at(1).pt()<12)) return;
+
+
    ZZplots();   // ZZ --> 4l
    ZZplots(48); // ZZ --> 2e2m
    ZZplots(44); // ZZ --> 4e
@@ -317,7 +331,7 @@ void ZZjAnalyzer::begin() {
 
   Xbins_pt += 20,30,50,100;
   Xbins_eta += 0,2.5,2.75,3.0,5.0;
-
+  myfile.open("example.txt",std::ios::app);
 }
 
 void ZZjAnalyzer::end( TFile &) {
@@ -331,7 +345,13 @@ void ZZjAnalyzer::end( TFile &) {
 
   cout<<"size "<<eventsFull.size()<<endl;
   std::sort (eventsFull.begin(), eventsFull.end(), strtool::sortEvents);
-  for (std::vector<std::string>::iterator it = eventsFull.begin() ; it != eventsFull.end(); ++it) std::cout<<*it<<std::endl;
+  for (std::vector<std::string>::iterator it = eventsFull.begin() ; it != eventsFull.end(); ++it){
+    //    std::cout<<*it<<std::endl;
+    myfile<<*it<<"\n";
+  }
+  cout<<myfile.good()<<endl;
+  myfile.close();
+  cout<<myfile.good()<<endl;
   std::cout<<"Final \neeee "<<events4e.size()<<std::endl<<"eemm "<<events2e2mu.size()<<std::endl<<"mmmm "<<events4mu.size()<<"\nsum "<<events4e.size()+events2e2mu.size()+events4mu.size()<<" total "<<events4l.size()<<std::endl;
     
 }

@@ -14,6 +14,9 @@
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
+#include <iostream>
+#include <fstream>
+
 class ZZjAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZjAnalyzer>{
 
 public:
@@ -34,6 +37,8 @@ public:
 
   std::vector<phys::Jet> *  noJerJets;
   std::vector<double>    *  noJerPt;
+
+  std::ofstream myfile;
 
  private:
   friend class Selector<ZZjAnalyzer>;
