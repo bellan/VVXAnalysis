@@ -120,12 +120,14 @@ std::pair<double,double> LeptonScaleFactors::fakeRateScaleFactor(const double& l
     double pt  = lepPt < 200 ? lepPt : 199;
     fakeRate      =  hFRMu_->GetBinContent( hFRMu_->FindBin(fabs(lepEta),pt)); 
     fakeRateUnc   =  hFRMu_->GetBinError( hFRMu_->FindBin(fabs(lepEta),pt)); 
+    //    std::cout<<"13  pt "<<pt<<" eta "<<fabs(lepEta)<<" "<<fakeRate/(1-fakeRate)<<std::endl;
   }
-
+  
   else if (abs(lepId) == 11){
-  double pt  = lepPt < 80 ? lepPt : 79;
-  fakeRate   =  hFREl_->GetBinContent( hFREl_->FindBin(fabs(lepEta),pt)); 
-  fakeRateUnc   =  hFREl_->GetBinError( hFREl_->FindBin(fabs(lepEta),pt)); 
+    double pt  = lepPt < 80 ? lepPt : 79;
+    fakeRate      =  hFREl_->GetBinContent( hFREl_->FindBin(fabs(lepEta),pt)); 
+    fakeRateUnc   =  hFREl_->GetBinError( hFREl_->FindBin(fabs(lepEta),pt)); 
+    //    std::cout<<"11  pt "<<pt<<" eta "<<fabs(lepEta)<<" "<<fakeRate/(1-fakeRate)<<std::endl;
   }
 
   else {
