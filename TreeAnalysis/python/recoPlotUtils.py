@@ -17,18 +17,21 @@ def GetTypeofsamples(category,Set):
     else: sys.exit("Wrong Set, choose pow or mad")
  
     signal_gg = [{"sample":'ggZZ4e',"color":ROOT.kAzure-5,"name":'gg #rightarrow ZZ(+jets)'},{"sample":'ggZZ2e2mu',"color":ROOT.kAzure-5,"name":'ZZ processes'},{"sample":'ggZZ4mu',"color":ROOT.kAzure-5,"name":'gg #rightarrow ZZ(+jets)'}]
+#    signal_gg = [{"sample":'ggTo4e_Contin_MCFM701',"color":ROOT.kAzure-5,"name":'gg #rightarrow ZZ(+jets)'},{"sample":'ggTo2e2mu_Contin_MCFM701',"color":ROOT.kAzure-5,"name":'ZZ processes'},{"sample":'ggTo4mu_Contin_MCFM701',"color":ROOT.kAzure-5,"name":'gg #rightarrow ZZ(+jets)'}]
     signal_VBS = [{"sample":'ZZTo4eJJ',"color":ROOT.kAzure-6,"name":'VBS'},{"sample":'ZZTo2e2muJJ',"color":ROOT.kAzure-6,"name":'VBS'},{"sample":'ZZTo4muJJ',"color":ROOT.kAzure-6,"name":'VBS'}]
+#    signal_VBS = [{"sample":'ZZJJTo4L_ewk',"color":ROOT.kAzure-6,"name":'VBS'}]
 
-#signal_others =  [{"sample":'ZH125',"color":ROOT.kAzure-6,"name":'other ZZ processes'},{"sample":'ZH125',"color":ROOT.kAzure-6,"name":'other ZZ processes'},}]#,{"sample":'ggH125',"color":ROOT.kAzure-6,"name":'other ZZ processes'},{"sample":'VBFH125',"color":ROOT.kAzure-6,"name":'other ZZ processes'}]
+#    signal_others =  [{"sample":'ZZZ',"color":ROOT.kAzure-7,"name":'other ZZ processes'},{"sample":'WZZ',"color":ROOT.kAzure-7,"name":'other ZZ processes'}]#,{"sample":'ggH125',"color":ROOT.kAzure-6,"name":'other ZZ processes'},{"sample":'VBFH125',"color":ROOT.kAzure-6,"name":'other ZZ processes'}]
     
-    #bkg_red = [{"sample":'WZ',"color":ROOT.kOrange,"name":'WZ'},{"sample":'TTTo2L2Nu2B',"color":ROOT.kRed-2,"name":'TT'},{"sample":'TTJets',"color":ROOT.kRed-2,"name":'TT'},{"sample":'DYJetsToLL_M50',"color":ROOT.kGreen-5,"name":'DY'}]
-    bkg_red = [{"sample":'WZ',"color":ROOT.kRed+2,"name":'WZ'},{"sample":'TTJets',"color":ROOT.kRed-4,"name":'TT'},{"sample":'TTWJets',"color":ROOT.kRed-4,"name":'TT'},{"sample":'TTGJets',"color":ROOT.kRed-4,"name":'TT'},{"sample":'DYJetsToLL_M50',"color":ROOT.kGreen-5,"name":'DY'},{"sample":'WWW',"color":ROOT.kMagenta,"name":'others'}]
+    signal_others =  [{"sample":'ggH',"color":ROOT.kAzure-7,"name":'higgs'}]
+
+    bkg_red = [{"sample":'WZ',"color":ROOT.kRed+2,"name":'WZ'},{"sample":'TTJets',"color":ROOT.kRed-4,"name":'TT'},{"sample":'TTWJets',"color":ROOT.kRed-4,"name":'TT'},{"sample":'TTGJets',"color":ROOT.kRed-4,"name":'TT'},{"sample":'WWW',"color":ROOT.kGreen-1,"name":'others'},{"sample":'DYJetsToLL_M50',"color":ROOT.kGreen-5,"name":'DY'}]
 
     bkg_irr = [{"sample":'WWZ',"color":ROOT.kOrange,"name":'WWZ'},{"sample":'TTZToLL',"color":ROOT.kOrange,"name":'TTZ'}]
     bkg_irr_divided = [{"sample":'WWZ',"color":ROOT.kOrange,"name":'WWZ'},{"sample":'TTZToLL',"color":ROOT.kOrange-5,"name":'TTZ'}]
     data = [{"sample":'data',"color":ROOT.kBlack,"name":'Data'}]
 
-    signal_tot = signal_qq + signal_gg  + signal_VBS 
+    signal_tot = signal_qq + signal_gg  + signal_VBS + signal_others
 
     typeofsamples = []
 
@@ -136,8 +139,9 @@ def GetMCPlot(inputdir, category, plot,Addfake,MCSet,rebin):
 
         if rebin!=1: h.Rebin(rebin) 
 
+        if "IrrBkg" in category:    h.SetLineColor(1)
+        else:   h.SetLineColor(sample["color"])
 
-        h.SetLineColor(sample["color"])
         h.SetFillColor(sample["color"])
         h.SetMarkerStyle(21)
         h.SetMarkerColor(sample["color"])
@@ -162,7 +166,7 @@ def GetDataPlot(inputdir, plot, Region,rebin):
     files = {}
     typeofsamples = GetTypeofsamples("data","pow")
     hdata=ROOT.TH1F()
-    plot = plot.replace("_JERCentralSmear","") #FIXME
+#    plot = plot.replace("_JERCentralSmear","") #FIXME
     for sample in typeofsamples:
         files[sample["sample"]] = ROOT.TFile(inputdir+sample["sample"]+".root")
     
@@ -182,7 +186,6 @@ def GetDataPlot(inputdir, plot, Region,rebin):
     if 1+inputdir.find("CR2P2F"): 
         print "Dir",inputdir,inputdir.find("CR2P2F")                
         hdata.Add(hdata,-2)     
-    #fdata = ROOT.TFile(inputdir+"data.root")  #DEL #CHECK
     #hdata = fdata.Get(plot)
     hdata.SetMarkerColor(ROOT.kBlack)
     hdata.SetLineColor(ROOT.kBlack)
@@ -196,7 +199,7 @@ def GetDataPlot(inputdir, plot, Region,rebin):
     DataGraph=SetError(hdata,Region,False)
     DataGraph.SetMarkerStyle(20)
     DataGraph.SetMarkerSize(.9)
-    return copy.deepcopy(DataGraph)
+    return copy.deepcopy(DataGraph),hdata
 
 ###############################################################
 
@@ -368,7 +371,7 @@ def GetFakeRate(inputdir,plot, method,rebin):
 
 def GetSignalDefPlot(inputdir,category):
 
-    leg = TLegend(0.61,0.56,0.85,0.81)
+    leg = TLegend(0.61,0.56,0.82,0.81)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.025)
 
