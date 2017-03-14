@@ -44,7 +44,7 @@ void ZZMCAnalyzer::analyze(){
       return;
     }
     
-    sample = "01";
+    sample = "";
     if(PreCounter < nentries/2) {sample = "0";} 
     else {sample = "1";}
     
@@ -61,7 +61,7 @@ void ZZMCAnalyzer::analyze(){
     if (ncentraljets>3) ncentraljets=3;
     
     ptzz_gen =  (genVBParticles->at(0).p4()+genVBParticles->at(1).p4()).Pt();
-    if (ptzz_gen>300) ptzz_gen=299;
+    //    if (ptzz_gen>300) ptzz_gen=299;
     
     dphizz_gen = 0;
     dphizz_gen = fabs(physmath::deltaPhi(genVBParticles->at(0).phi(),genVBParticles->at(1).phi())); 
@@ -69,9 +69,9 @@ void ZZMCAnalyzer::analyze(){
     
     if(njets >=1){
       ptjet1_gen = genJets->at(0).pt();
-      if(ptjet1_gen>=500) ptjet1_gen=499;
+      // if(ptjet1_gen>=500) ptjet1_gen=499;
       etajet1_gen = fabs(genJets->at(0).eta());
-      if(etajet1_gen>=4.7) etajet1_gen=4.6;
+      //if(etajet1_gen>=4.7) etajet1_gen=4.6;
       
       if(njets>=2){  
 	
@@ -80,10 +80,10 @@ void ZZMCAnalyzer::analyze(){
 	ptjet2_gen = genJets->at(1).pt();
 	etajet2_gen = fabs(genJets->at(1).eta());
 	
-	if (deta_gen>=4.7) deta_gen = 4.6;
-	if (mjj_gen>=800) mjj_gen = 799;
-	if(ptjet2_gen>=500) ptjet2_gen=499; 
-	if(etajet2_gen>=4.7) etajet2_gen=4.6;
+	// if (deta_gen>=4.7) deta_gen = 4.6;
+	// if (mjj_gen>=800) mjj_gen = 799;
+	// if(ptjet2_gen>=300) ptjet2_gen=299; 
+	// if(etajet2_gen>=4.7) etajet2_gen=4.6;
       }
     }
     
@@ -91,8 +91,8 @@ void ZZMCAnalyzer::analyze(){
       
       deta_gen_cj = fabs(centralGenJets->at(0).eta() - centralGenJets->at(1).eta());
       mjj_gen_cj =  (centralGenJets->at(0).p4() + centralGenJets->at(1).p4()).M();
-      if (deta_gen_cj>=4.7) deta_gen_cj = 4.6;
-      if (mjj_gen_cj>=800) mjj_gen_cj = 799;
+      //if (deta_gen_cj>=4.7) deta_gen_cj = 4.6;
+      //if (mjj_gen_cj>=800) mjj_gen_cj = 799;
     }
     scaleFacErrSq = ZZ->efficiencySFUnc();
     // scaleFacMuErrSq = ZZ->muEffSFUnc(); 
@@ -108,7 +108,7 @@ void ZZMCAnalyzer::analyze(){
     else if(theMCInfo.fileName()=="ZZTo4l") w_kf = 1.1; 
     
     m4L_gen  = sqrt((genVBParticles->at(0).p4()+genVBParticles->at(1).p4())*(genVBParticles->at(0).p4()+genVBParticles->at(1).p4()));
-    if (m4L_gen>=800) m4L_gen = 799;
+    //   if (m4L_gen>=800) m4L_gen = 799;
 
   
   // theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_pdfUp_01", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,Wh*LHEweight_PDFVariation_Up);
@@ -126,13 +126,15 @@ void ZZMCAnalyzer::analyze(){
     FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*LHEweight_AsMZ_Up,"Gen_01_asMZUp");
     FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*LHEweight_AsMZ_Dn,"Gen_01_asMZDn");
 
-
+    //reco
     if((region_ == phys::MC && regionWord.test(26)) || ((region_ == phys::MC_HZZ) && regionWord.test(3))){
       FillHistosBase(decay,theWeight*w_kf,"GenReco_"+sample);
       FillHistosBase(decay,theWeight*w_kf,"GenReco_01");
       FillHistosBase(decay,theWeight*w_kf*(1-scaleFacErrSq),"GenRecoSFErrSqMinus_01");
       FillHistosBase(decay,theWeight*w_kf*(1+scaleFacErrSq),"GenRecoSFErrSqPlus_01");
     }
+
+    //fiducial region
     if((region_ == phys::MC && topology.test(3)) || ( region_ == phys::MC_HZZ && topology.test(1)) ){
       FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf,"Gen_01_fr");
       FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf,"Gen_"+sample+"_fr");
@@ -142,6 +144,7 @@ void ZZMCAnalyzer::analyze(){
       FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*LHEweight_AsMZ_Up,"Gen_01_fr_asMZUp");
       FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*LHEweight_AsMZ_Dn,"Gen_01_fr_asMZDn");
 
+      //fiducial region reco
       if((region_ == phys::MC && regionWord.test(26)) || ((region_ == phys::MC_HZZ) && regionWord.test(3))){
 	FillHistosBase(decay,theWeight*w_kf,"GenReco_01_fr");
 	FillHistosBase(decay,theWeight*w_kf,"GenReco_"+sample+"_fr");
@@ -154,16 +157,15 @@ void ZZMCAnalyzer::analyze(){
 
 void ZZMCAnalyzer::FillHistosBase(std::string decay, float Wh,std::string type ){
 
-  // theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_"+sample, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_kf);
+  theHistograms.fill("ZZTo"+decay+"_Mass"+type,  "ZZTo"+decay+"_Mass"+type, Xbins, m4L_gen,Wh);
+  theHistograms.fill("ZZTo"+decay+"_PtZZ"+type,  "ZZTo"+decay+"_PtZZ"+type, Xbins_ptzz, ptzz_gen,Wh);
+  theHistograms.fill("ZZTo"+decay+"_DphiZZ"+type,"ZZTo"+decay+"_DphiZZ"+type, Xbins_dphizz, dphizz_gen,Wh);
+  theHistograms.fill("ZZTo"+decay+"_dRZZ"+type,  "ZZTo"+decay+"_dRZZ"+type, Xbins_drzz, drzz_gen,Wh);
 
-  theHistograms.fill("ZZTo"+decay+"_Mass"+type,"", Xbins, m4L_gen,Wh);
-  theHistograms.fill("ZZTo"+decay+"_PtZZ"+type, Xbins_ptzz, ptzz_gen,Wh);
-  theHistograms.fill("ZZTo"+decay+"_DphiZZ"+type, Xbins_dphizz, dphizz_gen,Wh);
-  theHistograms.fill("ZZTo"+decay+"_dRZZ"+type,"", Xbins_drzz, drzz_gen,Wh);
-  theHistograms.fill(std::string("ZZTo")+decay+"_nJets"+type, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,njets,Wh);    
-  theHistograms.fill(std::string("ZZTo")+decay+"_nJets_Central"+type, std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,ncentraljets,Wh);    
+  theHistograms.fill("ZZTo"+decay+"_nJets"+type, "Number of jets of ZZ_{1}#rightarrow "+decay,Xbins_nJets,njets,Wh);    
+  theHistograms.fill("ZZTo"+decay+"_nJets_Central"+type,"Number of jets of ZZ_{1}#rightarrow "+decay,Xbins_nJets,ncentraljets,Wh);    
   
-  //  cout<<endl;
+
   if(type=="Gen_01" || type=="Gen_01_fr"){ 
     for(unsigned int i =0; i<ScalVar.size(); i++){    
       // cout<<ScalVar.at(i)<<" "<<ScalVarVal.at(i)<<endl;
@@ -231,17 +233,18 @@ void ZZMCAnalyzer::begin() {
   nEvent = 0;
   inFiducialRegion=0;
 
-  Xbins_nJets += 0,1,2,3,4;
   Xbins += 100,200,250,300,350,400,500,600,800; 
-  Xbins_deta += 0,2.4,4.7;
-  Xbins_mjj += 0.,200,800;
+  Xbins_nJets += 0,1,2,3,4;
   Xbins_ptjet1 += 30,50,100,200,300,500;
-  Xbins_ptjet2 += 30,100,200,500;
-  Xbins_etajet1 += 0,1.5,3,4.7;
+  Xbins_ptjet2 += 30,50,100,170,300;
+  Xbins_etajet1 += 0,1.5,2.4,3.2,4.7;
   Xbins_etajet2 += 0,1.5,3,4.7; 
+  Xbins_mjj += 0.,200,400,600,1000;
+  Xbins_deta += 0,1.2,2.4,3.6,4.7;
+  Xbins_dphizz += 0,1.5,2.,2.25,2.5,2.75,3,3.25;
   Xbins_drzz += 0,1,2,3,4,5,6;
   Xbins_ptzz += 0,25,50,75,100,150,200,300;
-  Xbins_dphizz += 0,1.5,2.,2.25,2.5,2.75,3,3.25;
+
   ScalVarVal = {};
 
   ScalVar = {"_mf1mr1","_mf1mr2","_mf1mr0p5","_mf2mr1","_mf2mr2","_mf0p5mr1","_mf0p5mr0p5"};
@@ -300,12 +303,16 @@ void ZZMCAnalyzer::end( TFile &) {
     for (std::vector<std::string>::iterator it = FinalState.begin() ; it != FinalState.end(); ++it){
       for (std::vector<std::string>::iterator rg = Regions.begin() ; rg != Regions.end(); ++rg){	
 	//	cout<<"var "<<*var<<" fn "<<*it<<" rg "<<*rg<<endl;
+
+	TH1 *hcen = theHistograms.get(("ZZTo"+*it+"_"+*var+"Gen_01"+*rg).c_str());
+	
+	if(!hcen)	    continue;
+	
 	for (std::vector<std::string>::iterator scal = ScalVar.begin() ; scal != ScalVar.end(); ++scal){
 
 	  TH1 *h = theHistograms.get(("ZZTo"+*it+"_"+*var+"Gen_01"+*rg+*scal).c_str());
-	  if(!h){
-	    continue;
-	  }
+	  if(!h)	    continue;
+	  
 	  ScalHistos.push_back(  *dynamic_cast<TH1F *>(h) );
 	}
 
@@ -313,6 +320,12 @@ void ZZMCAnalyzer::end( TFile &) {
 	theHistograms.fill(std::string("ZZTo")+*it+"_"+*var+"Gen_01_scaleDn"+*rg, std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+*it , binsVec, 0,0);
 	TH1 * hvarUp = theHistograms.get(("ZZTo"+*it+"_"+*var+"Gen_01_scaleUp"+*rg).c_str());
 	TH1 * hvarDn = theHistograms.get(("ZZTo"+*it+"_"+*var+"Gen_01_scaleDn"+*rg).c_str());
+	
+	TH1 *h_pdf_up = theHistograms.get(("ZZTo"+*it+"_"+*var+"Gen_01"+*rg+"_pdfUp").c_str());
+	TH1 *h_pdf_dn = theHistograms.get(("ZZTo"+*it+"_"+*var+"Gen_01"+*rg+"_pdfDn").c_str());
+	TH1 *h_As_up = theHistograms.get(("ZZTo"+*it+"_"+*var+"Gen_01"+*rg+"_asMZUp").c_str());
+	TH1 *h_As_dn = theHistograms.get(("ZZTo"+*it+"_"+*var+"Gen_01"+*rg+"_asMZDn").c_str());
+
 
 	for(int b = 1; b<=hvarUp->GetNbinsX();b++){  
 	  bool isFirst = true;
@@ -328,8 +341,40 @@ void ZZMCAnalyzer::end( TFile &) {
 	      if(hvar->GetBinContent(b) < hvarDn->GetBinContent(b)) hvarDn->SetBinContent(b,hvar->GetBinContent(b));
 	    }
 	  }
+
+	  Float_t VarScUp  =   hvarUp->GetBinContent(b)   - hcen->GetBinContent(b);
+	  Float_t VarScDn  = - hvarDn->GetBinContent(b)   + hcen->GetBinContent(b);
+
+	  Float_t VarPdfUp;
+	  Float_t VarAsUp ;
+	  Float_t VarPdfDn;
+	  Float_t VarAsDn ;
+
+	  if(h_pdf_up->GetBinContent(b) > h_pdf_dn->GetBinContent(b)){
+	    VarPdfUp =   h_pdf_up->GetBinContent(b) - hcen->GetBinContent(b);
+	    VarPdfDn = - h_pdf_dn->GetBinContent(b) + hcen->GetBinContent(b);
+	  }
+	  else{
+	    VarPdfDn =   h_pdf_up->GetBinContent(b) - hcen->GetBinContent(b);
+	    VarPdfUp = - h_pdf_dn->GetBinContent(b) + hcen->GetBinContent(b);
+	  }	  
+
+	  if(h_As_up->GetBinContent(b) > h_As_dn->GetBinContent(b)){
+	    VarAsUp =   h_As_up->GetBinContent(b) - hcen->GetBinContent(b);
+	    VarAsDn = - h_As_dn->GetBinContent(b) + hcen->GetBinContent(b);
+	  }
+	  else{
+	    VarAsDn =   h_As_up->GetBinContent(b) - hcen->GetBinContent(b);
+	    VarAsUp = - h_As_dn->GetBinContent(b) + hcen->GetBinContent(b);
+	  }	  
+
+	  hvarUp->SetBinContent(b,hcen->GetBinContent(b) +  TMath::Sqrt(VarScUp*VarScUp+VarPdfUp*VarPdfUp+VarAsUp*VarAsUp));
+	  hvarDn->SetBinContent(b,hcen->GetBinContent(b) -  TMath::Sqrt(VarScDn*VarScDn+VarPdfDn*VarPdfDn+VarAsDn*VarAsDn));
+
 	}
-      ScalHistos.clear();
+
+	ScalHistos.clear();
+	
       }
     }
   }
