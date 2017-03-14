@@ -18,7 +18,6 @@ ResponseMatrix::ResponseMatrix(bool weight, bool madgraph, bool tightregion): TO
 {  
 
   //  map<string, TH2 > histosGen
-
   if(tightregion ==1)tightfr = "_fr";
   else tightfr = "";
   
@@ -35,16 +34,6 @@ ResponseMatrix::ResponseMatrix(bool weight, bool madgraph, bool tightregion): TO
     ZZTo4lmad_g  = new TFile("../../results/ZZMCAnalyzer_MC/ZZTo4lamcatnlo.root");
     qq4l2j_g     = new TFile("../../results/ZZMCAnalyzer_MC/qq_4l2j.root"); 
 
-    //Files for Powheg and MGatNLO theoretical uncertainties  //To be fix for 13 TeV
-    //ZZMCsystNamePow = "../../PowhegSystVar"+tightfr+".root ";
-    //ZZMCsystNameMGatNLO = "../../MGatNLOSystVar"+tightfr+".root ";
-    //ZZMCsystPow_g = new TFile(ZZMCsystNamePow.c_str());
-    //ZZMCsystMGatNLO_g = new TFile(ZZMCsystNameMGatNLO.c_str());
-    
-    //rescue file
-    //    rescue = new TFile("../../results/ZZRecoAnalyzer_SR/ZZTo4l.root");
-    
-    //output
     if(madgraph ==1)  {
       fileName    = "matrices" + tightfr+ "_Mad.root";
       fileName_SF = "matrices"+tightfr+ "_SF_Mad.root";
@@ -61,7 +50,7 @@ ResponseMatrix::ResponseMatrix(bool weight, bool madgraph, bool tightregion): TO
   }
   
   else{
-    
+
     //Reco samples (response matrices and signal region distributions) 
 
     ZZTo4lpow_r   = new TFile("../../results/ZZRecoWAnalyzer_SR/ZZTo4l.root");
@@ -70,16 +59,11 @@ ResponseMatrix::ResponseMatrix(bool weight, bool madgraph, bool tightregion): TO
     qq4l2j_r      = new TFile("../../results/ZZRecoWAnalyzer_SR/qq_4l2j.root");
     
     //Truth samples (signal definition distributions) 
-
     ZZTo4lmad_g   = new TFile("../../results/ZZMCWAnalyzer_MC/ZZTo4lamcatnlo.root");
     ZZTo4lpow_g   = new TFile("../../results/ZZMCWAnalyzer_MC/ZZTo4l.root");
     gg4l_g        = new TFile("../../results/ZZMCWAnalyzer_MC/gg_4l.root");
     qq4l2j_g      = new TFile("../../results/ZZMCWAnalyzer_MC/qq_4l2j.root");
 
-   
-    //rescue file
-    //    rescue = new TFile("../../results/ZZRecoWAnalyzer_SR/ZZTo4l.root"); del
-    
     //output 
     if(madgraph ==1)  {
       fileName = "weightedMatrices" + tightfr+ "_Mad.root";
@@ -92,7 +76,6 @@ ResponseMatrix::ResponseMatrix(bool weight, bool madgraph, bool tightregion): TO
      W = "W_";
   }
 
-
   // gg4l_r->Close();  
   // ZZTo4lpow_r->Close();  
   // ZZTo4lmad_r->Close();
@@ -101,6 +84,21 @@ ResponseMatrix::ResponseMatrix(bool weight, bool madgraph, bool tightregion): TO
   // ZZTo4lpow_g->Close();
   // ZZTo4lmad_g->Close();
   // qq4l2j_g->Close();
+}
+
+
+
+void ResponseMatrix::CloseFiles()
+{
+  
+  gg4l_r->Close();  
+  ZZTo4lpow_r->Close();  
+  ZZTo4lmad_r->Close();
+  qq4l2j_r->Close();  
+  gg4l_g->Close();
+  ZZTo4lpow_g->Close();
+  ZZTo4lmad_g->Close();
+  qq4l2j_g->Close();
 }
 
 
@@ -148,7 +146,6 @@ void ResponseMatrix::Build(string var, string dataset, string finalstate, int xs
   if(h_4lmad         == NULL){ cout<<"histogram "<<h_4lmad        ->GetName()<<" is null. Abort"<<endl;  abort(); } 
   if(h_4lmad_gen     == NULL){ cout<<"histogram "<<h_4lmad_gen    ->GetName()<<" is null. Abort"<<endl;  abort(); } 
   
-  
   TH2 * h_Resmat_gg4l_cl    = (TH2*) h_Resmat_gg4l->Clone("h_Resmat_4lpow");
   TH1 * h_gg4l_cl           = (TH1*) h_gg4l->Clone("h_4l");
   TH1 * h_gg4l_gen_cl       = (TH1*) h_gg4l_gen->Clone("h_4l");
@@ -169,7 +166,6 @@ void ResponseMatrix::Build(string var, string dataset, string finalstate, int xs
     h_4lTot_gen = (TH1*) h_4lpow_gen->Clone("h_4l");
   }
 
-
   h_Resmat_ggTot = (TH2*)h_Resmat_gg4l_cl->Clone("h_Resmat_gg"); 
   h_Resmat_JJTot = (TH2*)h_Resmat_qq4l2j_cl->Clone("h_Resmat_JJ"); 
   
@@ -177,8 +173,8 @@ void ResponseMatrix::Build(string var, string dataset, string finalstate, int xs
   // cout <<"JJ= " <<h_Resmat_qq4l2j->Integral(0,1,0,50)<<" " <<h_qq4l2j->Integral(0,1)<<endl;
   // cout <<"4l= "<< h_Resmat_4lTot->Integral(0,1,0,50)<<" " <<h_4l->Integral(0,1)<<endl;
   
-  unc_qq = 0.0444; //pdf: 3.4%  scale: 2.85%  //FIXME
-  unc_gg = 0.0886; //pdf: 3.10%  scale: 8.3%  
+  unc_qq = 0.0285; //pdf: 3.4%  scale: 2.85%  %use only scale because pdf is set somewhere else
+  unc_gg = 0.083; //pdf: 3.10%  scale: 8.3%   %use only scale because pdf is set somewhere else
  
   if(xs_qq == 0) { 
     h_Resmat_4lTot->Scale(1);
@@ -238,7 +234,6 @@ void ResponseMatrix::Build(string var, string dataset, string finalstate, int xs
   h_Resmat_normTot->Scale(1/totalint);
   
   //std::cout << "total integral " << totalint << std::endl;
-
   string unc;
   if(xs_qq == 0){
     if(xs_gg == 0) unc = "_st_"; //standard, no variations  
@@ -267,41 +262,35 @@ void ResponseMatrix::Build(string var, string dataset, string finalstate, int xs
   h_4lTot_c->SetTitle(histoName_recoFile.c_str());
   h_4lTot_gen_c->SetTitle(histoName_genFile.c_str());
   output->cd(); 
-  h_Resmat->Write(matrixNameFile.c_str());
-  h_Resmat_normTot->Write(matrixNormTotNameFile.c_str());
-  h_4lTot_c->Write(histoName_recoFile.c_str());
-  h_4lTot_gen_c->Write(histoName_genFile.c_str());
+  h_Resmat->Write(matrixNameFile.c_str(),TObject::kOverwrite);
+  h_Resmat_normTot->Write(matrixNormTotNameFile.c_str(),TObject::kOverwrite);
+  h_4lTot_c->Write(histoName_recoFile.c_str(),TObject::kOverwrite);
+  h_4lTot_gen_c->Write(histoName_genFile.c_str(),TObject::kOverwrite);
   output->Close();
 
-  h_Resmat_gg4l =NULL;
-  h_Resmat_qq4l2j =NULL;
+  h_Resmat_gg4l  =NULL;
+  h_Resmat_qq4l2j=NULL;
   h_Resmat_4lmad =NULL;
   h_Resmat_4lpow =NULL;
-  h_gg4l        =NULL;
-  h_qq4l2j        =NULL;
+  h_gg4l         =NULL;
+  h_qq4l2j       =NULL;
   h_4lpow        =NULL;
   h_4lmad        =NULL;
-  h_gg4l_gen    =NULL;
-  h_qq4l2j_gen    =NULL;
+  h_gg4l_gen     =NULL;
+  h_qq4l2j_gen   =NULL;
   h_4lpow_gen    =NULL;
   h_4lmad_gen    =NULL; 
-
 
 }
 
 //Build response matrices and distributions varying lepton scale factors by their uncertainties
 void ResponseMatrix::Build_SF(string var, string dataset, string finalstate, string unc, bool mad)
 {
-
   output = new TFile((var+"_test/"+fileName_SF).c_str(), "UPDATE");
     
-  string observable;
-  if(var == "Mass" || var == "dRZZ") observable = var;
-  else observable = var ; 
-
-  matrixName = "ResMat_ZZTo" + finalstate + "_"+var+"_"+unc+"_"+ dataset + tightfr;
+  matrixName     = "ResMat_ZZTo" + finalstate + "_"+var+"_"+unc+"_"+ dataset + tightfr;
   histoName_reco = "ZZTo" + finalstate + "_"+var+"_"+unc +"_"+ dataset;
-  histoName_gen =  "ZZTo" + finalstate + "_"+var+"Gen_"+ dataset + tightfr;
+  histoName_gen  = "ZZTo" + finalstate + "_"+var+"Gen_"+ dataset + tightfr;
  
   float totalint = 0; 
   h_Resmat_gg4l   = (TH2*) gg4l_r->Get(matrixName.c_str()); 
@@ -317,7 +306,6 @@ void ResponseMatrix::Build_SF(string var, string dataset, string finalstate, str
   h_4lmad_gen     = (TH1*) ZZTo4lmad_g->Get(histoName_gen.c_str());
   h_4lpow_gen     = (TH1*) ZZTo4lpow_g->Get(histoName_gen.c_str()); 
   
-
   if(h_Resmat_gg4l   == NULL){ cout<<"histogram "<<h_Resmat_gg4l  ->GetName()<<" is null. Abort"<<endl;  abort(); }  
   if(h_Resmat_qq4l2j == NULL){ cout<<"histogram "<<h_Resmat_qq4l2j->GetName()<<" is null. Abort"<<endl;  abort(); } 
   if(h_gg4l          == NULL){ cout<<"histogram "<<h_gg4l         ->GetName()<<" is null. Abort"<<endl;  abort(); } 
@@ -378,10 +366,10 @@ void ResponseMatrix::Build_SF(string var, string dataset, string finalstate, str
   h_4lTot_gen_c->SetTitle(histoName_genFile.c_str());
  
   output->cd(); 
-  h_Resmat->Write(matrixNameFile.c_str());
-  h_Resmat_normTot->Write(matrixNormTotNameFile.c_str());
-  h_4lTot_c->Write(histoName_recoFile.c_str());
-  h_4lTot_gen_c->Write(histoName_genFile.c_str());
+  h_Resmat->Write(matrixNameFile.c_str(),TObject::kOverwrite);
+  h_Resmat_normTot->Write(matrixNormTotNameFile.c_str(),TObject::kOverwrite);
+  h_4lTot_c->Write(histoName_recoFile.c_str(),TObject::kOverwrite);
+  h_4lTot_gen_c->Write(histoName_genFile.c_str(),TObject::kOverwrite);
   output->Close(); 
 }
 
@@ -393,8 +381,6 @@ void ResponseMatrix::Build_JE(string var, string dataset, string finalstate, str
   matrixName     = "ResMat_ZZTo" + finalstate + "_"+var+"_"+unc+"Smear_" + dataset + tightfr;
   histoName_reco = "ZZTo" + finalstate + "_"+var+"_"+unc+"Smear_" + dataset;
   histoName_gen  = "ZZTo" + finalstate + "_"+var+"Gen_"+ dataset + tightfr;
-
-
  
   float totalint = 0; 
   h_Resmat_gg4l   = (TH2*) gg4l_r->Get(matrixName.c_str()); 
@@ -422,7 +408,7 @@ void ResponseMatrix::Build_JE(string var, string dataset, string finalstate, str
   if(h_4lpow_gen     == NULL){ cout<<"histogram "<<h_4lpow_gen    ->GetName()<<" is null. Abort"<<endl;  abort(); } 
   if(h_4lmad         == NULL){ cout<<"histogram "<<h_4lmad        ->GetName()<<" is null. Abort"<<endl;  abort(); } 
   if(h_4lmad_gen     == NULL){ cout<<"histogram "<<h_4lmad_gen    ->GetName()<<" is null. Abort"<<endl;  abort(); } 
-
+  
   if(mad ==1){
     h_Resmat_4lTot = (TH2*)h_Resmat_4lmad->Clone("h_Resmat_4lmad");
     h_4lTot = (TH1*) h_4lmad->Clone("h_4lmad");
@@ -433,9 +419,8 @@ void ResponseMatrix::Build_JE(string var, string dataset, string finalstate, str
     h_4lTot = (TH1*) h_4lpow->Clone("h_4lpow");
     h_4lTot_gen = (TH1*) h_4lpow_gen->Clone("h_4lpow");
   }
-
   h_Resmat_ggTot = (TH2*)h_Resmat_gg4l->Clone("h_Resmat_gg"); 
-    h_Resmat_JJTot = (TH2*)h_Resmat_qq4l2j->Clone("h_Resmat_JJ"); 
+  h_Resmat_JJTot = (TH2*)h_Resmat_qq4l2j->Clone("h_Resmat_JJ"); 
   
   //cout <<"gg= "<< h_Resmat_gg4l->Integral(0,1,0,50)<<" " << h_gg4l->Integral(0,1)<<endl;  
   //cout <<"JJ= " <<h_Resmat_qq4l2j->Integral(0,1,0,50)<<" " <<h_qq4l2j->Integral(0,1)<<endl;
@@ -444,13 +429,17 @@ void ResponseMatrix::Build_JE(string var, string dataset, string finalstate, str
   h_Resmat = (TH2*)h_Resmat_4lTot->Clone("h_Resmat_4lTot");
   h_Resmat->Add(h_Resmat_ggTot); 
   h_Resmat->Add(h_Resmat_JJTot);
+
   h_4lTot_c = (TH1*) h_4lTot ->Clone("h_4lTot"); 
   h_4lTot_c->Add(h_gg4l); 
   h_4lTot_c->Add(h_qq4l2j);
+
   h_4lTot_gen_c = (TH1*) h_4lTot_gen ->Clone("h_4lTot_gen");
   h_4lTot_gen_c->Add(h_gg4l_gen);
   h_4lTot_gen_c->Add(h_qq4l2j_gen);
+
   totalint = h_Resmat->Integral();
+
   h_Resmat_normTot = (TH2*)h_Resmat->Clone("h_Resmat");
   h_Resmat_normTot->Scale(1/totalint);
   
@@ -467,19 +456,18 @@ void ResponseMatrix::Build_JE(string var, string dataset, string finalstate, str
   h_4lTot_c->SetTitle(histoName_recoFile.c_str());
   h_4lTot_gen_c->SetTitle(histoName_genFile.c_str());
 
-  TH1 * h_4lTot_err = (TH1*) h_4lTot_c ->Clone("h_4lTot_c");
-
   output->cd(); 
-  h_Resmat->Write(matrixNameFile.c_str());
-  h_Resmat_normTot->Write(matrixNormTotNameFile.c_str());
-  h_4lTot_c->Write(histoName_recoFile.c_str());
-  h_4lTot_gen_c->Write(histoName_genFile.c_str());
+  h_Resmat->Write(matrixNameFile.c_str(),TObject::kOverwrite);
+  h_Resmat_normTot->Write(matrixNormTotNameFile.c_str(),TObject::kOverwrite);
+  h_4lTot_c->Write(histoName_recoFile.c_str(),TObject::kOverwrite);
+  h_4lTot_gen_c->Write(histoName_genFile.c_str(),TObject::kOverwrite);
   output->Close();
 }
 
 //Plot distributions
 void ResponseMatrix::Plot(string var,string fs, string dataset, string unc, string path)
 {
+
   gROOT->Reset();  
   gROOT->SetStyle("Plain");   
   gStyle->SetOptStat(0);
@@ -491,7 +479,6 @@ void ResponseMatrix::Plot(string var,string fs, string dataset, string unc, stri
   writeExtraText = true;    
   extraText  = "Simulation";
   extraText2 = "";
-
   string title;
   string xAxis;
   string yAxis;
@@ -603,7 +590,7 @@ void ResponseMatrix::Plot(string var,string fs, string dataset, string unc, stri
     matrix->GetYaxis()->SetLabelSize(0.05);
  }
 
- gStyle->SetPaintTextFormat("4.1f");
+ gStyle->SetPaintTextFormat("4.2f");
  // // PrecisionMatrix(matrix);
  // Int_t nbinsx = matrix->GetNbinsX();
  // Int_t nbinsy = matrix->GetNbinsY();
@@ -634,6 +621,7 @@ void ResponseMatrix::Plot(string var,string fs, string dataset, string unc, stri
   
   c->Print(png.c_str());
   c->Print(pdf.c_str());
+  c->Delete();
 }
 
 //Build response matrix, reco and gen distributions needed for the theoretical uncertainty on Powheg
@@ -709,8 +697,8 @@ void ResponseMatrix::GenMCSystDistributions(string var, string dataset, string f
   h_4lTot_down_gen->SetTitle(histoName_down.c_str());
   
   output->cd(); 
-  h_4lTot_up_gen->Write(histoName_up.c_str());
-  h_4lTot_down_gen->Write(histoName_down.c_str());
+  h_4lTot_up_gen->Write(histoName_up.c_str(),TObject::kOverwrite);
+  h_4lTot_down_gen->Write(histoName_down.c_str(),TObject::kOverwrite);
   output->Close();
   
 }
@@ -785,8 +773,8 @@ void ResponseMatrix::GenMGatNLOSystDistributions(string var, string dataset, str
   h_4lTot_down_gen->SetTitle(histoName_down.c_str());
   
   output->cd(); 
-  h_4lTot_gen->Write(histoName_central.c_str());
-  h_4lTot_up_gen->Write(histoName_up.c_str());
-  h_4lTot_down_gen->Write(histoName_down.c_str());
+  h_4lTot_gen->Write(histoName_central.c_str(),TObject::kOverwrite);
+  h_4lTot_up_gen->Write(histoName_up.c_str(),TObject::kOverwrite);
+  h_4lTot_down_gen->Write(histoName_down.c_str(),TObject::kOverwrite);
   output->Close();  
 }

@@ -40,7 +40,7 @@ class DataToUnfold : public TObject
   TFile *Irr;
   TFile *file;
   TFile *file_syst;
-  TFile *rescue;
+  //  TFile *rescue;
 
   TH1 * h_data;
   TH1 * h_data_up; 
@@ -59,8 +59,8 @@ class DataToUnfold : public TObject
   TH1 * h_data_irrm;
   TH1 * h_data_redp;
   TH1 * h_data_redm; 
-  TH1 * h_safe_tmp;
-  TH1 * h_safe;
+  //  TH1 * h_safe_tmp;
+  //  TH1 * h_safe;
   string variable;
   //string XaxisTitle;
   string fs;  
@@ -68,8 +68,8 @@ class DataToUnfold : public TObject
   string histoName_up; 
   string histoName_down; 
   string histoMCName;
-  string safeHistoName;
-  string safeHistoName_mass;
+  //  string safeHistoName;
+  //gstring safeHistoName_mass;
   string dataName;
   string TotdataName;
   string dataName_up;

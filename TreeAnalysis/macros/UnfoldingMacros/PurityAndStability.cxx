@@ -1,7 +1,10 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "PurityAndStability.h"
-#include "tdrstyle.C"
-#include "CMS_lumi.C"
+// #include "tdrstyle.C"
+// #include "CMS_lumi.C"
+#include "tdrstyle.h"
+#include "CMS_lumi.h"
+
 #endif
 
 using namespace std;
@@ -33,15 +36,17 @@ void PurityAndStability::Build(string var, string finalstate)
   h_purity = (TH1*) matrixFile->Get(histoName.c_str()); 
   h_stability = (TH1*) matrixFile->Get(histoName.c_str());  
   
-  int b = 0;
 
-  if(var == "Mass")  b = 9;
-  else if(var == "nJets" || var == "nJets_Central") b = 5;
-  else if(var == "Mjj" || var == "CentralMjj" || var == "Deta" || var == "CentralDeta") b = 3;
-  else if(var == "PtJet1") b = 6;
-  else if(var == "PtJet2") b = 5;
-  else if(var == "EtaJet1" || var == "EtaJet2" ) b = 6;
-  else if(var == "dRZZ") b = 6;
+  int b = h_Resmat->GetNbinsX();;  
+
+  // if(var == "Mass")  b = 9;
+  // else if(var == "nJets" || var == "nJets_Central") b = 5;
+  // else if(var == "Mjj" || var == "Mjj_Central" || var == "Deta" || var == "Deta_Central") b = 3;
+  // else if(var == "PtJet1") b = 6;
+  // else if(var == "PtJet2") b = 5;
+  // else if(var == "EtaJet1" || var == "EtaJet2" ) b = 6;
+  // else if(var == "dRZZ") b = 6;
+  // else if(var == "PtZZ") b = 8;
 
   float binContent = 0; 
   float binError = 0;
@@ -51,8 +56,8 @@ void PurityAndStability::Build(string var, string finalstate)
   float s_err =0;  
   double reco_err =0;  
   double gen_err =0;  
-  
-  for(int i =1; i<b; i++){
+
+  for(int i =1; i<=b; i++){
     reco_err=0;
     gen_err=0;
     binContent=0;  
@@ -69,9 +74,8 @@ void PurityAndStability::Build(string var, string finalstate)
     p_err = sqrt((binError/binContent)*(binError/binContent) + (reco_err/all_reco)*(reco_err/all_reco))*(binContent/all_reco);    
     s_err = sqrt((binError/binContent)*(binError/binContent) + (gen_err/all_gen)*(gen_err/all_gen))*(binContent/all_gen);    
 
-
-    // std::cout <<"bin " << i <<  " all_reco  = " << all_reco << " +- " << reco_err << " p= "<<  binContent/all_reco << " +- " << p_err << std::endl;
-    // std::cout <<"bin " << i <<" all_gen  = " << all_gen <<" +- " << gen_err << " s= " << binContent/all_gen <<" +- " << s_err  << std::endl;
+    //    std::cout <<"bin " << i <<" all_reco  = " << all_reco << " +- " << reco_err << " p= "<<  binContent/all_reco << " +- " << p_err << std::endl;
+    //std::cout <<"bin " << i <<" all_gen  = " << all_gen <<" +- " << gen_err << " s= " << binContent/all_gen <<" +- " << s_err  << std::endl;
     
     if(all_reco!=0){
       h_purity->SetBinContent(i,binContent/all_reco);
@@ -92,21 +96,20 @@ void PurityAndStability::Build(string var, string finalstate)
 
   string purityName = "hPurity_ZZTo" + finalstate + "_01";
   string stabilityName = "hStability_ZZTo" + finalstate + "_01";
-
   output->cd(); 
-  h_purity->Write(purityName.c_str()); 
-  h_stability->Write(stabilityName.c_str()); 
+  h_purity->Write(purityName.c_str(),TObject::kOverwrite); 
+  h_stability->Write(stabilityName.c_str(),TObject::kOverwrite); 
   output->Close();
-  
+  // matrixFile->Delete();  
+  matrixFile->Close();  
 }
 
 //Plot Purity and Stability distributions
-void PurityAndStability::Plot(string var,string finalstate, string path) 
-{
+void PurityAndStability::Plot(string var,string finalstate, string path) {
   gROOT->Reset();  
   gROOT->SetStyle("Plain");   
   gStyle->SetOptStat(0);
-  
+
   string xAxis; 
   string fs;
 
@@ -118,7 +121,7 @@ void PurityAndStability::Plot(string var,string finalstate, string path)
   fileNamePow =  var+"_test/MatrixPurityStability_Pow.root";
   
   madgraph = new TFile(fileNameMad.c_str()); 
-  powheg = new TFile(fileNamePow.c_str()); 
+  powheg   = new TFile(fileNamePow.c_str()); 
   
   pName = "hPurity_ZZTo"+finalstate+"_01";
   sName = "hStability_ZZTo"+finalstate+"_01";
@@ -164,7 +167,10 @@ void PurityAndStability::Plot(string var,string finalstate, string path)
  else if(var =="dRZZ"){
    xAxis = "reco #DeltaR(Z_1,Z_2)";
  }
-  
+ else if(var =="PtZZ"){
+   xAxis = "reco p_{T}^{4\ell}";
+ }
+
   TCanvas *c_p = new TCanvas ("c_p","c_p");
   TLegend *leg_p = new TLegend(0.65,0.35,0.6,0.43); 
   leg_p->SetFillColor(kWhite);
@@ -193,7 +199,7 @@ void PurityAndStability::Plot(string var,string finalstate, string path)
   leg_s->SetBorderSize(0);
   leg_s->SetTextSize(0.03);
 
-  s_mad->Draw("E");  
+  s_mad->Draw("E text");  
   s_mad->SetLineColor(1);
   s_mad->SetTitle(sTitle.c_str());
   s_mad->GetXaxis()->SetTitle(xAxis.c_str());
@@ -206,17 +212,20 @@ void PurityAndStability::Plot(string var,string finalstate, string path)
   leg_s->AddEntry(s_pow,"Powheg set","l"); 
   leg_s->Draw("SAME");
   
+  std::string SavePage = "~/www/PlotsVV/13TeV/";
  
-  string p_png = "~/www/VBS/"+path+"/"+var+"/PurityAndStability/"+"purity_MadPow_"+finalstate+"_"+var+".png";
-  string s_png = "~/www/VBS/"+path+"/"+var+"/PurityAndStability/"+"stability_MadPow_"+finalstate+"_"+var+".png";
-  string p_pdf = "~/www/VBS/"+path+"/"+var+"/PurityAndStability/"+"purity_MadPow_"+finalstate+"_"+var+".pdf";
-  string s_pdf = "~/www/VBS/"+path+"/"+var+"/PurityAndStability/"+"stability_MadPow_"+finalstate+"_"+var+".pdf";
+  string p_png = SavePage+path+"/"+var+"/PurityAndStability/"+"purity_MadPow_"+finalstate+"_"+var+".png";
+  string s_png = SavePage+path+"/"+var+"/PurityAndStability/"+"stability_MadPow_"+finalstate+"_"+var+".png";
+  string p_pdf = SavePage+path+"/"+var+"/PurityAndStability/"+"purity_MadPow_"+finalstate+"_"+var+".pdf";
+  string s_pdf = SavePage+path+"/"+var+"/PurityAndStability/"+"stability_MadPow_"+finalstate+"_"+var+".pdf";
   c_p->Print(p_png.c_str());
   c_s->Print(s_png.c_str());
   c_p->Print(p_pdf.c_str());
   c_s->Print(s_pdf.c_str());
-}
 
+  madgraph->Close();
+  powheg->Close();
+}
 
 void PurityAndStability::Plot_PAS(string var,string finalstate, string path) 
 { 
@@ -225,7 +234,7 @@ void PurityAndStability::Plot_PAS(string var,string finalstate, string path)
   gStyle->SetOptStat(0); 
   
   setTDRStyle();
-  int iPeriod = 2; 
+  int iPeriod = 4; 
   int iPos = 11; 
   writeExtraText = true;    
   extraText  = "Simulation";
@@ -251,10 +260,11 @@ void PurityAndStability::Plot_PAS(string var,string finalstate, string path)
     p_mad->GetXaxis()->SetBinLabel(1,"0");
     p_mad->GetXaxis()->SetBinLabel(2,"1");
     p_mad->GetXaxis()->SetBinLabel(3,"2");
-    p_mad->GetXaxis()->SetBinLabel(4,">2");  
+    p_mad->GetXaxis()->SetBinLabel(4,">2"); 
     //p_mad->GetXaxis()->SetLabelFont(42);
     //p_mad->GetXaxis()->SetLabelOffset(0.02);
     p_mad->GetXaxis()->SetLabelSize(0.05);
+
   }
 
   if(var =="Mass"){
@@ -293,6 +303,9 @@ void PurityAndStability::Plot_PAS(string var,string finalstate, string path)
  else if(var =="dRZZ"){
    xAxis = "reco #DeltaR(Z_1,Z_2)";
  }
+ else if(var =="PtZZ"){
+   xAxis = "reco p_{T}^{4\ell}";
+ }
   TCanvas *c_p = new TCanvas ("c_p","c_p");
   TLegend *leg_p = new TLegend(0.70,0.35,0.6,0.45); 
   leg_p->SetFillColor(kWhite);
@@ -320,7 +333,7 @@ void PurityAndStability::Plot_PAS(string var,string finalstate, string path)
   leg_p->AddEntry(s_mad,"Stability","p"); 
   leg_p->Draw("SAME");
   
-  //lumiTextSize     = 0.4;
+  // lumiTextSize     = 0.4;
   // cmsTextSize      = 0.48;
   // extraOverCmsTextSize  = 0.80;//0.63;
   CMS_lumi(c_p,iPeriod,iPos);
@@ -328,9 +341,12 @@ void PurityAndStability::Plot_PAS(string var,string finalstate, string path)
   // pad1->RedrawAxis();
   //pad1->GetFrame()->Draw();
 
-  string p_pdf ="~/www/VBS/"+path+"/"+var+"/PurityAndStability/"+ "PurityStability_"+finalstate+"_"+var+mc+".pdf";
-  string p_png = "~/www/VBS/"+path+"/"+var+"/PurityAndStability/"+"PurityStability_"+finalstate+"_"+var+mc+".png";
+  std::string SavePage = "~/www/PlotsVV/13TeV/";
+  string p_pdf = SavePage+path+"/"+var+"/PurityAndStability/"+ "PurityStability_"+finalstate+"_"+var+mc+".pdf";
+  string p_png = SavePage+path+"/"+var+"/PurityAndStability/"+ "PurityStability_"+finalstate+"_"+var+mc+".png";
 
   c_p->Print(p_pdf.c_str());
   c_p->Print(p_png.c_str());
+
+  file->Close();
 }

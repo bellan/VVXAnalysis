@@ -34,6 +34,7 @@ class ResponseMatrix : public TObject
   void Plot(string var,string fs, string dataset, string unc,string path); 
   void GenMCSystDistributions(string var, string dataset, string finalstate, bool mad);
   void GenMGatNLOSystDistributions(string var, string dataset, string finalstate);
+  void CloseFiles();
   
   TFile *output; 
   TFile *gg4l_r;

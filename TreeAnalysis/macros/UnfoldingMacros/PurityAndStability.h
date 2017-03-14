@@ -28,7 +28,7 @@ class PurityAndStability : public TObject
   PurityAndStability(bool mad);
   ~PurityAndStability();
   void Build(string var, string finalstate);
-  void Plot(string var,string finalstate,string path); 
+  void Plot(string var,  string finalstate,string path); 
   void Plot_PAS(string var,string finalstate,string path); 
   
   TFile *output; 

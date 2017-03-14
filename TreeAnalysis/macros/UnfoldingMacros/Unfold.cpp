@@ -14,6 +14,7 @@ using std::endl;
 #include "TMatrix.h"
 #include "TStyle.h"
 #include "TLine.h"
+#include "TArrow.h"
 #include "TFrame.h"
 #include "TH2.h"
 #include "TLegend.h"
@@ -25,7 +26,13 @@ using std::endl;
 //#include <boost/filesystem.hpp>
 #include "tdrstyle.C"
 #include "CMS_lumi.C"
+#include <boost/foreach.hpp>
+#define foreach BOOST_FOREACH
+
+
 #endif
+
+
 //==============================================================================
 // Global definitions
 //==============================================================================
@@ -45,7 +52,8 @@ TH1 * h_unfolded_m;
 TH1 * h_data_p;
 TH1 * h_data_m;
 
-TMatrixD * cov;
+TH1F h_chi2;
+TH2D *cov;
 TVectorD * Vcov_stat; 
 TVectorD * Vcov_unf; 
 
@@ -79,6 +87,10 @@ std::string XaxisTitle;
 std::string YaxisTitle;
 std::string MCgen;
 
+std::vector<std::string> Variables   = {"Mass","nJets","nJets_Central","Mjj","Mjj_Central","Deta","Deta_Central","PtJet1","PtJet2","EtaJet1","EtaJet2","dRZZ","PtZZ"};
+
+
+
 /*To unfold distributions, first download the RooUnfold package following these instructions:
  http://hepunx.rl.ac.uk/~adye/software/unfold/RooUnfold.html
 Then, in ../RooUnfold-1.1.1/RooUnfold (after "make"):
@@ -93,6 +105,8 @@ void Unfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tightre
 #ifdef __CINT__
   gSystem->Load("libRooUnfold");
 #endif 
+
+  std::string SavePage = "~/www/PlotsVV/13TeV/";
   
   gROOT->SetStyle("Plain");  
   gStyle->SetOptStat(0);
@@ -116,13 +130,12 @@ void Unfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tightre
     MCgen = "_Pow";
   }
 
-  system(("mkdir ~/www/VBS/"+date).c_str()); 
-  system(("cp ~/www/VBS/index.php ~/www/VBS/"+date).c_str());
-  system(("mkdir ~/www/VBS/"+date+"/"+ var).c_str()); 
-  system(("cp ~/www/VBS/index.php ~/www/VBS/"+date+"/"+ var).c_str());
+  system(("mkdir "+SavePage+date).c_str()); 
+  system(("cp "+SavePage+"index.php " +SavePage+date).c_str());
+  system(("mkdir "+SavePage+date+"/"+ var).c_str()); 
+  system(("cp "+SavePage+"index.php " +SavePage+date+"/"+ var).c_str());
 
   dataFileName = "../" +var + "_test/DataToUnfold.root";
-  //  dataFileName = "../" +var + "_test/DataToUnfoldFake.root";
   
   matrix = new TFile(matrixFileName.c_str());
   data   = new TFile(dataFileName.c_str());
@@ -131,6 +144,7 @@ void Unfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tightre
   matrixName    = "ResMat_qqggJJ_" + var + "_ZZTo" + fs + "_st_01";
   histoName     = var +"_qqggJJ_ZZTo" + fs + "_st_01";
   histoNameGen  = var + "Gen_qqggJJ_ZZTo" + fs + "_st_01";
+
   histoName_unf = "DataminusBkg_" + var + "_ZZTo"+fs;
  
   h_measured     = (TH1*) matrix->Get(histoName.c_str());  
@@ -138,24 +152,26 @@ void Unfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tightre
   h_Resmat       = (TH2*) matrix->Get(matrixName.c_str()); 
   h_measured_unf = (TH1*) data->Get(histoName_unf.c_str());  
 
-  // h_measured->Draw();
-  // h_true ->Draw("same");
-  // h_Resmat->Draw("same");
+
   RooUnfoldResponse response(h_measured, h_true, h_Resmat, "response", "response"); 
+
+  Int_t nIter = 4;
+  //  if(h_measured_unf->GetNbinsX()<4) nIter = h_measured_unf->GetNbinsX();
+  
   RooUnfoldSvd   unfold_svd(&response, h_measured_unf, 4); 
-  RooUnfoldBayes unfold_bayes(&response, h_measured_unf,4);  
-  RooUnfoldBayes unfold_bayes4(&response, h_measured_unf,4); 
-    
-  // if(var == "Mass")       h_unfolded= (TH1*) unfold_svd.Hreco(RooUnfold::kCovariance);
-  //  if(var == "Mass")         h_unfolded= (TH1*) unfold_bayes4.Hreco(RooUnfold::kCovariance);
-  //else if(var == "dRZZ")  h_unfolded= (TH1*) unfold_bayes4.Hreco(RooUnfold::kCovariance);
-  //  else
+  RooUnfoldBayes unfold_bayes(&response, h_measured_unf,nIter);  
+  RooUnfoldBayes unfold_bayes10(&response, h_measured_unf,10); 
+
+  h_unfolded= (TH1*) unfold_bayes10.Hreco(RooUnfold::kCovariance);
+  h_chi2 =  unfold_bayes10.GethChi2();
   h_unfolded= (TH1*) unfold_bayes.Hreco(RooUnfold::kCovariance);
+  //h_unfolded= (TH1*) unfold_svd.Hreco(RooUnfold::kCovariance);
 
   unfHistoName    = "ZZTo"+ fs +"_" + var;
   recoHistoName   = "ZZTo"+ fs +"_"+var+"_RECO"; 
   recoMCHistoName = "ZZTo"+ fs +"_"+var+"_RECO_MC";
   trueHistoName   = "ZZTo"+ fs +"_"+var+"_GEN";
+
   string finalstate;
   if(fs == "4m") finalstate = "4#mu";
   else if(fs == "2e2m") finalstate = "2e2#mu";
@@ -171,6 +187,7 @@ void Unfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tightre
   else if(var =="EtaJet1")  XaxisTitle = "|#eta^{jet1}| ("+ finalstate+" final state)";
   else if(var =="EtaJet2")  XaxisTitle = "|#eta^{jet2}| ("+ finalstate+" final state)";
   else if(var =="dRZZ")  XaxisTitle = "#DeltaR(Z_{1},Z_{2}) ("+ finalstate+" final state)";
+  else if(var =="PtZZ")  XaxisTitle = "p_{T}^{ZZ} ("+ finalstate+" final state)"; 
   YaxisTitle = "Events";
   string YaxisTitle2 = "Unfolded/True";
  
@@ -184,6 +201,7 @@ void Unfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tightre
   else if(var == "EtaJet1") max =  h_true->GetBinContent(1)+h_true->GetBinContent(1)*0.15+h_unfolded->GetBinError(1);
   else if(var == "EtaJet2") max =  h_true->GetBinContent(1)+h_true->GetBinContent(1)*0.15+h_unfolded->GetBinError(1); 
   else if(var == "dRZZ") max =  h_true->GetBinContent(4)+h_true->GetBinContent(4)+h_unfolded->GetBinError(1);
+  else if(var == "PtZZ") max =  h_true->GetBinContent(4)+h_true->GetBinContent(4)+h_unfolded->GetBinError(1);
   else  max =  h_true->GetBinContent(1)+h_true->GetBinContent(1)*0.15+h_unfolded->GetBinError(1);
  
   TCanvas *c = new TCanvas ("c","c");
@@ -213,7 +231,7 @@ void Unfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tightre
     
   pad1->cd();
   h_true->SetTitle("");
-  h_true->GetXaxis()->SetRange(0,25);
+  //  h_true->GetXaxis()->SetRange(0,25);
   h_true->GetXaxis()->SetTitle(XaxisTitle.c_str()); 
   h_true->GetYaxis()->SetTitle(YaxisTitle.c_str());
   h_true->GetXaxis()->SetLabelOffset(0.5); 
@@ -283,8 +301,8 @@ void Unfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tightre
   h_unfolded_r->GetYaxis()->SetTitleOffset(0.4);
   h_unfolded_r->GetYaxis()->SetTitleSize(0.10);
   h_unfolded_r->GetXaxis()->SetTitleSize(0.13);
-    h_unfolded_r-> SetMaximum(2.5); 
-  h_unfolded_r-> SetMinimum(-0.5);
+  h_unfolded_r-> SetMaximum(2.5); 
+  h_unfolded_r-> SetMinimum(-0.9);
   h_unfolded_r->Draw("E");
   TLine *line = new TLine();
 
@@ -298,13 +316,12 @@ void Unfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tightre
   line->SetLineColor(kRed);
   line->Draw("SAME");
   h_unfolded_r->Draw("E SAME");
-  
-  // string png = "~/www/VBS/"+date+"/"+ var+"/"+var + "_ZZTo" + fs + MCgen+tightfr +".png"; 
-  // string pdf = "~/www/VBS/"+date+"/"+ var+"/"+var + "_ZZTo" + fs + MCgen+tightfr +".pdf";
-  // c->SaveAs(pdf.c_str());
-  // c->SaveAs(png.c_str());
 
-  output->cd();   
+  TH2D *hcov = new TH2D(unfold_bayes.Ereco((RooUnfold::ErrorTreatment)2));  
+  
+  cov=hcov;
+  cov->Write((recoHistoName+"_cov").c_str());
+  h_chi2.Write((recoHistoName+"_chi2").c_str());
   h_unfolded->Write(unfHistoName.c_str());
   h_measured_unf->Write(recoHistoName.c_str());
   h_measured->Write(recoMCHistoName.c_str());
@@ -313,6 +330,7 @@ void Unfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tightre
   matrix->Close();
   data->Close();
 
+  h_unfolded=NULL;
 }
 
 void Unfold_data_All(std::string var = "Mass", bool mad = 1,bool tightregion = 0, string date = "test"){
@@ -322,6 +340,7 @@ void Unfold_data_All(std::string var = "Mass", bool mad = 1,bool tightregion = 0
 }
 
 void DoUnfoldedDataOverGenMCRatio(string var = "Mass", string fs = "4e", bool mad =1,bool tightregion = 0){
+
   
   string tightfr;
   if(tightregion == 1) tightfr = "_fr";
@@ -429,6 +448,7 @@ void DoUnfoldedDataOverGenMCRatio(string var = "Mass", string fs = "4e", bool ma
    
    output->cd();
    h_ratio->Write(HistoRatio.c_str());
+   data->Close();
    output->Close();
 }
 
@@ -476,20 +496,17 @@ void DoMCGenSystematic(string var = "Mass", string fs = "4e",bool mad =1 ,bool t
   h_measured_unf = (TH1*) data->Get(histoName_unf.c_str()); 
 
   RooUnfoldResponse response(h_measured, h_true, h_Resmat, "response", "response"); 
+  Int_t nIter = 4;
+  //  if(h_measured_unf->GetNbinsX()<4) nIter = h_measured_unf->GetNbinsX();
   RooUnfoldSvd   unfold_svd(&response, h_measured_unf, 4); 
-  RooUnfoldBayes unfold_bayes(&response, h_measured_unf,4);  
-  RooUnfoldBayes unfold_bayes4(&response, h_measured_unf,4); 
+  RooUnfoldBayes unfold_bayes(&response, h_measured_unf,nIter);  
+  h_unfolded= (TH1*) unfold_bayes.Hreco(RooUnfold::kCovariance);
 
-  if(var == "Mass") h_unfolded= (TH1*) unfold_svd.Hreco(RooUnfold::kCovariance);
-  else if(var == "dRZZ") h_unfolded= (TH1*) unfold_bayes4.Hreco(RooUnfold::kCovariance);
-  else h_unfolded= (TH1*) unfold_bayes.Hreco(RooUnfold::kCovariance);
-   
   unfHistoName = "ZZTo"+ fs +"_" + var;
   output->cd();   
   h_unfolded->Write(unfHistoName.c_str());
-  output->Close();
-
   matrix->Close();
+  output->Close();
   data->Close();
 
 }
@@ -536,27 +553,17 @@ void DoQqggSystematic(string var = "Mass", string fs = "4e", bool mad =1 ,bool t
   RooUnfoldResponse response_p(h_measured_p, h_true_p, h_Resmat_p, "response_p", "response_p"); 
   RooUnfoldResponse response_m(h_measured_m, h_true_m, h_Resmat_m, "response_m", "response_m"); 
   
+  Int_t nIter = 4;
+  //  if(h_measured_unf->GetNbinsX()<4) nIter = h_measured_unf->GetNbinsX();
+
   RooUnfoldSvd unfold_svd_p(&response_p, h_measured_unf, 4);
   RooUnfoldSvd unfold_svd_m(&response_m, h_measured_unf, 4);
   
-  RooUnfoldBayes unfold_bayes_p(&response_p, h_measured_unf, 4);
-  RooUnfoldBayes unfold_bayes_m(&response_m, h_measured_unf, 4);
-    
-  RooUnfoldBayes unfold_bayes4_p(&response_p, h_measured_unf, 4);
-  RooUnfoldBayes unfold_bayes4_m(&response_m, h_measured_unf, 4);
-
-  if(var == "Mass") {
-    h_unfolded_p = (TH1*) unfold_svd_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_svd_m.Hreco(RooUnfold::kCovariance);
-  }
-  else if(var == "dRZZ"){
-    h_unfolded_p = (TH1*) unfold_bayes4_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_bayes4_m.Hreco(RooUnfold::kCovariance);
-  }
-  else{ 
-    h_unfolded_p = (TH1*) unfold_bayes_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_bayes_m.Hreco(RooUnfold::kCovariance);
-  }
+  RooUnfoldBayes unfold_bayes_p(&response_p, h_measured_unf, nIter);
+  RooUnfoldBayes unfold_bayes_m(&response_m, h_measured_unf, nIter);
+  
+  h_unfolded_p = (TH1*) unfold_bayes_p.Hreco(RooUnfold::kCovariance);
+  h_unfolded_m = (TH1*) unfold_bayes_m.Hreco(RooUnfold::kCovariance);
  
   h_unfolded_p->Draw();
   h_unfolded_m->Draw("same");
@@ -586,8 +593,9 @@ void DoQqggSystematic(string var = "Mass", string fs = "4e", bool mad =1 ,bool t
   output->cd();
   h_max->Write(UnfHistoName_p.c_str());
   h_min->Write(UnfHistoName_m.c_str());
-  output->Close();
+
   matrix->Close();
+  output->Close();
   data->Close();
  }
 
@@ -635,26 +643,17 @@ void DoIrrBkgSystematic(string var = "Mass", string fs = "4e", bool mad = 1,bool
   h_data_m = (TH1*) data->Get(data_m.c_str()); 
 
   RooUnfoldResponse response(h_measured, h_true, h_Resmat, "response", "response"); 
+
+  Int_t nIter = 4;
+  //  if(h_true->GetNbinsX()<4) nIter = h_true->GetNbinsX();
+
   RooUnfoldSvd unfold_svd_p(&response, h_data_p, 4);
   RooUnfoldSvd unfold_svd_m(&response, h_data_m, 4);
-  RooUnfoldBayes unfold_bayes_p(&response, h_data_p, 4);
-  RooUnfoldBayes unfold_bayes_m(&response, h_data_m, 4); 
-  RooUnfoldBayes unfold_bayes4_p(&response, h_data_p, 4);
-  RooUnfoldBayes unfold_bayes4_m(&response, h_data_m, 4);
-  
-  if(var == "Mass") {
-    h_unfolded_p = (TH1*) unfold_svd_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_svd_m.Hreco(RooUnfold::kCovariance);
-  }
-  else if(var == "dRZZ"){
-    h_unfolded_p = (TH1*) unfold_bayes4_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_bayes4_m.Hreco(RooUnfold::kCovariance);
-  }
-  else{ 
-    h_unfolded_p = (TH1*) unfold_bayes_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_bayes_m.Hreco(RooUnfold::kCovariance);
-  }
-  
+  RooUnfoldBayes unfold_bayes_p(&response, h_data_p, nIter);
+  RooUnfoldBayes unfold_bayes_m(&response, h_data_m, nIter); 
+  h_unfolded_p = (TH1*) unfold_bayes_p.Hreco(RooUnfold::kCovariance);
+  h_unfolded_m = (TH1*) unfold_bayes_m.Hreco(RooUnfold::kCovariance);
+   
   double max =0;
   double min = 0;
   TH1 * h_max = (TH1*) h_unfolded_p->Clone("h_max");
@@ -729,25 +728,16 @@ void DoRedBkgSystematic(string var = "Mass", string fs = "4e", bool mad = 1,bool
   h_data_m = (TH1*) data->Get(data_m.c_str()); 
 
   RooUnfoldResponse response(h_measured, h_true, h_Resmat, "response", "response"); 
+  Int_t nIter = 4;
+  //  if(h_true->GetNbinsX()<4) nIter = h_true->GetNbinsX();
+
   RooUnfoldSvd unfold_svd_p(&response, h_data_p, 4);
   RooUnfoldSvd unfold_svd_m(&response, h_data_m, 4);
-  RooUnfoldBayes unfold_bayes_p(&response, h_data_p, 4);
-  RooUnfoldBayes unfold_bayes_m(&response, h_data_m, 4);
-  RooUnfoldBayes unfold_bayes4_p(&response, h_data_p, 4);
-  RooUnfoldBayes unfold_bayes4_m(&response, h_data_m, 4);
-  
-  if(var == "Mass") {
-    h_unfolded_p = (TH1*) unfold_svd_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_svd_m.Hreco(RooUnfold::kCovariance);
-  } 
-  else if(var == "dRZZ") {
-    h_unfolded_p = (TH1*) unfold_bayes4_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_bayes4_m.Hreco(RooUnfold::kCovariance);
-  }
-  else{ 
-    h_unfolded_p = (TH1*) unfold_bayes_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_bayes_m.Hreco(RooUnfold::kCovariance);
-  }
+  RooUnfoldBayes unfold_bayes_p(&response, h_data_p, nIter);
+  RooUnfoldBayes unfold_bayes_m(&response, h_data_m, nIter); 
+  h_unfolded_p = (TH1*) unfold_bayes_p.Hreco(RooUnfold::kCovariance);
+  h_unfolded_m = (TH1*) unfold_bayes_m.Hreco(RooUnfold::kCovariance);
+ 
 
   double max =0;
   double min = 0;
@@ -773,7 +763,7 @@ void DoRedBkgSystematic(string var = "Mass", string fs = "4e", bool mad = 1,bool
   output->cd();
   h_max->Write(UnfHistoName_p.c_str());
   h_min->Write(UnfHistoName_m.c_str());
-  output->Close();
+
   matrix->Close();
   data->Close();
   output->Close();
@@ -804,7 +794,6 @@ void DoUnfOverGenSystematic(string var = "Mass", string fs = "4e", bool mad = 1,
   output   = new TFile(outputFileName.c_str(), "UPDATE");
 
  
-  std::cout<<"matrixFileName "<<matrixFileName.c_str()<<std::endl;
   matrixName    = "ResMat_qqggJJ_" + var + "_ZZTo" + fs + "_st_01";
   histoName     = var +"_qqggJJ_ZZTo" + fs + "_st_01";
   histoNameGen  = var + "Gen_qqggJJ_ZZTo" + fs + "_st_01";
@@ -817,16 +806,16 @@ void DoUnfOverGenSystematic(string var = "Mass", string fs = "4e", bool mad = 1,
   h_measured_unf = (TH1*) data->Get(histoName_unf.c_str());  
 
   RooUnfoldResponse response(h_measured, h_true, h_Resmat, "response", "response"); 
-  RooUnfoldSvd      unfold_svd(&response, h_measured_unf, 4); 
-  RooUnfoldBayes    unfold_bayes(&response, h_measured_unf,4);   
-  RooUnfoldBayes    unfold_bayes4(&response, h_measured_unf,4); 
 
-  if(var == "Mass") h_unfolded= (TH1*) unfold_svd.Hreco(RooUnfold::kCovariance);
-  else if(var == "dRZZ") h_unfolded= (TH1*) unfold_bayes4.Hreco(RooUnfold::kCovariance);
-  else  h_unfolded= (TH1*) unfold_bayes.Hreco(RooUnfold::kCovariance);
+  Int_t nIter = 4;
+  //  if(h_true->GetNbinsX()<4) nIter = h_true->GetNbinsX();  
+
+  RooUnfoldSvd   unfold_svd(&response, h_measured_unf, 4); 
+  RooUnfoldBayes unfold_bayes(&response, h_measured_unf,nIter);  
+
+  h_unfolded= (TH1*) unfold_bayes.Hreco(RooUnfold::kCovariance);
  
   unfHistoName = "ZZTo"+ fs +"_" + var;
-  
   output->cd();   
   h_unfolded->Write(unfHistoName.c_str());
 
@@ -884,29 +873,19 @@ void DoJERSystematic(string var = "nJets", string fs = "4e", bool mad = 1,bool t
 
   RooUnfoldResponse response_p(h_measured_p, h_true_p, h_Resmat_p, "response_p", "response_p"); 
   RooUnfoldResponse response_m(h_measured_m, h_true_m, h_Resmat_m, "response_m", "response_m"); 
-  
+ 
+  Int_t nIter = 4;
+  //  if(h_measured_unf->GetNbinsX()<4) nIter = h_measured_unf->GetNbinsX();
+
   RooUnfoldSvd unfold_svd_p(&response_p, h_measured_unf, 4);
   RooUnfoldSvd unfold_svd_m(&response_m, h_measured_unf, 4);
   
-  RooUnfoldBayes unfold_bayes_p(&response_p, h_measured_unf, 4);
-  RooUnfoldBayes unfold_bayes_m(&response_m, h_measured_unf, 4);
-
-  RooUnfoldBayes unfold_bayes4_p(&response_p, h_measured_unf, 4);
-  RooUnfoldBayes unfold_bayes4_m(&response_m, h_measured_unf, 4);
+  RooUnfoldBayes unfold_bayes_p(&response_p, h_measured_unf, nIter);
+  RooUnfoldBayes unfold_bayes_m(&response_m, h_measured_unf, nIter);
+  
+  h_unfolded_p = (TH1*) unfold_bayes_p.Hreco(RooUnfold::kCovariance);
+  h_unfolded_m = (TH1*) unfold_bayes_m.Hreco(RooUnfold::kCovariance);
     
-  if(var == "Mass") {
-    h_unfolded_p = (TH1*) unfold_svd_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_svd_m.Hreco(RooUnfold::kCovariance);
-  }
-  else if(var == "dRZZ"){ 
-    h_unfolded_p = (TH1*) unfold_bayes4_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_bayes4_m.Hreco(RooUnfold::kCovariance);
-  }
-  else{ 
-    h_unfolded_p = (TH1*) unfold_bayes_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_bayes_m.Hreco(RooUnfold::kCovariance);
-  }
-
   double max =0;
   double min = 0;
   TH1 * h_max = (TH1*) h_unfolded_p->Clone("h_max");
@@ -931,9 +910,10 @@ void DoJERSystematic(string var = "nJets", string fs = "4e", bool mad = 1,bool t
   output->cd();
   h_max->Write(UnfHistoName_p.c_str());
   h_min->Write(UnfHistoName_m.c_str());
-  output->Close();
+
   matrix->Close();
   data->Close();
+  output->Close();
 }
 
 void DoJESSystematic_ModMat(string var = "nJets", string fs = "4e", bool mad = 1,bool tightregion = 0){
@@ -985,27 +965,17 @@ void DoJESSystematic_ModMat(string var = "nJets", string fs = "4e", bool mad = 1
   RooUnfoldResponse response_p(h_measured_p, h_true_p, h_Resmat_p, "response_p", "response_p"); 
   RooUnfoldResponse response_m(h_measured_m, h_true_m, h_Resmat_m, "response_m", "response_m"); 
   
+  Int_t nIter = 4;
+  //  if(h_measured_unf->GetNbinsX()<4) nIter = h_measured_unf->GetNbinsX();
+
   RooUnfoldSvd unfold_svd_p(&response_p, h_measured_unf, 4);
   RooUnfoldSvd unfold_svd_m(&response_m, h_measured_unf, 4);
   
-  RooUnfoldBayes unfold_bayes_p(&response_p, h_measured_unf, 4);
-  RooUnfoldBayes unfold_bayes_m(&response_m, h_measured_unf, 4);
-
-  RooUnfoldBayes unfold_bayes4_p(&response_p, h_measured_unf, 4);
-  RooUnfoldBayes unfold_bayes4_m(&response_m, h_measured_unf, 4);
-    
-  if(var == "Mass") {
-    h_unfolded_p = (TH1*) unfold_svd_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_svd_m.Hreco(RooUnfold::kCovariance);
-  } 
-  else if(var == "dRZZ"){ 
-    h_unfolded_p = (TH1*) unfold_bayes4_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_bayes4_m.Hreco(RooUnfold::kCovariance);
-  }
-  else { 
-    h_unfolded_p = (TH1*) unfold_bayes_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_bayes_m.Hreco(RooUnfold::kCovariance);
-  }
+  RooUnfoldBayes unfold_bayes_p(&response_p, h_measured_unf, nIter);
+  RooUnfoldBayes unfold_bayes_m(&response_m, h_measured_unf, nIter);
+  
+  h_unfolded_p = (TH1*) unfold_bayes_p.Hreco(RooUnfold::kCovariance);
+  h_unfolded_m = (TH1*) unfold_bayes_m.Hreco(RooUnfold::kCovariance);
   
   double max =0;
   double min = 0;
@@ -1031,6 +1001,7 @@ void DoJESSystematic_ModMat(string var = "nJets", string fs = "4e", bool mad = 1
   output->cd();
   h_max->Write(UnfHistoName_p.c_str());
   h_min->Write(UnfHistoName_m.c_str());
+
   matrix->Close();
   data->Close();
   output->Close();
@@ -1079,27 +1050,17 @@ void DoJESSystematic_ModData(string var = "nJets", string fs = "4e",bool mad = 1
   h_data_m = (TH1*) data->Get(data_m.c_str()); 
 
   RooUnfoldResponse response(h_measured, h_true, h_Resmat, "response", "response"); 
+  
+  Int_t nIter = 4;
+  //  if(h_true->GetNbinsX()<4) nIter = h_true->GetNbinsX();  
   RooUnfoldSvd unfold_svd_p(&response, h_data_p, 4);
   RooUnfoldSvd unfold_svd_m(&response, h_data_m, 4);
 
-  RooUnfoldBayes unfold_bayes_p(&response, h_data_p, 4);
-  RooUnfoldBayes unfold_bayes_m(&response, h_data_m, 4);
+  RooUnfoldBayes unfold_bayes_p(&response, h_data_p, nIter);
+  RooUnfoldBayes unfold_bayes_m(&response, h_data_m, nIter);
 
-  RooUnfoldBayes unfold_bayes4_p(&response, h_data_p, 4);
-  RooUnfoldBayes unfold_bayes4_m(&response, h_data_m, 4);
- 
-  if(var == "Mass") {
-    h_unfolded_p = (TH1*) unfold_svd_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_svd_m.Hreco(RooUnfold::kCovariance);
-  } 
-  else if(var == "dRZZ"){ 
-    h_unfolded_p = (TH1*) unfold_bayes4_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_bayes4_m.Hreco(RooUnfold::kCovariance);
-  }
-  else{ 
-    h_unfolded_p = (TH1*) unfold_bayes_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_bayes_m.Hreco(RooUnfold::kCovariance);
-  }
+  h_unfolded_p = (TH1*) unfold_bayes_p.Hreco(RooUnfold::kCovariance);
+  h_unfolded_m = (TH1*) unfold_bayes_m.Hreco(RooUnfold::kCovariance);
 
   double max =0;
   double min = 0;
@@ -1118,13 +1079,13 @@ void DoJESSystematic_ModData(string var = "nJets", string fs = "4e",bool mad = 1
      
     }
 
-
   UnfHistoName_p = "ZZTo"+ fs + "_" + var + "_p";
   UnfHistoName_m = "ZZTo"+ fs + "_" + var + "_m";
 
   output->cd();
   h_max->Write(UnfHistoName_p.c_str());
   h_min->Write(UnfHistoName_m.c_str());
+
   output->Close();
   matrix->Close();
   data->Close();
@@ -1184,7 +1145,6 @@ void DoSFSystematic(string var = "nJets", string fs = "4e", bool mad = 1,bool ti
     histoName_unf = "DataminusBkg_" + var + "_ZZTo"+fs; 
     }
   
-  std::cout<<"matrix name "<<matrixFileName.c_str()<<std::endl;
   h_measured_p = (TH1*) matrix->Get(histoReco_p.c_str());
   std::cout<<histoReco_p.c_str()<<std::endl;  
   h_true_p = (TH1*) matrix->Get(histoGen_p.c_str());
@@ -1196,29 +1156,21 @@ void DoSFSystematic(string var = "nJets", string fs = "4e", bool mad = 1,bool ti
   h_Resmat_m = (TH2*)matrix->Get(matrix_m.c_str()); 
   h_measured_unf = (TH1*) data->Get(histoName_unf.c_str());
 
-
   RooUnfoldResponse response_p(h_measured_p, h_true_p, h_Resmat_p, "response_p", "response_p"); 
   RooUnfoldResponse response_m(h_measured_m, h_true_m, h_Resmat_m, "response_m", "response_m"); 
+
+  Int_t nIter = 4;
+  //  if(h_measured_unf->GetNbinsX()<4) nIter = h_measured_unf->GetNbinsX();
+
   RooUnfoldSvd unfold_svd_p(&response_p, h_measured_unf, 4);
   RooUnfoldSvd unfold_svd_m(&response_m, h_measured_unf, 4);
-  RooUnfoldBayes unfold_bayes_p(&response_p, h_measured_unf, 4);
-  RooUnfoldBayes unfold_bayes_m(&response_m, h_measured_unf, 4);
-  RooUnfoldBayes unfold_bayes4_p(&response_p, h_measured_unf, 4);
-  RooUnfoldBayes unfold_bayes4_m(&response_m, h_measured_unf, 4);
-    
-  if(var == "Mass") {
-    h_unfolded_p = (TH1*) unfold_svd_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_svd_m.Hreco(RooUnfold::kCovariance);
-  } 
-  else if(var == "dRZZ"){ 
-    h_unfolded_p = (TH1*) unfold_bayes4_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_bayes4_m.Hreco(RooUnfold::kCovariance);
-  }
-  else{ 
-    h_unfolded_p = (TH1*) unfold_bayes_p.Hreco(RooUnfold::kCovariance);
-    h_unfolded_m = (TH1*) unfold_bayes_m.Hreco(RooUnfold::kCovariance);
-  }
- 
+
+  RooUnfoldBayes unfold_bayes_p(&response_p, h_measured_unf, nIter);
+  RooUnfoldBayes unfold_bayes_m(&response_m, h_measured_unf, nIter);
+
+  h_unfolded_p = (TH1*) unfold_bayes_p.Hreco(RooUnfold::kCovariance);
+  h_unfolded_m = (TH1*) unfold_bayes_m.Hreco(RooUnfold::kCovariance);
+
   double max =0;
   double min = 0;
   TH1 * h_max = (TH1*) h_unfolded_p->Clone("h_max");
@@ -1235,7 +1187,6 @@ void DoSFSystematic(string var = "nJets", string fs = "4e", bool mad = 1,bool ti
       h_min->SetBinContent(i,min);
      
     }
-
 
   UnfHistoName_p = "ZZTo"+ fs + "_" + var + "_p";
   UnfHistoName_m = "ZZTo"+ fs + "_" + var + "_m";
@@ -1291,6 +1242,7 @@ void  DoAllSystematics(string var = "Mass", bool mad =1, bool tightregion =0){
 
 void PlotResults(string var = "nJets", string fs = "4e", string syst = "MCgen", bool mad =1,bool tightregion =0, string date = "test"){
   
+
 #ifdef __CINT__
   gSystem->Load("libRooUnfold");
 #endif 
@@ -1321,11 +1273,13 @@ void PlotResults(string var = "nJets", string fs = "4e", string syst = "MCgen", 
   string systHistoName_p;
   string systHistoName_m;
   TH1 *h_true_othMC;
+
+  std::string SavePage = "~/www/PlotsVV/13TeV/";
  
-  system(("mkdir ~/www/VBS/"+date+"/"+ var).c_str());
-  system(("cp ~/www/VBS/index.php ~/www/VBS/"+date+"/"+ var).c_str()); 
-  system(("mkdir ~/www/VBS/"+date+"/"+ var+"/Systematics").c_str()); 
-  system(("cp ~/www/VBS/index.php ~/www/VBS/"+date+"/"+ var+"/Systematics").c_str());
+  system(("mkdir "+SavePage+date+"/"+ var).c_str());
+  system(("cp "+SavePage+"index.php " +SavePage+date+"/"+ var).c_str()); 
+  system(("mkdir "+SavePage+date+"/"+ var+"/Systematics").c_str()); 
+  system(("cp "+SavePage+"index.php " +SavePage+date+"/"+ var+"/Systematics").c_str());
 
 
   filePath = "../../../";
@@ -1392,8 +1346,8 @@ void PlotResults(string var = "nJets", string fs = "4e", string syst = "MCgen", 
   else if(syst=="qqgg"||syst=="IrrBkg"||syst=="RedBkg"||syst=="JER"||syst=="JES_ModMat"||syst=="JES_ModData"||syst=="SF"||syst=="SFSq"){
     h_unfolded_p = (TH1*) unfSyst->Get(systHistoName_p.c_str());
     h_unfolded_m = (TH1*) unfSyst->Get(systHistoName_m.c_str());
-    h_max = (TH1*)h_unfolded_p->Clone("");;
-    h_min = (TH1*)h_unfolded_p->Clone("");;
+    h_max = (TH1*)h_unfolded_p->Clone("");
+    h_min = (TH1*)h_unfolded_p->Clone("");
     for(int i = 1; i<9; i++){
       
       syst_percentage[i-1]=0;
@@ -1452,13 +1406,13 @@ void PlotResults(string var = "nJets", string fs = "4e", string syst = "MCgen", 
     XaxisTitle = "N jets (|#eta^{jet}| < 4.7)";
     YaxisTitle = "Events";
     if (tightregion == 1)  max_y = 300;
-    else max_y = 700; 
+    else max_y = 1500; 
   }
   else if(var == "nJets_Central")  {
     XaxisTitle = "N jets (|#eta^{jet}| < 2.4)"; 
     YaxisTitle = "Events"; 
-    if (tightregion == 1)  max_y = 300;
-    else max_y = 700; 
+    if (tightregion == 1)  max_y = 600;
+    else max_y = 1500; 
   }
   else if(var == "Mjj") {
     XaxisTitle ="m_{jj} (|#eta^{jet}| < 4.7) [GeV]";
@@ -1511,14 +1465,18 @@ void PlotResults(string var = "nJets", string fs = "4e", string syst = "MCgen", 
     YaxisTitle = "Events/(bin width)"; 
     max_y =  h_true->GetBinContent(4)+h_true->GetBinContent(4);
   }
+  else if(var =="PtZZ") {
+    XaxisTitle = "p_{T}^{ZZ}"; 
+    YaxisTitle = "Events/(bin width)"; 
+    max_y =  1; //h_true->GetBinContent(1)+h_true->GetBinContent(1);
+  }
    
   h_max->Scale(1,"width");
   h_min->Scale(1,"width");
   h_unfolded->Scale(1,"width");
   h_true->Scale(1,"width");
   h_true_othMC->Scale(1,"width");
-  
- 
+   
   int binmax = h_max->GetMaximumBin();
   double binwidth = h_max->GetBinWidth(binmax);  
   
@@ -1527,14 +1485,24 @@ void PlotResults(string var = "nJets", string fs = "4e", string syst = "MCgen", 
   h_max->SetFillStyle(3001);
   h_max->SetLineColor(10);
   h_max->SetTitle("");
-  h_max->GetXaxis()->SetRange(0,25);
+  //  h_max->GetXaxis()->SetRange(0,25);
   h_max->GetXaxis()->SetTitle(XaxisTitle.c_str());  
   h_max->GetYaxis()->SetTitle(YaxisTitle.c_str()); 
   if(var =="Mjj"||var =="Mjj_Central") h_max->GetYaxis()->SetTitleOffset(1.8);
   else  h_max->GetYaxis()->SetTitleOffset(1.4);
   h_max->GetXaxis()->SetTitleOffset(1.2);
   if(var == "Mjj_Central" && fs == "2e2m") h_max->SetMaximum(0.1);  
-  else h_max->SetMaximum(max_y/binwidth);
+
+  else if(var == "Mass" && fs == "2e2m"){
+      if (tightregion == 1) h_max->SetMaximum(3.5);  
+    }
+
+  else if(var == "nJets" && fs == "2e2m"){
+      if (tightregion == 1) h_max->SetMaximum(700);  
+    }
+
+  else h_max->SetMaximum(max_y/binwidth);// FIX
+  //  else h_max->SetMaximum(1.);
   h_max->SetMinimum(0.);
   h_min->Draw("HIST SAME");
   h_min->SetFillColor(10);
@@ -1574,7 +1542,7 @@ void PlotResults(string var = "nJets", string fs = "4e", string syst = "MCgen", 
   else if(syst=="JES_ModMat") syst_uncertainty = "JES syst. unc. (modified matrix)";
   else if(syst=="JES_ModData") syst_uncertainty = "JES syst. unc. (modified data)";
   else if(syst=="SFSq") syst_uncertainty = "Scale Factor syst. unc.";
-    else if(syst=="SF") syst_uncertainty = "Scale Factor syst. unc. (correlated)";
+  else if(syst=="SF") syst_uncertainty = "Scale Factor syst. unc. (correlated)";
   else std::cout << "wrong systematic uncerainty!!!!" << std::endl;
 
   leg->AddEntry(h_unfolded,"Unfolded data","lp"); 
@@ -1594,12 +1562,14 @@ void PlotResults(string var = "nJets", string fs = "4e", string syst = "MCgen", 
   leg->AddEntry(h_max,syst_uncertainty.c_str(),"f"); 
   leg->Draw("SAME");
 
-  string png = " ~/www/VBS/"+date+"/"+ var+"/Systematics/ZZTo"+fs+"_"+var+"_"+syst+MCgen+tightfr+".png";
-  string pdf = " ~/www/VBS/"+date+"/"+ var+"/Systematics/ZZTo"+fs+"_"+var+"_"+syst+MCgen+tightfr+".pdf";
+  string png = " "+SavePage+date+"/"+ var+"/Systematics/ZZTo"+fs+"_"+var+"_"+syst+MCgen+tightfr+".png";
+  string pdf = " "+SavePage+date+"/"+ var+"/Systematics/ZZTo"+fs+"_"+var+"_"+syst+MCgen+tightfr+".pdf";
   c->SaveAs(png.c_str());
   c->SaveAs(pdf.c_str());
 
-
+  data->Close();  
+  matrix->Close();
+  unfSyst->Close();
 }
 
 void AllPlots_fs(string var = "nJets", string fs = "4e", bool mad =1,bool tightregion =0,string date = "test"){
@@ -1641,27 +1611,30 @@ void AllSystematicPlotsForAllVariables(bool mad =1,bool tightregion =0,string da
   AllPlots("EtaJet2",mad, tightregion, date);
 }
 void AllYouNeed(bool mad =1, bool tightregion = 0){
-  Unfold_data_All("Mass",mad,tightregion);
-  DoAllRatios("Mass",mad,tightregion);
-  DoAllSystematics("Mass",mad,tightregion);
-  Unfold_data_All("nJets",mad,tightregion);
-  DoAllRatios("nJets",mad,tightregion);
-  DoAllSystematics("nJets",mad,tightregion);
-  Unfold_data_All("Mjj",mad,tightregion);
-  DoAllRatios("Mjj",mad,tightregion);
-  DoAllSystematics("Mjj",mad,tightregion);
-  Unfold_data_All("Deta",mad,tightregion);
-  DoAllRatios("Deta",mad,tightregion);
-  DoAllSystematics("Deta",mad,tightregion);
-  Unfold_data_All("nJets_Central",mad,tightregion);
-  DoAllRatios("nJets_Central",mad,tightregion);
-  DoAllSystematics("nJets_Central",mad,tightregion);
-  Unfold_data_All("Mjj_Central",mad,tightregion);
-  DoAllRatios("Mjj_Central",mad,tightregion);
-  DoAllSystematics("Mjj_Central",mad,tightregion);
-  Unfold_data_All("Deta_Central",mad,tightregion);
-  DoAllRatios("Deta_Central",mad,tightregion);
-  DoAllSystematics("Deta_Central",mad,tightregion);
+  foreach(const std::string &var, Variables){
+    Unfold_data_All(var.c_str(),mad,tightregion);
+    DoAllRatios(var.c_str(),mad,tightregion);
+    DoAllSystematics(var.c_str(),mad,tightregion);
+  }
+  
+  // Unfold_data_All("nJets",mad,tightregion);
+  // DoAllRatios("nJets",mad,tightregion);
+  // DoAllSystematics("nJets",mad,tightregion);
+  // Unfold_data_All("Mjj",mad,tightregion);
+  // DoAllRatios("Mjj",mad,tightregion);
+  // DoAllSystematics("Mjj",mad,tightregion);
+  // Unfold_data_All("Deta",mad,tightregion);
+  // DoAllRatios("Deta",mad,tightregion);
+  // DoAllSystematics("Deta",mad,tightregion);
+  // Unfold_data_All("nJets_Central",mad,tightregion);
+  // DoAllRatios("nJets_Central",mad,tightregion);
+  // DoAllSystematics("nJets_Central",mad,tightregion);
+  // Unfold_data_All("Mjj_Central",mad,tightregion);
+  // DoAllRatios("Mjj_Central",mad,tightregion);
+  // DoAllSystematics("Mjj_Central",mad,tightregion);
+  // Unfold_data_All("Deta_Central",mad,tightregion);
+  // DoAllRatios("Deta_Central",mad,tightregion);
+  // DoAllSystematics("Deta_Central",mad,tightregion);
 }
 
 void PlotUnfoldData4L(string var = "nJets", bool mad =1,bool tightregion =0, string date = "test"){
@@ -1685,11 +1658,14 @@ void PlotUnfoldData4L(string var = "nJets", bool mad =1,bool tightregion =0, str
   
   TFile * unfData;
   string unfDataFileName;  
+
+  std::string SavePage = "~/www/PlotsVV/13TeV/";
+
   filePath = "../../../";
-  system(("mkdir ~/www/VBS/"+date).c_str());
-  system(("cp ~/www/VBS/index.php ~/www/VBS/"+date).c_str());
-  system(("mkdir ~/www/VBS/"+date+"/"+ var).c_str()); 
-  system(("cp ~/www/VBS/index.php ~/www/VBS/"+date+"/"+ var).c_str());
+  system(("mkdir "+SavePage+date).c_str());
+  system(("cp "+SavePage+"index.php " +SavePage+date).c_str());
+  system(("mkdir "+SavePage+date+"/"+ var).c_str()); 
+  system(("cp "+SavePage+"index.php " +SavePage+date+"/"+ var).c_str());
   
   if(mad ==1){
     system(("mkdir "+filePath+ "UnfoldFolder"+tightfr+"_Mad/").c_str());  
@@ -1717,8 +1693,8 @@ void PlotUnfoldData4L(string var = "nJets", bool mad =1,bool tightregion =0, str
   TH1 * h_reco4m = (TH1*) unfData->Get(("ZZTo4m_" + var+"_RECO_MC").c_str());
   TH1 * h_reco2e2m = (TH1*) unfData->Get(("ZZTo2e2m_" + var+"_RECO_MC").c_str());
   TH1 * h_gen4e = (TH1*) unfData->Get(("ZZTo4e_" + var+"_GEN").c_str());
-  TH1 * h_gen4m = (TH1*) unfData->Get(("ZZTo4m_" + var+"_GEN").c_str());;
-  TH1 * h_gen2e2m = (TH1*) unfData->Get(("ZZTo2e2m_" + var+"_GEN").c_str());;
+  TH1 * h_gen4m = (TH1*) unfData->Get(("ZZTo4m_" + var+"_GEN").c_str());
+  TH1 * h_gen2e2m = (TH1*) unfData->Get(("ZZTo2e2m_" + var+"_GEN").c_str());
   
   
   h_unfdata4e->Add(h_unfdata4m);
@@ -1806,7 +1782,7 @@ void PlotUnfoldData4L(string var = "nJets", bool mad =1,bool tightregion =0, str
   
   pad1->cd();
   h_gen4e->SetTitle("");
-  h_gen4e->GetXaxis()->SetRange(0,25);
+  //  h_gen4e->GetXaxis()->SetRange(0,25);
   h_gen4e->GetXaxis()->SetTitle(XaxisTitle.c_str()); 
   h_gen4e->GetYaxis()->SetTitle(YaxisTitle.c_str());
   h_gen4e->GetYaxis()->SetTitleOffset(1.4);
@@ -1885,7 +1861,6 @@ void PlotUnfoldData4L(string var = "nJets", bool mad =1,bool tightregion =0, str
     h_unfdata4e_r->SetBinError(k,err_ratio);
   }
   
-  
   pad2->cd();  
   h_unfdata4e_r->SetTitle("");
   h_unfdata4e_r->SetMarkerColor(1);
@@ -1905,8 +1880,7 @@ void PlotUnfoldData4L(string var = "nJets", bool mad =1,bool tightregion =0, str
     h_unfdata4e_r->GetXaxis()->SetBinLabel(1,"0");
     h_unfdata4e_r->GetXaxis()->SetBinLabel(2,"1");
     h_unfdata4e_r->GetXaxis()->SetBinLabel(3,"2");
-    h_unfdata4e_r->GetXaxis()->SetBinLabel(3,"3");
-±    h_unfdata4e_r->GetXaxis()->SetBinLabel(4,">3");  
+    h_unfdata4e_r->GetXaxis()->SetBinLabel(4,">2");
     h_unfdata4e_r->GetXaxis()->SetLabelFont(42);
   }
   h_unfdata4e_r-> SetMaximum(3.); 
@@ -1921,6 +1895,7 @@ void PlotUnfoldData4L(string var = "nJets", bool mad =1,bool tightregion =0, str
   else if(var =="PtJet1"||var =="PtJet2" )  line =  new TLine(30,1,500,1); 
   else if(var =="EtaJet1"||var =="EtaJet2" )  line =  new TLine(0,1,4.7,1);
   else if(var == "dRZZ")line = new TLine(0,1,6,1); 
+  else if(var == "PtZZ")line = new TLine(0,1,300,1); 
   line->SetLineColor(kRed);
   line->Draw("SAME");
   h_unfdata4e_r->Draw("E SAME");
@@ -1933,14 +1908,19 @@ void PlotUnfoldData4L(string var = "nJets", bool mad =1,bool tightregion =0, str
   pad1->RedrawAxis();
   pad1->GetFrame()->Draw();
 
-  string png = "~/www/VBS/"+date+"/"+var+"/"+var + "_ZZTo4l"+MCgen+tightfr+".png"; 
-  string pdf ="~/www/VBS/"+date+"/"+var+"/"+var + "_ZZTo4l"+MCgen+tightfr+".pdf";
+  string png = ""+SavePage+date+"/"+var+"/"+var + "_ZZTo4l"+MCgen+tightfr+".png"; 
+  string pdf =""+SavePage+date+"/"+var+"/"+var + "_ZZTo4l"+MCgen+tightfr+".pdf";
   c->SaveAs(pdf.c_str());
   c->SaveAs(png.c_str());
+
+  unfData->Close();
+  data->Close();
+
   }
 
 void AllPlot4L(bool mad =1, bool tightregion =0,string date = "test")
 {
+  PlotUnfoldData4L("Mass",mad, tightregion, date);
   PlotUnfoldData4L("nJets",mad, tightregion, date);
   PlotUnfoldData4L("nJets_Central",mad, tightregion, date);
   PlotUnfoldData4L("Mjj",mad, tightregion, date);
@@ -1952,6 +1932,7 @@ void AllPlot4L(bool mad =1, bool tightregion =0,string date = "test")
   PlotUnfoldData4L("EtaJet1",mad, tightregion, date);
   PlotUnfoldData4L("EtaJet2",mad, tightregion, date);
   }
+
 void PlotUnfoldData(string var = "nJets", string fs = "4e", bool mad =1,bool tightregion =0, string date = "test"){
   
 #ifdef __CINT__
@@ -1962,7 +1943,8 @@ void PlotUnfoldData(string var = "nJets", string fs = "4e", bool mad =1,bool tig
   gStyle->SetOptStat(0);
   gStyle->SetPalette(1,0);
   setTDRStyle();
-  
+  gStyle->SetPaintTextFormat("4.2f");  
+
   string finalstate;
   if(fs == "4m") finalstate = "4#mu";
   else if(fs == "2e2m") finalstate = "2e2#mu";
@@ -1987,12 +1969,14 @@ void PlotUnfoldData(string var = "nJets", string fs = "4e", bool mad =1,bool tig
 
   TFile * unfData;
   string unfDataFileName;
+
+  std::string SavePage = "~/www/PlotsVV/13TeV/";
   
   filePath = "../../../"; 
-  system(("mkdir ~/www/VBS/"+date).c_str());
-  system(("cp ~/www/VBS/index.php ~/www/VBS/"+date).c_str());
-  system(("mkdir ~/www/VBS/"+date+"/"+ var).c_str()); 
-  system(("cp ~/www/VBS/index.php ~/www/VBS/"+date+"/"+ var).c_str());
+  system(("mkdir "+SavePage+date).c_str());
+  system(("cp "+SavePage+"index.php " +SavePage+date).c_str());
+  system(("mkdir "+SavePage+date+"/"+ var).c_str()); 
+  system(("cp "+SavePage+"index.php " +SavePage+date+"/"+ var).c_str());
   
   if(mad ==1){
     system(("mkdir "+filePath+ "UnfoldFolder"+tightfr+"_Mad/").c_str());  
@@ -2012,7 +1996,9 @@ void PlotUnfoldData(string var = "nJets", string fs = "4e", bool mad =1,bool tig
   TH1 * h_unfdata = (TH1*) unfData->Get(("ZZTo"+fs+"_" + var).c_str());
   TH1 * h_data = (TH1*) unfData->Get(("ZZTo"+fs+"_" + var+"_RECO").c_str());
   TH1 * h_reco = (TH1*) unfData->Get(("ZZTo"+fs+"_" + var+"_RECO_MC").c_str());
-  TH1 * h_gen = (TH1*) unfData->Get(("ZZTo"+fs+"_" + var+"_GEN").c_str());
+  TH1 * h_gen =  (TH1*) unfData->Get(("ZZTo"+fs+"_" + var+"_GEN").c_str());
+  TH1 * h_chi2 = (TH1*) unfData->Get(("ZZTo"+fs+"_" + var+"_RECO_chi2").c_str());
+  TH2 * h_cov = (TH2*) unfData->Get(("ZZTo"+fs+"_" + var+"_RECO_cov").c_str());
   
   if(var == "Mass"){
     XaxisTitle = "m_{4l} [GeV]";
@@ -2062,6 +2048,10 @@ void PlotUnfoldData(string var = "nJets", string fs = "4e", bool mad =1,bool tig
     XaxisTitle = "#DeltaR(Z_{1},Z_{2})"; 
     YaxisTitle = "Events/(bin width)"; 
   }
+  else if(var =="PtZZ") { 
+    XaxisTitle = "p_{T}^{ZZ}"; 
+    YaxisTitle = "Events/(bin width)"; 
+  }
 
   string YaxisTitle2 = "Unfolded/True";
 
@@ -2088,7 +2078,7 @@ void PlotUnfoldData(string var = "nJets", string fs = "4e", bool mad =1,bool tig
 
   pad1->cd();
   h_gen->SetTitle("");
-  h_gen->GetXaxis()->SetRange(0,25);
+  //  h_gen->GetXaxis()->SetRange(0,25);
   h_gen->GetXaxis()->SetTitle(XaxisTitle.c_str()); 
   h_gen->GetYaxis()->SetTitle(YaxisTitle.c_str());
   h_gen->GetYaxis()->SetTitleOffset(1.4);
@@ -2109,6 +2099,7 @@ void PlotUnfoldData(string var = "nJets", string fs = "4e", bool mad =1,bool tig
   else if(var == "EtaJet1") max =  h_gen->GetBinContent(1)+h_gen->GetBinContent(1)*0.80+h_unfdata->GetBinError(1);
   else if(var == "EtaJet2") max =  h_gen->GetBinContent(1)+h_gen->GetBinContent(1)*0.80+h_unfdata->GetBinError(1);
   else if(var == "dRZZ") max =  h_gen->GetBinContent(4)+h_gen->GetBinContent(4)+h_unfdata->GetBinError(1);
+  else if(var == "PtZZ") max =  h_gen->GetMaximum()*1.5;
   else  max =  h_gen->GetBinContent(1)+h_gen->GetBinContent(1)*0.50+h_unfdata->GetBinError(1);
 
   h_gen->SetMaximum(max);
@@ -2160,6 +2151,9 @@ void PlotUnfoldData(string var = "nJets", string fs = "4e", bool mad =1,bool tig
     h_unfdata_r->SetBinError(k,err_ratio);
   }
   pad2->cd();  
+  Float_t Max = h_unfdata_r->GetBinError(h_unfdata_r->GetMaximumBin())*1.6+h_unfdata_r->GetMaximum();
+  Float_t Min = -h_unfdata_r->GetBinError(h_unfdata_r->GetMinimumBin())*1.6+h_unfdata_r->GetMinimum();
+
   h_unfdata_r->SetTitle("");
   h_unfdata_r->SetMarkerColor(1);
   h_unfdata_r->SetLineColor(1); 
@@ -2173,9 +2167,13 @@ void PlotUnfoldData(string var = "nJets", string fs = "4e", bool mad =1,bool tig
   h_unfdata_r->GetYaxis()->SetTitleOffset(0.4);
   h_unfdata_r->GetYaxis()->SetTitleSize(0.10);
   h_unfdata_r->GetXaxis()->SetTitleSize(0.13);
-  h_unfdata_r-> SetMaximum(3.); 
-  h_unfdata_r-> SetMinimum(-1.);
+  h_unfdata_r-> SetMaximum(Max); 
+  h_unfdata_r-> SetMinimum(Min);
   h_unfdata_r->Draw("E");
+
+  h_cov->GetXaxis()->SetTitle(("reco "+XaxisTitle).c_str()); 
+  h_cov->GetYaxis()->SetTitle(("gen "+YaxisTitle).c_str()); 
+
   
   if(var == "nJets" || var == "nJets_Central"){
     h_unfdata_r->GetXaxis()->SetBinLabel(1,"0");
@@ -2183,6 +2181,21 @@ void PlotUnfoldData(string var = "nJets", string fs = "4e", bool mad =1,bool tig
     h_unfdata_r->GetXaxis()->SetBinLabel(3,"2");
     h_unfdata_r->GetXaxis()->SetBinLabel(4,">2");  
     h_unfdata_r->GetXaxis()->SetLabelFont(42);
+
+    h_cov->GetXaxis()->SetBinLabel(1,"0");
+    h_cov->GetXaxis()->SetBinLabel(2,"1");
+    h_cov->GetXaxis()->SetBinLabel(3,"2");
+    h_cov->GetXaxis()->SetBinLabel(4,">2");  
+    //    h_cov->GetXaxis()->SetBinLabel(5,">3");  
+    h_cov->GetXaxis()->SetLabelSize(0.05);
+    
+    h_cov->GetYaxis()->SetBinLabel(1,"0");
+    h_cov->GetYaxis()->SetBinLabel(2,"1");
+    h_cov->GetYaxis()->SetBinLabel(3,"2");
+    h_cov->GetYaxis()->SetBinLabel(4,">2");  
+    //    h_cov->GetYaxis()->SetBinLabel(5,">3");  
+    h_cov->GetYaxis()->SetLabelSize(0.05);
+
   }
 
   TLine *line = new TLine();
@@ -2207,11 +2220,71 @@ void PlotUnfoldData(string var = "nJets", string fs = "4e", bool mad =1,bool tig
   pad1->RedrawAxis();
   pad1->GetFrame()->Draw();
   
-  string png = "~/www/VBS/"+date+"/"+var+"/"+var + "_ZZTo"+fs+MCgen+tightfr+"_binwidth.png"; 
-  string pdf = "~/www/VBS/"+date+"/"+var+"/"+var + "_ZZTo"+fs+MCgen+tightfr+"_binwidth.pdf";
+  string png = SavePage+date+"/"+var+"/"+var + "_ZZTo"+fs+MCgen+tightfr+"_binwidth.png"; 
+  string pdf = SavePage+date+"/"+var+"/"+var + "_ZZTo"+fs+MCgen+tightfr+"_binwidth.pdf";
   c->SaveAs(pdf.c_str());
   c->SaveAs(png.c_str());
- }
+
+  TCanvas *c_cov = new TCanvas ("c_cov","c_cov");  
+
+  h_cov->SetMarkerColor(kGray+1);
+  h_cov->SetMarkerSize(1.4);
+  h_cov->Draw("COLZTEXT");
+  h_cov->Draw("colz text");
+  c_cov->SaveAs((SavePage+date+"/"+var+"/cov_"+var + "_ZZTo"+fs+MCgen+tightfr+".png").c_str());
+  c_cov->SaveAs((SavePage+date+"/"+var+"/cov_"+var + "_ZZTo"+fs+MCgen+tightfr+".pdf").c_str());
+
+
+  TLine *chi2line = new TLine(0.5,1/sqrt(2.),10.5,1/sqrt(2.));
+  chi2line->SetLineColor(2);
+  chi2line->SetLineStyle(7);
+  chi2line->SetLineWidth(2.);
+  h_chi2->GetXaxis()->SetTitle("N_{iteration}"); 
+  h_chi2->GetYaxis()->SetTitle("#chi^{2}/ndf");
+
+  int iter = 4;
+  if(h_unfdata_r->GetNbinsX()==2) iter=2;
+  TH1F *point = new TH1F();
+  point = (TH1F*)h_chi2->Clone();
+  point->Reset();
+  point->SetBinContent(iter,h_chi2->GetBinContent(iter));
+  point->SetMarkerStyle(20);
+  point->SetMarkerColor(2);
+
+
+  TH1F *pointDag = new TH1F();
+  pointDag = (TH1F*)h_chi2->Clone();
+  pointDag->Reset();
+  int DagBin = h_chi2->FindLastBinAbove(1/sqrt(2))+1;
+  if(DagBin==0) DagBin=1;
+  cout<<"DagBin "<<DagBin<<endl;
+  pointDag->SetBinContent(DagBin,h_chi2->GetBinContent(DagBin));
+  pointDag->SetMarkerStyle(20);
+  pointDag->SetMarkerColor(4);
+
+  TLegend *legChi2 = new TLegend(0.6,0.65,0.90,0.85); 
+  legChi2->AddEntry(point,"n iteration choesen","lpe");
+  legChi2->AddEntry(pointDag,"n iteration D'Agostini","lpe");
+  legChi2->AddEntry(chi2line,"#frac{1}{#sqrt{2}} threshold","l");
+ 
+  //  TArrow *ar = new TArrow(iter,h_chi2->GetBinContent(iter)*1.1,iter,h_chi2->GetBinContent(iter)*0.9,0.15,"|>");
+  //ar->SetLineColor(2);
+  // ar->SetLineWidth(8.);
+  //  TArrow *ar = new TArrow(iter,2,iter,1,0.05,"|>");
+
+  h_chi2->SetLineWidth(2.);
+  h_chi2->Draw("hist");
+  chi2line->Draw("same");
+  point->Draw("same hist P");
+  pointDag->Draw("same hist P");
+  legChi2->Draw("same");
+  c_cov->SaveAs((SavePage+date+"/"+var+"/chi2_"+var + "_ZZTo"+fs+MCgen+tightfr+".png").c_str());
+  c_cov->SaveAs((SavePage+date+"/"+var+"/chi2_"+var + "_ZZTo"+fs+MCgen+tightfr+".pdf").c_str());
+
+  unfData->Close();
+  data->Close();
+
+}
 void AllPlotBinWidth(bool mad =1, bool tightregion =0,string date = "test")
 {
   PlotUnfoldData4L("Mass",0, tightregion, date);
@@ -2326,7 +2399,7 @@ void FakeUnfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tig
   else tightfr = "";
  
   filePath = "../../../";
-   
+
   if(mad ==1){
     system(("mkdir "+filePath+ "UnfoldFolder"+tightfr+"_Mad/").c_str());  
     matrixFileName = "../" + var + "_test/matrices"+tightfr+"_Mad.root";
@@ -2339,31 +2412,36 @@ void FakeUnfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tig
     outputFileName = filePath+"UnfoldFolder"+tightfr+"_Pow/UnfoldData_"+ var + ".root";
     MCgen = "_Pow";
   }
+
+  std::string SavePage = "~/www/PlotsVV/13TeV/";
   
-  system(("mkdir ~/www/VBS/"+date+"/"+ var).c_str()); 
-  system(("cp ~/www/VBS/index.php ~/www/VBS/"+date+"/"+ var).c_str());
+  system(("mkdir "+SavePage+date+"/"+ var + "/FakeTest").c_str()); 
+  system(("cp "+SavePage+"index.php " +SavePage+date+"/"+var+"/FakeTest").c_str());
 
   dataFileName = "../" +var + "_test/DataToUnfoldFake.root";
+
+  matrix    = new TFile(matrixFileName.c_str());
+  data      = new TFile(dataFileName.c_str());
+  output    = new TFile(outputFileName.c_str(), "UPDATE");
   
-  matrix = new TFile(matrixFileName.c_str());
-  data = new TFile(dataFileName.c_str());
-  output = new TFile(outputFileName.c_str(), "UPDATE");
-  
-  matrixName = "ResMat_qqggJJ_" + var + "_ZZTo" + fs + "_st_01";
-  histoName = var +"_qqggJJ_ZZTo" + fs + "_st_01";
-  histoNameGen = var + "Gen_qqggJJ_ZZTo" + fs + "_st_01";
-  histoName_unf = "DataminusBkg_" + var + "_ZZTo"+fs;
-  
-  h_measured = (TH1*) matrix->Get(histoName.c_str());  
-  h_true = (TH1*) matrix->Get(histoNameGen.c_str());
-  h_Resmat = (TH2*)matrix->Get(matrixName.c_str()); 
+  matrixName     = "ResMat_qqggJJ_" + var + "_ZZTo" + fs + "_st_01";
+  histoName      = var +"_qqggJJ_ZZTo" + fs + "_st_01";
+  histoNameGen   = var + "Gen_qqggJJ_ZZTo" + fs + "_st_01";
+  histoName_unf  = "DataminusBkg_" + var + "_ZZTo"+fs;
+
+  h_measured     = (TH1*) matrix->Get(histoName.c_str());  
+  h_true         = (TH1*) matrix->Get(histoNameGen.c_str());
+  h_Resmat       = (TH2*) matrix->Get(matrixName.c_str()); 
   h_measured_unf = (TH1*) data->Get(histoName_unf.c_str());  
- 
+
+  cout<<histoName_unf.c_str()<<endl;
   RooUnfoldResponse response(h_measured, h_true, h_Resmat, "response", "response"); 
-  RooUnfoldSvd   unfold_svd(&response, h_measured_unf, kreg); 
-  RooUnfoldBayes unfold_bayes(&response, h_measured_unf,kreg);  
+  RooUnfoldSvd      unfold_svd(&response, h_measured_unf, kreg); 
+  RooUnfoldBayes    unfold_bayes(&response, h_measured_unf,kreg);  
  
-  if(bayes ==0) {h_unfolded= (TH1*) unfold_svd.Hreco(RooUnfold::kCovariance);
+
+
+  if(bayes ==0) {h_unfolded= (TH1*) unfold_bayes.Hreco(RooUnfold::kCovariance);
   }
   else if(bayes == 1){
     h_unfolded= (TH1*) unfold_bayes.Hreco(RooUnfold::kCovariance); 
@@ -2387,6 +2465,7 @@ void FakeUnfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tig
   else if(var =="EtaJet1")  XaxisTitle = "|#eta^{jet1}| ";
   else if(var =="EtaJet2")  XaxisTitle = "|#eta^{jet2}| ";
   else if(var =="dRZZ")  XaxisTitle = "#DeltaR(Z_{1},Z_{2}) ";
+  else if(var =="PtZZ")  XaxisTitle = "p_{T}^{ZZ}";
   
   YaxisTitle = "Events";
   string YaxisTitle2 = "Unfolded/True";
@@ -2400,7 +2479,7 @@ void FakeUnfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tig
   leg->SetTextFont(42); 
 
   h_true->SetTitle("");
-  h_true->GetXaxis()->SetRange(0,25);
+  //  h_true->GetXaxis()->SetRange(0,25);
   h_true->GetXaxis()->SetTitle(XaxisTitle.c_str()); 
   h_true->GetYaxis()->SetTitle(YaxisTitle.c_str());
 
@@ -2432,7 +2511,6 @@ void FakeUnfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tig
   h_measured_unf->SetLineColor(2);
   h_measured_unf->SetLineWidth(1);
   
- 
   leg->AddEntry(h_true,"MC truth","l"); 
   leg->Draw("SAME");
   leg->AddEntry(h_unfolded,"unfolded data","lep"); 
@@ -2446,19 +2524,20 @@ void FakeUnfold_data(string var = "Mass", string fs = "4e", bool mad =1,bool tig
   CMS_lumi(c, iPeriod, iPos );
   
   string algo;
-  if(bayes == 0){
-    if(kreg ==2) algo = "_SVD_2";
-    else if(kreg ==4) algo = "_SVD_4";
-  }
-  else if(bayes ==1 && kreg == 2) algo = "_bayes_2"; 
-  else if(bayes ==1 && kreg == 4) algo = "_bayes_4";
 
-  string png = "~/www/VBS/"+date+"/"+ var+"/"+var + "_ZZTo" + fs + MCgen+tightfr +algo+".png"; 
-  string pdf = "~/www/VBS/"+date+"/"+ var+"/"+var + "_ZZTo" + fs + MCgen+tightfr +algo+ ".pdf";
+  if(bayes == 0) algo = "_SVD_"+to_string(kreg);
+  else  algo = "_bayes_"+to_string(kreg);
+
+  string png = SavePage+date+"/"+ var+"/FakeTest/"+var + "_ZZTo" + fs + MCgen+tightfr +algo+".png"; 
+  string pdf = SavePage+date+"/"+ var+"/FakeTest/"+var + "_ZZTo" + fs + MCgen+tightfr +algo+ ".pdf";
   c->SaveAs(pdf.c_str());
   c->SaveAs(png.c_str());
 
-  // output->cd();   
+
+  matrix->Close();
+  data->Close();
+  output->Close(); 
+
   // h_unfolded->Write(unfHistoName.c_str());
   // h_measured_unf->Write(recoHistoName.c_str());
   // h_measured->Write(recoMCHistoName.c_str());
@@ -2532,8 +2611,8 @@ void Systematics_value(string var = "nJets", string fs = "4e", string syst = "MC
   float syst_percentage[9];
   if(syst == "MCgen" || syst == "UnfDataOverGenMC"){
     h_unfolded_p = (TH1*) unfSyst->Get(unfHistoName.c_str());
-    h_max = (TH1*)h_unfolded_p->Clone("");;
-    h_min = (TH1*)h_unfolded_p->Clone("");;
+    h_max = (TH1*)h_unfolded_p->Clone("");
+    h_min = (TH1*)h_unfolded_p->Clone("");
     for(int i = 1; i<9; i++){
       max = 0;
       min = 0;
@@ -2553,8 +2632,8 @@ void Systematics_value(string var = "nJets", string fs = "4e", string syst = "MC
   else if(syst=="qqgg"||syst=="IrrBkg"||syst=="RedBkg"||syst=="JER"||syst=="JES_ModMat"||syst=="JES_ModData"||syst=="SF"||syst=="SFSq"){
     h_unfolded_p = (TH1*) unfSyst->Get(systHistoName_p.c_str());
     h_unfolded_m = (TH1*) unfSyst->Get(systHistoName_m.c_str());
-    h_max = (TH1*)h_unfolded_p->Clone("");;
-    h_min = (TH1*)h_unfolded_p->Clone("");;
+    h_max = (TH1*)h_unfolded_p->Clone("");
+    h_min = (TH1*)h_unfolded_p->Clone("");
     for(int i = 1; i<9; i++){
       
       syst_percentage[i-1]=0;
@@ -2593,7 +2672,12 @@ void Systematics_value(string var = "nJets", string fs = "4e", string syst = "MC
   cout << syst << ": + " <<  totUnc_max*100 << "% - " << totUnc_min*100 << "%" <<endl;
   std::cout << "Max syst = " << M << "%   Min syst = " << m << "%" << endl;
 
- }
+  unfSyst->Close(); //HOT
+  data->Close();
+  unfSyst->Close();
+  matrix->Close();
+
+}
 
 void AllSystematicsValues(string var = "nJets", string fs = "4e", bool mad =1,bool tightregion =0){
 
@@ -2647,12 +2731,15 @@ void PlotResults_4l(string var = "nJets", string syst = "MCgen", bool mad =1,boo
   string systHistoName_p;
   string systHistoName_m;
   TH1 *h_true_othMC;
-  system(("mkdir ~/www/VBS/"+date).c_str());
-  system(("cp ~/www/VBS/index.php ~/www/VBS/"+date).c_str()); 
-  system(("mkdir ~/www/VBS/"+date+"/"+ var).c_str());
-  system(("cp ~/www/VBS/index.php ~/www/VBS/"+date+"/"+ var).c_str()); 
-  system(("mkdir ~/www/VBS/"+date+"/"+ var+"/Systematics").c_str()); 
-  system(("cp ~/www/VBS/index.php ~/www/VBS/"+date+"/"+ var+"/Systematics").c_str());
+
+  std::string SavePage = "~/www/PlotsVV/13TeV/";
+
+  system(("mkdir "+SavePage+date).c_str());
+  system(("cp "+SavePage+"index.php " +SavePage+date).c_str()); 
+  system(("mkdir "+SavePage+date+"/"+ var).c_str());
+  system(("cp "+SavePage+"index.php " +SavePage+date+"/"+ var).c_str()); 
+  system(("mkdir "+SavePage+date+"/"+ var+"/Systematics").c_str()); 
+  system(("cp "+SavePage+"index.php " +SavePage+date+"/"+ var+"/Systematics").c_str());
   
   filePath = "../../../";
   if(mad ==1){
@@ -2795,8 +2882,8 @@ void PlotResults_4l(string var = "nJets", string syst = "MCgen", bool mad =1,boo
       dxmax_2e2m[i-1] = 0;
       dxmin_2e2m[i-1] =0;
 
-      Double_t vec_4e[] ={h_unfolded_4e_p->GetBinContent(i),h_unfolded_4e_m->GetBinContent(i),h_unfolded_4e->GetBinContent(i)};
-      Double_t vec_4m[] ={h_unfolded_4m_p->GetBinContent(i),h_unfolded_4m_m->GetBinContent(i),h_unfolded_4m->GetBinContent(i)};
+      Double_t vec_4e[]   ={h_unfolded_4e_p->GetBinContent(i),  h_unfolded_4e_m->GetBinContent(i)  ,h_unfolded_4e->GetBinContent(i)};
+      Double_t vec_4m[]   ={h_unfolded_4m_p->GetBinContent(i),  h_unfolded_4m_m->GetBinContent(i)  ,h_unfolded_4m->GetBinContent(i)};
       Double_t vec_2e2m[] ={h_unfolded_2e2m_p->GetBinContent(i),h_unfolded_2e2m_m->GetBinContent(i),h_unfolded_2e2m->GetBinContent(i)};
       float max_4e = 0;
       float min_4e= vec_4e[0];
@@ -2853,12 +2940,12 @@ void PlotResults_4l(string var = "nJets", string syst = "MCgen", bool mad =1,boo
     h_unfolded-> SetBinContent(i,c_val);
     h_true->SetBinContent(i,c_val_true);
     h_true_othMC->SetBinContent(i,c_val_true_othMC);
-
-    // cout << "c_val = " << c_val << endl;
-    // cout << " c_val+unc_p = " << c_val+ unc_p << endl;
-    // cout << " c_val-unc_m = " << c_val - unc_m << endl;
-    // cout << "c_true  = " << c_val_true << endl; 
-    // cout << "c_true_othMC  = " << c_val_true_othMC << endl;
+    cout<< "bin "<<i<<endl;
+    cout << "c_val = " << c_val << endl;
+    cout << " c_val+unc_p = " << c_val+ unc_p << " rel "<<(100*unc_p)/c_val<<" % "<<endl;
+    cout << " c_val-unc_m = " << c_val - unc_m << " rel "<<(100*unc_m)/c_val<<" % "<<endl;
+    cout << "c_true  = " << c_val_true << endl; 
+    cout << "c_true_othMC  = " << c_val_true_othMC << endl;
 
 }
   
@@ -2931,6 +3018,11 @@ void PlotResults_4l(string var = "nJets", string syst = "MCgen", bool mad =1,boo
    YaxisTitle = "Events/GeV";
    //max_y = h_true->GetBinContent(1)+30;//*2+100;
   }  
+  else if(var == "PtZZ"){
+   XaxisTitle = "p_{T}^{ZZ}) "; 
+   YaxisTitle = "Events/GeV";
+   //max_y = h_true->GetBinCgontent(1)+30;//*2+100;
+  }  
 
   max_y = h_true->GetMaximum()*1.5; 
   h_max->Scale(1,"width");
@@ -2948,7 +3040,7 @@ void PlotResults_4l(string var = "nJets", string syst = "MCgen", bool mad =1,boo
   h_max->SetFillStyle(3001);
   h_max->SetLineColor(10);
   h_max->SetTitle("");
-  h_max->GetXaxis()->SetRange(0,25);
+  //  h_max->GetXaxis()->SetRange(0,25);
   h_max->GetXaxis()->SetTitle(XaxisTitle.c_str());  
   h_max->GetYaxis()->SetTitle(YaxisTitle.c_str()); 
   h_max->SetMaximum(max_y/binwidth);
@@ -3021,11 +3113,15 @@ void PlotResults_4l(string var = "nJets", string syst = "MCgen", bool mad =1,boo
   leg->AddEntry(h_max,syst_uncertainty.c_str(),"f"); 
   leg->Draw("SAME");
 
-  string png = " ~/www/VBS/"+date+"/"+ var+"/Systematics/ZZTo4l_"+var+"_"+syst+MCgen+tightfr+".png";
-  string pdf =" ~/www/VBS/"+date+"/"+ var+"/Systematics/ZZTo4l_"+var+"_"+syst+MCgen+tightfr+".pdf";
+  string png = SavePage+date+"/"+ var+"/Systematics/ZZTo4l_"+var+"_"+syst+MCgen+tightfr+".png";
+  string pdf = SavePage+date+"/"+ var+"/Systematics/ZZTo4l_"+var+"_"+syst+MCgen+tightfr+".pdf";
   c->SaveAs(png.c_str());
   c->SaveAs(pdf.c_str());
 
+  unfSyst->Close(); //HOT                                                                                                                                                                                                                    
+  data->Close();
+  unfSyst->Close();
+  matrix->Close();
 }
 
 void AllPlots_4l(string var = "nJets", bool mad =1,bool tightregion =0,string date = "test"){
@@ -3046,12 +3142,38 @@ void AllPlots_4l(string var = "nJets", bool mad =1,bool tightregion =0,string da
 }
 
 void PlotAllSyst_4l(string var = "nJets", string date = "test"){
-  AllPlots_4l(var.c_str(),1,0, date.c_str());
+  //  AllPlots_4l(var.c_str(),1,0, date.c_str());
   AllPlots_4l(var.c_str(),1,1, date.c_str());
   AllPlots_4l(var.c_str(),0,1, date.c_str());
-  AllPlots_4l(var.c_str(),0,0, date.c_str());
+  // AllPlots_4l(var.c_str(),0,0, date.c_str());
+}
+
+
+void AllSteps(string date = "test"){
+  foreach(const std::string &var, Variables){
+    AllYouNeed_Var2(var.c_str(),date);
+    PlotAllSyst_4l(var.c_str(),date);
+  }
+}
+// FakePlot(string var = "Mass", bool mad =1, string date = "test", bool bayes = 1, int kreg = 2)
+void  FakeAllStep(string date = "test"){
+   foreach(const std::string &var, Variables){
+     //MAD
+    FakePlot(var,1, date, 0, 2);
+    FakePlot(var,1, date, 0, 4);
+    FakePlot(var,1, date, 1, 1);
+    FakePlot(var,1, date, 1, 2);
+    FakePlot(var,1, date, 1, 3);
+    FakePlot(var,1, date, 1, 4);
+    //POW
+    FakePlot(var,0, date, 0, 2);
+    FakePlot(var,0, date, 0, 4);
+    FakePlot(var,0, date, 1, 2);
+    FakePlot(var,0, date, 1, 4);
+   }
 }
 
 #ifndef __CINT__
 int main () { AllYouNeed_Var2(); return 0; }  // Main program when run stand-alone
 #endif
+

@@ -1,7 +1,10 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "DataToUnfold.h"
-#include "tdrstyle.C"
-#include "CMS_lumi.C"
+#include "tdrstyle.h"
+#include "CMS_lumi.h"
+// #include "tdrstyle.C"
+// #include "CMS_lumi.C"
+//#include "PersonalInfo.cxx"
 #endif
 
 using namespace std;
@@ -16,9 +19,7 @@ DataToUnfold::DataToUnfold(): TObject()
   red = new TFile("../../results/ZZRecoAnalyzer_CR/data.root"); 
   //irreducible backgrounds
    ttZ = new TFile("../../results/ZZRecoAnalyzer_SR/TTZToLL.root");
-   //ttWW = new TFile("../../results/ZZRecoAnalyzer_SR/TTWWJets.root");
    WWZ = new TFile("../../results/ZZRecoAnalyzer_SR/WWZ.root");
-  rescue = new TFile("../../results/ZZRecoAnalyzer_SR/ggH126.root");
  
 }
 
@@ -32,25 +33,11 @@ void DataToUnfold::Build(string var, string finalstate)
 {
   output = new TFile((var+"_test/DataToUnfold.root").c_str(), "UPDATE");
   output_syst =   new TFile((var+"_test/DataToUnfold_syst.root").c_str(), "UPDATE");
-//system(("mkdir "+var+"_test").c_str()); 
-  int b = 0;  
-  if(var == "Mass" || var == "dRZZ")  variable = var;
-  else  variable = var + "_JERSmear";
- 
-  if(var == "Mass")  b = 9;
-  else if(var == "nJets" || var == "nJets_Central") b = 5;
-  else if(var == "Mjj" || var == "Mjj_Central" || var == "Deta" || var == "Deta_Central") b = 3;
-  else if(var == "PtJet1") b = 6;
-  else if(var == "PtJet2") b = 5;
-  else if(var == "EtaJet1" || var == "EtaJet2" ) b = 6;
-  else if(var == "dRZZ") b = 6;
-
-
+  
+  variable = var;
 
   histoName          = "ZZTo" + finalstate + "_" + var + "_01";
   histoMCName        = "ZZTo" + finalstate + "_" + variable + "_01";
-  safeHistoName      = "ZZTo" + finalstate + "_" + var + "_JERUpSmear_01";
-  safeHistoName_mass = "ZZTo" + finalstate + "_" + var + "_01";
   dataName           = "DataminusBkg_"+var+"_ZZTo"+finalstate;
   TotdataName        = "TotData_"+var+"_ZZTo"+finalstate;
   dataIrrpName       = "DataminusBkg_irrp_"+var+"_ZZTo"+finalstate; 
@@ -58,23 +45,16 @@ void DataToUnfold::Build(string var, string finalstate)
   dataRedpName       = "DataminusBkg_redp_"+var+"_ZZTo"+finalstate; 
   dataRedmName       = "DataminusBkg_redm_"+var+"_ZZTo"+finalstate;
 
-  h_totdata = (TH1*) data->Get(histoName.c_str()); 
-  h_data    = (TH1*) h_totdata->Clone("h_totdata");
-  h_red     = (TH1*) red->Get(histoName.c_str()); 
+  h_totdata  = (TH1*) data->Get(histoName.c_str()); 
+  h_data     = (TH1*) h_totdata->Clone("h_totdata");
+  h_red      = (TH1*) red->Get(histoName.c_str()); 
+  h_ttZ      = (TH1*) ttZ->Get(histoMCName.c_str()); 
+  h_WWZ      = (TH1*) WWZ->Get(histoMCName.c_str()); 
 
-  h_ttZ = (TH1*) ttZ->Get(histoMCName.c_str()); 
-  // h_ttWW = (TH1*) ttWW->Get(histoMCName.c_str()); 
-  h_WWZ = (TH1*) WWZ->Get(histoMCName.c_str()); 
-  h_safe_tmp = (TH1*) rescue->Get(safeHistoName_mass.c_str());
-  h_safe     = (TH1*) h_safe_tmp->Clone(safeHistoName.c_str());
-
-
-  for(int l=1; l<b; l++){
-    h_safe->SetBinContent(l,0.);
-    h_safe->SetBinError(l,0.);  
-  }
-  
-  if(h_red == NULL) h_red = (TH1*) h_safe->Clone("h_safe");
+  if(h_totdata  ==NULL) {cout <<"histo "<<h_totdata->GetName()<<" is null. Abort"<<endl; abort();} 
+  if(h_red      ==NULL) {cout <<"histo "<<h_red->GetName()<<" is null. Abort"<<endl; abort();}  
+  if(h_ttZ      ==NULL) {cout <<"histo "<<h_ttZ->GetName()<<" is null. Abort"<<endl; abort();} 
+  if(h_WWZ      ==NULL) {cout <<"histo "<<h_WWZ->GetName()<<" is null. Abort"<<endl; abort();} 
   
   h_data_irrp = (TH1*)h_totdata->Clone("h_totdata");
   h_data_irrm = (TH1*)h_totdata->Clone("h_totdata");
@@ -88,7 +68,9 @@ void DataToUnfold::Build(string var, string finalstate)
   float dmb_irrm =0;
   float dmb_redp =0;
   float dmb_redm =0;
-  for(int i =1; i<b; i++){
+
+  int b = h_totdata->GetNbinsX();
+  for(int i =1; i<=b; i++){
     dataminusbkg = 0;
     err_irr = 0;
     err_red = 0;
@@ -98,6 +80,7 @@ void DataToUnfold::Build(string var, string finalstate)
     dmb_redp =0;
     dmb_redm =0;
     
+    //    cout<<"all "<< h_totdata->GetBinContent(i) <<" red "<<h_red->GetBinContent(i)<<" irr "<<h_ttZ->GetBinContent(i)<<" irr 2 "<<h_WWZ->GetBinContent(i)<<endl; 
     //    dataminusbkg = h_totdata->GetBinContent(i)- h_red->GetBinContent(i)- h_ttZ->GetBinContent(i)-h_ttWW->GetBinContent(i)-h_WWZ->GetBinContent(i); //FIXME
     dataminusbkg = h_totdata->GetBinContent(i)- h_red->GetBinContent(i)- h_ttZ->GetBinContent(i)-h_WWZ->GetBinContent(i); 
     //    dataminusbkg = h_totdata->GetBinContent(i)- h_red->GetBinContent(i)- h_Irr->GetBinContent(i);
@@ -106,9 +89,10 @@ void DataToUnfold::Build(string var, string finalstate)
     //    err_irr = sqrt(h_ttZ->GetBinError(i)*h_ttZ->GetBinError(i)+h_ttWW->GetBinError(i)*h_ttWW->GetBinError(i)+h_WWZ->GetBinError(i)*h_WWZ->GetBinError(i));
     err_irr = sqrt(h_ttZ->GetBinError(i)*h_ttZ->GetBinError(i)+h_WWZ->GetBinError(i)*h_WWZ->GetBinError(i));
     //    err_irr = sqrt(h_Irr->GetBinError(i)*h_Irr->GetBinError(i));
-    err_red = h_red->GetBinError(i);
-    err_red_tot=+ err_red*err_red;
+    //    err_red = h_red->GetBinError(i);
+    //    err_red_tot=+ err_red*err_red;
 
+    err_red = h_red->GetBinContent(i)*0.3;
     dmb_irrp = dataminusbkg + err_irr;
     dmb_irrm = dataminusbkg - err_irr;
     dmb_redp = dataminusbkg + err_red;
@@ -155,17 +139,17 @@ void DataToUnfold::Build(string var, string finalstate)
   // std::cout <<  "    tot_irr = " << tot_irr << " +- " << err_irr_tot << "(" <<err_irr_tot/tot_data*100 << "%) " << err_irr_tot/tot_irr*100 <<std::endl; 
   // std::cout <<  "    final data = " << finaldata << " +- " << err_finaldata << std::endl;
   // std::cout <<   "==============================================" << std::endl;  
-  
+
  output->cd();    
- h_data->Write(dataName.c_str());
- h_totdata->Write(TotdataName.c_str());
+ h_data->Write(dataName.c_str(),TObject::kOverwrite);
+ h_totdata->Write(TotdataName.c_str(),TObject::kOverwrite);
  output->Close();
  
  output_syst->cd();
- h_data_irrp->Write(dataIrrpName.c_str());
- h_data_irrm->Write(dataIrrmName.c_str());
- h_data_redp->Write(dataRedpName.c_str());
- h_data_redm->Write(dataRedmName.c_str());
+ h_data_irrp->Write(dataIrrpName.c_str(),TObject::kOverwrite);
+ h_data_irrm->Write(dataIrrmName.c_str(),TObject::kOverwrite);
+ h_data_redp->Write(dataRedpName.c_str(),TObject::kOverwrite);
+ h_data_redm->Write(dataRedmName.c_str(),TObject::kOverwrite);
  output_syst->Close();
 
 }
@@ -174,69 +158,43 @@ void DataToUnfold::Build(string var, string finalstate)
 void DataToUnfold::Build_JE(string var, string finalstate)
 {
   output = new TFile((var+"_test/DataToUnfold_JES.root").c_str(), "UPDATE");
-  int b = 0;  
 
-  if(var == "Mass")  b = 9;
-  else if(var == "nJets" || var == "nJets_Central") b = 5;
-  else if(var == "Mjj" || var == "Mjj_Central" || var == "Deta" || var == "Deta_Central") b = 3;
-  else if(var == "PtJet1") b = 6;
-  else if(var == "PtJet2") b = 5;
-  else if(var == "EtaJet1" || var == "EtaJet2" ) b = 6;
-  else if(var == "dRZZ") b = 6;
+  histoName_up     = "ZZTo" + finalstate + "_" + var+"_JESDataUpSmear_01"; 
+  histoName_down   = "ZZTo" + finalstate + "_" + var+"_JESDataDownSmear_01"; 
+  histoMCName      = "ZZTo" + finalstate + "_" + var+"_01";
 
-  histoName_up     = "ZZTo" + finalstate + "_"+var+"_JESDataUpSmear_01"; 
-  histoName_down   = "ZZTo" + finalstate + "_"+var+"_JESDataDownSmear_01"; 
-  histoMCName      = "ZZTo" + finalstate + "_"+var+"_JERSmear_01";
-  safeHistoName    = "ZZTo" + finalstate + "_" + var + "_JERSmear_01";
   dataName_up      = "DataminusBkg_"+var+"_ZZTo"+finalstate+"_JESUp";
   dataName_down    = "DataminusBkg_"+var+"_ZZTo"+finalstate+"_JESDown";
   TotdataName_up   = "TotData_"+var+"_ZZTo"+finalstate+"_JESUp";
   TotdataName_down = "TotData_"+var+"_ZZTo"+finalstate+"_JESDown";
-
-  //  std::cout<<histoName_up<<" "<<histoMCName<<" "<<dataName_up<<" "<<TotdataName_up<<" "<<safeHistoName<<std::endl;
 
   h_totdata_up     = (TH1*) data->Get(histoName_up.c_str());    
   h_totdata_down   = (TH1*) data->Get(histoName_down.c_str()); 
   h_data_up        = (TH1*) h_totdata_up->Clone("h_totdata_up");  
   h_data_down      = (TH1*) h_totdata_down->Clone("h_totdata_down"); 
 
-
   h_red_up         = (TH1*) red->Get(histoName_up.c_str());
   h_red_down       = (TH1*) red->Get(histoName_down.c_str());
 
-  //  h_Irr            = (TH1*) Irr->Get(histoMCName.c_str()); //DEL
+
   h_ttZ = (TH1*) ttZ->Get(histoMCName.c_str());
-  // h_ttWW = (TH1*) ttWW->Get(histoMCName.c_str()); 
   h_WWZ = (TH1*) WWZ->Get(histoMCName.c_str());
 
-  h_safe_tmp = (TH1*) rescue->Get(safeHistoName.c_str());
-  h_safe = (TH1*)h_safe_tmp->Clone(safeHistoName.c_str());
-
-  for(int l=1; l<b; l++){
-    h_safe->SetBinContent(l,0.);
-    h_safe->SetBinError(l,0.);  
-  }
-  
-
-  if(h_red_up == NULL)   h_red_up = (TH1*)   h_safe->Clone("h_safe");
-  if(h_red_down == NULL) h_red_down = (TH1*) h_safe->Clone("h_safe");
+ 
+  if(h_red_up == NULL)  {cout<<"histo "<<h_red_up->GetName()<<" is Null"<<endl; abort();}
+  if(h_red_down == NULL){cout<<"histo "<<h_red_down->GetName()<<" is Null"<<endl; abort();}
 
   float dmb_up = 0;
   float dmb_down = 0;
   
-
-  for(int i =1; i<b; i++){
-
+  int b = h_red_up->GetNbinsX();
+  for(int i =1; i<=b; i++){
     dmb_up = 0;
-    //    dmb_up = h_totdata_up->GetBinContent(i)- h_red_up->GetBinContent(i)- h_ttZ->GetBinContent(i)-h_ttWW->GetBinContent(i)-h_WWZ->GetBinContent(i);
-    dmb_up = h_totdata_up->GetBinContent(i)- h_red_up->GetBinContent(i)- h_ttZ->GetBinContent(i)-h_WWZ->GetBinContent(i);
-    //    dmb_up = h_totdata_up->GetBinContent(i)- h_red_up->GetBinContent(i)- h_Irr->GetBinContent(i);
+    dmb_up = h_totdata_up->GetBinContent(i) - h_red_up->GetBinContent(i) - h_ttZ->GetBinContent(i) - h_WWZ->GetBinContent(i);
     if(dmb_up>0.) h_data_up-> SetBinContent(i,dmb_up);
     else h_data_up-> SetBinContent(i,0.);
     dmb_down = 0;
-    //    dmb_down = h_totdata_down->GetBinContent(i)- h_red_down->GetBinContent(i)- h_ttZ->GetBinContent(i)-h_ttWW->GetBinContent(i)-h_WWZ->GetBinContent(i);
-    dmb_down = h_totdata_down->GetBinContent(i)- h_red_down->GetBinContent(i)- h_ttZ->GetBinContent(i)-h_WWZ->GetBinContent(i);
-    //   dmb_down = h_totdata_down->GetBinContent(i)- h_red_down->GetBinContent(i)- h_Irr->GetBinContent(i); //FIXME
+    dmb_down = h_totdata_down->GetBinContent(i) - h_red_down->GetBinContent(i) - h_ttZ->GetBinContent(i) - h_WWZ->GetBinContent(i);
     if(dmb_down>0.) h_data_down-> SetBinContent(i,dmb_down);
     else h_data_down-> SetBinContent(i,0.);
 
@@ -244,10 +202,10 @@ void DataToUnfold::Build_JE(string var, string finalstate)
   }
   
   output->cd();   
-  h_data_up->Write(dataName_up.c_str());
-  h_totdata_up->Write(TotdataName_up.c_str()); 
-  h_data_down->Write(dataName_down.c_str());
-  h_totdata_down->Write(TotdataName_down.c_str());
+  h_data_up->Write(dataName_up.c_str(),TObject::kOverwrite);
+  h_totdata_up->Write(TotdataName_up.c_str(),TObject::kOverwrite); 
+  h_data_down->Write(dataName_down.c_str(),TObject::kOverwrite);
+  h_totdata_down->Write(TotdataName_down.c_str(),TObject::kOverwrite);
   output->Close();
 }
 
@@ -330,6 +288,10 @@ void DataToUnfold::Plot(string var,string finalstate, string path)
    xAxis = "reco #DeltaR(Z_1,Z_2)";
    //    max = matrix->GetBinContent(2,2)/2;
  }
+   else if(var =="PtZZ"){
+   xAxis = "reco p_{T}^{4#ell}";
+   //    max = matrix->GetBinContent(2,2)/2;
+ }
   TLegend *leg1 = new TLegend(0.65,0.65,0.6,0.85);
   leg1->SetFillColor(kWhite);
   leg1->SetBorderSize(0);
@@ -393,10 +355,12 @@ void DataToUnfold::Plot(string var,string finalstate, string path)
   leg->AddEntry(h_data_redm,"data-background (- err_red)","l"); 
   leg->Draw("SAME");
   
-  string png ="~/www/VBS/"+path+"/"+var+"/"+"Data_"+var+"_ZZTo" + finalstate + ".png";
-  string pdf ="~/www/VBS/"+path+"/"+var+"/"+"Data_"+var+"_ZZTo" + finalstate + ".pdf";
-  string png_syst ="~/www/VBS/"+path+"/"+var+"/"+"Data_syst_"+var+"_ZZTo" + finalstate + ".png";
-  string pdf_syst ="~/www/VBS/"+path+"/"+var+"/"+"Data_syst_"+var+"_ZZTo" + finalstate + ".pdf";
+  std::string SavePage = "~/www/PlotsVV/13TeV/";
+
+  string png =SavePage+path+"/"+var+"/"+"Data_"+var+"_ZZTo" + finalstate + ".png";
+  string pdf =SavePage+path+"/"+var+"/"+"Data_"+var+"_ZZTo" + finalstate + ".pdf";
+  string png_syst =SavePage+path+"/"+var+"/"+"Data_syst_"+var+"_ZZTo" + finalstate + ".png";
+  string pdf_syst =SavePage+path+"/"+var+"/"+"Data_syst_"+var+"_ZZTo" + finalstate + ".pdf";
   c->Print(png.c_str());
   c->Print(pdf.c_str());
   c1->Print(png_syst.c_str());

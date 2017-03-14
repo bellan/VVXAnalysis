@@ -1,4 +1,5 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
+
 #include <TFile.h>
 #include <TTree.h>
 #include "ResponseMatrix.h"
@@ -7,20 +8,23 @@
 #include "DataToUnfold.h"
 #include "PurityAndStability.h"
 //#include <sys/types.h>
+//#include "PersonalInfo.cxx"
 #include <sys/stat.h>
+#include <boost/foreach.hpp>
+#define foreach BOOST_FOREACH
 #endif
 
+std::vector<std::string> Variables   = {"Mass","nJets","nJets_Central","Mjj","Mjj_Central","Deta","Deta_Central","PtJet1","PtJet2","EtaJet1","EtaJet2","dRZZ","PtZZ"};
 
 //Build response matrices
 void GenerateDistributions(string var, bool madgraph, bool tightregion)
 {   
   struct stat st;
   if(stat((var+"_test").c_str(),&st) != 0)  system(("mkdir "+var+"_test").c_str());
-  ResponseMatrix *matrix_jesf = new ResponseMatrix(0,madgraph,tightregion);
-  DataToUnfold *datatounfold = new DataToUnfold(); 
-  PurityAndStability *pas = new PurityAndStability(madgraph); 
-  ResponseMatrix *matrix = new ResponseMatrix(0,madgraph,tightregion);
-  
+  ResponseMatrix     *matrix_jesf  = new ResponseMatrix(0,madgraph,tightregion);
+  DataToUnfold       *datatounfold = new DataToUnfold(); 
+  PurityAndStability *pas          = new PurityAndStability(madgraph); 
+  ResponseMatrix     *matrix       = new ResponseMatrix(0,madgraph,tightregion);
   for(int p=-1; p<2; p++){
     for(int q=-1; q<2; q++){    
       matrix->Build(var,"01","4e",p,q,madgraph);
@@ -34,7 +38,7 @@ void GenerateDistributions(string var, bool madgraph, bool tightregion)
       matrix->Build(var,"0","2e2m",p,q,madgraph);
     } 
   }
-  
+
   if(tightregion == 0){ 
     datatounfold->Build(var,"4e");
     datatounfold->Build(var,"4m");
@@ -50,7 +54,8 @@ void GenerateDistributions(string var, bool madgraph, bool tightregion)
   matrix_jesf->Build_SF(var,"01","4m","SFErrSqPlus",madgraph);
   matrix_jesf->Build_SF(var,"01","2e2m","SFErrSqMinus",madgraph);
   matrix_jesf->Build_SF(var,"01","2e2m","SFErrSqPlus",madgraph);
-  if(var!="Mass" &&  var!="dRZZ"){ 
+
+  if(var!="Mass" &&  var!="dRZZ" && var!="PtZZ"){ 
     matrix_jesf->Build_JE(var,"01","4e","JESDown",madgraph);
     matrix_jesf->Build_JE(var,"01","4e","JESUp",madgraph);
     matrix_jesf->Build_JE(var,"01","4e","JERDown",madgraph);
@@ -70,16 +75,26 @@ void GenerateDistributions(string var, bool madgraph, bool tightregion)
       datatounfold->Build_JE(var,"2e2m");
     }
   }
+  matrix->CloseFiles();
+  // matrix->Delete();  
+  // pas->Delete();
+  // matrix_jesf->Delete();
+  // datatounfold->Delete();
+  // delete matrix;  
+  // delete pas;
+  // delete matrix_jesf;
+  // delete datatounfold;
  }
 
 void Plot(string var, string date, bool madgraph, bool tightregion){
 
-  system(("mkdir ~/www/VBS/"+date).c_str()); 
-  system(("cp ~/www/VBS/index.php ~/www/VBS/"+date).c_str()); 
-  system(("mkdir ~/www/VBS/"+date+"/"+ var).c_str()); 
-  system(("cp ~/www/VBS/index.php ~/www/VBS/"+date+"/"+ var).c_str());
-  system(("mkdir ~/www/VBS/"+date+"/"+ var+"/PurityAndStability").c_str()); 
-  system(("cp ~/www/VBS/index.php ~/www/VBS/"+date+"/"+ var+"/PurityAndStability").c_str());
+  std::string SavePage = "~/www/PlotsVV/13TeV/";
+  system(("mkdir "+SavePage+date).c_str()); 
+  system(("cp "+SavePage+"index.php "+SavePage+date).c_str()); 
+  system(("mkdir "+SavePage+date+"/"+ var).c_str()); 
+  system(("cp "+SavePage+"index.php "+SavePage+date+"/"+ var).c_str());
+  system(("mkdir "+SavePage+date+"/"+ var+"/PurityAndStability").c_str()); 
+  system(("cp "+SavePage+"index.php "+SavePage+date+"/"+ var+"/PurityAndStability").c_str());
 
   ResponseMatrix *matrix = new ResponseMatrix(0,madgraph,tightregion);
   DataToUnfold *datatounfold = new DataToUnfold();
@@ -97,6 +112,10 @@ void Plot(string var, string date, bool madgraph, bool tightregion){
     datatounfold->Plot(var,"2e2m",date); 
     pas->Plot_PAS(var,"2e2m",date);
   }
+  matrix->CloseFiles();
+  matrix->Delete();  
+  pas->Delete();
+  datatounfold->Delete();
 }
 
 //Build weighted response matrices
@@ -115,7 +134,7 @@ void GenerateWeightedDistributions(string var, bool madgraph, bool tightregion)
   w_matrix->Build(var,"01","2e2m",0,0,madgraph);
   w_matrix->Build(var,"1","2e2m",0,0,madgraph);
   w_matrix->Build(var,"0","2e2m",0,0,madgraph);
-  
+  w_matrix->Delete();
 }
 
 void AllDistributions_var(string var){
@@ -162,6 +181,7 @@ struct stat st;
   matrix->GenMCSystDistributions(var,"0","4m", madgraph);
   matrix->GenMCSystDistributions(var,"0","2e2m", madgraph);
 
+  matrix->Delete();
 }
 
 void GenerateGenMCUpDown_Var(string var)
@@ -212,90 +232,29 @@ void GenerateGenMGatNLOUpDownDistributions(string var, bool tightregion)
 }
 void GenerateGenMGatNLOUpDown_All()
 {   
-  GenerateGenMGatNLOUpDownDistributions("nJets",0);
-  GenerateGenMGatNLOUpDownDistributions("nJets_Central",0); 
-  GenerateGenMGatNLOUpDownDistributions("Mjj_Central",0); 
-  GenerateGenMGatNLOUpDownDistributions("Deta_Central",0);
-  GenerateGenMGatNLOUpDownDistributions("Mjj",0); 
-  GenerateGenMGatNLOUpDownDistributions("Deta",0);
-  GenerateGenMGatNLOUpDownDistributions("Mass",0);
-  GenerateGenMGatNLOUpDownDistributions("PtJet1",0);
-  GenerateGenMGatNLOUpDownDistributions("PtJet2",0); 
-  GenerateGenMGatNLOUpDownDistributions("EtaJet1",0);
-  GenerateGenMGatNLOUpDownDistributions("EtaJet2",0); 
-  GenerateGenMGatNLOUpDownDistributions("nJets",1);
-  GenerateGenMGatNLOUpDownDistributions("nJets_Central",1); 
-  GenerateGenMGatNLOUpDownDistributions("Mjj_Central",1); 
-  GenerateGenMGatNLOUpDownDistributions("Deta_Central",1);
-  GenerateGenMGatNLOUpDownDistributions("Mjj",1); 
-  GenerateGenMGatNLOUpDownDistributions("Deta",1);
-  GenerateGenMGatNLOUpDownDistributions("Mass",1);
-  GenerateGenMGatNLOUpDownDistributions("PtJet1",1);
-  GenerateGenMGatNLOUpDownDistributions("PtJet2",1); 
-  GenerateGenMGatNLOUpDownDistributions("EtaJet1",1);
-  GenerateGenMGatNLOUpDownDistributions("EtaJet2",1);
+  foreach(const std::string &var, Variables){
+  GenerateGenMGatNLOUpDownDistributions(var,0);
+  GenerateGenMGatNLOUpDownDistributions(var,1);
+  }
 }
-void GenerateAll_step1(){
-  cout<<"Mass"<<endl;
-  GenerateDistributions("Mass",0,0);
-  GenerateDistributions("Mass",0,1);
-  GenerateDistributions("Mass",1,0);
-  GenerateDistributions("Mass",1,1);
-  cout<<"nJets"<<endl;
-  GenerateDistributions("nJets",0,0);
-  GenerateDistributions("nJets",0,1);
-  GenerateDistributions("nJets",1,0);
-  GenerateDistributions("nJets",1,1);
-  cout<<"nJets Central"<<endl;  
-  GenerateDistributions("nJets_Central",0,0);
-  GenerateDistributions("nJets_Central",0,1);
-  GenerateDistributions("nJets_Central",1,0);
-  GenerateDistributions("nJets_Central",1,1);
-  cout<<"Mjj"<<endl;
-  GenerateDistributions("Mjj",0,0);
-  GenerateDistributions("Mjj",0,1);
-  GenerateDistributions("Mjj",1,0);
-  GenerateDistributions("Mjj",1,1);
-  cout<<"Mjj Central"<<endl;
-  GenerateDistributions("Mjj_Central",0,0);
-  GenerateDistributions("Mjj_Central",0,1);
-  GenerateDistributions("Mjj_Central",1,0);
-  GenerateDistributions("Mjj_Central",1,1);
-  cout<<"PtJet1"<<endl;
-  GenerateDistributions("PtJet1",0,0);
-  GenerateDistributions("PtJet1",0,1);
-  GenerateDistributions("PtJet1",1,0);
-  GenerateDistributions("PtJet1",1,1);
+
+void GenerateAll(){
+  foreach(const std::string &var, Variables){
+    cout<<var.c_str()<<endl;
+    GenerateDistributions(var,0,0);
+    GenerateDistributions(var,0,1);
+    GenerateDistributions(var,1,0);
+    GenerateDistributions(var,1,1);
+  }
 }
-void GenerateAll_step2(){
-  cout<<"Deta"<<endl;
-  GenerateDistributions("Deta",0,0);
-  GenerateDistributions("Deta",0,1);
-  GenerateDistributions("Deta",1,0);
-  GenerateDistributions("Deta",1,1);
-  cout<<"Deta_Central"<<endl;
-  GenerateDistributions("Deta_Central",0,0);
-  GenerateDistributions("Deta_Central",0,1);
-  GenerateDistributions("Deta_Central",1,0);
-  GenerateDistributions("Deta_Central",1,1);
-  cout<<"EtaJet1"<<endl;
-  GenerateDistributions("EtaJet1",0,0);
-  GenerateDistributions("EtaJet1",0,1);
-  GenerateDistributions("EtaJet1",1,0);
-  GenerateDistributions("EtaJet1",1,1);
-  cout<<"PtJet2"<<endl;
-  GenerateDistributions("PtJet2",0,0);
-  GenerateDistributions("PtJet2",0,1);
-  GenerateDistributions("PtJet2",1,0);
-  GenerateDistributions("PtJet2",1,1);
-  cout<<"EtaJet2"<<endl;
-  GenerateDistributions("EtaJet2",0,0);
-  GenerateDistributions("EtaJet2",0,1);
-  GenerateDistributions("EtaJet2",1,0);
-  GenerateDistributions("EtaJet2",1,1);
-  cout<<"dRZZ"<<endl;
-  GenerateDistributions("dRZZ",0,0);
-  GenerateDistributions("dRZZ",0,1);
-  GenerateDistributions("dRZZ",1,0);
-  GenerateDistributions("dRZZ",1,1);
+
+void plotAll(string date){
+  foreach(const std::string &var, Variables){
+    cout<<var.c_str()<<endl;
+    Plot(var,date,0,0);
+    Plot(var,date,0,1);
+    Plot(var,date,1,0);
+    Plot(var,date,1,1); 
+  }
 }
+

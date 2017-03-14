@@ -23,9 +23,14 @@ using std::endl;
 #include "TPad.h"
 #include "tdrstyle.C"
 #include "CMS_lumi.C"
+#include <boost/foreach.hpp>
+#define foreach BOOST_FOREACH
 #endif
 
 //This macro tests the unfolding procedure on MC samples
+
+
+std::vector<std::string> Variables   = {"Mass","nJets","nJets_Central","Mjj","Mjj_Central","Deta","Deta_Central","PtJet1","PtJet2","EtaJet1","EtaJet2","dRZZ","PtZZ"};
 
 void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0, int it = 4, bool MadMatrix =1, bool MadDistribution = 1, bool FullSample = 0,bool tightregion = 0, string date = "test")
 {
@@ -34,20 +39,22 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
   gSystem->Load("libRooUnfold");
 #endif 
   
+  std::string SavePage = "~/www/PlotsVV/13TeV/";
+
 
   struct stat st;
 
-  //  if(stat(("~/www/VBS/"+date+"/").c_str(),&st) != 0){
-    system(("mkdir ~/www/VBS/"+date+"/").c_str()); 
-    system(("cp ~/www/VBS/index.php ~/www/VBS/"+date+"/").c_str()); 
+  //  if(stat((""+SavePage+"+date+"/").c_str(),&st) != 0){
+    system(("mkdir "+SavePage+date+"/").c_str()); 
+    system(("cp "+SavePage+"index.php "+SavePage+date+"/").c_str()); 
     //}
-    //  if(satat((" ~/www/VBS/"+date+"/"+ var+"/").c_str(),&st) != 0){
-    system(("mkdir ~/www/VBS/"+date+"/"+ var+"/").c_str()); 
-    system(("cp ~/www/VBS/index.php ~/www/VBS/"+date+"/"+ var+"/").c_str());
+    //  if(satat((""+SavePage+date+"/"+ var+"/").c_str(),&st) != 0){
+    system(("mkdir "+SavePage+date+"/"+ var+"/").c_str()); 
+    system(("cp "+SavePage+"index.php "+SavePage+date+"/"+ var+"/").c_str());
     //  }
-    //  if(stat(("~/www/VBS/"+date+"/"+ var+"/MCTests").c_str(),&st) != 0){
-    system(("mkdir ~/www/VBS/"+date+"/"+ var+"/MCTests").c_str()); 
-    system(("cp ~/www/VBS/index.php ~/www/VBS/"+date+"/"+ var+"/MCTests").c_str());
+    //  if(stat((""+SavePage+"+date+"/"+ var+"/MCTests").c_str(),&st) != 0){
+    system(("mkdir "+SavePage+date+"/"+ var+"/MCTests").c_str()); 
+    system(("cp "+SavePage+"index.php "+SavePage+date+"/"+ var+"/MCTests").c_str());
     //  }
 
   setTDRStyle();
@@ -77,11 +84,11 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
   TH2 * h_Resmat;
   TH1 * hReco;
  
-  string  filePath = "../";
-  string fileName = filePath+var+"_test/matrices"+tightfr+"_Mad.root";
-  string fileName_Pow =filePath +var+"_test/matrices"+tightfr+"_Pow.root"; 
+  string filePath = "../";
+  string fileName_Mad = filePath + var +"_test/matrices"+tightfr+"_Mad.root";
+  string fileName_Pow = filePath + var +"_test/matrices"+tightfr+"_Pow.root"; 
 
-  TFile *file_mad = new TFile(fileName.c_str());
+  TFile *file_mad = new TFile(fileName_Mad.c_str());
   TFile *file_pow = new TFile(fileName_Pow.c_str());
  
   string matrixName; 
@@ -91,10 +98,10 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
   string histoName_unf;
 
  if(FullSample == 0){
-   matrixName = "ResMat_qqggJJ_"+var+"_ZZTo" + finalstate + "_st_0";
-   histoName = var+"_qqggJJ_ZZTo" + finalstate + "_st_0";
-   histoNamegen = var+"Gen_qqggJJ_ZZTo" + finalstate + "_st_0";
-   histoName_unf =  var+"_qqggJJ_ZZTo" + finalstate + "_st_1"; 
+   matrixName       = "ResMat_qqggJJ_"+var+"_ZZTo" + finalstate + "_st_0";
+   histoName        = var+"_qqggJJ_ZZTo" + finalstate + "_st_0";
+   histoNamegen     = var+"Gen_qqggJJ_ZZTo" + finalstate + "_st_0";
+   histoName_unf    = var+"_qqggJJ_ZZTo" + finalstate + "_st_1"; 
    histoNameGen_unf = var+"Gen_qqggJJ_ZZTo" + finalstate + "_st_1";
  }
  
@@ -108,26 +115,25 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
   
  if(MadMatrix == 1){
    h_measured = (TH1*) file_mad->Get(histoName.c_str());  
-   h_true = (TH1*) file_mad->Get(histoNamegen.c_str());
-   h_Resmat = (TH2*)file_mad->Get(matrixName.c_str()); 
+   h_true     = (TH1*) file_mad->Get(histoNamegen.c_str());
+   h_Resmat   = (TH2*) file_mad->Get(matrixName.c_str()); 
  }
 
  else{
    h_measured = (TH1*) file_pow->Get(histoName.c_str());  
-   h_true = (TH1*) file_pow->Get(histoNamegen.c_str());
-   h_Resmat = (TH2*)file_pow->Get(matrixName.c_str()); 
+   h_true     = (TH1*) file_pow->Get(histoNamegen.c_str());
+   h_Resmat   = (TH2*) file_pow->Get(matrixName.c_str()); 
  }
 
  if(MadDistribution == 1){
    h_measured_unf = (TH1*) file_mad->Get(histoName_unf.c_str());  
-   h_true_unf = (TH1*) file_mad->Get(histoNameGen_unf.c_str());
+   h_true_unf     = (TH1*) file_mad->Get(histoNameGen_unf.c_str());
  }
  
  else{
    h_measured_unf = (TH1*) file_pow->Get(histoName_unf.c_str());  
-   h_true_unf = (TH1*) file_pow->Get(histoNameGen_unf.c_str());
+   h_true_unf     = (TH1*) file_pow->Get(histoNameGen_unf.c_str());
  }
-
 
   RooUnfoldResponse response(h_measured, h_true, h_Resmat, "response", "response"); 
   RooUnfoldBayes unfold_bayes(&response, h_measured_unf,it);
@@ -144,10 +150,10 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
   if(var == "Mass") XaxisTitle = "m_{4l} [GeV]"; 
   else if(var == "nJets")  XaxisTitle = "N jets (|#eta^{jet}| < 4.7)";
   else if(var == "nJets_Central")  XaxisTitle = "N jets (|#eta^{jet}| < 2.4)"; 
-  else if(var == "Mjj") {XaxisTitle ="m_{jj} (|#eta^{jet}| < 4.7) [GeV]";}
-  else if(var == "Mjj_Central") {XaxisTitle ="m_{jj} (|#eta^{jet}| < 2.4) [GeV]";}
-  else if( var == "Deta"){ XaxisTitle ="#Delta#eta_{jj} (|#eta^{jet}| < 4.7)";}
-  else if(var == "Deta_Central"){ XaxisTitle ="#Delta#eta_{jj} (|#eta^{jet}| < 2.4)";}
+  else if(var == "Mjj") XaxisTitle ="m_{jj} (|#eta^{jet}| < 4.7) [GeV]";
+  else if(var == "Mjj_Central") XaxisTitle ="m_{jj} (|#eta^{jet}| < 2.4) [GeV]";
+  else if(var == "Deta") XaxisTitle ="#Delta#eta_{jj} (|#eta^{jet}| < 4.7)";
+  else if(var == "Deta_Central") XaxisTitle ="#Delta#eta_{jj} (|#eta^{jet}| < 2.4)";
   else if(var =="PtJet1")  XaxisTitle = "p_{T}^{jet1} [GeV]";
   else if(var =="PtJet2")  XaxisTitle = "p_{T}^{jet2} [GeV]";
   else if(var =="EtaJet1")  XaxisTitle = "|#eta^{jet1}|";
@@ -255,8 +261,7 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
    hReco_r->GetXaxis()->SetBinLabel(1,"0");
    hReco_r->GetXaxis()->SetBinLabel(2,"1");
    hReco_r->GetXaxis()->SetBinLabel(3,"2");
-   hReco_r->GetXaxis()->SetBinLabel(3,"3");
-   hReco_r->GetXaxis()->SetBinLabel(4,">3");  
+   hReco_r->GetXaxis()->SetBinLabel(4,">2");
    hReco_r->GetXaxis()->SetLabelFont(42);
     //h_true->GetXaxis()->SetLabelOffset(0.02);
    hReco_r->GetXaxis()->SetLabelSize(0.17);
@@ -303,8 +308,8 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
  if(bayes) Algo = "_Bayes";
  else Algo = "_SVD";
 
-  pdf = "~/www/VBS/"+date+"/"+ var+"/MCTests/"+var+"_ZZTo" + finalstate + "_"+ matrix + "_" + distr + "_" + sample + tightfr +Algo+".pdf";
-  png = "~/www/VBS/"+date+"/"+ var+"/MCTests/"+var+"_ZZTo" + finalstate + "_"+ matrix + "_" + distr + "_" + sample + tightfr +Algo+".png";
+ pdf = SavePage+date+"/"+ var+"/MCTests/"+var+"_ZZTo" + finalstate + "_"+ matrix + "_" + distr + "_" + sample + tightfr +Algo+"_"+std::to_string(it)+".pdf";
+ png = SavePage+date+"/"+ var+"/MCTests/"+var+"_ZZTo" + finalstate + "_"+ matrix + "_" + distr + "_" + sample + tightfr +Algo+"_"+std::to_string(it)+".png";
   c->Print(pdf.c_str());
   c->Print(png.c_str());
   
@@ -312,7 +317,9 @@ void Unfold_MCtest(string var = "Mass",string finalstate = "4e", bool bayes = 0,
   //hReco->Write(UnfHistoName.c_str());
   //h_measured_unf->Write(HistoName.c_str());
   //h_true_unf->Write(TrueHistoName.c_str());
-  //output->Close();
+  file_mad->Close();
+  file_pow->Close();
+
 
 
 }
@@ -334,30 +341,48 @@ void MakeAllFinalStates (string var = "Mass",bool bayes = 0, int it = 4, bool ti
   MakeAllTest(var.c_str(),"2e2m",bayes,it,tightregion,date);
 }
 
+
 void MakeAllTests (bool bayes = 0, int it = 4, string date = "test"){
-  MakeAllFinalStates("Mass",bayes,it,0,date);
-  MakeAllFinalStates("Mass",bayes,it,1,date);
-  MakeAllFinalStates("nJets",bayes,it,0,date);
-  MakeAllFinalStates("nJets",bayes,it,1,date);
-  MakeAllFinalStates("nJets_Central",bayes,it,0,date);
-  MakeAllFinalStates("nJets_Central",bayes,it,1,date);
-  MakeAllFinalStates("Mjj_Central",bayes,it,0,date);
-  MakeAllFinalStates("Mjj_Central",bayes,it,1,date);  
-  MakeAllFinalStates("Deta_Central",bayes,it,0,date);
-  MakeAllFinalStates("Deta_Central",bayes,it,1,date); 
-  MakeAllFinalStates("Mjj",bayes,it,0,date);
-  MakeAllFinalStates("Mjj",bayes,it,1,date);  
-  MakeAllFinalStates("Deta",bayes,it,0,date);
-  MakeAllFinalStates("Deta",bayes,it,1,date);
-  MakeAllFinalStates("PtJet1",bayes,it,0,date);
-  MakeAllFinalStates("PtJet1",bayes,it,1,date);
-  MakeAllFinalStates("PtJet2",bayes,it,0,date);
-  MakeAllFinalStates("PtJet2",bayes,it,1,date);
-  MakeAllFinalStates("EtaJet1",bayes,it,0,date);
-  MakeAllFinalStates("EtaJet1",bayes,it,1,date);
-  MakeAllFinalStates("EtaJet2",bayes,it,0,date);
-  MakeAllFinalStates("EtaJet2",bayes,it,1,date);
+  foreach(const std::string &var, Variables){
+    MakeAllFinalStates(var,bayes,it,0,date);
+    MakeAllFinalStates(var,bayes,it,1,date);
+  }
 }
+
+void MakeAllOfficialTests (string date = "test"){
+  MakeAllFinalStates("Mass",1,4,0,date);
+  MakeAllFinalStates("Mass",1,4,1,date);
+  MakeAllFinalStates("nJets",1,4,0,date);
+  MakeAllFinalStates("nJets",1,4,1,date);
+  MakeAllFinalStates("nJets_Central",1,4,0,date);
+  MakeAllFinalStates("nJets_Central",1,4,1,date);
+  MakeAllFinalStates("Mjj_Central",1,2,0,date);
+  MakeAllFinalStates("Mjj_Central",1,2,1,date);  
+  MakeAllFinalStates("Deta_Central",1,2,0,date);
+  MakeAllFinalStates("Deta_Central",1,2,1,date); 
+  MakeAllFinalStates("Mjj",1,2,0,date);
+  MakeAllFinalStates("Mjj",1,2,1,date);  
+  MakeAllFinalStates("Deta",1,2,0,date);
+  MakeAllFinalStates("Deta",1,2,1,date);
+  MakeAllFinalStates("PtJet1",1,4,0,date);
+  MakeAllFinalStates("PtJet1",1,4,1,date);
+  MakeAllFinalStates("PtJet2",1,4,0,date);
+  MakeAllFinalStates("PtJet2",1,4,1,date);
+  MakeAllFinalStates("EtaJet1",1,3,0,date);
+  MakeAllFinalStates("EtaJet1",1,3,1,date);
+  MakeAllFinalStates("EtaJet2",1,3,0,date);
+  MakeAllFinalStates("EtaJet2",1,3,1,date);
+  MakeAllFinalStates("PtZZ",1,4,0,date);
+  MakeAllFinalStates("PtZZ",1,4,1,date);
+  MakeAllFinalStates("dRZZ",1,4,0,date);
+  MakeAllFinalStates("dRZZ",1,4,1,date);
+
+  MakeAllFinalStates("nJets",0,2,1,date);
+  MakeAllFinalStates("Mjj",0,2,0,date);
+  MakeAllFinalStates("PtJet1",0,2,0,date);
+}
+
+
 #ifndef __CINT__
 int main () { Unfold_MCtest(); return 0; }  // Main program when run stand-alone
 #endif
