@@ -38,6 +38,11 @@ parser.add_option("-d", "--Dir", dest="Dir",
                   default = "test",
                   help="Choose a specific directory name for save plots. Default is ''")
 
+parser.add_option("-p", "--plot", dest="showPlot",
+                  action="store_true",
+                  default=False,
+                  help="Show plot option, default is False")
+
 
 (options, args) = parser.parse_args()
 
@@ -46,6 +51,9 @@ Set       = options.Set
 SavePlot  = options.SavePlot
 Analysis  = options.Analysis
 Dir       = options.Dir
+showPlot   = options.showPlot
+
+if not showPlot: ROOT.gROOT.SetBatch(True)
 
 Dir+="/"
 
@@ -81,10 +89,15 @@ if SavePlot:
         os.mkdir(PersonalFolder+Dir)
         os.system("cp "+PersonalFolder+"index.php "+PersonalFolder+Dir )
     try:
-        os.stat(PersonalFolder+Dir+"/Acceptance/")
+        os.stat(PersonalFolder+Dir+"/"+Type)
     except:
-        os.mkdir(PersonalFolder+Dir+"/Acceptance/")
-        os.system("cp "+PersonalFolder+"index.php "+PersonalFolder+Dir+"/Acceptance/" )
+        os.mkdir(PersonalFolder+Dir+"/"+Type)
+        os.system("cp "+PersonalFolder+"index.php "+PersonalFolder+Dir+"/"+Type) 
+    try:
+        os.stat(PersonalFolder+Dir+"/"+Type+"/Acceptance/")
+    except:
+        os.mkdir(PersonalFolder+Dir+"/"+Type+"/Acceptance/")
+        os.system("cp "+PersonalFolder+"index.php "+PersonalFolder+Dir+"/"+Type+"/Acceptance/" )
 
 
     
@@ -123,6 +136,9 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
     Acc1=0. 
     Acc2=0.
     Acc3=0.
+
+    Tot4lReco = 0;
+    Tot4l     = 0;
 
     FinStateAcc ={"2e2m":Acc1,"4m":Acc2,"4e":Acc3}
     for Fin in ("2e2m","4m","4e"):
@@ -187,6 +203,9 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
         NTotEv  = hMergGen.Integral(0,-1)
         NRecoEv = hMergReco.Integral(0,-1)
 
+        Tot4lReco+=NRecoEv
+        Tot4l    +=NTotEv
+
         Acc= NRecoEv/NTotEv
  #       print "Tot",NTotEv,"Reco",NRecoEv
 
@@ -218,17 +237,15 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
                 hMergReco.GetXaxis().SetBinLabel(1,"0 Jets")
                 hMergReco.GetXaxis().SetBinLabel(2,"1 Jets")
                 hMergReco.GetXaxis().SetBinLabel(3,"2 Jets")
-                hMergReco.GetXaxis().SetBinLabel(4,"3 Jets")
-                hMergReco.GetXaxis().SetBinLabel(4,">3 Jets")
-               
+                hMergReco.GetXaxis().SetBinLabel(4,">2 Jets")
+
             elif SampleType=="nJets_Central": 
                 hMergReco.SetXTitle("# Central nJets")
                 hMergReco.GetXaxis().SetTitle("#CentralnJets")
                 hMergReco.GetXaxis().SetBinLabel(1,"0 Jets")
                 hMergReco.GetXaxis().SetBinLabel(2,"1 Jets")
                 hMergReco.GetXaxis().SetBinLabel(3,"2 Jets")
-                hMergReco.GetXaxis().SetBinLabel(3,"3 Jets")
-                hMergReco.GetXaxis().SetBinLabel(4,">3 Jets")
+                hMergReco.GetXaxis().SetBinLabel(4,">2 Jets")
                
             elif SampleType == "Deta":
                 hMergReco.SetXTitle("gen #Delta#eta_{jj}")
@@ -301,12 +318,20 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
                 leg.AddEntry(hcopy3,"ZZ #rightarrow 4e","lep")
                 hcopy3.Draw("sameE1");
                 leg.Draw("same")
-        
+
+
+
+
     if SistErr=="0":
+        Acc4l = Tot4lReco/Tot4l
+        TotAcc = TParameter(float)("TotAcc4l_"+Fr,Acc4l)
+        TotAcc.Write("",TotAcc.kOverwrite)
+        print    "total Acc",Acc4l
         c1.SaveAs("./Plot/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+".png") 
         if SavePlot:
-            c1.SaveAs(PersonalFolder+Dir+"Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".png") 
-            c1.SaveAs(PersonalFolder+Dir+"Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".pdf") 
+            print PersonalFolder+Dir+"/"+Type+"/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".png" 
+            c1.SaveAs(PersonalFolder+Dir+"/"+Type+"/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".png") 
+            c1.SaveAs(PersonalFolder+Dir+"/"+Type+"/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".pdf") 
     return FinStateAcc
 
 

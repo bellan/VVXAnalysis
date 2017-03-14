@@ -38,8 +38,6 @@ def LL(hData,hDataUp,hDataDown,hMC,Type,FinState,UncType,DataOverMC):
         elif UncType == "statsyst": sd = math.sqrt(sd_stat*sd_stat+sd_syst*sd_syst)
         mc =  hMC.GetBinContent(j)
         smc = hMC.GetBinError(j)
-        #print hMC, smc        
-
 
         if DataOverMC == 1:
             r0 = d/mc 
@@ -98,7 +96,7 @@ def LL(hData,hDataUp,hDataDown,hMC,Type,FinState,UncType,DataOverMC):
         r.setVal(0.)
         if errlo == 0 and pll.getVal()<0.5: errlo = -rval
         #else: break
-       
+        #print "sd",sd,"smc",smc,"mc",mc  
         stderr = r0*math.sqrt(((sd/d)*(sd/d)+(smc/mc)*(smc/mc)))#to compare with
         print "profile likelihood ratio results",j, errhi, errlo, stderr, stderr+errlo
       
