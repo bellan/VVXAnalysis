@@ -26,6 +26,8 @@ class MCInfo {
   double mcProcWeightUnormalized()   const {return mcprocweight_;}
   double summcprocweight()      const {return summcprocweight_;}     
   double puWeight()             const {return puweight_;}
+  double puWeightUncUp()             const {return puweightUp_/puweight_;}
+  double puWeightUncDn()             const {return puweightDn_/puweight_;}
 
   // Total MC weight of the event. Beware, it does not include DATA/MC correction! See instead below.
   double weight()               const {return luminosity_ >= 0 ? sampleWeight()*puWeight() : 1.;}
@@ -71,6 +73,8 @@ class MCInfo {
   double mcprocweight_;
   // Weight from PU reweighting. This is a per event weight
   double puweight_;
+  double puweightUp_;
+  double puweightDn_;
 
   // Sum of weights
   double summcprocweight_;
