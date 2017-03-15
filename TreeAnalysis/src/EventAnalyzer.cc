@@ -121,8 +121,11 @@ void EventAnalyzer::Init(TTree *tree)
 
   b_nvtx        = 0; theTree->SetBranchAddress("nvtxs"  , &nvtx   , &b_nvtx   );
   
+
   // MC related variables
   b_puweight     = 0; theTree->SetBranchAddress("puweight"    , &theMCInfo.puweight_     , &b_puweight );
+  b_puweightUp   = 0; theTree->SetBranchAddress("puweightUp"  , &theMCInfo.puweightUp_   , &b_puweightUp );
+  b_puweightDn   = 0; theTree->SetBranchAddress("puweightDn"  , &theMCInfo.puweightDn_   , &b_puweightDn );
   b_mcprocweight = 0; theTree->SetBranchAddress("mcprocweight", &theMCInfo.mcprocweight_ , &b_mcprocweight);
   b_genCategory  = 0; theTree->SetBranchAddress("genCategory" , &genCategory             , &b_genCategory  );
 

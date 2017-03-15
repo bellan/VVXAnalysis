@@ -172,9 +172,15 @@ void ZZRecoAnalyzer::analyze(){
     FillHistosJets(decay,theWeight*(1-scaleFacEleErrSq),centralJets,"Central_EleSFErrSqMinus_01");
     FillHistosJets(decay,theWeight*(1+scaleFacEleErrSq),centralJets,"Central_EleSFErrSqPlus_01");
 
-    //    std::cout<<"scaleFacErrSq "<<scaleFacErrSq<<std::endl;
+    FillHistosBase(decay,theWeight*theMCInfo.puWeightUncDn(),"PuDn_01");
+    FillHistosBase(decay,theWeight*theMCInfo.puWeightUncUp(),"PuUp_01");
 
-    //ADD JER SF err?
+    FillHistosJets(decay,theWeight*theMCInfo.puWeightUncDn(),jets,"PuDn_01");
+    FillHistosJets(decay,theWeight*theMCInfo.puWeightUncUp(),jets,"PuUp_01");
+
+    FillHistosJets(decay,theWeight*theMCInfo.puWeightUncDn(),centralJets,"Central_PuDn_01");
+    FillHistosJets(decay,theWeight*theMCInfo.puWeightUncUp(),centralJets,"Central_PuUp_01");
+
 
     //Is Signal
    if((region_ == phys::SR && topology.test(2)) || (region_ == phys::SR_HZZ && topology.test(0) ) ){       
@@ -235,11 +241,17 @@ void ZZRecoAnalyzer::analyze(){
 
     FillMatrixHistosJets(decay,theWeight*(1-scaleFacEleErrSq),centralJets,centralGenJets,"Central_EleSFErrSqMinus_01");
     FillMatrixHistosJets(decay,theWeight*(1+scaleFacEleErrSq),centralJets,centralGenJets,"Central_EleSFErrSqPlus_01");
+ 
+    FillMatrixHistosBase(decay,theWeight*theMCInfo.puWeightUncDn(),"PuDn_01");
+    FillMatrixHistosBase(decay,theWeight*theMCInfo.puWeightUncUp(),"PuUp_01");
 
-   }
+    FillMatrixHistosJets(decay,theWeight*theMCInfo.puWeightUncDn(),jets,genJets,"PuDn_01");
+    FillMatrixHistosJets(decay,theWeight*theMCInfo.puWeightUncUp(),jets,genJets,"PuUp_01");
 
+    FillMatrixHistosJets(decay,theWeight*theMCInfo.puWeightUncDn(),centralJets,centralGenJets,"Central_PuDn_01");
+    FillMatrixHistosJets(decay,theWeight*theMCInfo.puWeightUncUp(),centralJets,centralGenJets,"Central_PuUp_01");
 
-
+    }
 
 
     if((region_ == phys::SR && topology.test(3)) || (region_ == phys::SR_HZZ && topology.test(1))){
@@ -276,6 +288,15 @@ void ZZRecoAnalyzer::analyze(){
        FillMatrixHistosJets(decay,theWeight*(1-scaleFacErrSq),centralJets,centralGenJets,"Central_SFErrSqMinus_01_fr");
        FillMatrixHistosJets(decay,theWeight*(1+scaleFacErrSq),centralJets,centralGenJets,"Central_SFErrSqPlus_01_fr");
 
+       FillMatrixHistosBase(decay,theWeight*theMCInfo.puWeightUncDn(),"PuDn_01_fr");
+       FillMatrixHistosBase(decay,theWeight*theMCInfo.puWeightUncUp(),"PuUp_01_fr");
+       
+       FillMatrixHistosJets(decay,theWeight*theMCInfo.puWeightUncDn(),jets,genJets,"PuDn_01_fr");
+       FillMatrixHistosJets(decay,theWeight*theMCInfo.puWeightUncUp(),jets,genJets,"PuUp_01_fr");
+       
+       FillMatrixHistosJets(decay,theWeight*theMCInfo.puWeightUncDn(),centralJets,centralGenJets,"Central_PuDn_01_fr");
+       FillMatrixHistosJets(decay,theWeight*theMCInfo.puWeightUncUp(),centralJets,centralGenJets,"Central_PuUp_01_fr");
+       
 
        FillMatrixHistosBase(decay,theWeight*(1-scaleFacMuErrSq),"MuSFErrSqMinus_01_fr");
        FillMatrixHistosBase(decay,theWeight*(1+scaleFacMuErrSq),"MuSFErrSqPlus_01_fr");
@@ -313,6 +334,15 @@ void ZZRecoAnalyzer::analyze(){
        
        FillHistosJets(decay,theWeight*(1-scaleFacEleErrSq),centralJets,"Central_EleSFErrSqMinus_01_fr");
        FillHistosJets(decay,theWeight*(1+scaleFacEleErrSq),centralJets,"Central_EleSFErrSqPlus_01_fr");
+
+       FillHistosBase(decay,theWeight*theMCInfo.puWeightUncDn(),"PuDn_01_fr");
+       FillHistosBase(decay,theWeight*theMCInfo.puWeightUncUp(),"PuUp_01_fr");
+       
+       FillHistosJets(decay,theWeight*theMCInfo.puWeightUncDn(),jets,"PuDn_01_fr");
+       FillHistosJets(decay,theWeight*theMCInfo.puWeightUncUp(),jets,"PuUp_01_fr");
+       
+       FillHistosJets(decay,theWeight*theMCInfo.puWeightUncDn(),centralJets,"Central_PuDn_01_fr");
+       FillHistosJets(decay,theWeight*theMCInfo.puWeightUncUp(),centralJets,"Central_PuUp_01_fr");
 
     } // end fiducial region
   } //end is MC
