@@ -294,8 +294,8 @@ def getHisto(Type,isData,Sign,syst,isTot,isFiducial):
         if Set=="Pow":   AccFile = ROOT.TFile("./Acceptance/Acceptance_Mad_"+Type+".root")
         else:  AccFile = ROOT.TFile("./Acceptance/Acceptance_Pow_"+Type+".root")
     elif syst=="sFactor":
-        if   Sign==-1:  AccFile = ROOT.TFile("./Acceptance/AcceptanceSFactorSqPlus_"+Set+"_"+Type+".root")#SF errors non-correlated #Check
-        elif Sign==+1:  AccFile = ROOT.TFile("./Acceptance/AcceptanceSFactorSqMinus_"+Set+"_"+Type+".root")#SF errors non-correlated
+        if   Sign==-1:  AccFile = ROOT.TFile("./Acceptance/AcceptanceSFactorSqUp_"+Set+"_"+Type+".root")#SF errors non-correlated #Check
+        elif Sign==+1:  AccFile = ROOT.TFile("./Acceptance/AcceptanceSFactorSqDn_"+Set+"_"+Type+".root")#SF errors non-correlated
 
         #if Sign==1: AccFile = ROOT.TFile("AcceptanceSFactorPlus_"+Set+".root")
         #elif Sign==-1:  AccFile = ROOT.TFile("AcceptanceSFactorMinus_"+Set+".root")
