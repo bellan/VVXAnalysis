@@ -97,10 +97,10 @@ void ZZRecoAnalyzer::analyze(){
 
     }
 
-    FillHistosJets(decay,theWeight,UpJESData_jets,"JESDataUpSmear_01");
-    FillHistosJets(decay,theWeight,DownJESData_jets,"JESDataDownSmear_01");
-    FillHistosJets(decay,theWeight,UpJESData_centraljets,"Central_JESDataUpSmear_01");
-    FillHistosJets(decay,theWeight,DownJESData_centraljets,"Central_JESDataDownSmear_01");
+    FillHistosJets(decay,theWeight,UpJESData_jets,"JESDataUp_01");
+    FillHistosJets(decay,theWeight,DownJESData_jets,"JESDataDn_01");
+    FillHistosJets(decay,theWeight,UpJESData_centraljets,"Central_JESDataUp_01");
+    FillHistosJets(decay,theWeight,DownJESData_centraljets,"Central_JESDataDn_01");
  }
   
   else{
@@ -133,53 +133,72 @@ void ZZRecoAnalyzer::analyze(){
     FillHistosJets(decay,theWeight,jets,sample);
     FillHistosJets(decay,theWeight,centralJets,"Central_"+sample);   
 
-    FillHistosJets(decay,theWeight,UpJER_jets,"JERUpSmear_01");
-    FillHistosJets(decay,theWeight,DownJER_jets,"JERDownSmear_01");
+    FillHistosJets(decay,theWeight,UpJER_jets,"JERUp_01");
+    FillHistosJets(decay,theWeight,DownJER_jets,"JERDn_01");
 
-    FillHistosJets(decay,theWeight,UpJER_centraljets,"Central_JERUpSmear_01");
-    FillHistosJets(decay,theWeight,DownJER_centraljets,"Central_JERDownSmear_01");
+    FillHistosJets(decay,theWeight,UpJER_centraljets,"Central_JERUp_01");
+    FillHistosJets(decay,theWeight,DownJER_centraljets,"Central_JERDn_01");
 
-    FillHistosJets(decay,theWeight,UpJES_jets,"JESUpSmear_01");
-    FillHistosJets(decay,theWeight,DownJES_jets,"JESDownSmear_01");
+    FillHistosJets(decay,theWeight,UpJES_jets,"JESUp_01");
+    FillHistosJets(decay,theWeight,DownJES_jets,"JESDn_01");
 
-    FillHistosJets(decay,theWeight,UpJES_centraljets,"Central_JESUpSmear_01");
-    FillHistosJets(decay,theWeight,DownJES_centraljets,"Central_JESDownSmear_01");
+    FillHistosJets(decay,theWeight,UpJES_centraljets,"Central_JESUp_01");
+    FillHistosJets(decay,theWeight,DownJES_centraljets,"Central_JESDn_01");
 
-    FillHistosBase(decay,theWeight*(1-scaleFacErrSq),"SFErrSqMinus_01");
-    FillHistosBase(decay,theWeight*(1+scaleFacErrSq),"SFErrSqPlus_01");
+    FillHistosBase(decay,theWeight*(1-scaleFacErrSq),"SFSqDn_01");
+    FillHistosBase(decay,theWeight*(1+scaleFacErrSq),"SFSqUp_01");
 
-    FillHistosJets(decay,theWeight*(1-scaleFacErrSq),jets,"SFErrSqMinus_01");
-    FillHistosJets(decay,theWeight*(1+scaleFacErrSq),jets,"SFErrSqPlus_01");
+    FillHistosJets(decay,theWeight*(1-scaleFacErrSq),jets,"SFSqDn_01");
+    FillHistosJets(decay,theWeight*(1+scaleFacErrSq),jets,"SFSqUp_01");
 
-    FillHistosJets(decay,theWeight*(1-scaleFacErrSq),centralJets,"Central_SFErrSqMinus_01");
-    FillHistosJets(decay,theWeight*(1+scaleFacErrSq),centralJets,"Central_SFErrSqPlus_01");
+    FillHistosJets(decay,theWeight*(1-scaleFacErrSq),centralJets,"Central_SFSqDn_01");
+    FillHistosJets(decay,theWeight*(1+scaleFacErrSq),centralJets,"Central_SFSqUp_01");
 
-    FillHistosBase(decay,theWeight*(1-scaleFacMuErrSq),"MuSFErrSqMinus_01");
-    FillHistosBase(decay,theWeight*(1+scaleFacMuErrSq),"MuSFErrSqPlus_01");
+    FillHistosBase(decay,theWeight*(1-scaleFacMuErrSq),"MuSFSqDn_01");
+    FillHistosBase(decay,theWeight*(1+scaleFacMuErrSq),"MuSFSqUp_01");
 
-    FillHistosJets(decay,theWeight*(1-scaleFacMuErrSq),jets,"MuSFErrSqMinus_01");
-    FillHistosJets(decay,theWeight*(1+scaleFacMuErrSq),jets,"MuSFErrSqPlus_01");
+    FillHistosJets(decay,theWeight*(1-scaleFacMuErrSq),jets,"MuSFSqDn_01");
+    FillHistosJets(decay,theWeight*(1+scaleFacMuErrSq),jets,"MuSFSqUp_01");
 
-    FillHistosJets(decay,theWeight*(1-scaleFacMuErrSq),centralJets,"Central_MuSFErrSqMinus_01");
-    FillHistosJets(decay,theWeight*(1+scaleFacMuErrSq),centralJets,"Central_MuSFErrSqPlus_01");
+    FillHistosJets(decay,theWeight*(1-scaleFacMuErrSq),centralJets,"Central_MuSFSqDn_01");
+    FillHistosJets(decay,theWeight*(1+scaleFacMuErrSq),centralJets,"Central_MuSFSqUp_01");
 
-    FillHistosBase(decay,theWeight*(1-scaleFacEleErrSq),"EleSFErrSqMinus_01");
-    FillHistosBase(decay,theWeight*(1+scaleFacEleErrSq),"EleSFErrSqPlus_01");
+    FillHistosBase(decay,theWeight*(1-scaleFacEleErrSq),"EleSFSqDn_01");
+    FillHistosBase(decay,theWeight*(1+scaleFacEleErrSq),"EleSFSqUp_01");
 
-    FillHistosJets(decay,theWeight*(1-scaleFacEleErrSq),jets,"EleSFErrSqMinus_01");
-    FillHistosJets(decay,theWeight*(1+scaleFacEleErrSq),jets,"EleSFErrSqPlus_01");
+    FillHistosJets(decay,theWeight*(1-scaleFacEleErrSq),jets,"EleSFSqDn_01");
+    FillHistosJets(decay,theWeight*(1+scaleFacEleErrSq),jets,"EleSFSqUp_01");
 
-    FillHistosJets(decay,theWeight*(1-scaleFacEleErrSq),centralJets,"Central_EleSFErrSqMinus_01");
-    FillHistosJets(decay,theWeight*(1+scaleFacEleErrSq),centralJets,"Central_EleSFErrSqPlus_01");
-
+    FillHistosJets(decay,theWeight*(1-scaleFacEleErrSq),centralJets,"Central_EleSFSqDn_01");
+    FillHistosJets(decay,theWeight*(1+scaleFacEleErrSq),centralJets,"Central_EleSFSqUp_01");
+    
     FillHistosBase(decay,theWeight*theMCInfo.puWeightUncDn(),"PuDn_01");
     FillHistosBase(decay,theWeight*theMCInfo.puWeightUncUp(),"PuUp_01");
-
+    
     FillHistosJets(decay,theWeight*theMCInfo.puWeightUncDn(),jets,"PuDn_01");
     FillHistosJets(decay,theWeight*theMCInfo.puWeightUncUp(),jets,"PuUp_01");
-
+    
     FillHistosJets(decay,theWeight*theMCInfo.puWeightUncDn(),centralJets,"Central_PuDn_01");
     FillHistosJets(decay,theWeight*theMCInfo.puWeightUncUp(),centralJets,"Central_PuUp_01");
+
+    //pdf alpha s
+    FillHistosBase(decay,theWeight*LHEweight_PDFVariation_Dn,"PDFDn_01");
+    FillHistosBase(decay,theWeight*LHEweight_PDFVariation_Up,"PDFUp_01");
+
+    FillHistosJets(decay,theWeight*LHEweight_PDFVariation_Dn,jets,"PDFDn_01");
+    FillHistosJets(decay,theWeight*LHEweight_PDFVariation_Up,jets,"PDFUp_01");
+
+    FillHistosJets(decay,theWeight*LHEweight_PDFVariation_Dn,centralJets,"Central_PDFDn_01");
+    FillHistosJets(decay,theWeight*LHEweight_PDFVariation_Up,centralJets,"Central_PDFUp_01");
+
+    FillHistosBase(decay,theWeight*LHEweight_AsMZ_Dn,"AsDn_01");
+    FillHistosBase(decay,theWeight*LHEweight_AsMZ_Up,"AsUp_01");
+
+    FillHistosJets(decay,theWeight*LHEweight_AsMZ_Dn,jets,"AsDn_01");
+    FillHistosJets(decay,theWeight*LHEweight_AsMZ_Up,jets,"AsUp_01");
+
+    FillHistosJets(decay,theWeight*LHEweight_AsMZ_Dn,centralJets,"Central_AsDn_01");
+    FillHistosJets(decay,theWeight*LHEweight_AsMZ_Up,centralJets,"Central_AsUp_01");
 
 
     //Is Signal
@@ -203,44 +222,44 @@ void ZZRecoAnalyzer::analyze(){
     FillMatrixHistosJets(decay,theWeight,jets,genJets,"01");
     FillMatrixHistosJets(decay,theWeight,centralJets,centralGenJets,"Central_01");
 
-    FillMatrixHistosJets(decay,theWeight,UpJER_jets,genJets,"JERUpSmear_01");
-    FillMatrixHistosJets(decay,theWeight,DownJER_jets,genJets,"JERDownSmear_01");
+    FillMatrixHistosJets(decay,theWeight,UpJER_jets,genJets,"JERUp_01");
+    FillMatrixHistosJets(decay,theWeight,DownJER_jets,genJets,"JERDn_01");
 
-    FillMatrixHistosJets(decay,theWeight,UpJER_centraljets,centralGenJets,"Central_JERUpSmear_01");
-    FillMatrixHistosJets(decay,theWeight,DownJER_centraljets,centralGenJets,"Central_JERDownSmear_01");
+    FillMatrixHistosJets(decay,theWeight,UpJER_centraljets,centralGenJets,"Central_JERUp_01");
+    FillMatrixHistosJets(decay,theWeight,DownJER_centraljets,centralGenJets,"Central_JERDn_01");
 
-    FillMatrixHistosJets(decay,theWeight,UpJES_jets,genJets,"JESUpSmear_01");
-    FillMatrixHistosJets(decay,theWeight,DownJES_jets,genJets,"JESDownSmear_01");
+    FillMatrixHistosJets(decay,theWeight,UpJES_jets,genJets,"JESUp_01");
+    FillMatrixHistosJets(decay,theWeight,DownJES_jets,genJets,"JESDn_01");
 
-    FillMatrixHistosJets(decay,theWeight,UpJES_centraljets,centralGenJets,"Central_JESUpSmear_01");
-    FillMatrixHistosJets(decay,theWeight,DownJES_centraljets,centralGenJets,"Central_JESDownSmear_01");
+    FillMatrixHistosJets(decay,theWeight,UpJES_centraljets,centralGenJets,"Central_JESUp_01");
+    FillMatrixHistosJets(decay,theWeight,DownJES_centraljets,centralGenJets,"Central_JESDn_01");
 
-    FillMatrixHistosBase(decay,theWeight*(1-scaleFacErrSq),"SFErrSqMinus_01");
-    FillMatrixHistosBase(decay,theWeight*(1+scaleFacErrSq),"SFErrSqPlus_01");
+    FillMatrixHistosBase(decay,theWeight*(1-scaleFacErrSq),"SFSqDn_01");
+    FillMatrixHistosBase(decay,theWeight*(1+scaleFacErrSq),"SFSqUp_01");
 
-    FillMatrixHistosJets(decay,theWeight*(1-scaleFacErrSq),jets,genJets,"SFErrSqMinus_01");
-    FillMatrixHistosJets(decay,theWeight*(1+scaleFacErrSq),jets,genJets,"SFErrSqPlus_01");
+    FillMatrixHistosJets(decay,theWeight*(1-scaleFacErrSq),jets,genJets,"SFSqDn_01");
+    FillMatrixHistosJets(decay,theWeight*(1+scaleFacErrSq),jets,genJets,"SFSqUp_01");
 
-    FillMatrixHistosJets(decay,theWeight*(1-scaleFacErrSq),centralJets,centralGenJets,"Central_SFErrSqMinus_01");
-    FillMatrixHistosJets(decay,theWeight*(1+scaleFacErrSq),centralJets,centralGenJets,"Central_SFErrSqPlus_01");
+    FillMatrixHistosJets(decay,theWeight*(1-scaleFacErrSq),centralJets,centralGenJets,"Central_SFSqDn_01");
+    FillMatrixHistosJets(decay,theWeight*(1+scaleFacErrSq),centralJets,centralGenJets,"Central_SFSqUp_01");
 
-    FillMatrixHistosBase(decay,theWeight*(1-scaleFacMuErrSq),"MuSFErrSqMinus_01");
-    FillMatrixHistosBase(decay,theWeight*(1+scaleFacMuErrSq),"MuSFErrSqPlus_01");
+    FillMatrixHistosBase(decay,theWeight*(1-scaleFacMuErrSq),"MuSFSqDn_01");
+    FillMatrixHistosBase(decay,theWeight*(1+scaleFacMuErrSq),"MuSFSqUp_01");
 
-    FillMatrixHistosJets(decay,theWeight*(1-scaleFacMuErrSq),jets,genJets,"MuSFErrSqMinus_01");
-    FillMatrixHistosJets(decay,theWeight*(1+scaleFacMuErrSq),jets,genJets,"MuSFErrSqPlus_01");
+    FillMatrixHistosJets(decay,theWeight*(1-scaleFacMuErrSq),jets,genJets,"MuSFSqDn_01");
+    FillMatrixHistosJets(decay,theWeight*(1+scaleFacMuErrSq),jets,genJets,"MuSFSqUp_01");
 
-    FillMatrixHistosJets(decay,theWeight*(1-scaleFacMuErrSq),centralJets,centralGenJets,"Central_MuSFErrSqMinus_01");
-    FillMatrixHistosJets(decay,theWeight*(1+scaleFacMuErrSq),centralJets,centralGenJets,"Central_MuSFErrSqPlus_01");
+    FillMatrixHistosJets(decay,theWeight*(1-scaleFacMuErrSq),centralJets,centralGenJets,"Central_MuSFSqDn_01");
+    FillMatrixHistosJets(decay,theWeight*(1+scaleFacMuErrSq),centralJets,centralGenJets,"Central_MuSFSqUp_01");
 
-    FillMatrixHistosBase(decay,theWeight*(1-scaleFacEleErrSq),"EleSFErrSqMinus_01");
-    FillMatrixHistosBase(decay,theWeight*(1+scaleFacEleErrSq),"EleSFErrSqPlus_01");
+    FillMatrixHistosBase(decay,theWeight*(1-scaleFacEleErrSq),"EleSFSqDn_01");
+    FillMatrixHistosBase(decay,theWeight*(1+scaleFacEleErrSq),"EleSFSqUp_01");
 
-    FillMatrixHistosJets(decay,theWeight*(1-scaleFacEleErrSq),jets,genJets,"EleSFErrSqMinus_01");
-    FillMatrixHistosJets(decay,theWeight*(1+scaleFacEleErrSq),jets,genJets,"EleSFErrSqPlus_01");
+    FillMatrixHistosJets(decay,theWeight*(1-scaleFacEleErrSq),jets,genJets,"EleSFSqDn_01");
+    FillMatrixHistosJets(decay,theWeight*(1+scaleFacEleErrSq),jets,genJets,"EleSFSqUp_01");
 
-    FillMatrixHistosJets(decay,theWeight*(1-scaleFacEleErrSq),centralJets,centralGenJets,"Central_EleSFErrSqMinus_01");
-    FillMatrixHistosJets(decay,theWeight*(1+scaleFacEleErrSq),centralJets,centralGenJets,"Central_EleSFErrSqPlus_01");
+    FillMatrixHistosJets(decay,theWeight*(1-scaleFacEleErrSq),centralJets,centralGenJets,"Central_EleSFSqDn_01");
+    FillMatrixHistosJets(decay,theWeight*(1+scaleFacEleErrSq),centralJets,centralGenJets,"Central_EleSFSqUp_01");
  
     FillMatrixHistosBase(decay,theWeight*theMCInfo.puWeightUncDn(),"PuDn_01");
     FillMatrixHistosBase(decay,theWeight*theMCInfo.puWeightUncUp(),"PuUp_01");
@@ -250,6 +269,25 @@ void ZZRecoAnalyzer::analyze(){
 
     FillMatrixHistosJets(decay,theWeight*theMCInfo.puWeightUncDn(),centralJets,centralGenJets,"Central_PuDn_01");
     FillMatrixHistosJets(decay,theWeight*theMCInfo.puWeightUncUp(),centralJets,centralGenJets,"Central_PuUp_01");
+
+    //pdf alpha s
+    FillMatrixHistosBase(decay,theWeight*LHEweight_PDFVariation_Dn,"PDFDn_01");
+    FillMatrixHistosBase(decay,theWeight*LHEweight_PDFVariation_Up,"PDFUp_01");
+
+    FillMatrixHistosJets(decay,theWeight*LHEweight_PDFVariation_Dn,jets,genJets,"PDFDn_01");
+    FillMatrixHistosJets(decay,theWeight*LHEweight_PDFVariation_Up,jets,genJets,"PDFUp_01");
+
+    FillMatrixHistosJets(decay,theWeight*LHEweight_PDFVariation_Dn,centralJets,centralGenJets,"Central_PDFDn_01");
+    FillMatrixHistosJets(decay,theWeight*LHEweight_PDFVariation_Up,centralJets,centralGenJets,"Central_PDFUp_01");
+
+    FillMatrixHistosBase(decay,theWeight*LHEweight_AsMZ_Dn,"AsDn_01");
+    FillMatrixHistosBase(decay,theWeight*LHEweight_AsMZ_Up,"AsUp_01");
+
+    FillMatrixHistosJets(decay,theWeight*LHEweight_AsMZ_Dn,jets,genJets,"AsDn_01");
+    FillMatrixHistosJets(decay,theWeight*LHEweight_AsMZ_Up,jets,genJets,"AsUp_01");
+
+    FillMatrixHistosJets(decay,theWeight*LHEweight_AsMZ_Dn,centralJets,centralGenJets,"Central_AsDn_01");
+    FillMatrixHistosJets(decay,theWeight*LHEweight_AsMZ_Up,centralJets,centralGenJets,"Central_AsUp_01");
 
     }
 
@@ -267,26 +305,26 @@ void ZZRecoAnalyzer::analyze(){
        FillMatrixHistosJets(decay,theWeight,centralJets,centralGenJets,"Central_01_fr");
        FillMatrixHistosJets(decay,theWeight,centralJets,centralGenJets,"Central_"+sample+"_fr");
 
-       FillMatrixHistosJets(decay,theWeight,UpJER_jets,genJets,"JERUpSmear_01_fr");
-       FillMatrixHistosJets(decay,theWeight,DownJER_jets,genJets,"JERDownSmear_01_fr");
+       FillMatrixHistosJets(decay,theWeight,UpJER_jets,genJets,"JERUp_01_fr");
+       FillMatrixHistosJets(decay,theWeight,DownJER_jets,genJets,"JERDn_01_fr");
        
-       FillMatrixHistosJets(decay,theWeight,UpJER_centraljets,centralGenJets,"Central_JERUpSmear_01_fr");
-       FillMatrixHistosJets(decay,theWeight,DownJER_centraljets,centralGenJets,"Central_JERDownSmear_01_fr");
+       FillMatrixHistosJets(decay,theWeight,UpJER_centraljets,centralGenJets,"Central_JERUp_01_fr");
+       FillMatrixHistosJets(decay,theWeight,DownJER_centraljets,centralGenJets,"Central_JERDn_01_fr");
        
-       FillMatrixHistosJets(decay,theWeight,UpJES_jets,genJets,"JESUpSmear_01_fr");
-       FillMatrixHistosJets(decay,theWeight,DownJES_jets,genJets,"JESDownSmear_01_fr");
+       FillMatrixHistosJets(decay,theWeight,UpJES_jets,genJets,"JESUp_01_fr");
+       FillMatrixHistosJets(decay,theWeight,DownJES_jets,genJets,"JESDn_01_fr");
        
-       FillMatrixHistosJets(decay,theWeight,UpJES_centraljets,centralGenJets,"Central_JESUpSmear_01_fr");
-       FillMatrixHistosJets(decay,theWeight,DownJES_centraljets,centralGenJets,"Central_JESDownSmear_01_fr");
+       FillMatrixHistosJets(decay,theWeight,UpJES_centraljets,centralGenJets,"Central_JESUp_01_fr");
+       FillMatrixHistosJets(decay,theWeight,DownJES_centraljets,centralGenJets,"Central_JESDn_01_fr");
        
-       FillMatrixHistosBase(decay,theWeight*(1-scaleFacErrSq),"SFErrSqMinus_01_fr");
-       FillMatrixHistosBase(decay,theWeight*(1+scaleFacErrSq),"SFErrSqPlus_01_fr");
+       FillMatrixHistosBase(decay,theWeight*(1-scaleFacErrSq),"SFSqDn_01_fr");
+       FillMatrixHistosBase(decay,theWeight*(1+scaleFacErrSq),"SFSqUp_01_fr");
        
-       FillMatrixHistosJets(decay,theWeight*(1-scaleFacErrSq),jets,genJets,"SFErrSqMinus_01_fr");
-       FillMatrixHistosJets(decay,theWeight*(1+scaleFacErrSq),jets,genJets,"SFErrSqPlus_01_fr");
+       FillMatrixHistosJets(decay,theWeight*(1-scaleFacErrSq),jets,genJets,"SFSqDn_01_fr");
+       FillMatrixHistosJets(decay,theWeight*(1+scaleFacErrSq),jets,genJets,"SFSqUp_01_fr");
        
-       FillMatrixHistosJets(decay,theWeight*(1-scaleFacErrSq),centralJets,centralGenJets,"Central_SFErrSqMinus_01_fr");
-       FillMatrixHistosJets(decay,theWeight*(1+scaleFacErrSq),centralJets,centralGenJets,"Central_SFErrSqPlus_01_fr");
+       FillMatrixHistosJets(decay,theWeight*(1-scaleFacErrSq),centralJets,centralGenJets,"Central_SFSqDn_01_fr");
+       FillMatrixHistosJets(decay,theWeight*(1+scaleFacErrSq),centralJets,centralGenJets,"Central_SFSqUp_01_fr");
 
        FillMatrixHistosBase(decay,theWeight*theMCInfo.puWeightUncDn(),"PuDn_01_fr");
        FillMatrixHistosBase(decay,theWeight*theMCInfo.puWeightUncUp(),"PuUp_01_fr");
@@ -295,56 +333,87 @@ void ZZRecoAnalyzer::analyze(){
        FillMatrixHistosJets(decay,theWeight*theMCInfo.puWeightUncUp(),jets,genJets,"PuUp_01_fr");
        
        FillMatrixHistosJets(decay,theWeight*theMCInfo.puWeightUncDn(),centralJets,centralGenJets,"Central_PuDn_01_fr");
-       FillMatrixHistosJets(decay,theWeight*theMCInfo.puWeightUncUp(),centralJets,centralGenJets,"Central_PuUp_01_fr");
-       
+       FillMatrixHistosJets(decay,theWeight*theMCInfo.puWeightUncUp(),centralJets,centralGenJets,"Central_PuUp_01_fr");       
 
-       FillMatrixHistosBase(decay,theWeight*(1-scaleFacMuErrSq),"MuSFErrSqMinus_01_fr");
-       FillMatrixHistosBase(decay,theWeight*(1+scaleFacMuErrSq),"MuSFErrSqPlus_01_fr");
+       FillMatrixHistosBase(decay,theWeight*(1-scaleFacMuErrSq),"MuSFSqDn_01_fr");
+       FillMatrixHistosBase(decay,theWeight*(1+scaleFacMuErrSq),"MuSFSqUp_01_fr");
        
-       FillMatrixHistosJets(decay,theWeight*(1-scaleFacMuErrSq),jets,genJets,"MuSFErrSqMinus_01_fr");
-       FillMatrixHistosJets(decay,theWeight*(1+scaleFacMuErrSq),jets,genJets,"MuSFErrSqPlus_01_fr");
+       FillMatrixHistosJets(decay,theWeight*(1-scaleFacMuErrSq),jets,genJets,"MuSFSqDn_01_fr");
+       FillMatrixHistosJets(decay,theWeight*(1+scaleFacMuErrSq),jets,genJets,"MuSFSqUp_01_fr");
        
-       FillMatrixHistosJets(decay,theWeight*(1-scaleFacMuErrSq),centralJets,centralGenJets,"Central_MuSFErrSqMinus_01_fr");
-       FillMatrixHistosJets(decay,theWeight*(1+scaleFacMuErrSq),centralJets,centralGenJets,"Central_MuSFErrSqPlus_01_fr");
+       FillMatrixHistosJets(decay,theWeight*(1-scaleFacMuErrSq),centralJets,centralGenJets,"Central_MuSFSqDn_01_fr");
+       FillMatrixHistosJets(decay,theWeight*(1+scaleFacMuErrSq),centralJets,centralGenJets,"Central_MuSFSqUp_01_fr");
        
-       FillMatrixHistosBase(decay,theWeight*(1-scaleFacEleErrSq),"EleSFErrSqMinus_01_fr");
-       FillMatrixHistosBase(decay,theWeight*(1+scaleFacEleErrSq),"EleSFErrSqPlus_01_fr");
+       FillMatrixHistosBase(decay,theWeight*(1-scaleFacEleErrSq),"EleSFSqDn_01_fr");
+       FillMatrixHistosBase(decay,theWeight*(1+scaleFacEleErrSq),"EleSFSqUp_01_fr");
        
-       FillMatrixHistosJets(decay,theWeight*(1-scaleFacEleErrSq),jets,genJets,"EleSFErrSqMinus_01_fr");
-       FillMatrixHistosJets(decay,theWeight*(1+scaleFacEleErrSq),jets,genJets,"EleSFErrSqPlus_01_fr");
+       FillMatrixHistosJets(decay,theWeight*(1-scaleFacEleErrSq),jets,genJets,"EleSFSqDn_01_fr");
+       FillMatrixHistosJets(decay,theWeight*(1+scaleFacEleErrSq),jets,genJets,"EleSFSqUp_01_fr");
        
-       FillMatrixHistosJets(decay,theWeight*(1-scaleFacEleErrSq),centralJets,centralGenJets,"Central_EleSFErrSqMinus_01_fr");
-       FillMatrixHistosJets(decay,theWeight*(1+scaleFacEleErrSq),centralJets,centralGenJets,"Central_EleSFErrSqPlus_01_fr");
-       
+       FillMatrixHistosJets(decay,theWeight*(1-scaleFacEleErrSq),centralJets,centralGenJets,"Central_EleSFSqDn_01_fr");
+       FillMatrixHistosJets(decay,theWeight*(1+scaleFacEleErrSq),centralJets,centralGenJets,"Central_EleSFSqUp_01_fr");
 
-       FillHistosBase(decay,theWeight*(1-scaleFacMuErrSq),"MuSFErrSqMinus_01_fr");
-       FillHistosBase(decay,theWeight*(1+scaleFacMuErrSq),"MuSFErrSqPlus_01_fr");
+       //pdf alpha s       
        
-       FillHistosJets(decay,theWeight*(1-scaleFacMuErrSq),jets,"MuSFErrSqMinus_01_fr");
-       FillHistosJets(decay,theWeight*(1+scaleFacMuErrSq),jets,"MuSFErrSqPlus_01_fr");
+       FillMatrixHistosBase(decay,theWeight*LHEweight_PDFVariation_Dn,"PDFDn_01_fr");
+       FillMatrixHistosBase(decay,theWeight*LHEweight_PDFVariation_Up,"PDFUp_01_fr");
        
-       FillHistosJets(decay,theWeight*(1-scaleFacMuErrSq),centralJets,"Central_MuSFErrSqMinus_01_fr");
-       FillHistosJets(decay,theWeight*(1+scaleFacMuErrSq),centralJets,"Central_MuSFErrSqPlus_01_fr");
+       FillMatrixHistosJets(decay,theWeight*LHEweight_PDFVariation_Dn,jets,genJets,"PDFDn_01_fr");
+       FillMatrixHistosJets(decay,theWeight*LHEweight_PDFVariation_Up,jets,genJets,"PDFUp_01_fr");
        
-       FillHistosBase(decay,theWeight*(1-scaleFacEleErrSq),"EleSFErrSqMinus_01_fr");
-       FillHistosBase(decay,theWeight*(1+scaleFacEleErrSq),"EleSFErrSqPlus_01_fr");
+       FillMatrixHistosJets(decay,theWeight*LHEweight_PDFVariation_Dn,centralJets,centralGenJets,"Central_PDFDn_01_fr");
+       FillMatrixHistosJets(decay,theWeight*LHEweight_PDFVariation_Up,centralJets,centralGenJets,"Central_PDFUp_01_fr");
        
-       FillHistosJets(decay,theWeight*(1-scaleFacEleErrSq),jets,"EleSFErrSqMinus_01_fr");
-       FillHistosJets(decay,theWeight*(1+scaleFacEleErrSq),jets,"EleSFErrSqPlus_01_fr");
+       FillMatrixHistosBase(decay,theWeight*LHEweight_AsMZ_Dn,"AsDn_01_fr");
+       FillMatrixHistosBase(decay,theWeight*LHEweight_AsMZ_Up,"AsUp_01_fr");
        
-       FillHistosJets(decay,theWeight*(1-scaleFacEleErrSq),centralJets,"Central_EleSFErrSqMinus_01_fr");
-       FillHistosJets(decay,theWeight*(1+scaleFacEleErrSq),centralJets,"Central_EleSFErrSqPlus_01_fr");
+       FillMatrixHistosJets(decay,theWeight*LHEweight_AsMZ_Dn,jets,genJets,"AsDn_01_fr");
+       FillMatrixHistosJets(decay,theWeight*LHEweight_AsMZ_Up,jets,genJets,"AsUp_01_fr");
+       
+       FillMatrixHistosJets(decay,theWeight*LHEweight_AsMZ_Dn,centralJets,centralGenJets,"Central_AsDn_01_fr");
+       FillMatrixHistosJets(decay,theWeight*LHEweight_AsMZ_Up,centralJets,centralGenJets,"Central_AsUp_01_fr");
+       
+       //1D
 
+       FillHistosBase(decay,theWeight,"01_fr");
+       FillHistosBase(decay,theWeight*(1-scaleFacMuErrSq),"MuSFSqDn_01_fr");
+       FillHistosBase(decay,theWeight*(1+scaleFacMuErrSq),"MuSFSqUp_01_fr");
+            
+       FillHistosBase(decay,theWeight*(1-scaleFacEleErrSq),"EleSFSqDn_01_fr");
+       FillHistosBase(decay,theWeight*(1+scaleFacEleErrSq),"EleSFSqUp_01_fr");
+      
        FillHistosBase(decay,theWeight*theMCInfo.puWeightUncDn(),"PuDn_01_fr");
        FillHistosBase(decay,theWeight*theMCInfo.puWeightUncUp(),"PuUp_01_fr");
+      
+       //pdf alpha s
        
-       FillHistosJets(decay,theWeight*theMCInfo.puWeightUncDn(),jets,"PuDn_01_fr");
-       FillHistosJets(decay,theWeight*theMCInfo.puWeightUncUp(),jets,"PuUp_01_fr");
-       
-       FillHistosJets(decay,theWeight*theMCInfo.puWeightUncDn(),centralJets,"Central_PuDn_01_fr");
-       FillHistosJets(decay,theWeight*theMCInfo.puWeightUncUp(),centralJets,"Central_PuUp_01_fr");
-
+       FillHistosBase(decay,theWeight*LHEweight_PDFVariation_Dn,"PDFDn_01_fr");
+       FillHistosBase(decay,theWeight*LHEweight_PDFVariation_Up,"PDFUp_01_fr");
+                  
+       FillHistosBase(decay,theWeight*LHEweight_AsMZ_Dn,"AsDn_01_fr");
+       FillHistosBase(decay,theWeight*LHEweight_AsMZ_Up,"AsUp_01_fr");
+            
     } // end fiducial region
+    else{
+      FillHistosBase(decay,theWeight,"01_nofr");
+
+       FillHistosBase(decay,theWeight*(1-scaleFacMuErrSq),"MuSFSqDn_01_nofr");
+       FillHistosBase(decay,theWeight*(1+scaleFacMuErrSq),"MuSFSqUp_01_nofr");
+       
+       FillHistosBase(decay,theWeight*(1-scaleFacEleErrSq),"EleSFSqDn_01_nofr");
+       FillHistosBase(decay,theWeight*(1+scaleFacEleErrSq),"EleSFSqUp_01_nofr");
+       
+       FillHistosBase(decay,theWeight*theMCInfo.puWeightUncDn(),"PuDn_01_nofr");
+       FillHistosBase(decay,theWeight*theMCInfo.puWeightUncUp(),"PuUp_01_nofr");
+
+       //pdf alpha s
+       
+       FillHistosBase(decay,theWeight*LHEweight_PDFVariation_Dn,"PDFDn_01_nofr");
+       FillHistosBase(decay,theWeight*LHEweight_PDFVariation_Up,"PDFUp_01_nofr");
+       
+       FillHistosBase(decay,theWeight*LHEweight_AsMZ_Dn,"AsDn_01_nofr");
+       FillHistosBase(decay,theWeight*LHEweight_AsMZ_Up,"AsUp_01_nofr");
+    }
   } //end is MC
   
   
@@ -493,7 +562,7 @@ void ZZRecoAnalyzer::FillMatrixHistosBase(std::string decay, float Wh,std::strin
      theHistograms.fill("ResMat_ZZTo"+decay+"_Deta_"+type,"",Xbins_deta,Xbins_deta, deta,deta_gen,Wh); 
      theHistograms.fill("ResMat_ZZTo"+decay+"_Phi_" +type,"",Xbins_dphi,Xbins_dphi,dphi,dphi_gen,Wh); 
    }
-   }
+ }
 
  
 void ZZRecoAnalyzer::begin() {
