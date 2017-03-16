@@ -36,14 +36,12 @@ ResponseMatrix::ResponseMatrix(bool weight, bool madgraph, bool tightregion): TO
 
     if(madgraph ==1)  {
       fileName    = "matrices" + tightfr+ "_Mad.root";
-      fileName_SF = "matrices"+tightfr+ "_SF_Mad.root";
-      fileName_JE = "matrices"+tightfr+ "_JESJER_Mad.root";
+      fileName_Syst = "matrices"+tightfr+ "_Syst_Mad.root";
       mc = "Mad";
     } 
     else {
       fileName    = "matrices" + tightfr+ "_Pow.root"; 
-      fileName_SF = "matrices" + tightfr+ "_SF_Pow.root";
-      fileName_JE = "matrices" + tightfr+ "_JESJER_Pow.root";
+      fileName_Syst = "matrices" + tightfr+ "_Syst_Pow.root";
       mc = "Pow";
     }
     W = "";
@@ -283,15 +281,16 @@ void ResponseMatrix::Build(string var, string dataset, string finalstate, int xs
 
 }
 
-//Build response matrices and distributions varying lepton scale factors by their uncertainties
-void ResponseMatrix::Build_SF(string var, string dataset, string finalstate, string unc, bool mad)
+void ResponseMatrix::Build_Syst(string var, string dataset, string finalstate, string unc, bool mad)
 {
-  output = new TFile((var+"_test/"+fileName_SF).c_str(), "UPDATE");
+
+  output = new TFile((var+"_test/"+fileName_Syst).c_str(), "UPDATE");
     
-  matrixName     = "ResMat_ZZTo" + finalstate + "_"+var+"_"+unc+"_"+ dataset + tightfr;
+  matrixName = "ResMat_ZZTo" + finalstate + "_"+var+"_"+unc+"_"+ dataset + tightfr;
   histoName_reco = "ZZTo" + finalstate + "_"+var+"_"+unc +"_"+ dataset;
-  histoName_gen  = "ZZTo" + finalstate + "_"+var+"Gen_"+ dataset + tightfr;
- 
+  histoName_gen =  "ZZTo" + finalstate + "_"+var+"Gen_"+ dataset + tightfr;
+
+  //  cout<<"matrixName "<<matrixName<<" histoName_reco "<<histoName_reco<<" histoName_gen "<<histoName_gen<<endl;
   float totalint = 0; 
   h_Resmat_gg4l   = (TH2*) gg4l_r->Get(matrixName.c_str()); 
   h_Resmat_qq4l2j = (TH2*) qq4l2j_r->Get(matrixName.c_str()); 
@@ -373,96 +372,189 @@ void ResponseMatrix::Build_SF(string var, string dataset, string finalstate, str
   output->Close(); 
 }
 
-//Build response matrices and distributions varying JER and JES by their uncertainties
-void ResponseMatrix::Build_JE(string var, string dataset, string finalstate, string unc, bool mad)
-{
-  output = new TFile((var+"_test/"+fileName_JE).c_str(), "UPDATE");
 
-  matrixName     = "ResMat_ZZTo" + finalstate + "_"+var+"_"+unc+"Smear_" + dataset + tightfr;
-  histoName_reco = "ZZTo" + finalstate + "_"+var+"_"+unc+"Smear_" + dataset;
-  histoName_gen  = "ZZTo" + finalstate + "_"+var+"Gen_"+ dataset + tightfr;
+
+
+// //Build response matrices and distributions varying lepton scale factors by their uncertainties
+// void ResponseMatrix::Build_SF(string var, string dataset, string finalstate, string unc, bool mad)
+// {
+//   output = new TFile((var+"_test/"+fileName_Syst).c_str(), "UPDATE");
+    
+//   matrixName     = "ResMat_ZZTo" + finalstate + "_"+var+"_"+unc+"_"+ dataset + tightfr;
+//   histoName_reco = "ZZTo" + finalstate + "_"+var+"_"+unc +"_"+ dataset;
+//   histoName_gen  = "ZZTo" + finalstate + "_"+var+"Gen_"+ dataset + tightfr;
  
-  float totalint = 0; 
-  h_Resmat_gg4l   = (TH2*) gg4l_r->Get(matrixName.c_str()); 
-  h_Resmat_qq4l2j   = (TH2*) qq4l2j_r->Get(matrixName.c_str()); 
-  h_Resmat_4lmad   = (TH2*) ZZTo4lmad_r->Get(matrixName.c_str());
-  h_Resmat_4lpow   = (TH2*) ZZTo4lpow_r->Get(matrixName.c_str()); 
-  h_gg4l   = (TH1*) gg4l_r->Get(histoName_reco.c_str()); 
-  h_qq4l2j   = (TH1*) qq4l2j_r->Get(histoName_reco.c_str()); 
-  h_4lmad   = (TH1*) ZZTo4lmad_r->Get(histoName_reco.c_str()); 
-  h_4lpow   = (TH1*) ZZTo4lpow_r->Get(histoName_reco.c_str()); 
-  h_gg4l_gen   = (TH1*) gg4l_g->Get(histoName_gen.c_str()); 
-  h_qq4l2j_gen   = (TH1*) qq4l2j_g->Get(histoName_gen.c_str()); 
-  h_4lmad_gen   = (TH1*) ZZTo4lmad_g->Get(histoName_gen.c_str()); 
-  h_4lpow_gen   = (TH1*) ZZTo4lpow_g->Get(histoName_gen.c_str()); 
+//   float totalint = 0; 
+//   h_Resmat_gg4l   = (TH2*) gg4l_r->Get(matrixName.c_str()); 
+//   h_Resmat_qq4l2j = (TH2*) qq4l2j_r->Get(matrixName.c_str()); 
+//   h_Resmat_4lmad  = (TH2*) ZZTo4lmad_r->Get(matrixName.c_str());
+//   h_Resmat_4lpow  = (TH2*) ZZTo4lpow_r->Get(matrixName.c_str()); 
+//   h_gg4l          = (TH1*) gg4l_r->Get(histoName_reco.c_str()); 
+//   h_qq4l2j        = (TH1*) qq4l2j_r->Get(histoName_reco.c_str()); 
+//   h_4lmad         = (TH1*) ZZTo4lmad_r->Get(histoName_reco.c_str()); 
+//   h_4lpow         = (TH1*) ZZTo4lpow_r->Get(histoName_reco.c_str());   
+//   h_gg4l_gen      = (TH1*) gg4l_g->Get(histoName_gen.c_str()); 
+//   h_qq4l2j_gen    = (TH1*) qq4l2j_g->Get(histoName_gen.c_str()); 
+//   h_4lmad_gen     = (TH1*) ZZTo4lmad_g->Get(histoName_gen.c_str());
+//   h_4lpow_gen     = (TH1*) ZZTo4lpow_g->Get(histoName_gen.c_str()); 
+  
+//   if(h_Resmat_gg4l   == NULL){ cout<<"histogram "<<h_Resmat_gg4l  ->GetName()<<" is null. Abort"<<endl;  abort(); }  
+//   if(h_Resmat_qq4l2j == NULL){ cout<<"histogram "<<h_Resmat_qq4l2j->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_gg4l          == NULL){ cout<<"histogram "<<h_gg4l         ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_qq4l2j        == NULL){ cout<<"histogram "<<h_qq4l2j       ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_gg4l_gen      == NULL){ cout<<"histogram "<<h_gg4l_gen     ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_qq4l2j_gen    == NULL){ cout<<"histogram "<<h_qq4l2j_gen   ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_Resmat_4lpow  == NULL){ cout<<"histogram "<<h_Resmat_4lpow ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_Resmat_4lmad  == NULL){ cout<<"histogram "<<h_Resmat_4lmad ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_4lpow         == NULL){ cout<<"histogram "<<h_4lpow        ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_4lpow_gen     == NULL){ cout<<"histogram "<<h_4lpow_gen    ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_4lmad         == NULL){ cout<<"histogram "<<h_4lmad        ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_4lmad_gen     == NULL){ cout<<"histogram "<<h_4lmad_gen    ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+
+//   if(mad ==1){
+//     h_Resmat_4lTot = (TH2*) h_Resmat_4lmad->Clone("h_Resmat_4lmad");
+//     h_4lTot        = (TH1*) h_4lmad->Clone("h_4lmad");
+//     h_4lTot_gen    = (TH1*) h_4lmad_gen->Clone("h_4lmad");
+//   }
+//   else{
+//     h_Resmat_4lTot = (TH2*)h_Resmat_4lpow->Clone("h_Resmat_4lpow");
+//     h_4lTot        = (TH1*) h_4lpow->Clone("h_4lpow");
+//     h_4lTot_gen    = (TH1*) h_4lpow_gen->Clone("h_4lpow");
+//   }
+//   h_Resmat_ggTot = (TH2*)h_Resmat_gg4l->Clone("h_Resmat_gg"); 
+//   h_Resmat_JJTot = (TH2*)h_Resmat_qq4l2j->Clone("h_Resmat_JJ"); 
+  
+//   //cout <<"gg= "<< h_Resmat_gg4l->Integral(0,1,0,50)<<" " << h_gg4l->Integral(0,1)<<endl;  
+//   //cout <<"JJ= " <<h_Resmat_qq4l2j->Integral(0,1,0,50)<<" " <<h_qq4l2j->Integral(0,1)<<endl;
+//   //cout <<"4l= "<< h_Resmat_4lTot->Integral(0,1,0,50)<<" " <<h_4l->Integral(0,1)<<endl;
+  
+//   h_Resmat = (TH2*)h_Resmat_4lTot->Clone("h_Resmat_4lTot");
+//   h_Resmat->Add(h_Resmat_ggTot); 
+//   h_Resmat->Add(h_Resmat_JJTot);
  
-  if(h_Resmat_gg4l   == NULL){ cout<<"histogram "<<h_Resmat_gg4l  ->GetName()<<" is null. Abort"<<endl;  abort(); }  
-  if(h_Resmat_qq4l2j == NULL){ cout<<"histogram "<<h_Resmat_qq4l2j->GetName()<<" is null. Abort"<<endl;  abort(); } 
-  if(h_gg4l          == NULL){ cout<<"histogram "<<h_gg4l         ->GetName()<<" is null. Abort"<<endl;  abort(); } 
-  if(h_qq4l2j        == NULL){ cout<<"histogram "<<h_qq4l2j       ->GetName()<<" is null. Abort"<<endl;  abort(); } 
-  if(h_gg4l_gen      == NULL){ cout<<"histogram "<<h_gg4l_gen     ->GetName()<<" is null. Abort"<<endl;  abort(); } 
-  if(h_qq4l2j_gen    == NULL){ cout<<"histogram "<<h_qq4l2j_gen   ->GetName()<<" is null. Abort"<<endl;  abort(); } 
-  if(h_Resmat_4lpow  == NULL){ cout<<"histogram "<<h_Resmat_4lpow ->GetName()<<" is null. Abort"<<endl;  abort(); } 
-  if(h_Resmat_4lmad  == NULL){ cout<<"histogram "<<h_Resmat_4lmad ->GetName()<<" is null. Abort"<<endl;  abort(); } 
-  if(h_4lpow         == NULL){ cout<<"histogram "<<h_4lpow        ->GetName()<<" is null. Abort"<<endl;  abort(); } 
-  if(h_4lpow_gen     == NULL){ cout<<"histogram "<<h_4lpow_gen    ->GetName()<<" is null. Abort"<<endl;  abort(); } 
-  if(h_4lmad         == NULL){ cout<<"histogram "<<h_4lmad        ->GetName()<<" is null. Abort"<<endl;  abort(); } 
-  if(h_4lmad_gen     == NULL){ cout<<"histogram "<<h_4lmad_gen    ->GetName()<<" is null. Abort"<<endl;  abort(); } 
-  
-  if(mad ==1){
-    h_Resmat_4lTot = (TH2*)h_Resmat_4lmad->Clone("h_Resmat_4lmad");
-    h_4lTot = (TH1*) h_4lmad->Clone("h_4lmad");
-    h_4lTot_gen = (TH1*) h_4lmad_gen->Clone("h_4lmad");
-  }
-  else{
-    h_Resmat_4lTot = (TH2*)h_Resmat_4lpow->Clone("h_Resmat_4lpow");
-    h_4lTot = (TH1*) h_4lpow->Clone("h_4lpow");
-    h_4lTot_gen = (TH1*) h_4lpow_gen->Clone("h_4lpow");
-  }
-  h_Resmat_ggTot = (TH2*)h_Resmat_gg4l->Clone("h_Resmat_gg"); 
-  h_Resmat_JJTot = (TH2*)h_Resmat_qq4l2j->Clone("h_Resmat_JJ"); 
-  
-  //cout <<"gg= "<< h_Resmat_gg4l->Integral(0,1,0,50)<<" " << h_gg4l->Integral(0,1)<<endl;  
-  //cout <<"JJ= " <<h_Resmat_qq4l2j->Integral(0,1,0,50)<<" " <<h_qq4l2j->Integral(0,1)<<endl;
-  //cout <<"4l= "<< h_Resmat_4lTot->Integral(0,1,0,50)<<" " <<h_4l->Integral(0,1)<<endl;
-  
-  h_Resmat = (TH2*)h_Resmat_4lTot->Clone("h_Resmat_4lTot");
-  h_Resmat->Add(h_Resmat_ggTot); 
-  h_Resmat->Add(h_Resmat_JJTot);
-
-  h_4lTot_c = (TH1*) h_4lTot ->Clone("h_4lTot"); 
-  h_4lTot_c->Add(h_gg4l); 
-  h_4lTot_c->Add(h_qq4l2j);
-
-  h_4lTot_gen_c = (TH1*) h_4lTot_gen ->Clone("h_4lTot_gen");
-  h_4lTot_gen_c->Add(h_gg4l_gen);
-  h_4lTot_gen_c->Add(h_qq4l2j_gen);
-
-  totalint = h_Resmat->Integral();
-
-  h_Resmat_normTot = (TH2*)h_Resmat->Clone("h_Resmat");
-  h_Resmat_normTot->Scale(1/totalint);
-  
-  //std::cout << "total integral " << totalint << std::endl;
-  //  string title = "Response Matrix m_{" + binning + "_" + finalstate + "} " + unc+dataset;   
+//   h_4lTot_c = (TH1*) h_4lTot ->Clone("h_4lTot"); 
+//   h_4lTot_c->Add(h_gg4l); 
+//   h_4lTot_c->Add(h_qq4l2j);
  
-  string matrixNameFile = "ResMat_qqggJJ_"+var+"_ZZTo" + finalstate + "_" + unc + "_" + dataset; 
-  string matrixNormTotNameFile =  "ResMat_qqggJJ_"+var+"_normTot_ZZTo" + finalstate + "_" + unc + "_" + dataset; 
-  string histoName_recoFile = var+"_qqggJJ_ZZTo" + finalstate + "_" + unc + "_" + dataset; 
-  string histoName_genFile =  var+"Gen_qqggJJ_ZZTo" + finalstate + "_" + unc + "_" + dataset; 
+//   h_4lTot_gen_c = (TH1*) h_4lTot_gen ->Clone("h_4lTot_gen");
+//   h_4lTot_gen_c->Add(h_gg4l_gen);
+//   h_4lTot_gen_c->Add(h_qq4l2j_gen);
+ 
+//   totalint = h_Resmat->Integral();
+ 
+//   h_Resmat_normTot = (TH2*)h_Resmat->Clone("h_Resmat");   
+//   h_Resmat_normTot->Scale(1/totalint);
+  
+//   //std::cout << "total integral " << totalint << std::endl;
+  
+//   string matrixNameFile = "ResMat_qqggJJ_"+var+"_ZZTo" + finalstate + "_" + unc + "_" + dataset; 
+//   string matrixNormTotNameFile =  "ResMat_qqggJJ_"+var+"_normTot_ZZTo" + finalstate + "_" + unc + "_" + dataset; 
+//   string histoName_recoFile = var+"_qqggJJ_ZZTo" + finalstate + "_" + unc + "_" + dataset; 
+//   string histoName_genFile =  var+"Gen_qqggJJ_ZZTo" + finalstate + "_" + unc + "_" + dataset; 
 
-  h_Resmat->SetTitle(matrixNameFile.c_str());
-  h_Resmat_normTot->SetTitle(matrixNormTotNameFile.c_str());
-  h_4lTot_c->SetTitle(histoName_recoFile.c_str());
-  h_4lTot_gen_c->SetTitle(histoName_genFile.c_str());
+//   h_Resmat->SetTitle(matrixNameFile.c_str());
+//   h_Resmat_normTot->SetTitle(matrixNormTotNameFile.c_str());
+//   h_4lTot_c->SetTitle(histoName_recoFile.c_str());
+//   h_4lTot_gen_c->SetTitle(histoName_genFile.c_str());
+ 
+//   output->cd(); 
+//   h_Resmat->Write(matrixNameFile.c_str(),TObject::kOverwrite);
+//   h_Resmat_normTot->Write(matrixNormTotNameFile.c_str(),TObject::kOverwrite);
+//   h_4lTot_c->Write(histoName_recoFile.c_str(),TObject::kOverwrite);
+//   h_4lTot_gen_c->Write(histoName_genFile.c_str(),TObject::kOverwrite);
+//   output->Close(); 
+// }
 
-  output->cd(); 
-  h_Resmat->Write(matrixNameFile.c_str(),TObject::kOverwrite);
-  h_Resmat_normTot->Write(matrixNormTotNameFile.c_str(),TObject::kOverwrite);
-  h_4lTot_c->Write(histoName_recoFile.c_str(),TObject::kOverwrite);
-  h_4lTot_gen_c->Write(histoName_genFile.c_str(),TObject::kOverwrite);
-  output->Close();
-}
+// //Build response matrices and distributions varying JER and JES by their uncertainties
+// void ResponseMatrix::Build_JE(string var, string dataset, string finalstate, string unc, bool mad)
+// {
+//   output = new TFile((var+"_test/"+fileName_Syst).c_str(), "UPDATE");
+
+//   matrixName     = "ResMat_ZZTo" + finalstate + "_"+var+"_"+unc+"Smear_" + dataset + tightfr;
+//   histoName_reco = "ZZTo" + finalstate + "_"+var+"_"+unc+"Smear_" + dataset;
+//   histoName_gen  = "ZZTo" + finalstate + "_"+var+"Gen_"+ dataset + tightfr;
+ 
+//   float totalint = 0; 
+//   h_Resmat_gg4l   = (TH2*) gg4l_r->Get(matrixName.c_str()); 
+//   h_Resmat_qq4l2j   = (TH2*) qq4l2j_r->Get(matrixName.c_str()); 
+//   h_Resmat_4lmad   = (TH2*) ZZTo4lmad_r->Get(matrixName.c_str());
+//   h_Resmat_4lpow   = (TH2*) ZZTo4lpow_r->Get(matrixName.c_str()); 
+//   h_gg4l   = (TH1*) gg4l_r->Get(histoName_reco.c_str()); 
+//   h_qq4l2j   = (TH1*) qq4l2j_r->Get(histoName_reco.c_str()); 
+//   h_4lmad   = (TH1*) ZZTo4lmad_r->Get(histoName_reco.c_str()); 
+//   h_4lpow   = (TH1*) ZZTo4lpow_r->Get(histoName_reco.c_str()); 
+//   h_gg4l_gen   = (TH1*) gg4l_g->Get(histoName_gen.c_str()); 
+//   h_qq4l2j_gen   = (TH1*) qq4l2j_g->Get(histoName_gen.c_str()); 
+//   h_4lmad_gen   = (TH1*) ZZTo4lmad_g->Get(histoName_gen.c_str()); 
+//   h_4lpow_gen   = (TH1*) ZZTo4lpow_g->Get(histoName_gen.c_str()); 
+ 
+//   if(h_Resmat_gg4l   == NULL){ cout<<"histogram "<<h_Resmat_gg4l  ->GetName()<<" is null. Abort"<<endl;  abort(); }  
+//   if(h_Resmat_qq4l2j == NULL){ cout<<"histogram "<<h_Resmat_qq4l2j->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_gg4l          == NULL){ cout<<"histogram "<<h_gg4l         ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_qq4l2j        == NULL){ cout<<"histogram "<<h_qq4l2j       ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_gg4l_gen      == NULL){ cout<<"histogram "<<h_gg4l_gen     ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_qq4l2j_gen    == NULL){ cout<<"histogram "<<h_qq4l2j_gen   ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_Resmat_4lpow  == NULL){ cout<<"histogram "<<h_Resmat_4lpow ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_Resmat_4lmad  == NULL){ cout<<"histogram "<<h_Resmat_4lmad ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_4lpow         == NULL){ cout<<"histogram "<<h_4lpow        ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_4lpow_gen     == NULL){ cout<<"histogram "<<h_4lpow_gen    ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_4lmad         == NULL){ cout<<"histogram "<<h_4lmad        ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+//   if(h_4lmad_gen     == NULL){ cout<<"histogram "<<h_4lmad_gen    ->GetName()<<" is null. Abort"<<endl;  abort(); } 
+  
+//   if(mad ==1){
+//     h_Resmat_4lTot = (TH2*)h_Resmat_4lmad->Clone("h_Resmat_4lmad");
+//     h_4lTot = (TH1*) h_4lmad->Clone("h_4lmad");
+//     h_4lTot_gen = (TH1*) h_4lmad_gen->Clone("h_4lmad");
+//   }
+//   else{
+//     h_Resmat_4lTot = (TH2*)h_Resmat_4lpow->Clone("h_Resmat_4lpow");
+//     h_4lTot = (TH1*) h_4lpow->Clone("h_4lpow");
+//     h_4lTot_gen = (TH1*) h_4lpow_gen->Clone("h_4lpow");
+//   }
+//   h_Resmat_ggTot = (TH2*)h_Resmat_gg4l->Clone("h_Resmat_gg"); 
+//   h_Resmat_JJTot = (TH2*)h_Resmat_qq4l2j->Clone("h_Resmat_JJ"); 
+  
+//   //cout <<"gg= "<< h_Resmat_gg4l->Integral(0,1,0,50)<<" " << h_gg4l->Integral(0,1)<<endl;  
+//   //cout <<"JJ= " <<h_Resmat_qq4l2j->Integral(0,1,0,50)<<" " <<h_qq4l2j->Integral(0,1)<<endl;
+//   //cout <<"4l= "<< h_Resmat_4lTot->Integral(0,1,0,50)<<" " <<h_4l->Integral(0,1)<<endl;
+  
+//   h_Resmat = (TH2*)h_Resmat_4lTot->Clone("h_Resmat_4lTot");
+//   h_Resmat->Add(h_Resmat_ggTot); 
+//   h_Resmat->Add(h_Resmat_JJTot);
+
+//   h_4lTot_c = (TH1*) h_4lTot ->Clone("h_4lTot"); 
+//   h_4lTot_c->Add(h_gg4l); 
+//   h_4lTot_c->Add(h_qq4l2j);
+
+//   h_4lTot_gen_c = (TH1*) h_4lTot_gen ->Clone("h_4lTot_gen");
+//   h_4lTot_gen_c->Add(h_gg4l_gen);
+//   h_4lTot_gen_c->Add(h_qq4l2j_gen);
+
+//   totalint = h_Resmat->Integral();
+
+//   h_Resmat_normTot = (TH2*)h_Resmat->Clone("h_Resmat");
+//   h_Resmat_normTot->Scale(1/totalint);
+  
+//   //std::cout << "total integral " << totalint << std::endl;
+//   //  string title = "Response Matrix m_{" + binning + "_" + finalstate + "} " + unc+dataset;   
+ 
+//   string matrixNameFile = "ResMat_qqggJJ_"+var+"_ZZTo" + finalstate + "_" + unc + "_" + dataset; 
+//   string matrixNormTotNameFile =  "ResMat_qqggJJ_"+var+"_normTot_ZZTo" + finalstate + "_" + unc + "_" + dataset; 
+//   string histoName_recoFile = var+"_qqggJJ_ZZTo" + finalstate + "_" + unc + "_" + dataset; 
+//   string histoName_genFile =  var+"Gen_qqggJJ_ZZTo" + finalstate + "_" + unc + "_" + dataset; 
+
+//   h_Resmat->SetTitle(matrixNameFile.c_str());
+//   h_Resmat_normTot->SetTitle(matrixNormTotNameFile.c_str());
+//   h_4lTot_c->SetTitle(histoName_recoFile.c_str());
+//   h_4lTot_gen_c->SetTitle(histoName_genFile.c_str());
+
+//   output->cd(); 
+//   h_Resmat->Write(matrixNameFile.c_str(),TObject::kOverwrite);
+//   h_Resmat_normTot->Write(matrixNormTotNameFile.c_str(),TObject::kOverwrite);
+//   h_4lTot_c->Write(histoName_recoFile.c_str(),TObject::kOverwrite);
+//   h_4lTot_gen_c->Write(histoName_genFile.c_str(),TObject::kOverwrite);
+//   output->Close();
+// }
 
 //Plot distributions
 void ResponseMatrix::Plot(string var,string fs, string dataset, string unc, string path)

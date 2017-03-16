@@ -825,6 +825,9 @@ void DoUnfOverGenSystematic(string var = "Mass", string fs = "4e", bool mad = 1,
 
 }
 
+
+///////////////////////////////////////////
+
 void DoJERSystematic(string var = "nJets", string fs = "4e", bool mad = 1,bool tightregion = 0){
   
   string tightfr;
@@ -842,12 +845,12 @@ void DoJERSystematic(string var = "nJets", string fs = "4e", bool mad = 1,bool t
   filePath = "../../../";
   if(mad ==1){
     system(("mkdir "+filePath+ "UnfoldFolder"+tightfr+"_Mad/").c_str());  
-    matrixFileName = "../" + var + "_test/matrices"+tightfr+"_JESJER_Mad.root";
+    matrixFileName = "../" + var + "_test/matrices"+tightfr+"_Syst_Mad.root";
     outputFileName = filePath+"UnfoldFolder"+tightfr+"_Mad/UnfoldData_"+ var + "_JER.root";
   }
   else{ 
      system(("mkdir "+filePath+ "UnfoldFolder"+tightfr+"_Pow/").c_str());    
-    matrixFileName = "../" + var + "_test/matrices"+tightfr+"_JESJER_Pow.root";
+    matrixFileName = "../" + var + "_test/matrices"+tightfr+"_Syst_Pow.root";
     outputFileName = filePath+"UnfoldFolder"+tightfr+"_Pow/UnfoldData_"+ var + "_JER.root";
   }
   dataFileName = "../" +var + "_test/DataToUnfold.root";
@@ -1007,6 +1010,102 @@ void DoJESSystematic_ModMat(string var = "nJets", string fs = "4e", bool mad = 1
   output->Close();
 }
 
+//////////////////////////////////////////
+void DoSystematic(string var = "nJets", string fs = "4e", bool mad = 1,bool tightregion = 0, string unc = "JES"){
+  
+  string tightfr;
+  if(tightregion == 1) tightfr = "_fr";
+  else tightfr = "";
+
+#ifdef __CINT__
+  gSystem->Load("libRooUnfold");
+#endif 
+  
+  gROOT->SetStyle("Plain");  
+  gStyle->SetOptStat(0);
+  gStyle->SetPalette(1,0);
+
+  filePath = "../../../";
+  if(mad ==1){
+    system(("mkdir "+filePath+ "UnfoldFolder"+tightfr+"_Mad/").c_str());  
+    matrixFileName = "../" + var + "_test/matrices"+tightfr+"_Syst_Mad.root";
+    outputFileName = filePath+"UnfoldFolder"+tightfr+"_Mad/UnfoldData_"+ var + "_"+unc+".root";
+  }
+  else{ 
+     system(("mkdir "+filePath+ "UnfoldFolder"+tightfr+"_Pow/").c_str());     
+    matrixFileName = "../" + var + "_test/matrices"+tightfr+"_Syst_Pow.root";
+    outputFileName = filePath+"UnfoldFolder"+tightfr+"_Pow/UnfoldData_"+ var + "_"+unc+".root";
+  }
+  dataFileName = "../" +var + "_test/DataToUnfold.root";
+  matrix = new TFile(matrixFileName.c_str());
+  data = new TFile(dataFileName.c_str());
+  output = new TFile(outputFileName.c_str(), "UPDATE");
+
+  matrix_p = "ResMat_qqggJJ_" + var + "_ZZTo" + fs + "_"+unc+"Up_01";
+  histoReco_p = var + "_qqggJJ_ZZTo" + fs +"_"+unc+"Up_01";
+  histoGen_p = var + "Gen_qqggJJ_ZZTo" + fs +"_"+unc+"Up_01";
+  matrix_m = "ResMat_qqggJJ_" + var + "_ZZTo" + fs +"_"+unc+"Dn_01";  
+  histoReco_m = var + "_qqggJJ_ZZTo" + fs +"_"+unc+"Dn_01";
+  histoGen_m = var + "Gen_qqggJJ_ZZTo" + fs +"_"+unc+"Dn_01"; 
+  histoName_unf = "DataminusBkg_" + var + "_ZZTo"+fs;
+
+  //  cout<<"histoReco_p.c_str() "<<histoReco_p.c_str()<<" histoGen_p.c_str() "<<histoGen_p.c_str()
+  //  <<" matrix_p.c_str() "<<matrix_p.c_str()<<" histoReco_m.c_str() "<<histoReco_m.c_str()<<" histoGen_m.c_str() "<<histoGen_m.c_str()
+  //  << "matrix_m.c_str() "<<matrix_m.c_str()<<" histoName_unf.c_str() "<<histoName_unf.c_str()<<endl;
+
+  h_measured_p = (TH1*) matrix->Get(histoReco_p.c_str());  
+  h_true_p = (TH1*) matrix->Get(histoGen_p.c_str());
+  h_Resmat_p = (TH2*)matrix->Get(matrix_p.c_str()); 
+  h_measured_m = (TH1*) matrix->Get(histoReco_m.c_str());  
+  h_true_m = (TH1*) matrix->Get(histoGen_m.c_str());
+  h_Resmat_m = (TH2*)matrix->Get(matrix_m.c_str()); 
+  h_measured_unf = (TH1*) data->Get(histoName_unf.c_str());
+
+  RooUnfoldResponse response_p(h_measured_p, h_true_p, h_Resmat_p, "response_p", "response_p"); 
+  RooUnfoldResponse response_m(h_measured_m, h_true_m, h_Resmat_m, "response_m", "response_m"); 
+  
+  Int_t nIter = 4;
+  //  if(h_measured_unf->GetNbinsX()<4) nIter = h_measured_unf->GetNbinsX();
+
+  RooUnfoldSvd unfold_svd_p(&response_p, h_measured_unf, 4);
+  RooUnfoldSvd unfold_svd_m(&response_m, h_measured_unf, 4);
+  
+  RooUnfoldBayes unfold_bayes_p(&response_p, h_measured_unf, nIter);
+  RooUnfoldBayes unfold_bayes_m(&response_m, h_measured_unf, nIter);
+  
+  h_unfolded_p = (TH1*) unfold_bayes_p.Hreco(RooUnfold::kCovariance);
+  h_unfolded_m = (TH1*) unfold_bayes_m.Hreco(RooUnfold::kCovariance);
+  
+  double max =0;
+  double min = 0;
+  TH1 * h_max = (TH1*) h_unfolded_p->Clone("h_max");
+  TH1 * h_min = (TH1*) h_unfolded_p->Clone("h_max");
+
+   for(int i = 1; i<10; i++){
+      max = 0;
+      min = 0;
+     
+      max = TMath::Max(h_unfolded_p->GetBinContent(i),h_unfolded_m->GetBinContent(i));
+      min = TMath::Min(h_unfolded_p->GetBinContent(i),h_unfolded_m->GetBinContent(i));
+           
+      h_max->SetBinContent(i,max); 
+      h_min->SetBinContent(i,min);
+     
+    }
+
+
+  UnfHistoName_p = "ZZTo"+ fs + "_" + var + "_p";
+  UnfHistoName_m = "ZZTo"+ fs + "_" + var + "_m";
+
+  output->cd();
+  h_max->Write(UnfHistoName_p.c_str());
+  h_min->Write(UnfHistoName_m.c_str());
+
+  matrix->Close();
+  data->Close();
+  output->Close();
+}
+
 void DoJESSystematic_ModData(string var = "nJets", string fs = "4e",bool mad = 1,bool tightregion = 0){
   
   string tightfr;
@@ -1111,12 +1210,12 @@ void DoSFSystematic(string var = "nJets", string fs = "4e", bool mad = 1,bool ti
   filePath = "../../../";
   if(mad ==1){
     system(("mkdir "+filePath+ "UnfoldFolder"+tightfr+"_Mad/").c_str());  
-    matrixFileName = "../" + var + "_test/matrices"+tightfr+"_SF_Mad.root";
+    matrixFileName = "../" + var + "_test/matrices"+tightfr+"_Syst_Mad.root";
     outputFileName = filePath+"UnfoldFolder"+tightfr+"_Mad/UnfoldData_"+ var + "_SF"+errtype+".root";
   }
   else{ 
-     system(("mkdir "+filePath+ "UnfoldFolder"+tightfr+"_Pow/").c_str());     
-    matrixFileName = "../" + var + "_test/matrices"+tightfr+"_SF_Pow.root";
+    system(("mkdir "+filePath+ "UnfoldFolder"+tightfr+"_Pow/").c_str());     
+    matrixFileName = "../" + var + "_test/matrices"+tightfr+"_Syst_Pow.root";
     outputFileName = filePath+"UnfoldFolder"+tightfr+"_Pow/UnfoldData_"+ var + "_SF"+errtype+".root";
   }
   dataFileName = "../" +var + "_test/DataToUnfold.root";
@@ -1219,26 +1318,90 @@ void  DoAllSystematics(string var = "Mass", bool mad =1, bool tightregion =0){
   //sDoUnfOverGenSystematic(var.c_str(), "2e2m",mad,tightregion);
   
   if(var == "nJets"||var == "Mjj"||var == "Deta" || var == "nJets_Central"||var == "Mjj_Central"||var == "Deta_Central"||var == "PtJet1"||var == "PtJet2"||var == "EtaJet1"||var == "EtaJet2"){
-    DoJERSystematic(var.c_str(), "4e",mad,tightregion); 
-    DoJERSystematic(var.c_str(), "4m",mad,tightregion);
-    DoJERSystematic(var.c_str(), "2e2m",mad,tightregion);
-  
-    DoJESSystematic_ModMat(var.c_str(), "4e",mad,tightregion); 
-    DoJESSystematic_ModMat(var.c_str(), "4m",mad,tightregion);
-    DoJESSystematic_ModMat(var.c_str(), "2e2m",mad,tightregion);  
-  
+    cout<<"hhei 1"<<endl;
+    DoSystematic(var.c_str(), "4e",mad,tightregion,"JER"); 
+    DoSystematic(var.c_str(), "4m",mad,tightregion,"JER");
+    DoSystematic(var.c_str(), "2e2m",mad,tightregion,"JER");
+    cout<<"hhei 2"<<endl;
+    DoSystematic(var.c_str(), "4e",mad,tightregion,"JES"); 
+    DoSystematic(var.c_str(), "4m",mad,tightregion,"JES");
+    DoSystematic(var.c_str(), "2e2m",mad,tightregion,"JES");  
+    cout<<"hhei 3"<<endl;
     DoJESSystematic_ModData(var.c_str(), "4e",mad,tightregion); 
     DoJESSystematic_ModData(var.c_str(), "4m",mad,tightregion);
     DoJESSystematic_ModData(var.c_str(), "2e2m",mad,tightregion); 
   }
-  
-  DoSFSystematic(var.c_str(),"4e",mad,tightregion,0); 
-  DoSFSystematic(var.c_str(),"4m",mad,tightregion,0); 
-  DoSFSystematic(var.c_str(),"2e2m",mad,tightregion,0);
+  cout<<"hhei 4"<<endl;
+  DoSystematic(var.c_str(),"4e",mad,tightregion,"SFSq"); 
+  DoSystematic(var.c_str(),"4m",mad,tightregion,"SFSq"); 
+  DoSystematic(var.c_str(),"2e2m",mad,tightregion,"SFSq");
+
+  DoSystematic(var.c_str(),"4e",mad,tightregion,"MuSFSq"); 
+  DoSystematic(var.c_str(),"4m",mad,tightregion,"MuSFSq"); 
+  DoSystematic(var.c_str(),"2e2m",mad,tightregion,"MuSFSq");
+
+  DoSystematic(var.c_str(),"4e",mad,tightregion,"EleSFSq"); 
+  DoSystematic(var.c_str(),"4m",mad,tightregion,"EleSFSq"); 
+  DoSystematic(var.c_str(),"2e2m",mad,tightregion,"EleSFSq");
+
+  DoSystematic(var.c_str(),"4e",mad,tightregion,"Pu"); 
+  DoSystematic(var.c_str(),"4m",mad,tightregion,"Pu"); 
+  DoSystematic(var.c_str(),"2e2m",mad,tightregion,"Pu");
+
+  DoSystematic(var.c_str(),"4e",mad,tightregion,"PDF"); 
+  DoSystematic(var.c_str(),"4m",mad,tightregion,"PDF"); 
+  DoSystematic(var.c_str(),"2e2m",mad,tightregion,"PDF");
+
+  DoSystematic(var.c_str(),"4e",mad,tightregion,"As"); 
+  DoSystematic(var.c_str(),"4m",mad,tightregion,"As"); 
+  DoSystematic(var.c_str(),"2e2m",mad,tightregion,"As");
+
   // DoSFSystematic(var.c_str(),"4e",mad,tightregion,1);  
   // DoSFSystematic(var.c_str(),"4m",mad,tightregion,1); 
   // DoSFSystematic(var.c_str(),"2e2m",mad,tightregion,1); 
 }
+
+// void  DoAllSystematics_del(string var = "Mass", bool mad =1, bool tightregion =0){
+  
+//   DoMCGenSystematic(var.c_str(), "4e",mad,tightregion);
+//   DoMCGenSystematic(var.c_str(), "4m",mad,tightregion);
+//   DoMCGenSystematic(var.c_str(), "2e2m",mad,tightregion);
+//   DoQqggSystematic(var.c_str(), "4e",mad,tightregion); 
+//   DoQqggSystematic(var.c_str(), "4m",mad,tightregion);
+//   DoQqggSystematic(var.c_str(), "2e2m",mad,tightregion);
+//   DoIrrBkgSystematic(var.c_str(), "4e",mad,tightregion); 
+//   DoIrrBkgSystematic(var.c_str(), "4m",mad,tightregion); 
+//   DoIrrBkgSystematic(var.c_str(), "2e2m",mad,tightregion);
+//   DoRedBkgSystematic(var.c_str(), "4e",mad,tightregion); 
+//   DoRedBkgSystematic(var.c_str(), "4m",mad,tightregion); 
+//   DoRedBkgSystematic(var.c_str(), "2e2m",mad,tightregion); 
+  
+//   //  DoUnfOverGenSystematic(var.c_str(), "4e",mad,tightregion);
+//   //DoUnfOverGenSystematic(var.c_str(), "4m",mad,tightregion);
+//   //sDoUnfOverGenSystematic(var.c_str(), "2e2m",mad,tightregion);
+  
+//   if(var == "nJets"||var == "Mjj"||var == "Deta" || var == "nJets_Central"||var == "Mjj_Central"||var == "Deta_Central"||var == "PtJet1"||var == "PtJet2"||var == "EtaJet1"||var == "EtaJet2"){
+//     DoJERSystematic(var.c_str(), "4e",mad,tightregion); 
+//     DoJERSystematic(var.c_str(), "4m",mad,tightregion);
+//     DoJERSystematic(var.c_str(), "2e2m",mad,tightregion);
+  
+//     DoJESSystematic_ModMat(var.c_str(), "4e",mad,tightregion); 
+//     DoJESSystematic_ModMat(var.c_str(), "4m",mad,tightregion);
+//     DoJESSystematic_ModMat(var.c_str(), "2e2m",mad,tightregion);  
+  
+//     DoJESSystematic_ModData(var.c_str(), "4e",mad,tightregion); 
+//     DoJESSystematic_ModData(var.c_str(), "4m",mad,tightregion);
+//     DoJESSystematic_ModData(var.c_str(), "2e2m",mad,tightregion); 
+//   }
+  
+//   DoSFSystematic(var.c_str(),"4e",mad,tightregion,0); 
+//   DoSFSystematic(var.c_str(),"4m",mad,tightregion,0); 
+//   DoSFSystematic(var.c_str(),"2e2m",mad,tightregion,0);
+//   // DoSFSystematic(var.c_str(),"4e",mad,tightregion,1);  
+//   // DoSFSystematic(var.c_str(),"4m",mad,tightregion,1); 
+//   // DoSFSystematic(var.c_str(),"2e2m",mad,tightregion,1); 
+// }
+
 
 void PlotResults(string var = "nJets", string fs = "4e", string syst = "MCgen", bool mad =1,bool tightregion =0, string date = "test"){
   
@@ -1343,7 +1506,7 @@ void PlotResults(string var = "nJets", string fs = "4e", string syst = "MCgen", 
  
     }
   }
-  else if(syst=="qqgg"||syst=="IrrBkg"||syst=="RedBkg"||syst=="JER"||syst=="JES_ModMat"||syst=="JES_ModData"||syst=="SF"||syst=="SFSq"){
+  else if(syst=="qqgg"||syst=="IrrBkg"||syst=="RedBkg"||syst=="JER"||syst=="JES_ModMat"||syst=="JES_ModData"||syst=="SF"||syst=="SFSq" || syst=="EleSFSq" || syst=="MuSFSq" || syst=="Pu" || syst=="PDF" || syst=="As"){
     h_unfolded_p = (TH1*) unfSyst->Get(systHistoName_p.c_str());
     h_unfolded_m = (TH1*) unfSyst->Get(systHistoName_m.c_str());
     h_max = (TH1*)h_unfolded_p->Clone("");
@@ -1542,7 +1705,15 @@ void PlotResults(string var = "nJets", string fs = "4e", string syst = "MCgen", 
   else if(syst=="JES_ModMat") syst_uncertainty = "JES syst. unc. (modified matrix)";
   else if(syst=="JES_ModData") syst_uncertainty = "JES syst. unc. (modified data)";
   else if(syst=="SFSq") syst_uncertainty = "Scale Factor syst. unc.";
-  else if(syst=="SF") syst_uncertainty = "Scale Factor syst. unc. (correlated)";
+  else if(syst=="EleSFSq") syst_uncertainty = "Electron Scale Factor syst. unc.";
+  else if(syst=="MuSFSq") syst_uncertainty = "Muon Scale Factor syst. unc.";
+  else if(syst=="Pu") syst_uncertainty = "Pileup syst. unc.";
+  else if(syst=="EleSFSq") syst_uncertainty = "Electron Scale Factor syst. unc.";
+  else if(syst=="MuSFSq") syst_uncertainty = "Muon Scale Factor syst. unc.";
+  else if(syst=="Pu") syst_uncertainty = "Pileup syst. unc.";
+  else if(syst=="SF")  syst_uncertainty = "Scale Factor syst. unc. (correlated)";
+  else if(syst=="PDF") syst_uncertainty = "PDF syst. unc. (correlated)";
+  else if(syst=="As")  syst_uncertainty = "#alpha_{S} syst. unc. (correlated)";
   else std::cout << "wrong systematic uncerainty!!!!" << std::endl;
 
   leg->AddEntry(h_unfolded,"Unfolded data","lp"); 
@@ -1589,6 +1760,11 @@ void AllPlots_fs(string var = "nJets", string fs = "4e", bool mad =1,bool tightr
     PlotResults(var.c_str(),fs.c_str(),"JES_ModData",mad, tightregion, date.c_str()); 
   }
   PlotResults(var.c_str(),fs.c_str(),"SFSq",mad, tightregion, date.c_str()); 
+  PlotResults(var.c_str(),fs.c_str(),"EleSFSq",mad, tightregion, date.c_str()); 
+  PlotResults(var.c_str(),fs.c_str(),"MuSFSq",mad, tightregion, date.c_str());
+  PlotResults(var.c_str(),fs.c_str(),"Pu",mad, tightregion, date.c_str()); 
+  PlotResults(var.c_str(),fs.c_str(),"PDF",mad, tightregion, date.c_str()); 
+  PlotResults(var.c_str(),fs.c_str(),"As",mad, tightregion, date.c_str()); 
   //  PlotResults(var.c_str(),fs.c_str(),"SF",mad, tightregion, date.c_str());
 }
 
@@ -2629,7 +2805,7 @@ void Systematics_value(string var = "nJets", string fs = "4e", string syst = "MC
  
     }
   }
-  else if(syst=="qqgg"||syst=="IrrBkg"||syst=="RedBkg"||syst=="JER"||syst=="JES_ModMat"||syst=="JES_ModData"||syst=="SF"||syst=="SFSq"){
+  else if(syst=="qqgg"||syst=="IrrBkg"||syst=="RedBkg"||syst=="JER"||syst=="JES_ModMat"||syst=="JES_ModData"||syst=="SF"||syst=="SFSq"||syst=="EleSFSq"||syst=="MuSFSq"||syst=="Pu"||syst=="PDF"||syst=="As"){
     h_unfolded_p = (TH1*) unfSyst->Get(systHistoName_p.c_str());
     h_unfolded_m = (TH1*) unfSyst->Get(systHistoName_m.c_str());
     h_max = (TH1*)h_unfolded_p->Clone("");
@@ -2696,7 +2872,12 @@ void AllSystematicsValues(string var = "nJets", string fs = "4e", bool mad =1,bo
     Systematics_value(var.c_str(),fs.c_str(),"JES_ModData",mad, tightregion); 
   }
   Systematics_value(var.c_str(),fs.c_str(),"SFSq",mad, tightregion); 
+  Systematics_value(var.c_str(),fs.c_str(),"EleSFSq",mad, tightregion); 
+  Systematics_value(var.c_str(),fs.c_str(),"MuSFSq",mad, tightregion); 
+  Systematics_value(var.c_str(),fs.c_str(),"Pu",mad, tightregion); 
   Systematics_value(var.c_str(),fs.c_str(),"SF",mad, tightregion);
+  Systematics_value(var.c_str(),fs.c_str(),"PDF",mad, tightregion);
+  Systematics_value(var.c_str(),fs.c_str(),"As",mad, tightregion);
 }
 
 void AllSystematicsValues_fs(string var = "nJets", bool mad =1,bool tightregion =0){
@@ -2866,7 +3047,7 @@ void PlotResults_4l(string var = "nJets", string syst = "MCgen", bool mad =1,boo
       
     }
   }
-  else if(syst=="qqgg"||syst=="IrrBkg"||syst=="RedBkg"||syst=="JER"||syst=="JES_ModMat"||syst=="JES_ModData"||syst=="SF"||syst=="SFSq"){
+  else if(syst=="qqgg"||syst=="IrrBkg"||syst=="RedBkg"||syst=="JER"||syst=="JES_ModMat"||syst=="JES_ModData"||syst=="SF"||syst=="SFSq"||syst=="EleSFSq"||syst=="MuSFSq"|| syst=="Pu"|| syst=="As"|| syst=="PDF"){
     h_unfolded_4e_p   = (TH1*) unfSyst->Get(systHistoName_4e_p.c_str());
     h_unfolded_4m_p   = (TH1*) unfSyst->Get(systHistoName_4m_p.c_str());
     h_unfolded_2e2m_p = (TH1*) unfSyst->Get(systHistoName_2e2m_p.c_str());
@@ -3093,7 +3274,12 @@ void PlotResults_4l(string var = "nJets", string syst = "MCgen", bool mad =1,boo
   else if(syst=="JES_ModMat") syst_uncertainty = "JES syst. unc. (modified matrix)";
   else if(syst=="JES_ModData") syst_uncertainty = "JES syst. unc. (modified data)";
   else if(syst=="SFSq") syst_uncertainty = "Scale Factor syst. unc.";
-    else if(syst=="SF") syst_uncertainty = "Scale Factor syst. unc. (correlated)";
+  else if(syst=="EleSFSq") syst_uncertainty = "Electron Scale Factor syst. unc.";
+  else if(syst=="MuSFSq") syst_uncertainty = "Muon Scale Factor syst. unc.";
+  else if(syst=="Pu") syst_uncertainty = "Pileup syst. unc.";
+  else if(syst=="PDF") syst_uncertainty = "PDF syst. unc.";
+  else if(syst=="As") syst_uncertainty = "#alpa_{S} syst. unc.";
+   else if(syst=="SF") syst_uncertainty = "Scale Factor syst. unc. (correlated)";
   else std::cout << "wrong systematic uncerainty!!!!" << std::endl;
 
   leg->AddEntry(h_unfolded,"Unfolded data","lp"); 

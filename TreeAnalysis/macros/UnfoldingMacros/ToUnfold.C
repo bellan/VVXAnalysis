@@ -3,8 +3,6 @@
 #include <TFile.h>
 #include <TTree.h>
 #include "ResponseMatrix.h"
-//#include "ResponseMatrix_JE.h"
-//#include "ResponseMatrix_JESF.h"
 #include "DataToUnfold.h"
 #include "PurityAndStability.h"
 //#include <sys/types.h>
@@ -48,28 +46,66 @@ void GenerateDistributions(string var, bool madgraph, bool tightregion)
     pas->Build(var,"2e2m");
   }
 
-  matrix_jesf->Build_SF(var,"01","4e","SFErrSqMinus",madgraph);
-  matrix_jesf->Build_SF(var,"01","4e","SFErrSqPlus",madgraph);
-  matrix_jesf->Build_SF(var,"01","4m","SFErrSqMinus",madgraph);
-  matrix_jesf->Build_SF(var,"01","4m","SFErrSqPlus",madgraph);
-  matrix_jesf->Build_SF(var,"01","2e2m","SFErrSqMinus",madgraph);
-  matrix_jesf->Build_SF(var,"01","2e2m","SFErrSqPlus",madgraph);
+  matrix_jesf->Build_Syst(var,"01","4e","SFSqDn",madgraph);
+  matrix_jesf->Build_Syst(var,"01","4e","SFSqUp",madgraph);
+  matrix_jesf->Build_Syst(var,"01","4m","SFSqDn",madgraph);
+  matrix_jesf->Build_Syst(var,"01","4m","SFSqUp",madgraph);
+  matrix_jesf->Build_Syst(var,"01","2e2m","SFSqDn",madgraph);
+  matrix_jesf->Build_Syst(var,"01","2e2m","SFSqUp",madgraph);
+
+  matrix_jesf->Build_Syst(var,"01","4e","EleSFSqDn",madgraph);
+  matrix_jesf->Build_Syst(var,"01","4e","EleSFSqUp",madgraph);
+  matrix_jesf->Build_Syst(var,"01","4m","EleSFSqDn",madgraph);
+  matrix_jesf->Build_Syst(var,"01","4m","EleSFSqUp",madgraph);
+  matrix_jesf->Build_Syst(var,"01","2e2m","EleSFSqDn",madgraph);
+  matrix_jesf->Build_Syst(var,"01","2e2m","EleSFSqUp",madgraph);
+
+  matrix_jesf->Build_Syst(var,"01","4e","MuSFSqDn",madgraph);
+  matrix_jesf->Build_Syst(var,"01","4e","MuSFSqUp",madgraph);
+  matrix_jesf->Build_Syst(var,"01","4m","MuSFSqDn",madgraph);
+  matrix_jesf->Build_Syst(var,"01","4m","MuSFSqUp",madgraph);
+  matrix_jesf->Build_Syst(var,"01","2e2m","MuSFSqDn",madgraph);
+  matrix_jesf->Build_Syst(var,"01","2e2m","MuSFSqUp",madgraph);
+
+  matrix_jesf->Build_Syst(var,"01","4e","PuDn",madgraph);
+  matrix_jesf->Build_Syst(var,"01","4e","PuUp",madgraph);
+  matrix_jesf->Build_Syst(var,"01","4m","PuDn",madgraph);
+  matrix_jesf->Build_Syst(var,"01","4m","PuUp",madgraph);
+  matrix_jesf->Build_Syst(var,"01","2e2m","PuDn",madgraph);
+  matrix_jesf->Build_Syst(var,"01","2e2m","PuUp",madgraph);
+
+
+  matrix_jesf->Build_Syst(var,"01","4e","PDFDn",madgraph);
+  matrix_jesf->Build_Syst(var,"01","4e","PDFUp",madgraph);
+  matrix_jesf->Build_Syst(var,"01","4m","PDFDn",madgraph);
+  matrix_jesf->Build_Syst(var,"01","4m","PDFUp",madgraph);
+  matrix_jesf->Build_Syst(var,"01","2e2m","PDFDn",madgraph);
+  matrix_jesf->Build_Syst(var,"01","2e2m","PDFUp",madgraph);
+
+
+  matrix_jesf->Build_Syst(var,"01","4e","AsDn",madgraph);
+  matrix_jesf->Build_Syst(var,"01","4e","AsUp",madgraph);
+  matrix_jesf->Build_Syst(var,"01","4m","AsDn",madgraph);
+  matrix_jesf->Build_Syst(var,"01","4m","AsUp",madgraph);
+  matrix_jesf->Build_Syst(var,"01","2e2m","AsDn",madgraph);
+  matrix_jesf->Build_Syst(var,"01","2e2m","AsUp",madgraph);
+
 
   if(var!="Mass" &&  var!="dRZZ" && var!="PtZZ"){ 
-    matrix_jesf->Build_JE(var,"01","4e","JESDown",madgraph);
-    matrix_jesf->Build_JE(var,"01","4e","JESUp",madgraph);
-    matrix_jesf->Build_JE(var,"01","4e","JERDown",madgraph);
-    matrix_jesf->Build_JE(var,"01","4e","JERUp",madgraph);
-    matrix_jesf->Build_JE(var,"01","4m","JESDown",madgraph);
-    matrix_jesf->Build_JE(var,"01","4m","JESUp",madgraph);
-    matrix_jesf->Build_JE(var,"01","4m","JERDown",madgraph);
-    matrix_jesf->Build_JE(var,"01","4m","JERUp",madgraph);
-    matrix_jesf->Build_JE(var,"01","2e2m","JESDown",madgraph);
-    matrix_jesf->Build_JE(var,"01","2e2m","JESUp",madgraph);
-    matrix_jesf->Build_JE(var,"01","2e2m","JERDown",madgraph);
-    matrix_jesf->Build_JE(var,"01","2e2m","JERUp",madgraph); 
+    matrix_jesf->Build_Syst(var,"01","4e","JESDn",madgraph);
+    matrix_jesf->Build_Syst(var,"01","4e","JESUp",madgraph);
+    matrix_jesf->Build_Syst(var,"01","4e","JERDn",madgraph);
+    matrix_jesf->Build_Syst(var,"01","4e","JERUp",madgraph);
+    matrix_jesf->Build_Syst(var,"01","4m","JESDn",madgraph);
+    matrix_jesf->Build_Syst(var,"01","4m","JESUp",madgraph);
+    matrix_jesf->Build_Syst(var,"01","4m","JERDn",madgraph);
+    matrix_jesf->Build_Syst(var,"01","4m","JERUp",madgraph);
+    matrix_jesf->Build_Syst(var,"01","2e2m","JESDn",madgraph);
+    matrix_jesf->Build_Syst(var,"01","2e2m","JESUp",madgraph);
+    matrix_jesf->Build_Syst(var,"01","2e2m","JERDn",madgraph);
+    matrix_jesf->Build_Syst(var,"01","2e2m","JERUp",madgraph); 
 
-    if(tightregion == 0){ 
+    if(tightregion == 0){
       datatounfold->Build_JE(var,"4e");
       datatounfold->Build_JE(var,"4m");
       datatounfold->Build_JE(var,"2e2m");

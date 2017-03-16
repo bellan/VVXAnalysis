@@ -29,8 +29,9 @@ class ResponseMatrix : public TObject
   ResponseMatrix(bool weight, bool madgraph, bool tightregion);
   ~ResponseMatrix();
   void Build(string var, string dataset, string finalstate, int xs_qq, int xs_gg, bool mad);
-  void Build_SF(string var, string dataset, string finalstate,string unc,bool mad);
-  void Build_JE(string var, string dataset, string finalstate,string unc,bool mad);
+  //  void Build_SF(string var, string dataset, string finalstate,string unc,bool mad);
+  // void Build_JE(string var, string dataset, string finalstate,string unc,bool mad);
+  void Build_Syst(string var, string dataset, string finalstate,string unc,bool mad);
   void Plot(string var,string fs, string dataset, string unc,string path); 
   void GenMCSystDistributions(string var, string dataset, string finalstate, bool mad);
   void GenMGatNLOSystDistributions(string var, string dataset, string finalstate);
@@ -52,8 +53,7 @@ class ResponseMatrix : public TObject
 
   TFile *file;
   string fileName;
-  string fileName_SF;
-  string fileName_JE;
+  string fileName_Syst;
   string FolderNameMCSyst;
 
   TH2 * h_Resmat;

@@ -159,14 +159,14 @@ void DataToUnfold::Build_JE(string var, string finalstate)
 {
   output = new TFile((var+"_test/DataToUnfold_JES.root").c_str(), "UPDATE");
 
-  histoName_up     = "ZZTo" + finalstate + "_" + var+"_JESDataUpSmear_01"; 
-  histoName_down   = "ZZTo" + finalstate + "_" + var+"_JESDataDownSmear_01"; 
+  histoName_up     = "ZZTo" + finalstate + "_" + var+"_JESDataUp_01"; 
+  histoName_down   = "ZZTo" + finalstate + "_" + var+"_JESDataDn_01"; 
   histoMCName      = "ZZTo" + finalstate + "_" + var+"_01";
 
   dataName_up      = "DataminusBkg_"+var+"_ZZTo"+finalstate+"_JESUp";
-  dataName_down    = "DataminusBkg_"+var+"_ZZTo"+finalstate+"_JESDown";
+  dataName_down    = "DataminusBkg_"+var+"_ZZTo"+finalstate+"_JESDn";
   TotdataName_up   = "TotData_"+var+"_ZZTo"+finalstate+"_JESUp";
-  TotdataName_down = "TotData_"+var+"_ZZTo"+finalstate+"_JESDown";
+  TotdataName_down = "TotData_"+var+"_ZZTo"+finalstate+"_JESDn";
 
   h_totdata_up     = (TH1*) data->Get(histoName_up.c_str());    
   h_totdata_down   = (TH1*) data->Get(histoName_down.c_str()); 
