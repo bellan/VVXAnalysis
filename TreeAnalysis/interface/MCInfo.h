@@ -34,11 +34,8 @@ class MCInfo {
 
   // Total weight of the event, including efficiency scale factors.
   double weight(const phys::DiBoson<phys::Lepton, phys::Lepton> &ZZ) const {return ZZ.fakeRateSF() * (luminosity_ >= 0 ? weight() * ZZ.efficiencySF() : 1.);}
-  
   double signalEfficiency()           const {return signalEfficiency_;}
-
   double signalEfficiencyCorrection() const {return 1./signalEfficiency_;}
-
   int    signalDefinition()           const {return signalDefinition_;}
 
   // Approximate number of events in SR and CRs. It is an approx number because the trigger requirement is not asked.
