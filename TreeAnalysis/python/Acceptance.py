@@ -102,10 +102,10 @@ if SavePlot:
 
     
 FileOut_0   =  ROOT.TFile("./Acceptance/Acceptance_"+Set+Analysis+"_"+Type+".root","RECREATE") 
-FileOut_1   =  ROOT.TFile("./Acceptance/AcceptanceSFactorPlus_"+Set+Analysis+"_"+Type+".root","RECREATE") 
-FileOut_m1  =  ROOT.TFile("./Acceptance/AcceptanceSFactorMinus_"+Set+Analysis+"_"+Type+".root","RECREATE") 
-FileOut_Sq  =  ROOT.TFile("./Acceptance/AcceptanceSFactorSqPlus_"+Set+Analysis+"_"+Type+".root","RECREATE") 
-FileOut_mSq =  ROOT.TFile("./Acceptance/AcceptanceSFactorSqMinus_"+Set+Analysis+"_"+Type+".root","RECREATE") 
+FileOut_1   =  ROOT.TFile("./Acceptance/AcceptanceSFactorUp_"+Set+Analysis+"_"+Type+".root","RECREATE") 
+FileOut_m1  =  ROOT.TFile("./Acceptance/AcceptanceSFactorDn_"+Set+Analysis+"_"+Type+".root","RECREATE") 
+FileOut_Sq  =  ROOT.TFile("./Acceptance/AcceptanceSFactorSqUp_"+Set+Analysis+"_"+Type+".root","RECREATE") 
+FileOut_mSq =  ROOT.TFile("./Acceptance/AcceptanceSFactorSqDn_"+Set+Analysis+"_"+Type+".root","RECREATE") 
     
 
 def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
@@ -155,10 +155,10 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
             if Fr=="Tot":
                 hGen_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"Gen_01")
                 if SistErr=="0":      hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenReco_01")
-                elif SistErr=="1":    hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrPlus_01")
-                elif SistErr=="-1":   hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrMinus_01")
-                elif SistErr=="+Sq":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrSqPlus_01")
-                elif SistErr=="-Sq":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrSqMinus_01") 
+                elif SistErr=="1":    hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFUp_01")
+                elif SistErr=="-1":   hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFDn_01")
+                elif SistErr=="+Sq":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFSqUp_01")
+                elif SistErr=="-Sq":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFSqDn_01") 
                 else:          
                     sys.exit("Wrong value for scale factor sistematic")
 
@@ -166,10 +166,10 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
             elif Fr=="Eff_Tight":
                 hGen_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"Gen_01_fr")
                 if SistErr=="0":      hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenReco_01")
-                elif SistErr=="1":    hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrPlus_01")
-                elif SistErr=="-1":   hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrMinus_01")
-                elif SistErr=="+Sq":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrSqPlus_01")
-                elif SistErr=="-Sq":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFErrSqMinus_01") 
+                elif SistErr=="1":    hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFUp_01")
+                elif SistErr=="-1":   hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFDn_01")
+                elif SistErr=="+Sq":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFSqUp_01")
+                elif SistErr=="-Sq":  hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenRecoSFSqDn_01") 
                 else:          
                     sys.exit("Wrong value for scale factor sistematic")
 
@@ -177,10 +177,12 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
                 hGen_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"Gen_01")
                 if SistErr=="0":      hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"Gen_01_fr")
 
+            print  SistErr ,"ZZTo"+Fin+"_"+SampleType
+
             hGen  = copy.deepcopy(hGen_)          
             hReco = copy.deepcopy(hRec_)
             if hGen==None: 
-                #print "in sample",sample["sample"],"ZZTo"+Fin+"_"+SampleType+"Gen_01"+"   Not found"
+                print "in sample",sample["sample"],"ZZTo"+Fin+"_"+SampleType+"Gen_01"+"   Not found"
                 continue
             if hReco==None:
                 print sample["sample"],"No events in reco sample but events in gen sample"
@@ -199,7 +201,7 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
                 hMergReco.Add(hReco)
                 hMergGen.Add(hGen)             
            
-        Nbins= hMergGen.GetNbinsX()
+        Nbins   = hMergGen.GetNbinsX()
         NTotEv  = hMergGen.Integral(0,-1)
         NRecoEv = hMergReco.Integral(0,-1)
 
@@ -336,7 +338,7 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
 
 
 #PlusAcc    = SetAcceptance("results/ZZMCAnalyzer_MC/",Type,SavePlot,"1")  # Correlated Errors //To be added again
-#MinusAcc   = SetAcceptance("results/ZZMCAnalyzer_MC/",Type,SavePlot,"-1") # Correlated Errors
+#MinuAcc   = SetAcceptance("results/ZZMCAnalyzer_MC/",Type,SavePlot,"-1") # Correlated Errors
 
 
 print Yellow("Total")
