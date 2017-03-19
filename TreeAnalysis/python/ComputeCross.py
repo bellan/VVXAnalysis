@@ -400,14 +400,13 @@ for i in range(0,4):
  
 
     # "Type":{fr:{norm,notnorm},notfr:{norm,notnorm}}
-    MaxList = {"Mass":{True:{True:0.011,False:0.42},False:{True:0.011,False:0.17}},"nJets":{True:{True:0.97,False:40.},False:{True:1.,False:18.}},"nJets_Central":{True:{True:.92,False:55},False:{True:0.92,False:16}},"Mjj":{True:{True:0.005,False:0.028},False:{True:0.006, False:0.0086}},"Mjj_Central":{True:{True:0.005,False:0.018},False:{True:0.005,False:0.006}},"Deta":{True:{True:0.7,False:3.2},False:{True:0.72,False:1.05}},"Deta_Central":{True:{True:0.8,False:1.98},False:{True:0.7,False:.9}} ,"PtJet1":{True:{True:0.03,False:0.4},False:{True:0.06,False:0.16}},"PtJet2":{True:{True:0.038,False:0.21},False:{True:0.016,False:0.025}},"EtaJet1":{True:{True:0.65,False:9.2},False:{True:0.65,False:3.2}},"EtaJet2":{True:{True:0.65,False:2.},False:{True:0.58,False:0.9}},"dRZZ":{True:{True:0.65,False:29.6},False:{True:0.7,False:12.}},"PtZZ":{True:{True:0.03,False:1.2},False:{True:0.02,False:.30}}}
+    MaxList = {"Mass":{True:{True:0.011,False:0.42},False:{True:0.011,False:0.17}},"nJets":{True:{True:0.97,False:40.},False:{True:1.,False:18.}},"nJets_Central":{True:{True:.92,False:55},False:{True:0.92,False:16}},"Mjj":{True:{True:0.005,False:0.028},False:{True:0.006, False:0.0086}},"Mjj_Central":{True:{True:0.005,False:0.018},False:{True:0.005,False:0.006}},"Deta":{True:{True:0.7,False:3.2},False:{True:0.72,False:1.05}},"Deta_Central":{True:{True:0.8,False:1.98},False:{True:0.7,False:.9}} ,"PtJet1":{True:{True:0.028,False:0.4},False:{True:0.06,False:0.16}},"PtJet2":{True:{True:0.038,False:0.21},False:{True:0.016,False:0.025}},"EtaJet1":{True:{True:0.65,False:9.2},False:{True:0.65,False:3.2}},"EtaJet2":{True:{True:0.65,False:2.},False:{True:0.58,False:0.9}},"dRZZ":{True:{True:0.65,False:29.6},False:{True:0.7,False:12.}},"PtZZ":{True:{True:0.03,False:1.2},False:{True:0.02,False:.30}}}
 
     # "Type":{fr:{up,notup},notfr:{up,notup}}
-    MaxRatioList = {"Mass":{True:{True:1.9,False:0.2},False:{True:1.9,False:0.01}},"nJets":{True:{True:1.7,False:.51},False:{True:1.65,False:0.51}},"nJets_Central":{True:{True:1.9,False:0.6},False:{True:0.92,False:16}},"Mjj":{True:{True:2.2,False:0.03},False:{True:2.1, False:0.00}},"Mjj_Central":{True:{True:1.5,False:0.02},False:{True:0.005,False:0.006}},"Deta":{True:{True:2.05,False:0.05},False:{True:1.9,False:0}},"Deta_Central":{True:{True:1.8,False:0.01},False:{True:2.2,False:1e-3}} ,"PtJet1":{True:{True:2.2,False:0.09},False:{True:0.06,False:0.16}},"PtJet2":{True:{True:3.4,False:0.03},False:{True:0.016,False:0.025}},"EtaJet1":{True:{True:1.75,False:.1},False:{True:1.6,False:3e-2}},"EtaJet2":{True:{True:1.78,False:.2},False:{True:0.58,False:0.9}},"dRZZ":{True:{True:0.65,False:29.6},False:{True:0.7,False:12.}},"PtZZ":{True:{True:1.8,False:.01},False:{True:0.02,False:.30}}}
+    MaxRatioList = {"Mass":{True:{True:1.9,False:0.2},False:{True:1.9,False:0.01}},"nJets":{True:{True:1.7,False:.51},False:{True:1.65,False:0.51}},"nJets_Central":{True:{True:1.9,False:0.6},False:{True:0.92,False:16}},"Mjj":{True:{True:2.2,False:0.03},False:{True:2.1, False:0.00}},"Mjj_Central":{True:{True:1.5,False:0.02},False:{True:0.005,False:0.006}},"Deta":{True:{True:2.05,False:0.05},False:{True:1.9,False:0}},"Deta_Central":{True:{True:1.8,False:0.01},False:{True:2.2,False:1e-3}} ,"PtJet1":{True:{True:2.99,False:0.19},False:{True:2.5,False:1e-4}},"PtJet2":{True:{True:3.4,False:0.03},False:{True:0.016,False:0.025}},"EtaJet1":{True:{True:1.75,False:.1},False:{True:1.6,False:3e-2}},"EtaJet2":{True:{True:1.78,False:.2},False:{True:0.58,False:0.9}},"dRZZ":{True:{True:0.65,False:29.6},False:{True:0.7,False:12.}},"PtZZ":{True:{True:1.8,False:.01},False:{True:0.02,False:.30}}}
 
     # "Type":{not norm:{max,min},norm:{max,min}}
-    LogList = {"Mass":{True:{True:0.1,False:2e-5},False:{True:2.5,False:0.0009}},"nJets":{True:{True:6.,False:0.02},False:{True:135.,False:0.5}},"nJets_Central":{True:{True:.92,False:55},False:{True:120.9,False:.5}},"Mjj":{True:{True:0.005,False:0.028},False:{True:0.004, False:0.0086}},"Mjj_Central":{True:{True:0.005,False:0.018},False:{True:0.005,False:0.006}},"Deta":{True:{True:12.,False:5.5e-3},False:{True:45.45,False:3e-2}},"Deta_Central":{True:{True:20.5,False:0.004},False:{True:0.7,False:.9}} ,"PtJet1":{True:{True:0.2,False:0.00004},False:{True:0.06,False:0.16}},"PtJet2":{True:{True:0.7,False:0.00001},False:{True:0.016,False:0.025}},"EtaJet1":{True:{True:31.,False:3e-3},False:{True:2e2,False:7e-2}},"EtaJet2":{True:{True:0.65,False:2.},False:{True:0.58,False:0.9}},"dRZZ":{True:{True:0.65,False:29.6},False:{True:0.7,False:12.}},"PtZZ":{True:{True:0.03,False:1.2},False:{True:0.02,False:.30}}}
-
+    LogList = {"Mass":{True:{True:0.1,False:2e-5},False:{True:2.5,False:0.0009}},"nJets":{True:{True:6.,False:0.02},False:{True:135.,False:0.5}},"nJets_Central":{True:{True:.92,False:55},False:{True:120.9,False:.5}},"Mjj":{True:{True:0.005,False:0.028},False:{True:0.004, False:0.0086}},"Mjj_Central":{True:{True:0.005,False:0.018},False:{True:0.005,False:0.006}},"Deta":{True:{True:12.,False:5.5e-3},False:{True:45.45,False:3e-2}},"Deta_Central":{True:{True:20.5,False:0.004},False:{True:0.7,False:.9}} ,"PtJet1":{True:{True:0.21,False:4e-5},False:{True:0.06,False:0.16}},"PtJet2":{True:{True:0.7,False:0.00001},False:{True:0.016,False:0.025}},"EtaJet1":{True:{True:31.,False:3e-3},False:{True:2e2,False:7e-2}},"EtaJet2":{True:{True:0.65,False:2.},False:{True:0.58,False:0.9}},"dRZZ":{True:{True:0.65,False:29.6},False:{True:0.7,False:12.}},"PtZZ":{True:{True:0.03,False:1.2},False:{True:0.02,False:.30}}}
 
 
     # Max   = hDataList[i]["state"].GetMaximum()+hDataList[i]["state"].GetBinError(hDataList[i]["state"].GetMaximumBin()) #Automatic max
@@ -428,10 +427,8 @@ for i in range(0,4):
     hMCList_op[i]["state"].SetLineWidth(2);
     hMCList_op[i]["state"].SetLineStyle(1);
      
-       
     c1 = TCanvas( 'c1', hMCList[i]["name"] , 200, 10, 900, 1200 )
   
-
     leg = ROOT.TLegend(.51,.50,.80,.85);
     leg.SetBorderSize(0);
     leg.SetTextSize(0.032);
@@ -441,35 +438,11 @@ for i in range(0,4):
     leg.AddEntry(hMCList_op[i]["state"],mcop_entry,"l")
 
     fInt = ROOT.TF1("constant","1",hMCList[i]["state"].GetXaxis().GetXmin(),    hMCList[i]["state"].GetXaxis().GetXmax());
-        
+    
+    line =  ROOT.TLine(hMCList[i]["state"].GetXaxis().GetXmin(),1,hMCList[i]["state"].GetXaxis().GetXmax(),1) 
+    line_op =  ROOT.TLine(hMCList[i]["state"].GetXaxis().GetXmin(),1,hMCList[i]["state"].GetXaxis().GetXmax(),1) 
 
-    if(Type == "Mass"): 
-        line = ROOT.TLine(100,1,800,1)
-        line_op = ROOT.TLine(100,1,800,1)
-    elif(Type == "nJets" or Type == "nJets_Central"): 
-        line =  ROOT.TLine(0,1,4,1)
-        line_op =  ROOT.TLine(0,1,4,1)
-    elif(Type == "Mjj" or Type == "Mjj_Central"): 
-        line =  ROOT.TLine(0,1,1000,1)
-        line_op =  ROOT.TLine(0,1,1000,1)
-    elif(Type == "Deta"  or Type == "Deta_Central"): 
-        line =  ROOT.TLine(0,1,4.7,1)
-        line_op =  ROOT.TLine(0,1,4.7,1) 
-    elif(Type =="PtJet1"):  
-        line =  ROOT.TLine(30,1,500,1) 
-        line_op =  ROOT.TLine(30,1,500,1) 
-    elif(Type =="PtJet2" ):  
-        line =  ROOT.TLine(30,1,200,1) 
-        line_op =  ROOT.TLine(30,1,200,1) 
-    elif(Type =="EtaJet1"or Type =="EtaJet2" ):  
-        line =  ROOT.TLine(0,1,4.7,1)
-        line_op =  ROOT.TLine(0,1,4.7,1) 
-    elif(Type =="dRZZ" ):  
-        line =  ROOT.TLine(0,1,6,1)  
-        line_op =  ROOT.TLine(0,1,6,1) 
-    elif(Type =="PtZZ" ):  
-        line =  ROOT.TLine(30,1,300,1) 
-        line_op =  ROOT.TLine(30,1,300,1) 
+
 
     #line.SetLineColor(852);
     line.SetLineColor(ROOT.kBlack);
@@ -530,8 +503,22 @@ for i in range(0,4):
    
     if not UseMCReco:
         grSyst.Draw("same2")
-    print "Integral",    hDataList[i]["state"].Integral(0,-1)
+    print "Integral",  hDataList[i]["state"].IntegralAndError(0,-1,Err)
     hDataList[i]["state"].Draw("sameE1")
+
+
+    print "Only Statistic uncertainty"
+    hDataList[i]["state"].Chi2Test(hMCList[i]["state"],"WW P")
+
+    SetHistoForChi2(hDataList[i]["state"],grSyst)
+    SetHistoForChi2(hMCList[i]["state"],grMCSyst)
+    SetHistoForChi2(hMCList_op[i]["state"],grMCSyst_op)
+
+    hDataList[i]["state"].Chi2Test(hMCList[i]["state"],"WW P")
+    print "Kolomogorov",hDataList[i]["state"].KolmogorovTest(hMCList[i]["state"])
+    PValue    = hDataList[i]["state"].Chi2Test(hMCList[i]["state"],"WW")
+    PValue_op = hDataList[i]["state"].Chi2Test(hMCList_op[i]["state"],"WW")
+
     leg.Draw("same")
     
     pad2.cd()
@@ -576,8 +563,8 @@ for i in range(0,4):
     ratioTitle.SetTextSize(0.10);
     ratioTitle.SetTextAlign(22);
     ratioTitle.SetTextAngle(0);
-    if "Pow" in MCSetIn: ratioTitle.DrawText(0.345, 0.90,mcref_entry);
-    else: ratioTitle.DrawText(0.435, 0.90,mcref_entry);  
+    if "Pow" in MCSetIn: ratioTitle.DrawText(0.445, 0.90,"{0} P value = {1:.3f} ".format(mcref_entry,PValue)); 
+    else: ratioTitle.DrawText(0.535, 0.90,"{0} P value = {1:.3f} ".format(mcref_entry,PValue));  
 
   
     pad3.cd()
@@ -621,8 +608,10 @@ for i in range(0,4):
     ratioTitle_op.SetTextSize(0.10);
     ratioTitle_op.SetTextAlign(22);
     ratioTitle_op.SetTextAngle(0);
-    if "Pow" in MCSetIn: ratioTitle_op.DrawText(0.435, 0.90,mcop_entry);
-    else: ratioTitle_op.DrawText(0.345, 0.90,mcop_entry); 
+    if "Pow" in MCSetIn: ratioTitle_op.DrawText(0.535, 0.90,"{0} P value = {1:.3f} ".format(mcop_entry,PValue_op)); 
+#    else: ratioTitle_op.DrawText(0.345, 0.90,mcop_entry+" P value = "+str(PValue_op)); 
+    else: ratioTitle_op.DrawText(0.445, 0.90,"{0} P value = {1:.3f} ".format(mcop_entry,PValue_op)); 
+
 
     grSist_ratio_op.Draw("same2") 
     grStat_ratio_op.Draw("P same")

@@ -130,8 +130,8 @@ void ZZMCAnalyzer::analyze(){
     if((region_ == phys::MC && regionWord.test(26)) || ((region_ == phys::MC_HZZ) && regionWord.test(3))){
       FillHistosBase(decay,theWeight*w_kf,"GenReco_"+sample);
       FillHistosBase(decay,theWeight*w_kf,"GenReco_01");
-      FillHistosBase(decay,theWeight*w_kf*(1-scaleFacErrSq),"GenRecoSFErrSqMinus_01");
-      FillHistosBase(decay,theWeight*w_kf*(1+scaleFacErrSq),"GenRecoSFErrSqPlus_01");
+      FillHistosBase(decay,theWeight*w_kf*(1-scaleFacErrSq),"GenRecoSFSqDn_01");
+      FillHistosBase(decay,theWeight*w_kf*(1+scaleFacErrSq),"GenRecoSFSqUp_01");
     }
 
     //fiducial region
@@ -148,8 +148,8 @@ void ZZMCAnalyzer::analyze(){
       if((region_ == phys::MC && regionWord.test(26)) || ((region_ == phys::MC_HZZ) && regionWord.test(3))){
 	FillHistosBase(decay,theWeight*w_kf,"GenReco_01_fr");
 	FillHistosBase(decay,theWeight*w_kf,"GenReco_"+sample+"_fr");
-	FillHistosBase(decay,theWeight*w_kf*(1-scaleFacErrSq),"GenRecoSFErrSqMinus_01_fr");
-	FillHistosBase(decay,theWeight*w_kf*(1+scaleFacErrSq),"GenRecoSFErrSqPlus_01_fr");
+	FillHistosBase(decay,theWeight*w_kf*(1-scaleFacErrSq),"GenRecoSFSqDn_01_fr");
+	FillHistosBase(decay,theWeight*w_kf*(1+scaleFacErrSq),"GenRecoSFSqUp_01_fr");
       }
     }
   }

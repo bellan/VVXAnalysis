@@ -445,9 +445,9 @@ def setCrossSectionMC(h1,h1up,h1dn,FinState,Type,DoNormalized,MCSet,doFiducial):
 
 def combineCross(HList,HListUp,HListDown):
 
-    HCross=ROOT.TH1F()
-    HCrossUp=ROOT.TH1F()
-    HCrossDown=ROOT.TH1F()
+    HCross     = ROOT.TH1F()
+    HCrossUp   = ROOT.TH1F()
+    HCrossDown = ROOT.TH1F()
 
     #just equal to one
     HCross=copy.deepcopy(HList[1]["state"])
@@ -474,13 +474,15 @@ def combineCross(HList,HListUp,HListDown):
 
 
         for elem in SortedHlist:
+
             Entries = elem[0]["state"].GetBinContent(i)
+            print  elem[0]["name"],elem[0]["state"].GetBinContent(i)
             if Entries == 0.:   break   # Because of sorting also others final state will be 0 so use break and no continue
 
-            errStatSq     = (elem[0]["state"].GetBinError(i))**2
-            errSystUpSq   = (elem[1]["state"].GetBinContent(i)-Entries)**2
-            errSystDownSq = (elem[2]["state"].GetBinContent(i)-Entries)**2
-            errSystSq     = ((elem[1]["state"].GetBinContent(i)-elem[2]["state"].GetBinContent(i) )/2.)**2 #Use the average of systematic up and down. is it a +, right? //DELhot
+            errStatSq     = (elem[0]["state"].GetBinError(i)/Entries)**2
+            errSystUpSq   = ((elem[1]["state"].GetBinContent(i)-Entries)/Entries)**2
+            errSystDownSq = ((elem[2]["state"].GetBinContent(i)-Entries)/Entries)**2
+            errSystSq     = ((elem[1]["state"].GetBinContent(i)-elem[2]["state"].GetBinContent(i) )/(Entries*2.))**2 #Use the average of systematic up and down. is it a +, right? //DELhot
 
             weightStat =  1./errStatSq
 
@@ -495,10 +497,10 @@ def combineCross(HList,HListUp,HListDown):
             WeightTot      += weightTot
             WeightSystUp   += weightSystUp
             WeightSystDown += weightSystDown 
+
             Cross          += weightTot*Entries
 
         Cross = Cross/WeightTot
-        print Cross
 
         ErrStat     = math.sqrt(1./WeightStat)        
         ErrSystUp   = math.sqrt(1./WeightSystUp)
@@ -507,18 +509,18 @@ def combineCross(HList,HListUp,HListDown):
             print "ErrSystDown for bin",i,"is 0. Check it"
         else: ErrSystDown = math.sqrt(1./WeightSystDown)
         
-        HCrossUp.SetBinContent(i,Cross+ErrSystUp)
-        HCrossDown.SetBinContent(i,Cross-ErrSystDown)
+        HCrossUp.SetBinContent(i,Cross+ErrSystUp*Cross)
+        HCrossDown.SetBinContent(i,Cross-ErrSystDown*Cross)
         HCross.SetBinContent(i,Cross)
-        HCross.SetBinError(i,ErrStat)      
+        HCross.SetBinError(i,ErrStat*Cross)      
  
     return HCross,HCrossUp,HCrossDown
 
 def combineCrossFiducial(HList,HListUp,HListDown):
 
-    HCross    =ROOT.TH1F()
-    HCrossUp  =ROOT.TH1F()
-    HCrossDown=ROOT.TH1F()
+    HCross    = ROOT.TH1F()
+    HCrossUp  = ROOT.TH1F()
+    HCrossDown= ROOT.TH1F()
 
     #just copy one finalstate
     HCross     = copy.deepcopy(HList[1]["state"])
@@ -776,3 +778,12 @@ def GetNorm(finState,Type,doFid):
         if "Jet1" in Type: return normjson[finState][0]
         elif "Jet2" in Type or "Deta" in Type or "Mjj" in Type: return normjson[finState][1]
 
+
+
+def SetHistoForChi2(h,gr):
+    
+    NBins = h.GetNbinsX()
+        
+    for i in range(1,NBins+1):
+        print gr.GetErrorYhigh(i-1),gr.GetErrorYhigh(i-1),abs(gr.GetErrorYhigh(i-1)+gr.GetErrorYhigh(i-1))/2
+        h.SetBinError(i,abs(gr.GetErrorYhigh(i-1)+gr.GetErrorYhigh(i-1))/2)

@@ -7,17 +7,14 @@
 import ROOT,copy
 from ROOT import gSystem, TCanvas, TH1,  TPad, gStyle, TLegend,TGraphAsymmErrors,Math,TArrayD,TTree
 import collections 
-#import CrossInfo
-#from CrossInfo import*
-#from Colours import *
+import CrossInfo
+from CrossInfo import*
 from optparse import OptionParser
 import sys,ast,os
 import math
 import operator
 import textwrap
 import collections                                                                                    
-
-
 
 
 parser = OptionParser(usage="usage: %prog <final state> [options]")
@@ -35,10 +32,6 @@ parser.add_option("-A", "--Analysis", dest="Analysis",
 
 Set = options.Set
 Analysis  = options.Analysis
-
-
-xs_tight      = {"2e2m":19.829,"4m":9.020,"4e":8.971,"4l":37.821}   
-
 
 
 list2e2m = {"fs":"2e2m","name":"2e2\mu","mu":1.00276  ,"up":+0.0987631 , "down": -0.0915201 ,"stup":+0.0758923,"stdown":-0.0724288 }  
@@ -66,7 +59,7 @@ if not skipFit:
 
 
 for fin in finstate:
-    print fin
+
     fStat = ROOT.TFile("mlfit"+fin+"_stat.root")
     tree = fStat.Get("tree_fit_sb")
     tree.GetEntry(0)
@@ -84,8 +77,8 @@ for fin in finstate:
  #   listFin[fin]["down"]  =  math.sqrt(pow(fTot.tree_fit_sb.muLoErr,2) + pow(listFin[fin]["stdown"],2))
 
 
-LumiUnc = 0.026
-
+for gb in GlobSystList:
+    if gb["name"]=="Lumi": LumiUnc = gb["value"]
 
 print "Signal strength\n\n\n"
 
@@ -95,10 +88,9 @@ print "\\hline"
 
 for l in (list4m,list4e,list2e2m,list4l):
     if l["fs"]=="4l": print "\\hline"
-    print "pp~$\\to\Z\Z \\to {0}$ & $ {1:.2f} {2} {3:.2f} {4} {5} +{6:.2f} {4}{7} {2} -{8:.2f} {4}{5} +{9:.2f} {4}{10} \\pm {11:.2f} {12} $\\\\".format(l["name"],l["mu"],"_{",l["stdown"],"}","^{", l["stup"],"~\mathrm{(stat.)}", math.sqrt(math.pow(l["down"],2) - math.pow(l["stdown"],2)),math.sqrt(math.pow(l["up"],2) - math.pow(l["stup"],2)),"~\mathrm{(syst.)}",LumiUnc,"~\mathrm{(lumi.)}")
+    print "pp~$\\to\Z\Z \\to {0}$ & $ {1:.3f} {2} {3:.3f} {4} {5} +{6:.3f} {4}{7} {2} -{8:.3f} {4}{5} +{9:.3f} {4}{10} \\pm {11:.3f} {12} $\\\\".format(l["name"],l["mu"],"_{",l["stdown"],"}","^{", l["stup"],"~\mathrm{(stat.)}", math.sqrt(math.pow(l["down"],2) - math.pow(l["stdown"],2)),math.sqrt(math.pow(l["up"],2) - math.pow(l["stup"],2)),"~\mathrm{(syst.)}",LumiUnc,"~\mathrm{(lumi.)}")
 
 print " \\hline \n \\end{tabular} \n\n"
-
 
 
 print "\\begin{tabular}{lc}"
@@ -110,9 +102,6 @@ for l in (list4m,list4e,list2e2m,list4l):
 
 print " \\hline \n \\end{tabular} \n"
 
-BRele  = 0.03363
-BRmu   = 0.03366
-Lumi   = 35900
 
 BR_4m   = BRmu*BRmu
 BR_2e2m = 2*BRmu*BRele
@@ -120,15 +109,12 @@ BR_4e   = BRele*BRele
 BR      = BR_4m+BR_2e2m+BR_4e
 
 
-sys.exit("for now exit")
-
 AccFile     = ROOT.TFile("./Acceptance/Acceptance_Mad_Mass.root")  
 Acc     = AccFile.Get("TotAcc4l_Acc").GetVal() 
 print "Acc",Acc,"BR",BR
-Acc = 0.5388
+#Acc = 0.5388
 
 #print "\sigma_{pp~$\\to\Z\Z \\to {0}} {1:.2f} {2} {3:.2f} {4} {5} +{6:.2f} {4}{7} {2} -{8:.2f} {4}{5} +{9:.2f} {4}{10} \\pm {11:.2f} {12} $".format(list4l["name"],list4l["mu"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"_{",list4l["stdown"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"}","^{", list4l["stup"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"~\mathrm{(stat.)}", math.sqrt(math.pow(list4l["down"],2) - math.pow(list4l["stdown"],2))*xs_tight[list4l["fs"]]/(1000*BR*Acc),math.sqrt(math.pow(list4l["up"],2) - math.pow(list4l["stup"],2))*xs_tight[list4l["fs"]]/(1000*BR*Acc),"~\mathrm{(syst.)}",0.062*xs_tight[list4l["fs"]]/(1000*BR*Acc) ,"~\mathrm{(lumi.)}")
-
 
 print "$\sigma {2} pp~\\to\Z\Z \\to {0} {4} {1:.2f} {2} {3:.2f} {4} {5} +{6:.2f} {4}{7} {2} -{8:.2f} {4}{5} +{9:.2f} {4}{10} \\pm {11:.2f} {12} $".format(list4l["name"],list4l["mu"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"_{",list4l["stdown"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"}","^{", list4l["stup"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"~\mathrm{(stat.)}", math.sqrt(math.pow(list4l["down"],2) - math.pow(list4l["stdown"],2))*xs_tight[list4l["fs"]]/(1000*BR*Acc),math.sqrt(math.pow(list4l["up"],2) - math.pow(list4l["stup"],2))*xs_tight[list4l["fs"]]/(1000*BR*Acc),"~\mathrm{(syst.)}",LumiUnc*xs_tight[list4l["fs"]]/(1000*BR*Acc) ,"~\mathrm{(lumi.)}")
 

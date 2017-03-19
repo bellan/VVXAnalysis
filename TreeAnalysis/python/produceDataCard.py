@@ -87,6 +87,9 @@ for fn in ('2e2m','4m','4e'):
 print Red('4l')
 print "{0:.3f} fb\n".format(xsTot)
 
+if doVBS: print "have you merged the reco file?\n if not type:\n hadd -f results/ZZRecoAnalyzer_SR/VBSbkg.root results/ZZRecoAnalyzer_SR/ZZTo4l.root results/ZZRecoAnalyzer_SR/gg_4l.root results/ZZRecoAnalyzer_SR/Irr.root"
+else:  print "have you merged the reco file?\n if not type:\n hadd -f results/ZZRecoAnalyzer_SR/sig_pow.root results/ZZRecoAnalyzer_SR/ZZTo4l.root results/ZZRecoAnalyzer_SR/gg_4l.root results/ZZRecoAnalyzer_SR/qq_4l2j.root "
+
 '''
 
 Reco level part:
@@ -139,7 +142,7 @@ for i, (key, value) in enumerate(SigDic.items()):
 
     hIrrBkg  = copy.deepcopy(fileIrrBkg.Get("ZZTo"+key+"_Mass_01"))
     hRedBkg  = copy.deepcopy(fileRedBkg.Get("ZZTo"+key+"_Mass_01"))
-    hZZBkg = copy.deepcopy(fileSig.Get("ZZTo"+key+"_Mass_01_nofr"))
+    hZZBkg   = copy.deepcopy(fileSig.Get("ZZTo"+key+"_Mass_01_nofr"))
 
     Err=ROOT.Double(0.)
     value["yield"]=h.IntegralAndError(0,-1,Err)
@@ -161,7 +164,6 @@ for i, (key, value) in enumerate(SigDic.items()):
     TotExp+=ZZBkgDic[key]["yield"]
    
     for t in Type:
-        print t
         if doRight:
             hup   = copy.deepcopy(fileSig.Get("ZZTo"+key+"_Mass_"+t+"Up_01_fr"))
             hdown = copy.deepcopy(fileSig.Get("ZZTo"+key+"_Mass_"+t+"Dn_01_fr"))
@@ -179,9 +181,6 @@ for i, (key, value) in enumerate(SigDic.items()):
 
 # irrBkgDic[key]["variation"]["stat"]=(hIrrBkg.Integral(0,-1)-irrBkgDic[key]["yield"])       
 #        print h.Integral(0,-1),hup.Integral(0,-1),hdown.Integral(0,-1),value["variation"][t]
-
-
-
 
 
 

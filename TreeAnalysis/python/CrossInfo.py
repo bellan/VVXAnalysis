@@ -39,36 +39,26 @@ xs_wide = 16.5
 
 # Theoretic xs for the tight fiducial region MCFM
 
-# 2e2m
-# 19.829 fb
-# 4m
-# 9.020 fb
-# 4e
-# 8.971 fb
-# 4l
-# 37.821 fb
+xs_tight_exp  = {"2e2m":21.0,"4m":10.8,"4e":9.9,"4l":42.2}  # ZZ inclusive official.  Powheg 
+xs_tight      = {"2e2m":20.1630,"4m":10.0270,"4e":10.0270,"4l":40.2170}  #Born level. ZZ Inclusive official. Pow*1.1 + MCFM*1.7 
 
-xs_tight_exp  = {"2e2m":20.1630,"4m":10.0270,"4e":10.0270,"4l":42.4}  #Pow kfactor  
-xs_tight      = {"2e2m":20.1630,"4m":10.0270,"4e":10.0270,"4l":34.4}  #Pow kfactor   
-#xs_tight      = {"2e2m":19.829,"4m":9.020,"4e":8.971,"4l":37.821}  #Pow kfactor   
-
-#xs_tight_exp  = {"2e2m":19.43,"4m":9.15,"4e":9.70,"4l":39.63} #4l ZZ+jets frame work (only 4l) 
 
 Xs_OS_2e2m =  32.64
 xs_OS_4m   =  16.32
 xs_OS_4e   =  16.32
 
-#GlobSystList           = [{"name":"Trig","value":0.02},{"name":"Lumi","value": 0.062},{"name":"Pdf","value":0.1}] 
 GlobSystList           = [{"name":"Trig","value":0.02},{"name":"Lumi","value": 0.026}] 
 
 PdfSyst_fid=[{"name":"Pdf","value":0.00}] 
 PdfSyst    =[{"name":"Pdf","value":0.00}] 
 
-DiffSystList           = [{"name":"Red","longname":"Reducible background"},{"name":"Irr","longname":"Irreducible background"},{"name":"sFactor","longname":"Scale Factor"},{"name":"MCgen","longname":"Monte Carlo choice"}] #add pdf
+DiffSystList           = [{"name":"Red","longname":"Reducible background"},{"name":"Irr","longname":"Irreducible background"},{"name":"sFactor","longname":"Scale Factor"},{"name":"MCgen","longname":"Monte Carlo choice"},{"name":"Pu","longname":"Pile up"}] #add pdf
 
 DiffSystListJets = [{"name":"JES_ModMat","longname":"JES Mat correction"},{"name":"JER","longname":"Jet energy resolution"}]
 
-DiffSystListUnfold     = [{"name":"RedBkg","longname":"Reducible background"},{"name":"IrrBkg","longname":"Irreducible background"},{"name":"SFSq","longname":"Scale Factor"},{"name":"MCgen","longname":"Monte Carlo choice"},{"name":"qqgg","longname":"qq gg cross section"}]
+DiffSystListUnfold     = [{"name":"RedBkg","longname":"Reducible background"},{"name":"IrrBkg","longname":"Irreducible background"},{"name":"EleSFSq","longname":"Electron Scale Factor"},{"name":"MuSFSq","longname":"Muon Scale Factor"},{"name":"MCgen","longname":"Monte Carlo choice"},{"name":"qqgg","longname":"qq gg cross section"},{"name":"Pu","longname":"Pileup"},{"name":"PDF","longname":"PDF"},{"name":"As","longname":"\Alpha_S"}]
+
+#DiffSystListUnfold     = [{"name":"RedBkg","longname":"Reducible background"},{"name":"IrrBkg","longname":"Irreducible background"},{"name":"SFSq","longname":"Scale Factor"},{"name":"MCgen","longname":"Monte Carlo choice"},{"name":"qqgg","longname":"qq gg cross section"}]
 
 DiffSystListJetsUnfold = [{"name":"JES_ModMat","longname":"JES Mat correction"},{"name":"JER","longname":"Jet energy resolution"}]
 

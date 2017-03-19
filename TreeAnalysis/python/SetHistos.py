@@ -95,7 +95,6 @@ if Analysis=="VBS":
    #  BkgSamples += SignalZZ_qq_Mad 
     DiffSystList.remove({"name":"Red","longname":"Reducible background"})
 
-    print DiffSystList
 
 ##################################################################################################################
 
@@ -486,7 +485,6 @@ def getSyst(Sign,isUnfold,HData,isTot,isFiducial):
     else:           print Red("Down Systematics")
     if isUnfold:
         for syst in SystList:
-            print syst
             if Sign==+1:    SystDicUp[syst["longname"]] = {}
             else:           SystDicDown[syst["longname"]] = {}
             hSystList[syst["name"]] =  getHistoUnfold(Sign,syst["name"],isFiducial)

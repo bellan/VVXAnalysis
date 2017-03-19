@@ -109,12 +109,23 @@ void ZZRecoAnalyzer::analyze(){
       // if(!jet.fullPuId()) continue;
 
       //      if(jet.ptJerDn() < jet.pt()) cout<<"jet.ptJerDn() "<<jet.ptJerDn() <<"jet.ptJerUp() "<<jet.ptJerUp() <<" jet.pt() "<<jet.pt()<<endl;
+      //       phys::Jet *newjet =  new  phys::Jet();
+      // //      phys
 
+      //       *newjet = jet;
+      // 	    TLorentzVector newvec = jet->p4();
+      // 	    newvec.SetPt
+      // 	    newjet->
+      // cout<<newjet->pt()<<endl;
+
+      // jet
       if(jet.ptJerUp() > 30.) 	UpJER_jets->push_back(jet); 
       if(jet.ptJerDn() > 30.)	DownJER_jets->push_back(jet);
       
       if(jet.ptJerDn()  > 30. && fabs(jet.eta())<2.4)   UpJER_centraljets->push_back(jet); 
       if(jet.ptJerDn()  > 30. && fabs(jet.eta())<2.4) DownJER_centraljets->push_back(jet);
+
+     
 
       //JES correction: Up and down velues used to assess systematic uncertainty on jet energy resolution
       double newJetPtJES_up   = 0;  
@@ -128,6 +139,7 @@ void ZZRecoAnalyzer::analyze(){
       if(newJetPtJES_up > 30 && fabs(jet.eta())<2.4 ) UpJES_centraljets->push_back(jet); 
       if(newJetPtJES_down > 30 &&  fabs(jet.eta())<2.4) DownJES_centraljets->push_back(jet);
       }
+
 
     FillHistosBase(decay,theWeight,sample);
     FillHistosJets(decay,theWeight,jets,sample);
@@ -448,7 +460,17 @@ void ZZRecoAnalyzer::FillHistosJets(std::string decay,float Wh,std::vector<phys:
   if(njets>0){  
   
     stable_sort(jetsVec->begin(), jetsVec->end(), PtComparator());
-    ptJet1 = jetsVec->at(0).pt();
+
+     if (type.find("JESUp") != std::string::npos)     ptJet1  =  jetsVec->at(0).ptJerUp();
+     else if(type.find("JESDn") != std::string::npos) ptJet1  =  jetsVec->at(0).ptJerDn();
+     else if(type.find("JERUp") != std::string::npos) ptJet1  =  jetsVec->at(0).pt()*(1+jetsVec->at(0).jecUncertainty());
+     else if(type.find("JERDn") != std::string::npos) ptJet1  =  jetsVec->at(0).pt()*(1-jetsVec->at(0).jecUncertainty());
+     else{
+       ptJet1 = jetsVec->at(0).pt(); 
+     }
+
+
+
     //    if (ptJet1>=500) ptJet1 = 499;    
 
     theHistograms.fill("ZZTo"+decay+"_PtJet1_"+type," ", Xbins_ptJet1, ptJet1, Wh); 
@@ -463,8 +485,16 @@ void ZZRecoAnalyzer::FillHistosJets(std::string decay,float Wh,std::vector<phys:
      
      if (deta>=4.7) deta = 4.6;
      mjj =  (jetsVec->at(0).p4() + jetsVec->at(1).p4()).M();
-     //if (mjj>=800) mjj = 799;
-     ptJet2 = jetsVec->at(1).pt();
+
+     if (type.find("JESUp") != std::string::npos)     ptJet2  =  jetsVec->at(1).ptJerUp();
+     else if(type.find("JESDn") != std::string::npos) ptJet2  =  jetsVec->at(1).ptJerDn();
+     else if(type.find("JERUp") != std::string::npos) ptJet2  =  jetsVec->at(1).pt()*(1+jetsVec->at(1).jecUncertainty());
+     else if(type.find("JERDn") != std::string::npos) ptJet2  =  jetsVec->at(1).pt()*(1-jetsVec->at(1).jecUncertainty());
+     else{
+       ptJet2 = jetsVec->at(1).pt(); 
+     }
+
+
      //if (ptJet2>=300) ptJet2 = 299;
 
      dphi = physmath::deltaPhi(jetsVec->at(0).phi(),jetsVec->at(1).phi());
@@ -507,10 +537,16 @@ void ZZRecoAnalyzer::FillMatrixHistosBase(std::string decay, float Wh,std::strin
    theHistograms.fill("ResMat_ZZTo"+decay+"_nJets_"+type, "", Xbins_nJets,Xbins_nJets,njets,njets_gen, Wh);      
    if(njets>0) {
      stable_sort(jetsVec->begin(), jetsVec->end(), PtComparator());
-     ptJet1 = jetsVec->at(0).pt();
      etaJet1 = fabs(jetsVec->at(0).eta());
-     //     if (ptJet1>=500)       ptJet1 = 499;    
-     // if (etaJet1>=4.7)      etaJet1 = 4.6;
+     
+     if (type.find("JESUp") != std::string::npos)     ptJet1  =  jetsVec->at(0).ptJerUp();
+     else if(type.find("JESDn") != std::string::npos) ptJet1  =  jetsVec->at(0).ptJerDn();
+     else if(type.find("JERUp") != std::string::npos) ptJet1  =  jetsVec->at(0).pt()*(1+jetsVec->at(0).jecUncertainty());
+     else if(type.find("JERDn") != std::string::npos) ptJet1  =  jetsVec->at(0).pt()*(1-jetsVec->at(0).jecUncertainty());
+     else{
+       ptJet1 = jetsVec->at(0).pt(); 
+     }
+
    }
    
    if(njets_gen>0){       
@@ -531,16 +567,22 @@ void ZZRecoAnalyzer::FillMatrixHistosBase(std::string decay, float Wh,std::strin
 
      deta = fabs(jetsVec->at(0).eta() - jetsVec->at(1).eta());
      mjj =  (jetsVec->at(0).p4() + jetsVec->at(1).p4()).M();
-     ptJet2 = jetsVec->at(1).pt();
      etaJet2 = fabs(jetsVec->at(1).eta());
      dphi = physmath::deltaPhi(jetsVec->at(0).phi(),jetsVec->at(1).phi());
 
+     if (type.find("JESUp") != std::string::npos)     ptJet2  =  jetsVec->at(1).ptJerUp();
+     else if(type.find("JESDn") != std::string::npos) ptJet2  =  jetsVec->at(1).ptJerDn();
+     else if(type.find("JERUp") != std::string::npos) ptJet2  =  jetsVec->at(1).pt()*(1+jetsVec->at(1).jecUncertainty());
+     else if(type.find("JERDn") != std::string::npos) ptJet2  =  jetsVec->at(1).pt()*(1-jetsVec->at(1).jecUncertainty());
+     else{
+       ptJet2 = jetsVec->at(1).pt(); 
+     }
      
      // if (deta>=4.7)    deta    = 4.6;
-   //   if (mjj>=800)     mjj     = 799;
-   //   if (ptJet2>=500)  ptJet2  = 499;
-   //   if (dphi>=6)      dphi    = 5;
-   //   if (etaJet2>=4.7) etaJet2 = 4.6;
+     // if (mjj>=800)     mjj     = 799;
+     // if (ptJet2>=500)  ptJet2  = 499;
+     // if (dphi>=6)      dphi    = 5;
+     // if (etaJet2>=4.7) etaJet2 = 4.6;
    }
 
    if(njets_gen>1){  
