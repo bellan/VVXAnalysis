@@ -322,8 +322,10 @@ if(
    ZZplots(48); // ZZ --> 2e2m
    ZZplots(44); // ZZ --> 4e
    ZZplots(52); // ZZ --> 4m
-   //    if (topology.test(2)) theHistograms.fill("PassDef", "Number of events passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight); 
-   //   else theHistograms.fill("NoPassDef", "Number of events not passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight);
+   if (topology.test(2)) theHistograms.fill("PassDef", "Number of events passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight); 
+   else theHistograms.fill("NoPassDef", "Number of events not passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight);
+   if (topology.test(3)) theHistograms.fill("PassFidDef", "Number of events passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight); 
+   else theHistograms.fill("NoPassFidDef", "Number of events not passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight);
  
 }
 
