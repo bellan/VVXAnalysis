@@ -184,11 +184,11 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   jets->clear(); centralJets->clear(); pileUpIds->clear();
 
   foreach(const phys::Jet &jet, *pjets){
-    //    if(jet.fullPuId(1)){//2 tight, 1 medium, 0 loose
+    if(jet.fullPuId(0)){//2 tight, 1 medium, 0 loose
       if(jet.pt() > 30){
 	if(fabs(jet.eta()) < 4.7) jets->push_back(jet);
 	if(fabs(jet.eta()) < 2.4) centralJets->push_back(jet);
-	// }
+        }
     }
     else pileUpIds->push_back(idx);   
     idx++; 
@@ -233,9 +233,9 @@ if(region_ == phys::MC){
  
 
  if((abs(Leps.at(1).id())==11) && (Leps.at(1).pt()<12))  return 0;
-
-addOptions();
-
+ 
+ addOptions();
+ 
   // Check if the request on region tye matches with the categorization of the event
   regionWord = std::bitset<128>(ZZ->region());
   // check bits accordingly to ZZAnalysis/AnalysisStep/interface/FinalStates.h
@@ -248,12 +248,24 @@ addOptions();
   if(region_ == phys::CR2P2F_HZZ && !regionWord.test(22)) return 0;
   if(region_ == phys::CR3P1F_HZZ && !regionWord.test(23)) return 0;
 
+  if(!doSF){
+  theWeight = theMCInfo.weight(*ZZ);
 
+  }
+  else  theWeight = theMCInfo.weight();
 
-  if(!doSF || !theMCInfo.isMC() )  theWeight = theMCInfo.weight(*ZZ);
-  else{
+  if(doSF && (region_ == phys::CR2P2F || region_ == phys::CR3P1F || region_ == phys::CR2P2F_HZZ || region_ == phys::CR3P1F_HZZ)){
+      if(!ZZ->first().daughterPtr(0)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(0))).first;	
+      if(!ZZ->first().daughterPtr(1)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(1))).first;	
+      if(!ZZ->second().daughterPtr(0)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(0))).first;
+      if(!ZZ->second().daughterPtr(1)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(1))).first; 
+     
+      if(region_ == phys::CR2P2F || region_ == phys::CR2P2F_HZZ ) theWeight*=-1;
     
-    theWeight = theMCInfo.weight();
+    }
+
+  if(doSF && theMCInfo.isMC() ){
+    
     
     std::pair<double,double> lepSF;
     
@@ -274,17 +286,6 @@ addOptions();
     theWeight*=lepSF.first;
   }
 
-  if(doSF && (region_ == phys::CR2P2F || region_ == phys::CR3P1F || region_ == phys::CR2P2F_HZZ || region_ == phys::CR3P1F_HZZ)){
-      
-    //if(ZZ->first().daughterPtr(0)->passFullSel() && ZZ->first().daughterPtr(1)->passFullSel() && ZZ->second().daughterPtr(0)->passFullSel() && ZZ->second().daughterPtr(1)->passFullSel()) cout<<"alt   !!!"<<endl;
-      
-      if(!ZZ->first().daughterPtr(0)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(0))).first;	
-      if(!ZZ->first().daughterPtr(1)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(1))).first;	
-      if(!ZZ->second().daughterPtr(0)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(0))).first;
-      if(!ZZ->second().daughterPtr(1)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(1))).first; 
-     
-      //      cout<<" id "<<ZZ->first().daughterPtr(0)->id()<<" pt "<<ZZ->first().daughterPtr(0)->pt()<<" eta "<<ZZ->first().daughterPtr(0)->eta()<<" fr "<<(leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(0))).first <<endl;
-    }
   
   theHistograms.fill("weight_full"  , "All weights applied"                                    , 1200, -2, 10, theWeight);
   theHistograms.fill("weight_bare"  , "All weights, but efficiency and fake rate scale factors", 1200, -2, 10, theMCInfo.weight());
