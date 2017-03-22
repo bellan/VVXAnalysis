@@ -445,6 +445,8 @@ std::tuple<bool, phys::Boson<phys::Lepton>, phys::Boson<phys::Lepton> > zz::zz4l
 std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::getZZ(const std::vector<phys::Boson<phys::Particle> >  &ZLL){
   
   
+  //  foreach(const phys::Boson<phys::Particle>& z,   ZLL)  cout<<"mass "<<z.mass()<<" id "<<z.id()<<" pt "<<z.pt()<<endl; //comment
+
   if(ZLL.size() < 2) return std::make_tuple(false, phys::Boson<phys::Particle>(),phys::Boson<phys::Particle>());
   
   std::vector<phys::Boson<phys::Particle> > Zll;  
@@ -475,32 +477,45 @@ std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::
       break;
     }
   }  
- 
+  
+  // cout<<"Z0 m "<<Z0.mass()<<" pt "<<Z0.pt()<<" Z1 m "<<Z1.mass()<<" pt "<<Z1.pt()
+  //     <<"Z0 0 m "<<Z0.daughter(0).mass()<<" id "<<Z0.daughter(0).id()<<" pt "<<Z0.daughter(0).pt()
+  //     <<"Z0 1 m "<<Z0.daughter(1).mass()<<" id "<<Z0.daughter(1).id()<<" pt "<<Z0.daughter(1).pt()
+  //     <<"Z0 0 m "<<Z1.daughter(0).mass()<<" id "<<Z1.daughter(0).id()<<" pt "<<Z1.daughter(0).pt()
+  //     <<"Z0 0 m "<<Z1.daughter(0).mass()<<" id "<<Z1.daughter(1).id()<<" pt "<<Z1.daughter(1).pt()<<endl; //comment
+  
+
   if(Z1.id() == 0) return std::make_tuple(false, Z0, phys::Boson<phys::Particle>());
   
   // Now check that the 4 leptons are not mismatched due to the presence of low mass resonances 
   
   bool passllLowMass = true;
-  bool passDeltaR    = true;
-  
+
+
   for(int i = 0; i <=1; ++i) {
+  //not very efficent or elegant . To be fixed  
 
-    if ( Z0.daughter(0).charge() != Z1.daughter(i).charge() ) {
-      if ( (Z0.daughter(0).p4() + Z1.daughter(i).p4()).M() < 4 || (Z0.daughter(1).p4() + Z1.daughter((i+1)%2).p4()).M() < 4 ) passllLowMass = false;
+    if(  (( (Z0.daughter(i).p4()+ Z0.daughter((i+1)%2).p4()).M() < 4 ) || ( (Z1.daughter(i).p4()+ Z1.daughter((i+1)%2).p4()).M() < 4)) || 
+	 (  (abs(Z0.daughter(0).id())==abs(Z1.daughter(0).id()))  && 
+	    ( ( (Z0.daughter(0).id() ==  -1*(Z1.daughter(i).id())  ) && ( (Z0.daughter(0).p4()+ Z1.daughter(i).p4()).M()<4. ) ) ||
+	      ( (Z0.daughter(1).id() ==  -1*(Z1.daughter(i).id())   ) && ( (Z0.daughter(1).p4()+ Z1.daughter(i).p4()).M()<4. ) ) ) )
+	 ) passllLowMass = false;
+            
     }
+    
+  // cout<<" 00 01 "<<(Z0.daughter(0).p4()+ Z0.daughter(1).p4()).M()<<" 10 11 "<<(Z1.daughter(0).p4()+ Z1.daughter(1).p4()).M()<<" 00 10 " <<
+  //   (Z0.daughter(0).p4()+ Z1.daughter(0).p4()).M()<<" 01 10 "<<(Z0.daughter(1).p4()+ Z1.daughter(0).p4()).M()
+  //     <<" 01 11 "<<(Z0.daughter(1).p4()+ Z1.daughter(1).p4()).M()  <<" 01 11 "<<(Z0.daughter(1).p4()+ Z1.daughter(1).p4()).M()<<endl; //comment
 
-    //Check deltaR > 0.4 between same flavour leptons.
-    if( ( (physmath::deltaR(Z0.daughter(i), Z0.daughter((i+1)%2)) < 0.4 ) || (physmath::deltaR(Z1.daughter(i), Z1.daughter((i+1)%2)) < 0.4 ) )  || 
-    ( (abs(Z0.daughter(0).id())==abs(Z1.daughter(0).id()))  && 
-    	( (physmath::deltaR(Z0.daughter(0), Z1.daughter(i)) < 0.4 ) || (physmath::deltaR(Z0.daughter(1), Z1.daughter(i)) < 0.4 ) ) ) ) passDeltaR = false;        
- }
-  
+
   bool inZMassWindow = true;
 
   if(Z0.mass() > 120. || Z0.mass() < 40. || Z1.mass() > 120. || Z1.mass() < 12.) //Higgs range mass. ZZ range is selected with a specific bit.
       inZMassWindow = false;
 
-  if(!passllLowMass || !inZMassWindow || !passDeltaR) return std::make_tuple(false, Z0, Z1);
+  //  cout<<"passllLowMass "<<passllLowMass<<" inZMassWindow "<<inZMassWindow<<endl; comment
+
+  if(!passllLowMass || !inZMassWindow ) return std::make_tuple(false, Z0, Z1);
   else return std::make_tuple(true, Z0, Z1);
 }
 
@@ -726,7 +741,6 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   // Not enough Zs with good quality 
   if(!std::get<0>(Zpair)) return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1); 
 
-
   // Clean the gen jet collection properly
   std::vector<phys::Particle> tmp;
   foreach(const phys::Particle& jet, theGenj)
@@ -838,17 +852,6 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   if(abs(Z0DaugID) == 13 || abs(Z1DaugID) == 13) topology.set(10);
   if(abs(Z0DaugID) == 11 || abs(Z1DaugID) == 11) topology.set(11);
 
-
-
-
-  // OLD definition
-  //topology.set(0);                             //ZZ4l 
-  //if(hasJets)              topology.set(1);    //ZZ4l + jets (E>20 GeV and |eta| < 5)
-  //if(hasAtLeast2jets)      topology.set(2);    //ZZ4l + 2q
-  //if(has5leptons)          topology.set(3);    //ZZ4l + 1lepton
-  //if(foundWjj) topology.set(4);    //ZZ4l + hadronic W
-  //if(foundZjj) topology.set(5);    //ZZ4l + hadronic Z 
-  // The leptonic Z and W topologies are missing!! FIXME
   return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1);
 }
 
