@@ -19,9 +19,6 @@ from LatexUtils import*
 import LatexUtils_v2
 from LatexUtils_v2 import*
 
-import  dataCardProducer
-from  dataCardProducer import*
-
 parser = OptionParser(usage="usage: %prog [options]")
 
 parser.add_option("-t", "--type", dest="Type",
@@ -51,10 +48,11 @@ parser.add_option("-L", "--printLatex", dest="printLatex",
                   default=False,
                   help="Print LateX code of tabulars")
 
-parser.add_option("-D", "--datacard", dest="doDataCard",
+parser.add_option("-v", "--verbose", dest="verbose",
                   action="store_true",
                   default=False,
-                  help="create data card for inclusive cross-section")
+                  help="Print LateX code of tabulars")
+
 
 (options, args) = parser.parse_args()
 
@@ -64,7 +62,7 @@ Analysis   = options.Analysis
 isFiducial = options.isFiducial
 isUnfold   = options.isUnfold
 printLatex = options.printLatex
-doDataCard = options.doDataCard
+verbose    = options.verbose
 
 SampleDic = collections.OrderedDict()
 RedDic    = collections.OrderedDict()
@@ -188,10 +186,6 @@ def getHisto(Type,isData,Sign,syst,isTot,isFiducial):
         sDic["yield"]="{0:.2f}".format(h["state"].Integral(bin1,bin2))
         sDic["Err"]="{0:.2f}".format(math.sqrt(h["state"].Integral(bin1,bin2)))
         if not isData:  SampleDic["Total Signal"][h["name"]]=sDic
-
-      #  print SampleDic
-#        if h["name"]=="2e2m" or h["name"]=="4m": #FIXME
- #           h["state"].Fill(1) 
 
     hIrredBkg2e2mu = ROOT.TH1F() 
     hIrredBkg4mu   = ROOT.TH1F() 
@@ -347,8 +341,9 @@ def getHisto(Type,isData,Sign,syst,isTot,isFiducial):
             ErrStat=ROOT.Double(0.)                
             if syst=="": print "Integral after background subtraction {0}> {1:.2f} +- {2:.2f}\n ".format(23*"-",i["state"].IntegralAndError(0,-1,ErrStat),ErrStat)
         if isTot:
-            if isFiducial:   Acc = AccFile.Get("TotAcc"+i["name"]+"_fr").GetVal()
-            else:            Acc = AccFile.Get("TotAcc"+i["name"]+"_Tot").GetVal() #FIXME
+#            if isFiducial:   Acc = AccFile.Get("TotAcc"+i["name"]+"_fr").GetVal()
+            if isFiducial:   Acc = AccFile.Get("TotAcc"+i["name"]+"_frAndFake").GetVal()
+            else:            Acc = AccFile.Get("TotAcc"+i["name"]+"_Tot").GetVal() 
             i["state"].Scale(1./Acc)
 
         else:
@@ -454,14 +449,12 @@ def GetRightSyst(h,hup,hdown,sign):
     nBins = h.GetNbinsX()
     for bin in range(1,nBins+1):
         if sign ==1:
-#            print "cen",h.GetBinContent(bin),"up",hup.GetBinContent(bin),"down",hdown.GetBinContent(bin)
             if(hup.GetBinContent(bin)-h.GetBinContent(bin) >0 and hdown.GetBinContent(bin)-h.GetBinContent(bin) >0): print "warning "
             newCont = max(hup.GetBinContent(bin)-h.GetBinContent(bin),hdown.GetBinContent(bin)-h.GetBinContent(bin))
             if newCont>0: newH.SetBinContent(bin,newCont+h.GetBinContent(bin))
             else:         newH.SetBinContent(bin,h.GetBinContent(bin))
         if sign ==-1:
             newCont = max(h.GetBinContent(bin)-hdown.GetBinContent(bin),h.GetBinContent(bin)-hup.GetBinContent(bin))
-#            print bin,newCont,h.GetBinContent(bin)-hdown.GetBinContent(bin),h.GetBinContent(bin)-hup.GetBinContent(bin)
             if newCont>0: newH.SetBinContent(bin,h.GetBinContent(bin)-newCont)
             else:         newH.SetBinContent(bin,h.GetBinContent(bin))
 
@@ -500,25 +493,25 @@ def getSyst(Sign,isUnfold,HData,isTot,isFiducial):
     if Type!="Total":
         Nbins = hFinSyst[0]["state"].GetNbinsX()
         for syst in SystList:
-            print Blue(syst["longname"])
+            if verbose: print Blue(syst["longname"])
             lSyst.setSampleStatus(syst["longname"])
             systlista={} 
             sumentries= {}
             for bin in range(1,Nbins+1):
-                print bin
+                if verbose: print "bin ",bin
                 systlista[bin] = 0
                 sumentries[bin] = 0;
                 for i in range(0,3):
                     systlista[bin] += pow((hSystList[syst["name"]][i]["state"].GetBinContent(bin)-hFinSyst[i]["state"].GetBinContent(bin)),2)
                     if(Sign==1): 
-                        print hFinSyst[i]["name"],hFinSyst[i]["state"].GetBinContent(bin),((hSystList[syst["name"]][i]["state"].GetBinContent(bin)-hFinSyst[i]["state"].GetBinContent(bin))/hFinSyst[i]["state"].GetBinContent(bin))*100,"%"
+                        if verbose: print hFinSyst[i]["name"],hFinSyst[i]["state"].GetBinContent(bin),((hSystList[syst["name"]][i]["state"].GetBinContent(bin)-hFinSyst[i]["state"].GetBinContent(bin))/hFinSyst[i]["state"].GetBinContent(bin))*100,"%"
                         lSyst.setSystBin(bin,hFinSyst[i]["name"],Sign,((hSystList[syst["name"]][i]["state"].GetBinContent(bin)-hFinSyst[i]["state"].GetBinContent(bin))/hFinSyst[i]["state"].GetBinContent(bin))) 
                     else:   
-                        print hFinSyst[i]["name"],hFinSyst[i]["state"].GetBinContent(bin),((-hSystList[syst["name"]][i]["state"].GetBinContent(bin)+hFinSyst[i]["state"].GetBinContent(bin))/hFinSyst[i]["state"].GetBinContent(bin))*100,"%"
+                        if verbose: print hFinSyst[i]["name"],hFinSyst[i]["state"].GetBinContent(bin),((-hSystList[syst["name"]][i]["state"].GetBinContent(bin)+hFinSyst[i]["state"].GetBinContent(bin))/hFinSyst[i]["state"].GetBinContent(bin))*100,"%"
                         lSyst.setSystBin(bin,hFinSyst[i]["name"],Sign,((-hSystList[syst["name"]][i]["state"].GetBinContent(bin)+hFinSyst[i]["state"].GetBinContent(bin))/hFinSyst[i]["state"].GetBinContent(bin))) 
                     sumentries[bin] += hFinSyst[i]["state"].GetBinContent(bin)
-                print "4l",sumentries[bin],math.sqrt(systlista[bin])/(sumentries[bin])*100," %"      
-                lSyst.setSystBin(bin,"4l",Sign,math.sqrt(systlista[bin])/(sumentries[bin])*100) #ahhot
+                if verbose: print "4l",sumentries[bin],math.sqrt(systlista[bin])/(sumentries[bin])*100," %"      
+                lSyst.setSystBin(bin,"4l",Sign,math.sqrt(systlista[bin])/(sumentries[bin])*100)
 
 ######################################################################
 
@@ -534,7 +527,9 @@ def getSyst(Sign,isUnfold,HData,isTot,isFiducial):
                     continue
                 sDic["yield"]="{0:.1f}".format((1-hSystList[syst["name"]][i]["state"].Integral(0,-1)/hFinSyst[i]["state"].Integral(0,-1))*100)
                 print "{0} {1}-> {2:.3f} %".format(syst["longname"],(30-len(syst["longname"]))*"-",(1-hSystList[syst["name"]][i]["state"].Integral(0,-1)/hFinSyst[i]["state"].Integral(0,-1))*100)
-                for bin in range(1,hSystList[syst["name"]][i]["state"].GetNbinsX()+1):  print "{0} {1}-> {2:.3f} %".format(bin,(30-len(syst["longname"]))*"-",(1-hSystList[syst["name"]][i]["state"].GetBinContent(bin)/hFinSyst[i]["state"].GetBinContent(bin))*100)
+                if verbose: 
+                    for bin in range(1,hSystList[syst["name"]][i]["state"].GetNbinsX()+1):
+                        print "{0} {1}-> {2:.3f} %".format(bin,(30-len(syst["longname"]))*"-",(1-hSystList[syst["name"]][i]["state"].GetBinContent(bin)/hFinSyst[i]["state"].GetBinContent(bin))*100)
                 SystDicDown[syst["longname"]][hSystList[syst["name"]][i]["name"]]=sDic
             else: 
                 if (hFinSyst[i]["state"].Integral(0,-1)/hSystList[syst["name"]][i]["state"].Integral(0,-1)) > 1:
@@ -545,7 +540,9 @@ def getSyst(Sign,isUnfold,HData,isTot,isFiducial):
                 sDic["yield"]="{0:.1f}".format((1-hFinSyst[i]["state"].Integral(0,-1)/hSystList[syst["name"]][i]["state"].Integral(0,-1))*100)
 #                print "sDic",sDic
                 print "{0} {1}-> {2:.3f} %".format(syst["longname"],(30-len(syst["longname"]))*"-",(1-hFinSyst[i]["state"].Integral(0,-1)/hSystList[syst["name"]][i]["state"].Integral(0,-1))*100)
-                for bin in range(1,hSystList[syst["name"]][i]["state"].GetNbinsX()+1):  print "{0} {1}-> {2:.3f} %".format(bin,(30-len(syst["longname"]))*"-",(1-hFinSyst[i]["state"].GetBinContent(bin)/hSystList[syst["name"]][i]["state"].GetBinContent(bin))*100)
+                if verbose:  
+                    for bin in range(1,hSystList[syst["name"]][i]["state"].GetNbinsX()+1): 
+                        print "{0} {1}-> {2:.3f} %".format(bin,(30-len(syst["longname"]))*"-",(1-hFinSyst[i]["state"].GetBinContent(bin)/hSystList[syst["name"]][i]["state"].GetBinContent(bin))*100)
                 SystDicUp[syst["longname"]][hSystList[syst["name"]][i]["name"]]=sDic
 
 
@@ -553,7 +550,6 @@ def getSyst(Sign,isUnfold,HData,isTot,isFiducial):
 
         for b in range(1,NBin+1):
             Content = 0
- 
             # loop over histograms bins with systematics
             for syst in SystList:    
 
@@ -562,10 +558,11 @@ def getSyst(Sign,isUnfold,HData,isTot,isFiducial):
 
                 #square sum of systematics  
                 Content += (hSystList[syst["name"]][i]["state"].GetBinContent(b)-hFinSyst[i]["state"].GetBinContent(b))**2.
+              #  print syst["name"],"var ",hSystList[syst["name"]][i]["state"].GetBinContent(b)-hFinSyst[i]["state"].GetBinContent(b),
 
             hFinSyst[i]["state"].AddBinContent(b, Sign*math.sqrt(Content))
 
-            # print "Variation",  Sign*math.sqrt(Content),"New bin content", hFinSyst[i]["state"].GetBinContent(b) 
+            #print " Variation",  Sign*math.sqrt(Content),"New bin content", hFinSyst[i]["state"].GetBinContent(b) #DELETE
 
     return hFinSyst
 ##################################################################################################################
@@ -576,8 +573,6 @@ def getSyst(Sign,isUnfold,HData,isTot,isFiducial):
 
 
 def getPlot_MC(Type,isFiducial,var):
-
-    print Red("\n############################ MC SIGNAL ############################\n")
 
     files={}
 
@@ -609,6 +604,7 @@ def getPlot_MC(Type,isFiducial,var):
 
     for h in hSum:
         print Blue(h["name"])
+
         if isFromUnfold:
             h["state"] = copy.deepcopy(fileUnfold.Get("ZZTo"+h["name"]+"_"+Type+"_GEN"))
             if isFiducial:
@@ -620,9 +616,10 @@ def getPlot_MC(Type,isFiducial,var):
             for s in Samples:
                 if "ZZTo4l" in s["sample"]: Var=var
                 else: Var=""
-                if isFiducial: h1 = files[s["sample"]].Get("ZZTo"+h["name"]+"_"+CrossType+"_01"+Var+"_fr")  
+                if isFiducial: 
+                    h1 = files[s["sample"]].Get("ZZTo"+h["name"]+"_"+CrossType+"_01"+Var+"_fr")  
                 else: h1 = files[s["sample"]].Get("ZZTo"+h["name"]+"_"+CrossType+"_01"+Var)
-                print  "ZZTo"+h["name"]+"_"+CrossType+"_01"+Var
+
                 if h1==None:
                #print "For sample ", s["sample"], "h"+h["name"],"has no enetries or is a zombie"       
                     continue
@@ -637,8 +634,6 @@ def getPlot_MC(Type,isFiducial,var):
                 h1.SetName(s["sample"]+"_"+h["name"])
                 h["samples"].append(h1) #check
                 print "{0} {1}-> {2:.2f} ".format(s["sample"],(61-len(s["sample"]))*"-",h1.Integral(0,-1))
-#            h["state"].SetName(h["state"].GetName())        
-       # if isFiducial: h["state"].SetName( h["state"].GetName()+"_fr" )
            
         print "\nTotal integral {0} contribution {1}> {2:.2f}\n\n".format(h["name"],(34-len(h["name"]))*"-",h["state"].Integral(0,-1))
 
@@ -666,8 +661,11 @@ else:
     SystList = DiffSystList
     if "Jet" in Type or "Deta" in Type or "Mjj" in Type: SystList = SystList+DiffSystListJets #Add Jet systematic
 
+print Red("\n############################ MC SIGNAL ############################\n")
 hMC    =  getPlot_MC(Type,isFiducial,"")
+print Red("### Syst Up ###\n ")
 hMC_Up =  getPlot_MC(Type,isFiducial,"_scaleUp")
+print Red("### Syst Down ###\n")
 hMC_Dn =  getPlot_MC(Type,isFiducial,"_scaleDn")
 
 
@@ -687,9 +685,7 @@ for i,j,k in zip(hMC,hMC_Up,hMC_Dn):
     j["state"].Write("",j["state"].kOverwrite)
     k["state"].Write("",k["state"].kOverwrite)
     for h,hup,hdn in zip(i["samples"],j["samples"],k["samples"]):
-        h.Write("",i["state"].kOverwrite)
-        hup.Write("",i["state"].kOverwrite)
-        hdn.Write("",i["state"].kOverwrite)
+        h.Write("",h.kOverwrite)
     
     
 if isUnfold:
@@ -804,9 +800,6 @@ if printLatex:
     SystLatex(Text,SystDicUp,SystDicDown)
     if not isUnfold:  lbin.printPerBinCode()
     else: lSyst.printSystRanges()
-
-if doDataCard:
-    produceDataCard(SampleDic,RedDic,IrrDic,DataDic,SystDicUp,SystDicDown)
 
 
 
