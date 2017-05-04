@@ -54,7 +54,10 @@ Recipe for tree analysis step
   - Make a soft link to the directory containing the sample (optional).
 
 ```
+git clone https://github.com/CJLST/ZZAnalysis.git ZZAnalysis
 git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis
+cd ZZAnalysis; git checkout miniAOD_80X
+cd ..
 cd VVXAnalysis/TreeAnalysis
 cmake CMakeLists.txt
 make
