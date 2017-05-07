@@ -35,6 +35,11 @@ parser.add_option("-u", "--unfold", dest="isUnfold",
                   default=False,
                   help="is Unfold distribution")
 
+parser.add_option("-n", "--normalize", dest="doNormalized",
+                  action="store_true",
+                  default=False,
+                  help="set histograms for normalized distribution")
+
 parser.add_option("-S", "--Set", dest="Set",
                   default="Mad",
                   help="MC samples Set, default is Mad (MadGraph) the other one is Pow (Powheg)")
@@ -56,13 +61,14 @@ parser.add_option("-v", "--verbose", dest="verbose",
 
 (options, args) = parser.parse_args()
 
-Type       = options.Type
-Set        = options.Set
-Analysis   = options.Analysis
-isFiducial = options.isFiducial
-isUnfold   = options.isUnfold
-printLatex = options.printLatex
-verbose    = options.verbose
+Type        = options.Type
+Set         = options.Set
+Analysis    = options.Analysis
+isFiducial  = options.isFiducial
+isUnfold    = options.isUnfold
+printLatex  = options.printLatex
+verbose     = options.verbose
+doNormalized = options.doNormalized
 
 SampleDic = collections.OrderedDict()
 RedDic    = collections.OrderedDict()
@@ -207,7 +213,8 @@ def getHisto(Type,isData,Sign,syst,isTot,isFiducial):
     for hfake in hFakeSum:
         sDic = {}
         ErrFake=ROOT.Double(0.)
-        if Analysis!="VBS":  hfake["state"] = getRedBkg(hfake["name"],Sign,syst)
+#        if Analysis!="VBS":  hfake["state"] = getRedBkg(hfake["name"],Sign,syst)
+        if Analysis!="VBS":  hfake["state"] = getRedBkgNoZZ(hfake["name"],Sign,syst)
         else: 
             hfake["state"]=hSum[0]["state"]
             hfake["state"].Reset()
@@ -372,6 +379,37 @@ def setErrorsEntries(hVar):
     
 #################################################################################################################
 
+
+def getRedBkgNoZZ(FinState,Sign,syst):
+
+    fileFake2P2F = ROOT.TFile(inputdir_CR.replace("R/","R")+"2P2F/data.root")
+    fileFake3P1F = ROOT.TFile(inputdir_CR.replace("R/","R")+"3P1F/data.root")
+    fileFakeqqZZ3P1F = ROOT.TFile(inputdir_CR.replace("R/","R")+"3P1F/ZZTo4lamcatnlo.root")
+    fileFakeggZZ3P1F = ROOT.TFile(inputdir_CR.replace("R/","R")+"3P1F/gg_4l.root")
+
+    hFakeRate=ROOT.TH1F()
+    if syst=="Red" and Sign==1:      TypeRed=Type+"_RedDn"
+    elif syst=="Red" and Sign==-1:   TypeRed=Type+"_RedUp"
+    else:                            TypeRed=Type
+
+    hFakeRate       = fileFake3P1F.Get("ZZTo"+FinState+"_"+TypeRed+"_01")
+    hFakeRate2P2F   = fileFake2P2F.Get("ZZTo"+FinState+"_"+TypeRed+"_01")
+    hFakeRateggZZ3P1F = fileFakeggZZ3P1F.Get("ZZTo"+FinState+"_"+TypeRed+"_01")
+    hFakeRateqqZZ3P1F = fileFakeqqZZ3P1F.Get("ZZTo"+FinState+"_"+TypeRed+"_01")
+
+    hFakeRate.Add(hFakeRateqqZZ3P1F,-1)
+    hFakeRate.Add(hFakeRateggZZ3P1F,-1)
+    hFakeRate.Add(hFakeRate2P2F)
+
+    Err=ROOT.Double(0.)
+    Integr= hFakeRate.IntegralAndError(0,-1,Err)
+    if Sign==0: print "Total integral {0} contribution {1}> {2:.2f}\n".format(FinState,(33-len(FinState))*"-",hFakeRate.Integral(0,-1))
+    if syst=="Red": print Sign,"Total integral {0} contribution {1}> {2:.2f}\n\n".format(FinState,(33-len(FinState))*"-",hFakeRate.Integral(0,-1))
+    return  copy.deepcopy(hFakeRate)
+
+#################################################################################################################                                                                    
+
+
 def getRedBkg(FinState,Sign,syst):
 
     fileFake = ROOT.TFile(inputdir_CR+"data.root")
@@ -438,6 +476,9 @@ def getHistoUnfold(Sign,syst,isFiducial):
             if hup==None:
                 hup   = copy.deepcopy(fileUnfold.Get("ZZTo"+h["name"]+"_"+Type))
                 hdown = hup
+            if doNormalized:  
+                hup.Scale( hcen.Integral(0,-1)/hup.Integral(0,-1) )
+                hdown.Scale( hcen.Integral(0,-1)/hdown.Integral(0,-1) )
             h["state"] = GetRightSyst(hcen,hup,hdown,Sign)
 
         h["state"].SetName("ZZTo"+h["name"]+"_"+Type+"_01")
@@ -449,7 +490,7 @@ def GetRightSyst(h,hup,hdown,sign):
     nBins = h.GetNbinsX()
     for bin in range(1,nBins+1):
         if sign ==1:
-            if(hup.GetBinContent(bin)-h.GetBinContent(bin) >0 and hdown.GetBinContent(bin)-h.GetBinContent(bin) >0): print "warning "
+            #if(hup.GetBinContent(bin)-h.GetBinContent(bin) >0 and hdown.GetBinContent(bin)-h.GetBinContent(bin) >0): print "warning"
             newCont = max(hup.GetBinContent(bin)-h.GetBinContent(bin),hdown.GetBinContent(bin)-h.GetBinContent(bin))
             if newCont>0: newH.SetBinContent(bin,newCont+h.GetBinContent(bin))
             else:         newH.SetBinContent(bin,h.GetBinContent(bin))
@@ -471,98 +512,114 @@ def GetRightSyst(h,hup,hdown,sign):
 ##################################################################################################################
 
 def getSyst(Sign,isUnfold,HData,isTot,isFiducial): 
-   
+
     hFinSyst = copy.deepcopy(HData)
-    hSystList = {}
+
+    # 4l combination
+    h4l = copy.deepcopy(hFinSyst[0]) # copy of one channel
+    h4l["name"]="4l"
+    h4l["state"].SetName((hFinSyst[0]["state"].GetName()).replace("2e2m","4l"))
+    # set to 0 entries and errors
+    for b in range(0,h4l["state"].GetNbinsX()+2): h4l["state"].SetBinContent(b,0)
+    for b in range(0,h4l["state"].GetNbinsX()+2): h4l["state"].SetBinError(b,0)
+
+    h4lFinSyst = copy.deepcopy(h4l)
+
+    # sum of all the channels
+    for i in range(0,3):
+        h4lFinSyst["state"].Add(HData[i]["state"])
+
     if Sign==+1:    print Red("Up Systematics")
     else:           print Red("Down Systematics")
     if isUnfold:
         for syst in SystList:
             if Sign==+1:    SystDicUp[syst["longname"]] = {}
             else:           SystDicDown[syst["longname"]] = {}
-            hSystList[syst["name"]] =  getHistoUnfold(Sign,syst["name"],isFiducial)
+            syst["histo"] =  getHistoUnfold(Sign,syst["name"],isFiducial)
     else:
         for syst in SystList:
             if Sign==+1:    SystDicUp[syst["longname"]] = {}   
             else:           SystDicDown[syst["longname"]] = {}   
 
-            hSystList[syst["name"]] =  getHisto(Type,True,Sign,syst["name"],isTot,isFiducial)
- 
-######################################################################
+            syst["histo"] = getHisto(Type,True,Sign,syst["name"],isTot,isFiducial)
 
-    if Type!="Total":
-        Nbins = hFinSyst[0]["state"].GetNbinsX()
+    # create 4l systemtic histogram.
+    for systType in SystList:
+
+        systType["histo"].append(copy.deepcopy(h4l))
+        if systType["corr"] != 1:  
+            systType["histo"][3]["state"].Add(h4lFinSyst["state"])
+            hUnCorrSyst = copy.deepcopy(h4l)
+        for i in range(0,3):
+            if systType["corr"]==1:  
+                systType["histo"][3]["state"].Add(systType["histo"][i]["state"])
+            else:
+                hUnc = copy.deepcopy(systType["histo"][i]["state"])
+                hUnc.Add(HData[i]["state"],-1)
+                hUnc.Multiply(hUnc)             
+                hUnCorrSyst["state"].Add(hUnc)
+
+        if systType["corr"] != 1: 
+
+            for b in range(0,h4l["state"].GetNbinsX()+2): 
+                systType["histo"][3]["state"].SetBinContent( b, systType["histo"][3]["state"].GetBinContent(b)+Sign*math.sqrt(hUnCorrSyst["state"].GetBinContent(b)) )
+
+
+    hFinSyst.append(h4lFinSyst)
+    for i in range(0,4):
+        print  Blue(hFinSyst[i]["name"])
         for syst in SystList:
-            if verbose: print Blue(syst["longname"])
             lSyst.setSampleStatus(syst["longname"])
-            systlista={} 
-            sumentries= {}
-            for bin in range(1,Nbins+1):
-                if verbose: print "bin ",bin
-                systlista[bin] = 0
-                sumentries[bin] = 0;
-                for i in range(0,3):
-                    systlista[bin] += pow((hSystList[syst["name"]][i]["state"].GetBinContent(bin)-hFinSyst[i]["state"].GetBinContent(bin)),2)
-                    if(Sign==1): 
-                        if verbose: print hFinSyst[i]["name"],hFinSyst[i]["state"].GetBinContent(bin),((hSystList[syst["name"]][i]["state"].GetBinContent(bin)-hFinSyst[i]["state"].GetBinContent(bin))/hFinSyst[i]["state"].GetBinContent(bin))*100,"%"
-                        lSyst.setSystBin(bin,hFinSyst[i]["name"],Sign,((hSystList[syst["name"]][i]["state"].GetBinContent(bin)-hFinSyst[i]["state"].GetBinContent(bin))/hFinSyst[i]["state"].GetBinContent(bin))) 
-                    else:   
-                        if verbose: print hFinSyst[i]["name"],hFinSyst[i]["state"].GetBinContent(bin),((-hSystList[syst["name"]][i]["state"].GetBinContent(bin)+hFinSyst[i]["state"].GetBinContent(bin))/hFinSyst[i]["state"].GetBinContent(bin))*100,"%"
-                        lSyst.setSystBin(bin,hFinSyst[i]["name"],Sign,((-hSystList[syst["name"]][i]["state"].GetBinContent(bin)+hFinSyst[i]["state"].GetBinContent(bin))/hFinSyst[i]["state"].GetBinContent(bin))) 
-                    sumentries[bin] += hFinSyst[i]["state"].GetBinContent(bin)
-                if verbose: print "4l",sumentries[bin],math.sqrt(systlista[bin])/(sumentries[bin])*100," %"      
-                lSyst.setSystBin(bin,"4l",Sign,math.sqrt(systlista[bin])/(sumentries[bin])*100)
-
-######################################################################
-
-    for i in range(0,3):
-        print  Blue(hSystList[syst["name"]][i]["name"])
-        for syst in SystList:
             sDic = {}
             if Sign==-1: 
-                if (hSystList[syst["name"]][i]["state"].Integral(0,-1)/hFinSyst[i]["state"].Integral(0,-1)) > 1: 
-#                    print syst,"is negative.If is MCgen is ok"
+                if (syst["histo"][i]["state"].Integral(0,-1)/hFinSyst[i]["state"].Integral(0,-1) ) > 1 and 0: 
+                    print syst,"is negative.If is MCgen is ok"
                     sDic["yield"]="-"
-                    SystDicDown[syst["longname"]][hSystList[syst["name"]][i]["name"]]=sDic
+                    SystDicDown[syst["longname"]][syst["histo"][i]["name"]]=sDic
                     continue
-                sDic["yield"]="{0:.1f}".format((1-hSystList[syst["name"]][i]["state"].Integral(0,-1)/hFinSyst[i]["state"].Integral(0,-1))*100)
-                print "{0} {1}-> {2:.3f} %".format(syst["longname"],(30-len(syst["longname"]))*"-",(1-hSystList[syst["name"]][i]["state"].Integral(0,-1)/hFinSyst[i]["state"].Integral(0,-1))*100)
-                if verbose: 
-                    for bin in range(1,hSystList[syst["name"]][i]["state"].GetNbinsX()+1):
-                        print "{0} {1}-> {2:.3f} %".format(bin,(30-len(syst["longname"]))*"-",(1-hSystList[syst["name"]][i]["state"].GetBinContent(bin)/hFinSyst[i]["state"].GetBinContent(bin))*100)
-                SystDicDown[syst["longname"]][hSystList[syst["name"]][i]["name"]]=sDic
-            else: 
-                if (hFinSyst[i]["state"].Integral(0,-1)/hSystList[syst["name"]][i]["state"].Integral(0,-1)) > 1:
-                    #                   print syst,"is negative. If is MCgen is ok"
-                    sDic["yield"]="-"
-                    SystDicUp[syst["longname"]][hSystList[syst["name"]][i]["name"]]=sDic
-                    continue
-                sDic["yield"]="{0:.1f}".format((1-hFinSyst[i]["state"].Integral(0,-1)/hSystList[syst["name"]][i]["state"].Integral(0,-1))*100)
-#                print "sDic",sDic
-                print "{0} {1}-> {2:.3f} %".format(syst["longname"],(30-len(syst["longname"]))*"-",(1-hFinSyst[i]["state"].Integral(0,-1)/hSystList[syst["name"]][i]["state"].Integral(0,-1))*100)
-                if verbose:  
-                    for bin in range(1,hSystList[syst["name"]][i]["state"].GetNbinsX()+1): 
-                        print "{0} {1}-> {2:.3f} %".format(bin,(30-len(syst["longname"]))*"-",(1-hFinSyst[i]["state"].GetBinContent(bin)/hSystList[syst["name"]][i]["state"].GetBinContent(bin))*100)
-                SystDicUp[syst["longname"]][hSystList[syst["name"]][i]["name"]]=sDic
+                sDic["yield"]="{0:.1f}".format((1-syst["histo"][i]["state"].Integral(0,-1)/hFinSyst[i]["state"].Integral(0,-1))*100)
+                print "{0} {1}-> {2:.3f} %".format(syst["longname"],(30-len(syst["longname"]))*"-",(1-syst["histo"][i]["state"].Integral(0,-1)/hFinSyst[i]["state"].Integral(0,-1))*100)
 
+                for bin in range(1,syst["histo"][i]["state"].GetNbinsX()+1):
+                    lSyst.setSystBin(bin,hFinSyst[i]["name"],Sign,((Sign*syst["histo"][i]["state"].GetBinContent(bin)-1*Sign*hFinSyst[i]["state"].GetBinContent(bin))/hFinSyst[i]["state"].GetBinContent(bin)))
+                    if verbose:     print "{0} {1}-> {2:.3f} %".format(bin,(30-len(syst["longname"]))*"-",(1-syst["histo"][i]["state"].GetBinContent(bin)/hFinSyst[i]["state"].GetBinContent(bin))*100)
+                SystDicDown[syst["longname"]][syst["histo"][i]["name"]]=sDic
+            else: 
+                if (hFinSyst[i]["state"].Integral(0,-1)/syst["histo"][i]["state"].Integral(0,-1)) > 1 and 0:
+
+                    sDic["yield"]="-"
+                    SystDicUp[syst["longname"]][syst["histo"][i]["name"]]=sDic
+                    continue
+                sDic["yield"]="{0:.1f}".format((1-hFinSyst[i]["state"].Integral(0,-1)/syst["histo"][i]["state"].Integral(0,-1))*100)
+
+                print "{0} {1}-> {2:.3f} %".format(syst["longname"],(30-len(syst["longname"]))*"-",(1-hFinSyst[i]["state"].Integral(0,-1)/syst["histo"][i]["state"].Integral(0,-1))*100)
+     
+                for bin in range(1,syst["histo"][i]["state"].GetNbinsX()+1): 
+                    lSyst.setSystBin(bin,hFinSyst[i]["name"],Sign,((Sign*syst["histo"][i]["state"].GetBinContent(bin)-1*Sign*hFinSyst[i]["state"].GetBinContent(bin))/hFinSyst[i]["state"].GetBinContent(bin))) 
+                    if verbose:  print "{0} {1}-> {2:.3f} %".format(bin,(30-len(syst["longname"]))*"-",( ( -1+(syst["histo"][i]["state"].GetBinContent(bin))/hFinSyst[i]["state"].GetBinContent(bin))*100) )
+                SystDicUp[syst["longname"]][syst["histo"][i]["name"]]=sDic
 
         NBin = hFinSyst[i]["state"].GetNbinsX()
+        
 
         for b in range(1,NBin+1):
+
             Content = 0
+
             # loop over histograms bins with systematics
             for syst in SystList:    
+                if Sign==-1 and hFinSyst[i]["state"].GetBinContent(b) != 0 and  (syst["histo"][i]["state"].GetBinContent(b)/hFinSyst[i]["state"].GetBinContent(b)) > 1: continue
+                elif Sign==+1 and syst["histo"][i]["state"].GetBinContent(b) !=0 and (hFinSyst[i]["state"].GetBinContent(b)/syst["histo"][i]["state"].GetBinContent(b)) > 1: continue
 
-                if Sign==-1 and hFinSyst[i]["state"].GetBinContent(b) != 0 and  (hSystList[syst["name"]][i]["state"].GetBinContent(b)/hFinSyst[i]["state"].GetBinContent(b)) > 1: continue
-                elif Sign==+1 and hSystList[syst["name"]][i]["state"].GetBinContent(b) !=0 and (hFinSyst[i]["state"].GetBinContent(b)/hSystList[syst["name"]][i]["state"].GetBinContent(b)) > 1: continue
-
+                #syst["4l"][hFinSyst[i]["name"]]=syst["histo"][i]["state"].GetBinContent(b)-hFinSyst[i]["state"].GetBinContent(b)
                 #square sum of systematics  
-                Content += (hSystList[syst["name"]][i]["state"].GetBinContent(b)-hFinSyst[i]["state"].GetBinContent(b))**2.
-              #  print syst["name"],"var ",hSystList[syst["name"]][i]["state"].GetBinContent(b)-hFinSyst[i]["state"].GetBinContent(b),
+                Content += (syst["histo"][i]["state"].GetBinContent(b)-hFinSyst[i]["state"].GetBinContent(b))**2.
+
+                #print syst["name"],"var ",syst["histo"][i]["state"].GetBinContent(b)-hFinSyst[i]["state"].GetBinContent(b),
 
             hFinSyst[i]["state"].AddBinContent(b, Sign*math.sqrt(Content))
 
-            #print " Variation",  Sign*math.sqrt(Content),"New bin content", hFinSyst[i]["state"].GetBinContent(b) #DELETE
+       #  for b in range(0,h4lFinSyst["state"].GetNbinsX()+2): h4lFinSyst["state"].AddBinContent(b,0) h4lFinSyst["state"]
 
     return hFinSyst
 ##################################################################################################################
@@ -616,6 +673,7 @@ def getPlot_MC(Type,isFiducial,var):
             for s in Samples:
                 if "ZZTo4l" in s["sample"]: Var=var
                 else: Var=""
+                #Var=var
                 if isFiducial: 
                     h1 = files[s["sample"]].Get("ZZTo"+h["name"]+"_"+CrossType+"_01"+Var+"_fr")  
                 else: h1 = files[s["sample"]].Get("ZZTo"+h["name"]+"_"+CrossType+"_01"+Var)
@@ -642,7 +700,6 @@ def getPlot_MC(Type,isFiducial,var):
 
 isTot = False
 
-
 if Type=="Total":
     Type="Mass"
     isTot=True
@@ -651,7 +708,6 @@ try:
     os.stat("./FinalResults_"+Set+"_"+Analysis)
 except:
     os.mkdir("./FinalResults_"+Set+"_"+Analysis)       
-
 
 # Set systematic lists defined in CrossInfo.py
 if isUnfold:
@@ -689,23 +745,40 @@ for i,j,k in zip(hMC,hMC_Up,hMC_Dn):
     
     
 if isUnfold:
-
+    
     hData     = getHistoUnfold(0,"",isFiducial)
     hDataUp   = getSyst(1,isUnfold,hData,False,isFiducial)   
     hDataDown = getSyst(-1,isUnfold,hData,False,isFiducial) 
-        
+
+    hFinSyst = copy.deepcopy(hData)
+
+    # 4l combination
+    h4l = copy.deepcopy(hFinSyst[0]) # copy of one channel
+    h4l["name"]="4l"
+    h4l["state"].SetName((hFinSyst[0]["state"].GetName()).replace("2e2m","4l"))
+    for b in range(0,h4l["state"].GetNbinsX()+2): h4l["state"].SetBinContent(b,0)
+    for b in range(0,h4l["state"].GetNbinsX()+2): h4l["state"].SetBinError(b,0)
+
+    h4lFin = copy.deepcopy(h4l)
+
+    for i in range(0,3):
+        h4lFin["state"].Add(hData[i]["state"])
+
+    hData.append(h4lFin)
+    
     print Red("\n#############################  UNFOLD DATA  ############################")  
     
-
     FileOutData =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/DataUnfold"+Fr+".root","update") 
     for i in hData:
         i["state"].Write("",i["state"].kOverwrite)
         print "\n Total integral {0} contribution {1}> {2:.2f}".format(i["name"],(32-len(i["name"]))*"-",i["state"].Integral(0,-1))
-        
+
+
     print Red("\n#########################  DATA UNFOLD SYST UP #########################")  
     
     FileOutDataUp =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/DataUnfoldUp"+Fr+".root","update")      
     for i in hDataUp:
+        if doNormalized:  i["state"].SetName(i["state"].GetName()+"_norm")
         i["state"].Write("",i["state"].kOverwrite)
         print "\n Total integral {0} contribution {1}> {2:.2f}".format(i["name"],(32-len(i["name"]))*"-",i["state"].Integral(0,-1)) 
 
@@ -713,6 +786,7 @@ if isUnfold:
 
     FileOutDataDown =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/DataUnfoldDown"+Fr+".root","update") 
     for i in hDataDown:
+        if doNormalized:  i["state"].SetName(i["state"].GetName()+"_norm")
         i["state"].Write("",i["state"].kOverwrite)
         print "\n Total integral {0} contribution {1}> {2:.2f}".format(i["name"],(32-len(i["name"]))*"-",i["state"].Integral(0,-1))
 
@@ -749,6 +823,7 @@ else:
 
 
     FileOutData =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/Data"+Fr+".root","update") 
+    DataTot = 0
     if isTot:
         for i in hDataTot:
             if isFiducial:  i["state"].Write("ZZTo"+i["name"]+"_Tot_fr",i["state"].kOverwrite)
@@ -758,6 +833,8 @@ else:
         for i in hData:
             i["state"].Write("",i["state"].kOverwrite)
             print "\n Total integral {0} contribution {1}> {2:.2f}".format(i["name"],(32-len(i["name"]))*"-",i["state"].Integral(0,-1))
+
+
  
 
     print Red("\n###########################  DATA SYST UP ############################")  
@@ -791,13 +868,10 @@ if printLatex:
     print "\nYields tabular:\n"
     Text =("Sample","2e2mu" ,"4mu" ,"4e")
     YieldLatex(Text,SampleDic,RedDic,IrrDic,TotDic,DataDic)
-    print " "
-    YieldLatex_2(Text,SampleDic,RedDic,IrrDic,TotDic,DataDic)
-
 
     print "\n\nSyst tabular:\n"
     Text =("Systematic","2e2mu" ,"4mu" ,"4e")
-    SystLatex(Text,SystDicUp,SystDicDown)
+    SystLatex(Text,SystDicUp,SystDicDown,isTot)
     if not isUnfold:  lbin.printPerBinCode()
     else: lSyst.printSystRanges()
 
