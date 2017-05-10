@@ -46,7 +46,7 @@ Recipe for the tree production step
 Recipe for tree analysis step
 -----------------------------
 
-- In an environment with ROOT and CMAKE installed:
+- In an environment with ROOT, CMAKE and boost library installed:
   - check-out the code from this repository as done above.
   - Generate the Makefile.
   - Compile the code.
