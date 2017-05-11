@@ -1,4 +1,5 @@
 #include "VVXAnalysis/TreeAnalysis/interface/AnalysisFactory.h"
+#include "VVXAnalysis/TreeAnalysis/interface/WlllnuAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/VVXAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZWAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZSAnalyzer.h"
@@ -13,6 +14,7 @@
 #include "VVXAnalysis/TreeAnalysis/interface/VBSRecoAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/FakeRateAnalyzer.h"
 AnalysisFactory::AnalysisFactory(){
+  Register("WlllnuAnalyzer", &RegistrableAnalysis<WlllnuAnalyzer>::create);
   Register("VVXAnalyzer", &RegistrableAnalysis<VVXAnalyzer>::create);
   Register("ZZWAnalyzer", &RegistrableAnalysis<ZZWAnalyzer>::create);
   Register("ZZSAnalyzer", &RegistrableAnalysis<ZZSAnalyzer>::create);
