@@ -23,11 +23,7 @@ public:
 
  VVXAnalyzer(const AnalysisConfiguration& configuration)
    : EventAnalyzer(*(new Selector<VVXAnalyzer>(*this)), 
-		   configuration)
-    //, lepSF("/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root","/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root",
-   //	    "/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root","/home/bellan/Workspace/WZZ/NtupleTestBed/VVXAnalysis/TreeAnalysis/fakeRates.root")
-
-{
+		   configuration){
     //theHistograms.profile(genCategory);
   }
 
@@ -37,9 +33,6 @@ public:
   
   virtual Int_t cut();
 
-  void ZZplots(int id = -1);
-  
-  int pairing(const phys::Particle &, const phys::Boson<phys::Particle> &, const phys::Boson<phys::Particle>&);
 
  private:
   friend class Selector<VVXAnalyzer>;
@@ -65,8 +58,6 @@ public:
     return false;
 
   }
-
-  //LeptonScaleFactors lepSF;
 
 
 
