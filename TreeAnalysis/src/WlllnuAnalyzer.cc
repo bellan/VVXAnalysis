@@ -23,16 +23,16 @@ Int_t WlllnuAnalyzer::cut() {
 
 void WlllnuAnalyzer::analyze(){
 
-
   cout << "------------------------------------------------------------------"<<endl;
   cout << "Run: " << run << " event: " << event << endl;
   
   //Leptons
   
   std::vector<phys::Particle>  leptons;
-  //  phys::Lepton<phys::Particle> lep; //why doesn't work? error: ‘phys::Lepton’ is not a template
+  phys::Lepton lep;
   
   foreach(const phys::Particle &gen, *genParticles){
+
     if( (abs(gen.id()) != 11 && abs(gen.id()) != 13) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
     cout << "id: " << gen.id() << " pt: " << gen.pt() << " mass: " << gen.mass() << endl;
     theHistograms.fill("ptAllGenParticle","pt ", 100, 0, 100, gen.pt());
@@ -45,7 +45,7 @@ void WlllnuAnalyzer::analyze(){
   
   //----------------------------------------------------------------//  
   
-  //Bosons
+  //Boson
     
   std::vector<Boson<phys::Particle> > Zcandidates;
   
