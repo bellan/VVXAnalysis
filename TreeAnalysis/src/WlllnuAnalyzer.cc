@@ -23,8 +23,7 @@ Int_t WlllnuAnalyzer::cut() {
 
 void WlllnuAnalyzer::analyze(){
 
-  if(event > 20000) return;
-  
+
   cout << "------------------------------------------------------------------"<<endl;
   cout << "Run: " << run << " event: " << event << endl;
   
@@ -49,11 +48,11 @@ void WlllnuAnalyzer::analyze(){
   //Bosons
     
   std::vector<Boson<phys::Particle> > Zcandidates;
-
+  
   phys::Boson<phys::Particle> z1;
   phys::Boson<phys::Particle> z2;
   double zMass = 91.1876; //Gev
-   
+  
   foreach(const phys::Boson<phys::Particle> &gen, *genVBParticles){
     if(gen.id() == 23 && (abs(gen.daughter(0).id()) == 11 || abs(gen.daughter(0).id()) == 13)){
       if(z1.id() != 23) z1 = gen;
@@ -69,5 +68,5 @@ void WlllnuAnalyzer::analyze(){
   cout << "z2: " << z2.id() << " pt: " << z2.pt() << " mass: " << z2.mass() << endl;
   
   
- 
+  
 }
