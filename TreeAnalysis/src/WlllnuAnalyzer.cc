@@ -43,19 +43,7 @@ void WlllnuAnalyzer::analyze(){
     theHistograms.fill("YAllGenParticle","Y ", 100, 0, 100, gen.rapidity());
     leptons.push_back(gen);
   }
-  //cout << "lepton 0: mass" << leptons.at(0).mass() << endl;
-
-  int finalid = 0;
-  foreach(const Particle lep, leptons){
-    finalid += lep.id();
-  }
-  cout << "final id: " << finalid << endl;
-  // finalid = 44 -> 4e
-  // finalid = 48 -> 2mu2e
-  // finalid = 52 -> 4mu
-
-  //----------------------------------------------------------------//  
-  
+ 
   //z0, z1
   
   phys::Boson<phys::Particle> z0;
@@ -63,7 +51,6 @@ void WlllnuAnalyzer::analyze(){
   //double zMass = 91.1876; //Gev
   
   foreach(const phys::Boson<phys::Particle> &gen, *genVBParticles){
-   
     if( ZBosonDefinition(gen) && gen.id() == 23 && (abs(gen.daughter(0).id()) == 11 || abs(gen.daughter(0).id()) == 13)){
       if(z0.id() != 23) z0 = gen;
       else if ( abs(z0.mass() - ZMASS) < abs(gen.mass() - ZMASS)){
@@ -86,20 +73,17 @@ void WlllnuAnalyzer::analyze(){
   }
   cout << "\nz0: " << z0.id() << " pt: " << z0.pt() << " mass: " << z0.mass() << " Y: " << z0.rapidity() << endl;
   cout << "z1: " << z1.id() << " pt: " << z1.pt() << " mass: " << z1.mass() << " Y: " << z1.rapidity() << endl;
-
-  //----------------------------------------------------------------//
-
+  
   //z0, z1 daughters
-
+  
   cout << "\nz0.daughter(0) " << z0.daughter(0).id() << " pt: " << z0.daughter(0).mass() << endl;
   cout << "z0.daughter(1) " << z0.daughter(1).id() << " pt: " << z0.daughter(1).mass() << endl;
   cout << "z1.daughter(0) " << z1.daughter(0).id() << " pt: " << z1.daughter(0).mass() << endl;
   cout << "z1.daughter(1) " << z1.daughter(1).id() << " pt: " << z1.daughter(1).mass() << endl;
-
-  //deltaR
-
-  //double deltaPhi0 = z0.daughter(0).phi() - z1.phi(); //between z1 and z0's first daughter
-  //double deltaPhi1 = z0.daughter(1).phi() - z1.phi(); //between z1 and z0's second daughter
+  //they're different from leptons! why?
+  
+  //deltaR, deltaEta, deltaPhi
+  
   double deltaEta0 = z0.daughter(0).eta() - z1.eta(); //between z1 and z0's first daughter
   double deltaEta1 = z0.daughter(1).eta() - z1.eta(); //between z1 and z0's first daughter
   
@@ -110,29 +94,17 @@ void WlllnuAnalyzer::analyze(){
   cout << "deltaEta daughter 0: " << deltaEta0 << endl;
   cout << "deltaEta daughter 1: " << deltaEta1 << endl;
   
-  //----------------------------------------------------------------//
-
-  //ll
-  /*
-  std::vector<Boson<phys::Particle> > Zcand;
-  
-  if(finalid == 48){ //2mu2e
-    
-    
-  }
-  */
-
-  
-  //----------------------------------------------------------------//  
-  
   // ZZ
-
+  
   DiBoson<phys::Particle,phys::Particle>  ZZ(z0,z1);
-  cout << "\n ZZ: " << ZZ.id() << " pt: " << ZZ.pt() << " mass: " << ZZ.mass() << "\n daughters: " << " Y: " << ZZ.rapidity() << ZZ.first().id() << "\t" << ZZ.second().id() << endl; //why daughter(0) instead of first() is not working??
-
+  cout << "\n ZZ: " << ZZ.id() << " pt: " << ZZ.pt() << " mass: " << ZZ.mass() << "\n daughters: " << ZZ.first().id() << "\t" << ZZ.second().id() << " Y: " << ZZ.rapidity()
+       << endl; //why daughter(0) instead of first() is not working??
+  
   theHistograms.fill("ptZZ","pt ", 100, 0, 100, ZZ.pt());
   theHistograms.fill("etaZZ","eta ", 100, 0, 100, ZZ.eta());
   theHistograms.fill("massZZ","mass ", 100, 0, 100, ZZ.pt());
   theHistograms.fill("YZZ","Y ", 100, 0, 100, ZZ.rapidity());
-  //<phys::Boson<phys::Particle>,phys::Boson<phys::Particle> > 
+  //<phys::Boson<phys::Particle>,phys::Boson<phys::Particle> >
+
+  
 }
