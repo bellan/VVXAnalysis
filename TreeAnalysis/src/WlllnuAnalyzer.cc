@@ -6,6 +6,9 @@
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 #include "VVXAnalysis/DataFormats/interface/Lepton.h"
 
+#include <TCanvas.h>
+#include <TH1F.h>
+
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
@@ -20,6 +23,13 @@ using namespace phys;
 
 Int_t WlllnuAnalyzer::cut() {
   return 1;
+}
+
+
+template<typename T> double mT(const T& p1, const T& p2){
+
+  return sqrt( 2*p1.pt()*p2.pt()*(1-TMath::Cos(physmath::deltaPhi(p1.phi(), p2.phi()))) );
+
 }
 
 
@@ -71,8 +81,23 @@ void WlllnuAnalyzer::analyze(){
       theHistograms.fill("Yz1","Y ", 100, 0, 100, z1.rapidity());      
     }
   }
+  
   cout << "\nz0: " << z0.id() << " pt: " << z0.pt() << " mass: " << z0.mass() << " Y: " << z0.rapidity() << endl;
   cout << "z1: " << z1.id() << " pt: " << z1.pt() << " mass: " << z1.mass() << " Y: " << z1.rapidity() << endl;
+
+  //comparing leptons with z0, z1
+
+  for(int i=0; i<leptons.size(); i++){
+    for(int j=i++; j<leptons.size(); j++){
+      if(leptons[i].id() == -leptons[j].id()){
+	if(abs(leptons[i].id()) == abs(z0.daughter(0).id()) )
+	  cout << i << " " << j << "z0: " << mT(leptons[i], leptons[j]) - z0.mass() << endl;
+	else if(abs(leptons[i].id()) == abs(z1.daughter(0).id()) )
+	  cout << i << " " << j << "z1: " << mT(leptons[i], leptons[j]) - z1.mass() << endl;
+      }
+      else cout << i << " " << j << "no Z daughter candididates" << endl;
+    }  
+  }
   
   //z0, z1 daughters
   
@@ -106,5 +131,6 @@ void WlllnuAnalyzer::analyze(){
   theHistograms.fill("YZZ","Y ", 100, 0, 100, ZZ.rapidity());
   //<phys::Boson<phys::Particle>,phys::Boson<phys::Particle> >
 
+  //----------------------------------------------------------------//
   
 }
