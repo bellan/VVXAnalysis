@@ -42,6 +42,7 @@ void WlllnuAnalyzer::analyze(){
   
   std::vector<phys::Particle>  leptons;
   phys::Lepton lep;
+  std::vector<Boson<Particle> > Zcandidates;
   
   foreach(const phys::Particle &gen, *genParticles){
 
@@ -53,7 +54,17 @@ void WlllnuAnalyzer::analyze(){
     theHistograms.fill("YAllGenParticle","Y ", 100, 0, 100, gen.rapidity());
     leptons.push_back(gen);
   }
- 
+
+  for(int i=0; i<leptons.size(); i++){
+    if( (abs(leptons.at(i).id()) == abs(leptons.at(i++).id())) && (leptons.at(i).charge() + leptons.at(i++).charge() == 0) ){
+      Zcandidates.push_back(phys::Boson<Particle>(leptons.at(i), leptons.at(i++), 23));
+    }
+  }
+  cout << "id: "<< Zcandidates.at(0).id() << "mass: " <<  Zcandidates.at(0).mass() << endl;
+  cout << "id: "<< Zcandidates.at(1).id() << "mass: " <<  Zcandidates.at(1).mass() << endl;
+  
+  
+  
   //z0, z1
   
   phys::Boson<phys::Particle> z0;
@@ -87,13 +98,14 @@ void WlllnuAnalyzer::analyze(){
 
   //comparing leptons with z0, z1
 
+  cout << "\n\t Comparing mT leptons and mass z0/z1" << endl;
   for(int i=0; i<leptons.size(); i++){
     for(int j=i++; j<leptons.size(); j++){
       if(leptons[i].id() == -leptons[j].id()){
 	if(abs(leptons[i].id()) == abs(z0.daughter(0).id()) )
-	  cout << i << " " << j << "z0: " << mT(leptons[i], leptons[j]) - z0.mass() << endl;
+	  cout << i << " " << j << " z0: " << mT(leptons[i], leptons[j]) - z0.mass() << endl;
 	else if(abs(leptons[i].id()) == abs(z1.daughter(0).id()) )
-	  cout << i << " " << j << "z1: " << mT(leptons[i], leptons[j]) - z1.mass() << endl;
+	  cout << i << " " << j << " z1: " << mT(leptons[i], leptons[j]) - z1.mass() << endl;
       }
       else cout << i << " " << j << "no Z daughter candididates" << endl;
     }  
@@ -105,7 +117,7 @@ void WlllnuAnalyzer::analyze(){
   cout << "z0.daughter(1) " << z0.daughter(1).id() << " pt: " << z0.daughter(1).mass() << endl;
   cout << "z1.daughter(0) " << z1.daughter(0).id() << " pt: " << z1.daughter(0).mass() << endl;
   cout << "z1.daughter(1) " << z1.daughter(1).id() << " pt: " << z1.daughter(1).mass() << endl;
-  //they're different from leptons! why?
+  //they're different from leptons! why? try mT
   
   //deltaR, deltaEta, deltaPhi
   
@@ -123,7 +135,7 @@ void WlllnuAnalyzer::analyze(){
   
   DiBoson<phys::Particle,phys::Particle>  ZZ(z0,z1);
   cout << "\n ZZ: " << ZZ.id() << " pt: " << ZZ.pt() << " mass: " << ZZ.mass() << "\n daughters: " << ZZ.first().id() << "\t" << ZZ.second().id() << " Y: " << ZZ.rapidity()
-       << endl; //why daughter(0) instead of first() is not working??
+       << endl; //why daughter(0) instead of first() is not working?? daughter<Particle>(0)
   
   theHistograms.fill("ptZZ","pt ", 100, 0, 100, ZZ.pt());
   theHistograms.fill("etaZZ","eta ", 100, 0, 100, ZZ.eta());
