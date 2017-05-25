@@ -64,7 +64,7 @@ void WlllnuAnalyzer::analyze(){
     }
   }
 
-  foreach(const phys::Boson<phys::Particle> &gen, *Zcandidates){
+  foreach(const phys::Boson<phys::Particle> gen, Zcandidates){
     cout << "id: "<< gen << "mass: " <<  gen.mass() << endl;
   }
   
