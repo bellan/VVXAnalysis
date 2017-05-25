@@ -63,10 +63,10 @@ void WlllnuAnalyzer::analyze(){
       }
     }
   }
-    
-  cout << "id: "<< Zcandidates.at(0).id() << "mass: " <<  Zcandidates.at(0).mass() << endl;
-  cout << "id: "<< Zcandidates.at(1).id() << "mass: " <<  Zcandidates.at(1).mass() << endl;
-  
+
+  foreach(const phys::Boson<phys::Particle> &gen, *Zcandidates){
+    cout << "id: "<< gen << "mass: " <<  gen.mass() << endl;
+  }
   
   
   //z0, z1
