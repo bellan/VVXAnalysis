@@ -54,12 +54,16 @@ void WlllnuAnalyzer::analyze(){
     theHistograms.fill("YAllGenParticle","Y ", 100, 0, 100, gen.rapidity());
     leptons.push_back(gen);
   }
-
-  for(int i=0; i<leptons.size(); i++){
-    if( (abs(leptons.at(i).id()) == abs(leptons.at(i++).id())) && (leptons.at(i).charge() + leptons.at(i++).charge() == 0) ){
-      Zcandidates.push_back(phys::Boson<Particle>(leptons.at(i), leptons.at(i++), 23));
+  cout<<leptons.size()<<endl;
+  
+  for(unsigned int i=0; i<leptons.size()-1; i++){
+    for(unsigned int j=i++; j<leptons.size(); j++){
+      if( (abs(leptons.at(i).id()) == abs(leptons.at(j).id())) && (leptons.at(i).charge() + leptons.at(j).charge() == 0) ){
+	Zcandidates.push_back(phys::Boson<Particle>(leptons.at(i), leptons.at(j), 23));
+      }
     }
   }
+    
   cout << "id: "<< Zcandidates.at(0).id() << "mass: " <<  Zcandidates.at(0).mass() << endl;
   cout << "id: "<< Zcandidates.at(1).id() << "mass: " <<  Zcandidates.at(1).mass() << endl;
   
@@ -99,8 +103,8 @@ void WlllnuAnalyzer::analyze(){
   //comparing leptons with z0, z1
 
   cout << "\n\t Comparing mT leptons and mass z0/z1" << endl;
-  for(int i=0; i<leptons.size(); i++){
-    for(int j=i++; j<leptons.size(); j++){
+  for(unsigned int i=0; i<leptons.size(); i++){
+    for(unsigned int j=i++; j<leptons.size(); j++){
       if(leptons[i].id() == -leptons[j].id()){
 	if(abs(leptons[i].id()) == abs(z0.daughter(0).id()) )
 	  cout << i << " " << j << " z0: " << mT(leptons[i], leptons[j]) - z0.mass() << endl;
