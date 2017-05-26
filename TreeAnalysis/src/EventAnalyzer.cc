@@ -327,7 +327,7 @@ void EventAnalyzer::loop(const std::string outputfile){
   unweightedEventsIn2P2FCR = tree()->GetEntries("ZZCand.passSelZLL_2P2F_ZZOnShell_");
   unweightedEventsIn3P1FCR = tree()->GetEntries("ZZCand.passSelZLL_3P1F_ZZOnShell_");
   begin();
-  int looptimes=0;
+  int looptimes=1;
   for (Long64_t jentry=0; jentry<nentries; ++jentry) {
     Long64_t ientry = LoadTree(jentry);
     if (ientry < 0) break;
