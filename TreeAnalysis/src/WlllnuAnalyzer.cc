@@ -43,9 +43,9 @@ void WlllnuAnalyzer::analyze(){
   std::vector<phys::Particle>  leptons;
   std::vector<Particle> electrons; // Z daughters
   std::vector<Particle> muons; // Z daughters  
-  int finalid = 0;  
-  
-  //find leptons
+  int finalid = 0;
+
+   //find leptons
   foreach(const phys::Particle &gen, *genParticles){    
     if( (abs(gen.id()) != 11 && abs(gen.id()) != 13) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
     finalid += abs(gen.id());
@@ -96,8 +96,8 @@ void WlllnuAnalyzer::analyze(){
     if ( cand.daughter(0).pt() != z0.daughter(0).pt() &&  cand.daughter(1).pt() != z0.daughter(1).pt() ) z1 = cand;//camparing pt is not enough, need function to compare particles: maybe isAlmostEqual ??
   //!!!need to find a way to check if 2 particles are the same!!!!
 
-  theHistograms.fill("massZParticles","Z mass ", 10000, 50, 150, z0.mass() + z1.mass());
-  // theHistograms.fill("massZparticles","Z mass ", 10000, 50, 150, z1.mass());
+  theHistograms.fill("massZParticles","Z mass ", 1000, 50, 150, z0.mass());
+  theHistograms.fill("massZparticles","Z mass ", 1000, 50, 150, z1.mass());
   
   // cout << "\n z0: " << z0 << endl;
   cout << "\n z0.daughter(0).pt(): " << z0.daughter(0).pt() << " z0.daughter(1).pt(): " << z0.daughter(1).pt() << " z0 mass: " << z0.mass() << endl;

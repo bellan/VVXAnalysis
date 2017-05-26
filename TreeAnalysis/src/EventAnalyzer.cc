@@ -322,12 +322,12 @@ void EventAnalyzer::loop(const std::string outputfile){
   if (theTree == 0) return;
 
 
-  Long64_t nentries = 3000; //theTree->GetEntries();  
+  Long64_t nentries = 10000; //theTree->GetEntries();  
   unweightedEventsInSR     = tree()->GetEntries("ZZCand.passSRZZOnShell_");
   unweightedEventsIn2P2FCR = tree()->GetEntries("ZZCand.passSelZLL_2P2F_ZZOnShell_");
   unweightedEventsIn3P1FCR = tree()->GetEntries("ZZCand.passSelZLL_3P1F_ZZOnShell_");
   begin();
-
+  int looptimes=0;
   for (Long64_t jentry=0; jentry<nentries; ++jentry) {
     Long64_t ientry = LoadTree(jentry);
     if (ientry < 0) break;
@@ -336,6 +336,8 @@ void EventAnalyzer::loop(const std::string outputfile){
     theCutCounter += theWeight;
     if(doBasicPlots_) fillBasicPlots();
     analyze();
+    cout<<"\n loop #: "<< looptimes << "\n" << endl;
+    looptimes++;
   }
 
 
