@@ -49,8 +49,8 @@ void WlllnuAnalyzer::analyze(){
   foreach(const phys::Particle &gen, *genParticles){    
     if( (abs(gen.id()) != 11 && abs(gen.id()) != 13) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
     finalid += abs(gen.id());
-    cout << " genLepton: " << gen << endl;
-    //cout << "id: " << gen.id() << " pt: " << gen.pt() << " mass: " << gen.mass() << endl;
+    //cout << " genLepton: " << gen << endl;
+    cout << "id: " << gen.id() << " pt: " << gen.pt() << " mass: " << gen.mass() << endl;
     theHistograms.fill("ptAllGenParticle","pt ", 100, 0, 200, gen.pt());
     theHistograms.fill("etaAllGenParticle","eta ", 100, -10, 10, gen.eta());
     theHistograms.fill("massAllGenParticle","mass ", 100, 0, 0.2, gen.mass());
@@ -62,88 +62,105 @@ void WlllnuAnalyzer::analyze(){
     else if (gen.id() == -13) muons.push_back(gen);
   }
   
-  //check 4l in final state
-  if( (electrons.size() + muons.size() != 4) || (finalid != 44 && finalid != 48 && finalid != 52) ){
-    cout << "\n\tEvent without 4l" << endl;
-    return;    
-  }
-  
-  //build z0, z1
-  std::vector<Boson<Particle> > Zcandidates;
-  phys::Boson<phys::Particle> z0;
-  phys::Boson<phys::Particle> z1;
+  //ZZ
+  if( (electrons.size() + muons.size() == 4) && (finalid == 44 || finalid == 48 || finalid == 52) ){
+    cout << "\nZZ analysis" << endl; 
+    //build z0, z1
+    std::vector<Boson<Particle> > Zcandidates;
+    phys::Boson<phys::Particle> z0;
+    phys::Boson<phys::Particle> z1;
     
-  if (finalid == 44){ //4e
-    Zcandidates.push_back(phys::Boson<Particle>(electrons[0],electrons[2], 23));
-    Zcandidates.push_back(phys::Boson<Particle>(electrons[1],electrons[3], 23));
-    Zcandidates.push_back(phys::Boson<Particle>(electrons[0],electrons[3], 23));
-    Zcandidates.push_back(phys::Boson<Particle>(electrons[1],electrons[2], 23));
-  }
-  if (finalid == 52){ //4mu
-    Zcandidates.push_back(phys::Boson<Particle>(muons[0],muons[2], 23));
-    Zcandidates.push_back(phys::Boson<Particle>(muons[1],muons[3], 23));
-    Zcandidates.push_back(phys::Boson<Particle>(muons[0],muons[3], 23));
-    Zcandidates.push_back(phys::Boson<Particle>(muons[1],muons[2], 23));
-  }
-  if (finalid == 48){ //2e2mu
-    Zcandidates.push_back(phys::Boson<Particle>(electrons[0],electrons[1], 23));
-    Zcandidates.push_back(phys::Boson<Particle>(muons[0],muons[1], 23));
-  }
-  z0 = Zcandidates[0];
-  foreach(const phys::Boson<phys::Particle> cand, Zcandidates)
-    if ( abs(cand.mass() - ZMASS) < abs(z0.mass() - ZMASS)) z0 = cand;
-  foreach(const phys::Boson<phys::Particle> cand, Zcandidates)
-    if ( cand.daughter(0).pt() != z0.daughter(0).pt() &&  cand.daughter(1).pt() != z0.daughter(1).pt() ) z1 = cand;//camparing pt is not enough, need function to compare particles: maybe isAlmostEqual ??
-  //!!!need to find a way to check if 2 particles are the same!!!!
-
-  theHistograms.fill("massZParticles","Z mass ", 1000, 50, 150, z0.mass());
-  theHistograms.fill("massZparticles","Z mass ", 1000, 50, 150, z1.mass());
-  
-  // cout << "\n z0: " << z0 << endl;
-  cout << "\n z0.daughter(0).pt(): " << z0.daughter(0).pt() << " z0.daughter(1).pt(): " << z0.daughter(1).pt() << " z0 mass: " << z0.mass() << endl;
-  //cout << " z1: " << z1 << endl;
-  cout << " z1.daughter(0).pt(): " << z1.daughter(0).pt() << " z1.daughter(1).pt(): " << z1.daughter(1).pt() << " z1 mass: " << z1.mass() << endl;
+    if (finalid == 44){ //4e
+      Zcandidates.push_back(phys::Boson<Particle>(electrons[0],electrons[2], 23));
+      Zcandidates.push_back(phys::Boson<Particle>(electrons[1],electrons[3], 23));
+      Zcandidates.push_back(phys::Boson<Particle>(electrons[0],electrons[3], 23));
+      Zcandidates.push_back(phys::Boson<Particle>(electrons[1],electrons[2], 23));
+    }
+    else if (finalid == 52){ //4mu
+      Zcandidates.push_back(phys::Boson<Particle>(muons[0],muons[2], 23));
+      Zcandidates.push_back(phys::Boson<Particle>(muons[1],muons[3], 23));
+      Zcandidates.push_back(phys::Boson<Particle>(muons[0],muons[3], 23));
+      Zcandidates.push_back(phys::Boson<Particle>(muons[1],muons[2], 23));
+    }
+    else if (finalid == 48){ //2e2mu
+      Zcandidates.push_back(phys::Boson<Particle>(electrons[0],electrons[1], 23));
+      Zcandidates.push_back(phys::Boson<Particle>(muons[0],muons[1], 23));
+    }
+    z0 = Zcandidates[0];
+    foreach(const phys::Boson<phys::Particle> cand, Zcandidates)
+      if ( abs(cand.mass() - ZMASS) < abs(z0.mass() - ZMASS)) z0 = cand;
+    foreach(const phys::Boson<phys::Particle> cand, Zcandidates)
+      if ( cand.daughter(0).pt() != z0.daughter(0).pt() &&  cand.daughter(1).pt() != z0.daughter(1).pt() ) z1 = cand;
+    //!!!need to find a way to check if 2 particles are the same!!!!
     
-  /*
-  //comparing leptons with z0, z1: change it!!
+    theHistograms.fill("massZParticles","Z mass ", 1000, 50, 150, z0.mass());
+    theHistograms.fill("massZparticles","Z mass ", 1000, 50, 150, z1.mass());
 
-  cout << "\n\t Comparing mT leptons and mass z0/z1" << endl;
-  for(unsigned int i=0; i<leptons.size(); i++){
-    for(unsigned int j=i++; j<leptons.size(); j++){
-      if(leptons[i].id() == -leptons[j].id()){
-	if(abs(leptons[i].id()) == abs(z0.daughter(0).id()) )
-	  cout << i << " " << j << " z0: " << mT(leptons[i], leptons[j]) - z0.mass() << endl;
-	else if(abs(leptons[i].id()) == abs(z1.daughter(0).id()) )
-	  cout << i << " " << j << " z1: " << mT(leptons[i], leptons[j]) - z1.mass() << endl;
+    //some printout   
+    //cout << "\n z0: " << z0 << endl;
+    cout << "\nz0: " << z0.id() << " mass: " << z0.mass() << "\tz0.daughter(0).id(): " << z0.daughter(0).id() << " z0.daughter(1).id(): " << z0.daughter(1).id() << endl;
+    //cout << " z1: " << z1 << endl;
+    cout << "\nz1: " << z1.id() << " mass: " << z1.mass() << "\tz1.daughter(0).id(): " << z1.daughter(0).id() << " z1.daughter(1).id(): " << z1.daughter(1).id() << endl;
+      
+    //comparing mT leptons with z0, z1 (a bit messy!!)
+      
+    cout << "\nComparing mT leptons and mass z0/z1" << endl;
+    for(unsigned int i=0; i<leptons.size(); i++){
+      for(unsigned int j=i+1; j<leptons.size(); j++){
+	if(leptons[j].id() == -leptons[i].id()){
+	  if(abs(leptons[i].id()) == abs(z0.daughter(0).id()) )
+	    cout << "mT(leptons " << i << ", " << j << ") - mT(z0): " << abs(mT(leptons[i], leptons[j]) - z0.mass()) << endl;
+	  if(abs(leptons[i].id()) == abs(z1.daughter(0).id()) )
+	    cout << "mT(leptons " << i << ", " << j << ") - mT(z1): " << abs(mT(leptons[i], leptons[j]) - z1.mass()) << endl;
+	}
+	else cout << "leptons " << i << ", " << j << ": no Z daughters candididates" << endl;
       }
-      else cout << i << " " << j << " no Z daughter candididates" << endl;
-    }  
-  }
+    }
+    
+    /*   //deltaR, deltaEta, deltaPhi
+    double deltaEta0 = z0.daughter(0).eta() - z1.eta(); //between z1 and z0's first daughter
+    double deltaEta1 = z0.daughter(1).eta() - z1.eta(); //between z1 and z0's first daughter
+    // some print out  
+    cout << "\n\ndeltaR daughter 0: " << deltaR(z1.p4(), z0.daughter(0).p4()) << endl;
+    cout << "deltaR daughter 1: " << deltaR(z1.p4(), z0.daughter(1).p4()) << endl; 
+    cout << "deltaPhi daughter 0: " << deltaPhi(z0.daughter(0).p4(), z1.p4()) << endl;
+    cout << "deltaPhi daughter 1: " << deltaPhi(z0.daughter(1).p4(), z1.p4()) << endl;
+    cout << "deltaEta daughter 0: " << deltaEta0 << endl;
+    cout << "deltaEta daughter 1: " << deltaEta1 << endl;
   */
-  //deltaR, deltaEta, deltaPhi
-  
-  double deltaEta0 = z0.daughter(0).eta() - z1.eta(); //between z1 and z0's first daughter
-  double deltaEta1 = z0.daughter(1).eta() - z1.eta(); //between z1 and z0's first daughter
-  /* 
-  cout << "\n\ndeltaR daughter 0: " << deltaR(z1.p4(), z0.daughter(0).p4()) << endl;
-  cout << "deltaR daughter 1: " << deltaR(z1.p4(), z0.daughter(1).p4()) << endl; 
-  cout << "deltaPhi daughter 0: " << deltaPhi(z0.daughter(0).p4(), z1.p4()) << endl;
-  cout << "deltaPhi daughter 1: " << deltaPhi(z0.daughter(1).p4(), z1.p4()) << endl;
-  cout << "deltaEta daughter 0: " << deltaEta0 << endl;
-  cout << "deltaEta daughter 1: " << deltaEta1 << endl;
-  */
-  // ZZ
-  
-  DiBoson<phys::Particle,phys::Particle>  ZZ(z0,z1);
-  cout << "\n\n ZZ: " << ZZ.id() << " pt: " << ZZ.pt() << " mass: " << ZZ.mass() << "\n daughters: " << ZZ.first().id() << "\t" << ZZ.second().id() << " Y: " << ZZ.rapidity()
-       << endl; //why daughter(0) instead of first() is not working?? daughter<Particle>(0)
-  
-  theHistograms.fill("ptZZ","pt ", 100, 0, 100, ZZ.pt());
-  theHistograms.fill("etaZZ","eta ", 100, 0, 100, ZZ.eta());
-  theHistograms.fill("massZZ","mass ", 1000, 0, 400, ZZ.pt());
-  theHistograms.fill("YZZ","Y ", 100, 0, 100, ZZ.rapidity());
-  //<phys::Boson<phys::Particle>,phys::Boson<phys::Particle> >
+    
+    // ZZ
+    DiBoson<phys::Particle,phys::Particle>  ZZ(z0,z1);
+    cout << "\n\n ZZ: " << ZZ.id() << " pt: " << ZZ.pt() << " mass: " << ZZ.mass() << "\n daughters: " << ZZ.first().id() << ", " << ZZ.second().id() << " Y: " << ZZ.rapidity() << endl; //why daughter(0) instead of first() is not working?? daughter<Particle>(0)
+    
+    theHistograms.fill("ptZZ","pt ", 100, 0, 100, ZZ.pt());
+    theHistograms.fill("etaZZ","eta ", 100, 0, 100, ZZ.eta());
+    theHistograms.fill("massZZ","mass ", 1000, 0, 400, ZZ.pt());
+    theHistograms.fill("YZZ","Y ", 100, 0, 100, ZZ.rapidity());
+    //<phys::Boson<phys::Particle>,phys::Boson<phys::Particle> >
 
-  //----------------------------------------------------------------//
+    return;
+  }
+    
+  //  cout << " \n\t\t  -----------------------------------\n " << endl;
+  
+  else if(leptons.size()<3){
+    cout << "\nLess than 3 leptons" << endl;
+    return;
+  }
+  
+  //ZL
+  else if(leptons.size()==3){
+    // std::pair<Boson<phys::Lepton> ,phys::Lepton>
+    // std::pair<phys::Boson<phys::Lepton>, phys::Lepton>
+    cout << "\nZL analysis" << endl; 
+    cout << "\n # of ZL candidates: "  << (*ZL).size() << endl;
+    foreach(const ZLCompositeCandidate &gen, *ZL){
+      cout << "\nZlcand: \t" << std::get<0>(gen) << "\n\t\t" << std::get<1>(gen) << endl;
+      theHistograms.fill("massBosonZl","mass Z", 100, 0, 500, (std::get<0>(gen)).mass());
+      theHistograms.fill("massLeptonZl","mass l", 100, 0, 0.12, (std::get<1>(gen)).mass());
+    }
+    return;
+  }
   
 }
