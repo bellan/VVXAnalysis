@@ -210,7 +210,7 @@ void WlllnuAnalyzer::analyze(){
     }
 
     cout << "\nmyZl analysis" << endl; 
-    cout << "\n # of ZL candidates: "  << Zl.size() << endl;
+    cout << "\n # of my Zl candidates: "  << Zl.size() << endl;
     foreach(const Zltype zl, Zl){
       cout << "\nZlcand: \t" << std::get<0>(zl) << "\n\t\t" << std::get<1>(zl) << endl;
       //theHistograms.fill("massBosonMyZl","mass Z", 100, 0, 500, (std::get<0>(zl)).mass());
