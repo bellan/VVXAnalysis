@@ -14,18 +14,22 @@
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
+#include "VVXAnalysis/DataFormats/interface/Boson.h"
+#include "VVXAnalysis/DataFormats/interface/Particle.h"
 
 class WlllnuAnalyzer: public EventAnalyzer, RegistrableAnalysis<WlllnuAnalyzer>{
 
 public:
 
   //, const std::string& filename, const double& lumi = 1., const double& externalXSection = -1., bool doBasicPlots = false
-
+  
  WlllnuAnalyzer(const AnalysisConfiguration& configuration)
    : EventAnalyzer(*(new Selector<WlllnuAnalyzer>(*this)), 
 		   configuration){
     //theHistograms.profile(genCategory);
   }
+
+  typedef std::pair<phys::Boson<phys::Particle>, phys::Particle> Zltype;
 
   virtual ~WlllnuAnalyzer(){}
 

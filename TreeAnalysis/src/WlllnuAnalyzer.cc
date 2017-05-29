@@ -49,29 +49,30 @@ void WlllnuAnalyzer::analyze(){
    //find leptons
   foreach(const phys::Particle &gen, *genParticles){    
     if( (abs(gen.id()) != 11 && abs(gen.id()) != 13) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
+    //if(abs(gen.id()) != 11 && abs(gen.id()) != 13) continue;
     finalid += abs(gen.id());
     //cout << " genLepton: " << gen << endl;
     cout << "id: " << gen.id() << " pt: " << gen.pt() << " mass: " << gen.mass() << " eta: " << gen.eta() << endl;
     theHistograms.fill("ptAllGenParticle","pt ", 100, 0, 200, gen.pt());
     theHistograms.fill("etaAllGenParticle","eta ", 100, -10, 10, gen.eta());
-    theHistograms.fill("massAllGenParticle","mass ", 100, 0, 0.2, gen.mass());
+    theHistograms.fill("massAllGenParticle","mass ", 100, 0, 0.12, gen.mass());
     theHistograms.fill("YAllGenParticle","Y ", 100, 0, 100, gen.rapidity());
     leptons.push_back(gen);
     if (gen.id() == 11){
       electrons.insert(electrons.begin(),gen); //fist all e-, then all e+
-      theHistograms.fill("ptElectrons","pt e", 100, 0, 200, gen.pt());
+      //theHistograms.fill("ptElectrons","pt e", 100, 0, 200, gen.pt());
     }
     else if (gen.id() == -11){
       electrons.push_back(gen);
-      theHistograms.fill("ptElectrons","pt e", 100, 0, 200, gen.pt());
+      //theHistograms.fill("ptElectrons","pt e", 100, 0, 200, gen.pt());
     }
     else if (gen.id() == 13){
       muons.insert(muons.begin(),gen); //first all mu-, then all mu+
-      theHistograms.fill("ptMuons","pt mu", 100, 0, 200, gen.pt());
+      //theHistograms.fill("ptMuons","pt mu", 100, 0, 200, gen.pt());
     }
     else if (gen.id() == -13){
       muons.push_back(gen);
-      theHistograms.fill("ptMuons","pt mu", 100, 0, 200, gen.pt());
+      //theHistograms.fill("ptMuons","pt mu", 100, 0, 200, gen.pt());
     }
   }
   
@@ -145,7 +146,7 @@ void WlllnuAnalyzer::analyze(){
     
     // ZZ
     DiBoson<phys::Particle,phys::Particle>  ZZ(z0,z1);
-    cout << "\n\n ZZ: " << ZZ.id() << " pt: " << ZZ.pt() << " mass: " << ZZ.mass() << "\n daughters: " << ZZ.first().id() << ", " << ZZ.second().id() << " Y: " << ZZ.rapidity() << endl; //why daughter(0) instead of first() is not working?? daughter<Particle>(0)
+    cout << "\n\n ZZ: " << ZZ.id() << " pt: " << ZZ.pt() << " mass: " << ZZ.mass() << "\n daughters: " << ZZ.daughter<Particle>(0).id() << ", " << ZZ.second().id() << " Y: " << ZZ.rapidity() << endl; //why daughter(0) instead of first() is not working?? It's templated!! Try daughter<Particle>(0)
     
     theHistograms.fill("ptZZ","pt ", 100, 0, 100, ZZ.pt());
     theHistograms.fill("etaZZ","eta ", 100, 0, 100, ZZ.eta());
@@ -171,42 +172,55 @@ void WlllnuAnalyzer::analyze(){
     
     cout << "\nZL analysis" << endl; 
     cout << "\n # of ZL candidates: "  << (*ZL).size() << endl;
-    foreach(const ZLCompositeCandidate &gen, *ZL){
-      cout << "\nZlcand: \t" << std::get<0>(gen) << "\n\t\t" << std::get<1>(gen) << endl;
-      theHistograms.fill("massBosonZl","mass Z", 100, 0, 500, (std::get<0>(gen)).mass());
-      theHistograms.fill("massLeptonZl","mass l", 100, 0, 0.12, (std::get<1>(gen)).mass());
-      theHistograms.fill("daughtersZl"," Z daughters id", 5 , 9.5, 14.5, abs((gen.first).daughter(0).id()));
-      theHistograms.fill("leptonsZl"," leptons id", 5 , 9.5, 14.5, abs((gen.second).id()));
+    foreach(const ZLCompositeCandidate &zl, *ZL){
+      cout << "\nZlcand: \t" << std::get<0>(zl) << "\n\t\t" << std::get<1>(zl) << endl;
+      //theHistograms.fill("massBosonZl","mass Z", 100, 0, 500, (std::get<0>(zl)).mass());
+      //theHistograms.fill("massLeptonZl","mass l", 100, 0, 0.12, (std::get<1>(zl)).mass());
+      theHistograms.fill("idDaughterZl"," Z daughters id", 5 , 9.5, 14.5, abs((zl.first).daughter(0).id()));
+      theHistograms.fill("idLeptonZl"," leptons id", 5 , 9.5, 14.5, abs((zl.second).id()));
 
     }
-    if ((*ZL).size() > 0) theHistograms.fill("totIdZL"," leptons & daughters id in ZL", 10 , 30.5, 40.5, finalid);
+    if ((*ZL).size() > 0) theHistograms.fill("idAllParticlesZL"," leptons & daughters id in ZL", 10 , 30.5, 40.5, finalid);
     //  if(ZL.size()>0) theHistograms.fill("daughtersZl"," Z daughters id", 100, 0, 500, abs((ZL[0].first).daughter(0).id()));
     // if(ZL.size()>1) theHistograms.fill("daughtersZl"," Z daughters id", 100, 0, 500, abs((ZL[1].first).daughter(0).id()));
     
     //----my particles----//
-
-    std::vector<std::pair<phys::Boson<phys::Particle>, phys::Particle> > Zl; //change Particle to Lepton
+    //forms Zl every time there are 3 leptons (1 or 2 Zl depending on presence of both e and mu)
+    std::vector<Zltype > Zl; //change Particle to Lepton
+    
     if(finalid == 33){//3e
-      Zl.push_back(std::pair<phys::Boson<phys::Particle>, phys::Particle>(phys::Boson<phys::Particle>(electrons[0],electrons[2], 23), electrons[1]));
+      Zl.push_back(Zltype(phys::Boson<phys::Particle>(electrons[0],electrons[2], 23), electrons[1]));
       if(electrons[1].id()<0)
-	Zl.push_back(std::pair<phys::Boson<phys::Particle>, phys::Particle>(phys::Boson<phys::Particle>(electrons[0],electrons[1], 23), electrons[2]));
+	Zl.push_back(Zltype(phys::Boson<phys::Particle>(electrons[0],electrons[1], 23), electrons[2]));
       else
-	Zl.push_back(std::pair<phys::Boson<phys::Particle>, phys::Particle>(phys::Boson<phys::Particle>(electrons[1],electrons[2], 23), electrons[0]));	
+	Zl.push_back(Zltype(phys::Boson<phys::Particle>(electrons[1],electrons[2], 23), electrons[0]));
     }
     else if(finalid == 39){//3mu
-      Zl.push_back(std::pair<phys::Boson<phys::Particle>, phys::Particle>(phys::Boson<phys::Particle>(muons[0],muons[2], 23), muons[1]));
+      Zl.push_back(Zltype(phys::Boson<phys::Particle>(muons[0],muons[2], 23), muons[1]));
       if(muons[1].id()<0)
-	Zl.push_back(std::pair<phys::Boson<phys::Particle>, phys::Particle>(phys::Boson<phys::Particle>(muons[0],muons[1], 23), muons[2]));
+	Zl.push_back(Zltype(phys::Boson<phys::Particle>(muons[0],muons[1], 23), muons[2]));
       else
-	Zl.push_back(std::pair<phys::Boson<phys::Particle>, phys::Particle>(phys::Boson<phys::Particle>(muons[1],muons[2], 23), muons[0]));	
+	Zl.push_back(Zltype(phys::Boson<phys::Particle>(muons[1],muons[2], 23), muons[0]));	
     }
     else if(finalid == 35){//2e1mu
-      Zl.push_back(std::pair<phys::Boson<phys::Particle>, phys::Particle>(phys::Boson<phys::Particle>(electrons[0],electrons[1], 23), muons[0]));
+      Zl.push_back(Zltype(phys::Boson<phys::Particle>(electrons[0],electrons[1], 23), muons[0]));
     }
     else if(finalid == 37){//2mu1e
-      Zl.push_back(std::pair<phys::Boson<phys::Particle>, phys::Particle>(phys::Boson<phys::Particle>(muons[0],muons[1], 23), electrons[0]));
+      Zl.push_back(Zltype(phys::Boson<phys::Particle>(muons[0],muons[1], 23), electrons[0]));
     }
 
+    cout << "\nmyZl analysis" << endl; 
+    cout << "\n # of ZL candidates: "  << Zl.size() << endl;
+    foreach(const Zltype zl, Zl){
+      cout << "\nZlcand: \t" << std::get<0>(zl) << "\n\t\t" << std::get<1>(zl) << endl;
+      //theHistograms.fill("massBosonMyZl","mass Z", 100, 0, 500, (std::get<0>(zl)).mass());
+      //theHistograms.fill("massLeptonMyZl","mass l", 100, 0, 0.12, (std::get<1>(zl)).mass());
+      theHistograms.fill("idDaughterMyZl"," Z daughters id", 5 , 9.5, 14.5, abs((zl.first).daughter(0).id()));
+      theHistograms.fill("idLeptonMyZl"," leptons id", 5 , 9.5, 14.5, abs((zl.second).id()));
+
+    }
+    if (Zl.size() > 0) theHistograms.fill("idAllParticlesMyZl"," leptons & daughters id in Zl", 10 , 30.5, 40.5, finalid);
+    
     std::stable_sort(electrons.begin(), electrons.end(), PtComparator());
     std::stable_sort(muons.begin(), muons.end(), PtComparator());
     
