@@ -176,10 +176,10 @@ void WlllnuAnalyzer::analyze(){
       theHistograms.fill("massBosonZl","mass Z", 100, 0, 500, (std::get<0>(gen)).mass());
       theHistograms.fill("massLeptonZl","mass l", 100, 0, 0.12, (std::get<1>(gen)).mass());
       theHistograms.fill("daughtersZl"," Z daughters id", 5 , 9.5, 14.5, abs((gen.first).daughter(0).id()));
-       theHistograms.fill("leptonsZl"," leptons id", 5 , 9.5, 14.5, abs((gen.second).id()));
+      theHistograms.fill("leptonsZl"," leptons id", 5 , 9.5, 14.5, abs((gen.second).id()));
 
     }
-
+    if ((*ZL).size() > 0) theHistograms.fill("totIdZL"," leptons & daughters id in ZL", 10 , 30.5, 40.5, finalid);
     //  if(ZL.size()>0) theHistograms.fill("daughtersZl"," Z daughters id", 100, 0, 500, abs((ZL[0].first).daughter(0).id()));
     // if(ZL.size()>1) theHistograms.fill("daughtersZl"," Z daughters id", 100, 0, 500, abs((ZL[1].first).daughter(0).id()));
     
