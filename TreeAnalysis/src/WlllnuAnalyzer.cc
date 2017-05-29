@@ -225,3 +225,6 @@ void WlllnuAnalyzer::analyze(){
   }
   
 }
+
+//Few "rummy" events in WZ.root with 3e (3 good leptons not forming a ZL pair): loop# 1975 (event: 7702007), loop# 1963(event: 7701988), loop# 1957 (event: 7701979), loop# 1953 (event: 7701973), loop# 1912 (event: 7701916)
+//other events (also with muons): loop# 1533 (event:4903958), loop# 1545 (4903977) 
