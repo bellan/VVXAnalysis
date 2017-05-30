@@ -38,7 +38,7 @@ using namespace colour;
 EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 			     const AnalysisConfiguration& configuration)
   : select(aSelector)
-  ,  leptonScaleFactors_("../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_mu_Moriond2017.root",
+  ,  leptonScaleFactors_("../../ZLZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_mu_Moriond2017.root",
 			 "../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_non_gap_ele_Moriond2017_v2.root",
 			 "../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_gap_ele_Moriond2017_v2.root",
 			 "../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_RECO_ele_Moriond2017_v1.root",
@@ -322,13 +322,13 @@ void EventAnalyzer::loop(const std::string outputfile){
   if (theTree == 0) return;
 
 
-  Long64_t nentries = /*10000; */theTree->GetEntries();  
+  Long64_t nentries = theTree->GetEntries();  
   unweightedEventsInSR     = tree()->GetEntries("ZZCand.passSRZZOnShell_");
   unweightedEventsIn2P2FCR = tree()->GetEntries("ZZCand.passSelZLL_2P2F_ZZOnShell_");
   unweightedEventsIn3P1FCR = tree()->GetEntries("ZZCand.passSelZLL_3P1F_ZZOnShell_");
   begin();
   int looptimes=1;
-  for (Long64_t jentry=0; jentry<nentries; ++jentry) {
+  for (Long64_t jentry=0; jentry<nentries && looptimes<2001; ++jentry) {
     Long64_t ientry = LoadTree(jentry);
     if (ientry < 0) break;
     if (!GetEntry(jentry)) continue;
@@ -336,7 +336,7 @@ void EventAnalyzer::loop(const std::string outputfile){
     theCutCounter += theWeight;
     if(doBasicPlots_) fillBasicPlots();
     analyze();
-    cout<<"\n loop #: "<< looptimes << "\n" << endl;
+    cout<<"\nloop #: "<< looptimes << "\n" << endl;
     looptimes++;
   }
 
