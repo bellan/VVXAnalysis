@@ -75,6 +75,7 @@ void WlllnuAnalyzer::analyze(){
       //theHistograms.fill("ptMuons","pt mu", 100, 0, 200, gen.pt());
     }
   }
+  theHistograms.fill("leptonsNumber",  "number of leptons ",  5, -0.5, 4.5, leptons.size());
   
   //ZZ
   if( (electrons.size() + muons.size() == 4) && (finalid == 44 || finalid == 48 || finalid == 52) ){
@@ -254,10 +255,11 @@ void WlllnuAnalyzer::analyze(){
 	cout << "\nZl good cand (right deltaEta and pt)\t" << " leptons forming Z: " << abs(zl.first.daughter(0).id()) << " other lepton: " << abs(zl.second.id()) << " deltaEta: " << deltaEtaZl << endl;
     }
     if (Zl.size() > 0) theHistograms.fill("idAllParticlesMyZl"," leptons & daughters id in Zl", 10 , 30.5, 40.5, finalid);
-    
-    if(eptSort.size() > 0)  theHistograms.fill("pte0",  "pt e0",  100, 0, 200, eptSort[0].pt());
-    if(eptSort.size() > 1)  theHistograms.fill("pte1",  "pt e1",  100, 0, 200, eptSort[1].pt());
-    if(eptSort.size() > 2)  theHistograms.fill("pte2",  "pt e2",  100, 0, 200, eptSort[2].pt());
+
+    //some histograms
+    if(eptSort.size()  > 0) theHistograms.fill("pte0",  "pt e0",  100, 0, 200, eptSort[0].pt());
+    if(eptSort.size()  > 1) theHistograms.fill("pte1",  "pt e1",  100, 0, 200, eptSort[1].pt());
+    if(eptSort.size()  > 2) theHistograms.fill("pte2",  "pt e2",  100, 0, 200, eptSort[2].pt());
     if(muptSort.size() > 0) theHistograms.fill("ptmu0", "pt mu0", 100, 0, 200, muptSort[0].pt());
     if(muptSort.size() > 1) theHistograms.fill("ptmu1", "pt mu1", 100, 0, 200, muptSort[1].pt());
     if(muptSort.size() > 2) theHistograms.fill("ptmu2", "pt mu2", 100, 0, 200, muptSort[2].pt());
@@ -272,4 +274,4 @@ void WlllnuAnalyzer::analyze(){
 //Few "rummy" events in WZ.root with 3e (3 good leptons not forming a ZL pair): loop# 1975 (event: 7702007), loop# 1963(event: 7701988), loop# 1957 (event: 7701979), loop# 1953 (event: 7701973), loop# 1912 (event: 7701916)
 //other events (also with muons): loop# 1533 (event:4903958), loop# 1545 (4903977) 
 
-//1989
+//1989, 1975
