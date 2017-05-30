@@ -323,13 +323,13 @@ void EventAnalyzer::loop(const std::string outputfile){
 
 
 
-  Long64_t nentries = 10000; //*/theTree->GetEntries();  
+  Long64_t nentries = theTree->GetEntries();  
   unweightedEventsInSR     = tree()->GetEntries("ZZCand.passSRZZOnShell_");
   unweightedEventsIn2P2FCR = tree()->GetEntries("ZZCand.passSelZLL_2P2F_ZZOnShell_");
   unweightedEventsIn3P1FCR = tree()->GetEntries("ZZCand.passSelZLL_3P1F_ZZOnShell_");
   begin();
   int looptimes=1;
-  for (Long64_t jentry=0; jentry<nentries && looptimes<2001; ++jentry) {
+  for (Long64_t jentry=0; jentry<nentries && looptimes<5001; ++jentry) {
     Long64_t ientry = LoadTree(jentry);
     if (ientry < 0) break;
     if (!GetEntry(jentry)) continue;

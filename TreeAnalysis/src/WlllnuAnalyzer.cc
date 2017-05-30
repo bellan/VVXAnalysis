@@ -53,10 +53,10 @@ void WlllnuAnalyzer::analyze(){
     finalid += abs(gen.id());
     //cout << " genLepton: " << gen << endl;
     cout << "id: " << gen.id() << " pt: " << gen.pt() << " mass: " << gen.mass() << " eta: " << gen.eta() << endl;
-    theHistograms.fill("ptAllGenParticle","pt ", 100, 0, 200, gen.pt());
-    theHistograms.fill("etaAllGenParticle","eta ", 100, -10, 10, gen.eta());
-    theHistograms.fill("massAllGenParticle","mass ", 100, 0, 0.12, gen.mass());
-    theHistograms.fill("YAllGenParticle","Y ", 100, 0, 100, gen.rapidity());
+    theHistograms.fill("ptAllGenParticle",   "pt ",   100, 0,   200,  gen.pt());
+    theHistograms.fill("etaAllGenParticle",  "eta ",  100, -10, 10,   gen.eta());
+    theHistograms.fill("massAllGenParticle", "mass ", 100, 0,   0.12, gen.mass());
+    theHistograms.fill("YAllGenParticle",    "Y ",    100, 0,   100,  gen.rapidity());
     leptons.push_back(gen);
     if (gen.id() == 11){
       electrons.insert(electrons.begin(),gen); //fist all e-, then all e+
@@ -108,8 +108,8 @@ void WlllnuAnalyzer::analyze(){
       if ( cand.daughter(0).pt() != z0.daughter(0).pt() &&  cand.daughter(1).pt() != z0.daughter(1).pt() ) z1 = cand;
     //!!!need to find a way to check if 2 particles are the same!!!!
     
-    theHistograms.fill("massZParticles","Z mass ", 1000, 50, 150, z0.mass());
-    theHistograms.fill("massZparticles","Z mass ", 1000, 50, 150, z1.mass());
+    theHistograms.fill("massZParticles", "Z mass ", 1000, 50, 150, z0.mass());
+    theHistograms.fill("massZparticles", "Z mass ", 1000, 50, 150, z1.mass());
 
     //some printout   
     //cout << "\n z0: " << z0 << endl;
@@ -137,21 +137,21 @@ void WlllnuAnalyzer::analyze(){
     double deltaEta1 = z0.daughter(1).eta() - z1.eta(); //between z1 and z0's first daughter
     // some print out  
     cout << "\n\ndeltaR daughter 0: " << deltaR(z1.p4(), z0.daughter(0).p4()) << endl;
-    cout << "deltaR daughter 1: " << deltaR(z1.p4(), z0.daughter(1).p4()) << endl; 
-    cout << "deltaPhi daughter 0: " << deltaPhi(z0.daughter(0).p4(), z1.p4()) << endl;
-    cout << "deltaPhi daughter 1: " << deltaPhi(z0.daughter(1).p4(), z1.p4()) << endl;
-    cout << "deltaEta daughter 0: " << deltaEta0 << endl;
-    cout << "deltaEta daughter 1: " << deltaEta1 << endl;
+    cout << "deltaR daughter 1: "     << deltaR(z1.p4(), z0.daughter(1).p4()) << endl; 
+    cout << "deltaPhi daughter 0: "   << deltaPhi(z0.daughter(0).p4(), z1.p4()) << endl;
+    cout << "deltaPhi daughter 1: "   << deltaPhi(z0.daughter(1).p4(), z1.p4()) << endl;
+    cout << "deltaEta daughter 0: "   << deltaEta0 << endl;
+    cout << "deltaEta daughter 1: "   << deltaEta1 << endl;
   */
     
     // ZZ
     DiBoson<phys::Particle,phys::Particle>  ZZ(z0,z1);
     cout << "\n\n ZZ: " << ZZ.id() << " pt: " << ZZ.pt() << " mass: " << ZZ.mass() << "\n daughters: " << ZZ.daughter<Particle>(0).id() << ", " << ZZ.second().id() << " Y: " << ZZ.rapidity() << endl; //why daughter(0) instead of first() is not working?? It's templated!! Try daughter<Particle>(0)
     
-    theHistograms.fill("ptZZ","pt ", 100, 0, 100, ZZ.pt());
-    theHistograms.fill("etaZZ","eta ", 100, 0, 100, ZZ.eta());
-    theHistograms.fill("massZZ","mass ", 1000, 0, 400, ZZ.pt());
-    theHistograms.fill("YZZ","Y ", 100, 0, 100, ZZ.rapidity());
+    theHistograms.fill("ptZZ",   "pt ",   100,  0,   100, ZZ.pt());
+    theHistograms.fill("etaZZ",  "eta ",  100,  -10, 10,  ZZ.eta());
+    theHistograms.fill("massZZ", "mass ", 1000, 0,   400, ZZ.pt());
+    theHistograms.fill("YZZ",    "Y ",    100,  0,   100, ZZ.rapidity());
     //<phys::Boson<phys::Particle>,phys::Boson<phys::Particle> >
 
     return;
@@ -185,10 +185,42 @@ void WlllnuAnalyzer::analyze(){
     // if(ZL.size()>1) theHistograms.fill("daughtersZl"," Z daughters id", 100, 0, 500, abs((ZL[1].first).daughter(0).id()));
     
     //----my particles----//
-    //forms Zl every time there are 3 leptons (1 or 2 Zl depending on presence of both e and mu)
-    std::vector<Zltype > Zl; //change Particle to Lepton
+    cout << "\nmyZl analysis" << endl; 
+    //forms Zl every time there are 3 leptons (1 or 2 Zl depending on presence of both e and mu) if leptons pt is good enough
     
-    if(finalid == 33){//3e
+    std::vector<Zltype > Zl; //change Particle to Lepton    
+    std::vector<Particle> eptSort; // electrons sorted by pt
+    std::vector<Particle> muptSort;
+    std::vector<Particle> lepptSort;
+    
+    //check pt(e)>7Gev, pt(mu)>5Gev
+    foreach(const Particle e, electrons){
+      if(e.pt()<7){
+	cout<<"pt leptons not sufficient (e 7Gev)"<< endl;
+	return;
+      }
+      eptSort.push_back(e);
+      lepptSort.push_back(e);
+    }
+    foreach(const Particle mu, muons){
+      if(mu.pt()<5){
+	cout<<"pt leptons not sufficient (mu 5Gev)"<< endl;
+	return;
+      }
+      muptSort.push_back(mu);
+      lepptSort.push_back(mu);
+    }
+    std::stable_sort(eptSort.begin(), eptSort.end(), PtComparator());
+    std::stable_sort(muptSort.begin(), muptSort.end(), PtComparator());
+    std::stable_sort(lepptSort.begin(), lepptSort.end(), PtComparator());
+        
+    //check 1st lepton has pt>20 and 2nd pt>10
+    if(lepptSort[0].pt()<20 || lepptSort[1].pt()<10){
+      cout<<"pt leptons not sufficient (first 20Gev, second 10Gev)"<< endl;
+      return;
+    }
+
+    if(finalid == 33){//3e     
       Zl.push_back(Zltype(phys::Boson<phys::Particle>(electrons[0],electrons[2], 23), electrons[1]));
       if(electrons[1].id()<0)
 	Zl.push_back(Zltype(phys::Boson<phys::Particle>(electrons[0],electrons[1], 23), electrons[2]));
@@ -208,37 +240,36 @@ void WlllnuAnalyzer::analyze(){
     else if(finalid == 37){//2mu1e
       Zl.push_back(Zltype(phys::Boson<phys::Particle>(muons[0],muons[1], 23), electrons[0]));
     }
-
-    cout << "\nmyZl analysis" << endl; 
+    
     cout << "\n # of my Zl candidates: "  << Zl.size() << endl;
     foreach(const Zltype zl, Zl){
-      cout << "\nZlcand: \t" << std::get<0>(zl) << "\n\t\t" << std::get<1>(zl) << endl;
+      //cout << "\nZlcand: \t" << std::get<0>(zl) << "\n\t\t" << std::get<1>(zl) << endl;
+      double deltaEtaZl =zl.first.eta()-zl.second.eta();
       //theHistograms.fill("massBosonMyZl","mass Z", 100, 0, 500, (std::get<0>(zl)).mass());
       //theHistograms.fill("massLeptonMyZl","mass l", 100, 0, 0.12, (std::get<1>(zl)).mass());
-      theHistograms.fill("idDaughterMyZl"," Z daughters id", 5 , 9.5, 14.5, abs((zl.first).daughter(0).id()));
-      theHistograms.fill("idLeptonMyZl"," leptons id", 5 , 9.5, 14.5, abs((zl.second).id()));
-
+      theHistograms.fill("idDaughterMyZl", " Z daughters id", 5,   9.5, 14.5, abs((zl.first).daughter(0).id()));
+      theHistograms.fill("idLeptonMyZl",   " leptons id",     5,   9.5, 14.5, abs((zl.second).id()));
+      theHistograms.fill("deltaEtaMyZl",   " delta Eta ",     100, -10, 10,   deltaEtaZl );
+      if(deltaEtaZl>-2.4 && deltaEtaZl<2.4)
+	cout << "\nZl good cand (right deltaEta and pt)\t" << " leptons forming Z: " << abs(zl.first.daughter(0).id()) << " other lepton: " << abs(zl.second.id()) << " deltaEta: " << deltaEtaZl << endl;
     }
     if (Zl.size() > 0) theHistograms.fill("idAllParticlesMyZl"," leptons & daughters id in Zl", 10 , 30.5, 40.5, finalid);
     
-    std::stable_sort(electrons.begin(), electrons.end(), PtComparator());
-    std::stable_sort(muons.begin(), muons.end(), PtComparator());
-    
-    if(electrons.size() > 0) theHistograms.fill("pte0","pt e0", 100, 0, 200, electrons[0].pt());
-    if(electrons.size() > 1) theHistograms.fill("pte1","pt e1", 100, 0, 200, electrons[1].pt());
-    if(electrons.size() > 2) theHistograms.fill("pte2","pt e2", 100, 0, 200, electrons[2].pt());
-    if(muons.size() > 0) theHistograms.fill("ptmu0","pt mu0", 100, 0, 200, muons[0].pt());
-    if(muons.size() > 1) theHistograms.fill("ptmu1","pt mu1", 100, 0, 200, muons[1].pt());
-    if(muons.size() > 2) theHistograms.fill("ptmu2","pt mu2", 100, 0, 200, muons[2].pt());
-   
-    
-    
-    return;
+    if(eptSort.size() > 0)  theHistograms.fill("pte0",  "pt e0",  100, 0, 200, eptSort[0].pt());
+    if(eptSort.size() > 1)  theHistograms.fill("pte1",  "pt e1",  100, 0, 200, eptSort[1].pt());
+    if(eptSort.size() > 2)  theHistograms.fill("pte2",  "pt e2",  100, 0, 200, eptSort[2].pt());
+    if(muptSort.size() > 0) theHistograms.fill("ptmu0", "pt mu0", 100, 0, 200, muptSort[0].pt());
+    if(muptSort.size() > 1) theHistograms.fill("ptmu1", "pt mu1", 100, 0, 200, muptSort[1].pt());
+    if(muptSort.size() > 2) theHistograms.fill("ptmu2", "pt mu2", 100, 0, 200, muptSort[2].pt());
 
     
+    return;
+ 
   }
   
 }
 
 //Few "rummy" events in WZ.root with 3e (3 good leptons not forming a ZL pair): loop# 1975 (event: 7702007), loop# 1963(event: 7701988), loop# 1957 (event: 7701979), loop# 1953 (event: 7701973), loop# 1912 (event: 7701916)
 //other events (also with muons): loop# 1533 (event:4903958), loop# 1545 (4903977) 
+
+//1989
