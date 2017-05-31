@@ -194,18 +194,18 @@ void WlllnuAnalyzer::analyze(){
     std::vector<Particle> muptSort;
     std::vector<Particle> lepptSort;
     
-    //check pt(e)>7Gev, pt(mu)>5Gev
+    //check pt(e)>7Gev, pt(mu)>5Gev, abs(eta(e))<2.5, abs(eta(mu))<2.4
     foreach(const Particle e, electrons){
-      if(e.pt()<7){
-	cout<<"pt leptons not sufficient (e 7Gev)"<< endl;
+      if(e.pt()<7 || abs(e.eta())>2.5 ){
+	cout<<"pt leptons not sufficient (e 7Gev) or eta over limit (|eta| 2.5)"<< endl;
 	return;
       }
       eptSort.push_back(e);
       lepptSort.push_back(e);
     }
     foreach(const Particle mu, muons){
-      if(mu.pt()<5){
-	cout<<"pt leptons not sufficient (mu 5Gev)"<< endl;
+      if(mu.pt()<5 || abs(mu.eta())>2.4 ){
+	cout<<"pt leptons not sufficient (mu 5Gev) or eta over limit (|eta| 2.5)"<< endl;
 	return;
       }
       muptSort.push_back(mu);
@@ -245,14 +245,14 @@ void WlllnuAnalyzer::analyze(){
     cout << "\n # of my Zl candidates: "  << Zl.size() << endl;
     foreach(const Zltype zl, Zl){
       //cout << "\nZlcand: \t" << std::get<0>(zl) << "\n\t\t" << std::get<1>(zl) << endl;
-      double deltaEtaZl =zl.first.eta()-zl.second.eta();
+      //double deltaEtaZl =zl.first.eta()-zl.second.eta();
       //theHistograms.fill("massBosonMyZl","mass Z", 100, 0, 500, (std::get<0>(zl)).mass());
       //theHistograms.fill("massLeptonMyZl","mass l", 100, 0, 0.12, (std::get<1>(zl)).mass());
       theHistograms.fill("idDaughterMyZl", " Z daughters id", 5,   9.5, 14.5, abs((zl.first).daughter(0).id()));
       theHistograms.fill("idLeptonMyZl",   " leptons id",     5,   9.5, 14.5, abs((zl.second).id()));
-      theHistograms.fill("deltaEtaMyZl",   " delta Eta ",     100, -10, 10,   deltaEtaZl );
-      if(deltaEtaZl>-2.4 && deltaEtaZl<2.4)
-	cout << "\nZl good cand (right deltaEta and pt)\t" << " leptons forming Z: " << abs(zl.first.daughter(0).id()) << " other lepton: " << abs(zl.second.id()) << " deltaEta: " << deltaEtaZl << endl;
+      //theHistograms.fill("deltaEtaMyZl",   " delta Eta ",     100, -10, 10,   deltaEtaZl );
+      
+      cout << "\nZl good cand (right deltaEta and pt)\t" << " leptons forming Z: " << abs(zl.first.daughter(0).id()) << " other lepton: " << abs(zl.second.id()) << endl;
     }
     if (Zl.size() > 0) theHistograms.fill("idAllParticlesMyZl"," leptons & daughters id in Zl", 10 , 30.5, 40.5, finalid);
 
@@ -271,7 +271,4 @@ void WlllnuAnalyzer::analyze(){
   
 }
 
-//Few "rummy" events in WZ.root with 3e (3 good leptons not forming a ZL pair): loop# 1975 (event: 7702007), loop# 1963(event: 7701988), loop# 1957 (event: 7701979), loop# 1953 (event: 7701973), loop# 1912 (event: 7701916)
-//other events (also with muons): loop# 1533 (event:4903958), loop# 1545 (4903977) 
-
-//1989, 1975
+//there are still some events where I form Zl but it has no ZL!! (the ones with 3e)
