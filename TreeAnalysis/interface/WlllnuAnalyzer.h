@@ -16,6 +16,7 @@
 #include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/DataFormats/interface/Particle.h"
+#include "VVXAnalysis/Commons/interface/AriEle.h"
 
 class WlllnuAnalyzer: public EventAnalyzer, RegistrableAnalysis<WlllnuAnalyzer>{
 
@@ -28,8 +29,6 @@ public:
 		   configuration){
     //theHistograms.profile(genCategory);
   }
-
-  typedef std::pair<phys::Boson<phys::Particle>, phys::Particle> Zltype;
 
   virtual ~WlllnuAnalyzer(){}
 
