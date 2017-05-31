@@ -80,10 +80,10 @@ void WZAnalyzer::analyze(){
     if(candidates.daughter(0).pt() != Zet[0].daughter(0).pt() && candidates.daughter(1).pt() != Zet[0].daughter(1).pt()) Zet.push_back(candidates);
   }
 
-  DiBoson<Boson<Particle>, Boson<Particle>  doubleZ
+  // DiBoson<Boson<Particle>, Boson<Particle> > doubleZ;
   
 
-  cout << "Found Z are: Z0 " << Zet[0].mass() << "\n\tZ1 " << Zet[1].mass() << endl;
+	  //  cout << "Found Z are: Z0 " << Zet[0].mass() << "\n\tZ1 " << Zet[1].mass() << endl;
 
   // */
   // end of tests on ZZ Analysis
