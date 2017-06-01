@@ -29,24 +29,24 @@ void WZAnalyzer::analyze(){
   
   foreach(const Particle &gen, *genParticles){
     if((abs(gen.id()) != 11 && abs(gen.id()) != 13) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
-    //if(abs(gen.id()) != 11 && abs(gen.id()) != 13) continue;
     cout << "id: " << gen.id() << " pt: " << gen.pt() << endl;
-       theHistograms.fill("ptAllGenParticle",  "p_{t}", 100, 0, 100, gen.pt());
-       theHistograms.fill("massAllGenParticle","mass",  100, 0, 100, gen.mass());
-       theHistograms.fill("etaAllGenParticle", "#eta",  100, 0, 100, gen.eta());
-       theHistograms.fill("YAllGenParticle",   "Y",     100, 0, 100, gen.eta());
+    theHistograms.fill("ptAllGenParticle",  "p_{t}", 100, 0, 100, gen.pt());
+    theHistograms.fill("massAllGenParticle","mass",  100, 0, 100, gen.mass());
+    theHistograms.fill("etaAllGenParticle", "#eta",  100, 0, 100, gen.eta());
+    theHistograms.fill("YAllGenParticle",   "Y",     100, 0, 100, gen.eta());
        
-       if(gen.id() == 11)       electron.insert(electron.begin(),gen);
-       else if(gen.id() == -11) electron.push_back(gen);
-       else if(gen.id() == 13)  muon.insert(muon.begin(),gen);
-       else if(gen.id() == -13) muon.push_back(gen);
+    if(gen.id() == 11)       electron.insert(electron.begin(),gen);
+    else if(gen.id() == -11) electron.push_back(gen);
+    else if(gen.id() == 13)  muon.insert(muon.begin(),gen);
+    else if(gen.id() == -13) muon.push_back(gen);
   }
 
  
   // ~~~~~~ tests on ZZ Analysis ~~~~~~
   // /*
+  cout << "~~~~~~ ZZ analysis ~~~~~~" << endl;
   if(electron.size()+muon.size()!=4) {
-    cout << "There are not enough or too many leptons in this event. They are: " << electron.size()+muon.size() << endl;
+    cout << "There are not enough or too many final leptons in this event. They are: " << electron.size()+muon.size() << endl;
     return;
   }
 
@@ -59,7 +59,6 @@ void WZAnalyzer::analyze(){
     possibleZ.push_back(Boson<Particle>(electron[0], electron[1], 23));
     possibleZ.push_back(Boson<Particle>(muon[0], muon[1], 23));
   }
-  
   else if(electron.size()==4){
     possibleZ.push_back(Boson<Particle>(electron[0], electron[2], 23));
     possibleZ.push_back(Boson<Particle>(electron[0], electron[3], 23));
@@ -103,10 +102,37 @@ void WZAnalyzer::analyze(){
  
 
   // ~~~~~~ WZ Analysis ~~~~~~
-   /*
-  if(electron.size()+muon.size()!=3) return;
+  /*
+  cout << "~~~~~~ WZ analysis ~~~~~~" << endl;
+  if(electron.size()+muon.size()!=3)  {
+    cout << "There are not enough or too many final leptons in this event. They are: " << electron.size()+muon.size() << endl;
+    return;
+  }
   
-   */
+  // ------ ZL recontructed ------
+  
+  Ztype Zet;
+  Particle lepton;
+  vector<Ztype> possibleZ;
+  vector<Particle> possiblelep;
+  vector<Zltype> Zls;
+
+  if(electron.size()==3){
+    
+  }
+  else if(electron.size()==2 && muon.size()==1){
+    Zet(electron[0], electron[1], 23);
+    Zls.push_back(Zltype(Zet, muon[0]));
+  }
+  else if(electron.size()==1 && muon.size()==2){
+    Zet(muon[0], muon[1], 23);
+    Zls.push_back(Zltype(Zet, electron[0]));    
+  }
+  else if(muon.size()==3){
+    
+  }
+
+  */
  
   
 }
