@@ -44,6 +44,7 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 			 "../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_RECO_ele_Moriond2017_v1.root",
 			 "../../VVXAnalysis/Commons/data/fakeRates.root",
 			 "../../VVXAnalysis/Commons/data/fakeRates.root")
+  , maxNumEvents_(configuration.getParameter<int>("maxNumEvents"))
   , doBasicPlots_(configuration.getParameter<bool>("doBasicPlots"))
   , doSF         (configuration.getParameter<bool>("doSF"))
   , region_      (configuration.getParameter<phys::RegionTypes>("region"))
@@ -322,7 +323,7 @@ void EventAnalyzer::loop(const std::string outputfile){
   if (theTree == 0) return;
 
 
-  Long64_t nentries = theTree->GetEntries();  
+  Long64_t nentries = maxNumEvents_ > 0 ? maxNumEvents_ : theTree->GetEntries();  
   unweightedEventsInSR     = tree()->GetEntries("ZZCand.passSRZZOnShell_");
   unweightedEventsIn2P2FCR = tree()->GetEntries("ZZCand.passSelZLL_2P2F_ZZOnShell_");
   unweightedEventsIn3P1FCR = tree()->GetEntries("ZZCand.passSelZLL_3P1F_ZZOnShell_");

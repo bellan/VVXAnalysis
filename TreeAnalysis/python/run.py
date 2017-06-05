@@ -42,6 +42,12 @@ parser.add_option("-s", "--scalefactor", dest="doSF",
                   default=False,
                   help="take SF from tree-analyzer instead of entuple internal values")
 
+parser.add_option("-n", "--nevents", dest="maxNumEvents",
+                  type='int',
+                  default= -1,
+                  help="Set max number of events to run over. Default is -1, meaning all events in the tree")
+
+
 
 (options, args) = parser.parse_args()
 
@@ -49,6 +55,7 @@ analysis     = args[0]
 typeofsample = args[1]
 region       = options.region
 doSF         = options.doSF
+maxNumEvents = options.maxNumEvents
 
 if region not in regions:
     print region, "is an unknown region. Run {0:s} -h for more details.".format(sys.argv[0])
@@ -118,7 +125,7 @@ print "\n"
 ############################################################################
 
 
-def run(executable, analysis, typeofsample, region, luminosity, doSF):
+def run(executable, analysis, typeofsample, region, luminosity, maxNumEvents, doSF):
 
 
     inputdir = baseinputdir
@@ -174,7 +181,7 @@ def run(executable, analysis, typeofsample, region, luminosity, doSF):
             print "For {0:s} {1:s} {2:.6f}".format(period, Warning("Using external cross section:"), externalXsec)
 
         print Red('\n------------------------------ {0:s} -------------------------------\n'.format(basefile))
-        command = "./{0:s} {1:s} {2:s} {3:s}/{5:s}.root {4:s}/{5:s}.root {6:.0f} {7:.5f} {8:b}".format(executable,analysis,region,inputdir,outputdir, basefile, luminosity, externalXsec,doSF)
+        command = "./{0:s} {1:s} {2:s} {3:s}/{5:s}.root {4:s}/{5:s}.root {6:.0f} {7:.5f} {8:.0f} {9:b}".format(executable,analysis,region,inputdir,outputdir, basefile, luminosity, externalXsec, maxNumEvents, doSF)
         print "Command going to be executed:", Violet(command)
         failure, output = commands.getstatusoutput(command)
         print "\n",output
@@ -209,9 +216,9 @@ def mergeDataSamples(outputLocations):
     failure, output = commands.getstatusoutput(hadd)
 
 
-def runOverCRs(executable, analysis, sample, luminosity, doSF, postfix = '', outputLocations = []):
-    outputCR2P2F = run(executable, analysis, sample, 'CR2P2F'+postfix, luminosity, doSF)    # runs over all samples in the CR2P2F control reagion
-    outputCR3P1F = run(executable, analysis, sample, 'CR3P1F'+postfix, luminosity, doSF)    # runs over all samples in the CR3P1F control reagion
+def runOverCRs(executable, analysis, sample, luminosity, maxNumEvents, doSF, postfix = '', outputLocations = []):
+    outputCR2P2F = run(executable, analysis, sample, 'CR2P2F'+postfix, luminosity, maxNumEvents, doSF)    # runs over all samples in the CR2P2F control reagion
+    outputCR3P1F = run(executable, analysis, sample, 'CR3P1F'+postfix, luminosity, maxNumEvents, doSF)    # runs over all samples in the CR3P1F control reagion
 
     if not os.path.exists('results/{0:s}_CR{1:s}'.format(analysis,postfix)): os.popen('mkdir results/{0:s}_CR{1:s}'.format(analysis,postfix))
     outputRedBkg = 'results/{0:s}_CR{1:s}/reducible_background_from_{2:s}.root'.format(analysis, postfix, sample)
@@ -230,13 +237,13 @@ if typeofsample == 'all' or typeofsample == 'data':
 
             if region == 'all':
                 for cr in regions:
-                    run(executable, analysis, sample, cr, luminosity, doSF)    # runs over all samples in all control reagions
+                    run(executable, analysis, sample, cr, luminosity, maxNumEvents, doSF)    # runs over all samples in all control reagions
             elif region == 'CR':
-                runOverCRs(executable, analysis, sample, luminosity, doSF, "",outputLocations)
+                runOverCRs(executable, analysis, sample, luminosity, maxNumEvents, doSF, "",outputLocations)
             elif region == 'CR_HZZ': 
-                runOverCRs(executable, analysis, sample, luminosity,doSF, '_HZZ',outputLocations)
+                runOverCRs(executable, analysis, sample, luminosity, maxNumEvents, doSF, '_HZZ',outputLocations)
             else:
-                outputLocations.append(run(executable, analysis, sample, region, luminosity,doSF))   # runs over all samples in a specific control reagions
+                outputLocations.append(run(executable, analysis, sample, region, luminosity, maxNumEvents, doSF))   # runs over all samples in a specific control reagions
     if typeofsample == 'data':
         mergeDataSamples(outputLocations)
 
@@ -244,13 +251,13 @@ if typeofsample == 'all' or typeofsample == 'data':
 else:
     if region == 'all':
         for cr in range(0,4):     
-            run(executable, analysis, typeofsample, cr, luminosity, doSF)  # runs over a specific sample in all control regions
+            run(executable, analysis, typeofsample, cr, luminosity, maxNumEvents, doSF)  # runs over a specific sample in all control regions
 
     elif region == 'CR':
-        runOverCRs(executable, analysis, typeofsample, luminosity, doSF)
+        runOverCRs(executable, analysis, typeofsample, luminosity, maxNumEvents, doSF)
     elif region == 'CR_HZZ':
-        runOverCRs(executable, analysis, typeofsample, luminosity, doSF, postfix='_HZZ')
+        runOverCRs(executable, analysis, typeofsample, luminosity, maxNumEvents, doSF, postfix='_HZZ')
     else:
-        run(executable, analysis, typeofsample, region, luminosity, doSF) # runs over a specific sample in a specific region
+        run(executable, analysis, typeofsample, region, luminosity, maxNumEvents, doSF) # runs over a specific sample in a specific region
 
 print "\nJob status: ", OK("DONE"),"\n"

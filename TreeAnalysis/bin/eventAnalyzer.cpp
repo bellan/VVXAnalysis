@@ -24,6 +24,7 @@ int main (int argc, char ** argv){
   analysisConfig.addParameter("outputfile"      , std::string(argv[4]));
   analysisConfig.addParameter("lumi"            , atof(argv[5]));
   analysisConfig.addParameter("externalXSection", atof(argv[6]));
+  analysisConfig.addParameter("maxNumEvents"    , atoi(argv[7]));
   analysisConfig.addParameter("doBasicPlots"    , false);
   analysisConfig.addParameter("test"    , phys::RegionTypes::CR3P1F);
   
