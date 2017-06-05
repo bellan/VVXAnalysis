@@ -22,7 +22,12 @@ using std::endl;
 
 using namespace phys;
 
+void WlllnuAnalyzer::begin(){
+  nevents = 0;
+}
+
 Int_t WlllnuAnalyzer::cut() {
+  nevents++;
   return 1;
 }
 
@@ -37,7 +42,7 @@ template<typename T> double mT(const T& p1, const T& p2){
 void WlllnuAnalyzer::analyze(){
   
   cout << "------------------------------------------------------------------"<<endl;
-  cout << "Run: " << run << " event: " << event << endl;
+  cout << "Run: " << run << " event: " << event << "  #: " << nevents << endl;
   
   //leptons
   
@@ -146,7 +151,8 @@ void WlllnuAnalyzer::analyze(){
   */
     
     // ZZ
-    DiBoson<phys::Particle,phys::Particle>  ZZ(z0,z1);
+    //DiBoson<phys::Particle,phys::Particle>  ZZ(z0,z1);
+    ZZtype ZZ(z0,z1);
     cout << "\n\n ZZ: " << ZZ.id() << " pt: " << ZZ.pt() << " mass: " << ZZ.mass() << "\n daughters: " << ZZ.daughter<Particle>(0).id() << ", " << ZZ.second().id() << " Y: " << ZZ.rapidity() << endl; //why daughter(0) instead of first() is not working?? It's templated!! Try daughter<Particle>(0)
     
     theHistograms.fill("ptZZ",   "pt ",   100,  0,   100, ZZ.pt());
