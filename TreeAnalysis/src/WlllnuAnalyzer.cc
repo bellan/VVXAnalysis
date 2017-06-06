@@ -32,15 +32,8 @@ Int_t WlllnuAnalyzer::cut() {
 }
 
 
-template<typename T> double mT(const T& p1, const T& p2){
-
-  return sqrt( 2*p1.pt()*p2.pt()*(1-TMath::Cos(physmath::deltaPhi(p1.phi(), p2.phi()))) );
-
-}
-
-
 void WlllnuAnalyzer::analyze(){
-  
+  //if(nevents != 611) return; 
   cout << "------------------------------------------------------------------"<<endl;
   cout << "Run: " << run << " event: " << event << "  #: " << nevents << endl;
   
@@ -114,8 +107,10 @@ void WlllnuAnalyzer::analyze(){
       if ( cand.daughter(0).pt() != z0.daughter(0).pt() &&  cand.daughter(1).pt() != z0.daughter(1).pt() ) z1 = cand;
     //!!!need to find a way to check if 2 particles are the same!!!!
     
+    theHistograms.fill("massZ0", "z0 mass ", 1000, 50, 150, z0.mass());
+    theHistograms.fill("massZ1", "z1 mass ", 1000, 50, 150, z1.mass());
     theHistograms.fill("massZParticles", "Z mass ", 1000, 50, 150, z0.mass());
-    theHistograms.fill("massZparticles", "Z mass ", 1000, 50, 150, z1.mass());
+    theHistograms.fill("massZParticles", "Z mass ", 1000, 50, 150, z1.mass());
 
     //some printout   
     //cout << "\n z0: " << z0 << endl;
@@ -130,9 +125,9 @@ void WlllnuAnalyzer::analyze(){
       for(unsigned int j=i+1; j<leptons.size(); j++){
 	if(leptons[j].id() == -leptons[i].id()){
 	  if(abs(leptons[i].id()) == abs(z0.daughter(0).id()) )
-	    cout << "mT(leptons " << i << ", " << j << ") - mT(z0): " << abs(mT(leptons[i], leptons[j]) - z0.mass()) << endl;
+	    cout << "mT(leptons " << i << ", " << j << ") - m(z0): " << abs(mT(leptons[i], leptons[j]) - z0.mass()) << endl;
 	  if(abs(leptons[i].id()) == abs(z1.daughter(0).id()) )
-	    cout << "mT(leptons " << i << ", " << j << ") - mT(z1): " << abs(mT(leptons[i], leptons[j]) - z1.mass()) << endl;
+	    cout << "mT(leptons " << i << ", " << j << ") - m(z1): " << abs(mT(leptons[i], leptons[j]) - z1.mass()) << endl;
 	}
 	else cout << "leptons " << i << ", " << j << ": no Z daughters candididates" << endl;
       }
@@ -149,6 +144,7 @@ void WlllnuAnalyzer::analyze(){
     cout << "deltaEta daughter 0: "   << deltaEta0 << endl;
     cout << "deltaEta daughter 1: "   << deltaEta1 << endl;
   */
+    //how do we know z0 is the first in the diagram?? I assumed it, but I'm not sure!
     
     // ZZ
     //DiBoson<phys::Particle,phys::Particle>  ZZ(z0,z1);
@@ -157,7 +153,7 @@ void WlllnuAnalyzer::analyze(){
     
     theHistograms.fill("ptZZ",   "pt ",   100,  0,   100, ZZ.pt());
     theHistograms.fill("etaZZ",  "eta ",  100,  -10, 10,  ZZ.eta());
-    theHistograms.fill("massZZ", "mass ", 1000, 0,   400, ZZ.pt());
+    theHistograms.fill("massZZ", "mass ", 1000, 0,   400, ZZ.mass());
     theHistograms.fill("YZZ",    "Y ",    100,  0,   100, ZZ.rapidity());
     //<phys::Boson<phys::Particle>,phys::Boson<phys::Particle> >
 
@@ -178,7 +174,8 @@ void WlllnuAnalyzer::analyze(){
     // std::pair<Boson<phys::Lepton> ,phys::Lepton>
     
     cout << "\nZL analysis" << endl; 
-    cout << "\n # of ZL candidates: "  << (*ZL).size() << endl;
+    cout << "\n # of ZL candidates: "  << (*ZL).size() << endl; //reco ZL
+    //there're some negative mass values: why?? 
     foreach(const ZLCompositeCandidate &zl, *ZL){
       cout << "\nZlcand: \t" << std::get<0>(zl) << "\n\t\t" << std::get<1>(zl) << endl;
       //theHistograms.fill("massBosonZl","mass Z", 100, 0, 500, (std::get<0>(zl)).mass());
@@ -187,7 +184,7 @@ void WlllnuAnalyzer::analyze(){
       theHistograms.fill("idLeptonZl"," leptons id", 5 , 9.5, 14.5, abs((zl.second).id()));
 
     }
-    if ((*ZL).size() > 0) theHistograms.fill("idAllParticlesZL"," leptons & daughters id in ZL", 10 , 30.5, 40.5, finalid);
+    if((*ZL).size() > 0) theHistograms.fill("idAllParticlesZL"," leptons & daughters id in ZL", 10 , 30.5, 40.5, finalid);
     //  if(ZL.size()>0) theHistograms.fill("daughtersZl"," Z daughters id", 100, 0, 500, abs((ZL[0].first).daughter(0).id()));
     // if(ZL.size()>1) theHistograms.fill("daughtersZl"," Z daughters id", 100, 0, 500, abs((ZL[1].first).daughter(0).id()));
     
@@ -221,25 +218,19 @@ void WlllnuAnalyzer::analyze(){
     std::stable_sort(muptSort.begin(), muptSort.end(), PtComparator());
     std::stable_sort(lepptSort.begin(), lepptSort.end(), PtComparator());
         
-    //check 1st lepton has pt>20 and 2nd pt>10
-    if(lepptSort[0].pt()<20 || lepptSort[1].pt()<10){
-      cout<<"pt leptons not sufficient (first 20Gev, second 10Gev)"<< endl;
+    //check 1st lepton has pt>20 and 2nd pt>10(mu)/12(e)
+    if(lepptSort[0].pt()<20 || (abs(lepptSort[1].id())==11 && lepptSort[1].pt()<12) || (abs(lepptSort[1].id())==13 && lepptSort[1].pt()<10)){
+      cout<<"pt leptons not sufficient (first 20Gev, second 10Gev(mu)/12Gev(e))"<< endl;
       return;
     }
-
+    
     if(finalid == 33){//3e     
       Zl.push_back(Zltype(phys::Boson<phys::Particle>(electrons[0],electrons[2], 23), electrons[1]));
-      if(electrons[1].id()<0)
-	Zl.push_back(Zltype(phys::Boson<phys::Particle>(electrons[0],electrons[1], 23), electrons[2]));
-      else
-	Zl.push_back(Zltype(phys::Boson<phys::Particle>(electrons[1],electrons[2], 23), electrons[0]));
+      electrons[1].id()<0 ? Zl.push_back(Zltype(phys::Boson<phys::Particle>(electrons[0],electrons[1], 23), electrons[2])) : Zl.push_back(Zltype(phys::Boson<phys::Particle>(electrons[1],electrons[2], 23), electrons[0]));
     }
     else if(finalid == 39){//3mu
       Zl.push_back(Zltype(phys::Boson<phys::Particle>(muons[0],muons[2], 23), muons[1]));
-      if(muons[1].id()<0)
-	Zl.push_back(Zltype(phys::Boson<phys::Particle>(muons[0],muons[1], 23), muons[2]));
-      else
-	Zl.push_back(Zltype(phys::Boson<phys::Particle>(muons[1],muons[2], 23), muons[0]));	
+      muons[1].id()<0 ? Zl.push_back(Zltype(phys::Boson<phys::Particle>(muons[0],muons[1], 23), muons[2])) : Zl.push_back(Zltype(phys::Boson<phys::Particle>(muons[1],muons[2], 23), muons[0]));	
     }
     else if(finalid == 35){//2e1mu
       Zl.push_back(Zltype(phys::Boson<phys::Particle>(electrons[0],electrons[1], 23), muons[0]));
@@ -250,7 +241,7 @@ void WlllnuAnalyzer::analyze(){
     
     cout << "\n # of my Zl candidates: "  << Zl.size() << endl;
     foreach(const Zltype zl, Zl){
-      //cout << "\nZlcand: \t" << std::get<0>(zl) << "\n\t\t" << std::get<1>(zl) << endl;
+      cout << "\nZlcand: \t" << std::get<0>(zl) << "\n\t\t" << std::get<1>(zl) << endl;
       //double deltaEtaZl =zl.first.eta()-zl.second.eta();
       //theHistograms.fill("massBosonMyZl","mass Z", 100, 0, 500, (std::get<0>(zl)).mass());
       //theHistograms.fill("massLeptonMyZl","mass l", 100, 0, 0.12, (std::get<1>(zl)).mass());
@@ -258,7 +249,7 @@ void WlllnuAnalyzer::analyze(){
       theHistograms.fill("idLeptonMyZl",   " leptons id",     5,   9.5, 14.5, abs((zl.second).id()));
       //theHistograms.fill("deltaEtaMyZl",   " delta Eta ",     100, -10, 10,   deltaEtaZl );
       
-      cout << "\nZl good cand (right deltaEta and pt)\t" << " leptons forming Z: " << abs(zl.first.daughter(0).id()) << " other lepton: " << abs(zl.second.id()) << endl;
+      //cout << "\nZl good cand (right deltaEta and pt)\t" << " leptons forming Z: " << abs(zl.first.daughter(0).id()) << " other lepton: " << abs(zl.second.id()) << endl;
     }
     if (Zl.size() > 0) theHistograms.fill("idAllParticlesMyZl"," leptons & daughters id in Zl", 10 , 30.5, 40.5, finalid);
 
@@ -274,7 +265,131 @@ void WlllnuAnalyzer::analyze(){
     return;
  
   }
-  
+  /*
+  else{
+    cout<<"ZL size: "<<(*ZL).size()<<endl;
+    foreach(const ZLCompositeCandidate &zl, *ZL){
+      cout << "\nZlcand: \t" << std::get<0>(zl) << "\n\t\t" << std::get<1>(zl) << endl;
+    }
+  }*/
 }
 
 //there are still some events where I form Zl but it has no ZL!! (the ones with 3e)
+// event: 7702027  #: 1988 -> 3mu, 2nd mu has pt<10 BUT there're 2 ZL reco
+// event: 7701979  #: 1957 -> 3e, all good (eta and pt) BUT no ZL reco
+// event: 7701973  #: 1953 -> 3e, IDEM
+// event: 7701934  #: 1928 -> 2e1mu, IDEM
+// event: 7701871  #: 1894 -> 3e, IDEM
+// event: 7701864  #: 1891 -> 2mu1e, IDEM
+// event: 7701836  #: 1873 -> 3e, IDEM
+// event: 7701827  #: 1867 -> 3e, IDEM
+// event: 7701826  #: 1866 -> 3e, IDEM
+// event: 7701817  #: 1862 -> 3e, IDEM
+// event: 7701815  #: 1860 -> 2mu1e, IDEM
+// event: 7701765  #: 1828 -> 2mu1e
+// event: 7701753  #: 1823 -> 3e, IDEM
+// event: 7701730  #: 1808 -> 2mu1e
+// event: 6879026  #: 1741 -> 2mu1e
+// event: 6879024  #: 1739 -> 3e
+// event: 6878960  #: 1704 -> 3e
+// event: 6878948  #: 1699 -> 3mu, 2nd mu has has pt<10 BUT there're 2 ZL reco
+// event: 6878934  #: 1691 -> 3e, all good (eta and pt) BUT no ZL reco
+// event: 6878932  #: 1690 -> 3mu (!)
+// event: 6878916  #: 1680 -> 3e
+// event: 6878907  #: 1673 -> 3mu
+// event: 6878894  #: 1664 -> 3e
+// event: 6878873  #: 1655 -> 2mu1e
+// event: 6878834  #: 1633 -> 3e
+// event: 6878751  #: 1588 -> 3mu
+// event: 6878746  #: 1586 -> 2mu1e
+// event: 6878742  #: 1583 -> 3e
+// event: 4903971  #: 1541 -> 2e1mu
+// event: 4903893  #: 1491 -> 2e1mu
+// event: 4903857  #: 1472 -> 3e
+// event: 4903788  #: 1440 -> 2e1mu
+// event: 4903762  #: 1424 -> 2e1mu
+// event: 4903750  #: 1418 -> 3mu
+// event: 4903747  #: 1417 -> 2e1mu
+// event: 4903741  #: 1416 -> 3e
+// event: 4903724  #: 1410 -> 2mu1e
+// event: 4903717  #: 1406 -> 3e
+// event: 4903708  #: 1402 -> 3mu
+// event: 4903668  #: 1375 -> 3e
+// event: 4903653  #: 1369 -> 3e
+// event: 4903566  #: 1322 -> 3e
+// event: 4899910  #: 1287 -> 3e
+// event: 4899893  #: 1276 -> 2e1mu
+// event: 4899865  #: 1264 -> 3mu
+// event: 4899789  #: 1215 -> 2e1mu
+// event: 4899779  #: 1210 -> 3mu
+// event: 4899772  #: 1204 -> 3e
+// event: 4899732  #: 1184 -> 2e1mu
+// event: 4899722  #: 1179 -> 3e
+// event: 4899711  #: 1174 -> 3mu
+// event: 4899689  #: 1165 -> 2e1mu
+// event: 4899688  #: 1164 -> 3e
+// event: 4899677  #: 1158 -> 2e1mu
+// event: 4899662  #: 1150 -> 2e1mu
+// event: 4899626  #: 1127 -> 3e
+// event: 4899552  #: 1078 -> 2e1mu
+// event: 4899496  #: 1042 -> 2mu1e
+// event: 4899492  #: 1038 -> 3e
+// event: 4877486  #: 1034 -> 3e
+// event: 4877485  #: 1033 -> 3e
+// event: 4877466  #: 1022 -> 3e
+// event: 4877435  #: 1008 -> 3e
+// event: 4877369  #: 968 -> 3e
+// event: 4877311  #: 932 -> 3mu, 2nd mu has has pt<10 BUT there're 2 ZL reco
+// event: 4877304  #: 928 -> 3e
+// event: 4877293  #: 921 -> 3e
+// event: 4877226  #: 886 -> 2e1mu
+// event: 4877210  #: 876 -> 3e
+// event: 4877186  #: 864 -> 2mu1e
+// event: 4877118  #: 825 -> 3mu
+// event: 4877106  #: 816 -> 3e
+// event: 4877065  #: 795 -> 3e
+// event: 4877045  #: 780 -> 3e
+// event: 3553805  #: 757 -> 3mu, 2nd mu has has pt<10 BUT there're 2 ZL reco
+// event: 3553753  #: 725 -> 3mu
+// event: 3553701  #: 694 -> 3mu
+// event: 3553640  #: 662 -> 2mu1e
+// event: 3553623  #: 656 -> 3e
+// event: 3553572  #: 629 -> 3mu
+// event: 3553553  #: 618 -> 2e1mu
+// event: 3553543  #: 611 -> 3mu, one mu has eta>2.4 BUT there's 1 ZL reco WITH e AS OTHER LEPTON!!!
+// event: 3553469  #: 565 -> 3e
+// event: 3553388  #: 509 -> 3e
+// event: 1542758  #: 505 -> 3mu
+// event: 1542728  #: 486 -> 2mu1e
+// event: 1542692  #: 465 -> 3e
+// event: 1542684  #: 460 -> 3e
+// event: 1542660  #: 441 -> 3e
+// event: 1542657  #: 439 -> 2mu1e
+// event: 1542575  #: 390 -> 2e1mu
+// event: 1542574  #: 389 -> 3e
+// event: 1542424  #: 314 -> 2mu1e
+// event: 1542419  #: 310 -> 3e
+// event: 1542408  #: 302 -> 3e
+// event: 1542397  #: 294 -> 3e
+// event: 1542387  #: 288 -> 3e
+// event: 1542381  #: 284 -> 2e1mu
+// event: 1542378  #: 282 -> 2e1mu
+// event: 1542370  #: 279 -> 3e
+// event: 1542361  #: 272 -> 3e
+// event: 1542356  #: 268 -> 3e
+// event: 1542332  #: 256 -> 3e
+// event: 367724  #: 242 -> 3e
+// event: 367620  #: 184 -> 3mu
+// event: 367570  #: 162 -> 2mu1e
+// event: 367520  #: 135 -> 3e
+// event: 367506  #: 127 -> 3mu
+// event: 367470  #: 112 -> 3e
+// event: 367412  #: 80 -> 3e
+// event: 367409  #: 77 -> 3e
+// event: 367348  #: 41 -> 3e
+// event: 367338  #: 32 -> 3e
+// event: 367326  #: 25 -> 2e1mu
+// event: 367318  #: 21 -> 3mu
+// event: 367313  #: 17 -> 3e
+// event: 367283  #: 1 -> 3e
+// TOT anomalous events (WZ sample): 117/2000
