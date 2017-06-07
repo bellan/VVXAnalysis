@@ -33,29 +33,34 @@ Int_t WlllnuAnalyzer::cut() {
 
 
 void WlllnuAnalyzer::analyze(){
-  //if(nevents != 611) return; 
+  //  if(event != 7701979 && event != 7701973 && event != 7701836  && event != 7701827  && event != 7701817  && event !=  7701753  ) return; 
   cout << "------------------------------------------------------------------"<<endl;
   cout << "Run: " << run << " event: " << event << "  #: " << nevents << endl;
   
   //leptons
   
   std::vector<phys::Particle> leptons;
+  phys::Particle nu;
   std::vector<Particle> electrons; // Z daughters
-  std::vector<Particle> muons; // Z daughters  
+  std::vector<Particle> muons; // Z daughters
   int finalid = 0;
 
    //find leptons
   foreach(const phys::Particle &gen, *genParticles){    
-    if( (abs(gen.id()) != 11 && abs(gen.id()) != 13) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
+    if( (abs(gen.id()) != 11 && abs(gen.id()) != 13 && (abs(gen.id()) != 12) && (abs(gen.id()) != 14)) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
     //if(abs(gen.id()) != 11 && abs(gen.id()) != 13) continue;
     finalid += abs(gen.id());
-    //cout << " genLepton: " << gen << endl;
-    cout << "id: " << gen.id() << " pt: " << gen.pt() << " mass: " << gen.mass() << " eta: " << gen.eta() << endl;
+    cout << " genLepton: " << gen << endl;
+    //cout << "id: " << gen.id() << " pt: " << gen.pt() << " mass: " << gen.mass() << " eta: " << gen.eta() << endl;
     theHistograms.fill("ptAllGenParticle",   "pt ",   100, 0,   200,  gen.pt());
     theHistograms.fill("etaAllGenParticle",  "eta ",  100, -10, 10,   gen.eta());
     theHistograms.fill("massAllGenParticle", "mass ", 100, 0,   0.12, gen.mass());
     theHistograms.fill("YAllGenParticle",    "Y ",    100, 0,   100,  gen.rapidity());
-    leptons.push_back(gen);
+    //leptons.push_back(gen);
+    bool isLepton = abs(gen.id()) == 11 || abs(gen.id()) == 13;
+    //isLepton ? leptons.push_back(gen) : nu=gen;
+    if(isLepton) leptons.push_back(gen);
+    else nu=gen;
     if (gen.id() == 11){
       electrons.insert(electrons.begin(),gen); //first all e-, then all e+
       //theHistograms.fill("ptElectrons","pt e", 100, 0, 200, gen.pt());
@@ -107,10 +112,10 @@ void WlllnuAnalyzer::analyze(){
       if ( cand.daughter(0).pt() != z0.daughter(0).pt() &&  cand.daughter(1).pt() != z0.daughter(1).pt() ) z1 = cand;
     //!!!need to find a way to check if 2 particles are the same!!!!
     
-    theHistograms.fill("massZ0", "z0 mass ", 1000, 50, 150, z0.mass());
-    theHistograms.fill("massZ1", "z1 mass ", 1000, 50, 150, z1.mass());
-    theHistograms.fill("massZParticles", "Z mass ", 1000, 50, 150, z0.mass());
-    theHistograms.fill("massZParticles", "Z mass ", 1000, 50, 150, z1.mass());
+    theHistograms.fill("massGenZ0", "z0 mass ", 1000, 50, 150, z0.mass());
+    theHistograms.fill("massGenZ1", "z1 mass ", 1000, 50, 150, z1.mass());
+    theHistograms.fill("massGenZParticles", "Z mass ", 1000, 50, 150, z0.mass());
+    theHistograms.fill("massGenZParticles", "Z mass ", 1000, 50, 150, z1.mass());
 
     //some printout   
     //cout << "\n z0: " << z0 << endl;
@@ -151,10 +156,10 @@ void WlllnuAnalyzer::analyze(){
     ZZtype ZZ(z0,z1);
     cout << "\n\n ZZ: " << ZZ.id() << " pt: " << ZZ.pt() << " mass: " << ZZ.mass() << "\n daughters: " << ZZ.daughter<Particle>(0).id() << ", " << ZZ.second().id() << " Y: " << ZZ.rapidity() << endl;
     
-    theHistograms.fill("ptZZ",   "pt ",   100,  0,   100, ZZ.pt());
-    theHistograms.fill("etaZZ",  "eta ",  100,  -10, 10,  ZZ.eta());
-    theHistograms.fill("massZZ", "mass ", 1000, 0,   400, ZZ.mass());
-    theHistograms.fill("YZZ",    "Y ",    100,  0,   100, ZZ.rapidity());
+    theHistograms.fill("ptGenZZ",   "pt ",   100,  0,   100, ZZ.pt());
+    theHistograms.fill("etaGenZZ",  "eta ",  100,  -10, 10,  ZZ.eta());
+    theHistograms.fill("massGenZZ", "mass ", 1000, 0,   400, ZZ.mass());
+    theHistograms.fill("YGenZZ",    "Y ",    100,  0,   100, ZZ.rapidity());
     
     return;
   }
@@ -167,22 +172,22 @@ void WlllnuAnalyzer::analyze(){
   }
   
   //ZL
-  else if(leptons.size()==3){
+  else if(leptons.size()==3 && (finalid == 33 || finalid == 35 || finalid == 37 || finalid == 39)){ //3l
 
     //----RECO particles----//
         
     cout << "\nZL analysis" << endl; 
     cout << "\n # of ZL candidates: "  << (*ZL).size() << endl; //reco ZL
-    //there're some negative mass values: why?? 
+    //there're some negative or "strange" electrons' mass values: why?? eg  event: 3553456  #: 555,  event: 1542753  #: 502,  event: 7702004  #: 1973 -> depends on p4, in any case so small (mass) that doesn't matter
     foreach(const ZLCompositeCandidate &zl, *ZL){
       cout << "\nZlcand: \t" << std::get<0>(zl) << "\n\t\t" << std::get<1>(zl) << endl;
-      //theHistograms.fill("massBosonZl","mass Z", 100, 0, 500, (std::get<0>(zl)).mass());
+      theHistograms.fill("massBosonRecoZl","mass Z", 100, 0, 500, (std::get<0>(zl)).mass());
       //theHistograms.fill("massLeptonZl","mass l", 100, 0, 0.12, (std::get<1>(zl)).mass());
-      theHistograms.fill("idDaughterZl"," Z daughters id", 5 , 9.5, 14.5, abs((zl.first).daughter(0).id()));
-      theHistograms.fill("idLeptonZl"," leptons id", 5 , 9.5, 14.5, abs((zl.second).id()));
+      //theHistograms.fill("idDaughterRecoZl"," Z daughters id", 5 , 9.5, 14.5, abs((zl.first).daughter(0).id()));
+      //theHistograms.fill("idLeptonRecoZl"," leptons id", 5 , 9.5, 14.5, abs((zl.second).id()));
 
     }
-    if((*ZL).size() > 0) theHistograms.fill("idAllParticlesZL"," leptons & daughters id in ZL", 10 , 30.5, 40.5, finalid);
+    if((*ZL).size() > 0) theHistograms.fill("idParticlesRecoZL"," leptons & daughters id in ZL", 10 , 30.5, 40.5, finalid);
     // if(ZL.size()>0) theHistograms.fill("daughtersZl"," Z daughters id", 100, 0, 500, abs((ZL[0].first).daughter(0).id()));
     // if(ZL.size()>1) theHistograms.fill("daughtersZl"," Z daughters id", 100, 0, 500, abs((ZL[1].first).daughter(0).id()));
     
@@ -241,14 +246,14 @@ void WlllnuAnalyzer::analyze(){
     cout << "\n # of my Zl candidates: "  << Zl.size() << endl;
     foreach(const Zltype zl, Zl){
       cout << "\nZlcand: \t" << std::get<0>(zl) << "\n\t\t" << std::get<1>(zl) << endl;
-      //theHistograms.fill("massBosonMyZl","mass Z", 100, 0, 500, (std::get<0>(zl)).mass());
+      theHistograms.fill("massBosonGenZl","mass Z", 100, 0, 500, (std::get<0>(zl)).mass());
       //theHistograms.fill("massLeptonMyZl","mass l", 100, 0, 0.12, (std::get<1>(zl)).mass());
-      theHistograms.fill("idDaughterMyZl", " Z daughters id", 5,   9.5, 14.5, abs((zl.first).daughter(0).id()));
-      theHistograms.fill("idLeptonMyZl",   " leptons id",     5,   9.5, 14.5, abs((zl.second).id()));
+      //theHistograms.fill("idDaughterMyZl", " Z daughters id", 5,   9.5, 14.5, abs((zl.first).daughter(0).id()));
+      //theHistograms.fill("idLeptonMyZl",   " leptons id",     5,   9.5, 14.5, abs((zl.second).id()));
       
       //cout << "\nZl good cand (right deltaEta and pt)\t" << " leptons forming Z: " << abs(zl.first.daughter(0).id()) << " other lepton: " << abs(zl.second.id()) << endl;
     }
-    if (Zl.size() > 0) theHistograms.fill("idAllParticlesMyZl"," leptons & daughters id in Zl", 10 , 30.5, 40.5, finalid);
+    if (Zl.size() > 0) theHistograms.fill("idParticlesGenZl"," leptons & daughters id in Zl", 10 , 30.5, 40.5, finalid);
 
     //some histograms
     //if(eptSort.size()  > 0) theHistograms.fill("pte0",  "pt e0",  100, 0, 200, eptSort[0].pt());
@@ -260,13 +265,20 @@ void WlllnuAnalyzer::analyze(){
 
     return;
   }
-  /*
-  else{
-    cout<<"ZL size: "<<(*ZL).size()<<endl;
-    foreach(const ZLCompositeCandidate &zl, *ZL){
-      cout << "\nZlcand: \t" << std::get<0>(zl) << "\n\t\t" << std::get<1>(zl) << endl;
-    }
-  }*/
+
+  //Wlllnu
+  if(leptons.size() == 3 && (finalid == 45 || finalid == 49 || finalid == 53)){//3l1nu
+    TLorentzVector Ptot = nu.p4();
+    foreach(const Particle lep, leptons)
+      Ptot += lep.p4();
+    double masslllnu = Ptot.M();
+    theHistograms.fill("massGenlllnu","mass lllnu", 75, 0, 600, masslllnu);
+    cout << "\n masslllnu: " << masslllnu << endl;
+
+    return;
+  }
+
+
 }
 
 //there are still some events where I form Zl but it has no ZL!! (all the ones with 3e)
