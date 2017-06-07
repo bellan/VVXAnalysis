@@ -29,7 +29,7 @@ int main (int argc, char ** argv){
   analysisConfig.addParameter("test"    , phys::RegionTypes::CR3P1F);
   
 
-  if(atof(argv[7]))   analysisConfig.addParameter("doSF"    , true);
+  if(atof(argv[8]))   analysisConfig.addParameter("doSF"    , true);
   else   analysisConfig.addParameter("doSF"    , false);
 
   cout<<Yellow("Analyzing "+analysisConfig.getParameter<std::string>("filename")+" ... please wait... ")<<endl ;
