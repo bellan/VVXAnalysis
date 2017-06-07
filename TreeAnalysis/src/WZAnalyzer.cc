@@ -43,10 +43,10 @@ void WZAnalyzer::analyze(){
 
  
   // ~~~~~~ tests on ZZ Analysis ~~~~~~
-  // /*
-  cout << "~~~~~~ ZZ analysis ~~~~~~" << endl;
+  //
+  /*
   if(electron.size()+muon.size()!=4) {
-    cout << "There are not enough or too many final leptons in this event. They are: " << electron.size()+muon.size() << endl;
+    cout << "There are not enough or too many final leptons in this event." << endl;
     return;
   }
 
@@ -91,25 +91,26 @@ void WZAnalyzer::analyze(){
 
   theHistograms.fill("ptZZ",   "ZZ p_{t}", 100,  0, 100, doppelZ.pt());
   theHistograms.fill("etaZZ",  "ZZ #eta",  100,-10,  10, doppelZ.eta());
-  theHistograms.fill("massZZ", "ZZ mass", 1000,  0, 400, doppelZ.pt());
+  theHistograms.fill("massZZ", "ZZ mass", 1000,  0, 400, doppelZ.mass());
   theHistograms.fill("YZZ",    "ZZ Y",     100,  0, 100, doppelZ.rapidity());
   
   cout << "Reconstructed ZZ: " << doppelZ << endl;
-  
 
-  // */
+  //add transvers mass
+  
+  //
+   */
   // ~~~~~~ end of tests on ZZ Analysis ~~~~~~
  
 
   // ~~~~~~ WZ Analysis ~~~~~~
-  /*
-  cout << "~~~~~~ WZ analysis ~~~~~~" << endl;
+  // /*
   if(electron.size()+muon.size()!=3)  {
-    cout << "There are not enough or too many final leptons in this event. They are: " << electron.size()+muon.size() << endl;
+    cout << "There are not enough or too many final leptons in this event." << endl;
     return;
   }
   
-  // ------ ZL recontructed ------
+  // ------ ZL reconstructed by me ------
   
   Ztype Zet;
   Particle lepton;
@@ -118,21 +119,49 @@ void WZAnalyzer::analyze(){
   vector<Zltype> Zls;
 
   if(electron.size()==3){
+    possibleZ.push_back(Ztype(electron[0], electron[2], 23));
+    Zls.push_back(Zltype(possibleZ[0], electron[1]));
     
+    if(electron[0].id()==electron[1].id()){
+      possibleZ.push_back(Ztype(electron[1], electron[2], 23));
+      Zls.push_back(Zltype(possibleZ[1], electron[0]));
+    }
+    else{
+      possibleZ.push_back(Ztype(electron[0], electron[1], 23));
+      Zls.push_back(Zltype(possibleZ[1], electron[2]));
+    }
   }
+  
   else if(electron.size()==2 && muon.size()==1){
-    Zet(electron[0], electron[1], 23);
+    Zet = Ztype(electron[0], electron[1], 23);
     Zls.push_back(Zltype(Zet, muon[0]));
   }
+  
   else if(electron.size()==1 && muon.size()==2){
-    Zet(muon[0], muon[1], 23);
+    Zet = Ztype(muon[0], muon[1], 23);
     Zls.push_back(Zltype(Zet, electron[0]));    
   }
+  
   else if(muon.size()==3){
+    possibleZ.push_back(Ztype(muon[0], muon[2], 23));
+    Zls.push_back(Zltype(possibleZ[0], muon[1]));
+    
+    if(muon[0].id()==muon[1].id()){
+      possibleZ.push_back(Ztype(muon[1], muon[2], 23));
+      Zls.push_back(Zltype(possibleZ[1], muon[0]));
+    }
+    else{
+      possibleZ.push_back(Ztype(muon[0], muon[1], 23));
+      Zls.push_back(Zltype(possibleZ[1], muon[2]));
+    }
     
   }
 
-  */
+  // ------ ZL reconstructed  ------
+
+  
+  
+  // */
  
   
 }
