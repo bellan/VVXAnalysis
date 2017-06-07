@@ -32,6 +32,8 @@ public:
 
   virtual ~WlllnuAnalyzer(){}
 
+  virtual void begin();
+  
   virtual void analyze();
   
   virtual Int_t cut();
@@ -39,6 +41,8 @@ public:
   
  
  private:
+  Int_t nevents;
+  
   friend class Selector<WlllnuAnalyzer>;
   template< class PAR >
     bool ZBosonDefinition(phys::Boson<PAR> cand) const{
@@ -62,8 +66,6 @@ public:
     return false;
     
   }
-  
-  
   
 };
 #endif
