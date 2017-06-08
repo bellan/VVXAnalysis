@@ -47,7 +47,7 @@ void WlllnuAnalyzer::analyze(){
 
    //find leptons
   foreach(const phys::Particle &gen, *genParticles){    
-    if( (abs(gen.id()) != 11 && abs(gen.id()) != 13 && (abs(gen.id()) != 12) && (abs(gen.id()) != 14)) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
+    if( (abs(gen.id()) != 11 && abs(gen.id()) != 13 && abs(gen.id()) != 12 && abs(gen.id()) != 14) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
     //if(abs(gen.id()) != 11 && abs(gen.id()) != 13) continue;
     finalid += abs(gen.id());
     //    cout << " genLepton: " << gen << endl;
@@ -121,10 +121,12 @@ void WlllnuAnalyzer::analyze(){
     cout << "\nz1: " << z1.id() << " mass: " << z1.mass() << "\tz1.daughter(0).id(): " << z1.daughter(0).id() << " z1.daughter(1).id(): " << z1.daughter(1).id() << "\tz1.daughter(0).pt(): " << z1.daughter(0).pt() << " z1.daughter(1).pt(): " << z1.daughter(1).pt() << "\n  mTdaughters-mZ1: "<< mT(z1.daughter(0), z1.daughter(1)) - z1.mass() << endl;
 
     //comparing mZ with mT daughters
-    theHistograms.fill("mZmT", "mZ vs mT daughters", 300, 0, 150, 300, 0, 150, mT(z0.daughter(0),z0.daughter(1)), z0.mass());
-    theHistograms.fill("mZmT", "mZ vs mT daughters", 300, 0, 150, 300, 0, 150, mT(z1.daughter(0),z1.daughter(1)), z1.mass());
+    theHistograms.fill("mZmT", "mZ vs mT daughters", 600, 0, 150, 600, 0, 150, mT(z0.daughter(0),z0.daughter(1)), z0.mass());
+    theHistograms.fill("mZmT", "mZ vs mT daughters", 600, 0, 150, 600, 0, 150, mT(z1.daughter(0),z1.daughter(1)), z1.mass());
+    theHistograms.fill("deltamZmT", "mZ - mT daughters", 100, -100, 100, z0.mass() - mT(z0.daughter(0),z0.daughter(1)));
+    theHistograms.fill("deltamZmT", "mZ - mT daughters", 100, -100, 100, z1.mass() - mT(z1.daughter(0),z1.daughter(1)));
     
-    /*
+    
     //making z0,z1 with mT criteria (mT daughters closer to ZMASS)
     std::stable_sort(Zcandidates.begin(), Zcandidates.end(), mTComparator(ZMASS));
     phys::Boson<phys::Particle> z0mT = Zcandidates[0];
@@ -140,7 +142,7 @@ void WlllnuAnalyzer::analyze(){
     //comparing z0mT, z1mT to z0, z1
     int sameZandZmT = ((isTheSame(z0, z0mT) && isTheSame(z1,z1mT)) || (isTheSame(z0, z1mT) && isTheSame(z1,z0mT))) ? 1 : 0;
     theHistograms.fill("sameGenZ", "Z and ZmT are the same? ", 2 , -0.5, 1.5, sameZandZmT);
-       */
+   
     /*
     //comparing mT leptons with z0, z1 (a bit messy!!)      
     cout << "\nComparing mT leptons and mass z0/z1" << endl;
@@ -151,12 +153,12 @@ void WlllnuAnalyzer::analyze(){
 	  continue;
 	}
 	if(abs(leptons[i].id()) == abs(z0.daughter(0).id()) )
-	  cout << "mT(leptons " << i << ", " << j << ") - m(z0): " << abs(mT(leptons[i], leptons[j]) - z0.mass()) << /* "\tid: " << leptons[i].id() << " " << leptons[j].id() << endl;
+	cout << "mT(leptons " << i << ", " << j << ") - m(z0): " << mT(leptons[i], leptons[j]) - z0.mass() << /* "\tid: " << leptons[i].id() << " " << leptons[j].id() << endl;
 	if(abs(leptons[i].id()) == abs(z1.daughter(0).id()) )
-	  cout << "mT(leptons " << i << ", " << j << ") - m(z1): " << abs(mT(leptons[i], leptons[j]) - z1.mass()) <</* "\tid: " << leptons[i].id() << " " << leptons[j].id() << endl;
+	  cout << "mT(leptons " << i << ", " << j << ") - m(z1): " << mT(leptons[i], leptons[j]) - z1.mass() <</* "\tid: " << leptons[i].id() << " " << leptons[j].id() << endl;
       }
-    }
-    */
+    }*/
+    
     /*   //deltaR, deltaEta, deltaPhi
     double deltaEta0 = z0.daughter(0).eta() - z1.eta(); //between z1 and z0's first daughter
     double deltaEta1 = z0.daughter(1).eta() - z1.eta(); //between z1 and z0's first daughter
@@ -177,7 +179,7 @@ void WlllnuAnalyzer::analyze(){
     
     theHistograms.fill("ptGenZZ",   "pt ",   100,  0,   100, ZZ.pt());
     theHistograms.fill("etaGenZZ",  "eta ",  100,  -10, 10,  ZZ.eta());
-    theHistograms.fill("massGenZZ", "mass ", 1000, 0,   400, ZZ.mass());
+    theHistograms.fill("massGenZZ", "mass ", 100, 0,   400, ZZ.mass());
     theHistograms.fill("YGenZZ",    "Y ",    100,  0,   100, ZZ.rapidity());
     
     return;
@@ -189,7 +191,7 @@ void WlllnuAnalyzer::analyze(){
     cout << "\nLess than 3 leptons" << endl;
     return;
   }
-  else if(neutrinos.size()<1){
+  else if(neutrinos.size()>1){
     cout << "\nMore than 1 nu" << endl;
     return;
   }
@@ -286,6 +288,14 @@ void WlllnuAnalyzer::analyze(){
     //if(muptSort.size() > 1) theHistograms.fill("ptmu1", "pt mu1", 100, 0, 200, muptSort[1].pt());
     //if(muptSort.size() > 2) theHistograms.fill("ptmu2", "pt mu2", 100, 0, 200, muptSort[2].pt());
 
+    //--------------------------------------------------//
+    //comparing mZ with mT daughters
+    foreach(const Zltype zl, Zl){
+      if(Zl.size() == 0) continue;
+      theHistograms.fill("mZlmT", "mZ vs mT daughters", 150, 0, 150, 150, 0, 150, mT((std::get<0>(zl)).daughter(0),(std::get<0>(zl)).daughter(1)), (std::get<0>(zl)).mass());
+      theHistograms.fill("deltamZlmT", "mZ - mT daughters", 100, -100, 100, (std::get<0>(zl)).mass() - mT((std::get<0>(zl)).daughter(0),(std::get<0>(zl)).daughter(1)));
+    }
+    
     return;
   }
 
