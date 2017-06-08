@@ -39,8 +39,8 @@ void WlllnuAnalyzer::analyze(){
   
   //leptons
   
-  std::vector<phys::Particle> leptons;
-  phys::Particle nu;
+  std::vector<phys::Particle > leptons;
+  std::vector<phys::Particle > neutrinos;
   std::vector<Particle> electrons; // Z daughters
   std::vector<Particle> muons; // Z daughters
   int finalid = 0;
@@ -50,17 +50,14 @@ void WlllnuAnalyzer::analyze(){
     if( (abs(gen.id()) != 11 && abs(gen.id()) != 13 && (abs(gen.id()) != 12) && (abs(gen.id()) != 14)) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
     //if(abs(gen.id()) != 11 && abs(gen.id()) != 13) continue;
     finalid += abs(gen.id());
-    cout << " genLepton: " << gen << endl;
-    //cout << "id: " << gen.id() << " pt: " << gen.pt() << " mass: " << gen.mass() << " eta: " << gen.eta() << endl;
+    //    cout << " genLepton: " << gen << endl;
+    cout << "id: " << gen.id() << " pt: " << gen.pt() << " mass: " << gen.mass() << " eta: " << gen.eta() << endl;
     theHistograms.fill("ptAllGenParticle",   "pt ",   100, 0,   200,  gen.pt());
     theHistograms.fill("etaAllGenParticle",  "eta ",  100, -10, 10,   gen.eta());
     theHistograms.fill("massAllGenParticle", "mass ", 100, 0,   0.12, gen.mass());
     theHistograms.fill("YAllGenParticle",    "Y ",    100, 0,   100,  gen.rapidity());
-    //leptons.push_back(gen);
     bool isLepton = abs(gen.id()) == 11 || abs(gen.id()) == 13;
-    //isLepton ? leptons.push_back(gen) : nu=gen;
-    if(isLepton) leptons.push_back(gen);
-    else nu=gen;
+    isLepton ? leptons.push_back(gen) : neutrinos.push_back(gen);
     if (gen.id() == 11){
       electrons.insert(electrons.begin(),gen); //first all e-, then all e+
       //theHistograms.fill("ptElectrons","pt e", 100, 0, 200, gen.pt());
@@ -104,6 +101,8 @@ void WlllnuAnalyzer::analyze(){
       Zcandidates.push_back(phys::Boson<Particle>(electrons[0],electrons[1], 23));
       Zcandidates.push_back(phys::Boson<Particle>(muons[0],muons[1], 23));
     }
+
+    //making z0, z1 with mass criteria (mass closer to ZMASS)
     std::stable_sort(Zcandidates.begin(), Zcandidates.end(), phys::MassComparator(ZMASS));
     z0 = Zcandidates[0];
     //foreach(const phys::Boson<phys::Particle> cand, Zcandidates)
@@ -111,18 +110,38 @@ void WlllnuAnalyzer::analyze(){
     foreach(const phys::Boson<phys::Particle> cand, Zcandidates)
       if ( cand.daughter(0).pt() != z0.daughter(0).pt() &&  cand.daughter(1).pt() != z0.daughter(1).pt() ) z1 = cand;
     //!!!need to find a way to check if 2 particles are the same!!!!
-    
     theHistograms.fill("massGenZ0", "z0 mass ", 1000, 50, 150, z0.mass());
     theHistograms.fill("massGenZ1", "z1 mass ", 1000, 50, 150, z1.mass());
     theHistograms.fill("massGenZParticles", "Z mass ", 1000, 50, 150, z0.mass());
     theHistograms.fill("massGenZParticles", "Z mass ", 1000, 50, 150, z1.mass());
 
-    //some printout   
     //cout << "\n z0: " << z0 << endl;
-    cout << "\nz0: " << z0.id() << " mass: " << z0.mass() << "\tz0.daughter(0).id(): " << z0.daughter(0).id() << " z0.daughter(1).id(): " << z0.daughter(1).id() << endl;
+    cout << "\nz0: " << z0.id() << " mass: " << z0.mass() << "\tz0.daughter(0).id(): " << z0.daughter(0).id() << " z0.daughter(1).id(): " << z0.daughter(1).id() << "\tz0.daughter(0).pt(): " << z0.daughter(0).pt() << " z0.daughter(1).pt(): " << z0.daughter(1).pt() << "\n  mTdaughters-mZ0: "<< mT(z0.daughter(0), z0.daughter(1)) - z0.mass() << endl;
     //cout << " z1: " << z1 << endl;
-    cout << "\nz1: " << z1.id() << " mass: " << z1.mass() << "\tz1.daughter(0).id(): " << z1.daughter(0).id() << " z1.daughter(1).id(): " << z1.daughter(1).id() << endl;
-      
+    cout << "\nz1: " << z1.id() << " mass: " << z1.mass() << "\tz1.daughter(0).id(): " << z1.daughter(0).id() << " z1.daughter(1).id(): " << z1.daughter(1).id() << "\tz1.daughter(0).pt(): " << z1.daughter(0).pt() << " z1.daughter(1).pt(): " << z1.daughter(1).pt() << "\n  mTdaughters-mZ1: "<< mT(z1.daughter(0), z1.daughter(1)) - z1.mass() << endl;
+
+    //comparing mZ with mT daughters
+    theHistograms.fill("mZmT", "mZ vs mT daughters", 300, 0, 150, 300, 0, 150, mT(z0.daughter(0),z0.daughter(1)), z0.mass());
+    theHistograms.fill("mZmT", "mZ vs mT daughters", 300, 0, 150, 300, 0, 150, mT(z1.daughter(0),z1.daughter(1)), z1.mass());
+    
+    /*
+    //making z0,z1 with mT criteria (mT daughters closer to ZMASS)
+    std::stable_sort(Zcandidates.begin(), Zcandidates.end(), mTComparator(ZMASS));
+    phys::Boson<phys::Particle> z0mT = Zcandidates[0];
+    phys::Boson<phys::Particle> z1mT;
+    foreach(const phys::Boson<phys::Particle> cand, Zcandidates)
+      if ( cand.daughter(0).pt() != z0mT.daughter(0).pt() &&  cand.daughter(1).pt() != z0mT.daughter(1).pt() ) z1mT = cand;
+    theHistograms.fill("massGenZmT", "Z (selected by mT) mass ", 1000, 50, 150, z0mT.mass());
+    theHistograms.fill("massGenZmT", "Z (selected by mT) mass ", 1000, 50, 150, z1mT.mass());
+    
+    cout << "\nz0mT: " << z0mT.id() << " mass: " << z0mT.mass() << "\tz0mT.daughter(0).id(): " << z0mT.daughter(0).id() << " z0mT.daughter(1).id(): " << z0mT.daughter(1).id() << "\tz0mT.daughter(0).pt(): " << z0mT.daughter(0).pt() << " z0mT.daughter(1).pt(): " << z0mT.daughter(1).pt() << endl;
+    cout << "\nz1mT: " << z1mT.id() << " mass: " << z1mT.mass() << "\tz1mT.daughter(0).id(): " << z1mT.daughter(0).id() << " z1mT.daughter(1).id(): " << z1mT.daughter(1).id() << "\tz1mT.daughter(0).pt(): " << z1mT.daughter(0).pt() << " z1mT.daughter(1).pt(): " << z1mT.daughter(1).pt() << endl;
+
+    //comparing z0mT, z1mT to z0, z1
+    int sameZandZmT = ((isTheSame(z0, z0mT) && isTheSame(z1,z1mT)) || (isTheSame(z0, z1mT) && isTheSame(z1,z0mT))) ? 1 : 0;
+    theHistograms.fill("sameGenZ", "Z and ZmT are the same? ", 2 , -0.5, 1.5, sameZandZmT);
+       */
+    /*
     //comparing mT leptons with z0, z1 (a bit messy!!)      
     cout << "\nComparing mT leptons and mass z0/z1" << endl;
     for(unsigned int i=0; i<leptons.size(); i++){
@@ -132,12 +151,12 @@ void WlllnuAnalyzer::analyze(){
 	  continue;
 	}
 	if(abs(leptons[i].id()) == abs(z0.daughter(0).id()) )
-	  cout << "mT(leptons " << i << ", " << j << ") - m(z0): " << abs(mT(leptons[i], leptons[j]) - z0.mass()) << /* "\tid: " << leptons[i].id() << " " << leptons[j].id() <<*/ endl;
+	  cout << "mT(leptons " << i << ", " << j << ") - m(z0): " << abs(mT(leptons[i], leptons[j]) - z0.mass()) << /* "\tid: " << leptons[i].id() << " " << leptons[j].id() << endl;
 	if(abs(leptons[i].id()) == abs(z1.daughter(0).id()) )
-	  cout << "mT(leptons " << i << ", " << j << ") - m(z1): " << abs(mT(leptons[i], leptons[j]) - z1.mass()) <</* "\tid: " << leptons[i].id() << " " << leptons[j].id() <<*/ endl;
+	  cout << "mT(leptons " << i << ", " << j << ") - m(z1): " << abs(mT(leptons[i], leptons[j]) - z1.mass()) <</* "\tid: " << leptons[i].id() << " " << leptons[j].id() << endl;
       }
     }
-    
+    */
     /*   //deltaR, deltaEta, deltaPhi
     double deltaEta0 = z0.daughter(0).eta() - z1.eta(); //between z1 and z0's first daughter
     double deltaEta1 = z0.daughter(1).eta() - z1.eta(); //between z1 and z0's first daughter
@@ -170,9 +189,13 @@ void WlllnuAnalyzer::analyze(){
     cout << "\nLess than 3 leptons" << endl;
     return;
   }
+  else if(neutrinos.size()<1){
+    cout << "\nMore than 1 nu" << endl;
+    return;
+  }
   
   //ZL
-  else if(leptons.size()==3 && (finalid == 33 || finalid == 35 || finalid == 37 || finalid == 39)){ //3l
+  else if(leptons.size()==3 && neutrinos.size() == 0){// 3l(finalid == 33 || finalid == 35 || finalid == 37 || finalid == 39)){ //3l
 
     //----RECO particles----//
         
@@ -267,8 +290,9 @@ void WlllnuAnalyzer::analyze(){
   }
 
   //Wlllnu
-  if(leptons.size() == 3 && (finalid == 45 || finalid == 49 || finalid == 53)){//3l1nu
-    TLorentzVector Ptot = nu.p4();
+  else if(leptons.size() == 3 && neutrinos.size() == 1){//3l1nu (finalid == 45 || finalid == 49 || finalid == 53)){
+    //  Particle nu = neutrinos[0];
+    TLorentzVector Ptot = neutrinos[0].p4();
     foreach(const Particle lep, leptons)
       Ptot += lep.p4();
     double masslllnu = Ptot.M();
