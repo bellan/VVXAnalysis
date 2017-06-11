@@ -12,9 +12,13 @@
 
 #include "EventAnalyzer.h"
 #include "RegistrableAnalysis.h"
+#include "VVXAnalysis/Commons/interface/AriEle.h"
+#include "VVXAnalysis/Commons/interface/Comparators.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
-#include "VVXAnalysis/Commons/interface/AriEle.h"
+#include "VVXAnalysis/DataFormats/interface/Boson.h"
+#include "VVXAnalysis/DataFormats/interface/DiBoson.h"
+#include "VVXAnalysis/DataFormats/interface/Particle.h"
 
 class WZAnalyzer: public EventAnalyzer, RegistrableAnalysis<WZAnalyzer>{
 
@@ -30,19 +34,22 @@ public:
 
   virtual ~WZAnalyzer(){}
 
+  virtual void begin();
+
   virtual void analyze();
   
   virtual Int_t cut();
 
 
  private:
+  Int_t zahl;
+  
   friend class Selector<WZAnalyzer>;
   template< class PAR >
     bool ZBosonDefinition(phys::Boson<PAR> cand) const{
     bool checkCharge = cand.daughter(0).charge() + cand.daughter(1).charge() == 0;
     return checkCharge && fabs(cand.p4().M() - phys::ZMASS) < 30;
   }
-
 
   template< class PAR >
     bool WBosonDefinition(phys::Boson<PAR> cand) {
@@ -59,8 +66,6 @@ public:
     return false;
 
   }
-
-
 
 };
 #endif

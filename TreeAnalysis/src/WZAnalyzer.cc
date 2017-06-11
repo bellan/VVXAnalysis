@@ -1,9 +1,9 @@
 #include "VVXAnalysis/TreeAnalysis/interface/WZAnalyzer.h"
-#include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
-#include "VVXAnalysis/Commons/interface/Utilities.h"
+#include "VVXAnalysis/Commons/interface/AriEle.h"
 #include "VVXAnalysis/Commons/interface/Comparators.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
-#include "VVXAnalysis/Commons/interface/AriEle.h"
+#include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
+#include "VVXAnalysis/Commons/interface/Utilities.h"
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
@@ -14,22 +14,28 @@ using namespace boost::assign;
 using namespace phys;
 using namespace std;
 
+void WZAnalyzer::begin() {
+  zahl = 0; 
+}
+
+
 Int_t WZAnalyzer::cut() {
   return 1;
 }
 
 
 void WZAnalyzer::analyze(){
+  zahl++;
 
-  std::vector<Particle> electron;
-  std::vector<Particle> muon;
+  vector<Particle> electron;
+  vector<Particle> muon;
   
-  cout << "------------------------------------------------------------------"<<endl;
-  cout << "Run: " << run << " event: " << event << endl;
+  cout << "\n--------------------------------------------------------------------------"<<endl;
+  cout << "Run: " << run << " event: " << event << " number: " << zahl << endl;
   
   foreach(const Particle &gen, *genParticles){
     if((abs(gen.id()) != 11 && abs(gen.id()) != 13) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
-    cout << "id: " << gen.id() << " pt: " << gen.pt() << endl;
+    cout << "id: " << gen.id() << " pt: " << gen.pt() << "\t eta: " << gen.eta() << endl;
     theHistograms.fill("ptAllGenParticle",  "p_{t}", 100, 0, 100, gen.pt());
     theHistograms.fill("massAllGenParticle","mass",  100, 0, 100, gen.mass());
     theHistograms.fill("etaAllGenParticle", "#eta",  100, 0, 100, gen.eta());
@@ -52,24 +58,24 @@ void WZAnalyzer::analyze(){
 
   // Reconstruction of the two Zs
   
-  vector<Boson<Particle> > Zet;
-  vector<Boson<Particle> > possibleZ;
+  vector<Ztype> Zet;
+  vector<Ztype> possibleZ;
 
   if(electron.size()==2 && muon.size()==2){
-    possibleZ.push_back(Boson<Particle>(electron[0], electron[1], 23));
-    possibleZ.push_back(Boson<Particle>(muon[0], muon[1], 23));
+    possibleZ.push_back(Ztype(electron[0], electron[1], 23));
+    possibleZ.push_back(Ztype(muon[0], muon[1], 23));
   }
   else if(electron.size()==4){
-    possibleZ.push_back(Boson<Particle>(electron[0], electron[2], 23));
-    possibleZ.push_back(Boson<Particle>(electron[0], electron[3], 23));
-    possibleZ.push_back(Boson<Particle>(electron[1], electron[2], 23));
-    possibleZ.push_back(Boson<Particle>(electron[1], electron[3], 23));
+    possibleZ.push_back(Ztype(electron[0], electron[2], 23));
+    possibleZ.push_back(Ztype(electron[0], electron[3], 23));
+    possibleZ.push_back(Ztype(electron[1], electron[2], 23));
+    possibleZ.push_back(Ztype(electron[1], electron[3], 23));
   }
   else if(muon.size()==4){      
-    possibleZ.push_back(Boson<Particle>(muon[0], muon[2], 23));
-    possibleZ.push_back(Boson<Particle>(muon[0], muon[3], 23));
-    possibleZ.push_back(Boson<Particle>(muon[1], muon[2], 23));
-    possibleZ.push_back(Boson<Particle>(muon[1], muon[3], 23));
+    possibleZ.push_back(Ztype(muon[0], muon[2], 23));
+    possibleZ.push_back(Ztype(muon[0], muon[3], 23));
+    possibleZ.push_back(Ztype(muon[1], muon[2], 23));
+    possibleZ.push_back(Ztype(muon[1], muon[3], 23));
   }
       
   stable_sort(possibleZ.begin(), possibleZ.end(), MassComparator(ZMASS));
@@ -110,14 +116,47 @@ void WZAnalyzer::analyze(){
     return;
   }
   
-  // ------ ZL reconstructed by me ------
+  // ------ ZL reconstructed ------
   
   Ztype Zet;
-  Particle lepton;
+  vector<Particle> lepton;
   vector<Ztype> possibleZ;
-  vector<Particle> possiblelep;
   vector<Zltype> Zls;
 
+  // first filter on pt and eta
+  foreach(const Particle ele, electron){
+    if(ele.pt() < 7 || abs(ele.eta()) > 2.5){
+      cout << "Electrons: pt less than 7 GeV or eta's absolute value greater than 2.5" << endl;
+      return;
+    }
+    lepton.push_back(ele);
+  }
+  foreach(const Particle mu, muon){
+    if(mu.pt() < 5 || abs(mu.eta()) > 2.4){
+      cout << "Muons: pt less than 5 GeV or eta's absolute value greater than 2.4" << endl;
+      return;
+    }
+    lepton.push_back(mu);
+  }
+  stable_sort(electron.begin(), electron.end(), PtComparator());
+  stable_sort(muon.begin(), muon.end(), PtComparator());
+  stable_sort(lepton.begin(), lepton.end(), PtComparator());
+
+  // second filter on pt and eta
+  if(lepton[0].pt() < 20){
+    cout << "First lepton pt less than 20 GeV" << endl;
+    return;
+  }
+  if(abs(lepton[1].id() == 11) && lepton[1].pt() < 12){
+    cout << "Second lepton is an electron and has pt less than 12 GeV" << endl;
+    return;
+  }
+  if(abs(lepton[1].id() == 13) && lepton[1].pt() < 10){
+    cout << "Second lepton is a muon and has pt less than 10 GeV" << endl;
+    return;
+  }
+  
+  // Zl recontructed
   if(electron.size()==3){
     possibleZ.push_back(Ztype(electron[0], electron[2], 23));
     Zls.push_back(Zltype(possibleZ[0], electron[1]));
@@ -154,15 +193,12 @@ void WZAnalyzer::analyze(){
       possibleZ.push_back(Ztype(muon[0], muon[1], 23));
       Zls.push_back(Zltype(possibleZ[1], muon[2]));
     }
-    
+  
   }
 
-  // ------ ZL reconstructed  ------
-
-  
+  cout << "\nZl candidates are: " << Zls.size() << endl;
   
   // */
- 
-  
+   
 }
   
