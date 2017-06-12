@@ -14,6 +14,10 @@ typedef Boson<Particle> Ztype;
 template<typename T> double mT(const T& p1, const T& p2){
   return sqrt( 2*p1.pt()*p2.pt()*(1-TMath::Cos(physmath::deltaPhi(p1.phi(), p2.phi()))) );
 }
+template<typename T> double mT(const T& p1, const T& p2, const T& p3){
+  return sqrt(mT(p1, p2)*mT(p1, p2) + mT(p1, p3)*mT(p1, p3) + mT(p2, p3)*mT(p2, p3));
+}
+
 
 struct mTComparator{
   mTComparator(const double& ref): ref_(ref){}
