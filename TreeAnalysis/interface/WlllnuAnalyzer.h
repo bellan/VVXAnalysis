@@ -33,6 +33,7 @@ public:
   virtual ~WlllnuAnalyzer(){}
 
   virtual void begin();
+  virtual void end(TFile &);
   
   virtual void analyze();
   
@@ -42,6 +43,7 @@ public:
  
  private:
   Int_t nevents;
+  Int_t mass80Counter;
   
   friend class Selector<WlllnuAnalyzer>;
   template< class PAR >

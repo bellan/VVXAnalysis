@@ -2,6 +2,7 @@
 #include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
+#include "VVXAnalysis/Commons/interface/Colours.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 #include "VVXAnalysis/DataFormats/interface/Lepton.h"
@@ -15,6 +16,7 @@
 
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign;
+using namespace colour;
 
 using std::cout;
 using std::endl;
@@ -24,13 +26,13 @@ using namespace phys;
 
 void WlllnuAnalyzer::begin(){
   nevents = 0;
+  mass80Counter = 0;
 }
 
 Int_t WlllnuAnalyzer::cut() {
   nevents++;
   return 1;
 }
-
 
 void WlllnuAnalyzer::analyze(){
   //  if(event != 7701979 && event != 7701973 && event != 7701836  && event != 7701827  && event != 7701817  && event !=  7701753  ) return; 
@@ -75,7 +77,7 @@ void WlllnuAnalyzer::analyze(){
     }
   }
   theHistograms.fill("leptonsNumber",  "number of leptons ",  5, -0.5, 4.5, leptons.size());
-  
+  //theHistograms.fill("idAllGenParticles"," finalid ", 60 , -0.5, 59.5, finalid);
   //ZZ
   if( (electrons.size() + muons.size() == 4) && (finalid == 44 || finalid == 48 || finalid == 52) ){
     cout << "\nZZ analysis" << endl; 
@@ -112,8 +114,12 @@ void WlllnuAnalyzer::analyze(){
     theHistograms.fill("massGenZParticles", "Z mass ", 1000, 50, 150, z0.mass());
     theHistograms.fill("massGenZParticles", "Z mass ", 1000, 50, 150, z1.mass());
 
-    cout << "\nz0 " "\tmass: " << z0.mass() << "\tmTdaughters-mZ0: "<< mT(z0.daughter(0), z0.daughter(1)) - z0.mass() << "\n\tz0.daughter(0) \tid(): " << z0.daughter(0).id() <<  " pt(): " << z0.daughter(0).pt() << "\n\tz0.daughter(1)\tid(): " << z0.daughter(1).id() << " pt(): " << z0.daughter(1).pt() <<  endl;
-    cout << "\nz1 " "\tmass: " << z1.mass() << "\tmTdaughters-mZ1: "<< mT(z1.daughter(0), z1.daughter(1)) - z1.mass() << "\n\tz1.daughter(0) \tid(): " << z1.daughter(0).id() <<  " pt(): " << z1.daughter(0).pt() << "\n\tz1.daughter(1)\tid(): " << z1.daughter(1).id() << " pt(): " << z1.daughter(1).pt() <<  endl;
+    cout << "\nz0 " "\tmass: " << z0.mass() << "\tmTdaughters-mZ0: "<< mT(z0.daughter(0), z0.daughter(1)) - z0.mass()
+	 << "\n\tz0.daughter(0) \tid: " << z0.daughter(0).id() << "     pt: " << z0.daughter(0).pt()
+	 << "\n\tz0.daughter(1) \tid: " << z0.daughter(1).id() << "    pt: " << z0.daughter(1).pt() <<  endl;
+    cout << "\nz1 " "\tmass: " << z1.mass() << "\tmTdaughters-mZ1: "<< mT(z1.daughter(0), z1.daughter(1)) - z1.mass()
+	 << "\n\tz1.daughter(0) \tid: " << z1.daughter(0).id() << "     pt: " << z1.daughter(0).pt()
+	 << "\n\tz1.daughter(1) \tid: " << z1.daughter(1).id() << "    pt: " << z1.daughter(1).pt() <<  endl;
     //comparing mZ with mT daughters
     theHistograms.fill("mZmT", "mZ vs mT daughters", 600, 0, 150, 600, 0, 150, mT(z0.daughter(0),z0.daughter(1)), z0.mass());
     theHistograms.fill("mZmT", "mZ vs mT daughters", 600, 0, 150, 600, 0, 150, mT(z1.daughter(0),z1.daughter(1)), z1.mass());
@@ -164,11 +170,11 @@ void WlllnuAnalyzer::analyze(){
   //  cout << " \n\t\t  -----------------------------------\n " << endl;
  
   else if(leptons.size()<3){
-    cout << "\nLess than 3 leptons" << endl;
+    cout << colour::Red("\nLess than 3 leptons") << endl;
     return;
   }
   else if(neutrinos.size()>1){
-    cout << "\nMore than 1 nu" << endl;
+    cout << colour::Red("\nMore than 1 nu") << endl;
     return;
   }
   
@@ -177,7 +183,7 @@ void WlllnuAnalyzer::analyze(){
 
     //----RECO particles----//
         
-    cout << "\nZL analysis" << endl; 
+    cout << Violet("\nZL analysis") << endl; 
     cout << "\n # of ZL candidates: "  << (*ZL).size() << endl; //reco ZL
     foreach(const ZLCompositeCandidate &zl, *ZL){
       cout << "\nZlcand: \t" << std::get<0>(zl) << "\n\t\t" << std::get<1>(zl) << endl;
@@ -258,16 +264,120 @@ void WlllnuAnalyzer::analyze(){
 
   //Wlllnu
   else if(leptons.size() == 3 && neutrinos.size() == 1){//3l1nu (finalid == 45 || finalid == 49 || finalid == 53)){
+    cout << Blue("\nWlllnu analysis") << endl; 
     //  Particle nu = neutrinos[0];
     TLorentzVector Ptot = neutrinos[0].p4();
     foreach(const Particle lep, leptons)
       Ptot += lep.p4();
     double masslllnu = Ptot.M();
-    theHistograms.fill("massGenlllnu","mass lllnu", 100, 0, 600, masslllnu);
+    if (masslllnu < 165) mass80Counter++;
+    theHistograms.fill("massGenlllnu","mass lllnu", 400, 40, 440, masslllnu);
+    //    cout <<"\n events with mass < 165 Gev: " << mass80Counter << endl;
     //cout << "\n masslllnu: " << masslllnu << endl;
+    theHistograms.fill("idlllnu"," total id lllnu ", 13 , 43.5, 56.5, finalid);
+    cout << "mass lllnu: " << masslllnu << "\n" << endl;
+    
+    Ztype Z;
+    Particle l;
+    Particle nu = neutrinos[0];
+    std::vector<double> deltaRl;
+    std::vector<double> deltaRnu;
+    if(finalid == 49 && electrons.size() == 2){//2e 1mu 1nu_mu
+      Z = Ztype(electrons[0], electrons[1], 23);
+      l = muons[0];
+      cout << "Z: " << Z << endl;
+      cout << "l: " << l << endl;
+      cout << "nu: " << nu << endl;
+    }
+    else if(finalid == 49 && muons.size() == 2){//2mu 1e 1nu_e
+      Z = Ztype(muons[0], muons[1], 23);
+      l = electrons[0];
+      cout << "Z: " << Z << endl;
+      cout << "l: " << l << endl;
+      cout << "nu: " << nu << endl;
+    }
+    //std::vector<double> mTcombos;
+    
+    else if(finalid == 45 || finalid == 53){//3e 1nu_e
+      //cout << "mT 3l: " <<  << endl;
+   
+      theHistograms.fill("mTlcouples","mT leptons couples", 1000, 0, 500, mT(leptons[0],leptons[1]));
+      theHistograms.fill("mTlcouples","mT leptons couples", 1000, 0, 500, mT(leptons[0],leptons[2]));
+      theHistograms.fill("mTlcouples","mT leptons couples", 1000, 0, 500, mT(leptons[1],leptons[2]));
+      theHistograms.fill("mTnucouples","mT lepton-mu couples", 1000, 0, 300, mT(nu,leptons[0]));
+      theHistograms.fill("mTnucouples","mT lepton-nu couples", 1000, 0, 300, mT(nu,leptons[1]));
+      theHistograms.fill("mTnucouples","mT lepton-nu couples", 1000, 0, 300, mT(nu,leptons[2]));
+      theHistograms.fill("mTlll","mT 3 leptons", 1000, 0, 500, mT(leptons[0], leptons[1], leptons[2]));
+      deltaRl.push_back(deltaR(leptons[0].p4(), leptons[1].p4()));
+      deltaRl.push_back(deltaR(leptons[0].p4(), leptons[2].p4()));
+      deltaRl.push_back(deltaR(leptons[1].p4(), leptons[2].p4()));
+      std::stable_sort(deltaRl.begin(), deltaRl.end());
+      deltaRnu.push_back(deltaR(nu.p4(), leptons[1].p4()));
+      deltaRnu.push_back(deltaR(nu.p4(), leptons[2].p4()));
+      deltaRnu.push_back(deltaR(nu.p4(), leptons[2].p4()));
+      std::stable_sort(deltaRnu.begin(), deltaRnu.end());
+	
+      theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[1].p4()));
+      theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[2].p4()));
+      theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[1].p4(), leptons[2].p4()));
+      theHistograms.fill("deltaRnu","deltaR nu-lepton couples", 100, 0, 10, deltaR(nu.p4(), leptons[0].p4()));
+      theHistograms.fill("deltaRnu","deltaR nu-lepton couples", 100, 0, 10, deltaR(nu.p4(), leptons[1].p4()));
+      theHistograms.fill("deltaRnu","deltaR nu-lepton couples", 100, 0, 10, deltaR(nu.p4(), leptons[2].p4()));
+      theHistograms.fill("deltaRl[0]","best deltaR leptons", 100, 0, 10, deltaRl[0]);
+      theHistograms.fill("deltaRl[1]","second best deltaR leptons", 100, 0, 10, deltaRl[1]);
+      theHistograms.fill("deltaRl[2]","worst deltaR leptons", 100, 0, 10, deltaRl[2]);
+      theHistograms.fill("deltaRnu[0]","best deltaR nu-lep", 100, 0, 10, deltaRnu[0]);
+      theHistograms.fill("deltaRnu[1]","second best deltaR nu-lep", 100, 0, 10, deltaRnu[1]);
+      theHistograms.fill("deltaRnu[2]","worst deltaR nu-lep", 100, 0, 10, deltaRnu[2]);
+   
+      //-----------------------------------------------------------------//
+
+      //build Z
+      //if(leptons[0].charge()+leptons[1].charge()+leptons[2].charge()>0)
+      for(unsigned int i=0; i<leptons.size(); i++){
+	for(unsigned int j=i+1; j<leptons.size(); j++){
+	  if(leptons[i].id() != -leptons[j].id()) continue;
+	  if(Z.id() == 0) Z=Ztype(leptons[i], leptons[j],23);
+	  else if(deltaR(leptons[0].p4(), leptons[2].p4()) < deltaR(Z.daughter(0).p4(), Z.daughter(1).p4()))  Z=Ztype(leptons[i], leptons[j],23);
+	}
+      }
+      cout << "Z: " << Z << endl;
+      theHistograms.fill("deltaRZ","deltaR Z daughters", 100, 0, 10, deltaR(Z.daughter(0).p4(), Z.daughter(1).p4()));
+      theHistograms.fill("mTZ","mT Z daughters", 1000, 0, 500, mT(Z.daughter(0), Z.daughter(1)));
+      theHistograms.fill("massZ","mass Z", 1000, 0, 500, Z.mass());
+      if (masslllnu < 165) {
+      theHistograms.fill("deltaRZ80","deltaR Z daughters", 100, 0, 10, deltaR(Z.daughter(0).p4(), Z.daughter(1).p4()));
+      theHistograms.fill("mTZ80","mT Z daughters", 1000, 0, 500, mT(Z.daughter(0), Z.daughter(1)));
+      theHistograms.fill("massZ80","mass Z", 1000, 0, 500, Z.mass());
+      }
+      
+      //}
+      /*if(leptons[0].id() == -leptons[1].id()) Z=Ztype(leptons[0], leptons[1],23);
+      if(leptons[0].id() == -leptons[2].id()){
+	if(Z.id() == 0)  Z=Ztype(leptons[0], leptons[1],23);
+	if(Z.id() == 23 && deltaR(leptons[0].p4(), leptons[2].p4()) < deltaR(Z.daughter(0).p4(), Z.daughter(1).p4())) Z=Ztype(leptons[0], leptons[2],23);
+      }
+      if(leptons[1].id() == -leptons[2].id() && deltaR(leptons[1].p4(), leptons[2].p4()) < deltaR(Z.daughter(0).p4(), Z.daughter(1).p4())) Z=Ztype(leptons[1], leptons[2],23);*/
+      
+    }
+    /* else if(finalid == 53){//3mu 1numu
+      cout << "mT 3l: " << mT(leptons[0], leptons[1], leptons[2]) << endl;
+      theHistograms.fill("mTcouples","mT leptons couples", 1000, 0, 500, mT(leptons[0],leptons[1]));
+      theHistograms.fill("mTcouples","mT leptons couples", 1000, 0, 500, mT(leptons[0],leptons[2]));
+      theHistograms.fill("mTcouples","mT leptons couples", 1000, 0, 500, mT(leptons[1],leptons[2]));
+    }*/
+    else cout << Red("invalid total id") << endl;
+    
     
     return;
   }
 
+}
 
+void WlllnuAnalyzer::end(TFile &){
+  if (mass80Counter > 0)
+    cout << Yellow("\n-----------------------------------------------------------\n")
+	 << " Events with lllnu mass < 165 Gev: " << mass80Counter
+	 << Yellow("\n-----------------------------------------------------------\n") << endl;
+  return;
 }
