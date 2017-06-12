@@ -276,31 +276,104 @@ void WlllnuAnalyzer::analyze(){
     //cout << "\n masslllnu: " << masslllnu << endl;
     theHistograms.fill("idlllnu"," total id lllnu ", 13 , 43.5, 56.5, finalid);
     cout << "mass lllnu: " << masslllnu << "\n" << endl;
+    if (masslllnu >= 165){
+      cout << Yellow("Mass lllnu over 165 Gev") << endl;
+      return;
+    }
+    /*
+    std::vector<Particle> particles;
+    particles.push_back(neutrinos[0]);
+    foreach(const Particle p, leptons){
+      particles.push_back(p);
+    }*/
+
+    //    mT(particles[0], particles[1
+    
+    /*
+    mTcombos.push_back(particles[0].p4().Mt(), mT(particles[1], particles[2], particles[3]));
+    mTcombos.push_back(particles[1].p4().Mt(), mT(particles[0], particles[2], particles[3]));
+    mTcombos.push_back(particles[2].p4().Mt(), mT(particles[0], particles[1], particles[3]));
+    mTcombos.push_back(particles[3].p4().Mt(), mT(particles[0], particles[1], particles[2]));
+    foreach(const pairD p, mTcombos){
+      if(abs(p.first + p.second - masslllnu) < delta){
+	delta = abs(p.first + p.second - masslllnu);
+	theCombo = p;
+      }
+    }
+    cout << Green("\n\n\ttheCombo: ") << Green(theCombo) << endl; 
+    */
     
     Ztype Z;
     Particle l;
     Particle nu = neutrinos[0];
-    std::vector<double> deltaRl;
-    std::vector<double> deltaRnu;
+    //std::vector<double> deltaRl;
+    //std::vector<double> deltaRnu;
     if(finalid == 49 && electrons.size() == 2){//2e 1mu 1nu_mu
       Z = Ztype(electrons[0], electrons[1], 23);
       l = muons[0];
-      cout << "Z: " << Z << endl;
-      cout << "l: " << l << endl;
-      cout << "nu: " << nu << endl;
     }
     else if(finalid == 49 && muons.size() == 2){//2mu 1e 1nu_e
       Z = Ztype(muons[0], muons[1], 23);
       l = electrons[0];
-      cout << "Z: " << Z << endl;
-      cout << "l: " << l << endl;
-      cout << "nu: " << nu << endl;
     }
-    //std::vector<double> mTcombos;
+    //how do I distinguish the 2 diagrams??
     
     else if(finalid == 45 || finalid == 53){//3e 1nu_e
-      //cout << "mT 3l: " <<  << endl;
-   
+      std::vector<pair<Particle, TLorentzVector> > mTcombos;
+      double delta = 9999.;
+      std::vector<pairParticle> pCombos;
+      pairParticle theCombo;
+      int lepId = leptons[0].id()+leptons[1].id()+leptons[2].id();
+      /*
+      pCombos.push_back(pairParticle(particles[0],Particle((particles[1]).p4()+(particles[2]).p4()+(particles[3]).p4(),particles[1].charge()+particle[2].charge(), particle[3].charge(),particles[1].id()+particle[2].id(), particle[3].id())));
+      pCombos.push_back(pairParticle(particles[1],Particle((particles[0]).p4()+(particles[2]).p4()+(particles[3]).p4(),particles[0].charge()+particle[2].charge(), particle[3].charge(),particles[0].id()+particle[2].id(), particle[3].id())));
+      pCombos.push_back(pairParticle(particles[2],Particle((particles[1]).p4()+(particles[0]).p4()+(particles[3]).p4(),particles[1].charge()+particle[0].charge(), particle[3].charge(),particles[1].id()+particle[0].id(), particle[3].id())));
+      pCombos.push_back(pairParticle(particles[3],Particle((particles[1]).p4()+(particles[2]).p4()+(particles[0]) .p4(),particles[1].charge()+particle[2].charge(), particle[0].charge(),particles[1].id()+particle[2].id(), particle[0].id())));*/
+
+      pCombos.push_back(pairParticle(nu,Particle(leptons[0].p4()+leptons[1].p4()+leptons[2].p4())));
+      if((lepId>0 && leptons[0].id()>0) || (lepId<0 && leptons[0].id()<0))
+	pCombos.push_back(pairParticle(leptons[0],Particle(nu.p4()+leptons[1].p4()+leptons[2].p4())));
+      if((lepId>0 && leptons[1].id()>0) || (lepId<0 && leptons[1].id()<0))
+	pCombos.push_back(pairParticle(leptons[1],Particle(nu.p4()+leptons[0].p4()+leptons[2].p4())));
+      if((lepId>0 && leptons[2].id()>0) || (lepId<0 && leptons[2].id()<0))
+	pCombos.push_back(pairParticle(leptons[2],Particle(nu.p4()+leptons[1].p4()+leptons[0].p4())));
+      foreach(const pairParticle p, pCombos){
+	if(abs(mT(p.first, p.second) - masslllnu) < delta){
+	  delta = mT(p.first, p.second);
+	  theCombo = p;
+	}
+      }
+      //      cout << "\nthe best combo: \t" << theCombo.first << "\n\t\t" << theCombo.second << endl;
+
+      if(isTheSame(nu,theCombo.first)){
+	// if(abs(theCombo.first.id()) == 12 || abs(theCombo.first.id()) == 14){//lepton "out" is nu
+	if(leptons[0].id() == -leptons[1].id()){
+	  Z = Ztype(leptons[0], leptons[1], 23);
+	  l = leptons[2];
+	}
+	if(leptons[0].id() == -leptons[2].id() && (Z.id() == 0 || abs(deltaR(leptons[0].p4(), leptons[2].p4())) < abs(deltaR(Z.daughter(0).p4(), Z.daughter(1).p4())))){
+	  Z = Ztype(leptons[0], leptons[2], 23);
+	  l = leptons[1];
+	}
+	if(leptons[1].id() == -leptons[2].id() && (Z.id() == 0 || abs(deltaR(leptons[1].p4(), leptons[2].p4())) < abs(deltaR(Z.daughter(0).p4(), Z.daughter(1).p4())))){
+	  Z = Ztype(leptons[1], leptons[2], 23);
+	  l = leptons[0];
+	}
+      }
+      else{
+	//else if(abs(theCombo.first.id()) == 12 || abs(theCombo.first.id()) == 14){
+	l = theCombo.first;
+	if(isTheSame(l, leptons[0])) Z = Ztype(leptons[1], leptons[2], 23);
+	else if(isTheSame(l, leptons[1])) Z = Ztype(leptons[0], leptons[2], 23);
+	else if(isTheSame(l, leptons[2])) Z = Ztype(leptons[0], leptons[1], 23);
+      }
+    }
+    else cout << Red("invalid total id") << endl;
+    cout << "Z: " << Z << endl;
+    cout << "l: " << l << endl;
+    cout << "nu: " << nu << endl;
+      
+      /*
       theHistograms.fill("mTlcouples","mT leptons couples", 1000, 0, 500, mT(leptons[0],leptons[1]));
       theHistograms.fill("mTlcouples","mT leptons couples", 1000, 0, 500, mT(leptons[0],leptons[2]));
       theHistograms.fill("mTlcouples","mT leptons couples", 1000, 0, 500, mT(leptons[1],leptons[2]));
@@ -329,11 +402,10 @@ void WlllnuAnalyzer::analyze(){
       theHistograms.fill("deltaRnu[0]","best deltaR nu-lep", 100, 0, 10, deltaRnu[0]);
       theHistograms.fill("deltaRnu[1]","second best deltaR nu-lep", 100, 0, 10, deltaRnu[1]);
       theHistograms.fill("deltaRnu[2]","worst deltaR nu-lep", 100, 0, 10, deltaRnu[2]);
-   
+      
       //-----------------------------------------------------------------//
 
       //build Z
-      //if(leptons[0].charge()+leptons[1].charge()+leptons[2].charge()>0)
       for(unsigned int i=0; i<leptons.size(); i++){
 	for(unsigned int j=i+1; j<leptons.size(); j++){
 	  if(leptons[i].id() != -leptons[j].id()) continue;
@@ -352,29 +424,32 @@ void WlllnuAnalyzer::analyze(){
       }
       
       //}
-      /*if(leptons[0].id() == -leptons[1].id()) Z=Ztype(leptons[0], leptons[1],23);
+      if(leptons[0].id() == -leptons[1].id()) Z=Ztype(leptons[0], leptons[1],23);
       if(leptons[0].id() == -leptons[2].id()){
 	if(Z.id() == 0)  Z=Ztype(leptons[0], leptons[1],23);
 	if(Z.id() == 23 && deltaR(leptons[0].p4(), leptons[2].p4()) < deltaR(Z.daughter(0).p4(), Z.daughter(1).p4())) Z=Ztype(leptons[0], leptons[2],23);
       }
-      if(leptons[1].id() == -leptons[2].id() && deltaR(leptons[1].p4(), leptons[2].p4()) < deltaR(Z.daughter(0).p4(), Z.daughter(1).p4())) Z=Ztype(leptons[1], leptons[2],23);*/
+      if(leptons[1].id() == -leptons[2].id() && deltaR(leptons[1].p4(), leptons[2].p4()) < deltaR(Z.daughter(0).p4(), Z.daughter(1).p4())) Z=Ztype(leptons[1], leptons[2],23);
+      }
+    */
       
-    }
+    
     /* else if(finalid == 53){//3mu 1numu
       cout << "mT 3l: " << mT(leptons[0], leptons[1], leptons[2]) << endl;
       theHistograms.fill("mTcouples","mT leptons couples", 1000, 0, 500, mT(leptons[0],leptons[1]));
       theHistograms.fill("mTcouples","mT leptons couples", 1000, 0, 500, mT(leptons[0],leptons[2]));
       theHistograms.fill("mTcouples","mT leptons couples", 1000, 0, 500, mT(leptons[1],leptons[2]));
     }*/
-    else cout << Red("invalid total id") << endl;
-    
-    
+      //}
+        
+
     return;
+    
+  
   }
 
 }
-
-void WlllnuAnalyzer::end(TFile &){
+  void WlllnuAnalyzer::end(TFile &){
   if (mass80Counter > 0)
     cout << Yellow("\n-----------------------------------------------------------\n")
 	 << " Events with lllnu mass < 165 Gev: " << mass80Counter
