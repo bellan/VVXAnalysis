@@ -15,9 +15,10 @@ using namespace phys;
 using namespace std;
 
 void WZAnalyzer::begin() {
-  zahl = 0; 
+  zahl = 0;
+  eventcounter = 0;
+  begintime = ((float)clock())/CLOCKS_PER_SEC;
 }
-
 
 Int_t WZAnalyzer::cut() {
   return 1;
@@ -49,8 +50,7 @@ void WZAnalyzer::analyze(){
 
  
   // ~~~~~~ tests on ZZ Analysis ~~~~~~
-  //
-  /*
+  // /*
   if(electron.size()+muon.size()!=4) {
     cout << "There are not enough or too many final leptons in this event." << endl;
     return;
@@ -104,13 +104,13 @@ void WZAnalyzer::analyze(){
 
   //add transvers mass
   
-  //
-   */
+  // */
   // ~~~~~~ end of tests on ZZ Analysis ~~~~~~
  
 
   // ~~~~~~ WZ Analysis ~~~~~~
-  // /*
+  //
+  /*
   if(electron.size()+muon.size()!=3)  {
     cout << "There are not enough or too many final leptons in this event." << endl;
     return;
@@ -198,7 +198,20 @@ void WZAnalyzer::analyze(){
 
   cout << "\nZl candidates are: " << Zls.size() << endl;
   
-  // */
+  //
+ */
    
 }
   
+void WZAnalyzer::end(TFile &){
+
+  cout << "\n--------------------------------------------------------------------------"<<endl;
+  
+  cout << "\nNumber of event analyzed: " << eventcounter << endl;
+  
+  // execution time
+  endtime = ((float)clock())/CLOCKS_PER_SEC;
+  cout << "Execution time of the analysis: " << endtime - begintime << " seconds." << endl;
+  //cout << "prova" << (int)((endtime - begintime)/3600) << " h " << (int)(((endtime - begintime) - (endtime - begintime)/3600)) << " s " << endl; to be rewritten with %
+  cout << "\n--------------------------------------------------------------------------"<<endl;
+}
