@@ -343,6 +343,7 @@ void WlllnuAnalyzer::analyze(){
 	  Z = Ztype(electrons[0], electrons[1], 23);
 	  l = electrons[2];
 	}
+	theHistograms.fill("deltaRZdaughters","deltaR Z daughters", 100, 0, 10, deltaR(Z.daughter(0).p4(), Z.daughter(1).p4()));
       }
       else{
 	isNuAlone = false;
@@ -367,7 +368,7 @@ void WlllnuAnalyzer::analyze(){
 	isNuAlone = true;
 	Z = Ztype(muons[0], muons[2], 23);
 	l = muons[1];
-	if(muons[1].id()>0 && (abs(deltaR(muons[1].p4(), muons[2].p4())) < abs(deltaR(Z.daughter(0).p4(), Z.daughter(1).p4())))) {
+	if(muons[1].id()>0 && (abs(deltaR(muons[1].p4(), muons[2].p4())) < abs(deltaR(Z.daughter(0).p4(), Z.daughter(1).p4())))) {//choosing leptons that are closer as Z daughters
 	  Z = Ztype(muons[1], muons[2], 23);
 	  l = muons[0];
 	}
@@ -375,6 +376,7 @@ void WlllnuAnalyzer::analyze(){
 	  Z = Ztype(muons[0], muons[1], 23);
 	  l = muons[2];
 	}
+	theHistograms.fill("deltaRZdaughters","deltaR Z daughters", 100, 0, 10, deltaR(Z.daughter(0).p4(), Z.daughter(1).p4()));
       }
       else{
 	isNuAlone = false;
@@ -390,7 +392,14 @@ void WlllnuAnalyzer::analyze(){
     cout << "\n l: " << l << endl;
     cout << "\n nu: " << nu << endl;
 
-    theHistograms.fill("deltaRZ","deltaR Z daughters", 100, 0, 10, deltaR(Z.daughter(0).p4(), Z.daughter(1).p4()));
+    isNuAlone ? theHistograms.fill("deltaRZtriplet","deltaR Z and related leptons ", 100, 0, 10, deltaR(Z.p4(), l.p4())) : theHistograms.fill("deltaRZtriplet","deltaR Z and related leptons ", 100, 0, 10, deltaR(Z.p4(), nu.p4())); //are Z and its "related" lepton collinear?
+    !(isNuAlone) ? theHistograms.fill("deltaRZsinglet","deltaR Z and NOT related leptons ", 100, 0, 10, deltaR(Z.p4(), l.p4())) : theHistograms.fill("deltaRZsinglet","deltaR Z and NOT related leptons ", 100, 0, 10, deltaR(Z.p4(), nu.p4())); //are Z and its "related" lepton collinear?
+
+    	
+      theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[1].p4()));
+      theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[2].p4()));
+      theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[1].p4(), leptons[2].p4()));
+      
     theHistograms.fill("massZ","mass Z", 300, 0, 150, Z.mass());
     theHistograms.fill("isNuAlone","type of diagram", 2, -0.5, 1.5, isNuAlone);
 
