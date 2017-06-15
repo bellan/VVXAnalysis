@@ -78,6 +78,8 @@ void WlllnuAnalyzer::analyze(){
   }
   theHistograms.fill("leptonsNumber",  "number of leptons ",  5, -0.5, 4.5, leptons.size());
   //theHistograms.fill("idAllGenParticles"," finalid ", 60 , -0.5, 59.5, finalid);
+
+    
   //ZZ
   if( (electrons.size() + muons.size() == 4) && (finalid == 44 || finalid == 48 || finalid == 52) ){
     cout << "\nZZ analysis" << endl; 
@@ -263,14 +265,43 @@ void WlllnuAnalyzer::analyze(){
   }
 
   //Wlllnu
-  else if(leptons.size() == 3 && neutrinos.size() == 1){//3l1nu (finalid == 45 || finalid == 49 || finalid == 53)){
+  else if(finalid == 45 || finalid == 49 || finalid == 53){///*(leptons.size() == 3 && neutrinos.size() == 1){3l1nu*/ 
     cout << Blue("\nWlllnu analysis") << endl; 
+    theHistograms.fill("idlllnuNOcut"," total id lllnu ", 13 , 43.5, 56.5, finalid);
+    
+    //----------------------------------------
+    //check pt and eta
+    std::vector<Particle> lepptSort;
+    foreach(const Particle e, electrons){
+      if(e.pt()<7 || abs(e.eta())>2.5 ){
+	cout<<"pt leptons not sufficient (e 7Gev) or eta over limit (|eta| 2.5)"<< endl;
+	return;
+      }
+      lepptSort.push_back(e);
+    }
+    foreach(const Particle mu, muons){
+      if(mu.pt()<5 || abs(mu.eta())>2.4 ){
+	cout<<"pt leptons not sufficient (mu 5Gev) or eta over limit (|eta| 2.5)"<< endl;
+	return;
+      }
+      lepptSort.push_back(mu);
+    }
+    std::stable_sort(lepptSort.begin(), lepptSort.end(), PtComparator());
+    
+    //check 1st lepton has pt>20 and 2nd pt>10(mu)/12(e)
+    if(lepptSort[0].pt()<20 || (abs(lepptSort[1].id())==11 && lepptSort[1].pt()<12) || (abs(lepptSort[1].id())==13 && lepptSort[1].pt()<10)){
+      cout<<"pt leptons not sufficient (first 20Gev, second 10Gev(mu)/12Gev(e))"<< endl;
+      return;
+    }
+
+
+    //-----------------------------------------------------
     TLorentzVector Ptot = neutrinos[0].p4();
     foreach(const Particle lep, leptons)
       Ptot += lep.p4();
     double masslllnu = Ptot.M();
     if (masslllnu < 165) mass80Counter++;
-    theHistograms.fill("massGenlllnu","mass lllnu", 400, 40, 440, masslllnu);
+    theHistograms.fill("massGenlllnu","mass lllnu", 1040, 0, 1040, masslllnu);
     theHistograms.fill("mTGenlllnu","mT lllnu", 400, 40, 440, Ptot.Mt());
     theHistograms.fill("massMtlllnu", "mass vs mT lllnu", 400, 40, 440, 400, 40, 440, Ptot.Mt(),masslllnu) ;
     //    cout <<"\n events with mass < 165 Gev: " << mass80Counter << endl;
