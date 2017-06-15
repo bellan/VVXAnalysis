@@ -54,7 +54,7 @@ void WlllnuAnalyzer::analyze(){
     finalid += abs(gen.id());
     //    cout << " genLepton: " << gen << endl;
     cout << "id: " << gen.id() << " pt: " << gen.pt() << " mass: " << gen.mass() << " eta: " << gen.eta() << endl;
-    //theHistograms.fill("ptAllGenParticle",   "pt ",   100, 0,   200,  gen.pt());
+    theHistograms.fill("ptAllGenParticle",   "pt ",   100, 0,   200,  gen.pt());
     //theHistograms.fill("etaAllGenParticle",  "eta ",  100, -10, 10,   gen.eta());
     //theHistograms.fill("YAllGenParticle",    "Y ",    100, -10, 10,  gen.rapidity());
     bool isLepton = abs(gen.id()) == 11 || abs(gen.id()) == 13;
@@ -271,6 +271,8 @@ void WlllnuAnalyzer::analyze(){
     double masslllnu = Ptot.M();
     if (masslllnu < 165) mass80Counter++;
     theHistograms.fill("massGenlllnu","mass lllnu", 400, 40, 440, masslllnu);
+    theHistograms.fill("mTGenlllnu","mT lllnu", 400, 40, 440, Ptot.Mt());
+    theHistograms.fill("massMtlllnu", "mass vs mT lllnu", 400, 40, 440, 400, 40, 440, Ptot.Mt(),masslllnu) ;
     //    cout <<"\n events with mass < 165 Gev: " << mass80Counter << endl;
     //cout << "\n masslllnu: " << masslllnu << endl;
     theHistograms.fill("idlllnu"," total id lllnu ", 13 , 43.5, 56.5, finalid);
@@ -309,16 +311,19 @@ void WlllnuAnalyzer::analyze(){
     //std::vector<double> deltaRl;
     //std::vector<double> deltaRnu;
     bool isNuAlone = NULL; //in order to mark W -> nu + lll or W -> l + llnu
+    int diagramId = 0;
     
     if(finalid == 49 && electrons.size() == 2){//2e 1mu 1nu_mu
       Z = Ztype(electrons[0], electrons[1], 23);
       l = muons[0];
       isNuAlone =  mT(nu,Particle(electrons[0].p4()+electrons[1].p4()+muons[0].p4())) <  mT(muons[0],Particle(electrons[0].p4()+electrons[1].p4()+nu.p4())) ? true : false;
+      theHistograms.fill("deltaRZdaughters","deltaR Z daughters", 100, 0, 10, deltaR(Z.daughter(0).p4(), Z.daughter(1).p4()));
     }
     else if(finalid == 49 && muons.size() == 2){//2mu 1e 1nu_e
       Z = Ztype(muons[0], muons[1], 23);
       l = electrons[0];
       isNuAlone =  mT(nu,Particle(muons[0].p4()+muons[1].p4()+electrons[0].p4())) <  mT(electrons[0],Particle(muons[0].p4()+muons[1].p4()+nu.p4())) ? true : false;
+      theHistograms.fill("deltaRZdaughters","deltaR Z daughters", 100, 0, 10, deltaR(Z.daughter(0).p4(), Z.daughter(1).p4()));
     }
 
     else if(finalid == 45){//3e 1nu_e
@@ -343,15 +348,16 @@ void WlllnuAnalyzer::analyze(){
 	  Z = Ztype(electrons[0], electrons[1], 23);
 	  l = electrons[2];
 	}
-	theHistograms.fill("deltaRZdaughters","deltaR Z daughters", 100, 0, 10, deltaR(Z.daughter(0).p4(), Z.daughter(1).p4()));
+	//theHistograms.fill("deltaRZdaughters","deltaR Z daughters", 100, 0, 10, deltaR(Z.daughter(0).p4(), Z.daughter(1).p4()));
       }
       else{
 	isNuAlone = false;
 	l = theCombo.first;
-	if(isTheSame(electrons[0],l)) Z = Ztype(electrons[1], electrons[2]);
-	else if(isTheSame(electrons[1],l)) Z = Ztype(electrons[0], electrons[2]);
-	else if(isTheSame(electrons[2],l)) Z = Ztype(electrons[0], electrons[1]);	
-      }      
+	if(isTheSame(electrons[0],l)) Z = Ztype(electrons[1], electrons[2], 23);
+	else if(isTheSame(electrons[1],l)) Z = Ztype(electrons[0], electrons[2], 23);
+	else if(isTheSame(electrons[2],l)) Z = Ztype(electrons[0], electrons[1], 23);
+	theHistograms.fill("deltaRZdaughters","deltaR Z daughters", 100, 0, 10, deltaR(Z.daughter(0).p4(), Z.daughter(1).p4()));
+      }
     }
 
     else if(finalid == 53){//3mu 1nu_mu
@@ -376,33 +382,41 @@ void WlllnuAnalyzer::analyze(){
 	  Z = Ztype(muons[0], muons[1], 23);
 	  l = muons[2];
 	}
-	theHistograms.fill("deltaRZdaughters","deltaR Z daughters", 100, 0, 10, deltaR(Z.daughter(0).p4(), Z.daughter(1).p4()));
+	//	theHistograms.fill("deltaRZdaughters","deltaR Z daughters", 100, 0, 10, deltaR(Z.daughter(0).p4(), Z.daughter(1).p4()));
       }
       else{
 	isNuAlone = false;
 	l = theCombo.first;
-	if(isTheSame(muons[0],l)) Z = Ztype(muons[1], muons[2]);
-	else if(isTheSame(muons[1],l)) Z = Ztype(muons[0], muons[2]);
-	else if(isTheSame(muons[2],l)) Z = Ztype(muons[0], muons[1]);	
-      }      
+	if(isTheSame(muons[0],l)) Z = Ztype(muons[1], muons[2], 23);
+	else if(isTheSame(muons[1],l)) Z = Ztype(muons[0], muons[2], 23);
+	else if(isTheSame(muons[2],l)) Z = Ztype(muons[0], muons[1], 23);
+	theHistograms.fill("deltaRZdaughters","deltaR Z daughters", 100, 0, 10, deltaR(Z.daughter(0).p4(), Z.daughter(1).p4()));
+      }
     }    
     else cout << Red("invalid total id") << endl;
     
     cout << "\n Z: " << Z << endl;
     cout << "\n l: " << l << endl;
     cout << "\n nu: " << nu << endl;
+    diagramId = abs(nu.id()) + abs(l.id()) + abs(Z.daughter(0).id());
 
     isNuAlone ? theHistograms.fill("deltaRZtriplet","deltaR Z and related leptons ", 100, 0, 10, deltaR(Z.p4(), l.p4())) : theHistograms.fill("deltaRZtriplet","deltaR Z and related leptons ", 100, 0, 10, deltaR(Z.p4(), nu.p4())); //are Z and its "related" lepton collinear?
     !(isNuAlone) ? theHistograms.fill("deltaRZsinglet","deltaR Z and NOT related leptons ", 100, 0, 10, deltaR(Z.p4(), l.p4())) : theHistograms.fill("deltaRZsinglet","deltaR Z and NOT related leptons ", 100, 0, 10, deltaR(Z.p4(), nu.p4())); //are Z and its "related" lepton collinear?
 
     	
-      theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[1].p4()));
-      theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[2].p4()));
-      theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[1].p4(), leptons[2].p4()));
-      
+    theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[1].p4()));
+    theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[2].p4()));
+    theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[1].p4(), leptons[2].p4()));
+    
     theHistograms.fill("massZ","mass Z", 300, 0, 150, Z.mass());
+    theHistograms.fill("mTZ","direct mT Z", 300, 0, 150, Z.p4().Mt());
+    theHistograms.fill("mTZdaughters","mT Z from daughters", 300, 0, 150, mT(Z.daughter(0), Z.daughter(1)));
     theHistograms.fill("isNuAlone","type of diagram", 2, -0.5, 1.5, isNuAlone);
-
+    isNuAlone ? theHistograms.fill("diagramId","type of diagram", 21, -10.5, 10.5, diagramId-30) : theHistograms.fill("diagramId","type of diagram", 21, -10.5, 10.5, -(diagramId-30));
+    theHistograms.fill("ptnu",   "pt nu",   100, 0,   200,  nu.pt());
+    theHistograms.fill("ptZ",   "pt Z",   100, 0,   200,  Z.pt());
+    theHistograms.fill("ptl",   "pt l",   100, 0,   200,  l.pt());
+    
     return;
   }
 
