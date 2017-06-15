@@ -35,18 +35,20 @@ public:
 
   virtual ~WZAnalyzer(){}
 
+  virtual void analyze();
+
   virtual void begin();
 
   virtual void end(TFile &);
-
-  virtual void analyze();
   
   virtual Int_t cut();
 
 
  private:
+  Int_t nunumber;
+  Int_t totalevent;
+  Int_t WZevent;
   Int_t zahl;
-  Int_t eventcounter;
   Float_t begintime;
   Float_t endtime;
   
