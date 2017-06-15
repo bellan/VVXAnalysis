@@ -30,31 +30,36 @@ void WZAnalyzer::analyze(){
 
   vector<Particle> electron;
   vector<Particle> muon;
+  vector<Particle> neutrino;
   
   cout << "\n--------------------------------------------------------------------------"<<endl;
   cout << "Run: " << run << " event: " << event << " number: " << zahl << endl;
   
   foreach(const Particle &gen, *genParticles){
-    if((abs(gen.id()) != 11 && abs(gen.id()) != 13) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
+    if((abs(gen.id()) != 11 && abs(gen.id()) != 13 && abs(gen.id()) != 12 && abs(gen.id()) != 14) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
     cout << "id: " << gen.id() << " pt: " << gen.pt() << "\t eta: " << gen.eta() << endl;
-    theHistograms.fill("ptAllGenParticle",  "p_{t}", 100, 0, 100, gen.pt());
-    theHistograms.fill("massAllGenParticle","mass",  100, 0, 100, gen.mass());
-    theHistograms.fill("etaAllGenParticle", "#eta",  100, 0, 100, gen.eta());
-    theHistograms.fill("YAllGenParticle",   "Y",     100, 0, 100, gen.eta());
+    theHistograms.fill("ptAllGenParticle",  "p_{t}", 100,  0, 100, gen.pt());
+    theHistograms.fill("massAllGenParticle","mass",  100,  0, 100, gen.mass());
+    theHistograms.fill("etaAllGenParticle", "#eta",  100,  0, 100, gen.eta());
+    theHistograms.fill("YAllGenParticle",   "Y",     100,  0, 100, gen.eta());
+    theHistograms.fill("idAllGenParticle",  "ids",     6, 10,  15, abs(gen.id()));
        
-    if(gen.id() == 11)       electron.insert(electron.begin(),gen);
+    if(gen.id() == 11)       electron.insert(electron.begin(), gen);
     else if(gen.id() == -11) electron.push_back(gen);
-    else if(gen.id() == 13)  muon.insert(muon.begin(),gen);
+    else if(gen.id() == 13)  muon.insert(muon.begin(), gen);
     else if(gen.id() == -13) muon.push_back(gen);
+    else if(abs(gen.id()) == 12 || abs(gen.id()) == 14)  neutrino.insert(neutrino.begin(), gen);
   }
 
- 
   // ~~~~~~ tests on ZZ Analysis ~~~~~~
-  // /*
+  //
+  /*
   if(electron.size()+muon.size()!=4) {
     cout << "There are not enough or too many final leptons in this event." << endl;
     return;
   }
+
+  eventcounter++;
 
   // Reconstruction of the two Zs
   
@@ -104,23 +109,32 @@ void WZAnalyzer::analyze(){
 
   //add transvers mass
   
-  // */
+  //
+  */
   // ~~~~~~ end of tests on ZZ Analysis ~~~~~~
  
 
   // ~~~~~~ WZ Analysis ~~~~~~
-  //
-  /*
+  //  /*
   if(electron.size()+muon.size()!=3)  {
     cout << "There are not enough or too many final leptons in this event." << endl;
     return;
   }
+
+  if(neutrino.size() != 1){
+    cout << "There are not enough or too many final neutrinos in this event." << endl;
+    return;
+  }
+
+  eventcounter++;
   
-  // ------ ZL reconstructed ------
+  // ------ ZL reconstruction ------
   
   Ztype Zet;
+  Ztype Weh;
   vector<Particle> lepton;
   vector<Ztype> possibleZ;
+  vector<Ztype> possibleW;
   vector<Zltype> Zls;
 
   // first filter on pt and eta
@@ -195,23 +209,34 @@ void WZAnalyzer::analyze(){
     }
   
   }
-
-  cout << "\nZl candidates are: " << Zls.size() << endl;
   
-  //
- */
+  cout << "\nZl candidates are: " << Zls.size() << endl;
+  foreach(const Zltype zl, Zls){
+    cout << "\t Z " << zl.first << "\n\t l " << zl.second << endl << endl;
+  }
+
+  // Z and W must be on shell
+  /*
+  TLorentzVector Ptot = neutrino[0].p4();
+  foreach(const Particle l, lepton)
+    Ptot += l.p4();
+
+  double massllnu = Ptot.M();
+  
+  theHistograms.fill("allmasslllnu", "m_{T} 3 leptons and #nu", 400, 0, 700, masslllnu);
+  */
+  // */
    
 }
   
 void WZAnalyzer::end(TFile &){
 
-  cout << "\n--------------------------------------------------------------------------"<<endl;
+  cout << "\n--------------------------------------------------------------------------"<< endl;
   
   cout << "\nNumber of event analyzed: " << eventcounter << endl;
   
   // execution time
   endtime = ((float)clock())/CLOCKS_PER_SEC;
-  cout << "Execution time of the analysis: " << endtime - begintime << " seconds." << endl;
-  //cout << "prova" << (int)((endtime - begintime)/3600) << " h " << (int)(((endtime - begintime) - (endtime - begintime)/3600)) << " s " << endl; to be rewritten with %
+  cout << "Execution time: " << (int)((endtime - begintime)/3600) << " h " << (((int)(endtime - begintime)%3600)/60) << " m " << endtime - begintime - (int)((endtime - begintime)/3600)*3600 - (((int)(endtime - begintime)%3600)/60)*60 << " s." << endl;
   cout << "\n--------------------------------------------------------------------------"<<endl;
 }
