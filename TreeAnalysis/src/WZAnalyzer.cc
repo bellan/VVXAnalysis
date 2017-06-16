@@ -43,7 +43,7 @@ void WZAnalyzer::analyze(){
   
   foreach(const Particle &gen, *genParticles){
     if((abs(gen.id()) != 11 && abs(gen.id()) != 13 && abs(gen.id()) != 12 && abs(gen.id()) != 14) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
-    //cout << "id: " << gen.id() << " pt: " << gen.pt() << "\t eta: " << gen.eta() << endl;
+    cout << "id: " << gen.id() << " pt: " << gen.pt() << "\t eta: " << gen.eta() << endl;
     theHistograms.fill("ptAllGenParticle",  "p_{t} all particles", 100,  0  , 100  , gen.pt());
     theHistograms.fill("massAllGenParticle","mass all particles",  100,  0  , 100  , gen.mass());
     theHistograms.fill("etaAllGenParticle", "#eta all particles",  100,  0  , 100  , gen.eta());
@@ -123,12 +123,12 @@ void WZAnalyzer::analyze(){
   // ~~~~~~ WZ Analysis ~~~~~~
   //  /*
   if(electron.size()+muon.size()!=3)  {
-    cout << "There are not enough or too many final leptons in this event." << endl;
+    cout << "\nThere are not enough or too many final leptons in this event." << endl;
     return;
   }
 
   if(neutrino.size() != 1){
-    cout << "There are not enough or too many final neutrinos in this event." << endl;
+    cout << "\nThere are not enough or too many final neutrinos in this event." << endl;
     return;
   }
 
@@ -145,18 +145,20 @@ void WZAnalyzer::analyze(){
   // first filter on pt and eta
   foreach(const Particle ele, electron){
     if(ele.pt() < 7 || abs(ele.eta()) > 2.5){
-      cout << "Electrons: pt less than 7 GeV or eta's absolute value greater than 2.5" << endl;
+      cout << "\nElectrons: pt less than 7 GeV or eta's absolute value greater than 2.5" << endl;
       return;
     }
     lepton.push_back(ele);
   }
+  
   foreach(const Particle mu, muon){
     if(mu.pt() < 5 || abs(mu.eta()) > 2.4){
-      cout << "Muons: pt less than 5 GeV or eta's absolute value greater than 2.4" << endl;
+      cout << "\nMuons: pt less than 5 GeV or eta's absolute value greater than 2.4" << endl;
       return;
     }
     lepton.push_back(mu);
   }
+  
   stable_sort(electron.begin(), electron.end(), PtComparator());
   stable_sort(lepton.begin(), lepton.end(), PtComparator());
   stable_sort(muon.begin(), muon.end(), PtComparator());
@@ -164,15 +166,15 @@ void WZAnalyzer::analyze(){
   // second filter on pt and eta -> unnecessary at the moment
   /*
   if(lepton[0].pt() < 20){
-    cout << "First lepton pt less than 20 GeV" << endl;
+    cout << "\nFirst lepton pt less than 20 GeV" << endl;
     return;
   }
   if(abs(lepton[1].id()) == 11 && lepton[1].pt() < 12){
-    cout << "Second lepton is an electron and has pt less than 12 GeV" << endl;
+    cout << "\nSecond lepton is an electron and has pt less than 12 GeV" << endl;
     return;
   }
-if(abs(lepton[1].id()) == 13 && lepton[1].pt() < 10){
-    cout << "Second lepton is a muon and has pt less than 10 GeV" << endl;
+  if(abs(lepton[1].id()) == 13 && lepton[1].pt() < 10){
+    cout << "\nSecond lepton is a muon and has pt less than 10 GeV" << endl;
     return;
   }
   */
@@ -191,12 +193,14 @@ if(abs(lepton[1].id()) == 13 && lepton[1].pt() < 10){
   theHistograms.fill("alltrmasslllnu", "m_{T} 3 leptons and #nu", 1200, 0, 1200, trmasslllnu);
 
   if(masslllnu < 165){
-    cout << "Total mass of the products insufficient for the WZ analysis." << endl;
+    cout << "\nTotal mass of the products insufficient for the WZ analysis." << endl;
     return;
   }
 
   // ------ Z & W ------
   WZevent++;
+  
+  theHistograms.fill("allmassWZ", "m 3 leptons and #nu", 1200, 160, 1360, masslllnu);
   
   if(electron.size()==2 && muon.size()==1){
     Zet = Ztype(electron[0], electron[1], 23);
@@ -236,22 +240,6 @@ if(abs(lepton[1].id()) == 13 && lepton[1].pt() < 10){
 
     bool isSortOk = abs(possibleZ[0].mass() - ZMASS) < abs(possibleZ[1].mass() - ZMASS);
     theHistograms.fill("SortOK", "Is Sort OK", 2, -0.5, 1.5, isSortOk);
-    
-    /*foreach(const Zltype zls, Zls){
-      if((isTheSame(Zet.daughter(0), zls.first.daughter(0)) && isTheSame(Zet.daughter(1), zls.first.daughter(1)))){// || (isTheSame(Zet.daughter(0), zls.first.daughter(1)) && isTheSame(Zet.daughter(1), zls.first.daughter(0)))){
-	Weh = Ztype(zls.second, neutrino[0], 24);
-      }    
-      }*/
-
-    if( (isTheSame(Zet.daughter(0), Zls[0].first.daughter(0)) && isTheSame(Zet.daughter(1), Zls[0].first.daughter(1))) || (isTheSame(Zet.daughter(0), Zls[0].first.daughter(1)) && isTheSame(Zet.daughter(1), Zls[0].first.daughter(0)) ) ){
-      Weh = Ztype(Zls[0].second, neutrino[0], 24);
-      cout << Red("First Zls") << endl;
-    }
-    
-    if( (isTheSame(Zet.daughter(0), Zls[1].first.daughter(0)) && isTheSame(Zet.daughter(1), Zls[1].first.daughter(1))) || (isTheSame(Zet.daughter(0), Zls[1].first.daughter(1)) && isTheSame(Zet.daughter(1), Zls[1].first.daughter(0)) ) ){
-      Weh = Ztype(Zls[1].second, neutrino[0], 24);
-      cout << Red("Second Zls") << endl;
-    }
   }
   
   else if(muon.size()==3){
@@ -268,36 +256,37 @@ if(abs(lepton[1].id()) == 13 && lepton[1].pt() < 10){
     }
 
     stable_sort(possibleZ.begin(), possibleZ.end(), MassComparator(ZMASS));
-    Zet = possibleZ[0];
+    Zet = possibleZ[0];  
 
     bool isSortOk = abs(possibleZ[0].mass() - ZMASS) < abs(possibleZ[1].mass() - ZMASS);
     theHistograms.fill("SortOK", "Is Sort OK", 2, -0.5, 1.5, isSortOk);
-    
-    /*foreach(const Ztype candidates, possibleZ){
-      if(isTheSame(Zet, possibleZ[0])) continue;
-      else cout << Red("diversi!!") << endl;
-      }*/
-
-    if( (isTheSame(Zet.daughter(0), Zls[0].first.daughter(0)) && isTheSame(Zet.daughter(1), Zls[0].first.daughter(1))) || (isTheSame(Zet.daughter(0), Zls[0].first.daughter(1)) && isTheSame(Zet.daughter(1), Zls[0].first.daughter(0)) ) ){
-      Weh = Ztype(Zls[0].second, neutrino[0], 24);
-      cout << Red("First Zls") << endl;
-    }
-    
-    if( (isTheSame(Zet.daughter(0), Zls[1].first.daughter(0)) && isTheSame(Zet.daughter(1), Zls[1].first.daughter(1))) || (isTheSame(Zet.daughter(0), Zls[1].first.daughter(1)) && isTheSame(Zet.daughter(1), Zls[1].first.daughter(0)) ) ){
-      Weh = Ztype(Zls[1].second, neutrino[0], 24);
-      cout << Red("Second Zls") << endl;
-    }
-  
   }
   
   cout << "\nZl candidates are: " << Zls.size() << endl;
   foreach(const Zltype zl, Zls){
-    cout << "\t Z " << zl.first << "\n\t l " << zl.second << endl << endl;
+    cout << " 1. Z " << zl.first << "\n 2. l " << zl.second << endl << endl;
   }
-
+    
+  if( ( isTheSame(Zet.daughter(0), Zls[0].first.daughter(0)) && isTheSame(Zet.daughter(1), Zls[0].first.daughter(1)) ) || ( isTheSame(Zet.daughter(0), Zls[0].first.daughter(1)) && isTheSame(Zet.daughter(1), Zls[0].first.daughter(0)) ) ){
+    if(Zls[0].second.id() < 0)
+      Weh = Ztype(Zls[0].second, neutrino[0], -24);
+    if(Zls[0].second.id() > 0)
+      Weh = Ztype(Zls[0].second, neutrino[0], 24);
+    cout << " The best Z is in the first Zl couple." << endl;
+  }
+  
+  if( ( isTheSame(Zet.daughter(0), Zls[1].first.daughter(0)) && isTheSame(Zet.daughter(1), Zls[1].first.daughter(1)) ) || ( isTheSame(Zet.daughter(0), Zls[1].first.daughter(1)) && isTheSame(Zet.daughter(1), Zls[1].first.daughter(0)) ) ){
+    if(Zls[1].second.id() < 0)
+      Weh = Ztype(Zls[1].second, neutrino[0], -24);
+    if(Zls[1].second.id() > 0)
+      Weh = Ztype(Zls[1].second, neutrino[0], 24);
+    cout << " The best Z is in the second Zl couple." << endl;
+  }
+  
   cout << "Z is: " << Zet << endl;
-  cout << "W is: " << Weh << endl;
+  cout << "W is: " << Weh << "\n  her lepton daughter is: " << Weh.daughter(0) << endl;
 
+  //To do: add histograms to study the distribution of Z and W (pt, eta, rapidity, transverse mass... ; their ids and their daughter's ids); make the prints out readable
   // */
    
 }
@@ -306,10 +295,10 @@ void WZAnalyzer::end(TFile &){
 
   cout << "\n--------------------------------------------------------------------------"<< endl;
   
-  cout << "\nNumber of events of the sample:                         " << zahl << endl;
-  cout << "Number of events ending with 3 leptons and 1 neutrino:  " << nunumber << endl;
-  cout << "Number of events useful for both WZ analysis:           " << totalevent << endl;
-  cout << "Number of events useful for this WZ analysis:           " << WZevent << endl;
+  cout << "\nNumber of events of the sample:                         " << setw(7) << zahl << endl;
+  cout << "Number of events ending with 3 leptons and 1 neutrino:  " << setw(7) << nunumber << endl;
+  cout << "Number of events useful for Wlllnu and WZ analysis:     " << setw(7) << totalevent << endl;
+  cout << "Number of events useful for WZ analysis:                " << setw(7) << WZevent << endl;
   
   // execution time
   endtime = ((float)clock())/CLOCKS_PER_SEC;
