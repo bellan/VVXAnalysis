@@ -1,5 +1,6 @@
 #include "VVXAnalysis/TreeAnalysis/interface/WZAnalyzer.h"
 #include "VVXAnalysis/Commons/interface/AriEle.h"
+#include "VVXAnalysis/Commons/interface/Colours.h"
 #include "VVXAnalysis/Commons/interface/Comparators.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
@@ -11,6 +12,7 @@
 #include <boost/assign/std/vector.hpp> 
 
 using namespace boost::assign;
+using namespace colour;
 using namespace phys;
 using namespace std;
 
@@ -36,12 +38,12 @@ void WZAnalyzer::analyze(){
   vector<Particle> muon;
   vector<Particle> neutrino;
   
-  cout << "\n--------------------------------------------------------------------------"<<endl;
+  cout << "\n--------------------------------------------------------------------------"<< endl;
   cout << "Run: " << run << " event: " << event << endl;
   
   foreach(const Particle &gen, *genParticles){
     if((abs(gen.id()) != 11 && abs(gen.id()) != 13 && abs(gen.id()) != 12 && abs(gen.id()) != 14) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
-    cout << "id: " << gen.id() << " pt: " << gen.pt() << "\t eta: " << gen.eta() << endl;
+    //cout << "id: " << gen.id() << " pt: " << gen.pt() << "\t eta: " << gen.eta() << endl;
     theHistograms.fill("ptAllGenParticle",  "p_{t} all particles", 100,  0  , 100  , gen.pt());
     theHistograms.fill("massAllGenParticle","mass all particles",  100,  0  , 100  , gen.mass());
     theHistograms.fill("etaAllGenParticle", "#eta all particles",  100,  0  , 100  , gen.eta());
@@ -159,7 +161,7 @@ void WZAnalyzer::analyze(){
   stable_sort(lepton.begin(), lepton.end(), PtComparator());
   stable_sort(muon.begin(), muon.end(), PtComparator());
 
-  // second filter on pt and eta -> unnecessary for the moment
+  // second filter on pt and eta -> unnecessary at the moment
   /*
   if(lepton[0].pt() < 20){
     cout << "First lepton pt less than 20 GeV" << endl;
@@ -193,12 +195,13 @@ if(abs(lepton[1].id()) == 13 && lepton[1].pt() < 10){
     return;
   }
 
-  // ------ Z & W reconstruction ------
+  // ------ Z & W ------
   WZevent++;
   
   if(electron.size()==2 && muon.size()==1){
     Zet = Ztype(electron[0], electron[1], 23);
     Zls.push_back(Zltype(Zet, muon[0]));
+    
     if(muon[0].charge() > 0)
       Weh = Ztype(muon[0], neutrino[0], 24);
     else if(muon[0].charge() < 0)
@@ -208,6 +211,7 @@ if(abs(lepton[1].id()) == 13 && lepton[1].pt() < 10){
   else if(electron.size()==1 && muon.size()==2){
     Zet = Ztype(muon[0], muon[1], 23);
     Zls.push_back(Zltype(Zet, electron[0]));
+    
     if(electron[0].charge() > 0)
       Weh = Ztype(electron[0], neutrino[0], 24);
     else if(electron[0].charge() < 0)
@@ -226,6 +230,28 @@ if(abs(lepton[1].id()) == 13 && lepton[1].pt() < 10){
       possibleZ.push_back(Ztype(electron[0], electron[1], 23));
       Zls.push_back(Zltype(possibleZ[1], electron[2]));
     }
+
+    stable_sort(possibleZ.begin(), possibleZ.end(), MassComparator(ZMASS));
+    Zet = possibleZ[0];
+
+    bool isSortOk = abs(possibleZ[0].mass() - ZMASS) < abs(possibleZ[1].mass() - ZMASS);
+    theHistograms.fill("SortOK", "Is Sort OK", 2, -0.5, 1.5, isSortOk);
+    
+    /*foreach(const Zltype zls, Zls){
+      if((isTheSame(Zet.daughter(0), zls.first.daughter(0)) && isTheSame(Zet.daughter(1), zls.first.daughter(1)))){// || (isTheSame(Zet.daughter(0), zls.first.daughter(1)) && isTheSame(Zet.daughter(1), zls.first.daughter(0)))){
+	Weh = Ztype(zls.second, neutrino[0], 24);
+      }    
+      }*/
+
+    if( (isTheSame(Zet.daughter(0), Zls[0].first.daughter(0)) && isTheSame(Zet.daughter(1), Zls[0].first.daughter(1))) || (isTheSame(Zet.daughter(0), Zls[0].first.daughter(1)) && isTheSame(Zet.daughter(1), Zls[0].first.daughter(0)) ) ){
+      Weh = Ztype(Zls[0].second, neutrino[0], 24);
+      cout << Red("First Zls") << endl;
+    }
+    
+    if( (isTheSame(Zet.daughter(0), Zls[1].first.daughter(0)) && isTheSame(Zet.daughter(1), Zls[1].first.daughter(1))) || (isTheSame(Zet.daughter(0), Zls[1].first.daughter(1)) && isTheSame(Zet.daughter(1), Zls[1].first.daughter(0)) ) ){
+      Weh = Ztype(Zls[1].second, neutrino[0], 24);
+      cout << Red("Second Zls") << endl;
+    }
   }
   
   else if(muon.size()==3){
@@ -240,6 +266,27 @@ if(abs(lepton[1].id()) == 13 && lepton[1].pt() < 10){
       possibleZ.push_back(Ztype(muon[0], muon[1], 23));
       Zls.push_back(Zltype(possibleZ[1], muon[2]));
     }
+
+    stable_sort(possibleZ.begin(), possibleZ.end(), MassComparator(ZMASS));
+    Zet = possibleZ[0];
+
+    bool isSortOk = abs(possibleZ[0].mass() - ZMASS) < abs(possibleZ[1].mass() - ZMASS);
+    theHistograms.fill("SortOK", "Is Sort OK", 2, -0.5, 1.5, isSortOk);
+    
+    /*foreach(const Ztype candidates, possibleZ){
+      if(isTheSame(Zet, possibleZ[0])) continue;
+      else cout << Red("diversi!!") << endl;
+      }*/
+
+    if( (isTheSame(Zet.daughter(0), Zls[0].first.daughter(0)) && isTheSame(Zet.daughter(1), Zls[0].first.daughter(1))) || (isTheSame(Zet.daughter(0), Zls[0].first.daughter(1)) && isTheSame(Zet.daughter(1), Zls[0].first.daughter(0)) ) ){
+      Weh = Ztype(Zls[0].second, neutrino[0], 24);
+      cout << Red("First Zls") << endl;
+    }
+    
+    if( (isTheSame(Zet.daughter(0), Zls[1].first.daughter(0)) && isTheSame(Zet.daughter(1), Zls[1].first.daughter(1))) || (isTheSame(Zet.daughter(0), Zls[1].first.daughter(1)) && isTheSame(Zet.daughter(1), Zls[1].first.daughter(0)) ) ){
+      Weh = Ztype(Zls[1].second, neutrino[0], 24);
+      cout << Red("Second Zls") << endl;
+    }
   
   }
   
@@ -247,6 +294,9 @@ if(abs(lepton[1].id()) == 13 && lepton[1].pt() < 10){
   foreach(const Zltype zl, Zls){
     cout << "\t Z " << zl.first << "\n\t l " << zl.second << endl << endl;
   }
+
+  cout << "Z is: " << Zet << endl;
+  cout << "W is: " << Weh << endl;
 
   // */
    
