@@ -19,6 +19,7 @@
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 #include "VVXAnalysis/DataFormats/interface/Particle.h"
+#include <time.h>
 
 class WZAnalyzer: public EventAnalyzer, RegistrableAnalysis<WZAnalyzer>{
 
@@ -34,15 +35,22 @@ public:
 
   virtual ~WZAnalyzer(){}
 
+  virtual void analyze();
+
   virtual void begin();
 
-  virtual void analyze();
+  virtual void end(TFile &);
   
   virtual Int_t cut();
 
 
  private:
+  Int_t nunumber;
+  Int_t totalevent;
+  Int_t WZevent;
   Int_t zahl;
+  Float_t begintime;
+  Float_t endtime;
   
   friend class Selector<WZAnalyzer>;
   template< class PAR >
