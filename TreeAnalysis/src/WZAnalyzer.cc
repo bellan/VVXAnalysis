@@ -205,21 +205,21 @@ void WZAnalyzer::analyze(){
   if(electron.size()==2 && muon.size()==1){
     Zet = Ztype(electron[0], electron[1], 23);
     Zls.push_back(Zltype(Zet, muon[0]));
-    
+    /*
     if(muon[0].charge() > 0)
       Weh = Ztype(muon[0], neutrino[0], 24);
     else if(muon[0].charge() < 0)
-      Weh = Ztype(muon[0], neutrino[0], -24);
+      Weh = Ztype(muon[0], neutrino[0], -24);*/
   }
   
   else if(electron.size()==1 && muon.size()==2){
     Zet = Ztype(muon[0], muon[1], 23);
     Zls.push_back(Zltype(Zet, electron[0]));
-    
+    /*
     if(electron[0].charge() > 0)
       Weh = Ztype(electron[0], neutrino[0], 24);
     else if(electron[0].charge() < 0)
-      Weh = Ztype(electron[0], neutrino[0], -24);
+      Weh = Ztype(electron[0], neutrino[0], -24);*/
   }
     
   else if(electron.size()==3){
@@ -285,7 +285,7 @@ void WZAnalyzer::analyze(){
 */
   foreach(const Zltype zl, Zls){
     if( (isTheSame(Zet.daughter(0), zl.first.daughter(0)) && isTheSame(Zet.daughter(1), zl.first.daughter(1))) ||  (isTheSame(Zet.daughter(0), zl.first.daughter(1)) && isTheSame(Zet.daughter(1), zl.first.daughter(0))) )
-      neutrino[0].charge() > 0 ? Weh = Ztype(zl.second, neutrino[0], 24) : Weh = Ztype(zl.second, neutrino[0], -24);
+      zl.second.charge() > 0 ? Weh = Ztype(zl.second, neutrino[0], 24) : Weh = Ztype(zl.second, neutrino[0], -24);
   }
 
   
