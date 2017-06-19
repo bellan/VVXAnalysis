@@ -266,7 +266,7 @@ void WZAnalyzer::analyze(){
   foreach(const Zltype zl, Zls){
     cout << " 1. Z " << zl.first << "\n 2. l " << zl.second << endl << endl;
   }
-    
+  /*  
   if( ( isTheSame(Zet.daughter(0), Zls[0].first.daughter(0)) && isTheSame(Zet.daughter(1), Zls[0].first.daughter(1)) ) || ( isTheSame(Zet.daughter(0), Zls[0].first.daughter(1)) && isTheSame(Zet.daughter(1), Zls[0].first.daughter(0)) ) ){
     if(Zls[0].second.id() < 0)
       Weh = Ztype(Zls[0].second, neutrino[0], -24);
@@ -282,6 +282,12 @@ void WZAnalyzer::analyze(){
       Weh = Ztype(Zls[1].second, neutrino[0], 24);
     cout << " The best Z is in the second Zl couple." << endl;
   }
+*/
+  foreach(const Zltype zl, Zls){
+    if( (isTheSame(Zet.daughter(0), zl.first.daughter(0)) && isTheSame(Zet.daughter(1), zl.first.daughter(1))) ||  (isTheSame(Zet.daughter(0), zl.first.daughter(1)) && isTheSame(Zet.daughter(1), zl.first.daughter(0))) )
+      neutrino[0].charge() > 0 ? Weh = Ztype(zl.second, neutrino[0], 24) : Weh = Ztype(zl.second, neutrino[0], -24);
+  }
+
   
   cout << "Z is: " << Zet << endl;
   cout << "W is: " << Weh << "\n  her lepton daughter is: " << Weh.daughter(0) << endl;
