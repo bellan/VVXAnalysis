@@ -162,21 +162,21 @@ void WZAnalyzer::analyze(){
   stable_sort(lepton.begin(), lepton.end(), PtComparator());
   stable_sort(muon.begin(), muon.end(), PtComparator());
 
-  // second filter on pt and eta -> unnecessary at the moment
-  /*
+  // second filter on pt and eta
+  // /*
   if(lepton[0].pt() < 20){
-    cout << "\nFirst lepton pt less than 20 GeV" << endl;
+    cout << Violet("\nFirst lepton pt less than 20 GeV") << endl;
     return;
   }
   if(abs(lepton[1].id()) == 11 && lepton[1].pt() < 12){
-    cout << "\nSecond lepton is an electron and has pt less than 12 GeV" << endl;
+    cout << Violet("\nSecond lepton is an electron and has pt less than 12 GeV") << endl;
     return;
   }
   if(abs(lepton[1].id()) == 13 && lepton[1].pt() < 10){
-    cout << "\nSecond lepton is a muon and has pt less than 10 GeV" << endl;
+    cout << Violet("\nSecond lepton is a muon and has pt less than 10 GeV") << endl;
     return;
   }
-  */
+  // */
 
   totalevent++;
   
@@ -188,7 +188,7 @@ void WZAnalyzer::analyze(){
   double masslllnu = Ptot.M();
   double trmasslllnu = Ptot.Mt();
 
-  theHistograms.fill("allmasslllnu", "m 3 leptons and #nu", 1200, 0, 1200, masslllnu);
+  theHistograms.fill("allmasslllnu", "m 3 leptons and #nu", 1200, 0, 1200, masslllnu); //what happens between 90 and 160 GeV?
   theHistograms.fill("alltrmasslllnu", "m_{T} 3 leptons and #nu", 1200, 0, 1200, trmasslllnu);
 
   if(masslllnu < 165){
@@ -259,20 +259,11 @@ void WZAnalyzer::analyze(){
     cout << "   Z " << zl.first << "\n   l " << zl.second << endl << endl;
     
     // W is made up of the remaining lepton and the neutrino
-    if( ( isTheSame(Zet.daughter(0), Zls[0].first.daughter(0)) && isTheSame(Zet.daughter(1), Zls[0].first.daughter(1)) ) || ( isTheSame(Zet.daughter(0), Zls[0].first.daughter(1)) && isTheSame(Zet.daughter(1), Zls[0].first.daughter(0)) ) ){
-      if(Zls[0].second.id() < 0)
-	Weh = Ztype(Zls[0].second, neutrino[0], -24);
+    if( ( isTheSame(Zet.daughter(0), zl.first.daughter(0)) && isTheSame(Zet.daughter(1), zl.first.daughter(1)) ) || ( isTheSame(Zet.daughter(0), zl.first.daughter(1)) && isTheSame(Zet.daughter(1), zl.first.daughter(0)) ) ){
+      if(zl.second.id() < 0)
+	Weh = Ztype(zl.second, neutrino[0], -24);
       else
-	Weh = Ztype(Zls[0].second, neutrino[0], 24);
-      cout << " The best Z is in the first Zl couple." << endl;
-    }
-    
-    else if( ( isTheSame(Zet.daughter(0), Zls[1].first.daughter(0)) && isTheSame(Zet.daughter(1), Zls[1].first.daughter(1)) ) || ( isTheSame(Zet.daughter(0), Zls[1].first.daughter(1)) && isTheSame(Zet.daughter(1), Zls[1].first.daughter(0)) ) ){
-      if(Zls[1].second.id() < 0)
-	Weh = Ztype(Zls[1].second, neutrino[0], -24);
-      else
-	Weh = Ztype(Zls[1].second, neutrino[0], 24);
-      cout << " The best Z is in the second Zl couple." << endl;
+	Weh = Ztype(zl.second, neutrino[0], 24);
     }
   }
   
@@ -280,14 +271,14 @@ void WZAnalyzer::analyze(){
   cout << "W is: " << Weh << "\n  her lepton daughter is: " << Weh.daughter(0) << endl;
 
   //W Histograms
-  theHistograms.fill("Wid",   "W's ids/24",     2,  -2,   2, Weh.id()/24); //why are there many more W- than W+? (5689 vs 3931)
-  theHistograms.fill("Wmass", "W's mass",  160,   0, 320, Weh.mass());
+  theHistograms.fill("Wid",   "W's ids/24",     2,  -2,   2, Weh.id()/24); //why are there many more W- than W+?
+  theHistograms.fill("Wmass", "W's mass",  350,   0, 350, Weh.mass());
   theHistograms.fill("Wpt",   "W's p_{t}", 300,   0, 600, Weh.pt());
   theHistograms.fill("WY",    "W's Y",      50,  -5,   5, Weh.rapidity());
   theHistograms.fill("Weta",  "W's #eta",   50,  -9,   9, Weh.eta());
   
   //Z Histograms
-  theHistograms.fill("Zmass", "Z's mass",  160,   0, 320, Zet.mass());
+  theHistograms.fill("Zmass", "Z's mass",  350,   0, 350, Zet.mass());
   theHistograms.fill("Zpt",   "Z's p_{t}", 300,   0, 600, Zet.pt());
   theHistograms.fill("ZY",    "Z's Y",      50,  -4,   4, Zet.rapidity());
   theHistograms.fill("Zeta",  "Z's #eta",  100,  -7,   7, Zet.eta());
