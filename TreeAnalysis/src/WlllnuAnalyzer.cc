@@ -393,12 +393,22 @@ void WlllnuAnalyzer::analyze(){
     
     else cout << Red("invalid total id") << endl;
     cout << Green("\n # of valid Zl: ")  << Green(Zl.size()) << endl;
-    if(Zl.size() > 1) return;
 
+    diagramId = abs(nu.id()) + abs(Zl[0].second.id()) + abs(Zl[0].first.daughter(0).id());
+    isNuAlone ? theHistograms.fill("diagramId","type of diagram", 21, -10.5, 10.5, diagramId-30) : theHistograms.fill("diagramId","type of diagram", 21, -10.5, 10.5, -(diagramId-30));
+    theHistograms.fill("isNuAlone","type of diagram", 2, -0.5, 1.5, isNuAlone);
+    theHistograms.fill("absDiagId","type of diagram", 7, -3.5, 10.5, diagramId-30);
+    
+    if(Zl.size() > 1){
+      std::stable_sort(Zl.begin(), Zl.end(), deltaRComparator());
+      theHistograms.fill("deltaRZ0","deltaR best Zcand", 100, 0, 10, physmath::deltaR(Zl[0].first.daughter(0), Zl[0].first.daughter(1)));
+      theHistograms.fill("deltaRZ1","deltaR other Zcand", 100, 0, 10, physmath::deltaR(Zl[1].first.daughter(0), Zl[1].first.daughter(1)));
+      return;
+    }
+      
     theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[1].p4()));
     theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[2].p4()));
     theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[1].p4(), leptons[2].p4()));
-    theHistograms.fill("isNuAlone","type of diagram", 2, -0.5, 1.5, isNuAlone);
     theHistograms.fill("ptnu",   "pt nu",   100, 0,   200,  nu.pt());
     
     
@@ -410,7 +420,7 @@ void WlllnuAnalyzer::analyze(){
       cout << "\n nu: " << nu << endl;
       cout << "\n W: " << W << endl;
       
-      diagramId = abs(nu.id()) + abs(zl.second.id()) + abs(zl.first.daughter(0).id());
+      //diagramId = abs(nu.id()) + abs(zl.second.id()) + abs(zl.first.daughter(0).id());
       
       isNuAlone ? theHistograms.fill("deltaRZtriplet","deltaR Z and related leptons ", 100, 0, 10, deltaR(zl.first.p4(), zl.second.p4())) : theHistograms.fill("deltaRZtriplet","deltaR Z and related leptons ", 100, 0, 10, deltaR(zl.first.p4(), nu.p4())); //are Z and its "related" lepton collinear?
       !(isNuAlone) ? theHistograms.fill("deltaRZsinglet","deltaR Z and NOT related leptons ", 100, 0, 10, deltaR(zl.first.p4(), zl.second.p4())) : theHistograms.fill("deltaRZsinglet","deltaR Z and NOT related leptons ", 100, 0, 10, deltaR(zl.first.p4(), nu.p4())); //are Z and its "related" lepton collinear?
@@ -418,19 +428,11 @@ void WlllnuAnalyzer::analyze(){
       theHistograms.fill("massZ","mass Z", 300, 0, 150, zl.first.mass());
       theHistograms.fill("mTZ","direct mT Z", 300, 0, 150, zl.first.p4().Mt());
       theHistograms.fill("mTZdaughters","mT Z from daughters", 300, 0, 150, mT(zl.first.daughter(0), zl.first.daughter(1)));
-      isNuAlone ? theHistograms.fill("diagramId","type of diagram", 21, -10.5, 10.5, diagramId-30) : theHistograms.fill("diagramId","type of diagram", 21, -10.5, 10.5, -(diagramId-30));
+      //isNuAlone ? theHistograms.fill("diagramId","type of diagram", 21, -10.5, 10.5, diagramId-30) : theHistograms.fill("diagramId","type of diagram", 21, -10.5, 10.5, -(diagramId-30));
       theHistograms.fill("ptZ",   "pt Z",   100, 0,   200,  zl.first.pt());
       theHistograms.fill("ptl",   "pt l",   100, 0,   200,  zl.second.pt());
       theHistograms.fill("deltaRZdaughters","deltaR Z daughters", 100, 0, 10, deltaR(zl.first.daughter(0).p4(), zl.first.daughter(1).p4()));
     }
-    /*
-    if(zl.size() > 0) cout << "\n\nZ and Zl[0] are the same?\t" << isTheSame(Z, Zl[0].first) <<  endl;
-    if(Zl.size() > 1) cout << "Z and Zl[1] are the same?\t" << isTheSame(Z, Zl[1].first) <<  endl;
-    if(Zl.size() == 1) theHistograms.fill("ZZltheSame","Are Z and Zl cand the same?", 2, -0.5, 1.5, isTheSame(Z, Zl[0].first));
-    if(Zl.size() > 1){
-      theHistograms.fill("ZZl0theSame","Are Z and one of Zl cands the same?", 2, -0.5, 1.5, isTheSame(Z, Zl[0].first));
-      theHistograms.fill("ZZl1theSame","Are Z and one of Zl cands the same?", 2, -0.5, 1.5, isTheSame(Z, Zl[1].first));
-    }*/
     return;
   }
 
