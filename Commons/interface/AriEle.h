@@ -37,7 +37,13 @@ mTComparator(const double& ref): ref_(ref){}
 	bool operator()(const PAR * a , 
 	const PAR * b) const{ 
 	return fabs(a->p4().M()-ref_) < fabs(b->p4().M()-ref_); 
-	}*/
+	}
+   template<typename T1, typename T2>
+    bool operator()(const std::pair<T1, T2> & a, const std::pair<T1, T2> & b) const{    
+    return fabs(mT(a.first.daughter(0), a.first.daughter(1))-ref_) < fabs(mT(b.first.daughter(0), b.first.daughter(1))-ref_);
+  }
+  
+*/
   double ref_;
 };
   
@@ -52,6 +58,15 @@ massComparator(bool element, const double& ref): element_(element), ref_(ref){}
   bool element_;
   double ref_;
 };
+
+struct deltaRComparator{
+  template<typename PAIR>
+  bool operator()(const PAIR & a,
+		  const PAIR & b) const{
+    return physmath::deltaR(a.first.daughter(0), a.first.daughter(1)) < physmath::deltaR(b.first.daughter(0), b.first.daughter(1));
+  }
+};
+  
   
 template<typename T> bool isTheSame(const T& p1, const T& p2){
   return !(p1.pt() != p2.pt());
