@@ -403,6 +403,12 @@ void WlllnuAnalyzer::analyze(){
       std::stable_sort(Zl.begin(), Zl.end(), deltaRComparator());
       theHistograms.fill("deltaRZ0","deltaR best Zcand", 100, 0, 10, physmath::deltaR(Zl[0].first.daughter(0), Zl[0].first.daughter(1)));
       theHistograms.fill("deltaRZ1","deltaR other Zcand", 100, 0, 10, physmath::deltaR(Zl[1].first.daughter(0), Zl[1].first.daughter(1)));
+      cout << "\n Z0: " << Zl[0].first << endl;
+      cout << "\n l0: " << Zl[0].second << endl;
+      cout << "\n deltaRZ0:\t " << physmath::deltaR(Zl[0].first.daughter(0), Zl[0].first.daughter(1)) << endl;
+      cout << "\n\n Z1: " << Zl[1].first << endl;
+      cout << "\n l1: " << Zl[1].second << endl;
+      cout << "\n deltaRZ1:\t " << physmath::deltaR(Zl[1].first.daughter(0), Zl[1].first.daughter(1)) << endl;
       return;
     }
       
@@ -414,7 +420,7 @@ void WlllnuAnalyzer::analyze(){
     
     foreach(const Zltype zl, Zl){
 
-      W = zl.second.charge()>0 ? Ztype(theCombo.first, theCombo.second, 24) : Ztype(theCombo.first, theCombo.second, -24);
+      W = Ztype(theCombo.first, theCombo.second, copysign(24, zl.second.charge()));
       cout << "\n Z: " << zl.first << endl;
       cout << "\n l: " << zl.second << endl;
       cout << "\n nu: " << nu << endl;
