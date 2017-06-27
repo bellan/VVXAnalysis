@@ -68,24 +68,24 @@ void WZAnalyzer::analyze(){
 
   // Reconstruction of the two Zs
   
-  vector<Ztype> Zet;
-  vector<Ztype> possibleZ;
+  vector<Vtype> Zet;
+  vector<Vtype> possibleZ;
 
   if(electron.size()==2 && muon.size()==2){
-    possibleZ.push_back(Ztype(electron[0], electron[1], 23));
-    possibleZ.push_back(Ztype(muon[0], muon[1], 23));
+    possibleZ.push_back(Vtype(electron[0], electron[1], 23));
+    possibleZ.push_back(Vtype(muon[0], muon[1], 23));
   }
   else if(electron.size()==4){
-    possibleZ.push_back(Ztype(electron[0], electron[2], 23));
-    possibleZ.push_back(Ztype(electron[0], electron[3], 23));
-    possibleZ.push_back(Ztype(electron[1], electron[2], 23));
-    possibleZ.push_back(Ztype(electron[1], electron[3], 23));
+    possibleZ.push_back(Vtype(electron[0], electron[2], 23));
+    possibleZ.push_back(Vtype(electron[0], electron[3], 23));
+    possibleZ.push_back(Vtype(electron[1], electron[2], 23));
+    possibleZ.push_back(Vtype(electron[1], electron[3], 23));
   }
   else if(muon.size()==4){      
-    possibleZ.push_back(Ztype(muon[0], muon[2], 23));
-    possibleZ.push_back(Ztype(muon[0], muon[3], 23));
-    possibleZ.push_back(Ztype(muon[1], muon[2], 23));
-    possibleZ.push_back(Ztype(muon[1], muon[3], 23));
+    possibleZ.push_back(Vtype(muon[0], muon[2], 23));
+    possibleZ.push_back(Vtype(muon[0], muon[3], 23));
+    possibleZ.push_back(Vtype(muon[1], muon[2], 23));
+    possibleZ.push_back(Vtype(muon[1], muon[3], 23));
   }
       
   stable_sort(possibleZ.begin(), possibleZ.end(), MassComparator(ZMASS));
@@ -133,11 +133,11 @@ void WZAnalyzer::analyze(){
 
   nunumber++;
   
-  Ztype Weh;
-  Ztype Zet;
+  Vtype Weh;
+  Vtype Zet;
   vector<Particle> lepton;
-  vector<Ztype> possibleW;
-  vector<Ztype> possibleZ;
+  vector<Vtype> possibleW;
+  vector<Vtype> possibleZ;
   vector<Zltype> Zls;
   
   // ------ filters on leptons ------
@@ -148,6 +148,7 @@ void WZAnalyzer::analyze(){
       return;
     }
     lepton.push_back(ele);
+    theHistograms.fill("Lcharge", "leptons charge", 2, -2, 2, ele.charge());
   }
   
   foreach(const Particle mu, muon){
@@ -156,6 +157,7 @@ void WZAnalyzer::analyze(){
       return;
     }
     lepton.push_back(mu);
+    theHistograms.fill("Lcharge", "leptons charge", 2, -2, 2, mu.charge());
   }
   
   stable_sort(electron.begin(), electron.end(), PtComparator());
@@ -198,30 +200,28 @@ void WZAnalyzer::analyze(){
 
   // ------ Z & W ------
   WZevent++;
-  
-  theHistograms.fill("allmassWZ", "m 3 leptons and #nu", 1200, 160, 1360, masslllnu);
 
   // Z and W construction 
   if(electron.size()==2 && muon.size()==1){
-    Zet = Ztype(electron[0], electron[1], 23);
+    Zet = Vtype(electron[0], electron[1], 23);
     Zls.push_back(Zltype(Zet, muon[0]));
   }
   
   else if(electron.size()==1 && muon.size()==2){
-    Zet = Ztype(muon[0], muon[1], 23);
+    Zet = Vtype(muon[0], muon[1], 23);
     Zls.push_back(Zltype(Zet, electron[0]));
   }
     
   else if(electron.size()==3){
-    possibleZ.push_back(Ztype(electron[0], electron[2], 23));
+    possibleZ.push_back(Vtype(electron[0], electron[2], 23));
     Zls.push_back(Zltype(possibleZ[0], electron[1]));
     
     if(electron[0].id()==electron[1].id()){
-      possibleZ.push_back(Ztype(electron[1], electron[2], 23));
+      possibleZ.push_back(Vtype(electron[1], electron[2], 23));
       Zls.push_back(Zltype(possibleZ[1], electron[0]));
     }
     else{
-      possibleZ.push_back(Ztype(electron[0], electron[1], 23));
+      possibleZ.push_back(Vtype(electron[0], electron[1], 23));
       Zls.push_back(Zltype(possibleZ[1], electron[2]));
     }
 
@@ -229,29 +229,33 @@ void WZAnalyzer::analyze(){
     stable_sort(possibleZ.begin(), possibleZ.end(), MassComparator(ZMASS));
     Zet = possibleZ[0];
 
-    bool isSortOk = abs(possibleZ[0].mass() - ZMASS) < abs(possibleZ[1].mass() - ZMASS);
-    theHistograms.fill("SortOK", "Is Sort OK", 2, -0.5, 1.5, isSortOk);
+    /*
+      bool isSortOk = abs(possibleZ[0].mass() - ZMASS) < abs(possibleZ[1].mass() - ZMASS);
+      theHistograms.fill("SortOK", "Is Sort OK", 2, -0.5, 1.5, isSortOk);
+    */
   }
   
   else if(muon.size()==3){
-    possibleZ.push_back(Ztype(muon[0], muon[2], 23));
+    possibleZ.push_back(Vtype(muon[0], muon[2], 23));
     Zls.push_back(Zltype(possibleZ[0], muon[1]));
     
     if(muon[0].id()==muon[1].id()){
-      possibleZ.push_back(Ztype(muon[1], muon[2], 23));
+      possibleZ.push_back(Vtype(muon[1], muon[2], 23));
       Zls.push_back(Zltype(possibleZ[1], muon[0]));
     }
     else{
-      possibleZ.push_back(Ztype(muon[0], muon[1], 23));
+      possibleZ.push_back(Vtype(muon[0], muon[1], 23));
       Zls.push_back(Zltype(possibleZ[1], muon[2]));
     }
 
     stable_sort(possibleZ.begin(), possibleZ.end(), MassComparator(ZMASS));
     Zet = possibleZ[0];  
 
-    bool isSortOk = abs(possibleZ[0].mass() - ZMASS) < abs(possibleZ[1].mass() - ZMASS);
-    theHistograms.fill("SortOK", "Is Sort OK", 2, -0.5, 1.5, isSortOk);
-  }
+    /*
+      bool isSortOk = abs(possibleZ[0].mass() - ZMASS) < abs(possibleZ[1].mass() - ZMASS);
+      theHistograms.fill("SortOK", "Is Sort OK", 2, -0.5, 1.5, isSortOk);
+    */  
+}
   
   cout << "\nZl candidates are: " << Zls.size() << endl;
   
@@ -260,31 +264,35 @@ void WZAnalyzer::analyze(){
     
     // W is made up of the remaining lepton and the neutrino
     if( ( isTheSame(Zet.daughter(0), zl.first.daughter(0)) && isTheSame(Zet.daughter(1), zl.first.daughter(1)) ) || ( isTheSame(Zet.daughter(0), zl.first.daughter(1)) && isTheSame(Zet.daughter(1), zl.first.daughter(0)) ) ){
-      if(zl.second.id() < 0)
-	Weh = Ztype(zl.second, neutrino[0], -24);
-      else
-	Weh = Ztype(zl.second, neutrino[0], 24);
+      Weh = Vtype(zl.second, neutrino[0], copysign(24, zl.second.charge()));
     }
   }
   
   cout << "Z is: " << Zet << endl;
   cout << "W is: " << Weh << "\n  her lepton daughter is: " << Weh.daughter(0) << endl;
-
-  //W Histograms
-  theHistograms.fill("Wid",   "W's ids/24",     2,  -2,   2, Weh.id()/24); //why are there many more W- than W+?
-  theHistograms.fill("Wmass", "W's mass",  350,   0, 350, Weh.mass());
-  theHistograms.fill("Wpt",   "W's p_{t}", 300,   0, 600, Weh.pt());
-  theHistograms.fill("WY",    "W's Y",      50,  -5,   5, Weh.rapidity());
-  theHistograms.fill("Weta",  "W's #eta",   50,  -9,   9, Weh.eta());
   
-  //Z Histograms
+  //W histograms
+  theHistograms.fill("Wcharge", "W's charge",   2,  -2,   2, Weh.charge()); //why are there many more W+ than W-?
+  theHistograms.fill("Wmass",   "W's mass",   350,   0, 350, Weh.mass());
+  theHistograms.fill("Wpt",   "W's p_{t}",  300,   0, 600, Weh.pt());
+  theHistograms.fill("WY",    "W's Y",       50,  -5,   5, Weh.rapidity());
+  theHistograms.fill("Weta",  "W's #eta",    50,  -9,   9, Weh.eta());
+  
+  //Z histograms
   theHistograms.fill("Zmass", "Z's mass",  350,   0, 350, Zet.mass());
   theHistograms.fill("Zpt",   "Z's p_{t}", 300,   0, 600, Zet.pt());
   theHistograms.fill("ZY",    "Z's Y",      50,  -4,   4, Zet.rapidity());
   theHistograms.fill("Zeta",  "Z's #eta",  100,  -7,   7, Zet.eta());
+
+  //W&Z histograms
+  theHistograms.fill("allmassWZ", "m 3 leptons and #nu", 1200, 160, 1360, masslllnu);
+    
+  bool areZWOnShell = Zet.mass() >= 86 && Zet.mass() <= 96 && Weh.mass() >= 75 && Weh.mass() <= 85;
+  theHistograms.fill("ZWOnShell", "Are W and Z on shell?", 2, -0.5, 1.5, areZWOnShell);
   
   //To do:
   //      try to find a way to order Zls by mass
+  
   // */
    
 }
@@ -300,6 +308,7 @@ void WZAnalyzer::end(TFile &){
   
   // execution time
   endtime = ((float)clock())/CLOCKS_PER_SEC;
-  cout << "\nExecution time: " << (int)((endtime - begintime)/3600) << " h " << (((int)(endtime - begintime)%3600)/60) << " m " << endtime - begintime - (int)((endtime - begintime)/3600)*3600 - (((int)(endtime - begintime)%3600)/60)*60 << " s." << endl;
+  //cout << "\nExecution time: " << (int)((endtime - begintime)/3600) << " h " << (((int)(endtime - begintime)%3600)/60) << " m " << endtime - begintime - (int)((endtime - begintime)/3600)*3600 - (((int)(endtime - begintime)%3600)/60)*60 << " s." << endl;
+  WZAnalyzer::printTime(begintime, endtime);
   cout << "\n--------------------------------------------------------------------------"<<endl;
 }
