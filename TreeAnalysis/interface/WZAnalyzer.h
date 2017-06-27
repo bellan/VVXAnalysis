@@ -75,6 +75,10 @@ public:
 
   }
 
+  void printTime(float btime, float etime){
+  cout << "\nExecution time: " << (int)((etime - btime)/3600) << " h " << (((int)(etime - btime)%3600)/60) << " m " << etime - btime - (int)((etime - btime)/3600)*3600 - (((int)(etime - btime)%3600)/60)*60 << " s." << endl;
+}
+
 };
 #endif
 

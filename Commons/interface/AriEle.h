@@ -72,6 +72,9 @@ template<typename T> bool isTheSame(const T& p1, const T& p2){
   return !(p1.pt() != p2.pt());
   //return abs(p1.pt()- p2.pt()) < 0.1;
 }
-
-
+/*
+void printTime(float btime, float etime){
+  cout << "\nExecution time: " << (int)((etime - btime)/3600) << " h " << (((int)(etime - btime)%3600)/60) << " m " << etime - btime - (int)((etime - btime)/3600)*3600 - (((int)(etime - btime)%3600)/60)*60 << " s." << endl;
+}
+*/
 #endif
