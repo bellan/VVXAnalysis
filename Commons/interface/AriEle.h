@@ -9,7 +9,7 @@ using namespace std;
 
 typedef std::pair<phys::Boson<phys::Particle>, phys::Particle> Zltype;
 typedef DiBoson<Particle, Particle> ZZtype;
-typedef Boson<Particle> Ztype;
+typedef Boson<Particle> Vtype;
 typedef pair<Particle, Particle> pairParticle;
 
 template<typename T> double mT(const T& p1, const T& p2){
