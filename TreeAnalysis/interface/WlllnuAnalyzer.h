@@ -38,7 +38,7 @@ public:
   virtual void analyze();
   
   virtual Int_t cut();
-  
+  typedef std::pair<bool,int> boolInt;
   
  
  private:

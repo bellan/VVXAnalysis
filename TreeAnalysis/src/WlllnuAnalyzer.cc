@@ -76,7 +76,7 @@ void WlllnuAnalyzer::analyze(){
       //theHistograms.fill("ptMuons","pt mu", 100, 0, 200, gen.pt());
     }
   }
-  theHistograms.fill("leptonsNumber",  "number of leptons ",  5, -0.5, 4.5, leptons.size());
+  //theHistograms.fill("leptonsNumber",  "number of leptons ",  5, -0.5, 4.5, leptons.size());
   //theHistograms.fill("idAllGenParticles"," finalid ", 60 , -0.5, 59.5, finalid);
 
   //std::vector<Zltype > Zl; //change Particle to Lepton    
@@ -145,7 +145,7 @@ void WlllnuAnalyzer::analyze(){
     int sameZ0Z1 = (isTheSame(z0, z0mT) && isTheSame(z1,z1mT)) ? 1 : 0;
     theHistograms.fill("sameGenZ0z1", "Z and ZmT are the same? (also the order) ", 2 , -0.5, 1.5, sameZ0Z1);
         
-    /*   //deltaR, deltaEta, deltaPhi
+    /*  //deltaR, deltaEta, deltaPhi
     double deltaEta0 = z0.daughter(0).eta() - z1.eta(); //between z1 and z0's first daughter
     double deltaEta1 = z0.daughter(1).eta() - z1.eta(); //between z1 and z0's first daughter
     // some print out  
@@ -268,7 +268,7 @@ void WlllnuAnalyzer::analyze(){
   //Wlllnu
   if(finalid == 45 || finalid == 49 || finalid == 53){///*(leptons.size() == 3 && neutrinos.size() == 1){3l1nu*/ 
     cout << Blue("\nWlllnu analysis") << endl; 
-    theHistograms.fill("idlllnuNOcut"," total id lllnu ", 13 , 43.5, 56.5, finalid);
+    //theHistograms.fill("idlllnuNOcut"," total id lllnu ", 13 , 43.5, 56.5, finalid);
     
     //----------------------------------------
     //check pt and eta
@@ -288,6 +288,8 @@ void WlllnuAnalyzer::analyze(){
       lepptSort.push_back(mu);
     }
     std::stable_sort(lepptSort.begin(), lepptSort.end(), PtComparator());
+
+    
     /*
     //check 1st lepton has pt>20 and 2nd pt>10(mu)/12(e)
     if(lepptSort[0].pt()<20 || (abs(lepptSort[1].id())==11 && lepptSort[1].pt()<12) || (abs(lepptSort[1].id())==13 && lepptSort[1].pt()<10)){
@@ -301,154 +303,187 @@ void WlllnuAnalyzer::analyze(){
     foreach(const Particle lep, leptons)
       Ptot += lep.p4();
     double masslllnu = Ptot.M();
-    if (masslllnu < 165) mass80Counter++;
+    if (masslllnu > 70 && masslllnu < 90) mass80Counter++;
     theHistograms.fill("massGenlllnu","mass lllnu", 1040, 0, 1040, masslllnu);
-    theHistograms.fill("mTGenlllnu","mT lllnu", 400, 40, 440, Ptot.Mt());
-    theHistograms.fill("massMtlllnu", "mass vs mT lllnu", 400, 40, 440, 400, 40, 440, Ptot.Mt(),masslllnu) ;
+    //theHistograms.fill("mTGenlllnu","mT lllnu", 400, 40, 440, Ptot.Mt());
+    //theHistograms.fill("massMtlllnu", "mass vs mT lllnu", 400, 40, 440, 400, 40, 440, Ptot.Mt(),masslllnu) ;
     //    cout <<"\n events with mass < 165 Gev: " << mass80Counter << endl;
     //cout << "\n masslllnu: " << masslllnu << endl;
-    theHistograms.fill("idlllnu"," total id lllnu ", 13 , 43.5, 56.5, finalid);
+    //theHistograms.fill("idlllnu"," total id lllnu ", 13 , 43.5, 56.5, finalid);
     cout << "mass lllnu: " << masslllnu << "\n" << endl;
-    if (masslllnu >= 165){
-      cout << Yellow("Mass lllnu over 165 Gev") << endl;
+    if (masslllnu <= 70 || masslllnu >= 90){
+      cout << Yellow("Mass lllnu off shell (70-90 Gev)") << endl;
       return;
     }
-    
-    std::vector<pairParticle> pCombos; //all the possible combos with 3l
-    pairParticle theCombo; //the best one
-    std::vector <Zltype> Zl; //Z and lepton
     Particle nu = neutrinos[0];
-    Ztype W;
-    bool isNuAlone = NULL; //in order to mark W -> nu + lll or W -> l + llnu
-    int diagramId = 0;
-    
-    if(finalid == 49 && electrons.size() == 2){//2e 1mu 1nu_mu
-      Zl.push_back(Zltype(Ztype(electrons[0], electrons[1], 23),muons[0]));
-      pCombos.push_back(pairParticle(nu,Particle(electrons[0].p4()+electrons[1].p4()+muons[0].p4())));
-      pCombos.push_back(pairParticle(muons[0],Particle(electrons[0].p4()+electrons[1].p4()+nu.p4())));
-      std::stable_sort(pCombos.begin(), pCombos.end(), mTComparator(masslllnu));
-      theCombo = pCombos[0];
-      isNuAlone = isTheSame(nu, theCombo.first);
-    }
-    else if(finalid == 49 && muons.size() == 2){//2mu 1e 1nu_e
-      Zl.push_back(Zltype(Ztype(muons[0], muons[1], 23), electrons[0]));
-      pCombos.push_back(pairParticle(nu,Particle(muons[0].p4()+muons[1].p4()+electrons[0].p4())));
-      pCombos.push_back(pairParticle(electrons[0],Particle(muons[0].p4()+muons[1].p4()+nu.p4())));
-      std::stable_sort(pCombos.begin(), pCombos.end(), mTComparator(masslllnu));
-      theCombo = pCombos[0];
-      isNuAlone = isTheSame(nu, theCombo.first);
-    }
-
-    else if(finalid == 45){//3e 1nu_e
-      pCombos.push_back(pairParticle(nu,Particle(electrons[0].p4()+electrons[1].p4()+electrons[2].p4())));
-      pCombos.push_back(pairParticle(electrons[1],Particle(nu.p4()+electrons[0].p4()+electrons[2].p4())));
-      electrons[1].id()>0 ?
-	pCombos.push_back(pairParticle(electrons[0],Particle(nu.p4()+electrons[1].p4()+electrons[2].p4()))) :
-	pCombos.push_back(pairParticle(electrons[2],Particle(nu.p4()+electrons[0].p4()+electrons[1].p4())));
-      std::stable_sort(pCombos.begin(), pCombos.end(), mTComparator(masslllnu));
-      theCombo = pCombos[0];
-      /* foreach(const pairParticle p, pCombos)
-	if(abs(mT(p.first, p.second)-masslllnu) < abs(mT(theCombo.first, theCombo.second)-masslllnu))
-	  theCombo = p; //the best Combo has closest mT to lllnu (W)*/
-      isNuAlone = isTheSame(nu, theCombo.first);
-      if(isNuAlone){
-	Zl.push_back(Zltype(Ztype(electrons[0], electrons[2], 23), electrons[1]));
-	electrons[1].id()>0 ?
-	  Zl.push_back(Zltype(Ztype(electrons[1], electrons[2], 23), electrons[0])) :
-	  Zl.push_back(Zltype(Ztype(electrons[0], electrons[1], 23), electrons[2]));
-      }
-      else if(isTheSame(electrons[0],theCombo.first))
-	Zl.push_back(Zltype(Ztype(electrons[1], electrons[2], 23), electrons[0]));
-      else if(isTheSame(electrons[1],theCombo.first))
-	Zl.push_back(Zltype(Ztype(electrons[0], electrons[2], 23), electrons[1]));
-      else if(isTheSame(electrons[2],theCombo.first))
-	Zl.push_back(Zltype(Ztype(electrons[0], electrons[1], 23), electrons[2]));
-    }
-    
-    else if(finalid == 53){//3mu 1nu_mu
-      pCombos.push_back(pairParticle(nu,Particle(muons[0].p4()+muons[1].p4()+muons[2].p4())));
-      pCombos.push_back(pairParticle(muons[1],Particle(nu.p4()+muons[0].p4()+muons[2].p4())));
-      muons[1].id()>0 ?
-	pCombos.push_back(pairParticle(muons[0],Particle(nu.p4()+muons[1].p4()+muons[2].p4()))) :
-	pCombos.push_back(pairParticle(muons[2],Particle(nu.p4()+muons[0].p4()+muons[1].p4())));
-      std::stable_sort(pCombos.begin(), pCombos.end(), mTComparator(masslllnu));
-      theCombo = pCombos[0];
-      /* foreach(const pairParticle p, pCombos)
-	if(abs(mT(p.first, p.second) - masslllnu) < abs(mT(theCombo.first, theCombo.second) - masslllnu))
-	  theCombo = p;*/
-      isNuAlone = isTheSame(nu, theCombo.first);
-      if(isNuAlone){
-	Zl.push_back(Zltype(Ztype(muons[0], muons[2], 23), muons[1]));
-	muons[1].id()>0 ?
-	  Zl.push_back(Zltype(Ztype(muons[1], muons[2], 23), muons[0])) :
-	  Zl.push_back(Zltype(Ztype(muons[0], muons[1], 23), muons[2]));
-      }
-      else if(isTheSame(muons[0],theCombo.first))
-	Zl.push_back(Zltype(Ztype(muons[1], muons[2], 23), muons[0]));
-      else if(isTheSame(muons[1],theCombo.first))
-	Zl.push_back(Zltype(Ztype(muons[0], muons[2], 23), muons[1]));
-      else if(isTheSame(muons[2],theCombo.first))
-	Zl.push_back(Zltype(Ztype(muons[0], muons[1], 23), muons[2]));
-    }
-    
-    else cout << Red("invalid total id") << endl;
-    cout << Green("\n # of valid Zl: ")  << Green(Zl.size()) << endl;
-
-    diagramId = abs(nu.id()) + abs(Zl[0].second.id()) + abs(Zl[0].first.daughter(0).id());
-    isNuAlone ? theHistograms.fill("diagramId","type of diagram", 21, -10.5, 10.5, diagramId-30) : theHistograms.fill("diagramId","type of diagram", 21, -10.5, 10.5, -(diagramId-30));
-    theHistograms.fill("isNuAlone","type of diagram", 2, -0.5, 1.5, isNuAlone);
-    theHistograms.fill("absDiagId","type of diagram", 7, -3.5, 10.5, diagramId-30);
-    
-    if(Zl.size() > 1){
-      std::stable_sort(Zl.begin(), Zl.end(), deltaRComparator());
-      theHistograms.fill("deltaRZ0","deltaR best Zcand", 100, 0, 10, physmath::deltaR(Zl[0].first.daughter(0), Zl[0].first.daughter(1)));
-      theHistograms.fill("deltaRZ1","deltaR other Zcand", 100, 0, 10, physmath::deltaR(Zl[1].first.daughter(0), Zl[1].first.daughter(1)));
-      cout << "\n Z0: " << Zl[0].first << endl;
-      cout << "\n l0: " << Zl[0].second << endl;
-      cout << "\n deltaRZ0:\t " << physmath::deltaR(Zl[0].first.daughter(0), Zl[0].first.daughter(1)) << endl;
-      cout << "\n\n Z1: " << Zl[1].first << endl;
-      cout << "\n l1: " << Zl[1].second << endl;
-      cout << "\n deltaRZ1:\t " << physmath::deltaR(Zl[1].first.daughter(0), Zl[1].first.daughter(1)) << endl;
-      return;
-    }
-      
-    theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[1].p4()));
-    theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[2].p4()));
-    theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[1].p4(), leptons[2].p4()));
     theHistograms.fill("ptnu",   "pt nu",   100, 0,   200,  nu.pt());
+    std::vector<boolInt> nuCut;
+    nuCut.push_back(boolInt(true, 0));//no nu cut
+    nuCut.push_back(boolInt(nu.pt()>5 && nu.eta()<2.4, 5));//"democratic" cut
+    nuCut.push_back(boolInt(nu.pt()<8, 8)); //"undemocratic" cut
+    nuCut.push_back(boolInt(nu.pt()<10, 10)); //"undemocratic" cut
+    nuCut.push_back(boolInt(nu.pt()<15, 15)); //"undemocratic" cut
+    nuCut.push_back(boolInt(nu.pt()>54, 54)); //"undemocratic" cut
+    // nuCut.push_back(boolInt(nu.pt()<10 && nu.eta()<2.4, 10)); //"undemocratic" cut
     
+    foreach(const boolInt theCut, nuCut){
+      cout << Violet("\nnuCut: ") << Violet(theCut.second) << endl;
+      if(!(theCut.first)){
+	cout <<  "nu not valid\n-------------------" << endl;
+	continue;
+      }
+          
+      std::vector<pairParticle> pCombos; //all the possible combos with 3l
+      pairParticle theCombo; //the best one
+      std::vector <Zltype> Zl; //Z and lepton
+      Vtype W;
+      bool isNuAlone = NULL; //in order to mark W -> nu + lll or W -> l + llnu
+      int diagramId = 0;
     
-    foreach(const Zltype zl, Zl){
+      if(finalid == 49 && electrons.size() == 2){//2e 1mu 1nu_mu
+	Zl.push_back(Zltype(Vtype(electrons[0], electrons[1], 23),muons[0]));
+	pCombos.push_back(pairParticle(nu,Particle(electrons[0].p4()+electrons[1].p4()+muons[0].p4())));
+	pCombos.push_back(pairParticle(muons[0],Particle(electrons[0].p4()+electrons[1].p4()+nu.p4())));
+	std::stable_sort(pCombos.begin(), pCombos.end(), mTComparator(masslllnu));
+	theCombo = pCombos[0];
+	isNuAlone = isTheSame(nu, theCombo.first);
+      }
+      else if(finalid == 49 && muons.size() == 2){//2mu 1e 1nu_e
+	Zl.push_back(Zltype(Vtype(muons[0], muons[1], 23), electrons[0]));
+	pCombos.push_back(pairParticle(nu,Particle(muons[0].p4()+muons[1].p4()+electrons[0].p4())));
+	pCombos.push_back(pairParticle(electrons[0],Particle(muons[0].p4()+muons[1].p4()+nu.p4())));
+	std::stable_sort(pCombos.begin(), pCombos.end(), mTComparator(masslllnu));
+	theCombo = pCombos[0];
+	isNuAlone = isTheSame(nu, theCombo.first);
+      }
+      
+      else if(finalid == 45){//3e 1nu_e
+	pCombos.push_back(pairParticle(nu,Particle(electrons[0].p4()+electrons[1].p4()+electrons[2].p4())));
+	pCombos.push_back(pairParticle(electrons[1],Particle(nu.p4()+electrons[0].p4()+electrons[2].p4())));
+	electrons[1].id()>0 ?
+	  pCombos.push_back(pairParticle(electrons[0],Particle(nu.p4()+electrons[1].p4()+electrons[2].p4()))) :
+	  pCombos.push_back(pairParticle(electrons[2],Particle(nu.p4()+electrons[0].p4()+electrons[1].p4())));
+	std::stable_sort(pCombos.begin(), pCombos.end(), mTComparator(masslllnu));
+	theCombo = pCombos[0];
+	// foreach(const pairParticle p, pCombos)
+	// if(abs(mT(p.first, p.second)-masslllnu) < abs(mT(theCombo.first, theCombo.second)-masslllnu))
+	//   theCombo = p; //the best Combo has closest mT to lllnu (W)
+	isNuAlone = isTheSame(nu, theCombo.first);
+	if(isNuAlone){
+	  Zl.push_back(Zltype(Vtype(electrons[0], electrons[2], 23), electrons[1]));
+	  electrons[1].id()>0 ?
+	    Zl.push_back(Zltype(Vtype(electrons[1], electrons[2], 23), electrons[0])) :
+	    Zl.push_back(Zltype(Vtype(electrons[0], electrons[1], 23), electrons[2]));
+	}
+	else if(isTheSame(electrons[0],theCombo.first))
+	  Zl.push_back(Zltype(Vtype(electrons[1], electrons[2], 23), electrons[0]));
+	else if(isTheSame(electrons[1],theCombo.first))
+	  Zl.push_back(Zltype(Vtype(electrons[0], electrons[2], 23), electrons[1]));
+	else if(isTheSame(electrons[2],theCombo.first))
+	  Zl.push_back(Zltype(Vtype(electrons[0], electrons[1], 23), electrons[2]));
+      }
+      
+      else if(finalid == 53){//3mu 1nu_mu
+	pCombos.push_back(pairParticle(nu,Particle(muons[0].p4()+muons[1].p4()+muons[2].p4())));
+	pCombos.push_back(pairParticle(muons[1],Particle(nu.p4()+muons[0].p4()+muons[2].p4())));
+	muons[1].id()>0 ?
+	  pCombos.push_back(pairParticle(muons[0],Particle(nu.p4()+muons[1].p4()+muons[2].p4()))) :
+	  pCombos.push_back(pairParticle(muons[2],Particle(nu.p4()+muons[0].p4()+muons[1].p4())));
+	std::stable_sort(pCombos.begin(), pCombos.end(), mTComparator(masslllnu));
+	theCombo = pCombos[0];
+	// foreach(const pairParticle p, pCombos)
+	//   if(abs(mT(p.first, p.second) - masslllnu) < abs(mT(theCombo.first, theCombo.second) - masslllnu))
+	//   theCombo = p;
+	isNuAlone = isTheSame(nu, theCombo.first);
+	if(isNuAlone){
+	  Zl.push_back(Zltype(Vtype(muons[0], muons[2], 23), muons[1]));
+	  muons[1].id()>0 ?
+	    Zl.push_back(Zltype(Vtype(muons[1], muons[2], 23), muons[0])) :
+	    Zl.push_back(Zltype(Vtype(muons[0], muons[1], 23), muons[2]));
+	}
+	else if(isTheSame(muons[0],theCombo.first))
+	  Zl.push_back(Zltype(Vtype(muons[1], muons[2], 23), muons[0]));
+	else if(isTheSame(muons[1],theCombo.first))
+	  Zl.push_back(Zltype(Vtype(muons[0], muons[2], 23), muons[1]));
+	else if(isTheSame(muons[2],theCombo.first))
+	  Zl.push_back(Zltype(Vtype(muons[0], muons[1], 23), muons[2]));
+      }
+      
+      
+      else cout << Red("invalid total id") << endl;
+      cout << Green("\n # of valid Zl: ")  << Green(Zl.size()) << endl;
 
-      W = Ztype(theCombo.first, theCombo.second, copysign(24, zl.second.charge()));
-      cout << "\n Z: " << zl.first << endl;
-      cout << "\n l: " << zl.second << endl;
-      cout << "\n nu: " << nu << endl;
-      cout << "\n W: " << W << endl;
+      theHistograms.fill("isNuAlone","type of diagram", 56, -0.5, 55.5, isNuAlone+theCut.second);
       
-      //diagramId = abs(nu.id()) + abs(zl.second.id()) + abs(zl.first.daughter(0).id());
+      if(theCut.second != 0) continue;
       
-      isNuAlone ? theHistograms.fill("deltaRZtriplet","deltaR Z and related leptons ", 100, 0, 10, deltaR(zl.first.p4(), zl.second.p4())) : theHistograms.fill("deltaRZtriplet","deltaR Z and related leptons ", 100, 0, 10, deltaR(zl.first.p4(), nu.p4())); //are Z and its "related" lepton collinear?
-      !(isNuAlone) ? theHistograms.fill("deltaRZsinglet","deltaR Z and NOT related leptons ", 100, 0, 10, deltaR(zl.first.p4(), zl.second.p4())) : theHistograms.fill("deltaRZsinglet","deltaR Z and NOT related leptons ", 100, 0, 10, deltaR(zl.first.p4(), nu.p4())); //are Z and its "related" lepton collinear?
+      foreach(const pairParticle pcombos, pCombos){
+	theHistograms.fill("mTAllCombos","mT all combo", 100, 0, 100, abs(mT(pcombos.first, pcombos.second)-masslllnu));
+      }
       
-      theHistograms.fill("massZ","mass Z", 300, 0, 150, zl.first.mass());
-      theHistograms.fill("mTZ","direct mT Z", 300, 0, 150, zl.first.p4().Mt());
-      theHistograms.fill("mTZdaughters","mT Z from daughters", 300, 0, 150, mT(zl.first.daughter(0), zl.first.daughter(1)));
+      theHistograms.fill("mTcombo","mT combo", 100, 0, 100, mT(theCombo.first, theCombo.second));
+      theHistograms.fill("mTcombo1","mT second combo", 100, 0, 100, mT(pCombos[1].first, pCombos[1].second));
+      theHistograms.fill("mTcombo2","mT third combo", 100, 0, 100, mT(pCombos[2].first, pCombos[2].second));
+      theHistograms.fill("mTcomboMasslllnu", "mT theCombo vs mass lllnu", 100, 50, 100, 200, 0, 100, masslllnu,mT(theCombo.first, theCombo.second));
+      diagramId = abs(nu.id()) + abs(Zl[0].second.id()) + abs(Zl[0].first.daughter(0).id());
       //isNuAlone ? theHistograms.fill("diagramId","type of diagram", 21, -10.5, 10.5, diagramId-30) : theHistograms.fill("diagramId","type of diagram", 21, -10.5, 10.5, -(diagramId-30));
-      theHistograms.fill("ptZ",   "pt Z",   100, 0,   200,  zl.first.pt());
-      theHistograms.fill("ptl",   "pt l",   100, 0,   200,  zl.second.pt());
-      theHistograms.fill("deltaRZdaughters","deltaR Z daughters", 100, 0, 10, deltaR(zl.first.daughter(0).p4(), zl.first.daughter(1).p4()));
+      //theHistograms.fill("absDiagId","type of diagram", 7, 3.5, 10.5, diagramId-30);
+      isNuAlone ? theHistograms.fill("ptnuAlone",   "pt nu when is alone",   100, 0,   200,  nu.pt()) : theHistograms.fill("ptnuNoAlone",   "pt nu when is forming Z",   100, 0,   200,  nu.pt());
+    
+      if(Zl.size() > 1){
+	//std::stable_sort(Zl.begin(), Zl.end(), deltaRComparator());
+	//theHistograms.fill("deltaRZ0","deltaR best Zcand", 100, 0, 10, physmath::deltaR(Zl[0].first.daughter(0), Zl[0].first.daughter(1)));
+	//theHistograms.fill("deltaRZ1","deltaR other Zcand", 100, 0, 10, physmath::deltaR(Zl[1].first.daughter(0), Zl[1].first.daughter(1)));
+	//cout << "\n Z0: " << Zl[0].first << endl;
+	//cout << "\n l0: " << Zl[0].second << endl;
+	//cout << "\n deltaRZ0:\t " << physmath::deltaR(Zl[0].first.daughter(0), Zl[0].first.daughter(1)) << endl;
+	//cout << "\n\n Z1: " << Zl[1].first << endl;
+	//cout << "\n l1: " << Zl[1].second << endl;
+	//cout << "\n deltaRZ1:\t " << physmath::deltaR(Zl[1].first.daughter(0), Zl[1].first.daughter(1)) << endl;
+	continue;
+      }
+      
+      //theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[1].p4()));
+      //theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[2].p4()));
+      //theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[1].p4(), leptons[2].p4()));
+            
+      foreach(const Zltype zl, Zl){
+	
+	W = Vtype(theCombo.first, theCombo.second, copysign(24, zl.second.charge()));
+	cout << "is nu Alone:\t";
+	isNuAlone ? cout << "yes" : cout << "no";
+	cout << endl;
+	cout << "\n Z: " << zl.first << endl;
+	cout << "\n l: " << zl.second << endl;
+	cout << "\n nu: " << nu << endl;
+	cout << "\n W: " << W << endl;
+	
+	if(finalid != 49) continue;
+	isNuAlone ? theHistograms.fill("deltaRZtriplet","deltaR Z and related leptons ", 100, 0, 10, deltaR(zl.first.p4(), zl.second.p4())) : theHistograms.fill("deltaRZtriplet","deltaR Z and related leptons ", 100, 0, 10, deltaR(zl.first.p4(), nu.p4())); //are Z and its "related" lepton collinear?
+	!(isNuAlone) ? theHistograms.fill("deltaRZsinglet","deltaR Z and NOT related leptons ", 100, 0, 10, deltaR(zl.first.p4(), zl.second.p4())) : theHistograms.fill("deltaRZsinglet","deltaR Z and NOT related leptons ", 100, 0, 10, deltaR(zl.first.p4(), nu.p4())); //are Z and its "related" lepton collinear?
+	theHistograms.fill("deltaRZdaughters","deltaR Z daughters", 100, 0, 10, deltaR(zl.first.daughter(0).p4(), zl.first.daughter(1).p4()));
+	theHistograms.fill("massZ","mass Z", 300, 0, 150, zl.first.mass());
+	//theHistograms.fill("mTZ","direct mT Z", 300, 0, 150, zl.first.p4().Mt());
+	theHistograms.fill("mTZdaughters","mT Z from daughters", 300, 0, 150, mT(zl.first.daughter(0), zl.first.daughter(1)));
+	theHistograms.fill("massZmTZdaughters", "mass Z vs mT Z daughters", 100, 0, 100, 100, 0, 100, mT(zl.first.daughter(0), zl.first.daughter(1)), zl.first.mass());
+	theHistograms.fill("ptZ",   "pt Z",   100, 0,   200,  zl.first.pt());
+	theHistograms.fill("ptl",   "pt l",   125, 0,   125,  zl.second.pt());
+	isNuAlone ? theHistograms.fill("ptlAlone",   "pt l when is alone",   125, 0,   125,  zl.second.pt()) : theHistograms.fill("ptlNoAlone",   "pt l when is forming Z",   125, 0,   125,  zl.second.pt());
+	theHistograms.fill("massW","mass W", 300, 0, 150, W.mass());
+	//	theHistograms.fill("chargeW","charge W", 3, -1.5, 1.5, copysign(1, W.id()));
+      }
     }
-    return;
+    
   }
-
+    return;
+    
 }
 
 
 void WlllnuAnalyzer::end(TFile &){
   if (mass80Counter > 0)
     cout << Yellow("\n-----------------------------------------------------------\n")
-	 << " Events with lllnu mass < 165 Gev: " << mass80Counter
+	 << " Events with lllnu mass between 70 and 90 Gev: " << mass80Counter
 	 << Yellow("\n-----------------------------------------------------------\n") << endl;
   return;
 }
