@@ -274,9 +274,9 @@ void WZAnalyzer::analyze(){
   //W histograms
   theHistograms.fill("Wcharge", "W's charge",   2,  -2,   2, Weh.charge()); //why are there many more W+ than W-?
   theHistograms.fill("Wmass",   "W's mass",   350,   0, 350, Weh.mass());
-  theHistograms.fill("Wpt",   "W's p_{t}",  300,   0, 600, Weh.pt());
-  theHistograms.fill("WY",    "W's Y",       50,  -5,   5, Weh.rapidity());
-  theHistograms.fill("Weta",  "W's #eta",    50,  -9,   9, Weh.eta());
+  theHistograms.fill("Wpt"  ,   "W's p_{t}",  300,   0, 600, Weh.pt());
+  theHistograms.fill("WY",      "W's Y",       50,  -5,   5, Weh.rapidity());
+  theHistograms.fill("Weta",    "W's #eta",    50,  -9,   9, Weh.eta());
   
   //Z histograms
   theHistograms.fill("Zmass", "Z's mass",  350,   0, 350, Zet.mass());
@@ -308,7 +308,6 @@ void WZAnalyzer::end(TFile &){
   
   // execution time
   endtime = ((float)clock())/CLOCKS_PER_SEC;
-  //cout << "\nExecution time: " << (int)((endtime - begintime)/3600) << " h " << (((int)(endtime - begintime)%3600)/60) << " m " << endtime - begintime - (int)((endtime - begintime)/3600)*3600 - (((int)(endtime - begintime)%3600)/60)*60 << " s." << endl;
   WZAnalyzer::printTime(begintime, endtime);
   cout << "\n--------------------------------------------------------------------------"<<endl;
 }

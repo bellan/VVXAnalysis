@@ -4,8 +4,8 @@
 /** \class WZAnalyzer
  *  Concrete class for WZ analysis
  *
- *  $Date: 2013/03/15 13:37:31 $
- *  $Revision: 1.4 $
+ *  $Date: 2017/05/24 $
+ *  $Revision: 0.5 $
  *  \author E. Racca - UNITO <eleonora.racca@cern.ch>
  */
 
@@ -76,8 +76,8 @@ public:
   }
 
   void printTime(float btime, float etime){
-  cout << "\nExecution time: " << (int)((etime - btime)/3600) << " h " << (((int)(etime - btime)%3600)/60) << " m " << etime - btime - (int)((etime - btime)/3600)*3600 - (((int)(etime - btime)%3600)/60)*60 << " s." << endl;
-}
+    cout << "\nExecution time: " << (int)((etime - btime)/3600) << " h " << (((int)(etime - btime)%3600)/60) << " m " << etime - btime - (int)((etime - btime)/3600)*3600 - (((int)(etime - btime)%3600)/60)*60 << " s." << endl;
+  }
 
 };
 #endif
