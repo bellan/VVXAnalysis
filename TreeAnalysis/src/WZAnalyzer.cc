@@ -23,6 +23,11 @@ void WZAnalyzer::begin() {
   WZevent = 0;
   zahl = 0;
 
+  threemuonsplus = 0;
+  threemuonsminus = 0;
+  threeelesplus = 0;
+  threeelesminus = 0;
+
   begintime = ((float)clock())/CLOCKS_PER_SEC;
 }
 
@@ -43,7 +48,7 @@ void WZAnalyzer::analyze(){
   
   foreach(const Particle &gen, *genParticles){
     if((abs(gen.id()) != 11 && abs(gen.id()) != 13 && abs(gen.id()) != 12 && abs(gen.id()) != 14) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
-    cout << "id: " << gen.id() << " pt: " << gen.pt() << "\t eta: " << gen.eta() << endl;
+    //cout << "id: " << gen.id() << " pt: " << gen.pt() << "\t eta: " << gen.eta() << endl;
     theHistograms.fill("AllGenParticleid",  "ids all particles",     4, 10.5,  14.5, abs(gen.id()));
     theHistograms.fill("AllGenParticlept",  "p_{t} all particles", 200,  0  , 200  , gen.pt());
     theHistograms.fill("AllGenParticleY",   "Y all particles",     100,-10  ,  10  , gen.rapidity());
@@ -131,6 +136,34 @@ void WZAnalyzer::analyze(){
     return;
   }
 
+  if(electron.size() == 3){
+    if(electron[0].charge() == electron[1].charge() && electron[1].charge() == electron[2].charge() && electron[0].charge() > 0){
+      cout << Red("\nThere are three positrons.") << endl;
+      threeelesplus++;
+      return;
+    }
+    else {if(electron[0].charge() == electron[1].charge() && electron[1].charge() == electron[2].charge() && electron[0].charge() < 0){
+	cout << Red("\nThere are three electrons.") << endl;
+	threeelesminus++;
+	return;
+      }
+    }
+  }
+
+  if(muon.size() == 3){
+    if(muon[0].charge() == muon[1].charge() && muon[1].charge() == muon[2].charge() && muon[0].charge() > 0){
+      cout << Red("\nThere are three antimuons.") << endl;
+      threemuonsplus++;
+      return;
+    }
+    else {if(muon[0].charge() == muon[1].charge() && muon[1].charge() == muon[2].charge() && muon[0].charge() < 0){
+	cout << Red("\nThere are three muons.") << endl;
+	threemuonsminus++;
+	return;
+      }
+    }
+  }
+  
   nunumber++;
   
   Vtype Weh;
@@ -198,33 +231,41 @@ void WZAnalyzer::analyze(){
     return;
   }
 
+  foreach(const Particle &gen, *genParticles){
+    if((abs(gen.id()) != 11 && abs(gen.id()) != 13 && abs(gen.id()) != 12 && abs(gen.id()) != 14) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
+    cout << "id: " << gen.id() << " pt: " << gen.pt() << "\t eta: " << gen.eta() << endl;
+  }
+  
   // ------ Z & W ------
   WZevent++;
 
-  // Z and W construction 
-  if(electron.size()==2 && muon.size()==1){
+  // Construction of the two possible Zs
+  if(electron.size()==2 && muon.size()==1 && electron[0].charge() != electron[1].charge()){
     Zet = Vtype(electron[0], electron[1], 23);
     Zls.push_back(Zltype(Zet, muon[0]));
   }
   
-  else if(electron.size()==1 && muon.size()==2){
+  else if(electron.size()==1 && muon.size()==2 && muon[0].charge() != muon[1].charge()){
     Zet = Vtype(muon[0], muon[1], 23);
     Zls.push_back(Zltype(Zet, electron[0]));
   }
     
   else if(electron.size()==3){
-    possibleZ.push_back(Vtype(electron[0], electron[2], 23));
-    Zls.push_back(Zltype(possibleZ[0], electron[1]));
-    
-    if(electron[0].id()==electron[1].id()){
+    if(electron[0].id() != electron[2].id()){
+      possibleZ.push_back(Vtype(electron[0], electron[2], 23));
+      Zls.push_back(Zltype(possibleZ[0], electron[1]));
+    }
+      
+    if(electron[0].id() == electron[1].id() && electron[1].id() != electron[2].id()){
       possibleZ.push_back(Vtype(electron[1], electron[2], 23));
       Zls.push_back(Zltype(possibleZ[1], electron[0]));
     }
-    else{
-      possibleZ.push_back(Vtype(electron[0], electron[1], 23));
-      Zls.push_back(Zltype(possibleZ[1], electron[2]));
+    else{if(electron[0].id() != electron[1].id()){
+	possibleZ.push_back(Vtype(electron[0], electron[1], 23));
+	Zls.push_back(Zltype(possibleZ[1], electron[2]));
+      }
     }
-
+      
     // Z is made up of the couple which gives a better Zmass 
     stable_sort(possibleZ.begin(), possibleZ.end(), MassComparator(ZMASS));
     Zet = possibleZ[0];
@@ -236,26 +277,29 @@ void WZAnalyzer::analyze(){
   }
   
   else if(muon.size()==3){
-    possibleZ.push_back(Vtype(muon[0], muon[2], 23));
-    Zls.push_back(Zltype(possibleZ[0], muon[1]));
-    
-    if(muon[0].id()==muon[1].id()){
+    if(muon[0].id() != muon[2].id()){
+      possibleZ.push_back(Vtype(muon[0], muon[2], 23));
+      Zls.push_back(Zltype(possibleZ[0], muon[1]));
+    }
+      
+    if(muon[0].id() == muon[1].id() && muon[1].id() != muon[2].id()){
       possibleZ.push_back(Vtype(muon[1], muon[2], 23));
       Zls.push_back(Zltype(possibleZ[1], muon[0]));
     }
-    else{
-      possibleZ.push_back(Vtype(muon[0], muon[1], 23));
-      Zls.push_back(Zltype(possibleZ[1], muon[2]));
+    else{if(muon[0].id() != muon[1].id()){
+	possibleZ.push_back(Vtype(muon[0], muon[1], 23));
+	Zls.push_back(Zltype(possibleZ[1], muon[2]));
+      }
     }
-
+    
     stable_sort(possibleZ.begin(), possibleZ.end(), MassComparator(ZMASS));
     Zet = possibleZ[0];  
 
-    /*
+    /*    
       bool isSortOk = abs(possibleZ[0].mass() - ZMASS) < abs(possibleZ[1].mass() - ZMASS);
       theHistograms.fill("SortOK", "Is Sort OK", 2, -0.5, 1.5, isSortOk);
-    */  
-}
+    */
+  }
   
   cout << "\nZl candidates are: " << Zls.size() << endl;
   
@@ -272,17 +316,18 @@ void WZAnalyzer::analyze(){
   cout << "W is: " << Weh << "\n  her lepton daughter is: " << Weh.daughter(0) << endl;
   
   //W histograms
-  theHistograms.fill("Wcharge", "W's charge",   2,  -2,   2, Weh.charge()); //why are there many more W+ than W-?
+  theHistograms.fill("Wcharge", "W's charge",   3,-1.5, 1.5, Weh.charge()); //why are there more W+ than W-?
   theHistograms.fill("Wmass",   "W's mass",   350,   0, 350, Weh.mass());
   theHistograms.fill("Wpt"  ,   "W's p_{t}",  300,   0, 600, Weh.pt());
   theHistograms.fill("WY",      "W's Y",       50,  -5,   5, Weh.rapidity());
   theHistograms.fill("Weta",    "W's #eta",    50,  -9,   9, Weh.eta());
   
   //Z histograms
-  theHistograms.fill("Zmass", "Z's mass",  350,   0, 350, Zet.mass());
-  theHistograms.fill("Zpt",   "Z's p_{t}", 300,   0, 600, Zet.pt());
-  theHistograms.fill("ZY",    "Z's Y",      50,  -4,   4, Zet.rapidity());
-  theHistograms.fill("Zeta",  "Z's #eta",  100,  -7,   7, Zet.eta());
+  theHistograms.fill("Zcharge", "Z's charge", 5, -2.5, 2.5, Zet.charge()); //just to be sure...
+  theHistograms.fill("Zmass",   "Z's mass",  350,   0, 350, Zet.mass());
+  theHistograms.fill("Zpt",     "Z's p_{t}", 300,   0, 600, Zet.pt());
+  theHistograms.fill("ZY",      "Z's Y",      50,  -4,   4, Zet.rapidity());
+  theHistograms.fill("Zeta",    "Z's #eta",  100,  -7,   7, Zet.eta());
 
   //W&Z histograms
   theHistograms.fill("allmassWZ", "m 3 leptons and #nu", 1200, 160, 1360, masslllnu);
@@ -290,8 +335,27 @@ void WZAnalyzer::analyze(){
   bool areZWOnShell = Zet.mass() >= 86 && Zet.mass() <= 96 && Weh.mass() >= 75 && Weh.mass() <= 85;
   theHistograms.fill("ZWOnShell", "Are W and Z on shell?", 2, -0.5, 1.5, areZWOnShell);
   
-  //To do:
-  //      try to find a way to order Zls by mass
+  if(areZWOnShell == 0){
+    int cases = 0;
+    if(Zet.mass() < 86 && Weh.mass() < 75)                            // Z sotto  W sotto
+      cases = 1;
+    else if(Zet.mass() < 86 && Weh.mass() > 85)                       // Z sotto  W sopra
+      cases = 2;
+    else if(Zet.mass() > 96 && Weh.mass() < 75)                       // Z sopra  W sotto 
+      cases = 3;
+    else if(Zet.mass() > 96 && Weh.mass() > 85)                       // Z sopra  W sopra
+      cases = 4;
+    else if(Zet.mass() >= 86 && Zet.mass() <= 96 && Weh.mass() < 75)  // Z dentro W sotto
+      cases = 5;
+    else if(Zet.mass() >= 86 && Zet.mass() <= 96 && Weh.mass() > 85)  // Z dentro W sopra
+      cases = 6;
+    else if(Weh.mass() >= 75 && Weh.mass() <= 85 && Zet.mass() < 86)  // Z sotto  W dentro
+      cases = 7;
+    else if(Weh.mass() >= 75 && Weh.mass() <= 85 && Zet.mass() > 96)  // Z sopra  W dentro
+      cases = 8;
+
+    theHistograms.fill("ZWcases", "ZWcases", 9, -0.5, 8.5, cases);
+  }
   
   // */
    
@@ -305,6 +369,13 @@ void WZAnalyzer::end(TFile &){
   cout << "Number of events ending with 3 leptons and 1 neutrino:  " << setw(7) << nunumber << endl;
   cout << "Number of events useful for Wlllnu and WZ analysis:     " << setw(7) << totalevent << endl;
   cout << "Number of events useful for WZ analysis:                " << setw(7) << WZevent << endl;
+
+  /*
+  cout << "\nNumber of events ending with 3 positrons                " << setw(7) << threeelesplus << endl;
+  cout << "Number of events ending with 3 electrons                " << setw(7) << threeelesminus << endl;
+  cout << "Number of events ending with 3 antimuons                " << setw(7) << threemuonsplus << endl;
+  cout << "Number of events ending with 3 muons                    " << setw(7) << threemuonsminus << endl;
+  */
   
   // execution time
   endtime = ((float)clock())/CLOCKS_PER_SEC;
