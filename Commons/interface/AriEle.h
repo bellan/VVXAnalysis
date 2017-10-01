@@ -7,11 +7,13 @@
 using namespace phys;
 using namespace std;
 
+// new types
 typedef std::pair<phys::Boson<phys::Particle>, phys::Particle> Zltype;
 typedef DiBoson<Particle, Particle> ZZtype;
 typedef Boson<Particle> Vtype;
 typedef pair<Particle, Particle> pairParticle;
 
+// Transverse Mass
 template<typename T> double mT(const T& p1, const T& p2){
   return sqrt( 2*p1.pt()*p2.pt()*(1-TMath::Cos(physmath::deltaPhi(p1.phi(), p2.phi()))) );
 }
@@ -19,7 +21,7 @@ template<typename T> double mT(const T& p1, const T& p2, const T& p3){
   return sqrt(mT(p1, p2)*mT(p1, p2) + mT(p1, p3)*mT(p1, p3) + mT(p2, p3)*mT(p2, p3));
 }
 
-
+// Comparators
 struct mTComparator{
 mTComparator(const double& ref): ref_(ref){}
   template<typename BOS>
@@ -33,17 +35,7 @@ mTComparator(const double& ref): ref_(ref){}
 		  const std::pair<PAR, PAR> & b) const{ 
     return fabs(mT(a.first, a.second)-ref_) < fabs(mT(b.first, b.second)-ref_); 
   }
-  /*    template<typename PAR>
-	bool operator()(const PAR * a , 
-	const PAR * b) const{ 
-	return fabs(a->p4().M()-ref_) < fabs(b->p4().M()-ref_); 
-	}
-   template<typename T1, typename T2>
-    bool operator()(const std::pair<T1, T2> & a, const std::pair<T1, T2> & b) const{    
-    return fabs(mT(a.first.daughter(0), a.first.daughter(1))-ref_) < fabs(mT(b.first.daughter(0), b.first.daughter(1))-ref_);
-  }
   
-*/
   double ref_;
 };
   
@@ -59,6 +51,20 @@ massComparator(bool element, const double& ref): element_(element), ref_(ref){}
   double ref_;
 };
 
+struct ZlMassComparator{
+  ZlMassComparator(const double& ref): ref_(ref){}
+    bool operator()(const Zltype & a , 
+		    const Zltype & b) const{ 
+      return fabs(a.first.p4().M()-ref_) < fabs(b.first.p4().M()-ref_); 
+    }
+    bool operator()(const Zltype * a , 
+		    const Zltype * b) const{ 
+      return fabs(a->first.p4().M()-ref_) < fabs(b->first.p4().M()-ref_); 
+    }
+
+  double ref_;
+};
+
 struct deltaRComparator{
   template<typename PAIR>
   bool operator()(const PAIR & a,
@@ -67,14 +73,8 @@ struct deltaRComparator{
   }
 };
   
-  
+// Check if two are the same  
 template<typename T> bool isTheSame(const T& p1, const T& p2){
-  return !(p1.pt() != p2.pt());
-  //return abs(p1.pt()- p2.pt()) < 0.1;
+  return abs(p1.pt()- p2.pt()) < 0.01;
 }
-/*
-void printTime(float btime, float etime){
-  cout << "\nExecution time: " << (int)((etime - btime)/3600) << " h " << (((int)(etime - btime)%3600)/60) << " m " << etime - btime - (int)((etime - btime)/3600)*3600 - (((int)(etime - btime)%3600)/60)*60 << " s." << endl;
-}
-*/
 #endif
