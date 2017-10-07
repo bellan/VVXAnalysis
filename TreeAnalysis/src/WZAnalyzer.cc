@@ -53,11 +53,9 @@ void WZAnalyzer::analyze(){
     theHistograms.fill("AllGenParticlept",  "p_{t} all particles", 200,  0  , 200  , gen.pt());
     theHistograms.fill("AllGenParticleY",   "Y all particles",     100,-10  ,  10  , gen.rapidity());
     theHistograms.fill("AllGenParticleeta", "#eta all particles",  100,-10  ,  10  , gen.eta());
-       
-    if(gen.id() == 11)       electron.insert(electron.begin(), gen);
-    else if(gen.id() == -11) electron.push_back(gen);
-    else if(gen.id() == 13)  muon.insert(muon.begin(), gen);
-    else if(gen.id() == -13) muon.push_back(gen);
+    
+    if(abs(gen.id()) == 11)      electron.push_back(gen);
+    else if(abs(gen.id()) == 13) muon.push_back(gen);
     else if(abs(gen.id()) == 12 || abs(gen.id()) == 14)  neutrino.push_back(gen);
   } 
 
@@ -204,22 +202,35 @@ void WZAnalyzer::analyze(){
   
   if(electron.size()==3){
     //return;
-    // /*
+    ///*
     if(electron[0].charge() != electron[2].charge()){
       possibleZ.push_back(Vtype(electron[0], electron[2], 23));
-      Zls.push_back(Zltype(possibleZ[0], electron[1]));
+      Zls.push_back(Zltype(possibleZ.back(), electron[1]));
     }
     
     if(electron[1].charge() != electron[2].charge()){
       possibleZ.push_back(Vtype(electron[1], electron[2], 23));
-      Zls.push_back(Zltype(possibleZ[1], electron[0]));
+      Zls.push_back(Zltype(possibleZ.back(), electron[0]));
     }
 
     if(electron[0].charge() != electron[1].charge()){
       possibleZ.push_back(Vtype(electron[0], electron[1], 23));
-      Zls.push_back(Zltype(possibleZ[1], electron[2]));
+      Zls.push_back(Zltype(possibleZ.back(), electron[2]));
     }
-     
+    //*/
+    /*
+    int k = electron.size() - 1;
+    for(int i = 0; i < (int)electron.size() -2; i++){
+      for(int j = 1; j < (int)electron.size() -1; j++){
+	if(electron[i].charge() != electron[j].charge()){
+	  possibleZ.push_back(Vtype(electron[i], electron[j], 23));
+	  Zls.push_back(Zltype (possibleZ.back(), electron[k]));
+	}
+	k--;
+      }
+    }
+    */
+    
     // Z is made up of the couple which gives a better Zmass 
     if(Zls.size() < 1){
       cout << Red("No Z formed.") << endl;
@@ -229,9 +240,8 @@ void WZAnalyzer::analyze(){
     
     if(Zls.size() > 1){
       stable_sort(Zls.begin(), Zls.end(), ZlMassComparator(ZMASS));
-      threeelesminus++;
     }
-    
+
     Zet = Zls[0].first;
 
     // W is made up of the remaining lepton and the neutrino
@@ -245,33 +255,45 @@ void WZAnalyzer::analyze(){
   
   else if(muon.size()==3){
     //return;
-    // /*
+    ///*
     if(muon[0].charge() != muon[2].charge()){
       possibleZ.push_back(Vtype(muon[0], muon[2], 23));
-      Zls.push_back(Zltype(possibleZ[0], muon[1]));
+      Zls.push_back(Zltype(possibleZ.back(), muon[1]));
     }
     
     if(muon[1].charge() != muon[2].charge()){
       possibleZ.push_back(Vtype(muon[1], muon[2], 23));
-      Zls.push_back(Zltype(possibleZ[1], muon[0]));
+      Zls.push_back(Zltype(possibleZ.back(), muon[0]));
     }
 
     if(muon[0].charge() != muon[1].charge()){
       possibleZ.push_back(Vtype(muon[0], muon[1], 23));
-      Zls.push_back(Zltype(possibleZ[1], muon[2]));
+      Zls.push_back(Zltype(possibleZ.back(), muon[2]));
     }
+    //*/
+    /*
+    int k = muon.size() - 1;
+    for(int i = 0; i < (int)muon.size() -2; i++){
+      for(int j = 1; j < (int)muon.size() -1; j++){
+	if(muon[i].charge() != muon[j].charge()){
+	  possibleZ.push_back(Vtype(muon[i], muon[j], 23));
+	  Zls.push_back(Zltype (possibleZ.back(), muon[k]));
+	}
+	k--;
+      }
+    }
+    */
 
     if(Zls.size() < 1){
       cout << Red("No Z formed.") << endl;
-      threeelesplus++;
+      threemuonsplus++;
       return;
     }
     
     if(Zls.size() > 1){
       stable_sort(Zls.begin(), Zls.end(), ZlMassComparator(ZMASS));
-      threemuonsminus++;
     }
-    
+
     Zet = Zls[0].first;
     Weh = Vtype(Zls[0].second, neutrino[0], copysign(24, Zls[0].second.charge()));
     // */
