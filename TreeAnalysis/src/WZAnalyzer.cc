@@ -42,12 +42,14 @@ void WZAnalyzer::analyze(){
   vector<Particle> electron;
   vector<Particle> muon;
   vector<Particle> neutrino;
+  vector<Particle> jets;
   
   cout << "\n--------------------------------------------------------------------------"<< endl;
   cout << "Run: " << run << " event: " << event << endl;
   
   foreach(const Particle &gen, *genParticles){
-    if((abs(gen.id()) != 11 && abs(gen.id()) != 13 && abs(gen.id()) != 12 && abs(gen.id()) != 14) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
+    //if((abs(gen.id()) != 11 && abs(gen.id()) != 13 && abs(gen.id()) != 12 && abs(gen.id()) != 14) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
+    if((!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
     //cout << "id: " << gen.id() << " pt: " << gen.pt() << "\t eta: " << gen.eta() << endl;
     theHistograms.fill("AllGenParticleid",  "ids all particles",     4, 10.5,  14.5, abs(gen.id()));
     theHistograms.fill("AllGenParticlept",  "p_{t} all particles", 200,  0  , 200  , gen.pt());
@@ -164,8 +166,8 @@ void WZAnalyzer::analyze(){
   double masslllnu = Ptot.M();
   double trmasslllnu = Ptot.Mt();
 
-  theHistograms.fill("allmasslllnu", "m 3 leptons and #nu", 1200, 0, 1200, masslllnu); //what happens between 90 and 160 GeV?
-  theHistograms.fill("alltrmasslllnu", "m_{T} 3 leptons and #nu", 1200, 0, 1200, trmasslllnu);
+  theHistograms.fill("allmasslllnu", "m 3 leptons and #nu", 1500, 0, 1500, masslllnu); //what happens between 90 and 160 GeV?
+  theHistograms.fill("alltrmasslllnu", "m_{T} 3 leptons and #nu", 1500, 0, 1500, trmasslllnu);
 
   if(masslllnu < 165){
     cout << Yellow("\nTotal mass of the products insufficient for the WZ analysis.") << endl;
@@ -174,9 +176,9 @@ void WZAnalyzer::analyze(){
 
   foreach(const Particle &gen, *genParticles){
     if((abs(gen.id()) != 11 && abs(gen.id()) != 13 && abs(gen.id()) != 12 && abs(gen.id()) != 14) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
-    cout << "id: " << gen.id() << " pt: " << gen.pt() << "\t eta: " << gen.eta() << endl;
+    cout << "id: " << gen.id() << " pt: " << setw(5) << gen.pt() << "\t eta: " << gen.eta() << endl;
   }
-  
+    
   // ------ Z & W ------
   WZevent++;
 
@@ -313,21 +315,21 @@ void WZAnalyzer::analyze(){
   cout << "W is: " << Weh << "\n  her lepton daughter is: " << Weh.daughter(0) << endl;
   
   //W histograms
-  theHistograms.fill("Wcharge", "W's charge",   3,-1.5, 1.5, Weh.charge());
-  theHistograms.fill("Wmass",   "W's mass",   350,   0, 350, Weh.mass());
-  theHistograms.fill("Wpt"  ,   "W's p_{t}",  300,   0, 600, Weh.pt());
+  theHistograms.fill("Wcharge", "W's charge",   5,-2.5, 2.5, Weh.charge());
+  theHistograms.fill("Wmass",   "W's mass",   400,   0, 400, Weh.mass());
+  theHistograms.fill("Wpt"  ,   "W's p_{t}",  650,   0, 650, Weh.pt());
   theHistograms.fill("WY",      "W's Y",       50,  -5,   5, Weh.rapidity());
   theHistograms.fill("Weta",    "W's #eta",    50,  -9,   9, Weh.eta());
   
   //Z histograms
   theHistograms.fill("Zcharge", "Z's charge", 5, -2.5, 2.5, Zet.charge()); //just to be sure...
-  theHistograms.fill("Zmass",   "Z's mass",  350,   0, 350, Zet.mass());
-  theHistograms.fill("Zpt",     "Z's p_{t}", 300,   0, 600, Zet.pt());
+  theHistograms.fill("Zmass",   "Z's mass",  400,   0, 400, Zet.mass());
+  theHistograms.fill("Zpt",     "Z's p_{t}", 650,   0, 650, Zet.pt());
   theHistograms.fill("ZY",      "Z's Y",      50,  -4,   4, Zet.rapidity());
   theHistograms.fill("Zeta",    "Z's #eta",  100,  -7,   7, Zet.eta());
 
   //W&Z histograms
-  theHistograms.fill("allmassWZ", "m 3 leptons and #nu", 1200, 160, 1360, masslllnu);
+  theHistograms.fill("allmassWZ", "m 3 leptons and #nu", 1340, 160, 1500, masslllnu);
     
   bool areZWOnShell = Zet.mass() >= 86 && Zet.mass() <= 96 && Weh.mass() >= 75 && Weh.mass() <= 85;
   theHistograms.fill("ZWOnShell", "Are W and Z on shell?", 2, -0.5, 1.5, areZWOnShell);
@@ -355,7 +357,24 @@ void WZAnalyzer::analyze(){
   }
   
   // */
-   
+
+  // ------- Jet  -------
+
+  cout << "\n~~~~~~~~~~~~~~~~ Jets ~~~~~~~~~~~~~~~~\n" << endl;
+
+  foreach(const Particle jet, *pgenJets){
+    jets.push_back(jet);
+
+    cout << "ID: " << jet.id() << " pt: " << jet.pt() << "\t eta: " << jet.eta() << endl;
+
+    theHistograms.fill("AllGenJetsnumber", "number of jets",  13,  -0.5,  12.5, jets.size());
+    theHistograms.fill("AllGenJetpt",      "p_{t} all jets", 500,   0  , 500  , jet.pt());
+    theHistograms.fill("AllGenJetY",       "Y all jets",      80,  -6  ,   6  , jet.rapidity());
+    theHistograms.fill("AllGenJeteta",     "#eta all jets",   80,  -6  ,   6  , jet.eta());    
+    theHistograms.fill("AllGenJetcharge",  "charge all jets",  5,  -2.5,   2.5, jet.charge());
+    theHistograms.fill("AllGenJetmass",    "mass all jets",  100,   0  , 100  , jet.mass());
+  }
+  
 }
   
 void WZAnalyzer::end(TFile &){
@@ -367,12 +386,12 @@ void WZAnalyzer::end(TFile &){
   cout << "Number of events useful for Wlllnu and WZ analysis:     " << setw(7) << totalevent << endl;
   cout << "Number of events useful for WZ analysis:                " << setw(7) << WZevent << endl;
 
-  // /*
+  /*
   cout << "\nNumber of events ending with 3 positrons                " << setw(7) << threeelesplus << endl;
   cout << "Number of events ending with 3 electrons                " << setw(7) << threeelesminus << endl;
   cout << "Number of events ending with 3 antimuons                " << setw(7) << threemuonsplus << endl;
   cout << "Number of events ending with 3 muons                    " << setw(7) << threemuonsminus << endl;
-  // */
+  */
   
   // execution time
   endtime = ((float)clock())/CLOCKS_PER_SEC;
