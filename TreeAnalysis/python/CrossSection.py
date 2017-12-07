@@ -16,9 +16,7 @@ import json
 import operator
 from Colours import *
 import os.path
-import LatexUtils
-from LatexUtils import*
-
+from  PersonalInfo import*
 
 ##################################################################################################################
 
@@ -47,36 +45,6 @@ def addGlobSyst(hCent,hUp,hDown,FinState,doFiducial):
         hUp.SetBinContent(i,hCent.GetBinContent(i)+math.sqrt(valUp))
         hDown.SetBinContent(i,hCent.GetBinContent(i)-math.sqrt(valDown))
 
-# def addGlobSyst(hCent,hUp,hDown):
-      
-#     Nbins = hCent.GetNbinsX()
-#     for i in range(1,Nbins+1):
-#         valUp = (hUp.GetBinContent(i)-hCent.GetBinContent(i))**2
-#         valDown = (hCent.GetBinContent(i)-hDown.GetBinContent(i))**2
-#         #print "i",i, math.sqrt(valUp)      
-#         for syst in GlobSystList:
-#             valUp+=(hCent.GetBinContent(i)*syst["value"])**2
-#             valDown+=(hCent.GetBinContent(i)*syst["value"])**2
-
-#         #print i, math.sqrt(valUp)
-#         hUp.SetBinContent(i,hCent.GetBinContent(i)+math.sqrt(valUp))
-#         #print hCent.GetBinContent(i)+math.sqrt(valUp),"\n"
-#         hDown.SetBinContent(i,hCent.GetBinContent(i)-math.sqrt(valDown))
-
-# #######################for the Fiducial region
-# def addGlobSyst4lFiducial(hCent,hUp,hDown):
-      
-#     Nbins = hCent.GetNbinsX()
-#     for i in range(1,Nbins+1):
-#         valGlobal = (hCent.GetBinContent(i)*(0.026))**2 #lumi
-#         valUp = (hUp.GetBinContent(i)-hCent.GetBinContent(i))**2 + valGlobal
-#         valDown = (hCent.GetBinContent(i)-hDown.GetBinContent(i))**2 + valGlobal
-#         #print "i",i, math.sqrt(valUp)      
-      
-#         #print i, math.sqrt(valUp)
-#         hUp.SetBinContent(i,hCent.GetBinContent(i)+math.sqrt(valUp))
-#         #print hCent.GetBinContent(i)+math.sqrt(valUp),"\n"
-#         hDown.SetBinContent(i,hCent.GetBinContent(i)-math.sqrt(valDown))
 
 ##################################################################################################################
 
@@ -90,7 +58,6 @@ def getUncGraph(HCent,HUp,HDown,MCSet,FinState,Data,Err):
     NBins = HCent.GetNbinsX()
     
     #Add global systematic uncertainties: acceptance, luminosity and (if not tight region and not 4l) trigger  
- #   if Data == True: #FIXDELsyst
 
     grErr = ROOT.TGraphAsymmErrors(HCent)
     NBins = HCent.GetNbinsX()
@@ -103,14 +70,14 @@ def getUncGraph(HCent,HUp,HDown,MCSet,FinState,Data,Err):
         totUnc_up = 0 
         totUnc_down = 0
         if Data == True:
-            statUnc_up =  HCent.GetBinErrorUp(i)#g.GetErrorYhigh(i) - HCent.GetBinContent(i)
-            statUnc_down = HCent.GetBinErrorLow(i)#HCent.GetBinContent(i) - g.GetErrorYlow(i)
+            statUnc_up =  HCent.GetBinErrorUp(i)
+            statUnc_down = HCent.GetBinErrorLow(i)
         else:
             statUnc_up = HCent.GetBinError(i)
             statUnc_down = HCent.GetBinError(i)
 
-        sistUnc_up = HUp.GetBinContent(i)-HCent.GetBinContent(i)
-        sistUnc_down = HCent.GetBinContent(i)- HDown.GetBinContent(i)
+        sistUnc_up = HUp.GetBinContent(i) - HCent.GetBinContent(i)
+        sistUnc_down = HCent.GetBinContent(i) - HDown.GetBinContent(i)
         if Err == "syst":
             totUnc_up = sistUnc_up
             totUnc_down = sistUnc_down 
@@ -131,22 +98,7 @@ def getUncGraph(HCent,HUp,HDown,MCSet,FinState,Data,Err):
 ##################################################################################################################
 
 
-def getSystGraph(HCent,HUp,HDown,DoFiducial,FinState): #DEL not used
-
-    if DoFiducial and FinState == '4l': addGlobSyst4lFiducial(HCent,HUp,HDown)
-    else: addGlobSyst(HCent,HUp,HDown)
-    grSyst = ROOT.TGraphAsymmErrors(HCent)
-    NBins = HCent.GetNbinsX()
-    for i in range(1,NBins+1):
-#        print i,HCent.GetBinContent(i),"+-", HCent.GetBinError(i),"+",HUp.GetBinContent(i)-HCent.GetBinContent(i),"-",HCent.GetBinContent(i)- HDown.GetBinContent(i)
-        grSyst.SetPointEYhigh(i-1,HUp.GetBinContent(i)-HCent.GetBinContent(i))
-        grSyst.SetPointEYlow(i-1,HCent.GetBinContent(i)- HDown.GetBinContent(i))
-
-    return copy.deepcopy(grSyst)
-
-##################################################################################################################
-
-def getCrossPlot_MC(MCSet,Type,analysis,DoNormalized,DoFiducial):
+def getCrossPlot_MC(MCSet,Type,analysis,doNormalize,DoFiducial):
 
     if DoFiducial:    fInMC  = ROOT.TFile("./FinalResults_"+MCSet+"_"+analysis+"/MC_"+Type+"_fr.root")  
     else:             fInMC  = ROOT.TFile("./FinalResults_"+MCSet+"_"+analysis+"/MC_"+Type+".root")  
@@ -155,48 +107,63 @@ def getCrossPlot_MC(MCSet,Type,analysis,DoNormalized,DoFiducial):
 
     print Red("######################### Monte Carlo #######################\n")
 
-    
     list2e2mu = []
     list4mu   = []
     list4e    = []
+    list4l    = []
 
     listUpDn = [] # for up and down list. Just to put something. 
 
     hsum2e2mu = ROOT.TH1F()
     hsum4e    = ROOT.TH1F()
     hsum4mu   = ROOT.TH1F()
+    hsum4l    = ROOT.TH1F()
 
     hSum = [{"state":hsum2e2mu,"name":'2e2m',"samples":list2e2mu},{"state":hsum4e,"name":'4e',"samples":list4e},{"state":hsum4mu,"name":'4m',"samples":list4mu}]
+    if DoFiducial:
+        hSum.append({"state":hsum4l,"name":'4l',"samples":list4l})
     
-
     hsum2e2muUp = ROOT.TH1F()
     hsum4eUp    = ROOT.TH1F()
     hsum4muUp   = ROOT.TH1F()
 
-    
+    hsum4lUp    = ROOT.TH1F()
+
     hSumUp = [{"state":hsum2e2muUp,"name":'2e2m',"samples":listUpDn},{"state":hsum4e,"name":'4e',"samples":listUpDn},{"state":hsum4muUp,"name":'4m',"samples":listUpDn}]    
+
+    if DoFiducial:
+        hSumUp.append({"state":hsum4lUp,"name":'4l',"samples":listUpDn})
 
     hsum2e2muDn = ROOT.TH1F()
     hsum4eDn    = ROOT.TH1F()
     hsum4muDn   = ROOT.TH1F()
+    hsum4lDn    = ROOT.TH1F()
 
     hSumDn = [{"state":hsum2e2muDn,"name":'2e2m',"samples":listUpDn},{"state":hsum4eDn,"name":'4e',"samples":listUpDn},{"state":hsum4muDn,"name":'4m',"samples":listUpDn}]    
 
+    if DoFiducial:
+        hSumDn.append({"state":hsum4lDn,"name":'4l',"samples":listUpDn})
 
+    normStr = ""
+    if doNormalize: normStr = "_norm"
     for h,hup,hdn in  zip(hSum,hSumUp,hSumDn):
 
         if DoFiducial:
-            h["state"]    = copy.deepcopy(fInMC.Get("ZZTo"+h["name"]+"_"+Type+"Gen_01_fr"))
-            hup["state"]  = copy.deepcopy(fInMC.Get("ZZTo"+h["name"]+"_"+Type+"Gen_01_scaleUp_fr"))
-            hdn["state"]  = copy.deepcopy(fInMC.Get("ZZTo"+h["name"]+"_"+Type+"Gen_01_scaleDn_fr"))
-            if h["state"]  ==None:  sys.exit("ERROR: Check MC histograms. ZZTo"+h["name"]+"_"+Type+"Gen_01_fr does not exist")
-            if hup["state"]==None:  sys.exit("ERROR: Check MC histograms. ZZTo"+h["name"]+"_"+Type+"Gen_01_scaleUp_fr does not exist  in file ./FinalResults_"+MCSet+"_"+analysis+"/MC_"+Type+"_fr.root")
-            if hdn["state"]==None: sys.exit("ERROR: Check MC histograms. ZZTo"+h["name"]+"_"+Type+"Gen_01_scaleDn_fr does not exist") 
-        else:  
-            h["state"]    = copy.deepcopy(fInMC.Get("ZZTo"+h["name"]+"_"+Type+"Gen_01"))
-            hup["state"]  = copy.deepcopy(fInMC.Get("ZZTo"+h["name"]+"_"+Type+"Gen_01_scaleUp"))
-            hdn["state"]  = copy.deepcopy(fInMC.Get("ZZTo"+h["name"]+"_"+Type+"Gen_01_scaleDn"))
+            
+            h["state"]    = copy.deepcopy(fInMC.Get("ZZTo"+h["name"]+"_"+Type+"Gen_01"+"_fr"+normStr))
+            hup["state"]  = copy.deepcopy(fInMC.Get("ZZTo"+h["name"]+"_"+Type+"Gen_01"+"_fr_Up"+normStr))
+            hdn["state"]  = copy.deepcopy(fInMC.Get("ZZTo"+h["name"]+"_"+Type+"Gen_01"+"_fr_Dn"+normStr))
 
+            if h["state"]  == None:  sys.exit("ERROR: Check MC histograms.ZZTo"+h["name"]+"_"+Type+"Gen_01"+"_fr"+normStr+" does not exist")
+            if hup["state"]== None:  sys.exit("ERROR: Check MC histograms. ZZTo"+h["name"]+"_"+Type+"Gen_01_scaleUp"+"_fr"+normStr+" does not exist  in file ./FinalResults_"+MCSet+"_"+analysis+"/MC_"+Type+"_fr.root")
+            if hdn["state"]== None: sys.exit("ERROR: Check MC histograms. ZZTo"+h["name"]+"_"+Type+"Gen_01_scaleDn"+"_fr"+normStr+"does not exist") 
+        else:  
+            h["state"]    = copy.deepcopy(fInMC.Get("ZZTo"+h["name"]+"_"+Type+"Gen_01"+normStr))
+            hup["state"]  = copy.deepcopy(fInMC.Get("ZZTo"+h["name"]+"_"+Type+"Gen_01_Up"+normStr))
+            hdn["state"]  = copy.deepcopy(fInMC.Get("ZZTo"+h["name"]+"_"+Type+"Gen_01_Dn"+normStr))
+            
+            if  h["state"] is None: sys.exit("ZZTo"+h["name"]+"_"+Type+"Gen_01"+normStr,"Doesn't exist")
+            elif  hup["state"] == None: sys.exit("ZZTo"+h["name"]+"_"+Type+"Gen_01_Up"+normStr+" Doesn't exist")
             
         if MCSet == "Mad":SignalSamples = SignalSamples_Mad
         else: SignalSamples = SignalSamples_Pow 
@@ -205,7 +172,9 @@ def getCrossPlot_MC(MCSet,Type,analysis,DoNormalized,DoFiducial):
             h_s   = copy.deepcopy(fInMC.Get(i["sample"]+"_"+h["name"]))
             h_sup = copy.deepcopy(fInMC.Get(i["sample"]+"_"+h["name"]))
             h_sdn = copy.deepcopy(fInMC.Get(i["sample"]+"_"+h["name"]))
+    
             if h_s==None: continue
+
             h["samples"].append(h_s)
             hup["samples"].append(h_sup)
             hdn["samples"].append(h_sdn)
@@ -214,40 +183,32 @@ def getCrossPlot_MC(MCSet,Type,analysis,DoNormalized,DoFiducial):
             print "ERROR no data for",h["name"]
             break
 
-    hTOTCross   = copy.deepcopy(hSum[0]["state"])
-    hTOTCrossUp = copy.deepcopy(hSumUp[0]["state"])
-    hTOTCrossDn = copy.deepcopy(hSumDn[0]["state"])
+    if not DoFiducial:
 
-    if DoFiducial:
-        hTOTCross.Add(hSum[1]["state"])
-        hTOTCross.Add(hSum[2]["state"])
+        hTOTCross   = copy.deepcopy(hSum[0]["state"])
+        hTOTCrossUp = copy.deepcopy(hSumUp[0]["state"])
+        hTOTCrossDn = copy.deepcopy(hSumDn[0]["state"])
 
-        hTOTCrossUp.Add(hSumUp[1]["state"])
-        hTOTCrossUp.Add(hSumUp[2]["state"])
+        hTOTElem   = {"state":hTOTCross,  "color":ROOT.kAzure-6,"name":'4l'}
+        hTOTElemUp = {"state":hTOTCrossUp,"color":ROOT.kAzure-6,"name":'4l'}
+        hTOTElemDn = {"state":hTOTCrossDn,"color":ROOT.kAzure-6,"name":'4l'}
 
-        hTOTCrossDn.Add(hSumDn[1]["state"])
-        hTOTCrossDn.Add(hSumDn[2]["state"])
-
-    hTOTElem   = {"state":hTOTCross,"color":ROOT.kAzure-6,"name":'4l'}
-    hTOTElemUp = {"state":hTOTCrossUp,"color":ROOT.kAzure-6,"name":'4l'}
-    hTOTElemDn = {"state":hTOTCrossDn,"color":ROOT.kAzure-6,"name":'4l'}
-
-    hSum.append(hTOTElem)
-    hSumUp.append(hTOTElemUp)
-    hSumDn.append(hTOTElemDn)
+        hSum.append(hTOTElem)
+        hSumUp.append(hTOTElemUp)
+        hSumDn.append(hTOTElemDn)
 
     for h,hup,hdn in zip(hSum,hSumUp,hSumDn):
         print Red(h["name"])
         if h["name"]!="4l":
             for (h_s,h_sup,h_sdn) in zip(h["samples"],hup["samples"],hdn["samples"]):
-                setCrossSectionMC(h_s,h_sup,h_sdn,h["name"],Type,DoNormalized,MCSet,DoFiducial)
-        setCrossSectionMC(h["state"],hup["state"],hdn["state"],h["name"],Type,DoNormalized,MCSet,DoFiducial) 
+                setCrossSectionMC(h_s,h_sup,h_sdn,h["name"],Type,doNormalize,MCSet,DoFiducial)
+        setCrossSectionMC(h["state"],hup["state"],hdn["state"],h["name"],Type,doNormalize,MCSet,DoFiducial) 
 
     return (hSum,hSumUp,hSumDn)
 
 
 ##############################################################################################################
-def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,DoNormalized,doFiducial):
+def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,doNormalize,doFiducial):
     
     Fr = ""
     if doFiducial: Fr="_fr"
@@ -293,7 +254,7 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,DoNormalized,
             FInUp     = ROOT.TFile("./FinalResults_"+MCSet+"_"+analysis+"/DataUp"+Fr+".root")
             FInDown   = ROOT.TFile( "./FinalResults_"+MCSet+"_"+analysis+"/DataDown"+Fr+".root")  
 
-    if DoNormalized: normStr = "_norm"
+    if doNormalize: normStr = "_norm"
     else: normStr = ""
 
     for h,hup,hdown in zip(hSum,hSumUp,hSumDown):
@@ -303,10 +264,7 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,DoNormalized,
         hup["state"]   = copy.deepcopy(FInUp.Get("ZZTo"+h["name"]+"_"+Type+"_01"+normStr))
         hdown["state"] = copy.deepcopy(FInDown.Get("ZZTo"+h["name"]+"_"+Type+"_01"+normStr))
 
-
-        if h==None:
-            print "ERROR no data for",h["name"]
-            break
+        if h["state"]==None:   sys.exit( "ERROR no data for "+h["name"])
 
         setCrossSectionData(h["state"],h["name"],MCSet,doFiducial)
         setCrossSectionData(hup["state"],hup["name"],MCSet,doFiducial)
@@ -315,25 +273,14 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,DoNormalized,
 
     if not doFiducial:
         hTOTCross= ROOT.TH1F()
-        (hTOTCross,hTOTCrossUp,hTOTCrossDown)=combineCross(hSum,hSumUp,hSumDown) 
+        (hTOTCross,hTOTCrossUp,hTOTCrossDown)=combineCrossCorr(hSum,hSumUp,hSumDown) 
 
         hSum.append({"state":hTOTCross,"name":'4l'})
         hSumUp.append({"state":hTOTCrossUp,"name":'4l'})
         hSumDown.append({"state":hTOTCrossDown,"name":'4l'})
-        
-    #delete if pass to new method
-   # if doFiducial: (hTOTCross,hTOTCrossUp,hTOTCrossDown)=combineCrossFiducial(hSum,hSumUp,hSumDown)   
-   # else: 
-    #    (hTOTCross,hTOTCrossUp,hTOTCrossDown)=combineCross(hSum,hSumUp,hSumDown) 
-
-   # hSum.append({"state":hTOTCross,"name":'4l'})
-   # hSumUp.append({"state":hTOTCrossUp,"name":'4l'})
-   # hSumDown.append({"state":hTOTCrossDown,"name":'4l'})
 
     for h,hup,hdown in zip(hSum,hSumUp,hSumDown):
 
-
-#        if not DoNormalized: 
         addGlobSyst(h["state"],hup["state"],hdown["state"],h["name"],doFiducial)
 
         print "{0} Tot Cross     {1} {2:.2f} \n".format(h["name"],(15-len(h["name"]))*" ", h["state"].Integral(0,-1))     
@@ -343,17 +290,16 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,DoNormalized,
         if h["state"]==None:
             print h["state"]," has no enetries"
 
-            #        NormUp   =   hup["state"].Integral(1,-1)/h["state"].Integral(1,-1) #FIXdelnorm
- #      NormDown = hdown["state"].Integral(1,-1)/h["state"].Integral(1,-1) #FIXdelnorm
+            #      NormUp   =   hup["state"].Integral(1,-1)/h["state"].Integral(1,-1) #FIXdelnorm
+            #      NormDown = hdown["state"].Integral(1,-1)/h["state"].Integral(1,-1) #FIXdelnorm
 
         DoInclNormalized= False
         DoNormal = True
 
-        if DoNormalized:
+        if doNormalize:
             hup["state"].Scale(1./h["state"].Integral(),"width")
             hdown["state"].Scale(1./h["state"].Integral(),"width")
             h["state"].Scale(1./h["state"].Integral(),"width")
-
 
         elif DoNormal:
             # hup["state"].Scale((1000.)/(Lumi),"width")
@@ -363,13 +309,11 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,DoNormalized,
             hdown["state"].Scale(1.,"width")
             h["state"].Scale(1.,"width")
                                                 
-
         elif DoInclNormalized:
             norm = GetNorm(h["name"],Type,doFiducial)
             hup["state"].Scale(1./norm,"width")
             hdown["state"].Scale(1./norm,"width")
             h["state"].Scale(1./norm,"width")
-
 
         else:
             norm = GetNorm(h["name"],Type,doFiducial)
@@ -397,7 +341,7 @@ def setCrossSectionData(h1,FinState,MCSet,doFiducial):
     else:   h1.Scale(1./(Lumi*BR))
     
 ##########################################################
-def setCrossSectionMC(h1,h1up,h1dn,FinState,Type,DoNormalized,MCSet,doFiducial):
+def setCrossSectionMC(h1,h1up,h1dn,FinState,Type,doNormalize,MCSet,doFiducial):
     
     if doFiducial: BR = 1
     else:
@@ -417,38 +361,20 @@ def setCrossSectionMC(h1,h1up,h1dn,FinState,Type,DoNormalized,MCSet,doFiducial):
     else:
         print "{0} {1} {2:.2f} [pb]\n".format(name,((25-len(name))*" "),(h1.Integral(1,-1))/(Lumi*BR)) # Check total cross section witho
     
-    
     Integral = h1.Integral() 
-    
-    #h1.Scale(1/(Lumi*BR),"width") # If you don't want to normalize at the official cross section value.
 
-    if DoNormalized:  
-         h1.Scale(1./Integral,"width") 
-         h1up.Scale(1./Integral,"width") 
-         h1dn.Scale(1./Integral,"width") 
-    ## MC normaliztion
+    if doNormalize:  
+        h1.Scale(1.,"width") 
+        h1up.Scale(1.,"width") 
+        h1dn.Scale(1.,"width") 
     elif doFiducial:  
-         if FinState=="4l":
-              # To use an external normalization
-              # norm = GetNorm(FinState,Type,doFiducial) 
-              # print 1000*Integral/Lumi,norm
-              # h1.Scale(norm/Integral,"width")  
-              # h1up.Scale(norm/Integral,"width")  
-              # h1dn.Scale(norm/Integral,"width")  
-              h1.Scale(1000./(Lumi),"width")  
-              h1up.Scale(1000./(Lumi),"width")  
-              h1dn.Scale(1000./(Lumi),"width")  
-
-         else: 
-             h1.Scale(1000./(Lumi),"width")  
-             h1up.Scale(1000./(Lumi),"width")  
-             h1dn.Scale(1000./(Lumi),"width")  
+        h1.Scale(1000./(Lumi),"width")  
+        h1up.Scale(1000./(Lumi),"width")  
+        h1dn.Scale(1000./(Lumi),"width")  
     else:
         h1.Scale(1./(Lumi*BR),"width")  
         h1up.Scale(1./(Lumi*BR),"width")  
         h1dn.Scale(1./(Lumi*BR),"width")  
-
-      
         
 ##################################################################################################################
 
@@ -530,6 +456,132 @@ def combineCross(HList,HListUp,HListDown):
         HCross.SetBinError(i,ErrStat*Cross)      
  
     return HCross,HCrossUp,HCrossDown
+
+def combineCrossCorr(HList,HListUp,HListDown):
+
+    HCross     = ROOT.TH1F()
+    HCrossUp   = ROOT.TH1F()
+    HCrossDown = ROOT.TH1F()
+
+    #just equal to one
+    HCross=copy.deepcopy(HList[1]["state"])
+    HCrossUp=copy.deepcopy(HListUp[1]["state"])
+    HCrossDown=copy.deepcopy(HListDown[1]["state"])
+
+    Nbins= HList[1]["state"].GetNbinsX()
+
+    for i in range(1,Nbins+1):
+        Hlist  = zip(HList, HListUp,HListDown)
+        #Sort List by entries magnitude, from higher to lower to skip 0 entries bins
+        SortedHlist = sorted(Hlist,key=lambda value: value[0]["state"].GetBinContent(i),reverse = True)        
+
+        Cross       = 0.
+        ErrSystUp   = 0.
+        ErrSystDown = 0.
+        ErrStat     = 0.
+
+        WeightStat     = 0.
+        WeightTot      = 0.
+        WeightSystUp   = 0.
+        WeightSystDown = 0.
+
+
+        errStatSq = {"2e2m":0,"4m":0,"4e":0}
+        errSystSq = {"2e2m":0,"4m":0,"4e":0}
+        errSyst   = {"2e2m":0,"4m":0,"4e":0}
+        errStat   = {"2e2m":0,"4m":0,"4e":0}
+        Entries   = {"2e2m":0,"4m":0,"4e":0}
+
+        for elem in SortedHlist:
+
+            Entries[elem[0]["name"]] = elem[0]["state"].GetBinContent(i)
+            #print  elem[0]["name"],elem[0]["state"].GetBinContent(i),(elem[0]["state"].GetBinError(i))
+            if Entries[elem[0]["name"]] == 0.:   break   # Because of sorting also others final state will be 0 so use break and no continue
+
+#            errStatSq[ elem[0]["name"]]     = (elem[0]["state"].GetBinError(i)/Entries[elem[0]["name"]])**2
+            errStat[elem[0]["name"]]     = (elem[0]["state"].GetBinError(i))
+            errStatSq[elem[0]["name"]]   = (elem[0]["state"].GetBinError(i))**2
+            errSyst[elem[0]["name"]]     = ((elem[1]["state"].GetBinContent(i)-elem[2]["state"].GetBinContent(i) )/(2.)) #Use the average of systematic up and do\
+
+        Cross,ErrTot,ErrStat = ToyMCAverage(Entries["2e2m"],errStat["2e2m"],errSyst["2e2m"],Entries["4m"],errStat["4m"],errSyst["4m"],Entries["4e"],errStat["4e"],errSyst["4e"],i)
+        print "2e2m",Entries["2e2m"], errStat["2e2m"], errStat["2e2m"]/Entries["2e2m"],errSyst["2e2m"]/Entries["2e2m"]
+        print "4m"  ,Entries["4m"],   errStat["4m"],   errStat["4m"]/Entries["4m"],    errSyst["4m"]/Entries["4m"]
+        print "4e",  Entries["4e"],   errStat["4e"],   errStat["4e"]/Entries["4e"],    errSyst["4e"]/Entries["4e"]
+        print Cross,ErrTot
+        
+        HCrossUp.SetBinContent(i,Cross+ErrTot)
+        HCrossDown.SetBinContent(i,Cross-ErrTot)
+        HCross.SetBinContent(i,Cross)
+        HCross.SetBinError(i,ErrStat)      
+ 
+    return HCross,HCrossUp,HCrossDown
+
+def ToyMCAverage(val1,stat1,syst1,val2,stat2,syst2,val3,stat3,syst3,bin):
+
+    ctoy  = ROOT.TCanvas("ctoy","ctoy", 200, 10,1200, 900) 
+    r =   ROOT.TRandom()
+
+    hToy     = ROOT.TH1F("hToy","",100,val1-stat1*4,val1+stat1*4)
+    hToyStat = ROOT.TH1F("hToystat","",100,val1-stat1*4,val1+stat1*4)
+
+    if val1<=0.01 or val2<=0.01 or val3<=0.01:
+
+        if val1<=0.01: 
+            val1  = val3
+            stat1 = stat3
+            syst1 = syst3
+        elif val2<=0.01:
+            val2  = val3
+            stat2 = stat3
+            syst2 = syst3
+
+        for i in range(0,10000):
+            
+            corr = r.Gaus(0,1)                
+            hToy.Fill(
+                ( 
+                    ((val1+r.Gaus(0,1)*stat1+corr*syst1)/(stat1*stat1+syst1*syst1))
+                    +((val2+r.Gaus(0,1)*stat2+corr*syst2)/(stat2*stat2+syst2*syst2)))
+                     /( 1/(stat1*stat1+syst1*syst1) +1/(stat2*stat2+syst2*syst2)) )
+            
+            hToyStat.Fill(
+                (
+                    ((val1+r.Gaus(0,1)*stat1)/(stat1*stat1 ))
+                    +((val2+r.Gaus(0,1)*stat2)/(stat2*stat2))
+                    )/( 1/(stat1*stat1) +1/(stat2*stat2)) )
+
+    else:
+        for i in range(0,100000):
+            
+            corr = r.Gaus(0,1)      
+            hToy.Fill(
+                ( 
+                    ((val1+r.Gaus(0,1)*stat1+corr*syst1)/((stat1*stat1+syst1*syst1)/(val1*val1)))
+                    +((val2+r.Gaus(0,1)*stat2+corr*syst2)/((stat2*stat2+syst2*syst2)/(val2*val2)))
+                    +((val3+r.Gaus(0,1)*stat3+corr*syst3)/((stat3*stat3+syst3*syst3)/(val3*val3))))/( (val1*val1)/(stat1*stat1+syst1*syst1) +(val2*val2)/(stat2*stat2+syst2*syst2) +(val3*val3)/(stat3*stat3+syst3*syst3)  ) )
+            
+            hToyStat.Fill(
+                (
+                    (((val1+r.Gaus(0,1)*stat1)*val1*val1)/(stat1*stat1 ))
+                    +(((val2+r.Gaus(0,1)*stat2)*val2*val2)/(stat2*stat2))
+                    +(((val3+r.Gaus(0,1)*stat3)*val3*val3)/(stat3*stat3)) )/( (val1*val1)/(stat1*stat1) +(val2*val2)/(stat2*stat2) +(val3*val3)/(stat3*stat3)  ) )
+       
+    ctoy.Divide(2,1)
+
+    ctoy.cd(1)
+    hToy.SetLineColor(4)
+    hToy.Draw("hist")
+    f = hToy.Fit("gaus","S")
+
+    ctoy.cd(2)
+    hToyStat.Draw("hist")
+    fStat = hToyStat.Fit("gaus","S")
+    Type ="Mass"
+
+    ctoy.SaveAs(PersonalFolder+"/test/ToyMC_"+Type+"bin_"+str(bin)+".png")
+
+    return f.GetParams()[1],f.GetParams()[2],fStat.GetParams()[2]
+
 
 def combineCrossFiducial(HList,HListUp,HListDown):
 
@@ -624,8 +676,6 @@ def getHisto(Sign,MCSet,analysis,Type,doFiducial,UseMCReco):
             h1 = fIn.Get("ZZTo"+h["name"]+"_"+Type+doFid)
             h["state"] = copy.deepcopy(h1)
             ErrStat=ROOT.Double(0.)
-            #print h["state"].IntegralAndError(0,-1,ErrStat) #HOT
-            #print "err stat",ErrStat
         else:
             print Red("\n WRONG TYPE: Mass or Jets only\n") 
       
@@ -665,13 +715,13 @@ def TotalCross(MCSet,Type,analysis,doFiducial,UseMCReco):
         CrossDic[i["name"]][3] = CrossDic[i["name"]][0] - k["state"].Integral(0,-1)/(BR*Lumi)
         
         MidSyst =  (abs(CrossDic[i["name"]][2]) + abs(CrossDic[i["name"]][3]))/2.
-        CrossDic[i["name"]][4] = math.sqrt(CrossDic[i["name"]][1]**2+MidSyst**2) #HOT
+        CrossDic[i["name"]][4] = math.sqrt(CrossDic[i["name"]][1]**2+MidSyst**2) 
 
     print Red("\n##################### RESULTS FOR INCLUSIVE CROSS SECTION ####################\n") 
 
     if doFiducial: list4l = combineInclusiveCrossFiducial(CrossDic)
     else:          list4l = combineInclusiveCross(CrossDic)
-    dic4l = {"4l":list4l}
+    dic4l = {"4l":list4l}  
     CrossDic.update(dic4l)
  
     for fin,value in CrossDic.iteritems():
@@ -684,8 +734,8 @@ def TotalCross(MCSet,Type,analysis,doFiducial,UseMCReco):
         else:            
             for syst in GlobSystList: #Add inclusive systematic errors
                 value[2]+=(value[0]*syst["value"])**2
-                value[3]+=(value[0]*syst["value"])**2 #CHECK
-                #value[4]+=(value[0]*syst["value"])**2 #CHECK #HOT #FIX
+                value[3]+=(value[0]*syst["value"])**2 
+                #value[4]+=(value[0]*syst["value"])**2 #CHECk
         value[4]= math.sqrt(value[2]+value[3])#CHECK
         #value[4]= math.sqrt(value[4])
         value[2]= math.sqrt(value[2])
@@ -694,14 +744,13 @@ def TotalCross(MCSet,Type,analysis,doFiducial,UseMCReco):
         print Blue("{0}".format(fin))
         if doFiducial:
             print  " {0:.2f} +- {1:.2f} (stat) + {2:.2f} (syst) - {3:.2f} (syst) +- {4:.2f} (Total) [fb]\n".format(value[0]*1000,value[1]*1000,value[2]*1000,value[3]*1000,value[4]*1000)
-        #   print  " {0:.2f} $\\pm$ {1:.2f} (stat) + {2:.2f} (syst) - {3:.2f} (syst) $\\pm$ {4:.2f} (Total) [fb]\n".format(value[0]*1000,value[1]*1000,value[2]*1000,value[3]*1000,value[4]*1000)
             if fin=="4l":
                 AccFile = ROOT.TFile("./Acceptance/Acceptance_"+MCSet+"_Mass.root")
                 Acc = (AccFile.Get("TotAcc2e2m_Acc").GetVal()+AccFile.Get("TotAcc4e_Acc").GetVal()+AccFile.Get("TotAcc4m_Acc").GetVal())/3. 
                 print "Cross Section in wide Region",value[0]/(Acc*(BRele*BRele+2*BRele*BRmu+BRmu*BRmu)),"\nAcceptance",Acc,"\n" 
 
         else: print " {0:.2f} +- {1:.2f} (stat) + {2:.2f} (syst) - {3:.2f} (syst) +- {4:.2f} (Total) [pb] \n".format(value[0],value[1],value[2],value[3],value[4])
-        #else: print " {0:.2f} $\\pm$ {1:.2f}(stat) + {2:.2f} (syst) - {3:.2f} (syst) $\\pm$ {4:.2f} (Total) [pb] \n".format(value[0],value[1],value[2],value[3],value[4])
+
 
 def combineInclusiveCross(Dic):
 

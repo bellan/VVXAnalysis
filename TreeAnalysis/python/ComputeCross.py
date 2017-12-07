@@ -18,7 +18,8 @@ from  PersonalInfo import*
 import CMS_lumi, tdrstyle
 import LatexUtils
 from LatexUtils import*
-
+import PlotStyle
+from PlotStyle import*
 
 parser = OptionParser(usage="usage: %prog [options]")
 
@@ -84,6 +85,11 @@ parser.add_option("-p", "--plot", dest="showPlot",
                   default=False,
                   help="Show plot option, default is False")
 
+parser.add_option("-R", "--Ratio8TeV", dest="do8TeVRatio",
+                  action="store_true",
+                  default=False,
+                  help="8 TeV ratio ange")
+
 
 (options, args) = parser.parse_args()
 
@@ -101,7 +107,7 @@ Dir          =  options.Dir
 printLatex   =  options.printLatex
 doLog        =  options.doLog
 showPlot     =  options.showPlot
-
+do8TeVRatio  =  options.do8TeVRatio
 Dir+="/"
 
 if not showPlot: ROOT.gROOT.SetBatch(True)
@@ -109,7 +115,6 @@ if not showPlot: ROOT.gROOT.SetBatch(True)
 if printLatex or DoNormalized: 
     LumiErr = GlobSystList[1]["value"] 
     GlobSystList[1]["value"]=0.
-
 
 if DoFiducial: GlobSystList+=PdfSyst_fid
 else: GlobSystList+=PdfSyst
@@ -150,12 +155,15 @@ else:
 #set the tdr style
 tdrstyle.setTDRStyle()
 ROOT.gStyle.SetOptStat(0)
-ROOT.gStyle.SetHatchesSpacing(2.)
+ROOT.gStyle.SetHatchesSpacing(hatchSpace)
+ROOT.gStyle.SetHatchesLineWidth(1)                                                                                  
+                                         
 
 lumi = round(Lumi/1000.,1)
-CMS_lumi.writeExtraText = 1
+CMS_lumi.writeExtraText = False
 CMS_lumi.extraText = "Preliminary"
 CMS_lumi.lumi_sqrtS = "{0}".format(lumi)+" fb^{-1} (13 TeV)\n"
+CMS_lumi.cmsTextSize = 1.
 
 iPos = 11
 if( iPos==0 ): CMS_lumi.relPosX = 0.12
@@ -180,7 +188,7 @@ if UseMCReco:
 else:
     (hDataList,hDataListUp,hDataListDown)  = getCrossPlot_Data(MCSetIn,UseUnfold,Type,analysis,0,False,DoNormalized,DoFiducial) 
 
-if Type=="nJets":
+if Type=="nJets" or Type=="nIncJets":
     WriteJetsNorm(hDataList,Type,DoFiducial) #Write partial xsec for variable with jet>0    
     CrossDic = collections.OrderedDict()
 
@@ -193,8 +201,8 @@ if Type=="nJets":
                 CrossDic[bin]={}  
                 CrossDic[bin]["cross"]="{0:.1f}".format(h["state"].GetBinContent(bin))
                 CrossDic[bin]["stat"]="{0:.1f}".format(h["state"].GetBinError(bin))
-                CrossDic[bin]["up"]="{0:.1f}".format(hup["state"].GetBinContent(bin)-h["state"].GetBinContent(bin))
-                CrossDic[bin]["down"]="{0:.1f}".format(h["state"].GetBinContent(bin)-hdown["state"].GetBinContent(bin))
+                CrossDic[bin]["up"]="{0:.3f}".format(hup["state"].GetBinContent(bin)-h["state"].GetBinContent(bin))
+                CrossDic[bin]["down"]="{0:.3f}".format(h["state"].GetBinContent(bin)-hdown["state"].GetBinContent(bin))
                 CrossDic[bin]["lumi"]="{0:.1f}".format(h["state"].GetBinContent(bin)*LumiErr)
                 CrossDic[bin]["theor"]="{0:.1f}".format(hmc["state"].GetBinContent(bin))
                 CrossDic[bin]["theorUp"]="{0:.1f}".format(hmcup["state"].GetBinContent(bin)-hmc["state"].GetBinContent(bin))
@@ -206,32 +214,38 @@ for i in range(0,4):
     hDataList[i]["state"].SetMarkerStyle(20)
     hDataList[i]["state"].SetLineColor(1)
 
-    grSyst = getUncGraph(hDataList[i]["state"],hDataListUp[i]["state"],hDataListDown[i]["state"],MCSetIn,hDataList[i]["name"],True,"statsyst")
+    if not DoFiducial and hDataList[i]["name"]=="4l":
+        grSyst = getUncGraph(hDataList[i]["state"],hDataListUp[i]["state"],hDataListDown[i]["state"],MCSetIn,hDataList[i]["name"],True,"syst")
+    else:
+        grSyst = getUncGraph(hDataList[i]["state"],hDataListUp[i]["state"],hDataListDown[i]["state"],MCSetIn,hDataList[i]["name"],True,"statsyst")
 
-    print"PRINT",hMCList[i]["name"], hMCList[i]["state"].GetBinContent(1),hMCListUp[i]["state"].GetBinContent(1),hMCListDown[i]["state"].GetBinContent(1),hMCListUp[i]["state"].GetBinContent(1)/hMCList[i]["state"].GetBinContent(1)
-    
-    grMCSyst    = getUncGraph(hMCList[i]["state"],hMCListUp[i]["state"],hMCListDown[i]["state"],MCSetIn,hMCList[i]["name"],False,"syst")
-    
-    print"PRINT",hMCList[i]["name"], hMCList_op[i]["state"].GetBinContent(1),hMCListUp_op[i]["state"].GetBinContent(1),hMCListDown_op[i]["state"].GetBinContent(1),hMCListUp_op[i]["state"].GetBinContent(1)/hMCList_op[i]["state"].GetBinContent(1)
+    grMCSyst    = getUncGraph(hMCList[i]["state"],hMCListUp[i]["state"],hMCListDown[i]["state"],MCSetIn,hMCList[i]["name"],False,"syst")    
     grMCSyst_op = getUncGraph(hMCList_op[i]["state"],hMCListUp_op[i]["state"],hMCListDown_op[i]["state"],MCSetIn,hMCList_op[i]["name"],False,"syst")
 
-    grSyst.SetFillStyle(3005)
-    grSyst.SetFillColor(ROOT.kBlack)
+    grSyst.SetFillStyle(DataFillStyle)
+    grSyst.SetFillColorAlpha(DataFillColor,DataAlpha)
 
-    grMCSyst.SetFillColorAlpha(ROOT.kBlue,0.70) 
-    grMCSyst.SetFillStyle(3001)
+    grMCSyst.SetFillColorAlpha(MG5FillColor,MG5Alpha) 
+    grMCSyst.SetLineColor(MG5Color)
+    grMCSyst.SetMarkerColor(MG5Color)
+    grMCSyst.SetLineStyle(MG5LineStyle)
+    grMCSyst.SetLineWidth(MG5LineWidth)
 
-    grMCSyst_op.SetFillColorAlpha(ROOT.kRed-4,0.70)
-    grMCSyst_op.SetFillStyle(3001)
+    grMCSyst_op.SetFillColorAlpha(PowFillColor,PowAlpha)
+    grMCSyst_op.SetLineColor(PowColor)
+    grMCSyst_op.SetLineStyle(PowLineStyle)
+    grMCSyst_op.SetMarkerColor(PowColor)
+    grMCSyst_op.SetLineWidth(PowLineStyle)
+    grMCSyst_op.SetLineWidth(PowLineWidth)
 
     Err=ROOT.Double(0.)    
     LastBin = hMCList[i]["state"].GetXaxis().GetLast()    
 
     if "Pow" in MCSetIn: 
         mcref_entry = "Powheg+MCFM+Pythia8"
-        mcop_entry  = "MadGraph5_aMCatNLO+MCFM+Pythia8"
+        mcop_entry  = "MadGraph5_aMC@NLO+MCFM+Pythia8"
     else:
-        mcref_entry = "MadGraph5_aMCatNLO+MCFM+Pythia8"
+        mcref_entry = "MadGraph5_aMC@NLO+MCFM+Pythia8"
         mcop_entry  = "Powheg+MCFM+Pythia8"
     
 ###########################################################
@@ -248,21 +262,18 @@ for i in range(0,4):
     (hRatio_ss,hRatio_up_ss,hRatio_down_ss) = LL(hDataList[i]["state"],hDataListUp[i]["state"],hDataListDown[i]["state"],hMCList[i]["state"],Type,hDataList[i]["name"],"statsyst",True) 
 
     print "ratio ss up",hRatio_up_ss.GetBinContent(2) 
-    grSist_ratio = getUncGraph(hRatio_ss,hRatio_up_ss,hRatio_down_ss,MCSetIn,hDataList[i]["name"],True,"syst")
-    grSist_ratio.SetFillStyle(3005)
-    grSist_ratio.SetFillColor(ROOT.kBlack)
+    grSyst_ratio = getUncGraph(hRatio_ss,hRatio_up_ss,hRatio_down_ss,MCSetIn,hDataList[i]["name"],True,"syst")
+    grSyst_ratio.SetFillStyle(DataFillStyle)
+    grSyst_ratio.SetFillColorAlpha(DataFillColor,DataAlpha)
 
     (hMCRatio_ss,hMCRatio_up_ss,hMCRatio_down_ss) = LL(hMCList[i]["state"],hMCListUp[i]["state"],hMCListDown[i]["state"],hMCList[i]["state"],Type,hMCList[i]["name"],"syst",True) 
     grMCSyst_ratio = getUncGraph(hMCRatio_ss,hMCRatio_up_ss,hMCRatio_down_ss,MCSetIn,hMCList[i]["name"],False,"syst")  
-
-    grMCSyst_ratio.SetFillColorAlpha(ROOT.kBlue,0.70)
-    grMCSyst_ratio.SetFillStyle(3001) 
+    grMCSyst_ratio.SetFillColorAlpha(MG5Color,MG5Alpha)
 
     (hMCRatio_op_ss,hMCRatio_op_up_ss,hMCRatio_op_down_ss) = LL(hMCList_op[i]["state"],hMCListUp_op[i]["state"],hMCListDown_op[i]["state"],hMCList_op[i]["state"],Type,hMCList_op[i]["name"],"syst",True) 
     grMCSyst_ratio_op = getUncGraph(hMCRatio_op_ss,hMCRatio_op_up_ss,hMCRatio_op_down_ss,MCSetIn,hMCList_op[i]["name"],False,"syst")  
 
-    grMCSyst_ratio_op.SetFillColorAlpha(ROOT.kRed-4,0.70)
-    grMCSyst_ratio_op.SetFillStyle(3001)
+    grMCSyst_ratio_op.SetFillColorAlpha(PowFillColor,PowAlpha)
 
     maxtot = hRatio_up_ss.GetMaximum()   
 
@@ -277,9 +288,10 @@ for i in range(0,4):
   
     #systematic uncertainty
     (hRatio_op_ss,hRatio_op_up_ss,hRatio_op_down_ss) = LL(hDataList[i]["state"],hDataListUp[i]["state"],hDataListDown[i]["state"],hMCList_op[i]["state"],Type,hDataList[i]["name"],"statsyst",True)  
-    grSist_ratio_op = getUncGraph(hRatio_op_ss,hRatio_op_up_ss,hRatio_op_down_ss,MCSetIn,hDataList[i]["name"],True,"syst")  
-    grSist_ratio_op.SetFillStyle(3005)
-    grSist_ratio_op.SetFillColor(ROOT.kBlack)
+    grSyst_ratio_op = getUncGraph(hRatio_op_ss,hRatio_op_up_ss,hRatio_op_down_ss,MCSetIn,hDataList[i]["name"],True,"syst")  
+
+    grSyst_ratio_op.SetFillStyle(DataFillStyle)
+    grSyst_ratio_op.SetFillColorAlpha(DataFillColor,DataAlpha)
 
     maxtot_op =  hRatio_op_up_ss.GetMaximum() 
     maxratios_op = max(maxtot,maxtot_op)
@@ -291,16 +303,16 @@ for i in range(0,4):
     else: eta_cut = " (|#eta^{jet}| < 4.7)"
 
     if Type=="Mass":
-        xName = "m_{4l} [GeV]"
+        xName = "m_{4 l} [GeV]"
         hRatio.GetXaxis().SetTitle(xName)
         if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{dm_{4l}} [1/GeV]")
         else: hMCList[i]["state"].GetYaxis().SetTitle("#frac{d#sigma}{dm_{4l}} ["+Unit+"/GeV]")
 
-    if Type=="PtZZ":
+    elif Type=="PtZZ":
         xName = "p_{T}^{ZZ} [GeV]"
         hRatio.GetXaxis().SetTitle(xName)
-        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{dm_{4l}} [1/GeV]")
-        else: hMCList[i]["state"].GetYaxis().SetTitle("#frac{d#sigma}{dm_{4l}} ["+Unit+"/GeV]")
+        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{dp_{T}^{4l}} [1/GeV]")
+        else: hMCList[i]["state"].GetYaxis().SetTitle("#frac{d#sigma}{dp_{T}^{4l}} ["+Unit+"/GeV]")
 
     elif "nJets" in Type:
         hRatio_op.GetXaxis().SetBinLabel(1,"0")
@@ -321,36 +333,55 @@ for i in range(0,4):
         if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{dN_{jets}}")        
         else: hMCList[i]["state"].GetYaxis().SetTitle("#frac{d#sigma_{fid}}{dN_{jets}}["+Unit+"]")  
 
+    elif "nIncJets" in Type:
+        hRatio_op.GetXaxis().SetBinLabel(1,"#geq0")
+        hRatio_op.GetXaxis().SetBinLabel(2,"#geq1")
+        hRatio_op.GetXaxis().SetBinLabel(3,"#geq2")
+        hRatio_op.GetXaxis().SetBinLabel(4,"#geq3")
+
+        hMCList[i]["state"].GetXaxis().SetBinLabel(1,"#geq0")
+        hMCList[i]["state"].GetXaxis().SetBinLabel(2,"#geq1")
+        hMCList[i]["state"].GetXaxis().SetBinLabel(3,"#geq2")
+        hMCList[i]["state"].GetXaxis().SetBinLabel(4,"#geq3")
+        
+        xName = "N_{jets}"+eta_cut
+       
+        hRatio.GetXaxis().SetTitle(xName)
+        hMCList[i]["state"].GetXaxis().SetTitle(xName)
+
+        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{dN_{jets}}")        
+        else: hMCList[i]["state"].GetYaxis().SetTitle("#frac{d#sigma_{fid}}{dN_{jets}}["+Unit+"]")  
+
     elif "Deta" in Type:
         xName = "#Delta#eta_{jj}" + eta_cut
-        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{d#Delta#eta_{jj}}")
+        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid,jets#geq2}}} #frac{d#sigma_{fid}}{d#Delta#eta_{jj}}")
         else: hMCList[i]["state"].GetYaxis().SetTitle("#frac{d#sigma_{fid}}{d#Delta#eta_{jj}}["+Unit+"]")  
 
     elif "Mjj" in Type:
         xName = "m_{jj}" + eta_cut+ " [GeV]"
         hMCList[i]["state"].GetXaxis().SetTitle(xName)
-        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{dm_{jj}} [1/GeV]")      
+        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid,jets#geq2}} #frac{d#sigma_{fid}}{dm_{jj}} [1/GeV]")      
         else: hMCList[i]["state"].GetYaxis().SetTitle("#frac{d#sigma_{fid}}{dm_{jj}} ["+Unit+"/GeV]")  
 
     elif "PtJet1" in Type:
         xName = "p_{T}^{jet1} [GeV]"
         hMCList[i]["state"].GetXaxis().SetTitle(xName)
-        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{dp_{T}^{jet1}} [1/GeV]")             
+        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid,jets#geq1}} #frac{d#sigma_{fid}}{dp_{T}^{jet1}} [1/GeV]")             
         else:  hMCList[i]["state"].GetYaxis().SetTitle("#frac{d#sigma_{fid}}{dp_{T}^{jet1}} ["+Unit+"/GeV]") 
     elif "PtJet2" in Type:
         xName = "p_{T}^{jet2} [GeV]"
         hMCList[i]["state"].GetXaxis().SetTitle(xName)
-        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{dp_{T}^{jet2}} [1/GeV]")             
+        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid,jets#geq2}} #frac{d#sigma_{fid}}{dp_{T}^{jet2}} [1/GeV]")             
         else:  hMCList[i]["state"].GetYaxis().SetTitle("#frac{d#sigma_{fid}}{dp_{T}^{jet2}} ["+Unit+"/GeV]") 
     elif "EtaJet1" in Type:
         xName = "|#eta^{jet1}|"
         hMCList[i]["state"].GetXaxis().SetTitle(xName)
-        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{d|#eta^{jet1}|}")             
+        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid,jets#geq1}} #frac{d#sigma_{fid}}{d|#eta^{jet1}|}")             
         else: hMCList[i]["state"].GetYaxis().SetTitle("#frac{d#sigma_{fid}}{d|#eta^{jet1}|} ["+Unit+"]") 
     elif "EtaJet2" in Type:
         xName = "|#eta^{jet2}|"
         hMCList[i]["state"].GetXaxis().SetTitle(xName)
-        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid}} #frac{d#sigma_{fid}}{d|#eta^{jet2}|}")             
+        if DoNormalized: hMCList[i]["state"].GetYaxis().SetTitle("#frac{1}{#sigma_{fid,jets#geq2}} #frac{d#sigma_{fid}}{d|#eta^{jet2}|}")             
         else: hMCList[i]["state"].GetYaxis().SetTitle("#frac{d#sigma_{fid}}{d|#eta^{jet2}|} ["+Unit+"]")
     elif "dRZZ" in Type:
         xName = "#Delta R_{ZZ}"
@@ -366,18 +397,18 @@ for i in range(0,4):
     hRatio_op.GetYaxis().SetTitle(ratioName)
  
     # "Type":{fr:{norm,notnorm},notfr:{norm,notnorm}}
-    MaxList = {"Mass":{True:{True:0.011,False:0.42},False:{True:0.011,False:0.17}},"nJets":{True:{True:0.97,False:40.},False:{True:1.,False:18.}},"nJets_Central":{True:{True:.98,False:55},False:{True:0.99,False:16}},"Mjj":{True:{True:0.005,False:0.028},False:{True:0.006, False:0.0086}},"Mjj_Central":{True:{True:0.005,False:0.018},False:{True:0.005,False:0.006}},"Deta":{True:{True:0.7,False:3.2},False:{True:0.72,False:1.25}},"Deta_Central":{True:{True:0.8,False:1.98},False:{True:0.7,False:.9}} ,"PtJet1":{True:{True:0.028,False:0.4},False:{True:0.04,False:0.16}},"PtJet2":{True:{True:0.038,False:0.21},False:{True:0.036,False:0.145}},"EtaJet1":{True:{True:0.65,False:9.2},False:{True:0.65,False:3.2}},"EtaJet2":{True:{True:0.65,False:2.9},False:{True:0.58,False:1.2}},"dRZZ":{True:{True:0.65,False:29.6},False:{True:0.7,False:12.}},"PtZZ":{True:{True:0.03,False:1.2},False:{True:0.032,False:.50}}}
+    MaxList = {"Mass":{True:{True:0.011,False:0.42},False:{True:0.011,False:0.17}},"nJets":{True:{True:0.97,False:40.},False:{True:1.,False:18.}},"nIncJets":{True:{True:0.97,False:60.},False:{True:1.,False:18.}},"nJets_Central":{True:{True:.98,False:55},False:{True:0.99,False:16}},"Mjj":{True:{True:0.004,False:0.028},False:{True:0.006, False:0.0086}},"Mjj_Central":{True:{True:0.005,False:0.018},False:{True:0.005,False:0.006}},"Deta":{True:{True:0.6,False:3.2},False:{True:0.72,False:1.25}},"Deta_Central":{True:{True:0.8,False:1.98},False:{True:0.7,False:.9}} ,"PtJet1":{True:{True:0.028,False:0.4},False:{True:0.04,False:0.16}},"PtJet2":{True:{True:0.038,False:0.21},False:{True:0.036,False:0.145}},"EtaJet1":{True:{True:0.65,False:9.2},False:{True:0.65,False:3.2}},"EtaJet2":{True:{True:0.55,False:2.9},False:{True:0.58,False:1.2}},"dRZZ":{True:{True:0.65,False:29.6},False:{True:0.7,False:12.}},"PtZZ":{True:{True:0.03,False:1.2},False:{True:0.032,False:.55}}}
+
+    MaxRatioList_8TeV = {"Mass":{True:{True:1.9,False:0.2},False:{True:1.9,False:0.01}},"nJets":{True:{True:2.3,False:-0.6},False:{True:2.5,False:-0.55}},"nJets_Central":{True:{True:2.42,False:-0.41},False:{True:0.92,False:16}},"Mjj":{True:{True:2.2,False:0.03},False:{True:3.2, False:0.00}},"Mjj_Central":{True:{True:1.5,False:0.02},False:{True:0.005,False:0.006}},"Deta":{True:{True:2.05,False:0.05},False:{True:2.9,False:0}},"Deta_Central":{True:{True:1.8,False:0.01},False:{True:2.2,False:1e-3}} ,"PtJet1":{True:{True:9.5,False:-2.},False:{True:2.5,False:1e-4}},"PtJet2":{True:{True:3.4,False:0.03},False:{True:5.,False:0.1}},"EtaJet1":{True:{True:2.4,False:-0.3},False:{True:1.6,False:3e-2}},"EtaJet2":{True:{True:1.78,False:.2},False:{True:1.7,False:0.2}},"dRZZ":{True:{True:0.65,False:29.6},False:{True:0.7,False:12.}},"PtZZ":{True:{True:1.5,False:0.3},False:{True:1.9,False:0.2}}}
 
     # "Type":{fr:{up,notup},notfr:{up,notup}}
-    MaxRatioList = {"Mass":{True:{True:1.9,False:0.2},False:{True:1.9,False:0.01}},"nJets":{True:{True:1.5,False:.45},False:{True:1.65,False:0.51}},"nJets_Central":{True:{True:1.6,False:0.6},False:{True:0.92,False:16}},"Mjj":{True:{True:2.2,False:0.03},False:{True:3.2, False:0.00}},"Mjj_Central":{True:{True:1.5,False:0.02},False:{True:0.005,False:0.006}},"Deta":{True:{True:2.05,False:0.05},False:{True:2.9,False:0}},"Deta_Central":{True:{True:1.8,False:0.01},False:{True:2.2,False:1e-3}} ,"PtJet1":{True:{True:2.99,False:0.19},False:{True:2.5,False:1e-4}},"PtJet2":{True:{True:3.4,False:0.03},False:{True:5.,False:0.1}},"EtaJet1":{True:{True:1.75,False:.1},False:{True:1.6,False:3e-2}},"EtaJet2":{True:{True:1.78,False:.2},False:{True:1.7,False:0.2}},"dRZZ":{True:{True:0.65,False:29.6},False:{True:0.7,False:12.}},"PtZZ":{True:{True:1.5,False:0.3},False:{True:1.9,False:0.2}}}
+    MaxRatioList = {"Mass":{True:{True:1.9,False:0.2},False:{True:1.9,False:0.01}},"nJets":{True:{True:1.55,False:.45},False:{True:1.65,False:0.3}},"nIncJets":{True:{True:1.5,False:.45},False:{True:1.65,False:0.3}},"nJets_Central":{True:{True:1.6,False:0.6},False:{True:2.1,False:5e-1}},"Mjj":{True:{True:2.3,False:0.03},False:{True:3.2, False:0.00}},"Mjj_Central":{True:{True:1.5,False:0.02},False:{True:0.005,False:0.006}},"Deta":{True:{True:2.05,False:-0.1},False:{True:2.9,False:0}},"Deta_Central":{True:{True:1.8,False:0.01},False:{True:2.2,False:1e-3}} ,"PtJet1":{True:{True:2.99,False:0.19},False:{True:3.2,False:1e-4}},"PtJet2":{True:{True:3.7,False:0.4},False:{True:6.,False:0.1}},"EtaJet1":{True:{True:1.6,False:.1},False:{True:1.9,False:5e-5}},"EtaJet2":{True:{True:1.78,False:.2},False:{True:1.7,False:0.2}},"dRZZ":{True:{True:0.65,False:29.6},False:{True:0.7,False:12.}},"PtZZ":{True:{True:1.5,False:0.3},False:{True:1.9,False:0.2}}}
 
     # "Type":{not norm:{max,min},norm:{max,min}}
-    LogList = {"Mass":{True:{True:0.1,False:2e-5},False:{True:2.5,False:0.0009}},"nJets":{True:{True:3.2,False:0.02},False:{True:135.,False:0.5}},"nJets_Central":{True:{True:9.,False:55},False:{True:140.9,False:.5}},"Mjj":{True:{True:0.005,False:0.028},False:{True:0.004, False:0.0086}},"Mjj_Central":{True:{True:0.005,False:0.018},False:{True:0.005,False:0.006}},"Deta":{True:{True:12.,False:5.5e-3},False:{True:45.45,False:3e-2}},"Deta_Central":{True:{True:20.5,False:0.004},False:{True:0.7,False:.9}} ,"PtJet1":{True:{True:.1,False:4e-5},False:{True:1.1,False:1e-3}},"PtJet2":{True:{True:0.7,False:0.00001},False:{True:.96,False:2.5e-5}},"EtaJet1":{True:{True:31.,False:3e-3},False:{True:2e2,False:7e-2}},"EtaJet2":{True:{True:0.65,False:2.},False:{True:0.58,False:0.9}},"dRZZ":{True:{True:0.65,False:29.6},False:{True:0.7,False:12.}},"PtZZ":{True:{True:0.03,False:1.2},False:{True:0.02,False:.30}}}
+    LogList = {"Mass":{True:{True:0.1,False:2e-5},False:{True:2.5,False:0.0009}},"nJets":{True:{True:3.1,False:0.02},False:{True:1.3e2,False:0.5}},"nIncJets":{True:{True:3.2,False:0.02},False:{True:4e2,False:0.5}},"nJets_Central":{True:{True:5.5,False:55},False:{True:110.9,False:.5}},"Mjj":{True:{True:0.005,False:0.028},False:{True:0.004, False:0.0086}},"Mjj_Central":{True:{True:0.005,False:0.018},False:{True:0.005,False:0.006}},"Deta":{True:{True:12.,False:5.5e-3},False:{True:45.45,False:3e-2}},"Deta_Central":{True:{True:20.5,False:0.004},False:{True:0.7,False:.9}} ,"PtJet1":{True:{True:.1,False:4e-5},False:{True:1.1,False:1e-3}},"PtJet2":{True:{True:0.09,False:0.0001},False:{True:.96,False:2.5e-5}},"EtaJet1":{True:{True:31.,False:3e-3},False:{True:2e2,False:7e-2}},"EtaJet2":{True:{True:0.65,False:2.},False:{True:0.58,False:0.9}},"dRZZ":{True:{True:0.65,False:29.6},False:{True:0.7,False:12.}},"PtZZ":{True:{True:0.03,False:1.2},False:{True:0.02,False:.30}}}
 
-
-    LogList_wide = {"Mass":{True:{True:0.1,False:2e-5},False:{True:2.5,False:0.0009}},"nJets":{True:{True:6.,False:0.02},False:{True:135.,False:0.5}},"nJets_Central":{True:{True:9.2,False:55},False:{True:120.9,False:.5}},"Mjj":{True:{True:0.005,False:0.028},False:{True:0.004, False:0.0086}},"Mjj_Central":{True:{True:0.005,False:0.018},False:{True:0.005,False:0.006}},"Deta":{True:{True:12.,False:5.5e-3},False:{True:45.45,False:3e-2}},"Deta_Central":{True:{True:20.5,False:0.004},False:{True:0.7,False:.9}} ,"PtJet1":{True:{True:.8,False:4e-5},False:{True:1.06,False:1e-4}},"PtJet2":{True:{True:1.7,False:0.00001},False:{True:2.1,False:1e-5}},"EtaJet1":{True:{True:31.,False:3e-3},False:{True:2e2,False:7e-2}},"EtaJet2":{True:{True:0.65,False:2.},False:{True:0.58,False:0.9}},"dRZZ":{True:{True:0.65,False:29.6},False:{True:0.7,False:12.}},"PtZZ":{True:{True:0.03,False:1.2},False:{True:0.02,False:.30}}}
-
-
+    # "Type":{Norm:{max,min},Not norm:{max,min}}
+    LogList_wide = {"Mass":{True:{True:0.1,False:2e-5},False:{True:2.5,False:0.0009}},"nJets":{True:{True:5.,False:1.2e-2},False:{True:135.,False:1e-1}},"nIncJets":{True:{True:5.,False:1.2e-2},False:{True:135.,False:1e-1}},"nJets_Central":{True:{True:9.2,False:1e-2},False:{True:8e+1,False:.1}},"Mjj":{True:{True:0.005,False:0.028},False:{True:0.004, False:0.0086}},"Mjj_Central":{True:{True:0.005,False:0.018},False:{True:0.005,False:0.006}},"Deta":{True:{True:12.,False:5.5e-3},False:{True:45.45,False:3e-2}},"Deta_Central":{True:{True:20.5,False:0.004},False:{True:0.7,False:.9}} ,"PtJet1":{True:{True:1.8,False:4e-5},False:{True:1.5,False:1e-4}},"PtJet2":{True:{True:1.7,False:0.00001},False:{True:2.1,False:1e-4}},"EtaJet1":{True:{True:31.,False:3e-3},False:{True:2e2,False:7e-2}},"EtaJet2":{True:{True:0.65,False:2.},False:{True:0.58,False:0.9}},"dRZZ":{True:{True:0.65,False:29.6},False:{True:0.7,False:12}},"PtZZ":{True:{True:0.03,False:1.2},False:{True:0.02,False:.30}}}
 
     # Maxratios = max(maxratios_op,maxtot_MGatNLO)+0.80*max(maxratios_op,maxtot_MGatNLO)
     # Max   = hDataList[i]["state"].GetMaximum()+hDataList[i]["state"].GetBinError(hDataList[i]["state"].GetMaximumBin()) #Automatic max
@@ -387,86 +418,89 @@ for i in range(0,4):
         else:   Max = LogList_wide[Type][DoNormalized][True]
     hMCList[i]["state"].SetMaximum(Max)
     hMCList[i]["state"].SetMinimum(0) 
-    hMCList[i]["state"].SetFillColor(851)
-    hMCList[i]["state"].SetLineColor(852)
-    hMCList[i]["state"].SetLineStyle(1)
-    hMCList[i]["state"].SetLineWidth(2) 
+    hMCList[i]["state"].SetFillColorAlpha(MadFillColor,MadAlpha)
+    hMCList[i]["state"].SetLineStyle(MadLineStyle)
+    hMCList[i]["state"].SetLineStyle(MG5LineStyle)
+    hMCList[i]["state"].SetLineWidth(MG5LineWidth) 
+    hMCList[i]["state"].GetXaxis().SetNoExponent()    
     hMCList[i]["state"].GetXaxis().SetTitle("")
-    hMCList[i]["state"].GetYaxis().SetTitleOffset(1.4) 
+    hMCList[i]["state"].GetYaxis().SetTitleOffset(0.4) 
     hMCList[i]["state"].GetXaxis().SetLabelOffset(0.5) 
     hMCList[i]["state"].SetTitle("") 
-    hMCList_op[i]["state"].SetLineColor(ROOT.kRed); 
-    hMCList_op[i]["state"].SetLineWidth(2);
-    hMCList_op[i]["state"].SetLineStyle(1);
+    hMCList_op[i]["state"].SetLineColor(PowColor);
+    hMCList_op[i]["state"].SetLineWidth(PowLineWidth);
+    hMCList_op[i]["state"].SetLineStyle(PowLineStyle);
      
-    c1 = TCanvas( 'c1', hMCList[i]["name"] , 200, 10, 900, 1300 )
-#    c1 = TCanvas( 'c1', hMCList[i]["name"] , 200, 10, 900, 1100 )
+    c1 = TCanvas( 'c1', hMCList[i]["name"] , 200, 10, 900, 1200 )
   
-    leg = ROOT.TLegend(.56,.50,.80,.85);
+
+    leg = ROOT.TLegend(.54,.54,.79,.9);
+
     leg.SetBorderSize(0);
     leg.SetTextSize(0.025);
     leg.AddEntry(hDataList[i]["state"],"Unfolded data + stat. uncertainty","lep")
-    leg.AddEntry(grSyst,"Total uncertainty","f") 
-    leg.AddEntry(hMCList[i]["state"],mcref_entry,"f") 
-    leg.AddEntry(hMCList_op[i]["state"],mcop_entry,"l")
+    leg.AddEntry(grSyst,"Total uncertainty","fl") 
 
-    fInt = ROOT.TF1("constant","1",hMCList[i]["state"].GetXaxis().GetXmin(),    hMCList[i]["state"].GetXaxis().GetXmax());
-    
+    leg.AddEntry(grMCSyst,mcref_entry,"flp") 
+    leg.AddEntry(grMCSyst_op,mcop_entry,"flp")
+
+    fInt = ROOT.TF1("constant","1",hMCList[i]["state"].GetXaxis().GetXmin(),    hMCList[i]["state"].GetXaxis().GetXmax());    
     line    =  ROOT.TLine(hMCList[i]["state"].GetXaxis().GetXmin(),1,hMCList[i]["state"].GetXaxis().GetXmax(),1) 
     line_op =  ROOT.TLine(hMCList[i]["state"].GetXaxis().GetXmin(),1,hMCList[i]["state"].GetXaxis().GetXmax(),1) 
 
+    line.SetLineColor(MG5Color)
+    line.SetLineStyle(MG5LineStyle)
+    line.SetLineWidth(MG5LineWidth)
 
-    #line.SetLineColor(852);
-    line.SetLineColor(ROOT.kBlack);
-    line.SetLineWidth(1);
-    #line_op.SetLineColor(ROOT.kRed);
-    line_op.SetLineColor(ROOT.kBlack);
-    line_op.SetLineWidth(1);
-
+    line_op.SetLineColor(PowColor)
+    line_op.SetLineStyle(PowLineStyle)
+    line_op.SetLineWidth(PowLineWidth)
 
     c1.cd()
-    pad1 = ROOT.TPad ('hist', '', 0., 0.48, 1.0, 1.0)#0.35
+    pad1 = ROOT.TPad ('hist', '', 0., 0.45, 1.0, 1.0)
     if doLog: pad1.SetLogy()
-    pad1.SetTopMargin (0.10)
-    pad1.SetRightMargin (0.03)#0.10
+    pad1.SetRightMargin (0.04)
     pad1.SetLeftMargin (0.17)
-    pad1.SetBottomMargin (0.03) 
+    pad1.SetBottomMargin (0.01) 
     pad1.Draw()
-   
+
     c1.cd()
-    pad2 = ROOT.TPad ('rat', 'Data/MC ratio', 0., 0.28,  1., 0.48)#0.15
+    pad2 = ROOT.TPad ('rat', 'Data/MC ratio', 0., 0.28,  1., 0.45)
     pad2.SetTopMargin (0.0)
-    pad2.SetRightMargin (0.03)#0.10
+    pad2.SetRightMargin (0.04)
     pad2.SetLeftMargin (0.17)
     pad2.SetBottomMargin(0.35);
     pad2.Draw()
-     
+
     c1.cd()
-    pad3 = ROOT.TPad ('rat2', 'Data/MC ratio', 0., 0.15,  1., 0.35)#0.02-0.22
+    pad3 = ROOT.TPad ('rat2', 'Data/MC ratio', 0., 0.17,  1., 0.34)
     pad3.SetTopMargin (0.0)
-    pad3.SetRightMargin (0.03)#0.10
+    pad3.SetRightMargin (0.04)
     pad3.SetLeftMargin (0.17)
     pad3.SetBottomMargin(0.35);
     pad3.Draw()
 
     #needed because of strange effects on pdf plots
     c1.cd()
-    pad5 = ROOT.TPad ('space', 'space', 0.5, 0.1,  1., 0.17)#0.02-0.22
+    pad5 = ROOT.TPad ('space', 'space', 0.5, 0.1,  1., 0.17)
     pad5.SetTopMargin (0.0)
-    pad5.SetRightMargin (0.03)#0.10
+    pad5.SetRightMargin (0.04)
     pad5.SetLeftMargin (0.17)
-    pad5.SetBottomMargin(0.60)#0.35
+    pad5.SetBottomMargin(0.60)
     pad5.Draw()
-  
     pad1.cd() 
 
     if doLog:
         if DoFiducial:    Min = LogList[Type][DoNormalized][False]
         else:  Min = LogList_wide[Type][DoNormalized][False]
         hMCList[i]["state"].SetMinimum(Min)
+    
+    hMCList[i]["state"].GetXaxis().SetLabelSize(0)
+    hMCList_op[i]["state"].GetXaxis().SetNoExponent()
+    hMCList[i]["state"].Draw(MadDrawStyle)
+    hMCList_op[i]["state"].Draw("same][")
 
-    hMCList[i]["state"].Draw("hist")
-    hMCList_op[i]["state"].Draw("hist, same")
+    hMCList[i]["state"].GetXaxis().SetTitle("");
 
     grMCSyst.Draw("same2")   
     grMCSyst_op.Draw("same2")
@@ -500,14 +534,14 @@ for i in range(0,4):
     
     pad2.cd()
     hRatio.GetYaxis().SetLabelSize(0.10);  
-    #hRatio.GetXaxis().CenterLabels();
+    hRatio.GetXaxis().SetNoExponent()    
     hRatio.GetYaxis().SetNdivisions(604,1); 
-    hRatio.GetXaxis().SetLabelSize(0.13); 
-    hRatio.GetXaxis().SetLabelOffset(0.5);
+    hRatio.GetXaxis().SetLabelSize(0); 
     hRatio.GetXaxis().SetTitle(""); 
-    hRatio.GetYaxis().SetTitleOffset(0.4);
-    hRatio.GetYaxis().SetTitleSize(0.13);#0.13
-    hRatio.GetXaxis().SetTitleSize(0.13); #0.13  
+    hRatio.GetXaxis().SetTitle(""); 
+    hRatio.GetYaxis().SetTitleOffset(0.3);
+    hRatio.GetYaxis().SetTitleSize(0.13);
+    hRatio.GetXaxis().SetTitleSize(0.13); 
       
     hRatio.SetTitleSize(0.13);  
 
@@ -521,60 +555,70 @@ for i in range(0,4):
         hRatio.SetMinimum(-0.7);
     else: hRatio.SetMinimum(-0.5);
     
-    hRatio.SetMaximum(MaxRatioList[Type][DoFiducial][True])
-    hRatio.SetMinimum(MaxRatioList[Type][DoFiducial][False])
+    if do8TeVRatio:
+        hRatio.SetMaximum(MaxRatioList_8TeV[Type][DoFiducial][True])
+        hRatio.SetMinimum(MaxRatioList_8TeV[Type][DoFiducial][False])
+    else:
+        print "Min",MaxRatioList[Type][DoFiducial][False]
+        hRatio.SetMaximum(MaxRatioList[Type][DoFiducial][True])
+        hRatio.SetMinimum(MaxRatioList[Type][DoFiducial][False])
+
 
     hRatio.Draw("AXIS") 
-    grMCSyst_ratio.Draw("same2")
     line.Draw("same")
 
-
-    grSist_ratio.Draw("same2")
+    grMCSyst_ratio.Draw("same2")
+   
     ratioTitle = ROOT.TText();
     grStat_ratio.Draw("P same")
+    grSyst_ratio.Draw("same2")
+    grSyst_ratio.Draw("same2")
     ratioTitle.SetNDC();
     #ratioTitle.SetTextFont(1);
     ratioTitle.SetTextColor(1);
     ratioTitle.SetTextSize(0.10);
     ratioTitle.SetTextAlign(22);
     ratioTitle.SetTextAngle(0);
-    if "Pow" in MCSetIn: ratioTitle.DrawText(0.445, 0.90,"{0}. p-value = {1:.3f} ".format(mcref_entry,PValue)); 
-    else: ratioTitle.DrawText(0.535, 0.90,"{0}. p-value = {1:.3f} ".format(mcref_entry,PValue));  
+    if "Pow" in MCSetIn: ratioTitle.DrawText(0.4, 0.90,"{0}. p-value = {1:.3f}".format(mcref_entry,PValue)); 
+    else: ratioTitle.DrawText(0.48, 0.90,"{0}. p-value = {1:.3f}".format(mcref_entry,PValue));  
 
-  
     pad3.cd()
     hRatio_op.GetYaxis().SetLabelSize(0.10);  
     hRatio_op.GetYaxis().SetNdivisions(604,1); 
-    if "Jets" in Type: hRatio_op.GetXaxis().SetLabelSize(0.22)#0.15; 
-    else: hRatio_op.GetXaxis().SetLabelSize(0.15)#0.15; 
+    if "Jets" in Type: hRatio_op.GetXaxis().SetLabelSize(0.22)
+    else: hRatio_op.GetXaxis().SetLabelSize(.18)
     hRatio_op.GetXaxis().SetLabelOffset(0.05);
-    hRatio_op.GetXaxis().SetTitleOffset(1.5);#1.2; 
-    hRatio_op.GetYaxis().SetTitleOffset(0.4);
-    hRatio_op.GetYaxis().SetTitleSize(0.13);#0.13
+    hRatio_op.GetXaxis().SetTitleOffset(1.5);
+    hRatio_op.GetYaxis().SetTitleOffset(0.3);
+    hRatio_op.GetYaxis().SetTitleSize(0.13);
     hRatio_op.GetXaxis().SetTitleSize(0.18); 
-    
-    hRatio_op.SetMaximum(MaxRatioList[Type][DoFiducial][True])
-    hRatio_op.SetMinimum(MaxRatioList[Type][DoFiducial][False])
+    hRatio_op.GetXaxis().SetTitle("");
+    hRatio_op.GetXaxis().SetNoExponent()    
+
+    if do8TeVRatio:
+        hRatio_op.SetMaximum(MaxRatioList_8TeV[Type][DoFiducial][True])
+        hRatio_op.SetMinimum(MaxRatioList_8TeV[Type][DoFiducial][False])
+    else:
+        hRatio_op.SetMaximum(MaxRatioList[Type][DoFiducial][True])
+        hRatio_op.SetMinimum(MaxRatioList[Type][DoFiducial][False])
 
     hRatio_op.Draw("AXIS")
     line_op.Draw("same")
     grMCSyst_ratio_op.Draw("same2")
-    grSist_ratio_op.Draw("same2") 
+    grSyst_ratio_op.Draw("same2") 
     grStat_ratio_op.Draw("P same")
-    grSist_ratio_op.Draw("same2")
-   
+
     ratioTitle_op = ROOT.TText();
     ratioTitle_op.SetNDC();
     ratioTitle_op.SetTextColor(1);
-    ratioTitle_op.SetTextSize(0.10);
+    ratioTitle_op.SetTextSize(0.1);
     ratioTitle_op.SetTextAlign(22);
     ratioTitle_op.SetTextAngle(0);
-    if "Pow" in MCSetIn: ratioTitle_op.DrawText(0.535, 0.90,"{0}. p-value = {1:.3f} ".format(mcop_entry,PValue_op)); 
 
-    else: ratioTitle_op.DrawText(0.445, 0.90,"{0}. p-value = {1:.3f} ".format(mcop_entry,PValue_op)); 
+    if "Pow" in MCSetIn: ratioTitle_op.DrawText(0.48, 0.90,"{0}. p-value = {1:.3f}".format(mcop_entry,PValue_op));
+    else: ratioTitle_op.DrawText(0.4, 0.90,"{0}. p-value = {1:.3f}".format(mcop_entry,PValue_op)); 
 
-    grSist_ratio_op.Draw("same2") 
-    grStat_ratio_op.Draw("P same")
+    grSyst_ratio_op.Draw("same2") 
  
     pad5.cd()
     ratioTitle = ROOT.TLatex(0.94,0.48,xName);
@@ -585,11 +629,9 @@ for i in range(0,4):
     ratioTitle.SetTextAlign(32);
     ratioTitle.SetTextAngle(0);
     ratioTitle.Draw();
+
     #write CMS Preliminary and luminosity
     CMS_lumi.CMS_lumi(pad1, iPeriod, iPos)
-    
-    #ROOT.gStyle.SetOptStat(0);   
-    #c1.SetLogy()    
 
     if UseUnfold: PlotType="_Unfolded" 
     else: PlotType=""
@@ -607,6 +649,8 @@ for i in range(0,4):
     if DoFiducial:   Kind += "_tight"
     if DoNormalized: Kind += "_norm"
 
+    if do8TeVRatio:
+        Kind+="_8TeV"
 
     if SavePlot:
         if doLog:
@@ -623,7 +667,7 @@ for i in range(0,4):
             c1.SaveAs(PersonalFolder+Dir+"/"+Type+"/CrossSection/diffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+Kind+".root")       
 
      
-if printLatex and Type=="nJets": 
+if printLatex and (Type=="nJets" or Type=="nIncJets"): 
     print "\nJet multuplicity cross section tabular:\n"
     Text =("Number of jets ($|\eta_{jet}| < 4.7$)","Total cross-section [fb]","stat","syst","lumi")
-    CrossLatex(Text,CrossDic)
+    CrossLatex(Text,CrossDic,Type)
