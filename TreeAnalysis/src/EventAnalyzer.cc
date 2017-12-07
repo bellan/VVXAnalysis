@@ -42,8 +42,10 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 			 "../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_non_gap_ele_Moriond2017_v2.root",
 			 "../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_gap_ele_Moriond2017_v2.root",
 			 "../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_RECO_ele_Moriond2017_v1.root",
-			 "../../VVXAnalysis/Commons/data/fakeRates.root",
-			 "../../VVXAnalysis/Commons/data/fakeRates.root")
+			 "../../VVXAnalysis/Commons/data/fakeRate_20feb2017.root",
+			 "../../VVXAnalysis/Commons/data/fakeRate_20feb2017.root")
+			 //"../../VVXAnalysis/Commons/data/fakeRates.root",
+			 //"../../VVXAnalysis/Commons/data/fakeRates.root")
   , doBasicPlots_(configuration.getParameter<bool>("doBasicPlots"))
   , doSF         (configuration.getParameter<bool>("doSF"))
   , region_      (configuration.getParameter<phys::RegionTypes>("region"))
@@ -61,11 +63,11 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
   TChain *tree = new TChain("treePlanter/ElderTree");
   tree->Add(configuration.getParameter<std::string>("filename").c_str());
 
-
   if (tree == 0) std::cout<<Important("Error in EventAnalyzer ctor:")<<" The tree has a null pointer."<<std::endl;
 
   Init(tree);
-
+  fileName =  configuration.getParameter<std::string>("filename");
+ 
 }
 
 
@@ -159,6 +161,17 @@ void EventAnalyzer::Init(TTree *tree)
   b_LHEweight_AsMZ_Up                 =0; theTree->SetBranchAddress("LHEweight_AsMZ_Up"               , &LHEweight_AsMZ_Up                , &b_LHEweight_AsMZ_Up               );
   b_LHEweight_AsMZ_Dn                 =0; theTree->SetBranchAddress("LHEweight_AsMZ_Dn"               , &LHEweight_AsMZ_Dn                , &b_LHEweight_AsMZ_Dn               );
   
+  b_p_JJVBF_BKG_MCFM_JECNominal =0;   theTree->SetBranchAddress("p_JJVBF_BKG_MCFM_JECNominal",  &p_JJVBF_BKG_MCFM_JECNominal  , &b_p_JJVBF_BKG_MCFM_JECNominal );
+  b_p_JJQCD_BKG_MCFM_JECNominal =0;   theTree->SetBranchAddress("p_JJQCD_BKG_MCFM_JECNominal",  &p_JJQCD_BKG_MCFM_JECNominal  , &b_p_JJQCD_BKG_MCFM_JECNominal );
+  b_p_JJVBF_BKG_MCFM_JECUp      =0;   theTree->SetBranchAddress("p_JJVBF_BKG_MCFM_JECUp",       &p_JJVBF_BKG_MCFM_JECUp       , &b_p_JJVBF_BKG_MCFM_JECUp      );     
+  b_p_JJQCD_BKG_MCFM_JECUp      =0;   theTree->SetBranchAddress("p_JJQCD_BKG_MCFM_JECUp",       &p_JJQCD_BKG_MCFM_JECUp       , &b_p_JJQCD_BKG_MCFM_JECUp      );     
+  b_p_JJVBF_BKG_MCFM_JECDn      =0;   theTree->SetBranchAddress("p_JJVBF_BKG_MCFM_JECDn",       &p_JJVBF_BKG_MCFM_JECDn       , &b_p_JJVBF_BKG_MCFM_JECDn      );     
+  b_p_JJQCD_BKG_MCFM_JECDn      =0;   theTree->SetBranchAddress("p_JJQCD_BKG_MCFM_JECDn",       &p_JJQCD_BKG_MCFM_JECDn       , &b_p_JJQCD_BKG_MCFM_JECDn      );     
+  b_p_JJEW_BKG_MCFM_JECNominal  =0;   theTree->SetBranchAddress("p_JJEW_BKG_MCFM_JECNominal",   &p_JJEW_BKG_MCFM_JECNominal   , &b_p_JJEW_BKG_MCFM_JECNominal  );  
+  b_p_JJEW_BKG_MCFM_JECUp       =0;   theTree->SetBranchAddress("p_JJEW_BKG_MCFM_JECUp",        &p_JJEW_BKG_MCFM_JECUp        , &b_p_JJEW_BKG_MCFM_JECUp       );     
+  b_p_JJEW_BKG_MCFM_JECDn       =0;   theTree->SetBranchAddress("p_JJEW_BKG_MCFM_JECDn",        &p_JJEW_BKG_MCFM_JECDn        , &b_p_JJEW_BKG_MCFM_JECDn       );     
+
+
   
 }
 
@@ -184,11 +197,11 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   jets->clear(); centralJets->clear(); pileUpIds->clear();
 
   foreach(const phys::Jet &jet, *pjets){
-    if(jet.fullPuId(0)){//2 tight, 1 medium, 0 loose
+    //    if(jet.fullPuId(0)){//2 tight, 1 medium, 0 loose
       if(jet.pt() > 30){
 	if(fabs(jet.eta()) < 4.7) jets->push_back(jet);
 	if(fabs(jet.eta()) < 2.4) centralJets->push_back(jet);
-        }
+	//  }
     }
     else pileUpIds->push_back(idx);   
     idx++; 
@@ -196,17 +209,12 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   genJets->clear(); centralGenJets->clear();
   foreach(const phys::Particle &jet, *pgenJets)
     if(jet.pt() > 30){
-      //  bool leptonMatch = false; //Already done in signaldefinition. Here leptons are also loose. 
-      //foreach(const phys::Particle &gen, *genParticles){
-      //	if(physmath::deltaR(gen,jet) < 0.4 && (abs(gen.id()) == 11 || abs(gen.id()) == 13)) leptonMatch = true;
-      //}
-      // if(!leptonMatch){
 	if(fabs(jet.eta()) < 4.7) genJets->push_back(jet);
 	if(fabs(jet.eta()) < 2.4) centralGenJets->push_back(jet);
     }
-  //}
-Vhad->clear();
+  
 
+Vhad->clear();
 foreach(const phys::Boson<phys::Jet> v, *VhadCand)
 if(select(v)) Vhad->push_back(v);
 
@@ -255,6 +263,8 @@ if(region_ == phys::MC){
   else  theWeight = theMCInfo.weight();
 
   if(doSF && (region_ == phys::CR2P2F || region_ == phys::CR3P1F || region_ == phys::CR2P2F_HZZ || region_ == phys::CR3P1F_HZZ)){
+
+
       if(!ZZ->first().daughterPtr(0)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(0))).first;	
       if(!ZZ->first().daughterPtr(1)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(1))).first;	
       if(!ZZ->second().daughterPtr(0)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(0))).first;

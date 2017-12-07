@@ -32,6 +32,7 @@
 #include "VVXAnalysis/Commons/interface/RegionTypes.h"
 #include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 //#include "VVXAnalysis/Commons/interface/Utilities.h"
+#include <ZZAnalysis/AnalysisStep/interface/bitops.h>
 
 class TFile;
 class TTree;
@@ -89,8 +90,9 @@ public:
     
     return dR;
   }
-
- 
+  
+  std::string fileName;
+  
     static double deltaPhi (const TLorentzVector &a, const TLorentzVector &b) {
     
     double phi1 = a.Phi();
@@ -202,6 +204,17 @@ public:
   Float_t LHEweight_PDFVariation_Dn        ; TBranch *b_LHEweight_PDFVariation_Dn        ;
   Float_t LHEweight_AsMZ_Up                ; TBranch *b_LHEweight_AsMZ_Up                ;
   Float_t LHEweight_AsMZ_Dn                ; TBranch *b_LHEweight_AsMZ_Dn                ;
+  
+  Float_t p_JJVBF_BKG_MCFM_JECNominal   ; TBranch *b_p_JJVBF_BKG_MCFM_JECNominal ;     
+  Float_t p_JJQCD_BKG_MCFM_JECNominal   ; TBranch *b_p_JJQCD_BKG_MCFM_JECNominal ;     
+  Float_t p_JJVBF_BKG_MCFM_JECUp        ; TBranch *b_p_JJVBF_BKG_MCFM_JECUp      ;     
+  Float_t p_JJQCD_BKG_MCFM_JECUp        ; TBranch *b_p_JJQCD_BKG_MCFM_JECUp      ;     
+  Float_t p_JJVBF_BKG_MCFM_JECDn        ; TBranch *b_p_JJVBF_BKG_MCFM_JECDn      ;     
+  Float_t p_JJQCD_BKG_MCFM_JECDn        ; TBranch *b_p_JJQCD_BKG_MCFM_JECDn      ;     
+  Float_t p_JJEW_BKG_MCFM_JECNominal    ; TBranch *b_p_JJEW_BKG_MCFM_JECNominal  ;     
+  Float_t p_JJEW_BKG_MCFM_JECUp         ; TBranch *b_p_JJEW_BKG_MCFM_JECUp       ;     
+  Float_t p_JJEW_BKG_MCFM_JECDn         ; TBranch *b_p_JJEW_BKG_MCFM_JECDn       ;     
+  
 
   
 
