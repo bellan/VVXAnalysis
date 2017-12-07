@@ -13,6 +13,8 @@ void compilemyclass(TString myopt="fast"){
     sprintf(opt ,"kg");
   }
   
+  //  gSystem->CompileMacro("CMS_lumi.cxx",opt);
+  //  gSystem->CompileMacro("PersonalInfo.cxx",opt);
   gSystem->CompileMacro("DataToUnfold.cxx",opt);
   gSystem->CompileMacro("PurityAndStability.cxx",opt);
   gSystem->CompileMacro("ResponseMatrix.cxx",opt);

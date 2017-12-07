@@ -16,16 +16,20 @@ DataToUnfold::DataToUnfold(): TObject()
 {  
   data = new TFile("../../results/ZZRecoAnalyzer_SR/data.root");
   //reducible background
-  red = new TFile("../../results/ZZRecoAnalyzer_CR/data.root"); 
+  red3P1F     = new TFile("../../results/ZZRecoAnalyzer_CR3P1F/data.root"); 
+  red3P1FqqZZ = new TFile("../../results/ZZRecoAnalyzer_CR3P1F/ZZTo4lamcatnlo.root");
+  red3P1FggZZ = new TFile("../../results/ZZRecoAnalyzer_CR3P1F/gg_4l.root"); 
+  red2P2F     = new TFile("../../results/ZZRecoAnalyzer_CR2P2F/data.root"); 
   //irreducible backgrounds
    ttZ = new TFile("../../results/ZZRecoAnalyzer_SR/TTZToLL.root");
    WWZ = new TFile("../../results/ZZRecoAnalyzer_SR/WWZ.root");
- 
+   //   ZZbkg = new TFile("../../results/ZZRecoAnalyzer_SR/sig_pow.root"); //new
+
 }
 
 
-
 DataToUnfold::~DataToUnfold(){}
+
 
 //Build data and data-minus-bkg distributions for the 4e, 4mu and 2e2mu final states. 
 //Build data distributions to estimate the reducible and irreducible background systematic uncertainties 
@@ -47,14 +51,62 @@ void DataToUnfold::Build(string var, string finalstate)
 
   h_totdata  = (TH1*) data->Get(histoName.c_str()); 
   h_data     = (TH1*) h_totdata->Clone("h_totdata");
-  h_red      = (TH1*) red->Get(histoName.c_str()); 
+
+  h_red          = (TH1*) red3P1F->Get(histoName.c_str()); 
+  h_red3P1FqqZZ  = (TH1*) red3P1FqqZZ->Get(histoName.c_str()); 
+  h_red3P1FggZZ  = (TH1*) red3P1FggZZ->Get(histoName.c_str()); 
+  h_red2P2F      = (TH1*) red2P2F->Get(histoName.c_str()); 
+  
+  
+  if(h_red          ==NULL) {cout <<"histo "<<histoName.c_str()<<" in "<<  red3P1F->GetName()    <<" is null. Abort"<<endl; abort();} 
+  if(h_red3P1FqqZZ  ==NULL) {cout <<"histo "<<histoName.c_str()<<" in "<<  red3P1FqqZZ->GetName()<<" is null. Abort"<<endl; abort();} 
+  if(h_red3P1FggZZ  ==NULL) {cout <<"histo "<<histoName.c_str()<<" in "<<  red3P1FggZZ->GetName()<<" is null. Abort"<<endl; abort();} 
+  if(h_red2P2F      ==NULL) {cout <<"histo "<<histoName.c_str()<<" in "<<  red2P2F->GetName()    <<" is null. Abort"<<endl; abort();} 
+  
+
+  h_red->Add(h_red3P1FqqZZ,-1);
+  h_red->Add(h_red3P1FggZZ,-1);
+  h_red->Add(h_red2P2F);
+
+  h_red_up          = (TH1*) red3P1F->Get(("ZZTo" + finalstate + "_" + var + "_RedUp_01").c_str()); 
+  h_red3P1FqqZZ_up  = (TH1*) red3P1FqqZZ->Get(("ZZTo" + finalstate + "_" + var + "_RedUp_01").c_str()); 
+  h_red3P1FggZZ_up  = (TH1*) red3P1FggZZ->Get(("ZZTo" + finalstate + "_" + var + "_RedUp_01").c_str()); 
+  h_red2P2F_up      = (TH1*) red2P2F->Get(("ZZTo" + finalstate + "_" + var + "_RedUp_01").c_str()); 
+
+
+  if(h_red_up          ==NULL) {cout <<"histo "<<histoName.c_str()<<" in "<<  red3P1F->GetName()    <<" is null. Abort"<<endl; abort();} 
+  if(h_red3P1FqqZZ_up  ==NULL) {cout <<"histo "<<histoName.c_str()<<" in "<<  red3P1FqqZZ->GetName()<<" is null. Abort"<<endl; abort();} 
+  if(h_red3P1FggZZ_up  ==NULL) {cout <<"histo "<<histoName.c_str()<<" in "<<  red3P1FggZZ->GetName()<<" is null. Abort"<<endl; abort();} 
+  if(h_red2P2F_up      ==NULL) {cout <<"histo "<<histoName.c_str()<<" in "<<  red2P2F->GetName()    <<" is null. Abort"<<endl; abort();} 
+  
+
+  h_red_up->Add(h_red3P1FqqZZ_up,-1);
+  h_red_up->Add(h_red3P1FggZZ_up,-1);
+  h_red_up->Add(h_red2P2F_up);
+
+  h_red_down          = (TH1*) red3P1F->Get(("ZZTo" + finalstate + "_" + var + "_RedDn_01").c_str()); 
+  h_red3P1FqqZZ_down  = (TH1*) red3P1FqqZZ->Get(("ZZTo" + finalstate + "_" + var + "_RedDn_01").c_str()); 
+  h_red3P1FggZZ_down  = (TH1*) red3P1FggZZ->Get(("ZZTo" + finalstate + "_" + var + "_RedDn_01").c_str()); 
+  h_red2P2F_down      = (TH1*) red2P2F->Get(("ZZTo" + finalstate + "_" + var + "_RedDn_01").c_str()); 
+
+  if(h_red_down          ==NULL) {cout <<"histo "<<histoName.c_str()<<" in "<<  red3P1F->GetName()    <<" is null. Abort"<<endl; abort();} 
+  if(h_red3P1FqqZZ_down  ==NULL) {cout <<"histo "<<histoName.c_str()<<" in "<<  red3P1FqqZZ->GetName()<<" is null. Abort"<<endl; abort();} 
+  if(h_red3P1FggZZ_down  ==NULL) {cout <<"histo "<<histoName.c_str()<<" in "<<  red3P1FggZZ->GetName()<<" is null. Abort"<<endl; abort();} 
+  if(h_red2P2F_down      ==NULL) {cout <<"histo "<<histoName.c_str()<<" in "<<  red2P2F->GetName()    <<" is null. Abort"<<endl; abort();} 
+
+
+  h_red_down->Add(h_red3P1FqqZZ_down,-1);
+  h_red_down->Add(h_red3P1FggZZ_down,-1);
+  h_red_down->Add(h_red2P2F_down);
+
   h_ttZ      = (TH1*) ttZ->Get(histoMCName.c_str()); 
   h_WWZ      = (TH1*) WWZ->Get(histoMCName.c_str()); 
+  //  h_ZZBkg    = (TH1*) ZZbkg->Get(("ZZTo" + finalstate + "_" + var + "_01_nofr").c_str());  //new
 
-  if(h_totdata  ==NULL) {cout <<"histo "<<h_totdata->GetName()<<" is null. Abort"<<endl; abort();} 
-  if(h_red      ==NULL) {cout <<"histo "<<h_red->GetName()<<" is null. Abort"<<endl; abort();}  
-  if(h_ttZ      ==NULL) {cout <<"histo "<<h_ttZ->GetName()<<" is null. Abort"<<endl; abort();} 
-  if(h_WWZ      ==NULL) {cout <<"histo "<<h_WWZ->GetName()<<" is null. Abort"<<endl; abort();} 
+  if(h_totdata  ==NULL) {cout <<"histo "<<histoName.c_str()<<" in "<<h_totdata->GetName()<<" is null. Abort"<<endl; abort();} 
+  if(h_red      ==NULL) {cout <<"histo "<<histoName.c_str()<<" in "<<h_red->GetName()<<" is null. Abort"<<endl; abort();}  
+  if(h_ttZ      ==NULL) {cout <<"histo "<<histoName.c_str()<<" in "<<h_ttZ->GetName()<<" is null. Abort"<<endl; abort();} 
+  if(h_WWZ      ==NULL) {cout <<"histo "<<histoName.c_str()<<" in "<<h_WWZ->GetName()<<" is null. Abort"<<endl; abort();} 
   
   h_data_irrp = (TH1*)h_totdata->Clone("h_totdata");
   h_data_irrm = (TH1*)h_totdata->Clone("h_totdata");
@@ -64,6 +116,8 @@ void DataToUnfold::Build(string var, string finalstate)
   float err_red = 0;
   float err_irr = 0;
   float dataminusbkg = 0;
+  float dataminusbkg_redUp = 0;
+  float dataminusbkg_redDn = 0;
   float dmb_irrp =0;
   float dmb_irrm =0;
   float dmb_redp =0;
@@ -82,29 +136,40 @@ void DataToUnfold::Build(string var, string finalstate)
     
     //    cout<<"all "<< h_totdata->GetBinContent(i) <<" red "<<h_red->GetBinContent(i)<<" irr "<<h_ttZ->GetBinContent(i)<<" irr 2 "<<h_WWZ->GetBinContent(i)<<endl; 
     //    dataminusbkg = h_totdata->GetBinContent(i)- h_red->GetBinContent(i)- h_ttZ->GetBinContent(i)-h_ttWW->GetBinContent(i)-h_WWZ->GetBinContent(i); //FIXME
+
+    // dataminusbkg       = h_totdata->GetBinContent(i)- h_red->GetBinContent(i)- h_ttZ->GetBinContent(i)-h_WWZ->GetBinContent(i) -  h_ZZBkg->GetBinContent(i);  //new
+    // dataminusbkg_redUp = h_totdata->GetBinContent(i)- h_red_up->GetBinContent(i)- h_ttZ->GetBinContent(i)-h_WWZ->GetBinContent(i) - h_ZZBkg->GetBinContent(i); 
+    // dataminusbkg_redDn = h_totdata->GetBinContent(i)- h_red_down->GetBinContent(i)- h_ttZ->GetBinContent(i)-h_WWZ->GetBinContent(i) - h_ZZBkg->GetBinContent(i); 
+
+    //    cout<< h_ZZBkg->GetBinContent(i)<<endl;
     dataminusbkg = h_totdata->GetBinContent(i)- h_red->GetBinContent(i)- h_ttZ->GetBinContent(i)-h_WWZ->GetBinContent(i); 
+    dataminusbkg_redUp = h_totdata->GetBinContent(i)- h_red_up->GetBinContent(i)- h_ttZ->GetBinContent(i)-h_WWZ->GetBinContent(i); 
+    dataminusbkg_redDn = h_totdata->GetBinContent(i)- h_red_down->GetBinContent(i)- h_ttZ->GetBinContent(i)-h_WWZ->GetBinContent(i); 
+
     //    dataminusbkg = h_totdata->GetBinContent(i)- h_red->GetBinContent(i)- h_Irr->GetBinContent(i);
     if(dataminusbkg>0.) h_data-> SetBinContent(i,dataminusbkg);
     else h_data-> SetBinContent(i,0.);
-    //    err_irr = sqrt(h_ttZ->GetBinError(i)*h_ttZ->GetBinError(i)+h_ttWW->GetBinError(i)*h_ttWW->GetBinError(i)+h_WWZ->GetBinError(i)*h_WWZ->GetBinError(i));
+
+
     err_irr = sqrt(h_ttZ->GetBinError(i)*h_ttZ->GetBinError(i)+h_WWZ->GetBinError(i)*h_WWZ->GetBinError(i));
+
     //    err_irr = sqrt(h_Irr->GetBinError(i)*h_Irr->GetBinError(i));
-    //    err_red = h_red->GetBinError(i);
     //    err_red_tot=+ err_red*err_red;
 
-    err_red = h_red->GetBinContent(i)*0.3;
+    err_red  = h_red->GetBinContent(i)*0.3; //To be changed
     dmb_irrp = dataminusbkg + err_irr;
     dmb_irrm = dataminusbkg - err_irr;
-    dmb_redp = dataminusbkg + err_red;
-    dmb_redm = dataminusbkg - err_red;
+
+    //    dmb_redp = dataminusbkg + err_red;
+    // dmb_redm = dataminusbkg - err_red;
     
     if(dmb_irrp>0.) h_data_irrp-> SetBinContent(i,dmb_irrp);
     else h_data_irrp-> SetBinContent(i,0.);
     if(dmb_irrm>0.) h_data_irrm-> SetBinContent(i,dmb_irrm);
     else h_data_irrm-> SetBinContent(i,0.);
-    if(dmb_redp>0.) h_data_redp-> SetBinContent(i,dmb_redp);
+    if(dataminusbkg_redUp>0.) h_data_redp-> SetBinContent(i, dataminusbkg_redUp);
     else h_data_redp-> SetBinContent(i,0.);
-    if(dmb_redm>0.) h_data_redm-> SetBinContent(i,dmb_redm);
+    if(dataminusbkg_redDn >0.) h_data_redm-> SetBinContent(i,dataminusbkg_redDn);
     else h_data_redm-> SetBinContent(i,0.);
     
     // cout << "=================================================================================================================" << endl; 
@@ -140,7 +205,8 @@ void DataToUnfold::Build(string var, string finalstate)
   // std::cout <<  "    final data = " << finaldata << " +- " << err_finaldata << std::endl;
   // std::cout <<   "==============================================" << std::endl;  
 
- output->cd();    
+ output->cd();
+ std::cout<<"hei"<<std::endl;    
  h_data->Write(dataName.c_str(),TObject::kOverwrite);
  h_totdata->Write(TotdataName.c_str(),TObject::kOverwrite);
  output->Close();
@@ -154,60 +220,62 @@ void DataToUnfold::Build(string var, string finalstate)
 
 }
 
-//Build data and data-minus-bkg distributions(for the 4e, 4mu and 2e2mu final states) for the JES systematic uncertainty, where data distributions are shifted up and down by the JES uncertainty.
-void DataToUnfold::Build_JE(string var, string finalstate)
-{
-  output = new TFile((var+"_test/DataToUnfold_JES.root").c_str(), "UPDATE");
+// //Build data and data-minus-bkg distributions(for the 4e, 4mu and 2e2mu final states) for the JES systematic uncertainty, where data distributions are shifted up and down by the JES uncertainty.
+// void DataToUnfold::Build_JE(string var, string finalstate)
+// {
+//   output = new TFile((var+"_test/DataToUnfold_JES.root").c_str(), "UPDATE");
 
-  histoName_up     = "ZZTo" + finalstate + "_" + var+"_JESDataUp_01"; 
-  histoName_down   = "ZZTo" + finalstate + "_" + var+"_JESDataDn_01"; 
-  histoMCName      = "ZZTo" + finalstate + "_" + var+"_01";
+//   histoName_up     = "ZZTo" + finalstate + "_" + var+"_JESDataUp_01"; 
+//   histoName_down   = "ZZTo" + finalstate + "_" + var+"_JESDataDn_01"; 
+//   histoMCName      = "ZZTo" + finalstate + "_" + var+"_01";
 
-  dataName_up      = "DataminusBkg_"+var+"_ZZTo"+finalstate+"_JESUp";
-  dataName_down    = "DataminusBkg_"+var+"_ZZTo"+finalstate+"_JESDn";
-  TotdataName_up   = "TotData_"+var+"_ZZTo"+finalstate+"_JESUp";
-  TotdataName_down = "TotData_"+var+"_ZZTo"+finalstate+"_JESDn";
+//   dataName_up      = "DataminusBkg_"+var+"_ZZTo"+finalstate+"_JESUp";
+//   dataName_down    = "DataminusBkg_"+var+"_ZZTo"+finalstate+"_JESDn";
+//   TotdataName_up   = "TotData_"+var+"_ZZTo"+finalstate+"_JESUp";
+//   TotdataName_down = "TotData_"+var+"_ZZTo"+finalstate+"_JESDn";
 
-  h_totdata_up     = (TH1*) data->Get(histoName_up.c_str());    
-  h_totdata_down   = (TH1*) data->Get(histoName_down.c_str()); 
-  h_data_up        = (TH1*) h_totdata_up->Clone("h_totdata_up");  
-  h_data_down      = (TH1*) h_totdata_down->Clone("h_totdata_down"); 
+//   h_totdata_up     = (TH1*) data->Get(histoName_up.c_str());    
+//   h_totdata_down   = (TH1*) data->Get(histoName_down.c_str()); 
+//   h_data_up        = (TH1*) h_totdata_up->Clone("h_totdata_up");  
+//   h_data_down      = (TH1*) h_totdata_down->Clone("h_totdata_down"); 
 
-  h_red_up         = (TH1*) red->Get(histoName_up.c_str());
-  h_red_down       = (TH1*) red->Get(histoName_down.c_str());
+//   h_red_up         = (TH1*) red3P1F->Get(histoName_up.c_str());
+//   h_red_down       = (TH1*) red3P1F->Get(histoName_down.c_str());
 
 
-  h_ttZ = (TH1*) ttZ->Get(histoMCName.c_str());
-  h_WWZ = (TH1*) WWZ->Get(histoMCName.c_str());
+//   h_ttZ = (TH1*) ttZ->Get(histoMCName.c_str());
+//   h_WWZ = (TH1*) WWZ->Get(histoMCName.c_str());
 
  
-  if(h_red_up == NULL)  {cout<<"histo "<<h_red_up->GetName()<<" is Null"<<endl; abort();}
-  if(h_red_down == NULL){cout<<"histo "<<h_red_down->GetName()<<" is Null"<<endl; abort();}
+//   if(h_red_up == NULL)  {cout<<"histo "<<h_red_up->GetName()<<" is Null"<<endl; abort();}
+//   if(h_red_down == NULL){cout<<"histo "<<h_red_down->GetName()<<" is Null"<<endl; abort();}
 
-  float dmb_up = 0;
-  float dmb_down = 0;
+//   float dmb_up = 0;
+//   float dmb_down = 0;
   
-  int b = h_red_up->GetNbinsX();
-  for(int i =1; i<=b; i++){
-    dmb_up = 0;
-    dmb_up = h_totdata_up->GetBinContent(i) - h_red_up->GetBinContent(i) - h_ttZ->GetBinContent(i) - h_WWZ->GetBinContent(i);
-    if(dmb_up>0.) h_data_up-> SetBinContent(i,dmb_up);
-    else h_data_up-> SetBinContent(i,0.);
-    dmb_down = 0;
-    dmb_down = h_totdata_down->GetBinContent(i) - h_red_down->GetBinContent(i) - h_ttZ->GetBinContent(i) - h_WWZ->GetBinContent(i);
-    if(dmb_down>0.) h_data_down-> SetBinContent(i,dmb_down);
-    else h_data_down-> SetBinContent(i,0.);
+//   int b = h_red_up->GetNbinsX();
+//   for(int i =1; i<=b; i++){
+//     dmb_up = 0;
+//     dmb_up = h_totdata_up->GetBinContent(i) - h_red_up->GetBinContent(i) - h_ttZ->GetBinContent(i) - h_WWZ->GetBinContent(i);
+//     if(dmb_up>0.) h_data_up-> SetBinContent(i,dmb_up);
+//     else h_data_up-> SetBinContent(i,0.);
+//     dmb_down = 0;
+//     dmb_down = h_totdata_down->GetBinContent(i) - h_red_down->GetBinContent(i) - h_ttZ->GetBinContent(i) - h_WWZ->GetBinContent(i);
+//     if(dmb_down>0.) h_data_down-> SetBinContent(i,dmb_down);
+//     else h_data_down-> SetBinContent(i,0.);
 
-    // std::cout << "bin " << i << " data up= "<< h_totdata_up->GetBinContent(i) << " +- " << h_totdata_up->GetBinError(i)<< " data down= "<< h_totdata_down->GetBinContent(i) << " +- " << h_totdata_down->GetBinError(i) << " red up = " << h_red_up->GetBinContent(i) << " +- " << h_red_up->GetBinError(i)  << "h_red down" << h_red_down->GetBinContent(i) << " +- " << h_red_down->GetBinError(i)<<   " ttZ = " << h_ttZ->GetBinContent(i) << " +- " << h_ttZ->GetBinError(i) <<  " ttWW = " << h_ttWW->GetBinContent(i) << " +- " << h_ttWW->GetBinError(i) <<   " WWZ = " << h_WWZ->GetBinContent(i)   << " +- " << h_WWZ->GetBinError(i) << " data-bkg up = " << dmb_up <<" +- " << h_data_up->GetBinError(i) << " " << h_data_ip->GetBinContent(i) << " data-bkg down = " << dmb_down <<" +- " << h_data_down->GetBinError(i) << " " << h_data_ip->GetBinContent(i)<< std::endl;
-  }
+//     // std::cout << "bin " << i << " data up= "<< h_totdata_up->GetBinContent(i) << " +- " << h_totdata_up->GetBinError(i)<< " data down= "<< h_totdata_down->GetBinContent(i) << " +- " << h_totdata_down->GetBinError(i) << " red up = " << h_red_up->GetBinContent(i) << " +- " << h_red_up->GetBinError(i)  << "h_red down" << h_red_down->GetBinContent(i) << " +- " << h_red_down->GetBinError(i)<<   " ttZ = " << h_ttZ->GetBinContent(i) << " +- " << h_ttZ->GetBinError(i) <<  " ttWW = " << h_ttWW->GetBinContent(i) << " +- " << h_ttWW->GetBinError(i) <<   " WWZ = " << h_WWZ->GetBinContent(i)   << " +- " << h_WWZ->GetBinError(i) << " data-bkg up = " << dmb_up <<" +- " << h_data_up->GetBinError(i) << " " << h_data_ip->GetBinContent(i) << " data-bkg down = " << dmb_down <<" +- " << h_data_down->GetBinError(i) << " " << h_data_ip->GetBinContent(i)<< std::endl;
+//   }
   
-  output->cd();   
-  h_data_up->Write(dataName_up.c_str(),TObject::kOverwrite);
-  h_totdata_up->Write(TotdataName_up.c_str(),TObject::kOverwrite); 
-  h_data_down->Write(dataName_down.c_str(),TObject::kOverwrite);
-  h_totdata_down->Write(TotdataName_down.c_str(),TObject::kOverwrite);
-  output->Close();
-}
+//   output->cd();   
+//   h_data_up->Write(dataName_up.c_str(),TObject::kOverwrite);
+//   h_data_down->Write(dataName_down.c_str(),TObject::kOverwrite);
+
+//   h_totdata_up->Write(TotdataName_up.c_str(),TObject::kOverwrite); 
+//   h_totdata_down->Write(TotdataName_down.c_str(),TObject::kOverwrite);
+
+//   output->Close();
+// }
 
 //Plot data distributions
 void DataToUnfold::Plot(string var,string finalstate, string path) 
@@ -248,6 +316,10 @@ void DataToUnfold::Plot(string var,string finalstate, string path)
     xAxis = "reco Njets";
     // max = matrix->GetBinContent(1,1)/2;
   }
+  else if(var =="nIncJets"){
+    xAxis = "reco Njets";
+    // max = matrix->GetBinContent(1,1)/2;
+  }
   else if(var =="Mjj"){
     xAxis = "reco m_{jj}";
     //max = matrix->GetBinContent(2,2)*1.5;
@@ -257,6 +329,10 @@ void DataToUnfold::Plot(string var,string finalstate, string path)
     //max = matrix->GetBinContent(2,2)*1.5;
   }
   else if(var =="nJets_Central"){
+    xAxis = "reco Ncentraljets";
+    //    max = matrix->GetBinContent(1,1)/3;
+  }
+  else if(var =="nIncJets_Central"){
     xAxis = "reco Ncentraljets";
     //    max = matrix->GetBinContent(1,1)/3;
   }

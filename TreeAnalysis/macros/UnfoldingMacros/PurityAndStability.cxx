@@ -137,6 +137,9 @@ void PurityAndStability::Plot(string var,string finalstate, string path) {
   else if(var =="nJets"){
     xAxis = "reco Njets";
   }
+  else if(var =="nIncJets"){
+    xAxis = "reco Njets";
+  }
   else if(var =="Mjj"){
     xAxis = "reco m_{jj}";
   }
@@ -271,6 +274,9 @@ void PurityAndStability::Plot_PAS(string var,string finalstate, string path)
     xAxis = "reco m_{"+fs+"} [GeV]";
    }
   else if(var =="nJets"){
+    xAxis = "reco N jets (|#eta^{jet}|<4.7)";
+  }
+  else if(var =="nIncJets"){
     xAxis = "reco N jets (|#eta^{jet}|<4.7)";
   }
   else if(var =="Mjj"){

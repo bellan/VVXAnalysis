@@ -12,7 +12,7 @@
 #define foreach BOOST_FOREACH
 #endif
 
-std::vector<std::string> Variables   = {"Mass","nJets","nJets_Central","Mjj","Mjj_Central","Deta","Deta_Central","PtJet1","PtJet2","EtaJet1","EtaJet2","dRZZ","PtZZ"};
+std::vector<std::string> Variables   = {"Mass","nJets","nIncJets","nJets_Central","Mjj","Mjj_Central","Deta","Deta_Central","PtJet1","PtJet2","EtaJet1","EtaJet2","dRZZ","PtZZ"};
 
 //Build response matrices
 void GenerateDistributions(string var, bool madgraph, bool tightregion)
@@ -23,6 +23,7 @@ void GenerateDistributions(string var, bool madgraph, bool tightregion)
   DataToUnfold       *datatounfold = new DataToUnfold(); 
   PurityAndStability *pas          = new PurityAndStability(madgraph); 
   ResponseMatrix     *matrix       = new ResponseMatrix(0,madgraph,tightregion);
+
   for(int p=-1; p<2; p++){
     for(int q=-1; q<2; q++){    
       matrix->Build(var,"01","4e",p,q,madgraph);
@@ -52,6 +53,7 @@ void GenerateDistributions(string var, bool madgraph, bool tightregion)
   matrix_jesf->Build_Syst(var,"01","4m","SFSqUp",madgraph);
   matrix_jesf->Build_Syst(var,"01","2e2m","SFSqDn",madgraph);
   matrix_jesf->Build_Syst(var,"01","2e2m","SFSqUp",madgraph);
+
 
   matrix_jesf->Build_Syst(var,"01","4e","EleSFSqDn",madgraph);
   matrix_jesf->Build_Syst(var,"01","4e","EleSFSqUp",madgraph);
@@ -92,6 +94,7 @@ void GenerateDistributions(string var, bool madgraph, bool tightregion)
 
 
   if(var!="Mass" &&  var!="dRZZ" && var!="PtZZ"){ 
+
     matrix_jesf->Build_Syst(var,"01","4e","JESDn",madgraph);
     matrix_jesf->Build_Syst(var,"01","4e","JESUp",madgraph);
     matrix_jesf->Build_Syst(var,"01","4e","JERDn",madgraph);
@@ -105,12 +108,13 @@ void GenerateDistributions(string var, bool madgraph, bool tightregion)
     matrix_jesf->Build_Syst(var,"01","2e2m","JERDn",madgraph);
     matrix_jesf->Build_Syst(var,"01","2e2m","JERUp",madgraph); 
 
-    if(tightregion == 0){
-      datatounfold->Build_JE(var,"4e");
-      datatounfold->Build_JE(var,"4m");
-      datatounfold->Build_JE(var,"2e2m");
-    }
+    // if(tightregion == 0){
+    //   datatounfold->Build_JE(var,"4e");
+    //   datatounfold->Build_JE(var,"4m");
+    //   datatounfold->Build_JE(var,"2e2m");
+    // }
   }
+
   matrix->CloseFiles();
   // matrix->Delete();  
   // pas->Delete();
@@ -231,6 +235,7 @@ void GenerateGenMCUpDown_Var(string var)
 void GenerateGenMCUpDown_All()
 {   
   GenerateGenMCUpDown_Var("nJets");
+  GenerateGenMCUpDown_Var("nIncJets");
   GenerateGenMCUpDown_Var("nJets_Central"); 
   GenerateGenMCUpDown_Var("Mjj_Central"); 
   GenerateGenMCUpDown_Var("Deta_Central");
