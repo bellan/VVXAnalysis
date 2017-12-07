@@ -7,8 +7,8 @@ LeptonScaleFactors::LeptonScaleFactors(const std::string& muonEffFilename, const
 				       const std::string& electronEffRecoFilename,
 				       const std::string& muonFRFilename, const std::string& electronFRFilename){
 
-  TFile *fEffMu     = new TFile(muonEffFilename.c_str());
-  TFile *fEffEl     = new TFile(electronEffFilename.c_str());
+  TFile *fEffMu       = new TFile(muonEffFilename.c_str());
+  TFile *fEffEl       = new TFile(electronEffFilename.c_str());
   TFile *fEffElCracks = new TFile(electronEffCracksfilename.c_str());  
   TFile *fEffElReco   = new TFile(electronEffRecoFilename.c_str());
   
@@ -18,12 +18,11 @@ LeptonScaleFactors::LeptonScaleFactors(const std::string& muonEffFilename, const
   hEffElCracks_ = dynamic_cast<TH2F*>(fEffElCracks->Get("EGamma_SF2D"));
   hEffElReco_   = dynamic_cast<TH2F*>(fEffElReco->Get("EGamma_SF2D"));
 
-
   TFile *fFRMu = new TFile(muonFRFilename.c_str());
   TFile *fFREl = new TFile(electronFRFilename.c_str());
 
-  hFRMu_  = dynamic_cast<TH2F*>(fFRMu->Get("h1D_FRmu"));                                                 
-  hFREl_  = dynamic_cast<TH2F*>(fFREl->Get("h1D_FRel"));
+  hFRMu_  = dynamic_cast<TH2D*>(fFRMu->Get("fakeRate_m"));                                                 
+  hFREl_  = dynamic_cast<TH2D*>(fFREl->Get("fakeRate_e"));
 
 }
 
@@ -74,9 +73,9 @@ std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double
       else if (pt < hDataMCSF->GetYaxis()->GetXmin()) ybin = hDataMCSF->GetYaxis()->GetFirst();   // ...should never happen
     }
 
-    sFactor      =  hDataMCSF->GetBinContent(xbin,ybin); 
-    recoSfactor  =  hEffElReco_->GetBinContent(hEffElReco_->FindBin(eta,50)); // The histogram depend only on eta so 50 is just a value inside the range. 
-    recoSfactorUnc = hEffElReco_->GetBinError(hEffElReco_->FindBin(eta,50));
+    sFactor        =  hDataMCSF->GetBinContent(xbin,ybin); 
+    recoSfactor    =  hEffElReco_->GetBinContent(hEffElReco_->FindBin(eta,50)); // The histogram depend only on eta so 50 is just a value inside the range. 
+    recoSfactorUnc =  hEffElReco_->GetBinError(hEffElReco_->FindBin(eta,50));
 
     if(pt < 20. || pt > 80.) recoSfactorUnc += 0.01;
 
@@ -99,7 +98,6 @@ std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const double
 std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const phys::Lepton& lep) const{
   float eta = abs(lep.id())==11 ? lep.scEta() : lep.eta();
   return lep.passFullSel() ? efficiencyScaleFactor(lep.pt(), eta, lep.id(), lep.isInCracks()) : std::make_pair(1.,0.); 
-
 }
 
 
@@ -124,7 +122,8 @@ std::pair<double,double> LeptonScaleFactors::fakeRateScaleFactor(const double& l
   }
   
   else if (abs(lepId) == 11){
-    double pt  = lepPt < 80 ? lepPt : 79;
+    double pt  = lepPt < 200 ? lepPt : 199;
+    //    double pt  = lepPt < 80 ? lepPt : 79;
     fakeRate      =  hFREl_->GetBinContent( hFREl_->FindBin(fabs(lepEta),pt)); 
     fakeRateUnc   =  hFREl_->GetBinError( hFREl_->FindBin(fabs(lepEta),pt)); 
     //    std::cout<<"11  pt "<<pt<<" eta "<<fabs(lepEta)<<" "<<fakeRate/(1-fakeRate)<<std::endl;
