@@ -1,6 +1,8 @@
 #include "VVXAnalysis/TreeAnalysis/interface/AnalysisFactory.h"
+#include "VVXAnalysis/TreeAnalysis/interface/WlllnuAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/VVXAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZWAnalyzer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/WZAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZSAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZjAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZjGenAnalyzer.h"
@@ -11,10 +13,13 @@
 #include "VVXAnalysis/TreeAnalysis/interface/ZZRecoAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/VBSMCAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/VBSRecoAnalyzer.h"
+
 #include "VVXAnalysis/TreeAnalysis/interface/FakeRateAnalyzer.h"
 AnalysisFactory::AnalysisFactory(){
+  Register("WlllnuAnalyzer", &RegistrableAnalysis<WlllnuAnalyzer>::create);
   Register("VVXAnalyzer", &RegistrableAnalysis<VVXAnalyzer>::create);
   Register("ZZWAnalyzer", &RegistrableAnalysis<ZZWAnalyzer>::create);
+  Register("WZAnalyzer", &RegistrableAnalysis<WZAnalyzer>::create);
   Register("ZZSAnalyzer", &RegistrableAnalysis<ZZSAnalyzer>::create);
   Register("ZZjAnalyzer", &RegistrableAnalysis<ZZjAnalyzer>::create);
   Register("ZZjGenAnalyzer", &RegistrableAnalysis<ZZjGenAnalyzer>::create);

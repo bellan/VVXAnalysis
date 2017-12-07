@@ -46,6 +46,7 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 			 "../../VVXAnalysis/Commons/data/fakeRate_20feb2017.root")
 			 //"../../VVXAnalysis/Commons/data/fakeRates.root",
 			 //"../../VVXAnalysis/Commons/data/fakeRates.root")
+
   , maxNumEvents_(configuration.getParameter<int>("maxNumEvents"))
   , doBasicPlots_(configuration.getParameter<bool>("doBasicPlots"))
   , doSF         (configuration.getParameter<bool>("doSF"))
@@ -332,7 +333,9 @@ void EventAnalyzer::loop(const std::string outputfile){
 
   if (theTree == 0) return;
 
-  Long64_t nentries = maxNumEvents_ > 0 ? maxNumEvents_ : theTree->GetEntries(); 
+
+  Long64_t nentries = maxNumEvents_ > 0 ? maxNumEvents_ : theTree->GetEntries();  
+
   unweightedEventsInSR     = tree()->GetEntries("ZZCand.passSRZZOnShell_");
   unweightedEventsIn2P2FCR = tree()->GetEntries("ZZCand.passSelZLL_2P2F_ZZOnShell_");
   unweightedEventsIn3P1FCR = tree()->GetEntries("ZZCand.passSelZLL_3P1F_ZZOnShell_");

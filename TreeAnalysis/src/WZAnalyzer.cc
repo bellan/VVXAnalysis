@@ -1,0 +1,401 @@
+#include "VVXAnalysis/TreeAnalysis/interface/WZAnalyzer.h"
+#include "VVXAnalysis/Commons/interface/AriEle.h"
+#include "VVXAnalysis/Commons/interface/Colours.h"
+#include "VVXAnalysis/Commons/interface/Comparators.h"
+#include "VVXAnalysis/Commons/interface/Constants.h"
+#include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
+#include "VVXAnalysis/Commons/interface/Utilities.h"
+
+#include <boost/foreach.hpp>
+#define foreach BOOST_FOREACH
+
+#include <boost/assign/std/vector.hpp> 
+
+using namespace boost::assign;
+using namespace colour;
+using namespace phys;
+using namespace std;
+
+void WZAnalyzer::begin() {
+
+  nunumber = 0;
+  totalevent = 0;
+  WZevent = 0;
+  zahl = 0;
+
+  threemuonsplus = 0;
+  threemuonsminus = 0;
+  threeelesplus = 0;
+  threeelesminus = 0;
+
+  begintime = ((float)clock())/CLOCKS_PER_SEC;
+}
+
+Int_t WZAnalyzer::cut() {
+  return 1;
+}
+
+
+void WZAnalyzer::analyze(){
+  zahl++;
+  
+  vector<Particle> electron;
+  vector<Particle> lepton;
+  vector<Particle> muon;
+  vector<Particle> neutrino;
+
+  cout << "\n--------------------------------------------------------------------------"<< endl;
+  cout << "Run: " << run << " event: " << event << endl;
+
+  foreach(const Particle &gen, *genParticles){
+    if((abs(gen.id()) != 11 && abs(gen.id()) != 13 && abs(gen.id()) != 12 && abs(gen.id()) != 14) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
+    //cout << "id: " << gen.id() << " pt: " << gen.pt() << "\t eta: " << gen.eta() << endl;
+    theHistograms.fill("AllGenParticle_id",  "ids all particles",     4, 10.5,  14.5, abs(gen.id()));
+    theHistograms.fill("AllGenParticle_pt",  "p_{t} all particles", 600,  0  , 600  , gen.pt());
+    theHistograms.fill("AllGenParticle_Y",   "Y all particles",     100,-10  ,  10  , gen.rapidity());
+    theHistograms.fill("AllGenParticle_eta", "#eta all particles",  100,-10  ,  10  , gen.eta());
+    
+    if(abs(gen.id()) == 11)      electron.push_back(gen);
+    else if(abs(gen.id()) == 13) muon.push_back(gen);
+    else if(abs(gen.id()) == 12 || abs(gen.id()) == 14)  neutrino.push_back(gen);
+  }
+  
+
+  // ~~~~~~ WZ Analysis ~~~~~~
+  //  /*
+  if(electron.size()+muon.size()!=3)  {
+    cout << Red("\nThere are not enough or too many final leptons in this event.") << endl;
+    return;
+  }
+
+  if(neutrino.size() != 1){
+    cout << Red("\nThere are not enough or too many final neutrinos in this event.") << endl;
+    return;
+  }
+  
+  if(electron.size() == 3){
+    if(electron[0].charge() == electron[1].charge() && electron[1].charge() == electron[2].charge() && electron[0].charge() > 0){
+      cout << Red("\nThere are three positrons.") << endl;
+      threeelesplus++;
+      return;
+    }
+    else {if(electron[0].charge() == electron[1].charge() && electron[1].charge() == electron[2].charge() && electron[0].charge() < 0){
+	cout << Red("\nThere are three electrons.") << endl;
+	threeelesminus++;
+	return;
+      }
+    }
+  }
+
+  if(muon.size() == 3){
+    if(muon[0].charge() == muon[1].charge() && muon[1].charge() == muon[2].charge() && muon[0].charge() > 0){
+      cout << Red("\nThere are three antimuons.") << endl;
+      threemuonsplus++;
+      return;
+    }
+    else {if(muon[0].charge() == muon[1].charge() && muon[1].charge() == muon[2].charge() && muon[0].charge() < 0){
+	cout << Red("\nThere are three muons.") << endl;
+	threemuonsminus++;
+	return;
+      }
+    }
+  }
+  
+  nunumber++;
+  
+  // ------ filters on leptons ------
+  // first filter on pt and eta
+  foreach(const Particle ele, electron){
+    if(ele.pt() < 7 || abs(ele.eta()) > 2.5){
+      cout << Violet("\nElectrons: pt less than 7 GeV or eta's absolute value greater than 2.5") << endl;
+      return;
+    }
+    lepton.push_back(ele);
+  }
+  
+  foreach(const Particle mu, muon){
+    if(mu.pt() < 5 || abs(mu.eta()) > 2.4){
+      cout << Violet("\nMuons: pt less than 5 GeV or eta's absolute value greater than 2.4") << endl;
+      return;
+    }
+    lepton.push_back(mu);
+  }
+  
+  stable_sort(electron.begin(), electron.end(), PtComparator());
+  stable_sort(lepton.begin(), lepton.end(), PtComparator());
+  stable_sort(muon.begin(), muon.end(), PtComparator());
+
+  // second filter on pt and eta
+  // /*
+  if(lepton[0].pt() < 20){
+    cout << Violet("\nFirst lepton pt less than 20 GeV") << endl;
+    return;
+  }
+  if(abs(lepton[1].id()) == 11 && lepton[1].pt() < 12){
+    cout << Violet("\nSecond lepton is an electron and has pt less than 12 GeV") << endl;
+    return;
+  }
+  if(abs(lepton[1].id()) == 13 && lepton[1].pt() < 10){
+    cout << Violet("\nSecond lepton is a muon and has pt less than 10 GeV") << endl;
+    return;
+  }
+  // */
+  
+  totalevent++;
+  
+  // Z and W must be on shell
+  TLorentzVector Ptot = neutrino[0].p4();
+  foreach(const Particle lep, lepton)
+    Ptot += lep.p4();
+
+  double masslllnu = Ptot.M();
+  double trmasslllnu = Ptot.Mt();
+
+  theHistograms.fill("AllGenlllnu_mass", "m 3 leptons and #nu", 500, 0, 1500, masslllnu); //what happens between 90 and 160 GeV?
+  theHistograms.fill("AllGenlllnu_trmass", "m_{T} 3 leptons and #nu", 500, 0, 1500, trmasslllnu);
+
+  if(masslllnu < 165){
+    cout << Yellow("\nTotal mass of the products insufficient for the WZ analysis.") << endl;
+    return;
+  }
+  
+  foreach(const Particle &gen, *genParticles){
+    if((abs(gen.id()) != 11 && abs(gen.id()) != 13 && abs(gen.id()) != 12 && abs(gen.id()) != 14) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
+    cout << "id: " << gen.id() << " pt: " << setw(5) << gen.pt() << "\t eta: " << gen.eta() << endl;
+  }
+  
+  foreach(const Particle lep, lepton){
+    theHistograms.fill("GenL_charge", "leptons charge", 3, -1.5, 1.5, lep.charge());
+  }
+  
+    
+  // ------ Z & W ------
+  WZevent++;
+  
+  Vtype Weh;
+  Vtype Zet;
+  vector<Vtype> possibleZ;
+  vector<Zltype> Zls;  
+
+  // Construction of the two possible Zs
+  
+  if(electron.size()==2 && muon.size()==1 && electron[0].charge() != electron[1].charge()){
+    // return;
+    // /*
+    Zet = Vtype(electron[0], electron[1], 23);
+    Zls.push_back(Zltype(Zet, muon[0]));
+    Weh = Vtype(Zls[0].second, neutrino[0], copysign(24, Zls[0].second.charge()) );
+    // */
+  }
+  
+  if(electron.size()==1 && muon.size()==2 && muon[0].charge() != muon[1].charge()){
+    // return;
+    // /*
+    Zet = Vtype(muon[0], muon[1], 23);
+    Zls.push_back(Zltype(Zet, electron[0]));
+    Weh = Vtype(Zls[0].second, neutrino[0], copysign(24, Zls[0].second.charge()) );
+    // */
+  }
+  
+  if(electron.size()==3){
+    //return;
+    // /*
+    for(int i = 0; i < (int)electron.size() -1; i++){
+      for(int j = i + 1; j < (int)electron.size(); j++){
+	for(int k = 0; k < (int)electron.size(); k++){
+	  if(k != i && k != j){
+	    if(electron[i].charge() != electron[j].charge()){
+	      possibleZ.push_back(Vtype(electron[i], electron[j], 23));
+	      Zls.push_back(Zltype (possibleZ.back(), electron[k]));
+	    }
+	  }
+	}
+      }
+    }
+    // */
+    
+    // Z is made up of the couple which gives a better Zmass 
+    if(Zls.size() < 1){
+      cout << Red("No Z formed.") << endl;
+      threeelesplus++;
+      return;
+    }
+    
+    if(Zls.size() > 1){
+      stable_sort(Zls.begin(), Zls.end(), ZlMassComparator(ZMASS));
+    }
+
+    Zet = Zls[0].first;
+
+    // W is made up of the remaining lepton and the neutrino
+    Weh = Vtype(Zls[0].second, neutrino[0], copysign(24, Zls[0].second.charge()));
+    // */
+    /*
+      bool isSortOk = abs(possibleZ[0].mass() - ZMASS) < abs(possibleZ[1].mass() - ZMASS);
+      theHistograms.fill("SortOK", "Is Sort OK", 2, -0.5, 1.5, isSortOk);
+    */
+  }
+  
+  else if(muon.size()==3){
+    //return;
+    // /*
+    for(int i = 0; i < (int)muon.size() -1; i++){
+      for(int j = i + 1; j < (int)muon.size(); j++){
+	for(int k = 0; k < (int)muon.size(); k++){
+	  if(k != i && k != j){
+	    if(muon[i].charge() != muon[j].charge()){
+	      possibleZ.push_back(Vtype(muon[i], muon[j], 23));
+	      Zls.push_back(Zltype (possibleZ.back(), muon[k]));
+	    }
+	  }
+	}
+      }
+    }
+    // */
+
+    if(Zls.size() < 1){
+      cout << Red("No Z formed.") << endl;
+      threemuonsplus++;
+      return;
+    }
+    
+    if(Zls.size() > 1){
+      stable_sort(Zls.begin(), Zls.end(), ZlMassComparator(ZMASS));
+    }
+
+    Zet = Zls[0].first;
+    Weh = Vtype(Zls[0].second, neutrino[0], copysign(24, Zls[0].second.charge()));
+    // */
+    /*    
+      bool isSortOk = abs(possibleZ[0].mass() - ZMASS) < abs(possibleZ[1].mass() - ZMASS);
+      theHistograms.fill("SortOK", "Is Sort OK", 2, -0.5, 1.5, isSortOk);
+    */
+  }
+
+  cout << "\n~~~~~~~~~~~~~~~~~ Gen ~~~~~~~~~~~~~~~~~" << endl;
+  cout << "---------------- Z + l ----------------\n" << endl;
+  cout << "\nZl candidates are: " << Zls.size() << endl;
+  theHistograms.fill("GenZL_size", "Zl's size", 4, -0.5, 3.5, Zls.size());
+  
+  foreach(const Zltype zl, Zls){
+    cout << "   Z " << zl.first << "\n   l " << zl.second << endl << endl;
+  }
+  
+  cout << "Z is: " << Zet << endl;
+  cout << "W is: " << Weh << "\n  her lepton daughter is: " << Weh.daughter(0) << endl;
+
+  //neutrino histograms
+  theHistograms.fill("GenN_charge", "#nu's charge",  5, -2.5,   2.5, neutrino[0].charge()); //just to be sure...
+  theHistograms.fill("GenN_pt",     "#nu's p_{t}", 350,  0,   700,   neutrino[0].pt());
+  theHistograms.fill("GenN_Y",      "#nu's Y",      90, -6.5,   6.5, neutrino[0].rapidity());
+  theHistograms.fill("GenN_eta",    "#nu's #eta",   90, -6.5,   6.5, neutrino[0].eta());
+  
+  //W histograms
+  theHistograms.fill("GenW_charge", "W's charge",   5,-2.5, 2.5, Weh.charge());
+  theHistograms.fill("GenW_mass",   "W's mass",   400,   0, 400, Weh.mass());
+  theHistograms.fill("GenW_pt"  ,   "W's p_{t}",  325,   0, 650, Weh.pt());
+  theHistograms.fill("GenW_Y",      "W's Y",       50,  -5,   5, Weh.rapidity());
+  theHistograms.fill("GenW_eta",    "W's #eta",    50,  -9,   9, Weh.eta());
+  
+  //Z histograms
+  theHistograms.fill("GenZ_charge", "Z's charge",  5,-2.5, 2.5, Zet.charge()); //just to be sure...
+  theHistograms.fill("GenZ_mass",   "Z's mass",  400,   0, 400, Zet.mass());
+  theHistograms.fill("GenZ_pt",     "Z's p_{t}", 325,   0, 650, Zet.pt());
+  theHistograms.fill("GenZ_Y",      "Z's Y",      45,  -3,   3, Zet.rapidity());
+  theHistograms.fill("GenZ_eta",    "Z's #eta",  100,  -7,   7, Zet.eta());
+
+  //W&Z histograms
+  theHistograms.fill("AllGenWZ_mass", "m 3 leptons and #nu", 450, 160, 1500, masslllnu);
+  /*
+  bool areZWOnShell = Zet.mass() >= 86 && Zet.mass() <= 96 && Weh.mass() >= 75 && Weh.mass() <= 85;
+  theHistograms.fill("GenZW_OnShell", "Are W and Z on shell?", 2, -0.5, 1.5, areZWOnShell);
+  */
+  
+  
+  // ------- Jets -------
+  cout << "\n---------------- Jets -----------------\n" << endl;
+  
+  vector<Particle> jets;
+
+  //persistent jets, pT > 20 GeV
+  /*
+  foreach(const Particle jet, *pgenJets){
+    theHistograms.fill("GenpJets_pt",      "p_{t} all jets", 300,   0  , 600  , jet.pt());
+    theHistograms.fill("GenpJets_Y",       "Y all jets",      80,  -6  ,   6  , jet.rapidity());
+    theHistograms.fill("GenpJets_eta",     "#eta all jets",   80,  -6  ,   6  , jet.eta());
+    theHistograms.fill("GenpJets_charge",  "charge all jets",  5,  -2.5,   2.5, jet.charge());
+    theHistograms.fill("GenpJets_mass",    "mass all jets",  120,   0  , 120  , jet.mass());
+  }
+  */
+  theHistograms.fill("GenJetsp_number", "number of jets",  13,  -0.5,  12.5, pgenJets->size());
+
+  //jets, pT > 30 GeV and |eta| < 4.7
+  foreach(const Particle jet, *genJets){
+    jets.push_back(jet);
+
+    cout << "ID: " << jet.id() << " pt: " << jet.pt() << "\t eta: " << jet.eta() << endl;
+
+    theHistograms.fill("GenJets_pt",      "p_{t} all jets", 350,   0  , 400  , jet.pt());
+    theHistograms.fill("GenJets_Y",       "Y all jets",      70,  -5  ,   5  , jet.rapidity());
+    theHistograms.fill("GenJets_eta",     "#eta all jets",   70,  -5  ,   5  , jet.eta());    
+    theHistograms.fill("GenJets_charge",  "charge all jets",  5,  -2.5,   2.5, jet.charge());
+    theHistograms.fill("GenJets_mass",    "mass all jets",  120,   0  , 120  , jet.mass());
+  }
+  theHistograms.fill("GenJets_number", "number of jets",  13,  -0.5,  12.5, jets.size());
+
+
+  // ------- Reco -------
+
+  Vtype recoW;
+  Vtype recoZ;
+  ZLCompositeCandidates recoZls;
+  
+  //cout << "\n~~~~~~~~~~~~~~~~~ Reco ~~~~~~~~~~~~~~~~" << endl;
+  //cout << "---------------- Z + l ----------------\n" << endl;
+  foreach(const ZLCompositeCandidate Z, *ZLCand){
+    recoZls.push_back(Z);
+    
+    theHistograms.fill("recoZl_Z_charge", "Z's charge",   5, -2.5,   2.5, Z.first.charge()); //just to be sure...
+    theHistograms.fill("recoZl_Z_mass",   "Z's mass",   400,  0  , 400  , Z.first.mass());
+    theHistograms.fill("recoZl_Z_pt",     "Z's p_{t}",  325,  0  , 650  , Z.first.pt());
+    theHistograms.fill("recoZl_Z_Y",      "Z's Y",       45, -3  ,   3  , Z.first.rapidity());
+    theHistograms.fill("recoZl_Z_eta",    "Z's #eta",   100, -7  ,   7  , Z.first.eta());
+    
+    theHistograms.fill("recoZl_l_charge", "l's charge",  5, -2.5,   2.5, Z.second.charge());
+    theHistograms.fill("recoZl_l_id",     "l's id",      5,  9.5,  14.5, abs(Z.second.id()));
+    theHistograms.fill("recoZl_l_pt",     "l's p_{t}", 325,  0  , 650  , Z.second.pt());
+    theHistograms.fill("recoZl_l_Y",      "l's Y",      45, -3  ,   3  , Z.second.rapidity());
+    theHistograms.fill("recoZl_l_eta",    "l's #eta",   45, -3  ,   3  , Z.second.eta());    
+  }
+
+  theHistograms.fill("recoZl_size", "Reco Zl's size", 9, -0.5, 8.5, recoZls.size());
+  
+  //cout << "----------------- MET -----------------\n" << endl;
+  theHistograms.fill("recoMET_charge", "MET's charge",  5,-2.5, 2.5, met->charge());
+  theHistograms.fill("recoMET_pt",     "MET's p_{t}", 325,   0, 650, met->pt());
+  theHistograms.fill("recoMET_Y",      "MET's Y",      50,  -4,   4, met->rapidity());
+  theHistograms.fill("recoMET_eta",    "MET's #eta",  100,  -7,   7, met->eta());
+    
+}
+  
+void WZAnalyzer::end(TFile &){
+
+  cout << "\n--------------------------------------------------------------------------" << endl;
+  
+  cout << "\nNumber of events of the sample:                         " << setw(7) << zahl << endl;
+  cout << "Number of events ending with 3 leptons and 1 neutrino:  " << setw(7) << nunumber << endl;
+  cout << "Number of events useful for Wlllnu and WZ analysis:     " << setw(7) << totalevent << endl;
+  cout << "Number of events useful for WZ analysis:                " << setw(7) << WZevent << endl;
+
+  /*
+  cout << "\nNumber of                 " << setw(7) << threeelesplus << endl;
+  cout << "Number of                 " << setw(7) << threeelesminus << endl;
+  cout << "Number of                 " << setw(7) << threemuonsplus << endl;
+  cout << "Number of                 " << setw(7) << threemuonsminus << endl;
+  */
+  
+  // execution time
+  endtime = ((float)clock())/CLOCKS_PER_SEC;
+  WZAnalyzer::printTime(begintime, endtime);
+  cout << "\n--------------------------------------------------------------------------" << endl;
+}

@@ -1,12 +1,12 @@
-#ifndef VVXAnalyzer_h
-#define VVXAnalyzer_h
+#ifndef WlllnuAnalyzer_h
+#define WlllnuAnalyzer_h
 
-/** \class VVXAnalyzer
- *  Concrete class for VVX analysis
+/** \class WlllnuAnalyzer
+ *  Concrete class for Wlllnu analysis
  *
  *  $Date: 2013/03/15 13:37:31 $
  *  $Revision: 1.4 $
- *  \author R. Bellan - UNITO <riccardo.bellan@cern.ch>
+ *  \author A. Corrado - UNITO <arianna.corrado@cern.ch>
  */
 
 
@@ -14,53 +14,61 @@
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
+#include "VVXAnalysis/DataFormats/interface/Boson.h"
+#include "VVXAnalysis/DataFormats/interface/Particle.h"
+#include "VVXAnalysis/Commons/interface/AriEle.h"
 
-class VVXAnalyzer: public EventAnalyzer, RegistrableAnalysis<VVXAnalyzer>{
+class WlllnuAnalyzer: public EventAnalyzer, RegistrableAnalysis<WlllnuAnalyzer>{
 
 public:
 
   //, const std::string& filename, const double& lumi = 1., const double& externalXSection = -1., bool doBasicPlots = false
-
- VVXAnalyzer(const AnalysisConfiguration& configuration)
-   : EventAnalyzer(*(new Selector<VVXAnalyzer>(*this)), 
+  
+ WlllnuAnalyzer(const AnalysisConfiguration& configuration)
+   : EventAnalyzer(*(new Selector<WlllnuAnalyzer>(*this)), 
 		   configuration){
     //theHistograms.profile(genCategory);
   }
 
-  virtual ~VVXAnalyzer(){}
+  virtual ~WlllnuAnalyzer(){}
 
+  virtual void begin();
+  virtual void end(TFile &);
+  
   virtual void analyze();
   
   virtual Int_t cut();
-
-
+  typedef std::pair<bool,int> boolInt;
+  
+ 
  private:
-  friend class Selector<VVXAnalyzer>;
+  Int_t nevents;
+  Int_t mass80Counter;
+  
+  friend class Selector<WlllnuAnalyzer>;
   template< class PAR >
     bool ZBosonDefinition(phys::Boson<PAR> cand) const{
     bool checkCharge = cand.daughter(0).charge() + cand.daughter(1).charge() == 0;
     return checkCharge && fabs(cand.p4().M() - phys::ZMASS) < 30;
   }
 
-
+  
   template< class PAR >
     bool WBosonDefinition(phys::Boson<PAR> cand) {
-
+    
     bool gooddaughters = false;
     if(fabs(cand.daughter(0).eta()) < 2.5 && cand.daughter(0).pt() > 30 &&
        cand.daughter(0).passPUID() && cand.daughter(0).passLooseJetID() &&
        fabs(cand.daughter(1).eta()) < 2.5 && cand.daughter(1).pt() > 30 &&
        cand.daughter(1).passPUID() && cand.daughter(1).passLooseJetID())
       gooddaughters = true;
-
+    
     if(fabs(cand.p4().M() - phys::WMASS) < 150 && gooddaughters)
       return true;
     return false;
-
+    
   }
-
-
-
+  
 };
 #endif
 
