@@ -42,8 +42,8 @@ class LeptonScaleFactors{
   TH2F *hEffMuLoose_;
   TH2F *hEffElLoose_;
 
-  TH2F *hFRMu_;
-  TH2F *hFREl_;
+  TH2D *hFRMu_;
+  TH2D *hFREl_;
 
   std::string year;
 };
