@@ -504,7 +504,7 @@ std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::
     }
     
   // cout<<" 00 01 "<<(Z0.daughter(0).p4()+ Z0.daughter(1).p4()).M()<<" 10 11 "<<(Z1.daughter(0).p4()+ Z1.daughter(1).p4()).M()<<" 00 10 " <<
-  //   (Z0.daughter(0).p4()+ Z1.daughter(0).p4()).M()<<" 01 10 "<<(Z0.daughter(1).p4()+ Z1.daughter(0).p4()).M()
+  //    (Z0.daughter(0).p4()+ Z1.daughter(0).p4()).M()<<" 01 10 "<<(Z0.daughter(1).p4()+ Z1.daughter(0).p4()).M()
   //     <<" 01 11 "<<(Z0.daughter(1).p4()+ Z1.daughter(1).p4()).M()  <<" 01 11 "<<(Z0.daughter(1).p4()+ Z1.daughter(1).p4()).M()<<endl; //comment
 
 
@@ -513,7 +513,7 @@ std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::
   if(Z0.mass() > 120. || Z0.mass() < 40. || Z1.mass() > 120. || Z1.mass() < 12.) //Higgs range mass. ZZ range is selected with a specific bit.
       inZMassWindow = false;
 
-  //  cout<<"passllLowMass "<<passllLowMass<<" inZMassWindow "<<inZMassWindow<<endl; comment
+  //  cout<<"passllLowMass "<<passllLowMass<<" inZMassWindow "<<inZMassWindow<<endl; //comment
 
   if(!passllLowMass || !inZMassWindow ) return std::make_tuple(false, Z0, Z1);
   else return std::make_tuple(true, Z0, Z1);
@@ -715,7 +715,8 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   //std::cout<<"new ev "<<std::endl<<std::endl; #HOT
   foreach(const phys::Particle &p, theGenl){    
 
-    if(abs(p.id()) != 11 && abs(p.id()) != 13 && (p.genStatusFlags().test(phys::GenStatusBit::isPrompt)) && (p.genStatusFlags().test(phys::GenStatusBit::fromHardProcess))) continue;
+
+    if(abs(p.id()) != 11 && abs(p.id()) != 13 && (p.genStatusFlags().test(phys::GenStatusBit::isPrompt))) continue;
 
     if (p.id() > 0) theGenlm.push_back(p); // negative leptons                                          
     else            theGenlp.push_back(p); // positive leptons 
