@@ -52,12 +52,13 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   : PUWeighter_      (2017,2017)
   , filterController_(config,consumesCollector())
   , mcHistoryTools_  (0)
-  , leptonScaleFactors_(edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_mu_Moriond2017.root").fullPath(),
+  , leptonScaleFactors_(
+			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_mu_Moriond2017.root").fullPath(),
 			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_non_gap_ele_Moriond2017_v2.root").fullPath(),
 			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_gap_ele_Moriond2017_v2.root").fullPath(),
-		        edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_RECO_ele_Moriond2017_v1.root").fullPath(),		     
-  			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates.root").fullPath(),
-  			edm::FileInPath("VVXAnalysis/Commons/data/fakeRates.root").fullPath())
+		        edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_RECO_ele_Moriond2017_v1.root").fullPath(),     
+			edm::FileInPath("VVXAnalysis/Commons/data/fakeRate_20feb2017.root").fullPath(),
+  			edm::FileInPath("VVXAnalysis/Commons/data/fakeRate_20feb2017.root").fullPath())
 
   , signalDefinition_(config.getParameter<int>("signalDefinition"   ))
   , passTrigger_(false)
@@ -147,8 +148,8 @@ void TreePlanter::beginJob(){
 
   theTree->Branch("mcprocweight"     , &mcprocweight_);
   theTree->Branch("puweight"         , &puweight_);
-  theTree->Branch("puweightUp"         , &puweightUp_);
-  theTree->Branch("puweightDn"         , &puweightDn_);
+  theTree->Branch("puweightUp"       , &puweightUp_);
+  theTree->Branch("puweightDn"       , &puweightDn_);
   theTree->Branch("genCategory" , &genCategory_);
 
   theTree->Branch("met"   , &met_);
@@ -421,6 +422,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   // asked to the specific final state
 
   passTrigger_ = filterController_.passTrigger(NONE, event, triggerWord_);
+
   if (applyTrigger_ && !passTrigger_) return false;
 
   // Check Skim requests
@@ -478,17 +480,15 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
 
     event.getByToken(theGenVBCollectionToken,  genParticles);
     
-    //    std::cout<"size genvb "<<genParticles->size()<<satd::endl;
+
     for(edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p)
       { 
-	//	cout<<"genvb id "<<p->pdgId()<<std::endl;
 	if(fabs(p->pdgId()) == 24 || p->pdgId() == 23)
 	  genVBParticles_.push_back(phys::Boson<phys::Particle>(phys::Particle(p->daughter(0)->p4(), phys::Particle::computeCharge(p->daughter(0)->pdgId()), p->daughter(0)->pdgId()),
 							      phys::Particle(p->daughter(1)->p4(), phys::Particle::computeCharge(p->daughter(1)->pdgId()), p->daughter(1)->pdgId()),
 
    							      p->pdgId()));
    }
-    //    std::cout<<"genVBpart "<<genVBParticles_.size()<<std::endl;   
     // Get the gen jet collection
     edm::Handle<edm::View<reco::Candidate> > genJets;
     event.getByToken(theGenJetCollectionToken,  genJets);
@@ -586,16 +586,11 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   ZL_ = fillZLCandidates(ZL);
 
 
-
-  
-
   bool oneInSR = false;
 
-  // FIXME
   if(ZZ->size() > 1) {
 
     //  cout<<"ZZs.size() "<<ZZs.size()<<" ZZs.front().passTrigger() "<<ZZs.front().passTrigger()<<" applySkim_ "<<applySkim_<< " SR? " << test_bit(ZZs.front().regionWord_,Channel::ZZ) << " CR2P2F? " << test_bit(ZZs.front().regionWord_,CRZLLos_2P2F) << " CR3P1F? " << test_bit(ZZs.front().regionWord_,CRZLLos_3P1F) <<" mass "<< ZZs.front().mass() <<endl;;
-
 
     cout << "----------------------------------------------------" << endl;
     cout << "More than one ZZ candidate!! " << ZZ->size() << endl;  
@@ -613,25 +608,16 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
       cout << "....................." << endl;
       
       if(zz.passTrigger() && (test_bit(zz.regionWord_,Channel::ZZ) || test_bit(zz.regionWord_,Channel::ZZOnShell))){
-	
-	//if(!oneInSR)
-	//	else if((abs(zz.first().mass() - 91.19) < abs(ZZ_.first().mass() - 91.19)) || ( (zz.first().mass() == ZZ_.first().mass() ) && (zz.pt() > ZZ_.pt()) ) )  ZZ_ = zz;      	
 	ZZ_ = zz;   
 	oneInSR = true;
-
       }
-      else if(!oneInSR){
-	//	cout<<" mass s "<<ZZ_.first().mass()<<" (abs(zz.first().mass() - 91.19) < abs(ZZ_.first().mass() - 91.19))  "<<(abs(zz.first().mass() - 91.19) < abs(ZZ_.first().mass() - 91.19))<<" | ( (zz.first().mass() == ZZ_.first().mass() ) && zz.second().pt() > ZZ_.second().pt() )  "<< ( (zz.first().mass() == ZZ_.first().mass() ) && zz.second().pt() > ZZ_.second().pt() ) <<endl;
+      else if(!oneInSR && zz.passTrigger() ){
 	if((abs(zz.first().mass() - 91.19) < abs(ZZ_.first().mass() - 91.19)) || ( (zz.first().mass() == ZZ_.first().mass() ) && (zz.pt() > ZZ_.pt()) ) ){
-	  //  cout<<" change Z CR"<<endl;
-	    ZZ_ = zz;      	
+	  ZZ_ = zz;
 	}
       }
     }
-
-
-
-
+    
     cout << "----------------------------------------------------" << endl;
   }
 
