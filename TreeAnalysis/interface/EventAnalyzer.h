@@ -138,6 +138,7 @@ public:
   TTree *theTree;
   LeptonScaleFactors leptonScaleFactors_;
   int fCurrent; 
+  int  maxNumEvents_;
   bool doBasicPlots_;
   bool doSF;
 
