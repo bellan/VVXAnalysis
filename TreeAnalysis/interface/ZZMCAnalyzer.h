@@ -63,6 +63,7 @@ public:
 
   friend class Selector<ZZMCAnalyzer>;
 
+  std::vector<double> Xbins_single;
   std::vector<double> Xbins;
   std::vector<double> Xbins_nJets;
   std::vector<double> Xbins_mjj;  

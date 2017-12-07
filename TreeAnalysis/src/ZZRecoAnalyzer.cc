@@ -59,6 +59,9 @@ void ZZRecoAnalyzer::analyze(){
 
   Float_t w_kf = 1.;
 
+
+  ScalVarVal = {LHEweight_QCDscale_muR1_muF1,LHEweight_QCDscale_muR1_muF2,LHEweight_QCDscale_muR1_muF0p5,LHEweight_QCDscale_muR2_muF1,LHEweight_QCDscale_muR2_muF2,LHEweight_QCDscale_muR0p5_muF1,LHEweight_QCDscale_muR0p5_muF0p5};
+
   //  if((theMCInfo.fileName()=="ggZZ2e2mu") || (theMCInfo.fileName()=="ggZZ4e") || (theMCInfo.fileName()=="ggZZ4mu"))   w_kf = kFactor_ggZZ ; 
   //  else if((theMCInfo.fileName()=="ZZTo4l") || (theMCInfo.fileName()=="ZZTo4lamcatnlo")) w_kf = kFactor_qqZZM * kFactor_EWKqqZZ ; 
 
@@ -71,6 +74,7 @@ void ZZRecoAnalyzer::analyze(){
   Float_t scaleFacMuErrSq  = ZZ->muEffSFUnc(); 
   Float_t scaleFacEleErrSq = ZZ->eleEffSFUnc(); 
 
+  //  cout<<" new "<<endl;
   //Data 
   if(!theMCInfo.isMC()){    
      
@@ -118,13 +122,18 @@ void ZZRecoAnalyzer::analyze(){
       // 	    newjet->
       // cout<<newjet->pt()<<endl;
 
+
+      // TLorentzVector newvec;
+      // newvec.SetPtEtaPhiM(jet.ptJerUp(),jet.eta(),jet.phi(),jet.mass());
+      // jet.setP4(newvec);
+
+
       // jet
       if(jet.ptJerUp() > 30.) 	UpJER_jets->push_back(jet); 
       if(jet.ptJerDn() > 30.)	DownJER_jets->push_back(jet);
       
       if(jet.ptJerDn()  > 30. && fabs(jet.eta())<2.4)   UpJER_centraljets->push_back(jet); 
       if(jet.ptJerDn()  > 30. && fabs(jet.eta())<2.4) DownJER_centraljets->push_back(jet);
-
      
 
       //JES correction: Up and down velues used to assess systematic uncertainty on jet energy resolution
@@ -133,13 +142,17 @@ void ZZRecoAnalyzer::analyze(){
            
       newJetPtJES_up   = jet.pt()*(1+jet.jecUncertainty());
       newJetPtJES_down = jet.pt()*(1-jet.jecUncertainty());
-      
+
+      //      cout<<"jet pt "<<jet.pt()<<" newJetPtJES_up "<<newJetPtJES_up<<" newJetPtJES_down "<<newJetPtJES_down<<endl;      
+
       if(newJetPtJES_up > 30)  	  UpJES_jets->push_back(jet);
       if(newJetPtJES_down > 30)   DownJES_jets->push_back(jet);
+
       if(newJetPtJES_up > 30 && fabs(jet.eta())<2.4 ) UpJES_centraljets->push_back(jet); 
       if(newJetPtJES_down > 30 &&  fabs(jet.eta())<2.4) DownJES_centraljets->push_back(jet);
       }
 
+    //    cout<<" njets "<<pjets->size()<<" UpJES_jets "<<UpJES_jets->size()<<" DownJES_jets "<<DownJES_jets->size()<<endl;
 
     FillHistosBase(decay,theWeight,sample);
     FillHistosJets(decay,theWeight,jets,sample);
@@ -212,16 +225,15 @@ void ZZRecoAnalyzer::analyze(){
     FillHistosJets(decay,theWeight*LHEweight_AsMZ_Dn,centralJets,"Central_AsDn_01");
     FillHistosJets(decay,theWeight*LHEweight_AsMZ_Up,centralJets,"Central_AsUp_01");
 
-
     //Is Signal
+
    if((region_ == phys::SR && topology.test(2)) || (region_ == phys::SR_HZZ && topology.test(0) ) ){       
 
      m4L_gen = sqrt((genVBParticles->at(0).p4()+genVBParticles->at(1).p4())*(genVBParticles->at(0).p4()+genVBParticles->at(1).p4()));
      //     if (m4L_gen>=800) m4L_gen = 799;
      
-     drzz_gen =physmath::deltaR(genVBParticles->at(0),genVBParticles->at(1));
-     
-     ptzz_gen =  (genVBParticles->at(0).p4()+genVBParticles->at(1).p4()).Pt();
+     drzz_gen = physmath::deltaR(genVBParticles->at(0),genVBParticles->at(1));
+     ptzz_gen = (genVBParticles->at(0).p4()+genVBParticles->at(1).p4()).Pt();
      //  if (ptzz_gen>300) ptzz_gen=299;
      dphizz_gen = fabs(physmath::deltaPhi(genVBParticles->at(0).phi(),genVBParticles->at(1).phi())); 
      
@@ -428,12 +440,24 @@ void ZZRecoAnalyzer::analyze(){
     }
   } //end is MC
   
-  
+   
   FillHistosBase(decay,theWeight,"01");
   FillHistosJets(decay,theWeight,centralJets,"Central_01");
   FillHistosJets(decay,theWeight,jets,"01");
 
   if(region_ == phys::CR3P1F || region_ == phys::CR2P2F) {
+    
+    Float_t RedUp = 1.4; //(ZZ->fakeRateSFUp()/ZZ->fakeRateSF());
+    Float_t RedDn = 0.6; //(ZZ->fakeRateSFDn()/ZZ->fakeRateSF());
+    
+    // cout<<"RedUp "<<RedUp<<" "<<(ZZCopy->fakeRateSFUp()/ZZCopy->fakeRateSF())<<endl;
+    // cout<<"copy fakerate "<<ZZCopy->fakeRateSF()<< " "<<ZZCopy->fakeRateSFUp()<<endl;
+    FillHistosBase(decay,theWeight*RedUp,"RedUp_01");
+    FillHistosJets(decay,theWeight*RedUp,jets,"RedUp_01");
+    FillHistosJets(decay,theWeight*RedUp,centralJets,"Central_RedUp_01");   
+    FillHistosBase(decay,theWeight*RedDn,"RedDn_01");
+    FillHistosJets(decay,theWeight*RedDn,jets,"RedDn_01");
+    FillHistosJets(decay,theWeight*RedDn,centralJets,"Central_RedDn_01");   
     FillHistosBase(decay,ZZ->fakeRateSFVar(),"FRVar");
     FillHistosJets(decay,ZZ->fakeRateSFVar(),jets,"FRVar");
     FillHistosJets(decay,ZZ->fakeRateSFVar(),centralJets,"Central_FRVar");
@@ -448,6 +472,16 @@ void ZZRecoAnalyzer::analyze(){
   theHistograms.fill("ZZTo"+decay+"_DphiZZ_"+type, Xbins_dphizz, dphizz,Wh);
   theHistograms.fill("ZZTo"+decay+"_dRZZ_"+type,"", Xbins_drzz, drzz,Wh);
   
+  if(type=="01_fr" || type=="01"){ 
+    for(unsigned int i =0; i<ScalVar.size(); i++){    
+      // cout<<ScalVar.at(i)<<" "<<ScalVarVal.at(i)<<endl;
+      theHistograms.fill(std::string("ZZTo"+decay+"_Mass"+type+ScalVar.at(i)), std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L,Wh*ScalVarVal.at(i));
+      theHistograms.fill(std::string("ZZTo"+decay+"_PtZZ"+type+ScalVar.at(i)), std::string("  PtZZ #rightarrow ")+decay , Xbins_ptzz, ptzz,Wh*ScalVarVal.at(i));
+      theHistograms.fill(std::string("ZZTo"+decay+"_DphiZZ"+type+ScalVar.at(i)), std::string(" #Delta #Phi ZZ #rightarrow")+decay , Xbins_dphizz, dphizz,Wh*ScalVarVal.at(i));
+      theHistograms.fill(std::string("ZZTo"+decay+"_dRZZ"+type+ScalVar.at(i)), std::string("  #Delta R  ZZ #rightarrow")+decay , Xbins_dphizz, drzz,Wh*ScalVarVal.at(i));      
+    }
+  }
+
 }
 
 void ZZRecoAnalyzer::FillHistosJets(std::string decay,float Wh,std::vector<phys::Jet> *jetsVec,std::string type){
@@ -456,15 +490,20 @@ void ZZRecoAnalyzer::FillHistosJets(std::string decay,float Wh,std::vector<phys:
   
   if (njets>3) njets=3;
   theHistograms.fill("ZZTo"+decay+"_nJets_"+type, "", Xbins_nJets,njets, Wh);
+
+  for(int ijet=0; ijet<=njets; ijet++)   theHistograms.fill("ZZTo"+decay+"_nIncJets_"+type, "Number of jets of ZZ_{1}#rightarrow "+decay,Xbins_nJets,njets-ijet,Wh);    
+
+  //      theHistograms.fill(std::string("ZZTo")+decay+"_nJets"+type+ScalVar.at(i), std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,njets,Wh*ScalVarVal.at(i));    
+  //      theHistograms.fill(std::string("ZZTo")+decay+"_nJets_Central"+type+ScalVar.at(i), std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,ncentraljets,Wh*ScalVarVal.at(i));    
   
   if(njets>0){  
   
     stable_sort(jetsVec->begin(), jetsVec->end(), PtComparator());
 
-     if (type.find("JESUp") != std::string::npos)     ptJet1  =  jetsVec->at(0).ptJerUp();
-     else if(type.find("JESDn") != std::string::npos) ptJet1  =  jetsVec->at(0).ptJerDn();
-     else if(type.find("JERUp") != std::string::npos) ptJet1  =  jetsVec->at(0).pt()*(1+jetsVec->at(0).jecUncertainty());
-     else if(type.find("JERDn") != std::string::npos) ptJet1  =  jetsVec->at(0).pt()*(1-jetsVec->at(0).jecUncertainty());
+     if (type.find("JERUp") != std::string::npos)     ptJet1  =  jetsVec->at(0).ptJerUp();
+     else if(type.find("JERDn") != std::string::npos) ptJet1  =  jetsVec->at(0).ptJerDn();
+     else if(type.find("JESUp") != std::string::npos) ptJet1  =  jetsVec->at(0).pt()*(1+jetsVec->at(0).jecUncertainty());
+     else if(type.find("JESDn") != std::string::npos) ptJet1  =  jetsVec->at(0).pt()*(1-jetsVec->at(0).jecUncertainty());
      else{
        ptJet1 = jetsVec->at(0).pt(); 
      }
@@ -482,29 +521,22 @@ void ZZRecoAnalyzer::FillHistosJets(std::string decay,float Wh,std::vector<phys:
    
    if(njets>1){  
      deta = fabs(jetsVec->at(0).eta() - jetsVec->at(1).eta());
-     
-     if (deta>=4.7) deta = 4.6;
+    
      mjj =  (jetsVec->at(0).p4() + jetsVec->at(1).p4()).M();
 
-     if (type.find("JESUp") != std::string::npos)     ptJet2  =  jetsVec->at(1).ptJerUp();
-     else if(type.find("JESDn") != std::string::npos) ptJet2  =  jetsVec->at(1).ptJerDn();
-     else if(type.find("JERUp") != std::string::npos) ptJet2  =  jetsVec->at(1).pt()*(1+jetsVec->at(1).jecUncertainty());
-     else if(type.find("JERDn") != std::string::npos) ptJet2  =  jetsVec->at(1).pt()*(1-jetsVec->at(1).jecUncertainty());
+     if (type.find("JERUp") != std::string::npos)     ptJet2  =  jetsVec->at(1).ptJerUp();
+     else if(type.find("JERDn") != std::string::npos) ptJet2  =  jetsVec->at(1).ptJerDn();
+     else if(type.find("JESUp") != std::string::npos) ptJet2  =  jetsVec->at(1).pt()*(1+jetsVec->at(1).jecUncertainty());
+     else if(type.find("JESDn") != std::string::npos) ptJet2  =  jetsVec->at(1).pt()*(1-jetsVec->at(1).jecUncertainty());
      else{
        ptJet2 = jetsVec->at(1).pt(); 
      }
 
 
-     //if (ptJet2>=300) ptJet2 = 299;
-
      dphi = physmath::deltaPhi(jetsVec->at(0).phi(),jetsVec->at(1).phi());
-     //if (dphi>=6) dphi = 5;
-     
      theHistograms.fill("ZZTo"+decay+"_PtJet2_"+type, "", Xbins_ptJet2, ptJet2, Wh);
-     
      etaJet2 = fabs(jetsVec->at(1).eta());
-     //if (etaJet2>=4.7) etaJet2 = 4.6;
-     
+          
      theHistograms.fill("ZZTo"+decay+"_EtaJet2_"+type, "", Xbins_etaJet2, etaJet2, Wh);
      theHistograms.fill("ZZTo"+decay+"_Mjj_"+type,"",Xbins_mjj,mjj,Wh); 
      theHistograms.fill("ZZTo"+decay+"_Deta_"+type,"",Xbins_deta,deta,Wh); 
@@ -528,13 +560,20 @@ void ZZRecoAnalyzer::FillMatrixHistosBase(std::string decay, float Wh,std::strin
 
  void ZZRecoAnalyzer::FillMatrixHistosJets(std::string decay,float Wh,std::vector<phys::Jet> *jetsVec,std::vector<phys::Particle> *jetsGenVec,std::string type){
 
-
    njets_gen = jetsGenVec->size();    
    njets     = jetsVec->size(); 
    if (njets_gen>3) njets_gen=3;
    if (njets>3)     njets=3;
-
+   
    theHistograms.fill("ResMat_ZZTo"+decay+"_nJets_"+type, "", Xbins_nJets,Xbins_nJets,njets,njets_gen, Wh);      
+   
+   for(int igjet=0; igjet<=njets_gen; igjet++){
+     for(int ijet=0; ijet<=njets; ijet++){
+       if(igjet != ijet) continue;
+       theHistograms.fill("ResMat_ZZTo"+decay+"_nIncJets_"+type, "Number of jets of ZZ_{1}#rightarrow "+decay,Xbins_nJets,Xbins_nJets,njets-ijet,njets_gen-igjet, Wh);      
+     }
+   }
+
    if(njets>0) {
      stable_sort(jetsVec->begin(), jetsVec->end(), PtComparator());
      etaJet1 = fabs(jetsVec->at(0).eta());
@@ -578,11 +617,6 @@ void ZZRecoAnalyzer::FillMatrixHistosBase(std::string decay, float Wh,std::strin
        ptJet2 = jetsVec->at(1).pt(); 
      }
      
-     // if (deta>=4.7)    deta    = 4.6;
-     // if (mjj>=800)     mjj     = 799;
-     // if (ptJet2>=500)  ptJet2  = 499;
-     // if (dphi>=6)      dphi    = 5;
-     // if (etaJet2>=4.7) etaJet2 = 4.6;
    }
 
    if(njets_gen>1){  
@@ -593,10 +627,6 @@ void ZZRecoAnalyzer::FillMatrixHistosBase(std::string decay, float Wh,std::strin
      etaJet2_gen = fabs(genJets->at(1).eta());
      dphi        = physmath::deltaPhi(jetsGenVec->at(0).phi(),jetsGenVec->at(1).phi());     
 
-     // if (ptJet2_gen >=500)  ptJet2_gen  = 499;
-     // if (etaJet2_gen >=4.7) etaJet2_gen = 4.6;
-     // if (deta_gen>=4.7)     deta_gen    = 4.6;
-     // if (mjj_gen>=800)      mjj_gen     = 799;
      
      theHistograms.fill("ResMat_ZZTo"+decay+"_PtJet2_"+type, "", Xbins_ptJet2,Xbins_ptJet2, ptJet2,ptJet2_gen, Wh);     
      theHistograms.fill("ResMat_ZZTo"+decay+"_EtaJet2_"+type, "", Xbins_etaJet2, Xbins_etaJet2, etaJet2, etaJet2_gen, Wh);
@@ -689,6 +719,11 @@ void ZZRecoAnalyzer::begin() {
   etaJet2 =0;
   deta    =0;
   mjj     =0;
+
+
+  ScalVarVal = {};
+  ScalVar = {"_mf1mr1","_mf1mr2","_mf1mr0p5","_mf2mr1","_mf2mr2","_mf0p5mr1","_mf0p5mr0p5"};
+
 }
 
 

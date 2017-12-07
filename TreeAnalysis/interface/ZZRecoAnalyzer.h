@@ -84,6 +84,8 @@ class ZZRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZZRecoAnalyzer>{
   float ptzz_gen;
   int nEvent;
 
+  std::vector<Float_t>  ScalVarVal;
+  std::vector<std::string>  ScalVar;
   TStopwatch *st;
 
 
