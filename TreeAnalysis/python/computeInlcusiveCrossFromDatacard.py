@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+g#! /usr/bin/env python
 
 ##################################
 ## G. Pinna (UNITO) - Jun 2015 ##
@@ -28,6 +28,7 @@ parser.add_option("-A", "--Analysis", dest="Analysis",
                   help="Analysis, default is  ZZ, others are ZZFull and HZZ")
 
 
+
 (options, args) = parser.parse_args()
 
 Set = options.Set
@@ -36,11 +37,12 @@ Analysis  = options.Analysis
 
 list2e2m = {"fs":"2e2m","name":"2e2\mu","mu":1.00276  ,"up":+0.0987631 , "down": -0.0915201 ,"stup":+0.0758923,"stdown":-0.0724288 }  
 
-list4m = {"fs":"4m","name":"4\mu","mu":0.963087  ,"up":+0.0973039 , "down": -0.0910539 ,"stup":+0.0925716,"stdown":-0.0864597 }  
+list4m   = {"fs":"4m","name":"4\mu","mu":0.963087  ,"up":+0.0973039 , "down": -0.0910539 ,"stup":+0.0925716,"stdown":-0.0864597 }  
 
-list4e = {"fs":"4e","name":"4e","mu":1.0214  ,"up":+0.166146 , "down": -0.147676 ,"stup":+0.126615,"stdown":-0.117369 }  
+list4e   = {"fs":"4e","name":"4e","mu":1.0214  ,"up":+0.166146 , "down": -0.147676 ,"stup":+0.126615,"stdown":-0.117369 }  
 
-list4l = {"fs":"4l","name":"4\ell","mu":0.9855   ,"up":+0.0713972  , "down": -0.0683678 ,"stup":+0.0526103,"stdown":-0.0508797 }  
+list4l   = {"fs":"4l","name":"4\ell","mu":0.9855   ,"up":+0.0713972  , "down": -0.0683678 ,"stup":+0.0526103,"stdown":-0.0508797 }  
+
 
 listFin = {"2e2m":list2e2m,"4m":list4m,"4e":list4e,"4l":list4l}
 
@@ -49,7 +51,6 @@ finstate = ("2e2m","4e","4m","4l")
 skipFit  =True
 if not skipFit:
 
-
     for fin in finstate:
         print "combine -M MaxLikelihoodFit --forceRecreateNLL datacard_"+fin+".txt -n " +fin+"\n\n"
         os.system("combine -M MaxLikelihoodFit --forceRecreateNLL datacard_"+fin+".txt -n " +fin)
@@ -57,17 +58,16 @@ if not skipFit:
         os.system("combine -M MaxLikelihoodFit --forceRecreateNLL datacard_"+fin+".txt -S 0 -n " +fin+"_stat")
 
 
-
 for fin in finstate:
 
-    fStat = ROOT.TFile("mlfit"+fin+"_stat.root")
+    fStat = ROOT.TFile("InclusiveFitResults/mlfit"+fin+"_stat.root")
     tree = fStat.Get("tree_fit_sb")
     tree.GetEntry(0)
     listFin[fin]["stup"]    =  fStat.tree_fit_sb.muHiErr
     listFin[fin]["stdown"]  =  fStat.tree_fit_sb.muLoErr
 
 
-    fTot = ROOT.TFile("mlfit"+fin+".root")
+    fTot = ROOT.TFile("InclusiveFitResults/mlfit"+fin+".root")
     tree = fTot.Get("tree_fit_sb")
     tree.GetEntry(0)
     listFin[fin]["mu"]    =  fTot.tree_fit_sb.mu
@@ -82,13 +82,13 @@ for gb in GlobSystList:
 
 print "Signal strength\n\n\n"
 
-print "\\begin{tabular}{|c|c|}"
+print "\\begin{tabular}{cc}"
 print "\\hline Process &  Signal strength \\\\"                                                       
 print "\\hline"
 
 for l in (list4m,list4e,list2e2m,list4l):
     if l["fs"]=="4l": print "\\hline"
-    print "pp~$\\to\Z\Z \\to {0}$ & $ {1:.3f} {2} {3:.3f} {4} {5} +{6:.3f} {4}{7} {2} -{8:.3f} {4}{5} +{9:.3f} {4}{10} \\pm {11:.3f} {12} $\\\\".format(l["name"],l["mu"],"_{",l["stdown"],"}","^{", l["stup"],"~\mathrm{(stat.)}", math.sqrt(math.pow(l["down"],2) - math.pow(l["stdown"],2)),math.sqrt(math.pow(l["up"],2) - math.pow(l["stup"],2)),"~\mathrm{(syst.)}",LumiUnc,"~\mathrm{(lumi.)}")
+    print "pp~$\\rightarrow Z Z \\rightarrow {0}$ & $ {1:.3f} {2} - {3:.3f} {4} {5} +{6:.3f} {4}{7} {2} -{8:.3f} {4}{5} +{9:.3f} {4}{10} \\pm {11:.3f} {12} $\\\\".format(l["name"],l["mu"],"_{",l["stdown"],"}","^{", l["stup"],"~\mathrm{(stat.)}", math.sqrt(math.pow(l["down"],2) - math.pow(l["stdown"],2)),math.sqrt(math.pow(l["up"],2) - math.pow(l["stup"],2)),"~\mathrm{(syst.)}",LumiUnc,"~\mathrm{(lumi.)}")
 
 print " \\hline \n \\end{tabular} \n\n"
 
@@ -98,7 +98,9 @@ print "\\hline Process & Fiducial cross section [fb] \\\\ "
 print "\\hline"
 for l in (list4m,list4e,list2e2m,list4l):
     if l["fs"]=="4l": print "\\hline"
-    print "pp~$\\to\Z\Z \\to {0}$ & $ {1:.2f} {2} {3:.2f} {4} {5} +{6:.2f} {4}{7} {2} -{8:.2f} {4}{5} +{9:.2f} {4}{10} \\pm {11:.2f} {12} $\\\\".format(l["name"],l["mu"]*xs_tight[l["fs"]],"_{",l["stdown"]*xs_tight[l["fs"]],"}","^{", l["stup"]*xs_tight[l["fs"]],"~\mathrm{(stat.)}", math.sqrt(math.pow(l["down"],2) - math.pow(l["stdown"],2))*xs_tight[l["fs"]],math.sqrt(math.pow(l["up"],2) - math.pow(l["stup"],2))*xs_tight[l["fs"]],"~\mathrm{(syst.)}",LumiUnc*xs_tight[l["fs"]] ,"~\mathrm{(lumi.)}")
+    print "pp~$\\rightarrow Z Z \\rightarrow {0}$ & $ {1:.1f} {2} - {3:.1f} {4} {5} +{6:.1f} {4}{7} {2} -{8:.1f} {4}{5} +{9:.1f} {4}{10} \\pm {11:.1f} {12} $\\\\".format(l["name"],l["mu"]*xs_tight[l["fs"]],"_{",l["stdown"]*xs_tight[l["fs"]],"}","^{", l["stup"]*xs_tight[l["fs"]],"~\mathrm{(stat.)}", math.sqrt(math.pow(l["down"],2) - math.pow(l["stdown"],2))*xs_tight[l["fs"]],math.sqrt(math.pow(l["up"],2) - math.pow(l["stup"],2))*xs_tight[l["fs"]],"~\mathrm{(syst.)}",LumiUnc*xs_tight[l["fs"]] ,"~\mathrm{(lumi.)}")
+
+#    print "pp~$\\rightarrow Z Z \\rightarrow {0}$ & $ {1:.3f} {2} - {3:.3f} {4} {5} +{6:.3f} {4}{7} {2} -{8:.3f} {4}{5} +{9:.3f} {4}{10} \\pm {11:.1f} {12} $\\\\".format(l["name"],l["mu"]*xs_tight[l["fs"]],"_{",l["stdown"]*xs_tight[l["fs"]],"}","^{", l["stup"]*xs_tight[l["fs"]],"~\mathrm{(stat.)}", math.sqrt(math.pow(l["down"],2) - math.pow(l["stdown"],2))*xs_tight[l["fs"]],math.sqrt(math.pow(l["up"],2) - math.pow(l["stup"],2))*xs_tight[l["fs"]],"~\mathrm{(syst.)}",LumiUnc*xs_tight[l["fs"]] ,"~\mathrm{(lumi.)}")
 
 print " \\hline \n \\end{tabular} \n"
 
@@ -108,15 +110,44 @@ BR_2e2m = 2*BRmu*BRele
 BR_4e   = BRele*BRele    
 BR      = BR_4m+BR_2e2m+BR_4e
 
-
 AccFile     = ROOT.TFile("./Acceptance/Acceptance_Mad_Mass.root")  
-Acc     = AccFile.Get("TotAcc4l_Acc").GetVal() 
-print "Acc",Acc,"BR",BR
-#Acc = 0.5388
+Acc         = AccFile.Get("TotAcc4l_Acc").GetVal() 
 
-#print "\sigma_{pp~$\\to\Z\Z \\to {0}} {1:.2f} {2} {3:.2f} {4} {5} +{6:.2f} {4}{7} {2} -{8:.2f} {4}{5} +{9:.2f} {4}{10} \\pm {11:.2f} {12} $".format(list4l["name"],list4l["mu"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"_{",list4l["stdown"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"}","^{", list4l["stup"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"~\mathrm{(stat.)}", math.sqrt(math.pow(list4l["down"],2) - math.pow(list4l["stdown"],2))*xs_tight[list4l["fs"]]/(1000*BR*Acc),math.sqrt(math.pow(list4l["up"],2) - math.pow(list4l["stup"],2))*xs_tight[list4l["fs"]]/(1000*BR*Acc),"~\mathrm{(syst.)}",0.062*xs_tight[list4l["fs"]]/(1000*BR*Acc) ,"~\mathrm{(lumi.)}")
+AccFileUp     = ROOT.TFile("./Acceptance/AcceptanceTheorUp_Mad_Mass.root")  
+AccUp         = AccFileUp.Get("TotAcc4l_Acc").GetVal() 
 
-print "$\sigma {2} pp~\\to\Z\Z \\to {0} {4} {1:.2f} {2} {3:.2f} {4} {5} +{6:.2f} {4}{7} {2} -{8:.2f} {4}{5} +{9:.2f} {4}{10} \\pm {11:.2f} {12} $".format(list4l["name"],list4l["mu"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"_{",list4l["stdown"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"}","^{", list4l["stup"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"~\mathrm{(stat.)}", math.sqrt(math.pow(list4l["down"],2) - math.pow(list4l["stdown"],2))*xs_tight[list4l["fs"]]/(1000*BR*Acc),math.sqrt(math.pow(list4l["up"],2) - math.pow(list4l["stup"],2))*xs_tight[list4l["fs"]]/(1000*BR*Acc),"~\mathrm{(syst.)}",LumiUnc*xs_tight[list4l["fs"]]/(1000*BR*Acc) ,"~\mathrm{(lumi.)}")
+AccFileDn     = ROOT.TFile("./Acceptance/AcceptanceTheorDn_Mad_Mass.root")  
+AccDn         = AccFileDn.Get("TotAcc4l_Acc").GetVal() 
+
+
+
+print "Acc",Acc,"Acc Up",AccUp,"Acc Dn",AccDn,"BR",BR
+
+
+
+
+SystDn =   math.sqrt( (math.pow(list4l["down"],2) - math.pow(list4l["stdown"],2))/(Acc*Acc) + (math.pow( (list4l["mu"]/Acc - list4l["mu"]/AccDn),2)) )*((xs_tight[list4l["fs"]])/(1000*BR))
+
+SystUp =   math.sqrt( (math.pow(list4l["up"],2)   - math.pow(list4l["stup"],2))/(Acc*Acc)   + (math.pow( (list4l["mu"]/AccUp -list4l["mu"]/Acc),2)) )*((xs_tight[list4l["fs"]])/(1000*BR))
+
+
+SystThDn =   (list4l["mu"]/Acc - list4l["mu"]/AccDn)*((xs_tight[list4l["fs"]])/(1000*BR))
+
+SystThUp =   (list4l["mu"]/AccUp -list4l["mu"]/Acc)*((xs_tight[list4l["fs"]])/(1000*BR)) 
+
+
+
+print SystUp,SystDn, SystThUp,SystThDn
+
+#print "\sigma_{pp~$\\rightarrow Z Z \\rightarrow {0}} {1:.1f} {2} {3:.1f} {4} {5} +{6:.1f} {4}{7} {2} -{8:.1f} {4}{5} +{9:.1f} {4}{10} \\pm {11:.1f} {12} $".format(list4l["name"],list4l["mu"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"_{",list4l["stdown"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"}","^{", list4l["stup"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"~\mathrm{(stat.)}", math.sqrt(math.pow(list4l["down"],2) - math.pow(list4l["stdown"],2))*xs_tight[list4l["fs"]]/(1000*BR*Acc),math.sqrt(math.pow(list4l["up"],2) - math.pow(list4l["stup"],2))*xs_tight[list4l["fs"]]/(1000*BR*Acc),"~\mathrm{(syst.)}",0.062*xs_tight[list4l["fs"]]/(1000*BR*Acc) ,"~\mathrm{(lumi.)}")
+
+print "$\sigma {2} pp~\\rightarrow Z Z {4} {1:.1f} {2} {3:.1f} {4} {5} +{6:.1f} {4}{7} {2} {8:.1f} {4}{5} +{9:.1f} {4}{10} \\pm {11:.1f} {12} $".format("4l",list4l["mu"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"_{-",list4l["stdown"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"}","^{", list4l["stup"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"~\mathrm{(stat.)}",SystDn, SystUp,"~\mathrm{(syst.)}",LumiUnc*xs_tight[list4l["fs"]]/(1000*BR*Acc) ,"~\mathrm{(lumi.)}")
+
+
+#print "$\sigma {2} pp~\\rightarrow Z Z {4} {1:.3f} {2} {3:.3f} {4} {5} +{6:.3f} {4}{7} {2} {8:.3f} {4}{5} +{9:.3f} {4}{10} \\pm {11:.1f} {12} $".format("4l",list4l["mu"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"_{-",list4l["stdown"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"}","^{", list4l["stup"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"~\mathrm{(stat.)}",SystDn, SystUp,"~\mathrm{(syst.)}",LumiUnc*xs_tight[list4l["fs"]]/(1000*BR*Acc) ,"~\mathrm{(lumi.)}")
+
+
+#print "$\sigma {2} pp~\\rightarrow Z Z {4} {1:.1f} {2} {3:.1f} {4} {5} +{6:.1f} {4}{7} {2} {8:.4f} {4}{5} +{9:.4f} {4}{10} \\pm {11:.1f} {12} $".format("4l",list4l["mu"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"_{-",list4l["stdown"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"}","^{", list4l["stup"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"~\mathrm{(stat.)}", math.sqrt(math.pow(list4l["down"],2) - math.pow(list4l["stdown"],2))*(xs_tight[list4l["fs"]]/(1000*BR*Acc)),math.sqrt(math.pow(list4l["up"],2) - math.pow(list4l["stup"],2))*xs_tight[list4l["fs"]]/(1000*BR*Acc),"~\mathrm{(syst.)}",LumiUnc*xs_tight[list4l["fs"]]/(1000*BR*Acc) ,"~\mathrm{(lumi.)}")
 
 #print (list4l["mu"]*xs_tight[list4l["fs"]])/(1000*BR*Acc),"\pm",(list4l["stup"]*xs_tight[list4l["fs"]])/(1000*BR*Acc),(list4l["stdown"]*xs_tight[list4l["fs"]])/(1000*BR*Acc)
 
