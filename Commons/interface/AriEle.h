@@ -11,6 +11,7 @@ using namespace std;
 typedef std::pair<phys::Boson<phys::Particle>, phys::Particle> Zltype;
 typedef DiBoson<Particle, Particle> ZZtype;
 typedef Boson<Particle> Vtype;
+typedef Boson<Lepton> BosonLepton;
 typedef pair<Particle, Particle> pairParticle;
 
 // Transverse Mass
