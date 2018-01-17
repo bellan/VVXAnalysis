@@ -52,10 +52,10 @@ void WZAnalyzer::analyze(){
   foreach(const Particle &gen, *genParticles){
     if((abs(gen.id()) != 11 && abs(gen.id()) != 13 && abs(gen.id()) != 12 && abs(gen.id()) != 14) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
     //cout << "id: " << gen.id() << " pt: " << gen.pt() << "\t eta: " << gen.eta() << endl;
-    theHistograms.fill("AllGenParticle_id",  "ids all particles",     4, 10.5,  14.5, abs(gen.id()));
-    theHistograms.fill("AllGenParticle_pt",  "p_{t} all particles", 600,  0  , 600  , gen.pt());
-    theHistograms.fill("AllGenParticle_Y",   "Y all particles",     100,-10  ,  10  , gen.rapidity());
-    theHistograms.fill("AllGenParticle_eta", "#eta all particles",  100,-10  ,  10  , gen.eta());
+    theHistograms.fill("AllGenParticle_id",  "ids all particles",     4, 10.5,  14.5, abs(gen.id()) , theWeight);
+    theHistograms.fill("AllGenParticle_pt",  "p_{t} all particles", 600,  0  , 600  , gen.pt()      , theWeight);
+    theHistograms.fill("AllGenParticle_Y",   "Y all particles",     100,-10  ,  10  , gen.rapidity(), theWeight);
+    theHistograms.fill("AllGenParticle_eta", "#eta all particles",  100,-10  ,  10  , gen.eta()     , theWeight);
     
     if(abs(gen.id()) == 11)      electron.push_back(gen);
     else if(abs(gen.id()) == 13) muon.push_back(gen);
@@ -64,51 +64,13 @@ void WZAnalyzer::analyze(){
   
 
   // ~~~~~~ WZ Analysis ~~~~~~
-  /*
-  if(electron.size()+muon.size()!=3)  {
-    cout << Red("\nThere are not enough or too many final leptons in this event.") << endl;
-    return;
-  }
-
-  if(neutrino.size() != 1){
-    cout << Red("\nThere are not enough or too many final neutrinos in this event.") << endl;
-    return;
-  }
   
-  if(electron.size() == 3){
-    if(electron[0].charge() == electron[1].charge() && electron[1].charge() == electron[2].charge() && electron[0].charge() > 0){
-      cout << Red("\nThere are three positrons.") << endl;
-      threeelesplus++;
-      return;
-    }
-    else {if(electron[0].charge() == electron[1].charge() && electron[1].charge() == electron[2].charge() && electron[0].charge() < 0){
-	cout << Red("\nThere are three electrons.") << endl;
-	threeelesminus++;
-	return;
-      }
-    }
-  }
-
-  if(muon.size() == 3){
-    if(muon[0].charge() == muon[1].charge() && muon[1].charge() == muon[2].charge() && muon[0].charge() > 0){
-      cout << Red("\nThere are three antimuons.") << endl;
-      threemuonsplus++;
-      return;
-    }
-    else {if(muon[0].charge() == muon[1].charge() && muon[1].charge() == muon[2].charge() && muon[0].charge() < 0){
-	cout << Red("\nThere are three muons.") << endl;
-	threemuonsminus++;
-	return;
-      }
-    }
-  }
-  */
   // /*
   if(electron.size() + muon.size() + neutrino.size() != 4){
     return;
   }
   
-  theHistograms.fill("GenJets_number", "number of all gen jets",  13,  -0.5,  12.5, genJets->size());
+  theHistograms.fill("GenJets_number", "number of all gen jets",  13,  -0.5,  12.5, genJets->size(), theWeight);
   if(genJets->size() != 2){
     cout << "Wrong number of jets" << endl;
     return;
@@ -165,8 +127,8 @@ void WZAnalyzer::analyze(){
   double masslllnu = Ptot.M();
   double trmasslllnu = Ptot.Mt();
 
-  theHistograms.fill("AllGenlllnu_mass", "m 3 leptons and #nu", 500, 0, 1500, masslllnu); //what happens between 90 and 160 GeV?
-  theHistograms.fill("AllGenlllnu_trmass", "m_{T} 3 leptons and #nu", 500, 0, 1500, trmasslllnu);
+  theHistograms.fill("AllGenlllnu_mass",   "m 3 leptons and #nu",     500, 0, 1500, masslllnu  , theWeight); //what happens between 90 and 160 GeV?
+  theHistograms.fill("AllGenlllnu_trmass", "m_{T} 3 leptons and #nu", 500, 0, 1500, trmasslllnu, theWeight);
 
   if(masslllnu < 165){
     cout << Yellow("\nTotal mass of the products insufficient for the WZ analysis.") << endl;
@@ -179,7 +141,7 @@ void WZAnalyzer::analyze(){
   }
   
   foreach(const Particle lep, lepton){
-    theHistograms.fill("GenL_charge", "leptons charge", 3, -1.5, 1.5, lep.charge());
+    theHistograms.fill("GenL_charge", "leptons charge", 3, -1.5, 1.5, lep.charge(), theWeight);
   }
   
     
@@ -243,10 +205,6 @@ void WZAnalyzer::analyze(){
     // W is made up of the remaining lepton and the neutrino
     Weh = Vtype(Zls[0].second, neutrino[0], copysign(24, Zls[0].second.charge()));
     // */
-    /*
-      bool isSortOk = abs(possibleZ[0].mass() - ZMASS) < abs(possibleZ[1].mass() - ZMASS);
-      theHistograms.fill("SortOK", "Is Sort OK", 2, -0.5, 1.5, isSortOk);
-    */
   }
   
   else if(muon.size()==3){
@@ -279,10 +237,6 @@ void WZAnalyzer::analyze(){
     Weh = Vtype(Zls[0].second, neutrino[0], copysign(24, Zls[0].second.charge()));
 
     // */
-    /*    
-      bool isSortOk = abs(possibleZ[0].mass() - ZMASS) < abs(possibleZ[1].mass() - ZMASS);
-      theHistograms.fill("SortOK", "Is Sort OK", 2, -0.5, 1.5, isSortOk);
-    */
   }
 
   double ZdeltaEta = Zet.daughter(0).eta() - Zet.daughter(1).eta();
@@ -297,11 +251,13 @@ void WZAnalyzer::analyze(){
   //double WZdeltaPhi = physmath::deltaPhi(Zet.phi(), Weh.phi());
   double WZdeltaR = physmath::deltaR(Zet, Weh);
 
+  
   // Histograms and printouts
+  
   cout << "\n~~~~~~~~~~~~~~~~~ Gen ~~~~~~~~~~~~~~~~~" << endl;
   cout << "---------------- Z + l ----------------\n" << endl;
   cout << "\nZl candidates are: " << Zls.size() << endl;
-  theHistograms.fill("GenZL_size", "Zl's size", 4, -0.5, 3.5, Zls.size());
+  theHistograms.fill("GenZL_size", "Zl's size", 4, -0.5, 3.5, Zls.size(), theWeight);
   
   foreach(const Zltype zl, Zls){
     cout << "   Z " << zl.first << "\n   l " << zl.second << endl << endl;
@@ -311,43 +267,39 @@ void WZAnalyzer::analyze(){
   cout << "W is: " << Weh << "\n  her lepton daughter is: " << Weh.daughter(0) << endl;
 
   //neutrino histograms
-  theHistograms.fill("GenN_charge", "#nu's charge",  5, -2.5,   2.5, neutrino[0].charge()); //just to be sure...
-  theHistograms.fill("GenN_pt",     "#nu's p_{t}", 350,  0,   700,   neutrino[0].pt());
-  //theHistograms.fill("GenN_Y",      "#nu's Y",      90, -6.5,   6.5, neutrino[0].rapidity());
-  theHistograms.fill("GenN_eta",    "#nu's #eta",   90, -6.5,   6.5, neutrino[0].eta());
-  //theHistograms.fill("GenN_phi",    "#nu's #phi",   50, -4,     4,   neutrino[0].phi());
+  theHistograms.fill("GenN_charge", "#nu's charge",  5, -2.5,   2.5, neutrino[0].charge(), theWeight); //just to be sure...
+  theHistograms.fill("GenN_pt",     "#nu's p_{t}", 350,  0  , 700  , neutrino[0].pt()    , theWeight);
+  theHistograms.fill("GenN_eta",    "#nu's #eta",   90, -6.5,   6.5, neutrino[0].eta()   , theWeight);
+  //theHistograms.fill("GenN_Y",      "#nu's Y",      90, -6.5,   6.5, neutrino[0].rapidity(), theWeight);
+  //theHistograms.fill("GenN_phi",    "#nu's #phi",   50, -4  ,   4  , neutrino[0].phi()     , theWeight);
   
   //W histograms
-  theHistograms.fill("GenW_charge", "W's charge",   5,-2.5, 2.5, Weh.charge());
-  theHistograms.fill("GenW_mass",   "W's mass",   400,   0, 400, Weh.mass());
-  theHistograms.fill("GenW_pt",     "W's p_{t}",  325,   0, 650, Weh.pt());
-  theHistograms.fill("GenW_Y",      "W's Y",       50,  -5,   5, Weh.rapidity());
-  //theHistograms.fill("GenW_eta",    "W's #eta",    50,  -9,   9, Weh.eta());
-  //theHistograms.fill("GenW_phi",    "W's #phi",    50,  -4,   4, Weh.phi());
-  theHistograms.fill("GenW_deltaEta", "W's #Delta#eta", 50, -6.5, 6.5, WdeltaEta);
-  //theHistograms.fill("GenW_deltaPhi", "W's #Delta#phi", 50, -4, 4, WdeltaPhi);
-  theHistograms.fill("GenW_deltaR",   "W's #DeltaR",    50, -0.5, 6.5, WdeltaR);
+  theHistograms.fill("GenW_charge",   "W's charge",       5, -2.5,   2.5, Weh.charge()  , theWeight);
+  theHistograms.fill("GenW_mass",     "W's mass",       400,  0  , 400  , Weh.mass()    , theWeight);
+  theHistograms.fill("GenW_pt",       "W's p_{t}",      325,  0  , 650  , Weh.pt()      , theWeight);
+  theHistograms.fill("GenW_Y",        "W's Y",           50, -5  ,   5  , Weh.rapidity(), theWeight);
+  theHistograms.fill("GenW_deltaEta", "W's #Delta#eta",  50, -6.5,   6.5, WdeltaEta     , theWeight);
+  theHistograms.fill("GenW_deltaR",   "W's #DeltaR",     50, -0.5,   6.5, WdeltaR       , theWeight);
+  //theHistograms.fill("GenW_eta",      "W's #eta",       50, -9, 9, Weh.eta(), theWeight);
+  //theHistograms.fill("GenW_phi",      "W's #phi",       50, -4, 4, Weh.phi(), theWeight);
+  //theHistograms.fill("GenW_deltaPhi", "W's #Delta#phi", 50, -4, 4, WdeltaPhi, theWeight);
   
   //Z histograms
-  theHistograms.fill("GenZ_charge", "Z's charge",  5,-2.5, 2.5, Zet.charge()); //just to be sure...
-  theHistograms.fill("GenZ_mass",   "Z's mass",  400,   0, 400, Zet.mass());
-  theHistograms.fill("GenZ_pt",     "Z's p_{t}", 325,   0, 650, Zet.pt());
-  theHistograms.fill("GenZ_Y",      "Z's Y",      45,  -3,   3, Zet.rapidity());
-  //theHistograms.fill("GenZ_eta",    "Z's #eta",  100,  -7,   7, Zet.eta());
-  //theHistograms.fill("GenZ_phi",    "Z's #phi",   50,  -4,   4, Zet.phi());
-  theHistograms.fill("GenZ_deltaEta", "Z's #Delta#eta", 30, -5, 5,   ZdeltaEta);
-  //theHistograms.fill("GenZ_deltaPhi", "Z's #Delta#phi", 50, -4, 4,   ZdeltaPhi);
-  theHistograms.fill("GenZ_deltaR",   "Z's #DeltaR",    20, -0.5, 5.5, ZdeltaR);
+  theHistograms.fill("GenZ_charge",   "Z's charge",       5, -2.5,   2.5, Zet.charge()  , theWeight); //just to be sure...
+  theHistograms.fill("GenZ_mass",     "Z's mass",       400,  0  , 400  , Zet.mass()    , theWeight);
+  theHistograms.fill("GenZ_pt",       "Z's p_{t}",      325,  0  , 650  , Zet.pt()      , theWeight);
+  theHistograms.fill("GenZ_Y",        "Z's Y",           45, -3  ,   3  , Zet.rapidity(), theWeight);
+  theHistograms.fill("GenZ_deltaEta", "Z's #Delta#eta",  30, -5  ,   5  , ZdeltaEta     , theWeight);
+  theHistograms.fill("GenZ_deltaR",   "Z's #DeltaR",     20, -0.5,   5.5, ZdeltaR       , theWeight);
+  //theHistograms.fill("GenZ_eta",      "Z's #eta",       100, -7, 7, Zet.eta(), theWeight);
+  //theHistograms.fill("GenZ_phi",      "Z's #phi",        50, -4, 4, Zet.phi(), theWeight);
+  //theHistograms.fill("GenZ_deltaPhi", "Z's #Delta#phi",  50, -4, 4, ZdeltaPhi, theWeight);
   
   //W&Z histograms
-  theHistograms.fill("AllGenWZ_mass", "m 3 leptons and #nu", 450, 160, 1500, masslllnu);
-  theHistograms.fill("WZ_deltaEta", "W and Z #Delta#eta", 50, -9, 9, WZdeltaEta);
-  //theHistograms.fill("WZ_deltaPhi", "W and Z #Delta#phi", 50, -4, 4, WZdeltaPhi);
-  theHistograms.fill("WZ_deltaR",   "w and Z #Delta R",    25, -0.5, 9, WZdeltaR);
-  /*
-  bool areZWOnShell = Zet.mass() >= 86 && Zet.mass() <= 96 && Weh.mass() >= 75 && Weh.mass() <= 85;
-  theHistograms.fill("GenZW_OnShell", "Are W and Z on shell?", 2, -0.5, 1.5, areZWOnShell);
-  */
+  theHistograms.fill("AllGenWZ_mass", "m 3 leptons and #nu", 450, 160  , 1500, masslllnu , theWeight);
+  theHistograms.fill("WZ_deltaEta",   "W and Z #Delta#eta",   50,  -9  ,    9, WZdeltaEta, theWeight);
+  theHistograms.fill("WZ_deltaR",     "W and Z #Delta R",     25,  -0.5,    9, WZdeltaR  , theWeight);
+  //theHistograms.fill("WZ_deltaPhi", "W and Z #Delta#phi", 50, -4, 4, WZdeltaPhi, theWeight);
   
   
   // ------- Jets -------
@@ -362,12 +314,12 @@ void WZAnalyzer::analyze(){
 
     cout << "ID: " << jet.id() << " pt: " << jet.pt() << "\t eta: " << jet.eta() << endl;
 
-    theHistograms.fill("GenJet_pt",      "p_{t} jets", 350,   0  , 400  , jet.pt());
-    //theHistograms.fill("GenJet_Y",       "Y jets",      70,  -5  ,   5  , jet.rapidity());
-    theHistograms.fill("GenJet_eta",     "#eta jets",   70,  -5  ,   5  , jet.eta());    
-    theHistograms.fill("GenJet_charge",  "charge jets",  5,  -2.5,   2.5, jet.charge());
-    theHistograms.fill("GenJet_mass",    "mass jets",  120,   0  , 120  , jet.mass());
-    //theHistograms.fill("GenJet_phi",     "#phi jets",   50,  -4  ,   4  , jet.phi());
+    theHistograms.fill("GenJet_pt",     "p_{t} jets",  350,  0  , 400  , jet.pt()    , theWeight);
+    theHistograms.fill("GenJet_eta",    "#eta jets",    70, -5  ,   5  , jet.eta()   , theWeight);    
+    theHistograms.fill("GenJet_charge", "charge jets",   5, -2.5,   2.5, jet.charge(), theWeight);
+    theHistograms.fill("GenJet_mass",   "mass jets",   120,  0  , 120  , jet.mass()  , theWeight);
+    //theHistograms.fill("GenJet_Y",   "Y jets",    70, -5, 5, jet.rapidity(), theWeight);
+    //theHistograms.fill("GenJet_phi", "#phi jets", 50, -4, 4, jet.phi()     , theWeight);
   }
 
   if(genjets.size() == 2){
@@ -375,9 +327,9 @@ void WZAnalyzer::analyze(){
     //double JJdeltaPhi = physmath::deltaPhi(genjets[0].phi(), genjets[1].phi());
     double JJdeltaR = physmath::deltaR(genjets[0], genjets[1]);
 
-    theHistograms.fill("GenJets_deltaEta", "Jets #Delta#eta", 50, -9, 9, JJdeltaEta);
-    //theHistograms.fill("GenJets_deltaPhi", "Jets #Delta#phi", 50, -4, 4, JJdeltaPhi);   
-    theHistograms.fill("GenJets_deltaR", "Jets #DeltaR", 25, -0.5, 9, JJdeltaR);
+    theHistograms.fill("GenJets_deltaEta", "Jets #Delta#eta", 50, -9  , 9, JJdeltaEta, theWeight); 
+    theHistograms.fill("GenJets_deltaR",   "Jets #DeltaR",    25, -0.5, 9, JJdeltaR  , theWeight);
+    //theHistograms.fill("GenJets_deltaPhi", "Jets #Delta#phi", 50, -4, 4, JJdeltaPhi, theWeight);  
   }
 
   // ------- Reco -------
@@ -393,28 +345,28 @@ void WZAnalyzer::analyze(){
   foreach(const ZLCompositeCandidate Z, *ZLCand){
     recoZls.push_back(Z);
     
-    theHistograms.fill("recoZl_Z_charge", "Z's charge",   5, -2.5,   2.5, Z.first.charge()); //just to be sure...
-    theHistograms.fill("recoZl_Z_mass",   "Z's mass",   400,  0  , 400  , Z.first.mass());
-    theHistograms.fill("recoZl_Z_pt",     "Z's p_{t}",  325,  0  , 650  , Z.first.pt());
-    theHistograms.fill("recoZl_Z_Y",      "Z's Y",       45, -3  ,   3  , Z.first.rapidity());
-    //theHistograms.fill("recoZl_Z_eta",    "Z's #eta",   100, -7  ,   7  , Z.first.eta());
-    //theHistograms.fill("recoZl_Z_phi",    "Z's #phi",    50, -4  ,   4  , Z.first.phi());
+    theHistograms.fill("recoZl_Z_charge", "Z's charge",   5, -2.5,   2.5, Z.first.charge()  , theWeight); //just to be sure...
+    theHistograms.fill("recoZl_Z_mass",   "Z's mass",   400,  0  , 400  , Z.first.mass()    , theWeight);
+    theHistograms.fill("recoZl_Z_pt",     "Z's p_{t}",  325,  0  , 650  , Z.first.pt()      , theWeight);
+    theHistograms.fill("recoZl_Z_Y",      "Z's Y",       45, -3  ,   3  , Z.first.rapidity(), theWeight);
+    //theHistograms.fill("recoZl_Z_eta",    "Z's #eta",   100, -7  ,   7  , Z.first.eta(), theWeight);
+    //theHistograms.fill("recoZl_Z_phi",    "Z's #phi",    50, -4  ,   4  , Z.first.phi(), theWeight);
     
-    theHistograms.fill("recoZl_l_charge", "l's charge",  5, -2.5,   2.5, Z.second.charge());
-    theHistograms.fill("recoZl_l_id",     "l's id",      5,  9.5,  14.5, abs(Z.second.id()));
-    theHistograms.fill("recoZl_l_pt",     "l's p_{t}", 325,  0  , 650  , Z.second.pt());
-    //theHistograms.fill("recoZl_l_Y",      "l's Y",      45, -3  ,   3  , Z.second.rapidity());
-    theHistograms.fill("recoZl_l_eta",    "l's #eta",   45, -3  ,   3  , Z.second.eta());
-    //theHistograms.fill("recoZl_l_phi",    "l's #phi",   50, -4  ,   4  , Z.second.phi());
+    theHistograms.fill("recoZl_l_charge", "l's charge",  5, -2.5,   2.5, Z.second.charge() , theWeight);
+    theHistograms.fill("recoZl_l_id",     "l's id",      5,  9.5,  14.5, abs(Z.second.id()), theWeight);
+    theHistograms.fill("recoZl_l_pt",     "l's p_{t}", 325,  0  , 650  , Z.second.pt()     , theWeight);
+    theHistograms.fill("recoZl_l_eta",    "l's #eta",   45, -3  ,   3  , Z.second.eta()    , theWeight);
+    //theHistograms.fill("recoZl_l_Y",      "l's Y",      45, -3  ,   3  , Z.second.rapidity(), theWeight);
+    //theHistograms.fill("recoZl_l_phi",    "l's #phi",   50, -4  ,   4  , Z.second.phi()     , theWeight);
   }
 
   theHistograms.fill("recoZl_size", "Reco Zl's size", 9, -0.5, 8.5, recoZls.size());
   
   //cout << "----------------- MET -----------------\n" << endl;
-  theHistograms.fill("recoMET_charge", "MET's charge",  5,-2.5, 2.5, met->charge());
-  theHistograms.fill("recoMET_pt",     "MET's p_{t}", 325,   0, 650, met->pt());
-  theHistograms.fill("recoMET_Y",      "MET's Y",      50,  -4,   4, met->rapidity());
-  theHistograms.fill("recoMET_eta",    "MET's #eta",  100,  -7,   7, met->eta());
+  theHistograms.fill("recoMET_charge", "MET's charge",  5, -2.5,   2.5, met->charge()  , theWeight);
+  theHistograms.fill("recoMET_pt",     "MET's p_{t}", 325,  0  , 650  , met->pt()      , theWeight);
+  theHistograms.fill("recoMET_Y",      "MET's Y",      50, -4  ,   4  , met->rapidity(), theWeight);
+  theHistograms.fill("recoMET_eta",    "MET's #eta",  100, -7  ,   7  , met->eta()     , theWeight);
 
   //recoZ and recoW reconstruction
   if(recoZls.size() == 0){
@@ -433,7 +385,7 @@ void WZAnalyzer::analyze(){
 
     if(Zls.size() == 1){
       //threeelesplus++;
-      theHistograms.fill("ZvsrecoZ_21_deltapt", "#Deltap_{t} between Z and reco Z", 75, -11, 11, ZrecoZdeltaPt);
+      theHistograms.fill("ZvsrecoZ_21_deltapt", "#Deltap_{t} between Z and reco Z", 75, -11, 11, ZrecoZdeltaPt, theWeight);
     }
     /* //no recoZls.size()=1 matches Zls.size()=2
     if(Zls.size() == 2)
@@ -444,37 +396,25 @@ void WZAnalyzer::analyze(){
     //recoW = Boson(recoZls[0].second, met, copysign(24, recoZls[0].second.charge())); //doesn't work: recoZls.second is Lepton and met is Particle
   }
 
-  if(recoZls.size() > 1){
+  if(recoZls.size() == 4){
     if(Zls.size() == 1)
       threeelesplus++;
-    if(Zls.size() == 2)
+    if(Zls.size() == 4)
       threeelesminus++;
   }
-  
-  /*
-  if(recoZls.size() != 0){
-      int dim = (int)recoZls.size();
-      double ZrecoZdeltaR[dim];
-      
-      for(int i = 0; i < dim; i++){
-	ZrecoZdeltaR[i] = physmath::deltaR(Zet, recoZls[i].first);
-	theHistograms.fill("")
-      }
-    }
-  */
   
   //cout << "----------------- JET -----------------\n" << endl;
   foreach(const Particle jet, *jets){
     recoJets.push_back(jet);
 
-    theHistograms.fill("recoJet_charge", "Jets' charge",  19,  -8.5,  10.5, jet.charge());
-    theHistograms.fill("recoJet_pt",     "Jets' p_{t}",  350,   0  , 400  , jet.pt());
-    //theHistograms.fill("recoJet_Y",      "Jets' Y",       80,  -5  ,   5  , jet.rapidity());
-    theHistograms.fill("recoJet_eta",    "Jets' #eta",    80,  -5  ,   5  , jet.eta());
-    //theHistograms.fill("recoJet_phi",    "Jets' #phi",    50,  -4  ,   4  , jet.phi());
+    theHistograms.fill("recoJet_charge", "Jets' charge",  19, -8.5,  10.5, jet.charge(), theWeight);
+    theHistograms.fill("recoJet_pt",     "Jets' p_{t}",  350,  0  , 400  , jet.pt()    , theWeight);
+    theHistograms.fill("recoJet_eta",    "Jets' #eta",    80, -5  ,   5  , jet.eta()   , theWeight);
+    //theHistograms.fill("recoJet_Y",      "Jets' Y",       80,  -5  ,   5  , jet.rapidity(), theWeight);
+    //theHistograms.fill("recoJet_phi",    "Jets' #phi",    50,  -4  ,   4  , jet.phi()     , theWeight);
   }
 
-  theHistograms.fill("recoJet_number", "Jets' number", 4, -0.5, 3.5, recoJets.size());    
+  theHistograms.fill("recoJet_number", "Jets' number", 4, -0.5, 3.5, recoJets.size(), theWeight);    
 }
   
 void WZAnalyzer::end(TFile &){
