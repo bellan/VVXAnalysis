@@ -10,10 +10,10 @@ using namespace std;
 // ~~~~~~~~ New types
 typedef std::pair<phys::Boson<phys::Particle>, phys::Particle> Zltype;
 typedef DiBoson<Particle, Particle> ZZtype;
+typedef DiBoson<Lepton, Lepton> DiBosonLepton;
 typedef Boson<Particle> Vtype;
 typedef Boson<Lepton> BosonLepton;
 typedef pair<Particle, Particle> pairParticle;
-typedef std::pair<phys::Boson<phys::Lepton>, phys::Lepton> pippo;
 
 // ~~~~~~~~ Transverse Mass
 template<typename T> double mT(const T& p1, const T& p2){
