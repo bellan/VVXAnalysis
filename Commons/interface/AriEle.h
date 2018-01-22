@@ -72,6 +72,21 @@ struct ZlMassComparator{
   double ref_;
 };
 
+// pt comparators
+struct greaterpt{
+  template<typename PAR>
+  bool operator()(const PAR & a,
+		  const PAR & b) const{
+    return a.pt() > b.pt();
+  }
+  
+  template<typename PAR>
+  bool operator()(const PAR * a,
+		  const PAR * b) const{
+    return a.pt() > b.pt();
+  }
+};
+
 // DeltaR comparators
 struct deltaRComparator{
   template<typename PAIR>
