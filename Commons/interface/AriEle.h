@@ -8,12 +8,12 @@ using namespace phys;
 using namespace std;
 
 // ~~~~~~~~ New types
+typedef pair<Particle, Particle> pairParticle;
 typedef std::pair<phys::Boson<phys::Particle>, phys::Particle> Zltype;
-typedef DiBoson<Particle, Particle> ZZtype;
-typedef DiBoson<Lepton, Lepton> DiBosonLepton;
 typedef Boson<Particle> Vtype;
 typedef Boson<Lepton> BosonLepton;
-typedef pair<Particle, Particle> pairParticle;
+typedef DiBoson<Particle, Particle> ZZtype;
+typedef DiBoson<Lepton, Lepton> DiBosonLepton;
 
 // ~~~~~~~~ Transverse Mass
 template<typename T> double mT(const T& p1, const T& p2){
@@ -72,19 +72,21 @@ struct ZlMassComparator{
   double ref_;
 };
 
-// pt comparators
-struct greaterpt{
-  template<typename PAR>
-  bool operator()(const PAR & a,
-		  const PAR & b) const{
-    return a.pt() > b.pt();
-  }
+struct ZWMassComparator{
+  ZWMassComparator(const double& ref): ref_(ref){}
+  template<typename DiBOS>
+    bool operator()(const DiBOS & a , 
+		    const DiBOS & b) const{ 
+    return fabs(a.first().p4().M() - ref_) < fabs(b.first().p4().M() - ref_); 
+    }
   
-  template<typename PAR>
-  bool operator()(const PAR * a,
-		  const PAR * b) const{
-    return a.pt() > b.pt();
-  }
+  template<typename DiBOS>
+    bool operator()(const DiBOS * a , 
+		    const DiBOS * b) const{ 
+    return fabs(a->first().p4().M() - ref_) < fabs(b->first().p4().M() - ref_); 
+    }
+
+  double ref_;
 };
 
 // DeltaR comparators
