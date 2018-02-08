@@ -30,6 +30,7 @@ struct WZPtComparator{
     bool operator()(const DiBOS1 & a ,
 		    const DiBOS2 & b) const{
     return a.first().daughter(0).pt() > b.first().daughter(0).pt();
+  }
 
   template<typename DiBOS1, typename DiBOS2>
     bool operator()(const DiBOS1 * a ,
@@ -109,6 +110,7 @@ struct deltaRComparator{
   bool operator()(const PAIR & a,
 		  const PAIR & b) const{
     return physmath::deltaR(a.first.daughter(0), a.first.daughter(1)) < physmath::deltaR(b.first.daughter(0), b.first.daughter(1));
+  }
     
   template<typename PAIR>
   bool operator()(const PAIR * a,
