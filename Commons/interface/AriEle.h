@@ -24,6 +24,20 @@ template<typename T> double mT(const T& p1, const T& p2, const T& p3){
 }
 
 // ~~~~~~~~ Comparators
+// Pt comparators
+struct WZPtComparator{
+  template<typename DiBOS1, typename DiBOS2>
+    bool operator()(const DiBOS1 & a ,
+		    const DiBOS2 & b) const{
+    return a.first().daughter(0).pt() > b.first().daughter(0).pt();
+
+  template<typename DiBOS1, typename DiBOS2>
+    bool operator()(const DiBOS1 * a ,
+		    const DiBOS2 * b) const{
+    return a.first().daughter(0).pt() > b.first().daughter(0).pt();
+  }
+};
+
 // Mass comparators
 struct mTComparator{
 mTComparator(const double& ref): ref_(ref){}
@@ -94,6 +108,11 @@ struct deltaRComparator{
   template<typename PAIR>
   bool operator()(const PAIR & a,
 		  const PAIR & b) const{
+    return physmath::deltaR(a.first.daughter(0), a.first.daughter(1)) < physmath::deltaR(b.first.daughter(0), b.first.daughter(1));
+    
+  template<typename PAIR>
+  bool operator()(const PAIR * a,
+		  const PAIR * b) const{
     return physmath::deltaR(a.first.daughter(0), a.first.daughter(1)) < physmath::deltaR(b.first.daughter(0), b.first.daughter(1));
   }
 };
