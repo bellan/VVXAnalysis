@@ -57,6 +57,15 @@ public:
   Int_t eventSample;
   Int_t recoZlempty;
   Int_t recoJetless2;
+
+  Int_t gen3e;
+  Int_t gen3m;
+  Int_t gen2e1m;
+  Int_t gen2m1e;
+  Int_t reco3e;
+  Int_t reco3m;
+  Int_t reco2e1m;
+  Int_t reco2m1e;
   
   Int_t counter1;
   Int_t counter2;
