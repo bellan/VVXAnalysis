@@ -55,8 +55,9 @@ public:
   Int_t eventReco;
   Int_t eventGenReco;
   Int_t eventSample;
-  Int_t recoZlempty;
+  Int_t recoAfterCut;
   Int_t recoJetless2;
+  Int_t recoZlempty;
 
   Int_t gen3e;
   Int_t gen3m;
