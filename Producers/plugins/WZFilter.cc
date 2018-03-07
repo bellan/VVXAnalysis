@@ -33,7 +33,7 @@ else if(Zltemp.size() > 0){
     Wtemp = BosonLepton(Zltemp[i].second, Lepton(met->p4()), copysign(24, Zltemp[i].second.charge()));
     
     // filter on W's trmass
-    if(Wtemp.p4().Mt() < 30 || Wtemp.p4().Mt() > 500){
+    if(Wtemp.p4().Mt() > 30 || Wtemp.p4().Mt() < 500){
       WZCand.push_back(DiBosonLepton(Wtemp, Zltemp[i].first));
     }
     
