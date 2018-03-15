@@ -124,8 +124,8 @@ void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
   foreach(const Particle lep, lepton)
     Ptot += lep.p4();
   
-  theHistograms.fill("AllGenlllnu_mass",   "m 3 leptons and #nu",     300, 0, 1500, Ptot.M() , theWeight);
-  theHistograms.fill("AllGenlllnu_trmass", "m_{T} 3 leptons and #nu", 300, 0, 1500, Ptot.Mt(), theWeight);
+  theHistograms.fill("AllGenlllnu_mass",   "m 3 leptons and #nu",     150, 0, 1500, Ptot.M() , theWeight);
+  theHistograms.fill("AllGenlllnu_trmass", "m_{T} 3 leptons and #nu", 150, 0, 1500, Ptot.Mt(), theWeight);
   
   if(Ptot.M() < 165){
     return;
@@ -349,7 +349,7 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   ZLCompositeCandidates tempZls;
   
   // filter on ZLCand's size > 0
-  theHistograms.fill("recoZls_size_ZLCand", 12, -0.5, 11.5, ZLCand->size());
+  theHistograms.fill("recoZl_size_ZLCand", 12, -0.5, 11.5, ZLCand->size());
 
   if(ZLCand->size() == 0){
     recoZlempty++;
@@ -415,11 +415,11 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   
   if(recoZls.size() == 1){    
     recoZ = recoZls[0].first;
-    recoWtemp = BosonLepton(recoZls[0].second, MET, copysign(24, recoZls[0].second.charge()));
+    recoW = BosonLepton(recoZls[0].second, MET, copysign(24, recoZls[0].second.charge()));
 
     // filter on W's trmass 30 < trm < 500
-    if(recoWtemp.p4().Mt() > 30. && recoWtemp.p4().Mt() < 500){
-      recoWZs.push_back(DiBosonLepton(recoWtemp, recoZ));
+    if(recoW.p4().Mt() > 30. && recoW.p4().Mt() < 500.){
+      recoWZs.push_back(DiBosonLepton(recoW, recoZ));
     }
     else{
       return;
@@ -435,14 +435,14 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
     bool choosingW = kTRUE;
     
     for(int i = 0; choosingW; i++){
-      recoWtemp = BosonLepton(recoZls[i].second, MET, copysign(24, recoZls[0].second.charge()));
+      recoWtemp = BosonLepton(recoZls[i].second, MET, copysign(24, recoZls[i].second.charge()));
 
       // filter on W's trmass 30 < trm < 500
-      if(recoWtemp.p4().Mt() > 30. && recoWtemp.p4().Mt() < 500){
+      if(recoWtemp.p4().Mt() > 30. && recoWtemp.p4().Mt() < 500.){
 	recoWZs.push_back(DiBosonLepton(recoWtemp, recoZls[i].first));
       }
       
-      if(i + 1 == (int)recoZls.size() || recoZls[i].first.mass() - recoZls[i + 1].first.mass() <= 0.1){
+      if(i == (int)recoZls.size() - 1 || recoZls[i].first.mass() - recoZls[i + 1].first.mass() < 0.1){
 	choosingW = kFALSE;
       }
     }
@@ -456,11 +456,12 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
     recoW = recoWZs[0].first();
     recoZ = recoWZs[0].second();
   }
-
+  
   cut++;
   theHistograms.fill("RecoCuts", "Events after cuts", 13, -0.5, 12.5, cut);
   
   WZ = recoWZs[0];
+  
   
   // ------------------------ W & Z variables ----------------------
   // Z
@@ -493,7 +494,7 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   else if(recoZlID == 37) reco2m1e++;
   else if(recoZlID == 39) reco3m++;
     
-  
+    
   // WZ
   //double recoWZdeltaPhi = physmath::deltaPhi(recoW.phi(), recoZ.phi());
   //double recoWZdeltaEta = recoW.eta() - recoZ.eta();
@@ -516,7 +517,7 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   double recoJJdeltaEta = recoJets[0].eta() - recoJets[1].eta();
   double recoJJdeltaPhi = physmath::deltaPhi(recoJets[0].phi(), recoJets[1].phi());
   //double recoJJdeltaR = abs(physmath::deltaR(recoJets[0], recoJets[1]));
-  
+
     
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ All ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   TLorentzVector recoPtot = recoW.p4() + recoZ.p4() + recoJets[0].p4() + recoJets[1].p4();
@@ -537,10 +538,9 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Cuts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   //histos before cuts
-  theHistograms.fill("recoJJ_mass_BC",         "Jets' mass",                         880, 10, 4500, recoJJptot.M()     , theWeight);
+  theHistograms.fill("recoJJ_mass_BC",         "Jets' mass",                         300, 10, 4510, recoJJptot.M()     , theWeight);
   theHistograms.fill("recoJJ_deltaEta_BC",     "Jets' #Delta#eta",                   100, -9,    9, recoJJdeltaEta     , theWeight); 
   theHistograms.fill("recoJJ_deltaEta_abs_BC", "Jets' #Delta#eta",                   100, -9,    9, abs(recoJJdeltaEta), theWeight);
-  theHistograms.fill("recoJ1_pt_BC",           "Jet1's p_{t}",                       160,  0,  400, recoJets[1].pt()   , theWeight);
   theHistograms.fill("Zeppenfeld_llJ0_BC",     "Zeppenfeld variable for Z and Jet0", 100, -6,    6, zeppenfeldllJ0     , theWeight);
   theHistograms.fill("Zeppenfeld_llJ0_abs_BC", "Zeppenfeld variable for Z and Jet0", 100, -6,    6, abs(zeppenfeldllJ0), theWeight);
 
@@ -576,18 +576,17 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   theHistograms.fill("RecoCuts", "Events after cuts", 13, -0.5, 12.5, cut);
   */
 
-
   recoAfterCut++;
   
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~ Histograms ~~~~~~~~~~~~~~~~~~~~~~~~~
   // ------------------------------ MET ----------------------------
-  theHistograms.fill("recoMET_trmass", "MET's trmass",  400,  0  , 400  , met->p4().Mt(), theWeight);
+  theHistograms.fill("recoMET_trmass", "MET's trmass",  200,  0  , 400  , met->p4().Mt(), theWeight);
   theHistograms.fill("recoMET_pt",     "MET's p_{t}",   140,  0  , 700  , MET.pt()      , theWeight);
   //theHistograms.fill("recoMET_phi",    "MET's #phi",     50, -3.5,   3.5, MET.phi()     , theWeight);
   
   // ------------------------------- W -----------------------------
   //theHistograms.fill("recoW_charge",   "recoW's charge",       5, -2.5,   2.5, recoW.charge()  , theWeight);
-  theHistograms.fill("recoW_trmass",   "recoW's trmass",     400,  0  , 800  , recoW.p4().Mt() , theWeight);
+  theHistograms.fill("recoW_trmass",   "recoW's trmass",     300,  0  , 900  , recoW.p4().Mt() , theWeight);
   theHistograms.fill("recoW_pt",       "recoW's p_{t}",      260,  0  , 650  , recoW.pt()      , theWeight);
   //theHistograms.fill("recoW_Y",        "recoW's Y",           45, -3  ,   3  , recoW.rapidity(), theWeight);
   //theHistograms.fill("recoW_eta",      "recoW's #eta",       100, -7  ,   7  , recoW.eta()     , theWeight);
@@ -598,9 +597,9 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   
   // ------------------------------- Z -----------------------------
   //theHistograms.fill("recoZ_charge",   "recoZ's charge",       5, -2.5,   2.5, recoZ.charge()  , theWeight); //just to be sure...
-  theHistograms.fill("recoZ_mass",     "recoZ's mass",       400,  0  , 400  , recoZ.mass()    , theWeight);
-  theHistograms.fill("recoZ_trmass",   "recoZ's trmass",     400,  0  , 400  , recoZ.p4().Mt() , theWeight);
-  theHistograms.fill("recoZ_pt",       "recoZ's p_{t}",      260,  0  , 650  , recoZ.pt()      , theWeight);
+  theHistograms.fill("recoZ_mass",     "recoZ's mass",       200,  0  , 400  , recoZ.mass()    , theWeight);
+  theHistograms.fill("recoZ_trmass",   "recoZ's trmass",     200,  0  , 400  , recoZ.p4().Mt() , theWeight);
+  theHistograms.fill("recoZ_pt",       "recoZ's p_{t}",      130,  0  , 650  , recoZ.pt()      , theWeight);
   //theHistograms.fill("recoZ_Y",        "recoZ's Y",           45, -3  ,   3  , recoZ.rapidity(), theWeight);
   //theHistograms.fill("recoZ_eta",      "recoZ's #eta",       100, -7  ,   7  , recoZ.eta()     , theWeight);
   //theHistograms.fill("recoZ_phi",      "recoZ's #phi",        50, -3.5,   3.5, recoZ.phi()     , theWeight);
@@ -618,8 +617,8 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   //theHistograms.fill("recoZl_3rd_pt", "W's lepton p_{t}",        200,  0  ,  400  , recoW.daughter(0).pt(), theWeight);
   
   // ------------------------------ WZ -----------------------------
-  theHistograms.fill("recoWZ_trmass",   "recoWZ trmass",        800,   0  , 2400  , recoWZs[0].p4().Mt(), theWeight);
-  theHistograms.fill("recoWZ_pt",       "recoWZ p_{T}",         200, 200  , 3000  , recoWZs[0].pt()     , theWeight);
+  theHistograms.fill("recoWZ_trmass",   "recoWZ trmass",        200,   0  , 2400  , recoWZs[0].p4().Mt(), theWeight);
+  theHistograms.fill("recoWZ_pt",       "recoWZ p_{T}",         200, 200  , 2400  , recoWZs[0].pt()     , theWeight);
   //theHistograms.fill("recoWZ_deltaPhi", "recoW & Z #Delta#phi",  50,  -3.5,    3.5, recoWZdeltaPhi      , theWeight);
   //theHistograms.fill("recoWZ_deltaEta", "recoW & Z #Delta#eta",  55,  -5  ,    5  , recoWZdeltaEta      , theWeight);
   //theHistograms.fill("recoWZ_deltaR",   "recoW & Z #DeltaR",     20,  -0.5,    5.5, recoWZdeltaR        , theWeight);
@@ -659,13 +658,13 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   */
 
   // leading jets  
-  theHistograms.fill("recoJJ_pt",              "Jets' p_{t}",               400,   0  ,  1200  , recoJJptot.Pt()                                                    , theWeight);
+  theHistograms.fill("recoJJ_pt",              "Jets' p_{t}",               200,   0  ,  1200  , recoJJptot.Pt()                                                    , theWeight);
   theHistograms.fill("recoJJ_ptpt",            "Jets' p_{t}*p_{t}}",        800, 500  , 80500  , recoJets[0].pt()*recoJets[1].pt()                                  , theWeight);
   theHistograms.fill("recoJJ_pt0_pt1_sum",     "Jets' p_{t}+p_{t}",         320,   0  ,   800  , recoJets[0].pt()+recoJets[1].pt()                                  , theWeight);
   //theHistograms.fill("recoJJ_pt0_pt1_sumquad", "Jets' p_{t}^{2}+p_{t}^{2}", 800,   0  , 80000  , recoJets[0].pt()*recoJets[0].pt()+recoJets[1].pt()*recoJets[1].pt(), theWeight);
-  theHistograms.fill("recoJJ_mass",            "Jets' mass",                880,  10  ,  4500  , recoJJptot.M()                                                     , theWeight);
+  theHistograms.fill("recoJJ_mass",            "Jets' mass",                300,  10  ,  4510  , recoJJptot.M()                                                     , theWeight);
   //theHistograms.fill("recoJJ_massquad",        "Jets' nass^{2}",            600,   0  , 10000  , recoJJptot.M()*recoJJptot.M()                                      , theWeight);
-  theHistograms.fill("recoJJ_trmass",          "Jets' transverse mass",     600,   0  ,  4500  , recoJJptot.Mt()                                                    , theWeight);
+  theHistograms.fill("recoJJ_trmass",          "Jets' transverse mass",     300,   0  ,  4500  , recoJJptot.Mt()                                                    , theWeight);
   theHistograms.fill("recoJJ_deltaEta",        "Jets' #Delta#eta",          100,  -9  ,     9  , recoJJdeltaEta                                                     , theWeight);
   theHistograms.fill("recoJJ_deltaEta_abs",    "Jets' |#Delta#eta|",         50,   0  ,     8.1, abs(recoJJdeltaEta)                                                , theWeight);
   //theHistograms.fill("recoJJ_deltaEtaquad",    "Jets' #Delta#eta^{2}",      400, -81  ,    81  , recoJJdeltaEta*recoJJdeltaEta                                      , theWeight);
