@@ -68,6 +68,7 @@ void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
     else if(abs(gen.id()) == 13) muon.push_back(gen);
     else if(abs(gen.id()) == 12 || abs(gen.id()) == 14)  neutrino.push_back(gen);
   }
+
   
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~ Filters ~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // filter on jets' number
@@ -86,7 +87,7 @@ void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
   }
   
   // filter on leptons' number
-  if(electron.size() + muon.size() + neutrino.size() != 4){
+  if(electron.size() + muon.size() + neutrino.size() != 4 && neutrino.size() == 1){
     return;
   }
   
@@ -104,6 +105,10 @@ void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
     }
     lepton.push_back(mu);
   }
+
+  if(lepton.size() != 3){
+    return;
+  }
   
   sort(electron.begin(), electron.end(), PtComparator());
   sort(lepton.begin(), lepton.end(), PtComparator());
@@ -112,15 +117,18 @@ void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
   if(lepton[0].pt() < 20){
     return;
   }
+  
   if(abs(lepton[1].id()) == 11 && lepton[1].pt() < 12){
     return;
   }
+
   if(abs(lepton[1].id()) == 13 && lepton[1].pt() < 10){
     return;
   }
   
-  // Z and W must be at least on shell
+  // Z and W must be at least on shell  
   TLorentzVector Ptot = neutrino[0].p4();
+  
   foreach(const Particle lep, lepton)
     Ptot += lep.p4();
   
@@ -130,10 +138,9 @@ void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
   if(Ptot.M() < 165){
     return;
   }
-  
+
   
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Z & W ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  eventGen++;
   
   Vtype Weh;
   Vtype Zet;
@@ -171,10 +178,6 @@ void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
       }
     }
     
-    if(Zls.size() < 1){
-      return;
-    }
-    
     // Z is made up of the couple which gives a better Zmass 
     sort(Zls.begin(), Zls.end(), pairMassComparator(0, ZMASS));
     Zet = Zls[0].first;
@@ -198,17 +201,18 @@ void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
       }
     }
     
-    if(Zls.size() < 1){
-      return;
-    }
-    
     sort(Zls.begin(), Zls.end(), pairMassComparator(0, ZMASS));
     Zet = Zls[0].first;
     Weh = Vtype(Zls[0].second, neutrino[0], copysign(24, Zls[0].second.charge()));
   }
   
+  if(Zls.size() < 1){
+    return;
+  }
+  
   // W&Z diboson
   WZ = ZZtype(Weh, Zet);
+  eventGen++;
   
   // ------------------------ W & Z variables ----------------------
   // Z
@@ -228,7 +232,7 @@ void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
   //double WZdeltaEta = Zet.eta() - Weh.eta();
   //double WZdeltaPhi = physmath::deltaPhi(Zet.phi(), Weh.phi());
   //double WZdeltaR = abs(physmath::deltaR(Zet, Weh));
-  
+
   
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Jets ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // leading jets are those with higher pt
@@ -334,7 +338,7 @@ void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
   
   theHistograms.fill("GenAll_massvstrmass", "WZjj's mass(x) vs trmass(y)", 200, 220, 1200, 200, 220, 1200, WZjjp4.M(), WZjjp4.Mt(), theWeight);
   */
-  
+
   
   // ~~~~~~~~~~~~~~~~~~~~~ End of gen Analysis ~~~~~~~~~~~~~~~~~~~~~
 }
@@ -343,6 +347,7 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   // ~~~~~~~~~~~~~~~~~~~~ Begin of reco Analysis ~~~~~~~~~~~~~~~~~~~
   int cut = 0;
   theHistograms.fill("RecoCuts", "Events after cuts", 13, -0.5, 12.5, cut);
+
   
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~ Filters ~~~~~~~~~~~~~~~~~~~~~~~~~~~
   ZLCompositeCandidates recoZls;
@@ -403,7 +408,6 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
 
   
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Z & W ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  eventReco++;
   
   BosonLepton recoW;
   BosonLepton recoWtemp;
@@ -461,6 +465,7 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   theHistograms.fill("RecoCuts", "Events after cuts", 13, -0.5, 12.5, cut);
   
   WZ = recoWZs[0];
+  eventReco++;
   
   
   // ------------------------ W & Z variables ----------------------
@@ -729,8 +734,8 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   */
 
   // ---------------------- WZ & leading jets ----------------------
-  theHistograms.fill("recoAll_mass",           "Mass recoW,Z,J,J",                          200, 220  , 8220  , recoPtot.M()                                      , theWeight);
-  theHistograms.fill("recoAll_trmass",         "Transverse mass recoW,Z,J",                 160, 220  , 8220  , recoPtot.Mt()                                     , theWeight);
+  theHistograms.fill("recoAll_mass",           "Mass recoW,Z,J,J",                          150, 220  , 7720  , recoPtot.M()                                      , theWeight);
+  theHistograms.fill("recoAll_trmass",         "Transverse mass recoW,Z,J",                 150, 220  , 7720  , recoPtot.Mt()                                     , theWeight);
   //theHistograms.fill("recoAll_WZjpt_deltaPhi", "#Delta#phi between recoWZ and recoJets[0]",  50,  -3.5,    3.5, WZjptDeltaPhi                                     , theWeight);
   //theHistograms.fill("recoAll_Zj0_deltaEta",   "#Delta#eta between reco Z and recoJets[0]", 100,  -7  ,    7  , recoZ.eta()-recoJets[0].eta()                     , theWeight);
   //theHistograms.fill("recoAll_Zj1_deltaEta",   "#Delta#eta between reco Z and recoJets[1]", 100,  -7  ,    7  , recoZ.eta()-recoJets[1].eta()                     , theWeight);
@@ -865,11 +870,13 @@ void WZAnalyzer::analyze(){
   
   //Reco analysis
   WZAnalyzer::RecoAnalysis(recoWZ, recoJet0, recoJet1);
-  
+
+  ///*
   if(genWZ.pt() != 0. && recoWZ.pt() != 0.){
     //Reco vs Gen analysis
     WZAnalyzer::GenRecoAnalysis(genWZ, genJet0, genJet1, recoWZ, recoJet0, recoJet1);
   }
+  //*/
 }
 
 void WZAnalyzer::end(TFile &){
