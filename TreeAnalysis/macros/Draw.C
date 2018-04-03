@@ -15,13 +15,17 @@ struct test{
   }
 };
 
+TString path = "~/Tesi/VVXAnalysis/TreeAnalysis/results/WZAnalyzer_MC/";
+vector<TString> samples = {"DYJetsToLL_M50", "TTJets", "WZQCD", "TTTo2L2Nu", "TTZToLL", "ZZTo4l", "TTWJets", "WZEW"};
+
+vector<Color_t> colors = {kRed, kOrange-3, kOrange-2, kGreen+1, kAzure+10, kBlue, kViolet+1, kMagenta};
+vector<Style_t> style = {3004, 3005, 3006, 3007, 3016, 3020, 3021, 3002};
 
 // ************************************ Draw1D ************************************
 
 void Draw1D(TString name, int cuts = 0, TString back_path = "WZQCD", TString sig_path = "WZEW"){
   
   // analysis results files
-  TString path = "~/Tesi/VVXAnalysis/TreeAnalysis/results/WZAnalyzer_MC/";
   TFile *EW = TFile::Open(path + sig_path + ".root");
   TFile *QCD = TFile::Open(path + back_path + ".root");
     
@@ -31,6 +35,12 @@ void Draw1D(TString name, int cuts = 0, TString back_path = "WZQCD", TString sig
   hEW->SetMarkerSize(0.6);
   hEW->SetMarkerStyle(21);
   hEW->SetLineColor(kGreen+2);
+
+  for(int j = 1; j <= hEW->GetNbinsX(); j++){
+    if(hEW->GetBinContent(j) < 0.){
+      hEW->SetBinContent(j, 0.);
+    }
+  }
   
   // backgroung histogram
   TH1F *hQCD = (TH1F*)QCD->Get(name);
@@ -38,6 +48,12 @@ void Draw1D(TString name, int cuts = 0, TString back_path = "WZQCD", TString sig
   hQCD->SetMarkerSize(0.6);
   hQCD->SetMarkerStyle(21);
   hQCD->SetLineColor(kRed);
+
+  for(int j = 1; j <= hQCD->GetNbinsX(); j++){
+    if(hQCD->GetBinContent(j) < 0.){
+      hQCD->SetBinContent(j, 0.);
+    }
+  }
   
   // legend
   TLegend *legend = new TLegend(0.75, 0.80, 0.95, 0.95);
@@ -137,8 +153,6 @@ void Draw1D(TString name, int cuts = 0, TString back_path = "WZQCD", TString sig
     delete legend;
     
     TFile *filetemp;
-    vector<TString> samples = {"DYJetsToLL_M50", "TTJets", "WZ", "TTZToLL", "ZZTo4l", "TTWJets", "WZEW"};
-    vector<Color_t> colors = {kRed, kOrange-3, kOrange-2, kGreen+1, kAzure+10, kBlue, kViolet+1, kMagenta};
     vector<TFile *> files;
     vector<TH1F *> histos;
     vector<float> maxs;
@@ -160,7 +174,14 @@ void Draw1D(TString name, int cuts = 0, TString back_path = "WZQCD", TString sig
       histos[i]->SetMarkerStyle(21);
       histos[i]->SetMarkerColor(colors[i]);
       histos[i]->SetLineColor(colors[i]);
+      histos[i]->SetFillColor(colors[i]);
       legenda2->AddEntry(histos[i], samples[i]);
+
+      for(int j = 1; j <= histos[i]->GetNbinsX(); j++){
+	if(histos[i]->GetBinContent(j) < 0.){
+	  histos[i]->SetBinContent(j, 0.);
+	}
+      }
 	
       maxs.push_back(histos[i]->GetMaximum());
     }
@@ -171,11 +192,11 @@ void Draw1D(TString name, int cuts = 0, TString back_path = "WZQCD", TString sig
     
     // drawing
     cDrawing->cd();
-    histos[0]->Draw();
+    histos[0]->Draw("hist");
     legenda2->Draw();
 
     for(int i = 1; i < (int)samples.size(); i++){
-      histos[i]->Draw("same");
+      histos[i]->Draw("histosame");
     }
     
   }
@@ -190,8 +211,6 @@ void Draw1D(TString name, int cuts = 0, TString back_path = "WZQCD", TString sig
     delete legend;
     
     TFile *filetemp;
-    vector<TString> samples = {"DYJetsToLL_M50", "TTJets", "WZ", "TTZToLL", "ZZTo4l", "TTWJets", "WZEW"};
-    vector<Color_t> colors = {kRed, kOrange-3, kOrange-2, kGreen+1, kAzure+10, kBlue, kViolet+1};
     vector<TFile *> files;
     vector<TH1F *> histos;
     
@@ -201,7 +220,7 @@ void Draw1D(TString name, int cuts = 0, TString back_path = "WZQCD", TString sig
     THStack *hstack = new THStack("hstack", name);
 
     // legend
-    TLegend *legenda2 = new TLegend(0.75, 0.80, 0.95, 0.95);
+    TLegend *legenda2 = new TLegend(0.75, 0.70, 0.95, 0.95);
 
     // analysis results file + histograms + legend
     for(int i = 0; i < (int)samples.size(); i++){
@@ -212,13 +231,94 @@ void Draw1D(TString name, int cuts = 0, TString back_path = "WZQCD", TString sig
       histos[i]->SetLineColor(colors[i]);
       histos[i]->SetFillColor(colors[i]);
       legenda2->AddEntry(histos[i], samples[i]);
+
+      for(int j = 1; j <= histos[i]->GetNbinsX(); j++){
+	if(histos[i]->GetBinContent(j) < 0.){
+	  histos[i]->SetBinContent(j, 0.);
+	}
+      }
+      
       hstack->Add(histos[i]);
     }
+
+    ///*
+    TH1F *hserror = (TH1F*)(hstack->GetStack()->Last())->Clone();    
+    hserror->SetMarkerStyle(1);
+    hserror->SetFillColor(kBlack);
+    hserror->SetFillStyle(3005);
+    legenda2->AddEntry(hserror, "MC statistical error");
+    hstack->SetMaximum(hserror->GetBinContent(hserror->GetMaximumBin()) + hserror->GetBinError(hserror->GetMaximumBin()));
+    //*/
 
     // drawing
     cStack->cd();
     hstack->Draw("hist");
     legenda2->Draw();
+    hserror->Draw("samee2");
+  }
+    break;
+    
+  case 4:{
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ case 4 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    delete hEW;
+    delete hQCD;
+    delete EW;
+    delete QCD;
+    delete legend;
+    
+    TFile *filetemp;
+    vector<TFile *> files;
+    vector<TH1F *> histos;
+    
+    // canvas
+    TCanvas *cStack = new TCanvas("cStack", name, 10, 0, 1280, 1024);
+    gStyle->SetOptStat(0);
+    THStack *hstack = new THStack("hstack", name);
+
+    // legend
+    TLegend *legenda2 = new TLegend(0.75, 0.70, 0.95, 0.95);
+
+    // analysis results file + histograms + legend
+    for(int i = 0; i < (int)samples.size(); i++){
+      filetemp = TFile::Open(path + samples[i] + ".root");
+      files.push_back(filetemp);
+      
+      histos.push_back((TH1F*)files[i]->Get(name));
+      histos[i]->SetLineColor(colors[i]);
+      histos[i]->SetFillColor(colors[i]);
+      legenda2->AddEntry(histos[i], samples[i]);
+
+      for(int j = 1; j <= histos[i]->GetNbinsX(); j++){
+	if(histos[i]->GetBinContent(j) < 0.){
+	  histos[i]->SetBinContent(j, 0.);
+	}
+      }
+      
+      hstack->Add(histos[i]);
+    }
+
+    ///*
+    TH1F *hserror = (TH1F*)(hstack->GetStack()->Last())->Clone();    
+    hserror->SetMarkerStyle(1);
+    hserror->SetFillColor(kBlack);
+    hserror->SetFillStyle(3005);
+    legenda2->AddEntry(hserror, "MC statistical error");
+    //*/
+
+    TFile *filedata = TFile::Open(path + "Data.root");
+    TGraph *hdata = (TGraph*)filedata->Get(name);
+    hdata-> SetMarkerSize(0.6);
+    hdata-> SetMarkerStyle(21);
+    legenda2->AddEntry(hdata, "data");
+
+    hstack->SetMaximum(hserror->GetBinContent(hserror->GetMaximumBin()) + hserror->GetBinError(hserror->GetMaximumBin()));
+
+    // drawing
+    cStack->cd();
+    hstack->Draw("hist");
+    legenda2->Draw();
+    hserror->Draw("samee2");
+    hdata->Draw("same");
   }
     break;
     
@@ -228,6 +328,7 @@ void Draw1D(TString name, int cuts = 0, TString back_path = "WZQCD", TString sig
     cout << "Set case = 1 to compare signal and one background before and after all cuts." << endl;
     cout << "Set case = 2 to compare all samples" << endl;
     cout << "Set case = 3 to get stack graphs" << endl;
+    cout << "Set case = 4 to compare MC and data" << endl;
     
     return;
   }
@@ -239,7 +340,6 @@ void Draw1D(TString name, int cuts = 0, TString back_path = "WZQCD", TString sig
 
 void Draw1DNorm(TString name, int cuts = 0, TString back_path = "WZQCD", TString sig_path = "WZEW"){
   // analysis results files
-  TString path = "~/Tesi/VVXAnalysis/TreeAnalysis/results/WZAnalyzer_MC/";
   TFile *EW = TFile::Open(path + sig_path + ".root");
   TFile *QCD = TFile::Open(path + back_path + ".root");
 
@@ -251,6 +351,12 @@ void Draw1DNorm(TString name, int cuts = 0, TString back_path = "WZQCD", TString
   hEW->SetMarkerColor(kGreen+2);
   hEW->SetLineColor(kGreen+2);
 
+  for(int j = 1; j <= hEW->GetNbinsX(); j++){
+    if(hEW->GetBinContent(j) < 0.){
+      hEW->SetBinContent(j, 0.);
+    }
+  }
+  
   // backgroung histogram
   TH1F *hQCD = (TH1F*)QCD->Get(name);
   hQCD->Scale(1/hQCD->Integral(0, -1));
@@ -259,6 +365,12 @@ void Draw1DNorm(TString name, int cuts = 0, TString back_path = "WZQCD", TString
   hQCD->SetMarkerColor(kRed);
   hQCD->SetLineColor(kRed);
 
+  for(int j = 1; j <= hQCD->GetNbinsX(); j++){
+    if(hQCD->GetBinContent(j) < 0.){
+      hQCD->SetBinContent(j, 0.);
+    }
+  }
+  
   // legend
   TLegend *legend = new TLegend(0.75, 0.80, 0.95, 0.95);
   legend->AddEntry(hEW, sig_path);
@@ -350,8 +462,6 @@ void Draw1DNorm(TString name, int cuts = 0, TString back_path = "WZQCD", TString
     delete legend;
     
     TFile *filetemp;
-    vector<TString> samples = {"DYJetsToLL_M50", "TTJets", "WZ", "TTZToLL", "ZZTo4l", "TTWJets", "WZEW"};
-    vector<Color_t> colors = {kRed, kOrange-3, kOrange-2, kGreen+1, kAzure+10, kBlue, kViolet+1, kMagenta};
     vector<TFile *> files;
     vector<TH1F *> histos;
     vector<float> maxs;
@@ -375,6 +485,12 @@ void Draw1DNorm(TString name, int cuts = 0, TString back_path = "WZQCD", TString
       histos[i]->SetMarkerColor(colors[i]);
       histos[i]->SetLineColor(colors[i]);
       legenda2->AddEntry(histos[i], samples[i]);
+
+      for(int j = 1; j <= histos[i]->GetNbinsX(); j++){
+	if(histos[i]->GetBinContent(j) < 0.){
+	  histos[i]->SetBinContent(j, 0.);
+	}
+      }
 	
       maxs.push_back(histos[i]->GetMaximum());
     }
@@ -384,11 +500,11 @@ void Draw1DNorm(TString name, int cuts = 0, TString back_path = "WZQCD", TString
     histos[0]->SetMaximum(1.1 * maxs[0]);
     // drawing
     cDrawing->cd();
-    histos[0]->Draw();
+    histos[0]->Draw("hist");
     legenda2->Draw();
 
     for(int i = 1; i < (int)samples.size(); i++){
-      histos[i]->Draw("same");
+      histos[i]->Draw("histsame");
     }
     
   }
@@ -403,8 +519,6 @@ void Draw1DNorm(TString name, int cuts = 0, TString back_path = "WZQCD", TString
     delete legend;
     
     TFile *filetemp;
-    vector<TString> samples = {"DYJetsToLL_M50", "TTJets", "WZ", "TTZToLL", "ZZTo4l", "TTWJets", "WZEW"};
-    vector<Color_t> colors = {kRed, kOrange-3, kOrange-2, kGreen+1, kAzure+10, kBlue, kViolet+1};
     vector<TFile *> files;
     vector<TH1F *> histos;
     
@@ -426,6 +540,13 @@ void Draw1DNorm(TString name, int cuts = 0, TString back_path = "WZQCD", TString
       histos[i]->SetLineColor(colors[i]);
       histos[i]->SetFillColor(colors[i]);
       legenda2->AddEntry(histos[i], samples[i]);
+
+      for(int j = 1; j <= histos[i]->GetNbinsX(); j++){
+	if(histos[i]->GetBinContent(j) < 0.){
+	  histos[i]->SetBinContent(j, 0.);
+	}
+      }
+      
       hstack->Add(histos[i]);
     }
 
@@ -453,7 +574,6 @@ void Draw1DNorm(TString name, int cuts = 0, TString back_path = "WZQCD", TString
 
 void Draw2D(TString name, int cuts = 0, TString back_path = "WZQCD", TString sig_path = "WZEW"){
   // analysis results files
-  TString path = "~/Tesi/VVXAnalysis/TreeAnalysis/results/WZAnalyzer_MC/";
   TFile *EW = TFile::Open(path + sig_path + ".root");
   TFile *QCD = TFile::Open(path + back_path + ".root");
 
@@ -548,7 +668,6 @@ void Draw2D(TString name, int cuts = 0, TString back_path = "WZQCD", TString sig
 void SSB(TString name, int cut = 1, TString back_path = "WZQCD", TString sig_path = "WZEW"){
   
   // analysis results files
-  TString path = "~/Tesi/VVXAnalysis/TreeAnalysis/results/WZAnalyzer_MC/";
     
   // canvas
   TCanvas *cDrawing = new TCanvas("cDrawingSSB", name, 10, 0, 1280, 1024);
@@ -580,9 +699,14 @@ void SSB(TString name, int cut = 1, TString back_path = "WZQCD", TString sig_pat
     for(int i = 1; i <= hEW->GetNbinsX(); i++){
       signal = hEW->Integral(i, -1);
       background = hQCD->Integral(i, -1);
-      weight = signal/sqrt(background);
-      
-      hSSB->Fill(hEW->GetBinCenter(i), weight);
+
+      if(background > 0.){
+	weight = signal/sqrt(background);	
+	hSSB->Fill(hEW->GetBinCenter(i), weight);
+      }
+      else{
+	hSSB->Fill(hEW->GetBinCenter(i), -0.5);
+      }
     }
     
     // drawing
@@ -596,7 +720,6 @@ void SSB(TString name, int cut = 1, TString back_path = "WZQCD", TString sig_pat
   case 1:{ 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ case 1 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
     TFile *filetemp;
-    vector<TString> samples = {"DYJetsToLL_M50", "TTJets", "WZ", "TTZToLL", "ZZTo4l", "TTWJets", "WZEW"};
     vector<TFile *> files;
     vector<TH1F *> histos;
     
@@ -609,17 +732,34 @@ void SSB(TString name, int cut = 1, TString back_path = "WZQCD", TString sig_pat
     }
     
     // signal/sqrt(background) histogram
-    TH1F *hSSB = new TH1F("hSSB", name + " #rightarrow #frac{S}{#sqrt{#sum B}}", histos[0]->GetNbinsX(), histos[0]->GetBinLowEdge(1), histos[0]->GetBinLowEdge(histos[0]->GetNbinsX()) + histos[0]->GetBinWidth(histos[0]->GetNbinsX()));
+    TH1F *hSSB = new TH1F("hSSB", name + " #rightarrow #frac{S}{#sqrt{#SigmaB}}", histos[0]->GetNbinsX(), histos[0]->GetBinLowEdge(1), histos[0]->GetBinLowEdge(histos[0]->GetNbinsX()) + histos[0]->GetBinWidth(histos[0]->GetNbinsX()));
     
     for(int i = 1; i <= histos[0]->GetNbinsX(); i++){
+      background = 0;
+      signal = histos[samples.size() - 1]->Integral(i, -1);
 
-      for(int j = 0; j <= samples.size() - 2; j++){
+      /*
+      for(int j = 0; j < samples.size() - 1; j++){
 	background = background + histos[j]->Integral(i, -1);
       }
+      */
+
+      float back0 = histos[0]->Integral(i, -1);
+      float back1 = histos[1]->Integral(i, -1);
+      float back2 = histos[2]->Integral(i, -1);
+      float back3 = histos[3]->Integral(i, -1);
+      float back4 = histos[4]->Integral(i, -1);
+      float back5 = histos[5]->Integral(i, -1);
+
+      background = back0 + back1 + back2 + back3 + back4 + back5;
       
-      signal = histos[samples.size() - 1]->Integral(i, -1);
-      weight = signal/sqrt(background);
-      hSSB->Fill(histos[0]->GetBinCenter(i), weight);
+      if(background > 0){
+	weight = signal/sqrt(background);
+	hSSB->Fill(histos[0]->GetBinCenter(i), weight);
+      }
+      else{
+	hSSB->Fill(histos[0]->GetBinCenter(i), -0.5);
+      }
     }
     
     // drawing
@@ -644,7 +784,6 @@ void SSB(TString name, int cut = 1, TString back_path = "WZQCD", TString sig_pat
 // ************************************* Cuts *************************************
 
 void Cuts(int cuts = 0, TString back_path = "WZQCD", TString sig_path = "WZEW"){
-  TString path = "~/Tesi/VVXAnalysis/TreeAnalysis/results/WZAnalyzer_MC/";
   float weight;
   vector<TString> namebin = {"All events", "ZLCand's size > 0", "3^{rd} lep pass full sel", "60 < m_{Z} < 120 #frac{GeV}{c^{2}}", "jets' size > 2", "p_{T, MET} > 30 #frac{GeV}{c}", "30 < m_{T, W^{#pm}} < 500 #frac{GeV}{c^{2}}", "m_{J_{0}J_{1}} > 258,5 #frac{GeV}{c^{2}}", "|#Delta#eta| > 2,1", "Z_{llJ_{0}} > 0,6"};
   
@@ -792,10 +931,7 @@ void Cuts(int cuts = 0, TString back_path = "WZQCD", TString sig_path = "WZEW"){
     
   case 1:{
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ case 1 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
-    TFile *filetemp;    
-    vector<TString> samples = {"100/DYJetsToLL_M50", "100/TTJets", "100/WZ", "100/TTZToLL", "100/ZZTo4l", "100/TTWJets", "100/WZEW"};
-    vector<Color_t> colors = {kRed, kOrange-3, kOrange-2, kGreen+1, kAzure+10, kBlue, kViolet+1, kMagenta};
-    vector<Style_t> style = {3004, 3005, 3006, 3007, 3016, 3020, 3002};
+    TFile *filetemp;
     vector<TFile *> files;
     vector<TH1F *> histos;
     vector<TH1F *> histos2;
