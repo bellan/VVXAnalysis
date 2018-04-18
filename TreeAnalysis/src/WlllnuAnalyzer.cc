@@ -338,8 +338,8 @@ void WlllnuAnalyzer::analyze(){
       std::vector <Zltype> Zl; //Z and lepton
       Vtype W;
       bool isNuAlone = NULL; //in order to mark W -> nu + lll or W -> l + llnu
-      int diagramId = 0;
-    
+      //int diagramId = 0;
+      
       if(finalid == 49 && electrons.size() == 2){//2e 1mu 1nu_mu
 	Zl.push_back(Zltype(Vtype(electrons[0], electrons[1], 23),muons[0]));
 	pCombos.push_back(pairParticle(nu,Particle(electrons[0].p4()+electrons[1].p4()+muons[0].p4())));
@@ -412,7 +412,7 @@ void WlllnuAnalyzer::analyze(){
       
       else cout << Red("invalid total id") << endl;
       cout << Green("\n # of valid Zl: ")  << Green(Zl.size()) << endl;
-
+      
       theHistograms.fill("isNuAlone","type of diagram", 56, -0.5, 55.5, isNuAlone+theCut.second);
       
       if(theCut.second != 0) continue;
@@ -425,7 +425,7 @@ void WlllnuAnalyzer::analyze(){
       theHistograms.fill("mTcombo1","mT second combo", 100, 0, 100, mT(pCombos[1].first, pCombos[1].second));
       theHistograms.fill("mTcombo2","mT third combo", 100, 0, 100, mT(pCombos[2].first, pCombos[2].second));
       theHistograms.fill("mTcomboMasslllnu", "mT theCombo vs mass lllnu", 100, 50, 100, 200, 0, 100, masslllnu,mT(theCombo.first, theCombo.second));
-      diagramId = abs(nu.id()) + abs(Zl[0].second.id()) + abs(Zl[0].first.daughter(0).id());
+      //diagramId = abs(nu.id()) + abs(Zl[0].second.id()) + abs(Zl[0].first.daughter(0).id());
       //isNuAlone ? theHistograms.fill("diagramId","type of diagram", 21, -10.5, 10.5, diagramId-30) : theHistograms.fill("diagramId","type of diagram", 21, -10.5, 10.5, -(diagramId-30));
       //theHistograms.fill("absDiagId","type of diagram", 7, 3.5, 10.5, diagramId-30);
       isNuAlone ? theHistograms.fill("ptnuAlone",   "pt nu when is alone",   100, 0,   200,  nu.pt()) : theHistograms.fill("ptnuNoAlone",   "pt nu when is forming Z",   100, 0,   200,  nu.pt());
@@ -446,7 +446,7 @@ void WlllnuAnalyzer::analyze(){
       //theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[1].p4()));
       //theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[2].p4()));
       //theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[1].p4(), leptons[2].p4()));
-            
+      
       foreach(const Zltype zl, Zl){
 	
 	W = Vtype(theCombo.first, theCombo.second, copysign(24, zl.second.charge()));
