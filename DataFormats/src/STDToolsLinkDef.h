@@ -1,10 +1,10 @@
 
-#include "../interface/Particle.h"
-#include "../interface/Lepton.h"
-#include "../interface/Jet.h"
-#include "../interface/Electron.h"
-#include "../interface/Boson.h"
-#include "../interface/DiBoson.h"
+#include "Particle.h"
+#include "Lepton.h"
+#include "Jet.h"
+#include "Electron.h"
+#include "Boson.h"
+#include "DiBoson.h"
 
 #ifdef __CINT__
 

@@ -19,6 +19,7 @@ message(STATUS ${ROOT_LIBS})
 
 set(DataFormats ../DataFormats)
 set(DataFormats_src ${DataFormats}/src)
+set(DataFormats_interface ${DataFormats}/interface)
 set(Commons_src ../Commons/src)
 
 
@@ -36,9 +37,9 @@ set(EventDF_LINKDEF ${DataFormats_src}/STDToolsLinkDef.h)
 set(EventDF_DICTIONARY STDTools.cxx)
 
 include(FindROOT.cmake)
-ROOT_GENERATE_DICTIONARY("${EventDF_HEADERS}" "${EventDF_LINKDEF}" "${EventDF_DICTIONARY}" "${include_directories}")
+ROOT_GENERATE_DICTIONARY("${DataFormats_interface}" "${EventDF_HEADERS}" "${EventDF_LINKDEF}" "${EventDF_DICTIONARY}" "${include_directories}")
 
-include_directories(${CMAKE_INCLUDE_PATH})
+include_directories(${CMAKE_INCLUDE_PATH} ${DataFormats_interface})
 set(EventAnalyzer_SRCS ${EventDF_DICTIONARY} ${SRC}/MCInfo.cc ${SRC}/EventAnalyzer.cc ${Commons_src}/SignalDefinitions.cc ${Commons_src}/LeptonScaleFactors.cc ${Commons_src}/RegionTypes.cc ${Commons_src}/StringTools.cc)
 
 #Set here the location of the source code of your analysis
