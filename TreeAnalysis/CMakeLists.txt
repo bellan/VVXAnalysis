@@ -28,7 +28,9 @@ set(TreeAnalysis_interface interface)
 set(BIN bin)
 set(SRC src)
 
-set(CMAKE_INCLUDE_PATH ${BASE} ${TreeAnalysis_interface}) 
+set(BOOST /opt/local/include/)
+
+set(CMAKE_INCLUDE_PATH ${BASE} ${TreeAnalysis_interface} ${BOOST}) 
 set(EventDF_HEADERS ${BASE}/VVXAnalysis/DataFormats/interface/*.h)
 set(EventDF_LINKDEF ${DataFormats_src}/STDToolsLinkDef.h)
 set(EventDF_DICTIONARY STDTools.cxx)
