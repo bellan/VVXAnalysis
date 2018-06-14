@@ -2,6 +2,9 @@
 #define VVXAnalysis_Commons_AriEle_h
 
 #include "VVXAnalysis/DataFormats/interface/Particle.h"
+#include "VVXAnalysis/DataFormats/interface/Lepton.h"
+#include "VVXAnalysis/DataFormats/interface/Boson.h"
+#include "VVXAnalysis/DataFormats/interface/DiBoson.h" 
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 
 using namespace phys;

@@ -1,7 +1,7 @@
-#ifndef WWsoAnalyzer_h
-#define WWsoAnalyzer_h
+#ifndef WWosAnalyzer_h
+#define WWosAnalyzer_h
 
-/** \class WWsoAnalyzer
+/** \Class WWosAnalyzer
  *  Concrete class for VVX analysis
  *
  *  $Date: 2013/03/15 13:37:31 $
@@ -15,19 +15,14 @@
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 
-class WWsoAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWsoAnalyzer>{
-
-public:
-
-  //, const std::string& filename, const double& lumi = 1., const double& externalXSection = -1., bool doBasicPlots = false
-
- WWosAnalyzer(const AnalysisConfiguration& configuration)
-   : EventAnalyzer(*(new Selector<WWsoAnalyzer>(*this)), 
-		   configuration){
+class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
+ public:
+    WWosAnalyzer(const AnalysisConfiguration& configuration) 
+      : EventAnalyzer(*(new Selector<WWosAnalyzer>(*this)), configuration)){
     //theHistograms.profile(genCategory);
   }
 
-  virtual ~WWsoAnalyzer(){}
+  virtual ~WWosAnalyzer(){}
 
   virtual void analyze();
   
@@ -35,12 +30,11 @@ public:
 
 
  private:
-  friend class Selector<WWsoAnalyzer>;
+  friend class Selector<WWosAnalyzer>;
   template< class PAR >
     bool ZBosonDefinition(phys::Boson<PAR> cand) const{
     bool checkCharge = cand.daughter(0).charge() + cand.daughter(1).charge() == 0;
     return checkCharge && fabs(cand.p4().M() - phys::ZMASS) < 30;
-  }
 
 
   template< class PAR >
