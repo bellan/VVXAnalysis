@@ -6,7 +6,7 @@
  *
  *  $Date: 2013/03/15 13:37:31 $
  *  $Revision: 1.4 $
- *  \author R. Bellan - UNITO <riccardo.bellan@cern.ch>
+ *  \author 
  */
 
 
@@ -18,7 +18,7 @@
 class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
  public:
     WWosAnalyzer(const AnalysisConfiguration& configuration) 
-      : EventAnalyzer(*(new Selector<WWosAnalyzer>(*this)), configuration)){
+      : EventAnalyzer(*(new Selector<WWosAnalyzer>(*this)), configuration){
     //theHistograms.profile(genCategory);
   }
 
@@ -35,7 +35,7 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
     bool ZBosonDefinition(phys::Boson<PAR> cand) const{
     bool checkCharge = cand.daughter(0).charge() + cand.daughter(1).charge() == 0;
     return checkCharge && fabs(cand.p4().M() - phys::ZMASS) < 30;
-
+  }
 
   template< class PAR >
     bool WBosonDefinition(phys::Boson<PAR> cand) {
