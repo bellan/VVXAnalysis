@@ -6,7 +6,7 @@
  *
  *  $Date: 2013/03/15 13:37:31 $
  *  $Revision: 1.4 $
- *  \author 
+ *  \author A. Mecca alberto.mecca@edu.unito.it
  */
 
 
