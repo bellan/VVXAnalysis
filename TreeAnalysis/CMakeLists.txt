@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 2.6)
 
 project(VVXAnalysis) 
 
-
+set(CMAKE_MACOSX_RPATH 0)
 
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 #---Locate the ROOT package and defines a number of variables (e.g. ROOT_INCLUDE_DIRS)
@@ -52,14 +52,15 @@ set(VVXAnalyzer_SRCS ${EventAnalyzer_SRCS} ${SRC}/VVXAnalyzer.cc ${SRC}/ZZWAnaly
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN})
 
 add_library(TreeAnalysis SHARED G__TreeAnalysis.cxx)
+target_link_libraries(TreeAnalysis ${ROOT_LIBRARIES})
 add_executable(eventAnalyzer ${BIN}/eventAnalyzer.cpp ${SRC}/AnalysisFactory.cc ${VVXAnalyzer_SRCS})
-target_link_libraries(eventAnalyzer TreeAnalysis ${ROOT_LIBRARIES})
+target_link_libraries(eventAnalyzer TreeAnalysis)
 
 add_executable(treeFilter ${BIN}/treeFilter.cpp ${EventDF_DICTIONARY})
-target_link_libraries(treeFilter TreeAnalysis ${ROOT_LIBRARIES})
+target_link_libraries(treeFilter TreeAnalysis)
 
 add_executable(genEventAnalyzer ${BIN}/genEventAnalyzer.cpp ${SRC}/GenEventAnalyzer.cc ${EventAnalyzer_SRCS})
-target_link_libraries(genEventAnalyzer TreeAnalysis ${ROOT_LIBRARIES})
+target_link_libraries(genEventAnalyzer TreeAnalysis)
 
 
 
