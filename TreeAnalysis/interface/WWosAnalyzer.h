@@ -35,8 +35,8 @@
 	#define NUMBER_OF_EVENTS ULONG_MAX
 #endif
 
-#define DO_STATISTICS_ON_PARTICLES
-#define DO_STATISTICS_ON_EVENTS
+//#define DO_STATISTICS_ON_PARTICLES
+//#define DO_STATISTICS_ON_EVENTS
 
 class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 	public:
