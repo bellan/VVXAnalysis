@@ -17,18 +17,26 @@
 
 //#define TTJets_SMALL
 #define WWEW
+//#define WWQCD
+//#define WWEWQCD
 
 #ifdef TTJets_SMALL	//40 Mb sample
 	#define NUMBER_OF_EVENTS 9055
 #elif defined WWEW
 	#define NUMBER_OF_EVENTS 499500
+#elif defined WWQCD
+	#define NUMBER_OF_EVENTS 499600
+#elif defined WWEWQCD
+	#define NUMBER_OF_EVENTS 467264
+#elif defined TTTo2L2Nu
+	#define NUMBER_OF_EVENTS 18539890
 #else
 	#include <climits>
 	#define NUMBER_OF_EVENTS ULONG_MAX
 #endif
 
-//#define DO_STATISTICS_ON_PARTICLES
-//#define DO_STATISTICS_ON_EVENTS
+#define DO_STATISTICS_ON_PARTICLES
+#define DO_STATISTICS_ON_EVENTS
 
 class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 	public:
@@ -76,10 +84,9 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		//Function for efficiency analysis
 		template <class T, class P, typename C>
 		void analyzeEfficiency(std::vector<T>* gen, std::vector<P>* rec, std::string name, C& counter);
-		//void analyzeEfficiency();
 		
 		template <class P, class T>
-		bool checkMatch(const /*phys::Particle&*/P& reconstructed, /*const phys::Particle&*/ T& generated,  const float& tolerance);	//Checks deltaR
+		bool checkMatch(const /*phys::Particle&*/P& reconstructed, const /*phys::Particle&*/ T& generated,  const float& tolerance);	//Checks deltaR
 		phys::Particle* findMatchingParticle(const phys::Particle& rec, std::vector<phys::Lepton>* candidates);
 		
 		void normalizeHistograms(std::string name);
@@ -88,7 +95,6 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		void fillParticlePlots(const std::string &, const phys::Particle & );
 		
 		void doSomeFits();
-		void getFitInfo(TF1*);
 		
 		#ifdef DO_STATISTICS_ON_PARTICLES
 		void initStatistics();
@@ -120,11 +126,15 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		
 		long matchedElectrons;
 		long matchedMuons;
+		int wrongChargeE;
+		int wrongChargeM;
 		long totalElectrons;
 		long totalMuons;
 		
 		clock_t startTime;
 };
+
+void getFitInfo(TF1*);
 #endif
 
 
