@@ -4,7 +4,11 @@
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 
 #include <TF1.h>
+#include <TH1.h>
 #include <vector>
+#include <algorithm>    // std::min
+#include <time.h>
+#include <string>
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
@@ -14,7 +18,8 @@ using namespace boost::assign;
 
 using std::cout;
 using std::endl;
-
+using std::vector;
+using std::string;
 
 using namespace phys;
 
@@ -28,16 +33,21 @@ void WWosAnalyzer::begin(){
 	cout<<" \tBegin of WWos\t ";
 	for(char i=0; i<25; i++) cout<<"-";
 	cout<<"\n";
+	startTime = clock();
 }
 
 void WWosAnalyzer::analyze(){
-	initStatistics();
-	std::vector<phys::Particle>* genElectrons = new std::vector<phys::Particle>();	//genElectrons in this event
-	std::vector<phys::Particle>* genMuons 		= new std::vector<phys::Particle>();	//muons in this event
-	std::vector<phys::Particle>* leptons			= new std::vector<phys::Particle>();	//every lepton in this event
+	#ifdef DO_STATISTICS_ON_PARTICLES
+	//initStatistics();
+	#endif
+	genElectrons 	= new std::vector<phys::Particle>();	//prompt genElectrons in this event
+	genMuons 		= new std::vector<phys::Particle>();	//prompt genMuons in this event
+	genLeptons 		= new std::vector<phys::Particle>();	//every prompt genLepton in this event
 	
 	foreach(const phys::Particle &gen, *genParticles){
+		#ifdef DO_STATISTICS_ON_PARTICLES
 		tempStatisticParticles(gen);
+		#endif
 		if(!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt))) {
 			continue;
 		}
@@ -45,26 +55,28 @@ void WWosAnalyzer::analyze(){
 			case 11:
 				fillParticlePlots("genElectrons", gen);
 				genElectrons->push_back(gen);
-				leptons->push_back(gen);
+				genLeptons->push_back(gen);
 			case 13:
 				fillParticlePlots("genMuons", gen);
 				genMuons->push_back(gen);
-				leptons->push_back(gen);
+				genLeptons->push_back(gen);
 			case 15:
-				fillParticlePlots("taus", gen);
-				leptons->push_back(gen);
+				fillParticlePlots("geTaus", gen);
+				genLeptons->push_back(gen);
 			default:
 				continue;
 		}
 		
 	}
-	tempStatisticEvents();
+	#ifdef DO_STATISTICS_ON_EVENTS
+	//tempStatisticEvents();
 	//fillBasicPlots();		//Inherited from EventAnalyzer
-	inTheLastEvent();	
+	#endif
 	std::sort(genElectrons->begin(), genElectrons->end(), PtComparator());	//Descending order
 	std::sort(genMuons->begin(), genMuons->end(), PtComparator());
-	std::sort(leptons->begin(), leptons->end(), PtComparator());
+	std::sort(genLeptons->begin(), genLeptons->end(), PtComparator());
   
+  /*
   bool genElectronsignal = false;
   bool muonSignal = false;
   
@@ -83,7 +95,7 @@ void WWosAnalyzer::analyze(){
 	if(genMuons->size() >=2){
 		if(
 				genMuons->at(0).pt() > 20 && 
-				met->p4().E() > 20 &&
+				met->p4().E() > 100 &&
 				genMuons->at(1).pt() > 15 && 
 				genMuons->at(0).charge() * genMuons->at(1).charge() == -1
 			) 
@@ -100,59 +112,127 @@ void WWosAnalyzer::analyze(){
 		theHistograms.fill("Muon_pt_analyzed", "Muon_pt_analyzed", 200, 0, 200, genMuons->at(0).pt());
 	}
 	if((genElectronsignal && !muonSignal) || (muonSignal && !genElectronsignal)) passingSelection++;
+	*/
 	
-	//Efficiency
-	foreach(const phys::Particle & ele, *electrons){
-		findElectronMatch(ele, genElectrons);
-	}
+	//Efficiency of particle reconstruction
+	//analyzeEfficiency();
+	analyzeEfficiency(genElectrons, electrons, string("Electrons"), matchedElectrons);
+	analyzeEfficiency(genMuons, muons, string("Muons"), matchedMuons);
+	
 	totalElectrons += genElectrons->size();
+	totalMuons += genMuons->size();
 	
-	/*
 	delete genElectrons;
 	delete genMuons;
-	delete leptons;
-	*/
+	delete genLeptons;
 	
 	return;
 }
 
-void WWosAnalyzer::end(){
+void WWosAnalyzer::end(TFile &){
 	//doSomeFits();
-	cout<<"Events: "<<9055<<" \tPassing selection: "<<passingSelection<<" \tEfficiency: "<<(1.-(float)passingSelection/9055)*100<<" %\n";
-	cout<<"Electron events: "<<electronEvents<<" \tMuon events: "<<muonEvents<<"\n";
+	cout<<"Events: "<<NUMBER_OF_EVENTS<<" \tPassing selection: "<<passingSelection<<" \tEfficiency: "<<(1.-(float)passingSelection/NUMBER_OF_EVENTS)*100.<<" %\n";
+	//cout<<"Electron events: "<<electronEvents<<" \tMuon events: "<<muonEvents<<"\n";
 	cout<<"Matched Electrons: "<<matchedElectrons<<" \tTotal Electrons: "<<totalElectrons<<" \tEfficiency: "<<(float)matchedElectrons/totalElectrons*100.<< "%" <<"\n";
+	cout<<"Matched Muons: "<<matchedMuons<<" \tTotal Muons: "<<totalMuons<<" \tEfficiency: "<<(float)matchedMuons/totalMuons*100.<< "%" <<"\n";
+	
+	normalizeHistograms(string("Electrons"));
+	normalizeHistograms(string("Muons"));
+	
+	cout<<"\nElapsed Time: "<< (float)(clock()-startTime)/CLOCKS_PER_SEC<<" s\n";
 	for(char i=0; i<25; i++) cout<<"-";
-	cout<<" \tEnd of WWos\t ";
+	cout<<" \tEnd of WWos\t";
 	for(char i=0; i<25; i++) cout<<"-";
 	cout<<"\n\n";
 }
 
-
-//	Helper functions
-void WWosAnalyzer::findElectronMatch(const phys::Particle & rec, std::vector<phys::Particle> * gen){
-	foreach(const phys::Particle & genEle, *gen){
-		if(electronMatch(rec, genEle)){
-			matchedElectrons++;
-			return;
+//Efficiency analysis
+template <class T, class P, typename C>
+void WWosAnalyzer::analyzeEfficiency(vector<T>* genGroup, vector<P>* recGroup, std::string name, C& counter){
+	
+	foreach(const phys::Particle & gen, *genGroup){
+		theHistograms.fill("gen"+name+"_vs_eta","gen"+name+"_vs_eta", 26*2+1, -2.6,2.6,gen.eta(), 1);
+		theHistograms.fill("gen"+name+"_vs_pt","gen"+name+"_vs_pt", 100, 0., 500., gen.pt(), 1);
+		
+		phys::Particle* cand = findMatchingParticle(gen, recGroup);	//candidate is a reconstructed particle
+		if(cand != nullptr){
+			counter++;
+			if(checkMatch(gen, *cand, 0.1)){
+				//Resolution vs Eta
+				theHistograms.fill(name+"Matched_vs_eta",name+"Matched_vs_eta", 26*2+1, -2.6,2.6, cand->eta(),1);
+				//Resolution vs pt
+				theHistograms.fill(name+"Matched_vs_pt",name+"Matched_vs_pt",100,0.,500.,cand->pt(),1);
+			}
+			//Resolution vs Tolerance
+			for(int cTolerance = 1; cTolerance <= 20; cTolerance++){ //I like to iterate on ints
+				if(checkMatch(gen, *cand, (double)cTolerance/100.)){
+					theHistograms.fill(name+"Efficiency_vs_tolerance",name+"Efficiency_vs_tolerance", 20, 0.01, 0.21, (float)cTolerance/100.+0.0001, 1);	//To be normalized in end()
+				}
+			}
 		}
 	}
 }
 
-bool WWosAnalyzer::electronMatch(const phys::Particle & reconstructed, const phys::Particle & generated){
-	//if(reconstructed.charge() != generated.charge()) return false;
-	cout<<physmath::deltaR(reconstructed, generated);
-	//return physmath::deltaR(reconstructed, generated) < 10.;
-	return true;
+/*void WWosAnalyzer::analyzeEfficiency(){
+	foreach(const phys::Particle & gen, *genElectrons){
+		theHistograms.fill("genElectrons_vs_eta","genElectrons_vs_eta", 26*2+1, -2.6,2.6,gen.eta(), 1);
+		
+		phys::Particle* candidate = findMatchingParticle(gen, electrons);	//candidate is a reconstructed particle
+		if(candidate != nullptr){
+			matchedElectrons++;
+			//Resolution vs Eta
+			if(checkMatch(gen, *candidate, 0.1)){
+				theHistograms.fill("electronsMatched_vs_eta","electronsMatched_vs_eta", 26*2+1, -2.6,2.6, candidate->eta(),1);
+			}
+			//Resolution vs Tolerance
+			for(int cTolerance = 1; cTolerance <= 20; cTolerance++){
+				if(checkMatch(gen, *candidate, (double)cTolerance/100.)){
+					theHistograms.fill("electronsMatched_vs_tolerance","electronsMatched_vs_tolerance", 20, 0.01, 0.21, (float)cTolerance/100.+0.0001, 1);
+				}
+			}
+		}
+	}
+}*/
+
+
+//	Helper functions
+
+phys::Particle* WWosAnalyzer::findMatchingParticle(const phys::Particle& rec, std::vector<phys::Lepton>* candidates){
+	if(candidates->size() == 0) return nullptr;
+	int minPos = 0;
+	double deltaRMin = physmath::deltaR(rec, candidates->at(0));
+	for(int i = 0; i < candidates->size(); i++){
+		static double temp = physmath::deltaR(rec, candidates->at(i));
+		if(temp < deltaRMin){
+			deltaRMin = temp;
+			minPos = i;
+		}
+	}
+	// We've searched the candidate with the minmimum deltaR. Now we check if this makes sense
+	/*if(checkMatch(rec, candidates->at(minPos), 0.1)){
+		return & (candidates->at(minPos));
+	} else return nullptr;	//Otherwise we can assume that rec is something faking an electron*/
+	
+	return & (candidates->at(minPos));
 }
 
+template <class P, class T>
+bool WWosAnalyzer::checkMatch(const /*phys::Particle&*/P& reconstructed, /*const phys::Particle&*/ T& generated,  const float& tolerance){
+	//if(reconstructed.charge() != generated.charge()) return false;	//NO
+	return physmath::deltaR(reconstructed, generated) < tolerance;
+}
 
-void WWosAnalyzer::inTheLastEvent(){	//For some reasons, end() is not executed at the end of the analysis
-	static int event = 0;
-	event++;
-	if(event == 9055){
-		end();
-	}
-	return;
+void WWosAnalyzer::normalizeHistograms(std::string name){
+	theHistograms.clone(name+"Matched_vs_eta", name+"Efficiency_vs_eta");
+	theHistograms.get(name+"Efficiency_vs_eta")->Divide(theHistograms.get("gen"+name+"_vs_eta"));
+	theHistograms.get(name+"Efficiency_vs_eta")->SetTitle((name+"Efficiency_vs_eta").string::c_str());
+	
+	theHistograms.clone(name+"Matched_vs_pt", name+"Efficiency_vs_pt");
+	theHistograms.get(name+"Efficiency_vs_pt")->Divide(theHistograms.get("gen"+name+"_vs_pt"));
+	theHistograms.get(name+"Efficiency_vs_pt")->SetTitle((name+"Efficiency_vs_pt").string::c_str());
+	
+	theHistograms.get(name+"Efficiency_vs_tolerance")->Scale(1./(float)totalElectrons);
+	theHistograms.get(name+"Efficiency_vs_tolerance")->GetYaxis()->SetLimits(0., 1.);
 }
 
 
@@ -180,12 +260,12 @@ void WWosAnalyzer::fillParticlePlots(const std::string &type, const phys::Partic
 }
 
 
-
+#ifdef DO_STATISTICS_ON_PARTICLES
 void WWosAnalyzer::initStatistics(){
 	/*	cout << "------------------------------------------------------------------"<<endl;
 	cout << "Run: " << run << " event: " << event << endl;*/
 	
-	counter = 0;
+	particleCounter = 0;
 	eCounter = 0;
 	mCounter = 0;
 	
@@ -195,7 +275,7 @@ void WWosAnalyzer::initStatistics(){
 }
 
 void WWosAnalyzer::tempStatisticParticles(const phys::Particle &par){
-	counter++;
+	particleCounter++;
 		if(abs(par.id()) == 11) eCounter++;
 		if(abs(par.id()) == 13) mCounter++;
 		
@@ -205,7 +285,7 @@ void WWosAnalyzer::tempStatisticParticles(const phys::Particle &par){
 			if(abs(par.id()) == 13) pmCounter++;
 			
 			theHistograms.fill("ptPromptParticle", "p_t (prompt)", 25, 0, 50, par.pt());
-			theHistograms.fill("massPromptParticle", "m (prompt)", 1000, 0, 100, par.p4().M());
+			//theHistograms.fill("massPromptParticle", "m (prompt)", 1000, 0, 100, par.p4().M());
 		}
 	/*	if(
 				(abs(gen.id()) != 11 && abs(gen.id()) != 13) || 
@@ -216,24 +296,25 @@ void WWosAnalyzer::tempStatisticParticles(const phys::Particle &par){
 	*/
 	//	cout << "id: " << gen.id() << " pt: " << gen.pt() << endl;
 	theHistograms.get("ptPromptParticle")->GetXaxis()->SetTitle("[GeV/c]");
-	theHistograms.get("massPromptParticle")->GetXaxis()->SetTitle("[GeV/c^2]");
-	theHistograms.fill("ptAllAnalyzedParticle", "p_t", 25, 0, 50, par.pt());
-	theHistograms.get("ptAllAnalyzedParticle")->GetXaxis()->SetTitle("[GeV]");
-	theHistograms.fill("ParticlesIDs", "ParticlesIDs", 40, -20, 20, par.id());
+	//theHistograms.get("massPromptParticle")->GetXaxis()->SetTitle("[GeV/c^2]");
+	//theHistograms.fill("ptAllAnalyzedParticle", "p_t", 25, 0, 50, par.pt());
+	//theHistograms.get("ptAllAnalyzedParticle")->GetXaxis()->SetTitle("[GeV]");
+	//theHistograms.fill("ParticlesIDs", "ParticlesIDs", 40, -20, 20, par.id());
 }
-
+#endif
+#ifdef DO_STATISTICS_ON_EVENTS
 void WWosAnalyzer::tempStatisticEvents(){
-	theHistograms.fill("ParticlesPerEvent", "ParticlesPerEvent", 40, 0, 40, counter);
+	theHistograms.fill("genParticlesPerEvent", "genParticlesPerEvent", 40, 0, 40, particleCounter);
 	theHistograms.fill("genElectronsPerEvent", "genElectronsPerEvent", 25, 0, 25, eCounter);
 	theHistograms.fill("genMuonsPerEvent", "genMuonsPerEvent", 25, 0, 25, mCounter);
 	
-	theHistograms.fill("PromptParticlesPerEvent", "PromptParticlesPerEvent", 25, 0, 25, promptCounter);
-	theHistograms.fill("PromptgenElectronsPerEvent", "PromptgenElectronsPerEvent", 25, 0, 25, peCounter);
-	theHistograms.fill("PromptMuonsPerEvent", "PromptMuonsPerEvent", 25, 0, 25, pmCounter);
+	theHistograms.fill("PromptGenParticlesPerEvent", "PromptGenParticlesPerEvent", 15, 0, 15, promptCounter);
+	theHistograms.fill("PromptGenElectronsPerEvent", "PromptGenElectronsPerEvent", 10, 0, 10, peCounter);
+	theHistograms.fill("PromptMuonsPerEvent", "PromptMuonsPerEvent", 10, 0, 10, pmCounter);
 	
-	theHistograms.fill("ElectronsPerEvent", "ElectronsPerEvent", 25, 0, 25, electrons->size());
+	theHistograms.fill("ElectronsPerEvent", "ElectronsPerEvent", 20, 0, 20, electrons->size());
 }
-
+#endif
 void WWosAnalyzer::doSomeFits(){
 	TF1* func1 = new TF1("func1","[0]*pow(x,[1])*exp(-x/2)",2,25);
 	func1->SetParLimits(1,1.5,2.0);
