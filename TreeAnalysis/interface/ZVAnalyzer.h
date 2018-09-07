@@ -6,7 +6,7 @@
  *
  *  $Date: 2013/03/15 13:37:31 $
  *  $Revision: 1.4 $
- *  \author R. Bellan - UNITO <riccardo.bellan@cern.ch>
+ *  \author D. Usseglio - UNITO <davide.usseglio@edu.unito.it>
  */
 
 
@@ -14,6 +14,8 @@
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
+#include "VVXAnalysis/Commons/interface/Comparators.h"
+
 
 class ZVAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZVAnalyzer>{
 
@@ -28,10 +30,14 @@ public:
   }
 
   virtual ~ZVAnalyzer(){}
+    
+  virtual void begin();
 
   virtual void analyze();
   
   virtual Int_t cut();
+    
+  virtual void end(TFile &);
 
 
  private:
@@ -39,7 +45,8 @@ public:
   template< class PAR >
     bool ZBosonDefinition(phys::Boson<PAR> cand) const{
     bool checkCharge = cand.daughter(0).charge() + cand.daughter(1).charge() == 0;
-    return checkCharge && fabs(cand.p4().M() - phys::ZMASS) < 30;
+    bool checkMass = fabs(cand.p4().M() - phys::ZMASS) < 30;
+    return checkCharge && checkMass;
   }
 
 
@@ -58,9 +65,52 @@ public:
     return false;
 
   }
-
-
-
+    
+    template <class P, class T>
+    bool checkMatch(const P&, T&, const float&);
+   
+   
+    phys::Particle* findMatchingParticle(const phys::Particle&,std::vector<phys::Lepton>*);
+    
+    double minDeltaR;
+    double minPos;
+    
+    void fillBasicPlots();
+    void fillParticlePlots(const std::string &, const phys::Particle &);
+    void normalizeHistograms(std::string);
+    
+    void doSomeFits();
+    void getFitInfo(TF1*);
+    
+    void initStatistics();
+    void tempStatisticParticles(const phys::Particle&);
+    void tempStatisticEvents();
+    
+    float counter;
+    int eCounter;
+    int mCounter;
+    
+    int promptCounter;
+    int peCounter;
+    int pmCounter;
+    
+    long electronEvents;
+    long muonEvents;
+    long passingSelection;
+    
+    float matchedElectrons;
+    float matchedMuons;
+    float totalElectrons;
+    float totalMuons;
+    
+    float Counter;
+    long checkElectrons;
+    long checkMuons;
+    
+    template <class T, class P, typename C>
+    void analyzeEfficiency(std::vector<T>*, std::vector<P>*, std::string, C&);
+    
+    clock_t startTime;
 };
 #endif
 
