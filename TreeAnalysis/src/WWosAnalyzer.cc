@@ -24,6 +24,9 @@ using std::string;
 using namespace phys;
 
 Int_t WWosAnalyzer::cut() {
+	static unsigned long evtN = 0;
+	evtN++;
+	cout<<evtN<<"\b\b\b\b\b\b";
 	return 1;
 }
 
@@ -32,7 +35,7 @@ void WWosAnalyzer::begin(){
 	for(char i=0; i<25; i++) cout<<"-";
 	cout<<" \tBegin of WWos\t ";
 	for(char i=0; i<25; i++) cout<<"-";
-	cout<<"\n";
+	cout<<"\nTotal Events: "<<NUMBER_OF_EVENTS<<" \tAnalyzed:\n";
 	startTime = clock();
 }
 
@@ -133,7 +136,7 @@ void WWosAnalyzer::analyze(){
 
 void WWosAnalyzer::end(TFile &){
 	//doSomeFits();
-	cout<<"Events: "<<NUMBER_OF_EVENTS<<" \tPassing selection: "<<passingSelection<<" \tEfficiency: "<<(1.-(float)passingSelection/NUMBER_OF_EVENTS)*100.<<" %\n";
+	//cout<<"Events: "<<NUMBER_OF_EVENTS<<" \tPassing selection: "<<passingSelection<<" \tEfficiency: "<<(1.-(float)passingSelection/NUMBER_OF_EVENTS)*100.<<" %\n";
 	//cout<<"Electron events: "<<electronEvents<<" \tMuon events: "<<muonEvents<<"\n";
 	cout<<"Total Electrons: "<<totalElectrons<<" \tMatched Electrons: "<<matchedElectrons<<" \tEfficiency: "<<(float)(100*matchedElectrons)/totalElectrons<<" %" <<"\n";
 	cout<<"\t\t   Of wich with mismatched charge:   "<<wrongChargeE<<" \tRatio:      "<<(float)(100*wrongChargeE)/totalElectrons<<" %\n";
@@ -154,7 +157,7 @@ void WWosAnalyzer::end(TFile &){
 template <class T, class P, typename C>
 void WWosAnalyzer::analyzeEfficiency(vector<T>* genGroup, vector<P>* recGroup, std::string name, C& counter){
 	foreach(const phys::Particle & gen, *genGroup){
-		fillParticlePlots("gen"+name, gen);
+		//fillParticlePlots("gen"+name, gen);
 		/*theHistograms.fill("gen"+name+"_vs_eta","gen"+name+"_vs_eta", 26*8+1, -2.6,2.6,gen.eta(), 1);
 		theHistograms.fill("gen"+name+"_vs_pt","gen"+name+"_vs_pt", 100, 0., 500., gen.pt(), 1);*/
 		
@@ -169,7 +172,7 @@ void WWosAnalyzer::analyzeEfficiency(vector<T>* genGroup, vector<P>* recGroup, s
 					if(name == string("Muons")) wrongChargeM++;
 				}	
 				//Efficiency vs Eta
-				theHistograms.fill(name+"Matched_vs_eta", name+"Matched_vs_eta", 131, -2.6, 2.6, gen.eta(), 1);
+				theHistograms.fill(name+"Matched_vs_eta", name+"Matched_vs_eta", 261, -2.6, 2.6, gen.eta(), 1);
 				//Efficiency vs pt
 				theHistograms.fill(name+"Matched_vs_pt",name+"Matched_vs_pt",100,0.,500.,gen.pt(),1);
 			}
@@ -224,9 +227,9 @@ void WWosAnalyzer::normalizeHistograms(std::string name){
 	theHistograms.get(name+"Efficiency_vs_pt")->SetTitle((name+"Efficiency_vs_pt").string::c_str());
 	theHistograms.get(name+"Efficiency_vs_pt")->GetXaxis()->SetTitle("pt [GeV/c]");
 	
-	theHistograms.get(name+"Efficiency_vs_tolerance")->Scale(1./(float)totalElectrons);
+	/*theHistograms.get(name+"Efficiency_vs_tolerance")->Scale(1./(float)totalElectrons);
 	theHistograms.get(name+"Efficiency_vs_tolerance")->GetYaxis()->SetRangeUser(0., 1.);
-	theHistograms.get(name+"Efficiency_vs_tolerance")->GetXaxis()->SetTitle("deltaR");
+	theHistograms.get(name+"Efficiency_vs_tolerance")->GetXaxis()->SetTitle("deltaR");*/
 }
 
 
@@ -247,9 +250,9 @@ void WWosAnalyzer::fillBasicPlots(){
 
 
 void WWosAnalyzer::fillParticlePlots(const std::string &type, const phys::Particle & lepton){
-  theHistograms.fill(type+"_pt" ,    "p_{T} spectrum", 100,  0   , 500  ,lepton.pt()    , theWeight);
-  theHistograms.fill(type+"_eta",    "#eta spectrum" , 131, -2.6 ,  2.6 ,lepton.eta()   , theWeight);
-  theHistograms.fill(type+"_phi",    "#phi spectrum" ,  50, -3.15, 3.15 ,lepton.phi()   , theWeight);
+  theHistograms.fill(type+"_pt" ,    "p_{T} spectrum", 100,  0   , 500  ,lepton.pt() , 1/*theWeight*/);
+  theHistograms.fill(type+"_eta",    "#eta spectrum" , 261, -2.6 ,  2.6 ,lepton.eta(), 1/*theWeight*/);
+  theHistograms.fill(type+"_phi",    "#phi spectrum" ,  50, -3.15, 3.15 ,lepton.phi(), 1/*theWeight*/);
   //theHistograms.fill(type+"_charge", "charge"        ,  50,  -25  ,  25   ,lepton.charge(), theWeight);
   
   theHistograms.get(type+"_pt")->GetXaxis()->SetTitle("[GeV/c]");
