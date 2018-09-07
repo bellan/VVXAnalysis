@@ -87,7 +87,7 @@ void ZVAnalyzer::analyze(){
     analyzeEfficiency(genElectrons, electrons, std::string("Electrons"), matchedElectrons);
     analyzeEfficiency(genMuons, muons, std::string("Muons"), matchedMuons);
     
-    
+
     delete genElectrons;
     delete genMuons;
     delete leptons;
@@ -95,6 +95,21 @@ void ZVAnalyzer::analyze(){
     return;
     
 }
+
+template<class T, class P>
+void ZVAnalyzer::analyzeResolutionpt(const T& generated, const P& reconstructed, std::string name) {
+    double ideltapt = 1./generated.pt() - 1./reconstructed.pt();
+    theHistograms.fill(name+"pt_Resolution", name+"pt_Resolution", 200, -0.2, 0.2, ideltapt/(1./generated.pt()),1);
+};
+
+template <class T, class P>
+void ZVAnalyzer::analyzeResolutionEnergy(const T& generated, const P& reconstructed, std::string name) {
+    double deltaE = generated.e() - reconstructed.e();
+    theHistograms.fill(name+"Energy_Resolution", name+"Energy_Resolution", 200, -0.2, 0.2, deltaE/(generated.e()),1);
+};
+
+
+
 
 template <class T, class P, typename C>
 void ZVAnalyzer::analyzeEfficiency(std::vector<T>* genGroup, std::vector<P>* recGroup, std::string name, C& counter){
@@ -110,13 +125,11 @@ void ZVAnalyzer::analyzeEfficiency(std::vector<T>* genGroup, std::vector<P>* rec
                 //Efficiency vs pt
                 theHistograms.fill(name+"Matched_vs_pt",name+"Matched_vs_pt",100,0.,500., gen.pt(), 1);
             }
-            //Efficiency vs Tolerance
-            /*for(int cTolerance = 1; cTolerance <= 20; cTolerance++){ //I like to iterate on ints
-                if(checkMatch(gen, *cand, (double)cTolerance/100.)){
-                    theHistograms.fill(name+"Efficiency_vs_tolerance",name+"Efficiency_vs_tolerance", 20, 0.01, 0.21, (float)cTolerance/100.+0.0001, 1);   */ //To be normalized in end()
-                }
-            }
+        analyzeResolutionpt(gen, *cand, name);
+        analyzeResolutionEnergy(gen, *cand, name);
         }
+    }
+}
 
 
 phys::Particle* ZVAnalyzer::findMatchingParticle(const phys::Particle& gen, std::vector<phys::Lepton>* candidates){
@@ -148,6 +161,9 @@ void ZVAnalyzer::end(TFile &){
     
     normalizeHistograms(std::string("Electrons"));
     normalizeHistograms(std::string("Muons"));
+    doSomeFits(std::string("Electrons"));
+    doSomeFits(std::string("Muons"));
+    
     
     cout << "The number of electrons is: " << totalElectrons << "and the number of matched electrons is: " << matchedElectrons << "\n";
     cout <<  "Efficiency: " << (matchedElectrons/totalElectrons)*100 << " %\n";
@@ -172,6 +188,7 @@ void ZVAnalyzer::normalizeHistograms(std::string name){
     theHistograms.get(name+"Efficiency_vs_eta")->SetTitle((name+"Efficiency_vs_eta").std::string::c_str());
     //There's no overload of SetTitle(const char*) with SetTitle(std::string)
     theHistograms.get(name+"Efficiency_vs_eta")->GetXaxis()->SetTitle("#eta");
+    
     
     theHistograms.clone(name+"Matched_vs_pt", name+"Efficiency_vs_pt");
     theHistograms.get(name+"Efficiency_vs_pt")->Divide(theHistograms.get("gen"+name+"_pt"));
@@ -250,30 +267,42 @@ void ZVAnalyzer::normalizeHistograms(std::string name){
         theHistograms.fill("ElectronsPerEvent", "ElectronsPerEvent", 25, 0, 25, electrons->size());
     }
     
-    void ZVAnalyzer::doSomeFits(){
-        TF1* func1 = new TF1("func1","[0]*pow(x,[1])*exp(-x/2)",2,25);
-        func1->SetParLimits(1,1.5,2.0);
+void ZVAnalyzer::doSomeFits(std::string name){
+    
+    if (name == "Electrons") {
+        TF1* func1 = new TF1("func1","[0]*exp(-x*x/(2*[1])) + [2]",-0.05,0.05);
+        func1->SetParameters(2000,0.2,100);
+        func1->SetParLimits(0,0,10000000);
+        func1->SetParLimits(2,0,2000);
         func1->SetLineColor(4);
+        theHistograms.get(name+"pt_Resolution")->Fit(func1,"R+");
         
-        TF1* func2 = new TF1("func2","[0]*pow(x,[1])*exp(-x/2)",2,25);
-        func2->SetParLimits(1,1.75,2.0);
+      
+        
+        TF1* func2 = new TF1("func2","[0]*exp(-x*x/(2*[1])) + [2]",-0.05,0.05);
+        func2->SetParameters(2000,0.2,100);
+        func2->SetParLimits(0,0,10000000);
+        func2->SetParLimits(2,0,2000);
         func2->SetLineColor(3);
+        theHistograms.get(name+"Energy_Resolution")->Fit(func2, "R+");
+    }
+    if (name == "Muons"){
+        TF1* func3 = new TF1("func3","[0]*exp(-x*x/(2*[1])) + [2]",-0.05,0.05);
+        func3->SetParameters(2500,0.2,100);
+        func3->SetParLimits(0,0,10000000);
+        func3->SetParLimits(2,0,2500);
+        func3->SetLineColor(4);
+        theHistograms.get(name+"pt_Resolution")->Fit(func3,"R+");
         
-        TF1* func3 = new TF1("func3","[2]+[0]*pow(x,[1])*exp(-x/2)",0,25);
-        func3->SetParameter(1,1.5);
-        func3->SetLineColor(1);
+        TF1* func4 = new TF1("func4","[0]*exp(-x*x/(2*[1])) + [2]",-0.05,0.05);
+        func4->SetParameters(2500,0.2,100);
+        func4->SetParLimits(0,0,10000000);
+        func4->SetParLimits(2,0,2500);
+        func4->SetLineColor(3);
+        theHistograms.get(name+"Energy_Resolution")->Fit(func4, "R+");
+    }
+    
         
-        TH1* ePlot = theHistograms.get("genElectronsPerEvent");
-        ePlot->Fit(func1,"R");
-        getFitInfo(func1);
-        ePlot->Fit(func2,"R+");
-        getFitInfo(func2);
-        ePlot->Fit(func3,"R+");
-        getFitInfo(func3);
-        
-        ePlot->Draw("same");
-        func1->Draw("same");
-        func2->Draw("same");
     }
     
     void ZVAnalyzer::getFitInfo(TF1* p){

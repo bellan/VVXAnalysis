@@ -79,7 +79,7 @@ public:
     void fillParticlePlots(const std::string &, const phys::Particle &);
     void normalizeHistograms(std::string);
     
-    void doSomeFits();
+    void doSomeFits(std::string);
     void getFitInfo(TF1*);
     
     void initStatistics();
@@ -109,6 +109,13 @@ public:
     
     template <class T, class P, typename C>
     void analyzeEfficiency(std::vector<T>*, std::vector<P>*, std::string, C&);
+    
+    template <class T, class P>
+    void analyzeResolutionpt(const T&, const P&, std::string);
+    
+    template <class T, class P>
+    void analyzeResolutionEnergy(const T&, const P&, std::string);
+    
     
     clock_t startTime;
 };
