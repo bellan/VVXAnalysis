@@ -22,14 +22,14 @@
 
 using namespace std;
 
-TString path = "~/Workspace/VVXAnalysis/TreeAnalysis/results/WWosAnalyzer_MC/";
-vector<TString> samples = {"WWEW", "WWQCD", "WWEWQCD"};
-vector<TString> parNames = {"Electrons", "Muons", "Jets"};
-vector<TString> typeNames = {"eta", "phi", "pt"};
-
-//char* nullstr = new char[0]; 
-
 void WWosEfficiencyAnalysis(TString requestedSample){
+	
+	TString path = "~/Workspace/VVXAnalysis/TreeAnalysis/results/WWosAnalyzer_MC/";
+	vector<TString> samples = {"WWEW", "WWQCD", "WWEWQCD"};
+	vector<TString> parNames = {"Electrons", "Muons", "Jets"};
+	vector<TString> typeNames = {"eta", "phi", "pt"};
+
+
 	TString sampleName;
 	if(requestedSample != ""){
 		for(int i = 0; i < samples.size(); i++){

@@ -1,11 +1,11 @@
-#ifndef WWosAnalyzer_h
+	#ifndef WWosAnalyzer_h
 #define WWosAnalyzer_h
 
 /** \Class WWosAnalyzer
  *  Concrete class for WW with opposite sign analysis
  *
  *  $Date: 2018/08/04 13:37:31 $
- *  $Revision: 0.1 $
+ *  $Revision: 0.2 $
  *  \author A. Mecca alberto.mecca@edu.unito.it
  */
 
@@ -35,8 +35,14 @@
 	#define NUMBER_OF_EVENTS ULONG_MAX
 #endif
 
-//#define DO_STATISTICS_ON_PARTICLES
-//#define DO_STATISTICS_ON_EVENTS
+//#define DO_GEN_PARTICLES_ANALYSIS
+#ifdef DO_GEN_PARTICLES_ANALYSIS
+	//#define DO_STATISTICS_ON_PARTICLES
+	//#define DO_STATISTICS_ON_EVENTS
+	#define DO_EFFICIENCY_ANALYSIS
+#endif
+
+#define LEPTON_CUT	//Cuts events in which there are not exactly 2 leptons
 
 class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 	public:
@@ -64,7 +70,7 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 			return checkCharge && checkMass;
 		}
 
-		template< class PAR >
+		template< class PAR >	//Apparently, PAR must inherit from Jet
 		bool WBosonDefinition(phys::Boson<PAR> cand ) {	//candidate
 
 			bool gooddaughters = false;
@@ -73,7 +79,7 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 					cand.daughter(0).passPUID() && cand.daughter(0).passLooseJetID() &&
 					fabs(cand.daughter(1).eta()) < 2.5 && cand.daughter(1).pt() > 30 &&
 					cand.daughter(1).passPUID() && cand.daughter(1).passLooseJetID()
-				)
+				) //passLooseJetID and passPUID are inherited from VVXAnalysis/DataFormats/interface/Jet.h
 				gooddaughters = true;
 
 			if(fabs(cand.p4().M() - phys::WMASS) < 150 && gooddaughters)
@@ -81,15 +87,32 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 			return false;
 		}
 		
+		void genParticlesAnalysis();	//All the work realate to efficiency/resolution analysis
+		
+		void genParticlesCategorization();
+		
+		void endGenParticleAnalysis(); //stuff from end();
+		
 		//Function for efficiency analysis
 		template <class T, class P, typename C>
-		void analyzeEfficiency(std::vector<T>* gen, std::vector<P>* rec, std::string name, C& counter);
+		void analyzeEfficiency(std::vector<T>* gen, std::vector<P>* rec, std::string name, C& counter, Float_t maxDeltaR = 0.2);
 		
 		template <class P, class T>
 		bool checkMatch(const /*phys::Particle&*/P& reconstructed, const /*phys::Particle&*/ T& generated,  const float& tolerance);	//Checks deltaR
-		phys::Particle* findMatchingParticle(const phys::Particle& rec, std::vector<phys::Lepton>* candidates);
+		
+		template <class P>
+		phys::Particle* findMatchingParticle(const phys::Particle& rec, std::vector<P>* candidates);
+		
+		template <class P, class T>
+		void resolutionAnalysis(const T& rec, const P& gen, std::string name);
+		void fitResolutionPt(std::string name);
+		void fitResolutionE(std::string name);
 		
 		void normalizeHistograms(std::string name);
+		void normalizeEta(std::string name);
+		void normalizePhi(std::string name);
+		void normalizePt(std::string name);
+		TGraphAsymmErrors* myTGraphAsymmErrors(TH1* num, TH1* denom);
 		
 		void fillBasicPlots();
 		void fillParticlePlots(const std::string &, const phys::Particle & );
@@ -105,9 +128,11 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		#endif
 		
 		//Generated particles (prompt)
-		std::vector<phys::Particle>* genElectrons;	//genElectrons in this event
-		std::vector<phys::Particle>* genMuons;	//muons in this event
-		std::vector<phys::Particle>* genLeptons;	//every lepton in this event
+		std::vector<phys::Particle>* genElectrons;		//genElectrons in this event
+		std::vector<phys::Particle>* genMuons;				//genMuons in this event
+		std::vector<phys::Particle>* genLeptons;			//every genLepton in this event
+		std::vector<phys::Particle>* genCleanedJets;	//every prompt genJet in this event	
+		std::vector<phys::Particle>* fakeJets; 				//isolated particles that appear in genJets
 		
 		#ifdef DO_STATISTICS_ON_PARTICLES
 		//Various counters
@@ -120,21 +145,30 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		int pmCounter;
 		#endif
 		
-		int electronEvents;
-		int muonEvents;
+		int eeEvents; //electronEvents;
+		int mmEvents; //muonEvents;
+		int emEvents; //mixedEvents;
+		int multiSignEvents;
 		int passingSelection;
 		
 		long matchedElectrons;
 		long matchedMuons;
+		int matchedJets;
 		int wrongChargeE;
 		int wrongChargeM;
 		long totalElectrons;
 		long totalMuons;
 		
+		long totjets;
+		long totgenJets;
+		long totgenCleanedJets;
+		long totgenParticles;
+		
 		clock_t startTime;
 };
 
 void getFitInfo(TF1*);
+//void confidence_binomial_clopper_pearson(int n, int k, double &xlow, double &xhigh, double level=.68540158589942957);
 #endif
 
 
