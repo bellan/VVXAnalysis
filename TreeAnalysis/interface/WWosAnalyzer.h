@@ -19,6 +19,7 @@
 #define WWEW
 //#define WWQCD
 //#define WWEWQCD
+//#define TTTo2L2Nu
 
 #ifdef TTJets_SMALL	//40 Mb sample
 	#define NUMBER_OF_EVENTS 9055
@@ -43,6 +44,7 @@
 #endif
 
 #define LEPTON_CUT	//Cuts events in which there are not exactly 2 leptons
+//#define Jet_CUT			//Cuts events in which there are not less than 2 jets
 
 class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 	public:
@@ -87,10 +89,14 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 			return false;
 		}
 		
+		bool leptonCut(const phys::Particle* lead, const phys::Particle* tail, const std::string& type);
+		void leptonPlots(const phys::Particle* lead, const phys::Particle* tail, const std::string& type = std::string(""), bool useWeight = true);
+		void leptonCutAnalysis(const phys::Particle* lead, const phys::Particle* tail, const std::string& type = std::string(""), bool useWeight = true);
+		void nestedPtCutHistogram(const phys::Particle* lead, const phys::Particle* tail, const std::string& type, float ptCut, float weight);
+		
+		
 		void genParticlesAnalysis();	//All the work realate to efficiency/resolution analysis
-		
 		void genParticlesCategorization();
-		
 		void endGenParticleAnalysis(); //stuff from end();
 		
 		//Function for efficiency analysis
@@ -103,6 +109,7 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		template <class P>
 		phys::Particle* findMatchingParticle(const phys::Particle& rec, std::vector<P>* candidates);
 		
+		#ifdef DO_EFFICIENCY_ANALYSIS
 		template <class P, class T>
 		void resolutionAnalysis(const T& rec, const P& gen, std::string name);
 		void fitResolutionPt(std::string name);
@@ -113,6 +120,7 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		void normalizePhi(std::string name);
 		void normalizePt(std::string name);
 		TGraphAsymmErrors* myTGraphAsymmErrors(TH1* num, TH1* denom);
+		#endif
 		
 		void fillBasicPlots();
 		void fillParticlePlots(const std::string &, const phys::Particle & );
@@ -150,7 +158,9 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		int emEvents; //mixedEvents;
 		int multiSignEvents;
 		int passingSelection;
+		int passingCut;
 		
+		#ifdef DO_GEN_PARTICLES_ANALYSIS
 		long matchedElectrons;
 		long matchedMuons;
 		int matchedJets;
@@ -163,8 +173,10 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		long totgenJets;
 		long totgenCleanedJets;
 		long totgenParticles;
+		#endif
 		
 		clock_t startTime;
+		unsigned long evtN;
 };
 
 void getFitInfo(TF1*);

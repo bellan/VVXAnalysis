@@ -8,8 +8,9 @@
 //#include <TEfficiency.h> // ClopperPearson(Double_t, Double_t, Double_t, Bool_t)
 #include <vector>
 #include <algorithm>    // std::min
-#include <time.h>
+#include <time.h>				//clock_t, clock()
 #include <string>
+#include <iomanip>      // std::setprecision
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
@@ -31,11 +32,13 @@ using namespace phys;
 #define HISTO_Pt_Config 			100,0.,500.
 
 Int_t WWosAnalyzer::cut() {
-	static unsigned long evtN = 0;
 	evtN++;
 	cout<<"\r\t\t"<<evtN;//"\b\b\b\b\b\b";
+	#ifdef JET_CUT
+	if(jets->size() < 2) return -1;
+	#endif
 	#ifdef LEPTON_CUT
-	if(electrons->size() + muons->size() != 2) return -1;
+	if((electrons->size() + muons->size() != 2) /*|| jets->size() < 2*/) return -1;
 	#endif
 	return 1;
 }
@@ -48,32 +51,34 @@ void WWosAnalyzer::begin(){
 	//cout<<"\nTotal Events: "<<NUMBER_OF_EVENTS<<" \tAnalyzed:\n";
 	cout<<"\nAnalyzed:\t      /"<<NUMBER_OF_EVENTS;
 	startTime = clock();
+	evtN = 0;
 }
 
 void WWosAnalyzer::analyze(){
+	passingCut++;
 	#ifdef DO_GEN_PARTICLES_ANALYSIS
 	genParticlesAnalysis();
 	#endif
+	
+	#ifdef JET_CUT
 	//Plot the invariant mass of the two jets
+	float jjMass = (jets->at(0).p4() + jets->at(1).p4()).M();
+	theHistograms.fill("mjj","mjj", 250, 0., 2000., jjMass);
+	#endif
 	
 	#ifdef LEPTON_CUT
+	const Particle* leadingLept;
+	const Particle* secondLept;
+	string type;
 	switch(electrons->size()){
-	float deltaEta;
-	float deltaPhi;
-	float deltaR;
 		case 2: //ee
-			theHistograms.fill("Leading e pt", "Leading e pt", HISTO_Pt_Config, electrons->at(0).pt(), theWeight);
-			theHistograms.fill("Second e pt", "Second e pt", HISTO_Pt_Config, electrons->at(1).pt(), theWeight);
-			deltaEta = electrons->at(0).eta() - electrons->at(1).eta();
-			theHistograms.fill("#Delta #eta ee", "#Delta #eta ee", HISTO_JEta_Config, deltaEta, theWeight);
-			deltaPhi = electrons->at(0).phi() - electrons->at(1).phi();
-			theHistograms.fill("#Delta #phi ee", "#Delta #phi ee", HISTO_Phi_Config, deltaPhi, theWeight);
-			deltaR = physmath::deltaR(electrons->at(0), electrons->at(1));
-			theHistograms.fill("#Delta R ee", "#Delta R ee", 100, 0., 2., deltaR, theWeight);
+			eeEvents++;
+			leadingLept = &(electrons->at(0));
+			secondLept = &(electrons->at(1));
+			type = "ee";
 			break;
 		case 1: //em
-			const Particle* leadingLept;
-			const Particle* secondLept;
+			emEvents++;
 			if(electrons->at(0).pt() > muons->at(0).pt()){
 				leadingLept = &(electrons->at(0));
 				secondLept = &(muons->at(0));
@@ -81,34 +86,33 @@ void WWosAnalyzer::analyze(){
 				leadingLept = &(muons->at(0));
 				secondLept = &(electrons->at(0));
 			}
-			theHistograms.fill("Leading l pt", "Leading l pt", HISTO_Pt_Config, leadingLept->pt(), theWeight);
-			theHistograms.fill("Second l pt", "Second l pt", HISTO_Pt_Config, secondLept->pt(), theWeight);
-			deltaEta = leadingLept->eta() - secondLept->eta();
-			theHistograms.fill("#Delta #eta ee", "#Delta #eta ee", HISTO_JEta_Config, deltaEta, theWeight);
-			deltaPhi = leadingLept->phi() - secondLept->phi();
-			theHistograms.fill("#Delta #phi ee", "#Delta #phi ee", HISTO_Phi_Config, deltaPhi, theWeight);
-			deltaR = physmath::deltaR(*leadingLept, *secondLept);
-			theHistograms.fill("#Delta R ee", "#Delta R ee", 100, 0., 2., deltaR, theWeight);
+			type = "em";
 			break;
 		case 0: //mm
-			theHistograms.fill("Leading m pt", "Leading m pt", HISTO_Pt_Config, muons->at(0).pt(), theWeight);
-			theHistograms.fill("Second m pt", "Second m pt", HISTO_Pt_Config, muons->at(1).pt(), theWeight);
-			deltaEta = muons->at(0).eta() - muons->at(1).eta();
-			theHistograms.fill("#Delta #eta mm", "#Delta #eta mm", HISTO_JEta_Config, deltaEta, theWeight);
-			deltaPhi = muons->at(0).phi() - muons->at(1).phi();
-			theHistograms.fill("#Delta #phi mm", "#Delta #phi mm", HISTO_Phi_Config, deltaPhi, theWeight);
-			deltaR = physmath::deltaR(muons->at(0), muons->at(1));
-			theHistograms.fill("#Delta R mm", "#Delta R mm", 100, 0., 2., deltaR, theWeight);
+			mmEvents++;
+			leadingLept = &(muons->at(0));
+			secondLept = &(muons->at(1));
+			type = "mm";
 			break;
 		default:
-			cout<<"We've got a problem: electrons->size() = "<<electrons->size()<<" muons->size() = "<<muons->size()<<"\n";
+			cout<<"We've got a problem: electrons->size() = "<<electrons->size()<<" muons->size() = "<<muons->size()<<'\n';
+			break;
 	}
+	if(leptonCut(leadingLept, secondLept, type)) return;
+	passingSelection++;
+	//leptonPlots(leadingLept, secondLept, type, true);
+	leptonCutAnalysis(leadingLept, secondLept, type, true);
 	#endif
 	
 	return;
 }
 
 void WWosAnalyzer::end(TFile &){
+	cout << std::setprecision(4);
+	cout<<"\nEvents: "<<evtN<<" \tPassing selection: "<<passingCut<<" \t(of the total): "<<((float)passingCut/evtN)*100.<<" %\n";
+	cout<<"Events\t\tee: "<<eeEvents<<" \tmm : "<<mmEvents<<" \tem: "<<emEvents<<'\n';
+	cout<<"Passing second cut: "<<passingSelection<<" \t(of the selected): "<<((float)passingSelection/passingCut)*100.<<" % \t(of the total): "<<((float)passingSelection/evtN)*100.<<" %\n";
+	
 	#ifdef DO_GEN_PARTICLES_ANALYSIS
 	endGenParticleAnalysis();
 	#endif
@@ -120,6 +124,55 @@ void WWosAnalyzer::end(TFile &){
 	cout<<"\n\n";
 }
 
+
+bool WWosAnalyzer::leptonCut(const Particle* lead, const Particle* tail, const string& type){
+	if(lead->charge() * tail->charge() > 0) return false;
+	if(lead->pt() < 100 || tail->pt() < 60) return true;
+	return false;
+}
+
+void WWosAnalyzer::leptonPlots(const Particle* lead, const Particle* tail, const string& type, bool useWeight){
+	double w = (useWeight ? theWeight : 1.);
+	theHistograms.fill("Leading "+type+" pt", "Leading "+type+" pt", HISTO_Pt_Config, lead->pt(), w);
+	theHistograms.fill("Second "+type+" pt", "Second "+type+" pt", HISTO_Pt_Config, tail->pt(), w);
+	float deltaEta = lead->eta() - tail->eta();
+	theHistograms.fill("#Delta #eta "+type, "#Delta #eta "+type, HISTO_JEta_Config, deltaEta, w);
+	float deltaPhi = lead->phi() - tail->phi();
+	theHistograms.fill("#Delta #phi "+type, "#Delta #phi "+type, HISTO_Phi_Config, deltaPhi, w);
+	float deltaR = physmath::deltaR(*lead, *tail);
+	theHistograms.fill("#Delta R "+type, "#Delta R "+type, 200, 0., 4., deltaR, w);
+}
+
+/*void WWosAnalyzer::leptonCutAnalysis(const Particle* lead, const Particle* tail, const string& type, bool useWeight){
+	double w = (useWeight ? theWeight : 1.);
+	theHistograms.fill<TH2F>(type+": pt", type+": pt", HISTO_Pt_Config, HISTO_Pt_Config, lead->pt(), tail->pt(), w);
+}*/
+
+void WWosAnalyzer::leptonCutAnalysis(const Particle* lead, const Particle* tail, const string& type, bool useWeight){
+	//These plots should be filled in a more efficient way in end(TFile&). Each bin shall be filled individually
+	TH1::SetDefaultSumw2(true);
+	double w = (useWeight ? theWeight : 1.);
+	for(float ptCut = 0.; ptCut < 500.; ptCut += 5.){
+		if(lead->pt() >= ptCut){
+			theHistograms.fill(type+": events passing lead pt >=", type+": events passing lead pt >=", HISTO_Pt_Config, ptCut, w);
+			nestedPtCutHistogram(lead, tail, type, ptCut, w);
+		}
+		if(tail->pt() >= ptCut)
+			theHistograms.fill(type+": events passing second pt >=", type+": events passing second pt >=", HISTO_Pt_Config, ptCut, w);
+	}
+	for(float dRCut = 0.; dRCut < 4.; dRCut += 0.02)
+		if(physmath::deltaR(*lead, *tail) <= dRCut)
+			theHistograms.fill(type+": events passing deltaR <=", type+": events passing deltaR <=",  200, 0., 4., dRCut, w);
+}
+
+void WWosAnalyzer::nestedPtCutHistogram(const Particle* lead, const Particle* tail, const string& type, float ptCut, float weight){
+	for(float ptCut2 = 0.; ptCut2 < 500.; ptCut2 += 5.)
+		if(tail->pt() >= ptCut2)
+			theHistograms.fill<TH2F>(type+": pt Cuts", type+": pt Cuts", HISTO_Pt_Config, HISTO_Pt_Config, ptCut, ptCut2, weight);
+}
+
+#ifdef DO_GEN_PARTICLES_ANALYSIS
+//	##################################	genParticles ##################################
 void WWosAnalyzer::genParticlesAnalysis(){
 	genElectrons 		= new std::vector<phys::Particle>();	//prompt genElectrons in this event
 	genMuons 				= new std::vector<phys::Particle>();	//prompt genMuons in this event
@@ -153,6 +206,7 @@ void WWosAnalyzer::genParticlesAnalysis(){
 	delete genLeptons;	
 	delete genCleanedJets;
 }
+
 
 void WWosAnalyzer::genParticlesCategorization(){	//Divides the genParticles betwenn e, mu, jet, etc.
 	#ifdef DO_STATISTICS_ON_PARTICLES
@@ -235,8 +289,6 @@ void WWosAnalyzer::genParticlesCategorization(){	//Divides the genParticles betw
 
 void WWosAnalyzer::endGenParticleAnalysis(){
 	//doSomeFits();
-	cout<<"\nEvents: "<<NUMBER_OF_EVENTS<<" \tPassing selection: "<<passingSelection<<" \tCut efficiency: "<<(1.-(float)passingSelection/NUMBER_OF_EVENTS)*100.<<" %\n";
-	cout<<"Events\t\tee: "<<eeEvents<<" \tmm : "<<mmEvents<<" \tem: "<<emEvents<<" \tMulti signal: "<<multiSignEvents;
 	
 	#ifdef DO_EFFICIENCY_ANALYSIS
 	cout<<"\nTotal Electrons: "<<totalElectrons<<" \tMatched Electrons: "<<matchedElectrons<<" \tEfficiency: "<<(float)(100*matchedElectrons)/totalElectrons<<" %" <<"\n";
@@ -260,8 +312,10 @@ void WWosAnalyzer::endGenParticleAnalysis(){
 	*/
 	#endif
 }
+#endif	//DO_GEN_PARTICLES_ANALYSIS
 
 //Efficiency analysis
+#ifdef DO_EFFICIENCY_ANALYSIS
 template <class T, class P, typename C>
 void WWosAnalyzer::analyzeEfficiency(vector<T>* genGroup, vector<P>* recGroup, std::string name, C& counter, Float_t maxDeltaR){
 	foreach(const phys::Particle & gen, *genGroup){
@@ -332,6 +386,7 @@ phys::Particle* WWosAnalyzer::findMatchingParticle(const phys::Particle& rec, st
 	
 	return & (candidates->at(minPos));
 }
+
 
 template <class P, class T>
 bool WWosAnalyzer::checkMatch(const /*phys::Particle&*/P& reconstructed, const /*phys::Particle&*/ T& generated, const float& tolerance){
@@ -454,7 +509,7 @@ void WWosAnalyzer::fitResolutionE(std::string name){
 	thisPlot->Fit(funcE,"R");
 	getFitInfo(funcE);
 }
-
+#endif	//DO_EFFICIENCY_ANALYSIS
 
 
 // Random statistics 	------------------------------------------------------------------------
