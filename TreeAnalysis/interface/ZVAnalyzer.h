@@ -69,15 +69,17 @@ public:
     template <class P, class T>
     bool checkMatch(const P&, T&, const float&);
    
-   
-    phys::Particle* findMatchingParticle(const phys::Particle&,std::vector<phys::Lepton>*);
+   template<class P>
+    phys::Particle* findMatchingParticle(const phys::Particle&,std::vector<P>*);
     
     double minDeltaR;
     double minPos;
     
     void fillBasicPlots();
-    void fillParticlePlots(const std::string &, const phys::Particle &);
+    template<class P>
+    void fillParticlePlots(const std::string &, const P &);
     void normalizeHistograms(std::string);
+    TGraphAsymmErrors* HistogramsErrors(TH1 *, TH1 *);
     
     void doSomeFits(std::string);
     void getFitInfo(TF1*);
@@ -97,24 +99,33 @@ public:
     long electronEvents;
     long muonEvents;
     long passingSelection;
+    float totalEvents;
+    float badevents;
     
     float matchedElectrons;
     float matchedMuons;
+    float matchedJets;
     float totalElectrons;
     float totalMuons;
+    float totalJets;
+    float totalJets2;
+    
     
     float Counter;
     long checkElectrons;
     long checkMuons;
     
     template <class T, class P, typename C>
-    void analyzeEfficiency(std::vector<T>*, std::vector<P>*, std::string, C&);
+    void analyzeEfficiency(std::vector<T>*, std::vector<P>*, std::string, C&, const float&);
     
     template <class T, class P>
     void analyzeResolutionpt(const T&, const P&, std::string);
     
     template <class T, class P>
     void analyzeResolutionEnergy(const T&, const P&, std::string);
+    
+    void GenAnalysis();
+    void endGenAnalysis();
     
     
     clock_t startTime;

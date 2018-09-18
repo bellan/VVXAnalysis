@@ -5,14 +5,15 @@
 
 #include <TF1.h>
 #include <TH1.h>
+//#include <TEfficiency.h> // ClopperPearson(Double_t, Double_t, Double_t, Bool_t)
 #include <vector>
 #include <algorithm>    // std::min
-#include <time.h>
+#include <time.h>				//clock_t, clock()
 #include <string>
+#include <iomanip>      // std::setprecision
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
-
 #include <boost/assign/std/vector.hpp> 
 using namespace boost::assign;
 
@@ -23,10 +24,22 @@ using std::string;
 
 using namespace phys;
 
+//Uniform configuration for histograms to avoid errors. Format: <nbins>,<ufirst>,<ulast>
+#define HISTO_deltaR_Config 	200,0.,0.5
+#define HISTO_Eta_Config 			261,-2.6,2.6
+#define HISTO_JEta_Config 		250,-5.,5.
+#define HISTO_Phi_Config 			100,-3.15,3.15
+#define HISTO_Pt_Config 			100,0.,500.
+
 Int_t WWosAnalyzer::cut() {
-	static unsigned long evtN = 0;
 	evtN++;
-	cout<<evtN<<"\b\b\b\b\b\b";
+	cout<<"\r\t\t"<<evtN;//"\b\b\b\b\b\b";
+	#ifdef JET_CUT
+	if(jets->size() < 2) return -1;
+	#endif
+	#ifdef LEPTON_CUT
+	if((electrons->size() + muons->size() != 2) /*|| jets->size() < 2*/) return -1;
+	#endif
 	return 1;
 }
 
@@ -35,23 +48,186 @@ void WWosAnalyzer::begin(){
 	for(char i=0; i<25; i++) cout<<"-";
 	cout<<" \tBegin of WWos\t ";
 	for(char i=0; i<25; i++) cout<<"-";
-	cout<<"\nTotal Events: "<<NUMBER_OF_EVENTS<<" \tAnalyzed:\n";
+	//cout<<"\nTotal Events: "<<NUMBER_OF_EVENTS<<" \tAnalyzed:\n";
+	cout<<"\nAnalyzed:\t      /"<<NUMBER_OF_EVENTS;
 	startTime = clock();
+	evtN = 0;
 }
 
 void WWosAnalyzer::analyze(){
+	passingCut++;
+	#ifdef DO_GEN_PARTICLES_ANALYSIS
+	genParticlesAnalysis();
+	#endif
+	
+	#ifdef JET_CUT
+	//Plot the invariant mass of the two jets
+	float jjMass = (jets->at(0).p4() + jets->at(1).p4()).M();
+	theHistograms.fill("mjj","mjj", 250, 0., 2000., jjMass);
+	#endif
+	
+	#ifdef LEPTON_CUT
+	const Particle* leadingLept;
+	const Particle* secondLept;
+	string type;
+	switch(electrons->size()){
+		case 2: //ee
+			eeEvents++;
+			leadingLept = &(electrons->at(0));
+			secondLept = &(electrons->at(1));
+			type = "ee";
+			break;
+		case 1: //em
+			emEvents++;
+			if(electrons->at(0).pt() > muons->at(0).pt()){
+				leadingLept = &(electrons->at(0));
+				secondLept = &(muons->at(0));
+			} else{
+				leadingLept = &(muons->at(0));
+				secondLept = &(electrons->at(0));
+			}
+			type = "em";
+			break;
+		case 0: //mm
+			mmEvents++;
+			leadingLept = &(muons->at(0));
+			secondLept = &(muons->at(1));
+			type = "mm";
+			break;
+		default:
+			cout<<"We've got a problem: electrons->size() = "<<electrons->size()<<" muons->size() = "<<muons->size()<<'\n';
+			break;
+	}
+	if(leptonCut(leadingLept, secondLept, type)) return;
+	passingSelection++;
+	//leptonPlots(leadingLept, secondLept, type, true);
+	leptonCutAnalysis(leadingLept, secondLept, type, true);
+	#endif
+	
+	return;
+}
+
+void WWosAnalyzer::end(TFile &){
+	cout << std::setprecision(4);
+	cout<<"\nEvents: "<<evtN<<" \tPassing selection: "<<passingCut<<" \t(of the total): "<<((float)passingCut/evtN)*100.<<" %\n";
+	cout<<"Events\t\tee: "<<eeEvents<<" \tmm : "<<mmEvents<<" \tem: "<<emEvents<<'\n';
+	cout<<"Passing second cut: "<<passingSelection<<" \t(of the selected): "<<((float)passingSelection/passingCut)*100.<<" % \t(of the total): "<<((float)passingSelection/evtN)*100.<<" %\n";
+	
+	#ifdef DO_GEN_PARTICLES_ANALYSIS
+	endGenParticleAnalysis();
+	#endif
+	
+	cout<<"\nElapsed Time: "<< (float)(clock()-startTime)/CLOCKS_PER_SEC<<" s\n";
+	for(char i=0; i<25; i++) cout<<"-";
+	cout<<" \tEnd of WWos\t";
+	for(char i=0; i<25; i++) cout<<"-";
+	cout<<"\n\n";
+}
+
+
+bool WWosAnalyzer::leptonCut(const Particle* lead, const Particle* tail, const string& type){
+	if(lead->charge() * tail->charge() > 0) return false;
+	if(lead->pt() < 100 || tail->pt() < 60) return true;
+	return false;
+}
+
+void WWosAnalyzer::leptonPlots(const Particle* lead, const Particle* tail, const string& type, bool useWeight){
+	double w = (useWeight ? theWeight : 1.);
+	theHistograms.fill("Leading "+type+" pt", "Leading "+type+" pt", HISTO_Pt_Config, lead->pt(), w);
+	theHistograms.fill("Second "+type+" pt", "Second "+type+" pt", HISTO_Pt_Config, tail->pt(), w);
+	float deltaEta = lead->eta() - tail->eta();
+	theHistograms.fill("#Delta #eta "+type, "#Delta #eta "+type, HISTO_JEta_Config, deltaEta, w);
+	float deltaPhi = lead->phi() - tail->phi();
+	theHistograms.fill("#Delta #phi "+type, "#Delta #phi "+type, HISTO_Phi_Config, deltaPhi, w);
+	float deltaR = physmath::deltaR(*lead, *tail);
+	theHistograms.fill("#Delta R "+type, "#Delta R "+type, 200, 0., 4., deltaR, w);
+}
+
+/*void WWosAnalyzer::leptonCutAnalysis(const Particle* lead, const Particle* tail, const string& type, bool useWeight){
+	double w = (useWeight ? theWeight : 1.);
+	theHistograms.fill<TH2F>(type+": pt", type+": pt", HISTO_Pt_Config, HISTO_Pt_Config, lead->pt(), tail->pt(), w);
+}*/
+
+void WWosAnalyzer::leptonCutAnalysis(const Particle* lead, const Particle* tail, const string& type, bool useWeight){
+	//These plots should be filled in a more efficient way in end(TFile&). Each bin shall be filled individually
+	TH1::SetDefaultSumw2(true);
+	double w = (useWeight ? theWeight : 1.);
+	for(float ptCut = 0.; ptCut < 500.; ptCut += 5.){
+		if(lead->pt() >= ptCut){
+			theHistograms.fill(type+": events passing lead pt >=", type+": events passing lead pt >=", HISTO_Pt_Config, ptCut, w);
+			nestedPtCutHistogram(lead, tail, type, ptCut, w);
+		}
+		if(tail->pt() >= ptCut)
+			theHistograms.fill(type+": events passing second pt >=", type+": events passing second pt >=", HISTO_Pt_Config, ptCut, w);
+	}
+	for(float dRCut = 0.; dRCut < 4.; dRCut += 0.02)
+		if(physmath::deltaR(*lead, *tail) <= dRCut)
+			theHistograms.fill(type+": events passing deltaR <=", type+": events passing deltaR <=",  200, 0., 4., dRCut, w);
+}
+
+void WWosAnalyzer::nestedPtCutHistogram(const Particle* lead, const Particle* tail, const string& type, float ptCut, float weight){
+	for(float ptCut2 = 0.; ptCut2 < 500.; ptCut2 += 5.)
+		if(tail->pt() >= ptCut2)
+			theHistograms.fill<TH2F>(type+": pt Cuts", type+": pt Cuts", HISTO_Pt_Config, HISTO_Pt_Config, ptCut, ptCut2, weight);
+}
+
+#ifdef DO_GEN_PARTICLES_ANALYSIS
+//	##################################	genParticles ##################################
+void WWosAnalyzer::genParticlesAnalysis(){
+	genElectrons 		= new std::vector<phys::Particle>();	//prompt genElectrons in this event
+	genMuons 				= new std::vector<phys::Particle>();	//prompt genMuons in this event
+	genLeptons 			= new std::vector<phys::Particle>();	//every genLepton in this event (no neutrinos)
+	genCleanedJets	= new std::vector<phys::Particle>();	//every prompt Jet in this event
+	fakeJets				= new std::vector<phys::Particle>();	//isolated particles that appear in genJets
+	
+	genParticlesCategorization();	//foreach(	, *genParticles)
+	
+	totalElectrons += genElectrons->size();
+	totalMuons += genMuons->size();
+	totjets += jets->size();
+	totgenJets += genJets->size();
+	totgenCleanedJets += genCleanedJets->size();
+	totgenParticles += genParticles->size();
+	
+	//Efficiency of particle reconstruction
+	#ifdef DO_EFFICIENCY_ANALYSIS
+	analyzeEfficiency(genElectrons, electrons, string("Electrons"), matchedElectrons);
+	analyzeEfficiency(genMuons, muons, string("Muons"), matchedMuons);
+	analyzeEfficiency(genCleanedJets, jets, string("Jets"), matchedJets, 0.4);
+	#endif
+	
+	genElectrons->clear();
+	genMuons->clear();
+	genLeptons->clear();	
+	genCleanedJets->clear();
+
+	delete genElectrons;
+	delete genMuons;
+	delete genLeptons;	
+	delete genCleanedJets;
+}
+
+
+void WWosAnalyzer::genParticlesCategorization(){	//Divides the genParticles betwenn e, mu, jet, etc.
 	#ifdef DO_STATISTICS_ON_PARTICLES
 	initStatistics();
 	#endif
-	genElectrons 	= new std::vector<phys::Particle>();	//prompt genElectrons in this event
-	genMuons 		= new std::vector<phys::Particle>();	//prompt genMuons in this event
-	genLeptons 		= new std::vector<phys::Particle>();	//every prompt genLepton in this event
-	
 	foreach(const phys::Particle &gen, *genParticles){
 		#ifdef DO_STATISTICS_ON_PARTICLES
 		tempStatisticParticles(gen);
 		#endif
-		if(!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt) && abs(gen.eta()) < 2.4) ) {
+		if(
+				abs(gen.eta()) > 2.4 && 
+				(abs(gen.id()) == 11 || abs(gen.id()) == 13 || abs(gen.id()) == 15 || abs(gen.id()) == 22) &&
+				gen.pt() >20.
+			)
+			fakeJets->push_back(gen);
+		if(
+				!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || 
+				!(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)) || 
+				abs(gen.eta()) > 2.4 /*|| gen.pt() < 25*/
+			){
+			
 			continue;
 		}
 		switch (abs(gen.id())){
@@ -72,8 +248,35 @@ void WWosAnalyzer::analyze(){
 			default:
 				continue;
 		}
-		
 	}
+	
+	foreach(const phys::Particle &jet, *genJets){
+		if(abs(jet.eta()) < 4.7){
+				phys::Particle* cand = findMatchingParticle(jet, fakeJets/*genParticles*/); //
+				if(cand != nullptr){
+					if(checkMatch(jet, *cand, 0.4) && (abs(cand->id()) >= 11 && abs(cand->id())<=16)) continue; //All particles are also jets, this is a duplicate
+					}
+				/*else{
+					cout<<"\nFound a nullptr\n";
+					cout<<"\n\tgenJet:\n";
+					cout<<jet<<"\n";
+					cout<<"\n\tgenParticles:" << genLeptons->size()<<endl;
+					foreach(Particle& genP, *genParticles){
+						cout<<genP<<" - "<<(genP.genStatusFlags().test(phys::GenStatusBit::isPrompt))<<" - "<<(genP.genStatusFlags().test(phys::GenStatusBit::fromHardProcess))<<"\n";
+					}
+					for(int i=0; i<50; i++) cout<<"-";
+				}*/
+				
+			}
+			genCleanedJets->push_back(jet);	//genCleanedJets
+			fillParticlePlots("genJets", jet);
+	}/*
+	foreach(const phys::Particle &jet, *centralGenJets){
+		if(jet.genStatusFlags().test(phys::GenStatusBit::isPrompt) && abs(jet.eta()) < 5.){
+			fillParticlePlots("genJets", jet);
+			genJets->push_back(jet);
+		}
+	}*/
 	#ifdef DO_STATISTICS_ON_EVENTS
 	tempStatisticEvents();
 	fillBasicPlots();		//Inherited from EventAnalyzer
@@ -81,106 +284,81 @@ void WWosAnalyzer::analyze(){
 	std::sort(genElectrons->begin(), genElectrons->end(), PtComparator());	//Descending order
 	std::sort(genMuons->begin(), genMuons->end(), PtComparator());
 	std::sort(genLeptons->begin(), genLeptons->end(), PtComparator());
-  	/*
-  	bool genElectronsignal = false;
-  	bool muonSignal = false;
-  
-  	//electrons
-  	if(genElectrons->size() >=2){
-		if(
-				genElectrons->at(0).pt() > 25 && 
-				met->p4().E() > 20 &&
-				genElectrons->at(1).pt() > 15 && 
-				genElectrons->at(0).charge() * genElectrons->at(1).charge() == -1
-			)
-			genElectronsignal = true;
-	}
-	else genElectronsignal = false;
-	//muons
-	if(genMuons->size() >=2){
-		if(
-				genMuons->at(0).pt() > 20 && 
-				met->p4().E() > 100 &&
-				genMuons->at(1).pt() > 15 && 
-				genMuons->at(0).charge() * genMuons->at(1).charge() == -1
-			) 
-			muonSignal = true;
-	}
-	else muonSignal = false;
-	
-	if(genElectronsignal && !muonSignal){ 
-		electronEvents++;
-	}
-	if(muonSignal && !genElectronsignal){ 
-		muonEvents++;
-		theHistograms.fill("Muon_E_analyzed", "Muon_E_analyzed", 200, 0, 200, genMuons->at(0).p4().E());
-		theHistograms.fill("Muon_pt_analyzed", "Muon_pt_analyzed", 200, 0, 200, genMuons->at(0).pt());
-	}
-	if((genElectronsignal && !muonSignal) || (muonSignal && !genElectronsignal)) passingSelection++;
-	*/
-	
-	//Efficiency of particle reconstruction
-	//analyzeEfficiency();
-	analyzeEfficiency(genElectrons, electrons, string("Electrons"), matchedElectrons);
-	analyzeEfficiency(genMuons, muons, string("Muons"), matchedMuons);
-	
-	totalElectrons += genElectrons->size();
-	totalMuons += genMuons->size();
-	
-	delete genElectrons;
-	delete genMuons;
-	delete genLeptons;
-	
-	return;
+	std::sort(genCleanedJets->begin(), genCleanedJets->end(), PtComparator());
 }
 
-void WWosAnalyzer::end(TFile &){
+void WWosAnalyzer::endGenParticleAnalysis(){
 	//doSomeFits();
-	//cout<<"Events: "<<NUMBER_OF_EVENTS<<" \tPassing selection: "<<passingSelection<<" \tEfficiency: "<<(1.-(float)passingSelection/NUMBER_OF_EVENTS)*100.<<" %\n";
-	//cout<<"Electron events: "<<electronEvents<<" \tMuon events: "<<muonEvents<<"\n";
-	cout<<"Total Electrons: "<<totalElectrons<<" \tMatched Electrons: "<<matchedElectrons<<" \tEfficiency: "<<(float)(100*matchedElectrons)/totalElectrons<<" %" <<"\n";
+	
+	#ifdef DO_EFFICIENCY_ANALYSIS
+	cout<<"\nTotal Electrons: "<<totalElectrons<<" \tMatched Electrons: "<<matchedElectrons<<" \tEfficiency: "<<(float)(100*matchedElectrons)/totalElectrons<<" %" <<"\n";
 	cout<<"\t\t   Of wich with mismatched charge:   "<<wrongChargeE<<" \tRatio:      "<<(float)(100*wrongChargeE)/totalElectrons<<" %\n";
 	cout<<"Total Muons:     "<<totalMuons<<" \tMatched Muons:     "<<matchedMuons<<" \tEfficiency: "<<(float)(100*matchedMuons)/totalMuons<<" %" <<"\n";
 	cout<<"\t\t   Of wich with mismatched charge:    "<<wrongChargeM<<" \tRatio:      "<<(float)(100*wrongChargeM)/totalMuons<<" %\n";
+	cout<<"jets: "<<totjets<<" \tgenJets: "<<totgenJets<<" \tgenCleanedJets: "<<totgenCleanedJets<<" \ttotgenParticles: "<<totgenParticles<<"\n";
 	
 	normalizeHistograms(string("Electrons"));
 	normalizeHistograms(string("Muons"));
-	
-	cout<<"\nElapsed Time: "<< (float)(clock()-startTime)/CLOCKS_PER_SEC<<" s\n";
-	for(char i=0; i<25; i++) cout<<"-";
-	cout<<" \tEnd of WWos\t";
-	for(char i=0; i<25; i++) cout<<"-";
-	cout<<"\n\n";
+	normalizeHistograms(string("Jets"));
+	/*
+	cout<<"Resolution 1/Pt (Electrons)\n";
+	fitResolutionPt(string("Electrons"));
+	cout<<"Resolution 1/Pt (Muons)\n";
+	fitResolutionPt(string("Muons"));
+	cout<<"Resolution E (Electrons)\n";
+	fitResolutionE(string("Electrons"));
+	cout<<"Resolution E (Muons)\n";
+	fitResolutionE(string("Muons"));
+	*/
+	#endif
 }
+#endif	//DO_GEN_PARTICLES_ANALYSIS
 
 //Efficiency analysis
+#ifdef DO_EFFICIENCY_ANALYSIS
 template <class T, class P, typename C>
-void WWosAnalyzer::analyzeEfficiency(vector<T>* genGroup, vector<P>* recGroup, std::string name, C& counter){
+void WWosAnalyzer::analyzeEfficiency(vector<T>* genGroup, vector<P>* recGroup, std::string name, C& counter, Float_t maxDeltaR){
 	foreach(const phys::Particle & gen, *genGroup){
-		//fillParticlePlots("gen"+name, gen);
-		/*theHistograms.fill("gen"+name+"_vs_eta","gen"+name+"_vs_eta", 26*8+1, -2.6,2.6,gen.eta(), 1);
-		theHistograms.fill("gen"+name+"_vs_pt","gen"+name+"_vs_pt", 100, 0., 500., gen.pt(), 1);*/
 		
 		phys::Particle* cand = findMatchingParticle(gen, recGroup);	//candidate is a reconstructed particle
 		if(cand != nullptr){
 			counter++;
-			theHistograms.fill(name+"Match_deltaR",name+"Match_deltaR", 200, 0, 2, physmath::deltaR(gen, *cand), 1.);
-			if(checkMatch(gen, *cand, 0.2)){
+			theHistograms.fill(name+"Match_deltaR",name+"Match_deltaR", HISTO_deltaR_Config, physmath::deltaR(gen, *cand), 1.);
+			if(checkMatch(gen, *cand, maxDeltaR)){
 				
 				if(gen.charge() != (*cand).charge()){
-					if(name == string("Electrons")) wrongChargeE++;
-					if(name == string("Muons")) wrongChargeM++;
-				}	
-				//Efficiency vs Eta
-				theHistograms.fill(name+"Matched_vs_eta", name+"Matched_vs_eta", 261, -2.6, 2.6, gen.eta(), 1);
-				//Efficiency vs pt
-				theHistograms.fill(name+"Matched_vs_pt",name+"Matched_vs_pt",100,0.,500.,gen.pt(),1);
-			}
-			//Efficiency vs Tolerance
-			/*for(int cTolerance = 1; cTolerance <= 50; cTolerance++){ //I like to iterate on ints
-				if(checkMatch(gen, *cand, (double)cTolerance/100.)){
-					theHistograms.fill(name+"Efficiency_vs_tolerance",name+"Efficiency_vs_tolerance", 50, 0.01, 0.51, (float)cTolerance/100.+0.0001, 1);	//To be normalized in end()
+					if(name == "Electrons") wrongChargeE++;
+					if(name == "Muons") wrongChargeM++;
 				}
+				//Efficiency vs Eta
+				if(name == "Jets"){
+					theHistograms.fill("JetsMatched_vs_eta","JetsMatched_vs_eta",HISTO_JEta_Config, gen.eta(), 1.);
+					theHistograms.fill("JetsMatched_Charge","JetsCharge", 60, -10., 10., gen.charge(), 1.);
+				}
+				else 
+					theHistograms.fill(name+"Matched_vs_eta", name+"Matched_vs_eta",HISTO_Eta_Config,gen.eta(),1);
+				//Efficiency vs Phi
+				theHistograms.fill(name+"Matched_vs_phi",name+"Matched_vs_phi",HISTO_Phi_Config,gen.phi(),1);
+				//Efficiency vs pt
+				theHistograms.fill(name+"Matched_vs_pt",name+"Matched_vs_pt",HISTO_Pt_Config,gen.pt(),1);
+				
+				//Let's analyze the resolution too!
+				resolutionAnalysis(*cand, gen, name);
+			}/*
+			else if(name == "Jets"){
+				cout<<"\n\tgenLeptons:\n";
+				foreach(Particle& genP, *genLeptons){
+					cout<<genP<<"\n";
+				}
+				cout<<"\n\tgenJets:\n";
+				foreach(Particle& genJ, *genGroup){
+					cout<<genJ<<"\n";
+				}
+				cout<<"\n\tjets:\n"<<*cand;
+				foreach(Particle& recP, *recGroup){
+					cout<<recP<<"\n";
+				}
+				for(int i=0; i<50; i++) cout<<"-";
 			}*/
 		}
 	}
@@ -188,13 +366,13 @@ void WWosAnalyzer::analyzeEfficiency(vector<T>* genGroup, vector<P>* recGroup, s
 
 
 //	Helper functions
-
-phys::Particle* WWosAnalyzer::findMatchingParticle(const phys::Particle& rec, std::vector<phys::Lepton>* candidates){
+template <class P>
+phys::Particle* WWosAnalyzer::findMatchingParticle(const phys::Particle& rec, std::vector<P>* candidates){
 	if(candidates->size() == 0) return nullptr;
 	int minPos = 0;
 	double deltaRMin = physmath::deltaR(rec, candidates->at(0));
 	double temp = 999.;
-	for(int i = 0; i < candidates->size(); i++){
+	for(int i = 1; i < candidates->size(); i++){
 		temp = physmath::deltaR(rec, candidates->at(i));
 		if(temp < deltaRMin){
 			deltaRMin = temp;
@@ -209,6 +387,7 @@ phys::Particle* WWosAnalyzer::findMatchingParticle(const phys::Particle& rec, st
 	return & (candidates->at(minPos));
 }
 
+
 template <class P, class T>
 bool WWosAnalyzer::checkMatch(const /*phys::Particle&*/P& reconstructed, const /*phys::Particle&*/ T& generated, const float& tolerance){
 	//if(reconstructed.charge() != generated.charge()) return false;	//NO
@@ -216,24 +395,124 @@ bool WWosAnalyzer::checkMatch(const /*phys::Particle&*/P& reconstructed, const /
 }
 
 void WWosAnalyzer::normalizeHistograms(std::string name){
-	theHistograms.clone(name+"Matched_vs_eta", name+"Efficiency_vs_eta");
-	theHistograms.get(name+"Efficiency_vs_eta")->Divide(theHistograms.get("gen"+name+"_eta"));
-	theHistograms.get(name+"Efficiency_vs_eta")->SetTitle((name+"Efficiency_vs_#eta").string::c_str());
-	//There's no overload of SetTitle(const char*) with SetTitle(std::string)
-	theHistograms.get(name+"Efficiency_vs_eta")->GetXaxis()->SetTitle("#eta");
+	normalizeEta(name);	//problem with jets
+	normalizePhi(name);
+	normalizePt(name);
 	
-	theHistograms.clone(name+"Matched_vs_pt", name+"Efficiency_vs_pt");
-	theHistograms.get(name+"Efficiency_vs_pt")->Divide(theHistograms.get("gen"+name+"_pt"));
-	theHistograms.get(name+"Efficiency_vs_pt")->SetTitle((name+"Efficiency_vs_pt").string::c_str());
-	theHistograms.get(name+"Efficiency_vs_pt")->GetXaxis()->SetTitle("pt [GeV/c]");
-	
-	/*theHistograms.get(name+"Efficiency_vs_tolerance")->Scale(1./(float)totalElectrons);
-	theHistograms.get(name+"Efficiency_vs_tolerance")->GetYaxis()->SetRangeUser(0., 1.);
-	theHistograms.get(name+"Efficiency_vs_tolerance")->GetXaxis()->SetTitle("deltaR");*/
+	//Resolution
+
+	theHistograms.get("(#Delta 1/pt)/(1/pt) "+name)->GetXaxis()->SetTitle("");
 }
 
+void WWosAnalyzer::normalizeEta(std::string name){
+	TH1* matchEta = theHistograms.get(name+"Matched_vs_eta");
+	if(matchEta == nullptr){
+		cout<<"\""<<name<<"Matched_vs_eta"<<"\" not found\n";
+		return;
+	}
+	theHistograms.clone(name+"Matched_vs_eta", name+"Efficiency_vs_eta");
+	TH1* effEta = theHistograms.get(name+"Efficiency_vs_eta");
+	if(effEta == nullptr){
+		cout<<"\""<<name<<"Efficiency_vs_eta"<<"\" not found\n";
+		return;
+	}
+	/*TGraphAsymmErrors* a = myTGraphAsymmErrors(theHistograms.get(name+"Efficiency_vs_eta"), theHistograms.get("gen"+name+"_eta"));
+	a->Draw("AP");*/
+	effEta->Divide(theHistograms.get("gen"+name+"_eta"));
+	effEta->SetTitle((name+"Efficiency_vs_#eta").string::c_str());
+	
+	//There's no overload of SetTitle(const char*) with SetTitle(std::string)
+	effEta->GetXaxis()->SetTitle("#eta");
+}
 
-// Random statistics	------------------------------------------------------------------------
+void WWosAnalyzer::normalizePhi(std::string name){
+	theHistograms.clone(name+"Matched_vs_phi", name+"Efficiency_vs_phi");
+	TH1* effPhi = theHistograms.get(name+"Efficiency_vs_phi");
+	if(effPhi == nullptr){
+		cout<<"\""<<name<<"Efficiency_vs_phi"<<"\" not found\n";
+	}
+	effPhi->Divide(theHistograms.get("gen"+name+"_phi"));
+	effPhi->SetTitle((name+"Efficiency_vs_#phi").string::c_str());
+	effPhi->GetXaxis()->SetTitle("#phi [rad]");
+}
+
+void WWosAnalyzer::normalizePt(std::string name){
+	theHistograms.clone(name+"Matched_vs_pt", name+"Efficiency_vs_pt");
+	TH1* effPt = theHistograms.get(name+"Efficiency_vs_pt");
+	if(effPt == nullptr){
+		cout<<"\""<<name<<"Efficiency_vs_pt"<<"\" not found\n";
+	}
+	effPt->Divide(theHistograms.get("gen"+name+"_pt"));
+	effPt->SetTitle((name+"Efficiency_vs_pt").string::c_str());
+	effPt->GetXaxis()->SetTitle("pt [GeV/c]");
+}
+
+TGraphAsymmErrors* WWosAnalyzer::myTGraphAsymmErrors(TH1* num, TH1* denom){ //Correct errors
+	if(num->GetXaxis()->GetNbins() != denom->GetXaxis()->GetNbins()) return nullptr;
+	TGraphAsymmErrors* result = new TGraphAsymmErrors(num, denom,"cp" /*Clopper-Pearson*/); //C'tor divides the two TH1 inputs
+	return result;
+}
+
+template <class P, class T>
+void WWosAnalyzer::resolutionAnalysis(const T& rec, const P& gen, std::string name){
+	
+	//#Delta(1/pt) is gaussian
+	float delta1Pt = (float)((1/rec.pt()-1/gen.pt())*gen.pt());//(D(1/p))/(1/p) = D(1/p) * p
+	float deltaEN = (float)((rec.e()-gen.e())/gen.e());
+	
+		theHistograms.fill("(#Delta 1/pt)/(1/pt) "+name,"(#Delta 1/pt)/(1/pt) "+name, 200,-0.1,0.1, delta1Pt, 1);
+		theHistograms.fill("(#Delta E)/E "+name,"(#Delta E)/E "+name, 200,-0.1,0.1, deltaEN, 1);
+}
+
+void WWosAnalyzer::fitResolutionPt(std::string name){
+	TH1* thisPlot = theHistograms.get("(#Delta 1/pt)/(1/pt) "+name);
+	TAxis* thisXAxis = thisPlot->GetXaxis();
+	Double_t xm = thisXAxis->GetBinLowEdge(1);
+	Int_t xup = thisXAxis->GetNbins();
+	Double_t xM = thisXAxis->GetBinLowEdge(xup);
+	TF1* ptInv = new TF1("ptInv","[0]*exp(-(x*x)/(2*[1]))+[2]",xm/3.,xM/3.);
+	if(name == "Electrons"){
+		ptInv->SetParameters(5000., 0.007, 50.);
+		ptInv->SetParLimits(1,0.0001,0.001);
+		ptInv->SetParLimits(2,0.,1000.);
+	}
+	if(name == "Muons"){
+		ptInv->SetParameters(5000., 0.1, 50.);
+		ptInv->SetParLimits(1,0.0001,0.001);
+		ptInv->SetParLimits(2,0.,1000.);
+	}
+	ptInv->SetLineColor(2);
+	thisPlot->Fit(ptInv,"R");	//R->Fit in function's range
+	getFitInfo(ptInv);
+}
+
+void WWosAnalyzer::fitResolutionE(std::string name){
+	TH1* thisPlot = theHistograms.get("(#Delta E)/E "+name);
+	TAxis* thisXAxis = thisPlot->GetXaxis();
+	Double_t xm = thisXAxis->GetBinLowEdge(1);
+	Int_t xup = thisXAxis->GetNbins();
+	Double_t xM = thisXAxis->GetBinLowEdge(xup);
+	TF1* funcE = new TF1("funcE","[0]*exp(-(x*x)/(2*[1]))+[2]",xm/3.,xM/3.);
+	if(name == "Electrons"){
+		funcE->SetParameters(5000., 0.007, 50.);
+		funcE->SetParLimits(0,0.,100000.);
+		funcE->SetParLimits(1,0.0001,0.01);
+		funcE->SetParLimits(2,0.,2000.);
+	}
+	if(name == "Muons"){
+		funcE->SetParameters(5000., 0.1, 50.);
+		funcE->SetParLimits(0,0.,100000.);
+		funcE->SetParLimits(1,0.0001,0.01);
+		funcE->SetParLimits(2,0.,2000.);
+	}
+	funcE->SetLineColor(3);
+	thisPlot->Fit(funcE,"R");
+	getFitInfo(funcE);
+}
+#endif	//DO_EFFICIENCY_ANALYSIS
+
+
+// Random statistics 	------------------------------------------------------------------------
 
 void WWosAnalyzer::fillBasicPlots(){
   theHistograms.fill<TH1I>("nvtx"     , "Number of vertices" , 100, 0, 100, nvtx             , theWeight);
@@ -250,12 +529,15 @@ void WWosAnalyzer::fillBasicPlots(){
 
 
 void WWosAnalyzer::fillParticlePlots(const std::string &type, const phys::Particle & lepton){
-  theHistograms.fill(type+"_pt" ,    "p_{T} spectrum", 100,  0   , 500  ,lepton.pt() , 1/*theWeight*/);
-  theHistograms.fill(type+"_eta",    "#eta spectrum" , 261, -2.6 ,  2.6 ,lepton.eta(), 1/*theWeight*/);
-  theHistograms.fill(type+"_phi",    "#phi spectrum" ,  50, -3.15, 3.15 ,lepton.phi(), 1/*theWeight*/);
-  //theHistograms.fill(type+"_charge", "charge"        ,  50,  -25  ,  25   ,lepton.charge(), theWeight);
+  theHistograms.fill(type+"_pt" ,   "p_{T} spectrum",HISTO_Pt_Config	,lepton.pt(), 1/*theWeight*/);
+  if(type == "genJets" || type == "allJets") 
+  	theHistograms.fill(type+"_eta",	"#eta spectrum",HISTO_JEta_Config	,lepton.eta(), 1/*theWeight*/);
+  else 
+  	theHistograms.fill(type+"_eta", "#eta spectrum",HISTO_Eta_Config	,lepton.eta(), 1/*theWeight*/);
+  theHistograms.fill(type+"_phi", 	"#phi spectrum",HISTO_Phi_Config	,lepton.phi(), 1/*theWeight*/);
+  //theHistograms.fill(type+"_charge", "charge"    ,	50,		-25 ,  25 ,lepton.charge(), theWeight);
   
-  theHistograms.get(type+"_pt")->GetXaxis()->SetTitle("[GeV/c]");
+  //theHistograms.get(type+"_pt")->GetXaxis()->SetTitle("[GeV/c]");
 }
 
 
@@ -272,7 +554,6 @@ void WWosAnalyzer::initStatistics(){
 	peCounter = 0;
 	pmCounter = 0;
 }
-
 void WWosAnalyzer::tempStatisticParticles(const phys::Particle &par){
 	particleCounter++;
 		if(abs(par.id()) == 11) eCounter++;
@@ -347,4 +628,79 @@ void getFitInfo(TF1* p){
 	cout<<"\n";
 }
 
+/*void confidence_binomial_clopper_pearson(int n, int k, double &xlow, double &xhigh, double level=.68540158589942957) {
+   double alpha = (1.0 - level)/2;
+   xlow = (k == 0) ? 0.0 : ROOT::Math::beta_quantile(alpha, k, n-k + 1.0);
+   xhigh = (k == n) ? 1.0 : ROOT::Math::beta_quantile(1.0 - alpha, k + 1.0, n-k);
+}*/
+
+/* temp stuff from analyze()
+bool eeSignal = false;
+  bool purEE = false;			//Only ee
+  bool mmSignal = false;
+  bool purMM = false;			//Only mm
+  bool emSignal = false;
+  bool purEM = false;			//Only em
   
+  if(genCleanedJets->size() >= 2){
+  	//electrons
+  	if(genElectrons->size() >= 2){
+			if(
+					fabs(genCleanedJets->at(0).eta()) > 2.4 && 
+					fabs(genCleanedJets->at(1).eta()) > 2.4 &&
+					genElectrons->at(0).e() > 20. && 
+					met->e() > 15. &&
+					genElectrons->at(1).e() > 15. && 
+					genElectrons->at(0).charge() * genElectrons->at(1).charge() == -1
+				)
+				eeSignal = true;
+		}
+		else eeSignal = false;
+		//muons
+		if(genMuons->size() >= 2){
+			if(
+					fabs(genCleanedJets->at(0).eta()) > 2.4 && 
+					fabs(genCleanedJets->at(1).eta()) > 2.4 &&
+					genMuons->at(0).e() > 20. && 
+					met->e() > 15. &&
+					genMuons->at(1).e() > 15. && 
+					genMuons->at(0).charge() * genMuons->at(1).charge() == -1
+				) 
+				mmSignal = true;
+		}
+		else mmSignal = false;
+		//mixed
+		if((genElectrons->size() >= 1) && (genMuons->size() >= 1)){
+			if(
+					fabs(genCleanedJets->at(0).eta()) > 2.4 && 
+					fabs(genCleanedJets->at(1).eta()) > 2.4 &&
+					genElectrons->at(0).e() > 20. &&
+					genMuons->at(0).e() > 15. &&
+					met->e() > 15. &&
+					genMuons->at(0).charge() * genElectrons->at(0).charge() == -1
+				)
+				emSignal = true;
+		}
+		else emSignal = false;
+	}
+	
+	if(eeSignal && !mmSignal && !emSignal){ 
+		eeEvents++;
+		purEE = true;
+	}
+	if(mmSignal && !eeSignal && !emSignal){ 
+		mmEvents++;
+		purMM = true;
+	}
+	if(emSignal && !eeSignal && !mmSignal){ 
+		emEvents++;
+		purEM = true;
+	}
+	if(eeSignal || mmSignal || emSignal){
+		if(purEE || purMM || purEM) passingSelection++;
+		else multiSignEvents++;
+	}
+*/
+
+
+ 
