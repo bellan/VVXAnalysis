@@ -34,13 +34,67 @@ using namespace phys;
 Int_t WWosAnalyzer::cut() {
 	evtN++;
 	cout<<"\r\t\t"<<evtN;//"\b\b\b\b\b\b";
-	#ifdef JET_CUT
-	if(jets->size() < 2) return -1;
-	#endif
-	#ifdef LEPTON_CUT
-	if((electrons->size() + muons->size() != 2) /*|| jets->size() < 2*/) return -1;
-	#endif
-	return 1;
+	
+	bool jetOK = false;
+	foreach(const Jet& jet1, *jets){
+		if(jetOK) break;		//Saves computation time
+    foreach(const Jet& jet2, *jets){
+    	double mjj = (jet1.p4() + jet2.p4()).M();
+    	if (mjj < 150){
+    		jetOK = true; 
+    		break;
+  		}
+  	}
+	}
+  bool leptOK = false;
+  int countMu20 = 0;
+  int countEle20 = 0;
+  float maxPt = 20.;
+  float secPt = 20.;
+  thisEventType = myEventTypes::ee;
+  foreach(const Lepton& e, *electrons){
+  	countEle20 += (e.pt() > 20 ? 1 : 0);
+  	if(e.pt() > maxPt){
+	  	maxPt = e.pt();
+  		leadLepton = e;
+		}
+		else if(e.pt() > secPt){
+	  	secPt = e.pt();
+  		tailLepton = e;
+		}
+	}
+  	
+  foreach(const Lepton& m, *muons){
+  	countMu20 += (m.pt() > 20 ? 1 : 0);
+  	if(m.pt() > maxPt){
+	  	maxPt = m.pt();
+  		leadLepton = m;
+  		if(thisEventType == myEventTypes::ee) thisEventType = myEventTypes::em;
+  		else if(thisEventType == myEventTypes::em) thisEventType = myEventTypes::mm;
+		}
+		else if(m.pt() > secPt){
+	  	secPt = m.pt();
+  		tailLepton = m;
+  		if(thisEventType == myEventTypes::ee) thisEventType = myEventTypes::em;
+  		else if(thisEventType == myEventTypes::em) thisEventType = myEventTypes::mm;
+		}
+	}
+  
+  if(countEle20 + countMu20 >= 2) leptOK = true;	
+  if(countEle20 + countMu20 > 2) lostEvents++;
+  
+  
+  /*if(false){
+  cout<<"\n\nType: "<<eventType<<" \t"<<;
+	cout<<"\nElectrons pt: \t\t";
+	foreach(const Lepton& el, *electrons) cout<<el.pt()<<" - ";
+	cout<<"\nMuons pt: \t\t";
+	foreach(const Lepton& mu, *muons) cout<<mu.pt()<<" - ";
+	cout<<"\nmaxPt: "<<maxPt<<" \tsecPt: "<<secPt;
+  }*/
+  
+	if(jetOK && leptOK) return 1;
+	return -1;
 }
 
 void WWosAnalyzer::begin(){
@@ -49,59 +103,44 @@ void WWosAnalyzer::begin(){
 	cout<<" \tBegin of WWos\t ";
 	for(char i=0; i<25; i++) cout<<"-";
 	//cout<<"\nTotal Events: "<<NUMBER_OF_EVENTS<<" \tAnalyzed:\n";
-	cout<<"\nAnalyzed:\t      /"<<NUMBER_OF_EVENTS;
+	TTree* thisTree = tree();
+	cout<<"\nAnalyzed:\t      /";//<<thisTree->GetEntries();
 	startTime = clock();
 	evtN = 0;
 }
 
 void WWosAnalyzer::analyze(){
+	
 	passingCut++;
 	#ifdef DO_GEN_PARTICLES_ANALYSIS
 	genParticlesAnalysis();
 	#endif
 	
-	#ifdef JET_CUT
-	//Plot the invariant mass of the two jets
-	float jjMass = (jets->at(0).p4() + jets->at(1).p4()).M();
-	theHistograms.fill("mjj","mjj", 250, 0., 2000., jjMass);
-	#endif
-	
 	#ifdef LEPTON_CUT
-	const Particle* leadingLept;
-	const Particle* secondLept;
-	string type;
-	switch(electrons->size()){
-		case 2: //ee
-			eeEvents++;
-			leadingLept = &(electrons->at(0));
-			secondLept = &(electrons->at(1));
-			type = "ee";
-			break;
-		case 1: //em
-			emEvents++;
-			if(electrons->at(0).pt() > muons->at(0).pt()){
-				leadingLept = &(electrons->at(0));
-				secondLept = &(muons->at(0));
-			} else{
-				leadingLept = &(muons->at(0));
-				secondLept = &(electrons->at(0));
-			}
-			type = "em";
-			break;
-		case 0: //mm
-			mmEvents++;
-			leadingLept = &(muons->at(0));
-			secondLept = &(muons->at(1));
-			type = "mm";
-			break;
-		default:
-			cout<<"We've got a problem: electrons->size() = "<<electrons->size()<<" muons->size() = "<<muons->size()<<'\n';
-			break;
+	
+	string eventType;
+	if(thisEventType == myEventTypes::ee){			eeEvents++;		eventType = "ee"; }
+	else if(thisEventType == myEventTypes::em){	emEvents++;		eventType = "em"; }
+	else if(thisEventType == myEventTypes::mm){	mmEvents++;		eventType = "mm"; }
+	/*default:
+			cout<<"\nWe've got a problem: electrons->size() = "<<electrons->size()<<", muons->size() = "<<muons->size();
+			cout<<"\nElectrons pt: \t\t";
+			foreach(const Lepton& el, *electrons) cout<<el.pt()<<" - ";
+			cout<<"\nMuons pt: \t\t";
+			foreach(const Lepton& mu, *muons) cout<<mu.pt()<<" - ";
+			return;	//It's no use to go on
+	*/
+	
+	if(leptonCut(&leadLepton, &tailLepton, eventType)){
+		return;
 	}
-	if(leptonCut(leadingLept, secondLept, type)) return;
+	
 	passingSelection++;
-	//leptonPlots(leadingLept, secondLept, type, true);
-	leptonCutAnalysis(leadingLept, secondLept, type, true);
+	leptonPlots(&leadLepton, &tailLepton, eventType, true);
+	leptonCutAnalysis(&leadLepton, &tailLepton, eventType, true);
+	//lepton2DGraph(&leadLepton, &tailLepton, eventType, true);
+	jetPlots();
+	miscPlots(&leadLepton, &tailLepton, eventType, true);
 	#endif
 	
 	return;
@@ -109,9 +148,10 @@ void WWosAnalyzer::analyze(){
 
 void WWosAnalyzer::end(TFile &){
 	cout << std::setprecision(4);
-	cout<<"\nEvents: "<<evtN<<" \tPassing selection: "<<passingCut<<" \t(of the total): "<<((float)passingCut/evtN)*100.<<" %\n";
+	cout<<"\nEvents: "<<evtN<<" \tPassing cut: "<<passingCut<<" \t(of the total): "<<((float)passingCut/evtN)*100.<<" %\n";
 	cout<<"Events\t\tee: "<<eeEvents<<" \tmm : "<<mmEvents<<" \tem: "<<emEvents<<'\n';
-	cout<<"Passing second cut: "<<passingSelection<<" \t(of the selected): "<<((float)passingSelection/passingCut)*100.<<" % \t(of the total): "<<((float)passingSelection/evtN)*100.<<" %\n";
+	cout<<"Passing second cut: "<<passingSelection<<" \t(of the uncut): "<<((float)passingSelection/passingCut)*100.<<" % \t(of the total): "<<((float)passingSelection/evtN)*100.<<" %\n";
+	cout<<"Events with >=3 leptons: "<<lostEvents<<" \t(of the selected): "<<((float)lostEvents/passingSelection)*100.<<" % \t(of the uncut): "<<((float)lostEvents/passingCut)*100.<<" % \t(of the total): "<<((float)lostEvents/evtN)*100.<<" %\n";
 	
 	#ifdef DO_GEN_PARTICLES_ANALYSIS
 	endGenParticleAnalysis();
@@ -126,8 +166,8 @@ void WWosAnalyzer::end(TFile &){
 
 
 bool WWosAnalyzer::leptonCut(const Particle* lead, const Particle* tail, const string& type){
-	if(lead->charge() * tail->charge() > 0) return false;
-	if(lead->pt() < 100 || tail->pt() < 60) return true;
+	if(lead->charge() * tail->charge() > 0) return true;	// true = cut this event
+	//if(lead->pt() < 100 || tail->pt() < 60) return true;
 	return false;
 }
 
@@ -143,10 +183,10 @@ void WWosAnalyzer::leptonPlots(const Particle* lead, const Particle* tail, const
 	theHistograms.fill("#Delta R "+type, "#Delta R "+type, 200, 0., 4., deltaR, w);
 }
 
-/*void WWosAnalyzer::leptonCutAnalysis(const Particle* lead, const Particle* tail, const string& type, bool useWeight){
+void WWosAnalyzer::lepton2DGraph(const Particle* lead, const Particle* tail, const string& type, bool useWeight){
 	double w = (useWeight ? theWeight : 1.);
 	theHistograms.fill<TH2F>(type+": pt", type+": pt", HISTO_Pt_Config, HISTO_Pt_Config, lead->pt(), tail->pt(), w);
-}*/
+}
 
 void WWosAnalyzer::leptonCutAnalysis(const Particle* lead, const Particle* tail, const string& type, bool useWeight){
 	//These plots should be filled in a more efficient way in end(TFile&). Each bin shall be filled individually
@@ -155,7 +195,7 @@ void WWosAnalyzer::leptonCutAnalysis(const Particle* lead, const Particle* tail,
 	for(float ptCut = 0.; ptCut < 500.; ptCut += 5.){
 		if(lead->pt() >= ptCut){
 			theHistograms.fill(type+": events passing lead pt >=", type+": events passing lead pt >=", HISTO_Pt_Config, ptCut, w);
-			nestedPtCutHistogram(lead, tail, type, ptCut, w);
+			//nestedPtCutHistogram(lead, tail, type, ptCut, w);
 		}
 		if(tail->pt() >= ptCut)
 			theHistograms.fill(type+": events passing second pt >=", type+": events passing second pt >=", HISTO_Pt_Config, ptCut, w);
@@ -171,16 +211,70 @@ void WWosAnalyzer::nestedPtCutHistogram(const Particle* lead, const Particle* ta
 			theHistograms.fill<TH2F>(type+": pt Cuts", type+": pt Cuts", HISTO_Pt_Config, HISTO_Pt_Config, ptCut, ptCut2, weight);
 }
 
+void WWosAnalyzer::jetPlots(){
+	theHistograms.fill("n Jets", "n Jets", 10, 0., 10., jets->size(), theWeight);
+	if(jets->size() >= 1){
+		theHistograms.fill("Lead jet E",  "Lead jet E",  250, 0., 1000., jets->at(0).e(),  theWeight);
+		theHistograms.fill("Lead jet pt", "Lead jet pt", 250, 0., 1000., jets->at(0).pt(), theWeight);
+		if(jets->size() >= 2){
+			theHistograms.fill("Tail jet E",  "Tail jet E",  250, 0., 1000., jets->at(1).e(),  theWeight);
+			theHistograms.fill("Tail jet pt", "Tail jet pt", 250, 0., 1000., jets->at(1).pt(), theWeight);
+			foreach(const Particle& jet, *jets){
+				theHistograms.fill("Jet Eta", "Jet Eta", 100, -5., 5.,jet.eta(), theWeight);
+			}
+			float deltaR = physmath::deltaR(jets->at(0), jets->at(1));
+			theHistograms.fill("delta R jets", "delta R jets", 100, 0., 5., deltaR, theWeight);
+			float deltaEta = abs(jets->at(0).eta() - jets->at(1).eta());
+			theHistograms.fill("delta Eta jets", "delta Eta jets", 100, 0., 5., deltaEta, theWeight);
+			float jjMass = (jets->at(0).p4() + jets->at(1).p4()).M();
+			theHistograms.fill("mjj","mjj", 200, 0., 2000., jjMass, theWeight);
+		}
+	}
+}
+
+void WWosAnalyzer::miscPlots(const Particle* lead, const Particle* tail, const string& type, bool useWeight){
+	double w = (useWeight ? theWeight : 1.);
+	
+	float ptScalarLL = lead->pt() + tail->pt();
+	theHistograms.fill("ptScalarLL", "ptScalarLL", 250, 0., 2000., ptScalarLL, w);
+	
+	TLorentzVector Lp4 = lead->p4();
+	TLorentzVector Tp4 = tail->p4();
+	float ptVectLL = (Lp4 + Tp4).Pt();
+	theHistograms.fill("ptVectLL", "ptVectLL", 200, 0., 500., ptVectLL, w);
+	
+	float mll = (Lp4 + Tp4).M();
+	theHistograms.fill("mll", "mll", 250, 0., 2000., mll, w);
+	
+	float angularSeparation = Lp4.Vect().Angle(Tp4.Vect());
+	theHistograms.fill("angSeparationLL", "angSeparationLL", 50, 0., 3.14, angularSeparation, w);
+	
+	//met
+	float ptScalarLLmet = ptScalarLL + met->pt();
+	theHistograms.fill("ptScalarLLmet", "ptScalarLLmet", 200, 0., 500., ptScalarLLmet, w);
+	
+	float ptVectLLmet = (Lp4 + Tp4 + met->p4()).Pt();
+	theHistograms.fill("ptVectLLmet", "ptVectLLmet", 200, 0., 250., ptVectLLmet, w);
+}
+
+
 #ifdef DO_GEN_PARTICLES_ANALYSIS
 //	##################################	genParticles ##################################
 void WWosAnalyzer::genParticlesAnalysis(){
 	genElectrons 		= new std::vector<phys::Particle>();	//prompt genElectrons in this event
 	genMuons 				= new std::vector<phys::Particle>();	//prompt genMuons in this event
 	genLeptons 			= new std::vector<phys::Particle>();	//every genLepton in this event (no neutrinos)
+	genNeutrinos 		= new std::vector<phys::Particle>();
 	genCleanedJets	= new std::vector<phys::Particle>();	//every prompt Jet in this event
 	fakeJets				= new std::vector<phys::Particle>();	//isolated particles that appear in genJets
 	
 	genParticlesCategorization();	//foreach(	, *genParticles)
+	
+	theHistograms.fill("n genNeutrinos", "n genNeutrinos", 10, 0., 10., genNeutrinos->size(), theWeight);
+	
+	#ifdef GEN_WWOS_CHECK
+	if(checkGenWWosEvent()) WWosEvents++;
+	#endif
 	
 	totalElectrons += genElectrons->size();
 	totalMuons += genMuons->size();
@@ -200,11 +294,13 @@ void WWosAnalyzer::genParticlesAnalysis(){
 	genMuons->clear();
 	genLeptons->clear();	
 	genCleanedJets->clear();
+	genNeutrinos->clear();
 
 	delete genElectrons;
 	delete genMuons;
 	delete genLeptons;	
 	delete genCleanedJets;
+	delete genNeutrinos;
 }
 
 
@@ -236,40 +332,50 @@ void WWosAnalyzer::genParticlesCategorization(){	//Divides the genParticles betw
 				genElectrons->push_back(gen);
 				genLeptons->push_back(gen);
 				break;
+			case 12:
+				genNeutrinos->push_back(gen);
+				break;
 			case 13:
 				fillParticlePlots("genMuons", gen);
 				genMuons->push_back(gen);
 				genLeptons->push_back(gen);
 				break;
-			case 15:
+			case 14:
+				genNeutrinos->push_back(gen);
+				break;
+	/*	case 15:
 				fillParticlePlots("genTaus", gen);
 				genLeptons->push_back(gen);
-				break;
+				break;*/
+	/*	case 16:
+				genNeutrinos->push_back(gen);
+				break;*/
 			default:
 				continue;
 		}
 	}
 	
 	foreach(const phys::Particle &jet, *genJets){
+		#ifdef DO_EFFICIENCY_ANALYSIS
 		if(abs(jet.eta()) < 4.7){
-				phys::Particle* cand = findMatchingParticle(jet, fakeJets/*genParticles*/); //
-				if(cand != nullptr){
-					if(checkMatch(jet, *cand, 0.4) && (abs(cand->id()) >= 11 && abs(cand->id())<=16)) continue; //All particles are also jets, this is a duplicate
-					}
-				/*else{
-					cout<<"\nFound a nullptr\n";
-					cout<<"\n\tgenJet:\n";
-					cout<<jet<<"\n";
-					cout<<"\n\tgenParticles:" << genLeptons->size()<<endl;
-					foreach(Particle& genP, *genParticles){
-						cout<<genP<<" - "<<(genP.genStatusFlags().test(phys::GenStatusBit::isPrompt))<<" - "<<(genP.genStatusFlags().test(phys::GenStatusBit::fromHardProcess))<<"\n";
-					}
-					for(int i=0; i<50; i++) cout<<"-";
-				}*/
-				
+			phys::Particle* cand = findMatchingParticle(jet, fakeJets/*genParticles*/); //
+			if(cand != nullptr){
+				if(checkMatch(jet, *cand, 0.4) && (abs(cand->id()) >= 11 && abs(cand->id())<=16)) continue; //All particles are also jets, this is a duplicate
 			}
-			genCleanedJets->push_back(jet);	//genCleanedJets
-			fillParticlePlots("genJets", jet);
+		/*else{
+				cout<<"\nFound a nullptr\n";
+				cout<<"\n\tgenJet:\n";
+				cout<<jet<<"\n";
+				cout<<"\n\tgenParticles:" << genLeptons->size()<<endl;
+				foreach(Particle& genP, *genParticles){
+					cout<<genP<<" - "<<(genP.genStatusFlags().test(phys::GenStatusBit::isPrompt))<<" - "<<(genP.genStatusFlags().test(phys::GenStatusBit::fromHardProcess))<<"\n";
+				}
+				for(int i=0; i<50; i++) cout<<"-";
+			}*/
+		}
+		#endif
+		genCleanedJets->push_back(jet);	//genCleanedJets
+		fillParticlePlots("genJets", jet);
 	}/*
 	foreach(const phys::Particle &jet, *centralGenJets){
 		if(jet.genStatusFlags().test(phys::GenStatusBit::isPrompt) && abs(jet.eta()) < 5.){
@@ -287,8 +393,34 @@ void WWosAnalyzer::genParticlesCategorization(){	//Divides the genParticles betw
 	std::sort(genCleanedJets->begin(), genCleanedJets->end(), PtComparator());
 }
 
+#ifdef GEN_WWOS_CHECK
+bool WWosAnalyzer::checkGenWWosEvent(){
+	bool result = false;
+	vector<phys::Boson<phys::Particle>>* WCandidates = new vector<phys::Boson<phys::Particle>>;
+	foreach(const Particle& genLep, *genLeptons){
+		foreach(const Particle& genNu, *genNeutrinos){
+			if(
+					(genLep.id()+1) == (- genNu.id()) &&		//same flavour and opposite lepton number
+					((genLep.p4() + genNu.p4()).M() - phys::WMASS) < 30
+				){
+				int thisId = -24*copysign(1, genLep.id());		//W+ o W-, depending on the sign of the lepton
+				WCandidates->push_back(phys::Boson<Particle>(genLep, genNu, thisId));
+				}
+		}
+	}
+	if(WCandidates->size() == 2)
+		if(WCandidates->at(0).charge() * WCandidates->at(0).charge() < 0)
+			result = true;
+	delete WCandidates;
+	return result;
+}
+#endif
+
 void WWosAnalyzer::endGenParticleAnalysis(){
 	//doSomeFits();
+	#ifdef GEN_WWOS_CHECK
+	cout<<"\nWWosEvents: "<<WWosEvents<<" ratio: "<<(float)WWosEvents/evtN*100.<<" %";
+	#endif
 	
 	#ifdef DO_EFFICIENCY_ANALYSIS
 	cout<<"\nTotal Electrons: "<<totalElectrons<<" \tMatched Electrons: "<<matchedElectrons<<" \tEfficiency: "<<(float)(100*matchedElectrons)/totalElectrons<<" %" <<"\n";

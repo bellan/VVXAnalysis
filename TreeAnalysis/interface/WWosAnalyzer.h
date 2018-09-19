@@ -36,11 +36,12 @@
 	#define NUMBER_OF_EVENTS ULONG_MAX
 #endif
 
-//#define DO_GEN_PARTICLES_ANALYSIS
+#define DO_GEN_PARTICLES_ANALYSIS
 #ifdef DO_GEN_PARTICLES_ANALYSIS
 	//#define DO_STATISTICS_ON_PARTICLES
 	//#define DO_STATISTICS_ON_EVENTS
-	#define DO_EFFICIENCY_ANALYSIS
+	//#define DO_EFFICIENCY_ANALYSIS
+	#define GEN_WWOS_CHECK
 #endif
 
 #define LEPTON_CUT	//Cuts events in which there are not exactly 2 leptons
@@ -92,11 +93,18 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		bool leptonCut(const phys::Particle* lead, const phys::Particle* tail, const std::string& type);
 		void leptonPlots(const phys::Particle* lead, const phys::Particle* tail, const std::string& type = std::string(""), bool useWeight = true);
 		void leptonCutAnalysis(const phys::Particle* lead, const phys::Particle* tail, const std::string& type = std::string(""), bool useWeight = true);
+		void lepton2DGraph(const phys::Particle* lead, const phys::Particle* tail, const std::string& type = std::string(""), bool useWeight = true);
 		void nestedPtCutHistogram(const phys::Particle* lead, const phys::Particle* tail, const std::string& type, float ptCut, float weight);
 		
+		void jetPlots();
+		void miscPlots(const phys::Particle* lead, const phys::Particle* tail, const std::string& type = std::string(""), bool useWeight = true);
 		
 		void genParticlesAnalysis();	//All the work realate to efficiency/resolution analysis
-		void genParticlesCategorization();
+		void genParticlesCategorization();	//Divides genParticle by the id
+		#ifdef GEN_WWOS_CHECK
+		bool checkGenWWosEvent();			//checks if there's a pair of WW with opposite sign
+		#endif
+		
 		void endGenParticleAnalysis(); //stuff from end();
 		
 		//Function for efficiency analysis
@@ -135,10 +143,17 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		void tempStatisticEvents();
 		#endif
 		
+		phys::Lepton leadLepton;	//electron or muon with the largest pt among the leptons in this event
+		phys::Lepton tailLepton;	//        ...               second largest pt          ...
+		enum myEventTypes {ee, em, mm};
+		myEventTypes thisEventType;		//{"ee", "em", "mm"}
+		
 		//Generated particles (prompt)
 		std::vector<phys::Particle>* genElectrons;		//genElectrons in this event
 		std::vector<phys::Particle>* genMuons;				//genMuons in this event
 		std::vector<phys::Particle>* genLeptons;			//every genLepton in this event
+		std::vector<phys::Particle>* genNeutrinos;		
+		
 		std::vector<phys::Particle>* genCleanedJets;	//every prompt genJet in this event	
 		std::vector<phys::Particle>* fakeJets; 				//isolated particles that appear in genJets
 		
@@ -152,6 +167,8 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		int peCounter;
 		int pmCounter;
 		#endif
+		
+		int lostEvents;
 		
 		int eeEvents; //electronEvents;
 		int mmEvents; //muonEvents;
@@ -173,6 +190,10 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		long totgenJets;
 		long totgenCleanedJets;
 		long totgenParticles;
+		#endif
+		
+		#ifdef GEN_WWOS_CHECK
+		int WWosEvents;
 		#endif
 		
 		clock_t startTime;
