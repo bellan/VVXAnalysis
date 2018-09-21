@@ -30,22 +30,29 @@ using namespace phys;
 #define HISTO_JEta_Config 		250,-5.,5.
 #define HISTO_Phi_Config 			100,-3.15,3.15
 #define HISTO_Pt_Config 			100,0.,500.
+#define HISTO_Cut_Config			7,0,7
 
 Int_t WWosAnalyzer::cut() {
+	theHistograms.fill<TH1I>("Cuts", "Cuts", HISTO_Cut_Config, 0/*, theWeigth*/);	//Total (0th cut)
 	evtN++;
 	cout<<"\r\t\t"<<evtN;//"\b\b\b\b\b\b";
 	
+	//#####		At least a pair of jets with mjj > 150 GeV/c^2		#####
 	bool jetOK = false;
 	foreach(const Jet& jet1, *jets){
 		if(jetOK) break;		//Saves computation time
     foreach(const Jet& jet2, *jets){
     	double mjj = (jet1.p4() + jet2.p4()).M();
-    	if (mjj < 150){
+    	if (mjj > 150){
     		jetOK = true; 
     		break;
   		}
   	}
 	}
+	if(!jetOK || jets->size() < 2) return -1;	//Saves computation time, avoiding unnecessary lepton analysis
+	theHistograms.fill<TH1I>("Cuts", "Cuts", HISTO_Cut_Config, 1/*,theWeigth*/);	//1st cut: mjj
+	
+	//#####		At least a pair of leptons with pt > 20 GeV/c		#####
   bool leptOK = false;
   int countMu20 = 0;
   int countEle20 = 0;
@@ -56,7 +63,7 @@ Int_t WWosAnalyzer::cut() {
   	countEle20 += (e.pt() > 20 ? 1 : 0);
   	if(e.pt() > maxPt){
 	  	maxPt = e.pt();
-  		leadLepton = e;
+  		leadLepton = e;		//leadLepton and tailLepton are used in analyze()
 		}
 		else if(e.pt() > secPt){
 	  	secPt = e.pt();
@@ -79,10 +86,8 @@ Int_t WWosAnalyzer::cut() {
   		else if(thisEventType == myEventTypes::em) thisEventType = myEventTypes::mm;
 		}
 	}
-  
   if(countEle20 + countMu20 >= 2) leptOK = true;	
-  if(countEle20 + countMu20 > 2) lostEvents++;
-  
+  if(countEle20 + countMu20 > 2) lostEvents++;	//Events we would loose by cuttig events with a third lepton with pt > 20 GeV/c
   
   /*if(false){
   cout<<"\n\nType: "<<eventType<<" \t"<<;
@@ -93,7 +98,10 @@ Int_t WWosAnalyzer::cut() {
 	cout<<"\nmaxPt: "<<maxPt<<" \tsecPt: "<<secPt;
   }*/
   
-	if(jetOK && leptOK) return 1;
+	if(jetOK && leptOK){
+		theHistograms.fill<TH1I>("Cuts","Cuts", HISTO_Cut_Config, 2/*,theWeigth*/);	//2nd cut: lepton pt>20
+		return 1;
+	}
 	return -1;
 }
 
@@ -130,14 +138,21 @@ void WWosAnalyzer::analyze(){
 			foreach(const Lepton& mu, *muons) cout<<mu.pt()<<" - ";
 			return;	//It's no use to go on
 	*/
+	//IMPORTANT: TO HAVE CUMULATIVE GRAPHS, I'M OVERRIDING THE EVENT TYPE (only the string)
+	eventType = "leptons";
 	
 	if(leptonCut(&leadLepton, &tailLepton, eventType)){
 		return;
 	}
+	if(jetCsvtagCut(0.9535, 0.9535)) return; //0.9535 (Thight) or 0.8484 (Medium)
+	theHistograms.fill<TH1I>("Cuts","Cuts", HISTO_Cut_Config, 5);	//5th cut: tight jet csvtag
+	
+	if(jetCsvtagCut(0.8484, 0.8484)) return;	//0.9535 (Thight) or 0.8484 (Medium)
+	theHistograms.fill<TH1I>("Cuts","Cuts", HISTO_Cut_Config, 6);	//6th cut: medium jet csvtag
 	
 	passingSelection++;
 	leptonPlots(&leadLepton, &tailLepton, eventType, true);
-	leptonCutAnalysis(&leadLepton, &tailLepton, eventType, true);
+	//leptonCutAnalysis(&leadLepton, &tailLepton, eventType, true);
 	//lepton2DGraph(&leadLepton, &tailLepton, eventType, true);
 	jetPlots();
 	miscPlots(&leadLepton, &tailLepton, eventType, true);
@@ -150,14 +165,18 @@ void WWosAnalyzer::end(TFile &){
 	cout << std::setprecision(4);
 	cout<<"\nEvents: "<<evtN<<" \tPassing cut: "<<passingCut<<" \t(of the total): "<<((float)passingCut/evtN)*100.<<" %\n";
 	cout<<"Events\t\tee: "<<eeEvents<<" \tmm : "<<mmEvents<<" \tem: "<<emEvents<<'\n';
-	cout<<"Passing second cut: "<<passingSelection<<" \t(of the uncut): "<<((float)passingSelection/passingCut)*100.<<" % \t(of the total): "<<((float)passingSelection/evtN)*100.<<" %\n";
-	cout<<"Events with >=3 leptons: "<<lostEvents<<" \t(of the selected): "<<((float)lostEvents/passingSelection)*100.<<" % \t(of the uncut): "<<((float)lostEvents/passingCut)*100.<<" % \t(of the total): "<<((float)lostEvents/evtN)*100.<<" %\n";
+	cout<<"Passing second cut: "<<passingSelection<<" \t(of the analyzed): "<<((float)passingSelection/passingCut)*100.<<" % \t(of the total): "<<((float)passingSelection/evtN)*100.<<" %\n";
+	cout<<"Events with >=3 leptons: "<<lostEvents<<" \t(of the selected): "<<((float)lostEvents/passingSelection)*100.<<" % \t(of the analyzed): "<<((float)lostEvents/passingCut)*100.<<" % \t(of the total): "<<((float)lostEvents/evtN)*100.<<" %\n";
+	
+	nameCutGraph();
 	
 	#ifdef DO_GEN_PARTICLES_ANALYSIS
 	endGenParticleAnalysis();
 	#endif
 	
-	cout<<"\nElapsed Time: "<< (float)(clock()-startTime)/CLOCKS_PER_SEC<<" s\n";
+	float elapsedSec = (float)(clock()-startTime)/CLOCKS_PER_SEC;
+	int elapsedSecInt = (int)elapsedSec;
+	cout<<"\nElapsed Time: "<<elapsedSec<<" s\t\t("<<elapsedSecInt/60<<"\' "<<elapsedSecInt%60<<"\")\n";
 	for(char i=0; i<25; i++) cout<<"-";
 	cout<<" \tEnd of WWos\t";
 	for(char i=0; i<25; i++) cout<<"-";
@@ -167,7 +186,16 @@ void WWosAnalyzer::end(TFile &){
 
 bool WWosAnalyzer::leptonCut(const Particle* lead, const Particle* tail, const string& type){
 	if(lead->charge() * tail->charge() > 0) return true;	// true = cut this event
-	//if(lead->pt() < 100 || tail->pt() < 60) return true;
+	theHistograms.fill<TH1I>("Cuts", "Cuts", HISTO_Cut_Config, 3/*,theWeigth*/);	//3rd cut: lepton charge
+	float mll = (lead->p4() + tail->p4()).M();
+	if(mll < 120) return true;
+	theHistograms.fill<TH1I>("Cuts", "Cuts", HISTO_Cut_Config, 4/*,theWeigth*/);	//4th cut: mLL
+	return false;
+}
+
+bool WWosAnalyzer::jetCsvtagCut(const float &leadMax, const float &tailMax){
+	if(jets->at(0).csvtagger() > leadMax) return true;
+	if(jets->at(1).csvtagger() > tailMax) return true;
 	return false;
 }
 
@@ -177,10 +205,10 @@ void WWosAnalyzer::leptonPlots(const Particle* lead, const Particle* tail, const
 	theHistograms.fill("Second "+type+" pt", "Second "+type+" pt", HISTO_Pt_Config, tail->pt(), w);
 	float deltaEta = lead->eta() - tail->eta();
 	theHistograms.fill("#Delta #eta "+type, "#Delta #eta "+type, HISTO_JEta_Config, deltaEta, w);
-	float deltaPhi = lead->phi() - tail->phi();
-	theHistograms.fill("#Delta #phi "+type, "#Delta #phi "+type, HISTO_Phi_Config, deltaPhi, w);
+	float dPhi = deltaPhi(lead->p4(), tail->p4());//lead->phi() - tail->phi();
+	theHistograms.fill("#Delta #phi "+type, "#Delta #phi "+type, 100, 0., 3.15, dPhi, w);
 	float deltaR = physmath::deltaR(*lead, *tail);
-	theHistograms.fill("#Delta R "+type, "#Delta R "+type, 200, 0., 4., deltaR, w);
+	theHistograms.fill("#Delta R "+type, "#Delta R "+type, 200, 0., 5., deltaR, w);
 }
 
 void WWosAnalyzer::lepton2DGraph(const Particle* lead, const Particle* tail, const string& type, bool useWeight){
@@ -223,11 +251,16 @@ void WWosAnalyzer::jetPlots(){
 				theHistograms.fill("Jet Eta", "Jet Eta", 100, -5., 5.,jet.eta(), theWeight);
 			}
 			float deltaR = physmath::deltaR(jets->at(0), jets->at(1));
-			theHistograms.fill("delta R jets", "delta R jets", 100, 0., 5., deltaR, theWeight);
-			float deltaEta = abs(jets->at(0).eta() - jets->at(1).eta());
-			theHistograms.fill("delta Eta jets", "delta Eta jets", 100, 0., 5., deltaEta, theWeight);
+			theHistograms.fill("delta R jets", "delta R jets", 100, 0., 10., deltaR, theWeight);
+			float deltaEta = fabs(jets->at(0).eta() - jets->at(1).eta());
+			theHistograms.fill("delta Eta jets", "delta Eta jets", 100, 0., 10., deltaEta, theWeight);
 			float jjMass = (jets->at(0).p4() + jets->at(1).p4()).M();
 			theHistograms.fill("mjj","mjj", 200, 0., 2000., jjMass, theWeight);
+			
+			theHistograms.fill("lead jet csvtagger", "lead jet csvtagger", 100,0.,1., jets->at(0).csvtagger(), theWeight);
+			theHistograms.fill("tail jet csvtagger", "tail jet csvtagger", 100,0.,1., jets->at(1).csvtagger(), theWeight);
+			
+			theHistograms.fill<TH2F>("jets csvtagger", "jets csvtagger", 100,0.,1., 100,0.,1., jets->at(0).csvtagger(), jets->at(1).csvtagger(), theWeight);
 		}
 	}
 }
@@ -241,20 +274,20 @@ void WWosAnalyzer::miscPlots(const Particle* lead, const Particle* tail, const s
 	TLorentzVector Lp4 = lead->p4();
 	TLorentzVector Tp4 = tail->p4();
 	float ptVectLL = (Lp4 + Tp4).Pt();
-	theHistograms.fill("ptVectLL", "ptVectLL", 200, 0., 500., ptVectLL, w);
+	theHistograms.fill("ptVectLL", "ptVectLL", 200, 0., 1000., ptVectLL, w);
 	
 	float mll = (Lp4 + Tp4).M();
-	theHistograms.fill("mll", "mll", 250, 0., 2000., mll, w);
+	theHistograms.fill("mll", "mll", 250, 0., 1000., mll, w);
 	
 	float angularSeparation = Lp4.Vect().Angle(Tp4.Vect());
 	theHistograms.fill("angSeparationLL", "angSeparationLL", 50, 0., 3.14, angularSeparation, w);
 	
 	//met
 	float ptScalarLLmet = ptScalarLL + met->pt();
-	theHistograms.fill("ptScalarLLmet", "ptScalarLLmet", 200, 0., 500., ptScalarLLmet, w);
+	theHistograms.fill("ptScalarLLmet", "ptScalarLLmet", 200, 0., 2000., ptScalarLLmet, w);
 	
 	float ptVectLLmet = (Lp4 + Tp4 + met->p4()).Pt();
-	theHistograms.fill("ptVectLLmet", "ptVectLLmet", 200, 0., 250., ptVectLLmet, w);
+	theHistograms.fill("ptVectLLmet", "ptVectLLmet", 200, 0., 1000., ptVectLLmet, w);
 }
 
 
@@ -445,6 +478,17 @@ void WWosAnalyzer::endGenParticleAnalysis(){
 	#endif
 }
 #endif	//DO_GEN_PARTICLES_ANALYSIS
+
+void WWosAnalyzer::nameCutGraph(){
+	TAxis* aXCuts = theHistograms.get("Cuts")->GetXaxis();
+	aXCuts->SetBinLabel(0+1, "Total");
+	aXCuts->SetBinLabel(1+1, "mJJ");
+	aXCuts->SetBinLabel(2+1, "lepton pt>20");
+	aXCuts->SetBinLabel(3+1, "lepton charge");
+	aXCuts->SetBinLabel(4+1, "mLL");
+	aXCuts->SetBinLabel(5+1, "tight csvtag");
+	aXCuts->SetBinLabel(6+1, "tight jet csvtag");
+}
 
 //Efficiency analysis
 #ifdef DO_EFFICIENCY_ANALYSIS

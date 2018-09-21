@@ -1,11 +1,11 @@
-	#ifndef WWosAnalyzer_h
+#ifndef WWosAnalyzer_h
 #define WWosAnalyzer_h
 
 /** \Class WWosAnalyzer
  *  Concrete class for WW with opposite sign analysis
  *
  *  $Date: 2018/08/04 13:37:31 $
- *  $Revision: 0.2 $
+ *  $Revision: 0.3 $
  *  \author A. Mecca alberto.mecca@edu.unito.it
  */
 
@@ -31,12 +31,14 @@
 	#define NUMBER_OF_EVENTS 467264
 #elif defined TTTo2L2Nu
 	#define NUMBER_OF_EVENTS 18539890
+#elif defined DYJetsToLL_M50
+	#define NUMBER_OF_EVENTS 3014382
 #else
 	#include <climits>
 	#define NUMBER_OF_EVENTS ULONG_MAX
 #endif
 
-#define DO_GEN_PARTICLES_ANALYSIS
+//#define DO_GEN_PARTICLES_ANALYSIS
 #ifdef DO_GEN_PARTICLES_ANALYSIS
 	//#define DO_STATISTICS_ON_PARTICLES
 	//#define DO_STATISTICS_ON_EVENTS
@@ -91,6 +93,8 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		}
 		
 		bool leptonCut(const phys::Particle* lead, const phys::Particle* tail, const std::string& type);
+		bool jetCsvtagCut(const float &max = 1.){ return jetCsvtagCut(max,max); };
+		bool jetCsvtagCut(const float &leadMax, const float &tailMax);
 		void leptonPlots(const phys::Particle* lead, const phys::Particle* tail, const std::string& type = std::string(""), bool useWeight = true);
 		void leptonCutAnalysis(const phys::Particle* lead, const phys::Particle* tail, const std::string& type = std::string(""), bool useWeight = true);
 		void lepton2DGraph(const phys::Particle* lead, const phys::Particle* tail, const std::string& type = std::string(""), bool useWeight = true);
@@ -106,6 +110,7 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		#endif
 		
 		void endGenParticleAnalysis(); //stuff from end();
+		void nameCutGraph();				//Sets the name of the bins in the graph "Cuts"
 		
 		//Function for efficiency analysis
 		template <class T, class P, typename C>
