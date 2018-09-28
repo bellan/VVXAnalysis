@@ -15,28 +15,12 @@
 #include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 #include "VVXAnalysis/Commons/interface/Comparators.h"
 
-//#define TTJets_SMALL
-#define WWEW
-//#define WWQCD
-//#define WWEWQCD
-//#define TTTo2L2Nu
-
-#ifdef TTJets_SMALL	//40 Mb sample
-	#define NUMBER_OF_EVENTS 9055
-#elif defined WWEW
-	#define NUMBER_OF_EVENTS 499500
-#elif defined WWQCD
-	#define NUMBER_OF_EVENTS 499600
-#elif defined WWEWQCD
-	#define NUMBER_OF_EVENTS 467264
-#elif defined TTTo2L2Nu
-	#define NUMBER_OF_EVENTS 18539890
-#elif defined DYJetsToLL_M50
-	#define NUMBER_OF_EVENTS 3014382
-#else
-	#include <climits>
-	#define NUMBER_OF_EVENTS ULONG_MAX
-#endif
+// TTJets_SMALL      9055 (40 Mb sample) 
+// WWEW            499500
+// WWQCD           499600
+// WWEWQCD         467264
+// TTTo2L2Nu     18539890
+// DYJetsToLL_M50 3014382
 
 //#define DO_GEN_PARTICLES_ANALYSIS
 #ifdef DO_GEN_PARTICLES_ANALYSIS
@@ -92,16 +76,16 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 			return false;
 		}
 		
-		bool leptonCut(const phys::Particle* lead, const phys::Particle* tail, const std::string& type);
+		bool leptonCut(const phys::Particle* lead, const phys::Particle* trail, const std::string& type);
 		bool jetCsvtagCut(const float &max = 1.){ return jetCsvtagCut(max,max); };
-		bool jetCsvtagCut(const float &leadMax, const float &tailMax);
-		void leptonPlots(const phys::Particle* lead, const phys::Particle* tail, const std::string& type = std::string(""), bool useWeight = true);
-		void leptonCutAnalysis(const phys::Particle* lead, const phys::Particle* tail, const std::string& type = std::string(""), bool useWeight = true);
-		void lepton2DGraph(const phys::Particle* lead, const phys::Particle* tail, const std::string& type = std::string(""), bool useWeight = true);
-		void nestedPtCutHistogram(const phys::Particle* lead, const phys::Particle* tail, const std::string& type, float ptCut, float weight);
+		bool jetCsvtagCut(const float &leadMax, const float &trailMax);
+		void leptonPlots(const phys::Particle* lead, const phys::Particle* trail, const std::string& type = std::string(""), bool useWeight = true);
+		void leptonCutAnalysis(const phys::Particle* lead, const phys::Particle* trail, const std::string& type = std::string(""), bool useWeight = true);
+		void lepton2DGraph(const phys::Particle* lead, const phys::Particle* trail, const std::string& type = std::string(""), bool useWeight = true);
+		void nestedPtCutHistogram(const phys::Particle* lead, const phys::Particle* trail, const std::string& type, float ptCut, float weight);
 		
-		void jetPlots();
-		void miscPlots(const phys::Particle* lead, const phys::Particle* tail, const std::string& type = std::string(""), bool useWeight = true);
+		void jetPlots(const std::string& type = "");
+		void miscPlots(const phys::Particle* lead, const phys::Particle* trail, const std::string& type = std::string(""), bool useWeight = true);
 		
 		void genParticlesAnalysis();	//All the work realate to efficiency/resolution analysis
 		void genParticlesCategorization();	//Divides genParticle by the id
@@ -149,7 +133,7 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		#endif
 		
 		phys::Lepton leadLepton;	//electron or muon with the largest pt among the leptons in this event
-		phys::Lepton tailLepton;	//        ...               second largest pt          ...
+		phys::Lepton trailLepton;	//        ...               second largest pt          ...
 		enum myEventTypes {ee, em, mm};
 		myEventTypes thisEventType;		//{"ee", "em", "mm"}
 		
