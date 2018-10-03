@@ -27,16 +27,16 @@ using namespace phys;
 //Uniform configuration for histograms to avoid errors. Format: <nbins>,<ufirst>,<ulast>
 #define HISTO_deltaR_Config 	200,0.,0.5
 #define HISTO_Eta_Config 			261,-2.6,2.6
-#define HISTO_JEta_Config 		250,-5.,5.
+#define HISTO_JEta_Config 		150,-5.,5.
 #define HISTO_Phi_Config 			100,-3.15,3.15
 #define HISTO_Pt_Config 			100,0.,500.
-#define HISTO_Cut_Config			7,0,7
+#define HISTO_Cut_Config			4,0,4
 
 Int_t WWosAnalyzer::cut() {
 	evtN++;
 	cout<<"\r\t\t"<<evtN;//"\b\b\b\b\b\b";
 	
-	theHistograms.fill<TH1I>("Cuts", "Cuts", HISTO_Cut_Config, 0/*, theWeigth*/);	//Total (0th cut)
+//	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, 0, theWeight);	//Total
 	
 	//#####		At least a pair of jets with mjj > 150 GeV/c^2		#####
 	bool jetOK = false;
@@ -50,8 +50,9 @@ Int_t WWosAnalyzer::cut() {
   		}
   	}
 	}
-	if(!jetOK || jets->size() < 2) return -1;	//Saves computation time, avoiding unnecessary lepton analysis
-	theHistograms.fill<TH1I>("Cuts", "Cuts", HISTO_Cut_Config, 1/*,theWeigth*/);	//1st cut: mjj
+	if(!jetOK /*|| jets->size() < 2*/) return -1;	//Saves computation time, avoiding unnecessary lepton analysis
+//	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, 1, theWeight);	//mjj
+	if(jets->size() < 2) return -1;
 	
 	//#####		At least a pair of leptons with pt > 20 GeV/c		#####
   bool leptOK = false;
@@ -88,7 +89,7 @@ Int_t WWosAnalyzer::cut() {
 		}
 	}
   if(countEle20 + countMu20 >= 2) leptOK = true;	
-  if(countEle20 + countMu20 > 2) lostEvents++;	//Events we would loose by cuttig events with a third lepton with pt > 20 GeV/c
+  if(countEle20 + countMu20 > 2) lostEvents++;	//Events we loose by cuttig events with a third lepton with pt > 20 GeV/c
   
   /*if(false){
   cout<<"\n\nType: "<<eventType<<" \t"<<;
@@ -100,8 +101,8 @@ Int_t WWosAnalyzer::cut() {
   }*/
   
 	if(jetOK && leptOK){
-		theHistograms.fill<TH1I>("Cuts","Cuts", HISTO_Cut_Config, 2/*,theWeigth*/);	//2nd cut: lepton pt>20
-		return 1;
+		//theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, 2, theWeight);	//lepton pt>20
+		return 1;	
 	}
 	return -1;
 }
@@ -124,27 +125,24 @@ void WWosAnalyzer::analyze(){
 	
 	#ifdef LEPTON_CUT
 	//#####		pre-second cut		#####
+	std::sort(jets->begin(), jets->end(), phys::EComparator());	//They were sorted by pt
 	jetPlots(" all");
 	miscPlots(&leadLepton, &trailLepton, " all", true);
-	leptonPlots(&leadLepton, &trailLepton, "all lep"/*eventType*/, true);
-	//###############################
+	leptonPlots(&leadLepton, &trailLepton, " lep all"/*eventType*/, true);
+	//##################################################
 	
-	string eventType;
+	string eventType = "";/*
+	//IMPORTANT: TO HAVE CUMULATIVE GRAPHS, I'M OVERRIDING THE EVENT TYPE (only the string)
 	if(thisEventType == myEventTypes::ee){			eeEvents++;		eventType = "ee"; }
 	else if(thisEventType == myEventTypes::em){	emEvents++;		eventType = "em"; }
-	else if(thisEventType == myEventTypes::mm){	mmEvents++;		eventType = "mm"; }
+	else if(thisEventType == myEventTypes::mm){	mmEvents++;		eventType = "mm"; }*/
 	
-	//IMPORTANT: TO HAVE CUMULATIVE GRAPHS, I'M OVERRIDING THE EVENT TYPE (only the string)
-	eventType = "ll";
-	
-	if(leptonCut(&leadLepton, &trailLepton, eventType)){
+	if(leptonCut())
 		return;
-	}
-	if(jetCsvtagCut(0.9535, 0.9535)) return; //0.9535 (Thight) or 0.8484 (Medium)
-	theHistograms.fill<TH1I>("Cuts","Cuts", HISTO_Cut_Config, 5);	//5th cut: tight jet csvtag
+		
+	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, 0, theWeight);	//0th cut: Preselected 
 	
-	if(jetCsvtagCut(0.8484, 0.8484)) return;	//0.9535 (Thight) or 0.8484 (Medium)
-	theHistograms.fill<TH1I>("Cuts","Cuts", HISTO_Cut_Config, 6);	//6th cut: medium jet csvtag
+	if(newCuts()) return;	//automatically fills the "Cuts" plot
 	
 	passingSelection++;
 	leptonPlots(&leadLepton, &trailLepton, "lep"/*eventType*/, true);
@@ -180,12 +178,11 @@ void WWosAnalyzer::end(TFile &){
 }
 
 
-bool WWosAnalyzer::leptonCut(const Particle* lead, const Particle* trail, const string& type){
-	if(lead->charge() * trail->charge() > 0) return true;	// true = cut this event
-	theHistograms.fill<TH1I>("Cuts", "Cuts", HISTO_Cut_Config, 3/*,theWeigth*/);	//3rd cut: lepton charge
-	float mll = (lead->p4() + trail->p4()).M();
-	if(mll < 120) return true;
-	theHistograms.fill<TH1I>("Cuts", "Cuts", HISTO_Cut_Config, 4/*,theWeigth*/);	//4th cut: mLL
+bool WWosAnalyzer::leptonCut(){
+	if(leadLepton.charge() * trailLepton.charge() > 0) return true;	// true = cut this event
+	//theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, 3, theWeight);	//lepton charge
+	float mll = (leadLepton.p4() + trailLepton.p4()).M();
+	if(mll < 120 && (leadLepton.id() == -1*trailLepton.id())) return true; //mLL
 	return false;
 }
 
@@ -195,6 +192,22 @@ bool WWosAnalyzer::jetCsvtagCut(const float &leadMax, const float &trailMax){
 	return false;
 }
 
+bool WWosAnalyzer::newCuts(){
+	
+	if(jetCsvtagCut(0.8484, 0.8484)) return true;	//0.9535 (Thight) or 0.8484 (Medium)
+	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, 1, theWeight);	//1st cut: medium jet csvtag
+
+	if((leadLepton.p4() + trailLepton.p4() + met->p4()).Pt() < 60) return true;
+	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, 2, theWeight);	//2nd cut: ptVectLLmet > 60
+	
+	if(jets->at(0).e() < 100) return true;
+	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, 3, theWeight);	//3rd cut: Lead jet E > 100
+	
+	return false;
+}
+
+//	####################### Plots #################################
+
 void WWosAnalyzer::leptonPlots(const Particle* lead, const Particle* trail, const string& type, bool useWeight){
 	double w = (useWeight ? theWeight : 1.);
 	theHistograms.fill("Leading "+type+" pt", "Leading "+type+" pt", HISTO_Pt_Config, lead->pt(), w);
@@ -202,9 +215,9 @@ void WWosAnalyzer::leptonPlots(const Particle* lead, const Particle* trail, cons
 	float deltaEta = lead->eta() - trail->eta();
 	theHistograms.fill("#Delta #eta "+type, "#Delta #eta "+type, HISTO_JEta_Config, deltaEta, w);
 	float dPhi = deltaPhi(lead->p4(), trail->p4());//lead->phi() - trail->phi();
-	theHistograms.fill("#Delta #phi "+type, "#Delta #phi "+type, 100, 0., 3.15, dPhi, w);
+	theHistograms.fill("#Delta #phi "+type, "#Delta #phi "+type, 70, 0., 3.15, dPhi, w);
 	float deltaR = physmath::deltaR(*lead, *trail);
-	theHistograms.fill("#Delta R "+type, "#Delta R "+type, 200, 0., 5., deltaR, w);
+	theHistograms.fill("#Delta R "+type, "#Delta R "+type, 100, 0., 5., deltaR, w);
 }
 
 void WWosAnalyzer::lepton2DGraph(const Particle* lead, const Particle* trail, const string& type, bool useWeight){
@@ -239,11 +252,11 @@ void WWosAnalyzer::jetPlots(const string& type){
 	double w = theWeight;
 	theHistograms.fill("n Jets", "n Jets", 10, 0., 10., jets->size(), w);
 	if(jets->size() >= 1){
-		theHistograms.fill("Lead jet E"+type, "Lead jet E"+type, 250,0.,1000., jets->at(0).e(),  w);
-		theHistograms.fill("Lead jet pt"+type,"Lead jet pt"+type,250,0.,1000., jets->at(0).pt(), w);
+		theHistograms.fill("Lead jet E"+type, "Lead jet E"+type, 100,0.,800., jets->at(0).e(),  w);
+		theHistograms.fill("Lead jet pt"+type,"Lead jet pt"+type,100,0.,800., jets->at(0).pt(), w);
 		if(jets->size() >= 2){
-			theHistograms.fill("Trail jet E"+type, "Trail jet E"+type, 250,0.,1000., jets->at(1).e(),  w);
-			theHistograms.fill("Trail jet pt"+type,"Trail jet pt"+type,250,0.,1000., jets->at(1).pt(), w);
+			theHistograms.fill("Trail jet E"+type, "Trail jet E"+type, 100,0.,800., jets->at(1).e(),  w);
+			theHistograms.fill("Trail jet pt"+type,"Trail jet pt"+type,100,0.,800., jets->at(1).pt(), w);
 			foreach(const Particle& jet, *jets){
 				theHistograms.fill("Jet Eta"+type, "Jet Eta"+type, 100, -5., 5.,jet.eta(), w);
 			}
@@ -266,25 +279,25 @@ void WWosAnalyzer::miscPlots(const Particle* lead, const Particle* trail, const 
 	double w = (useWeight ? theWeight : 1.);
 	
 	float ptScalarLL = lead->pt() + trail->pt();
-	theHistograms.fill("ptScalarLL"+type, "ptScalarLL"+type, 250, 0., 2000., ptScalarLL, w);
+	theHistograms.fill("ptScalarLL"+type, "ptScalarLL"+type, 100, 0., 1500., ptScalarLL, w);
 	
 	TLorentzVector Lp4 = lead->p4();
 	TLorentzVector Tp4 = trail->p4();
 	float ptVectLL = (Lp4 + Tp4).Pt();
-	theHistograms.fill("ptVectLL"+type, "ptVectLL"+type, 200, 0., 1000., ptVectLL, w);
+	theHistograms.fill("ptVectLL"+type, "ptVectLL"+type, 100, 0., 1000., ptVectLL, w);
 	
 	float mll = (Lp4 + Tp4).M();
-	theHistograms.fill("mll"+type, "mll"+type, 250, 0., 1000., mll, w);
+	theHistograms.fill("mll"+type, "mll"+type, 100, 0., 1000., mll, w);
 	
 	float angularSeparation = Lp4.Vect().Angle(Tp4.Vect());
 	theHistograms.fill("angSeparationLL"+type, "angSeparationLL"+type, 50,0.,3.14, angularSeparation, w);
 	
 	//met
 	float ptScalarLLmet = ptScalarLL + met->pt();
-	theHistograms.fill("ptScalarLLmet"+type, "ptScalarLLmet"+type, 200, 0., 2000., ptScalarLLmet, w);
+	theHistograms.fill("ptScalarLLmet"+type, "ptScalarLLmet"+type, 100, 0., 1000., ptScalarLLmet, w);
 	
 	float ptVectLLmet = (Lp4 + Tp4 + met->p4()).Pt();
-	theHistograms.fill("ptVectLLmet"+type, "ptVectLLmet"+type, 200, 0., 1000., ptVectLLmet, w);
+	theHistograms.fill("ptVectLLmet"+type, "ptVectLLmet"+type, 100, 0., 1000., ptVectLLmet, w);
 }
 
 
@@ -477,14 +490,19 @@ void WWosAnalyzer::endGenParticleAnalysis(){
 #endif	//DO_GEN_PARTICLES_ANALYSIS
 
 void WWosAnalyzer::nameCutGraph(){
-	TAxis* aXCuts = theHistograms.get("Cuts")->GetXaxis();
+	theHistograms.get("Cuts")->SetMinimum(0.1);
+	TAxis* aXCuts = theHistograms.get("Cuts")->GetXaxis();/*
 	aXCuts->SetBinLabel(0+1, "Total");
-	aXCuts->SetBinLabel(1+1, "mJJ");
+	aXCuts->SetBinLabel(1+1, "mJJ > 150");
 	aXCuts->SetBinLabel(2+1, "lepton pt>20");
 	aXCuts->SetBinLabel(3+1, "lepton charge");
-	aXCuts->SetBinLabel(4+1, "mLL");
-	aXCuts->SetBinLabel(5+1, "tight csvtag");
-	aXCuts->SetBinLabel(6+1, "tight jet csvtag");
+	aXCuts->SetBinLabel(4+1, "mLL > 120");	//if not same flavour, in that case pass anyway
+	aXCuts->SetBinLabel(5+1, "medium jet csvtag");*/
+	aXCuts->SetBinLabel(0+1, "Preselected");
+	aXCuts->SetBinLabel(1+1, "tight csvtag veto");
+	aXCuts->SetBinLabel(2+1, "ptVectLLmet > 60");
+	//aXCuts->SetBinLabel(8+1, "ptVectLL > 60");
+	aXCuts->SetBinLabel(3+1, "Lead Jet E > 100");
 }
 
 //Efficiency analysis

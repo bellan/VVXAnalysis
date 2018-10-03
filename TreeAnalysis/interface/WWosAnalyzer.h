@@ -22,6 +22,15 @@
 // TTTo2L2Nu     18539890
 // DYJetsToLL_M50 3014382
 
+//##### New samples #####
+// WWEW            499500 	~1'15"
+// WWQCD           499600 	~1'22"
+// WWEWQCD         467264		~1'17"
+// WZ              163611 	~0'31"
+// TTJets          166862 	~0'34"
+// TTTo2L2Nu      2321521 	~7'44"
+// DYJetsToLL_M50   22199 	~0'04"
+
 //#define DO_GEN_PARTICLES_ANALYSIS
 #ifdef DO_GEN_PARTICLES_ANALYSIS
 	//#define DO_STATISTICS_ON_PARTICLES
@@ -61,9 +70,7 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 
 		template< class PAR >	//Apparently, PAR must inherit from Jet
 		bool WBosonDefinition(phys::Boson<PAR> cand ) {	//candidate
-
 			bool gooddaughters = false;
-    	
 			if(fabs(cand.daughter(0).eta()) < 2.5 && cand.daughter(0).pt() > 30 &&
 					cand.daughter(0).passPUID() && cand.daughter(0).passLooseJetID() &&
 					fabs(cand.daughter(1).eta()) < 2.5 && cand.daughter(1).pt() > 30 &&
@@ -76,9 +83,11 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 			return false;
 		}
 		
-		bool leptonCut(const phys::Particle* lead, const phys::Particle* trail, const std::string& type);
+		bool leptonCut();
 		bool jetCsvtagCut(const float &max = 1.){ return jetCsvtagCut(max,max); };
 		bool jetCsvtagCut(const float &leadMax, const float &trailMax);
+		bool newCuts();
+				
 		void leptonPlots(const phys::Particle* lead, const phys::Particle* trail, const std::string& type = std::string(""), bool useWeight = true);
 		void leptonCutAnalysis(const phys::Particle* lead, const phys::Particle* trail, const std::string& type = std::string(""), bool useWeight = true);
 		void lepton2DGraph(const phys::Particle* lead, const phys::Particle* trail, const std::string& type = std::string(""), bool useWeight = true);
