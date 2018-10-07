@@ -143,8 +143,8 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		
 		phys::Lepton leadLepton;	//electron or muon with the largest pt among the leptons in this event
 		phys::Lepton trailLepton;	//        ...               second largest pt          ...
-		enum myEventTypes {ee, em, mm};
-		myEventTypes thisEventType;		//{"ee", "em", "mm"}
+		enum WWosEventTypes {ee, em, mm};
+		WWosEventTypes thisEventType;		//{"ee", "em", "mm"}
 		
 		//Generated particles (prompt)
 		std::vector<phys::Particle>* genElectrons;		//genElectrons in this event
