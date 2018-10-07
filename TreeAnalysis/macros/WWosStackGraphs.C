@@ -8,7 +8,7 @@
  *
  *	It's possible to use it with standard values, by simply calling:	root -l WWosCutAnalysis
  *	
- *	<category of graphs> = {"cut", "jet", "lep", "jP", "lP"} //P = pre-second cut
+ *	<category of graphs> = {"cut", "jet", "lep", "jA", "lA"} //A = All analyzed (whitout second cut)
  *	<requested graphs by name> depends on the category
  *	<type of graphs> = {
  *		0 sig and bkg same canvas (no stack)
@@ -48,11 +48,11 @@ public:
 	TString graphName;
 	TString sigGrName;
 	vector <TString> bkgGrNames;
-	TString toString() const{
+/*	TString toString() const{
 		TString res = "graphName: "+graphName+"\nsigGrName: "+sigGrName+"\nbkgGrNames: ";
 		foreach(const TString& b, bkgGrNames) res += b+" \t";
 		return res;
-	}
+	}*/
 };
 
 template <class TH=TH1F>
@@ -63,9 +63,9 @@ struct MyGraphs{
 	vector<TH*> vhBkgs;
 	TH* hSigInt;
 	vector<TH*> vhBkgInt;
-	TString toString() const{
+/*	TString toString() const{
 		return TString("hSig? ")+(hSig != nullptr)+" - vhBkgs.size(): "+vhBkgs.size();
-	}
+	}*/
 };
 
 TFile* openRootFile(const TString&/*path*/,const TString&/*name*/);//prints to cout the name of the file
@@ -74,13 +74,14 @@ TH1Z* openGraph(TFile*, const TString&, const TString& = nullTString);//points t
 TH1F* integralGraph(const TH1F* const origin); //Creates a copy which is modified
 TH1F* reverseIntegrGraph(const TH1F* const origin);	//Integrates from the last bin
 TH1F* sqrtGraph(const TH1F* const origin);		 //Creates a copy which is modified
+bool doThisGraphName(TString graphName, TString reqGrName);
 
 template <size_t N, class TH=TH1F>
 void newPrintGraph(const MyGraphs<TH>& theGraphs, const GNames& theNames, const bitset<N>& grToDo);
 
 // Specific types of graph
 template <class TH>
-void compareCutGraphs(const MyGraphs<TH>&, const GNames&);
+void compareCutGraphs(const MyGraphs<TH>&, const GNames&); //Uses helper functions
 template <class TH>
 void printGraphSame(const MyGraphs<TH>&, const GNames&);
 template <class TH>
@@ -102,14 +103,14 @@ void WWosStackGraphs(string requestType = string(""), string reqGrName = string(
 	TString path = "~/Workspace/VVXAnalysis/TreeAnalysis/results/WWosAnalyzer_MC/";
 	//TString path = "~/Workspace/Private/Results/";
 	cout<<"Source path: \""<<path<<"\"\n";
-	vector<TString> backgrounds = {"WWQCD", "TTTo2L2Nu", "DYJetsToLL_M50", /*"TTJets"*/};
+	vector<TString> backgrounds = {"TTTo2L2Nu", "DYJetsToLL_M50", "WWQCD", /*"TTJets"*/};
 	
 	std::transform(reqGrName.begin(), reqGrName.end(), reqGrName.begin(), ::tolower);
 	std::transform(requestType.begin(), requestType.end(), requestType.begin(), ::tolower);
 	TString sigName = "WWEW";
 	
-//graphs not categorized by event type
-	vector<TString> jetPlots = {"Lead jet E", "Lead jet pt", "Trail jet E", "Trail jet pt", "delta R jets", "delta Eta jets", "mjj", "lead jet csvtagger", "trail jet csvtagger"};
+//#####	graphs not categorized by event type	#####
+	vector<TString> jetPlots = {"Lead jet E", "Lead jet pt", "Trail jet E", "Trail jet pt", "delta R jets", "delta Eta jets", "mjj", "lead jet csvtagger", "trail jet csvtagger", "angSep (jet)"};
 	vector<TString> jetAll(jetPlots.size());
 	for(size_t k = 0; k < jetPlots.size(); k++)
 		jetAll.at(k) = (jetPlots.at(k)+" all");
@@ -118,7 +119,7 @@ void WWosStackGraphs(string requestType = string(""), string reqGrName = string(
 	vector<TString> lepAll(leptonPlots.size());
 	for(size_t k = 0; k < leptonPlots.size(); k++)
 		lepAll.at(k) = (leptonPlots.at(k)+" all");
-	
+//#####	end graph names	#####
 	
 	TFile* signalFile = openRootFile(path, sigName);
 
@@ -147,8 +148,8 @@ void WWosStackGraphs(string requestType = string(""), string reqGrName = string(
 	if(requestType.find("cut") != string::npos) toDo.set(0); //set to 1
 	if(requestType.find("jet") != string::npos) toDo.set(1);	
 	if(requestType.find("lep") != string::npos) toDo.set(2);
-	if(requestType.find("jp")  != string::npos) toDo.set(3);
-	if(requestType.find("lp")  != string::npos) toDo.set(4);
+	if(requestType.find("ja")  != string::npos) toDo.set(3);
+	if(requestType.find("la")  != string::npos) toDo.set(4);
 	if(requestType == string(""))								toDo.set(2); //Default
 	
 	bitset<4> grToDo;	
@@ -185,8 +186,8 @@ void WWosStackGraphs(string requestType = string(""), string reqGrName = string(
 //################################	JET PLOTS ################################
 	if(toDo.test(1)){
 		foreach(TString& graphName, jetPlots){
-			if(reqGrName != string(""))
-				if(reqGrName.find(graphName) == string::npos && reqGrName.find("all") == string::npos) continue;
+			
+			if(! doThisGraphName(graphName, reqGrName) ) continue;
 			
 			//	#####	Struct creation #####
 			GNames theNames(graphName, sigName, backgrounds);
@@ -200,9 +201,8 @@ void WWosStackGraphs(string requestType = string(""), string reqGrName = string(
 //################################	LEPTON PLOTS ################################
 	if(toDo.test(2)){
 		foreach(TString& graphName, leptonPlots){
-			TString copy = graphName;			copy.ToLower();
-			if(reqGrName != string(""))
-				if(reqGrName.find(graphName) == string::npos && reqGrName.find("all") == string::npos) continue;
+		
+			if(! doThisGraphName(graphName, reqGrName) ) continue;
 			
 			//	#####	Struct creation #####
 			GNames theNames(graphName, sigName, backgrounds);
@@ -216,9 +216,8 @@ void WWosStackGraphs(string requestType = string(""), string reqGrName = string(
 //################################	JET PRE-CUT ################################
 	if(toDo.test(3)){
 		foreach(TString& graphName, jetAll){
-			TString copy = graphName;			copy.ToLower();
-			if(reqGrName != string(""))
-				if(reqGrName.find(graphName) == string::npos && reqGrName.find("all") == string::npos) continue;
+			
+			if(! doThisGraphName(graphName, reqGrName) ) continue;
 			
 			//	#####	Struct creation #####
 			GNames theNames(graphName, sigName, backgrounds);
@@ -232,9 +231,8 @@ void WWosStackGraphs(string requestType = string(""), string reqGrName = string(
 //################################	LEPTON PRE-CUT ################################
 	if(toDo.test(4)){
 		foreach(TString& graphName, lepAll){
-			TString copy = graphName;			copy.ToLower();
-			if(reqGrName != string(""))
-				if(reqGrName.find(graphName) == string::npos && reqGrName.find("all") == string::npos) continue;
+			
+			if(! doThisGraphName(graphName, reqGrName) ) continue;
 			
 			//	#####	Struct creation #####
 			GNames theNames(graphName, sigName, backgrounds);
@@ -294,7 +292,7 @@ TH1F* reverseIntegrGraph(const TH1F* const origin){
 	TH1F* newGraph = (TH1F*)origin->Clone((name+" rI").Data());
 	int nbins = origin->GetNbinsX();
 	for(int i = nbins; i >= 1; i--)
-		newGraph->SetBinContent(i, origin->Integral(1, i));
+		newGraph->SetBinContent(i, origin->Integral(0, i));
 	
 	return newGraph;
 }
@@ -311,7 +309,121 @@ TH1F* sqrtGraph(const TH1F* const origin){
 	return newGraph;
 }
 
+bool doThisGraphName(TString graphName, TString reqGrName){
+	graphName.ToLower();
+	reqGrName.ToLower();
+	std::string SgraphName = std::string(graphName.Data());
+	std::string SreqGrName = std::string(reqGrName.Data());/*
+	cout<<"\nSgraphName = \""<<SgraphName<<"\" \tSreqGrName = \""<<SreqGrName<<'\"';
+	cout<<"\nSreqGrName != string(\"\") "<<(SreqGrName != string(""));
+	cout<<"\nSgraphName.find(SreqGrName) == string::npos "<<(SgraphName.find(SreqGrName) == string::npos);
+	cout<<"\nSreqGrName.find(\"all\") == string::npos "<<(SreqGrName.find("all") == string::npos);*/
+	if(SreqGrName != string("")){
+		if(
+				SgraphName.find(SreqGrName) == string::npos && 
+				SreqGrName.find("all") == string::npos
+			){
+			//cout<<"\nReturning false\n";
+			return false;
+			}
+	}
+	//else
+	//cout<<"\nReturning true\n";
+	return true;
+}
+
 // ########################## Graphs ####################################
+// ----- Service stuff  -----
+template <class TH = TH1F, typename f = float>
+void cutsNotScaled(const MyGraphs<TH>& theGraphs, const GNames& names){
+	TCanvas* cCutSame = new TCanvas("Cuts same", "Cuts same", 10,0,1280,1024);
+	TH* hSigC2 = (TH*)theGraphs.hSig->Clone("Cuts same");
+	hSigC2->SetTitle("Cuts (not scaled)");
+	hSigC2->SetLineColor(myColors.at(0));
+	
+	float yMax = hSigC2->GetBinContent(1);
+	for(int i = 0; i < theGraphs.vhBkgs.size(); i++){
+		float newY = theGraphs.vhBkgs.at(i)->GetBinContent(1);
+		yMax = (newY > yMax ? newY : yMax);
+	}
+	
+	TLegend* legendCut = new TLegend(0.78, 0.94, 0.98, 0.74);
+	legendCut->AddEntry(hSigC2, names.sigGrName);
+	
+	for(int i = 0; i < theGraphs.vhBkgs.size(); i++){
+		TH* cg = (TH*)(theGraphs.vhBkgs.at(i)->Clone(names.bkgGrNames.at(i)+" C"));
+		cg->SetTitle("Cuts same "+names.bkgGrNames.at(i));
+		cg->SetLineColor(myColors.at(1+i));
+
+		cg->GetYaxis()->SetRangeUser(1.,yMax*1.05);
+		cCutSame->cd();
+		cg->Draw("SAME HIST");
+		legendCut->AddEntry(cg, names.bkgGrNames.at(i));
+	}
+	hSigC2->Draw("SAME HIST");
+	cCutSame->cd();
+	legendCut->Draw("SAME HIST");
+}
+
+template <class TH = TH1F>
+void cutsScaled(const MyGraphs<TH>& theGraphs, const GNames& names, UInt_t nbins, float xm, float xM){
+	TCanvas* cCutScaled = new TCanvas("Cuts same norm", "Cuts same norm", 10,0,1280,1024);
+	TH* hSigCNorm = (TH*)theGraphs.hSig->Clone("Cuts sig norm");
+	hSigCNorm->Scale(1./hSigCNorm->GetBinContent(1));
+	hSigCNorm->SetTitle("Cuts (scaled)");
+	hSigCNorm->SetLineColor(myColors.at(0));
+	hSigCNorm->SetMinimum(0.);
+	//hSigCNorm->SetFillColorAlpha(kRed-4,35);
+	
+	TLegend* legendCutNorm = new TLegend(0.78, 0.94, 0.98, 0.74);
+	legendCutNorm->AddEntry(hSigCNorm, names.sigGrName);
+	
+	for(int i = 0; i < theGraphs.vhBkgs.size(); i++){
+		TH* cgNorm = (TH*)(theGraphs.vhBkgs.at(i)->Clone(names.bkgGrNames.at(i)+" norm"));
+		cgNorm->Scale(1./cgNorm->GetBinContent(1));
+		cgNorm->SetMinimum(0.);
+		cgNorm->SetLineColor(myColors.at(1+i));
+		//cgNorm->SetFillColorAlpha(myColors.at(1+i),35);//cgNorm->SetFillColor(1+i);
+		cCutScaled->cd();
+		cgNorm->Draw("SAME HIST");
+		legendCutNorm->AddEntry(cgNorm, names.bkgGrNames.at(i));
+	}
+	
+	cCutScaled->cd();
+	hSigCNorm->Draw("SAME HIST");
+	legendCutNorm->Draw("SAME HIST");
+	
+}
+
+template <class TH = TH1F>
+void cutSigSqrtBkg(const MyGraphs<TH>& theGraphs, const GNames& names, UInt_t nbins,float xm,float xM){
+	TAxis* sigXAxis = theGraphs.hSig->GetXaxis();
+	
+	TCanvas* cCut = new TCanvas("Cuts sig/#sqrt{bkg}", "Cuts sig/#sqrt{bkg}", 10,0,1280,1024);
+	TH* hSigC = (TH*)theGraphs.hSig->Clone("Cuts sig/#sqrt{bkg}");
+	hSigC->SetLineColor(myColors.at(0));
+	
+	TH* hBkgSum = new TH("Cuts bkg","Cuts bkg", nbins, xm, xM);
+	for(int i = 1; i<= nbins; i++)
+		hBkgSum->GetXaxis()->SetBinLabel(i, sigXAxis->GetBinLabel(i));
+	
+	for(int i = 0; i < theGraphs.vhBkgs.size(); i++){
+		TH* cg     = (TH*)(theGraphs.vhBkgs.at(i)->Clone(names.bkgGrNames.at(i)+" C"));
+		cg->SetTitle("Cuts same "+names.bkgGrNames.at(i));
+		cg->SetLineColor(myColors.at(1+i));
+
+		hBkgSum->Add(cg);
+		cout<<"\nAdded: \""<<names.bkgGrNames.at(i)<<'\"';
+	}
+	
+	cCut->cd();
+	hSigC->Divide(sqrtGraph(hBkgSum));
+	hSigC->SetTitle("Cuts sig/#sqrt{bkg}");
+	hSigC->SetMinimum(0.);
+	hSigC->Draw("HIST");
+}
+// ----- End service stuff---
+
 template<class TH = TH1F>
 void compareCutGraphs(const MyGraphs<TH>& theGraphs, const GNames& names){
 	cout<<"\n----compareCutGraphs: "<<names.graphName;
@@ -321,81 +433,12 @@ void compareCutGraphs(const MyGraphs<TH>& theGraphs, const GNames& names){
 	Int_t nbins = sigXAxis->GetNbins();
 	Double_t xM = sigXAxis->GetBinLowEdge(nbins+1);
 	
-	//1) cuts sig/sqrt(bkg)
-	TCanvas* cCut = new TCanvas("Cuts sig/#sqrt{bkg}", "Cuts sig/#sqrt{bkg}", 10,0,1280,1024);
-	TH* hSigC = (TH*)theGraphs.hSig->Clone("Cuts sig/#sqrt{bkg}");
-	TH* hBkgSum = new TH("Cuts bkg","Cuts bkg", nbins, xm, xM);
-	for(int i = 1; i<= nbins; i++)
-		hBkgSum->GetXaxis()->SetBinLabel(i, sigXAxis->GetBinLabel(i));
-	
-	//2) cuts over same graph (not scaled)
-	TCanvas* cCutSame = new TCanvas("Cuts same", "Cuts same", 10,0,1280,1024);
-	//THStack* stackNotScaled = new THStack("Cuts (not scaled)","Cuts (not scaled)");
-	TH* hSigC2 = (TH*)theGraphs.hSig->Clone("Cuts same");
-	hSigC2->SetTitle("Cuts (not scaled)");
-	hSigC2->SetLineColor(myColors.at(0));
-	hSigC2->SetFillColor(kRed-4);
-	hSigC2->Draw();//stackNotScaled->Add(hSigC2);
-	
-	TLegend* legendCut = new TLegend(0.78, 0.94, 0.98, 0.74);
-	legendCut->AddEntry(hSigC2, names.sigGrName);
-	
-	//3) cuts over same graph (scaled)
-	TCanvas* cCutScaled = new TCanvas("Cuts same norm", "Cuts same norm", 10,0,1280,1024);
-	//THStack* stackScaled = new THStack("Cuts (scaled)","Cuts (scaled)");
-	TH* hSigCNorm = (TH*)theGraphs.hSig->Clone("Cuts sig norm");
-	hSigCNorm->Scale(1./hSigCNorm->GetBinContent(1));
-	hSigCNorm->SetTitle("Cuts (scaled)");
-	hSigCNorm->SetLineColor(myColors.at(0));
-	hSigCNorm->SetFillColor(kRed-4);
-	hSigCNorm->Draw();//stackScaled->Add(hSigCNorm);
-	
-	TLegend* legendCutNorm = new TLegend(0.78, 0.94, 0.98, 0.74);
-	legendCutNorm->AddEntry(hSigCNorm, names.sigGrName);
-	
-	
-	for(int i = 0; i < theGraphs.vhBkgs.size(); i++){
-		//3: scaled
-		TH* cgNorm = (TH*)(theGraphs.vhBkgs.at(i)->Clone(names.bkgGrNames.at(i)+" norm"));
-		cgNorm->Scale(1./cgNorm->GetBinContent(1));
-		cgNorm->SetLineColor(myColors.at(1+i));
-		cgNorm->SetFillColor(1+i);//cgNorm->SetFillColorAlpha(1+i,35);
-		cCutScaled->cd();
-		cgNorm->Draw("SAME");//stackScaled->Add(cgNorm);
-		legendCutNorm->AddEntry(cgNorm, names.bkgGrNames.at(i));
-		
-		//--------------------------------------------------------
-		TH* cg     = (TH*)(theGraphs.vhBkgs.at(i)->Clone(names.bkgGrNames.at(i)+" C"));
-		cg->SetTitle("Cuts same "+names.bkgGrNames.at(i));
-		cg->SetLineColor(myColors.at(1+i));
-		//2: not scaled
-		cCutSame->cd();
-		cg->Draw("SAME");//stackNotScaled->Add(cg);
-		legendCut->AddEntry(cg, names.bkgGrNames.at(i));
-		//1: sig/sqrt{bkg}
-		hBkgSum->Add(cg);
-		cout<<"\nAdded: \""<<names.bkgGrNames.at(i)<<'\"';
-	}
-	
-	//1: sig/sqrt{bkg}
-	cCut->cd();
-	hSigC->Divide(sqrtGraph(hBkgSum));
-	hSigC->SetTitle("Cuts sig/#sqrt{bkg}");
-	hSigC->SetMinimum(0.);
-	hSigC->Draw();
-	
-	//2: not scaled
-	cCutSame->cd();
-	//stackNotScaled->Draw();
-	legendCut->Draw("SAME");
-	
-	//3: scaled
-	cCutScaled->cd();
-	//stackScaled->Draw();
-	legendCutNorm->Draw("SAME");
+	cutsNotScaled(theGraphs, names);
+	cutsScaled(theGraphs, names, nbins, xm, xM);
+	cutSigSqrtBkg(theGraphs, names, nbins, xm, xM);
 }
 
-
+// ##################################################################
 template <class TH>
 void printGraphSame(const MyGraphs<TH>& graphs, const GNames& names){
 	cout<<"\n----printGraphSame: "<<names.graphName;
@@ -406,19 +449,19 @@ void printGraphSame(const MyGraphs<TH>& graphs, const GNames& names){
 		TH* cg = (TH*)(graphs.vhBkgs.at(i)->Clone(names.bkgGrNames.at(i)));
 		//vhBkgCs.push_back(cg);
 		cg->SetTitle(names.graphName+" same");
-		cg->SetLineColor(1+myColors.at(i));
+		cg->SetLineColor(myColors.at(i+1));
 		legend0->AddEntry(cg, names.bkgGrNames.at(i));
-		cg->Draw("SAME");
+		cg->Draw("SAME HISTO");
 		//cout<<"\nAdded: \""<<names.bkgGrNames.at(i)<<'\"';
 	}
 	
 	TH* hSigC = (TH*)graphs.hSig->Clone(names.sigGrName);
 	hSigC->SetTitle(names.sigGrName);
 	hSigC->SetLineColor(myColors.at(0));
-	hSigC->Draw("SAME");
+	hSigC->Draw("SAME HISTO");
 	legend0->AddEntry(hSigC, names.sigGrName);
 	
-	legend0->Draw("SAME");
+	legend0->Draw("SAME HISTO");
 	//c0->BuildLegend(0.7,0.8,0.95,0.95);	//It's a kind of magic
 }
 
@@ -436,7 +479,7 @@ void printGraphCompare(const MyGraphs<TH>& graphs, const GNames& names){
 		TH* cg = (TH*)(graphs.vhBkgs.at(i)->Clone(names.bkgGrNames.at(i)));
 		//vhBkgCs.push_back(cg);
 		cg->SetTitle(names.bkgGrNames.at(i));
-		cg->SetLineColor(1+myColors.at(i));
+		cg->SetLineColor(myColors.at(i+1));
 		stack1->Add(cg);
 		//cout<<"\nAdded: \""<<names.bkgGrNames.at(i)<<'\"';
 	}
@@ -446,7 +489,7 @@ void printGraphCompare(const MyGraphs<TH>& graphs, const GNames& names){
 	hSigC->SetLineColor(myColors.at(0));
 	stack1->Add(hSigC);
 	
-	stack1->Draw();
+	stack1->Draw("HIST");
 	c1->BuildLegend(0.7,0.8,0.95,0.95);	//It's a kind of magic
 }
 
@@ -459,18 +502,18 @@ void printGraphIntegr(const MyGraphs<TH>& graphs, const GNames& names){
 	for(int i = 0; i < graphs.vhBkgs.size(); i++){
 		TH* cg = (TH*)( graphs.vhBkgInt.at(i)->Clone(names.bkgGrNames.at(i)+" Integral") ); //Copy integral of background
 		cg->SetTitle(names.bkgGrNames.at(i)+" Integral");
-		cg->SetLineColor(1+myColors.at(i));
+		cg->SetLineColor(myColors.at(i+1));
 		stackIS->Add(cg);
 		//cout<<"\nAdded: \""<<names.bkgGrNames.at(i)<<'\"';
 	}
 	
-	TH* hSigIntC = (TH*)graphs.hSig->Clone(names.sigGrName+" Integral"); //Copy integral of signal
+	TH* hSigIntC = (TH*)graphs.hSigInt->Clone(names.sigGrName+" Integral"); //Copy integral of signal
 	hSigIntC->SetTitle(names.sigGrName+" Integral");
 	hSigIntC->SetLineColor(myColors.at(0));
 	stackIS->Add(hSigIntC);
 	
 	cI->cd();
-	stackIS->Draw();
+	stackIS->Draw("HIST");
 	cI->BuildLegend(0.7,0.8,0.95,0.95);
 }
 
@@ -479,7 +522,7 @@ void printGraphSqrt(const MyGraphs<TH>& graphs, const GNames& names){
 	cout<<"\n----printGraphSqrt: "<<names.graphName;
 	TCanvas *cIS = new TCanvas(names.graphName+" I(S)/#sqrt{I(B)}", names.graphName+" I(S)/#sqrt{I(B)}", 10,0,1280,1024);
 	
-	TH* hSigIntC = (TH*)graphs.hSig->Clone(names.graphName+" I(S)/#sqrt{I(B)}"); //Copy integral of signal
+	TH* hSigIntC = (TH*)graphs.hSigInt->Clone(names.graphName+" I(S)/#sqrt{I(B)}"); //Copy integral of signal
 	hSigIntC->SetTitle(names.graphName+" I(S)/#sqrt{I(B)}");
 	hSigIntC->SetMinimum(0.);
 	
@@ -500,10 +543,10 @@ void printGraphSqrt(const MyGraphs<TH>& graphs, const GNames& names){
 	}
 	
 	hSigIntC->Divide(sqrtGraph(hBkgSqrt));
-	
+		
 	cIS->cd();
 	hSigIntC->SetFillColor(kBlue-7);
-	hSigIntC->Draw();
+	hSigIntC->Draw("HIST");
 	//cIS->BuildLegend(0.7,0.8,0.95,0.95);
 }
 
@@ -538,5 +581,11 @@ MyGraphs<TH>* buildMyGraphs(const GNames& names, TFile* const signalFile, vector
 		vhBackgrIntegr.push_back( integralGraph(pippo) );
 	}
 	return new MyGraphs<TH>(hSig, vhBackgrounds, integralGraph(hSig), vhBackgrIntegr);
+}
+
+//Alternative way(s) to call main function
+void WWosStackGraphs(string requestType = string(""), string reqGrName = string(""), int iGrToDo = 0){
+	std::string sGrToDo = std::to_string(iGrToDo);
+	WWosStackGraphs(requestType, reqGrName, sGrToDo);
 }
 
