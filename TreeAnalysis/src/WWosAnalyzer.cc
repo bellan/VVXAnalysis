@@ -30,7 +30,7 @@ using namespace phys;
 #define HISTO_JEta_Config 		150,-5.,5.
 #define HISTO_Phi_Config 			100,-3.15,3.15
 #define HISTO_Pt_Config 			100,0.,500.
-#define HISTO_Cut_Config			7,0,7
+#define HISTO_Cut_Config			7,0,7//6,0,6
 
 Int_t WWosAnalyzer::cut() {
 	evtN++;
@@ -40,10 +40,12 @@ Int_t WWosAnalyzer::cut() {
 	
 	//#####		At least a pair of jets with mjj > 150 GeV/c^2		#####
 	bool jetOK = false;
-	foreach(const Jet& jet1, *jets){
+
+	if(jets->size() < 2) return -1;
+	for(int i = 0; i < jets->size()-1; ++i){
 		if(jetOK) break;		//Saves computation time
-    foreach(const Jet& jet2, *jets){
-    	double mjj = (jet1.p4() + jet2.p4()).M();
+    for(int k = i+1; k < jets->size(); ++k){
+    	double mjj = ( jets->at(i).p4() + jets->at(k).p4() ).M();
     	if (mjj > 150){
     		jetOK = true; 
     		break;
@@ -52,7 +54,6 @@ Int_t WWosAnalyzer::cut() {
 	}
 	if(!jetOK || jets->size() < 2) return -1;	//Saves computation time, avoiding unnecessary lepton analysis
 //	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, 1, theWeight);	//mjj
-	//if(jets->size() < 2) return -1;
 	
 	//#####		At least a pair of leptons with pt > 20 GeV/c		#####
   bool leptOK = false;
@@ -78,14 +79,14 @@ Int_t WWosAnalyzer::cut() {
   	if(m.pt() > maxPt){
 	  	maxPt = m.pt();
   		leadLepton = m;
-  		if(thisEventType == WWosEventTypes::ee) thisEventType = WWosEventTypes::em;
-  		else if(thisEventType == WWosEventTypes::em) thisEventType = WWosEventTypes::mm;
+  	//	if(thisEventType == WWosEventTypes::ee) thisEventType = WWosEventTypes::em;
+  	//	else if(thisEventType == WWosEventTypes::em) thisEventType = WWosEventTypes::mm;
 		}
 		else if(m.pt() > secPt){
 	  	secPt = m.pt();
   		trailLepton = m;
-  		if(thisEventType == WWosEventTypes::ee) thisEventType = WWosEventTypes::em;
-  		else if(thisEventType == WWosEventTypes::em) thisEventType = WWosEventTypes::mm;
+  	//	if(thisEventType == WWosEventTypes::ee) thisEventType = WWosEventTypes::em;
+  	//	else if(thisEventType == WWosEventTypes::em) thisEventType = WWosEventTypes::mm;
 		}
 	}
   if(countEle20 + countMu20 >= 2) leptOK = true;	
@@ -131,15 +132,13 @@ void WWosAnalyzer::analyze(){
 	else if(thisEventType == WWosEventTypes::em){	emEvents++;		eventType = "em"; }
 	else if(thisEventType == WWosEventTypes::mm){	mmEvents++;		eventType = "mm"; }*/
 	
+	if(leptonCut())	//opposite charge and, if they're same flavour, then mll>120
+		return;
+		
 	std::sort(jets->begin(), jets->end(), phys::EComparator());	//They were sorted by pt
 	jetPlots(" all");
 	miscPlots(&leadLepton, &trailLepton, " all", true);
 	leptonPlots(&leadLepton, &trailLepton, " lep all"/*eventType*/, true);
-	
-	
-	
-	if(leptonCut())	//opposite charge and, if they're same flavour, then mll>120
-		return;
 		
 	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, 0, theWeight);	//0th cut: Preselected 
 	
@@ -196,28 +195,47 @@ bool WWosAnalyzer::jetCsvtagCut(const float &leadMax, const float &trailMax){
 bool WWosAnalyzer::newCuts(){
 	UInt_t ncut = 0;
 	
+	if( fabs(jets->at(0).eta() - jets->at(1).eta()) < 5. ) return true;
+	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //1st cut: deltaEta > 5
+	
 	if(jetCsvtagCut(0.8484, 0.8484)) return true;	//0.9535 (Thight) or 0.8484 (Medium)
-	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //1st cut: medium jet csvtag
+	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //2nd cut: medium jet csvtag
 
 	//if((leadLepton.p4() + trailLepton.p4() + met->p4()).Pt() < 100) return true;
-	//theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //2nd cut: ptVectLLmet > 100
+	//theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight);
 	
 	if(jets->at(0).e() < 150) return true;
-	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //2nd cut: Lead jet E > 150
+	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //3rd cut: Lead jet E > 150
 	
 	if(leadLepton.pt() + trailLepton.pt() + met->pt() < 200) return true;
-	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //3rd cut: ptScalarLLmet > 200
+	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //4th cut: ptScalarLLmet> 200
 	
 	if((leadLepton.p4() + trailLepton.p4()).Pt() < 120) return true;
-	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //4th cut: ptVectLL > 120
+	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //5th cut: ptVectLL > 120
 	
-	if( jetCsvtagCut(0.55, 0.55) ) return true;
-	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //5th cut: csvtag<0.55
-	
-	if( physmath::deltaR(jets->at(0), jets->at(1)) < 5. ) return true;
-	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //6th cut: ptVectLL > 120
+	if( jetCsvtagCut(0.4, 0.4) ) return true;
+	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //6th cut: csvtag<0.4
 	
 	return false;
+}
+
+void WWosAnalyzer::nameCutGraph(){
+	theHistograms.get("Cuts")->SetMinimum(1.);
+	UInt_t ncut = 0;
+	TAxis* aXCuts = theHistograms.get("Cuts")->GetXaxis();/*
+	aXCuts->SetBinLabel(0+1, "Total");
+	aXCuts->SetBinLabel(1+1, "mJJ > 150");
+	aXCuts->SetBinLabel(2+1, "lepton pt>20");
+	aXCuts->SetBinLabel(3+1, "lepton charge");
+	aXCuts->SetBinLabel(4+1, "mLL > 120");	//if not same flavour, in that case pass anyway
+	aXCuts->SetBinLabel(5+1, "medium jet csvtag");*/
+	aXCuts->SetBinLabel(++ncut, "Preselected");        //0
+	aXCuts->SetBinLabel(++ncut, "deltaEta (jets) > 5");//1
+	aXCuts->SetBinLabel(++ncut, "tight csvtag veto");  //2
+	aXCuts->SetBinLabel(++ncut, "Lead Jet E > 150");   //3
+	aXCuts->SetBinLabel(++ncut, "ptScalarLLmet > 200");//4
+	aXCuts->SetBinLabel(++ncut, "ptVectLL > 120");     //5
+	aXCuts->SetBinLabel(++ncut, "csvtag < 0.4");       //6
 }
 
 //	####################### Plots #################################
@@ -265,10 +283,10 @@ void WWosAnalyzer::nestedPtCutHistogram(const Particle* lead, const Particle* tr
 void WWosAnalyzer::jetPlots(const string& type){
 	double w = theWeight;
 	theHistograms.fill("n Jets", "n Jets", 10, 0., 10., jets->size(), w);
-	if(jets->size() >= 1){
+	//if(jets->size() >= 1){	//we already asked jets->size() >= 2 in cut()
 		theHistograms.fill("Lead jet E"+type, "Lead jet E"+type, 100,0.,800., jets->at(0).e(),  w);
 		theHistograms.fill("Lead jet pt"+type,"Lead jet pt"+type,100,0.,800., jets->at(0).pt(), w);
-		if(jets->size() >= 2){
+	//	if(jets->size() >= 2){
 			theHistograms.fill("Trail jet E"+type, "Trail jet E"+type, 100,0.,800., jets->at(1).e(),  w);
 			theHistograms.fill("Trail jet pt"+type,"Trail jet pt"+type,100,0.,800., jets->at(1).pt(), w);
 			foreach(const Particle& jet, *jets){
@@ -287,8 +305,8 @@ void WWosAnalyzer::jetPlots(const string& type){
 			theHistograms.fill("trail jet csvtagger"+type, "trail jet csvtagger"+type, 100,0.,1., jets->at(1).csvtagger(), w);
 			
 			theHistograms.fill<TH2F>("jets csvtagger"+type, "jets csvtagger"+type, 100,0.,1., 100,0.,1., jets->at(0).csvtagger(), jets->at(1).csvtagger(), w);
-		}
-	}
+	//	}
+	//}
 }
 
 void WWosAnalyzer::miscPlots(const Particle* lead, const Particle* trail, const string& type, bool useWeight){
@@ -504,25 +522,6 @@ void WWosAnalyzer::endGenParticleAnalysis(){
 	#endif
 }
 #endif	//DO_GEN_PARTICLES_ANALYSIS
-
-void WWosAnalyzer::nameCutGraph(){
-	theHistograms.get("Cuts")->SetMinimum(1.);
-	UInt_t ncut = 0;
-	TAxis* aXCuts = theHistograms.get("Cuts")->GetXaxis();/*
-	aXCuts->SetBinLabel(0+1, "Total");
-	aXCuts->SetBinLabel(1+1, "mJJ > 150");
-	aXCuts->SetBinLabel(2+1, "lepton pt>20");
-	aXCuts->SetBinLabel(3+1, "lepton charge");
-	aXCuts->SetBinLabel(4+1, "mLL > 120");	//if not same flavour, in that case pass anyway
-	aXCuts->SetBinLabel(5+1, "medium jet csvtag");*/
-	aXCuts->SetBinLabel(++ncut, "Preselected");        //0
-	aXCuts->SetBinLabel(++ncut, "tight csvtag veto");  //1
-	aXCuts->SetBinLabel(++ncut, "Lead Jet E > 150");   //2
-	aXCuts->SetBinLabel(++ncut, "ptScalarLLmet > 200");//3
-	aXCuts->SetBinLabel(++ncut, "ptVectLL > 120");     //4
-	aXCuts->SetBinLabel(++ncut, "csvtag < 0.55");      //5
-	aXCuts->SetBinLabel(++ncut, "deltaR (jets) > 5");  //6
-}
 
 //Efficiency analysis
 #ifdef DO_EFFICIENCY_ANALYSIS
