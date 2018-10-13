@@ -30,14 +30,14 @@ using namespace phys;
 #define HISTO_JEta_Config 		150,-5.,5.
 #define HISTO_Phi_Config 			100,-3.15,3.15
 #define HISTO_Pt_Config 			100,0.,500.
-#define HISTO_Cut_Config			7,0,7//6,0,6
+#define HISTO_CSV_Config			52,-0.03,1.01//102,-0.015,1.005
+#define HISTO_Cut_Config			4,0,4//3,0,3//5,0,5//7,0,7
 
 Int_t WWosAnalyzer::cut() {
 	evtN++;
 	cout<<"\r\t\t"<<evtN;//"\b\b\b\b\b\b";
 	
 //	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, 0, theWeight);	//Total
-	
 	//#####		At least a pair of jets with mjj > 150 GeV/c^2		#####
 	bool jetOK = false;
 
@@ -132,6 +132,8 @@ void WWosAnalyzer::analyze(){
 	else if(thisEventType == WWosEventTypes::em){	emEvents++;		eventType = "em"; }
 	else if(thisEventType == WWosEventTypes::mm){	mmEvents++;		eventType = "mm"; }*/
 	
+	if(jetCsvtagCut(0.95, 0.95)) return;	//Some samples have a prouction cut at 0.95
+	
 	if(leptonCut())	//opposite charge and, if they're same flavour, then mll>120
 		return;
 		
@@ -198,24 +200,25 @@ bool WWosAnalyzer::newCuts(){
 	if( fabs(jets->at(0).eta() - jets->at(1).eta()) < 5. ) return true;
 	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //1st cut: deltaEta > 5
 	
-	if(jetCsvtagCut(0.8484, 0.8484)) return true;	//0.9535 (Thight) or 0.8484 (Medium)
-	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //2nd cut: medium jet csvtag
-
+	if((leadLepton.p4() + trailLepton.p4()).Pt() < 120) return true;
+	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //2nd cut: ptVectLL > 120
+	
+	if(leadLepton.pt() + trailLepton.pt() + met->pt() < 250) return true;
+	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //3rd cut: ptScalarLLmet> 250
+	
+	/*
 	//if((leadLepton.p4() + trailLepton.p4() + met->p4()).Pt() < 100) return true;
 	//theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight);
 	
-	if(jets->at(0).e() < 150) return true;
-	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //3rd cut: Lead jet E > 150
-	
-	if(leadLepton.pt() + trailLepton.pt() + met->pt() < 200) return true;
-	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //4th cut: ptScalarLLmet> 200
-	
-	if((leadLepton.p4() + trailLepton.p4()).Pt() < 120) return true;
-	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //5th cut: ptVectLL > 120
-	
-	if( jetCsvtagCut(0.4, 0.4) ) return true;
-	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //6th cut: csvtag<0.4
-	
+	if(jetCsvtagCut(0.8484, 0.8484)) return true;	//0.9535 (Thight) or 0.8484 (Medium)
+	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //4th cut: medium jet csvtag
+	*/
+/*	if( jetCsvtagCut(0.4, 0.4) ) return true;
+	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //5th cut: csvtag<0.4
+	*/
+/*	if(jets->at(0).e() < 150) return true;
+	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //6th cut: Lead jet E > 150
+	*/
 	return false;
 }
 
@@ -231,11 +234,13 @@ void WWosAnalyzer::nameCutGraph(){
 	aXCuts->SetBinLabel(5+1, "medium jet csvtag");*/
 	aXCuts->SetBinLabel(++ncut, "Preselected");        //0
 	aXCuts->SetBinLabel(++ncut, "deltaEta (jets) > 5");//1
-	aXCuts->SetBinLabel(++ncut, "tight csvtag veto");  //2
-	aXCuts->SetBinLabel(++ncut, "Lead Jet E > 150");   //3
-	aXCuts->SetBinLabel(++ncut, "ptScalarLLmet > 200");//4
-	aXCuts->SetBinLabel(++ncut, "ptVectLL > 120");     //5
-	aXCuts->SetBinLabel(++ncut, "csvtag < 0.4");       //6
+	aXCuts->SetBinLabel(++ncut, "ptVectLL > 120");     //2
+	aXCuts->SetBinLabel(++ncut, "ptScalarLLmet > 250");//3
+	/*
+	aXCuts->SetBinLabel(++ncut, "tight csvtag veto");  //4
+	*/
+//	aXCuts->SetBinLabel(++ncut, "csvtag < 0.4");       //5
+//	aXCuts->SetBinLabel(++ncut, "Lead Jet E > 150");   //6
 }
 
 //	####################### Plots #################################
@@ -284,29 +289,35 @@ void WWosAnalyzer::jetPlots(const string& type){
 	double w = theWeight;
 	theHistograms.fill("n Jets", "n Jets", 10, 0., 10., jets->size(), w);
 	//if(jets->size() >= 1){	//we already asked jets->size() >= 2 in cut()
-		theHistograms.fill("Lead jet E"+type, "Lead jet E"+type, 100,0.,800., jets->at(0).e(),  w);
-		theHistograms.fill("Lead jet pt"+type,"Lead jet pt"+type,100,0.,800., jets->at(0).pt(), w);
+	theHistograms.fill("Lead jet E"+type, "Lead jet E"+type, 100,0.,800., jets->at(0).e(),  w);
+	theHistograms.fill("Lead jet pt"+type,"Lead jet pt"+type,100,0.,800., jets->at(0).pt(), w);
 	//	if(jets->size() >= 2){
-			theHistograms.fill("Trail jet E"+type, "Trail jet E"+type, 100,0.,800., jets->at(1).e(),  w);
-			theHistograms.fill("Trail jet pt"+type,"Trail jet pt"+type,100,0.,800., jets->at(1).pt(), w);
-			foreach(const Particle& jet, *jets){
-				theHistograms.fill("Jet Eta"+type, "Jet Eta"+type, 100, -5., 5.,jet.eta(), w);
-			}
-			float deltaR = physmath::deltaR(jets->at(0), jets->at(1));
-			theHistograms.fill("delta R jets"+type, "delta R jets"+type, 100, 0., 10., deltaR, w);
-			float deltaEta = fabs(jets->at(0).eta() - jets->at(1).eta());
-			theHistograms.fill("delta Eta jets"+type, "delta Eta jets"+type, 100, 0., 10., deltaEta, w);
-			float jjMass = (jets->at(0).p4() + jets->at(1).p4()).M();
-			theHistograms.fill("mjj"+type,"mjj"+type, 200, 0., 2000., jjMass, w);
-			float angSep = jets->at(0).p4().Vect().Angle( jets->at(1).p4().Vect() );
-			theHistograms.fill("angSep (jet)"+type, "angSep (jet)"+type, 100,0.,3.15, angSep, w);
-			
-			theHistograms.fill("lead jet csvtagger"+type, "lead jet csvtagger"+type, 100,0.,1., jets->at(0).csvtagger(), w);
-			theHistograms.fill("trail jet csvtagger"+type, "trail jet csvtagger"+type, 100,0.,1., jets->at(1).csvtagger(), w);
-			
-			theHistograms.fill<TH2F>("jets csvtagger"+type, "jets csvtagger"+type, 100,0.,1., 100,0.,1., jets->at(0).csvtagger(), jets->at(1).csvtagger(), w);
-	//	}
-	//}
+	theHistograms.fill("Trail jet E"+type, "Trail jet E"+type, 100,0.,800., jets->at(1).e(),  w);
+	theHistograms.fill("Trail jet pt"+type,"Trail jet pt"+type,100,0.,800., jets->at(1).pt(), w);
+	foreach(const Particle& jet, *jets){
+		theHistograms.fill("Jet Eta"+type, "Jet Eta"+type, 100, -5., 5.,jet.eta(), w);
+	}
+	float deltaR = physmath::deltaR(jets->at(0), jets->at(1));
+	theHistograms.fill("delta R jets"+type, "delta R jets"+type, 100, 0., 10., deltaR, w);
+	float deltaEta = fabs(jets->at(0).eta() - jets->at(1).eta());
+	theHistograms.fill("delta Eta jets"+type, "delta Eta jets"+type, 100, 0., 10., deltaEta, w);
+	float jjMass = (jets->at(0).p4() + jets->at(1).p4()).M();
+	theHistograms.fill("mjj"+type,"mjj"+type, 200, 0., 2000., jjMass, w);
+	float angSep = jets->at(0).p4().Vect().Angle( jets->at(1).p4().Vect() );
+	theHistograms.fill("angSep (jet)"+type, "angSep (jet)"+type, 100,0.,3.15, angSep, w);
+	
+	float leadCSV = jets->at(0).csvtagger();
+	if(leadCSV < 0.) leadCSV = -0.01;
+	float trailCSV = jets->at(1).csvtagger();
+	if(trailCSV <0.) trailCSV =-0.01;
+	theHistograms.fill("lead jet csvtagger"+type, "lead jet csvtagger"+type, HISTO_CSV_Config, leadCSV, w);
+	theHistograms.fill("trail jet csvtagger"+type,"trail jet csvtagger"+type,HISTO_CSV_Config,trailCSV, w);
+	
+	//cout<<'\n'<<type<<' '<<jets->at(0).csvtagger()<<' '<<jets->at(1).csvtagger()<<' '<<w;
+	
+	//theHistograms.fill<TH2F>("jets csvtagger"+type, "jets csvtagger"+type, 100,0.,1., 100,0.,1., jets->at(0).csvtagger(), jets->at(1).csvtagger(), w);
+//}
+//}
 }
 
 void WWosAnalyzer::miscPlots(const Particle* lead, const Particle* trail, const string& type, bool useWeight){
