@@ -31,7 +31,7 @@ using namespace phys;
 #define HISTO_Phi_Config 			100,-3.15,3.15
 #define HISTO_Pt_Config 			100,0.,500.
 #define HISTO_CSV_Config			52,-0.03,1.01//102,-0.015,1.005
-#define HISTO_Cut_Config			4,0,4//3,0,3//5,0,5//7,0,7
+#define HISTO_Cut_Config			4,0,4
 
 Int_t WWosAnalyzer::cut() {
 	evtN++;
@@ -205,7 +205,6 @@ bool WWosAnalyzer::newCuts(){
 	
 	if(leadLepton.pt() + trailLepton.pt() + met->pt() < 250) return true;
 	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //3rd cut: ptScalarLLmet> 250
-	
 	/*
 	//if((leadLepton.p4() + trailLepton.p4() + met->p4()).Pt() < 100) return true;
 	//theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight);
@@ -360,10 +359,6 @@ void WWosAnalyzer::genParticlesAnalysis(){
 	
 	theHistograms.fill("n genNeutrinos", "n genNeutrinos", 10, 0., 10., genNeutrinos->size(), theWeight);
 	
-	#ifdef GEN_WWOS_CHECK
-	if(checkGenWWosEvent()) WWosEvents++;
-	#endif
-	
 	totalElectrons += genElectrons->size();
 	totalMuons += genMuons->size();
 	totjets += jets->size();
@@ -481,34 +476,8 @@ void WWosAnalyzer::genParticlesCategorization(){	//Divides the genParticles betw
 	std::sort(genCleanedJets->begin(), genCleanedJets->end(), PtComparator());
 }
 
-#ifdef GEN_WWOS_CHECK
-bool WWosAnalyzer::checkGenWWosEvent(){
-	bool result = false;
-	vector<phys::Boson<phys::Particle>>* WCandidates = new vector<phys::Boson<phys::Particle>>;
-	foreach(const Particle& genLep, *genLeptons){
-		foreach(const Particle& genNu, *genNeutrinos){
-			if(
-					(genLep.id()+1) == (- genNu.id()) &&		//same flavour and opposite lepton number
-					((genLep.p4() + genNu.p4()).M() - phys::WMASS) < 30
-				){
-				int thisId = -24*copysign(1, genLep.id());		//W+ o W-, depending on the sign of the lepton
-				WCandidates->push_back(phys::Boson<Particle>(genLep, genNu, thisId));
-				}
-		}
-	}
-	if(WCandidates->size() == 2)
-		if(WCandidates->at(0).charge() * WCandidates->at(0).charge() < 0)
-			result = true;
-	delete WCandidates;
-	return result;
-}
-#endif
-
 void WWosAnalyzer::endGenParticleAnalysis(){
 	//doSomeFits();
-	#ifdef GEN_WWOS_CHECK
-	cout<<"\nWWosEvents: "<<WWosEvents<<" ratio: "<<(float)WWosEvents/evtN*100.<<" %";
-	#endif
 	
 	#ifdef DO_EFFICIENCY_ANALYSIS
 	cout<<"\nTotal Electrons: "<<totalElectrons<<" \tMatched Electrons: "<<matchedElectrons<<" \tEfficiency: "<<(float)(100*matchedElectrons)/totalElectrons<<" %" <<"\n";

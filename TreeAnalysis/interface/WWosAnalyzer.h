@@ -36,7 +36,6 @@
 	//#define DO_STATISTICS_ON_PARTICLES
 	//#define DO_STATISTICS_ON_EVENTS
 	//#define DO_EFFICIENCY_ANALYSIS
-	#define GEN_WWOS_CHECK
 #endif
 
 #define LEPTON_CUT	//Cuts events in which there are not exactly 2 leptons
@@ -98,9 +97,6 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		
 		void genParticlesAnalysis();	//All the work realate to efficiency/resolution analysis
 		void genParticlesCategorization();	//Divides genParticle by the id
-		#ifdef GEN_WWOS_CHECK
-		bool checkGenWWosEvent();			//checks if there's a pair of WW with opposite sign
-		#endif
 		
 		void endGenParticleAnalysis(); //stuff from end();
 		void nameCutGraph();				//Sets the name of the bins in the graph "Cuts"
@@ -188,10 +184,6 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		long totgenJets;
 		long totgenCleanedJets;
 		long totgenParticles;
-		#endif
-		
-		#ifdef GEN_WWOS_CHECK
-		int WWosEvents;
 		#endif
 		
 		clock_t startTime;
