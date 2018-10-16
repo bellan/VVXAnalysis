@@ -102,9 +102,14 @@ vector<Color_t> myFillColors={kRed-9,kOrange-4,kGreen-9,kCyan-9,kBlue-9,kViolet-
 
 void WWosStackGraphs(string requestType = string(""), int iGrToDo = 0, string reqGrName = string("")){
 	
-	TString path = "../results/WWosAnalyzer_MC/";
+	//TString path = "../results/WWosAnalyzer_MC/";  //fresh results
 	//TString path = "~/Workspace/Private/Results/";
+	TString path = "~/Documents/Materiale tesi/Results/3 cuts/";
+	//TString path = "~/Documents/Materiale tesi/Results/2 cuts/";
+	//TString path = "~/Documents/Materiale tesi/Results/1 cut/";
+	//TString path = "~/Documents/Materiale tesi/Results/0 cuts/";
 	cout<<"Source path: \""<<path<<"\"\n";
+	
 	vector<TString> backgrounds = {"TTTo2L2Nu", "DYJetsToLL_M50", "WWQCD"/*"WW"*/, "WWdouble", /*"WZ","TTJets"*/};
 	
 	string sGrToDo = std::to_string(iGrToDo);
@@ -247,6 +252,12 @@ void WWosStackGraphs(string requestType = string(""), int iGrToDo = 0, string re
 	}
 	
 	cout<<'\n';
+	
+	/*
+	signalFile->Close();
+	for(unsigned int i = 0; i < backgroundFiles.size(); i++)
+		backgroundFiles.at(i)->Close();
+	*/
 }
 
 
@@ -390,7 +401,7 @@ void cutsScaled(const MyGraphs<TH>& theGraphs, const GNames& names, UInt_t nbins
 		cgNorm->SetMinimum(0.);
 		cgNorm->SetLineColor(myColors.at(1+i));
 		//cgNorm->SetFillColor(myFillColors.at(1+i));
-		//cgNorm->SetFillColorAlpha(myColors.at(1+i),35);//cgNorm->SetFillColor(1+i);
+		//cgNorm->SetFillColorAlpha(myColors.at(1+i),35);
 		cCutScaled->cd();
 		cgNorm->Draw("SAME HIST");
 		legendCutNorm->AddEntry(cgNorm, names.bkgGrNames.at(i));
