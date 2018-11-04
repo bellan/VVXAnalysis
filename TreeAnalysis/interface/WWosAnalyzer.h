@@ -5,7 +5,7 @@
  *  Concrete class for WW with opposite sign analysis
  *
  *  $Date: 2018/08/04 13:37:31 $
- *  $Revision: 0.3 $
+ *  $Revision: 1.0 $
  *  \author A. Mecca alberto.mecca@edu.unito.it
  */
 
@@ -31,11 +31,11 @@
 // TTTo2L2Nu      2321521 	~7'44"
 // DYJetsToLL_M50   22199 	~0'04"
 
-//#define DO_GEN_PARTICLES_ANALYSIS
+#define DO_GEN_PARTICLES_ANALYSIS
 #ifdef DO_GEN_PARTICLES_ANALYSIS
 	//#define DO_STATISTICS_ON_PARTICLES
 	//#define DO_STATISTICS_ON_EVENTS
-	//#define DO_EFFICIENCY_ANALYSIS
+	#define DO_EFFICIENCY_ANALYSIS
 #endif
 
 #define LEPTON_CUT	//Cuts events in which there are not exactly 2 leptons
@@ -88,9 +88,7 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		bool newCuts();
 				
 		void leptonPlots(const phys::Particle* lead, const phys::Particle* trail, const std::string& type = std::string(""), bool useWeight = true);
-		void leptonCutAnalysis(const phys::Particle* lead, const phys::Particle* trail, const std::string& type = std::string(""), bool useWeight = true);
 		void lepton2DGraph(const phys::Particle* lead, const phys::Particle* trail, const std::string& type = std::string(""), bool useWeight = true);
-		void nestedPtCutHistogram(const phys::Particle* lead, const phys::Particle* trail, const std::string& type, float ptCut, float weight);
 		
 		void jetPlots(const std::string& type = "");
 		void miscPlots(const phys::Particle* lead, const phys::Particle* trail, const std::string& type = std::string(""), bool useWeight = true);
@@ -121,7 +119,6 @@ class WWosAnalyzer: public EventAnalyzer, RegistrableAnalysis<WWosAnalyzer>{
 		void normalizeEta(std::string name);
 		void normalizePhi(std::string name);
 		void normalizePt(std::string name);
-		TGraphAsymmErrors* myTGraphAsymmErrors(TH1* num, TH1* denom);
 		#endif
 		
 		void fillBasicPlots();

@@ -37,7 +37,7 @@ Int_t WWosAnalyzer::cut() {
 	evtN++;
 	cout<<"\r\t\t"<<evtN;//"\b\b\b\b\b\b";
 	
-//	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, 0, theWeight);	//Total
+	theHistograms.fill("PreCut", "PreCut", 5,0,5, 0, theWeight);	//Total
 	//#####		At least a pair of jets with mjj > 150 GeV/c^2		#####
 	bool jetOK = false;
 
@@ -53,7 +53,7 @@ Int_t WWosAnalyzer::cut() {
   	}
 	}
 	if(!jetOK || jets->size() < 2) return -1;	//Saves computation time, avoiding unnecessary lepton analysis
-//	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, 1, theWeight);	//mjj
+	theHistograms.fill("PreCut", "PreCut", 5,0,5, 1, theWeight);	//mjj
 	
 	//#####		At least a pair of leptons with pt > 20 GeV/c		#####
   bool leptOK = false;
@@ -100,12 +100,15 @@ Int_t WWosAnalyzer::cut() {
 	foreach(const Lepton& mu, *muons) cout<<mu.pt()<<" - ";
 	cout<<"\nmaxPt: "<<maxPt<<" \tsecPt: "<<secPt;
   }*/
-  
-	if(jetOK && leptOK){
-		//theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, 2, theWeight);	//lepton pt>20
-		return 1;	
-	}
-	return -1;
+	
+	if(!leptOK)	return -1;
+	
+	theHistograms.fill("PreCut", "PreCut", 5,0,5, 2, theWeight);	//2 leptons pt>20
+	
+	if(leptonCut())	//opposite charge and, if they're same flavour, then mll>120
+		return -1;
+
+	return 1;
 }
 
 void WWosAnalyzer::begin(){
@@ -120,6 +123,7 @@ void WWosAnalyzer::begin(){
 
 void WWosAnalyzer::analyze(){
 	passingCut++;
+	TH1::SetDefaultSumw2(true);
 	#ifdef DO_GEN_PARTICLES_ANALYSIS
 	genParticlesAnalysis();
 	#endif
@@ -131,23 +135,20 @@ void WWosAnalyzer::analyze(){
 	if(thisEventType == WWosEventTypes::ee){			eeEvents++;		eventType = "ee"; }
 	else if(thisEventType == WWosEventTypes::em){	emEvents++;		eventType = "em"; }
 	else if(thisEventType == WWosEventTypes::mm){	mmEvents++;		eventType = "mm"; }*/
-	
-	if(jetCsvtagCut(0.95, 0.95)) return;	//Some samples have a prouction cut at 0.95
-	
-	if(leptonCut())	//opposite charge and, if they're same flavour, then mll>120
-		return;
 		
 	std::sort(jets->begin(), jets->end(), phys::EComparator());	//They were sorted by pt
+	if(jetCsvtagCut(0.95, 0.95)) return;	//Some samples have a prouction cut at 0.95
+	
 	jetPlots(" all");
 	miscPlots(&leadLepton, &trailLepton, " all", true);
 	leptonPlots(&leadLepton, &trailLepton, " lep all"/*eventType*/, true);
 		
 	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, 0, theWeight);	//0th cut: Preselected 
+	theHistograms.fill("Cuts unweighted","Cuts unweighted",HISTO_Cut_Config, 0,1);
 	
 	if(newCuts()) return;	//automatically fills the "Cuts" plot
 	
 	passingSelection++;
-	//leptonCutAnalysis(&leadLepton, &trailLepton, eventType, true);
 	//lepton2DGraph(&leadLepton, &trailLepton, eventType, true);
 	jetPlots();
 	miscPlots(&leadLepton, &trailLepton, eventType, true);
@@ -182,9 +183,12 @@ void WWosAnalyzer::end(TFile &){
 
 bool WWosAnalyzer::leptonCut(){
 	if(leadLepton.charge() * trailLepton.charge() > 0) return true;	// true = cut this event
-	//theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, 3, theWeight);	//lepton charge
+	theHistograms.fill("PreCut", "PreCut", 5,0,5, 3, theWeight);	//Opposite charge
+	
 	float mll = (leadLepton.p4() + trailLepton.p4()).M();
 	if(mll < 120 && (leadLepton.id() == -1*trailLepton.id())) return true; //mLL
+	
+	theHistograms.fill("PreCut", "PreCut", 5,0,5, 4, theWeight);	//mll
 	return false;
 }
 
@@ -199,12 +203,16 @@ bool WWosAnalyzer::newCuts(){
 	
 	if( fabs(jets->at(0).eta() - jets->at(1).eta()) < 5. ) return true;
 	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //1st cut: deltaEta > 5
+	theHistograms.fill("Cuts unweighted","Cuts unweighted",HISTO_Cut_Config, ncut,1);
 	
 	if((leadLepton.p4() + trailLepton.p4()).Pt() < 120) return true;
 	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //2nd cut: ptVectLL > 120
+	theHistograms.fill("Cuts unweighted","Cuts unweighted",HISTO_Cut_Config, ncut,1);
 	
-	if(leadLepton.pt() + trailLepton.pt() + met->pt() < 250) return true;
-	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //3rd cut: ptScalarLLmet> 250
+	if(leadLepton.pt() + trailLepton.pt() + met->pt() < 255) return true;
+	theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight); //3rd cut: ptScalarLLmet> 255
+	theHistograms.fill("Cuts unweighted","Cuts unweighted",HISTO_Cut_Config, ncut,1);
+	
 	/*
 	//if((leadLepton.p4() + trailLepton.p4() + met->p4()).Pt() < 100) return true;
 	//theHistograms.fill("Cuts", "Cuts", HISTO_Cut_Config, ++ncut, theWeight);
@@ -224,36 +232,50 @@ bool WWosAnalyzer::newCuts(){
 void WWosAnalyzer::nameCutGraph(){
 	theHistograms.get("Cuts")->SetMinimum(1.);
 	UInt_t ncut = 0;
-	TAxis* aXCuts = theHistograms.get("Cuts")->GetXaxis();/*
+	TAxis* aXCuts = theHistograms.get("Cuts")->GetXaxis();
+	TAxis* aXUnweighted = theHistograms.get("Cuts unweighted")->GetXaxis();
+	/*
 	aXCuts->SetBinLabel(0+1, "Total");
 	aXCuts->SetBinLabel(1+1, "mJJ > 150");
 	aXCuts->SetBinLabel(2+1, "lepton pt>20");
 	aXCuts->SetBinLabel(3+1, "lepton charge");
 	aXCuts->SetBinLabel(4+1, "mLL > 120");	//if not same flavour, in that case pass anyway
 	aXCuts->SetBinLabel(5+1, "medium jet csvtag");*/
+
 	aXCuts->SetBinLabel(++ncut, "Preselected");        //0
+	aXUnweighted->SetBinLabel(ncut, "Preselected");
+	
 	aXCuts->SetBinLabel(++ncut, "deltaEta (jets) > 5");//1
+	aXUnweighted->SetBinLabel(ncut, "deltaEta (jets) > 5");
+	
 	aXCuts->SetBinLabel(++ncut, "ptVectLL > 120");     //2
-	aXCuts->SetBinLabel(++ncut, "ptScalarLLmet > 250");//3
-	/*
-	aXCuts->SetBinLabel(++ncut, "tight csvtag veto");  //4
-	*/
-//	aXCuts->SetBinLabel(++ncut, "csvtag < 0.4");       //5
-//	aXCuts->SetBinLabel(++ncut, "Lead Jet E > 150");   //6
+	aXUnweighted->SetBinLabel(ncut, "ptVectLL > 120");
+	
+	aXCuts->SetBinLabel(++ncut, "ptScalarLLmet > 255");//3
+	aXUnweighted->SetBinLabel(ncut, "ptScalarLLmet > 255");
+	
+	TH1* precut = theHistograms.get("PreCut");
+	precut->SetTitle("PreCut;;# Events");
+	TAxis* aXPreCuts = precut->GetXaxis();
+	aXPreCuts->SetBinLabel(1, "Total");
+	aXPreCuts->SetBinLabel(2, ">2jet && mjj>150");
+	aXPreCuts->SetBinLabel(3, "2lep (pt>20)");
+	aXPreCuts->SetBinLabel(4, "charge");
+	aXPreCuts->SetBinLabel(5, "mll>120");
 }
 
 //	####################### Plots #################################
 
 void WWosAnalyzer::leptonPlots(const Particle* lead, const Particle* trail, const string& type, bool useWeight){
 	double w = (useWeight ? theWeight : 1.);
-	theHistograms.fill("Leading "+type+" pt", "Leading "+type+" pt", HISTO_Pt_Config, lead->pt(), w);
-	theHistograms.fill("Second "+type+" pt", "Second "+type+" pt", HISTO_Pt_Config, trail->pt(), w);
+	theHistograms.fill("Leading "+type+" pt", "Leading "+type+" pt;pt [GeV/c]", HISTO_Pt_Config, lead->pt(), w);
+	theHistograms.fill("Second "+type+" pt", "Second "+type+" pt;pt [GeV/c]", HISTO_Pt_Config, trail->pt(), w);
 	float deltaEta = lead->eta() - trail->eta();
-	theHistograms.fill("#Delta #eta "+type, "#Delta #eta "+type, HISTO_JEta_Config, deltaEta, w);
+	theHistograms.fill("#Delta #eta "+type, "#Delta #eta "+type+";#Delta#eta", HISTO_JEta_Config, deltaEta, w);
 	float dPhi = deltaPhi(lead->p4(), trail->p4());//lead->phi() - trail->phi();
-	theHistograms.fill("#Delta #phi "+type, "#Delta #phi "+type, 70, 0., 3.15, dPhi, w);
+	theHistograms.fill("#Delta #phi "+type, "#Delta #phi "+type+";#phi [rad]", 70, 0., 3.15, dPhi, w);
 	float deltaR = physmath::deltaR(*lead, *trail);
-	theHistograms.fill("#Delta R "+type, "#Delta R "+type, 100, 0., 5., deltaR, w);
+	theHistograms.fill("#Delta R "+type, "#Delta R "+type+"; #Delta R", 100, 0., 5., deltaR, w);
 }
 
 void WWosAnalyzer::lepton2DGraph(const Particle* lead, const Particle* trail, const string& type, bool useWeight){
@@ -261,49 +283,27 @@ void WWosAnalyzer::lepton2DGraph(const Particle* lead, const Particle* trail, co
 	theHistograms.fill<TH2F>(type+": pt", type+": pt", HISTO_Pt_Config, HISTO_Pt_Config, lead->pt(), trail->pt(), w);
 }
 
-void WWosAnalyzer::leptonCutAnalysis(const Particle* lead, const Particle* trail, const string& type, bool useWeight){
-	//These plots should be filled in a more efficient way in end(TFile&). Each bin shall be filled individually
-	TH1::SetDefaultSumw2(true);
-	double w = (useWeight ? theWeight : 1.);
-	for(float ptCut = 0.; ptCut < 500.; ptCut += 5.){
-		if(lead->pt() >= ptCut){
-			theHistograms.fill(type+": events passing lead pt >=", type+": events passing lead pt >=", HISTO_Pt_Config, ptCut, w);
-			//nestedPtCutHistogram(lead, trail, type, ptCut, w);
-		}
-		if(trail->pt() >= ptCut)
-			theHistograms.fill(type+": events passing second pt >=", type+": events passing second pt >=", HISTO_Pt_Config, ptCut, w);
-	}
-	for(float dRCut = 0.; dRCut < 4.; dRCut += 0.02)
-		if(physmath::deltaR(*lead, *trail) <= dRCut)
-			theHistograms.fill(type+": events passing deltaR <=", type+": events passing deltaR <=",  200, 0., 4., dRCut, w);
-}
-
-void WWosAnalyzer::nestedPtCutHistogram(const Particle* lead, const Particle* trail, const string& type, float ptCut, float weight){
-	for(float ptCut2 = 0.; ptCut2 < 500.; ptCut2 += 5.)
-		if(trail->pt() >= ptCut2)
-			theHistograms.fill<TH2F>(type+": pt Cuts", type+": pt Cuts", HISTO_Pt_Config, HISTO_Pt_Config, ptCut, ptCut2, weight);
-}
 
 void WWosAnalyzer::jetPlots(const string& type){
 	double w = theWeight;
 	theHistograms.fill("n Jets", "n Jets", 10, 0., 10., jets->size(), w);
 	//if(jets->size() >= 1){	//we already asked jets->size() >= 2 in cut()
-	theHistograms.fill("Lead jet E"+type, "Lead jet E"+type, 100,0.,800., jets->at(0).e(),  w);
-	theHistograms.fill("Lead jet pt"+type,"Lead jet pt"+type,100,0.,800., jets->at(0).pt(), w);
+	theHistograms.fill("Lead jet E"+type, "Lead jet E"+type+";E [GeV]",   100,0.,800.,jets->at(0).e(), w);
+	theHistograms.fill("Lead jet pt"+type,"Lead jet pt"+type+";E [GeV/c]",100,0.,800.,jets->at(0).pt(),w);
 	//	if(jets->size() >= 2){
-	theHistograms.fill("Trail jet E"+type, "Trail jet E"+type, 100,0.,800., jets->at(1).e(),  w);
-	theHistograms.fill("Trail jet pt"+type,"Trail jet pt"+type,100,0.,800., jets->at(1).pt(), w);
+	theHistograms.fill("Trail jet E"+type, "Trail jet E"+type+";E [GeV]",   100,0.,700., jets->at(1).e(),  w);
+	theHistograms.fill("Trail jet pt"+type,"Trail jet pt"+type+";E [GeV/c]",100,0.,700., jets->at(1).pt(), w);
 	foreach(const Particle& jet, *jets){
-		theHistograms.fill("Jet Eta"+type, "Jet Eta"+type, 100, -5., 5.,jet.eta(), w);
+		theHistograms.fill("Jet Eta"+type, "Jet Eta"+type+";#eta", 100, -5., 5.,jet.eta(), w);
 	}
 	float deltaR = physmath::deltaR(jets->at(0), jets->at(1));
-	theHistograms.fill("delta R jets"+type, "delta R jets"+type, 100, 0., 10., deltaR, w);
+	theHistograms.fill("delta R jets"+type, "delta R jets"+type+"#Delta R", 100, 0., 10., deltaR, w);
 	float deltaEta = fabs(jets->at(0).eta() - jets->at(1).eta());
-	theHistograms.fill("delta Eta jets"+type, "delta Eta jets"+type, 100, 0., 10., deltaEta, w);
+	theHistograms.fill("delta Eta jets"+type, "delta Eta jets"+type+"#Delta#eta", 100,0.,10., deltaEta,w);
 	float jjMass = (jets->at(0).p4() + jets->at(1).p4()).M();
-	theHistograms.fill("mjj"+type,"mjj"+type, 200, 0., 2000., jjMass, w);
+	theHistograms.fill("mjj"+type,"mjj"+type+";mass [GeV/c^2]", 100, 0., 2000., jjMass, w);
 	float angSep = jets->at(0).p4().Vect().Angle( jets->at(1).p4().Vect() );
-	theHistograms.fill("angSep (jet)"+type, "angSep (jet)"+type, 100,0.,3.15, angSep, w);
+	theHistograms.fill("angSep (jet)"+type, "angSep (jet)"+type+";[rad]", 100,0.,3.15, angSep, w);
 	
 	float leadCSV = jets->at(0).csvtagger();
 	if(leadCSV < 0.) leadCSV = -0.01;
@@ -323,25 +323,26 @@ void WWosAnalyzer::miscPlots(const Particle* lead, const Particle* trail, const 
 	double w = (useWeight ? theWeight : 1.);
 	
 	float ptScalarLL = lead->pt() + trail->pt();
-	theHistograms.fill("ptScalarLL"+type, "ptScalarLL"+type, 100, 0., 1500., ptScalarLL, w);
+	theHistograms.fill("ptScalarLL"+type, "ptScalarLL"+type+";pt [GeV/c]", 100, 0., 1500., ptScalarLL, w);
 	
 	TLorentzVector Lp4 = lead->p4();
 	TLorentzVector Tp4 = trail->p4();
 	float ptVectLL = (Lp4 + Tp4).Pt();
-	theHistograms.fill("ptVectLL"+type, "ptVectLL"+type, 100, 0., 1000., ptVectLL, w);
+	theHistograms.fill("ptVectLL"+type, "ptVectLL"+type+";pt [GeV/c]", 100, 0., 1000., ptVectLL, w);
 	
 	float mll = (Lp4 + Tp4).M();
-	theHistograms.fill("mll"+type, "mll"+type, 100, 0., 1000., mll, w);
+	theHistograms.fill("mll"+type, "mll"+type+";mass [GeV/c^2]", 100, 0., 1000., mll, w);
 	
 	float angularSeparation = Lp4.Vect().Angle(Tp4.Vect());
-	theHistograms.fill("angSeparationLL"+type, "angSeparationLL"+type, 50,0.,3.14, angularSeparation, w);
+	theHistograms.fill("angSeparationLL"+type, "angSeparationLL"+type+";[rad]", 50,0.,3.14, angularSeparation, w);
 	
 	//met
 	float ptScalarLLmet = ptScalarLL + met->pt();
-	theHistograms.fill("ptScalarLLmet"+type, "ptScalarLLmet"+type, 100, 0., 1000., ptScalarLLmet, w);
+	theHistograms.fill("ptScalarLLmet"+type,"ptScalarLLmet"+type+";pt [GeV/c]", 100,0.,1000.,
+	ptScalarLLmet, w);
 	
 	float ptVectLLmet = (Lp4 + Tp4 + met->p4()).Pt();
-	theHistograms.fill("ptVectLLmet"+type, "ptVectLLmet"+type, 100, 0., 1000., ptVectLLmet, w);
+	theHistograms.fill("ptVectLLmet"+type,"ptVectLLmet"+type+";pt [GeV/c]", 100,0.,1000.,ptVectLLmet, w);
 }
 
 
@@ -489,7 +490,7 @@ void WWosAnalyzer::endGenParticleAnalysis(){
 	normalizeHistograms(string("Electrons"));
 	normalizeHistograms(string("Muons"));
 	normalizeHistograms(string("Jets"));
-	/*
+	
 	cout<<"Resolution 1/Pt (Electrons)\n";
 	fitResolutionPt(string("Electrons"));
 	cout<<"Resolution 1/Pt (Muons)\n";
@@ -498,7 +499,7 @@ void WWosAnalyzer::endGenParticleAnalysis(){
 	fitResolutionE(string("Electrons"));
 	cout<<"Resolution E (Muons)\n";
 	fitResolutionE(string("Muons"));
-	*/
+	
 	#endif
 }
 #endif	//DO_GEN_PARTICLES_ANALYSIS
@@ -512,7 +513,7 @@ void WWosAnalyzer::analyzeEfficiency(vector<T>* genGroup, vector<P>* recGroup, s
 		phys::Particle* cand = findMatchingParticle(gen, recGroup);	//candidate is a reconstructed particle
 		if(cand != nullptr){
 			counter++;
-			theHistograms.fill(name+"Match_deltaR",name+"Match_deltaR", HISTO_deltaR_Config, physmath::deltaR(gen, *cand), 1.);
+			theHistograms.fill(name+"Match_deltaR",name+"Match_deltaR;#Delta R", 100,0.,0.5 , physmath::deltaR(gen, *cand), 1.);
 			if(checkMatch(gen, *cand, maxDeltaR)){
 				
 				if(gen.charge() != (*cand).charge()){
@@ -521,15 +522,15 @@ void WWosAnalyzer::analyzeEfficiency(vector<T>* genGroup, vector<P>* recGroup, s
 				}
 				//Efficiency vs Eta
 				if(name == "Jets"){
-					theHistograms.fill("JetsMatched_vs_eta","JetsMatched_vs_eta",HISTO_JEta_Config, gen.eta(), 1.);
+					theHistograms.fill("JetsMatched_vs_eta","JetsMatched_vs_eta;#eta",HISTO_JEta_Config, gen.eta(), 1.);
 					theHistograms.fill("JetsMatched_Charge","JetsCharge", 60, -10., 10., gen.charge(), 1.);
 				}
 				else 
-					theHistograms.fill(name+"Matched_vs_eta", name+"Matched_vs_eta",HISTO_Eta_Config,gen.eta(),1);
+					theHistograms.fill(name+"Matched_vs_eta", name+"Matched_vs_eta;#eta", HISTO_Eta_Config, gen.eta(),1);
 				//Efficiency vs Phi
-				theHistograms.fill(name+"Matched_vs_phi",name+"Matched_vs_phi",HISTO_Phi_Config,gen.phi(),1);
+				theHistograms.fill(name+"Matched_vs_phi",name+"Matched_vs_phi;#phi [rad]", HISTO_Phi_Config, gen.phi(),1);
 				//Efficiency vs pt
-				theHistograms.fill(name+"Matched_vs_pt",name+"Matched_vs_pt",HISTO_Pt_Config,gen.pt(),1);
+				theHistograms.fill(name+"Matched_vs_pt",name+"Matched_vs_pt;pt [GeV/c]", HISTO_Pt_Config, gen.pt(),1);
 				
 				//Let's analyze the resolution too!
 				resolutionAnalysis(*cand, gen, name);
@@ -636,11 +637,6 @@ void WWosAnalyzer::normalizePt(std::string name){
 	effPt->GetXaxis()->SetTitle("pt [GeV/c]");
 }
 
-TGraphAsymmErrors* WWosAnalyzer::myTGraphAsymmErrors(TH1* num, TH1* denom){ //Correct errors
-	if(num->GetXaxis()->GetNbins() != denom->GetXaxis()->GetNbins()) return nullptr;
-	TGraphAsymmErrors* result = new TGraphAsymmErrors(num, denom,"cp" /*Clopper-Pearson*/); //C'tor divides the two TH1 inputs
-	return result;
-}
 
 template <class P, class T>
 void WWosAnalyzer::resolutionAnalysis(const T& rec, const P& gen, std::string name){
@@ -649,8 +645,8 @@ void WWosAnalyzer::resolutionAnalysis(const T& rec, const P& gen, std::string na
 	float delta1Pt = (float)((1/rec.pt()-1/gen.pt())*gen.pt());//(D(1/p))/(1/p) = D(1/p) * p
 	float deltaEN = (float)((rec.e()-gen.e())/gen.e());
 	
-		theHistograms.fill("(#Delta 1/pt)/(1/pt) "+name,"(#Delta 1/pt)/(1/pt) "+name, 200,-0.1,0.1, delta1Pt, 1);
-		theHistograms.fill("(#Delta E)/E "+name,"(#Delta E)/E "+name, 200,-0.1,0.1, deltaEN, 1);
+		theHistograms.fill("(#Delta 1/pt)/(1/pt) "+name,"(#Delta 1/pt)/(1/pt) "+name, 100,-0.1,0.1, delta1Pt, 1);
+		theHistograms.fill("(#Delta E)/E "+name,"(#Delta E)/E "+name, 100,-0.1,0.1, deltaEN, 1);
 }
 
 void WWosAnalyzer::fitResolutionPt(std::string name){
