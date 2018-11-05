@@ -127,7 +127,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     theGenInfoToken          = consumes<GenEventInfoProduct>          (edm::InputTag("generator"));
     theGenInfoTokenInRun     = consumes<GenRunInfoProduct,edm::InRun>(edm::InputTag("generator"));
     externalCrossSection_    = config.getUntrackedParameter<double>("XSection",-1);
-    lheHandler               = new LHEHandler(config.getParameter<int>("VVMode"), config.getParameter<int>("VVDecayMode"), true); //fix
+    lheHandler               = new LHEHandler(config.getParameter<int>("VVMode"), config.getParameter<int>("VVDecayMode"), true, 2016); //fix
   }
    
   skimPaths_ = config.getParameter<std::vector<std::string> >("skimPaths");

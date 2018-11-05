@@ -17,6 +17,9 @@ import os
 
 PyFilePath = os.environ['CMSSW_BASE'] + "/src/VVXAnalysis/Producers/python/"
 execfile(PyFilePath + "analyzer_VVjj.py")
+PyFilePath = os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/"
+execfile(PyFilePath + "prod/pyFragments/RecoProbabilities.py")
+
 
 ### ----------------------------------------------------------------------
 

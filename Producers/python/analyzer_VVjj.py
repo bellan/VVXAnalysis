@@ -13,6 +13,8 @@ declareDefault("VVMODE", 1, globals())
 declareDefault("VVDECAYMODE", 0, globals())
 declareDefault("ADDLHEKINEMATICS", False, globals())
 
+declareDefault("APPLY_QCD_GGF_UNCERT", False, globals() )
+
 # Get absolute path
 import os
 PyFilePath = os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/"
@@ -39,13 +41,43 @@ process.TFileService=cms.Service('TFileService', fileName=cms.string('VVXAnalysi
 ### ------------------------------- Analyses -----------------------------
 
 ### ZZjj paths
-ZZjj_search_path = os.environ['CMSSW_BASE'] + "/src/VVXAnalysis/Producers/python/"
+VVjj_search_path = os.environ['CMSSW_BASE'] + "/src/VVXAnalysis/Producers/python/"
 
 ### ----------------------------------------------------------------------
 ### Standard sequence
 ### ----------------------------------------------------------------------
 
-execfile(ZZjj_search_path + "analyzer_ZZjj.py")
+
+
+#process.goodIsoMuons = cms.EDProducer("CandSelector",
+#                                      src = cms.InputTag("appendPhotons:muons"),
+#                                      cut = cms.string("userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
+
+#process.goodIsoElectrons = cms.EDProducer("CandSelector",
+#                                      src = cms.InputTag("appendPhotons:electrons"),
+#                                      cut = cms.string("userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
+
+process.VVjjEventTagger = cms.EDFilter("EventTagger",
+                                       Topology = cms.int32(-1), 
+                                       src = cms.InputTag("softLeptons"),
+                                       TightSelection = cms.string("userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')")
+                                       )
+
+process.path(process.VVjjEventTagger)
+
+
+## ZZ->4l
+execfile(VVjj_search_path + "analyzer_ZZjj.py")
+
+## WZ->3lnu
+#execfile(VVjj_search_path + "analyzer_WZjj.py") 
+
+## VZ->2l2j
+#execfile(VVjj_search_path + "analyzer_VZjj.py")
+
+## WW->2l2nu
+#execfile(VVjj_search_path + "analyzer_WWjj.py")
+
 ### ----------------------------------------------------------------------
 
 

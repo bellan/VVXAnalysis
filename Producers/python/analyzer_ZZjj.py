@@ -24,7 +24,7 @@ process.postCleaningMuons = cms.EDProducer("PATMuonCleaner",
                                            # pat electron input source
                                            src = cms.InputTag("appendPhotons:muons"),
                                            # preselection (any string-based cut for pat::Muons)
-                                           preselection = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"),
+                                           preselection = cms.string("pt > 5 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"),
                                            # overlap checking configurables
                                            checkOverlaps = cms.PSet(
         muons = cms.PSet(
@@ -51,7 +51,7 @@ process.postCleaningElectrons = cms.EDProducer("PATElectronCleaner",
                                                # pat electron input source
                                                src = cms.InputTag("appendPhotons:electrons"),
                                                # preselection (any string-based cut for pat::Electron)
-                                              preselection = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"),
+                                              preselection = cms.string("pt > 7 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"),
                                                # overlap checking configurables
                                                checkOverlaps = cms.PSet(
         electrons = cms.PSet(
@@ -90,29 +90,6 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
                                            DebugPrintOuts      =  cms.untracked.bool(False),
                                            DebugPlots= cms.untracked.bool(False)
                                            )
-
-
-### ......................................................................... ###
-### Build the W->jj candidate out of the previously disambiguated jet collection, restricted to the central regions
-### ......................................................................... ###
-
-process.centralJets = cms.EDFilter("EtaPtMinCandViewSelector", 
-                                   src = cms.InputTag("disambiguatedJets"),
-                                   ptMin   = cms.double(10),
-                                   etaMin = cms.double(-2.4),
-                                   etaMax = cms.double(2.4)
-                                   )
-
-process.bareVhadCand = cms.EDProducer("CandViewShallowCloneCombiner",
-                                      decay = cms.string('centralJets centralJets'),
-                                      cut = cms.string('mass > 20'), # protect against ghosts
-                                      checkCharge = cms.bool(False))
-
-process.VhadCand = cms.EDProducer("WCandidateFiller",
-                                  src = cms.InputTag("bareVhadCand"))
-
-process.VhadSequence = cms.Sequence(process.centralJets * process.bareVhadCand * process.VhadCand)
-
 
 
 
@@ -198,7 +175,6 @@ process.postRecoCleaning = cms.Sequence( process.ZZSelectedCand
                                          + process.muonsFromZZ*process.postCleaningMuons 
                                          + process.electronsFromZZ*process.postCleaningElectrons
                                          + process.disambiguatedJets
-                                         + process.VhadSequence
                                          )
 
 
