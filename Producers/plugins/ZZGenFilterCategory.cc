@@ -91,8 +91,7 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
     for (View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) {
       
       //cout << std::distance(genParticles->begin(),p) << " ID: " << p->pdgId() << " status: " << p->status() << endl;
-      const reco::Candidate *newp = &(*p);
-      const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(newp);
+      const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(&(*p));
       
 
       if (p->status() == 1){
@@ -115,11 +114,7 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 	  // if(!fromTau)  genLeptons.push_back(phys::convert(newp)); } // leptons     
 	
       }
-      if (false && p->status() == 3){
-	int id   = abs(p->pdgId());     
-	if ( id == 11 || id == 13 ) { genLeptons.push_back(phys::convert(*p,gp->statusFlags().flags_)); }// leptons 
 
-      }
     }
     
     foreach(phys::Particle &lep, genLeptons)
