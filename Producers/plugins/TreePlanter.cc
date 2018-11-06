@@ -26,6 +26,7 @@
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
+#include "VVXAnalysis/Commons/interface/Constants.h"
 
 #include "ZZAnalysis/AnalysisStep/interface/MCHistoryTools.h"
 #include "ZZAnalysis/AnalysisStep/interface/bitops.h"
@@ -92,10 +93,6 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , cr2P2FCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("cr2P2FCounter"          )))
   , cr3P1FCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("cr3P1FCounter"          )))
   , sampleName_      (config.getParameter<std::string>("sampleName"))
-  , jetAlgo_         (config.getParameter<std::string>("JetAlgo"       )) //To use DB. to be fixed
-  , jetRes_file_pt   (config.getParameter<edm::FileInPath>("jetResFile_pt").fullPath())
-  , jetRes_file_phi  (config.getParameter<edm::FileInPath>("jetResFile_phi").fullPath())
-  , jetRes_file_sf   (config.getParameter<edm::FileInPath>("jetResFile_SF").fullPath())
   , isMC_            (config.getUntrackedParameter<bool>("isMC",false))
   , sampleType_      (config.getParameter<int>("sampleType"))
   , setup_           (config.getParameter<int>("setup"))
@@ -127,7 +124,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     theGenInfoToken          = consumes<GenEventInfoProduct>          (edm::InputTag("generator"));
     theGenInfoTokenInRun     = consumes<GenRunInfoProduct,edm::InRun>(edm::InputTag("generator"));
     externalCrossSection_    = config.getUntrackedParameter<double>("XSection",-1);
-    lheHandler               = new LHEHandler(config.getParameter<int>("VVMode"), config.getParameter<int>("VVDecayMode"), true, 2016); //fix
+    theLHEHandler            = new LHEHandler(config.getParameter<int>("VVMode"), config.getParameter<int>("VVDecayMode"), true, 2016); //fix
   }
    
   skimPaths_ = config.getParameter<std::vector<std::string> >("skimPaths");
@@ -146,14 +143,10 @@ void TreePlanter::beginJob(){
   theTree->Branch("passSkim"    , &passSkim_); 
   theTree->Branch("triggerWord" , &triggerWord_); 
 
-  theTree->Branch("mcprocweight"     , &mcprocweight_);
-  theTree->Branch("puweight"         , &puweight_);
-  theTree->Branch("puweightUp"       , &puweightUp_);
-  theTree->Branch("puweightDn"       , &puweightDn_);
-  theTree->Branch("genCategory" , &genCategory_);
+  theTree->Branch("genEventInfo", &genEventInfo_);
+
 
   theTree->Branch("met"   , &met_);
-  //theTree->Branch("metNoHF"   , &metNoHF_);
   theTree->Branch("nvtxs" , &nvtx_);
 
   theTree->Branch("muons"     , &muons_);
@@ -166,42 +159,7 @@ void TreePlanter::beginJob(){
   theTree->Branch("genParticles"  , &genParticles_);
   theTree->Branch("genVBParticles", &genVBParticles_);
   theTree->Branch("genJets"       , &genJets_);
-
-  theTree->Branch("kFactor_ggZZ"          , &kFactor_ggZZ_);
-  theTree->Branch("kFactor_qqZZM"         , &kFactor_qqZZM_);
-  theTree->Branch("kFactor_qqZZPt"        , &kFactor_qqZZPt_);
-  theTree->Branch("kFactor_qqZZdPhi"      , &kFactor_qqZZdPhi_);
-  theTree->Branch("kFactor_EWKqqZZ"       , &kFactor_EWKqqZZ_);
-
-
-  theTree->Branch("LHEPDFScale", &LHEPDFScale_);
-  theTree->Branch("LHEweight_QCDscale_muR1_muF1", &LHEweight_QCDscale_muR1_muF1_);
-  theTree->Branch("LHEweight_QCDscale_muR1_muF2", &LHEweight_QCDscale_muR1_muF2_);
-  theTree->Branch("LHEweight_QCDscale_muR1_muF0p5", &LHEweight_QCDscale_muR1_muF0p5_);
-  theTree->Branch("LHEweight_QCDscale_muR2_muF1", &LHEweight_QCDscale_muR2_muF1_);
-  theTree->Branch("LHEweight_QCDscale_muR2_muF2", &LHEweight_QCDscale_muR2_muF2_);
-  theTree->Branch("LHEweight_QCDscale_muR2_muF0p5", &LHEweight_QCDscale_muR2_muF0p5_);
-  theTree->Branch("LHEweight_QCDscale_muR0p5_muF1", &LHEweight_QCDscale_muR0p5_muF1_);
-  theTree->Branch("LHEweight_QCDscale_muR0p5_muF2", &LHEweight_QCDscale_muR0p5_muF2_);
-  theTree->Branch("LHEweight_QCDscale_muR0p5_muF0p5", &LHEweight_QCDscale_muR0p5_muF0p5_);
-  theTree->Branch("LHEweight_PDFVariation_Up", &LHEweight_PDFVariation_Up_);
-  theTree->Branch("LHEweight_PDFVariation_Dn", &LHEweight_PDFVariation_Dn_);
-  theTree->Branch("LHEweight_AsMZ_Up", &LHEweight_AsMZ_Up_);
-  theTree->Branch("LHEweight_AsMZ_Dn", &LHEweight_AsMZ_Dn_);
-  
-  
-  theTree->Branch("p_JJVBF_BKG_MCFM_JECNominal",  &p_JJVBF_BKG_MCFM_JECNominal_);
-  theTree->Branch("p_JJQCD_BKG_MCFM_JECNominal",  &p_JJQCD_BKG_MCFM_JECNominal_);
-  theTree->Branch("p_JJVBF_BKG_MCFM_JECUp",       &p_JJVBF_BKG_MCFM_JECUp_);     
-  theTree->Branch("p_JJQCD_BKG_MCFM_JECUp",       &p_JJQCD_BKG_MCFM_JECUp_);     
-  theTree->Branch("p_JJVBF_BKG_MCFM_JECDn",       &p_JJVBF_BKG_MCFM_JECDn_);     
-  theTree->Branch("p_JJQCD_BKG_MCFM_JECDn",       &p_JJQCD_BKG_MCFM_JECDn_);     
-  theTree->Branch("p_JJEW_BKG_MCFM_JECNominal",   &p_JJEW_BKG_MCFM_JECNominal_);  
-  theTree->Branch("p_JJEW_BKG_MCFM_JECUp",        &p_JJEW_BKG_MCFM_JECUp_);     
-  theTree->Branch("p_JJEW_BKG_MCFM_JECDn",        &p_JJEW_BKG_MCFM_JECDn_);     
-  
-
-     }
+}
 
 void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
 {
@@ -258,7 +216,6 @@ void TreePlanter::endRun(const edm::Run& run, const edm::EventSetup& setup){
 
 void TreePlanter::endJob(){
 
-
   if(mcHistoryTools_) delete mcHistoryTools_;
 
   edm::Service<TFileService> fs;
@@ -297,8 +254,7 @@ void TreePlanter::endJob(){
     countTree->Branch("postSkimSignalEvents"  , &postSkimSignalEvents_);
     countTree->Branch("eventsInEtaAcceptance"   , &eventsInEtaAcceptance_);
     countTree->Branch("eventsInEtaPtAcceptance" , &eventsInEtaPtAcceptance_);
-  
-}
+  }
   
   countTree->Fill();
 }
@@ -313,18 +269,11 @@ void TreePlanter::initTree(){
   passSkim_    = false;
   triggerWord_ = 0;
 
-  mcprocweight_       = 1.;
-  puweight_           = 1.; 
-  puweightUp_        = 0.; 
-  puweightDn_        = 0.; 
-
-  genCategory_    = -1;
-  nobservedPUInt_ = -1;
-  ntruePUInt_     = -1;
+  genEventInfo_ = phys::GenEventInfo();
 
   met_    = phys::Particle();
   nvtx_   = -1;
-
+  
   muons_     = std::vector<phys::Lepton>();
   electrons_ = std::vector<phys::Lepton>();
   jets_      = std::vector<phys::Jet>();
@@ -336,94 +285,16 @@ void TreePlanter::initTree(){
   genParticles_ = std::vector<phys::Particle>();
   genVBParticles_ = std::vector<phys::Boson<phys::Particle> >();
   genJets_ = std::vector<phys::Particle>();
-
-  kFactor_ggZZ_     = 1.; 
-  kFactor_qqZZM_    = 1.; 
-  kFactor_qqZZPt_   = 1.;
-  kFactor_qqZZdPhi_ = 1.;
-  kFactor_EWKqqZZ_  = 1.;
-
-
-  LHEPDFScale_ = 0;
-  LHEweight_QCDscale_muR1_muF1_ = 0;
-  LHEweight_QCDscale_muR1_muF2_ = 0;
-  LHEweight_QCDscale_muR1_muF0p5_ = 0;
-  LHEweight_QCDscale_muR2_muF1_ = 0;
-  LHEweight_QCDscale_muR2_muF2_ = 0;
-  LHEweight_QCDscale_muR2_muF0p5_ = 0;
-  LHEweight_QCDscale_muR0p5_muF1_ = 0;
-  LHEweight_QCDscale_muR0p5_muF2_ = 0;
-  LHEweight_QCDscale_muR0p5_muF0p5_ = 0;  
-  LHEweight_PDFVariation_Up_ = 0;
-  LHEweight_PDFVariation_Dn_ = 0;
-  LHEweight_AsMZ_Up_ = 0;
-  LHEweight_AsMZ_Dn_ = 0;
-  
-  p_JJVBF_BKG_MCFM_JECNominal_ = 0.;
-  p_JJQCD_BKG_MCFM_JECNominal_ = 0.;
-  p_JJVBF_BKG_MCFM_JECUp_ = 0.;     
-  p_JJQCD_BKG_MCFM_JECUp_ = 0.;     
-  p_JJVBF_BKG_MCFM_JECDn_ = 0.;     
-  p_JJQCD_BKG_MCFM_JECDn_ = 0.;     
-  p_JJEW_BKG_MCFM_JECNominal_ = 0.;  
-  p_JJEW_BKG_MCFM_JECUp_ = 0.;     
-  p_JJEW_BKG_MCFM_JECDn_ = 0.;     
-
 }
+
 bool TreePlanter::fillEventInfo(const edm::Event& event){
-  // Fill some info abut acceptance before cutting away events. Beware: if the signal is defined a-posteriori, we will have a problem. For that case, we need to
-  // explicitly check here that we are counting signal and not irreducible background.
-
-  edm::Handle<edm::View<reco::Candidate> > genParticles;
-  edm::Handle<GenEventInfoProduct> genInfo;
-
-  if (isMC_) {
-    // Apply MC filter
-    if (!filterController_.passMCFilter(event)) return false;
-    if(mcHistoryTools_) delete mcHistoryTools_;
-
-    event.getByToken(theGenCollectionToken, genParticles);
-    event.getByToken(theGenInfoToken, genInfo);
-
-    mcHistoryTools_ = new MCHistoryTools(event, sampleName_, genParticles, genInfo);
-    bool gen_ZZ4lInEtaAcceptance   = false; // All 4 gen leptons in eta acceptance
-    bool gen_ZZ4lInEtaPtAcceptance = false; // All 4 gen leptons in eta,pT acceptance
-    mcHistoryTools_->genAcceptance(gen_ZZ4lInEtaAcceptance, gen_ZZ4lInEtaPtAcceptance);
-    if (gen_ZZ4lInEtaAcceptance)   ++eventsInEtaAcceptance_;  
-    if (gen_ZZ4lInEtaPtAcceptance) ++eventsInEtaPtAcceptance_;
-
-    std::vector<edm::Handle<std::vector< PileupSummaryInfo > > >  PupInfos; 
-    event.getManyByType(PupInfos);
-    edm::Handle<std::vector< PileupSummaryInfo > > puInfo = PupInfos.front(); 
-
-    foreach(const PileupSummaryInfo& pui, *puInfo)
-      if(pui.getBunchCrossing() == 0) { 
-	nobservedPUInt_  = pui.getPU_NumInteractions();
-	ntruePUInt_      = pui.getTrueNumInteractions();
-	break;
-      }
-    
-
-    // Info about the MC weight
-    puweight_ = PUWeighter_.weight(ntruePUInt_);
-    puweightUp_ = PUWeighter_.weight(ntruePUInt_, PileUpWeight::PUvar::VARUP);
-    puweightDn_ = PUWeighter_.weight(ntruePUInt_, PileUpWeight::PUvar::VARDOWN);
-
-    mcprocweight_ = mcHistoryTools_->gethepMCweight();
-
-    // Sum of weight, particularly imprtant for MCs that return also negative weights
-    // or, in general, weighted events
-    sumpuweights_       += puweight_;
-    summcprocweights_   += mcprocweight_;
-    sumpumcprocweights_ += puweight_*mcprocweight_;
-  }
     
   // Check trigger request. Actually, it is a very very loose request, not the actual one, that instead should be
   // asked to the specific final state
 
   passTrigger_ = filterController_.passTrigger(NONE, event, triggerWord_);
-
   if (applyTrigger_ && !passTrigger_) return false;
+
 
   // Check Skim requests
   passSkim_ = filterController_.passSkim(event, triggerWord_);
@@ -444,65 +315,136 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   
   rho_ = *rhoHandle;
 
-  if(isMC_){
-
-    edm::Handle<float> kFactorHandle_ggZZ     ;   
-    edm::Handle<float> kFactorHandle_qqZZM    ;   
-    edm::Handle<float> kFactorHandle_qqZZPt   ;   
-    edm::Handle<float> kFactorHandle_qqZZdPhi ;   
-    edm::Handle<float> kFactorHandle_EWKqqZZ  ;   
-
-    if( event.getByToken( thekfactorToken_ggZZ    ,  kFactorHandle_ggZZ    ))  kFactor_ggZZ_     = *kFactorHandle_ggZZ    ;
-    if( event.getByToken( thekfactorToken_qqZZM   ,  kFactorHandle_qqZZM   ))  kFactor_qqZZM_    = *kFactorHandle_qqZZM   ;
-    if( event.getByToken( thekfactorToken_qqZZPt  ,  kFactorHandle_qqZZPt  ))  kFactor_qqZZPt_   = *kFactorHandle_qqZZPt  ;
-    if( event.getByToken( thekfactorToken_qqZZdPhi,  kFactorHandle_qqZZdPhi))  kFactor_qqZZdPhi_ = *kFactorHandle_qqZZdPhi;
-    if( event.getByToken( thekfactorToken_EWKqqZZ ,  kFactorHandle_EWKqqZZ ))  kFactor_EWKqqZZ_  = *kFactorHandle_EWKqqZZ ;
+ 
+  return true;
+}
 
 
-    for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p){ 
-      //      std::cout<<"id "<<p->pdgId()<<" status "<<p->status()<<std::endl;
-      if (p->status() == 1){
-	
-	const reco::Candidate *newp = &(*p);
-	const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(newp);
 
-	phys::Particle prtcl(p->p4(),phys::Particle::computeCharge(p->pdgId()), p->pdgId(),gp->statusFlags().flags_);
-	prtcl.setMotherId(p->mother()->pdgId());
-      	genParticles_.push_back(prtcl);
-      }
+bool TreePlanter::fillGenInfo(const edm::Event& event){
+  // Fill some info abut acceptance before cutting away events. Beware: if the signal is defined a-posteriori, we will have a problem. For that case, we need to
+  // explicitly check here that we are counting signal and not irreducible background.
+
+  // Apply MC filter
+  if (!filterController_.passMCFilter(event)) return false;
+    
   
-    }
+  edm::Handle<edm::View<reco::Candidate> > genParticles; event.getByToken(theGenCollectionToken, genParticles);
+  edm::Handle<GenEventInfoProduct>         genInfo     ; event.getByToken(theGenInfoToken, genInfo);
 
-    edm::Handle<int> genCategory;
-    event.getByToken(theGenCategoryToken, genCategory);
-    genCategory_ = *genCategory;
-    if(((genCategory_ ^ signalDefinition_) & signalDefinition_) == 0) ++postSkimSignalEvents_;
-
-    event.getByToken(theGenVBCollectionToken,  genParticles);
+  if (mcHistoryTools_) delete mcHistoryTools_;
+  mcHistoryTools_ = new MCHistoryTools(event, sampleName_, genParticles, genInfo);
     
 
-    for(edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p)
-      { 
-	if(fabs(p->pdgId()) == 24 || p->pdgId() == 23)
-	  genVBParticles_.push_back(phys::Boson<phys::Particle>(phys::Particle(p->daughter(0)->p4(), phys::Particle::computeCharge(p->daughter(0)->pdgId()), p->daughter(0)->pdgId()),
+  // Fill Pile-up info 
+  std::vector<edm::Handle<std::vector< PileupSummaryInfo > > >  PupInfos; 
+  event.getManyByType(PupInfos);
+  edm::Handle<std::vector< PileupSummaryInfo > > puInfo = PupInfos.front(); 
+  
+  foreach(const PileupSummaryInfo& pui, *puInfo)
+    if(pui.getBunchCrossing() == 0) { 
+      int ntruePUInt            = pui.getTrueNumInteractions();
+      genEventInfo_.puweight_   = PUWeighter_.weight(ntruePUInt);
+      genEventInfo_.puweightUp_ = PUWeighter_.weight(ntruePUInt, PileUpWeight::PUvar::VARUP);
+      genEventInfo_.puweightDn_ = PUWeighter_.weight(ntruePUInt, PileUpWeight::PUvar::VARDOWN);
+      break;
+    }
+  
+
+  
+  // Info about the MC weight
+  genEventInfo_.mcprocweight_ = mcHistoryTools_->gethepMCweight();
+  
+  // Sum of weight, particularly imprtant for MCs that return also negative weights
+  // or, in general, weighted events
+  sumpuweights_       += genEventInfo_.puweight_;
+  summcprocweights_   += genEventInfo_.mcprocweight_;
+  sumpumcprocweights_ += genEventInfo_.puweight_*genEventInfo_.mcprocweight_;
+  
+    
+  // NLO k-factors
+  edm::Handle<float> kFactorHandle_ggZZ     ;   
+  edm::Handle<float> kFactorHandle_qqZZM    ;   
+  edm::Handle<float> kFactorHandle_qqZZPt   ;   
+  edm::Handle<float> kFactorHandle_qqZZdPhi ;   
+  edm::Handle<float> kFactorHandle_EWKqqZZ  ;   
+  
+  if(event.getByToken( thekfactorToken_ggZZ    ,  kFactorHandle_ggZZ    ))  genEventInfo_.kFactor_ggZZ_     = *kFactorHandle_ggZZ    ;
+  if(event.getByToken( thekfactorToken_qqZZM   ,  kFactorHandle_qqZZM   ))  genEventInfo_.kFactor_qqZZM_    = *kFactorHandle_qqZZM   ;
+  if(event.getByToken( thekfactorToken_qqZZPt  ,  kFactorHandle_qqZZPt  ))  genEventInfo_.kFactor_qqZZPt_   = *kFactorHandle_qqZZPt  ;
+  if(event.getByToken( thekfactorToken_qqZZdPhi,  kFactorHandle_qqZZdPhi))  genEventInfo_.kFactor_qqZZdPhi_ = *kFactorHandle_qqZZdPhi;
+  if(event.getByToken( thekfactorToken_EWKqqZZ ,  kFactorHandle_EWKqqZZ ))  genEventInfo_.kFactor_EWKqqZZ_  = *kFactorHandle_EWKqqZZ ;
+
+  
+  edm::Handle<int> genCategory;
+  event.getByToken(theGenCategoryToken, genCategory);
+  genEventInfo_.genCategory_ = *genCategory;
+  if(((genEventInfo_.genCategory_ ^ signalDefinition_) & signalDefinition_) == 0) ++postSkimSignalEvents_;
+  
+
+  // load only gen leptons and gen photon status 1, from hard process!!!!
+  //event.getByToken(theGenLepCollectionToken,  genParticles);
+  //for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p){
+  //  const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(p->masterClone().get());
+  //  genParticles_.push_back(phys::Particle(gp->p4(), phys::Particle::computeCharge(gp->pdgId()), gp->pdgId()));
+  // }
+
+  
+  event.getByToken(theGenVBCollectionToken,  genParticles);
+  for(edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p)
+    { 
+      if(fabs(p->pdgId()) == 24 || p->pdgId() == 23)
+	genVBParticles_.push_back(phys::Boson<phys::Particle>(phys::Particle(p->daughter(0)->p4(), phys::Particle::computeCharge(p->daughter(0)->pdgId()), p->daughter(0)->pdgId()),
 							      phys::Particle(p->daughter(1)->p4(), phys::Particle::computeCharge(p->daughter(1)->pdgId()), p->daughter(1)->pdgId()),
+							      p->pdgId()));
+    }
 
-   							      p->pdgId()));
-   }
-    // Get the gen jet collection
-    edm::Handle<edm::View<reco::Candidate> > genJets;
-    event.getByToken(theGenJetCollectionToken,  genJets);
+  // Get the gen jet collection
+  edm::Handle<edm::View<reco::Candidate> > genJets;
+  event.getByToken(theGenJetCollectionToken,  genJets);
+    
+  for(edm::View<reco::Candidate>::const_iterator jet = genJets->begin(); jet != genJets->end(); ++jet)
+    genJets_.push_back(phys::Particle(jet->p4(), phys::Particle::computeCharge(jet->pdgId()), jet->pdgId()));
+ 
 
-    for(edm::View<reco::Candidate>::const_iterator jet = genJets->begin(); jet != genJets->end(); ++jet)
-      genJets_.push_back(phys::Particle(jet->p4(), phys::Particle::computeCharge(jet->pdgId()), jet->pdgId()));
+  // LHE information
+  edm::Handle<LHEEventProduct> lhe_evt;
+  vector<edm::Handle<LHEEventProduct> > lhe_handles;
+  event.getManyByType(lhe_handles);
+
+  if (lhe_handles.size()>0){
+    lhe_evt = lhe_handles.front();
+    theLHEHandler->setHandle(&lhe_evt);
+    theLHEHandler->extract();
+    //    FillLHECandidate();
+    
+    genEventInfo_.LHEPDFScale_                      = theLHEHandler->getPDFScale();
+    genEventInfo_.LHEweight_QCDscale_muR1_muF1_     = theLHEHandler->getLHEWeight(0, 1.);
+    genEventInfo_.LHEweight_QCDscale_muR1_muF2_     = theLHEHandler->getLHEWeight(1, 1.);
+    genEventInfo_.LHEweight_QCDscale_muR1_muF0p5_   = theLHEHandler->getLHEWeight(2, 1.);
+    genEventInfo_.LHEweight_QCDscale_muR2_muF1_     = theLHEHandler->getLHEWeight(3, 1.);
+    genEventInfo_.LHEweight_QCDscale_muR2_muF2_     = theLHEHandler->getLHEWeight(4, 1.);
+    genEventInfo_.LHEweight_QCDscale_muR2_muF0p5_   = theLHEHandler->getLHEWeight(5, 1.);
+    genEventInfo_.LHEweight_QCDscale_muR0p5_muF1_   = theLHEHandler->getLHEWeight(6, 1.);
+    genEventInfo_.LHEweight_QCDscale_muR0p5_muF2_   = theLHEHandler->getLHEWeight(7, 1.);
+    genEventInfo_.LHEweight_QCDscale_muR0p5_muF0p5_ = theLHEHandler->getLHEWeight(8, 1.);
+    genEventInfo_.LHEweight_PDFVariation_Up_        = theLHEHandler->getLHEWeight_PDFVariationUpDn( 1, 1.);
+    genEventInfo_.LHEweight_PDFVariation_Dn_        = theLHEHandler->getLHEWeight_PDFVariationUpDn(-1, 1.);
+    genEventInfo_.LHEweight_AsMZ_Up_                = theLHEHandler->getLHEWeigh_AsMZUpDn( 1, 1.);
+    genEventInfo_.LHEweight_AsMZ_Dn_                = theLHEHandler->getLHEWeigh_AsMZUpDn(-1, 1.);
+    
+    theLHEHandler->clear();
   }
+  
+  
   return true;
 }
 
 void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup){
 
   initTree();
-  bool goodEvent = fillEventInfo(event);
+
+  bool goodEvent = isMC_ ? (fillGenInfo(event) && fillEventInfo(event)) : fillEventInfo(event);
   if(!goodEvent) return;
   ++theNumberOfAnalyzedEvents;
 
@@ -510,91 +452,34 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   edm::Handle<pat::MuonCollection>       muons          ; event.getByToken(theMuonToken    ,     muons);
   edm::Handle<pat::ElectronCollection>   electrons      ; event.getByToken(theElectronToken, electrons);
   edm::Handle<std::vector<pat::Jet> >    jets           ; event.getByToken(theJetToken     ,      jets);
-  edm::Handle<edm::View<pat::CompositeCandidate> > Vhad ; event.getByToken(theVhadToken    ,      Vhad);
+  //  edm::Handle<edm::View<pat::CompositeCandidate> > Vhad ; event.getByToken(theVhadToken    ,      Vhad);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZZ   ; event.getByToken(theZZToken      ,        ZZ);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZL   ; event.getByToken(theZLToken      ,        ZL);
 
-
-  // LHE information
-  if(isMC_){
-  edm::Handle<LHEEventProduct> lhe_evt;
-  vector<edm::Handle<LHEEventProduct> > lhe_handles;
-  event.getManyByType(lhe_handles);
-  if (lhe_handles.size()>0){
-    lhe_evt = lhe_handles.front();
-    lheHandler->setHandle(&lhe_evt);
-    lheHandler->extract();
-    //    FillLHECandidate();
-
-    LHEPDFScale_ = lheHandler->getPDFScale();
-    LHEweight_QCDscale_muR1_muF1_ = lheHandler->getLHEWeight(0, 1.);
-    LHEweight_QCDscale_muR1_muF2_ = lheHandler->getLHEWeight(1, 1.);
-    LHEweight_QCDscale_muR1_muF0p5_ = lheHandler->getLHEWeight(2, 1.);
-    LHEweight_QCDscale_muR2_muF1_ = lheHandler->getLHEWeight(3, 1.);
-    LHEweight_QCDscale_muR2_muF2_ = lheHandler->getLHEWeight(4, 1.);
-    LHEweight_QCDscale_muR2_muF0p5_ = lheHandler->getLHEWeight(5, 1.);
-    LHEweight_QCDscale_muR0p5_muF1_ = lheHandler->getLHEWeight(6, 1.);
-    LHEweight_QCDscale_muR0p5_muF2_ = lheHandler->getLHEWeight(7, 1.);
-    LHEweight_QCDscale_muR0p5_muF0p5_ = lheHandler->getLHEWeight(8, 1.);
-    LHEweight_PDFVariation_Up_ = lheHandler->getLHEWeight_PDFVariationUpDn(1, 1.);
-    LHEweight_PDFVariation_Dn_ = lheHandler->getLHEWeight_PDFVariationUpDn(-1, 1.);
-    LHEweight_AsMZ_Up_ = lheHandler->getLHEWeigh_AsMZUpDn(1, 1.);
-    LHEweight_AsMZ_Dn_ = lheHandler->getLHEWeigh_AsMZUpDn(-1, 1.);
-
-    lheHandler->clear();
-
-  }
-}
-
-
-
-  // No further selection on muons, all is made in the .py file
-  foreach(const pat::Muon& muon, *muons){
-    phys::Lepton physmuon = fill(muon);
-    muons_.push_back(physmuon);
-  }
-
-  // No further selection on electrons, all is made in the .py file
-  foreach(const pat::Electron& electron, *electrons){
-    phys::Lepton physelectron =  fill(electron);
-    electrons_.push_back(physelectron);
-  }
-
-  //  jetRes_sf = JME::JetResolutionScaleFactor::get(setup,jetAlgo_); //To use DB. To be fixed
-  //  jetRes_pt = JME::JetResolution::get(setup,jetAlgo_+"_pt");                                                                            
-  //  jetRes_phi = JME::JetResolution::get(setup,jetAlgo_+"_phi");                                                                          
-
-  jetRes_pt  = JME::JetResolution(jetRes_file_pt);
-  jetRes_phi = JME::JetResolution(jetRes_file_phi);
-  jetRes_sf  = JME::JetResolutionScaleFactor(jetRes_file_sf);
-
-  // No further selection on jets, all is made in the .py file
-  foreach(const pat::Jet& jet, *jets){
-    phys::Jet physjet = fill(jet);
-    jets_.push_back(physjet);
-   }
+  // No further selection on muons, electrons, or jets. All is made in the .py file
+  foreach(const pat::Muon&     muon    , *muons    ) muons_.push_back(fill(muon));
+  foreach(const pat::Electron& electron, *electrons) electrons_.push_back(fill(electron));
+  foreach(const pat::Jet&      jet     , *jets     ) jets_.push_back(fill(jet));
+  
 
   // The bosons are selected requiring that their daughters pass the quality criteria to be good daughters
-  Vhad_ = fillHadBosons(Vhad, 24);
+  // Vhad_ = fillHadBosons(Vhad, 24);
 
 
   // The bosons have NOT any requirement on the quality of their daughters, only the flag is set (because of the same code is usd for CR too)
-
   std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > ZZs = fillDiBosons(ZZ);
 
   // Fill Z+l pairs for fake rate measurements
   ZL_ = fillZLCandidates(ZL);
 
 
-  bool oneInSR = false;
+  bool oneZZInSR = false;
 
   if(ZZ->size() > 1) {
 
-    //  cout<<"ZZs.size() "<<ZZs.size()<<" ZZs.front().passTrigger() "<<ZZs.front().passTrigger()<<" applySkim_ "<<applySkim_<< " SR? " << test_bit(ZZs.front().regionWord_,Channel::ZZ) << " CR2P2F? " << test_bit(ZZs.front().regionWord_,CRZLLos_2P2F) << " CR3P1F? " << test_bit(ZZs.front().regionWord_,CRZLLos_3P1F) <<" mass "<< ZZs.front().mass() <<endl;;
-
+    // Debug in case of more than 1 ZZ candidate
     cout << "----------------------------------------------------" << endl;
-    cout << "More than one ZZ candidate!! " << ZZ->size() << endl;  
-    cout << "Event: " << event_ << endl;
+    cout << "More than one ZZ candidate!! " << ZZ->size() <<  " candidates in event: " << event_ << endl;
     typedef phys::DiBoson<phys::Lepton,phys::Lepton> ZZlep;
     foreach(const ZZlep& zz , ZZs){
       cout << "....................." << endl;
@@ -607,14 +492,19 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
       cout << "daughter 1.1: " << zz.second().daughter(1) << " is good? " <<  zz.second().daughter(1).isGood() << " pass full sel? " << zz.second().daughter(1).passFullSel() <<  endl;
       cout << "....................." << endl;
       
-      if(zz.passTrigger() && (test_bit(zz.regionWord_,Channel::ZZ) || test_bit(zz.regionWord_,Channel::ZZOnShell))){
+      if(!zz.passTrigger()) continue;
+      
+      // If more than a candidate is found, then give precedence to SR type ZZ
+      if(test_bit(zz.regionWord_,Channel::ZZ) || test_bit(zz.regionWord_,Channel::ZZOnShell)){
 	ZZ_ = zz;   
-	oneInSR = true;
+	oneZZInSR = true;
       }
-      else if(!oneInSR && zz.passTrigger() ){
-	if((abs(zz.first().mass() - 91.19) < abs(ZZ_.first().mass() - 91.19)) || ( (zz.first().mass() == ZZ_.first().mass() ) && (zz.pt() > ZZ_.pt()) ) ){
+      // Otherwise, select the ZZ acordingly to the same logic as the ZZ is chosen
+      if(!oneZZInSR){
+	if(abs(zz.first().mass() - phys::ZMASS) < abs(ZZ_.first().mass() - phys::ZMASS)) 
 	  ZZ_ = zz;
-	}
+	if((zz.first().mass() - ZZ_.first().mass()) < 0.001 && (zz.second().daughter(0).pt()+zz.second().daughter(1).pt()) > (ZZ_.second().daughter(0).pt() + ZZ_.second().daughter(1).pt()) )
+	  ZZ_ = zz;
       }
     }
     
@@ -622,7 +512,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   }
 
   else if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();
-  else if(isMC_ && ZL_.empty() && !test_bit(genCategory_,2) && applySkim_ ) return;
+  else if(isMC_ && ZL_.empty() && !test_bit(genEventInfo_.genCategory_,2) && applySkim_ ) return;
   else if(!isMC_  && ZL_.empty() && applySkim_ ) return;
 
   theTree->Fill();
@@ -772,15 +662,15 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   phys::Boson<phys::Lepton> V1;
 
 
-  p_JJVBF_BKG_MCFM_JECNominal_ = edmVV.userFloat("p_JJVBF_BKG_MCFM_JECNominal");
-  p_JJQCD_BKG_MCFM_JECNominal_ = edmVV.userFloat("p_JJQCD_BKG_MCFM_JECNominal");
-  p_JJVBF_BKG_MCFM_JECUp_      = edmVV.userFloat("p_JJVBF_BKG_MCFM_JECUp"     );
-  p_JJQCD_BKG_MCFM_JECUp_      = edmVV.userFloat("p_JJQCD_BKG_MCFM_JECUp"     );
-  p_JJVBF_BKG_MCFM_JECDn_      = edmVV.userFloat("p_JJVBF_BKG_MCFM_JECDn"     );
-  p_JJQCD_BKG_MCFM_JECDn_      = edmVV.userFloat("p_JJQCD_BKG_MCFM_JECDn"     );
-  p_JJEW_BKG_MCFM_JECNominal_  = edmVV.userFloat("p_JJEW_BKG_MCFM_JECNominal" );
-  p_JJEW_BKG_MCFM_JECUp_       = edmVV.userFloat("p_JJEW_BKG_MCFM_JECUp"      );
-  p_JJEW_BKG_MCFM_JECDn_       = edmVV.userFloat("p_JJEW_BKG_MCFM_JECDn"      );
+  genEventInfo_.p_JJVBF_BKG_MCFM_JECNominal_ = edmVV.userFloat("p_JJVBF_BKG_MCFM_JECNominal");
+  genEventInfo_.p_JJQCD_BKG_MCFM_JECNominal_ = edmVV.userFloat("p_JJQCD_BKG_MCFM_JECNominal");
+  genEventInfo_.p_JJVBF_BKG_MCFM_JECUp_      = edmVV.userFloat("p_JJVBF_BKG_MCFM_JECUp"     );
+  genEventInfo_.p_JJQCD_BKG_MCFM_JECUp_      = edmVV.userFloat("p_JJQCD_BKG_MCFM_JECUp"     );
+  genEventInfo_.p_JJVBF_BKG_MCFM_JECDn_      = edmVV.userFloat("p_JJVBF_BKG_MCFM_JECDn"     );
+  genEventInfo_.p_JJQCD_BKG_MCFM_JECDn_      = edmVV.userFloat("p_JJQCD_BKG_MCFM_JECDn"     );
+  genEventInfo_.p_JJEW_BKG_MCFM_JECNominal_  = edmVV.userFloat("p_JJEW_BKG_MCFM_JECNominal" );
+  genEventInfo_.p_JJEW_BKG_MCFM_JECUp_       = edmVV.userFloat("p_JJEW_BKG_MCFM_JECUp"      );
+  genEventInfo_.p_JJEW_BKG_MCFM_JECDn_       = edmVV.userFloat("p_JJEW_BKG_MCFM_JECDn"      );
      
 
   // The first boson is always a good Z, also in the CR. For the other particle assign 23 if it is a true Z from SR
