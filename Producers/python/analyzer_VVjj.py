@@ -57,13 +57,13 @@ VVjj_search_path = os.environ['CMSSW_BASE'] + "/src/VVXAnalysis/Producers/python
 #                                      src = cms.InputTag("appendPhotons:electrons"),
 #                                      cut = cms.string("userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
 
-process.VVjjEventTagger = cms.EDFilter("EventTagger",
-                                       Topology = cms.int32(-1), 
-                                       src = cms.InputTag("softLeptons"),
-                                       TightSelection = cms.string("userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')")
-                                       )
+#process.VVjjEventTagger = cms.EDFilter("EventTagger",
+#                                       Topology = cms.int32(-1), 
+#                                       src = cms.InputTag("softLeptons"),
+#                                       TightSelection = cms.string("userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')")
+#                                       )
 
-process.path(process.VVjjEventTagger)
+#process.eventTagger = cms.Path(process.VVjjEventTagger)
 
 
 ## ZZ->4l
@@ -104,14 +104,10 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      VVMode = cms.int32(int(VVMODE)),
                                      VVDecayMode = cms.int32(int(VVDECAYMODE)),
                                      signalDefinition = cms.int32(SIGNALDEFINITION),
-                                     JetAlgo        = cms.string("AK4PFchs"),        
-                                     jetResFile_pt  = cms.FileInPath('JRDatabase/textFiles/Fall15_25nsV2_MC/Fall15_25nsV2_MC_PtResolution_AK4PFchs.txt'),
-                                     jetResFile_phi = cms.FileInPath('JRDatabase/textFiles/Fall15_25nsV2_MC/Fall15_25nsV2_MC_PhiResolution_AK4PFchs.txt'),
-                                     jetResFile_SF  = cms.FileInPath('JRDatabase/textFiles/Fall15_25nsV2_MC/Fall15_25nsV2_MC_SF_AK4PFchs.txt'),
                                      muons        = cms.InputTag("postCleaningMuons"),     # all good isolated muons BUT the ones coming from ZZ decay
                                      electrons    = cms.InputTag("postCleaningElectrons"), # all good isolated electrons BUT the ones coming from ZZ decay
                                      jets         = cms.InputTag("disambiguatedJets"),     # jets which do not contains leptons from ZZ or other good isolated leptons are removed
-                                     Vhad         = cms.InputTag("VhadCand"),
+                                     Vhad         = cms.InputTag(""),
                                      ZZ           = cms.InputTag("ZZFiltered"),            # only the best ZZ->4l candidate that pass the FULL selection
                                      ZL           = cms.InputTag("ZlCand"),
                                      MET          = cms.InputTag("slimmedMETs"),
