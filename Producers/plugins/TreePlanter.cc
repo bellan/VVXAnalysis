@@ -143,7 +143,7 @@ void TreePlanter::beginJob(){
   theTree->Branch("passSkim"    , &passSkim_); 
   theTree->Branch("triggerWord" , &triggerWord_); 
 
-  theTree->Branch("genEventInfo", &genEventInfo_);
+  theTree->Branch("genEventWeights", &genEventWeights_);
   theTree->Branch("MELA"        , &MELA_);
 
 
@@ -270,7 +270,7 @@ void TreePlanter::initTree(){
   passSkim_    = false;
   triggerWord_ = 0;
 
-  genEventInfo_ = phys::GenEventInfo();
+  genEventWeights_ = phys::GenEventWeights();
   MELA_ = phys::MELA();
 
   met_    = phys::Particle();
@@ -346,22 +346,22 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
   foreach(const PileupSummaryInfo& pui, *puInfo)
     if(pui.getBunchCrossing() == 0) { 
       int ntruePUInt            = pui.getTrueNumInteractions();
-      genEventInfo_.puweight_   = PUWeighter_.weight(ntruePUInt);
-      genEventInfo_.puweightUp_ = PUWeighter_.weight(ntruePUInt, PileUpWeight::PUvar::VARUP);
-      genEventInfo_.puweightDn_ = PUWeighter_.weight(ntruePUInt, PileUpWeight::PUvar::VARDOWN);
+      genEventWeights_.puweight_   = PUWeighter_.weight(ntruePUInt);
+      genEventWeights_.puweightUp_ = PUWeighter_.weight(ntruePUInt, PileUpWeight::PUvar::VARUP);
+      genEventWeights_.puweightDn_ = PUWeighter_.weight(ntruePUInt, PileUpWeight::PUvar::VARDOWN);
       break;
     }
   
 
   
   // Info about the MC weight
-  genEventInfo_.mcprocweight_ = mcHistoryTools_->gethepMCweight();
+  genEventWeights_.mcprocweight_ = mcHistoryTools_->gethepMCweight();
   
   // Sum of weight, particularly imprtant for MCs that return also negative weights
   // or, in general, weighted events
-  sumpuweights_       += genEventInfo_.puweight_;
-  summcprocweights_   += genEventInfo_.mcprocweight_;
-  sumpumcprocweights_ += genEventInfo_.puweight_*genEventInfo_.mcprocweight_;
+  sumpuweights_       += genEventWeights_.puweight_;
+  summcprocweights_   += genEventWeights_.mcprocweight_;
+  sumpumcprocweights_ += genEventWeights_.puweight_*genEventWeights_.mcprocweight_;
   
     
   // NLO k-factors
@@ -371,17 +371,17 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
   edm::Handle<float> kFactorHandle_qqZZdPhi ;   
   edm::Handle<float> kFactorHandle_EWKqqZZ  ;   
   
-  if(event.getByToken( thekfactorToken_ggZZ    ,  kFactorHandle_ggZZ    ))  genEventInfo_.kFactor_ggZZ_     = *kFactorHandle_ggZZ    ;
-  if(event.getByToken( thekfactorToken_qqZZM   ,  kFactorHandle_qqZZM   ))  genEventInfo_.kFactor_qqZZM_    = *kFactorHandle_qqZZM   ;
-  if(event.getByToken( thekfactorToken_qqZZPt  ,  kFactorHandle_qqZZPt  ))  genEventInfo_.kFactor_qqZZPt_   = *kFactorHandle_qqZZPt  ;
-  if(event.getByToken( thekfactorToken_qqZZdPhi,  kFactorHandle_qqZZdPhi))  genEventInfo_.kFactor_qqZZdPhi_ = *kFactorHandle_qqZZdPhi;
-  if(event.getByToken( thekfactorToken_EWKqqZZ ,  kFactorHandle_EWKqqZZ ))  genEventInfo_.kFactor_EWKqqZZ_  = *kFactorHandle_EWKqqZZ ;
+  if(event.getByToken( thekfactorToken_ggZZ    ,  kFactorHandle_ggZZ    ))  genEventWeights_.kFactor_ggZZ_     = *kFactorHandle_ggZZ    ;
+  if(event.getByToken( thekfactorToken_qqZZM   ,  kFactorHandle_qqZZM   ))  genEventWeights_.kFactor_qqZZM_    = *kFactorHandle_qqZZM   ;
+  if(event.getByToken( thekfactorToken_qqZZPt  ,  kFactorHandle_qqZZPt  ))  genEventWeights_.kFactor_qqZZPt_   = *kFactorHandle_qqZZPt  ;
+  if(event.getByToken( thekfactorToken_qqZZdPhi,  kFactorHandle_qqZZdPhi))  genEventWeights_.kFactor_qqZZdPhi_ = *kFactorHandle_qqZZdPhi;
+  if(event.getByToken( thekfactorToken_EWKqqZZ ,  kFactorHandle_EWKqqZZ ))  genEventWeights_.kFactor_EWKqqZZ_  = *kFactorHandle_EWKqqZZ ;
 
   
   edm::Handle<int> genCategory;
   event.getByToken(theGenCategoryToken, genCategory);
-  genEventInfo_.genCategory_ = *genCategory;
-  if(((genEventInfo_.genCategory_ ^ signalDefinition_) & signalDefinition_) == 0) ++postSkimSignalEvents_;
+  genEventWeights_.genCategory_ = *genCategory;
+  if(((genEventWeights_.genCategory_ ^ signalDefinition_) & signalDefinition_) == 0) ++postSkimSignalEvents_;
   
 
   // load only gen leptons and gen photon status 1, from hard process!!!!
@@ -420,20 +420,20 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
     theLHEHandler->extract();
     //    FillLHECandidate();
     
-    genEventInfo_.LHEPDFScale_                      = theLHEHandler->getPDFScale();
-    genEventInfo_.LHEweight_QCDscale_muR1_muF1_     = theLHEHandler->getLHEWeight(0, 1.);
-    genEventInfo_.LHEweight_QCDscale_muR1_muF2_     = theLHEHandler->getLHEWeight(1, 1.);
-    genEventInfo_.LHEweight_QCDscale_muR1_muF0p5_   = theLHEHandler->getLHEWeight(2, 1.);
-    genEventInfo_.LHEweight_QCDscale_muR2_muF1_     = theLHEHandler->getLHEWeight(3, 1.);
-    genEventInfo_.LHEweight_QCDscale_muR2_muF2_     = theLHEHandler->getLHEWeight(4, 1.);
-    genEventInfo_.LHEweight_QCDscale_muR2_muF0p5_   = theLHEHandler->getLHEWeight(5, 1.);
-    genEventInfo_.LHEweight_QCDscale_muR0p5_muF1_   = theLHEHandler->getLHEWeight(6, 1.);
-    genEventInfo_.LHEweight_QCDscale_muR0p5_muF2_   = theLHEHandler->getLHEWeight(7, 1.);
-    genEventInfo_.LHEweight_QCDscale_muR0p5_muF0p5_ = theLHEHandler->getLHEWeight(8, 1.);
-    genEventInfo_.LHEweight_PDFVariation_Up_        = theLHEHandler->getLHEWeight_PDFVariationUpDn( 1, 1.);
-    genEventInfo_.LHEweight_PDFVariation_Dn_        = theLHEHandler->getLHEWeight_PDFVariationUpDn(-1, 1.);
-    genEventInfo_.LHEweight_AsMZ_Up_                = theLHEHandler->getLHEWeigh_AsMZUpDn( 1, 1.);
-    genEventInfo_.LHEweight_AsMZ_Dn_                = theLHEHandler->getLHEWeigh_AsMZUpDn(-1, 1.);
+    genEventWeights_.LHEPDFScale_                      = theLHEHandler->getPDFScale();
+    genEventWeights_.LHEweight_QCDscale_muR1_muF1_     = theLHEHandler->getLHEWeight(0, 1.);
+    genEventWeights_.LHEweight_QCDscale_muR1_muF2_     = theLHEHandler->getLHEWeight(1, 1.);
+    genEventWeights_.LHEweight_QCDscale_muR1_muF0p5_   = theLHEHandler->getLHEWeight(2, 1.);
+    genEventWeights_.LHEweight_QCDscale_muR2_muF1_     = theLHEHandler->getLHEWeight(3, 1.);
+    genEventWeights_.LHEweight_QCDscale_muR2_muF2_     = theLHEHandler->getLHEWeight(4, 1.);
+    genEventWeights_.LHEweight_QCDscale_muR2_muF0p5_   = theLHEHandler->getLHEWeight(5, 1.);
+    genEventWeights_.LHEweight_QCDscale_muR0p5_muF1_   = theLHEHandler->getLHEWeight(6, 1.);
+    genEventWeights_.LHEweight_QCDscale_muR0p5_muF2_   = theLHEHandler->getLHEWeight(7, 1.);
+    genEventWeights_.LHEweight_QCDscale_muR0p5_muF0p5_ = theLHEHandler->getLHEWeight(8, 1.);
+    genEventWeights_.LHEweight_PDFVariation_Up_        = theLHEHandler->getLHEWeight_PDFVariationUpDn( 1, 1.);
+    genEventWeights_.LHEweight_PDFVariation_Dn_        = theLHEHandler->getLHEWeight_PDFVariationUpDn(-1, 1.);
+    genEventWeights_.LHEweight_AsMZ_Up_                = theLHEHandler->getLHEWeigh_AsMZUpDn( 1, 1.);
+    genEventWeights_.LHEweight_AsMZ_Dn_                = theLHEHandler->getLHEWeigh_AsMZUpDn(-1, 1.);
     
     theLHEHandler->clear();
   }
@@ -514,7 +514,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   }
 
   else if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();
-  else if(isMC_ && ZL_.empty() && !test_bit(genEventInfo_.genCategory_,2) && applySkim_ ) return;
+  else if(isMC_ && ZL_.empty() && !test_bit(genEventWeights_.genCategory_,2) && applySkim_ ) return;
   else if(!isMC_  && ZL_.empty() && applySkim_ ) return;
 
   theTree->Fill();

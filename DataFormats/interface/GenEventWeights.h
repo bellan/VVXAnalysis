@@ -1,7 +1,7 @@
-#ifndef VVXAnalysis_DataFormats_GenEventInfo_H
-#define VVXAnalysis_DataFormats_GenEventInfo_H
+#ifndef VVXAnalysis_DataFormats_GenEventWeights_H
+#define VVXAnalysis_DataFormats_GenEventWeights_H
 
-/** \class GenEventInfo
+/** \class GenEventWeights
  *  No description available.
  *
  *  $Date: 2013/03/15 13:37:31 $
@@ -19,14 +19,14 @@ namespace phys {
 
   
 
-  class GenEventInfo: public TObject {
+  class GenEventWeights: public TObject {
     
     friend class ::TreePlanter;
 
   public:
     
     /// Constructor
-    GenEventInfo(){
+    GenEventWeights(){
       
       mcprocweight_       = 1.;
       puweight_           = 1.; 
@@ -60,13 +60,13 @@ namespace phys {
     };
 	
     /// Destructor
-    virtual ~GenEventInfo(){};
+    virtual ~GenEventWeights(){};
     
     // Operations
 
 
 
-    friend std::ostream&  operator<<(std::ostream& os, const GenEventInfo& ev){
+    friend std::ostream&  operator<<(std::ostream& os, const GenEventWeights& ev){
       
       //os << endl;
       return os;
@@ -104,7 +104,7 @@ namespace phys {
     Float_t LHEweight_AsMZ_Up_;
     Float_t LHEweight_AsMZ_Dn_;
 
-    ClassDef(GenEventInfo, 1) //     
+    ClassDef(GenEventWeights, 1) //     
   };
 
 }

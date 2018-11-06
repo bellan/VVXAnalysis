@@ -26,7 +26,7 @@
 #include "VVXAnalysis/DataFormats/interface/Jet.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
-#include "VVXAnalysis/DataFormats/interface/GenEventInfo.h"
+#include "VVXAnalysis/DataFormats/interface/GenEventWeights.h"
 #include "VVXAnalysis/DataFormats/interface/MELA.h"
 
 
@@ -128,7 +128,7 @@ class TreePlanter: public edm::EDAnalyzer {
   Int_t signalCounter_;
   Int_t postSkimSignalEvents_;
 
-  phys::GenEventInfo genEventInfo_;
+  phys::GenEventWeights genEventWeights_;
   phys::MELA MELA_;
 
 
