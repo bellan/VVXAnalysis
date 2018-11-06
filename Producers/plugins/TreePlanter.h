@@ -26,6 +26,8 @@
 #include "VVXAnalysis/DataFormats/interface/Jet.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
+#include "VVXAnalysis/DataFormats/interface/GenEventInfo.h"
+
 
 #include "VVXAnalysis/Producers/interface/FilterController.h"
 #include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
@@ -58,6 +60,7 @@ class TreePlanter: public edm::EDAnalyzer {
   virtual void endJob();
   void initTree();
   
+  bool fillGenInfo(const edm::Event& event);
   bool fillEventInfo(const edm::Event& event);
   
   template<typename LEP>
@@ -124,17 +127,12 @@ class TreePlanter: public edm::EDAnalyzer {
   Int_t signalCounter_;
   Int_t postSkimSignalEvents_;
 
-  Double_t mcprocweight_;
-  Double_t puweight_;
-  Double_t puweightUp_;
-  Double_t puweightDn_;
+  phys::GenEventInfo genEventInfo_;
 
-  Int_t genCategory_;
-  Int_t nobservedPUInt_; 
-  Int_t ntruePUInt_;
+
 
   phys::Particle  met_;
-  //phys::Particle  metNoHF_;
+
   Int_t           nvtx_;
   
   // ------------------- Objects in the tree ------------------- //
@@ -202,10 +200,6 @@ class TreePlanter: public edm::EDAnalyzer {
 
   // Ordinary data members
   std::string sampleName_;
-  std::string jetAlgo_;
-  std::string jetRes_file_pt;
-  std::string jetRes_file_phi;
-  std::string jetRes_file_sf;
 
   bool isMC_;
   int  sampleType_;
@@ -216,42 +210,13 @@ class TreePlanter: public edm::EDAnalyzer {
 
   std::vector<double> theXSections;
   double rho_;
-  float kFactor_ggZZ_;
-  float kFactor_qqZZM_;
-  float kFactor_qqZZPt_;
-  float kFactor_qqZZdPhi_;
-  float kFactor_EWKqqZZ_;
-
-  LHEHandler* lheHandler;
-
-  Float_t LHEPDFScale_;
-  Float_t LHEweight_QCDscale_muR1_muF1_ ;
-  Float_t LHEweight_QCDscale_muR1_muF2_ ;
-  Float_t LHEweight_QCDscale_muR1_muF0p5_ ;
-  Float_t LHEweight_QCDscale_muR2_muF1_ ;
-  Float_t LHEweight_QCDscale_muR2_muF2_ ;
-  Float_t LHEweight_QCDscale_muR2_muF0p5_ ;
-  Float_t LHEweight_QCDscale_muR0p5_muF1_ ;
-  Float_t LHEweight_QCDscale_muR0p5_muF2_ ;
-  Float_t LHEweight_QCDscale_muR0p5_muF0p5_ ;
-  Float_t LHEweight_PDFVariation_Up_;
-  Float_t LHEweight_PDFVariation_Dn_;
-  Float_t LHEweight_AsMZ_Up_;
-  Float_t LHEweight_AsMZ_Dn_;
 
 
-  mutable Float_t p_JJVBF_BKG_MCFM_JECNominal_;
-  mutable Float_t p_JJQCD_BKG_MCFM_JECNominal_;
-  mutable Float_t p_JJVBF_BKG_MCFM_JECUp_;     
-  mutable Float_t p_JJQCD_BKG_MCFM_JECUp_;     
-  mutable Float_t p_JJVBF_BKG_MCFM_JECDn_;     
-  mutable Float_t p_JJQCD_BKG_MCFM_JECDn_;     
-  mutable Float_t p_JJEW_BKG_MCFM_JECNominal_;
-  mutable Float_t p_JJEW_BKG_MCFM_JECUp_;
-  mutable Float_t p_JJEW_BKG_MCFM_JECDn_;     
+  LHEHandler* theLHEHandler; 
 
-  double externalCrossSection_;
-  Double_t summcprocweights_;
+
+  double externalCrossSection_; 
+  Double_t summcprocweights_; 
   Double_t sumpuweights_;
   Double_t sumpumcprocweights_;
   Int_t theNumberOfEvents;
