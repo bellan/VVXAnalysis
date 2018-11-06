@@ -25,11 +25,6 @@ void VVXAnalyzer::analyze(){
   cout << "------------------------------------------------------------------"<<endl;
   cout << "Run: " << run << " event: " << event << endl;
   
-  foreach(const phys::Particle &gen, *genParticles){
-    if(abs(gen.id()) != 11 && abs(gen.id()) != 13 || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) continue;
-       cout << "id: " << gen.id() << " pt: " << gen.pt() << endl;
-       theHistograms.fill("ptAllGenParticle","pt ", 100, 0, 100, gen.pt());
-  }
-  
+ 
 }
   

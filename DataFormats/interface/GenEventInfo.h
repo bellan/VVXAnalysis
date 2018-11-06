@@ -57,15 +57,6 @@ namespace phys {
       LHEweight_AsMZ_Up_ = 0;
       LHEweight_AsMZ_Dn_ = 0;
       
-      p_JJVBF_BKG_MCFM_JECNominal_ = 0.;
-      p_JJQCD_BKG_MCFM_JECNominal_ = 0.;
-      p_JJVBF_BKG_MCFM_JECUp_ = 0.;     
-      p_JJQCD_BKG_MCFM_JECUp_ = 0.;     
-      p_JJVBF_BKG_MCFM_JECDn_ = 0.;     
-      p_JJQCD_BKG_MCFM_JECDn_ = 0.;     
-      p_JJEW_BKG_MCFM_JECNominal_ = 0.;  
-      p_JJEW_BKG_MCFM_JECUp_ = 0.;     
-      p_JJEW_BKG_MCFM_JECDn_ = 0.;     
     };
 	
     /// Destructor
@@ -112,19 +103,6 @@ namespace phys {
     Float_t LHEweight_PDFVariation_Dn_;
     Float_t LHEweight_AsMZ_Up_;
     Float_t LHEweight_AsMZ_Dn_;
-    
-    
-    mutable Float_t p_JJVBF_BKG_MCFM_JECNominal_;
-    mutable Float_t p_JJQCD_BKG_MCFM_JECNominal_;
-    mutable Float_t p_JJVBF_BKG_MCFM_JECUp_;     
-    mutable Float_t p_JJQCD_BKG_MCFM_JECUp_;     
-    mutable Float_t p_JJVBF_BKG_MCFM_JECDn_;     
-    mutable Float_t p_JJQCD_BKG_MCFM_JECDn_;     
-    mutable Float_t p_JJEW_BKG_MCFM_JECNominal_;
-    mutable Float_t p_JJEW_BKG_MCFM_JECUp_;
-    mutable Float_t p_JJEW_BKG_MCFM_JECDn_;     
-    
-    
 
     ClassDef(GenEventInfo, 1) //     
   };

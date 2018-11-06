@@ -144,6 +144,7 @@ void TreePlanter::beginJob(){
   theTree->Branch("triggerWord" , &triggerWord_); 
 
   theTree->Branch("genEventInfo", &genEventInfo_);
+  theTree->Branch("MELA"        , &MELA_);
 
 
   theTree->Branch("met"   , &met_);
@@ -270,6 +271,7 @@ void TreePlanter::initTree(){
   triggerWord_ = 0;
 
   genEventInfo_ = phys::GenEventInfo();
+  MELA_ = phys::MELA();
 
   met_    = phys::Particle();
   nvtx_   = -1;
@@ -528,12 +530,8 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
   output.dxy_                 = lepton.userFloat("dxy"              );               
   output.dz_                  = lepton.userFloat("dz"               );                
   output.sip_                 = lepton.userFloat("SIP"              );
-  output.pfChargedHadIso_     = lepton.userFloat("PFChargedHadIso"  );
-  output.pfNeutralHadIso_     = lepton.userFloat("PFNeutralHadIso"  );
-  output.pfPhotonIso_         = lepton.userFloat("PFPhotonIso"      );
   output.pfCombRelIso_        = lepton.userFloat("combRelIsoPF"     );  
   output.pfCombRelIsoFSRCorr_ = lepton.userFloat("combRelIsoPFFSRCorr");
-  output.rho_                 = lepton.userFloat("rho"              );
   output.matchHLT_            = lepton.userFloat("HLTMatch"         );
   output.isGood_              = lepton.userFloat("isGood"           );
   if(abs(lepton.pdgId())      == 11){ 
@@ -564,19 +562,11 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   
   phys::Jet output(phys::Particle::convert(jet.p4()),jet.charge(),1);
   
-  output.nConstituents_ = jet.numberOfDaughters();
-  output.nCharged_      = jet.chargedMultiplicity();
-  output.nNeutral_      = jet.neutralMultiplicity();
-    
-  output.neutralHadronEnergyFraction_ = jet.neutralHadronEnergyFraction();
-  output.chargedHadronEnergyFraction_ = jet.chargedHadronEnergyFraction();
-  output.chargedEmEnergyFraction_     = jet.chargedEmEnergyFraction();
-  output.neutralEmEnergyFraction_     = jet.neutralEmEnergyFraction();  
-  output.muonEnergyFraction_          = jet.muonEnergyFraction();        
-  
-  output.csvtagger_    = jet.userFloat("bTagger");
-  output.qgLikelihood_ = jet.userFloat("qgLikelihood");
-  output.fullPuId_     = jet.userInt("pileupJetIdUpdated:fullId");
+ 
+  output.csvtagger_      = jet.userFloat("bTagger");
+  output.qgLikelihood_   = jet.userFloat("qgLikelihood");
+  output.fullPuId_       = jet.userInt("pileupJetIdUpdated:fullId");
+  output.passLooseId_    = jet.userFloat("looseJetID");
 
   //girth - See http://arxiv.org/abs/1106.3076v2 - eqn (2)
   double gsumcharged = 0.0;
@@ -660,18 +650,7 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   
   phys::Boson<phys::Lepton> V0;
   phys::Boson<phys::Lepton> V1;
-
-
-  genEventInfo_.p_JJVBF_BKG_MCFM_JECNominal_ = edmVV.userFloat("p_JJVBF_BKG_MCFM_JECNominal");
-  genEventInfo_.p_JJQCD_BKG_MCFM_JECNominal_ = edmVV.userFloat("p_JJQCD_BKG_MCFM_JECNominal");
-  genEventInfo_.p_JJVBF_BKG_MCFM_JECUp_      = edmVV.userFloat("p_JJVBF_BKG_MCFM_JECUp"     );
-  genEventInfo_.p_JJQCD_BKG_MCFM_JECUp_      = edmVV.userFloat("p_JJQCD_BKG_MCFM_JECUp"     );
-  genEventInfo_.p_JJVBF_BKG_MCFM_JECDn_      = edmVV.userFloat("p_JJVBF_BKG_MCFM_JECDn"     );
-  genEventInfo_.p_JJQCD_BKG_MCFM_JECDn_      = edmVV.userFloat("p_JJQCD_BKG_MCFM_JECDn"     );
-  genEventInfo_.p_JJEW_BKG_MCFM_JECNominal_  = edmVV.userFloat("p_JJEW_BKG_MCFM_JECNominal" );
-  genEventInfo_.p_JJEW_BKG_MCFM_JECUp_       = edmVV.userFloat("p_JJEW_BKG_MCFM_JECUp"      );
-  genEventInfo_.p_JJEW_BKG_MCFM_JECDn_       = edmVV.userFloat("p_JJEW_BKG_MCFM_JECDn"      );
-     
+   
 
   // The first boson is always a good Z, also in the CR. For the other particle assign 23 if it is a true Z from SR
   // or 26 if the two additional leptons comes from LL.
@@ -705,6 +684,18 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   VV.regionWord_  = regionWord;
   VV.triggerWord_ = triggerWord_;
   VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
+
+  // MELA info
+  MELA_.p_JJVBF_BKG_MCFM_JECNominal_ = edmVV.userFloat("p_JJVBF_BKG_MCFM_JECNominal");
+  MELA_.p_JJQCD_BKG_MCFM_JECNominal_ = edmVV.userFloat("p_JJQCD_BKG_MCFM_JECNominal");
+  MELA_.p_JJVBF_BKG_MCFM_JECUp_      = edmVV.userFloat("p_JJVBF_BKG_MCFM_JECUp"     );
+  MELA_.p_JJQCD_BKG_MCFM_JECUp_      = edmVV.userFloat("p_JJQCD_BKG_MCFM_JECUp"     );
+  MELA_.p_JJVBF_BKG_MCFM_JECDn_      = edmVV.userFloat("p_JJVBF_BKG_MCFM_JECDn"     );
+  MELA_.p_JJQCD_BKG_MCFM_JECDn_      = edmVV.userFloat("p_JJQCD_BKG_MCFM_JECDn"     );
+  MELA_.p_JJEW_BKG_MCFM_JECNominal_  = edmVV.userFloat("p_JJEW_BKG_MCFM_JECNominal" );
+  MELA_.p_JJEW_BKG_MCFM_JECUp_       = edmVV.userFloat("p_JJEW_BKG_MCFM_JECUp"      );
+  MELA_.p_JJEW_BKG_MCFM_JECDn_       = edmVV.userFloat("p_JJEW_BKG_MCFM_JECDn"      );
+
 
   return VV;
 } //filldibosons end

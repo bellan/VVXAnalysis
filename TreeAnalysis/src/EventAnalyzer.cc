@@ -413,11 +413,6 @@ void EventAnalyzer::fillLeptonPlots(const std::string &type, const phys::Lepton 
   theHistograms.fill(type+"_dxy"             , "d_{xy}"         , 200,   0,   0.5, lepton.dxy()            , theWeight);   
   theHistograms.fill(type+"_dz"              , "d_{z}"          , 200,   0,   0.5, lepton.dz()             , theWeight);
   theHistograms.fill(type+"_sip"             , "sip"            , 150,   0,  15  , lepton.sip()            , theWeight); 
-  theHistograms.fill(type+"_pfCombRelIso"    , "pfCombRelIso"   , 200,   0,   1  , lepton.pfChargedHadIso(), theWeight);           
-  theHistograms.fill(type+"_pfNeutralHadIso" , "pfNeutralHadIso", 200,   0,   1  , lepton.pfNeutralHadIso(), theWeight);        
-  theHistograms.fill(type+"_pfChargedHadIso" , "pfChargedHadIso", 200,   0,   1  , lepton.pfPhotonIso()    , theWeight);        
-  theHistograms.fill(type+"_pfPhotonHadIso"  , "pfPhotonHadIso" , 200,   0,   1  , lepton.pfCombRelIso()   , theWeight);         
-  theHistograms.fill(type+"_rho"             , "rho"            ,  50,   0,  50  , lepton.rho()            , theWeight);                    
 }
 
 
@@ -445,17 +440,6 @@ void EventAnalyzer::fillExtraPlotsForElectrons(const std::string &type, const ph
 void EventAnalyzer::fillJetPlots(const std::string &type, const phys::Jet      &jet){
 
   fillParticlePlots(type, jet);
-
-
-  theHistograms.fill<TH1I>(type+"_nConstituents", 120, 0, 120, jet.nConstituents(),theWeight);
-  theHistograms.fill<TH1I>(type+"_nCharged"     , 100, 0, 100, jet.nCharged(),theWeight);
-  theHistograms.fill<TH1I>(type+"_nNeutral"     , 100, 0, 100, jet.nNeutral(),theWeight);
-
-  theHistograms.fill(type+"_neutralHadronEnergyFraction", 100, 0, 1, jet.neutralHadronEnergyFraction(), theWeight);
-  theHistograms.fill(type+"_chargedHadronEnergyFraction", 100, 0, 1, jet.chargedHadronEnergyFraction(), theWeight);
-  theHistograms.fill(type+"_chargedEmEnergyFraction"    , 100, 0, 1, jet.chargedEmEnergyFraction    (), theWeight);
-  theHistograms.fill(type+"_neutralEmEnergyFraction"    , 100, 0, 1, jet.neutralEmEnergyFraction    (), theWeight);
-  theHistograms.fill(type+"_muonEnergyFraction"         , 100, 0, 1, jet.muonEnergyFraction         (), theWeight);
 
   theHistograms.fill(type+"_csvtagger"    , 200,  0, 1   , jet.csvtagger    (), theWeight);
   theHistograms.fill(type+"_girth"        , 200,  0, 1   , jet.girth        (), theWeight);

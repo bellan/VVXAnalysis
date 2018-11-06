@@ -229,14 +229,6 @@ void ZZjAnalyzer::analyze(){
     int i = 0;
     foreach(const phys::Jet &jet, *jets){
       cout<<"jet "<<i<<") pt "<<jet.pt()<<"    eta "<<jet.eta()
-          <<"  nConstituents = "<< jet.nConstituents()
-          <<"  nCharged = "<<jet.nCharged()
-          <<"  Neutral = "<<jet.nNeutral()
-          <<"  neutralHadronEnergyFraction = "<<jet.neutralHadronEnergyFraction()
-          <<"  chargedHadronEnergyFraction = "<<jet.chargedHadronEnergyFraction()<<"\n"
-          <<"     chargedEmEnergyFraction = "<<jet.chargedEmEnergyFraction()
-          <<"  neutralEmEnergyFraction = "<<jet.neutralEmEnergyFraction()
-          <<"  muonEnergyFraction  = "<<jet.muonEnergyFraction()
 	  <<"  sum pt^2 = "<<jet.ptd()  
 	  <<"  jetArea = "<<jet.jetArea()<<std::endl;
     }  

@@ -27,6 +27,7 @@
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 #include "VVXAnalysis/DataFormats/interface/GenEventInfo.h"
+#include "VVXAnalysis/DataFormats/interface/MELA.h"
 
 
 #include "VVXAnalysis/Producers/interface/FilterController.h"
@@ -128,7 +129,7 @@ class TreePlanter: public edm::EDAnalyzer {
   Int_t postSkimSignalEvents_;
 
   phys::GenEventInfo genEventInfo_;
-
+  phys::MELA MELA_;
 
 
   phys::Particle  met_;
@@ -192,10 +193,6 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::EDGetTokenT<edm::MergeableCounter> cr2P2FCounterToken_;
   edm::EDGetTokenT<edm::MergeableCounter> cr3P1FCounterToken_;          
 
-  // jet utilities
-  JME::JetResolutionScaleFactor jetRes_sf;
-  JME::JetResolution jetRes_pt;
-  JME::JetResolution jetRes_phi;
   // --------------------------------------------------------- //
 
   // Ordinary data members

@@ -26,14 +26,6 @@ namespace phys {
     /// Constructor
     Jet(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), float q =0, int pid = 0)
       : Particle(p, q, pid)
-      , nConstituents_(-1)
-      , nCharged_(-1)
-      , nNeutral_(-1)
-      , neutralHadronEnergyFraction_(-9999.)
-      , chargedHadronEnergyFraction_(-9999.)
-      , chargedEmEnergyFraction_(-9999.)    
-      , neutralEmEnergyFraction_(-9999.)    
-      , muonEnergyFraction_(-9999.)
       , csvtagger_(-2)
       , girth_(-9999.)
       , girth_charged_(-9999.)
@@ -44,6 +36,7 @@ namespace phys {
       , rawFactor_(-9999.)
       , jecUnc_(-9999.)
       , mcPartonFlavour_(-1)
+      , passLooseId_(false)
       , fullPuId_(-1)
     {}           
     
@@ -51,16 +44,6 @@ namespace phys {
     virtual ~Jet(){};
     
     // Operations
-
-    Int_t nConstituents() const {return nConstituents_;} 
-    Int_t nCharged()      const {return nCharged_;}	  
-    Int_t nNeutral()      const {return nNeutral_;}      
-
-    Double_t neutralHadronEnergyFraction() const {return neutralHadronEnergyFraction_;}    
-    Double_t chargedHadronEnergyFraction() const {return chargedHadronEnergyFraction_;} 
-    Double_t chargedEmEnergyFraction()     const {return chargedEmEnergyFraction_;}     
-    Double_t neutralEmEnergyFraction()     const {return neutralEmEnergyFraction_;}     
-    Double_t muonEnergyFraction()          const {return muonEnergyFraction_;}          
 
     // B-tagging info
     Double_t csvtagger()     const {return csvtagger_;}         
@@ -108,16 +91,7 @@ namespace phys {
     Int_t mcPartonFlavour() const {return mcPartonFlavour_;}
 
     bool    passLooseJetID() const {
-      return 
-	( fabs(eta()) <= 3 &&
-	 (neutralHadronEnergyFraction_   < 0.99                        &&
-	  neutralEmEnergyFraction_       < 0.99                        &&
-	  nConstituents_                 > 1                           &&
-	  (chargedHadronEnergyFraction_  > 0    || fabs(eta()) > 2.4)  &&
-	  (nCharged_                     > 0    || fabs(eta()) > 2.4)  &&
-	  (chargedEmEnergyFraction_      < 0.99 || fabs(eta()) > 2.4)))
-	||
-	(fabs(eta()) > 3 && neutralEmEnergyFraction_ < 0.90 && nNeutral_ > 10);
+      return passLooseId_;
     }
 
     Double_t qgLikelihood() const {return qgLikelihood_;}
@@ -128,17 +102,6 @@ namespace phys {
   protected:
     
   private:
-
-    Int_t nConstituents_;
-    Int_t nCharged_;
-    Int_t nNeutral_;
-    Int_t pileUpId_;
-
-    Double_t neutralHadronEnergyFraction_;    
-    Double_t chargedHadronEnergyFraction_;
-    Double_t chargedEmEnergyFraction_;    
-    Double_t neutralEmEnergyFraction_;    
-    Double_t muonEnergyFraction_;
 
     // B-tagging info
     Double_t csvtagger_;         
@@ -166,13 +129,13 @@ namespace phys {
     // return the matched MC parton flavour
     Int_t mcPartonFlavour_;
 
+    // loose ID
+    bool passLooseId_;
+
     // full Pile up ID
     Int_t fullPuId_;
     
     // Jet MC resolution, for JER determination. 
-    /* Double_t sigma_MC_pt_; */ //DEL
-    /* Double_t sigma_MC_phi_; */ //DEL
-
     Double_t pt_nojer_;
     Double_t pt_jerup_;
     Double_t pt_jerdn_;

@@ -6,10 +6,12 @@
 #include "../interface/Boson.h"
 #include "../interface/DiBoson.h"
 #include "../interface/GenEventInfo.h"
+#include "../interface/MELA.h"
 
 #ifdef __CINT__
 
 #pragma link C++ class  phys::GenEventInfo+;
+#pragma link C++ class  phys::MELA+;
 
 #pragma link C++ class  phys::Particle+;
 #pragma link C++ class  phys::Lepton+;

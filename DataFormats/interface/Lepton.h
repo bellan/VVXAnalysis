@@ -28,13 +28,9 @@ namespace phys {
       , dxy_(-9999.)               
       , dz_(-9999.)                
       , sip_(-9999.)
-      , pfChargedHadIso_(-9999.)
-      , pfNeutralHadIso_(-9999.)
-      , pfPhotonIso_(-9999.)
-      , pfCombRelIso_(-9999.)
+       , pfCombRelIso_(-9999.)
       , pfCombRelIsoFSRCorr_(-9999.)
-      , rho_(-9999.) 
-      , scEta_(-9999.)
+       , scEta_(-9999.)
       , matchHLT_(false)
       , isGood_(false)
       , isInCracks_(false)
@@ -49,12 +45,8 @@ namespace phys {
     Double_t dxy()                 const {return dxy_;}            
     Double_t dz()                  const {return dz_;}             
     Double_t sip()                 const {return sip_;}	      
-    Double_t pfChargedHadIso()     const {return pfChargedHadIso_;}
-    Double_t pfNeutralHadIso()     const {return pfNeutralHadIso_;}
-    Double_t pfPhotonIso()         const {return pfPhotonIso_;}    
     Double_t pfCombRelIso()        const {return pfCombRelIso_;}   
     Double_t pfCombRelIsoFSRCorr() const {return pfCombRelIsoFSRCorr_;}   
-    Double_t rho()                 const {return rho_;}             
     Double_t scEta()               const {return scEta_;}             
     Bool_t   matchHLT()            const {return matchHLT_;}
     Bool_t   isGood()              const {return isGood_;}
@@ -80,20 +72,14 @@ namespace phys {
     Double_t dxy_;               
     Double_t dz_;                
     Double_t sip_;
-    Double_t pfChargedHadIso_;
-    Double_t pfNeutralHadIso_;
-    Double_t pfPhotonIso_;
     Double_t pfCombRelIso_;
     Double_t pfCombRelIsoFSRCorr_;
-    Double_t rho_;
     Double_t scEta_;
 
     Bool_t matchHLT_;
     Bool_t isGood_;
 
     Bool_t isInCracks_;
-
-    //Jet nearestjet;    
 
     ClassDef(Lepton, 1) //
   };

@@ -22,20 +22,20 @@
 class TreePlanter;
 
 namespace phys {
-
+  
   
   typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
-
+  
   class Particle: public TObject {
     
     friend class ::TreePlanter;
-
+    
   public:
     static TLorentzVector convert(const LorentzVector& l)  {return TLorentzVector(l.Px(),l.Py(),l.Pz(),l.E());}
     static LorentzVector  convert(const TLorentzVector& l) {return LorentzVector(l.Px(),l.Py(),l.Pz(),l.E());}
     
     /// Constructor
-    Particle(const TLorentzVector& mom = TLorentzVector(0.,0.,0.,0.), float q =0, int i = 0)
+  Particle(const TLorentzVector& mom = TLorentzVector(0.,0.,0.,0.), float q =0, int i = 0)
       : p4_(mom)
       , charge_(q)
       , id_(i)
@@ -47,33 +47,20 @@ namespace phys {
       {}
 
   Particle(const LorentzVector& l, float q =0, int i = 0,  std::bitset<15> flags = (-99))
-	:p4_(convert(l))
-	, charge_(q)
-	, id_(i)
-	, motherId_(-99)
-        , efficiencySF_(1.)
-        , efficiencySFUnc_(0.)
-        , fakeRateSF_(1.)
-        , genStatusFlags_(flags)
-      {
-	// Correct Id for PF charge change
-	if (fabs(id_==13)) id_= fabs(i)*(-1)*q ;
-}
-
-      /* Particle(const LorentzVector& l, float q =0, const int &&i = 13) */
-      /* 	:p4_(convert(l)) */
-      /* 	, charge_(q) */
-      /* //, id_(i) */
-      /* 	, motherId_(-99) */
-      /*   , efficiencySF_(1.) */
-      /*   , fakeRateSF_(1.) */
-      /*   , genStatusFlags_(-99) */
-      /* { */
-
-      /* 	id_= fabs(i)*(-1)*q */
-      /* 	  } */
-
-	
+      : p4_(convert(l))
+      , charge_(q)
+      , id_(i)
+      , motherId_(-99)
+      , efficiencySF_(1.)
+      , efficiencySFUnc_(0.)
+      , fakeRateSF_(1.)
+      , genStatusFlags_(flags){
+      // Correct Id for PF charge change
+      if (fabs(id_==13)) id_= fabs(i)*(-1)*q ;
+    }
+    
+    
+    
     /// Destructor
     virtual ~Particle(){};
     
@@ -88,7 +75,7 @@ namespace phys {
     double p()          const {return p4_.P();}
     double e()          const {return p4_.E();}
     double mass()       const {return p4_.M();} 
-
+    
     // Method that tries to infer the charge of the particle starting from a pdgId in input
     // to be moved?
     static double computeCharge(int pdgId) {
@@ -104,29 +91,29 @@ namespace phys {
 	charge = 0;
       else if(abs(pdgId) == 24) // W
 	charge = copysign(1, pdgId);
-
+      
       return charge;
     }
-
+    
     void setId(int pid) {id_ = pid; charge_ = computeCharge(pid);}
     
     void setMotherId(int pid) {motherId_ = pid;}
-
+    
     void setP4(const TLorentzVector& pi){p4_=pi;}
     
     int motherId() const {return motherId_;}
-
+    
     bool isValid() const {return id_ != 0 && p() > 0;}
 
     void setEfficenySFUnc(float effSfUnc ) {efficiencySFUnc_ = effSfUnc;}
-
+    
     virtual Double_t efficiencySF()  const {return efficiencySF_;}
     virtual Double_t efficiencySFUnc()  const {return efficiencySFUnc_;}
     virtual Double_t fakeRateSF()    const {return fakeRateSF_;}
     virtual Double_t fakeRateSFUnc() const {return fakeRateSFUnc_;} 
     virtual Double_t fakeRateSFVar() const {return fakeRateSFUnc()*fakeRateSFUnc();}
     Bool_t   passFullSel() const {return true;}
- 
+    
     // Gen info, in case they are meaningfull
     std::bitset<15> genStatusFlags() const {return genStatusFlags_;}
     void setGenStatusBit(GenStatusBit bit, int val = 1) {genStatusFlags_.set(bit, val);}
@@ -142,7 +129,7 @@ namespace phys {
     Double_t fakeRateSF_;
     Double_t fakeRateSFUnc_;
     std::bitset<15> genStatusFlags_;
-
+    
   public:
     friend std::ostream&  operator<<(std::ostream& os, const Particle& obj){
       
@@ -153,8 +140,8 @@ namespace phys {
     
   private:
     ClassDef(Particle, 1) //     
-  };
-
+      };
+  
 }
 
 #endif
