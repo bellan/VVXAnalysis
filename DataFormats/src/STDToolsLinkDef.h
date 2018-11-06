@@ -5,8 +5,11 @@
 #include "../interface/Electron.h"
 #include "../interface/Boson.h"
 #include "../interface/DiBoson.h"
+#include "../interface/GenEventInfo.h"
 
 #ifdef __CINT__
+
+#pragma link C++ class  phys::GenEventInfo+;
 
 #pragma link C++ class  phys::Particle+;
 #pragma link C++ class  phys::Lepton+;
