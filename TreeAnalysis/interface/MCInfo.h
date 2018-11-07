@@ -50,11 +50,28 @@ class MCInfo {
   //std::string fileName() const {return filename_;}
   
   
-  double kF_ggZZ    () const {return genEventWeights_.kFactor_ggZZ_    ;} 
-  double kF_qqZZM   () const {return genEventWeights_.kFactor_qqZZM_   ;}
-  double kF_qqZZPt  () const {return genEventWeights_.kFactor_qqZZPt_  ;}
-  double kF_qqZZdPhi() const {return genEventWeights_.kFactor_qqZZdPhi_;}
-  double kF_EWKqqZZ () const {return genEventWeights_.kFactor_EWKqqZZ_ ;}
+  double kF_ggZZ    () const {return genEventWeights_.kF_ggZZ()    ;} 
+  double kF_qqZZM   () const {return genEventWeights_.kF_qqZZM()   ;}
+  double kF_qqZZPt  () const {return genEventWeights_.kF_qqZZPt()  ;}
+  double kF_qqZZdPhi() const {return genEventWeights_.kF_qqZZdPhi();}
+  double kF_EWKqqZZ () const {return genEventWeights_.kF_EWKqqZZ() ;}
+
+
+
+  float PDFScale           () const {return genEventWeights_.PDFScale           ();}
+  float QCDscale_muR1F1    () const {return genEventWeights_.QCDscale_muR1F1    ();} 
+  float QCDscale_muR1F2    () const {return genEventWeights_.QCDscale_muR1F2    ();}
+  float QCDscale_muR1F0p5  () const {return genEventWeights_.QCDscale_muR1F0p5  ();}
+  float QCDscale_muR2F1    () const {return genEventWeights_.QCDscale_muR2F1    ();}
+  float QCDscale_muR2F2    () const {return genEventWeights_.QCDscale_muR2F2    ();}
+  float QCDscale_muR2F0p5  () const {return genEventWeights_.QCDscale_muR2F0p5  ();}
+  float QCDscale_muR0p5F1  () const {return genEventWeights_.QCDscale_muR0p5F1  ();}
+  float QCDscale_muR0p5F2  () const {return genEventWeights_.QCDscale_muR0p5F2  ();}
+  float QCDscale_muR0p5F0p5() const {return genEventWeights_.QCDscale_muR0p5F0p5();}
+  float PDFVar_Up          () const {return genEventWeights_.PDFVar_Up          ();}
+  float PDFVar_Down        () const {return genEventWeights_.PDFVar_Down        ();}
+  float alphas_MZ_Up       () const {return genEventWeights_.alphas_MZ_Up       ();}
+  float alphas_MZ_Down     () const {return genEventWeights_.alphas_MZ_Down     ();}
 
 
 

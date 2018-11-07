@@ -72,6 +72,22 @@ namespace phys {
     double kF_qqZZdPhi() const {return kFactor_qqZZdPhi_;}
     double kF_EWKqqZZ () const {return kFactor_EWKqqZZ_ ;}
 
+    float PDFScale           () const {return LHEPDFScale_;}
+    float QCDscale_muR1F1    () const {return LHEweight_QCDscale_muR1_muF1_ ;}
+    float QCDscale_muR1F2    () const {return LHEweight_QCDscale_muR1_muF2_ ;}
+    float QCDscale_muR1F0p5  () const {return LHEweight_QCDscale_muR1_muF0p5_ ;}
+    float QCDscale_muR2F1    () const {return LHEweight_QCDscale_muR2_muF1_ ;}
+    float QCDscale_muR2F2    () const {return LHEweight_QCDscale_muR2_muF2_ ;}
+    float QCDscale_muR2F0p5  () const {return LHEweight_QCDscale_muR2_muF0p5_ ;}
+    float QCDscale_muR0p5F1  () const {return LHEweight_QCDscale_muR0p5_muF1_ ;}
+    float QCDscale_muR0p5F2  () const {return LHEweight_QCDscale_muR0p5_muF2_ ;}
+    float QCDscale_muR0p5F0p5() const {return LHEweight_QCDscale_muR0p5_muF0p5_ ;}
+    float PDFVar_Up          () const {return LHEweight_PDFVariation_Up_;}
+    float PDFVar_Down        () const {return LHEweight_PDFVariation_Dn_;}
+    float alphas_MZ_Up       () const {return LHEweight_AsMZ_Up_;}
+    float alphas_MZ_Down     () const {return LHEweight_AsMZ_Dn_;}
+
+
 
 
     friend std::ostream&  operator<<(std::ostream& os, const GenEventWeights& ev){
@@ -88,14 +104,14 @@ namespace phys {
     Double_t puweightDn_;
     
 
-    float kFactor_ggZZ_;
-    float kFactor_qqZZM_;
-    float kFactor_qqZZPt_;
-    float kFactor_qqZZdPhi_;
-    float kFactor_EWKqqZZ_;
+    Float_t kFactor_ggZZ_;
+    Float_t kFactor_qqZZM_;
+    Float_t kFactor_qqZZPt_;
+    Float_t kFactor_qqZZdPhi_;
+    Float_t kFactor_EWKqqZZ_;
     
     
-    
+    // LHE weights
     Float_t LHEPDFScale_;
     Float_t LHEweight_QCDscale_muR1_muF1_ ;
     Float_t LHEweight_QCDscale_muR1_muF2_ ;

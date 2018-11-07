@@ -89,7 +89,7 @@ void ZZMCAnalyzer::analyze(){
     }
     scaleFacErrSq = ZZ->efficiencySFUnc();
    
-    ScalVarVal = {LHEweight_QCDscale_muR1_muF1,LHEweight_QCDscale_muR1_muF2,LHEweight_QCDscale_muR1_muF0p5,LHEweight_QCDscale_muR2_muF1,LHEweight_QCDscale_muR2_muF2,LHEweight_QCDscale_muR0p5_muF1,LHEweight_QCDscale_muR0p5_muF0p5};
+    ScalVarVal = {theMCInfo.QCDscale_muR1F1(),theMCInfo.QCDscale_muR1F2(),theMCInfo.QCDscale_muR1F0p5(), theMCInfo.QCDscale_muR2F1(),theMCInfo.QCDscale_muR2F2(),theMCInfo.QCDscale_muR0p5F1(),theMCInfo.QCDscale_muR0p5F0p5()};
     
     
     w_kf = 1; 
@@ -103,10 +103,10 @@ void ZZMCAnalyzer::analyze(){
     FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf,"Gen_01");
     FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf,"Gen_"+sample);
 
-    FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*LHEweight_PDFVariation_Up,"Gen_01_pdfUp");
-    FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*LHEweight_PDFVariation_Dn,"Gen_01_pdfDn");
-    FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*LHEweight_AsMZ_Up,"Gen_01_asMZUp");
-    FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*LHEweight_AsMZ_Dn,"Gen_01_asMZDn");
+    FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*theMCInfo.PDFVar_Up(),"Gen_01_pdfUp");
+    FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*theMCInfo.PDFVar_Down(),"Gen_01_pdfDn");
+    FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*theMCInfo.alphas_MZ_Up(),"Gen_01_asMZUp");
+    FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*theMCInfo.alphas_MZ_Down(),"Gen_01_asMZDn");
 
     //reco
     if((region_ == phys::MC && regionWord.test(26)) || ((region_ == phys::MC_HZZ) && regionWord.test(3))){
@@ -121,10 +121,10 @@ void ZZMCAnalyzer::analyze(){
       FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf,"Gen_01_fr");
       FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf,"Gen_"+sample+"_fr");
 
-      FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*LHEweight_PDFVariation_Up,"Gen_01_fr_pdfUp");
-      FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*LHEweight_PDFVariation_Dn,"Gen_01_fr_pdfDn");
-      FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*LHEweight_AsMZ_Up,"Gen_01_fr_asMZUp");
-      FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*LHEweight_AsMZ_Dn,"Gen_01_fr_asMZDn");
+      FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*theMCInfo.PDFVar_Up(),"Gen_01_fr_pdfUp");
+      FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*theMCInfo.PDFVar_Down(),"Gen_01_fr_pdfDn");
+      FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*theMCInfo.alphas_MZ_Up(),"Gen_01_fr_asMZUp");
+      FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*theMCInfo.alphas_MZ_Down(),"Gen_01_fr_asMZDn");
 
       //fiducial region reco
       if((region_ == phys::MC && regionWord.test(26)) || ((region_ == phys::MC_HZZ) && regionWord.test(3))){

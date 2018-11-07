@@ -183,20 +183,20 @@ public:
   Short_t triggerWord; TBranch *b_triggerWord;
   
 
-  Float_t LHEPDFScale                      ; TBranch *b_LHEPDFScale                      ;
-  Float_t LHEweight_QCDscale_muR1_muF1     ; TBranch *b_LHEweight_QCDscale_muR1_muF1     ;
-  Float_t LHEweight_QCDscale_muR1_muF2     ; TBranch *b_LHEweight_QCDscale_muR1_muF2     ;
-  Float_t LHEweight_QCDscale_muR1_muF0p5   ; TBranch *b_LHEweight_QCDscale_muR1_muF0p5   ;
-  Float_t LHEweight_QCDscale_muR2_muF1     ; TBranch *b_LHEweight_QCDscale_muR2_muF1     ;
-  Float_t LHEweight_QCDscale_muR2_muF2     ; TBranch *b_LHEweight_QCDscale_muR2_muF2     ;
-  Float_t LHEweight_QCDscale_muR2_muF0p5   ; TBranch *b_LHEweight_QCDscale_muR2_muF0p5   ;
-  Float_t LHEweight_QCDscale_muR0p5_muF1   ; TBranch *b_LHEweight_QCDscale_muR0p5_muF1   ;
-  Float_t LHEweight_QCDscale_muR0p5_muF2   ; TBranch *b_LHEweight_QCDscale_muR0p5_muF2   ;
-  Float_t LHEweight_QCDscale_muR0p5_muF0p5 ; TBranch *b_LHEweight_QCDscale_muR0p5_muF0p5 ;
-  Float_t LHEweight_PDFVariation_Up        ; TBranch *b_LHEweight_PDFVariation_Up        ;
-  Float_t LHEweight_PDFVariation_Dn        ; TBranch *b_LHEweight_PDFVariation_Dn        ;
-  Float_t LHEweight_AsMZ_Up                ; TBranch *b_LHEweight_AsMZ_Up                ;
-  Float_t LHEweight_AsMZ_Dn                ; TBranch *b_LHEweight_AsMZ_Dn                ;
+  /* Float_t LHEPDFScale                      ; TBranch *b_LHEPDFScale                      ; */
+  /* Float_t LHEweight_QCDscale_muR1_muF1     ; TBranch *b_LHEweight_QCDscale_muR1_muF1     ; */
+  /* Float_t LHEweight_QCDscale_muR1_muF2     ; TBranch *b_LHEweight_QCDscale_muR1_muF2     ; */
+  /* Float_t LHEweight_QCDscale_muR1_muF0p5   ; TBranch *b_LHEweight_QCDscale_muR1_muF0p5   ; */
+  /* Float_t LHEweight_QCDscale_muR2_muF1     ; TBranch *b_LHEweight_QCDscale_muR2_muF1     ; */
+  /* Float_t LHEweight_QCDscale_muR2_muF2     ; TBranch *b_LHEweight_QCDscale_muR2_muF2     ; */
+  /* Float_t LHEweight_QCDscale_muR2_muF0p5   ; TBranch *b_LHEweight_QCDscale_muR2_muF0p5   ; */
+  /* Float_t LHEweight_QCDscale_muR0p5_muF1   ; TBranch *b_LHEweight_QCDscale_muR0p5_muF1   ; */
+  /* Float_t LHEweight_QCDscale_muR0p5_muF2   ; TBranch *b_LHEweight_QCDscale_muR0p5_muF2   ; */
+  /* Float_t LHEweight_QCDscale_muR0p5_muF0p5 ; TBranch *b_LHEweight_QCDscale_muR0p5_muF0p5 ; */
+  /* Float_t LHEweight_PDFVariation_Up        ; TBranch *b_LHEweight_PDFVariation_Up        ; */
+  /* Float_t LHEweight_PDFVariation_Dn        ; TBranch *b_LHEweight_PDFVariation_Dn        ; */
+  /* Float_t LHEweight_AsMZ_Up                ; TBranch *b_LHEweight_AsMZ_Up                ; */
+  /* Float_t LHEweight_AsMZ_Dn                ; TBranch *b_LHEweight_AsMZ_Dn                ; */
 
 
   phys::MELA *mela;
