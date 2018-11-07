@@ -170,11 +170,12 @@ public:
   Int_t    lumiBlock ; TBranch *b_lumiBlock;
   Int_t    nvtx      ; TBranch *b_nvtx;
   
-  TBranch *b_puweight;
-  TBranch *b_puweightUp;
-  TBranch *b_puweightDn;
+  //TBranch *b_puweight;
+  //TBranch *b_puweightUp;
+  //TBranch *b_puweightDn;
+  TBranch *b_genEventWeights;
 
-  TBranch *b_mcprocweight;
+  //TBranch *b_mcprocweight;
   Int_t genCategory  ; TBranch *b_genCategory;
 
   std::bitset<16> topology;

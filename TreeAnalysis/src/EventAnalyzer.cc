@@ -127,11 +127,10 @@ void EventAnalyzer::Init(TTree *tree)
   
 
   // MC related variables
-  b_puweight     = 0; theTree->SetBranchAddress("puweight"    , &theMCInfo.puweight_     , &b_puweight );
-  b_puweightUp   = 0; theTree->SetBranchAddress("puweightUp"  , &theMCInfo.puweightUp_   , &b_puweightUp );
-  b_puweightDn   = 0; theTree->SetBranchAddress("puweightDn"  , &theMCInfo.puweightDn_   , &b_puweightDn );
-  b_mcprocweight = 0; theTree->SetBranchAddress("mcprocweight", &theMCInfo.mcprocweight_ , &b_mcprocweight);
+  //  b_mcprocweight = 0; theTree->SetBranchAddress("mcprocweight", &theMCInfo.mcprocweight_ , &b_mcprocweight);
   b_genCategory  = 0; theTree->SetBranchAddress("genCategory" , &genCategory             , &b_genCategory  );
+  b_genEventWeights = 0; theTree->SetBranchAddress("genEventWeights", &theMCInfo.genEventWeights_ , &b_genEventWeights);
+
 
   // Info about selections
   b_passTrigger = 0; theTree->SetBranchAddress("passTrigger", &passTrigger, &b_passTrigger); 
@@ -303,7 +302,7 @@ if(region_ == phys::MC){
   theHistograms.fill("weight_bare"  , "All weights, but efficiency and fake rate scale factors", 1200, -2, 10, theMCInfo.weight());
   theHistograms.fill("weight_pu"    , "Weight from PU reweighting procedure"                   , 1200, -2, 10, theMCInfo.puWeight());
   theHistograms.fill("weight_sample", "Weight from cross-section and luminosity"               , 1200, -2, 10, theMCInfo.sampleWeight());
-  theHistograms.fill("weight_mcProc", "Weight from MC intrinsic event weight"                  , 1200, -2, 10, theMCInfo.mcProcWeight());
+  theHistograms.fill("weight_mcProc", "Weight from MC intrinsic event weight"                  , 1200, -2, 10, theMCInfo.mcWeight());
   theHistograms.fill("weight_efficiencySF", "Weight from data/MC lepton efficiency"            , 1200, -2, 10, ZZ->efficiencySF());
   theHistograms.fill("weight_fakeRateSF"  , "Weight from fake rate scale factor"               , 1200, -2, 10, ZZ->fakeRateSF());
   

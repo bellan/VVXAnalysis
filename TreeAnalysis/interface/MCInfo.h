@@ -3,6 +3,7 @@
 
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 #include "VVXAnalysis/DataFormats/interface/Lepton.h"
+#include "VVXAnalysis/DataFormats/interface/GenEventWeights.h"
 
 #include <string>
 
@@ -19,15 +20,15 @@ class MCInfo {
   double internalCrossSection() const {return internalCrossSection_;}
   double externalCrossSection() const {return externalCrossSection_;}
   double crossSection()         const {return *crossSection_;}
-  double sampleWeight()         const {return sampleWeight_*mcProcWeight();}
-  double mcProcWeight()         const {return mcprocweight_*genEvents_/summcprocweight_;}
-  //double mcProcWeight()         const {return 1.;}
-  double mcProcWeightNormalization() const {return genEvents_/summcprocweight_;}
-  double mcProcWeightUnormalized()   const {return mcprocweight_;}
+  double sampleWeight()         const {return sampleWeight_*mcWeight();}
+  double mcWeight()             const {return genEventWeights_.mcProcWeight()*genEvents_/summcprocweight_;}
+  //double mcWeight         const {return 1.;}
+  double mcWeightNormalization() const {return genEvents_/summcprocweight_;}
+  double mcWeightUnormalized()   const {return genEventWeights_.mcProcWeight();}
   double summcprocweight()      const {return summcprocweight_;}     
-  double puWeight()             const {return puweight_;}
-  double puWeightUncUp()             const {return puweightUp_/puweight_;}
-  double puWeightUncDn()             const {return puweightDn_/puweight_;}
+  double puWeight()             const {return genEventWeights_.puWeight();}
+  double puWeightUncUp()        const {return genEventWeights_.puWeightUncUp();}
+  double puWeightUncDn()        const {return genEventWeights_.puWeightUncDn();}
 
   // Total MC weight of the event. Beware, it does not include DATA/MC correction! See instead below.
   double weight()               const {return luminosity_ >= 0 ? sampleWeight()*puWeight() : 1.;}
@@ -67,11 +68,14 @@ class MCInfo {
   // Pure sample weight (from cross section and number of analyzed events)
   double sampleWeight_;
   // Intrinsic weight from MC sample
-  double mcprocweight_;
+  //double mcprocweight_;
+
+  phys::GenEventWeights genEventWeights_;
+  
   // Weight from PU reweighting. This is a per event weight
-  double puweight_;
-  double puweightUp_;
-  double puweightDn_;
+  //  double puweight_;
+  // double puweightUp_;
+  // double puweightDn_;
 
   // Sum of weights
   double summcprocweight_;

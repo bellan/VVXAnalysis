@@ -63,7 +63,10 @@ namespace phys {
     virtual ~GenEventWeights(){};
     
     // Operations
-
+    double mcProcWeight()         const {return mcprocweight_;}
+    double puWeight()             const {return puweight_;}
+    double puWeightUncUp()        const {return puweightUp_/puweight_;}
+    double puWeightUncDn()        const {return puweightDn_/puweight_;}
 
 
     friend std::ostream&  operator<<(std::ostream& os, const GenEventWeights& ev){
