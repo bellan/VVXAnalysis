@@ -44,8 +44,6 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 			 "../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_RECO_ele_Moriond2017_v1.root",
 			 "../../VVXAnalysis/Commons/data/fakeRate_20feb2017.root",
 			 "../../VVXAnalysis/Commons/data/fakeRate_20feb2017.root")
-			 //"../../VVXAnalysis/Commons/data/fakeRates.root",
-			 //"../../VVXAnalysis/Commons/data/fakeRates.root")
 
   , maxNumEvents_(configuration.getParameter<int>("maxNumEvents"))
   , doBasicPlots_(configuration.getParameter<bool>("doBasicPlots"))
@@ -125,10 +123,9 @@ void EventAnalyzer::Init(TTree *tree)
 
   b_nvtx        = 0; theTree->SetBranchAddress("nvtxs"  , &nvtx   , &b_nvtx   );
   
+  b_genCategory  = 0; theTree->SetBranchAddress("genCategory" , &genCategory             , &b_genCategory  );
 
   // MC related variables
-  //  b_mcprocweight = 0; theTree->SetBranchAddress("mcprocweight", &theMCInfo.mcprocweight_ , &b_mcprocweight);
-  b_genCategory  = 0; theTree->SetBranchAddress("genCategory" , &genCategory             , &b_genCategory  );
   b_genEventWeights = 0; theTree->SetBranchAddress("genEventWeights", &theMCInfo.genEventWeights_ , &b_genEventWeights);
 
 
@@ -137,13 +134,6 @@ void EventAnalyzer::Init(TTree *tree)
   b_passSkim    = 0; theTree->SetBranchAddress("passSkim"   , &passSkim   , &b_passSkim   ); 
   b_triggerWord = 0; theTree->SetBranchAddress("triggerWord", &triggerWord, &b_triggerWord); 
   
-  //K factors
-  
-  b_kFactor_ggZZ     =0;  theTree->SetBranchAddress("kFactor_ggZZ"    ,  &kFactor_ggZZ          , &b_kFactor_ggZZ);
-  b_kFactor_qqZZM    =0;  theTree->SetBranchAddress("kFactor_qqZZM"   ,  &kFactor_qqZZM         , &b_kFactor_qqZZM);
-  b_kFactor_qqZZPt   =0;  theTree->SetBranchAddress("kFactor_qqZZPt"  ,  &kFactor_qqZZPt        , &b_kFactor_qqZZPt);
-  b_kFactor_qqZZdPhi =0;  theTree->SetBranchAddress("kFactor_qqZZdPhi",  &kFactor_qqZZdPhi      , &b_kFactor_qqZZdPhi);
-  b_kFactor_EWKqqZZ  =0;  theTree->SetBranchAddress("kFactor_EWKqqZZ" ,  &kFactor_EWKqqZZ       , &b_kFactor_EWKqqZZ);
 
   //theretican uncertainties
 
@@ -162,18 +152,9 @@ void EventAnalyzer::Init(TTree *tree)
   b_LHEweight_AsMZ_Up                 =0; theTree->SetBranchAddress("LHEweight_AsMZ_Up"               , &LHEweight_AsMZ_Up                , &b_LHEweight_AsMZ_Up               );
   b_LHEweight_AsMZ_Dn                 =0; theTree->SetBranchAddress("LHEweight_AsMZ_Dn"               , &LHEweight_AsMZ_Dn                , &b_LHEweight_AsMZ_Dn               );
   
-  b_p_JJVBF_BKG_MCFM_JECNominal =0;   theTree->SetBranchAddress("p_JJVBF_BKG_MCFM_JECNominal",  &p_JJVBF_BKG_MCFM_JECNominal  , &b_p_JJVBF_BKG_MCFM_JECNominal );
-  b_p_JJQCD_BKG_MCFM_JECNominal =0;   theTree->SetBranchAddress("p_JJQCD_BKG_MCFM_JECNominal",  &p_JJQCD_BKG_MCFM_JECNominal  , &b_p_JJQCD_BKG_MCFM_JECNominal );
-  b_p_JJVBF_BKG_MCFM_JECUp      =0;   theTree->SetBranchAddress("p_JJVBF_BKG_MCFM_JECUp",       &p_JJVBF_BKG_MCFM_JECUp       , &b_p_JJVBF_BKG_MCFM_JECUp      );     
-  b_p_JJQCD_BKG_MCFM_JECUp      =0;   theTree->SetBranchAddress("p_JJQCD_BKG_MCFM_JECUp",       &p_JJQCD_BKG_MCFM_JECUp       , &b_p_JJQCD_BKG_MCFM_JECUp      );     
-  b_p_JJVBF_BKG_MCFM_JECDn      =0;   theTree->SetBranchAddress("p_JJVBF_BKG_MCFM_JECDn",       &p_JJVBF_BKG_MCFM_JECDn       , &b_p_JJVBF_BKG_MCFM_JECDn      );     
-  b_p_JJQCD_BKG_MCFM_JECDn      =0;   theTree->SetBranchAddress("p_JJQCD_BKG_MCFM_JECDn",       &p_JJQCD_BKG_MCFM_JECDn       , &b_p_JJQCD_BKG_MCFM_JECDn      );     
-  b_p_JJEW_BKG_MCFM_JECNominal  =0;   theTree->SetBranchAddress("p_JJEW_BKG_MCFM_JECNominal",   &p_JJEW_BKG_MCFM_JECNominal   , &b_p_JJEW_BKG_MCFM_JECNominal  );  
-  b_p_JJEW_BKG_MCFM_JECUp       =0;   theTree->SetBranchAddress("p_JJEW_BKG_MCFM_JECUp",        &p_JJEW_BKG_MCFM_JECUp        , &b_p_JJEW_BKG_MCFM_JECUp       );     
-  b_p_JJEW_BKG_MCFM_JECDn       =0;   theTree->SetBranchAddress("p_JJEW_BKG_MCFM_JECDn",        &p_JJEW_BKG_MCFM_JECDn        , &b_p_JJEW_BKG_MCFM_JECDn       );     
+  mela = new phys::MELA();
+  b_mela = 0;  theTree->SetBranchAddress("MELA"    , &mela    ,  &b_mela    );
 
-
-  
 }
 
 // ------------------------------------------------------------------------------------------ //

@@ -121,6 +121,7 @@ class TreePlanter: public edm::EDAnalyzer {
   Bool_t  passSkim_;
   Short_t triggerWord_;
   
+  Int_t genCategory_;
 
   Int_t preSkimCounter_;
   Int_t postSkimCounter_;
@@ -209,6 +210,7 @@ class TreePlanter: public edm::EDAnalyzer {
   double rho_;
 
 
+  
   LHEHandler* theLHEHandler; 
 
 

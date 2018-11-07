@@ -25,6 +25,7 @@
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 #include "VVXAnalysis/DataFormats/interface/TypeDefs.h"
+#include "VVXAnalysis/DataFormats/interface/MELA.h"
 
 #include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/MCInfo.h"
@@ -170,9 +171,6 @@ public:
   Int_t    lumiBlock ; TBranch *b_lumiBlock;
   Int_t    nvtx      ; TBranch *b_nvtx;
   
-  //TBranch *b_puweight;
-  //TBranch *b_puweightUp;
-  //TBranch *b_puweightDn;
   TBranch *b_genEventWeights;
 
   //TBranch *b_mcprocweight;
@@ -184,14 +182,6 @@ public:
   Bool_t  passSkim   ; TBranch *b_passSkim;
   Short_t triggerWord; TBranch *b_triggerWord;
   
-  //K factors
-  
-  Float_t kFactor_ggZZ ;      TBranch *b_kFactor_ggZZ ;  
-  Float_t kFactor_qqZZM;      TBranch *b_kFactor_qqZZM;  
-  Float_t kFactor_qqZZPt;     TBranch *b_kFactor_qqZZPt; 
-  Float_t kFactor_qqZZdPhi;   TBranch *b_kFactor_qqZZdPhi;
-  Float_t kFactor_EWKqqZZ;    TBranch *b_kFactor_EWKqqZZ;  
-
 
   Float_t LHEPDFScale                      ; TBranch *b_LHEPDFScale                      ;
   Float_t LHEweight_QCDscale_muR1_muF1     ; TBranch *b_LHEweight_QCDscale_muR1_muF1     ;
@@ -207,19 +197,10 @@ public:
   Float_t LHEweight_PDFVariation_Dn        ; TBranch *b_LHEweight_PDFVariation_Dn        ;
   Float_t LHEweight_AsMZ_Up                ; TBranch *b_LHEweight_AsMZ_Up                ;
   Float_t LHEweight_AsMZ_Dn                ; TBranch *b_LHEweight_AsMZ_Dn                ;
-  
-  Float_t p_JJVBF_BKG_MCFM_JECNominal   ; TBranch *b_p_JJVBF_BKG_MCFM_JECNominal ;     
-  Float_t p_JJQCD_BKG_MCFM_JECNominal   ; TBranch *b_p_JJQCD_BKG_MCFM_JECNominal ;     
-  Float_t p_JJVBF_BKG_MCFM_JECUp        ; TBranch *b_p_JJVBF_BKG_MCFM_JECUp      ;     
-  Float_t p_JJQCD_BKG_MCFM_JECUp        ; TBranch *b_p_JJQCD_BKG_MCFM_JECUp      ;     
-  Float_t p_JJVBF_BKG_MCFM_JECDn        ; TBranch *b_p_JJVBF_BKG_MCFM_JECDn      ;     
-  Float_t p_JJQCD_BKG_MCFM_JECDn        ; TBranch *b_p_JJQCD_BKG_MCFM_JECDn      ;     
-  Float_t p_JJEW_BKG_MCFM_JECNominal    ; TBranch *b_p_JJEW_BKG_MCFM_JECNominal  ;     
-  Float_t p_JJEW_BKG_MCFM_JECUp         ; TBranch *b_p_JJEW_BKG_MCFM_JECUp       ;     
-  Float_t p_JJEW_BKG_MCFM_JECDn         ; TBranch *b_p_JJEW_BKG_MCFM_JECDn       ;     
-  
 
-  
+
+  phys::MELA *mela;
+  TBranch *b_mela;
 
   std::bitset<128> regionWord;
   //MET

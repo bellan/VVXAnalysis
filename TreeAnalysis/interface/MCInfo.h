@@ -47,7 +47,16 @@ class MCInfo {
   bool isMC() const {return isMC_;}
 
   std::string fileName() const {return filename_; }
-   //std::string fileName() const {return filename_;}
+  //std::string fileName() const {return filename_;}
+  
+  
+  double kF_ggZZ    () const {return genEventWeights_.kFactor_ggZZ_    ;} 
+  double kF_qqZZM   () const {return genEventWeights_.kFactor_qqZZM_   ;}
+  double kF_qqZZPt  () const {return genEventWeights_.kFactor_qqZZPt_  ;}
+  double kF_qqZZdPhi() const {return genEventWeights_.kFactor_qqZZdPhi_;}
+  double kF_EWKqqZZ () const {return genEventWeights_.kFactor_EWKqqZZ_ ;}
+
+
 
  private:
   friend class EventAnalyzer;

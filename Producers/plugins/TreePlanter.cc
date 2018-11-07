@@ -143,6 +143,8 @@ void TreePlanter::beginJob(){
   theTree->Branch("passSkim"    , &passSkim_); 
   theTree->Branch("triggerWord" , &triggerWord_); 
 
+  theTree->Branch("genCategory" , &genCategory_);
+
   theTree->Branch("genEventWeights", &genEventWeights_);
   theTree->Branch("MELA"        , &MELA_);
 
@@ -270,6 +272,8 @@ void TreePlanter::initTree(){
   passSkim_    = false;
   triggerWord_ = 0;
 
+  genCategory_ = -1;
+
   genEventWeights_ = phys::GenEventWeights();
   MELA_ = phys::MELA();
 
@@ -380,8 +384,8 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
   
   edm::Handle<int> genCategory;
   event.getByToken(theGenCategoryToken, genCategory);
-  genEventWeights_.genCategory_ = *genCategory;
-  if(((genEventWeights_.genCategory_ ^ signalDefinition_) & signalDefinition_) == 0) ++postSkimSignalEvents_;
+  genCategory_ = *genCategory;
+  if(((genCategory_ ^ signalDefinition_) & signalDefinition_) == 0) ++postSkimSignalEvents_;
   
 
   // load only gen leptons and gen photon status 1, from hard process!!!!
@@ -514,7 +518,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   }
 
   else if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();
-  else if(isMC_ && ZL_.empty() && !test_bit(genEventWeights_.genCategory_,2) && applySkim_ ) return;
+  else if(isMC_ && ZL_.empty() && !test_bit(genCategory_,2) && applySkim_ ) return;
   else if(!isMC_  && ZL_.empty() && applySkim_ ) return;
 
   theTree->Fill();

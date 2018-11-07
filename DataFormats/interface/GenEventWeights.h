@@ -33,8 +33,6 @@ namespace phys {
       puweightUp_        = 0.; 
       puweightDn_        = 0.; 
       
-      genCategory_    = -1;
-        
       kFactor_ggZZ_     = 1.; 
       kFactor_qqZZM_    = 1.; 
       kFactor_qqZZPt_   = 1.;
@@ -68,6 +66,13 @@ namespace phys {
     double puWeightUncUp()        const {return puweightUp_/puweight_;}
     double puWeightUncDn()        const {return puweightDn_/puweight_;}
 
+    double kF_ggZZ    () const {return kFactor_ggZZ_    ;} 
+    double kF_qqZZM   () const {return kFactor_qqZZM_   ;}
+    double kF_qqZZPt  () const {return kFactor_qqZZPt_  ;}
+    double kF_qqZZdPhi() const {return kFactor_qqZZdPhi_;}
+    double kF_EWKqqZZ () const {return kFactor_EWKqqZZ_ ;}
+
+
 
     friend std::ostream&  operator<<(std::ostream& os, const GenEventWeights& ev){
       
@@ -82,7 +87,6 @@ namespace phys {
     Double_t puweightUp_;
     Double_t puweightDn_;
     
-    Int_t genCategory_;
 
     float kFactor_ggZZ_;
     float kFactor_qqZZM_;
