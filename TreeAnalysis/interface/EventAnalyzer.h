@@ -19,7 +19,6 @@
 
 #include "AnalysisConfiguration.h"
 
-#include "VVXAnalysis/DataFormats/interface/Electron.h"
 #include "VVXAnalysis/DataFormats/interface/Lepton.h"
 #include "VVXAnalysis/DataFormats/interface/Jet.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
@@ -46,7 +45,6 @@ class TH1;
 class SelectorBase {
 public:
   virtual bool operator()(const phys::Boson<phys::Lepton>&)   const = 0;
-  virtual bool operator()(const phys::Boson<phys::Electron>&) const = 0;
   virtual bool operator()(const phys::Boson<phys::Jet>&)      const = 0;
 };
 
@@ -56,7 +54,6 @@ public:
   Analysis& analysis;
   Selector(Analysis& ananalysis) : analysis(ananalysis) { };
   virtual bool operator()(const phys::Boson<phys::Lepton>&   boson) const { return analysis.ZBosonDefinition(boson); }
-  virtual bool operator()(const phys::Boson<phys::Electron>& boson) const { return analysis.ZBosonDefinition(boson); }
   virtual bool operator()(const phys::Boson<phys::Jet>&      boson) const { return analysis.WBosonDefinition(boson); }
 };
 
@@ -135,8 +132,6 @@ public:
   void fillParticlePlots         (const std::string &type, const phys::Particle &particle);
   void fillLeptonPlots           (const std::string &type, const phys::Lepton   &lepton);
   void fillJetPlots              (const std::string &type, const phys::Jet      &jet);
-  void fillElectronPlots         (const std::string &type, const phys::Electron &electron);
-  void fillExtraPlotsForElectrons(const std::string &type, const phys::Electron &electron);
 
  private:
   TTree *theTree;
@@ -237,8 +232,6 @@ public:
   // Central jets (not in the tree)
   std::vector<phys::Particle> *centralGenJets;
 
-  // not passing pile-up id idx for pjets 
-  std::vector<Int_t> *pileUpIds;
 };
 
 #endif

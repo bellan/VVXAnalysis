@@ -92,7 +92,6 @@ void EventAnalyzer::Init(TTree *tree)
   // Jets   
   pjets = 0;      b_pjets = 0;    theTree->SetBranchAddress("jets", &pjets, &b_pjets);
   jets  = new std::vector<phys::Jet>(); centralJets  = new std::vector<phys::Jet>();
-  pileUpIds  = new std::vector<Int_t>();
 
   // Bosons   
   Vhad = new std::vector<phys::Boson<phys::Jet> > ()    ; VhadCand = 0; b_VhadCand = 0; theTree->SetBranchAddress("VhadCand", &VhadCand, &b_VhadCand);
@@ -148,70 +147,65 @@ void EventAnalyzer::Init(TTree *tree)
 Int_t EventAnalyzer::GetEntry(Long64_t entry){
   // Read contents of entry.
   if (!theTree) return 0;
-
+  
   int e =  theTree->GetEntry(entry);
-
+  
   stable_sort(muons->begin(),     muons->end(),     phys::PtComparator());
   stable_sort(electrons->begin(), electrons->end(), phys::PtComparator());
   stable_sort(pjets->begin(),     pjets->end(),     phys::PtComparator());
   stable_sort(pgenJets->begin(),  pgenJets->end(),  phys::PtComparator());
-
+  
   // Some selection on jets
-  Int_t idx = 0;
-  jets->clear(); centralJets->clear(); pileUpIds->clear();
-
+  jets->clear(); centralJets->clear(); 
   foreach(const phys::Jet &jet, *pjets){
-    //    if(jet.fullPuId(0)){//2 tight, 1 medium, 0 loose
-      if(jet.pt() > 30){
-	if(fabs(jet.eta()) < 4.7) jets->push_back(jet);
-	if(fabs(jet.eta()) < 2.4) centralJets->push_back(jet);
-	//  }
+    if(jet.pt() > 30){
+      if(fabs(jet.eta()) < 4.7) jets->push_back(jet);
+      if(fabs(jet.eta()) < 2.4) centralJets->push_back(jet);
     }
-    else pileUpIds->push_back(idx);   
-    idx++; 
   }
+  
   genJets->clear(); centralGenJets->clear();
   foreach(const phys::Particle &jet, *pgenJets)
     if(jet.pt() > 30){
-	if(fabs(jet.eta()) < 4.7) genJets->push_back(jet);
-	if(fabs(jet.eta()) < 2.4) centralGenJets->push_back(jet);
+      if(fabs(jet.eta()) < 4.7) genJets->push_back(jet);
+      if(fabs(jet.eta()) < 2.4) centralGenJets->push_back(jet);
     }
   
-
-Vhad->clear();
-foreach(const phys::Boson<phys::Jet> v, *VhadCand)
-if(select(v)) Vhad->push_back(v);
-
-stable_sort(Vhad->begin(), Vhad->end(), phys::PtComparator());
-
-ZL->clear();
-foreach(const ZLCompositeCandidate& zl, *ZLCand)
-if( zl.second.sip() < 4) ZL->push_back(zl); //To be moved in cfg
-if(region_ == phys::MC){
-  if(!ZZ->isValid()){
-    if(ZZ) delete ZZ;
-    ZZ = new phys::DiBoson<phys::Lepton, phys::Lepton>();
+  
+  Vhad->clear();
+  foreach(const phys::Boson<phys::Jet> v, *VhadCand)
+    if(select(v)) Vhad->push_back(v);
+  
+  stable_sort(Vhad->begin(), Vhad->end(), phys::PtComparator());
+  
+  ZL->clear();
+  foreach(const ZLCompositeCandidate& zl, *ZLCand)
+    if( zl.second.sip() < 4) ZL->push_back(zl); //To be moved in cfg
+  if(region_ == phys::MC){
+    if(!ZZ->isValid()){
+      if(ZZ) delete ZZ;
+      ZZ = new phys::DiBoson<phys::Lepton, phys::Lepton>();
+    }
   }
- }
-
- std::vector<phys::Lepton> Leps;
-
- Leps.push_back(*ZZ->first().daughterPtr(0));
- Leps.push_back(*ZZ->first().daughterPtr(1));
- Leps.push_back(*ZZ->second().daughterPtr(0));
- Leps.push_back(*ZZ->second().daughterPtr(1));
-
- stable_sort(Leps.begin(),     Leps.end(),     phys::PtComparator());
- 
-
- if((abs(Leps.at(1).id())==11) && (Leps.at(1).pt()<12))  return 0;
- 
- addOptions();
- 
+  
+  std::vector<phys::Lepton> Leps;
+  
+  Leps.push_back(*ZZ->first().daughterPtr(0));
+  Leps.push_back(*ZZ->first().daughterPtr(1));
+  Leps.push_back(*ZZ->second().daughterPtr(0));
+  Leps.push_back(*ZZ->second().daughterPtr(1));
+  
+  stable_sort(Leps.begin(),     Leps.end(),     phys::PtComparator());
+  
+  
+  if((abs(Leps.at(1).id())==11) && (Leps.at(1).pt()<12))  return 0;
+  
+  addOptions();
+  
   // Check if the request on region tye matches with the categorization of the event
   regionWord = std::bitset<128>(ZZ->region());
   // check bits accordingly to ZZAnalysis/AnalysisStep/interface/FinalStates.h
-
+  
   if(region_ == phys::SR     && !regionWord.test(26)) return 0;
   if(region_ == phys::CR2P2F && !regionWord.test(24)) return 0;
   if(region_ == phys::CR3P1F && !regionWord.test(25)) return 0;
@@ -219,25 +213,25 @@ if(region_ == phys::MC){
   if(region_ == phys::SR_HZZ     && !regionWord.test(3))  return 0;
   if(region_ == phys::CR2P2F_HZZ && !regionWord.test(22)) return 0;
   if(region_ == phys::CR3P1F_HZZ && !regionWord.test(23)) return 0;
-
+  
   if(!doSF){
-  theWeight = theMCInfo.weight(*ZZ);
-
+    theWeight = theMCInfo.weight(*ZZ);
+    
   }
   else  theWeight = theMCInfo.weight();
-
+  
   if(doSF && (region_ == phys::CR2P2F || region_ == phys::CR3P1F || region_ == phys::CR2P2F_HZZ || region_ == phys::CR3P1F_HZZ)){
-
-
-      if(!ZZ->first().daughterPtr(0)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(0))).first;	
-      if(!ZZ->first().daughterPtr(1)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(1))).first;	
-      if(!ZZ->second().daughterPtr(0)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(0))).first;
-      if(!ZZ->second().daughterPtr(1)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(1))).first; 
-     
-      if(region_ == phys::CR2P2F || region_ == phys::CR2P2F_HZZ ) theWeight*=-1;
     
-    }
-
+    
+    if(!ZZ->first().daughterPtr(0)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(0))).first;	
+    if(!ZZ->first().daughterPtr(1)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(1))).first;	
+    if(!ZZ->second().daughterPtr(0)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(0))).first;
+    if(!ZZ->second().daughterPtr(1)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(1))).first; 
+    
+    if(region_ == phys::CR2P2F || region_ == phys::CR2P2F_HZZ ) theWeight*=-1;
+    
+  }
+  
   if(doSF && theMCInfo.isMC() ){
     
     
@@ -269,12 +263,12 @@ if(region_ == phys::MC){
   theHistograms.fill("weight_efficiencySF", "Weight from data/MC lepton efficiency"            , 1200, -2, 10, ZZ->efficiencySF());
   theHistograms.fill("weight_fakeRateSF"  , "Weight from fake rate scale factor"               , 1200, -2, 10, ZZ->fakeRateSF());
   
-
+  
   theInputWeightedEvents += theWeight;
-
+  
   topology = std::bitset<16>(genCategory);
-
-
+  
+  
   return e;
 }
 
@@ -376,26 +370,6 @@ void EventAnalyzer::fillLeptonPlots(const std::string &type, const phys::Lepton 
   theHistograms.fill(type+"_dxy"             , "d_{xy}"         , 200,   0,   0.5, lepton.dxy()            , theWeight);   
   theHistograms.fill(type+"_dz"              , "d_{z}"          , 200,   0,   0.5, lepton.dz()             , theWeight);
   theHistograms.fill(type+"_sip"             , "sip"            , 150,   0,  15  , lepton.sip()            , theWeight); 
-}
-
-
-
-void EventAnalyzer::fillElectronPlots (const std::string &type, const phys::Electron &electron){
-  fillLeptonPlots           (type, electron);
-  fillExtraPlotsForElectrons(type, electron);
-}
-
-
-
-void EventAnalyzer::fillExtraPlotsForElectrons(const std::string &type, const phys::Electron &electron){
-
-  theHistograms.fill      (type+"_energy"    , "energy spectrum"   , 100,  0   , 500   , electron.energy()    , theWeight);  
-  theHistograms.fill      (type+"_phiWidth"  , "#phi width"        ,  50,  0   ,   2   , electron.phiWidth()  , theWeight);  
-  theHistograms.fill      (type+"_etaWidth"  , "#eta width"        ,  50,  0   ,   2   , electron.etaWidth()  , theWeight);  
-  theHistograms.fill      (type+"_BDT"       , "BDT"               , 100, -1   ,   1   , electron.BDT()       , theWeight);  
-  theHistograms.fill<TH1I>(type+"_isBDT"     , "is BDT?"           ,   2,  0   ,   2   , electron.isBDT()     , theWeight);  // void??
-  theHistograms.fill<TH1I>(type+"_missingHit", "Missing hits"      ,  50,  0   ,  50   , electron.missingHit(), theWeight);  // void?? 
-  theHistograms.fill<TH1I>(type+"_nCrystals" , "Number of Crystals", 200,  0   , 200   , electron.nCrystals() , theWeight);  
 }
 
 
