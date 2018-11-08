@@ -15,6 +15,7 @@ using std::endl;
 using namespace phys;
 
 Int_t VVXAnalyzer::cut() {
+  
   return 1;
 }
 
@@ -25,6 +26,5 @@ void VVXAnalyzer::analyze(){
   cout << "------------------------------------------------------------------"<<endl;
   cout << "Run: " << run << " event: " << event << endl;
   
- 
-}
   
+}

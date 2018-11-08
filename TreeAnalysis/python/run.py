@@ -4,7 +4,7 @@
 ## R. Bellan (UNITO) - Feb 2014 ##
 ##################################
 
-import sys, os, commands, math
+import sys, os, commands, math, subprocess
 from optparse import OptionParser
 from readSampleInfo import *
 from Colours import *
@@ -183,7 +183,8 @@ def run(executable, analysis, typeofsample, region, luminosity, maxNumEvents, do
         print Red('\n------------------------------ {0:s} -------------------------------\n'.format(basefile))
         command = "./{0:s} {1:s} {2:s} {3:s}/{5:s}.root {4:s}/{5:s}.root {6:.0f} {7:.5f} {8:.0f} {9:b}".format(executable,analysis,region,inputdir,outputdir, basefile, luminosity, externalXsec, maxNumEvents, doSF)
         print "Command going to be executed:", Violet(command)
-        failure, output = commands.getstatusoutput(command)
+
+        output = subprocess.call(command,shell=True)
         print "\n",output
         hadd = '{0:s} {1:s}/{2:s}.root'.format(hadd, outputdir, basefile)
 
@@ -192,7 +193,7 @@ def run(executable, analysis, typeofsample, region, luminosity, maxNumEvents, do
         if os.path.exists('{0:s}/{1:s}.root'.format(outputdir,typeofsample)):
             os.popen('rm {0:s}/{1:s}.root'.format(outputdir,typeofsample))
         print "Command going to be executed:", Violet(hadd)
-        failure, output = commands.getstatusoutput(hadd)
+        output = subprocess.call(hadd.split(),shell=True)
     elif len(datasets) == 1 and not datasets[0] == typeofsample:
         print "One sample in the dataset, just copying it."
         os.popen('cp {0:s}/{1:s}.root {0:s}/{2:s}.root'.format(outputdir,datasets[0],typeofsample))
@@ -213,8 +214,7 @@ def mergeDataSamples(outputLocations):
     if os.path.exists('{0:s}/data.root'.format(outputdir)):
         os.popen('rm {0:s}/data.root'.format(outputdir))
     print "Command going to be executed:", Violet(hadd)
-    failure, output = commands.getstatusoutput(hadd)
-
+    output = subprocess.call(hadd.split(),shell=True)
 
 def runOverCRs(executable, analysis, sample, luminosity, maxNumEvents, doSF, postfix = '', outputLocations = []):
     outputCR2P2F = run(executable, analysis, sample, 'CR2P2F'+postfix, luminosity, maxNumEvents, doSF)    # runs over all samples in the CR2P2F control reagion
@@ -226,7 +226,7 @@ def runOverCRs(executable, analysis, sample, luminosity, maxNumEvents, doSF, pos
     if os.path.exists('{0:s}'.format(outputRedBkg)):
         os.popen('rm {0:s}'.format(outputRedBkg))
     print "Command going to be executed:", Violet(hadd)
-    failure, output = commands.getstatusoutput(hadd)
+    output = subprocess.call(hadd.split(),shell=True)
     outputLocations.append(outputRedBkg)
 
 

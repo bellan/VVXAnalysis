@@ -2,6 +2,9 @@
 #define VVXAnalysis_Commons_AriEle_h
 
 #include "VVXAnalysis/DataFormats/interface/Particle.h"
+#include "VVXAnalysis/DataFormats/interface/Lepton.h"
+#include "VVXAnalysis/DataFormats/interface/Boson.h"
+#include "VVXAnalysis/DataFormats/interface/DiBoson.h" 
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 
 using namespace phys;
@@ -35,7 +38,7 @@ struct WZPtComparator{
   template<typename DiBOS1, typename DiBOS2>
     bool operator()(const DiBOS1 * a ,
 		    const DiBOS2 * b) const{
-    return a.first().daughter(0).pt() > b.first().daughter(0).pt();
+    return a->first().daughter(0).pt() > b->first().daughter(0).pt();
   }
 };
 
@@ -168,7 +171,7 @@ struct deltaRComparator{
   template<typename PAIR>
   bool operator()(const PAIR * a,
 		  const PAIR * b) const{
-    return physmath::deltaR(a.first.daughter(0), a.first.daughter(1)) < physmath::deltaR(b.first.daughter(0), b.first.daughter(1));
+    return physmath::deltaR(a->first.daughter(0), a->first.daughter(1)) < physmath::deltaR(b->first.daughter(0), b->first.daughter(1));
   }
 };
 

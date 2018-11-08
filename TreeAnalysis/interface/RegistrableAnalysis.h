@@ -3,12 +3,14 @@
 
 #include "AnalysisConfiguration.h"
 
+
 class EventAnalyzer;
+
 
 template <typename T>
 class RegistrableAnalysis{
  public:
-
+  
   RegistrableAnalysis(){}
   
   static EventAnalyzer* create(const AnalysisConfiguration& configuration) {  
