@@ -214,45 +214,8 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   if(region_ == phys::CR2P2F_HZZ && !regionWord.test(22)) return 0;
   if(region_ == phys::CR3P1F_HZZ && !regionWord.test(23)) return 0;
   
-  if(!doSF){
-    theWeight = theMCInfo.weight(*ZZ);
-    
-  }
-  else  theWeight = theMCInfo.weight();
-  
-  if(doSF && (region_ == phys::CR2P2F || region_ == phys::CR3P1F || region_ == phys::CR2P2F_HZZ || region_ == phys::CR3P1F_HZZ)){
-    
-    
-    if(!ZZ->first().daughterPtr(0)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(0))).first;	
-    if(!ZZ->first().daughterPtr(1)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(1))).first;	
-    if(!ZZ->second().daughterPtr(0)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(0))).first;
-    if(!ZZ->second().daughterPtr(1)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(1))).first; 
-    
-    if(region_ == phys::CR2P2F || region_ == phys::CR2P2F_HZZ ) theWeight*=-1;
-    
-  }
-  
-  if(doSF && theMCInfo.isMC() ){
-    
-    
-    std::pair<double,double> lepSF;
-    
-    lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->first().daughterPtr(0));
-    (ZZ->first().daughterPtr(0))->setEfficenySFUnc(lepSF.second);
-    theWeight*=lepSF.first;
-    
-    lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->first().daughterPtr(1));
-    (ZZ->first().daughterPtr(1))->setEfficenySFUnc(lepSF.second);
-    theWeight*=lepSF.first;
-    
-    lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->second().daughterPtr(0));
-    ( ZZ->second().daughterPtr(0))->setEfficenySFUnc(lepSF.second);
-    theWeight*=lepSF.first;
-    
-    lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->second().daughterPtr(1));
-    (ZZ->second().daughterPtr(1))->setEfficenySFUnc(lepSF.second);
-    theWeight*=lepSF.first;
-  }
+  if(!doSF) theWeight = theMCInfo.weight(*ZZ);
+  else  applyLeptonScaleFactors();
 
   
   theHistograms.fill("weight_full"  , "All weights applied"                                    , 1200, -2, 10, theWeight);
@@ -334,6 +297,56 @@ Int_t EventAnalyzer::cut() {
   return pass ? 1 : -1;
 }
 
+//
+//
+//
+
+void EventAnalyzer::applyLeptonScaleFactors(){
+
+  // Protection
+  if(!doSF) return;
+
+  theWeight = theMCInfo.weight();
+  
+  if(region_ == phys::CR2P2F || region_ == phys::CR3P1F || region_ == phys::CR2P2F_HZZ || region_ == phys::CR3P1F_HZZ){
+    
+    
+    if(!ZZ->first().daughterPtr(0)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(0))).first;	
+    if(!ZZ->first().daughterPtr(1)->passFullSel())   theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->first().daughterPtr(1))).first;	
+    if(!ZZ->second().daughterPtr(0)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(0))).first;
+    if(!ZZ->second().daughterPtr(1)->passFullSel())  theWeight*= (leptonScaleFactors_.fakeRateScaleFactor(*ZZ->second().daughterPtr(1))).first; 
+    
+    if(region_ == phys::CR2P2F || region_ == phys::CR2P2F_HZZ ) theWeight*=-1;
+    
+  }
+  
+  if(theMCInfo.isMC()){
+    
+    
+    std::pair<double,double> lepSF;
+    
+    lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->first().daughterPtr(0));
+    (ZZ->first().daughterPtr(0))->setEfficenySFUnc(lepSF.second);
+    theWeight*=lepSF.first;
+    
+    lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->first().daughterPtr(1));
+    (ZZ->first().daughterPtr(1))->setEfficenySFUnc(lepSF.second);
+    theWeight*=lepSF.first;
+    
+    lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->second().daughterPtr(0));
+    ( ZZ->second().daughterPtr(0))->setEfficenySFUnc(lepSF.second);
+    theWeight*=lepSF.first;
+    
+    lepSF=leptonScaleFactors_.efficiencyScaleFactor(*ZZ->second().daughterPtr(1));
+    (ZZ->second().daughterPtr(1))->setEfficenySFUnc(lepSF.second);
+    theWeight*=lepSF.first;
+  }
+
+}
+
+
+
+
 
 // ------------------------------------------------------------------------------------------ //
 // --------------------------------------- Histograms --------------------------------------- //
@@ -347,9 +360,9 @@ void EventAnalyzer::fillBasicPlots(){
   theHistograms.fill<TH1I>("nmuons"    ,"Number of muons"    ,  10, 0, 10 , muons->size()    , theWeight);
   theHistograms.fill<TH1I>("nelectrons","Number of electrons",  10, 0, 10 , electrons->size(), theWeight);
 
-  foreach(const phys::Lepton& mu , *muons)     fillLeptonPlots  ("mu",  mu  );
-  foreach(const phys::Electron& e, *electrons) fillElectronPlots("e" ,  e   );
-  foreach(const phys::Jet& jet   , *jets)      fillJetPlots     ("jet", jet );
+  foreach(const phys::Lepton& mu , *muons)     fillLeptonPlots("mu",  mu  );
+  foreach(const phys::Electron& e, *electrons) fillLeptonPlots("e" ,  e   );
+  foreach(const phys::Jet& jet   , *jets)      fillJetPlots   ("jet", jet );
 }
 
 

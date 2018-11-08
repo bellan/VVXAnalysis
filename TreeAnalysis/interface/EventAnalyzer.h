@@ -127,6 +127,8 @@ public:
   virtual Long64_t LoadTree(Long64_t entry);
   virtual void     Init(TTree *tree);
   
+  void applyLeptonScaleFactors();
+  
   // Some basic plots. User may want to change these, thou they should be used only for very basic plots.
   virtual void     fillBasicPlots();
   void fillParticlePlots         (const std::string &type, const phys::Particle &particle);
