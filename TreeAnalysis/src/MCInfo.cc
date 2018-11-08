@@ -33,6 +33,8 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   , eventsIn3P1FCR_(0)
 {
 
+  genEventWeights_ = new phys::GenEventWeights();
+
   TChain *tree = new TChain("treePlanter/HollyTree");
   tree->Add(filename.c_str());
 

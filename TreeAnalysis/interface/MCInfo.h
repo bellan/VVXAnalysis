@@ -21,14 +21,14 @@ class MCInfo {
   double externalCrossSection() const {return externalCrossSection_;}
   double crossSection()         const {return *crossSection_;}
   double sampleWeight()         const {return sampleWeight_*mcWeight();}
-  double mcWeight()             const {return genEventWeights_.mcProcWeight()*genEvents_/summcprocweight_;}
+  double mcWeight()             const {return genEventWeights_->mcProcWeight()*genEvents_/summcprocweight_;}
   //double mcWeight         const {return 1.;}
   double mcWeightNormalization() const {return genEvents_/summcprocweight_;}
-  double mcWeightUnormalized()   const {return genEventWeights_.mcProcWeight();}
+  double mcWeightUnormalized()   const {return genEventWeights_->mcProcWeight();}
   double summcprocweight()      const {return summcprocweight_;}     
-  double puWeight()             const {return genEventWeights_.puWeight();}
-  double puWeightUncUp()        const {return genEventWeights_.puWeightUncUp();}
-  double puWeightUncDn()        const {return genEventWeights_.puWeightUncDn();}
+  double puWeight()             const {return genEventWeights_->puWeight();}
+  double puWeightUncUp()        const {return genEventWeights_->puWeightUncUp();}
+  double puWeightUncDn()        const {return genEventWeights_->puWeightUncDn();}
 
   // Total MC weight of the event. Beware, it does not include DATA/MC correction! See instead below.
   double weight()               const {return luminosity_ >= 0 ? sampleWeight()*puWeight() : 1.;}
@@ -50,28 +50,28 @@ class MCInfo {
   //std::string fileName() const {return filename_;}
   
   
-  double kF_ggZZ    () const {return genEventWeights_.kF_ggZZ()    ;} 
-  double kF_qqZZM   () const {return genEventWeights_.kF_qqZZM()   ;}
-  double kF_qqZZPt  () const {return genEventWeights_.kF_qqZZPt()  ;}
-  double kF_qqZZdPhi() const {return genEventWeights_.kF_qqZZdPhi();}
-  double kF_EWKqqZZ () const {return genEventWeights_.kF_EWKqqZZ() ;}
+  double kF_ggZZ    () const {return genEventWeights_->kF_ggZZ()    ;} 
+  double kF_qqZZM   () const {return genEventWeights_->kF_qqZZM()   ;}
+  double kF_qqZZPt  () const {return genEventWeights_->kF_qqZZPt()  ;}
+  double kF_qqZZdPhi() const {return genEventWeights_->kF_qqZZdPhi();}
+  double kF_EWKqqZZ () const {return genEventWeights_->kF_EWKqqZZ() ;}
 
 
 
-  float PDFScale           () const {return genEventWeights_.PDFScale           ();}
-  float QCDscale_muR1F1    () const {return genEventWeights_.QCDscale_muR1F1    ();} 
-  float QCDscale_muR1F2    () const {return genEventWeights_.QCDscale_muR1F2    ();}
-  float QCDscale_muR1F0p5  () const {return genEventWeights_.QCDscale_muR1F0p5  ();}
-  float QCDscale_muR2F1    () const {return genEventWeights_.QCDscale_muR2F1    ();}
-  float QCDscale_muR2F2    () const {return genEventWeights_.QCDscale_muR2F2    ();}
-  float QCDscale_muR2F0p5  () const {return genEventWeights_.QCDscale_muR2F0p5  ();}
-  float QCDscale_muR0p5F1  () const {return genEventWeights_.QCDscale_muR0p5F1  ();}
-  float QCDscale_muR0p5F2  () const {return genEventWeights_.QCDscale_muR0p5F2  ();}
-  float QCDscale_muR0p5F0p5() const {return genEventWeights_.QCDscale_muR0p5F0p5();}
-  float PDFVar_Up          () const {return genEventWeights_.PDFVar_Up          ();}
-  float PDFVar_Down        () const {return genEventWeights_.PDFVar_Down        ();}
-  float alphas_MZ_Up       () const {return genEventWeights_.alphas_MZ_Up       ();}
-  float alphas_MZ_Down     () const {return genEventWeights_.alphas_MZ_Down     ();}
+  float PDFScale           () const {return genEventWeights_->PDFScale           ();}
+  float QCDscale_muR1F1    () const {return genEventWeights_->QCDscale_muR1F1    ();} 
+  float QCDscale_muR1F2    () const {return genEventWeights_->QCDscale_muR1F2    ();}
+  float QCDscale_muR1F0p5  () const {return genEventWeights_->QCDscale_muR1F0p5  ();}
+  float QCDscale_muR2F1    () const {return genEventWeights_->QCDscale_muR2F1    ();}
+  float QCDscale_muR2F2    () const {return genEventWeights_->QCDscale_muR2F2    ();}
+  float QCDscale_muR2F0p5  () const {return genEventWeights_->QCDscale_muR2F0p5  ();}
+  float QCDscale_muR0p5F1  () const {return genEventWeights_->QCDscale_muR0p5F1  ();}
+  float QCDscale_muR0p5F2  () const {return genEventWeights_->QCDscale_muR0p5F2  ();}
+  float QCDscale_muR0p5F0p5() const {return genEventWeights_->QCDscale_muR0p5F0p5();}
+  float PDFVar_Up          () const {return genEventWeights_->PDFVar_Up          ();}
+  float PDFVar_Down        () const {return genEventWeights_->PDFVar_Down        ();}
+  float alphas_MZ_Up       () const {return genEventWeights_->alphas_MZ_Up       ();}
+  float alphas_MZ_Down     () const {return genEventWeights_->alphas_MZ_Down     ();}
 
 
 
@@ -93,15 +93,9 @@ class MCInfo {
 
   // Pure sample weight (from cross section and number of analyzed events)
   double sampleWeight_;
-  // Intrinsic weight from MC sample
-  //double mcprocweight_;
 
-  phys::GenEventWeights genEventWeights_;
+  phys::GenEventWeights *genEventWeights_;
   
-  // Weight from PU reweighting. This is a per event weight
-  //  double puweight_;
-  // double puweightUp_;
-  // double puweightDn_;
 
   // Sum of weights
   double summcprocweight_;
