@@ -118,7 +118,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     consumesMany<std::vector< PileupSummaryInfo > >();
     consumesMany<LHEEventProduct>();
     theGenCategoryToken      = consumes<int>                        (config.getUntrackedParameter<edm::InputTag>("GenCategory"    , edm::InputTag("genCategory")));
-    theGenCollectionToken    = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("prunedGenParticles")));
+    theGenCollectionToken    = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("genCategory","genParticles")));
     theGenJetCollectionToken = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("genCategory","genJets")));
     theGenVBCollectionToken  = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenVBCollection", edm::InputTag("genCategory","vectorBosons")));
     theGenInfoToken          = consumes<GenEventInfoProduct>          (edm::InputTag("generator"));
@@ -388,12 +388,12 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
   if(((genCategory_ ^ signalDefinition_) & signalDefinition_) == 0) ++postSkimSignalEvents_;
   
 
-  // load only gen leptons and gen photon status 1, from hard process!!!!
-  //event.getByToken(theGenLepCollectionToken,  genParticles);
-  //for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p){
-  //  const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(p->masterClone().get());
-  //  genParticles_.push_back(phys::Particle(gp->p4(), phys::Particle::computeCharge(gp->pdgId()), gp->pdgId()));
-  // }
+  // load only gen leptons and gen photon status 1, from hard process
+  event.getByToken(theGenCollectionToken,  genParticles);
+  for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p){
+    const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(p->masterClone().get());
+    genParticles_.push_back(phys::Particle(gp->p4(), phys::Particle::computeCharge(gp->pdgId()), gp->pdgId()));
+  }
 
   
   event.getByToken(theGenVBCollectionToken,  genParticles);

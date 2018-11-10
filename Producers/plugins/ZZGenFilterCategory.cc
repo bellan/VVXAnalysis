@@ -109,7 +109,8 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 	int id   = abs(p->pdgId());
 
 	// Save prompt leptons and photons
-	if(gp->fromHardProcessFinalState() && ( (id >= 11 && id <= 16) ||  id == 22) genParticlesFromHardProcess.push_back(phys::convert(*p)); 
+	if(gp->fromHardProcessFinalState() && ( (id >= 11 && id <= 16) ||  id == 22)) 
+	  genParticlesFromHardProcess.push_back(phys::Particle(p->p4(), phys::Particle::computeCharge(p->pdgId()), p->pdgId()));
 	
 	// Photons for FSR correction
 	if(id == 22)  genPhotons.push_back(phys::convert(*p)); 
@@ -208,7 +209,7 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   // load prompt leptons and photons in the event
   std::auto_ptr<std::vector<reco::GenParticle> > outputGenParticleColl(new std::vector<reco::GenParticle>());
   foreach(const phys::Particle& particle, genParticlesFromHardProcess)
-    outputGenJetColl->push_back(reco::GenParticle(0, phys::Particle::convert(particle.p4()), reco::GenParticle::Point(0.,0.,0.), particle.id(), 1, true));
+    outputGenParticleColl->push_back(reco::GenParticle(0, phys::Particle::convert(particle.p4()), reco::GenParticle::Point(0.,0.,0.), particle.id(), 1, true));
 
   event.put(outputGenParticleColl,"genParticles");
 
