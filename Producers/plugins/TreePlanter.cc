@@ -391,7 +391,7 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
   // load only gen leptons and gen photon status 1, from hard process
   event.getByToken(theGenCollectionToken,  genParticles);
   for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p){
-    const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(p->masterClone().get());
+    const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(&(*p));
     genParticles_.push_back(phys::Particle(gp->p4(), phys::Particle::computeCharge(gp->pdgId()), gp->pdgId()));
   }
 
