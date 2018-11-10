@@ -49,6 +49,7 @@ public:
     produces<int>();
     produces<std::vector<reco::GenParticle> >("vectorBosons");
     produces<std::vector<reco::GenParticle> >("genJets");
+    produces<std::vector<reco::GenParticle> >("genParticles");
   }
  
 
@@ -79,13 +80,17 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   // Get the collection of gen particles
   edm::Handle<edm::View<reco::Candidate> > genParticles;
   event.getByToken(genToken_, genParticles);
-  
+
+  // Particle to be loaded in the event: prompt leptons (including neutrinos), prompt photons
+  std::vector<phys::Particle> genParticlesFromHardProcess; 
 
   switch(particleStatus_){
 
   case 1:{
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    std::vector<phys::Particle> genPhotons;
+    // make the two categories of photon mutually exclusive?
+    std::vector<phys::Particle> genPhotons; // this are used for FS correction
+
 
     //------------------ loop over genparticles ---------------------------------------------------------
     for (View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) {
@@ -100,11 +105,16 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 	  cout << "This particle, " << p->pdgId() << ", as NaN in p4 components: " << p->p4().P() << endl;
 	  continue;
 	}
-
+	
 	int id   = abs(p->pdgId());
-	if(id == 22)
-	  genPhotons.push_back(phys::convert(*p)); 
 
+	// Save prompt leptons and photons
+	if(gp->fromHardProcessFinalState() && ( (id >= 11 && id <= 16) ||  id == 22) genParticlesFromHardProcess.push_back(phys::convert(*p)); 
+	
+	// Photons for FSR correction
+	if(id == 22)  genPhotons.push_back(phys::convert(*p)); 
+	
+	  
 
 	if((id == 11 || id == 13) &&  (gp->fromHardProcessFinalState())){
   	  bool fromTau = false;
@@ -166,18 +176,6 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   if (particleStatus_ == 1) zzSignalTopology = zz::getSignalTopology(genLeptons, genJets);
   if (particleStatus_ == 3) zzSignalTopology = zz::getSignalTopologyStatus3(genLeptons, genJets);
 
-  // cout << "Topology " <<  std::get<0>(zzSignalTopology) << endl;
-  // cout << "Z0 " <<  std::get<1>(zzSignalTopology) << " " << std::get<1>(zzSignalTopology).mass() << endl;
-  // if(std::get<1>(zzSignalTopology).id() == 23){
-  //   cout << std::get<1>(zzSignalTopology).daughter(0) << endl;
-  //   cout << std::get<1>(zzSignalTopology).daughter(1) << endl;
-  // }
-  // cout << "Z1 " <<  std::get<2>(zzSignalTopology) << " " << std::get<2>(zzSignalTopology).mass() << endl;
-  // if(std::get<2>(zzSignalTopology).id() == 23){
-  //   cout << std::get<2>(zzSignalTopology).daughter(0) << endl;
-  //   cout << std::get<2>(zzSignalTopology).daughter(1) << endl;
-  // }
- 
 
   std::auto_ptr<int> output(new int(std::get<0>(zzSignalTopology))); //Topology
   
@@ -206,6 +204,16 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
     outputGenJetColl->push_back(reco::GenParticle(0, phys::Particle::convert(jet.p4()), reco::GenParticle::Point(0.,0.,0.), jet.id(), 1, true));
 
   event.put(outputGenJetColl,"genJets");
+
+  // load prompt leptons and photons in the event
+  std::auto_ptr<std::vector<reco::GenParticle> > outputGenParticleColl(new std::vector<reco::GenParticle>());
+  foreach(const phys::Particle& particle, genParticlesFromHardProcess)
+    outputGenJetColl->push_back(reco::GenParticle(0, phys::Particle::convert(particle.p4()), reco::GenParticle::Point(0.,0.,0.), particle.id(), 1, true));
+
+  event.put(outputGenParticleColl,"genParticles");
+
+
+
   
   if (sel_ >= 0) {
 
