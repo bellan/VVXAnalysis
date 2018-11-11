@@ -1,10 +1,10 @@
 
-#include "../interface/Particle.h"
-#include "../interface/Lepton.h"
-#include "../interface/Jet.h"
-#include "../interface/Electron.h"
-#include "../interface/Boson.h"
-#include "../interface/DiBoson.h"
+#include "VVXAnalysis/DataFormats/interface/Particle.h"
+#include "VVXAnalysis/DataFormats/interface/Lepton.h"
+#include "VVXAnalysis/DataFormats/interface/Jet.h"
+#include "VVXAnalysis/DataFormats/interface/Electron.h"
+#include "VVXAnalysis/DataFormats/interface/Boson.h"
+#include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 
 #ifdef __CINT__
 

@@ -43,16 +43,35 @@ public:
   
   virtual Int_t cut();
 
+  virtual void GenAnalysis(ZZtype &, Particle &, Particle &);
+
+  virtual void RecoAnalysis(DiBosonLepton &, Particle &, Particle &);
+
+  virtual void GenRecoAnalysis(const ZZtype, const Particle, const Particle, const DiBosonLepton, const Particle, const Particle);
+
 
  private:
-  Int_t nunumber;
-  Int_t totalevent;
-  Int_t WZevent;
-  Int_t zahl;
-  Int_t threemuonsplus;
-  Int_t threemuonsminus;
-  Int_t threeelesplus;
-  Int_t threeelesminus;
+  Int_t eventGen;
+  Int_t eventReco;
+  Int_t eventGenReco;
+  Int_t eventSample;
+  Int_t recoAfterCut;
+  Int_t recoJetless2;
+  Int_t recoZlempty;
+
+  Int_t gen3e;
+  Int_t gen3m;
+  Int_t gen2e1m;
+  Int_t gen2m1e;
+  Int_t reco3e;
+  Int_t reco3m;
+  Int_t reco2e1m;
+  Int_t reco2m1e;
+  
+  Int_t counter1;
+  Int_t counter2;
+  Int_t counter3;
+  Int_t counter4;
 
   Float_t begintime;
   Float_t endtime;

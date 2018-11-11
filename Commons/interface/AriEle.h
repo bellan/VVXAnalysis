@@ -2,18 +2,23 @@
 #define VVXAnalysis_Commons_AriEle_h
 
 #include "VVXAnalysis/DataFormats/interface/Particle.h"
+#include "VVXAnalysis/DataFormats/interface/Lepton.h"
+#include "VVXAnalysis/DataFormats/interface/Boson.h"
+#include "VVXAnalysis/DataFormats/interface/DiBoson.h" 
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 
 using namespace phys;
 using namespace std;
 
-// new types
-typedef std::pair<phys::Boson<phys::Particle>, phys::Particle> Zltype;
-typedef DiBoson<Particle, Particle> ZZtype;
-typedef Boson<Particle> Vtype;
+// ~~~~~~~~ New types
 typedef pair<Particle, Particle> pairParticle;
+typedef std::pair<phys::Boson<phys::Particle>, phys::Particle> Zltype;
+typedef Boson<Particle> Vtype;
+typedef Boson<Lepton> BosonLepton;
+typedef DiBoson<Particle, Particle> ZZtype;
+typedef DiBoson<Lepton, Lepton> DiBosonLepton;
 
-// Transverse Mass
+// ~~~~~~~~ Transverse Mass
 template<typename T> double mT(const T& p1, const T& p2){
   return sqrt( 2*p1.pt()*p2.pt()*(1-TMath::Cos(physmath::deltaPhi(p1.phi(), p2.phi()))) );
 }
@@ -21,7 +26,23 @@ template<typename T> double mT(const T& p1, const T& p2, const T& p3){
   return sqrt(mT(p1, p2)*mT(p1, p2) + mT(p1, p3)*mT(p1, p3) + mT(p2, p3)*mT(p2, p3));
 }
 
-// Comparators
+// ~~~~~~~~ Comparators
+// Pt comparators
+struct WZPtComparator{
+  template<typename DiBOS1, typename DiBOS2>
+    bool operator()(const DiBOS1 & a ,
+		    const DiBOS2 & b) const{
+    return a.first().daughter(0).pt() > b.first().daughter(0).pt();
+  }
+
+  template<typename DiBOS1, typename DiBOS2>
+    bool operator()(const DiBOS1 * a ,
+		    const DiBOS2 * b) const{
+    return a->first().daughter(0).pt() > b->first().daughter(0).pt();
+  }
+};
+
+// Mass comparators
 struct mTComparator{
 mTComparator(const double& ref): ref_(ref){}
   template<typename BOS>
@@ -38,39 +59,137 @@ mTComparator(const double& ref): ref_(ref){}
   
   double ref_;
 };
-  
-struct massComparator{
-massComparator(bool element, const double& ref): element_(element), ref_(ref){}
-  template<typename T1, typename T2>
-    bool operator()(const std::pair<T1, T2> & a, const std::pair<T1, T2> & b) const{    
-    if(element_ == 0) return fabs(a.first.p4().M()-ref_) < fabs(b.first.p4.M()-ref_);
-    else if (element_ == 1) return fabs(a.second.p4().M()-ref_) < fabs(b.second.p4.M()-ref_);    
+
+struct pairMassComparator{
+pairMassComparator(const int element, const double& ref): element_(element), ref_(ref){}
+  template<typename PAR, typename BOS>
+    bool operator()(const std::pair<BOS, PAR> & a , 
+		    const std::pair<BOS, PAR> & b) const{
+    if(element_ == 0){
+      return fabs(a.first.p4().M() - ref_) < fabs(b.first.p4().M() - ref_); 
+    }
+    else{
+      return fabs(a.second.p4().M() - ref_) < fabs(b.second.p4().M() - ref_); 
+    }
   }
-
-  bool element_;
+  
+  template<typename PAR, typename BOS>
+    bool operator()(const std::pair<BOS, PAR> * a , 
+		    const std::pair<BOS, PAR> * b) const{ 
+    if(element_ == 0){
+      return fabs(a->first.p4().M() - ref_) < fabs(b->first.p4().M() - ref_); 
+    }
+    else{
+      return fabs(a->second.p4().M() - ref_) < fabs(b->second.p4().M() - ref_); 
+    }
+  }
+  
+  template<typename DiBOS>
+    bool operator()(const DiBOS & a , 
+		    const DiBOS & b) const{ 
+    if(element_ == 0){
+      return fabs(a.first().p4().M() - ref_) < fabs(b.first().p4().M() - ref_); 
+    }
+    else{
+      return fabs(a.second().p4().M() - ref_) < fabs(b.second().p4().M() - ref_); 
+    }
+  }
+  
+  template<typename DiBOS>
+    bool operator()(const DiBOS * a , 
+		    const DiBOS * b) const{ 
+    if(element_ == 0){
+      return fabs(a->first().p4().M() - ref_) < fabs(b->first().p4().M() - ref_); 
+    }
+    else{
+      return fabs(a->second().p4().M() - ref_) < fabs(b->second().p4().M() - ref_); 
+    }
+  }
+  
+  int element_;
   double ref_;
 };
 
-struct ZlMassComparator{
-  ZlMassComparator(const double& ref): ref_(ref){}
-    bool operator()(const Zltype & a , 
-		    const Zltype & b) const{ 
-      return fabs(a.first.p4().M()-ref_) < fabs(b.first.p4().M()-ref_); 
+struct pairTrmassComparator{
+pairTrmassComparator(const int element, const double& ref): element_(element), ref_(ref){}
+  template<typename PAR, typename BOS>
+    bool operator()(const std::pair<BOS, PAR> & a , 
+		    const std::pair<BOS, PAR> & b) const{
+    if(element_ == 0){
+      return fabs(a.first.p4().Mt() - ref_) < fabs(b.first.p4().Mt() - ref_); 
     }
-    bool operator()(const Zltype * a , 
-		    const Zltype * b) const{ 
-      return fabs(a->first.p4().M()-ref_) < fabs(b->first.p4().M()-ref_); 
+    else{
+      return fabs(a.second.p4().Mt() - ref_) < fabs(b.second.p4().Mt() - ref_); 
     }
-
+  }
+  
+  template<typename PAR, typename BOS>
+    bool operator()(const std::pair<BOS, PAR> * a , 
+		    const std::pair<BOS, PAR> * b) const{ 
+    if(element_ == 0){
+      return fabs(a->first.p4().Mt() - ref_) < fabs(b->first.p4().Mt() - ref_); 
+    }
+    else{
+      return fabs(a->second.p4().Mt() - ref_) < fabs(b->second.p4().Mt() - ref_); 
+    }
+  }
+  
+  template<typename DiBOS>
+    bool operator()(const DiBOS & a , 
+		    const DiBOS & b) const{ 
+    if(element_ == 0){
+      return fabs(a.first().p4().Mt() - ref_) < fabs(b.first().p4().Mt() - ref_); 
+    }
+    else{
+      return fabs(a.second().p4().Mt() - ref_) < fabs(b.second().p4().Mt() - ref_); 
+    }
+  }
+  
+  template<typename DiBOS>
+    bool operator()(const DiBOS * a , 
+		    const DiBOS * b) const{ 
+    if(element_ == 0){
+      return fabs(a->first().p4().Mt() - ref_) < fabs(b->first().p4().Mt() - ref_); 
+    }
+    else{
+      return fabs(a->second().p4().Mt() - ref_) < fabs(b->second().p4().Mt() - ref_); 
+    }
+  }
+  
+  int element_;
   double ref_;
 };
 
+// DeltaR comparators
 struct deltaRComparator{
   template<typename PAIR>
   bool operator()(const PAIR & a,
 		  const PAIR & b) const{
     return physmath::deltaR(a.first.daughter(0), a.first.daughter(1)) < physmath::deltaR(b.first.daughter(0), b.first.daughter(1));
   }
+    
+  template<typename PAIR>
+  bool operator()(const PAIR * a,
+		  const PAIR * b) const{
+    return physmath::deltaR(a->first.daughter(0), a->first.daughter(1)) < physmath::deltaR(b->first.daughter(0), b->first.daughter(1));
+  }
+};
+
+struct ZlDeltaRComparator{
+  ZlDeltaRComparator(const double& ref): ref_(ref){}
+  template<typename PAR, typename BOS>
+    bool operator()(const std::pair<BOS, PAR> & a , 
+		    const std::pair<BOS, PAR> & b) const{ 
+      return fabs(physmath::deltaR(a.first.daughter(0), a.first.daughter(1)) - ref_) < fabs(physmath::deltaR(b.first.daughter(0), b.first.daughter(1)) - ref_); 
+  }
+
+  template<typename PAR, typename BOS>
+    bool operator()(const std::pair<BOS, PAR> * a , 
+		    const std::pair<BOS, PAR> * b) const{ 
+      return fabs(physmath::deltaR(a->first.daughter(0), a->first.daughter(1)) - ref_) < fabs(physmath::deltaR(b->first.daughter(0), b->first.daughter(1)) - ref_); 
+  }
+  
+  double ref_;
 };
   
 // Check if two are the same  
