@@ -18,6 +18,9 @@
 #include <iostream>
 #include <string>
 #include <sstream> 
+#include "tdrstyle.h"
+#include "CMS_lumi.h"
+
 
 class PurityAndStability : public TObject
 {

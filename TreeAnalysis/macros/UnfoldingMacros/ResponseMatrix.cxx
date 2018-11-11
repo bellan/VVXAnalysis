@@ -1,10 +1,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "ResponseMatrix.h"
-#include "tdrstyle.C"
 #include "CMS_lumi.C"
-//#include "PersonalInfo.cxx"
-//#include "ZZAnalysis/AnalysisStep/test/Plotter/CMS_lumi.C"
-//#include "ZZAnalysis/AnalysisStep/test/Plotter/tdrstyle.C"
+
 #endif
 
 using namespace std;
@@ -390,10 +387,9 @@ void ResponseMatrix::Plot(string var,string fs, string dataset, string unc, stri
   gROOT->Reset();  
   gROOT->SetStyle("Plain");   
   gStyle->SetOptStat(0);
-   
+
   setTDRStyle(); 
- 
-  int iPeriod = 4; 
+   int iPeriod = 4; 
   //int iPos = 11; 
   writeExtraText = true;    
   extraText  = "Simulation";
@@ -558,16 +554,15 @@ void ResponseMatrix::Plot(string var,string fs, string dataset, string unc, stri
  
  lumiTextSize     = 0.7;
  cmsTextSize      = 0.7;
-  extraOverCmsTextSize  = 0.80;//0.63; 
-  CMS_lumi(pad1,iPeriod,0);
- 
-  std::string SavePage = "~/www/PlotsVV/13TeV/";
-  string png = SavePage+path+"/"+var+"/"+"ResMat_qqggJJ_"+var+"_ZZTo" + fs + "_" + unc+ "_" + dataset + W + tightfr+ "_"+mc+".png";
-  string pdf = SavePage+path+"/"+var+"/"+"ResMat_qqggJJ_"+var+"_ZZTo" + fs + "_" + unc+ "_" + dataset + W + tightfr+ "_"+mc+".pdf";
-  
-  c->Print(png.c_str());
-  c->Print(pdf.c_str());
-  c->Delete();
+ extraOverCmsTextSize  = 0.80;//0.63; 
+ CMS_lumi(pad1,iPeriod,0);
+ std::string SavePage = "~/www/PlotsVV/13TeV/";
+ string png = SavePage+path+"/"+var+"/"+"ResMat_qqggJJ_"+var+"_ZZTo" + fs + "_" + unc+ "_" + dataset + W + tightfr+ "_"+mc+".png";
+ string pdf = SavePage+path+"/"+var+"/"+"ResMat_qqggJJ_"+var+"_ZZTo" + fs + "_" + unc+ "_" + dataset + W + tightfr+ "_"+mc+".pdf";
+
+ c->Print(png.c_str());
+ c->Print(pdf.c_str());
+ c->Delete();
 }
 
 //Build response matrix, reco and gen distributions needed for the theoretical uncertainty on Powheg

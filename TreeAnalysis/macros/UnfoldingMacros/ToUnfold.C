@@ -6,7 +6,6 @@
 #include "DataToUnfold.h"
 #include "PurityAndStability.h"
 //#include <sys/types.h>
-//#include "PersonalInfo.cxx"
 #include <sys/stat.h>
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
@@ -38,7 +37,7 @@ void GenerateDistributions(string var, bool madgraph, bool tightregion)
     } 
   }
 
-  if(tightregion == 0){ 
+  if(tightregion == 1){ //fixme  
     datatounfold->Build(var,"4e");
     datatounfold->Build(var,"4m");
     datatounfold->Build(var,"2e2m");
@@ -136,10 +135,9 @@ void Plot(string var, string date, bool madgraph, bool tightregion){
   system(("mkdir "+SavePage+date+"/"+ var+"/PurityAndStability").c_str()); 
   system(("cp "+SavePage+"index.php "+SavePage+date+"/"+ var+"/PurityAndStability").c_str());
 
-  ResponseMatrix *matrix = new ResponseMatrix(0,madgraph,tightregion);
   DataToUnfold *datatounfold = new DataToUnfold();
+  ResponseMatrix *matrix = new ResponseMatrix(0,madgraph,tightregion);
   PurityAndStability *pas = new PurityAndStability(madgraph);
-  
   matrix->Plot(var,"4e","01","st",date);
   matrix->Plot(var,"4m","01","st",date);
   matrix->Plot(var,"2e2m","01","st",date);
@@ -182,6 +180,7 @@ void AllDistributions_var(string var){
   GenerateDistributions(var,0,0);
   GenerateDistributions(var,1,1);
   GenerateDistributions(var,0,1);
+
   // GenerateWeightedDistributions(var,1,0);
   // GenerateWeightedDistributions(var,0,0);
   // GenerateWeightedDistributions(var,1,1);
