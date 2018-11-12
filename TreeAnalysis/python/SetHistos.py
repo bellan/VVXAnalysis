@@ -524,6 +524,7 @@ def getSyst(Sign,isUnfold,HData,isTot,isFiducial):
 
     if Sign==+1:    print Red("Up Systematics")
     else:           print Red("Down Systematics")
+
     if isUnfold:
         for syst in SystList:
             if Sign==+1:    SystDicUp[syst["longname"]] = {}
@@ -557,8 +558,8 @@ def getSyst(Sign,isUnfold,HData,isTot,isFiducial):
             for b in range(0,h4l["state"].GetNbinsX()+2): 
                 systType["histo"][3]["state"].SetBinContent( b, systType["histo"][3]["state"].GetBinContent(b)+Sign*math.sqrt(hUnCorrSyst["state"].GetBinContent(b)) )
 
-
     hFinSyst.append(h4lFinSyst)
+
     for i in range(0,4):
         print  Blue(hFinSyst[i]["name"])
         for syst in SystList:
@@ -598,16 +599,16 @@ def getSyst(Sign,isUnfold,HData,isTot,isFiducial):
         
         if verbose:
             if hFinSyst[i]["name"]=="4l": print Red("Overall systematics")
-            for b in range(1,NBin+1):
+        for b in range(1,NBin+1):
 
-                Content = 0
+            Content = 0
 
-                # loop over histograms bins with systematics
-                for syst in SystList:    
-                    if Sign==-1 and hFinSyst[i]["state"].GetBinContent(b) != 0 and  (syst["histo"][i]["state"].GetBinContent(b)/hFinSyst[i]["state"].GetBinContent(b)) > 1: continue
-                    elif Sign==+1 and syst["histo"][i]["state"].GetBinContent(b) !=0 and (hFinSyst[i]["state"].GetBinContent(b)/syst["histo"][i]["state"].GetBinContent(b)) > 1: continue
+            # loop over histograms bins with systematics
+            for syst in SystList:    
+                if Sign==-1 and hFinSyst[i]["state"].GetBinContent(b) != 0 and  (syst["histo"][i]["state"].GetBinContent(b)/hFinSyst[i]["state"].GetBinContent(b)) > 1: continue
+                elif Sign==+1 and syst["histo"][i]["state"].GetBinContent(b) !=0 and (hFinSyst[i]["state"].GetBinContent(b)/syst["histo"][i]["state"].GetBinContent(b)) > 1: continue
                 #square sum of systematics  
-                    Content += (syst["histo"][i]["state"].GetBinContent(b)-hFinSyst[i]["state"].GetBinContent(b))**2.
+                Content += (syst["histo"][i]["state"].GetBinContent(b)-hFinSyst[i]["state"].GetBinContent(b))**2.
 
                 hFinSyst[i]["state"].AddBinContent(b, Sign*math.sqrt(Content))
                 if hFinSyst[i]["name"]=="4l": print b,(math.sqrt(Content)/hFinSyst[i]["state"].GetBinContent(b))*100,"\%"
@@ -651,7 +652,10 @@ def getPlot_MC(Type,isFiducial,sign):
     SystVarUp = [{"state":{},"name":"_pdfUp"},{"state":{},"name":"_asMZUp"}]
     SystVarDn = [{"state":{},"name":"_pdfDn"},{"state":{},"name":"_asMZDn"}]
 
- 
+    kFacUp = {"name":"_kFacUp","state":{}}
+    kFacDn = {"name":"_kFacDn","state":{}}
+
+
     for h in hSum:
         print Blue(h["name"])
 
@@ -676,6 +680,15 @@ def getPlot_MC(Type,isFiducial,sign):
                 if h1==None:
                     print "For sample ", s["sample"], "h"+h["name"],"has no enetries or is a zombie"       
                     continue
+
+
+                if "gg_" in s["sample"]:
+                    print "Ecco",h["name"]
+                    kFacUp["state"][h["name"]] = copy.deepcopy(h1)
+                    kFacDn["state"][h["name"]] = copy.deepcopy(h1)
+                    kFacUp["state"][h["name"]].Scale(0.1)
+                    kFacDn["state"][h["name"]].Scale(-0.1)
+
                 if isFirst:
                     h["state"]=copy.deepcopy(h1)           
                     h1.SetName(s["sample"]+"_"+h["name"])
@@ -683,6 +696,7 @@ def getPlot_MC(Type,isFiducial,sign):
                     print "{0} {1}-> {2:.2f} ".format(s["sample"],(61-len(s["sample"]))*"-",h1.Integral(0,-1))
                     isFirst=False
                     continue
+
                 h["state"].Add(h1) 
                 h1.SetName(s["sample"]+"_"+h["name"])
                 h["samples"].append(h1)
@@ -697,6 +711,10 @@ def getPlot_MC(Type,isFiducial,sign):
                  #   sVarDn["state"].Scale(1/sVarDn["state"].Integral())
                  #   sVarUp["state"].Scale(1/sVarUp["state"].Integral())
             h["state"].Add(hCent) 
+
+            kFacUp["state"][h["name"]].Add(h["state"])
+            kFacDn["state"][h["name"]].Add(h["state"])
+
         else:
             isFirst = True
             for s in Samples:
@@ -753,7 +771,17 @@ def getPlot_MC(Type,isFiducial,sign):
             SystVar4lDn.Add(sVarDn["state"]["4m"])
             
             sVarDn["state"]["4l"] = SystVar4lDn
-        
+
+
+        kFacUp["state"]["4l"] = copy.deepcopy(kFacUp["state"]["2e2m"])
+        kFacUp["state"]["4l"].SetName(kFacUp["state"]["4l"].GetName().replace("2e2m","4l"))
+        kFacUp["state"]["4l"].Add(kFacUp["state"]["4e"])
+        kFacUp["state"]["4l"].Add(kFacUp["state"]["4m"])
+
+        kFacDn["state"]["4l"] = copy.deepcopy(kFacDn["state"]["2e2m"])
+        kFacDn["state"]["4l"].SetName(kFacDn["state"]["4l"].GetName().replace("2e2m","4l"))
+        kFacDn["state"]["4l"].Add(kFacDn["state"]["4e"])
+        kFacDn["state"]["4l"].Add(kFacDn["state"]["4m"])
 
         if doNormalized:
             for sVarUp,sVarDn in zip(SystVarUp,SystVarDn):            
@@ -763,10 +791,21 @@ def getPlot_MC(Type,isFiducial,sign):
                 for fin,hsyst in sVarDn["state"].iteritems():
                     hsyst.Scale(1/hsyst.Integral(0,-1))
 
+            for fin,hsyst in kFacUp["state"].iteritems():
+                hsyst.Scale(1/hsyst.Integral(0,-1))
+
+            for fin,hsyst in kFacDn["state"].iteritems():
+                hsyst.Scale(1/hsyst.Integral(0,-1))
+
+
+        SystVarDn.append(kFacDn)
+        SystVarUp.append(kFacUp)
+
+
         ScaleUp = {"name":"_scaleUp","state":{}}
         ScaleDn = {"name":"_scaleDn","state":{}}
-        
 
+        
         for h in hSum:
 
             if doNormalized: h["state"].Scale(1/h["state"].Integral(0,-1))
@@ -909,7 +948,7 @@ if isUnfold:
 
     hFinSyst = copy.deepcopy(hData)
 
-    # 4l combination
+    # 4l combination fo central value
     h4l = copy.deepcopy(hFinSyst[0]) # copy of one channel
     h4l["name"]="4l"
     h4l["state"].SetName((hFinSyst[0]["state"].GetName()).replace("2e2m","4l"))
@@ -923,11 +962,18 @@ if isUnfold:
 
     hData.append(h4lFin)
     
+
+    print "central",hData[3]["name"],hData[3]["state"].Integral(),hDataUp[3]["state"].Integral(),hDataDown[3]["state"].Integral()
+
     print Red("\n#############################  UNFOLD DATA  ############################")  
     
     FileOutData =  ROOT.TFile("./FinalResults_"+Set+"_"+Analysis+"/DataUnfold"+Fr+".root","update") 
     for i in hData:
         i["state"].Write("",i["state"].kOverwrite)
+        if i["name"]=="4l" and verbose:
+            print Red("Stat uncertainties")
+            for bin in range(1,i["state"].GetNbinsX()+1):
+                print bin,(i["state"].GetBinError(bin)/i["state"].GetBinContent(bin))*100,"%"
         print "\n Total integral {0} contribution {1}> {2:.2f}".format(i["name"],(32-len(i["name"]))*"-",i["state"].Integral(0,-1))
 
 
@@ -960,6 +1006,7 @@ else:
         hDataUp    = getSyst(1,isUnfold,hData,False,isFiducial)
         hDataDown  = getSyst(-1,isUnfold,hData,False,isFiducial)
         hMCReco    = getHisto(Type,False,0,"",False,isFiducial)
+
 
     print Red("\n##############################  SUMMARY  #############################")  
 
@@ -1031,10 +1078,3 @@ if printLatex:
     SystLatex(Text,SystDicUp,SystDicDown,isTot)
     if not isUnfold:  lbin.printPerBinCode()
     else: lSyst.printSystRanges()
-
-
-
-
-
-
-

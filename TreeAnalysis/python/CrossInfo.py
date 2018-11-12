@@ -71,12 +71,12 @@ DiffSystListUnfold     = [{"name":"RedBkg","longname":"Reducible background","co
                           {"name":"IrrBkg","longname":"Irreducible background","corr":0},
                           {"name":"EleSFSq","longname":"Electron ID, ISO and Tracking","corr":1},
                           {"name":"MuSFSq","longname":"Muon ID, ISO and Tracking","corr":1},
+                          #{"name":"SFSq","longname":"Lepton scale factor","corr":1},
                           {"name":"MCgen","longname":"Monte Carlo choice","corr":1},
                           {"name":"qqgg","longname":"qq gg cross section","corr":1},
                           {"name":"Pu","longname":"Pileup","corr":1},
                           {"name":"PDF","longname":"PDF","corr":1},
                           {"name":"As","longname":"\\alpha_S","corr":1}]
-#                          {"name":"SFSq","longname":"Lepton scale factor","corr":1}]
 
 
 DiffSystListJetsUnfold = [{"name":"JES","longname":"JES correction","corr":1},

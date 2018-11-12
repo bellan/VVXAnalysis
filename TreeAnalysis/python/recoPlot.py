@@ -93,7 +93,7 @@ tdrstyle.setTDRStyle()
 
 if not showPlot: ROOT.gROOT.SetBatch(True)
 
-if category=="IrrBkg":      c1 = TCanvas( 'c1', Type+"_"+mcSet, 200, 10, 900, 700 )
+if category=="IrrBkg" or category=="RedBkg":      c1 = TCanvas( 'c1', Type+"_"+mcSet, 200, 10, 800, 800 )
 else:                       c1 = TCanvas( 'c1', Type+"_"+mcSet , 200, 10, 900, 1200 )
 
 #leg = ROOT.TLegend(.78,.10,.8,.22);
@@ -102,9 +102,9 @@ FinState= options.FinalState
 
 Addfake=True
 
-InfoType_zz = {"Mass":["M_{4//ell}","M_{4//ell}",10],"Mjj":["m_{jj}","m_{JJ}",20],"Z1Mass":["Z1 Mass","M_{2//ell}",10,],"Z2Mass":["Z2 Mass","M_{2//ell}",10,],"Z1lep0_sip":["Z1 lep 0 Sip","Sip",4],"Z1lep0_iso":["Z1 lep 0 Iso","Iso",4],"Z0lep0_pt":["Z1 lep 0 pT","p_{T}",4],"nJets":["# jets","# jets",1],"nJets_central":["# jets","# jets",1],"z":["z1","z1",1],"PtJet1":["pT Jet","p_{T}^{jet}",10],"EtaJet1":["#eta Jet","#eta^{jet}",9],"PtJet2":["pT Jet","p_{T}^{jet}",10],"EtaJet2":["#eta Jet","#eta^{jet}",10],"Z1pt":["Z1 p_{T}","p_{T}",20],"Z2pt":["Z2 p_{T}","p_{T}",10],"Z1z":["Z1 z","z_{Z_{1}}",7],"Z2z":["Z2 z","z_{Z_{2}}",7],"ptJRatio":["","#Sigma p_{T}/# Sum  ",2],"ptRatio":["","#Sum p_{T}",2],"PtZZ":["p_{T}^{4\\ell}","Sum p_{T}",20],"deltaEtaJJ":["|#eta_{jj}|","|#eta_{jj}|",2],"Dphi":["#Delta #phi_{jj}","#Delta #phi_{jj}",10],"Deta":["#Delta #eta_{jj}","#Delta #eta_{jj}",5],"Mjj_Central":["m_{jj}","m_{jj}",20],"Deta_Central":["#Delta #eta_{jj}","#Delta #eta_{jj}",5],"Deta2Jet":["#Delta #eta_{jj}, 2 jet","#Delta #eta_{jj} =2 jet",5],"Deta_noCentral":["#Delta #eta_{jj}, >2 jet","#Delta #eta_{jj} > 2 jet",5],"Deta_1noCentral":["#Delta #eta_{jj}, >2 jet","#Delta #eta_{jj} > 2 jet",5],"PtJet1_noCentral":["#eta Jet","#eta^{jet}",9],"EtaJet1_noCentral":["#eta Jet","#eta^{jet}",10]}
+InfoType_zz = {"Mass":["m_{4l} [GeV]","m_{4\ell}",10],"Mjj":["m_{jj} [GeV]","m_{JJ}",20],"Z1Mass":["Z1 Mass","m_{2\ell}",10,],"Z2Mass":["Z2 Mass","m_{2\ell}",10,],"Z1lep0_sip":["Z1 lep 0 Sip","Sip",4],"Z1lep0_iso":["Z1 lep 0 Iso","Iso",4],"Z0lep0_pt":["Z1 lep 0 pT","p_{T}",4],"nJets":["N_{jets} (|#eta^{jet}| < 4.7)","N_{jets} (|#eta^{jet}| < 4.7)",1],"nJets_central":["N_{jets} (|#eta^{jet}| < 4.7)","N_{jets} (|#eta^{jet}| < 4.7)",1],"z":["z1","z1",1],"PtJet1":["p_{T}^{jet1} [GeV]","p_{T}^{jet}",1],"EtaJet1":["#eta^{jet1}","#eta^{jet}",9],"PtJet2":["p_{T}^{jet2} [GeV]","p_{T}^{jet}",1],"EtaJet2":["#eta^{jet2}","#eta^{jet}",10],"Z1pt":["Z1 p_{T}","p_{T}",20],"Z2pt":["Z2 p_{T}","p_{T}",10],"Z1z":["Z1 z","z_{Z_{1}}",7],"Z2z":["Z2 z","z_{Z_{2}}",7],"ptJRatio":["","#Sigma p_{T}/# Sum  ",2],"ptRatio":["","#Sum p_{T}",2],"PtZZ":["p_{T}^{4\\ell}","Sum p_{T}",20],"deltaEtaJJ":["|#eta_{jj}|","|#eta_{jj}|",2],"Dphi":["#Delta #phi_{jj}","#Delta #phi_{jj}",10],"Deta":["|#Delta#eta_{jj}|","#Delta #eta_{jj}",5],"Mjj_Central":["m_{jj}","m_{jj}",20],"Deta_Central":["#Delta #eta_{jj}","#Delta #eta_{jj}",5],"Deta2Jet":["#Delta #eta_{jj}, 2 jet","#Delta #eta_{jj} =2 jet",5],"Deta_noCentral":["#Delta #eta_{jj}, >2 jet","#Delta #eta_{jj} > 2 jet",5],"Deta_1noCentral":["#Delta #eta_{jj}, >2 jet","#Delta #eta_{jj} > 2 jet",5],"PtJet1_noCentral":["#eta Jet","#eta^{jet}",9],"EtaJet1_noCentral":["#eta Jet","#eta^{jet}",10]}
 
-InfoType_vbs = {"Mass":["M_{4//ell}","M_{4//ell}",40],"Mjj":["m_{jj}","m_{JJ}",20],"Z1Mass":["Z1 Mass","M_{2//ell}",10,],"Z2Mass":["Z2 Mass","M_{2//ell}",10,],"Z1lep0_sip":["Z1 lep 0 Sip","Sip",4],"Z1lep0_iso":["Z1 lep 0 Iso","Iso",4],"Z0lep0_pt":["Z1 lep 0 pT","p_{T}",4],"nJets":["# jets","# jets",1],"nJets_central":["# jets","# jets",1],"z":["z1","z1",1],"PtJet1":["pT Jet","p_{T}^{jet}",10],"EtaJet1":["#eta Jet","#eta^{jet}",10],"PtJet2":["pT Jet","p_{T}^{jet}",10],"EtaJet2":["#eta Jet","#eta^{jet}",10],"Z1pt":["Z1 p_{T}","p_{T}",20],"Z2pt":["Z2 p_{T}","p_{T}",10],"Z1z":["Z1 z","z_{Z_{1}}",7],"Z2z":["Z2 z","z_{Z_{2}}",7],"ptJRatio":["","#Sigma p_{T}/# Sum  ",2],"ptRatio":["","#Sum p_{T}",2],"PtZZ":["p_{T}^{4\\ell}","Sum p_{T}",60],"deltaEtaJJ":["|#eta_{jj}|","|#eta_{jj}|",2],"Dphi":["#Delta #phi_{jj}","#Delta #phi_{jj}",10],"Deta":["#Delta #eta_{jj}","#Delta #eta_{jj}",5],"Mjj_Central":["m_{jj}","m_{jj}",20],"Deta_Central":["#Delta #eta_{jj}","#Delta #eta_{jj}",5]}
+InfoType_vbs = {"Mass":["m_{4\ell}","m_{4\ell}",40],"Mjj":["m_{jj}","m_{JJ}",20],"Z1Mass":["Z1 Mass","m_{2\ell}",10,],"Z2Mass":["Z2 Mass","m_{2\ell}",10,],"Z1lep0_sip":["Z1 lep 0 Sip","Sip",4],"Z1lep0_iso":["Z1 lep 0 Iso","Iso",4],"Z0lep0_pt":["Z1 lep 0 pT","p_{T}",4],"nJets":["# jets","# jets",1],"nJets_central":["# jets","# jets",1],"z":["z1","z1",1],"PtJet1":["pT Jet","p_{T}^{jet}",10],"EtaJet1":["#eta Jet","#eta^{jet}",10],"PtJet2":["pT Jet","p_{T}^{jet}",10],"EtaJet2":["#eta Jet","#eta^{jet}",10],"Z1pt":["Z1 p_{T}","p_{T}",20],"Z2pt":["Z2 p_{T}","p_{T}",10],"Z1z":["Z1 z","z_{Z_{1}}",7],"Z2z":["Z2 z","z_{Z_{2}}",7],"ptJRatio":["","#Sigma p_{T}/# Sum  ",2],"ptRatio":["","#Sum p_{T}",2],"PtZZ":["p_{T}^{4\\ell}","Sum p_{T}",60],"deltaEtaJJ":["|#eta_{jj}|","|#eta_{jj}|",2],"Dphi":["#Delta #phi_{jj}","#Delta #phi_{jj}",10],"Deta":["#Delta #eta_{jj}","#Delta #eta_{jj}",5],"Mjj_Central":["m_{jj}","m_{jj}",20],"Deta_Central":["#Delta #eta_{jj}","#Delta #eta_{jj}",5]}
 
 
 if Analysis =="ZZ": InfoType=InfoType_zz
@@ -182,7 +182,7 @@ if YMaxData>YMaxMC and DoData:
     YMax = YMaxData
 else: YMax = YMaxMC
 
-YMax*=1.25
+YMax*=1.37
 
 # if len(InfoType[Type])>3: 
 #     hMC.SetMaximum(InfoType[Type][3])
@@ -196,27 +196,37 @@ if category !="IrrBkg" and category !="RedBkg":
     pad1 = ROOT.TPad ('hist', '', 0., 0.22, 1.0, 1.0)#0.35
     pad1.SetTopMargin (0.10)
     pad1.SetRightMargin (0.06)#0.10
-    pad1.SetLeftMargin (0.1)
-#pad1.SetBottomMargin (0.03) 
+    pad1.SetLeftMargin (0.05)
+    pad1.SetBottomMargin (1.5) 
     pad1.Draw()
     
     c1.cd()
 
     pad2 = ROOT.TPad ('rat', 'Data/MC ratio', 0., 0.0,  1., 0.28)#0.15
-    pad2.SetTopMargin (0.10)
+    pad2.SetTopMargin (0.01)
     pad2.SetRightMargin (0.06)#0.10
     pad2.SetLeftMargin (0.1)
-#pad2.SetBottomMargin(0.35);
+    pad2.SetBottomMargin(0.3);
     pad2.Draw()
     
     pad1.cd()
 
     histodata.Divide(hMC.GetStack().Last())    
+else:
+    c1.SetLeftMargin(0.15)
+    c1.SetRightMargin(0.08)
 hMC.SetMaximum(YMax)
 hMC.Draw("hist")
-hMC.GetHistogram().GetXaxis().SetTitle(InfoType[Type][0])
-hMC.SetName(InfoType[Type][1])
 
+if category !="IrrBkg" and category !="RedBkg": 
+    hMC.GetHistogram().GetXaxis().SetLabelSize(0)
+else: 
+    hMC.SetName(InfoType[Type][1])
+    hMC.GetHistogram().GetXaxis().SetTitle(InfoType[Type][0])
+    hMC.GetHistogram().GetXaxis().SetTitleSize(0.05)
+    hMC.GetHistogram().GetYaxis().SetTitleSize(0.05)
+    hMC.GetHistogram().GetXaxis().SetTitleOffset(1)
+    hMC.GetHistogram().GetYaxis().SetTitle("Events")
 
 if category is not "Sig":
     hMCErr.SetFillStyle(3005)
@@ -230,25 +240,25 @@ if DoData:
     hData.Draw("samep")
     leg.AddEntry(hData, "Data","lpe")
     #HistoData.Draw("same text")
-    if category !="IrrBkg" and category !="RedBkg":    HistoData.Draw("same text")
+    if category !="IrrBkg" and category !="RedBkg":    HistoData.Draw("same")
 
 if Type=="nJets":
-    hMC.GetHistogram().GetXaxis().SetTitle("#Jets")
-    hMC.GetHistogram().GetXaxis().SetBinLabel(1,"0 Jets")
-    hMC.GetHistogram().GetXaxis().SetBinLabel(2,"1 Jets")
-    hMC.GetHistogram().GetXaxis().SetBinLabel(3,"2 Jets")
-    hMC.GetHistogram().GetXaxis().SetBinLabel(4,"3 Jets")
-    hMC.GetHistogram().GetXaxis().SetBinLabel(5,">3 Jets")
+    hMC.GetHistogram().GetXaxis().SetTitle("N_{jets} (|#eta^{jet}| < 4.7)")
+    hMC.GetHistogram().GetXaxis().SetBinLabel(1,"0 ")
+    hMC.GetHistogram().GetXaxis().SetBinLabel(2,"1 ")
+    hMC.GetHistogram().GetXaxis().SetBinLabel(3,"2 ")
+    hMC.GetHistogram().GetXaxis().SetBinLabel(4,"3 ")
+    hMC.GetHistogram().GetXaxis().SetBinLabel(5,">3 ")
     if category != "IrrBkg" and category !="RedBkg":
-        histodata.GetXaxis().SetTitle("#Jets")
-        histodata.GetXaxis().SetBinLabel(1,"0 Jets")
-        histodata.GetXaxis().SetBinLabel(2,"1 Jets")
-        histodata.GetXaxis().SetBinLabel(3,"2 Jets")
-        histodata.GetXaxis().SetBinLabel(4,"3 Jets")
-        histodata.GetXaxis().SetBinLabel(5,">3 Jets")
+        histodata.GetXaxis().SetTitle("N_{jets} (|#eta^{jet}| < 4.7)")
+        histodata.GetXaxis().SetBinLabel(1,"0 ")
+        histodata.GetXaxis().SetBinLabel(2,"1 ")
+        histodata.GetXaxis().SetBinLabel(3,"2 ")
+        histodata.GetXaxis().SetBinLabel(4,"3 ")
+        histodata.GetXaxis().SetBinLabel(5,">3 ")
 
 
-#leg.Draw("same")    
+leg.Draw("same")    
 
 CMS_lumi.CMS_lumi(c1, iPeriod, iPos)
 
@@ -260,6 +270,9 @@ if category !="IrrBkg" and category !="RedBkg":
     
     Line = ROOT.TLine(hMC.GetXaxis().GetXmin(),1,hMC.GetXaxis().GetXmax(),1) 
     Line.SetLineWidth(2)
+    histodata.GetXaxis().SetTitle(InfoType[Type][0])
+    histodata.GetXaxis().SetLabelSize(0.08)
+    histodata.GetXaxis().SetTitleSize(0.08)
     #histodata.Draw("AXIS")
     histodata.SetMarkerStyle(20)
     histodata.Draw("E1")
@@ -294,7 +307,6 @@ ROOT.gStyle.SetOptTitle(0)
 c1.Update()
 
 c1.SetTitle(Title)
-
 c1.SaveAs("Plot/RecoPlots/"+Title+".root")        
 c1.SaveAs("Plot/RecoPlots/"+Title+".png")        
 c1.SaveAs("Plot/RecoPlots/"+Title+".eps")        
@@ -323,12 +335,6 @@ if Save:
         c1.SaveAs(PersonalFolder+Dir+"Reco/"+Title+".png")        
         c1.SaveAs(PersonalFolder+Dir+"Reco/"+Title+".root")        
         c1.SaveAs(PersonalFolder+Dir+"Reco/"+Title+".pdf")        
+        c1.SaveAs("~/../../../../../eos/user/g/gpinnaan/"+Dir+"Reco/"+Title+".pdf")        
 
-#        c1.SaveAs("~/www/PlotsVV/13TeV/"+Title+".pdf")        
-
-
-#fout  = ROOT.TFile("results/data/"+Title+".root","update")
-#hwrite  = copy.deepcopy(hMC.GetStack().Last())
-#hwrite.SetName(Type+"_"+LumiProj)
-#hwrite.Write()
 

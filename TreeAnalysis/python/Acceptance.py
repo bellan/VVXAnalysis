@@ -108,14 +108,21 @@ FileOut_Sq  =  ROOT.TFile("./Acceptance/AcceptanceSFactorSqUp_"+Set+Analysis+"_"
 FileOut_mSq =  ROOT.TFile("./Acceptance/AcceptanceSFactorSqDn_"+Set+Analysis+"_"+Type+".root","RECREATE") 
     
 
+FileOut_Acc1   =  ROOT.TFile("./Acceptance/AcceptanceTheorUp_"+Set+Analysis+"_"+Type+".root","RECREATE") 
+FileOut_Accm1  =  ROOT.TFile("./Acceptance/AcceptanceTheorDn_"+Set+Analysis+"_"+Type+".root","RECREATE") 
+
 def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
 
-    
-    if    SistErr == "0":     FileOut = FileOut_0 
-    elif  SistErr == "+Sq":   FileOut = FileOut_Sq 
-    elif  SistErr == "-Sq":   FileOut = FileOut_mSq 
-    elif  SistErr == "1":     FileOut = FileOut_1 
-    elif  SistErr == "-1":    FileOut = FileOut_m1 
+    if Fr =="Acc":    
+        if    SistErr == "0":     FileOut = FileOut_0 
+        elif  SistErr == "1":     FileOut = FileOut_Acc1 
+        elif  SistErr == "-1":    FileOut = FileOut_Accm1 
+    else:
+        if    SistErr == "0":     FileOut = FileOut_0 
+        elif  SistErr == "+Sq":   FileOut = FileOut_Sq 
+        elif  SistErr == "-Sq":   FileOut = FileOut_mSq 
+        elif  SistErr == "1":     FileOut = FileOut_1 
+        elif  SistErr == "-1":    FileOut = FileOut_m1 
 
 
     if    Set=="Pow": print "\nPowheg Monte Carlo set"
@@ -137,6 +144,7 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
     Acc2=0.
     Acc3=0.
 
+    Tot4lfr = 0;
     Tot4lReco = 0;
     Tot4l     = 0;
 
@@ -151,7 +159,7 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
         isFirst=True            
         for sample in SignalSamples:
             fileIn = ROOT.TFile(inputdir+sample["sample"]+".root")
-
+            fileRecoIn = ROOT.TFile( ( (inputdir.replace("_MC","_SR")).replace("MC","Reco"))+sample["sample"]+".root")
             if Fr=="Tot":
                 hGen_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"Gen_01")
                 if SistErr=="0":      hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"GenReco_01")
@@ -173,11 +181,29 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
                 else:          
                     sys.exit("Wrong value for scale factor sistematic")
 
-            elif Fr=="Acc":                    
-                hGen_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"Gen_01")
-                if SistErr=="0":      hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"Gen_01_fr")
 
-            print  SistErr ,"ZZTo"+Fin+"_"+SampleType
+            elif Fr=="EffAndFake_Tight":
+                hGen_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"Gen_01_fr")
+                if SistErr=="0":      hRec_ = fileRecoIn.Get("ZZTo"+Fin+"_"+SampleType+"_01")
+                elif SistErr=="1":    hRec_ = fileRecoIn.Get("ZZTo"+Fin+"_"+SampleType+"_SFUp_01")
+                elif SistErr=="-1":   hRec_ = fileRecoIn.Get("ZZTo"+Fin+"_"+SampleType+"_SFDn_01")
+                elif SistErr=="+Sq":  hRec_ = fileRecoIn.Get("ZZTo"+Fin+"_"+SampleType+"_SFSqUp_01")
+                elif SistErr=="-Sq":  hRec_ = fileRecoIn.Get("ZZTo"+Fin+"_"+SampleType+"_SFSqDn_01") 
+                else:          
+                    sys.exit("Wrong value for scale factor sistematic")
+
+
+            elif Fr=="Acc":                    
+                if SistErr=="0": 
+                    hGen_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"Gen_01")
+                    hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"Gen_01_fr")
+                if SistErr=="1":    
+                    hGen_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"Gen_01_scaleUp")
+                    hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"Gen_01_scaleUp_fr")
+                if SistErr=="-1":
+                    hGen_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"Gen_01_scaleDn")
+                    hRec_ = fileIn.Get("ZZTo"+Fin+"_"+SampleType+"Gen_01_scaleDn_fr")
+
 
             hGen  = copy.deepcopy(hGen_)          
             hReco = copy.deepcopy(hRec_)
@@ -205,6 +231,7 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
         NTotEv  = hMergGen.Integral(0,-1)
         NRecoEv = hMergReco.Integral(0,-1)
 
+
         Tot4lReco+=NRecoEv
         Tot4l    +=NTotEv
 
@@ -220,6 +247,7 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
             if Fr=="Eff_Tight":          TotAcc = TParameter(float)("TotAcc"+Fin+"_fr",Acc)
             elif Fr=="Tot":              TotAcc = TParameter(float)("TotAcc"+Fin+"_Tot",Acc)
             elif Fr=="Acc":              TotAcc = TParameter(float)("TotAcc"+Fin+"_Acc",Acc)
+            elif Fr=="EffAndFake_Tight":    TotAcc = TParameter(float)("TotAcc"+Fin+"_frAndFake",Acc)
             else: sys.exit("Error: Wrong region ")
            
             TotAcc.Write("",TotAcc.kOverwrite)
@@ -321,23 +349,20 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
                 hcopy3.Draw("sameE1");
                 leg.Draw("same")
 
-
-
-
-    if SistErr=="0":
-        Acc4l = Tot4lReco/Tot4l
-        TotAcc = TParameter(float)("TotAcc4l_"+Fr,Acc4l)
-        TotAcc.Write("",TotAcc.kOverwrite)
-        print    "total Acc",Acc4l
-        c1.SaveAs("./Plot/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+".png") 
-        if SavePlot:
-            print PersonalFolder+Dir+"/"+Type+"/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".png" 
-            c1.SaveAs(PersonalFolder+Dir+"/"+Type+"/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".png") 
-            c1.SaveAs(PersonalFolder+Dir+"/"+Type+"/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".pdf") 
+    FileOut.cd
+    Acc4l = Tot4lReco/Tot4l
+    print "Acc 4l",SistErr,Acc4l
+    TotAcc = TParameter(float)("TotAcc4l_"+Fr,Acc4l)
+    TotAcc.Write("",TotAcc.kOverwrite)
+    c1.SaveAs("./Plot/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+".png") 
+    if SavePlot:
+        print PersonalFolder+Dir+"/"+Type+"/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".png" 
+        c1.SaveAs(PersonalFolder+Dir+"/"+Type+"/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".png") 
+        c1.SaveAs(PersonalFolder+Dir+"/"+Type+"/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".pdf") 
     return FinStateAcc
 
 
-#PlusAcc    = SetAcceptance("results/ZZMCAnalyzer_MC/",Type,SavePlot,"1")  # Correlated Errors //To be added again
+#PlusAcc   = SetAcceptance("results/ZZMCAnalyzer_MC/",Type,SavePlot,"1")  # Correlated Errors //To be added again
 #MinuAcc   = SetAcceptance("results/ZZMCAnalyzer_MC/",Type,SavePlot,"-1") # Correlated Errors
 
 
@@ -351,8 +376,15 @@ PlusSqAcc_fr   = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SaveP
 MinusSqAcc_fr  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"-Sq","Eff_Tight")
 CentralAcc_fr  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"0","Eff_Tight")
 
+print Yellow("\n Fiducial and fake")
+PlusSqAcc_frAndFake   = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"+Sq","EffAndFake_Tight")
+MinusSqAcc_frAndFake  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"-Sq","EffAndFake_Tight")
+CentralAcc_frAndFake  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"0","EffAndFake_Tight")
+
 print Yellow("\n Acceptance Tr->Fr")
 CentralAcc_Acc  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"0","Acc")
+CentralAcc_Acc_up  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"1","Acc")
+CentralAcc_Acc_dn  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"-1","Acc")
 
 print Red(("Final total results for MC set {0} \n").format(Set))
 print Red("Total Region \nAcceptance x efficency")
@@ -362,10 +394,26 @@ for fin in ("2e2m","4m","4e"):
 
 print Red("Fiducial Region \nEfficency ")
 for fin in ("2e2m","4m","4e"):
-#    print "{0} {1} {2:.4f} + {3:.3f} %  - {4:.3f} % ".format(fin, (6-len(fin))*" ", CentralAcc_fr[fin],(-1+PlusSqAcc_fr[fin]/CentralAcc_fr[fin])*100,(1-MinusSqAcc_fr[fin]/CentralAcc_fr[fin])*100)
     print "{0} {1} {2:.4f} + {3:.3f}  - {4:.3f}".format(fin, (6-len(fin))*" ", CentralAcc_fr[fin],(PlusSqAcc_fr[fin]-CentralAcc_fr[fin]),(-MinusSqAcc_fr[fin]+CentralAcc_fr[fin]))
-    #print "acceptance for {0}  {1} {2:.2f} + {3:.3f}  - {4:.3f} % ".format(fin, (6-len(fin))*" ", CentralAcc_fr[fin]*100,(PlusSqAcc_fr[fin]-CentralAcc_fr[fin])*100,(-MinusSqAcc_fr[fin]+CentralAcc_fr[fin])*100)
+
+print Red("Fiducial Region \nEfficency and fake correction ")
+for fin in ("2e2m","4m","4e"):
+   print "{0} {1} {2:.4f} + {3:.3f}  - {4:.3f}".format(fin, (6-len(fin))*" ", CentralAcc_frAndFake[fin],(PlusSqAcc_frAndFake[fin]-CentralAcc_frAndFake[fin]),(-MinusSqAcc_frAndFake[fin]+CentralAcc_frAndFake[fin]))
+
 
 print Red("From Tight to Total \nAcceptance ")
 for fin in ("2e2m","4m","4e"):
     print "{0} {1} {2:.4f}".format(fin, (6-len(fin))*" ", CentralAcc_Acc[fin])
+
+print ""
+
+
+print Red("Fiducial Region \nEfficency ")
+print" \\begin{tabular}{ccc}"
+print"  \\hline"
+print "Final state & Efficiency  & acceptance \\\\"
+print"  \\hline"
+for fin in ("2e2m","4m","4e"):
+    print "${0} $ & {1} {2:.1f} + {3:.1f}  - {4:.1f} \\% & {5:.1f} + {6:.1f} - {7:.1f} \\% \\\\".format(fin, (6-len(fin))*" ", 100*CentralAcc_fr[fin],100*(PlusSqAcc_fr[fin]-CentralAcc_fr[fin]),100*(-MinusSqAcc_fr[fin]+CentralAcc_fr[fin]), 100*CentralAcc_Acc[fin],  100*(CentralAcc_Acc_dn[fin]-CentralAcc_Acc[fin]), 100*(CentralAcc_Acc[fin]-CentralAcc_Acc_up[fin] ))
+print"  \\hline"
+print"\\end{tabular} "

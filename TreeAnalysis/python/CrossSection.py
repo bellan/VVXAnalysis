@@ -53,7 +53,7 @@ def addGlobSyst(hCent,hUp,hDown,FinState,doFiducial):
 ##################################################################################################################
 
 
-def getUncGraph(HCent,HUp,HDown,MCSet,FinState,Data,Err):
+def getUncGraph(HCent,HUp,HDown,MCSet,FinState,Data,Err,Type):
     
     NBins = HCent.GetNbinsX()
     
@@ -61,7 +61,7 @@ def getUncGraph(HCent,HUp,HDown,MCSet,FinState,Data,Err):
 
     grErr = ROOT.TGraphAsymmErrors(HCent)
     NBins = HCent.GetNbinsX()
-    
+
     for i in range(1,NBins+1):
             
         statUnc = 0     
@@ -70,24 +70,33 @@ def getUncGraph(HCent,HUp,HDown,MCSet,FinState,Data,Err):
         totUnc_up = 0 
         totUnc_down = 0
         if Data == True:
-            statUnc_up =  HCent.GetBinErrorUp(i)
+            statUnc_up   = HCent.GetBinErrorUp(i)
             statUnc_down = HCent.GetBinErrorLow(i)
         else:
-            statUnc_up = HCent.GetBinError(i)
+            statUnc_up   = HCent.GetBinError(i)
             statUnc_down = HCent.GetBinError(i)
 
-        sistUnc_up = HUp.GetBinContent(i) - HCent.GetBinContent(i)
+        sistUnc_up   = HUp.GetBinContent(i)   - HCent.GetBinContent(i)
         sistUnc_down = HCent.GetBinContent(i) - HDown.GetBinContent(i)
-        if Err == "syst":
+
+        if Err == "syst" or Err == "ratio":
             totUnc_up = sistUnc_up
             totUnc_down = sistUnc_down 
         elif Err == "statsyst":
-            totUnc_up = math.sqrt(statUnc_up*statUnc_up + sistUnc_up*sistUnc_up)
+            totUnc_up   = math.sqrt(statUnc_up*statUnc_up + sistUnc_up*sistUnc_up)
             totUnc_down = math.sqrt(statUnc_down*statUnc_down + sistUnc_down*sistUnc_down)
         
-#        print i-1,"cent",HCent.GetBinContent(i),"stat up",statUnc_up,"stat down",statUnc_down,"syst up",sistUnc_up,"syst down",sistUnc_down,"tot up",totUnc_up,"tot down",totUnc_down
+        # print i-1,"cent",HCent.GetBinContent(i)
+        # print "stat up",statUnc_up,"syst up",sistUnc_up,"tot up",totUnc_up
+        # print "stat down",statUnc_down,"syst down",sistUnc_down,"tot down",totUnc_down
+
         grErr.SetPointEYhigh(i-1,totUnc_up) 
         grErr.SetPointEYlow(i-1,totUnc_down)
+
+        if "nJets del"in Type and Data and Err=="ratio":
+            print "set 0"
+            grErr.SetPointEXhigh(i-1,0.) 
+            grErr.SetPointEXlow(i-1,0.)
        
     return copy.deepcopy(grErr)
 
@@ -321,6 +330,14 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,doNormalize,d
             hdown["state"].Scale((norm)/h["state"].Integral(0,-1),"width")
             h["state"].Scale(norm/h["state"].Integral(0,-1),"width")
             print "NORM",norm
+
+        if "nJets del " in Type: #Fixme
+            for bin in range(1,h["state"].GetNbinsX()+1): 
+                hup["state"].SetBinError(bin,0.)
+                hdown["state"].SetBinError(bin,0.)
+                h["state"].SetBinError(bin,0.)
+            
+
     return hSum,hSumUp,hSumDown
 
 
