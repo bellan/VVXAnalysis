@@ -23,7 +23,7 @@ PyFilePath = os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/"
 ### Standard sequence
 ### ----------------------------------------------------------------------
 
-execfile(PyFilePath + "MasterPy/ZZ4lAnalysis.py")         # 2012 reference analysis
+execfile(PyFilePath + "MasterPy/ZZ4lAnalysis.py")         # 2016 reference analysis
 
 ### ----------------------------------------------------------------------
 ### Replace parameters
@@ -82,6 +82,96 @@ execfile(VVjj_search_path + "analyzer_ZZjj.py")
 
 
 
+
+### ......................................................................... ###
+### Build collections of muons and electrons that pass a quality criteria (isGood + isolation) and that are NOT selected to form the ZZ best candidate that pass the full selection
+### ......................................................................... ###
+
+
+# Muons cleaning. First, create a muon collection from the best ZZ candidate grand daughters
+process.muonsFromZZ = cms.EDProducer("PATMuonsFromCompositeCandidates", src =  cms.InputTag("ZZFiltered"), SplitLevel = cms.int32(1))
+
+# Muons cleaning. Second, remove from the muon collection the muons that come from the best ZZ candidate that pass the full selection (previous collection).
+# The newly produced collection is also filtered in muon quality and isolation
+process.postCleaningMuons = cms.EDProducer("PATMuonCleaner",
+                                           # pat electron input source
+                                           src = cms.InputTag("appendPhotons:muons"),
+                                           # preselection (any string-based cut for pat::Muons)
+                                           preselection = cms.string("pt > 5 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"),
+                                           # overlap checking configurables
+                                           checkOverlaps = cms.PSet(
+        muons = cms.PSet(
+            src       = cms.InputTag("muonsFromZZ"), # Start from loose lepton def
+            algorithm = cms.string("byDeltaR"),
+            preselection        = cms.string(""), 
+            deltaR              = cms.double(0.05),  
+            checkRecoComponents = cms.bool(False), # don't check if they share some AOD object ref
+            pairCut             = cms.string(""),
+            requireNoOverlaps   = cms.bool(True), # overlaps don't cause the electron to be discared
+            )
+        ),
+                                           # finalCut (any string-based cut for pat::Muons)
+                                           finalCut = cms.string(''),
+                                           )
+
+
+# Electrons cleaning. First, create a electron collection from the best ZZ candidate grand daughters
+process.electronsFromZZ = cms.EDProducer("PATElectronsFromCompositeCandidates", src =  cms.InputTag("ZZFiltered"), SplitLevel = cms.int32(1))
+
+# Electrons cleaning. Second, remove from the electron collection the electrons that come from the best ZZ candidate that pass the full selection (previous collection).
+# The newly produced collection is also filtered in electron quality and isolation
+process.postCleaningElectrons = cms.EDProducer("PATElectronCleaner",
+                                               # pat electron input source
+                                               src = cms.InputTag("appendPhotons:electrons"),
+                                               # preselection (any string-based cut for pat::Electron)
+                                              preselection = cms.string("pt > 7 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"),
+                                               # overlap checking configurables
+                                               checkOverlaps = cms.PSet(
+        electrons = cms.PSet(
+            src       = cms.InputTag("electronsFromZZ"), # Start from loose lepton def
+            algorithm = cms.string("byDeltaR"),
+            preselection        = cms.string(""), #
+            deltaR              = cms.double(0.05),  
+            checkRecoComponents = cms.bool(False), # don't check if they share some AOD object ref
+            pairCut             = cms.string(""),
+            requireNoOverlaps   = cms.bool(True), # overlaps don't cause the electron to be discared
+            )
+        ),
+                                               # finalCut (any string-based cut for pat::Electron)
+                                               finalCut = cms.string(''),
+                                               )
+
+
+### ......................................................................... ###
+# Remove from the event the jets that have leptons from the ZZ best candidate.
+# Jets are also checked against other good isolated leptons not coming from the ZZ best candidate. 
+# The jets, to be stored in the event, must pass the preselction (specified below by the user) AND the looseID + PU veto that is implemented in the code (same algo as for H->ZZ VBF selection)
+### ......................................................................... ###
+
+## FIXME: Logic need to be recheck as of new FSR strategy has been implemented
+process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
+                                           JetPreselection      = cms.string("pt > 20"),
+                                           DiBosonPreselection  = cms.string(""),
+                                           MuonPreselection     = cms.string(""),
+                                           ElectronPreselection = cms.string(""),
+                                           MatchingType         = cms.string("byDeltaR"), 
+                                           Jets      = cms.InputTag("dressedJets"),
+                                           Muons     = cms.InputTag("postCleaningMuons"),
+                                           Electrons = cms.InputTag("postCleaningElectrons"),
+                                           Diboson   = cms.InputTag("ZZFiltered"),
+                                           cleanFSRFromLeptons = cms.bool(True),
+                                           DebugPrintOuts      =  cms.untracked.bool(False),
+                                           DebugPlots= cms.untracked.bool(False)
+                                           )
+
+
+# Number of disambiguated jets
+process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("disambiguatedJets"), minNumber = cms.uint32(0))
+
+process.jetCleaning = cms.Path(process.muonsFromZZ*process.postCleaningMuons 
+                               + process.electronsFromZZ*process.postCleaningElectrons
+                               + process.disambiguatedJets
+                               + process.jetCounterFilter)
 
 
 
