@@ -49,14 +49,6 @@ VVjj_search_path = os.environ['CMSSW_BASE'] + "/src/VVXAnalysis/Producers/python
 
 
 
-#process.goodIsoMuons = cms.EDProducer("CandSelector",
-#                                      src = cms.InputTag("appendPhotons:muons"),
-#                                      cut = cms.string("userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
-
-#process.goodIsoElectrons = cms.EDProducer("CandSelector",
-#                                      src = cms.InputTag("appendPhotons:electrons"),
-#                                      cut = cms.string("userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
-
 #process.VVjjEventTagger = cms.EDFilter("EventTagger",
 #                                       Topology = cms.int32(-1), 
 #                                       src = cms.InputTag("softLeptons"),
@@ -95,76 +87,21 @@ process.muonsFromZZ = cms.EDProducer("PATMuonsFromCompositeCandidates", src =  c
 process.electronsFromZZ = cms.EDProducer("PATElectronsFromCompositeCandidates", src =  cms.InputTag("ZZFiltered"), SplitLevel = cms.int32(1))
 
 
-process.postCleaningMuons = cms.EDFilter("PATMuonSelector",
-                                         src = cms.InputTag("appendPhotons:muons"),
-                                         cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')")
-                                         )
+process.postCleaningMuons = cms.EDFilter("PATMuonSelector", src = cms.InputTag("appendPhotons:muons"),
+                                         cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
 
-process.postCleaningElectrons = cms.EDFilter("PATElectronSelector",
-                                             src = cms.InputTag("appendPhotons:electrons"),
-                                             cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')")
-                                             )
+
+process.postCleaningElectrons = cms.EDFilter("PATElectronSelector", src = cms.InputTag("appendPhotons:electrons"),
+                                             cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
 
 
 process.muonsToBeRemovedFromJets = cms.EDProducer("PATMuonMerger",
-                                                  src = cms.VInputTag(cms.InputTag("muonsFromZZ"),
-                                                                      cms.InputTag("postCleaningMuons"))
-                                                  )
+                                                  src = cms.VInputTag(cms.InputTag("muonsFromZZ"), cms.InputTag("postCleaningMuons")))
 
 process.electronsToBeRemovedFromJets = cms.EDProducer("PATElectronMerger",
-                                                      src = cms.VInputTag(cms.InputTag("electronsFromZZ"),
-                                                                          cms.InputTag("postCleaningElectrons"))
-                                                      )
+                                                      src = cms.VInputTag(cms.InputTag("electronsFromZZ"), cms.InputTag("postCleaningElectrons")))
 
 
-
-# # Muons cleaning. Second, remove from the muon collection the muons that come from the best ZZ candidate that pass the full selection (previous collection).
-# # The newly produced collection is also filtered in muon quality and isolation
-# process.postCleaningMuons = cms.EDProducer("PATMuonCleaner",
-#                                            # pat electron input source
-#                                            src = cms.InputTag("appendPhotons:muons"),
-#                                            # preselection (any string-based cut for pat::Muons)
-#                                            preselection = cms.string("pt > 5 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"),
-#                                            # overlap checking configurables
-#                                            checkOverlaps = cms.PSet(
-#         muons = cms.PSet(
-#             src       = cms.InputTag("muonsFromZZ"), # Start from loose lepton def
-#             algorithm = cms.string("byDeltaR"),
-#             preselection        = cms.string(""), 
-#             deltaR              = cms.double(0.05),  
-#             checkRecoComponents = cms.bool(False), # don't check if they share some AOD object ref
-#             pairCut             = cms.string(""),
-#             requireNoOverlaps   = cms.bool(True), # overlaps don't cause the electron to be discared
-#             )
-#         ),
-#                                            # finalCut (any string-based cut for pat::Muons)
-#                                            finalCut = cms.string(''),
-#                                            )
-
-
-
-# # Electrons cleaning. Second, remove from the electron collection the electrons that come from the best ZZ candidate that pass the full selection (previous collection).
-# # The newly produced collection is also filtered in electron quality and isolation
-# process.postCleaningElectrons = cms.EDProducer("PATElectronCleaner",
-#                                                # pat electron input source
-#                                                src = cms.InputTag("appendPhotons:electrons"),
-#                                                # preselection (any string-based cut for pat::Electron)
-#                                               preselection = cms.string("pt > 7 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"),
-#                                                # overlap checking configurables
-#                                                checkOverlaps = cms.PSet(
-#         electrons = cms.PSet(
-#             src       = cms.InputTag("electronsFromZZ"), # Start from loose lepton def
-#             algorithm = cms.string("byDeltaR"),
-#             preselection        = cms.string(""), #
-#             deltaR              = cms.double(0.05),  
-#             checkRecoComponents = cms.bool(False), # don't check if they share some AOD object ref
-#             pairCut             = cms.string(""),
-#             requireNoOverlaps   = cms.bool(True), # overlaps don't cause the electron to be discared
-#             )
-#         ),
-#                                                # finalCut (any string-based cut for pat::Electron)
-#                                                finalCut = cms.string(''),
-#                                                )
 
 
 ### ......................................................................... ###
@@ -191,9 +128,8 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
 # Number of disambiguated jets
 process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("disambiguatedJets"), minNumber = cms.uint32(0))
 
-process.jetCleaning = cms.Path(process.muonsFromZZ*process.postCleaningMuons 
-                               + process.electronsFromZZ*process.postCleaningElectrons
-                               + process.muonsToBeRemovedFromJets + process.electronsToBeRemovedFromJets                               
+process.jetCleaning = cms.Path(process.muonsFromZZ * process.postCleaningMuons * process.muonsToBeRemovedFromJets 
+                               + process.electronsFromZZ * process.postCleaningElectrons * process.electronsToBeRemovedFromJets                               
                                + process.disambiguatedJets
                                + process.jetCounterFilter)
 
