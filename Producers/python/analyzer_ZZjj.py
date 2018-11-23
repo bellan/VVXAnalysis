@@ -129,7 +129,7 @@ if IsMC:
     genCategory =  cms.EDFilter("ZZGenFilterCategory",
                                 Topology       = cms.int32(SIGNALDEFINITION), 
                                 src            = cms.InputTag("genParticlesFromHardProcess"),
-                                GenJets        = cms.InputTag("slimmedGenJets"),
+                                GenJets        = cms.InputTag("selectedGenJets"),
                                 )
     process.genCategory = genCategory
 

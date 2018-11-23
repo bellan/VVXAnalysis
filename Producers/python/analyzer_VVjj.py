@@ -65,7 +65,16 @@ process.genParticlesFromHardProcess = cms.EDFilter("GenParticleSelector",
                                            stableOnly = cms.bool(True)
                                            )
 
-process.genPath = cms.Path(process.genParticlesFromHardProcess)
+# FIXME! They need to be disambiguated from leptons!!
+process.selectedGenJets = cms.EDFilter("GenJetSelector",
+                                       filter = cms.bool(False),
+                                       src = cms.InputTag("slimmedGenJets"),
+                                       cut = cms.string('pt > 20 && abs(eta) < 4.7'),
+                                       )
+
+
+
+process.genPath = cms.Path(process.genParticlesFromHardProcess + process.selectedGenJets)
 
 
 
