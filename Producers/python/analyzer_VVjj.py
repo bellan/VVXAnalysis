@@ -61,7 +61,7 @@ VVjj_search_path = os.environ['CMSSW_BASE'] + "/src/VVXAnalysis/Producers/python
 process.genParticlesFromHardProcess = cms.EDFilter("GenParticleSelector",
                                            filter = cms.bool(False),
                                            src = cms.InputTag("prunedGenParticles"),
-                                           cut = cms.string('status == 1 && fromHardProcessFinalState && isPromptFinalState() && ( (abs(pdgId) >= 11 && abs(pdgId) <= 16) ||  abs(pdgId) == 22)'),
+                                           cut = cms.string('status == 1 && (fromHardProcessFinalState && isPromptFinalState && abs(pdgId) >= 11 && abs(pdgId) <= 16) ||  abs(pdgId) == 22'),
                                            stableOnly = cms.bool(True)
                                            )
 

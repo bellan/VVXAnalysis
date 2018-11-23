@@ -103,9 +103,7 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
     
     // Leptons
     if(id == 11 || id == 13) genLeptons.push_back(phys::convert(p,p.statusFlags().flags_)); 
-    
   }
-  
   
   
   foreach(phys::Particle &lep, genLeptons)
