@@ -28,7 +28,6 @@
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
 
-#include "ZZAnalysis/AnalysisStep/interface/MCHistoryTools.h"
 #include "ZZAnalysis/AnalysisStep/interface/bitops.h"
 #include "VVXAnalysis/DataFormats/interface/GenStatusBit.h"
 
@@ -52,7 +51,6 @@ using std::endl;
 TreePlanter::TreePlanter(const edm::ParameterSet &config)
   : PUWeighter_      (2017,2017)
   , filterController_(config,consumesCollector())
-  , mcHistoryTools_  (0)
   , leptonScaleFactors_(
 			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_mu_Moriond2017.root").fullPath(),
 			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_non_gap_ele_Moriond2017_v2.root").fullPath(),
@@ -119,6 +117,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     consumesMany<LHEEventProduct>();
     theGenCategoryToken      = consumes<int>                        (config.getUntrackedParameter<edm::InputTag>("GenCategory"    , edm::InputTag("genCategory")));
     theGenCollectionToken    = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("genParticlesFromHardProcess")));
+    //theGenJetCollectionToken = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("selectedGenJets")));
     theGenJetCollectionToken = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("genCategory","genJets")));
     theGenVBCollectionToken  = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenVBCollection", edm::InputTag("genCategory","vectorBosons")));
     theGenInfoToken          = consumes<GenEventInfoProduct>          (edm::InputTag("generator"));
@@ -218,8 +217,6 @@ void TreePlanter::endRun(const edm::Run& run, const edm::EventSetup& setup){
 }
 
 void TreePlanter::endJob(){
-
-  if(mcHistoryTools_) delete mcHistoryTools_;
 
   edm::Service<TFileService> fs;
   TTree *countTree = fs->make<TTree>("HollyTree","HollyTree");
@@ -338,9 +335,6 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
   edm::Handle<edm::View<reco::Candidate> > genParticles; event.getByToken(theGenCollectionToken, genParticles);
   edm::Handle<GenEventInfoProduct>         genInfo     ; event.getByToken(theGenInfoToken, genInfo);
 
-  if (mcHistoryTools_) delete mcHistoryTools_;
-  mcHistoryTools_ = new MCHistoryTools(event, sampleName_, genParticles, genInfo);
-    
 
   // Fill Pile-up info 
   std::vector<edm::Handle<std::vector< PileupSummaryInfo > > >  PupInfos; 
@@ -359,7 +353,7 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
 
   
   // Info about the MC weight
-  genEventWeights_.mcprocweight_ = mcHistoryTools_->gethepMCweight();
+  genEventWeights_.mcprocweight_ = genInfo->weight();
   
   // Sum of weight, particularly imprtant for MCs that return also negative weights
   // or, in general, weighted events
@@ -818,17 +812,6 @@ int TreePlanter::computeRegionFlag(const pat::CompositeCandidate & vv) const{
     set_bit(REGIONFLAG,CRZLLos_3P1F_ZZOnShell);
 
 
-
-  //For the SR, also fold information about acceptance in CRflag 
-  if (isMC_ && test_bit(REGIONFLAG,ZZ)) {
-    bool gen_ZZ4lInEtaAcceptance   = false; // All 4 gen leptons in eta acceptance
-    bool gen_ZZ4lInEtaPtAcceptance = false; // All 4 gen leptons in eta,pT acceptance
-
-    mcHistoryTools_->genAcceptance(gen_ZZ4lInEtaAcceptance, gen_ZZ4lInEtaPtAcceptance);
-
-    if (gen_ZZ4lInEtaAcceptance)   set_bit(REGIONFLAG,28);
-    if (gen_ZZ4lInEtaPtAcceptance) set_bit(REGIONFLAG,29);
-  }
   return REGIONFLAG;
 }
 

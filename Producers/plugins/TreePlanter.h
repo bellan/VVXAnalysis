@@ -41,7 +41,6 @@
 
 class TTree;
 namespace pat{class Jet;}
-class MCHistoryTools;
 
 class TreePlanter: public edm::EDAnalyzer {
   
@@ -107,7 +106,6 @@ class TreePlanter: public edm::EDAnalyzer {
 
   PileUpWeight     PUWeighter_; 
   FilterController filterController_;
-  MCHistoryTools   *mcHistoryTools_;
   // To get Lepton efficiency scale factors. Temporary here!
   LeptonScaleFactors leptonScaleFactors_;
   Int_t signalDefinition_;
