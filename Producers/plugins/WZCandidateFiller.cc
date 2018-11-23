@@ -1,4 +1,4 @@
-/** \class WZCandidateProducer
+/** \class WZCandidateFiller
  *
  *  No description available.
  *
@@ -26,10 +26,11 @@
 #define foreach BOOST_FOREACH
 
 
-class WZCandidateProducer : public edm::EDProducer {
+class WZCandidateFiller : public edm::EDProducer {
+
 public:
   /// Constructor
-  explicit WZCandidateProducer(const edm::ParameterSet& config)
+  explicit WZCandidateFiller(const edm::ParameterSet& config)
     : theZLToken (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZL")))
     , theMETToken(consumes<pat::METCollection>(config.getParameter<edm::InputTag>("MET")))
   {
@@ -38,7 +39,7 @@ public:
   }
   
   /// Destructor
-  ~WZCandidateProducer(){};  
+  ~WZCandidateFiller(){};  
   
   virtual void beginJob(){};  
   virtual void produce(edm::Event&, const edm::EventSetup&);
@@ -58,7 +59,7 @@ private:
 };
 
 
-void WZCandidateProducer::produce(edm::Event& event, const edm::EventSetup& setup){  
+void WZCandidateFiller::produce(edm::Event& event, const edm::EventSetup& setup){  
 
   
   edm::Handle<edm::View<pat::CompositeCandidate> > ZLs; event.getByToken(theZLToken ,  ZLs);
@@ -84,7 +85,7 @@ void WZCandidateProducer::produce(edm::Event& event, const edm::EventSetup& setu
       Lepp4 = phys::Particle::convert((dynamic_cast<const pat::Muon*>(ZL.daughter(1)->masterClone().get()))->p4());
     isGoodLep = (dynamic_cast<const pat::Muon*>(ZL.daughter(1)->masterClone().get()))->userFloat("isGood");}
     else{
-      edm::LogError("WZCandidateProducer") << "Do not know what to cast in fillZLCandidates, LEP part" << std::endl;
+      edm::LogError("WZCandidateFiller") << "Do not know what to cast in fillZLCandidates, LEP part" << std::endl;
       abort();
     }
 
@@ -107,4 +108,4 @@ void WZCandidateProducer::produce(edm::Event& event, const edm::EventSetup& setu
 
 
 #include <FWCore/Framework/interface/MakerMacros.h>
-DEFINE_FWK_MODULE(WZCandidateProducer);
+DEFINE_FWK_MODULE(WZCandidateFiller);
