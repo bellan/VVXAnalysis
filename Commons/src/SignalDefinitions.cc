@@ -445,8 +445,6 @@ std::tuple<bool, phys::Boson<phys::Lepton>, phys::Boson<phys::Lepton> > zz::zz4l
 std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::getZZ(const std::vector<phys::Boson<phys::Particle> >  &ZLL){
   
   
-  //  foreach(const phys::Boson<phys::Particle>& z,   ZLL)  cout<<"mass "<<z.mass()<<" id "<<z.id()<<" pt "<<z.pt()<<endl; //comment
-
   if(ZLL.size() < 2) return std::make_tuple(false, phys::Boson<phys::Particle>(),phys::Boson<phys::Particle>());
   
   std::vector<phys::Boson<phys::Particle> > Zll;  
@@ -478,13 +476,6 @@ std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::
     }
   }  
   
-  // cout<<"Z0 m "<<Z0.mass()<<" pt "<<Z0.pt()<<" Z1 m "<<Z1.mass()<<" pt "<<Z1.pt()
-  //     <<"Z0 0 m "<<Z0.daughter(0).mass()<<" id "<<Z0.daughter(0).id()<<" pt "<<Z0.daughter(0).pt()
-  //     <<"Z0 1 m "<<Z0.daughter(1).mass()<<" id "<<Z0.daughter(1).id()<<" pt "<<Z0.daughter(1).pt()
-  //     <<"Z0 0 m "<<Z1.daughter(0).mass()<<" id "<<Z1.daughter(0).id()<<" pt "<<Z1.daughter(0).pt()
-  //     <<"Z0 0 m "<<Z1.daughter(0).mass()<<" id "<<Z1.daughter(1).id()<<" pt "<<Z1.daughter(1).pt()<<endl; //comment
-  
-
   if(Z1.id() == 0) return std::make_tuple(false, Z0, phys::Boson<phys::Particle>());
   
   // Now check that the 4 leptons are not mismatched due to the presence of low mass resonances 
@@ -503,17 +494,12 @@ std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::
             
     }
     
-  // cout<<" 00 01 "<<(Z0.daughter(0).p4()+ Z0.daughter(1).p4()).M()<<" 10 11 "<<(Z1.daughter(0).p4()+ Z1.daughter(1).p4()).M()<<" 00 10 " <<
-  //    (Z0.daughter(0).p4()+ Z1.daughter(0).p4()).M()<<" 01 10 "<<(Z0.daughter(1).p4()+ Z1.daughter(0).p4()).M()
-  //     <<" 01 11 "<<(Z0.daughter(1).p4()+ Z1.daughter(1).p4()).M()  <<" 01 11 "<<(Z0.daughter(1).p4()+ Z1.daughter(1).p4()).M()<<endl; //comment
-
 
   bool inZMassWindow = true;
 
   if(Z0.mass() > 120. || Z0.mass() < 40. || Z1.mass() > 120. || Z1.mass() < 12.) //Higgs range mass. ZZ range is selected with a specific bit.
       inZMassWindow = false;
 
-  //  cout<<"passllLowMass "<<passllLowMass<<" inZMassWindow "<<inZMassWindow<<endl; //comment
 
   if(!passllLowMass || !inZMassWindow ) return std::make_tuple(false, Z0, Z1);
   else return std::make_tuple(true, Z0, Z1);

@@ -128,15 +128,14 @@ if IsMC:
 
     genCategory =  cms.EDFilter("ZZGenFilterCategory",
                                 Topology       = cms.int32(SIGNALDEFINITION), 
-                                ParticleStatus = cms.int32(1), 
-                                src            = cms.InputTag("prunedGenParticles"),
+                                src            = cms.InputTag("genParticlesFromHardProcess"),
                                 GenJets        = cms.InputTag("slimmedGenJets"),
                                 )
     process.genCategory = genCategory
 
     process.kFactor = cms.EDProducer('kfactorProducer',
                                      isMC  = cms.untracked.bool(IsMC),
-                                     src            = cms.InputTag("prunedGenParticles"))
+                                     src   = cms.InputTag("prunedGenParticles")) # RB: switch to genParticlesFromHardProcess ??
     
  
     process.signalCounter    = cms.EDProducer("EventCountProducer")

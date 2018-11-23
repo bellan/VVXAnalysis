@@ -118,7 +118,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     consumesMany<std::vector< PileupSummaryInfo > >();
     consumesMany<LHEEventProduct>();
     theGenCategoryToken      = consumes<int>                        (config.getUntrackedParameter<edm::InputTag>("GenCategory"    , edm::InputTag("genCategory")));
-    theGenCollectionToken    = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("genCategory","genParticles")));
+    theGenCollectionToken    = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("genParticlesFromHardProcess")));
     theGenJetCollectionToken = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("genCategory","genJets")));
     theGenVBCollectionToken  = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenVBCollection", edm::InputTag("genCategory","vectorBosons")));
     theGenInfoToken          = consumes<GenEventInfoProduct>          (edm::InputTag("generator"));
