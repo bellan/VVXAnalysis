@@ -10,6 +10,7 @@
 #include "VVXAnalysis/DataFormats/interface/Electron.h"
 #include "VVXAnalysis/DataFormats/interface/GenStatusBit.h"
 #include <tuple>
+#include <bitset>
 
 namespace vvx{
 
@@ -53,7 +54,6 @@ namespace zz{
     > SignalTopology;
 
 
-  SignalTopology getSignalTopologyStatus3(const std::vector<phys::Particle> &theGenl, const std::vector<phys::Particle> &theGenj);			    
   SignalTopology getSignalTopology       (const std::vector<phys::Particle> &theGenl, std::vector<phys::Particle> &theGenj);			    
  
   bool checkLeptonAcceptance(const phys::Particle &lepton);
@@ -72,6 +72,16 @@ namespace zz{
 
 
 }
+
+namespace VV{
+  std::vector<phys::Boson<phys::Particle> > categorizeHadronicPartOftheEvent(std::vector<phys::Particle> &theGenj,
+									     const std::vector<phys::Boson<phys::Particle> >& bosonsToLeptons, 
+									     std::bitset<16>& topology);
+  
+
+
+}
+
 
 
 
