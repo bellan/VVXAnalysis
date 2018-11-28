@@ -147,7 +147,8 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   if(     std::get<3>(zzSignalTopology).id()  > 0) outputGenColl = loadGenBoson(std::get<3>(zzSignalTopology), genRefs, outputGenColl); // Z2 --> ll
   if(     std::get<4>(zzSignalTopology).id()  > 0) outputGenColl = loadGenBoson(std::get<4>(zzSignalTopology), genRefs, outputGenColl); // Z3 --> jj
   if(fabs(std::get<5>(zzSignalTopology).id()) > 0) outputGenColl = loadGenBoson(std::get<5>(zzSignalTopology), genRefs, outputGenColl); // W0 --> lv
-  if(fabs(std::get<6>(zzSignalTopology).id()) > 0) outputGenColl = loadGenBoson(std::get<6>(zzSignalTopology), genRefs, outputGenColl); // W1 --> jj
+  if(fabs(std::get<6>(zzSignalTopology).id()) > 0) outputGenColl = loadGenBoson(std::get<6>(zzSignalTopology), genRefs, outputGenColl); // W1 --> lv
+  if(fabs(std::get<7>(zzSignalTopology).id()) > 0) outputGenColl = loadGenBoson(std::get<7>(zzSignalTopology), genRefs, outputGenColl); // W2 --> jj
 
   event.put(outputGenColl,"vectorBosons");
   

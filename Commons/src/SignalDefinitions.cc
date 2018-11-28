@@ -532,24 +532,24 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   
   // ---------------------------- Creation of the bosons ----------------------------
 
-  phys::Boson<phys::Particle> Z0, Z1, Z2, Z3, W0, W1;
+  phys::Boson<phys::Particle> Z0, Z1, Z2, Z3, W0, W1, W2;
   
   // Not enough Zs candidates
-  if ( Z.size() < 2) return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1);
+  if ( Z.size() < 2) return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1, W2);
   
   std::tuple<bool, phys::Boson<phys::Particle>,phys::Boson<phys::Particle> > Zpair = zz::getZZ(Z);
   Z0 = std::get<1>(Zpair); 
   Z1 = std::get<2>(Zpair); 
     
   // Not enough Zs with good quality 
-  if(!std::get<0>(Zpair)) return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1); 
+  if(!std::get<0>(Zpair)) return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1, W2); 
 
    
 
   phys::DiBoson<phys::Particle,phys::Particle> ZZ(Z0,Z1);
 
   
-  bool has5leptons      = theGenl.size() == 5;
+  bool has5leptons          = theGenl.size() == 5;
 
   bool isLeptonAcceptance   = inLeptonAcceptance(Z0,Z1);  
 
@@ -557,9 +557,9 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
 
   bool isInTriggerPlateau   = inTriggerPlateau(Z0,Z1);
 
-  bool isZZTightFidRegion   =  (isZZLeptonAcceptance && isInTriggerPlateau);
+  bool isZZTightFidRegion   = (isZZLeptonAcceptance && isInTriggerPlateau);
 
-  bool isHZZTightFidRegion  =  (isLeptonAcceptance && isInTriggerPlateau);
+  bool isHZZTightFidRegion  = (isLeptonAcceptance && isInTriggerPlateau);
 
   bool isZZMassRange = (Z0.mass() > 60 && Z0.mass() < 120 && Z1.mass() > 60. && Z1.mass() < 120 && ZZ.mass() > 100);
 
@@ -583,12 +583,12 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
 
 
   std::vector<phys::Boson<phys::Particle> > lepBosons;
-  lepBosons += Z0,Z1;//,W0;  // FIXME, when add it, put a protection against rejection of jets around 0,0!
+  lepBosons += Z0,Z1,W0,W1;
   std::vector<phys::Boson<phys::Particle> > hadBosons = VV::categorizeHadronicPartOftheEvent(theGenj, lepBosons, topology);
   Z3 = hadBosons.at(0);
-  W1 = hadBosons.at(1);
+  W2 = hadBosons.at(1);
 
-  return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1);
+  return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1, W2);
 }
 
 
@@ -597,15 +597,16 @@ std::vector<phys::Boson<phys::Particle> > VV::categorizeHadronicPartOftheEvent(s
 									       const std::vector<phys::Boson<phys::Particle> >& bosonsToLeptons, 
 									       bitset<16>& topology){
   
-  phys::Boson<phys::Particle> Z3, W1;
+  phys::Boson<phys::Particle> Z3, W2;
 
   // Clean the gen jet collection properly
   std::vector<phys::Particle> tmp;
   foreach(const phys::Particle& jet, theGenj){
     bool match = false;
     foreach(const phys::Boson<phys::Particle>& boson, bosonsToLeptons)
-      if(physmath::deltaR(boson.daughter(0),jet) < 0.4 ||
-	 physmath::deltaR(boson.daughter(1),jet) < 0.4)
+      if(boson.daughter(0).id()*boson.daughter(1).id() != 0 && 
+	 (physmath::deltaR(boson.daughter(0),jet) < 0.4 ||
+	  physmath::deltaR(boson.daughter(1),jet) < 0.4))
 	match = true;
     if(!match) tmp.push_back(jet);
   }
@@ -633,7 +634,7 @@ std::vector<phys::Boson<phys::Particle> > VV::categorizeHadronicPartOftheEvent(s
       phys::Particle q0 = theGenj[std::get<0>(bestJetPairW)];
       phys::Particle q1 = theGenj[std::get<1>(bestJetPairW)];
       if (q0.pt() < q1.pt()) std::swap(q0,q1); 
-      W1 = phys::Boson<phys::Particle>(q0, q1, 24);
+      W2 = phys::Boson<phys::Particle>(q0, q1, 24);
       foundWjj = true;
     }
     
@@ -669,19 +670,19 @@ std::vector<phys::Boson<phys::Particle> > VV::categorizeHadronicPartOftheEvent(s
   
   bool hasCentralJets   = countCentralJets > 0;
 
-  if(hasJets)          topology.set(4);       //ZZ4l + jets (pT>30 GeV and |eta| < 4.7)
+  if(hasJets)          topology.set(4);       //jets (pT>30 GeV and |eta| < 4.7)
   
-  if(hasAtLeast2jets)  topology.set(5);       //ZZ4l + 2jets
+  if(hasAtLeast2jets)  topology.set(5);       //2jets
   
-  if(hasCentralJets)   topology.set(6);       //ZZ4l + jets (pT>30 GeV and |eta| < 2.4)
+  if(hasCentralJets)   topology.set(6);       //jets (pT>30 GeV and |eta| < 2.4)
   
-  if(foundWjj)         topology.set(7);       //ZZ4l + hadronic W
+  if(foundWjj)         topology.set(7);       //hadronic W
   
-  if(foundZjj)         topology.set(8);       //ZZ4l + hadronic Z
+  if(foundZjj)         topology.set(8);       //hadronic Z
 
 
   std::vector<phys::Boson<phys::Particle> > hadBosons;
-  hadBosons += Z3, W1;
+  hadBosons += Z3, W2;
   return hadBosons;
 
 }
