@@ -513,12 +513,14 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   
   bitset<16>  topology(0);   
   
-  std::vector<phys::Particle> theGenlm, theGenlp;
+  std::vector<phys::Particle> theGenlm, theGenlp, genNu;
 
   foreach(const phys::Particle &p, theGenl){    
 
 
-    if(abs(p.id()) != 11 && abs(p.id()) != 13) continue;
+    if(abs(p.id()) != 11 && abs(p.id()) != 13 && abs(p.id()) != 12 && abs(p.id()) != 14) continue;
+
+    if(abs(p.id()) == 12 || abs(p.id()) == 14) {genNu.push_back(p); continue;}
 
     if (p.id() > 0) theGenlm.push_back(p); // negative leptons                                          
     else            theGenlp.push_back(p); // positive leptons 
@@ -534,22 +536,31 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
 
   phys::Boson<phys::Particle> Z0, Z1, Z2, Z3, W0, W1, W2;
   
-  // Not enough Zs candidates
-  if ( Z.size() < 2) return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1, W2);
-  
-  std::tuple<bool, phys::Boson<phys::Particle>,phys::Boson<phys::Particle> > Zpair = zz::getZZ(Z);
-  Z0 = std::get<1>(Zpair); 
-  Z1 = std::get<2>(Zpair); 
+
+  int numberOfChargedLeptons = theGenlp.size() + theGenlm.size();
+
+  // Not enough lepton to form a WZ or a ZZ boson pair. FIXME! WW need to be added and the cut lowered
+  if(theGenlp.size() + theGenlm.size() < 3) return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1, W2);
     
-  // Not enough Zs with good quality 
-  if(!std::get<0>(Zpair)) return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1, W2); 
+
+  // 4 charged leptons FS
+  if(Z.size() >= 2){
+    std::tuple<bool, phys::Boson<phys::Particle>,phys::Boson<phys::Particle> > Zpair = zz::getZZ(Z);
+    Z0 = std::get<1>(Zpair); 
+    Z1 = std::get<2>(Zpair); 
+    
+    // Not enough Zs with good quality 
+    if(!std::get<0>(Zpair)) return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1, W2); 
+  }
+  else return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1, W2);
+  
 
    
 
   phys::DiBoson<phys::Particle,phys::Particle> ZZ(Z0,Z1);
 
   
-  bool has5leptons          = theGenl.size() == 5;
+  bool has5leptons          = numberOfChargedLeptons == 5; // theGenl.size() == 5; // FIXME now theGenl contains neutrinos as well 
 
   bool isLeptonAcceptance   = inLeptonAcceptance(Z0,Z1);  
 

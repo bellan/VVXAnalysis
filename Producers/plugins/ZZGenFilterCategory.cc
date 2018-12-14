@@ -94,21 +94,22 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
       continue;
     }
     
-    genParticlesFromHardProcess.push_back(phys::Particle(p.p4(), phys::Particle::computeCharge(p.pdgId()), p.pdgId()));
+    phys::Particle php = phys::convert(p,p.statusFlags().flags_);
+    genParticlesFromHardProcess.push_back(php);
     
     int id = abs(p.pdgId());
     
     // Photons for FSR correction
-    if(id == 22)  genPhotons.push_back(phys::convert(p)); 
+    if(id == 22)  genPhotons.push_back(php);
     
     // Leptons
-    if(id == 11 || id == 13) genLeptons.push_back(phys::convert(p,p.statusFlags().flags_)); 
+    if(id == 11 || id == 13 || id == 12 || id == 14) genLeptons.push_back(php);
   }
   
   
   foreach(phys::Particle &lep, genLeptons)
     foreach(const phys::Particle &pho, genPhotons)
-    if(reco::deltaR(lep,pho) < 0.1) lep.setP4(lep.p4()+pho.p4()); // update iteratively, so if there is more than one photon to be associated it will mange it
+    if((abs(lep.id()) == 11 || abs(lep.id()) == 13) && reco::deltaR(lep,pho) < 0.1) lep.setP4(lep.p4()+pho.p4()); // update iteratively, so if there is more than one photon to be associated it will mange it
   // Note: right no it does not look at the order in which the photons are added, so there could be some
   // imperfection in the association. One way to overcome this would be to add the nearest one first.
   
