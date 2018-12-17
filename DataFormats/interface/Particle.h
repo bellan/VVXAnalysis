@@ -131,6 +131,22 @@ namespace phys {
     std::bitset<15> genStatusFlags_;
     
   public:
+
+    bool operator==(const Particle& p1) const{
+      return  (*this).id() == p1.id()         &&
+      (*this).p4().Px() - p1.p4().Px() < 0.01 &&
+      (*this).p4().Py() - p1.p4().Py() < 0.01 &&
+      (*this).p4().Pz() - p1.p4().Pz() < 0.01 &&
+      (*this).p4().E()  - p1.p4().E()  < 0.01;
+    }
+
+
+    bool operator!=(Particle p1) const{
+      return !((*this) == p1);
+    }
+
+
+
     friend std::ostream&  operator<<(std::ostream& os, const Particle& obj){
       
       os << "ID = " << obj.id() << " p = (" << obj.p4().X() << "," << obj.p4().Py() << "," << obj.p4().Pz() << "," << obj.e() << "), pT = " << obj.pt() << " eta = " << (obj.p() != 0 ? obj.eta() : 0.) << " phi = " << obj.phi() << " mass = " << obj.mass();    
