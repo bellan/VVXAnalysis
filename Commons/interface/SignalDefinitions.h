@@ -74,7 +74,15 @@ namespace zz{
 
 }
 
-namespace VV{
+namespace wz{
+  std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > getWZ(const std::vector<phys::Particle>& lepMinus,
+										    const std::vector<phys::Particle>& lepPlus,
+										    const std::vector<phys::Particle>& neutrinos);
+}
+
+
+
+namespace vv{
   std::vector<phys::Boson<phys::Particle> > categorizeHadronicPartOftheEvent(std::vector<phys::Particle> &theGenj,
 									     const std::vector<phys::Boson<phys::Particle> >& bosonsToLeptons, 
 									     std::bitset<16>& topology);

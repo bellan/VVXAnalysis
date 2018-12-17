@@ -539,19 +539,34 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
 
   int numberOfChargedLeptons = theGenlp.size() + theGenlm.size();
 
-  // Not enough lepton to form a WZ or a ZZ boson pair. FIXME! WW need to be added and the cut lowered
-  if(theGenlp.size() + theGenlm.size() < 3) return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1, W2);
+  // Not enough lepton to form a WZ or a ZZ boson pair. FIXME! ssWW not contemplated yet!
+  if(theGenlp.size() == 0 || theGenlm.size() == 0) return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1, W2);
     
 
-  // 4 charged leptons FS
-  if(Z.size() >= 2){
+  // ZZ --> 4l FS
+  if(Z.size() >= 2 && numberOfChargedLeptons >=4){
+
     std::tuple<bool, phys::Boson<phys::Particle>,phys::Boson<phys::Particle> > Zpair = zz::getZZ(Z);
+    // Not enough Zs of good quality 
+    if(!std::get<0>(Zpair)) return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1, W2); 
+    
     Z0 = std::get<1>(Zpair); 
     Z1 = std::get<2>(Zpair); 
     
-    // Not enough Zs with good quality 
-    if(!std::get<0>(Zpair)) return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1, W2); 
+
+
   }
+
+  // WZ --> 3l2nu FS
+  else if(Z.size() >= 1 && numberOfChargedLeptons >= 3 && genNu.size() > 0){
+    std::tuple<bool, phys::Boson<phys::Particle>,phys::Boson<phys::Particle> > WZpair = wz::getWZ(theGenlm, theGenlp, genNu);
+    // Not enough bosons of good quality 
+    if(!std::get<0>(WZpair)) return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1, W2); 
+
+    W0 = std::get<1>(WZpair); 
+    Z0 = std::get<2>(WZpair); 
+  }
+
   else return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1, W2);
   
 
@@ -560,7 +575,7 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   phys::DiBoson<phys::Particle,phys::Particle> ZZ(Z0,Z1);
 
   
-  bool has5leptons          = numberOfChargedLeptons == 5; // theGenl.size() == 5; // FIXME now theGenl contains neutrinos as well 
+  bool has5leptons          = numberOfChargedLeptons == 5; 
 
   bool isLeptonAcceptance   = inLeptonAcceptance(Z0,Z1);  
 
@@ -580,11 +595,11 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
 
   if(isHZZTightFidRegion) topology.set(1);    //ZZ4l with leptons in  HZZ tight fiducial region
   
-  if(isZZMassRange) topology.set(2);          //ZZ4l in ZZ fiducial region
+  if(isZZMassRange)       topology.set(2);    //ZZ4l in ZZ fiducial region
 
-  if(isZZTightFidRegion) topology.set(3);     //ZZ4l with leptons in ZZ tight fiducial region
+  if(isZZTightFidRegion)  topology.set(3);    //ZZ4l with leptons in ZZ tight fiducial region
    
-  if(has5leptons)      topology.set(9);       //ZZ4l + 1lepton
+  if(has5leptons)         topology.set(9);    //ZZ4l + 1lepton
 
   int Z0DaugID = Z0.daughter(0).id();  
   int Z1DaugID = Z1.daughter(1).id();
@@ -595,7 +610,7 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
 
   std::vector<phys::Boson<phys::Particle> > lepBosons;
   lepBosons += Z0,Z1,W0,W1;
-  std::vector<phys::Boson<phys::Particle> > hadBosons = VV::categorizeHadronicPartOftheEvent(theGenj, lepBosons, topology);
+  std::vector<phys::Boson<phys::Particle> > hadBosons = vv::categorizeHadronicPartOftheEvent(theGenj, lepBosons, topology);
   Z3 = hadBosons.at(0);
   W2 = hadBosons.at(1);
 
@@ -604,7 +619,7 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
 
 
 // FIXME, make theGenj const
-std::vector<phys::Boson<phys::Particle> > VV::categorizeHadronicPartOftheEvent(std::vector<phys::Particle> &theGenj,
+std::vector<phys::Boson<phys::Particle> > vv::categorizeHadronicPartOftheEvent(std::vector<phys::Particle> &theGenj,
 									       const std::vector<phys::Boson<phys::Particle> >& bosonsToLeptons, 
 									       bitset<16>& topology){
   
@@ -823,4 +838,87 @@ bool zz::inTightFiducialRegion(const zz::SignalTopology &topology){
   bool trigger = false;
   if(pt10 > 0 && pt20 > 0) trigger = true;
   return acceptance && trigger;
+}
+
+
+
+
+std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > wz::getWZ(const std::vector<phys::Particle>& lepMinus,
+										      const std::vector<phys::Particle>& lepPlus,
+										      const std::vector<phys::Particle>& neutrinos){
+  // Cases of WZ:
+  // H) --> e+  nu_e     , e+e-     -11  12 -11 11 =  1
+  // H) --> e-  antinu_e , e+e-      11 -12 -11 11 = -1
+  // M) --> mu+ nu_mu    , e+e-     -13  14 -11 11 =  1
+  // M) --> mu- antinu_mu, e+e-      13 -14 -11 11 = -1
+  // M) --> e+  nu_e     , mu+mu-   -11  12 -13 13 =  1
+  // M) --> e-  antie    , mu+mu-    11 -12 -13 13 = -1
+  // H) --> mu+ nu_mu    , mu+mu-   -13  14 -13 13 =  1
+  // H) --> mu- antinu_mu, mu+mu-    13 -14 -13 13 = -1
+
+
+  int sumId = 0;
+  foreach(const phys::Particle& l, lepMinus)  sumId += l.id();
+  foreach(const phys::Particle& l, lepPlus)   sumId += l.id();
+  foreach(const phys::Particle& l, neutrinos) sumId += l.id();
+
+  if(abs(sumId) != 1) return std::make_tuple(false, phys::Boson<phys::Particle>(),phys::Boson<phys::Particle>());
+
+  phys::Boson<phys::Particle> W,Z;
+
+  
+  // Creation and filling of the vector of Z boson candidates
+  std::vector<phys::Boson<phys::Particle> > Zs;
+  
+  foreach(const phys::Particle &p, lepPlus) foreach(const phys::Particle &m, lepMinus)
+    if(abs(p.id()) == abs(m.id())) Zs.push_back(phys::Boson<phys::Particle>(m,p,23));
+
+  // Mixed (M) cases presents only 1 Z candidate
+  if(Zs.size() == 1){
+    Z = Zs.at(0);
+    phys::Particle lepFromW, neuFromW;
+    neuFromW = neutrinos.at(0);
+    if(neuFromW.id() > 0)
+      foreach(const phys::Particle &p, lepPlus){
+	if(abs(p.id()) == neuFromW.id()){
+	  lepFromW = p;
+	  break;
+	}
+      }
+    else
+      foreach(const phys::Particle &p, lepMinus){
+	if(p.id() == abs(neuFromW.id())){
+	  lepFromW = p;
+	  break;
+	}
+      }
+    W = phys::Boson<phys::Particle>(lepFromW,neuFromW, copysign(24,neuFromW.id()));
+  }
+  // Homogeneous (H) cases presents 2 Z candidates
+  if(Zs.size() == 2){
+    Z = fabs((Zs.at(0).mass() - phys::ZMASS)) < fabs((Zs.at(1).mass() - phys::ZMASS)) ? Zs.at(0) : Zs.at(1);
+    phys::Particle lepFromW, neuFromW;
+    neuFromW = neutrinos.at(0);
+    if(neuFromW.id() > 0)
+      foreach(const phys::Particle &p, lepPlus){
+	if(abs(p.id()) == neuFromW.id() && 
+	   p != Z.daughter(0) && p != Z.daughter(1)){
+	  lepFromW = p;
+	  break;
+	}
+      }
+    else
+      foreach(const phys::Particle &p, lepMinus){
+	if(p.id() == abs(neuFromW.id()) &&
+	   p != Z.daughter(0) && p != Z.daughter(1)){
+	  lepFromW = p;
+	  break;
+	}
+      }
+    W = phys::Boson<phys::Particle>(lepFromW,neuFromW, copysign(24,neuFromW.id()));    
+  }
+  else{return std::make_tuple(false, phys::Boson<phys::Particle>(),phys::Boson<phys::Particle>());}
+
+  return std::make_tuple(true, W, Z);
+
 }
