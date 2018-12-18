@@ -31,4 +31,12 @@ namespace physmath{
     else return false;
   }
 }
+
+template <typename T> std::vector<T> concatenate(std::vector<T> &a, std::vector<T> &b) {
+  std::vector<T> ab = a;
+    ab.insert(ab.end(), b.begin(), b.end());
+    return ab;
+}
+
+
 #endif
