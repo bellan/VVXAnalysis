@@ -57,15 +57,7 @@ namespace zz{
 
   SignalTopology getSignalTopology       (const std::vector<phys::Particle> &theGenl, std::vector<phys::Particle> &theGenj);			    
  
-  bool checkLeptonAcceptance(const phys::Particle &lepton);
-
-  bool checkZZLeptonAcceptance(const phys::Particle &lepton);
-
-  bool inLeptonAcceptance(const phys::Boson<phys::Particle> Z0,const phys::Boson<phys::Particle> Z1 );
-
-  bool inZZLeptonAcceptance(const phys::Boson<phys::Particle> Z0,const phys::Boson<phys::Particle> Z1 );
-
-  bool inTriggerPlateau(const phys::Boson<phys::Particle> Z0,const phys::Boson<phys::Particle> Z1);
+  bool inTriggerPlateau(const std::vector<phys::Particle>& leptons);
 
   bool inTightFiducialRegion(const zz::SignalTopology &topology);
 
@@ -83,6 +75,16 @@ namespace wz{
 
 
 namespace vv{
+
+  bool checkLeptonAcceptance(const phys::Particle& lepton, 
+			     const double& pt_e, const double&eta_e, 
+			     const double& pt_mu, const double& eta_mu);
+
+  bool inLeptonAcceptance(const std::vector<phys::Particle>& leptons,
+			  const double& pt_e, const double&eta_e, 
+			  const double& pt_mu, const double& eta_mu);
+
+
   std::vector<phys::Boson<phys::Particle> > categorizeHadronicPartOftheEvent(std::vector<phys::Particle> &theGenj,
 									     const std::vector<phys::Boson<phys::Particle> >& bosonsToLeptons, 
 									     std::bitset<16>& topology);

@@ -410,15 +410,16 @@ std::tuple<bool, phys::Boson<phys::Lepton>, phys::Boson<phys::Lepton> > zz::zz4l
   
   if(Z1.id() == 0) return std::make_tuple(false, phys::Boson<phys::Lepton>(), phys::Boson<phys::Lepton>());
   
-  // Now check that the 4 leptons can pass the requirement to be on the trigger plateau
-  int count10 = 0;
-  int count20 = 0;
-  for (int i = 0; i<=1; ++i) {
-    if (Z0.daughter(i).pt() > 10 || Z1.daughter(i).pt() > 10) ++count10;
-    if (Z0.daughter(i).pt() > 20 || Z1.daughter(i).pt() > 20) ++count20;
-  }
+  // FIXME REMOVE? Or add it back?
+  // // Now check that the 4 leptons can pass the requirement to be on the trigger plateau
+  // int count10 = 0;
+  // int count20 = 0;
+  // for (int i = 0; i<=1; ++i) {
+  //   if (Z0.daughter(i).pt() > 10 || Z1.daughter(i).pt() > 10) ++count10;
+  //   if (Z0.daughter(i).pt() > 20 || Z1.daughter(i).pt() > 20) ++count20;
+  // }
   
-  if (count10 < 2 || count20 < 1 ) return std::make_tuple(false, phys::Boson<phys::Lepton>(), phys::Boson<phys::Lepton>());
+  // if (count10 < 2 || count20 < 1 ) return std::make_tuple(false, phys::Boson<phys::Lepton>(), phys::Boson<phys::Lepton>());
    
   bool passllLowMass = true;
   
@@ -552,9 +553,6 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
     
     Z0 = std::get<1>(Zpair); 
     Z1 = std::get<2>(Zpair); 
-    
-
-
   }
 
   // WZ --> 3l2nu FS
@@ -577,11 +575,11 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   
   bool has5leptons          = numberOfChargedLeptons == 5; 
 
-  bool isLeptonAcceptance   = inLeptonAcceptance(Z0,Z1);  
+  bool isLeptonAcceptance   = vv::inLeptonAcceptance(theGenlp,7,2.5,5,2.4) && vv::inLeptonAcceptance(theGenlm,7,2.5,5,2.4);  
 
-  bool isZZLeptonAcceptance = inZZLeptonAcceptance(Z0,Z1);  
+  bool isZZLeptonAcceptance = vv::inLeptonAcceptance(theGenlp,5,2.5,5,2.5) && vv::inLeptonAcceptance(theGenlm,5,2.5,5,2.5);  
 
-  bool isInTriggerPlateau   = inTriggerPlateau(Z0,Z1);
+  bool isInTriggerPlateau   = inTriggerPlateau(concatenate(theGenlp,theGenlm));
 
   bool isZZTightFidRegion   = (isZZLeptonAcceptance && isInTriggerPlateau);
 
@@ -715,73 +713,47 @@ std::vector<phys::Boson<phys::Particle> > vv::categorizeHadronicPartOftheEvent(s
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-bool zz::checkLeptonAcceptance(const phys::Particle &lepton){
-
-  if(abs(lepton.id()) == 11 && lepton.pt() > 7 && fabs(lepton.eta()) < 2.5) return true;
-  if(abs(lepton.id()) == 13 && lepton.pt() > 5 && fabs(lepton.eta()) < 2.4) return true;
-
-  return false;
-}
-
-
-bool zz::checkZZLeptonAcceptance(const phys::Particle &lepton){
-
-  if(lepton.pt() > 5. && fabs(lepton.eta()) < 2.5) return true;
-
-  return false;
-}
-
- 
-
-bool zz::inLeptonAcceptance(const phys::Boson<phys::Particle> Z0,const phys::Boson<phys::Particle> Z1 ){
+bool vv::checkLeptonAcceptance(const phys::Particle &lepton, 
+			       const double& pt_e, const double&eta_e, 
+			       const double& pt_mu, const double& eta_mu){
   
-  // Ask for leptons within eta and pt acceptance
- 
-  return  (checkLeptonAcceptance(Z0.daughter(0)) && checkLeptonAcceptance(Z0.daughter(1)) &&
-	   checkLeptonAcceptance(Z1.daughter(0)) && checkLeptonAcceptance(Z1.daughter(1)));
-
-}
-
-
-bool zz::inZZLeptonAcceptance(const phys::Boson<phys::Particle> Z0,const phys::Boson<phys::Particle> Z1 ){
   
-  // Ask for leptons within eta and pt acceptance for ZZ analysis
- 
-  return  (checkZZLeptonAcceptance(Z0.daughter(0)) && checkZZLeptonAcceptance(Z0.daughter(1)) &&
-	   checkZZLeptonAcceptance(Z1.daughter(0)) && checkZZLeptonAcceptance(Z1.daughter(1)));
+  if     (abs(lepton.id()) == 11 && lepton.pt() > pt_e  && fabs(lepton.eta()) < eta_e ) return true;
+  else if(abs(lepton.id()) == 13 && lepton.pt() > pt_mu && fabs(lepton.eta()) < eta_mu) return true;
+  else return false;
 
+  //  if(lepton.pt() > 5. && fabs(lepton.eta()) < 2.5) return true;
+}
+
+ 
+
+bool vv::inLeptonAcceptance(const std::vector<phys::Particle> &leptons,
+			    const double& pt_e , const double&eta_e   , 
+			    const double& pt_mu, const double& eta_mu ){
+  
+  bool inAcceptance = true;
+
+  foreach(const phys::Particle& lep, leptons) inAcceptance = inAcceptance && checkLeptonAcceptance(lep, pt_e, eta_e, pt_mu, eta_mu);
+
+  return inAcceptance;
 }
 
 
- bool zz::inTriggerPlateau(const phys::Boson<phys::Particle> Z0,const phys::Boson<phys::Particle> Z1){
-   
-   int pt10 = 0; 
-   int pt20 = 0;
-   
-   for(int i = 0; i < 2; ++i){
-     if(Z0.daughter(i).pt() > 10) ++pt10; 
-     if(Z0.daughter(i).pt() > 20) ++pt20;
-     if(Z1.daughter(i).pt() > 10) ++pt10; 
-     if(Z1.daughter(i).pt() > 20) ++pt20;
-   }
-   bool trigger = false;
-   if(pt10 > 0 && pt20 > 0) trigger = true;
-   return trigger;
- }
- 
- 
- 
+
+bool zz::inTriggerPlateau(const std::vector<phys::Particle> &leptons){
+  
+  int pt10 = 0; 
+  int pt20 = 0;
+  
+  foreach(const phys::Particle& lep, leptons){
+    if(lep.pt() > 10) ++pt10;
+    if(lep.pt() > 20) ++pt20;
+  }
+  if(pt10 > 1 && pt20 > 0) return true;   
+  else return false;
+}
+
+
 
 bool zz::inHiggsFiducialRegion(const zz::SignalTopology &topology){
 
@@ -800,8 +772,9 @@ bool zz::inHiggsFiducialRegion(const zz::SignalTopology &topology){
 
   // Ask for leptons within eta and pt acceptance
   if(std::get<1>(topology).isValid() && std::get<2>(topology).isValid()) 
-    acceptance = checkLeptonAcceptance(std::get<1>(topology).daughter(0)) && checkLeptonAcceptance(std::get<1>(topology).daughter(1)) &&
-      checkLeptonAcceptance(std::get<2>(topology).daughter(0)) && checkLeptonAcceptance(std::get<2>(topology).daughter(1));
+    acceptance = 
+      vv::checkLeptonAcceptance(std::get<1>(topology).daughter(0),7,2.5,5,2.4) && vv::checkLeptonAcceptance(std::get<1>(topology).daughter(1),7,2.5,5,2.4) &&
+      vv::checkLeptonAcceptance(std::get<2>(topology).daughter(0),7,2.5,5,2.4) && vv::checkLeptonAcceptance(std::get<2>(topology).daughter(1),7,2.5,5,2.4);
   
   for(int i = 0; i < 2; ++i){
       if(std::get<1>(topology).daughter(i).pt() > 10) ++pt10; 
@@ -810,7 +783,7 @@ bool zz::inHiggsFiducialRegion(const zz::SignalTopology &topology){
       if(std::get<2>(topology).daughter(i).pt() > 20) ++pt20;
      }
   bool trigger = false;
-  if(pt10 > 0 && pt20 > 0) trigger = true;
+  if(pt10 > 1 && pt20 > 0) trigger = true;
   return massrequirements && acceptance && trigger;
 }
 
@@ -826,8 +799,9 @@ bool zz::inTightFiducialRegion(const zz::SignalTopology &topology){
 
   // Ask for leptons within eta and pt acceptance
   if(std::get<1>(topology).isValid() && std::get<2>(topology).isValid()) 
-    acceptance = checkLeptonAcceptance(std::get<1>(topology).daughter(0)) && checkLeptonAcceptance(std::get<1>(topology).daughter(1)) &&
-      checkLeptonAcceptance(std::get<2>(topology).daughter(0)) && checkLeptonAcceptance(std::get<2>(topology).daughter(1));
+    acceptance = 
+      vv::checkLeptonAcceptance(std::get<1>(topology).daughter(0),7,2.5,5,2.4) && vv::checkLeptonAcceptance(std::get<1>(topology).daughter(1),7,2.5,5,2.4) &&
+      vv::checkLeptonAcceptance(std::get<2>(topology).daughter(0),7,2.5,5,2.4) && vv::checkLeptonAcceptance(std::get<2>(topology).daughter(1),7,2.5,5,2.4);
   
   for(int i = 0; i < 2; ++i){
       if(std::get<1>(topology).daughter(i).pt() > 10) ++pt10; 
@@ -836,7 +810,7 @@ bool zz::inTightFiducialRegion(const zz::SignalTopology &topology){
       if(std::get<2>(topology).daughter(i).pt() > 20) ++pt20;
      }
   bool trigger = false;
-  if(pt10 > 0 && pt20 > 0) trigger = true;
+  if(pt10 > 1 && pt20 > 0) trigger = true;
   return acceptance && trigger;
 }
 
