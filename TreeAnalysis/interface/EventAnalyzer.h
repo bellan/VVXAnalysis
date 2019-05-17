@@ -197,10 +197,12 @@ public:
   std::vector<phys::Lepton> *electrons; TBranch *b_electrons;
 
   // Persistent Jets (no eta cut, pT > 20 GeV)  
-  std::vector<phys::Jet> *pjets; TBranch *b_pjets;
+  std::vector<phys::Jet> *pjets;    TBranch *b_pjets;
+  std::vector<phys::Jet> *pjetsAK8; TBranch *b_pjetsAK8;
 
   // Jets with pT > 30 GeV and |eta| < 4.7 (not in the tree)
   std::vector<phys::Jet> *jets;
+  std::vector<phys::Jet> *jetsAK8;
   
   // Central jets (not in the tree)
   std::vector<phys::Jet> *centralJets;
@@ -226,10 +228,13 @@ public:
   std::vector<phys::Boson<phys::Particle> > *genVBParticles; TBranch *b_genVBParticles;
   
   // GenJets
-  std::vector<phys::Particle>               *pgenJets;   TBranch *b_pgenJets;
+  std::vector<phys::Particle>               *pgenJets;    TBranch *b_pgenJets;
+  std::vector<phys::Particle>               *pgenJetsAK8; TBranch *b_pgenJetsAK8;
 
   // Jets with pT > 30 GeV and |eta| < 4.7 (not in the tree)
   std::vector<phys::Particle> *genJets;
+  std::vector<phys::Particle> *genJetsAK8;
+
   
   // Central jets (not in the tree)
   std::vector<phys::Particle> *centralGenJets;

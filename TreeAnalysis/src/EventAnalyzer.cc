@@ -93,6 +93,9 @@ void EventAnalyzer::Init(TTree *tree)
   pjets = 0;      b_pjets = 0;    theTree->SetBranchAddress("jets", &pjets, &b_pjets);
   jets  = new std::vector<phys::Jet>(); centralJets  = new std::vector<phys::Jet>();
 
+  pjetsAK8 = 0;      b_pjetsAK8 = 0;    theTree->SetBranchAddress("jetsAK8", &pjetsAK8, &b_pjetsAK8);
+  jetsAK8  = new std::vector<phys::Jet>();
+
   // Bosons   
   Vhad = new std::vector<phys::Boson<phys::Jet> > ()    ; VhadCand = 0; b_VhadCand = 0; theTree->SetBranchAddress("VhadCand", &VhadCand, &b_VhadCand);
 
@@ -110,6 +113,10 @@ void EventAnalyzer::Init(TTree *tree)
   // Gen Jets
   pgenJets   = 0;                                                    b_pgenJets   = 0; theTree->SetBranchAddress("genJets"  , &pgenJets  , &b_pgenJets);
   genJets  = new std::vector<phys::Particle>(); centralGenJets  = new std::vector<phys::Particle>();
+
+  pgenJetsAK8 = 0;                                                   b_pgenJetsAK8 = 0; theTree->SetBranchAddress("genJetsAK8"  , &pgenJetsAK8  , &b_pgenJetsAK8);
+  genJetsAK8  = new std::vector<phys::Particle>();
+
 
   // MET
   met = new phys::Particle();
@@ -150,10 +157,13 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   
   int e =  theTree->GetEntry(entry);
   
-  stable_sort(muons->begin(),     muons->end(),     phys::PtComparator());
-  stable_sort(electrons->begin(), electrons->end(), phys::PtComparator());
-  stable_sort(pjets->begin(),     pjets->end(),     phys::PtComparator());
-  stable_sort(pgenJets->begin(),  pgenJets->end(),  phys::PtComparator());
+  stable_sort(muons->begin(),       muons->end(),       phys::PtComparator());
+  stable_sort(electrons->begin(),   electrons->end(),   phys::PtComparator());
+  stable_sort(pjets->begin(),       pjets->end(),       phys::PtComparator());
+  stable_sort(pgenJets->begin(),    pgenJets->end(),    phys::PtComparator());
+  stable_sort(pjetsAK8->begin(),    pjetsAK8->end(),    phys::PtComparator());
+  stable_sort(pgenJetsAK8->begin(), pgenJetsAK8->end(), phys::PtComparator());
+
   
   // Some selection on jets
   jets->clear(); centralJets->clear(); 
@@ -170,6 +180,16 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
       if(fabs(jet.eta()) < 4.7) genJets->push_back(jet);
       if(fabs(jet.eta()) < 2.4) centralGenJets->push_back(jet);
     }
+  
+
+  // Some selection on jets
+  jetsAK8->clear();
+  foreach(const phys::Jet &jet, *pjetsAK8)
+    if(jet.pt() > 30 && fabs(jet.eta()) < 4.7) jetsAK8->push_back(jet);
+   
+  genJetsAK8->clear();
+  foreach(const phys::Particle &jet, *pgenJetsAK8)
+    if(jet.pt() > 30 && fabs(jet.eta()) < 4.7) genJetsAK8->push_back(jet);
   
   
   Vhad->clear();

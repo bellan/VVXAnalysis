@@ -143,6 +143,9 @@ class TreePlanter: public edm::EDAnalyzer {
   // jets which do not contains leptons from ZZ or other good isolated leptons
   std::vector<phys::Jet>                    jets_;
 
+  // fat jets a-kT R = 0.8
+  std::vector<phys::Jet>                    jetsAK8_;
+
   // V --> jj, with V = W,Z
   std::vector<phys::Boson<phys::Jet>      > Vhad_;
 
@@ -155,15 +158,18 @@ class TreePlanter: public edm::EDAnalyzer {
   std::vector<phys::Particle>               genParticles_;
   std::vector<phys::Boson<phys::Particle> > genVBParticles_;
   std::vector<phys::Particle>               genJets_;
+  std::vector<phys::Particle>               genJetsAK8_;
 
   // ------------------- Input Labels ------------------- //
   edm::EDGetTokenT<pat::MuonCollection>                 theMuonToken;
   edm::EDGetTokenT<pat::ElectronCollection>             theElectronToken;
   edm::EDGetTokenT<std::vector<pat::Jet> >              theJetToken;
+  edm::EDGetTokenT<std::vector<pat::Jet> >              theJetAK8Token;
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theVhadToken;
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZZToken;
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZLToken;
   edm::EDGetTokenT<pat::METCollection>                  theMETToken;
+  edm::EDGetTokenT<std::vector<reco::Vertex> >          theVertexToken;
   edm::EDGetTokenT<double>                              theRhoToken;
   edm::EDGetTokenT<float>                               thekfactorToken_ggZZ    ;
   edm::EDGetTokenT<float>                               thekfactorToken_qqZZM   ;
@@ -172,13 +178,13 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::EDGetTokenT<float>                               thekfactorToken_EWKqqZZ ;
 
   //edm::EDGetTokenT<pat::METCollection>                  theMETNoHFToken;
-  edm::EDGetTokenT<std::vector<reco::Vertex> >          theVertexToken;
 
   // thePUInfoLabel;
   edm::EDGetTokenT<int>                         theGenCategoryToken;
   edm::EDGetTokenT<edm::View<reco::Candidate> > theGenVBCollectionToken;
   edm::EDGetTokenT<edm::View<reco::Candidate> >	theGenCollectionToken;
   edm::EDGetTokenT<edm::View<reco::Candidate> > theGenJetCollectionToken;
+  edm::EDGetTokenT<edm::View<reco::Candidate> > theGenJetAK8CollectionToken;
   edm::EDGetTokenT<GenEventInfoProduct>         theGenInfoToken;
   edm::EDGetTokenT<GenRunInfoProduct>           theGenInfoTokenInRun;
 

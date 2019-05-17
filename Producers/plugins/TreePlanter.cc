@@ -71,23 +71,24 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theMuonToken     (consumes<pat::MuonCollection>                (config.getParameter<edm::InputTag>("muons"    )))
   , theElectronToken (consumes<pat::ElectronCollection>            (config.getParameter<edm::InputTag>("electrons")))
   , theJetToken      (consumes<std::vector<pat::Jet> >             (config.getParameter<edm::InputTag>("jets"     )))
+  , theJetAK8Token   (consumes<std::vector<pat::Jet> >             (config.getParameter<edm::InputTag>("jetsAK8"  )))
   , theVhadToken     (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("Vhad"     )))
   , theZZToken       (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZZ"       )))
   , theZLToken       (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZL"       )))
   , theMETToken      (consumes<pat::METCollection>                 (config.getParameter<edm::InputTag>("MET"      )))
-  , theRhoToken      (consumes<double>                             (edm::InputTag("fixedGridRhoFastjetAll","")))
-  , thekfactorToken_ggZZ     (consumes<float>                              (edm::InputTag("kFactor","ggZZ")))
-  , thekfactorToken_qqZZM    (consumes<float>                              (edm::InputTag("kFactor","qqZZM")))
-  , thekfactorToken_qqZZPt   (consumes<float>                              (edm::InputTag("kFactor","qqZZPt")))
-  , thekfactorToken_qqZZdPhi (consumes<float>                              (edm::InputTag("kFactor","qqZZdPhi")))
-  , thekfactorToken_EWKqqZZ  (consumes<float>                              (edm::InputTag("kFactor","EWKqqZZ")))
   , theVertexToken   (consumes<std::vector<reco::Vertex> >         (config.getParameter<edm::InputTag>("Vertices" )))
-  , thePreSkimCounterToken       (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("preSkimCounter"              )))
-  , prePreselectionCounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("prePreselectionCounter"      )))
+  , theRhoToken      (consumes<double>                             (edm::InputTag("fixedGridRhoFastjetAll","")))
+  , thekfactorToken_ggZZ     (consumes<float>                      (edm::InputTag("kFactor","ggZZ"           )))
+  , thekfactorToken_qqZZM    (consumes<float>                      (edm::InputTag("kFactor","qqZZM"          )))
+  , thekfactorToken_qqZZPt   (consumes<float>                      (edm::InputTag("kFactor","qqZZPt"         )))
+  , thekfactorToken_qqZZdPhi (consumes<float>                      (edm::InputTag("kFactor","qqZZdPhi"       )))
+  , thekfactorToken_EWKqqZZ  (consumes<float>                      (edm::InputTag("kFactor","EWKqqZZ"        )))
+  , thePreSkimCounterToken       (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("preSkimCounter"         )))
+  , prePreselectionCounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("prePreselectionCounter" )))
   , postPreselectionCounterToken_(consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("postPreselectionCounter")))
   , signalCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("signalCounter"          )))
   , postSkimSignalCounterToken_  (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("postSkimSignalCounter"  )))
-  , srCounterToken_              (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("srCounter" ))) 
+  , srCounterToken_              (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("srCounter"              ))) 
   , cr2P2FCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("cr2P2FCounter"          )))
   , cr3P1FCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("cr3P1FCounter"          )))
   , sampleName_      (config.getParameter<std::string>("sampleName"))
@@ -118,7 +119,8 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     theGenCategoryToken      = consumes<int>                        (config.getUntrackedParameter<edm::InputTag>("GenCategory"    , edm::InputTag("genCategory")));
     theGenCollectionToken    = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("genParticlesFromHardProcess")));
     //theGenJetCollectionToken = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("selectedGenJets")));
-    theGenJetCollectionToken = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("genCategory","genJets")));
+    theGenJetCollectionToken    = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("genCategory","genJets")));
+    theGenJetAK8CollectionToken = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJetsAK8"      , edm::InputTag("genCategory","genJetsAK8")));
     theGenVBCollectionToken  = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenVBCollection", edm::InputTag("genCategory","vectorBosons")));
     theGenInfoToken          = consumes<GenEventInfoProduct>          (edm::InputTag("generator"));
     theGenInfoTokenInRun     = consumes<GenRunInfoProduct,edm::InRun>(edm::InputTag("generator"));
@@ -154,6 +156,7 @@ void TreePlanter::beginJob(){
   theTree->Branch("muons"     , &muons_);
   theTree->Branch("electrons" , &electrons_);
   theTree->Branch("jets"      , &jets_); 
+  theTree->Branch("jetsAK8"   , &jetsAK8_); 
   theTree->Branch("VhadCand"  , &Vhad_);
   theTree->Branch("ZZCand"    , &ZZ_); 
   theTree->Branch("ZLCand"    , &ZL_); 
@@ -161,6 +164,7 @@ void TreePlanter::beginJob(){
   theTree->Branch("genParticles"  , &genParticles_);
   theTree->Branch("genVBParticles", &genVBParticles_);
   theTree->Branch("genJets"       , &genJets_);
+  theTree->Branch("genJetsAK8"    , &genJetsAK8_);
 }
 
 void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
@@ -280,6 +284,7 @@ void TreePlanter::initTree(){
   muons_     = std::vector<phys::Lepton>();
   electrons_ = std::vector<phys::Lepton>();
   jets_      = std::vector<phys::Jet>();
+  jetsAK8_   = std::vector<phys::Jet>();
   ZZ_        = phys::DiBoson<phys::Lepton  , phys::Lepton>();
   Vhad_      = std::vector<phys::Boson<phys::Jet>      >();   
 
@@ -288,6 +293,7 @@ void TreePlanter::initTree(){
   genParticles_ = std::vector<phys::Particle>();
   genVBParticles_ = std::vector<phys::Boson<phys::Particle> >();
   genJets_ = std::vector<phys::Particle>();
+  genJetsAK8_ = std::vector<phys::Particle>();
 }
 
 bool TreePlanter::fillEventInfo(const edm::Event& event){
@@ -403,9 +409,25 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
   edm::Handle<edm::View<reco::Candidate> > genJets;
   event.getByToken(theGenJetCollectionToken,  genJets);
     
+  // Still need to clean the genjets. In SignalDefinition, each category cleans the jet collection when it set the bits.
+  // However, for the final... REMOVE this comment
   for(edm::View<reco::Candidate>::const_iterator jet = genJets->begin(); jet != genJets->end(); ++jet)
     genJets_.push_back(phys::Particle(jet->p4(), phys::Particle::computeCharge(jet->pdgId()), jet->pdgId()));
  
+
+  // Get the gen jet collection
+  edm::Handle<edm::View<reco::Candidate> > genJetsAK8;
+  event.getByToken(theGenJetAK8CollectionToken,  genJetsAK8);
+  
+  // Still need to clean the genjets. In SignalDefinition, each category cleans the jet collection when it set the bits.
+  // However, for the final... REMOVE this comment
+  for(edm::View<reco::Candidate>::const_iterator jet = genJetsAK8->begin(); jet != genJetsAK8->end(); ++jet)
+    genJetsAK8_.push_back(phys::Particle(jet->p4(), phys::Particle::computeCharge(jet->pdgId()), jet->pdgId()));
+ 
+
+
+
+
 
   // LHE information
   edm::Handle<LHEEventProduct> lhe_evt;
@@ -452,6 +474,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   edm::Handle<pat::MuonCollection>       muons          ; event.getByToken(theMuonToken    ,     muons);
   edm::Handle<pat::ElectronCollection>   electrons      ; event.getByToken(theElectronToken, electrons);
   edm::Handle<std::vector<pat::Jet> >    jets           ; event.getByToken(theJetToken     ,      jets);
+  edm::Handle<std::vector<pat::Jet> >    jetsAK8        ; event.getByToken(theJetAK8Token  ,   jetsAK8);
   //  edm::Handle<edm::View<pat::CompositeCandidate> > Vhad ; event.getByToken(theVhadToken    ,      Vhad);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZZ   ; event.getByToken(theZZToken      ,        ZZ);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZL   ; event.getByToken(theZLToken      ,        ZL);
@@ -460,6 +483,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   foreach(const pat::Muon&     muon    , *muons    ) muons_.push_back(fill(muon));
   foreach(const pat::Electron& electron, *electrons) electrons_.push_back(fill(electron));
   foreach(const pat::Jet&      jet     , *jets     ) jets_.push_back(fill(jet));
+  foreach(const pat::Jet&      jet     , *jetsAK8  ) jetsAK8_.push_back(fill(jet));
   
 
   // The bosons are selected requiring that their daughters pass the quality criteria to be good daughters

@@ -130,6 +130,7 @@ if IsMC:
                                 Topology       = cms.int32(SIGNALDEFINITION), 
                                 src            = cms.InputTag("genParticlesFromHardProcess"),
                                 GenJets        = cms.InputTag("selectedGenJets"),
+                                GenJetsAK8     = cms.InputTag("selectedGenJetsAK8"),
                                 )
     process.genCategory = genCategory
 

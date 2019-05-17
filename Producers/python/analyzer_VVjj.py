@@ -66,16 +66,23 @@ process.genParticlesFromHardProcess = cms.EDFilter("GenParticleSelector",
                                            stableOnly = cms.bool(True)
                                            )
 
-# FIXME! They need to be disambiguated from leptons!!
+# FIXME! They need to be disambiguated from leptons!! RB: done in the signal definition!
 process.selectedGenJets = cms.EDFilter("GenJetSelector",
                                        filter = cms.bool(False),
                                        src = cms.InputTag("slimmedGenJets"),
                                        cut = cms.string('pt > 20 && abs(eta) < 4.7'),
                                        )
 
+process.selectedGenJetsAK8 = cms.EDFilter("GenJetSelector",
+                                       filter = cms.bool(False),
+                                       src = cms.InputTag("slimmedGenJetsAK8"),
+                                       cut = cms.string('pt > 20 && abs(eta) < 4.7'),
+                                       )
 
 
-process.genPath = cms.Path(process.genParticlesFromHardProcess + process.selectedGenJets)
+
+
+process.genPath = cms.Path(process.genParticlesFromHardProcess + process.selectedGenJets  + process.selectedGenJetsAK8)
 
 
 
@@ -145,13 +152,28 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
                                            cleanFSRFromLeptons = cms.bool(True)
                                            )
 
+# To be fixed
+process.disambiguatedJetsAK8 = cms.EDProducer("JetsWithLeptonsRemover",
+                                              JetPreselection      = cms.string("pt > 20"),
+                                              DiBosonPreselection  = cms.string(""),
+                                              MuonPreselection     = cms.string(""),
+                                              ElectronPreselection = cms.string(""),
+                                              MatchingType         = cms.string("byDeltaR"), 
+                                              Jets      = cms.InputTag("dressedJets"), # need to create AK8 dressed jets
+                                              Muons     = cms.InputTag("muonsToBeRemovedFromJets"),
+                                              Electrons = cms.InputTag("electronsToBeRemovedFromJets"),
+                                              Diboson   = cms.InputTag(""),
+                                              cleanFSRFromLeptons = cms.bool(True)
+                                              )
+
+
 
 # Number of disambiguated jets
 process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("disambiguatedJets"), minNumber = cms.uint32(0))
 
 process.jetCleaning = cms.Path(process.muonsFromZZ * process.postCleaningMuons * process.muonsToBeRemovedFromJets 
                                + process.electronsFromZZ * process.postCleaningElectrons * process.electronsToBeRemovedFromJets                               
-                               + process.disambiguatedJets
+                               + process.disambiguatedJets + process.disambiguatedJetsAK8
                                + process.jetCounterFilter)
 
 
@@ -178,6 +200,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      muons        = cms.InputTag("postCleaningMuons"),     # all good isolated muons BUT the ones coming from ZZ decay
                                      electrons    = cms.InputTag("postCleaningElectrons"), # all good isolated electrons BUT the ones coming from ZZ decay
                                      jets         = cms.InputTag("disambiguatedJets"),     # jets which do not contains leptons from ZZ or other good isolated leptons are removed
+                                     jetsAK8      = cms.InputTag("disambiguatedJetsAK8"),     # jets which do not contains leptons from ZZ or other good isolated leptons are removed
                                      Vhad         = cms.InputTag(""),
                                      ZZ           = cms.InputTag("ZZFiltered"),            # only the best ZZ->4l candidate that pass the FULL selection
                                      ZL           = cms.InputTag("ZlCand"),

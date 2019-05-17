@@ -74,6 +74,7 @@ void ZZGenAnalyzer::analyze(const Event & event, const EventSetup& eventSetup) {
   std::vector<phys::Particle> theGenlp;
   std::vector<phys::Particle> theGenlm;
   std::vector<phys::Particle> theGenj;
+  std::vector<phys::Particle> theGenjAK8;
   std::vector<phys::Particle> theGenq;
 
  
@@ -225,7 +226,7 @@ void ZZGenAnalyzer::analyze(const Event & event, const EventSetup& eventSetup) {
 //     }
     
    
-    zz::SignalTopology zzSignalTopology = zz::getSignalTopology(theGenl, theGenj);
+  zz::SignalTopology zzSignalTopology = zz::getSignalTopology(theGenl, theGenj,theGenjAK8);
 
     phys::Boson<phys::Particle> Z0  = std::get<1>(zzSignalTopology);
     phys::Boson<phys::Particle> Z1  = std::get<2>(zzSignalTopology);

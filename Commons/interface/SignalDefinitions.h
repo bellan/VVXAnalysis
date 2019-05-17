@@ -55,8 +55,8 @@ namespace zz{
     > SignalTopology;
 
 
-  SignalTopology getSignalTopology       (const std::vector<phys::Particle> &theGenl, std::vector<phys::Particle> &theGenj);			    
- 
+  SignalTopology getSignalTopology       (const std::vector<phys::Particle> &theGenl, std::vector<phys::Particle> &theGenj, std::vector<phys::Particle> &theGenjAK8);
+  
   bool inTriggerPlateau(const std::vector<phys::Particle>& leptons);
 
   bool inTightFiducialRegion(const zz::SignalTopology &topology);
@@ -86,6 +86,7 @@ namespace vv{
 
 
   std::vector<phys::Boson<phys::Particle> > categorizeHadronicPartOftheEvent(std::vector<phys::Particle> &theGenj,
+									     std::vector<phys::Particle> &theGenjAK8,
 									     const std::vector<phys::Boson<phys::Particle> >& bosonsToLeptons, 
 									     std::bitset<16>& topology);
   

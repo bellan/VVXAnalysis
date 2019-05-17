@@ -233,7 +233,7 @@ void GenEventAnalyzer::makeBasicPlots(const std::string &selection, const zz::Si
 void GenEventAnalyzer::analyze() {
   
   
-  zz::SignalTopology zzSignalTopology = zz::getSignalTopology(*genParticles, *genJets);
+  zz::SignalTopology zzSignalTopology = zz::getSignalTopology(*genParticles, *genJets, *genJets); // FIXME AK8 as third argument!
   
                                                     makeBasicPlots("All",zzSignalTopology);
   if(std::get<0>(zzSignalTopology) > 0)            {makeBasicPlots("Signal",zzSignalTopology);                    ++passSignal;}

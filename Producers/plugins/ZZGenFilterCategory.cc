@@ -43,11 +43,13 @@ public:
     : sel_             (pset.getParameter<int>("Topology"))
     , genToken_        (consumes<reco::GenParticleCollection>(pset.getParameter<edm::InputTag>("src")))
     , genJetsToken_    (consumes<reco::GenJetCollection>     (pset.getParameter<edm::InputTag>("GenJets")))
+    , genJetsAK8Token_ (consumes<reco::GenJetCollection>     (pset.getParameter<edm::InputTag>("GenJetsAK8")))
   {
     
     produces<int>();
     produces<reco::GenParticleCollection>("vectorBosons");
     produces<reco::GenParticleCollection>("genJets");
+    produces<reco::GenParticleCollection>("genJetsAK8");
   }
  
 
@@ -64,6 +66,7 @@ private:
   int sel_;
   edm::EDGetTokenT<reco::GenParticleCollection> genToken_;
   edm::EDGetTokenT<reco::GenJetCollection>      genJetsToken_;
+  edm::EDGetTokenT<reco::GenJetCollection>      genJetsAK8Token_;
 };
 
 void ZZGenFilterCategory::beginJob() {}
@@ -72,7 +75,7 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   
   //  cout << "\nRun: " << event.id().run() << " event: " << event.id().event() << " LS: " << event.luminosityBlock() << endl;
 
-  std::vector<phys::Particle> genLeptons, genJets;
+  std::vector<phys::Particle> genLeptons, genJets, genJetsAK8;
   
   // Get the collection of gen particles
   edm::Handle<reco::GenParticleCollection> genParticles;
@@ -125,11 +128,18 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   foreach(const reco::GenJet& jet, *genJetsH)
       genJets.push_back(phys::Particle(jet.p4(), phys::Particle::computeCharge(jet.pdgId()), jet.pdgId()));
   
+ 
+  edm::Handle<reco::GenJetCollection> genJetsAK8H;
+  event.getByToken(genJetsAK8Token_,  genJetsAK8H);
+  
+  foreach(const reco::GenJet& jet, *genJetsAK8H)
+      genJetsAK8.push_back(phys::Particle(jet.p4(), phys::Particle::computeCharge(jet.pdgId()), jet.pdgId()));
+  
   
   
   
   zz::SignalTopology zzSignalTopology;
-  zzSignalTopology = zz::getSignalTopology(genLeptons, genJets);
+  zzSignalTopology = zz::getSignalTopology(genLeptons, genJets, genJetsAK8);
   
   
   std::auto_ptr<int> output(new int(std::get<0>(zzSignalTopology))); //Topology
@@ -160,6 +170,15 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
     outputGenJetColl->push_back(reco::GenParticle(0, phys::Particle::convert(jet.p4()), reco::GenParticle::Point(0.,0.,0.), jet.id(), 1, true));
 
   event.put(outputGenJetColl,"genJets");
+
+
+  std::auto_ptr<reco::GenParticleCollection> outputGenJetAK8Coll(new reco::GenParticleCollection());
+  foreach(const phys::Particle& jet, genJetsAK8)
+    outputGenJetAK8Coll->push_back(reco::GenParticle(0, phys::Particle::convert(jet.p4()), reco::GenParticle::Point(0.,0.,0.), jet.id(), 1, true));
+
+  event.put(outputGenJetAK8Coll,"genJetsAK8");
+
+
   
   
   if (sel_ >= 0) {

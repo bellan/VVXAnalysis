@@ -510,7 +510,7 @@ std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::
 
 
 
-zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theGenl, std::vector<phys::Particle> &theGenj){
+zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theGenl, std::vector<phys::Particle> &theGenj, std::vector<phys::Particle> &theGenjAK8){
   
   bitset<16>  topology(0);   
   
@@ -527,7 +527,7 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
     else            theGenlp.push_back(p); // positive leptons 
   }
   
-  // Creation and filling of the vector of Z boson candidates
+  // Creating and filling the vector of Z boson candidates
   std::vector<phys::Boson<phys::Particle> > Z;
   
   foreach(const phys::Particle &p, theGenlp) foreach(const phys::Particle &m, theGenlm)
@@ -608,7 +608,7 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
 
   std::vector<phys::Boson<phys::Particle> > lepBosons;
   lepBosons += Z0,Z1,W0,W1;
-  std::vector<phys::Boson<phys::Particle> > hadBosons = vv::categorizeHadronicPartOftheEvent(theGenj, lepBosons, topology);
+  std::vector<phys::Boson<phys::Particle> > hadBosons = vv::categorizeHadronicPartOftheEvent(theGenj, theGenjAK8, lepBosons, topology);
   Z3 = hadBosons.at(0);
   W2 = hadBosons.at(1);
 
@@ -616,8 +616,9 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
 }
 
 
-// FIXME, make theGenj const
+// This function cleans the jets from leptons!
 std::vector<phys::Boson<phys::Particle> > vv::categorizeHadronicPartOftheEvent(std::vector<phys::Particle> &theGenj,
+									       std::vector<phys::Particle> &theGenjAK8,
 									       const std::vector<phys::Boson<phys::Particle> >& bosonsToLeptons, 
 									       bitset<16>& topology){
   
@@ -635,6 +636,23 @@ std::vector<phys::Boson<phys::Particle> > vv::categorizeHadronicPartOftheEvent(s
     if(!match) tmp.push_back(jet);
   }
   theGenj = tmp;
+
+
+  // Clean the gen jet collection properly, 1.0 to be checked!
+  tmp = std::vector<phys::Particle>();
+  foreach(const phys::Particle& jet, theGenjAK8){
+    bool match = false;
+    foreach(const phys::Boson<phys::Particle>& boson, bosonsToLeptons)
+      if(boson.daughter(0).id()*boson.daughter(1).id() != 0 && 
+	 (physmath::deltaR(boson.daughter(0),jet) < 1.0 ||
+	  physmath::deltaR(boson.daughter(1),jet) < 1.0))
+	match = true;
+    if(!match) tmp.push_back(jet);
+  }
+  theGenjAK8 = tmp;
+
+  // FIXME: AK8 numerology still to be added
+
   
   bool foundWjj(false), foundZjj(false);
  
