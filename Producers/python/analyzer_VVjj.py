@@ -152,19 +152,56 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
                                            cleanFSRFromLeptons = cms.bool(True)
                                            )
 
-# To be fixed
+# AK8 jets
+if IsMC:
+    process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
+                                       tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016V4_MC_AK8PFchs'), #for 80X/Moriond17
+                                       label  = cms.untracked.string('AK8PFchs')
+                                       ))
+else:
+    process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
+                                       tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV4_DATA_AK8PFchs'), #for 80X/Moriond17
+                                       label  = cms.untracked.string('AK8PFchs')
+                                       ))
+
+process.patJetCorrFactorsReapplyJECAK8 = updatedPatJetCorrFactors.clone(src     = cms.InputTag("slimmedJetsAK8"),
+                                                                        levels  = ['L1FastJet','L2Relative','L3Absolute'],
+                                                                        payload = 'AK8PFchs')
+
+process.patJetsReapplyJECAK8 = updatedPatJets.clone(jetSource = cms.InputTag("slimmedJetsAK8"),
+                                                    jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJECAK8") ))
+
+from PhysicsTools.SelectorUtils.pfJetIDSelector_cfi import pfJetIDSelector
+process.goodJetsAK8 = cms.EDFilter("PFJetIDSelectionFunctorFilter",
+                                   filterParams = pfJetIDSelector.clone(),
+                                   src = cms.InputTag("patJetsReapplyJECAK8"),
+                                   filter = cms.bool(False) )
+
+
+process.correctedJetsAK8 = cms.EDProducer("CorrJetsProducer",
+                                          jets    = cms.InputTag( "goodJetsAK8" ), # FIXME check with Roberto, it was cleanJetsFat/AK8
+                                          vertex  = cms.InputTag( "goodPrimaryVertices" ), 
+                                          rho     = cms.InputTag( "fixedGridRhoFastjetAll"   ),
+                                          payload = cms.string  ( "AK8PFchs" ),
+                                          isData  = cms.bool    (  not IsMC )) # FIXME check with Roberto
+
+
+
 process.disambiguatedJetsAK8 = cms.EDProducer("JetsWithLeptonsRemover",
                                               JetPreselection      = cms.string("pt > 20"),
                                               DiBosonPreselection  = cms.string(""),
                                               MuonPreselection     = cms.string(""),
                                               ElectronPreselection = cms.string(""),
                                               MatchingType         = cms.string("byDeltaR"), 
-                                              Jets      = cms.InputTag("dressedJets"), # need to create AK8 dressed jets
+                                              DeltaRCut = cms.untracked.double(0.8),
+                                              Jets      = cms.InputTag("correctedJetsAK8:corrJets"), # need to create AK8 dressed jets???
                                               Muons     = cms.InputTag("muonsToBeRemovedFromJets"),
                                               Electrons = cms.InputTag("electronsToBeRemovedFromJets"),
                                               Diboson   = cms.InputTag(""),
                                               cleanFSRFromLeptons = cms.bool(True)
                                               )
+
+process.fatJets = cms.Sequence(process.patJetCorrFactorsReapplyJECAK8 + process.patJetsReapplyJECAK8 + process.goodJetsAK8 + process.correctedJetsAK8 + process.disambiguatedJetsAK8)
 
 
 
@@ -173,8 +210,9 @@ process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTa
 
 process.jetCleaning = cms.Path(process.muonsFromZZ * process.postCleaningMuons * process.muonsToBeRemovedFromJets 
                                + process.electronsFromZZ * process.postCleaningElectrons * process.electronsToBeRemovedFromJets                               
-                               + process.disambiguatedJets + process.disambiguatedJetsAK8
-                               + process.jetCounterFilter)
+                               + process.disambiguatedJets
+                               + process.jetCounterFilter
+                               + process.fatJets)
 
 
 

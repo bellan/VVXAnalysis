@@ -483,7 +483,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   foreach(const pat::Muon&     muon    , *muons    ) muons_.push_back(fill(muon));
   foreach(const pat::Electron& electron, *electrons) electrons_.push_back(fill(electron));
   foreach(const pat::Jet&      jet     , *jets     ) jets_.push_back(fill(jet));
-  foreach(const pat::Jet&      jet     , *jetsAK8  ) jetsAK8_.push_back(fill(jet));
+  //foreach(const pat::Jet&      jet     , *jetsAK8  ) jetsAK8_.push_back(fill(jet)); // FIXME: need jet class extention
   
 
   // The bosons are selected requiring that their daughters pass the quality criteria to be good daughters

@@ -638,14 +638,14 @@ std::vector<phys::Boson<phys::Particle> > vv::categorizeHadronicPartOftheEvent(s
   theGenj = tmp;
 
 
-  // Clean the gen jet collection properly, 1.0 to be checked!
+  // Clean the gen jet collection properly, 0.8 to be checked!
   tmp = std::vector<phys::Particle>();
   foreach(const phys::Particle& jet, theGenjAK8){
     bool match = false;
     foreach(const phys::Boson<phys::Particle>& boson, bosonsToLeptons)
       if(boson.daughter(0).id()*boson.daughter(1).id() != 0 && 
-	 (physmath::deltaR(boson.daughter(0),jet) < 1.0 ||
-	  physmath::deltaR(boson.daughter(1),jet) < 1.0))
+	 (physmath::deltaR(boson.daughter(0),jet) < 0.8 ||
+	  physmath::deltaR(boson.daughter(1),jet) < 0.8))
 	match = true;
     if(!match) tmp.push_back(jet);
   }
