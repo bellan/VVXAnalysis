@@ -38,6 +38,17 @@ namespace phys {
       , mcPartonFlavour_(-1)
       , passLooseId_(false)
       , fullPuId_(-1)
+      , tau1_(-999)
+      , tau2_(-999)
+      , tau3_(-999)
+      , corrPrunedMass_(-999)
+      , prunedMass_(-999)
+      , softDropMass_(-999)
+      , puppiTau1_(-999)
+      , puppiTau2_(-999)
+      , puppiTau3_(-999)
+      , puppiMass_(-999)
+
     {}           
     
     /// Destructor
@@ -139,6 +150,21 @@ namespace phys {
     Double_t pt_nojer_;
     Double_t pt_jerup_;
     Double_t pt_jerdn_;
+
+
+    // AK8
+
+    Double_t tau1_;
+    Double_t tau2_;
+    Double_t tau3_;
+    Double_t corrPrunedMass_;
+    Double_t prunedMass_;
+    Double_t softDropMass_;
+    Double_t puppiTau1_;
+    Double_t puppiTau2_;
+    Double_t puppiTau3_;
+    Double_t puppiMass_;
+
 
     ClassDef(Jet, 1) //
   };
