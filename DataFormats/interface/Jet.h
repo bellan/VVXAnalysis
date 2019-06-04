@@ -110,6 +110,21 @@ namespace phys {
 
     bool  passPUID() const {return true;}
 
+    // AK8 methods
+
+    double tau1()           const {return tau1_;}
+    double tau2()           const {return tau2_;}
+    double tau3()           const {return tau3_;}
+    double corrPrunedMass() const {return corrPrunedMass_;}
+    double prunedMass()     const {return prunedMass_;}
+    double softDropMass()   const {return softDropMass_;}
+    double puppiTau1()      const {return puppiTau1_;}
+    double puppiTau2()      const {return puppiTau2_;}
+    double puppiTau3()      const {return puppiTau3_;}
+    double puppiMass()      const {return puppiMass_;}
+
+
+
   protected:
     
   private:
