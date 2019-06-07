@@ -1,10 +1,10 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
+
 #include "DataToUnfold.h"
 #include "tdrstyle.h"
 #include "CMS_lumi.h"
-// #include "tdrstyle.C"
 // #include "CMS_lumi.C"
-//#include "PersonalInfo.cxx"
+
 #endif
 
 using namespace std;
@@ -21,9 +21,9 @@ DataToUnfold::DataToUnfold(): TObject()
   red3P1FggZZ = new TFile("../../results/ZZRecoAnalyzer_CR3P1F/gg_4l.root"); 
   red2P2F     = new TFile("../../results/ZZRecoAnalyzer_CR2P2F/data.root"); 
   //irreducible backgrounds
-   ttZ = new TFile("../../results/ZZRecoAnalyzer_SR/TTZToLL.root");
-   WWZ = new TFile("../../results/ZZRecoAnalyzer_SR/WWZ.root");
-   //   ZZbkg = new TFile("../../results/ZZRecoAnalyzer_SR/sig_pow.root"); //new
+  ttZ = new TFile("../../results/ZZRecoAnalyzer_SR/TTZToLL.root");
+  WWZ = new TFile("../../results/ZZRecoAnalyzer_SR/WWZ.root");
+  //   ZZbkg = new TFile("../../results/ZZRecoAnalyzer_SR/sig_pow.root"); //new
 
 }
 
@@ -206,7 +206,6 @@ void DataToUnfold::Build(string var, string finalstate)
   // std::cout <<   "==============================================" << std::endl;  
 
  output->cd();
- std::cout<<"hei"<<std::endl;    
  h_data->Write(dataName.c_str(),TObject::kOverwrite);
  h_totdata->Write(TotdataName.c_str(),TObject::kOverwrite);
  output->Close();

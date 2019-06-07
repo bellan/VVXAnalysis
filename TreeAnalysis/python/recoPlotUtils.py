@@ -25,7 +25,7 @@ def GetTypeofsamples(category,Set):
     
     signal_others =  [{"sample":'ggH',"color":ROOT.kAzure-7,"name":'higgs'}]
 
-    bkg_red = [{"sample":'WZ',"color":ROOT.kRed+2,"name":'WZ'},{"sample":'TTJets',"color":ROOT.kRed-4,"name":'TT'},{"sample":'TTWJets',"color":ROOT.kRed-4,"name":'TT'},{"sample":'TTGJets',"color":ROOT.kRed-4,"name":'TT'},{"sample":'WWW',"color":ROOT.kGreen-1,"name":'others'},{"sample":'DYJetsToLL_M50',"color":ROOT.kGreen-5,"name":'DY'}]
+    bkg_red = [{"sample":'WZ',"color":ROOT.kRed+2,"name":'WZ'},{"sample":'TTJets',"color":ROOT.kRed-4,"name":'t#bar{t}'},{"sample":'TTWJets',"color":ROOT.kRed-4,"name":'TT'},{"sample":'TTGJets',"color":ROOT.kRed-4,"name":'TT'},{"sample":'WWW',"color":ROOT.kGreen-1,"name":'others'},{"sample":'DYJetsToLL_M50',"color":ROOT.kGreen-5,"name":'DY'}]
 
     bkg_irr = [{"sample":'WWZ',"color":ROOT.kOrange,"name":'WWZ'},{"sample":'TTZToLL',"color":ROOT.kOrange,"name":'TTZ'}]
     bkg_irr_divided = [{"sample":'WWZ',"color":ROOT.kOrange,"name":'WWZ'},{"sample":'TTZToLL',"color":ROOT.kOrange-5,"name":'TTZ'}]
@@ -59,7 +59,7 @@ def GetMCPlot(inputdir, category, plot,Addfake,MCSet,rebin):
     print Red("\n#########################################\n############## Monte Carlo ##############\n#########################################\n")
     print "Category",category
     print "plot",plot
-    leg = TLegend(0.67,0.56,0.86,0.81)
+    leg = TLegend(0.67,0.66,0.86,0.91)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.025)
 
@@ -96,8 +96,8 @@ def GetMCPlot(inputdir, category, plot,Addfake,MCSet,rebin):
             print "{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat)
             bsum.Add(hb)        
                 
-        #if rebin != 1:  bsum.Rebin(rebin)
-        bsum.Rebin(rebin)
+        if rebin != 1:  bsum.Rebin(rebin)
+        #bsum.Rebin(rebin)
         bsum.SetName("hirr")
         stack.Add(bsum)
             
@@ -207,7 +207,7 @@ def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
     print Red("\n#########################################\n############## Monte Carlo ##############\n#########################################\n")
    
     print Red("\n######### Contribution to Signal #########\n")    
-    leg = TLegend(0.61,0.56,0.85,0.81)
+    leg = TLegend(0.51,0.56,0.85,0.81)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.025)
     files={}
@@ -446,3 +446,82 @@ def SetError(Histo,Region,Set0Error):
                 statPlus = ROOT.Math.chisquared_quantile_c(q,2*(N+1))/2.-N
                 Graph.SetPointError(i-1,0,0,statMin,statPlus)
     return Graph
+
+
+def setCMSStyle(self, canvas, author='N. Woods', textRight=True, dataType='Preliminary Simulation', energy=13, intLumi=19710.):
+    '''
+    Set plotting defaults to something appropriate for CMS Analysis Notes
+    intLumi is given in pb^-1 and converted to fb^-1, unless it is less than 1 fb^-1
+    If intLumi is nonpositive, it is not printed
+    '''
+    # Make sure that if there's an exponent on the X axis, it's visible but not on top of the axis title
+    self.fixXExponent(canvas)
+
+    # Make sure that temperature plot scales don't run off the right side
+    self.fixZScale(canvas)
+
+    # Put "Preliminary" or similar on the plots
+    if dataType:
+        CMS_lumi.relPosX = 0.12
+        CMS_lumi.extraText = dataType
+    else:
+        CMS_lumi.writeExtraText = False
+
+    # Put sqrt(s) on plots
+    try:
+        energy = [int(energy)]
+    except TypeError:
+        assert isinstance(energy,list) and all(isinstance(e, int) for e in energy), \
+            "Energy must be an integer or list of integers"
+
+    try:
+        intLumi = [float(intLumi)]
+    except TypeError:
+        assert isinstance(intLumi, list) and all(isinstance(e, float) for il in intLumi), \
+            "Integrated Luminosity must be a float  or list of floats"
+    assert len(intLumi) == len(energy), "Must have exactly one integrated luminosity per energy"
+
+    iPeriod = 0
+    for i, e in enumerate(energy):
+        iL = intLumi[i]
+        if iL > 0.:
+            if iL >= 1000.:
+                iL /= 1000. # convert to fb^-1
+                unit = "fb^{-1}"
+            else:
+                unit = "pb^{-1}"
+            iLStr = makeNumberPretty(iL, 1)
+        else:
+            iLStr = ""
+            unit = ""
+
+        if e == 13:
+            iPeriod += 4
+            CMS_lumi.lumi_13TeV = CMS_lumi.lumi_13TeV.replace("20.1","%s"%iLStr).replace("fb^{-1}", unit)
+        elif energy == 8:
+            iPeriod += 2
+            CMS_lumi.lumi_8TeV = CMS_lumi.lumi_8TeV.replace("19.7","%.1f"%iLStr).replace("fb^{-1}", unit)
+        if energy == 7:
+            iPeriod += 1
+            CMS_lumi.lumi_7TeV = CMS_lumi.lumi_7TeV.replace("5.1","%.1f"%iLStr).replace("fb^{-1}", unit)
+
+    # Put "CMS preliminary simulation" or whatever above the left side of the plot
+    iPos = 0
+
+    # Draw all that stuff
+    CMS_lumi.CMS_lumi(canvas, iPeriod, iPos)
+
+    # Put author name and "Preliminary Exam" and a box in the top right corner of the frame
+    latex = TLatex()
+    latex.SetNDC()
+    latex.SetTextAngle(0)
+    latex.SetTextColor(kBlack)
+    latex.SetTextFont(61)
+    latex.SetTextSize(0.03)
+    latex.SetTextAlign(12)
+    latex.DrawLatex(0.01, 0.05, author)
+#        latex.DrawLatex(0.01, 0.02, "U. Wisconsin Preliminary Exam")
+
+#         # Make frame and tick marks thicker
+#         gStyle.SetFrameLineWidth(3)
+#         gStyle.SetLineWidth(3)

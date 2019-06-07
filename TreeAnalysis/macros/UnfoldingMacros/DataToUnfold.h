@@ -18,6 +18,8 @@
 #include <iostream>
 #include <string>
 #include <sstream> 
+#include "tdrstyle.h"
+#include "CMS_lumi.h"
 
 class DataToUnfold : public TObject
 {
@@ -36,6 +38,14 @@ class DataToUnfold : public TObject
   TFile *red;
   TFile *ttZ;
   //  TFile *ttWW;
+
+
+  TFile * red3P1F;
+  TFile * red3P1FqqZZ;
+  TFile * red3P1FggZZ;
+  TFile * red2P2F;
+
+
   TFile *WWZ;
   TFile *Irr;
   TFile *file;
@@ -52,6 +62,19 @@ class DataToUnfold : public TObject
   TH1 * h_red_up;
   TH1 * h_red_down;
   TH1 * h_ttZ;
+
+  TH1 * h_red3P1FqqZZ ;
+  TH1 * h_red3P1FggZZ; 
+  TH1 * h_red2P2F;
+
+  TH1 * h_red3P1FqqZZ_up ;
+  TH1 * h_red3P1FggZZ_up; 
+  TH1 * h_red2P2F_up;
+
+  TH1 * h_red3P1FqqZZ_down ;
+  TH1 * h_red3P1FggZZ_down; 
+  TH1 * h_red2P2F_down;
+
   // TH1 * h_ttWW;
   TH1 * h_WWZ;
   TH1 * h_Irr;
