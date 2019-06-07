@@ -483,7 +483,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   foreach(const pat::Muon&     muon    , *muons    ) muons_.push_back(fill(muon));
   foreach(const pat::Electron& electron, *electrons) electrons_.push_back(fill(electron));
   foreach(const pat::Jet&      jet     , *jets     ) jets_.push_back(fill(jet));
-  //foreach(const pat::Jet&      jet     , *jetsAK8  ) jetsAK8_.push_back(fill(jet)); // FIXME: need jet class extention
+  foreach(const pat::Jet&      jet     , *jetsAK8  ) jetsAK8_.push_back(fill(jet)); // FIXME: need jet class extention
   
 
   // The bosons are selected requiring that their daughters pass the quality criteria to be good daughters
@@ -582,13 +582,16 @@ phys::Lepton TreePlanter::fill(const pat::Muon& mu) const{
 
 phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   
+  // NjettinessAK8:tau1=0.0603222  NjettinessAK8:tau2=0.0263014  NjettinessAK8:tau3=0.0160889  ak8PFJetsCHSCorrPrunedMass=19.9073  ak8PFJetsCHSPrunedMass=18.7322  ak8PFJetsCHSSoftDropMass=18.7322  ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1=0.0620236  ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau2=0  ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau3=0  ak8PFJetsPuppiValueMap:eta=0.201157  ak8PFJetsPuppiValueMap:mass=11.0152  ak8PFJetsPuppiValueMap:phi=-3.13416  ak8PFJetsPuppiValueMap:pt=129.474 
+
+
   phys::Jet output(phys::Particle::convert(jet.p4()),jet.charge(),1);
   
  
-  output.csvtagger_      = jet.userFloat("bTagger");
-  output.qgLikelihood_   = jet.userFloat("qgLikelihood");
-  output.fullPuId_       = jet.userInt("pileupJetIdUpdated:fullId");
-  output.passLooseId_    = jet.userFloat("looseJetID");
+  output.csvtagger_      = jet.hasUserFloat("bTagger")                   ? jet.userFloat("bTagger")                : -999;
+  output.qgLikelihood_   = jet.hasUserFloat("qgLikelihood")              ? jet.userFloat("qgLikelihood")           : -999;
+  output.fullPuId_       = jet.hasUserInt  ("pileupJetIdUpdated:fullId") ? jet.userInt("pileupJetIdUpdated:fullId"): -999;
+  output.passLooseId_    = jet.hasUserFloat("looseJetID")                ? jet.userFloat("looseJetID")             : -999;
 
   //girth - See http://arxiv.org/abs/1106.3076v2 - eqn (2)
   double gsumcharged = 0.0;
@@ -613,21 +616,36 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   output.ptd_ = sqrt( sumpt2 ) / sumpt; 
   
   output.jetArea_    = jet.jetArea();
-  output.secvtxMass_ = jet.userFloat("vtxMass");
+  output.secvtxMass_ = jet.hasUserFloat("vtxMass") ? jet.userFloat("vtxMass") : -999;
   
   output.mcPartonFlavour_ = jet.partonFlavour();
   
   // JEC
   output.rawFactor_ = jet.jecFactor(0);
   // JES
-  output.jecUnc_    = jet.userFloat("jec_unc");
+  output.jecUnc_    = jet.hasUserFloat("jec_unc") ? jet.userFloat("jec_unc") : -999;
 
   // JER
   if(isMC_){                                                                                                         
-    output.pt_nojer_    = jet.userFloat("pt_nojer");
-    output.pt_jerup_    = jet.userFloat("pt_jerup");
-    output.pt_jerdn_    = jet.userFloat("pt_jerdn");
- }  
+    output.pt_nojer_    = jet.hasUserFloat("pt_nojer") ? jet.userFloat("pt_nojer") : -999;
+    output.pt_jerup_    = jet.hasUserFloat("pt_jerup") ? jet.userFloat("pt_jerup") : -999;
+    output.pt_jerdn_    = jet.hasUserFloat("pt_jerdn") ? jet.userFloat("pt_jerdn") : -999;
+  }  
+
+  // Variables for AK8 jets
+  output.tau1_           = jet.hasUserFloat("NjettinessAK8:tau1") ? jet.userFloat("NjettinessAK8:tau1") : -999;
+  output.tau2_           = jet.hasUserFloat("NjettinessAK8:tau2") ? jet.userFloat("NjettinessAK8:tau2") : -999;
+  output.tau3_           = jet.hasUserFloat("NjettinessAK8:tau3") ? jet.userFloat("NjettinessAK8:tau3") : -999;
+  output.corrPrunedMass_ = jet.hasUserFloat("ak8PFJetsCHSCorrPrunedMass") ? jet.userFloat("ak8PFJetsCHSCorrPrunedMass") : -999;
+  output.prunedMass_     = jet.hasUserFloat("ak8PFJetsCHSPrunedMass")     ? jet.userFloat("ak8PFJetsCHSPrunedMass") : -999;
+  output.softDropMass_   = jet.hasUserFloat("ak8PFJetsCHSSoftDropMass")   ? jet.userFloat("ak8PFJetsCHSSoftDropMass") : -999;
+  output.puppiTau1_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") ? jet.userFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") : -999;
+  output.puppiTau2_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") ? jet.userFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") : -999;
+  output.puppiTau3_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") ? jet.userFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") : -999;
+  output.puppiMass_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:mass") ? jet.userFloat("ak8PFJetsPuppiValueMap:mass") : -999;
+  
+  
+
 
   return output; 
 }

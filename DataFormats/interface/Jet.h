@@ -38,6 +38,17 @@ namespace phys {
       , mcPartonFlavour_(-1)
       , passLooseId_(false)
       , fullPuId_(-1)
+      , tau1_(-999)
+      , tau2_(-999)
+      , tau3_(-999)
+      , corrPrunedMass_(-999)
+      , prunedMass_(-999)
+      , softDropMass_(-999)
+      , puppiTau1_(-999)
+      , puppiTau2_(-999)
+      , puppiTau3_(-999)
+      , puppiMass_(-999)
+
     {}           
     
     /// Destructor
@@ -99,6 +110,21 @@ namespace phys {
 
     bool  passPUID() const {return true;}
 
+    // AK8 methods
+
+    double tau1()           const {return tau1_;}
+    double tau2()           const {return tau2_;}
+    double tau3()           const {return tau3_;}
+    double corrPrunedMass() const {return corrPrunedMass_;}
+    double prunedMass()     const {return prunedMass_;}
+    double softDropMass()   const {return softDropMass_;}
+    double puppiTau1()      const {return puppiTau1_;}
+    double puppiTau2()      const {return puppiTau2_;}
+    double puppiTau3()      const {return puppiTau3_;}
+    double puppiMass()      const {return puppiMass_;}
+
+
+
   protected:
     
   private:
@@ -139,6 +165,21 @@ namespace phys {
     Double_t pt_nojer_;
     Double_t pt_jerup_;
     Double_t pt_jerdn_;
+
+
+    // AK8
+
+    Double_t tau1_;
+    Double_t tau2_;
+    Double_t tau3_;
+    Double_t corrPrunedMass_;
+    Double_t prunedMass_;
+    Double_t softDropMass_;
+    Double_t puppiTau1_;
+    Double_t puppiTau2_;
+    Double_t puppiTau3_;
+    Double_t puppiMass_;
+
 
     ClassDef(Jet, 1) //
   };

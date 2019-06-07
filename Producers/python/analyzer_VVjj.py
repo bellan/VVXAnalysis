@@ -252,7 +252,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
 ### Run the TreePlanter
 ### ------------------------------------------------------------------------- ###
 
-process.filltrees = cms.EndPath(cms.ignore(process.zzTrigger) + process.srCounter + process.cr2P2FCounter + process.cr3P1FCounter + process.treePlanter)
+#process.filltrees = cms.EndPath(cms.ignore(process.zzTrigger) + process.srCounter + process.cr2P2FCounter + process.cr3P1FCounter + process.treePlanter)
 
 ########################################################################################################################################################################
 
@@ -289,13 +289,17 @@ process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
         ZLL = cms.InputTag("ZLLCand"),  
         ZL  = cms.InputTag("ZlCand") 
         ),
-      jetSrc = cms.PSet(
-        cleanJets          = cms.InputTag("cleanJets"),
-        JetsWithLeptonsRemover = cms.InputTag("JetsWithLeptonsRemover"),
-        disambiguatedJets = cms.InputTag("disambiguatedJets")
-        )
+      # jetSrc = cms.PSet(
+      #   cleanJets          = cms.InputTag("cleanJets"),
+      #   JetsWithLeptonsRemover = cms.InputTag("JetsWithLeptonsRemover"),
+      #   disambiguatedJets = cms.InputTag("disambiguatedJets"),
+      #   correctedJetsAK8 = cms.InputTag("correctedJetsAK8"),
+      #   disambiguatedJetsAK8 = cms.InputTag("disambiguatedJetsAK8")
+      #   )
+     jetSrc =  cms.InputTag("disambiguatedJetsAK8")
 )
 
+process.filltrees = cms.EndPath(cms.ignore(process.zzTrigger) + process.srCounter + process.cr2P2FCounter + process.cr3P1FCounter + process.treePlanter + process.dumpUserData)
 
 #process.filltrees = cms.Path(process.preselection * process.genCategory * process.treePlanter * process.printTree)
 #process.filltrees = cms.EndPath(process.treePlanter *process.dumpUserData)
