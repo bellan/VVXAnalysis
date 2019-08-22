@@ -88,7 +88,7 @@ ZZJJTo4L_qcd   ,,          0.009335,     ,,/ZZJJTo4L_QCD_13TeV-madgraph-pythia8/
 
 #Other signal processes##,,,,,,,,,,,  
 #ZZZ         ,othSig,    0.01398, ,,/ZZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,4,PROCESS_CR=False; APPLYTRIG=False ,RecoProbabilities_VBS.py,     
-#WZZ         ,othSig, 0.05565,    ,,/WZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,4,PROCESS_CR=False; APPLYTRIG=False,RecoProbabilities_VBS.py,
+WZZ         ,othSig, 0.05565,    ,,/WZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM,dbs,,4,PROCESS_CR=False; APPLYTRIG=False,RecoProbabilities_VBS.py,
 
 
 #Reducible background##,,,,,,,,,,,  
