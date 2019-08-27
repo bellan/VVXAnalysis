@@ -1,0 +1,49 @@
+{ decls }
+namespace std {  }
+namespace phys {  }
+namespace phys { class Particle; }
+namespace phys { template <typename P> class Boson; }
+namespace phys { class Lepton; }
+namespace phys { class Jet; }
+namespace phys { class Electron; }
+namespace phys { template <typename P1, typename P2> class DiBoson; }
+
+[ libTreeAnalysis.so ]
+# List of selected classes
+class pair<phys::Boson<phys::Lepton>,phys::Lepton>
+class phys::Boson<phys::Electron>
+class phys::Boson<phys::Jet>
+class phys::Boson<phys::Lepton>
+class phys::Boson<phys::Particle>
+class phys::DiBoson<phys::Electron,phys::Electron>
+class phys::DiBoson<phys::Electron,phys::Lepton>
+class phys::DiBoson<phys::Lepton,phys::Electron>
+class phys::DiBoson<phys::Lepton,phys::Lepton>
+class phys::DiBoson<phys::Particle,phys::Particle>
+class phys::Electron
+class phys::GenEventWeights
+class phys::Jet
+class phys::Lepton
+class phys::MELA
+class phys::Particle
+class vector<pair<phys::Boson<phys::Lepton>,phys::Lepton> >
+class vector<phys::Boson<phys::Electron> >
+class vector<phys::Boson<phys::Jet> >
+class vector<phys::Boson<phys::Lepton> >
+class vector<phys::Boson<phys::Particle> >
+class vector<phys::DiBoson<phys::Electron,phys::Electron> >
+class vector<phys::DiBoson<phys::Electron,phys::Lepton> >
+class vector<phys::DiBoson<phys::Lepton,phys::Electron> >
+class vector<phys::DiBoson<phys::Lepton,phys::Lepton> >
+class vector<phys::DiBoson<phys::Particle,phys::Particle> >
+class vector<phys::Electron>
+class vector<phys::Jet>
+class vector<phys::Lepton>
+class vector<phys::Particle>
+class vector<std::pair<phys::Boson<phys::Lepton>,phys::Lepton> >
+header Electron.h
+header GenEventWeights.h
+header Jet.h
+header Lepton.h
+header MELA.h
+header Particle.h
