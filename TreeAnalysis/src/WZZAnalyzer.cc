@@ -28,7 +28,7 @@ void WZZAnalyzer::analyze(){
 
   foreach(const phys::Particle& gen, *genParticles){
     if(abs(gen.id()) == 13 )//for muon: mc pdg id = 13 by notation
-      theHistograms.fill("genMuonPt1","pt of gen muons",20,0,200,gen.pt(),theWeight);
+      theHistograms.fill("genMuonPt","pt of gen muons",20,0,200,gen.pt(),theWeight);
   }
    /*
    *
