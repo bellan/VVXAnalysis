@@ -359,6 +359,7 @@ void PdfSystematicsAnalyzerZZ::analyze(const edm::Event & ev, const edm::EventSe
   //if(genCategory_ == 0) return; // fixme!!
   // std::cout<<"genCategory "<<genCategory_<<std::endl;
   int FinStat=0;
+  // RB: FIXME!!!!!!
   if     (test_bit(genCategory_,7) && !test_bit(genCategory_,8)) FinStat = 1; //4mu
   else if(test_bit(genCategory_,8) && !test_bit(genCategory_,7)) FinStat = 2; //4e
   else if(test_bit(genCategory_,7) && test_bit(genCategory_,8)) FinStat = 3; //2e2mu
