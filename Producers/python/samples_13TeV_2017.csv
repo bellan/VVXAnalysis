@@ -106,13 +106,13 @@ WZEW		 ,WZall,	     -1 ,        ,,/WZJJ_EWK_13TeV-madgraph-pythia8/RunIISummer16
 WZQCD		 ,WZall,	     -1	,	 ,,/WZJJ_QCD_13TeV-madgraph-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True,,
 WZEWQCD		 ,WZall,	     -1	,	 ,,/WZJJ_EWK_QCD_13TeV-madgraph-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,4,PROCESS_CR=True,,
 
-# WW
+# WW##,,,,,,,,,,,
 
 WWEW		 ,WWall,	     -1 ,        ,,/WWJJToLNuLNu_EWK_noTop_13TeV-madgraph-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,,
 WWQCD		 ,WWall,	     -1 ,        ,,/WWJJToLNuLNu_QCD_noTop_13TeV-madgraph-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,,
 WWEWQCD		 ,WWall,	     -1 ,        ,,/WWJJToLNuLNu_EWK_QCD_noTop_13TeV-madgraph-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM	,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,,
 
-# ZW and ZZ semileptonic
+# ZW and ZZ semileptonic##,,,,,,,,,,,
 
 VBSZZ_mjj100, ,0.0159, ,,/ZTo2LZTo2JJJ_EWK_LO_SM_MJJ100PTJ10_TuneCUETP8M1_13TeV-madgraph-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,,
 VBSZWplus_mjj100, ,0.054, ,,/WplusTo2JZTo2LJJ_EWK_LO_SM_MJJ100PTJ10_TuneCUETP8M1_13TeV-madgraph-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,PROCESS_CR=False;SKIM_REQUIRED=False,,
