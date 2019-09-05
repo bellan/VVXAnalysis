@@ -536,7 +536,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   }
 
   else if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();
-  else if(isMC_ && ZL_.empty() && !test_bit(genCategory_,2) && applySkim_ ) return;
+  else if(isMC_ && ZL_.empty() && !test_bit(genCategory_,0) && applySkim_ ) return;
   else if(!isMC_  && ZL_.empty() && applySkim_ ) return;
 
   theTree->Fill();
