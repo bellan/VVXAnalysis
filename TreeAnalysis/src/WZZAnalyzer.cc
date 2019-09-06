@@ -57,7 +57,8 @@ void WZZAnalyzer::analyze(){
    
   }
   theHistograms.fill("ngenElectrons","Number of genElectrons",  10, 0, 10 , ngenElectrons, theWeight);
-  theHistograms.fill("ngenMuons","Number of genMuons",  10, 0, 10 , ngenMuons, theWeight);  
+  theHistograms.fill("ngenMuons","Number of genMuons",  10, 0, 10 , ngenMuons, theWeight);
+  
 
 
 
@@ -177,4 +178,46 @@ void WZZAnalyzer::analyze(){
 
  }
 
+
+
+
+ 
+ /*
+  foreach(const phys::Particle& gen, *genParticles){
+    if(abs(gen.id()) == 13 ){//for muons: mc pdg id = 13 by notation
+
+      foreach(const phys::Lepton& e, *electrons){
+	theHistograms.fill("deltaRElectrons","deltaR of electrons",20,30,200,deltaR(gen, e));
+
+
+
+	
+      }
+ */
+
+
+ /*
+  *
+  *----------------------------MET_ ANALYSIS---------------------------- 
+  *
+  *
+  */
+ double genMet=0;
+ theHistograms.fill("met","MET",  20, 0, 30 , met->pt(), theWeight);
+ /*
+ foreach(const phys::Particle& gen, *genParticles){
+   if(abs(gen.id()) == 12 || abs(gen.id()) == 14 || abs(gen.id()) == 16){//neutrinos mc pdg id
+     theHistograms.fill("genMet","genMET",  20, 0, 30 , sqrt(gen.pt()*gen.pt()+gen.pt()*gen.pt(), theWeight);
+
+
+
+ }
+ */
+
 }
+
+
+
+
+
+
