@@ -385,7 +385,8 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
   edm::Handle<int> genCategory;
   event.getByToken(theGenCategoryToken, genCategory);
   genCategory_ = *genCategory;
-  if(((genCategory_ ^ signalDefinition_) & signalDefinition_) == 0) ++postSkimSignalEvents_;
+  isSignal_ = ((genCategory_ ^ signalDefinition_) & signalDefinition_) == 0; 
+  if(isSignal_) ++postSkimSignalEvents_;
   
 
   // load only gen leptons and gen photon status 1, from hard process
@@ -536,8 +537,9 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   }
 
   else if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();
-  else if(isMC_ && ZL_.empty() && !test_bit(genCategory_,0) && applySkim_ ) return;
-  else if(!isMC_  && ZL_.empty() && applySkim_ ) return;
+  //else if(isMC_ && ZL_.empty() && !test_bit(genCategory_,0) && applySkim_ ) return;
+  else if(isMC_ && ZL_.empty() && !isSignal_ && applySkim_) return;
+  else if(!isMC_  && ZL_.empty() && applySkim_) return;
 
   theTree->Fill();
 
