@@ -204,6 +204,7 @@ class TreePlanter: public edm::EDAnalyzer {
   std::string sampleName_;
 
   bool isMC_;
+  bool isSignal_;
   int  sampleType_;
   int  setup_;
   bool applyTrigger_;

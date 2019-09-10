@@ -1,6 +1,6 @@
 from ZZAnalysis.AnalysisStep.defaults import declareDefault
 
-SIGNALDEFINITION = int('101',2)  # -1 means get everything, 1 means the request of having a HZZ pair with the  mass in the chosen windows. 11 means the request of having a ZZ pair with the  mass in the chosen windows. For other topology see the README under VVXAnalysis/Commons.
+SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the chosen windows. For other topology see the README under VVXAnalysis/Commons.
 
 declareDefault("PD","",globals())
 declareDefault("XSEC",-1.,globals())
@@ -34,7 +34,8 @@ execfile(PyFilePath + "MasterPy/ZZ4lAnalysis.py")         # 2016 reference analy
 ### Output root file
 ### ----------------------------------------------------------------------
 
-process.TFileService=cms.Service('TFileService', fileName=cms.string('VVXAnalysis.root'))
+#process.TFileService=cms.Service('TFileService', fileName=cms.string('VVXAnalysis.root'))
+process.TFileService=cms.Service('TFileService', fileName=cms.string('ZZ4lAnalysis.root'))
 
 
 
@@ -252,7 +253,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
 ### Run the TreePlanter
 ### ------------------------------------------------------------------------- ###
 
-#process.filltrees = cms.EndPath(cms.ignore(process.zzTrigger) + process.srCounter + process.cr2P2FCounter + process.cr3P1FCounter + process.treePlanter)
+process.filltrees = cms.EndPath(cms.ignore(process.zzTrigger) + process.srCounter + process.cr2P2FCounter + process.cr3P1FCounter + process.treePlanter)
 
 ########################################################################################################################################################################
 
@@ -299,7 +300,7 @@ process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
      jetSrc =  cms.InputTag("disambiguatedJetsAK8")
 )
 
-process.filltrees = cms.EndPath(cms.ignore(process.zzTrigger) + process.srCounter + process.cr2P2FCounter + process.cr3P1FCounter + process.treePlanter + process.dumpUserData)
+#process.filltrees = cms.EndPath(cms.ignore(process.zzTrigger) + process.srCounter + process.cr2P2FCounter + process.cr3P1FCounter + process.treePlanter + process.dumpUserData)
 
 #process.filltrees = cms.Path(process.preselection * process.genCategory * process.treePlanter * process.printTree)
 #process.filltrees = cms.EndPath(process.treePlanter *process.dumpUserData)

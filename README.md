@@ -28,7 +28,7 @@ Recipe for the tree production step
 - Check-out the code from this repository.
   - ```git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis```
   - cd VVXAnalysis
-  - git checkout miniAOD_76X
+  - git checkout VVjj_80X_v1
 - Check-out the jet resolution constabts
   - ```git clone https://github.com/cms-jet/JRDatabase.git JRDatabase```
 - Compile the code with ```scram b```
