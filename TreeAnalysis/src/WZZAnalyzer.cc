@@ -85,13 +85,7 @@ void WZZAnalyzer::analyze(){
     
   }
 
-  /*
-  loop(const phys::Particle& gen, *genParticles){
-    if(abs(gen.id()) == 13)
 
-  } 
-
-  */
   /*
    *
    *-----------------ELECTRONS------------------
@@ -181,43 +175,128 @@ void WZZAnalyzer::analyze(){
 
 
 
- 
- /*
-  foreach(const phys::Particle& gen, *genParticles){
-    if(abs(gen.id()) == 13 ){//for muons: mc pdg id = 13 by notation
-
-      foreach(const phys::Lepton& e, *electrons){
-	theHistograms.fill("deltaRElectrons","deltaR of electrons",20,30,200,deltaR(gen, e));
-
-
-
-	
-      }
- */
-
-
  /*
   *
   *----------------------------MET_ ANALYSIS---------------------------- 
   *
   *
   */
- double genMet=0;
- theHistograms.fill("met","MET",  20, 0, 30 , met->pt(), theWeight);
+
+ 
+ theHistograms.fill("met","MET",  100, 0, 500 , met->pt(), theWeight);
+
+ TLorentzVector pTot = TLorentzVector(0., 0., 0., 0.);
+ double genMet=0.0;
+ //double genMetX=0.0;
+ //double genMetY=0.0;
+ 
+ foreach(const phys::Particle& gen, *genParticles)//neutrinos
+   if(abs(gen.id()) == 12 || abs(gen.id()) == 14 || abs(gen.id()) == 16)
+     pTot+=gen.p4();
+ 
+ //genMet = sqrt(genMetX*genMetX+genMetY*genMetY);
+ genMet = sqrt(pTot.Px()*pTot.Px()+pTot.Py()*pTot.Py());
+ theHistograms.fill("genMet","genMET",  100, 0, 300 , genMet , theWeight);
+
+ theHistograms.fill("metDeviation","deviation of MET",  100, -150, 150, genMet-met->pt(), theWeight);
+ 
+
+
+
+
+
  /*
+  *
+  *-------------------------EFFICIENCY_&_RESOLUTION------------------------------- 
+  *
+  *
+  */
+
+ 
+ double dptInv=0;
+ double dpt=0;
+ double deta=0;
+ double dE=0;
+ double dR=0;
+ double dRmin=99.9;
  foreach(const phys::Particle& gen, *genParticles){
-   if(abs(gen.id()) == 12 || abs(gen.id()) == 14 || abs(gen.id()) == 16){//neutrinos mc pdg id
-     theHistograms.fill("genMet","genMET",  20, 0, 30 , sqrt(gen.pt()*gen.pt()+gen.pt()*gen.pt(), theWeight);
+
+     //-----electrons-----//
+   
+   if(abs(gen.id()) == 11){//electrons mc pdg id
+     foreach(const phys::Lepton& e, *electrons){
+       dR=deltaR(gen.eta(), gen.phi(), e.eta(), e.phi());
+       if (dR<dRmin){
+	 dRmin=dR;
+ 	 dptInv=1/gen.pt()-1/e.pt();
+	 dpt=gen.pt()-e.pt();
+	 deta=gen.eta()-e.eta();
+	 dE=gen.e()-e.e();
+       }
+     }
+     theHistograms.fill("electronsDeltaR","dR of e",  50, 0, 2 , dRmin, theWeight);
+     if(dRmin<=0.04)
+       theHistograms.fill("electronsCutDeltaR","cut dR of e",  50, 0, 0.05 , dRmin, theWeight);
+
+     
+     if(fabs(dpt)>0){
+       theHistograms.fill("electronsDeltaPt","dpt of e",  50, -10, 10 , dpt, theWeight);
+       theHistograms.fill("electronsAbsResolution(pt)","absResolution(pt) of e",  50, -0.2, 0.2, dpt/gen.pt() , theWeight);
+       theHistograms.fill("electronsAbsResolution(pt)vsPt","absResolution(pt) of e vs pt",  50, -0.2, 0.2 ,  10, 0, 20, dpt/gen.pt(), gen.pt(), theWeight);
+     }
+     if(fabs(dptInv)>0){
+       theHistograms.fill("electronsDeltaPtInverse","dptInv of e",  50, -0.2, 0.2 , dptInv, theWeight);
+       theHistograms.fill("electronsAbsResolution(ptInv)","absResolution(ptInv) of e",  50, -0.2, 0.2 , dptInv/(1/gen.pt()), theWeight);
+     }
+
+     if(fabs(deta)>0){
+       theHistograms.fill("electronsDeltaEta","deta of e",  50, -10, 10, deta, theWeight);
+       theHistograms.fill("electronsAbsResolution(eta)","absResolution(eta) of e",  50, -0.2, 0.2 , deta/gen.eta(), theWeight);
+     }
+     if(fabs(dE)>0){
+       theHistograms.fill("electronsDeltaE","dE of e",  50, -30, 30 , dE, theWeight);
+       theHistograms.fill("electronsAbsResolution(E)","absResolution(E) of e",  50, -0.2, 0.2 , dE/gen.e(), theWeight);
+     }
 
 
+     //-----muons-----//
+     
+   } else if(abs(gen.id()) == 13){//muons mc pdg id
+     foreach(const phys::Lepton& mu, *muons){
+       dR=deltaR(gen.eta(), gen.phi(), mu.eta(), mu.phi());
+       if (dR<dRmin){
+	 dRmin=dR;
+ 	 dptInv=1/gen.pt()-1/mu.pt();
+	 dpt=gen.pt()-mu.pt();
+	 deta=gen.eta()-mu.eta();
+	 dE=gen.e()-mu.e();
+       }
+     }
+     theHistograms.fill("muonsDeltaR","dR of e",  50, 0, 2 , dRmin, theWeight);
+     if(dRmin<=0.04)
+       theHistograms.fill("muonsCutDeltaR","cut dR of e",  50, 0, 0.05 , dRmin, theWeight);
 
+     
+     if(fabs(dpt)>0){
+       theHistograms.fill("muonsDeltaPt","dpt of mu",  50, -10, 10 , dpt, theWeight);
+       theHistograms.fill("muonsAbsResolution(pt)","absResolution(pt) of mu",  50, -0.2, 0.2, dpt/gen.pt() , theWeight);
+       theHistograms.fill("muonsAbsResolution(pt)vsPt","absResolution(pt) of mu vs pt",  50, -0.2, 0.2 ,  10, 0, 20, dpt/gen.pt(), gen.pt(), theWeight);
+     }
+     if(fabs(dptInv)>0){
+       theHistograms.fill("muonsDeltaPtInverse","dptInv of mu",  50, -0.2, 0.2 , dptInv, theWeight);
+       theHistograms.fill("muonsAbsResolution(ptInv)","absResolution(ptInv) of mu",  50, -0.2, 0.2 , dptInv/(1/gen.pt()), theWeight);
+     }
+
+     if(fabs(deta)>0){
+       theHistograms.fill("muonsDeltaEta","deta of mu",  50, -10, 10, deta, theWeight);
+       theHistograms.fill("muonsAbsResolution(eta)","absResolution(eta) of mu",  50, -0.2, 0.2 , deta/gen.eta(), theWeight);
+     }
+     if(fabs(dE)>0){
+       theHistograms.fill("muonsDeltaE","dE of mu",  50, -30, 30 , dE, theWeight);
+       theHistograms.fill("muonsAbsResolution(E)","absResolution(E) of mu",  50, -0.2, 0.2 , dE/gen.e(), theWeight);
+     }
+   }
+
+   
  }
- */
-
 }
-
-
-
-
-
-
