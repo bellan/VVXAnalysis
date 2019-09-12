@@ -26,12 +26,11 @@ void WZZAnalyzer::analyze(){
   cout << "-----------------------------------------------------------------"<<endl;
   cout << "Run: " << run << " event: " << event << endl;
 
-  /*
-   *
-   *-----------------GenParticles------------------
-   *  
-*/  
 
+
+
+
+  //----------------------------------------GenParticles----------------------------------------//
   
   int ngenElectrons=0;
   int ngenMuons=0;
@@ -64,14 +63,10 @@ void WZZAnalyzer::analyze(){
 
 
 
-
-  /*
-   *
-   *---------------MUONS------------------
-   *
-*/
-
   
+//----------------------------------------MUONS----------------------------------------//
+
+
   theHistograms.fill("nmuons","Number of muons",  10, 0, 10 , muons->size(), theWeight);
 
   
@@ -86,11 +81,7 @@ void WZZAnalyzer::analyze(){
   }
 
 
-  /*
-   *
-   *-----------------ELECTRONS------------------
-   *  
-*/  
+//----------------------------------------ELECTRONS----------------------------------------//
 
   
   theHistograms.fill("nelectrons","Number of electrons",  10, 0, 10 , electrons->size(), theWeight);
@@ -108,12 +99,11 @@ void WZZAnalyzer::analyze(){
 
    theHistograms.fill("nelectronsmuons","Number of electrons and muons",  10, 0, 10 , 10, 0 , 10 , electrons->size(), muons->size(), theWeight);
 
-   
-   /*
-   *
-   *-----------------JETS------------------
-   *  
-*/  
+
+
+
+
+   //----------------------------------------JETS----------------------------------------//
 
 
   foreach(const phys::Particle& gen, *genJets){
@@ -144,11 +134,7 @@ void WZZAnalyzer::analyze(){
   }
 
 
-  /*
-   *
-   *-------------------JETS(AK8)------------------
-   *  
-*/  
+   //----------------------------------------JETS(AK8)----------------------------------------//
 
     foreach(const phys::Particle& gen, *genJetsAK8){
       theHistograms.fill("genJetAK8Pt","pt of gen jetsAK8",20,0,200,gen.pt(),theWeight);
@@ -174,13 +160,7 @@ void WZZAnalyzer::analyze(){
 
 
 
-
- /*
-  *
-  *----------------------------MET_ ANALYSIS---------------------------- 
-  *
-  *
-  */
+   //----------------------------------------MET_ANALYSIS----------------------------------------//
 
  
  theHistograms.fill("met","MET",  100, 0, 500 , met->pt(), theWeight);
@@ -204,13 +184,7 @@ void WZZAnalyzer::analyze(){
 
 
 
-
- /*
-  *
-  *-------------------------EFFICIENCY_&_RESOLUTION------------------------------- 
-  *
-  *
-  */
+   //----------------------------------------RESOLUTION----------------------------------------//
 
  
  double dptInv=0;
@@ -219,6 +193,7 @@ void WZZAnalyzer::analyze(){
  double dE=0;
  double dR=0;
  double dRmin=99.9;
+ double dRmax=0.1;
  foreach(const phys::Particle& gen, *genParticles){
 
      //-----electrons-----//
@@ -235,7 +210,7 @@ void WZZAnalyzer::analyze(){
        }
      }
      theHistograms.fill("electronsDeltaR","dR of e",  50, 0, 2 , dRmin, theWeight);
-     if(dRmin<=0.04)
+     if(dRmin<=dRmax)
        theHistograms.fill("electronsCutDeltaR","cut dR of e",  50, 0, 0.05 , dRmin, theWeight);
 
      
@@ -262,8 +237,10 @@ void WZZAnalyzer::analyze(){
      //-----muons-----//
      
    } else if(abs(gen.id()) == 13){//muons mc pdg id
+     theHistograms.fill("genMuonEta_den","eta of gen muons",30,0,2.5,fabs(gen.eta()));
      foreach(const phys::Lepton& mu, *muons){
        dR=deltaR(gen.eta(), gen.phi(), mu.eta(), mu.phi());
+       //dR=deltaR(gen, mu);
        if (dR<dRmin){
 	 dRmin=dR;
  	 dptInv=1/gen.pt()-1/mu.pt();
@@ -273,9 +250,10 @@ void WZZAnalyzer::analyze(){
        }
      }
      theHistograms.fill("muonsDeltaR","dR of e",  50, 0, 2 , dRmin, theWeight);
-     if(dRmin<=0.04)
+     if(dRmin<=dRmax){
+       theHistograms.fill("genMuonEta_num","eta of gen muons",30,0,2.5,fabs(gen.eta()));
        theHistograms.fill("muonsCutDeltaR","cut dR of e",  50, 0, 0.05 , dRmin, theWeight);
-
+     }
      
      if(fabs(dpt)>0){
        theHistograms.fill("muonsDeltaPt","dpt of mu",  50, -10, 10 , dpt, theWeight);
@@ -299,4 +277,5 @@ void WZZAnalyzer::analyze(){
 
    
  }
+
 }
