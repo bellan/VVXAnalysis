@@ -191,54 +191,83 @@ void WZZAnalyzer::analyze(){
 
   //----------------------------------------RESOLUTION&EFFICIENCY----------------------------------------//
 
- 
-  double dptInv=0;
-  double dpt=0;
-  double deta=0;
-  double dE=0;
-  double dR=0;
-  double dRmin=99.9;
-  double dRmax=0.1;
+
+
+  bool electronMatched[electrons->size()];
+  for(int k=0; k<electrons->size(); k++)
+    electronMatched[k]=false;
+
+  bool muonMatched[muons->size()];
+  for(int k=0; k<electrons->size(); k++)
+    muonMatched[k]=false;
+
+  bool genParticleMatched;
+
   foreach(const phys::Particle& gen, *genParticles){
-    //double dRgen[ngenElectrons]; int i=0;
-    //double dRgen[ngenMuons]; int j=0;
+
+    double dptInv=0;
+    double dpt=0;
+    double deta=0;
+    double dE=0;
+  
+    double dRminEl=99.9;
+    double dRminMu=99.9;
+
+    double dRmax=0.1;
+
+    double dREl[ngenElectrons][electrons->size()];
+    double dRMu[ngenMuons][muons->size()];
+
+    int j=0;
+    int i=0;//only for electrons
+    int m=0;//only for muons
+    int electronIndex=0;
+    int muonIndex=0;
+
+    
+    genParticleMatched=false;
+
+
 
     //-----electrons-----//
-   
+
+
     if(abs(gen.id()) == 11){//electrons mc pdg id
-      
+          
       theHistograms.fill("genElectronsEta_den","eta of gen electrons",30,0,2.5,fabs(gen.eta()));//for efficiency
       theHistograms.fill("genElectronsPt_den","pt of gen electrons",20,0,200,gen.pt(),theWeight);
       theHistograms.fill("genElectronsPhi_den","phi of gen electrons",30,-3.2,3.2,gen.phi(),theWeight);
-      //theHistograms.fill("genElectronsRapidity","rapidity of gen electrons",30,0,2.5,fabs(gen.rapidity()),theWeight);
-      theHistograms.fill("genElectronsE_den","energy of gen electrons",120,0,400,gen.e(),theWeight);
+      theHistograms.fill("genElectronsE_den","energy of gen electrons",100,0,400,gen.e(),theWeight);
      
-
 
      
       foreach(const phys::Lepton& e, *electrons){
-	dR=deltaR(gen.eta(), gen.phi(), e.eta(), e.phi());
-	if (dR<dRmin){
-	  dRmin=dR;
-	  //if(i==0)
+	dREl[i][j]=deltaR(gen.eta(), gen.phi(), e.eta(), e.phi());
+	if(dREl[i][j]<dRminEl && !electronMatched[j]){
+	  dRminEl=dREl[i][j];
+	  electronIndex=j;
+	  genParticleMatched=true;
 	  dptInv=1/gen.pt()-1/e.pt();
 	  dpt=gen.pt()-e.pt();
 	  deta=gen.eta()-e.eta();
 	  dE=gen.e()-e.e();
 	}
+	j++;
       }
-      theHistograms.fill("electronsDeltaR","dR of e",  50, 0, 2 , dRmin, theWeight);
-      if(dRmin<=dRmax){
-	theHistograms.fill("electronsCutDeltaR","cut dR of e",  50, 0, 0.05 , dRmin, theWeight);
-	theHistograms.fill("genElectronsEta_num","eta of gen electrons",30,0,2.5,fabs(gen.eta()));
-	theHistograms.fill("genElectronsPt_num","pt of gen electrons",20,0,200,gen.pt(),theWeight);
-	theHistograms.fill("genElectronsPhi_num","phi of gen electrons",30,-3.2,3.2,gen.phi(),theWeight);
-	//theHistograms.fill("genElectronsRapidity","rapidity of gen electrons",30,0,2.5,fabs(gen.rapidity()),theWeight);
-	theHistograms.fill("genElectronsE_num","energy of gen electrons",120,0,400,gen.e(),theWeight);
+      electronMatched[electronIndex]=true;
+      i++;
+      if(genParticleMatched){
+	theHistograms.fill("electronsDeltaR","dR of e",  50, 0, 2 , dRminEl, theWeight);
+	if(dRminEl<=dRmax){
+	  theHistograms.fill("electronsCutDeltaR","cut dR of e",  50, 0, 0.05 , dRminEl, theWeight);
+	  theHistograms.fill("genElectronsEta_num","eta of gen electrons",30,0,2.5,fabs(gen.eta()));
+	  theHistograms.fill("genElectronsPt_num","pt of gen electrons",20,0,200,gen.pt(),theWeight);
+	  theHistograms.fill("genElectronsPhi_num","phi of gen electrons",30,-3.2,3.2,gen.phi(),theWeight);
+	  theHistograms.fill("genElectronsE_num","energy of gen electrons",100,0,400,gen.e(),theWeight);
+	}
       }
-	    
 
-     
+
       if(fabs(dpt)>0){
 	theHistograms.fill("electronsDeltaPt","dpt of e",  50, -10, 10 , dpt, theWeight);
 	theHistograms.fill("electronsAbsResolution(pt)","absResolution(pt) of e",  50, -0.2, 0.2, dpt/gen.pt() , theWeight);
@@ -257,36 +286,41 @@ void WZZAnalyzer::analyze(){
 	theHistograms.fill("electronsDeltaE","dE of e",  50, -30, 30 , dE, theWeight);
 	theHistograms.fill("electronsAbsResolution(E)","absResolution(E) of e",  50, -0.2, 0.2 , dE/gen.e(), theWeight);
       }
+    }
 
-
+    
       //-----muons-----//
      
-    } else if(abs(gen.id()) == 13){//muons mc pdg id
+    else if(abs(gen.id()) == 13){//muons mc pdg id
       theHistograms.fill("genMuonsEta_den","eta of gen muons",30,0,2.5,fabs(gen.eta()));
       theHistograms.fill("genMuonsPt_den","pt of gen muons",20,0,200,gen.pt(),theWeight);
       theHistograms.fill("genMuonsPhi_den","phi of gen muons",30,-3.2,3.2,gen.phi(),theWeight);
-      theHistograms.fill("genMuonsE_den","energy of gen muons",120,0,400,gen.e(),theWeight);
+      theHistograms.fill("genMuonsE_den","energy of gen muons",90,0,400,gen.e(),theWeight);
 
       foreach(const phys::Lepton& mu, *muons){
-	dR=deltaR(gen.eta(), gen.phi(), mu.eta(), mu.phi());
-	//dR=deltaR(gen, mu);
-	if (dR<dRmin){
-	  dRmin=dR;
+	dRMu[m][j]=deltaR(gen.eta(), gen.phi(), mu.eta(), mu.phi());
+	if(dRMu[m][j]<dRminMu && !muonMatched[j]){
+	  dRminMu=dRMu[m][j];
+	  muonIndex=j;
+	  genParticleMatched=true;
 	  dptInv=1/gen.pt()-1/mu.pt();
 	  dpt=gen.pt()-mu.pt();
 	  deta=gen.eta()-mu.eta();
 	  dE=gen.e()-mu.e();
 	}
+	j++;
       }
-      theHistograms.fill("muonsDeltaR","dR of e",  50, 0, 2 , dRmin, theWeight);
-      if(dRmin<=dRmax){
-	theHistograms.fill("genMuonsEta_num","eta of gen muons",30,0,2.5,fabs(gen.eta()));
-	theHistograms.fill("genMuonsPt_num","pt of gen muons",20,0,200,gen.pt(),theWeight);
-	theHistograms.fill("genMuonsPhi_num","phi of gen muons",30,-3.2,3.2,gen.phi(),theWeight);
-	theHistograms.fill("genMuonsE_num","energy of gen muons",120,0,400,gen.e(),theWeight);
-
-       
-	theHistograms.fill("muonsCutDeltaR","cut dR of e",  50, 0, 0.05 , dRmin, theWeight);
+      muonMatched[muonIndex]=true;
+      m++;
+      if(genParticleMatched){
+	theHistograms.fill("muonsDeltaR","dR of mu",  50, 0, 2 , dRminMu, theWeight);
+	if(dRminMu<=dRmax){
+	  theHistograms.fill("muonsCutDeltaR","cut dR of mu",  50, 0, 0.05 , dRminMu, theWeight);
+	  theHistograms.fill("genMuonsEta_num","eta of gen muons",30,0,2.5,fabs(gen.eta()));
+	  theHistograms.fill("genMuonsPt_num","pt of gen muons",20,0,200,gen.pt(),theWeight);
+	  theHistograms.fill("genMuonsPhi_num","phi of gen muons",30,-3.2,3.2,gen.phi(),theWeight);
+	  theHistograms.fill("genMuonsE_num","energy of gen muons",90,0,400,gen.e(),theWeight);
+	}
       }
      
       if(fabs(dpt)>0){
@@ -309,7 +343,9 @@ void WZZAnalyzer::analyze(){
       }
     }
 
-   
+      
+
   }
+      
 
 }
