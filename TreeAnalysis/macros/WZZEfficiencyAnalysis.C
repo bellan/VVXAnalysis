@@ -38,7 +38,7 @@ void WZZEfficiencyAnalysis(){
       TH1F* hNum = (TH1F*)result->Get("gen"+name+type+"_num");
       if(hNum == nullptr){
         #ifdef TEST_MODE
-	cout<<"Could not open \gen"<<name<<type<<"_num""\"\n";
+	cout<<"Could not open gen"<<name<<type<<"_num""\"\n";
 #endif
       }
 
@@ -46,7 +46,7 @@ void WZZEfficiencyAnalysis(){
 			
       if(hDen == nullptr){
 	#
-	cout<<"Could not open \gen"<<name<<type<<"_den""\"\n";
+	cout<<"Could not open gen"<<name<<type<<"_den""\"\n";
       }
 			
       if(hNum != nullptr && hDen != nullptr){
