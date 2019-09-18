@@ -272,7 +272,7 @@ void WWosAnalyzer::leptonPlots(const Particle* lead, const Particle* trail, cons
 	theHistograms.fill("Second "+type+" pt", "Second "+type+" pt;pt [GeV/c]", HISTO_Pt_Config, trail->pt(), w);
 	float deltaEta = lead->eta() - trail->eta();
 	theHistograms.fill("#Delta #eta "+type, "#Delta #eta "+type+";#Delta#eta", HISTO_JEta_Config, deltaEta, w);
-	float dPhi = deltaPhi(lead->p4(), trail->p4());//lead->phi() - trail->phi();
+	float dPhi = physmath::deltaPhi(lead->p4(), trail->p4());//lead->phi() - trail->phi();
 	theHistograms.fill("#Delta #phi "+type, "#Delta #phi "+type+";#phi [rad]", 70, 0., 3.15, dPhi, w);
 	float deltaR = physmath::deltaR(*lead, *trail);
 	theHistograms.fill("#Delta R "+type, "#Delta R "+type+"; #Delta R", 100, 0., 5., deltaR, w);
