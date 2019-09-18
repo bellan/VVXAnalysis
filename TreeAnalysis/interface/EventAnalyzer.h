@@ -69,42 +69,9 @@ public:
 
   virtual ~EventAnalyzer();
 
-  static double deltaR (double rapidity1, double phi1, double rapidity2, double phi2 ) {
-    
-    double Drapidity = fabs(rapidity1 - rapidity2);
-    double Dphi      = fabs(phi1 - phi2);
-    if (Dphi>TMath::Pi()) Dphi -= TMath::TwoPi();
-
-    double dR = sqrt(Drapidity*Drapidity  + Dphi*Dphi);
-    
-    return dR;
-    
-  }
-  template <typename T>
-    static double deltaR (const T&a, const T&b ) {
-    
-    double Drapidity = a.Eta() - b.Eta();
-    double Dphi      = a.Phi() - b.Phi(); 
-    if (Dphi>TMath::Pi()) Dphi -= TMath::TwoPi();
-   
-    double dR = sqrt(Drapidity*Drapidity  + Dphi*Dphi);
-    
-    return dR;
-  }
   
   std::string fileName;
   
-    static double deltaPhi (const TLorentzVector &a, const TLorentzVector &b) {
-    
-    double phi1 = a.Phi();
-    double phi2 = b.Phi();
-    
-    double DPhi = std::abs(phi2 - phi1);
-    
-    if(DPhi > TMath::Pi()) DPhi = (TMath::TwoPi()) - DPhi;
-    
-    return DPhi;   
-  }
     
   // Class for specific selections
   SelectorBase& select;
