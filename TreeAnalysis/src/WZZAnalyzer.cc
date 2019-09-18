@@ -242,7 +242,7 @@ void WZZAnalyzer::analyze(){
 
      
       foreach(const phys::Lepton& e, *electrons){
-	dREl[i][j]=deltaR(gen.eta(), gen.phi(), e.eta(), e.phi());
+	dREl[i][j]=physmath::deltaR(gen, e);
 	if(dREl[i][j]<dRminEl && !electronMatched[j]){
 	  dRminEl=dREl[i][j];
 	  electronIndex=j;
@@ -298,7 +298,7 @@ void WZZAnalyzer::analyze(){
       theHistograms.fill("genMuonsE_den","energy of gen muons",120,0,400,gen.e());
 
       foreach(const phys::Lepton& mu, *muons){
-	dRMu[m][j]=deltaR(gen.eta(), gen.phi(), mu.eta(), mu.phi());
+	dRMu[m][j]=physmath::deltaR(gen, mu);
 	if(dRMu[m][j]<dRminMu && !muonMatched[j]){
 	  dRminMu=dRMu[m][j];
 	  muonIndex=j;

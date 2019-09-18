@@ -183,15 +183,15 @@ Int_t ZZWSRDefinition::cut() {
     double ptj1 = max(p_myj1.Pt(), p_myj2.Pt());
     double ptj2 = min(p_myj1.Pt(), p_myj2.Pt());
 
-    double deltaRJets11 = physmath::deltaR(p_myj1, p_myl1);
-    double deltaRJets12 = physmath::deltaR(p_myj1, p_myl2);
-    double deltaRJets13 = physmath::deltaR(p_myj1, p_myl3);
-    double deltaRJets14 = physmath::deltaR(p_myj1, p_myl4);
-    double deltaRJets21 = physmath::deltaR(p_myj2, p_myl1);
-    double deltaRJets22 = physmath::deltaR(p_myj2, p_myl2);
-    double deltaRJets23 = physmath::deltaR(p_myj2, p_myl3);
-    double deltaRJets24 = physmath::deltaR(p_myj2, p_myl4);
-
+    double deltaRJets11 = physmath::deltaR(phys::Particle(p_myj1), phys::Particle(p_myl1));
+    double deltaRJets12 = physmath::deltaR(phys::Particle(p_myj1), phys::Particle(p_myl2));
+    double deltaRJets13 = physmath::deltaR(phys::Particle(p_myj1), phys::Particle(p_myl3));
+    double deltaRJets14 = physmath::deltaR(phys::Particle(p_myj1), phys::Particle(p_myl4));
+    double deltaRJets21 = physmath::deltaR(phys::Particle(p_myj2), phys::Particle(p_myl1));
+    double deltaRJets22 = physmath::deltaR(phys::Particle(p_myj2), phys::Particle(p_myl2));
+    double deltaRJets23 = physmath::deltaR(phys::Particle(p_myj2), phys::Particle(p_myl3));
+    double deltaRJets24 = physmath::deltaR(phys::Particle(p_myj2), phys::Particle(p_myl4));
+    
     double DPhi_j1_j2   = physmath::deltaPhi(p_myj1, p_myj2);
     double DPhi_ZZ_j1j2 = physmath::deltaPhi((p_myj1 + p_myj2), (p_myZ0 + p_myZ1));
     double DPhi_Z_Z     = physmath::deltaPhi(p_myZ0, p_myZ1); 
