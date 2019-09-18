@@ -235,9 +235,9 @@ void WZZAnalyzer::analyze(){
     if(abs(gen.id()) == 11){//electrons mc pdg id
           
       theHistograms.fill("genElectronsEta_den","eta of gen electrons",30,0,2.5,fabs(gen.eta()));//for efficiency
-      theHistograms.fill("genElectronsPt_den","pt of gen electrons",20,0,200,gen.pt(),theWeight);
-      theHistograms.fill("genElectronsPhi_den","phi of gen electrons",30,-3.2,3.2,gen.phi(),theWeight);
-      theHistograms.fill("genElectronsE_den","energy of gen electrons",100,0,400,gen.e(),theWeight);
+      theHistograms.fill("genElectronsPt_den","pt of gen electrons",20,0,200,gen.pt());
+      theHistograms.fill("genElectronsPhi_den","phi of gen electrons",30,-3.2,3.2,gen.phi());
+      theHistograms.fill("genElectronsE_den","energy of gen electrons",100,0,400,gen.e());
      
 
      
@@ -261,9 +261,9 @@ void WZZAnalyzer::analyze(){
 	if(dRminEl<=dRmax){
 	  theHistograms.fill("electronsCutDeltaR","cut dR of e",  50, 0, 0.05 , dRminEl, theWeight);
 	  theHistograms.fill("genElectronsEta_num","eta of gen electrons",30,0,2.5,fabs(gen.eta()));
-	  theHistograms.fill("genElectronsPt_num","pt of gen electrons",20,0,200,gen.pt(),theWeight);
-	  theHistograms.fill("genElectronsPhi_num","phi of gen electrons",30,-3.2,3.2,gen.phi(),theWeight);
-	  theHistograms.fill("genElectronsE_num","energy of gen electrons",100,0,400,gen.e(),theWeight);
+	  theHistograms.fill("genElectronsPt_num","pt of gen electrons",20,0,200,gen.pt());
+	  theHistograms.fill("genElectronsPhi_num","phi of gen electrons",30,-3.2,3.2,gen.phi());
+	  theHistograms.fill("genElectronsE_num","energy of gen electrons",100,0,400,gen.e());
 	}
       }
 
@@ -293,9 +293,9 @@ void WZZAnalyzer::analyze(){
      
     else if(abs(gen.id()) == 13){//muons mc pdg id
       theHistograms.fill("genMuonsEta_den","eta of gen muons",30,0,2.5,fabs(gen.eta()));
-      theHistograms.fill("genMuonsPt_den","pt of gen muons",20,0,200,gen.pt(),theWeight);
-      theHistograms.fill("genMuonsPhi_den","phi of gen muons",30,-3.2,3.2,gen.phi(),theWeight);
-      theHistograms.fill("genMuonsE_den","energy of gen muons",90,0,400,gen.e(),theWeight);
+      theHistograms.fill("genMuonsPt_den","pt of gen muons",20,0,200,gen.pt());
+      theHistograms.fill("genMuonsPhi_den","phi of gen muons",30,-3.2,3.2,gen.phi());
+      theHistograms.fill("genMuonsE_den","energy of gen muons",120,0,400,gen.e());
 
       foreach(const phys::Lepton& mu, *muons){
 	dRMu[m][j]=deltaR(gen.eta(), gen.phi(), mu.eta(), mu.phi());
@@ -317,9 +317,9 @@ void WZZAnalyzer::analyze(){
 	if(dRminMu<=dRmax){
 	  theHistograms.fill("muonsCutDeltaR","cut dR of mu",  50, 0, 0.05 , dRminMu, theWeight);
 	  theHistograms.fill("genMuonsEta_num","eta of gen muons",30,0,2.5,fabs(gen.eta()));
-	  theHistograms.fill("genMuonsPt_num","pt of gen muons",20,0,200,gen.pt(),theWeight);
-	  theHistograms.fill("genMuonsPhi_num","phi of gen muons",30,-3.2,3.2,gen.phi(),theWeight);
-	  theHistograms.fill("genMuonsE_num","energy of gen muons",90,0,400,gen.e(),theWeight);
+	  theHistograms.fill("genMuonsPt_num","pt of gen muons",20,0,200,gen.pt());
+	  theHistograms.fill("genMuonsPhi_num","phi of gen muons",30,-3.2,3.2,gen.phi());
+	  theHistograms.fill("genMuonsE_num","energy of gen muons",120,0,400,gen.e());
 	}
       }
      
@@ -346,6 +346,41 @@ void WZZAnalyzer::analyze(){
       
 
   }
-      
+
+
+
+  //----------------------------------------VECTOR_BOSONS_RECONSTRUCTION----------------------------------------//
+
+  
+  //This part of the analysis can be used both for WZZ and for ZZZ samples. 
+  //For the signal definition, the categories with the first bit on, are the only ones that have to be considered 
+   
+  if(topology.test(0)){
+    
+    foreach(const phys::Boson<phys::Particle>& gen, *genVBParticles){
+
+      if(abs(gen.id()) == 23 && abs(gen.daughter(0).id()) < 10){//for Z bosons: mc pdg id = 23 by notation
+	theHistograms.fill("genZPt","pt of gen Z",20,0,200,gen.pt(),theWeight);
+	theHistograms.fill("genZEta","eta of gen Z",30,0,2.5,fabs(gen.eta()),theWeight);
+	theHistograms.fill("genZPhi","phi of gen Z",30,-3.2,3.2,gen.phi(),theWeight);
+	theHistograms.fill("genZRapidity","rapidity of gen Z",30,0,2.5,fabs(gen.rapidity()),theWeight);
+	theHistograms.fill("genZEnergy","energy of gen Z",120,0,400,fabs(gen.e()),theWeight);
+	theHistograms.fill("genZmass","mass of gen Z",40,40,200,fabs(gen.mass()),theWeight);
+
+      }
+
+    
+      if(abs(gen.id()) == 24 && abs(gen.daughter(0).id()) < 10){//for W bosons: mc pdg id = 24 by notation
+	theHistograms.fill("genWPt","pt of gen W",20,0,200,gen.pt(),theWeight);
+	theHistograms.fill("genWEta","eta of gen W",30,0,2.5,fabs(gen.eta()),theWeight);
+	theHistograms.fill("genWPhi","phi of gen W",30,-3.2,3.2,gen.phi(),theWeight);
+	theHistograms.fill("genWRapidity","rapidity of gen W",30,0,2.5,fabs(gen.rapidity()),theWeight);
+	theHistograms.fill("genWEnergy","energy of gen W",120,0,400,fabs(gen.e()),theWeight);
+	theHistograms.fill("genWmass","mass of gen W",40,40,200,fabs(gen.mass()),theWeight);
+
+      }
+    }
+  }
+  
 
 }
