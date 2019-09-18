@@ -459,9 +459,9 @@ void WlllnuAnalyzer::analyze(){
 	cout << "\n W: " << W << endl;
 	
 	if(finalid != 49) continue;
-	isNuAlone ? theHistograms.fill("deltaRZtriplet","deltaR Z and related leptons ", 100, 0, 10, deltaR(zl.first.p4(), zl.second.p4())) : theHistograms.fill("deltaRZtriplet","deltaR Z and related leptons ", 100, 0, 10, deltaR(zl.first.p4(), nu.p4())); //are Z and its "related" lepton collinear?
-	!(isNuAlone) ? theHistograms.fill("deltaRZsinglet","deltaR Z and NOT related leptons ", 100, 0, 10, deltaR(zl.first.p4(), zl.second.p4())) : theHistograms.fill("deltaRZsinglet","deltaR Z and NOT related leptons ", 100, 0, 10, deltaR(zl.first.p4(), nu.p4())); //are Z and its "related" lepton collinear?
-	theHistograms.fill("deltaRZdaughters","deltaR Z daughters", 100, 0, 10, deltaR(zl.first.daughter(0).p4(), zl.first.daughter(1).p4()));
+	isNuAlone ? theHistograms.fill("deltaRZtriplet","deltaR Z and related leptons ", 100, 0, 10, physmath::deltaR(zl.first, zl.second)) : theHistograms.fill("deltaRZtriplet","deltaR Z and related leptons ", 100, 0, 10, physmath::deltaR(zl.first, nu)); //are Z and its "related" lepton collinear?
+	!(isNuAlone) ? theHistograms.fill("deltaRZsinglet","deltaR Z and NOT related leptons ", 100, 0, 10, physmath::deltaR(zl.first, zl.second)) : theHistograms.fill("deltaRZsinglet","deltaR Z and NOT related leptons ", 100, 0, 10, physmath::deltaR(zl.first, nu)); //are Z and its "related" lepton collinear?
+	theHistograms.fill("deltaRZdaughters","deltaR Z daughters", 100, 0, 10, physmath::deltaR(zl.first.daughter(0), zl.first.daughter(1)));
 	theHistograms.fill("massZ","mass Z", 300, 0, 150, zl.first.mass());
 	//theHistograms.fill("mTZ","direct mT Z", 300, 0, 150, zl.first.p4().Mt());
 	theHistograms.fill("mTZdaughters","mT Z from daughters", 300, 0, 150, mT(zl.first.daughter(0), zl.first.daughter(1)));
