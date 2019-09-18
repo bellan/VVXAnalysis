@@ -250,18 +250,17 @@ void ZZjAnalyzer::analyze(){
   if((region_ == phys::CR2P2F) && (  (ZZ->second().daughterPtr(0)->passFullSel())  || (ZZ->second().daughterPtr(1)->passFullSel() )))  std::cout<<" some FullSell "<< " ev "<<eventstr<<std::endl;
   
   
-  if((abs(ZZ->first().daughterPtr(0)->id())!=(abs(ZZ->second().daughterPtr(0)->id())))  && ( 
- (deltaR(ZZ->first().daughterPtr(0)->p4().Rapidity(), ZZ->first().daughterPtr(0)->p4().Phi(), ZZ->second().daughterPtr(0)->p4().Rapidity(), ZZ->second().daughterPtr(0)->p4().Phi())<0.05) || 
- (deltaR(ZZ->first().daughterPtr(0)->p4().Rapidity(), ZZ->first().daughterPtr(0)->p4().Phi(), ZZ->second().daughterPtr(1)->p4().Rapidity(), ZZ->second().daughterPtr(1)->p4().Phi())<0.05) || 
- (deltaR(ZZ->first().daughterPtr(1)->p4().Rapidity(), ZZ->first().daughterPtr(1)->p4().Phi(), ZZ->second().daughterPtr(0)->p4().Rapidity(), ZZ->second().daughterPtr(0)->p4().Phi())<0.05) || 
- (deltaR(ZZ->first().daughterPtr(1)->p4().Rapidity(), ZZ->first().daughterPtr(1)->p4().Phi(), ZZ->second().daughterPtr(1)->p4().Rapidity(), ZZ->second().daughterPtr(1)->p4().Phi())<0.05)  )) 
+  if((abs(ZZ->first().daughterPtr(0)->id())!=(abs(ZZ->second().daughterPtr(0)->id())))  && ((physmath::deltaR(*ZZ->first().daughterPtr(0), *ZZ->second().daughterPtr(0))<0.05) || 
+											    (physmath::deltaR(*ZZ->first().daughterPtr(0), *ZZ->second().daughterPtr(1))<0.05) || 
+											    (physmath::deltaR(*ZZ->first().daughterPtr(1), *ZZ->second().daughterPtr(0))<0.05) || 
+											    (physmath::deltaR(*ZZ->first().daughterPtr(1), *ZZ->second().daughterPtr(1))<0.05)  )) 
     std::cout<<" delta R  <0.05 "<< " ev "<<eventstr<<std::endl;
 
 if( 
- (deltaR(ZZ->first().daughterPtr(0)->p4().Rapidity(), ZZ->first().daughterPtr(0)->p4().Phi(), ZZ->second().daughterPtr(0)->p4().Rapidity(), ZZ->second().daughterPtr(0)->p4().Phi())<0.02) || 
- (deltaR(ZZ->first().daughterPtr(0)->p4().Rapidity(), ZZ->first().daughterPtr(0)->p4().Phi(), ZZ->second().daughterPtr(1)->p4().Rapidity(), ZZ->second().daughterPtr(1)->p4().Phi())<0.02) || 
- (deltaR(ZZ->first().daughterPtr(1)->p4().Rapidity(), ZZ->first().daughterPtr(1)->p4().Phi(), ZZ->second().daughterPtr(0)->p4().Rapidity(), ZZ->second().daughterPtr(0)->p4().Phi())<0.02) || 
- (deltaR(ZZ->first().daughterPtr(1)->p4().Rapidity(), ZZ->first().daughterPtr(1)->p4().Phi(), ZZ->second().daughterPtr(1)->p4().Rapidity(), ZZ->second().daughterPtr(1)->p4().Phi())<0.02)  ) 
+   (physmath::deltaR(*ZZ->first().daughterPtr(0), *ZZ->second().daughterPtr(0))<0.02) || 
+   (physmath::deltaR(*ZZ->first().daughterPtr(0), *ZZ->second().daughterPtr(1))<0.02) || 
+   (physmath::deltaR(*ZZ->first().daughterPtr(1), *ZZ->second().daughterPtr(0))<0.02) || 
+   (physmath::deltaR(*ZZ->first().daughterPtr(1), *ZZ->second().daughterPtr(1))<0.02)  ) 
     std::cout<<" delta R  < 0.02 "<<" ev "<<eventstr<<std::endl;
 
  if( ZZ->mass() < 70.)  std::cout<<" mass < 70 "<<" ev "<<eventstr<<" ZZ mass "<<ZZ->mass()<<std::endl;

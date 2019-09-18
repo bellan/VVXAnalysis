@@ -70,10 +70,10 @@ Int_t ZZWAnalyzer::cut() {
         
     for(vector<Boson<Lepton> >::iterator b = Zll.begin()+1; b != Zll.end(); ++b) { 
     
-      double DR00 = deltaR(myZ0.daughter(0).p4().Rapidity(), myZ0.daughter(0).p4().Phi(), b->daughter(0).p4().Rapidity(), b->daughter(0).p4().Phi());
-      double DR01 = deltaR(myZ0.daughter(0).p4().Rapidity(), myZ0.daughter(0).p4().Phi(), b->daughter(1).p4().Rapidity(), b->daughter(1).p4().Phi());
-      double DR10 = deltaR(myZ0.daughter(1).p4().Rapidity(), myZ0.daughter(1).p4().Phi(), b->daughter(0).p4().Rapidity(), b->daughter(0).p4().Phi());
-      double DR11 = deltaR(myZ0.daughter(1).p4().Rapidity(), myZ0.daughter(1).p4().Phi(), b->daughter(1).p4().Rapidity(), b->daughter(1).p4().Phi());
+      double DR00 = physmath::deltaR(myZ0.daughter(0), b->daughter(0));
+      double DR01 = physmath::deltaR(myZ0.daughter(0), b->daughter(1));
+      double DR10 = physmath::deltaR(myZ0.daughter(1), b->daughter(0));
+      double DR11 = physmath::deltaR(myZ0.daughter(1), b->daughter(1));
 
       if (DR00 < 0.02 || DR01 < 0.02 || DR10 < 0.02 || DR11 < 0.02) {
 	passGhost=false; 
@@ -183,21 +183,21 @@ Int_t ZZWAnalyzer::cut() {
     double ptj1 = max(p_myj1.Pt(), p_myj2.Pt());
     double ptj2 = min(p_myj1.Pt(), p_myj2.Pt());
 
-    double deltaRJets11 = deltaR(p_myj1.Rapidity(), p_myj1.Phi(), p_myl1.Rapidity(), p_myl1.Phi());
-    double deltaRJets12 = deltaR(p_myj1.Rapidity(), p_myj1.Phi(), p_myl2.Rapidity(), p_myl2.Phi());
-    double deltaRJets13 = deltaR(p_myj1.Rapidity(), p_myj1.Phi(), p_myl3.Rapidity(), p_myl3.Phi());
-    double deltaRJets14 = deltaR(p_myj1.Rapidity(), p_myj1.Phi(), p_myl4.Rapidity(), p_myl4.Phi());
-    double deltaRJets21 = deltaR(p_myj2.Rapidity(), p_myj2.Phi(), p_myl1.Rapidity(), p_myl1.Phi());
-    double deltaRJets22 = deltaR(p_myj2.Rapidity(), p_myj2.Phi(), p_myl2.Rapidity(), p_myl2.Phi());
-    double deltaRJets23 = deltaR(p_myj2.Rapidity(), p_myj2.Phi(), p_myl3.Rapidity(), p_myl3.Phi());
-    double deltaRJets24 = deltaR(p_myj2.Rapidity(), p_myj2.Phi(), p_myl4.Rapidity(), p_myl4.Phi());
+    double deltaRJets11 = physmath::deltaR(p_myj1, p_myl1);
+    double deltaRJets12 = physmath::deltaR(p_myj1, p_myl2);
+    double deltaRJets13 = physmath::deltaR(p_myj1, p_myl3);
+    double deltaRJets14 = physmath::deltaR(p_myj1, p_myl4);
+    double deltaRJets21 = physmath::deltaR(p_myj2, p_myl1);
+    double deltaRJets22 = physmath::deltaR(p_myj2, p_myl2);
+    double deltaRJets23 = physmath::deltaR(p_myj2, p_myl3);
+    double deltaRJets24 = physmath::deltaR(p_myj2, p_myl4);
 
-    double DPhi_j1_j2   = deltaPhi(p_myj1, p_myj2);
-    double DPhi_ZZ_j1j2 = deltaPhi((p_myj1 + p_myj2), (p_myZ0 + p_myZ1));
-    double DPhi_Z_Z     = deltaPhi(p_myZ0, p_myZ1); 
-    double DPhi_ZZ_W    = deltaPhi((p_myZ0 + p_myZ1), p_myW);
-    double DPhi_Z0_W    = deltaPhi(p_myZ0, p_myW);
-    double DPhi_Z1_W    = deltaPhi(p_myZ1, p_myW);
+    double DPhi_j1_j2   = physmath::deltaPhi(p_myj1, p_myj2);
+    double DPhi_ZZ_j1j2 = physmath::deltaPhi((p_myj1 + p_myj2), (p_myZ0 + p_myZ1));
+    double DPhi_Z_Z     = physmath::deltaPhi(p_myZ0, p_myZ1); 
+    double DPhi_ZZ_W    = physmath::deltaPhi((p_myZ0 + p_myZ1), p_myW);
+    double DPhi_Z0_W    = physmath::deltaPhi(p_myZ0, p_myW);
+    double DPhi_Z1_W    = physmath::deltaPhi(p_myZ1, p_myW);
 
 
     cout << endl << Red("============Selected Event: ") << Red(event) << Red(" w= ") << Red(theWeight) << " " << Red(" ==================")  << endl;
@@ -325,14 +325,14 @@ void ZZWAnalyzer::analyze() {
       const Boson<Particle>& Z1gen = *GenZ.at(1);
       const Boson<Particle>& Wgen  = *GenW.at(0);
       
-      double DR11 = deltaR(Wgen.daughter(0).p4().Rapidity(), Wgen.daughter(0).p4().Phi(), Z0gen.daughter(0).p4().Rapidity(), Z0gen.daughter(0).p4().Phi());
-      double DR12 = deltaR(Wgen.daughter(0).p4().Rapidity(), Wgen.daughter(0).p4().Phi(), Z0gen.daughter(1).p4().Rapidity(), Z0gen.daughter(0).p4().Phi());
-      double DR13 = deltaR(Wgen.daughter(0).p4().Rapidity(), Wgen.daughter(0).p4().Phi(), Z1gen.daughter(0).p4().Rapidity(), Z0gen.daughter(0).p4().Phi());
-      double DR14 = deltaR(Wgen.daughter(0).p4().Rapidity(), Wgen.daughter(0).p4().Phi(), Z1gen.daughter(1).p4().Rapidity(), Z0gen.daughter(0).p4().Phi());
-      double DR21 = deltaR(Wgen.daughter(1).p4().Rapidity(), Wgen.daughter(1).p4().Phi(), Z0gen.daughter(0).p4().Rapidity(), Z0gen.daughter(0).p4().Phi());
-      double DR22 = deltaR(Wgen.daughter(1).p4().Rapidity(), Wgen.daughter(1).p4().Phi(), Z0gen.daughter(1).p4().Rapidity(), Z0gen.daughter(1).p4().Phi());
-      double DR23 = deltaR(Wgen.daughter(1).p4().Rapidity(), Wgen.daughter(1).p4().Phi(), Z1gen.daughter(0).p4().Rapidity(), Z1gen.daughter(0).p4().Phi());
-      double DR24 = deltaR(Wgen.daughter(1).p4().Rapidity(), Wgen.daughter(1).p4().Phi(), Z1gen.daughter(1).p4().Rapidity(), Z1gen.daughter(1).p4().Phi());
+      double DR11 = physmath::deltaR(Wgen.daughter(0), Z0gen.daughter(0));
+      double DR12 = physmath::deltaR(Wgen.daughter(0), Z0gen.daughter(1));
+      double DR13 = physmath::deltaR(Wgen.daughter(0), Z1gen.daughter(0));
+      double DR14 = physmath::deltaR(Wgen.daughter(0), Z1gen.daughter(1));
+      double DR21 = physmath::deltaR(Wgen.daughter(1), Z0gen.daughter(0));
+      double DR22 = physmath::deltaR(Wgen.daughter(1), Z0gen.daughter(1));
+      double DR23 = physmath::deltaR(Wgen.daughter(1), Z1gen.daughter(0));
+      double DR24 = physmath::deltaR(Wgen.daughter(1), Z1gen.daughter(1));
       
       
       
