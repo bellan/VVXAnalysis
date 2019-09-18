@@ -194,11 +194,11 @@ void WZZAnalyzer::analyze(){
 
 
   bool electronMatched[electrons->size()];
-  for(int k=0; k<electrons->size(); k++)
+  for(uint k=0; k<electrons->size(); k++)
     electronMatched[k]=false;
 
   bool muonMatched[muons->size()];
-  for(int k=0; k<electrons->size(); k++)
+  for(uint k=0; k<electrons->size(); k++)
     muonMatched[k]=false;
 
   bool genParticleMatched;
