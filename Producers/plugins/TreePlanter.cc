@@ -128,9 +128,6 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     theLHEHandler            = new LHEHandler(config.getParameter<int>("VVMode"), config.getParameter<int>("VVDecayMode"), true, 2016); //fix
   }
    
-  skimPaths_ = config.getParameter<std::vector<std::string> >("skimPaths");
-
-
   initTree();
 }
 
@@ -524,7 +521,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 	ZZ_ = zz;   
 	oneZZInSR = true;
       }
-      // Otherwise, select the ZZ acordingly to the same logic as the ZZ is chosen
+      // Otherwise, select the ZZ accordingly to the same logic as the ZZ is chosen
       if(!oneZZInSR){
 	if(abs(zz.first().mass() - phys::ZMASS) < abs(ZZ_.first().mass() - phys::ZMASS)) 
 	  ZZ_ = zz;
@@ -537,10 +534,11 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   }
 
   else if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();
-  //else if(isMC_ && ZL_.empty() && !test_bit(genCategory_,0) && applySkim_ ) return;
+  // case ZZ == 1 !trigger is missing
   else if(isMC_ && ZL_.empty() && !isSignal_ && applySkim_) return;
   else if(!isMC_  && ZL_.empty() && applySkim_) return;
-
+  else { cout<<"BOOOO" << endl;}
+  
   theTree->Fill();
 
 }
