@@ -88,8 +88,8 @@ bool EventTagger::filter(Event & event, const EventSetup& eventSetup) {
     topology.reset();
   
 
-  std::auto_ptr<int> output(new int(topology.to_ulong())); //Topology
-  event.put(output); 
+  auto output = std::make_unique<int>(topology.to_ulong()); //Topology
+  event.put(std::move(output)); 
 
   if (sel_ >= 0 && topology.any()) {
 

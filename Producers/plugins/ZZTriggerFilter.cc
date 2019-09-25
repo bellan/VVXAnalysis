@@ -46,9 +46,9 @@ bool ZZTriggerFilter::filter(edm::Event& event, const edm::EventSetup& setup){
   Short_t triggerWord(0);
   bool passTrigger = filterController_.passTrigger(NONE, event, triggerWord);
 
-  std::auto_ptr<bool> output(new bool(false)); //Topology
+  auto output = std::make_unique<bool>(false); //Topology
 
-  if(!passTrigger) {event.put(output);return false;}
+  if(!passTrigger) {event.put(std::move(output));return false;}
 
   // HACK HERE!! Do not consider cases where there is more than 1 ZZ candidate! 
   // The selection is as the same as in TreePlanter, but here it is not the right place where put the
@@ -70,7 +70,7 @@ bool ZZTriggerFilter::filter(edm::Event& event, const edm::EventSetup& setup){
 
   bool result = filterController_.passTrigger(effectiveChannel, triggerWord); 
   *output = result;
-  event.put(output);
+  event.put(std::move(output));
   return result; 
 }
 

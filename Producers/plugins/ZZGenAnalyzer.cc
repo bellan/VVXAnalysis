@@ -12,7 +12,6 @@
 #include <FWCore/ServiceRegistry/interface/Service.h>
 #include <CommonTools/UtilAlgos/interface/TFileService.h>
 #include <DataFormats/HepMCCandidate/interface/GenParticle.h>
-#include <Calibration/IsolatedParticles/plugins/IsolatedGenParticles.h>
 #include <FWCore/Utilities/interface/InputTag.h>
 #include <FWCore/ServiceRegistry/interface/Service.h>
 

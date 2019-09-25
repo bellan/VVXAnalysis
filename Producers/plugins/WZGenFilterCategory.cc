@@ -56,7 +56,7 @@ public:
  
 
   bool filter(edm::Event & event, const edm::EventSetup& eventSetup);
-  std::auto_ptr<std::vector<reco::GenParticle> > loadGenBoson(const phys::Boson<phys::Particle> &vb, const reco::GenParticleRefProd &genRefs, std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl);
+  void loadGenBoson(const phys::Boson<phys::Particle> &vb, const reco::GenParticleRefProd &genRefs, std::unique_ptr<reco::GenParticleCollection>& outputGenColl);
   
   virtual void beginJob();
   virtual void endJob(){}
@@ -190,49 +190,49 @@ bool WZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   //  if (particleStatus_ == 3) zzSignalTopology = zz::getSignalTopologyStatus3(genLeptons, genJets);
 
 
-  std::auto_ptr<int> output(new int(std::get<0>(zzSignalTopology))); //Topology
+  auto output = std::make_unique<int>(std::get<0>(zzSignalTopology)); //Topology
   
-  event.put(output); 
+  event.put(std::move(output)); 
   
   
-  std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl(new std::vector<reco::GenParticle>());
+  auto outputGenColl = std::make_unique<reco::GenParticleCollection>();
   
   reco::GenParticleRefProd genRefs = event.getRefBeforePut<std::vector<reco::GenParticle> >("vectorBosons");
 
   // a simple, beautiful loop over the tuple elements is not possible without writing more code than what implemented in this class, for curiosity see
   // http://stackoverflow.com/questions/1198260/iterate-over-tuple, http://stackoverflow.com/questions/18155533/how-to-iterate-through-stdtuple, http://www.metaxcompile.com/blog/2013/03/14/A_cleaner_way_to_do_tuple_iteration.html
-  if(     std::get<1>(zzSignalTopology).id()  > 0) outputGenColl = loadGenBoson(std::get<1>(zzSignalTopology), genRefs, outputGenColl); // Z0 --> ll
-  if(     std::get<2>(zzSignalTopology).id()  > 0) outputGenColl = loadGenBoson(std::get<2>(zzSignalTopology), genRefs, outputGenColl); // Z1 --> ll
-  if(     std::get<3>(zzSignalTopology).id()  > 0) outputGenColl = loadGenBoson(std::get<3>(zzSignalTopology), genRefs, outputGenColl); // Z2 --> ll
-  if(     std::get<4>(zzSignalTopology).id()  > 0) outputGenColl = loadGenBoson(std::get<4>(zzSignalTopology), genRefs, outputGenColl); // Z3 --> jj
-  if(fabs(std::get<5>(zzSignalTopology).id()) > 0) outputGenColl = loadGenBoson(std::get<5>(zzSignalTopology), genRefs, outputGenColl); // W0 --> lv
-  if(fabs(std::get<6>(zzSignalTopology).id()) > 0) outputGenColl = loadGenBoson(std::get<6>(zzSignalTopology), genRefs, outputGenColl); // W1 --> jj
+  if(     std::get<1>(zzSignalTopology).id()  > 0) loadGenBoson(std::get<1>(zzSignalTopology), genRefs, outputGenColl); // Z0 --> ll
+  if(     std::get<2>(zzSignalTopology).id()  > 0) loadGenBoson(std::get<2>(zzSignalTopology), genRefs, outputGenColl); // Z1 --> ll
+  if(     std::get<3>(zzSignalTopology).id()  > 0) loadGenBoson(std::get<3>(zzSignalTopology), genRefs, outputGenColl); // Z2 --> ll
+  if(     std::get<4>(zzSignalTopology).id()  > 0) loadGenBoson(std::get<4>(zzSignalTopology), genRefs, outputGenColl); // Z3 --> jj
+  if(fabs(std::get<5>(zzSignalTopology).id()) > 0) loadGenBoson(std::get<5>(zzSignalTopology), genRefs, outputGenColl); // W0 --> lv
+  if(fabs(std::get<6>(zzSignalTopology).id()) > 0) loadGenBoson(std::get<6>(zzSignalTopology), genRefs, outputGenColl); // W1 --> jj
 
-  event.put(outputGenColl,"vectorBosons");
+  event.put(std::move(outputGenColl),"vectorBosons");
 
 
   // load the cleaned GenJets too
-  std::auto_ptr<std::vector<reco::GenParticle> > outputGenJetColl(new std::vector<reco::GenParticle>());
+  auto outputGenJetColl = std::make_unique<reco::GenParticleCollection>();
   foreach(const phys::Particle& jet, genJets)
     outputGenJetColl->push_back(reco::GenParticle(0, phys::Particle::convert(jet.p4()), reco::GenParticle::Point(0.,0.,0.), jet.id(), 1, true));
 
-  event.put(outputGenJetColl,"genJets");
+  event.put(std::move(outputGenJetColl),"genJets");
 
 
-  std::auto_ptr<std::vector<reco::GenParticle> > outputGenJetAK8Coll(new std::vector<reco::GenParticle>());
+  auto outputGenJetAK8Coll = std::make_unique<reco::GenParticleCollection>();
   foreach(const phys::Particle& jet, genJetsAK8)
     outputGenJetAK8Coll->push_back(reco::GenParticle(0, phys::Particle::convert(jet.p4()), reco::GenParticle::Point(0.,0.,0.), jet.id(), 1, true));
   
-  event.put(outputGenJetAK8Coll,"genJetsAK8");
+  event.put(std::move(outputGenJetAK8Coll),"genJetsAK8");
 
 
 
   // load prompt leptons and photons in the event
-  std::auto_ptr<std::vector<reco::GenParticle> > outputGenParticleColl(new std::vector<reco::GenParticle>());
+  auto outputGenParticleColl = std::make_unique<reco::GenParticleCollection>();
   foreach(const phys::Particle& particle, genParticlesFromHardProcess)
     outputGenParticleColl->push_back(reco::GenParticle(0, phys::Particle::convert(particle.p4()), reco::GenParticle::Point(0.,0.,0.), particle.id(), 1, true));
 
-  event.put(outputGenParticleColl,"genParticles");
+  event.put(std::move(outputGenParticleColl),"genParticles");
 
 
 
@@ -250,7 +250,7 @@ bool WZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 
 }
 
-  std::auto_ptr<std::vector<reco::GenParticle> > WZGenFilterCategory::loadGenBoson(const phys::Boson<phys::Particle> &vb, const reco::GenParticleRefProd &genRefs, std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl){
+  void WZGenFilterCategory::loadGenBoson(const phys::Boson<phys::Particle> &vb, const reco::GenParticleRefProd &genRefs, std::unique_ptr<reco::GenParticleCollection> &outputGenColl){
     
     size_t initialSize = outputGenColl->size();
     
@@ -259,8 +259,6 @@ bool WZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
    outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb.daughter(1).id())      , phys::Particle::convert(vb.daughter(1).p4()), reco::GenParticle::Point(0.,0.,0.), vb.daughter(1).id(), 3, true));
    outputGenColl->at(initialSize).addDaughter(reco::GenParticleRef(genRefs,initialSize+1));
    outputGenColl->at(initialSize).addDaughter(reco::GenParticleRef(genRefs,initialSize+2));
-   
-   return outputGenColl;
  }
 
 

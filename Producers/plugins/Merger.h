@@ -61,7 +61,7 @@ template<typename InputCollection, typename OutputCollection, typename P>
 
 template<typename InputCollection, typename OutputCollection, typename P>
   void Merger<InputCollection, OutputCollection, P>::produce( edm::Event& evt, const edm::EventSetup&) {
-  std::auto_ptr<OutputCollection> coll( new OutputCollection );
+  auto coll = std::make_unique<OutputCollection>();
 
   // Fill the collection with labels with priority
   for( typename vtoken::iterator s = srcToken_.begin(); s != srcToken_.end(); ++ s ) {
@@ -85,7 +85,7 @@ template<typename InputCollection, typename OutputCollection, typename P>
     }
   }
   
-  evt.put( coll );
+  evt.put( std::move(coll));
 }
 }
 

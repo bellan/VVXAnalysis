@@ -42,7 +42,7 @@ public:
  
 
   bool filter(edm::Event & event, const edm::EventSetup& eventSetup);
-  std::auto_ptr<std::vector<reco::GenParticle> > loadGenBoson(const phys::Boson<phys::Particle> &vb, const reco::GenParticleRefProd &genRefs, std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl);
+  void loadGenBoson(const phys::Boson<phys::Particle> &vb, const reco::GenParticleRefProd &genRefs, std::unique_ptr<reco::GenParticleCollection> &outputGenColl);
   
   virtual void beginJob();
   virtual void endJob(){}
@@ -106,22 +106,22 @@ bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   
   zzw::GenTopology zzwGenTopology = zzw::getGenTopology(signalDefinition_, theGenl, theGenj, theGenZ, theGenW);
 
-  std::auto_ptr<int> output(new int(std::get<0>(zzwGenTopology))); // GenCategory
-  event.put(output);
+  auto output = std::make_unique<int>(std::get<0>(zzwGenTopology)); // GenCategory
+  event.put(std::move(output));
   
   
-  std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl(new std::vector<reco::GenParticle>());
+  auto outputGenColl = std::make_unique<reco::GenParticleCollection>();
   
   reco::GenParticleRefProd genRefs = event.getRefBeforePut<std::vector<reco::GenParticle> >();
 
   // a simple, beautiful loop over the tuple elements is not possible without writing more code than what implemented in this class, for curiosity see
   // http://stackoverflow.com/questions/1198260/iterate-over-tuple, http://stackoverflow.com/questions/18155533/how-to-iterate-through-stdtuple, http://www.metaxcompile.com/blog/2013/03/14/A_cleaner_way_to_do_tuple_iteration.html
-  if(     std::get<1>(zzwGenTopology).id()  > 0) outputGenColl = loadGenBoson(std::get<1>(zzwGenTopology), genRefs, outputGenColl); // Z0 --> ll
-  if(     std::get<2>(zzwGenTopology).id()  > 0) outputGenColl = loadGenBoson(std::get<2>(zzwGenTopology), genRefs, outputGenColl); // Z1 --> ll
-  if(     std::get<3>(zzwGenTopology).id()  > 0) outputGenColl = loadGenBoson(std::get<3>(zzwGenTopology), genRefs, outputGenColl); // Z2 --> jj
-  if(fabs(std::get<4>(zzwGenTopology).id()) > 0) outputGenColl = loadGenBoson(std::get<4>(zzwGenTopology), genRefs, outputGenColl); //  W --> jj
+  if(     std::get<1>(zzwGenTopology).id()  > 0) loadGenBoson(std::get<1>(zzwGenTopology), genRefs, outputGenColl); // Z0 --> ll
+  if(     std::get<2>(zzwGenTopology).id()  > 0) loadGenBoson(std::get<2>(zzwGenTopology), genRefs, outputGenColl); // Z1 --> ll
+  if(     std::get<3>(zzwGenTopology).id()  > 0) loadGenBoson(std::get<3>(zzwGenTopology), genRefs, outputGenColl); // Z2 --> jj
+  if(fabs(std::get<4>(zzwGenTopology).id()) > 0) loadGenBoson(std::get<4>(zzwGenTopology), genRefs, outputGenColl); //  W --> jj
   
-  event.put(outputGenColl);
+  event.put(std::move(outputGenColl));
   
   if(sel_ >= 0)
     return sel_ == std::get<0>(zzwGenTopology);
@@ -130,7 +130,7 @@ bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 }
 
 
-std::auto_ptr<std::vector<reco::GenParticle> > GenFilterCategory::loadGenBoson(const phys::Boson<phys::Particle> &vb, const reco::GenParticleRefProd &genRefs, std::auto_ptr<std::vector<reco::GenParticle> > outputGenColl){
+void GenFilterCategory::loadGenBoson(const phys::Boson<phys::Particle> &vb, const reco::GenParticleRefProd &genRefs, std::unique_ptr<reco::GenParticleCollection> &outputGenColl){
 
    size_t initialSize = outputGenColl->size();
 
@@ -138,9 +138,7 @@ std::auto_ptr<std::vector<reco::GenParticle> > GenFilterCategory::loadGenBoson(c
    outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb.daughter(0).id())      , phys::Particle::convert(vb.daughter(0).p4()), reco::GenParticle::Point(0.,0.,0.), vb.daughter(0).id(), 3, true));
    outputGenColl->push_back(reco::GenParticle(copysign(1,-1*vb.daughter(1).id())      , phys::Particle::convert(vb.daughter(1).p4()), reco::GenParticle::Point(0.,0.,0.), vb.daughter(1).id(), 3, true));
    outputGenColl->at(initialSize).addDaughter(reco::GenParticleRef(genRefs,initialSize+1));
-   outputGenColl->at(initialSize).addDaughter(reco::GenParticleRef(genRefs,initialSize+2));
-   
-   return outputGenColl;
+   outputGenColl->at(initialSize).addDaughter(reco::GenParticleRef(genRefs,initialSize+2));  
  }
 
 

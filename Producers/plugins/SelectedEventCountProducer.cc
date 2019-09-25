@@ -12,7 +12,7 @@
 #include <iostream>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDProducer.h"
+#include "FWCore/Framework/interface/one/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -24,6 +24,7 @@
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
+
 
 class SelectedEventCountProducer : public edm::one::EDProducer<edm::one::WatchLuminosityBlocks,
 							       edm::EndLuminosityBlockProducer> {
@@ -38,8 +39,7 @@ private:
   virtual void endLuminosityBlock(edm::LuminosityBlock const&, const edm::EventSetup&) {};
   virtual void endLuminosityBlockProduce(edm::LuminosityBlock &, const edm::EventSetup&) override;
 
-
-
+ 
   // ----------member data ---------------------------
   unsigned int eventsProcessedInLumi_;
   edm::EDGetTokenT<edm::TriggerResults> triggerToken_;
@@ -108,9 +108,9 @@ void SelectedEventCountProducer::endLuminosityBlockProduce(LuminosityBlock & the
 
   
   LogTrace("SelectedEventCounting") << "endLumi: adding " << eventsProcessedInLumi_ << " events" << endl;
-  auto_ptr<edm::MergeableCounter> numEventsPtr(new edm::MergeableCounter);
+  auto numEventsPtr = std::make_unique<edm::MergeableCounter>();
   numEventsPtr->value = eventsProcessedInLumi_;
-  theLuminosityBlock.put(numEventsPtr);
+  theLuminosityBlock.put(std::move(numEventsPtr));
 }
 
 //define this as a plug-in

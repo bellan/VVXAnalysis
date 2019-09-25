@@ -44,7 +44,7 @@ namespace pat{
     
     
     edm::Handle<edm::View<pat::CompositeCandidate> > CC   ; event.getByToken(srcToken_, CC);
-    std::auto_ptr< std::vector<PATObjType> > out(new std::vector<PATObjType>());
+    auto out = std::make_unique<std::vector<PATObjType> >();
       
 
     foreach(const pat::CompositeCandidate &cc, *CC){
@@ -71,7 +71,7 @@ namespace pat{
 	  edm::LogError("CompositeCandidateDecomposer") << "CompositeCandidateDecomposer: Unknown split level: " << splitLevel_;
       }
     }    
-    event.put(out);
+    event.put(std::move(out));
   }
 }
 #endif

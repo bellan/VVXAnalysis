@@ -65,7 +65,7 @@ void WZCandidateFiller::produce(edm::Event& event, const edm::EventSetup& setup)
   edm::Handle<edm::View<pat::CompositeCandidate> > ZLs; event.getByToken(theZLToken ,  ZLs);
   edm::Handle<pat::METCollection> MET                 ;      event.getByToken(theMETToken    , MET);
   
-   std::auto_ptr<pat::CompositeCandidateCollection> result(new pat::CompositeCandidateCollection);
+  auto result = std::make_unique<pat::CompositeCandidateCollection>();
 
   
   if(MET->at(0).pt() < 30) return;
@@ -101,7 +101,7 @@ void WZCandidateFiller::produce(edm::Event& event, const edm::EventSetup& setup)
     
   }
 
-  event.put(result);
+  event.put(std::move(result));
 
   
 }
