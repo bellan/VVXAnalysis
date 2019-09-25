@@ -16,14 +16,14 @@ FilterController::FilterController(const edm::ParameterSet& pset,  edm::Consumes
   triggerToken_(consumesCollector.consumes<edm::TriggerResults>(edm::InputTag("TriggerResults"))){
   
   // Check for inconsistent configurations
-  if ( ( theSampleType!=2011 && theSampleType!=2012 && theSampleType!=2015 && theSampleType!=2016 && theSampleType!=2017) ||
-       ( theSetup!=2011 && theSetup!=2012 && theSetup!=2015 && theSetup!=2016 && theSetup!=2017) ||
-       ( theSampleType!=theSetup ) // No sample rescaling supported as of now.
-       // We may add exception for MC only when needed.
-       ) {
-    cout << "ERROR: FilterController: inconsistent setup " << theSampleType << " " << theSetup << " " <<isMC_ << endl;
-    abort();
-  }
+  if (theSampleType < 2011 || theSampleType > 2018 ||
+      theSetup      < 2011 || theSetup      > 2018 ||
+      theSampleType != theSetup ) // No sample rescaling supported as of now.
+    // We may add exception for MC only when needed.
+    {
+      cout << "ERROR: FilterController: inconsistent setup " << theSampleType << " " << theSetup << " " <<isMC_ << endl;
+      abort();
+    }
   
   
   if ((isMC_&&PD!="") || (!isMC_ && (PD!="DoubleEle" && PD!="DoubleMu" && PD!="MuEG" && PD!= "SingleElectron" && PD!= "SingleMuon" ))) {
