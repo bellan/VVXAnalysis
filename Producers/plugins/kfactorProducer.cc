@@ -159,11 +159,11 @@ kfactorProducer::produce(edm::Event& event, const edm::EventSetup& iSetup)
      
    }
    
-   std::auto_ptr<Float_t> result_ggZZ        (new float(KFactorggZZ));
-   std::auto_ptr<Float_t> result_QCDqqZZ_dPhi(new float(KFactorQCDqqZZ_dPhi));
-   std::auto_ptr<Float_t> result_QCDqqZZ_M   (new float(KFactorQCDqqZZ_M  ));
-   std::auto_ptr<Float_t> result_QCDqqZZ_Pt  (new float(KFactorQCDqqZZ_Pt ));
-   std::auto_ptr<Float_t> result_EWKqqZZ     (new float(KFactorEWKqqZZ));
+   auto result_ggZZ         = std::make_unique<float>(KFactorggZZ);
+   auto result_QCDqqZZ_dPhi = std::make_unique<float>(KFactorQCDqqZZ_dPhi);
+   auto result_QCDqqZZ_M    = std::make_unique<float>(KFactorQCDqqZZ_M  );
+   auto result_QCDqqZZ_Pt   = std::make_unique<float>(KFactorQCDqqZZ_Pt );
+   auto result_EWKqqZZ      = std::make_unique<float>(KFactorEWKqqZZ);
    
    event.put(std::move(result_ggZZ        ),"ggZZ");
    event.put(std::move(result_QCDqqZZ_dPhi),"qqZZM"  );
