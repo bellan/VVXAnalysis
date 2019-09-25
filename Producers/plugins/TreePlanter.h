@@ -36,7 +36,7 @@
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include <JetMETCorrections/Modules/interface/JetResolution.h>
 
-#include "ZZAnalysis/AnalysisStep/interface/LHEHandler.h"
+#include <CommonLHETools/LHEHandler/interface/LHEHandler.h>
 #include <ZZMatrixElement/MELA/interface/Mela.h>
 
 class TTree;
@@ -210,6 +210,7 @@ class TreePlanter: public edm::EDAnalyzer {
   bool applyTrigger_;
   bool applySkim_;
   bool applyMCSel_;
+  bool addLHEKinematics_;
 
   std::vector<double> theXSections;
   double rho_;

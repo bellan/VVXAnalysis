@@ -51,7 +51,7 @@ using std::endl;
 TreePlanter::TreePlanter(const edm::ParameterSet &config)
   : PUWeighter_      (2017,2017)
   , filterController_(config,consumesCollector())
-  , leptonScaleFactors_(
+  , leptonScaleFactors_( // FIXME: This should be changed for Run2Legacy
 			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_mu_Moriond2017.root").fullPath(),
 			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_non_gap_ele_Moriond2017_v2.root").fullPath(),
 			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_gap_ele_Moriond2017_v2.root").fullPath(),
@@ -98,6 +98,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , applyTrigger_    (config.getUntrackedParameter<bool>("TriggerRequired", false)) 
   , applySkim_       (config.getUntrackedParameter<bool>("SkimRequired"   , true)) 
   , applyMCSel_      (config.getUntrackedParameter<bool>("DoMCSelection"  , false)) 
+  , addLHEKinematics_(config.getParameter<bool>("AddLHEKinematics"))
   , externalCrossSection_(-1.)
   , summcprocweights_    (0.)
   , sumpuweights_        (0.) 
@@ -125,7 +126,13 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     theGenInfoToken          = consumes<GenEventInfoProduct>          (edm::InputTag("generator"));
     theGenInfoTokenInRun     = consumes<GenRunInfoProduct,edm::InRun>(edm::InputTag("generator"));
     externalCrossSection_    = config.getUntrackedParameter<double>("XSection",-1);
-    theLHEHandler            = new LHEHandler(config.getParameter<int>("VVMode"), config.getParameter<int>("VVDecayMode"), true, 2016); //fix
+    theLHEHandler            = new LHEHandler(((MELAEvent::CandidateVVMode)(config.getParameter<int>("VVMode")+1))
+					      , config.getParameter<int>("VVDecayMode")
+					      , (addLHEKinematics_ ? LHEHandler::doHiggsKinematics : LHEHandler::noKinematics)
+					      , setup_ // means year
+					      , LHEHandler::tryNNPDF30
+					      , LHEHandler::tryNLO);
+    
   }
    
   skimPaths_ = config.getParameter<std::vector<std::string> >("skimPaths");
@@ -432,7 +439,7 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
 
   // LHE information
   edm::Handle<LHEEventProduct> lhe_evt;
-  vector<edm::Handle<LHEEventProduct> > lhe_handles;
+  std::vector<edm::Handle<LHEEventProduct> > lhe_handles;
   event.getManyByType(lhe_handles);
 
   if (lhe_handles.size()>0){
@@ -537,7 +544,6 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   }
 
   else if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();
-  //else if(isMC_ && ZL_.empty() && !test_bit(genCategory_,0) && applySkim_ ) return;
   else if(isMC_ && ZL_.empty() && !isSignal_ && applySkim_) return;
   else if(!isMC_  && ZL_.empty() && applySkim_) return;
 
@@ -584,8 +590,6 @@ phys::Lepton TreePlanter::fill(const pat::Muon& mu) const{
 
 phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   
-  // NjettinessAK8:tau1=0.0603222  NjettinessAK8:tau2=0.0263014  NjettinessAK8:tau3=0.0160889  ak8PFJetsCHSCorrPrunedMass=19.9073  ak8PFJetsCHSPrunedMass=18.7322  ak8PFJetsCHSSoftDropMass=18.7322  ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1=0.0620236  ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau2=0  ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau3=0  ak8PFJetsPuppiValueMap:eta=0.201157  ak8PFJetsPuppiValueMap:mass=11.0152  ak8PFJetsPuppiValueMap:phi=-3.13416  ak8PFJetsPuppiValueMap:pt=129.474 
-
 
   phys::Jet output(phys::Particle::convert(jet.p4()),jet.charge(),1);
   
