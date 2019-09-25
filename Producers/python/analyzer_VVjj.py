@@ -155,15 +155,53 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
 
 # AK8 jets
 if IsMC:
-    process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
-                                       tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016V4_MC_AK8PFchs'), #for 80X/Moriond17
-                                       label  = cms.untracked.string('AK8PFchs')
+    if   (SAMPLE_TYPE == 2016):
+        process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
+                                           tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016V4_MC_AK8PFchs'), #for 80X/Moriond17
+                                           label  = cms.untracked.string('AK8PFchs')
                                        ))
+
+    elif (SAMPLE_TYPE == 2017):
+        process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
+                                           tag    = cms.string('JetCorrectorParametersCollection_Fall17_17Nov2017_V32_94X_MC_AK8PFchs'), #FIXME: need to be tested
+                                           label  = cms.untracked.string('AK8PFchs')
+                                       ))
+
+    elif (SAMPLE_TYPE == 2018):
+        process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
+                                           tag    = cms.string('JetCorrectorParametersCollection_Autumn18_V8_MC_AK8PFchs'),
+                                           label  = cms.untracked.string('AK8PFchs')
+                                       ))
+    else:
+        print "UNKNOWN YEAR", SAMPLE_TYPE
+
+
+
 else:
-    process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
-                                       tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV4_DATA_AK8PFchs'), #for 80X/Moriond17
-                                       label  = cms.untracked.string('AK8PFchs')
+    if   (SAMPLE_TYPE == 2016):
+        process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
+                                           tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV4_DATA_AK8PFchs'), #for 80X/Moriond17
+                                           label  = cms.untracked.string('AK8PFchs')
                                        ))
+    elif (SAMPLE_TYPE == 2017):
+        process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
+                                           tag    = cms.string('JetCorrectorParametersCollection_Fall17_17Nov2017_V32_94X_DATA_AK8PFchs'), #FIXME: need to be tested
+                                           label  = cms.untracked.string('AK8PFchs')
+                                       ))
+
+    elif (SAMPLE_TYPE == 2018):
+        process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
+                                           tag    = cms.string('JetCorrectorParametersCollection_Autumn18_RunABCD_V8_DATA_AK8PFchs'),
+                                           label  = cms.untracked.string('AK8PFchs')
+                                       ))
+    else:
+        print "UNKNOWN YEAR", SAMPLE_TYPE
+
+
+
+
+
+
 
 process.patJetCorrFactorsReapplyJECAK8 = updatedPatJetCorrFactors.clone(src     = cms.InputTag("slimmedJetsAK8"),
                                                                         levels  = ['L1FastJet','L2Relative','L3Absolute'],
@@ -236,7 +274,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      VVMode = cms.int32(int(VVMODE)),
                                      VVDecayMode = cms.int32(int(VVDECAYMODE)),
                                      signalDefinition = cms.int32(SIGNALDEFINITION),
-                                     addlhekinematics = cms.bool(ADDLHEKINEMATICS),
+                                     AddLHEKinematics = cms.bool(ADDLHEKINEMATICS),
                                      muons        = cms.InputTag("postCleaningMuons"),     # all good isolated muons BUT the ones coming from ZZ decay
                                      electrons    = cms.InputTag("postCleaningElectrons"), # all good isolated electrons BUT the ones coming from ZZ decay
                                      jets         = cms.InputTag("disambiguatedJets"),     # jets which do not contains leptons from ZZ or other good isolated leptons are removed

@@ -90,7 +90,7 @@ void CorrJetsProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
         jecAK8->setJetPt ( jet.correctedP4(0).pt()     );
         jecAK8->setJetEta( jet.correctedP4(0).eta()    );
         jecAK8->setJetE  ( jet.correctedP4(0).energy() );
-        float corrMass   = jet.userFloat("ak8PFJetsCHSPrunedMass") * jecAK8->getCorrection();
+        float corrMass   = jet.userFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSPrunedMass") * jecAK8->getCorrection();
         pat::Jet* cloneJet = jet.clone();
         cloneJet->addUserFloat("ak8PFJetsCHSCorrPrunedMass", corrMass );
         corrJets->push_back( *cloneJet );
