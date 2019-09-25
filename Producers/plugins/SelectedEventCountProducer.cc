@@ -60,7 +60,8 @@ SelectedEventCountProducer::SelectedEventCountProducer(const edm::ParameterSet& 
   , filterNamesToken_( edm::vector_transform(iConfig.template getParameter<std::vector<std::string> >( "names" ), [this](std::string const & tag){return std::make_pair(tag,consumes<bool>(edm::InputTag(tag)));} ) ) 
 {
   
-  produces<edm::MergeableCounter, edm::InLumi>();
+  //produces<edm::MergeableCounter, edm::InLumi>();
+  produces<edm::MergeableCounter, edm::Transition::EndLuminosityBlock>();
 }
 
 
