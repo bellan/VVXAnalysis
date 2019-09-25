@@ -8,8 +8,6 @@
 #include "VVXAnalysis/TreeAnalysis/interface/ZZjGenAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZWSRDefinition.h"
 #include "VVXAnalysis/TreeAnalysis/interface/WWosAnalyzer.h"
-//#include "VVXAnalysis/TreeAnalysis/interface/JetAnalyzer.h"
-//#include "VVXAnalysis/TreeAnalysis/interface/ZZSDataAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZMCAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZRecoAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/VBSMCAnalyzer.h"
@@ -18,24 +16,22 @@
 #include "VVXAnalysis/TreeAnalysis/interface/FakeRateAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/WZZAnalyzer.h"
 AnalysisFactory::AnalysisFactory(){
-  Register("WlllnuAnalyzer", &RegistrableAnalysis<WlllnuAnalyzer>::create);
-  Register("VVXAnalyzer", &RegistrableAnalysis<VVXAnalyzer>::create);
-  Register("ZZWAnalyzer", &RegistrableAnalysis<ZZWAnalyzer>::create);
-  Register("WZZAnalyzer", &RegistrableAnalysis<WZZAnalyzer>::create);
-  Register("WZAnalyzer", &RegistrableAnalysis<WZAnalyzer>::create);
-  Register("ZZSAnalyzer", &RegistrableAnalysis<ZZSAnalyzer>::create);
-  Register("ZZjAnalyzer", &RegistrableAnalysis<ZZjAnalyzer>::create);
-  Register("ZZjGenAnalyzer", &RegistrableAnalysis<ZZjGenAnalyzer>::create);
-  Register("ZZWSRDefinition", &RegistrableAnalysis<ZZWSRDefinition>::create);
-  //Register("JetAnalyzer", &RegistrableAnalysis<JetAnalyzer>::create);
-  //Register("ZZSDataAnalyzer", &RegistrableAnalysis<ZZSDataAnalyzer>::create); 
-  Register("ZZMCAnalyzer", &RegistrableAnalysis<ZZMCAnalyzer>::create);
-  Register("ZZRecoAnalyzer", &RegistrableAnalysis<ZZRecoAnalyzer>::create);
-  Register("VBSMCAnalyzer", &RegistrableAnalysis<VBSMCAnalyzer>::create);
-  Register("VBSRecoAnalyzer", &RegistrableAnalysis<VBSRecoAnalyzer>::create);
+  Register("WlllnuAnalyzer"  , &RegistrableAnalysis<WlllnuAnalyzer>::create  );
+  Register("VVXAnalyzer"     , &RegistrableAnalysis<VVXAnalyzer>::create     );
+  Register("ZZWAnalyzer"     , &RegistrableAnalysis<ZZWAnalyzer>::create     );
+  Register("WZZAnalyzer"     , &RegistrableAnalysis<WZZAnalyzer>::create     );
+  Register("WZAnalyzer"      , &RegistrableAnalysis<WZAnalyzer>::create      );
+  Register("ZZSAnalyzer"     , &RegistrableAnalysis<ZZSAnalyzer>::create     );
+  Register("ZZjAnalyzer"     , &RegistrableAnalysis<ZZjAnalyzer>::create     );
+  Register("ZZjGenAnalyzer"  , &RegistrableAnalysis<ZZjGenAnalyzer>::create  );
+  Register("ZZWSRDefinition" , &RegistrableAnalysis<ZZWSRDefinition>::create );
+  Register("ZZMCAnalyzer"    , &RegistrableAnalysis<ZZMCAnalyzer>::create    );
+  Register("ZZRecoAnalyzer"  , &RegistrableAnalysis<ZZRecoAnalyzer>::create  );
+  Register("VBSMCAnalyzer"   , &RegistrableAnalysis<VBSMCAnalyzer>::create   );
+  Register("VBSRecoAnalyzer" , &RegistrableAnalysis<VBSRecoAnalyzer>::create );
   Register("FakeRateAnalyzer", &RegistrableAnalysis<FakeRateAnalyzer>::create);
-  Register("ZVAnalyzer",&RegistrableAnalysis<ZVAnalyzer>::create);
-  Register("WWosAnalyzer",&RegistrableAnalysis<WWosAnalyzer>::create);
+  Register("ZVAnalyzer"      , &RegistrableAnalysis<ZVAnalyzer>::create      );
+  Register("WWosAnalyzer"    , &RegistrableAnalysis<WWosAnalyzer>::create    );
 }
 
 void AnalysisFactory::Register(const std::string &analysisName, CreateAnFn pfnCreate)
