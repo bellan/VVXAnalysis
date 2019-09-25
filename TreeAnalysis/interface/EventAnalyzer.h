@@ -46,13 +46,16 @@ class SelectorBase {
 public:
   virtual bool operator()(const phys::Boson<phys::Lepton>&)   const = 0;
   virtual bool operator()(const phys::Boson<phys::Jet>&)      const = 0;
+  virtual ~SelectorBase() = 0;
 };
+
 
 template <typename Analysis>
 class Selector : public SelectorBase {
 public:
   Analysis& analysis;
   Selector(Analysis& ananalysis) : analysis(ananalysis) { };
+  virtual ~Selector(){};
   virtual bool operator()(const phys::Boson<phys::Lepton>&   boson) const { return analysis.ZBosonDefinition(boson); }
   virtual bool operator()(const phys::Boson<phys::Jet>&      boson) const { return analysis.WBosonDefinition(boson); }
 };

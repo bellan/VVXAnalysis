@@ -34,6 +34,8 @@ using namespace colour;
 // ------------------------------- C'tor/Des'tor/Init the tree ------------------------------ //
 // ------------------------------------------------------------------------------------------ //
 
+SelectorBase::~SelectorBase(){};
+
 
 EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 			     const AnalysisConfiguration& configuration)
