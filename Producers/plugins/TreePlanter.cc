@@ -135,9 +135,6 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     
   }
    
-  skimPaths_ = config.getParameter<std::vector<std::string> >("skimPaths");
-
-
   initTree();
 }
 
@@ -531,7 +528,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 	ZZ_ = zz;   
 	oneZZInSR = true;
       }
-      // Otherwise, select the ZZ acordingly to the same logic as the ZZ is chosen
+      // Otherwise, select the ZZ accordingly to the same logic as the ZZ is chosen
       if(!oneZZInSR){
 	if(abs(zz.first().mass() - phys::ZMASS) < abs(ZZ_.first().mass() - phys::ZMASS)) 
 	  ZZ_ = zz;
@@ -544,9 +541,10 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   }
 
   else if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();
+  // case ZZ == 1 !trigger is missing
   else if(isMC_ && ZL_.empty() && !isSignal_ && applySkim_) return;
   else if(!isMC_  && ZL_.empty() && applySkim_) return;
-
+  
   theTree->Fill();
 
 }

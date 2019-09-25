@@ -170,33 +170,16 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
 
   phys::DiBoson<phys::Particle,phys::Particle> ZZ(Z0,Z1);
 
- 
-
-  bool detectorAcceptance   = vv::inLeptonAcceptance(concatenate(theGenlp,theGenlm),7,2.5,5,2.4);
-
-  bool fiducialAcceptance   = vv::inLeptonAcceptance(concatenate(theGenlp,theGenlm),5,2.5,5,2.5);
-
-  bool isInTriggerPlateau   = inTriggerPlateau(concatenate(theGenlp,theGenlm));
-
-  //bool isTightFidRegion   = (fiducialAcceptance && isInTriggerPlateau); // OLD definition
-
-  bool isFiducialRegion = fiducialAcceptance;
-  bool isTightFiducialRegion  = detectorAcceptance && isInTriggerPlateau; // remove trigger??
-
-  //bool isZZMassRange = ( ZZ.mass() > 100);
-
-  // Definition of the topologies 
-  if(isFiducialRegion)      topology.set(4);  
-
-  if(isTightFiducialRegion) topology.set(5);
+  if(vv::inLeptonAcceptance(concatenate(theGenlp,theGenlm),5,2.5,5,2.5))  topology.set(4);   // Fiducial acceptance
+  if(vv::inLeptonAcceptance(concatenate(theGenlp,theGenlm),7,2.5,5,2.4))  topology.set(5);   // Detector acceptance
+  if(inTriggerPlateau(concatenate(theGenlp,theGenlm)))                    topology.set(6);   // is on trigger plateau    
+  if( ZZ.mass() > 100)                                                    topology.set(7);   // Remove additional VB decaying hadronically
 
 
-
-  int Z0DaugID = Z0.daughter(0).id();  
-  int Z1DaugID = Z1.daughter(1).id();
-
-  if(abs(Z0DaugID) == 13 || abs(Z1DaugID) == 13) topology.set(7);
-  if(abs(Z0DaugID) == 11 || abs(Z1DaugID) == 11) topology.set(8);
+  //int Z0DaugID = Z0.daughter(0).id();  
+  //int Z1DaugID = Z1.daughter(1).id();
+  //if(abs(Z0DaugID) == 13 || abs(Z1DaugID) == 13) topology.set(8);
+  //if(abs(Z0DaugID) == 11 || abs(Z1DaugID) == 11) topology.set(9);
 
 
   std::vector<phys::Boson<phys::Particle> > lepBosons;
@@ -289,31 +272,31 @@ std::vector<phys::Boson<phys::Particle> > vv::categorizeHadronicPartOftheEvent(s
   } //------------------------- end searching for the bosons ----------------------------------------
 
   
-  // Some usefull counters for topology characterization
-  int countJets = 0;
-  int countCentralJets = 0;
-  foreach(const phys::Particle& jet, theGenj)
-    if(jet.pt() > 30.){
-      if(abs(jet.eta()) < 4.7) ++countJets;
-      if(abs(jet.eta()) < 2.4) ++countCentralJets;
-    }
+  // // Some usefull counters for topology characterization
+  // int countJets = 0;
+  // int countCentralJets = 0;
+  // foreach(const phys::Particle& jet, theGenj)
+  //   if(jet.pt() > 30.){
+  //     if(abs(jet.eta()) < 4.7) ++countJets;
+  //     if(abs(jet.eta()) < 2.4) ++countCentralJets;
+  //   }
 
 
-  bool hasJets = countJets > 0;
+  //bool hasJets = countJets > 0;
   
-  bool hasAtLeast2jets  =  countJets > 1;
+  //bool hasAtLeast2jets  =  countJets > 1;
   
-  bool hasCentralJets   = countCentralJets > 0;
+  //bool hasCentralJets   = countCentralJets > 0;
 
-  if(hasJets)          topology.set(4);       //jets (pT>30 GeV and |eta| < 4.7)
+  //if(hasJets)          topology.set(4);       //jets (pT>30 GeV and |eta| < 4.7)
   
-  if(hasAtLeast2jets)  topology.set(5);       //2jets
+  //if(hasAtLeast2jets)  topology.set(5);       //2jets
   
-  if(hasCentralJets)   topology.set(6);       //jets (pT>30 GeV and |eta| < 2.4)
+  //if(hasCentralJets)   topology.set(6);       //jets (pT>30 GeV and |eta| < 2.4)
   
-  if(foundWjj)         topology.set(7);       //hadronic W
+  if(foundWjj)         topology.set(8);       //hadronic W
   
-  if(foundZjj)         topology.set(8);       //hadronic Z
+  if(foundZjj)         topology.set(9);       //hadronic Z
 
 
   std::vector<phys::Boson<phys::Particle> > hadBosons;
