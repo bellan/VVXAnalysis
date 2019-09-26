@@ -365,7 +365,7 @@ void WZZAnalyzer::analyze(){
 	theHistograms.fill("genZPhi","phi of gen Z",30,-3.2,3.2,gen.phi(),theWeight);
 	theHistograms.fill("genZRapidity","rapidity of gen Z",30,0,2.5,fabs(gen.rapidity()),theWeight);
 	theHistograms.fill("genZEnergy","energy of gen Z",120,0,400,fabs(gen.e()),theWeight);
-	theHistograms.fill("genZmass","mass of gen Z",40,40,200,fabs(gen.mass()),theWeight);
+	theHistograms.fill("genZmass","mass of gen Z",40,40,130,fabs(gen.mass()),theWeight);
 
       }
 
@@ -376,7 +376,7 @@ void WZZAnalyzer::analyze(){
 	theHistograms.fill("genWPhi","phi of gen W",30,-3.2,3.2,gen.phi(),theWeight);
 	theHistograms.fill("genWRapidity","rapidity of gen W",30,0,2.5,fabs(gen.rapidity()),theWeight);
 	theHistograms.fill("genWEnergy","energy of gen W",120,0,400,fabs(gen.e()),theWeight);
-	theHistograms.fill("genWmass","mass of gen W",40,40,200,fabs(gen.mass()),theWeight);
+	theHistograms.fill("genWmass","mass of gen W",40,40,130,fabs(gen.mass()),theWeight);
 
       }
     }
