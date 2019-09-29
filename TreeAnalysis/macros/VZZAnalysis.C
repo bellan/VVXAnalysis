@@ -35,26 +35,20 @@ void VZZAnalysis(){
 
   
   hW->Draw();
-
   hW->SetLineColor(kBlue);
 
   hFakeW->Draw("same");
-  
   hFakeW->SetLineColor(kRed);
 
   new TCanvas();
-  //TCanvas *c2 = new TCanvas("c2","c2");
-  //c2->cd();
-
+  
   hZ->Draw();
-
   hZ->SetLineColor(kBlue);
 
   hFakeZ->Draw("same");
-  
   hFakeZ->SetLineColor(kRed);
 
-  //TH1F* hTotW = (TH1F*)resultWZZ->Get("genWmass");
+
   TList *listW = new TList;
   listW->Add(hW);
   listW->Add(hFakeW);
@@ -78,4 +72,12 @@ void VZZAnalysis(){
 
 
   
+
+
+
+
+
+
+
+
 }
