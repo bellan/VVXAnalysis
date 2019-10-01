@@ -1,6 +1,7 @@
 #include "VVXAnalysis/TreeAnalysis/interface/WZZAnalyzer.h"
 #include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
+#include "VVXAnalysis/Commons/interface/Comparators.h"
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
@@ -354,47 +355,22 @@ void WZZAnalyzer::analyze(){
   
   //This part of the analysis can be used both for WZZ and for ZZZ samples. 
   //For the signal definition, the categories with the first bit on (i.e. bit0=true), are the only ones that have to be considered
-
-  //vector <phys::Boson<phys::Jet>> ZDecay;
-  //vector <phys::Boson<phys::Jet>> WDecay;
-
   
-  std::vector <bool>jetsCoupleMatchedW((jets->size()*(jets->size()-1))/2,false);//parallel vectors
-  std::vector <bool>jetsCoupleMatchedZ(jetsCoupleMatchedW);
+  std::vector<phys::Boson<phys::Jet> > jetsPairs;
+  double dRMax=0.4,  dRJ0d0, dRJ0d1, dRJ1d0, dRJ1d1  ;
 
-  std::vector <std::vector <int>> jetsCouplesW((jets->size()*(jets->size()-1))/2, std::vector <int>(2) );
-  /*int k=0;
-  for(int i=0; i<jets->size()-1; i++)
-    for(int j=i+1; j<jets->size(); j++){
-      jetsCouplesW[k][0]=i;
-      jetsCouplesW[k][1]=j;
-      k++;
-    }
-  */
-  std::vector <std::vector <int>> jetsCouplesZ(jetsCouplesW);
+  phys::Boson<phys::Jet> ZCandidate;
 
-  /*  
-  int n=0;
-  for(int i=0; i<jets->size()-1; i++)
-    for(int j=i+1; j<jets->size(); j++){
-      jetsCouplesZ[n][0]=i;
-      jetsCouplesZ[n][1]=j;
-      n++;
-    }
-  */
-  std::vector <std::vector <double>> WMatching;//matrix of compatibility parameters
-  std::vector <std::vector <double>> ZMatching;
-  
-  double etaTot, mTot,  dEta ,dm, dEtaMax=30, dmMax=20, etaWeight=0.3, mWeight=0.7/*,  compatibility */ ;
-  
-  double WBosonIndex=0, WJetsCoupleIndex=0;
-  double ZBosonIndex=0, ZJetsCoupleIndex=0;
+  int counter;
+  for(counter=0; counter<jets->size(); counter++)//Warning: size can be 0
+    for(int j=counter; j<jets->size(); j++)  
+      if(j!=counter)
+	jetsPairs.push_back(phys::Boson<phys::Jet>(jets->at(counter), jets->at(j)/*, 23*/));//Z mc pdg id = 23
+
   
   if(topology.test(0)){
        
     foreach(const phys::Boson<phys::Particle>& gen, *genVBParticles){
-
-      int Zj0Counter=0, Zj1Counter=0;
 
       //-------------Vector Boson Z-------------//
       
@@ -406,49 +382,41 @@ void WZZAnalyzer::analyze(){
 	theHistograms.fill("genZEnergy","energy of gen Z",120,0,400,fabs(gen.e()),theWeight);
 	theHistograms.fill("genZmass","mass of gen Z",40,40,130,fabs(gen.mass()),theWeight);
 
-	foreach(const phys::Jet& j0, *jets){
-	  foreach(const phys::Jet& j1, *jets){
+	theHistograms.fill("genZEta_den","eta of gen Z",30,0,2.5,fabs(gen.eta()));
+	theHistograms.fill("genZPt_den","pt of gen Z ",20,0,200,gen.pt());
+	theHistograms.fill("genZPhi_den","phi of gen Z ",30,-3.2,3.2,gen.phi());
+	theHistograms.fill("genZE_den","energy of gen Z ",120,0,400,gen.e());
 
-	    if(Zj1Counter>Zj0Counter){
+	if(counter>1){	
 
-	      etaTot=j0.eta()+j1.eta();
-	      dEta=fabs((gen.eta()-etaTot)/gen.eta());
-
-	      mTot=j0.mass()+j1.mass();
-	      dm=fabs((mTot-phys::ZMASS)/phys::ZMASS);
-
-	      ZMatching[ZJetsCoupleIndex][ZBosonIndex]=1-(etaWeight*dEta+mWeight*dm);
-
-	      if(ZMatching[ZJetsCoupleIndex][ZBosonIndex]<0)
-		ZMatching[ZJetsCoupleIndex][ZBosonIndex]=0;
-	      
-	      jetsCouplesZ[ZJetsCoupleIndex][0]=Zj0Counter;
-	      jetsCouplesZ[ZJetsCoupleIndex][1]=Zj1Counter;
-	      ZJetsCoupleIndex++;
-	      
-	    }
-
-	    Zj1Counter++;
-
-	  }	  
-
-	  Zj0Counter++;
-
-	}
-
-	ZBosonIndex++;
+	  //first reconstruction model: mass comparison
+	  std::stable_sort(jetsPairs.begin(), jetsPairs.end(), phys::MassComparator(phys::ZMASS));
+	  ZCandidate = jetsPairs.at(0);
     
+	  /*
+	  //second reconstruction model: max pt
+	  /*
+	  std::stable_sort(jetsPairs.begin(), jetsPairs.end(), phys::ScalarSumPtComparator());
+	  phys::Boson<phys::Particle> ZCandidate = jetsPairs.at(0);
+	  */
+
+	  
+	  dRJ0d0=physmath::deltaR(ZCandidate.daughter(0),gen.daughter(0));
+	  dRJ0d1=physmath::deltaR(ZCandidate.daughter(0),gen.daughter(1));
+	  dRJ1d0=physmath::deltaR(ZCandidate.daughter(1),gen.daughter(0));
+	  dRJ1d1=physmath::deltaR(ZCandidate.daughter(1),gen.daughter(1));
+
+	  if(dRJ1d0+dRJ0d1<dRMax || dRJ0d0+dRJ1d1<dRMax){
+   
+	    theHistograms.fill("genZEta_num","eta of gen Z",30,0,2.5,fabs(gen.eta()));
+	    theHistograms.fill("genZPt_num","pt of gen Z ",20,0,200,gen.pt());
+	    theHistograms.fill("genZPhi_num","phi of gen Z ",30,-3.2,3.2,gen.phi());
+	    theHistograms.fill("genZE_num","energy of gen Z ",120,0,400,gen.e());
+	  
+	  }
+	}
       }
-
-      
-
-
-      
-
-
-      
-
-      //-------------Vector Boson W-------------//
+       //-------------Vector Boson W-------------//
 
       
       if(abs(gen.id()) == 24 && abs(gen.daughter(0).id()) < 10){//for W bosons: mc pdg id = 24 by notation
@@ -461,45 +429,11 @@ void WZZAnalyzer::analyze(){
 
       }
       
+
     }
 
-
-    //-------------Vector Boson Z best jets couple-------------//
-
-    //Best matching searching
-
-    int  ZMatchedIndex, jetsCoupleMatchedIndex;
-    std::vector<std::vector<int>> bestZJetsCoupleIndex(ZBosonIndex, std::vector<int>(2));//each boson there is the best jets pair
-    std::vector<bool>ZMatched(ZBosonIndex);
-    //std::vector<std::vector<int>>bestZJetsCoupleIndex(ZBosonIndex,<std::vector<int>(2));
-
-    double bestMatching;
-    for(int count=0; count<ZBosonIndex; count++){//i.e. while there is at least one ZBoson not matched yet
-      bestMatching=-1;
-      for(int i=0; i<ZBosonIndex; i++)
-	for(int j=0; j<ZJetsCoupleIndex; j++)
-	  if(!jetsCoupleMatchedZ[j] && !ZMatched[i] && ZMatching[j][i]>bestMatching){
-	    bestMatching=ZMatching[j][i];
-	    ZMatchedIndex=i;
-	    jetsCoupleMatchedIndex=j;
-	  }
-      
-      bestZJetsCoupleIndex[ZMatchedIndex][0]=jetsCouplesZ[jetsCoupleMatchedIndex][0];//setting matrix of Bosons-Jets (index) 
-      bestZJetsCoupleIndex[ZMatchedIndex][1]=jetsCouplesZ[jetsCoupleMatchedIndex][1];
-
-      ZMatched[ZMatchedIndex]=true;
-
-      jetsCoupleMatchedZ[jetsCoupleMatchedIndex]=true;
-      for(int i=0; i<ZJetsCoupleIndex; i++)
-	for(int j=0; j<2; j++)
-	  if(jetsCouplesZ[i][j]==jetsCouplesZ[jetsCoupleMatchedIndex][0] || jetsCouplesZ[i][j]==jetsCouplesZ[jetsCoupleMatchedIndex][1])
-	    jetsCoupleMatchedZ[i]=true;
-    }
     
-
-
-    
-  }
+  }//topology.test(0) closed
 
   
 
