@@ -33,6 +33,7 @@ public:
   
   virtual Int_t cut();
 
+  virtual void CompatibilityTest(phys::Boson<phys::Jet>, phys::Boson<phys::Particle>, std::string, std::string);
 
  private:
   friend class Selector<WZZAnalyzer>;
