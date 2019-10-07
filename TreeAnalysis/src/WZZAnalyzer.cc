@@ -382,7 +382,7 @@ void WZZAnalyzer::analyze(){
   phys::Boson<phys::Jet> mWCandidate;
   phys::Boson<phys::Jet> mZCandidate;
   phys::Boson<phys::Jet> maxVPtCandidate;
-  //phys::Boson<phys::Jet> minTotPtCandidate;
+  phys::Boson<phys::Jet> minTotPtCandidate;
   phys::Boson<phys::Jet> mWZCandidate;
 
   
@@ -410,22 +410,21 @@ void WZZAnalyzer::analyze(){
       std::stable_sort(DiJets.begin(), DiJets.end(), phys::ScalarSumPtComparator());
       maxVPtCandidate=DiJets.at(0);
 
-      /*
       //4th reconstruction model: minimization of total Pt of ZZjj system
-      std::vector<phys::Particle> ZZjj;    
-      //foreach(const phys::DiBoson< phys::Lepton > & DiZ, *ZZ){
-      for(int i=0; i<DiJets.size(); i++)
-	ZZjj.push_back(phys::Particle(ZZ->p4()+DiJets.at(i).p4()));
-      //    }
-      std::stable_sort(ZZjj.begin(), ZZjj.end(), phys::ScalarSumPtComparator());
+      std::vector<phys::Particle> ZZjj;
+      phys::Particle ZZjjCandidate;
+      for(int i=0; i<DiJets.size(); i++){
+	phys:: Particle totState(ZZ->p4()+(DiJets.at(i)).p4());
+	ZZjj.push_back(totState.p4());
+      }
+      std::stable_sort(ZZjj.begin(), ZZjj.end(), phys::PtComparator());
+      ZZjjCandidate=ZZjj.back();
       for (int i=0; i<(centralJets->size()*(centralJets->size()-1)/2); i++)
-	if((DiJets.at(i)).p4()==(ZZjj.p4()-ZZ->p4()))
+	if((DiJets.at(i)).p4()==(ZZjjCandidate.p4()-ZZ->p4()))
 	  minTotPtCandidate = DiJets.at(i);
-      */
 
-      
       //5th reconstruction model: comparison with a mean value between ZMass and WMass
-      std::stable_sort(DiJets.begin(), DiJets.end(), phys::MassComparator(0.2*phys::ZMASS+0.8*phys::WMASS));
+      std::stable_sort(DiJets.begin(), DiJets.end(), phys::MassComparator(0.3*phys::ZMASS+0.7*phys::WMASS));
       mWZCandidate = DiJets.at(0);
 
       
@@ -444,7 +443,7 @@ void WZZAnalyzer::analyze(){
 	    CompatibilityTest(mWCandidate, gen, "ZZZ", "mW");
 	    CompatibilityTest(mZCandidate, gen, "ZZZ", "mZ");
 	    CompatibilityTest(maxVPtCandidate, gen, "ZZZ", "maxVPt");
-	    //CompatibilityTest(minTotPtCandidate, gen, "ZZZ", "minTotPt");
+	    CompatibilityTest(minTotPtCandidate, gen, "ZZZ", "minTotPt");
 	    CompatibilityTest(mWZCandidate, gen, "ZZZ", "mWZ");
 
 	  }
@@ -461,7 +460,7 @@ void WZZAnalyzer::analyze(){
 	    CompatibilityTest(mWCandidate, gen, "WZZ", "mW");
 	    CompatibilityTest(mZCandidate, gen, "WZZ", "mZ");
 	    CompatibilityTest(maxVPtCandidate, gen, "WZZ", "maxVPt");
-	    //CompatibilityTest(minTotPtCandidate, gen, "WZZ", "minTotPt");
+	    CompatibilityTest(minTotPtCandidate, gen, "WZZ", "minTotPt");
 	    CompatibilityTest(mWZCandidate, gen, "WZZ", "mWZ");
 
 	  }

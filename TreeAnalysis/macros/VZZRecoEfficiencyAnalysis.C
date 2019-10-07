@@ -32,7 +32,7 @@ void VZZRecoEfficiencyAnalysis(TString requestedSample){
   vector<TString> samples = {"WZZ", "ZZZ"};
   vector<TString> parNames = {"W","Z"};
   vector<TString> typeNames = {"Eta", "Phi", "Pt", "E", "Mass","Tot"};
-  vector<TString> algNames = {"mW", "mZ", "maxVPt"/*, "minTotPt"*/, "mWZ"};
+  vector<TString> algNames = {"mW", "mZ", "maxVPt", "minTotPt", "mWZ"};
 
   
   TString sampleName, name;
