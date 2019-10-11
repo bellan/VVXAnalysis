@@ -354,18 +354,18 @@ void WZZAnalyzer::analyze(){
   //----------------------------------------VECTOR_BOSONS_RECONSTRUCTION----------------------------------------//
 
   TLorentzVector genP4Tot = TLorentzVector(0., 0. , 0., 0.);
-
+  
   int nGenHadBoson=0;
   int nGenLepBoson=0;
   if(topology.test(0)){
     foreach(const phys::Boson<phys::Particle>& gen, *genVBParticles){
-      if(abs(gen.daughter(0).id()) < 10 && nGenHadBoson<1){
+      if(abs(gen.daughter(0).id()) < 10 && nGenHadBoson<1 && ((gen.id()==23 && gen.mass()>60 && gen.mass()<120) || (gen.id()==24 && gen.mass()>50 && gen.mass()<110))  && (gen.daughter(0)).pt()>30 &&  (gen.daughter(1)).pt()>30){
 	genP4Tot+=gen.p4();
 	nGenHadBoson++;
       }
       
 
-      if((abs(gen.daughter(0).id())==11 || abs(gen.daughter(0).id())==13 || abs(gen.daughter(0).id())==15) && nGenLepBoson<2){
+      if((abs(gen.daughter(0).id())==11 || abs(gen.daughter(0).id())==13) && gen.id()==23 && nGenLepBoson<2){
 	genP4Tot+=gen.p4();
 	nGenLepBoson++;
       }
@@ -389,14 +389,14 @@ void WZZAnalyzer::analyze(){
   //Building of every jets pairs combination
   std::vector<phys::Boson<phys::Jet> > DiJets;
 
-  for(int i=0; i<centralJets->size(); i++)//Warning: size can be 0
-    for(int j=i; j<centralJets->size(); j++)  
+  for(int i=0; i</*centralJets*/jets->size(); i++)//Warning: size can be 0
+    for(int j=i; j</*centralJets*/jets->size(); j++)  
       if(j!=i)
-	DiJets.push_back(phys::Boson<phys::Jet>(centralJets->at(i), centralJets->at(j)));
+	DiJets.push_back(phys::Boson<phys::Jet>(/*centralJets*/jets->at(i), /*centralJets*/jets->at(j)));
 
   if(topology.test(0)){  //For the signal definition, the categories with the first bit on (i.e. bit0=true), are the only ones that have to be considered
 
-    if(centralJets->size()>1){	
+    if(/*centralJets*/jets->size()>1){	
   
       //1st reconstruction model: comparison with WMass
       std::stable_sort(DiJets.begin(), DiJets.end(), phys::MassComparator(phys::WMASS));
@@ -419,25 +419,26 @@ void WZZAnalyzer::analyze(){
       }
       std::stable_sort(ZZjj.begin(), ZZjj.end(), phys::PtComparator());
       ZZjjCandidate=ZZjj.back();
-      for (int i=0; i<(centralJets->size()*(centralJets->size()-1)/2); i++)
+      for (int i=0; i<DiJets.size(); i++)
 	if((DiJets.at(i)).p4()==(ZZjjCandidate.p4()-ZZ->p4()))
 	  minTotPtCandidate = DiJets.at(i);
 
       //5th reconstruction model: comparison with a mean value between ZMass and WMass
-      std::stable_sort(DiJets.begin(), DiJets.end(), phys::MassComparator(0.3*phys::ZMASS+0.7*phys::WMASS));
+      std::stable_sort(DiJets.begin(), DiJets.end(), phys::MassComparator(0.2*phys::ZMASS+0.8*phys::WMASS));
       mWZCandidate = DiJets.at(0);
-
       
       foreach(const phys::Boson<phys::Particle>& gen, *genVBParticles){
 	if(abs(gen.daughter(0).id()) < 10){
-	  if(abs(gen.id()==23)){//for Z bosons: mc pdg id = 23 by notation
-	    theHistograms.fill("genZPt","pt of gen Z",20,0,200,gen.pt(),theWeight);
+	  if(abs(gen.id())==23  && gen.mass()>60 && gen.mass()<120 && (gen.daughter(0)).pt()>30 &&  (gen.daughter(1)).pt()>30){//for Z bosons: mc pdg id = 23 by notation
+	    theHistograms.fill("genZPt","pt of gen Z",20,30,200,gen.pt(),theWeight);
 	    theHistograms.fill("genZEta","eta of gen Z",30,0,2.5,fabs(gen.eta()),theWeight);
 	    theHistograms.fill("genZPhi","phi of gen Z",30,-3.2,3.2,gen.phi(),theWeight);
 	    theHistograms.fill("genZRapidity","rapidity of gen Z",30,0,2.5,fabs(gen.rapidity()),theWeight);
 	    theHistograms.fill("genZEnergy","energy of gen Z",120,0,400,fabs(gen.e()),theWeight);
 	    theHistograms.fill("genZmass","mass of gen Z",40,40,130,fabs(gen.mass()),theWeight);
 	    theHistograms.fill("genJetDeltaPhi","dPhi of gen jets",30,0,3.2,fabs(physmath::deltaPhi(gen.daughter(0).phi(), gen.daughter(1).phi())),theWeight);
+	    theHistograms.fill("genZDaughtersMass","mass of gen Z daughters",100,0,100, (gen.daughter(0)).mass(),theWeight);
+	    theHistograms.fill("genZDaughtersMass","mass of gen Z daughters",100,0,100, (gen.daughter(1)).mass(),theWeight);
 
 
 	    CompatibilityTest(mWCandidate, gen, "ZZZ", "mW");
@@ -447,14 +448,16 @@ void WZZAnalyzer::analyze(){
 	    CompatibilityTest(mWZCandidate, gen, "ZZZ", "mWZ");
 
 	  }
-	  else if(abs(gen.id()==24)){
-	    theHistograms.fill("genWPt","pt of gen W",20,0,200,gen.pt(),theWeight);
+	  else if(abs(gen.id())==24 && gen.mass()>50 && gen.mass()<110 && (gen.daughter(0)).pt()>30 &&  (gen.daughter(1)).pt()>30){
+	    theHistograms.fill("genWPt","pt of gen W",20,30,200,gen.pt(),theWeight);
 	    theHistograms.fill("genWEta","eta of gen W",30,0,2.5,fabs(gen.eta()),theWeight);
 	    theHistograms.fill("genWPhi","phi of gen W",30,-3.2,3.2,gen.phi(),theWeight);
 	    theHistograms.fill("genWRapidity","rapidity of gen W",30,0,2.5,fabs(gen.rapidity()),theWeight);
 	    theHistograms.fill("genWEnergy","energy of gen W",120,0,400,fabs(gen.e()),theWeight);
 	    theHistograms.fill("genWmass","mass of gen W",40,40,130,fabs(gen.mass()),theWeight);
   	    theHistograms.fill("genJetDeltaPhi","dPhi of gen jets",30,0,3.2,fabs(physmath::deltaPhi(gen.daughter(0).phi(), gen.daughter(1).phi())),theWeight);
+	    theHistograms.fill("genWDaughtersMass","mass of gen W daughters",100,0,100, (gen.daughter(0)).mass(),theWeight);
+	    theHistograms.fill("genWDaughtersMass","mass of gen W daughters",100,0,100, (gen.daughter(1)).mass(),theWeight);
 
 
 	    CompatibilityTest(mWCandidate, gen, "WZZ", "mW");
@@ -483,8 +486,10 @@ void WZZAnalyzer::CompatibilityTest(phys::Boson<phys::Jet> bestCandidate, phys::
   double dRMax=0.4;
   std::string genVBId;
 
-  if(genVB.id()==24) genVBId="W";
-  else if(genVB.id()==23) genVBId="Z";
+  if(genVB.id()==24 /* && genVB.mass()>50 && genVB.mass()<110 /* && (genVB.daughter(0)).mass()>30 &&  (genVB.daughter(1)).mass()>30*/)
+    genVBId="W";
+  else if(genVB.id()==23 /* && genVB.mass()>60 && genVB.mass()<120 /* && (genVB.daughter(0)).mass()>30 &&  (genVB.daughter(1)).mass()>30*/)
+    genVBId="Z";
   else return;
 
   if(genVBId+"ZZ"==sample){
