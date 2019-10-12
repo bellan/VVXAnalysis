@@ -29,6 +29,8 @@ void VZZRecoEfficiencyAnalysis(TString requestedSample){
   //gStyle->SetOptStat(0);
   
   TString path = "~/VVXAnalysis/TreeAnalysis/results/WZZAnalyzer_MC/";
+  TString otherPath =  "~/VVXAnalysis/TreeAnalysis/results/WZZAnalyzer_SR/";
+  
   vector<TString> samples = {"WZZ", "ZZZ"};
   vector<TString> parNames = {"W","Z"};
   vector<TString> typeNames = {"Eta", "Phi", "Pt", "E", "Mass","Tot"};
@@ -87,7 +89,7 @@ void VZZRecoEfficiencyAnalysis(TString requestedSample){
 	TCanvas *cDrawing = new TCanvas(name+"ReconstructionEfficiency_vs_"+type+"_"+alg, name+"ReconstructionEfficiency_vs_"+type+"_"+alg, 10,0,1280,1024);
 	cDrawing->cd();
 	hEff->Draw("AP");
-	if(type=="Tot") hEff->Draw("TEXT SAME");
+	//if(type=="Tot") hEff->Draw("TEXT SAME");
 
       }
     }
