@@ -15,15 +15,170 @@ using std::endl;
 
 using namespace phys;
 
-Int_t WZZAnalyzer::cut() {
+Int_t WZZAnalyzer::signalCostraint() {
+
+       /*
   
+
+  if(topology.test(0))
+  //For WZZ & ZZZ signal samples:
+  
+    foreach(const phys::Boson<phys::Particle>& gen, *genVBParticles){
+      if(
+	 gen.mass()>50 && gen.mass()<120
+	 && (
+	     (//For Z bosons
+	      abs(gen.id())==23 && gen.mass()>60
+	      && (//For leptonic bosons
+		  abs(gen.daughter(0).id())==11 || abs(gen.daughter(0).id())==13 ||
+		  (//For hadronic Z bosons
+		   abs(gen.daughter(0).id())<10 && gen.daughter(0).pt()>30 && gen.daughter(1).pt()>30)
+		  )
+	      )
+	     || (//For hadronic W bosons
+		 abs(gen.id())==24 && gen.mass()<110 && abs(gen.daughter(0).id())<10 && gen.daughter(0).pt()>30 && gen.daughter(1).pt()>30
+		 )
+	     )
+	 )
+	  
+	
+       */
+  int nGenHadBoson=0;
+  int nGenLepBoson=0;
+  if(topology.test(0)) {
+    foreach(const phys::Boson<phys::Particle>& gen, *genVBParticles){
+    
+      if(abs(gen.daughter(0).id()) < 10 && nGenHadBoson<1 && ((gen.id()==23 && gen.mass()>60 && gen.mass()<120) || (abs(gen.id())==24 && gen.mass()>50 && gen.mass()<110)) && abs(gen.daughter(0).pt())>30 &&  abs(gen.daughter(1).pt())>30)
+	nGenHadBoson++;
+
+      if((abs(gen.daughter(0).id())==11 || abs(gen.daughter(0).id())==13) && gen.id()==23 && gen.mass()>60 && gen.mass()<120 && nGenLepBoson<2)
+	nGenLepBoson++;
+    }
+  }
+  if(nGenHadBoson!=1 || nGenLepBoson!=2)
+    return 0;
+
   return 1;
+
 }
 
- 
+Bool_t WZZAnalyzer::cut(Int_t n,  phys::Boson<phys::Jet> recoV) {
+
+  if(n==0)
+    return true;
+  else if(n==1)
+    if(/*topology.test(0) &&*/ jets->size()>1 && recoV.mass()>50 && recoV.mass()<120 && abs(recoV.daughter(0).pt())>30 && abs(recoV.daughter(1).pt())>30)
+	return true;
+  return false;
+    
+  
+
+}
 
 
-void WZZAnalyzer::analyze(){
+
+
+
+void WZZAnalyzer::analyze(){ //It's the only member function running each event.
+
+  cout << "----------------------------------------------------------------"<<endl;
+  cout << "Run: " << run << " event: " << event << endl;
+
+  //genAnalyze();
+  
+  phys::Boson<phys::Jet> recoV;
+  Reconstruct(&recoV);
+
+  
+  theHistograms.fill("recoVMass_den","mass of recoV",60,0.1,200, recoV.mass());
+  theHistograms.fill("recoVTot_den","mass of recoV",1,0.1,200, recoV.mass());
+
+  /*
+  
+  //HERE: START of part just for WZZ and ZZZ samples   
+
+  //---------------ALL-THE-EVENTS---------------//
+
+
+  
+  foreach(const phys::Boson<phys::Particle>& gen, *genVBParticles){
+    if(abs(gen.id())==24 && abs(gen.daughter(0).id()) < 10) {
+      theHistograms.fill("genVMass_WZZ_den","mass of gen W",60,0.1,150,gen.mass());
+      theHistograms.fill("genVTot_WZZ_den","mass of gen W",1,0.1,150,gen.mass());
+    }
+    if(abs(gen.id())==23 && abs(gen.daughter(0).id()) < 10) {
+      theHistograms.fill("genVMass_ZZZ_den","mass of gen Z",60,0.1,150,gen.mass());
+      theHistograms.fill("genVTot_ZZZ_den","mass of gen Z",1,0.1,150,gen.mass());
+    }
+  }
+
+
+
+  //---------------SIGNAL-EVENTS---------------//
+  
+  if(signalCostraint==1){
+    foreach(const phys::Boson<phys::Particle>& gen, *genVBParticles){
+      if(abs(gen.id())==24 && abs(gen.daughter(0).id()) < 10) {
+	theHistograms.fill("genVMass_WZZ_num_sign","mass of gen W",60,0.1,150,gen.mass());
+	theHistograms.fill("genVTot_WZZ_num_sign","mass of gen W",1,0.1,150,gen.mass());
+      }
+      if(abs(gen.id())==23 && abs(gen.daughter(0).id()) < 10) {
+	theHistograms.fill("genVMass_ZZZ_num_sign","mass of gen Z",60,0.1,150,gen.mass());
+	theHistograms.fill("genVTot_ZZZ_num_sign","mass of gen Z",1,0.1,150,gen.mass());
+      }
+
+    }
+   
+    theHistograms.fill("recoVMass_sign0","mass of recoV",60,0.1,200, recoV.mass());
+    theHistograms.fill("recoVTot_sign0","mass of recoV",60,0.1,200, recoV.mass());
+
+    //genAnalyze();
+  }//not signalCostraint anymore 
+
+
+  //---------------BACKGROUND-EVENTS---------------//
+  
+  else{
+    foreach(const phys::Boson<phys::Particle>& gen, *genVBParticles){
+      if(abs(gen.id())==24 && abs(gen.daughter(0).id()) < 10) {
+	theHistograms.fill("genVMass_WZZ_num_bckg","mass of gen W",60,0.1,150,gen.mass());
+	theHistograms.fill("genVTot_WZZ_num_bckg","mass of gen W",1,0.1,150,gen.mass());
+      }
+      if(abs(gen.id())==23 && abs(gen.daughter(0).id()) < 10) {
+	theHistograms.fill("genVMass_ZZZ_num_bckg","mass of gen Z",60,0.1,150,gen.mass());
+	theHistograms.fill("genVTot_ZZZ_num_bckg","mass of gen Z",1,0.1,150,gen.mass());
+      }
+
+    }
+  
+    theHistograms.fill("recoVMass_bckg0","mass of recoV",60,0.1,200, recoV.mass());
+    theHistograms.fill("recoVTot_bckg0","mass of recoV",60,0.1,200, recoV.mass());
+  
+    if(cut(1, recoV)){
+      theHistograms.fill("recoVMass_bckg_num1","mass of recoV",60,0.1,200, recoV.mass());
+      theHistograms.fill("recoVTot_bckg_num1","mass of recoV",60,0.1,200, recoV.mass());
+    }
+
+  }
+  //HERE: END of part just for WZZ and ZZZ samples   
+  
+*/
+
+  if(cut(1, recoV)){
+    theHistograms.fill("recoVMass_num1","mass of recoV",60,0.1,200, recoV.mass());
+    theHistograms.fill("recoVTot_num1","mass of recoV",1,0.1,200, recoV.mass());
+  }
+
+
+
+
+
+
+
+}
+
+
+void WZZAnalyzer::genAnalyze(){
 
   cout << "-----------------------------------------------------------------"<<endl;
   cout << "Run: " << run << " event: " << event << endl;
@@ -471,7 +626,6 @@ void WZZAnalyzer::analyze(){
 	}
       }
 
-
     
     }
 
@@ -480,7 +634,27 @@ void WZZAnalyzer::analyze(){
   }//topology.test(0) closed
 }
 
-  
+
+
+
+void WZZAnalyzer::Reconstruct(phys::Boson<phys::Jet>* mWCandidate){
+  //Building of every jets pairs combination
+  std::vector<phys::Boson<phys::Jet> > DiJets;
+
+  for(int i=0; i<jets->size(); i++)//Warning: size can be 0
+    for(int j=i; j<jets->size(); j++)  
+      if(j!=i)
+	DiJets.push_back(phys::Boson<phys::Jet>(jets->at(i), jets->at(j)));
+  /*
+  if(topology.test(0)){  //For the signal definition, the categories with the first bit on (i.e. bit0=true), are the only ones that have to be considered
+  */
+  //Deleted because it may be used after the signalCostraint() running 
+
+  if(jets->size()>1){	
+      std::stable_sort(DiJets.begin(), DiJets.end(), phys::MassComparator(phys::WMASS));
+      *mWCandidate = DiJets.at(0);
+  }
+}
 
 void WZZAnalyzer::CompatibilityTest(phys::Boson<phys::Jet> bestCandidate, phys::Boson<phys::Particle> genVB, std::string sample, std::string algorithm){
   double dRMax=0.4;
@@ -536,9 +710,6 @@ void WZZAnalyzer::CompatibilityTest(phys::Boson<phys::Jet> bestCandidate, phys::
   }
   return;
 }
-
-
-
 
 
 
