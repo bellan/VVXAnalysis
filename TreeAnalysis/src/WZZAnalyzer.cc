@@ -62,17 +62,68 @@ Int_t WZZAnalyzer::signalCostraint() {
 
 }
 
-Bool_t WZZAnalyzer::cut(Int_t n,  phys::Boson<phys::Jet> recoV) {
-
+Bool_t WZZAnalyzer::cut(Int_t n,  phys::Boson<phys::Jet> recoV) { //returns false if the event has to be cut
+  /*
   if(n==0)
     return true;
-  else if(n==1)
-    if(/*topology.test(0) &&*/ jets->size()>1 && recoV.mass()>50 && recoV.mass()<120 && abs(recoV.daughter(0).pt())>30 && abs(recoV.daughter(1).pt())>30)
+  else if(n==1){
+  if(/*topology.test(0) &&*//* jets->size()>1 && recoV.mass()>50 && recoV.mass()<120 && abs(recoV.daughter(0).pt())>30 && abs(recoV.daughter(1).pt())>30)
+      return true;
+  }else
+    if(n==2){
+      if(ZZ->mass()>60 && ZZ->mass()<300)
 	return true;
+    }else
+      if(n>2){
+	return true
+	  }
   return false;
-    
-  
+*/
 
+  switch(n){
+    
+  case 1:
+    if(/*topology.test(0) &&*/ jets->size()>1 && recoV.mass()>50 && recoV.mass()<120 && abs(recoV.daughter(0).pt())>30 && abs(recoV.daughter(1).pt())>30)
+      return true;
+    break;
+
+  case 2: 
+    if(fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi()))<1.8 || fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi()))>2.8)
+      return true;
+
+    break;
+
+    
+  case 3: 
+    if(fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi()))<=2.4)
+      return true;
+    break;
+
+
+  case 4: 
+    if(fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->second().phi()))>1 || fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->second().phi()))<0.7 )
+      return true;
+    break;
+
+
+  case 5: 
+    if(fabs(ZZ->eta())>0.7 )
+      return true;
+
+    break;
+
+
+  case 6: 
+    if(fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->second().phi()))>0.7 )
+      return true;
+    break;
+
+    
+  default:
+    return true;
+
+  }
+  return false;
 }
 
 
@@ -89,12 +140,11 @@ void WZZAnalyzer::analyze(){ //It's the only member function running each event.
   phys::Boson<phys::Jet> recoV;
   Reconstruct(&recoV);
 
-  
+   
   theHistograms.fill("recoVMass_den","mass of recoV",60,0.1,200, recoV.mass());
   theHistograms.fill("recoVTot_den","mass of recoV",1,0.1,200, recoV.mass());
-
-  /*
   
+  /*
   //HERE: START of part just for WZZ and ZZZ samples   
 
   //---------------ALL-THE-EVENTS---------------//
@@ -116,7 +166,7 @@ void WZZAnalyzer::analyze(){ //It's the only member function running each event.
 
   //---------------SIGNAL-EVENTS---------------//
   
-  if(signalCostraint==1){
+  if(signalCostraint()==1){
     foreach(const phys::Boson<phys::Particle>& gen, *genVBParticles){
       if(abs(gen.id())==24 && abs(gen.daughter(0).id()) < 10) {
 	theHistograms.fill("genVMass_WZZ_num_sign","mass of gen W",60,0.1,150,gen.mass());
@@ -130,8 +180,88 @@ void WZZAnalyzer::analyze(){ //It's the only member function running each event.
     }
    
     theHistograms.fill("recoVMass_sign0","mass of recoV",60,0.1,200, recoV.mass());
-    theHistograms.fill("recoVTot_sign0","mass of recoV",60,0.1,200, recoV.mass());
+    theHistograms.fill("recoVTot_sign0","mass of recoV",1,0.1,200, recoV.mass());
+    theHistograms.fill("recoZZMass_sign0","mass of recoZZ",100,0.1,400, ZZ->mass());
 
+    theHistograms.fill("recoVPt_sign0","pt of recoV",20,30,200,recoV.pt());
+    theHistograms.fill("recoVEta_sign0","eta of recoV",30,0,2.5,fabs(recoV.eta()));
+    theHistograms.fill("recoVPhi_sign0","phi of recoV",30,-3.2,3.2,recoV.phi());
+    theHistograms.fill("recoVEnergy_sign0","energy of  recoV",120,0,400,fabs(recoV.e()));
+    theHistograms.fill("recoVDaughtersDeltaPhi_sign0","dPhi of recoVDaughters",30,0,3.2,fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())));
+
+    theHistograms.fill("recoZZPt_sign0","pt of recoZZ",100,0,400,ZZ->pt());
+    theHistograms.fill("recoZZEta_sign0","eta of recoZZ",30,0,2.5,fabs(ZZ->eta()));
+    theHistograms.fill("recoZZEnergy_sign0","energy of  recoZZ",120,0,400,fabs(ZZ->e()));
+    theHistograms.fill("recoZZDeltaPhi_sign0","dPhi of recoZZ",30,0,3.2,fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->first().phi())));
+    
+  
+    if(cut(1, recoV)){
+      theHistograms.fill("recoVMass_sign1","mass of recoV",60,0.1,200, recoV.mass());
+      theHistograms.fill("recoVTot_sign1","mass of recoV",1,0.1,200, recoV.mass());
+      theHistograms.fill("recoZZMass_sign1","mass of recoZZ",100,0.1,400, ZZ->mass());
+
+      theHistograms.fill("recoVPt_sign1","pt of recoV",50,0,300,recoV.pt());
+      theHistograms.fill("recoVEta_sign1","eta of recoV",30,0,2.5,fabs(recoV.eta()));
+      theHistograms.fill("recoVPhi_sign1","phi of recoV",30,-3.2,3.2,recoV.phi());
+      theHistograms.fill("recoVEnergy_sign1","energy of  recoV",120,0,1200,fabs(recoV.e()));
+      theHistograms.fill("recoVDaughtersDeltaPhi_sign1","dPhi of recoVDaughters",30,0,3.2,fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())));
+
+      theHistograms.fill("recoZZPt_sign1","pt of recoZZ",100,0,400,ZZ->pt());
+      theHistograms.fill("recoZZEta_sign1","eta of recoZZ",30,0,2.5,fabs(ZZ->eta()));
+      theHistograms.fill("recoZZEnergy_sign1","energy of  recoZZ",120,0,400,fabs(ZZ->e()));
+      theHistograms.fill("recoZZDeltaPhi_sign1","dPhi of recoZZ",30,0,3.2,fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->second().phi())));
+
+      
+      if(cut(2, recoV)){
+	theHistograms.fill("recoVMass_sign2","mass of recoV",60,0.1,200, recoV.mass());
+	theHistograms.fill("recoVTot_sign2","mass of recoV",1,0.1,200, recoV.mass());
+	theHistograms.fill("recoZZMass_sign2","mass of recoZZ",100,0.1,400, ZZ->mass());
+
+	theHistograms.fill("recoZZEnergy_sign2","energy of  recoZZ",120,0,400,fabs(ZZ->e()));
+	theHistograms.fill("recoZZDeltaPhi_sign2","dPhi of recoZZ",30,0,3.2,fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->second().phi())));
+
+	
+	if(cut(3, recoV)){
+	  theHistograms.fill("recoVMass_sign3","mass of recoV",60,0.1,200, recoV.mass());
+	  theHistograms.fill("recoVTot_sign3","mass of recoV",1,0.1,200, recoV.mass());
+
+	  if(cut(4, recoV)){
+	    theHistograms.fill("recoVMass_sign4","mass of recoV",60,0.1,200, recoV.mass());
+	    theHistograms.fill("recoVTot_sign4","mass of recoV",1,0.1,200, recoV.mass());
+
+	    if(cut(5, recoV)){
+	      theHistograms.fill("recoVMass_sign5","mass of recoV",60,0.1,200, recoV.mass());
+	      theHistograms.fill("recoVTot_sign5","mass of recoV",1,0.1,200, recoV.mass());
+
+
+	      theHistograms.fill("recoZZMass_sign5","mass of recoZZ",100,0.1,400, ZZ->mass());
+
+	      theHistograms.fill("recoVPt_sign5","pt of recoV",50,0,300,recoV.pt());
+	      theHistograms.fill("recoVEta_sign5","eta of recoV",30,0,2.5,fabs(recoV.eta()));
+	      theHistograms.fill("recoVPhi_sign5","phi of recoV",30,-3.2,3.2,recoV.phi());
+	      theHistograms.fill("recoVEnergy_sign5","energy of  recoV",120,0,1200,fabs(recoV.e()));
+	      theHistograms.fill("recoVDaughtersDeltaPhi_sign5","dPhi of recoVDaughters",30,0,3.2,fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())));
+
+	      theHistograms.fill("recoZZPt_sign5","pt of recoZZ",100,0,400,ZZ->pt());
+	      theHistograms.fill("recoZZEta_sign5","eta of recoZZ",30,0,2.5,fabs(ZZ->eta()));
+	      theHistograms.fill("recoZZEnergy_sign5","energy of  recoZZ",120,0,400,fabs(ZZ->e()));
+	      theHistograms.fill("recoZZDeltaPhi_sign5","dPhi of recoZZ",30,0,3.2,fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->second().phi())));
+
+
+	      if(cut(6, recoV)){
+		theHistograms.fill("recoVMass_sign6","mass of recoV",60,0.1,200, recoV.mass());
+		theHistograms.fill("recoVTot_sign6","mass of recoV",1,0.1,200, recoV.mass());
+	      }
+
+
+	    }
+
+	  }
+	}
+
+      }
+
+    }  
     //genAnalyze();
   }//not signalCostraint anymore 
 
@@ -152,28 +282,173 @@ void WZZAnalyzer::analyze(){ //It's the only member function running each event.
     }
   
     theHistograms.fill("recoVMass_bckg0","mass of recoV",60,0.1,200, recoV.mass());
-    theHistograms.fill("recoVTot_bckg0","mass of recoV",60,0.1,200, recoV.mass());
-  
-    if(cut(1, recoV)){
-      theHistograms.fill("recoVMass_bckg_num1","mass of recoV",60,0.1,200, recoV.mass());
-      theHistograms.fill("recoVTot_bckg_num1","mass of recoV",60,0.1,200, recoV.mass());
+    theHistograms.fill("recoVTot_bckg0","mass of recoV",1,0.1,200, recoV.mass());
+
+
+    theHistograms.fill("recoVPt_bckg0","pt of recoV",20,30,200,recoV.pt());
+    theHistograms.fill("recoVEta_bckg0","eta of recoV",30,0,2.5,fabs(recoV.eta()));
+    theHistograms.fill("recoVPhi_bckg0","phi of recoV",30,-3.2,3.2,recoV.phi());
+    theHistograms.fill("recoVEnergy_bckg0","energy of  recoV",120,0,400,fabs(recoV.e()));
+    theHistograms.fill("recoVDaughtersDeltaPhi_bckg0","dPhi of recoVDaughters",30,0,3.2,fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())));
+
+    theHistograms.fill("recoZZPt_bckg0","pt of recoZZ",100,0,400,ZZ->pt());
+    theHistograms.fill("recoZZEta_bckg0","eta of recoZZ",30,0,2.5,fabs(ZZ->eta()));
+    theHistograms.fill("recoZZEnergy_bckg0","energy of  recoZZ",120,0,400,fabs(ZZ->e()));
+    theHistograms.fill("recoZZDeltaPhi_bckg0","dPhi of recoZZ",30,0,3.2,fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->first().phi())));
+
+    
+    if(cut(1, recoV)) {
+      theHistograms.fill("recoVMass_bckg1","mass of recoV",60,0.1,200, recoV.mass());
+      theHistograms.fill("recoVTot_bckg1","mass of recoV",1,0.1,200, recoV.mass());
+
+
+      theHistograms.fill("recoVPt_bckg0","pt of recoV",20,30,200,recoV.pt());
+      theHistograms.fill("recoVEta_bckg0","eta of recoV",30,0,2.5,fabs(recoV.eta()));
+      theHistograms.fill("recoVPhi_bckg0","phi of recoV",30,-3.2,3.2,recoV.phi());
+      theHistograms.fill("recoVEnergy_bckg0","energy of  recoV",120,0,400,fabs(recoV.e()));
+      theHistograms.fill("recoVDaughtersDeltaPhi_bckg0","dPhi of recoVDaughters",30,0,3.2,fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())));
+
+      theHistograms.fill("recoZZPt_bckg0","pt of recoZZ",100,0,400,ZZ->pt());
+      theHistograms.fill("recoZZEta_bckg0","eta of recoZZ",30,0,2.5,fabs(ZZ->eta()));
+      theHistograms.fill("recoZZEnergy_bckg0","energy of  recoZZ",120,0,400,fabs(ZZ->e()));
+      theHistograms.fill("recoZZDeltaPhi_bckg0","dPhi of recoZZ",30,0,3.2,fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->first().phi())));
+
+      
+      if(cut(2, recoV)){
+	theHistograms.fill("recoVMass_bckg2","mass of recoV",60,0.1,200, recoV.mass());
+	theHistograms.fill("recoVTot_bckg2","mass of recoV",1,0.1,200, recoV.mass());
+
+      
+	if(cut(3, recoV)){
+	  theHistograms.fill("recoVMass_bckg3","mass of recoV",60,0.1,200, recoV.mass());
+	  theHistograms.fill("recoVTot_bckg3","mass of recoV",1,0.1,200, recoV.mass());
+
+	  if(cut(4, recoV)){
+	    theHistograms.fill("recoVMass_bckg4","mass of recoV",60,0.1,200, recoV.mass());
+	    theHistograms.fill("recoVTot_bckg4","mass of recoV",1,0.1,200, recoV.mass());
+
+	    if(cut(5, recoV)){
+	      theHistograms.fill("recoVMass_bckg5","mass of recoV",60,0.1,200, recoV.mass());
+	      theHistograms.fill("recoVTot_bckg5","mass of recoV",1,0.1,200, recoV.mass());
+
+
+	      theHistograms.fill("recoZZMass_bckg5","mass of recoZZ",100,0.1,400, ZZ->mass());
+
+	      theHistograms.fill("recoVPt_bckg5","pt of recoV",50,0,300,recoV.pt());
+	      theHistograms.fill("recoVEta_bckg5","eta of recoV",30,0,2.5,fabs(recoV.eta()));
+	      theHistograms.fill("recoVPhi_bckg5","phi of recoV",30,-3.2,3.2,recoV.phi());
+	      theHistograms.fill("recoVEnergy_bckg5","energy of  recoV",120,0,1200,fabs(recoV.e()));
+	      theHistograms.fill("recoVDaughtersDeltaPhi_bckg5","dPhi of recoVDaughters",30,0,3.2,fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())));
+
+	      theHistograms.fill("recoZZPt_bckg5","pt of recoZZ",100,0,400,ZZ->pt());
+	      theHistograms.fill("recoZZEta_bckg5","eta of recoZZ",30,0,2.5,fabs(ZZ->eta()));
+	      theHistograms.fill("recoZZEnergy_bckg5","energy of  recoZZ",120,0,400,fabs(ZZ->e()));
+	      theHistograms.fill("recoZZDeltaPhi_bckg5","dPhi of recoZZ",30,0,3.2,fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->second().phi())));
+
+
+	      if(cut(6, recoV)){
+		theHistograms.fill("recoVMass_bckg6","mass of recoV",60,0.1,200, recoV.mass());
+		theHistograms.fill("recoVTot_bckg6","mass of recoV",1,0.1,200, recoV.mass());
+	      }
+
+
+
+	    }
+
+
+	  }
+
+	}
+
+      }
+
     }
 
   }
   //HERE: END of part just for WZZ and ZZZ samples   
-  
-*/
+  */
 
-  if(cut(1, recoV)){
+
+  if(cut(1, recoV)) {
     theHistograms.fill("recoVMass_num1","mass of recoV",60,0.1,200, recoV.mass());
     theHistograms.fill("recoVTot_num1","mass of recoV",1,0.1,200, recoV.mass());
+
+
+      theHistograms.fill("recoZZMass_num1","mass of recoZZ",100,0.1,400, ZZ->mass());
+
+      theHistograms.fill("recoVPt_num1","pt of recoV",50,0,300,recoV.pt());
+      theHistograms.fill("recoVEta_num1","eta of recoV",30,0,2.5,fabs(recoV.eta()));
+      theHistograms.fill("recoVPhi_num1","phi of recoV",30,-3.2,3.2,recoV.phi());
+      theHistograms.fill("recoVEnergy_num1","energy of  recoV",120,0,1200,fabs(recoV.e()));
+      theHistograms.fill("recoVDaughtersDeltaPhi_num1","dPhi of recoVDaughters",30,0,3.2,fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())));
+
+      theHistograms.fill("recoZZPt_num1","pt of recoZZ",100,0,400,ZZ->pt());
+      theHistograms.fill("recoZZEta_num1","eta of recoZZ",30,0,2.5,fabs(ZZ->eta()));
+      theHistograms.fill("recoZZEnergy_num1","energy of  recoZZ",120,0,400,fabs(ZZ->e()));
+      theHistograms.fill("recoZZDeltaPhi_num1","dPhi of recoZZ",30,0,3.2,fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->second().phi())));
+
+
+
+
+
+
+    
+
+    if(cut(2, recoV)){
+      theHistograms.fill("recoVMass_num2","mass of recoV",60,0.1,200, recoV.mass());
+      theHistograms.fill("recoVTot_num2","mass of recoV",1,0.1,200, recoV.mass());
+
+      if(cut(3, recoV)){
+	theHistograms.fill("recoVMass_num3","mass of recoV",60,0.1,200, recoV.mass());
+	theHistograms.fill("recoVTot_num3","mass of recoV",1,0.1,200, recoV.mass());
+
+
+
+	if(cut(4, recoV)) {
+	  theHistograms.fill("recoVMass_num4","mass of recoV",60,0.1,200, recoV.mass());
+	  theHistograms.fill("recoVTot_num4","mass of recoV",1,0.1,200, recoV.mass());
+
+
+	  if(cut(5, recoV)){
+	    theHistograms.fill("recoVMass_num5","mass of recoV",60,0.1,200, recoV.mass());
+	    theHistograms.fill("recoVTot_num5","mass of recoV",1,0.1,200, recoV.mass());
+
+
+	    
+	    theHistograms.fill("recoZZMass_num5","mass of recoZZ",100,0.1,400, ZZ->mass());
+
+	    theHistograms.fill("recoVPt_num5","pt of recoV",50,0,300,recoV.pt());
+	    theHistograms.fill("recoVEta_num5","eta of recoV",30,0,2.5,fabs(recoV.eta()));
+	    theHistograms.fill("recoVPhi_num5","phi of recoV",30,-3.2,3.2,recoV.phi());
+	    theHistograms.fill("recoVEnergy_num5","energy of  recoV",120,0,1200,fabs(recoV.e()));
+	    theHistograms.fill("recoVDaughtersDeltaPhi_num5","dPhi of recoVDaughters",30,0,3.2,fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())));
+
+	    theHistograms.fill("recoZZPt_num5","pt of recoZZ",100,0,400,ZZ->pt());
+	    theHistograms.fill("recoZZEta_num5","eta of recoZZ",30,0,2.5,fabs(ZZ->eta()));
+	    theHistograms.fill("recoZZEnergy_num5","energy of  recoZZ",120,0,400,fabs(ZZ->e()));
+	    theHistograms.fill("recoZZDeltaPhi_num5","dPhi of recoZZ",30,0,3.2,fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->second().phi())));
+
+
+	    if(cut(6, recoV)) {
+	      theHistograms.fill("recoVMass_num6","mass of recoV",60,0.1,200, recoV.mass());
+	      theHistograms.fill("recoVTot_num6","mass of recoV",1,0.1,200, recoV.mass());
+	    }
+
+	  }
+	}
+      
+      }
+
+    }
+
+    
   }
+  
+    
+  
 
-
-
-
-
-
+  
+  
 
 }
 
