@@ -22,7 +22,7 @@ using namespace std;
 void WZZEfficiencyAnalysis(){
 
   vector<TString> parNames = {"Electrons", "Muons"/*, "Jets"*/};
-  vector<TString> typeNames = {"Eta", "Phi", "Pt", "E"};
+  vector<TString> typeNames = {"Eta", "Phi", "Pt", "E","PtTot","ETot"};
 
   TFile* result = TFile::Open("~/VVXAnalysis/TreeAnalysis/results/WZZAnalyzer_MC/WZZ.root");
 

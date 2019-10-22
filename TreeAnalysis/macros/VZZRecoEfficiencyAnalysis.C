@@ -26,14 +26,13 @@ using namespace std;
 
 void VZZRecoEfficiencyAnalysis(TString requestedSample){
 
-  //gStyle->SetOptStat(0);
   
   TString path = "~/VVXAnalysis/TreeAnalysis/results/WZZAnalyzer_MC/";
   TString otherPath =  "~/VVXAnalysis/TreeAnalysis/results/WZZAnalyzer_SR/";
   
   vector<TString> samples = {"WZZ", "ZZZ"};
   vector<TString> parNames = {"W","Z"};
-  vector<TString> typeNames = {"Eta", "Phi", "Pt", "E", "Mass","Tot"};
+  vector<TString> typeNames = {"Eta", "Phi", "Pt", "E", "Mass", "Pt","Tot"};
   vector<TString> algNames = {"mW", "mZ", "maxVPt", "minTotPt", "mWZ"};
 
   
@@ -54,11 +53,6 @@ void VZZRecoEfficiencyAnalysis(TString requestedSample){
   cout<<"Opening \""<<sampleName<<".root\"\n";
 
   TFile* result = TFile::Open(path + sampleName + ".root");
-
-  /*foreach(TString& name, parNames){
-    #ifdef TEST_MODE
-    #endif
-  */
 
 
   foreach(TString& alg, algNames){

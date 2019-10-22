@@ -15,6 +15,8 @@
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 
+#include <TString.h>
+
 class WZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<WZZAnalyzer>{
 
 public:
@@ -40,6 +42,8 @@ public:
   virtual void Reconstruct(phys::Boson<phys::Jet>*);
 
   virtual void CompatibilityTest(phys::Boson<phys::Jet>, phys::Boson<phys::Particle>, std::string, std::string);
+
+  virtual void printHistos(Int_t, std::string, phys::Boson<phys::Jet>);
 
  private:
   friend class Selector<WZZAnalyzer>;

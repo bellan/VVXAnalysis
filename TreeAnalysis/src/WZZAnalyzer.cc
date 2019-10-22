@@ -6,6 +6,8 @@
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
+//#include <TString.h>
+
 #include <boost/assign/std/vector.hpp> 
 using namespace boost::assign;
 
@@ -16,42 +18,18 @@ using std::endl;
 using namespace phys;
 
 Int_t WZZAnalyzer::signalCostraint() {
-
-       /*
-  
-
-  if(topology.test(0))
-  //For WZZ & ZZZ signal samples:
-  
-    foreach(const phys::Boson<phys::Particle>& gen, *genVBParticles){
-      if(
-	 gen.mass()>50 && gen.mass()<120
-	 && (
-	     (//For Z bosons
-	      abs(gen.id())==23 && gen.mass()>60
-	      && (//For leptonic bosons
-		  abs(gen.daughter(0).id())==11 || abs(gen.daughter(0).id())==13 ||
-		  (//For hadronic Z bosons
-		   abs(gen.daughter(0).id())<10 && gen.daughter(0).pt()>30 && gen.daughter(1).pt()>30)
-		  )
-	      )
-	     || (//For hadronic W bosons
-		 abs(gen.id())==24 && gen.mass()<110 && abs(gen.daughter(0).id())<10 && gen.daughter(0).pt()>30 && gen.daughter(1).pt()>30
-		 )
-	     )
-	 )
-	  
-	
-       */
   int nGenHadBoson=0;
   int nGenLepBoson=0;
   if(topology.test(0)) {
     foreach(const phys::Boson<phys::Particle>& gen, *genVBParticles){
-    
-      if(abs(gen.daughter(0).id()) < 10 && nGenHadBoson<1 && ((gen.id()==23 && gen.mass()>60 && gen.mass()<120) || (abs(gen.id())==24 && gen.mass()>50 && gen.mass()<110)) && abs(gen.daughter(0).pt())>30 &&  abs(gen.daughter(1).pt())>30)
+
+      if(abs(gen.daughter(0).id()) < 10 && nGenHadBoson<1 && ((gen.id()==23 && gen.mass()>60 && gen.mass()<120) || (abs(gen.id())==24 && gen.mass()>50 && gen.mass()<110)) && fabs(gen.daughter(0).pt())>30 &&  fabs(gen.daughter(1).pt())>30 && fabs(gen.daughter(0).eta())<2.5 && fabs(gen.daughter(1).eta())<2.5)
 	nGenHadBoson++;
 
-      if((abs(gen.daughter(0).id())==11 || abs(gen.daughter(0).id())==13) && gen.id()==23 && gen.mass()>60 && gen.mass()<120 && nGenLepBoson<2)
+      if((abs(gen.daughter(0).id())==11 || abs(gen.daughter(0).id())==13) &&
+	 gen.id()==23 && gen.mass()>60 && gen.mass()<120 &&
+	 fabs(gen.daughter(0).eta())<2.5 && fabs(gen.daughter(1).eta())<2.5 && gen.daughter(0).pt()>5 && gen.daughter(1).pt()>5 &&
+	 nGenLepBoson<2)
 	nGenLepBoson++;
     }
   }
@@ -63,62 +41,30 @@ Int_t WZZAnalyzer::signalCostraint() {
 }
 
 Bool_t WZZAnalyzer::cut(Int_t n,  phys::Boson<phys::Jet> recoV) { //returns false if the event has to be cut
-  /*
-  if(n==0)
-    return true;
-  else if(n==1){
-  if(/*topology.test(0) &&*//* jets->size()>1 && recoV.mass()>50 && recoV.mass()<120 && abs(recoV.daughter(0).pt())>30 && abs(recoV.daughter(1).pt())>30)
-      return true;
-  }else
-    if(n==2){
-      if(ZZ->mass()>60 && ZZ->mass()<300)
-	return true;
-    }else
-      if(n>2){
-	return true
-	  }
-  return false;
-*/
-
+  
   switch(n){
     
   case 1:
-    if(/*topology.test(0) &&*/ jets->size()>1 && recoV.mass()>50 && recoV.mass()<120 && abs(recoV.daughter(0).pt())>30 && abs(recoV.daughter(1).pt())>30)
-      return true;
+    if(jets->size()>1 && recoV.mass()>50 && recoV.mass()<120 &&
+       fabs(recoV.daughter(0).pt())>30 && fabs(recoV.daughter(1).pt())>30 && fabs(recoV.daughter(0).eta())<2.5 && fabs(recoV.daughter(1).eta())<2.5 &&
+       ZZ->first().daughter(0).pt()>5 && ZZ->second().daughter(0).pt()>5 && ZZ->first().daughter(1).pt()>5 && ZZ->second().daughter(1).pt()>5 &&
+       ZZ->first().daughter(0).eta()<2.5 && ZZ->second().daughter(0).eta()<2.5 && ZZ->first().daughter(1).eta()<2.5 && ZZ->second().daughter(1).eta()<2.5)
+       return true;
     break;
+
 
   case 2: 
-    if(fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi()))<1.8 || fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi()))>2.8)
+    if(recoV.mass()>65)
       return true;
 
     break;
 
-    
   case 3: 
-    if(fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi()))<=2.4)
-      return true;
-    break;
-
-
-  case 4: 
-    if(fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->second().phi()))>1 || fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->second().phi()))<0.7 )
-      return true;
-    break;
-
-
-  case 5: 
-    if(fabs(ZZ->eta())>0.7 )
+    if(recoV.mass()<105)
       return true;
 
     break;
 
-
-  case 6: 
-    if(fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->second().phi()))>0.7 )
-      return true;
-    break;
-
-    
   default:
     return true;
 
@@ -132,20 +78,14 @@ Bool_t WZZAnalyzer::cut(Int_t n,  phys::Boson<phys::Jet> recoV) { //returns fals
 
 void WZZAnalyzer::analyze(){ //It's the only member function running each event.
 
-  cout << "----------------------------------------------------------------"<<endl;
-  cout << "Run: " << run << " event: " << event << endl;
+  //cout << "----------------------------------------------------------------"<<endl;
+  //cout << "Run: " << run << " event: " << event << endl;
 
   //genAnalyze();
   
   phys::Boson<phys::Jet> recoV;
   Reconstruct(&recoV);
-
-   
-  theHistograms.fill("recoVMass_den","mass of recoV",60,0.1,200, recoV.mass());
-  theHistograms.fill("recoVTot_den","mass of recoV",1,0.1,200, recoV.mass());
   
-  /*
-  //HERE: START of part just for WZZ and ZZZ samples   
 
   //---------------ALL-THE-EVENTS---------------//
 
@@ -161,6 +101,7 @@ void WZZAnalyzer::analyze(){ //It's the only member function running each event.
       theHistograms.fill("genVTot_ZZZ_den","mass of gen Z",1,0.1,150,gen.mass());
     }
   }
+  //printHistos(0,"all", recoV);
 
 
 
@@ -169,294 +110,48 @@ void WZZAnalyzer::analyze(){ //It's the only member function running each event.
   if(signalCostraint()==1){
     foreach(const phys::Boson<phys::Particle>& gen, *genVBParticles){
       if(abs(gen.id())==24 && abs(gen.daughter(0).id()) < 10) {
-	theHistograms.fill("genVMass_WZZ_num_sign","mass of gen W",60,0.1,150,gen.mass());
-	theHistograms.fill("genVTot_WZZ_num_sign","mass of gen W",1,0.1,150,gen.mass());
+	theHistograms.fill("genVMass_WZZ_num_sign","mass of gen W",60,0.1,150,gen.mass(), theWeight);
+	theHistograms.fill("genVTot_WZZ_num_sign","mass of gen W",1,0.1,150,gen.mass(), theWeight);
       }
       if(abs(gen.id())==23 && abs(gen.daughter(0).id()) < 10) {
-	theHistograms.fill("genVMass_ZZZ_num_sign","mass of gen Z",60,0.1,150,gen.mass());
-	theHistograms.fill("genVTot_ZZZ_num_sign","mass of gen Z",1,0.1,150,gen.mass());
+	theHistograms.fill("genVMass_ZZZ_num_sign","mass of gen Z",60,0.1,150,gen.mass(), theWeight);
+	theHistograms.fill("genVTot_ZZZ_num_sign","mass of gen Z",1,0.1,150,gen.mass(), theWeight);
       }
 
     }
-   
-    theHistograms.fill("recoVMass_sign0","mass of recoV",60,0.1,200, recoV.mass());
-    theHistograms.fill("recoVTot_sign0","mass of recoV",1,0.1,200, recoV.mass());
-    theHistograms.fill("recoZZMass_sign0","mass of recoZZ",100,0.1,400, ZZ->mass());
 
-    theHistograms.fill("recoVPt_sign0","pt of recoV",20,30,200,recoV.pt());
-    theHistograms.fill("recoVEta_sign0","eta of recoV",30,0,2.5,fabs(recoV.eta()));
-    theHistograms.fill("recoVPhi_sign0","phi of recoV",30,-3.2,3.2,recoV.phi());
-    theHistograms.fill("recoVEnergy_sign0","energy of  recoV",120,0,400,fabs(recoV.e()));
-    theHistograms.fill("recoVDaughtersDeltaPhi_sign0","dPhi of recoVDaughters",30,0,3.2,fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())));
-
-    theHistograms.fill("recoZZPt_sign0","pt of recoZZ",100,0,400,ZZ->pt());
-    theHistograms.fill("recoZZEta_sign0","eta of recoZZ",30,0,2.5,fabs(ZZ->eta()));
-    theHistograms.fill("recoZZEnergy_sign0","energy of  recoZZ",120,0,400,fabs(ZZ->e()));
-    theHistograms.fill("recoZZDeltaPhi_sign0","dPhi of recoZZ",30,0,3.2,fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->first().phi())));
+    printHistos(0,"sign", recoV);
+    genAnalyze();
+  }//not signalCostraint anymore 
     
   
-    if(cut(1, recoV)){
-      theHistograms.fill("recoVMass_sign1","mass of recoV",60,0.1,200, recoV.mass());
-      theHistograms.fill("recoVTot_sign1","mass of recoV",1,0.1,200, recoV.mass());
-      theHistograms.fill("recoZZMass_sign1","mass of recoZZ",100,0.1,400, ZZ->mass());
-
-      theHistograms.fill("recoVPt_sign1","pt of recoV",50,0,300,recoV.pt());
-      theHistograms.fill("recoVEta_sign1","eta of recoV",30,0,2.5,fabs(recoV.eta()));
-      theHistograms.fill("recoVPhi_sign1","phi of recoV",30,-3.2,3.2,recoV.phi());
-      theHistograms.fill("recoVEnergy_sign1","energy of  recoV",120,0,1200,fabs(recoV.e()));
-      theHistograms.fill("recoVDaughtersDeltaPhi_sign1","dPhi of recoVDaughters",30,0,3.2,fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())));
-
-      theHistograms.fill("recoZZPt_sign1","pt of recoZZ",100,0,400,ZZ->pt());
-      theHistograms.fill("recoZZEta_sign1","eta of recoZZ",30,0,2.5,fabs(ZZ->eta()));
-      theHistograms.fill("recoZZEnergy_sign1","energy of  recoZZ",120,0,400,fabs(ZZ->e()));
-      theHistograms.fill("recoZZDeltaPhi_sign1","dPhi of recoZZ",30,0,3.2,fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->second().phi())));
-
-      
-      if(cut(2, recoV)){
-	theHistograms.fill("recoVMass_sign2","mass of recoV",60,0.1,200, recoV.mass());
-	theHistograms.fill("recoVTot_sign2","mass of recoV",1,0.1,200, recoV.mass());
-	theHistograms.fill("recoZZMass_sign2","mass of recoZZ",100,0.1,400, ZZ->mass());
-
-	theHistograms.fill("recoZZEnergy_sign2","energy of  recoZZ",120,0,400,fabs(ZZ->e()));
-	theHistograms.fill("recoZZDeltaPhi_sign2","dPhi of recoZZ",30,0,3.2,fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->second().phi())));
-
-	
-	if(cut(3, recoV)){
-	  theHistograms.fill("recoVMass_sign3","mass of recoV",60,0.1,200, recoV.mass());
-	  theHistograms.fill("recoVTot_sign3","mass of recoV",1,0.1,200, recoV.mass());
-
-	  if(cut(4, recoV)){
-	    theHistograms.fill("recoVMass_sign4","mass of recoV",60,0.1,200, recoV.mass());
-	    theHistograms.fill("recoVTot_sign4","mass of recoV",1,0.1,200, recoV.mass());
-
-	    if(cut(5, recoV)){
-	      theHistograms.fill("recoVMass_sign5","mass of recoV",60,0.1,200, recoV.mass());
-	      theHistograms.fill("recoVTot_sign5","mass of recoV",1,0.1,200, recoV.mass());
-
-
-	      theHistograms.fill("recoZZMass_sign5","mass of recoZZ",100,0.1,400, ZZ->mass());
-
-	      theHistograms.fill("recoVPt_sign5","pt of recoV",50,0,300,recoV.pt());
-	      theHistograms.fill("recoVEta_sign5","eta of recoV",30,0,2.5,fabs(recoV.eta()));
-	      theHistograms.fill("recoVPhi_sign5","phi of recoV",30,-3.2,3.2,recoV.phi());
-	      theHistograms.fill("recoVEnergy_sign5","energy of  recoV",120,0,1200,fabs(recoV.e()));
-	      theHistograms.fill("recoVDaughtersDeltaPhi_sign5","dPhi of recoVDaughters",30,0,3.2,fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())));
-
-	      theHistograms.fill("recoZZPt_sign5","pt of recoZZ",100,0,400,ZZ->pt());
-	      theHistograms.fill("recoZZEta_sign5","eta of recoZZ",30,0,2.5,fabs(ZZ->eta()));
-	      theHistograms.fill("recoZZEnergy_sign5","energy of  recoZZ",120,0,400,fabs(ZZ->e()));
-	      theHistograms.fill("recoZZDeltaPhi_sign5","dPhi of recoZZ",30,0,3.2,fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->second().phi())));
-
-
-	      if(cut(6, recoV)){
-		theHistograms.fill("recoVMass_sign6","mass of recoV",60,0.1,200, recoV.mass());
-		theHistograms.fill("recoVTot_sign6","mass of recoV",1,0.1,200, recoV.mass());
-	      }
-
-
-	    }
-
-	  }
-	}
-
-      }
-
-    }  
-    //genAnalyze();
-  }//not signalCostraint anymore 
-
-
   //---------------BACKGROUND-EVENTS---------------//
   
   else{
     foreach(const phys::Boson<phys::Particle>& gen, *genVBParticles){
       if(abs(gen.id())==24 && abs(gen.daughter(0).id()) < 10) {
-	theHistograms.fill("genVMass_WZZ_num_bckg","mass of gen W",60,0.1,150,gen.mass());
-	theHistograms.fill("genVTot_WZZ_num_bckg","mass of gen W",1,0.1,150,gen.mass());
+	theHistograms.fill("genVMass_WZZ_num_bckg","mass of gen W",60,0.1,150,gen.mass(), theWeight);
+	theHistograms.fill("genVTot_WZZ_num_bckg","mass of gen W",1,0.1,150,gen.mass(), theWeight);
       }
       if(abs(gen.id())==23 && abs(gen.daughter(0).id()) < 10) {
-	theHistograms.fill("genVMass_ZZZ_num_bckg","mass of gen Z",60,0.1,150,gen.mass());
-	theHistograms.fill("genVTot_ZZZ_num_bckg","mass of gen Z",1,0.1,150,gen.mass());
+	theHistograms.fill("genVMass_ZZZ_num_bckg","mass of gen Z",60,0.1,150,gen.mass(), theWeight);
+	theHistograms.fill("genVTot_ZZZ_num_bckg","mass of gen Z",1,0.1,150,gen.mass(), theWeight);
       }
 
     }
   
-    theHistograms.fill("recoVMass_bckg0","mass of recoV",60,0.1,200, recoV.mass());
-    theHistograms.fill("recoVTot_bckg0","mass of recoV",1,0.1,200, recoV.mass());
-
-
-    theHistograms.fill("recoVPt_bckg0","pt of recoV",20,30,200,recoV.pt());
-    theHistograms.fill("recoVEta_bckg0","eta of recoV",30,0,2.5,fabs(recoV.eta()));
-    theHistograms.fill("recoVPhi_bckg0","phi of recoV",30,-3.2,3.2,recoV.phi());
-    theHistograms.fill("recoVEnergy_bckg0","energy of  recoV",120,0,400,fabs(recoV.e()));
-    theHistograms.fill("recoVDaughtersDeltaPhi_bckg0","dPhi of recoVDaughters",30,0,3.2,fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())));
-
-    theHistograms.fill("recoZZPt_bckg0","pt of recoZZ",100,0,400,ZZ->pt());
-    theHistograms.fill("recoZZEta_bckg0","eta of recoZZ",30,0,2.5,fabs(ZZ->eta()));
-    theHistograms.fill("recoZZEnergy_bckg0","energy of  recoZZ",120,0,400,fabs(ZZ->e()));
-    theHistograms.fill("recoZZDeltaPhi_bckg0","dPhi of recoZZ",30,0,3.2,fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->first().phi())));
-
-    
-    if(cut(1, recoV)) {
-      theHistograms.fill("recoVMass_bckg1","mass of recoV",60,0.1,200, recoV.mass());
-      theHistograms.fill("recoVTot_bckg1","mass of recoV",1,0.1,200, recoV.mass());
-
-
-      theHistograms.fill("recoVPt_bckg0","pt of recoV",20,30,200,recoV.pt());
-      theHistograms.fill("recoVEta_bckg0","eta of recoV",30,0,2.5,fabs(recoV.eta()));
-      theHistograms.fill("recoVPhi_bckg0","phi of recoV",30,-3.2,3.2,recoV.phi());
-      theHistograms.fill("recoVEnergy_bckg0","energy of  recoV",120,0,400,fabs(recoV.e()));
-      theHistograms.fill("recoVDaughtersDeltaPhi_bckg0","dPhi of recoVDaughters",30,0,3.2,fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())));
-
-      theHistograms.fill("recoZZPt_bckg0","pt of recoZZ",100,0,400,ZZ->pt());
-      theHistograms.fill("recoZZEta_bckg0","eta of recoZZ",30,0,2.5,fabs(ZZ->eta()));
-      theHistograms.fill("recoZZEnergy_bckg0","energy of  recoZZ",120,0,400,fabs(ZZ->e()));
-      theHistograms.fill("recoZZDeltaPhi_bckg0","dPhi of recoZZ",30,0,3.2,fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->first().phi())));
-
-      
-      if(cut(2, recoV)){
-	theHistograms.fill("recoVMass_bckg2","mass of recoV",60,0.1,200, recoV.mass());
-	theHistograms.fill("recoVTot_bckg2","mass of recoV",1,0.1,200, recoV.mass());
-
-      
-	if(cut(3, recoV)){
-	  theHistograms.fill("recoVMass_bckg3","mass of recoV",60,0.1,200, recoV.mass());
-	  theHistograms.fill("recoVTot_bckg3","mass of recoV",1,0.1,200, recoV.mass());
-
-	  if(cut(4, recoV)){
-	    theHistograms.fill("recoVMass_bckg4","mass of recoV",60,0.1,200, recoV.mass());
-	    theHistograms.fill("recoVTot_bckg4","mass of recoV",1,0.1,200, recoV.mass());
-
-	    if(cut(5, recoV)){
-	      theHistograms.fill("recoVMass_bckg5","mass of recoV",60,0.1,200, recoV.mass());
-	      theHistograms.fill("recoVTot_bckg5","mass of recoV",1,0.1,200, recoV.mass());
-
-
-	      theHistograms.fill("recoZZMass_bckg5","mass of recoZZ",100,0.1,400, ZZ->mass());
-
-	      theHistograms.fill("recoVPt_bckg5","pt of recoV",50,0,300,recoV.pt());
-	      theHistograms.fill("recoVEta_bckg5","eta of recoV",30,0,2.5,fabs(recoV.eta()));
-	      theHistograms.fill("recoVPhi_bckg5","phi of recoV",30,-3.2,3.2,recoV.phi());
-	      theHistograms.fill("recoVEnergy_bckg5","energy of  recoV",120,0,1200,fabs(recoV.e()));
-	      theHistograms.fill("recoVDaughtersDeltaPhi_bckg5","dPhi of recoVDaughters",30,0,3.2,fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())));
-
-	      theHistograms.fill("recoZZPt_bckg5","pt of recoZZ",100,0,400,ZZ->pt());
-	      theHistograms.fill("recoZZEta_bckg5","eta of recoZZ",30,0,2.5,fabs(ZZ->eta()));
-	      theHistograms.fill("recoZZEnergy_bckg5","energy of  recoZZ",120,0,400,fabs(ZZ->e()));
-	      theHistograms.fill("recoZZDeltaPhi_bckg5","dPhi of recoZZ",30,0,3.2,fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->second().phi())));
-
-
-	      if(cut(6, recoV)){
-		theHistograms.fill("recoVMass_bckg6","mass of recoV",60,0.1,200, recoV.mass());
-		theHistograms.fill("recoVTot_bckg6","mass of recoV",1,0.1,200, recoV.mass());
-	      }
-
-
-
-	    }
-
-
-	  }
-
-	}
-
-      }
-
-    }
+    printHistos(0,"bckg", recoV);
 
   }
-  //HERE: END of part just for WZZ and ZZZ samples   
-  */
 
-
-  if(cut(1, recoV)) {
-    theHistograms.fill("recoVMass_num1","mass of recoV",60,0.1,200, recoV.mass());
-    theHistograms.fill("recoVTot_num1","mass of recoV",1,0.1,200, recoV.mass());
-
-
-      theHistograms.fill("recoZZMass_num1","mass of recoZZ",100,0.1,400, ZZ->mass());
-
-      theHistograms.fill("recoVPt_num1","pt of recoV",50,0,300,recoV.pt());
-      theHistograms.fill("recoVEta_num1","eta of recoV",30,0,2.5,fabs(recoV.eta()));
-      theHistograms.fill("recoVPhi_num1","phi of recoV",30,-3.2,3.2,recoV.phi());
-      theHistograms.fill("recoVEnergy_num1","energy of  recoV",120,0,1200,fabs(recoV.e()));
-      theHistograms.fill("recoVDaughtersDeltaPhi_num1","dPhi of recoVDaughters",30,0,3.2,fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())));
-
-      theHistograms.fill("recoZZPt_num1","pt of recoZZ",100,0,400,ZZ->pt());
-      theHistograms.fill("recoZZEta_num1","eta of recoZZ",30,0,2.5,fabs(ZZ->eta()));
-      theHistograms.fill("recoZZEnergy_num1","energy of  recoZZ",120,0,400,fabs(ZZ->e()));
-      theHistograms.fill("recoZZDeltaPhi_num1","dPhi of recoZZ",30,0,3.2,fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->second().phi())));
-
-
-
-
-
-
-    
-
-    if(cut(2, recoV)){
-      theHistograms.fill("recoVMass_num2","mass of recoV",60,0.1,200, recoV.mass());
-      theHistograms.fill("recoVTot_num2","mass of recoV",1,0.1,200, recoV.mass());
-
-      if(cut(3, recoV)){
-	theHistograms.fill("recoVMass_num3","mass of recoV",60,0.1,200, recoV.mass());
-	theHistograms.fill("recoVTot_num3","mass of recoV",1,0.1,200, recoV.mass());
-
-
-
-	if(cut(4, recoV)) {
-	  theHistograms.fill("recoVMass_num4","mass of recoV",60,0.1,200, recoV.mass());
-	  theHistograms.fill("recoVTot_num4","mass of recoV",1,0.1,200, recoV.mass());
-
-
-	  if(cut(5, recoV)){
-	    theHistograms.fill("recoVMass_num5","mass of recoV",60,0.1,200, recoV.mass());
-	    theHistograms.fill("recoVTot_num5","mass of recoV",1,0.1,200, recoV.mass());
-
-
-	    
-	    theHistograms.fill("recoZZMass_num5","mass of recoZZ",100,0.1,400, ZZ->mass());
-
-	    theHistograms.fill("recoVPt_num5","pt of recoV",50,0,300,recoV.pt());
-	    theHistograms.fill("recoVEta_num5","eta of recoV",30,0,2.5,fabs(recoV.eta()));
-	    theHistograms.fill("recoVPhi_num5","phi of recoV",30,-3.2,3.2,recoV.phi());
-	    theHistograms.fill("recoVEnergy_num5","energy of  recoV",120,0,1200,fabs(recoV.e()));
-	    theHistograms.fill("recoVDaughtersDeltaPhi_num5","dPhi of recoVDaughters",30,0,3.2,fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())));
-
-	    theHistograms.fill("recoZZPt_num5","pt of recoZZ",100,0,400,ZZ->pt());
-	    theHistograms.fill("recoZZEta_num5","eta of recoZZ",30,0,2.5,fabs(ZZ->eta()));
-	    theHistograms.fill("recoZZEnergy_num5","energy of  recoZZ",120,0,400,fabs(ZZ->e()));
-	    theHistograms.fill("recoZZDeltaPhi_num5","dPhi of recoZZ",30,0,3.2,fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->second().phi())));
-
-
-	    if(cut(6, recoV)) {
-	      theHistograms.fill("recoVMass_num6","mass of recoV",60,0.1,200, recoV.mass());
-	      theHistograms.fill("recoVTot_num6","mass of recoV",1,0.1,200, recoV.mass());
-	    }
-
-	  }
-	}
-      
-      }
-
-    }
-
-    
-  }
-  
-    
-  
-
-  
-  
 
 }
 
 
 void WZZAnalyzer::genAnalyze(){
 
-  cout << "-----------------------------------------------------------------"<<endl;
-  cout << "Run: " << run << " event: " << event << endl;
+  //cout << "-----------------------------------------------------------------"<<endl;
+  //cout << "Run: " << run << " event: " << event << endl;
 
 
 
@@ -604,14 +299,11 @@ void WZZAnalyzer::genAnalyze(){
 
   TLorentzVector pTot = TLorentzVector(0., 0., 0., 0.);
   double genMet=0.0;
-  //double genMetX=0.0;
-  //double genMetY=0.0;
  
   foreach(const phys::Particle& gen, *genParticles)//neutrinos
     if(abs(gen.id()) == 12 || abs(gen.id()) == 14 || abs(gen.id()) == 16)
       pTot+=gen.p4();
- 
-  //genMet = sqrt(genMetX*genMetX+genMetY*genMetY);
+
   genMet = sqrt(pTot.Px()*pTot.Px()+pTot.Py()*pTot.Py());
   theHistograms.fill("genMet","genMET",  100, 0, 300 , genMet , theWeight);
 
@@ -668,8 +360,13 @@ void WZZAnalyzer::genAnalyze(){
           
       theHistograms.fill("genElectronsEta_den","eta of gen electrons",30,0,2.5,fabs(gen.eta()));//for efficiency
       theHistograms.fill("genElectronsPt_den","pt of gen electrons",20,0,200,gen.pt());
+
       theHistograms.fill("genElectronsPhi_den","phi of gen electrons",30,-3.2,3.2,gen.phi());
       theHistograms.fill("genElectronsE_den","energy of gen electrons",100,0,400,gen.e());
+
+
+      theHistograms.fill("genElectronsPtTot_den","pt of gen electrons",1,0,200,gen.pt());
+      theHistograms.fill("genElectronsETot_den","energy of gen electrons",1,0,400,gen.e());
      
 
      
@@ -696,6 +393,12 @@ void WZZAnalyzer::genAnalyze(){
 	  theHistograms.fill("genElectronsPt_num","pt of gen electrons",20,0,200,gen.pt());
 	  theHistograms.fill("genElectronsPhi_num","phi of gen electrons",30,-3.2,3.2,gen.phi());
 	  theHistograms.fill("genElectronsE_num","energy of gen electrons",100,0,400,gen.e());
+
+
+
+	  theHistograms.fill("genElectronsPtTot_num","pt of gen electrons",1,0,200,gen.pt());
+	  theHistograms.fill("genElectronsETot_num","energy of gen electrons",1,0,400,gen.e());
+
 	}
       }
 
@@ -729,6 +432,12 @@ void WZZAnalyzer::genAnalyze(){
       theHistograms.fill("genMuonsPhi_den","phi of gen muons",30,-3.2,3.2,gen.phi());
       theHistograms.fill("genMuonsE_den","energy of gen muons",120,0,400,gen.e());
 
+
+      theHistograms.fill("genMuonsPtTot_den","pt of gen muons",1,0,200,gen.pt());
+      theHistograms.fill("genMuonsETot_den","energy of gen muons",1,0,400,gen.e());
+
+
+      
       foreach(const phys::Lepton& mu, *muons){
 	dRMu[m][j]=physmath::deltaR(gen, mu);
 	if(dRMu[m][j]<dRminMu && !muonMatched[j]){
@@ -752,6 +461,12 @@ void WZZAnalyzer::genAnalyze(){
 	  theHistograms.fill("genMuonsPt_num","pt of gen muons",20,0,200,gen.pt());
 	  theHistograms.fill("genMuonsPhi_num","phi of gen muons",30,-3.2,3.2,gen.phi());
 	  theHistograms.fill("genMuonsE_num","energy of gen muons",120,0,400,gen.e());
+
+
+
+	  theHistograms.fill("genMuonsPtTot_num","pt of gen muons",1,0,200,gen.pt());
+	  theHistograms.fill("genMuonsETot_num","energy of gen muons",1,0,400,gen.e());
+
 	}
       }
      
@@ -947,7 +662,7 @@ void WZZAnalyzer::CompatibilityTest(phys::Boson<phys::Jet> bestCandidate, phys::
     theHistograms.fill("gen"+genVBId+"Pt_"+sample+"_"+algorithm+"_den","pt of gen "+genVBId,20,0,200,genVB.pt());
     theHistograms.fill("gen"+genVBId+"Phi_"+sample+"_"+algorithm+"_den","phi of gen "+genVBId,30,-3.2,3.2,genVB.phi());
     theHistograms.fill("gen"+genVBId+"E_"+sample+"_"+algorithm+"_den","energy of gen "+genVBId,20,0,400,genVB.e());
-    theHistograms.fill("gen"+genVBId+"Mass_"+sample+"_"+algorithm+"_den","mass of gen "+genVBId,40,0,200,genVB.mass());
+    theHistograms.fill("gen"+genVBId+"Mass_"+sample+"_"+algorithm+"_den","mass of gen "+genVBId,10,50,120,genVB.mass());
     theHistograms.fill("gen"+genVBId+"Tot_"+sample+"_"+algorithm+"_den","tot gen "+genVBId,1,0,200,genVB.mass());
 
     
@@ -964,7 +679,7 @@ void WZZAnalyzer::CompatibilityTest(phys::Boson<phys::Jet> bestCandidate, phys::
 	theHistograms.fill("gen"+genVBId+"Pt_"+sample+"_"+algorithm+"_num","pt of gen "+genVBId,20,0,200,genVB.pt());
 	theHistograms.fill("gen"+genVBId+"Phi_"+sample+"_"+algorithm+"_num","phi of gen "+genVBId,30,-3.2,3.2,genVB.phi());
 	theHistograms.fill("gen"+genVBId+"E_"+sample+"_"+algorithm+"_num","energy of gen "+genVBId,20,0,400,genVB.e());
-	theHistograms.fill("gen"+genVBId+"Mass_"+sample+"_"+algorithm+"_num","mass of gen "+genVBId,40,0,200,genVB.mass());
+	theHistograms.fill("gen"+genVBId+"Mass_"+sample+"_"+algorithm+"_num","mass of gen "+genVBId,10,50,120,genVB.mass());
 	theHistograms.fill("gen"+genVBId+"Tot_"+sample+"_"+algorithm+"_num","tot gen "+genVBId,1,0,200,genVB.mass());
 
       }
@@ -977,7 +692,7 @@ void WZZAnalyzer::CompatibilityTest(phys::Boson<phys::Jet> bestCandidate, phys::
 	theHistograms.fill("gen"+genVBId+"Pt_"+sample+"_"+algorithm+"_num","pt of gen "+genVBId,20,0,200,genVB.pt());
 	theHistograms.fill("gen"+genVBId+"Phi_"+sample+"_"+algorithm+"_num","phi of gen "+genVBId,30,-3.2,3.2,genVB.phi());
 	theHistograms.fill("gen"+genVBId+"E_"+sample+"_"+algorithm+"_num","energy of gen "+genVBId,20,0,400,genVB.e());
-	theHistograms.fill("gen"+genVBId+"Mass_"+sample+"_"+algorithm+"_num","mass of gen "+genVBId,40,0,200,genVB.mass());
+	theHistograms.fill("gen"+genVBId+"Mass_"+sample+"_"+algorithm+"_num","mass of gen "+genVBId,10,50,120,genVB.mass());
 	theHistograms.fill("gen"+genVBId+"Tot_"+sample+"_"+algorithm+"_num","tot gen "+genVBId,1,0,200,genVB.mass());
 
       }
@@ -986,6 +701,48 @@ void WZZAnalyzer::CompatibilityTest(phys::Boson<phys::Jet> bestCandidate, phys::
   return;
 }
 
+void WZZAnalyzer::printHistos(Int_t i, std::string histoType,  phys::Boson<phys::Jet> recoV){
+  
+  std::vector<std::string> cuts ={"0","1","2","3"};
+  
+  if(i<cuts.size() && cut(i, recoV)){
+    theHistograms.fill("recoVMass_"+histoType+cuts.at(i),"mass of recoV",30,0.1,200, recoV.mass(), (theWeight));
+    theHistograms.fill("recoVTot_"+histoType+cuts.at(i),"mass of recoV",1,0.1,200, recoV.mass(), (theWeight));
+
+    theHistograms.fill("recoVDaughter0Pt_"+histoType+cuts.at(i),"pt of recoVDaughter0",50,0,600, recoV.daughter(0).pt(), (theWeight));
+    theHistograms.fill("recoVDaughter1Pt_"+histoType+cuts.at(i),"pt of recoVDaughter1",50,0,600, recoV.daughter(1).pt(), (theWeight));
+
+
+    
+    theHistograms.fill("recoZZMass_"+histoType+cuts.at(i),"mass of recoZZ",25,0.1,400, ZZ->mass(), (theWeight));
+
+    theHistograms.fill("recoVPt_"+histoType+cuts.at(i),"pt of recoV",50,0,300,recoV.pt(), (theWeight));
+    theHistograms.fill("recoVEta_"+histoType+cuts.at(i),"eta of recoV",30,0,3.5,fabs(recoV.eta()), (theWeight));
+    theHistograms.fill("recoVPhi_"+histoType+cuts.at(i),"phi of recoV",30,-3.2,3.2,recoV.phi(), (theWeight));
+    theHistograms.fill("recoVEnergy_"+histoType+cuts.at(i),"energy of  recoV",60,0,2400,fabs(recoV.e()), (theWeight));
+    theHistograms.fill("recoVDaughtersDeltaPhi_"+histoType+cuts.at(i),"dPhi of recoVDaughters",30,0,3.2,fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())), (theWeight));
+
+    theHistograms.fill("recoZZPt_"+histoType+cuts.at(i),"pt of recoZZ",50,0,600,ZZ->pt(), (theWeight));
+    theHistograms.fill("recoZZEta_"+histoType+cuts.at(i),"eta of recoZZ",70,0,3.5,fabs(ZZ->eta()), (theWeight));
+    theHistograms.fill("recoZZEnergy_"+histoType+cuts.at(i),"energy of  recoZZ",120,0,400,fabs(ZZ->e()), (theWeight));
+    theHistograms.fill("recoZZDeltaPhi_"+histoType+cuts.at(i),"dPhi of recoZZ",30,0,3.2,fabs(physmath::deltaPhi(ZZ->first().phi(), ZZ->second().phi())), (theWeight));
+
+    theHistograms.fill("recoZZDeltaPhi_vs_recoV_"+histoType+cuts.at(i),"phi of recoZZ vs recoV",100,0.0,3.14,fabs(physmath::deltaPhi(ZZ->first().phi(),recoV.daughter(0).phi())),100,0.0,3.14, fabs(physmath::deltaPhi(ZZ->second().phi(), recoV.phi())) ,theWeight);
+
+    
+    theHistograms.fill("recoFirstZVDeltaPhi_"+histoType+cuts.at(i),"phi of recoZV",100,0.0,3.14,fabs(physmath::deltaPhi(ZZ->first().phi(),(recoV.daughter(0).phi()+recoV.phi()))), theWeight);
+
+        
+    theHistograms.fill("recoSecondZVDeltaPhi_"+histoType+cuts.at(i),"phi of recoZV",100,0.0,3.14,fabs(physmath::deltaPhi(ZZ->second().phi(),(recoV.daughter(0).phi()+recoV.phi()))), theWeight);
+ 
+    printHistos(++i, histoType, recoV);
+      
+ 
+  }
+  
+
+  return;
+}
 
 
 
