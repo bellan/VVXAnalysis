@@ -47,7 +47,7 @@ ROOT_GENERATE_DICTIONARY(G__TreeAnalysis "${EventDF_HEADERS}" LINKDEF "${EventDF
 set(EventAnalyzer_SRCS ${EventDF_DICTIONARY} ${SRC}/MCInfo.cc ${SRC}/EventAnalyzer.cc ${Commons_src}/SignalDefinitions.cc ${Commons_src}/LeptonScaleFactors.cc ${Commons_src}/RegionTypes.cc ${Commons_src}/StringTools.cc)
 
 #Set here the location of the source code of your analysis
-set(VVXAnalyzer_SRCS ${EventAnalyzer_SRCS} ${SRC}/VVXAnalyzer.cc ${SRC}/ZZWAnalyzer.cc ${SRC}/WZAnalyzer.cc ${SRC}/ZZSAnalyzer.cc ${SRC}/ZZjAnalyzer.cc ${SRC}/ZZWSRDefinition.cc ${SRC}/ZZMCAnalyzer.cc ${SRC}/ZZRecoAnalyzer.cc ${SRC}/FakeRateAnalyzer.cc ${SRC}/ZZjGenAnalyzer.cc ${SRC}/VBSMCAnalyzer.cc ${SRC}/VBSRecoAnalyzer.cc ${SRC}/WlllnuAnalyzer.cc ${SRC}/ZVAnalyzer.cc ${SRC}/WWosAnalyzer.cc ${SRC}/WZZAnalyzer.cc)
+set(VVXAnalyzer_SRCS ${EventAnalyzer_SRCS} ${SRC}/VVXAnalyzer.cc ${SRC}/ZZWAnalyzer.cc ${SRC}/WZAnalyzer.cc ${SRC}/ZZSAnalyzer.cc ${SRC}/ZZjAnalyzer.cc ${SRC}/ZZWSRDefinition.cc ${SRC}/ZZMCAnalyzer.cc ${SRC}/ZZRecoAnalyzer.cc ${SRC}/FakeRateAnalyzer.cc ${SRC}/ZZjGenAnalyzer.cc ${SRC}/VBSMCAnalyzer.cc ${SRC}/VBSRecoAnalyzer.cc ${SRC}/WlllnuAnalyzer.cc ${SRC}/ZVAnalyzer.cc ${SRC}/WWosAnalyzer.cc ${SRC}/WZZAnalyzer.cc ${SRC}/DBGenerator.cc)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN})
 
