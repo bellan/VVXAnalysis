@@ -2,8 +2,8 @@
 #define DBGenerator_h
 
 /** \Class DBGenerator
- *  Used to generate a database for scikit Machine Learning, therefore it deviates
- *	somewhat from the intended purpose of an EventAnalyzer.
+ *  Used to generate a database (.txt for now) for scikit Machine Learning, 
+ *	therefore it deviates somewhat from the intended purpose of an EventAnalyzer.
  *
  *  $Date: 2020/01/23 17:00:00 $
  *  $Revision: 1.0 $
@@ -37,6 +37,10 @@ class DBGenerator: public EventAnalyzer, RegistrableAnalysis<DBGenerator>{
 		virtual void end(TFile &);
 		
 	private:
+		static const char SEP_CHAR = ',';	//separatory char used in the .txt
+		clock_t startTime; //Used to calculate elapsed time
+		unsigned long evtN; //Used to count processed events
+		
 		friend class Selector<DBGenerator>;
 		
 		std::ofstream outputFile; //a .txt file the data in the tree is written to
