@@ -27,18 +27,18 @@
 #./python/run.py ZZjAnalyzer    WGToLNuG
 #./python/run.py ZZjAnalyzer    WWGJets 
 
-./python/run.py ZZjAnalyzer  MuEGA
-./python/run.py ZZjAnalyzer  MuEGB
-./python/run.py ZZjAnalyzer  MuEGC
-./python/run.py ZZjAnalyzer  MuEGD
-./python/run.py ZZjAnalyzer DoubleMuA
-./python/run.py ZZjAnalyzer DoubleMuB
-./python/run.py ZZjAnalyzer DoubleMuC
-./python/run.py ZZjAnalyzer DoubleMuD
-./python/run.py ZZjAnalyzer DoubleEleA
-./python/run.py ZZjAnalyzer DoubleEleB
-./python/run.py ZZjAnalyzer DoubleEleC
-./python/run.py ZZjAnalyzer DoubleEleD
+#./python/run.py ZZjAnalyzer  MuEGA
+#./python/run.py ZZjAnalyzer  MuEGB
+#./python/run.py ZZjAnalyzer  MuEGC
+#./python/run.py ZZjAnalyzer  MuEGD
+#./python/run.py ZZjAnalyzer DoubleMuA
+#./python/run.py ZZjAnalyzer DoubleMuB
+#./python/run.py ZZjAnalyzer DoubleMuC
+#./python/run.py ZZjAnalyzer DoubleMuD
+#./python/run.py ZZjAnalyzer DoubleEleA
+#./python/run.py ZZjAnalyzer DoubleEleB
+#./python/run.py ZZjAnalyzer DoubleEleC
+#./python/run.py ZZjAnalyzer DoubleEleD
 
 
 #./python/run.py ZZjAnalyzer  ZZTo4e -r CR2P2F 
@@ -68,18 +68,18 @@
 #./python/run.py ZZjAnalyzer    WGToLNuG -r CR2P2F
 #./python/run.py ZZjAnalyzer    WWGJets  -r CR2P2F
 
-./python/run.py ZZjAnalyzer  MuEGA -r CR2P2F
-./python/run.py ZZjAnalyzer  MuEGB -r CR2P2F
-./python/run.py ZZjAnalyzer  MuEGC -r CR2P2F
-./python/run.py ZZjAnalyzer  MuEGD -r CR2P2F
-./python/run.py ZZjAnalyzer DoubleMuA -r CR2P2F
-./python/run.py ZZjAnalyzer DoubleMuB -r CR2P2F
-./python/run.py ZZjAnalyzer DoubleMuC -r CR2P2F
-./python/run.py ZZjAnalyzer DoubleMuD -r CR2P2F
-./python/run.py ZZjAnalyzer DoubleEleA -r CR2P2F
-./python/run.py ZZjAnalyzer DoubleEleB -r CR2P2F
-./python/run.py ZZjAnalyzer DoubleEleC -r CR2P2F
-./python/run.py ZZjAnalyzer DoubleEleD -r CR2P2F
+#./python/run.py ZZjAnalyzer  MuEGA -r CR2P2F
+#./python/run.py ZZjAnalyzer  MuEGB -r CR2P2F
+#./python/run.py ZZjAnalyzer  MuEGC -r CR2P2F
+#./python/run.py ZZjAnalyzer  MuEGD -r CR2P2F
+#./python/run.py ZZjAnalyzer DoubleMuA -r CR2P2F
+#./python/run.py ZZjAnalyzer DoubleMuB -r CR2P2F
+#./python/run.py ZZjAnalyzer DoubleMuC -r CR2P2F
+#./python/run.py ZZjAnalyzer DoubleMuD -r CR2P2F
+#./python/run.py ZZjAnalyzer DoubleEleA -r CR2P2F
+#./python/run.py ZZjAnalyzer DoubleEleB -r CR2P2F
+#./python/run.py ZZjAnalyzer DoubleEleC -r CR2P2F
+#./python/run.py ZZjAnalyzer DoubleEleD -r CR2P2F
 
 
  
@@ -110,15 +110,26 @@
 #./python/run.py ZZjAnalyzer    WGToLNuG -r CR3P1F
 #./python/run.py ZZjAnalyzer    WWGJets -r CR3P1F 
 
-./python/run.py ZZjAnalyzer  MuEGA -r CR3P1F
-./python/run.py ZZjAnalyzer  MuEGB -r CR3P1F
-./python/run.py ZZjAnalyzer  MuEGC -r CR3P1F
-./python/run.py ZZjAnalyzer  MuEGD -r CR3P1F
-./python/run.py ZZjAnalyzer DoubleMuA -r CR3P1F
-./python/run.py ZZjAnalyzer DoubleMuB -r CR3P1F
-./python/run.py ZZjAnalyzer DoubleMuC -r CR3P1F
-./python/run.py ZZjAnalyzer DoubleMuD -r CR3P1F
-./python/run.py ZZjAnalyzer DoubleEleA -r CR3P1F
-./python/run.py ZZjAnalyzer DoubleEleB -r CR3P1F
-./python/run.py ZZjAnalyzer DoubleEleC -r CR3P1F
-./python/run.py ZZjAnalyzer DoubleEleD -r CR3P1F
+#./python/run.py ZZjAnalyzer  MuEGA -r CR3P1F
+#./python/run.py ZZjAnalyzer  MuEGB -r CR3P1F
+#./python/run.py ZZjAnalyzer  MuEGC -r CR3P1F
+#./python/run.py ZZjAnalyzer  MuEGD -r CR3P1F
+#./python/run.py ZZjAnalyzer DoubleMuA -r CR3P1F
+#./python/run.py ZZjAnalyzer DoubleMuB -r CR3P1F
+#./python/run.py ZZjAnalyzer DoubleMuC -r CR3P1F
+#./python/run.py ZZjAnalyzer DoubleMuD -r CR3P1F
+#./python/run.py ZZjAnalyzer DoubleEleA -r CR3P1F
+#./python/run.py ZZjAnalyzer DoubleEleB -r CR3P1F
+#./python/run.py ZZjAnalyzer DoubleEleC -r CR3P1F
+#./python/run.py ZZjAnalyzer DoubleEleD -r CR3P1F
+
+# Calls the Analyzer over all the samples in samples/
+# Author: A. Mecca (alberto.mecca@edu.unito.it)
+ANALYZER=VZZAnalyzer;
+for SAMPLE in samples/* ; do
+	SAMPLE=${SAMPLE#*/};
+	SAMPLE=${SAMPLE%.*};
+	./python/run.py ${ANALYZER} ${SAMPLE} -r MC -n10000
+	#echo ${SAMPLE};
+done;
+
