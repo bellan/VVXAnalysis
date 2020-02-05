@@ -36,9 +36,14 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
   
 		virtual void end(TFile &);
 		
+		void simpleGraphs();
+		void jetRecoGraphs();
+		
 	private:
-		clock_t startTime; //Used to calculate elapsed time
-		unsigned long evtN; //Used to count processed events
+		//Counters, etc.
+		clock_t startTime_; //Used to calculate elapsed time
+		unsigned long evtN_; //Used to count processed events
+		
 		
 		friend class Selector<VZZAnalyzer>;
 		
