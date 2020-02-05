@@ -50,22 +50,23 @@ void VZZAnalyzer::begin(){
 }
 
 void VZZAnalyzer::analyze(){
+	bool weHaveACand = findBestVCandidate();
 	
-	if(jets->size() >= 2 && ZZ != nullptr){		
-		TLorentzVector p4JJ = jets->at(0).p4() + jets->at(1).p4();
+	if(weHaveACand && ZZ != nullptr){		
+		TLorentzVector p4JJ = VCandidate.p4();
 		TLorentzVector p4Tot = p4JJ + ZZ->p4();
 		float ptTot = p4Tot.Pt();
 		float mTot = p4Tot.M(); //Doesn't make much sense, but let's try anyway
 		float deltaEtaTot = fabs(p4JJ.Eta() - ZZ->eta());
 		float deltaRTot = ZZ->p4().DeltaR(p4JJ); //TLorentzVector::DeltaR()
-		theHistograms.fill("ptTot", "ptTot;[GeV]", 200,0.,400., ptTot, theWeight);
+		theHistograms.fill("ptTot_r_", "ptTot;[GeV]", 200,0.,400., ptTot, theWeight);
 		theHistograms.fill("mTot", "mTot;[GeV]", 200,0.,4000., mTot, theWeight);
-		theHistograms.fill("deltaEtaTot", "#DeltaEtaTot", 100,0.,5., deltaEtaTot, theWeight);
-		theHistograms.fill("deltaRTot", "#DeltaRTot;[GeV]", 140,0.,7., deltaRTot, theWeight);
+		theHistograms.fill("deltaEtaTot_r_", "#DeltaEtaTot", 100,0.,5., deltaEtaTot, theWeight);
+		theHistograms.fill("deltaRTot_r_", "#DeltaRTot;[GeV]", 140,0.,7., deltaRTot, theWeight);
 		
 		float mWJJ_norm = fabs(p4JJ.M() - phys::WMASS)/phys::WMASS;
-		theHistograms.fill("mWJJ_norm","M_W-M_JJ_norm;[m_W]", 200,0.,20, mWJJ_norm, theWeight);
-		theHistograms.fill("mWJJ_norm_sq","(M_W-M_JJ_norm)^2;[m_W]", 200,0.,20, mWJJ_norm*mWJJ_norm, theWeight);
+		theHistograms.fill("mWJJ_norm_r_","M_W-M_JJ_norm;[m_W]", 200,0.,20, mWJJ_norm, theWeight);
+		theHistograms.fill("mWJJ_norm_sq_r_","(M_W-M_JJ_norm)^2;[m_W]", 200,0.,20, mWJJ_norm*mWJJ_norm, theWeight);
 	}
 	
 	simpleGraphs();
@@ -116,8 +117,6 @@ void VZZAnalyzer::jetRecoGraphs(){
 	float minDifW = 1.;
 	float massZCand = 0.;
 	float massWCand = 0.;
-	//pair<size_t, size_t> indicesMinZ(0, 0);
-	//pair<size_t, size_t> indicesMinW(0, 0);
 	
 	if(jets->size()>=2){
 		float tmpMass = 0.;
@@ -146,3 +145,49 @@ void VZZAnalyzer::jetRecoGraphs(){
 			theHistograms.fill("W_Candidate_mass", "W_Candidate_mass;;[GeV/c^2]", 150,71.,101., massWCand, theWeight);
 	}
 }
+
+bool VZZAnalyzer::findBestVCandidate(){
+	bool isAccurate = false;
+	if(jets->size()>=2){
+		std::pair<size_t, size_t> indices(0,0);
+		float minDifZ = 1.;
+		float minDifW = 1.;
+		float massZCand = 0.;
+		float massWCand = 0.;
+		float tmpMass = 0.;
+		for(size_t i = 0; i < jets->size(); i++){
+			for(size_t j = i+1; j < jets->size(); j++){
+				tmpMass = (jets->at(i).p4()+jets->at(j).p4()).M();
+				float diffZ = (tmpMass - phys::ZMASS)/phys::ZMASS;
+				float diffZa = fabs(diffZ);
+				float diffW = (tmpMass - phys::WMASS)/phys::WMASS;
+				float diffWa = fabs(diffW);
+				if(diffZa < minDifZ){
+					minDifZ = diffZa;
+					massZCand = tmpMass;
+					indices = std::make_pair(i,j);
+				}
+				if(diffWa < minDifW){
+					minDifW = diffWa;
+					massWCand = tmpMass;
+					indices = std::make_pair(i,j);
+				}
+			}
+		}
+		VCandidate = Boson<Jet>(jets->at(indices.first), jets->at(indices.second));
+		
+		if(minDifZ < minDifW){
+			isAccurate = ZBosonDefinition(VCandidate);
+			candType = VCandType::Z;
+		}
+		else{
+			isAccurate = WBosonDefinition(VCandidate);
+			candType = VCandType::W;
+		}
+	}
+	else
+		candType = VCandType::None;
+	return isAccurate;
+}
+
+

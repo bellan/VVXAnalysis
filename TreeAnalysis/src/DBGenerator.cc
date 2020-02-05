@@ -9,6 +9,7 @@
 #include <time.h>				//clock_t, clock()
 #include "TSystem.h"
 #include "TTree.h"
+#include "TLorentzVector.h"
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
@@ -72,9 +73,9 @@ void DBGenerator::analyze(){
 		if(electrons->size()>=2)
 			outputFile<<SEP_CHAR<<electrons->at(1).pt()<<SEP_CHAR<<electrons->at(1).e();
 		else
-			outputFile<<SEP_CHAR<<0<<SEP_CHAR<<0;
+			printZeros(2);
 	} else
-		outputFile<<SEP_CHAR<<0<<SEP_CHAR<<0<<SEP_CHAR<<0<<SEP_CHAR<<0;
+		printZeros(4);
 	
 	//Writing muons variables
 	outputFile<<SEP_CHAR<<muons->size();
@@ -83,9 +84,9 @@ void DBGenerator::analyze(){
 		if(muons->size()>=2)
 			outputFile<<SEP_CHAR<<muons->at(1).pt()<<SEP_CHAR<<muons->at(1).e();
 		else
-			outputFile<<SEP_CHAR<<0<<SEP_CHAR<<0;
+			printZeros(2);
 	} else
-		outputFile<<SEP_CHAR<<0<<SEP_CHAR<<0<<SEP_CHAR<<0<<SEP_CHAR<<0;
+		printZeros(4);
 	
 	//Writing jets variables
 	if(jets->size()>=1){
@@ -93,9 +94,24 @@ void DBGenerator::analyze(){
 		if(jets->size()>=2)
 			outputFile<<SEP_CHAR<<jets->at(1).pt()<<SEP_CHAR<<jets->at(1).e();
 		else
-			outputFile<<SEP_CHAR<<0<<SEP_CHAR<<0;
+			printZeros(2);
 	} else
-		outputFile<<SEP_CHAR<<0<<SEP_CHAR<<0<<SEP_CHAR<<0<<SEP_CHAR<<0;
+		printZeros(4);
+	
+	//Other jets-related variables
+	if(jets->size()>=2){
+		TLorentzVector p4JJ = jets->at(0).p4() + jets->at(1).p4();
+		TLorentzVector p4Tot = p4JJ + ZZ->p4();
+		float ptTot = p4Tot.Pt();
+		float mTot = p4Tot.M(); //Doesn't make much sense, but let's try anyway
+		float deltaEtaTot = fabs(p4JJ.Eta() - ZZ->eta());
+		float deltaRTot = ZZ->p4().DeltaR(p4JJ); //TLorentzVector::DeltaR()
+		float mWJJ_norm = fabs(p4JJ.M() - phys::WMASS)/phys::WMASS;
+		float mWJJ_norm_sq = mWJJ_norm*mWJJ_norm;
+		outputFile<<SEP_CHAR<< ptTot<<SEP_CHAR<< mTot<<SEP_CHAR<< deltaEtaTot<<SEP_CHAR<< deltaRTot<<SEP_CHAR<< mWJJ_norm<<SEP_CHAR<<mWJJ_norm_sq;
+	}
+	else
+		printZeros(6);
 	
 	outputFile<<std::endl;
 }
@@ -110,4 +126,10 @@ void DBGenerator::end(TFile &){
 	cout<<" \tEnd of DBGenerator\t";
 	for(char i=0; i<25; i++) cout<<"-";
 	cout<<"\n\n";
+}
+
+void DBGenerator::printZeros(size_t nzeros){
+	for(size_t i = 0; i < nzeros; i++){
+		outputFile<<SEP_CHAR<<0;
+	}
 }

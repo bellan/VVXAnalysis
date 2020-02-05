@@ -36,14 +36,15 @@ class DBGenerator: public EventAnalyzer, RegistrableAnalysis<DBGenerator>{
   
 		virtual void end(TFile &);
 		
+		void printZeros(size_t nzeros);
 	private:
 		static const char SEP_CHAR = ',';	//separatory char used in the .txt
 		clock_t startTime; //Used to calculate elapsed time
 		unsigned long evtN; //Used to count processed events
 		
-		friend class Selector<DBGenerator>;
-		
 		std::ofstream outputFile; //a .txt file the data in the tree is written to
+		
+		friend class Selector<DBGenerator>;
 		
 		
 		//Miscellanous stuff required by EventAnalyzer
