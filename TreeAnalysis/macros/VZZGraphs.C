@@ -30,6 +30,7 @@
 #include "TLegend.h"
 #include "THStack.h"
 #include "TLine.h"
+#include "TRegexp.h" //Used for a simple find and replace of R_PATTERN
 #include <iostream>
 #include <bitset>
 #include <string>
@@ -38,6 +39,7 @@
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
+#define R_PATTERN "_r_" //If present in a graph's name, it means that a "reverse integral of sig/sqrt(bkg)" must be done
 //#define TEST_MODE
 
 using std::cout;
@@ -130,7 +132,7 @@ void VZZGraphs(string sReqCateg = string(""), string sReqType = "", string reqGr
 	for(size_t i = 0; i < signals.size(); i++){
 		//cout<<"backgrounds.at("<<i<<") = "<<backgrounds.at(i)<<'\n';
 		signalFiles.push_back( openRootFile(path, signals.at(i)) );
-		cout<<" \tnullptr? "<<(signalFiles.at(i) == nullptr);
+		//cout<<" \tnullptr? "<<(signalFiles.at(i) == nullptr);
 		if(signalFiles.at(i) == nullptr)
 			notFoundS.push_back(i);
 	}
@@ -145,7 +147,7 @@ void VZZGraphs(string sReqCateg = string(""), string sReqType = "", string reqGr
 	for(size_t i = 0; i < backgrounds.size(); i++){
 		//cout<<"backgrounds.at("<<i<<") = "<<backgrounds.at(i)<<'\n';
 		backgroundFiles.push_back( openRootFile(path, backgrounds.at(i)) );
-		cout<<" \tnullptr? "<<(backgroundFiles.at(i) == nullptr);
+		//cout<<" \tnullptr? "<<(backgroundFiles.at(i) == nullptr);
 		if(backgroundFiles.at(i) == nullptr)
 			notFoundB.push_back(i);
 	}
@@ -189,7 +191,7 @@ void VZZGraphs(string sReqCateg = string(""), string sReqType = "", string reqGr
 	if(sReqCateg == string(""))								categToDo.set(2); //Default
 	
 	bitset<4> typeToDo;	
-	cout<<"\nsReqType = \""<<sReqType<<"\"\t";
+	cout<<"sReqType = \""<<sReqType<<"\"\t";
 	if(sReqType == string("")){ 	//Default
 		cout<<"Setting default\n";
 		//typeToDo.set(0);
@@ -286,7 +288,9 @@ void VZZGraphs(string sReqCateg = string(""), string sReqType = "", string reqGr
 
 // ################################################################################################
 TFile* openRootFile(const TString& path, const TString& name){
+	#ifdef TEST_MODE
 	cout<<"\nOpening \""<<name<<".root\" \t";
+	#endif
 	TFile* file = nullptr;
 	try{
 		file = TFile::Open(path + name + ".root");
@@ -508,7 +512,9 @@ void cutSigSqrtBkg(const MyGraphs<TH>& theGraphs, const GNames& names, UInt_t nb
 
 template<class TH = TH1F>
 void compareCutGraphs(const MyGraphs<TH>& theGraphs, const GNames& names){
+	#ifdef TEST_MODE
 	cout<<"\n----compareCutGraphs: "<<names.graphName;
+	#endif
 	if(theGraphs.vhSigs.at(0) == nullptr){
 			cout<<"\n\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(0)<< " --> can't create CutGraph";
 			return;
@@ -539,7 +545,10 @@ void printGraphSame(const MyGraphs<TH>& graphs, const GNames& names){
 			continue;
 		}
 		TH* cg = (TH*)(graphs.vhBkgs.at(i)->Clone(names.bkgGrNames.at(i)));
-		cg->SetTitle(names.graphName+" nostack;;# Events");
+		TRegexp regexp(R_PATTERN);
+		TString newName = names.graphName+" nostack;;# Events";
+		newName(regexp) = "";
+		cg->SetTitle(newName);
 		cg->SetLineColor(myColors.at(i + graphs.vhSigs.size()));
 		legend0->AddEntry(cg, names.bkgGrNames.at(i));
 		cg->Draw("SAME HISTO");
@@ -552,7 +561,10 @@ void printGraphSame(const MyGraphs<TH>& graphs, const GNames& names){
 			continue;
 		}
 		TH* cg = (TH*)(graphs.vhSigs.at(i)->Clone(names.sigGrNames.at(i)));
-		cg->SetTitle(names.graphName+" nostack;;# Events");
+		TRegexp regexp(R_PATTERN);
+		TString newName = names.graphName+" nostack;;# Events";
+		newName(regexp) = "";
+		cg->SetTitle(newName);
 		cg->SetLineColor(myColors.at(i));
 		legend0->AddEntry(cg, names.sigGrNames.at(i));
 		cg->Draw("SAME HISTO");
@@ -595,6 +607,10 @@ void printGraphStack(const MyGraphs<TH>& graphs, const GNames& names){
 		stack1->Add(cg);
 	}
 	
+	TRegexp regexp(R_PATTERN);
+	TString newName = stack1->GetTitle();
+	newName(regexp) = "";
+	stack1->SetTitle(newName);
 	stack1->Draw("HIST");
 	c1->BuildLegend(0.75,0.68,0.98,0.95);	//It's a kind of magic
 }
@@ -642,6 +658,10 @@ void printGraphIntegr(const MyGraphs<TH>& graphs, const GNames& names){
 	}
 	
 	cI->cd();
+	TRegexp regexp(R_PATTERN);
+	TString newName = stackIS->GetTitle();
+	newName(regexp) = "";
+	stackIS->SetTitle(newName);
 	stackIS->Draw("HIST");
 	cI->BuildLegend(0.75,0.68,0.98,0.95);
 }
@@ -651,7 +671,8 @@ void printGraphSqrt(const MyGraphs<TH>& graphs, const GNames& names){
 	#ifdef TEST_MODE
 	cout<<"\n----printGraphSqrt: "<<names.graphName;
 	#endif
-	TCanvas *cIS = new TCanvas(names.graphName+" I(S)/#sqrt{I(B)}", names.graphName+" I(S)/#sqrt{I(B)}", 10,0,1280,1024);
+	TString thisName = names.graphName+" I(S)/#sqrt{I(B)}";
+	TCanvas *cIS = new TCanvas(thisName.Data(), thisName.Data(), 10,0,1280,1024);
 	
 	//Takes the first signal as a reference for the range
 	if(graphs.vhSigInt.at(0) == nullptr){
@@ -666,7 +687,7 @@ void printGraphSqrt(const MyGraphs<TH>& graphs, const GNames& names){
 	Double_t xM = sig0XAxis->GetBinLowEdge(nbins+1);
 	
 	
-	TH* hSigSqrt = new TH(names.graphName+" I(Sig)/#sqrt{I(Bkg)}",names.graphName+" I(Sig)/#sqrt{I(Bkg)}", nbins, xm, xM); // Sum of all signals. Will be divided by sqrt(sum(bkg))
+	TH* hSigSqrt = new TH(names.graphName+" I(S)/#sqrt{I(B)}", names.graphName+" I(S)/#sqrt{I(B)}", nbins, xm, xM); // Sum of all signals. Will be divided by sqrt(sum(bkg))
 	
 	for(size_t i = 0; i < graphs.vhSigInt.size(); i++){
 		if(graphs.vhSigInt.at(i) == nullptr){
@@ -675,7 +696,7 @@ void printGraphSqrt(const MyGraphs<TH>& graphs, const GNames& names){
 		}
 		TH* cg = (TH*)( graphs.vhSigInt.at(i)->Clone(names.sigGrNames.at(i)+" Integral") ); //Copy integral of signal
 		cg->SetTitle(names.sigGrNames.at(i)+" Integral");
-		cg->SetLineColor(i);
+		//cg->SetLineColor(i);
 		hSigSqrt->Add(cg);
 		//cout<<"\nAdded: \""<<names.sigGrNames.at(i)<<'\"';
 	}
@@ -690,7 +711,7 @@ void printGraphSqrt(const MyGraphs<TH>& graphs, const GNames& names){
 		}
 		TH* cg = (TH*)( graphs.vhBkgInt.at(i)->Clone(names.bkgGrNames.at(i)+" Integral") ); //Copy integral of background
 		cg->SetTitle(names.bkgGrNames.at(i)+" Integral");
-		cg->SetLineColor(graphs.vhSigs.size() + i);
+		//cg->SetLineColor(graphs.vhSigs.size() + i);
 		hBkgSqrt->Add(cg);
 		//cout<<"\nAdded: \""<<names.bkgGrNames.at(i)<<'\"';
 	}
@@ -698,7 +719,16 @@ void printGraphSqrt(const MyGraphs<TH>& graphs, const GNames& names){
 	hSigSqrt->Divide(sqrtGraph(hBkgSqrt)); //Division and sqrt of background combined
 	
 	cIS->cd();
-	hSigSqrt->SetFillColor(kBlue-7);
+	if(names.graphName.Contains(R_PATTERN)){
+		TRegexp regexp(R_PATTERN);
+		TString newName = hSigSqrt->GetTitle();
+		newName(regexp) = "";
+		hSigSqrt->SetTitle(newName);
+		hSigSqrt->SetLineColor(kRed);
+		hSigSqrt->SetFillColor(kRed-7);
+	} else {
+		hSigSqrt->SetFillColor(kBlue-7);
+	}
 	hSigSqrt->Draw("HIST");
 	//cIS->BuildLegend(0.7,0.8,0.95,0.95);
 }
@@ -735,7 +765,8 @@ MyGraphs<TH>* buildMyGraphs(const GNames& names, vector<TFile*>& signalFiles, ve
 	vector<TH*> vhSigIntegr;
 	vector<TH*> vhBackgrounds;
 	vector<TH*> vhBackgrIntegr;
-	bool isReverse = (names.graphName.Contains("csvtag") || names.graphName.Contains("deltaR"));
+	bool isReverse = names.graphName.Contains(R_PATTERN);
+	//(names.graphName.Contains("csvtag") || names.graphName.Contains("deltaR"));
 	
 	
 	for(size_t i = 0; i < signalFiles.size(); i++){
