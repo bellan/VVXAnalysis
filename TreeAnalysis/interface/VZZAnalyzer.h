@@ -22,10 +22,11 @@
 class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 	public:
 		enum VCandType {None, W, Z}; //VCandidate is closest to Wmass or Zmass?
+		
 		VZZAnalyzer(const AnalysisConfiguration& configuration) 
 				: EventAnalyzer(*(new Selector<VZZAnalyzer>(*this)), configuration){
     	//theHistograms.profile(genCategory);
-    	candType = VCandType::None;
+    	//candType = VCandType::None;
  	 	}
 
 		virtual ~VZZAnalyzer(){}
@@ -40,14 +41,16 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		void simpleGraphs();
 		void jetRecoGraphs();
-		bool findBestVCandidate(); //true: candidate fits the (W/Z)BosonDefinition
+		bool findBestVFromSing(const std::vector<phys::Jet>*, phys::Jet& VCandidate, VCandType& candType);
+		bool findBestVFromPair(const std::vector<phys::Jet>*, phys::Boson<phys::Jet>& VCandidate, VCandType& candType);
+		//Searches among the Jets in the vector (which is likely either "jets" or "jetsAK8") and finds the pair candidate with mass closest to W or Z (modifying "candType"), and stores it in "VCandidate". true: candidate fits the (W/Z) BosonDefinition
 		
 	private:
 		//Counters, etc.
 		clock_t startTime_; //Used to calculate elapsed time
 		unsigned long evtN_; //Used to count processed events
-		phys::Boson<phys::Jet> VCandidate;
-		VCandType candType;
+		//phys::Boson<phys::Jet> VCandidate_;
+		//VCandType candType_;
 		
 		friend class Selector<VZZAnalyzer>;
 		

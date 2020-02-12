@@ -2,7 +2,7 @@
 #define DBGenerator_h
 
 /** \Class DBGenerator
- *  Used to generate a database (.txt for now) for scikit Machine Learning, 
+ *  Used to generate a database (.csv for now) for scikit Machine Learning, 
  *	therefore it deviates somewhat from the intended purpose of an EventAnalyzer.
  *
  *  $Date: 2020/01/23 17:00:00 $
@@ -21,6 +21,8 @@
 
 class DBGenerator: public EventAnalyzer, RegistrableAnalysis<DBGenerator>{
 	public:
+		enum VCandType {None, W, Z}; //VCandidate is closest to Wmass or Zmass?
+		
 		DBGenerator(const AnalysisConfiguration& configuration) 
 				: EventAnalyzer(*(new Selector<DBGenerator>(*this)), configuration){
     	//theHistograms.profile(genCategory);
@@ -37,12 +39,14 @@ class DBGenerator: public EventAnalyzer, RegistrableAnalysis<DBGenerator>{
 		virtual void end(TFile &);
 		
 		void printZeros(size_t nzeros);
+		void printVars(int n, ...);
+		bool findBestVCandidate(const std::vector<phys::Jet>*, phys::Boson<phys::Jet>& VCandidate, VCandType& candType);
 	private:
-		static const char SEP_CHAR = ',';	//separatory char used in the .txt
+		static const char SEP_CHAR = ',';	//separatory char used in the .csv
 		clock_t startTime; //Used to calculate elapsed time
 		unsigned long evtN; //Used to count processed events
 		
-		std::ofstream outputFile; //a .txt file the data in the tree is written to
+		std::ofstream outputFile; //a .csv file the data in the tree is written to
 		
 		friend class Selector<DBGenerator>;
 		

@@ -12,7 +12,7 @@
 #include <fstream>			//open(), close(), <<
 #include <string>				//find_last_of()
 #include <time.h>				//clock_t, clock()
-//#include <utils.h>			//std::pair(), std::make_pair()
+#include <utility>			//std::pair(), std::make_pair()
 #include "TSystem.h"
 #include "TTree.h"
 #include "TLorentzVector.h"
@@ -27,7 +27,7 @@ using std::endl;
 using std::vector;
 using std::string;
 using std::ofstream;
-//using std::pair;
+using std::pair;
 
 using namespace phys;
 
@@ -50,27 +50,41 @@ void VZZAnalyzer::begin(){
 }
 
 void VZZAnalyzer::analyze(){
-	bool weHaveACand = findBestVCandidate();
+	phys::Boson<phys::Jet> candPairJets; //initialization
+	VCandType typePairJets = VCandType::None; //initialization
+	bool pairFromJets = findBestVFromPair(jets, candPairJets, typePairJets); //modifies VCandidate and candType
 	
-	if(weHaveACand && ZZ != nullptr){		
-		TLorentzVector p4JJ = VCandidate.p4();
+	phys::Jet candSingJets;
+	VCandType typeSingJets = VCandType::None;
+	bool singFromJets = findBestVFromSing(jets, candSingJets, typeSingJets);
+	
+	phys::Boson<phys::Jet> candPairJetsAK8;
+	VCandType typePairJetsAK8 = VCandType::None;
+	bool pairFromJetsAK8 = findBestVFromPair(jetsAK8, candPairJetsAK8, typePairJetsAK8);
+	
+	phys::Jet candSingJetsAK8;
+	VCandType typeSingJetsAK8 = VCandType::None;
+	bool singFromJetsAK8 = findBestVFromSing(jetsAK8, candSingJetsAK8, typeSingJetsAK8);
+	
+	//TODO: chose best candidate
+	if(pairFromJets && ZZ != nullptr){		
+		TLorentzVector p4JJ = candPairJets.p4(); //TODO: candPairJets is temporary
 		TLorentzVector p4Tot = p4JJ + ZZ->p4();
 		float ptTot = p4Tot.Pt();
 		float mTot = p4Tot.M(); //Doesn't make much sense, but let's try anyway
 		float deltaEtaTot = fabs(p4JJ.Eta() - ZZ->eta());
 		float deltaRTot = ZZ->p4().DeltaR(p4JJ); //TLorentzVector::DeltaR()
 		theHistograms.fill("ptTot_r_", "ptTot;[GeV]", 200,0.,400., ptTot, theWeight);
-		theHistograms.fill("mTot", "mTot;[GeV]", 200,0.,4000., mTot, theWeight);
+		theHistograms.fill("mTot", "mTot;[GeV]", 200,0.,2000., mTot, theWeight);
 		theHistograms.fill("deltaEtaTot_r_", "#DeltaEtaTot", 100,0.,5., deltaEtaTot, theWeight);
 		theHistograms.fill("deltaRTot_r_", "#DeltaRTot;[GeV]", 140,0.,7., deltaRTot, theWeight);
 		
 		float mWJJ_norm = fabs(p4JJ.M() - phys::WMASS)/phys::WMASS;
-		theHistograms.fill("mWJJ_norm_r_","M_W-M_JJ_norm;[m_W]", 200,0.,20, mWJJ_norm, theWeight);
-		theHistograms.fill("mWJJ_norm_sq_r_","(M_W-M_JJ_norm)^2;[m_W]", 200,0.,20, mWJJ_norm*mWJJ_norm, theWeight);
+		theHistograms.fill("mWJJ_norm_r_","M_W-M_JJ_norm;[m_W]", 200,0.,.8, mWJJ_norm, theWeight);
+		theHistograms.fill("mWJJ_norm_sq_r_","(M_W-M_JJ_norm)^2;[m_W]", 300,0.,.6, mWJJ_norm*mWJJ_norm, theWeight);
 	}
 	
 	simpleGraphs();
-	//jetRecoGraphs();
 	
 	return;
 }
@@ -111,82 +125,87 @@ void VZZAnalyzer::simpleGraphs(){
 	}
 }
 
-void VZZAnalyzer::jetRecoGraphs(){
-	float tolerance = 0.1;
+bool VZZAnalyzer::findBestVFromSing(const std::vector<phys::Jet>* js, phys::Jet& thisCandidate, VCandType& thisCandType){
+	bool isAccurate = false;
+	thisCandType = VCandType::None;
+	if(js->size() < 1)
+		return false;
+	size_t index = 0;
 	float minDifZ = 1.;
 	float minDifW = 1.;
 	float massZCand = 0.;
 	float massWCand = 0.;
-	
-	if(jets->size()>=2){
-		float tmpMass = 0.;
-		for(size_t i = 0; i < jets->size(); i++){
-			for(size_t j = i+1; j < jets->size(); j++){
-				tmpMass = (jets->at(i).p4()+jets->at(j).p4()).M();
-				float diffZ = (tmpMass - phys::ZMASS)/phys::ZMASS;
-				float diffZa = fabs(diffZ);
-				float diffW = (tmpMass - phys::WMASS)/phys::WMASS;
-				float diffWa = fabs(diffW);
-				if(diffZa < minDifZ){
-					//indicesMinZ = make_pair(i,j);
-					minDifZ = diffZa;
-					massZCand = tmpMass;
-				}
-				if(diffWa < minDifW){
-					//indicesMinW = std::make_pair(i,j);
-					minDifW = diffWa;
-					massWCand = tmpMass;
-				}
-			}
+	float tmpMass = 0.;
+	for(size_t i = 0; i < js->size(); i++){
+		tmpMass = js->at(i).mass();
+		float diffZ = (tmpMass - phys::ZMASS)/phys::ZMASS;
+		float diffZa = fabs(diffZ);
+		float diffW = (tmpMass - phys::WMASS)/phys::WMASS;
+		float diffWa = fabs(diffW);
+		if(diffZa < minDifZ){
+			minDifZ = diffZa;
+			massZCand = tmpMass;
+			index = i;
 		}
-		if((minDifZ < tolerance) && (minDifZ < minDifW))
-			theHistograms.fill("Z_Candidate_mass", "Z_Candidate_mass;;[GeV/c^2]", 150,71.,101., massZCand, theWeight);
-		else if((minDifW < tolerance) && (minDifW < minDifZ))
-			theHistograms.fill("W_Candidate_mass", "W_Candidate_mass;;[GeV/c^2]", 150,71.,101., massWCand, theWeight);
+		if(diffWa < minDifW){
+			minDifW = diffWa;
+			massWCand = tmpMass;
+			index = i;
+		}
 	}
+	thisCandidate = js->at(index);
+	if(minDifZ < minDifW){
+			isAccurate = true; //TODO: define a good candidate in case of fat jet
+			thisCandType = VCandType::Z;
+	}
+	else{
+		isAccurate = true;
+		thisCandType = VCandType::W;
+	}
+	return isAccurate;
 }
 
-bool VZZAnalyzer::findBestVCandidate(){
+bool VZZAnalyzer::findBestVFromPair(const std::vector<phys::Jet>* js, phys::Boson<phys::Jet>& thisCandidate, VCandType& thisCandType){
 	bool isAccurate = false;
-	if(jets->size()>=2){
-		std::pair<size_t, size_t> indices(0,0);
-		float minDifZ = 1.;
-		float minDifW = 1.;
-		float massZCand = 0.;
-		float massWCand = 0.;
-		float tmpMass = 0.;
-		for(size_t i = 0; i < jets->size(); i++){
-			for(size_t j = i+1; j < jets->size(); j++){
-				tmpMass = (jets->at(i).p4()+jets->at(j).p4()).M();
-				float diffZ = (tmpMass - phys::ZMASS)/phys::ZMASS;
-				float diffZa = fabs(diffZ);
-				float diffW = (tmpMass - phys::WMASS)/phys::WMASS;
-				float diffWa = fabs(diffW);
-				if(diffZa < minDifZ){
-					minDifZ = diffZa;
-					massZCand = tmpMass;
-					indices = std::make_pair(i,j);
-				}
-				if(diffWa < minDifW){
-					minDifW = diffWa;
-					massWCand = tmpMass;
-					indices = std::make_pair(i,j);
-				}
+	thisCandType = VCandType::None;
+	if(js->size() < 2)
+		return false;
+		
+	pair<size_t, size_t> indices(0,0);
+	float minDifZ = 1.;
+	float minDifW = 1.;
+	float massZCand = 0.;
+	float massWCand = 0.;
+	float tmpMass = 0.;
+	for(size_t i = 0; i < js->size(); i++){
+		for(size_t j = i+1; j < js->size(); j++){
+			tmpMass = (js->at(i).p4() + js->at(j).p4()).M();
+			float diffZ = (tmpMass - phys::ZMASS)/phys::ZMASS;
+			float diffZa = fabs(diffZ);
+			float diffW = (tmpMass - phys::WMASS)/phys::WMASS;
+			float diffWa = fabs(diffW);
+			if(diffZa < minDifZ){
+				minDifZ = diffZa;
+				massZCand = tmpMass;
+				indices = std::make_pair(i,j);
+			}
+			if(diffWa < minDifW){
+				minDifW = diffWa;
+				massWCand = tmpMass;
+				indices = std::make_pair(i,j);
 			}
 		}
-		VCandidate = Boson<Jet>(jets->at(indices.first), jets->at(indices.second));
+		thisCandidate = Boson<Jet>(js->at(indices.first), js->at(indices.second));
 		
 		if(minDifZ < minDifW){
-			isAccurate = ZBosonDefinition(VCandidate);
-			candType = VCandType::Z;
+			isAccurate = ZBosonDefinition(thisCandidate);
+			thisCandType = VCandType::Z;
 		}
 		else{
-			isAccurate = WBosonDefinition(VCandidate);
-			candType = VCandType::W;
+			isAccurate = WBosonDefinition(thisCandidate);
+			thisCandType = VCandType::W;
 		}
 	}
-	else
-		candType = VCandType::None;
 	return isAccurate;
 }
 
