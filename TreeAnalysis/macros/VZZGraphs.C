@@ -40,6 +40,7 @@
 #define foreach BOOST_FOREACH
 
 #define R_PATTERN "_r_" //If present in a graph's name, it means that a "reverse integral of sig/sqrt(bkg)" must be done
+#define NO_GRAPH "_N_" //If present in a graph's name, it means that it must be ignored
 //#define TEST_MODE
 
 using std::cout;
@@ -104,9 +105,8 @@ void printGraphSqrt(const MyGraphs<TH>&, const GNames&);
 template <class TH = TH1F>
 MyGraphs<TH>* buildMyGraphs(const GNames& names, vector<TFile*>& signalFiles, vector<TFile*>& backgroundFiles);
 
-//Colors TODO find better colors
-static const vector<Color_t> myColors = {kRed,kOrange-3 ,kAzure+10,kBlue,kViolet+1,kMagenta+3,kGreen+1,kOrange-2,1,2,3,4,5};
-static const vector<Color_t> myFillColors = {kRed-9,kOrange-4,kCyan-9,kBlue-9,kViolet-4,kMagenta-9,kGreen-9,kYellow-7,1,2,3,4,5};
+static const vector<Color_t> myColors =     {kRed  ,kGreen+1,kOrange-3,kAzure+10,kBlue,  kViolet+1,kYellow  ,kYellow+2,kOrange+3,kGray+3, kMagenta+3};
+static const vector<Color_t> myFillColors = {kRed-4,kGreen-7,kOrange-4,kCyan-9  ,kBlue-9, kViolet-4,kYellow-7,kYellow-2,kOrange-7,kGray  , kMagenta-9};
 //vector<Color_t> myFillColors(myColors.size(), 0);
 
 void VZZGraphs(string sReqCateg = string(""), string sReqType = "", string reqGrName = string("")){
@@ -363,6 +363,8 @@ TH1F* sqrtGraph(const TH1F* const origin){
 }
 
 bool doThisGraphName(TString graphName, TString reqGrName){
+	if(SgraphName.find(NO_GRAPH) != string::npos)
+		return false;
 	graphName.ToLower();
 	reqGrName.ToLower();
 	std::string SgraphName = std::string(graphName.Data());
