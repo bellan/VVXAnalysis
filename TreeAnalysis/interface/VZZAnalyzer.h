@@ -51,16 +51,38 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		bool findBestVPoint(std::vector<const P*>* js, const P*& thisCandidate, VCandType& thisCandType); //Uses a vector<P*> instead of a vector<P>
 		
 		template <class P, class R = phys::Boson<phys::Particle>> // P = Jet or Particle
-		P*              closestSing(std::vector<P>* cands, const R& reference);
+		P*              closestSing(std::vector<P>* cands, const R& reference); //max dR = 0.4
 		template <class P, class R = phys::Boson<phys::Particle>> // P = Jet or Particle
-		phys::Boson<P>* closestPair(std::vector<P>* cands, const R& reference);
+		phys::Boson<P>* closestPair(std::vector<P>* cands, const R& reference); //max dR = 0.4
+		template <class P, class R = phys::DiBoson<phys::Lepton, phys::Lepton>>
+		P* furthestSing(std::vector<P>* cands, const R& reference, const float& minDR = 2., const std::pair<float,float>& massLimits = std::make_pair(1.,1000.));
+		template <class P, class R = phys::DiBoson<phys::Lepton, phys::Lepton>>
+		phys::Boson<P>* furthestPair(std::vector<P>* cands, const R& reference, const float& minDR = 2., const std::pair<float,float>& massLimits = std::make_pair(1.,1000.));
 		
-		void bestCandidateAnalisys();
+		template <class P = phys::Particle>
+		inline double getRefinedMass(P& p) { return p.mass(); } // If I used "const P&" it would have precedence on the template specialization when the object is a pointer to non-const, since "const P&" matches const P* & (const reference to non-const pointer to non-const)
+		template <class P = phys::Particle*>
+		inline double getRefinedMass(P* p) { return p->mass();}
+		//Function overload of the template for Jets 
+		inline double getRefinedMass(phys::Jet& j) { return j.corrPrunedMass(); }
+		inline double getRefinedMass(phys::Jet* j) { return j->corrPrunedMass();}
+		
+		// ----- ----- Large sub-analisys
+		void bestCandidateAnalysis();
+		void endBestCandAnalysis(TFile & fout); //Divide histograms to obtain efficiency
+		
 		void ptCutMVA(); //select the best cut in pt for the jetsAK8 --> corrPrunedMass
-		void jetAnalisys(); //how often ak8 are better than ak4? Does it depend on pt? |p|? Mass?
 		
+		void jetAnalysis(); //how often ak8 are better than ak4? Does it depend on pt? |p|? Mass?
+		void endJetAnalysis(); //Histogram normalization
+		
+		void AKChoiceMVA(); //Search a variable that lets us choose whether to use an AK4 or an AK8
+		
+		void fillGenHadVBs(); //Fills the vector only if it is empty
 		
 	private:
+		std::vector<phys::Boson<phys::Particle>>* genHadVBs_ = nullptr; //genVBParticles with hadronic daugthers
+		
 		//Counters, etc.
 		clock_t startTime_; //Used to calculate elapsed time
 		unsigned long evtN_; //Used to count processed events
@@ -68,9 +90,7 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		unsigned int singZFromJets_, pairZFromJets_, singZFromJetsAK8_, pairZFromJetsAK8_;
 		unsigned int recVBtot_; //Evts where the reconstructed VB is acceptable (VBosonDefinition)
 		unsigned int goodRec_, withGenVB_; //Evts wit a recVB near a genVB / Evts with a genVB
-		//unsigned int finalFromJetsSing_, finalFromJetsPair_, finalFromJetsAK8sing_, finalFromJetsAK8Pair_;
-		//phys::Boson<phys::Jet> VCandidate_;
-		//VCandType candType_;
+		unsigned int win4_,win8_;//How often an AK4/AK8 reconstructs better an hadronic decaying VB
 		
 		friend class Selector<VZZAnalyzer>;
 		
