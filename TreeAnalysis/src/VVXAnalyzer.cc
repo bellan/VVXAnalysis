@@ -23,8 +23,8 @@ Int_t VVXAnalyzer::cut() {
 
 void VVXAnalyzer::analyze(){
 
-  cout << "------------------------------------------------------------------"<<endl;
-  cout << "Run: " << run << " event: " << event << endl;
+  //cout << "------------------------------------------------------------------"<<endl;
+  //cout << "Run: " << run << " event: " << event << endl;
   
   
 }
