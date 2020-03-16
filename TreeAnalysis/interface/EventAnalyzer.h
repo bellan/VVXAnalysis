@@ -31,7 +31,7 @@
 #include "VVXAnalysis/TreeAnalysis/interface/MCInfo.h"
 
 #include "VVXAnalysis/Commons/interface/RegionTypes.h"
-#include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
+//#include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 #include <ZZAnalysis/AnalysisStep/interface/bitops.h>
 
@@ -97,7 +97,7 @@ public:
   virtual Long64_t LoadTree(Long64_t entry);
   virtual void     Init(TTree *tree);
   
-  void applyLeptonScaleFactors();
+  //void applyLeptonScaleFactors();
   
   // Some basic plots. User may want to change these, thou they should be used only for very basic plots.
   virtual void     fillBasicPlots();
@@ -107,7 +107,7 @@ public:
 
  private:
   TTree *theTree;
-  LeptonScaleFactors leptonScaleFactors_;
+  //LeptonScaleFactors leptonScaleFactors_;
 
   int fCurrent;
   int  maxNumEvents_;

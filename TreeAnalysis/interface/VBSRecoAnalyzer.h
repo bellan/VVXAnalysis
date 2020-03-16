@@ -13,7 +13,6 @@
 #include "EventAnalyzer.h"
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
-#include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 class VBSRecoAnalyzer: public EventAnalyzer, RegistrableAnalysis<VBSRecoAnalyzer>{
 
 public:

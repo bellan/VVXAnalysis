@@ -13,9 +13,8 @@
 #include "EventAnalyzer.h"
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
-#include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 #include "VVXAnalysis/Commons/interface/Comparators.h"
-
+#include "TGraphAsymmErrors.h"
 
 class ZVAnalyzer: public EventAnalyzer, RegistrableAnalysis<ZVAnalyzer>{
 

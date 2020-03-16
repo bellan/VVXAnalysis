@@ -13,7 +13,6 @@
 #include "EventAnalyzer.h"
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
-#include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 
 class FakeRateAnalyzer: public EventAnalyzer, RegistrableAnalysis<FakeRateAnalyzer>{
 
@@ -94,7 +93,6 @@ public:
   std::vector<std::string> eventsD_mme;
   std::vector<std::string> eventsD_mmm;
 
-  //LeptonScaleFactors lepSF;
 
 };
 #endif

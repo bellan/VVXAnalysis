@@ -61,6 +61,9 @@ analysis     = args[0]
 typeofsample = args[1]
 region       = options.region
 doSF         = options.doSF
+if doSF:
+    print "Option temporarily disabled!"
+    sys.exit(1)
 maxNumEvents = options.maxNumEvents
 year         = options.year
 luminosity   = options.luminosity
