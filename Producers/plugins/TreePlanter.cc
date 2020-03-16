@@ -51,11 +51,8 @@ using std::endl;
 TreePlanter::TreePlanter(const edm::ParameterSet &config)
   : PUWeighter_      (2017,2017)
   , filterController_(config,consumesCollector())
-  , leptonScaleFactors_( // FIXME: This should be changed for Run2Legacy
-			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_mu_Moriond2017.root").fullPath(),
-			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_non_gap_ele_Moriond2017_v2.root").fullPath(),
-			edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_gap_ele_Moriond2017_v2.root").fullPath(),
-		        edm::FileInPath("ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_RECO_ele_Moriond2017_v1.root").fullPath(),     
+  , leptonScaleFactors_(config.getParameter<int>("setup"),
+			// FIXME need to be updated for Run2Legacy
 			edm::FileInPath("VVXAnalysis/Commons/data/fakeRate_20feb2017.root").fullPath(),
   			edm::FileInPath("VVXAnalysis/Commons/data/fakeRate_20feb2017.root").fullPath())
 
@@ -565,7 +562,10 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
   if(abs(lepton.pdgId())      == 11){ 
     output.isInCracks_        = lepton.userFloat("isCrack"          );
     output.scEta_             = lepton.userFloat("SCeta"            );
-  }
+    // Deal with very rare cases when SCeta is out of 2.5 bonds
+    if ( output.eta() <= 2.5 && output.scEta_ >= 2.5) output.scEta_ = 2.49;
+    else if ( output.eta() >= -2.5 && output.scEta_ <= -2.5) output.scEta_ = -2.49;
+    }
   std::pair<double,double> effSF = leptonScaleFactors_.efficiencyScaleFactor(output); 
   output.efficiencySF_    = effSF.first;
   output.efficiencySFUnc_ = effSF.second;
@@ -637,17 +637,18 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   }  
 
   // Variables for AK8 jets
-  output.tau1_           = jet.hasUserFloat("NjettinessAK8:tau1") ? jet.userFloat("NjettinessAK8:tau1") : -999;
-  output.tau2_           = jet.hasUserFloat("NjettinessAK8:tau2") ? jet.userFloat("NjettinessAK8:tau2") : -999;
-  output.tau3_           = jet.hasUserFloat("NjettinessAK8:tau3") ? jet.userFloat("NjettinessAK8:tau3") : -999;
+  output.tau1_           = jet.hasUserFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau1") ? jet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau1") : -999;
+  output.tau2_           = jet.hasUserFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau2") ? jet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau2") : -999;
+  output.tau3_           = jet.hasUserFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau3") ? jet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau3") : -999;
   output.corrPrunedMass_ = jet.hasUserFloat("ak8PFJetsCHSCorrPrunedMass") ? jet.userFloat("ak8PFJetsCHSCorrPrunedMass") : -999;
-  output.prunedMass_     = jet.hasUserFloat("ak8PFJetsCHSPrunedMass")     ? jet.userFloat("ak8PFJetsCHSPrunedMass") : -999;
-  output.softDropMass_   = jet.hasUserFloat("ak8PFJetsCHSSoftDropMass")   ? jet.userFloat("ak8PFJetsCHSSoftDropMass") : -999;
-  output.puppiTau1_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") ? jet.userFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") : -999;
-  output.puppiTau2_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") ? jet.userFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") : -999;
-  output.puppiTau3_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") ? jet.userFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") : -999;
-  output.puppiMass_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:mass") ? jet.userFloat("ak8PFJetsPuppiValueMap:mass") : -999;
-  
+
+  output.prunedMass_     = jet.hasUserFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSPrunedMass")   ? jet.userFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSPrunedMass")   : -999;
+  output.softDropMass_   = jet.hasUserFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSSoftDropMass") ? jet.userFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSSoftDropMass") : -999;
+
+  output.puppiTau1_      = jet.hasUserFloat("NjettinessAK8Puppi:tau1") ? jet.userFloat("NjettinessAK8Puppi:tau1") : -999;
+  output.puppiTau2_      = jet.hasUserFloat("NjettinessAK8Puppi:tau2") ? jet.userFloat("NjettinessAK8Puppi:tau2") : -999;
+  output.puppiTau3_      = jet.hasUserFloat("NjettinessAK8Puppi:tau3") ? jet.userFloat("NjettinessAK8Puppi:tau3") : -999;
+  output.puppiMass_      = jet.hasUserFloat("ak8PFJetsPuppiSoftDropMass") ? jet.userFloat("ak8PFJetsPuppiSoftDropMass") : -999;
   
 
 
@@ -731,14 +732,16 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
 
   // MELA info
   MELA_.p_JJVBF_BKG_MCFM_JECNominal_ = edmVV.userFloat("p_JJVBF_BKG_MCFM_JECNominal");
+  MELA_.p_JJVBF_BKG_MCFM_JECUp_      = edmVV.userFloat("p_JJVBF_BKG_MCFM_JERUp"     );
+  MELA_.p_JJVBF_BKG_MCFM_JECDn_      = edmVV.userFloat("p_JJVBF_BKG_MCFM_JERDn"     );
+
   MELA_.p_JJQCD_BKG_MCFM_JECNominal_ = edmVV.userFloat("p_JJQCD_BKG_MCFM_JECNominal");
-  MELA_.p_JJVBF_BKG_MCFM_JECUp_      = edmVV.userFloat("p_JJVBF_BKG_MCFM_JECUp"     );
-  MELA_.p_JJQCD_BKG_MCFM_JECUp_      = edmVV.userFloat("p_JJQCD_BKG_MCFM_JECUp"     );
-  MELA_.p_JJVBF_BKG_MCFM_JECDn_      = edmVV.userFloat("p_JJVBF_BKG_MCFM_JECDn"     );
-  MELA_.p_JJQCD_BKG_MCFM_JECDn_      = edmVV.userFloat("p_JJQCD_BKG_MCFM_JECDn"     );
+  MELA_.p_JJQCD_BKG_MCFM_JECUp_      = edmVV.userFloat("p_JJQCD_BKG_MCFM_JERUp"     );
+  MELA_.p_JJQCD_BKG_MCFM_JECDn_      = edmVV.userFloat("p_JJQCD_BKG_MCFM_JERDn"     );
+
   MELA_.p_JJEW_BKG_MCFM_JECNominal_  = edmVV.userFloat("p_JJEW_BKG_MCFM_JECNominal" );
-  MELA_.p_JJEW_BKG_MCFM_JECUp_       = edmVV.userFloat("p_JJEW_BKG_MCFM_JECUp"      );
-  MELA_.p_JJEW_BKG_MCFM_JECDn_       = edmVV.userFloat("p_JJEW_BKG_MCFM_JECDn"      );
+  MELA_.p_JJEW_BKG_MCFM_JECUp_       = edmVV.userFloat("p_JJEW_BKG_MCFM_JERUp"      );
+  MELA_.p_JJEW_BKG_MCFM_JECDn_       = edmVV.userFloat("p_JJEW_BKG_MCFM_JERDn"      );
 
 
   return VV;
