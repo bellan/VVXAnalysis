@@ -3,8 +3,10 @@ from ZZAnalysis.AnalysisStep.defaults import declareDefault
 SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the chosen windows. For other topology see the README under VVXAnalysis/Commons.
 
 declareDefault("PD","",globals())
-declareDefault("XSEC",-1.,globals())
 declareDefault("MCFILTER","",globals())
+declareDefault("XSEC",-1,globals()) # was -1. FIXME
+declareDefault("GENXSEC", -1, globals()) # FIXME
+declareDefault("GENBR", -1, globals()) # FIXME
 declareDefault("SKIM_REQUIRED",True,globals())
 declareDefault("KINREFIT", False, globals())
 declareDefault("BESTCANDCOMPARATOR", "byBestZ1bestZ2", globals())
@@ -12,8 +14,28 @@ declareDefault("APPLYTRIG", True, globals())
 declareDefault("VVMODE", 1, globals())
 declareDefault("VVDECAYMODE", 0, globals())
 declareDefault("ADDLHEKINEMATICS", False, globals())
+#declareDefault("PROCESS_CR", False, globals())
+declareDefault("ADDZTREE", False, globals())
+
 
 declareDefault("APPLY_QCD_GGF_UNCERT", False, globals() )
+
+# K factors
+declareDefault("APPLY_K_NNLOQCD_ZZGG", 0, globals()) # 0: Do not; 1: NNLO/LO; 2: NNLO/NLO; 3: NLO/LO
+declareDefault("APPLY_K_NNLOQCD_ZZQQB", False, globals())
+declareDefault("APPLY_K_NLOEW_ZZQQB", False, globals())
+
+#failed events
+declareDefault("SKIP_EMPTY_EVENTS", True, globals())
+declareDefault("FAILED_TREE_LEVEL", 0, globals())
+
+if FAILED_TREE_LEVEL and not SKIP_EMPTY_EVENTS:
+    raise ValueError(
+                     "Inconsistent options: FAILED_TREE_LEVEL={}, SKIP_EMPTY_EVENTS={}\n"
+                     "If you want to write a failed tree, set SKIP_EMPTY_EVENTS=True"
+                     .format(FAILED_TREE_LEVEL, SKIP_EMPTY_EVENTS)
+                    )
+
 
 # Get absolute path
 import os
@@ -157,7 +179,7 @@ process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
 if IsMC:
     if   (SAMPLE_TYPE == 2016):
         process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
-                                           tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016V4_MC_AK8PFchs'), #for 80X/Moriond17
+                                           tag    = cms.string('JetCorrectorParametersCollection_Summer16_07Aug2017_V11_MC_AK8PFchs'), 
                                            label  = cms.untracked.string('AK8PFchs')
                                        ))
 
@@ -169,7 +191,7 @@ if IsMC:
 
     elif (SAMPLE_TYPE == 2018):
         process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
-                                           tag    = cms.string('JetCorrectorParametersCollection_Autumn18_V8_MC_AK8PFchs'),
+                                           tag    = cms.string('JetCorrectorParametersCollection_Autumn18_V19_MC_AK8PFchs'),
                                            label  = cms.untracked.string('AK8PFchs')
                                        ))
     else:
@@ -180,7 +202,7 @@ if IsMC:
 else:
     if   (SAMPLE_TYPE == 2016):
         process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
-                                           tag    = cms.string('JetCorrectorParametersCollection_Summer16_23Sep2016AllV4_DATA_AK8PFchs'), #for 80X/Moriond17
+                                           tag    = cms.string('JetCorrectorParametersCollection_Summer16_07Aug2017All_V11_DATA_AK8PFchs'), #for 80X/Moriond17
                                            label  = cms.untracked.string('AK8PFchs')
                                        ))
     elif (SAMPLE_TYPE == 2017):
@@ -191,7 +213,7 @@ else:
 
     elif (SAMPLE_TYPE == 2018):
         process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
-                                           tag    = cms.string('JetCorrectorParametersCollection_Autumn18_RunABCD_V8_DATA_AK8PFchs'),
+                                           tag    = cms.string('JetCorrectorParametersCollection_Autumn18_RunABCD_V19_DATA_AK8PFchs'),
                                            label  = cms.untracked.string('AK8PFchs')
                                        ))
     else:
