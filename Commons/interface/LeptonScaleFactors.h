@@ -12,18 +12,21 @@
 #include "VVXAnalysis/DataFormats/interface/Lepton.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
+#include "ZZAnalysis/AnalysisStep/interface/LeptonSFHelper.h"
 
 #include <TH2F.h>
 #include <TGraphAsymmErrors.h>
 
 class LeptonScaleFactors{
  public:
-  LeptonScaleFactors(const std::string& muonEffFilename, const std::string& electronEFFfilename, const std::string& electronEFFCracksfilename,
-		     const std::string& electronEffRecoFilename,
-		     const std::string& muonFRFilename, const std::string& electronFRFilename);
+  LeptonScaleFactors(int year, const std::string& muonFRFilename, const std::string& electronFRFilename);
 
+  std::pair<double, double> efficiencyScaleFactor(const double& lepPt, const double& lepEta, int lepId, bool isInCracks = false) const{ 
+    
+    // eta is copied twice because of bad design of LeptonSFHelper class. The eta of the lepton is done beforehand and then it is treated differently in the lepSFHelper for electrons and muons.
+    return std::make_pair(lepSFHelper_.getSF(year_, lepId, lepPt, lepEta, lepEta, isInCracks),lepSFHelper_.getSFError(year_, lepId, lepPt, lepEta, lepEta, isInCracks));
+  }
 
-  std::pair<double, double> efficiencyScaleFactor(const double& lepPt, const double& lepEta, int lepId, bool isInCracks = false) const;
   std::pair<double, double> efficiencyScaleFactor(const phys::Lepton& lep) const;
 
   double weight(const phys::DiBoson<phys::Lepton,phys::Lepton> &ZZ) const;
@@ -33,14 +36,9 @@ class LeptonScaleFactors{
   std::pair<double,double > fakeRateScaleFactor(const phys::Lepton& lep) const;
  private:
 
-  TH2F *hEffMu_;
-  TH2F *hEffEl_;
-  TH2F *hEffEl_Unc_;
-  TH2F *hEffElCracks_;
-  TH2F *hEffElCracks_Unc_;
-  TH2F *hEffElReco_;
-  TH2F *hEffMuLoose_;
-  TH2F *hEffElLoose_;
+  LeptonSFHelper lepSFHelper_;
+  int year_;
+
 
   TH2D *hFRMu_;
   TH2D *hFREl_;
