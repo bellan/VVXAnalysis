@@ -17,6 +17,7 @@ import os
 
 LEPTON_SETUP = 2018
 
+
 PyFilePath = os.environ['CMSSW_BASE'] + "/src/VVXAnalysis/Producers/python/"
 execfile(PyFilePath + "analyzer_VVjj.py")
 PyFilePath = os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/"
@@ -66,6 +67,10 @@ process.source = cms.Source("PoolSource",fileNames = cms.untracked.vstring(
 
 #'/store/mc/RunIIAutumn18MiniAOD/ZZTo4L_TuneCP5_13TeV_powheg_pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15_ext2-v2/80000/C30C0216-D827-AF41-9979-48B97AC5DF47.root'
 '/store/mc/RunIIAutumn18MiniAOD/WZZ_TuneCP5_13TeV-amcatnlo-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15_ext1-v2/100000/6DB7F3BB-8FB7-7F43-9288-9B9A0700F467.root'
+
+
+# Sync 2018
+#'/store/mc/RunIIAutumn18MiniAOD/GluGluHToZZTo4L_M125_13TeV_powheg2_JHUGenV7011_pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v2/270000/E5E2F122-AA57-5248-8177-594EC87DD494.root'
 
 
 ))
