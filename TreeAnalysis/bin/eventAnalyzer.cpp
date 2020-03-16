@@ -22,14 +22,17 @@ int main (int argc, char ** argv){
   analysisConfig.addParameter("region"          , phys::regionType(std::string(argv[2])));
   analysisConfig.addParameter("filename"        , std::string(argv[3]));
   analysisConfig.addParameter("outputfile"      , std::string(argv[4]));
-  analysisConfig.addParameter("lumi"            , atof(argv[5]));
-  analysisConfig.addParameter("externalXSection", atof(argv[6]));
-  analysisConfig.addParameter("maxNumEvents"    , atoi(argv[7]));
+
+  analysisConfig.addParameter("year"    , atoi(argv[5]));
+
+  analysisConfig.addParameter("lumi"            , atof(argv[6]));
+  analysisConfig.addParameter("externalXSection", atof(argv[7]));
+  analysisConfig.addParameter("maxNumEvents"    , atoi(argv[8]));
   analysisConfig.addParameter("doBasicPlots"    , false);
   analysisConfig.addParameter("test"    , phys::RegionTypes::CR3P1F);
   
 
-  if(atof(argv[8]))   analysisConfig.addParameter("doSF"    , true);
+  if(atof(argv[9]))   analysisConfig.addParameter("doSF"    , true);
   else   analysisConfig.addParameter("doSF"    , false);
 
   cout<<Yellow("Analyzing "+analysisConfig.getParameter<std::string>("filename")+" ... please wait... ")<<endl ;

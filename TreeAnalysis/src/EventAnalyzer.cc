@@ -40,10 +40,7 @@ SelectorBase::~SelectorBase(){};
 EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 			     const AnalysisConfiguration& configuration)
   : select(aSelector)
-  ,  leptonScaleFactors_("../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_mu_Moriond2017.root",
-			 "../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_non_gap_ele_Moriond2017_v2.root",
-			 "../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_gap_ele_Moriond2017_v2.root",
-			 "../../ZZAnalysis/AnalysisStep/data/LeptonEffScaleFactors/ScaleFactors_RECO_ele_Moriond2017_v1.root",
+  ,  leptonScaleFactors_(configuration.getParameter<int>("year"),
 			 "../../VVXAnalysis/Commons/data/fakeRate_20feb2017.root",
 			 "../../VVXAnalysis/Commons/data/fakeRate_20feb2017.root")
 

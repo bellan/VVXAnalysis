@@ -24,9 +24,15 @@ parser.add_option("-e", "--external-cross-section", dest="getExternalCrossSectio
                   action="store_true",
                   help="Use this option if you want to force to read again the cross-section from the csv file")
 
+parser.add_option("-y", "--year", dest="year",
+                  type='int',
+                  default= 2016,
+                  help="Set year scenario from command line. Default is 2016.")
+
+
 parser.add_option("-l", "--luminosity", dest="luminosity",
                   type='int',
-                  default= 35900,
+                  default= -1,
                   help="Set luminosity scenario from command line. Default is  35900/pb.")
 
 parser.add_option("-d", "--directory", dest="directory",
@@ -56,6 +62,22 @@ typeofsample = args[1]
 region       = options.region
 doSF         = options.doSF
 maxNumEvents = options.maxNumEvents
+year         = options.year
+luminosity   = options.luminosity
+
+# if luminosity is specified thorugh -l option, overwrite the year <-> luminosity decision
+if luminosity <= 0:
+    if year == 2016: 
+        luminosity =  35900
+    elif year == 2017: 
+        luminosity =  41500
+    elif year == 2018: 
+        luminosity =  59700
+    elif year == 1618: 
+        luminosity = 137100
+    else :
+        print"{0:s}: Unknown year, please specify a luminosity with -l option".format(year)
+        sys.exit(1)
 
 if region not in regions:
     print region, "is an unknown region. Run {0:s} -h for more details.".format(sys.argv[0])
@@ -63,7 +85,7 @@ if region not in regions:
 
 getExternalCrossSectionFromFile = False if options.getExternalCrossSectionFromFile is None else options.getExternalCrossSectionFromFile
 
-luminosity = options.luminosity
+
 baseinputdir = options.directory
 csvfile = options.csvfile
 
@@ -116,6 +138,7 @@ print "Sample/type of samples:", Blue(typeofsample)
 print "CSV file: ", Blue(csvfile)
 print "Get (again) cross sections from csv file: ", Blue(getExternalCrossSectionFromFile)
 print "Region type: ", Blue(region)
+print "Year: ", Blue(year)
 print "Integrated luminosity: ", Blue(luminosity)
 print "Use internal scale factor",Blue(doSF)
 print Blue("----------------------------------------------------------------------")
@@ -125,7 +148,7 @@ print "\n"
 ############################################################################
 
 
-def run(executable, analysis, typeofsample, region, luminosity, maxNumEvents, doSF):
+def run(executable, analysis, typeofsample, region, year, luminosity, maxNumEvents, doSF):
 
 
     inputdir = baseinputdir
@@ -181,7 +204,7 @@ def run(executable, analysis, typeofsample, region, luminosity, maxNumEvents, do
             print "For {0:s} {1:s} {2:.6f}".format(period, Warning("Using external cross section:"), externalXsec)
 
         print Red('\n------------------------------ {0:s} -------------------------------\n'.format(basefile))
-        command = "./{0:s} {1:s} {2:s} {3:s}/{5:s}.root {4:s}/{5:s}.root {6:.0f} {7:.5f} {8:.0f} {9:b}".format(executable,analysis,region,inputdir,outputdir, basefile, luminosity, externalXsec, maxNumEvents, doSF)
+        command = "./{0:s} {1:s} {2:s} {3:s}/{5:s}.root {4:s}/{5:s}.root {6:.0f} {7:.0f} {8:.5f} {9:.0f} {10:b}".format(executable,analysis,region,inputdir,outputdir, basefile, year, luminosity, externalXsec, maxNumEvents, doSF)
         print "Command going to be executed:", Violet(command)
 
         output = subprocess.call(command,shell=True)
@@ -216,9 +239,9 @@ def mergeDataSamples(outputLocations):
     print "Command going to be executed:", Violet(hadd)
     output = subprocess.call(hadd.split(),shell=True)
 
-def runOverCRs(executable, analysis, sample, luminosity, maxNumEvents, doSF, postfix = '', outputLocations = []):
-    outputCR2P2F = run(executable, analysis, sample, 'CR2P2F'+postfix, luminosity, maxNumEvents, doSF)    # runs over all samples in the CR2P2F control reagion
-    outputCR3P1F = run(executable, analysis, sample, 'CR3P1F'+postfix, luminosity, maxNumEvents, doSF)    # runs over all samples in the CR3P1F control reagion
+def runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doSF, postfix = '', outputLocations = []):
+    outputCR2P2F = run(executable, analysis, sample, 'CR2P2F'+postfix, year, luminosity, maxNumEvents, doSF)    # runs over all samples in the CR2P2F control reagion
+    outputCR3P1F = run(executable, analysis, sample, 'CR3P1F'+postfix, year, luminosity, maxNumEvents, doSF)    # runs over all samples in the CR3P1F control reagion
 
     if not os.path.exists('results/{0:s}_CR{1:s}'.format(analysis,postfix)): os.popen('mkdir results/{0:s}_CR{1:s}'.format(analysis,postfix))
     outputRedBkg = 'results/{0:s}_CR{1:s}/reducible_background_from_{2:s}.root'.format(analysis, postfix, sample)
@@ -237,13 +260,13 @@ if typeofsample == 'all' or typeofsample == 'data':
 
             if region == 'all':
                 for cr in regions:
-                    run(executable, analysis, sample, cr, luminosity, maxNumEvents, doSF)    # runs over all samples in all control reagions
+                    run(executable, analysis, sample, cr, year, luminosity, maxNumEvents, doSF)    # runs over all samples in all control reagions
             elif region == 'CR':
-                runOverCRs(executable, analysis, sample, luminosity, maxNumEvents, doSF, "",outputLocations)
+                runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doSF, "",outputLocations)
             elif region == 'CR_HZZ': 
-                runOverCRs(executable, analysis, sample, luminosity, maxNumEvents, doSF, '_HZZ',outputLocations)
+                runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doSF, '_HZZ',outputLocations)
             else:
-                outputLocations.append(run(executable, analysis, sample, region, luminosity, maxNumEvents, doSF))   # runs over all samples in a specific control reagions
+                outputLocations.append(run(executable, analysis, sample, region, year, luminosity, maxNumEvents, doSF))   # runs over all samples in a specific control reagions
     if typeofsample == 'data':
         mergeDataSamples(outputLocations)
 
@@ -251,13 +274,13 @@ if typeofsample == 'all' or typeofsample == 'data':
 else:
     if region == 'all':
         for cr in range(0,4):     
-            run(executable, analysis, typeofsample, cr, luminosity, maxNumEvents, doSF)  # runs over a specific sample in all control regions
+            run(executable, analysis, typeofsample, cr, year, luminosity, maxNumEvents, doSF)  # runs over a specific sample in all control regions
 
     elif region == 'CR':
-        runOverCRs(executable, analysis, typeofsample, luminosity, maxNumEvents, doSF)
+        runOverCRs(executable, analysis, typeofsample, year, luminosity, maxNumEvents, doSF)
     elif region == 'CR_HZZ':
-        runOverCRs(executable, analysis, typeofsample, luminosity, maxNumEvents, doSF, postfix='_HZZ')
+        runOverCRs(executable, analysis, typeofsample, year, luminosity, maxNumEvents, doSF, postfix='_HZZ')
     else:
-        run(executable, analysis, typeofsample, region, luminosity, maxNumEvents, doSF) # runs over a specific sample in a specific region
+        run(executable, analysis, typeofsample, region, year, luminosity, maxNumEvents, doSF) # runs over a specific sample in a specific region
 
 print "\nJob status: ", OK("DONE"),"\n"
