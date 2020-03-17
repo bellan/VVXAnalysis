@@ -106,5 +106,22 @@ namespace phys{
   	
   	TLorentzVector refp4_;
   };
+  
+  struct PtTotRefComparator{ //Compares the pt of the sum of a particle's momentum and the one of a reference particle. Used to find the particle that minimizes total pt in an event
+  	template <class P>
+  	PtTotRefComparator(const P& refParticle) : refp4_(refParticle.p4()) {}
+  	PtTotRefComparator(const TLorentzVector p4) : refp4_(p4) {}
+  	
+  	template <class P1, class P2>
+  	bool operator()(const P1& p1, const P2& p2){
+  		return (p1.p4() + refp4_).Pt() < (p2.p4() + refp4_).Pt();
+  	}
+  	template <class P1, class P2>
+  	bool operator()(const P1* p1, const P2* p2){
+  		return (p1->p4() + refp4_).Pt() < (p1->p4() + refp4_).Pt();
+  	}
+  	
+  	TLorentzVector refp4_;
+  };
 }
 #endif
