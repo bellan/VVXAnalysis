@@ -16,7 +16,10 @@ namespace physmath{
   inline double deltaPhi (const TLorentzVector &a, const TLorentzVector &b) {
     return deltaPhi(a.Phi(),b.Phi());
   }
-    
+  
+  template<typename T1, typename T2> inline double deltaPhi(const T1& p1, const T2& p2){
+  	return deltaPhi(p1.phi(), p2.phi());
+  }
 	
   template<typename T1, typename T2> double deltaR(const T1& p1, const T2& p2){
     return sqrt( deltaPhi(p1.phi(),p2.phi())*deltaPhi(p1.phi(),p2.phi()) +
