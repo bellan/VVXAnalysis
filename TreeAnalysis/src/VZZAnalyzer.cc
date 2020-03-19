@@ -76,10 +76,14 @@ void VZZAnalyzer::analyze(){
 	//ptCutMVA();
 	//closestJetAnalisys();
 	//furthestJetMVA();
+	fillGenHadVBs();
+	foreach(const Boson<Particle>& b, *genHadVBs_)
+		theHistograms.fill("All AK4 mass", "All AK4 mass", 50,0.,200., b.mass(), theWeight);
 	
 	minPtJetMVA();
 	bestZMassJetMVA();
 	simpleGraphs();
+	
 	
 	theHistograms.fill("s AK4 gen", "s AK4 gen", 100,0.,2000., sAK4g_, theWeight);
 	theHistograms.fill("s AK8 gen", "s AK8 gen", 100,0.,2000., sAK8g_, theWeight);
@@ -205,21 +209,35 @@ void VZZAnalyzer::bestZMassJetMVA(){
 	}
 	
 	
-	//------------------	BEST GEN	------------------
+	//------------------	WINNER GEN	------------------
 	if(found_4g || found_8g){
 		float type = 0.;  // -1 --> AK4 pair,   1 --> AK8
-		if(found_4g && found_8g)
+		if(found_4g && found_8g){
 			type = (fabs(it_8g->mass() -phys:: ZMASS) < fabs(it_4g->mass() -phys:: ZMASS) ? 1.:-1.);
+			theHistograms.fill<TH2F>("Winner Z mass", "Winner Z mass", MASS_2D_SIZE, BINARY_SIZE, (type > 0.5 ? *it_8g : *it_4g).mass(), type);
+			theHistograms.fill<TH2F>("Loser Z mass", "Loser Z mass", MASS_2D_SIZE, BINARY_SIZE, (type < 0.5 ? *it_8g : *it_4g).mass(), type);
+		}
 		else if(found_8g)
 			type = 1.;
 		else if(found_4g)
 			type = -1.;
 		
-		theHistograms.fill<TH2F>("Best Z mass (4-8)_{gen} vs ZZ pt", "Best Z mass (4-8)_{gen} vs ZZ pt", PT_2D_SIZE, BINARY_SIZE, ZZ->pt(), type);
-		theHistograms.fill<TH2F>("Best Z mass (4-8)_{gen} vs s", "Best Z mass (4-8)_{gen} vs s", S_2D_SIZE, BINARY_SIZE, (type > 0.5 ? sAK8g_ : sAK4g_), type);
+		double sHat_g = ( ZZ->p4() + (type > 0.5 ? *it_8g : *it_4g).p4() ).M();
+		theHistograms.fill<TH2F>("Best Z gen vs #hat{s}", "Best Z gen vs #hat{s}", S_2D_SIZE, BINARY_SIZE, sHat_g, type);
+		theHistograms.fill<TH2F>("Best Z gen vs s", "Best Z gen vs s", S_2D_SIZE, BINARY_SIZE, (type > 0.5 ? sAK8g_ : sAK4g_), type);
+		theHistograms.fill<TH2F>("Best Z gen vs ZZ pt", "Best Z gen vs ZZ pt", PT_2D_SIZE, BINARY_SIZE, ZZ->pt(), type);
+		theHistograms.fill<TH2F>("Best Z gen vs #Delta#phi(ZZ, Jet)_div_pi", "Best Z gen vs #Delta#phi(ZZ, Jet)_div_#pi", 40,-1.,1., BINARY_SIZE, physmath::deltaPhi( *ZZ, (type > 0.5 ? *it_8g : *it_4g) )/M_PI, type); //32,-3.2,3.2
+		theHistograms.fill<TH2F>("Best Z gen vs #Delta#eta(ZZ, Jet)", "Best Z gen vs #Delta#eta(ZZ, Jet)", 20,-4.,4., BINARY_SIZE, ZZ->eta()-(type > 0.5 ? *it_8g : *it_4g).eta(), type);
+		theHistograms.fill<TH2F>("Best Z gen vs #DeltaR(ZZ, Jet)", "Best Z gen vs #DeltaR(ZZ, Jet)", 40,2.,6., BINARY_SIZE, physmath::deltaR( *ZZ, (type > 0.5 ? *it_8g : *it_4g) ), type);
 		
 		theHistograms.fill<TH2F>("Best Z vs deltaR(4_{gen})", "Best Z vs deltaR(4_{gen})", 50,0.,5., BINARY_SIZE, (found_4g ? physmath::deltaR( it_4g->daughter(0), it_4g->daughter(1) ) : -1.), type /*filling underflow bin --> bestZ found with AK8*/ );
 	theHistograms.fill<TH2F>("Best Z vs deltaPhi(4_{gen})","Best Z vs deltaPhi(4_{gen})", 32,-3.2,3.2, BINARY_SIZE, (found_4g ? physmath::deltaPhi(it_4g->daughter(0), it_4g->daughter(1)) : -9.), type);
+	}
+	
+	if(found_8g && !found_4g){	//Special_174 AK8 that win because they're alone
+		theHistograms.fill("Special_174 mass", "Special_174 mass", 16,50.,130., it_8g->mass());
+		theHistograms.fill("Special_174 pt",   "Special_174 pt",  16,200.,1000., it_8g->pt());
+		theHistograms.fill("Special_174 #Delta#phi(ZZ)_div_pi", "Special_174 #Delta#phi(ZZ)_div_pi",  20,-1.,1., physmath::deltaPhi(*ZZ, *it_8g)/M_PI );
 	}
 	
 	
@@ -266,7 +284,7 @@ void VZZAnalyzer::bestZMassJetMVA(){
 		}
 	}
 	
-	//------------------	BEST REC	------------------
+	//------------------	WINNER REC	------------------
 	if(found_4r || found_8r){
 		float type = 0.;  // -1 --> AK4 pair,   1 --> AK8
 		if(found_4r && found_8r)
@@ -276,8 +294,8 @@ void VZZAnalyzer::bestZMassJetMVA(){
 		else if(found_4r)
 			type = -1.;
 		
-		theHistograms.fill<TH2F>("Best Z mass (4-8)_{rec} vs ZZ pt", "Best Z mass (4-8)_{rec} vs ZZ pt", PT_2D_SIZE, BINARY_SIZE, ZZ->pt(), type);
-		theHistograms.fill<TH2F>("Best Z mass (4-8)_{rec} vs s", "Best Z mass (4-8)_{rec} vs s", S_2D_SIZE, BINARY_SIZE, (type > 0.5 ? sAK8r_ : sAK4r_), type);
+		theHistograms.fill<TH2F>("Best Z rec vs ZZ pt", "Best Z rec vs ZZ pt", PT_2D_SIZE, BINARY_SIZE, ZZ->pt(), type);
+		theHistograms.fill<TH2F>("Best Z rec vs s", "Best Z rec vs s", S_2D_SIZE, BINARY_SIZE, (type > 0.5 ? sAK8r_ : sAK4r_), type);
 		
 		theHistograms.fill<TH2F>("Best Z vs deltaR(4_{rec})", "Best Z vs deltaR(4_{rec})", 50,0.,5., BINARY_SIZE, (found_4r ? physmath::deltaR( it_4r->daughter(0), it_4r->daughter(1) ) : -1.), type /*filling underflow bin --> bestZ found with AK8*/ );
 		theHistograms.fill<TH2F>("Best Z vs deltaPhi(4_{rec})","Best Z vs deltaPhi(4_{rec})", 32,-3.2,3.2, BINARY_SIZE, (found_4r ? physmath::deltaPhi(it_4r->daughter(0), it_4r->daughter(1)) : -9.), type);
@@ -376,6 +394,7 @@ void VZZAnalyzer::furthestJetMVA(){
 	//------------------	GEN PARTICLES	------------------
 	//For the AK4 part: genVB are constructed from pairs of AK4 (FOR NOW!) See SignalDefinitions
 	fillGenHadVBs();
+	
 	if(genHadVBs_->size() > 0){ //Looks like sometimes ZZ is a void DiBoson
 		if(genHadVBs_->size() > 1)
 			std::stable_sort(genHadVBs_->begin(), genHadVBs_->end(), DeltaRComparator(*ZZ));
@@ -794,6 +813,49 @@ void VZZAnalyzer::endResolutionAnalisys(TFile& fout){
 	TProfile* prof_4g = genAK4_ZZpt->ProfileX("Precision AK4 vs ZZ pt");
 	prof_4g->SetTitle("Precision AK4 vs ZZ pt;ZZ pt [GeV/c];Precision [GeV/c^{2}]");
 	prof_4g->Write();
+	
+	
+	// ----- Ratio of AK8 to AK4-resolved gen bosons vs s
+	TH2* genType_s = dynamic_cast<TH2*>(theHistograms.get("Best Z gen vs s"));
+	if(!genType_s) return; //TGraphErrors or TGraphAsymmErrors?
+	TH1D* g4_s = genType_s->ProjectionX("AK4_proj", 1,2);
+	TH1D* g8_s = genType_s->ProjectionX("AK8_proj", 2,3);
+	g4_s->Rebin(2);
+	g8_s->Rebin(2);
+	TH1D* sum_s = (TH1D*)g4_s->Clone("total");
+	sum_s->Add(g8_s);
+	
+	TGraphAsymmErrors ratio_g8_s(g8_s, sum_s);
+	ratio_g8_s.SetName("Ratio of best Z AK8 vs s"); 
+	ratio_g8_s.SetTitle("Ratio of best Z AK8;s [GeV/c^{2}]");
+	ratio_g8_s.SetMinimum(0.);
+	ratio_g8_s.Write();
+	TGraphAsymmErrors ratio_g4_s(g4_s, sum_s);
+	ratio_g4_s.SetName("Ratio of best Z AK4 vs s"); 
+	ratio_g4_s.SetTitle("Ratio of best Z AK4;s [GeV/c^{2}]");
+	ratio_g4_s.SetMinimum(0.);
+	ratio_g4_s.Write();
+	
+	// ----- Ratio of AK8 to AK4-resolved gen bosons vs ZZ pt
+	TH2* genType_pt = dynamic_cast<TH2*>(theHistograms.get("Best Z gen vs ZZ pt"));
+	if(!genType_pt) return; //TGraphErrors or TGraphAsymmErrors?
+	TH1D* g4_pt = genType_pt->ProjectionX("AK4_proj_pt", 1,2);
+	TH1D* g8_pt = genType_pt->ProjectionX("AK8_proj_pt", 2,3);
+	g4_pt->Rebin(2);
+	g8_pt->Rebin(2);
+	TH1D* sum_pt = (TH1D*)g4_pt->Clone("total_pt");
+	sum_pt->Add(g8_pt);
+	
+	TGraphAsymmErrors ratio_g8_pt(g8_pt, sum_pt);
+	ratio_g8_pt.SetName("Ratio of best Z AK8 vs ZZ pt");
+	ratio_g8_pt.SetTitle("Ratio of best Z AK8;ZZ pt [GeV/c]");
+	ratio_g8_pt.SetMinimum(0.);
+	ratio_g8_pt.Write();
+	TGraphAsymmErrors ratio_g4_pt(g4_pt, sum_pt);
+	ratio_g4_pt.SetName("Ratio of best Z AK4 vs ZZ pt"); 
+	ratio_g4_pt.SetTitle("Ratio of best Z AK4;ZZ pt [GeV/c]");
+	ratio_g4_pt.SetMinimum(0.);
+	ratio_g4_pt.Write();
 }
 
 
