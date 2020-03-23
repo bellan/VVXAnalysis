@@ -12,6 +12,7 @@
 #include "EventAnalyzer.h"
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
+#include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 #include "VVXAnalysis/Commons/interface/Comparators.h"
 
 #include <iostream>
@@ -73,8 +74,8 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		inline double getRefinedMass(const phys::Jet* j) const{ return j->corrPrunedMass();}
 		
 		// ----- ----- Event-specific varibles calculation ----- ----- 
-		void fillGenHadVBs(); //Fills the vector only if it is empty
-		void fillAK4pairs();  //Fills the vector only if it is empty
+		void fillGenHadVBs(); //old: Fills the vector only if it is empty
+		void fillRecHadVBs();  //old: Fills the vector only if it is empty
 		void calcS();
 		
 		// ----- ----- Large sub-analisys ----- ----- 
@@ -109,7 +110,7 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		// ----- ----- Counters, ecc. ----- ----- 
 		clock_t startTime_; //Used to calculate elapsed time
-		unsigned long evtN_; //Used to count processed events
+		unsigned long evtN_, analyzedN_; //Used to count processed events
 		unsigned int singWFromJets_, pairWFromJets_, singWFromJetsAK8_, pairWFromJetsAK8_;
 		unsigned int singZFromJets_, pairZFromJets_, singZFromJetsAK8_, pairZFromJetsAK8_;
 		unsigned int recVBtot_; //Evts where the reconstructed VB is acceptable (VBosonDefinition)
@@ -120,6 +121,8 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		
 		// ----- ----- Signal definition ----- ----- 
+		int isSignal() const;  // 0-->no  1-->AK4  2-->AK8
+		
 		template <class PAR>
 		bool ZBosonDefinition(phys::Boson<PAR>& cand) const{  //candidate
 			bool checkMass = fabs(cand.p4().M() - phys::ZMASS) < 40; //temp
