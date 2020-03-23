@@ -19,12 +19,10 @@ include_directories(${CMAKE_SOURCE_DIR} ${ROOT_INCLUDE_DIRS})
 add_definitions(${ROOT_CXX_FLAGS})
 
 
-
 set(DataFormats ../DataFormats)
 set(DataFormats_src ${DataFormats}/src)
 set(DataFormats_interface ${DataFormats}/interface)
 set(Commons_src ../Commons/src)
-
 
 set(BASE ../../)
 
@@ -43,14 +41,11 @@ include_directories(${CMAKE_INCLUDE_PATH} ${DataFormats_interface} ${BASE})
 ROOT_GENERATE_DICTIONARY(G__TreeAnalysis "${EventDF_HEADERS}" LINKDEF "${EventDF_LINKDEF}")
 
 
-
 set(EventAnalyzer_SRCS ${EventDF_DICTIONARY} ${SRC}/MCInfo.cc ${SRC}/EventAnalyzer.cc ${Commons_src}/SignalDefinitions.cc ${Commons_src}/RegionTypes.cc ${Commons_src}/StringTools.cc)
 
-#Set here the location of the source code of your analysis
 set(Analyzers_SRCS)
 file(GLOB Analyzers_SRCS ${SRC}/*.cc)
 set(VVXAnalyzer_SRCS ${EventAnalyzer_SRCS} ${Analyzers_SRCS})
-#set(VVXAnalyzer_SRCS ${EventAnalyzer_SRCS} ${SRC}/VVXAnalyzer.cc ${SRC}/ZZWAnalyzer.cc ${SRC}/WZAnalyzer.cc ${SRC}/ZZSAnalyzer.cc ${SRC}/ZZjAnalyzer.cc ${SRC}/ZZWSRDefinition.cc ${SRC}/ZZMCAnalyzer.cc ${SRC}/ZZRecoAnalyzer.cc ${SRC}/FakeRateAnalyzer.cc ${SRC}/ZZjGenAnalyzer.cc ${SRC}/VBSMCAnalyzer.cc ${SRC}/VBSRecoAnalyzer.cc ${SRC}/WlllnuAnalyzer.cc ${SRC}/ZVAnalyzer.cc ${SRC}/WWosAnalyzer.cc ${SRC}/WZZAnalyzer.cc ${SRC}/VZZAnalyzer.cc ${SRC}/DBGenerator.cc)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN})
 
