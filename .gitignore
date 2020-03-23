@@ -1,5 +1,4 @@
 # Ignore some ancillary files
-
 *.pyc
 *.*~
 *.d
@@ -7,3 +6,18 @@
 *.root
 *.log
 __init__.py
+*.pcm
+*.rootmap
+*.cmake
+
+# Ignore folders
+bin/
+results/
+databases/
+CMakeFiles/
+JRDatabase/
+
+# Ignore specific files
+CMakeCache.txt
+Makefile
+G__TreeAnalysis.cxx

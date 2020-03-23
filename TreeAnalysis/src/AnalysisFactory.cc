@@ -15,6 +15,9 @@
 #include "VVXAnalysis/TreeAnalysis/interface/ZVAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/FakeRateAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/WZZAnalyzer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/VZZAnalyzer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/DBGenerator.h"
+
 AnalysisFactory::AnalysisFactory(){
   Register("WlllnuAnalyzer"  , &RegistrableAnalysis<WlllnuAnalyzer>::create  );
   Register("VVXAnalyzer"     , &RegistrableAnalysis<VVXAnalyzer>::create     );
@@ -32,6 +35,8 @@ AnalysisFactory::AnalysisFactory(){
   Register("FakeRateAnalyzer", &RegistrableAnalysis<FakeRateAnalyzer>::create);
   Register("ZVAnalyzer"      , &RegistrableAnalysis<ZVAnalyzer>::create      );
   Register("WWosAnalyzer"    , &RegistrableAnalysis<WWosAnalyzer>::create    );
+  Register("VZZAnalyzer"     , &RegistrableAnalysis<VZZAnalyzer>::create     );
+  Register("DBGenerator"     , &RegistrableAnalysis<DBGenerator>::create     );
 }
 
 void AnalysisFactory::Register(const std::string &analysisName, CreateAnFn pfnCreate)

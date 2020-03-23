@@ -1,5 +1,27 @@
 #!/bin/bash
 
+# Calls the Analyzer (via run.py) over all the samples in "samples/"
+# Last Author: A. Mecca (alberto.mecca@edu.unito.it)
+# Usage: without arguments, it uses default values. Otherwise it takes the
+# first as the Analyzer and passes the others unchanged as parameters to run.py
+
+ANALYZER=VZZAnalyzer; #default values
+EXTRA_ARGS='-rMC -n10000'
+
+if (($# \> 0)); then
+	ANALYZER=$1
+fi
+if (($# \> 1)); then
+	EXTRA_ARGS="${@:2}" #All the aguments except the first
+fi
+
+for SAMPLE in samples/* ; do
+	SAMPLE=${SAMPLE#*/};
+	SAMPLE=${SAMPLE%.root};
+	./python/run.py ${ANALYZER} ${SAMPLE} ${EXTRA_ARGS}
+	#echo "${ANALYZER} ${SAMPLE} ${EXTRA_ARGS}";
+done;
+
 #./python/run.py ZZjAnalyzer  ZZTo4e 
 #./python/run.py ZZjAnalyzer  ZZTo4mu 
 #./python/run.py ZZjAnalyzer  ZZTo2e2mu
@@ -27,19 +49,18 @@
 #./python/run.py ZZjAnalyzer    WGToLNuG
 #./python/run.py ZZjAnalyzer    WWGJets 
 
-./python/run.py ZZjAnalyzer  MuEGA
-./python/run.py ZZjAnalyzer  MuEGB
-./python/run.py ZZjAnalyzer  MuEGC
-./python/run.py ZZjAnalyzer  MuEGD
-./python/run.py ZZjAnalyzer DoubleMuA
-./python/run.py ZZjAnalyzer DoubleMuB
-./python/run.py ZZjAnalyzer DoubleMuC
-./python/run.py ZZjAnalyzer DoubleMuD
-./python/run.py ZZjAnalyzer DoubleEleA
-./python/run.py ZZjAnalyzer DoubleEleB
-./python/run.py ZZjAnalyzer DoubleEleC
-./python/run.py ZZjAnalyzer DoubleEleD
-
+#./python/run.py ZZjAnalyzer  MuEGA
+#./python/run.py ZZjAnalyzer  MuEGB
+#./python/run.py ZZjAnalyzer  MuEGC
+#./python/run.py ZZjAnalyzer  MuEGD
+#./python/run.py ZZjAnalyzer DoubleMuA
+#./python/run.py ZZjAnalyzer DoubleMuB
+#./python/run.py ZZjAnalyzer DoubleMuC
+#./python/run.py ZZjAnalyzer DoubleMuD
+#./python/run.py ZZjAnalyzer DoubleEleA
+#./python/run.py ZZjAnalyzer DoubleEleB
+#./python/run.py ZZjAnalyzer DoubleEleC
+#./python/run.py ZZjAnalyzer DoubleEleD
 
 #./python/run.py ZZjAnalyzer  ZZTo4e -r CR2P2F 
 #./python/run.py ZZjAnalyzer  ZZTo4mu -r CR2P2F
@@ -68,20 +89,18 @@
 #./python/run.py ZZjAnalyzer    WGToLNuG -r CR2P2F
 #./python/run.py ZZjAnalyzer    WWGJets  -r CR2P2F
 
-./python/run.py ZZjAnalyzer  MuEGA -r CR2P2F
-./python/run.py ZZjAnalyzer  MuEGB -r CR2P2F
-./python/run.py ZZjAnalyzer  MuEGC -r CR2P2F
-./python/run.py ZZjAnalyzer  MuEGD -r CR2P2F
-./python/run.py ZZjAnalyzer DoubleMuA -r CR2P2F
-./python/run.py ZZjAnalyzer DoubleMuB -r CR2P2F
-./python/run.py ZZjAnalyzer DoubleMuC -r CR2P2F
-./python/run.py ZZjAnalyzer DoubleMuD -r CR2P2F
-./python/run.py ZZjAnalyzer DoubleEleA -r CR2P2F
-./python/run.py ZZjAnalyzer DoubleEleB -r CR2P2F
-./python/run.py ZZjAnalyzer DoubleEleC -r CR2P2F
-./python/run.py ZZjAnalyzer DoubleEleD -r CR2P2F
-
-
+#./python/run.py ZZjAnalyzer  MuEGA -r CR2P2F
+#./python/run.py ZZjAnalyzer  MuEGB -r CR2P2F
+#./python/run.py ZZjAnalyzer  MuEGC -r CR2P2F
+#./python/run.py ZZjAnalyzer  MuEGD -r CR2P2F
+#./python/run.py ZZjAnalyzer DoubleMuA -r CR2P2F
+#./python/run.py ZZjAnalyzer DoubleMuB -r CR2P2F
+#./python/run.py ZZjAnalyzer DoubleMuC -r CR2P2F
+#./python/run.py ZZjAnalyzer DoubleMuD -r CR2P2F
+#./python/run.py ZZjAnalyzer DoubleEleA -r CR2P2F
+#./python/run.py ZZjAnalyzer DoubleEleB -r CR2P2F
+#./python/run.py ZZjAnalyzer DoubleEleC -r CR2P2F
+#./python/run.py ZZjAnalyzer DoubleEleD -r CR2P2F
  
 #./python/run.py ZZjAnalyzer  ZZTo4e -r CR3P1F
 #./python/run.py ZZjAnalyzer  ZZTo4mu -r CR3P1F
@@ -110,15 +129,17 @@
 #./python/run.py ZZjAnalyzer    WGToLNuG -r CR3P1F
 #./python/run.py ZZjAnalyzer    WWGJets -r CR3P1F 
 
-./python/run.py ZZjAnalyzer  MuEGA -r CR3P1F
-./python/run.py ZZjAnalyzer  MuEGB -r CR3P1F
-./python/run.py ZZjAnalyzer  MuEGC -r CR3P1F
-./python/run.py ZZjAnalyzer  MuEGD -r CR3P1F
-./python/run.py ZZjAnalyzer DoubleMuA -r CR3P1F
-./python/run.py ZZjAnalyzer DoubleMuB -r CR3P1F
-./python/run.py ZZjAnalyzer DoubleMuC -r CR3P1F
-./python/run.py ZZjAnalyzer DoubleMuD -r CR3P1F
-./python/run.py ZZjAnalyzer DoubleEleA -r CR3P1F
-./python/run.py ZZjAnalyzer DoubleEleB -r CR3P1F
-./python/run.py ZZjAnalyzer DoubleEleC -r CR3P1F
-./python/run.py ZZjAnalyzer DoubleEleD -r CR3P1F
+#./python/run.py ZZjAnalyzer  MuEGA -r CR3P1F
+#./python/run.py ZZjAnalyzer  MuEGB -r CR3P1F
+#./python/run.py ZZjAnalyzer  MuEGC -r CR3P1F
+#./python/run.py ZZjAnalyzer  MuEGD -r CR3P1F
+#./python/run.py ZZjAnalyzer DoubleMuA -r CR3P1F
+#./python/run.py ZZjAnalyzer DoubleMuB -r CR3P1F
+#./python/run.py ZZjAnalyzer DoubleMuC -r CR3P1F
+#./python/run.py ZZjAnalyzer DoubleMuD -r CR3P1F
+#./python/run.py ZZjAnalyzer DoubleEleA -r CR3P1F
+#./python/run.py ZZjAnalyzer DoubleEleB -r CR3P1F
+#./python/run.py ZZjAnalyzer DoubleEleC -r CR3P1F
+#./python/run.py ZZjAnalyzer DoubleEleD -r CR3P1F
+
+

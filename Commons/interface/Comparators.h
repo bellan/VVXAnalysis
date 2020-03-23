@@ -47,7 +47,7 @@ namespace phys{
 	};
   
 	struct MassComparator{
-	MassComparator(const double& ref): ref_(ref){}
+		MassComparator(const double& ref): ref_(ref){}
 		template<typename PAR>
 		bool operator()(const PAR & a , const PAR & b) const{ 
 			return fabs(a.p4().M()-ref_) < fabs(b.p4().M()-ref_); 
@@ -57,7 +57,7 @@ namespace phys{
 			return fabs(a->p4().M()-ref_) < fabs(b->p4().M()-ref_); 
 		}
     
-	MassComparator(int id, const double& ref): id_(id), ref_(ref){}
+		MassComparator(int id, const double& ref): id_(id), ref_(ref){}
     
 		typedef std::tuple<uint,uint,int,double> QuarkPairFeatures;
 		typedef std::vector<QuarkPairFeatures>   QuarkPairsFeatures;
@@ -82,7 +82,46 @@ namespace phys{
                     const PAIR & b) const{
 		return physmath::deltaR(a.first, a.second) < physmath::deltaR(b.first, b.second);
 		}
+		
+		template<typename P>
+		bool operator()(const Boson<P> & a,
+                    const Boson<P> & b) const{
+		return physmath::deltaR(a.daughter(0), a.daughter(1)) < physmath::deltaR(b.daughter(0), b.daughter(1));
+		}
 	};
   
+  struct DeltaRComparator{//Used to sort particles in order of deltaR from a reference momentum
+  	template <class P>
+  	DeltaRComparator(const P& refParticle) : refp4_(refParticle.p4()) {}
+  	DeltaRComparator(const TLorentzVector p4) : refp4_(p4) {}
+  	
+  	template <class P1, class P2>
+  	bool operator()(const P1& p1, const P2& p2){
+  		return physmath::deltaR(p1.p4(), refp4_) < physmath::deltaR(p2.p4(), refp4_);
+  	}
+  	template <class P1, class P2>
+  	bool operator()(const P1* p1, const P2* p2){
+  		return physmath::deltaR(p1->p4(), refp4_) < physmath::deltaR(p2->p4(), refp4_);
+  	}
+  	
+  	TLorentzVector refp4_;
+  };
+  
+  struct PtTotRefComparator{ //Compares the pt of the sum of a particle's momentum and the one of a reference particle. Used to find the particle that minimizes total pt in an event
+  	template <class P>
+  	PtTotRefComparator(const P& refParticle) : refp4_(refParticle.p4()) {}
+  	PtTotRefComparator(const TLorentzVector p4) : refp4_(p4) {}
+  	
+  	template <class P1, class P2>
+  	bool operator()(const P1& p1, const P2& p2){
+  		return (p1.p4() + refp4_).Pt() < (p2.p4() + refp4_).Pt();
+  	}
+  	template <class P1, class P2>
+  	bool operator()(const P1* p1, const P2* p2){
+  		return (p1->p4() + refp4_).Pt() < (p1->p4() + refp4_).Pt();
+  	}
+  	
+  	TLorentzVector refp4_;
+  };
 }
 #endif

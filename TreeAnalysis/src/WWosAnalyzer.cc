@@ -5,6 +5,7 @@
 
 #include <TF1.h>
 #include <TH1.h>
+#include "TTree.h"
 //#include <TEfficiency.h> // ClopperPearson(Double_t, Double_t, Double_t, Bool_t)
 #include <vector>
 #include <algorithm>    // std::min
@@ -116,7 +117,7 @@ void WWosAnalyzer::begin(){
 	for(char i=0; i<25; i++) cout<<"-";
 	cout<<" \tBegin of WWos\t ";
 	for(char i=0; i<25; i++) cout<<"-";
-	cout<<"\nAnalyzed:\t      /";//<<thisTree->GetEntries();
+	cout<<"\nAnalyzed:\t      /"<<tree()->GetEntries()<<std::flush;
 	startTime = clock();
 	evtN = 0;
 }

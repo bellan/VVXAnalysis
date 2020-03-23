@@ -5,7 +5,7 @@
  *  Concrete class for WZZ analysis
  *
  *  $Date: 2013/03/15 13:37:31 $
- *  $Revision: 1.4 $
+ *  $Revision: 1.6 $
  *  \author R. Bellan - UNITO <riccardo.bellan@cern.ch>
  */
 
@@ -13,6 +13,8 @@
 #include "EventAnalyzer.h"
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
+
+#include <TString.h>
 
 class WZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<WZZAnalyzer>{
 
@@ -29,9 +31,18 @@ public:
   virtual ~WZZAnalyzer(){}
 
   virtual void analyze();
-  
-  virtual Int_t cut();
 
+  virtual void genAnalyze();
+  
+  virtual Int_t signalCostraint();
+
+  virtual Bool_t cut(Int_t, phys::Boson<phys::Jet>);
+
+  virtual void Reconstruct(phys::Boson<phys::Jet>*);
+
+  virtual void CompatibilityTest(phys::Boson<phys::Jet>, phys::Boson<phys::Particle>, std::string, std::string);
+
+  virtual void printHistos(Int_t, std::string, phys::Boson<phys::Jet>);
 
  private:
   friend class Selector<WZZAnalyzer>;

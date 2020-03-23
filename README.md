@@ -11,7 +11,7 @@ pool of samples to fully match our needs too.
 
 The Multi Boson work-flow then foreseen the production of ROOT tree files, filled with objects like muons, electrons, jets, vector bosons, described by relatively 
 simple data formats (step: tree production).
-The actual analysis is then performed on TTrees. For this step I implemented a C++ framework that put the user in the condition of immediately start an analysis, even on a laptop, 
+The actual analysis is then performed on TTrees. For this step I implemented a C++ framework that puts the user in the condition of immediately start an analysis, even on a laptop, 
 and provided the samples are stored locally, to work off-line (step: tree analysis).
 
 The current structured of the repository is:
@@ -24,7 +24,7 @@ The code is located in this repository: https://github.com/bellan/VVXAnalysis.gi
 Recipe for the tree production step
 -----------------------------------
 
-- In a lxplus like environment, setup your area has for H --> ZZ --> 4l analysis, following the recipe in https://github.com/CJLST/ZZAnalysis.
+- In a lxplus like environment, setup your area as for H --> ZZ --> 4l analysis, following the recipe in https://github.com/CJLST/ZZAnalysis.
 - Check-out the code from this repository.
   - ```git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis```
   - cd VVXAnalysis
@@ -92,20 +92,20 @@ ln -s <samples-location> samples/
   
   ```./python/run.py <name of analysis class> <name of the sample/data set type>```
 
-  As further option, it can take a bool that force the analysis to grab the cross-section from the CSV file. 
+  As further option, it can take a bool that forces the analysis to grab the cross-section from the CSV file. 
   The default is ```False```, because normally the tree already contains the cross section from the CSV. This option is meant to be used in case of
   a more precise cross section is made available, or a bug in the cross section assignment for a specific sample is found, allowing the user to postpone a new tree production.
 
-Off course, here in this step, it is supposed that you implement something. I need to give you more info, then. As said the code is steered by the ```./python/run.py``` code, that knows 
+Of course, here in this step, it is supposed that you implement something. I need to give you more info, then. As said the code is steered by the ```./python/run.py``` code, that knows 
 how to access the samples and their main characteristics, but the actual code is C++ based.
-To implement an analysis, you should inherit from the ```EventAnalyzer``` class, that set up all the relevant branches, the loop over the events and some other useful utilities for
+To implement an analysis, you should inherit from the ```EventAnalyzer``` class, that sets up all the relevant branches, the loop over the events and some other useful utilities for
 histogramming. The base class has a pure virtual method (```analyze()```) that must be implemented in the concrete class (your analysis). As a matter of fact, all the analysis should be doable
 in the ```analyze()``` method (called each event) and in the ```begin()``` and ```end()``` methods, called before and after the loop over the events starts/ends.
-Also the ```cut()``` function, called each event, is supposed to be possibly overloaded, as it can holds a pre-selection of the analysis.
+Also the ```cut()``` function, called each event, is supposed to be possibly overloaded, as it can hold a pre-selection of the analysis.
 
 Your class needs then to be registered to be ran by the ```eventAnalyzer``` executable. To do that you have to do two things. First, your class must inherit from ```RegistrableAnalysis.h```, so in the inheritance declaration of your class, make sure you have ```RegistrableAnalysis<YourClass>```. Second, in ```AnalysisFactory.cc```, more precisely in the constructor of the class, add a line like 
 ```Register("YourClass", &RegistrableAnalysis<YourClass>::create);``` 
-To make your code successfully compiled on your laptop, you finally need to modify ```CMakeList.txt``` to add the source code of your analysis. Addi it to the ```VVXAnalyzer_SRCS``` variable (```scram``` instead does everything by itself).
+To make your code successfully compile on your laptop, you finally need to modify ```CMakeList.txt``` to add the source code of your analysis. Add it to the ```VVXAnalyzer_SRCS``` variable (```scram``` instead does everything by itself).
 To make more clear the procedure I have put an example (that it is not supposed to be modified) in ```interface/VVXAnalyzer.h``` and ```src/VVXAnalyzer.cc```. 
 
 Note that the histogrammer utility (a member of the ```EventAnalyzer``` class) allows you to fill plots without bothering 
