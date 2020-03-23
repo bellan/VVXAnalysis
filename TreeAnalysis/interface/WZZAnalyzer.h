@@ -42,7 +42,7 @@ public:
 
   virtual void CompatibilityTest(phys::Boson<phys::Jet>, phys::Boson<phys::Particle>, std::string, std::string);
 
-  virtual void printHistos(Int_t, std::string, phys::Boson<phys::Jet>);
+  virtual void printHistos(uint, std::string, phys::Boson<phys::Jet>);
 
  private:
   friend class Selector<WZZAnalyzer>;

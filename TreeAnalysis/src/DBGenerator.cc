@@ -157,8 +157,8 @@ bool DBGenerator::findBestVCandidate(const std::vector<phys::Jet>* js, phys::Bos
 		pair<size_t, size_t> indices(0,0);
 		float minDifZ = 1.;
 		float minDifW = 1.;
-		float massZCand = 0.;
-		float massWCand = 0.;
+		// float massZCand = 0.;
+		// float massWCand = 0.;
 		float tmpMass = 0.;
 		for(size_t i = 0; i < js->size(); i++){
 			for(size_t j = i+1; j < js->size(); j++){
@@ -169,12 +169,12 @@ bool DBGenerator::findBestVCandidate(const std::vector<phys::Jet>* js, phys::Bos
 				float diffWa = fabs(diffW);
 				if(diffZa < minDifZ){
 					minDifZ = diffZa;
-					massZCand = tmpMass;
+					//massZCand = tmpMass;
 					indices = std::make_pair(i,j);
 				}
 				if(diffWa < minDifW){
 					minDifW = diffWa;
-					massWCand = tmpMass;
+					//massWCand = tmpMass;
 					indices = std::make_pair(i,j);
 				}
 			}

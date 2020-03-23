@@ -914,9 +914,10 @@ void VZZAnalyzer::endBestCandAnalysis(TFile & fout){
 
 
 void VZZAnalyzer::simpleGraphs(){
-	if(ZZ != nullptr)
+  if(ZZ != nullptr){
 		theHistograms.fill("ZZmass","ZZ mass;[GeV/c^2]", 200,0.,500., ZZ->mass(), theWeight);
 		theHistograms.fill("ZZpt","ZZ pt;[GeV/c]", 200,0.,500., ZZ->pt(), theWeight);
+  }
 	/*else
 		cout<<"evtN_: ZZ == nullptr\n";*/
 	theHistograms.fill("genVBParticles","genVBParticles->size()", 5,-0.5,4.5, genVBParticles->size(), theWeight);

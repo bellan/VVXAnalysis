@@ -534,8 +534,8 @@ void WZZAnalyzer::genAnalyze(){
   //Building of every jets pairs combination
   std::vector<phys::Boson<phys::Jet> > DiJets;
 
-  for(int i=0; i</*centralJets*/jets->size(); i++)//Warning: size can be 0
-    for(int j=i; j</*centralJets*/jets->size(); j++)  
+  for(uint i=0; i</*centralJets*/jets->size(); i++)//Warning: size can be 0
+    for(uint j=i; j</*centralJets*/jets->size(); j++)  
       if(j!=i)
 	DiJets.push_back(phys::Boson<phys::Jet>(/*centralJets*/jets->at(i), /*centralJets*/jets->at(j)));
 
@@ -558,13 +558,13 @@ void WZZAnalyzer::genAnalyze(){
       //4th reconstruction model: minimization of total Pt of ZZjj system
       std::vector<phys::Particle> ZZjj;
       phys::Particle ZZjjCandidate;
-      for(int i=0; i<DiJets.size(); i++){
+      for(uint i=0; i<DiJets.size(); i++){
 	phys:: Particle totState(ZZ->p4()+(DiJets.at(i)).p4());
 	ZZjj.push_back(totState.p4());
       }
       std::stable_sort(ZZjj.begin(), ZZjj.end(), phys::PtComparator());
       ZZjjCandidate=ZZjj.back();
-      for (int i=0; i<DiJets.size(); i++)
+      for (uint i=0; i<DiJets.size(); i++)
 	if((DiJets.at(i)).p4()==(ZZjjCandidate.p4()-ZZ->p4()))
 	  minTotPtCandidate = DiJets.at(i);
 
@@ -631,8 +631,8 @@ void WZZAnalyzer::Reconstruct(phys::Boson<phys::Jet>* mWCandidate){
   //Building of every jets pairs combination
   std::vector<phys::Boson<phys::Jet> > DiJets;
 
-  for(int i=0; i<jets->size(); i++)//Warning: size can be 0
-    for(int j=i; j<jets->size(); j++)  
+  for(uint i=0; i<jets->size(); i++)//Warning: size can be 0
+    for(uint j=i; j<jets->size(); j++)  
       if(j!=i)
 	DiJets.push_back(phys::Boson<phys::Jet>(jets->at(i), jets->at(j)));
   /*
@@ -650,9 +650,9 @@ void WZZAnalyzer::CompatibilityTest(phys::Boson<phys::Jet> bestCandidate, phys::
   double dRMax=0.4;
   std::string genVBId;
 
-  if(genVB.id()==24 /* && genVB.mass()>50 && genVB.mass()<110 /* && (genVB.daughter(0)).mass()>30 &&  (genVB.daughter(1)).mass()>30*/)
+  if(genVB.id()==24) // && genVB.mass()>50 && genVB.mass()<110 && (genVB.daughter(0)).mass()>30 &&  (genVB.daughter(1)).mass()>30)
     genVBId="W";
-  else if(genVB.id()==23 /* && genVB.mass()>60 && genVB.mass()<120 /* && (genVB.daughter(0)).mass()>30 &&  (genVB.daughter(1)).mass()>30*/)
+  else if(genVB.id()==23) // && genVB.mass()>60 && genVB.mass()<120 && (genVB.daughter(0)).mass()>30 &&  (genVB.daughter(1)).mass()>30)
     genVBId="Z";
   else return;
 
@@ -701,7 +701,7 @@ void WZZAnalyzer::CompatibilityTest(phys::Boson<phys::Jet> bestCandidate, phys::
   return;
 }
 
-void WZZAnalyzer::printHistos(Int_t i, std::string histoType,  phys::Boson<phys::Jet> recoV){
+void WZZAnalyzer::printHistos(uint i, std::string histoType,  phys::Boson<phys::Jet> recoV){
   
   std::vector<std::string> cuts ={"0","1","2","3"};
   
