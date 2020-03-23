@@ -86,8 +86,19 @@ process.genParticlesFromHardProcess = cms.EDFilter("GenParticleSelector",
                                            src = cms.InputTag("prunedGenParticles"),
                                            #acceptance cut on leptons?
                                            cut = cms.string('status == 1 && (isPromptFinalState && fromHardProcessFinalState && abs(pdgId) >= 11 && abs(pdgId) <= 16) ||  abs(pdgId) == 22'),        
-                                           stableOnly = cms.bool(True)
+                                                   stableOnly = cms.bool(True)
                                            )
+
+process.genTaus = cms.EDFilter("GenParticleSelector",
+                              filter = cms.bool(False),
+                              src = cms.InputTag("prunedGenParticles"),
+                              cut = cms.string('isPromptDecayed && abs(pdgId) == 15'),        
+                              stableOnly = cms.bool(False)
+)
+
+
+
+
 
 # FIXME! They need to be disambiguated from leptons!! RB: done in the signal definition!
 process.selectedGenJets = cms.EDFilter("GenJetSelector",
@@ -105,7 +116,7 @@ process.selectedGenJetsAK8 = cms.EDFilter("GenJetSelector",
 
 
 
-process.genPath = cms.Path(process.genParticlesFromHardProcess + process.selectedGenJets  + process.selectedGenJetsAK8)
+process.genPath = cms.Path(process.genParticlesFromHardProcess + process.selectedGenJets  + process.selectedGenJetsAK8 + process.genTaus)
 
 
 

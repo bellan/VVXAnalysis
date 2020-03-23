@@ -116,6 +116,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     consumesMany<LHEEventProduct>();
     theGenCategoryToken      = consumes<int>                        (config.getUntrackedParameter<edm::InputTag>("GenCategory"    , edm::InputTag("genCategory")));
     theGenCollectionToken    = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("genParticlesFromHardProcess")));
+    theGenTauCollectionToken = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenTaus"  , edm::InputTag("genTaus")));
     //theGenJetCollectionToken = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("selectedGenJets")));
     theGenJetCollectionToken    = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("genCategory","genJets")));
     theGenJetAK8CollectionToken = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJetsAK8"      , edm::InputTag("genCategory","genJetsAK8")));
@@ -163,6 +164,7 @@ void TreePlanter::beginJob(){
   theTree->Branch("ZLCand"    , &ZL_); 
 
   theTree->Branch("genParticles"  , &genParticles_);
+  theTree->Branch("genTaus"       , &genTaus_);
   theTree->Branch("genVBParticles", &genVBParticles_);
   theTree->Branch("genJets"       , &genJets_);
   theTree->Branch("genJetsAK8"    , &genJetsAK8_);
@@ -292,6 +294,7 @@ void TreePlanter::initTree(){
   ZL_        = std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> >();
 
   genParticles_ = std::vector<phys::Particle>();
+  genTaus_ = std::vector<phys::Particle>();
   genVBParticles_ = std::vector<phys::Boson<phys::Particle> >();
   genJets_ = std::vector<phys::Particle>();
   genJetsAK8_ = std::vector<phys::Particle>();
@@ -340,6 +343,7 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
     
   
   edm::Handle<edm::View<reco::Candidate> > genParticles; event.getByToken(theGenCollectionToken, genParticles);
+  edm::Handle<edm::View<reco::Candidate> > genTaus; event.getByToken(theGenTauCollectionToken, genTaus);
   edm::Handle<GenEventInfoProduct>         genInfo     ; event.getByToken(theGenInfoToken, genInfo);
 
 
@@ -396,6 +400,14 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
     const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(&(*p));
     genParticles_.push_back(phys::Particle(gp->p4(), phys::Particle::computeCharge(gp->pdgId()), gp->pdgId()));
   }
+
+  event.getByToken(theGenTauCollectionToken,  genTaus);
+  for (edm::View<reco::Candidate>::const_iterator p = genTaus->begin(); p != genTaus->end(); ++p){
+    const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(&(*p));
+    genTaus_.push_back(phys::Particle(gp->p4(), phys::Particle::computeCharge(gp->pdgId()), gp->pdgId()));
+  }
+
+
 
   
   event.getByToken(theGenVBCollectionToken,  genParticles);

@@ -74,6 +74,6 @@ process.source = cms.Source("PoolSource",fileNames = cms.untracked.vstring(
 
 
 ))
-process.maxEvents.input = 10000
+process.maxEvents.input = -1
 
 

@@ -156,6 +156,7 @@ class TreePlanter: public edm::EDAnalyzer {
   std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > ZL_;
 
   std::vector<phys::Particle>               genParticles_;
+  std::vector<phys::Particle>               genTaus_;
   std::vector<phys::Boson<phys::Particle> > genVBParticles_;
   std::vector<phys::Particle>               genJets_;
   std::vector<phys::Particle>               genJetsAK8_;
@@ -183,6 +184,7 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::EDGetTokenT<int>                         theGenCategoryToken;
   edm::EDGetTokenT<edm::View<reco::Candidate> > theGenVBCollectionToken;
   edm::EDGetTokenT<edm::View<reco::Candidate> >	theGenCollectionToken;
+  edm::EDGetTokenT<edm::View<reco::Candidate> >	theGenTauCollectionToken;
   edm::EDGetTokenT<edm::View<reco::Candidate> > theGenJetCollectionToken;
   edm::EDGetTokenT<edm::View<reco::Candidate> > theGenJetAK8CollectionToken;
   edm::EDGetTokenT<GenEventInfoProduct>         theGenInfoToken;
