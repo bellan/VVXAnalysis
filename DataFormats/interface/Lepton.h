@@ -54,7 +54,8 @@ namespace phys {
     Bool_t  isInCracks()           const {return isInCracks_;}
 
     Bool_t   passFullSelNoFSRCorr()const {return isGood_ && pfCombRelIso_ < (abs(id_) == 13 ? 0.35 : 0.35);}
-    Bool_t   passFullSel()         const {return isGood_ && pfCombRelIsoFSRCorr_ < (abs(id_) == 13 ? 0.35 : 0.35);}
+    //Bool_t   passFullSel()         const {return isGood_ && pfCombRelIsoFSRCorr_ < (abs(id_) == 13 ? 0.35 : 0.35);}
+    Bool_t   passFullSel()         const {return isGood_;} // In ZZAnalysis:Run2Legacy the iso is included in the ID
 
     // The fake rate is set to a value different from 1 even for true leptons.
     void setFakeRateSF(const std::pair<double,double> & sf) {

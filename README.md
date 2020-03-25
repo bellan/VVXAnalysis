@@ -27,10 +27,6 @@ Recipe for the tree production step
 - In a lxplus like environment, setup your area as for H --> ZZ --> 4l analysis, following the recipe in https://github.com/CJLST/ZZAnalysis.
 - Check-out the code from this repository.
   - ```git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis```
-  - cd VVXAnalysis
-  - git checkout VVjj_80X_v1
-- Check-out the jet resolution constabts
-  - ```git clone https://github.com/cms-jet/JRDatabase.git JRDatabase```
 - Compile the code with ```scram b```
 - in ```VVXAnalysis/Producers/test/analysis_ZZW.py``` there is an example on cmsRun configuration for an interactive run.
 - in ```ZZAnalysis/AnalysisStep/test/prod``` there are queue tools useful for submission/check-status/resubmission/merging.
@@ -56,8 +52,6 @@ Recipe for tree analysis step
 ```
 git clone https://github.com/CJLST/ZZAnalysis.git ZZAnalysis
 git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis
-cd ZZAnalysis; git checkout miniAOD_80X
-cd ..
 cd VVXAnalysis/TreeAnalysis
 cmake CMakeLists.txt
 make
