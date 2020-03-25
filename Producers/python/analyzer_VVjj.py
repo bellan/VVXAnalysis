@@ -150,11 +150,13 @@ process.electronsFromZZ = cms.EDProducer("PATElectronsFromCompositeCandidates", 
 
 
 process.postCleaningMuons = cms.EDFilter("PATMuonSelector", src = cms.InputTag("appendPhotons:muons"),
-                                         cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
+                                         #cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
+                                         cut = cms.string("pt > 10 && userFloat('isGood')"))
 
 
 process.postCleaningElectrons = cms.EDFilter("PATElectronSelector", src = cms.InputTag("appendPhotons:electrons"),
-                                             cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
+                                             #cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
+                                             cut = cms.string("pt > 10 && userFloat('isGood')"))
 
 
 process.muonsToBeRemovedFromJets = cms.EDProducer("PATMuonMerger",
