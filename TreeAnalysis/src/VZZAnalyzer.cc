@@ -71,9 +71,10 @@ void VZZAnalyzer::begin(){
 
 Int_t VZZAnalyzer::cut(){
 	++evtN_;
-	//cout<<"\r\t\t"<<evtN_;
+	cout<<"\r\t\t"<<evtN_;
 	
 	//Cleanup of previous event
+	sigVB_ = nullptr;
 	if(genHadVBs_) genHadVBs_->clear(); //Destroys objects but keeps memory allocated
 	if(AK4pairs_)   AK4pairs_->clear();
 	
@@ -87,34 +88,44 @@ Int_t VZZAnalyzer::cut(){
 	fillGenHadVBs();
 	fillRecHadVBs();
 	
-	int sigType = isSignal(/*Uses genJets(AK4) and genJetsAK8*/);
-	theHistograms.fill("Signal Type", "Signal Type", 3,-0.5,2.5, sigType);
-	if(sigType) return 1;
+	sigType_ = isSignal(/*Uses genJets(AK4) and genJetsAK8*/);
+	theHistograms.fill("Signal Type", "Signal Type", 3,-0.5,2.5, sigType_);
+	if(sigType_) return 1;
 	else return -1;
 }
 
 
 void VZZAnalyzer::analyze(){
 	++analyzedN_;
+	switch(sigType_){
+		case 1:
+			sigVB_ = &(genHadVBs_->front());
+			break;
+		case 2:
+			sigVB_ = &(genHadVBs_->front());
+			break;
+		case 0:
+			cout<<"Error, sigType_ is not set in analyze()\n";
+			return;
+		default:
+			cout<<"Error, sigType_ has an invalid value in analyze()\n";
+			return;
+	}
 	
-	calcS();
+	genSignalGraphs();
+	recSignalGraphs();
+	//calcS();
 	//bestCandidateAnalysis();
 	//ptCutMVA();
 	//closestJetAnalisys();
 	//furthestJetMVA();
 	//minPtJetMVA();
 	
-	bestZMassJetMVA();
+	//bestZMassJetMVA();
 	simpleGraphs();
 	
-	
-	foreach(const Boson<Particle>& b, *genHadVBs_)
-		theHistograms.fill("All AK4_{gen} mass", "All AK4_{gen} mass", 50,0.,200., b.mass(), 1./*theWeight*/);
-	/*
-	theHistograms.fill("s AK4 gen", "s AK4 gen", 100,0.,2000., sAK4g_, theWeight);
-	theHistograms.fill("s AK8 gen", "s AK8 gen", 100,0.,2000., sAK8g_, theWeight);
-	theHistograms.fill("s AK4 rec", "s AK4 rec", 100,0.,2000., sAK4r_, theWeight);
-	theHistograms.fill("s AK8 rec", "s AK8 rec", 100,0.,2000., sAK8r_, theWeight);
+	/*foreach(const Boson<Particle>& b, *genHadVBs_)
+		theHistograms.fill("All AK4_{gen} mass", "All AK4_{gen} mass", 50,0.,200., b.mass(), 1.);
 	*/
 	
 	return;
@@ -122,29 +133,22 @@ void VZZAnalyzer::analyze(){
 
 void VZZAnalyzer::end(TFile & fout){
 	//Final cleanup
-	if(genHadVBs_) delete genHadVBs_; //Deallocate memory
+	if(genHadVBs_) delete genHadVBs_; //Deallocates memory
 	if(AK4pairs_)  delete AK4pairs_;
 	
 	cout<<'\n';
 	if(withGenVB_) //This counter was incremented if bestCandidateAnalysis() was called
 		endBestCandAnalysis(fout); //Dividing histograms to get efficiency and stuff
 	
-	if(win4_ || win8_) //This counter was incremented if closestJetAnalisys() was called
+	if(win4_ || win8_){ //This counter was incremented if closestJetAnalisys() was called
 		endClosestJetAn();
-	
-	
-	if(withGenVB_ /*if the candJetAnalysis has been done*/){
-		cout<<"Candidate W: JetPair = "<<pairWFromJets_<<" \tJetSing = "<<singWFromJets_<<" \tAK8Pair = "<<pairWFromJetsAK8_<<" \tAK8Sing = "<<singWFromJetsAK8_;
-		cout<<"\nCandidate Z: JetPair = "<<pairZFromJets_<<" \tJetSing = "<<singZFromJets_<<" \tAK8Pair = "<<pairZFromJetsAK8_<<" \tAK8Sing = "<<singZFromJetsAK8_;
-		cout<<"\nEvents with a reconstructed VB: "<<recVBtot_<<" -> "<<recVBtot_*100./evtN_<<'%';
-		cout<<"\nReconstructed near (deltaR < 0.4) a genVB: "<<goodRec_<<" \tevents with a genVB: "<<withGenVB_<<" \t--> "<<goodRec_*100./withGenVB_<<'%';
-	}
-	if(win8_ || win4_) //if closestJetAnalisys has been done
 		cout<<"Reconstruction of a VB --> AK8: "<<win8_<<" \tAK4 pairs: "<<win4_;
+	}
 	
-	endResolutionAnalisys(fout);
+	//endResolutionAnalisys(fout);
+	endSignalEff(fout);
 	
-	cout<<"\nAnalized: "<<analyzedN_<<'\n';
+	cout<<"\nPassing cut: "<<analyzedN_<<'\n';
 	
 	float elapsedSec = (float)(clock()-startTime_)/CLOCKS_PER_SEC;
 	int elapsedSecInt = (int)elapsedSec;
@@ -156,8 +160,8 @@ void VZZAnalyzer::end(TFile & fout){
 }
 
 
-int VZZAnalyzer::isSignal() const{
-	bool twoAK4 = ( genHadVBs_->size() >= 2 );
+int VZZAnalyzer::isSignal(){
+	bool twoAK4 = ( genHadVBs_->size() >= 1 );
 	bool oneAK8 = ( genJetsAK8->size() >= 1 );
 	if(!twoAK4 || !oneAK8)
 		return 0;
@@ -173,6 +177,73 @@ int VZZAnalyzer::isSignal() const{
 		return 2;
 		
 	return 0;
+}
+
+
+void VZZAnalyzer::genSignalGraphs(){
+	const char* name_eta = Form("Sig Gen AK%d: #eta", sigType_*4);  // 4*1 = 4, 4*2 = 8
+	theHistograms.fill(name_eta, name_eta, 20,-5.,5., sigVB_->eta(), 1.);
+	const char* name_pt = Form("Sig Gen AK%d: pt", sigType_*4);
+	theHistograms.fill(name_pt, name_pt, 20,0.,500., sigVB_->pt(), 1.);
+}
+
+
+void VZZAnalyzer::recSignalGraphs(){
+	Particle* candClosest;
+	switch(sigType_){
+		case 1:
+			stable_sort(AK4pairs_->begin(), AK4pairs_->end(), DeltaRComparator(*sigVB_) );
+			candClosest = &(AK4pairs_->front());
+			break;
+		case 2:
+			stable_sort(jetsAK8->begin(), jetsAK8->end(), DeltaRComparator(*sigVB_) );
+			candClosest = &(jetsAK8->front());
+			break;
+		default:
+			cout<<"Error, sigType_ has an invalid value in recSignalGraphs()\n";
+	}
+	
+	const char* name_dR = Form("Sig Rec closest AK%d: #DeltaR", sigType_*4);
+	float dR_closest = physmath::deltaR(*sigVB_, *candClosest);
+	theHistograms.fill(name_dR, name_dR, 20,0.,2., dR_closest, 1.);
+	
+	//Efficiency
+	if(dR_closest < 0.4){
+		const char* name_eta = Form("Sig Rec AK%d: #eta of gen", sigType_*4);  // 4*1 = 4, 4*2 = 8
+		theHistograms.fill(name_eta, name_eta, 20,-5.,5., sigVB_->eta(), 1.);
+		const char* name_pt = Form("Sig Rec AK%d: pt of gen", sigType_*4);
+		theHistograms.fill(name_pt, name_pt, 20,0.,500., sigVB_->pt(), 1.);
+		
+		//Resolution
+		const char* name_resE = Form("Sig Resolution AK%d: E", sigType_*4);
+		theHistograms.fill(name_resE, name_resE, 20,-100.,100., candClosest->e()-sigVB_->e(), 1.);
+		const char* name_resM = Form("Sig Resolution AK%d: M", sigType_*4);
+		theHistograms.fill(name_resM, name_resM, 20,-50.,50., candClosest->mass()-sigVB_->mass());
+	}
+}
+
+
+void VZZAnalyzer::endSignalEff(TFile& fout){
+	TH1* gen_eta = theHistograms.get("Sig Gen AK4: #eta");
+	TH1* gen_pt  = theHistograms.get("Sig Gen AK4: pt");
+	TH1* rec_eta = theHistograms.get("Sig Rec AK4: #eta of gen");
+	TH1* rec_pt  = theHistograms.get("Sig Rec AK4: pt of gen");
+	
+	fout.cd();
+	if(gen_eta != nullptr && rec_eta != nullptr){
+		TGraphAsymmErrors* etaEff  = new TGraphAsymmErrors(rec_eta,  gen_eta,  "cp");
+		etaEff->GetYaxis()->SetRangeUser(0.,1.01);
+		etaEff->SetTitle("Sig efficiency vs #eta");
+		etaEff->SetName("Sig efficiency vs #eta");
+		etaEff->Write();
+	}
+	if(gen_pt != nullptr && rec_pt != nullptr){
+		TGraphAsymmErrors* ptEff  = new TGraphAsymmErrors(rec_pt,  gen_pt,  "cp");
+		ptEff->GetYaxis()->SetRangeUser(0.,1.01);
+		ptEff->SetTitle("Sig efficiency vs pt");
+		ptEff->SetName("Sig efficiency vs pt");
+		ptEff->Write();
+	}
 }
 
 
@@ -310,7 +381,6 @@ void VZZAnalyzer::bestZMassJetMVA(){
 	}
 	
 	//------------------	REC AK4	------------------
-	//fillRecHadVBs();
 	auto it_4r = AK4pairs_->begin();
 	bool found_4r = false;
 	if(AK4pairs_->size() > 0){
@@ -412,7 +482,6 @@ void VZZAnalyzer::minPtJetMVA(){
 		}
 	}
 	//------------------	REC AK4	------------------
-	//fillRecHadVBs();
 	if(AK4pairs_->size() > 0){
 		stable_sort( AK4pairs_->begin(), AK4pairs_->end(), PtTotRefComparator(*ZZ) );
 		auto it = AK4pairs_->begin();
@@ -955,24 +1024,34 @@ void VZZAnalyzer::endBestCandAnalysis(TFile & fout){
 		//etaEff->GetYaxis()->SetRangeUser(0.,1.01);
 		MEff->Write();
 	}
+	
+	cout<<"Candidate W: JetPair = "<<pairWFromJets_<<" \tJetSing = "<<singWFromJets_<<" \tAK8Pair = "<<pairWFromJetsAK8_<<" \tAK8Sing = "<<singWFromJetsAK8_;
+		cout<<"\nCandidate Z: JetPair = "<<pairZFromJets_<<" \tJetSing = "<<singZFromJets_<<" \tAK8Pair = "<<pairZFromJetsAK8_<<" \tAK8Sing = "<<singZFromJetsAK8_;
+		cout<<"\nEvents with a reconstructed VB: "<<recVBtot_<<" -> "<<recVBtot_*100./evtN_<<'%';
+		cout<<"\nReconstructed near (deltaR < 0.4) a genVB: "<<goodRec_<<" \tevents with a genVB: "<<withGenVB_<<" \t--> "<<goodRec_*100./withGenVB_<<'%';
 }
 
 
 void VZZAnalyzer::simpleGraphs(){
-  if(ZZ != nullptr){
-		theHistograms.fill("ZZmass","ZZ mass;[GeV/c^2]", 200,0.,500., ZZ->mass(), theWeight);
-		theHistograms.fill("ZZpt","ZZ pt;[GeV/c]", 200,0.,500., ZZ->pt(), theWeight);
-  }
+	if(ZZ != nullptr)
+		theHistograms.fill("ZZmass","ZZ mass;[GeV/c^2]", 200,0.,500., ZZ->mass(),1./*theWeight*/);
+		theHistograms.fill("ZZpt","ZZ pt;[GeV/c]", 200,0.,500., ZZ->pt(), 1./*theWeight*/);
 	/*else
 		cout<<"evtN_: ZZ == nullptr\n";*/
 	theHistograms.fill("genVBParticles","genVBParticles->size()", 5,-0.5,4.5, genVBParticles->size(), 1./*theWeight*/);
+	unsigned int nW = 0;
+	unsigned int nZ = 0;
 	foreach(const phys::Boson<phys::Particle>& gen, *genVBParticles){
-    if(abs(gen.id()) == 24 && abs(gen.daughter(0).id()) < 10) {
-      theHistograms.fill("genMass_W", "mass of gen W", 100,35.5,135.5, gen.mass(), 1./*theWeight*/);
-    }
     if(abs(gen.id()) == 23 && abs(gen.daughter(0).id()) < 10) {
-      theHistograms.fill("genMass_Z", "mass of gen Z", 100,35.5,135.5, gen.mass(), 1./*theWeight*/);
+      theHistograms.fill("genMass_Z", "mass of gen Z", 35,50.,120., gen.mass(), 1./*theWeight*/);
+      ++nZ;
     }
+    else if(abs(gen.id()) == 24 && abs(gen.daughter(0).id()) < 10) {
+      theHistograms.fill("genMass_W", "mass of gen W", 35,50.,120., gen.mass(), 1./*theWeight*/);
+      ++nW;
+    }
+    theHistograms.fill("number of gen W", "number of gen W", 4,-0.5,3.5, nW, 1.);
+    theHistograms.fill("number of gen Z", "number of gen Z", 4,-0.5,3.5, nZ, 1.);    
   }
 	
 	theHistograms.fill("AK4_{rec} size","AK4_{rec} mass", 8,-0.5,7.5, jets->size(), 1./*theWeight*/);

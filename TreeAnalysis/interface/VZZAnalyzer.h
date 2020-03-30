@@ -74,7 +74,7 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		// ----- ----- Event-specific varibles calculation ----- ----- 
 		void fillGenHadVBs(); //old: Fills the vector only if it is empty
-		void fillRecHadVBs();  //old: Fills the vector only if it is empty
+		void fillRecHadVBs(); //old: Fills the vector only if it is empty
 		void calcS();
 		
 		// ----- ----- Large sub-analisys ----- ----- 
@@ -97,6 +97,10 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		void endResolutionAnalisys(TFile& fout); //Calculates AK4-AK8 resolution per bin of ZZ pt
 		
+		
+		void genSignalGraphs();  // Reads sigType_
+		void recSignalGraphs();
+		void endSignalEff(TFile&);
 	private:
 		std::vector<phys::Boson<phys::Particle>>* genHadVBs_ = nullptr; //genVBParticles with hadronic daugthers
 		std::vector<phys::Boson<phys::Jet>>* AK4pairs_ = nullptr; //pairs of all the reconstructed AK4 jets
@@ -120,7 +124,9 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		
 		// ----- ----- Signal definition ----- ----- 
-		int isSignal() const;  // 0-->no  1-->AK4  2-->AK8
+		int sigType_;   // 0-->no  1-->AK4  2-->AK8
+		phys::Particle* sigVB_;
+		int isSignal();  
 		
 		template <class PAR>
 		bool ZBosonDefinition(phys::Boson<PAR>& cand) const{  //candidate
