@@ -150,13 +150,12 @@ process.electronsFromZZ = cms.EDProducer("PATElectronsFromCompositeCandidates", 
 
 
 process.postCleaningMuons = cms.EDFilter("PATMuonSelector", src = cms.InputTag("appendPhotons:muons"),
-                                         #cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
-                                         cut = cms.string("pt > 10 && userFloat('isGood')"))
+                                         cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
 
 
 process.postCleaningElectrons = cms.EDFilter("PATElectronSelector", src = cms.InputTag("appendPhotons:electrons"),
-                                             #cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
-                                             cut = cms.string("pt > 10 && userFloat('isGood')"))
+                                         cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
+
 
 
 process.muonsToBeRemovedFromJets = cms.EDProducer("PATMuonMerger",
@@ -253,6 +252,7 @@ process.goodJetsAK8 = cms.EDFilter("PFJetIDSelectionFunctorFilter",
 
 
 process.correctedJetsAK8 = cms.EDProducer("CorrJetsProducer",
+                                          year    = cms.int32  (LEPTON_SETUP),
                                           jets    = cms.InputTag( "goodJetsAK8" ), # FIXME check with Roberto, it was cleanJetsFat/AK8
                                           vertex  = cms.InputTag( "goodPrimaryVertices" ), 
                                           rho     = cms.InputTag( "fixedGridRhoFastjetAll"   ),

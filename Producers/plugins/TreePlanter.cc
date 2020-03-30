@@ -49,9 +49,10 @@ using std::endl;
 
 
 TreePlanter::TreePlanter(const edm::ParameterSet &config)
-  : PUWeighter_      (2017,2017)
+  : setup_(config.getParameter<int>("setup"))
+  , PUWeighter_      (setup_,setup_)
   , filterController_(config,consumesCollector())
-  , leptonScaleFactors_(config.getParameter<int>("setup"),
+  , leptonScaleFactors_(setup_,
 			// FIXME need to be updated for Run2Legacy
 			edm::FileInPath("VVXAnalysis/Commons/data/fakeRate_20feb2017.root").fullPath(),
   			edm::FileInPath("VVXAnalysis/Commons/data/fakeRate_20feb2017.root").fullPath())
@@ -91,7 +92,6 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , sampleName_      (config.getParameter<std::string>("sampleName"))
   , isMC_            (config.getUntrackedParameter<bool>("isMC",false))
   , sampleType_      (config.getParameter<int>("sampleType"))
-  , setup_           (config.getParameter<int>("setup"))
   , applyTrigger_    (config.getUntrackedParameter<bool>("TriggerRequired", false)) 
   , applySkim_       (config.getUntrackedParameter<bool>("SkimRequired"   , true)) 
   , applyMCSel_      (config.getUntrackedParameter<bool>("DoMCSelection"  , false)) 
@@ -228,6 +228,7 @@ void TreePlanter::endJob(){
   edm::Service<TFileService> fs;
   TTree *countTree = fs->make<TTree>("HollyTree","HollyTree");
   
+  countTree->Branch("setup"         , &setup_); 
   countTree->Branch("analyzedEvents", &theNumberOfAnalyzedEvents);
   countTree->Branch("eventsInSR"    , &eventsInSR_);
   countTree->Branch("eventsIn2P2FCR", &eventsIn2P2FCR_);
@@ -570,7 +571,7 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
   output.pfCombRelIso_        = lepton.userFloat("combRelIsoPF"     );  
   output.pfCombRelIsoFSRCorr_ = lepton.userFloat("combRelIsoPFFSRCorr");
   output.matchHLT_            = lepton.userFloat("HLTMatch"         );
-  output.isGood_              = lepton.userFloat("isGood"           );
+  output.isGood_              = lepton.userFloat("isGood"           ) && lepton.userFloat("passCombRelIsoPFFSRCorr");
   if(abs(lepton.pdgId())      == 11){ 
     output.isInCracks_        = lepton.userFloat("isCrack"          );
     output.scEta_             = lepton.userFloat("SCeta"            );
@@ -649,19 +650,43 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   }  
 
   // Variables for AK8 jets
-  output.tau1_           = jet.hasUserFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau1") ? jet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau1") : -999;
-  output.tau2_           = jet.hasUserFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau2") ? jet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau2") : -999;
-  output.tau3_           = jet.hasUserFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau3") ? jet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau3") : -999;
-  output.corrPrunedMass_ = jet.hasUserFloat("ak8PFJetsCHSCorrPrunedMass") ? jet.userFloat("ak8PFJetsCHSCorrPrunedMass") : -999;
 
-  output.prunedMass_     = jet.hasUserFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSPrunedMass")   ? jet.userFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSPrunedMass")   : -999;
-  output.softDropMass_   = jet.hasUserFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSSoftDropMass") ? jet.userFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSSoftDropMass") : -999;
+  if(setup_ == 2016 || setup_ == 2017){
+    
+    output.tau1_           = jet.hasUserFloat("NjettinessAK8:tau1") ? jet.userFloat("NjettinessAK8:tau1") : -999;
+    output.tau2_           = jet.hasUserFloat("NjettinessAK8:tau2") ? jet.userFloat("NjettinessAK8:tau2") : -999;
+    output.tau3_           = jet.hasUserFloat("NjettinessAK8:tau3") ? jet.userFloat("NjettinessAK8:tau3") : -999;
+    output.corrPrunedMass_ = jet.hasUserFloat("ak8PFJetsCHSCorrPrunedMass") ? jet.userFloat("ak8PFJetsCHSCorrPrunedMass") : -999;
+    
+    output.prunedMass_     = jet.hasUserFloat("ak8PFJetsCHSPrunedMass")     ? jet.userFloat("ak8PFJetsCHSPrunedMass") : -999;
+    output.softDropMass_   = jet.hasUserFloat("ak8PFJetsCHSSoftDropMass")   ? jet.userFloat("ak8PFJetsCHSSoftDropMass") : -999;
+    
+    output.puppiTau1_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") ? jet.userFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") : -999;
+    output.puppiTau2_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") ? jet.userFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") : -999;
+    output.puppiTau3_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") ? jet.userFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") : -999;
+    output.puppiMass_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:mass") ? jet.userFloat("ak8PFJetsPuppiValueMap:mass") : -999;
+  }
 
-  output.puppiTau1_      = jet.hasUserFloat("NjettinessAK8Puppi:tau1") ? jet.userFloat("NjettinessAK8Puppi:tau1") : -999;
-  output.puppiTau2_      = jet.hasUserFloat("NjettinessAK8Puppi:tau2") ? jet.userFloat("NjettinessAK8Puppi:tau2") : -999;
-  output.puppiTau3_      = jet.hasUserFloat("NjettinessAK8Puppi:tau3") ? jet.userFloat("NjettinessAK8Puppi:tau3") : -999;
-  output.puppiMass_      = jet.hasUserFloat("ak8PFJetsPuppiSoftDropMass") ? jet.userFloat("ak8PFJetsPuppiSoftDropMass") : -999;
-  
+
+  else if(setup_ == 2018){
+    output.tau1_           = jet.hasUserFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau1") ? jet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau1") : -999;
+    output.tau2_           = jet.hasUserFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau2") ? jet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau2") : -999;
+    output.tau3_           = jet.hasUserFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau3") ? jet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau3") : -999;
+    output.corrPrunedMass_ = jet.hasUserFloat("ak8PFJetsCHSCorrPrunedMass") ? jet.userFloat("ak8PFJetsCHSCorrPrunedMass") : -999;
+    
+    output.prunedMass_     = jet.hasUserFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSPrunedMass")   ? jet.userFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSPrunedMass")   : -999;
+    output.softDropMass_   = jet.hasUserFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSSoftDropMass") ? jet.userFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSSoftDropMass") : -999;
+    
+    output.puppiTau1_      = jet.hasUserFloat("NjettinessAK8Puppi:tau1") ? jet.userFloat("NjettinessAK8Puppi:tau1") : -999;
+    output.puppiTau2_      = jet.hasUserFloat("NjettinessAK8Puppi:tau2") ? jet.userFloat("NjettinessAK8Puppi:tau2") : -999;
+    output.puppiTau3_      = jet.hasUserFloat("NjettinessAK8Puppi:tau3") ? jet.userFloat("NjettinessAK8Puppi:tau3") : -999;
+    output.puppiMass_      = jet.hasUserFloat("ak8PFJetsPuppiSoftDropMass") ? jet.userFloat("ak8PFJetsPuppiSoftDropMass") : -999;
+  }
+  else {
+    edm::LogError("TreePlanter") << "Do not know what to do with the year " << setup_ << endl;
+  }
+
+
 
 
   return output; 

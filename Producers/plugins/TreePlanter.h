@@ -104,6 +104,7 @@ class TreePlanter: public edm::EDAnalyzer {
 
   TTree *theTree;
 
+  int              setup_;
   PileUpWeight     PUWeighter_; 
   FilterController filterController_;
   // To get Lepton efficiency scale factors. Temporary here!
@@ -208,7 +209,6 @@ class TreePlanter: public edm::EDAnalyzer {
   bool isMC_;
   bool isSignal_;
   int  sampleType_;
-  int  setup_;
   bool applyTrigger_;
   bool applySkim_;
   bool applyMCSel_;
