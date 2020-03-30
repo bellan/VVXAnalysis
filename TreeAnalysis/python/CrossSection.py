@@ -17,12 +17,54 @@ import operator
 from Colours import *
 import os.path
 from  PersonalInfo import*
+#from operator import add #del
 
 ##################################################################################################################
 
 ########################################### Add inclusive systematic #############################################
 
 ##################################################################################################################
+
+
+def addGlobSyst2(hSum,hSumUp,hSumDown,doFiducial):
+  
+    SystList = GlobSystList
+
+    sigmaTrig = {"4e":[],"4m":[],"2e2m":[],"4l":[]}
+    for h,hUp,hDown in zip(hSum,hSumUp,hSumDown):                                                     
+        Nbins = h["state"].GetNbinsX()
+        print h["name"]
+        for i in range(1,Nbins+1):
+            valUp = (hUp["state"].GetBinContent(i)-h["state"].GetBinContent(i))**2
+            valDown = (h["state"].GetBinContent(i)-hDown["state"].GetBinContent(i))**2
+            for syst in SystList:
+#                print doFiducial, h["name"],syst["name"]"Trig": 
+                if doFiducial and h["name"] == '4l' and syst["corrEll"]: 
+            #for the tight region the trigger uncertainty is added when the 4l cross-section is computed
+                    valUp+= 0.
+                    valDown+= 0.
+                else:
+                    print syst["name"],h["state"].GetBinContent(i)*syst["value"]
+                    valUp+=(h["state"].GetBinContent(i)*syst["value"])**2
+                    valDown+=(h["state"].GetBinContent(i)*syst["value"])**2
+                    if syst["name"]=="Trig": sigmaTrig[h["name"]].append(h["state"].GetBinContent(i)*syst["value"])
+
+            hUp["state"].SetBinContent(i,h["state"].GetBinContent(i)+math.sqrt(valUp))
+            hDown["state"].SetBinContent(i,h["state"].GetBinContent(i)-math.sqrt(valDown))
+
+    for sig4e,sig4m,sig2e2m in zip(sigmaTrig["4e"],sigmaTrig["4m"],sigmaTrig["2e2m"]):
+        sigmaTrig["4l"].append(math.sqrt(sig4e*sig4e +sig4m*sig4m) +sig2e2m)
+        #sigmaTrig["4l"].append(sig4e+sig4m+sig2e2m)
+
+
+    for h,hup,hdn in zip(hSum,hSumUp,hSumDown):
+        Nbins = h["state"].GetNbinsX()
+        for i in range(1,Nbins+1):
+            if hup["name"] == "4l":
+                hup["state"].SetBinContent(i,h["state"].GetBinContent(i)+math.sqrt( pow(hup["state"].GetBinContent(i)-h["state"].GetBinContent(i),2)+pow(sigmaTrig["4l"][i-1],2) ) )
+                hdn["state"].SetBinContent(i,h["state"].GetBinContent(i)-math.sqrt( pow(h["state"].GetBinContent(i)-hdn["state"].GetBinContent(i),2)+pow(sigmaTrig["4l"][i-1],2) ) )
+
+
 
 
 def addGlobSyst(hCent,hUp,hDown,FinState,doFiducial):
@@ -32,16 +74,16 @@ def addGlobSyst(hCent,hUp,hDown,FinState,doFiducial):
     for i in range(1,Nbins+1):
         valUp = (hUp.GetBinContent(i)-hCent.GetBinContent(i))**2
         valDown = (hCent.GetBinContent(i)-hDown.GetBinContent(i))**2
-        for sist in SystList:
-            #for the tight region the trigger uncertainty is added when the 4l cross-section is computed
-             if doFiducial and FinState == '4l' and sist["name"] == "Trig": 
+        for syst in SystList:
+#for the tight region the trigger uncertainty is added when the 4l cross-section is computed
+             if doFiducial and FinState == '4l' and syst["name"] == "Trig": 
                  valUp+= 0.
                  valDown+= 0.
              else:
-                #  print sist["name"],hCent.GetBinContent(i)*sist["value"]
-                  valUp+=(hCent.GetBinContent(i)*sist["value"])**2
-                  valDown+=(hCent.GetBinContent(i)*sist["value"])**2
-
+                 print syst["name"],hCent.GetBinContent(i)*syst["value"]
+                 valUp+=(hCent.GetBinContent(i)*syst["value"])**2
+                 valDown+=(hCent.GetBinContent(i)*syst["value"])**2
+                 
         hUp.SetBinContent(i,hCent.GetBinContent(i)+math.sqrt(valUp))
         hDown.SetBinContent(i,hCent.GetBinContent(i)-math.sqrt(valDown))
 
@@ -163,7 +205,7 @@ def getCrossPlot_MC(MCSet,Type,analysis,doNormalize,DoFiducial):
             hup["state"]  = copy.deepcopy(fInMC.Get("ZZTo"+h["name"]+"_"+Type+"Gen_01"+"_fr_Up"+normStr))
             hdn["state"]  = copy.deepcopy(fInMC.Get("ZZTo"+h["name"]+"_"+Type+"Gen_01"+"_fr_Dn"+normStr))
 
-            if h["state"]  == None:  sys.exit("ERROR: Check MC histograms.ZZTo"+h["name"]+"_"+Type+"Gen_01"+"_fr"+normStr+" does not exist")
+            if h["state"]  == None:  sys.exit("ERROR: Check MC histograms. ZZTo"+h["name"]+"_"+Type+"Gen_01"+"_fr"+normStr+" does not exist in "+fInMC.GetName())
             if hup["state"]== None:  sys.exit("ERROR: Check MC histograms. ZZTo"+h["name"]+"_"+Type+"Gen_01_scaleUp"+"_fr"+normStr+" does not exist  in file ./FinalResults_"+MCSet+"_"+analysis+"/MC_"+Type+"_fr.root")
             if hdn["state"]== None: sys.exit("ERROR: Check MC histograms. ZZTo"+h["name"]+"_"+Type+"Gen_01_scaleDn"+"_fr"+normStr+"does not exist") 
         else:  
@@ -288,9 +330,8 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,doNormalize,d
         hSumUp.append({"state":hTOTCrossUp,"name":'4l'})
         hSumDown.append({"state":hTOTCrossDown,"name":'4l'})
 
+    addGlobSyst2(hSum,hSumUp,hSumDown,doFiducial)
     for h,hup,hdown in zip(hSum,hSumUp,hSumDown):
-
-        addGlobSyst(h["state"],hup["state"],hdown["state"],h["name"],doFiducial)
 
         print "{0} Tot Cross     {1} {2:.2f} \n".format(h["name"],(15-len(h["name"]))*" ", h["state"].Integral(0,-1))     
         print "{0} Tot Cross up  {1} {2:.2f} \n".format(hup["name"],(15-len(hup["name"]))*" ", hup["state"].Integral(0,-1))     
@@ -299,8 +340,8 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,doNormalize,d
         if h["state"]==None:
             print h["state"]," has no enetries"
 
-            #      NormUp   =   hup["state"].Integral(1,-1)/h["state"].Integral(1,-1) #FIXdelnorm
-            #      NormDown = hdown["state"].Integral(1,-1)/h["state"].Integral(1,-1) #FIXdelnorm
+            #      NormUp   =   hup["state"].Integral(1,-1)/h["state"].Integral(1,-1) 
+            #      NormDown = hdown["state"].Integral(1,-1)/h["state"].Integral(1,-1) 
 
         DoInclNormalized= False
         DoNormal = True
@@ -331,12 +372,6 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,doNormalize,d
             h["state"].Scale(norm/h["state"].Integral(0,-1),"width")
             print "NORM",norm
 
-        if "nJets del " in Type: #Fixme
-            for bin in range(1,h["state"].GetNbinsX()+1): 
-                hup["state"].SetBinError(bin,0.)
-                hdown["state"].SetBinError(bin,0.)
-                h["state"].SetBinError(bin,0.)
-            
 
     return hSum,hSumUp,hSumDown
 
@@ -351,7 +386,7 @@ def setCrossSectionData(h1,FinState,MCSet,doFiducial):
     elif FinState=='2e2m': BR=2*BRmu*BRele
 
     if doFiducial: 
-        # norm = GetNorm(FinState,Type,doFiducial) #fixnorm? Do we want ot normalize to offical before or after combination?
+        # norm = GetNorm(FinState,Type,doFiducial) 
          #h1.Scale(norm/Integral,"width")  
          h1.Scale(1000./(Lumi)) #if you don't want to use official xs
 
@@ -373,7 +408,7 @@ def setCrossSectionMC(h1,h1up,h1dn,FinState,Type,doNormalize,MCSet,doFiducial):
         print "{0} {1} {2:.2f} + {3:.2f} -{4:.2f} [fb]\n".format(name,((25-len(name))*" "),1000*(h1.Integral(0,-1))/(Lumi),1000*((h1up.Integral(0,-1) - h1.Integral(0,-1))/(Lumi)),1000*((h1.Integral(0,-1) - h1dn.Integral(0,-1) )/(Lumi)))
         if FinState=="4l" and Type=="Total":
             AccFile = ROOT.TFile("./Acceptance/Acceptance_"+MCSet+"_"+Type+".root")
-            Acc = AccFile.Get("TotAcc2e2m_Acc").GetVal() #FIXME Use a weightd avarage?
+            Acc = AccFile.Get("TotAcc2e2m_Acc").GetVal()
             print "Cross section Wide region",(h1.Integral(0,-1))/(Lumi*Acc*(BRele*BRele+2*BRele*BRmu+BRmu*BRmu)),"[pb]"              
     else:
         print "{0} {1} {2:.2f} [pb]\n".format(name,((25-len(name))*" "),(h1.Integral(1,-1))/(Lumi*BR)) # Check total cross section witho
@@ -463,7 +498,7 @@ def combineCross(HList,HListUp,HListDown):
         ErrStat     = math.sqrt(1./WeightStat)        
         ErrSystUp   = math.sqrt(1./WeightSystUp)
         if WeightSystDown ==0:  
-            ErrSystDown = 0 #FIXME
+            ErrSystDown = 0 
             print "ErrSystDown for bin",i,"is 0. Check it"
         else: ErrSystDown = math.sqrt(1./WeightSystDown)
         
@@ -714,7 +749,6 @@ def TotalCross(MCSet,Type,analysis,doFiducial,UseMCReco):
     CrossDic["4e"]   = list4e
     CrossDic["4m"]   = list4m
     
-
     for i,j,k in zip(hData,hDataUp,hDataDown):
 
         if doFiducial: BR = 1
