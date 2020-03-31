@@ -29,19 +29,19 @@ parser.add_option("-y", "--year", dest="year",
                   default= 2016,
                   help="Set year scenario from command line. Default is 2016.")
 
-
 parser.add_option("-l", "--luminosity", dest="luminosity",
                   type='int',
-                  default= -1,
-                  help="Set luminosity scenario from command line. Default is  35900/pb.")
+                  default= None,
+                  help="Set luminosity scenario from command line. The default is the one taken from the target year. Default year is 2016 and L = 35900/pb. Full lumi is 137100/pb.")
 
 parser.add_option("-d", "--directory", dest="directory",
                   default="samples",
-                  help="Sample location, default is ./samples")
+                  help="Sample location, default is ./samples/2016")
 
 parser.add_option("-c", "--csv", dest="csvfile",
-                  default="../Producers/python/samples_13TeV_2017.csv",
-                  help="csv path, default is ../Producers/python/samples_13TeV_2017.csv")
+                  #default="../Producers/python/samples_2016_MC.csv",
+                  default=None,
+                  help="csv path, default is ../Producers/python/samples_<year>_MC.csv")
 
 parser.add_option("-s", "--scalefactor", dest="doSF",
                   action="store_true",
@@ -69,15 +69,13 @@ year         = options.year
 luminosity   = options.luminosity
 
 # if luminosity is specified thorugh -l option, overwrite the year <-> luminosity decision
-if luminosity <= 0:
+if luminosity is None:
     if year == 2016: 
         luminosity =  35900
     elif year == 2017: 
         luminosity =  41500
     elif year == 2018: 
         luminosity =  59700
-    elif year == 1618: 
-        luminosity = 137100
     else :
         print"{0:s}: Unknown year, please specify a luminosity with -l option".format(year)
         sys.exit(1)
@@ -89,8 +87,11 @@ if region not in regions:
 getExternalCrossSectionFromFile = False if options.getExternalCrossSectionFromFile is None else options.getExternalCrossSectionFromFile
 
 
-baseinputdir = options.directory
+baseinputdir = options.directory+'/'+str(year)
+
 csvfile = options.csvfile
+if options.csvfile is None:
+    csvfile = "../Producers/python/samples_"+str(year)+"_MC.csv"
 
 
 ###########################################################################
