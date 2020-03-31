@@ -651,40 +651,40 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
 
   // Variables for AK8 jets
 
-  if(setup_ == 2016 || setup_ == 2017){
+  // if(setup_ == 2016 || setup_ == 2017){
     
-    output.tau1_           = jet.hasUserFloat("NjettinessAK8:tau1") ? jet.userFloat("NjettinessAK8:tau1") : -999;
-    output.tau2_           = jet.hasUserFloat("NjettinessAK8:tau2") ? jet.userFloat("NjettinessAK8:tau2") : -999;
-    output.tau3_           = jet.hasUserFloat("NjettinessAK8:tau3") ? jet.userFloat("NjettinessAK8:tau3") : -999;
-    output.corrPrunedMass_ = jet.hasUserFloat("ak8PFJetsCHSCorrPrunedMass") ? jet.userFloat("ak8PFJetsCHSCorrPrunedMass") : -999;
+  //   output.tau1_           = jet.hasUserFloat("NjettinessAK8:tau1") ? jet.userFloat("NjettinessAK8:tau1") : -999;
+  //   output.tau2_           = jet.hasUserFloat("NjettinessAK8:tau2") ? jet.userFloat("NjettinessAK8:tau2") : -999;
+  //   output.tau3_           = jet.hasUserFloat("NjettinessAK8:tau3") ? jet.userFloat("NjettinessAK8:tau3") : -999;
+  //   output.corrPrunedMass_ = jet.hasUserFloat("ak8PFJetsCHSCorrPrunedMass") ? jet.userFloat("ak8PFJetsCHSCorrPrunedMass") : -999;
     
-    output.prunedMass_     = jet.hasUserFloat("ak8PFJetsCHSPrunedMass")     ? jet.userFloat("ak8PFJetsCHSPrunedMass") : -999;
-    output.softDropMass_   = jet.hasUserFloat("ak8PFJetsCHSSoftDropMass")   ? jet.userFloat("ak8PFJetsCHSSoftDropMass") : -999;
+  //   output.prunedMass_     = jet.hasUserFloat("ak8PFJetsCHSPrunedMass")     ? jet.userFloat("ak8PFJetsCHSPrunedMass") : -999;
+  //   output.softDropMass_   = jet.hasUserFloat("ak8PFJetsCHSSoftDropMass")   ? jet.userFloat("ak8PFJetsCHSSoftDropMass") : -999;
     
-    output.puppiTau1_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") ? jet.userFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") : -999;
-    output.puppiTau2_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") ? jet.userFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") : -999;
-    output.puppiTau3_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") ? jet.userFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") : -999;
-    output.puppiMass_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:mass") ? jet.userFloat("ak8PFJetsPuppiValueMap:mass") : -999;
-  }
+  //   output.puppiTau1_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") ? jet.userFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") : -999;
+  //   output.puppiTau2_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") ? jet.userFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") : -999;
+  //   output.puppiTau3_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") ? jet.userFloat("ak8PFJetsPuppiValueMap:NjettinessAK8PuppiTau1") : -999;
+  //   output.puppiMass_      = jet.hasUserFloat("ak8PFJetsPuppiValueMap:mass") ? jet.userFloat("ak8PFJetsPuppiValueMap:mass") : -999;
+  // }
 
 
-  else if(setup_ == 2018){
-    output.tau1_           = jet.hasUserFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau1") ? jet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau1") : -999;
-    output.tau2_           = jet.hasUserFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau2") ? jet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau2") : -999;
-    output.tau3_           = jet.hasUserFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau3") ? jet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau3") : -999;
-    output.corrPrunedMass_ = jet.hasUserFloat("ak8PFJetsCHSCorrPrunedMass") ? jet.userFloat("ak8PFJetsCHSCorrPrunedMass") : -999;
-    
-    output.prunedMass_     = jet.hasUserFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSPrunedMass")   ? jet.userFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSPrunedMass")   : -999;
-    output.softDropMass_   = jet.hasUserFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSSoftDropMass") ? jet.userFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSSoftDropMass") : -999;
-    
-    output.puppiTau1_      = jet.hasUserFloat("NjettinessAK8Puppi:tau1") ? jet.userFloat("NjettinessAK8Puppi:tau1") : -999;
-    output.puppiTau2_      = jet.hasUserFloat("NjettinessAK8Puppi:tau2") ? jet.userFloat("NjettinessAK8Puppi:tau2") : -999;
-    output.puppiTau3_      = jet.hasUserFloat("NjettinessAK8Puppi:tau3") ? jet.userFloat("NjettinessAK8Puppi:tau3") : -999;
-    output.puppiMass_      = jet.hasUserFloat("ak8PFJetsPuppiSoftDropMass") ? jet.userFloat("ak8PFJetsPuppiSoftDropMass") : -999;
-  }
-  else {
-    edm::LogError("TreePlanter") << "Do not know what to do with the year " << setup_ << endl;
-  }
+  // else if(setup_ == 2018){
+  output.tau1_           = jet.hasUserFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau1") ? jet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau1") : -999;
+  output.tau2_           = jet.hasUserFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau2") ? jet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau2") : -999;
+  output.tau3_           = jet.hasUserFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau3") ? jet.userFloat("ak8PFJetsCHSValueMap:NjettinessAK8CHSTau3") : -999;
+  output.corrPrunedMass_ = jet.hasUserFloat("ak8PFJetsCHSCorrPrunedMass") ? jet.userFloat("ak8PFJetsCHSCorrPrunedMass") : -999;
+  
+  output.prunedMass_     = jet.hasUserFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSPrunedMass")   ? jet.userFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSPrunedMass")   : -999;
+  output.softDropMass_   = jet.hasUserFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSSoftDropMass") ? jet.userFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSSoftDropMass") : -999;
+  
+  output.puppiTau1_      = jet.hasUserFloat("NjettinessAK8Puppi:tau1") ? jet.userFloat("NjettinessAK8Puppi:tau1") : -999;
+  output.puppiTau2_      = jet.hasUserFloat("NjettinessAK8Puppi:tau2") ? jet.userFloat("NjettinessAK8Puppi:tau2") : -999;
+  output.puppiTau3_      = jet.hasUserFloat("NjettinessAK8Puppi:tau3") ? jet.userFloat("NjettinessAK8Puppi:tau3") : -999;
+  output.puppiMass_      = jet.hasUserFloat("ak8PFJetsPuppiSoftDropMass") ? jet.userFloat("ak8PFJetsPuppiSoftDropMass") : -999;
+    //}
+    //else {
+    // edm::LogError("TreePlanter") << "Do not know what to do with the year " << setup_ << endl;
+    //}
 
 
 
