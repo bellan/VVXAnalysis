@@ -134,7 +134,9 @@ public:
   int unweightedEventsInSR;
   int unweightedEventsIn2P2FCR;
   int unweightedEventsIn3P1FCR;
-
+  
+  int year;
+  
   // Access to the branches
   Long64_t event     ; TBranch *b_event;
   Int_t    run       ; TBranch *b_run;

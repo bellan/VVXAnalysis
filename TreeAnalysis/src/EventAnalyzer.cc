@@ -40,10 +40,6 @@ SelectorBase::~SelectorBase(){};
 EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 			     const AnalysisConfiguration& configuration)
   : select(aSelector)
-  // ,  leptonScaleFactors_(configuration.getParameter<int>("year"),
-  // 			 "../../VVXAnalysis/Commons/data/fakeRate_20feb2017.root",
-  // 			 "../../VVXAnalysis/Commons/data/fakeRate_20feb2017.root")
-
   , maxNumEvents_(configuration.getParameter<int>("maxNumEvents"))
   , doBasicPlots_(configuration.getParameter<bool>("doBasicPlots"))
   , doSF         (configuration.getParameter<bool>("doSF"))
@@ -59,6 +55,10 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
   , unweightedEventsIn3P1FCR(0)
   , genCategory(-128){
 
+  if(configuration.getParameter<int>("year") != theMCInfo.setup())
+    cout << colour::Warning("Possible mismatch") << ": simulation scenario is " << Green(configuration.getParameter<int>("year")) << ", chosen sample is " << Green(theMCInfo.setup()) << endl;
+
+  
   TChain *tree = new TChain("treePlanter/ElderTree");
   tree->Add(configuration.getParameter<std::string>("filename").c_str());
 

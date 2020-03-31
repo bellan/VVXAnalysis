@@ -159,6 +159,9 @@ def run(executable, analysis, typeofsample, region, year, luminosity, maxNumEven
     outputdir = 'results'
     if not os.path.exists(outputdir): os.popen('mkdir "%s"' %outputdir)
 
+    outputdir = outputdir+"/"+str(year)
+    if not os.path.exists(outputdir): os.popen('mkdir "%s"' %outputdir)
+    
     outputdir = outputdir+"/"+analysis+"_"+region
     if not os.path.exists(outputdir): os.popen('mkdir "%s"' %outputdir)
 

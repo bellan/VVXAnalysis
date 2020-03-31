@@ -45,6 +45,7 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   TBranch *b_eventsInSR              = 0;
   TBranch *b_eventsIn2P2FCR          = 0;
   TBranch *b_eventsIn3P1FCR          = 0;
+  TBranch *b_setup                   = 0;
   TBranch *b_signalDefinition        = 0;
   TBranch *b_genEvents               = 0;
   TBranch *b_analyzedEvents          = 0;
@@ -63,7 +64,8 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   tree->SetBranchAddress("eventsInSR"    , &eventsInSR_    , &b_eventsInSR);
   tree->SetBranchAddress("eventsIn2P2FCR", &eventsIn2P2FCR_, &b_eventsIn2P2FCR);
   tree->SetBranchAddress("eventsIn3P1FCR", &eventsIn3P1FCR_, &b_eventsIn3P1FCR);
-
+  tree->SetBranchAddress("setup"         , &setup_         , &b_setup);
+  
   tree->SetBranchAddress("signalDefinition"       , &signalDefinition_       , &b_signalDefinition       );
   tree->SetBranchAddress("genEvents"              , &genEvents_              , &b_genEvents              );
   tree->SetBranchAddress("analyzedEvents"         , &analyzedEvents_         , &b_analyzedEvents         );
@@ -83,7 +85,6 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   filename_.erase(0, filename_.find("/")+1); 
   filename_.erase(filename_.find(".root")); 
 
-  std::cout<<filename<<std::endl;
   if((filename_.find("Single") != std::string::npos) || (filename_.find("Double") != std::string::npos) || (filename_.find("MuonEG") != std::string::npos)) isMC_ = kFALSE;
   else isMC_=kTRUE;
 

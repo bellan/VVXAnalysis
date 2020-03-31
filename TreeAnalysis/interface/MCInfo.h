@@ -44,6 +44,8 @@ class MCInfo {
   int approximateNeventsIn2P2FCR() const {return eventsIn2P2FCR_;}
   int approximateNeventsIn3P1FCR() const {return eventsIn3P1FCR_;}
 
+  int setup() const {return setup_;}
+  
   bool isMC() const {return isMC_;}
 
   std::string fileName() const {return filename_; }
@@ -79,7 +81,6 @@ class MCInfo {
   friend class EventAnalyzer;
 
   std::string filename_;  
-  // integrated luminosity
   double luminosity_;
   double internalCrossSection_;
   double externalCrossSection_;
@@ -114,7 +115,8 @@ class MCInfo {
   int eventsInSR_;
   int eventsIn2P2FCR_;
   int eventsIn3P1FCR_;
-
+  int setup_;
+  
   //others utilities
   bool isMC_;
 };
