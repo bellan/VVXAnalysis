@@ -12,7 +12,8 @@
 #include <fstream>			//open(), close(), <<
 #include <string>				//find_last_of()
 #include <time.h>				//clock_t, clock()
-#include <utility>			//std::pair(), std::make_pair()
+#include <utility>			//std::pair, std::make_pair()
+#include <algorithm>    //std::min_element()
 #include "TSystem.h"
 #include "TTree.h"
 #include "TLorentzVector.h"
@@ -78,11 +79,11 @@ Int_t VZZAnalyzer::cut(){
 	if(genHadVBs_) genHadVBs_->clear(); //Destroys objects but keeps memory allocated
 	if(AK4pairs_)   AK4pairs_->clear();
 	
-	
-	if(!ZZ)
-		return -1;
-	else if(ZZ->pt() < 3.)
-		return -1;
+	//test topology(0) --> is signal region ZZ
+	//AND
+	//4 --> Fiducial acceptance 
+	// per avere segnale serve^ (bisogna girare su MC, altrimenti non ha senso)
+	//if( !topology.test(0) || !topology.test(4) ) 
 	
 	//Preparation for this event
 	fillGenHadVBs();
@@ -91,12 +92,14 @@ Int_t VZZAnalyzer::cut(){
 	sigType_ = isSignal(/*Uses genJets(AK4) and genJetsAK8*/);
 	theHistograms.fill("Signal Type", "Signal Type", 3,-0.5,2.5, sigType_);
 	if(sigType_) return 1;
-	else return -1;
+	//else return -1;
+	return 1;
 }
 
 
 void VZZAnalyzer::analyze(){
 	++analyzedN_;
+	/*
 	switch(sigType_){
 		case 1:
 			sigVB_ = &(genHadVBs_->front());
@@ -113,7 +116,11 @@ void VZZAnalyzer::analyze(){
 	}
 	
 	genSignalGraphs();
-	recSignalGraphs();
+	recSignalGraphs();*/
+	
+	genTauAnalisys();
+	reconstructionAnalisys();
+	AK8MassAlgorithms();
 	//calcS();
 	//bestCandidateAnalysis();
 	//ptCutMVA();
@@ -127,7 +134,11 @@ void VZZAnalyzer::analyze(){
 	/*foreach(const Boson<Particle>& b, *genHadVBs_)
 		theHistograms.fill("All AK4_{gen} mass", "All AK4_{gen} mass", 50,0.,200., b.mass(), 1.);
 	*/
-	
+	/*
+		if(!ZZ)
+		return -1; 
+	else if(!(ZZ->region().test(26) )) // Is a good ZZ (4 L prompt)
+		return -1;*/
 	return;
 }
 
@@ -145,8 +156,15 @@ void VZZAnalyzer::end(TFile & fout){
 		cout<<"Reconstruction of a VB --> AK8: "<<win8_<<" \tAK4 pairs: "<<win4_;
 	}
 	
+	
+	TH1* massAlgorithms = theHistograms.get("Resolution AK8: winner");
+	if(massAlgorithms)
+		for(unsigned int i = 0; i < 6; ++i)
+			massAlgorithms->GetXaxis()->SetBinLabel(i+1, massAlgsNames_[i]);
+	
+	
 	//endResolutionAnalisys(fout);
-	endSignalEff(fout);
+	//endSignalEff(fout);
 	
 	cout<<"\nPassing cut: "<<analyzedN_<<'\n';
 	
@@ -173,7 +191,7 @@ int VZZAnalyzer::isSignal(){
 	
 	std::stable_sort(genJetsAK8->begin(), genJetsAK8->end(), MassComparator(phys::ZMASS));
 	float mass8 = genJetsAK8->front().mass();
-	if(60. < mass4 && mass4 < 120.)
+	if(60. < mass8 && mass8 < 120.)
 		return 2;
 		
 	return 0;
@@ -201,6 +219,7 @@ void VZZAnalyzer::recSignalGraphs(){
 			break;
 		default:
 			cout<<"Error, sigType_ has an invalid value in recSignalGraphs()\n";
+			return;
 	}
 	
 	const char* name_dR = Form("Sig Rec closest AK%d: #DeltaR", sigType_*4);
@@ -208,7 +227,7 @@ void VZZAnalyzer::recSignalGraphs(){
 	theHistograms.fill(name_dR, name_dR, 20,0.,2., dR_closest, 1.);
 	
 	//Efficiency
-	if(dR_closest < 0.4){
+	if(dR_closest < 0.5){
 		const char* name_eta = Form("Sig Rec AK%d: #eta of gen", sigType_*4);  // 4*1 = 4, 4*2 = 8
 		theHistograms.fill(name_eta, name_eta, 20,-5.,5., sigVB_->eta(), 1.);
 		const char* name_pt = Form("Sig Rec AK%d: pt of gen", sigType_*4);
@@ -244,6 +263,197 @@ void VZZAnalyzer::endSignalEff(TFile& fout){
 		ptEff->SetName("Sig efficiency vs pt");
 		ptEff->Write();
 	}
+}
+
+
+void VZZAnalyzer::genTauAnalisys(){
+	vector<Jet> rec4fromTau;
+	//vector<Particle> gen8fromTaus;
+	//vector<Jet> rec8fromTaus;
+	
+	foreach(const Particle& tau, *genTaus){
+		// AK4 gen
+		foreach(const Boson<Particle>& hadVB, *genHadVBs_){
+			float dR0 = physmath::deltaR(hadVB.daughter(0), tau);
+			float dR1 = physmath::deltaR(hadVB.daughter(1), tau);
+			float minDR = (dR0 < dR1 ? dR0 : dR1);
+			if(minDR < 0.5){
+				theHistograms.fill("Closest #tau: #DeltaR(AK4_{genHadVB})", "Closest #tau: #DeltaR(AK4_{genHadVB})", 25,0.,0.5, minDR, 1.);
+				float dM = hadVB.daughter(dR0 < dR1 ? 0 : 1).mass() - tau.mass();
+				theHistograms.fill("Closest #tau: #DeltaM(AK4_{genHadVB})", "Closest #tau: #DeltaM(AK4_{genHadVB})", 20,-25.,25., dM, 1.);
+				
+				//Search for a reconstructed AK4 near the jet closest to the tau
+				if(jets->size() > 0){
+					const Particle& closestGenAK4 = (dR0 < dR1 ? hadVB.daughter(0) : hadVB.daughter(1));
+					stable_sort(jets->begin(), jets->end(), DeltaRComparator(closestGenAK4));
+					if(physmath::deltaR(jets->front(), closestGenAK4) < 0.5)
+						theHistograms.fill("Closest #tau: #DeltaR(AK4_{rec})", "Closest #tau: #DeltaR(AK4_{rec})", 25,0.,0.5, physmath::deltaR(jets->front(), tau), 1.);
+						float dMr = jets->front().mass() - tau.mass();
+						theHistograms.fill("Closest #tau: #DeltaM(AK4_{rec})", "Closest #tau: #DeltaM(AK4_{rec})", 20,-25.,25., dMr, 1.);
+				}
+			}
+		}
+		
+		// AK4 rec
+		foreach(const Jet& jet, *jets){
+			float dR = physmath::deltaR(jet, tau);
+			if(dR < 0.5){
+				theHistograms.fill("Closest #tau: #DeltaR(All AK4_{rec})", "Closest #tau: #DeltaR(All AK4_{rec})", 25,0.,0.5, dR, 1.);
+				float dM = jet.mass() - tau.mass();
+				theHistograms.fill("Closest #tau: M(All AK4_{rec}) - M(#tau_{gen})", "Closest #tau: M(All AK4_{rec}) - M(#tau_{gen}", 30,-30.,30., dM, 1.);
+				theHistograms.fill("Closest #tau: #DeltaM vs #DeltaR (All AK4_{rec})", "Closest #tau: #DeltaM vs #DeltaR (All AK4_{rec})", 10,0.,0.5, 20,-25.,25., dR, dM, 1.);
+				rec4fromTau.push_back(jet);
+			}
+		}
+	}
+	
+	
+	// AK8
+	/*for(size_t i = 0; i < genTaus->size(); ++i){
+		for(size_t j = i+1; j < genTaus->size(); ++j){
+			TLorentzVector p4Taus = genTaus->at(i).p4() + genTaus->at(j).p4();
+			//Generated
+			foreach(const Particle& jet8, *genJetsAK8)
+				if(physmath::deltaR(jet8.p4(), p4Taus) < 0.5)
+					gen8fromTaus.push_back( jet8 );
+			
+			//Reconstructed
+			foreach(const Jet& jet8, *jetsAK8)
+				if(physmath::deltaR(jet8.p4(), p4Taus) < 0.5)
+					rec8fromTaus.push_back( jet8 );
+		}
+	}*/
+	
+	//Combinatory Zs
+	//vector<Boson<Particle>> genZtoTau;
+	for(size_t i = 0; i < genTaus->size(); ++i){
+		for(size_t j = i+1; j < genTaus->size(); ++j){
+			TLorentzVector p4tau = genTaus->at(i).p4() + genTaus->at(j).p4();
+			float mass = p4tau.M();
+			if(60 < mass && mass < 120){
+				//genZtoTau.push_back(Boson<Particle>(genTaus->at(i), genTaus->at(j)));
+				theHistograms.fill("Combinatory Z (#tau): mass", "Combinatory Z (#tau): mass", 24,60.,120., mass, 1.);
+				theHistograms.fill("Combinatory Z (#tau): pt", "Combinatory Z (#tau): pt", 20,0.,400., p4tau.Pt(), 1.);
+			}
+		}
+	}
+	
+	//vector<Boson<Jet>> genZtoTauTo4;
+	for(size_t i = 0; i < rec4fromTau.size(); ++i){
+		for(size_t j = i+1; j < rec4fromTau.size(); ++j){
+			TLorentzVector p4tau = rec4fromTau.at(i).p4() + rec4fromTau.at(j).p4();
+			float mass = p4tau.M();
+			if(60 < mass && mass < 120){
+				//genZtoTauTo4.push_back(Boson<Jet>(rec4fromTau.at(i), rec4fromTau.at(j)));
+				theHistograms.fill("Combinatory Z (#tau-->AK4): mass", "Combinatory Z (#tau-->AK4): mass", 24,60.,120., mass, 1.);
+				theHistograms.fill("Combinatory Z (#tau-->AK4): pt", "Combinatory Z (#tau-->AK4): pt", 20,0.,400., p4tau.Pt(), 1.);
+			}
+		}
+	}
+	
+}
+
+
+void VZZAnalyzer::AK8MassAlgorithms(){
+	if(jetsAK8->size() == 0 || genJetsAK8->size() == 0) return;
+	
+	foreach(const Particle& genj, *genJetsAK8){
+		if(genj.mass() < 70) continue;
+		stable_sort(jetsAK8->begin(), jetsAK8->end(), phys::DeltaRComparator(genj));
+		//DeltaRComparator is defined in Commons/interface/Utils.h
+		float dR = physmath::deltaR(jetsAK8->front(), genj);
+		float tau21 = jetsAK8->front().puppiTau2()/jetsAK8->front().puppiTau1();
+		if(dR < 0.5 /*or 0.8?*/ && tau21 < 0.35){
+			theHistograms.fill("Resolution AK8: #DeltaR", "Resolution AK8: #DeltaR", 50,0.,0.5, dR, 1.);
+			//We have a match! This AK8 should have the same mass of the gen one
+			float mass           = jetsAK8->at(0).mass();
+			float secvtxMass     = jetsAK8->at(0).secvtxMass();
+			float corrPrunedMass = jetsAK8->at(0).corrPrunedMass();
+			float prunedMass     = jetsAK8->at(0).prunedMass();
+			float softDropMass   = jetsAK8->at(0).softDropMass();
+			float puppiMass      = jetsAK8->at(0).puppiMass();
+			float massesVal[6] = {mass, secvtxMass, corrPrunedMass, prunedMass, softDropMass, puppiMass};
+			float absDiffs[6];
+			for(unsigned int i = 0; i<6; ++i){
+				char* name = Form("Resolution AK8: #DeltaM with %s", massAlgsNames_[i]);
+				theHistograms.fill(name, name, 40,-50.,50., massesVal[i] - genj.mass(), 1.);
+				absDiffs[i] = fabs( massesVal[i] - genj.mass() );
+			}
+			//find the minimum difference
+			int minpos = std::min_element(absDiffs, absDiffs + 6) - absDiffs; //pointer arithmetic
+			//cout<<massesVal[0]<<' '<<massesVal[1]<<' '<<massesVal[2]<<' '<<massesVal[3]<<' '<<massesVal[4]<<' '<<massesVal[5]<<'\t'<<minpos<<'\n';
+			//cout<<absDiffs[0]<<' '<<absDiffs[1]<<' '<<absDiffs[2]<<' '<<absDiffs[3]<<' '<<absDiffs[4]<<' '<<absDiffs[5]<<'\t'<<minpos<<'\n';
+			theHistograms.fill("Resolution AK8: winner", "Resolution AK8: winner", 6,-0.5,5.5, minpos, 1.);
+		}
+	}
+}
+
+
+void VZZAnalyzer::reconstructionAnalisys(){
+	// AK4: reconstruction
+	VCandType recAK4type = VCandType::None; //initialization
+	Boson<Jet>* recAK4cand = findBestVFromPair(jets, recAK4type);
+	if(recAK4cand){
+		theHistograms.fill("Purity of AK4 pairs (All): rec mass", "Purity of AK4 pairs (All): rec mass", 30,60.,120., recAK4cand->mass(), theWeight);
+		theHistograms.fill("Purity of AK4 pairs (All): rec pt", "Purity of AK4 pairs (All): rec pt", 25,0.,500., recAK4cand->pt(), theWeight);
+		theHistograms.fill("Purity of AK4 pairs (All): # of rec AK4", "Purity of AK4 pairs (All): # of rec AK4", 11,-0.5,10.5, jets->size(), theWeight);
+	}
+	
+	// AK4: Gen vs rec matching
+	if(jets->size() == 0 && genHadVBs_->size() == 0) return;
+	
+	foreach(const Boson<Particle>& genVB, *genHadVBs_){
+		//theHistograms.fill("Daughters pt","Daughters pt",50,0.,50.,genVB.daughter(0).pt(),1.);
+		//theHistograms.fill("Daughters pt","Daughters pt",50,0.,50.,genVB.daughter(1).pt(),1.);
+		std::stable_sort( jets->begin(), jets->end(), DeltaRComparator(genVB.daughter(0)) );
+		Jet rec0 = jets->front();  // Copy for future use
+		float dR0 = physmath::deltaR(rec0, genVB.daughter(0));
+		/*if(dR0 < 0.5){
+			theHistograms.fill("Resolution of rec AK4: #DeltaR", "Resolution of rec AK4: #DeltaR", 25,0.,0.5, dR0);
+			float dM0 = rec0.mass() - genVB.daughter(0).mass();
+			theHistograms.fill("Resolution of rec AK4: #DeltaM", "Resolution of rec AK4: #DeltaM", 31,-15.5,15.5, dM0);
+			theHistograms.fill<TH2F>("Resolution of rec AK4: #DeltaM vs pt", "Resolution of rec AK4: #DeltaM vs pt", 10,20.,220., 13,-16.25,16.25, genVB.daughter(0).pt(), dM0, 1.);
+		}*/
+		
+		std::stable_sort( jets->begin(), jets->end(), DeltaRComparator(genVB.daughter(1)) );
+		Jet rec1 = jets->front();  // Copy for future use
+		float dR1 = physmath::deltaR(rec1, genVB.daughter(1));
+		/*if(dR1 < 0.5){
+			theHistograms.fill("Resolution of rec AK4: #DeltaR", "Resolution of rec AK4: #DeltaR", 25,0.,0.5, dR1);
+			float dM1 = rec1.mass() - genVB.daughter(1).mass();
+			theHistograms.fill("Resolution of rec AK4: #DeltaM", "Resolution of rec AK4: #DeltaM", 31,-15.5,15.5, dM1);
+			theHistograms.fill<TH2F>("Resolution of rec AK4: #DeltaM vs pt", "Resolution of rec AK4: #DeltaM vs pt", 10,20.,220., 13,-16.25,16.25, genVB.daughter(1).pt(), dM1, 1.);
+		}*/
+		
+		// Gen VB can be correctly reconstructed
+		if(dR0 < 0.5 && dR1 < 0.5){
+			Boson<Jet> bestPossibleAK4(rec0, rec1);
+			float dR = physmath::deltaR(bestPossibleAK4, genVB);
+			theHistograms.fill("Resolution of rec VB: #DeltaR", "Resolution of rec VB: #DeltaR", 25,0.,0.5, dR);
+			float dM = bestPossibleAK4.mass() - genVB.mass();
+			theHistograms.fill("Resolution of rec VB: #DeltaM", "Resolution of rec VB: #DeltaM", 31,-31.,31., dM);
+			theHistograms.fill<TH2F>("Resolution of rec VB: #DeltaM vs pt", "Resolution of rec VB: #DeltaM vs pt", PT_2D_SIZE, 13,-32.5,32.5, genVB.pt(), dM, 1.);
+			
+			// How often do we match the gen VB with rec AK4, without knowing MC truth?
+			if(recAK4cand){
+				float dRrec00 =physmath::deltaR(recAK4cand->daughter(0), bestPossibleAK4.daughter(0));
+				float dRrec01 =physmath::deltaR(recAK4cand->daughter(0), bestPossibleAK4.daughter(1));
+				float dRrec10 =physmath::deltaR(recAK4cand->daughter(1), bestPossibleAK4.daughter(0));
+				float dRrec11 =physmath::deltaR(recAK4cand->daughter(1), bestPossibleAK4.daughter(1));
+				
+				// they should be the same jet, so the tolerance can be very low
+				if((dRrec00 < 0.1 && dRrec11 < 0.1) || (dRrec01 < 0.1 && dRrec10 < 0.1)){
+					// We correctly reconstructed the best possible reconstructible Boson for this particular genBoson with hadronic daugthers
+					theHistograms.fill("Purity of AK4 pairs (good): genVB mass", "Purity of AK4 pairs (good): gen VB mass", 30,60.,120., genVB.mass(), theWeight);
+					theHistograms.fill("Purity of AK4 pairs (good): rec mass", "Purity of AK4 pairs (good): rec mass", 30,60.,120., recAK4cand->mass(), theWeight);
+					theHistograms.fill("Purity of AK4 pairs (good): rec pt", "Purity of AK4 pairs (good): rec pt", 25,0.,500., recAK4cand->pt(), theWeight);
+					theHistograms.fill("Purity of AK4 pairs (good): # of rec AK4", "Purity of AK4 pairs (good): # of rec AK4", 11,-0.5,10.5, jets->size(), theWeight);
+				}
+			}
+		}
+	}
+	//Cleanup
+	if(recAK4cand) delete recAK4cand;
 }
 
 
@@ -740,28 +950,26 @@ void VZZAnalyzer::ptCutMVA(){
 	for(int i = 0; i < 10; ++i){
 		vector_cuts.push_back((float)(170.+10*i)); //there's no variation before 170 GeV
 	}
-	const char* massesNames[6] = {"simpleMass", "secvtxMass", "corrPrunedMass", "prunedMass", "softDropMass", "puppiMass"}; //[1] = {"corrPrunedMass"};
-	//vector<float (*)(const Jet&)> VectMassFunction(5);
 	
 	foreach(const Boson<Particle>& genVB, *genVBParticles){
 		stable_sort(jetsAK8->begin(), jetsAK8->end(), phys::DeltaRComparator(genVB));
 		//DeltaRComparator is defined in Commons/interface/Utils.h
-		if(physmath::deltaR(jetsAK8->at(0), genVB) < 0.4 /*or 0.8?*/){
+		if(physmath::deltaR(jetsAK8->at(0), genVB) < 0.5 /*or 0.8?*/){
 			//We have a match! This AK8 should have the mass of a VB (80-90 GeV)
 			//Compute the mass once and for all
-			float simpleMass     = jetsAK8->at(0).mass();
+			float mass           = jetsAK8->at(0).mass();
 			float secvtxMass     = jetsAK8->at(0).secvtxMass();
 			float corrPrunedMass = jetsAK8->at(0).corrPrunedMass();
 			float prunedMass     = jetsAK8->at(0).prunedMass();
 			float softDropMass   = jetsAK8->at(0).softDropMass();
 			float puppiMass      = jetsAK8->at(0).puppiMass();
-			float massesVal[6] = {simpleMass, secvtxMass, corrPrunedMass, prunedMass, softDropMass, puppiMass}; //[1] = {corrPrunedMass};
+			float massesVal[6] = {mass, secvtxMass, corrPrunedMass, prunedMass, softDropMass, puppiMass}; //[1] = {corrPrunedMass};
 			
 			foreach(const float& cut, vector_cuts){
 				if(jetsAK8->at(0).pt() > cut){
 					for(int i = 0; i < 6 /*1*/ /*massesVal's size*/; ++i){
 						char name[32];
-						sprintf(name, "%s: pt > %d", massesNames[i], (int)(cut));
+						sprintf(name, "%s: pt > %d", massAlgsNames_[i], (int)(cut));
 						theHistograms.fill(name, name, 30,0.,120., massesVal[i], 1./*theWeight*/);
 					}
 				}
@@ -774,51 +982,46 @@ void VZZAnalyzer::ptCutMVA(){
 
 void VZZAnalyzer::bestCandidateAnalysis(){
 	//Find the best candidate in Jets and JetsAK8 as single fat Jet or as a pair (Boson<Jet>)
-	phys::Boson<phys::Jet>* candPairJets = nullptr; //initialization
 	VCandType typePairJets = VCandType::None; //initialization
-	bool pairFromJets = findBestVFromPair(jets, candPairJets, typePairJets); //modifies VCandidate and candType
-	if(pairFromJets){
+	phys::Boson<phys::Jet>* candPairJets = findBestVFromPair(jets, typePairJets); //modifies candType
+	if(candPairJets){
 		( typePairJets == VCandType::W ?  ++pairWFromJets_  : ++pairZFromJets_  );
 		theHistograms.fill("pairFromJets_M","pairFromJets_M",CAND_M_SIZE, candPairJets->mass(), 1./*theWeight*/);
 	}
 	
-	const phys::Jet* candSingJets = nullptr;
 	VCandType typeSingJets = VCandType::None;
-	bool singFromJets = findBestVFromSing(jets, candSingJets, typeSingJets);
-	if(singFromJets){
+	const phys::Jet* candSingJets = findBestVFromSing(jets, typeSingJets);
+	if(candSingJets){
 		( typeSingJets == VCandType::W ?  ++singWFromJets_  : ++singZFromJets_  );
 		theHistograms.fill("singFromJets_M","singFromJets_M",CAND_M_SIZE, candSingJets->mass(), 1./*theWeight*/);
 	}
 	
-	phys::Boson<phys::Jet>* candPairJetsAK8 = nullptr;
 	VCandType typePairJetsAK8 = VCandType::None;
-	bool pairFromJetsAK8 = findBestVFromPair(jetsAK8, candPairJetsAK8, typePairJetsAK8);
-	if(pairFromJetsAK8){
+	phys::Boson<phys::Jet>* candPairJetsAK8 = findBestVFromPair(jetsAK8, typePairJetsAK8);
+	if(candPairJetsAK8){
 		(typePairJetsAK8==VCandType::W ? ++pairWFromJetsAK8_ : ++pairZFromJetsAK8_);
 		theHistograms.fill("pairFromAK8_M","pairFromAK8_M",CAND_M_SIZE, candPairJetsAK8->mass(), 1./*theWeight*/);
 	}
 	
-	const phys::Jet* candSingJetsAK8 = nullptr;
 	VCandType typeSingJetsAK8 = VCandType::None;
-	bool singFromJetsAK8 = findBestVFromSing(jetsAK8, candSingJetsAK8, typeSingJetsAK8);
-	if(singFromJetsAK8){
+	const phys::Jet* candSingJetsAK8 = findBestVFromSing(jetsAK8, typeSingJetsAK8);
+	if(candSingJetsAK8){
 		(typeSingJetsAK8==VCandType::W ? ++singWFromJetsAK8_ : ++singZFromJetsAK8_);
 		theHistograms.fill("singFromAK8_M","singFromAK8_M",CAND_M_SIZE, candSingJetsAK8->mass(), 1./*theWeight*/);
 	}
 	
 	//Choose best candidate
 	vector<const phys::Particle*>* candidates = new vector<const Particle*>(); // Both Jet and Boson inherit from Particle
-	if(pairFromJets)    candidates->push_back(candPairJets);   //0
-	if(singFromJets)    candidates->push_back(candSingJets);   //1
-	if(pairFromJetsAK8) candidates->push_back(candPairJetsAK8);//2
-	if(singFromJetsAK8) candidates->push_back(candSingJetsAK8);//3
+	if(candPairJets)    candidates->push_back(candPairJets);   //0
+	if(candSingJets)    candidates->push_back(candSingJets);   //1
+	if(candPairJetsAK8) candidates->push_back(candPairJetsAK8);//2
+	if(candSingJetsAK8) candidates->push_back(candSingJetsAK8);//3
 	
-	const phys::Particle* bestV = nullptr;
 	VCandType bestVtype = VCandType::None;
-	bool b = findBestVPoint(candidates, bestV, bestVtype);
+	const phys::Particle* bestV = findBestVPoint(candidates, bestVtype);
 	
 	// ----- ----- PLOTS! ----- -----
-	if(b && ZZ != nullptr){
+	if(bestV != nullptr && ZZ != nullptr){
 		++recVBtot_; //Total VB reconstructed
 		//if(ZZ->pt() > 1.){
 		TLorentzVector p4Cand = bestV->p4();
@@ -841,7 +1044,7 @@ void VZZAnalyzer::bestCandidateAnalysis(){
 	
 	//Let's find the best genV    TODO: define signal region(?)
 	Boson<Particle>* genVB = nullptr;
-	if(b && genVBParticles->size() >= 1){
+	if(bestV != nullptr && genVBParticles->size() >= 1){
 		if(genVBParticles->size() >= 2){
 			sort( genVBParticles->begin(), genVBParticles->end(), phys::DeltaRComparator(bestV->p4()) );
 		}
@@ -1034,8 +1237,9 @@ void VZZAnalyzer::endBestCandAnalysis(TFile & fout){
 
 void VZZAnalyzer::simpleGraphs(){
 	if(ZZ != nullptr)
-		theHistograms.fill("ZZmass","ZZ mass;[GeV/c^2]", 200,0.,500., ZZ->mass(),1./*theWeight*/);
-		theHistograms.fill("ZZpt","ZZ pt;[GeV/c]", 200,0.,500., ZZ->pt(), 1./*theWeight*/);
+		theHistograms.fill("ZZmass", "ZZ mass;[GeV/c^2]", 100,100.,600., ZZ->mass(), 1./*theWeight*/);
+		theHistograms.fill("ZZpt", "ZZ pt;[GeV/c]", 100,0.,500., ZZ->pt(), 1./*theWeight*/);
+		theHistograms.fill("ZZeta", "ZZ #eta", 100,-5.,5., ZZ->eta(), 1./*theWeight*/);
 	/*else
 		cout<<"evtN_: ZZ == nullptr\n";*/
 	theHistograms.fill("genVBParticles","genVBParticles->size()", 5,-0.5,4.5, genVBParticles->size(), 1./*theWeight*/);
@@ -1054,83 +1258,43 @@ void VZZAnalyzer::simpleGraphs(){
     theHistograms.fill("number of gen Z", "number of gen Z", 4,-0.5,3.5, nZ, 1.);    
   }
 	
-	theHistograms.fill("AK4_{rec} size","AK4_{rec} mass", 8,-0.5,7.5, jets->size(), 1./*theWeight*/);
-	theHistograms.fill("AK8_{rec} size","AK8_{rec} mass", 8,-0.5,7.5, jetsAK8->size(), 1./*theWeight*/);
-	theHistograms.fill("AK4_{gen} size","AK4_{gen} mass", 8,-0.5,7.5, genJets->size(), 1./*theWeight*/);
-	theHistograms.fill("AK8_{gen} size","AK8_{gen} mass", 8,-0.5,7.5, genJetsAK8->size(), 1./*theWeight*/);
+	theHistograms.fill("Size AK4_{rec}","Size AK4_{rec}", 8,-0.5,7.5, jets->size(), 1./*theWeight*/);
+	theHistograms.fill("Size AK8_{rec}","Size AK8_{rec}", 8,-0.5,7.5, jetsAK8->size(), 1./*theWeight*/);
+	theHistograms.fill("Size AK4_{gen}","Size AK4_{gen}", 8,-0.5,7.5, genJets->size(), 1./*theWeight*/);
+	theHistograms.fill("Size AK8_{gen}","Size AK8_{gen}", 8,-0.5,7.5, genJetsAK8->size(), 1./*theWeight*/);
 	
-	/*foreach(const Jet& jet, *jets)
-		theHistograms.fill("All AK4_{rec} mass", "All AK4_{rec} mass", 25,-5.,120., jet.corrPrunedMass(), theWeight);*/
+	foreach(const Jet& jet, *jets)
+		theHistograms.fill("All AK4_{rec} mass", "All AK4_{rec} mass", 24,-0.,120., jet.corrPrunedMass(), theWeight);
 	
 	foreach(const Jet& jet, *jetsAK8){
-		theHistograms.fill("All AK8_{rec} mass", "All AK8_{rec} mass", 25,-5.,120., jet.corrPrunedMass(), 1./*theWeight*/);
-		if(ZZ != nullptr)
+		theHistograms.fill("All AK8_{rec} corrPrunedMass", "All AK8_{rec} mass", 24,-0.,120., jet.corrPrunedMass(), 1./*theWeight*/);
+		/*if(ZZ != nullptr)
 			if(ZZ->pt() > 1.)
-				theHistograms.fill<TH2F>("All AK8_{rec} mass vs ZZ pt", "All AK8_{rec} mass vs ZZ pt", PT_2D_SIZE, MASS_2D_SIZE, ZZ->pt(), jet.mass(), 1.);
+				theHistograms.fill<TH2F>("All AK8_{rec} mass vs ZZ pt", "All AK8_{rec} mass vs ZZ pt", PT_2D_SIZE, MASS_2D_SIZE, ZZ->pt(), jet.mass(), 1.);*/
 	}
 	
-	/*foreach(const Particle& jet, *genJets)
-		theHistograms.fill("All AK4_{gen} mass", "All AK4_{gen} mass", 25,-5.,120., jet.mass(), theWeight);*/
+	foreach(const Particle& jet, *genJets)
+		theHistograms.fill("All AK4_{gen} mass", "All AK4_{gen} mass", 24,-0.,120., jet.mass(), theWeight);
 	
 	foreach(const Particle& jet, *genJetsAK8){
-		theHistograms.fill("All AK8_{gen} mass", "All AK8_{gen} mass", 25,-5.,120., jet.mass(), 1./*theWeight*/);
-		if(ZZ != nullptr)
+		theHistograms.fill("All AK8_{gen} mass", "All AK8_{gen} mass", 24,-0.,120., jet.mass(), 1./*theWeight*/);
+		/*if(ZZ != nullptr)
 			if(ZZ->pt() > 1.)
-				theHistograms.fill<TH2F>("All AK8_{gen} mass vs ZZ pt", "All AK8_{gen} mass vs ZZ pt", PT_2D_SIZE, MASS_2D_SIZE, ZZ->pt(), jet.mass(), 1./*theWeight*/);
+				theHistograms.fill<TH2F>("All AK8_{gen} mass vs ZZ pt", "All AK8_{gen} mass vs ZZ pt", PT_2D_SIZE, MASS_2D_SIZE, ZZ->pt(), jet.mass(), 1.);*/
 	}
-}
-
-
-template<class P = phys::Jet>
-bool VZZAnalyzer::findBestVFromSing(/*const*/ std::vector<P>* js, const P*& thisCandidate, VCandType& thisCandType){
-	bool isAccurate = false;
-	thisCandType = VCandType::None;
-	if(js->size() < 1)
-		return false;
-	size_t indexZ = 0;
-	size_t indexW = 0;
-	float minDifZ = 1.;
-	float minDifW = 1.;
-	float tmpMass = 0.;
-	for(size_t i = 0; i < js->size(); ++i){
-		tmpMass = js->at(i).mass();
-		float diffZa = fabs(tmpMass - phys::ZMASS);
-		float diffWa = fabs(tmpMass - phys::WMASS);
-		if(diffZa < minDifZ){
-			minDifZ = diffZa;
-			indexZ = i;
-		}
-		if(diffWa < minDifW){
-			minDifW = diffWa;
-			indexW = i;
-		}
-	}
-	
-	if(minDifZ < minDifW){
-		thisCandidate = &(js->at(indexZ));
-		isAccurate = ZBosonDefinition(*thisCandidate);
-		thisCandType = VCandType::Z;
-	}
-	else{
-		thisCandidate = &(js->at(indexW));
-		isAccurate = WBosonDefinition(*thisCandidate);
-		thisCandType = VCandType::W;
-	}
-	return isAccurate;
 }
 
 
 template <class J = phys::Jet>
-bool VZZAnalyzer::findBestVFromPair(const std::vector<J>* js, phys::Boson<J>*& thisCandidate, VCandType& thisCandType){
-	bool isAccurate = false;
+phys::Boson<J>* VZZAnalyzer::findBestVFromPair(const std::vector<J>* js, VCandType& thisCandType){
 	thisCandType = VCandType::None;
 	if(js->size() < 2)
-		return false;
+		return nullptr;
 		
 	pair<size_t, size_t> indicesZ(0,0);
 	pair<size_t, size_t> indicesW(0,0);
-	float minDifZ = 1.;
-	float minDifW = 1.;
+	float minDifZ = 50.;
+	float minDifW = 50.;
 	float tmpMass = 0.;
 	for(size_t i = 0; i < js->size(); ++i){
 		for(size_t j = i+1; j < js->size(); ++j){
@@ -1146,34 +1310,37 @@ bool VZZAnalyzer::findBestVFromPair(const std::vector<J>* js, phys::Boson<J>*& t
 				indicesW = std::make_pair(i,j);
 			}
 		}
-		
-		if(minDifZ < minDifW){
-			thisCandidate = new Boson<J>(js->at(indicesZ.first), js->at(indicesZ.second));
-			isAccurate = ZBosonDefinition(*thisCandidate);
-			thisCandType = VCandType::Z;
-		}
-		else{
-			thisCandidate = new Boson<J>(js->at(indicesW.first), js->at(indicesW.second));
-			isAccurate = WBosonDefinition(*thisCandidate);
-			thisCandType = VCandType::W;
-		}
 	}
-	return isAccurate;
+	
+	phys::Boson<J>* thisCandidate = nullptr;
+	if(minDifZ < minDifW){
+		thisCandidate = new Boson<J>(js->at(indicesZ.first), js->at(indicesZ.second));
+		if(!ZBosonDefinition(*thisCandidate))
+			return nullptr;
+		thisCandType = VCandType::Z;
+	}
+	else{
+		thisCandidate = new Boson<J>(js->at(indicesW.first), js->at(indicesW.second));
+		if(!WBosonDefinition(*thisCandidate))
+			return nullptr;
+		thisCandType = VCandType::W;
+	}
+	return thisCandidate;
 }
 
-template <class P = phys::Particle>
-bool VZZAnalyzer::findBestVPoint(std::vector<const P*>* js, const P*& thisCandidate, VCandType& thisCandType){
-	bool isAccurate = false;
+
+template<class P = phys::Jet>
+const P* VZZAnalyzer::findBestVFromSing(/*const*/ std::vector<P>* js, VCandType& thisCandType){
 	thisCandType = VCandType::None;
-	if(js->size() == 0)
-		return false;
+	if(js->size() < 1)
+		return nullptr;
 	size_t indexZ = 0;
 	size_t indexW = 0;
-	float minDifZ = 1.;
-	float minDifW = 1.;
+	float minDifZ = 50.;
+	float minDifW = 50.;
 	float tmpMass = 0.;
 	for(size_t i = 0; i < js->size(); ++i){
-		tmpMass = js->at(i)->mass();
+		tmpMass = js->at(i).mass();
 		float diffZa = fabs(tmpMass - phys::ZMASS);
 		float diffWa = fabs(tmpMass - phys::WMASS);
 		if(diffZa < minDifZ){
@@ -1185,17 +1352,62 @@ bool VZZAnalyzer::findBestVPoint(std::vector<const P*>* js, const P*& thisCandid
 			indexW = i;
 		}
 	}
+	
+	const P* thisCandidate = nullptr;
 	if(minDifZ < minDifW){
-		thisCandidate = (js->at(indexZ));
-		isAccurate = ZBosonDefinition(*thisCandidate); //calling the version for a Particle, not the one for a Boson<Particle>
+		thisCandidate = &(js->at(indexZ));
+		if(!ZBosonDefinition(*thisCandidate))
+			return nullptr;
 		thisCandType = VCandType::Z;
 	}
 	else{
-		thisCandidate = (js->at(indexW));
-		isAccurate = WBosonDefinition(*thisCandidate);
+		thisCandidate = &(js->at(indexW));
+		if(!WBosonDefinition(*thisCandidate))
+			return nullptr;
 		thisCandType = VCandType::W;
 	}
-	return isAccurate;
+	return thisCandidate;
+}
+
+
+template <class P = phys::Particle>
+const P* VZZAnalyzer::findBestVPoint(std::vector<const P*>* js, VCandType& thisCandType){
+	thisCandType = VCandType::None;
+	if(js->size() < 1)
+		return nullptr;
+	size_t indexZ = 0;
+	size_t indexW = 0;
+	float minDifZ = 50.;
+	float minDifW = 50.;
+	float tmpMass = 0.;
+	for(size_t i = 0; i < js->size(); ++i){
+		tmpMass = getRefinedMass(js->at(i));
+		float diffZa = fabs(tmpMass - phys::ZMASS);
+		float diffWa = fabs(tmpMass - phys::WMASS);
+		if(diffZa < minDifZ){
+			minDifZ = diffZa;
+			indexZ = i;
+		}
+		if(diffWa < minDifW){
+			minDifW = diffWa;
+			indexW = i;
+		}
+	}
+	
+	const P* thisCandidate = nullptr;
+	if(minDifZ < minDifW){
+		thisCandidate = js->at(indexZ);
+		if(!ZBosonDefinition(*thisCandidate))
+			return nullptr;
+		thisCandType = VCandType::Z;
+	}
+	else{
+		thisCandidate = js->at(indexW);
+		if(!WBosonDefinition(*thisCandidate))
+			return nullptr;
+		thisCandType = VCandType::W;
+	}
+	return thisCandidate;
 }
 
 /*
