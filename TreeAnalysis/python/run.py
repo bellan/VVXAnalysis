@@ -247,11 +247,11 @@ def runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doS
     outputLocations.append(outputRedBkg)
 
     
-def runOverSamples(executable, analysis, typeofsample, region, year, luminosity, maxNumEvents, doSF):
+def runOverSamples(executable, analysis, typeofsample, region, year, luminosity, maxNumEvents, knownProcesses, doSF):
 
     if typeofsample == 'all' or typeofsample == 'data':
         outputLocations = []
-        for sample in typeofsamples:
+        for sample in knownProcesses:
             if typeofsample == 'all' or sample[0:8] == 'DoubleMu' or sample[0:9] == 'DoubleEle' or sample[0:4] == 'MuEG' or sample[0:9]== "SingleEle" or sample[0:8]== "SingleMu":
 
                 if region == 'all':
@@ -279,27 +279,34 @@ def runOverSamples(executable, analysis, typeofsample, region, year, luminosity,
             run(executable, analysis, typeofsample, region, year, luminosity, maxNumEvents, doSF) # runs over a specific sample in a specific region
 
 
+
+###################################
+### Actual steering of the code ###
+###################################
+
 if year == 1618:
     for year in years:
         if options.csvfile is None:
             csvfile = "../Producers/python/samples_"+str(year)+"_MC.csv"
-
+            
         print "CSV file: ", Blue(csvfile)
-        typeofsamples = typeOfSamples(csvfile)
-        typeofsamples.append('test')
-        
-        runOverSamples(executable, analysis, typeofsample, region, year, luminosity, maxNumEvents, doSF)
+        knownProcesses = typeOfSamples(csvfile)
+        knownProcesses.append('test')
+
+        runOverSamples(executable, analysis, typeofsample, region, year, luminosity, maxNumEvents, knownProcesses, doSF)
+
 elif year in years:
     if options.csvfile is None:
         csvfile = "../Producers/python/samples_"+str(year)+"_MC.csv"
+        
     print "CSV file: ", Blue(csvfile)
-    typeofsamples = typeOfSamples(csvfile)
-    typeofsamples.append('test')
-    
-    runOverSamples(executable, analysis, typeofsample, region, year, luminosity, maxNumEvents, doSF)
+    knownProcesses = typeOfSamples(csvfile)
+    knownProcesses.append('test')
+
+    runOverSamples(executable, analysis, typeofsample, region, year, luminosity, maxNumEvents, knownProcesses, doSF)
+
 else:
     print "Unknown year"
     sys.exit(1)    
-
-        
+       
 print "\nJob status: ", OK("DONE"),"\n"
