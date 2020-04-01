@@ -21,6 +21,7 @@
 class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 	public:
 		enum VCandType {None, W, Z}; //VCandidate is closest to Wmass or Zmass?
+		const char* massAlgsNames_[6] = {"mass", "secvtxMass", "corrPrunedMass", "prunedMass", "softDropMass", "puppiMass"};
 		
 		VZZAnalyzer(const AnalysisConfiguration& configuration) 
 				: EventAnalyzer(*(new Selector<VZZAnalyzer>(*this)), configuration){
@@ -40,13 +41,13 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		// ----- ----- Helper functions ----- ----- 
 		template<class P = phys::Jet>
-		bool findBestVFromSing(/*const*/ std::vector<P>*, const P*& VCandidate, VCandType& candType);
-		//Passing pointer by reference so that it gets updated
+		const P* findBestVFromSing(/*const*/ std::vector<P>*, VCandType& candType);
+		//The candidate is NOT copied, and the pointer returned points to the original
 		template <class J = phys::Jet>
-		bool findBestVFromPair(const std::vector<J>*, phys::Boson<J>*& VCandidate, VCandType& candType);
-		//Searches among the Jets in the vector (which is likely either "jets" or "jetsAK8") and finds the pair candidate with mass closest to W or Z (modifying "candType"), and stores it in "VCandidate". true: candidate fits the (W/Z) BosonDefinition
+		phys::Boson<J>* findBestVFromPair(const std::vector<J>*, VCandType& candType);
+		//Searches among the Jets in the vector and finds the pair candidate with mass closest to W or Z (modifying "candType"). Returns the candidate only if it fits the (W/Z)BosonDefinition
 		template <class P = phys::Particle>
-		bool findBestVPoint(std::vector<const P*>* js, const P*& thisCandidate, VCandType& thisCandType); //Uses a vector<P*> instead of a vector<P>
+		const P* findBestVPoint(std::vector<const P*>* js, VCandType& thisCandType); //Uses a vector<P*> instead of a vector<P>
 		
 		template <class P, class R = phys::Boson<phys::Particle>> // P = Jet or Particle
 		P*              closestSing(std::vector<P>* cands, const R& reference); //max dR = 0.4
@@ -95,8 +96,13 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		void bestZMassJetMVA();
 		void specialPeakAnalisys(const phys::Particle& theGenAK8); //Is there a pair of AK4 that reconstructs theese events with an AK8 but low-pt ZZ?
 		
+		void reconstructionAnalisys();
+		
+		void AK8MassAlgorithms();
+		
 		void endResolutionAnalisys(TFile& fout); //Calculates AK4-AK8 resolution per bin of ZZ pt
 		
+		void genTauAnalisys();
 		
 		void genSignalGraphs();  // Reads sigType_
 		void recSignalGraphs();
@@ -130,23 +136,29 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		template <class PAR>
 		bool ZBosonDefinition(phys::Boson<PAR>& cand) const{  //candidate
-			bool checkMass = fabs(cand.p4().M() - phys::ZMASS) < 40; //temp
+			//bool checkMass = fabs(cand.p4().M() - phys::ZMASS) < 40; //temp
+			bool checkMass = (60. < cand.p4().M() && cand.p4().M() < 120.);
 			return checkMass;
 		}
-		template <class PAR>	 //Apparently, PAR must inherit from Jet
+		template <class PAR>
 		bool WBosonDefinition(phys::Boson<PAR>& cand) const{	//candidate
-			bool checkMass = fabs(cand.p4().M() - phys::WMASS) < 40;
+			//bool checkMass = fabs(cand.p4().M() - phys::WMASS) < 40;
+			bool checkMass = (60. < cand.p4().M() && cand.p4().M() < 120.);
 			return checkMass;
 		}
 		
 		template <class PAR>  //usually PAR is Jet
 		bool ZBosonDefinition(PAR& cand) const{
-			bool checkMass = fabs(getRefinedMass(cand) - phys::ZMASS) < 40;
+			//bool checkMass = fabs(getRefinedMass(cand) - phys::ZMASS) < 40;
+			float mass = getRefinedMass(cand);
+			bool checkMass = (60. < mass && mass < 120.);
 			return checkMass;
 		}
 		template <class PAR>	
 		bool WBosonDefinition(PAR& cand) const{	
-			bool checkMass = fabs(getRefinedMass(cand) - phys::WMASS) < 40;
+			//bool checkMass = fabs(getRefinedMass(cand) - phys::WMASS) < 40;
+			float mass = getRefinedMass(cand);
+			bool checkMass = (60. < mass && mass < 120.);
 			return checkMass;
 		}
 		/*
