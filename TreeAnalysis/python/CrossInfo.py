@@ -52,11 +52,11 @@ Xs_OS_2e2m =  32.64
 xs_OS_4m   =  16.32
 xs_OS_4e   =  16.32
 
-GlobSystList           = [{"name":"Trig","value":0.02,"longname":"Trigger efficiency"},
-                          {"name":"Lumi","value": 0.025,"longname":"Luminosity"}] 
+GlobSystList           = [{"name":"Trig","value":0.02,"longname":"Trigger efficiency","corrEll":1},
+                          {"name":"Lumi","value": 0.025,"longname":"Luminosity","corrEll":0}] 
 
-PdfSyst_fid=[{"name":"Pdf","value":0.00}] 
-PdfSyst    =[{"name":"Pdf","value":0.00}] 
+PdfSyst_fid=[{"name":"Pdf","value":0.00,"corrEll":0}] 
+PdfSyst    =[{"name":"Pdf","value":0.00,"corrEll":0}]
 
 DiffSystList           = [{"name":"Red","longname":"Reducible background","corr":0},
                           {"name":"Irr","longname":"Irreducible background","corr":0},
@@ -64,8 +64,8 @@ DiffSystList           = [{"name":"Red","longname":"Reducible background","corr"
                           {"name":"MCgen","longname":"Monte Carlo choice","corr":0},
                           {"name":"Pu","longname":"Pile up","corr":0}] 
 
-DiffSystListJets = [{"name":"JES","longname":"JES Mat correction","corr":0},
-                    {"name":"JER","longname":"Jet energy resolution","corr":0}]
+DiffSystListJets =      [{"name":"JES","longname":"JES Mat correction","corr":0},
+                         {"name":"JER","longname":"Jet energy resolution","corr":0}]
 
 DiffSystListUnfold     = [{"name":"RedBkg","longname":"Reducible background","corr":0},
                           {"name":"IrrBkg","longname":"Irreducible background","corr":0},

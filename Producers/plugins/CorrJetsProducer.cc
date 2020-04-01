@@ -33,6 +33,7 @@ class CorrJetsProducer : public edm::EDProducer {
       edm::EDGetTokenT<double>                          rho_;
       std::string                                   payload_;
       bool                                           isData_;
+      int                                              year_;
 };
 
 CorrJetsProducer::CorrJetsProducer(const edm::ParameterSet& iConfig):
@@ -40,7 +41,8 @@ CorrJetsProducer::CorrJetsProducer(const edm::ParameterSet& iConfig):
     vertexToken_( consumes<reco::VertexCollection> ( iConfig.getParameter<edm::InputTag>( "vertex"  ) ) ),
     rho_        ( consumes<double>                 ( iConfig.getParameter<edm::InputTag>( "rho"     ) ) ),
     payload_    (                                    iConfig.getParameter<std::string>  ( "payload"   ) ),
-    isData_     (                                    iConfig.getParameter<bool>         ( "isData"    ) )
+    isData_     (                                    iConfig.getParameter<bool>         ( "isData"    ) ),
+    year_       (                                    iConfig.getParameter<int>          ( "year"      ) )
 {
     produces< pat::JetCollection >( "corrJets" );
 }
@@ -90,7 +92,11 @@ void CorrJetsProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
         jecAK8->setJetPt ( jet.correctedP4(0).pt()     );
         jecAK8->setJetEta( jet.correctedP4(0).eta()    );
         jecAK8->setJetE  ( jet.correctedP4(0).energy() );
-        float corrMass   = jet.userFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSPrunedMass") * jecAK8->getCorrection();
+	float corrMass = -999;
+	//if (year_ == 2016 || year_ == 2017) 
+	//  corrMass   = jet.userFloat("ak8PFJetsCHSPrunedMass") * jecAK8->getCorrection();
+        //else if (year_ == 2018) 
+	corrMass   = jet.userFloat("ak8PFJetsCHSValueMap:ak8PFJetsCHSPrunedMass") * jecAK8->getCorrection();
         pat::Jet* cloneJet = jet.clone();
         cloneJet->addUserFloat("ak8PFJetsCHSCorrPrunedMass", corrMass );
         corrJets->push_back( *cloneJet );
