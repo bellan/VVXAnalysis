@@ -223,7 +223,7 @@ def run(executable, analysis, typeofsample, region, year, luminosity, maxNumEven
         if os.path.exists('{0:s}/{1:s}.root'.format(outputdir,typeofsample)):
             os.popen('rm {0:s}/{1:s}.root'.format(outputdir,typeofsample))
         print "Command going to be executed:", Violet(hadd)
-        output = subprocess.call(hadd.split(),shell=True)
+        output = subprocess.call(hadd,shell=True)
     elif len(datasets) == 1 and not datasets[0] == typeofsample:
         print "One sample in the dataset, just copying it."
         os.popen('cp {0:s}/{1:s}.root {0:s}/{2:s}.root'.format(outputdir,datasets[0],typeofsample))
