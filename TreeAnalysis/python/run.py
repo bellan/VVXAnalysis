@@ -123,8 +123,6 @@ print "Sample/type of samples:", Blue(typeofsample)
 print "Get (again) cross sections from csv file: ", Blue(getExternalCrossSectionFromFile)
 print "Region type: ", Blue(region)
 print "Use internal scale factor",Blue(doSF)
-#print "Integrated luminosity: ", Blue(luminosity)
-
 
 
 ############################################################################
@@ -159,7 +157,7 @@ def run(executable, analysis, typeofsample, region, year, luminosity, maxNumEven
     print "\n"
 
     
-    inputdir = baseinputdir
+    inputdir = options.directory+'/'+str(year)
     
     outputdir = 'results'
     if not os.path.exists(outputdir): os.popen('mkdir "%s"' %outputdir)
@@ -289,7 +287,6 @@ if year == 1618:
         print "CSV file: ", Blue(csvfile)
         typeofsamples = typeOfSamples(csvfile)
         typeofsamples.append('test')
-        baseinputdir = options.directory+'/'+str(year)
         
         runOverSamples(executable, analysis, typeofsample, region, year, luminosity, maxNumEvents, doSF)
 elif year in years:
@@ -298,7 +295,6 @@ elif year in years:
     print "CSV file: ", Blue(csvfile)
     typeofsamples = typeOfSamples(csvfile)
     typeofsamples.append('test')
-    baseinputdir = options.directory+'/'+str(year)
     
     runOverSamples(executable, analysis, typeofsample, region, year, luminosity, maxNumEvents, doSF)
 else:
