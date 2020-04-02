@@ -73,7 +73,7 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		inline double getRefinedMass(const phys::Jet& j) const{ return j.corrPrunedMass(); }
 		inline double getRefinedMass(const phys::Jet* j) const{ return j->corrPrunedMass();}
 		
-		// ----- ----- Event-specific varibles calculation ----- ----- 
+		// ----- ----- Event-specific variables calculation ----- ----- 
 		void fillGenHadVBs(); //old: Fills the vector only if it is empty
 		void fillRecHadVBs(); //old: Fills the vector only if it is empty
 		void calcS();
@@ -96,7 +96,7 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		void bestZMassJetMVA();
 		void specialPeakAnalisys(const phys::Particle& theGenAK8); //Is there a pair of AK4 that reconstructs theese events with an AK8 but low-pt ZZ?
 		
-		void reconstructionAnalisys();
+		void reconstructionAK4();
 		
 		void AK8MassAlgorithms();
 		
@@ -125,6 +125,17 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		unsigned int recVBtot_; //Evts where the reconstructed VB is acceptable (VBosonDefinition)
 		unsigned int goodRec_, withGenVB_; //Evts wit a recVB near a genVB / Evts with a genVB
 		unsigned int win4_,win8_;//How often an AK4/AK8 reconstructs better an hadronic decaying VB
+		
+		unsigned int Nhad_genVB_;  // generated VB with hadronic decay
+		unsigned int Ncms_recVB_;  // reconstructed by the detector
+		unsigned int Nall_recVB_60_120_;  // reconstructed by the algorithm (60<mrec<120)
+		unsigned int Ngood_recVB_60_120_; // rec. by the algorithm that match the rec. from the detector 
+		//in SignalDefinitions.cc for generated VB (bestJetPairW, and bestJetPairZ) (|m-mV|<30) 
+		unsigned int Nall_recVB_m20_;  // reconstructed by the algorithm (|m-mV|<20) 
+		unsigned int Ngood_recVB_m20_;
+		
+		unsigned int N_gen8_, Ncms_rec8_, Nall_rec8;
+		unsigned int Ngood_rec8; //reconstructed near a recAK8 that is close to a genAK8
 		
 		friend class Selector<VZZAnalyzer>;
 		
