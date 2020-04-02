@@ -14,6 +14,7 @@ from Colours import *
 ############################## User's inputs ###############################
 ############################################################################
 regions = ['SR','CR','CR2P2F','CR3P1F','SR_HZZ','CR_HZZ','CR2P2F_HZZ','CR3P1F_HZZ', 'MC','MC_HZZ']
+years   = [2016,2017,2018]
 
 parser = OptionParser(usage="usage: %prog <analysis> <sample> [options]")
 parser.add_option("-r", "--region", dest="region",
@@ -68,31 +69,13 @@ maxNumEvents = options.maxNumEvents
 year         = options.year
 luminosity   = options.luminosity
 
-# if luminosity is specified thorugh -l option, overwrite the year <-> luminosity decision
-if luminosity is None:
-    if year == 2016: 
-        luminosity =  35900
-    elif year == 2017: 
-        luminosity =  41500
-    elif year == 2018: 
-        luminosity =  59700
-    else :
-        print"{0:s}: Unknown year, please specify a luminosity with -l option".format(year)
-        sys.exit(1)
-
 if region not in regions:
     print region, "is an unknown region. Run {0:s} -h for more details.".format(sys.argv[0])
     sys.exit(1)
 
 getExternalCrossSectionFromFile = False if options.getExternalCrossSectionFromFile is None else options.getExternalCrossSectionFromFile
 
-
-baseinputdir = options.directory+'/'+str(year)
-
 csvfile = options.csvfile
-if options.csvfile is None:
-    csvfile = "../Producers/python/samples_"+str(year)+"_MC.csv"
-
 
 ###########################################################################
 ###########################################################################
@@ -110,8 +93,6 @@ print "\n\n"
 
 executable = "eventAnalyzer" 
 
-typeofsamples = typeOfSamples(csvfile)
-typeofsamples.append('test')
 
 failure, output = commands.getstatusoutput('ls ./bin/ | grep -v .cpp | grep -v .xml | grep -v .md')
 availableExecutable = output.split()
@@ -139,14 +120,9 @@ print Blue("--------------------------------------------------------------------
 print Red("Configuration:")
 print "Executable: {0:s} and analysis: {1:s}".format(Blue(executable), Blue(analysis)) 
 print "Sample/type of samples:", Blue(typeofsample)
-print "CSV file: ", Blue(csvfile)
 print "Get (again) cross sections from csv file: ", Blue(getExternalCrossSectionFromFile)
 print "Region type: ", Blue(region)
-print "Year: ", Blue(year)
-print "Integrated luminosity: ", Blue(luminosity)
 print "Use internal scale factor",Blue(doSF)
-print Blue("----------------------------------------------------------------------")
-print "\n"
 
 
 ############################################################################
@@ -154,8 +130,34 @@ print "\n"
 
 def run(executable, analysis, typeofsample, region, year, luminosity, maxNumEvents, doSF):
 
+    # if luminosity is specified thorugh -l option, overwrite the year <-> luminosity decision
+    if luminosity is None:
+        if year == 2016:
+            luminosity =  35900
+        elif year == 2017: 
+            luminosity =  41500
+        elif year == 2018: 
+            luminosity =  59700
+        else :
+            print"{0:s}: Unknown year, please specify a luminosity with -l option".format(year)
+            sys.exit(1)
 
-    inputdir = baseinputdir
+    #################################################################################
+    ### Special treatment for DATA ###
+    #################################################################################
+    isData = False
+
+    if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:4] == 'MuEG' or typeofsample[0:6] == 'Single' or typeofsample[0:4] == 'test' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:8] == 'DoubleEG':
+        luminosity = -1
+        isData = True
+
+    print "Year: ", Blue(year)
+    print "Integrated luminosity: ", Blue(luminosity)
+    print Blue("----------------------------------------------------------------------")
+    print "\n"
+
+    
+    inputdir = options.directory+'/'+str(year)
     
     outputdir = 'results'
     if not os.path.exists(outputdir): os.popen('mkdir "%s"' %outputdir)
@@ -180,24 +182,9 @@ def run(executable, analysis, typeofsample, region, year, luminosity, maxNumEven
     ### Override configuration, for test only ###
     if typeofsample == 'test':
         datasets = ['test']
-        
-
-    #################################################################################
-
-    ### Special treatment for DATA ###
-
-    #################################################################################
-    isData = False
-
-#        if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:4] == 'MuEG' or typeofsample[0:9]== "SingleEle" or typeofsample[0:8]== "SingleMu" or typeofsample[0:4] == 'test' :
-
-    if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:4] == 'MuEG' or typeofsample[0:6] == 'Single' or typeofsample[0:4] == 'test' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:8] == 'DoubleEG':
 
 
-        luminosity = -1
-        isData = True
-        
-
+    
     # ----- Run over the run periods -----
     hadd = 'hadd {0:s}/{1:s}.root'.format(outputdir,typeofsample)
     for period in datasets:
@@ -259,35 +246,67 @@ def runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doS
     output = subprocess.call(hadd.split(),shell=True)
     outputLocations.append(outputRedBkg)
 
+    
+def runOverSamples(executable, analysis, typeofsample, region, year, luminosity, maxNumEvents, knownProcesses, doSF):
 
-if typeofsample == 'all' or typeofsample == 'data':
-    outputLocations = []
-    for sample in typeofsamples:
-        if typeofsample == 'all' or sample[0:8] == 'DoubleMu' or sample[0:9] == 'DoubleEle' or sample[0:4] == 'MuEG' or sample[0:9]== "SingleEle" or sample[0:8]== "SingleMu":
+    if typeofsample == 'all' or typeofsample == 'data':
+        outputLocations = []
+        for sample in knownProcesses:
+            if typeofsample == 'all' or sample[0:8] == 'DoubleMu' or sample[0:9] == 'DoubleEle' or sample[0:4] == 'MuEG' or sample[0:9]== "SingleEle" or sample[0:8]== "SingleMu":
 
-            if region == 'all':
-                for cr in regions:
-                    run(executable, analysis, sample, cr, year, luminosity, maxNumEvents, doSF)    # runs over all samples in all control reagions
-            elif region == 'CR':
-                runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doSF, "",outputLocations)
-            elif region == 'CR_HZZ': 
-                runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doSF, '_HZZ',outputLocations)
-            else:
-                outputLocations.append(run(executable, analysis, sample, region, year, luminosity, maxNumEvents, doSF))   # runs over all samples in a specific control reagions
-    if typeofsample == 'data':
-        mergeDataSamples(outputLocations)
-
+                if region == 'all':
+                    for cr in regions:
+                        run(executable, analysis, sample, cr, year, luminosity, maxNumEvents, doSF)    # runs over all samples in all control reagions
+                elif region == 'CR':
+                    runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doSF, "",outputLocations)
+                elif region == 'CR_HZZ': 
+                    runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doSF, '_HZZ',outputLocations)
+                else:
+                    outputLocations.append(run(executable, analysis, sample, region, year, luminosity, maxNumEvents, doSF))   # runs over all samples in a specific control reagions
+        if typeofsample == 'data':
+            mergeDataSamples(outputLocations)
             
-else:
-    if region == 'all':
-        for cr in range(0,4):     
-            run(executable, analysis, typeofsample, cr, year, luminosity, maxNumEvents, doSF)  # runs over a specific sample in all control regions
-
-    elif region == 'CR':
-        runOverCRs(executable, analysis, typeofsample, year, luminosity, maxNumEvents, doSF)
-    elif region == 'CR_HZZ':
-        runOverCRs(executable, analysis, typeofsample, year, luminosity, maxNumEvents, doSF, postfix='_HZZ')
     else:
-        run(executable, analysis, typeofsample, region, year, luminosity, maxNumEvents, doSF) # runs over a specific sample in a specific region
+        if region == 'all':
+            for cr in range(0,4):     
+                run(executable, analysis, typeofsample, cr, year, luminosity, maxNumEvents, doSF)  # runs over a specific sample in all control regions
 
+        elif region == 'CR':
+            runOverCRs(executable, analysis, typeofsample, year, luminosity, maxNumEvents, doSF)
+        elif region == 'CR_HZZ':
+            runOverCRs(executable, analysis, typeofsample, year, luminosity, maxNumEvents, doSF, postfix='_HZZ')
+        else:
+            run(executable, analysis, typeofsample, region, year, luminosity, maxNumEvents, doSF) # runs over a specific sample in a specific region
+
+
+
+###################################
+### Actual steering of the code ###
+###################################
+
+if year == 1618:
+    for year in years:
+        if options.csvfile is None:
+            csvfile = "../Producers/python/samples_"+str(year)+"_MC.csv"
+            
+        print "CSV file: ", Blue(csvfile)
+        knownProcesses = typeOfSamples(csvfile)
+        knownProcesses.append('test')
+
+        runOverSamples(executable, analysis, typeofsample, region, year, luminosity, maxNumEvents, knownProcesses, doSF)
+
+elif year in years:
+    if options.csvfile is None:
+        csvfile = "../Producers/python/samples_"+str(year)+"_MC.csv"
+        
+    print "CSV file: ", Blue(csvfile)
+    knownProcesses = typeOfSamples(csvfile)
+    knownProcesses.append('test')
+
+    runOverSamples(executable, analysis, typeofsample, region, year, luminosity, maxNumEvents, knownProcesses, doSF)
+
+else:
+    print "Unknown year"
+    sys.exit(1)    
+       
 print "\nJob status: ", OK("DONE"),"\n"
