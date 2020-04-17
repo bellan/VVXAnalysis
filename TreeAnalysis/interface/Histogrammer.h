@@ -15,7 +15,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TFile.h"
-#include "TString.h"
+//#include "TString.h"
 
 class Histogrammer{
   typedef std::map<std::string,TH1*> TH1map;
@@ -52,7 +52,7 @@ class Histogrammer{
     TH1map::iterator f = thePlots.find(name);
     if(f != thePlots.end()) return f->second; 
     else{
-      thePlots[name] = new H(TString(name),TString(title),bins,min,max);
+      thePlots[name] = new H(name.c_str(), title.c_str(), bins,min,max);
       return thePlots[name];
     }
   }
@@ -64,12 +64,11 @@ class Histogrammer{
  
  template<typename H>
    void fill(const std::string& name, const std::string& title, int bins, const double& min, const double& max, const double& value, const double& weight = 1){
-
    if(profile())
      // Profile by gen category, right now it is a word of 64 bit
-     book<TH2F>(name, name, 64, 0, 64, bins, min, max)->Fill(*category_,value,weight);
+     book<TH2F>(name, title, 64, 0, 64, bins, min, max)->Fill(*category_,value,weight);
    else
-     book<H>(name, name, bins, min, max)->Fill(value,weight);
+     book<H>(name, title, bins, min, max)->Fill(value,weight);
 
  }
 
@@ -79,7 +78,7 @@ class Histogrammer{
  }
 
  void fill(const std::string& name, const std::string& title, int bins, const double& min, const double& max, const double& value, const double& weight = 1){
-   fill<TH1F>(name, name, bins, min, max, value, weight);
+		fill<TH1F>(name, title, bins, min, max, value, weight);
  }
  
  void fill(const std::string& name, int bins, const double& min, const double& max, const double& value, const double& weight = 1){
@@ -93,7 +92,7 @@ class Histogrammer{
    TH1map::iterator f = thePlots.find(name);
    if(f != thePlots.end()) return f->second;
     else{
-      thePlots[name] = new H(TString(name),TString(title),xbins.size()-1,&xbins[0]);
+      thePlots[name] = new H(name.c_str(), title.c_str(), xbins.size()-1,&xbins[0]);
       return thePlots[name];
     }
  }
@@ -108,9 +107,9 @@ class Histogrammer{
 
    /* if(profile()) */
    /*   // Profile by gen category, right now it is a word of 64 bit */
-   /*   book<TH2F>(name, name, 64, 0, 64, bins, xbins)->Fill(*category_,value,weight); */
+   /*   book<TH2F>(name, title, 64, 0, 64, bins, xbins)->Fill(*category_,value,weight); */
    /* else */
-     book<H>(name, name, xbins)->Fill(value,weight);
+     book<H>(name, title, xbins)->Fill(value,weight);
 
  }
 
@@ -120,7 +119,7 @@ class Histogrammer{
  }
 
  void fill(const std::string& name, const std::string& title, const std::vector<double>& xbins, const double& value, const double& weight = 1){
-   fill<TH1F>(name, name, xbins, value, weight);
+   fill<TH1F>(name, title, xbins, value, weight);
  }
  
  void fill(const std::string& name, const std::vector<double>& xbins, const double& value, const double& weight = 1){
@@ -150,7 +149,7 @@ class Histogrammer{
     TH1map::iterator f = thePlots.find(name);
     if(f != thePlots.end()) return dynamic_cast<TH2*>(f->second); 
     else{
-      thePlots[name] = new H(TString(name),TString(title),xbins,xmin,xmax,ybins,ymin,ymax);
+      thePlots[name] = new H(name.c_str(),title.c_str(),xbins,xmin,xmax,ybins,ymin,ymax);
       return dynamic_cast<TH2*>(thePlots[name]);
     }
   }
@@ -167,7 +166,7 @@ class Histogrammer{
 	     const double& xbins, const double& xmin, const double& xmax, 
 	     const double& ybins, const double& ymin, const double& ymax, 
 	     const double& xvalue, const double& yvalue, const double& weight = 1){
-   book<H>(name, name, xbins, xmin, xmax, ybins, ymin, ymax)->Fill(xvalue,yvalue,weight);
+   book<H>(name, title, xbins, xmin, xmax, ybins, ymin, ymax)->Fill(xvalue,yvalue,weight);
  }
 
  template<typename H>
@@ -182,7 +181,7 @@ class Histogrammer{
 	   const double& xbins, const double& xmin, const double& xmax, 
 	   const double& ybins, const double& ymin, const double& ymax, 
 	   const double& xvalue, const double& yvalue, const double& weight = 1){
-   book<TH2F>(name, name, xbins, xmin, xmax, ybins, ymin, ymax)->Fill(xvalue,yvalue,weight);
+   book<TH2F>(name, title, xbins, xmin, xmax, ybins, ymin, ymax)->Fill(xvalue,yvalue,weight);
  }
  
  void fill(const std::string& name, 
@@ -200,7 +199,7 @@ template<typename H>
     TH1map::iterator f = thePlots.find(name);
     if(f != thePlots.end()) return dynamic_cast<TH2*>(f->second); 
     else{
-      thePlots[name] = new H(TString(name),TString(title),xbins.size()-1,&xbins[0],ybins.size()-1,&ybins[0]);
+      thePlots[name] = new H(name.c_str(),title.c_str(),xbins.size()-1,&xbins[0],ybins.size()-1,&ybins[0]);
       return dynamic_cast<TH2*>(thePlots[name]);
     }
   }
@@ -217,7 +216,7 @@ template<typename H>
 	     const std::vector<double>& xbins,
 	     const std::vector<double>& ybins,
 	     const double& xvalue, const double& yvalue, const double& weight = 1){
-   book<H>(name, name, xbins, ybins)->Fill(xvalue,yvalue,weight);
+   book<H>(name, title, xbins, ybins)->Fill(xvalue,yvalue,weight);
  }
 
  template<typename H>
@@ -232,7 +231,7 @@ template<typename H>
 	   const std::vector<double>& xbins,
 	   const std::vector<double>& ybins,
 	   const double& xvalue, const double& yvalue, const double& weight = 1){
-   book<TH2F>(name, name, xbins, ybins)->Fill(xvalue,yvalue,weight);
+   book<TH2F>(name, title, xbins, ybins)->Fill(xvalue,yvalue,weight);
  }
  
  void fill(const std::string& name, 
