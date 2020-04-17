@@ -1,6 +1,7 @@
 #ifndef VVXAnalysis_Commons_Comparators_H
 #define VVXAnalysis_Commons_Comparators_H
 
+#include <algorithm>  // std::min()
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 
 namespace phys{
@@ -75,6 +76,28 @@ namespace phys{
 		int id_;
 		double ref_;
   };
+  
+  //Used to order Particles by the closest to any of 2 different mass values (e.g. the closest to ZMASS or WMASS)
+  struct Mass2Comparator{
+  	double ref1_, ref2_;
+  	Mass2Comparator(const double& ref1, const double& ref2): ref1_(ref1), ref2_(ref2){}
+		
+		template<typename PAR>
+		bool operator()(const PAR & a, const PAR & b) const{ 
+			double diffA = std::min(fabs(a.mass() - ref1_), fabs(a.mass() - ref2_));
+			double diffB = std::min(fabs(b.mass() - ref1_), fabs(b.mass() - ref2_));
+			return diffA < diffB;
+		}
+		template<typename PAR>
+		bool operator()(PAR* a, PAR* b) const{ 
+			return operator()(*a, *b);
+		}
+		template<typename PAR>
+		bool operator()(const PAR* a, const PAR* b) const{ 
+			return operator()(*a, *b);
+		}
+  };
+  
   
 	struct VdeltaRComparator{
 		template<typename PAIR>
