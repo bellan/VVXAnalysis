@@ -70,13 +70,16 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		inline double getRefinedMass(const phys::Boson<P>* p) const{ return p->mass(); }
 		
 		//Function overload of the template for Jets 
-		inline double getRefinedMass(const phys::Jet& j) const{ return j.corrPrunedMass(); }
-		inline double getRefinedMass(const phys::Jet* j) const{ return j->corrPrunedMass();}
+		inline double getRefinedMass(const phys::Jet& j) const{ return j.chosenAlgoMass(); }
+		inline double getRefinedMass(const phys::Jet* j) const{ return j->chosenAlgoMass();}
 		
 		// ----- ----- Event-specific variables calculation ----- ----- 
 		void fillGenHadVBs(); //old: Fills the vector only if it is empty
 		void fillRecHadVBs(); //old: Fills the vector only if it is empty
 		void calcS();
+		void fillAK4GenRec(bool doGraphs = true); // Fills AK4GenRec_
+		void fillGenVBtoAK4();  // TODO: must fill AllGenVBjj_
+		//void fillZZgen();
 		
 		// ----- ----- Large sub-analisys ----- ----- 
 		void simpleGraphs();
@@ -96,7 +99,13 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		void bestZMassJetMVA();
 		void specialPeakAnalisys(const phys::Particle& theGenAK8); //Is there a pair of AK4 that reconstructs theese events with an AK8 but low-pt ZZ?
 		
-		void reconstructionAK4();
+		//Analisys on the resolution/efficiency of reconstruction of AK4 and AK8
+		//void reconstructionAK4();
+		std::pair<const phys::Boson<phys::Particle>*, phys::Boson<phys::Jet>*> reconstructionAK4(); // returns nullptr(s) if there was no reconstructed/generated candidate
+		std::pair<const phys::Particle*, phys::Jet*> reconstructionAK8();
+		void AKrace(std::pair<const phys::Boson<phys::Particle>*, phys::Boson<phys::Jet>*>, std::pair<const phys::Particle*, phys::Jet*>);
+		void AK8recover();  // Is it possible to recover some signal by using AK8?
+		void endReconstructionAK();
 		
 		void AK8MassAlgorithms();
 		
@@ -107,9 +116,16 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		void genSignalGraphs();  // Reads sigType_
 		void recSignalGraphs();
 		void endSignalEff(TFile&);
+		
+		void genHadVBCategorization();  // Two genHadVB (W2, Z3) can be formed from the same jets. How often does that happen?
+		void endGenHadVbCateg();
+		
 	private:
-		std::vector<phys::Boson<phys::Particle>>* genHadVBs_ = nullptr; //genVBParticles with hadronic daugthers
-		std::vector<phys::Boson<phys::Jet>>* AK4pairs_ = nullptr; //pairs of all the reconstructed AK4 jets
+		//phys::DiBoson<phys::Particle, phys::Particle>* ZZ_gen = nullptr;
+		std::vector<phys::Boson<phys::Particle>>* genHadVBs_ = nullptr;  // genVBParticles with hadronic daugthers
+		std::vector<phys::Boson<phys::Particle>>* AllGenVBjj_ = nullptr;  // All the unique pairs of genAK4 with |m - M_{Z,W}| < 30.  genVB is limited to 2 (Z3 and W2 in SignalDefinitions)
+		std::vector<phys::Boson<phys::Jet>>* AK4pairs_ = nullptr;  // All the pairs of all the reconstructed AK4 jets
+		std::vector<std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Jet>>>* AK4GenRec_ = nullptr;  // Pairs of gen VB-->jj succesfully reconstructed by the detector
 		
 		float sAK4g_; //invariant mass of ZZ and all the AK4s gen
 		float sAK8g_; //                                 AK8s
@@ -126,16 +142,19 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		unsigned int goodRec_, withGenVB_; //Evts wit a recVB near a genVB / Evts with a genVB
 		unsigned int win4_,win8_;//How often an AK4/AK8 reconstructs better an hadronic decaying VB
 		
-		unsigned int Nhad_genVB_;  // generated VB with hadronic decay
-		unsigned int Ncms_recVB_;  // reconstructed by the detector
-		unsigned int Nall_recVB_60_120_;  // reconstructed by the algorithm (60<mrec<120)
-		unsigned int Ngood_recVB_60_120_; // rec. by the algorithm that match the rec. from the detector 
-		//in SignalDefinitions.cc for generated VB (bestJetPairW, and bestJetPairZ) (|m-mV|<30) 
-		unsigned int Nall_recVB_m20_;  // reconstructed by the algorithm (|m-mV|<20) 
+		unsigned int Nhad_genVB_;  // Generated VB with hadronic decay
+		unsigned int Ncms_recVB_;  // Reconstructed by the detector
+		unsigned int Nall_recVB_60_120_;  // Reconstructed by the algorithm (60<mrec<120)
+		unsigned int Ngood_recVB_60_120_; // Rec. by the algorithm that match the rec. from the detector 
+		//in SignalDefinitions.cc for generated VB (bestJetPairW, and bestJetPairZ): (|m-mV|<30) 
+		unsigned int Nall_recVB_m20_;  // Reconstructed by the algorithm (|m-mV|<20) 
 		unsigned int Ngood_recVB_m20_;
 		
-		unsigned int N_gen8_, Ncms_rec8_, Nall_rec8;
-		unsigned int Ngood_rec8; //reconstructed near a recAK8 that is close to a genAK8
+		unsigned int N_gen8_, Ncms_rec8_;  // Implicit cut 60<m_gen<120
+		unsigned int Ncms_rec8_pTau35_, Nall_rec8_pTau35_; //Reconstructed with a puppiTau21 < 0.35
+		unsigned int Ngood_rec8_pTau35_;  //Reconstructed near a recAK8 that is close to a genAK8
+		
+		unsigned int NnoAK4_, N8genVB_, N8recover_;  // See AK8recover()
 		
 		friend class Selector<VZZAnalyzer>;
 		
