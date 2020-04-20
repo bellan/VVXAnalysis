@@ -96,6 +96,12 @@ namespace phys{
 		bool operator()(const PAR* a, const PAR* b) const{ 
 			return operator()(*a, *b);
 		}
+		
+		bool operator()(const std::tuple<size_t,size_t,double> &a, const std::tuple<size_t,size_t,double>& b) const{
+			double diffA = std::min(fabs(std::get<2>(a) - ref1_), fabs(std::get<2>(a) - ref2_));
+			double diffB = std::min(fabs(std::get<2>(b) - ref1_), fabs(std::get<2>(b) - ref2_));
+			return diffA < diffB;
+		}
   };
   
   
