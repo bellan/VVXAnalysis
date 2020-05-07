@@ -29,7 +29,12 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
     	//candType = VCandType::None;
  	 	}
 
-		virtual ~VZZAnalyzer(){}
+		virtual ~VZZAnalyzer(){
+			if(genHadVBs_) delete genHadVBs_; //Deallocates memory
+			if(AK4pairs_)  delete AK4pairs_;
+			if(AllGenVBjj_)delete AllGenVBjj_;
+			if(AK4GenRec_) delete AK4GenRec_;
+		}
   	
 		virtual void begin();
   	
@@ -99,8 +104,10 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		void bestZMassJetMVA();
 		void specialPeakAnalisys(const phys::Particle& theGenAK8); //Is there a pair of AK4 that reconstructs theese events with an AK8 but low-pt ZZ?
 		
+		void AK8nearGenHadVB();  // Is there an AK8 near genHadVBs_->front() ?
+		
 		//Analisys on the resolution/efficiency of reconstruction of AK4 and AK8
-		//void reconstructionAK4();
+		void reconstructionAK();
 		std::pair<const phys::Boson<phys::Particle>*, phys::Boson<phys::Jet>*> reconstructionAK4(); // returns nullptr(s) if there was no reconstructed/generated candidate
 		std::pair<const phys::Particle*, phys::Jet*> reconstructionAK8();
 		void AKrace(std::pair<const phys::Boson<phys::Particle>*, phys::Boson<phys::Jet>*>, std::pair<const phys::Particle*, phys::Jet*>);
@@ -120,13 +127,9 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		void genHadVBCategorization();  // Two genHadVB (W2, Z3) can be formed from the same jets. How often does that happen?
 		void endGenHadVbCateg();
 		
-	private:
-		//phys::DiBoson<phys::Particle, phys::Particle>* ZZ_gen = nullptr;
-		std::vector<phys::Boson<phys::Particle>>* genHadVBs_ = nullptr;  // genVBParticles with hadronic daugthers
-		std::vector<phys::Boson<phys::Particle>>* AllGenVBjj_ = nullptr;  // All the unique pairs of genAK4 with |m - M_{Z,W}| < 30.  genVB is limited to 2 (Z3 and W2 in SignalDefinitions)
-		std::vector<phys::Boson<phys::Jet>>* AK4pairs_ = nullptr;  // All the pairs of all the reconstructed AK4 jets
-		std::vector<std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Jet>>>* AK4GenRec_ = nullptr;  // Pairs of gen VB-->jj succesfully reconstructed by the detector
+		void endNameCuts();  // Gives names to the xAxis labels of "Cuts"
 		
+	private:
 		float sAK4g_; //invariant mass of ZZ and all the AK4s gen
 		float sAK8g_; //                                 AK8s
 		float sAK4r_; //                                 AK4s rec
@@ -135,7 +138,7 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		// ----- ----- Counters, ecc. ----- ----- 
 		clock_t startTime_; //Used to calculate elapsed time
-		unsigned long evtN_, analyzedN_; //Used to count processed events
+		float analyzedW_;  // Weighted events passing cut
 		unsigned int singWFromJets_, pairWFromJets_, singWFromJetsAK8_, pairWFromJetsAK8_;
 		unsigned int singZFromJets_, pairZFromJets_, singZFromJetsAK8_, pairZFromJetsAK8_;
 		unsigned int recVBtot_; //Evts where the reconstructed VB is acceptable (VBosonDefinition)
@@ -158,10 +161,18 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		friend class Selector<VZZAnalyzer>;
 		
-		
+	protected:
+		unsigned long evtN_, analyzedN_; //Used to count processed events.
+	
+		//phys::DiBoson<phys::Particle, phys::Particle>* ZZ_gen = nullptr;
+		std::vector<phys::Boson<phys::Particle>>* genHadVBs_ = nullptr;  // genVBParticles with hadronic daugthers
+		std::vector<phys::Boson<phys::Particle>>* AllGenVBjj_ = nullptr;  // All the unique pairs of genAK4 with |m - M_{Z,W}| < 30.  genVB is limited to 2 (Z3 and W2 in SignalDefinitions)
+		std::vector<phys::Boson<phys::Jet>>* AK4pairs_ = nullptr;  // All the pairs of all the reconstructed AK4 jets
+		std::vector<std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Jet>>>* AK4GenRec_ = nullptr;  // Pairs of gen VB-->jj succesfully reconstructed by the detector
+	
 		// ----- ----- Signal definition ----- ----- 
-		int sigType_;   // 0-->no  1-->AK4  2-->AK8
-		phys::Particle* sigVB_;
+		int sigType_;            // 0-->no  |     1-->AK4     |  2-->AK8
+		phys::Particle* sigVB_;  // nullptr | Boson<Particle> | Particle
 		int isSignal();  
 		
 		template <class PAR>

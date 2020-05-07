@@ -14,16 +14,21 @@
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/Commons/interface/Comparators.h"
+#include "VZZAnalyzer.h"
 
 #include <iostream>
 #include <fstream>
 
-class DBGenerator: public EventAnalyzer, RegistrableAnalysis<DBGenerator>{
+//class DBGenerator: public EventAnalyzer, RegistrableAnalysis<DBGenerator>{
+
+class DBGenerator: public VZZAnalyzer, RegistrableAnalysis<DBGenerator>{
 	public:
-		enum VCandType {None, W, Z}; //VCandidate is closest to Wmass or Zmass?
+		//enum VCandType {None, W, Z}; //VCandidate is closest to Wmass or Zmass?
+		const std::vector<std::string> signalNames_ = {"WZZ", "ZZZ"};
 		
 		DBGenerator(const AnalysisConfiguration& configuration) 
-				: EventAnalyzer(*(new Selector<DBGenerator>(*this)), configuration){
+				//: EventAnalyzer(*(new Selector<DBGenerator>(*this)), configuration){
+				: VZZAnalyzer(configuration) {
     	//theHistograms.profile(genCategory);
  	 	}
 
@@ -37,13 +42,23 @@ class DBGenerator: public EventAnalyzer, RegistrableAnalysis<DBGenerator>{
   
 		virtual void end(TFile &);
 		
-		void printZeros(size_t nzeros);
-		void printVars(int n, ...);
-		bool findBestVCandidate(const std::vector<phys::Jet>*, phys::Boson<phys::Jet>& VCandidate, VCandType& candType);
+		void printZeroes(size_t nzeros);
+		void printVars(size_t n, ...);
+		
+		// ----- ----- Event-specific variables calculation ----- ----- 
+		//void fillGenHadVBs(); // see VZZAnalyzer.h
+		
+		template <class J = phys::Jet>
+		//phys::Boson<J>* findBestVFromPair(const std::vector<J>*, VCandType& candType);
+		
+		int isSignal();
 	private:
+		//std::vector<phys::Boson<phys::Particle>>* genHadVBs_ = nullptr;  // genVBParticles with hadronic daugthers
+		
 		static const char SEP_CHAR = ',';	//separatory char used in the .csv
 		clock_t startTime; //Used to calculate elapsed time
 		unsigned long evtN; //Used to count processed events
+		bool isSigFile_ = false;  // Set during begin()
 		
 		std::ofstream outputFile; //a .csv file the data in the tree is written to
 		
