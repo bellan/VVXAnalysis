@@ -16,6 +16,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <algorithm>  // std::min
 
 
 class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
@@ -34,6 +35,7 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 			if(AK4pairs_)  delete AK4pairs_;
 			if(AllGenVBjj_)delete AllGenVBjj_;
 			if(AK4GenRec_) delete AK4GenRec_;
+			if(genZZ)      delete genZZ;
 		}
   	
 		virtual void begin();
@@ -46,13 +48,13 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		// ----- ----- Helper functions ----- ----- 
 		template<class P = phys::Jet>
-		const P* findBestVFromSing(/*const*/ std::vector<P>*, VCandType& candType);
+		const P* findBestVFromSing(std::vector<P>*, VCandType&);
 		//The candidate is NOT copied, and the pointer returned points to the original
 		template <class J = phys::Jet>
-		phys::Boson<J>* findBestVFromPair(const std::vector<J>*, VCandType& candType);
+		phys::Boson<J>* findBestVFromPair(const std::vector<J>*, VCandType&);
 		//Searches among the Jets in the vector and finds the pair candidate with mass closest to W or Z (modifying "candType"). Returns the candidate only if it fits the (W/Z)BosonDefinition
 		template <class P = phys::Particle>
-		const P* findBestVPoint(std::vector<const P*>* js, VCandType& thisCandType); //Uses a vector<P*> instead of a vector<P>
+		const P* findBestVPoint(std::vector<const P*>& js, VCandType& thisCandType); //Uses a vector<P*> instead of a vector<P>
 		
 		template <class P, class R = phys::Boson<phys::Particle>> // P = Jet or Particle
 		P*              closestSing(std::vector<P>* cands, const R& reference); //max dR = 0.4
@@ -64,27 +66,29 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		phys::Boson<P>* furthestPair(std::vector<P>* cands, const R& reference, const float& minDR = 2., const std::pair<float,float>& massLimits = std::make_pair(1.,1000.));
 		
 		template <class P = phys::Particle>
-		inline double getRefinedMass(const P& p) const{ return p.mass(); } 
+		static inline double getRefinedMass(const P& p){ return p.mass(); } 
 		// If I used "const P&" it would have precedence on the template specialization when the object is a pointer to non-const, since "const P&" matches const P* & (const reference to non-const pointer to non-const)
 		//template <class P = phys::Particle*> 
 		//inline double getRefinedMass(P* p) const{ return p->mass();}
 		
 		//I give up, c++ templates are too complicated when mixed with cv-qualifiers. It's easier to write the function overloads
-		inline double getRefinedMass(const phys::Particle* p) const{ return p->mass(); }
+		static inline double getRefinedMass(const phys::Particle* p){ return p->mass(); }
 		template <class P = phys::Particle>
-		inline double getRefinedMass(const phys::Boson<P>* p) const{ return p->mass(); }
+		static inline double getRefinedMass(const phys::Boson<P>* p){ return p->mass(); }
 		
 		//Function overload of the template for Jets 
-		inline double getRefinedMass(const phys::Jet& j) const{ return j.chosenAlgoMass(); }
-		inline double getRefinedMass(const phys::Jet* j) const{ return j->chosenAlgoMass();}
+		static inline double getRefinedMass(const phys::Jet& j) { return j.chosenAlgoMass(); }
+		static inline double getRefinedMass(const phys::Jet* j) { return j->chosenAlgoMass();}
+		
+		static inline double minDM(const double& mass, const double& r1 = phys::ZMASS, const double& r2 = phys::WMASS) { return std::min( fabs(mass-r1), fabs(mass-r2) ); }
 		
 		// ----- ----- Event-specific variables calculation ----- ----- 
 		void fillGenHadVBs(); //old: Fills the vector only if it is empty
 		void fillRecHadVBs(); //old: Fills the vector only if it is empty
 		void calcS();
 		void fillAK4GenRec(bool doGraphs = true); // Fills AK4GenRec_
-		void fillGenVBtoAK4();  // TODO: must fill AllGenVBjj_
-		//void fillZZgen();
+		void fillGenVBtoAK4();
+		void makeGenZZ();
 		
 		// ----- ----- Large sub-analisys ----- ----- 
 		void simpleGraphs();
@@ -107,9 +111,9 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		void AK8nearGenHadVB();  // Is there an AK8 near genHadVBs_->front() ?
 		
 		//Analisys on the resolution/efficiency of reconstruction of AK4 and AK8
-		void reconstructionAK();
+		void reconstructionAK();  //runs reconstructionAK4() and 8() which calculate efficiency
 		std::pair<const phys::Boson<phys::Particle>*, phys::Boson<phys::Jet>*> reconstructionAK4(); // returns nullptr(s) if there was no reconstructed/generated candidate
-		std::pair<const phys::Particle*, phys::Jet*> reconstructionAK8();
+		std::pair<const phys::Particle*, phys::Jet*> reconstructionAK8(/*bool doGraphs=false*/);
 		void AKrace(std::pair<const phys::Boson<phys::Particle>*, phys::Boson<phys::Jet>*>, std::pair<const phys::Particle*, phys::Jet*>);
 		void AK8recover();  // Is it possible to recover some signal by using AK8?
 		void endReconstructionAK();
@@ -122,12 +126,15 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		void genSignalGraphs();  // Reads sigType_
 		void recSignalGraphs();
+		void recSignalAnalysis();
 		void endSignalEff(TFile&);
 		
 		void genHadVBCategorization();  // Two genHadVB (W2, Z3) can be formed from the same jets. How often does that happen?
 		void endGenHadVbCateg();
 		
 		void endNameCuts();  // Gives names to the xAxis labels of "Cuts"
+		
+		void endVHad_vs_ZZpt(TFile&);  // Stack plot of "Vjj_ZZpt" and "VJ_ZZpt"
 		
 	private:
 		float sAK4g_; //invariant mass of ZZ and all the AK4s gen
@@ -137,8 +144,6 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		// We will use #hat{s} for proper energy of ZZ+best AK8/pair pf AK4
 		
 		// ----- ----- Counters, ecc. ----- ----- 
-		clock_t startTime_; //Used to calculate elapsed time
-		float analyzedW_;  // Weighted events passing cut
 		unsigned int singWFromJets_, pairWFromJets_, singWFromJetsAK8_, pairWFromJetsAK8_;
 		unsigned int singZFromJets_, pairZFromJets_, singZFromJetsAK8_, pairZFromJetsAK8_;
 		unsigned int recVBtot_; //Evts where the reconstructed VB is acceptable (VBosonDefinition)
@@ -163,17 +168,21 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 	protected:
 		unsigned long evtN_, analyzedN_; //Used to count processed events.
+		clock_t startTime_; //Used to calculate elapsed time
+		float analyzedW_;  // Weighted events passing cut
 	
 		//phys::DiBoson<phys::Particle, phys::Particle>* ZZ_gen = nullptr;
 		std::vector<phys::Boson<phys::Particle>>* genHadVBs_ = nullptr;  // genVBParticles with hadronic daugthers
 		std::vector<phys::Boson<phys::Particle>>* AllGenVBjj_ = nullptr;  // All the unique pairs of genAK4 with |m - M_{Z,W}| < 30.  genVB is limited to 2 (Z3 and W2 in SignalDefinitions)
 		std::vector<phys::Boson<phys::Jet>>* AK4pairs_ = nullptr;  // All the pairs of all the reconstructed AK4 jets
 		std::vector<std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Jet>>>* AK4GenRec_ = nullptr;  // Pairs of gen VB-->jj succesfully reconstructed by the detector
-	
+		
+		phys::DiBoson<phys::Particle, phys::Particle>* genZZ; //Always != nullptr from begin() to end(). Test isValid() to see if there's really such particle in this event
+		
 		// ----- ----- Signal definition ----- ----- 
 		int sigType_;            // 0-->no  |     1-->AK4     |  2-->AK8
 		phys::Particle* sigVB_;  // nullptr | Boson<Particle> | Particle
-		int isSignal();  
+		int isSignal(bool doGraphs = false);  
 		
 		template <class PAR>
 		bool ZBosonDefinition(phys::Boson<PAR>& cand) const{  //candidate
