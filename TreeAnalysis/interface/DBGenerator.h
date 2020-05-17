@@ -42,6 +42,10 @@ class DBGenerator: public VZZAnalyzer, RegistrableAnalysis<DBGenerator>{
   
 		virtual void end(TFile &);
 		
+		// ----- ----- Groups ----- -----
+		void mainEvtRec(int sigRecType, const phys::Particle* recV);
+		
+		// ----- ----- Helpers ----- -----
 		void printZeroes(size_t nzeros);
 		void printVars(size_t n, ...);
 		
@@ -56,8 +60,8 @@ class DBGenerator: public VZZAnalyzer, RegistrableAnalysis<DBGenerator>{
 		//std::vector<phys::Boson<phys::Particle>>* genHadVBs_ = nullptr;  // genVBParticles with hadronic daugthers
 		
 		static const char SEP_CHAR = ',';	//separatory char used in the .csv
-		clock_t startTime; //Used to calculate elapsed time
-		unsigned long evtN; //Used to count processed events
+		//clock_t startTime_; //Used to calculate elapsed time
+		//unsigned long evtN_; //Used to count processed events
 		bool isSigFile_ = false;  // Set during begin()
 		
 		std::ofstream outputFile; //a .csv file the data in the tree is written to
