@@ -16,11 +16,13 @@
 
 #include <iostream>
 #include <fstream>
+#include <algorithm>  // std::min
 
 
 class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 	public:
 		enum VCandType {None, W, Z}; //VCandidate is closest to Wmass or Zmass?
+		const char* massAlgsNames_[6] = {"mass", "secvtxMass", "corrPrunedMass", "prunedMass", "softDropMass", "puppiMass"};
 		
 		VZZAnalyzer(const AnalysisConfiguration& configuration) 
 				: EventAnalyzer(*(new Selector<VZZAnalyzer>(*this)), configuration){
@@ -28,7 +30,13 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
     	//candType = VCandType::None;
  	 	}
 
-		virtual ~VZZAnalyzer(){}
+		virtual ~VZZAnalyzer(){
+			if(genHadVBs_) delete genHadVBs_; //Deallocates memory
+			if(AK4pairs_)  delete AK4pairs_;
+			if(AllGenVBjj_)delete AllGenVBjj_;
+			if(AK4GenRec_) delete AK4GenRec_;
+			if(genZZ)      delete genZZ;
+		}
   	
 		virtual void begin();
   	
@@ -40,13 +48,13 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		// ----- ----- Helper functions ----- ----- 
 		template<class P = phys::Jet>
-		bool findBestVFromSing(/*const*/ std::vector<P>*, const P*& VCandidate, VCandType& candType);
-		//Passing pointer by reference so that it gets updated
+		const P* findBestVFromSing(std::vector<P>*, VCandType&);
+		//The candidate is NOT copied, and the pointer returned points to the original
 		template <class J = phys::Jet>
-		bool findBestVFromPair(const std::vector<J>*, phys::Boson<J>*& VCandidate, VCandType& candType);
-		//Searches among the Jets in the vector (which is likely either "jets" or "jetsAK8") and finds the pair candidate with mass closest to W or Z (modifying "candType"), and stores it in "VCandidate". true: candidate fits the (W/Z) BosonDefinition
+		phys::Boson<J>* findBestVFromPair(const std::vector<J>*, VCandType&);
+		//Searches among the Jets in the vector and finds the pair candidate with mass closest to W or Z (modifying "candType"). Returns the candidate only if it fits the (W/Z)BosonDefinition
 		template <class P = phys::Particle>
-		bool findBestVPoint(std::vector<const P*>* js, const P*& thisCandidate, VCandType& thisCandType); //Uses a vector<P*> instead of a vector<P>
+		const P* findBestVPoint(std::vector<const P*>& js, VCandType& thisCandType); //Uses a vector<P*> instead of a vector<P>
 		
 		template <class P, class R = phys::Boson<phys::Particle>> // P = Jet or Particle
 		P*              closestSing(std::vector<P>* cands, const R& reference); //max dR = 0.4
@@ -58,24 +66,29 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		phys::Boson<P>* furthestPair(std::vector<P>* cands, const R& reference, const float& minDR = 2., const std::pair<float,float>& massLimits = std::make_pair(1.,1000.));
 		
 		template <class P = phys::Particle>
-		inline double getRefinedMass(const P& p) const{ return p.mass(); } 
+		static inline double getRefinedMass(const P& p){ return p.mass(); } 
 		// If I used "const P&" it would have precedence on the template specialization when the object is a pointer to non-const, since "const P&" matches const P* & (const reference to non-const pointer to non-const)
 		//template <class P = phys::Particle*> 
 		//inline double getRefinedMass(P* p) const{ return p->mass();}
 		
 		//I give up, c++ templates are too complicated when mixed with cv-qualifiers. It's easier to write the function overloads
-		inline double getRefinedMass(const phys::Particle* p) const{ return p->mass(); }
+		static inline double getRefinedMass(const phys::Particle* p){ return p->mass(); }
 		template <class P = phys::Particle>
-		inline double getRefinedMass(const phys::Boson<P>* p) const{ return p->mass(); }
+		static inline double getRefinedMass(const phys::Boson<P>* p){ return p->mass(); }
 		
 		//Function overload of the template for Jets 
-		inline double getRefinedMass(const phys::Jet& j) const{ return j.corrPrunedMass(); }
-		inline double getRefinedMass(const phys::Jet* j) const{ return j->corrPrunedMass();}
+		static inline double getRefinedMass(const phys::Jet& j) { return j.chosenAlgoMass(); }
+		static inline double getRefinedMass(const phys::Jet* j) { return j->chosenAlgoMass();}
 		
-		// ----- ----- Event-specific varibles calculation ----- ----- 
+		static inline double minDM(const double& mass, const double& r1 = phys::ZMASS, const double& r2 = phys::WMASS) { return std::min( fabs(mass-r1), fabs(mass-r2) ); }
+		
+		// ----- ----- Event-specific variables calculation ----- ----- 
 		void fillGenHadVBs(); //old: Fills the vector only if it is empty
 		void fillRecHadVBs(); //old: Fills the vector only if it is empty
 		void calcS();
+		void fillAK4GenRec(bool doGraphs = true); // Fills AK4GenRec_
+		void fillGenVBtoAK4();
+		void makeGenZZ();
 		
 		// ----- ----- Large sub-analisys ----- ----- 
 		void simpleGraphs();
@@ -95,16 +108,35 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		void bestZMassJetMVA();
 		void specialPeakAnalisys(const phys::Particle& theGenAK8); //Is there a pair of AK4 that reconstructs theese events with an AK8 but low-pt ZZ?
 		
+		void AK8nearGenHadVB();  // Is there an AK8 near genHadVBs_->front() ?
+		
+		//Analisys on the resolution/efficiency of reconstruction of AK4 and AK8
+		void reconstructionAK();  //runs reconstructionAK4() and 8() which calculate efficiency
+		std::pair<const phys::Boson<phys::Particle>*, phys::Boson<phys::Jet>*> reconstructionAK4(); // returns nullptr(s) if there was no reconstructed/generated candidate
+		std::pair<const phys::Particle*, phys::Jet*> reconstructionAK8(/*bool doGraphs=false*/);
+		void AKrace(std::pair<const phys::Boson<phys::Particle>*, phys::Boson<phys::Jet>*>, std::pair<const phys::Particle*, phys::Jet*>);
+		void AK8recover();  // Is it possible to recover some signal by using AK8?
+		void endReconstructionAK();
+		
+		void AK8MassAlgorithms();
+		
 		void endResolutionAnalisys(TFile& fout); //Calculates AK4-AK8 resolution per bin of ZZ pt
 		
+		void genTauAnalisys();
 		
 		void genSignalGraphs();  // Reads sigType_
 		void recSignalGraphs();
+		void recSignalAnalysis();
 		void endSignalEff(TFile&);
-	private:
-		std::vector<phys::Boson<phys::Particle>>* genHadVBs_ = nullptr; //genVBParticles with hadronic daugthers
-		std::vector<phys::Boson<phys::Jet>>* AK4pairs_ = nullptr; //pairs of all the reconstructed AK4 jets
 		
+		void genHadVBCategorization();  // Two genHadVB (W2, Z3) can be formed from the same jets. How often does that happen?
+		void endGenHadVbCateg();
+		
+		void endNameCuts();  // Gives names to the xAxis labels of "Cuts"
+		
+		void endVHad_vs_ZZpt(TFile&);  // Stack plot of "Vjj_ZZpt" and "VJ_ZZpt"
+		
+	private:
 		float sAK4g_; //invariant mass of ZZ and all the AK4s gen
 		float sAK8g_; //                                 AK8s
 		float sAK4r_; //                                 AK4s rec
@@ -112,41 +144,71 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		// We will use #hat{s} for proper energy of ZZ+best AK8/pair pf AK4
 		
 		// ----- ----- Counters, ecc. ----- ----- 
-		clock_t startTime_; //Used to calculate elapsed time
-		unsigned long evtN_, analyzedN_; //Used to count processed events
 		unsigned int singWFromJets_, pairWFromJets_, singWFromJetsAK8_, pairWFromJetsAK8_;
 		unsigned int singZFromJets_, pairZFromJets_, singZFromJetsAK8_, pairZFromJetsAK8_;
 		unsigned int recVBtot_; //Evts where the reconstructed VB is acceptable (VBosonDefinition)
 		unsigned int goodRec_, withGenVB_; //Evts wit a recVB near a genVB / Evts with a genVB
 		unsigned int win4_,win8_;//How often an AK4/AK8 reconstructs better an hadronic decaying VB
 		
+		unsigned int Nhad_genVB_;  // Generated VB with hadronic decay
+		unsigned int Ncms_recVB_;  // Reconstructed by the detector
+		unsigned int Nall_recVB_60_120_;  // Reconstructed by the algorithm (60<mrec<120)
+		unsigned int Ngood_recVB_60_120_; // Rec. by the algorithm that match the rec. from the detector 
+		//in SignalDefinitions.cc for generated VB (bestJetPairW, and bestJetPairZ): (|m-mV|<30) 
+		unsigned int Nall_recVB_m20_;  // Reconstructed by the algorithm (|m-mV|<20) 
+		unsigned int Ngood_recVB_m20_;
+		
+		unsigned int N_gen8_, Ncms_rec8_;  // Implicit cut 60<m_gen<120
+		unsigned int Ncms_rec8_pTau35_, Nall_rec8_pTau35_; //Reconstructed with a puppiTau21 < 0.35
+		unsigned int Ngood_rec8_pTau35_;  //Reconstructed near a recAK8 that is close to a genAK8
+		
+		unsigned int NnoAK4_, N8genVB_, N8recover_;  // See AK8recover()
+		
 		friend class Selector<VZZAnalyzer>;
 		
+	protected:
+		unsigned long evtN_, analyzedN_; //Used to count processed events.
+		clock_t startTime_; //Used to calculate elapsed time
+		float analyzedW_;  // Weighted events passing cut
+	
+		//phys::DiBoson<phys::Particle, phys::Particle>* ZZ_gen = nullptr;
+		std::vector<phys::Boson<phys::Particle>>* genHadVBs_ = nullptr;  // genVBParticles with hadronic daugthers
+		std::vector<phys::Boson<phys::Particle>>* AllGenVBjj_ = nullptr;  // All the unique pairs of genAK4 with |m - M_{Z,W}| < 30.  genVB is limited to 2 (Z3 and W2 in SignalDefinitions)
+		std::vector<phys::Boson<phys::Jet>>* AK4pairs_ = nullptr;  // All the pairs of all the reconstructed AK4 jets
+		std::vector<std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Jet>>>* AK4GenRec_ = nullptr;  // Pairs of gen VB-->jj succesfully reconstructed by the detector
+		
+		phys::DiBoson<phys::Particle, phys::Particle>* genZZ; //Always != nullptr from begin() to end(). Test isValid() to see if there's really such particle in this event
 		
 		// ----- ----- Signal definition ----- ----- 
-		int sigType_;   // 0-->no  1-->AK4  2-->AK8
-		phys::Particle* sigVB_;
-		int isSignal();  
+		int sigType_;            // 0-->no  |     1-->AK4     |  2-->AK8
+		phys::Particle* sigVB_;  // nullptr | Boson<Particle> | Particle
+		int isSignal(bool doGraphs = false);  
 		
 		template <class PAR>
 		bool ZBosonDefinition(phys::Boson<PAR>& cand) const{  //candidate
-			bool checkMass = fabs(cand.p4().M() - phys::ZMASS) < 40; //temp
+			//bool checkMass = fabs(cand.p4().M() - phys::ZMASS) < 40; //temp
+			bool checkMass = (60. < cand.p4().M() && cand.p4().M() < 120.);
 			return checkMass;
 		}
-		template <class PAR>	 //Apparently, PAR must inherit from Jet
+		template <class PAR>
 		bool WBosonDefinition(phys::Boson<PAR>& cand) const{	//candidate
-			bool checkMass = fabs(cand.p4().M() - phys::WMASS) < 40;
+			//bool checkMass = fabs(cand.p4().M() - phys::WMASS) < 40;
+			bool checkMass = (60. < cand.p4().M() && cand.p4().M() < 120.);
 			return checkMass;
 		}
 		
 		template <class PAR>  //usually PAR is Jet
 		bool ZBosonDefinition(PAR& cand) const{
-			bool checkMass = fabs(getRefinedMass(cand) - phys::ZMASS) < 40;
+			//bool checkMass = fabs(getRefinedMass(cand) - phys::ZMASS) < 40;
+			float mass = getRefinedMass(cand);
+			bool checkMass = (60. < mass && mass < 120.);
 			return checkMass;
 		}
 		template <class PAR>	
 		bool WBosonDefinition(PAR& cand) const{	
-			bool checkMass = fabs(getRefinedMass(cand) - phys::WMASS) < 40;
+			//bool checkMass = fabs(getRefinedMass(cand) - phys::WMASS) < 40;
+			float mass = getRefinedMass(cand);
+			bool checkMass = (60. < mass && mass < 120.);
 			return checkMass;
 		}
 		/*

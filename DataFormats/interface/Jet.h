@@ -122,6 +122,8 @@ namespace phys {
     double puppiTau2()      const {return puppiTau2_;}
     double puppiTau3()      const {return puppiTau3_;}
     double puppiMass()      const {return puppiMass_;}
+    
+    double chosenAlgoMass() const {return softDropMass_;}
 
 
 

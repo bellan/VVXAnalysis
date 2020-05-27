@@ -23,7 +23,7 @@ int main (int argc, char ** argv){
   analysisConfig.addParameter("filename"        , std::string(argv[3]));
   analysisConfig.addParameter("outputfile"      , std::string(argv[4]));
 
-  analysisConfig.addParameter("year"    , atoi(argv[5]));
+  analysisConfig.addParameter("year"            , atoi(argv[5]));
 
   analysisConfig.addParameter("lumi"            , atof(argv[6]));
   analysisConfig.addParameter("externalXSection", atof(argv[7]));
@@ -40,7 +40,7 @@ int main (int argc, char ** argv){
   EventAnalyzer *analysis = AnalysisFactory::get()->createAnalysis(analysisConfig);
 
   analysis->loop(analysisConfig.getParameter<std::string>("outputfile"));
-
+	       
   cout<<"Output saved in --> "<<Green(analysisConfig.getParameter<std::string>("outputfile"))<<endl;
   cout<<"\nAnalysis status: "<<OK("DONE")<<"\n"<<endl;
 

@@ -17,7 +17,7 @@ using namespace boost::assign;
 
 using namespace std;
 
-typedef std::tuple<uint,uint,int,double> QuarkPairFeatures;
+typedef std::tuple<uint,uint,int,double> QuarkPairFeatures; //0,1-->indexes of jets;  2-->Id of boson (if known);  3--> mass of boson
 typedef std::vector<QuarkPairFeatures> QuarkPairsFeatures;
 
 
@@ -269,7 +269,22 @@ std::vector<phys::Boson<phys::Particle> > vv::categorizeHadronicPartOftheEvent(s
       Z3 = phys::Boson<phys::Particle>(q0, q1, 23);
       foundZjj = true;
     }
-  } //------------------------- end searching for the bosons ----------------------------------------
+  } 
+  
+  
+  bool foundWj = false;
+  bool foundZj = false;
+  if(theGenjAK8.size() > 0){
+  	// Search for W-->j
+		std::stable_sort(theGenjAK8.begin(), theGenjAK8.end(), phys::MassComparator(phys::WMASS));
+		foundWj = fabs(theGenjAK8.front().mass() - phys::WMASS) < 30.;
+		
+		// Search for Z-->j
+		std::stable_sort(theGenjAK8.begin(), theGenjAK8.end(), phys::MassComparator(phys::ZMASS));
+		foundZj = fabs(theGenjAK8.front().mass() - phys::ZMASS) < 30.;
+	}
+  
+  //------------------------- end searching for the bosons ----------------------------------------
 
   
   // // Some usefull counters for topology characterization
@@ -294,9 +309,16 @@ std::vector<phys::Boson<phys::Particle> > vv::categorizeHadronicPartOftheEvent(s
   
   //if(hasCentralJets)   topology.set(6);       //jets (pT>30 GeV and |eta| < 2.4)
   
-  if(foundWjj)         topology.set(8);       //hadronic W
+  if(foundWjj || foundZjj || foundWj || foundZj) topology.set(8); //Hadronic signal
   
-  if(foundZjj)         topology.set(9);       //hadronic Z
+  if(foundWjj)         topology.set(9);       //hadronic W
+  
+  if(foundZjj)         topology.set(10);      //hadronic Z
+  
+  if(foundWj)          topology.set(11);      //W->j (AK8)
+  
+  if(foundZj)          topology.set(12);      //Z->j (AK8)
+  
 
 
   std::vector<phys::Boson<phys::Particle> > hadBosons;
