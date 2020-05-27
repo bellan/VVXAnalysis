@@ -85,8 +85,9 @@ process.genParticlesFromHardProcess = cms.EDFilter("GenParticleSelector",
                                            filter = cms.bool(False),
                                            src = cms.InputTag("prunedGenParticles"),
                                            #acceptance cut on leptons?
-                                           cut = cms.string('status == 1 && (isPromptFinalState && fromHardProcessFinalState && abs(pdgId) >= 11 && abs(pdgId) <= 16) ||  abs(pdgId) == 22'),        
-                                                   stableOnly = cms.bool(True)
+                                           #cut = cms.string('status == 1 && (isPromptFinalState && fromHardProcessFinalState && abs(pdgId) >= 11 && abs(pdgId) <= 16) ||  abs(pdgId) == 22'),        
+                            cut = cms.string('status == 1 && (isPromptFinalState && fromHardProcessFinalState && (abs(pdgId) <= 16 || pdgId == 21) ) ||  abs(pdgId) == 22'),
+                                       stableOnly = cms.bool(True)
                                            )
 
 process.genTaus = cms.EDFilter("GenParticleSelector",
