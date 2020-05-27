@@ -117,8 +117,8 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
 
     if(abs(p.id()) == 12 || abs(p.id()) == 14) {genNu.push_back(p); continue;}
 
-    if (p.id() > 0) theGenlm.push_back(p); // negative leptons                                          
-    else            theGenlp.push_back(p); // positive leptons 
+    if (p.charge() < 0) theGenlm.push_back(p); // negative leptons                                          
+    else                theGenlp.push_back(p); // positive leptons 
   }
   
   // Creating and filling the vector of Z boson candidates
