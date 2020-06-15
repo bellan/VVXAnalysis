@@ -91,11 +91,12 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		void makeGenZZ();
 		
 		// ----- ----- Large sub-analisys ----- ----- 
+		void baseHistos();  // called in cut(), so runs every event
 		void simpleGraphs();
 		void jetRecoGraphs();
 		
 		void bestCandidateAnalysis();
-		void endBestCandAnalysis(TFile& fout); //Divide histograms to obtain efficiency
+		void endBestCandAnalysis(TFile& f_out); //Divide histograms to obtain efficiency
 		
 		void ptCutMVA(); //select the best cut in pt for the jetsAK8 --> corrPrunedMass
 		
@@ -107,8 +108,17 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		void bestZMassJetMVA();
 		void specialPeakAnalisys(const phys::Particle& theGenAK8); //Is there a pair of AK4 that reconstructs theese events with an AK8 but low-pt ZZ?
+		void endResolutionAnalisys(TFile& f_out); //Calculates AK4-AK8 resolution per bin of ZZ pt
+		
+		void resolutionZmass();  // same as bestZMassJetMVA() but without dR(jet, ZZ) > 2.
+		void endResolutionZmass(TFile& f_out);
+		//Permanently moved into an external macro
 		
 		void AK8nearGenHadVB();  // Is there an AK8 near genHadVBs_->front() ?
+		
+		phys::Boson<phys::Particle>* genQuarksID();
+		void genQuarksAnalisys(const phys::Boson<phys::Particle>* qq);  // gen quarks from VB decay
+		//void endGenQuarksAnalisys(TFile& f_out);  //better implementation in macro/Efficiency
 		
 		//Analisys on the resolution/efficiency of reconstruction of AK4 and AK8
 		void reconstructionAK();  //runs reconstructionAK4() and 8() which calculate efficiency
@@ -119,8 +129,6 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		void endReconstructionAK();
 		
 		void AK8MassAlgorithms();
-		
-		void endResolutionAnalisys(TFile& fout); //Calculates AK4-AK8 resolution per bin of ZZ pt
 		
 		void genTauAnalisys();
 		
