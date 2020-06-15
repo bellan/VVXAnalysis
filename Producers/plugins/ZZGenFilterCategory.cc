@@ -77,12 +77,9 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 
   std::vector<phys::Particle> genLeptons, genJets, genJetsAK8;
   
-  // Get the collection of gen particles
+  // Get the collection of gen particles from hard process (plus prompt photons). It contains leptons (charged and neutrinos) and quarks.
   edm::Handle<reco::GenParticleCollection> genParticles;
   event.getByToken(genToken_, genParticles);
-  
-  // Particle to be loaded in the event: prompt leptons (including neutrinos), prompt photons
-  std::vector<phys::Particle> genParticlesFromHardProcess; 
   
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // make the two categories of photon mutually exclusive?
@@ -97,15 +94,14 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
       continue;
     }
     
-    phys::Particle php = phys::convert(p,p.statusFlags().flags_);
-    genParticlesFromHardProcess.push_back(php);
     
     int id = abs(p.pdgId());
+    phys::Particle php = phys::convert(p,p.statusFlags().flags_);
     
     // Photons for FSR correction
     if(id == 22)  genPhotons.push_back(php);
     
-    // Leptons
+    // Stable leptons
     if(id == 11 || id == 13 || id == 12 || id == 14) genLeptons.push_back(php);
   }
   
