@@ -27,7 +27,6 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		VZZAnalyzer(const AnalysisConfiguration& configuration) 
 				: EventAnalyzer(*(new Selector<VZZAnalyzer>(*this)), configuration){
     	//theHistograms.profile(genCategory);
-    	//candType = VCandType::None;
  	 	}
 
 		virtual ~VZZAnalyzer(){
@@ -57,9 +56,14 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		const P* findBestVPoint(std::vector<const P*>& js, VCandType& thisCandType); //Uses a vector<P*> instead of a vector<P>
 		
 		template <class P, class R = phys::Boson<phys::Particle>> // P = Jet or Particle
-		P*              closestSing(std::vector<P>* cands, const R& reference); //max dR = 0.4
+		const P*        closestSing(std::vector<P>* cands, const R& ref, size_t& k); //max dR=0.4
 		template <class P, class R = phys::Boson<phys::Particle>> // P = Jet or Particle
-		phys::Boson<P>* closestPair(std::vector<P>* cands, const R& reference); //max dR = 0.4
+		const P*        closestSing(std::vector<P>* cands, const R& ref){
+			size_t k = 0;
+			return(closestSing(cands, ref, k));
+		};
+		template <class P, class R = phys::Boson<phys::Particle>> // P = Jet or Particle
+		phys::Boson<P>* closestPair(std::vector<P>* cands, const R& ref); //max dR = 0.4
 		template <class P, class R = phys::DiBoson<phys::Lepton, phys::Lepton>>
 		P* furthestSing(std::vector<P>* cands, const R& reference, const float& minDR = 2., const std::pair<float,float>& massLimits = std::make_pair(1.,1000.));
 		template <class P, class R = phys::DiBoson<phys::Lepton, phys::Lepton>>
@@ -116,7 +120,7 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		void AK8nearGenHadVB();  // Is there an AK8 near genHadVBs_->front() ?
 		
-		phys::Boson<phys::Particle>* genQuarksID();
+		phys::Boson<phys::Particle>* genQuarksID(); // Returns a boson created wit the 2 quarks only if the final state is 4l 2q
 		void genQuarksAnalisys(const phys::Boson<phys::Particle>* qq);  // gen quarks from VB decay
 		//void endGenQuarksAnalisys(TFile& f_out);  //better implementation in macro/Efficiency
 		
@@ -241,6 +245,52 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		inline bool tauCut(std::vector<phys::Jet>::iterator jet8, const double& thr = 0.6){
 			return tauCut(*jet8, thr);
 		}
+		
 };
+
+
+/*template <class T>
+class SortableMap{
+	public:
+		SortableMap() {};
+		SortableMap(const std::vector<T>& vect){
+			for(size_t i = 0; i < vect.size(); ++i)
+				map.push_back(make_pair(i, vect.at(i)));
+		}
+		
+		void sort_by_val(bool comp(const T&, const T&)){
+			auto lambda = [comp](const std::pair<int, T>& a, const std::pair<int, T>& b) { return comp(a.second, b.second); };
+			sort(map.begin(), map.end(), lambda);
+		}
+		
+		size_t find_by_key(int k) const{
+			for(size_t i = 0; i < map.size(); ++i)
+				if(map.at(i).first == k)
+					return i;
+		}
+		
+		template <class P = phys::Particle>
+		size_t find_closest(const P& reference) const{
+			//closestSing
+			if(map.size() < 1)  return -1;
+			if(map.size() == 1) return 0;
+			
+			int index = -1;
+			float minDR = 0.4; //starting value = the threshold we use
+			for(int i = 0; i < map.size(); ++i){
+			float DR = physmath::deltaR( map.at(i).second, reference );
+				if(DR < minDR){
+					minDR = DR;
+					index = i;
+				}
+			}
+			if(physmath::deltaR(reference, map.at(index).second) < 0.4)
+				return index;
+			else return nullptr;
+		}
+		
+		std::vector<std::pair<int, T>> map;
+};*/
+
 
 #endif

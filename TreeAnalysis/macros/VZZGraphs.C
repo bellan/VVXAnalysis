@@ -110,6 +110,7 @@ static const vector<Color_t> myColors =     {kRed  ,kGreen+1,kOrange-3,kAzure+10
 static const vector<Color_t> myFillColors = {kRed-4,kGreen-7,kOrange-4,kCyan-9  ,kBlue-9, kViolet-4,kYellow-7,kYellow-2,kOrange-7,kGray  , kMagenta-9};
 //vector<Color_t> myFillColors(myColors.size(), 0);
 
+
 void VZZGraphs(string sReqCateg = string(""), string sReqType = "", string reqGrName = string("")){
 	TH1::SetDefaultSumw2(true);
 	TString path = "../results/";  // "../results/VZZAnalyzer_MC/";  //fresh results

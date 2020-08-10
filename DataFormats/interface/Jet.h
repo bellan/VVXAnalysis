@@ -123,7 +123,7 @@ namespace phys {
     double puppiTau3()      const {return puppiTau3_;}
     double puppiMass()      const {return puppiMass_;}
     
-    double chosenAlgoMass() const {return softDropMass_;}
+    inline double chosenAlgoMass() const {return softDropMass_;} //puppiMass_ + 11.85;} //
 
 
 

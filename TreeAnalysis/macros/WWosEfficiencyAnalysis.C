@@ -62,7 +62,6 @@ void WWosEfficiencyAnalysis(TString requestedSample){
 			
 			TH1F* hTot = (TH1F*)result->Get("gen"+name+"_"+type);
 			if(hTot == nullptr){
-				#
 				cout<<"Could not open \""<<"gen"<<name<<"_"<<type<<"\"\n";
 			}
 			

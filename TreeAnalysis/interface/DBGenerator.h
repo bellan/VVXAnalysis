@@ -19,8 +19,6 @@
 #include <iostream>
 #include <fstream>
 
-//class DBGenerator: public EventAnalyzer, RegistrableAnalysis<DBGenerator>{
-
 class DBGenerator: public VZZAnalyzer, RegistrableAnalysis<DBGenerator>{
 	public:
 		//enum VCandType {None, W, Z}; //VCandidate is closest to Wmass or Zmass?
@@ -42,29 +40,28 @@ class DBGenerator: public VZZAnalyzer, RegistrableAnalysis<DBGenerator>{
   
 		virtual void end(TFile &);
 		
-		// ----- ----- Groups ----- -----
+		// ----- ----- Databases ----- -----
 		void mainEvtRec(int sigRecType, const phys::Particle* recV);
+		
+		void writeTagger(std::ofstream& outFile4, std::ofstream& outFile8);  // We want to choose the best AK8 (pair of AK4), using info from the original quarks
+		void writeInfoAK4(const phys::Boson<phys::Jet> bestAK4, std::ofstream& outFile);
+		void writeInfoAK8(const phys::Jet bestAK8, std::ofstream& outFile);
 		
 		// ----- ----- Helpers ----- -----
 		void printZeroes(size_t nzeros);
 		void printVars(size_t n, ...);
+		void printZeroes(std::ofstream& outFile, size_t nzeros);
+		void printVars(std::ofstream& outFile, size_t n, ...);
 		
-		// ----- ----- Event-specific variables calculation ----- ----- 
-		//void fillGenHadVBs(); // see VZZAnalyzer.h
-		
-		template <class J = phys::Jet>
-		//phys::Boson<J>* findBestVFromPair(const std::vector<J>*, VCandType& candType);
-		
-		int isSignal();
 	private:
-		//std::vector<phys::Boson<phys::Particle>>* genHadVBs_ = nullptr;  // genVBParticles with hadronic daugthers
-		
 		static const char SEP_CHAR = ',';	//separatory char used in the .csv
 		//clock_t startTime_; //Used to calculate elapsed time
 		//unsigned long evtN_; //Used to count processed events
 		bool isSigFile_ = false;  // Set during begin()
 		
-		std::ofstream outputFile; //a .csv file the data in the tree is written to
+		std::ofstream outputFile_; //a .csv file the data in the tree is written to
+		std::ofstream outputFileAK4_; //a .csv file; this one is for the Jet Tagger
+		std::ofstream outputFileAK8_; //a .csv file; this one is for the Jet Tagger
 		
 		friend class Selector<DBGenerator>;
 		

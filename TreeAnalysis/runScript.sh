@@ -6,7 +6,7 @@
 # first as the Analyzer and passes the others unchanged as parameters to run.py
 
 ANALYZER=VZZAnalyzer; #default values
-EXTRA_ARGS='-rMC -n10000'
+EXTRA_ARGS='-rMC -l137100'  # '-rMC -n10000'
 
 if (($# \> 0)); then
 	ANALYZER=$1
@@ -15,7 +15,8 @@ if (($# \> 1)); then
 	EXTRA_ARGS="${@:2}" #All the aguments except the first
 fi
 
-for SAMPLE in samples/* ; do
+for SAMPLE in samples/2016/* ; do
+	SAMPLE=${SAMPLE#*/};
 	SAMPLE=${SAMPLE#*/};
 	SAMPLE=${SAMPLE%.root};
 	./python/run.py ${ANALYZER} ${SAMPLE} ${EXTRA_ARGS}
