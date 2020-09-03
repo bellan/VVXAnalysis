@@ -19,7 +19,7 @@ Int_t VZZaQGCAnalyzer::cut() {
   return 1;
 }
 
-double a,b,c,d,mass,a1,b1,c1,d1,mass1;
+double a,b,c,d,mass,a1,b1,c1,d1,mass1,a2,b2,c2,d2,mass2;
 int good;
 
 void VZZaQGCAnalyzer::analyze(){
@@ -80,8 +80,17 @@ void VZZaQGCAnalyzer::analyze(){
    theHistograms.fill("energia bosoni ricostruiti","Energia bosoni ricostruiti",135,0,2700,ZZ->first().e());
    theHistograms.fill("energia bosoni ricostruiti","Energia bosoni ricostruiti",135,0,2700,ZZ->second().e());
    theHistograms.fill("eta bosoni ricostruiti","Eta bosoni ricostruiti",60,0,6,ZZ->first().eta());
-   theHistograms.fill("eta bosoni ricostruiti","Eta bosoni ricostruiti",60,0,6,ZZ->second().eta());
-   
+   theHistograms.fill("eta bosoni ricostruiti","Eta bosoni ricostruiti",60,0,6,ZZ->second().eta()); 
+
+      a2=b2=c2=d2=mass2=0;
+      foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
+	a2+=genVBParticle.p4().Px();
+	b2+=genVBParticle.p4().Py();
+        c2+=genVBParticle.p4().Pz();
+	d2+=genVBParticle.p4().E();}
+      mass2=sqrt((d2*d2)-(a2*a2)-(b2*b2)-(c2*c2));
+      theHistograms.fill("massa dibosoni ricostruiti","Massa dibosoni ricostruiti",55,80,520,mass2);
+	
    if(ZZ->first().daughter(1).e()>ZZ->first().daughter(0).e()){
      theHistograms.fill("E leptone maggiore ricostruito","Energia leptone piu' energetico ricostruito",200,0,2000,ZZ->first().daughter(1).e());}
    else{theHistograms.fill("E leptone maggiore ricostruito","Energia leptone piu' energetico ricostruito",200,0,2000,ZZ->first().daughter(0).e());};
