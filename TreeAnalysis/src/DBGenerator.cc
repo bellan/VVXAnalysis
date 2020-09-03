@@ -1,5 +1,6 @@
 #include "VVXAnalysis/TreeAnalysis/interface/DBGenerator.h"
 #include "VVXAnalysis/TreeAnalysis/interface/VZZAnalyzer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/VZZAnalyzer_impl.h"
 #include "VVXAnalysis/DataFormats/interface/Particle.h"
 #include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
@@ -42,7 +43,8 @@ void DBGenerator::begin(){
 	if(genHadVBs_ == nullptr)  genHadVBs_ = new vector<Boson<Particle>>;
 	//if(AllGenVBjj_ == nullptr) AllGenVBjj_= new vector<Boson<Particle>>;
 	//if(!AK4GenRec_) AK4GenRec_ = new vector<pair<Boson<Particle>, Boson<Jet>>>;
-	
+	qq_    = (Boson<Particle>*) ::operator new (sizeof(Boson<Particle>));
+	sigVB_ = (Boson<Particle>*) ::operator new (sizeof(Boson<Particle>));
 	
 	isSigFile_ = false;
 	foreach(const std::string& name, signalNames_)
@@ -110,19 +112,25 @@ Int_t DBGenerator::cut(){
 	cout<<"\r\t\t"<<evtN_;
 	
 	//Cleanup of previous event
-	sigVB_ = nullptr;
 	if(genHadVBs_)  genHadVBs_->clear(); //Destroys objects but keeps memory allocated
 	if(AK4pairs_)    AK4pairs_->clear();
 	//if(AK4GenRec_)  AK4GenRec_->clear();
 	//if(AllGenVBjj_)AllGenVBjj_->clear();
+	if(qq_->p() > 1.)    *qq_    = Boson<Particle>();
+	if(sigVB_->p() > 1.) *sigVB_ = Particle();
 	
 	//Preparation for this event
 	fillGenHadVBs();  // -->genHadVBs_
 	fillRecHadVBs();  // -->AK4pairs_
 	//fillAK4GenRec();
 	//fillGenVBtoAK4();
+	makeQQ(true);
 	
-	sigType_ = VZZAnalyzer::isSignal(/*Uses genJets(AK4) and genJetsAK8*/);
+	//Hadronic signal
+	sigType_ = VZZAnalyzer::isSignal(/*Uses genJets(AK4) and qq_. Modifies sigVB*/); 
+	
+	if(!ZZ || ZZ->p() < 1.) return -1;
+	if(jets->size() < 2. && jetsAK8->size() == 0) return -2;
 	
 	return 1;
 }
@@ -131,33 +139,12 @@ Int_t DBGenerator::cut(){
 void DBGenerator::analyze(){
 	++analyzedN_; analyzedW_ += theWeight;
 	
+	bool sigDefinition = sigType_ > 0 && topology.test(0) && topology.test(4);
+	
 	//Particle* candClosest =nullptr;//Contains information from the simulation. Probably useless
 	const Particle* candBestV = nullptr;  // Obtainable looking only at data
 	// As sigVB, it only points to the Particle, it doesn't own it. Maybe change this?
 	
-	switch(sigType_){
-		case 1:
-			sigVB_ = &(genHadVBs_->front());
-			/*if(AK4pairs_->size() > 0){
-				stable_sort(AK4pairs_->begin(), AK4pairs_->end(), DeltaRComparator(*sigVB_) );
-				if(physmath::deltaR(AK4pairs_->front(), *sigVB_) < 0.4)
-					candClosest = &(AK4pairs_->front());
-			}*/ // else if(jetsAK8->size() > 0) goto ak8_label;
-			break;
-		case 2:
-			sigVB_ = &(genJetsAK8->front());
-			/*if(jetsAK8->size() != 0){
-				stable_sort(jetsAK8->begin(), jetsAK8->end(), DeltaRComparator(*sigVB_) );
-				if(physmath::deltaR(jetsAK8->front(), *sigVB_) < 0.4)
-					candClosest = &(jetsAK8->front());
-			}*/ // else if(AK4pairs_->size() > 0) goto ak4_label;
-			break;
-		case 0:
-			break;
-		default:
-			cout<<"Error, sigType_ has an invalid value in analyze()\n";
-			return;
-	}
 	
 	//RECONSTUCTION: Move it to VZZ, make nonprivate member function
 	VCandType temp = VCandType::None;
@@ -182,9 +169,9 @@ void DBGenerator::analyze(){
 	//END RECONSTRUCTION
 	
 	// IMPORTANT: JUMP EVENT IF NO VB CAN BE RECONSTRUCTED!
-	if(!candBestV || !ZZ || ZZ->isValid() || ZZ->passFullSelection()) return;
+	if(!candBestV || !ZZ->isValid() || !ZZ->passFullSelection()) return;
 	
-	if(/*isSigFile_ &&*/ topology.test(4) && topology.test(0) && sigType_)
+	if(/*isSigFile_ &&*/ topology.test(4) && topology.test(0) && sigType_ > 0)
 		outputFile_<<1;  // 1  Is signal at gen level?
 	else
 		outputFile_<<0;
@@ -226,70 +213,70 @@ void DBGenerator::end(TFile &){
 
 
 void DBGenerator::writeTagger(std::ofstream& outFile4, std::ofstream& outFile8){
-	vector<Particle> genQuarks;
-	size_t nLep = 0;
-	
-	foreach(const Particle& p, *genParticles){
-		unsigned int aID = abs(p.id());
-		if(aID < 10)       // Is it a quark?
-			genQuarks.push_back(Particle(p));
-		else if(aID < 20)
-			++nLep;
-	}
-	
 	// 2q final state
-	if(genQuarks.size() != 2) // || nLep != 4)
+	if(qq_->p() < 1.) // || nLep != 4)
 		return;
 	
-	Boson<Particle> qq(genQuarks.at(0), genQuarks.at(1));
-	
-	//GenJets AK4  IMPORTANT: eff/res ONLY for the 4l 2q channel (no 4q/6q)!
-	Jet rec4_1, rec4_2;
+	//AK4:
 	Boson<Jet> bestAK4;
-	float dR0 = 99.;
-	float dR1 = 99.;
-	if(jets->size() >= 2){
-		std::sort(jets->begin(), jets->end(), phys::DeltaRComparator(qq.daughter(0)));
-		dR0 = physmath::deltaR(jets->front(), qq.daughter(0));
-		if(dR0 < 0.4)
-			rec4_1 = Jet(jets->front());
+	const Jet* rec4_0;
+	const Jet* rec4_1;
+	size_t i4_0 = 99;
+	size_t i4_1 = 99;
+	vector<Jet> cpJets; //(*jets);
+	
+	if(jets->size() < 2)
+		goto AK8;
+	
+	cpJets = vector<Jet>(*jets);
+	
+	rec4_0 = VZZAnalyzer::closestSing(jets, qq_->daughter(0), i4_0);
+	rec4_1 = VZZAnalyzer::closestSing(jets, qq_->daughter(1), i4_1);
+	
+	if(rec4_0 && rec4_1){
+		float dR0 = physmath::deltaR(*rec4_0, qq_->daughter(0));
+		float dR1 = physmath::deltaR(*rec4_1, qq_->daughter(1));
 		
-		std::sort(jets->begin(), jets->end(), phys::DeltaRComparator(qq.daughter(1)));
-		dR1 = physmath::deltaR(jets->front(), qq.daughter(1));
-		if(dR1 < 0.4)
-			rec4_2 = Jet(jets->front());
-			
-		if(dR0 < 0.4 && dR1 < 0.4){
-			bestAK4 = Boson<Jet>(rec4_1, rec4_2);
-			writeInfoAK4(bestAK4, outFile4);
-			outFile4<<'\n';  // '\n' instead of std::endl because it does not force buffer flush
+		if(i4_0 == i4_1){ // If they're matched to the same jet
+			if(dR0 < dR1){ // Search for a second, different jet
+				cpJets.erase(cpJets.begin() + i4_0);
+				rec4_1 = VZZAnalyzer::closestSing(&cpJets, qq_->daughter(1), i4_1);
+			} else if(dR1 < dR0){
+				cpJets.erase(cpJets.begin() + i4_1);
+				rec4_0 = VZZAnalyzer::closestSing(&cpJets, qq_->daughter(1), i4_0);
+			}
 		}
 	}
+
+	if(rec4_0 && rec4_1){		
+		bestAK4 = Boson<Jet>(*rec4_0, *rec4_1);
+		writeInfoAK4(bestAK4, outFile4);
+	}
 	
-	
-	//GenJets AK8  IMPORTANT: eff/res ONLY for the 4l 2q channel (no 4q/6q)!
+	AK8:
 	if(jetsAK8->size() > 0){
-		std::sort(jetsAK8->begin(), jetsAK8->end(), phys::DeltaRComparator(qq));
-		
-		if(physmath::deltaR(jetsAK8->front(), qq) > 0.4)
+		/*std::sort(jetsAK8->begin(), jetsAK8->end(), phys::DeltaRComparator(*qq_));
+		if(physmath::deltaR(jetsAK8->front(), *qq_) > 0.4)
 			return;
-		else{
-			writeInfoAK8(jetsAK8->front(), outFile8);
-			outFile8<<'\n';  // '\n' instead of std::endl because it does not force buffer flush
-		}
+		else
+			writeInfoAK8(jetsAK8->front(), outFile8);*/
+		const Jet* rec8 = closestSing(jetsAK8, *qq_);
+		if(rec8)
+			writeInfoAK8(*rec8, outFile8);
 	}
 }
 
 
 void DBGenerator::writeInfoAK4(const Boson<Jet> bestAK4, std::ofstream& outFile){
 	std::sort(AK4pairs_->begin(), AK4pairs_->end(), phys::DeltaRComparator(bestAK4));
+	
 	for(size_t i = 0; i < AK4pairs_->size(); ++i){
 		Boson<Jet>& jj = AK4pairs_->at(i);
 		if(i == 0)
 			outFile<<1;
 		else
 			outFile<<0;
-		printVars(1, theWeight);
+		printVars(outFile, 1, theWeight);
 		
 		float dR = physmath::deltaR(jj.daughter(0), jj.daughter(1));
 		float pt = jj.pt();
@@ -298,6 +285,7 @@ void DBGenerator::writeInfoAK4(const Boson<Jet> bestAK4, std::ofstream& outFile)
 		float mDM = minDM(m);
 		
 		printVars(outFile, 5, dR, pt, pt_scalar, m, mDM);
+		outFile<<'\n';  // '\n' instead of std::endl because it does not force buffer flush
 	}
 }
 
@@ -310,7 +298,7 @@ void DBGenerator::writeInfoAK8(const Jet bestAK8, std::ofstream& outFile){
 			outFile<<1;
 		else
 			outFile<<0;
-		printVars(1, theWeight);
+		printVars(outFile, 1, theWeight);
 		
 		float tau21 = j.tau2()/j.tau1();  // This should be high
 		float tau32 = j.tau3()/j.tau2();  // This should be low
@@ -322,6 +310,7 @@ void DBGenerator::writeInfoAK8(const Jet bestAK8, std::ofstream& outFile){
 		
 		//printVars(7, tau21, tau32, ptau21, ptau32, pt, m, mDM);
 		printVars(outFile, 5, tau21, tau32, pt, m, mDM);
+		outFile<<'\n';  // '\n' instead of std::endl because it does not force buffer flush
 	}
 }
 
@@ -331,10 +320,10 @@ void DBGenerator::mainEvtRec(int sigRecType, const Particle* recV){
 	float dMHad = minDM(recV->mass());
 	float ptHad = recV->pt();
 	float aEtaHad = fabs(recV->eta());
-	printVars(3, dMHad, ptHad, aEtaHad);
+	printVars(outputFile_, 3, dMHad, ptHad, aEtaHad);
 	
 	//if(ZZ && ZZ->pt() > 1.){
-	printVars(3, ZZ->mass(), ZZ->pt(), ZZ->eta());
+	printVars(outputFile_, 3, ZZ->mass(), ZZ->pt(), ZZ->eta());
 	
 		//if(recV){  // Either there's no rec VB or it's too far in dR
 	TLorentzVector candp4(recV->p4());
@@ -366,9 +355,9 @@ void DBGenerator::mainEvtRec(int sigRecType, const Particle* recV){
 	float pt1 = Z1p4.P() * sin( Z1p4.Angle((candp4 + Z2p4).Vect()) );
 	float pt2 = Z2p4.P() * sin( Z2p4.Angle((candp4 + Z1p4).Vect()) );
 	
-	printVars(15, ang0,ang1,ang2, dPhi0,dPhi1,dPhi2, dEta0,dEta1,dEta2, dR0,dR1,dR2, pt0,pt1,pt2);
+	printVars(outputFile_, 15, ang0,ang1,ang2, dPhi0,dPhi1,dPhi2, dEta0,dEta1,dEta2, dR0,dR1,dR2, pt0,pt1,pt2);
 	
-	printVars(2, (candp4+ZZ->p4()).M(), (candp4+ZZ->p4()).Pt());
+	printVars(outputFile_, 2, (candp4+ZZ->p4()).M(), (candp4+ZZ->p4()).Pt());
 	
 		//}
 		/*else{
@@ -388,22 +377,6 @@ void DBGenerator::mainEvtRec(int sigRecType, const Particle* recV){
 	//}
 }
 
-
-void DBGenerator::printZeroes(size_t nzeros){
-	for(size_t i = 0; i < nzeros; ++i){
-		outputFile_ << SEP_CHAR << 0;
-	}
-}
-void DBGenerator::printVars(size_t n, ...){
-	double val;
-  va_list vl;
-  va_start(vl, n);
-  for (size_t i = 0; i < n; ++i){
-		val = va_arg(vl, double); //For historic reasons floats are promoted to double anyway
-		outputFile_ << SEP_CHAR << (float)val;
-	}
-  va_end(vl);
-}
 
 void DBGenerator::printZeroes(std::ofstream& outFile, size_t nzeros){
 	for(size_t i = 0; i < nzeros; ++i){

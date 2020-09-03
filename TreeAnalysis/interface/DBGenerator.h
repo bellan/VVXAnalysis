@@ -48,8 +48,6 @@ class DBGenerator: public VZZAnalyzer, RegistrableAnalysis<DBGenerator>{
 		void writeInfoAK8(const phys::Jet bestAK8, std::ofstream& outFile);
 		
 		// ----- ----- Helpers ----- -----
-		void printZeroes(size_t nzeros);
-		void printVars(size_t n, ...);
 		void printZeroes(std::ofstream& outFile, size_t nzeros);
 		void printVars(std::ofstream& outFile, size_t n, ...);
 		
