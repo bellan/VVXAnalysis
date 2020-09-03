@@ -19,7 +19,7 @@ Int_t VZZaQGCAnalyzer::cut() {
   return 1;
 }
 
-double a,b,c,d,mass,a1,b1,c1,d1,mass1,a2,b2,c2,d2,mass2,theta1,theta2,theta3,theta4,theta5,theta6,phi1,phi2,phi3,phi4,phi5,phi6,angolo1,angolo2,angolo,dR;
+double a,b,c,d,mass,a1,b1,c1,d1,mass1,a2,b2,c2,d2,a3,b3,c3,d3,mass2,theta1,theta2,theta3,theta4,theta5,theta6,phi1,phi2,phi3,phi4,phi5,phi6,angolo1,angolo2,angolo,dR;
 int good;
 
 void VZZaQGCAnalyzer::analyze(){
@@ -59,7 +59,7 @@ void VZZaQGCAnalyzer::analyze(){
         c+=genVBParticle.p4().Pz();
 	d+=genVBParticle.p4().E();}
       mass=sqrt((d*d)-(a*a)-(b*b)-(c*c));
-      theHistograms.fill("massa dibosoni generati","Massa dibosoni generati",55,80,520,mass);}
+      theHistograms.fill("massa dibosoni generati","Massa dibosoni generati",88,80,520,mass);}
      }}
    
    if(genVBParticles->size()==4){
@@ -75,7 +75,7 @@ void VZZaQGCAnalyzer::analyze(){
 	  }}
 	  mass1=sqrt((d1*d1)-(a1*a1)-(b1*b1)-(c1*c1));
 	  if(good==2){
-	    theHistograms.fill("massa dibosoni generati","Massa dibosoni generati",55,80,520,mass);}}
+	    theHistograms.fill("massa dibosoni generati","Massa dibosoni generati",88,80,520,mass);}}
    if(ZZ->first().mass()!=0){
    theHistograms.fill("massa bosoni ricostruiti","Massa bosoni ricostruiti",180,50,130,ZZ->first().mass());
    theHistograms.fill("massa bosoni ricostruiti","Massa bosoni ricostruiti",180,50,130,ZZ->second().mass());
@@ -102,14 +102,17 @@ void VZZaQGCAnalyzer::analyze(){
    angolo2=acos(sin(theta5)*sin(theta6)*cos(phi5-phi6)+cos(theta5)*cos(theta6));
    theHistograms.fill("angolo leptoni ricostruiti","Angolo leptoni ricostruiti",75,0,3.5,angolo2);
    
-      a2=b2=c2=d2=mass2=0;
-      foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
-	a2+=genVBParticle.p4().Px();
-	b2+=genVBParticle.p4().Py();
-        c2+=genVBParticle.p4().Pz();
-	d2+=genVBParticle.p4().E();}
-      mass2=sqrt((d2*d2)-(a2*a2)-(b2*b2)-(c2*c2));
-      theHistograms.fill("massa dibosoni ricostruiti","Massa dibosoni ricostruiti",55,80,520,mass2);
+      a2=b2=c2=d2=a3=b3=c3=d3=mass2=0;
+      a2=ZZ->first().p4().Px();
+      b2=ZZ->first().p4().Py();
+      c2=ZZ->first().p4().Pz();
+      d2=ZZ->first().p4().E();
+      a3=ZZ->second().p4().Px();
+      b3=ZZ->second().p4().Py();
+      c3=ZZ->second().p4().Pz();
+      d3=ZZ->second().p4().E();
+      mass2=sqrt((d2+d3)*(d2+d3)-(a2+a3)*(a2+a3)-(b2+b3)*(b2+b3)-(c2+c3)*(c2+c3));
+      theHistograms.fill("massa dibosoni ricostruiti","Massa dibosoni ricostruiti",88,80,520,mass2);
 	
    if(ZZ->first().daughter(1).e()>ZZ->first().daughter(0).e()){
      theHistograms.fill("E leptone maggiore ricostruito","Energia leptone piu' energetico ricostruito",200,0,2000,ZZ->first().daughter(1).e());}
@@ -130,15 +133,10 @@ void VZZaQGCAnalyzer::analyze(){
    foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
      if((genVBParticle.daughter(0).id()==11&&genVBParticle.daughter(1).id()==-11)||(genVBParticle.daughter(0).id()==13&&genVBParticle.daughter(1).id()==-13)){
        dR=physmath::deltaR(genVBParticle,ZZ->first());
-       if(abs(dR)<0.01){
+       if(abs(dR)<0.05){
 	 theHistograms.fill("delta M","Delta m bosoni generati/ricostruiti",40,-10,10,ZZ->first().mass()-genVBParticle.mass());}
        dR=physmath::deltaR(genVBParticle,ZZ->second());
-       if(abs(dR)<0.01){
+       if(abs(dR)<0.05){
 	 theHistograms.fill("delta M","Delta m bosoni generati/ricostruiti",40,-10,10,ZZ->second().mass()-genVBParticle.mass());}}}
-	 
-	   
-
-   }
-
-   
+	 }
 } 
