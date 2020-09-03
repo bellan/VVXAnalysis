@@ -23,8 +23,19 @@ Int_t VVXAnalyzer::cut() {
 
 void VVXAnalyzer::analyze(){
 
-  //cout << "------------------------------------------------------------------"<<endl;
-  //cout << "Run: " << run << " event: " << event << endl;
+  cout << "------------------------------------------------------------------"<<endl;
+  cout << "Run: " << run << " event: " << event << endl;
+
+  cout << "# muons: " << muons->size() <<endl;
+
+  theHistograms.fill("nmuons", "Number of muons per event", 6,0,6, muons->size());
+
+
+  foreach(const phys::Lepton muon, *muons)
+    cout << "pt muon: " << muon.pt() << endl;
+
+
+  
   
   
 }

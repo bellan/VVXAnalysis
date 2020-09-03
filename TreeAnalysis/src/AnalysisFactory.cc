@@ -16,6 +16,7 @@
 #include "VVXAnalysis/TreeAnalysis/interface/FakeRateAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/WZZAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/VZZAnalyzer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/VZZaQGCAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/DBGenerator.h"
 
 AnalysisFactory::AnalysisFactory(){
@@ -36,6 +37,7 @@ AnalysisFactory::AnalysisFactory(){
   Register("ZVAnalyzer"      , &RegistrableAnalysis<ZVAnalyzer>::create      );
   Register("WWosAnalyzer"    , &RegistrableAnalysis<WWosAnalyzer>::create    );
   Register("VZZAnalyzer"     , &RegistrableAnalysis<VZZAnalyzer>::create     );
+  Register("VZZaQGCAnalyzer" , &RegistrableAnalysis<VZZaQGCAnalyzer>::create );
   Register("DBGenerator"     , &RegistrableAnalysis<DBGenerator>::create     );
 }
 
