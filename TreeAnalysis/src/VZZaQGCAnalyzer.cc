@@ -19,7 +19,7 @@ Int_t VZZaQGCAnalyzer::cut() {
   return 1;
 }
 
-double a,b,c,d,mass,a1,b1,c1,d1,mass1,a2,b2,c2,d2,mass2,theta1,theta2,theta3,theta4,theta5,theta6,phi1,phi2,phi3,phi4,phi5,phi6,angolo1,angolo2,angolo;
+double a,b,c,d,mass,a1,b1,c1,d1,mass1,a2,b2,c2,d2,mass2,theta1,theta2,theta3,theta4,theta5,theta6,phi1,phi2,phi3,phi4,phi5,phi6,angolo1,angolo2,angolo,dR;
 int good;
 
 void VZZaQGCAnalyzer::analyze(){
@@ -125,5 +125,20 @@ void VZZaQGCAnalyzer::analyze(){
    else{theHistograms.fill("E leptone minore ricostruito","Energia leptone meno energetico ricostruito",200,0,800,ZZ->first().daughter(1).e());};
    if(ZZ->second().daughter(1).e()>ZZ->second().daughter(0).e()){
      theHistograms.fill("E leptone minore ricostruito","Energia leptone meno energetico ricostruito",200,0,800,ZZ->second().daughter(0).e());}
-   else{theHistograms.fill("E leptone minore ricostruito","Energia leptone meno energetico ricostruito",200,0,800,ZZ->second().daughter(1).e());};}
+   else{theHistograms.fill("E leptone minore ricostruito","Energia leptone meno energetico ricostruito",200,0,800,ZZ->second().daughter(1).e());};
+   
+   foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
+     if((genVBParticle.daughter(0).id()==11&&genVBParticle.daughter(1).id()==-11)||(genVBParticle.daughter(0).id()==13&&genVBParticle.daughter(1).id()==-13)){
+       dR=physmath::deltaR(genVBParticle,ZZ->first());
+       if(abs(dR)<0.01){
+	 theHistograms.fill("delta M","Delta m bosoni generati/ricostruiti",40,-10,10,ZZ->first().mass()-genVBParticle.mass());}
+       dR=physmath::deltaR(genVBParticle,ZZ->second());
+       if(abs(dR)<0.01){
+	 theHistograms.fill("delta M","Delta m bosoni generati/ricostruiti",40,-10,10,ZZ->second().mass()-genVBParticle.mass());}}}
+	 
+	   
+
+   }
+
+   
 } 
