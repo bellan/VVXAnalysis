@@ -14,6 +14,9 @@
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/Commons/interface/Comparators.h"
 
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
+
 #include <iostream>
 #include <fstream>
 #include <algorithm>  // std::min
@@ -27,14 +30,22 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		VZZAnalyzer(const AnalysisConfiguration& configuration) 
 				: EventAnalyzer(*(new Selector<VZZAnalyzer>(*this)), configuration){
     	//theHistograms.profile(genCategory);
+    	//std::cout<<"Creating VZZAnalyzer"<<std::endl;
  	 	}
 
 		virtual ~VZZAnalyzer(){
+			//std::cout<<"Destroying VZZAnalyzer"<<std::endl;
 			if(genHadVBs_) delete genHadVBs_; //Deallocates memory
 			if(AK4pairs_)  delete AK4pairs_;
 			if(AllGenVBjj_)delete AllGenVBjj_;
 			if(AK4GenRec_) delete AK4GenRec_;
 			if(genZZ)      delete genZZ;
+			if(qq_)        delete qq_;
+			if(sigVB_)     delete sigVB_;
+			
+			Py_XDECREF(AK4_classifier_);  // Free memory in event of crash (end() is not called)
+			Py_XDECREF(helper_module_);  // XDECREF: checks if the reference count is >=0
+			Py_FinalizeEx();  // Close Python interpreter
 		}
   	
 		virtual void begin();
@@ -55,6 +66,7 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		template <class P = phys::Particle>
 		const P* findBestVPoint(std::vector<const P*>& js, VCandType& thisCandType); //Uses a vector<P*> instead of a vector<P>
 		
+		//Implemented in VZZAnalyzer_impl.cc
 		template <class P, class R = phys::Boson<phys::Particle>> // P = Jet or Particle
 		const P*        closestSing(std::vector<P>* cands, const R& ref, size_t& k); //max dR=0.4
 		template <class P, class R = phys::Boson<phys::Particle>> // P = Jet or Particle
@@ -85,6 +97,10 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		static inline double getRefinedMass(const phys::Jet* j) { return j->chosenAlgoMass();}
 		
 		static inline double minDM(const double& mass, const double& r1 = phys::ZMASS, const double& r2 = phys::WMASS) { return std::min( fabs(mass-r1), fabs(mass-r2) ); }
+		
+		// ----- ----- Predictions from scikit classifiers ----- ----- 
+		double getPyPrediction(const double*, const size_t, const PyObject*) const; // uses module_helper
+		static void getAK4features(const phys::Boson<phys::Jet>&, double*);
 		
 		// ----- ----- Event-specific variables calculation ----- ----- 
 		void fillGenHadVBs(); //old: Fills the vector only if it is empty
@@ -120,8 +136,8 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		void AK8nearGenHadVB();  // Is there an AK8 near genHadVBs_->front() ?
 		
-		phys::Boson<phys::Particle>* genQuarksID(); // Returns a boson created wit the 2 quarks only if the final state is 4l 2q
-		void genQuarksAnalisys(const phys::Boson<phys::Particle>* qq);  // gen quarks from VB decay
+		void makeQQ(bool doGraphs = false); //phys::Boson<phys::Particle>* genQuarksID(); // Returns a boson created wit the 2 quarks only if the final state is 4l 2q
+		void genQuarksAnalisys(/*const phys::Boson<phys::Particle>* qq_*/);  // gen quarks from VB decay
 		//void endGenQuarksAnalisys(TFile& f_out);  //better implementation in macro/Efficiency
 		
 		//Analisys on the resolution/efficiency of reconstruction of AK4 and AK8
@@ -176,6 +192,9 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		unsigned int NnoAK4_, N8genVB_, N8recover_;  // See AK8recover()
 		
+		PyObject* helper_module_;  // Python mini-module to unpickle AK4_classifier_ and obtain predictions from it
+		PyObject* AK4_classifier_;  // A scikit-learn classifier, trained on pairs of AK4 to distinguish from W/Z induced jets and background QCD processes. Must implement the method "predict_proba(<2D matrix>)"
+		
 		friend class Selector<VZZAnalyzer>;
 		
 	protected:
@@ -190,6 +209,7 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		std::vector<std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Jet>>>* AK4GenRec_ = nullptr;  // Pairs of gen VB-->jj succesfully reconstructed by the detector
 		
 		phys::DiBoson<phys::Particle, phys::Particle>* genZZ; //Always != nullptr from begin() to end(). Test isValid() to see if there's really such particle in this event
+		phys::Boson<phys::Particle>* qq_;
 		
 		// ----- ----- Signal definition ----- ----- 
 		int sigType_;            // 0-->no  |     1-->AK4     |  2-->AK8
@@ -245,7 +265,6 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		inline bool tauCut(std::vector<phys::Jet>::iterator jet8, const double& thr = 0.6){
 			return tauCut(*jet8, thr);
 		}
-		
 };
 
 
