@@ -55,12 +55,13 @@ void VZZaQGCAnalyzer::analyze(){
 	good+=1;
 	  }}
      mass1=sqrt((d1*d1)-(a1*a1)-(b1*b1)-(c1*c1));
-     theHistograms.fill("numero bosoni buoni","Bosoni buoni",10,0,10,good);
      if(good==2){
 	    theHistograms.fill("massa dibosoni generati","Massa ZZ generati",78,80,600,mass1);}
    if(ZZ->first().mass()!=0){
    theHistograms.fill("massa bosoni ricostruiti","Massa bosoni ricostruiti",180,50,130,ZZ->first().mass());
    theHistograms.fill("massa bosoni ricostruiti","Massa bosoni ricostruiti",180,50,130,ZZ->second().mass());
+   theHistograms.fill("massa Z1 ricostruiti","Massa Z1 ricostruiti",180,50,130,ZZ->first().mass());
+   theHistograms.fill("massa Z2 ricostruiti","Massa Z2 ricostruiti",90,50,130,ZZ->second().mass());
    theHistograms.fill("pt bosoni ricostruiti","Pt bosoni ricostruiti",150,0,900,ZZ->first().pt());
    theHistograms.fill("pt bosoni ricostruiti","Pt bosoni ricostruiti",150,0,900,ZZ->second().pt());
    theHistograms.fill("theta bosoni ricostruiti","Theta bosoni ricostruiti",75 ,0,3.5,ZZ->first().p4().Theta());
