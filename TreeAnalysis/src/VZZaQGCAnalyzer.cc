@@ -18,7 +18,7 @@ Int_t VZZaQGCAnalyzer::cut() {
   return 1;
 }
 
-double a1,b1,c1,d1,mass1,a2,b2,c2,d2,a3,b3,c3,d3,mass2,theta1,theta2,theta3,theta4,theta5,theta6,phi1,phi2,phi3,phi4,phi5,phi6,angolo1,angolo2,angolo,dR,dR2,massaz1,massaz2,massaz3,massaz4;
+double a1,b1,c1,d1,mass1,a2,b2,c2,d2,a3,b3,c3,d3,mass2,theta1,theta2,theta3,theta4,theta5,theta6,phi1,phi2,phi3,phi4,phi5,phi6,angolo1,angolo2,angolo,dR,dR2,massaz1,massaz2,massaz3,massaz4,ptz1,ptz2,energiaz1,energiaz2,enlep1,enlep2,enlep3,enlep4;
 int good;
 double mz=91.1876;
 
@@ -126,31 +126,78 @@ void VZZaQGCAnalyzer::analyze(){
      theHistograms.fill("E leptone minore ricostruito","Energia leptone meno energetico ricostruito",200,0,800,ZZ->second().daughter(0).e());}
    else{theHistograms.fill("E leptone minore ricostruito","Energia leptone meno energetico ricostruito",200,0,800,ZZ->second().daughter(1).e());};
    
-   dR=0;
-   dR2=0;
-   massaz3=0;
+   dR=dR2=massaz3=massaz4=ptz1=ptz2=energiaz1=energiaz2=enlep1=enlep2=enlep3=enlep4=0;
    if(good==2){
     foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
      if((genVBParticle.daughter(0).id()==11&&genVBParticle.daughter(1).id()==-11)||(genVBParticle.daughter(0).id()==13&&genVBParticle.daughter(1).id()==-13)){
        if(dR==0){
 	 dR=physmath::deltaR(genVBParticle,ZZ->first());
-         massaz3=genVBParticle.mass();}
+         massaz3=genVBParticle.mass();
+         energiaz1=genVBParticle.e();
+         ptz1=genVBParticle.pt();
+	 if(genVBParticle.daughter(0).e()>genVBParticle.daughter(1).e()){
+	   enlep1=genVBParticle.daughter(0).e();
+	   enlep2=genVBParticle.daughter(1).e();
+	 }
+         else{enlep1=genVBParticle.daughter(1).e();
+	   enlep2=genVBParticle.daughter(0).e();}
+       }
        else{if(physmath::deltaR(genVBParticle,ZZ->first())<dR){
 	   dR=physmath::deltaR(genVBParticle,ZZ->first());
-	   massaz3=genVBParticle.mass();}}}}}
+	   massaz3=genVBParticle.mass();
+	   energiaz1=genVBParticle.e();
+	   ptz1=genVBParticle.pt();
+	   if(genVBParticle.daughter(0).e()>genVBParticle.daughter(1).e()){
+	     enlep1=genVBParticle.daughter(0).e();
+	     enlep2=genVBParticle.daughter(1).e();
+	 }
+	   else{enlep1=genVBParticle.daughter(1).e();
+	     enlep2=genVBParticle.daughter(0).e();}}}}}}
    if(dR!=0&&dR<0.1){
      theHistograms.fill("confronto massa Z1","Differenza massa generata/ricostruita Z1",40,-8,8,ZZ->first().mass()-massaz3);
-     foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
+     theHistograms.fill("confronto energia Z1","Differenza energia generata/ricostruita Z1",200,-40,40,ZZ->first().e()-energiaz1);
+     theHistograms.fill("confronto pt Z1","Differenza pt generata/ricostruita Z1",150,-30,30,ZZ->first().pt()-ptz1);
+     if(ZZ->first().daughter(0).e()>ZZ->first().daughter(1).e()){
+       theHistograms.fill("confronto leptone maggiore Z1","DeltaE leptone maggiore Z1",100,-20,20,ZZ->first().daughter(0).e()-enlep1);
+       theHistograms.fill("confronto leptone minore Z1","DeltaE leptone minore Z1",100,-20,20,ZZ->first().daughter(1).e()-enlep2);
+     }
+     else{theHistograms.fill("confronto leptone maggiore Z1","DeltaE leptone maggiore Z1",100,-20,20,ZZ->first().daughter(1).e()-enlep1);
+       theHistograms.fill("confronto leptone minore Z1","DeltaE leptone minore Z1",100,-20,20,ZZ->first().daughter(0).e()-enlep2);
+     }}
+       foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
      if((genVBParticle.daughter(0).id()==11&&genVBParticle.daughter(1).id()==-11)||(genVBParticle.daughter(0).id()==13&&genVBParticle.daughter(1).id()==-13)){
        if(dR2==0){
 	 dR2=physmath::deltaR(genVBParticle,ZZ->second());
-         massaz4=genVBParticle.mass();}
+         massaz4=genVBParticle.mass();
+         energiaz2=genVBParticle.e();
+         ptz2=genVBParticle.pt();
+       	 if(genVBParticle.daughter(0).e()>genVBParticle.daughter(1).e()){
+	   enlep3=genVBParticle.daughter(0).e();
+	   enlep4=genVBParticle.daughter(1).e();}
+         else{enlep3=genVBParticle.daughter(1).e();
+	   enlep4=genVBParticle.daughter(0).e();}}
        else{if(physmath::deltaR(genVBParticle,ZZ->second())<dR2){
 	   dR2=physmath::deltaR(genVBParticle,ZZ->second());
-	   massaz4=genVBParticle.mass();}}}}
-     if(dR2!=0&&dR2<0.1){
-       theHistograms.fill("confronto massa Z2","Differenza massa generata/ricostruita Z2",40,-8,8,ZZ->second().mass()-massaz4);}
-   }
+	   massaz4=genVBParticle.mass();
+	   energiaz2=genVBParticle.e();
+           ptz2=genVBParticle.pt();
+	   if(genVBParticle.daughter(0).e()>genVBParticle.daughter(1).e()){
+	   enlep3=genVBParticle.daughter(0).e();
+	   enlep4=genVBParticle.daughter(1).e();
 	 }
-   
+         else{enlep3=genVBParticle.daughter(1).e();
+	   enlep4=genVBParticle.daughter(0).e();}}}}}
+     if(dR2!=0&&dR2<0.1){
+       theHistograms.fill("confronto massa Z2","Differenza massa generata/ricostruita Z2",40,-8,8,ZZ->second().mass()-massaz4);
+       theHistograms.fill("confronto energia Z2","Differenza energia generata/ricostruita Z2",200,-40,40,ZZ->second().e()-energiaz2);
+       theHistograms.fill("confronto pt Z2","Differenza pt generata/ricostruita Z2",150,-30,30,ZZ->second().pt()-ptz2);
+       if(ZZ->second().daughter(0).e()>ZZ->second().daughter(1).e()){
+       theHistograms.fill("confronto leptone maggiore Z2","DeltaE leptone maggiore Z2",100,-20,20,ZZ->second().daughter(0).e()-enlep3);
+       theHistograms.fill("confronto leptone minore Z2","DeltaE leptone minore Z2",100,-20,20,ZZ->second().daughter(1).e()-enlep4);
+     }
+     else{theHistograms.fill("confronto leptone maggiore Z2","DeltaE leptone maggiore Z2",100,-20,20,ZZ->second().daughter(1).e()-enlep3);
+       theHistograms.fill("confronto leptone minore Z2","DeltaE leptone minore Z2",100,-20,20,ZZ->second().daughter(0).e()-enlep4);
+     }
+     }
+	 }
 }
