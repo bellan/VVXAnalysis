@@ -19,8 +19,9 @@ Int_t VZZaQGCAnalyzer::cut() {
   return 1;
 }
 
-double a1,b1,c1,d1,mass1,a2,b2,c2,d2,a3,b3,c3,d3,mass2,theta1,theta2,theta3,theta4,theta5,theta6,phi1,phi2,phi3,phi4,phi5,phi6,angolo1,angolo2,angolo,dR;
+double a1,b1,c1,d1,mass1,a2,b2,c2,d2,a3,b3,c3,d3,mass2,theta1,theta2,theta3,theta4,theta5,theta6,phi1,phi2,phi3,phi4,phi5,phi6,angolo1,angolo2,angolo,dR,massaz1,massaz2;
 int good;
+double mz=91.1876;
 
 void VZZaQGCAnalyzer::analyze(){
    foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
@@ -34,7 +35,7 @@ void VZZaQGCAnalyzer::analyze(){
       theta2=genVBParticle.daughter(1).p4().Theta();
       phi1=genVBParticle.daughter(0).phi();
       phi2=genVBParticle.daughter(1).phi();
-      angolo=acos(sin(theta1)*sin(theta2)*cos(phi1-phi2)+cos(theta1)*cos(theta2));
+      angolo=acos(sin(theta1)*sin(theta2)*cos(physmath::deltaPhi(phi1,phi2))+cos(theta1)*cos(theta2));
       theHistograms.fill("angolo leptoni generati","Angolo leptoni generati",75,0,3.5,angolo);
       if(genVBParticle.daughter(1).e()>genVBParticle.daughter(0).e()){
 	theHistograms.fill("E leptone maggiore","Energia leptone piu' energetico",200,0,2000,genVBParticle.daughter(1).e());}
@@ -56,7 +57,20 @@ void VZZaQGCAnalyzer::analyze(){
 	  }}
      mass1=sqrt((d1*d1)-(a1*a1)-(b1*b1)-(c1*c1));
      if(good==2){
-	    theHistograms.fill("massa dibosoni generati","Massa ZZ generati",78,80,600,mass1);}
+	    theHistograms.fill("massa dibosoni generati","Massa ZZ generati",78,80,600,mass1);
+	    foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
+	      if(massaz1==0){
+		massaz1=genVBParticle.mass();}
+	      else{if(abs(genVBParticle.mass()-mz)<abs(massaz1-mz)){
+		  massaz2=massaz1;
+		  massaz1=genVBParticle.mass();
+		   }
+		else{
+		  massaz2=genVBParticle.mass();}}}
+	    theHistograms.fill("massa Z1 generati","Massa Z1 generati",180,50,130,massaz1);
+	    theHistograms.fill("massa Z2 generati","Massa Z2 generati",90,50,130,massaz2);
+     }
+     
    if(ZZ->first().mass()!=0){
    theHistograms.fill("massa bosoni ricostruiti","Massa bosoni ricostruiti",180,50,130,ZZ->first().mass());
    theHistograms.fill("massa bosoni ricostruiti","Massa bosoni ricostruiti",180,50,130,ZZ->second().mass());
@@ -75,14 +89,14 @@ void VZZaQGCAnalyzer::analyze(){
    theta4=ZZ->first().daughter(1).p4().Theta();
    phi3=ZZ->first().daughter(0).phi();
    phi4=ZZ->first().daughter(1).phi();
-   angolo1=acos(sin(theta3)*sin(theta4)*cos(phi3-phi4)+cos(theta3)*cos(theta4));
+   angolo1=acos(sin(theta3)*sin(theta4)*cos(physmath::deltaPhi(phi3,phi4))+cos(theta3)*cos(theta4));
    theHistograms.fill("angolo leptoni ricostruiti","Angolo leptoni ricostruiti",75,0,3.5,angolo1);
    
    theta5=ZZ->second().daughter(0).p4().Theta();
    theta6=ZZ->second().daughter(1).p4().Theta();
    phi5=ZZ->second().daughter(0).phi();
    phi6=ZZ->second().daughter(1).phi();
-   angolo2=acos(sin(theta5)*sin(theta6)*cos(phi5-phi6)+cos(theta5)*cos(theta6));
+   angolo2=acos(sin(theta5)*sin(theta6)*cos(physmath::deltaPhi(phi5,phi6))+cos(theta5)*cos(theta6));
    theHistograms.fill("angolo leptoni ricostruiti","Angolo leptoni ricostruiti",75,0,3.5,angolo2);
    
       a2=b2=c2=d2=a3=b3=c3=d3=mass2=0;
@@ -116,10 +130,10 @@ void VZZaQGCAnalyzer::analyze(){
    foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
      if((genVBParticle.daughter(0).id()==11&&genVBParticle.daughter(1).id()==-11)||(genVBParticle.daughter(0).id()==13&&genVBParticle.daughter(1).id()==-13)){
        dR=physmath::deltaR(genVBParticle,ZZ->first());
-       if(abs(dR)<0.05){
+       if(abs(dR)<0.1){
 	 theHistograms.fill("delta M","Delta m bosoni generati/ricostruiti",40,-10,10,ZZ->first().mass()-genVBParticle.mass());}
        dR=physmath::deltaR(genVBParticle,ZZ->second());
-       if(abs(dR)<0.05){
+       if(abs(dR)<0.1){
 	 theHistograms.fill("delta M","Delta m bosoni generati/ricostruiti",40,-10,10,ZZ->second().mass()-genVBParticle.mass());}}}
 	 }
-} 
+}
