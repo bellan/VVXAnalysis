@@ -11,7 +11,6 @@ using namespace boost::assign;
 using std::cout;
 using std::endl;
 
-
 using namespace phys;
 
 Int_t VZZaQGCAnalyzer::cut() {
@@ -146,11 +145,12 @@ void VZZaQGCAnalyzer::analyze(){
        if(dR2==0){
 	 dR2=physmath::deltaR(genVBParticle,ZZ->second());
          massaz4=genVBParticle.mass();}
-       else{if(physmath::deltaR(genVBParticle,ZZ->second())<dR){
+       else{if(physmath::deltaR(genVBParticle,ZZ->second())<dR2){
 	   dR2=physmath::deltaR(genVBParticle,ZZ->second());
 	   massaz4=genVBParticle.mass();}}}}
      if(dR2!=0&&dR2<0.1){
        theHistograms.fill("confronto massa Z2","Differenza massa generata/ricostruita Z2",40,-8,8,ZZ->second().mass()-massaz4);}
    }
 	 }
+   
 }
