@@ -18,7 +18,7 @@ Int_t VZZaQGCAnalyzer::cut() {
   return 1;
 }
 
-double a1,b1,c1,d1,mass1,a2,b2,c2,d2,a3,b3,c3,d3,mass2,theta1,theta2,theta3,theta4,theta5,theta6,phi1,phi2,phi3,phi4,phi5,phi6,angolo1,angolo2,angolo,dR,dR2,massaz1,massaz2,massaz3,massaz4,ptz1,ptz2,ptz3,ptz4,energiaz1,energiaz2,energiaz3,energiaz4,enlep1,enlep2,enlep3,enlep4;
+double a1,b1,c1,d1,mass1,a2,b2,c2,d2,a3,b3,c3,d3,mass2,theta1,theta2,theta3,theta4,theta5,theta6,phi1,phi2,phi3,phi4,phi5,phi6,angolo1,angolo2,angolo,dR,dR2,massaz1,massaz2,massaz3,massaz4,ptz1,ptz2,ptz3,ptz4,energiaz1,energiaz2,energiaz3,energiaz4,enlep1,enlep2,enlep3,enlep4,etaz1,etaz2;
 int good;
 
 void VZZaQGCAnalyzer::analyze(){
@@ -51,9 +51,10 @@ void VZZaQGCAnalyzer::analyze(){
      if(good==2){
 	    theHistograms.fill("massa dibosoni generati","Massa ZZ generati",78,80,600,mass1);
 	    foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
-	      theHistograms.fill("massa bosoni generati bene","Massa bosoni generati bene",50,50,130,genVBParticle.mass());
-	      theHistograms.fill("pt bosoni generati bene","Pt bosoni generati bene",50,0,900,genVBParticle.pt());
-	      theHistograms.fill("energia bosoni generati bene","Energia bosoni generati bene",50,0,2700,genVBParticle.e());
+	      theHistograms.fill("massa bosoni generati bene","Massa bosoni generati bene",15,70,110,genVBParticle.mass());
+	      theHistograms.fill("pt bosoni generati bene","Pt bosoni generati bene",15,0,350,genVBParticle.pt());
+	      theHistograms.fill("energia bosoni generati bene","Energia bosoni generati bene",15,0,1400,genVBParticle.e());
+	      theHistograms.fill("eta bosoni generati bene","Eta bosoni generati bene",15,0,4.5,genVBParticle.eta());
 	      if(massaz1==0){
 		massaz1=genVBParticle.mass();
 	        energiaz1=genVBParticle.e();
@@ -130,7 +131,7 @@ void VZZaQGCAnalyzer::analyze(){
      theHistograms.fill("E leptone minore ricostruito","Energia leptone meno energetico ricostruito",200,0,800,ZZ->second().daughter(0).e());}
    else{theHistograms.fill("E leptone minore ricostruito","Energia leptone meno energetico ricostruito",200,0,800,ZZ->second().daughter(1).e());};
    
-   dR=dR2=massaz3=massaz4=ptz1=ptz2=energiaz3=energiaz4=enlep1=enlep2=enlep3=enlep4=0;
+   dR=dR2=massaz3=massaz4=ptz1=ptz2=energiaz3=energiaz4=enlep1=enlep2=enlep3=enlep4=etaz1=etaz2=0;
    if(good==2){
     foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
      if((genVBParticle.daughter(0).id()==11&&genVBParticle.daughter(1).id()==-11)||(genVBParticle.daughter(0).id()==13&&genVBParticle.daughter(1).id()==-13)){
@@ -139,6 +140,7 @@ void VZZaQGCAnalyzer::analyze(){
          massaz3=genVBParticle.mass();
          energiaz3=genVBParticle.e();
          ptz3=genVBParticle.pt();
+	 etaz1=genVBParticle.eta();
 	 if(genVBParticle.daughter(0).e()>genVBParticle.daughter(1).e()){
 	   enlep1=genVBParticle.daughter(0).e();
 	   enlep2=genVBParticle.daughter(1).e();}
@@ -149,6 +151,7 @@ void VZZaQGCAnalyzer::analyze(){
 	   massaz3=genVBParticle.mass();
 	   energiaz3=genVBParticle.e();
 	   ptz3=genVBParticle.pt();
+	   etaz1=genVBParticle.eta();
 	   if(genVBParticle.daughter(0).e()>genVBParticle.daughter(1).e()){
 	     enlep1=genVBParticle.daughter(0).e();
 	     enlep2=genVBParticle.daughter(1).e();}
@@ -158,9 +161,10 @@ void VZZaQGCAnalyzer::analyze(){
      theHistograms.fill("confronto massa Z1","Differenza massa generata/ricostruita Z1",40,-8,8,ZZ->first().mass()-massaz3);
      theHistograms.fill("confronto energia Z1","Differenza energia generata/ricostruita Z1",200,-40,40,ZZ->first().e()-energiaz3);
      theHistograms.fill("confronto pt Z1","Differenza pt generata/ricostruita Z1",150,-30,30,ZZ->first().pt()-ptz3);
-     theHistograms.fill("massa bosoni ricostruiti bene","Massa bosoni ricostruiti bene",50,50,130,massaz3);
-     theHistograms.fill("pt bosoni ricostruiti bene","Pt bosoni ricostruiti bene",50,0,900,ptz3);
-     theHistograms.fill("energia bosoni ricostruiti bene","Energia bosoni ricostruiti bene",50,0,2700,energiaz3);
+     theHistograms.fill("massa bosoni ricostruiti bene","Massa bosoni ricostruiti bene",15,70,110,massaz3);
+     theHistograms.fill("pt bosoni ricostruiti bene","Pt bosoni ricostruiti bene",15,0,350,ptz3);
+     theHistograms.fill("energia bosoni ricostruiti bene","Energia bosoni ricostruiti bene",15,0,1400,energiaz3);
+     theHistograms.fill("eta bosoni ricostruiti bene","Eta bosoni ricostruiti bene",15,0,4.5,etaz1);
      if(ZZ->first().daughter(0).e()>ZZ->first().daughter(1).e()){
        theHistograms.fill("confronto leptone maggiore Z1","DeltaE leptone maggiore Z1",100,-20,20,ZZ->first().daughter(0).e()-enlep1);
        theHistograms.fill("confronto leptone minore Z1","DeltaE leptone minore Z1",100,-20,20,ZZ->first().daughter(1).e()-enlep2);}
@@ -173,6 +177,7 @@ void VZZaQGCAnalyzer::analyze(){
          massaz4=genVBParticle.mass();
          energiaz4=genVBParticle.e();
          ptz4=genVBParticle.pt();
+	 etaz2=genVBParticle.eta();
        	 if(genVBParticle.daughter(0).e()>genVBParticle.daughter(1).e()){
 	   enlep3=genVBParticle.daughter(0).e();
 	   enlep4=genVBParticle.daughter(1).e();}
@@ -183,6 +188,7 @@ void VZZaQGCAnalyzer::analyze(){
 	   massaz4=genVBParticle.mass();
 	   energiaz4=genVBParticle.e();
            ptz4=genVBParticle.pt();
+	   etaz2=genVBParticle.eta();
 	   if(genVBParticle.daughter(0).e()>genVBParticle.daughter(1).e()){
 	   enlep3=genVBParticle.daughter(0).e();
 	   enlep4=genVBParticle.daughter(1).e();}
@@ -192,9 +198,10 @@ void VZZaQGCAnalyzer::analyze(){
        theHistograms.fill("confronto massa Z2","Differenza massa generata/ricostruita Z2",40,-8,8,ZZ->second().mass()-massaz4);
        theHistograms.fill("confronto energia Z2","Differenza energia generata/ricostruita Z2",200,-40,40,ZZ->second().e()-energiaz4);
        theHistograms.fill("confronto pt Z2","Differenza pt generata/ricostruita Z2",150,-30,30,ZZ->second().pt()-ptz4);
-       theHistograms.fill("massa bosoni ricostruiti bene","Massa bosoni ricostruiti bene",50,50,130,massaz4);
-       theHistograms.fill("pt bosoni ricostruiti bene","Pt bosoni ricostruiti bene",50,0,900,ptz4);
-       theHistograms.fill("energia bosoni ricostruiti bene","Energia bosoni ricostruiti bene",50,0,2700,energiaz4);
+       theHistograms.fill("massa bosoni ricostruiti bene","Massa bosoni ricostruiti bene",15,70,110,massaz4);
+       theHistograms.fill("pt bosoni ricostruiti bene","Pt bosoni ricostruiti bene",15,0,350,ptz4);
+       theHistograms.fill("energia bosoni ricostruiti bene","Energia bosoni ricostruiti bene",15,0,1400,energiaz4);
+       theHistograms.fill("eta bosoni ricostruiti bene","Eta bosoni ricostruiti bene",15,0,4.5,etaz2);
        if(ZZ->second().daughter(0).e()>ZZ->second().daughter(1).e()){
        theHistograms.fill("confronto leptone maggiore Z2","DeltaE leptone maggiore Z2",100,-20,20,ZZ->second().daughter(0).e()-enlep3);
        theHistograms.fill("confronto leptone minore Z2","DeltaE leptone minore Z2",100,-20,20,ZZ->second().daughter(1).e()-enlep4);}
