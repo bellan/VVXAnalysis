@@ -17,8 +17,9 @@ Int_t VZZaQGCAnalyzer::cut() {
   return 1;
 }
 
-double theta1,theta2,theta3,theta4,theta5,theta6,phi1,phi2,phi3,phi4,phi5,phi6,angolo1,angolo2,angolo,dR,dR2,massaz1,massaz2,massaz3,massaz4,ptz1,ptz2,ptz3,ptz4,energiaz1,energiaz2,energiaz3,energiaz4,enlep1,enlep2,enlep3,enlep4,enlep5,enlep6,enlep7,enlep8,etaz1,etaz2,etaz3,etaz4,mass1,mass2;
-TLorentzVector a,b,zero;
+double theta1,theta2,theta3,theta4,theta5,theta6,phi1,phi2,phi3,phi4,phi5,phi6,angolo1,angolo2,angolo,dR,dR2,dRq,dRq1,dRq2,massaz1,massaz2,massaz3,massaz4,ptz1,ptz2,ptz3,ptz4,energiaz1,energiaz2,energiaz3,energiaz4,enlep1,enlep2,enlep3,enlep4,enlep5,enlep6,enlep7,enlep8,etaz1,etaz2,etaz3,etaz4,mass1,mass2,massaqq,massajet,massajetjet;
+TLorentzVector a,b,pquark,pjet,p,zero;
+int nquark,troppi;
 
 void VZZaQGCAnalyzer::analyze(){
    massaz1=massaz2=energiaz1=energiaz2=ptz1=ptz2=etaz1=etaz2=enlep1=enlep2=enlep3=enlep4=0;
@@ -209,4 +210,38 @@ void VZZaQGCAnalyzer::analyze(){
        theHistograms.fill("confronto leptone minore Z2","DeltaE leptone minore Z2",100,-20,20,ZZ->second().daughter(0).e()-enlep8);
        theHistograms.fill("E leptone maggiore Z2 buono ricostruito","Energia leptone piu' energetico Z2",10,0,1000,ZZ->second().daughter(1).e());
        theHistograms.fill("E leptone minore Z2 buono ricostruito","Energia leptone meno energetico Z2",10,0,300,ZZ->second().daughter(0).e());} }
-	 }}
+   }
+   troppi=0;
+   pquark=pjet=p=zero;
+   dRq1=dRq2=0;
+   foreach(const phys::Particle genParticle,*genParticles){
+     dRq=9999;
+     p=zero;
+     if(abs(genParticle.id())>0&&abs(genParticle.id())<7){
+       foreach(const phys::Particle genJet,*genJets){
+	 if(physmath::deltaR(genJet,genParticle)<dRq){
+	   dRq=physmath::deltaR(genJet,genParticle);
+	   p=genJet.p4();
+	   massajet=genJet.mass();}}
+       theHistograms.fill("dR quark-jet","dR quark-jet",100,0,0.5,dRq);
+       if(dRq<0.1){
+	 theHistograms.fill("deltam quark-jet","Differenza di massa quark-jet",100,-5,30,massajet-genParticle.mass());
+	 if(dRq1==0){
+	   dRq1=dRq;
+	   pquark+=genParticle.p4();
+	   pjet+=p;}
+	 else if(dRq2==0){
+	   dRq2=dRq;
+	   pquark+=genParticle.p4();
+	   pjet+=p;}
+	 else{troppi+=1;}}
+     }
+     if(dRq1!=0&&dRq2!=0&&troppi==0){
+       massaqq=sqrt((pquark.E()*pquark.E())-(pquark.Px()*pquark.Px())-(pquark.Py()*pquark.Py())-(pquark.Pz()*pquark.Pz()));
+       massajetjet=sqrt((pjet.E()*pjet.E())-(pjet.Px()*pjet.Px())-(pjet.Py()*pjet.Py())-(pjet.Pz()*pjet.Pz()));
+       theHistograms.fill("massa qq","Massa qq",180,50,130,massaqq);
+       theHistograms.fill("massa jet-jet","Massa jet-jet",180,50,130,massajetjet);
+       theHistograms.fill("deltam qq-jetjet","Differenza di massa qq-jetjet",100,-20,20,massajetjet-massaqq);
+     }
+   }
+}
