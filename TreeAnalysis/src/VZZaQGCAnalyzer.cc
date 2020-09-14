@@ -17,11 +17,11 @@ Int_t VZZaQGCAnalyzer::cut() {
   return 1;
 }
 
-double theta1,theta2,theta3,theta4,theta5,theta6,phi1,phi2,phi3,phi4,phi5,phi6,angolo1,angolo2,angolo,dR,dR2,dRq,dRq1,dRq2,enlep1,enlep2,enlep3,enlep4,mass1,mass2,massaqq,massajetjet;
-TLorentzVector a,b,pquark,pjet,zero;
+double theta1,theta2,theta3,theta4,theta5,theta6,phi1,phi2,phi3,phi4,phi5,phi6,angolo1,angolo2,angolo,dR,dR2,dRq,dRq1,dRq2,enlep1,enlep2,enlep3,enlep4,mass1,mass2,massaqq,massajetjet,masstot;
+TLorentzVector a,b,pquark,zero,q;
 int nquark,troppi;
-phys::Particle jet;
-phys::Boson<phys::Particle> z1,z2,z3,z4,bosonzero;
+phys::Particle jet,jet1,jet2;
+phys::Boson<phys::Particle> z1,z2,z3,z4,bosonzero,jetboson;
 
 void VZZaQGCAnalyzer::analyze(){
    a=zero;
@@ -188,7 +188,7 @@ void VZZaQGCAnalyzer::analyze(){
        theHistograms.fill("E leptone minore Z2 buono ricostruito","Energia leptone meno energetico Z2",10,0,300,ZZ->second().daughter(0).e());} }
    }
    troppi=0;
-   pquark=pjet=zero;
+   pquark=zero;
    dRq1=dRq2=0;
    foreach(const phys::Particle genParticle,*genParticles){
      dRq=9999;
@@ -203,17 +203,25 @@ void VZZaQGCAnalyzer::analyze(){
 	 if(dRq1==0){
 	   dRq1=dRq;
 	   pquark+=genParticle.p4();
-	   pjet+=jet.p4();}
-	 else if(dRq2==0&&jet.e()!=pjet.E()){
+	   jet1=jet;}
+	 else if(dRq2==0&&jet.e()!=jet1.e()){
 	   dRq2=dRq;
 	   pquark+=genParticle.p4();
-	   pjet+=jet.p4();}
+	   jet2=jet;}
 	 else if(dRq1!=0&&dRq2!=0){troppi+=1;}}
      }}
      if(dRq1!=0&&dRq2!=0&&troppi==0){
+       jetboson=phys::Boson<phys::Particle>(jet1,jet2,0);
        massaqq=sqrt((pquark.E()*pquark.E())-(pquark.Px()*pquark.Px())-(pquark.Py()*pquark.Py())-(pquark.Pz()*pquark.Pz()));
-       massajetjet=sqrt((pjet.E()*pjet.E())-(pjet.Px()*pjet.Px())-(pjet.Py()*pjet.Py())-(pjet.Pz()*pjet.Pz()));
-       theHistograms.fill("massa qq","Massa qq",180,50,130,massaqq);
-       theHistograms.fill("massa jet-jet","Massa jet-jet",180,50,130,massajetjet);
-       theHistograms.fill("deltam qq-jetjet","Differenza di massa qq-jetjet",50,-25,25,massajetjet-massaqq);}
+       theHistograms.fill("massa qq","Massa qq",120,50,130,massaqq);
+       theHistograms.fill("massa bosone adronico","Massa bosone adronico",120,50,130,jetboson.mass());
+       theHistograms.fill("deltam qq-jetjet","Differenza di massa qq-jetjet",50,-25,25,jetboson.mass()-massaqq);
+       theHistograms.fill("energia bosone adronico","Energia bosone adronico",135,0,2700,jetboson.e());
+       theHistograms.fill("eta bosone adronico","Eta bosone adronico",60,0,6,jetboson.eta());
+       theHistograms.fill("pt bosone adronico","Pt bosone adronico",150,0,900,jetboson.pt());
+       if(topology.test(0)){
+	 q=jetboson.p4()+z1.p4()+z2.p4();
+	 masstot=sqrt((q.E()*q.E())-(q.Px()*q.Px())-(q.Py()*q.Py())-(q.Pz()*q.Pz()));
+	 theHistograms.fill("massa tribosoni","Massa tribosoni",20,200,1000,masstot);}
+     }
 }
