@@ -101,6 +101,30 @@ void DBGenerator::begin(){
 			exit(1);
 	}
 	
+	// Scikit predictor test
+	Py_Initialize();
+	cout<<"Py interpreter initialized? "<<Py_IsInitialized()<<std::endl;
+	
+	PyRun_SimpleString(
+   "import sys\n"
+   "sys.path.append('./python')\n"
+	);
+	
+	helper_module_ = PyImport_ImportModule("VZZhelper"); // import module
+	if (!helper_module_){
+		cout<<"Error: could not load \"VZZhelper\""<<std::endl;
+		Py_FinalizeEx();
+		exit(2);  // TODO: something else must be done here
+	}
+	
+	AK4_classifier_ = PyObject_CallMethod(helper_module_, "load_object","s","VZZ_AK4_tree.pkl");
+	if(AK4_classifier_ == Py_None){
+		cout<<"Error: could not load AK4_classifier_."<<std::endl;
+		Py_DECREF(helper_module_);
+		Py_FinalizeEx();
+		exit(3);
+	}
+	
 	cout<<"\nAnalyzed:\t      /"<<tree()->GetEntries()<<std::flush;
 	
 	return;
@@ -193,12 +217,17 @@ void DBGenerator::analyze(){
 }
 
 void DBGenerator::end(TFile &){
-	outputFile_.close();
+	if(outputFile_.is_open())    outputFile_.close();
 	if(outputFileAK4_.is_open()) outputFileAK4_.close();
 	if(outputFileAK8_.is_open()) outputFileAK8_.close();
 	
 	if(genHadVBs_) delete genHadVBs_; //Deallocates memory
 	if(AK4pairs_)  delete AK4pairs_;
+	
+	//Python cleanup and shutdown of the interpreter
+	Py_DECREF(AK4_classifier_);
+	Py_DECREF(helper_module_);
+	Py_FinalizeEx();
 	
 	cout<<"\nPassing cut: "<<Form("%lu (weighted: %.2f)", analyzedN_, analyzedW_)<<'\n';
 	
@@ -284,7 +313,11 @@ void DBGenerator::writeInfoAK4(const Boson<Jet> bestAK4, std::ofstream& outFile)
 		float m = jj.mass();
 		float mDM = minDM(m);
 		
-		printVars(outFile, 5, dR, pt, pt_scalar, m, mDM);
+		double feat[5] = {dR, pt, pt_scalar, m, mDM};
+		double pred = getPyPrediction(feat, 5, AK4_classifier_);
+		printVars(outFile, 6, dR, pt, pt_scalar, m, mDM, pred);
+		
+		//printVars(outFile, 5, dR, pt, pt_scalar, m, mDM);
 		outFile<<'\n';  // '\n' instead of std::endl because it does not force buffer flush
 	}
 }

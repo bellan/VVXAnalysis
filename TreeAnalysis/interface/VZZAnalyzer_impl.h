@@ -1,10 +1,17 @@
+#ifndef VZZANALYZER_IMPL_H
+#define VZZANALYZER_IMPL_H
+
+/** \Implementation of template functions of VZZAnalyzer
+ *
+ *  $Date: 2020/08/27 12:00:00 $
+ *  $Revision: 1.0 $
+ *  \author A. Mecca alberto.mecca@edu.unito.it
+ */
+
 #include "VVXAnalysis/TreeAnalysis/interface/VZZAnalyzer.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 
 #include <utility>  // std::pair, std::make_pair()
-
-#ifndef VZZANALYZER_IMPL_H
-#define VZZANALYZER_IMPL_H
 
 using std::vector;
 using std::pair;

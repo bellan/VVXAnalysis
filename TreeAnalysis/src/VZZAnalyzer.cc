@@ -72,7 +72,7 @@ void VZZAnalyzer::begin(){
 	
 	//Python: scikit predictors
 	Py_Initialize();
-	cout<<"\nInitialized? "<<Py_IsInitialized()<<std::endl;
+	cout<<"\nPy interpreter initialized? "<<Py_IsInitialized()<<std::endl;
 	
 	PyRun_SimpleString(
    "import sys\n"
@@ -82,19 +82,17 @@ void VZZAnalyzer::begin(){
 	helper_module_ = PyImport_ImportModule("VZZhelper"); // import module
 	if (!helper_module_){
 		cout<<"Error: could not load \"VZZhelper\""<<std::endl;
-		return;  // TODO: something else must be done here
+		Py_FinalizeEx();
+		exit(1);  // TODO: something else must be done here
 	}
 	
 	AK4_classifier_ = PyObject_CallMethod(helper_module_, "load_object","s","VZZ_AK4_tree.pkl");
 	if(AK4_classifier_ == Py_None){
 		cout<<"Error: could not load AK4_classifier_."<<std::endl;
-		return;
+		Py_DECREF(helper_module_);
+		Py_FinalizeEx();
+		exit(2);
 	}
-	//getAK4PyPrediction
-	
-	
-	//cout<<"Exiting..."<<std::endl;
-	//exit(0);
 	
 	//Memory allocation
 	if(AK4pairs_ == nullptr)    AK4pairs_ = new vector<Boson<Jet>>;
@@ -170,7 +168,7 @@ Int_t VZZAnalyzer::cut(){
 void VZZAnalyzer::analyze(){
 	++analyzedN_; analyzedW_ += theWeight;
 	
-	if(AK4pairs_->size() > 0){
+	if(AK4pairs_->size() > 0){ // TODO: test
 		foreach(const Boson<Jet>& pair, *AK4pairs_){
 			double bufFeat[5];
 			getAK4features(pair, bufFeat);

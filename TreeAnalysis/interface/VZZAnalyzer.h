@@ -192,16 +192,16 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		unsigned int NnoAK4_, N8genVB_, N8recover_;  // See AK8recover()
 		
-		PyObject* helper_module_;  // Python mini-module to unpickle AK4_classifier_ and obtain predictions from it
-		PyObject* AK4_classifier_;  // A scikit-learn classifier, trained on pairs of AK4 to distinguish from W/Z induced jets and background QCD processes. Must implement the method "predict_proba(<2D matrix>)"
-		
 		friend class Selector<VZZAnalyzer>;
 		
 	protected:
 		unsigned long evtN_, analyzedN_; //Used to count processed events.
 		clock_t startTime_; //Used to calculate elapsed time
 		float analyzedW_;  // Weighted events passing cut
-	
+		
+		PyObject* helper_module_;  // Python mini-module to unpickle AK4_classifier_ and obtain predictions from it
+		PyObject* AK4_classifier_;  // A scikit-learn classifier, trained on pairs of AK4 to distinguish from W/Z induced jets and background QCD processes. Must implement the method "predict_proba(<2D matrix>)"
+		
 		//phys::DiBoson<phys::Particle, phys::Particle>* ZZ_gen = nullptr;
 		std::vector<phys::Boson<phys::Particle>>* genHadVBs_ = nullptr;  // genVBParticles with hadronic daugthers
 		std::vector<phys::Boson<phys::Particle>>* AllGenVBjj_ = nullptr;  // All the unique pairs of genAK4 with |m - M_{Z,W}| < 30.  genVB is limited to 2 (Z3 and W2 in SignalDefinitions)
