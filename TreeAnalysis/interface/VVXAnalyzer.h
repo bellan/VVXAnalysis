@@ -58,6 +58,34 @@ public:
 
   }
 
+  template<class T> 
+  std::vector<phys::Boson<phys::Particle> > getZtoX(const std::vector<phys::Particle> & collectionX, T condition);
+
+  
+  class ZnnCondition { 
+  public: 
+    // Comparator function 
+    bool operator()(phys::Particle a, 
+                    phys::Particle b){ 
+
+      if(a.id() + b.id() == 0 && a.id() > 0) return true; 
+      else return false; 
+    } 
+  }; 
+
+  class ZqqCondition { 
+  public: 
+    // Comparator function 
+    bool operator()(phys::Particle a, 
+                    phys::Particle b){ 
+
+      if(a.id() + b.id() == 0 && a.id() > 0) return true; 
+      else return false; 
+    } 
+  }; 
+
+
+  
 
 
 };
