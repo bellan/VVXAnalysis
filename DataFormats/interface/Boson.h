@@ -82,6 +82,20 @@ namespace phys {
       else { std::cout << "*** Boson's daughter not found! ***" << " " << i << std::endl; abort();}
     }
 
+    int decayId() const{
+      // if it is a leptonic decay, return the abs(id) of the charged lepton (if present). If it is an hadronic decay, return 0
+      return abs(daughter0_.id()) > 7 ? std::min(abs(daughter0_.id()), abs(daughter1_.id())) : 0;
+    }
+
+    int decayType() const{
+      // 0 for hadronic decays, 1 for leptonic
+      return decayId() == 0 ? 0 : 1;
+    }
+
+    bool overlapWithDaughters(const P &p) const {
+      return p == daughter0_ || p == daughter1_;
+    }
+    
 
     void addFSR(int daughter_index, const Particle &photon){
       std::bitset<2> index = std::bitset<2>(indexFSR_);
