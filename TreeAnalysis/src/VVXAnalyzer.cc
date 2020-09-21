@@ -23,40 +23,56 @@ Int_t VVXAnalyzer::cut() {
   return 1;
 }
 
-template<class T>
-std::vector<phys::Boson<phys::Particle> > VVXAnalyzer::getZtoX(const std::vector<phys::Particle> & collectionX, T condition){
+template<class T1, class T2>
+std::vector<phys::Boson<phys::Particle> > VVXAnalyzer::getVtoX(const std::vector<phys::Particle> & collectionX1,
+							       const std::vector<phys::Particle> & collectionX2,
+							       T1 idcondition, T2 masswindow, const double& referenceMass){
 
-  std::vector<phys::Boson<phys::Particle> > ZtoX;
-  std::vector<phys::Boson<phys::Particle> > ZtoXcand;
+  std::vector<phys::Boson<phys::Particle> > VtoX;
+  std::vector<phys::Boson<phys::Particle> > VtoXcand;
    
-  foreach(const phys::Particle &p1, collectionX) foreach(const phys::Particle &p2, collectionX)
-    if(condition(p1,p2)) ZtoXcand.push_back(phys::Boson<phys::Particle>(p1,p2,23));
-  std::stable_sort(ZtoXcand.begin(), ZtoXcand.end(), phys::MassComparator(phys::ZMASS));
-  if(!ZtoXcand.empty()){
+  foreach(const phys::Particle &p1, collectionX1) foreach(const phys::Particle &p2, collectionX2)
+    if(idcondition(p1,p2)) VtoXcand.push_back(phys::Boson<phys::Particle>(p1,p2,
+									  p1.id()+p2.id()==0 ? 23 : copysign(24,p1.charge()+p2.charge()) ));
+  std::stable_sort(VtoXcand.begin(), VtoXcand.end(), phys::MassComparator(referenceMass));
+  if(!VtoXcand.empty()){
 
-    phys::Boson<phys::Particle> Z0 = ZtoXcand.at(0);
-    phys::Boson<phys::Particle> Z1;
+    phys::Boson<phys::Particle> V0 = VtoXcand.at(0);
+    phys::Boson<phys::Particle> V1;
 
-    std::stable_sort(ZtoXcand.begin(), ZtoXcand.end(), phys::ScalarSumPtComparator());
+    std::stable_sort(VtoXcand.begin(), VtoXcand.end(), phys::ScalarSumPtComparator());
     
-    foreach(const phys::Boson<phys::Particle> &z, ZtoXcand){
-      if(!Z0.overlapWithDaughters(z.daughter(0)) && !Z0.overlapWithDaughters(z.daughter(1))){
-	Z1 = z;
+    foreach(const phys::Boson<phys::Particle> &v, VtoXcand){
+      if(!V0.overlapWithDaughters(v.daughter(0)) && !V0.overlapWithDaughters(v.daughter(1))){
+	V1 = v;
 	break;
       }
     }  
-    if(Z0.mass() >= 60 && Z0.mass() <= 120) ZtoX.push_back(Z0);
-    if(Z1.mass() >= 60 && Z1.mass() <= 120) ZtoX.push_back(Z1);
+    if(masswindow(V0)) VtoX.push_back(V0);
+    if(masswindow(V1)) VtoX.push_back(V1);
   }
 
-  foreach(const phys::Boson<phys::Particle> &zcan, ZtoXcand){
+  foreach(const phys::Boson<phys::Particle> &vcan, VtoXcand){
     bool match = false;
-    foreach(const phys::Boson<phys::Particle> &zxx, ZtoX)
-      if(zcan.overlapWithDaughters(zxx.daughter(0)) || zcan.overlapWithDaughters(zxx.daughter(1))) match = true;
-    if(!match && zcan.mass() >= 60 && zcan.mass() <= 120) ZtoX.push_back(zcan);
+    foreach(const phys::Boson<phys::Particle> &vxx, VtoX)
+      if(vcan.overlapWithDaughters(vxx.daughter(0)) || vcan.overlapWithDaughters(vxx.daughter(1))) match = true;
+    if(!match && masswindow(vcan)) VtoX.push_back(vcan);
   }
-  return ZtoX;
+  return VtoX;
 }
+
+std::vector<phys::Particle> VVXAnalyzer::removeOverlaps(const std::vector<phys::Particle> &collectionX, const std::vector<phys::Boson<phys::Particle> >& collectionVB){
+  std::vector<phys::Particle> nonoverapping;    
+  foreach(const phys::Particle &p, collectionX){
+    bool matching=false;
+    foreach(const phys::Boson<phys::Particle> &vb, collectionVB)
+      if(vb.overlapWithDaughters(p)) matching=true;
+    if(matching) continue;
+    nonoverapping.push_back(p);
+  }
+  return nonoverapping;
+}
+
 
 
 
@@ -69,27 +85,26 @@ void VVXAnalyzer::analyze(){
   // Taus are not stable particles therefore are inside a separate collection!
   
   // Prepare the containers
-  std::vector<phys::Particle> quarks;
-  std::vector<phys::Particle> chleptons, posleptons, negleptons; // chleptons is an UNCLEANED collection
-  std::vector<phys::Particle> neutrinos, photons;
-  std::vector<phys::Boson<phys::Particle> > ZtoChLep;
-  std::vector<phys::Boson<phys::Particle> > ZtoNeutrinos;
-  std::vector<phys::Boson<phys::Particle> > WtoLep;
-  std::vector<phys::Boson<phys::Particle> > ZtoQ;
-  std::vector<phys::Boson<phys::Particle> > WtoQ;
+  std::vector<phys::Particle> quarks, antiquarks;
+  std::vector<phys::Particle> chleptons, posleptons, negleptons, photons; // chleptons is an UNCLEANED collection
+  std::vector<phys::Particle> neutrinos, antineutrinos;
   
+  std::vector<phys::Boson<phys::Particle> > ZtoChLep;
+    
 
-  // Divide Z from W that decay leptonically
+  // Take Z from the event topology (there should not be W bosons...)
   foreach(const phys::Boson<phys::Particle> &vb, *genVBParticles)
-    if(vb.decayType() == 1)
-      if     (    vb.id()  == 23) ZtoChLep.push_back(vb);
-      else if(abs(vb.id()) == 24) WtoLep.push_back(vb);     // it should be empty here
+    if(vb.decayType() == 1 && vb.id()  == 23) ZtoChLep.push_back(vb);
   
   // categorize basic particles
   foreach(const phys::Particle gp, *genParticles){   
     if(abs(gp.id()) == 11 || abs(gp.id()) == 13)                            chleptons.push_back(gp);
-    else if(abs(gp.id()) <= 6)                                              quarks.push_back(gp);
-    else if(abs(gp.id()) == 12 || abs(gp.id()) == 14 || abs(gp.id()) == 16) neutrinos.push_back(gp);
+    else if(abs(gp.id()) <= 6)
+      if(gp.id() > 0)                                                       quarks.push_back(gp);
+      else                                                                  antiquarks.push_back(gp);
+    else if(abs(gp.id()) == 12 || abs(gp.id()) == 14 || abs(gp.id()) == 16)
+      if(gp.id() > 0)                                                       neutrinos.push_back(gp);
+      else                                                                  antineutrinos.push_back(gp);
     else if(gp.id() == 22)                                                  photons.push_back(gp);
   }
 
@@ -101,7 +116,6 @@ void VVXAnalyzer::analyze(){
     // Check if the lepton was already used to build up the VB in the genVB collection
     bool matching=false;
     foreach(const phys::Boson<phys::Particle> &vb, ZtoChLep) if(vb.overlapWithDaughters(lep)) matching=true;
-    foreach(const phys::Boson<phys::Particle> &vb, WtoLep  ) if(vb.overlapWithDaughters(lep)) matching=true;
     if(matching) continue;
 
     if(lep.id() == -11 || lep.id() == -13) posleptons.push_back(lep);
@@ -119,155 +133,37 @@ void VVXAnalyzer::analyze(){
   // Z, so any ordering fits, or there are 0 Z boson, therefore the best additional boson should come with the mass sorting.
   std::stable_sort(Zllcand.begin(), Zllcand.end(), phys::MassComparator(phys::ZMASS));
   
-  if(!Zllcand.empty() && Zllcand.at(0).mass() >= 60 && Zllcand.at(0).mass() <= 120) ZtoChLep.push_back(Zllcand.at(0));
+  if(!Zllcand.empty() && ZMassWindow()(Zllcand.at(0))) ZtoChLep.push_back(Zllcand.at(0));
   // ------------------------------------------------------------------------------------------
 
 
 
 
   
-  // ---------------------- Search for Z->nunu in the event -----------------------------------
-  ZtoNeutrinos = getZtoX(neutrinos,ZnnCondition());
-
+  // ---------------------- Search for Z->nunu in the event -----------------------------------------
+  std::vector<phys::Boson<phys::Particle> > ZtoNeutrinos = getVtoX(neutrinos, antineutrinos, 
+								   ZDaughtersIdCondition(), ZMassWindow(), phys::ZMASS);
+  // ------------------------------------------------------------------------------------------------
   
-  // std::vector<phys::Boson<phys::Particle> > Znncand;
-   
-  // foreach(const phys::Particle &n1, neutrinos) foreach(const phys::Particle &n2, neutrinos)
-  //   if(n1.id() + n2.id() == 0 && n1.id() > 0) Znncand.push_back(phys::Boson<phys::Particle>(n1,n2,23));
-  // std::stable_sort(Znncand.begin(), Znncand.end(), phys::MassComparator(phys::ZMASS));
-  // if(!Znncand.empty()){
-
-  //   phys::Boson<phys::Particle> Z0 = Znncand.at(0);
-  //   phys::Boson<phys::Particle> Z1;
-
-  //   std::stable_sort(Znncand.begin(), Znncand.end(), phys::ScalarSumPtComparator());
-    
-  //   foreach(const phys::Boson<phys::Particle> &z, Znncand){
-  //     if(!Z0.overlapWithDaughters(z.daughter(0)) && !Z0.overlapWithDaughters(z.daughter(1))){
-  // 	Z1 = z;
-  // 	break;
-  //     }
-  //   }  
-  //   if(Z0.mass() >= 60 && Z0.mass() <= 120) ZtoNeutrinos.push_back(Z0);
-  //   if(Z1.mass() >= 60 && Z1.mass() <= 120) ZtoNeutrinos.push_back(Z1);
-  // }
-
-  // foreach(const phys::Boson<phys::Particle> &zcan, Znncand){
-  //   bool match = false;
-  //   foreach(const phys::Boson<phys::Particle> &znn, ZtoNeutrinos)
-  //     if(zcan.overlapWithDaughters(znn.daughter(0)) || zcan.overlapWithDaughters(znn.daughter(1))) match = true;
-  //   if(!match && zcan.mass() >= 60 && zcan.mass() <= 120) ZtoNeutrinos.push_back(zcan);
-  // }
-  // ---------------------------------------------------------------------------------------------
-
-
-  
-  // ----------------------------- Search for W->ln in the event ---------------------------------------
-  // at most 1 is expected...
-  std::vector<phys::Boson<phys::Particle> > Wlncand;
-
-  // Clean the neutrinos collections from neutrinos already used to build up the Z
-  foreach(phys::Particle &n, neutrinos){
-    bool matching=false;
-    foreach(const phys::Boson<phys::Particle> &vb, ZtoNeutrinos)
-      if(vb.overlapWithDaughters(n)) matching=true;
-    if(matching) continue;
-
-    foreach(const phys::Particle &l, posleptons)
-      if(abs(l.id() + n.id()) == 1 && abs(n.id()) > abs(l.id())) Wlncand.push_back(phys::Boson<phys::Particle>(l,n,copysign(24,n.id())));
-    
-    foreach(const phys::Particle &l, negleptons)
-      if(abs(l.id() + n.id()) == 1 && abs(n.id()) > abs(l.id())) Wlncand.push_back(phys::Boson<phys::Particle>(l,n,copysign(24,n.id())));
-  }
-
-  std::stable_sort(Wlncand.begin(), Wlncand.end(), phys::MassComparator(phys::WMASS));
-  if(!Wlncand.empty()){
-    phys::Boson<phys::Particle> W = Wlncand.at(0);
-
-    if(W.mass() >= 50 && W.mass() <= 110) WtoLep.push_back(W);
-  }
-
-  foreach(const phys::Boson<phys::Particle> &wcan, Wlncand){
-    bool match = false;
-    foreach(const phys::Boson<phys::Particle> &wln, WtoLep)
-      if(wcan.overlapWithDaughters(wln.daughter(0)) || wcan.overlapWithDaughters(wln.daughter(1))) match = true;
-    if(!match && wcan.mass() >= 50 && wcan.mass() <= 110) WtoLep.push_back(wcan);
-  }
-  // ---------------------------------------------------------------------------------------------
-
-
-
-
-
-  // ---------------------- Search for Z->qq in the event -----------------------------------
-  std::vector<phys::Boson<phys::Particle> > Zqqcand;
-  foreach(const phys::Particle &q1, quarks) foreach(const phys::Particle &q2, quarks)
-    if(q1.id() + q2.id() == 0 && q1.id() > 0) Zqqcand.push_back(phys::Boson<phys::Particle>(q1,q2,23));
-
-  std::stable_sort(Zqqcand.begin(), Zqqcand.end(), phys::MassComparator(phys::ZMASS));
-  
-  if(!Zqqcand.empty()){
-
-    phys::Boson<phys::Particle> Z0 = Zqqcand.at(0);
-    phys::Boson<phys::Particle> Z1;
-
-    // attenzione! da controllare. Se il falvour è diverso, usare MassComparator?
-    std::stable_sort(Zqqcand.begin(), Zqqcand.end(), phys::ScalarSumPtComparator());
-    
-    foreach(const phys::Boson<phys::Particle> &z, Zqqcand){
-      if(!Z0.overlapWithDaughters(z.daughter(0)) && !Z0.overlapWithDaughters(z.daughter(1))){
-	Z1 = z;
-	break;
-      }
-    }  
-    if(Z0.mass() >= 60 && Z0.mass() <= 120) ZtoQ.push_back(Z0);
-    if(Z1.mass() >= 60 && Z1.mass() <= 120) ZtoQ.push_back(Z1);
-  }
-
-  foreach(const phys::Boson<phys::Particle> &zcan, Zqqcand){
-    bool match = false;
-    foreach(const phys::Boson<phys::Particle> &zqq, ZtoQ)
-      if(zcan.overlapWithDaughters(zqq.daughter(0)) || zcan.overlapWithDaughters(zqq.daughter(1))) match = true;
-    if(!match && zcan.mass() >= 60 && zcan.mass() <= 120) ZtoQ.push_back(zcan);
-  }
-  // ---------------------------------------------------------------------------------------------
-
-
-
-
-
+  // ---------------------- Search for Z->qq in the event -------------------------------------------
+  std::vector<phys::Boson<phys::Particle> > ZtoQ          = getVtoX(quarks, antiquarks,
+								    ZDaughtersIdCondition(), ZMassWindow(), phys::ZMASS);
+  // ------------------------------------------------------------------------------------------------
 
   // ---------------------- Search for W->qq' in the event -----------------------------------
+  std::vector<phys::Boson<phys::Particle> > WtoQ          = getVtoX(removeOverlaps(quarks,ZtoQ), removeOverlaps(antiquarks,ZtoQ),
+								    WqqDaughtersIdCondition(), WMassWindow(), phys::WMASS);
+  // ------------------------------------------------------------------------------------------------
 
-  // Clean the  quark collection from quarks already used to build up the Z
-  std::vector<phys::Particle> nonoverappingq;    
-  foreach(const phys::Particle &q, quarks){
-    bool matching=false;
-    foreach(const phys::Boson<phys::Particle> &vb, ZtoQ)
-      if(vb.overlapWithDaughters(q)) matching=true;
-    if(matching) continue;
-    nonoverappingq.push_back(q);
-  }
-  std::vector<phys::Boson<phys::Particle> > Wqqcand;    
-  foreach(const phys::Particle &q1, nonoverappingq) foreach(const phys::Particle &q2, nonoverappingq)
-    if( abs((q1.id() + q2.id()))%2 == 1 && q1.id() > 0) Wqqcand.push_back(phys::Boson<phys::Particle>(q1,q2, copysign(24,-1))); // FIXME
-    
-  
-  std::stable_sort(Wqqcand.begin(), Wqqcand.end(), phys::MassComparator(phys::WMASS));
-  
-  if(!Wqqcand.empty()){
+  // ----------------------------- Search for W->ln in the event ---------------------------------------
+  // at most 1 is expected...
+  std::vector<phys::Boson<phys::Particle> > WtoLep        = getVtoX(posleptons, removeOverlaps(neutrinos,ZtoNeutrinos),
+								    WlnDaughtersIdCondition(), WMassWindow(), phys::WMASS);
+  std::vector<phys::Boson<phys::Particle> > WmtoLep       = getVtoX(negleptons, removeOverlaps(antineutrinos,ZtoNeutrinos),
+								    WlnDaughtersIdCondition(), WMassWindow(), phys::WMASS);
+  WtoLep.insert(WtoLep.end(), WmtoLep.begin(), WmtoLep.end());
 
-    phys::Boson<phys::Particle> W = Wqqcand.at(0);
-    if(W.mass() >= 50 && W.mass() <= 110) WtoQ.push_back(W);
-  }
 
-  foreach(const phys::Boson<phys::Particle> &wcan, Wqqcand){
-    bool match = false;
-    foreach(const phys::Boson<phys::Particle> &wqq, WtoQ)
-      if(wcan.overlapWithDaughters(wqq.daughter(0)) || wcan.overlapWithDaughters(wqq.daughter(1))) match = true;
-    if(!match && wcan.mass() >= 50 && wcan.mass() <= 110) WtoQ.push_back(wcan);
-  }
-  // ---------------------------------------------------------------------------------------------
 
   
   theHistograms.fill("nZtoChLep", "Number of Z->ll per event", 7,0,7, ZtoChLep.size());
@@ -279,9 +175,7 @@ void VVXAnalyzer::analyze(){
   int nVBs = ZtoChLep.size() + ZtoNeutrinos.size() + WtoLep.size() + ZtoQ.size() + WtoQ.size();
   theHistograms.fill("nVBs", "Number of VB per event", 7,0,7, nVBs);
   
-  //theHistograms.fill("nZnncand", "Number of Z->nn per event", 7,0,7, Znncand.size());
   theHistograms.fill("nneutrinos", "Number of neutrinos per event", 7,0,7, neutrinos.size());
-  // // theHistograms.fill("nlepVB", "Number of lepVB per event", 7,0,7, lepVBs.size());
   theHistograms.fill("nquarks", "Number of quarks per event", 7,0,7, quarks.size());
   //   //  
  

@@ -58,32 +58,68 @@ public:
 
   }
 
-  template<class T> 
-  std::vector<phys::Boson<phys::Particle> > getZtoX(const std::vector<phys::Particle> & collectionX, T condition);
+  std::vector<phys::Particle> removeOverlaps(const std::vector<phys::Particle> &collectionX, const std::vector<phys::Boson<phys::Particle> >& collectionVB);
 
   
-  class ZnnCondition { 
+  template<class T1, class T2> 
+  std::vector<phys::Boson<phys::Particle> > getVtoX(const std::vector<phys::Particle> & collectionX1,
+						    const std::vector<phys::Particle> & collectionX2,
+						    T1 idcondition, T2 masswindow, const double& referenceMass);
+
+  
+  class ZDaughtersIdCondition { 
   public: 
     // Comparator function 
     bool operator()(phys::Particle a, 
                     phys::Particle b){ 
 
-      if(a.id() + b.id() == 0 && a.id() > 0) return true; 
+      if(a.id() + b.id() == 0) return true; 
       else return false; 
     } 
   }; 
 
-  class ZqqCondition { 
+  class  WqqDaughtersIdCondition{ 
   public: 
     // Comparator function 
     bool operator()(phys::Particle a, 
                     phys::Particle b){ 
 
-      if(a.id() + b.id() == 0 && a.id() > 0) return true; 
+      if(abs((a.id() + b.id()))%2 == 1) return true; 
+      else return false; 
+    } 
+  };
+
+  class  WlnDaughtersIdCondition{ 
+  public: 
+    // Comparator function 
+    bool operator()(phys::Particle l, 
+                    phys::Particle n){ 
+
+      if(abs(l.id() + n.id()) == 1 && abs(n.id()) > abs(l.id())) return true; 
+      else return false; 
+    } 
+  };
+
+  
+ class ZMassWindow { 
+  public: 
+    // Comparator function 
+    bool operator()(phys::Particle a){ 
+
+      if(a.mass() <= 120 && a.mass() >= 60) return true; 
       else return false; 
     } 
   }; 
 
+  class WMassWindow { 
+  public: 
+    // Comparator function 
+    bool operator()(phys::Particle a){ 
+
+      if(a.mass() <= 110 && a.mass() >= 50) return true; 
+      else return false; 
+    } 
+  }; 
 
   
 
