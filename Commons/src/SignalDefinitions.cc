@@ -170,10 +170,11 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
 
   phys::DiBoson<phys::Particle,phys::Particle> ZZ(Z0,Z1);
 
+  // There is an error here. We shall check the leptons that make the bosons, not all those in the event!
   if(vv::inLeptonAcceptance(concatenate(theGenlp,theGenlm),5,2.5,5,2.5))  topology.set(4);   // Fiducial acceptance
   if(vv::inLeptonAcceptance(concatenate(theGenlp,theGenlm),7,2.5,5,2.4))  topology.set(5);   // Detector acceptance
   if(inTriggerPlateau(concatenate(theGenlp,theGenlm)))                    topology.set(6);   // is on trigger plateau    
-  if( ZZ.mass() > 100)                                                    topology.set(7);   // Remove additional VB decaying hadronically
+  if( ZZ.mass() > 100)                                                    topology.set(7);   
 
 
   //int Z0DaugID = Z0.daughter(0).id();  
