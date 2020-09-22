@@ -33,6 +33,7 @@
 #include "VVXAnalysis/Commons/interface/RegionTypes.h"
 //#include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
+#include "VVXAnalysis/Commons/interface/GenVBHelper.h"
 #include <ZZAnalysis/AnalysisStep/interface/bitops.h>
 
 
@@ -212,6 +213,10 @@ public:
   // Central jets (not in the tree)
   std::vector<phys::Particle> *centralGenJets;
 
+  // Helper for gen VB analysis
+  GenVBHelper genVBHelper_;
+
+  
 };
 
 #endif

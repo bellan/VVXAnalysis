@@ -181,6 +181,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
       if(fabs(jet.eta()) < 2.4) centralGenJets->push_back(jet);
     }
   
+  genVBHelper_.analyze(*genParticles, *genVBParticles);
 
   // Some selection on jets
   jetsAK8->clear();
