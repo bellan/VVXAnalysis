@@ -138,33 +138,33 @@ void GenVBHelper::analyze(const std::vector<phys::Particle>& genParticles, const
   if(!Zllcand.empty() && ZMassWindow()(Zllcand.at(0))) ZtoChLep_.push_back(Zllcand.at(0));
   // ------------------------------------------------------------------------------------------
 
-
-
-
   
   // ---------------------- Search for Z->nunu in the event -----------------------------------------
   ZtoNeutrinos_ = getVtoX(neutrinos, antineutrinos, 
 			  ZDaughtersIdCondition(), ZMassWindow(), phys::ZMASS);
   // ------------------------------------------------------------------------------------------------
-  
-  // ---------------------- Search for Z->qq in the event -------------------------------------------
-  ZtoQ_         = getVtoX(quarks, antiquarks,
-			  ZDaughtersIdCondition(), ZMassWindow(), phys::ZMASS);
-  // ------------------------------------------------------------------------------------------------
 
-  // ---------------------- Search for W->qq' in the event -----------------------------------
-  WtoQ_         = getVtoX(removeOverlaps(quarks,ZtoQ_), removeOverlaps(antiquarks,ZtoQ_),
-			  WqqDaughtersIdCondition(), WMassWindow(), phys::WMASS);
-  // ------------------------------------------------------------------------------------------------
-  
-  // ----------------------------- Search for W->ln in the event ---------------------------------------
+
+  // ----------------------------- Search for W->ln in the event ------------------------------------
   // at most 1 is expected...
   WtoLep_        = getVtoX(posleptons, removeOverlaps(neutrinos,ZtoNeutrinos_),
 			   WlnDaughtersIdCondition(), WMassWindow(), phys::WMASS);
   std::vector<phys::Boson<phys::Particle> > WmtoLep       = getVtoX(negleptons, removeOverlaps(antineutrinos,ZtoNeutrinos_),
 								    WlnDaughtersIdCondition(), WMassWindow(), phys::WMASS);
   WtoLep_.insert(WtoLep_.end(), WmtoLep.begin(), WmtoLep.end());
+  // ------------------------------------------------------------------------------------------------
 
+  
+  // ---------------------- Search for Z->qq in the event -------------------------------------------
+  ZtoQ_         = getVtoX(quarks, antiquarks,
+			  ZDaughtersIdCondition(), ZMassWindow(), phys::ZMASS);
+  // ------------------------------------------------------------------------------------------------
+
+  
+  // ---------------------- Search for W->qq' in the event ------------------------------------------
+  WtoQ_         = getVtoX(removeOverlaps(quarks,ZtoQ_), removeOverlaps(antiquarks,ZtoQ_),
+			  WqqDaughtersIdCondition(), WMassWindow(), phys::WMASS);
+  // ------------------------------------------------------------------------------------------------  
 }
 
 
