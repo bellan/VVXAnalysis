@@ -47,7 +47,10 @@ Boson<P>* VZZAnalyzer::closestPair(vector<P>* cands, const R& reference){
 			Boson<P>* res = new Boson<P>( cands->at(0), cands->at(1) );
 			if(physmath::deltaR( *res, reference ) < 0.4 )
 				return res;
-			else return nullptr;
+			else{
+				delete res;
+				return nullptr;
+			}
 		}
 		else{
 			//Find the pair with the closest p4
