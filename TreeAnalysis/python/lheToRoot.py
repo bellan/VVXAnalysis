@@ -4,7 +4,7 @@ import commands, ROOT, sys
 from Colours import *
 from ROOT import gROOT, TTree, gSystem
 
-gROOT.ProcessLine(".L /afs/cern.ch/work/b/bellan/lxcms131/2/CMSSW_5_3_18/src/VVXAnalysis/DataFormats/src/loader.C++")
+gROOT.ProcessLine(".L loader.C")
 
 from ROOT import phys
 
@@ -29,6 +29,7 @@ def convert(input_file_name):
     for line in input_file:
 
         if line.startswith("#"): continue
+        
 
         if in_ev_1 == 1:
             in_ev_1 = 0
@@ -48,6 +49,8 @@ def convert(input_file_name):
             genParticlesIn.clear()
             in_ev = 0
             continue
+        
+        if line.startswith("<"): continue    
     
         if in_ev == 1:
             gp= phys.Particle(LorentzVector(float(line.split()[6]), 

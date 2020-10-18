@@ -17,6 +17,7 @@ Int_t VZZaQGCAnalyzer::cut() {
   return 1;
 }
 void VZZaQGCAnalyzer::analyze(){
+  //assegnazione e proprietà bosoni generati
    TLorentzVector a;
    phys::Boson<phys::Particle> z1,z2;
    foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
@@ -63,7 +64,8 @@ void VZZaQGCAnalyzer::analyze(){
 	    theHistograms.fill("E leptone minore Z2 buono","Energia leptone meno energetico Z2",10,0,300,std::min(z2.daughter(0).e(),z2.daughter(1).e()));
 	    double angoloZZ1=z1.p4().Angle(z2.p4().Vect());
 	    theHistograms.fill("angolo bosoni generati","Angolo bosoni generati",35,0,3.5,angoloZZ1);
-     
+
+	    //studio proprietà bosoni ricostruiti	    
 	    if(ZZ->first().mass()!=0&&ZZ->passFullSelection()){
    theHistograms.fill("massa Z1 ricostruiti","Massa Z1 ricostruiti",180,50,130,ZZ->first().mass());
    theHistograms.fill("massa Z2 ricostruiti","Massa Z2 ricostruiti",180,50,130,ZZ->second().mass());
@@ -91,7 +93,7 @@ void VZZaQGCAnalyzer::analyze(){
    theHistograms.fill("E leptone minore ricostruito","Energia leptone meno energetico ricostruito",200,0,800,std::min(ZZ->first().daughter(0).e(),ZZ->first().daughter(1).e()));
    theHistograms.fill("E leptone maggiore ricostruito","Energia leptone piu' energetico ricostruito",200,0,2000,std::max(ZZ->second().daughter(0).e(),ZZ->second().daughter(1).e()));
    theHistograms.fill("E leptone minore ricostruito","Energia leptone meno energetico ricostruito",200,0,800,std::min(ZZ->second().daughter(0).e(),ZZ->second().daughter(1).e()));
-   
+   //accoppiamento bosoni generati/ricostruiti
    if(topology.test(0)){
      double enlep1,enlep2,enlep3,enlep4;
      phys::Boson<phys::Particle> z3,z4;
@@ -139,6 +141,7 @@ void VZZaQGCAnalyzer::analyze(){
        theHistograms.fill("E leptone maggiore Z2 buono ricostruito","Energia leptone piu' energetico Z2",10,0,1000,enlep3);
        theHistograms.fill("E leptone minore Z2 buono ricostruito","Energia leptone meno energetico Z2",10,0,300,enlep4); }
    }}}
+   //studio bosoni adronici
    int troppi;
    double dRq,dRq1,dRq2;
    TLorentzVector pquark;

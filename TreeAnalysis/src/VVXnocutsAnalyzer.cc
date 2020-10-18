@@ -65,8 +65,8 @@ void VVXnocutsAnalyzer::analyze(){
       theHistograms.fill("massa ZZ","Massa ZZ",100,150,1000,massaWZ2);}
     if(WZ.id()==24){
       theHistograms.fill("massa WZ","Massa WZ",100,150,1000,massaWZ1);
-      theHistograms.fill("massa WZ","Massa WZ",100,150,1000,massaWZ2);
-      theHistograms.fill("massa tribosoni","Massa tribosoni",100,200,2500,massaWZZ);}
+      theHistograms.fill("massa WZ","Massa WZ",100,150,1000,massaWZ2);}
+    theHistograms.fill("massa tribosoni","Massa tribosoni",100,200,2500,massaWZZ);
     theHistograms.fill("massa bosoni a coppie","Massa bosoni a coppie",100,150,1000,massaWZ1);
     theHistograms.fill("massa bosoni a coppie","Massa bosoni a coppie",100,150,1000,massaWZ2);
     theHistograms.fill("massa bosoni a coppie","Massa bosoni a coppie",100,150,1000,massaZ1Z2);
