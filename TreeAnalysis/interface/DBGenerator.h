@@ -40,16 +40,21 @@ class DBGenerator: public VZZAnalyzer, RegistrableAnalysis<DBGenerator>{
   
 		virtual void end(TFile &);
 		
-		// ----- ----- Databases ----- -----
+		// ----- ----- Write to databases ----- -----
 		void mainEvtRec(int sigRecType, const phys::Particle* recV);
 		
 		void writeTagger(std::ofstream& outFile4, std::ofstream& outFile8);  // We want to choose the best AK8 (pair of AK4), using info from the original quarks
-		void writeInfoAK4(const phys::Boson<phys::Jet> bestAK4, std::ofstream& outFile);
-		void writeInfoAK8(const phys::Jet bestAK8, std::ofstream& outFile);
+		void writeInfoAK4(const phys::Boson<phys::Jet>* bestAK4, std::ofstream& outFile);
+		void writeInfoAK8(const phys::Jet* bestAK8, std::ofstream& outFile);
 		
 		// ----- ----- Helpers ----- -----
-		void printZeroes(std::ofstream& outFile, size_t nzeros);
-		void printVars(std::ofstream& outFile, size_t n, ...);
+		static void printZeroes(std::ofstream& outFile, size_t nzeros);
+		static void printVars(std::ofstream& outFile, size_t n, ...);
+		static void printVars(std::ofstream& outFile, size_t n, const double* buf);
+		static void printVars(std::ofstream& outFile, const std::vector<double>& vect);
+		
+		// This will be replaced by VZZAnalyzer::getAK4Features() once a new predictor is trained
+		//std::vector<double> getAK4FeaturesTEMP(const phys::Boson<phys::Jet>& jj);
 		
 	private:
 		static const char SEP_CHAR = ',';	//separatory char used in the .csv
