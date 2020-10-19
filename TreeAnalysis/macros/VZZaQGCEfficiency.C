@@ -12,7 +12,7 @@ using namespace std;
 
 void VZZaQGCEfficiency(){
 
-  TFile *result = TFile::Open("/home/giovanni/Desktop/tesi/VVXAnalysis/TreeAnalysis/results/2018/VZZaQGCAnalyzer_MC/WZZ.root");
+  TFile *result = TFile::Open("./results/2018/VZZaQGCAnalyzer_MC/WZZ.root");
   TCanvas *c1 = new TCanvas("c1","canvas",0,0,1000,1000);
   TCanvas *c2 = new TCanvas("c2","canvas",0,0,1000,1000);
   TCanvas *c3 = new TCanvas("c3","canvas",0,0,1000,1000);
