@@ -154,54 +154,58 @@ void EventAnalyzer::Init(TTree *tree)
 Int_t EventAnalyzer::GetEntry(Long64_t entry){
   // Read contents of entry.
   if (!theTree) return 0;
-  
-  int e =  theTree->GetEntry(entry);
-  
-  stable_sort(muons->begin(),       muons->end(),       phys::PtComparator());
-  stable_sort(electrons->begin(),   electrons->end(),   phys::PtComparator());
-  stable_sort(pjets->begin(),       pjets->end(),       phys::PtComparator());
-  stable_sort(pgenJets->begin(),    pgenJets->end(),    phys::PtComparator());
-  stable_sort(pjetsAK8->begin(),    pjetsAK8->end(),    phys::PtComparator());
-  stable_sort(pgenJetsAK8->begin(), pgenJetsAK8->end(), phys::PtComparator());
 
-  
+  int e =  theTree->GetEntry(entry);
+
+  if(muons)       stable_sort(muons->begin(),       muons->end(),       phys::PtComparator());
+  if(electrons)   stable_sort(electrons->begin(),   electrons->end(),   phys::PtComparator());
+  if(pjets)       stable_sort(pjets->begin(),       pjets->end(),       phys::PtComparator());
+  if(pgenJets)    stable_sort(pgenJets->begin(),    pgenJets->end(),    phys::PtComparator());
+  if(pjetsAK8)    stable_sort(pjetsAK8->begin(),    pjetsAK8->end(),    phys::PtComparator());
+  if(pgenJetsAK8) stable_sort(pgenJetsAK8->begin(), pgenJetsAK8->end(), phys::PtComparator());
+
   // Some selection on jets
   jets->clear(); centralJets->clear(); 
-  foreach(const phys::Jet &jet, *pjets){
-    if(jet.pt() > 30){
-      if(fabs(jet.eta()) < 4.7) jets->push_back(jet);
-      if(fabs(jet.eta()) < 2.4) centralJets->push_back(jet);
-    }
-  }
-  
+  if(pjets)
+    foreach(const phys::Jet &jet, *pjets)
+      if(jet.pt() > 30){
+	if(fabs(jet.eta()) < 4.7) jets->push_back(jet);
+	if(fabs(jet.eta()) < 2.4) centralJets->push_back(jet);
+      }
+      
   genJets->clear(); centralGenJets->clear();
-  foreach(const phys::Particle &jet, *pgenJets)
-    if(jet.pt() > 30){
-      if(fabs(jet.eta()) < 4.7) genJets->push_back(jet);
-      if(fabs(jet.eta()) < 2.4) centralGenJets->push_back(jet);
-    }
+  if(pgenJets)
+    foreach(const phys::Particle &jet, *pgenJets)
+      if(jet.pt() > 30){
+	if(fabs(jet.eta()) < 4.7) genJets->push_back(jet);
+	if(fabs(jet.eta()) < 2.4) centralGenJets->push_back(jet);
+      }
   
   genVBHelper_.analyze(*genParticles, *genVBParticles);
 
   // Some selection on jets
   jetsAK8->clear();
-  foreach(const phys::Jet &jet, *pjetsAK8)
-    if(jet.pt() > 30 && fabs(jet.eta()) < 4.7) jetsAK8->push_back(jet);
+  if(pjetsAK8)
+    foreach(const phys::Jet &jet, *pjetsAK8)
+      if(jet.pt() > 30 && fabs(jet.eta()) < 4.7) jetsAK8->push_back(jet);
    
   genJetsAK8->clear();
-  foreach(const phys::Particle &jet, *pgenJetsAK8)
-    if(jet.pt() > 30 && fabs(jet.eta()) < 4.7) genJetsAK8->push_back(jet);
+  if(pgenJetsAK8)
+    foreach(const phys::Particle &jet, *pgenJetsAK8)
+      if(jet.pt() > 30 && fabs(jet.eta()) < 4.7) genJetsAK8->push_back(jet);
   
   
   Vhad->clear();
-  foreach(const phys::Boson<phys::Jet> v, *VhadCand)
-    if(select(v)) Vhad->push_back(v);
-  
+  if(VhadCand)
+    foreach(const phys::Boson<phys::Jet> v, *VhadCand)
+      if(select(v)) Vhad->push_back(v);
+   
   stable_sort(Vhad->begin(), Vhad->end(), phys::PtComparator());
   
   ZL->clear();
-  foreach(const ZLCompositeCandidate& zl, *ZLCand)
-    if( zl.second.sip() < 4) ZL->push_back(zl); //To be moved in cfg
+  if(ZLCand)
+    foreach(const ZLCompositeCandidate& zl, *ZLCand)
+      if( zl.second.sip() < 4) ZL->push_back(zl); //To be moved in cfg
   if(region_ == phys::MC){
     if(!ZZ->isValid()){
       if(ZZ) delete ZZ;
