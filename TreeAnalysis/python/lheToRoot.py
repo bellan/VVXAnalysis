@@ -4,7 +4,7 @@ import commands, ROOT, sys
 from Colours import *
 from ROOT import gROOT, TTree, gSystem
 
-gROOT.ProcessLine(".L ../DataFormats/src/loader.C++")
+gROOT.ProcessLine(".L ../DataFormats/src/loader.C")
 
 from ROOT import phys
 
@@ -47,6 +47,9 @@ def convert(input_file_name):
             genParticles.clear()
             genParticlesIn.clear()
             in_ev = 0
+            continue
+            
+        if line.startswith("<"):
             continue
     
         if in_ev == 1:
