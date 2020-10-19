@@ -21,9 +21,21 @@ def load_object(path):
 	
 def predict(ADA, list_data):
 	#print("Predicting. type(list_data):", type(list_data))
-	res = float(ADA.predict_proba([list_data])[:, 1][0])
+	res = ADA.predict_proba([list_data])[:, 1][0]
+	#print("type(res) =", type(res))
+	#res_float = float(ADA.predict_proba([list_data])[:, 1][0])
+	#print("type(res_float) =", type(res_float))
+	#print("Returning a %s  (value = %.4f)" % (type(res), res))
+	return temp;
+	
+def predict_fast(ADA, list_data):
+	print("Predicting. type(list_data):", type(list_data))
+	#print("Python: list_data", list_data)
+	res = ADA.predict_proba(list_data)
+	print("Returning a %s" % (type(res)))
 	#print("Returning a %s  (value = %.4f)" % (type(res), res))
 	return res;
+
 
 def test_ADA(ADA):
 	print("is ADA instance of AdaBoostClassifier?", isinstance(ADA, AdaBoostClassifier))

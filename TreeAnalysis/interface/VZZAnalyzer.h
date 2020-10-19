@@ -39,13 +39,14 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 			if(AK4pairs_)  delete AK4pairs_;
 			if(AllGenVBjj_)delete AllGenVBjj_;
 			if(AK4GenRec_) delete AK4GenRec_;
-			if(genZZ)      delete genZZ;
-			if(qq_)        delete qq_;
+			if(genZZ_)     delete genZZ_;
+			//if(qq_)        delete qq_;
 			if(sigVB_)     delete sigVB_;
 			
 			Py_XDECREF(AK4_classifier_);  // Free memory in event of crash (end() is not called)
+			Py_XDECREF(AK8_classifier_);
 			Py_XDECREF(helper_module_);  // XDECREF: checks if the reference count is >=0
-			Py_FinalizeEx();  // Close Python interpreter
+			//Py_FinalizeEx();  // Close Python interpreter
 		}
   	
 		virtual void begin();
@@ -60,9 +61,17 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		template<class P = phys::Jet>
 		const P* findBestVFromSing(std::vector<P>*, VCandType&);
 		//The candidate is NOT copied, and the pointer returned points to the original
+		template<class P = phys::Jet> const P* findBestVFromSing(std::vector<P>* v){
+			VCandType temp = VCandType::None;
+			return findBestVFromSing(v, temp);
+		}
 		template <class J = phys::Jet>
 		phys::Boson<J>* findBestVFromPair(const std::vector<J>*, VCandType&);
 		//Searches among the Jets in the vector and finds the pair candidate with mass closest to W or Z (modifying "candType"). Returns the candidate only if it fits the (W/Z)BosonDefinition
+		template <class J = phys::Jet> phys::Boson<J>* findBestVFromPair(const std::vector<J>* v){
+			VCandType temp = VCandType::None;
+			return findBestVFromPair(v, temp);
+		}
 		template <class P = phys::Particle>
 		const P* findBestVPoint(std::vector<const P*>& js, VCandType& thisCandType); //Uses a vector<P*> instead of a vector<P>
 		
@@ -99,8 +108,9 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		static inline double minDM(const double& mass, const double& r1 = phys::ZMASS, const double& r2 = phys::WMASS) { return std::min( fabs(mass-r1), fabs(mass-r2) ); }
 		
 		// ----- ----- Predictions from scikit classifiers ----- ----- 
-		double getPyPrediction(const double*, const size_t, const PyObject*) const; // uses module_helper
-		static void getAK4features(const phys::Boson<phys::Jet>&, double*);
+		double getPyPrediction(const std::vector<double>&, const PyObject*) const; // uses module_helper
+		static std::vector<double> getAK4features(const phys::Boson<phys::Jet>&);
+		static std::vector<double> getAK8features(const phys::Jet&);
 		
 		// ----- ----- Event-specific variables calculation ----- ----- 
 		void fillGenHadVBs(); //old: Fills the vector only if it is empty
@@ -201,6 +211,7 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		PyObject* helper_module_;  // Python mini-module to unpickle AK4_classifier_ and obtain predictions from it
 		PyObject* AK4_classifier_;  // A scikit-learn classifier, trained on pairs of AK4 to distinguish from W/Z induced jets and background QCD processes. Must implement the method "predict_proba(<2D matrix>)"
+		PyObject* AK8_classifier_;
 		
 		//phys::DiBoson<phys::Particle, phys::Particle>* ZZ_gen = nullptr;
 		std::vector<phys::Boson<phys::Particle>>* genHadVBs_ = nullptr;  // genVBParticles with hadronic daugthers
@@ -208,8 +219,8 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		std::vector<phys::Boson<phys::Jet>>* AK4pairs_ = nullptr;  // All the pairs of all the reconstructed AK4 jets
 		std::vector<std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Jet>>>* AK4GenRec_ = nullptr;  // Pairs of gen VB-->jj succesfully reconstructed by the detector
 		
-		phys::DiBoson<phys::Particle, phys::Particle>* genZZ; //Always != nullptr from begin() to end(). Test isValid() to see if there's really such particle in this event
-		phys::Boson<phys::Particle>* qq_;
+		phys::DiBoson<phys::Particle, phys::Particle>* genZZ_; //Always != nullptr from begin() to end().
+		phys::Boson<phys::Particle> qq_;
 		
 		// ----- ----- Signal definition ----- ----- 
 		int sigType_;            // 0-->no  |     1-->AK4     |  2-->AK8
