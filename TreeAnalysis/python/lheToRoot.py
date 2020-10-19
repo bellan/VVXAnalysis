@@ -4,7 +4,7 @@ import commands, ROOT, sys
 from Colours import *
 from ROOT import gROOT, TTree, gSystem
 
-gROOT.ProcessLine(".L /afs/cern.ch/work/b/bellan/lxcms131/2/CMSSW_5_3_18/src/VVXAnalysis/DataFormats/src/loader.C++")
+gROOT.ProcessLine(".L ../DataFormats/src/loader.C++")
 
 from ROOT import phys
 
@@ -18,7 +18,7 @@ def convert(input_file_name):
     genParticles   = ParticleVector()
     genParticlesIn = ParticleVector()
     
-    output_tree = TTree("Cypress"      , "Cypress"     )
+    output_tree = TTree("ElderTree"      , "ElderTree"     )
     output_tree.Branch("genParticles"  , genParticles  )
     output_tree.Branch("genParticlesIn", genParticlesIn)
 
@@ -70,6 +70,8 @@ def convert(input_file_name):
     output_file_name = input_file_name.replace(".lhe",".root")   
     
     f = ROOT.TFile(output_file_name,"RECREATE")
+    f.mkdir("treePlanter")
+    f.cd("treePlanter")
     output_tree.Write()
     f.Close()
     print "Output file is: ", Green(output_file_name)
