@@ -13,33 +13,32 @@ using namespace std;
 void VZZaQGCEfficiency(){
 
   TFile *result = TFile::Open("./results/2018/VZZaQGCAnalyzer_MC/WZZ.root");
-  TCanvas *c1 = new TCanvas("c1","canvas",0,0,1000,1000);
-  TCanvas *c2 = new TCanvas("c2","canvas",0,0,1000,1000);
-  TCanvas *c3 = new TCanvas("c3","canvas",0,0,1000,1000);
-  TCanvas *c4 = new TCanvas("c4","canvas",0,0,1000,1000);
-  TCanvas *c5 = new TCanvas("c5","canvas",0,0,1000,1000);
-  TCanvas *c6 = new TCanvas("c6","canvas",0,0,1000,1000);
-  TCanvas *c7 = new TCanvas("c7","canvas",0,0,1000,1000);
-  TCanvas *c8 = new TCanvas("c8","canvas",0,0,1000,1000);
-  TCanvas *c9 = new TCanvas("c9","canvas",0,0,1000,1000);
-  TCanvas *c10 = new TCanvas("c10","canvas",0,0,1000,1000);
-  TCanvas *c11 = new TCanvas("c11","canvas",0,0,1000,1000);
-  TCanvas *c12 = new TCanvas("c12","canvas",0,0,1000,1000);
-  TCanvas *c13 = new TCanvas("c13","canvas",0,0,1000,1000);
-  TCanvas *c14 = new TCanvas("c14","canvas",0,0,1000,1000);
-  TCanvas *c15 = new TCanvas("c15","canvas",0,0,1000,1000);
-  TCanvas *c16 = new TCanvas("c16","canvas",0,0,1000,1000);
-  TCanvas *c17 = new TCanvas("c17","canvas",0,0,1000,1000);
-  TCanvas *c18 = new TCanvas("c18","canvas",0,0,1000,1000);
-  TCanvas *c19 = new TCanvas("c19","canvas",0,0,1000,1000);
-  TCanvas *c20 = new TCanvas("c20","canvas",0,0,1000,1000);
-  TCanvas *c21 = new TCanvas("c21","canvas",0,0,1000,1000);
-  TCanvas *c22 = new TCanvas("c22","canvas",0,0,1000,1000);
-  TCanvas *c23 = new TCanvas("c23","canvas",0,0,1000,1000);
-  TCanvas *c24 = new TCanvas("c24","canvas",0,0,1000,1000);
+  TCanvas *c1 = new TCanvas("c1","canvas",0,0,1000,500);
+  c1->Divide(2,1);
+  TCanvas *c2 = new TCanvas("c2","canvas",0,0,1000,500);
+  c2->Divide(2,1);
+  TCanvas *c3 = new TCanvas("c3","canvas",0,0,1000,500);
+  c3->Divide(2,1);
+  TCanvas *c4 = new TCanvas("c4","canvas",0,0,1000,500);
+  c4->Divide(2,1);
+  TCanvas *c5 = new TCanvas("c5","canvas",0,0,1000,500);
+  c5->Divide(2,1);
+  TCanvas *c6 = new TCanvas("c6","canvas",0,0,1000,500);
+  c6->Divide(2,1);
+  TCanvas *c7 = new TCanvas("c7","canvas",0,0,1000,500);
+  c7->Divide(2,1);
+  TCanvas *c8 = new TCanvas("c8","canvas",0,0,1000,500);
+  c8->Divide(2,1);
+  TCanvas *c9 = new TCanvas("c9","canvas",0,0,1000,500);
+  c9->Divide(2,1);
+  TCanvas *c10 = new TCanvas("c10","canvas",0,0,1000,500);
+  c10->Divide(2,1);
+  TCanvas *c11 = new TCanvas("c11","canvas",0,0,1000,500);
+  c11->Divide(2,1);
+  TCanvas *c12 = new TCanvas("c12","canvas",0,0,1000,500);
+  c12->Divide(2,1);
   
-  
-  c1->cd(); 
+  TVirtualPad *pd1=c1->cd(2); 
   TH1F *mass1gen = (TH1F*)result->Get("massa Z1 generati bene");
   TH1F *mass1ric = (TH1F*)result->Get("massa Z1 ricostruiti bene");
   mass1ric->SetTitle("efficienza in funzione della massa di Z1");
@@ -51,7 +50,7 @@ void VZZaQGCEfficiency(){
   mass1efficiency->SetLineColor(1);
   mass1efficiency->SetLineWidth(2);
   mass1efficiency->Draw();
-  c2->cd();
+  TVirtualPad *pd2=c1->cd(1);
   mass1gen->SetTitle("massa Z1 generati e ricostruiti");
   mass1gen->GetYaxis()->SetRangeUser(0,1000);
   mass1gen->GetXaxis()->SetTitle("massa (GeV/c^2)");
@@ -61,8 +60,12 @@ void VZZaQGCEfficiency(){
   mass1ric->SetLineWidth(2);
   mass1gen->Draw();
   mass1ric->Draw("same");
+  TLegend *legend1= new TLegend(0.7,0.77,0.98,0.94,"");
+  legend1->AddEntry(mass1gen,"bosoni generati","l");
+  legend1->AddEntry(mass1ric,"bosoni ricostruiti","l");
+  legend1->Draw();
 
-  c3->cd(); 
+  TVirtualPad *pd3=c2->cd(2);  
   TH1F *mass2gen = (TH1F*)result->Get("massa Z2 generati bene");
   TH1F *mass2ric = (TH1F*)result->Get("massa Z2 ricostruiti bene");
   mass2ric->SetTitle("efficienza in funzione della massa di Z2");
@@ -74,7 +77,7 @@ void VZZaQGCEfficiency(){
   mass2efficiency->SetLineColor(1);
   mass2efficiency->SetLineWidth(2);
   mass2efficiency->Draw();
-  c4->cd();
+  TVirtualPad *pd4=c2->cd(1); 
   mass2gen->SetTitle("massa Z2 generati e ricostruiti");
   mass2gen->GetYaxis()->SetRangeUser(0,1000);
   mass2gen->GetXaxis()->SetTitle("massa (GeV/c^2)");
@@ -84,8 +87,12 @@ void VZZaQGCEfficiency(){
   mass2ric->SetLineWidth(2);
   mass2gen->Draw();
   mass2ric->Draw("same");
+  TLegend *legend2= new TLegend(0.7,0.77,0.98,0.94,"");
+  legend2->AddEntry(mass1gen,"bosoni generati","l");
+  legend2->AddEntry(mass1ric,"bosoni ricostruiti","l");
+  legend2->Draw();
 
-  c5->cd();
+  TVirtualPad *pd5=c3->cd(2); 
   TH1F *pt1gen = (TH1F*)result->Get("pt Z1 generati bene");
   TH1F *pt1ric = (TH1F*)result->Get("pt Z1 ricostruiti bene");
   pt1ric->SetTitle("efficienza in funzione della pt di Z1");
@@ -97,7 +104,7 @@ void VZZaQGCEfficiency(){
   pt1efficiency->SetLineColor(1);
   pt1efficiency->SetLineWidth(2);
   pt1efficiency->Draw();
-  c6->cd();
+  TVirtualPad *pd6=c3->cd(1); 
   pt1gen->SetTitle("pt Z1 generati e ricostruiti");
   pt1gen->GetYaxis()->SetRangeUser(0,600);
   pt1gen->GetXaxis()->SetTitle("pt (GeV/c)");
@@ -107,8 +114,12 @@ void VZZaQGCEfficiency(){
   pt1ric->SetLineWidth(2);
   pt1gen->Draw();
   pt1ric->Draw("same");
+  TLegend *legend3= new TLegend(0.7,0.77,0.98,0.94,"");
+  legend3->AddEntry(pt1gen,"bosoni generati","l");
+  legend3->AddEntry(pt1ric,"bosoni ricostruiti","l");
+  legend3->Draw();
 
-  c7->cd();
+  TVirtualPad *pd7=c4->cd(2); 
   TH1F *pt2gen = (TH1F*)result->Get("pt Z2 generati bene");
   TH1F *pt2ric = (TH1F*)result->Get("pt Z2 ricostruiti bene");
   pt2ric->SetTitle("efficienza in funzione della pt di Z2");
@@ -120,7 +131,7 @@ void VZZaQGCEfficiency(){
   pt2efficiency->SetLineColor(1);
   pt2efficiency->SetLineWidth(2);
   pt2efficiency->Draw();
-  c8->cd();
+  TVirtualPad *pd8=c4->cd(1); 
   pt2gen->SetTitle("pt Z2 generati e ricostruiti");
   pt2gen->GetYaxis()->SetRangeUser(0,600);
   pt2gen->GetXaxis()->SetTitle("pt (GeV/c)");
@@ -130,8 +141,12 @@ void VZZaQGCEfficiency(){
   pt2ric->SetLineWidth(2);
   pt2gen->Draw();
   pt2ric->Draw("same");
+  TLegend *legend4= new TLegend(0.7,0.77,0.98,0.94,"");
+  legend4->AddEntry(pt2gen,"bosoni generati","l");
+  legend4->AddEntry(pt2ric,"bosoni ricostruiti","l");
+  legend4->Draw();
 
-  c9->cd();
+  TVirtualPad *pd9=c5->cd(2); 
   TH1F *energy1gen = (TH1F*)result->Get("energia Z1 generati bene");
   TH1F *energy1ric = (TH1F*)result->Get("energia Z1 ricostruiti bene");
   energy1ric->SetTitle("efficienza in funzione dell'energia di Z1");
@@ -143,7 +158,7 @@ void VZZaQGCEfficiency(){
   energy1efficiency->SetLineColor(1);
   energy1efficiency->SetLineWidth(2);
   energy1efficiency->Draw();
-  c10->cd();
+  TVirtualPad *pd10=c5->cd(1); 
   energy1gen->SetTitle("energia Z1 generati e ricostruiti");
   energy1gen->GetYaxis()->SetRangeUser(0,1200);
   energy1gen->GetXaxis()->SetTitle("energia(GeV)");
@@ -153,8 +168,12 @@ void VZZaQGCEfficiency(){
   energy1ric->SetLineWidth(2);
   energy1gen->Draw();
   energy1ric->Draw("same");
+  TLegend *legend5= new TLegend(0.7,0.77,0.98,0.94,"");
+  legend5->AddEntry(energy1gen,"bosoni generati","l");
+  legend5->AddEntry(energy1ric,"bosoni ricostruiti","l");
+  legend5->Draw();
 
-  c11->cd();
+  TVirtualPad *pd11=c6->cd(2); 
   TH1F *energy2gen = (TH1F*)result->Get("energia Z2 generati bene");
   TH1F *energy2ric = (TH1F*)result->Get("energia Z2 ricostruiti bene");
   energy2ric->SetTitle("efficienza in funzione dell'energia di Z2");
@@ -166,7 +185,7 @@ void VZZaQGCEfficiency(){
   energy2efficiency->SetLineColor(1);
   energy2efficiency->SetLineWidth(2);
   energy2efficiency->Draw();
-  c12->cd();
+  TVirtualPad *pd12=c6->cd(1); 
   energy2gen->SetTitle("energia Z2 generati e ricostruiti");
   energy2gen->GetYaxis()->SetRangeUser(0,1200);
   energy2gen->GetXaxis()->SetTitle("energia(GeV)");
@@ -176,8 +195,12 @@ void VZZaQGCEfficiency(){
   energy2ric->SetLineWidth(2);
   energy2gen->Draw();
   energy2ric->Draw("same");
+  TLegend *legend6= new TLegend(0.7,0.77,0.98,0.94,"");
+  legend6->AddEntry(energy2gen,"bosoni generati","l");
+  legend6->AddEntry(energy2ric,"bosoni ricostruiti","l");
+  legend6->Draw();
 
-  c13->cd(); 
+  TVirtualPad *pd13=c7->cd(2); 
   TH1F *eta1gen = (TH1F*)result->Get("eta Z1 generati bene");
   TH1F *eta1ric = (TH1F*)result->Get("eta Z1 ricostruiti bene");
   eta1ric->SetTitle("efficienza in funzione della eta di Z1");
@@ -189,7 +212,7 @@ void VZZaQGCEfficiency(){
   eta1efficiency->SetLineColor(1);
   eta1efficiency->SetLineWidth(2);
   eta1efficiency->Draw();
-  c14->cd();
+  TVirtualPad *pd14=c7->cd(1); 
   eta1gen->SetTitle("eta Z1 generati e ricostruiti");
   eta1gen->GetYaxis()->SetRangeUser(0,200);
   eta1gen->GetXaxis()->SetTitle("eta");
@@ -199,8 +222,12 @@ void VZZaQGCEfficiency(){
   eta1ric->SetLineWidth(2);
   eta1gen->Draw();
   eta1ric->Draw("same");
+  TLegend *legend7= new TLegend(0.7,0.77,0.98,0.94,"");
+  legend7->AddEntry(eta1gen,"bosoni generati","l");
+  legend7->AddEntry(eta1ric,"bosoni ricostruiti","l");
+  legend7->Draw();
 
-  c15->cd(); 
+  TVirtualPad *pd15=c8->cd(2); 
   TH1F *eta2gen = (TH1F*)result->Get("eta Z2 generati bene");
   TH1F *eta2ric = (TH1F*)result->Get("eta Z2 ricostruiti bene");
   eta2ric->SetTitle("efficienza in funzione della eta di Z2");
@@ -212,7 +239,7 @@ void VZZaQGCEfficiency(){
   eta2efficiency->SetLineColor(1);
   eta2efficiency->SetLineWidth(2);
   eta2efficiency->Draw();
-  c16->cd();
+  TVirtualPad *pd16=c8->cd(1); 
   eta2gen->SetTitle("eta Z2 generati e ricostruiti");
   eta2gen->GetYaxis()->SetRangeUser(0,200);
   eta2gen->GetXaxis()->SetTitle("eta");
@@ -222,8 +249,12 @@ void VZZaQGCEfficiency(){
   eta2ric->SetLineWidth(2);
   eta2gen->Draw();
   eta2ric->Draw("same");
+  TLegend *legend8= new TLegend(0.7,0.77,0.98,0.94,"");
+  legend8->AddEntry(eta2gen,"bosoni generati","l");
+  legend8->AddEntry(eta2ric,"bosoni ricostruiti","l");
+  legend8->Draw();
 
-  c17->cd(); 
+  TVirtualPad *pd17=c9->cd(2);  
   TH1F *mag1gen = (TH1F*)result->Get("E leptone maggiore Z1 buono");
   TH1F *mag1ric = (TH1F*)result->Get("E leptone maggiore Z1 buono ricostruito");
   mag1ric->SetTitle("efficienza in funzione dell'energia leptone maggiore di Z1");
@@ -235,7 +266,7 @@ void VZZaQGCEfficiency(){
   mag1efficiency->SetLineColor(1);
   mag1efficiency->SetLineWidth(2);
   mag1efficiency->Draw();
-  c18->cd();
+  TVirtualPad *pd18=c9->cd(1); 
   mag1gen->SetTitle("energia leptoni maggiori di Z1 generati e ricostruiti");
   mag1gen->GetYaxis()->SetRangeUser(0,1000);
   mag1gen->GetXaxis()->SetTitle("energia (GeV)");
@@ -245,8 +276,12 @@ void VZZaQGCEfficiency(){
   mag1ric->SetLineWidth(2);
   mag1gen->Draw();
   mag1ric->Draw("same");
+  TLegend *legend9= new TLegend(0.7,0.77,0.98,0.94,"");
+  legend9->AddEntry(mag1gen,"bosoni generati","l");
+  legend9->AddEntry(mag1ric,"bosoni ricostruiti","l");
+  legend9->Draw();
 
-  c19->cd(); 
+  TVirtualPad *pd19=c10->cd(2);  
   TH1F *mag2gen = (TH1F*)result->Get("E leptone maggiore Z2 buono");
   TH1F *mag2ric = (TH1F*)result->Get("E leptone maggiore Z2 buono ricostruito");
   mag2ric->SetTitle("efficienza in funzione dell'energia leptone maggiore di Z2");
@@ -258,7 +293,7 @@ void VZZaQGCEfficiency(){
   mag2efficiency->SetLineColor(1);
   mag2efficiency->SetLineWidth(2);
   mag2efficiency->Draw();
-  c20->cd();
+  TVirtualPad *pd20=c10->cd(1); 
   mag2gen->SetTitle("energia leptoni maggiori di Z2 generati e ricostruiti");
   mag2gen->GetYaxis()->SetRangeUser(0,1000);
   mag2gen->GetXaxis()->SetTitle("energia (GeV)");
@@ -268,8 +303,12 @@ void VZZaQGCEfficiency(){
   mag2ric->SetLineWidth(2);
   mag2gen->Draw();
   mag2ric->Draw("same");
+  TLegend *legend10= new TLegend(0.7,0.77,0.98,0.94,"");
+  legend10->AddEntry(mag2gen,"bosoni generati","l");
+  legend10->AddEntry(mag2ric,"bosoni ricostruiti","l");
+  legend10->Draw();
 
-  c21->cd(); 
+  TVirtualPad *pd21=c11->cd(2); 
   TH1F *min1gen = (TH1F*)result->Get("E leptone minore Z1 buono");
   TH1F *min1ric = (TH1F*)result->Get("E leptone minore Z1 buono ricostruito");
   min1ric->SetTitle("efficienza in funzione dell'energia leptone minore di Z1");
@@ -281,7 +320,7 @@ void VZZaQGCEfficiency(){
   min1efficiency->SetLineColor(1);
   min1efficiency->SetLineWidth(2);
   min1efficiency->Draw();
-  c22->cd();
+  TVirtualPad *pd22=c11->cd(1); 
   min1gen->SetTitle("energia leptoni minori generati e ricostruiti di Z1");
   min1gen->GetYaxis()->SetRangeUser(0,800);
   min1gen->GetXaxis()->SetTitle("energia (GeV)");
@@ -291,8 +330,12 @@ void VZZaQGCEfficiency(){
   min1ric->SetLineWidth(2);
   min1gen->Draw();
   min1ric->Draw("same");
+  TLegend *legend11= new TLegend(0.7,0.77,0.98,0.94,"");
+  legend11->AddEntry(min1gen,"bosoni generati","l");
+  legend11->AddEntry(min1ric,"bosoni ricostruiti","l");
+  legend11->Draw();
 
-  c23->cd(); 
+  TVirtualPad *pd23=c12->cd(2); 
   TH1F *min2gen = (TH1F*)result->Get("E leptone minore Z2 buono");
   TH1F *min2ric = (TH1F*)result->Get("E leptone minore Z2 buono ricostruito");
   min2ric->SetTitle("efficienza in funzione dell'energia leptone minore di Z2");
@@ -304,7 +347,7 @@ void VZZaQGCEfficiency(){
   min2efficiency->SetLineColor(1);
   min2efficiency->SetLineWidth(2);
   min2efficiency->Draw();
-  c24->cd();
+  TVirtualPad *pd24=c12->cd(1); 
   min2gen->SetTitle("energia leptoni minori generati e ricostruiti di Z2");
   min2gen->GetYaxis()->SetRangeUser(0,800);
   min2gen->GetXaxis()->SetTitle("energia (GeV)");
@@ -314,4 +357,8 @@ void VZZaQGCEfficiency(){
   min2ric->SetLineWidth(2);
   min2gen->Draw();
   min2ric->Draw("same");
+  TLegend *legend12= new TLegend(0.7,0.77,0.98,0.94,"");
+  legend12->AddEntry(min2gen,"bosoni generati","l");
+  legend12->AddEntry(min2ric,"bosoni ricostruiti","l");
+  legend12->Draw();
 }
