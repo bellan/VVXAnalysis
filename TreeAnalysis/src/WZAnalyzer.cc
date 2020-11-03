@@ -17,7 +17,7 @@ using namespace physmath;
 using namespace phys;
 using namespace std;
 
-// !!!! to analyze data, comment line 489 !!!!
+// !!!! to analyze data, comment line 489 !!!! still valid in 2020?
 
 void WZAnalyzer::begin() {
   
@@ -56,8 +56,10 @@ Int_t WZAnalyzer::cut() {
 }
 
 void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~ Begin of gen Analysis ~~~~~~~~~~~~~~~~~~~~
-  
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
   vector<Particle> electron;
   vector<Particle> genjets;
   vector<Particle> lepton;
@@ -68,20 +70,20 @@ void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
     if((abs(gen.id()) != 11 && abs(gen.id()) != 13 && abs(gen.id()) != 12 && abs(gen.id()) != 14) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) 
       continue;
     
-    if(abs(gen.id()) == 11)      electron.push_back(gen);
+    if(abs(gen.id()) == 11) electron.push_back(gen);
     else if(abs(gen.id()) == 13) muon.push_back(gen);
-    else if(abs(gen.id()) == 12 || abs(gen.id()) == 14)  neutrino.push_back(gen);
+    else if(abs(gen.id()) == 12 || abs(gen.id()) == 14) neutrino.push_back(gen);
   }
 
   
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~ Filters ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // filter on jets' number
-  foreach(const Particle jet, *genJets){ //in genJets are included leptons
+  // ----- filter on jets' number and eta
+  foreach(const Particle jet, *genJets){ // in genJets are included leptons
     bool leptonMatch = false; 
-    foreach(const phys::Particle &gen, *genParticles){
+    foreach(const phys::Particle &gen, *genParticles){ // get jets only
       if(physmath::deltaR(gen,jet) < 0.4 && (abs(gen.id()) == 11 || abs(gen.id()) == 13)) leptonMatch = true;
     }
-    if(!leptonMatch){
+    if(!leptonMatch){ // jets must have rapidity less than 4.7
       if(fabs(jet.eta()) < 4.7) genjets.push_back(jet);
     }
   }
@@ -90,12 +92,12 @@ void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
     return;
   }
   
-  // filter on leptons' number
+  // ----- filter on leptons' number
   if(electron.size() + muon.size() + neutrino.size() != 4 && neutrino.size() != 1){
     return;
   }
   
-  // filters on leptons' pt and eta
+  // ----- filters on leptons' pt and eta
   foreach(const Particle ele, electron){
     if(ele.pt() < 7 || abs(ele.eta()) > 2.5){
       return;
@@ -130,7 +132,7 @@ void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
     return;
   }
   
-  // Z and W must be at least on shell  
+  // ----- filter on total mass: Z and W must be at least on shell  
   TLorentzVector Ptot = neutrino[0].p4();
   
   foreach(const Particle lep, lepton)
@@ -166,7 +168,8 @@ void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
     Zls.push_back(Zltype(Zet, electron[0]));
     Weh = Vtype(Zls[0].second, neutrino[0], copysign(24, Zls[0].second.charge()) );
   }
-  
+
+  // ----- filter on Z mass
   // case 3e
   if(electron.size()==3){
     gen3e++;
@@ -219,24 +222,26 @@ void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
   eventGen++;
   
   // ------------------------ W & Z variables ----------------------
+  /*
   // Z
-  //double ZdeltaEta = Zet.daughter(0).eta() - Zet.daughter(1).eta();
-  //double ZdeltaPhi = physmath::deltaPhi(Zet.daughter(0).phi(), Zet.daughter(1).phi());
-  //double ZdeltaR = abs(physmath::deltaR(Zet.daughter(0), Zet.daughter(1)));
+  double ZdeltaEta = Zet.daughter(0).eta() - Zet.daughter(1).eta();
+  double ZdeltaPhi = physmath::deltaPhi(Zet.daughter(0).phi(), Zet.daughter(1).phi());
+  double ZdeltaR = abs(physmath::deltaR(Zet.daughter(0), Zet.daughter(1)));
   
   // W
-  //double WdeltaEta = Weh.daughter(0).eta() - Weh.daughter(1).eta();
-  //double WdeltaPhi = physmath::deltaPhi(Weh.daughter(0).phi(), Weh.daughter(1).phi());
-  //double WdeltaR = abs(physmath::deltaR(Weh.daughter(0), Weh.daughter(1)));
+  double WdeltaEta = Weh.daughter(0).eta() - Weh.daughter(1).eta();
+  double WdeltaPhi = physmath::deltaPhi(Weh.daughter(0).phi(), Weh.daughter(1).phi());
+  double WdeltaR = abs(physmath::deltaR(Weh.daughter(0), Weh.daughter(1)));
   
   // Zl
-  //int ZlsID = abs(Zls[0].first.daughter(0).id()) + abs(Zls[0].first.daughter(1).id()) + abs(Zls[0].second.id());
+  int ZlsID = abs(Zls[0].first.daughter(0).id()) + abs(Zls[0].first.daughter(1).id()) + abs(Zls[0].second.id());
   
   // WZ
-  //double WZdeltaEta = Zet.eta() - Weh.eta();
-  //double WZdeltaPhi = physmath::deltaPhi(Zet.phi(), Weh.phi());
-  //double WZdeltaR = abs(physmath::deltaR(Zet, Weh));
-
+  double WZdeltaEta = Zet.eta() - Weh.eta();
+  double WZdeltaPhi = physmath::deltaPhi(Zet.phi(), Weh.phi());
+  double WZdeltaR = abs(physmath::deltaR(Zet, Weh));
+  */
+  
   
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Jets ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // leading jets are those with higher pt
@@ -258,12 +263,12 @@ void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~ Histograms ~~~~~~~~~~~~~~~~~~~~~~~~~
   /*
   // Nu
-  theHistograms.fill("GenN_charge", "#nu's charge",  5, -2.5,   2.5, neutrino[0].charge()  , theWeight); //just to be sure...
-  theHistograms.fill("GenN_trmass", "W's trmass",  400,  0  , 400  , neutrino[0].p4().Mt() , theWeight);
-  theHistograms.fill("GenN_pt",     "#nu's p_{t}", 140,  0  , 700  , neutrino[0].pt()      , theWeight);
-  theHistograms.fill("GenN_Y",      "#nu's Y",      90, -6.5,   6.5, neutrino[0].rapidity(), theWeight);
-  theHistograms.fill("GenN_eta",    "#nu's #eta",   90, -6.5,   6.5, neutrino[0].eta()     , theWeight);
-  theHistograms.fill("GenN_phi",    "#nu's #phi",   50, -3.5,   3.5, neutrino[0].phi()     , theWeight);
+  theHistograms.fill("GenN_charge", "#nu's charge",   5, -2.5,   2.5, neutrino[0].charge()  , theWeight); //just to be sure...
+  theHistograms.fill("GenN_trmass", "#nu's trmass", 400,  0  , 400  , neutrino[0].p4().Mt() , theWeight);
+  theHistograms.fill("GenN_pt",     "#nu's p_{t}",  140,  0  , 700  , neutrino[0].pt()      , theWeight);
+  theHistograms.fill("GenN_Y",      "#nu's Y",       90, -6.5,   6.5, neutrino[0].rapidity(), theWeight);
+  theHistograms.fill("GenN_eta",    "#nu's #eta",    90, -6.5,   6.5, neutrino[0].eta()     , theWeight);
+  theHistograms.fill("GenN_phi",    "#nu's #phi",    50, -3.5,   3.5, neutrino[0].phi()     , theWeight);
   
   // W
   theHistograms.fill("GenW_charge",       "W's charge",       5, -2.5,   2.5, Weh.charge()  , theWeight);
@@ -344,11 +349,15 @@ void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
   */
 
   
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~~ End of gen Analysis ~~~~~~~~~~~~~~~~~~~~~
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }
 
 void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1){
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~ Begin of reco Analysis ~~~~~~~~~~~~~~~~~~~
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   int cut = 0;
   int cut2 = 0;
   theHistograms.fill("RecoCuts", "Events after cuts", 13, -0.5, 12.5, cut);
@@ -358,7 +367,7 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   ZLCompositeCandidates recoZls;
   ZLCompositeCandidates tempZls;
   
-  // filter on ZLCand's size > 0
+  // ----- filter on ZLCand's size > 0
   theHistograms.fill("recoZl_size_ZLCand", 12, -0.5, 11.5, ZLCand->size());
 
   if(ZLCand->size() == 0){
@@ -368,7 +377,7 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   cut++;
   theHistograms.fill("RecoCuts", "Events after cuts", 13, -0.5, 12.5, cut);
     
-  // filter on 3rd lepton full selection
+  // ----- filter on 3rd lepton full selection
   foreach(const ZLCompositeCandidate Zl, *ZLCand){
     if(Zl.second.passFullSel()){
       tempZls.push_back(Zl);
@@ -382,7 +391,7 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   cut++;
   theHistograms.fill("RecoCuts", "Events after cuts", 13, -0.5, 12.5, cut);
 
-  // filter on Z's mass 60 < m < 120
+  // ----- filter on Z's mass 60 < m < 120
   foreach(const ZLCompositeCandidate Zl, tempZls){
     if(Zl.first.mass() > 60. && Zl.first.mass() < 120.){
       recoZls.push_back(Zl);
@@ -396,7 +405,7 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   cut++;
   theHistograms.fill("RecoCuts", "Events after cuts", 13, -0.5, 12.5, cut);
   
-  // filter on jet's number > 2
+  // ----- filter on jet's number > 2
   if(jets->size() < 2){
     recoJetless2++;
     return;
@@ -404,7 +413,7 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   cut++;
   theHistograms.fill("RecoCuts", "Events after cuts", 13, -0.5, 12.5, cut);
 
-  // filter on MET's pt
+  // ----- filter on MET's pt
   if(met->pt() < 30.){
     return;
   }
@@ -426,7 +435,7 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
     recoZ = recoZls[0].first;
     recoW = BosonLepton(recoZls[0].second, MET, copysign(24, recoZls[0].second.charge()));
 
-    // filter on W's trmass 30 < trm < 500
+    // ----- filter on W's trmass 30 < trm < 500
     if(recoW.p4().Mt() >= 30. && recoW.p4().Mt() <= 500.){
       recoWZs.push_back(DiBosonLepton(recoW, recoZ));
     }
@@ -449,7 +458,7 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
     for(int i = 0; choosingW; i++){
       recoWtemp = BosonLepton(recoZls[i].second, MET, copysign(24, recoZls[i].second.charge()));
 
-      // filter on W's trmass 30 < trm < 500
+      // ----- filter on W's trmass 30 < trm < 500
       if(recoWtemp.p4().Mt() >= 30. && recoWtemp.p4().Mt() <= 500.){
 	recoWZs.push_back(DiBosonLepton(recoWtemp, recoZls[i].first));
       }
@@ -858,13 +867,17 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   theHistograms.fill("Zeppenfeld_article_abs", 26,  0, 6.24, zeppenfeldArticle  , theWeight);
   
   
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~~ End of reco Analysis ~~~~~~~~~~~~~~~~~~~~
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }
 
 void WZAnalyzer::GenRecoAnalysis(const ZZtype genWZ, const Particle genJet0, const Particle genJet1, const DiBosonLepton recoWZ, const Particle recoJet0, const Particle recoJet1){
   eventGenReco++;
   
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~ Reco vs Gen ~~~~~~~~~~~~~~~~~~~~~~~~~
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // ~~~~~~~~~~~~~~~~~~~~ Begin of Reco vs Gen ~~~~~~~~~~~~~~~~~~~~~
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   bool choosingW = kTRUE;
   BosonLepton recoWtemp;
   TLorentzVector genWZjjp4 = genWZ.first().p4() + genWZ.second().p4() + genJet0.p4() + genJet1.p4();
@@ -930,10 +943,16 @@ void WZAnalyzer::GenRecoAnalysis(const ZZtype genWZ, const Particle genJet0, con
   // genWZJJ vs recoWZJJ
   theHistograms.fill("GR_WZJJ_Deltatrmass", "WZ and jets' #Deltam_{t} in Gen&Reco events", 600, -600, 600, genWZjjp4.Mt() - recoWZjjp4.Mt(), theWeight);
   
+  
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // ~~~~~~~~~~~~~~~~~~~~~ End of Reco vs Gen ~~~~~~~~~~~~~~~~~~~~~~
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }
 
 void WZAnalyzer::analyze(){
-  
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // ~~~~~~~~~~~~~~~~~~~~~~~~ Main analysis ~~~~~~~~~~~~~~~~~~~~~~~~
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
   eventSample++;
   
   //gen variables	
@@ -960,8 +979,10 @@ void WZAnalyzer::analyze(){
   //*/
 }
 
-void WZAnalyzer::end(TFile &){
-  
+void WZAnalyzer::end(TFile &){    
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~ End banner ~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   cout << "\n--------------------------------------------------------------------------" << endl;
   
   cout << "\nEvents of the sample analyzed:                       " << setw(9) << eventSample << endl;
@@ -978,7 +999,15 @@ void WZAnalyzer::end(TFile &){
   cout << "Number of                                            " << setw(9) << counter3 << endl;
   cout << "Number of                                            " << setw(9) << counter4 << endl;
   */
-  
+
+  ///*
+  cout << "\nNumber of couples reconstructed per type: " << endl;
+  cout << "- Generated:     3 electrons        " << gen3e   << "\t 3 muons" << gen3m << endl;
+  cout << "                 2 electrons 1 muon " << gen2e1m << "\t 2 muons 1 electron" << gen2m1e << endl;
+  cout << "- Reconstructed: 3 electrons        " << reco3e   << "\t 3 muons" << reco3m << endl;
+  cout << "                 2 electrons 1 muon " << reco2e1m << "\t 2 muons 1 electron" << reco2m1e << endl;
+  //*/
+    
   // execution time
   endtime = ((float)clock())/CLOCKS_PER_SEC;
   WZAnalyzer::printTime(begintime, endtime);
