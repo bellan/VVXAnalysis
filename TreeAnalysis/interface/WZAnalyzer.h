@@ -71,6 +71,7 @@ public:
   Int_t counter2;
   Int_t counter3;
   Int_t counter4;
+  Int_t counter5;
 
   Float_t begintime;
   Float_t endtime;

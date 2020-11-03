@@ -43,10 +43,11 @@ void WZAnalyzer::begin() {
   reco2m1e = 0;
   
   //free counters
-  counter1 = 0;
-  counter2 = 0;
-  counter3 = 0;
-  counter4 = 0;
+  counter1 = 0; // gen firstly Z, secondly W -> Z's daughters of different flavour (em or me)
+  counter2 = 0; // gen firstly W, secondly Z -> Z's daughters of different flavour (em or me)
+  counter3 = 0; // reco firstly Z, secondly W -> Z's daughters of different flavour (em or me)
+  counter4 = 0; // reco firstly W, secondly Z -> Z's daughters of different flavour (em or me)
+  counter5 = 0; // gen Z and reco W have different IDs
 
   begintime = ((float)clock())/CLOCKS_PER_SEC;
 }
@@ -151,9 +152,10 @@ void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
   Vtype Weh;
   Vtype Zet;
   vector<Zltype> Zls;
+  vector<ZZtype> WZs;
   
   // ---------------------- W & Z construction ---------------------
-  // case 2e 1m
+  ///*// case 2e 1m
   if(electron.size()==2 && muon.size()==1 && electron[0].charge() != electron[1].charge()){
     gen2e1m++;
     Zet = Vtype(electron[0], electron[1], 23);
@@ -167,8 +169,59 @@ void WZAnalyzer::GenAnalysis(ZZtype &WZ, Particle &Jet0, Particle &Jet1){
     Zet = Vtype(muon[0], muon[1], 23);
     Zls.push_back(Zltype(Zet, electron[0]));
     Weh = Vtype(Zls[0].second, neutrino[0], copysign(24, Zls[0].second.charge()) );
-  }
+    }//*/
 
+  /*
+  // ~~~~~ Mixed cases, test: see if better identify W from Z or Z from W
+  if((electron.size()==2 && muon.size()==1 && electron[0].charge() != electron[1].charge()) || (electron.size()==1 && muon.size()==2 && muon[0].charge() != muon[1].charge())){
+    double differenceZ = 0;
+    double differenceW = 0;
+
+    for(int i = 0; i < (int)lepton.size() -1; i++){
+      for(int j = i + 1; j < (int)lepton.size(); j++){
+	for(int k = 0; k < (int)lepton.size(); k++){
+	  if(k != i && k != j){
+	    if(lepton[i].charge() != lepton[j].charge()){
+	      Zls.push_back(Zltype(Vtype(lepton[i], lepton[j], 23), lepton[k]));
+	    }
+	  }
+	}
+      }
+    }
+    
+    // Z is made up of the couple which gives a better Zmass 
+    sort(Zls.begin(), Zls.end(), pairMassComparator(0, ZMASS));
+    differenceZ = fabs(ZMASS - Zls[0].first.p4().M());
+
+    for(int i = 0; i < (int)Zls.size(); i++){
+      WZs.push_back(ZZtype(Vtype(neutrino[0], Zls[i].second, copysign(24, Zls[i].second.charge())), Zls[i].first));
+    }
+    
+    // W is made up of the couple which gives a better Wmass 
+    sort(WZs.begin(), WZs.end(), pairMassComparator(0, WMASS));
+    differenceW = fabs(WMASS - WZs[0].first().p4().M());
+    
+    // Best couple has less difference in mass from main boson
+    if(differeceZ < differeceW){ // Z chosen first
+      Zet = Zls[0].first;
+      Weh = Vtype(Zls[0].second, neutrino[0], copysign(24, Zls[0].second.charge()));
+
+      if(abs(Zet.daughter(0).id()) != abs(Zet.daughter(1).id())){
+	counter1++;
+      }
+      
+    } else{ // W chosen first
+      Weh = WZs[0].first();
+      Zet = WZs[0].second();
+
+      if(abs(Zet.daughter(0).id()) != abs(Zet.daughter(1).id())){
+	counter2++;
+      }
+    }
+    
+  }
+  */
+  
   // ----- filter on Z mass
   // case 3e
   if(electron.size()==3){
@@ -438,13 +491,13 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
     // ----- filter on W's trmass 30 < trm < 500
     if(recoW.p4().Mt() >= 30. && recoW.p4().Mt() <= 500.){
       recoWZs.push_back(DiBosonLepton(recoW, recoZ));
-    }
+    }    
     else{
-      cout << "reco W: " << recoW << " trmass: " << recoW.p4().Mt() << endl;
-      cout << "reco Z: " << recoZ << " trmass: " << recoZ.p4().Mt() << endl << endl;
-      
+      //cout << "reco W: " << recoW << " trmass: " << recoW.p4().Mt() << endl;
+      //cout << "reco Z: " << recoZ << " trmass: " << recoZ.p4().Mt() << endl << endl;      
       return;
     }
+    
   }
   
   else if(recoZls.size() > 1){
@@ -462,13 +515,14 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
       if(recoWtemp.p4().Mt() >= 30. && recoWtemp.p4().Mt() <= 500.){
 	recoWZs.push_back(DiBosonLepton(recoWtemp, recoZls[i].first));
       }
-
+      /*
       else{
-	cout << "reco W: " << recoWtemp << " trmass: " << recoWtemp.p4().Mt() << endl;
+        cout << "reco W: " << recoWtemp << " trmass: " << recoWtemp.p4().Mt() << endl;
 	cout << "reco Z: " << recoZls[i].first << " trmass: " << recoZls[i].first.p4().Mt() << endl << endl;
       }
+      */
       
-      if(i == (int)recoZls.size() - 1 || recoZls[i].first.mass() - recoZls[i + 1].first.mass() < 0.1){
+      if(i == (int)recoZls.size() - 1 || recoZls[i].first.mass() - recoZls[i + 1].first.mass() > 0.1){ // FIXME, maybe < is wrong, temporary changed to >
 	choosingW = kFALSE;
       }
     }
@@ -506,8 +560,8 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   double recoZdeltaPhi = physmath::deltaPhi(recoZ.daughter(0).phi(), recoZ.daughter(1).phi());
   double recoZdeltaR = abs(physmath::deltaR(recoZ.daughter(0), recoZ.daughter(1)));
   
-  float recoZpzlp;
-  float recoZpzlm;
+  float recoZpzlp; //lp = positive lepton
+  float recoZpzlm; //lm = negative lepton
   if(recoZ.daughter(0).id() > 0){
     recoZpzlp = recoZ.daughter(0).p4().Pz();
     recoZpzlm = recoZ.daughter(1).p4().Pz();
@@ -709,6 +763,7 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   theHistograms.fill("recoZl_3rd_pt", "W's lepton p_{t}",         50,  0  ,  400  , recoW.daughter(0).pt(), theWeight);
   
   // ------------------------------ WZ -----------------------------
+  theHistograms.fill("recoWZ_size",     "Reco WZ's size",        15,  -0.5,   14.5, recoWZs.size()      , theWeight); 
   theHistograms.fill("recoWZ_trmass",   "recoWZ trmass",         48,   0  , 2400  , recoWZs[0].p4().Mt(), theWeight);
   theHistograms.fill("recoWZ_pt",       "recoWZ p_{T}",         100, 200  , 2400  , recoWZs[0].pt()     , theWeight);
   theHistograms.fill("recoWZ_deltaPhi", "recoW & Z #Delta#phi",  50,  -3.5,    3.5, recoWZdeltaPhi      , theWeight);
@@ -994,19 +1049,32 @@ void WZAnalyzer::end(TFile &){
   cout << "Reco events after all cuts:                          " << setw(9) << recoAfterCut << "\t" << recoAfterCut*100./eventReco << endl;
   
   /*
-  cout << "\nNumber of                                            " << setw(9) << counter1 << endl;
+  cout << "\n When event has mixed flavour leptons: " << endl;
+  cout << "GEN PARTICLES: ";
+  cout << "\nZ identified first than W -> Z's daughter with different flavour " << setw(9) << counter1 << endl;
+  cout << "W identified first than Z -> Z's daughter with different flavour " << setw(9) << counter2 << endl;
+  cout << "\nRECO PARTICLES: ";
+  cout << "\nZ identified first than W -> Z's daughter with different flavour " << setw(9) << counter1 << endl;
+  cout << "W identified first than Z -> Z's daughter with different flavour " << setw(9) << counter2 << endl;
+  cout << "\nRECO vs GEN PARTICLES: ";
+  cout << "\nNumber of Zgen and Zreco with different ID: " << setw(9) << counter5 << endl;
+  */
+  
+  /*
+  cout << "\nNumber of                                           " << setw(9) << counter1 << endl;
   cout << "Number of                                            " << setw(9) << counter2 << endl;
   cout << "Number of                                            " << setw(9) << counter3 << endl;
   cout << "Number of                                            " << setw(9) << counter4 << endl;
+  cout << "Number of                                            " << setw(9) << counter5 << endl;
   */
 
-  ///*
+  /*
   cout << "\nNumber of couples reconstructed per type: " << endl;
   cout << "- Generated:     3 electrons        " << gen3e   << "\t 3 muons" << gen3m << endl;
   cout << "                 2 electrons 1 muon " << gen2e1m << "\t 2 muons 1 electron" << gen2m1e << endl;
   cout << "- Reconstructed: 3 electrons        " << reco3e   << "\t 3 muons" << reco3m << endl;
   cout << "                 2 electrons 1 muon " << reco2e1m << "\t 2 muons 1 electron" << reco2m1e << endl;
-  //*/
+  */
     
   // execution time
   endtime = ((float)clock())/CLOCKS_PER_SEC;
