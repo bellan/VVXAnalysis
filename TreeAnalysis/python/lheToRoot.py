@@ -49,7 +49,7 @@ def convert(input_file_name):
             in_ev = 0
             continue
             
-        if line.startswith("<"):
+        if (line.startswith("<") or line.startswith("  <") or line.startswith("   <")):
             continue
     
         if in_ev == 1:
