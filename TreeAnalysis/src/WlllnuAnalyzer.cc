@@ -3,6 +3,7 @@
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/Commons/interface/Colours.h"
+#include "VVXAnalysis/DataFormats/interface/TypeDefs.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 #include "VVXAnalysis/DataFormats/interface/Lepton.h"
@@ -23,6 +24,7 @@ using std::endl;
 
 
 using namespace phys;
+using namespace physmath;
 
 void WlllnuAnalyzer::begin(){
   nevents = 0;
@@ -159,7 +161,7 @@ void WlllnuAnalyzer::analyze(){
     //how do we know z0 is the first in the diagram?? I know
     
     // ZZ
-    ZZtype ZZ(z0,z1);
+    VVtype ZZ(z0,z1);
     cout << "\n\n ZZ: " << ZZ.id() << " pt: " << ZZ.pt() << " mass: " << ZZ.mass() << "\n daughters: " << ZZ.daughter<Particle>(0).id() << ", " << ZZ.second().id() << " Y: " << ZZ.rapidity() << endl;
     
     theHistograms.fill("ptGenZZ",   "pt ",   100,  0,   100, ZZ.pt());
@@ -336,12 +338,12 @@ void WlllnuAnalyzer::analyze(){
       std::vector<pairParticle> pCombos; //all the possible combos with 3l
       pairParticle theCombo; //the best one
       std::vector <Zltype> Zl; //Z and lepton
-      Vtype W;
+      BosonParticle W;
       bool isNuAlone = NULL; //in order to mark W -> nu + lll or W -> l + llnu
       //int diagramId = 0;
       
       if(finalid == 49 && electrons.size() == 2){//2e 1mu 1nu_mu
-	Zl.push_back(Zltype(Vtype(electrons[0], electrons[1], 23),muons[0]));
+	Zl.push_back(Zltype(BosonParticle(electrons[0], electrons[1], 23),muons[0]));
 	pCombos.push_back(pairParticle(nu,Particle(electrons[0].p4()+electrons[1].p4()+muons[0].p4())));
 	pCombos.push_back(pairParticle(muons[0],Particle(electrons[0].p4()+electrons[1].p4()+nu.p4())));
 	std::stable_sort(pCombos.begin(), pCombos.end(), mTComparator(masslllnu));
@@ -349,7 +351,7 @@ void WlllnuAnalyzer::analyze(){
 	isNuAlone = isTheSame(nu, theCombo.first);
       }
       else if(finalid == 49 && muons.size() == 2){//2mu 1e 1nu_e
-	Zl.push_back(Zltype(Vtype(muons[0], muons[1], 23), electrons[0]));
+	Zl.push_back(Zltype(BosonParticle(muons[0], muons[1], 23), electrons[0]));
 	pCombos.push_back(pairParticle(nu,Particle(muons[0].p4()+muons[1].p4()+electrons[0].p4())));
 	pCombos.push_back(pairParticle(electrons[0],Particle(muons[0].p4()+muons[1].p4()+nu.p4())));
 	std::stable_sort(pCombos.begin(), pCombos.end(), mTComparator(masslllnu));
@@ -370,17 +372,17 @@ void WlllnuAnalyzer::analyze(){
 	//   theCombo = p; //the best Combo has closest mT to lllnu (W)
 	isNuAlone = isTheSame(nu, theCombo.first);
 	if(isNuAlone){
-	  Zl.push_back(Zltype(Vtype(electrons[0], electrons[2], 23), electrons[1]));
+	  Zl.push_back(Zltype(BosonParticle(electrons[0], electrons[2], 23), electrons[1]));
 	  electrons[1].id()>0 ?
-	    Zl.push_back(Zltype(Vtype(electrons[1], electrons[2], 23), electrons[0])) :
-	    Zl.push_back(Zltype(Vtype(electrons[0], electrons[1], 23), electrons[2]));
+	    Zl.push_back(Zltype(BosonParticle(electrons[1], electrons[2], 23), electrons[0])) :
+	    Zl.push_back(Zltype(BosonParticle(electrons[0], electrons[1], 23), electrons[2]));
 	}
 	else if(isTheSame(electrons[0],theCombo.first))
-	  Zl.push_back(Zltype(Vtype(electrons[1], electrons[2], 23), electrons[0]));
+	  Zl.push_back(Zltype(BosonParticle(electrons[1], electrons[2], 23), electrons[0]));
 	else if(isTheSame(electrons[1],theCombo.first))
-	  Zl.push_back(Zltype(Vtype(electrons[0], electrons[2], 23), electrons[1]));
+	  Zl.push_back(Zltype(BosonParticle(electrons[0], electrons[2], 23), electrons[1]));
 	else if(isTheSame(electrons[2],theCombo.first))
-	  Zl.push_back(Zltype(Vtype(electrons[0], electrons[1], 23), electrons[2]));
+	  Zl.push_back(Zltype(BosonParticle(electrons[0], electrons[1], 23), electrons[2]));
       }
       
       else if(finalid == 53){//3mu 1nu_mu
@@ -396,17 +398,17 @@ void WlllnuAnalyzer::analyze(){
 	//   theCombo = p;
 	isNuAlone = isTheSame(nu, theCombo.first);
 	if(isNuAlone){
-	  Zl.push_back(Zltype(Vtype(muons[0], muons[2], 23), muons[1]));
+	  Zl.push_back(Zltype(BosonParticle(muons[0], muons[2], 23), muons[1]));
 	  muons[1].id()>0 ?
-	    Zl.push_back(Zltype(Vtype(muons[1], muons[2], 23), muons[0])) :
-	    Zl.push_back(Zltype(Vtype(muons[0], muons[1], 23), muons[2]));
+	    Zl.push_back(Zltype(BosonParticle(muons[1], muons[2], 23), muons[0])) :
+	    Zl.push_back(Zltype(BosonParticle(muons[0], muons[1], 23), muons[2]));
 	}
 	else if(isTheSame(muons[0],theCombo.first))
-	  Zl.push_back(Zltype(Vtype(muons[1], muons[2], 23), muons[0]));
+	  Zl.push_back(Zltype(BosonParticle(muons[1], muons[2], 23), muons[0]));
 	else if(isTheSame(muons[1],theCombo.first))
-	  Zl.push_back(Zltype(Vtype(muons[0], muons[2], 23), muons[1]));
+	  Zl.push_back(Zltype(BosonParticle(muons[0], muons[2], 23), muons[1]));
 	else if(isTheSame(muons[2],theCombo.first))
-	  Zl.push_back(Zltype(Vtype(muons[0], muons[1], 23), muons[2]));
+	  Zl.push_back(Zltype(BosonParticle(muons[0], muons[1], 23), muons[2]));
       }
       
       
@@ -449,7 +451,7 @@ void WlllnuAnalyzer::analyze(){
       
       foreach(const Zltype zl, Zl){
 	
-	W = Vtype(theCombo.first, theCombo.second, copysign(24, zl.second.charge()));
+	W = BosonParticle(theCombo.first, theCombo.second, copysign(24, zl.second.charge()));
 	cout << "is nu Alone:\t";
 	isNuAlone ? cout << "yes" : cout << "no";
 	cout << endl;
