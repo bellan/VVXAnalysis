@@ -15,7 +15,6 @@
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/DataFormats/interface/Particle.h"
-#include "VVXAnalysis/Commons/interface/AriEle.h"
 
 class WlllnuAnalyzer: public EventAnalyzer, RegistrableAnalysis<WlllnuAnalyzer>{
 
@@ -23,7 +22,7 @@ public:
 
   //, const std::string& filename, const double& lumi = 1., const double& externalXSection = -1., bool doBasicPlots = false
   
- WlllnuAnalyzer(const AnalysisConfiguration& configuration)
+  WlllnuAnalyzer(const AnalysisConfiguration& configuration)
    : EventAnalyzer(*(new Selector<WlllnuAnalyzer>(*this)), 
 		   configuration){
     //theHistograms.profile(genCategory);
@@ -40,7 +39,7 @@ public:
   typedef std::pair<bool,int> boolInt;
   
  
- private:
+private:
   Int_t nevents;
   Int_t mass80Counter;
   
