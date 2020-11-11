@@ -15,7 +15,7 @@ double scale(double sig,double sig_SM){return sig/sig_SM;}
 //cross sections for SM
 
 const double sig_WZZ_SM=0.000141309273192;
-const double sig_ZZZ_SM=0;
+const double sig_ZZZ_SM=0.000132818264676;
 
 //cross sections for anomalous phenomena
 
@@ -23,7 +23,7 @@ const double sig_ZZZ_SM=0;
 const double sig_WZZ_cW_LI=-5.4669356329e-07;
 const double sig_WZZ_cW_QU=6.6865180464e-05;
 //cW ZZZ
-const double sig_ZZZ_cW_LI=0;
+const double sig_ZZZ_cW_LI=2.5001339964e-08;
 const double sig_ZZZ_cW_QU=3.64336224597e-06;
 //cHW WZZ
 const double sig_WZZ_cHW_LI=1.37528873887e-07;
@@ -110,14 +110,24 @@ void DistributionComparisonVZZ(string operatorname, double parameter, string his
   TH1F *histZZZ=DistributionPlot(result4,legend,histname,title,axisname,"SM data",ymax,kBlack);
   TH1F *histsumZZZ=DistributionSummer(operatorname,parameter,result4, result5, scale3, result6, scale4, legend, histname, title, axisname, ymax, kRed);
 
-  TH1F *hist=new TH1F(*histWZZ);
+  TH1F *hist= new TH1F(*histWZZ);
   hist->Add(histWZZ,histZZZ,1,sig2/sig1);
-  TH1F *histsum=new TH1F(*histsumWZZ);
-  histsum->Add(histsumWZZ,histsumZZZ,1,(1+(sig5/sig4)*parameter+(sig6/sig4)*parameter*parameter)/(1+(sig2/sig1)*parameter+(sig3/sig1)*parameter*parameter));
-  
+  TH1F *histsum= new TH1F(*histsumWZZ);
+  histsum->Add(histsumWZZ,histsumZZZ,1,sig2/sig1);
+
+  hist->GetYaxis()->SetRangeUser(0,ymax);
+  histsum->GetYaxis()->SetRangeUser(0,ymax);
   hist->Draw();
   histsum->Draw("same");
 
+  legend->Clear();
+  
+  legend->AddEntry(hist,"SM data","l");
+  ostringstream streamsum;
+  streamsum << parameter;
+  string insertsum= operatorname+"= "+streamsum.str();
+  legend->AddEntry(histsum,insertsum.c_str(),"l");
+  
   ostringstream stream1,stream2,stream3;
   stream1 << hist->Chi2Test(histsum,"WWCHI2");
   string insert1= "chi2: "+stream1.str();
@@ -173,9 +183,9 @@ void VZZDistributionComparison(string sample, string operatorname, double parame
       sig6=sig_ZZZ_cHW_QU;}
     
     c1->cd();
-    DistributionComparisonVZZ(operatorname,parameter,"mass of coupled bosons","Coupled bosons mass","mass (GeV/c^2)",2700,result1,result2,result3,result4,result5,result6,sig1,sig2,sig3,sig4,sig5,sig6);
+    DistributionComparisonVZZ(operatorname,parameter,"energy of all bosons","Total boson energy","energy (GeV)",1700,result1,result2,result3,result4,result5,result6,sig1,sig2,sig3,sig4,sig5,sig6);
     c2->cd();
-    DistributionComparisonVZZ(operatorname,parameter,"energy of all bosons","Total boson energy","energy (GeV)",1000,result1,result2,result3,result4,result5,result6,sig1,sig2,sig3,sig4,sig5,sig6);
+    DistributionComparisonVZZ(operatorname,parameter,"mass of coupled bosons","Coupled bosons mass","mass (GeV/c^2)",4200,result1,result2,result3,result4,result5,result6,sig1,sig2,sig3,sig4,sig5,sig6);
     return;}
 
   string filename1= filename(sample+"_SM");
@@ -218,9 +228,9 @@ void VZZDistributionComparison(string sample, string operatorname, double parame
   double scale2=scale(sig_QU,sig_SM);
 
   c1->cd();
-  DistributionComparison(operatorname,parameter,"mass of coupled bosons","Coupled bosons mass","mass (GeV/c^2)",2700,result1,result2,result3,scale1,scale2);
-  c2->cd();
   DistributionComparison(operatorname,parameter,"energy of all bosons","Total boson energy","energy (GeV)",1000,result1,result2,result3,scale1,scale2);
+  c2->cd();
+  DistributionComparison(operatorname,parameter,"mass of coupled bosons","Coupled bosons mass","mass (GeV/c^2)",2700,result1,result2,result3,scale1,scale2);
   /*
   c3->cd();
   DistributionComparison(operatorname,parameter,"mass of tribosons","Triboson mass","mass (GeV/c^2)",1600,result1,result2,result3,scale1,scale2);
