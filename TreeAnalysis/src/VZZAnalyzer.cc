@@ -508,7 +508,7 @@ Particle* VZZAnalyzer::getHadVB(){
 	if(jetsAK8->size() > 1 && !hadVB){
 		std::sort(jetsAK8->begin(), jetsAK8->end(), Mass2Comparator(phys::WMASS, phys::ZMASS));
 		
-		if(jetsAK8->front().mass() > 60 && jetsAK8->front().mass() < 120)
+		if(jetsAK8->front().chosenAlgoMass() > 60 && jetsAK8->front().chosenAlgoMass() < 120)
 			hadVB = new Jet(jetsAK8->front());
 	}
 	
