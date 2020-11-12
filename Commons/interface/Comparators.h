@@ -88,12 +88,13 @@ namespace phys{
 			double diffB = std::min(fabs(b.mass() - ref1_), fabs(b.mass() - ref2_));
 			return diffA < diffB;
 		}
-		template<typename PAR>
-		bool operator()(PAR* a, PAR* b) const{ 
-			return operator()(*a, *b);
+		bool operator()(const phys::Jet & a, const phys::Jet & b) const{ 
+			double diffA = std::min(fabs(a.chosenAlgoMass() - ref1_), fabs(a.chosenAlgoMass() - ref2_));
+			double diffB = std::min(fabs(b.chosenAlgoMass() - ref1_), fabs(b.chosenAlgoMass() - ref2_));
+			return diffA < diffB;
 		}
 		template<typename PAR>
-		bool operator()(const PAR* a, const PAR* b) const{ 
+		bool operator()(PAR* a, PAR* b) const{ 
 			return operator()(*a, *b);
 		}
 		
