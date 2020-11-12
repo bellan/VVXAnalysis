@@ -49,6 +49,7 @@
 #define S_2D_SIZE 30,100.,1600.
 #define BINARY_SIZE 2,-1.5,1.5
 #define CUTS_SIZE 3,-0.5,2.5
+#define CUT_AN_SIZE 4,-0.5,3.5
 
 //#define USE_PYTHON
 
@@ -84,18 +85,45 @@ void VZZAnalyzer::begin(){
    "import sys\n"
    "sys.path.append('./python')\n"
 	);
+	
+	helper_module_ = PyImport_ImportModule("VZZhelper"); // import module
+	if (!helper_module_){
+		cout<<"Error: could not load \"VZZhelper\""<<std::endl;
+		Py_FinalizeEx();
+		exit(2);
+	}
 
-	AK4_classifier_ = PyObject_CallMethod(helper_module_, "load_object","s","VZZ_AK4_tree.pkl");
+	AK4_classifier_ = PyObject_CallMethod(helper_module_, "load_object", "s", "VZZ_AK4_tree.pkl");
 	if(AK4_classifier_ == Py_None){
 		cout<<"Error: could not load AK4_classifier_."<<std::endl;
 		Py_DECREF(helper_module_);
 		Py_FinalizeEx();
-		exit(2);
+		exit(3);
 	}
+	
+	AK8_classifier_ = PyObject_CallMethod(helper_module_, "load_object", "s", "VZZ_AK8_tree.pkl");
+	if(AK8_classifier_ == Py_None){
+		cout<<"Error: could not load AK8_classifier_."<<std::endl;
+		Py_DECREF(AK4_classifier_);
+		Py_DECREF(helper_module_);
+		Py_FinalizeEx();
+		exit(3);
+	}
+	/*
+	EVT_classifier_ = PyObject_CallMethod(helper_module_, "load_object", "s", "VZZ_EVT_tree.pkl");
+	if(AK8_classifier_ == Py_None){
+		cout<<"Error: could not load AK8_classifier_."<<std::endl;
+		Py_DECREF(VZZ_EVT_tree);
+		Py_DECREF(helper_module_);
+		Py_FinalizeEx();
+		exit(3);
+	}*/
 	#endif  // USE_PYTHON
 	
 	//Memory allocation
 	if(AK4pairs_ == nullptr)    AK4pairs_ = new vector<Boson<Jet>>;
+	if(AK4pairsWithPred_==nullptr) AK4pairsWithPred_ = new vector<pair<Boson<Jet>, double>>;
+	if(AK8WithPred_==nullptr) AK8WithPred_ = new vector<pair<Jet, double>>;
 	if(genHadVBs_ == nullptr)  genHadVBs_ = new vector<Boson<Particle>>;
 	if(AllGenVBjj_ == nullptr) AllGenVBjj_= new vector<Boson<Particle>>;
 	if(!AK4GenRec_) AK4GenRec_ = new vector<pair<Boson<Particle>, Boson<Jet>>>;
@@ -110,22 +138,14 @@ void VZZAnalyzer::begin(){
 
 Int_t VZZAnalyzer::cut(){
 	++evtN_;
+	totEvtW_ += theWeight;
 	cout<<"\r\t\t"<<evtN_;
-	
-	/*
-	#ifdef USE_PYTHON
-	Boson<Jet> temp;
-	vector<double> vect = getAK4features(temp);
-	vect.pop_back();
-	vect.pop_back();
-	double pred = getPyPrediction(vect, AK4_classifier_);
-	#endif
-	*/
-	
 	
 	//Cleanup of previous event
 	if(genHadVBs_)     genHadVBs_->clear(); //Destroys objects but keeps memory allocated
 	if(AK4pairs_)       AK4pairs_->clear();
+	if(AK4pairsWithPred_)AK4pairsWithPred_->clear();
+	if(AK8WithPred_) AK8WithPred_->clear();
 	if(AK4GenRec_)     AK4GenRec_->clear();
 	if(AllGenVBjj_)   AllGenVBjj_->clear();
 	if(qq_.p() > 1.)      qq_    = Boson<Particle>();  // Making invalid
@@ -152,11 +172,19 @@ Int_t VZZAnalyzer::cut(){
 		genQuarksAnalisys();
 	}
 	
-	sigType_ = isSignal(false/*Uses genJets(AK4) and genJetsAK8*/);
-	theHistograms.fill("Signal Type","Signal Type;type;events",6,-1.5,4.5, -sigType_,theWeight);
+	if(qq_.p() > 1. && genZZ_->p() > 1.){
+		theHistograms.fill<TH2F>("genZZ pt vs qq pt", ";qq p_{T} [GeV/c];ZZ_{GEN} p_{T} [GeV/c]", 25,0.,250., 25,0.,250., qq_.pt(), genZZ_->pt(), theWeight);
+	}
 	
 	
 	// GEN SIGNAL
+	sigType_ = isSignal(false/*Uses genJets(AK4) and genJetsAK8*/);
+	theHistograms.fill("Signal Type","Signal Type;type;events",6,-1.5,4.5, -sigType_,theWeight);
+	//TEMP
+	if(sigType_ && topology.test(0) && topology.test(4)) return 1;
+	else return -1;
+	//!!!!!!!!!!!!!!!!!!!!
+	
 	theHistograms.fill("Cuts gen_f_", "Cuts on gen variables;;weighted evts", CUTS_SIZE, 0., theWeight);
 	if(topology.test(0) && topology.test(4)){  // equivalent to genZZ_->isValid()
 		theHistograms.fill("Cuts gen_f_", "Cuts on gen variables;;weighted evts", CUTS_SIZE, 1., theWeight);
@@ -178,19 +206,98 @@ Int_t VZZAnalyzer::cut(){
 void VZZAnalyzer::analyze(){
 	++analyzedN_; analyzedW_ += theWeight;
 	
-	/*#ifdef USE_PYTHON
-	if(AK4pairs_->size() > 0){ // TODO: test
-		foreach(const Boson<Jet>& pair, *AK4pairs_){
-			vector<double> feat = getAK4features(pair);
+	//TEMP
+	Particle* hadVB = getHadVB();
+	
+	if(hadVB)
+		theHistograms.fill("test: hadVB mass", "hadVB mass", 30,60.,120., hadVB->mass(), theWeight);
+	
+	if(hadVB) delete hadVB;
+	return;
+	
+	foreach(const Jet& j, *jetsAK8){
+		theHistograms.fill("All8_t21_f_", ";#tau_{2}/#tau_{1};# jets", 25,0.,1., j.tau2()/j.tau1(), theWeight);
+		theHistograms.fill("All8_t32_f_", ";#tau_{3}/#tau_{2};# jets", 25,0.,1., j.tau3()/j.tau2(), theWeight);
+		theHistograms.fill("All8_PUPPIt21_f_", ";PUPPI #tau_{2}/#tau_{1};# jets", 25,0.,1., j.puppiTau2()/j.puppiTau1(), theWeight);
+	}
+	
+	
+	//Hypotetical cut on minDM
+	theHistograms.fill("Cut analysis_f_","Cut analysis;;Events", CUT_AN_SIZE, 0., theWeight);
+	
+	float pt_tot4 = 0.;
+	float pt_tot8 = 0.;
+	
+	float mindm4 = 100.;
+	float mindm8 = 100.;
+	if(AK4pairs_->size() > 0){
+		std::sort(AK4pairs_->begin(), AK4pairs_->end(), Mass2Comparator(phys::ZMASS, phys::WMASS));
+		mindm4 = minDM(AK4pairs_->front().mass());
+		if(mindm4 < 30.)
+			pt_tot4 = (ZZ->p4() + AK4pairs_->front().p4()).Pt();
+		
+		
+	}
+	if(jetsAK8->size() > 0){
+		std::sort(jetsAK8->begin(), jetsAK8->end(), Mass2Comparator(phys::ZMASS, phys::WMASS));
+		theHistograms.fill("Best8_t21_f_", ";#tau_{2}/#tau_{1};# jets", 25,0.,1., jetsAK8->front().tau2()/jetsAK8->front().tau1());
+		theHistograms.fill("Best8_t32_f_", ";#tau_{3}/#tau_{2};# jets", 25,0.,1., jetsAK8->front().tau3()/jetsAK8->front().tau2());
+		theHistograms.fill("Best8_PUPPIt21_f_", ";PUPPI #tau_{2}/#tau_{1};# jets", 25,0.,1., jetsAK8->front().puppiTau2()/jetsAK8->front().puppiTau1(), theWeight);
+		mindm8 = minDM(jetsAK8->front().chosenAlgoMass());
+		if(mindm8 < 30.)
+			pt_tot8 = (ZZ->p4() + jetsAK8->front().p4()).Pt();
+	}
+	theHistograms.fill("minDM_r_", "cut on minDM;minDM [GeV/c^{2}];Events",30,0.,60., std::min(mindm4, mindm8), theWeight);
+	theHistograms.fill("pt_tot_r_", "cut on pt_tot;pt_tot [GeV/c];Events",20,0.,100., std::min(mindm4, mindm8), theWeight);
+	
+	if(mindm4 < 30. || mindm8 < 30.)
+		theHistograms.fill("Cut analysis_f_","Cut analysis;;Events", CUT_AN_SIZE, 1., theWeight);
+	if(mindm4 < 30.)
+		theHistograms.fill("Cut analysis_f_","Cut analysis;;Events", CUT_AN_SIZE, 2., theWeight);
+	
+	if(mindm4 < 13. || mindm8 < 13.)
+		theHistograms.fill("Cut analysis_f_","Cut analysis;;Events", CUT_AN_SIZE, 3., theWeight);
+	
+	#ifdef USE_PYTHON
+	//AK4pairsWithPred_
+	foreach(const Boson<Jet>& jj, *AK4pairs_)
+		if(jj.mass() > 50. && jj.mass() < 120.){
+			vector<double> feat = getAK4features(jj);
 			double pred = getPyPrediction(feat, AK4_classifier_);
-			theHistograms.fill("AK4 predictions","AK4 predictions", 21,-0.025,1.025, pred, theWeight);
+			//AK4pairsWithPred_->emplace_back(pair<Boson<Jet>, double>(jj, pred));
+		}
+	
+	auto it4 = max_element(AK4pairsWithPred_->begin(), AK4pairsWithPred_->end(), [](pair<Boson<Jet>, double>& a, pair<Boson<Jet>, double>& b) { return a.second < b.second;});
+	
+	//AK8WithPred_
+	foreach(const Jet& j, *jetsAK8)
+		if(j.mass() > 50. && j.mass() < 120.){
+			vector<double> feat = getAK8features(j);
+			double pred = getPyPrediction(feat, AK8_classifier_);
+			AK8WithPred_->emplace_back(pair<Jet, double>(j, pred));
+		}
+	
+	auto it8 = max_element(AK8WithPred_->begin(), AK8WithPred_->end(), [](pair<Jet, double>& a, pair<Jet, double>& b) { return a.second < b.second;});
+	#endif
+	
+	/*
+	int sigRecType = 0;
+	if(AK4pairs_->size() > 0){
+		std::sort(AK4pairs_->begin(), AK4pairs_->end(), Mass2Comparator(phys::ZMASS, phys::WMASS));
+		if(minDM(AK4pairs_->front().mass()) < 30.){
+			sigRecType = 1;
+			theHistograms.fill("Vjj_ZZpt", "AK4 dijets candidates;ZZ pt [GeV/c];Events", 25,0.,500., ZZ->pt(), theWeight);
 		}
 	}
-	#endif  // USE_PYTHON*/
-	/*
-	if(genZZ_ && genZZ_->p() > 1. && qq_.p() > 1.)
-		theHistograms.fill<TH2F>("genZZ pt vs qq pt", "genZZ pt vs qq pt;qq pt;genZZ pt;# events", 20,0.,400., 20,0.,400., qq_.pt(), genZZ_->pt(), theWeight);
-	*/
+	if(sigRecType == 0 && jetsAK8->size() > 0){
+		std::sort(jetsAK8->begin(), jetsAK8->end(), Mass2Comparator(phys::ZMASS, phys::WMASS));
+		if(minDM(jetsAK8->front().chosenAlgoMass()) < 30.){
+			sigRecType = 2;
+			theHistograms.fill("VJ_ZZpt", "AK8 dijets candidates;ZZ pt [GeV/c];Events", 25,0.,500., ZZ->pt(), theWeight);
+		}
+	}*/
+	
+	
 	
 	//genSignalGraphs();
 	//recSignalGraphs();
@@ -210,7 +317,7 @@ void VZZAnalyzer::analyze(){
 	//furthestJetMVA();
 	//minPtJetMVA();
 	
-	bestZMassJetMVA();
+	//bestZMassJetMVA();
 	resolutionZmass();  // same as bestZMassJetMVA(), but without dR(jet, ZZ) > 2. Also, gen part is done with respect to genZZ_ and not ZZ
 	
 	simpleGraphs();
@@ -234,6 +341,8 @@ void VZZAnalyzer::end(TFile& fout){
 	if(AK4pairs_)  delete AK4pairs_;
 	if(AllGenVBjj_)delete AllGenVBjj_;
 	if(AK4GenRec_) delete AK4GenRec_;
+	if(AK4pairsWithPred_) delete AK4pairsWithPred_;
+	if(AK8WithPred_) delete AK8WithPred_;
 	//if(genZZ_)     delete genZZ_;
 	//if(qq)         delete qq_;
 	
@@ -267,7 +376,8 @@ void VZZAnalyzer::end(TFile& fout){
 	//endSignalEff(fout);
 	endVHad_vs_ZZpt(fout);  // Vjj_ZZpt
 	
-	cout<<"\nPassing cut: "<<Form("%lu (weighted: %.2f)", analyzedN_, analyzedW_)<<'\n';
+	cout<<"\nTotal events: "<<Form("%lu (weighted: %.2f)", evtN_, totEvtW_);
+	cout<<"\nPassing cut:  "<<Form("%lu (weighted: %.2f)", analyzedN_, analyzedW_)<<'\n';
 	endReconstructionAK();  // Writes to cout only if reconstructionAK4() has been called
 	
 	
@@ -362,6 +472,47 @@ int VZZAnalyzer::isSignal(bool doGraphs){ //isHadSignal
 	}
 	*/
 	return 0;  // Should never reach this point
+}
+
+/*
+  Function that can be used by any EventAnalyzer.
+  Returns:
+  - Boson<Jet>* in case of 2 AK4
+  - Jet* in case of single AK8
+  - nullptr in case nothing was found
+  
+  In any case, the memory management is responsibility of the caller.
+*/
+Particle* VZZAnalyzer::getHadVB(){
+	Particle* hadVB = nullptr;
+	
+	// First look for a pair of AK4
+	if(jets->size() > 2){
+		size_t j4_size = jets->size();
+		//Build vector of pairs. If the vector is promoted to a data member of the 
+		//analyzer, this operation can be done only once per event, and the result reused.
+		vector<Boson<Jet>> AK4pairs;
+		AK4pairs.reserve( j4_size*(j4_size - 1)/2 ); //Optional, avoids potential reallocations
+		for(size_t i = 0; i < j4_size; ++i)
+			for(size_t j = i+1; j < j4_size; ++j)
+				AK4pairs.emplace_back(Boson<Jet>(jets->at(i), jets->at(j))); 
+		
+		//Mass2Comparator is defined in Commons/interface/Comparators.h
+		std::sort(AK4pairs.begin(), AK4pairs.end(), Mass2Comparator(phys::WMASS, phys::ZMASS));
+		
+		if(AK4pairs.front().mass() > 60 && AK4pairs.front().mass() < 120)
+			hadVB = new Boson<Jet>(AK4pairs.front());
+	}
+	
+	// If no pair of AK4, look for single AK8
+	if(jetsAK8->size() > 1 && !hadVB){
+		std::sort(jetsAK8->begin(), jetsAK8->end(), Mass2Comparator(phys::WMASS, phys::ZMASS));
+		
+		if(jetsAK8->front().mass() > 60 && jetsAK8->front().mass() < 120)
+			hadVB = new Jet(jetsAK8->front());
+	}
+	
+	return hadVB;
 }
 
 
@@ -650,6 +801,14 @@ void VZZAnalyzer::endNameCuts(){
 		gCutsR->GetXaxis()->SetBinLabel(2, "Lep signal");
 		gCutsR->GetXaxis()->SetBinLabel(3, "Had signal");
 	}
+	
+	TH1* gCutsAnalysis = theHistograms.get("Cut analysis_f_");
+	if(gCutsR){
+		gCutsAnalysis->GetXaxis()->SetBinLabel(1, "Baseline");
+		gCutsAnalysis->GetXaxis()->SetBinLabel(2, "Any minDM < 30");
+		gCutsAnalysis->GetXaxis()->SetBinLabel(3, "AK4 minDM < 30");
+		gCutsAnalysis->GetXaxis()->SetBinLabel(4, "Any minDM < 13");
+	}
 }
 
 
@@ -659,7 +818,7 @@ void VZZAnalyzer::endVHad_vs_ZZpt(TFile& f_out){
 	if(!Vjj_ZZpt || !VJ_ZZpt)
 		return;
 	
-	THStack Vsig_vs_ZZpt("Vsig_vs_ZZpt", "Hadronic part of event;ZZ pt [GeV/c]");
+	THStack Vsig_vs_ZZpt("Vsig_vs_ZZpt", "Hadronic part of event;ZZ pt [GeV/c];Events");
 	Vjj_ZZpt->SetLineColor(kRed); 		Vjj_ZZpt->SetFillColor(kRed-7);
 	Vsig_vs_ZZpt.Add(Vjj_ZZpt);
 	VJ_ZZpt->SetLineColor(kGreen+2); 	VJ_ZZpt->SetFillColor(kGreen-7);
@@ -1059,7 +1218,7 @@ void VZZAnalyzer::makeQQ(bool doGraphs){ //Boson<Particle>* VZZAnalyzer::genQuar
 		qq_ = Boson<Particle>(genQuarks.at(0), genQuarks.at(1));
 	}
 	//else
-		//new (qq_) Boson<Particle>(); //return nullptr;
+		//new (qq_) Boson<Particle>(); //return nullptr;	
 }
 
 
@@ -1404,45 +1563,43 @@ void VZZAnalyzer::fillGenVBtoAK4(){
 
 void VZZAnalyzer::resolutionZmass(){  // same as bestZMassJetMVA() but without dR(jet, ZZ)>2.
 	MassComparator ZmassComp(phys::ZMASS);
-	
-	if( genZZ_ && genZZ_->p() > 1. ){
-		//------------------	GEN AK8	------------------
-		if(genJetsAK8->size() > 0){
-			stable_sort( genJetsAK8->begin(), genJetsAK8->end(), ZmassComp );
-			float mass_8g = genJetsAK8->front().mass();
-			if( fabs(mass_8g - phys::ZMASS) < 30.){
-				theHistograms.fill<TH2F>("BestZ_AK8_gen", "BestZ AK8_{gen} mass vs ZZ_{gen} pt;pt ZZ [GeV/c];AK8_{gen} mass [GeV/c]", PT_2D_SIZE, MASS_2D_SIZE, genZZ_->pt(), mass_8g, theWeight);
-			}
-		}
-		//------------------	GEN AK4	------------------
-		if(genHadVBs_->size() > 0){
-			stable_sort( genHadVBs_->begin(), genHadVBs_->end(), ZmassComp );
-			float mass_4g = genHadVBs_->front().mass();
-			if( fabs(mass_4g - phys::ZMASS) < 30.){
-				theHistograms.fill<TH2F>("BestZ_AK4s_gen", "BestZ AK4s_{gen} mass vs ZZ_{gen} pt;pt ZZ [GeV/c];AK4s_{gen} mass [GeV/c]", PT_2D_SIZE, MASS_2D_SIZE, genZZ_->pt(), mass_4g, theWeight);
-			}
+	/*
+	//------------------	GEN AK8	------------------
+	if(genJetsAK8->size() > 0){
+		stable_sort( genJetsAK8->begin(), genJetsAK8->end(), ZmassComp );
+		float mass_8g = genJetsAK8->front().mass();
+		if( fabs(mass_8g - phys::ZMASS) < 30.){
+			theHistograms.fill<TH2F>("BestZ_AK8_gen", "BestZ AK8_{gen} mass vs ZZ_{gen} pt;pt ZZ [GeV/c];AK8_{gen} mass [GeV/c]", PT_2D_SIZE, MASS_2D_SIZE, genZZ_->pt(), mass_8g, theWeight);
 		}
 	}
-	
-	/*
-	if( ZZ && ZZ->p() > 1.){
-		// ------------------	REC AK4	------------------
-		if(jetsAK8->size() > 0){
-			stable_sort( jetsAK8->begin(), jetsAK8->end(), ZmassComp );
-			float mass_8r = jetsAK8->front().mass();
-			if( fabs(mass_8r - phys::ZMASS) < 30.){
-				theHistograms.fill<TH2F>("BestZ_AK8_rec", "BestZ AK8_{rec} mass vs ZZ_{rec} pt;pt ZZ [GeV/c];AK8_{gen} mass [GeV/c]", PT_2D_SIZE, MASS_2D_SIZE, ZZ->pt(), mass_8r, theWeight);
-			}
+	//------------------	GEN AK4	------------------
+	if(genHadVBs_->size() > 0){
+		stable_sort( genHadVBs_->begin(), genHadVBs_->end(), ZmassComp );
+		float mass_4g = genHadVBs_->front().mass();
+		if( fabs(mass_4g - phys::ZMASS) < 30.){
+			theHistograms.fill<TH2F>("BestZ_AK4s_gen", "BestZ AK4s_{gen} mass vs ZZ_{gen} pt;pt ZZ [GeV/c];AK4s_{gen} mass [GeV/c]", PT_2D_SIZE, MASS_2D_SIZE, genZZ_->pt(), mass_4g, theWeight);
 		}
-		//------------------	REC AK4	------------------
-		if(AK4pairs_->size() > 0){
-			stable_sort( AK4pairs_->begin(), AK4pairs_->end(), ZmassComp );
-			float mass_4r = AK4pairs_->front().mass();
-			if( fabs(mass_4r - phys::ZMASS) < 30.){
-				theHistograms.fill<TH2F>("BestZ_AK4s_rec","BestZ AK4s_{rec} mass vs ZZ_{rec} pt;pt ZZ [GeV/c];AK4s_{rec} mass [GeV/c]", PT_2D_SIZE, MASS_2D_SIZE, ZZ->pt(), mass_4r, theWeight);
-			}
+	}
+	*/
+	
+	// ------------------	REC AK8	------------------
+	/*if(jetsAK8->size() > 0){
+		stable_sort( jetsAK8->begin(), jetsAK8->end(), ZmassComp );
+		float mass_8r = jetsAK8->front().mass();
+		if( fabs(mass_8r - phys::ZMASS) < 30.){
+			theHistograms.fill<TH2F>("BestZ_AK8_rec", "BestZ AK8_{rec} mass vs ZZ_{rec} pt;pt ZZ [GeV/c];AK8_{gen} mass [GeV/c]", PT_2D_SIZE, MASS_2D_SIZE, ZZ->pt(), mass_8r, theWeight);
 		}
 	}*/
+	//------------------	REC AK4	------------------
+	if(AK4pairs_->size() > 0){
+		stable_sort( AK4pairs_->begin(), AK4pairs_->end(), ZmassComp );
+		float mass_4r = AK4pairs_->front().mass();
+		theHistograms.fill("BestZ r4 mass", "BestZ AK4s rec mass;mass [GeV/c^{2}];# evts", 30,60.,120., mass_4r, theWeight);
+		theHistograms.fill("BestZ r4 dM _r_", "BestZ AK4s rec dM;mass [GeV/c^{2}];# evts", 32,0.,32., fabs(mass_4r - phys::ZMASS), theWeight);
+		//if( fabs(mass_4r - phys::ZMASS) < 30.){
+			//theHistograms.fill<TH2F>("BestZ_AK4s_rec","BestZ AK4s_{rec} mass vs ZZ_{rec} pt;pt ZZ [GeV/c];AK4s_{rec} mass [GeV/c]", PT_2D_SIZE, MASS_2D_SIZE, ZZ->pt(), mass_4r, theWeight);
+		//}
+	}
 }
 
 /*
@@ -2510,66 +2667,60 @@ const P* VZZAnalyzer::findBestVPoint(std::vector<const P*>& js, VCandType& thisC
 }
 
 
-double VZZAnalyzer::getPyPrediction(const vector<double>& vect, const PyObject* predictor) const{
+double VZZAnalyzer::getPyPrediction(const vector<double>& vect, PyObject* predictor) const{
 	if(!predictor){
 		fputs ("Warning (getPyPrediction): predictor is NULL", stderr);
-		return -1.;
+		return -2.;
 	}
 	
 	PyObject *l = PyList_New(vect.size());
-	
 	for (size_t i = 0; i < vect.size(); ++i) {
 		PyList_SET_ITEM(l, i, PyFloat_FromDouble(vect.at(i)));
 	}
+	
 	//PyObject_CallMethod(helper_module_, "test_list", "O", l);
 	
-	PyObject* result = PyObject_CallMethod(helper_module_, "predict", "OO", predictor, l);
-	double res = PyFloat_AsDouble(result);
+	//PyObject* result = PyObject_CallMethod(helper_module_, "predict", "OO", predictor, l);
+	//Py_DECREF(l);
 	
-	Py_DECREF(l);
-	Py_DECREF(result);
 	
-	return res;
-}
-	//////////////////////////////////////////////////
-	// Tentative with direct numpy to reduce overhead on Python side
-	/*	
-	PyObject* numpy_module_ = PyImport_ImportModule("numpy");
-	helper_module_ = PyImport_ImportModule("numpy"); // import module
-	if (!helper_module_){
-		cout<<"Error: could not load \"numpy\""<<std::endl;
-		Py_FinalizeEx();
-		exit(1);  // TODO: something else must be done here
-	}
-	*/
-	//numpy_module_
-	//npy_intp ndim = npy_intp(2);
-	//PyObject* arr = PyArray_SimpleNewFromData(vect.size(), 2, NPY_FLOAT, (void*)(vect.data()));*/
-	/*
-	PyObject *l = PyList_New(vect.size());
-	for (size_t i = 0; i < vect.size(); ++i) {
-		PyList_SET_ITEM(l, i, PyFloat_FromDouble(vect.at(i)));
-	}
 	PyObject *ll = PyList_New(1);
 	PyList_SET_ITEM(ll, 0, l);
-	PyObject_CallMethod(helper_module_, "test_list", "O", l);
-	PyObject_CallMethod(helper_module_, "test_list", "O", ll);
 	
-	PyObject* result = PyObject_CallMethod(helper_module_, "predict_fast", "OO", AK4_classifier_, ll);*/
-	/*
-	//double res = PyFloat_AsDouble(result);
-	*/
-	//Py_XDECREF(ll);
-	//Py_XDECREF(l);
-	/*
-	Py_XDECREF(result);
+	PyObject* pred = PyObject_CallMethod(predictor, "predict_proba", "O", ll);
+	PyObject* result = PyObject_CallMethod(helper_module_, "pyfloat_from_prediction", "O", pred);
 	
-	Py_XDECREF(AK4_classifier_);  // Free memory in event of crash (end() is not called)
-	Py_XDECREF(AK8_classifier_);
-	Py_XDECREF(helper_module_);  // XDECREF: checks if the reference count is >=0
-	Py_FinalizeEx();*/
-	//////////////////////////////////////////////////
+	Py_DECREF(pred);
+	Py_DECREF(ll);
+	
+	
+	double res = PyFloat_AsDouble(result);
+	Py_DECREF(result);  // For unknown reasons, this makes the interpreter crash
+	return res;
+}
 
+/*TODO
+double VZZAnalyzer::getPyPredAll(const vector<vector<double>>& vect, PyObject* predictor) const{
+	if(!predictor){
+		fputs ("Warning (getPyPrediction): predictor is NULL", stderr);
+		return -2.;
+	}
+	
+	PyObject *ll = PyList_New(vect.size());
+	for (size_t i = 0; i < vect.size(); ++i) {
+		PyObject *l = PyList_New(vect.at(0).size());
+		
+		for(size_t j = 0; j < vect.at(0).size(); ++j){
+			PyList_SET_ITEM(l, j, PyFloat_FromDouble(vect.at(i).at(j)));
+		}
+		PyList_SET_ITEM(ll, i, l);
+	}
+	
+	
+	
+	Py_DECREF(ll);
+}
+*/
 
 vector<double> VZZAnalyzer::getAK4features(const Boson<Jet>& jj){
 	vector<double> buffer;

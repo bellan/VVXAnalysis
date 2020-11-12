@@ -15,11 +15,14 @@
 #include "TTree.h"
 #include "TLorentzVector.h"
 
+//#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+//#include <numpy/arrayobject.h>
+
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 #include <boost/assign/std/vector.hpp> 
 
-//#define USE_PYTHON
+#define USE_PYTHON
 //#define PRINT_ONLY_CAND
 
 using namespace boost::assign;
@@ -61,12 +64,13 @@ void DBGenerator::begin(){
 	cout<<"\n\tfilename = \""<<fileName<<"\"\n"; //fileName comes from EventAnalyzer.h
 	// format: samples/<year>/<sample_name>.root
 	
+	//std::string::size_type nameLength = fileName.length();
+	
 	std::string::size_type startOfName = fileName.find_last_of('/');
 	std::string::size_type endOfName = fileName.find_last_of('.');
-	std::string::size_type nameLength = fileName.length();
 	
 	std::string::size_type startOfYear = fileName.find_first_of('/');
-	std::string::size_type endOfYear = fileName.find_last_of('/');
+	std::string::size_type endOfYear = startOfName;  //fileName.find_last_of('/');
 	
 	//cout<<"\tstart = "<<startOfName<<" \tend = "<<endOfName<<" \ttotal length = "<<nameLength<<"\n";
 	std::string strippedName = "UnnamedTree";
@@ -117,12 +121,21 @@ void DBGenerator::begin(){
 	if (!helper_module_){
 		cout<<"Error: could not load \"VZZhelper\""<<std::endl;
 		Py_FinalizeEx();
-		exit(2);  // TODO: something else must be done here
+		exit(2);
 	}
 	
-	AK4_classifier_ = PyObject_CallMethod(helper_module_, "load_object","s","VZZ_AK4_tree.pkl");
+	AK4_classifier_ = PyObject_CallMethod(helper_module_, "load_object", "s", "VZZ_AK4_tree.pkl");
 	if(AK4_classifier_ == Py_None){
 		cout<<"Error: could not load AK4_classifier_."<<std::endl;
+		Py_DECREF(helper_module_);
+		Py_FinalizeEx();
+		exit(3);
+	}
+	
+	AK8_classifier_ = PyObject_CallMethod(helper_module_, "load_object", "s", "VZZ_AK8_tree.pkl");
+	if(AK8_classifier_ == Py_None){
+		cout<<"Error: could not load AK8_classifier_."<<std::endl;
+		Py_DECREF(AK4_classifier_);
 		Py_DECREF(helper_module_);
 		Py_FinalizeEx();
 		exit(3);
@@ -130,7 +143,7 @@ void DBGenerator::begin(){
 	#endif
 	
 	cout<<"\nAnalyzed:\t      /"<<tree()->GetEntries()<<std::flush;
-	
+	//cout<<'\n';
 	return;
 }
 
@@ -138,6 +151,7 @@ void DBGenerator::begin(){
 Int_t DBGenerator::cut(){
 	++evtN_;
 	cout<<"\r\t\t"<<evtN_;
+	
 	
 	//Cleanup of previous event
 	if(genHadVBs_)  genHadVBs_->clear(); //Destroys objects but keeps memory allocated
@@ -157,6 +171,7 @@ Int_t DBGenerator::cut(){
 	//Hadronic signal
 	sigType_ = VZZAnalyzer::isSignal(/*Uses genJets(AK4) and qq_. Modifies sigVB*/); 
 	
+	// REC BASELINE
 	if(!ZZ || ZZ->p() < 1.) return -1;
 	if(jets->size() < 2. && jetsAK8->size() == 0) return -2;
 	
@@ -167,54 +182,22 @@ Int_t DBGenerator::cut(){
 void DBGenerator::analyze(){
 	++analyzedN_; analyzedW_ += theWeight;
 	
-	bool sigDefinition = sigType_ > 0 && topology.test(0) && topology.test(4);
+	//vector<double> test(15, 0.);
+	//getPyPrediction(test, AK8_classifier_);
 	
-	//Particle* candClosest =nullptr;//Contains information from the simulation. Probably useless
-	const Particle* candBestV = nullptr;  // Obtainable looking only at data
-	// As sigVB, it only points to the Particle, it doesn't own it. Maybe change this?
+	mainEvtRec(outputFile_); //TEMP
 	
-	
-	//RECONSTUCTION: Move it to VZZ, make nonprivate member function
-	VCandType temp = VCandType::None;
-	int sigRecType = 0;
-	Particle* cand4 = VZZAnalyzer::findBestVFromPair(jets, temp);  // = Particle -> Boson<Jet>*
-	const Particle* cand8 = VZZAnalyzer::findBestVFromSing(jetsAK8, temp);//= Particle* -> Jet*
-	if(!cand4 && !cand8) return;  // IMPORTANT: JUMP EVENT IF NO VB CAN BE RECONSTRUCTED!
-	if(cand4 && cand8){
-		if(VZZAnalyzer::minDM(cand4->mass()) < 30. || VZZAnalyzer::minDM(cand8->mass()) < 30.){
-			if( VZZAnalyzer::minDM(cand4->mass()) < VZZAnalyzer::minDM(cand8->mass()) ){
-				sigRecType = 1;
-				candBestV = cand4;
-			}
-			else{
-				sigRecType = 2;
-				candBestV = cand8;
-			}
-		}
-	}
-	else if(cand4) { candBestV = cand4; 	sigRecType = 1; }
-	else if(cand8) { candBestV = cand8; 	sigRecType = 2; }
-	//END RECONSTRUCTION
-	
-	// IMPORTANT: JUMP EVENT IF NO VB CAN BE RECONSTRUCTED!
-	if(!candBestV || !ZZ->isValid() || !ZZ->passFullSelection()) return;
-	
-	if(/*isSigFile_ &&*/ sigDefinition)
-		outputFile_<<1;  // 1  Is signal at gen level?
-	else
-		outputFile_<<0;
-	
-	outputFile_<<SEP_CHAR<<theWeight;  // 2
-	
-	//Here we write relevant variables to the outputFile
-	mainEvtRec(sigRecType, candBestV);
-	
-	if(cand4) delete cand4;
-	
-	outputFile_<<'\n';  // Let the buffer be flushed automatically
-	
-	//if(isSigFile_)
 	writeTagger(outputFileAK4_, outputFileAK8_);  // contains the endline
+	
+	/*
+	foreach(const Jet& jet, *jetsAK8){
+		theHistograms.fill("m8chosen","m8chosen", 30,-1000.,1000., jet.chosenAlgoMass(), 1.);
+		theHistograms.fill("m8","m8", 30,-1000.,1000., jet.mass(), 1.);
+	}*/
+	/*
+	foreach(const Jet& jet, *jets)
+		theHistograms.fill("m4","m4", 30,-1000.,1000., jet.chosenAlgoMass(), 1.);
+	*/
 }
 
 void DBGenerator::end(TFile &){
@@ -228,6 +211,7 @@ void DBGenerator::end(TFile &){
 	#ifdef USE_PYTHON
 	//Python cleanup and shutdown of the interpreter
 	Py_DECREF(AK4_classifier_);
+	Py_DECREF(AK8_classifier_);
 	Py_DECREF(helper_module_);
 	Py_FinalizeEx();
 	#endif
@@ -241,6 +225,58 @@ void DBGenerator::end(TFile &){
 	cout<<" \tEnd of DBGenerator\t";
 	for(char i=0; i<25; ++i) cout<<'-';
 	cout<<"\n\n";
+}
+
+
+void DBGenerator::mainEvtRec(std::ofstream& outFile){
+	// GEN SIGNAL
+	bool sigDefinition = sigType_ > 0 && topology.test(0) && topology.test(4);
+	
+	//RECONSTUCTION: Move it to VZZ, make nonprivate member function
+	const Particle* candBestV = nullptr;  // Obtainable looking only at data
+	// As sigVB, it only points to the Particle, it doesn't own it
+	/*
+	VCandType temp = VCandType::None;
+	const Particle* cand4 = VZZAnalyzer::findBestVFromSing(AK4pairs_, temp);  // = Particle -> Boson<Jet>*
+	const Jet* cand8 = VZZAnalyzer::findBestVFromSing(jetsAK8, temp);//= Particle* -> Jet*
+	*/
+	int sigRecType = 0;
+	if(AK4pairs_->size() > 0){
+		std::sort(AK4pairs_->begin(), AK4pairs_->end(), Mass2Comparator(phys::ZMASS, phys::WMASS));
+		if(minDM(AK4pairs_->front().mass()) < 30.){
+			candBestV = &AK4pairs_->front();
+			sigRecType = 1;
+		}
+	}
+	if(sigRecType == 0 && jetsAK8->size() > 0){
+		std::sort(jetsAK8->begin(), jetsAK8->end(), Mass2Comparator(phys::ZMASS, phys::WMASS));
+		if(minDM(jetsAK8->front().chosenAlgoMass()) < 30.){
+			candBestV = &jetsAK8->front();
+			sigRecType = 2;
+		}
+	}
+	
+	if(!candBestV) return;  // IMPORTANT: JUMP EVENT IF NO VB CAN BE RECONSTRUCTED!
+	
+	//else return;
+	//END RECONSTRUCTION
+	
+	// IMPORTANT: JUMP EVENT IF NO VB CAN BE RECONSTRUCTED!
+	if(!candBestV || !ZZ->isValid() || !ZZ->passFullSelection()) return;
+	
+	if(isSigFile_ && sigDefinition)
+		outFile<<1;  // 1  Is signal at gen level?
+	else
+		outFile<<0;
+	
+	outFile<<SEP_CHAR<<theWeight;  // 2
+	
+	//Here we write relevant variables to the outputFile
+	writeMainEvt(outFile, sigRecType, candBestV);  // uses AK(4|8)classifier_
+	
+	//if(cand4) delete cand4;
+	
+	outFile<<'\n';  // Let the buffer be flushed automatically
 }
 
 
@@ -292,6 +328,7 @@ void DBGenerator::writeTagger(std::ofstream& outFile4, std::ofstream& outFile8){
 	AK8:
 	if(jetsAK8->size() > 0){
 		const Jet* rec8 = closestSing(jetsAK8, qq_);
+		//TODO DOUBT a selection on the mass?
 		writeInfoAK8(rec8, outFile8);
 	}
 	
@@ -327,7 +364,7 @@ void DBGenerator::writeInfoAK4(const Boson<Jet>* bestAK4, std::ofstream& outFile
 	float tmpM = 0.;
 	for(size_t i = start; i < AK4pairs_->size(); ++i){
 		tmpM = AK4pairs_->at(i).mass();
-		if(tmpM < 60. || tmpM > 120.) 
+		if(tmpM < 50. || tmpM > 120.) 
 			continue;  // We would exclude them anyway
 		outFile<<0<<SEP_CHAR<<theWeight;
 		vector<double> features = getAK4features(AK4pairs_->at(i));
@@ -371,6 +408,7 @@ vector<double> DBGenerator::getAK4featuresTEMP(const Boson<Jet>& jj){
 
 void DBGenerator::writeInfoAK8(const Jet* bestAK8, std::ofstream& outFile){
 	// If it exists, the true good boson is always written.
+	
 	if(bestAK8){
 		vector<double> features = getAK8features(*bestAK8);
 		outFile<<1<<SEP_CHAR<<theWeight;
@@ -398,8 +436,9 @@ void DBGenerator::writeInfoAK8(const Jet* bestAK8, std::ofstream& outFile){
 	float tmpM = 0.;
 	for(size_t i = start; i < jetsAK8->size(); ++i){
 		tmpM = jetsAK8->at(i).mass();
-		if(tmpM < 60. || tmpM > 120.) 
-			continue;  // We would exclude them anyway
+		if(tmpM < 50. || tmpM > 120.)
+			continue;  // We would exclude them anyway	
+		
 		outFile<<0<<SEP_CHAR<<theWeight;
 		vector<double> features = getAK8features(jetsAK8->at(i));
 		printVars(outFile, features);
@@ -409,64 +448,67 @@ void DBGenerator::writeInfoAK8(const Jet* bestAK8, std::ofstream& outFile){
 }
 
 
-void DBGenerator::mainEvtRec(int sigRecType, const Particle* recV){
+void DBGenerator::writeMainEvt(std::ofstream& outFile, int sigRecType, const Particle* recV){
 	//output of scikit
 	#ifdef USE_PYTHON
-	double pred = 0.;
+	double pred = -10.;
 	if(AK4_classifier_ && sigRecType==1){
 		vector<double> bufFeat = VZZAnalyzer::getAK4features( *((Boson<Jet>*)recV) );
 		pred = VZZAnalyzer::getPyPrediction(bufFeat, AK4_classifier_);
 	}
 	else if(AK8_classifier_ && sigRecType==2){
-		//double bufFeat[n];  //TODO, maybe
-		//VZZAnalyzer::getAK8features(*recV, bufFeat);
-		pred = 0.;  // VZZAnalyzer::getPyPrediction(bufFeat, 5, AK8_classifier_);
+		vector<double> bufFeat = VZZAnalyzer::getAK8features( *(Jet*)recV );
+		pred = VZZAnalyzer::getPyPrediction(bufFeat, AK8_classifier_);
 	}
-	printVars(outputFile_, 2, sigRecType, pred);  //TODO, ifndef USE_PYTHON????
+	
+	printVars(outFile, 2, (double)sigRecType, pred);       // 2
 	#endif
-	// outputFile_<<SEP_CHAR<<met->pt();
+	// outFile<<SEP_CHAR<<met->pt();
 	
 	//recV is from findBestVfrom[...]()
 	/*float dMHad = minDM(recV->mass());
 	float ptHad = recV->pt();
 	float aEtaHad = fabs(recV->eta());
-	printVars(outputFile_, 3, dMHad, ptHad, aEtaHad);*/
+	printVars(outFile, 3, dMHad, ptHad, aEtaHad);*/
 	
-	printVars(outputFile_, 3, ZZ->mass(), ZZ->pt(), ZZ->eta());
+	printVars(outFile, 3, ZZ->mass(), ZZ->pt(), ZZ->eta()); // 5
 	
 	TLorentzVector candp4(recV->p4());
 	TLorentzVector Z1p4(ZZ->first().p4());
-	TLorentzVector Z2p4(ZZ->second().p4());
+	TLorentzVector Z2p4(ZZ->second().p4());                 // 8 (+3)
 	
 	// Angles
 	float ang0 = Z1p4.Angle(Z2p4.Vect());
 	float ang1 = Z1p4.Angle(candp4.Vect());
 	float ang2 = candp4.Angle(Z2p4.Vect());
+	float ang3 = candp4.Angle(ZZ->p4().Vect());             // 12 (+7)
 	
 	// phi
 	float dPhi0 = physmath::deltaPhi(ZZ->first(), ZZ->second());
 	float dPhi1 = physmath::deltaPhi(ZZ->first(), *recV);
 	float dPhi2 = physmath::deltaPhi(*recV, ZZ->second());
-	float dPhi3 = physmath::deltaPhi(*recV, *ZZ);
+	float dPhi3 = physmath::deltaPhi(*recV, *ZZ);           // 16 (+11)
 	
 	// eta
 	float dEta0 = ZZ->first().eta() - ZZ->second().eta();
 	float dEta1 = ZZ->first().eta() - recV->eta();
 	float dEta2 = recV->eta() - ZZ->second().eta();
+	float dEta3 = recV->eta() - ZZ->eta();                  // 20 (+15)
 	
 	// R
-	float dR0 = physmath::deltaPhi(ZZ->first(), ZZ->second());
-	float dR1 = physmath::deltaPhi(ZZ->first(), *recV);
-	float dR2 = physmath::deltaPhi(*recV, ZZ->second());
+	float dR0 = physmath::deltaR(ZZ->first(), ZZ->second());
+	float dR1 = physmath::deltaR(ZZ->first(), *recV);
+	float dR2 = physmath::deltaR(*recV, ZZ->second());
+	float dR3 = physmath::deltaR(*recV, *ZZ);               // 24 (+19)
 	
 	// projection - relative pt
 	float pt0 = candp4.P() * sin( candp4.Angle(ZZ->p4().Vect()) );
 	float pt1 = Z1p4.P() * sin( Z1p4.Angle((candp4 + Z2p4).Vect()) );
 	float pt2 = Z2p4.P() * sin( Z2p4.Angle((candp4 + Z1p4).Vect()) );
 	
-	printVars(outputFile_, 15, ang0,ang1,ang2, dPhi0,dPhi1,dPhi2, dEta0,dEta1,dEta2, dR0,dR1,dR2, pt0,pt1,pt2);
+	printVars(outFile, 19, ang0,ang1,ang2,ang3, dPhi0,dPhi1,dPhi2,dPhi3, dEta0,dEta1,dEta2,dEta3, dR0,dR1,dR2,dR3, pt0,pt1,pt2);
 	
-	printVars(outputFile_, 2, (candp4+ZZ->p4()).M(), (candp4+ZZ->p4()).Pt());
+	printVars(outFile, 2, (candp4+ZZ->p4()).M(), (candp4+ZZ->p4()).Pt());
 	
 }
 

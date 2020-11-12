@@ -41,7 +41,8 @@ class DBGenerator: public VZZAnalyzer, RegistrableAnalysis<DBGenerator>{
 		virtual void end(TFile &);
 		
 		// ----- ----- Write to databases ----- -----
-		void mainEvtRec(int sigRecType, const phys::Particle* recV);
+		void mainEvtRec(std::ofstream& outFile);
+		void writeMainEvt(std::ofstream&, int sigRecType, const phys::Particle* recV);
 		
 		void writeTagger(std::ofstream& outFile4, std::ofstream& outFile8);  // We want to choose the best AK8 (pair of AK4), using info from the original quarks
 		void writeInfoAK4(const phys::Boson<phys::Jet>* bestAK4, std::ofstream& outFile);

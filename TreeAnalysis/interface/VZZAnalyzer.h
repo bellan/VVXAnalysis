@@ -37,6 +37,8 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 			//std::cout<<"Destroying VZZAnalyzer"<<std::endl;
 			if(genHadVBs_) delete genHadVBs_; //Deallocates memory
 			if(AK4pairs_)  delete AK4pairs_;
+			if(AK4pairsWithPred_) delete AK4pairsWithPred_;
+			if(AK8WithPred_)delete AK8WithPred_;
 			if(AllGenVBjj_)delete AllGenVBjj_;
 			if(AK4GenRec_) delete AK4GenRec_;
 			if(genZZ_)     delete genZZ_;
@@ -46,7 +48,7 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 			Py_XDECREF(AK4_classifier_);  // Free memory in event of crash (end() is not called)
 			Py_XDECREF(AK8_classifier_);
 			Py_XDECREF(helper_module_);  // XDECREF: checks if the reference count is >=0
-			//Py_FinalizeEx();  // Close Python interpreter
+			Py_FinalizeEx();  // Close Python interpreter
 		}
   	
 		virtual void begin();
@@ -58,6 +60,7 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		virtual void end(TFile &);
 		
 		// ----- ----- Helper functions ----- ----- 
+		phys::Particle* getHadVB();
 		template<class P = phys::Jet>
 		const P* findBestVFromSing(std::vector<P>*, VCandType&);
 		//The candidate is NOT copied, and the pointer returned points to the original
@@ -108,7 +111,7 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		static inline double minDM(const double& mass, const double& r1 = phys::ZMASS, const double& r2 = phys::WMASS) { return std::min( fabs(mass-r1), fabs(mass-r2) ); }
 		
 		// ----- ----- Predictions from scikit classifiers ----- ----- 
-		double getPyPrediction(const std::vector<double>&, const PyObject*) const; // uses module_helper
+		double getPyPrediction(const std::vector<double>&, PyObject*) const; // uses module_helper
 		static std::vector<double> getAK4features(const phys::Boson<phys::Jet>&);
 		static std::vector<double> getAK8features(const phys::Jet&);
 		
@@ -207,11 +210,12 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 	protected:
 		unsigned long evtN_, analyzedN_; //Used to count processed events.
 		clock_t startTime_; //Used to calculate elapsed time
-		float analyzedW_;  // Weighted events passing cut
+		float analyzedW_, totEvtW_;  // Weighted events passing cut and total
 		
 		PyObject* helper_module_;  // Python mini-module to unpickle AK4_classifier_ and obtain predictions from it
 		PyObject* AK4_classifier_;  // A scikit-learn classifier, trained on pairs of AK4 to distinguish from W/Z induced jets and background QCD processes. Must implement the method "predict_proba(<2D matrix>)"
 		PyObject* AK8_classifier_;
+		//PyObject* EVT_classifier_;
 		
 		//phys::DiBoson<phys::Particle, phys::Particle>* ZZ_gen = nullptr;
 		std::vector<phys::Boson<phys::Particle>>* genHadVBs_ = nullptr;  // genVBParticles with hadronic daugthers
@@ -221,6 +225,9 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		phys::DiBoson<phys::Particle, phys::Particle>* genZZ_; //Always != nullptr from begin() to end().
 		phys::Boson<phys::Particle> qq_;
+		
+		std::vector<std::pair<phys::Boson<phys::Jet>, double>>* AK4pairsWithPred_ = nullptr;
+		std::vector<std::pair<phys::Jet, double>>* AK8WithPred_ = nullptr;
 		
 		// ----- ----- Signal definition ----- ----- 
 		int sigType_;            // 0-->no  |     1-->AK4     |  2-->AK8

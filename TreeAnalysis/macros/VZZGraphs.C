@@ -116,14 +116,14 @@ void VZZGraphs(string sReqCateg = string(""), string sReqType = "", string reqGr
 	TString path = "../results/";  // "../results/VZZAnalyzer_MC/";  //fresh results
 	cout<<"Source path: \""<<path<<"\"\n";
 	
-	vector<TString> signals = {"ZZZ_1618_MC","WZZ_1618_MC"}; //{"ZZZ","WZZ"};
-	vector<TString> backgrounds = {"ZZTo4l"};//, "ggTo4mu_Contin_MCFM701", "ggTo4e_Contin_MCFM701", "ggTo2e2mu_Contin_MCFM701"}; //{"ggZZ2e2mu", "ggZZ4e", "ggZZ4mu", "WZ", "ZZTo2e2muJJ", "ZZTo4eJJ", "ZZTo4lamcatnlo", "ZZTo4muJJ"};
+	vector<TString> signals = {"ZZZ_1618_MC", "WZZ_1618_MC"};//,"VZZ_1618_MC"};
+	vector<TString> backgrounds = {"ZZTo4L"};//{"ZZTo4l"};//, "ggTo4mu_Contin_MCFM701", "ggTo4e_Contin_MCFM701", "ggTo2e2mu_Contin_MCFM701"}; //{"ggZZ2e2mu", "ggZZ4e", "ggZZ4mu", "WZ", "ZZTo2e2muJJ", "ZZTo4eJJ", "ZZTo4lamcatnlo", "ZZTo4muJJ"};
 	
 	std::transform(reqGrName.begin(), reqGrName.end(), reqGrName.begin(), ::tolower);
 	std::transform(sReqCateg.begin(), sReqCateg.end(), sReqCateg.begin(), ::tolower);
 	
 //#####	graphs not categorized by event type	#####
-	vector<TString> jetPlots = {};
+	vector<TString> jetPlots = {/*"BestZ r4 mass", "BestZ r4 dM", "Cut analysis_f_", "minDM_r_","pt_tot_r_","All8_t21","All8_t32",*/ "Best8_t21_f_", "Best8_t32_f_", "Best8_t32_f_", "Best8_PUPPIt21_f_"};
 		
 	vector<TString> leptonPlots = {};//{"ZZmass", "jet1_pt", "jet2_pt", "jet1_E", "jet2_E", "jets_deltaR", "jets12_M"}; //Maybe create a single vector of plots?
 	
@@ -190,7 +190,7 @@ void VZZGraphs(string sReqCateg = string(""), string sReqType = "", string reqGr
 	if(sReqCateg.find("cut") != string::npos) categToDo.set(0); //set to 1
 	if(sReqCateg.find("jet") != string::npos) categToDo.set(1);	
 	if(sReqCateg.find("lep") != string::npos) categToDo.set(2);
-	if(sReqCateg == string(""))								categToDo.set(2); //Default
+	if(sReqCateg == string(""))								categToDo.set(1); //Default
 	
 	bitset<4> typeToDo;	
 	cout<<"sReqType = \""<<sReqType<<"\"\t";
@@ -228,8 +228,10 @@ void VZZGraphs(string sReqCateg = string(""), string sReqType = "", string reqGr
 //################################	JET PLOTS ################################
 	if(categToDo.test(1)){
 		foreach(TString& graphName, jetPlots){
-			
-			if(! doThisGraphName(graphName, reqGrName) ) continue;
+			#ifdef TEST_MODE
+			cout<<"\nJet plots: looping over \""<<graphName<<"\"\n";
+			#endif
+			//if(! doThisGraphName(graphName, reqGrName) ) continue;
 			
 			//	#####	Struct creation #####
 			GNames theNames(graphName, signals, backgrounds);
@@ -602,6 +604,7 @@ void printGraphStack(const MyGraphs<TH>& graphs, const GNames& names){
 		TH* cg = (TH*)(graphs.vhBkgs.at(i)->Clone(names.bkgGrNames.at(i)));
 		//vhBkgCs.push_back(cg);
 		cg->SetTitle(names.bkgGrNames.at(i));
+		//cg->SetTitle(Form("%s;%s", names.bkgGrNames.at(i).Data(), "|m_{jj} - m_{Z}| [GeV/c^{2}]"));
 		cg->SetLineColor(myColors.at(i + graphs.vhSigs.size()));
 		cg->SetFillColor(myFillColors.at(i + graphs.vhSigs.size()));
 		stack1->Add(cg);
@@ -615,6 +618,7 @@ void printGraphStack(const MyGraphs<TH>& graphs, const GNames& names){
 		}
 		TH* cg = (TH*)(graphs.vhSigs.at(i)->Clone(names.sigGrNames.at(i)));
 		cg->SetTitle(names.sigGrNames.at(i));
+		//cg->SetTitle(Form("%s;%s", names.sigGrNames.at(i).Data(), "|m_{jj} - m_{Z}| [GeV/c^{2}]"));
 		cg->SetLineColor(myColors.at(i));
 		cg->SetFillColor(myFillColors.at(i));
 		stack1->Add(cg);
@@ -622,7 +626,9 @@ void printGraphStack(const MyGraphs<TH>& graphs, const GNames& names){
 	
 	TString newTitle = stack1->GetTitle();
 	newTitle.ReplaceAll(F_PATTERN, "").ReplaceAll(R_PATTERN, "");
+	//stack1->SetTitle(Form("%s;%s", newTitle.Data(), "|m_{jj} - m_{Z}| [GeV/c^{2}]"));
 	stack1->SetTitle(newTitle);
+	//cout<<"\nstack1->GetXaxis(): "<<stack1->GetXaxis()<<'\n';
 	stack1->Draw("HIST");
 	c1->BuildLegend(0.75,0.68,0.98,0.95);	//It's a kind of magic
 }
@@ -783,7 +789,7 @@ MyGraphs<TH>* buildMyGraphs(const GNames& names, vector<TFile*>& signalFiles, ve
 	vector<TH*> vhBackgrounds;
 	vector<TH*> vhBackgrIntegr;
 	//bool isCuts = names.graphName.Contains("Cuts");
-	bool isReverse = names.graphName.Contains(R_PATTERN);
+	bool isReverse = names.graphName.Contains(R_PATTERN);// || names.graphName.Contains("dM");
 	TString strippedGrName(names.graphName);//graphName will be overridden at the end of the func
 	strippedGrName.ReplaceAll(F_PATTERN, "").ReplaceAll(R_PATTERN, "");  // Replacing PATTERNS
 	
