@@ -13,12 +13,8 @@
 #include <boost/assign/std/vector.hpp> 
 using namespace boost::assign;
 
-using std::cout;
-using std::endl;
-using std::min;
-using std::max;
+using namespace std;
 using namespace colour;
-
 using namespace phys;
 
 
@@ -31,10 +27,10 @@ Int_t VVXnocutsAnalyzer::cut() {
 void VVXnocutsAnalyzer::analyze(){
 
   gErrorIgnoreLevel=kFatal; //to avoid errors due to nonexistent tree branches
+  
+  phys::Boson<phys::Particle> Za,Zb,Z1,Z2,WZ;
 
-  phys::Boson<phys::Particle> Z1,Z2,WZ;
-
-  //first choice: analysis fo WZZ (uncomment if needed)
+  //first choice: analysis for WZZ (uncomment if needed)
 
   /*
   std::vector<phys::Boson<phys::Particle>>  bosons=genVBHelper_.ZtoChLep();
@@ -76,12 +72,19 @@ void VVXnocutsAnalyzer::analyze(){
 	j1=par;}
       else{j2=par;}}
   }
-
-  Z1=Boson<phys::Particle>(eminus,eplus);
-  Z2=Boson<phys::Particle>(muminus,muplus);
+  
+  const double zmass=91.1876;
+  Za=Boson<phys::Particle>(eminus,eplus);
+  Zb=Boson<phys::Particle>(muminus,muplus);
+  if(abs(Za.mass()-zmass)<abs(Zb.mass()-zmass)){
+    Z1=Za;
+    Z2=Zb;}
+  else{
+    Z1=Zb;
+    Z2=Za;}
   WZ=Boson<phys::Particle>(j1,j2);
 
-  // analysis of three generic bosons
+  //distribution analysis
   
   TLorentzVector WZ1=Z1.p4()+WZ.p4();
   TLorentzVector WZ2=Z2.p4()+WZ.p4();
@@ -92,62 +95,40 @@ void VVXnocutsAnalyzer::analyze(){
   double massZ1Z2=sqrt((Z1Z2.E()*Z1Z2.E())-(Z1Z2.Px()*Z1Z2.Px())-(Z1Z2.Py()*Z1Z2.Py())-(Z1Z2.Pz()*Z1Z2.Pz()));
   double massWZZ=sqrt((WZZ.E()*WZZ.E())-(WZZ.Px()*WZZ.Px())-(WZZ.Py()*WZZ.Py())-(WZZ.Pz()*WZZ.Pz()));
   theHistograms.fill("mass of ZZ","ZZ mass",100,150,1000,massZ1Z2);
-  if(WZ.id()==23){
-    theHistograms.fill("mass of ZZ","ZZ mass",100,150,1000,massWZ1);
-    theHistograms.fill("mass of ZZ","ZZ mass",100,150,1000,massWZ2);}
-  if(WZ.id()==24){
-    theHistograms.fill("mass of WZ","WZ mass",100,150,1000,massWZ1);
-    theHistograms.fill("mass of WZ","WZ mass",100,150,1000,massWZ2);}
-  theHistograms.fill("mass of tribosons","Triboson mass",50,200,2500,massWZZ);
-  theHistograms.fill("mass of coupled bosons","Coupled boson mass",50,150,1000,massWZ1);
-  theHistograms.fill("mass of coupled bosons","Coupled boson mass",50,150,1000,massWZ2);
-  theHistograms.fill("mass of coupled bosons","Coupled boson mass",50,150,1000,massZ1Z2);
-  theHistograms.fill("energy of all bosons","Total boson energy",50,0,5000,WZZ.E());
-  theHistograms.fill("energy of coupled bosons","Coupled boson energy",50,0,3000,Z1.e()+Z2.e());
-  theHistograms.fill("energy of coupled bosons","Coupled boson energy",50,0,3000,Z1.e()+WZ.e());
-  theHistograms.fill("energy of coupled bosons","Coupled boson energy",50,0,3000,WZ.e()+Z2.e());
+  theHistograms.fill("mass of WZ1","WZ1 mass",50,150,1000,massWZ1);
+  theHistograms.fill("mass of WZ2","WZ2 mass",50,150,1000,massWZ2);
+  theHistograms.fill("mass of WZ","WZ mass",100,150,1000,massWZ1);
+  theHistograms.fill("mass of WZ","WZ mass",100,150,1000,massWZ2);
+  theHistograms.fill("mass of tribosons","Triboson mass",50,200,1200,massWZZ,theWeight); 
+  
+  theHistograms.fill("energy of all bosons","Total boson energy",50,0,3000,WZZ.E());
+  theHistograms.fill("energy of ZZ","ZZ energy",50,0,2000,Z1.e()+Z2.e());
+  theHistograms.fill("energy of WZ1","WZ1 energy",50,0,2000,Z1.e()+WZ.e());
+  theHistograms.fill("energy of WZ2","WZ2 energy",50,0,2000,WZ.e()+Z2.e());
+  theHistograms.fill("energy of Z1","Z1 energy",50,0,1500,Z1.e());
+  theHistograms.fill("energy of Z2","Z2 energy",50,0,1500,Z2.e());
+  theHistograms.fill("energy of W","W energy",50,0,1500,WZ.e());
+  
   double angleWZ1=Z1.p4().Angle(WZ.p4().Vect());
   double angleWZ2=Z2.p4().Angle(WZ.p4().Vect());
   double angleZZ=Z1.p4().Angle(Z2.p4().Vect());
-  double anglemax=max(angleWZ1,max(angleWZ2,angleZZ));
-  double anglemin=min(angleWZ1,min(angleWZ2,angleZZ));
   theHistograms.fill("boson relative angle","Boson relative angle",50,0,3.5,angleWZ1);
   theHistograms.fill("boson relative angle","Boson relative angle",50,0,3.5,angleWZ2);
   theHistograms.fill("boson relative angle","Boson relative angle",50,0,3.5,angleZZ);
-  theHistograms.fill("maximum boson relative angle","Maximum boson relative angle",100,0,3.5,anglemax);
-  theHistograms.fill("minimum boson relative angle","Minimum boson relative angle",100,0,3.5,anglemin);
-  theHistograms.fill("difference between max and min relative angle","Difference between max/min relative boson angle",100,0,3.5,anglemax-anglemin);
-  theHistograms.fill("ratio between max and min relative angle","Ratio between max/min relative boson angle",200,0,30,anglemax/anglemin);
-  theHistograms.fill("sum of relative angles","Sum of boson relative angles",300,0,10.5,angleWZ1+angleWZ2+angleZZ);
-  double emax=max(WZ.e(),max(Z1.e(),Z2.e()));
-  double emin=min(WZ.e(),min(Z1.e(),Z2.e()));
-  theHistograms.fill("energy of major bosons","Major boson energy",50,100,1800,emax);
-  theHistograms.fill("energy of minor bosons","Minor boson energy",100,0,1000,emin);
-  theHistograms.fill("deltae between major and minor bosons","Energy difference between major/minor bosons",100,0,1800,emax-emin);
-  theHistograms.fill("energy ratio between major major and minor bosons","Ratio between major/minor boson energy",150,0,30,emax/emin);
-  double ptmax=max(WZ.pt(),max(Z1.pt(),Z2.pt()));
-  double ptmin=min(WZ.pt(),min(Z1.pt(),Z2.pt()));
-  theHistograms.fill("pt of major bosons","Major boson pt",50,100,1000,ptmax);
-  theHistograms.fill("pt of minor bosons","Minor boson pt",100,0,400,ptmin);
-  theHistograms.fill("deltapt between major and minor bosons","Pt difference between major/minor bosons",100,0,800,ptmax-ptmin);
-  theHistograms.fill("pt ratio between major and minor bosons","Pt ratio between major/minor bosons",150,0,30,ptmax/ptmin);
-  theHistograms.fill("total pt(abs value) sum","Sum of total pt (in abs value)",100,0,2000,WZ.pt()+Z1.pt()+Z2.pt());
-  double etamax=max(abs(WZ.eta()),max(abs(Z1.eta()),abs(Z2.eta())));
-  double etamin=min(abs(WZ.eta()),min(abs(Z1.eta()),abs(Z2.eta())));
-  theHistograms.fill("eta max","Maximum eta (in abs value) of bosons",100,0,7,etamax);
-  theHistograms.fill("eta min","Minimum eta (in abs value) of bosons",100,0,4,etamin);
-  theHistograms.fill("deltaeta max and min","Difference between max/min boson eta(in abs value)",100,0,7,etamax-etamin);
-  theHistograms.fill("ratio eta max and min","Ratio eta max/min (in abs value)",100,1,20,etamax/etamin);
-
-  //analysis of leptonic Z bosons
-
-  foreach(const phys::Boson<phys::Particle> lepbos,genVBHelper_.ZtoChLep()){
-    double elepmin= min(lepbos.daughter(0).e(),lepbos.daughter(1).e());
-    double elepmax= max(lepbos.daughter(0).e(),lepbos.daughter(1).e());
-    theHistograms.fill("energy of major leptons","Major lepton energy",50,0,2500,elepmax);
-    theHistograms.fill("energy of minor leptons","Minor lepton energy",50,0,1000,elepmin);
-    theHistograms.fill("mass of leptonic bosons","Leptonic boson mass",25,85,95,lepbos.mass());
-    theHistograms.fill("energy of leptonic bosons","Leptonic boson energy",50,0,3000,lepbos.e());
-    theHistograms.fill("pt of leptonic bosons","Leptonic boson pt",50,0,2000,lepbos.pt());
-  }
+  
+  theHistograms.fill("total pt scalar sum","Scalar pt sum",100,0,1200,Z1.pt()+Z2.pt()+WZ.pt());
+  theHistograms.fill("total pt vector sum","Vector pt sum",100,0,300,sqrt(WZZ.Px()*WZZ.Px()+WZZ.Py()*WZZ.Py()));
+  
+  theHistograms.fill("pt of Z1","Z1 pt",100,0,400,Z1.pt());
+  theHistograms.fill("pt of Z2","Z2 pt",100,0,400,Z2.pt());
+  theHistograms.fill("pt of W","W pt",100,0,400,WZ.pt());
+  
+  double elepZ1min= min(Z1.daughter(0).e(),Z1.daughter(1).e());
+  double elepZ1max= max(Z1.daughter(0).e(),Z1.daughter(1).e());
+  theHistograms.fill("energy of major Z1 leptons","Major Z1 lepton energy",50,0,2500,elepZ1max);
+  theHistograms.fill("energy of minor Z1 leptons","Minor Z1 lepton energy",50,0,1000,elepZ1min);
+  double elepZ2min= min(Z2.daughter(0).e(),Z2.daughter(1).e());
+  double elepZ2max= max(Z2.daughter(0).e(),Z2.daughter(1).e());
+  theHistograms.fill("energy of major Z2 leptons","Major Z2 lepton energy",50,0,2500,elepZ2max);
+  theHistograms.fill("energy of minor Z2 leptons","Minor Z2 lepton energy",50,0,1000,elepZ2min);
 }

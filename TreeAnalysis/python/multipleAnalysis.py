@@ -1,7 +1,7 @@
 import os
-import time
 
 def testsample(samplename):
+  os.system("make")
   os.system("cp samples/2016/"+samplename+".root samples/2016/test.root")
   os.system("python/run.py VVXnocutsAnalyzer test -r MC")
   os.system("mv results/2016/VVXnocutsAnalyzer_MC/test.root results/2016/VVXnocutsAnalyzer_MC/"+samplename+".root")
