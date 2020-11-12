@@ -12,13 +12,16 @@
 
 #include "EventAnalyzer.h"
 #include "RegistrableAnalysis.h"
-#include "VVXAnalysis/Commons/interface/AriEle.h"
+#include "VVXAnalysis/DataFormats/interface/TypeDefs.h"
 #include "VVXAnalysis/Commons/interface/Comparators.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 #include "VVXAnalysis/DataFormats/interface/Particle.h"
 #include <time.h>
+
+using namespace phys;
+using namespace std;
 
 class WZAnalyzer: public EventAnalyzer, RegistrableAnalysis<WZAnalyzer>{
 
@@ -42,11 +45,11 @@ public:
   
   virtual Int_t cut();
 
-  virtual void GenAnalysis(ZZtype &, Particle &, Particle &);
+  virtual void GenAnalysis(VVtype &, Particle &, Particle &);
 
   virtual void RecoAnalysis(DiBosonLepton &, Particle &, Particle &);
 
-  virtual void GenRecoAnalysis(const ZZtype, const Particle, const Particle, const DiBosonLepton, const Particle, const Particle);
+  virtual void GenRecoAnalysis(const VVtype, const Particle, const Particle, const DiBosonLepton, const Particle, const Particle);
 
 
  private:
@@ -71,6 +74,7 @@ public:
   Int_t counter2;
   Int_t counter3;
   Int_t counter4;
+  Int_t counter5;
 
   Float_t begintime;
   Float_t endtime;

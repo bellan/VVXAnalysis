@@ -2,10 +2,8 @@
 #define VZZaQGCAnalyzer_h
 
 /** \class VZZaQGCAnalyzer
- *  Concrete class for VVX analysis
- *
- *  $Date: 2013/03/15 13:37:31 $
- *  $Revision: 1.4 $
+ *  Class for analysis of anomalous couplings
+ *  $Date: 2020/11/25 $
  *  \author Giovanni Marozzo giovanni.marozzo@edu.unito.it
  */
 

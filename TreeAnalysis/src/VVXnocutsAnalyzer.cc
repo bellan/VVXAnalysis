@@ -13,12 +13,8 @@
 #include <boost/assign/std/vector.hpp> 
 using namespace boost::assign;
 
-using std::cout;
-using std::endl;
-using std::min;
-using std::max;
+using namespace std;
 using namespace colour;
-
 using namespace phys;
 
 
@@ -29,20 +25,26 @@ Int_t VVXnocutsAnalyzer::cut() {
 
 
 void VVXnocutsAnalyzer::analyze(){
-  
-  std::vector<phys::Boson<phys::Particle>>  bosoni=genVBHelper_.ZtoChLep();
-  foreach(const phys::Boson<phys::Particle> bos,genVBHelper_.ZtoNeutrinos()){
-    bosoni.push_back(bos);}
-  foreach(const phys::Boson<phys::Particle> bos,genVBHelper_.ZtoQ()){
-    bosoni.push_back(bos);}
-  foreach(const phys::Boson<phys::Particle> bos,genVBHelper_.WtoLep()){
-    bosoni.push_back(bos);}
-  foreach(const phys::Boson<phys::Particle> bos,genVBHelper_.WtoQ()){
-    bosoni.push_back(bos);}
 
-  phys::Boson<phys::Particle> Z1,Z2,WZ,nullboson;
-  if(bosoni.size()==3){
-    foreach(const phys::Boson<phys::Particle> bosone,bosoni){
+  gErrorIgnoreLevel=kFatal; //to avoid errors due to nonexistent tree branches
+  
+  phys::Boson<phys::Particle> Za,Zb,Z1,Z2,WZ;
+
+  //first choice: analysis for WZZ (uncomment if needed)
+
+  /*
+  std::vector<phys::Boson<phys::Particle>>  bosons=genVBHelper_.ZtoChLep();
+  foreach(const phys::Boson<phys::Particle> bos,genVBHelper_.ZtoNeutrinos()){
+    bosons.push_back(bos);}
+  foreach(const phys::Boson<phys::Particle> bos,genVBHelper_.ZtoQ()){
+    bosons.push_back(bos);}
+  foreach(const phys::Boson<phys::Particle> bos,genVBHelper_.WtoLep()){
+    bosons.push_back(bos);}
+  foreach(const phys::Boson<phys::Particle> bos,genVBHelper_.WtoQ()){
+    bosons.push_back(bos);}
+  
+  if(bosons.size()==3){
+    foreach(const phys::Boson<phys::Particle> bosone,bosons){
       if(WZ==nullboson&&abs(bosone.id())==24){
 	WZ=bosone;}
       else if(Z1==nullboson&&abs(bosone.id())==23){
@@ -50,64 +52,83 @@ void VVXnocutsAnalyzer::analyze(){
       else if(Z2==nullboson&&abs(bosone.id())==23){
 	Z2=bosone;}
       else{WZ=bosone;}}
-    
-    TLorentzVector WZ1=Z1.p4()+WZ.p4();
-    TLorentzVector WZ2=Z2.p4()+WZ.p4();
-    TLorentzVector Z1Z2=Z1.p4()+Z2.p4();
-    TLorentzVector WZZ=Z1.p4()+Z2.p4()+WZ.p4();
-    double massaWZ1=sqrt((WZ1.E()*WZ1.E())-(WZ1.Px()*WZ1.Px())-(WZ1.Py()*WZ1.Py())-(WZ1.Pz()*WZ1.Pz()));
-    double massaWZ2=sqrt((WZ2.E()*WZ2.E())-(WZ2.Px()*WZ2.Px())-(WZ2.Py()*WZ2.Py())-(WZ2.Pz()*WZ2.Pz()));
-    double massaZ1Z2=sqrt((Z1Z2.E()*Z1Z2.E())-(Z1Z2.Px()*Z1Z2.Px())-(Z1Z2.Py()*Z1Z2.Py())-(Z1Z2.Pz()*Z1Z2.Pz()));
-    double massaWZZ=sqrt((WZZ.E()*WZZ.E())-(WZZ.Px()*WZZ.Px())-(WZZ.Py()*WZZ.Py())-(WZZ.Pz()*WZZ.Pz()));
-    theHistograms.fill("massa ZZ","Massa ZZ",100,150,1000,massaZ1Z2);
-    if(WZ.id()==23){
-      theHistograms.fill("massa ZZ","Massa ZZ",100,150,1000,massaWZ1);
-      theHistograms.fill("massa ZZ","Massa ZZ",100,150,1000,massaWZ2);}
-    if(WZ.id()==24){
-      theHistograms.fill("massa WZ","Massa WZ",100,150,1000,massaWZ1);
-      theHistograms.fill("massa WZ","Massa WZ",100,150,1000,massaWZ2);
-      theHistograms.fill("massa tribosoni","Massa tribosoni",100,200,2500,massaWZZ);}
-    theHistograms.fill("massa bosoni a coppie","Massa bosoni a coppie",100,150,1000,massaWZ1);
-    theHistograms.fill("massa bosoni a coppie","Massa bosoni a coppie",100,150,1000,massaWZ2);
-    theHistograms.fill("massa bosoni a coppie","Massa bosoni a coppie",100,150,1000,massaZ1Z2);
-    theHistograms.fill("energia totale bosoni","Energia totale bosoni",100,0,5000,WZZ.E());
-    theHistograms.fill("energia bosoni a coppie","Energia bosoni a coppie",100,0,3000,Z1.e()+Z2.e());
-    theHistograms.fill("energia bosoni a coppie","Energia bosoni a coppie",100,0,3000,Z1.e()+WZ.e());
-    theHistograms.fill("energia bosoni a coppie","Energia bosoni a coppie",100,0,3000,WZ.e()+Z2.e());
-    double angoloWZ1=Z1.p4().Angle(WZ.p4().Vect());
-    double angoloWZ2=Z2.p4().Angle(WZ.p4().Vect());
-    double angoloZZ=Z1.p4().Angle(Z2.p4().Vect());
-    double angolomax=max(angoloWZ1,max(angoloWZ2,angoloZZ));
-    double angolomin=min(angoloWZ1,min(angoloWZ2,angoloZZ));
-    theHistograms.fill("angolo relativo bosoni","Angolo relativo bosoni",100,0,3.5,angoloWZ1);
-    theHistograms.fill("angolo relativo bosoni","Angolo relativo bosoni",100,0,3.5,angoloWZ2);
-    theHistograms.fill("angolo relativo bosoni","Angolo relativo bosoni",100,0,3.5,angoloZZ);
-    theHistograms.fill("angolo relativo massimo bosoni","Angolo relativo massimo bosoni",100,0,3.5,angolomax);
-    theHistograms.fill("angolo relativo minimo bosoni","Angolo relativo minimo bosoni",100,0,3.5,angolomin);
-    theHistograms.fill("differenza angolo max/min bosoni","Differenza angolo max/min bosoni",100,0,3.5,angolomax-angolomin);
-    theHistograms.fill("rapporto angolo max/min bosoni","Rapporto angolo max/min bosoni",200,0,30,angolomax/angolomin);
-    theHistograms.fill("somma angoli relativi","Somma angoli relativi",300,0,10.5,angoloWZ1+angoloWZ2+angoloZZ);
-    double emax=max(WZ.e(),max(Z1.e(),Z2.e()));
-    double emin=min(WZ.e(),min(Z1.e(),Z2.e()));
-    theHistograms.fill("energia bosone piu' energetico","Energia bosone piu' energetico",100,100,1800,emax);
-    theHistograms.fill("energia bosone meno energetico","Energia bosone meno energetico",100,0,1000,emin);
-    theHistograms.fill("deltae bosoni max/min","Differenza di energia bosoni piu'/meno energetico",100,0,1800,emax-emin);
-    theHistograms.fill("rapporto energia bosoni max/min","Rapporto tra energia bosoni piu'/meno energetico",150,0,30,emax/emin);
-    double ptmax=max(WZ.pt(),max(Z1.pt(),Z2.pt()));
-    double ptmin=min(WZ.pt(),min(Z1.pt(),Z2.pt()));
-    theHistograms.fill("pt bosone maggiore","Pt bosone maggiore",100,100,1000,ptmax);
-    theHistograms.fill("pt bosone minore","Pt bosone minore",100,0,400,ptmin);
-    theHistograms.fill("deltapt bosoni max/min","Differenza di pt bosoni massima/minima",100,0,800,ptmax-ptmin);
-    theHistograms.fill("rapporto pt bosoni max/min","Rapporto tra pt bosoni massima/minima",150,0,30,ptmax/ptmin);
-    theHistograms.fill("somma totale pt(in modulo)","Somma totale pt (in modulo)",100,0,2000,WZ.pt()+Z1.pt()+Z2.pt());
-    theHistograms.fill("rapporto e max/pt max","Rapporto tra e massima e pt minima",190,1,20,emax/ptmax);
-    theHistograms.fill("rapporto e min/pt min","Rapporto tra e massima e pt minima",190,1,20,emin/ptmin);
-    theHistograms.fill("rapporto e max/pt min","Rapporto tra e massima e pt minima",200,0,80,emax/ptmin);
-    theHistograms.fill("rapporto e min/pt max","Rapporto tra e minima e pt massima",100,0,7,emin/ptmax);
-    double etamax=max(abs(WZ.eta()),max(abs(Z1.eta()),abs(Z2.eta())));
-    double etamin=min(abs(WZ.eta()),min(abs(Z1.eta()),abs(Z2.eta())));
-    theHistograms.fill("eta massima","Eta massima (in modulo) bosoni",100,0,7,etamax);
-    theHistograms.fill("eta minima","Eta minima (in modulo) bosoni",100,0,4,etamin);
-    theHistograms.fill("deltaeta max/min","Differenza di eta bosoni max/min (in modulo)",100,0,7,etamax-etamin);
-    theHistograms.fill("rapporto eta max/min","Rapporto eta max/min (in modulo)",100,1,20,etamax/etamin);
-  }}
+    */
+
+  //second choice: analysis for eemumujj (uncomment if needed)
+  
+  phys::Particle eminus,eplus,muminus,muplus;
+  phys::Particle j1,j2,nullj;
+  foreach(const phys::Particle par,*genParticles){
+    if(par.id()==11){
+      eminus=par;}
+    if(par.id()==-11){
+      eplus=par;}
+    if(par.id()==13){
+      muminus=par;}
+    if(par.id()==-13){
+      muplus=par;}
+    if(abs(par.id())<7){
+      if(j1==nullj){
+	j1=par;}
+      else{j2=par;}}
+  }
+  
+  const double zmass=91.1876;
+  Za=Boson<phys::Particle>(eminus,eplus);
+  Zb=Boson<phys::Particle>(muminus,muplus);
+  if(abs(Za.mass()-zmass)<abs(Zb.mass()-zmass)){
+    Z1=Za;
+    Z2=Zb;}
+  else{
+    Z1=Zb;
+    Z2=Za;}
+  WZ=Boson<phys::Particle>(j1,j2);
+
+  //distribution analysis
+  
+  TLorentzVector WZ1=Z1.p4()+WZ.p4();
+  TLorentzVector WZ2=Z2.p4()+WZ.p4();
+  TLorentzVector Z1Z2=Z1.p4()+Z2.p4();
+  TLorentzVector WZZ=Z1.p4()+Z2.p4()+WZ.p4();
+  double massWZ1=sqrt((WZ1.E()*WZ1.E())-(WZ1.Px()*WZ1.Px())-(WZ1.Py()*WZ1.Py())-(WZ1.Pz()*WZ1.Pz()));
+  double massWZ2=sqrt((WZ2.E()*WZ2.E())-(WZ2.Px()*WZ2.Px())-(WZ2.Py()*WZ2.Py())-(WZ2.Pz()*WZ2.Pz()));
+  double massZ1Z2=sqrt((Z1Z2.E()*Z1Z2.E())-(Z1Z2.Px()*Z1Z2.Px())-(Z1Z2.Py()*Z1Z2.Py())-(Z1Z2.Pz()*Z1Z2.Pz()));
+  double massWZZ=sqrt((WZZ.E()*WZZ.E())-(WZZ.Px()*WZZ.Px())-(WZZ.Py()*WZZ.Py())-(WZZ.Pz()*WZZ.Pz()));
+  theHistograms.fill("mass of ZZ","ZZ mass",100,150,1000,massZ1Z2);
+  theHistograms.fill("mass of WZ1","WZ1 mass",50,150,1000,massWZ1);
+  theHistograms.fill("mass of WZ2","WZ2 mass",50,150,1000,massWZ2);
+  theHistograms.fill("mass of WZ","WZ mass",100,150,1000,massWZ1);
+  theHistograms.fill("mass of WZ","WZ mass",100,150,1000,massWZ2);
+  theHistograms.fill("mass of tribosons","Triboson mass",50,200,1200,massWZZ,theWeight); 
+  
+  theHistograms.fill("energy of all bosons","Total boson energy",50,0,3000,WZZ.E());
+  theHistograms.fill("energy of ZZ","ZZ energy",50,0,2000,Z1.e()+Z2.e());
+  theHistograms.fill("energy of WZ1","WZ1 energy",50,0,2000,Z1.e()+WZ.e());
+  theHistograms.fill("energy of WZ2","WZ2 energy",50,0,2000,WZ.e()+Z2.e());
+  theHistograms.fill("energy of Z1","Z1 energy",50,0,1500,Z1.e());
+  theHistograms.fill("energy of Z2","Z2 energy",50,0,1500,Z2.e());
+  theHistograms.fill("energy of W","W energy",50,0,1500,WZ.e());
+  
+  double angleWZ1=Z1.p4().Angle(WZ.p4().Vect());
+  double angleWZ2=Z2.p4().Angle(WZ.p4().Vect());
+  double angleZZ=Z1.p4().Angle(Z2.p4().Vect());
+  theHistograms.fill("boson relative angle","Boson relative angle",50,0,3.5,angleWZ1);
+  theHistograms.fill("boson relative angle","Boson relative angle",50,0,3.5,angleWZ2);
+  theHistograms.fill("boson relative angle","Boson relative angle",50,0,3.5,angleZZ);
+  
+  theHistograms.fill("total pt scalar sum","Scalar pt sum",100,0,1200,Z1.pt()+Z2.pt()+WZ.pt());
+  theHistograms.fill("total pt vector sum","Vector pt sum",100,0,300,sqrt(WZZ.Px()*WZZ.Px()+WZZ.Py()*WZZ.Py()));
+  
+  theHistograms.fill("pt of Z1","Z1 pt",100,0,400,Z1.pt());
+  theHistograms.fill("pt of Z2","Z2 pt",100,0,400,Z2.pt());
+  theHistograms.fill("pt of W","W pt",100,0,400,WZ.pt());
+  
+  double elepZ1min= min(Z1.daughter(0).e(),Z1.daughter(1).e());
+  double elepZ1max= max(Z1.daughter(0).e(),Z1.daughter(1).e());
+  theHistograms.fill("energy of major Z1 leptons","Major Z1 lepton energy",50,0,2500,elepZ1max);
+  theHistograms.fill("energy of minor Z1 leptons","Minor Z1 lepton energy",50,0,1000,elepZ1min);
+  double elepZ2min= min(Z2.daughter(0).e(),Z2.daughter(1).e());
+  double elepZ2max= max(Z2.daughter(0).e(),Z2.daughter(1).e());
+  theHistograms.fill("energy of major Z2 leptons","Major Z2 lepton energy",50,0,2500,elepZ2max);
+  theHistograms.fill("energy of minor Z2 leptons","Minor Z2 lepton energy",50,0,1000,elepZ2min);
+}

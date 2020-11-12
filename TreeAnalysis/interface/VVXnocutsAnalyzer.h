@@ -2,10 +2,8 @@
 #define VVXnocutsAnalyzer_h
 
 /** \class VVXnocutsAnalyzer
- *  Concrete class for VVX analysis
- *
- *  $Date: 2013/03/15 13:37:31 $
- *  $Revision: 1.4 $
+ *  Class for analysis of a generic VZZ state 
+ *  $Date: 2020/11/25 $
  *  \author Giovanni Marozzo giovanni.marozzo@edu.unito.it
  */
 

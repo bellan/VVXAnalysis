@@ -1,3 +1,9 @@
+/*
+Macro to analyze efficiency and resolution for a VZZ sample analyzed by VZZaQGCAnalyzer. Path will probably need changing.
+Author: Marozzo Giovanni Battista
+Date: 2020/11/25
+*/
+
 #include <TCanvas.h>
 #include <TFile.h>
 #include <TH1F.h>
@@ -10,308 +16,88 @@
 
 using namespace std;
 
+void efficiency(string histname1,string histname2,string axistitle, string title, string efftitle, double ymax, TFile *result, TCanvas *c){
+  TVirtualPad *pd1=c->cd(1);
+  TH1F *hist1= (TH1F*)result->Get(histname1.c_str());
+  TH1F *hist2= (TH1F*)result->Get(histname2.c_str());
+  TH1F *hist3= (TH1F*)hist2->Clone("efficiency");
+  
+  hist1->SetTitle(title.c_str());
+  hist1->GetYaxis()->SetRangeUser(0,ymax);
+  hist1->GetXaxis()->SetTitle(axistitle.c_str());
+  hist1->SetLineColor(1);
+  hist2->SetLineColor(2);
+  hist1->SetLineWidth(2);
+  hist2->SetLineWidth(2);
+  hist1->Draw();
+  hist2->Draw("same");
+  TLegend *legend= new TLegend(0.7,0.77,0.98,0.94,"");
+  legend->AddEntry(hist1,"generated bosons","l");
+  legend->AddEntry(hist2,"reconstructed bosons","l");
+  legend->Draw();
+
+  TVirtualPad *pd2=c->cd(2);
+  hist3->Divide(hist1);
+  hist3->SetTitle(efftitle.c_str());
+  hist3->GetYaxis()->SetRangeUser(0,1);
+  hist3->GetXaxis()->SetTitle(axistitle.c_str());
+  hist3->GetYaxis()->SetTitle("efficiency");
+  hist3->SetLineColor(1);
+  hist3->SetLineWidth(2);
+  hist3->Draw();}
+
+
 void VZZaQGCEfficiency(){
 
-  TFile *result = TFile::Open("/home/giovanni/Desktop/tesi/VVXAnalysis/TreeAnalysis/results/2018/VZZaQGCAnalyzer_MC/WZZ.root");
-  TCanvas *c1 = new TCanvas("c1","canvas",0,0,1000,1000);
-  TCanvas *c2 = new TCanvas("c2","canvas",0,0,1000,1000);
-  TCanvas *c3 = new TCanvas("c3","canvas",0,0,1000,1000);
-  TCanvas *c4 = new TCanvas("c4","canvas",0,0,1000,1000);
-  TCanvas *c5 = new TCanvas("c5","canvas",0,0,1000,1000);
-  TCanvas *c6 = new TCanvas("c6","canvas",0,0,1000,1000);
-  TCanvas *c7 = new TCanvas("c7","canvas",0,0,1000,1000);
-  TCanvas *c8 = new TCanvas("c8","canvas",0,0,1000,1000);
-  TCanvas *c9 = new TCanvas("c9","canvas",0,0,1000,1000);
-  TCanvas *c10 = new TCanvas("c10","canvas",0,0,1000,1000);
-  TCanvas *c11 = new TCanvas("c11","canvas",0,0,1000,1000);
-  TCanvas *c12 = new TCanvas("c12","canvas",0,0,1000,1000);
-  TCanvas *c13 = new TCanvas("c13","canvas",0,0,1000,1000);
-  TCanvas *c14 = new TCanvas("c14","canvas",0,0,1000,1000);
-  TCanvas *c15 = new TCanvas("c15","canvas",0,0,1000,1000);
-  TCanvas *c16 = new TCanvas("c16","canvas",0,0,1000,1000);
-  TCanvas *c17 = new TCanvas("c17","canvas",0,0,1000,1000);
-  TCanvas *c18 = new TCanvas("c18","canvas",0,0,1000,1000);
-  TCanvas *c19 = new TCanvas("c19","canvas",0,0,1000,1000);
-  TCanvas *c20 = new TCanvas("c20","canvas",0,0,1000,1000);
-  TCanvas *c21 = new TCanvas("c21","canvas",0,0,1000,1000);
-  TCanvas *c22 = new TCanvas("c22","canvas",0,0,1000,1000);
-  TCanvas *c23 = new TCanvas("c23","canvas",0,0,1000,1000);
-  TCanvas *c24 = new TCanvas("c24","canvas",0,0,1000,1000);
+  gErrorIgnoreLevel = kFatal; //to ignore errors due to nonexistent tree branches
+
+  TFile *result = TFile::Open("./results/2018/VZZaQGCAnalyzer_MC/WZZ.root");
+  TCanvas *c1 = new TCanvas("c1","canvas",0,0,1000,500);
+  c1->Divide(2,1);
+  TCanvas *c2 = new TCanvas("c2","canvas",0,0,1000,500);
+  c2->Divide(2,1);
+  TCanvas *c3 = new TCanvas("c3","canvas",0,0,1000,500);
+  c3->Divide(2,1);
+  TCanvas *c4 = new TCanvas("c4","canvas",0,0,1000,500);
+  c4->Divide(2,1);
+  TCanvas *c5 = new TCanvas("c5","canvas",0,0,1000,500);
+  c5->Divide(2,1);
+  TCanvas *c6 = new TCanvas("c6","canvas",0,0,1000,500);
+  c6->Divide(2,1);
+  TCanvas *c7 = new TCanvas("c7","canvas",0,0,1000,500);
+  c7->Divide(2,1);
+  TCanvas *c8 = new TCanvas("c8","canvas",0,0,1000,500);
+  c8->Divide(2,1);
+  TCanvas *c9 = new TCanvas("c9","canvas",0,0,1000,500);
+  c9->Divide(2,1);
+  TCanvas *c10 = new TCanvas("c10","canvas",0,0,1000,500);
+  c10->Divide(2,1);
+  TCanvas *c11 = new TCanvas("c11","canvas",0,0,1000,500);
+  c11->Divide(2,1);
+  TCanvas *c12 = new TCanvas("c12","canvas",0,0,1000,500);
+  c12->Divide(2,1);
+
+  efficiency("mass of well generated Z1","mass of well reconstructed Z1","mass (Gev/c^2)","Generated and reconstructed Z1 mass","Efficiency as a function of Z1 mass",1000,result,c1);
   
+  efficiency("mass of well generated Z2","mass of well reconstructed Z2","mass (Gev/c^2)","Generated and reconstructed Z2 mass","efficiency as a function of Z2 mass",1000,result,c2);
   
-  c1->cd(); 
-  TH1F *mass1gen = (TH1F*)result->Get("massa Z1 generati bene");
-  TH1F *mass1ric = (TH1F*)result->Get("massa Z1 ricostruiti bene");
-  mass1ric->SetTitle("efficienza in funzione della massa di Z1");
-  TH1F *mass1efficiency = (TH1F*)mass1ric->Clone("mass1efficiency");
-  mass1efficiency->Divide(mass1gen);
-  mass1efficiency->GetYaxis()->SetRangeUser(0,1);
-  mass1efficiency->GetXaxis()->SetTitle("massa (GeV/c^2)");
-  mass1efficiency->GetYaxis()->SetTitle("efficienza");
-  mass1efficiency->SetLineColor(1);
-  mass1efficiency->SetLineWidth(2);
-  mass1efficiency->Draw();
-  c2->cd();
-  mass1gen->SetTitle("massa Z1 generati e ricostruiti");
-  mass1gen->GetYaxis()->SetRangeUser(0,1000);
-  mass1gen->GetXaxis()->SetTitle("massa (GeV/c^2)");
-  mass1gen->SetLineColor(1);
-  mass1ric->SetLineColor(2);
-  mass1gen->SetLineWidth(2);
-  mass1ric->SetLineWidth(2);
-  mass1gen->Draw();
-  mass1ric->Draw("same");
-
-  c3->cd(); 
-  TH1F *mass2gen = (TH1F*)result->Get("massa Z2 generati bene");
-  TH1F *mass2ric = (TH1F*)result->Get("massa Z2 ricostruiti bene");
-  mass2ric->SetTitle("efficienza in funzione della massa di Z2");
-  TH1F *mass2efficiency = (TH1F*)mass2ric->Clone("mass2efficiency");
-  mass2efficiency->Divide(mass2gen);
-  mass2efficiency->GetYaxis()->SetRangeUser(0,1);
-  mass2efficiency->GetXaxis()->SetTitle("massa (GeV/c^2)");
-  mass2efficiency->GetYaxis()->SetTitle("efficienza");
-  mass2efficiency->SetLineColor(1);
-  mass2efficiency->SetLineWidth(2);
-  mass2efficiency->Draw();
-  c4->cd();
-  mass2gen->SetTitle("massa Z2 generati e ricostruiti");
-  mass2gen->GetYaxis()->SetRangeUser(0,1000);
-  mass2gen->GetXaxis()->SetTitle("massa (GeV/c^2)");
-  mass2gen->SetLineColor(1);
-  mass2ric->SetLineColor(2);
-  mass2gen->SetLineWidth(2);
-  mass2ric->SetLineWidth(2);
-  mass2gen->Draw();
-  mass2ric->Draw("same");
-
-  c5->cd();
-  TH1F *pt1gen = (TH1F*)result->Get("pt Z1 generati bene");
-  TH1F *pt1ric = (TH1F*)result->Get("pt Z1 ricostruiti bene");
-  pt1ric->SetTitle("efficienza in funzione della pt di Z1");
-  TH1F *pt1efficiency = (TH1F*)pt1ric->Clone("pt1efficiency");
-  pt1efficiency->Divide(pt1gen);
-  pt1efficiency->GetYaxis()->SetRangeUser(0,1);
-  pt1efficiency->GetXaxis()->SetTitle("pt (GeV/c)");
-  pt1efficiency->GetYaxis()->SetTitle("efficienza");
-  pt1efficiency->SetLineColor(1);
-  pt1efficiency->SetLineWidth(2);
-  pt1efficiency->Draw();
-  c6->cd();
-  pt1gen->SetTitle("pt Z1 generati e ricostruiti");
-  pt1gen->GetYaxis()->SetRangeUser(0,600);
-  pt1gen->GetXaxis()->SetTitle("pt (GeV/c)");
-  pt1gen->SetLineColor(1);
-  pt1ric->SetLineColor(2);
-  pt1gen->SetLineWidth(2);
-  pt1ric->SetLineWidth(2);
-  pt1gen->Draw();
-  pt1ric->Draw("same");
-
-  c7->cd();
-  TH1F *pt2gen = (TH1F*)result->Get("pt Z2 generati bene");
-  TH1F *pt2ric = (TH1F*)result->Get("pt Z2 ricostruiti bene");
-  pt2ric->SetTitle("efficienza in funzione della pt di Z2");
-  TH1F *pt2efficiency = (TH1F*)pt2ric->Clone("pt2efficiency");
-  pt2efficiency->Divide(pt2gen);
-  pt2efficiency->GetYaxis()->SetRangeUser(0,1);
-  pt2efficiency->GetXaxis()->SetTitle("pt (GeV/c)");
-  pt2efficiency->GetYaxis()->SetTitle("efficienza");
-  pt2efficiency->SetLineColor(1);
-  pt2efficiency->SetLineWidth(2);
-  pt2efficiency->Draw();
-  c8->cd();
-  pt2gen->SetTitle("pt Z2 generati e ricostruiti");
-  pt2gen->GetYaxis()->SetRangeUser(0,600);
-  pt2gen->GetXaxis()->SetTitle("pt (GeV/c)");
-  pt2gen->SetLineColor(1);
-  pt2ric->SetLineColor(2);
-  pt2gen->SetLineWidth(2);
-  pt2ric->SetLineWidth(2);
-  pt2gen->Draw();
-  pt2ric->Draw("same");
-
-  c9->cd();
-  TH1F *energy1gen = (TH1F*)result->Get("energia Z1 generati bene");
-  TH1F *energy1ric = (TH1F*)result->Get("energia Z1 ricostruiti bene");
-  energy1ric->SetTitle("efficienza in funzione dell'energia di Z1");
-  TH1F *energy1efficiency = (TH1F*)energy1ric->Clone("energy1efficiency");
-  energy1efficiency->Divide(energy1gen);
-  energy1efficiency->GetYaxis()->SetRangeUser(0,1);
-  energy1efficiency->GetXaxis()->SetTitle("E (GeV)");
-  energy1efficiency->GetYaxis()->SetTitle("efficienza");
-  energy1efficiency->SetLineColor(1);
-  energy1efficiency->SetLineWidth(2);
-  energy1efficiency->Draw();
-  c10->cd();
-  energy1gen->SetTitle("energia Z1 generati e ricostruiti");
-  energy1gen->GetYaxis()->SetRangeUser(0,1200);
-  energy1gen->GetXaxis()->SetTitle("energia(GeV)");
-  energy1gen->SetLineColor(1);
-  energy1ric->SetLineColor(2);
-  energy1gen->SetLineWidth(2);
-  energy1ric->SetLineWidth(2);
-  energy1gen->Draw();
-  energy1ric->Draw("same");
-
-  c11->cd();
-  TH1F *energy2gen = (TH1F*)result->Get("energia Z2 generati bene");
-  TH1F *energy2ric = (TH1F*)result->Get("energia Z2 ricostruiti bene");
-  energy2ric->SetTitle("efficienza in funzione dell'energia di Z2");
-  TH1F *energy2efficiency = (TH1F*)energy2ric->Clone("energy2efficiency");
-  energy2efficiency->Divide(energy2gen);
-  energy2efficiency->GetYaxis()->SetRangeUser(0,1);
-  energy2efficiency->GetXaxis()->SetTitle("E (GeV)");
-  energy2efficiency->GetYaxis()->SetTitle("efficienza");
-  energy2efficiency->SetLineColor(1);
-  energy2efficiency->SetLineWidth(2);
-  energy2efficiency->Draw();
-  c12->cd();
-  energy2gen->SetTitle("energia Z2 generati e ricostruiti");
-  energy2gen->GetYaxis()->SetRangeUser(0,1200);
-  energy2gen->GetXaxis()->SetTitle("energia(GeV)");
-  energy2gen->SetLineColor(1);
-  energy2ric->SetLineColor(2);
-  energy2gen->SetLineWidth(2);
-  energy2ric->SetLineWidth(2);
-  energy2gen->Draw();
-  energy2ric->Draw("same");
-
-  c13->cd(); 
-  TH1F *eta1gen = (TH1F*)result->Get("eta Z1 generati bene");
-  TH1F *eta1ric = (TH1F*)result->Get("eta Z1 ricostruiti bene");
-  eta1ric->SetTitle("efficienza in funzione della eta di Z1");
-  TH1F *eta1efficiency = (TH1F*)eta1ric->Clone("eta1efficiency");
-  eta1efficiency->Divide(eta1gen);
-  eta1efficiency->GetYaxis()->SetRangeUser(0,1);
-  eta1efficiency->GetXaxis()->SetTitle("eta");
-  eta1efficiency->GetYaxis()->SetTitle("efficienza");
-  eta1efficiency->SetLineColor(1);
-  eta1efficiency->SetLineWidth(2);
-  eta1efficiency->Draw();
-  c14->cd();
-  eta1gen->SetTitle("eta Z1 generati e ricostruiti");
-  eta1gen->GetYaxis()->SetRangeUser(0,200);
-  eta1gen->GetXaxis()->SetTitle("eta");
-  eta1gen->SetLineColor(1);
-  eta1ric->SetLineColor(2);
-  eta1gen->SetLineWidth(2);
-  eta1ric->SetLineWidth(2);
-  eta1gen->Draw();
-  eta1ric->Draw("same");
-
-  c15->cd(); 
-  TH1F *eta2gen = (TH1F*)result->Get("eta Z2 generati bene");
-  TH1F *eta2ric = (TH1F*)result->Get("eta Z2 ricostruiti bene");
-  eta2ric->SetTitle("efficienza in funzione della eta di Z2");
-  TH1F *eta2efficiency = (TH1F*)eta2ric->Clone("eta2efficiency");
-  eta2efficiency->Divide(eta2gen);
-  eta2efficiency->GetYaxis()->SetRangeUser(0,1);
-  eta2efficiency->GetXaxis()->SetTitle("eta");
-  eta2efficiency->GetYaxis()->SetTitle("efficienza");
-  eta2efficiency->SetLineColor(1);
-  eta2efficiency->SetLineWidth(2);
-  eta2efficiency->Draw();
-  c16->cd();
-  eta2gen->SetTitle("eta Z2 generati e ricostruiti");
-  eta2gen->GetYaxis()->SetRangeUser(0,200);
-  eta2gen->GetXaxis()->SetTitle("eta");
-  eta2gen->SetLineColor(1);
-  eta2ric->SetLineColor(2);
-  eta2gen->SetLineWidth(2);
-  eta2ric->SetLineWidth(2);
-  eta2gen->Draw();
-  eta2ric->Draw("same");
-
-  c17->cd(); 
-  TH1F *mag1gen = (TH1F*)result->Get("E leptone maggiore Z1 buono");
-  TH1F *mag1ric = (TH1F*)result->Get("E leptone maggiore Z1 buono ricostruito");
-  mag1ric->SetTitle("efficienza in funzione dell'energia leptone maggiore di Z1");
-  TH1F *mag1efficiency = (TH1F*)mag1ric->Clone("mag1efficiency");
-  mag1efficiency->Divide(mag1gen);
-  mag1efficiency->GetYaxis()->SetRangeUser(0,1);
-  mag1efficiency->GetXaxis()->SetTitle("energia (GeV)");
-  mag1efficiency->GetYaxis()->SetTitle("efficienza");
-  mag1efficiency->SetLineColor(1);
-  mag1efficiency->SetLineWidth(2);
-  mag1efficiency->Draw();
-  c18->cd();
-  mag1gen->SetTitle("energia leptoni maggiori di Z1 generati e ricostruiti");
-  mag1gen->GetYaxis()->SetRangeUser(0,1000);
-  mag1gen->GetXaxis()->SetTitle("energia (GeV)");
-  mag1gen->SetLineColor(1);
-  mag1ric->SetLineColor(2);
-  mag1gen->SetLineWidth(2);
-  mag1ric->SetLineWidth(2);
-  mag1gen->Draw();
-  mag1ric->Draw("same");
-
-  c19->cd(); 
-  TH1F *mag2gen = (TH1F*)result->Get("E leptone maggiore Z2 buono");
-  TH1F *mag2ric = (TH1F*)result->Get("E leptone maggiore Z2 buono ricostruito");
-  mag2ric->SetTitle("efficienza in funzione dell'energia leptone maggiore di Z2");
-  TH1F *mag2efficiency = (TH1F*)mag2ric->Clone("mag2efficiency");
-  mag2efficiency->Divide(mag2gen);
-  mag2efficiency->GetYaxis()->SetRangeUser(0,1);
-  mag2efficiency->GetXaxis()->SetTitle("energia (GeV)");
-  mag2efficiency->GetYaxis()->SetTitle("efficienza");
-  mag2efficiency->SetLineColor(1);
-  mag2efficiency->SetLineWidth(2);
-  mag2efficiency->Draw();
-  c20->cd();
-  mag2gen->SetTitle("energia leptoni maggiori di Z2 generati e ricostruiti");
-  mag2gen->GetYaxis()->SetRangeUser(0,1000);
-  mag2gen->GetXaxis()->SetTitle("energia (GeV)");
-  mag2gen->SetLineColor(1);
-  mag2ric->SetLineColor(2);
-  mag2gen->SetLineWidth(2);
-  mag2ric->SetLineWidth(2);
-  mag2gen->Draw();
-  mag2ric->Draw("same");
-
-  c21->cd(); 
-  TH1F *min1gen = (TH1F*)result->Get("E leptone minore Z1 buono");
-  TH1F *min1ric = (TH1F*)result->Get("E leptone minore Z1 buono ricostruito");
-  min1ric->SetTitle("efficienza in funzione dell'energia leptone minore di Z1");
-  TH1F *min1efficiency = (TH1F*)min1ric->Clone("min1efficiency");
-  min1efficiency->Divide(min1gen);
-  min1efficiency->GetYaxis()->SetRangeUser(0,1);
-  min1efficiency->GetXaxis()->SetTitle("energia (GeV)");
-  min1efficiency->GetYaxis()->SetTitle("efficienza");
-  min1efficiency->SetLineColor(1);
-  min1efficiency->SetLineWidth(2);
-  min1efficiency->Draw();
-  c22->cd();
-  min1gen->SetTitle("energia leptoni minori generati e ricostruiti di Z1");
-  min1gen->GetYaxis()->SetRangeUser(0,800);
-  min1gen->GetXaxis()->SetTitle("energia (GeV)");
-  min1gen->SetLineColor(1);
-  min1ric->SetLineColor(2);
-  min1gen->SetLineWidth(2);
-  min1ric->SetLineWidth(2);
-  min1gen->Draw();
-  min1ric->Draw("same");
-
-  c23->cd(); 
-  TH1F *min2gen = (TH1F*)result->Get("E leptone minore Z2 buono");
-  TH1F *min2ric = (TH1F*)result->Get("E leptone minore Z2 buono ricostruito");
-  min2ric->SetTitle("efficienza in funzione dell'energia leptone minore di Z2");
-  TH1F *min2efficiency = (TH1F*)min2ric->Clone("min2efficiency");
-  min2efficiency->Divide(min2gen);
-  min2efficiency->GetYaxis()->SetRangeUser(0,1);
-  min2efficiency->GetXaxis()->SetTitle("energia (GeV)");
-  min2efficiency->GetYaxis()->SetTitle("efficienza");
-  min2efficiency->SetLineColor(1);
-  min2efficiency->SetLineWidth(2);
-  min2efficiency->Draw();
-  c24->cd();
-  min2gen->SetTitle("energia leptoni minori generati e ricostruiti di Z2");
-  min2gen->GetYaxis()->SetRangeUser(0,800);
-  min2gen->GetXaxis()->SetTitle("energia (GeV)");
-  min2gen->SetLineColor(1);
-  min2ric->SetLineColor(2);
-  min2gen->SetLineWidth(2);
-  min2ric->SetLineWidth(2);
-  min2gen->Draw();
-  min2ric->Draw("same");
+  efficiency("pt of well generated Z1","pt of well reconstructed Z1","pt (Gev/c)","Generated and reconstructed Z1 pt","efficiency as a function of Z1 pt",600,result,c3);
+  
+  efficiency("pt of well generated Z2","pt of well reconstructed Z2","pt (Gev/c)","Generated and reconstructes Z2 pt","efficiency as a function of Z2 pt",600,result,c4);
+  
+  efficiency("energy of well generated Z1","energy of well reconstructed Z1","E (Gev)","Generated and reconstructed Z1 energy","efficiency as a function of Z1 energy",1200,result,c5);
+  
+  efficiency("energy of well generated Z2","energy of well reconstructed Z2","E (Gev)","Generated and reconstructed Z2 energy","efficiency as a function of Z2 energy",1200,result,c6);
+  
+  efficiency("eta of well generated Z1","eta of well reconstructed Z1","eta","Generated and reconstructed Z1 eta","efficiency as a function of Z1 eta",200,result,c7);
+  
+  efficiency("eta of well generated Z2","eta of well reconstructed Z2","eta","Generated and reconstructed Z2 eta","efficiency as a function of Z2 eta",200,result,c8);
+  
+  efficiency("energy of good Z1 major lepton","energy of well reconstructed Z1 major lepton","E (Gev)","Generated and reconstructed Z1 major lepton energy","efficiency as a function of Z1 major lepton energy",400,result,c9);
+  
+  efficiency("energy of good Z2 major lepton","energy of well reconstructed Z2 major lepton","E (Gev)","Generated and reconstructed Z2 major lepton energy","efficiency as a function of Z2 major lepton energy",400,result,c10);
+  
+  efficiency("energy of good Z1 minor lepton","energy of well reconstructed Z1 minor lepton","E (Gev)","Generated and reconstructed Z1 minor lepton energy","efficiency as a function of Z1 minor lepton energy",400,result,c11);
+  
+  efficiency("energy of good Z2 minor lepton","energy of well reconstructed Z2 minor lepton","E (Gev)","Generated and reconstructed Z2 minor lepton energy","efficiency as a function of Z2 minor lepton energy",400,result,c12);
 }
