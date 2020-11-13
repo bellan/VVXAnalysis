@@ -120,24 +120,24 @@ void DBGenerator::begin(){
 	helper_module_ = PyImport_ImportModule("VZZhelper"); // import module
 	if (!helper_module_){
 		cout<<"Error: could not load \"VZZhelper\""<<std::endl;
-		Py_FinalizeEx();
+		Py_Finalize();
 		exit(2);
 	}
 	
-	AK4_classifier_ = PyObject_CallMethod(helper_module_, "load_object", "s", "VZZ_AK4_tree.pkl");
+	AK4_classifier_ = PyObject_CallMethod(helper_module_, (char*)"load_object", (char*)"s", (char*)"VZZ_AK4_tree.pkl");
 	if(AK4_classifier_ == Py_None){
 		cout<<"Error: could not load AK4_classifier_."<<std::endl;
 		Py_DECREF(helper_module_);
-		Py_FinalizeEx();
+		Py_Finalize();
 		exit(3);
 	}
 	
-	AK8_classifier_ = PyObject_CallMethod(helper_module_, "load_object", "s", "VZZ_AK8_tree.pkl");
+	AK8_classifier_ = PyObject_CallMethod(helper_module_, (char*)"load_object", (char*)"s", (char*)"VZZ_AK8_tree.pkl");
 	if(AK8_classifier_ == Py_None){
 		cout<<"Error: could not load AK8_classifier_."<<std::endl;
 		Py_DECREF(AK4_classifier_);
 		Py_DECREF(helper_module_);
-		Py_FinalizeEx();
+		Py_Finalize();
 		exit(3);
 	}
 	#endif
@@ -213,7 +213,7 @@ void DBGenerator::end(TFile &){
 	Py_DECREF(AK4_classifier_);
 	Py_DECREF(AK8_classifier_);
 	Py_DECREF(helper_module_);
-	Py_FinalizeEx();
+	Py_Finalize();
 	#endif
 	
 	cout<<"\nPassing cut: "<<Form("%lu (weighted: %.2f)", analyzedN_, analyzedW_)<<'\n';

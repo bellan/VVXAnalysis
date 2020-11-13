@@ -89,33 +89,33 @@ void VZZAnalyzer::begin(){
 	helper_module_ = PyImport_ImportModule("VZZhelper"); // import module
 	if (!helper_module_){
 		cout<<"Error: could not load \"VZZhelper\""<<std::endl;
-		Py_FinalizeEx();
+		Py_Finalize();
 		exit(2);
 	}
 
-	AK4_classifier_ = PyObject_CallMethod(helper_module_, "load_object", "s", "VZZ_AK4_tree.pkl");
+	AK4_classifier_ = PyObject_CallMethod(helper_module_, (char*)"load_object", (char*)"s", (char*)"VZZ_AK4_tree.pkl");
 	if(AK4_classifier_ == Py_None){
 		cout<<"Error: could not load AK4_classifier_."<<std::endl;
 		Py_DECREF(helper_module_);
-		Py_FinalizeEx();
+		Py_Finalize();
 		exit(3);
 	}
 	
-	AK8_classifier_ = PyObject_CallMethod(helper_module_, "load_object", "s", "VZZ_AK8_tree.pkl");
+	AK8_classifier_ = PyObject_CallMethod(helper_module_, (char*)"load_object", (char*)"s", (char*)"VZZ_AK8_tree.pkl");
 	if(AK8_classifier_ == Py_None){
 		cout<<"Error: could not load AK8_classifier_."<<std::endl;
 		Py_DECREF(AK4_classifier_);
 		Py_DECREF(helper_module_);
-		Py_FinalizeEx();
+		Py_Finalize();
 		exit(3);
 	}
 	/*
-	EVT_classifier_ = PyObject_CallMethod(helper_module_, "load_object", "s", "VZZ_EVT_tree.pkl");
+	EVT_classifier_ = PyObject_CallMethod(helper_module_, (char*)"load_object", (char*)"s", (char*)"VZZ_EVT_tree.pkl");
 	if(AK8_classifier_ == Py_None){
 		cout<<"Error: could not load AK8_classifier_."<<std::endl;
 		Py_DECREF(VZZ_EVT_tree);
 		Py_DECREF(helper_module_);
-		Py_FinalizeEx();
+		Py_Finalize();
 		exit(3);
 	}*/
 	#endif  // USE_PYTHON
@@ -333,7 +333,7 @@ void VZZAnalyzer::end(TFile& fout){
 	#ifdef USE_PYTHON
 	Py_XDECREF(AK4_classifier_);
 	Py_XDECREF(helper_module_);
-	Py_FinalizeEx();
+	Py_Finalize();
 	#endif  // USE_PYTHON
 	
 	//Final cleanup
@@ -2678,17 +2678,17 @@ double VZZAnalyzer::getPyPrediction(const vector<double>& vect, PyObject* predic
 		PyList_SET_ITEM(l, i, PyFloat_FromDouble(vect.at(i)));
 	}
 	
-	//PyObject_CallMethod(helper_module_, "test_list", "O", l);
+	//PyObject_CallMethod(helper_module_, (char*)"test_list", (char*)"O", l);
 	
-	//PyObject* result = PyObject_CallMethod(helper_module_, "predict", "OO", predictor, l);
+	//PyObject* result = PyObject_CallMethod(helper_module_, (char*)"predict", (char*)"OO", predictor, l);
 	//Py_DECREF(l);
 	
 	
 	PyObject *ll = PyList_New(1);
 	PyList_SET_ITEM(ll, 0, l);
 	
-	PyObject* pred = PyObject_CallMethod(predictor, "predict_proba", "O", ll);
-	PyObject* result = PyObject_CallMethod(helper_module_, "pyfloat_from_prediction", "O", pred);
+	PyObject* pred = PyObject_CallMethod(predictor, (char*)"predict_proba", (char*)"O", ll);
+	PyObject* result = PyObject_CallMethod(helper_module_, (char*)"pyfloat_from_prediction", (char*)"O", pred);
 	
 	Py_DECREF(pred);
 	Py_DECREF(ll);
