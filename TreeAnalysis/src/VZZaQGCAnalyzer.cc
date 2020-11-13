@@ -19,7 +19,7 @@ Int_t VZZaQGCAnalyzer::cut() {
 void VZZaQGCAnalyzer::analyze(){
   
   //assignment and properties of generated bosons
-  
+
   TLorentzVector a;
   phys::Boson<phys::Particle> z1,z2;
   foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
@@ -238,11 +238,10 @@ void VZZaQGCAnalyzer::analyze(){
 	hadVB = new Jet(jetsAK8->front());}
 	}
 
-  Particle WZ= *hadVB;
-
   //study of the final state with three reconstructed bosons 
   
   if(hadVB&&ZZ->passFullSelection()){
+    Particle WZ= *hadVB;
     
     phys::Boson<phys::Lepton> Z1=ZZ->first();
     phys::Boson<phys::Lepton> Z2=ZZ->second();
