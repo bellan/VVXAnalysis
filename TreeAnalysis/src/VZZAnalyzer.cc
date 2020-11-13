@@ -89,7 +89,7 @@ void VZZAnalyzer::begin(){
 	helper_module_ = PyImport_ImportModule("VZZhelper"); // import module
 	if (!helper_module_){
 		cout<<"Error: could not load \"VZZhelper\""<<std::endl;
-		Py_FinalizeEx();
+		Py_Finalize();
 		exit(2);
 	}
 
@@ -97,7 +97,7 @@ void VZZAnalyzer::begin(){
 	if(AK4_classifier_ == Py_None){
 		cout<<"Error: could not load AK4_classifier_."<<std::endl;
 		Py_DECREF(helper_module_);
-		Py_FinalizeEx();
+		Py_Finalize();
 		exit(3);
 	}
 	
@@ -106,7 +106,7 @@ void VZZAnalyzer::begin(){
 		cout<<"Error: could not load AK8_classifier_."<<std::endl;
 		Py_DECREF(AK4_classifier_);
 		Py_DECREF(helper_module_);
-		Py_FinalizeEx();
+		Py_Finalize();
 		exit(3);
 	}
 	/*
@@ -115,7 +115,7 @@ void VZZAnalyzer::begin(){
 		cout<<"Error: could not load AK8_classifier_."<<std::endl;
 		Py_DECREF(VZZ_EVT_tree);
 		Py_DECREF(helper_module_);
-		Py_FinalizeEx();
+		Py_Finalize();
 		exit(3);
 	}*/
 	#endif  // USE_PYTHON
@@ -333,7 +333,7 @@ void VZZAnalyzer::end(TFile& fout){
 	#ifdef USE_PYTHON
 	Py_XDECREF(AK4_classifier_);
 	Py_XDECREF(helper_module_);
-	Py_FinalizeEx();
+	Py_Finalize();
 	#endif  // USE_PYTHON
 	
 	//Final cleanup
