@@ -112,9 +112,9 @@ void VVXnocutsAnalyzer::analyze(){
   double angleWZ1=Z1.p4().Angle(WZ.p4().Vect());
   double angleWZ2=Z2.p4().Angle(WZ.p4().Vect());
   double angleZZ=Z1.p4().Angle(Z2.p4().Vect());
-  theHistograms.fill("boson relative angle","Boson relative angle",50,0,3.5,angleWZ1);
-  theHistograms.fill("boson relative angle","Boson relative angle",50,0,3.5,angleWZ2);
-  theHistograms.fill("boson relative angle","Boson relative angle",50,0,3.5,angleZZ);
+  theHistograms.fill("WZ1 angle","WZ1 angle",50,0,3.5,angleWZ1);
+  theHistograms.fill("WZ2 angle","WZ2 angle",50,0,3.5,angleWZ2);
+  theHistograms.fill("ZZ angle","ZZ angle",50,0,3.5,angleZZ);
   
   theHistograms.fill("total pt scalar sum","Scalar pt sum",100,0,1200,Z1.pt()+Z2.pt()+WZ.pt());
   theHistograms.fill("total pt vector sum","Vector pt sum",100,0,300,sqrt(WZZ.Px()*WZZ.Px()+WZZ.Py()*WZZ.Py()));
