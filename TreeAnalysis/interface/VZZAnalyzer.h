@@ -48,7 +48,7 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 			Py_XDECREF(AK4_classifier_);  // Free memory in event of crash (end() is not called)
 			Py_XDECREF(AK8_classifier_);
 			Py_XDECREF(helper_module_);  // XDECREF: checks if the reference count is >=0
-			Py_FinalizeEx();  // Close Python interpreter
+			Py_Finalize();  // Close Python interpreter
 		}
   	
 		virtual void begin();

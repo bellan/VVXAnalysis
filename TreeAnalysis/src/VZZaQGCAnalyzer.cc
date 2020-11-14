@@ -24,7 +24,7 @@ void VZZaQGCAnalyzer::analyze(){
   int weightedevent=0;
   
   //assignment and properties of generated bosons
-  
+
   TLorentzVector a;
   phys::Boson<phys::Particle> z1,z2;
   foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
@@ -255,6 +255,7 @@ void VZZaQGCAnalyzer::analyze(){
 
   //study of the final state with three reconstructed bosons 
   
+<<<<<<< HEAD
     if((hadVB&&ZZ)&&weightedevent==1){
 
       const double luminosity= 150000; //pb^-1
@@ -264,6 +265,10 @@ void VZZaQGCAnalyzer::analyze(){
       double norm= samplecrosssec*luminosity/sampleevents;
       
       Particle WZ=*hadVB;
+=======
+  if(hadVB&&ZZ->passFullSelection()){
+    Particle WZ= *hadVB;
+>>>>>>> c98980ced0627f0d148b991b46ba3d11d17a0f4a
     
       phys::Boson<phys::Lepton> Z1=ZZ->first();
       phys::Boson<phys::Lepton> Z2=ZZ->second();
