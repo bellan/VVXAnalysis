@@ -1,3 +1,12 @@
+/*
+In order to use this analysis, one needs to follow these steps:
+1. Analyze the weighting samples of generated data (SM,linear and quadratic) with VVXnocutsAnalyzer. The python script multipleAnalysis.py could be useful to save time.
+2. Use the ROOT macro VZZDistributionComparison to obtain the weighting histogram (the variable used for the weighting could be changed). 
+3. Analyze the sample with this analysis.
+4. The result of this analysis, as far as aGCs go, can and should be extracted with the ROOT macro aGCRecosntructedPlot. 
+*/
+
+
 #include "VVXAnalysis/TreeAnalysis/interface/VZZaQGCAnalyzer.h"
 #include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
@@ -24,7 +33,7 @@ void VZZaQGCAnalyzer::analyze(){
   int weightedevent=0;
   
   //assignment and properties of generated bosons
-
+  
   TLorentzVector a;
   phys::Boson<phys::Particle> z1,z2;
   foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
@@ -45,7 +54,7 @@ void VZZaQGCAnalyzer::analyze(){
 
     foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
       if((abs(genVBParticle.daughter(0).id())==11||abs(genVBParticle.daughter(0).id())==13)&&genVBParticle.id()==23){
-	if(z1.mass()==0){
+	if(z1.mass()<0.01){
 	  z1=genVBParticle;}
 	else{if(abs(genVBParticle.mass()-phys::ZMASS)<abs(z1.mass()-phys::ZMASS)){
 	    z2=z1;
@@ -80,7 +89,7 @@ void VZZaQGCAnalyzer::analyze(){
 
   //study of reconstructed boson properties
     
-  if(ZZ->first().mass()!=0&&ZZ->passFullSelection()){
+  if(ZZ->passFullSelection()){
 
     double dR=9999;
     double dR2=9999;
@@ -172,39 +181,87 @@ void VZZaQGCAnalyzer::analyze(){
   
   //analysis of generated hadronic bosons
 
+  //choice 1:generated hadronic boson "reconstructed" through jets
+
+  
+  /*
   int toomany=0;
-  double dRq,dRq1,dRq2;
+  double dRq;
+  double dRq1=0;
+  double dRq2=0;
   TLorentzVector pquark;
   phys::Particle jet1,jet2;
   foreach(const phys::Particle genParticle,*genParticles){
     dRq=9999;
     if(abs(genParticle.id())>0&&abs(genParticle.id())<7){
+      nquark++;
       phys::Particle jet;
       foreach(const phys::Particle genJet,*genJets){
 	if(physmath::deltaR(genJet,genParticle)<dRq){
 	  dRq=physmath::deltaR(genJet,genParticle);
 	  jet=genJet;}}
       theHistograms.fill("dR quark-jet","dR quark-jet",100,0,0.5,dRq);
-      if(dRq<0.3){
+      if(dRq<=0.3){
 	if(dRq1==0){
 	  dRq1=dRq;
 	  pquark+=genParticle.p4();
 	  jet1=jet;}
-	else if(dRq2==0&&jet.e()!=jet1.e()){
+	else if(dRq2==0&&jet!=jet1){
 	  dRq2=dRq;
 	  pquark+=genParticle.p4();
 	  jet2=jet;}
 	else if(dRq1!=0&&dRq2!=0){toomany+=1;}}
      }}
+  */
+
+  //choice 2: generated hadronic boson "reconstructed" through quarks /uncomment if needed)
   
+  int nquark=0;
+  theHistograms.fill("numero quark","Numero quark",10,0,10,nquark);
+  phys::Particle quark1,quark2;
+
+  foreach(const phys::Particle genParticle,*genParticles){
+    if(abs(genParticle.id())>0&&abs(genParticle.id())<7){
+      nquark++;
+      if(quark1.e()<0.01){
+	quark1=genParticle;}
+      else if(quark2.e()<0.01){
+	quark2=genParticle;}}}
+
+  if(nquark==2){
+    phys::Boson<phys::Particle> jetboson=phys::Boson<phys::Particle>(quark1,quark2);
+    if(topology.test(0)){
+
+	double totalenergy=z1.e()+z2.e()+jetboson.e();
+        theHistograms.fill("energy of all bosons","Total boson energy",50,0,3000,z1.e()+z2.e()+jetboson.e());
+      
+        //event weighting
+
+	weightedevent++;
+	
+        TFile *weightfile = TFile::Open("./aGCweighthist.root");
+        TH1F *weighthist= (TH1F*)weightfile->Get("energy of all bosons");
+        double weightarray[50];
+        for(int i=0;i<50;i++){
+          weightarray[i]=weighthist->GetBinContent(i+1);}
+        for(int j=0;j<50;j++){
+          if(totalenergy>60*j&&totalenergy<60*(j+1)){
+	    theWeight=weightarray[j];}}
+        weightfile->Close();
+    }
+  } 
+    
+  /*
   if(dRq1!=0&&dRq2!=0&&toomany==0){
     
-    phys::Boson<phys::Particle> jetboson=phys::Boson<phys::Particle>(jet1,jet2,0);
+    phys::Boson<phys::Particle> jetboson=phys::Boson<phys::Particle>(jet1,jet2);
     
     double massqq=sqrt((pquark.E()*pquark.E())-(pquark.Px()*pquark.Px())-(pquark.Py()*pquark.Py())-(pquark.Pz()*pquark.Pz()));
     theHistograms.fill("mass of qq","qq mass",120,50,130,massqq);
     theHistograms.fill("mass of hadronic bosons","Hadronic boson mass",120,50,130,jetboson.mass());
     theHistograms.fill("deltam qq-jetjet","Difference between qq/jetjet mass",50,-25,25,jetboson.mass()-massqq);
+    if(nquark==2){
+      theHistograms.fill("delta energy qq-jetjet","Difference between qq/jetjet energy",100,-50,50,jetboson.e()-quarken);}
       
       if(topology.test(0)){
 
@@ -226,7 +283,8 @@ void VZZaQGCAnalyzer::analyze(){
         weightfile->Close();
     }
   }
-
+  */
+  
   //hadronic boson reconstruction
 
   Particle* hadVB = nullptr;
@@ -255,7 +313,6 @@ void VZZaQGCAnalyzer::analyze(){
 
   //study of the final state with three reconstructed bosons 
   
-<<<<<<< HEAD
     if((hadVB&&ZZ)&&weightedevent==1){
 
       const double luminosity= 150000; //pb^-1
@@ -265,10 +322,6 @@ void VZZaQGCAnalyzer::analyze(){
       double norm= samplecrosssec*luminosity/sampleevents;
       
       Particle WZ=*hadVB;
-=======
-  if(hadVB&&ZZ->passFullSelection()){
-    Particle WZ= *hadVB;
->>>>>>> c98980ced0627f0d148b991b46ba3d11d17a0f4a
     
       phys::Boson<phys::Lepton> Z1=ZZ->first();
       phys::Boson<phys::Lepton> Z2=ZZ->second();
