@@ -12,26 +12,23 @@ Date: 2020/11/25
 #include <string>
 #include <TLatex.h>
 
-#include <boost/foreach.hpp>
-#define foreach BOOST_FOREACH
-
 using namespace std;
 
 double scale(double sig,double sig_SM){return sig/sig_SM;}
 
 //cross sections for SM
 
-const double sig_WZZ_SM=0.000141309273192;
-const double sig_ZZZ_SM=0.000132818264676;
+const double sig_WZZ_SM=0.000141309273192;    //pb
+const double sig_ZZZ_SM=0.000132818264676;    //pb
 
 //cross sections for anomalous phenomena
 
 //cW WZZ
-const double sig_WZZ_cW_LI=-5.4669356329e-07;
-const double sig_WZZ_cW_QU=6.6865180464e-05;
+const double sig_WZZ_cW_LI=-5.4669356329e-07; //pb
+const double sig_WZZ_cW_QU=6.6865180464e-05;  //pb
 //cW ZZZ
-const double sig_ZZZ_cW_LI=2.5001339964e-08;
-const double sig_ZZZ_cW_QU=3.64336224597e-06;
+const double sig_ZZZ_cW_LI=2.5001339964e-08;  //pb
+const double sig_ZZZ_cW_QU=3.64336224597e-06; //pb
 
 //generates the filename input for other functions
 
@@ -82,8 +79,8 @@ TH1F *DistributionComparison(double parameter, string histname, string title,str
   TH1F *hist=DistributionPlot(result1,legend,histname,title,axisname,"SM data",ymax,kBlack,sig_SM);
   TH1F *histsum=DistributionSummer(parameter,result1, result2, scale1, result3, scale2, legend, histname, title, axisname, ymax, kRed,sig_SM);
   hist->Scale(150*sig_SM*pow(10,-1));
-  hist->Draw();
   histsum->Scale(150*sig_SM*pow(10,-1));
+  hist->Draw();
   histsum->Draw("same");
 
   ostringstream stream1,stream2,stream3;
@@ -98,9 +95,9 @@ TH1F *DistributionComparison(double parameter, string histname, string title,str
   string insert3= "p value: "+stream3.str();
   legend->AddEntry((TObject*)0,insert3.c_str(),"");
   legend->Draw();
-
-  histsum->Divide(hist);
-  return histsum;
+  TH1F *weighthist= new TH1F(*histsum);
+  weighthist->Divide(hist);
+  return weighthist;
 }
 
 
@@ -118,12 +115,7 @@ void VZZDistributionComparison(string sample, double parameter){
   TFile *result3 = TFile::Open(filename3.c_str());
   
   TCanvas *c1 = new TCanvas("c1","canvas",0,0,1000,1000);
-  /*
-  TCanvas *c2 = new TCanvas("c2","canvas",0,0,1000,1000);
-  TCanvas *c3 = new TCanvas("c3","canvas",0,0,1000,1000);
-  TCanvas *c4 = new TCanvas("c4","canvas",0,0,1000,1000);
-  */
-
+  
   //picks the correct cross sections for the scale factors
   
   double sig_SM,sig_LI,sig_QU;
@@ -141,11 +133,6 @@ void VZZDistributionComparison(string sample, double parameter){
 
   c1->cd();
   TH1F *weighthist=DistributionComparison(parameter,"energy of all bosons","Total boson energy","energy (GeV)",1000,result1,result2,result3,scale1,scale2,sig_SM);
-  /*
-  DistributionComparison(parameter, "total pt scalar sum","Scalar pt sum","pt (GeV/c)",1200,result1,result2,result3,scale1,scale2,sig_SM);
-  DistributionComparison(parameter,"mass of tribosons","Triboson mass","mass (GeV/c^2)",1600,result1,result2,result3,scale1,scale2,sig_SM);
-  DistributionComparison(parameter, "total pt vector sum","Vector pt sum","pt (GeV/c)",1200,result1,result2,result3,scale1,scale2,sig_SM);
-  DistributionComparison(parameter,"energy of major Z2 leptons","Major Z1 lepton energy","energy (GeV)",1000,result1,result2,result3,scale1,scale2,sig_SM);
-  */
-  weighthist->Draw();
+  TFile *file=new TFile("aGCweighthist.root","recreate");
+  weighthist->Write();
 }
