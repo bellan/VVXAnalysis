@@ -225,27 +225,26 @@ void VZZAnalyzer::analyze(){
 	//Hypotetical cut on minDM
 	theHistograms.fill("Cut analysis_f_","Cut analysis;;Events", CUT_AN_SIZE, 0., theWeight);
 	
-	float pt_tot4 = 0.;
-	float pt_tot8 = 0.;
+	//float pt_tot4 = 0.;
+	//float pt_tot8 = 0.;
 	
 	float mindm4 = 100.;
 	float mindm8 = 100.;
 	if(AK4pairs_->size() > 0){
 		std::sort(AK4pairs_->begin(), AK4pairs_->end(), Mass2Comparator(phys::ZMASS, phys::WMASS));
 		mindm4 = minDM(AK4pairs_->front().mass());
-		if(mindm4 < 30.)
-			pt_tot4 = (ZZ->p4() + AK4pairs_->front().p4()).Pt();
-		
-		
+		//if(mindm4 < 30.)
+			//pt_tot4 = (ZZ->p4() + AK4pairs_->front().p4()).Pt();
 	}
+	
 	if(jetsAK8->size() > 0){
 		std::sort(jetsAK8->begin(), jetsAK8->end(), Mass2Comparator(phys::ZMASS, phys::WMASS));
 		theHistograms.fill("Best8_t21_f_", ";#tau_{2}/#tau_{1};# jets", 25,0.,1., jetsAK8->front().tau2()/jetsAK8->front().tau1());
 		theHistograms.fill("Best8_t32_f_", ";#tau_{3}/#tau_{2};# jets", 25,0.,1., jetsAK8->front().tau3()/jetsAK8->front().tau2());
 		theHistograms.fill("Best8_PUPPIt21_f_", ";PUPPI #tau_{2}/#tau_{1};# jets", 25,0.,1., jetsAK8->front().puppiTau2()/jetsAK8->front().puppiTau1(), theWeight);
 		mindm8 = minDM(jetsAK8->front().chosenAlgoMass());
-		if(mindm8 < 30.)
-			pt_tot8 = (ZZ->p4() + jetsAK8->front().p4()).Pt();
+		//if(mindm8 < 30.)
+			//pt_tot8 = (ZZ->p4() + jetsAK8->front().p4()).Pt();
 	}
 	theHistograms.fill("minDM_r_", "cut on minDM;minDM [GeV/c^{2}];Events",30,0.,60., std::min(mindm4, mindm8), theWeight);
 	theHistograms.fill("pt_tot_r_", "cut on pt_tot;pt_tot [GeV/c];Events",20,0.,100., std::min(mindm4, mindm8), theWeight);
@@ -608,7 +607,7 @@ void VZZAnalyzer::recSignalGraphs(){
 	theHistograms.fill("Rec: ang0 _f_", "Rec: ang0;", 20,0.,2., ang0, theWeight);
 	theHistograms.fill("Rec: ang1 _f_", "Rec: ang1;", 20,0.,2., ang1, theWeight);
 	theHistograms.fill("Rec: ang2 _f_", "Rec: ang2;", 20,0.,2., ang2, theWeight);
-	
+	/*
 	// phi
 	float dPhi0 = physmath::deltaPhi(ZZ->first(), ZZ->second());
 	float dPhi1 = physmath::deltaPhi(ZZ->first(), *candClosest);
@@ -623,7 +622,7 @@ void VZZAnalyzer::recSignalGraphs(){
 	float dR0 = physmath::deltaPhi(ZZ->first(), ZZ->second());
 	float dR1 = physmath::deltaPhi(ZZ->first(), *candClosest);
 	float dR2 = physmath::deltaPhi(*candClosest, ZZ->second());
-	
+	*/
 	// projection - relative pt
 	float pt0 = candp4.P() * sin( candp4.Angle(ZZ->p4().Vect()) );
 	float pt1 = Z1p4.P() * sin( Z1p4.Angle((candp4 + Z2p4).Vect()) );
@@ -984,11 +983,12 @@ void VZZAnalyzer::genTauAnalisys(){
 		//theHistograms.fill("Closest #tau: All AK4_{rec} #eta", "Closest #tau: All AK4_{rec} #eta", 25,-5.,5., jet.eta(), 1.);
 		stable_sort(jets->begin(), jets->end(), DeltaRComparator(tau));
 		const Jet& jet = jets->front(); //const Particle& tau = genTaus->front();
-		if(physmath::deltaR(jets->front(), tau) < 0.2)
-			theHistograms.fill("Closest #tau: #DeltaR(All AK4_{rec})", "Closest #tau: #DeltaR(All AK4_{rec})", 25,0.,0.5, physmath::deltaR(jets->front(), tau), 1.);
+		if(physmath::deltaR(jet, tau) < 0.2){
+			theHistograms.fill("Closest #tau: #DeltaR(All AK4_{rec})", "Closest #tau: #DeltaR(All AK4_{rec})", 25,0.,0.5, physmath::deltaR(jet, tau), 1.);
 			theHistograms.fill("Closest #tau: match4_{All rec} #tau #eta", "Closest #tau: match4_{All rec} #tau #eta", 25,-5.,5., tau.eta(), 1.);
-			float dMr = jets->front().mass() - tau.mass();
+			float dMr = jet.mass() - tau.mass();
 			theHistograms.fill("Closest #tau: #DeltaM(All AK4_{rec})", "Closest #tau: #DeltaM(All AK4_{rec})", 20,-25.,25., dMr, 1.);
+		}
 	}
 	
 	
@@ -1411,7 +1411,7 @@ pair<const Boson<Particle>*, Boson<Jet>*> VZZAnalyzer::reconstructionAK4(){
 		if(dR0 < 0.2 && dR1 < 0.2){
 			++Ncms_recVB_;
 			Boson<Jet> bestPossibleAK4(rec0, rec1);
-			float dR = physmath::deltaR(bestPossibleAK4, genVB);
+			//float dR = physmath::deltaR(bestPossibleAK4, genVB);
 			// reconstructible --> reconstructible using detector-reconstructed particles
 			// therefore "CMS-rec" --> best possible reconstructible by algorithm: the ideal algorithm would always choose this as the VB-candidate, as its constituent jet are the reconstructed counterparts to the genJets of the genVB
 			
