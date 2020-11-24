@@ -60,6 +60,7 @@ public:
   Int_t recoAfterCut;
   Int_t recoJetless2;
   Int_t recoZlempty;
+  Int_t genAfterCut;
 
   Int_t gen3e;
   Int_t gen3m;
@@ -75,6 +76,7 @@ public:
   Int_t counter3;
   Int_t counter4;
   Int_t counter5;
+  Int_t counter6;
 
   Float_t begintime;
   Float_t endtime;
