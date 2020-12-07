@@ -4,6 +4,7 @@
 #include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 #include "VVXAnalysis/DataFormats/interface/TypeDefs.h"
+#include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
@@ -13,6 +14,7 @@ using namespace boost::assign;
 
 using namespace std;
 using namespace phys;
+using namespace physmath;
 
 void VVjjHelper::test() {
   cout << "pippo!!" << endl;
@@ -35,8 +37,13 @@ bool VVjjHelper::FindDiBoson(vector<Particle> &genparticles, VVtype &VV, string 
 
   if(leptonnumber != 4 || neutrinonumber > 1){
     return false;
-  } else{
+  }
+  else{    
     VV = helper.BuildVV(eventtype);
+  }
+
+  if(VV.first().mass() == 0){
+    return false;
   }
     
   return true;
@@ -47,6 +54,8 @@ void VVjjHelper::LeptonSearch(vector<Particle> &genparticles, string eventtype){
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~ Function to find Leptons ~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  Histogrammer theHistograms;
   
   // Reset Data Member containers
   leptons_.clear();   leptons_.shrink_to_fit();
@@ -124,9 +133,25 @@ void VVjjHelper::LeptonSearch(vector<Particle> &genparticles, string eventtype){
     break;
      
   default:{
-    cout << "ERROR: lepton's number is: " << leptons_.size() << endl << endl;
+    //cout << "ERROR: lepton's number is: " << leptons_.size() << endl << endl;
     return;
   }
+  }
+
+  TLorentzVector Ptot;
+
+  foreach(const Particle neu, neutrinos_)
+    Ptot += neu.p4();
+  
+  foreach(const Particle lep, leptons_)
+    Ptot += lep.p4();
+  
+  //theHistograms.fill("AllGenlllnu_mass",   "m 3 leptons and #nu",     150, 0, 1500, Ptot.M());
+  //theHistograms.fill("AllGenlllnu_trmass", "m_{T} 3 leptons and #nu", 150, 0, 1500, Ptot.Mt());
+  
+  if(Ptot.M() < 165.){
+    leptons_.clear();
+    leptons_.shrink_to_fit();    
   }
 }
 
@@ -136,8 +161,88 @@ VVtype VVjjHelper::BuildVV(string eventtype){
   // ~~~~~~~~~~~~~~~~~~ Function to build DiBoson ~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
+  Histogrammer theHistograms;  
   VVtype VV;
-  //things
+  VVtype null;
+
+  // different ways to build up the VV couple if event is WZ or ZZ
+  int switchcase = -1;
+  if(eventtype == "WZ"){
+    switchcase = 1;
+  }
+  else if(eventtype == "ZZ"){
+    switchcase = 0;
+  }
+  
+  switch(switchcase){
+  case 0:{// ZZ event
+    // things
+  }
+    break;
+
+  case 1:{// WZ event
+    // useful variables
+    vector<Zltype> Zls;
+    vector<VVtype> WZs;
+    double differenceZ = 0;
+    double differenceW = 0;
+    unsigned int choice = 0;
+
+    // fill Zl candidates
+    for(int i = 0; i < (int)leptons_.size() -1; i++){
+      for(int j = i + 1; j < (int)leptons_.size(); j++){
+	for(int k = 0; k < (int)leptons_.size(); k++){
+	  if(k != i && k != j){
+	    if(leptons_[i].id() == -leptons_[j].id()){// same flavour, opposite charge
+	      Zls.push_back(Zltype(BosonParticle(leptons_[i], leptons_[j], 23), leptons_[k]));
+	    }
+	  }
+	}
+      }
+    }
+    
+    // Z is made up of the couple which gives a better Zmass 
+    sort(Zls.begin(), Zls.end(), pairMassComparator(0, ZMASS));
+    differenceZ = fabs(ZMASS - Zls[0].first.p4().M());
+
+    for(int i = 0; i < (int)Zls.size(); i++){
+      WZs.push_back(VVtype(BosonParticle(Zls[i].second, neutrinos_[0], copysign(24, Zls[i].second.charge())), Zls[i].first));
+    }
+    
+    // W is made up of the couple which gives a better Wmass 
+    sort(WZs.begin(), WZs.end(), pairMassComparator(0, WMASS));
+    differenceW = fabs(WMASS - WZs[0].first().p4().M());
+    
+    // Best couple has less difference in mass from main boson
+    if(differenceZ < differenceW){ // Z is better
+      VV = VVtype(BosonParticle(Zls[0].second, neutrinos_[0], copysign(24, Zls[0].second.charge())), Zls[0].first);
+      choice = 1;
+      //theHistograms.fill("Helper_choosingWZ", "best WZ couple choice", 10, 0.5, 10.5, choice);
+    }
+    else{ // W is better
+      VV = WZs[0];
+      choice = 2;
+      //theHistograms.fill("Helper_choosingWZ", "best WZ couple choice", 10, 0.5, 10.5, choice);
+    }
+
+    if(fabs(VV.first().mass() - WMASS) > rangeVmass || fabs(VV.second().mass() - ZMASS) > rangeVmass){
+      VV = null;
+      choice = 3;
+      //theHistograms.fill("Helper_choosingWZ", "best WZ couple choice", 10, 0.5, 10.5, choice);
+    }
+
+    if(isTheSame(Zls[0].first, WZs[0].second())){
+      choice = 4;
+      //theHistograms.fill("Helper_choosingWZ", "best WZ couple choice", 10, 0.5, 10.5, choice);
+    }
+
+  }
+    break;
+
+  default:{
+    cout << "ERROR: wrong initialisation for eventtype, " << eventtype << endl << endl;
+  }
+  }
 
   return VV;
 }

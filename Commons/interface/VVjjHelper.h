@@ -39,20 +39,13 @@ public:
  
 
   // Data memebers
-  const float range = 30.;
-  
-  int counter1;
-  int counter2;
-  int counter3;
-  int counter4;
+  const float rangeVmass = 30.;
   
   void LeptonSearch(vector<Particle> &genparticles, string eventtype);
   VVtype BuildVV(string eventtype);
   unsigned int GetAllLeptonsNumber();
   unsigned int GetNeutrinosNumber();
   
-  //vector<Particle> electrons_;
-  //vector<Particle> muons_;
   vector<Particle> neutrinos_;
   vector<Particle> leptons_;
   
