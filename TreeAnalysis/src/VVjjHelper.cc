@@ -1,9 +1,10 @@
-#include "VVXAnalysis/Commons/interface/VVjjHelper.h"
+#include "VVXAnalysis/TreeAnalysis/interface/VVjjHelper.h"
 #include "VVXAnalysis/Commons/interface/Comparators.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 #include "VVXAnalysis/DataFormats/interface/TypeDefs.h"
+
 #include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
 
 #include <boost/foreach.hpp>
@@ -21,25 +22,25 @@ void VVjjHelper::test() {
 }
 
 
-bool VVjjHelper::FindDiBoson(vector<Particle> &genparticles, VVtype &VV, string eventtype){
+bool VVjjHelper::FindDiBoson(vector<Particle> &genparticles, DiBosonParticle &VV, string eventkind){
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~ Function to find DiBoson ~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-  VVjjHelper helper;
+  VVjjHelper vvjjhelper;
   
   // Search for and get leptons in genParticles
-  helper.LeptonSearch(genparticles, eventtype);
+  vvjjhelper.LeptonSearch(genparticles, eventkind);
 
   // Check if there are enough leptons and neutrinos
-  unsigned int leptonnumber = helper.GetAllLeptonsNumber();
-  unsigned int neutrinonumber = helper.GetNeutrinosNumber();
+  unsigned int leptonnumber = vvjjhelper.GetAllLeptonsNumber();
+  unsigned int neutrinonumber = vvjjhelper.GetNeutrinosNumber();
 
   if(leptonnumber != 4 || neutrinonumber > 1){
     return false;
   }
   else{    
-    VV = helper.BuildVV(eventtype);
+    VV = vvjjhelper.BuildVV(eventkind);
   }
 
   if(VV.first().mass() == 0){
@@ -50,7 +51,7 @@ bool VVjjHelper::FindDiBoson(vector<Particle> &genparticles, VVtype &VV, string 
 }
 
 
-void VVjjHelper::LeptonSearch(vector<Particle> &genparticles, string eventtype){
+void VVjjHelper::LeptonSearch(vector<Particle> &genparticles, string eventkind){
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~ Function to find Leptons ~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -58,8 +59,8 @@ void VVjjHelper::LeptonSearch(vector<Particle> &genparticles, string eventtype){
   Histogrammer theHistograms;
   
   // Reset Data Member containers
-  leptons_.clear();   leptons_.shrink_to_fit();
-  neutrinos_.clear(); neutrinos_.shrink_to_fit();
+  leptons_.clear();
+  neutrinos_.clear();
   
   // Get leptons from genParticles
   foreach(const Particle &gen, genparticles){
@@ -86,10 +87,10 @@ void VVjjHelper::LeptonSearch(vector<Particle> &genparticles, string eventtype){
 
   // different selection for differents event types: 1 for WZ and 0 for ZZ
   int switchcase = -1;
-  if(eventtype == "WZ" && leptons_.size() == 3){
+  if(eventkind == "WZ" && leptons_.size() == 3){
     switchcase = 1;
   }
-  else if(eventtype == "ZZ" && leptons_.size() == 4){
+  else if(eventkind == "ZZ" && leptons_.size() == 4){
     switchcase = 0;
   }
 
@@ -103,7 +104,7 @@ void VVjjHelper::LeptonSearch(vector<Particle> &genparticles, string eventtype){
     // first lepton must have at least 20GeV pt
     if(leptons_[0].pt() < 20.){
       leptons_.clear();
-      leptons_.shrink_to_fit();
+      //cout << "Leptons_ size " << leptons_.size() << endl;
     }
 
     // second lepton must have at least 12GeV pt if electron or 10GeV pt if muon
@@ -111,7 +112,7 @@ void VVjjHelper::LeptonSearch(vector<Particle> &genparticles, string eventtype){
     case 11:{
       if(leptons_[1].pt() < 12.){
 	leptons_.clear();
-	leptons_.shrink_to_fit();
+	//cout << "Leptons_ size " << leptons_.size() << endl;
       }
     }
       break;
@@ -119,7 +120,7 @@ void VVjjHelper::LeptonSearch(vector<Particle> &genparticles, string eventtype){
     case 13:{
       if(leptons_[1].pt() < 10.){
 	leptons_.clear();
-	leptons_.shrink_to_fit();
+	//cout << "Leptons_ size " << leptons_.size() << endl;
       }
     }
       break;
@@ -142,35 +143,36 @@ void VVjjHelper::LeptonSearch(vector<Particle> &genparticles, string eventtype){
 
   foreach(const Particle neu, neutrinos_)
     Ptot += neu.p4();
+
+  if(leptons_.size() != 0){
+    foreach(const Particle lep, leptons_)
+      Ptot += lep.p4();
+  }
   
-  foreach(const Particle lep, leptons_)
-    Ptot += lep.p4();
-  
-  //theHistograms.fill("AllGenlllnu_mass",   "m 3 leptons and #nu",     150, 0, 1500, Ptot.M());
-  //theHistograms.fill("AllGenlllnu_trmass", "m_{T} 3 leptons and #nu", 150, 0, 1500, Ptot.Mt());
+  theHistograms.fill("AllGenlllnu_mass",   "m 3 leptons and #nu",     150, 0, 1500, Ptot.M());
+  theHistograms.fill("AllGenlllnu_trmass", "m_{T} 3 leptons and #nu", 150, 0, 1500, Ptot.Mt());
   
   if(Ptot.M() < 165.){
-    leptons_.clear();
-    leptons_.shrink_to_fit();    
+    leptons_.clear();    
   }
 }
 
 
-VVtype VVjjHelper::BuildVV(string eventtype){
+DiBosonParticle VVjjHelper::BuildVV(string eventkind){
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~ Function to build DiBoson ~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-  Histogrammer theHistograms;  
-  VVtype VV;
-  VVtype null;
+  //Histogrammer theHistograms;  
+  DiBosonParticle VV;
+  DiBosonParticle null;
 
   // different ways to build up the VV couple if event is WZ or ZZ
   int switchcase = -1;
-  if(eventtype == "WZ"){
+  if(eventkind == "WZ"){
     switchcase = 1;
   }
-  else if(eventtype == "ZZ"){
+  else if(eventkind == "ZZ"){
     switchcase = 0;
   }
   
@@ -182,8 +184,8 @@ VVtype VVjjHelper::BuildVV(string eventtype){
 
   case 1:{// WZ event
     // useful variables
-    vector<Zltype> Zls;
-    vector<VVtype> WZs;
+    vector<pairBosonParticle> Zls;
+    vector<DiBosonParticle> WZs;
     double differenceZ = 0;
     double differenceW = 0;
     unsigned int choice = 0;
@@ -194,7 +196,7 @@ VVtype VVjjHelper::BuildVV(string eventtype){
 	for(int k = 0; k < (int)leptons_.size(); k++){
 	  if(k != i && k != j){
 	    if(leptons_[i].id() == -leptons_[j].id()){// same flavour, opposite charge
-	      Zls.push_back(Zltype(BosonParticle(leptons_[i], leptons_[j], 23), leptons_[k]));
+	      Zls.push_back(pairBosonParticle(BosonParticle(leptons_[i], leptons_[j], 23), leptons_[k]));
 	    }
 	  }
 	}
@@ -206,7 +208,7 @@ VVtype VVjjHelper::BuildVV(string eventtype){
     differenceZ = fabs(ZMASS - Zls[0].first.p4().M());
 
     for(int i = 0; i < (int)Zls.size(); i++){
-      WZs.push_back(VVtype(BosonParticle(Zls[i].second, neutrinos_[0], copysign(24, Zls[i].second.charge())), Zls[i].first));
+      WZs.push_back(DiBosonParticle(BosonParticle(Zls[i].second, neutrinos_[0], copysign(24, Zls[i].second.charge())), Zls[i].first));
     }
     
     // W is made up of the couple which gives a better Wmass 
@@ -215,7 +217,7 @@ VVtype VVjjHelper::BuildVV(string eventtype){
     
     // Best couple has less difference in mass from main boson
     if(differenceZ < differenceW){ // Z is better
-      VV = VVtype(BosonParticle(Zls[0].second, neutrinos_[0], copysign(24, Zls[0].second.charge())), Zls[0].first);
+      VV = DiBosonParticle(BosonParticle(Zls[0].second, neutrinos_[0], copysign(24, Zls[0].second.charge())), Zls[0].first);
       choice = 1;
       //theHistograms.fill("Helper_choosingWZ", "best WZ couple choice", 10, 0.5, 10.5, choice);
     }
@@ -240,7 +242,7 @@ VVtype VVjjHelper::BuildVV(string eventtype){
     break;
 
   default:{
-    cout << "ERROR: wrong initialisation for eventtype, " << eventtype << endl << endl;
+    cout << "ERROR: wrong initialisation for eventkind, " << eventkind << endl << endl;
   }
   }
 

@@ -9,7 +9,6 @@
  *  \author E. Racca - UNITO <eleonora.racca@cern.ch>
  */
 
-
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 #include "VVXAnalysis/DataFormats/interface/Particle.h"
@@ -22,13 +21,11 @@ class VVjjHelper{
 
 public:
 
-  VVjjHelper(){}
-
   virtual ~VVjjHelper(){}
   
   static void test();
 
-  static bool FindDiBoson(vector<Particle> &genparticles, VVtype &VV, string eventtype);
+  static bool FindDiBoson(vector<Particle> &genparticles, DiBosonParticle &VV, string eventkind);
 
   static bool FindLeadingJets(vector<Particle> &genjets, vector<Particle> &jets);
   
@@ -41,8 +38,8 @@ public:
   // Data memebers
   const float rangeVmass = 30.;
   
-  void LeptonSearch(vector<Particle> &genparticles, string eventtype);
-  VVtype BuildVV(string eventtype);
+  void LeptonSearch(vector<Particle> &genparticles, string eventkind);
+  DiBosonParticle BuildVV(string eventkind);
   unsigned int GetAllLeptonsNumber();
   unsigned int GetNeutrinosNumber();
   

@@ -45,7 +45,7 @@ include_directories(${CMAKE_INCLUDE_PATH} ${DataFormats_interface} ${BASE})
 ROOT_GENERATE_DICTIONARY(G__TreeAnalysis "${EventDF_HEADERS}" LINKDEF "${EventDF_LINKDEF}")
 
 
-set(EventAnalyzer_SRCS ${EventDF_DICTIONARY} ${SRC}/MCInfo.cc ${SRC}/EventAnalyzer.cc ${Commons_src}/SignalDefinitions.cc ${Commons_src}/RegionTypes.cc ${Commons_src}/StringTools.cc ${Commons_src}/GenVBHelper.cc ${Commons_src}/VVjjHelper.cc)
+set(EventAnalyzer_SRCS ${EventDF_DICTIONARY} ${SRC}/MCInfo.cc ${SRC}/EventAnalyzer.cc ${Commons_src}/SignalDefinitions.cc ${Commons_src}/RegionTypes.cc ${Commons_src}/StringTools.cc ${Commons_src}/GenVBHelper.cc)
 
 
 set(Analyzers_SRCS)

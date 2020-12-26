@@ -81,7 +81,7 @@ void WlllnuAnalyzer::analyze(){
   //theHistograms.fill("leptonsNumber",  "number of leptons ",  5, -0.5, 4.5, leptons.size());
   //theHistograms.fill("idAllGenParticles"," finalid ", 60 , -0.5, 59.5, finalid);
 
-  //std::vector<Zltype > Zl; //change Particle to Lepton    
+  //std::vector<pairBosonParticle > Zl; //change Particle to Lepton    
     
   //ZZ
   if( (electrons.size() + muons.size() == 4) && (finalid == 44 || finalid == 48 || finalid == 52) ){
@@ -161,7 +161,7 @@ void WlllnuAnalyzer::analyze(){
     //how do we know z0 is the first in the diagram?? I know
     
     // ZZ
-    VVtype ZZ(z0,z1);
+    DiBosonParticle ZZ(z0,z1);
     cout << "\n\n ZZ: " << ZZ.id() << " pt: " << ZZ.pt() << " mass: " << ZZ.mass() << "\n daughters: " << ZZ.daughter<Particle>(0).id() << ", " << ZZ.second().id() << " Y: " << ZZ.rapidity() << endl;
     
     theHistograms.fill("ptGenZZ",   "pt ",   100,  0,   100, ZZ.pt());
@@ -200,7 +200,7 @@ void WlllnuAnalyzer::analyze(){
     cout << "\nmyZl analysis" << endl; 
     //forms Zl every time there are 3 leptons (1 or 2 Zl depending on presence of both e and mu) if leptons pt and eta is good enough
     
-    std::vector<Zltype > Zl; //change Particle to Lepton    
+    std::vector<pairBosonParticle > Zl; //change Particle to Lepton    
     std::vector<Particle> eptSort; // electrons sorted by pt
     std::vector<Particle> muptSort;
     std::vector<Particle> lepptSort;
@@ -233,22 +233,22 @@ void WlllnuAnalyzer::analyze(){
     }*/
     
     if(finalid == 33){//3e     
-      Zl.push_back(Zltype(phys::Boson<phys::Particle>(electrons[0],electrons[2], 23), electrons[1]));
-      electrons[1].id()<0 ? Zl.push_back(Zltype(phys::Boson<phys::Particle>(electrons[0],electrons[1], 23), electrons[2])) : Zl.push_back(Zltype(phys::Boson<phys::Particle>(electrons[1],electrons[2], 23), electrons[0]));
+      Zl.push_back(pairBosonParticle(phys::Boson<phys::Particle>(electrons[0],electrons[2], 23), electrons[1]));
+      electrons[1].id()<0 ? Zl.push_back(pairBosonParticle(phys::Boson<phys::Particle>(electrons[0],electrons[1], 23), electrons[2])) : Zl.push_back(pairBosonParticle(phys::Boson<phys::Particle>(electrons[1],electrons[2], 23), electrons[0]));
     }
     else if(finalid == 39){//3mu
-      Zl.push_back(Zltype(phys::Boson<phys::Particle>(muons[0],muons[2], 23), muons[1]));
-      muons[1].id()<0 ? Zl.push_back(Zltype(phys::Boson<phys::Particle>(muons[0],muons[1], 23), muons[2])) : Zl.push_back(Zltype(phys::Boson<phys::Particle>(muons[1],muons[2], 23), muons[0]));	
+      Zl.push_back(pairBosonParticle(phys::Boson<phys::Particle>(muons[0],muons[2], 23), muons[1]));
+      muons[1].id()<0 ? Zl.push_back(pairBosonParticle(phys::Boson<phys::Particle>(muons[0],muons[1], 23), muons[2])) : Zl.push_back(pairBosonParticle(phys::Boson<phys::Particle>(muons[1],muons[2], 23), muons[0]));	
     }
     else if(finalid == 35){//2e1mu
-      Zl.push_back(Zltype(phys::Boson<phys::Particle>(electrons[0],electrons[1], 23), muons[0]));
+      Zl.push_back(pairBosonParticle(phys::Boson<phys::Particle>(electrons[0],electrons[1], 23), muons[0]));
     }
     else if(finalid == 37){//2mu1e
-      Zl.push_back(Zltype(phys::Boson<phys::Particle>(muons[0],muons[1], 23), electrons[0]));
+      Zl.push_back(pairBosonParticle(phys::Boson<phys::Particle>(muons[0],muons[1], 23), electrons[0]));
     }
     
     cout << "\n # of my Zl candidates: "  << Zl.size() << endl;
-    foreach(const Zltype zl, Zl){
+    foreach(const pairBosonParticle zl, Zl){
       cout << "\nZlcand: \t" << std::get<0>(zl) << "\n\t\t" << std::get<1>(zl) << endl;
       theHistograms.fill("massBosonGenZl","mass Z", 100, 0, 500, (std::get<0>(zl)).mass());
          
@@ -258,7 +258,7 @@ void WlllnuAnalyzer::analyze(){
 
     //--------------------------------------------------//
     //comparing mZ with mT daughters
-    foreach(const Zltype zl, Zl){
+    foreach(const pairBosonParticle zl, Zl){
       if(Zl.size() == 0) continue;
       theHistograms.fill("mZlmT", "mZ vs mT daughters", 150, 0, 150, 150, 0, 150, mT((std::get<0>(zl)).daughter(0),(std::get<0>(zl)).daughter(1)), (std::get<0>(zl)).mass());
       theHistograms.fill("deltamZlmT", "mZ - mT daughters", 100, -100, 100, (std::get<0>(zl)).mass() - mT((std::get<0>(zl)).daughter(0),(std::get<0>(zl)).daughter(1)));
@@ -337,13 +337,13 @@ void WlllnuAnalyzer::analyze(){
           
       std::vector<pairParticle> pCombos; //all the possible combos with 3l
       pairParticle theCombo; //the best one
-      std::vector <Zltype> Zl; //Z and lepton
+      std::vector <pairBosonParticle> Zl; //Z and lepton
       BosonParticle W;
       bool isNuAlone = NULL; //in order to mark W -> nu + lll or W -> l + llnu
       //int diagramId = 0;
       
       if(finalid == 49 && electrons.size() == 2){//2e 1mu 1nu_mu
-	Zl.push_back(Zltype(BosonParticle(electrons[0], electrons[1], 23),muons[0]));
+	Zl.push_back(pairBosonParticle(BosonParticle(electrons[0], electrons[1], 23),muons[0]));
 	pCombos.push_back(pairParticle(nu,Particle(electrons[0].p4()+electrons[1].p4()+muons[0].p4())));
 	pCombos.push_back(pairParticle(muons[0],Particle(electrons[0].p4()+electrons[1].p4()+nu.p4())));
 	std::stable_sort(pCombos.begin(), pCombos.end(), mTComparator(masslllnu));
@@ -351,7 +351,7 @@ void WlllnuAnalyzer::analyze(){
 	isNuAlone = isTheSame(nu, theCombo.first);
       }
       else if(finalid == 49 && muons.size() == 2){//2mu 1e 1nu_e
-	Zl.push_back(Zltype(BosonParticle(muons[0], muons[1], 23), electrons[0]));
+	Zl.push_back(pairBosonParticle(BosonParticle(muons[0], muons[1], 23), electrons[0]));
 	pCombos.push_back(pairParticle(nu,Particle(muons[0].p4()+muons[1].p4()+electrons[0].p4())));
 	pCombos.push_back(pairParticle(electrons[0],Particle(muons[0].p4()+muons[1].p4()+nu.p4())));
 	std::stable_sort(pCombos.begin(), pCombos.end(), mTComparator(masslllnu));
@@ -372,17 +372,17 @@ void WlllnuAnalyzer::analyze(){
 	//   theCombo = p; //the best Combo has closest mT to lllnu (W)
 	isNuAlone = isTheSame(nu, theCombo.first);
 	if(isNuAlone){
-	  Zl.push_back(Zltype(BosonParticle(electrons[0], electrons[2], 23), electrons[1]));
+	  Zl.push_back(pairBosonParticle(BosonParticle(electrons[0], electrons[2], 23), electrons[1]));
 	  electrons[1].id()>0 ?
-	    Zl.push_back(Zltype(BosonParticle(electrons[1], electrons[2], 23), electrons[0])) :
-	    Zl.push_back(Zltype(BosonParticle(electrons[0], electrons[1], 23), electrons[2]));
+	    Zl.push_back(pairBosonParticle(BosonParticle(electrons[1], electrons[2], 23), electrons[0])) :
+	    Zl.push_back(pairBosonParticle(BosonParticle(electrons[0], electrons[1], 23), electrons[2]));
 	}
 	else if(isTheSame(electrons[0],theCombo.first))
-	  Zl.push_back(Zltype(BosonParticle(electrons[1], electrons[2], 23), electrons[0]));
+	  Zl.push_back(pairBosonParticle(BosonParticle(electrons[1], electrons[2], 23), electrons[0]));
 	else if(isTheSame(electrons[1],theCombo.first))
-	  Zl.push_back(Zltype(BosonParticle(electrons[0], electrons[2], 23), electrons[1]));
+	  Zl.push_back(pairBosonParticle(BosonParticle(electrons[0], electrons[2], 23), electrons[1]));
 	else if(isTheSame(electrons[2],theCombo.first))
-	  Zl.push_back(Zltype(BosonParticle(electrons[0], electrons[1], 23), electrons[2]));
+	  Zl.push_back(pairBosonParticle(BosonParticle(electrons[0], electrons[1], 23), electrons[2]));
       }
       
       else if(finalid == 53){//3mu 1nu_mu
@@ -398,17 +398,17 @@ void WlllnuAnalyzer::analyze(){
 	//   theCombo = p;
 	isNuAlone = isTheSame(nu, theCombo.first);
 	if(isNuAlone){
-	  Zl.push_back(Zltype(BosonParticle(muons[0], muons[2], 23), muons[1]));
+	  Zl.push_back(pairBosonParticle(BosonParticle(muons[0], muons[2], 23), muons[1]));
 	  muons[1].id()>0 ?
-	    Zl.push_back(Zltype(BosonParticle(muons[1], muons[2], 23), muons[0])) :
-	    Zl.push_back(Zltype(BosonParticle(muons[0], muons[1], 23), muons[2]));
+	    Zl.push_back(pairBosonParticle(BosonParticle(muons[1], muons[2], 23), muons[0])) :
+	    Zl.push_back(pairBosonParticle(BosonParticle(muons[0], muons[1], 23), muons[2]));
 	}
 	else if(isTheSame(muons[0],theCombo.first))
-	  Zl.push_back(Zltype(BosonParticle(muons[1], muons[2], 23), muons[0]));
+	  Zl.push_back(pairBosonParticle(BosonParticle(muons[1], muons[2], 23), muons[0]));
 	else if(isTheSame(muons[1],theCombo.first))
-	  Zl.push_back(Zltype(BosonParticle(muons[0], muons[2], 23), muons[1]));
+	  Zl.push_back(pairBosonParticle(BosonParticle(muons[0], muons[2], 23), muons[1]));
 	else if(isTheSame(muons[2],theCombo.first))
-	  Zl.push_back(Zltype(BosonParticle(muons[0], muons[1], 23), muons[2]));
+	  Zl.push_back(pairBosonParticle(BosonParticle(muons[0], muons[1], 23), muons[2]));
       }
       
       
@@ -449,7 +449,7 @@ void WlllnuAnalyzer::analyze(){
       //theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[2].p4()));
       //theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[1].p4(), leptons[2].p4()));
       
-      foreach(const Zltype zl, Zl){
+      foreach(const pairBosonParticle zl, Zl){
 	
 	W = BosonParticle(theCombo.first, theCombo.second, copysign(24, zl.second.charge()));
 	cout << "is nu Alone:\t";
