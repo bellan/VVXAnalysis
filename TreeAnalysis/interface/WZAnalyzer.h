@@ -5,7 +5,7 @@
  *  Concrete class for WZ analysis
  *
  *  $Date: 2017/05/24 $
- *  $Revision: 0.5 $
+ *  $Revision: 1.0 $
  *  \author E. Racca - UNITO <eleonora.racca@cern.ch>
  */
 
@@ -20,6 +20,8 @@
 #include "VVXAnalysis/DataFormats/interface/Particle.h"
 #include <time.h>
 
+#include "VVXAnalysis/TreeAnalysis/interface/VVjjHelper.h"
+
 using namespace phys;
 using namespace std;
 
@@ -32,7 +34,9 @@ public:
  WZAnalyzer(const AnalysisConfiguration& configuration)
    : EventAnalyzer(*(new Selector<WZAnalyzer>(*this)), 
 		   configuration){
-    //theHistograms.profile(genCategory);
+   //theHistograms.profile(genCategory);
+   //histopointer_ = theHistograms;
+   helper_ = new VVjjHelper(&theHistograms);
   }
 
   virtual ~WZAnalyzer(){}
@@ -45,14 +49,17 @@ public:
   
   virtual Int_t cut();
 
-  virtual void GenAnalysis(VVtype &, Particle &, Particle &);
+  void GenAnalysis(DiBosonParticle &, Particle &, Particle &);
 
-  virtual void RecoAnalysis(DiBosonLepton &, Particle &, Particle &);
+  void RecoAnalysis(DiBosonLepton &, Particle &, Particle &);
 
-  virtual void GenRecoAnalysis(const VVtype, const Particle, const Particle, const DiBosonLepton, const Particle, const Particle);
+  void GenRecoAnalysis(const DiBosonParticle, const Particle, const Particle, const DiBosonLepton, const Particle, const Particle);
 
 
- private:
+private:
+  VVjjHelper* helper_;
+  Histogrammer* histopointer_;
+  
   Int_t eventGen;
   Int_t eventReco;
   Int_t eventGenReco;
@@ -77,9 +84,15 @@ public:
   Int_t counter4;
   Int_t counter5;
   Int_t counter6;
+  Int_t choosedZwrongID;
+  Int_t choosedWwrongID;
+  Int_t choosedZoutsiderange;
+  Int_t choosedWoutsiderange;
+  Int_t choosedZfirst;
+  Int_t choosedWfirst;
 
   Float_t begintime;
-  Float_t endtime;
+  Float_t endtime;  
   
   friend class Selector<WZAnalyzer>;
   template< class PAR >

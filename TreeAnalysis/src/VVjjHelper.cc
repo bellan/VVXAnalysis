@@ -5,8 +5,6 @@
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 #include "VVXAnalysis/DataFormats/interface/TypeDefs.h"
 
-#include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
-
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
@@ -17,46 +15,16 @@ using namespace std;
 using namespace phys;
 using namespace physmath;
 
+
 void VVjjHelper::test() {
   cout << "pippo!!" << endl;
 }
 
 
-bool VVjjHelper::FindDiBoson(vector<Particle> &genparticles, DiBosonParticle &VV, string eventkind){
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // ~~~~~~~~~~~~~~~~~~ Function to find DiBoson ~~~~~~~~~~~~~~~~~~~
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
-  VVjjHelper vvjjhelper;
-  
-  // Search for and get leptons in genParticles
-  vvjjhelper.LeptonSearch(genparticles, eventkind);
-
-  // Check if there are enough leptons and neutrinos
-  unsigned int leptonnumber = vvjjhelper.GetAllLeptonsNumber();
-  unsigned int neutrinonumber = vvjjhelper.GetNeutrinosNumber();
-
-  if(leptonnumber != 4 || neutrinonumber > 1){
-    return false;
-  }
-  else{    
-    VV = vvjjhelper.BuildVV(eventkind);
-  }
-
-  if(VV.first().mass() == 0){
-    return false;
-  }
-    
-  return true;
-}
-
-
-void VVjjHelper::LeptonSearch(vector<Particle> &genparticles, string eventkind){
+void VVjjHelper::LeptonSearch(const vector<Particle> &genparticles, string eventkind){
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~ Function to find Leptons ~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
-  Histogrammer theHistograms;
   
   // Reset Data Member containers
   leptons_.clear();
@@ -93,6 +61,8 @@ void VVjjHelper::LeptonSearch(vector<Particle> &genparticles, string eventkind){
   else if(eventkind == "ZZ" && leptons_.size() == 4){
     switchcase = 0;
   }
+
+  // first leptons selection is the same
 
   switch(switchcase){
   case 0:{// ZZevent
@@ -149,8 +119,8 @@ void VVjjHelper::LeptonSearch(vector<Particle> &genparticles, string eventkind){
       Ptot += lep.p4();
   }
   
-  theHistograms.fill("AllGenlllnu_mass",   "m 3 leptons and #nu",     150, 0, 1500, Ptot.M());
-  theHistograms.fill("AllGenlllnu_trmass", "m_{T} 3 leptons and #nu", 150, 0, 1500, Ptot.Mt());
+  histo_->fill("AllGenlllnu_mass",   "m 3 leptons and #nu",     150, 0, 1500, Ptot.M());
+  histo_->fill("AllGenlllnu_trmass", "m_{T} 3 leptons and #nu", 150, 0, 1500, Ptot.Mt());
   
   if(Ptot.M() < 165.){
     leptons_.clear();    
@@ -162,10 +132,9 @@ DiBosonParticle VVjjHelper::BuildVV(string eventkind){
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~ Function to build DiBoson ~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
-  //Histogrammer theHistograms;  
+   
   DiBosonParticle VV;
-  DiBosonParticle null;
+  DiBosonParticle nihil;
 
   // different ways to build up the VV couple if event is WZ or ZZ
   int switchcase = -1;
@@ -219,23 +188,23 @@ DiBosonParticle VVjjHelper::BuildVV(string eventkind){
     if(differenceZ < differenceW){ // Z is better
       VV = DiBosonParticle(BosonParticle(Zls[0].second, neutrinos_[0], copysign(24, Zls[0].second.charge())), Zls[0].first);
       choice = 1;
-      //theHistograms.fill("Helper_choosingWZ", "best WZ couple choice", 10, 0.5, 10.5, choice);
+      histo_->fill("Helper_choosingWZ", "best WZ couple choice", 10, 0.5, 10.5, choice);
     }
     else{ // W is better
       VV = WZs[0];
       choice = 2;
-      //theHistograms.fill("Helper_choosingWZ", "best WZ couple choice", 10, 0.5, 10.5, choice);
+      histo_->fill("Helper_choosingWZ", "best WZ couple choice", 10, 0.5, 10.5, choice);
     }
 
     if(fabs(VV.first().mass() - WMASS) > rangeVmass || fabs(VV.second().mass() - ZMASS) > rangeVmass){
-      VV = null;
+      VV = nihil;
       choice = 3;
-      //theHistograms.fill("Helper_choosingWZ", "best WZ couple choice", 10, 0.5, 10.5, choice);
+      histo_->fill("Helper_choosingWZ", "best WZ couple choice", 10, 0.5, 10.5, choice);
     }
 
     if(isTheSame(Zls[0].first, WZs[0].second())){
       choice = 4;
-      //theHistograms.fill("Helper_choosingWZ", "best WZ couple choice", 10, 0.5, 10.5, choice);
+      histo_->fill("Helper_choosingWZ", "best WZ couple choice", 10, 0.5, 10.5, choice);
     }
 
   }
@@ -247,6 +216,38 @@ DiBosonParticle VVjjHelper::BuildVV(string eventkind){
   }
 
   return VV;
+}
+
+
+void FindLeadingJets(vector<Particle> &jetcollection, vector<Particle> &particlecollection, Particle &Jet0, Particle &Jet1){
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // ~~~~~~~~~~~~~~~ Function to find leading jets ~~~~~~~~~~~~~~~~~
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  vector<Particle> jets;
+  bool leptonMatch = false; 
+
+  foreach(const Particle &jet, jetcollection){ // in genJets are included leptons
+    foreach(const Particle &gen, particlecollection){ // get jets only
+      if(deltaR(gen,jet) < 0.4 && (abs(gen.id()) == 11 || abs(gen.id()) == 13))
+	leptonMatch = true;
+    }
+    
+    if(!leptonMatch){ // jets must have rapidity less than 4.7
+      if(fabs(jet.eta()) < 4.7)
+	jets.push_back(jet);
+    }
+  }
+  
+  if(jets.size() < 2){
+    return;
+  }
+  
+  // leading jets are those with higher pt
+  sort(jets.begin(), jets.end(), PtComparator());
+  Jet0 = jets[0];
+  Jet1 = jets[1];
+  
 }
 
 

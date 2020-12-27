@@ -14,6 +14,8 @@
 #include "VVXAnalysis/DataFormats/interface/Particle.h"
 #include "VVXAnalysis/DataFormats/interface/TypeDefs.h"
 
+#include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
+
 using namespace std;
 using namespace phys;
 
@@ -21,14 +23,19 @@ class VVjjHelper{
 
 public:
 
+  VVjjHelper(Histogrammer *histopointer){
+    histo_ = histopointer;
+  }
+
   virtual ~VVjjHelper(){}
   
   static void test();
-
-  static bool FindDiBoson(vector<Particle> &genparticles, DiBosonParticle &VV, string eventkind);
-
-  static bool FindLeadingJets(vector<Particle> &genjets, vector<Particle> &jets);
-  
+    
+  void LeptonSearch(const vector<Particle> &genparticles, string eventkind);
+  void FindLeadingJets(vector<Particle> &jetcollection, vector<Particle> &particlecollection, Particle &Jet0, Particle &Jet1);
+  DiBosonParticle BuildVV(string eventkind);
+  unsigned int GetAllLeptonsNumber();
+  unsigned int GetNeutrinosNumber();
 
  private:
 
@@ -37,12 +44,8 @@ public:
 
   // Data memebers
   const float rangeVmass = 30.;
-  
-  void LeptonSearch(vector<Particle> &genparticles, string eventkind);
-  DiBosonParticle BuildVV(string eventkind);
-  unsigned int GetAllLeptonsNumber();
-  unsigned int GetNeutrinosNumber();
-  
+  Histogrammer *histo_;
+    
   vector<Particle> neutrinos_;
   vector<Particle> leptons_;
   

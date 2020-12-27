@@ -47,10 +47,11 @@ void WZAnalyzer::begin() {
   //free counters
   counter1 = 0; // gen firstly Z, secondly W -> Z's daughters of different flavour (em or me)
   counter2 = 0; // gen firstly W, secondly Z -> Z's daughters of different flavour (em or me)
-  counter3 = 0; 
-  counter4 = 0; 
+  counter3 = 0; // firstly Z, secondly W -> choosed Z's daughter of different flavour (even if not final Z)
+  counter4 = 0; // firstly W, secondly Z -> choosed Z's daughter of different flavour (even if not final Z)
   counter5 = 0; // gen Z and reco W have different IDs
   counter6 = 0;
+  
 
   begintime = ((float)clock())/CLOCKS_PER_SEC;
 }
@@ -59,296 +60,45 @@ Int_t WZAnalyzer::cut() {
   return 1;
 }
 
-void WZAnalyzer::GenAnalysis(VVtype &WZ, Particle &Jet0, Particle &Jet1){
+void WZAnalyzer::GenAnalysis(DiBosonParticle &WZ, Particle &Jet0, Particle &Jet1){
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~ Begin of gen Analysis ~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  vector<Particle> electron;
-  vector<Particle> genjets;
-  vector<Particle> lepton;
-  vector<Particle> muon;
-  vector<Particle> neutrino;
-  
-  foreach(const Particle &gen, *genParticles){
-    if((abs(gen.id()) != 11 && abs(gen.id()) != 13 && abs(gen.id()) != 12 && abs(gen.id()) != 14) || (!(gen.genStatusFlags().test(phys::GenStatusBit::isPrompt)) || !(gen.genStatusFlags().test(phys::GenStatusBit::fromHardProcess)))) 
-      continue;
-    
-    if(abs(gen.id()) == 11) electron.push_back(gen);
-    else if(abs(gen.id()) == 13) muon.push_back(gen);
-    else if(abs(gen.id()) == 12 || abs(gen.id()) == 14) neutrino.push_back(gen);
-  }
-
+  counter1++;
+  string eventkind = "WZ";
   
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~ Filters ~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // ----- filter on jets' number and eta
-  foreach(const Particle jet, *genJets){ // in genJets are included leptons
-    bool leptonMatch = false; 
-    foreach(const phys::Particle &gen, *genParticles){ // get jets only
-      if(physmath::deltaR(gen,jet) < 0.4 && (abs(gen.id()) == 11 || abs(gen.id()) == 13)) leptonMatch = true;
-    }
-    if(!leptonMatch){ // jets must have rapidity less than 4.7
-      if(fabs(jet.eta()) < 4.7) genjets.push_back(jet);
-    }
-  }
-  
-  if(genjets.size() < 2){
-    return;
-  }
-  
-  // ----- filter on leptons' number
-  if(electron.size() + muon.size() + neutrino.size() != 4 && neutrino.size() != 1){
-    return;
-  }
-  
-  // ----- filters on leptons' pt and eta
-  foreach(const Particle ele, electron){
-    if(ele.pt() < 7 || abs(ele.eta()) > 2.5){
-      return;
-    }
-    lepton.push_back(ele);
-  }
-  
-  foreach(const Particle mu, muon){
-    if(mu.pt() < 5 || abs(mu.eta()) > 2.4){
-      return;
-    }
-    lepton.push_back(mu);
-  }
+  //helper_->FindLeadingJets(*genJets, *genParticles, Jet0, Jet1);
 
-  if(lepton.size() != 3){
-    return;
-  }
-  
-  sort(electron.begin(), electron.end(), PtComparator());
-  sort(lepton.begin(), lepton.end(), PtComparator());
-  sort(muon.begin(), muon.end(), PtComparator());
-  
-  if(lepton[0].pt() < 20){
-    return;
-  }
-  
-  if(abs(lepton[1].id()) == 11 && lepton[1].pt() < 12){
+  if(Jet0.mass() == 0){
     return;
   }
 
-  if(abs(lepton[1].id()) == 13 && lepton[1].pt() < 10){
+  // ----- filter on leptons
+  helper_->LeptonSearch(*genParticles, eventkind);
+  unsigned int leptonnumber = helper_->GetAllLeptonsNumber();
+  unsigned int neutrinonumber = helper_->GetNeutrinosNumber();
+
+  if(leptonnumber != 4 || neutrinonumber > 1){
     return;
   }
-  
-  // ----- filter on total mass: Z and W must be at least on shell  
-  TLorentzVector Ptot = neutrino[0].p4();
-  
-  foreach(const Particle lep, lepton)
-    Ptot += lep.p4();
-  
-  theHistograms.fill("AllGenlllnu_mass",   "m 3 leptons and #nu",     150, 0, 1500, Ptot.M() , theWeight);
-  theHistograms.fill("AllGenlllnu_trmass", "m_{T} 3 leptons and #nu", 150, 0, 1500, Ptot.Mt(), theWeight);
-  
-  if(Ptot.M() < 165.){
+  else{
+    // ----- building DiBoson
+    WZ = helper_->BuildVV(eventkind);
+  }
+
+  // ----- filter on total mass (>= 165GeV)
+  if(WZ.first().mass() == 0){
     return;
   }
 
+  BosonParticle Weh = WZ.first();
+  BosonParticle Zet = WZ.second();  
+  vector<Particle> neutrino; neutrino.push_back(Weh.daughter(1));
+  vector<pairBosonParticle> Zls; Zls.push_back(pairBosonParticle(Zet, Weh.daughter(0)));
   
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Z & W ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
-  BosonParticle Weh;
-  BosonParticle Zet;
-  vector<Zltype> Zls;
-  vector<VVtype> WZs;
-  bool mixed = false;
-  
-  // ---------------------- W & Z construction ---------------------
-  ///*// case 2e 1m
-  if(electron.size()==2 && muon.size()==1 && electron[0].charge() != electron[1].charge()){
-    gen2e1m++;
-    mixed = true;
-    Zet = BosonParticle(electron[0], electron[1], 23);
-    Zls.push_back(Zltype(Zet, muon[0])); // useless if not cut on Zls size
-    Weh = BosonParticle(Zls[0].second, neutrino[0], copysign(24, Zls[0].second.charge()) );
-  }
-  
-  // case 1e 2m
-  if(electron.size()==1 && muon.size()==2 && muon[0].charge() != muon[1].charge()){
-    gen2m1e++;
-    mixed = true;
-    Zet = BosonParticle(muon[0], muon[1], 23);
-    Zls.push_back(Zltype(Zet, electron[0])); // useless if not cut on Zls size
-    Weh = BosonParticle(Zls[0].second, neutrino[0], copysign(24, Zls[0].second.charge()) );
-  }
-
-  /*
-  // ~~~~~ Mixed cases, test: see if better identify W from Z or Z from W
-  if(mixed){
-    double differenceZ = 0;
-    double differenceW = 0;
-
-    for(int i = 0; i < (int)lepton.size() -1; i++){
-      for(int j = i + 1; j < (int)lepton.size(); j++){
-	for(int k = 0; k < (int)lepton.size(); k++){
-	  if(k != i && k != j){
-	    if(lepton[i].charge() != lepton[j].charge()){
-	      Zls.push_back(Zltype(BosonParticle(lepton[i], lepton[j], 23), lepton[k]));
-	    }
-	  }
-	}
-      }
-    }
-    
-    // Z is made up of the couple which gives a better Zmass 
-    sort(Zls.begin(), Zls.end(), pairMassComparator(0, ZMASS));
-    differenceZ = fabs(ZMASS - Zls[0].first.p4().M());
-
-    for(int i = 0; i < (int)Zls.size(); i++){
-      WZs.push_back(VVtype(BosonParticle(neutrino[0], Zls[i].second, copysign(24, Zls[i].second.charge())), Zls[i].first));
-    }
-    
-    // W is made up of the couple which gives a better Wmass 
-    sort(WZs.begin(), WZs.end(), pairMassComparator(0, WMASS));
-    differenceW = fabs(WMASS - WZs[0].first().p4().M());
-    
-    // Best couple has less difference in mass from main boson
-    if(differenceZ < differenceW){ // Z chosen first
-      Zet = Zls[0].first;
-      Weh = BosonParticle(Zls[0].second, neutrino[0], copysign(24, Zls[0].second.charge()));
-
-      if(abs(Zet.daughter(0).id()) != abs(Zet.daughter(1).id())){
-	counter1++;
-	cout << "Choosen first Z" << endl;
-	cout << "W's mass: " << Weh.mass() << endl;
-	cout << "Z's mass: " << Zet.mass() << endl << endl;
-    
-	if(Weh.mass() < 50.00 || Weh.mass() > 110.00 || Zet.mass() < 60.00 || Zet.mass() > 120.00){
-	  counter3++;
-	  //return;
-	}
-      }
-      
-    } else{ // W chosen first
-      Weh = WZs[0].first();
-      Zet = WZs[0].second();
-
-      if(abs(Zet.daughter(0).id()) != abs(Zet.daughter(1).id())){
-	counter2++;
-	cout << "Choosen first W" << endl;
-	cout << "W's mass: " << Weh.mass() << endl;
-	cout << "Z's mass: " << Zet.mass() << endl << endl;
-    
-	if(Weh.mass() < 50.00 || Weh.mass() > 110.00 || Zet.mass() < 60.00 || Zet.mass() > 120.00){
-	  counter3++;
-	  //return;
-	}
-      }
-    }
-    
-  }
-  */
-  
-  // ----- choosing Z for non mixed cases
-  // case 3e
-  if(electron.size()==3){
-    gen3e++;/*
-    for(int i = 0; i < (int)electron.size() -1; i++){
-      for(int j = i + 1; j < (int)electron.size(); j++){
-	for(int k = 0; k < (int)electron.size(); k++){
-	  if(k != i && k != j){
-	    if(electron[i].charge() != electron[j].charge()){
-	      Zls.push_back(Zltype(BosonParticle(electron[i], electron[j], 23), electron[k]));
-	    }
-	  }
-	}
-      }
-    }
-    
-    // Z is made up of the couple which gives a better Zmass 
-    sort(Zls.begin(), Zls.end(), pairMassComparator(0, ZMASS));
-    Zet = Zls[0].first;
-    
-    // W is made up of the remaining lepton and the neutrino
-    Weh = BosonParticle(Zls[0].second, neutrino[0], copysign(24, Zls[0].second.charge()));*/
-  }
-  
-  // case 3m
-  else if(muon.size()==3){
-    gen3m++;/*
-    for(int i = 0; i < (int)muon.size() -1; i++){
-      for(int j = i + 1; j < (int)muon.size(); j++){
-	for(int k = 0; k < (int)muon.size(); k++){
-	  if(k != i && k != j){
-	    if(muon[i].charge() != muon[j].charge()){
-	      Zls.push_back(Zltype(BosonParticle(muon[i], muon[j], 23), muon[k]));
-	    }
-	  }
-	}
-      }
-    }
-    
-    sort(Zls.begin(), Zls.end(), pairMassComparator(0, ZMASS));
-    Zet = Zls[0].first;
-    Weh = BosonParticle(Zls[0].second, neutrino[0], copysign(24, Zls[0].second.charge()));*/
-  }
-
-  if(!mixed){
-    double differenceZ = 0;
-    double differenceW = 0;
-
-    for(int i = 0; i < (int)lepton.size() -1; i++){
-      for(int j = i + 1; j < (int)lepton.size(); j++){
-	for(int k = 0; k < (int)lepton.size(); k++){
-	  if(k != i && k != j){
-	    if(lepton[i].charge() != lepton[j].charge()){
-	      Zls.push_back(Zltype(BosonParticle(lepton[i], lepton[j], 23), lepton[k]));
-	    }
-	  }
-	}
-      }
-    }
-    
-    // Z is made up of the couple which gives a better Zmass 
-    sort(Zls.begin(), Zls.end(), pairMassComparator(0, ZMASS));
-    differenceZ = fabs(ZMASS - Zls[0].first.p4().M());
-
-    for(int i = 0; i < (int)Zls.size(); i++){
-      WZs.push_back(VVtype(BosonParticle(Zls[i].second, neutrino[0], copysign(24, Zls[i].second.charge())), Zls[i].first));
-    }
-    
-    // W is made up of the couple which gives a better Wmass 
-    sort(WZs.begin(), WZs.end(), pairMassComparator(0, WMASS));
-    differenceW = fabs(WMASS - WZs[0].first().p4().M());
-    
-    // Best couple has less difference in mass from main boson
-    if(differenceZ < differenceW){ // Z chosen first
-      Zet = Zls[0].first;
-      Weh = BosonParticle(Zls[0].second, neutrino[0], copysign(24, Zls[0].second.charge()));
-      counter1++;      
-    } else{ // W chosen first
-      Weh = WZs[0].first();
-      Zet = WZs[0].second();
-      counter2++;
-    }
-    
-    if(Weh.mass() < 50.00 || Weh.mass() > 110.00 || Zet.mass() < 60.00 || Zet.mass() > 120.00){
-      counter3++;
-      //return;
-    }
-
-    if(isTheSame(Zls[0].first, WZs[0].second())){
-      counter6++;
-    }
-  }
-
-  ///*
-  if(Zls.size() < 1){   
-    return;
-  }
-  //*/
-  
-  // ----- filter on Z and W mass
-  if(abs(WMASS - Weh.mass()) > 30. || abs(ZMASS - Zet.mass()) > 30.){
-    counter4++;
-    return;
-  }
-  
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Z & W ~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
   eventGen++;
   
   // ------------------------ W & Z variables ----------------------
@@ -375,17 +125,12 @@ void WZAnalyzer::GenAnalysis(VVtype &WZ, Particle &Jet0, Particle &Jet1){
   //*/
   
   
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Jets ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // leading jets are those with higher pt
-  sort(genjets.begin(), genjets.end(), PtComparator());
-  Jet0 = genjets[0];
-  Jet1 = genjets[1];
-  
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Jets ~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
   // leading jets
-  TLorentzVector JJp4 = genjets[0].p4() + genjets[1].p4();
-  double JJdeltaEta = genjets[0].eta() - genjets[1].eta();
-  //double JJdeltaPhi = physmath::deltaPhi(genjets[0].phi(), genjets[1].phi());
-  //double JJdeltaR = abs(physmath::deltaR(genjets[0], genjets[1]));
+  TLorentzVector JJp4 = Jet0.p4() + Jet1.p4();
+  double JJdeltaEta = Jet0.eta() - Jet1.eta();
+  //double JJdeltaPhi = physmath::deltaPhi(Jet0.phi(), Jet1.phi());
+  //double JJdeltaR = abs(physmath::deltaR(Jet0, Jet1));
   
   
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ All ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -395,7 +140,6 @@ void WZAnalyzer::GenAnalysis(VVtype &WZ, Particle &Jet0, Particle &Jet1){
 
   // --------------- Cuts implemented in reco analysis -------------
   bool filtromassaZ = abs(ZMASS - Zet.mass()) > 15.;
-  bool filtrojet = genjets.size() < 2;
   bool filtroMET = neutrino[0].pt() < 30.;
   bool filtrotrmassaWmin = Weh.p4().Mt() < 30.;
   bool filtrotrmassaWmax = Weh.p4().Mt() > 500.;
@@ -405,116 +149,13 @@ void WZAnalyzer::GenAnalysis(VVtype &WZ, Particle &Jet0, Particle &Jet1){
   bool filtroJ1pt = Jet1.pt() < 50.;
   bool filtroWleppt = Weh.daughter(0).pt() < 30.;
 
-  
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~ Histograms ~~~~~~~~~~~~~~~~~~~~~~~~~
-  ///*
-  // Nu
-  theHistograms.fill("GenN_charge", "#nu's charge",   5, -2.5,   2.5, neutrino[0].charge()  , theWeight); //just to be sure...
-  theHistograms.fill("GenN_trmass", "#nu's trmass", 400,  0  , 400  , neutrino[0].p4().Mt() , theWeight);
-  theHistograms.fill("GenN_pt",     "#nu's p_{t}",  140,  0  , 700  , neutrino[0].pt()      , theWeight);
-  theHistograms.fill("GenN_Y",      "#nu's Y",       90, -6.5,   6.5, neutrino[0].rapidity(), theWeight);
-  theHistograms.fill("GenN_eta",    "#nu's #eta",    90, -6.5,   6.5, neutrino[0].eta()     , theWeight);
-  theHistograms.fill("GenN_phi",    "#nu's #phi",    50, -3.5,   3.5, neutrino[0].phi()     , theWeight);
-  
-  // W
-  theHistograms.fill("GenW_charge",       "W's charge",       5, -2.5,   2.5, Weh.charge()  , theWeight);
-  theHistograms.fill("GenW_mass",         "W's mass",       400,  0  , 400  , Weh.mass()    , theWeight);
-  theHistograms.fill("GenW_trmass",       "W's trmass",     400,  0  , 400  , Weh.p4().Mt() , theWeight);
-  theHistograms.fill("GenW_pt",           "W's p_{t}",      130,  0  , 650  , Weh.pt()      , theWeight);
-  theHistograms.fill("GenW_Y",            "W's Y",           50, -5  ,   5  , Weh.rapidity(), theWeight);
-  theHistograms.fill("GenW_eta",          "W's #eta",        50, -9  ,   9  , Weh.eta()     , theWeight);
-  theHistograms.fill("GenW_phi",          "W's #phi",        50, -3.5,   3.5, Weh.phi()     , theWeight);
-  theHistograms.fill("GenW_deltaEta",     "W's #Delta#eta",  50, -6.5,   6.5, WdeltaEta     , theWeight);
-  theHistograms.fill("GenW_deltaR",       "W's #DeltaR",     50, -0.5,   6.5, WdeltaR       , theWeight);
-  theHistograms.fill("GenW_deltaPhi",     "W's #Delta#phi",  50, -3.5,   3.5, WdeltaPhi     , theWeight);
-  
-  theHistograms.fill("GenW_massvstrmass", "W's mass(x) vs trmass(y)", 400, 0, 400, 400, 0, 400, Weh.mass(), Weh.p4().Mt(), theWeight);
-  
-  // Z
-  theHistograms.fill("GenZ_charge",   "Z's charge",       5, -2.5,   2.5, Zet.charge()  , theWeight); //just to be sure...
-  theHistograms.fill("GenZ_mass",     "Z's mass",       400,  0  , 400  , Zet.mass()    , theWeight);
-  theHistograms.fill("GenZ_trmass",   "Z's trmass",     400,  0  , 400  , Zet.p4().Mt() , theWeight);
-  theHistograms.fill("GenZ_pt",       "Z's p_{t}",      130,  0  , 650  , Zet.pt()      , theWeight);
-  theHistograms.fill("GenZ_Y",        "Z's Y",           45, -3  ,   3  , Zet.rapidity(), theWeight);
-  theHistograms.fill("GenZ_eta",      "Z's #eta",       100, -7  ,   7  , Zet.eta()     , theWeight);
-  theHistograms.fill("GenZ_phi",      "Z's #phi",        50, -3.5,   3.5, Zet.phi()     , theWeight);
-  theHistograms.fill("GenZ_deltaEta", "Z's #Delta#eta",  30, -5  ,   5  , ZdeltaEta     , theWeight);
-  theHistograms.fill("GenZ_deltaR",   "Z's #DeltaR",     20, -0.5,   5.5, ZdeltaR       , theWeight);
-  theHistograms.fill("GenZ_deltaPhi", "Z's #Delta#phi",  50, -3.5,   3.5, ZdeltaPhi     , theWeight);
-  
-  theHistograms.fill("GenZ_massvstrmass", "Z's mass(x) vs trmass(y)", 400, 0, 400, 400, 0, 400, Zet.mass(), Zet.p4().Mt(), theWeight);
-  
-  // Zl
-  theHistograms.fill("GenZL_ID",   "Zls' ID",   9, 31.5, 40.5, ZlsID     , theWeight);
-  theHistograms.fill("GenZL_size", "Zl's size", 4, -0.5,  3.5, Zls.size(), theWeight);
-  
-  // WZ
-  theHistograms.fill("GenWZ_mass",         "W and Z mass",        268, 160  , 1500  , WZ.mass()   , theWeight);
-  theHistograms.fill("GenWZ_trmass",       "W and Z trmass",      268, 160  , 1500  , WZ.p4().Mt(), theWeight);
-  theHistograms.fill("GenWZ_pt",           "W and Z p_{t}",       500,   0  , 1000  , WZ.pt()     , theWeight);
-  theHistograms.fill("GenWZ_deltaEta",     "W and Z #Delta#eta",   50,  -9  ,    9  , WZdeltaEta  , theWeight);
-  theHistograms.fill("GenWZ_deltaR",       "W and Z #Delta R",     25,  -0.5,    9  , WZdeltaR    , theWeight);
-  theHistograms.fill("GenWZ_deltaPhi",     "W and Z #Delta#phi",   50,  -3.5,    3.5, WZdeltaPhi  , theWeight);
-  
-  theHistograms.fill("GenWZ_massvstrmass", "WZ's mass(x) vs trmass(y)", 268, 160, 1500, 268, 160, 1500, WZ.mass(), WZ.p4().Mt(), theWeight);
-  theHistograms.fill("GenWZ_IDs",          "GenZ's and GenW's ID"     ,   5,  19,   29,   5,  20,   30,    GenZID,       GenWID);
-  //*/
-  // Jets
-  /*
-  foreach(const Particle jet, genjets){  
-    theHistograms.fill("GenJet_charge", "charge jets",   5, -2.5,   2.5, jet.charge()  , theWeight);  
-    theHistograms.fill("GenJet_mass",   "mass jets",   120,  0  , 120  , jet.mass()    , theWeight);
-    theHistograms.fill("GenJet_pt",     "p_{t} jets",   80,  0  , 400  , jet.pt()      , theWeight);
-    theHistograms.fill("GenJet_Y",      "Y jets",       70, -5  ,   5  , jet.rapidity(), theWeight);
-    theHistograms.fill("GenJet_eta",    "#eta jets",    70, -5  ,   5  , jet.eta()     , theWeight);
-    theHistograms.fill("GenJet_phi",    "#phi jets",    50, -3.5,   3.5, jet.phi()     , theWeight);
-  }
-  
-  theHistograms.fill("GenJets_number", "number of all gen jets",  10,  -0.5,  9.5, genjets.size(), theWeight);
-  */
-  /*
-  theHistograms.fill("GenJJ_mass",     "Leading Jets' mass",       600,  0  , 4500  , JJp4.M()  , theWeight);
-  theHistograms.fill("GenJJ_trmass",   "Leading Jets' trmass",     600,  0  , 4500  , JJp4.Mt() , theWeight);
-  theHistograms.fill("GenJJ_deltaEta", "Leading Jets' #Delta#eta", 100, -9  ,    9  , JJdeltaEta, theWeight); 
-  theHistograms.fill("GenJJ_deltaR",   "Leading Jets' #DeltaR",     25, -0.5,    9  , JJdeltaR  , theWeight);
-  theHistograms.fill("GenJJ_deltaPhi", "Leading Jets' #Delta#phi",  50, -3.5,    3.5, JJdeltaPhi, theWeight);
-  */
-  /*
-  if(genjets.size() > 2){
-    for(int i = 2; i < (int)genjets.size(); i++){
-      theHistograms.fill("GenJet_pt_M3", "Not-leading jets' p_{t}", 64, 30, 350, genjets[2].pt(), theWeight);
-    }
-  }
-  */
-  
-  // WZ & leading jets
-  /*
-  theHistograms.fill("GenAll_mass",         "Mass W,Z,J,J",            200, 220, 8220, WZjjp4.M() , theWeight);
-  theHistograms.fill("GenAll_trmass",       "Transverse mass W,Z,J,J", 200, 220, 8220, WZjjp4.Mt(), theWeight);
-  
-  theHistograms.fill("GenAll_massvstrmass", "WZjj's mass(x) vs trmass(y)", 200, 220, 1200, 200, 220, 1200, WZjjp4.M(), WZjjp4.Mt(), theWeight);
-  */
-
-  if(filtromassaZ || filtrojet || filtroMET || filtrotrmassaWmin || filtrotrmassaWmax || filtroJJdeltaEta || filtroJJpt || filtrozeppenfeldllJ0 || filtroJ1pt || filtroWleppt){
+  if(filtromassaZ || filtroMET || filtrotrmassaWmin || filtrotrmassaWmax || filtroJJdeltaEta || filtroJJpt || filtrozeppenfeldllJ0 || filtroJ1pt || filtroWleppt){
     return;
   }
   
-  /*
-  theHistograms.fill("GenZ_mass_AC",      "Z's mass",                 400,  0  ,  400  , Zet.mass()          , theWeight);
-  theHistograms.fill("GenJ_size_AC",      "Jets size",                 15, -0.5,   14.5, genjets.size()      , theWeight);
-  theHistograms.fill("GenN_pt_AC",        "#nu's p_{t}",              140,  0  ,  700  , neutrino[0].pt()    , theWeight);
-  theHistograms.fill("GenW_trmass_AC",    "W's trmass",               400,  0  ,  400  , Weh.p4().Mt()       , theWeight);
-  theHistograms.fill("GenJJ_deltaEta_AC", "Leading Jets' #Delta#eta", 100, -9  ,    9  , JJdeltaEta          , theWeight); 
-  theHistograms.fill("GenJJ_pt_AC",       "Leading Jets' pt",         600,  0  , 4500  , JJp4.Pt()           , theWeight);
-  theHistograms.fill("Zeppenfeld_AC",     "Zeppenfeld variable",       50, -6  ,    6  , zeppenllJ0          , theWeight);
-  theHistograms.fill("GenJ1_pt_AC",       "p_{t} jet 1",               80,  0  ,  400  , Jet1.pt()           , theWeight);
-  theHistograms.fill("GenW_leppt_AC",     "W's lepton daughter pt",    80, 20  ,  100  , Weh.daughter(0).pt(), theWeight);
-  */
-
   // W&Z diboson
-  WZ = VVtype(Weh, Zet);
   genAfterCut++;
-  
+
   
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~~ End of gen Analysis ~~~~~~~~~~~~~~~~~~~~~
@@ -528,7 +169,7 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   int cut = 0;
   int cut2 = 0;
   theHistograms.fill("RecoCuts", "Events after cuts", 13, -0.5, 12.5, cut);
-
+  
   
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~ Filters ~~~~~~~~~~~~~~~~~~~~~~~~~~~
   ZLCompositeCandidates recoZls;
@@ -1041,7 +682,7 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &WZ, Particle &Jet0, Particle &Jet1)
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }
 
-void WZAnalyzer::GenRecoAnalysis(const VVtype genWZ, const Particle genJet0, const Particle genJet1, const DiBosonLepton recoWZ, const Particle recoJet0, const Particle recoJet1){
+void WZAnalyzer::GenRecoAnalysis(const DiBosonParticle genWZ, const Particle genJet0, const Particle genJet1, const DiBosonLepton recoWZ, const Particle recoJet0, const Particle recoJet1){
   eventGenReco++;
   
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1132,7 +773,7 @@ void WZAnalyzer::analyze(){
   eventSample++;
   
   //gen variables	
-  VVtype genWZ;
+  DiBosonParticle genWZ;
   Particle genJet0;
   Particle genJet1;
   
