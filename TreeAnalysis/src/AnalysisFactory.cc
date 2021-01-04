@@ -19,6 +19,7 @@
 #include "VVXAnalysis/TreeAnalysis/interface/VZZaQGCAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/VVXnocutsAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/DBGenerator.h"
+#include "VVXAnalysis/TreeAnalysis/interface/ZZjjAnalyzer.h"
 
 AnalysisFactory::AnalysisFactory(){
   Register("WlllnuAnalyzer"   , &RegistrableAnalysis<WlllnuAnalyzer>::create    );
@@ -41,6 +42,7 @@ AnalysisFactory::AnalysisFactory(){
   Register("VZZaQGCAnalyzer"  , &RegistrableAnalysis<VZZaQGCAnalyzer>::create   );
   Register("VVXnocutsAnalyzer", &RegistrableAnalysis<VVXnocutsAnalyzer>::create );
   Register("DBGenerator"      , &RegistrableAnalysis<DBGenerator>::create       );
+  Register("ZZjjAnalyzer"     , &RegistrableAnalysis<ZZjjAnalyzer>::create      );
 }
 
 void AnalysisFactory::Register(const std::string &analysisName, CreateAnFn pfnCreate)
