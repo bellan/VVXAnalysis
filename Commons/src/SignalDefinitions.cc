@@ -169,12 +169,13 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
    
 
   phys::DiBoson<phys::Particle,phys::Particle> ZZ(Z0,Z1);
+  phys::DiBoson<phys::Particle,phys::Particle> WZ(W0,Z0);  
 
   // There is an error here. We shall check the leptons that make the bosons, not all those in the event!
   if(vv::inLeptonAcceptance(concatenate(theGenlp,theGenlm),5,2.5,5,2.5))  topology.set(4);   // Fiducial acceptance
   if(vv::inLeptonAcceptance(concatenate(theGenlp,theGenlm),7,2.5,5,2.4))  topology.set(5);   // Detector acceptance
   if(inTriggerPlateau(concatenate(theGenlp,theGenlm)))                    topology.set(6);   // is on trigger plateau    
-  if( ZZ.mass() > 100)                                                    topology.set(7);   
+  if(ZZ.mass() > 100 || WZ.mass() > 100)                                  topology.set(7);   
 
 
   //int Z0DaugID = Z0.daughter(0).id();  
@@ -182,12 +183,12 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   //if(abs(Z0DaugID) == 13 || abs(Z1DaugID) == 13) topology.set(8);
   //if(abs(Z0DaugID) == 11 || abs(Z1DaugID) == 11) topology.set(9);
 
-
+  /*
   std::vector<phys::Boson<phys::Particle> > lepBosons;
   lepBosons += Z0,Z1,W0,W1;
   std::vector<phys::Boson<phys::Particle> > hadBosons = vv::categorizeHadronicPartOftheEvent(theGenj, theGenjAK8, lepBosons, topology);
   Z3 = hadBosons.at(0);
-  W2 = hadBosons.at(1);
+  W2 = hadBosons.at(1);*/
 
   return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1, W2);
 }
@@ -276,14 +277,14 @@ std::vector<phys::Boson<phys::Particle> > vv::categorizeHadronicPartOftheEvent(s
   bool foundWj = false;
   bool foundZj = false;
   if(theGenjAK8.size() > 0){
-  	// Search for W-->j
-		std::stable_sort(theGenjAK8.begin(), theGenjAK8.end(), phys::MassComparator(phys::WMASS));
-		foundWj = fabs(theGenjAK8.front().mass() - phys::WMASS) < 30.;
-		
-		// Search for Z-->j
-		std::stable_sort(theGenjAK8.begin(), theGenjAK8.end(), phys::MassComparator(phys::ZMASS));
-		foundZj = fabs(theGenjAK8.front().mass() - phys::ZMASS) < 30.;
-	}
+    // Search for W-->j
+    std::stable_sort(theGenjAK8.begin(), theGenjAK8.end(), phys::MassComparator(phys::WMASS));
+    foundWj = fabs(theGenjAK8.front().mass() - phys::WMASS) < 30.;
+    
+    // Search for Z-->j
+    std::stable_sort(theGenjAK8.begin(), theGenjAK8.end(), phys::MassComparator(phys::ZMASS));
+    foundZj = fabs(theGenjAK8.front().mass() - phys::ZMASS) < 30.;
+  }
   
   //------------------------- end searching for the bosons ----------------------------------------
 
@@ -433,10 +434,18 @@ bool zz::inTightFiducialRegion(const zz::SignalTopology &topology){
 
 
 
-
 std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > wz::getWZ(const std::vector<phys::Particle>& lepMinus,
 										      const std::vector<phys::Particle>& lepPlus,
 										      const std::vector<phys::Particle>& neutrinos){
+  
+  std::vector<phys::Particle> leptons = lepMinus;
+  copy(lepPlus.begin(), lepPlus.end(), back_inserter(leptons));
+
+  //cout << "lepton size:   " << leptons.size() << endl;
+  //cout << "neutrino size: " << neutrinos.size() << endl;
+  
+  if(leptons.size() != 3 && neutrinos.size() != 1) return std::make_tuple(false, phys::Boson<phys::Particle>(),phys::Boson<phys::Particle>());
+
   // Cases of WZ:
   // H) --> e+  nu_e     , e+e-     -11  12 -11 11 =  1
   // H) --> e-  antinu_e , e+e-      11 -12 -11 11 = -1
@@ -447,73 +456,69 @@ std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > wz::
   // H) --> mu+ nu_mu    , mu+mu-   -13  14 -13 13 =  1
   // H) --> mu- antinu_mu, mu+mu-    13 -14 -13 13 = -1
 
-
   int sumId = 0;
-  foreach(const phys::Particle& l, lepMinus)  sumId += l.id();
-  foreach(const phys::Particle& l, lepPlus)   sumId += l.id();
+  foreach(const phys::Particle& l, leptons)   sumId += l.id();
   foreach(const phys::Particle& l, neutrinos) sumId += l.id();
 
   if(abs(sumId) != 1) return std::make_tuple(false, phys::Boson<phys::Particle>(),phys::Boson<phys::Particle>());
 
   phys::Boson<phys::Particle> W,Z;
 
+  // Creation and filling of temporary vectors
+  std::vector<phys::DiBoson<phys::Particle, phys::Particle>> WZs;
+  std::vector<std::pair<phys::Boson<phys::Particle>, phys::Particle>> Zls;
+  double differenceZ = 0;
+  double differenceW = 0;
+
+  for(int i = 0; i < (int)leptons.size() -1; i++){
+    for(int j = i +1; j < (int)leptons.size(); j++){
+      for(int k = 0; k < (int)leptons.size(); k++){
+	if(k != i && k != j){
+	  if(leptons[i].id() == -leptons[j].id()){// same flavour, opposite charge
+	    Zls.push_back(std::pair<phys::Boson<phys::Particle>, phys::Particle>(phys::Boson<phys::Particle>(leptons[i], leptons[j], 23), leptons[k]));
+  }}}}}
+    
+  // Z is made up of the couple which gives a better Zmass 
+  sort(Zls.begin(), Zls.end(), phys::pairMassComparator(0, phys::ZMASS));
+  differenceZ = fabs(phys::ZMASS - Zls[0].first.p4().M());
   
-  // Creation and filling of the vector of Z boson candidates
-  std::vector<phys::Boson<phys::Particle> > Zs;
+  for(int i = 0; i < (int)Zls.size(); i++){
+    WZs.push_back(phys::DiBoson<phys::Particle, phys::Particle>(phys::Boson<phys::Particle>(Zls[i].second, neutrinos[0], copysign(24, Zls[i].second.charge())), Zls[i].first));
+  }
   
-  foreach(const phys::Particle &p, lepPlus) foreach(const phys::Particle &m, lepMinus)
-    if(abs(p.id()) == abs(m.id())) Zs.push_back(phys::Boson<phys::Particle>(m,p,23));
-
-  // Mixed (M) cases presents only 1 Z candidate
-  if(Zs.size() == 1){
-    Z = Zs.at(0);
-    phys::Particle lepFromW, neuFromW;
-    neuFromW = neutrinos.at(0);
-    if(neuFromW.id() > 0)
-      foreach(const phys::Particle &p, lepPlus){
-	if(abs(p.id()) == neuFromW.id()){
-	  lepFromW = p;
-	  break;
-	}
-      }
-    else
-      foreach(const phys::Particle &p, lepMinus){
-	if(p.id() == abs(neuFromW.id())){
-	  lepFromW = p;
-	  break;
-	}
-      }
-    W = phys::Boson<phys::Particle>(lepFromW,neuFromW, copysign(24,neuFromW.id()));
+  // W is made up of the couple which gives a better Wmass 
+  sort(WZs.begin(), WZs.end(), phys::pairMassComparator(0, phys::WMASS));
+  differenceW = fabs(phys::WMASS - WZs[0].first().p4().M());
+  
+  // Best couple has less difference in mass from main boson
+  if(differenceZ < differenceW){ // Z is better
+    W = phys::Boson<phys::Particle>(Zls[0].second, neutrinos[0], copysign(24, Zls[0].second.charge()));
+    Z = Zls[0].first;
   }
-  // Homogeneous (H) cases presents 2 Z candidates
-  if(Zs.size() == 2){
-    Z = fabs((Zs.at(0).mass() - phys::ZMASS)) < fabs((Zs.at(1).mass() - phys::ZMASS)) ? Zs.at(0) : Zs.at(1);
-    phys::Particle lepFromW, neuFromW;
-    neuFromW = neutrinos.at(0);
-    if(neuFromW.id() > 0)
-      foreach(const phys::Particle &p, lepPlus){
-	if(abs(p.id()) == neuFromW.id() && 
-	   p != Z.daughter(0) && p != Z.daughter(1)){
-	  lepFromW = p;
-	  break;
-	}
-      }
-    else
-      foreach(const phys::Particle &p, lepMinus){
-	if(p.id() == abs(neuFromW.id()) &&
-	   p != Z.daughter(0) && p != Z.daughter(1)){
-	  lepFromW = p;
-	  break;
-	}
-      }
-    W = phys::Boson<phys::Particle>(lepFromW,neuFromW, copysign(24,neuFromW.id()));    
+  else{ // W is better
+    W = WZs[0].first();
+    Z = WZs[0].second();
   }
-  else{return std::make_tuple(false, phys::Boson<phys::Particle>(),phys::Boson<phys::Particle>());}
 
-  // FIXME: Need to add mass requirements here
+  // Mass cuts
+  bool passllLowMass = true;
+  bool inMassWindow = true;
 
-  return std::make_tuple(true, W, Z);
+  if(abs(Z.daughter(0).id()) == abs(W.daughter(0).id())){
+    for(int i = 0; i < (int)leptons.size() -1; i++){
+      for(int j = i +1; j < (int)leptons.size(); j++){
+	if((leptons[i].p4() + leptons[j].p4()).M() < 4.) passllLowMass = false;
+  }}}
+  else{
+    if((Z.daughter(0).p4() + Z.daughter(1).p4()).M() < 4.) passllLowMass = false;
+  } 
+  
+  if(Z.mass() > 120. || Z.mass() < 60. || W.mass() > 110. || W.mass() < 50.)
+    inMassWindow = false;
 
+  
+  if(!passllLowMass || !inMassWindow) return std::make_tuple(false, W, Z);
+  else return std::make_tuple(true, W, Z);
 }
 
 
