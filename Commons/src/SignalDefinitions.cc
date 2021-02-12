@@ -75,25 +75,21 @@ std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > zz::
   
   if(Z1.id() == 0) return std::make_tuple(false, Z0, phys::Boson<phys::Particle>());
   
-  // Now check that the 4 leptons are not mismatched due to the presence of low mass resonances 
-  
+  // Now check that the 4 leptons are not mismatched due to the presence of low mass resonances   
   bool passllLowMass = true;
+  vector<phys::Particle> leptons;
+  for(int i = 0; i <=1; ++i) {    
+    leptons.push_back(Z0.daughter(i));
+    leptons.push_back(Z1.daughter(i));
+  }
 
-
-  for(int i = 0; i <=1; ++i) {
-  //not very efficent or elegant . To be fixed  
-
-    if(  (( (Z0.daughter(i).p4()+ Z0.daughter((i+1)%2).p4()).M() < 4 ) || ( (Z1.daughter(i).p4()+ Z1.daughter((i+1)%2).p4()).M() < 4)) || 
-	 (  (abs(Z0.daughter(0).id())==abs(Z1.daughter(0).id()))  && 
-	    ( ( (Z0.daughter(0).id() ==  -1*(Z1.daughter(i).id())  ) && ( (Z0.daughter(0).p4()+ Z1.daughter(i).p4()).M()<4. ) ) ||
-	      ( (Z0.daughter(1).id() ==  -1*(Z1.daughter(i).id())   ) && ( (Z0.daughter(1).p4()+ Z1.daughter(i).p4()).M()<4. ) ) ) )
-	 ) passllLowMass = false;
-            
-    }
+  for(int i = 0; i < (int)leptons.size() -1; i++)
+    for(int j = i +1; j < (int)leptons.size(); j++)
+      if((leptons[i].p4() + leptons[j].p4()).M() < 4.) passllLowMass = false;
     
 
+  // Now check that the Z masses are in the corrected range
   bool inZMassWindow = true;
-
   if(Z0.mass() > 120. || Z0.mass() < 60. || Z1.mass() > 120. || Z1.mass() < 60.)
     inZMassWindow = false;
 
@@ -192,6 +188,7 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
 
   return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1, W2);
 }
+
 
 
 // This function cleans the jets from leptons!
@@ -406,6 +403,7 @@ bool zz::inHiggsFiducialRegion(const zz::SignalTopology &topology){
 }
 
 
+
 bool zz::inTightFiducialRegion(const zz::SignalTopology &topology){
 
   if(std::get<0>(topology) <= 0) return false;
@@ -464,24 +462,24 @@ std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > wz::
 
   phys::Boson<phys::Particle> W,Z;
 
-  // Creation and filling of temporary vectors
+  // Creation and filling of temporary vectors 
   std::vector<phys::DiBoson<phys::Particle, phys::Particle>> WZs;
   std::vector<std::pair<phys::Boson<phys::Particle>, phys::Particle>> Zls;
   double differenceZ = 0;
   double differenceW = 0;
 
-  for(int i = 0; i < (int)leptons.size() -1; i++){
-    for(int j = i +1; j < (int)leptons.size(); j++){
-      for(int k = 0; k < (int)leptons.size(); k++){
-	if(k != i && k != j){
-	  if(leptons[i].id() == -leptons[j].id()){// same flavour, opposite charge
+  for(int i = 0; i < (int)leptons.size() -1; i++)
+    for(int j = i +1; j < (int)leptons.size(); j++)
+      for(int k = 0; k < (int)leptons.size(); k++)
+	if(k != i && k != j)
+	  if(leptons[i].id() == -leptons[j].id())// same flavour, opposite charge
 	    Zls.push_back(std::pair<phys::Boson<phys::Particle>, phys::Particle>(phys::Boson<phys::Particle>(leptons[i], leptons[j], 23), leptons[k]));
-  }}}}}
     
   // Z is made up of the couple which gives a better Zmass 
   sort(Zls.begin(), Zls.end(), phys::pairMassComparator(0, phys::ZMASS));
   differenceZ = fabs(phys::ZMASS - Zls[0].first.p4().M());
-  
+
+  // Creating all possible W bosons
   for(int i = 0; i < (int)Zls.size(); i++){
     WZs.push_back(phys::DiBoson<phys::Particle, phys::Particle>(phys::Boson<phys::Particle>(Zls[i].second, neutrinos[0], copysign(24, Zls[i].second.charge())), Zls[i].first));
   }
@@ -504,14 +502,9 @@ std::tuple<bool, phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > wz::
   bool passllLowMass = true;
   bool inMassWindow = true;
 
-  if(abs(Z.daughter(0).id()) == abs(W.daughter(0).id())){
-    for(int i = 0; i < (int)leptons.size() -1; i++){
-      for(int j = i +1; j < (int)leptons.size(); j++){
-	if((leptons[i].p4() + leptons[j].p4()).M() < 4.) passllLowMass = false;
-  }}}
-  else{
-    if((Z.daughter(0).p4() + Z.daughter(1).p4()).M() < 4.) passllLowMass = false;
-  } 
+  for(int i = 0; i < (int)leptons.size() -1; i++)
+    for(int j = i +1; j < (int)leptons.size(); j++)
+      if((leptons[i].p4() + leptons[j].p4()).M() < 4.) passllLowMass = false;
   
   if(Z.mass() > 120. || Z.mass() < 60. || W.mass() > 110. || W.mass() < 50.)
     inMassWindow = false;
