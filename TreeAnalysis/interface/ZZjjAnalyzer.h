@@ -46,12 +46,22 @@ public:
  private:
   VVjjHelper* helper_;
 
+  Int_t eventGen;
+  Int_t eventReco;
+  Int_t eventGenReco;
+  Int_t eventSample;
+  Int_t eventGenaftercut;
+  Int_t eventRecoaftercut;
+  Int_t eventGenNOReco;
+  Int_t eventRecoNOGen;
+
   Float_t begintime;
   Float_t endtime;  
 
   void GenAnalysis(DiBosonParticle &, Particle &, Particle &);
   void RecoAnalysis(DiBosonLepton &, Particle &, Particle &);
   void GenRecoAnalysis(const DiBosonParticle, const Particle, const Particle, const DiBosonLepton, const Particle, const Particle);
+  void GenNoRecoAnalysis();
 
   
   friend class Selector<ZZjjAnalyzer>;
