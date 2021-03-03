@@ -13,13 +13,10 @@
 #include "EventAnalyzer.h"
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/DataFormats/interface/TypeDefs.h"
-#include "VVXAnalysis/Commons/interface/Comparators.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 #include "VVXAnalysis/DataFormats/interface/Particle.h"
-#include <time.h>
-
 #include "VVXAnalysis/TreeAnalysis/interface/VVjjHelper.h"
 
 using namespace phys;
@@ -28,14 +25,12 @@ using namespace std;
 class WZAnalyzer: public EventAnalyzer, RegistrableAnalysis<WZAnalyzer>{
 
 public:
-
   //, const std::string& filename, const double& lumi = 1., const double& externalXSection = -1., bool doBasicPlots = false
 
  WZAnalyzer(const AnalysisConfiguration& configuration)
    : EventAnalyzer(*(new Selector<WZAnalyzer>(*this)), 
 		   configuration){
    //theHistograms.profile(genCategory);
-   //histopointer_ = theHistograms;
    helper_ = new VVjjHelper(&theHistograms);
   }
 
@@ -49,16 +44,9 @@ public:
   
   virtual Int_t cut();
 
-  void GenAnalysis(DiBosonParticle &, Particle &, Particle &);
 
-  void RecoAnalysis(DiBosonLepton &, Particle &, Particle &);
-
-  void GenRecoAnalysis(const DiBosonParticle, const Particle, const Particle, const DiBosonLepton, const Particle, const Particle);
-
-
-private:
+private:  
   VVjjHelper* helper_;
-  Histogrammer* histopointer_;
   
   Int_t eventGen;
   Int_t eventReco;
@@ -68,6 +56,9 @@ private:
   Int_t recoJetless2;
   Int_t recoZlempty;
   Int_t genAfterCut;
+  Int_t eventGenNOReco;
+  Int_t eventRecoNOGen;
+  
 
   Int_t gen3e;
   Int_t gen3m;
@@ -90,9 +81,24 @@ private:
   Int_t choosedWoutsiderange;
   Int_t choosedZfirst;
   Int_t choosedWfirst;
+  Int_t sicheso1;
+  Int_t sicheso2;
+  Int_t sicheso3;
+  Int_t sicheso4;
+  Int_t sicheso5;
+
+  Int_t wrongnumber;
+  Int_t wrongmass;
+  Int_t wrongjet;
 
   Float_t begintime;
   Float_t endtime;  
+
+  void GenAnalysis(DiBosonParticle &, Particle &, Particle &);
+  void RecoAnalysis(DiBosonLepton &, Particle &, Particle &);
+  void GenRecoAnalysis(const DiBosonParticle, const Particle, const Particle, const DiBosonLepton, const Particle, const Particle);
+  void CheckBuildWZ();
+  
   
   friend class Selector<WZAnalyzer>;
   template< class PAR >
@@ -114,11 +120,6 @@ private:
     if(fabs(cand.p4().M() - phys::WMASS) < 150 && gooddaughters)
       return true;
     return false;
-
-  }
-
-  void printTime(float btime, float etime){
-    cout << "\nExecution time: " << (int)((etime - btime)/3600) << " h " << (((int)(etime - btime)%3600)/60) << " m " << etime - btime - (int)((etime - btime)/3600)*3600 - (((int)(etime - btime)%3600)/60)*60 << " s." << endl;
   }
 
 };
