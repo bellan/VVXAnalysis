@@ -21,7 +21,7 @@
 #include <fstream>
 #include <algorithm>  // std::min
 
-#define USE_PYTHON
+//#define USE_PYTHON
 
 class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 	public:

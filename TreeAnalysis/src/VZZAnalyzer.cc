@@ -8,6 +8,9 @@
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 #include "VVXAnalysis/DataFormats/interface/TypeDefs.h"
 
+#define PY_SSIZE_T_CLEAN
+#include <Python.h> 
+
 #include <iostream>
 #include <fstream>			// open(), close(), <<
 #include <string>				// find_last_of()
@@ -87,9 +90,19 @@ void VZZAnalyzer::begin(){
 	cout<<"\nPy interpreter initialized? "<<Py_IsInitialized()<<std::endl;
 	
 	PyRun_SimpleString(
+	 "print('Importing sys...')\n"
    "import sys\n"
-   "sys.path.append('./python')\n"
+   "print('sys.version =', sys.version)\n"
+   //"print('Importing sklearn...')\n"
+   //"import sklearn\n"
+   "print('Succesul import')"
+   //"sys.path.append('./python')\n"
 	);
+	
+	Py_Finalize();	exit(0);
+	
+	//PyObject* sk_AdaBoost = PyImport_ImportModule("sklearn.ensemble");
+	//PyObject* time_mod = PyImport_ImportModule("time");
 	
 	helper_module_ = PyImport_ImportModule("VZZhelper"); // import module
 	if (!helper_module_){
@@ -97,9 +110,12 @@ void VZZAnalyzer::begin(){
 		Py_Finalize();
 		exit(2);
 	}
-
+	//PyObject_CallMethod(helper_module_, (char*)"test", (char*)"");
+	
+	exit(0);
+	
 	AK4_classifier_ = PyObject_CallMethod(helper_module_, (char*)"load_object", (char*)"s", (char*)"VZZ_AK4_tree.pkl");
-	if(AK4_classifier_ == Py_None){
+	if(!AK4_classifier_ || AK4_classifier_ == Py_None){
 		cout<<"Error: could not load AK4_classifier_."<<std::endl;
 		Py_DECREF(helper_module_);
 		Py_Finalize();
@@ -107,7 +123,7 @@ void VZZAnalyzer::begin(){
 	}
 	
 	AK8_classifier_ = PyObject_CallMethod(helper_module_, (char*)"load_object", (char*)"s", (char*)"VZZ_AK8_tree.pkl");
-	if(AK8_classifier_ == Py_None){
+	if(!AK8_classifier_ || AK8_classifier_ == Py_None){
 		cout<<"Error: could not load AK8_classifier_."<<std::endl;
 		Py_DECREF(AK4_classifier_);
 		Py_DECREF(helper_module_);
@@ -116,7 +132,7 @@ void VZZAnalyzer::begin(){
 	}
 	
 	EVT_classifier_ = PyObject_CallMethod(helper_module_, (char*)"load_object", (char*)"s", (char*)"VZZ_Evt_tree.pkl");
-	if(EVT_classifier_ == Py_None){
+	if(!EVT_classifier_ || EVT_classifier_ == Py_None){
 		cout<<"Error: could not load VZZ_Evt_tree."<<std::endl;
 		Py_DECREF(AK4_classifier_);
 		Py_DECREF(AK8_classifier_);
@@ -128,14 +144,14 @@ void VZZAnalyzer::begin(){
 	
 	
 	cout<<"\nAnalyzed:\t      /"<<tree()->GetEntries()<<std::flush;
-	cout<<'\n'; //TEMP
+	//cout<<'\n'; //TEMP
 	return;
 }
 
 
 Int_t VZZAnalyzer::cut(){
 	++evtN_;
-	//cout<<"\r\t\t"<<evtN_;
+	cout<<"\r\t\t"<<evtN_;
 	totEvtW_ += theWeight;
 	
 	theHistograms.fill("TOT_weight", "Total weight", 1,0.,1., 0.5, theWeight);
@@ -209,27 +225,36 @@ void VZZAnalyzer::analyze(){
 	
 	#ifdef USE_PYTHON
 	// AK4pairsWithPred_
+	if(!AK4_classifier_) {
+		cout<<"!AK4_classifier_\n";
+		return;
+	}
 	foreach(const Boson<Jet>& jj, *AK4pairs_)
 		if(jj.mass() > 50. && jj.mass() < 120.){
 			vector<double>* feat = getAK4features(jj);
-	//		double pred = getPyPrediction(*feat, AK4_classifier_);
-	//		AK4pairsWithPred_->emplace_back(pair<Boson<Jet>, double>(jj, pred));
+			double pred = getPyPrediction(*feat, AK4_classifier_);
+			AK4pairsWithPred_->emplace_back(pair<Boson<Jet>, double>(jj, pred));
 			delete feat;
 		}
-	//auto it4 = max_element(AK4pairsWithPred_->begin(), AK4pairsWithPred_->end(), [](pair<Boson<Jet>, double>& a, pair<Boson<Jet>, double>& b) { return a.second < b.second;});  //lambda expressions are useful but cumbersome
-	//auto it4 = max_element(AK4pairsWithPred_->begin(), AK4pairsWithPred_->end(), PairComparator());
-	//theHistograms.fill("BestAK4 score", "BestAK4 score", 10,0.,1., it4->second, theWeight);
+	if(AK4pairsWithPred_->size() > 0){
+		//auto it4 = max_element(AK4pairsWithPred_->begin(), AK4pairsWithPred_->end(), [](pair<Boson<Jet>, double>& a, pair<Boson<Jet>, double>& b) { return a.second < b.second;});  //lambda expressions are useful but cumbersome
+		auto it4 = max_element(AK4pairsWithPred_->begin(), AK4pairsWithPred_->end(), PairComparator());
+		theHistograms.fill("BestAK4 score", "BestAK4 score", 10,0.,1., it4->second, theWeight);
+	}
 	
 	// AK8WithPred_
+	/*
 	foreach(const Jet& j, *jetsAK8)
 		if(j.mass() > 50. && j.mass() < 120.){
 			vector<double>* feat = getAK8features(j);
-			//double pred = getPyPrediction(*feat, AK8_classifier_);
-			//AK8WithPred_->emplace_back(pair<Jet, double>(j, pred));
+			double pred = getPyPrediction(*feat, AK8_classifier_);
+			AK8WithPred_->emplace_back(pair<Jet, double>(j, pred));
 			delete feat;
 		}
-	//auto it8 = max_element(AK8WithPred_->begin(), AK8WithPred_->end(), PairComparator());
-	//theHistograms.fill("BestAK8 score", "BestAK8 score", 10,0.,1., it8->second, theWeight);
+	if(AK8WithPred_->size() > 0){
+		auto it8 = max_element(AK8WithPred_->begin(), AK8WithPred_->end(), PairComparator());
+		theHistograms.fill("BestAK8 score", "BestAK8 score", 10,0.,1., it8->second, theWeight);
+	}*/
 	#endif
 	
 	//genSignalGraphs();
@@ -2343,7 +2368,7 @@ const P* VZZAnalyzer::findBestVPoint(std::vector<const P*>& js){
 #ifdef USE_PYTHON
 double VZZAnalyzer::getPyPrediction(const vector<double>& vect, PyObject* predictor) const{
 	if(!predictor){
-		fputs ("Warning (getPyPrediction): predictor is NULL", stderr);
+		fputs ("Warning (getPyPrediction): predictor is NULL\n", stderr);
 		return -2.;
 	}
 	
