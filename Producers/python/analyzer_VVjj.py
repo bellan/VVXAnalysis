@@ -81,13 +81,20 @@ VVjj_search_path = os.environ['CMSSW_BASE'] + "/src/VVXAnalysis/Producers/python
 #process.eventTagger = cms.Path(process.VVjjEventTagger)
 
 
+genleptons = '(status == 1 && (isPromptFinalState && fromHardProcessFinalState && abs(pdgId) <= 16) ||  abs(pdgId) == 22)'
+#genquarks  = '(fromHardProcessFinalState && abs(pdgId) <= 6 && (mother.pdgId == 23 || abs(mother.pdgId) == 24))'
+genquarks  = '(abs(pdgId) <= 6 && (mother.pdgId == 23 || abs(mother.pdgId) == 24))'
+ 
 process.genParticlesFromHardProcess = cms.EDFilter("GenParticleSelector",
                                            filter = cms.bool(False),
                                            src = cms.InputTag("prunedGenParticles"),
                                            #acceptance cut on leptons?
                                            #cut = cms.string('status == 1 && (isPromptFinalState && fromHardProcessFinalState && abs(pdgId) >= 11 && abs(pdgId) <= 16) ||  abs(pdgId) == 22'),        
-                            cut = cms.string('status == 1 && (isPromptFinalState && fromHardProcessFinalState && (abs(pdgId) <= 16 || pdgId == 21) ) ||  abs(pdgId) == 22'),
-                                       stableOnly = cms.bool(True)
+#                            cut = cms.string(
+                                                   stableOnly = cms.bool(False),
+
+                                                   cut = cms.string(genleptons+" || "+ genquarks)
+
                                            )
 
 process.genTaus = cms.EDFilter("GenParticleSelector",
@@ -233,8 +240,32 @@ else:
         print "UNKNOWN YEAR", SAMPLE_TYPE
 
 
+################################################################
+from PhysicsTools.PatAlgos.tools.helpers import getPatAlgosToolsTask
 
+from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 
+#from RecoJets.Configuration.RecoPFJets_cff import ak8PFJetsCHSSoftDropMass
+
+from RecoBTag.MXNet.pfDeepBoostedJet_cff import _pfDeepBoostedJetTagsAll, _pfDeepBoostedJetTagsProbs, _pfDeepBoostedJetTagsMetaDiscrs, _pfMassDecorrelatedDeepBoostedJetTagsProbs, _pfMassDecorrelatedDeepBoostedJetTagsMetaDiscrs
+
+process.setName_('ZZ')
+
+updateJetCollection(
+    process,
+    jetSource = cms.InputTag('slimmedJetsAK8'),
+    pvSource = cms.InputTag('offlineSlimmedPrimaryVertices'),
+    svSource = cms.InputTag('slimmedSecondaryVertices'),
+    rParam = 0.8,
+    jetCorrections = ('AK8PFPuppi', cms.vstring(['L2Relative', 'L3Absolute', 'L2L3Residual']), 'None'),
+    btagDiscriminators = _pfDeepBoostedJetTagsAll,
+    postfix='AK8WithDeepTags',
+    printWarning = True
+   )
+
+patAlgosToolsTask = getPatAlgosToolsTask(process)
+process.outpathPAT = cms.EndPath(patAlgosToolsTask)
+################################################################
 
 
 
@@ -280,13 +311,16 @@ process.fatJets = cms.Sequence(process.patJetCorrFactorsReapplyJECAK8 + process.
 
 
 
+process.jetCounterFilter2 = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("selectedUpdatedPatJetsAK8WithDeepTags"), minNumber = cms.uint32(0))
+
+
 # Number of disambiguated jets
 process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("disambiguatedJets"), minNumber = cms.uint32(0))
 
 process.jetCleaning = cms.Path(process.muonsFromZZ * process.postCleaningMuons * process.muonsToBeRemovedFromJets 
-                               + process.electronsFromZZ * process.postCleaningElectrons * process.electronsToBeRemovedFromJets                               
+                               + process.electronsFromZZ * process.postCleaningElectrons * process.electronsToBeRemovedFromJets
                                + process.disambiguatedJets
-                               + process.jetCounterFilter
+                               + process.jetCounterFilter + process.jetCounterFilter2
                                + process.fatJets)
 
 
@@ -382,3 +416,4 @@ process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
 #process.filltrees = cms.EndPath(process.treePlanter *process.printTree)
 
 ########################################################
+
