@@ -22,7 +22,7 @@
 #define foreach BOOST_FOREACH
 #include <boost/assign/std/vector.hpp> 
 
-#define USE_PYTHON
+//#define USE_PYTHON
 //#define PRINT_ONLY_CAND
 
 using namespace boost::assign;
@@ -169,7 +169,7 @@ Int_t DBGenerator::cut(){
 	makeQQ(true);
 	
 	//Hadronic signal
-	sigType_ = VZZAnalyzer::isSignal(/*Uses genJets(AK4) and qq_. Modifies sigVB*/); 
+	sigType_ = VZZAnalyzer::isSignal(); //Uses genJets(AK4) and qq_. Modifies sigVB
 	
 	// REC BASELINE
 	if(!ZZ || ZZ->p() < 1.) return -1;
@@ -188,16 +188,6 @@ void DBGenerator::analyze(){
 	mainEvtRec(outputFile_); //TEMP
 	
 	writeTagger(outputFileAK4_, outputFileAK8_);  // contains the endline
-	
-	/*
-	foreach(const Jet& jet, *jetsAK8){
-		theHistograms.fill("m8chosen","m8chosen", 30,-1000.,1000., jet.chosenAlgoMass(), 1.);
-		theHistograms.fill("m8","m8", 30,-1000.,1000., jet.mass(), 1.);
-	}*/
-	/*
-	foreach(const Jet& jet, *jets)
-		theHistograms.fill("m4","m4", 30,-1000.,1000., jet.chosenAlgoMass(), 1.);
-	*/
 }
 
 void DBGenerator::end(TFile &){
@@ -235,11 +225,7 @@ void DBGenerator::mainEvtRec(std::ofstream& outFile){
 	//RECONSTUCTION: Move it to VZZ, make nonprivate member function
 	const Particle* candBestV = nullptr;  // Obtainable looking only at data
 	// As sigVB, it only points to the Particle, it doesn't own it
-	/*
-	VCandType temp = VCandType::None;
-	const Particle* cand4 = VZZAnalyzer::findBestVFromSing(AK4pairs_, temp);  // = Particle -> Boson<Jet>*
-	const Jet* cand8 = VZZAnalyzer::findBestVFromSing(jetsAK8, temp);//= Particle* -> Jet*
-	*/
+	
 	int sigRecType = 0;
 	if(AK4pairs_->size() > 0){
 		std::sort(AK4pairs_->begin(), AK4pairs_->end(), Mass2Comparator(phys::ZMASS, phys::WMASS));
@@ -339,20 +325,22 @@ void DBGenerator::writeTagger(std::ofstream& outFile4, std::ofstream& outFile8){
 void DBGenerator::writeInfoAK4(const Boson<Jet>* bestAK4, std::ofstream& outFile){
 	// If it exists, the true good boson is always written.
 	if(bestAK4){
-		vector<double> features = getAK4features(*bestAK4);
+		vector<double>* features = getAK4features(*bestAK4);
 		outFile<<1<<SEP_CHAR<<theWeight;
-		printVars(outFile, features);
+		printVars(outFile, *features);
 		outFile<<'\n';  // '\n' instead of std::endl because it does not force buffer flush
+		delete features;
 	}
 	
 	#ifdef PRINT_ONLY_CAND // If the algorithm found some other pair, that is the kind of error the classifier shall train against
 	Boson<Jet>* cand = findBestVFromPair(jets);
 	// Cand must exist (least we dereference a nullptr);
 	if(cand && (!bestAK4 || *cand != *bestAK4)){ //see the overload of operator==() in "Particle.h"
-		vector<double> features = getAK4features(*cand);
+		vector<double>* features = getAK4features(*cand);
 		outFile<<0<<SEP_CHAR<<theWeight;
-		printVars(outFile, features);
+		printVars(outFile, *features);
 		outFile<<'\n';  // '\n' instead of std::endl because it does not force buffer flush
+		delete features;
 	}
 	
 	#else  // Include all the other jet pairs
@@ -367,63 +355,35 @@ void DBGenerator::writeInfoAK4(const Boson<Jet>* bestAK4, std::ofstream& outFile
 		if(tmpM < 50. || tmpM > 120.) 
 			continue;  // We would exclude them anyway
 		outFile<<0<<SEP_CHAR<<theWeight;
-		vector<double> features = getAK4features(AK4pairs_->at(i));
-		printVars(outFile, features);
+		vector<double>* features = getAK4features(AK4pairs_->at(i));
+		printVars(outFile, *features);
 		outFile<<'\n';
+		delete features;
 	}
 	#endif
 }
 
-/*
-vector<double> DBGenerator::getAK4featuresTEMP(const Boson<Jet>& jj){
-	vector<double> buffer;
-	buffer.reserve(17);
-	
-	buffer.push_back(physmath::deltaR(jj.daughter(0), jj.daughter(1)));
-	buffer.push_back(jj.pt());
-	buffer.push_back(jj.daughter(0).pt() + jj.daughter(1).pt());
-	buffer.push_back(jj.mass());
-	buffer.push_back(minDM(jj.mass()));                 // 5
-	
-	//Still not included
-	buffer.push_back(jj.daughter(0).mass());
-	buffer.push_back(jj.daughter(1).mass());            // 7
-	buffer.push_back(jj.daughter(0).qgLikelihood());
-	buffer.push_back(jj.daughter(1).qgLikelihood());    // 9
-	buffer.push_back(jj.daughter(0).csvtagger());
-	buffer.push_back(jj.daughter(1).csvtagger());       // 11
-	buffer.push_back(jj.daughter(0).girth());
-	buffer.push_back(jj.daughter(1).girth());           // 13
-	buffer.push_back(jj.daughter(0).girth_charged());
-	buffer.push_back(jj.daughter(1).girth_charged());   // 15
-	buffer.push_back(jj.daughter(0).jetArea());
-	buffer.push_back(jj.daughter(1).jetArea());         //17 (+12)
-	
-	// Useless variables (values are always default) for AK4:
-	// tau(1,2,3), puppiTau(1,2,3), mass functions except mass(), ptd, secvtxMass
-	
-	return buffer;
-}
-*/
 
 void DBGenerator::writeInfoAK8(const Jet* bestAK8, std::ofstream& outFile){
 	// If it exists, the true good boson is always written.
 	
 	if(bestAK8){
-		vector<double> features = getAK8features(*bestAK8);
+		vector<double>* features = getAK8features(*bestAK8);
 		outFile<<1<<SEP_CHAR<<theWeight;
-		printVars(outFile, features);
+		printVars(outFile, *features);
 		outFile<<'\n';  // '\n' instead of std::endl because it does not force buffer flush
+		delete features;
 	}
 	
 	#ifdef PRINT_ONLY_CAND // If the algorithm found some other pair, that is the kind of error the classifier shall train against
 	const Jet* cand = findBestVFromSing(jetsAK8);
 	// Cand must exist (least we dereference a nullptr);
 	if(cand && (!bestAK8 || *cand != *bestAK8)){ //see the overload of operator==() in "Particle.h"
-		vector<double> features = getAK8features(*cand);
+		vector<double>* features = getAK8features(*cand);
 		outFile<<0<<SEP_CHAR<<theWeight;
-		printVars(outFile, features);
+		printVars(outFile, *features);
 		outFile<<'\n';  // '\n' instead of std::endl because it does not force buffer flush
+		delete features;
 	}
 	
 	#else  // Include all the other jet pairs
@@ -440,9 +400,10 @@ void DBGenerator::writeInfoAK8(const Jet* bestAK8, std::ofstream& outFile){
 			continue;  // We would exclude them anyway	
 		
 		outFile<<0<<SEP_CHAR<<theWeight;
-		vector<double> features = getAK8features(jetsAK8->at(i));
-		printVars(outFile, features);
+		vector<double>* features = getAK8features(jetsAK8->at(i));
+		printVars(outFile, *features);
 		outFile<<'\n';
+		delete features;
 	}
 	#endif
 }
@@ -453,12 +414,14 @@ void DBGenerator::writeMainEvt(std::ofstream& outFile, int sigRecType, const Par
 	#ifdef USE_PYTHON
 	double pred = -10.;
 	if(AK4_classifier_ && sigRecType==1){
-		vector<double> bufFeat = VZZAnalyzer::getAK4features( *((Boson<Jet>*)recV) );
-		pred = VZZAnalyzer::getPyPrediction(bufFeat, AK4_classifier_);
+		vector<double>* bufFeat = VZZAnalyzer::getAK4features( *((Boson<Jet>*)recV) );
+		pred = VZZAnalyzer::getPyPrediction(*bufFeat, AK4_classifier_);
+		delete bufFeat;
 	}
 	else if(AK8_classifier_ && sigRecType==2){
-		vector<double> bufFeat = VZZAnalyzer::getAK8features( *(Jet*)recV );
-		pred = VZZAnalyzer::getPyPrediction(bufFeat, AK8_classifier_);
+		vector<double>* bufFeat = VZZAnalyzer::getAK8features( *(Jet*)recV );
+		pred = VZZAnalyzer::getPyPrediction(*bufFeat, AK8_classifier_);
+		delete bufFeat;
 	}
 	
 	printVars(outFile, 2, (double)sigRecType, pred);       // 2
@@ -466,10 +429,6 @@ void DBGenerator::writeMainEvt(std::ofstream& outFile, int sigRecType, const Par
 	// outFile<<SEP_CHAR<<met->pt();
 	
 	//recV is from findBestVfrom[...]()
-	/*float dMHad = minDM(recV->mass());
-	float ptHad = recV->pt();
-	float aEtaHad = fabs(recV->eta());
-	printVars(outFile, 3, dMHad, ptHad, aEtaHad);*/
 	
 	printVars(outFile, 3, ZZ->mass(), ZZ->pt(), ZZ->eta()); // 5
 	
@@ -542,3 +501,4 @@ void DBGenerator::printVars(std::ofstream& outFile, const vector<double>& vect){
 		outFile << SEP_CHAR << (float)(vect.at(i));
 	}
 }
+

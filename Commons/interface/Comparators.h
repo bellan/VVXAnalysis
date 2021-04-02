@@ -287,6 +287,13 @@ namespace phys{
   	
   		TLorentzVector refp4_;
 	};
+	
+	struct PairComparator{
+		template <class T, class U>
+		bool operator()(const std::pair<T, U>& a, const std::pair<T, U>& b){
+			return a.second < b.second;
+		}
+	};
   
 }
 #endif
