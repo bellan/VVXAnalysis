@@ -27,6 +27,12 @@ namespace phys {
     Jet(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), float q =0, int pid = 0)
       : Particle(p, q, pid)
       , csvtagger_(-2)
+      , deepAK8_TvsQCD_(-2.)
+			, deepAK8_WvsQCD_(-2.)
+			, deepAK8MD_TvsQCD_(-2.)
+			, deepAK8MD_WvsQCD_(-2.)
+			, deepAK8MD_ZHbbvsQCD_(-2.)
+			, deepAK8MD_ZHccvsQCD_(-2.)
       , girth_(-9999.)
       , girth_charged_(-9999.)
       , ptd_(-9999.)
@@ -55,10 +61,18 @@ namespace phys {
     virtual ~Jet(){};
     
     // Operations
-
+    
     // B-tagging info
     Double_t csvtagger()     const {return csvtagger_;}         
     
+    // DeepAK8 tags
+  	Double_t deepAK8_TvsQCD()      const {return deepAK8_TvsQCD_;}
+  	Double_t deepAK8_WvsQCD()      const {return deepAK8_WvsQCD_;}
+		Double_t deepAK8MD_TvsQCD()    const {return deepAK8MD_TvsQCD_;}
+		Double_t deepAK8MD_WvsQCD()    const {return deepAK8MD_WvsQCD_;}
+		Double_t deepAK8MD_ZHbbvsQCD() const {return deepAK8MD_ZHbbvsQCD_;}
+		Double_t deepAK8MD_ZHccvsQCD() const {return deepAK8MD_ZHccvsQCD_;}
+
     // Quark-Gluon discrimination variables
     Double_t girth()         const {return girth_;}
     Double_t girth_charged() const {return girth_charged_;}
@@ -130,9 +144,17 @@ namespace phys {
   protected:
     
   private:
-
     // B-tagging info
-    Double_t csvtagger_;         
+    Double_t csvtagger_;
+    
+    // DeepAK8 tags
+  	Double_t deepAK8_TvsQCD_;
+  	Double_t deepAK8_WvsQCD_;
+  	Double_t deepAK8MD_TvsQCD_;  // Mass Decorrelated
+  	Double_t deepAK8MD_WvsQCD_;
+  	Double_t deepAK8MD_ZHbbvsQCD_;
+  	Double_t deepAK8MD_ZHccvsQCD_;
+  	//std::vector<std::pair<std::string, float>> bTaggers;
     
     // Quark-Gluon discrimination variables
     Double_t girth_;
