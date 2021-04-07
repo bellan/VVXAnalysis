@@ -242,14 +242,8 @@ else:
 
 ################################################################
 from PhysicsTools.PatAlgos.tools.helpers import getPatAlgosToolsTask
-
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-
-#from RecoJets.Configuration.RecoPFJets_cff import ak8PFJetsCHSSoftDropMass
-
 from RecoBTag.MXNet.pfDeepBoostedJet_cff import _pfDeepBoostedJetTagsAll, _pfDeepBoostedJetTagsProbs, _pfDeepBoostedJetTagsMetaDiscrs, _pfMassDecorrelatedDeepBoostedJetTagsProbs, _pfMassDecorrelatedDeepBoostedJetTagsMetaDiscrs
-
-process.setName_('ZZ')
 
 updateJetCollection(
     process,
@@ -267,19 +261,18 @@ patAlgosToolsTask = getPatAlgosToolsTask(process)
 process.outpathPAT = cms.EndPath(patAlgosToolsTask)
 ################################################################
 
+#process.patJetCorrFactorsReapplyJECAK8 = updatedPatJetCorrFactors.clone(src     = cms.InputTag("slimmedJetsAK8"),
+#                                                                        levels  = ['L1FastJet','L2Relative','L3Absolute'],
+#                                                                        payload = 'AK8PFchs')
 
-
-process.patJetCorrFactorsReapplyJECAK8 = updatedPatJetCorrFactors.clone(src     = cms.InputTag("slimmedJetsAK8"),
-                                                                        levels  = ['L1FastJet','L2Relative','L3Absolute'],
-                                                                        payload = 'AK8PFchs')
-
-process.patJetsReapplyJECAK8 = updatedPatJets.clone(jetSource = cms.InputTag("slimmedJetsAK8"),
-                                                    jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJECAK8") ))
+#process.patJetsReapplyJECAK8 = updatedPatJets.clone(jetSource = cms.InputTag("slimmedJetsAK8"),
+#                                                    jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJECAK8") ))
 
 from PhysicsTools.SelectorUtils.pfJetIDSelector_cfi import pfJetIDSelector
 process.goodJetsAK8 = cms.EDFilter("PFJetIDSelectionFunctorFilter",
                                    filterParams = pfJetIDSelector.clone(),
-                                   src = cms.InputTag("patJetsReapplyJECAK8"),
+                                   #src = cms.InputTag("patJetsReapplyJECAK8"),
+                                   src = cms.InputTag("selectedUpdatedPatJetsAK8WithDeepTags"),
                                    filter = cms.bool(False) )
 
 
@@ -307,7 +300,8 @@ process.disambiguatedJetsAK8 = cms.EDProducer("JetsWithLeptonsRemover",
                                               cleanFSRFromLeptons = cms.bool(True)
                                               )
 
-process.fatJets = cms.Sequence(process.patJetCorrFactorsReapplyJECAK8 + process.patJetsReapplyJECAK8 + process.goodJetsAK8 + process.correctedJetsAK8 + process.disambiguatedJetsAK8)
+#process.fatJets = cms.Sequence(process.patJetCorrFactorsReapplyJECAK8 + process.patJetsReapplyJECAK8 + process.goodJetsAK8 + process.correctedJetsAK8 + process.disambiguatedJetsAK8)
+process.fatJets = cms.Sequence(process.goodJetsAK8 + process.correctedJetsAK8 + process.disambiguatedJetsAK8)
 
 
 

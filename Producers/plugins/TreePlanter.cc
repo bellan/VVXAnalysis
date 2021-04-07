@@ -498,7 +498,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   foreach(const pat::Muon&     muon    , *muons    ) muons_.push_back(fill(muon));
   foreach(const pat::Electron& electron, *electrons) electrons_.push_back(fill(electron));
   foreach(const pat::Jet&      jet     , *jets     ) jets_.push_back(fill(jet));
-  foreach(const pat::Jet&      jet     , *jetsAK8  ) jetsAK8_.push_back(fill(jet)); // FIXME: need jet class extention
+  foreach(const pat::Jet&      jet     , *jetsAK8  ) jetsAK8_.push_back(fill(jet)); // FIXME: need jet class extension
   
 
   // The bosons are selected requiring that their daughters pass the quality criteria to be good daughters
@@ -606,6 +606,17 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   
  
   output.csvtagger_      = jet.hasUserFloat("bTagger")                   ? jet.userFloat("bTagger")                : -999;
+  
+  output.deepAK8_TvsQCD_      =  jet.bDiscriminator("pfDeepBoostedDiscriminatorsJetTags:TvsQCD");
+  output.deepAK8_WvsQCD_      = jet.bDiscriminator("pfDeepBoostedDiscriminatorsJetTags:WvsQCD");
+  output.deepAK8MD_TvsQCD_    = jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:TvsQCD");
+  output.deepAK8MD_WvsQCD_    = jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:WvsQCD");
+  output.deepAK8MD_ZHbbvsQCD_ = jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHbbvsQCD");
+  output.deepAK8MD_ZHccvsQCD_ = jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHccvsQCD");
+  
+  //output.bTaggers = jet.getPairDiscri(); //TEST get the whole list of tags
+  
+  
   output.qgLikelihood_   = jet.hasUserFloat("qgLikelihood")              ? jet.userFloat("qgLikelihood")           : -999;
   output.fullPuId_       = jet.hasUserInt  ("pileupJetIdUpdated:fullId") ? jet.userInt("pileupJetIdUpdated:fullId"): -999;
   output.passLooseId_    = jet.hasUserFloat("looseJetID")                ? jet.userFloat("looseJetID")             : -999;
