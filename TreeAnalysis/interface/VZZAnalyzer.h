@@ -21,7 +21,7 @@
 #include <fstream>
 #include <algorithm>  // std::min
 
-#define USE_PYTHON
+//#define USE_PYTHON
 
 class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 	public:
@@ -49,6 +49,7 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 			#ifdef USE_PYTHON
 			Py_XDECREF(AK4_classifier_);  // Free memory in event of crash
 			Py_XDECREF(AK8_classifier_);
+			Py_XDECREF(EVT_classifier_);
 			Py_XDECREF(helper_module_);  // XDECREF: checks if the reference count is >=0
 			Py_Finalize();  // Close Python interpreter
 			#endif
@@ -90,8 +91,6 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		template <class P = phys::Particle>
 		static inline double getRefinedMass(const P& p){ return p.mass(); } 
 		// If I used "const P&" it would have precedence on the template specialization when the object is a pointer to non-const, since "const P&" matches const P* & (const reference to non-const pointer to non-const)
-		//template <class P = phys::Particle*> 
-		//inline double getRefinedMass(P* p) const{ return p->mass();}
 		
 		//I give up, c++ templates are too complicated when mixed with cv-qualifiers. It's easier to write the function overloads
 		static inline double getRefinedMass(const phys::Particle* p){ return p->mass(); }
@@ -119,16 +118,17 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		// ----- ----- Event-specific variables calculation ----- ----- 
 		void fillGenHadVBs(); //old: Fills the vector only if it is empty
 		void fillRecHadVBs(); //old: Fills the vector only if it is empty
-		void calcS();
 		void fillAK4GenRec(bool doGraphs = true); // Fills AK4GenRec_
 		void fillGenVBtoAK4();
 		void makeGenZZ();
 		
-		// ----- ----- Large sub-analisys ----- ----- 
+		// ----- ----- Misc graphs ----- -----
 		void baseHistos();  // called in cut(), so runs every event
 		void simpleGraphs();
+		void ZZGraphs();
 		void jetRecoGraphs();
 		
+		// ----- ----- Large sub-analisys ----- -----
 		void ZZRecoEfficiency();
 		void jetRecoEfficiency();
 		
@@ -174,7 +174,7 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		void genHadVBCategorization();  // Two genHadVB (W2, Z3) can be formed from the same jets. How often does that happen?
 		void endGenHadVbCateg();
 		
-		void endNameCuts();  // Gives names to the xAxis labels of "Cuts"
+		void endNameHistos();  // Gives names to the xAxis labels of various histograms
 		
 	private:
 		float sAK4g_; //invariant mass of ZZ and all the AK4s gen
@@ -209,9 +209,10 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		clock_t startTime_; //Used to calculate elapsed time
 		float analyzedW_, totEvtW_;  // Weighted events passing cut and total
 		
-		PyObject* helper_module_;  // Python mini-module to unpickle AK4_classifier_ and obtain predictions from it
+		PyObject* helper_module_;  // Python mini-module to unpickle the classifiers and obtain predictions from them
 		PyObject* AK4_classifier_;  // A scikit-learn classifier, trained on pairs of AK4 to distinguish from W/Z induced jets and background QCD processes. Must implement the method "predict_proba(<2D matrix>)"
 		PyObject* AK8_classifier_;
+		PyObject* EVT_classifier_;
 		
 		std::vector<phys::Boson<phys::Particle>>* genHadVBs_ = nullptr;  // genVBParticles with hadronic daugthers
 		std::vector<phys::Boson<phys::Particle>>* AllGenVBjj_ = nullptr;  // All the unique pairs of genAK4 with |m - M_{Z,W}| < 30.  genVB is limited to 2 (Z3 and W2 in SignalDefinitions)
