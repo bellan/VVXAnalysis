@@ -24,7 +24,7 @@ foreach chunk ( *Chunk* )
    set fail="true"
  endif
 
-echo $chunk `ls ${chunk} | grep job | awk '{print $9}'`
+#echo $chunk `ls ${chunk} | grep job | awk '{print $9}'`
 
 
 # if ( $fail == "true" ) then
@@ -46,11 +46,15 @@ echo $chunk `ls ${chunk} | grep job | awk '{print $9}'`
   mkdir -p AAAOK
   mv $chunk AAAOK/
  else 
-  set description=""
-   if ( $exitStatus == 0 )  set description="(unknown)"
-   if ( $exitStatus == 84 ) set description="(missing input file)"
-   if ( $exitStatus == 134 ) set description="(Crashed)"
-   if ( $exitStatus == 152 ) set description="(Exceeded CPU time)"
+   set description=""
+   switch($exitStatus)  # From https://twiki.cern.ch/twiki/bin/view/CMSPublic/StandardExitCodes
+     case 0:   ; set description="(unknown)" ; breaksw
+     case 84:  ; set description="(missing input file)" ; breaksw
+     case 85:  ; set description="(failed to open local and fallback files)" ; breaksw
+     case 134: ; set description="(Crashed)" ; breaksw
+     case 152: ; set description="(Exceeded CPU time)" ; breaksw
+     case 153: ; set description="(Exceeded File size limit)" ; breaksw
+   endsw
    echo $chunk ": failed, exit status = " $exitStatus $description
  endif
 end
