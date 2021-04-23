@@ -14,14 +14,16 @@
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/Commons/interface/Comparators.h"
 
-#define PY_SSIZE_T_CLEAN
+//#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 #include <iostream>
 #include <fstream>
 #include <algorithm>  // std::min
 
-//#define USE_PYTHON
+#define USE_PYTHON
+
+using std::vector;
 
 class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 	public:
@@ -64,29 +66,28 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		virtual void end(TFile &);
 		
 		// ----- ----- Helper functions ----- ----- 
-		phys::Particle* getHadVB();
 		template<class P = phys::Jet>
-		const P* findBestVFromSing(std::vector<P>*);
+		const P* findBestVFromSing(vector<P>*);
 		template <class J = phys::Jet>
-		phys::Boson<J>* findBestVFromPair(const std::vector<J>*);
+		phys::Boson<J>* findBestVFromPair(const vector<J>*);
 		//Searches among the Jets in the vector and finds the pair candidate with mass closest to W or Z (modifying "candType"). Returns the candidate only if it fits the (W/Z)BosonDefinition
 		template <class P = phys::Particle>
-		const P* findBestVPoint(std::vector<const P*>& js); //Uses a vector<P*> instead of a vector<P>
+		const P* findBestVPoint(vector<const P*>& js); //Uses a vector<P*> instead of a vector<P>
 		
 		//Implemented in VZZAnalyzer_impl.cc
 		template <class P, class R = phys::Boson<phys::Particle>> // P = Jet or Particle
-		const P*        closestSing(std::vector<P>* cands, const R& ref, size_t& k); //max dR=0.4
+		const P*        closestSing(vector<P>* cands, const R& ref, size_t& k); //max dR=0.4
 		template <class P, class R = phys::Boson<phys::Particle>> // P = Jet or Particle
-		const P*        closestSing(std::vector<P>* cands, const R& ref){
+		const P*        closestSing(vector<P>* cands, const R& ref){
 			size_t k = 0;
 			return(closestSing(cands, ref, k));
 		};
 		template <class P, class R = phys::Boson<phys::Particle>> // P = Jet or Particle
-		phys::Boson<P>* closestPair(std::vector<P>* cands, const R& ref); //max dR = 0.4
+		phys::Boson<P>* closestPair(vector<P>* cands, const R& ref); //max dR = 0.4
 		template <class P, class R = phys::DiBoson<phys::Lepton, phys::Lepton>>
-		P* furthestSing(std::vector<P>* cands, const R& reference, const float& minDR = 2., const std::pair<float,float>& massLimits = std::make_pair(1.,1000.));
+		P* furthestSing(vector<P>* cands, const R& reference, const float& minDR = 2., const std::pair<float,float>& massLimits = std::make_pair(1.,1000.));
 		template <class P, class R = phys::DiBoson<phys::Lepton, phys::Lepton>>
-		phys::Boson<P>* furthestPair(std::vector<P>* cands, const R& reference, const float& minDR = 2., const std::pair<float,float>& massLimits = std::make_pair(1.,1000.));
+		phys::Boson<P>* furthestPair(vector<P>* cands, const R& reference, const float& minDR = 2., const std::pair<float,float>& massLimits = std::make_pair(1.,1000.));
 		
 		template <class P = phys::Particle>
 		static inline double getRefinedMass(const P& p){ return p.mass(); } 
@@ -110,17 +111,24 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		// ----- ----- Predictions from scikit classifiers ----- ----- 
 		#ifdef USE_PYTHON
-		double getPyPrediction(const std::vector<double>&, PyObject*) const; // uses module_helper
+		int initPy();
+		static double getPyPrediction(const vector<double>&, PyObject*);
+		vector<double>* predAll(double* data, size_t vsize, size_t nfeat, PyObject* predictor) const;
+		template <class P>
+		vector<double>* getPyPredAll(const vector<P>&, PyObject*) const;
 		#endif
-		static std::vector<double>* getAK4features(const phys::Boson<phys::Jet>&);
-		static std::vector<double>* getAK8features(const phys::Jet&);
+		static vector<double>* getAK4features(const phys::Boson<phys::Jet>&);
+		static vector<double>* getAK8features(const phys::Jet&);
+		static vector<double>* getFeatures(const phys::Boson<phys::Jet>& a) { return getAK4features(a); }
+		static vector<double>* getFeatures(const phys::Jet& a) { return getAK8features(a); }
 		
 		// ----- ----- Event-specific variables calculation ----- ----- 
-		void fillGenHadVBs(); //old: Fills the vector only if it is empty
-		void fillRecHadVBs(); //old: Fills the vector only if it is empty
+		void fillGenHadVBs();
+		void fillRecHadVBs();
 		void fillAK4GenRec(bool doGraphs = true); // Fills AK4GenRec_
 		void fillGenVBtoAK4();
 		void makeGenZZ();
+		void makeQQ(bool doGraphs = false); // Creates a boson created with the 2 quarks only if the final state is 4l 2q
 		
 		// ----- ----- Misc graphs ----- -----
 		void baseHistos();  // called in cut(), so runs every event
@@ -145,12 +153,9 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		void endResolutionAnalisys(TFile& f_out); //Calculates AK4-AK8 resolution per bin of ZZ pt
 		
 		void resolutionZmass();  // same as bestZMassJetMVA() but without dR(jet, ZZ) > 2.
-		void endResolutionZmass(TFile& f_out);
-		//Permanently moved into an external macro
 		
 		void AK8nearGenHadVB();  // Is there an AK8 near genHadVBs_->front() ?
 		
-		void makeQQ(bool doGraphs = false); //phys::Boson<phys::Particle>* genQuarksID(); // Returns a boson created wit the 2 quarks only if the final state is 4l 2q
 		void genQuarksAnalisys(/*const phys::Boson<phys::Particle>* qq_*/);  // gen quarks from VB decay
 		//void endGenQuarksAnalisys(TFile& f_out);  //better implementation in macro/Efficiency
 		
@@ -214,35 +219,22 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		PyObject* AK8_classifier_;
 		PyObject* EVT_classifier_;
 		
-		std::vector<phys::Boson<phys::Particle>>* genHadVBs_ = nullptr;  // genVBParticles with hadronic daugthers
-		std::vector<phys::Boson<phys::Particle>>* AllGenVBjj_ = nullptr;  // All the unique pairs of genAK4 with |m - M_{Z,W}| < 30.  genVB is limited to 2 (Z3 and W2 in SignalDefinitions)
-		std::vector<phys::Boson<phys::Jet>>* AK4pairs_ = nullptr;  // All the pairs of all the reconstructed AK4 jets
-		std::vector<std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Jet>>>* AK4GenRec_ = nullptr;  // Pairs of gen VB-->jj succesfully reconstructed by the detector
+		vector<phys::Boson<phys::Particle>>* genHadVBs_ = nullptr;  // genVBParticles with hadronic daugthers
+		vector<phys::Boson<phys::Particle>>* AllGenVBjj_ = nullptr;  // All the unique pairs of genAK4 with |m - M_{Z,W}| < 30.  genVB is limited to 2 (Z3 and W2 in SignalDefinitions)
+		vector<phys::Boson<phys::Jet>>* AK4pairs_ = nullptr;  // All the pairs of all the reconstructed AK4 jets
+		vector<std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Jet>>>* AK4GenRec_ = nullptr;  // Pairs of gen VB-->jj succesfully reconstructed by the detector
 		
 		phys::DiBoson<phys::Particle, phys::Particle>* genZZ_; //Always != nullptr from begin() to end().
 		phys::Boson<phys::Particle> qq_;
 		
-		std::vector<std::pair<phys::Boson<phys::Jet>, double>>* AK4pairsWithPred_ = nullptr;
-		std::vector<std::pair<phys::Jet, double>>* AK8WithPred_ = nullptr;
+		vector<std::pair<phys::Boson<phys::Jet>, double>>* AK4pairsWithPred_ = nullptr;
+		vector<std::pair<phys::Jet, double>>* AK8WithPred_ = nullptr;
 		
 		
 		// ----- ----- Signal definition ----- ----- 
 		int sigType_;            // 0-->no  |     1-->AK4     |  2-->AK8
 		phys::Particle* sigVB_;  // nullptr | Boson<Particle> | Particle
 		int isSignal(bool doGraphs = false);  
-		
-		template <class PAR>
-		bool ZBosonDefinition(phys::Boson<PAR>& cand) const{  //candidate
-			//bool checkMass = fabs(cand.p4().M() - phys::ZMASS) < 40; //temp
-			bool checkMass = (60. < cand.p4().M() && cand.p4().M() < 120.);
-			return checkMass;
-		}
-		template <class PAR>
-		bool WBosonDefinition(phys::Boson<PAR>& cand) const{	//candidate
-			//bool checkMass = fabs(cand.p4().M() - phys::WMASS) < 40;
-			bool checkMass = (60. < cand.p4().M() && cand.p4().M() < 120.);
-			return checkMass;
-		}
 		
 		template <class PAR>  //usually PAR is Jet
 		bool ZBosonDefinition(PAR& cand) const{
@@ -265,7 +257,7 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		inline bool tauCut(const phys::Jet* jet8, const double& thr = 0.6){
 			return tauCut(*jet8, thr);
 		}
-		inline bool tauCut(std::vector<phys::Jet>::iterator jet8, const double& thr = 0.6){
+		inline bool tauCut(vector<phys::Jet>::iterator jet8, const double& thr = 0.6){
 			return tauCut(*jet8, thr);
 		}
 };
