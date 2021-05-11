@@ -1,6 +1,6 @@
 from ZZAnalysis.AnalysisStep.defaults import declareDefault
 
-SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the chosen windows. For other topology see the README under VVXAnalysis/Commons.
+SIGNALDEFINITION = int('10',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the chosen windows. For other topology see the README under VVXAnalysis/Commons.
 
 declareDefault("PD","",globals())
 declareDefault("MCFILTER","",globals())
@@ -132,7 +132,7 @@ process.genPath = cms.Path(process.genParticlesFromHardProcess + process.selecte
 execfile(VVjj_search_path + "analyzer_ZZjj.py")
 
 ## WZ->3lnu
-#execfile(VVjj_search_path + "analyzer_WZjj.py") 
+execfile(VVjj_search_path + "analyzer_WZjj.py") 
 
 ## VZ->2l2j
 #execfile(VVjj_search_path + "analyzer_VZjj.py")
@@ -141,7 +141,6 @@ execfile(VVjj_search_path + "analyzer_ZZjj.py")
 #execfile(VVjj_search_path + "analyzer_WWjj.py")
 
 ### ----------------------------------------------------------------------
-
 
 
 
@@ -346,6 +345,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      Vhad         = cms.InputTag(""),
                                      ZZ           = cms.InputTag("ZZFiltered"),            # only the best ZZ->4l candidate that pass the FULL selection
                                      ZL           = cms.InputTag("ZlSelected"),
+                                     ZW           = cms.InputTag("ZWCand"),
                                      MET          = cms.InputTag("slimmedMETs"),
                                      Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
                                      XSection     = cms.untracked.double(XSEC)

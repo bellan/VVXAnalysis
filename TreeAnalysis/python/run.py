@@ -13,7 +13,7 @@ from Colours import *
 ############################################################################
 ############################## User's inputs ###############################
 ############################################################################
-regions = ['SR','CR','CR2P2F','CR3P1F','SR_HZZ','CR_HZZ','CR2P2F_HZZ','CR3P1F_HZZ', 'MC','MC_HZZ']
+regions = ['SR','CR','CR2P2F','CR3P1F','SR_HZZ','CR_HZZ','CR2P2F_HZZ','CR3P1F_HZZ', 'MC','MC_HZZ', 'SR3L']
 years   = [2016,2017,2018]
 
 parser = OptionParser(usage="usage: %prog <analysis> <sample> [options]")

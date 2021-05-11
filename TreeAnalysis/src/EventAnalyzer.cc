@@ -101,6 +101,9 @@ void EventAnalyzer::Init(TTree *tree)
   // DiBoson, if in SR, or Z+ll if in CR
   ZZ   = new phys::DiBoson<phys::Lepton, phys::Lepton>(); b_ZZ   = 0; theTree->SetBranchAddress("ZZCand"  , &ZZ  , &b_ZZ  );
 
+  // DiBoson, if in SR, or Z+ll if in CR
+  ZW   = new phys::DiBoson<phys::Lepton, phys::Lepton>(); b_ZW   = 0; theTree->SetBranchAddress("ZWCand"  , &ZW  , &b_ZW  );
+
   // Z+L 
   ZL = new ZLCompositeCandidates()    ; ZLCand = 0; b_ZLCand = 0; theTree->SetBranchAddress("ZLCand", &ZLCand, &b_ZLCand);
 
@@ -203,27 +206,29 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   stable_sort(Vhad->begin(), Vhad->end(), phys::PtComparator());
   
   ZL->clear();
-  if(ZLCand)
-    foreach(const ZLCompositeCandidate& zl, *ZLCand)
-      if( zl.second.sip() < 4) ZL->push_back(zl); //To be moved in cfg
+  if(ZLCand) foreach(const ZLCompositeCandidate& zl, *ZLCand) ZL->push_back(zl);
   if(region_ == phys::MC){
     if(!ZZ->isValid()){
       if(ZZ) delete ZZ;
       ZZ = new phys::DiBoson<phys::Lepton, phys::Lepton>();
     }
+    if(!ZW->isValid()){
+      if(ZW) delete ZW;
+      ZW = new phys::DiBoson<phys::Lepton, phys::Lepton>();
+    }
   }
   
-  std::vector<phys::Lepton> Leps;
+  // std::vector<phys::Lepton> Leps;
   
-  Leps.push_back(*ZZ->first().daughterPtr(0));
-  Leps.push_back(*ZZ->first().daughterPtr(1));
-  Leps.push_back(*ZZ->second().daughterPtr(0));
-  Leps.push_back(*ZZ->second().daughterPtr(1));
+  // Leps.push_back(*ZZ->first().daughterPtr(0));
+  // Leps.push_back(*ZZ->first().daughterPtr(1));
+  // Leps.push_back(*ZZ->second().daughterPtr(0));
+  // Leps.push_back(*ZZ->second().daughterPtr(1));
   
-  stable_sort(Leps.begin(),     Leps.end(),     phys::PtComparator());
+  // stable_sort(Leps.begin(),     Leps.end(),     phys::PtComparator());
   
   
-  if((abs(Leps.at(1).id())==11) && (Leps.at(1).pt()<12))  return 0;
+  // if((abs(Leps.at(1).id())==11) && (Leps.at(1).pt()<12))  return 0;
   
   addOptions();
   
@@ -238,11 +243,16 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   if(region_ == phys::SR_HZZ     && !regionWord.test(3))  return 0;
   if(region_ == phys::CR2P2F_HZZ && !regionWord.test(22)) return 0;
   if(region_ == phys::CR3P1F_HZZ && !regionWord.test(23)) return 0;
-  
-  if(!doSF) theWeight = theMCInfo.weight(*ZZ);
-  //else  applyLeptonScaleFactors();
 
-  
+  if(!doSF) theWeight = theMCInfo.weight(*ZZ);
+
+  if(region_ == phys::SR3L){
+    regionWord = std::bitset<128>(ZW->region());
+    if(!regionWord.test(30)) return 0; 
+    else theWeight = theMCInfo.weight(*ZW);
+  }
+
+ 
   theHistograms.fill("weight_full"  , "All weights applied"                                    , 1200, -2, 10, theWeight);
   theHistograms.fill("weight_bare"  , "All weights, but efficiency and fake rate scale factors", 1200, -2, 10, theMCInfo.weight());
   theHistograms.fill("weight_pu"    , "Weight from PU reweighting procedure"                   , 1200, -2, 10, theMCInfo.puWeight());

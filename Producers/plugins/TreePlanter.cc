@@ -73,6 +73,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theVhadToken     (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("Vhad"     )))
   , theZZToken       (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZZ"       )))
   , theZLToken       (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZL"       )))
+  , theZWToken       (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZW"       )))
   , theMETToken      (consumes<pat::METCollection>                 (config.getParameter<edm::InputTag>("MET"      )))
   , theVertexToken   (consumes<std::vector<reco::Vertex> >         (config.getParameter<edm::InputTag>("Vertices" )))
   , theRhoToken      (consumes<double>                             (edm::InputTag("fixedGridRhoFastjetAll","")))
@@ -161,6 +162,7 @@ void TreePlanter::beginJob(){
   theTree->Branch("jetsAK8"   , &jetsAK8_); 
   theTree->Branch("VhadCand"  , &Vhad_);
   theTree->Branch("ZZCand"    , &ZZ_); 
+  theTree->Branch("ZWCand"    , &ZW_); 
   theTree->Branch("ZLCand"    , &ZL_); 
 
   theTree->Branch("genParticles"  , &genParticles_);
@@ -293,6 +295,7 @@ void TreePlanter::initTree(){
   Vhad_      = std::vector<phys::Boson<phys::Jet>      >();   
 
   ZL_        = std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> >();
+  ZW_        = phys::DiBoson<phys::Lepton  , phys::Lepton>();
 
   genParticles_ = std::vector<phys::Particle>();
   genTaus_ = std::vector<phys::Particle>();
@@ -493,6 +496,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   //  edm::Handle<edm::View<pat::CompositeCandidate> > Vhad ; event.getByToken(theVhadToken    ,      Vhad);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZZ   ; event.getByToken(theZZToken      ,        ZZ);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZL   ; event.getByToken(theZLToken      ,        ZL);
+  edm::Handle<edm::View<pat::CompositeCandidate> > ZW   ; event.getByToken(theZWToken      ,        ZW);
 
   // No further selection on muons, electrons, or jets. All is made in the .py file
   foreach(const pat::Muon&     muon    , *muons    ) muons_.push_back(fill(muon));
@@ -510,7 +514,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
   // Fill Z+l pairs for fake rate measurements
   ZL_ = fillZLCandidates(ZL);
-
+  ZW_ = fillZWCandidate(ZW);
 
   bool oneZZInSR = false;
 
@@ -552,8 +556,8 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
   else if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();
   // case ZZ == 1 !trigger is missing
-  else if(isMC_ && ZL_.empty() && !isSignal_ && applySkim_) return;
-  else if(!isMC_  && ZL_.empty() && applySkim_) return;
+  else if(isMC_  && ZL_.empty() && !ZW_.isValid() && !isSignal_ && applySkim_) return;
+  else if(!isMC_ && ZL_.empty() && !ZW_.isValid() &&               applySkim_) return;
   
   theTree->Fill();
 
@@ -901,6 +905,79 @@ std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > TreePlanter::fi
 
   return physZLs;  
 }
+
+
+
+phys::DiBoson<phys::Lepton,phys::Lepton> 
+TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmZWs) const{
+
+  // Only one ZW is allowed
+  if(edmZWs->size() != 1) return  phys::DiBoson<phys::Lepton,phys::Lepton>();
+  //if(!filterController_.passTrigger(ZL, triggerWord_)) return physZLs;
+
+
+  // for ZW,  daughter(0) is the ZL while daughter(1) is the MET
+  const pat::CompositeCandidate edmZW = edmZWs->front();
+
+  // ----- Build the Z boson -----
+  const pat::CompositeCandidate* edmZ  = dynamic_cast<const pat::CompositeCandidate*>(edmZW.daughter(0)->daughter(0)->masterClone().get());
+  phys::Boson<phys::Lepton> physZ;
+    
+  if     (abs(edmZ->daughter(0)->pdgId()) == 11) physZ = fillBoson<pat::Electron, phys::Lepton>(*edmZ, 23, false);
+  else if(abs(edmZ->daughter(0)->pdgId()) == 13) physZ = fillBoson<pat::Muon    , phys::Lepton>(*edmZ, 23, false);
+  else{
+    edm::LogError("TreePlanter") << "Do not know what to cast in fillZWCandidates, Z part" << endl;
+    abort();
+  }
+  // -----------------------------
+
+  // ----- Build the W boson -----
+  phys::Lepton lep;
+  if     (abs(edmZW.daughter(0)->daughter(1)->pdgId()) == 11)
+    lep = fill(*dynamic_cast<const pat::Electron*>(edmZW.daughter(0)->daughter(1)->masterClone().get()));
+  else if(abs(edmZW.daughter(0)->daughter(1)->pdgId()) == 13)
+    lep = fill(*dynamic_cast<const pat::Muon*>    (edmZW.daughter(0)->daughter(1)->masterClone().get()));
+  else{
+    edm::LogError("TreePlanter") << "Do not know what to cast in fillZWCandidates, LEP part" << endl;
+    abort();
+  }
+
+  phys::Lepton met = phys::Lepton(phys::Particle::convert(edmZW.daughter(1)->p4()));
+
+  phys::Boson<phys::Lepton> physW(lep, met, copysign(24,-1*lep.id()));
+  // -----------------------------
+
+  
+  // ----- Build the ZW -----
+  if(physZ.isValid() && physW.isValid() ){
+    phys::DiBoson<phys::Lepton,phys::Lepton> ZW(physZ, physW);
+    
+    int regionWord = 0;
+    set_bit(regionWord,30); // use 30 for WZ
+    
+    ZW.isBestCand_                = true;
+    ZW.passFullSel_               = true;
+    ZW.isBestCRZLLos_2P2F_        = false;
+    ZW.passSelZLL_2P2F_           = false;
+    ZW.isBestCRZLLos_3P1F_        = false;
+    ZW.passSelZLL_3P1F_           = false;
+    ZW.passSRZZOnShell_           = false;
+    ZW.passSelZLL_2P2F_ZZOnShell_ = false;
+    ZW.passSelZLL_3P1F_ZZOnShell_ = false;
+    ZW.regionWord_                = regionWord;
+    ZW.triggerWord_               = triggerWord_;
+    ZW.passTrigger_               = filterController_.passTrigger(ZZ, triggerWord_); // use same trigger as ZZ
+    
+    return ZW;
+  }
+  else return phys::DiBoson<phys::Lepton,phys::Lepton>();
+}
+
+
+
+
+
+
 
 
 int TreePlanter::computeRegionFlag(const pat::CompositeCandidate & vv) const{

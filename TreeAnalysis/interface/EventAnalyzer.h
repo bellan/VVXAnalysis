@@ -189,6 +189,9 @@ public:
   // DiBoson, if in SR, or Z+ll if in CR
   phys::DiBoson<phys::Lepton  , phys::Lepton> *ZZ; TBranch *b_ZZ;
 
+  // DiBoson, WZ
+  phys::DiBoson<phys::Lepton  , phys::Lepton> *ZW; TBranch *b_ZW;
+
   // Z+L 
   ZLCompositeCandidates *ZLCand; TBranch *b_ZLCand;
 

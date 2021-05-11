@@ -89,6 +89,10 @@ class TreePlanter: public edm::EDAnalyzer {
 
   std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > fillZLCandidates(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmZLs) const;
 
+  phys::DiBoson<phys::Lepton,phys::Lepton> fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmZWs) const;
+
+  
+
   int computeRegionFlag(const pat::CompositeCandidate & vv) const;
 
  private:
@@ -156,6 +160,10 @@ class TreePlanter: public edm::EDAnalyzer {
   // Z + 1 loose lepton, for fake rate studies
   std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > ZL_;
 
+  // ZW in the SR
+  phys::DiBoson<phys::Lepton  , phys::Lepton> ZW_;
+
+
   std::vector<phys::Particle>               genParticles_;
   std::vector<phys::Particle>               genTaus_;
   std::vector<phys::Boson<phys::Particle> > genVBParticles_;
@@ -170,6 +178,7 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theVhadToken;
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZZToken;
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZLToken;
+  edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZWToken;
   edm::EDGetTokenT<pat::METCollection>                  theMETToken;
   edm::EDGetTokenT<std::vector<reco::Vertex> >          theVertexToken;
   edm::EDGetTokenT<double>                              theRhoToken;
