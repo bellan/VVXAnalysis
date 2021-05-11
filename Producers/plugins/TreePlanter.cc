@@ -951,6 +951,23 @@ TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate
   // ----- Build the ZW -----
   if(physZ.isValid() && physW.isValid() ){
     phys::DiBoson<phys::Lepton,phys::Lepton> ZW(physZ, physW);
+    
+    int regionWord = 0;
+    set_bit(regionWord,30); // use 30 for WZ
+    
+    ZW.isBestCand_                = true;
+    ZW.passFullSel_               = true;
+    ZW.isBestCRZLLos_2P2F_        = false;
+    ZW.passSelZLL_2P2F_           = false;
+    ZW.isBestCRZLLos_3P1F_        = false;
+    ZW.passSelZLL_3P1F_           = false;
+    ZW.passSRZZOnShell_           = false;
+    ZW.passSelZLL_2P2F_ZZOnShell_ = false;
+    ZW.passSelZLL_3P1F_ZZOnShell_ = false;
+    ZW.regionWord_                = regionWord;
+    ZW.triggerWord_               = triggerWord_;
+    ZW.passTrigger_               = filterController_.passTrigger(ZZ, triggerWord_); // use same trigger as ZZ
+    
     return ZW;
   }
   else return phys::DiBoson<phys::Lepton,phys::Lepton>();

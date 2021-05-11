@@ -12,6 +12,7 @@ phys::RegionTypes phys::regionType(const std::string& input){
   else if (input == "CR3P1F_HZZ") return CR3P1F_HZZ;
   else if (input == "MC") return MC;
   else if (input == "MC_HZZ") return MC_HZZ;
+  else if (input == "SR3L") return SR3L;
   else{
     std::cout << "Unknown region: " << input << std::endl;
     abort();
@@ -28,6 +29,7 @@ std::string phys::regionType(phys::RegionTypes input){
   else if (input == CR3P1F_HZZ) return "CR3P1F_HZZ";
   else if (input == MC) return "MC";
   else if (input == MC_HZZ) return "MC_HZZ";
+  else if (input == SR3L) return "SR3L";
   else{
     std::cout << "Unknown region: " << input << std::endl;
     abort();

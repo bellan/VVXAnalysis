@@ -38,4 +38,5 @@ process.ZWCand = cms.EDProducer("PATCandViewShallowCloneCombiner",
 )
 
 
-process.WZjjPath = cms.Path(process.ZlForWZ * process.ZlForWZCountFilter * process.ZWCand)
+#process.WZjjPath = cms.Path(process.ZlForWZ * process.ZlForWZCountFilter * process.ZWCand)
+process.WZjjPath = cms.Path(process.ZlForWZ * process.ZWCand)
