@@ -9,9 +9,11 @@
 #include "VVXAnalysis/DataFormats/interface/TypeDefs.h"
 
 //#define PY_SSIZE_T_CLEAN
+#ifdef USE_PYTHON
 #include <Python.h>
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include "numpy/arrayobject.h"
+#endif
 
 #include <iostream>
 #include <fstream>			// open(), close(), <<

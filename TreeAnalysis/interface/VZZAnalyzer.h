@@ -21,7 +21,7 @@
 #include <fstream>
 #include <algorithm>  // std::min
 
-#define USE_PYTHON
+//#define USE_PYTHON
 
 using std::vector;
 
