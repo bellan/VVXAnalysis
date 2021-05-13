@@ -1,6 +1,6 @@
 from ZZAnalysis.AnalysisStep.defaults import declareDefault
 
-SIGNALDEFINITION = int('10',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the chosen windows. For other topology see the README under VVXAnalysis/Commons.
+SIGNALDEFINITION = int('1',2)  # -1 means get everything, 1 means the request of having a ZZ pair with the  mass in the chosen windows. For other topology see the README under VVXAnalysis/Commons.
 
 declareDefault("PD","",globals())
 declareDefault("MCFILTER","",globals())
