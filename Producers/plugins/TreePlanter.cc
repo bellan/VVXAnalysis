@@ -911,8 +911,8 @@ std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > TreePlanter::fi
 phys::DiBoson<phys::Lepton,phys::Lepton> 
 TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmZWs) const{
 
-  // Only one ZW is allowed
-  if(edmZWs->size() != 1) return  phys::DiBoson<phys::Lepton,phys::Lepton>();
+  // Only one ZW is allowed. ZL_ is empty when edmZL.size() != 1. 
+  if(edmZWs->size() != 1 || ZL_.empty()) return  phys::DiBoson<phys::Lepton,phys::Lepton>();
   //if(!filterController_.passTrigger(ZL, triggerWord_)) return physZLs;
 
 
