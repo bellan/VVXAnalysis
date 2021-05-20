@@ -1,23 +1,23 @@
 identifier,process,crossSection=-1,BR=1,execute=True,dataset,prefix,pattern,splitLevel,::variables,::pyFragments,comment
 
 
-# VBS,,,,,,,,,,,
+#, VBS,,,,,,,,,,
 ZZ4lJJ,,0.4404E-03,,,/ZZJJTo4L_EWK_13TeV-madgraph-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,GENXSEC=0.4404E-03;GENBR=1;PROCESS_CR=False;LEPTON_SETUP=2016;SKIM_REQUIRED=False,RecoProbabilities.py;LHEProbabilities_VBF_BSI_0PM_H125_PhantomMCFM.py,
 WLLJJ,,0.01762,,,/WLLJJ_WToLNu_EWK_TuneCUETP8M1_13TeV_madgraph-madspin-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,GENXSEC=0.01762;GENBR=1;PROCESS_CR=False;LEPTON_SETUP=2016;SKIM_REQUIRED=False,RecoProbabilities.py;LHEProbabilities_VBF_BSI_0PM_H125_PhantomMCFM.py,
 
-# Tribosons,,,,,,,,,,,
+#, Tribosons,,,,,,,,,,
 ZZZ, VZZ, 0.01398,      ,,/ZZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016;SKIM_REQUIRED=False,RecoProbabilities.py,
 WZZ, VZZ, 0.05565,      ,,/WZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016;SKIM_REQUIRED=False,RecoProbabilities.py,
 WWZ,,0.1651,      ,,/WWZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v2/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016;SKIM_REQUIRED=False,RecoProbabilities.py,
 
 
-# Main backgrounds,,,,,,,,,,,
+#, Main backgrounds,,,,,,,,,,
 
-# qq->ZZ samples,,,,,,,,,,,
+#, qq->ZZ samples,,,,,,,,,,
 ZZTo4l, qqZZ,            1.256,      ,,/ZZTo4L_13TeV_powheg_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2016;SKIM_REQUIRED=True,RecoProbabilities.py,
 ZZTo4lext, qqZZ,    1.256,      ,,/ZZTo4L_13TeV_powheg_pythia8_ext1/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2016;SKIM_REQUIRED=True,RecoProbabilities.py, # Xsection from the gen: 1.218
 
-# gg->ZZ,,,,,,,,,,, xsec from https://twiki.cern.ch/twiki/bin/viewauth/CMS/Run2MCProductionforHiggsProperties#MCFM_ZZ_4l_l_e_mu_tau
+#, gg->ZZ,,,,,,,,,, xsec from https://twiki.cern.ch/twiki/bin/viewauth/CMS/Run2MCProductionforHiggsProperties#MCFM_ZZ_4l_l_e_mu_tau
 #       ,,,,,,,,,,,  Moved to ACOffshell
 ggTo4e_Contin_MCFM701, ggZZ,      0.00158549,   ,,/GluGluToContinToZZTo4e_13TeV_MCFM701_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,GENXSEC=0.00158549;GENBR=1;PROCESS_CR=False;APPLY_K_NNLOQCD_ZZGG=1;LEPTON_SETUP=2016;SKIM_REQUIRED=True,RecoProbabilities.py;LHEProbabilities_GG_BKG_MCFM.py,
 ggTo4mu_Contin_MCFM701, ggZZ,     0.00158549,   ,,/GluGluToContinToZZTo4mu_13TeV_MCFM701_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,GENXSEC=0.00158549;GENBR=1;PROCESS_CR=False;APPLY_K_NNLOQCD_ZZGG=1;LEPTON_SETUP=2016;SKIM_REQUIRED=True,RecoProbabilities.py;LHEProbabilities_GG_BKG_MCFM.py,
@@ -26,18 +26,18 @@ ggTo4tau_Contin_MCFM701, ggZZ,    0.00158549,   ,,/GluGluToContinToZZTo4tau_13Te
 ggTo2e2tau_Contin_MCFM701, ggZZ,  0.00319142,    ,,/GluGluToContinToZZTo2e2tau_13TeV_MCFM701_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,2,GENXSEC=0.00319142;GENBR=1;PROCESS_CR=False;APPLY_K_NNLOQCD_ZZGG=1;LEPTON_SETUP=2016;SKIM_REQUIRED=True,RecoProbabilities.py;LHEProbabilities_GG_BKG_MCFM.py,
 ggTo2mu2tau_Contin_MCFM701, ggZZ, 0.00319142,    ,,/GluGluToContinToZZTo2mu2tau_13TeV_MCFM701_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,4,GENXSEC=0.00319142;GENBR=1;PROCESS_CR=False;APPLY_K_NNLOQCD_ZZGG=1;LEPTON_SETUP=2016;SKIM_REQUIRED=True,RecoProbabilities.py;LHEProbabilities_GG_BKG_MCFM.py,
 
-# qq->WZ samples,,,,,,,,,,,
+#, qq->WZ samples,,,,,,,,,,
 WZTo3LNu, WZ, 4.670,,,/WZTo3LNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,4,GENXSEC=4.67;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 
 
-# Reducible backgrounds,,,,,,,,,,,background samples for Z+X studies
+#, Reducible backgrounds,,,,,,,,,,background samples for Z+X studies
 DYJetsToLL_M50, Z,     6225.4,    ,,/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v1/MINIAODSIM,dbs,,4,GENXSEC=6025.2;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 
 # DYJetsToLL_M50_LO, Z, 6225.4,    ,,/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v2/MINIAODSIM,dbs,,4,GENXSEC=5765.4;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2016,RecoProbabilities.py,#this does not work because the weight indices are different.  It would have to be implemented in LHEHandler.cc to pick up the LO (not NLO) PDF weights.  If you need this sample ask Heshy.
 TTTo2L2Nu, tt, 87.3,,,/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,GENXSEC=91.7701;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 
 
-# rare backgrounds,,,,,,,,,,,
+#, rare backgrounds,,,,,,,,,,
 TTZZ, ttX,0.001572,      ,,/TTZZ_TuneCUETP8M2T4_13TeV-madgraph-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v1/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 TTWW, ttX,0.007883,      ,,/TTWW_TuneCUETP8M2T4_13TeV-madgraph-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v1/MINIAODSIM ,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 TTZToLLNuNu_M10, ttX, 0.25271,,,/TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/MINIAODSIM,dbs,,1,GENXSEC=0.25271;GENBR=1;ADDZTREE=True;LEPTON_SETUP=2016,RecoProbabilities.py,
@@ -45,7 +45,7 @@ TTZToLL_M1to1O_MLM, ttX, 0.04695,,,/TTZToLL_M-1to10_TuneCUETP8M1_13TeV-madgraphM
 TTZJets_M10_MLM, ttX, 0.259,,,/ttZJets_13TeV_madgraphMLM/RunIISummer16MiniAODv3-94X_mcRun2_asymptotic_v3-v1/MINIAODSIM,dbs,,4,GENXSEC=0.259;GENBR=1;ADDZTREE=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 
 
-# Higgs samples,,,,,,,,,,,
+#, Higgs samples,,,,,,,,,,
 # See comment field,,,,,,,,,,,Unless otherwise stated; higgs x-sections are taken from https://hypernews.cern.ch/HyperNews/CMS/get/higgs/1738.html
 #,,,,,,,,,,,in the [120;130] range they are taken from the YR4 SM 13TeV tab; i.e. they are N3LO QCD + NLO EW
 #,,,,,,,,,,,while for other mass points they are taken from the YR4 BSM 13TeV tab; i.e. they are in NWA and without EWK corrections; see https://hypernews.cern.ch/HyperNews/CMS/get/higgs/1738/1/1/1.html
@@ -62,7 +62,7 @@ tqH125, HZZ, 0.07713,2.76E-04,,/tqH_HToZZTo4L_M125_13TeV_JHUgenV702_pythia8/RunI
 
 tHW125, HZZ, 0.01517,1,,/THW_ctcvcp_Hincl_13TeV-madgraph-pythia8_TuneCUETP8M1/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,2,GENXSEC=0.01517;GENBR=1;LEPTON_SETUP=2016,RecoProbabilities.py, #Inclusive sample at the moment
 
-###,,,,,,,,,,,ggZH xsec is from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt1314TeV2014.  However some older numbers I have from HXSWG give 1.227E-01 as the box xsec.  If you multiply by the ratio (triangle+box+int)/box from JHUGen you get 0.02801.  (JHUGen does not provide absolute xsecs.  But its ratios are correct.)  I am not sure if they use box only in the way I interpret it.  I will go with the former number which is more in line with what I expect.
+#,,,,,,,,,,,ggZH xsec is from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt1314TeV2014.  However some older numbers I have from HXSWG give 1.227E-01 as the box xsec.  If you multiply by the ratio (triangle+box+int)/box from JHUGen you get 0.02801.  (JHUGen does not provide absolute xsecs.  But its ratios are correct.)  I am not sure if they use box only in the way I interpret it.  I will go with the former number which is more in line with what I expect.
 ggZH125, HZZ, 0.1057,0.003941595,,/GluGluToZH_HToZZTo4L_M125_13TeV_JHUGenV723_pythia8/RunIISummer16MiniAODv3-PUMoriond17_94X_mcRun2_asymptotic_v3-v1/MINIAODSIM,dbs,,2,GENXSEC=0.1057;GENBR=0.003941595;LEPTON_SETUP=2016,RecoProbabilities.py,
 WplusH125, HZZ, 0.839913391993366,0.0002745,,/WplusH_HToZZTo4L_M125_13TeV_powheg2-minlo-HWJ_JHUGenV709_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,1,GENXSEC=0.85;GENBR=0.0002745;ADDLHEKINEMATICS=True;VVMODE=1;VVDECAYMODE=0;LEPTON_SETUP=2016,RecoProbabilities.py;LHEProbabilities_WH_SIG_0PM_H125_POWHEG.py,
 
