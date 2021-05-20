@@ -25,6 +25,7 @@ ggTo4tau_Contin_MCFM701, ggZZ,    0.00158549,   ,,/GluGluToContinToZZTo4tau_13Te
 ggTo2e2tau_Contin_MCFM701, ggZZ,  0.00319142,    ,,/GluGluToContinToZZTo2e2tau_13TeV_MCFM701_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,2,GENXSEC=0.00319142;GENBR=1;PROCESS_CR=False;APPLY_K_NNLOQCD_ZZGG=1;LEPTON_SETUP=2016;SKIM_REQUIRED=True,RecoProbabilities.py;LHEProbabilities_GG_BKG_MCFM.py,
 ggTo2mu2tau_Contin_MCFM701, ggZZ, 0.00319142,    ,,/GluGluToContinToZZTo2mu2tau_13TeV_MCFM701_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,4,GENXSEC=0.00319142;GENBR=1;PROCESS_CR=False;APPLY_K_NNLOQCD_ZZGG=1;LEPTON_SETUP=2016;SKIM_REQUIRED=True,RecoProbabilities.py;LHEProbabilities_GG_BKG_MCFM.py,
 
+
 #, qq->WZ samples,,,,,,,,,,
 WZTo3LNu, WZ, 4.670,,,/WZTo3LNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM,dbs,,4,GENXSEC=4.67;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 
