@@ -24,6 +24,7 @@ set max_running_process 1
 # specify the decay for the final state particles
 decay w+ > j j
 decay w- > j j
+decay z > l+ l-
 
 # running the actual code
 launch
