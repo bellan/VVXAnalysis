@@ -50,6 +50,7 @@ WZTo3LNuext1, WZ, 4.67,   ,,/WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIAu
 
 #, Reducible backgrounds,,,,,,,,,,background samples for Z+X studies xsec taken from https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#DY_Z
 DYJetsToLL_M50, Z, 6225.4,    ,,/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM,dbs,,4,GENXSEC=5877.16;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,
+DYJetsToLL_M50_ext, Z, 6225.4,    ,,/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext2-v1/MINIAODSIM,dbs,,4,GENXSEC=5877.16;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,
 TTTo2L2Nu, tt, 87.3,,,/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM,dbs,,1,GENXSEC=91.7701;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,
 # TTJets_DiLept,,56.84,    ,,/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/?????????/MINIAODSIM,dbs,,2,GENXSEC=5.684e+01;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,
 # ZGTo2LG,,117.864,   ,,/ZGTo2LG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/?????????/MINIAODSIM,dbs,,4,GENXSEC=117.864;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018,RecoProbabilities.py,
