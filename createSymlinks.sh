@@ -46,6 +46,6 @@ if [ -e $VVXpython/$samInfo ] ; then  # There's already something: it should be 
     [ ! -L $VVXpython/$samInfo ] && { printf "$VVXpython/$samInfo already exists but is not a symlink" >&2 ; }
 else
     echo "Linking $VVXpython/$samInfo --> ../../../../$ZZpython/$samInfo"
-    ln -s ../../../../$ZZpython/$samInfo $VVXpython/
+    ln -s ../../../$ZZpython/$samInfo $VVXpython/
 fi
 [ -L $VVXpython/$samInfo ] && [ -e $VVXpython/$samInfo ] || printf "Error: did not create a working symlink for $samInfo\n" >&2
