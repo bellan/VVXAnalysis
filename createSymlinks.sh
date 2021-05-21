@@ -36,7 +36,7 @@ for file in $pyF_files ; do
         echo "Linking $VVXpyF/$file --> ../../../../$ZZpyF/$file"
 	ln -s ../../../../$ZZpyF/$file $VVXpyF/
     fi
-    [ -L $VVXpyF/$file ] && [ -e $VVXpyF/$file ] || printf "Error: did not create a working symlink for $file\n" >&2
+    [ -L $VVXpyF/$file/a ] && [ -e $VVXpyF/$file ] || printf "Error: did not create a working symlink for $file\n" | grep --color=auto "Error" >&2
 done
 [ $fileNotFound -eq 0 ] || exit $fileNotFound
 
@@ -48,4 +48,4 @@ else
     echo "Linking $VVXpython/$samInfo --> ../../../../$ZZpython/$samInfo"
     ln -s ../../../$ZZpython/$samInfo $VVXpython/
 fi
-[ -L $VVXpython/$samInfo ] && [ -e $VVXpython/$samInfo ] || printf "Error: did not create a working symlink for $samInfo\n" >&2
+[ -L $VVXpython/$samInfo/a ] && [ -e $VVXpython/$samInfo ] || printf "Error: did not create a working symlink for $samInfo\n" | grep --color=auto "Error" >&2
