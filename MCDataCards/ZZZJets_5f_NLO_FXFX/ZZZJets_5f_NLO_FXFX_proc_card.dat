@@ -11,7 +11,7 @@ define noneutr = e+ mu+ e- mu- j
 #generate p p > z l+ l- l+ l- [QCD] @0
 #add process p p > z l+ l- l+ l- j [QCD] @1
 generate p p > z z z [QCD] @0
-add process p p > z z z [QCD] @1
+add process p p > z z z j [QCD] @1
 
 output ZZZJets_5f_NLO -nojpeg
 
