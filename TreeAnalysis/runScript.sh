@@ -8,12 +8,9 @@
 ANALYZER=VZZAnalyzer #default values
 EXTRA_ARGS='-rMC -l137100'  # '-rMC -n10000'
 
-if [ $# -gt 0 ]; then
-	ANALYZER=$1
-fi
-if [ $# -gt 1 ]; then
-	EXTRA_ARGS="${@:2}" #All the aguments except the first
-fi
+[ $# -gt 0 ] && ANALYZER=$1
+
+[ $# -gt 1 ] && EXTRA_ARGS="${@:2}" #All the aguments except the first
 
 for SAMPLE in samples/2016/* ; do
 	SAMPLE=${SAMPLE##*/}
