@@ -11,5 +11,4 @@ define l- = e- mu-
 generate p p > w z z [QCD] @0
 add process p p > w z z j [QCD] @1
 
-output WZZJets_5f_NLO -nojpeg
-
+output WZZJets_5f_NLO_FXFX -nojpeg
