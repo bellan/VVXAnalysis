@@ -218,7 +218,7 @@ void ZZjjAnalyzer::RecoAnalysis(DiBosonLepton &recoZZ, Particle &Jet0, Particle 
   TSpline3* ts = (TSpline3*)(f_->Get("sp_gr_varReco_Constant_Smooth")->Clone());
   f_->Close();
   
-  c = 8.5*ts->Eval(ZZ->mass());  
+  float c = 8.5*ts->Eval(ZZ->mass());  
   float disc_VBF_QCD = mela->JJVBF_Nominal()/(mela->JJVBF_Nominal() + c*mela->JJQCD_Nominal());
   
   theHistograms.fill("MELA_discriminant", "Discriminant #frac{JJVBF}{c JJQCD + JJVBF}", 50, 0, 1, disc_VBF_QCD, theWeight);
