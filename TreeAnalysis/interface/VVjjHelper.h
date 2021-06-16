@@ -29,7 +29,9 @@ public:
     histo_ = histopointer;
   }
 
-  virtual ~VVjjHelper(){}
+  virtual ~VVjjHelper(){
+    histo_ = NULL;
+  }
   
   static void test(int number);
     
@@ -62,14 +64,14 @@ public:
 
   
   // Histogram functions
-  void PlotParticle(const Particle &particle, string name, float weight);
-  void PlotJets(const Particle &Jet0, const Particle &Jet1, string prename, float weight);
+  void PlotParticle(const Particle &particle, string name, const float weight, string suffix);
+  void PlotJets(const Particle &Jet0, const Particle &Jet1, string prename, const float weight, string suffix);
 
   template <class BOS>
-  void PlotBoson(const BOS &particle, string name, float weight);
+  void PlotBoson(const BOS &particle, string name, const float weight, string suffix);
   
   template <class DiBOS>
-  void PlotDiBoson(const DiBOS& particle, string name, float weight);
+  void PlotDiBoson(const DiBOS& particle, string name, const float weight, string suffix);
 
 };
 
