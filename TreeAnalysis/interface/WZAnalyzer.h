@@ -5,7 +5,7 @@
  *  Concrete class for WZ analysis
  *
  *  $Date: 2017/05/24 $
- *  $Revision: 1.0 $
+ *  $Revision: 2.0 $
  *  \author E. Racca - UNITO <eleonora.racca@cern.ch>
  */
 
@@ -34,7 +34,9 @@ public:
    helper_ = new VVjjHelper(&theHistograms);
   }
 
-  virtual ~WZAnalyzer(){}
+  virtual ~WZAnalyzer(){
+    delete helper_;
+  }
 
   virtual void analyze();
 
@@ -98,6 +100,8 @@ private:
   void RecoAnalysis(DiBosonLepton &, Particle &, Particle &);
   void GenRecoAnalysis(const DiBosonParticle, const Particle, const Particle, const DiBosonLepton, const Particle, const Particle);
   void CheckBuildWZ();
+  
+  void RecoZWCand(DiBosonLepton &recoZW);
   
   
   friend class Selector<WZAnalyzer>;
