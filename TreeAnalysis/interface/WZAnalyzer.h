@@ -4,8 +4,8 @@
 /** \class WZAnalyzer
  *  Concrete class for WZ analysis
  *
- *  $Date: 2017/05/24 $
- *  $Revision: 2.0 $
+ *  $Date: 2021/06/17 $
+ *  $Revision: 0.5 $
  *  \author E. Racca - UNITO <eleonora.racca@cern.ch>
  */
 
@@ -25,27 +25,25 @@ using namespace std;
 class WZAnalyzer: public EventAnalyzer, RegistrableAnalysis<WZAnalyzer>{
 
 public:
-  //, const std::string& filename, const double& lumi = 1., const double& externalXSection = -1., bool doBasicPlots = false
-
+  
  WZAnalyzer(const AnalysisConfiguration& configuration)
    : EventAnalyzer(*(new Selector<WZAnalyzer>(*this)), 
 		   configuration){
-   //theHistograms.profile(genCategory);
-   helper_ = new VVjjHelper(&theHistograms);
+    helper_ = new VVjjHelper(&theHistograms);
   }
-
+  
   virtual ~WZAnalyzer(){
     delete helper_;
   }
-
+  
   virtual void analyze();
-
+  
   virtual void begin();
-
+  
   virtual void end(TFile &);
   
   virtual Int_t cut();
-
+  
 
 private:  
   VVjjHelper* helper_;
@@ -54,44 +52,18 @@ private:
   Int_t eventReco;
   Int_t eventGenReco;
   Int_t eventSample;
-  Int_t recoAfterCut;
-  Int_t recoJetless2;
-  Int_t recoZlempty;
-  Int_t genAfterCut;
+  Int_t eventGenaftercut;
+  Int_t eventRecoaftercut;
   Int_t eventGenNOReco;
   Int_t eventRecoNOGen;
   
-
-  Int_t gen3e;
-  Int_t gen3m;
-  Int_t gen2e1m;
-  Int_t gen2m1e;
-  Int_t reco3e;
-  Int_t reco3m;
-  Int_t reco2e1m;
-  Int_t reco2m1e;
-  
-  Int_t counter1;
-  Int_t counter2;
-  Int_t counter3;
-  Int_t counter4;
-  Int_t counter5;
-  Int_t counter6;
-  Int_t choosedZwrongID;
-  Int_t choosedWwrongID;
-  Int_t choosedZoutsiderange;
-  Int_t choosedWoutsiderange;
-  Int_t choosedZfirst;
-  Int_t choosedWfirst;
-  Int_t sicheso1;
-  Int_t sicheso2;
-  Int_t sicheso3;
-  Int_t sicheso4;
-  Int_t sicheso5;
-
-  Int_t wrongnumber;
-  Int_t wrongmass;
-  Int_t wrongjet;
+  Float_t weightGen;
+  Float_t weightReco;
+  Float_t weightGenReco;
+  Float_t weightGenaftercut;
+  Float_t weightRecoaftercut;
+  Float_t weightGenNOReco;
+  Float_t weightRecoNOGen;
 
   Float_t begintime;
   Float_t endtime;  
@@ -99,9 +71,8 @@ private:
   void GenAnalysis(DiBosonParticle &, Particle &, Particle &);
   void RecoAnalysis(DiBosonLepton &, Particle &, Particle &);
   void GenRecoAnalysis(const DiBosonParticle, const Particle, const Particle, const DiBosonLepton, const Particle, const Particle);
-  void CheckBuildWZ();
   
-  void RecoZWCand(DiBosonLepton &recoZW);
+  void BuildingWZ();
   
   
   friend class Selector<WZAnalyzer>;
@@ -128,4 +99,3 @@ private:
 
 };
 #endif
-
