@@ -292,7 +292,7 @@ void TreePlanter::initTree(){
   electrons_ = std::vector<phys::Lepton>();
   jets_      = std::vector<phys::Jet>();
   jetsAK8_   = std::vector<phys::Jet>();
-  photons_   = std::vector<phys::Jet>();
+  photons_   = std::vector<phys::Photon>();
   ZZ_        = phys::DiBoson<phys::Lepton  , phys::Lepton>();
   Vhad_      = std::vector<phys::Boson<phys::Jet>      >();   
 
