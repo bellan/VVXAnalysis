@@ -25,6 +25,8 @@ ZZZ, VZZ, 0.01398,      ,,/ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIIAutumn18MiniA
 WZZ, VZZ, 0.05565,      ,,/WZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018;SKIM_REQUIRED=False,RecoProbabilities.py,
 WWZ,,0.1651,      ,,/WWZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018,RecoProbabilities.py,
 
+#, Tribosons with 1 gamma,,,,,,,,,,
+WZG, VVG, 0.04345, /WZG_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018;SKIM_REQUIRED=False,RecoProbabilities.py,
 
 #, Main backgrounds,,,,,,,,,,
 

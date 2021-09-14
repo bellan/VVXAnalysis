@@ -73,6 +73,8 @@ class TreePlanter: public edm::EDAnalyzer {
   phys::Lepton fill(const reco::RecoCandidate& lep) const;
 
   phys::Jet fill(const pat::Jet &jet) const;
+  
+  phys::Photon fill(const pat::Photon &ph) const;
 
   std::vector<phys::Boson<phys::Lepton> > fillLepBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const;
   std::vector<phys::Boson<phys::Jet> >    fillHadBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const;
@@ -150,6 +152,9 @@ class TreePlanter: public edm::EDAnalyzer {
 
   // fat jets a-kT R = 0.8
   std::vector<phys::Jet>                    jetsAK8_;
+  
+  // photons
+  std::vector<phys::Photon>                 photons_;
 
   // V --> jj, with V = W,Z
   std::vector<phys::Boson<phys::Jet>      > Vhad_;
@@ -175,6 +180,7 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::EDGetTokenT<pat::ElectronCollection>             theElectronToken;
   edm::EDGetTokenT<std::vector<pat::Jet> >              theJetToken;
   edm::EDGetTokenT<std::vector<pat::Jet> >              theJetAK8Token;
+  edm::EDGetTokenT<std::vector<pat::Photon> >           thePhotonToken;
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theVhadToken;
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZZToken;
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZLToken;
