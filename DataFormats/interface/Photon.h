@@ -20,6 +20,7 @@ namespace phys {
     friend class ::TreePlanter;
 
   public:
+    typedef std::pair<std::string, Bool_t> IdPair;
     
     /// Constructor
     Photon(const TLorentzVector& pin = TLorentzVector(0.,0.,0.,0.), float q =0, int id = 22):
@@ -90,9 +91,9 @@ namespace phys {
 		// ---- photon ID's holder ----
 		std::vector<IdPair> photonIDs_;
 		// ---- Isolation and IsoDeposit related datamebers ----
-		typedef std::vector<std::pair<IsolationKeys, pat::IsoDeposit> > IsoDepositPairs;
-		IsoDepositPairs isoDeposits_;
-		std::vector<float> isolations_;
+		//typedef std::vector<std::pair<IsolationKeys, pat::IsoDeposit> > IsoDepositPairs;
+		//IsoDepositPairs isoDeposits_;
+		//std::vector<float> isolations_;
 
 		/// ---- conversion veto ----
 		bool passElectronVeto_;
@@ -165,6 +166,7 @@ namespace phys {
 		float energySigmaPhiDown_; // energy with the ecal energy smearing value shifted 1 sigma(phi) down
 		float energySigmaRhoUp_; // energy with the ecal energy smearing value shifted 1 sigma(rho) up
 		float energySigmaRhoDown_; // energy with the ecal energy smearing value shifted 1 sigma(rho) down
-}
+  };
+
 #endif
 
