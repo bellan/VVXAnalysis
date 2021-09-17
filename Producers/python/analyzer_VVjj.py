@@ -340,6 +340,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      AddLHEKinematics = cms.bool(ADDLHEKINEMATICS),
                                      muons        = cms.InputTag("postCleaningMuons"),     # all good isolated muons BUT the ones coming from ZZ decay
                                      electrons    = cms.InputTag("postCleaningElectrons"), # all good isolated electrons BUT the ones coming from ZZ decay
+                                     photons      = cms.InputTag("slimmedPhotons"),
                                      jets         = cms.InputTag("disambiguatedJets"),     # jets which do not contains leptons from ZZ or other good isolated leptons are removed
                                      jetsAK8      = cms.InputTag("disambiguatedJetsAK8"),     # jets which do not contains leptons from ZZ or other good isolated leptons are removed
                                      Vhad         = cms.InputTag(""),
