@@ -16,6 +16,7 @@
 
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
+#include "DataFormats/PatCandidates/interface/Photon.h"
 #include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
 #include "DataFormats/Common/interface/MergeableCounter.h"
 
@@ -24,6 +25,7 @@
 
 #include "VVXAnalysis/DataFormats/interface/Lepton.h"
 #include "VVXAnalysis/DataFormats/interface/Jet.h"
+#include "VVXAnalysis/DataFormats/interface/Photon.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 #include "VVXAnalysis/DataFormats/interface/GenEventWeights.h"
@@ -73,6 +75,8 @@ class TreePlanter: public edm::EDAnalyzer {
   phys::Lepton fill(const reco::RecoCandidate& lep) const;
 
   phys::Jet fill(const pat::Jet &jet) const;
+  
+  phys::Photon fill(const pat::Photon &ph) const;
 
   std::vector<phys::Boson<phys::Lepton> > fillLepBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const;
   std::vector<phys::Boson<phys::Jet> >    fillHadBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const;
@@ -150,6 +154,9 @@ class TreePlanter: public edm::EDAnalyzer {
 
   // fat jets a-kT R = 0.8
   std::vector<phys::Jet>                    jetsAK8_;
+  
+  // photons
+  std::vector<phys::Photon>                 photons_;
 
   // V --> jj, with V = W,Z
   std::vector<phys::Boson<phys::Jet>      > Vhad_;
@@ -175,6 +182,7 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::EDGetTokenT<pat::ElectronCollection>             theElectronToken;
   edm::EDGetTokenT<std::vector<pat::Jet> >              theJetToken;
   edm::EDGetTokenT<std::vector<pat::Jet> >              theJetAK8Token;
+  edm::EDGetTokenT<std::vector<pat::Photon> >           thePhotonToken;
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theVhadToken;
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZZToken;
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZLToken;
