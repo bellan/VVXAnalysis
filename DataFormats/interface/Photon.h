@@ -20,7 +20,7 @@ namespace phys {
     friend class ::TreePlanter;
 
   public:
-    //typedef std::pair<std::string, Bool_t> IdPair;
+    typedef std::pair<std::string, Bool_t> IdPair;
     
     /// Constructor
     Photon(const TLorentzVector& pin = TLorentzVector(0.,0.,0.,0.), float q =0, int id = 0):
@@ -85,10 +85,12 @@ namespace phys {
 		float energySigmaPhiDown() { return energySigmaPhiDown_; };
 		float energySigmaRhoUp() { return energySigmaRhoUp_; };
 		float energySigmaRhoDown() { return energySigmaRhoDown_; };
+
     
   private:
 		// ---- photon ID's holder ----
 		//std::vector<IdPair> photonIDs_;
+
 		// ---- Isolation and IsoDeposit related datamebers ----
 		//typedef std::vector<std::pair<IsolationKeys, pat::IsoDeposit> > IsoDepositPairs;
 		//IsoDepositPairs isoDeposits_;
