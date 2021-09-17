@@ -23,7 +23,7 @@ namespace phys {
     typedef std::pair<std::string, Bool_t> IdPair;
     
     /// Constructor
-    Photon(const TLorentzVector& pin = TLorentzVector(0.,0.,0.,0.), float q =0, int id = 22):
+    Photon(const TLorentzVector& pin = TLorentzVector(0.,0.,0.,0.), float q =0, int id = 0):
         Particle(pin, q, id)
         {}
     
@@ -89,12 +89,13 @@ namespace phys {
     
   private:
 		// ---- photon ID's holder ----
-		std::vector<IdPair> photonIDs_;
+		//std::vector<IdPair> photonIDs_;
+
 		// ---- Isolation and IsoDeposit related datamebers ----
 		//typedef std::vector<std::pair<IsolationKeys, pat::IsoDeposit> > IsoDepositPairs;
 		//IsoDepositPairs isoDeposits_;
 		//std::vector<float> isolations_;
-
+		
 		/// ---- conversion veto ----
 		bool passElectronVeto_;
 		bool hasPixelSeed_;
@@ -167,6 +168,6 @@ namespace phys {
 		float energySigmaRhoUp_; // energy with the ecal energy smearing value shifted 1 sigma(rho) up
 		float energySigmaRhoDown_; // energy with the ecal energy smearing value shifted 1 sigma(rho) down
   };
-
+}
 #endif
 
