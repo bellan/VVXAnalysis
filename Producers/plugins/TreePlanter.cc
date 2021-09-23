@@ -70,7 +70,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theElectronToken (consumes<pat::ElectronCollection>            (config.getParameter<edm::InputTag>("electrons")))
   , theJetToken      (consumes<std::vector<pat::Jet> >             (config.getParameter<edm::InputTag>("jets"     )))
   , theJetAK8Token   (consumes<std::vector<pat::Jet> >             (config.getParameter<edm::InputTag>("jetsAK8"  )))
-  , thePhotonToken   (consumes<std::vector<pat::Photon> >             (config.getParameter<edm::InputTag>("photons"  )))
+  , thePhotonToken   (consumes<std::vector<pat::Photon> >          (config.getParameter<edm::InputTag>("photons"  )))
   , theVhadToken     (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("Vhad"     )))
   , theZZToken       (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZZ"       )))
   , theZLToken       (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZL"       )))
@@ -161,6 +161,7 @@ void TreePlanter::beginJob(){
   theTree->Branch("electrons" , &electrons_);
   theTree->Branch("jets"      , &jets_); 
   theTree->Branch("jetsAK8"   , &jetsAK8_); 
+  theTree->Branch("photons"   , &photons_); 
   theTree->Branch("VhadCand"  , &Vhad_);
   theTree->Branch("ZZCand"    , &ZZ_); 
   theTree->Branch("ZWCand"    , &ZW_); 

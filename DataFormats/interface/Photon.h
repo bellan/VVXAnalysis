@@ -25,8 +25,10 @@ namespace phys {
     /// Constructor
     Photon(const TLorentzVector& pin = TLorentzVector(0.,0.,0.,0.), float q =0, int id = 0):
         Particle(pin, q, id)
-        {}
+	  {};
     
+    virtual ~Photon(){};
+	
     // Getters
     float seedEnergy() { return seedEnergy_; }
 		float eMax() { return eMax_; }
@@ -165,6 +167,8 @@ namespace phys {
 		float energySigmaPhiDown_; // energy with the ecal energy smearing value shifted 1 sigma(phi) down
 		float energySigmaRhoUp_; // energy with the ecal energy smearing value shifted 1 sigma(rho) up
 		float energySigmaRhoDown_; // energy with the ecal energy smearing value shifted 1 sigma(rho) down
+		
+	ClassDef(Photon, 1)
   };
 }
 #endif
