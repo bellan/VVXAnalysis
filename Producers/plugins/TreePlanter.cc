@@ -729,51 +729,69 @@ phys::Photon TreePlanter::fill(const pat::Photon &photon) const {
 	
 	phys::Photon output(phys::Particle::convert(corrP4), photon.charge(), 22);
 	
-	output.seedEnergy_            = photon.hasUserFloat("seedEnergy") ? photon.userFloat("seedEnergy") : -999.;
-        output.eMax_                  = photon.hasUserFloat("eMax") ? photon.userFloat("eMax") : -999.;
-        output.e2nd_                  = photon.hasUserFloat("e2nd") ? photon.userFloat("e2nd") : -999.;
-        output.e3x3_                  = photon.hasUserFloat("e3x3") ? photon.userFloat("e3x3") : -999.;
-        output.eTop_                  = photon.hasUserFloat("eTop") ? photon.userFloat("eTop") : -999.;
-        output.eBottom_               = photon.hasUserFloat("eBottom") ? photon.userFloat("eBottom") : -999.;
-        output.eLeft_                 = photon.hasUserFloat("eLeft") ? photon.userFloat("eLeft") : -999.;
-        output.eRight_                = photon.hasUserFloat("eRight") ? photon.userFloat("eRight") : -999.;
-        output.see_                   = photon.hasUserFloat("see") ? photon.userFloat("see") : -999.;
-        output.spp_                   = photon.hasUserFloat("spp") ? photon.userFloat("spp") : -999.;
-        output.sep_                   = photon.hasUserFloat("sep") ? photon.userFloat("sep") : -999.;
-        output.maxDR_                 = photon.hasUserFloat("maxDR") ? photon.userFloat("maxDR") : -999.;
-        output.maxDRDPhi_             = photon.hasUserFloat("maxDRDPhi") ? photon.userFloat("maxDRDPhi") : -999.;
-        output.maxDRDEta_             = photon.hasUserFloat("maxDRDEta") ? photon.userFloat("maxDRDEta") : -999.;
-        output.maxDRRawEnergy_        = photon.hasUserFloat("maxDRRawEnergy") ? photon.userFloat("maxDRRawEnergy") : -999.;
-        output.subClusRawE1_          = photon.hasUserFloat("subClusRawE1") ? photon.userFloat("subClusRawE1") : -999.;
-        output.subClusRawE2_          = photon.hasUserFloat("subClusRawE2") ? photon.userFloat("subClusRawE2") : -999.;
-        output.subClusRawE3_          = photon.hasUserFloat("subClusRawE3") ? photon.userFloat("subClusRawE3") : -999.;
-        output.subClusDPhi1_          = photon.hasUserFloat("subClusDPhi1") ? photon.userFloat("subClusDPhi1") : -999.;
-        output.subClusDPhi2_          = photon.hasUserFloat("subClusDPhi2") ? photon.userFloat("subClusDPhi2") : -999.;
-        output.subClusDPhi3_          = photon.hasUserFloat("subClusDPhi3") ? photon.userFloat("subClusDPhi3") : -999.;
-        output.subClusDEta1_          = photon.hasUserFloat("subClusDEta1") ? photon.userFloat("subClusDEta1") : -999.;
-        output.subClusDEta2_          = photon.hasUserFloat("subClusDEta2") ? photon.userFloat("subClusDEta2") : -999.;
-        output.subClusDEta3_          = photon.hasUserFloat("subClusDEta3") ? photon.userFloat("subClusDEta3") : -999.;
-        output.cryEta_                = photon.hasUserFloat("cryEta") ? photon.userFloat("cryEta") : -999.;
-        output.cryPhi_                = photon.hasUserFloat("cryPhi") ? photon.userFloat("cryPhi") : -999.;
-        output.iEta_                  = photon.hasUserFloat("iEta") ? photon.userFloat("iEta") : -999.;
-        output.iPhi_                  = photon.hasUserFloat("iPhi") ? photon.userFloat("iPhi") : -999.;
-        output.puppiChargedHadronIso_ = photon.hasUserFloat("puppiChargedHadronIso") ? photon.userFloat("puppiChargedHadronIso") : -999.;
-        output.puppiNeutralHadronIso_ = photon.hasUserFloat("puppiNeutralHadronIso") ? photon.userFloat("puppiNeutralHadronIso") : -999.;
-        output.puppiPhotonIso_        = photon.hasUserFloat("puppiPhotonIso") ? photon.userFloat("puppiPhotonIso") : -999.;
+	// IDs
+	output.cutBasedIDLoose_  = photon.photonID("cutBasedPhotonID_Fall17_94X_V2_loose");
+	output.cutBasedIDMedium_ = photon.photonID("cutBasedPhotonID_Fall17_94X_V2_medium");
+	output.cutBasedIDTight_  = photon.photonID("cutBasedPhotonID_Fall17_94X_V2_tight");
 	
+	// Isolations
+	output.chargedIsolation_       = photon.userFloat("phoChargedIsolation");
+	output.neutralHadronIsolation_ = photon.userFloat("phoNeutralHadronIsolation");
+	output.photonIsolation_        = photon.userFloat("phoPhotonIsolation");
+	
+	// conversion veto
+	output.passElectronVeto_ = photon.passElectronVeto();
+	output.hasPixelSeed_     = photon.hasPixelSeed();
+
+	output.seedEnergy_ = photon.seedEnergy();
+	// output.eMax_    = photon.eMax();
+	// output.e2nd_    = photon.e2nd();
+	// output.e3x3_    = photon.e3x3();
+	// output.eTop_    = photon.eTop();
+	// output.eBottom_ = photon.eBottom();
+	// output.eLeft_   = photon.eLeft();
+	// output.eRight_  = photon.eRight();
+	// output.see_ = photon.see();
+	// output.spp_ = photon.spp();
+	// output.sep_ = photon.sep();
+	// output.maxDR_          = photon.maxDR();
+	// output.maxDRDPhi_      = photon.maxDRDPhi();
+	// output.maxDRDEta_      = photon.maxDRDEta();
+	// output.maxDRRawEnergy_ = photon.maxDRRawEnergy();
+	// output.subClusRawE1_ = photon.subClusRawE1();
+	// output.subClusRawE2_ = photon.subClusRawE2();
+	// output.subClusRawE3_ = photon.subClusRawE3();
+	// output.subClusDPhi1_ = photon.subClusDPhi1();
+	// output.subClusDPhi2_ = photon.subClusDPhi2();
+	// output.subClusDPhi3_ = photon.subClusDPhi3();
+	// output.subClusDEta1_ = photon.subClusDEta1();
+	// output.subClusDEta2_ = photon.subClusDEta2();
+	// output.subClusDEta3_ = photon.subClusDEta3();
+	output.cryEta_ = photon.cryEta();
+	output.cryPhi_ = photon.cryPhi();
+	output.iEta_   = photon.iEta();
+	output.iPhi_   = photon.iPhi();
+	
+	// Isolations
+	output.puppiChargedHadronIso_ = photon.puppiChargedHadronIso();
+	output.puppiNeutralHadronIso_ = photon.puppiNeutralHadronIso();
+	output.puppiPhotonIso_        = photon.puppiPhotonIso();
+		
 	// Energy corrections
 	output.ecalEnergyPreCorr_ = photon.hasUserFloat("ecalEnergyPreCorr") ? photon.userFloat("ecalEnergyPreCorr") : -999.;
 	output.ecalEnergyErrPreCorr_ = photon.hasUserFloat("ecalEnergyErrPreCorr") ? photon.userFloat("ecalEnergyErrPreCorr") : -999.;
 	output.ecalEnergyPostCorr_ = photon.hasUserFloat("ecalEnergyPostCorr") ? photon.userFloat("ecalEnergyPostCorr") : -999.;
 	output.ecalEnergyErrPostCorr_ = photon.hasUserFloat("ecalEnergyErrPostCorr") ? photon.userFloat("ecalEnergyErrPostCorr") : -999.;
-	output.ecalTrkEnergyPreCorr_ = photon.hasUserFloat("ecalTrkEnergyPreCorr") ? photon.userFloat("ecalTrkEnergyPreCorr") : -999.;
-	output.ecalTrkEnergyErrPreCorr_ = photon.hasUserFloat("ecalTrkEnergyErrPreCorr") ? photon.userFloat("ecalTrkEnergyErrPreCorr") : -999.;
-	output.ecalTrkEnergyPostCorr_ = photon.hasUserFloat("ecalTrkEnergyPostCorr") ? photon.userFloat("ecalTrkEnergyPostCorr") : -999.;
-	output.ecalTrkEnergyErrPostCorr_ = photon.hasUserFloat("ecalTrkEnergyErrPostCorr") ? photon.userFloat("ecalTrkEnergyErrPostCorr") : -999.;
+	// output.ecalTrkEnergyPreCorr_ = photon.hasUserFloat("ecalTrkEnergyPreCorr") ? photon.userFloat("ecalTrkEnergyPreCorr") : -999.;
+	// output.ecalTrkEnergyErrPreCorr_ = photon.hasUserFloat("ecalTrkEnergyErrPreCorr") ? photon.userFloat("ecalTrkEnergyErrPreCorr") : -999.;
+	// output.ecalTrkEnergyPostCorr_ = photon.hasUserFloat("ecalTrkEnergyPostCorr") ? photon.userFloat("ecalTrkEnergyPostCorr") : -999.;
+	// output.ecalTrkEnergyErrPostCorr_ = photon.hasUserFloat("ecalTrkEnergyErrPostCorr") ? photon.userFloat("ecalTrkEnergyErrPostCorr") : -999.;
 	output.energyScaleValue_ = photon.hasUserFloat("energyScaleValue") ? photon.userFloat("energyScaleValue") : -999.;
 	output.energySigmaValue_ = photon.hasUserFloat("energySigmaValue") ? photon.userFloat("energySigmaValue") : -999.;
 	output.energySmearNrSigma_ = photon.hasUserFloat("energySmearNrSigma") ? photon.userFloat("energySmearNrSigma") : -999.;
 	output.energyScaleUp_ = photon.hasUserFloat("energyScaleUp") ? photon.userFloat("energyScaleUp") : -999.;
+	output.energyScaleDown_ = photon.hasUserFloat("energyScaleDown") ? photon.userFloat("energyScaleDown") : -999.;
+	output.energyScaleStatUp_ = photon.hasUserFloat("energyScaleStatUp") ? photon.userFloat("energyScaleStatUp") : -999.;
 	output.energyScaleStatDown_ = photon.hasUserFloat("energyScaleStatDown") ? photon.userFloat("energyScaleStatDown") : -999.;
 	output.energyScaleSystUp_ = photon.hasUserFloat("energyScaleSystUp") ? photon.userFloat("energyScaleSystUp") : -999.;
 	output.energyScaleSystDown_ = photon.hasUserFloat("energyScaleSystDown") ? photon.userFloat("energyScaleSystDown") : -999.;
