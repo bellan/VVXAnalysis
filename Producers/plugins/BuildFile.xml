@@ -18,3 +18,6 @@
   <use name="root"/>
   <flags EDM_PLUGIN="1"/>
 </library>
+
+<flags CPPFLAGS="-I$(CMSSW_BASE)/src/MelaAnalytics/EventContainer/interface/ -I$(CMSSW_BASE)/src/JHUGenMELA/MELA/interface/" />
+
