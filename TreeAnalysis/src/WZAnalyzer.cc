@@ -179,34 +179,34 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &recoWZ, Particle &Jet0, Particle &J
   if(ZW->mass() == 0)
     return;
 
-  cut++;
-  theHistograms.fill("RecoCuts",     "Reco events after cuts", 20, -0.5, 19.5, cut);
-  theHistograms.fill("RecoCuts_wei", "Reco events after cuts", 20, -0.5, 19.5, cut, theWeight);
+  //cut++;
+  //theHistograms.fill("RecoCuts",     "Reco events after cuts", 20, -0.5, 19.5, cut);
+  //theHistograms.fill("RecoCuts_wei", "Reco events after cuts", 20, -0.5, 19.5, cut, theWeight);
 
   // 3 leptons
   if(electrons->size() + muons->size() != 3)
     return;
   
-  cut++;
-  theHistograms.fill("RecoCuts",     "Reco events after cuts", 20, -0.5, 19.5, cut);
-  theHistograms.fill("RecoCuts_wei", "Reco events after cuts", 20, -0.5, 19.5, cut, theWeight);
+  //cut++;
+  //theHistograms.fill("RecoCuts",     "Reco events after cuts", 20, -0.5, 19.5, cut);
+  //theHistograms.fill("RecoCuts_wei", "Reco events after cuts", 20, -0.5, 19.5, cut, theWeight);
 
   // 3rd lepton full selection
   tempZW = DiBosonLepton(*ZW);
   if(!tempZW.second().daughter(0).passFullSel())
     return;
   
-  cut++;
-  theHistograms.fill("RecoCuts",     "Reco events after cuts", 20, -0.5, 19.5, cut);
-  theHistograms.fill("RecoCuts_wei", "Reco events after cuts", 20, -0.5, 19.5, cut, theWeight);
+  //cut++;
+  //theHistograms.fill("RecoCuts",     "Reco events after cuts", 20, -0.5, 19.5, cut);
+  //theHistograms.fill("RecoCuts_wei", "Reco events after cuts", 20, -0.5, 19.5, cut, theWeight);
 
   // 3rd lepton pt > 30
   if(tempZW.second().daughter(0).pt() <30.)
     return;
   
-  cut++;
-  theHistograms.fill("RecoCuts",     "Reco events after cuts", 20, -0.5, 19.5, cut);
-  theHistograms.fill("RecoCuts_wei", "Reco events after cuts", 20, -0.5, 19.5, cut, theWeight);
+  //cut++;
+  //theHistograms.fill("RecoCuts",     "Reco events after cuts", 20, -0.5, 19.5, cut);
+  //theHistograms.fill("RecoCuts_wei", "Reco events after cuts", 20, -0.5, 19.5, cut, theWeight);
 
   // MET pt > 30
   if(tempZW.second().daughter(1).pt() <30.)
@@ -220,9 +220,9 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &recoWZ, Particle &Jet0, Particle &J
   if(tempZW.first().mass() < 60. || tempZW.first().mass() > 120.)
     return;
   
-  cut++;
-  theHistograms.fill("RecoCuts",     "Reco events after cuts", 20, -0.5, 19.5, cut);
-  theHistograms.fill("RecoCuts_wei", "Reco events after cuts", 20, -0.5, 19.5, cut, theWeight);
+  //cut++;
+  //theHistograms.fill("RecoCuts",     "Reco events after cuts", 20, -0.5, 19.5, cut);
+  //theHistograms.fill("RecoCuts_wei", "Reco events after cuts", 20, -0.5, 19.5, cut, theWeight);
 
   // W's trmass 30 < trm < 500
   if(tempZW.second().p4().Mt() < 30. || tempZW.second().p4().Mt() > 500.)
@@ -245,9 +245,9 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &recoWZ, Particle &Jet0, Particle &J
 
   helper_->FindLeadingJets(jets, Jet0, Jet1);
   
-  cut++;
-  theHistograms.fill("RecoCuts",     "Reco events after cuts", 20, -0.5, 19.5, cut);
-  theHistograms.fill("RecoCuts_wei", "Reco events after cuts", 20, -0.5, 19.5, cut, theWeight);
+  //cut++;
+  //theHistograms.fill("RecoCuts",     "Reco events after cuts", 20, -0.5, 19.5, cut);
+  //theHistograms.fill("RecoCuts_wei", "Reco events after cuts", 20, -0.5, 19.5, cut, theWeight);
 
 
   
@@ -257,20 +257,41 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &recoWZ, Particle &Jet0, Particle &J
   
   // Variables
   TLorentzVector recoPtot = tempZW.p4() + Jet0.p4() + Jet1.p4();
+  TLorentzVector recolllptot = tempZW.first().daughter(0).p4() + tempZW.first().daughter(1).p4() + tempZW.second().daughter(0).p4();
   TLorentzVector recoJJptot = Jet0.p4() + Jet1.p4();
   
   float zeppenfeldllJ0 = Jet0.eta() - (tempZW.first().daughter(0).eta() + tempZW.first().daughter(1).eta())/2;
+  float zeppenfeldarticle = recolllptot.Eta() - (Jet0.eta() + Jet1.eta())/2;
+  float zeppenfeldarticle2 = tempZW.second().daughter(0).eta() - (Jet0.eta() + Jet1.eta())/2;
   float recoJJdeltaEta = Jet0.eta() - Jet1.eta();
+
+  float zeppeneta1 = (tempZW.second().daughter(0).eta() - (Jet0.eta() + Jet1.eta())/2)/recoJJdeltaEta;
+  float zeppeneta2 = (tempZW.first().daughter(0).eta() - (Jet0.eta() + Jet1.eta())/2)/recoJJdeltaEta;
+  float zeppeneta3 = (tempZW.first().daughter(1).eta() - (Jet0.eta() + Jet1.eta())/2)/recoJJdeltaEta;
+  float zeppeneta4 = (tempZW.second().daughter(0).eta() - (tempZW.first().daughter(0).eta() + tempZW.first().daughter(1).eta())/2)/(tempZW.first().daughter(0).eta() - tempZW.first().daughter(1).eta());
+  float zeppeneta5 = (tempZW.second().daughter(0).eta() - (tempZW.first().daughter(0).eta() + tempZW.first().daughter(1).eta())/2)/recoJJdeltaEta;
 
   
   
   // ------------------- Histograms before cuts --------------------
   helper_->PlotJets(Jet0, Jet1, "Reco", theWeight, "BC");
+
+  helper_->PlotDiBoson(tempZW, "RecoWZ", theWeight, "BC");
+  helper_->PlotBoson(tempZW.first(), "RecoZ", theWeight, "BC");
+  helper_->PlotBoson(tempZW.second(), "RecoW", theWeight, "BC");
+  helper_->PlotParticle(tempZW.second().daughter(0), "RecoWl", theWeight, "BC");
   
   theHistograms.fill("WZ_Events", "Weighted counters", 10, -0.5, 10.5, 4, theWeight);
   
-  theHistograms.fill("RecoAll_trmass_BC",     "Transverse mass recoW,Z,J", 34, 220, 7095, recoPtot.Mt() , theWeight);
-  theHistograms.fill("RecoAll_Zeppenfeld_BC", "Zeppenfeld variable",       50,  -6,    6, zeppenfeldllJ0, theWeight);
+  theHistograms.fill("RecoAll_trmass_BC",             "Transverse mass recoW,Z,J",                                         34, 220, 7095, recoPtot.Mt() ,     theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld_BC",         "Zeppenfeld variable z = J0 - #frac{l1 + l2}{2}",                    50,  -6,    6, zeppenfeldllJ0,     theWeight);
+  theHistograms.fill("RecoAll_ZeppenfeldArticle_BC",  "Zeppenfeld variable z = 3l - #frac{J0 + J1}{2}",                    50,  -6,    6, zeppenfeldarticle,  theWeight);
+  theHistograms.fill("RecoAll_ZeppenfeldArticle2_BC", "Zeppenfeld variable z = l3 - #frac{J0 + J1}{2}",                    50,  -6,    6, zeppenfeldarticle2, theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld1_BC",        "Zeppenfeld variable z = (l3 - #frac{J0 + J1}{2})#frac{1}{J0 - J1}", 50,  -6,    6, zeppeneta1,         theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld2_BC",        "Zeppenfeld variable z = (l1 - #frac{J0 + J1}{2})#frac{1}{J0 - J1}", 50,  -6,    6, zeppeneta2,         theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld3_BC",        "Zeppenfeld variable z = (l2 - #frac{J0 + J1}{2})#frac{1}{J0 - J1}", 50,  -6,    6, zeppeneta3,         theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld4_BC",        "Zeppenfeld variable z = (l3 - #frac{l1 + l2}{2})#frac{1}{l1 - l2}", 50,  -6,    6, zeppeneta4,         theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld5_BC",        "Zeppenfeld variable z = (l3 - #frac{l1 + l2}{2})#frac{1}{J0 - J1}", 50,  -6,    6, zeppeneta5,         theWeight);
 
   
   
@@ -282,6 +303,8 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &recoWZ, Particle &Jet0, Particle &J
   cut++;
   theHistograms.fill("RecoCuts",     "Reco events after cuts", 20, -0.5, 19.5, cut);
   theHistograms.fill("RecoCuts_wei", "Reco events after cuts", 20, -0.5, 19.5, cut, theWeight);
+  
+  theHistograms.fill("RecoJJ_mass_Significance", "Leading Jets' mass", 50, 0, 4000, recoJJptot.M(), theWeight);
 
   // JJmass > 280
   if(recoJJptot.M() < 280)
@@ -290,6 +313,8 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &recoWZ, Particle &Jet0, Particle &J
   cut++;
   theHistograms.fill("RecoCuts",     "Reco events after cuts", 20, -0.5, 19.5, cut);
   theHistograms.fill("RecoCuts_wei", "Reco events after cuts", 20, -0.5, 19.5, cut, theWeight);
+  
+  theHistograms.fill("RecoAll_Zeppenfeld_Significance", "Zeppenfeld variable z = J0 - #frac{l1 + l2}{2}", 50, -6, 6, zeppenfeldllJ0, theWeight);
 
   // filter Zeppenfeld > 0.6
   if(abs(zeppenfeldllJ0) < 0.6)
@@ -298,6 +323,8 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &recoWZ, Particle &Jet0, Particle &J
   cut++;
   theHistograms.fill("RecoCuts",     "Reco events after cuts", 20, -0.5, 19.5, cut);
   theHistograms.fill("RecoCuts_wei", "Reco events after cuts", 20, -0.5, 19.5, cut, theWeight);
+  
+  theHistograms.fill("RecoJ1_pt_Significance", "Reco Jet1's p_{t}", 140, 0, 700, Jet1.pt(), theWeight);
 
   // filter Jet1 pt > 50
   if(Jet1.pt() < 50.)
@@ -306,14 +333,16 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &recoWZ, Particle &Jet0, Particle &J
   cut++;
   theHistograms.fill("RecoCuts",     "Reco events after cuts", 20, -0.5, 19.5, cut);
   theHistograms.fill("RecoCuts_wei", "Reco events after cuts", 20, -0.5, 19.5, cut, theWeight);
+  
+  theHistograms.fill("RecoZ_mass_Significance", "Reco Z's mass", 100, 50, 130, tempZW.first().mass(), theWeight);
 
   // filter Zmass < 15
   if(abs(ZMASS - tempZW.first().mass() > 15))
     return;
 
-  cut++;
-  theHistograms.fill("RecoCuts",     "Reco events after cuts", 20, -0.5, 19.5, cut);
-  theHistograms.fill("RecoCuts_wei", "Reco events after cuts", 20, -0.5, 19.5, cut, theWeight);
+  //cut++;
+  //theHistograms.fill("RecoCuts",     "Reco events after cuts", 20, -0.5, 19.5, cut);
+  //theHistograms.fill("RecoCuts_wei", "Reco events after cuts", 20, -0.5, 19.5, cut, theWeight);
 
 
   
@@ -350,11 +379,25 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &recoWZ, Particle &Jet0, Particle &J
 
   
   // ----- Zl 
-  theHistograms.fill("RecoZl_mass",   "3 leptons mass",           400,  0  , 1200  , recoZlp4.M()                    , theWeight);
-  theHistograms.fill("RecoZl_1st_pt", "Z's 1^{st} lepton p_{t}",  200,  0  ,  400  , recoWZ.second().daughter(0).pt(), theWeight);
-  theHistograms.fill("RecoZl_2nd_pt", "Z's 2^{nd} lepton p_{t}",  200,  0  ,  400  , recoWZ.second().daughter(1).pt(), theWeight);
-  theHistograms.fill("RecoZl_3rd_pt", "W's lepton p_{t}",          50,  0  ,  400  , recoWZ.first().daughter(0).pt() , theWeight);
-  theHistograms.fill("RecoZl_ID",     "ID of WZ leptons daughters", 6, 30.5,   41.5, recoZlID                        , theWeight);
+  theHistograms.fill("RecoZl_mass_AC",   "3 leptons mass",           400,  0  , 1200  , recoZlp4.M()                    , theWeight);
+  theHistograms.fill("RecoZl_1st_pt_AC", "Z's 1^{st} lepton p_{t}",  200,  0  ,  400  , recoWZ.second().daughter(0).pt(), theWeight);
+  theHistograms.fill("RecoZl_2nd_pt_AC", "Z's 2^{nd} lepton p_{t}",  200,  0  ,  400  , recoWZ.second().daughter(1).pt(), theWeight);
+  theHistograms.fill("RecoZl_3rd_pt_AC", "W's lepton p_{t}",          50,  0  ,  400  , recoWZ.first().daughter(0).pt() , theWeight);
+  theHistograms.fill("RecoZl_ID_AC",     "ID of WZ leptons daughters", 6, 30.5,   41.5, recoZlID                        , theWeight);
+
+
+
+  // ----- Variables  
+  theHistograms.fill("RecoAll_trmass_AC",             "Transverse mass recoW,Z,J",                                         34, 220, 7095, recoPtot.Mt() ,     theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld_AC",         "Zeppenfeld variable z = J0 - #frac{l1 + l2}{2}",                    50,  -6,    6, zeppenfeldllJ0,     theWeight);
+  theHistograms.fill("RecoAll_ZeppenfeldArticle_AC",  "Zeppenfeld variable z = 3l - #frac{J0 + J1}{2}",                    50,  -6,    6, zeppenfeldarticle,  theWeight);
+  theHistograms.fill("RecoAll_ZeppenfeldArticle2_AC", "Zeppenfeld variable z = l3 - #frac{J0 + J1}{2}",                    50,  -6,    6, zeppenfeldarticle2, theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld1_AC",        "Zeppenfeld variable z = (l3 - #frac{J0 + J1}{2})#frac{1}{J0 - J1}", 50,  -6,    6, zeppeneta1,         theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld2_AC",        "Zeppenfeld variable z = (l1 - #frac{J0 + J1}{2})#frac{1}{J0 - J1}", 50,  -6,    6, zeppeneta2,         theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld3_AC",        "Zeppenfeld variable z = (l2 - #frac{J0 + J1}{2})#frac{1}{J0 - J1}", 50,  -6,    6, zeppeneta3,         theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld4_AC",        "Zeppenfeld variable z = (l3 - #frac{l1 + l2}{2})#frac{1}{l1 - l2}", 50,  -6,    6, zeppeneta4,         theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld5_AC",        "Zeppenfeld variable z = (l3 - #frac{l1 + l2}{2})#frac{1}{J0 - J1}", 50,  -6,    6, zeppeneta5,         theWeight);
+  
 
   
   
@@ -854,6 +897,8 @@ void WZAnalyzer::analyze(){
   //Reco analysis
   WZAnalyzer::RecoAnalysis(recoWZ, recoJet0, recoJet1);
 
+  WZAnalyzer::Article();
+
   ///*
   if(genWZ.pt() != 0. && recoWZ.pt() != 0.){
     //Reco vs Gen analysis
@@ -872,6 +917,171 @@ void WZAnalyzer::analyze(){
     theHistograms.fill("WZ_Events", "Weighted counters", 10, -0.5, 9.5, 8, theWeight);
   }  
   //*/
+}
+
+
+void WZAnalyzer::Article(){  
+  BosonLepton Weh;
+  BosonLepton Zet;
+  vector<DiBosonLepton> WZs;
+  Jet Jet0;
+  Jet Jet1;
+
+  Lepton MET = Lepton(met->p4());
+  vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton>> Zls;
+
+  vector<Lepton>* leptons = electrons;
+  leptons->insert(leptons->end(), muons->begin(), muons->end());
+  sort(leptons->begin(), leptons->end(), PtComparator());
+
+  int cut = 0;
+  theHistograms.fill("Article_Events", "Weighted counters", 20, -0.5, 19.5, cut, theWeight);
+  
+  // 3 leptons
+  if((leptons->size()) != 3)
+    return;
+  cut++;
+  theHistograms.fill("Article_Events", "Weighted counters", 20, -0.5, 19.5, cut, theWeight);
+  
+  if(leptons->at(0).pt() < 25. || leptons->at(1).pt() < 15.)
+    return;
+  cut++;
+  theHistograms.fill("Article_Events", "Weighted counters", 20, -0.5, 19.5, cut, theWeight);
+
+  // > 2 jets
+  if(jets->size() < 2)
+    return;
+  helper_->FindLeadingJets(jets, Jet0, Jet1);
+  cut++;
+  theHistograms.fill("Article_Events", "Weighted counters", 20, -0.5, 19.5, cut, theWeight);
+
+  // met, pt > 30
+  if(met->pt() < 30.)
+    return;
+  cut++;
+  theHistograms.fill("Article_Events", "Weighted counters", 20, -0.5, 19.5, cut, theWeight);
+
+  // smart cut
+  bool passllLowMass = kTRUE;
+  for(int i = 0; i < (int)leptons->size() -1; i++)
+    for(int j = i +1; j < (int)leptons->size(); j++)
+      if((leptons->at(i).p4()+ leptons->at(j).p4()).M() < 4.) passllLowMass = false;
+
+  if(!passllLowMass){
+    return;
+  }
+  cut++;
+  theHistograms.fill("Article_Events", "Weighted counters", 20, -0.5, 19.5, cut, theWeight);
+  
+  int lepID = 0;
+  for(int i = 0; i < (int)leptons->size(); i++){
+    lepID += abs(leptons->at(i).id());
+  }
+
+  switch(lepID){
+  case 39:
+  case 33:
+
+    for(int i = 0; i < (int)leptons->size() -1; i++){
+      for(int j = i + 1; j < (int)leptons->size(); j++){
+	for(int k = 0; k < (int)leptons->size(); k++){
+	  if(k != i && k != j){
+	    if(leptons->at(i).charge() != leptons->at(j).charge()){
+	      Zls.push_back(std::pair<phys::Boson<phys::Lepton>, phys::Lepton>(BosonLepton(leptons->at(i), leptons->at(j), 23), leptons->at(k)));
+	    }
+	  }
+	}
+      }
+    }
+
+    sort(Zls.begin(), Zls.end(), pairMassComparator(0, ZMASS));
+
+    Zet = Zls[0].first;
+    Weh = BosonLepton(Zls.at(0).second, MET, copysign(24, Zls[0].second.charge()));
+
+    if(abs(Zet.mass() - ZMASS) > 15.)
+      return;
+    cut++;
+    theHistograms.fill("Article_Events", "Weighted counters", 20, -0.5, 19.5, cut, theWeight);
+    
+    if(Weh.daughter(0).pt() < 20.)
+      return;
+    cut++;
+    theHistograms.fill("Article_Events", "Weighted counters", 20, -0.5, 19.5, cut, theWeight);
+    
+    break;
+    
+  case 35:
+    Zet = BosonLepton(electrons->at(0), electrons->at(1), 23);
+    
+    if(abs(Zet.mass() - ZMASS) > 15.)
+      return;
+    cut++;
+    theHistograms.fill("Article_Events", "Weighted counters", 20, -0.5, 19.5, cut, theWeight);
+    
+    if(muons->at(0).pt() < 20.)
+      return;
+    cut++;
+    theHistograms.fill("Article_Events", "Weighted counters", 20, -0.5, 19.5, cut, theWeight);
+    
+    Weh = BosonLepton(muons->at(0), MET, copysign(24, muons->at(0).charge()));
+    
+    break;
+    
+  case 37:
+    Zet = BosonLepton(muons->at(0), muons->at(1), 23);
+    
+    if(abs(Zet.mass() - ZMASS) > 15.)
+      return;
+    cut++;
+    theHistograms.fill("Article_Events", "Weighted counters", 20, -0.5, 19.5, cut, theWeight);
+    
+    if(electrons->at(0).pt() < 20.)
+      return;
+    cut++;
+    theHistograms.fill("Article_Events", "Weighted counters", 20, -0.5, 19.5, cut, theWeight);
+    
+    Weh = BosonLepton(electrons->at(0), MET, copysign(24, electrons->at(0).charge()));
+    
+    break;
+  
+  default:
+    cout << "Wrong lepton ID sum: " << lepID << endl;
+    return;
+  }
+
+  
+  // cuts
+  TLorentzVector JJp4 = Jet0.p4() + Jet1.p4();
+  TLorentzVector lllp4 = leptons->at(0).p4() + leptons->at(1).p4() + leptons->at(2).p4();
+  float deltaJJ = Jet0.eta() - Jet1.eta();
+  float zeppenfeld = lllp4.Eta() - (Jet0.eta() + Jet1.eta())/2;;
+
+  if(lllp4.M() < 100.)
+    return;
+  cut++;
+  theHistograms.fill("Article_Events", "Weighted counters", 20, -0.5, 19.5, cut, theWeight);
+
+  if(JJp4.M() < 500.)
+    return;
+  cut++;
+  theHistograms.fill("Article_Events", "Weighted counters", 20, -0.5, 19.5, cut, theWeight);
+
+  if(Jet1.p4().Pt() < 50.)
+    return;
+  cut++;
+  theHistograms.fill("Article_Events", "Weighted counters", 20, -0.5, 19.5, cut, theWeight);
+
+  if(abs(deltaJJ) < 2.5)
+    return;
+  cut++;
+  theHistograms.fill("Article_Events", "Weighted counters", 20, -0.5, 19.5, cut, theWeight);
+
+  if(abs(zeppenfeld > 2.5))
+    return;
+  cut++;
+  theHistograms.fill("Article_Events", "Weighted counters", 20, -0.5, 19.5, cut, theWeight);
+  
 }
 
 
