@@ -7,7 +7,7 @@
 #  Co-author: E. Racca (eleonora.racca@cern.ch)  #
 ##################################################
 
-# setting options
+# ~~~~~ Setting options
 haddOpt="-k -f -j $(grep processor /proc/cpuinfo | wc -l)"
 rmOpt="-r -f"
 
@@ -15,7 +15,7 @@ rmOpt="-r -f"
 cd results
 
 
-# removing previous files
+# ~~~~~ Removing previous files
 rm $rmOpt 1618
 
 for y in 2016 2017 2018 ; do
@@ -23,15 +23,20 @@ for y in 2016 2017 2018 ; do
 done
 
 
+# ~~~~~ Hadd-ing results
 # array of analyses and regions names
 exist_an_reg=$(echo $(ls 2016) $(ls 2017) $(ls 2018) | tr ' ' '\n' | sort -u | tr '\n' ' ')
 #echo $exist_an_reg
 
 
-# hadd-ing ggTo4l results and removing previous files
+# hadd-ing ggTo4l results and removing hadd-ed files
+echo "--- Hadd-ing gg -> ZZ results ---"
+echo "  " 
+
 for y in 2016 2017 2018 ; do	
 	for an_reg in $exist_an_reg ; do
-		#echo "+++" $y "+++" $an_reg
+		
+		#echo "--- + ---" $y " -> " $an_reg
 		[ -d $y/$an_reg ] || continue
 		rm $rmOpt $y/$an_reg/gg.root
 		rm $rmOpt $y/$an_reg/WZ.root
@@ -47,6 +52,9 @@ exist_sam=$(find ./201*/ -type f -name "*.root" | grep -oP "[^/]+\.root" | grep 
 
 
 # hadd-ing results by year and by analysis
+echo "  " 
+echo "--- Hadd-ing results into 1618 ---"
+echo "  " 
 for an_reg in $exist_an_reg ; do
 	mkdir -p 1618/$an_reg
  
@@ -57,6 +65,9 @@ done
 
 
 # hadd-ing control regions
+echo "  " 
+echo "--- Creating CR for all years ---"
+echo "  " 
 for y in 2016 2017 2018 1618 ; do
 	mkdir -p $y/ZZjjAnalyzer_CR
 
