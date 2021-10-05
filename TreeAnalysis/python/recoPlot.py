@@ -71,6 +71,10 @@ parser.add_option("-A", "--Analysis", dest="Analysis",
                   default="ZZ",
                   help="Analysis. Default is ZZ. Othe oprtion is VBS")
 
+parser.add_option("-y", "--year", dest="year",
+                  default="2016",
+                  help= "valid inputs are 2016, 2017, 2018")
+
 
 #REMEMBER ADD DEFINTION PLOT
 
@@ -88,6 +92,7 @@ LumiProj   = options.LumiProj
 Dir        = options.Dir
 Analysis   = options.Analysis
 showPlot   = options.showPlot
+year       = options.year
 
 tdrstyle.setTDRStyle()
 
@@ -133,7 +138,7 @@ except:
     
 Var = Type
 if Analysis =="ZZ":
-    InputDir = "2016/ZZjAnalyzer_"
+    InputDir = year+"/ZZjAnalyzer_"
 elif Analysis =="VBS":
     InputDir = "VBSAnalyzer_"
 else: sys.exit("Wrong analysis. Chose between ZZ and VBS")
