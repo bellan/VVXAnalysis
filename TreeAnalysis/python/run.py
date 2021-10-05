@@ -147,7 +147,7 @@ def run(executable, analysis, typeofsample, region, year, luminosity, maxNumEven
     #################################################################################
     isData = False
 
-    if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:4] == 'MuEG' or typeofsample[0:6] == 'Single' or typeofsample[0:4] == 'test' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:8] == 'DoubleEG':
+    if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:4] == 'MuEG' or typeofsample[0:6] == 'Single' or typeofsample[0:4] == 'test' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:8] == 'DoubleEG' or typeofsample[0:4] == str(year):
         luminosity = -1
         isData = True
 
@@ -222,7 +222,7 @@ def run(executable, analysis, typeofsample, region, year, luminosity, maxNumEven
 
 
 def mergeDataSamples(outputLocations):
-    print outputLocations
+    #print outputLocations
     failure, basename = commands.getstatusoutput('basename {0:s}'.format(outputLocations[0]))
     outputdir = outputLocations[0].replace(basename,'')
     hadd = 'hadd {0:s}/data.root '.format(outputdir)
@@ -231,19 +231,19 @@ def mergeDataSamples(outputLocations):
     if os.path.exists('{0:s}/data.root'.format(outputdir)):
         os.popen('rm {0:s}/data.root'.format(outputdir))
     print "Command going to be executed:", Violet(hadd)
-    output = subprocess.call(hadd.split(),shell=True)
+    output = subprocess.call(hadd,shell=True)
 
 def runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doSF, postfix = '', outputLocations = []):
     outputCR2P2F = run(executable, analysis, sample, 'CR2P2F'+postfix, year, luminosity, maxNumEvents, doSF)    # runs over all samples in the CR2P2F control reagion
     outputCR3P1F = run(executable, analysis, sample, 'CR3P1F'+postfix, year, luminosity, maxNumEvents, doSF)    # runs over all samples in the CR3P1F control reagion
 
-    if not os.path.exists('results/{0:s}_CR{1:s}'.format(analysis,postfix)): os.popen('mkdir results/{0:s}_CR{1:s}'.format(analysis,postfix))
-    outputRedBkg = 'results/{0:s}_CR{1:s}/reducible_background_from_{2:s}.root'.format(analysis, postfix, sample)
+    if not os.path.exists('results/{0:s}/{1:s}_CR{2:s}'.format(str(year),analysis,postfix)): os.popen('mkdir results/{0:s}/{1:s}_CR{2:s}'.format(str(year),analysis,postfix))
+    outputRedBkg = 'results/{0:s}/{1:s}_CR{2:s}/reducible_background_from_{3:s}.root'.format(str(year), analysis, postfix, sample)
     hadd = 'hadd {0:s} {1:s} {2:s}'.format(outputRedBkg, outputCR2P2F, outputCR3P1F)
     if os.path.exists('{0:s}'.format(outputRedBkg)):
         os.popen('rm {0:s}'.format(outputRedBkg))
     print "Command going to be executed:", Violet(hadd)
-    output = subprocess.call(hadd.split(),shell=True)
+    output = subprocess.call(hadd,shell=True)
     outputLocations.append(outputRedBkg)
 
     
@@ -252,8 +252,8 @@ def runOverSamples(executable, analysis, typeofsample, region, year, luminosity,
     if typeofsample == 'all' or typeofsample == 'data':
         outputLocations = []
         for sample in knownProcesses:
-            if typeofsample == 'all' or sample[0:8] == 'DoubleMu' or sample[0:9] == 'DoubleEle' or sample[0:4] == 'MuEG' or sample[0:9]== "SingleEle" or sample[0:8]== "SingleMu":
-
+            if typeofsample == 'all' or sample[0:4] == str(year):
+                print sample[0:4]
                 if region == 'all':
                     for cr in regions:
                         run(executable, analysis, sample, cr, year, luminosity, maxNumEvents, doSF)    # runs over all samples in all control reagions
