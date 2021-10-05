@@ -73,6 +73,7 @@ private:
   void GenRecoAnalysis(const DiBosonParticle, const Particle, const Particle, const DiBosonLepton, const Particle, const Particle);
   
   void BuildingWZ();
+  void Article();
   
   
   friend class Selector<WZAnalyzer>;
