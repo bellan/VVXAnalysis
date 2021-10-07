@@ -5,7 +5,7 @@
  *  Concrete class for ZZ analysis
  *
  *  $Date: 2021/01/04 $
- *  $Revision: 0.5 $
+ *  $Revision: 0.8 $
  *  \author E. Racca - UNITO <eleonora.racca@cern.ch>
  */
 
@@ -32,7 +32,9 @@ public:
    helper_ = new VVjjHelper(&theHistograms);
   }
 
-  virtual ~ZZjjAnalyzer(){}
+  virtual ~ZZjjAnalyzer(){
+    delete helper_;
+  }
 
   virtual void analyze();
 
@@ -54,6 +56,14 @@ public:
   Int_t eventRecoaftercut;
   Int_t eventGenNOReco;
   Int_t eventRecoNOGen;
+  
+  Float_t weightGen;
+  Float_t weightReco;
+  Float_t weightGenReco;
+  Float_t weightGenaftercut;
+  Float_t weightRecoaftercut;
+  Float_t weightGenNOReco;
+  Float_t weightRecoNOGen;
 
   Float_t begintime;
   Float_t endtime;  

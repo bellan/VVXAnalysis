@@ -38,7 +38,7 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   TChain *tree = new TChain("treePlanter/HollyTree");
   tree->Add(filename.c_str());
 
-  if(tree == 0 || lumi <= 0) return;
+  if(tree == 0 || lumi <= 0) {isMC_=false; return;}
 
   Long64_t nentries = tree->GetEntries();  
 
@@ -82,7 +82,8 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   tree->SetBranchAddress("eventsInEtaPtAcceptance", &eventsInEtaPtAcceptance_, &b_eventsInEtaPtAcceptance);
     
   filename_ = filename;
-  filename_.erase(0, filename_.find("/")+1); 
+  filename_.erase(0, filename_.find("/")+1); // erase samples/ 
+  filename_.erase(0, 5);  // erase year/
   filename_.erase(filename_.find(".root")); 
 
   if((filename_.find("Single") != std::string::npos) || (filename_.find("Double") != std::string::npos) || (filename_.find("MuonEG") != std::string::npos)) isMC_ = kFALSE;

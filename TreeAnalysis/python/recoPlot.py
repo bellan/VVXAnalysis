@@ -71,6 +71,10 @@ parser.add_option("-A", "--Analysis", dest="Analysis",
                   default="ZZ",
                   help="Analysis. Default is ZZ. Othe oprtion is VBS")
 
+parser.add_option("-y", "--year", dest="year",
+                  default="2016",
+                  help= "valid inputs are 2016, 2017, 2018")
+
 
 #REMEMBER ADD DEFINTION PLOT
 
@@ -88,6 +92,7 @@ LumiProj   = options.LumiProj
 Dir        = options.Dir
 Analysis   = options.Analysis
 showPlot   = options.showPlot
+year       = options.year
 
 tdrstyle.setTDRStyle()
 
@@ -122,7 +127,7 @@ CMS_lumi.writeExtraText = 1
 CMS_lumi.extraText = "Preliminary"
 CMS_lumi.lumi_sqrtS = "{0}".format(lumi)+" fb^{-1} (13 TeV)\n"
 
-iPos = 11
+iPos = 0
 if( iPos==0 ): CMS_lumi.relPosX = 0.12
 iPeriod = 0
 
@@ -133,7 +138,7 @@ except:
     
 Var = Type
 if Analysis =="ZZ":
-    InputDir = "ZZjAnalyzer_"
+    InputDir = year+"/ZZjAnalyzer_"
 elif Analysis =="VBS":
     InputDir = "VBSAnalyzer_"
 else: sys.exit("Wrong analysis. Chose between ZZ and VBS")
@@ -165,13 +170,13 @@ else:
         (hMC,leg)=GetMCPlot("results/"+InputDir+region+"/",category,"ZZTo"+FinState+"_"+Var,Addfake,mcSet,InfoType[Type][2])    
     (hData,histodata)=GetDataPlot("results/"+InputDir+region+"/","ZZTo"+FinState+"_"+Var,region,InfoType[Type][2])
     print "int",histodata.Integral()
-
+    
 YMaxMC = YMax=hMC.GetMaximum()
 
 if category=="IrrBkg" or category == "RedBkg": YMaxData = 0. # YMaxData = YMax=hData.GetMaximum()
-else:  YMaxData = ROOT.TMath.MaxElement(hData.GetN(),hData.GetEYhigh()) + ROOT.TMath.MaxElement(hData.GetN(),hData.GetY())
-
-
+else:
+    YMaxData = ROOT.TMath.MaxElement(hData.GetN(),hData.GetEYhigh()) + ROOT.TMath.MaxElement(hData.GetN(),hData.GetY())
+        
 #print hData.GetN(),ROOT.TMath.MaxElement(hData.GetN(),hData.GetEYhigh()),ROOT.TMath.MaxElement(hData.GetN(),hData.GetY()),hData.GetEYhigh(),YMaxData,YMaxMC,YMaxData>YMaxMC,DoData
 
 if category is not "Sig":
@@ -194,9 +199,9 @@ if category !="IrrBkg" and category !="RedBkg":
     HistoData = copy.deepcopy(histodata)
     c1.cd()
     pad1 = ROOT.TPad ('hist', '', 0., 0.22, 1.0, 1.0)#0.35
-    pad1.SetTopMargin (0.10)
-    pad1.SetRightMargin (0.06)#0.10
-    pad1.SetLeftMargin (0.05)
+    pad1.SetTopMargin    (0.10)
+    pad1.SetRightMargin  (0.06)#0.10
+    pad1.SetLeftMargin   (0.1)
     pad1.SetBottomMargin (1.5) 
     pad1.Draw()
     

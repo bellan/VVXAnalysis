@@ -37,7 +37,7 @@
 #include <JetMETCorrections/Modules/interface/JetResolution.h>
 
 #include <CommonLHETools/LHEHandler/interface/LHEHandler.h>
-#include <ZZMatrixElement/MELA/interface/Mela.h>
+#include <JHUGenMELA/MELA/interface/Mela.h>
 
 class TTree;
 namespace pat{class Jet;}

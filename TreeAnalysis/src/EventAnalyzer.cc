@@ -55,7 +55,7 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
   , unweightedEventsIn3P1FCR(0)
   , genCategory(-128){
 
-  if(configuration.getParameter<int>("year") != theMCInfo.setup())
+  if(configuration.getParameter<int>("year") != theMCInfo.setup() && theMCInfo.isMC())
     cout << colour::Warning("Possible mismatch") << ": simulation scenario is " << Green(configuration.getParameter<int>("year")) << ", chosen sample is " << Green(theMCInfo.setup()) << endl;
 
   

@@ -5,6 +5,7 @@ from ROOT import gSystem, TCanvas, TH1,  TPad, gStyle, TLegend, THStack, TGraphA
 from readSampleInfo import *
 from collections import OrderedDict
 from Colours import *
+import ctypes
 import re
 
 def GetTypeofsamples(category,Set):
@@ -15,20 +16,24 @@ def GetTypeofsamples(category,Set):
     if Set=="pow":   signal_qq = signal_qq_pow
     elif Set=="mad": signal_qq = signal_qq_mad
     else: sys.exit("Wrong Set, choose pow or mad")
- 
-    signal_gg = [{"sample":'ggZZ4e',"color":ROOT.kAzure-5,"name":'gg #rightarrow ZZ(+jets)'},{"sample":'ggZZ2e2mu',"color":ROOT.kAzure-5,"name":'ZZ processes'},{"sample":'ggZZ4mu',"color":ROOT.kAzure-5,"name":'gg #rightarrow ZZ(+jets)'}]
+
+    signal_gg = [{"sample":'ggZZ',"color":ROOT.kAzure-5,"name":'gg #rightarrow ZZ(+jets)'}]
+    signal_VBS = [{"sample":'ZZ4lJJ',"color":ROOT.kAzure-6,"name":'VBS'}]
+    signal_others =  [{"sample":'HZZ',"color":ROOT.kAzure-7,"name":'higgs'}]
+    
+    #signal_gg = [{"sample":'ggZZ4e',"color":ROOT.kAzure-5,"name":'gg #rightarrow ZZ(+jets)'},{"sample":'ggZZ2e2mu',"color":ROOT.kAzure-5,"name":'ZZ processes'},{"sample":'ggZZ4mu',"color":ROOT.kAzure-5,"name":'gg #rightarrow ZZ(+jets)'}]
 #    signal_gg = [{"sample":'ggTo4e_Contin_MCFM701',"color":ROOT.kAzure-5,"name":'gg #rightarrow ZZ(+jets)'},{"sample":'ggTo2e2mu_Contin_MCFM701',"color":ROOT.kAzure-5,"name":'ZZ processes'},{"sample":'ggTo4mu_Contin_MCFM701',"color":ROOT.kAzure-5,"name":'gg #rightarrow ZZ(+jets)'}]
-    signal_VBS = [{"sample":'ZZTo4eJJ',"color":ROOT.kAzure-6,"name":'VBS'},{"sample":'ZZTo2e2muJJ',"color":ROOT.kAzure-6,"name":'VBS'},{"sample":'ZZTo4muJJ',"color":ROOT.kAzure-6,"name":'VBS'}]
+     #signal_VBS = [{"sample":'ZZTo4eJJ',"color":ROOT.kAzure-6,"name":'VBS'},{"sample":'ZZTo2e2muJJ',"color":ROOT.kAzure-6,"name":'VBS'},{"sample":'ZZTo4muJJ',"color":ROOT.kAzure-6,"name":'VBS'}]
 #    signal_VBS = [{"sample":'ZZJJTo4L_ewk',"color":ROOT.kAzure-6,"name":'VBS'}]
 
 #    signal_others =  [{"sample":'ZZZ',"color":ROOT.kAzure-7,"name":'other ZZ processes'},{"sample":'WZZ',"color":ROOT.kAzure-7,"name":'other ZZ processes'}]#,{"sample":'ggH125',"color":ROOT.kAzure-6,"name":'other ZZ processes'},{"sample":'VBFH125',"color":ROOT.kAzure-6,"name":'other ZZ processes'}]
     
-    signal_others =  [{"sample":'ggH',"color":ROOT.kAzure-7,"name":'higgs'}]
+    #signal_others =  [{"sample":'ggH',"color":ROOT.kAzure-7,"name":'higgs'}]
 
     bkg_red = [{"sample":'WZ',"color":ROOT.kRed+2,"name":'WZ'},{"sample":'TTJets',"color":ROOT.kRed-4,"name":'t#bar{t}'},{"sample":'TTWJets',"color":ROOT.kRed-4,"name":'TT'},{"sample":'TTGJets',"color":ROOT.kRed-4,"name":'TT'},{"sample":'WWW',"color":ROOT.kGreen-1,"name":'others'},{"sample":'DYJetsToLL_M50',"color":ROOT.kGreen-5,"name":'DY'}]
 
-    bkg_irr = [{"sample":'WWZ',"color":ROOT.kOrange,"name":'WWZ'},{"sample":'TTZToLL',"color":ROOT.kOrange,"name":'TTZ'}]
-    bkg_irr_divided = [{"sample":'WWZ',"color":ROOT.kOrange,"name":'WWZ'},{"sample":'TTZToLL',"color":ROOT.kOrange-5,"name":'TTZ'}]
+    bkg_irr = [{"sample":'WWZ',"color":ROOT.kOrange,"name":'WWZ'},{"sample":'TTZJets_M10_MLM',"color":ROOT.kOrange,"name":'TTZ'}]
+    bkg_irr_divided = [{"sample":'WWZ',"color":ROOT.kOrange,"name":'WWZ'},{"sample":'TTZJets_M10_MLM',"color":ROOT.kOrange-5,"name":'TTZ'}]
     data = [{"sample":'data',"color":ROOT.kBlack,"name":'Data'}]
 
     signal_tot = signal_qq + signal_gg  + signal_VBS + signal_others
@@ -59,7 +64,7 @@ def GetMCPlot(inputdir, category, plot,Addfake,MCSet,rebin):
     print Red("\n#########################################\n############## Monte Carlo ##############\n#########################################\n")
     print "Category",category
     print "plot",plot
-    leg = TLegend(0.67,0.66,0.86,0.91)
+    leg = TLegend(0.6,0.52,0.79,0.87)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.025)
 
@@ -69,7 +74,7 @@ def GetMCPlot(inputdir, category, plot,Addfake,MCSet,rebin):
     files = {}
     filesbkg = {}
     stack = ROOT.THStack("stack",plot+"_stack")
-    ErrStat = ROOT.Double(0.)
+    ErrStat = ctypes.c_double(0.) #ROOT.Double(0.)
 
     if category != "RedBkg" and category != "IrrBkg":
         print Red("\n######### Contribution to Irreducible Background#########\n")    
@@ -89,11 +94,11 @@ def GetMCPlot(inputdir, category, plot,Addfake,MCSet,rebin):
                 continue
             if isFirst:
                 bsum=copy.deepcopy(hb)            
-                print "{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat)
+                print "{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat.value)
                 isFirst=0
                 continue 
             
-            print "{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat)
+            print "{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat.value)
             bsum.Add(hb)        
                 
         if rebin != 1:  bsum.Rebin(rebin)
@@ -133,7 +138,7 @@ def GetMCPlot(inputdir, category, plot,Addfake,MCSet,rebin):
             print sample["sample"],"has no enetries or is a zombie"
             continue
 
-        print "{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(sample["sample"],(40-len(sample["sample"]))*" ",h.IntegralAndError(0,-1,ErrStat),ErrStat)
+        print "{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(sample["sample"],(40-len(sample["sample"]))*" ",h.IntegralAndError(0,-1,ErrStat),ErrStat.value)
 
         totalMC += h.Integral()
 
@@ -235,7 +240,7 @@ def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
         print Blue("### "+h["name"]+" ###")
         NoSamples = "For "+h["name"]+" there are no events in "
         isFirst=1
-        ErrStat=ROOT.Double(0.)
+        ErrStat=ctypes.c_double(0.)
         print "ZZTo"+h["name"]+Var
         for s in typeofsamples:
             hsamp = files[s["sample"]].Get("ZZTo"+h["name"]+Var)  
@@ -245,16 +250,16 @@ def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
             if isFirst:
                 h["state"]=copy.deepcopy(hsamp)            
                 isFirst=0
-                print "{0} {1} {2:.3f} +- {3: .3f}".format(s["sample"],(40-len(s["sample"]))*" ",hsamp.IntegralAndError(1,-1,ErrStat),ErrStat)
+                print "{0} {1} {2:.3f} +- {3: .3f}".format(s["sample"],(40-len(s["sample"]))*" ",hsamp.IntegralAndError(1,-1,ErrStat),ErrStat.value)
                 continue 
 
-            print "{0} {1} {2:.3f} +- {3: .3f}".format(s["sample"],(40-len(s["sample"]))*" ",hsamp.IntegralAndError(1,-1,ErrStat),ErrStat)
+            print "{0} {1} {2:.3f} +- {3: .3f}".format(s["sample"],(40-len(s["sample"]))*" ",hsamp.IntegralAndError(1,-1,ErrStat),ErrStat.value)
             h["state"].Add(hsamp)        
         print "\n",NoSamples,"\n\n" 
         
     print Blue("### Signal ###")  
     for h in hsum:
-        print ("Total contribution "+h["name"]+" {0} {1:.3f} +- {2: .3f} \n").format((32-len(h["name"]))*" ",h["state"].IntegralAndError(1,-1,ErrStat),ErrStat)
+        print ("Total contribution "+h["name"]+" {0} {1:.3f} +- {2: .3f} \n").format((32-len(h["name"]))*" ",h["state"].IntegralAndError(1,-1,ErrStat),ErrStat.value)
 
     stack = ROOT.THStack("stack",plot+"_stack")   
 
@@ -283,13 +288,13 @@ def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
                 isFirst=0
                 continue 
             
-            ErrStat=ROOT.Double(0.)
-            print "{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat)
+            ErrStat=ctypes.c_double(0.)
+            print "{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat.value)
             hbkg["state"].Add(hb)        
             print NoSamples,"\n\n" 
             
             for hbkg in bsum:
-                print ("Total contribution "+hbkg["name"]+" {0} {1:.3f} +- {2: .3f} \n").format((32-len(hbkg["name"]))*" ",hbkg["state"].IntegralAndError(1,-1,ErrStat),ErrStat)
+                print ("Total contribution "+hbkg["name"]+" {0} {1:.3f} +- {2: .3f} \n").format((32-len(hbkg["name"]))*" ",hbkg["state"].IntegralAndError(1,-1,ErrStat),ErrStat.value)
                 
                 if rebin != 1:  hbkg["state"].Rebin(rebin)
         
@@ -351,19 +356,19 @@ def GetFakeRate(inputdir,plot, method,rebin):
      #   plot = plot.replace("_JERCentralSmear","")
 
     hFakeRate = fileFake.Get(plot)
-    Err=ROOT.Double(0.)
+    Err=ctypes.c_double(0.)
     Integr= hFakeRate.IntegralAndError(0,-1,Err)
     if rebin != 1: hFakeRate.Rebin(rebin)
     hFakeRate.SetFillColor(ROOT.kGray)
-    hFakeRate.SetLineColor(ROOT.kBlack)
+    hFakeRate.SetLineColor(ROOT.kGray)
     hFakeRate.SetMarkerStyle(21)
     hFakeRate.SetMarkerSize(.5)
 
-    ErrStat = ROOT.Double(0.)
+    ErrStat = ctypes.c_double(0.)
     #    print "\n","Total integral",FinState,"contribution ----------> ",Integr," +- ",Err,"\n"
 #    print "{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat)
 
-    print "Total contribution {0} {1:.3f} +- {2: .3f} \n".format(38*" ",hFakeRate.IntegralAndError(1,-1,ErrStat),ErrStat)
+    print "Total contribution {0} {1:.3f} +- {2: .3f} \n".format(38*" ",hFakeRate.IntegralAndError(1,-1,ErrStat),ErrStat.value)
 
     return  copy.deepcopy(hFakeRate) 
 

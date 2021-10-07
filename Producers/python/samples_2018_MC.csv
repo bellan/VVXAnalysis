@@ -1,8 +1,9 @@
 identifier,process,crossSection=-1,BR=1,execute=True,dataset,prefix,pattern,splitLevel,::variables,::pyFragments,comment
 
 #, VBS,,,,,,,,,,
-ZZJJTo4L,,0.4536, ,,/ZZJJTo4L_EWK_TuneCP5_13TeV-madgraph-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM,dbs,,4,GENXSEC=0.4536;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018;SKIM_REQUIRED=True,RecoProbabilities.py,
+ZZJJTo4L,,0.4536E-3, ,,/ZZJJTo4L_EWK_TuneCP5_13TeV-madgraph-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM,dbs,,4,GENXSEC=0.4536;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018;SKIM_REQUIRED=True,RecoProbabilities.py,
 # ZZJJTo4L_EWK,,-1,      ,,/ZZJJTo4L_EWK_TuneCP5_13TeV-madgraph-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM,dbs,,4,GENXSEC=-1;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+WLLJJ,      WZ,           16.28E-3,   ,,/WLLJJ_WToLNu_EWK_TuneCP5_13TeV_madgraph-madspin-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM,dbs,,4,GENXSEC=16.28;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2017;SKIM_REQUIRED=False,RecoProbabilities.py,
 
 # ###,,,,,,,,,,,Xsec from https://twiki.cern.ch/twiki/bin/view/CMS/PhantomGeneratorCMS averaging grid and events with their errors
 # #VBFTo2e2muJJ_Contin_phantom128,,6.429E-04,,,/VBFToContinZZTo2e2muJJ_13TeV_phantom_pythia8/?????????/MINIAODSIM,dbs,,1,GENXSEC=6.429E-04;GENBR=1;ADDLHEKINEMATICS=True;VVMODE=1;VVDECAYMODE=0;LEPTON_SETUP=2018,RecoProbabilities.py;LHEProbabilities_VBF_BKG_0PM_H125_PhantomMCFM.py,

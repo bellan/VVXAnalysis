@@ -8,10 +8,7 @@ define w = w+ w-
 define l+ = e+ mu+
 define l- = e- mu-
 
-#generate p p > w l+ l- l+ l- [QCD] @0
-#add process p p > w l+ l- l+ l- j [QCD] @1
 generate p p > w z z [QCD] @0
-add process p p > w z z [QCD] @1
+add process p p > w z z j [QCD] @1
 
-output WZZJets_5f_NLO -nojpeg
-
+output WZZJets_5f_NLO_FXFX -nojpeg
