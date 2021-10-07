@@ -11,8 +11,8 @@ identifier,process,crossSection=-1,BR=1,execute=True,dataset,prefix,pattern,spli
 # WWZ,, 0.1651,      ,,/WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2017;SKIM_REQUIRED=False,RecoProbabilities.py,
 
 # Triboson with 1 photon
-WZG, VVG, 0.04345,      ,,/WZG_TuneCP5_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2017;SKIM_REQUIRED=False,RecoProbabilities.py,
-
+# WZG, VVG, 0.04345,      ,,/WZG_TuneCP5_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2017;SKIM_REQUIRED=False,RecoProbabilities.py,
+# ZZGJetsTo4L2Nu, VVG, -1,      ,,/ZZGJetsTo4L2Nu_4f_TuneCP5_13TeV_amcatnloFXFX_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2017;SKIM_REQUIRED=False,RecoProbabilities.py, # cross section is made up
 
 #, Main backgrounds,,,,,,,,,,
 
@@ -29,7 +29,7 @@ WZG, VVG, 0.04345,      ,,/WZG_TuneCP5_13TeV-amcatnlo-pythia8/RunIIFall17MiniAOD
 # ggTo2mu2tau_Contin_MCFM701,ggZZ, 0.0031942,    ,,/GluGluToContinToZZTo2mu2tau_13TeV_MCFM701_pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/MINIAODSIM,dbs,,4,GENXSEC=0.00319142;GENBR=1;PROCESS_CR=False;APPLY_K_NNLOQCD_ZZGG=1;LEPTON_SETUP=2017;SKIM_REQUIRED=True,RecoProbabilities.py;LHEProbabilities_GG_BKG_MCFM.py,
 
 #, qq->WZ samples,,,,,,,,,,
-# WZTo3LNu, WZ,           4.670,   ,,/WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM,dbs,,4,GENXSEC=4.67;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2017;SKIM_REQUIRED=False,RecoProbabilities.py,
+WZTo3LNu, WZ,           4.670,   ,,/WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM,dbs,,4,GENXSEC=4.67;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2017;SKIM_REQUIRED=False,RecoProbabilities.py,
 
 #, Reducible backgrounds,,,,,,,,,,background samples for Z+X studies
 # DYJetsToLL_M50, Z,     6225.4,    ,,/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v1/MINIAODSIM,dbs,,4,GENXSEC=6025.2;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2017,RecoProbabilities.py,
