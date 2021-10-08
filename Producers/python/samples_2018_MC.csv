@@ -31,9 +31,9 @@ WWZ,,0.1651,      ,,/WWZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIIAutumn18MiniAOD-102
 #, qq->ZZ samples,,,,,,,,,,
 ZZTo4lext1, qqZZ, 1.256,      ,,/ZZTo4L_TuneCP5_13TeV_powheg_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2018,RecoProbabilities.py,
 ZZTo4lext2, qqZZ, 1.256,      ,,/ZZTo4L_TuneCP5_13TeV_powheg_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext2-v2/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2018,RecoProbabilities.py,
-# ZZTo4lamcatnlo,,1.256,      ,,/ZZTo4L_TuneCP5_13TeV-amcatnloFXFX-pythia8/?????????/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2018,RecoProbabilities.py, # Xsection from the gen: 1.218
-# ZZTo4lsherpa,,1.256,      ,,/ZZTo4L_TuneCP5_13TeV-sherpa/?????????/MINIAODSIM,dbs,,4,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2018,RecoProbabilities.py,
 ZZJJTo4L_QCD,,-1,      ,,/ZZJJTo4L_QCD_TuneCP5_13TeV-madgraph-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM,dbs,,4,GENXSEC=-1;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+ZZTo4lamcatnlo,qqZZ,1.256,      ,,/ZZTo4L_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM,dbs,,4,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2018,RecoProbabilities.py, # Xsection from the gen: 1.218
+
 
 #, gg->ZZ,,,,,,,,,, xsec from https://twiki.cern.ch/twiki/bin/viewauth/CMS/Run2MCProductionforHiggsProperties#MCFM_ZZ_4l_l_e_mu_tau
 ggTo4e_Contin_MCFM701, ggZZ, 0.00158549,   ,,/GluGluToContinToZZTo4e_13TeV_MCFM701_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM,dbs,,1,GENXSEC=0.00158549;GENBR=1;PROCESS_CR=False;APPLY_K_NNLOQCD_ZZGG=1;LEPTON_SETUP=2018,RecoProbabilities.py;LHEProbabilities_GG_BKG_MCFM.py,
@@ -62,6 +62,7 @@ TTWW, ttX, 0.007883,      ,,/TTWW_TuneCP5_13TeV-madgraph-pythia8/RunIIAutumn18Mi
 TTZToLLNuNu_M10ext1, ttX, 0.25271,,,/TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM,dbs,,1,GENXSEC=0.25271;GENBR=1;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,
 TTZToLL_M1to1O_MLM, ttX, 0.04695,,,/TTZToLL_M-1to10_TuneCP5_13TeV-amcatnlo-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM,dbs,,1,GENXSEC=0.04695;GENBR=1;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,
 TTZJets_M10_MLMext1, ttX, 0.259,,,/ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM,dbs,,4,GENXSEC=0.259;GENBR=1;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,
+TTWJetsToLNu   , ttX, 0.2001,,,/TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM,dbs,,4,GENXSEC=0.2001;GENBR=1;ADDZTREE=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 
 
 #, Higgs samples,,,,,,,,,,
