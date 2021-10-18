@@ -38,6 +38,9 @@ namespace phys {
     float neutralHadronIsolation(){ return neutralHadronIsolation_; }
     float photonIsolation()       { return photonIsolation_       ; }
     
+    bool passElectronVeto() { return passElectronVeto_; }
+    bool hasPixelSeed()     { return hasPixelSeed_    ; }
+    
     float seedEnergy() { return seedEnergy_; }
     /* float eMax() { return eMax_; } */
     /* float e2nd() { return e2nd_; } */
