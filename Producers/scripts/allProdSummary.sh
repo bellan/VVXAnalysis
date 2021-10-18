@@ -82,7 +82,7 @@ keys=$(cut -d " " -f 2 $tempfail | sort | uniq)
 for key in $keys ; do
     jobs_k=$(grep -oP "\d+(?= $key)" $tempfail | paste -s -d+ | bc)
     #printf "%d --> %d\n" $key "$jobs_k"
-    printf "\t%d:\t%d \t(%s)\n" $key $jobs_k "$(get_cause $key)"
+    printf "\t%d:\t%d \t%s\n" $key $jobs_k "$(get_cause $key)"
 done
 
 rm -f $tempfile $tempfail
