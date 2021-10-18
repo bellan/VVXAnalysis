@@ -70,62 +70,52 @@ VVjj_search_path = os.environ['CMSSW_BASE'] + "/src/VVXAnalysis/Producers/python
 ### Standard sequence
 ### ----------------------------------------------------------------------
 
+if IsMC:
+    #process.VVjjEventTagger = cms.EDFilter("EventTagger",
+    #                                       Topology = cms.int32(-1), 
+    #                                       src = cms.InputTag("softLeptons"),
+    #                                       TightSelection = cms.string("userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')")
+    #                                       )
+    
+    #process.eventTagger = cms.Path(process.VVjjEventTagger)
+    
+    
+    genleptons = '(status == 1 && (isPromptFinalState && fromHardProcessFinalState && abs(pdgId) <= 16) ||  abs(pdgId) == 22)'
+    #genquarks  = '(fromHardProcessFinalState && abs(pdgId) <= 6 && (mother.pdgId == 23 || abs(mother.pdgId) == 24))'
+    genquarks  = '(abs(pdgId) <= 6 && (mother.pdgId == 23 || abs(mother.pdgId) == 24))'
+    genphotons = 'pdgId == 22'
+    
+    process.genParticlesFromHardProcess = cms.EDFilter("GenParticleSelector",
+                                                       filter = cms.bool(False),
+                                                       src = cms.InputTag("prunedGenParticles"),
+                                                       #acceptance cut on leptons?
+                                                       #cut = cms.string('status == 1 && (isPromptFinalState && fromHardProcessFinalState && abs(pdgId) >= 11 && abs(pdgId) <= 16) ||  abs(pdgId) == 22'),        
+                                                       #                            cut = cms.string(
+                                                       stableOnly = cms.bool(False),
 
+                                                       cut = cms.string(genleptons + " || " + genquarks+" || " + genphotons)
+                                                       
+                                                   )
 
-#process.VVjjEventTagger = cms.EDFilter("EventTagger",
-#                                       Topology = cms.int32(-1), 
-#                                       src = cms.InputTag("softLeptons"),
-#                                       TightSelection = cms.string("userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')")
-#                                       )
-
-#process.eventTagger = cms.Path(process.VVjjEventTagger)
-
-
-genleptons = '(status == 1 && (isPromptFinalState && fromHardProcessFinalState && abs(pdgId) <= 16) ||  abs(pdgId) == 22)'
-#genquarks  = '(fromHardProcessFinalState && abs(pdgId) <= 6 && (mother.pdgId == 23 || abs(mother.pdgId) == 24))'
-genquarks  = '(abs(pdgId) <= 6 && (mother.pdgId == 23 || abs(mother.pdgId) == 24))'
-genphotons = 'pdgId == 22'
- 
-process.genParticlesFromHardProcess = cms.EDFilter("GenParticleSelector",
+    process.genTaus = cms.EDFilter("GenParticleSelector",
+                                   filter = cms.bool(False),
+                                   src = cms.InputTag("prunedGenParticles"),
+                                   cut = cms.string('isPromptDecayed && abs(pdgId) == 15'),        
+                                   stableOnly = cms.bool(False)
+                               )
+    # FIXME! They need to be disambiguated from leptons!! RB: done in the signal definition!
+    process.selectedGenJets = cms.EDFilter("GenJetSelector",
                                            filter = cms.bool(False),
-                                           src = cms.InputTag("prunedGenParticles"),
-                                           #acceptance cut on leptons?
-                                           #cut = cms.string('status == 1 && (isPromptFinalState && fromHardProcessFinalState && abs(pdgId) >= 11 && abs(pdgId) <= 16) ||  abs(pdgId) == 22'),        
-#                            cut = cms.string(
-                                                   stableOnly = cms.bool(False),
+                                           src = cms.InputTag("slimmedGenJets"),
+                                           cut = cms.string('pt > 20 && abs(eta) < 4.7'),
+                                    )
 
-                                                   cut = cms.string(genleptons+" || "+ genquarks+' || '+genphotons)
-
-                                           )
-
-process.genTaus = cms.EDFilter("GenParticleSelector",
-                              filter = cms.bool(False),
-                              src = cms.InputTag("prunedGenParticles"),
-                              cut = cms.string('isPromptDecayed && abs(pdgId) == 15'),        
-                              stableOnly = cms.bool(False)
-)
-
-
-
-
-
-# FIXME! They need to be disambiguated from leptons!! RB: done in the signal definition!
-process.selectedGenJets = cms.EDFilter("GenJetSelector",
-                                       filter = cms.bool(False),
-                                       src = cms.InputTag("slimmedGenJets"),
-                                       cut = cms.string('pt > 20 && abs(eta) < 4.7'),
-                                       )
-
-process.selectedGenJetsAK8 = cms.EDFilter("GenJetSelector",
-                                       filter = cms.bool(False),
-                                       src = cms.InputTag("slimmedGenJetsAK8"),
-                                       cut = cms.string('pt > 20 && abs(eta) < 4.7'),
-                                       )
-
-
-
-
-process.genPath = cms.Path(process.genParticlesFromHardProcess + process.selectedGenJets  + process.selectedGenJetsAK8 + process.genTaus)
+    process.selectedGenJetsAK8 = cms.EDFilter("GenJetSelector",
+                                              filter = cms.bool(False),
+                                              src = cms.InputTag("slimmedGenJetsAK8"),
+                                              cut = cms.string('pt > 20 && abs(eta) < 4.7'),
+                                          )
+    process.genPath = cms.Path(process.genParticlesFromHardProcess + process.selectedGenJets  + process.selectedGenJetsAK8 + process.genTaus)
 
 
 
@@ -320,10 +310,11 @@ process.jetCleaning = cms.Path(process.muonsFromZZ * process.postCleaningMuons *
 
 process.filteredPhotons = cms.EDFilter("PATPhotonSelector",
                                        src = cms.InputTag("slimmedPhotons"),
-                                       cut = cms.string("pt > 20") # && userFloat('cutBasedPhotonID_Fall17_94X_V2_loose') > 0.5")
+                                       cut = cms.string("pt > 18") # && userFloat('cutBasedPhotonID_Fall17_94X_V2_loose') > 0.5")
 )
 
 process.photonSelection = cms.Path(process.egammaPostRecoSeq * process.filteredPhotons)
+
 
 ### ------------------------------------------------------------------------- ###
 ### Fill the tree for the analysis
@@ -345,7 +336,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      AddLHEKinematics = cms.bool(ADDLHEKINEMATICS),
                                      muons        = cms.InputTag("postCleaningMuons"),     # all good isolated muons BUT the ones coming from ZZ decay
                                      electrons    = cms.InputTag("postCleaningElectrons"), # all good isolated electrons BUT the ones coming from ZZ decay
-                                     photons      = cms.InputTag("filteredPhotons"),
+                                     photons      = cms.InputTag("filteredPhotons"),       # all photons that pass pt cut
                                      jets         = cms.InputTag("disambiguatedJets"),     # jets which do not contains leptons from ZZ or other good isolated leptons are removed
                                      jetsAK8      = cms.InputTag("disambiguatedJetsAK8"),     # jets which do not contains leptons from ZZ or other good isolated leptons are removed
                                      Vhad         = cms.InputTag(""),
