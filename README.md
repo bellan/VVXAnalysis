@@ -29,6 +29,14 @@ Recipe for the tree production step
   - ```git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis```
 - Compile the code with ```scram b```
 - in ```VVXAnalysis/Producers/test/analysis_ZZW.py``` there is an example on cmsRun configuration for an interactive run.
+- Create symlinks to reco probabilities in ZZAnalysis: 
+```
+cd Producers/test/pyFragments/
+ln -s ../../../../ZZAnalysis/AnalysisStep/test/prod/pyFragments/LHEProbabilities_GG_BKG_MCFM.py
+ln -s ../../../../ZZAnalysis/AnalysisStep/test/prod/pyFragments/LHEProbabilities_VBF_BSI_0PM_H125_PhantomMCFM.py
+ln -s ../../../../ZZAnalysis/AnalysisStep/test/prod/pyFragments/RecoProbabilities.py
+cd ../../../
+```
 - in ```ZZAnalysis/AnalysisStep/test/prod``` there are queue tools useful for submission/check-status/resubmission/merging.
   The main commands are described here:
   - https://github.com/CJLST/ZZAnalysis/blob/master/AnalysisStep/test/prod/PRODUCTION.md 
