@@ -34,7 +34,7 @@ for file in $pyF_files ; do
         [ ! -L $VVXpyF/$file ] && { printf "$VVXpyF/$file already exists but is not a symlink" >&2 ; }
     else
         echo "Linking $VVXpyF/$file --> ../../../../$ZZpyF/$file"
-	ln -s ../../../../$ZZpyF/$file $VVXpyF/
+	( cd $VVXpyF && ln -s ../../../../$ZZpyF/$file )
     fi
     [ -L $VVXpyF/$file/a ] && [ -e $VVXpyF/$file ] || printf "Error: did not create a working symlink for $file\n" | grep --color=auto "Error" >&2
 done
@@ -46,6 +46,6 @@ if [ -e $VVXpython/$samInfo ] ; then  # There's already something: it should be 
     [ ! -L $VVXpython/$samInfo ] && { printf "$VVXpython/$samInfo already exists but is not a symlink" >&2 ; }
 else
     echo "Linking $VVXpython/$samInfo --> ../../../../$ZZpython/$samInfo"
-    ln -s ../../../$ZZpython/$samInfo $VVXpython/
+    ( cd $VVXpython && ln -s ../../../$ZZpython/$samInfo )
 fi
 [ -L $VVXpython/$samInfo/a ] && [ -e $VVXpython/$samInfo ] || printf "Error: did not create a working symlink for $samInfo\n" | grep --color=auto "Error" >&2
