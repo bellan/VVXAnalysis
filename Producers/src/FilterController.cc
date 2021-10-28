@@ -26,7 +26,7 @@ FilterController::FilterController(const edm::ParameterSet& pset,  edm::Consumes
     }
   
   
-  if ((isMC_&&PD!="") || (!isMC_ && (PD!="DoubleEle" && PD!="DoubleMu" && PD!="MuEG" && PD!= "SingleElectron" && PD!= "SingleMuon" ))) {
+  if ((isMC_&&PD!="") || (!isMC_ && (PD!="DoubleEle" && PD!="DoubleMu" && PD!="MuEG" && PD!= "SingleElectron" && PD!= "SingleMuon" && PD!="EGamma"))) {
     cout << "ERROR: FilterController: isMC: " << isMC_ << " PD: " << PD << endl;
     abort();
   }
@@ -115,7 +115,7 @@ short FilterController::getTriggerWord(const edm::Event & event){
  
   // This is the trigger selection logic to select ZZ and ZLL events
   if( ( PD == ""                                 &&  passAtLeastOneTrigger)    || 
-      ((PD == "DoubleEle" || PD == "DoubleEG"  ) && (passDiEle || passTriEle)) ||
+      ((PD == "DoubleEle" || PD == "DoubleEG"  || PD == "EGamma") && (passDiEle || passTriEle)) ||
       ((PD == "DoubleMu"  || PD == "DoubleMuon") && (passDiMu  || passTriMu)  && !passDiEle && !passTriEle) ||
       ((PD == "MuEG"      || PD == "MuonEG"    ) &&  passMuEle                && !passDiMu  && !passTriMu && !passDiEle && !passTriEle) ||
       ( PD == "SingleElectron"                   &&  passSingleEle            && !passMuEle && !passDiMu  && !passTriMu && !passDiEle && !passTriEle) ||
