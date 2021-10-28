@@ -184,8 +184,8 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &recoWZ, Particle &Jet0, Particle &J
   //theHistograms.fill("RecoCuts_wei", "Reco events after cuts", 20, -0.5, 19.5, cut, theWeight);
 
   // 3 leptons
-  if(electrons->size() + muons->size() != 3)
-    return;
+  //if(electrons->size() + muons->size() != 3)
+  //return;
   
   //cut++;
   //theHistograms.fill("RecoCuts",     "Reco events after cuts", 20, -0.5, 19.5, cut);
@@ -261,6 +261,7 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &recoWZ, Particle &Jet0, Particle &J
   TLorentzVector recoJJptot = Jet0.p4() + Jet1.p4();
   
   float zeppenfeldllJ0 = Jet0.eta() - (tempZW.first().daughter(0).eta() + tempZW.first().daughter(1).eta())/2;
+  float testingzeppen = Jet0.eta() - tempZW.first().eta();
   float zeppenfeldarticle = recolllptot.Eta() - (Jet0.eta() + Jet1.eta())/2;
   float zeppenfeldarticle2 = tempZW.second().daughter(0).eta() - (Jet0.eta() + Jet1.eta())/2;
   float recoJJdeltaEta = Jet0.eta() - Jet1.eta();
@@ -277,21 +278,25 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &recoWZ, Particle &Jet0, Particle &J
   helper_->PlotJets(Jet0, Jet1, "Reco", theWeight, "BC");
 
   helper_->PlotDiBoson(tempZW, "RecoWZ", theWeight, "BC");
+  
   helper_->PlotBoson(tempZW.first(), "RecoZ", theWeight, "BC");
   helper_->PlotBoson(tempZW.second(), "RecoW", theWeight, "BC");
+  
   helper_->PlotParticle(tempZW.second().daughter(0), "RecoWl", theWeight, "BC");
   
   theHistograms.fill("WZ_Events", "Weighted counters", 10, -0.5, 10.5, 4, theWeight);
   
-  theHistograms.fill("RecoAll_trmass_BC",             "Transverse mass recoW,Z,J",                                         34, 220, 7095, recoPtot.Mt() ,     theWeight);
-  theHistograms.fill("RecoAll_Zeppenfeld_BC",         "Zeppenfeld variable z = J0 - #frac{l1 + l2}{2}",                    50,  -6,    6, zeppenfeldllJ0,     theWeight);
-  theHistograms.fill("RecoAll_ZeppenfeldArticle_BC",  "Zeppenfeld variable z = 3l - #frac{J0 + J1}{2}",                    50,  -6,    6, zeppenfeldarticle,  theWeight);
-  theHistograms.fill("RecoAll_ZeppenfeldArticle2_BC", "Zeppenfeld variable z = l3 - #frac{J0 + J1}{2}",                    50,  -6,    6, zeppenfeldarticle2, theWeight);
-  theHistograms.fill("RecoAll_Zeppenfeld1_BC",        "Zeppenfeld variable z = (l3 - #frac{J0 + J1}{2})#frac{1}{J0 - J1}", 50,  -6,    6, zeppeneta1,         theWeight);
-  theHistograms.fill("RecoAll_Zeppenfeld2_BC",        "Zeppenfeld variable z = (l1 - #frac{J0 + J1}{2})#frac{1}{J0 - J1}", 50,  -6,    6, zeppeneta2,         theWeight);
-  theHistograms.fill("RecoAll_Zeppenfeld3_BC",        "Zeppenfeld variable z = (l2 - #frac{J0 + J1}{2})#frac{1}{J0 - J1}", 50,  -6,    6, zeppeneta3,         theWeight);
-  theHistograms.fill("RecoAll_Zeppenfeld4_BC",        "Zeppenfeld variable z = (l3 - #frac{l1 + l2}{2})#frac{1}{l1 - l2}", 50,  -6,    6, zeppeneta4,         theWeight);
-  theHistograms.fill("RecoAll_Zeppenfeld5_BC",        "Zeppenfeld variable z = (l3 - #frac{l1 + l2}{2})#frac{1}{J0 - J1}", 50,  -6,    6, zeppeneta5,         theWeight);
+  theHistograms.fill("Reco3l_mass_BC",                "3 leptons' mass",                                                  100,   0,  800, recolllptot.M(),    theWeight);
+  theHistograms.fill("RecoAll_trmass_BC",             "Transverse mass recoW,Z,J",                                         35, 220, 7220, recoPtot.Mt(),      theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld_BC",         "Zeppenfeld variable z = J0 - #frac{l1 + l2}{2}",                    30,  -6,    6, zeppenfeldllJ0,     theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld_test",       "Zeppenfeld variable z = J0 - Z"                ,                    30,  -6,    6, zeppenfeldllJ0,     theWeight);
+  theHistograms.fill("RecoAll_ZeppenfeldArticle_BC",  "Zeppenfeld variable z = 3l - #frac{J0 + J1}{2}",                    25,  -6,    6, zeppenfeldarticle,  theWeight);
+  theHistograms.fill("RecoAll_ZeppenfeldArticle2_BC", "Zeppenfeld variable z = l3 - #frac{J0 + J1}{2}",                    25,  -6,    6, zeppenfeldarticle2, theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld1_BC",        "Zeppenfeld variable z = (l3 - #frac{J0 + J1}{2})#frac{1}{J0 - J1}", 25,  -6,    6, zeppeneta1,         theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld2_BC",        "Zeppenfeld variable z = (l1 - #frac{J0 + J1}{2})#frac{1}{J0 - J1}", 25,  -6,    6, zeppeneta2,         theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld3_BC",        "Zeppenfeld variable z = (l2 - #frac{J0 + J1}{2})#frac{1}{J0 - J1}", 25,  -6,    6, zeppeneta3,         theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld4_BC",        "Zeppenfeld variable z = (l3 - #frac{l1 + l2}{2})#frac{1}{l1 - l2}", 25,  -6,    6, zeppeneta4,         theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld5_BC",        "Zeppenfeld variable z = (l3 - #frac{l1 + l2}{2})#frac{1}{J0 - J1}", 25,  -6,    6, zeppeneta5,         theWeight);
 
   
   
@@ -379,7 +384,7 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &recoWZ, Particle &Jet0, Particle &J
 
   
   // ----- Zl 
-  theHistograms.fill("RecoZl_mass_AC",   "3 leptons mass",           400,  0  , 1200  , recoZlp4.M()                    , theWeight);
+  theHistograms.fill("RecoZl_mass_AC",   "3 leptons' mass",          400,  0  , 1200  , recoZlp4.M()                    , theWeight);
   theHistograms.fill("RecoZl_1st_pt_AC", "Z's 1^{st} lepton p_{t}",  200,  0  ,  400  , recoWZ.second().daughter(0).pt(), theWeight);
   theHistograms.fill("RecoZl_2nd_pt_AC", "Z's 2^{nd} lepton p_{t}",  200,  0  ,  400  , recoWZ.second().daughter(1).pt(), theWeight);
   theHistograms.fill("RecoZl_3rd_pt_AC", "W's lepton p_{t}",          50,  0  ,  400  , recoWZ.first().daughter(0).pt() , theWeight);
@@ -388,15 +393,15 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &recoWZ, Particle &Jet0, Particle &J
 
 
   // ----- Variables  
-  theHistograms.fill("RecoAll_trmass_AC",             "Transverse mass recoW,Z,J",                                         34, 220, 7095, recoPtot.Mt() ,     theWeight);
-  theHistograms.fill("RecoAll_Zeppenfeld_AC",         "Zeppenfeld variable z = J0 - #frac{l1 + l2}{2}",                    50,  -6,    6, zeppenfeldllJ0,     theWeight);
-  theHistograms.fill("RecoAll_ZeppenfeldArticle_AC",  "Zeppenfeld variable z = 3l - #frac{J0 + J1}{2}",                    50,  -6,    6, zeppenfeldarticle,  theWeight);
-  theHistograms.fill("RecoAll_ZeppenfeldArticle2_AC", "Zeppenfeld variable z = l3 - #frac{J0 + J1}{2}",                    50,  -6,    6, zeppenfeldarticle2, theWeight);
-  theHistograms.fill("RecoAll_Zeppenfeld1_AC",        "Zeppenfeld variable z = (l3 - #frac{J0 + J1}{2})#frac{1}{J0 - J1}", 50,  -6,    6, zeppeneta1,         theWeight);
-  theHistograms.fill("RecoAll_Zeppenfeld2_AC",        "Zeppenfeld variable z = (l1 - #frac{J0 + J1}{2})#frac{1}{J0 - J1}", 50,  -6,    6, zeppeneta2,         theWeight);
-  theHistograms.fill("RecoAll_Zeppenfeld3_AC",        "Zeppenfeld variable z = (l2 - #frac{J0 + J1}{2})#frac{1}{J0 - J1}", 50,  -6,    6, zeppeneta3,         theWeight);
-  theHistograms.fill("RecoAll_Zeppenfeld4_AC",        "Zeppenfeld variable z = (l3 - #frac{l1 + l2}{2})#frac{1}{l1 - l2}", 50,  -6,    6, zeppeneta4,         theWeight);
-  theHistograms.fill("RecoAll_Zeppenfeld5_AC",        "Zeppenfeld variable z = (l3 - #frac{l1 + l2}{2})#frac{1}{J0 - J1}", 50,  -6,    6, zeppeneta5,         theWeight);
+  theHistograms.fill("RecoAll_trmass_AC",             "Transverse mass recoW,Z,J",                                         35, 220, 7220, recoPtot.Mt() ,     theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld_AC",         "Zeppenfeld variable z = J0 - #frac{l1 + l2}{2}",                    25,  -6,    6, zeppenfeldllJ0,     theWeight);
+  theHistograms.fill("RecoAll_ZeppenfeldArticle_AC",  "Zeppenfeld variable z = 3l - #frac{J0 + J1}{2}",                    25,  -6,    6, zeppenfeldarticle,  theWeight);
+  theHistograms.fill("RecoAll_ZeppenfeldArticle2_AC", "Zeppenfeld variable z = l3 - #frac{J0 + J1}{2}",                    25,  -6,    6, zeppenfeldarticle2, theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld1_AC",        "Zeppenfeld variable z = (l3 - #frac{J0 + J1}{2})#frac{1}{J0 - J1}", 25,  -6,    6, zeppeneta1,         theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld2_AC",        "Zeppenfeld variable z = (l1 - #frac{J0 + J1}{2})#frac{1}{J0 - J1}", 25,  -6,    6, zeppeneta2,         theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld3_AC",        "Zeppenfeld variable z = (l2 - #frac{J0 + J1}{2})#frac{1}{J0 - J1}", 25,  -6,    6, zeppeneta3,         theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld4_AC",        "Zeppenfeld variable z = (l3 - #frac{l1 + l2}{2})#frac{1}{l1 - l2}", 25,  -6,    6, zeppeneta4,         theWeight);
+  theHistograms.fill("RecoAll_Zeppenfeld5_AC",        "Zeppenfeld variable z = (l3 - #frac{l1 + l2}{2})#frac{1}{J0 - J1}", 25,  -6,    6, zeppeneta5,         theWeight);
   
 
   

@@ -88,8 +88,7 @@ void VVjjHelper::FindLeadingJets(const vector<Jet> *jetcollection, Particle &Jet
   // leading jets are those with higher pt
   sort(jets.begin(), jets.end(), PtComparator());
   Jet0 = jets[0];
-  Jet1 = jets[1];
-  
+  Jet1 = jets[1];  
 }
 
 
@@ -97,6 +96,7 @@ void VVjjHelper::FindLeadingJets(const vector<Jet> *jetcollection, Particle &Jet
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~ Histograms functions ~~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Histograms for particles
 void VVjjHelper::PlotParticle(const Particle &particle, string name, const float weight, string suffix){
   histo_->fill(name + "_charge_" + suffix, name + "'s charge",   5, -2.5,   2.5, particle.charge()  , weight);
   histo_->fill(name + "_pt_" + suffix,     name + "'s p_{t}",  140,  0  , 700  , particle.pt()      , weight);
@@ -112,12 +112,13 @@ void VVjjHelper::PlotParticle(const Particle &particle, string name, const float
 
 
 
+  // Histograms for jets
 void VVjjHelper::PlotJets(const Particle &Jet0, const Particle &Jet1, string prename, const float weight, string suffix){
   string name = "J0";  
   histo_->fill(prename + name + "_charge_" + suffix, prename + name + "'s charge",   5, -2.5,   2.5, Jet0.charge()  , weight);
   histo_->fill(prename + name + "_mass_" + suffix,   prename + name + "'s mass",    63,  0  , 252  , Jet0.mass()    , weight);
-  histo_->fill(prename + name + "_trmass_" + suffix, prename + name + "'s trmass", 100,  0  , 400  , Jet0.p4().Mt() , weight);
-  histo_->fill(prename + name + "_pt_" + suffix,     prename + name + "'s p_{t}",  140,  0  , 700  , Jet0.pt()      , weight);
+  histo_->fill(prename + name + "_trmass_" + suffix, prename + name + "'s trmass",  50,  0  , 400  , Jet0.p4().Mt() , weight);
+  histo_->fill(prename + name + "_pt_" + suffix,     prename + name + "'s p_{t}",   50, 30  , 695.4, Jet0.pt()      , weight); //695.4 because like this the bins for J0 pt are as large as those for J1 pt 
   histo_->fill(prename + name + "_Y_" + suffix,      prename + name + "'s Y",       50, -5  ,   5  , Jet0.rapidity(), weight);
   histo_->fill(prename + name + "_eta_" + suffix,    prename + name + "'s #eta",    50, -9  ,   9  , Jet0.eta()     , weight);
   histo_->fill(prename + name + "_phi_" + suffix,    prename + name + "'s #phi",    50, -3.5,   3.5, Jet0.phi()     , weight);
@@ -125,8 +126,8 @@ void VVjjHelper::PlotJets(const Particle &Jet0, const Particle &Jet1, string pre
   name = "J1";  
   histo_->fill(prename + name + "_charge_" + suffix, prename + name + "'s charge",   5, -2.5,   2.5, Jet1.charge()  , weight);
   histo_->fill(prename + name + "_mass_" + suffix,   prename + name + "'s mass",    63,  0  , 252  , Jet1.mass()    , weight);
-  histo_->fill(prename + name + "_trmass_" + suffix, prename + name + "'s trmass", 100,  0  , 400  , Jet1.p4().Mt() , weight);
-  histo_->fill(prename + name + "_pt_" + suffix,     prename + name + "'s p_{t}",  140,  0  , 700  , Jet1.pt()      , weight);
+  histo_->fill(prename + name + "_trmass_" + suffix, prename + name + "'s trmass",  50,  0  , 400  , Jet1.p4().Mt() , weight);
+  histo_->fill(prename + name + "_pt_" + suffix,     prename + name + "'s p_{t}",   50, 30  , 600  , Jet1.pt()      , weight);
   histo_->fill(prename + name + "_Y_" + suffix,      prename + name + "'s Y",       50, -5  ,   5  , Jet1.rapidity(), weight);
   histo_->fill(prename + name + "_eta_" + suffix,    prename + name + "'s #eta",    50, -9  ,   9  , Jet1.eta()     , weight);
   histo_->fill(prename + name + "_phi_" + suffix,    prename + name + "'s #phi",    50, -3.5,   3.5, Jet1.phi()     , weight);
@@ -145,17 +146,18 @@ void VVjjHelper::PlotJets(const Particle &Jet0, const Particle &Jet1, string pre
   histo_->fill(prename + name + "_deltaR_" + suffix,      "Leading Jets' #DeltaR",      25, -0.5,    9  , JJdeltaR       , weight);
   histo_->fill(prename + name + "_deltaPhi_" + suffix,    "Leading Jets' #Delta#phi",   50, -3.5,    3.5, JJdeltaPhi     , weight);  
   
-  histo_->fill(prename + name + "_massvsdeltaEta_" + suffix, name + "'s mass(x) vs #Delta#eta(y)",      10, 160, 1500, 10, -6.5, 6.5, JJp4.M(), JJdeltaEta,      weight);
-  histo_->fill(prename + name + "_massvsdeltaEtaabs_" + suffix, name + "'s mass(x) vs |#Delta#eta|(y)", 10, 160, 1500, 10, -6.5, 6.5, JJp4.M(), abs(JJdeltaEta), weight);
+  histo_->fill(prename + name + "_massvsdeltaEta_" + suffix,    prename + name + "'s mass(x) vs #Delta#eta(y)",   12, 160, 1780, 10, -6.5, 6.5, JJp4.M(), JJdeltaEta,      weight);
+  histo_->fill(prename + name + "_massvsdeltaEtaabs_" + suffix, prename + name + "'s mass(x) vs |#Delta#eta|(y)", 12, 160, 1780, 10, -6.5, 6.5, JJp4.M(), abs(JJdeltaEta), weight);
 }
 
 
 
+  // Histograms for bosons
 template <class BOS>
 void VVjjHelper::PlotBoson(const BOS &particle, string name, const float weight, string suffix){
   histo_->fill(name + "_charge_" + suffix, name + "'s charge",   5, -2.5,   2.5, particle.charge()  , weight);
   histo_->fill(name + "_trmass_" + suffix, name + "'s trmass", 200, 50  , 450  , particle.p4().Mt() , weight);
-  histo_->fill(name + "_pt_" + suffix,     name + "'s p_{t}",  140,  0  , 700  , particle.pt()      , weight);
+  histo_->fill(name + "_pt_" + suffix,     name + "'s p_{t}",   70,  0  , 700  , particle.pt()      , weight);
   histo_->fill(name + "_Y_" + suffix,      name + "'s Y",       50, -5  ,   5  , particle.rapidity(), weight);
   histo_->fill(name + "_eta_" + suffix,    name + "'s #eta",    50, -9  ,   9  , particle.eta()     , weight);
   histo_->fill(name + "_phi_" + suffix,    name + "'s #phi",    50, -3.5,   3.5, particle.phi()     , weight);
@@ -180,10 +182,11 @@ template void VVjjHelper::PlotBoson<BosonLepton>(const BosonLepton& particle, st
 
 
 
+  // Histograms for dibosons
 template <class DiBOS>
 void VVjjHelper::PlotDiBoson(const DiBOS& particle, string name, const float weight, string suffix){
-  histo_->fill(name + "_trmass_" + suffix, name + "'s trmass", 50, 150, 1650, particle.p4().Mt(), weight);
-  histo_->fill(name + "_mass_" + suffix,   name + "'s mass",   50, 150, 1650, particle.mass()   , weight);
+  histo_->fill(name + "_trmass_" + suffix, name + "'s trmass", 10, 150, 1050, particle.p4().Mt(), weight);
+  histo_->fill(name + "_mass_" + suffix,   name + "'s mass",   10, 150, 1050, particle.mass()   , weight);
   histo_->fill(name + "_pt_" + suffix,     name + "'s p_{t}",  70,   0,  700, particle.pt()     , weight);
   
   histo_->fill(name + "_massvstrmass_" + suffix, name + "'s mass(x) vs trmass(y)",            268, 160, 1500, 268, 160, 1500, particle.mass(),            particle.p4().Mt(),          weight);
@@ -204,7 +207,8 @@ void VVjjHelper::PlotDiBoson(const DiBOS& particle, string name, const float wei
   histo_->fill(name + "_IDs_" + suffix, name + "'s IDs", 5, 19, 29, 5, 20, 30, firstID, secondID, weight);
 
   if(particle.charge() == 0){
-  histo_->fill(name + "_mass_" + suffix,   name + "'s mass",   100, 100, 600, particle.mass()   , weight);
+    histo_->fill(name + "_mass_d0_" + suffix, name + "'s mass", 60, 90, 120, particle.first().p4().M(), weight);
+    histo_->fill(name + "_mass_d1_" + suffix, name + "'s mass", 60, 90, 120, particle.first().p4().M(), weight);
   }
 }
 

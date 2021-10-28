@@ -184,9 +184,15 @@ void ZZjjAnalyzer::RecoAnalysis(DiBosonLepton &recoZZ, Particle &Jet0, Particle 
 
 
   // Histograms before cuts
-  theHistograms.fill("Reco4l_mass_BC",   "m_{4l}",   100, 0, 3000, llllp4.M(), theWeight);
-  theHistograms.fill("RecoJJ_mass_BC",   "m_{jj}",   100, 0, 4000, jjp4.M(),   theWeight);
-  theHistograms.fill("RecoZZJJ_mass_BC", "m_{ZZjj}", 100, 0, 5000, ZZjjp4.M(), theWeight);
+  theHistograms.fill("Reco4l_mass_BC",   "m_{4l}",    100,   0, 3000, llllp4.M(),            theWeight);
+  theHistograms.fill("RecoJJ_mass_BC",   "m_{jj}",    100,   0, 4000, jjp4.M(),              theWeight);
+  theHistograms.fill("RecoZZJJ_mass_BC", "m_{ZZjj}",  100,   0, 5000, ZZjjp4.M(),            theWeight);
+  theHistograms.fill("RecoZZ_mass_BC",   "m_{ZZ}",     72, 170, 1610, ZZ->p4().M(),          theWeight);
+  theHistograms.fill("RecoZ0_mass_BC",   "m_{Z_{0}}",  30,  60,  120, ZZ->first().p4().M(),  theWeight);
+  theHistograms.fill("RecoZ1_mass_BC",   "m_{Z_{1}}",  30,  60,  120, ZZ->second().p4().M(), theWeight);
+  
+  helper_->PlotDiBoson(*ZZ, "ZZ", theWeight, "BC");  
+  helper_->PlotJets(Jet0, Jet1, "Reco", theWeight, "BC");
   
   
 
@@ -207,8 +213,6 @@ void ZZjjAnalyzer::RecoAnalysis(DiBosonLepton &recoZZ, Particle &Jet0, Particle 
   // Histograms after cuts (JJ mass and deltaEta in helper histograms)
   helper_->PlotDiBoson(*ZZ, "ZZ", theWeight, "AC");
   
-  helper_->PlotJets(Jet0, Jet1, "Reco", theWeight, "AC");
-  
   theHistograms.fill("Reco4l_mass_AC",   "m_{4l}",   100, 0, 3000, llllp4.M(), theWeight);
   theHistograms.fill("RecoZZjj_mass_AC", "m_{ZZjj}", 100, 0, 5000, ZZjjp4.M(), theWeight);
 
@@ -221,8 +225,7 @@ void ZZjjAnalyzer::RecoAnalysis(DiBosonLepton &recoZZ, Particle &Jet0, Particle 
 
   float c = 8.5*helper_->getSpline(ZZ->mass());  
   float disc_VBF_QCD = mela->JJVBF_Nominal()/(mela->JJVBF_Nominal() + c*mela->JJQCD_Nominal());
-  
-  
+    
   theHistograms.fill("MELA_discriminant", "Discriminant #frac{JJVBF}{c JJQCD + JJVBF}", 50, 0, 1, disc_VBF_QCD, theWeight);
   
   
@@ -241,9 +244,11 @@ void ZZjjAnalyzer::RecoAnalysis(DiBosonLepton &recoZZ, Particle &Jet0, Particle 
 
   
   // ~~~~~~~~~~~~~~~~~~~~~ VBS enriched regions ~~~~~~~~~~~~~~~~~~~~
+  float recoJJdeltaEta = Jet0.eta() - Jet1.eta();
+    
   // -------------------------- Loose VBS --------------------------
     cut++;
-  if(jjp4.M() > 400.){
+  if(jjp4.M() > 400. & recoJJdeltaEta > 2.4){
     theHistograms.fill("Reco4l_mass_AC_Loose",   "m_{4l}",   100, 0, 3000, llllp4.M(), theWeight);
     theHistograms.fill("Recojj_mass_AC_Loose",   "m_{jj}",   100, 0, 4000, jjp4.M(),   theWeight);
     theHistograms.fill("RecoZZjj_mass_AC_Loose", "m_{ZZjj}", 100, 0, 5000, ZZjjp4.M(), theWeight);
@@ -255,7 +260,7 @@ void ZZjjAnalyzer::RecoAnalysis(DiBosonLepton &recoZZ, Particle &Jet0, Particle 
   
   // -------------------------- Tight VBS --------------------------
     cut++; 
-  if(jjp4.M() > 1000.){
+  if(jjp4.M() > 1000. & recoJJdeltaEta > 2.4){
     theHistograms.fill("Reco4l_mass_AC_Tight",   "m_{4l}",   100, 0, 3000, llllp4.M(), theWeight);
     theHistograms.fill("Recojj_mass_AC_Tight",   "m_{jj}",   100, 0, 4000, jjp4.M(),   theWeight);
     theHistograms.fill("RecoZZjj_mass_AC_Tight", "m_{ZZjj}", 100, 0, 5000, ZZjjp4.M(), theWeight);
@@ -282,6 +287,7 @@ void ZZjjAnalyzer::RecoAnalysis(DiBosonLepton &recoZZ, Particle &Jet0, Particle 
   // ~~~~~~~~~~~~~~~~~~~~~ End of reco Analysis ~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }
+
 
 
 void ZZjjAnalyzer::GenRecoAnalysis(const DiBosonParticle genZZ, const Particle genJet0, const Particle genJet1, const DiBosonLepton recoZZ, const Particle recoJet0, const Particle recoJet1){
@@ -319,6 +325,7 @@ void ZZjjAnalyzer::GenRecoAnalysis(const DiBosonParticle genZZ, const Particle g
 }
 
 
+
 void ZZjjAnalyzer::GenNoRecoAnalysis(){
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~ Begin of Gen NO Reco ~~~~~~~~~~~~~~~~~~~~~
@@ -351,6 +358,7 @@ void ZZjjAnalyzer::GenNoRecoAnalysis(){
   // ~~~~~~~~~~~~~~~~~~~~~ End of Gen NO Reco ~~~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }
+
 
 
 void ZZjjAnalyzer::begin(){
@@ -390,6 +398,7 @@ void ZZjjAnalyzer::begin(){
 }
 
 
+
 void ZZjjAnalyzer::analyze(){
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~~~~~ Main analysis ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -397,10 +406,9 @@ void ZZjjAnalyzer::analyze(){
   eventSample++;
   theHistograms.fill("ZZ_Events", "Weighted counters", 10, -0.5, 9.5, 1, theWeight);
     
-  //if(eventSample%10000 == 0)
-  cout << "Event: " << eventSample << endl;
+  if(eventSample%10000 == 0)
+    cout << "Event: " << eventSample << endl;
   
-  if(eventSample > 368800){
   //gen variables	
   DiBosonParticle genZZ;
   Particle genJet0;
@@ -410,16 +418,16 @@ void ZZjjAnalyzer::analyze(){
   DiBosonLepton recoZZ;
   Particle recoJet0;
   Particle recoJet1;
-
-
-    //Gen analysis
-    ZZjjAnalyzer::GenAnalysis(genZZ, genJet0, genJet1);
-    
-    //Reco analysis
-    //if(genZZ.pt() != 0){
-    ZZjjAnalyzer::RecoAnalysis(recoZZ, recoJet0, recoJet1);
-    //}
-
+  
+  
+  //Gen analysis
+  ZZjjAnalyzer::GenAnalysis(genZZ, genJet0, genJet1);
+  
+  //Reco analysis
+  //if(genZZ.pt() != 0){
+  ZZjjAnalyzer::RecoAnalysis(recoZZ, recoJet0, recoJet1);
+  //}
+  
   
   ///*
   if(genZZ.pt() != 0. && recoZZ.pt() != 0.){
@@ -427,26 +435,27 @@ void ZZjjAnalyzer::analyze(){
     ZZjjAnalyzer::GenRecoAnalysis(genZZ, genJet0, genJet1, recoZZ, recoJet0, recoJet1);
   }
   //*/
-
+  
   if(genZZ.pt() != 0. && recoZZ.pt() == 0.){
     //Gen event not reconstructed for reasons
     ZZjjAnalyzer::GenNoRecoAnalysis();    
   }
-
+  
   if(genZZ.pt() == 0. && recoZZ.pt() != 0.){
     //Reco event not generated for reasons
     eventRecoNOGen++;
     weightRecoNOGen += theWeight;
     theHistograms.fill("ZZ_Events", "Weighted counters", 10, -0.5, 9.5, 8, theWeight);
   }
-
-  }
+  
 }
+
 
 
 Int_t ZZjjAnalyzer::cut(){  
   return 1;
 }
+
 
 
 void ZZjjAnalyzer::end(TFile &){
