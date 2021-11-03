@@ -28,78 +28,82 @@ namespace phys {
 	  {};
     
     virtual ~Photon(){};
-	
+    
     // Getters
-    bool cutBasedIDTight()  { return cutBasedIDTight_ ; }
-    bool cutBasedIDMedium() { return cutBasedIDMedium_; }
-    bool cutBasedIDLoose()  { return cutBasedIDLoose_ ; }
+    bool cutBasedIDTight()  const { return cutBasedIDTight_ ; }
+    bool cutBasedIDMedium() const { return cutBasedIDMedium_; }
+    bool cutBasedIDLoose()  const { return cutBasedIDLoose_ ; }
     
-    float chargedIsolation()      { return chargedIsolation_      ; } 
-    float neutralHadronIsolation(){ return neutralHadronIsolation_; }
-    float photonIsolation()       { return photonIsolation_       ; }
+    float chargedIsolation()      const { return chargedIsolation_      ; } 
+    float neutralHadronIsolation()const { return neutralHadronIsolation_; }
+    float photonIsolation()       const { return photonIsolation_       ; }
     
-    bool passElectronVeto() { return passElectronVeto_; }
-    bool hasPixelSeed()     { return hasPixelSeed_    ; }
+    float sigmaIetaIeta() const { return sigmaIetaIeta_; }
+    float HoverE()        const { return HoverE_       ; }
     
-    float seedEnergy() { return seedEnergy_; }
-    /* float eMax() { return eMax_; } */
-    /* float e2nd() { return e2nd_; } */
-    /* float e3x3() { return e3x3_; } */
-    /* float eTop() { return eTop_; } */
-    /* float eBottom() { return eBottom_; } */
-    /* float eLeft() { return eLeft_; } */
-    /* float eRight() { return eRight_; } */
-    /* float see() { return see_; } */
-    /* float spp() { return spp_; } */
-    /* float sep() { return sep_; } */
-    /* float maxDR() { return maxDR_; } */
-    /* float maxDRDPhi() { return maxDRDPhi_; } */
-    /* float maxDRDEta() { return maxDRDEta_; } */
-    /* float maxDRRawEnergy() { return maxDRRawEnergy_; } */
-    /* float subClusRawE1() { return subClusRawE1_; } */
-    /* float subClusRawE2() { return subClusRawE2_; } */
-    /* float subClusRawE3() { return subClusRawE3_; } */
-    /* float subClusDPhi1() { return subClusDPhi1_; } */
-    /* float subClusDPhi2() { return subClusDPhi2_; } */
-    /* float subClusDPhi3() { return subClusDPhi3_; } */
-    /* float subClusDEta1() { return subClusDEta1_; } */
-    /* float subClusDEta2() { return subClusDEta2_; } */
-    /* float subClusDEta3() { return subClusDEta3_; } */
-    float cryEta() { return cryEta_; }
-    float cryPhi() { return cryPhi_; }
-    float iEta() { return iEta_; }
-    float iPhi() { return iPhi_; }
-    float puppiChargedHadronIso() { return puppiChargedHadronIso_; }
-    float puppiNeutralHadronIso() { return puppiNeutralHadronIso_; }
-    float puppiPhotonIso() { return puppiPhotonIso_; }
+    bool passElectronVeto() const { return passElectronVeto_; }
+    bool hasPixelSeed()     const { return hasPixelSeed_    ; }
     
-    float ecalEnergyPreCorr() { return ecalEnergyPreCorr_; };
-    float ecalEnergyErrPreCorr() { return ecalEnergyErrPreCorr_; };
-    float ecalEnergyPostCorr() { return ecalEnergyPostCorr_; };
-    float ecalEnergyErrPostCorr() { return ecalEnergyErrPostCorr_; };
-    /* float ecalTrkEnergyPreCorr() { return ecalTrkEnergyPreCorr_; }; */
-    /* float ecalTrkEnergyErrPreCorr() { return ecalTrkEnergyErrPreCorr_; }; */
-    /* float ecalTrkEnergyPostCorr() { return ecalTrkEnergyPostCorr_; }; */
-    /* float ecalTrkEnergyErrPostCorr() { return ecalTrkEnergyErrPostCorr_; }; */
-    float energyScaleValue() { return energyScaleValue_; };
-    float energySigmaValue() { return energySigmaValue_; };
-    float energySmearNrSigma() { return energySmearNrSigma_; };
-    float energyScaleUp() { return energyScaleUp_; };
-    float energyScaleDown() { return energyScaleDown_; };
-    float energyScaleStatUp() { return energyScaleStatUp_; };
-    float energyScaleStatDown() { return energyScaleStatDown_; };
-    float energyScaleSystUp() { return energyScaleSystUp_; };
-    float energyScaleSystDown() { return energyScaleSystDown_; };
-    float energyScaleGainUp() { return energyScaleGainUp_; };
-    float energyScaleGainDown() { return energyScaleGainDown_; };
-    float energyScaleEtUp() { return energyScaleEtUp_; };
-    float energyScaleEtDown() { return energyScaleEtDown_; };
-    float energySigmaUp() { return energySigmaUp_; };
-    float energySigmaDown() { return energySigmaDown_; };
-    float energySigmaPhiUp() { return energySigmaPhiUp_; };
-    float energySigmaPhiDown() { return energySigmaPhiDown_; };
-    float energySigmaRhoUp() { return energySigmaRhoUp_; };
-    float energySigmaRhoDown() { return energySigmaRhoDown_; };
+    float seedEnergy()      const { return seedEnergy_; }
+    /* float eMax() const { return eMax_; } */
+    /* float e2nd() const { return e2nd_; } */
+    /* float e3x3() const { return e3x3_; } */
+    /* float eTop() const { return eTop_; } */
+    /* float eBottom() const { return eBottom_; } */
+    /* float eLeft() const { return eLeft_; } */
+    /* float eRight() const { return eRight_; } */
+    /* float see() const { return see_; } */
+    /* float spp() const { return spp_; } */
+    /* float sep() const { return sep_; } */
+    /* float maxDR() const { return maxDR_; } */
+    /* float maxDRDPhi() const { return maxDRDPhi_; } */
+    /* float maxDRDEta() const { return maxDRDEta_; } */
+    /* float maxDRRawEnergy() const { return maxDRRawEnergy_; } */
+    /* float subClusRawE1() const { return subClusRawE1_; } */
+    /* float subClusRawE2() const { return subClusRawE2_; } */
+    /* float subClusRawE3() const { return subClusRawE3_; } */
+    /* float subClusDPhi1() const { return subClusDPhi1_; } */
+    /* float subClusDPhi2() const { return subClusDPhi2_; } */
+    /* float subClusDPhi3() const { return subClusDPhi3_; } */
+    /* float subClusDEta1() const { return subClusDEta1_; } */
+    /* float subClusDEta2() const { return subClusDEta2_; } */
+    /* float subClusDEta3() const { return subClusDEta3_; } */
+    /* float cryEta() const { return cryEta_; } */
+    /* float cryPhi() const { return cryPhi_; } */
+    /* float iEta()   const { return iEta_  ; } */
+    /* float iPhi()   const { return iPhi_  ; } */
+    
+    float puppiChargedHadronIso() const { return puppiChargedHadronIso_; }
+    float puppiNeutralHadronIso() const { return puppiNeutralHadronIso_; }
+    float puppiPhotonIso()        const { return puppiPhotonIso_       ; }
+    
+    float ecalEnergyPreCorr()     const { return ecalEnergyPreCorr_; };
+    float ecalEnergyErrPreCorr()  const { return ecalEnergyErrPreCorr_; };
+    float ecalEnergyPostCorr()    const { return ecalEnergyPostCorr_; };
+    float ecalEnergyErrPostCorr() const { return ecalEnergyErrPostCorr_; };
+    /* float ecalTrkEnergyPreCorr() const { return ecalTrkEnergyPreCorr_; }; */
+    /* float ecalTrkEnergyErrPreCorr() const { return ecalTrkEnergyErrPreCorr_; }; */
+    /* float ecalTrkEnergyPostCorr() const { return ecalTrkEnergyPostCorr_; }; */
+    /* float ecalTrkEnergyErrPostCorr() const { return ecalTrkEnergyErrPostCorr_; }; */
+    float energyScaleValue()      const { return energyScaleValue_   ; };
+    float energySigmaValue()      const { return energySigmaValue_   ; };
+    float energySmearNrSigma()    const { return energySmearNrSigma_ ; };
+    float energyScaleUp()         const { return energyScaleUp_      ; };
+    float energyScaleDown()       const { return energyScaleDown_    ; };
+    float energyScaleStatUp()     const { return energyScaleStatUp_  ; };
+    float energyScaleStatDown()   const { return energyScaleStatDown_; };
+    float energyScaleSystUp()     const { return energyScaleSystUp_  ; };
+    float energyScaleSystDown()   const { return energyScaleSystDown_; };
+    float energyScaleGainUp()     const { return energyScaleGainUp_  ; };
+    float energyScaleGainDown()   const { return energyScaleGainDown_; };
+    float energyScaleEtUp()       const { return energyScaleEtUp_    ; };
+    float energyScaleEtDown()     const { return energyScaleEtDown_  ; };
+    float energySigmaUp()         const { return energySigmaUp_      ; };
+    float energySigmaDown()       const { return energySigmaDown_    ; };
+    float energySigmaPhiUp()      const { return energySigmaPhiUp_   ; };
+    float energySigmaPhiDown()    const { return energySigmaPhiDown_ ; };
+    float energySigmaRhoUp()      const { return energySigmaRhoUp_   ; };
+    float energySigmaRhoDown()    const { return energySigmaRhoDown_ ; };
 
     
   private:
@@ -113,6 +117,10 @@ namespace phys {
     float chargedIsolation_;
     float neutralHadronIsolation_;
     float photonIsolation_;
+    
+    // ---- Variables used in the ID ----
+    float sigmaIetaIeta_;
+    float HoverE_;
     
     // ---- conversion veto ----
     bool passElectronVeto_;
@@ -149,10 +157,10 @@ namespace phys {
     /* float subClusDEta2_; */
     /* float subClusDEta3_; */
     
-    float cryEta_;
-    float cryPhi_;
-    float iEta_;
-    float iPhi_;
+    /* float cryEta_; */
+    /* float cryPhi_; */
+    /* float iEta_; */
+    /* float iPhi_; */
     
     // PUPPI isolations
     float puppiChargedHadronIso_;

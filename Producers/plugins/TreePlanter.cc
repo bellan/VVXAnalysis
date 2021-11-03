@@ -739,6 +739,10 @@ phys::Photon TreePlanter::fill(const pat::Photon &photon) const {
 	output.neutralHadronIsolation_ = photon.userFloat("phoNeutralHadronIsolation");
 	output.photonIsolation_        = photon.userFloat("phoPhotonIsolation");
 	
+	// Variables for the ID
+	output.sigmaIetaIeta_ = photon.full5x5_sigmaIetaIeta();
+	output.HoverE_        = photon.hadTowOverEm();
+	
 	// conversion veto
 	output.passElectronVeto_ = photon.passElectronVeto();
 	output.hasPixelSeed_     = photon.hasPixelSeed();
@@ -767,10 +771,10 @@ phys::Photon TreePlanter::fill(const pat::Photon &photon) const {
 	// output.subClusDEta1_ = photon.subClusDEta1();
 	// output.subClusDEta2_ = photon.subClusDEta2();
 	// output.subClusDEta3_ = photon.subClusDEta3();
-	output.cryEta_ = photon.cryEta();
-	output.cryPhi_ = photon.cryPhi();
-	output.iEta_   = photon.iEta();
-	output.iPhi_   = photon.iPhi();
+	// output.cryEta_ = photon.cryEta();
+	// output.cryPhi_ = photon.cryPhi();
+	// output.iEta_   = photon.iEta();
+	// output.iPhi_   = photon.iPhi();
 	
 	// Isolations
 	output.puppiChargedHadronIso_ = photon.puppiChargedHadronIso();
