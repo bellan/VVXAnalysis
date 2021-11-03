@@ -94,6 +94,10 @@ void EventAnalyzer::Init(TTree *tree)
 
   pjetsAK8 = 0;      b_pjetsAK8 = 0;    theTree->SetBranchAddress("jetsAK8", &pjetsAK8, &b_pjetsAK8);
   jetsAK8  = new std::vector<phys::Jet>();
+  
+  // Photons
+  photons = 0;      b_photons = 0;    theTree->SetBranchAddress("photons", &photons, &b_photons);
+  jetsAK8  = new std::vector<phys::Jet>();
 
   // Bosons   
   Vhad = new std::vector<phys::Boson<phys::Jet> > ()    ; VhadCand = 0; b_VhadCand = 0; theTree->SetBranchAddress("VhadCand", &VhadCand, &b_VhadCand);
@@ -166,7 +170,8 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   if(pgenJets)    stable_sort(pgenJets->begin(),    pgenJets->end(),    phys::PtComparator());
   if(pjetsAK8)    stable_sort(pjetsAK8->begin(),    pjetsAK8->end(),    phys::PtComparator());
   if(pgenJetsAK8) stable_sort(pgenJetsAK8->begin(), pgenJetsAK8->end(), phys::PtComparator());
-
+	if(photons)     stable_sort(photons->begin(),   photons->end(),   phys::PtComparator());
+	
   // Some selection on jets
   jets->clear(); centralJets->clear(); 
   if(pjets)

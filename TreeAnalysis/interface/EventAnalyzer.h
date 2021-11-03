@@ -21,6 +21,7 @@
 
 #include "VVXAnalysis/DataFormats/interface/Lepton.h"
 #include "VVXAnalysis/DataFormats/interface/Jet.h"
+#include "VVXAnalysis/DataFormats/interface/Photon.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 #include "VVXAnalysis/DataFormats/interface/TypeDefs.h"
@@ -179,6 +180,9 @@ public:
   
   // Central jets (not in the tree)
   std::vector<phys::Jet> *centralJets;
+  
+  // Photons
+  std::vector<phys::Photon> *photons; TBranch *b_photons;
 
   // Bosons Candidate
   std::vector<phys::Boson<phys::Jet> >      *VhadCand; TBranch *b_VhadCand;
