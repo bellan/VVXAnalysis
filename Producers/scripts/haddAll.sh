@@ -10,8 +10,9 @@
 #  Author: A. Mecca  (alberto.mecca@cern.ch)                   #
 ################################################################
 
-
-eosdir="/eos/user/a/amecca/samples/May2021"
+campaign=September2021  # May2021
+initial=$(printf "%.1s" $USER)
+eosdir="/eos/user/$initial/$USER/samples/$campaign"
 dirs=$(find . -maxdepth 4 -name condor.sub | grep -oP ".+(?=/condor.sub)" | grep -oP "(?<=\./).+" )
 
 dirsExist () {
@@ -23,16 +24,18 @@ for dir in $dirs ; do
 	cd $dir
 	printf "%s \t--> " $dir
 	if ls | grep -q Chunk ; then
-	    echo "Still not done"
+	    j_done=$( [ -d AAAOK ] && ls AAAOK/ | grep Chunk | wc -l || echo "0" )
+	    j_todo=$(ls        | grep Chunk | wc -l)
+	    printf "Still not done (%d/%d)\n" $j_done $(($j_done + $j_todo))
 	else
 	    samples=$(ls AAAOK/ | grep -oP ".+(?=_Chunk)" | uniq)
 	    echo $samples | sed "s/\n/ /g" | xargs printf "%s "
-	    dirsExist $(echo "$samples" | sed "s:^:AAAOK/:g") && echo "(Already hadd-ed)" || haddChunks.py AAAOK
+	    dirsExist $(echo "$samples" | sed "s:^:AAAOK/:g") && echo "(Hadd-ed)" || haddChunks.py AAAOK
 	    for sampl in $samples ; do
-		[ -e AAAOK/$sampl/ZZ4lAnalysis.root ] || exit 1
+		[ -e AAAOK/$sampl/ZZ4lAnalysis.root ] || { echo "Tried to hadd but no rootfile has been created" 1>&2 ; exit 1 ; }
 		stripDir=$(echo $dir | sed -r "s:/[^/]+$::g")
 		destFile="$eosdir/$stripDir/$sampl.root"
-		[ -e $destFile ] || rsync -au --progress AAAOK/$sampl/ZZ4lAnalysis.root $destFile
+		[ -e $destFile ] || { rsync -au --progress AAAOK/$sampl/ZZ4lAnalysis.root $destFile ; echo "Copied to $destFile" ; }
 	    done
 	fi
     )

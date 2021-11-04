@@ -5,18 +5,20 @@
 # Usage: without arguments, it uses default values. Otherwise it takes the
 # first as the Analyzer and passes the others unchanged as parameters to run.py
 
-ANALYZER=VZZAnalyzer #default values
-EXTRA_ARGS='-rMC -l137100'  # '-rMC -n10000'
+analyzer=VVGammaAnalyzer #default values
+extra_args='-r SR -l 137100'  # '-rMC -n10000'
 
-[ $# -gt 0 ] && ANALYZER=$1
+[ $# -gt 0 ] && analyzer=$1
 
-[ $# -gt 1 ] && EXTRA_ARGS="${@:2}" #All the aguments except the first
+[ $# -gt 1 ] && extra_args="${@:2}" #All the aguments except the first
 
-for SAMPLE in samples/2016/* ; do
-	SAMPLE=${SAMPLE##*/}
-	SAMPLE=${SAMPLE%.root}
-	./python/run.py ${ANALYZER} ${SAMPLE} ${EXTRA_ARGS}
-	#echo "${ANALYZER} ${SAMPLE} ${EXTRA_ARGS}"
+samples=$(ls samples/2018/ | grep 2018)
+
+for sample in $samples ; do
+	sample=${sample##*/}
+	sample=${sample%.root}
+	./python/run.py ${analyzer} ${sample} ${extra_args}
+	# echo "${analyzer} ${sample} ${extra_args}"
 done
 
 #./python/run.py ZZjAnalyzer  ZZTo4e 

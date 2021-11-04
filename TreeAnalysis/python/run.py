@@ -223,6 +223,9 @@ def run(executable, analysis, typeofsample, region, year, luminosity, maxNumEven
 
 def mergeDataSamples(outputLocations):
     #print outputLocations
+    if(len(outputLocations) == 0):
+      print Red("Error") + ": outputLocations is empty!"
+      exit(1)
     failure, basename = commands.getstatusoutput('basename {0:s}'.format(outputLocations[0]))
     outputdir = outputLocations[0].replace(basename,'')
     hadd = 'hadd {0:s}/data.root '.format(outputdir)

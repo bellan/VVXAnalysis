@@ -101,7 +101,7 @@ short FilterController::getTriggerWord(const edm::Event & event){
 
   if (theSetup >= 2016) { passSingleMu  = passFilter(event,"triggerSingleMu"); }
 
-  bool passAtLeastOneTrigger = passDiMu || passDiEle || passMuEle || passTriEle || passSingleEle || passTriMu || passSingleMu ;
+  bool passAtLeastOneTrigger = passDiMu || passDiEle || passMuEle || passTriEle || passSingleEle || passTriMu || passSingleMu;
   
   if (passAtLeastOneTrigger)   set_bit_16(trigword,0);
   if (passDiMu)                set_bit_16(trigword,1);
@@ -115,10 +115,10 @@ short FilterController::getTriggerWord(const edm::Event & event){
  
   // This is the trigger selection logic to select ZZ and ZLL events
   if( ( PD == ""                                 &&  passAtLeastOneTrigger)    || 
-      ((PD == "DoubleEle" || PD == "DoubleEG"  || PD == "EGamma") && (passDiEle || passTriEle)) ||
+      ((PD == "DoubleEle" || PD == "DoubleEG" || PD == "EGamma" ) && (passDiEle || passTriEle)) ||
       ((PD == "DoubleMu"  || PD == "DoubleMuon") && (passDiMu  || passTriMu)  && !passDiEle && !passTriEle) ||
       ((PD == "MuEG"      || PD == "MuonEG"    ) &&  passMuEle                && !passDiMu  && !passTriMu && !passDiEle && !passTriEle) ||
-      ( PD == "SingleElectron"                   &&  passSingleEle            && !passMuEle && !passDiMu  && !passTriMu && !passDiEle && !passTriEle) ||
+      ((PD == "SingleElectron" || PD == "EGamma")&&  passSingleEle            && !passMuEle && !passDiMu  && !passTriMu && !passDiEle && !passTriEle) ||
       ( PD == "SingleMuon"                       &&  passSingleMu             && !passMuEle && !passDiMu  && !passTriMu && !passDiEle && !passTriEle && !passSingleEle)) 
     set_bit_16(trigword,8); 
 

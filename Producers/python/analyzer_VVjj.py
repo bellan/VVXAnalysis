@@ -83,6 +83,7 @@ if IsMC:
     genleptons = '(status == 1 && (isPromptFinalState && fromHardProcessFinalState && abs(pdgId) <= 16) ||  abs(pdgId) == 22)'
     #genquarks  = '(fromHardProcessFinalState && abs(pdgId) <= 6 && (mother.pdgId == 23 || abs(mother.pdgId) == 24))'
     genquarks  = '(abs(pdgId) <= 6 && (mother.pdgId == 23 || abs(mother.pdgId) == 24))'
+    genphotons = 'pdgId == 22'
     
     process.genParticlesFromHardProcess = cms.EDFilter("GenParticleSelector",
                                                        filter = cms.bool(False),
@@ -92,8 +93,7 @@ if IsMC:
                                                        #                            cut = cms.string(
                                                        stableOnly = cms.bool(False),
 
-                                                       cut = cms.string(genleptons+" || "+ genquarks)
-                                                       
+                                                       cut = cms.string(genleptons + " || " + genquarks+" || " + genphotons)
                                                    )
 
     process.genTaus = cms.EDFilter("GenParticleSelector",
@@ -307,7 +307,12 @@ process.jetCleaning = cms.Path(process.muonsFromZZ * process.postCleaningMuons *
                                + process.fatJets)
 
 
+process.filteredPhotons = cms.EDFilter("PATPhotonSelector",
+                                       src = cms.InputTag("slimmedPhotons"),
+                                       cut = cms.string("pt > 18") # && userFloat('cutBasedPhotonID_Fall17_94X_V2_loose') > 0.5")
+)
 
+process.photonSelection = cms.Path(process.egammaPostRecoSeq * process.filteredPhotons)
 
 
 ### ------------------------------------------------------------------------- ###
@@ -330,6 +335,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      AddLHEKinematics = cms.bool(ADDLHEKINEMATICS),
                                      muons        = cms.InputTag("postCleaningMuons"),     # all good isolated muons BUT the ones coming from ZZ decay
                                      electrons    = cms.InputTag("postCleaningElectrons"), # all good isolated electrons BUT the ones coming from ZZ decay
+                                     photons      = cms.InputTag("filteredPhotons"),       # all photons that pass pt cut
                                      jets         = cms.InputTag("disambiguatedJets"),     # jets which do not contains leptons from ZZ or other good isolated leptons are removed
                                      jetsAK8      = cms.InputTag("disambiguatedJetsAK8"),     # jets which do not contains leptons from ZZ or other good isolated leptons are removed
                                      Vhad         = cms.InputTag(""),
