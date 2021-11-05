@@ -145,26 +145,20 @@ if IsMC:
 
 
 
-process.ZlSelected = cms.EDFilter("PATCompositeCandidateSelector",
-                                  src = cms.InputTag("ZlCand"),
-                                  cut = cms.string("((daughter(0).daughter(0).pt > 20 && daughter(0).daughter(1).pt > 10) || (daughter(0).daughter(0).pt() > 10 && daughter(0).daughter(1).pt > 20)) && abs(daughter(0).mass -91.19) <= 10 && daughter(1).masterClone.userFloat('isSIP')")
-                                  )
-
-
-
-process.zzAndzlFilterCombiner = cms.EDFilter("ZLFilter", ZLL = cms.InputTag("ZZFiltered"), ZL = cms.InputTag("ZlSelected"),
-                                             isMC         = cms.untracked.bool(IsMC),                                            
-                                             ZLSelection = cms.string("") # Add SIP cut here and remove it in eventanalyzer.cc
-                                             #is MC, topology,  SR, CRs,  
-                                                               )
+# FIXME: new logic needs to be implemented!
+# process.zzAndzlFilterCombiner = cms.EDFilter("ZLFilter", ZLL = cms.InputTag("ZZFiltered"), ZL = cms.InputTag("ZlSelected"),
+#                                              isMC         = cms.untracked.bool(IsMC),                                            
+#                                              ZLSelection = cms.string("") # Add SIP cut here and remove it in eventanalyzer.cc
+#                                              #is MC, topology,  SR, CRs,  
+#                                                                )
 
 
 ### Path that pre-select the higher level objects that will input the TreePlanter
 process.preselection = cms.Path( process.prePreselectionCounter
                                  * process.CR
                                  * process.postRecoCleaning 
-                                 * process.ZlSelected
-                                 * process.zzAndzlFilterCombiner
+#                                 * process.ZlSelected
+#                                 * process.zzAndzlFilterCombiner
                                  * process.postPreselectionCounter)
 
 

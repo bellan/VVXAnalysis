@@ -118,11 +118,11 @@ if IsMC:
 
 
 
-## ZZ->4l
-execfile(VVjj_search_path + "analyzer_ZZjj.py")
+## targetting WZ->3lnu
+execfile(VVjj_search_path + "3_leptons_regions.py")
 
-## WZ->3lnu
-execfile(VVjj_search_path + "analyzer_WZjj.py") 
+## targetting ZZ->4l
+execfile(VVjj_search_path + "4_leptons_regions.py") 
 
 ## VZ->2l2j
 #execfile(VVjj_search_path + "analyzer_VZjj.py")
@@ -341,7 +341,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      Vhad         = cms.InputTag(""),
                                      ZZ           = cms.InputTag("ZZFiltered"),            # only the best ZZ->4l candidate that pass the FULL selection
                                      ZL           = cms.InputTag("ZlSelected"),
-                                     ZW           = cms.InputTag("ZWCand"),
+                                     ZW           = cms.InputTag("bareZWCand"),
                                      MET          = cms.InputTag("slimmedMETs"),
                                      Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
                                      XSection     = cms.untracked.double(XSEC)

@@ -17,26 +17,94 @@
 #     process.WZsignalCounter    = cms.EDProducer("EventCountProducer")
 #     process.WZsignalDefinition = cms.Path(process.WZgenCategory * process.WZsignalCounter)
 
-process.ZlForWZ = cms.EDFilter("PATCompositeCandidateSelector",
-                              src = cms.InputTag("ZlSelected"),
-                              cut = cms.string("daughter(1).masterClone.userFloat('isGood')" + " && " +
-                                               "daughter(1).masterClone.userFloat('passCombRelIsoPFFSRCorr')"
-                                              ),
-                              checkCharge = cms.bool(False)
-)
 
-process.ZlForWZCountFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZlForWZ"), 
-                                          minNumber = cms.uint32(1) # maxNumber does not exist
+PT20_10     = "((daughter(0).daughter(0).pt > 20 && daughter(0).daughter(1).pt > 10) || (daughter(0).daughter(0).pt() > 10 && daughter(0).daughter(1).pt > 20))"
+ZMASSWINDOW = "abs(daughter(0).mass -91.19) <= 10"
+
+
+### Basic object for the fake rate measurement CR
+process.ZlSelected = cms.EDFilter("PATCompositeCandidateSelector",
+                                  src = cms.InputTag("ZlCand"),
+                                  cut = cms.string(PT20_10 + " && "+ZMASSWINDOW)
+                                  )
+
+
+
+### We need to build up several CRs. For ref see CMS AN-2017/135 pag. 15-16
+
+
+# First, we create al possible SFOS, both e and mu, pairs
+process.bareZCandFromLooseL     = process.bareZCand.clone()
+process.bareZCandFromLooseL.cut = cms.string('mass > 0 && abs(daughter(0).pdgId()) == abs(daughter(1).pdgId())')
+
+# then we rank them
+process.ZCandFromLooseL            = process.ZCand.clone()
+process.ZCandFromLooseL.src        = cms.InputTag("bareZCandFromLooseL")
+process.ZCandFromLooseL.bestZAmong = cms.string("mass > 40 && mass < 120")
+process.ZCandFromLooseL.flags      = cms.PSet(GoodLeptons = cms.string(""),
+                                              GoodIsoLeptons = cms.string(""),
+                                              Z1Presel = cms.string("mass > 40 && mass < 120"),
                                           )
 
+# combine the Z candidate with a free lepton.
+process.ZlCandFromLooseL       = process.ZlCand.clone()
+process.ZlCandFromLooseL.decay = cms.string('ZCandFromLooseL softLeptons')
 
-process.ZWCand = cms.EDProducer("PATCandViewShallowCloneCombiner",
-                                decay = cms.string('ZlForWZ slimmedMETs'),
-                                cut = cms.string("daughter(0).daughter(1).pt > 20" + " && " + "daughter(1).pt > 20" 
-                                ),
-                                checkCharge = cms.bool(False)
+
+#  Just check that the trigger thresholds are passed
+process.selectedZlCandFromLooseL = cms.EDFilter("PATCompositeCandidateSelector",
+                                                src = cms.InputTag("ZlCandFromLooseL"),
+                                                cut = cms.string("(daughter(0).daughter(0).pt > 20 && (daughter(0).daughter(1).pt > 10 || daughter(1).pt > 10))" + 
+                                                                 " || " +
+                                                                 "(daughter(0).daughter(1).pt > 20 && (daughter(0).daughter(0).pt > 10 || daughter(1).pt > 10))" + 
+                                                                 " || " +
+                                                                 "(daughter(1).pt > 20 && (daughter(0).daughter(0).pt > 10 || daughter(0).daughter(1).pt > 10))"
+                                                             ),
+                                                checkCharge = cms.bool(False)
+                                            )
+
+# At this point we have all possible 3 leptons combinations. We now build the WZ bare candidate asking 20 GeV of MET
+process.bareZWCand = cms.EDProducer("PATCandViewShallowCloneCombiner",
+                                    decay = cms.string('selectedZlCandFromLooseL slimmedMETs'),
+                                    cut = cms.string("daughter(1).pt > 20"),
+                                    checkCharge = cms.bool(False)
 )
+
+
+process.pathFor3LeptonsAnalysis = cms.Path(process.ZlSelected               +  # CR for fake rate mesurement 
+                                           process.bareZCandFromLooseL      +  # Z from loose leptons
+                                           process.ZCandFromLooseL          +  # best Z from all loose leptons
+                                           process.ZlCandFromLooseL         +  # best Z + a free loose lepton
+                                           process.selectedZlCandFromLooseL +  # best Z + a free loose lepton w/ trigger requirements
+                                           process.bareZWCand)                 # Zl + MET (WZ bare candidate)
+
+
+
+#process.ZlForWZCountFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZlForWZ"), 
+#                                          minNumber = cms.uint32(1) # maxNumber does not exist
+#                                          )
+
+
+# process.ZlForWZ = cms.EDFilter("PATCompositeCandidateSelector",
+#                               src = cms.InputTag("ZlSelected"),
+#                               cut = cms.string("daughter(1).masterClone.userFloat('isGood')" + " && " +
+#                                                "daughter(1).masterClone.userFloat('passCombRelIsoPFFSRCorr')"
+#                                               ),
+#                               checkCharge = cms.bool(False)
+# )
+
+# process.ZlForWZCountFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZlForWZ"), 
+#                                           minNumber = cms.uint32(1) # maxNumber does not exist
+#                                           )
+
+
+# process.ZWCand = cms.EDProducer("PATCandViewShallowCloneCombiner",
+#                                 decay = cms.string('ZlForWZ slimmedMETs'),
+#                                 cut = cms.string("daughter(0).daughter(1).pt > 20" + " && " + "daughter(1).pt > 20" 
+#                                 ),
+#                                 checkCharge = cms.bool(False)
+# )
 
 
 #process.WZjjPath = cms.Path(process.ZlForWZ * process.ZlForWZCountFilter * process.ZWCand)
-process.WZjjPath = cms.Path(process.ZlForWZ * process.ZWCand)
+
