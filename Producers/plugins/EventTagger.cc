@@ -41,55 +41,116 @@ public:
 
   EventTagger(const ParameterSet& pset) 
     : sel_            (pset.getParameter<int>("Topology"))
-    , leptonsToken_   (consumes<edm::View<reco::Candidate> >(pset.getParameter<edm::InputTag>("src")))
-    , tightSelection_ (pset.getParameter<std::string>("TightSelection")){
+    , leptonsToken_         (consumes<edm::View<reco::Candidate> >(pset.getParameter<edm::InputTag>("leptons")))
+    , tightLeptonSelection_ (pset.getParameter<std::string>("tightLeptonSelection"))
+    , minLooseLeptons_       (pset.getParameter<int>("minLooseLeptons"))
+    , maxLooseLeptons_       (pset.getParameter<int>("maxLooseLeptons"))
+    , minTightLeptons_       (pset.getParameter<int>("minTightLeptons"))
+    , maxTightLeptons_       (pset.getParameter<int>("maxTightLeptons"))
+    , photonsToken_         (consumes<edm::View<reco::Candidate> >(pset.getParameter<edm::InputTag>("photons")))
+    , photonSelection_      (pset.getParameter<std::string>("photonSelection"))
+    , minPhotons_            (pset.getParameter<int>("minPhotons"))
+    , maxPhotons_            (pset.getParameter<int>("maxPhotons"))
+    , jetsAK4Token_         (consumes<edm::View<reco::Candidate> >(pset.getParameter<edm::InputTag>("jetsAK4")))
+    , jetAK4Selection_      (pset.getParameter<std::string>("jetAK4Selection"))
+    , minAK4s_               (pset.getParameter<int>("minAK4s"))
+    , jetsAK8Token_         (consumes<edm::View<reco::Candidate> >(pset.getParameter<edm::InputTag>("jetsAK8")))
+    , jetAK8Selection_      (pset.getParameter<std::string>("jetAK8Selection"))
+    , minAK8s_               (pset.getParameter<int>("minAK8s"))
+    , minAK4orMinAK8_       (pset.getParameter<bool>("minAK4orMinAK8"))
+    , METToken_             (consumes<edm::View<reco::Candidate> >(pset.getParameter<edm::InputTag>("MET")))
+    , METSelection_         (pset.getParameter<std::string>("METSelection")) {
+
     produces<int>();
   }
  
 
   bool filter(edm::Event & event, const edm::EventSetup& eventSetup);
     
-  
+ 
 private:
+
+  std::pair<int,int> countLooseAndTight(const edm::Event & event,
+					const edm::EDGetTokenT<edm::View<reco::Candidate> >& token,
+					const StringCutObjectSelector<reco::Candidate>& selection);
+  
+
   int sel_;
   edm::EDGetTokenT<edm::View<reco::Candidate> > leptonsToken_;
-  StringCutObjectSelector<reco::Candidate> tightSelection_;
-  
+  StringCutObjectSelector<reco::Candidate> tightLeptonSelection_;
+  int minLooseLeptons_;
+  int maxLooseLeptons_;
+  int minTightLeptons_;
+  int maxTightLeptons_;
+
+  edm::EDGetTokenT<edm::View<reco::Candidate> > photonsToken_;
+  StringCutObjectSelector<reco::Candidate> photonSelection_;
+  int minPhotons_;
+  int maxPhotons_;
+
+
+  edm::EDGetTokenT<edm::View<reco::Candidate> > jetsAK4Token_;
+  StringCutObjectSelector<reco::Candidate> jetAK4Selection_;
+  int minAK4s_;
+
+  edm::EDGetTokenT<edm::View<reco::Candidate> > jetsAK8Token_;
+  StringCutObjectSelector<reco::Candidate> jetAK8Selection_;
+  int minAK8s_;
+
+  bool minAK4orMinAK8_;
+
+  edm::EDGetTokenT<edm::View<reco::Candidate> > METToken_;
+  StringCutObjectSelector<reco::Candidate> METSelection_;
+ 
 };
+
+std::pair<int,int> EventTagger::countLooseAndTight(const edm::Event & event,
+						   const edm::EDGetTokenT<edm::View<reco::Candidate> >& token,
+						   const StringCutObjectSelector<reco::Candidate>& selection){
+
+  // Get the collection of
+  edm::Handle<edm::View<reco::Candidate> > candidates;
+  event.getByToken(token, candidates);
+
+  int loose  = candidates->size(); int tight = 0;
+
+  foreach(const reco::Candidate& cand, *candidates) if(selection(cand)) ++tight;
+  
+  return std::make_pair(loose,tight);
+}
+
 
 
 bool EventTagger::filter(Event & event, const EventSetup& eventSetup) { 
   
-
-  // Get the collection of gen particles
-  edm::Handle<edm::View<reco::Candidate> > leptons;
-  event.getByToken(leptonsToken_, leptons);
-  
-  int allLep  = leptons->size(); int tightLep  = 0; int looseNotTightLep = 0;
-  int sumid = 0;
   
   bitset<5>  topology;
 
 
-  foreach(const reco::Candidate& lep, *leptons){
-    
-    if (tightSelection_(lep)) topology.set(5-tightLep++);
-    else                      topology.set(looseNotTightLep++);   
-    sumid += lep.pdgId();
-  }
-  
- 
-  
-  if (tightLep < 1 || allLep < 2                                // At least 1T+1LnotT in the event
-      || allLep > 4                                             // At most 4L in the event
-      || looseNotTightLep > 3                                   // At most 3LnotT in the event
-      || (allLep == 4 && sumid != 0)                            // 4l -> only ZZ like events
-      || (allLep == 3 && abs(sumid) != 11 && abs(sumid) != 13)) // 3l -> only WZ like events
-    topology.reset();
-  
+  std::pair<int,int> nleptons = countLooseAndTight(event, leptonsToken_, tightLeptonSelection_);
+  std::pair<int,int> nphotons = countLooseAndTight(event, photonsToken_, photonSelection_);
+  std::pair<int,int> njetsAK4 = countLooseAndTight(event, jetsAK4Token_, jetAK4Selection_);
+  std::pair<int,int> njetsAK8 = countLooseAndTight(event, jetsAK8Token_, jetAK8Selection_);
+
+  edm::Handle<edm::View<reco::Candidate> >  met;      event.getByToken(METToken_ , met);
+
 
   auto output = std::make_unique<int>(topology.to_ulong()); //Topology
   event.put(std::move(output)); 
+
+
+  bool hasLooseL  = (nleptons.first >= minLooseLeptons_ && nleptons.first <= maxLooseLeptons_);
+  bool hasTightL  = (nleptons.second >= minTightLeptons_ && nleptons.second <= maxTightLeptons_);
+  bool hasPhotons = (nphotons.second >= minPhotons_ && nphotons.second <= maxPhotons_);
+  bool hasAK4     = (njetsAK4.second >= minAK4s_);
+  bool hasAK8     = (njetsAK8.second >= minAK8s_);
+  bool hasMET     = METSelection_(met->front());
+
+  return (hasLooseL  && hasTightL &&  
+	  hasPhotons &&
+	  hasAK4     && hasAK8     
+	  hasMET);
+  // FIXME: It compiles, but it is untested and unfinished
 
   if (sel_ >= 0 && topology.any()) {
 
