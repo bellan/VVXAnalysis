@@ -1,4 +1,4 @@
-/** \class EventTagger
+/** \class EventFilter
  *  No description available.
  *
  *  $Date: $
@@ -34,61 +34,55 @@ using namespace std;
 using namespace edm;
 
 
-class EventTagger: public edm::EDFilter {
+class EventFilter: public edm::EDFilter {
 
 public:
   
 
-  EventTagger(const ParameterSet& pset) 
-    : sel_            (pset.getParameter<int>("Topology"))
-    , leptonsToken_         (consumes<edm::View<reco::Candidate> >(pset.getParameter<edm::InputTag>("leptons")))
+  EventFilter(const ParameterSet& pset) 
+    : leptonsToken_         (consumes<edm::View<reco::Candidate> >(pset.getParameter<edm::InputTag>("leptons")))
     , tightLeptonSelection_ (pset.getParameter<std::string>("tightLeptonSelection"))
-    , minLooseLeptons_       (pset.getParameter<int>("minLooseLeptons"))
-    , maxLooseLeptons_       (pset.getParameter<int>("maxLooseLeptons"))
-    , minTightLeptons_       (pset.getParameter<int>("minTightLeptons"))
-    , maxTightLeptons_       (pset.getParameter<int>("maxTightLeptons"))
+    , minLooseLeptons_      (pset.getParameter<int>("minLooseLeptons"))
+    , maxLooseLeptons_      (pset.getParameter<int>("maxLooseLeptons"))
+    , minTightLeptons_      (pset.getParameter<int>("minTightLeptons"))
+    , maxTightLeptons_      (pset.getParameter<int>("maxTightLeptons"))
     , photonsToken_         (consumes<edm::View<reco::Candidate> >(pset.getParameter<edm::InputTag>("photons")))
     , photonSelection_      (pset.getParameter<std::string>("photonSelection"))
-    , minPhotons_            (pset.getParameter<int>("minPhotons"))
-    , maxPhotons_            (pset.getParameter<int>("maxPhotons"))
+    , minPhotons_           (pset.getParameter<int>("minPhotons"))
+    , maxPhotons_           (pset.getParameter<int>("maxPhotons"))
     , jetsAK4Token_         (consumes<edm::View<reco::Candidate> >(pset.getParameter<edm::InputTag>("jetsAK4")))
     , jetAK4Selection_      (pset.getParameter<std::string>("jetAK4Selection"))
-    , minAK4s_               (pset.getParameter<int>("minAK4s"))
+    , minAK4s_              (pset.getParameter<int>("minAK4s"))
     , jetsAK8Token_         (consumes<edm::View<reco::Candidate> >(pset.getParameter<edm::InputTag>("jetsAK8")))
     , jetAK8Selection_      (pset.getParameter<std::string>("jetAK8Selection"))
-    , minAK8s_               (pset.getParameter<int>("minAK8s"))
+    , minAK8s_              (pset.getParameter<int>("minAK8s"))
     , minAK4orMinAK8_       (pset.getParameter<bool>("minAK4orMinAK8"))
     , METToken_             (consumes<edm::View<reco::Candidate> >(pset.getParameter<edm::InputTag>("MET")))
-    , METSelection_         (pset.getParameter<std::string>("METSelection")) {
-
-    produces<int>();
-  }
+    , METSelection_         (pset.getParameter<std::string>("METSelection")) {}
  
-
+  
   bool filter(edm::Event & event, const edm::EventSetup& eventSetup);
-    
- 
+  
+  
 private:
-
+  
   std::pair<int,int> countLooseAndTight(const edm::Event & event,
 					const edm::EDGetTokenT<edm::View<reco::Candidate> >& token,
 					const StringCutObjectSelector<reco::Candidate>& selection);
   
-
-  int sel_;
   edm::EDGetTokenT<edm::View<reco::Candidate> > leptonsToken_;
   StringCutObjectSelector<reco::Candidate> tightLeptonSelection_;
   int minLooseLeptons_;
   int maxLooseLeptons_;
   int minTightLeptons_;
   int maxTightLeptons_;
-
+  
   edm::EDGetTokenT<edm::View<reco::Candidate> > photonsToken_;
   StringCutObjectSelector<reco::Candidate> photonSelection_;
   int minPhotons_;
   int maxPhotons_;
 
-
+  
   edm::EDGetTokenT<edm::View<reco::Candidate> > jetsAK4Token_;
   StringCutObjectSelector<reco::Candidate> jetAK4Selection_;
   int minAK4s_;
@@ -104,16 +98,16 @@ private:
  
 };
 
-std::pair<int,int> EventTagger::countLooseAndTight(const edm::Event & event,
+std::pair<int,int> EventFilter::countLooseAndTight(const edm::Event & event,
 						   const edm::EDGetTokenT<edm::View<reco::Candidate> >& token,
 						   const StringCutObjectSelector<reco::Candidate>& selection){
-
+  
   // Get the collection of
   edm::Handle<edm::View<reco::Candidate> > candidates;
   event.getByToken(token, candidates);
-
+  
   int loose  = candidates->size(); int tight = 0;
-
+  
   foreach(const reco::Candidate& cand, *candidates) if(selection(cand)) ++tight;
   
   return std::make_pair(loose,tight);
@@ -121,12 +115,8 @@ std::pair<int,int> EventTagger::countLooseAndTight(const edm::Event & event,
 
 
 
-bool EventTagger::filter(Event & event, const EventSetup& eventSetup) { 
+bool EventFilter::filter(Event & event, const EventSetup& eventSetup) { 
   
-  
-  bitset<5>  topology;
-
-
   std::pair<int,int> nleptons = countLooseAndTight(event, leptonsToken_, tightLeptonSelection_);
   std::pair<int,int> nphotons = countLooseAndTight(event, photonsToken_, photonSelection_);
   std::pair<int,int> njetsAK4 = countLooseAndTight(event, jetsAK4Token_, jetAK4Selection_);
@@ -134,12 +124,7 @@ bool EventTagger::filter(Event & event, const EventSetup& eventSetup) {
 
   edm::Handle<edm::View<reco::Candidate> >  met;      event.getByToken(METToken_ , met);
   
-  
-  auto output = std::make_unique<int>(topology.to_ulong()); //Topology
-  event.put(std::move(output)); 
-  
-  
-  bool hasLooseL  = (nleptons.first >= minLooseLeptons_  && nleptons.first  <= maxLooseLeptons_);
+  bool hasLooseL  = (nleptons.first  >= minLooseLeptons_ && nleptons.first  <= maxLooseLeptons_);
   bool hasTightL  = (nleptons.second >= minTightLeptons_ && nleptons.second <= maxTightLeptons_);
   bool hasPhotons = (nphotons.second >= minPhotons_      && nphotons.second <= maxPhotons_);
   bool hasAK4     = (njetsAK4.second >= minAK4s_);
@@ -148,25 +133,12 @@ bool EventTagger::filter(Event & event, const EventSetup& eventSetup) {
   
   return (hasLooseL  && hasTightL &&  
 	  hasPhotons &&
-	  hasAK4     && hasAK8    && 
+	  hasAK4     && hasAK8    &&
 	  hasMET);
-  // FIXME: It compiles, but it is untested and unfinished
-  
-  if (sel_ >= 0 && topology.any()) {
-    
-    if( ((topology.to_ulong() ^ sel_) & sel_) == 0)   return true;
-    
-    else return false;
-    
-  }
-  
-  else
-    return true;
-  
 }
 
 
 #include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(EventTagger);
+DEFINE_FWK_MODULE(EventFilter);
 
  
