@@ -8,7 +8,7 @@
 #  Author: A. Mecca  (alberto.mecca@cern.ch)                  #
 ###############################################################
 
-dirs=$(find . -maxdepth 4 -name condor.sub | grep -oP ".+(?=/condor.sub)" | grep -oP "(?<=\./).+")
+dirs=$(find . -maxdepth 4 -name "*Chunk*" -prune -o -name "AAAOK" -prune -o -type f -name condor.sub | grep -oP ".+(?=/condor.sub$)" | grep -oP "(?<=\./).+")
 
 for d in $dirs ; do
     (
