@@ -71,7 +71,28 @@ process.bareZWCand = cms.EDProducer("PATCandViewShallowCloneCombiner",
 )
 
 
-process.pathFor3LeptonsAnalysis = cms.Path(process.ZlSelected               +  # CR for fake rate mesurement 
+
+# Filter to select the events
+# it is a two stages filtering. One to reduce the computational time (preSelect), and another to do the proper selection (select)
+from VVXAnalysis.Producers.EventFilter_cfg import eventFilter
+process.preSelect3leptonsRegions = eventFilter.clone()
+process.preSelect3leptonsRegions.minLooseLeptons = cms.int32(3)
+process.preSelect3leptonsRegions.maxLooseLeptons = cms.int32(3)
+process.preSelect3leptonsRegions.jetsAK4         = cms.InputTag("slimmedJets")
+process.preSelect3leptonsRegions.muons           = cms.InputTag("slimmedMuons")
+process.preSelect3leptonsRegions.electrons       = cms.InputTag("slimmedElectrons")
+
+
+from VVXAnalysis.Producers.EventFilter_cfg import eventFilter
+process.select3leptonsRegions = eventFilter.clone()
+process.select3leptonsRegions.minTightLeptons = cms.int32(0)
+process.select3leptonsRegions.minLooseLeptons = cms.int32(3)
+process.select3leptonsRegions.maxTightLeptons = cms.int32(3)
+process.select3leptonsRegions.maxLooseLeptons = cms.int32(3)
+
+
+process.pathFor3LeptonsAnalysis = cms.Path(#process.preSelect3leptonsRegions *
+                                           process.ZlSelected               +  # CR for fake rate mesurement 
                                            process.bareZCandFromLooseL      +  # Z from loose leptons
                                            process.ZCandFromLooseL          +  # best Z from all loose leptons
                                            process.ZlCandFromLooseL         +  # best Z + a free loose lepton

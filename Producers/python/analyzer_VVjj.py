@@ -117,6 +117,17 @@ if IsMC:
     process.genPath = cms.Path(process.genParticlesFromHardProcess + process.selectedGenJets  + process.selectedGenJetsAK8 + process.genTaus)
 
 
+process.filteredPhotons = cms.EDFilter("PATPhotonSelector",
+                                       src = cms.InputTag("slimmedPhotons"),
+                                       cut = cms.string("pt > 15 && abs(eta) > 2.4") # && userFloat('cutBasedPhotonID_Fall17_94X_V2_loose') > 0.5")
+)
+
+process.photonSelection = cms.Path(process.filteredPhotons)
+
+
+
+
+
 
 ## targetting WZ->3lnu
 execfile(VVjj_search_path + "3_leptons_regions.py")
@@ -289,12 +300,13 @@ process.disambiguatedJetsAK8 = cms.EDProducer("JetsWithLeptonsRemover",
                                               cleanFSRFromLeptons = cms.bool(True)
                                               )
 
-#process.fatJets = cms.Sequence(process.patJetCorrFactorsReapplyJECAK8 + process.patJetsReapplyJECAK8 + process.goodJetsAK8 + process.correctedJetsAK8 + process.disambiguatedJetsAK8)
-process.fatJets = cms.Sequence(process.goodJetsAK8 + process.correctedJetsAK8 + process.disambiguatedJetsAK8)
-
-
-
 process.jetCounterFilter2 = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("selectedUpdatedPatJetsAK8WithDeepTags"), minNumber = cms.uint32(0))
+#process.fatJets = cms.Sequence(process.patJetCorrFactorsReapplyJECAK8 + process.patJetsReapplyJECAK8 + process.goodJetsAK8 + process.correctedJetsAK8 + process.disambiguatedJetsAK8)
+process.fatJets = cms.Sequence(process.jetCounterFilter2 + process.goodJetsAK8 + process.correctedJetsAK8)
+
+
+
+
 
 
 # Number of disambiguated jets
@@ -302,17 +314,11 @@ process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTa
 
 process.jetCleaning = cms.Path(process.muonsFromZZ * process.postCleaningMuons * process.muonsToBeRemovedFromJets 
                                + process.electronsFromZZ * process.postCleaningElectrons * process.electronsToBeRemovedFromJets
-                               + process.disambiguatedJets
-                               + process.jetCounterFilter + process.jetCounterFilter2
-                               + process.fatJets)
+                               + process.disambiguatedJets + process.disambiguatedJetsAK8
+                               + process.jetCounterFilter)
 
 
-process.filteredPhotons = cms.EDFilter("PATPhotonSelector",
-                                       src = cms.InputTag("slimmedPhotons"),
-                                       cut = cms.string("pt > 18") # && userFloat('cutBasedPhotonID_Fall17_94X_V2_loose') > 0.5")
-)
-
-process.photonSelection = cms.Path(process.egammaPostRecoSeq * process.filteredPhotons)
+#process.photonSelection = cms.Path(process.filteredPhotons)
 
 
 ### ------------------------------------------------------------------------- ###

@@ -7,7 +7,7 @@
 ### ------------------------------------------------------------------------- ###
 ### Activate some skimming and cleaning of the collections
 ### ------------------------------------------------------------------------- ###
-SkimPaths.append("preselection")
+SkimPaths.append("pathFor4LeptonsAnalysis")
 
 
 
@@ -82,14 +82,14 @@ process.ZZFiltered = cms.EDProducer("PATCompositeCandidateMergerWithPriority",
                                     )
 
 ### ------------------------------------------------------------------------- ###
-### Define the post reconstruction cleaning sequence
+### Merge the SR and the CRs in a unique collection
 ### ------------------------------------------------------------------------- ###
 
-process.postRecoCleaning = cms.Sequence( process.ZZSelectedCand
-                                         + process.ZLLFiltered2P2F
-                                         + process.ZLLFiltered3P1F
-                                         + process.ZZFiltered
-                                         )
+process.mergeZZCollections = cms.Sequence( process.ZZSelectedCand
+                                           + process.ZLLFiltered2P2F
+                                           + process.ZLLFiltered3P1F
+                                           + process.ZZFiltered
+                                       )
 
 
 
@@ -144,22 +144,32 @@ if IsMC:
 
 
 
+# Filter to select the events
+# it is a two stages filtering. One to reduce the computational time (preSelect), and another to do the proper selection (select)
+from VVXAnalysis.Producers.EventFilter_cfg import eventFilter
+process.preSelect4leptonsRegions = eventFilter.clone()
+process.preSelect4leptonsRegions.minLooseLeptons = cms.int32(4)
+process.preSelect4leptonsRegions.jetsAK4         = cms.InputTag("slimmedJets")
+process.preSelect4leptonsRegions.jetsAK8         = cms.InputTag("correctedJetsAK8:corrJets")
+process.preSelect4leptonsRegions.muons           = cms.InputTag("slimmedMuons")
+process.preSelect4leptonsRegions.electrons       = cms.InputTag("slimmedElectrons")
+process.preSelect4leptonsRegions.tightMuonSelection = cms.string("")
+process.preSelect4leptonsRegions.tightElectronSelection = cms.string("")
 
-# FIXME: new logic needs to be implemented!
-# process.zzAndzlFilterCombiner = cms.EDFilter("ZLFilter", ZLL = cms.InputTag("ZZFiltered"), ZL = cms.InputTag("ZlSelected"),
-#                                              isMC         = cms.untracked.bool(IsMC),                                            
-#                                              ZLSelection = cms.string("") # Add SIP cut here and remove it in eventanalyzer.cc
-#                                              #is MC, topology,  SR, CRs,  
-#                                                                )
+from VVXAnalysis.Producers.EventFilter_cfg import eventFilter
+process.select4leptonsRegions = eventFilter.clone()
+process.select4leptonsRegions.minTightLeptons = cms.int32(2)
+
+
 
 
 ### Path that pre-select the higher level objects that will input the TreePlanter
-process.preselection = cms.Path( process.prePreselectionCounter
-                                 * process.CR
-                                 * process.postRecoCleaning 
-#                                 * process.ZlSelected
-#                                 * process.zzAndzlFilterCombiner
-                                 * process.postPreselectionCounter)
+process.pathFor4LeptonsAnalysis = cms.Path( process.preSelect4leptonsRegions *
+                                            process.prePreselectionCounter
+                                            * process.CR                      # from ZZ4lAnalysis
+                                            * process.mergeZZCollections      # merge all CRs and the SR in a unique ZZ collection
+                                            * process.select4leptonsRegions 
+                                            * process.postPreselectionCounter)
 
 
 # Some counters and paths functional to the fake lepton background estimation and signal region check
@@ -177,17 +187,17 @@ process.zzTrigger = cms.EDFilter("ZZTriggerFilter", src = cms.InputTag("ZZFilter
 process.cand2P2F       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("ZZFiltered"), cut = cms.string(BOTHFAIL))
 process.cand2P2FFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand2P2F"), minNumber = cms.uint32(1))
 process.cr2P2F         = cms.Path(process.cand2P2F * process.cand2P2FFilter)
-process.cr2P2FCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("cr2P2F","preselection","zzTrigger"))
+process.cr2P2FCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("cr2P2F","pathFor4LeptonsAnalysis","zzTrigger"))
 
 process.cand3P1F       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("ZZFiltered"), cut = cms.string(PASSD0_XOR_PASSD1))
 process.cand3P1FFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand3P1F"), minNumber = cms.uint32(1))
 process.cr3P1F         = cms.Path(process.cand3P1F * process.cand3P1FFilter)
-process.cr3P1FCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("cr3P1F","preselection","zzTrigger"))
+process.cr3P1FCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("cr3P1F","pathFor4LeptonsAnalysis","zzTrigger"))
 
 process.candSR       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("ZZFiltered"), cut = cms.string(BOTHPASS))
 process.candSRFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("candSR"), minNumber = cms.uint32(1))
 process.sr           = cms.Path(process.candSR * process.candSRFilter)
-process.srCounter    = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("sr","preselection","zzTrigger"))
+process.srCounter    = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("sr","pathFor4LeptonsAnalysis","zzTrigger"))
 
 
 
