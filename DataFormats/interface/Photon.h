@@ -20,7 +20,7 @@ namespace phys {
     friend class ::TreePlanter;
 
   public:
-    typedef std::pair<std::string, Bool_t> IdPair;
+    //typedef std::pair<std::string, Bool_t> IdPair;
     
     // Constructor
     Photon(const TLorentzVector& pin = TLorentzVector(0.,0.,0.,0.), float q =0, int id = 0):
