@@ -30,15 +30,8 @@ void VVGammaAnalyzer::begin(){
 	cout<<" Start of VVGammaAnalyzer ";
 	for(char i=0; i<25; ++i) cout<<'-';
 	cout<<'\n';
-	/*
-	TFile* photonSFfile = TFile::Open("../data/2018_PhotonsMedium.root", "r");
-	if(! (photonSFfile && photonSFfile->IsOpen()) ){
-		cout<<"Warning: photon SF file not found\n";
-	} else{
-		photonSFhist = (TH2F*) photonSFfile->Get("EGamma_SF2D")->Clone();
-		photonSFfile->Close();
-	}
-	delete photonSFfile;*/
+	
+	initPhotonSF();
 	
 	std::string spaces( ceil(log10(tree()->GetEntries())), ' ' );
 	cout<<"Analyzed:\t"<<spaces<<'/'<<tree()->GetEntries()<<std::flush;
@@ -52,13 +45,11 @@ Int_t VVGammaAnalyzer::cut() {
   ++evtN_; totEvtW_ += theWeight;
 	cout<<"\r\t\t"<<evtN_;  //TEMP
 	
-	//cout<<"theWeight:"<<theWeight<<'\n';
-	
 	theHistograms.fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 1, theWeight);
 	theHistograms.fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 1);
 	
 	// Cleanup
-	goodPhotons_->clear();
+	kinPhotons_->clear();
 	
 	bool haveZVlep = false;
 	bool have2l2j = false;
@@ -90,7 +81,7 @@ Int_t VVGammaAnalyzer::cut() {
 	for(auto ph : *photons){
 		//ID and electron veto
 		if(ph.hasPixelSeed() || !ph.passElectronVeto()) continue;
-		if(! ph.cutBasedIDLoose()) continue;
+		//if(! ph.cutBasedIDLoose()) continue;
 		
 		//Kinematic selection
 		if(ph.pt() < 20) continue;
@@ -116,20 +107,20 @@ Int_t VVGammaAnalyzer::cut() {
 		}
 		if(match) continue;
 		
-		goodPhotons_->push_back(ph);
+		kinPhotons_->push_back(ph);
 	}
-	haveGoodPhoton = goodPhotons_->size() >= 1;
+	haveGoodPhoton = kinPhotons_->size() >= 1;
 	
-	theHistograms.fill("C: n good ph", "n good #gamma | ZZ/WZ exists", 7,-0.5,6.5, goodPhotons_->size(), theWeight);
+	theHistograms.fill("C: n good ph", "n good #gamma | ZZ/WZ exists", 7,-0.5,6.5, kinPhotons_->size(), theWeight);
 	
 	if(haveGoodPhoton){
 		theHistograms.fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 4, theWeight);
 		theHistograms.fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 4);
 	}
 	
-	if(!haveZVlep) 
-		return -1;
-	else if(!haveGoodPhoton) 
+	//if(!haveZVlep) //TEMP
+	//	return -1;
+	if(!haveGoodPhoton) 
 		return -1;
 	else
 		return 1;
@@ -140,21 +131,40 @@ void VVGammaAnalyzer::analyze(){
 	theHistograms.fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 5, theWeight);
 	theHistograms.fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 5);
 	
-	for(auto ph : *goodPhotons_){
-		theHistograms.fill("A: gamma loose", "loose photons;p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
-		if(ph.cutBasedIDMedium()){
-			theHistograms.fill("A: gamma medium", "medium photons;p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
-			theHistograms.fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 6, theWeight);
-			theHistograms.fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 6);
-			break;
+	for(auto ph : *kinPhotons_){
+		theHistograms.fill("A: ph kinem", "photons passing kinematic cut;p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+		theHistograms.fill("A:u ph kinem", "photons passing kinematic cut;p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()));
+		
+		int nCuts_Loose = nCutsIDLoose(ph);
+		theHistograms.fill("A:u nCuts loose ph", "Number of loose cuts passed by photons", 6,-0.5,5.5, nCuts_Loose);
+		
+		if(nCuts_Loose >= 4){
+			theHistograms.fill("A: ph loose TOT", "kin photons #geq4 loose;p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+			theHistograms.fill("A:u ph loose TOT", "kin photons #geq4 loose (unweighted);p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()));
+			if(ph.cutBasedIDLoose()){
+				theHistograms.fill("A: ph loose PASS", "kin photons passing loose;p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+				theHistograms.fill("A:u ph loose PASS", "kin photons passing loose (unweighted);p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()));
+			}
+		}
+		
+		int nCuts_Medium = nCutsIDMedium(ph);
+		theHistograms.fill("A:u nCuts medium ph", "Number of medium cuts passed by photons", 6,-0.5,5.5, nCuts_Medium);
+		
+		if(nCuts_Medium >= 4){
+			theHistograms.fill("A: ph medium TOT", "kin photons #geq4 medium;p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+			theHistograms.fill("A:u ph medium TOT", "kin photons #geq4 medium (unweighted);p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()));
+			if(ph.cutBasedIDMedium()){
+				theHistograms.fill("A: ph medium PASS", "kin photons passing medium;p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+				theHistograms.fill("A:u ph medium PASS", "kin photons passing medium (unweighted);p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()));
+			}
 		}
 	}
 	
 	if(theMCInfo.isMC()){
 		genEventSetup();
 		
-		for(size_t i = 0; i < goodPhotons_->size(); i++){
-			Photon& rec = goodPhotons_->at(i);
+		for(size_t i = 0; i < kinPhotons_->size(); i++){
+			Photon& rec = kinPhotons_->at(i);
 			bool matched = false;
 			for(auto gen: *genPhotons_){
 				double dR = deltaR(gen, rec);
@@ -183,7 +193,7 @@ void VVGammaAnalyzer::analyze(){
 		cout<<"fromHardProcessBeforeFSR: "<<flags.test(phys::GenStatusBit::fromHardProcessBeforeFSR)<<"   ";
 		cout<<'\n';
 	}
-	for(auto ph: *goodPhotons_){
+	for(auto ph: *kinPhotons_){
 		cout<<"pt: " <<ph.pt()<<"   ";
 		cout<<"eta: "<<ph.eta()<<"   ";
 		cout<<"loose: "<<ph.cutBasedIDLoose()<<"   ";
@@ -196,7 +206,7 @@ void VVGammaAnalyzer::analyze(){
 	// effPhotons();
 	
 	// SR: medium photon ID - CR: loose && !medium photon ID
-	Photon& thePhoton = goodPhotons_->front();
+	Photon& thePhoton = kinPhotons_->front();
 	bool isSR_G = thePhoton.cutBasedIDMedium();  
 	std::string region(isSR_G ? "G Medium" : "G Loose");
 	
@@ -223,7 +233,7 @@ void VVGammaAnalyzer::analyze(){
 	if(electrons->size() > 0){
 		theHistograms.fill("B: pt e1", "p_{t} e1; p_{t}", 50,0.,200., electrons->at(0).pt(), theWeight);
 		theHistograms.fill("B: eta e1", "#eta e1; p_{t}", 25,-2.5,2.5, electrons->at(0).eta(), theWeight);
-		//theHistograms.fill("B: dR(e1, a1)", "#DeltaR(e1, #gamma1)", 50,0.,5., deltaR(electrons->at(0), goodPhotons_->at(0)), theWeight);
+		//theHistograms.fill("B: dR(e1, a1)", "#DeltaR(e1, #gamma1)", 50,0.,5., deltaR(electrons->at(0), kinPhotons_->at(0)), theWeight);
 	}
 	if(electrons->size() > 1){
 		theHistograms.fill("B: pt e2", "p_{t} e2; p_{t}", 50,0.,200., electrons->at(1).pt(), theWeight);
@@ -238,7 +248,7 @@ void VVGammaAnalyzer::analyze(){
 	if(muons->size() > 0){
 		theHistograms.fill("B: pt mu1", "p_{t} #mu1; p_{t}", 50,0.,200., muons->at(0).pt(), theWeight);
 		theHistograms.fill("B: eta mu1", "#eta #mu1; p_{t}", 25,-2.5,2.5, muons->at(0).eta(), theWeight);
-		//theHistograms.fill("B: dR(mu1, a1)", "#DeltaR(#mu1, #gamma1)", 50,0.,5., deltaR(muons->at(0), goodPhotons_->at(0)), theWeight);
+		//theHistograms.fill("B: dR(mu1, a1)", "#DeltaR(#mu1, #gamma1)", 50,0.,5., deltaR(muons->at(0), kinPhotons_->at(0)), theWeight);
 	}
 	if(muons->size() > 1){
 		theHistograms.fill("B: pt mu2", "p_{t} #mu2; p_{t}", 50,0.,200., muons->at(1).pt(), theWeight);
@@ -449,7 +459,7 @@ void VVGammaAnalyzer::genEventHistos(){
 
 void VVGammaAnalyzer::effPhotons(){
 	// Photon gen-reco matching
-	vector<Photon> goodPhotonsC(*goodPhotons_);
+	vector<Photon> goodPhotonsC(*kinPhotons_);
 	
 	for(auto gPh : *genPhotons_){
 		if(gPh.pt() < 20.) continue;
@@ -474,7 +484,7 @@ void VVGammaAnalyzer::effPhotons(){
 	
 	
 	unsigned int tightPh = 0;
-	for(auto ph: *goodPhotons_){
+	for(auto ph: *kinPhotons_){
 		theHistograms.fill("A: goodPh pt","p_{t} loose #gamma", 25,0.,250., ph.pt(), theWeight);
 		if(ph.cutBasedIDTight()){
 			tightPh++;
@@ -490,6 +500,51 @@ void VVGammaAnalyzer::effPhotons(){
 		theHistograms.fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 6);
 	}
 }
+
+
+void VVGammaAnalyzer::initPhotonSF(){
+	if(! theMCInfo.isMC()){
+		for(auto wp : {WPCutID::Loose, WPCutID::Medium} )
+			photonSFhists_[wp] = nullptr;
+		return;
+	}
+		
+	int year = theMCInfo.setup();
+	auto curDir = gDirectory;
+	// Opening a TFile changes the TDirectory. When closing the file, all the histograms would be deleted
+	for(auto wp : {WPCutID::Loose, WPCutID::Medium} ){
+		const char* wp_str;
+		switch(wp){
+			case WPCutID::Loose : wp_str = "Loose" ; break;
+			case WPCutID::Medium: wp_str = "Medium"; break;
+		}
+		auto fname = Form("../data/%d_Photons%s.root", year, wp_str);
+		
+		TFile* SFfile = TFile::Open(fname, "r");
+		if(! (SFfile && SFfile->IsOpen()) ){
+			//cout<<"Warning: photon SF file not found\n";
+			photonSFhists_[wp] = nullptr;
+		} else{
+			auto hist = (TH2F*) SFfile->Get("EGamma_SF2D");//->Clone();
+			hist->SetDirectory(curDir);
+			photonSFhists_[wp] = hist;
+			SFfile->Close();
+		}
+		delete SFfile;
+	}
+}
+
+
+double VVGammaAnalyzer::getSF(const phys::Photon& ph, WPCutID wp) const{ 
+	auto hist = photonSFhists_.at(wp);
+	return ( hist ? hist->GetBinContent( hist->FindBin(ph.eta(), ph.pt()) ) : 1.);
+}
+
+double VVGammaAnalyzer::getSFerr(const phys::Photon& ph, WPCutID wp) const{ 
+	auto hist = photonSFhists_.at(wp);
+	return ( hist ? hist->GetBinError( hist->FindBin(ph.eta(), ph.pt()) ) : 0.);
+}
+
 
 const vector<double> VVGammaAnalyzer::pt_bins(
 {20., 35., 50., 100., 200., 500.}

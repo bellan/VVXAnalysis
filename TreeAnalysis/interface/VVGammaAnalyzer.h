@@ -14,6 +14,8 @@
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
 
+#include "TDirectory.h"
+
 class VVGammaAnalyzer: public EventAnalyzer, RegistrableAnalysis<VVGammaAnalyzer>{
 
 public:
@@ -35,7 +37,7 @@ public:
 		genZhadCandidates_ = new std::vector<phys::Boson<phys::Particle>>;
 		genWhadCandidates_ = new std::vector<phys::Boson<phys::Particle>>;
 		
-		goodPhotons_ = new std::vector<phys::Photon>;
+		kinPhotons_ = new std::vector<phys::Photon>;
   }
 
   virtual ~VVGammaAnalyzer(){
@@ -49,9 +51,9 @@ public:
 		delete genZhadCandidates_;
 		delete genWhadCandidates_;
 		
-		delete goodPhotons_;
+		delete kinPhotons_;
 		
-		//delete photonSFhist;
+		for(auto it: photonSFhists_) if(it.second) delete it.second;
   }
 	
 	virtual void begin();
@@ -61,12 +63,13 @@ public:
 	virtual void analyze();
 
 	virtual void end(TFile &);
-
+	
+	enum WPCutID {Loose, Medium}; //Working Points (WP) for cut-based ID 
 
  private:
  	
  	// Photons with pt > 20 (already in ntuples), at least loose (cut-based) ID
- 	std::vector<phys::Photon>* goodPhotons_;
+ 	std::vector<phys::Photon>* kinPhotons_;
  	
  	// Vectors of gen particles
  	std::vector<phys::Particle>* genQuarks_;
@@ -81,8 +84,11 @@ public:
 	// Gen objects
 	phys::DiBoson<phys::Particle, phys::Particle> genZZ_;
 	phys::DiBoson<phys::Particle, phys::Particle> genWZ_;
+	// Histograms with scale factors for cut-based ID at different Working Points (WP)
+	std::map<WPCutID, TH2F*> photonSFhists_;
 	
-	//TH2F* photonSFhist = nullptr;
+	// Initialization
+ 	void initPhotonSF();
  	
  	// Objects reconstruction for each event
  	void genEventSetup();
@@ -91,19 +97,14 @@ public:
  	void genEventHistos();
  	
  	// Sub analyses
- 	void effPhotons(); // uses goodPhotons_ and genPhotons_
- 	
+ 	void effPhotons(); // uses kinPhotons_ and genPhotons_
  	
  	void endNameHistos();
  	
  	// Utilities
- 	/*
- 	double getSF(const phys::Photon& ph){ 
- 		if(photonSFhist)
- 			return photonSFhist->GetBinContent(photonSFhist->FindBin(ph.eta(), ph.pt()));
- 		else return 1.;
-	}*/
- 	
+ 	double getSF(const phys::Photon& ph, WPCutID wp)    const; // uses photonSFhists_
+ 	double getSFerr(const phys::Photon& ph, WPCutID wp) const; // uses photonSFhists_
+	
  	template<class T, class V>
 	bool haveCommonDaughter(const phys::Boson<T>& a, const phys::Boson<V>& b, const float tol=0.001){
 		return (
