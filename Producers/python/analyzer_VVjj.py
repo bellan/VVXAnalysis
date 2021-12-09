@@ -45,7 +45,7 @@ PyFilePath = os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/"
 ### Standard sequence
 ### ----------------------------------------------------------------------
 
-execfile(PyFilePath + "MasterPy/ZZ4lAnalysis.py")         # 2016 reference analysis
+execfile(PyFilePath + "MasterPy/ZZ4lAnalysis.py")      
 
 ### ----------------------------------------------------------------------
 ### Replace parameters
@@ -117,85 +117,17 @@ if IsMC:
     process.genPath = cms.Path(process.genParticlesFromHardProcess + process.selectedGenJets  + process.selectedGenJetsAK8 + process.genTaus)
 
 
+
+
+### ------------------------------- Photons -----------------------------
 process.filteredPhotons = cms.EDFilter("PATPhotonSelector",
                                        src = cms.InputTag("slimmedPhotons"),
-                                       cut = cms.string("pt > 15 && abs(eta) > 2.4") # && userFloat('cutBasedPhotonID_Fall17_94X_V2_loose') > 0.5")
-)
-
+                                       cut = cms.string("pt > 15 && abs(eta) > 2.4"))
 process.photonSelection = cms.Path(process.filteredPhotons)
+### ---------------------------------------------------------------------
 
 
-
-
-
-
-## targetting WZ->3lnu
-execfile(VVjj_search_path + "3_leptons_regions.py")
-
-## targetting ZZ->4l
-execfile(VVjj_search_path + "4_leptons_regions.py") 
-
-## VZ->2l2j
-#execfile(VVjj_search_path + "analyzer_VZjj.py")
-
-## WW->2l2nu
-#execfile(VVjj_search_path + "analyzer_WWjj.py")
-
-### ----------------------------------------------------------------------
-
-
-
-### ......................................................................... ###
-### Build collections of muons and electrons that pass a quality criteria (isGood + isolation) and that are NOT selected to form the ZZ best candidate that pass the full selection
-### ......................................................................... ###
-
-
-# Muons cleaning. First, create a muon collection from the best ZZ candidate grand daughters
-process.muonsFromZZ = cms.EDProducer("PATMuonsFromCompositeCandidates", src =  cms.InputTag("ZZFiltered"), SplitLevel = cms.int32(1))
-
-# Electrons cleaning. First, create a electron collection from the best ZZ candidate grand daughters
-process.electronsFromZZ = cms.EDProducer("PATElectronsFromCompositeCandidates", src =  cms.InputTag("ZZFiltered"), SplitLevel = cms.int32(1))
-
-
-process.postCleaningMuons = cms.EDFilter("PATMuonSelector", src = cms.InputTag("appendPhotons:muons"),
-                                         cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
-
-
-process.postCleaningElectrons = cms.EDFilter("PATElectronSelector", src = cms.InputTag("appendPhotons:electrons"),
-                                         cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
-
-
-
-process.muonsToBeRemovedFromJets = cms.EDProducer("PATMuonMerger",
-                                                  src = cms.VInputTag(cms.InputTag("muonsFromZZ"), cms.InputTag("postCleaningMuons")))
-
-process.electronsToBeRemovedFromJets = cms.EDProducer("PATElectronMerger",
-                                                      src = cms.VInputTag(cms.InputTag("electronsFromZZ"), cms.InputTag("postCleaningElectrons")))
-
-
-
-
-### ......................................................................... ###
-# Remove from the event the jets that have leptons from the ZZ best candidate.
-# Jets are also checked against other good isolated leptons not coming from the ZZ best candidate. 
-# The jets, to be stored in the event, must pass the preselction (specified below by the user) AND the looseID + PU veto that is implemented in the code (same algo as for H->ZZ VBF selection)
-### ......................................................................... ###
-
-## FIXME: Logic need to be recheck as of new FSR strategy has been implemented
-process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
-                                           JetPreselection      = cms.string("pt > 20"),
-                                           DiBosonPreselection  = cms.string(""),
-                                           MuonPreselection     = cms.string(""),
-                                           ElectronPreselection = cms.string(""),
-                                           MatchingType         = cms.string("byDeltaR"), 
-                                           Jets      = cms.InputTag("dressedJets"),
-                                           Muons     = cms.InputTag("muonsToBeRemovedFromJets"),
-                                           Electrons = cms.InputTag("electronsToBeRemovedFromJets"),
-                                           Diboson   = cms.InputTag(""),
-                                           cleanFSRFromLeptons = cms.bool(True)
-                                           )
-
-# AK8 jets
+### ------------------------------- AK8 jets -----------------------------
 if IsMC:
     if   (SAMPLE_TYPE == 2016):
         process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
@@ -240,7 +172,7 @@ else:
         print "UNKNOWN YEAR", SAMPLE_TYPE
 
 
-################################################################
+
 from PhysicsTools.PatAlgos.tools.helpers import getPatAlgosToolsTask
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 from RecoBTag.MXNet.pfDeepBoostedJet_cff import _pfDeepBoostedJetTagsAll, _pfDeepBoostedJetTagsProbs, _pfDeepBoostedJetTagsMetaDiscrs, _pfMassDecorrelatedDeepBoostedJetTagsProbs, _pfMassDecorrelatedDeepBoostedJetTagsMetaDiscrs
@@ -259,7 +191,7 @@ updateJetCollection(
 
 patAlgosToolsTask = getPatAlgosToolsTask(process)
 process.outpathPAT = cms.EndPath(patAlgosToolsTask)
-################################################################
+
 
 #process.patJetCorrFactorsReapplyJECAK8 = updatedPatJetCorrFactors.clone(src     = cms.InputTag("slimmedJetsAK8"),
 #                                                                        levels  = ['L1FastJet','L2Relative','L3Absolute'],
@@ -285,6 +217,71 @@ process.correctedJetsAK8 = cms.EDProducer("CorrJetsProducer",
                                           isData  = cms.bool    (  not IsMC )) # FIXME check with Roberto
 
 
+#process.fatJets = cms.Sequence(process.patJetCorrFactorsReapplyJECAK8 + process.patJetsReapplyJECAK8 + process.goodJetsAK8 + process.correctedJetsAK8 + process.disambiguatedJetsAK8)
+process.fatJets = cms.Path(process.goodJetsAK8 + process.correctedJetsAK8)
+### ---------------------------------------------------------------------
+
+
+## targetting WZ->3lnu
+execfile(VVjj_search_path + "3_leptons_regions.py")
+
+## targetting ZZ->4l
+execfile(VVjj_search_path + "4_leptons_regions.py") 
+
+## VZ->2l2j
+execfile(VVjj_search_path + "2_leptons_regions.py")
+
+## WW->2l2nu
+#execfile(VVjj_search_path + "analyzer_WWjj.py")
+
+### ----------------------------------------------------------------------
+
+
+
+### ......................................................................... ###
+### Build collections of muons and electrons that pass a quality criteria (isGood + isolation) and that are NOT selected to form the ZZ best candidate that pass the full selection
+### ......................................................................... ###
+
+
+
+process.postCleaningMuons = cms.EDFilter("PATMuonSelector", src = cms.InputTag("appendPhotons:muons"),
+                                         cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
+
+
+process.postCleaningElectrons = cms.EDFilter("PATElectronSelector", src = cms.InputTag("appendPhotons:electrons"),
+                                         cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
+
+
+
+process.muonsToBeRemovedFromJets = cms.EDProducer("PATMuonMerger",
+                                                  src = cms.VInputTag(cms.InputTag("muonsFromZZ"), cms.InputTag("postCleaningMuons")))
+
+process.electronsToBeRemovedFromJets = cms.EDProducer("PATElectronMerger",
+                                                      src = cms.VInputTag(cms.InputTag("electronsFromZZ"), cms.InputTag("postCleaningElectrons")))
+
+
+
+
+### ......................................................................... ###
+# Remove from the event the jets that have leptons from the ZZ best candidate.
+# Jets are also checked against other good isolated leptons not coming from the ZZ best candidate. 
+# The jets, to be stored in the event, must pass the preselection (specified below by the user) AND the looseID + PU veto that is implemented in the code (same algo as for H->ZZ VBF selection)
+### ......................................................................... ###
+
+## FIXME: Logic need to be recheck as of new FSR strategy has been implemented
+process.disambiguatedJets = cms.EDProducer("JetsWithLeptonsRemover",
+                                           JetPreselection      = cms.string("pt > 20"),
+                                           DiBosonPreselection  = cms.string(""),
+                                           MuonPreselection     = cms.string(""),
+                                           ElectronPreselection = cms.string(""),
+                                           MatchingType         = cms.string("byDeltaR"), 
+                                           Jets      = cms.InputTag("dressedJets"),
+                                           Muons     = cms.InputTag("muonsToBeRemovedFromJets"),
+                                           Electrons = cms.InputTag("electronsToBeRemovedFromJets"),
+                                           Diboson   = cms.InputTag(""),
+                                           cleanFSRFromLeptons = cms.bool(True)
+                                           )
+
 
 process.disambiguatedJetsAK8 = cms.EDProducer("JetsWithLeptonsRemover",
                                               JetPreselection      = cms.string("pt > 20"),
@@ -300,9 +297,6 @@ process.disambiguatedJetsAK8 = cms.EDProducer("JetsWithLeptonsRemover",
                                               cleanFSRFromLeptons = cms.bool(True)
                                               )
 
-process.jetCounterFilter2 = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("selectedUpdatedPatJetsAK8WithDeepTags"), minNumber = cms.uint32(0))
-#process.fatJets = cms.Sequence(process.patJetCorrFactorsReapplyJECAK8 + process.patJetsReapplyJECAK8 + process.goodJetsAK8 + process.correctedJetsAK8 + process.disambiguatedJetsAK8)
-process.fatJets = cms.Sequence(process.jetCounterFilter2 + process.goodJetsAK8 + process.correctedJetsAK8)
 
 
 
@@ -312,8 +306,8 @@ process.fatJets = cms.Sequence(process.jetCounterFilter2 + process.goodJetsAK8 +
 # Number of disambiguated jets
 process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("disambiguatedJets"), minNumber = cms.uint32(0))
 
-process.jetCleaning = cms.Path(process.muonsFromZZ * process.postCleaningMuons * process.muonsToBeRemovedFromJets 
-                               + process.electronsFromZZ * process.postCleaningElectrons * process.electronsToBeRemovedFromJets
+process.jetCleaning = cms.Path(  process.postCleaningMuons * process.muonsToBeRemovedFromJets 
+                               + process.postCleaningElectrons * process.electronsToBeRemovedFromJets
                                + process.disambiguatedJets + process.disambiguatedJetsAK8
                                + process.jetCounterFilter)
 
@@ -343,7 +337,8 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      electrons    = cms.InputTag("postCleaningElectrons"), # all good isolated electrons BUT the ones coming from ZZ decay
                                      photons      = cms.InputTag("filteredPhotons"),       # all photons that pass pt cut
                                      jets         = cms.InputTag("disambiguatedJets"),     # jets which do not contains leptons from ZZ or other good isolated leptons are removed
-                                     jetsAK8      = cms.InputTag("disambiguatedJetsAK8"),     # jets which do not contains leptons from ZZ or other good isolated leptons are removed
+                                     jetsAK8      = cms.InputTag("disambiguatedJetsAK8"),  # jets which do not contains leptons from ZZ or other good isolated leptons are removed
+                                     Z            = cms.InputTag("selectedZCand"),
                                      Vhad         = cms.InputTag(""),
                                      ZZ           = cms.InputTag("ZZFiltered"),            # only the best ZZ->4l candidate that pass the FULL selection
                                      ZL           = cms.InputTag("ZlSelected"),
@@ -358,7 +353,9 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
 ### Run the TreePlanter
 ### ------------------------------------------------------------------------- ###
 
-process.filltrees = cms.EndPath(cms.ignore(process.zzTrigger) + process.srCounter + process.cr2P2FCounter + process.cr3P1FCounter + process.treePlanter)
+process.filltrees = cms.EndPath(cms.ignore(process.zzTrigger) + 
+                                process.SR4PCounter + process.CR3P1FCounter + process.CR2P2FCounter + 
+                                process.treePlanter)
 
 ########################################################################################################################################################################
 
