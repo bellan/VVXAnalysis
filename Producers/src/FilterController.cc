@@ -1,6 +1,7 @@
 #include "VVXAnalysis/Producers/interface/FilterController.h"
 #include <ZZAnalysis/AnalysisStep/interface/bitops.h>
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "VVXAnalysis/Commons/interface/RegionTypes.h"
 
 #include <iostream>
 
@@ -157,8 +158,41 @@ FilterController::passFilter(const edm::Event & event, const string& filterPath)
   unsigned i = triggerNames->triggerIndex(filterPath);
   if (i== triggerNames->size()){
     cout << "ERROR: FilterController::isTriggerBit: path does not exist! " << filterPath << endl;
-    abort();
+    return false;
+    //abort();
   }
   return triggerResults->accept(i);
 }
 
+
+int FilterController::getRegionWord(const edm::Event & event){
+
+  int regionword=0;
+
+  if(passFilter(event,"SR4P"   )) set_bit(regionword,phys::SR4P   );    
+  if(passFilter(event,"CR3P1F" )) set_bit(regionword,phys::CR3P1F );  
+  if(passFilter(event,"CR2P2F" )) set_bit(regionword,phys::CR2P2F );  
+  if(passFilter(event,"SR4P_1L")) set_bit(regionword,phys::SR4P_1L); 
+  if(passFilter(event,"SR4P_1P")) set_bit(regionword,phys::SR4P_1P); 
+  if(passFilter(event,"CR4P_1F")) set_bit(regionword,phys::CR4P_1F); 
+  
+  if(passFilter(event,"SR3P" ))   set_bit(regionword,phys::SR3P);     
+  if(passFilter(event,"CR110"))   set_bit(regionword,phys::CR110);   
+  if(passFilter(event,"CR101"))   set_bit(regionword,phys::CR101);   
+  if(passFilter(event,"CR011"))   set_bit(regionword,phys::CR011);   
+  if(passFilter(event,"CR100"))   set_bit(regionword,phys::CR100);   
+  if(passFilter(event,"CR001"))   set_bit(regionword,phys::CR001);   
+  if(passFilter(event,"CR010"))   set_bit(regionword,phys::CR010);   
+  if(passFilter(event,"CR000"))   set_bit(regionword,phys::CR000);   
+  if(passFilter(event,"SR3P_1L")) set_bit(regionword,phys::SR3P_1L); 
+  if(passFilter(event,"SR3P_1P")) set_bit(regionword,phys::SR3P_1P); 
+  if(passFilter(event,"CR3P_1F")) set_bit(regionword,phys::CR3P_1F); 
+  
+
+  if(passFilter(event,"SR2P"))    set_bit(regionword,phys::SR2P);    
+  if(passFilter(event,"SR2P_1L")) set_bit(regionword,phys::SR2P_1L); 
+  if(passFilter(event,"SR2P_1P")) set_bit(regionword,phys::SR2P_1P); 
+  if(passFilter(event,"CR2P_1F")) set_bit(regionword,phys::CR2P_1F); 
+  
+  return regionword;
+}

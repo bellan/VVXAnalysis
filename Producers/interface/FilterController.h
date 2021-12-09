@@ -46,6 +46,9 @@ class FilterController {
   /// Set bits in trigword
   short getTriggerWord(const edm::Event & event);
 
+  /// Set bits in regionWord
+  int getRegionWord(const edm::Event & event);
+
   /// Check if the trigger is satisfied for a given final state. Trigger word is give in INPUT
   bool passTrigger(Channel channel, const short& trigword) const;
 
