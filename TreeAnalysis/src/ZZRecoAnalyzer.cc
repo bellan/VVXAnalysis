@@ -228,7 +228,7 @@ void ZZRecoAnalyzer::analyze(){
 
     //Is Signal
 
-   if((region_ == phys::SR && topology.test(2)) || (region_ == phys::SR_HZZ && topology.test(0) ) ){       
+   if((region_ == phys::SR4P && topology.test(2)) || (region_ == phys::SR_HZZ && topology.test(0) ) ){       
 
      m4L_gen = sqrt((genVBParticles->at(0).p4()+genVBParticles->at(1).p4())*(genVBParticles->at(0).p4()+genVBParticles->at(1).p4()));
      //     if (m4L_gen>=800) m4L_gen = 799;
@@ -317,7 +317,7 @@ void ZZRecoAnalyzer::analyze(){
     }
 
 
-    if((region_ == phys::SR && topology.test(3)) || (region_ == phys::SR_HZZ && topology.test(1))){
+    if((region_ == phys::SR4P && topology.test(3)) || (region_ == phys::SR_HZZ && topology.test(1))){
 
        inFiducialRegion ++;
        

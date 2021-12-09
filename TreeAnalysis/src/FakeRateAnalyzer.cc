@@ -84,14 +84,14 @@ void FakeRateAnalyzer::analyze(){
   theHistograms.fill("NumberOfZLCandidates","Number of ZL candidates",10, 0, 10, ZLCand->size(), theWeight);
   theHistograms.fill("NumberOfZLCandidatesVsMET","Number of ZL candidates vs MET",200,0,800,10, 0, 10, met->pt(), ZLCand->size(), theWeight);
   theHistograms.fill("NumberOfZLCandidatesVsRegion","Number of ZL candidates vs region type",4,0,4,10, 0, 10,
-		     regionWord.test(3) ? 0 : (regionWord.test(22) ? 1 : (regionWord.test(23) ? 2 : 3 ))
+		     ZZregionWord.test(3) ? 0 : (ZZregionWord.test(22) ? 1 : (ZZregionWord.test(23) ? 2 : 3 ))
 		     , ZLCand->size(), theWeight);
   
   
   theHistograms.fill("NumberOfZL","Number of selected ZL",10, 0, 10, ZL->size(), theWeight);
   theHistograms.fill("NumberOfZLVsMET","Number of selected ZL vs MET",200,0,800,10, 0, 10, met->pt(), ZL->size(), theWeight);
   theHistograms.fill("NumberOfZLVsRegion","Number of selected ZL vs region type",4,0,4,10, 0, 10,
-		     regionWord.test(3) ? 0 : (regionWord.test(22) ? 1 : (regionWord.test(23) ? 2 : 3 ))
+		     ZZregionWord.test(3) ? 0 : (ZZregionWord.test(22) ? 1 : (ZZregionWord.test(23) ? 2 : 3 ))
 		     , ZL->size(), theWeight);
   
   if(ZL->size()){
@@ -115,13 +115,13 @@ void FakeRateAnalyzer::analyze(){
       theHistograms.fill("MET25_NumberOfZLCandidates","Number of ZL candidates MET<25",10, 0, 10, ZLCand->size(), theWeight);
       theHistograms.fill("MET25_NumberOfZLCandidatesVsMET","Number of ZL candidates vs MET MET<25",200,0,800,10, 0, 10, met->pt(), ZLCand->size(), theWeight);
       theHistograms.fill("MET25_NumberOfZLCandidatesVsRegion","Number of ZL candidates vs region type MET<25",4,0,4,10, 0, 10,
-			 regionWord.test(3) ? 0 : (regionWord.test(22) ? 1 : (regionWord.test(23) ? 2 : 3 ))
+			 ZZregionWord.test(3) ? 0 : (ZZregionWord.test(22) ? 1 : (ZZregionWord.test(23) ? 2 : 3 ))
 			 , ZLCand->size(), theWeight);
       
       theHistograms.fill("MET25_NumberOfZL","Number of selected ZL MET<25",10, 0, 10, ZL->size(), theWeight);
       theHistograms.fill("MET25_NumberOfZLVsMET","Number of selected ZL vs MET MET<25",200,0,800,10, 0, 10, met->pt(), ZL->size(), theWeight);
       theHistograms.fill("MET25_NumberOfZLVsRegion","Number of selected ZL vs region type MET<25",4,0,4,10, 0, 10,
-			 regionWord.test(3) ? 0 : (regionWord.test(22) ? 1 : (regionWord.test(23) ? 2 : 3 ))
+			 ZZregionWord.test(3) ? 0 : (ZZregionWord.test(22) ? 1 : (ZZregionWord.test(23) ? 2 : 3 ))
 			 , ZL->size(), theWeight);
       
 

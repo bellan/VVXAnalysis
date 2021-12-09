@@ -47,7 +47,7 @@ void VBSMCAnalyzer::ZZplots(string decay){
       theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_01_fr", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_kf);
       
       
-      if((region_ == phys::MC && regionWord.test(26)) || ((region_ == phys::MC_HZZ) && regionWord.test(3))){
+      if((region_ == phys::MC && ZZregionWord.test(26)) || ((region_ == phys::MC_HZZ) && ZZregionWord.test(3))){
 	
 	
 	theHistograms.fill(std::string("ZZTo")+decay+"_MassGenReco_01_fr", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay+"of reco events" , Xbins , m4L_gen,theWeight*w_kf); 
