@@ -18,15 +18,6 @@
 #     process.WZsignalDefinition = cms.Path(process.WZgenCategory * process.WZsignalCounter)
 
 
-PT20_10     = "((daughter(0).daughter(0).pt > 20 && daughter(0).daughter(1).pt > 10) || (daughter(0).daughter(0).pt() > 10 && daughter(0).daughter(1).pt > 20))"
-ZMASSWINDOW = "abs(daughter(0).mass -91.19) <= 10"
-
-
-### Basic object for the fake rate measurement CR
-process.ZlSelected = cms.EDFilter("PATCompositeCandidateSelector",
-                                  src = cms.InputTag("ZlCand"),
-                                  cut = cms.string(PT20_10 + " && " + ZMASSWINDOW)
-                                  )
 
 
 
@@ -74,8 +65,7 @@ process.bareZWCand = cms.EDProducer("PATCandViewShallowCloneCombiner",
 
 
 
-process.pathFor3LeptonsAnalysis = cms.Path(process.ZlSelected               +  # CR for fake rate mesurement 
-                                           process.bareZCandFromLooseL      +  # Z from loose leptons
+process.pathFor3LeptonsAnalysis = cms.Path(process.bareZCandFromLooseL      +  # Z from loose leptons
                                            process.ZCandFromLooseL          +  # best Z from all loose leptons
                                            process.ZlCandFromLooseL         +  # best Z + a free loose lepton
                                            process.selectedZlCandFromLooseL +  # best Z + a free loose lepton w/ trigger requirements
@@ -152,4 +142,33 @@ process.select3leptons1photonRegions.minPhotons = cms.int32(1)
 process.select3leptons1photonRegions.maxPhotons = cms.int32(1)
 
 process.SR3P_1L        = cms.Path(process.select3leptons1photonRegions * process.candSR3P * process.candSR3PFilter)
-process.SR3P_1LCounter = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR3P_1L","pathFor3LeptonsAnalysis","zzTrigger"))
+process.SR3P1LCounter = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR3P_1L","pathFor3LeptonsAnalysis","zzTrigger"))
+
+
+# Path for lepton fake rate measuerement
+
+PT20_10     = "((daughter(0).daughter(0).pt > 20 && daughter(0).daughter(1).pt > 10) || (daughter(0).daughter(0).pt() > 10 && daughter(0).daughter(1).pt > 20))"
+ZMASSWINDOW = "abs(daughter(0).mass -91.19) <= 10"
+
+
+### Basic object for the fake rate measurement CR
+process.ZlSelected = cms.EDFilter("PATCompositeCandidateSelector",
+                                  src = cms.InputTag("ZlCand"),
+                                  cut = cms.string(PT20_10 + " && " + ZMASSWINDOW)
+                                  )
+
+
+from VVXAnalysis.Producers.EventFilter_cfg import eventFilter
+process.selectLeptonFakeRateRegion = eventFilter.clone()
+process.selectLeptonFakeRateRegion.minTightLeptons = cms.int32(2)
+process.selectLeptonFakeRateRegion.minLooseLeptons = cms.int32(3)
+process.selectLeptonFakeRateRegion.maxTightLeptons = cms.int32(3)
+process.selectLeptonFakeRateRegion.maxLooseLeptons = cms.int32(3)
+process.selectLeptonFakeRateRegion.minPhotons = cms.int32(0)
+process.selectLeptonFakeRateRegion.maxPhotons = cms.int32(1000)
+
+
+process.pathForLeptonFakeRateAnalysis = cms.Path(process.ZlSelected)
+process.candZLFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZlSelected"), minNumber = cms.uint32(1))
+process.CRLFR         = cms.Path(process.selectLeptonFakeRateRegion * process.candZLFilter)
+process.CRLFRounter   = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CRLFR","pathForLeptonFakeRateAnalysis","zzTrigger"))
