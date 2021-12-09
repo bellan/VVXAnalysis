@@ -145,6 +145,7 @@ void EventAnalyzer::Init(TTree *tree)
   b_passTrigger = 0; theTree->SetBranchAddress("passTrigger", &passTrigger, &b_passTrigger); 
   b_passSkim    = 0; theTree->SetBranchAddress("passSkim"   , &passSkim   , &b_passSkim   ); 
   b_triggerWord = 0; theTree->SetBranchAddress("triggerWord", &triggerWord, &b_triggerWord); 
+  b_regionWord = 0; theTree->SetBranchAddress("regionWord", &pregionWord, &b_regionWord); 
   
   // MELA discriminators
   mela = new phys::MELA();
@@ -170,7 +171,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   if(pgenJets)    stable_sort(pgenJets->begin(),    pgenJets->end(),    phys::PtComparator());
   if(pjetsAK8)    stable_sort(pjetsAK8->begin(),    pjetsAK8->end(),    phys::PtComparator());
   if(pgenJetsAK8) stable_sort(pgenJetsAK8->begin(), pgenJetsAK8->end(), phys::PtComparator());
-	if(photons)     stable_sort(photons->begin(),   photons->end(),   phys::PtComparator());
+  if(photons)     stable_sort(photons->begin(),   photons->end(),   phys::PtComparator());
 	
   // Some selection on jets
   jets->clear(); centralJets->clear(); 
@@ -238,22 +239,24 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   addOptions();
   
   // Check if the request on region tye matches with the categorization of the event
-  regionWord = std::bitset<128>(ZZ->region());
+  regionWord = std::bitset<128>(pregionWord);
+
+  ZZregionWord = std::bitset<128>(ZZ->region());
   // check bits accordingly to ZZAnalysis/AnalysisStep/interface/FinalStates.h
   
-  if(region_ == phys::SR     && !regionWord.test(26)) return 0;
-  if(region_ == phys::CR2P2F && !regionWord.test(24)) return 0;
-  if(region_ == phys::CR3P1F && !regionWord.test(25)) return 0;
+  if(region_ == phys::SR4P   && !ZZregionWord.test(26)) return 0;
+  if(region_ == phys::CR2P2F && !ZZregionWord.test(24)) return 0;
+  if(region_ == phys::CR3P1F && !ZZregionWord.test(25)) return 0;
 
-  if(region_ == phys::SR_HZZ     && !regionWord.test(3))  return 0;
-  if(region_ == phys::CR2P2F_HZZ && !regionWord.test(22)) return 0;
-  if(region_ == phys::CR3P1F_HZZ && !regionWord.test(23)) return 0;
+  if(region_ == phys::SR_HZZ     && !ZZregionWord.test(3))  return 0;
+  if(region_ == phys::CR2P2F_HZZ && !ZZregionWord.test(22)) return 0;
+  if(region_ == phys::CR3P1F_HZZ && !ZZregionWord.test(23)) return 0;
 
   if(!doSF) theWeight = theMCInfo.weight(*ZZ);
 
-  if(region_ == phys::SR3L){
-    regionWord = std::bitset<128>(ZW->region());
-    if(!regionWord.test(30)) return 0; 
+  if(region_ == phys::SR3P){
+    std::bitset<128> ZWregionWord = std::bitset<128>(ZW->region());
+    if(!ZWregionWord.test(30)) return 0; 
     else theWeight = theMCInfo.weight(*ZW);
   }
 

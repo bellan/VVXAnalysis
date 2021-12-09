@@ -84,6 +84,10 @@ public:
   // To steer the loop over all events. User is not supposed to change this.
   virtual void     loop(const std::string outputfile);
 
+  inline void printEvent() const {
+    std::cout << "Run: " << run << " luminosity block: " << lumiBlock << " event: " << event << std::endl; 
+  }
+
  protected:
   // Functions to be overloaded in the concrete instance of the EventAnalyzer class.
   virtual void  begin() {}
@@ -155,12 +159,13 @@ public:
   Bool_t  passTrigger; TBranch *b_passTrigger;
   Bool_t  passSkim   ; TBranch *b_passSkim;
   Short_t triggerWord; TBranch *b_triggerWord;
-  
+  Int_t   pregionWord;  TBranch *b_regionWord;
 
   phys::MELA *mela;
   TBranch *b_mela;
 
   std::bitset<128> regionWord;
+  std::bitset<128> ZZregionWord; // to be removed!!!
   //MET
   phys::Particle *met   ; TBranch *b_met;
 
