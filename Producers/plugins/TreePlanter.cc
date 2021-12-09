@@ -71,6 +71,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theJetToken      (consumes<std::vector<pat::Jet> >             (config.getParameter<edm::InputTag>("jets"     )))
   , theJetAK8Token   (consumes<std::vector<pat::Jet> >             (config.getParameter<edm::InputTag>("jetsAK8"  )))
   , thePhotonToken   (consumes<std::vector<pat::Photon> >          (config.getParameter<edm::InputTag>("photons"  )))
+  , theZToken        (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("Z"        )))
   , theVhadToken     (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("Vhad"     )))
   , theZZToken       (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZZ"       )))
   , theZLToken       (consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZL"       )))
@@ -147,6 +148,7 @@ void TreePlanter::beginJob(){
   theTree->Branch("passTrigger" , &passTrigger_); 
   theTree->Branch("passSkim"    , &passSkim_); 
   theTree->Branch("triggerWord" , &triggerWord_); 
+  theTree->Branch("regionWord"  , &regionWord_); 
 
   theTree->Branch("genCategory" , &genCategory_);
 
@@ -163,6 +165,7 @@ void TreePlanter::beginJob(){
   theTree->Branch("jetsAK8"   , &jetsAK8_); 
   theTree->Branch("photons"   , &photons_); 
   theTree->Branch("VhadCand"  , &Vhad_);
+  theTree->Branch("ZCand"     , &Z_); 
   theTree->Branch("ZZCand"    , &ZZ_); 
   theTree->Branch("ZWCand"    , &ZW_); 
   theTree->Branch("ZLCand"    , &ZL_); 
@@ -280,6 +283,7 @@ void TreePlanter::initTree(){
   passTrigger_ = false;
   passSkim_    = false;
   triggerWord_ = 0;
+  regionWord_ = 0;
 
   genCategory_ = -1;
 
@@ -294,9 +298,9 @@ void TreePlanter::initTree(){
   jets_      = std::vector<phys::Jet>();
   jetsAK8_   = std::vector<phys::Jet>();
   photons_   = std::vector<phys::Photon>();
-  ZZ_        = phys::DiBoson<phys::Lepton  , phys::Lepton>();
+  Z_         = phys::Boson<phys::Lepton>();
   Vhad_      = std::vector<phys::Boson<phys::Jet>      >();   
-
+  ZZ_        = phys::DiBoson<phys::Lepton  , phys::Lepton>();
   ZL_        = std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> >();
   ZW_        = phys::DiBoson<phys::Lepton  , phys::Lepton>();
 
@@ -318,6 +322,9 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
 
   // Check Skim requests
   passSkim_ = filterController_.passSkim(event, triggerWord_);
+
+  // Fill the event region word
+  regionWord_ = filterController_.getRegionWord(event);
 
   run_       = event.id().run();
   event_     = event.id().event(); 
@@ -498,6 +505,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   edm::Handle<std::vector<pat::Jet> >    jetsAK8        ; event.getByToken(theJetAK8Token  ,   jetsAK8);
   edm::Handle<std::vector<pat::Photon> > photons        ; event.getByToken(thePhotonToken  ,   photons);
   //  edm::Handle<edm::View<pat::CompositeCandidate> > Vhad ; event.getByToken(theVhadToken    ,      Vhad);
+  edm::Handle<edm::View<pat::CompositeCandidate> > Z    ; event.getByToken(theZToken       ,        Z);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZZ   ; event.getByToken(theZZToken      ,        ZZ);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZL   ; event.getByToken(theZLToken      ,        ZL);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZW   ; event.getByToken(theZWToken      ,        ZW);
@@ -512,13 +520,25 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   // The bosons are selected requiring that their daughters pass the quality criteria to be good daughters
   // Vhad_ = fillHadBosons(Vhad, 24);
 
+  // Fill the Z->ll for the 2 leptons analysis
+  std::vector<phys::Boson<phys::Lepton> > Zs = fillLepBosons(Z,23);
+  if(!Zs.empty()) Z_ = Zs.front();
+
+  // Fill Z+l pairs for fake rate measurements
+  ZL_ = fillZLCandidates(ZL);
+
+  // Fill the WZ for the 3 leptons analysis
+  ZW_ = fillZWCandidate(ZW);
+
 
   // The bosons have NOT any requirement on the quality of their daughters, only the flag is set (because of the same code is usd for CR too)
   std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > ZZs = fillDiBosons(ZZ);
 
-  // Fill Z+l pairs for fake rate measurements
-  ZL_ = fillZLCandidates(ZL);
-  ZW_ = fillZWCandidate(ZW);
+
+  
+
+
+
 
   bool oneZZInSR = false;
 
@@ -615,7 +635,7 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
  
   output.csvtagger_      = jet.hasUserFloat("bTagger")                   ? jet.userFloat("bTagger")                : -999;
   
-  output.deepAK8_TvsQCD_      =  jet.bDiscriminator("pfDeepBoostedDiscriminatorsJetTags:TvsQCD");
+  output.deepAK8_TvsQCD_      = jet.bDiscriminator("pfDeepBoostedDiscriminatorsJetTags:TvsQCD");
   output.deepAK8_WvsQCD_      = jet.bDiscriminator("pfDeepBoostedDiscriminatorsJetTags:WvsQCD");
   output.deepAK8MD_TvsQCD_    = jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:TvsQCD");
   output.deepAK8MD_WvsQCD_    = jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:WvsQCD");
@@ -842,7 +862,7 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
 template<typename T1, typename T2>
 phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::CompositeCandidate& edmVV) const{
 
-  int regionWord = computeRegionFlag(edmVV);
+  int regionWord = computeRegionFlagForZZ(edmVV);
   Channel channel = NONE;
   if(test_bit(regionWord,ZZ) || test_bit(regionWord,ZZOnShell)) channel = ZZ;
   else if(test_bit(regionWord,CRZLLos_2P2F) || test_bit(regionWord,CRZLLos_3P1F) || test_bit(regionWord,CRZLLos_2P2F_ZZOnShell) || test_bit(regionWord,CRZLLos_3P1F_ZZOnShell)) channel = ZLL;
@@ -927,8 +947,8 @@ std::vector<phys::Boson<phys::Lepton> > TreePlanter::fillLepBosons(const edm::Ha
   foreach(const pat::CompositeCandidate& v, *edmBosons){
     phys::Boson<phys::Lepton> physV;
     int rawchannel = v.daughter(0)->pdgId() * v.daughter(1)->pdgId();
-    if      (rawchannel == -pow(11,2)) physV = fillBoson<pat::Electron, phys::Lepton>(v, type, true);
-    else if (rawchannel == -pow(13,2)) physV = fillBoson<pat::Muon,     phys::Lepton>(v, type, true);
+    if      (rawchannel == -pow(11,2)) physV = fillBoson<pat::Electron, phys::Lepton>(v, type, false);
+    else if (rawchannel == -pow(13,2)) physV = fillBoson<pat::Muon,     phys::Lepton>(v, type, false);
     else {cout << "TreePlanter: unexpected boson final state: " << rawchannel << " ... going to abort.. " << endl; abort();}
     
     if(physV.isValid()) physBosons.push_back(physV);
@@ -1071,12 +1091,7 @@ TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate
 
 
 
-
-
-
-
-
-int TreePlanter::computeRegionFlag(const pat::CompositeCandidate & vv) const{
+int TreePlanter::computeRegionFlagForZZ(const pat::CompositeCandidate & vv) const{
   int REGIONFLAG=0;
   
   if(vv.hasUserFloat("isBestCand")         && vv.hasUserFloat("SR")                     && vv.userFloat("isBestCand")         && vv.userFloat("SR"))
@@ -1095,6 +1110,18 @@ int TreePlanter::computeRegionFlag(const pat::CompositeCandidate & vv) const{
 
   return REGIONFLAG;
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 #include "FWCore/Framework/interface/MakerMacros.h"
 // ---- define this as a plug-in ----------------------------------------

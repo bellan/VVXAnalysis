@@ -97,7 +97,7 @@ class TreePlanter: public edm::EDAnalyzer {
 
   
 
-  int computeRegionFlag(const pat::CompositeCandidate & vv) const;
+  int computeRegionFlagForZZ(const pat::CompositeCandidate & vv) const;
 
  private:
   struct MinPairComparator{
@@ -123,6 +123,8 @@ class TreePlanter: public edm::EDAnalyzer {
   Long64_t event_;
   Int_t run_;
   Int_t lumiBlock_;
+
+  Int_t regionWord_;
   
   Bool_t  passTrigger_;
   Bool_t  passSkim_;
@@ -161,6 +163,9 @@ class TreePlanter: public edm::EDAnalyzer {
   // V --> jj, with V = W,Z
   std::vector<phys::Boson<phys::Jet>      > Vhad_;
 
+  // Z --> ll
+  phys::Boson<phys::Lepton>                 Z_;
+
   // ZZ in the SR, Z + ll in the CR
   phys::DiBoson<phys::Lepton  , phys::Lepton> ZZ_;
   
@@ -183,6 +188,7 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::EDGetTokenT<std::vector<pat::Jet> >              theJetToken;
   edm::EDGetTokenT<std::vector<pat::Jet> >              theJetAK8Token;
   edm::EDGetTokenT<std::vector<pat::Photon> >           thePhotonToken;
+  edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZToken;
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theVhadToken;
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZZToken;
   edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > theZLToken;
