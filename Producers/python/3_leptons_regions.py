@@ -25,7 +25,7 @@ ZMASSWINDOW = "abs(daughter(0).mass -91.19) <= 10"
 ### Basic object for the fake rate measurement CR
 process.ZlSelected = cms.EDFilter("PATCompositeCandidateSelector",
                                   src = cms.InputTag("ZlCand"),
-                                  cut = cms.string(PT20_10 + " && "+ZMASSWINDOW)
+                                  cut = cms.string(PT20_10 + " && " + ZMASSWINDOW)
                                   )
 
 
@@ -43,7 +43,7 @@ process.ZCandFromLooseL.src        = cms.InputTag("bareZCandFromLooseL")
 process.ZCandFromLooseL.bestZAmong = cms.string("mass > 40 && mass < 120")
 process.ZCandFromLooseL.flags      = cms.PSet(GoodLeptons = cms.string(""),
                                               GoodIsoLeptons = cms.string(""),
-                                              Z1Presel = cms.string("mass > 40 && mass < 120"),
+                                              Z1Presel = cms.string("mass > 60 && mass < 120"),
                                           )
 
 # combine the Z candidate with a free lepton.
@@ -54,11 +54,13 @@ process.ZlCandFromLooseL.decay = cms.string('ZCandFromLooseL softLeptons')
 #  Just check that the trigger thresholds are passed
 process.selectedZlCandFromLooseL = cms.EDFilter("PATCompositeCandidateSelector",
                                                 src = cms.InputTag("ZlCandFromLooseL"),
-                                                cut = cms.string("(daughter(0).daughter(0).pt > 20 && (daughter(0).daughter(1).pt > 10 || daughter(1).pt > 10))" + 
+                                                cut = cms.string("((daughter(0).daughter(0).pt > 20 && (daughter(0).daughter(1).pt > 10 || daughter(1).pt > 10))" + 
                                                                  " || " +
                                                                  "(daughter(0).daughter(1).pt > 20 && (daughter(0).daughter(0).pt > 10 || daughter(1).pt > 10))" + 
                                                                  " || " +
-                                                                 "(daughter(1).pt > 20 && (daughter(0).daughter(0).pt > 10 || daughter(0).daughter(1).pt > 10))"
+                                                                 "(daughter(1).pt > 20 && (daughter(0).daughter(0).pt > 10 || daughter(0).daughter(1).pt > 10)))" +
+                                                                 " && " + "daughter(0).masterClone.userFloat('isBestZ')" +
+                                                                 " && " + "daughter(0).masterClone.userFloat('Z1Presel')"
                                                              ),
                                                 checkCharge = cms.bool(False)
                                             )
@@ -72,15 +74,12 @@ process.bareZWCand = cms.EDProducer("PATCandViewShallowCloneCombiner",
 
 
 
-# Filter to select the events
-# it is a two stages filtering. One to reduce the computational time (preSelect), and another to do the proper selection (select)
-from VVXAnalysis.Producers.EventFilter_cfg import eventFilter
-process.preSelect3leptonsRegions = eventFilter.clone()
-process.preSelect3leptonsRegions.minLooseLeptons = cms.int32(3)
-process.preSelect3leptonsRegions.maxLooseLeptons = cms.int32(3)
-process.preSelect3leptonsRegions.jetsAK4         = cms.InputTag("slimmedJets")
-process.preSelect3leptonsRegions.muons           = cms.InputTag("slimmedMuons")
-process.preSelect3leptonsRegions.electrons       = cms.InputTag("slimmedElectrons")
+process.pathFor3LeptonsAnalysis = cms.Path(process.ZlSelected               +  # CR for fake rate mesurement 
+                                           process.bareZCandFromLooseL      +  # Z from loose leptons
+                                           process.ZCandFromLooseL          +  # best Z from all loose leptons
+                                           process.ZlCandFromLooseL         +  # best Z + a free loose lepton
+                                           process.selectedZlCandFromLooseL +  # best Z + a free loose lepton w/ trigger requirements
+                                           process.bareZWCand)                 # Zl + MET (WZ bare candidate)
 
 
 from VVXAnalysis.Producers.EventFilter_cfg import eventFilter
@@ -89,43 +88,68 @@ process.select3leptonsRegions.minTightLeptons = cms.int32(0)
 process.select3leptonsRegions.minLooseLeptons = cms.int32(3)
 process.select3leptonsRegions.maxTightLeptons = cms.int32(3)
 process.select3leptonsRegions.maxLooseLeptons = cms.int32(3)
+process.select3leptonsRegions.minPhotons = cms.int32(0)
+process.select3leptonsRegions.maxPhotons = cms.int32(1000)
 
 
-process.pathFor3LeptonsAnalysis = cms.Path(#process.preSelect3leptonsRegions *
-                                           process.ZlSelected               +  # CR for fake rate mesurement 
-                                           process.bareZCandFromLooseL      +  # Z from loose leptons
-                                           process.ZCandFromLooseL          +  # best Z from all loose leptons
-                                           process.ZlCandFromLooseL         +  # best Z + a free loose lepton
-                                           process.selectedZlCandFromLooseL +  # best Z + a free loose lepton w/ trigger requirements
-                                           process.bareZWCand)                 # Zl + MET (WZ bare candidate)
+PASSZW_1 = "daughter(0).daughter(0).daughter(0).masterClone.userFloat('isGood') && daughter(0).daughter(0).daughter(0).masterClone.userFloat('passCombRelIsoPFFSRCorr')"
+PASSZW_2 = "daughter(0).daughter(0).daughter(1).masterClone.userFloat('isGood') && daughter(0).daughter(0).daughter(1).masterClone.userFloat('passCombRelIsoPFFSRCorr')"
+PASSZW_3 = "daughter(0).daughter(1).masterClone.userFloat('isGood')             && daughter(0).daughter(1).masterClone.userFloat('passCombRelIsoPFFSRCorr')"
+
+SEL111 =       PASSZW_1 + " && " +       PASSZW_2 + " && " +       PASSZW_3
+SEL110 =       PASSZW_1 + " && " +       PASSZW_2 + " && " + "!" + PASSZW_3
+SEL101 =       PASSZW_1 + " && " + "!" + PASSZW_2 + " && " +       PASSZW_3
+SEL011 = "!" + PASSZW_1 + " && " +       PASSZW_2 + " && " +       PASSZW_3
+SEL100 =       PASSZW_1 + " && " + "!" + PASSZW_2 + " && " + "!" + PASSZW_3
+SEL001 = "!" + PASSZW_1 + " && " + "!" + PASSZW_2 + " && " +       PASSZW_3
+SEL010 = "!" + PASSZW_1 + " && " +       PASSZW_2 + " && " + "!" + PASSZW_3
+SEL000 = "!" + PASSZW_1 + " && " + "!" + PASSZW_2 + " && " + "!" + PASSZW_3
 
 
+process.candSR3P       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("bareZWCand"), cut = cms.string(SEL111))
+process.candSR3PFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("candSR3P"), minNumber = cms.uint32(1))
+process.SR3P           = cms.Path(process.select3leptonsRegions * process.candSR3P * process.candSR3PFilter)
+process.SR3PCounter    = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR3P","pathFor3LeptonsAnalysis","zzTrigger"))
 
-#process.ZlForWZCountFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZlForWZ"), 
-#                                          minNumber = cms.uint32(1) # maxNumber does not exist
-#                                          )
+process.cand110       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("bareZWCand"), cut = cms.string(SEL110))
+process.cand110Filter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand110"), minNumber = cms.uint32(1))
+process.CR110         = cms.Path(process.select3leptonsRegions * process.cand110 * process.cand110Filter)
+process.CR110Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR110","pathFor3LeptonsAnalysis","zzTrigger"))
+
+process.cand101       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("bareZWCand"), cut = cms.string(SEL101))
+process.cand101Filter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand101"), minNumber = cms.uint32(1))
+process.CR101         = cms.Path(process.select3leptonsRegions * process.cand101 * process.cand101Filter)
+process.CR101Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR101","pathFor3LeptonsAnalysis","zzTrigger"))
+
+process.cand011       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("bareZWCand"), cut = cms.string(SEL011))
+process.cand011Filter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand011"), minNumber = cms.uint32(1))
+process.CR011         = cms.Path(process.select3leptonsRegions * process.cand011 * process.cand011Filter)
+process.CR011Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR011","pathFor3LeptonsAnalysis","zzTrigger"))
+
+process.cand100       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("bareZWCand"), cut = cms.string(SEL100))
+process.cand100Filter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand100"), minNumber = cms.uint32(1))
+process.CR100         = cms.Path(process.select3leptonsRegions * process.cand100 * process.cand100Filter)
+process.CR100Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR100","pathFor3LeptonsAnalysis","zzTrigger"))
+
+process.cand001       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("bareZWCand"), cut = cms.string(SEL001))
+process.cand001Filter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand001"), minNumber = cms.uint32(1))
+process.CR001         = cms.Path(process.select3leptonsRegions * process.cand001 * process.cand001Filter)
+process.CR001Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR001","pathFor3LeptonsAnalysis","zzTrigger"))
+
+process.cand010       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("bareZWCand"), cut = cms.string(SEL010))
+process.cand010Filter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand010"), minNumber = cms.uint32(1))
+process.CR010         = cms.Path(process.select3leptonsRegions * process.cand010 * process.cand010Filter)
+process.CR010Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR010","pathFor3LeptonsAnalysis","zzTrigger"))
+
+process.cand000       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("bareZWCand"), cut = cms.string(SEL000))
+process.cand000Filter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand000"), minNumber = cms.uint32(1))
+process.CR000         = cms.Path(process.select3leptonsRegions * process.cand000 * process.cand000Filter)
+process.CR000Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR000","pathFor3LeptonsAnalysis","zzTrigger"))
 
 
-# process.ZlForWZ = cms.EDFilter("PATCompositeCandidateSelector",
-#                               src = cms.InputTag("ZlSelected"),
-#                               cut = cms.string("daughter(1).masterClone.userFloat('isGood')" + " && " +
-#                                                "daughter(1).masterClone.userFloat('passCombRelIsoPFFSRCorr')"
-#                                               ),
-#                               checkCharge = cms.bool(False)
-# )
+process.select3leptons1photonRegions = process.select3leptonsRegions.clone()
+process.select3leptons1photonRegions.minPhotons = cms.int32(1)
+process.select3leptons1photonRegions.maxPhotons = cms.int32(1)
 
-# process.ZlForWZCountFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZlForWZ"), 
-#                                           minNumber = cms.uint32(1) # maxNumber does not exist
-#                                           )
-
-
-# process.ZWCand = cms.EDProducer("PATCandViewShallowCloneCombiner",
-#                                 decay = cms.string('ZlForWZ slimmedMETs'),
-#                                 cut = cms.string("daughter(0).daughter(1).pt > 20" + " && " + "daughter(1).pt > 20" 
-#                                 ),
-#                                 checkCharge = cms.bool(False)
-# )
-
-
-#process.WZjjPath = cms.Path(process.ZlForWZ * process.ZlForWZCountFilter * process.ZWCand)
-
+process.SR3P_1L        = cms.Path(process.select3leptons1photonRegions * process.candSR3P * process.candSR3PFilter)
+process.SR3P_1LCounter = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR3P_1L","pathFor3LeptonsAnalysis","zzTrigger"))
