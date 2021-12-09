@@ -22,29 +22,17 @@ process.select2leptonsRegions.maxLooseLeptons = cms.int32(2)
 process.select2leptonsRegions.minAK4s = cms.int32(2)
 process.select2leptonsRegions.minAK8s = cms.int32(1)
 
-process.candSR2l       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("selectedZCand"), cut = cms.string(''))
-process.candSR2lFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("candSR2l"), minNumber = cms.uint32(1))
-process.sr2l           = cms.Path(process.select2leptonsRegions * process.candSR2l * process.candSR2lFilter)
-process.sr2lCounter    = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("sr2l","pathFor2LeptonsAnalysis","zzTrigger"))
+process.candSR2P       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("selectedZCand"), cut = cms.string(''))
+process.candSR2PFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("candSR2P"), minNumber = cms.uint32(1))
+process.SR2P           = cms.Path(process.select2leptonsRegions * process.candSR2P * process.candSR2PFilter)
+process.SR2PCounter    = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR2P","pathFor2LeptonsAnalysis","zzTrigger"))
 
+process.select2leptons1photonRegions = process.select2leptonsRegions.clone()
+process.select2leptons1photonRegions.minPhotons = cms.int32(1)
+process.select2leptons1photonRegions.maxPhotons = cms.int32(1)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+process.SR2P_1L         = cms.Path(process.select2leptons1photonRegions * process.candSR2P * process.candSR2PFilter)
+process.SR2P_1LCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR2P_1L","pathFor2LeptonsAnalysis","zzTrigger"))
 
 
 
