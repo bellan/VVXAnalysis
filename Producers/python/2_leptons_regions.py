@@ -32,7 +32,7 @@ process.select2leptons1photonRegions.minPhotons = cms.int32(1)
 process.select2leptons1photonRegions.maxPhotons = cms.int32(1)
 
 process.SR2P_1L         = cms.Path(process.select2leptons1photonRegions * process.candSR2P * process.candSR2PFilter)
-process.SR2P_1LCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR2P_1L","pathFor2LeptonsAnalysis","zzTrigger"))
+process.SR2P1LCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR2P_1L","pathFor2LeptonsAnalysis","zzTrigger"))
 
 
 
