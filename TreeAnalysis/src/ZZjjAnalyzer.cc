@@ -248,7 +248,7 @@ void ZZjjAnalyzer::RecoAnalysis(DiBosonLepton &recoZZ, Particle &Jet0, Particle 
     
   // -------------------------- Loose VBS --------------------------
     cut++;
-  if(jjp4.M() > 400. & recoJJdeltaEta > 2.4){
+  if(jjp4.M() > 400. && recoJJdeltaEta > 2.4){
     theHistograms.fill("Reco4l_mass_AC_Loose",   "m_{4l}",   100, 0, 3000, llllp4.M(), theWeight);
     theHistograms.fill("Recojj_mass_AC_Loose",   "m_{jj}",   100, 0, 4000, jjp4.M(),   theWeight);
     theHistograms.fill("RecoZZjj_mass_AC_Loose", "m_{ZZjj}", 100, 0, 5000, ZZjjp4.M(), theWeight);
@@ -260,7 +260,7 @@ void ZZjjAnalyzer::RecoAnalysis(DiBosonLepton &recoZZ, Particle &Jet0, Particle 
   
   // -------------------------- Tight VBS --------------------------
     cut++; 
-  if(jjp4.M() > 1000. & recoJJdeltaEta > 2.4){
+  if(jjp4.M() > 1000. && recoJJdeltaEta > 2.4){
     theHistograms.fill("Reco4l_mass_AC_Tight",   "m_{4l}",   100, 0, 3000, llllp4.M(), theWeight);
     theHistograms.fill("Recojj_mass_AC_Tight",   "m_{jj}",   100, 0, 4000, jjp4.M(),   theWeight);
     theHistograms.fill("RecoZZjj_mass_AC_Tight", "m_{ZZjj}", 100, 0, 5000, ZZjjp4.M(), theWeight);
