@@ -92,6 +92,15 @@ process.mergeZZCollections = cms.Sequence( process.ZZSelectedCand
                                        )
 
 
+# Muons cleaning. First, create a muon collection from the best ZZ candidate grand daughters
+process.muonsFromZZ = cms.EDProducer("PATMuonsFromCompositeCandidates", src =  cms.InputTag("ZZFiltered"), SplitLevel = cms.int32(1))
+
+# Electrons cleaning. First, create a electron collection from the best ZZ candidate grand daughters
+process.electronsFromZZ = cms.EDProducer("PATElectronsFromCompositeCandidates", src =  cms.InputTag("ZZFiltered"), SplitLevel = cms.int32(1))
+
+process.leptonsFromZZ = cms.Sequence(process.muonsFromZZ + process.electronsFromZZ)
+
+
 
 ### ------------------------------------------------------------------------- ###
 ### Run the preselection
@@ -111,6 +120,8 @@ process.postPreselectionCounter      = cms.EDProducer("EventCountProducer")
 
 # Looser preselection: ask only for a at least a Z + 1 soft lepton
 #process.zlCounterFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZlCand"), minNumber = cms.uint32(1))
+
+
 
 
 
@@ -144,32 +155,15 @@ if IsMC:
 
 
 
-# Filter to select the events
-# it is a two stages filtering. One to reduce the computational time (preSelect), and another to do the proper selection (select)
-from VVXAnalysis.Producers.EventFilter_cfg import eventFilter
-process.preSelect4leptonsRegions = eventFilter.clone()
-process.preSelect4leptonsRegions.minLooseLeptons = cms.int32(4)
-process.preSelect4leptonsRegions.jetsAK4         = cms.InputTag("slimmedJets")
-process.preSelect4leptonsRegions.jetsAK8         = cms.InputTag("correctedJetsAK8:corrJets")
-process.preSelect4leptonsRegions.muons           = cms.InputTag("slimmedMuons")
-process.preSelect4leptonsRegions.electrons       = cms.InputTag("slimmedElectrons")
-process.preSelect4leptonsRegions.tightMuonSelection = cms.string("")
-process.preSelect4leptonsRegions.tightElectronSelection = cms.string("")
-
-from VVXAnalysis.Producers.EventFilter_cfg import eventFilter
-process.select4leptonsRegions = eventFilter.clone()
-process.select4leptonsRegions.minTightLeptons = cms.int32(2)
-
 
 
 
 ### Path that pre-select the higher level objects that will input the TreePlanter
-process.pathFor4LeptonsAnalysis = cms.Path( process.preSelect4leptonsRegions *
-                                            process.prePreselectionCounter
-                                            * process.CR                      # from ZZ4lAnalysis
-                                            * process.mergeZZCollections      # merge all CRs and the SR in a unique ZZ collection
-                                            * process.select4leptonsRegions 
-                                            * process.postPreselectionCounter)
+process.pathFor4LeptonsAnalysis = cms.Path(process.prePreselectionCounter
+                                           * process.CR                      # from ZZ4lAnalysis
+                                           * process.mergeZZCollections      # merge all CRs and the SR in a unique ZZ collection
+                                           * process.leptonsFromZZ
+                                           * process.postPreselectionCounter)
 
 
 # Some counters and paths functional to the fake lepton background estimation and signal region check
@@ -184,20 +178,41 @@ process.zzTrigger = cms.EDFilter("ZZTriggerFilter", src = cms.InputTag("ZZFilter
                                  MCFilterPath = cms.string(MCFILTER)
                                  )
 
-process.cand2P2F       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("ZZFiltered"), cut = cms.string(BOTHFAIL))
+
+from VVXAnalysis.Producers.EventFilter_cfg import eventFilter
+process.select4leptonsRegions = eventFilter.clone()
+process.select4leptonsRegions.minTightLeptons = cms.int32(2)
+process.select4leptonsRegions.minPhotons = cms.int32(0)
+process.select4leptonsRegions.maxPhotons = cms.int32(1000)
+
+
+process.cand2P2F       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("ZZFiltered"), 
+                                      cut = cms.string(BOTHFAIL + " && userFloat('CRZLLos_3P1F_ZZOnShell')"))
 process.cand2P2FFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand2P2F"), minNumber = cms.uint32(1))
-process.cr2P2F         = cms.Path(process.cand2P2F * process.cand2P2FFilter)
-process.cr2P2FCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("cr2P2F","pathFor4LeptonsAnalysis","zzTrigger"))
+process.CR2P2F         = cms.Path(process.select4leptonsRegions * process.cand2P2F * process.cand2P2FFilter)
+process.CR2P2FCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR2P2F","pathFor4LeptonsAnalysis","zzTrigger"))
 
-process.cand3P1F       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("ZZFiltered"), cut = cms.string(PASSD0_XOR_PASSD1))
+process.cand3P1F       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("ZZFiltered"), 
+                                      cut = cms.string(PASSD0_XOR_PASSD1 + " && userFloat('CRZLLos_3P1F_ZZOnShell')"))
 process.cand3P1FFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand3P1F"), minNumber = cms.uint32(1))
-process.cr3P1F         = cms.Path(process.cand3P1F * process.cand3P1FFilter)
-process.cr3P1FCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("cr3P1F","pathFor4LeptonsAnalysis","zzTrigger"))
+process.CR3P1F         = cms.Path(process.select4leptonsRegions * process.cand3P1F * process.cand3P1FFilter)
+process.CR3P1FCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR3P1F","pathFor4LeptonsAnalysis","zzTrigger"))
 
-process.candSR       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("ZZFiltered"), cut = cms.string(BOTHPASS))
-process.candSRFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("candSR"), minNumber = cms.uint32(1))
-process.sr           = cms.Path(process.candSR * process.candSRFilter)
-process.srCounter    = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("sr","pathFor4LeptonsAnalysis","zzTrigger"))
+process.candSR4P       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("ZZFiltered"), 
+                                      cut = cms.string(BOTHPASS + " && userFloat('SR_ZZOnShell')"))
+process.candSR4PFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("candSR4P"), minNumber = cms.uint32(1))
+process.SR4P           = cms.Path(process.select4leptonsRegions * process.candSR4P * process.candSR4PFilter)
+#process.SR4P           = cms.Path(process.candSR4P * process.candSR4PFilter)
+process.SR4PCounter    = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR4P","pathFor4LeptonsAnalysis","zzTrigger"))
+
+
+process.select4leptons1photonRegions = process.select4leptonsRegions.clone()
+process.select4leptons1photonRegions.minPhotons = cms.int32(1)
+process.select4leptons1photonRegions.maxPhotons = cms.int32(1)
+
+process.SR4P_1L         = cms.Path(process.select4leptons1photonRegions * process.candSR4P * process.candSR4PFilter)
+process.SR4P_1LCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR4P_1L","pathFor4LeptonsAnalysis","zzTrigger"))
+
 
 
 
