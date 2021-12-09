@@ -21,6 +21,7 @@ phys::RegionTypes phys::regionType(const std::string& input){
   else if (input == "SR3P_1L")    return SR3P_1L;
   else if (input == "SR3P_1P")    return SR3P_1P;
   else if (input == "CR3P_1F")    return CR3P_1F;
+  else if (input == "CRLFR")      return CRLFR;
 
   else if (input == "SR2P")       return SR2P  ;
   else if (input == "SR2P_1L")    return SR2P_1L;
@@ -59,6 +60,7 @@ std::string phys::regionType(phys::RegionTypes input){
   else if (input == SR3P_1L)    return "SR3P_1L";
   else if (input == SR3P_1P)    return "SR3P_1P";
   else if (input == CR3P_1F)    return "CR3P_1F";
+  else if (input == CRLFR)      return "CRLFR";
 
   else if (input == SR2P)       return "SR2P"  ;
   else if (input == SR2P_1L)    return "SR2P_1L";

@@ -25,7 +25,8 @@ namespace phys{
 		   SR3P_1L, // * 3 tight leptons + 1 loose photon (baseline SR for WZgamma)
 		   SR3P_1P, // * 3 tight leptons + 1 tight photon (SR for WZgamma)
 		   CR3P_1F, //   3 tight leptons + 1 loose but not tight photon
-		   
+		   CRLFR  , //   2 tight leptons + 1 loose lepton (CR for lepton fake rate measurement)
+ 
 		   // Beware: 2P regions require the presence of either 2 AK4 jets or a AK8 jet
 		   SR2P,    // * 2 tight (pass ID) leptons (baseline SR for ZV) 
 		   SR2P_1L, // * 2 tight leptons + 1 loose photon (baseline SR for ZVgamma)
