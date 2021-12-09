@@ -173,8 +173,8 @@ int FilterController::getRegionWord(const edm::Event & event){
   if(passFilter(event,"CR3P1F" )) set_bit(regionword,phys::CR3P1F );  
   if(passFilter(event,"CR2P2F" )) set_bit(regionword,phys::CR2P2F );  
   if(passFilter(event,"SR4P_1L")) set_bit(regionword,phys::SR4P_1L); 
-  if(passFilter(event,"SR4P_1P")) set_bit(regionword,phys::SR4P_1P); 
-  if(passFilter(event,"CR4P_1F")) set_bit(regionword,phys::CR4P_1F); 
+  //if(passFilter(event,"SR4P_1P")) set_bit(regionword,phys::SR4P_1P); 
+  //if(passFilter(event,"CR4P_1F")) set_bit(regionword,phys::CR4P_1F); 
   
   if(passFilter(event,"SR3P" ))   set_bit(regionword,phys::SR3P);     
   if(passFilter(event,"CR110"))   set_bit(regionword,phys::CR110);   
@@ -185,14 +185,19 @@ int FilterController::getRegionWord(const edm::Event & event){
   if(passFilter(event,"CR010"))   set_bit(regionword,phys::CR010);   
   if(passFilter(event,"CR000"))   set_bit(regionword,phys::CR000);   
   if(passFilter(event,"SR3P_1L")) set_bit(regionword,phys::SR3P_1L); 
-  if(passFilter(event,"SR3P_1P")) set_bit(regionword,phys::SR3P_1P); 
-  if(passFilter(event,"CR3P_1F")) set_bit(regionword,phys::CR3P_1F); 
+  //if(passFilter(event,"SR3P_1P")) set_bit(regionword,phys::SR3P_1P); 
+  //if(passFilter(event,"CR3P_1F")) set_bit(regionword,phys::CR3P_1F); 
   
 
   if(passFilter(event,"SR2P"))    set_bit(regionword,phys::SR2P);    
   if(passFilter(event,"SR2P_1L")) set_bit(regionword,phys::SR2P_1L); 
-  if(passFilter(event,"SR2P_1P")) set_bit(regionword,phys::SR2P_1P); 
-  if(passFilter(event,"CR2P_1F")) set_bit(regionword,phys::CR2P_1F); 
+  //if(passFilter(event,"SR2P_1P")) set_bit(regionword,phys::SR2P_1P); 
+  //if(passFilter(event,"CR2P_1F")) set_bit(regionword,phys::CR2P_1F); 
+
+  if(passFilter(event,"SR_HZZ"     )) set_bit(regionword,phys::SR_HZZ   );    
+  if(passFilter(event,"CR3P1F_HZZ" )) set_bit(regionword,phys::CR3P1F_HZZ );  
+  if(passFilter(event,"CR2P2F_HZZ" )) set_bit(regionword,phys::CR2P2F_HZZ );  
+
   
   return regionword;
 }
