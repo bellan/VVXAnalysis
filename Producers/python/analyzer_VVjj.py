@@ -221,12 +221,11 @@ process.correctedJetsAK8 = cms.EDProducer("CorrJetsProducer",
 process.fatJets = cms.Path(process.goodJetsAK8 + process.correctedJetsAK8)
 ### ---------------------------------------------------------------------
 
+## targetting ZZ->4l
+execfile(VVjj_search_path + "4_leptons_regions.py") 
 
 ## targetting WZ->3lnu
 execfile(VVjj_search_path + "3_leptons_regions.py")
-
-## targetting ZZ->4l
-execfile(VVjj_search_path + "4_leptons_regions.py") 
 
 ## VZ->2l2j
 execfile(VVjj_search_path + "2_leptons_regions.py")
@@ -354,7 +353,10 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
 ### ------------------------------------------------------------------------- ###
 
 process.filltrees = cms.EndPath(cms.ignore(process.zzTrigger) + 
-                                process.SR4PCounter + process.CR3P1FCounter + process.CR2P2FCounter + 
+                                process.SR4PCounter + process.CR3P1FCounter + process.CR2P2FCounter + process.SR4P1LCounter +
+                                process.SRHZZCounter + process.CR3P1FHZZCounter + process.CR2P2FHZZCounter + 
+                                process.SR3PCounter   + process.CR110Counter  + process.CR101Counter  + process.CR011Counter  + process.CR100Counter  + process.CR001Counter  + process.CR010Counter  + process.CR000Counter  + process.SR3P1LCounter +
+                                process.SR2PCounter + process.SR2P1LCounter +
                                 process.treePlanter)
 
 ########################################################################################################################################################################
