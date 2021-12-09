@@ -84,8 +84,10 @@ public:
   // To steer the loop over all events. User is not supposed to change this.
   virtual void     loop(const std::string outputfile);
 
-  inline void printEvent() const {
-    std::cout << "Run: " << run << " luminosity block: " << lumiBlock << " event: " << event << std::endl; 
+  inline void printEvent(int opt = 0) const {
+    if(opt == 0)      std::cout << "Run: " << run << " luminosity block: " << lumiBlock << " event: " << event << std::endl; 
+    else if(opt == 1) std::cout << run << ":" << lumiBlock << ":" << event << std::endl; 
+    else              std::cout << "Run: " << run << " luminosity block: " << lumiBlock << " event: " << event << std::endl; 
   }
 
  protected:
