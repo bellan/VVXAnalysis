@@ -27,6 +27,8 @@
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
+#include "VVXAnalysis/Commons/interface/RegionTypes.h"
+
 
 #include "ZZAnalysis/AnalysisStep/interface/bitops.h"
 #include "VVXAnalysis/DataFormats/interface/GenStatusBit.h"
@@ -357,7 +359,7 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
     
   
   edm::Handle<edm::View<reco::Candidate> > genParticles; event.getByToken(theGenCollectionToken, genParticles);
-  edm::Handle<edm::View<reco::Candidate> > genTaus; event.getByToken(theGenTauCollectionToken, genTaus);
+  edm::Handle<edm::View<reco::Candidate> > genTaus     ; event.getByToken(theGenTauCollectionToken, genTaus);
   edm::Handle<GenEventInfoProduct>         genInfo     ; event.getByToken(theGenInfoToken, genInfo);
 
 
@@ -420,10 +422,7 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
     const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(&(*p));
     genTaus_.push_back(phys::Particle(gp->p4(), phys::Particle::computeCharge(gp->pdgId()), gp->pdgId()));
   }
-
-
-
-  
+ 
   event.getByToken(theGenVBCollectionToken,  genParticles);
   for(edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p)
     { 
@@ -452,9 +451,6 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
   for(edm::View<reco::Candidate>::const_iterator jet = genJetsAK8->begin(); jet != genJetsAK8->end(); ++jet)
     genJetsAK8_.push_back(phys::Particle(jet->p4(), phys::Particle::computeCharge(jet->pdgId()), jet->pdgId()));
  
-
-
-
 
 
   // LHE information
@@ -498,6 +494,11 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   if(!goodEvent) return;
   ++theNumberOfAnalyzedEvents;
 
+
+  if(      isMC_ && regionWord_ == 0 && !isSignal_ && applySkim_) return;
+  else if(!isMC_ && regionWord_ == 0               && applySkim_) return;
+
+
   // Load a bunch of objects from the event
   edm::Handle<pat::MuonCollection>       muons          ; event.getByToken(theMuonToken    ,     muons);
   edm::Handle<pat::ElectronCollection>   electrons      ; event.getByToken(theElectronToken, electrons);
@@ -520,68 +521,65 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   // The bosons are selected requiring that their daughters pass the quality criteria to be good daughters
   // Vhad_ = fillHadBosons(Vhad, 24);
 
-  // Fill the Z->ll for the 2 leptons analysis
-  std::vector<phys::Boson<phys::Lepton> > Zs = fillLepBosons(Z,23);
-  if(!Zs.empty()) Z_ = Zs.front();
 
-  // Fill Z+l pairs for fake rate measurements
-  ZL_ = fillZLCandidates(ZL);
+  // ---------------- 2 charged leptons ----------------
+  if(test_bit(regionWord_,phys::SR2P)    || 
+     test_bit(regionWord_,phys::SR2P_1L)){
 
-  // Fill the WZ for the 3 leptons analysis
-  ZW_ = fillZWCandidate(ZW);
-
-
-  // The bosons have NOT any requirement on the quality of their daughters, only the flag is set (because of the same code is usd for CR too)
-  std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > ZZs = fillDiBosons(ZZ);
+    // Fill the Z->ll for the 2 leptons analysis
+    std::vector<phys::Boson<phys::Lepton> > Zs = fillLepBosons(Z,23);
+    if(!Zs.empty()) Z_ = Zs.front();
+  }
+  // ---------------------------------------------------
 
 
+  // ---------------- 3 charged leptons ----------------
+
+  if(test_bit(regionWord_,phys::CRLFR))
+    // Fill Z+l pairs for fake rate measurements
+    ZL_ = fillZLCandidates(ZL);
+
+
+  if(test_bit(regionWord_,phys::SR3P)    || 
+     test_bit(regionWord_,phys::CR110)   || 
+     test_bit(regionWord_,phys::CR101)   || 
+     test_bit(regionWord_,phys::CR011)   || 
+     test_bit(regionWord_,phys::CR100)   || 
+     test_bit(regionWord_,phys::CR001)   || 
+     test_bit(regionWord_,phys::CR010)   || 
+     test_bit(regionWord_,phys::CR000)   || 
+     test_bit(regionWord_,phys::SR3P_1L)) 
+    
+    // Fill the WZ for the 3 leptons analysis
+    ZW_ = fillZWCandidate(ZW);
+  // ---------------------------------------------------
   
 
-
-
-
-  bool oneZZInSR = false;
-
-  if(ZZ->size() > 1) {
-
-    // Debug in case of more than 1 ZZ candidate
-    cout << "----------------------------------------------------" << endl;
-    cout << "More than one ZZ candidate!! " << ZZ->size() <<  " candidates in event: " << event_ << endl;
-    typedef phys::DiBoson<phys::Lepton,phys::Lepton> ZZlep;
-    foreach(const ZZlep& zz , ZZs){
-      cout << "....................." << endl;
-      cout << zz << " SR? " << test_bit(zz.regionWord_,Channel::ZZ) << " CR2P2F? " << test_bit(zz.regionWord_,CRZLLos_2P2F) << " CR3P1F? " << test_bit(zz.regionWord_,CRZLLos_3P1F) << " ZZOnShell " <<test_bit(zz.regionWord_,Channel::ZZOnShell)<<endl;
-      cout << "daughter 0: "   << zz.first() << endl;
-      cout << "daughter 0.1: " << zz.first().daughter(0) << " is good? " <<  zz.first().daughter(0).isGood() << " pass full sel? " << zz.first().daughter(0).passFullSel() <<  endl;
-      cout << "daughter 0.1: " << zz.first().daughter(1) << " is good? " <<  zz.first().daughter(1).isGood() << " pass full sel? " << zz.first().daughter(1).passFullSel() <<  endl;
-      cout << "daughter 1: "   << zz.second() << endl;
-      cout << "daughter 1.1: " << zz.second().daughter(0) << " is good? " <<  zz.second().daughter(0).isGood() << " pass full sel? " << zz.second().daughter(0).passFullSel() <<  endl;
-      cout << "daughter 1.1: " << zz.second().daughter(1) << " is good? " <<  zz.second().daughter(1).isGood() << " pass full sel? " << zz.second().daughter(1).passFullSel() <<  endl;
-      cout << "....................." << endl;
-      
-      if(!zz.passTrigger()) continue;
-      
-      // If more than a candidate is found, then give precedence to SR type ZZ
-      if(test_bit(zz.regionWord_,Channel::ZZ) || test_bit(zz.regionWord_,Channel::ZZOnShell)){
-	ZZ_ = zz;   
-	oneZZInSR = true;
-      }
-      // Otherwise, select the ZZ accordingly to the same logic as the ZZ is chosen
-      if(!oneZZInSR){
-	if(abs(zz.first().mass() - phys::ZMASS) < abs(ZZ_.first().mass() - phys::ZMASS)) 
-	  ZZ_ = zz;
-	if((zz.first().mass() - ZZ_.first().mass()) < 0.001 && (zz.second().daughter(0).pt()+zz.second().daughter(1).pt()) > (ZZ_.second().daughter(0).pt() + ZZ_.second().daughter(1).pt()) )
-	  ZZ_ = zz;
-      }
+  // ---------------- 4 charged leptons ----------------
+  if(test_bit(regionWord_,phys::SR4P)    ||
+     test_bit(regionWord_,phys::CR3P1F)  ||
+     test_bit(regionWord_,phys::CR2P2F)  ||
+     test_bit(regionWord_,phys::SR4P_1L) ||
+     test_bit(regionWord_,phys::SR_HZZ)      ||
+     test_bit(regionWord_,phys::CR3P1F_HZZ)  ||
+     test_bit(regionWord_,phys::CR2P2F_HZZ)) {    
+    
+    std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > ZZs = fillDiBosons(ZZ);
+    if(ZZs.size() > 1 && 
+       (test_bit(regionWord_,phys::SR4P)    ||
+	test_bit(regionWord_,phys::CR3P1F)  ||
+	test_bit(regionWord_,phys::CR2P2F)  ||
+	test_bit(regionWord_,phys::SR4P_1L))
+       ){ 
+      cout << "TreePlanter: something went wrong, there are more 4 leptons in the event. Please fix the code."<< endl;
+      abort();
     }
     
-    cout << "----------------------------------------------------" << endl;
+    ZZ_ = selectOnlyOnZpair(ZZs); 
+    
   }
-
-  else if(ZZs.size() == 1 && ZZs.front().passTrigger()) ZZ_ = ZZs.front();
-  // case ZZ == 1 !trigger is missing
-  else if(isMC_  && ZL_.empty() && !ZW_.isValid() && !isSignal_ && applySkim_) return;
-  else if(!isMC_ && ZL_.empty() && !ZW_.isValid() &&               applySkim_) return;
+  
+  
   
   theTree->Fill();
 
@@ -979,7 +977,7 @@ std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > TreePlanter::fillDiBosons
     }
     else {cout << "TreePlanter: unexpected diboson final state: " << rawchannel << " ... going to abort.. " << endl; abort();}
     
-    if(physVV.isValid()) physDiBosons.push_back(physVV);
+    if(physVV.isValid() && physVV.passTrigger()) physDiBosons.push_back(physVV);
     
   }
 
@@ -1112,9 +1110,52 @@ int TreePlanter::computeRegionFlagForZZ(const pat::CompositeCandidate & vv) cons
 }
 
 
+// Here as legacy for HZZ analysis where more than 4 leptons are allowed in the FS
+ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::selectOnlyOnZpair(const std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > &ZZs){
+   
+   phys::DiBoson<phys::Lepton,phys::Lepton> ZZ;
+   bool oneZZInSR = false;
+   
+   if(ZZs.size() > 1) {
 
+    // Debug in case of more than 1 ZZ candidate
+    cout << "----------------------------------------------------" << endl;
+    cout << "More than one ZZ candidate!! " << ZZs.size() <<  " candidates in event: " << event_ << endl;
+    typedef phys::DiBoson<phys::Lepton,phys::Lepton> ZZlep;
+    foreach(const ZZlep& zz , ZZs){
+      cout << "....................." << endl;
+      cout << zz << " SR? " << test_bit(zz.regionWord_,Channel::ZZ) << " CR2P2F? " << test_bit(zz.regionWord_,CRZLLos_2P2F) << " CR3P1F? " << test_bit(zz.regionWord_,CRZLLos_3P1F) << " ZZOnShell " <<test_bit(zz.regionWord_,Channel::ZZOnShell)<<endl;
+      cout << "daughter 0: "   << zz.first() << endl;
+      cout << "daughter 0.1: " << zz.first().daughter(0) << " is good? " <<  zz.first().daughter(0).isGood() << " pass full sel? " << zz.first().daughter(0).passFullSel() <<  endl;
+      cout << "daughter 0.1: " << zz.first().daughter(1) << " is good? " <<  zz.first().daughter(1).isGood() << " pass full sel? " << zz.first().daughter(1).passFullSel() <<  endl;
+      cout << "daughter 1: "   << zz.second() << endl;
+      cout << "daughter 1.1: " << zz.second().daughter(0) << " is good? " <<  zz.second().daughter(0).isGood() << " pass full sel? " << zz.second().daughter(0).passFullSel() <<  endl;
+      cout << "daughter 1.1: " << zz.second().daughter(1) << " is good? " <<  zz.second().daughter(1).isGood() << " pass full sel? " << zz.second().daughter(1).passFullSel() <<  endl;
+      cout << "....................." << endl;
+      
+      if(!zz.passTrigger()) continue;
+      
+      // If more than a candidate is found, then give precedence to SR type ZZ
+      if(test_bit(zz.regionWord_,Channel::ZZ) || test_bit(zz.regionWord_,Channel::ZZOnShell)){
+	ZZ = zz;   
+	oneZZInSR = true;
+      }
+      // Otherwise, select the ZZ accordingly to the same logic as the ZZ is chosen
+      if(!oneZZInSR){
+	if(abs(zz.first().mass() - phys::ZMASS) < abs(ZZ_.first().mass() - phys::ZMASS)) 
+	  ZZ = zz;
+	if((zz.first().mass() - ZZ_.first().mass()) < 0.001 && (zz.second().daughter(0).pt()+zz.second().daughter(1).pt()) > (ZZ_.second().daughter(0).pt() + ZZ_.second().daughter(1).pt()) )
+	  ZZ = zz;
+      }
+    }
+    
+    cout << "----------------------------------------------------" << endl;
 
-
+   }
+   
+   return ZZ;
+ }
+ 
 
 
 

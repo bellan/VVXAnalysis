@@ -95,7 +95,8 @@ class TreePlanter: public edm::EDAnalyzer {
 
   phys::DiBoson<phys::Lepton,phys::Lepton> fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmZWs) const;
 
-  
+  bool checkNumberOfZpairs();
+  phys::DiBoson<phys::Lepton,phys::Lepton> selectOnlyOnZpair(const std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > &ZZs);
 
   int computeRegionFlagForZZ(const pat::CompositeCandidate & vv) const;
 
