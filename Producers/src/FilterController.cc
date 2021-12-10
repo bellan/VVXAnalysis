@@ -188,6 +188,7 @@ int FilterController::getRegionWord(const edm::Event & event){
   //if(passFilter(event,"SR3P_1P")) set_bit(regionword,phys::SR3P_1P); 
   //if(passFilter(event,"CR3P_1F")) set_bit(regionword,phys::CR3P_1F); 
   
+  if(passFilter(event,"CRLFR")) set_bit(regionword,phys::CRLFR); 
 
   if(passFilter(event,"SR2P"))    set_bit(regionword,phys::SR2P);    
   if(passFilter(event,"SR2P_1L")) set_bit(regionword,phys::SR2P_1L); 
