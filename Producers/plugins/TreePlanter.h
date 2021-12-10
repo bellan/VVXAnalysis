@@ -226,6 +226,32 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::EDGetTokenT<edm::MergeableCounter> cr2P2FCounterToken_;
   edm::EDGetTokenT<edm::MergeableCounter> cr3P1FCounterToken_;          
 
+  edm::EDGetTokenT<edm::MergeableCounter> SR2PCounterToken_;  
+  edm::EDGetTokenT<edm::MergeableCounter> SR2P1LCounterToken_;
+
+  edm::EDGetTokenT<edm::MergeableCounter> SR3PCounterToken_;  
+  edm::EDGetTokenT<edm::MergeableCounter> CR110CounterToken_; 
+  edm::EDGetTokenT<edm::MergeableCounter> CR101CounterToken_; 
+  edm::EDGetTokenT<edm::MergeableCounter> CR011CounterToken_; 
+  edm::EDGetTokenT<edm::MergeableCounter> CR100CounterToken_; 
+  edm::EDGetTokenT<edm::MergeableCounter> CR001CounterToken_; 
+  edm::EDGetTokenT<edm::MergeableCounter> CR010CounterToken_; 
+  edm::EDGetTokenT<edm::MergeableCounter> CR000CounterToken_; 
+  edm::EDGetTokenT<edm::MergeableCounter> SR3P1LCounterToken_;
+  edm::EDGetTokenT<edm::MergeableCounter> CRLFRCounterToken_;       
+
+  edm::EDGetTokenT<edm::MergeableCounter> SR4PCounterToken_;  
+  edm::EDGetTokenT<edm::MergeableCounter> CR2P2FCounterToken_;
+  edm::EDGetTokenT<edm::MergeableCounter> CR3P1FCounterToken_;
+  edm::EDGetTokenT<edm::MergeableCounter> SR4P1LCounterToken_;
+  edm::EDGetTokenT<edm::MergeableCounter> CR2P2FHZZCounterToken_;
+  edm::EDGetTokenT<edm::MergeableCounter> CR3P1FHZZCounterToken_;
+  edm::EDGetTokenT<edm::MergeableCounter> SRHZZCounterToken_; 
+
+
+
+
+
   // --------------------------------------------------------- //
 
   // Ordinary data members
@@ -255,9 +281,30 @@ class TreePlanter: public edm::EDAnalyzer {
   Int_t theNumberOfAnalyzedEvents;
   Int_t eventsInEtaAcceptance_;
   Int_t eventsInEtaPtAcceptance_;
-  Int_t eventsInSR_;
-  Int_t eventsIn2P2FCR_;
-  Int_t eventsIn3P1FCR_;
+  
+
+  Int_t eventsInSR2P_;  
+  Int_t eventsInSR2P1L_;
+
+  Int_t eventsInSR3P_;  
+  Int_t eventsInCR110_; 
+  Int_t eventsInCR101_; 
+  Int_t eventsInCR011_; 
+  Int_t eventsInCR100_; 
+  Int_t eventsInCR001_; 
+  Int_t eventsInCR010_; 
+  Int_t eventsInCR000_; 
+  Int_t eventsInSR3P1L_;
+  Int_t eventsInCRLFR_;       
+
+  Int_t eventsInSR4P_;  
+  Int_t eventsInCR2P2F_;
+  Int_t eventsInCR3P1F_;
+  Int_t eventsInSR4P1L_;
+  Int_t eventsInCR2P2FHZZ_;
+  Int_t eventsInCR3P1FHZZ_;
+  Int_t eventsInSRHZZ_;    
+
 
   std::vector<std::string> skimPaths_;
 };

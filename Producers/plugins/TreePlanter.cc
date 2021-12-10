@@ -86,14 +86,36 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , thekfactorToken_qqZZPt   (consumes<float>                      (edm::InputTag("kFactor","qqZZPt"         )))
   , thekfactorToken_qqZZdPhi (consumes<float>                      (edm::InputTag("kFactor","qqZZdPhi"       )))
   , thekfactorToken_EWKqqZZ  (consumes<float>                      (edm::InputTag("kFactor","EWKqqZZ"        )))
+
+
   , thePreSkimCounterToken       (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("preSkimCounter"         )))
   , prePreselectionCounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("prePreselectionCounter" )))
   , postPreselectionCounterToken_(consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("postPreselectionCounter")))
   , signalCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("signalCounter"          )))
   , postSkimSignalCounterToken_  (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("postSkimSignalCounter"  )))
-  , srCounterToken_              (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("srCounter"              ))) 
-  , cr2P2FCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("cr2P2FCounter"          )))
-  , cr3P1FCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("cr3P1FCounter"          )))
+
+  , SR2PCounterToken_            (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("SR2PCounter"          ))) 
+  , SR2P1LCounterToken_          (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("SR2P1LCounter"          ))) 
+
+  , SR3PCounterToken_  (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("SR3PCounter")))
+  , CR110CounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("CR110Counter")))
+  , CR101CounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("CR101Counter")))
+  , CR011CounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("CR011Counter")))
+  , CR100CounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("CR100Counter")))
+  , CR001CounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("CR001Counter")))
+  , CR010CounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("CR010Counter")))
+  , CR000CounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("CR000Counter")))
+  , SR3P1LCounterToken_(consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("SR3P1LCounter")))
+  , CRLFRCounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("CRLFRounter")))
+
+  , SR4PCounterToken_  (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("SR4PCounter")))
+  , CR2P2FCounterToken_(consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("CR2P2FCounter")))
+  , CR3P1FCounterToken_(consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("CR3P1FCounter")))
+  , SR4P1LCounterToken_(consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("SR4P1LCounter")))
+  , CR2P2FHZZCounterToken_(consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("CR2P2FHZZCounter")))
+  , CR3P1FHZZCounterToken_(consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("CR3P1FHZZCounter")))
+  , SRHZZCounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("SRHZZCounter")))
+  
   , sampleName_      (config.getParameter<std::string>("sampleName"))
   , isMC_            (config.getUntrackedParameter<bool>("isMC",false))
   , sampleType_      (config.getParameter<int>("sampleType"))
@@ -109,13 +131,32 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theNumberOfAnalyzedEvents(0)
   , eventsInEtaAcceptance_(0)
   , eventsInEtaPtAcceptance_(0)
-  , eventsInSR_(0)
-  , eventsIn2P2FCR_(0)
-  , eventsIn3P1FCR_(0){
- 
+
+  , eventsInSR2P_(0)     
+  , eventsInSR2P1L_(0)   
+  
+  , eventsInSR3P_(0)     
+  , eventsInCR110_(0)    
+  , eventsInCR101_(0)    
+  , eventsInCR011_(0)    
+  , eventsInCR100_(0)    
+  , eventsInCR001_(0)    
+  , eventsInCR010_(0)    
+  , eventsInCR000_(0)    
+  , eventsInSR3P1L_(0)   
+  , eventsInCRLFR_(0)    
+  
+  , eventsInSR4P_(0)     
+  , eventsInCR2P2F_(0)   
+  , eventsInCR3P1F_(0)   
+  , eventsInSR4P1L_(0)   
+  , eventsInCR2P2FHZZ_(0)
+  , eventsInCR3P1FHZZ_(0)
+  , eventsInSRHZZ_(0)   {
+  
   edm::Service<TFileService> fs;
   theTree = fs->make<TTree>("ElderTree","ElderTree");
-
+  
   if(isMC_){
     consumesMany<std::vector< PileupSummaryInfo > >();
     consumesMany<LHEEventProduct>();
@@ -213,14 +254,64 @@ void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::Even
   found = lumi.getByToken(postSkimSignalCounterToken_, counter);
   if(found) postSkimSignalCounter_ += counter->value;
 
-  found = lumi.getByToken(srCounterToken_, counter);
-  if(found) eventsInSR_ += counter->value;
 
-  found = lumi.getByToken(cr2P2FCounterToken_, counter);
-  if(found) eventsIn2P2FCR_ += counter->value;
+  found = lumi.getByToken(SR2PCounterToken_, counter);
+  if(found) eventsInSR2P_ += counter->value;
 
-  found = lumi.getByToken(cr3P1FCounterToken_, counter);
-  if(found) eventsIn3P1FCR_ += counter->value;
+  found = lumi.getByToken(SR2P1LCounterToken_, counter);
+  if(found) eventsInSR2P1L_ += counter->value;
+
+  found = lumi.getByToken(SR3PCounterToken_, counter);
+  if(found) eventsInSR3P_ += counter->value;
+
+  found = lumi.getByToken(CR110CounterToken_, counter);
+  if(found) eventsInCR110_ += counter->value;
+
+  found = lumi.getByToken(CR101CounterToken_, counter);
+  if(found) eventsInCR101_ += counter->value;
+
+  found = lumi.getByToken(CR011CounterToken_, counter);
+  if(found) eventsInCR011_ += counter->value;
+
+  found = lumi.getByToken(CR100CounterToken_, counter);
+  if(found) eventsInCR100_ += counter->value;
+
+  found = lumi.getByToken(CR001CounterToken_, counter);
+  if(found) eventsInCR001_ += counter->value;
+
+  found = lumi.getByToken(CR010CounterToken_, counter);
+  if(found) eventsInCR010_ += counter->value;
+
+  found = lumi.getByToken(CR000CounterToken_, counter);
+  if(found) eventsInCR000_ += counter->value;
+
+  found = lumi.getByToken(SR3P1LCounterToken_, counter);
+  if(found) eventsInSR3P1L_ += counter->value;
+
+  found = lumi.getByToken(CRLFRCounterToken_, counter);
+  if(found) eventsInCRLFR_ += counter->value;
+
+  found = lumi.getByToken(SR4PCounterToken_, counter);
+  if(found)  eventsInSR4P_ += counter->value;
+
+  found = lumi.getByToken(CR2P2FCounterToken_, counter);
+  if(found) eventsInCR2P2F_ += counter->value;
+
+  found = lumi.getByToken(CR3P1FCounterToken_, counter);
+  if(found) eventsInCR3P1F_ += counter->value;
+
+  found = lumi.getByToken(SR4P1LCounterToken_, counter);
+  if(found) eventsInSR4P1L_ += counter->value;
+
+  found = lumi.getByToken(CR2P2FHZZCounterToken_, counter);
+  if(found) eventsInCR2P2FHZZ_ += counter->value;
+
+  found = lumi.getByToken(CR3P1FHZZCounterToken_, counter);
+  if(found) eventsInCR3P1FHZZ_ += counter->value;
+
+  found = lumi.getByToken(SRHZZCounterToken_, counter);
+  if(found) eventsInSRHZZ_ += counter->value;
+
 }
 
 
@@ -239,9 +330,32 @@ void TreePlanter::endJob(){
   
   countTree->Branch("setup"         , &setup_); 
   countTree->Branch("analyzedEvents", &theNumberOfAnalyzedEvents);
-  countTree->Branch("eventsInSR"    , &eventsInSR_);
-  countTree->Branch("eventsIn2P2FCR", &eventsIn2P2FCR_);
-  countTree->Branch("eventsIn3P1FCR", &eventsIn3P1FCR_);
+
+  countTree->Branch("eventsInSR2P",      &eventsInSR2P_);     
+  countTree->Branch("eventsInSR2P_1L",    &eventsInSR2P1L_);   
+					                    
+  countTree->Branch("eventsInSR3P",      &eventsInSR3P_);     
+  countTree->Branch("eventsInCR110",     &eventsInCR110_);    
+  countTree->Branch("eventsInCR101",     &eventsInCR101_);    
+  countTree->Branch("eventsInCR011",     &eventsInCR011_);    
+  countTree->Branch("eventsInCR100",     &eventsInCR100_);    
+  countTree->Branch("eventsInCR001",     &eventsInCR001_);    
+  countTree->Branch("eventsInCR010",     &eventsInCR010_);    
+  countTree->Branch("eventsInCR000",     &eventsInCR000_);    
+  countTree->Branch("eventsInSR3P_1L",   &eventsInSR3P1L_);   
+  countTree->Branch("eventsInCRLFR",     &eventsInCRLFR_);    
+					                    
+  countTree->Branch("eventsInSR4P",      &eventsInSR4P_);     
+  countTree->Branch("eventsInCR2P2F",    &eventsInCR2P2F_);   
+  countTree->Branch("eventsInCR3P1F",    &eventsInCR3P1F_);   
+  countTree->Branch("eventsInSR4P_1L",   &eventsInSR4P1L_);   
+  countTree->Branch("eventsInCR2P2FHZZ", &eventsInCR2P2FHZZ_);
+  countTree->Branch("eventsInCR3P1FHZZ", &eventsInCR3P1FHZZ_);
+  countTree->Branch("eventsInSRHZZ",     &eventsInSRHZZ_);    
+
+
+
+
 
   if(isMC_){
 
