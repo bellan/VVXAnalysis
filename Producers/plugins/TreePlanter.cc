@@ -535,9 +535,10 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
   // ---------------- 3 charged leptons ----------------
 
-  if(test_bit(regionWord_,phys::CRLFR))
+  if(test_bit(regionWord_,phys::CRLFR)){
     // Fill Z+l pairs for fake rate measurements
-    ZL_ = fillZLCandidates(ZL);
+    ZL_ = fillZLCandidates(ZL); // FIXME
+  }
 
 
   if(test_bit(regionWord_,phys::SR3P)    || 
@@ -548,10 +549,12 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
      test_bit(regionWord_,phys::CR001)   || 
      test_bit(regionWord_,phys::CR010)   || 
      test_bit(regionWord_,phys::CR000)   || 
-     test_bit(regionWord_,phys::SR3P_1L)) 
+     test_bit(regionWord_,phys::SR3P_1L)) {
+    
     
     // Fill the WZ for the 3 leptons analysis
     ZW_ = fillZWCandidate(ZW);
+  }
   // ---------------------------------------------------
   
 
@@ -563,7 +566,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
      test_bit(regionWord_,phys::SR_HZZ)      ||
      test_bit(regionWord_,phys::CR3P1F_HZZ)  ||
      test_bit(regionWord_,phys::CR2P2F_HZZ)) {    
-    
+  
     std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > ZZs = fillDiBosons(ZZ);
     if(ZZs.size() > 1 && 
        (test_bit(regionWord_,phys::SR4P)    ||
@@ -572,11 +575,11 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 	test_bit(regionWord_,phys::SR4P_1L))
        ){ 
       cout << "TreePlanter: something went wrong, there are more 4 leptons in the event. Please fix the code."<< endl;
-      abort();
+      abort(); // ZZ analysis uses exactly 4 leptons
     }
     
-    ZZ_ = selectOnlyOnZpair(ZZs); 
-    
+    ZZ_ = selectOnlyOnZpair(ZZs); // more thant 4 leptons are allowed for HZZ analysis
+
   }
   
   
@@ -1025,9 +1028,12 @@ std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > TreePlanter::fi
 phys::DiBoson<phys::Lepton,phys::Lepton> 
 TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmZWs) const{
 
-  // Only one ZW is allowed. ZL_ is empty when edmZL.size() != 1. 
-  if(edmZWs->size() != 1 || ZL_.empty()) return  phys::DiBoson<phys::Lepton,phys::Lepton>();
-  //if(!filterController_.passTrigger(ZL, triggerWord_)) return physZLs;
+
+
+  if(edmZWs->size() != 1) return  phys::DiBoson<phys::Lepton,phys::Lepton>();
+
+  // FIXME: check trigger (change naming)
+  if(!filterController_.passTrigger(ZZ, triggerWord_)) return phys::DiBoson<phys::Lepton,phys::Lepton>();;
 
 
   // for ZW,  daughter(0) is the ZL while daughter(1) is the MET
@@ -1150,8 +1156,8 @@ int TreePlanter::computeRegionFlagForZZ(const pat::CompositeCandidate & vv) cons
     }
     
     cout << "----------------------------------------------------" << endl;
-
    }
+   else if(ZZs.size() == 1) ZZ = ZZs.front();
    
    return ZZ;
  }
