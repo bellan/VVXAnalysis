@@ -204,11 +204,7 @@ public:
   phys::DiBoson<phys::Lepton  , phys::Lepton> *ZW; TBranch *b_ZW;
 
   // Z+L 
-  ZLCompositeCandidates *ZLCand; TBranch *b_ZLCand;
-
-  // Z+L  (Not in the tree)
-  ZLCompositeCandidates *ZL;
-
+  ZLCompositeCandidate *ZL; TBranch *b_ZLCand;
 
   // GenParticle 
   std::vector<phys::Particle>               *genParticles;   TBranch *b_genParticles;

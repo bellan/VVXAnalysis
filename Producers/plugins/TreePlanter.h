@@ -91,7 +91,7 @@ class TreePlanter: public edm::EDAnalyzer {
 
   std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > fillDiBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const;
 
-  std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > fillZLCandidates(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmZLs) const;
+  std::pair<phys::Boson<phys::Lepton>, phys::Lepton> fillZLCandidate(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmZLs) const;
 
   phys::DiBoson<phys::Lepton,phys::Lepton> fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmZWs) const;
 
@@ -171,7 +171,8 @@ class TreePlanter: public edm::EDAnalyzer {
   phys::DiBoson<phys::Lepton  , phys::Lepton> ZZ_;
   
   // Z + 1 loose lepton, for fake rate studies
-  std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > ZL_;
+  //std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > ZL_;
+  std::pair<phys::Boson<phys::Lepton>, phys::Lepton> ZL_;
 
   // ZW in the SR
   phys::DiBoson<phys::Lepton  , phys::Lepton> ZW_;

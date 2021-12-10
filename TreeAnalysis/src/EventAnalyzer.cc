@@ -109,7 +109,7 @@ void EventAnalyzer::Init(TTree *tree)
   ZW   = new phys::DiBoson<phys::Lepton, phys::Lepton>(); b_ZW   = 0; theTree->SetBranchAddress("ZWCand"  , &ZW  , &b_ZW  );
 
   // Z+L 
-  ZL = new ZLCompositeCandidates()    ; ZLCand = 0; b_ZLCand = 0; theTree->SetBranchAddress("ZLCand", &ZLCand, &b_ZLCand);
+  ZL = new ZLCompositeCandidate()    ; b_ZLCand = 0; theTree->SetBranchAddress("ZLCand", &ZL, &b_ZLCand);
 
 
   // Gen Particles   
@@ -211,14 +211,14 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
    
   stable_sort(Vhad->begin(), Vhad->end(), phys::PtComparator());
   
-  ZL->clear();
-  if(ZLCand) foreach(const ZLCompositeCandidate& zl, *ZLCand) ZL->push_back(zl);
+  
+  // FIXME this logic needs to be fixed!!!!!!
   if(region_ == phys::MC){
     if(!ZZ->isValid()){
       if(ZZ) delete ZZ;
       ZZ = new phys::DiBoson<phys::Lepton, phys::Lepton>();
     }
-    if(!ZW->isValid()){
+    if(!ZW->isValid()){ 
       if(ZW) delete ZW;
       ZW = new phys::DiBoson<phys::Lepton, phys::Lepton>();
     }

@@ -303,7 +303,7 @@ void TreePlanter::initTree(){
   Z_         = phys::Boson<phys::Lepton>();
   Vhad_      = std::vector<phys::Boson<phys::Jet>      >();   
   ZZ_        = phys::DiBoson<phys::Lepton  , phys::Lepton>();
-  ZL_        = std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> >();
+  ZL_        = std::pair<phys::Boson<phys::Lepton>, phys::Lepton>();
   ZW_        = phys::DiBoson<phys::Lepton  , phys::Lepton>();
 
   genParticles_ = std::vector<phys::Particle>();
@@ -537,7 +537,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
   if(test_bit(regionWord_,phys::CRLFR)){
     // Fill Z+l pairs for fake rate measurements
-    ZL_ = fillZLCandidates(ZL); // FIXME
+    ZL_ = fillZLCandidate(ZL); // FIXME
   }
 
 
@@ -988,41 +988,37 @@ std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > TreePlanter::fillDiBosons
   return physDiBosons;
 }
 
-std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > TreePlanter::fillZLCandidates(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmZLs) const{
+std::pair<phys::Boson<phys::Lepton>, phys::Lepton> TreePlanter::fillZLCandidate(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmZLs) const{
 
-  std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> > physZLs;
 
-  if(edmZLs->size() != 1) return physZLs; // FIXME: make physZLs an obj not a container.
-  if(!filterController_.passTrigger(ZL, triggerWord_)) return physZLs;
+  if(edmZLs->size() != 1)                              return std::pair<phys::Boson<phys::Lepton>, phys::Lepton>();
+  if(!filterController_.passTrigger(ZL, triggerWord_)) return std::pair<phys::Boson<phys::Lepton>, phys::Lepton>();
 
-  foreach(const pat::CompositeCandidate& edmZL, *edmZLs){
+  const pat::CompositeCandidate& edmZL = edmZLs->front();
     
-    const pat::CompositeCandidate* edmV0 = dynamic_cast<const pat::CompositeCandidate*>(edmZL.daughter(0)->masterClone().get());      
-    phys::Boson<phys::Lepton> V0;
+  const pat::CompositeCandidate* edmV0 = dynamic_cast<const pat::CompositeCandidate*>(edmZL.daughter(0)->masterClone().get());      
+  phys::Boson<phys::Lepton> V0;
     
-    if     (abs(edmV0->daughter(0)->pdgId()) == 11) V0 = fillBoson<pat::Electron,phys::Lepton>(*edmV0, 23, false);
-    else if(abs(edmV0->daughter(0)->pdgId()) == 13) V0 = fillBoson<pat::Muon,phys::Lepton>(*edmV0, 23, false);
-    else{
-      edm::LogError("TreePlanter") << "Do not know what to cast in fillZLCandidates, Z part" << endl;
-      abort();
-    }
+  if     (abs(edmV0->daughter(0)->pdgId()) == 11) V0 = fillBoson<pat::Electron,phys::Lepton>(*edmV0, 23, false);
+  else if(abs(edmV0->daughter(0)->pdgId()) == 13) V0 = fillBoson<pat::Muon,phys::Lepton>(*edmV0, 23, false);
+  else{
+    edm::LogError("TreePlanter") << "Do not know what to cast in fillZLCandidates, Z part" << endl;
+    abort();
+  }
     
-    phys::Lepton lep;
-    if     (abs(edmZL.daughter(1)->pdgId()) == 11)
-      lep = fill(*dynamic_cast<const pat::Electron*>(edmZL.daughter(1)->masterClone().get()));
-    else if(abs(edmZL.daughter(1)->pdgId()) == 13)
-      lep = fill(*dynamic_cast<const pat::Muon*>(edmZL.daughter(1)->masterClone().get()));
-    else{
-      edm::LogError("TreePlanter") << "Do not know what to cast in fillZLCandidates, LEP part" << endl;
-      abort();
-    }
-
-    if(V0.isValid() && lep.isValid()) physZLs.push_back(std::make_pair(V0,lep));
+  phys::Lepton lep;
+  if     (abs(edmZL.daughter(1)->pdgId()) == 11)
+    lep = fill(*dynamic_cast<const pat::Electron*>(edmZL.daughter(1)->masterClone().get()));
+  else if(abs(edmZL.daughter(1)->pdgId()) == 13)
+    lep = fill(*dynamic_cast<const pat::Muon*>(edmZL.daughter(1)->masterClone().get()));
+  else{
+    edm::LogError("TreePlanter") << "Do not know what to cast in fillZLCandidates, LEP part" << endl;
+    abort();
   }
 
-  return physZLs;  
+  if(V0.isValid() && lep.isValid()) return std::make_pair(V0,lep);
+  else return std::pair<phys::Boson<phys::Lepton>, phys::Lepton>();
 }
-
 
 
 phys::DiBoson<phys::Lepton,phys::Lepton> 

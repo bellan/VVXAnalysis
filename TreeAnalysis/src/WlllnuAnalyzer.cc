@@ -189,12 +189,10 @@ void WlllnuAnalyzer::analyze(){
     //----RECO particles----//
         
     cout << Violet("\nZL analysis") << endl; 
-    cout << "\n # of ZL candidates: "  << (*ZL).size() << endl; //reco ZL
-    foreach(const ZLCompositeCandidate &zl, *ZL){
-      cout << "\nZlcand: \t" << std::get<0>(zl) << "\n\t\t" << std::get<1>(zl) << endl;
-      theHistograms.fill("massBosonRecoZl","mass Z", 100, 0, 500, (std::get<0>(zl)).mass());
-    }
-    if((*ZL).size() > 0) theHistograms.fill("idParticlesRecoZL"," leptons & daughters id in ZL", 10 , 30.5, 40.5, finalid);
+    cout << "\nZlcand: \t" << std::get<0>(*ZL) << "\n\t\t" << std::get<1>(*ZL) << endl;
+      theHistograms.fill("massBosonRecoZl","mass Z", 100, 0, 500, (std::get<0>(*ZL)).mass());
+    
+    if(ZL->first.isValid()) theHistograms.fill("idParticlesRecoZL"," leptons & daughters id in ZL", 10 , 30.5, 40.5, finalid);
         
     //----my particles----//
     cout << "\nmyZl analysis" << endl; 
