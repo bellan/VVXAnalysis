@@ -269,7 +269,8 @@ class TreePlanter: public edm::EDAnalyzer {
   std::vector<double> theXSections;
   double rho_;
 
-
+  bool preVFP = false;
+  std::string dataTag;
   
   LHEHandler* theLHEHandler; 
 

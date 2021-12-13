@@ -324,6 +324,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      setup        = cms.int32(LEPTON_SETUP),
                                      sampleType   = cms.int32(SAMPLE_TYPE),
                                      PD           = cms.string(PD),
+                                     dataTag      = cms.string(DATA_TAG),                  #added for recognizing UL16 pre/post VFP
                                      skimPaths    = cms.vstring(SkimPaths),
                                      SkimRequired = cms.untracked.bool(SKIM_REQUIRED),
                                      MCFilterPath = cms.string(MCFILTER),
