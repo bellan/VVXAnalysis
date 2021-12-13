@@ -30,6 +30,7 @@
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 #include "VVXAnalysis/DataFormats/interface/GenEventWeights.h"
 #include "VVXAnalysis/DataFormats/interface/MELA.h"
+#include "VVXAnalysis/DataFormats/interface/RegionsCounter.h"
 
 
 #include "VVXAnalysis/Producers/interface/FilterController.h"
@@ -283,29 +284,7 @@ class TreePlanter: public edm::EDAnalyzer {
   Int_t eventsInEtaPtAcceptance_;
   
 
-  Int_t eventsInSR2P_;  
-  Int_t eventsInSR2P1L_;
-
-  Int_t eventsInSR3P_;  
-  Int_t eventsInCR110_; 
-  Int_t eventsInCR101_; 
-  Int_t eventsInCR011_; 
-  Int_t eventsInCR100_; 
-  Int_t eventsInCR001_; 
-  Int_t eventsInCR010_; 
-  Int_t eventsInCR000_; 
-  Int_t eventsInSR3P1L_;
-  Int_t eventsInCRLFR_;       
-
-  Int_t eventsInSR4P_;  
-  Int_t eventsInCR2P2F_;
-  Int_t eventsInCR3P1F_;
-  Int_t eventsInSR4P1L_;
-  Int_t eventsInCR2P2FHZZ_;
-  Int_t eventsInCR3P1FHZZ_;
-  Int_t eventsInSRHZZ_;    
-
-
+  phys::RegionsCounter eventsInRegions_;
   std::vector<std::string> skimPaths_;
 };
 #endif

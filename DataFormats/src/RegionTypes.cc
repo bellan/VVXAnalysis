@@ -1,4 +1,4 @@
-#include "VVXAnalysis/Commons/interface/RegionTypes.h"
+#include "VVXAnalysis/DataFormats/interface/RegionTypes.h"
 
 #include <iostream>
 

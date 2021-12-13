@@ -7,12 +7,17 @@
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 #include "VVXAnalysis/DataFormats/interface/GenEventWeights.h"
 #include "VVXAnalysis/DataFormats/interface/MELA.h"
-
+#include "VVXAnalysis/DataFormats/interface/RegionsCounter.h"
+#include "VVXAnalysis/DataFormats/interface/RegionTypes.h"
 
 #ifdef __CINT__
 
 #pragma link C++ class  phys::GenEventWeights+;
 #pragma link C++ class  phys::MELA+;
+#pragma link C++ class  phys::RegionTypes+;
+#pragma link C++ class  phys::RegionsCounter+;
+#pragma link C++ class  std::map<phys::RegionTypes,Int_t>+;
+
 
 #pragma link C++ class  phys::Particle+;
 #pragma link C++ class  phys::Lepton+;

@@ -28,12 +28,10 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   , postSkimSignalEvents_(0)
   , eventsInEtaAcceptance_(0)
   , eventsInEtaPtAcceptance_(0)
-  , eventsInSR_(0)
-  , eventsIn2P2FCR_(0)
-  , eventsIn3P1FCR_(0)
 {
 
   genEventWeights_ = new phys::GenEventWeights();
+  eventsInRegions_ = new phys::RegionsCounter(); 
 
   TChain *tree = new TChain("treePlanter/HollyTree");
   tree->Add(filename.c_str());
@@ -42,9 +40,7 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
 
   Long64_t nentries = tree->GetEntries();  
 
-  TBranch *b_eventsInSR              = 0;
-  TBranch *b_eventsIn2P2FCR          = 0;
-  TBranch *b_eventsIn3P1FCR          = 0;
+  TBranch *b_eventsInRegions         = 0;
   TBranch *b_setup                   = 0;
   TBranch *b_signalDefinition        = 0;
   TBranch *b_genEvents               = 0;
@@ -61,9 +57,7 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   TBranch *b_eventsInEtaAcceptance   = 0;
   TBranch *b_eventsInEtaPtAcceptance = 0;
 
-  tree->SetBranchAddress("eventsInSR"    , &eventsInSR_    , &b_eventsInSR);
-  tree->SetBranchAddress("eventsIn2P2FCR", &eventsIn2P2FCR_, &b_eventsIn2P2FCR);
-  tree->SetBranchAddress("eventsIn3P1FCR", &eventsIn3P1FCR_, &b_eventsIn3P1FCR);
+  tree->SetBranchAddress("eventsInRegions", &eventsInRegions_    , &b_eventsInRegions);
   tree->SetBranchAddress("setup"         , &setup_         , &b_setup);
   
   tree->SetBranchAddress("signalDefinition"       , &signalDefinition_       , &b_signalDefinition       );
@@ -91,9 +85,7 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
 
   // temp variables
 
-  int    totalEventsInSR     = 0;
-  int    totalEventsIn2P2FCR = 0;
-  int    totalEventsIn3P1FCR = 0;
+  phys::RegionsCounter    *totalEventsInRegions = new phys::RegionsCounter();
 
   double meanIntCrossSection = 0.;
   int    totalPreSkimCounter = 0 ;
@@ -109,9 +101,7 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   for (Long64_t jentry=0; jentry<nentries; ++jentry){
     tree->LoadTree(jentry); tree->GetEntry(jentry);
     
-    totalEventsInSR     += eventsInSR_;
-    totalEventsIn2P2FCR += eventsIn2P2FCR_;
-    totalEventsIn3P1FCR += eventsIn3P1FCR_;
+    *totalEventsInRegions += *eventsInRegions_;
 
     totalPreSkimCounter += preSkimCounter_;
     totalAnEvents       += analyzedEvents_;
@@ -129,9 +119,7 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   delete tree;
   
   // ... and the variables used to set the branch address can be overwritten too
-  eventsInSR_     = totalEventsInSR;
-  eventsIn2P2FCR_ = totalEventsIn2P2FCR;
-  eventsIn3P1FCR_ = totalEventsIn3P1FCR;
+  *eventsInRegions_     = *totalEventsInRegions;
 
   genEvents_               = totalGenEvents;
   preSkimCounter_          = totalPreSkimCounter;
@@ -168,7 +156,7 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   
   double signalFraction     = double(signalCounter_)/genEvents_;
   double signalCrossSection = signalFraction * crossSection();
-  signalEfficiency_         = double(eventsInSR_)/signalCounter_; // FIXME: double check this. That does not account for fakes nor trigger selections.
+  //signalEfficiency_         = double(eventsInSR_)/signalCounter_; // FIXME: double check this. That does not account for fakes nor trigger selections.
 
   std::cout<<"\nThis sample has been made out of a dataset containing " << Green(genEvents()) << " generated events."   << std::endl
 	   <<"Out of them, " << Green(analyzedEvents()) << " events have been used to produce the main tree."           << std::endl
@@ -181,11 +169,14 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
 	   << " (" << Green(std::bitset<16>(signalDefinition())) << ")."                                                << std::endl
 	   <<"The fraction of the signal in the sample is " << Green(signalFraction)  
 	   <<", that corresponds to a cross section of " <<  Green(signalCrossSection) << Green(" pb.")                 << std::endl
-	   <<"The efficiency for the baseline selection is " << eventsInSR_  <<"/"<< signalCounter_ << " = " << Green(signalEfficiency()) << ".\n"
-	   <<"Events in the SR = "    << Green(eventsInSR_) 
-	   <<", in the 2P2F CR = " << Green(eventsIn2P2FCR_)
-	   <<", in the 3P1F CR = " << Green(eventsIn3P1FCR_)
-	   <<"."
+
+    // FIXME
+    //<<"The efficiency for the baseline selection is " << eventsInSR_  <<"/"<< signalCounter_ << " = " << Green(signalEfficiency()) << ".\n"
+	   <<"Events in the Regions"    << std::endl
+	   <<*eventsInRegions_ 
+    //	   <<", in the 2P2F CR = " << Green(eventsIn2P2FCR_)
+    //	   <<", in the 3P1F CR = " << Green(eventsIn3P1FCR_)
+    //	   <<"."
 	   <<std::endl;
 	   
 }

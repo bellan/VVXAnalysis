@@ -31,7 +31,7 @@
 #include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/MCInfo.h"
 
-#include "VVXAnalysis/Commons/interface/RegionTypes.h"
+#include "VVXAnalysis/DataFormats/interface/RegionTypes.h"
 //#include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 #include "VVXAnalysis/Commons/interface/GenVBHelper.h"
@@ -139,7 +139,7 @@ public:
   double theInputWeightedEvents;
 
   // Counters about SR and CRs, with trigger requirements too. The numbers are unweighted.
-  int unweightedEventsInSR;
+  int unweightedEventsInSR;   // FIXME!!!
   int unweightedEventsIn2P2FCR;
   int unweightedEventsIn3P1FCR;
   

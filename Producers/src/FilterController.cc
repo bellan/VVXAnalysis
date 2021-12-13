@@ -1,7 +1,7 @@
 #include "VVXAnalysis/Producers/interface/FilterController.h"
 #include <ZZAnalysis/AnalysisStep/interface/bitops.h>
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
-#include "VVXAnalysis/Commons/interface/RegionTypes.h"
+#include "VVXAnalysis/DataFormats/interface/RegionTypes.h"
 
 #include <iostream>
 

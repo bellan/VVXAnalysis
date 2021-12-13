@@ -27,7 +27,7 @@
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
-#include "VVXAnalysis/Commons/interface/RegionTypes.h"
+#include "VVXAnalysis/DataFormats/interface/RegionTypes.h"
 
 
 #include "ZZAnalysis/AnalysisStep/interface/bitops.h"
@@ -130,29 +130,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , theNumberOfEvents(0)
   , theNumberOfAnalyzedEvents(0)
   , eventsInEtaAcceptance_(0)
-  , eventsInEtaPtAcceptance_(0)
-
-  , eventsInSR2P_(0)     
-  , eventsInSR2P1L_(0)   
-  
-  , eventsInSR3P_(0)     
-  , eventsInCR110_(0)    
-  , eventsInCR101_(0)    
-  , eventsInCR011_(0)    
-  , eventsInCR100_(0)    
-  , eventsInCR001_(0)    
-  , eventsInCR010_(0)    
-  , eventsInCR000_(0)    
-  , eventsInSR3P1L_(0)   
-  , eventsInCRLFR_(0)    
-  
-  , eventsInSR4P_(0)     
-  , eventsInCR2P2F_(0)   
-  , eventsInCR3P1F_(0)   
-  , eventsInSR4P1L_(0)   
-  , eventsInCR2P2FHZZ_(0)
-  , eventsInCR3P1FHZZ_(0)
-  , eventsInSRHZZ_(0)   {
+  , eventsInEtaPtAcceptance_(0){
   
   edm::Service<TFileService> fs;
   theTree = fs->make<TTree>("ElderTree","ElderTree");
@@ -256,61 +234,61 @@ void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::Even
 
 
   found = lumi.getByToken(SR2PCounterToken_, counter);
-  if(found) eventsInSR2P_ += counter->value;
+  if(found) eventsInRegions_[phys::SR2P] += counter->value;
 
   found = lumi.getByToken(SR2P1LCounterToken_, counter);
-  if(found) eventsInSR2P1L_ += counter->value;
+  if(found) eventsInRegions_[phys::SR2P_1L] += counter->value;
 
   found = lumi.getByToken(SR3PCounterToken_, counter);
-  if(found) eventsInSR3P_ += counter->value;
+  if(found) eventsInRegions_[phys::SR3P] += counter->value;
 
   found = lumi.getByToken(CR110CounterToken_, counter);
-  if(found) eventsInCR110_ += counter->value;
+  if(found) eventsInRegions_[phys::CR110] += counter->value;
 
   found = lumi.getByToken(CR101CounterToken_, counter);
-  if(found) eventsInCR101_ += counter->value;
+  if(found) eventsInRegions_[phys::CR101] += counter->value;
 
   found = lumi.getByToken(CR011CounterToken_, counter);
-  if(found) eventsInCR011_ += counter->value;
+  if(found) eventsInRegions_[phys::CR011] += counter->value;
 
   found = lumi.getByToken(CR100CounterToken_, counter);
-  if(found) eventsInCR100_ += counter->value;
+  if(found) eventsInRegions_[phys::CR100] += counter->value;
 
   found = lumi.getByToken(CR001CounterToken_, counter);
-  if(found) eventsInCR001_ += counter->value;
+  if(found) eventsInRegions_[phys::CR001] += counter->value;
 
   found = lumi.getByToken(CR010CounterToken_, counter);
-  if(found) eventsInCR010_ += counter->value;
+  if(found) eventsInRegions_[phys::CR010] += counter->value;
 
   found = lumi.getByToken(CR000CounterToken_, counter);
-  if(found) eventsInCR000_ += counter->value;
+  if(found) eventsInRegions_[phys::CR000] += counter->value;
 
   found = lumi.getByToken(SR3P1LCounterToken_, counter);
-  if(found) eventsInSR3P1L_ += counter->value;
+  if(found) eventsInRegions_[phys::SR3P_1L] += counter->value;
 
   found = lumi.getByToken(CRLFRCounterToken_, counter);
-  if(found) eventsInCRLFR_ += counter->value;
+  if(found) eventsInRegions_[phys::CRLFR] += counter->value;
 
   found = lumi.getByToken(SR4PCounterToken_, counter);
-  if(found)  eventsInSR4P_ += counter->value;
+  if(found) eventsInRegions_[phys::SR4P] += counter->value;
 
   found = lumi.getByToken(CR2P2FCounterToken_, counter);
-  if(found) eventsInCR2P2F_ += counter->value;
+  if(found) eventsInRegions_[phys::CR2P2F] += counter->value;
 
   found = lumi.getByToken(CR3P1FCounterToken_, counter);
-  if(found) eventsInCR3P1F_ += counter->value;
+  if(found) eventsInRegions_[phys::CR3P1F] += counter->value;
 
   found = lumi.getByToken(SR4P1LCounterToken_, counter);
-  if(found) eventsInSR4P1L_ += counter->value;
+  if(found) eventsInRegions_[phys::SR4P_1L] += counter->value;
 
   found = lumi.getByToken(CR2P2FHZZCounterToken_, counter);
-  if(found) eventsInCR2P2FHZZ_ += counter->value;
+  if(found) eventsInRegions_[phys::CR2P2F_HZZ] += counter->value;
 
   found = lumi.getByToken(CR3P1FHZZCounterToken_, counter);
-  if(found) eventsInCR3P1FHZZ_ += counter->value;
+  if(found) eventsInRegions_[phys::CR3P1F_HZZ] += counter->value;
 
   found = lumi.getByToken(SRHZZCounterToken_, counter);
-  if(found) eventsInSRHZZ_ += counter->value;
+  if(found) eventsInRegions_[phys::SR_HZZ] += counter->value;
 
 }
 
@@ -331,30 +309,8 @@ void TreePlanter::endJob(){
   countTree->Branch("setup"         , &setup_); 
   countTree->Branch("analyzedEvents", &theNumberOfAnalyzedEvents);
 
-  countTree->Branch("eventsInSR2P",      &eventsInSR2P_);     
-  countTree->Branch("eventsInSR2P_1L",    &eventsInSR2P1L_);   
-					                    
-  countTree->Branch("eventsInSR3P",      &eventsInSR3P_);     
-  countTree->Branch("eventsInCR110",     &eventsInCR110_);    
-  countTree->Branch("eventsInCR101",     &eventsInCR101_);    
-  countTree->Branch("eventsInCR011",     &eventsInCR011_);    
-  countTree->Branch("eventsInCR100",     &eventsInCR100_);    
-  countTree->Branch("eventsInCR001",     &eventsInCR001_);    
-  countTree->Branch("eventsInCR010",     &eventsInCR010_);    
-  countTree->Branch("eventsInCR000",     &eventsInCR000_);    
-  countTree->Branch("eventsInSR3P_1L",   &eventsInSR3P1L_);   
-  countTree->Branch("eventsInCRLFR",     &eventsInCRLFR_);    
-					                    
-  countTree->Branch("eventsInSR4P",      &eventsInSR4P_);     
-  countTree->Branch("eventsInCR2P2F",    &eventsInCR2P2F_);   
-  countTree->Branch("eventsInCR3P1F",    &eventsInCR3P1F_);   
-  countTree->Branch("eventsInSR4P_1L",   &eventsInSR4P1L_);   
-  countTree->Branch("eventsInCR2P2FHZZ", &eventsInCR2P2FHZZ_);
-  countTree->Branch("eventsInCR3P1FHZZ", &eventsInCR3P1FHZZ_);
-  countTree->Branch("eventsInSRHZZ",     &eventsInSRHZZ_);    
-
-
-
+  countTree->Branch("eventsInRegions",     &eventsInRegions_);    
+ 
 
 
   if(isMC_){
