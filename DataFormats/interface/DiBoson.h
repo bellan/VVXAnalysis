@@ -25,7 +25,6 @@ namespace phys {
       , triggerWord_(0)
       , regionWord_(0)
       , passFullSel_(false)
-      , passTrigger_(false)
       {}
       
     DiBoson(const Boson<P1>& vb1, const Boson<P2>& vb2)
@@ -35,7 +34,6 @@ namespace phys {
       , triggerWord_(0)
       , regionWord_(0)
       , passFullSel_(false)
-      , passTrigger_(false)
       {
 	
 	for(unsigned int i = 0; i < 2; ++i){
@@ -53,7 +51,6 @@ namespace phys {
       newdiboson.setTriggerWord(triggerWord_);
       newdiboson.setRegionWord (regionWord_ );
       newdiboson.setPassFullSel(passFullSel_);
-      newdiboson.setPassTrigger(passTrigger_);
       return newdiboson;
     }
 
@@ -81,13 +78,9 @@ namespace phys {
     // Triggers that have been passed
     short trigger() const {return triggerWord_;}
     
-    // True if pass the trigger for a given final state
-    bool passTrigger() const {return passTrigger_;}
-
     void setTriggerWord(Short_t tw) {triggerWord_ = tw;}
     void setRegionWord (Int_t   rw) {regionWord_  = rw;} 
     void setPassFullSel(Bool_t  fs) {passFullSel_ = fs;}
-    void setPassTrigger(Bool_t  passt) {passTrigger_ = passt;}
 
     int numberOfGoodGrandDaughters() const {
       if(!isValid()) return 0;
@@ -130,7 +123,6 @@ namespace phys {
     Short_t triggerWord_;
     Int_t   regionWord_;
     Bool_t  passFullSel_;
-    Bool_t  passTrigger_;
 
 
     ClassDef(DiBoson, 1) //
