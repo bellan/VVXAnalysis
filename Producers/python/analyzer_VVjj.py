@@ -355,7 +355,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
 process.filltrees = cms.EndPath(cms.ignore(process.zzTrigger) + 
                                 process.SR4PCounter + process.CR3P1FCounter + process.CR2P2FCounter + process.SR4P1LCounter +
                                 process.SRHZZCounter + process.CR3P1FHZZCounter + process.CR2P2FHZZCounter + 
-                                process.SR3PCounter   + process.CR110Counter  + process.CR101Counter  + process.CR011Counter  + process.CR100Counter  + process.CR001Counter  + process.CR010Counter  + process.CR000Counter  + process.SR3P1LCounter +
+                                process.SR3PCounter   + process.CR110Counter  + process.CR101Counter  + process.CR011Counter  + process.CR100Counter  + process.CR001Counter  + process.CR010Counter  + process.CR000Counter  + process.SR3P1LCounter + process.CRLFRCounter +
                                 process.SR2PCounter + process.SR2P1LCounter +
                                 process.treePlanter)
 
