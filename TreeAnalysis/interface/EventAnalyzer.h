@@ -139,10 +139,6 @@ public:
   double theInputWeightedEvents;
 
   // Counters about SR and CRs, with trigger requirements too. The numbers are unweighted.
-  int unweightedEventsInSR;   // FIXME!!!
-  int unweightedEventsIn2P2FCR;
-  int unweightedEventsIn3P1FCR;
-  
   int year;
   
   // Access to the branches

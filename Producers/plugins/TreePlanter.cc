@@ -967,15 +967,7 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::Com
   
   phys::DiBoson<phys::Lepton,phys::Lepton> VV(V0, V1);
 
-  VV.isBestCand_                = edmVV.hasUserFloat("isBestCand")             ? edmVV.userFloat("isBestCand")             : false;
   VV.passFullSel_               = edmVV.hasUserFloat("SR")                     ? edmVV.userFloat("SR")                     : false;
-  VV.isBestCRZLLos_2P2F_        = edmVV.hasUserFloat("isBestCRZLLos_2P2F")     ? edmVV.userFloat("isBestCRZLLos_2P2F")     : false;
-  VV.passSelZLL_2P2F_           = edmVV.hasUserFloat("CRZLLos_2P2F")           ? edmVV.userFloat("CRZLLos_2P2F")           : false;
-  VV.isBestCRZLLos_3P1F_        = edmVV.hasUserFloat("isBestCRZLLos_3P1F")     ? edmVV.userFloat("isBestCRZLLos_3P1F")     : false;
-  VV.passSelZLL_3P1F_           = edmVV.hasUserFloat("CRZLLos_3P1F")           ? edmVV.userFloat("CRZLLos_3P1F")           : false;
-  VV.passSRZZOnShell_           = edmVV.hasUserFloat("SR_ZZOnShell")           ? edmVV.userFloat("SR_ZZOnShell")           : false;
-  VV.passSelZLL_2P2F_ZZOnShell_ = edmVV.hasUserFloat("CRZLLos_2P2F_ZZOnShell") ? edmVV.userFloat("CRZLLos_2P2F_ZZOnShell") : false;
-  VV.passSelZLL_3P1F_ZZOnShell_ = edmVV.hasUserFloat("CRZLLos_3P1F_ZZOnShell") ? edmVV.userFloat("CRZLLos_3P1F_ZZOnShell") : false;   
   VV.regionWord_  = regionWord;
   VV.triggerWord_ = triggerWord_;
   VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
@@ -1141,15 +1133,7 @@ TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate
     int regionWord = 0;
     set_bit(regionWord,30); // use 30 for WZ
     
-    ZW.isBestCand_                = true;
     ZW.passFullSel_               = true;
-    ZW.isBestCRZLLos_2P2F_        = false;
-    ZW.passSelZLL_2P2F_           = false;
-    ZW.isBestCRZLLos_3P1F_        = false;
-    ZW.passSelZLL_3P1F_           = false;
-    ZW.passSRZZOnShell_           = false;
-    ZW.passSelZLL_2P2F_ZZOnShell_ = false;
-    ZW.passSelZLL_3P1F_ZZOnShell_ = false;
     ZW.regionWord_                = regionWord;
     ZW.triggerWord_               = triggerWord_;
     ZW.passTrigger_               = filterController_.passTrigger(ZZ, triggerWord_); // use same trigger as ZZ

@@ -24,13 +24,8 @@ namespace phys {
     DiBoson(): Particle()
       , triggerWord_(0)
       , regionWord_(0)
-      , isBestCand_(false)
       , passFullSel_(false)
       , passTrigger_(false)
-      , isBestCRZLLos_2P2F_(false)      
-      , passSelZLL_2P2F_(false)         
-      , isBestCRZLLos_3P1F_(false)      
-      , passSelZLL_3P1F_(false)         
       {}
       
     DiBoson(const Boson<P1>& vb1, const Boson<P2>& vb2)
@@ -39,13 +34,8 @@ namespace phys {
       , daughter1_(vb2)
       , triggerWord_(0)
       , regionWord_(0)
-      , isBestCand_(false)
       , passFullSel_(false)
       , passTrigger_(false)
-      , isBestCRZLLos_2P2F_(false)      
-      , passSelZLL_2P2F_(false)         
-      , isBestCRZLLos_3P1F_(false)      
-      , passSelZLL_3P1F_(false)         
       {
 	
 	for(unsigned int i = 0; i < 2; ++i){
@@ -62,7 +52,6 @@ namespace phys {
       DiBoson<T1,T2> newdiboson(daughter0_.template clone<T1>(), daughter1_.template clone<T2>());
       newdiboson.setTriggerWord(triggerWord_);
       newdiboson.setRegionWord (regionWord_ );
-      newdiboson.setIsBestCand (isBestCand_ );
       newdiboson.setPassFullSel(passFullSel_);
       newdiboson.setPassTrigger(passTrigger_);
       return newdiboson;
@@ -82,9 +71,6 @@ namespace phys {
     Boson<P2> *secondPtr() {return &daughter1_;}
 
 
-    // Best candidate in the Control/Search region
-    bool isBestCandidate() const {return isBestCand_;}
-
     // True if pass all requirements on di-boson quantities and on
     // its daughters and grand daughters and...
     bool passFullSelection() const {return passFullSel_;}
@@ -100,7 +86,6 @@ namespace phys {
 
     void setTriggerWord(Short_t tw) {triggerWord_ = tw;}
     void setRegionWord (Int_t   rw) {regionWord_  = rw;} 
-    void setIsBestCand (Bool_t  bc) {isBestCand_  = bc;} 
     void setPassFullSel(Bool_t  fs) {passFullSel_ = fs;}
     void setPassTrigger(Bool_t  passt) {passTrigger_ = passt;}
 
@@ -138,24 +123,15 @@ namespace phys {
     
 
   private:
-
+  
     Boson<P1> daughter0_;
     Boson<P2> daughter1_;
     
     Short_t triggerWord_;
     Int_t   regionWord_;
-    Bool_t  isBestCand_;
     Bool_t  passFullSel_;
     Bool_t  passTrigger_;
 
-    Bool_t isBestCRZLLos_2P2F_;
-    Bool_t passSelZLL_2P2F_;
-    Bool_t isBestCRZLLos_3P1F_;
-    Bool_t passSelZLL_3P1F_;   
-
-    Bool_t passSRZZOnShell_;
-    Bool_t passSelZLL_2P2F_ZZOnShell_ ;
-    Bool_t passSelZLL_3P1F_ZZOnShell_;
 
     ClassDef(DiBoson, 1) //
   };

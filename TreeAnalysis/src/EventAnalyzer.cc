@@ -50,9 +50,6 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
   , theWeight(1.)
   , theCutCounter(0.)
   , theInputWeightedEvents(0.)
-  , unweightedEventsInSR(0)
-  , unweightedEventsIn2P2FCR(0)
-  , unweightedEventsIn3P1FCR(0)
   , genCategory(-128){
 
   if(configuration.getParameter<int>("year") != theMCInfo.setup() && theMCInfo.isMC())
@@ -299,9 +296,6 @@ void EventAnalyzer::loop(const std::string outputfile){
 
   Long64_t nentries = maxNumEvents_ > 0 ? maxNumEvents_ : theTree->GetEntries();  
 
-  unweightedEventsInSR     = tree()->GetEntries("ZZCand.passSRZZOnShell_");
-  unweightedEventsIn2P2FCR = tree()->GetEntries("ZZCand.passSelZLL_2P2F_ZZOnShell_");
-  unweightedEventsIn3P1FCR = tree()->GetEntries("ZZCand.passSelZLL_3P1F_ZZOnShell_");
   begin();
 
   for (Long64_t jentry=0; jentry<nentries; ++jentry) {
