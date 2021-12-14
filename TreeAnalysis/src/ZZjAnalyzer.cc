@@ -203,7 +203,7 @@ void ZZjAnalyzer::analyze(){
     if(jets->size()==1 && genJets->size()==0) cout<<"\n\n##FAKE##\n"<<eventstr<<"\n"<<std::endl;
     else                                      cout<<"\n\n##TRUE##\n"<<eventstr<<"\n"<<std::endl;
     
-    std::cout<<"Region Word "<<ZZregionWord<<"\n"
+    std::cout<<"Region Word "<<regionWord<<"\n"
 	     <<"ZZMass "<<ZZ->mass()<<"\n"
 	     <<"Z0) Mass = "<<ZZ->first().mass()<<" pt = "<<ZZ->first().pt()<<"\n"
 	     <<"Z1) Msss = "<<ZZ->second().mass()<<" pt = "<<ZZ->second().pt()<<"\n"
@@ -224,7 +224,7 @@ void ZZjAnalyzer::analyze(){
 	     <<" iso noFSR = "<<ZZ->second().daughterPtr(1)->pfCombRelIso()<<"\n"
 	     <<"       is good "<<ZZ->second().daughterPtr(1)->isGood()<<" FSR photon pt = "<<ZZ->second().fsrPhoton(0).pt()<<"\n"     
 
-	     <<"is2p2f "<<ZZregionWord.test(24)<<" is3p1f "<<ZZregionWord.test(25)<<" is ZZSR "<<ZZregionWord.test(26)
+	     <<"is2p2f "<<regionWord.test(phys::CR2P2F)<<" is3p1f "<<regionWord.test(phys::CR3P1F)<<" is ZZSR "<<regionWord.test(phys::SR4P)
 	     <<std::endl; 
     int i = 0;
     foreach(const phys::Jet &jet, *jets){

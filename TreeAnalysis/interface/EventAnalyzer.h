@@ -163,7 +163,7 @@ public:
   TBranch *b_mela;
 
   std::bitset<128> regionWord;
-  std::bitset<128> ZZregionWord; // to be removed!!!
+
   //MET
   phys::Particle *met   ; TBranch *b_met;
 
@@ -198,6 +198,9 @@ public:
 
   // DiBoson, WZ
   phys::DiBoson<phys::Lepton  , phys::Lepton> *ZW; TBranch *b_ZW;
+
+  // Z->ll
+  phys::Boson<phys::Lepton>                    *Z; TBranch *b_Z;
 
   // Z+L 
   ZLCompositeCandidate *ZL; TBranch *b_ZLCand;

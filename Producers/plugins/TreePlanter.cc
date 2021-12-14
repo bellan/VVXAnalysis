@@ -971,7 +971,6 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillZZ(const pat::Composit
   phys::DiBoson<phys::Lepton,phys::Lepton> ZZ(Z0, Z1);
 
   ZZ.passFullSel_               = edmZZ.hasUserFloat("SR")                     ? edmZZ.userFloat("SR")                     : false;
-  ZZ.regionWord_  = regionWord;
 
   // MELA info
   MELA_.p_JJVBF_BKG_MCFM_JECNominal_ = edmZZ.userFloat("p_JJVBF_BKG_MCFM_JECNominal");
@@ -1135,7 +1134,6 @@ TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate
     set_bit(regionWord,30); // use 30 for WZ
     
     ZW.passFullSel_               = true;
-    ZW.regionWord_                = regionWord;
     
     return ZW;
   }
@@ -1179,7 +1177,7 @@ int TreePlanter::computeRegionFlagForZZ(const pat::CompositeCandidate & vv) cons
     typedef phys::DiBoson<phys::Lepton,phys::Lepton> ZZlep;
     foreach(const ZZlep& zz , ZZs){
       cout << "....................." << endl;
-      cout << zz << " SR? " << test_bit(zz.regionWord_,Channel::ZZ) << " CR2P2F? " << test_bit(zz.regionWord_,CRZLLos_2P2F) << " CR3P1F? " << test_bit(zz.regionWord_,CRZLLos_3P1F) << " ZZOnShell " <<test_bit(zz.regionWord_,Channel::ZZOnShell)<<endl;
+      cout << zz << " SR? " << test_bit(regionWord_,phys::SR_HZZ) << " CR2P2F? " << test_bit(regionWord_,phys::CR2P2F_HZZ) << " CR3P1F? " << test_bit(regionWord_,phys::CR3P1F_HZZ) << " ZZOnShell " <<test_bit(regionWord_,phys::SR4P)<<endl;
       cout << "daughter 0: "   << zz.first() << endl;
       cout << "daughter 0.1: " << zz.first().daughter(0) << " is good? " <<  zz.first().daughter(0).isGood() << " pass full sel? " << zz.first().daughter(0).passFullSel() <<  endl;
       cout << "daughter 0.1: " << zz.first().daughter(1) << " is good? " <<  zz.first().daughter(1).isGood() << " pass full sel? " << zz.first().daughter(1).passFullSel() <<  endl;
@@ -1189,7 +1187,7 @@ int TreePlanter::computeRegionFlagForZZ(const pat::CompositeCandidate & vv) cons
       cout << "....................." << endl;
       
       // If more than a candidate is found, then give precedence to SR type ZZ
-      if(test_bit(zz.regionWord_,Channel::ZZ) || test_bit(zz.regionWord_,Channel::ZZOnShell)){
+      if(test_bit(regionWord_,phys::SR_HZZ) || test_bit(regionWord_,phys::SR4P)){
 	ZZ = zz;   
 	oneZZInSR = true;
       }

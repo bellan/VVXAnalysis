@@ -35,7 +35,9 @@ class MCInfo {
   double weight()               const {return luminosity_ >= 0 ? sampleWeight()*puWeight() : 1.;}
 
   // Total weight of the event, including efficiency scale factors.
-  double weight(const phys::DiBoson<phys::Lepton, phys::Lepton> &ZZ) const {return ZZ.fakeRateSF() * (luminosity_ >= 0 ? weight() * ZZ.efficiencySF() : 1.);}
+  double weight(const phys::DiBoson<phys::Lepton, phys::Lepton> &VV) const {return VV.fakeRateSF() * (luminosity_ >= 0 ? weight() * VV.efficiencySF() : 1.);}
+  double weight(const phys::Boson<phys::Lepton> &Z) const {return Z.fakeRateSF() * (luminosity_ >= 0 ? weight() * Z.efficiencySF() : 1.);}
+
   double signalEfficiency()           const {return signalEfficiency_;}
   double signalEfficiencyCorrection() const {return 1./signalEfficiency_;}
   int    signalDefinition()           const {return signalDefinition_;}

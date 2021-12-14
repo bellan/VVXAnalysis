@@ -109,7 +109,7 @@ void ZZMCAnalyzer::analyze(){
     FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*theMCInfo.alphas_MZ_Down(),"Gen_01_asMZDn");
 
     //reco
-    if((region_ == phys::MC && ZZregionWord.test(26)) || ((region_ == phys::MC_HZZ) && ZZregionWord.test(3))){
+    if((region_ == phys::MC && regionWord.test(phys::SR4P)) || ((region_ == phys::MC_HZZ) && regionWord.test(phys::SR_HZZ))){
       FillHistosBase(decay,theWeight*w_kf,"GenReco_"+sample);
       FillHistosBase(decay,theWeight*w_kf,"GenReco_01");
       FillHistosBase(decay,theWeight*w_kf*(1-scaleFacErrSq),"GenRecoSFSqDn_01");
@@ -127,7 +127,7 @@ void ZZMCAnalyzer::analyze(){
       FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*theMCInfo.alphas_MZ_Down(),"Gen_01_fr_asMZDn");
 
       //fiducial region reco
-      if((region_ == phys::MC && ZZregionWord.test(26)) || ((region_ == phys::MC_HZZ) && ZZregionWord.test(3))){
+      if((region_ == phys::MC && regionWord.test(phys::SR4P)) || ((region_ == phys::MC_HZZ) && regionWord.test(phys::SR_HZZ))){
 	FillHistosBase(decay,theWeight*w_kf,"GenReco_01_fr");
 	FillHistosBase(decay,theWeight*w_kf,"GenReco_"+sample+"_fr");
 	FillHistosBase(decay,theWeight*w_kf*(1-scaleFacErrSq),"GenRecoSFSqDn_01_fr");

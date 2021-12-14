@@ -105,6 +105,11 @@ void EventAnalyzer::Init(TTree *tree)
   // DiBoson, if in SR, or Z+ll if in CR
   ZW   = new phys::DiBoson<phys::Lepton, phys::Lepton>(); b_ZW   = 0; theTree->SetBranchAddress("ZWCand"  , &ZW  , &b_ZW  );
 
+
+  // Z->ll
+  Z   = new phys::Boson<phys::Lepton>(); b_Z   = 0; theTree->SetBranchAddress("ZCand"  , &Z  , &b_Z  );
+
+
   // Z+L 
   ZL = new ZLCompositeCandidate()    ; b_ZLCand = 0; theTree->SetBranchAddress("ZLCand", &ZL, &b_ZLCand);
 
@@ -209,7 +214,6 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   stable_sort(Vhad->begin(), Vhad->end(), phys::PtComparator());
   
   
-  // FIXME this logic needs to be fixed!!!!!!
   if(region_ == phys::MC){
     if(!ZZ->isValid()){
       if(ZZ) delete ZZ;
@@ -219,43 +223,41 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
       if(ZW) delete ZW;
       ZW = new phys::DiBoson<phys::Lepton, phys::Lepton>();
     }
+    if(!Z->isValid()){ 
+      if(Z) delete Z;
+      Z = new phys::Boson<phys::Lepton>();
+    }
+    if(!ZL->first.isValid()){ 
+      if(ZL) delete ZL;
+      ZL = new std::pair<phys::Boson<phys::Lepton>, phys::Lepton>();
+    }
+
   }
   
-  // std::vector<phys::Lepton> Leps;
-  
-  // Leps.push_back(*ZZ->first().daughterPtr(0));
-  // Leps.push_back(*ZZ->first().daughterPtr(1));
-  // Leps.push_back(*ZZ->second().daughterPtr(0));
-  // Leps.push_back(*ZZ->second().daughterPtr(1));
-  
-  // stable_sort(Leps.begin(),     Leps.end(),     phys::PtComparator());
-  
-  
-  // if((abs(Leps.at(1).id())==11) && (Leps.at(1).pt()<12))  return 0;
   
   addOptions();
   
   // Check if the request on region tye matches with the categorization of the event
   regionWord = std::bitset<128>(pregionWord);
 
-  ZZregionWord = std::bitset<128>(ZZ->region());
-  // check bits accordingly to ZZAnalysis/AnalysisStep/interface/FinalStates.h
+  // FIXME: rise _1P or _1F bits 
   
-  if(region_ == phys::SR4P   && !ZZregionWord.test(26)) return 0;
-  if(region_ == phys::CR2P2F && !ZZregionWord.test(24)) return 0;
-  if(region_ == phys::CR3P1F && !ZZregionWord.test(25)) return 0;
+  if(!regionWord.test(region_))    return 0;
 
-  if(region_ == phys::SR_HZZ     && !ZZregionWord.test(3))  return 0;
-  if(region_ == phys::CR2P2F_HZZ && !ZZregionWord.test(22)) return 0;
-  if(region_ == phys::CR3P1F_HZZ && !ZZregionWord.test(23)) return 0;
+  if(region_ < phys::SR3P)
+    theWeight = theMCInfo.weight(*ZZ);
 
-  if(!doSF) theWeight = theMCInfo.weight(*ZZ);
-
-  if(region_ == phys::SR3P){
-    std::bitset<128> ZWregionWord = std::bitset<128>(ZW->region());
-    if(!ZWregionWord.test(30)) return 0; 
-    else theWeight = theMCInfo.weight(*ZW);
+  else if(region_ >= phys::SR3P && region_ < phys::CRLFR)
+    theWeight = theMCInfo.weight(*ZW);
+ 
+  else if(region_ > phys::CRLFR && region_ <= phys::CR2P_1F)
+    theWeight = theMCInfo.weight(*Z);
+  
+  else{
+    std::cout<<"Do not know what weight to set. Aborting... "  << endl;
+    std::abort();
   }
+    
 
  
   theHistograms.fill("weight_full"  , "All weights applied"                                    , 1200, -2, 10, theWeight);

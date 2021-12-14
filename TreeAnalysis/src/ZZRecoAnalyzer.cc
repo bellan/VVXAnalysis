@@ -640,7 +640,8 @@ void ZZRecoAnalyzer::FillMatrixHistosBase(std::string decay, float Wh,std::strin
  
 void ZZRecoAnalyzer::begin() {
 
-  nentries = tree()->GetEntries("ZZCand.regionWord_ & (1<<26)"); 
+  //nentries = tree()->GetEntries("ZZCand.regionWord_ & (1<<26)"); 
+  nentries = tree()->GetEntries("regionWord & (1<<1)"); // correspond to SR4P 
 
   UpJESData_jets           = new std::vector<phys::Jet>();
   DownJESData_jets         = new std::vector<phys::Jet>();
