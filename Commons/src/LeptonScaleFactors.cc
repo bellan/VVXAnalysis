@@ -4,7 +4,7 @@
 #include <iostream>
 
 LeptonScaleFactors::LeptonScaleFactors(int year,
-				       const std::string& muonFRFilename, const std::string& electronFRFilename):year_(year){
+				       const std::string& muonFRFilename, const std::string& electronFRFilename, bool preVFP) : lepSFHelper_(preVFP), year_(year){
 
 
   TFile *fFRMu = new TFile(muonFRFilename.c_str());

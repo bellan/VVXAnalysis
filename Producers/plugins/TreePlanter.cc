@@ -57,7 +57,8 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , leptonScaleFactors_(setup_,
 			// FIXME need to be updated for Run2Legacy
 			edm::FileInPath("VVXAnalysis/Commons/data/fakeRate_20feb2017.root").fullPath(),
-  			edm::FileInPath("VVXAnalysis/Commons/data/fakeRate_20feb2017.root").fullPath())
+			edm::FileInPath("VVXAnalysis/Commons/data/fakeRate_20feb2017.root").fullPath(),
+			(dataTag=="ULAPV" ? true : false))  // preVFP
 
   , signalDefinition_(config.getParameter<int>("signalDefinition"   ))
   , passTrigger_(false)
@@ -86,7 +87,6 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , thekfactorToken_qqZZPt   (consumes<float>                      (edm::InputTag("kFactor","qqZZPt"         )))
   , thekfactorToken_qqZZdPhi (consumes<float>                      (edm::InputTag("kFactor","qqZZdPhi"       )))
   , thekfactorToken_EWKqqZZ  (consumes<float>                      (edm::InputTag("kFactor","EWKqqZZ"        )))
-
 
   , thePreSkimCounterToken       (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("preSkimCounter"         )))
   , prePreselectionCounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("prePreselectionCounter" )))
@@ -123,6 +123,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , applySkim_       (config.getUntrackedParameter<bool>("SkimRequired"   , true)) 
   , applyMCSel_      (config.getUntrackedParameter<bool>("DoMCSelection"  , false)) 
   , addLHEKinematics_(config.getParameter<bool>("AddLHEKinematics"))
+  , dataTag          (config.getParameter<std::string>("dataTag"))
   , externalCrossSection_(-1.)
   , summcprocweights_    (0.)
   , sumpuweights_        (0.) 
@@ -154,7 +155,6 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
 					      , setup_ // means year
 					      , LHEHandler::tryNNPDF30
 					      , LHEHandler::tryNLO);
-    
   }
    
   initTree();
