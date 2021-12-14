@@ -3,6 +3,8 @@
 <use name="VVXAnalysis/DataFormats"/>
 <use name="VVXAnalysis/Commons"/>
 
+<include_path path="/usr/include/python2.7"/>
+
 <export>
    <lib name="1"/>
 </export>
