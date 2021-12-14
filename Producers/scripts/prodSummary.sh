@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 ################################################################
 #  Creates a readable summary of the output of checkProd.csh.  #
@@ -17,15 +17,18 @@ print_done () {
 [ $# -ne 1 ] && folder="." || folder=$1
 
 
-output=`cd ${folder} && checkProd.csh 2>/dev/null` #~/work/CMSSW_10_2_18/bin/slc7_amd64_gcc700/checkProd.csh
+output=$(cd ${folder} && checkProd.csh 2>/dev/null) #~/work/CMSSW_10_2_18/bin/slc7_amd64_gcc700/checkProd.csh
 [ $? -ne 0 ] && { print_done $folder ;  exit ; }
 
 [ -f $folder/condor.sub ] && grep "JobFlavour" $folder/condor.sub | xargs echo
-keys=`echo "$output" | cut -d : -f 2 | sort | uniq | sed "s/^ //g"`
+keys=$(echo "$output" | cut -d : -f 2 | sort | uniq | sed "s/^ //g")
+
+todo=$(ls $folder | grep Chunk | wc -l)
+[ $todo -eq 0 ] && { print_done $folder && exit 0 ; }
 
 printf "TODO: %d jobs\n" $(echo "$output" | wc -l)
-while read -r key; do
+echo "$keys" | while read -r key; do
         printf "\t%d --> \t%s\n" $(grep "$key" <<<"$output" | wc -l) "$(sed 's/ \+/ /g' <<<$key)"
-done < <(echo "$keys")
+done #< <(echo "$keys")
 
 print_done $folder
