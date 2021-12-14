@@ -972,7 +972,6 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillZZ(const pat::Composit
 
   ZZ.passFullSel_               = edmZZ.hasUserFloat("SR")                     ? edmZZ.userFloat("SR")                     : false;
   ZZ.regionWord_  = regionWord;
-  ZZ.triggerWord_ = triggerWord_;
 
   // MELA info
   MELA_.p_JJVBF_BKG_MCFM_JECNominal_ = edmZZ.userFloat("p_JJVBF_BKG_MCFM_JECNominal");
@@ -1137,7 +1136,6 @@ TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate
     
     ZW.passFullSel_               = true;
     ZW.regionWord_                = regionWord;
-    ZW.triggerWord_               = triggerWord_;
     
     return ZW;
   }

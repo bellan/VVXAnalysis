@@ -22,7 +22,6 @@ namespace phys {
   public:
     /// Constructor
     DiBoson(): Particle()
-      , triggerWord_(0)
       , regionWord_(0)
       , passFullSel_(false)
       {}
@@ -31,7 +30,6 @@ namespace phys {
       : Particle(vb1.p4()+vb2.p4(),0,0)
       , daughter0_(vb1)
       , daughter1_(vb2)
-      , triggerWord_(0)
       , regionWord_(0)
       , passFullSel_(false)
       {
@@ -48,7 +46,6 @@ namespace phys {
     template<typename T1, typename T2>
       DiBoson<T1,T2> clone() const {
       DiBoson<T1,T2> newdiboson(daughter0_.template clone<T1>(), daughter1_.template clone<T2>());
-      newdiboson.setTriggerWord(triggerWord_);
       newdiboson.setRegionWord (regionWord_ );
       newdiboson.setPassFullSel(passFullSel_);
       return newdiboson;
@@ -75,10 +72,6 @@ namespace phys {
     // Type of search/control region
     int region() const {return regionWord_;}
 
-    // Triggers that have been passed
-    short trigger() const {return triggerWord_;}
-    
-    void setTriggerWord(Short_t tw) {triggerWord_ = tw;}
     void setRegionWord (Int_t   rw) {regionWord_  = rw;} 
     void setPassFullSel(Bool_t  fs) {passFullSel_ = fs;}
 
@@ -120,7 +113,6 @@ namespace phys {
     Boson<P1> daughter0_;
     Boson<P2> daughter1_;
     
-    Short_t triggerWord_;
     Int_t   regionWord_;
     Bool_t  passFullSel_;
 
