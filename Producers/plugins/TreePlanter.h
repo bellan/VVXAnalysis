@@ -88,9 +88,9 @@ class TreePlanter: public edm::EDAnalyzer {
 
 
   template<typename T1, typename T2>
-    phys::DiBoson<phys::Lepton,phys::Lepton> fillDiBoson(const pat::CompositeCandidate& edmDiBosons) const;
+    phys::DiBoson<phys::Lepton,phys::Lepton> fillZZ(const pat::CompositeCandidate& edmDiBosons) const;
 
-  std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > fillDiBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const;
+  std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > fillZZs(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const;
 
   std::pair<phys::Boson<phys::Lepton>, phys::Lepton> fillZLCandidate(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmZLs) const;
 

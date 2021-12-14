@@ -637,7 +637,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
      test_bit(regionWord_,phys::CR3P1F_HZZ)  ||
      test_bit(regionWord_,phys::CR2P2F_HZZ)) {    
   
-    std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > ZZs = fillDiBosons(ZZ);
+    std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > ZZs = fillZZs(ZZ);
     if(ZZs.size() > 1 && 
        (test_bit(regionWord_,phys::SR4P)    ||
 	test_bit(regionWord_,phys::CR3P1F)  ||
@@ -931,62 +931,63 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
 
 // Right now, only for ZZ
 template<typename T1, typename T2>
-phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillDiBoson(const pat::CompositeCandidate& edmVV) const{
+phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillZZ(const pat::CompositeCandidate& edmZZ) const{
 
-  int regionWord = computeRegionFlagForZZ(edmVV);
+  int regionWord = computeRegionFlagForZZ(edmZZ);
   Channel channel = NONE;
   if(test_bit(regionWord,ZZ) || test_bit(regionWord,ZZOnShell)) channel = ZZ;
   else if(test_bit(regionWord,CRZLLos_2P2F) || test_bit(regionWord,CRZLLos_3P1F) || test_bit(regionWord,CRZLLos_2P2F_ZZOnShell) || test_bit(regionWord,CRZLLos_3P1F_ZZOnShell)) channel = ZLL;
 
   if(channel == NONE) {cout << "Channel cannot be identified, aborting..." << endl; abort();}
   
-  const pat::CompositeCandidate* edmV0   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z1")->masterClone().get());      
-  const pat::CompositeCandidate* edmV1   = dynamic_cast<const pat::CompositeCandidate*>(edmVV.daughter("Z2")->masterClone().get());
   
-  phys::Boson<phys::Lepton> V0;
-  phys::Boson<phys::Lepton> V1;
+  if (!filterController_.passTrigger(channel, triggerWord_)) return phys::DiBoson<phys::Lepton,phys::Lepton>();
+
+  const pat::CompositeCandidate* edmZ0   = dynamic_cast<const pat::CompositeCandidate*>(edmZZ.daughter("Z1")->masterClone().get());      
+  const pat::CompositeCandidate* edmZ1   = dynamic_cast<const pat::CompositeCandidate*>(edmZZ.daughter("Z2")->masterClone().get());
+  
+  phys::Boson<phys::Lepton> Z0;
+  phys::Boson<phys::Lepton> Z1;
    
 
   // The first boson is always a good Z, also in the CR. For the other particle assign 23 if it is a true Z from SR
   // or 26 if the two additional leptons comes from LL.
 
-  int idV1 = channel != ZLL ? 23 : 26;
+  int idZ1 = channel != ZLL ? 23 : 26;
 
-  if(dynamic_cast<const T1*>(edmV0->daughter(0)->masterClone().get()) && dynamic_cast<const T2*>(edmV1->daughter(0)->masterClone().get())){
-    V0 = fillBoson<T1,phys::Lepton>(*edmV0, 23, false);
-    V1 = fillBoson<T2,phys::Lepton>(*edmV1, idV1, false);
+  if(dynamic_cast<const T1*>(edmZ0->daughter(0)->masterClone().get()) && dynamic_cast<const T2*>(edmZ1->daughter(0)->masterClone().get())){
+    Z0 = fillBoson<T1,phys::Lepton>(*edmZ0, 23, false);
+    Z1 = fillBoson<T2,phys::Lepton>(*edmZ1, idZ1, false);
   }
-  else if(dynamic_cast<const T2*>(edmV0->daughter(0)->masterClone().get()) && dynamic_cast<const T1*>(edmV1->daughter(0)->masterClone().get())){
-    V0 = fillBoson<T1,phys::Lepton>(*edmV1, idV1, false);
-    V1 = fillBoson<T2,phys::Lepton>(*edmV0, 23, false);
+  else if(dynamic_cast<const T2*>(edmZ0->daughter(0)->masterClone().get()) && dynamic_cast<const T1*>(edmZ1->daughter(0)->masterClone().get())){
+    Z0 = fillBoson<T1,phys::Lepton>(*edmZ1, idZ1, false);
+    Z1 = fillBoson<T2,phys::Lepton>(*edmZ0, 23, false);
   }
   else{
-    edm::LogError("TreePlanter") << "Do not know what to cast in fillDiBosons" << endl;
+    edm::LogError("TreePlanter") << "Do not know what to cast in fillZZs" << endl;
     return phys::DiBoson<phys::Lepton,phys::Lepton>();
   }
   
-  phys::DiBoson<phys::Lepton,phys::Lepton> VV(V0, V1);
+  phys::DiBoson<phys::Lepton,phys::Lepton> ZZ(Z0, Z1);
 
-  VV.passFullSel_               = edmVV.hasUserFloat("SR")                     ? edmVV.userFloat("SR")                     : false;
-  VV.regionWord_  = regionWord;
-  VV.triggerWord_ = triggerWord_;
-  VV.passTrigger_ = filterController_.passTrigger(channel, triggerWord_); // triggerWord_ needs to be filled beforehand (as it is).
+  ZZ.passFullSel_               = edmZZ.hasUserFloat("SR")                     ? edmZZ.userFloat("SR")                     : false;
+  ZZ.regionWord_  = regionWord;
 
   // MELA info
-  MELA_.p_JJVBF_BKG_MCFM_JECNominal_ = edmVV.userFloat("p_JJVBF_BKG_MCFM_JECNominal");
-  MELA_.p_JJVBF_BKG_MCFM_JECUp_      = edmVV.userFloat("p_JJVBF_BKG_MCFM_JERUp"     );
-  MELA_.p_JJVBF_BKG_MCFM_JECDn_      = edmVV.userFloat("p_JJVBF_BKG_MCFM_JERDn"     );
+  MELA_.p_JJVBF_BKG_MCFM_JECNominal_ = edmZZ.userFloat("p_JJVBF_BKG_MCFM_JECNominal");
+  MELA_.p_JJVBF_BKG_MCFM_JECUp_      = edmZZ.userFloat("p_JJVBF_BKG_MCFM_JERUp"     );
+  MELA_.p_JJVBF_BKG_MCFM_JECDn_      = edmZZ.userFloat("p_JJVBF_BKG_MCFM_JERDn"     );
 
-  MELA_.p_JJQCD_BKG_MCFM_JECNominal_ = edmVV.userFloat("p_JJQCD_BKG_MCFM_JECNominal");
-  MELA_.p_JJQCD_BKG_MCFM_JECUp_      = edmVV.userFloat("p_JJQCD_BKG_MCFM_JERUp"     );
-  MELA_.p_JJQCD_BKG_MCFM_JECDn_      = edmVV.userFloat("p_JJQCD_BKG_MCFM_JERDn"     );
+  MELA_.p_JJQCD_BKG_MCFM_JECNominal_ = edmZZ.userFloat("p_JJQCD_BKG_MCFM_JECNominal");
+  MELA_.p_JJQCD_BKG_MCFM_JECUp_      = edmZZ.userFloat("p_JJQCD_BKG_MCFM_JERUp"     );
+  MELA_.p_JJQCD_BKG_MCFM_JECDn_      = edmZZ.userFloat("p_JJQCD_BKG_MCFM_JERDn"     );
 
-  MELA_.p_JJEW_BKG_MCFM_JECNominal_  = edmVV.userFloat("p_JJEW_BKG_MCFM_JECNominal" );
-  MELA_.p_JJEW_BKG_MCFM_JECUp_       = edmVV.userFloat("p_JJEW_BKG_MCFM_JERUp"      );
-  MELA_.p_JJEW_BKG_MCFM_JECDn_       = edmVV.userFloat("p_JJEW_BKG_MCFM_JERDn"      );
+  MELA_.p_JJEW_BKG_MCFM_JECNominal_  = edmZZ.userFloat("p_JJEW_BKG_MCFM_JECNominal" );
+  MELA_.p_JJEW_BKG_MCFM_JECUp_       = edmZZ.userFloat("p_JJEW_BKG_MCFM_JERUp"      );
+  MELA_.p_JJEW_BKG_MCFM_JECDn_       = edmZZ.userFloat("p_JJEW_BKG_MCFM_JERDn"      );
 
 
-  return VV;
+  return ZZ;
 } //filldibosons end
 
 
@@ -1022,27 +1023,27 @@ std::vector<phys::Boson<phys::Lepton> > TreePlanter::fillLepBosons(const edm::Ha
 
 
 // Right now, only for ZZ
-std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > TreePlanter::fillDiBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const{
+std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > TreePlanter::fillZZs(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmDiBosons) const{
 
   std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > physDiBosons;
   
-  foreach(const pat::CompositeCandidate& edmVV, *edmDiBosons){
-    phys::DiBoson<phys::Lepton,phys::Lepton> physVV;
+  foreach(const pat::CompositeCandidate& edmZZ, *edmDiBosons){
+    phys::DiBoson<phys::Lepton,phys::Lepton> physZZ;
     
-    int finalStateZ1 = abs(edmVV.daughter(0)->daughter(0)->pdgId())+abs(edmVV.daughter(0)->daughter(1)->pdgId());
-    int finalStateZ2 = abs(edmVV.daughter(1)->daughter(0)->pdgId())+abs(edmVV.daughter(1)->daughter(1)->pdgId());
+    int finalStateZ1 = abs(edmZZ.daughter(0)->daughter(0)->pdgId())+abs(edmZZ.daughter(0)->daughter(1)->pdgId());
+    int finalStateZ2 = abs(edmZZ.daughter(1)->daughter(0)->pdgId())+abs(edmZZ.daughter(1)->daughter(1)->pdgId());
 
     int rawchannel = finalStateZ1+finalStateZ2;
     
-    if     (rawchannel == 52)         physVV = fillDiBoson<pat::Muon,     pat::Muon    >(edmVV);
-    else if(rawchannel == 44)         physVV = fillDiBoson<pat::Electron, pat::Electron>(edmVV);
+    if     (rawchannel == 52)         physZZ = fillZZ<pat::Muon,     pat::Muon    >(edmZZ);
+    else if(rawchannel == 44)         physZZ = fillZZ<pat::Electron, pat::Electron>(edmZZ);
     else if(rawchannel == 48)  {
-      if(finalStateZ1 < finalStateZ2) physVV = fillDiBoson<pat::Electron, pat::Muon    >(edmVV);
-      else                            physVV = fillDiBoson<pat::Muon, pat::Electron    >(edmVV);
+      if(finalStateZ1 < finalStateZ2) physZZ = fillZZ<pat::Electron, pat::Muon    >(edmZZ);
+      else                            physZZ = fillZZ<pat::Muon, pat::Electron    >(edmZZ);
     }
     else {cout << "TreePlanter: unexpected diboson final state: " << rawchannel << " ... going to abort.. " << endl; abort();}
     
-    if(physVV.isValid() && physVV.passTrigger()) physDiBosons.push_back(physVV);
+    if(physZZ.isValid()) physDiBosons.push_back(physZZ);
     
   }
 
@@ -1135,8 +1136,6 @@ TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate
     
     ZW.passFullSel_               = true;
     ZW.regionWord_                = regionWord;
-    ZW.triggerWord_               = triggerWord_;
-    ZW.passTrigger_               = filterController_.passTrigger(ZZ, triggerWord_); // use same trigger as ZZ
     
     return ZW;
   }
@@ -1188,8 +1187,6 @@ int TreePlanter::computeRegionFlagForZZ(const pat::CompositeCandidate & vv) cons
       cout << "daughter 1.1: " << zz.second().daughter(0) << " is good? " <<  zz.second().daughter(0).isGood() << " pass full sel? " << zz.second().daughter(0).passFullSel() <<  endl;
       cout << "daughter 1.1: " << zz.second().daughter(1) << " is good? " <<  zz.second().daughter(1).isGood() << " pass full sel? " << zz.second().daughter(1).passFullSel() <<  endl;
       cout << "....................." << endl;
-      
-      if(!zz.passTrigger()) continue;
       
       // If more than a candidate is found, then give precedence to SR type ZZ
       if(test_bit(zz.regionWord_,Channel::ZZ) || test_bit(zz.regionWord_,Channel::ZZOnShell)){
