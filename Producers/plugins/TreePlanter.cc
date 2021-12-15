@@ -31,6 +31,7 @@
 
 
 #include "ZZAnalysis/AnalysisStep/interface/bitops.h"
+#include "ZZAnalysis/AnalysisStep/interface/DaughterDataHelpers.h"
 #include "VVXAnalysis/DataFormats/interface/GenStatusBit.h"
 
 #include "TTree.h"
@@ -950,18 +951,29 @@ phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillZZ(const pat::Composit
   phys::Boson<phys::Lepton> Z1;
    
 
-  // The first boson is always a good Z, also in the CR. For the other particle assign 23 if it is a true Z from SR
-  // or 26 if the two additional leptons comes from LL.
+  bool id00 =  (bool)userdatahelpers::getUserFloat(edmZ0->daughter(0),"isGood") 
+            && (bool)userdatahelpers::getUserFloat(edmZ0->daughter(0),"passCombRelIsoPFFSRCorr");
+  bool id01 =  (bool)userdatahelpers::getUserFloat(edmZ0->daughter(1),"isGood") 
+            && (bool)userdatahelpers::getUserFloat(edmZ0->daughter(1),"passCombRelIsoPFFSRCorr");
+  bool id10 =  (bool)userdatahelpers::getUserFloat(edmZ1->daughter(0),"isGood") 
+            && (bool)userdatahelpers::getUserFloat(edmZ1->daughter(0),"passCombRelIsoPFFSRCorr");
+  bool id11 =  (bool)userdatahelpers::getUserFloat(edmZ1->daughter(1),"isGood") 
+            && (bool)userdatahelpers::getUserFloat(edmZ1->daughter(1),"passCombRelIsoPFFSRCorr");
 
-  int idZ1 = channel != ZLL ? 23 : 26;
+  int  Z0id = 23;
+  if(!id00) Z0id += 100;
+  if(!id01) Z0id += 200;
+  int  Z1id = 23;
+  if(!id10) Z1id += 100;
+  if(!id11) Z1id += 200;
 
   if(dynamic_cast<const T1*>(edmZ0->daughter(0)->masterClone().get()) && dynamic_cast<const T2*>(edmZ1->daughter(0)->masterClone().get())){
-    Z0 = fillBoson<T1,phys::Lepton>(*edmZ0, 23, false);
-    Z1 = fillBoson<T2,phys::Lepton>(*edmZ1, idZ1, false);
+    Z0 = fillBoson<T1,phys::Lepton>(*edmZ0, Z0id, false);
+    Z1 = fillBoson<T2,phys::Lepton>(*edmZ1, Z1id, false);
   }
   else if(dynamic_cast<const T2*>(edmZ0->daughter(0)->masterClone().get()) && dynamic_cast<const T1*>(edmZ1->daughter(0)->masterClone().get())){
-    Z0 = fillBoson<T1,phys::Lepton>(*edmZ1, idZ1, false);
-    Z1 = fillBoson<T2,phys::Lepton>(*edmZ0, 23, false);
+    Z0 = fillBoson<T1,phys::Lepton>(*edmZ1, Z1id, false);
+    Z1 = fillBoson<T2,phys::Lepton>(*edmZ0, Z0id, false);
   }
   else{
     edm::LogError("TreePlanter") << "Do not know what to cast in fillZZs" << endl;
@@ -1101,8 +1113,18 @@ TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate
   const pat::CompositeCandidate* edmZ  = dynamic_cast<const pat::CompositeCandidate*>(edmZW.daughter(0)->daughter(0)->masterClone().get());
   phys::Boson<phys::Lepton> physZ;
     
-  if     (abs(edmZ->daughter(0)->pdgId()) == 11) physZ = fillBoson<pat::Electron, phys::Lepton>(*edmZ, 23, false);
-  else if(abs(edmZ->daughter(0)->pdgId()) == 13) physZ = fillBoson<pat::Muon    , phys::Lepton>(*edmZ, 23, false);
+  // Check particles goodness
+  bool id0 =  (bool)userdatahelpers::getUserFloat(edmZ->daughter(0),"isGood") 
+           && (bool)userdatahelpers::getUserFloat(edmZ->daughter(0),"passCombRelIsoPFFSRCorr");
+  bool id1 =  (bool)userdatahelpers::getUserFloat(edmZ->daughter(1),"isGood") 
+           && (bool)userdatahelpers::getUserFloat(edmZ->daughter(1),"passCombRelIsoPFFSRCorr");
+
+  int  Zid = 23;
+  if(!id0) Zid += 100;
+  if(!id1) Zid += 200;
+
+  if     (abs(edmZ->daughter(0)->pdgId()) == 11) physZ = fillBoson<pat::Electron, phys::Lepton>(*edmZ, Zid, false);
+  else if(abs(edmZ->daughter(0)->pdgId()) == 13) physZ = fillBoson<pat::Muon    , phys::Lepton>(*edmZ, Zid, false);
   else{
     edm::LogError("TreePlanter") << "Do not know what to cast in fillZWCandidates, Z part" << endl;
     abort();
@@ -1122,7 +1144,10 @@ TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate
 
   phys::Lepton met = phys::Lepton(phys::Particle::convert(edmZW.daughter(1)->p4()));
 
-  phys::Boson<phys::Lepton> physW(lep, met, copysign(24,-1*lep.id()));
+  // Check particle's goodness
+  int Wid = lep.passFullSel() ? copysign(24,-1*lep.id()) : copysign(124,-1*lep.id());
+
+  phys::Boson<phys::Lepton> physW(lep, met, Wid);
   // -----------------------------
 
   
@@ -1130,10 +1155,8 @@ TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate
   if(physZ.isValid() && physW.isValid() ){
     phys::DiBoson<phys::Lepton,phys::Lepton> ZW(physZ, physW);
     
-    int regionWord = 0;
-    set_bit(regionWord,30); // use 30 for WZ
     
-    ZW.passFullSel_               = true;
+    ZW.passFullSel_               = ZW.numberOfGoodGrandDaughters() == 3;
     
     return ZW;
   }

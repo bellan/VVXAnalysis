@@ -69,8 +69,6 @@ namespace phys {
 
     int numberOfGoodGrandDaughters() const {
       if(!isValid()) return 0;
-      // Put a protection because right now are contemplated only cases where at least one boson is made of good leptons.
-      if(daughter0_.numberOfGoodDaughters() < 2 && daughter1_.numberOfGoodDaughters() < 2) abort();
       return daughter0_.numberOfGoodDaughters() + daughter1_.numberOfGoodDaughters();
     }
 
