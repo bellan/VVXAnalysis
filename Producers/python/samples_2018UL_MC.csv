@@ -1,1 +1,5 @@
+identifier,process,crossSection=-1,BR=1,execute=True,dataset,prefix,pattern,splitLevel,::variables,::pyFragments,comment
+
 ZZTo4l, qqZZ, 1.325,      ,,/ZZTo4L_TuneCP5_13TeV_powheg_pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,1,GENXSEC=1.325;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+
+ZZTo4lext,,1.256,      ,,/ZZTo4L_TuneCP5_13TeV_powheg_pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2018,RecoProbabilities.py,
