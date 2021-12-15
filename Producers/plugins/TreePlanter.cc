@@ -825,10 +825,10 @@ phys::Photon TreePlanter::fill(const pat::Photon &photon) const {
 	output.cutBasedIDMedium_ = photon.photonID("cutBasedPhotonID-Fall17-94X-V2-medium");
 	output.cutBasedIDTight_  = photon.photonID("cutBasedPhotonID-Fall17-94X-V2-tight");
 	
-	// Isolations
-	output.chargedIsolation_       = photon.userFloat("phoChargedIsolation");
-	output.neutralHadronIsolation_ = photon.userFloat("phoNeutralHadronIsolation");
-	output.photonIsolation_        = photon.userFloat("phoPhotonIsolation");
+	// Isolations FIXME
+	output.chargedIsolation_       = photon.chargedHadronIso();
+	output.neutralHadronIsolation_ = photon.neutralHadronIso();
+	output.photonIsolation_        = photon.photonIso();
 	
 	// Variables for the ID
 	output.sigmaIetaIeta_ = photon.full5x5_sigmaIetaIeta();
