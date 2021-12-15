@@ -118,13 +118,16 @@ if IsMC:
 
 
 
-
 ### ------------------------------- Photons -----------------------------
 process.filteredPhotons = cms.EDFilter("PATPhotonSelector",
                                        src = cms.InputTag("slimmedPhotons"),
                                        cut = cms.string("pt > 15 && abs(eta) > 2.4"))
-process.photonSelection = cms.Path(process.filteredPhotons)
+
+process.photonSelection = cms.Path(process.egammaPostRecoSeq + process.filteredPhotons)
 ### ---------------------------------------------------------------------
+
+
+
 
 
 ### ------------------------------- AK8 jets -----------------------------
@@ -143,7 +146,8 @@ if IsMC:
 
     elif (SAMPLE_TYPE == 2018):
         process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
-                                           tag    = cms.string('JetCorrectorParametersCollection_Autumn18_V19_MC_AK8PFchs'),
+                                           #tag    = cms.string('JetCorrectorParametersCollection_Autumn18_V19_MC_AK8PFchs'),
+                                           tag    = cms.string('JetCorrectorParametersCollection_Summer19UL18_V5_MC_AK8PFchs'),
                                            label  = cms.untracked.string('AK8PFchs')
                                        ))
     else:
@@ -175,7 +179,9 @@ else:
 
 from PhysicsTools.PatAlgos.tools.helpers import getPatAlgosToolsTask
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-from RecoBTag.MXNet.pfDeepBoostedJet_cff import _pfDeepBoostedJetTagsAll, _pfDeepBoostedJetTagsProbs, _pfDeepBoostedJetTagsMetaDiscrs, _pfMassDecorrelatedDeepBoostedJetTagsProbs, _pfMassDecorrelatedDeepBoostedJetTagsMetaDiscrs
+from RecoBTag.ONNXRuntime.pfDeepBoostedJet_cff import _pfDeepBoostedJetTagsAll, _pfDeepBoostedJetTagsProbs, _pfDeepBoostedJetTagsMetaDiscrs, _pfMassDecorrelatedDeepBoostedJetTagsProbs, _pfMassDecorrelatedDeepBoostedJetTagsMetaDiscrs
+
+#from RecoBTag.MXNet.pfDeepBoostedJet_cff import _pfDeepBoostedJetTagsAll, _pfDeepBoostedJetTagsProbs, _pfDeepBoostedJetTagsMetaDiscrs, _pfMassDecorrelatedDeepBoostedJetTagsProbs, _pfMassDecorrelatedDeepBoostedJetTagsMetaDiscrs
 
 updateJetCollection(
     process,
@@ -237,6 +243,7 @@ execfile(VVjj_search_path + "2_leptons_regions.py")
 
 
 
+
 ### ......................................................................... ###
 ### Build collections of muons and electrons that pass a quality criteria (isGood + isolation) and that are NOT selected to form the ZZ best candidate that pass the full selection
 ### ......................................................................... ###
@@ -252,10 +259,10 @@ process.postCleaningElectrons = cms.EDFilter("PATElectronSelector", src = cms.In
 
 
 
-process.muonsToBeRemovedFromJets = cms.EDProducer("PATMuonMerger",
+process.muonsToBeRemovedFromJets = cms.EDProducer("PATMuonCollectionMerger",
                                                   src = cms.VInputTag(cms.InputTag("muonsFromZZ"), cms.InputTag("postCleaningMuons")))
 
-process.electronsToBeRemovedFromJets = cms.EDProducer("PATElectronMerger",
+process.electronsToBeRemovedFromJets = cms.EDProducer("PATElectronCollectionMerger",
                                                       src = cms.VInputTag(cms.InputTag("electronsFromZZ"), cms.InputTag("postCleaningElectrons")))
 
 

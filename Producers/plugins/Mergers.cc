@@ -12,10 +12,10 @@ DEFINE_FWK_MODULE( PATCompositeCandidateMergerWithPriority );
 
 #include "CommonTools/UtilAlgos/interface/Merger.h"
 #include <DataFormats/PatCandidates/interface/Muon.h>
-typedef Merger<pat::MuonCollection, pat::MuonCollection> PATMuonMerger;
-DEFINE_FWK_MODULE( PATMuonMerger );
+typedef Merger<pat::MuonCollection, pat::MuonCollection> PATMuonCollectionMerger;
+DEFINE_FWK_MODULE( PATMuonCollectionMerger );
 
 #include <DataFormats/PatCandidates/interface/Electron.h>
-typedef Merger<pat::ElectronCollection, pat::ElectronCollection> PATElectronMerger;
-DEFINE_FWK_MODULE( PATElectronMerger );
+typedef Merger<pat::ElectronCollection, pat::ElectronCollection> PATElectronCollectionMerger;
+DEFINE_FWK_MODULE( PATElectronCollectionMerger );
 
