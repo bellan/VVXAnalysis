@@ -22,17 +22,24 @@ namespace phys {
   public:
     
     //    enum JERVariations{central,up,down}; /DEL
-
+    
+    struct JetScores {
+      Double_t TvsQCD = -2;
+      Double_t WvsQCD = -2;
+      Double_t ZvsQCD = -2;
+      Double_t ZbbvsQCD = -2;
+      Double_t HbbvsQCD = -2;
+      Double_t H4qvsQCD = -2;
+    };
+    
     /// Constructor
     Jet(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), float q =0, int pid = 0)
       : Particle(p, q, pid)
       , csvtagger_(-2)
-      , deepAK8_TvsQCD_(-2.)
-			, deepAK8_WvsQCD_(-2.)
-			, deepAK8MD_TvsQCD_(-2.)
-			, deepAK8MD_WvsQCD_(-2.)
-			, deepAK8MD_ZHbbvsQCD_(-2.)
-			, deepAK8MD_ZHccvsQCD_(-2.)
+      , deepAK8_()
+      , deepAK8_MD_()
+      , particleNet_()
+      , particleNet_MD_()
       , girth_(-9999.)
       , girth_charged_(-9999.)
       , ptd_(-9999.)
@@ -65,13 +72,11 @@ namespace phys {
     // B-tagging info
     Double_t csvtagger()     const {return csvtagger_;}         
     
-    // DeepAK8 tags
-  	Double_t deepAK8_TvsQCD()      const {return deepAK8_TvsQCD_;}
-  	Double_t deepAK8_WvsQCD()      const {return deepAK8_WvsQCD_;}
-		Double_t deepAK8MD_TvsQCD()    const {return deepAK8MD_TvsQCD_;}
-		Double_t deepAK8MD_WvsQCD()    const {return deepAK8MD_WvsQCD_;}
-		Double_t deepAK8MD_ZHbbvsQCD() const {return deepAK8MD_ZHbbvsQCD_;}
-		Double_t deepAK8MD_ZHccvsQCD() const {return deepAK8MD_ZHccvsQCD_;}
+    // DeepAK8 and ParticleNet score getters
+    const JetScores& deepAK8()        const { return deepAK8_; }
+    const JetScores& deepAK8_MD()     const { return deepAK8_MD_; }
+    const JetScores& particleNet()    const { return particleNet_; }
+    const JetScores& particleNet_MD() const { return particleNet_MD_; }
 
     // Quark-Gluon discrimination variables
     Double_t girth()         const {return girth_;}
@@ -101,31 +106,23 @@ namespace phys {
       } 
     } 
     
-
-    // JER
-
-
-    // Values from https://twiki.cern.ch/twiki/bin/view/CMS/JetResolution
-
+    // JER: Values from https://twiki.cern.ch/twiki/bin/view/CMS/JetResolution
     Double_t ptJerUp() const {return  pt_jerup_;}
     Double_t ptJerDn() const {return  pt_jerdn_;}
     Double_t ptNoJer() const {return  pt_nojer_;}
-    
 
     // return the matched MC parton flavour
     Int_t mcPartonFlavour() const {return mcPartonFlavour_;}
 
-    bool    passLooseJetID() const {
+    bool passLooseJetID() const {
       return passLooseId_;
     }
 
     Double_t qgLikelihood() const {return qgLikelihood_;}
 
-
     bool  passPUID() const {return true;}
 
     // AK8 methods
-
     double tau1()           const {return tau1_;}
     double tau2()           const {return tau2_;}
     double tau3()           const {return tau3_;}
@@ -137,9 +134,7 @@ namespace phys {
     double puppiTau3()      const {return puppiTau3_;}
     double puppiMass()      const {return puppiMass_;}
     
-    inline double chosenAlgoMass() const {return softDropMass_;} //puppiMass_ + 11.85;} //
-
-
+    inline double chosenAlgoMass() const {return softDropMass_;} //puppiMass_ + 11.85;}
 
   protected:
     
@@ -147,22 +142,15 @@ namespace phys {
     // B-tagging info
     Double_t csvtagger_;
     
-    // DeepAK8 tags
-  	Double_t deepAK8_TvsQCD_;
-  	Double_t deepAK8_WvsQCD_;
-  	Double_t deepAK8MD_TvsQCD_;  // Mass Decorrelated
-  	Double_t deepAK8MD_WvsQCD_;
-  	Double_t deepAK8MD_ZHbbvsQCD_;
-  	Double_t deepAK8MD_ZHccvsQCD_;
-  	//std::vector<std::pair<std::string, float>> bTaggers;
+    // DeepAK8 and ParticleNet scores
+    JetScores deepAK8_, deepAK8_MD_, particleNet_, particleNet_MD_;
     
     // Quark-Gluon discrimination variables
     Double_t girth_;
     Double_t girth_charged_;
     // sum pt^2 / (sum pt)^2
     Double_t ptd_;
-    // jet width
-    // return the jet area 
+    // jet width (area) 
     Double_t jetArea_;
 
     // return secondary vertex b-tagging information
@@ -192,7 +180,6 @@ namespace phys {
 
 
     // AK8
-
     Double_t tau1_;
     Double_t tau2_;
     Double_t tau3_;
@@ -205,7 +192,7 @@ namespace phys {
     Double_t puppiMass_;
 
 
-    ClassDef(Jet, 1) //
+    ClassDef(Jet, 1)
   };
 }
 

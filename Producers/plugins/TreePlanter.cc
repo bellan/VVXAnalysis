@@ -707,15 +707,35 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
  
   output.csvtagger_      = jet.hasUserFloat("bTagger")                   ? jet.userFloat("bTagger")                : -999;
   
-  output.deepAK8_TvsQCD_      = jet.bDiscriminator("pfDeepBoostedDiscriminatorsJetTags:TvsQCD");
-  output.deepAK8_WvsQCD_      = jet.bDiscriminator("pfDeepBoostedDiscriminatorsJetTags:WvsQCD");
-  output.deepAK8MD_TvsQCD_    = jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:TvsQCD");
-  output.deepAK8MD_WvsQCD_    = jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:WvsQCD");
-  output.deepAK8MD_ZHbbvsQCD_ = jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHbbvsQCD");
-  output.deepAK8MD_ZHccvsQCD_ = jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHccvsQCD");
+  output.deepAK8_.TvsQCD      = jet.bDiscriminator("pfDeepBoostedDiscriminatorsJetTags:TvsQCD");
+  output.deepAK8_.WvsQCD      = jet.bDiscriminator("pfDeepBoostedDiscriminatorsJetTags:WvsQCD");
+  output.deepAK8_.ZvsQCD      = jet.bDiscriminator("pfDeepBoostedDiscriminatorsJetTags:ZvsQCD");
+  output.deepAK8_.ZbbvsQCD    = jet.bDiscriminator("pfDeepBoostedDiscriminatorsJetTags:ZbbvsQCD");
+  output.deepAK8_.HbbvsQCD    = jet.bDiscriminator("pfDeepBoostedDiscriminatorsJetTags:HbbvsQCD");
+  output.deepAK8_.H4qvsQCD    = jet.bDiscriminator("pfDeepBoostedDiscriminatorsJetTags:H4qvsQCD");
+
+  output.deepAK8_MD_.TvsQCD   = jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:TvsQCD");
+  output.deepAK8_MD_.WvsQCD   = jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:WvsQCD");
+  output.deepAK8_MD_.ZvsQCD   = jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZvsQCD");
+  output.deepAK8_MD_.ZbbvsQCD = jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZbbvsQCD");
+  output.deepAK8_MD_.HbbvsQCD = jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:HbbvsQCD");
+  output.deepAK8_MD_.H4qvsQCD = jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:H4qvsQCD");
+
+  output.particleNet_.TvsQCD      = jet.bDiscriminator("pfParticleNetJetTags:TvsQCD");
+  output.particleNet_.WvsQCD      = jet.bDiscriminator("pfParticleNetJetTags:WvsQCD");
+  output.particleNet_.ZvsQCD      = jet.bDiscriminator("pfParticleNetJetTags:ZvsQCD");
+  output.particleNet_.ZbbvsQCD    = jet.bDiscriminator("pfParticleNetJetTags:ZbbvsQCD");
+  output.particleNet_.HbbvsQCD    = jet.bDiscriminator("pfParticleNetJetTags:HbbvsQCD");
+  output.particleNet_.H4qvsQCD    = jet.bDiscriminator("pfParticleNetJetTags:H4qvsQCD");
+  
+  output.particleNet_MD_.TvsQCD   = jet.bDiscriminator("pfMassDecorrelatedParticleNetJetTags:TvsQCD");
+  output.particleNet_MD_.WvsQCD   = jet.bDiscriminator("pfMassDecorrelatedParticleNetJetTags:WvsQCD");
+  output.particleNet_MD_.ZvsQCD   = jet.bDiscriminator("pfMassDecorrelatedParticleNetJetTags:ZvsQCD");
+  output.particleNet_MD_.ZbbvsQCD = jet.bDiscriminator("pfMassDecorrelatedParticleNetJetTags:ZbbvsQCD");
+  output.particleNet_MD_.HbbvsQCD = jet.bDiscriminator("pfMassDecorrelatedParticleNetJetTags:HbbvsQCD");
+  output.particleNet_MD_.H4qvsQCD = jet.bDiscriminator("pfMassDecorrelatedParticleNetJetTags:H4qvsQCD");
   
   //output.bTaggers = jet.getPairDiscri(); //TEST get the whole list of tags
-  
   
   output.qgLikelihood_   = jet.hasUserFloat("qgLikelihood")              ? jet.userFloat("qgLikelihood")           : -999;
   output.fullPuId_       = jet.hasUserInt  ("pileupJetIdUpdated:fullId") ? jet.userInt("pileupJetIdUpdated:fullId"): -999;
