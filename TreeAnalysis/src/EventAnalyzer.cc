@@ -177,40 +177,40 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
 	
   // Some selection on jets
   jets->clear(); centralJets->clear(); 
-  if(pjets)
+  if(pjets){
     foreach(const phys::Jet &jet, *pjets)
       if(jet.pt() > 30){
 	if(fabs(jet.eta()) < 4.7) jets->push_back(jet);
 	if(fabs(jet.eta()) < 2.4) centralJets->push_back(jet);
       }
-      
+  }
   genJets->clear(); centralGenJets->clear();
-  if(pgenJets)
+  if(pgenJets){
     foreach(const phys::Particle &jet, *pgenJets)
       if(jet.pt() > 30){
 	if(fabs(jet.eta()) < 4.7) genJets->push_back(jet);
 	if(fabs(jet.eta()) < 2.4) centralGenJets->push_back(jet);
       }
-  
+  }
   genVBHelper_.analyze(*genParticles, *genVBParticles);
 
   // Some selection on jets
   jetsAK8->clear();
-  if(pjetsAK8)
+  if(pjetsAK8){
     foreach(const phys::Jet &jet, *pjetsAK8)
       if(jet.pt() > 30 && fabs(jet.eta()) < 4.7) jetsAK8->push_back(jet);
-   
+  }
   genJetsAK8->clear();
-  if(pgenJetsAK8)
+  if(pgenJetsAK8){
     foreach(const phys::Particle &jet, *pgenJetsAK8)
       if(jet.pt() > 30 && fabs(jet.eta()) < 4.7) genJetsAK8->push_back(jet);
-  
+  }  
   
   Vhad->clear();
-  if(VhadCand)
+  if(VhadCand){
     foreach(const phys::Boson<phys::Jet> v, *VhadCand)
       if(select(v)) Vhad->push_back(v);
-   
+  }
   stable_sort(Vhad->begin(), Vhad->end(), phys::PtComparator());
   
   
@@ -242,7 +242,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
 
   // FIXME: rise _1P or _1F bits 
   
-  if(!regionWord.test(region_))    return 0;
+  if(!regionWord.test(region_) && region_ != phys::MC)    return 0;
 
   if(region_ < phys::SR3P)
     theWeight = theMCInfo.weight(*ZZ);
@@ -254,8 +254,10 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
     theWeight = theMCInfo.weight(*Z);
   
   else{
-    std::cout<<"Do not know what weight to set. Aborting... "  << endl;
-    std::abort();
+    if(region_ != phys::MC){
+      std::cout<<"Do not know what weight to set. Aborting... "  << endl;
+      std::abort();
+    }
   }
     
 
