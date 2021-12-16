@@ -99,42 +99,42 @@ SEL000 = "!" + PASSZW_1 + " && " + "!" + PASSZW_2 + " && " + "!" + PASSZW_3
 process.candSR3P       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("bareZWCand"), cut = cms.string(SEL111))
 process.candSR3PFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("candSR3P"), minNumber = cms.uint32(1))
 process.SR3P           = cms.Path(process.select3leptonsRegions * process.candSR3P * process.candSR3PFilter)
-process.SR3PCounter    = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR3P","pathFor3LeptonsAnalysis","zzTrigger"))
+process.SR3PCounter    = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR3P","pathFor3LeptonsAnalysis","triggerForZW"))
 
 process.cand110       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("bareZWCand"), cut = cms.string(SEL110))
 process.cand110Filter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand110"), minNumber = cms.uint32(1))
 process.CR110         = cms.Path(process.select3leptonsRegions * process.cand110 * process.cand110Filter)
-process.CR110Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR110","pathFor3LeptonsAnalysis","zzTrigger"))
+process.CR110Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR110","pathFor3LeptonsAnalysis","triggerForZW"))
 
 process.cand101       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("bareZWCand"), cut = cms.string(SEL101))
 process.cand101Filter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand101"), minNumber = cms.uint32(1))
 process.CR101         = cms.Path(process.select3leptonsRegions * process.cand101 * process.cand101Filter)
-process.CR101Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR101","pathFor3LeptonsAnalysis","zzTrigger"))
+process.CR101Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR101","pathFor3LeptonsAnalysis","triggerForZW"))
 
 process.cand011       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("bareZWCand"), cut = cms.string(SEL011))
 process.cand011Filter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand011"), minNumber = cms.uint32(1))
 process.CR011         = cms.Path(process.select3leptonsRegions * process.cand011 * process.cand011Filter)
-process.CR011Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR011","pathFor3LeptonsAnalysis","zzTrigger"))
+process.CR011Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR011","pathFor3LeptonsAnalysis","triggerForZW"))
 
 process.cand100       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("bareZWCand"), cut = cms.string(SEL100))
 process.cand100Filter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand100"), minNumber = cms.uint32(1))
 process.CR100         = cms.Path(process.select3leptonsRegions * process.cand100 * process.cand100Filter)
-process.CR100Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR100","pathFor3LeptonsAnalysis","zzTrigger"))
+process.CR100Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR100","pathFor3LeptonsAnalysis","triggerForZW"))
 
 process.cand001       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("bareZWCand"), cut = cms.string(SEL001))
 process.cand001Filter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand001"), minNumber = cms.uint32(1))
 process.CR001         = cms.Path(process.select3leptonsRegions * process.cand001 * process.cand001Filter)
-process.CR001Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR001","pathFor3LeptonsAnalysis","zzTrigger"))
+process.CR001Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR001","pathFor3LeptonsAnalysis","triggerForZW"))
 
 process.cand010       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("bareZWCand"), cut = cms.string(SEL010))
 process.cand010Filter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand010"), minNumber = cms.uint32(1))
 process.CR010         = cms.Path(process.select3leptonsRegions * process.cand010 * process.cand010Filter)
-process.CR010Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR010","pathFor3LeptonsAnalysis","zzTrigger"))
+process.CR010Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR010","pathFor3LeptonsAnalysis","triggerForZW"))
 
 process.cand000       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("bareZWCand"), cut = cms.string(SEL000))
 process.cand000Filter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand000"), minNumber = cms.uint32(1))
 process.CR000         = cms.Path(process.select3leptonsRegions * process.cand000 * process.cand000Filter)
-process.CR000Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR000","pathFor3LeptonsAnalysis","zzTrigger"))
+process.CR000Counter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR000","pathFor3LeptonsAnalysis","triggerForZW"))
 
 
 process.select3leptons1photonRegions = process.select3leptonsRegions.clone()
@@ -142,7 +142,7 @@ process.select3leptons1photonRegions.minPhotons = cms.int32(1)
 process.select3leptons1photonRegions.maxPhotons = cms.int32(1)
 
 process.SR3P_1L        = cms.Path(process.select3leptons1photonRegions * process.candSR3P * process.candSR3PFilter)
-process.SR3P1LCounter = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR3P_1L","pathFor3LeptonsAnalysis","zzTrigger"))
+process.SR3P1LCounter = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR3P_1L","pathFor3LeptonsAnalysis","triggerForZW"))
 
 
 # Path for lepton fake rate measuerement
@@ -171,4 +171,4 @@ process.selectLeptonFakeRateRegion.maxPhotons = cms.int32(1000)
 process.pathForLeptonFakeRateAnalysis = cms.Path(process.ZlSelected)
 process.candZLFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZlSelected"), minNumber = cms.uint32(1))
 process.CRLFR         = cms.Path(process.selectLeptonFakeRateRegion * process.candZLFilter)
-process.CRLFRCounter   = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CRLFR","pathForLeptonFakeRateAnalysis","zzTrigger"))
+process.CRLFRCounter   = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CRLFR","pathForLeptonFakeRateAnalysis","triggerForZL"))

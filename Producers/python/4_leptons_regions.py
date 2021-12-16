@@ -169,14 +169,6 @@ process.pathFor4LeptonsAnalysis = cms.Path(process.prePreselectionCounter
 # Some counters and paths functional to the fake lepton background estimation and signal region check
 
 
-process.zzTrigger = cms.EDFilter("ZZTriggerFilter", src = cms.InputTag("ZZFiltered"),
-                                 isMC         = cms.untracked.bool(IsMC),
-                                 setup        = cms.int32(LEPTON_SETUP),
-                                 sampleType   = cms.int32(SAMPLE_TYPE),
-                                 PD           = cms.string(PD),
-                                 skimPaths    = cms.vstring(SkimPaths),
-                                 MCFilterPath = cms.string(MCFILTER)
-                                 )
 
 
 from VVXAnalysis.Producers.EventFilter_cfg import eventFilter
@@ -190,20 +182,20 @@ process.cand2P2F       = cms.EDFilter("PATCompositeCandidateSelector", src = cms
                                       cut = cms.string(BOTHFAIL + " && userFloat('CRZLLos_3P1F_ZZOnShell')"))
 process.cand2P2FFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand2P2F"), minNumber = cms.uint32(1))
 process.CR2P2F         = cms.Path(process.select4leptonsRegions * process.cand2P2F * process.cand2P2FFilter)
-process.CR2P2FCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR2P2F","pathFor4LeptonsAnalysis","zzTrigger"))
+process.CR2P2FCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR2P2F","pathFor4LeptonsAnalysis","triggerForZZ"))
 
 process.cand3P1F       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("ZZFiltered"), 
                                       cut = cms.string(PASSD0_XOR_PASSD1 + " && userFloat('CRZLLos_3P1F_ZZOnShell')"))
 process.cand3P1FFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand3P1F"), minNumber = cms.uint32(1))
 process.CR3P1F         = cms.Path(process.select4leptonsRegions * process.cand3P1F * process.cand3P1FFilter)
-process.CR3P1FCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR3P1F","pathFor4LeptonsAnalysis","zzTrigger"))
+process.CR3P1FCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR3P1F","pathFor4LeptonsAnalysis","triggerForZZ"))
 
 process.candSR4P       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("ZZFiltered"), 
                                       cut = cms.string(BOTHPASS + " && userFloat('SR_ZZOnShell')"))
 process.candSR4PFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("candSR4P"), minNumber = cms.uint32(1))
 process.SR4P           = cms.Path(process.select4leptonsRegions * process.candSR4P * process.candSR4PFilter)
 #process.SR4P           = cms.Path(process.candSR4P * process.candSR4PFilter)
-process.SR4PCounter    = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR4P","pathFor4LeptonsAnalysis","zzTrigger"))
+process.SR4PCounter    = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR4P","pathFor4LeptonsAnalysis","triggerForZZ"))
 
 
 process.select4leptons1photonRegions = process.select4leptonsRegions.clone()
@@ -211,7 +203,7 @@ process.select4leptons1photonRegions.minPhotons = cms.int32(1)
 process.select4leptons1photonRegions.maxPhotons = cms.int32(1)
 
 process.SR4P_1L         = cms.Path(process.select4leptons1photonRegions * process.candSR4P * process.candSR4PFilter)
-process.SR4P1LCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR4P_1L","pathFor4LeptonsAnalysis","zzTrigger"))
+process.SR4P1LCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR4P_1L","pathFor4LeptonsAnalysis","triggerForZZ"))
 
 
 #### H->ZZ regions ####
@@ -219,19 +211,19 @@ process.cand2P2FHZZ       = cms.EDFilter("PATCompositeCandidateSelector", src = 
                                           cut = cms.string(BOTHFAIL + " && userFloat('CRZLLos_3P1F')"))
 process.cand2P2FHZZFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand2P2FHZZ"), minNumber = cms.uint32(1))
 process.CR2P2F_HZZ         = cms.Path(process.select4leptonsRegions * process.cand2P2FHZZ * process.cand2P2FHZZFilter)
-process.CR2P2FHZZCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR2P2F_HZZ","pathFor4LeptonsAnalysis","zzTrigger"))
+process.CR2P2FHZZCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR2P2F_HZZ","pathFor4LeptonsAnalysis","triggerForZZ"))
 
 process.cand3P1FHZZ       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("ZZFiltered"), 
                                       cut = cms.string(PASSD0_XOR_PASSD1 + " && userFloat('CRZLLos_3P1F')"))
 process.cand3P1FHZZFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand3P1FHZZ"), minNumber = cms.uint32(1))
 process.CR3P1F_HZZ         = cms.Path(process.select4leptonsRegions * process.cand3P1FHZZ * process.cand3P1FHZZFilter)
-process.CR3P1FHZZCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR3P1F_HZZ","pathFor4LeptonsAnalysis","zzTrigger"))
+process.CR3P1FHZZCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR3P1F_HZZ","pathFor4LeptonsAnalysis","triggerForZZ"))
 
 process.candSRHZZ       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("ZZFiltered"), 
                                       cut = cms.string(BOTHPASS + " && userFloat('SR')"))
 process.candSRHZZFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("candSRHZZ"), minNumber = cms.uint32(1))
 process.SR_HZZ           = cms.Path(process.select4leptonsRegions * process.candSRHZZ * process.candSRHZZFilter)
-process.SRHZZCounter    = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR_HZZ","pathFor4LeptonsAnalysis","zzTrigger"))
+process.SRHZZCounter    = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("SR_HZZ","pathFor4LeptonsAnalysis","triggerForZZ"))
 
 
 

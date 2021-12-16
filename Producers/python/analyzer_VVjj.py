@@ -367,7 +367,30 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
 ### Run the TreePlanter
 ### ------------------------------------------------------------------------- ###
 
-process.filltrees = cms.EndPath(cms.ignore(process.zzTrigger) + 
+triggerFilterForVVX = cms.EDFilter("VVXTriggerFilter",
+                                   channelType  = cms.string("UNDEF"),
+                                   isMC         = cms.untracked.bool(IsMC),
+                                   setup        = cms.int32(LEPTON_SETUP),
+                                   sampleType   = cms.int32(SAMPLE_TYPE),
+                                   PD           = cms.string(PD),
+                                   skimPaths    = cms.vstring(SkimPaths),
+                                   MCFilterPath = cms.string(MCFILTER)
+                               )
+
+process.triggerForZZ = triggerFilterForVVX.clone()
+process.triggerForZZ.channelType = cms.string("ZZ")
+
+process.triggerForZW = triggerFilterForVVX.clone()
+process.triggerForZW.channelType = cms.string("ZW")
+
+process.triggerForZV = triggerFilterForVVX.clone()
+process.triggerForZV.channelType = cms.string("ZV")
+
+process.triggerForZL = triggerFilterForVVX.clone()
+process.triggerForZL.channelType = cms.string("ZL")
+
+
+process.filltrees = cms.EndPath(cms.ignore(process.triggerForZZ) + cms.ignore(process.triggerForZW) + cms.ignore(process.triggerForZV) + cms.ignore(process.triggerForZL) +
                                 process.SR4PCounter + process.CR3P1FCounter + process.CR2P2FCounter + process.SR4P1LCounter +
                                 process.SRHZZCounter + process.CR3P1FHZZCounter + process.CR2P2FHZZCounter + 
                                 process.SR3PCounter   + process.CR110Counter  + process.CR101Counter  + process.CR011Counter  + process.CR100Counter  + process.CR001Counter  + process.CR010Counter  + process.CR000Counter  + process.SR3P1LCounter + process.CRLFRCounter +
