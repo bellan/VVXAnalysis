@@ -389,7 +389,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   // Check trigger request. Actually, it is a very very loose request, not the actual one, that instead should be
   // asked to the specific final state
 
-  passTrigger_ = filterController_.passTrigger(NONE, event, triggerWord_);
+  passTrigger_ = filterController_.passTrigger(phys::UNDEF, event, triggerWord_);
   if (applyTrigger_ && !passTrigger_) return false;
 
 
@@ -599,7 +599,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
     // Fill the Z->ll for the 2 leptons analysis
     std::vector<phys::Boson<phys::Lepton> > Zs = fillLepBosons(Z,23);
-    if(!Zs.empty()) Z_ = Zs.front();
+    if(!filterController_.passTrigger(phys::ZV, triggerWord_) && !Zs.empty()) Z_ = Zs.front();
   }
   // ---------------------------------------------------
 
@@ -934,15 +934,7 @@ phys::Boson<PAR> TreePlanter::fillBoson(const pat::CompositeCandidate & v, int t
 template<typename T1, typename T2>
 phys::DiBoson<phys::Lepton,phys::Lepton> TreePlanter::fillZZ(const pat::CompositeCandidate& edmZZ) const{
 
-  int regionWord = computeRegionFlagForZZ(edmZZ);
-  Channel channel = NONE;
-  if(test_bit(regionWord,ZZ) || test_bit(regionWord,ZZOnShell)) channel = ZZ;
-  else if(test_bit(regionWord,CRZLLos_2P2F) || test_bit(regionWord,CRZLLos_3P1F) || test_bit(regionWord,CRZLLos_2P2F_ZZOnShell) || test_bit(regionWord,CRZLLos_3P1F_ZZOnShell)) channel = ZLL;
-
-  if(channel == NONE) {cout << "Channel cannot be identified, aborting..." << endl; abort();}
-  
-  
-  if (!filterController_.passTrigger(channel, triggerWord_)) return phys::DiBoson<phys::Lepton,phys::Lepton>();
+  if (!filterController_.passTrigger(phys::ZZ, triggerWord_)) return phys::DiBoson<phys::Lepton,phys::Lepton>();
 
   const pat::CompositeCandidate* edmZ0   = dynamic_cast<const pat::CompositeCandidate*>(edmZZ.daughter("Z1")->masterClone().get());      
   const pat::CompositeCandidate* edmZ1   = dynamic_cast<const pat::CompositeCandidate*>(edmZZ.daughter("Z2")->masterClone().get());
@@ -1066,7 +1058,7 @@ std::pair<phys::Boson<phys::Lepton>, phys::Lepton> TreePlanter::fillZLCandidate(
 
 
   if(edmZLs->size() != 1)                              return std::pair<phys::Boson<phys::Lepton>, phys::Lepton>();
-  if(!filterController_.passTrigger(ZL, triggerWord_)) return std::pair<phys::Boson<phys::Lepton>, phys::Lepton>();
+  if(!filterController_.passTrigger(phys::ZL, triggerWord_)) return std::pair<phys::Boson<phys::Lepton>, phys::Lepton>();
 
   const pat::CompositeCandidate& edmZL = edmZLs->front();
     
@@ -1098,12 +1090,14 @@ std::pair<phys::Boson<phys::Lepton>, phys::Lepton> TreePlanter::fillZLCandidate(
 phys::DiBoson<phys::Lepton,phys::Lepton> 
 TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmZWs) const{
 
+  cout << run_ << " " << lumiBlock_ << " " << event_ << endl;
+
+  cout << "ZW size: " << edmZWs->size() << " pass trigger: " << filterController_.passTrigger(phys::ZW, triggerWord_) << endl;
 
 
   if(edmZWs->size() != 1) return  phys::DiBoson<phys::Lepton,phys::Lepton>();
 
-  // FIXME: check trigger (change naming)
-  if(!filterController_.passTrigger(ZZ, triggerWord_)) return phys::DiBoson<phys::Lepton,phys::Lepton>();;
+  if(!filterController_.passTrigger(phys::ZW, triggerWord_)) return phys::DiBoson<phys::Lepton,phys::Lepton>();;
 
 
   // for ZW,  daughter(0) is the ZL while daughter(1) is the MET
@@ -1122,6 +1116,9 @@ TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate
   int  Zid = 23;
   if(!id0) Zid += 100;
   if(!id1) Zid += 200;
+
+  cout << "good Z leptons? " << id0 << " " << id1 << endl;
+
 
   if     (abs(edmZ->daughter(0)->pdgId()) == 11) physZ = fillBoson<pat::Electron, phys::Lepton>(*edmZ, Zid, false);
   else if(abs(edmZ->daughter(0)->pdgId()) == 13) physZ = fillBoson<pat::Muon    , phys::Lepton>(*edmZ, Zid, false);
@@ -1144,6 +1141,9 @@ TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate
 
   phys::Lepton met = phys::Lepton(phys::Particle::convert(edmZW.daughter(1)->p4()));
 
+  cout << "good W lepton? " << lep.passFullSel() << endl;
+
+
   // Check particle's goodness
   int Wid = lep.passFullSel() ? copysign(24,-1*lep.id()) : copysign(124,-1*lep.id());
 
@@ -1163,27 +1163,6 @@ TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate
   else return phys::DiBoson<phys::Lepton,phys::Lepton>();
 }
 
-
-
-int TreePlanter::computeRegionFlagForZZ(const pat::CompositeCandidate & vv) const{
-  int REGIONFLAG=0;
-  
-  if(vv.hasUserFloat("isBestCand")         && vv.hasUserFloat("SR")                     && vv.userFloat("isBestCand")         && vv.userFloat("SR"))
-    set_bit(REGIONFLAG,ZZ);
-  if(vv.hasUserFloat("isBestCRZLLos_2P2F") && vv.hasUserFloat("CRZLLos_2P2F")           && vv.userFloat("isBestCRZLLos_2P2F") && vv.userFloat("CRZLLos_2P2F"))
-    set_bit(REGIONFLAG,CRZLLos_2P2F);
-  if(vv.hasUserFloat("isBestCRZLLos_3P1F") && vv.hasUserFloat("CRZLLos_3P1F")           && vv.userFloat("isBestCRZLLos_3P1F") && vv.userFloat("CRZLLos_3P1F"))
-    set_bit(REGIONFLAG,CRZLLos_3P1F);
-  if(vv.hasUserFloat("isBestCand")         && vv.hasUserFloat("SR_ZZOnShell")           && vv.userFloat("isBestCand")         && vv.userFloat("SR_ZZOnShell"))
-    set_bit(REGIONFLAG,ZZOnShell);
-  if(vv.hasUserFloat("isBestCRZLLos_2P2F") && vv.hasUserFloat("CRZLLos_2P2F_ZZOnShell") && vv.userFloat("isBestCRZLLos_2P2F") && vv.userFloat("CRZLLos_2P2F_ZZOnShell"))
-    set_bit(REGIONFLAG,CRZLLos_2P2F_ZZOnShell);
-  if(vv.hasUserFloat("isBestCRZLLos_3P1F") && vv.hasUserFloat("CRZLLos_3P1F_ZZOnShell") && vv.userFloat("isBestCRZLLos_3P1F") && vv.userFloat("CRZLLos_3P1F_ZZOnShell"))
-    set_bit(REGIONFLAG,CRZLLos_3P1F_ZZOnShell);
-
-
-  return REGIONFLAG;
-}
 
 
 // Here as legacy for HZZ analysis where more than 4 leptons are allowed in the FS

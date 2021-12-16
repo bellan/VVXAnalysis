@@ -99,8 +99,6 @@ class TreePlanter: public edm::EDAnalyzer {
   bool checkNumberOfZpairs();
   phys::DiBoson<phys::Lepton,phys::Lepton> selectOnlyOnZpair(const std::vector<phys::DiBoson<phys::Lepton,phys::Lepton> > &ZZs);
 
-  int computeRegionFlagForZZ(const pat::CompositeCandidate & vv) const;
-
  private:
   struct MinPairComparator{
     bool operator()( const std::pair<int,double> & a , 
