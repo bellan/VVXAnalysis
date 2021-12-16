@@ -34,12 +34,12 @@
 using namespace std;
 using namespace edm;
 
-class ZZGenFilterCategory: public edm::EDFilter {
+class VVXGenFilterCategory: public edm::EDFilter {
 
 public:
   
   
-  ZZGenFilterCategory(const ParameterSet& pset)
+  VVXGenFilterCategory(const ParameterSet& pset)
     : sel_             (pset.getParameter<int>("Topology"))
     , genToken_        (consumes<reco::GenParticleCollection>(pset.getParameter<edm::InputTag>("src")))
     , genJetsToken_    (consumes<reco::GenJetCollection>     (pset.getParameter<edm::InputTag>("GenJets")))
@@ -69,12 +69,10 @@ private:
   edm::EDGetTokenT<reco::GenJetCollection>      genJetsAK8Token_;
 };
 
-void ZZGenFilterCategory::beginJob() {}
+void VVXGenFilterCategory::beginJob() {}
 
-bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) { 
+bool VVXGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) { 
   
-  //  cout << "\nRun: " << event.id().run() << " event: " << event.id().event() << " LS: " << event.luminosityBlock() << endl;
-
   std::vector<phys::Particle> genLeptons, genJets, genJetsAK8;
   
   // Get the collection of gen particles from hard process (plus prompt photons). It contains leptons (charged and neutrinos) and quarks.
@@ -89,11 +87,7 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   //------------------ loop over genParticles ---------------------------------------------------------
   foreach (const reco::GenParticle& p, *genParticles) {
     
-    if(p.p4().P() != p.p4().P()){
-      cout << "This particle, " << p.pdgId() << ", as NaN in p4 components: " << p.p4().P() << endl;
-      continue;
-    }
-    
+    if(p.p4().P() != p.p4().P()) continue;
     
     int id = abs(p.pdgId());
     phys::Particle php = phys::convert(p,p.statusFlags().flags_);
@@ -118,15 +112,13 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   
   
   // Get gen jets
-  edm::Handle<reco::GenJetCollection> genJetsH;
-  event.getByToken(genJetsToken_,  genJetsH);
+  edm::Handle<reco::GenJetCollection> genJetsH;      event.getByToken(genJetsToken_,  genJetsH);
   
   foreach(const reco::GenJet& jet, *genJetsH)
       genJets.push_back(phys::Particle(jet.p4(), phys::Particle::computeCharge(jet.pdgId()), jet.pdgId()));
   
  
-  edm::Handle<reco::GenJetCollection> genJetsAK8H;
-  event.getByToken(genJetsAK8Token_,  genJetsAK8H);
+  edm::Handle<reco::GenJetCollection> genJetsAK8H;   event.getByToken(genJetsAK8Token_,  genJetsAK8H);
   
   foreach(const reco::GenJet& jet, *genJetsAK8H)
       genJetsAK8.push_back(phys::Particle(jet.p4(), phys::Particle::computeCharge(jet.pdgId()), jet.pdgId()));
@@ -158,7 +150,7 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   if(fabs(std::get<6>(zzSignalTopology).id()) > 0) loadGenBoson(std::get<6>(zzSignalTopology), genRefs, outputGenColl); // W1 --> lv
   if(fabs(std::get<7>(zzSignalTopology).id()) > 0) loadGenBoson(std::get<7>(zzSignalTopology), genRefs, outputGenColl); // W2 --> jj
 
-  event.put(std::move(outputGenColl),"vectorBosons");
+  event.put(std::move(outputGenColl), "vectorBosons");
   
   
   // load the cleaned GenJets too
@@ -175,7 +167,6 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 
   event.put(std::move(outputGenJetAK8Coll),"genJetsAK8");
 
-
   
   
   if (sel_ >= 0) {
@@ -191,7 +182,7 @@ bool ZZGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   
 }
 
-void ZZGenFilterCategory::loadGenBoson(const phys::Boson<phys::Particle> &vb, const reco::GenParticleRefProd &genRefs, std::unique_ptr<reco::GenParticleCollection> &outputGenColl){
+void VVXGenFilterCategory::loadGenBoson(const phys::Boson<phys::Particle> &vb, const reco::GenParticleRefProd &genRefs, std::unique_ptr<reco::GenParticleCollection> &outputGenColl){
     
   size_t initialSize = outputGenColl->size();
   
@@ -205,6 +196,6 @@ void ZZGenFilterCategory::loadGenBoson(const phys::Boson<phys::Particle> &vb, co
 
 
 #include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(ZZGenFilterCategory);
+DEFINE_FWK_MODULE(VVXGenFilterCategory);
 
  
