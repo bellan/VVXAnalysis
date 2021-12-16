@@ -1090,11 +1090,6 @@ std::pair<phys::Boson<phys::Lepton>, phys::Lepton> TreePlanter::fillZLCandidate(
 phys::DiBoson<phys::Lepton,phys::Lepton> 
 TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmZWs) const{
 
-  cout << run_ << " " << lumiBlock_ << " " << event_ << endl;
-
-  cout << "ZW size: " << edmZWs->size() << " pass trigger: " << filterController_.passTrigger(phys::ZW, triggerWord_) << endl;
-
-
   if(edmZWs->size() != 1) return  phys::DiBoson<phys::Lepton,phys::Lepton>();
 
   if(!filterController_.passTrigger(phys::ZW, triggerWord_)) return phys::DiBoson<phys::Lepton,phys::Lepton>();;
@@ -1117,9 +1112,6 @@ TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate
   if(!id0) Zid += 100;
   if(!id1) Zid += 200;
 
-  cout << "good Z leptons? " << id0 << " " << id1 << endl;
-
-
   if     (abs(edmZ->daughter(0)->pdgId()) == 11) physZ = fillBoson<pat::Electron, phys::Lepton>(*edmZ, Zid, false);
   else if(abs(edmZ->daughter(0)->pdgId()) == 13) physZ = fillBoson<pat::Muon    , phys::Lepton>(*edmZ, Zid, false);
   else{
@@ -1141,9 +1133,6 @@ TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate
 
   phys::Lepton met = phys::Lepton(phys::Particle::convert(edmZW.daughter(1)->p4()));
 
-  cout << "good W lepton? " << lep.passFullSel() << endl;
-
-
   // Check particle's goodness
   int Wid = lep.passFullSel() ? copysign(24,-1*lep.id()) : copysign(124,-1*lep.id());
 
@@ -1153,9 +1142,8 @@ TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate
   
   // ----- Build the ZW -----
   if(physZ.isValid() && physW.isValid() ){
+
     phys::DiBoson<phys::Lepton,phys::Lepton> ZW(physZ, physW);
-    
-    
     ZW.passFullSel_               = ZW.numberOfGoodGrandDaughters() == 3;
     
     return ZW;
