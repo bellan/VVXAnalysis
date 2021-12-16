@@ -238,7 +238,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   addOptions();
   
   // Check if the request on region tye matches with the categorization of the event
-  regionWord = std::bitset<128>(pregionWord);
+  regionWord = std::bitset<32>(pregionWord);
 
   // FIXME: rise _1P or _1F bits 
   

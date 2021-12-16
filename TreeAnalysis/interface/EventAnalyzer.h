@@ -162,7 +162,7 @@ public:
   phys::MELA *mela;
   TBranch *b_mela;
 
-  std::bitset<128> regionWord;
+  std::bitset<32> regionWord;
 
   //MET
   phys::Particle *met   ; TBranch *b_met;
