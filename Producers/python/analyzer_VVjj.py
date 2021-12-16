@@ -70,51 +70,61 @@ VVjj_search_path = os.environ['CMSSW_BASE'] + "/src/VVXAnalysis/Producers/python
 ### Standard sequence
 ### ----------------------------------------------------------------------
 
+
+### ---------------------------------- MC --------------------------------
 if IsMC:
-    #process.VVjjEventTagger = cms.EDFilter("EventTagger",
-    #                                       Topology = cms.int32(-1), 
-    #                                       src = cms.InputTag("softLeptons"),
-    #                                       TightSelection = cms.string("userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')")
-    #                                       )
-    
-    #process.eventTagger = cms.Path(process.VVjjEventTagger)
-    
     
     genleptons = '(status == 1 && (isPromptFinalState && fromHardProcessFinalState && abs(pdgId) <= 16) ||  abs(pdgId) == 22)'
-    #genquarks  = '(fromHardProcessFinalState && abs(pdgId) <= 6 && (mother.pdgId == 23 || abs(mother.pdgId) == 24))'
     genquarks  = '(abs(pdgId) <= 6 && (mother.pdgId == 23 || abs(mother.pdgId) == 24))'
     genphotons = 'pdgId == 22'
     
-    process.genParticlesFromHardProcess = cms.EDFilter("GenParticleSelector",
-                                                       filter = cms.bool(False),
+    process.genParticlesFromHardProcess = cms.EDFilter("GenParticleSelector", filter = cms.bool(False), stableOnly = cms.bool(False),
                                                        src = cms.InputTag("prunedGenParticles"),
-                                                       #acceptance cut on leptons?
-                                                       #cut = cms.string('status == 1 && (isPromptFinalState && fromHardProcessFinalState && abs(pdgId) >= 11 && abs(pdgId) <= 16) ||  abs(pdgId) == 22'),        
-                                                       #                            cut = cms.string(
-                                                       stableOnly = cms.bool(False),
-
-                                                       cut = cms.string(genleptons + " || " + genquarks+" || " + genphotons)
-                                                   )
-
-    process.genTaus = cms.EDFilter("GenParticleSelector",
-                                   filter = cms.bool(False),
+                                                       cut = cms.string(genleptons + " || " + genquarks+" || " + genphotons))
+    
+    process.genTaus = cms.EDFilter("GenParticleSelector", filter = cms.bool(False), stableOnly = cms.bool(False),
                                    src = cms.InputTag("prunedGenParticles"),
-                                   cut = cms.string('isPromptDecayed && abs(pdgId) == 15'),        
-                                   stableOnly = cms.bool(False)
-                               )
-    # FIXME! They need to be disambiguated from leptons!! RB: done in the signal definition!
-    process.selectedGenJets = cms.EDFilter("GenJetSelector",
-                                           filter = cms.bool(False),
-                                           src = cms.InputTag("slimmedGenJets"),
-                                           cut = cms.string('pt > 20 && abs(eta) < 4.7'),
-                                    )
+                                   cut = cms.string('isPromptDecayed && abs(pdgId) == 15'))
 
-    process.selectedGenJetsAK8 = cms.EDFilter("GenJetSelector",
-                                              filter = cms.bool(False),
+
+    # FIXME! They need to be disambiguated from leptons!! RB: done in the signal definition!
+    process.selectedGenJets = cms.EDFilter("GenJetSelector", filter = cms.bool(False),
+                                           src = cms.InputTag("slimmedGenJets"),
+                                           cut = cms.string('pt > 20 && abs(eta) < 4.7'))
+                                    
+
+    process.selectedGenJetsAK8 = cms.EDFilter("GenJetSelector", filter = cms.bool(False),
                                               src = cms.InputTag("slimmedGenJetsAK8"),
-                                              cut = cms.string('pt > 20 && abs(eta) < 4.7'),
-                                          )
+                                              cut = cms.string('pt > 20 && abs(eta) < 4.7'))
+                                          
     process.genPath = cms.Path(process.genParticlesFromHardProcess + process.selectedGenJets  + process.selectedGenJetsAK8 + process.genTaus)
+
+
+### ---------- If it is MC, run also the signal definition path -----------
+
+    # Empty sequence to attach the signal filter (if specified in the CSV file)
+    process.mcSelectionCounter = cms.EDProducer("EventCountProducer") # not really needeed... it is mainly an hack to get the path executed
+    process.signalFilters = cms.Sequence(process.mcSelectionCounter) 
+    process.mcSelection   = cms.Path(process.signalFilters)
+    MCFILTER = "mcSelection"
+
+    process.genCategory =  cms.EDFilter("VVXGenFilterCategory",
+                                Topology       = cms.int32(SIGNALDEFINITION), 
+                                src            = cms.InputTag("genParticlesFromHardProcess"),
+                                GenJets        = cms.InputTag("selectedGenJets"),
+                                GenJetsAK8     = cms.InputTag("selectedGenJetsAK8"),
+                                )
+
+
+    process.kFactor = cms.EDProducer('kfactorProducer',
+                                     isMC  = cms.untracked.bool(IsMC),
+                                     src   = cms.InputTag("prunedGenParticles")) # RB: switch to genParticlesFromHardProcess ??
+    
+ 
+    process.signalCounter    = cms.EDProducer("EventCountProducer")
+    process.signalDefinition = cms.Path(process.genCategory * process.kFactor * process.signalCounter)
+
+### ---------------------------------------------------------------------
 
 
 
@@ -391,9 +401,9 @@ process.triggerForZL.channelType = cms.string("ZL")
 
 
 process.filltrees = cms.EndPath(cms.ignore(process.triggerForZZ) + cms.ignore(process.triggerForZW) + cms.ignore(process.triggerForZV) + cms.ignore(process.triggerForZL) +
-                                process.SR4PCounter + process.CR3P1FCounter + process.CR2P2FCounter + process.SR4P1LCounter +
+                                process.SR4PCounter  + process.CR3P1FCounter + process.CR2P2FCounter + process.SR4P1LCounter +
                                 process.SRHZZCounter + process.CR3P1FHZZCounter + process.CR2P2FHZZCounter + 
-                                process.SR3PCounter   + process.CR110Counter  + process.CR101Counter  + process.CR011Counter  + process.CR100Counter  + process.CR001Counter  + process.CR010Counter  + process.CR000Counter  + process.SR3P1LCounter + process.CRLFRCounter +
+                                process.SR3PCounter  + process.CR110Counter  + process.CR101Counter  + process.CR011Counter  + process.CR100Counter  + process.CR001Counter  + process.CR010Counter  + process.CR000Counter  + process.SR3P1LCounter + process.CRLFRCounter +
                                 process.SR2PCounter + process.SR2P1LCounter +
                                 process.treePlanter)
 
