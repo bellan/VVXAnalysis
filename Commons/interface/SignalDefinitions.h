@@ -28,7 +28,7 @@ namespace zzw{
     > GenTopology;
   
 
- std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > makeZBosonsFromLeptons(const std::vector<phys::Particle>& lm, const std::vector<phys::Particle>& lp, int leptonCode, float mZ);
+  std::pair<phys::Boson<phys::Particle>, phys::Boson<phys::Particle> > makeZBosonsFromLeptons(const std::vector<phys::Particle>& lm, const std::vector<phys::Particle>& lp, int leptonCode, float mZ);
  
  GenTopology getGenTopology(int signalDefinition,
 			    const std::vector<phys::Particle> &theGenl, const std::vector<phys::Particle> &theGenj, 
