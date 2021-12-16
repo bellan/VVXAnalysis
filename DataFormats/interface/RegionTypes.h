@@ -36,13 +36,15 @@ namespace phys{
 		   CR,
 		   SR_HZZ, CR_HZZ, CR2P2F_HZZ, CR3P1F_HZZ, MC_HZZ,
 		   MC};
-
-
-
-
- 
+  
   RegionTypes regionType(const std::string& input);
   std::string regionType(RegionTypes input);
+  
+  
+  enum Channel {ZZ, ZW, ZL, ZV, UNDEF};
+  Channel channelType(const std::string& input);
+  std::string channelType(Channel input);
+  
 
 };
 

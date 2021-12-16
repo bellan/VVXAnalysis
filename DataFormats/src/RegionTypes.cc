@@ -78,3 +78,33 @@ std::string phys::regionType(phys::RegionTypes input){
     abort();
   }
 }
+
+
+phys::Channel phys::channelType(const std::string& input){
+  if      (input == "ZZ")    return ZZ;
+  else if (input == "ZW")    return ZW;
+  else if (input == "WZ")    return ZW;
+  else if (input == "ZL")    return ZL;
+  else if (input == "ZV")    return ZV;
+  else if (input == "UNDEF") return UNDEF;
+
+  else{
+    std::cout << "Unknown channel: " << input << std::endl;
+    abort();
+  }
+}
+
+std::string phys::channelType(phys::Channel input){
+
+  if      (input == ZZ)    return "ZZ";
+  else if (input == ZW)    return "ZW";
+  else if (input == ZL)    return "ZL";
+  else if (input == ZV)    return "ZV";
+  else if (input == UNDEF) return "UNDEF";
+
+
+  else{
+    std::cout << "Unknown channel: " << input << std::endl;
+    abort();
+  }
+}
