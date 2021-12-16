@@ -125,8 +125,9 @@ namespace phys {
   friend std::ostream&  operator<<(std::ostream& os, const RegionsCounter& ev){      
     
     using namespace colour;
-
-    os << "| Region     | Number of events"                << "\t|" << std::endl
+    os << std::endl
+       << "| Region     | Events   |"                         << std::endl
+       << "| ---------- | -------- |"                         << std::endl
        << "| SR2P       | " << Green(ev[phys::SR2P]      ) << "\t|" << std::endl
        << "| SR2P_1L    | " << Green(ev[phys::SR2P_1L]   ) << "\t|" << std::endl
       
