@@ -1,4 +1,4 @@
-/** \class ZZTriggerFilter
+/** \class VVXTriggerFilter
  *
  *  No description available.
  *
@@ -16,20 +16,21 @@
 #include <DataFormats/Candidate/interface/ShallowCloneCandidate.h>
 
 #include "VVXAnalysis/Producers/interface/FilterController.h"
-#include <ZZAnalysis/AnalysisStep/interface/FinalStates.h>
+#include "VVXAnalysis/DataFormats/interface/RegionTypes.h"
 
-class ZZTriggerFilter : public edm::EDFilter {
+
+class VVXTriggerFilter : public edm::EDFilter {
 public:
   /// Constructor
-  explicit ZZTriggerFilter(const edm::ParameterSet& config) 
-    : filterController_(config, consumesCollector())
-    , srcToken_(consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("src")))
-  {
+  explicit VVXTriggerFilter(const edm::ParameterSet& config) 
+    : filterController_(config, consumesCollector()){
     consumes<edm::TriggerResults>(edm::InputTag("TriggerResults"));
-    produces<bool>();}
+    produces<bool>();
+    channel_ = phys::channelType(config.getParameter<std::string>("channelType"));
+  }
   
   /// Destructor
-  ~ZZTriggerFilter(){};  
+  ~VVXTriggerFilter(){};  
   
   virtual void beginJob(){};  
   virtual bool filter(edm::Event&, const edm::EventSetup&);
@@ -37,38 +38,21 @@ public:
   
 private:
   FilterController filterController_;
-  edm::EDGetTokenT<edm::View<pat::CompositeCandidate> > srcToken_;
+  phys::Channel channel_;
 };
 
 
-bool ZZTriggerFilter::filter(edm::Event& event, const edm::EventSetup& setup){  
-  edm::Handle<edm::View<pat::CompositeCandidate> > edmVVs   ; event.getByToken(srcToken_      ,        edmVVs);
-  Short_t triggerWord(0);
-  bool passTrigger = filterController_.passTrigger(NONE, event, triggerWord);
+bool VVXTriggerFilter::filter(edm::Event& event, const edm::EventSetup& setup){  
 
-  auto output = std::make_unique<bool>(false); //Topology
+  Short_t triggerWord(0);
+
+  bool passTrigger = filterController_.passTrigger(phys::UNDEF, event, triggerWord);
+
+  auto output = std::make_unique<bool>(false);
 
   if(!passTrigger) {event.put(std::move(output));return false;}
-
-  // HACK HERE!! Do not consider cases where there is more than 1 ZZ candidate! 
-  // The selection is as the same as in TreePlanter, but here it is not the right place where put the
-  // requirement of having 1 and only 1 candidate
-  // if(edmVVs->size() != 1) {event.put(output);return false;}
-  // const pat::CompositeCandidate& edmVV = edmVVs->front();
   
-  // int finalStateZ1 = abs(edmVV.daughter(0)->daughter(0)->pdgId())+abs(edmVV.daughter(0)->daughter(1)->pdgId());
-  // int finalStateZ2 = abs(edmVV.daughter(1)->daughter(0)->pdgId())+abs(edmVV.daughter(1)->daughter(1)->pdgId());
-
-  // int rawchannel = finalStateZ1+finalStateZ2;
-
-  Channel effectiveChannel = ZZ;
-  // if      (rawchannel == 44) effectiveChannel = EEEE;  // ZZ->4e
-  // else if (rawchannel == 48) effectiveChannel = EEMM;  // ZZ->2e2mu
-  // else if (rawchannel == 52) effectiveChannel = MMMM;  // ZZ->4mu
-  // else {std::cout << "Do not know what to do when setting trigger bit in ZZTriggerFilter. Unknown ZZ id: " << rawchannel << std::endl; abort();}
-  // //std::cout <<"channel "<<effectiveChannel<< "  Event: " << event.id().event() << std::endl;
-
-  bool result = filterController_.passTrigger(effectiveChannel, triggerWord); 
+  bool result = filterController_.passTrigger(channel_, triggerWord); 
   *output = result;
   event.put(std::move(output));
   return result; 
@@ -77,4 +61,4 @@ bool ZZTriggerFilter::filter(edm::Event& event, const edm::EventSetup& setup){
 
 
 #include <FWCore/Framework/interface/MakerMacros.h>
-DEFINE_FWK_MODULE(ZZTriggerFilter);
+DEFINE_FWK_MODULE(VVXTriggerFilter);
