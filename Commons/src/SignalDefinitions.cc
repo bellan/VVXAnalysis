@@ -1,7 +1,6 @@
 //-----------FUNCTION: definition of the two ZZ bosons from leptons-------
 
 #include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
-//#include "VVXAnalysis/Commons/interface/PhysTools.h"
 #include "VVXAnalysis/Commons/interface/Comparators.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
@@ -109,7 +108,7 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   foreach(const phys::Particle &p, theGenl){    
 
 
-    if(abs(p.id()) != 11 && abs(p.id()) != 13 && abs(p.id()) != 12 && abs(p.id()) != 14) continue;
+    if(abs(p.id()) < 11  || abs(p.id()) > 14) continue;
 
     if(abs(p.id()) == 12 || abs(p.id()) == 14) {genNu.push_back(p); continue;}
 
@@ -157,6 +156,14 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
     topology.set(1);
   }
 
+  // ZV --> 2l2jets FS
+  else if(Z.size() == 1 && numberOfChargedLeptons == 2 && genNu.size() == 0){
+    if(Z.front().isValid()){
+      Z0 = Z.front();
+      topology.set(2); // temporary rise this bit
+    }
+  }
+
   else return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1, W2);
   
   // ssWW topology.set(2);
@@ -179,12 +186,16 @@ zz::SignalTopology zz::getSignalTopology(const std::vector<phys::Particle> &theG
   //if(abs(Z0DaugID) == 13 || abs(Z1DaugID) == 13) topology.set(8);
   //if(abs(Z0DaugID) == 11 || abs(Z1DaugID) == 11) topology.set(9);
 
-  /*
+  
   std::vector<phys::Boson<phys::Particle> > lepBosons;
   lepBosons += Z0,Z1,W0,W1;
   std::vector<phys::Boson<phys::Particle> > hadBosons = vv::categorizeHadronicPartOftheEvent(theGenj, theGenjAK8, lepBosons, topology);
   Z3 = hadBosons.at(0);
-  W2 = hadBosons.at(1);*/
+  W2 = hadBosons.at(1);
+  
+  // recheck if ZV is confirmed
+  if(topology.test(2) && !topology.test(8)) topology.reset(2);
+
 
   return std::make_tuple(topology.to_ulong(), Z0, Z1, Z2, Z3, W0, W1, W2);
 }
