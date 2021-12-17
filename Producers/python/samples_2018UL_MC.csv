@@ -1,5 +1,67 @@
 identifier,process,crossSection=-1,BR=1,execute=True,dataset,prefix,pattern,splitLevel,::variables,::pyFragments,comment
 
-ZZTo4l, qqZZ, 1.325,      ,,/ZZTo4L_TuneCP5_13TeV_powheg_pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,1,GENXSEC=1.325;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+### See comment field,,,,,,,,,,,Unless otherwise stated; signal x-sections are taken from https://hypernews.cern.ch/HyperNews/CMS/get/higgs/1738.html
+###,,,,,,,,,,,in the [120;130] range they are taken from the YR4 SM 13TeV tab; i.e. they are N3LO QCD + NLO EW
+###,,,,,,,,,,,while for other mass points they are taken from the YR4 BSM 13TeV tab; i.e. they are in NWA and without EWK corrections; see https://hypernews.cern.ch/HyperNews/CMS/get/higgs/1738/1/1/1.html
+###,,,,,,,,,,,For ZH and ttH the BR is obtained as BR(H->ZZ->2L2X) = BR(H->4L) + BR(H->2L2q) + BR(H->ZZ*->2L2nu) * BR(H->2L2nu) / [ BR(H->ZZ*->2L2nu) + BR(H->WW*->2L2nu) ] where BR(H->4L) BR(H->2L2q) and BR(H->2L2nu) are taken from the YR3 Twikis.
+###,,,,,,,,,,,For ZH and ttH the BR column also includes the gen filter efficiency (0.15038 for ZH and 0.1544 for ttH).
 
-ZZTo4lext,,1.256,      ,,/ZZTo4L_TuneCP5_13TeV_powheg_pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+
+###,,,,,,,,,,,qq->ZZ background
+# ZZTo4lext,,1.256,      ,,/ZZTo4L_TuneCP5_13TeV_powheg_pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+# ZZTo4lamcatnlo,,1.256,      ,,-----missing-----,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2018,RecoProbabilities.py, # Xsection from the gen: 1.218
+# ZZTo4lsherpa,,1.256,      ,,-----missing-----,dbs,,4,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+# ZZJJTo4L_EWK,,-1,      ,,-----missing-----,dbs,,4,GENXSEC=-1;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+# ZZJJTo4L_QCD,,-1,      ,,-----missing-----,dbs,,4,GENXSEC=-1;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+
+
+###,,,,,,,,,,,gg->ZZ background - Xsec from https://twiki.cern.ch/twiki/bin/viewauth/CMS/Run2MCProductionforHiggsProperties#MCFM_ZZ_4l_l_e_mu_tau
+# ggTo4e_Contin_MCFM701,,0.00158549,   ,,/GluGluToContinToZZTo4e_TuneCP5_13TeV-mcfm701-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,1,GENXSEC=0.00158549;GENBR=1;PROCESS_CR=False;APPLY_K_NNLOQCD_ZZGG=1;LEPTON_SETUP=2018,RecoProbabilities.py;LHEProbabilities_GG_BKG_MCFM.py,
+# ggTo4mu_Contin_MCFM701,,0.00158549,   ,,/GluGluToContinToZZTo4mu_TuneCP5_13TeV-mcfm701-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,1,GENXSEC=0.00158549;GENBR=1;PROCESS_CR=False;APPLY_K_NNLOQCD_ZZGG=1;LEPTON_SETUP=2018,RecoProbabilities.py;LHEProbabilities_GG_BKG_MCFM.py,
+# ggTo4tau_Contin_MCFM701,,0.00158549,   ,,/GluGluToContinToZZTo4tau_TuneCP5_13TeV-mcfm701-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,5,GENXSEC=0.00158549;GENBR=1;PROCESS_CR=False;APPLY_K_NNLOQCD_ZZGG=1;LEPTON_SETUP=2018,RecoProbabilities.py;LHEProbabilities_GG_BKG_MCFM.py,
+# ggTo2e2mu_Contin_MCFM701,,0.0031942,    ,,/GluGluToContinToZZTo2e2mu_TuneCP5_13TeV-mcfm701-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,1,GENXSEC=0.00319142;GENBR=1;PROCESS_CR=False;APPLY_K_NNLOQCD_ZZGG=1;LEPTON_SETUP=2018,RecoProbabilities.py;LHEProbabilities_GG_BKG_MCFM.py,
+# ggTo2e2tau_Contin_MCFM701,,0.0031942,    ,,/GluGluToContinToZZTo2e2tau_TuneCP5_13TeV-mcfm701-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,2,GENXSEC=0.00319142;GENBR=1;PROCESS_CR=False;APPLY_K_NNLOQCD_ZZGG=1;LEPTON_SETUP=2018,RecoProbabilities.py;LHEProbabilities_GG_BKG_MCFM.py,
+# ggTo2mu2tau_Contin_MCFM701,,0.0031942,    ,,/GluGluToContinToZZTo2mu2tau_TuneCP5_13TeV-mcfm701-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,4,GENXSEC=0.00319142;GENBR=1;PROCESS_CR=False;APPLY_K_NNLOQCD_ZZGG=1;LEPTON_SETUP=2018,RecoProbabilities.py;LHEProbabilities_GG_BKG_MCFM.py,
+
+
+###,,,,,,,,,,,VVV backgrounds
+ZZZ,,0.01398,      ,,/ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+# ZZZext1,,0.01398,      ,,/ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1_ext1-v2/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+# WZZ,,0.05565,      ,,/WZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v3/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+# WZZext1,,0.05565,      ,,/WZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1_ext1-v2/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+# WWZ,,0.1651,      ,,-----missing-----,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+
+
+###,,,,,,,,,,,rare backgrounds targeting ttH categories
+# TTZZ,,0.001572,      ,,/TTZZ_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+# TTWW,,0.007883,      ,,/TTWW_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM ,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+# TTZToLLNuNu_M10ext1,,0.25271,,,/TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM ,dbs,,1,GENXSEC=0.25271;GENBR=1;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,
+# TTZToLL_M1to1O_MLM,,0.04695,,,-----missing-----,dbs,,1,GENXSEC=0.04695;GENBR=1;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,
+# TTZJets_M10_MLMext1,,0.259,,,/ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,4,GENXSEC=0.259;GENBR=1;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,
+
+
+###,,,,,,,,,,,Xsec from https://twiki.cern.ch/twiki/bin/view/CMS/PhantomGeneratorCMS averaging grid and events with their errors
+# VBFTo2e2muJJ_Contin_phantom128,,6.429E-04,,,-----missing-----,dbs,,1,GENXSEC=6.429E-04;GENBR=1;ADDLHEKINEMATICS=True;VVMODE=1;VVDECAYMODE=0;LEPTON_SETUP=2018,RecoProbabilities.py;LHEProbabilities_VBF_BKG_0PM_H125_PhantomMCFM.py,
+# VBFTo4eJJ_Contin_phantom128   ,,3.098E-04,,,-----missing-----   ,dbs,,1,GENXSEC=3.098E-04;GENBR=1;ADDLHEKINEMATICS=True;VVMODE=1;VVDECAYMODE=0;LEPTON_SETUP=2018,RecoProbabilities.py;LHEProbabilities_VBF_BKG_0PM_H125_PhantomMCFM.py,
+# VBFTo4muJJ_Contin_phantom128  ,,3.098E-04,,,-----missing-----  ,dbs,,1,GENXSEC=3.098E-04;GENBR=1;ADDLHEKINEMATICS=True;VVMODE=1;VVDECAYMODE=0;LEPTON_SETUP=2018,RecoProbabilities.py;LHEProbabilities_VBF_BKG_0PM_H125_PhantomMCFM.py,
+
+# VBFTo2e2muJJ_0PMH125_phantom128,,2.4817E-04,,,-----missing-----,dbs,,1,GENXSEC=2.4817E-04;GENBR=1;ADDLHEKINEMATICS=True;VVMODE=1;VVDECAYMODE=0;LEPTON_SETUP=2018,RecoProbabilities.py;LHEProbabilities_VBF_SIG_0PM_H125_PhantomMCFM.py,
+# VBFTo4eJJ_0PMH125_phantom128   ,,1.3339E-04,,,-----missing-----   ,dbs,,1,GENXSEC=1.3339E-04;GENBR=1;ADDLHEKINEMATICS=True;VVMODE=1;VVDECAYMODE=0;LEPTON_SETUP=2018,RecoProbabilities.py;LHEProbabilities_VBF_SIG_0PM_H125_PhantomMCFM.py,
+# VBFTo4muJJ_0PMH125_phantom128  ,,1.3339E-04,,,-----missing-----  ,dbs,,1,GENXSEC=1.3339E-04;GENBR=1;ADDLHEKINEMATICS=True;VVMODE=1;VVDECAYMODE=0;LEPTON_SETUP=2018,RecoProbabilities.py;LHEProbabilities_VBF_SIG_0PM_H125_PhantomMCFM.py,
+
+# VBFTo2e2muJJ_0PMH125Contin_phantom128,,8.357E-04,,,-----missing-----,dbs,,1,GENXSEC=8.357E-04;GENBR=1;ADDLHEKINEMATICS=True;VVMODE=1;VVDECAYMODE=0;LEPTON_SETUP=2018,RecoProbabilities.py;LHEProbabilities_VBF_BSI_0PM_H125_PhantomMCFM.py,
+# VBFTo4eJJ_0PMH125Contin_phantom128   ,,4.18E-04,,,-----missing-----   ,dbs,,1,GENXSEC=4.180E-04;GENBR=1;ADDLHEKINEMATICS=True;VVMODE=1;VVDECAYMODE=0;LEPTON_SETUP=2018,RecoProbabilities.py;LHEProbabilities_VBF_BSI_0PM_H125_PhantomMCFM.py,
+# VBFTo4muJJ_0PMH125Contin_phantom128  ,,4.18E-04,,,-----missing-----  ,dbs,,1,GENXSEC=4.180E-04;GENBR=1;ADDLHEKINEMATICS=True;VVMODE=1;VVDECAYMODE=0;LEPTON_SETUP=2018,RecoProbabilities.py;LHEProbabilities_VBF_BSI_0PM_H125_PhantomMCFM.py,
+
+
+###,,,,,,,,,,,background samples for Z+X studies xsec cross section taken from https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns#DY_Z
+# DYJetsToLL_M50,,6225.4,    ,,/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,4,GENXSEC=5877.16;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,
+# DYJetsToLL_M50_LO,,6225.4,    ,,/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM ,dbs,,4,GENXSEC=5765.4;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,#this does not work because the weight indices are different.  It would have to be implemented in LHEHandler.cc to pick up the LO (not NLO) PDF weights.  If you need this sample ask Heshy.
+# DYJetsToLL_M50_LOext1,,6225.4,    ,,/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1_ext1-v1/MINIAODSIM ,dbs,,4,GENXSEC=5765.4;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,#this does not work because the weight indices are different.  It would have to be implemented in LHEHandler.cc to pick up the LO (not NLO) PDF weights.  If you need this sample ask Heshy.
+
+
+# TTTo2L2Nu,,87.3,,,/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM,dbs,,1,GENXSEC=91.7701;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,
+# TTJets_DiLept,,56.84,    ,,-----missing-----,dbs,,2,GENXSEC=5.684e+01;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,
+# WZTo3LNuext1,,4.67,   ,,/WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,4,GENXSEC=4.74979;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,
+# WZTo3LNu,,4.67,   ,,/WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM ,dbs,,4,GENXSEC=4.74979;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,
+# ZGToLLG,,117.864,   ,,/ZGToLLG_01J_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM,dbs,,4,GENXSEC=117.864;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018,RecoProbabilities.py,
