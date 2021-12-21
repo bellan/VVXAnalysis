@@ -267,20 +267,21 @@ execfile(VVjj_search_path + "2_leptons_regions.py")
 
 
 
-process.postCleaningMuons = cms.EDFilter("PATMuonSelector", src = cms.InputTag("appendPhotons:muons"),
-                                         cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
+process.pogMuons     = cms.EDFilter("PATMuonSelector", src = cms.InputTag("appendPhotons:muons"),
+                                          cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
+
+process.pogElectrons = cms.EDFilter("PATElectronSelector", src = cms.InputTag("appendPhotons:electrons"),
+                                             cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
 
 
-process.postCleaningElectrons = cms.EDFilter("PATElectronSelector", src = cms.InputTag("appendPhotons:electrons"),
-                                         cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
-
+process.pogIdLeptons = cms.Path(process.pogMuons + process.pogElectrons)
 
 
 process.muonsToBeRemovedFromJets = cms.EDProducer("PATMuonCollectionMerger",
-                                                  src = cms.VInputTag(cms.InputTag("muonsFromZZ"), cms.InputTag("postCleaningMuons")))
+                                                  src = cms.VInputTag(cms.InputTag("muonsFromZZ"), cms.InputTag("muonsFromZW"), cms.InputTag("muonsFromZV")))
 
 process.electronsToBeRemovedFromJets = cms.EDProducer("PATElectronCollectionMerger",
-                                                      src = cms.VInputTag(cms.InputTag("electronsFromZZ"), cms.InputTag("postCleaningElectrons")))
+                                                      src = cms.VInputTag(cms.InputTag("electronsFromZZ"), cms.InputTag("electronsFromZW"), cms.InputTag("electronsFromZV")))
 
 
 
@@ -329,8 +330,8 @@ process.disambiguatedJetsAK8 = cms.EDProducer("JetsWithLeptonsRemover",
 # Number of disambiguated jets
 process.jetCounterFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("disambiguatedJets"), minNumber = cms.uint32(0))
 
-process.jetCleaning = cms.Path(  process.postCleaningMuons * process.muonsToBeRemovedFromJets 
-                               + process.postCleaningElectrons * process.electronsToBeRemovedFromJets
+process.jetCleaning = cms.Path(  process.muonsToBeRemovedFromJets 
+                               + process.electronsToBeRemovedFromJets
                                + process.disambiguatedJets + process.disambiguatedJetsAK8
                                + process.jetCounterFilter)
 
@@ -357,8 +358,8 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      VVDecayMode = cms.int32(int(VVDECAYMODE)),
                                      signalDefinition = cms.int32(SIGNALDEFINITION),
                                      AddLHEKinematics = cms.bool(ADDLHEKINEMATICS),
-                                     muons        = cms.InputTag("postCleaningMuons"),     # all good isolated muons BUT the ones coming from ZZ decay
-                                     electrons    = cms.InputTag("postCleaningElectrons"), # all good isolated electrons BUT the ones coming from ZZ decay
+                                     muons        = cms.InputTag("pogMuons"),     # For comparison
+                                     electrons    = cms.InputTag("pogElectrons"), # For comparison
                                      photons      = cms.InputTag("filteredPhotons"),       # all photons that pass pt cut
                                      jets         = cms.InputTag("disambiguatedJets"),     # jets which do not contains leptons from ZZ or other good isolated leptons are removed
                                      jetsAK8      = cms.InputTag("disambiguatedJetsAK8"),  # jets which do not contains leptons from ZZ or other good isolated leptons are removed

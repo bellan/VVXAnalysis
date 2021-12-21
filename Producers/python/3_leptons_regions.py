@@ -63,13 +63,18 @@ process.bareZWCand = cms.EDProducer("PATCandViewShallowCloneCombiner",
                                     checkCharge = cms.bool(False)
 )
 
+# For lepton-jet cleaning
+process.muonsFromZW     = cms.EDProducer("PATMuonsFromCompositeCandidates"    , src =  cms.InputTag("bareZWCand"), SplitLevel = cms.int32(2))
+process.electronsFromZW = cms.EDProducer("PATElectronsFromCompositeCandidates", src =  cms.InputTag("bareZWCand"), SplitLevel = cms.int32(2))
+process.leptonsFromZW   = cms.Sequence(process.muonsFromZW + process.electronsFromZW)
 
 
 process.pathFor3LeptonsAnalysis = cms.Path(process.bareZCandFromLooseL      +  # Z from loose leptons
                                            process.ZCandFromLooseL          +  # best Z from all loose leptons
                                            process.ZlCandFromLooseL         +  # best Z + a free loose lepton
                                            process.selectedZlCandFromLooseL +  # best Z + a free loose lepton w/ trigger requirements
-                                           process.bareZWCand)                 # Zl + MET (WZ bare candidate)
+                                           process.bareZWCand               +  # Zl + MET (WZ bare candidate)
+                                           process.leptonsFromZW)              # leptons to be removed from the jet collections
 
 
 from VVXAnalysis.Producers.EventFilter_cfg import eventFilter
@@ -171,4 +176,4 @@ process.selectLeptonFakeRateRegion.maxPhotons = cms.int32(1000)
 process.pathForLeptonFakeRateAnalysis = cms.Path(process.ZlSelected)
 process.candZLFilter  = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("ZlSelected"), minNumber = cms.uint32(1))
 process.CRLFR         = cms.Path(process.selectLeptonFakeRateRegion * process.candZLFilter)
-process.CRLFRCounter   = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CRLFR","pathForLeptonFakeRateAnalysis","triggerForZL"))
+process.CRLFRCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CRLFR","pathForLeptonFakeRateAnalysis","triggerForZL"))

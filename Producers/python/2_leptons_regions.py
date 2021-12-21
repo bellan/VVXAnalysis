@@ -9,7 +9,13 @@ process.selectedZCand = cms.EDFilter("PATCompositeCandidateSelector",
                                    )
 
 
-process.pathFor2LeptonsAnalysis = cms.Path(process.selectedZCand)
+
+# For lepton-jet cleaning
+process.muonsFromZV     = cms.EDProducer("PATMuonsFromCompositeCandidates"    , src =  cms.InputTag("selectedZCand"), SplitLevel = cms.int32(0))
+process.electronsFromZV = cms.EDProducer("PATElectronsFromCompositeCandidates", src =  cms.InputTag("selectedZCand"), SplitLevel = cms.int32(0))
+process.leptonsFromZV   = cms.Sequence(process.muonsFromZV + process.electronsFromZV)
+
+process.pathFor2LeptonsAnalysis = cms.Path(process.selectedZCand + process.leptonsFromZV)
 
 
 
