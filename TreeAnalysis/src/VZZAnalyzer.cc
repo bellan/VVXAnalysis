@@ -482,7 +482,7 @@ void VZZAnalyzer::baseHistos(){
 		theHistograms.fill("topology_u", "topology (unweighted)", 3,-0.5,2.5, 2);
 	
 	
-	Mass2Comparator comp(phys::WMASS, phys::ZMASS);
+	Mass2Comparator comp = Mass2Comparator(phys::WMASS, phys::ZMASS);
 	auto it4 = std::min_element(AK4pairs_->begin(), AK4pairs_->end(), comp);
 	auto it8 = std::min_element(jetsAK8->begin()  , jetsAK8->end()  , comp);
 	//VCandType temp;
@@ -1364,7 +1364,7 @@ void VZZAnalyzer::fillGenVBtoAK4(){
 
 
 void VZZAnalyzer::resolutionZmass(){  // same as bestZMassJetMVA() but without dR(jet, ZZ)>2.
-	MassComparator ZmassComp(phys::ZMASS);
+	MassComparator ZmassComp = MassComparator(phys::ZMASS);
 	/*
 	//------------------	GEN AK8	------------------
 	if(genJetsAK8->size() > 0){
@@ -1426,7 +1426,7 @@ void VZZAnalyzer::bestZMassJetMVA(){
 	
 	//-----------------------------	GEN PARTICLES	-----------------------------
 	//Mass2Comparator VBmassComp(phys::ZMASS, phys::WMASS);
-	MassComparator ZmassComp(phys::ZMASS);
+	MassComparator ZmassComp = MassComparator(phys::ZMASS);
 	//------------------	GEN AK8	------------------
 	auto it_8g = genJetsAK8->begin();
 	bool found_8g = false;
