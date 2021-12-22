@@ -261,7 +261,7 @@ void WZAnalyzer::RecoAnalysis(DiBosonLepton &recoWZ, Particle &Jet0, Particle &J
   TLorentzVector recoJJptot = Jet0.p4() + Jet1.p4();
   
   float zeppenfeldllJ0 = Jet0.eta() - (tempZW.first().daughter(0).eta() + tempZW.first().daughter(1).eta())/2;
-  float testingzeppen = Jet0.eta() - tempZW.first().eta();
+  //float testingzeppen = Jet0.eta() - tempZW.first().eta();
   float zeppenfeldarticle = recolllptot.Eta() - (Jet0.eta() + Jet1.eta())/2;
   float zeppenfeldarticle2 = tempZW.second().daughter(0).eta() - (Jet0.eta() + Jet1.eta())/2;
   float recoJJdeltaEta = Jet0.eta() - Jet1.eta();
