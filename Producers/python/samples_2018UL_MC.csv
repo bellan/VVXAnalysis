@@ -38,7 +38,7 @@ ZZZ,,0.01398,      ,,/ZZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18MiniAO
 # TTZToLLNuNu_M10ext1,,0.25271,,,/TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM ,dbs,,1,GENXSEC=0.25271;GENBR=1;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,
 # TTZToLL_M1to1O_MLM,,0.04695,,,-----missing-----,dbs,,1,GENXSEC=0.04695;GENBR=1;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,
 # TTZJets_M10_MLMext1,,0.259,,,/ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,4,GENXSEC=0.259;GENBR=1;LEPTON_SETUP=2018;ADDZTREE=True,RecoProbabilities.py,
-
+# tZq,, 0.07561,       ,,/tZq_ll_4f_ckm_NLO_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM ,dbs,,1,GENXSEC=0.07561;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018,RecoProbabilities.py,
 
 ###,,,,,,,,,,,Xsec from https://twiki.cern.ch/twiki/bin/view/CMS/PhantomGeneratorCMS averaging grid and events with their errors
 # VBFTo2e2muJJ_Contin_phantom128,,6.429E-04,,,-----missing-----,dbs,,1,GENXSEC=6.429E-04;GENBR=1;ADDLHEKINEMATICS=True;VVMODE=1;VVDECAYMODE=0;LEPTON_SETUP=2018,RecoProbabilities.py;LHEProbabilities_VBF_BKG_0PM_H125_PhantomMCFM.py,
