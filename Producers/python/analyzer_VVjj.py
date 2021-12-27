@@ -266,12 +266,17 @@ execfile(VVjj_search_path + "2_leptons_regions.py")
 ### ......................................................................... ###
 
 
+process.pogMuons     = cms.EDFilter("PATMuonSelector", 
+                                    src = cms.InputTag("appendPhotons:muons"),
+                                    #cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
+### ID as PKS
+                                    cut = cms.string("pt > 10 && abs(eta) < 2.5 && passed('CutBasedIdTight') && (pfIsolationR04().sumChargedHadronPt + max(pfIsolationR04().sumNeutralHadronEt + pfIsolationR04().sumPhotonEt - pfIsolationR04().sumPUPt/2,0.0))/pt < 0.15"))
 
-process.pogMuons     = cms.EDFilter("PATMuonSelector", src = cms.InputTag("appendPhotons:muons"),
-                                          cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
+process.pogElectrons = cms.EDFilter("PATElectronSelector", 
+                                    src = cms.InputTag("appendPhotons:electrons"),
+                                    #cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
+                                    cut = cms.string("pt > 10 && abs(eta) < 2.5 && userInt('cutBasedElectronID-Fall17-94X-V2-medium') ==1 && ((abs(eta) < 1.479 && userFloat('dxy')<0.05 && userFloat('dz')<0.1) || (abs(eta)>1.479 && userFloat('dxy')<0.1 && userFloat('dz')<0.2))"))
 
-process.pogElectrons = cms.EDFilter("PATElectronSelector", src = cms.InputTag("appendPhotons:electrons"),
-                                             cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
 
 
 process.pogIdLeptons = cms.Path(process.pogMuons + process.pogElectrons)
