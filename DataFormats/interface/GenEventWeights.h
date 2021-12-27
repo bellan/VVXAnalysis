@@ -55,6 +55,9 @@ namespace phys {
       LHEweight_AsMZ_Up_ = 0;
       LHEweight_AsMZ_Dn_ = 0;
       
+      L1PrefiringWeight_   = 1.;
+      L1PrefiringWeightUp_ = 1.;
+      L1PrefiringWeightDn_ = 1.;
     };
 	
     /// Destructor
@@ -87,6 +90,9 @@ namespace phys {
     float alphas_MZ_Up       () const {return LHEweight_AsMZ_Up_;}
     float alphas_MZ_Down     () const {return LHEweight_AsMZ_Dn_;}
 
+    float L1PrefiringWeight  () const {return L1PrefiringWeight_;  }
+    float L1PrefiringWeightUp() const {return L1PrefiringWeightUp_;}
+    float L1PrefiringWeightDn() const {return L1PrefiringWeightDn_;}
 
 
 
@@ -126,6 +132,10 @@ namespace phys {
     Float_t LHEweight_PDFVariation_Dn_;
     Float_t LHEweight_AsMZ_Up_;
     Float_t LHEweight_AsMZ_Dn_;
+
+    Float_t L1PrefiringWeight_;  
+    Float_t L1PrefiringWeightUp_;
+    Float_t L1PrefiringWeightDn_;
 
     ClassDef(GenEventWeights, 1) //     
   };

@@ -215,6 +215,11 @@ class TreePlanter: public edm::EDAnalyzer {
   edm::EDGetTokenT<GenEventInfoProduct>         theGenInfoToken;
   edm::EDGetTokenT<GenRunInfoProduct>           theGenInfoTokenInRun;
 
+  // Tokens for L1 prefiring
+  edm::EDGetTokenT< double > theL1PrefWeightToken;
+  edm::EDGetTokenT< double > theL1PrefWeightupToken;
+  edm::EDGetTokenT< double > theL1PrefWeightdownToken;
+
   // Tokens for counters
   edm::EDGetTokenT<edm::MergeableCounter> thePreSkimCounterToken;
   edm::EDGetTokenT<edm::MergeableCounter> prePreselectionCounterToken_;

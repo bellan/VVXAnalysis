@@ -89,6 +89,10 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , thekfactorToken_qqZZdPhi (consumes<float>                      (edm::InputTag("kFactor","qqZZdPhi"       )))
   , thekfactorToken_EWKqqZZ  (consumes<float>                      (edm::InputTag("kFactor","EWKqqZZ"        )))
 
+  , theL1PrefWeightToken     (consumes<double>                     (edm::InputTag("prefiringweight:nonPrefiringProb")))
+  , theL1PrefWeightupToken   (consumes<double>                     (edm::InputTag("prefiringweight:nonPrefiringProbUp")))
+  , theL1PrefWeightdownToken (consumes<double>                     (edm::InputTag("prefiringweight:nonPrefiringProbDown")))
+
   , thePreSkimCounterToken       (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("preSkimCounter"         )))
   , prePreselectionCounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("prePreselectionCounter" )))
   , postPreselectionCounterToken_(consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("postPreselectionCounter")))
@@ -552,6 +556,23 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
     
     theLHEHandler->clear();
   }
+
+  // Fill L1Prefiring weights
+  // From CMSSW_10_6_26 available for all the years
+  if( setup_ == 2016 || setup_ == 2017 || setup_ == 2018 )
+    {
+      edm::Handle<double> prefweight;
+      event.getByToken(theL1PrefWeightToken, prefweight);
+      genEventWeights_.L1PrefiringWeight_   =* prefweight;
+      
+      event.getByToken(theL1PrefWeightupToken, prefweight);
+      genEventWeights_.L1PrefiringWeightUp_ =* prefweight;
+      
+      event.getByToken(theL1PrefWeightdownToken, prefweight);
+      genEventWeights_.L1PrefiringWeightDn_ =* prefweight;
+    }
+  
+  
   
   
   return true;

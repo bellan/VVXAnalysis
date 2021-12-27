@@ -30,9 +30,14 @@ class MCInfo {
   double puWeight()             const {return genEventWeights_->puWeight();}
   double puWeightUncUp()        const {return genEventWeights_->puWeightUncUp();}
   double puWeightUncDn()        const {return genEventWeights_->puWeightUncDn();}
+  double L1PrefiringWeight()    const {return genEventWeights_->L1PrefiringWeight();}
+  double L1PrefiringWeightUp()  const {return genEventWeights_->L1PrefiringWeightUp();}
+  double L1PrefiringWeightDn()  const {return genEventWeights_->L1PrefiringWeightDn();}
+
+
 
   // Total MC weight of the event. Beware, it does not include DATA/MC correction! See instead below.
-  double weight()               const {return luminosity_ >= 0 ? sampleWeight()*puWeight() : 1.;}
+    double weight()               const {return luminosity_ >= 0 ? sampleWeight()*puWeight()*L1PrefiringWeight() : 1.;}
 
   // Total weight of the event, including efficiency scale factors.
   double weight(const phys::DiBoson<phys::Lepton, phys::Lepton> &VV) const {return VV.fakeRateSF() * (luminosity_ >= 0 ? weight() * VV.efficiencySF() : 1.);}
