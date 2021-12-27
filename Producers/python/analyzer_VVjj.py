@@ -270,7 +270,7 @@ process.pogMuons     = cms.EDFilter("PATMuonSelector",
                                     src = cms.InputTag("appendPhotons:muons"),
                                     #cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
 ### ID as PKS
-                                    cut = cms.string("pt > 10 && abs(eta) < 2.5 && passed('CutBasedIdTight') && (pfIsolationR04().sumChargedHadronPt + max(pfIsolationR04().sumNeutralHadronEt + pfIsolationR04().sumPhotonEt - pfIsolationR04().sumPUPt/2,0.0))/pt < 0.15"))
+                                    cut = cms.string("pt > 10 && abs(eta) < 2.4 && passed('CutBasedIdTight') && (pfIsolationR04().sumChargedHadronPt + max(pfIsolationR04().sumNeutralHadronEt + pfIsolationR04().sumPhotonEt - pfIsolationR04().sumPUPt/2,0.0))/pt < 0.15"))
 
 process.pogElectrons = cms.EDFilter("PATElectronSelector", 
                                     src = cms.InputTag("appendPhotons:electrons"),
