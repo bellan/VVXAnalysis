@@ -141,73 +141,66 @@ process.photonSelection = cms.Path(process.filteredPhotons)
 
 
 ### ------------------------------- AK8 jets -----------------------------
+AK8_JEC_tag = None
 if IsMC:
     if   (SAMPLE_TYPE == 2016):
-        process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
-                                           #tag    = cms.string('JetCorrectorParametersCollection_Summer16_07Aug2017_V11_MC_AK8PFchs'), 
-                                           #tag    = cms.string('JetCorrectorParametersCollection_Summer19UL16APV_V7_MC_AK8PFchs'), # APV
-                                           tag    = cms.string('JetCorrectorParametersCollection_Summer19UL16_V7_MC_AK8PFchs'), # NON APV
-
-                                           label  = cms.untracked.string('AK8PFchs')
-                                       ))
-
+        #AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer16_07Aug2017_V11_MC_AK8PFPuppi', 
+        #AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer19UL16APV_V7_MC_AK8PFPuppi', # APV
+        AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer19UL16_V7_MC_AK8PFPuppi' # NON APV
     elif (SAMPLE_TYPE == 2017):
-        process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
-                                           #tag    = cms.string('JetCorrectorParametersCollection_Fall17_17Nov2017_V32_94X_MC_AK8PFchs'), #FIXME: need to be tested
-                                           tag    = cms.string('JetCorrectorParametersCollection_Summer19UL17_V5_MC_AK8PFchs'),
-                                           label  = cms.untracked.string('AK8PFchs')
-                                       ))
-
+        #AK8_JEC_tag    = 'JetCorrectorParametersCollection_Fall17_17Nov2017_V32_94X_MC_AK8PFPuppi', #FIXME: need to be tested
+        AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer19UL17_V5_MC_AK8PFPuppi'
     elif (SAMPLE_TYPE == 2018):
-        process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
-                                           #tag    = cms.string('JetCorrectorParametersCollection_Autumn18_V19_MC_AK8PFchs'),
-                                           tag    = cms.string('JetCorrectorParametersCollection_Summer19UL18_V5_MC_AK8PFchs'),
-                                           label  = cms.untracked.string('AK8PFchs')
-                                       ))
-    else:
-        print "UNKNOWN YEAR", SAMPLE_TYPE
-
-
+        #AK8_JEC_tag    = 'JetCorrectorParametersCollection_Autumn18_V19_MC_AK8PFPuppi',
+        AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer19UL18_V5_MC_AK8PFPuppi'
 
 else:
     if   (SAMPLE_TYPE == 2016):
-        process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
-                                           #tag    = cms.string('JetCorrectorParametersCollection_Summer16_07Aug2017All_V11_DATA_AK8PFchs'), #for 80X/Moriond17
-                                           tag    = cms.string('JetCorrectorParametersCollection_Summer19UL16_RunBCDEFGH_Combined_V7_DATA_AK8PFchs'),
-                                           label  = cms.untracked.string('AK8PFchs')
-                                       ))
+        #AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer16_07Aug2017All_V11_DATA_AK8PFPuppi', #for 80X/Moriond17
+        AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer19UL16_RunBCDEFGH_Combined_V7_DATA_AK8PFPuppi'
     elif (SAMPLE_TYPE == 2017):
-        process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
-                                           #tag    = cms.string('JetCorrectorParametersCollection_Fall17_17Nov2017_V32_94X_DATA_AK8PFchs'), #FIXME: need to be tested
-                                           tag    = cms.string('JetCorrectorParametersCollection_Summer19UL17_RunBCDEF_V5_DATA_AK8PFchs'),
-                                           label  = cms.untracked.string('AK8PFchs')
-                                       ))
-
+        #AK8_JEC_tag    = 'JetCorrectorParametersCollection_Fall17_17Nov2017_V32_94X_DATA_AK8PFPuppi', #FIXME: need to be tested
+        AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer19UL17_RunBCDEF_V5_DATA_AK8PFPuppi'
     elif (SAMPLE_TYPE == 2018):
-        process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
-                                           #tag    = cms.string('JetCorrectorParametersCollection_Autumn18_RunABCD_V19_DATA_AK8PFchs'),
-                                           tag    = cms.string('JetCorrectorParametersCollection_Summer19UL18_V5_DATA_AK8PFchs'),
-                                           label  = cms.untracked.string('AK8PFchs')
-                                       ))
-    else:
-        print "UNKNOWN YEAR", SAMPLE_TYPE
+        #AK8_JEC_tag    = 'JetCorrectorParametersCollection_Autumn18_RunABCD_V19_DATA_AK8PFPuppi',
+        AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer19UL18_V5_DATA_AK8PFPuppi'
 
+
+if AK8_JEC_tag is not None:
+    process.jec.toGet.append(cms.PSet( record = cms.string('JetCorrectionsRecord'),
+                                       tag    = cms.string(AK8_JEC_tag),
+                                       label  = cms.untracked.string('AK8PFPuppi')
+                                   ))
+else:
+    print "UNKNOWN YEAR", SAMPLE_TYPE    
+
+
+
+process.patJetCorrFactorsReapplyJECAK8 = updatedPatJetCorrFactors.clone(
+    src     = cms.InputTag("slimmedJetsAK8"),
+    levels  = ['L1FastJet','L2Relative','L3Absolute'],
+    payload = 'AK8PFPuppi'
+)
+
+process.patJetsReapplyJECAK8 = updatedPatJets.clone(
+    jetSource = cms.InputTag("slimmedJetsAK8"),
+    jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJECAK8") )
+)
 
 
 from PhysicsTools.PatAlgos.tools.helpers import getPatAlgosToolsTask
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 from RecoBTag.ONNXRuntime.pfDeepBoostedJet_cff import _pfDeepBoostedJetTagsAll, _pfDeepBoostedJetTagsProbs, _pfDeepBoostedJetTagsMetaDiscrs, _pfMassDecorrelatedDeepBoostedJetTagsProbs, _pfMassDecorrelatedDeepBoostedJetTagsMetaDiscrs
-
-#from RecoBTag.MXNet.pfDeepBoostedJet_cff import _pfDeepBoostedJetTagsAll, _pfDeepBoostedJetTagsProbs, _pfDeepBoostedJetTagsMetaDiscrs, _pfMassDecorrelatedDeepBoostedJetTagsProbs, _pfMassDecorrelatedDeepBoostedJetTagsMetaDiscrs
+from RecoBTag.ONNXRuntime.pfParticleNet_cff import _pfParticleNetJetTagsAll
 
 updateJetCollection(
     process,
-    jetSource = cms.InputTag('slimmedJetsAK8'),
+    jetSource = cms.InputTag('patJetsReapplyJECAK8'),
     pvSource = cms.InputTag('offlineSlimmedPrimaryVertices'),
     svSource = cms.InputTag('slimmedSecondaryVertices'),
     rParam = 0.8,
-    jetCorrections = ('AK8PFPuppi', cms.vstring(['L2Relative', 'L3Absolute', 'L2L3Residual']), 'None'),
-    btagDiscriminators = _pfDeepBoostedJetTagsAll,
+    jetCorrections = ('AK8PFPuppi', cms.vstring(['L2Relative']), 'None'), #, 'L3Absolute', 'L2L3Residual'
+    btagDiscriminators = _pfDeepBoostedJetTagsAll + _pfParticleNetJetTagsAll,
     postfix='AK8WithDeepTags',
     printWarning = True
    )
@@ -215,13 +208,6 @@ updateJetCollection(
 patAlgosToolsTask = getPatAlgosToolsTask(process)
 process.outpathPAT = cms.EndPath(patAlgosToolsTask)
 
-
-#process.patJetCorrFactorsReapplyJECAK8 = updatedPatJetCorrFactors.clone(src     = cms.InputTag("slimmedJetsAK8"),
-#                                                                        levels  = ['L1FastJet','L2Relative','L3Absolute'],
-#                                                                        payload = 'AK8PFchs')
-
-#process.patJetsReapplyJECAK8 = updatedPatJets.clone(jetSource = cms.InputTag("slimmedJetsAK8"),
-#                                                    jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJECAK8") ))
 
 from PhysicsTools.SelectorUtils.pfJetIDSelector_cfi import pfJetIDSelector
 process.goodJetsAK8 = cms.EDFilter("PFJetIDSelectionFunctorFilter",
@@ -241,7 +227,7 @@ process.correctedJetsAK8 = cms.EDProducer("CorrJetsProducer",
 
 
 #process.fatJets = cms.Sequence(process.patJetCorrFactorsReapplyJECAK8 + process.patJetsReapplyJECAK8 + process.goodJetsAK8 + process.correctedJetsAK8 + process.disambiguatedJetsAK8)
-process.fatJets = cms.Path(process.goodJetsAK8 + process.correctedJetsAK8)
+process.fatJets = cms.Path(process.patJetCorrFactorsReapplyJECAK8 + process.patJetsReapplyJECAK8 + process.goodJetsAK8 + process.correctedJetsAK8)
 ### ---------------------------------------------------------------------
 
 ## targetting ZZ->4l
