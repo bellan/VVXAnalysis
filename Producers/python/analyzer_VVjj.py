@@ -414,26 +414,26 @@ process.printTree = cms.EDAnalyzer("ParticleListDrawer",
 
 process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
      dumpTrigger = cms.untracked.bool(True),
+     options = cms.PSet(SkipEvent = cms.untracked.vstring('ProductNotFound')),
+      muonSrcs =  cms.PSet(
+     #    slimmedMuons = cms.InputTag("slimmedMuons"),
+     #    calibratedMuons   = cms.InputTag("calibratedMuons"),
+     #    muons        = cms.InputTag("appendPhotons:muons"),
+     #    postCleaningMuons  = cms.InputTag("postCleaningMuons")
+      ),
 
-     muonSrcs =  cms.PSet(
-        slimmedMuons = cms.InputTag("slimmedMuons"),
-        calibratedMuons   = cms.InputTag("calibratedMuons"),
-        muons        = cms.InputTag("appendPhotons:muons"),
-        postCleaningMuons  = cms.InputTag("postCleaningMuons")
-     ),
-
-     electronSrcs = cms.PSet(
-        slimmedElectron        = cms.InputTag("slimmedElectrons"),
-        calibratedPatElectrons = cms.InputTag("calibratedPatElectrons"),
-        electrons              = cms.InputTag("appendPhotons:electrons"),
-        postCleaningElectrons  = cms.InputTag("postCleaningElectrons")
-     ),
-     candidateSrcs = cms.PSet(
-        Z   = cms.InputTag("ZCand"),
-        ZZ  = cms.InputTag("ZZCand"),
-        ZLL = cms.InputTag("ZLLCand"),  
-        ZL  = cms.InputTag("ZlCand") 
-        ),
+      electronSrcs = cms.PSet(
+     #    slimmedElectron        = cms.InputTag("slimmedElectrons"),
+     #    calibratedPatElectrons = cms.InputTag("calibratedPatElectrons"),
+     #    electrons              = cms.InputTag("appendPhotons:electrons"),
+     #    postCleaningElectrons  = cms.InputTag("postCleaningElectrons")
+      ),
+      candidateSrcs = cms.PSet(
+     #    Z   = cms.InputTag("ZCand"),
+     #    ZZ  = cms.InputTag("ZZCand"),
+     #    ZLL = cms.InputTag("ZLLCand"),  
+     #    ZL  = cms.InputTag("ZlCand") 
+         ),
       # jetSrc = cms.PSet(
       #   cleanJets          = cms.InputTag("cleanJets"),
       #   JetsWithLeptonsRemover = cms.InputTag("JetsWithLeptonsRemover"),
@@ -448,7 +448,6 @@ process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
 
 #process.filltrees = cms.Path(process.preselection * process.genCategory * process.treePlanter * process.printTree)
 #process.filltrees = cms.EndPath(process.treePlanter *process.dumpUserData)
-#process.filltrees = cms.EndPath(process.treePlanter *process.printTree)
 
 ########################################################
 
