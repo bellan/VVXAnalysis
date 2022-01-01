@@ -181,11 +181,30 @@ process.patJetCorrFactorsReapplyJECAK8 = updatedPatJetCorrFactors.clone(
     levels  = ['L1FastJet','L2Relative','L3Absolute'],
     payload = 'AK8PFPuppi'
 )
+if not IsMC:
+    process.patJetCorrFactorsReapplyJECAK8.levels = ['L1FastJet','L2Relative','L3Absolute', 'L2L3Residual']
 
 process.patJetsReapplyJECAK8 = updatedPatJets.clone(
     jetSource = cms.InputTag("slimmedJetsAK8"),
     jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJECAK8") )
 )
+
+
+from PhysicsTools.SelectorUtils.pfJetIDSelector_cfi import pfJetIDSelector
+process.goodJetsAK8 = cms.EDFilter("PFJetIDSelectionFunctorFilter",
+                                   filterParams = pfJetIDSelector.clone(),
+                                   src = cms.InputTag("patJetsReapplyJECAK8"),
+                                   #src = cms.InputTag("selectedUpdatedPatJetsAK8WithDeepTags"),
+                                   filter = cms.bool(False) )
+
+
+process.correctedJetsAK8 = cms.EDProducer("CorrJetsProducer",
+                                          year    = cms.int32  (LEPTON_SETUP),
+                                          jets    = cms.InputTag( "goodJetsAK8" ), # FIXME check with Roberto, it was cleanJetsFat/AK8
+                                          vertex  = cms.InputTag( "goodPrimaryVertices" ), 
+                                          rho     = cms.InputTag( "fixedGridRhoFastjetAll"   ),
+                                          payload = cms.string  ( "AK8PFPuppi" ),
+                                          isData  = cms.bool    (  not IsMC )) # FIXME check with Roberto
 
 
 from PhysicsTools.PatAlgos.tools.helpers import getPatAlgosToolsTask
@@ -195,11 +214,11 @@ from RecoBTag.ONNXRuntime.pfParticleNet_cff import _pfParticleNetJetTagsAll
 
 updateJetCollection(
     process,
-    jetSource = cms.InputTag('patJetsReapplyJECAK8'),
+    jetSource = cms.InputTag('correctedJetsAK8'),
     pvSource = cms.InputTag('offlineSlimmedPrimaryVertices'),
     svSource = cms.InputTag('slimmedSecondaryVertices'),
     rParam = 0.8,
-    jetCorrections = ('AK8PFPuppi', cms.vstring(['L2Relative']), 'None'), #, 'L3Absolute', 'L2L3Residual'
+    jetCorrections = ('AK8PFPuppi', cms.vstring(), 'None'), #, 'L2Relative', 'L3Absolute', 'L2L3Residual'
     btagDiscriminators = _pfDeepBoostedJetTagsAll + _pfParticleNetJetTagsAll,
     postfix='AK8WithDeepTags',
     printWarning = True
@@ -207,23 +226,6 @@ updateJetCollection(
 
 patAlgosToolsTask = getPatAlgosToolsTask(process)
 process.outpathPAT = cms.EndPath(patAlgosToolsTask)
-
-
-from PhysicsTools.SelectorUtils.pfJetIDSelector_cfi import pfJetIDSelector
-process.goodJetsAK8 = cms.EDFilter("PFJetIDSelectionFunctorFilter",
-                                   filterParams = pfJetIDSelector.clone(),
-                                   #src = cms.InputTag("patJetsReapplyJECAK8"),
-                                   src = cms.InputTag("selectedUpdatedPatJetsAK8WithDeepTags"),
-                                   filter = cms.bool(False) )
-
-
-process.correctedJetsAK8 = cms.EDProducer("CorrJetsProducer",
-                                          year    = cms.int32  (LEPTON_SETUP),
-                                          jets    = cms.InputTag( "goodJetsAK8" ), # FIXME check with Roberto, it was cleanJetsFat/AK8
-                                          vertex  = cms.InputTag( "goodPrimaryVertices" ), 
-                                          rho     = cms.InputTag( "fixedGridRhoFastjetAll"   ),
-                                          payload = cms.string  ( "AK8PFchs" ),
-                                          isData  = cms.bool    (  not IsMC )) # FIXME check with Roberto
 
 
 #process.fatJets = cms.Sequence(process.patJetCorrFactorsReapplyJECAK8 + process.patJetsReapplyJECAK8 + process.goodJetsAK8 + process.correctedJetsAK8 + process.disambiguatedJetsAK8)
