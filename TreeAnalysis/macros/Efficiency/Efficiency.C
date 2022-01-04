@@ -141,8 +141,8 @@ void doEfficiency2D(TFile* fin, const char* nTot, const char* nPas, const char* 
 	eff_X->Write();
 	eff_Y->Write();
 	
-	cout<<"Proj X"<<'\n';
-	verboseEff(hTot_X, hPas_X);
-	cout<<"Proj Y"<<'\n';
-	verboseEff(hTot_Y, hPas_Y);
+	//cout<<"Proj X"<<'\n';
+	//verboseEff(hTot_X, hPas_X);
+	//cout<<"Proj Y"<<'\n';
+	//verboseEff(hTot_Y, hPas_Y);
 }
