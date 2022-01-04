@@ -7,6 +7,8 @@
 
 #include "TTree.h"
 
+#include <map>
+
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
@@ -21,7 +23,7 @@ using namespace colour;
 using namespace phys;
 using namespace physmath;
 
-#define CUT_LAYOUT 6,0.5,6.5
+#define CUT_LAYOUT 7,0.5,7.5
 #define DEBUG
 
 void VVGammaAnalyzer::begin(){
@@ -45,16 +47,21 @@ Int_t VVGammaAnalyzer::cut() {
   ++evtN_; totEvtW_ += theWeight;
 	cout<<"\r\t\t"<<evtN_;  //TEMP
 	
-	theHistograms.fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 1, theWeight);
-	theHistograms.fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 1);
-	
 	// Cleanup
 	kinPhotons_->clear();
 	
 	bool haveZVlep = false;
 	bool have2l2j = false;
-	bool haveGoodPhoton = false;
+	bool haveKinPhoton = false;
 	
+	if(ZZ){
+		regionWord = std::bitset<128>(ZZ->region());
+		if(regionWord.test(26))
+			return -1; //TEMP exclude signal region when running with -r MC
+	}
+	
+	theHistograms.fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 1, theWeight);
+	theHistograms.fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 1);
 	theHistograms.fill("C: n leptons", "n leptons", 7,-0.5,6.5, electrons->size()+muons->size(), theWeight);
 	
 	
@@ -78,9 +85,10 @@ Int_t VVGammaAnalyzer::cut() {
 	}
 	
 	// ----- Cut1: Require at least 1 loose photon with pt > 20 GeV
+	vector<Photon> kinPh_pixEle;
 	for(auto ph : *photons){
 		//ID and electron veto
-		if(ph.hasPixelSeed() || !ph.passElectronVeto()) continue;
+		//if(ph.hasPixelSeed() || !ph.passElectronVeto()) continue;
 		//if(! ph.cutBasedIDLoose()) continue;
 		
 		//Kinematic selection
@@ -107,20 +115,37 @@ Int_t VVGammaAnalyzer::cut() {
 		}
 		if(match) continue;
 		
+		kinPh_pixEle.push_back(ph);
+		if(ph.hasPixelSeed() || !ph.passElectronVeto()) continue;
 		kinPhotons_->push_back(ph);
 	}
-	haveGoodPhoton = kinPhotons_->size() >= 1;
+	bool eleVeto = false;
+	bool pixSeed = false;
+	for(auto ph : kinPh_pixEle){
+		if(!ph.hasPixelSeed())    pixSeed = true;
+		if(ph.passElectronVeto()) eleVeto = true;
+	}
+	if(pixSeed){
+		theHistograms.fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 4, theWeight);
+		theHistograms.fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 4);
+	}
+	if(eleVeto){
+		theHistograms.fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 5, theWeight);
+		theHistograms.fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 5);
+	}
+	
+	haveKinPhoton = kinPhotons_->size() >= 1;
 	
 	theHistograms.fill("C: n good ph", "n good #gamma | ZZ/WZ exists", 7,-0.5,6.5, kinPhotons_->size(), theWeight);
 	
-	if(haveGoodPhoton){
-		theHistograms.fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 4, theWeight);
-		theHistograms.fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 4);
+	if(haveKinPhoton){
+		theHistograms.fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 6, theWeight);
+		theHistograms.fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 6);
 	}
 	
 	//if(!haveZVlep) //TEMP
 	//	return -1;
-	if(!haveGoodPhoton) 
+	if(!haveKinPhoton) 
 		return -1;
 	else
 		return 1;
@@ -128,9 +153,10 @@ Int_t VVGammaAnalyzer::cut() {
 
 void VVGammaAnalyzer::analyze(){
 	++analyzedN_; analyzedW_ += theWeight;
-	theHistograms.fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 5, theWeight);
-	theHistograms.fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 5);
+	theHistograms.fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 7, theWeight);
+	theHistograms.fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 7);
 	
+	//int nPhLoose = 0;
 	for(auto ph : *kinPhotons_){
 		theHistograms.fill("A: ph kinem", "photons passing kinematic cut;p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
 		theHistograms.fill("A:u ph kinem", "photons passing kinematic cut;p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()));
@@ -138,15 +164,20 @@ void VVGammaAnalyzer::analyze(){
 		int nCuts_Loose = nCutsIDLoose(ph);
 		theHistograms.fill("A:u nCuts loose ph", "Number of loose cuts passed by photons", 6,-0.5,5.5, nCuts_Loose);
 		
+		if(nCuts_Loose >= 3){
+			theHistograms.fill("A: ph loose 3", "kin photons #geq3 loose;p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+			theHistograms.fill("A:u ph loose 3", "kin photons #geq3 loose (unweighted);p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()));
+		}
 		if(nCuts_Loose >= 4){
-			theHistograms.fill("A: ph loose TOT", "kin photons #geq4 loose;p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
-			theHistograms.fill("A:u ph loose TOT", "kin photons #geq4 loose (unweighted);p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()));
+			theHistograms.fill("A: ph loose 4", "kin photons #geq4 loose;p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+			theHistograms.fill("A:u ph loose 4", "kin photons #geq4 loose (unweighted);p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()));
 			if(ph.cutBasedIDLoose()){
-				theHistograms.fill("A: ph loose PASS", "kin photons passing loose;p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
-				theHistograms.fill("A:u ph loose PASS", "kin photons passing loose (unweighted);p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()));
+				//nPhLoose++;
+				theHistograms.fill("A: ph loose 5", "kin photons passing loose;p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+				theHistograms.fill("A:u ph loose 5", "kin photons passing loose (unweighted);p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()));
 			}
 		}
-		
+		/*
 		int nCuts_Medium = nCutsIDMedium(ph);
 		theHistograms.fill("A:u nCuts medium ph", "Number of medium cuts passed by photons", 6,-0.5,5.5, nCuts_Medium);
 		
@@ -158,7 +189,12 @@ void VVGammaAnalyzer::analyze(){
 				theHistograms.fill("A:u ph medium PASS", "kin photons passing medium (unweighted);p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()));
 			}
 		}
+		*/
 	}
+	//if(nPhLoose > 0){
+	//	theHistograms.fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 8, theWeight);
+	//	theHistograms.fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 8);
+	//}
 	
 	if(theMCInfo.isMC()){
 		genEventSetup();
@@ -207,8 +243,8 @@ void VVGammaAnalyzer::analyze(){
 	
 	// SR: medium photon ID - CR: loose && !medium photon ID
 	Photon& thePhoton = kinPhotons_->front();
-	bool isSR_G = thePhoton.cutBasedIDMedium();  
-	std::string region(isSR_G ? "G Medium" : "G Loose");
+	bool isSR_G = thePhoton.cutBasedIDLoose();  
+	std::string region(isSR_G ? "G ID" : "G kin");
 	
 	theHistograms.fill(region+": G pt", Form("p_{t}^{#gamma} %s;GeV/c", region.c_str()), 50,0.,200., thePhoton.pt(), theWeight);
 	if(ZZ && ZZ->pt() > 1.){
@@ -224,36 +260,6 @@ void VVGammaAnalyzer::analyze(){
 	double leadMupt = muons->size()     > 0 ? muons->at(0).pt()     : 0.;
 	
 	theHistograms.fill(region+": lead L pt", "Leading lepton p_{t};p_{t} [GeV/c]", 20,0.,400., std::max(leadMupt, leadElpt), theWeight);
-	
-	// electrons
-	for(auto e : *electrons){
-		theHistograms.fill("B: pt all e", "p_{t} all e; p_{t}", 50,0.,200., e.pt(), theWeight);
-		theHistograms.fill("B: eta all e", "#eta all e; p_{t}", 25,-2.5,2.5, e.eta(), theWeight);
-	}
-	if(electrons->size() > 0){
-		theHistograms.fill("B: pt e1", "p_{t} e1; p_{t}", 50,0.,200., electrons->at(0).pt(), theWeight);
-		theHistograms.fill("B: eta e1", "#eta e1; p_{t}", 25,-2.5,2.5, electrons->at(0).eta(), theWeight);
-		//theHistograms.fill("B: dR(e1, a1)", "#DeltaR(e1, #gamma1)", 50,0.,5., deltaR(electrons->at(0), kinPhotons_->at(0)), theWeight);
-	}
-	if(electrons->size() > 1){
-		theHistograms.fill("B: pt e2", "p_{t} e2; p_{t}", 50,0.,200., electrons->at(1).pt(), theWeight);
-		theHistograms.fill("B: eta e2", "#eta e2; p_{t}", 25,-2.5,2.5, electrons->at(1).eta(), theWeight);
-	}
-	
-	// muons
-	for(auto mu : *muons){
-		theHistograms.fill("B: pt all mu", "p_{t} all #mu; p_{t}", 50,0.,200., mu.pt(), theWeight);
-		theHistograms.fill("B: eta all mu", "#eta all #mu; eta", 25,-2.5,2.5, mu.eta(), theWeight);
-	}
-	if(muons->size() > 0){
-		theHistograms.fill("B: pt mu1", "p_{t} #mu1; p_{t}", 50,0.,200., muons->at(0).pt(), theWeight);
-		theHistograms.fill("B: eta mu1", "#eta #mu1; p_{t}", 25,-2.5,2.5, muons->at(0).eta(), theWeight);
-		//theHistograms.fill("B: dR(mu1, a1)", "#DeltaR(#mu1, #gamma1)", 50,0.,5., deltaR(muons->at(0), kinPhotons_->at(0)), theWeight);
-	}
-	if(muons->size() > 1){
-		theHistograms.fill("B: pt mu2", "p_{t} #mu2; p_{t}", 50,0.,200., muons->at(1).pt(), theWeight);
-		theHistograms.fill("B: eta mu2", "#eta #mu2; p_{t}", 25,-2.5,2.5, muons->at(1).eta(), theWeight);
-	}
 	
 	/*
   theHistograms.fill("nZtoChLep"    , "Number of Z->ll per event" , 7,0,7, genVBHelper_.ZtoChLep().size());
@@ -292,25 +298,26 @@ void VVGammaAnalyzer::end(TFile& fout){
 
 
 void VVGammaAnalyzer::endNameHistos(){
+	std::map<int, std::string> cutsName = {
+		{1, "All"},
+		{2, "ZZ || ZW"},
+		{3, "2l2j || 2l1J"},
+		{4, "pixelSeed"},
+		{5, "electronVeto"},
+		{6, "#gamma kin"},
+		{7, "analyzed"}
+	};
 	TH1* cuts = theHistograms.get("AAA cuts w");
 	if(cuts){
 		TAxis* x = cuts->GetXaxis();
-		x->SetBinLabel(1, "All");
-		x->SetBinLabel(2, "ZZ || ZW");
-		x->SetBinLabel(3, "2l2j || 2l1J");
-		x->SetBinLabel(4, "#gamma loose");
-		x->SetBinLabel(5, "analyzed");
-		x->SetBinLabel(6, "#gamma medium");
+		for(auto cn : cutsName)
+			x->SetBinLabel(cn.first, cn.second.c_str());
 	}
 	TH1* cuts_u = theHistograms.get("AAA cuts u");
 	if(cuts_u){
 		TAxis* x = cuts_u->GetXaxis();
-		x->SetBinLabel(1, "All");
-		x->SetBinLabel(2, "ZZ || ZW");
-		x->SetBinLabel(3, "2l2j || 2l1J");
-		x->SetBinLabel(4, "#gamma loose");
-		x->SetBinLabel(5, "analyzed");
-		x->SetBinLabel(6, "#gamma medium");
+		for(auto cn : cutsName)
+			x->SetBinLabel(cn.first, cn.second.c_str());
 	}
 }
 
@@ -436,7 +443,6 @@ void VVGammaAnalyzer::genEventSetup(){
 		
 		genWZ_ = DiBoson<Particle, Particle>(Z0, W0);
 	}
-	
 }
 
 
@@ -487,18 +493,12 @@ void VVGammaAnalyzer::effPhotons(){
 	for(auto ph: *kinPhotons_){
 		theHistograms.fill("A: goodPh pt","p_{t} loose #gamma", 25,0.,250., ph.pt(), theWeight);
 		if(ph.cutBasedIDTight()){
-			tightPh++;
 			theHistograms.fill("A: goodPh tight pt","p_{t} tight #gamma", 25,0.,250., ph.pt(), theWeight);
 			theHistograms.fill("A: goodPh tight eta","#eta tight #gamma",25,-2.5,2.5, ph.eta(),theWeight);
 		}
 	}
 	
 	theHistograms.fill("A: tightG num", "# tight #gamma", 5,-0.5,4.5, tightPh, theWeight);
-	
-	if(tightPh > 0){
-		theHistograms.fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 6, theWeight);
-		theHistograms.fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 6);
-	}
 }
 
 
