@@ -10,10 +10,9 @@
 basedir=$(pwd -P)
 
 if [ $# -lt 1 ] ; then
-    jobdirs=$(find . -maxdepth 4 -name condor.sub | grep -oP ".+(?=/condor.sub$)" | sed "s|^\./||g" )
-    #topdirs=$(echo "$jobdirs" | grep -oP ".*(?=/)" | sort | uniq)
+    jobdirs=$(find . -maxdepth 4 -name "*Chunk*" -prune -name condor.sub | grep -oP ".+(?=/condor.sub$)" | sed "s|^\./||g" )
 else
-    jobdirs=$(find $@ -maxdepth 4 -name condor.sub | grep -oP ".+(?=/condor.sub$)" | sed "s|^\./||g" )
+    jobdirs=$(find $@ -maxdepth 4 -name "*Chunk*" -prune -name condor.sub | grep -oP ".+(?=/condor.sub$)" | sed "s|^\./||g" )
 fi
 
 #[ $# -lt 1 ] && echo "Usage: ${0##*/} FOLDER[S]" && exit 1
