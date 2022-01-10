@@ -48,7 +48,7 @@ positional=$(echo "$positional" | sed "s:\s*$inCSV\s*::")
 year=$(echo "$inCSV" | grep -oP "\d{4}" )
 CSVcontent=$(grep -P '^\s*[^#$]' $inCSV)
 header=$(echo "$CSVcontent" | head -n 1)
-lines=$(echo "$CSVcontent" | tail -n +2 | head -n 5)
+lines=$(echo "$CSVcontent" | tail -n +2)
 
 tempfile=$(mktemp)
 
