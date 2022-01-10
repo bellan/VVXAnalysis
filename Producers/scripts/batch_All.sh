@@ -56,8 +56,8 @@ echo "$lines" | while read -r line
 do
   sample=$(echo "$line" | cut -d "," -f 1)
   printf '%s\n%s\n' "$header" "$line" > $tempfile
-  #echo "batch_Condor.py $options -o $outputdir/$year/$sample $tempfile $positional"
-  batch_Condor.py $options -o $outputdir/$year/$sample $tempfile $positional
+  echo "batch_Condor.py $options -o $outputdir/$year/$sample $tempfile $positional"
+  #batch_Condor.py $options -o $outputdir/$year/$sample $tempfile $positional
 done
 
 rm $tempfile

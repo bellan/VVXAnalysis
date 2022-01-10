@@ -10,7 +10,7 @@
 #  Author: A. Mecca  (alberto.mecca@cern.ch)                   #
 ################################################################
 
-campaign=September2021  # May2021
+campaign=Jan2022 #September2021  # May2021
 initial=$(printf "%.1s" $USER)
 eosdir="/eos/user/$initial/$USER/samples/$campaign"
 dirs=$(find . -maxdepth 4 -name condor.sub | grep -oP ".+(?=/condor.sub)" | grep -oP "(?<=\./).+" )

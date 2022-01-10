@@ -26,7 +26,9 @@ keys=$(echo "$output" | cut -d : -f 2 | sort | uniq | sed "s/^ //g")
 todo=$(ls $folder | grep Chunk | wc -l)
 [ $todo -eq 0 ] && { print_done $folder && exit 0 ; }
 
-printf "TODO: %d jobs\n" $(echo "$output" | wc -l)
+printf "TODO: %d jobs\n" $todo
+[ -z "$output" ] && printf "\t%d --> \t%s\n" $todo "No info on jobs" && exit 0
+
 echo "$keys" | while read -r key; do
         printf "\t%d --> \t%s\n" $(grep "$key" <<<"$output" | wc -l) "$(sed 's/ \+/ /g' <<<$key)"
 done #< <(echo "$keys")

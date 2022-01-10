@@ -7,13 +7,9 @@
 #  Author: A. Mecca (amecca@cern.ch)                              #
 ###################################################################
 
-basedir=$(pwd -P)
+[ $# -ge 1 ] && top=$@ || top=.
 
-if [ $# -lt 1 ] ; then
-    jobdirs=$(find . -maxdepth 4 -name "*Chunk*" -prune -name condor.sub | grep -oP ".+(?=/condor.sub$)" | sed "s|^\./||g" )
-else
-    jobdirs=$(find $@ -maxdepth 4 -name "*Chunk*" -prune -name condor.sub | grep -oP ".+(?=/condor.sub$)" | sed "s|^\./||g" )
-fi
+jobdirs=$(find $top -maxdepth 4 -name "*Chunk*" -prune -o -name condor.sub | grep -oP ".+(?=/condor.sub$)" | sed "s|^\./||g" )
 
 #[ $# -lt 1 ] && echo "Usage: ${0##*/} FOLDER[S]" && exit 1
 tempfile=$(mktemp)
@@ -65,23 +61,26 @@ get_cause() {
 	    esac
 }
 
+totToDo=0
 for jobdir in $jobdirs ; do
     echo "----- $jobdir -----"
     prodSummary.sh "$jobdir" | tee $tempfile | sed "s/^/\t/g"
-    #grep -q TODO $tempfile && totToDo=$(( $totToDo + $(grep -oP "(?<=TODO: )\d+" $tempfile) ))
+    grep -q TODO $tempfile && totToDo=$(( $totToDo + $(grep -oP "(?<=TODO: )\d+" $tempfile) ))
     lines=$(grep failed $tempfile)
     [ -n "$lines" ] && echo "$lines" | sed "s/--> \tfailed, exit status = //g" >> $tempfail
     #printf "%d\t%d\n" $(echo "$lines" | grep -oP "\d+$") $(echo "$lines" | grep -oP "\d+(?= -->)") >> $tempfail
 done
 
-echo
-echo "Total jobs to do:" $(cut -d " " -f 1 $tempfail | paste -s -d+ | bc)
+printf "\nTotal jobs to do: %d\n" $totToDo  # $(cut -d " " -f 1 $tempfail | paste -s -d+ | bc)
 
+todoKnown=0
 keys=$(cut -d " " -f 2 $tempfail | sort | uniq)
 for key in $keys ; do
     jobs_k=$(grep -oP "\d+(?= $key)" $tempfail | paste -s -d+ | bc)
-    #printf "%d --> %d\n" $key "$jobs_k"
+    todoKnown=$(( $todoKnown + $jobs_k ))
     printf "\t%d:\t%d \t%s\n" $key $jobs_k "$(get_cause $key)"
 done
+todoUnknown=$(( $totToDo - $todoKnown )) 
+[ $todoUnknown -gt 0 ] && printf "\t%s:\t%d \t%s\n" "-" $todoUnknown "No info"
 
 rm -f $tempfile $tempfail

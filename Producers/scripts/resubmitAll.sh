@@ -15,6 +15,6 @@ for d in $dirs ; do
     (
 	printf "%s \t--> " $d 
 	cd $d && ls | grep -q Chunk &&  # Resubmit only if there are still chunks to do
-	echo "DO" && resubmit_Condor.csh || echo "Done"
+	echo "DO" && cleanup.csh && resubmit_Condor.csh || echo "Done"
     )
 done
