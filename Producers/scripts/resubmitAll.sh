@@ -8,13 +8,12 @@
 #  Author: A. Mecca  (alberto.mecca@cern.ch)                  #
 ###############################################################
 
-topdir=${1:-.}
-dirs=$(find $topdir -maxdepth 4 -name "*Chunk*" -prune -o -name "AAAOK" -prune -o -type f -name condor.sub | grep -oP ".+(?=/condor.sub$)" | sed "s:^./::g")
+source _findJobDirs.sh ; jobdirs=$(findJobDirs $@)  # All subfolders of the arguments containing a file named condor.sub
 
 for d in $dirs ; do
     (
 	printf "%s \t--> " $d 
 	cd $d && ls | grep -q Chunk &&  # Resubmit only if there are still chunks to do
-	echo "DO" && cleanup.csh && resubmit_Condor.csh || echo "Done"
+	echo "DO" && cleanup.csh && { resubmit_Condor.csh || echo "Done" ; }
     )
 done

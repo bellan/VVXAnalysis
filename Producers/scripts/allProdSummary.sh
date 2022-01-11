@@ -7,9 +7,7 @@
 #  Author: A. Mecca (amecca@cern.ch)                              #
 ###################################################################
 
-[ $# -ge 1 ] && top=$@ || top=.
-
-jobdirs=$(find $top -maxdepth 4 -name "*Chunk*" -prune -o -name condor.sub | grep -oP ".+(?=/condor.sub$)" | sed "s|^\./||g" )
+source _findJobDirs.sh ; jobdirs=$(findJobDirs $@)  # All subfolders of the arguments containing a file named condor.sub
 
 #[ $# -lt 1 ] && echo "Usage: ${0##*/} FOLDER[S]" && exit 1
 tempfile=$(mktemp)
@@ -57,8 +55,9 @@ get_cause() {
 	152) echo "CPU limit exceeded (4.2 BSD)" ;;
 	153) echo "File size limit exceeded (4.2 BSD)" ;;
 	155) echo "Profiling alarm clock (4.2 BSD)" ;;
+	0)   echo "Still running (or unknown failure)" ;;
 	*)   echo "unknown" ;;
-	    esac
+    esac
 }
 
 totToDo=0
@@ -68,7 +67,8 @@ for jobdir in $jobdirs ; do
     grep -q TODO $tempfile && totToDo=$(( $totToDo + $(grep -oP "(?<=TODO: )\d+" $tempfile) ))
     lines=$(grep failed $tempfile)
     [ -n "$lines" ] && echo "$lines" | sed "s/--> \tfailed, exit status = //g" >> $tempfail
-    #printf "%d\t%d\n" $(echo "$lines" | grep -oP "\d+$") $(echo "$lines" | grep -oP "\d+(?= -->)") >> $tempfail
+    running=$(grep "still running" $tempfile | grep -oP "\d+(?= -->)")
+    [ -n $running ] && echo "$running 0" >> $tempfail
 done
 
 printf "\nTotal jobs to do: %d\n" $totToDo  # $(cut -d " " -f 1 $tempfail | paste -s -d+ | bc)

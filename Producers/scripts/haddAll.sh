@@ -13,13 +13,14 @@
 campaign=Jan2022 #September2021  # May2021
 initial=$(printf "%.1s" $USER)
 eosdir="/eos/user/$initial/$USER/samples/$campaign"
-dirs=$(find . -maxdepth 4 -name condor.sub | grep -oP ".+(?=/condor.sub)" | grep -oP "(?<=\./).+" )
+
+source _findJobDirs.sh ; jobdirs=$(findJobDirs $@)  # All subfolders of the arguments containing a file named condor.sub
 
 dirsExist () {
     for d in $@ ; do [ -d $d ] || return 1 ; done
 }
 
-for dir in $dirs ; do
+for dir in $jobdirs ; do
     (
 	cd $dir
 	printf "%s \t--> " $dir
