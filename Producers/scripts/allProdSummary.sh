@@ -66,9 +66,9 @@ for jobdir in $jobdirs ; do
     prodSummary.sh "$jobdir" | tee $tempfile | sed "s/^/\t/g"
     grep -q TODO $tempfile && totToDo=$(( $totToDo + $(grep -oP "(?<=TODO: )\d+" $tempfile) ))
     lines=$(grep failed $tempfile)
-    [ -n "$lines" ] && echo "$lines" | sed "s/--> \tfailed, exit status = //g" >> $tempfail
+    [ -n "$lines" ] && echo "$lines" | sed "s/--> \tfailed, exit status = //g" | sed "s/^\t//g" >> $tempfail
     running=$(grep "still running" $tempfile | grep -oP "\d+(?= -->)")
-    [ -n $running ] && echo "$running 0" >> $tempfail
+    [ -n "$running" ] && echo "$running 0" >> $tempfail
 done
 
 printf "\nTotal jobs to do: %d\n" $totToDo  # $(cut -d " " -f 1 $tempfail | paste -s -d+ | bc)
