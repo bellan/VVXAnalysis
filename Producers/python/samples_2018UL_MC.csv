@@ -1,4 +1,4 @@
-# identifier,process,crossSection=-1,BR=1,execute=True,dataset,prefix,pattern,splitLevel,::variables,::pyFragments,comment
+identifier,process,crossSection=-1,BR=1,execute=True,dataset,prefix,pattern,splitLevel,::variables,::pyFragments,comment
 
 ### See comment field,,,,,,,,,,,Unless otherwise stated; signal x-sections are taken from https://hypernews.cern.ch/HyperNews/CMS/get/higgs/1738.html
 ###,,,,,,,,,,,in the [120;130] range they are taken from the YR4 SM 13TeV tab; i.e. they are N3LO QCD + NLO EW
@@ -65,7 +65,7 @@
 ###,Reducible backgrounds,,,,,,,,,,background samples for Z+X studies
 # DYJetsToLL_M50,Z,6225.4,,,/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,4,GENXSEC=6025.2;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2018,RecoProbabilities.py,
 # DYJetsToLL_M50_LO,Z,6225.4,,,/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,4,GENXSEC=5765.4;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2018,RecoProbabilities.py,#thisdoesnotworkbecausetheweightindicesaredifferent.ItwouldhavetobeimplementedinLHEHandler.cctopickuptheLO(notNLO)PDFweights.IfyouneedthissampleaskHeshy.
-# DYJetsToLL_M50_mg_ext1,Z,6225.4,,,/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1_ext1-v1/MINIAODSIM,dbs,,4,GENXSEC=5765.4;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2018,RecoProbabilities.py,#thisdoesnotworkbecausetheweightindicesaredifferent.ItwouldhavetobeimplementedinLHEHandler.cctopickuptheLO(notNLO)PDFweights.IfyouneedthissampleaskHeshy.
+# DYJetsToLL_M50_LO_ext1,Z,6225.4,,,/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1_ext1-v1/MINIAODSIM,dbs,,4,GENXSEC=5765.4;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2018,RecoProbabilities.py,#thisdoesnotworkbecausetheweightindicesaredifferent.ItwouldhavetobeimplementedinLHEHandler.cctopickuptheLO(notNLO)PDFweights.IfyouneedthissampleaskHeshy.
 # TTTo2L2Nu,tt,87.3,,,/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM,dbs,,4,GENXSEC=91.7701;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2018,RecoProbabilities.py,
 
 
