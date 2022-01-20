@@ -131,7 +131,7 @@ if IsMC:
 ### ------------------------------- Photons -----------------------------
 process.filteredPhotons = cms.EDFilter("PATPhotonSelector",
                                        src = cms.InputTag("slimmedPhotons"),
-                                       cut = cms.string("pt > 15 && abs(eta) > 2.4"))
+                                       cut = cms.string("pt > 15 && abs(eta) < 3.0"))
 
 process.photonSelection = cms.Path(process.filteredPhotons)
 ### ---------------------------------------------------------------------
