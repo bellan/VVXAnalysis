@@ -749,12 +749,12 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   output.particleNet_.HbbvsQCD    = jet.bDiscriminator("pfParticleNetDiscriminatorsJetTags:HbbvsQCD");
   output.particleNet_.H4qvsQCD    = jet.bDiscriminator("pfParticleNetDiscriminatorsJetTags:H4qvsQCD");
   // Note: the mass decorrelated discriminators for ParticleNet do not exist yet
-  output.particleNet_MD_.TvsQCD   = jet.bDiscriminator("pfMassDecorrelatedParticleNetDiscriminatorsJetTags:TvsQCD");
-  output.particleNet_MD_.WvsQCD   = jet.bDiscriminator("pfMassDecorrelatedParticleNetDiscriminatorsJetTags:WvsQCD");
-  output.particleNet_MD_.ZvsQCD   = jet.bDiscriminator("pfMassDecorrelatedParticleNetDiscriminatorsJetTags:ZvsQCD");
-  output.particleNet_MD_.ZbbvsQCD = jet.bDiscriminator("pfMassDecorrelatedParticleNetDiscriminatorsJetTags:ZbbvsQCD");
-  output.particleNet_MD_.HbbvsQCD = jet.bDiscriminator("pfMassDecorrelatedParticleNetDiscriminatorsJetTags:HbbvsQCD");
-  output.particleNet_MD_.H4qvsQCD = jet.bDiscriminator("pfMassDecorrelatedParticleNetDiscriminatorsJetTags:H4qvsQCD");
+  // output.particleNet_MD_.TvsQCD   = jet.bDiscriminator("pfMassDecorrelatedParticleNetDiscriminatorsJetTags:TvsQCD");
+  // output.particleNet_MD_.WvsQCD   = jet.bDiscriminator("pfMassDecorrelatedParticleNetDiscriminatorsJetTags:WvsQCD");
+  // output.particleNet_MD_.ZvsQCD   = jet.bDiscriminator("pfMassDecorrelatedParticleNetDiscriminatorsJetTags:ZvsQCD");
+  // output.particleNet_MD_.ZbbvsQCD = jet.bDiscriminator("pfMassDecorrelatedParticleNetDiscriminatorsJetTags:ZbbvsQCD");
+  // output.particleNet_MD_.HbbvsQCD = jet.bDiscriminator("pfMassDecorrelatedParticleNetDiscriminatorsJetTags:HbbvsQCD");
+  // output.particleNet_MD_.H4qvsQCD = jet.bDiscriminator("pfMassDecorrelatedParticleNetDiscriminatorsJetTags:H4qvsQCD");
   
   //output.bTaggers = jet.getPairDiscri(); //TEST get the whole list of tags
   

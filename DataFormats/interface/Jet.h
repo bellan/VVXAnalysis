@@ -39,7 +39,7 @@ namespace phys {
       , deepAK8_()
       , deepAK8_MD_()
       , particleNet_()
-      , particleNet_MD_()
+      //, particleNet_MD_()
       , girth_(-9999.)
       , girth_charged_(-9999.)
       , ptd_(-9999.)
@@ -76,7 +76,7 @@ namespace phys {
     const JetScores& deepAK8()        const { return deepAK8_; }
     const JetScores& deepAK8_MD()     const { return deepAK8_MD_; }
     const JetScores& particleNet()    const { return particleNet_; }
-    const JetScores& particleNet_MD() const { return particleNet_MD_; }
+    // const JetScores& particleNet_MD() const { return particleNet_MD_; }
 
     // Quark-Gluon discrimination variables
     Double_t girth()         const {return girth_;}
@@ -143,7 +143,7 @@ namespace phys {
     Double_t csvtagger_;
     
     // DeepAK8 and ParticleNet scores
-    JetScores deepAK8_, deepAK8_MD_, particleNet_, particleNet_MD_;
+    JetScores deepAK8_, deepAK8_MD_, particleNet_; //, particleNet_MD_;
     
     // Quark-Gluon discrimination variables
     Double_t girth_;
