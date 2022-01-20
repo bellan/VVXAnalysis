@@ -164,8 +164,15 @@ void EventAnalyzer::Init(TTree *tree)
 Int_t EventAnalyzer::GetEntry(Long64_t entry){
   // Read contents of entry.
   if (!theTree) return 0;
-
+  
   int e =  theTree->GetEntry(entry);
+  
+  // Check if the request on region tye matches with the categorization of the event
+  regionWord = std::bitset<32>(pregionWord);
+
+  // FIXME: rise _1P or _1F bits
+  if(!regionWord.test(region_) && region_ != phys::MC)    return 0;
+
 
   if(muons)       stable_sort(muons->begin(),       muons->end(),       phys::PtComparator());
   if(electrons)   stable_sort(electrons->begin(),   electrons->end(),   phys::PtComparator());
@@ -237,13 +244,6 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   
   addOptions();
   
-  // Check if the request on region tye matches with the categorization of the event
-  regionWord = std::bitset<32>(pregionWord);
-
-  // FIXME: rise _1P or _1F bits 
-  
-  if(!regionWord.test(region_) && region_ != phys::MC)    return 0;
-
   if(region_ < phys::SR3P)
     theWeight = theMCInfo.weight(*ZZ);
 
@@ -261,7 +261,6 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   }
     
 
- 
   theHistograms.fill("weight_full"  , "All weights applied"                                    , 1200, -2, 10, theWeight);
   theHistograms.fill("weight_bare"  , "All weights, but efficiency and fake rate scale factors", 1200, -2, 10, theMCInfo.weight());
   theHistograms.fill("weight_pu"    , "Weight from PU reweighting procedure"                   , 1200, -2, 10, theMCInfo.puWeight());
