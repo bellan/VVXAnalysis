@@ -5,19 +5,18 @@ Packages for a multi boson final state analysis
 The basic objects and selections are based on the H --> ZZ --> 4l analysis; this set of packages can be seen as an extension of the H --> ZZ --> 4l analysis code. 
 As a matter of fact, the user needs to follow the very same recipe as of the H --> ZZ --> 4l analysis, and on top of that, check-out the code in this repository.
 
-The philosophy is to run the H --> ZZ --> 4l work-flow up to the production of the Z --> ll bosons and deviate from it adding specific objects for the multi boson analyses, e.g.,
-W --> jj object or VVS tag-jets or other vector boson decays. The input of the analysis are patuples produced for H --> ZZ --> 4l and the idea is to collaborate with that team to extend the
-pool of samples to fully match our needs too. 
+The philosophy is to run the H --> ZZ --> 4l work-flow up to the production of the Z --> ll bosons and deviate from it adding specific objects for the multi boson analyses, e.g., W --> jj object or VVS tag-jets or other vector boson decays. 
 
-The Multi Boson work-flow then foreseen the production of ROOT tree files, filled with objects like muons, electrons, jets, vector bosons, described by relatively 
+The Multi Boson work-flow produces a ROOT tree file, filled with objects like muons, electrons, jets, vector bosons, described by relatively 
 simple data formats (step: tree production).
-The actual analysis is then performed on TTrees. For this step I implemented a C++ framework that puts the user in the condition of immediately start an analysis, even on a laptop, 
-and provided the samples are stored locally, to work off-line (step: tree analysis).
+The actual analysis is then performed on the TTrees contained in the ROOR files. For this step I implemented a C++ framework that puts the user in the condition of immediately start an analysis, even on a laptop, and provided the samples are stored locally, to work off-line (step: tree analysis).
 
 The current structured of the repository is:
 - ```VVXAnalysis/DataFormats```  --> Data formats for the object written in the TTree, used in both step previously described.
 - ```VVXAnalysis/Producers```    --> CMSSW code for TTrees production. This code is not used in the tree analysis step.
 - ```VVXAnalysis/TreeAnalysis``` --> Framework for the tree analysis. It is CMSSW independent.
+- ```VVXAnalysis/Commons```      --> Library that can be used both in TreeAnalysis and in CMSSW.
+- ```VVXAnalysis/MCDataCards```  --> Repository for run cards of specific samples.
 
 The code is located in this repository: https://github.com/bellan/VVXAnalysis.git
 
@@ -27,23 +26,12 @@ Recipe for the tree production step
 - In a lxplus like environment, setup your area as for H --> ZZ --> 4l analysis, following the recipe in https://github.com/CJLST/ZZAnalysis.
 - Check-out the code from this repository.
   - ```git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis```
-- Compile the code with ```scram b```
-- in ```VVXAnalysis/Producers/test/analysis_ZZW.py``` there is an example on cmsRun configuration for an interactive run.
-- Create symlinks to reco probabilities in ZZAnalysis: 
-```
-cd Producers/test/pyFragments/
-ln -s ../../../../ZZAnalysis/AnalysisStep/test/prod/pyFragments/LHEProbabilities_GG_BKG_MCFM.py
-ln -s ../../../../ZZAnalysis/AnalysisStep/test/prod/pyFragments/LHEProbabilities_VBF_BSI_0PM_H125_PhantomMCFM.py
-ln -s ../../../../ZZAnalysis/AnalysisStep/test/prod/pyFragments/RecoProbabilities.py
-cd ../../../
-```
+- Compile the code with ```scram b -j 8```
+- in ```VVXAnalysis/Producers/test/analyzer.py``` there is an example on cmsRun configuration for an interactive run.
 - in ```ZZAnalysis/AnalysisStep/test/prod``` there are queue tools useful for submission/check-status/resubmission/merging.
   The main commands are described here:
   - https://github.com/CJLST/ZZAnalysis/blob/master/AnalysisStep/test/prod/PRODUCTION.md 
-  - as starting point one can use as template the ```VVXAnalysis/Producers/test/analyzer_ZZW.py``` file.
-  - For our analysis, I have modified the batch.py from ZZAnalysis and put our version in ```VVXAnalysis/Producers/python/batch.py```. 
-    The syntax and the accepted options are the same, but it uses a CSV file (https://github.com/bellan/VVXAnalysis/Producers/python/samples_8TeV.csv) 
-    as Data Base for the samples given in input.
+  - as starting point one can use as template the ```VVXAnalysis/Producers/python/analyzer_VVjj.py``` file.
  - Details about data-sets and their management are reported here: https://github.com/bellan/VVXAnalysis/DATASETSMANAGEMENT.md
 
 
