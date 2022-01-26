@@ -135,7 +135,7 @@ process.select4leptonsRegions.maxPhotons = cms.int32(1000)
 
 
 process.cand2P2F       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("ZZFiltered"), 
-                                      cut = cms.string(BOTHFAIL + " && userFloat('CRZLLos_3P1F_ZZOnShell')"))
+                                      cut = cms.string(BOTHFAIL + " && userFloat('CRZLLos_2P2F_ZZOnShell')"))
 process.cand2P2FFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand2P2F"), minNumber = cms.uint32(1))
 process.CR2P2F         = cms.Path(process.select4leptonsRegions * process.cand2P2F * process.cand2P2FFilter)
 process.CR2P2FCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR2P2F","pathFor4LeptonsAnalysis","triggerForZZ"))

@@ -192,7 +192,7 @@ namespace phys {
     Double_t puppiMass_;
 
 
-    ClassDef(Jet, 1)
+    ClassDef(Jet, 2)
   };
 }
 
