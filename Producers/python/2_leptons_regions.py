@@ -25,6 +25,8 @@ process.select2leptonsRegions.minTightLeptons = cms.int32(2)
 process.select2leptonsRegions.minLooseLeptons = cms.int32(2)
 process.select2leptonsRegions.maxTightLeptons = cms.int32(2)
 process.select2leptonsRegions.maxLooseLeptons = cms.int32(2)
+process.select4leptonsRegions.minPhotons = cms.int32(0)
+process.select4leptonsRegions.maxPhotons = cms.int32(1000)
 process.select2leptonsRegions.minAK4s = cms.int32(2)
 process.select2leptonsRegions.minAK8s = cms.int32(1)
 
