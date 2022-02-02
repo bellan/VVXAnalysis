@@ -36,7 +36,7 @@ for dir in $jobdirs ; do
 		[ -e AAAOK/$sampl/ZZ4lAnalysis.root ] || { echo "Tried to hadd but no rootfile has been created" 1>&2 ; exit 1 ; }
 		stripDir=$(echo $dir | sed -r "s:/[^/]+$::g")
 		destFile="$eosdir/$stripDir/$sampl.root"
-		[ -e $destFile ] || { rsync -au --progress AAAOK/$sampl/ZZ4lAnalysis.root $destFile ; echo "Copied to $destFile" ; }
+		[ -e $destFile ] || { rsync -au --progress AAAOK/$sampl/ZZ4lAnalysis.root $destFile && echo "Copied to $destFile" ; }
 	    done
 	fi
     )
