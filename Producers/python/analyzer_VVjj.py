@@ -263,7 +263,7 @@ process.pogMuons     = cms.EDFilter("PATMuonSelector",
 process.pogElectrons = cms.EDFilter("PATElectronSelector", 
                                     src = cms.InputTag("appendPhotons:electrons"),
                                     #cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
-                                    cut = cms.string("pt > 10 && abs(eta) < 2.5 && userInt('cutBasedElectronID-Fall17-94X-V2-medium') ==1 && ((abs(eta) < 1.479 && userFloat('dxy')<0.05 && userFloat('dz')<0.1) || (abs(eta)>1.479 && userFloat('dxy')<0.1 && userFloat('dz')<0.2))"))
+                                    cut = cms.string("pt > 10 && abs(eta) < 2.5 && userInt('cutBasedElectronID-Fall17-94X-V2-medium') == 1023 && ((abs(eta) < 1.479 && userFloat('dxy')<0.05 && userFloat('dz')<0.1) || (abs(eta)>1.479 && userFloat('dxy')<0.1 && userFloat('dz')<0.2))"))  # userInt() == 1023 <--> electronID('cutBasedElectronID_Fall17_94X_V2_medium'), since it is a bitset containing 9 cuts
 
 
 
