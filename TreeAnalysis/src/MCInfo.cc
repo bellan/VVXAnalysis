@@ -36,7 +36,7 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   TChain *tree = new TChain("treePlanter/HollyTree");
   tree->Add(filename.c_str());
 
-  if(tree == 0 || lumi <= 0) {isMC_=false; return;}
+  if(tree == 0 || lumi <= 0) {isMC_=false; if(tree != 0) extractDataInfo(tree); return;}
 
   Long64_t nentries = tree->GetEntries();  
 
@@ -181,3 +181,40 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
 	   
 }
 
+// Not so elegant, as a class named MCInfo is giving info about data
+
+void MCInfo::extractDataInfo(TChain *tree){
+  
+  Long64_t nentries = tree->GetEntries();  
+
+  TBranch *b_eventsInRegions         = 0;
+  TBranch *b_setup                   = 0;
+  TBranch *b_analyzedEvents          = 0;
+
+  tree->SetBranchAddress("eventsInRegions", &eventsInRegions_    , &b_eventsInRegions);
+  tree->SetBranchAddress("setup"         , &setup_         , &b_setup);
+  tree->SetBranchAddress("analyzedEvents"         , &analyzedEvents_         , &b_analyzedEvents         );
+
+  phys::RegionsCounter    *totalEventsInRegions = new phys::RegionsCounter();
+
+  int    totalAnEvents       = 0 ;
+
+  for (Long64_t jentry=0; jentry<nentries; ++jentry){
+    tree->LoadTree(jentry); tree->GetEntry(jentry);
+    
+    *totalEventsInRegions += *eventsInRegions_;
+    totalAnEvents       += analyzedEvents_;
+  }
+
+  // The tree is not needed anymore
+  delete tree;
+  
+  // ... and the variables used to set the branch address can be overwritten too
+  *eventsInRegions_     = *totalEventsInRegions;
+  analyzedEvents_          = totalAnEvents;
+
+  std::cout<<"\nThe number of analyzed events is " << Green(analyzedEvents()) << "."           << std::endl
+	   <<"The selected events distribute in the Control/Search Regions as follow"    << std::endl
+	   <<*eventsInRegions_ 
+	   <<std::endl;
+}

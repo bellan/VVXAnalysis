@@ -8,6 +8,8 @@
 
 #include <string>
 
+class TChain;
+
 class MCInfo {
 
  public:
@@ -34,7 +36,7 @@ class MCInfo {
   double L1PrefiringWeightUp()  const {return genEventWeights_->L1PrefiringWeightUp();}
   double L1PrefiringWeightDn()  const {return genEventWeights_->L1PrefiringWeightDn();}
 
-
+  
 
   // Total MC weight of the event. Beware, it does not include DATA/MC correction! See instead below.
     double weight()               const {return luminosity_ >= 0 ? sampleWeight()*puWeight()*L1PrefiringWeight() : 1.;}
@@ -82,7 +84,8 @@ class MCInfo {
   float alphas_MZ_Up       () const {return genEventWeights_->alphas_MZ_Up       ();}
   float alphas_MZ_Down     () const {return genEventWeights_->alphas_MZ_Down     ();}
 
-
+  // Not so elegant, as a class named MCInfo is giving info about data
+  void extractDataInfo(TChain *tree);
 
  private:
   friend class EventAnalyzer;
