@@ -863,9 +863,9 @@ phys::Photon TreePlanter::fill(const pat::Photon &photon) const {
 	phys::Photon output(phys::Particle::convert(corrP4), photon.charge(), 22);
 	
 	// IDs
-	output.cutBasedIDLoose_  = photon.photonID("cutBasedPhotonID-Fall17-94X-V2-loose");
-	output.cutBasedIDMedium_ = photon.photonID("cutBasedPhotonID-Fall17-94X-V2-medium");
-	output.cutBasedIDTight_  = photon.photonID("cutBasedPhotonID-Fall17-94X-V2-tight");
+	output.cutBasedIDLoose_  = photon.isPhotonIDAvailable("cutBasedPhotonID-Fall17-94X-V2-loose")  ? photon.photonID("cutBasedPhotonID-Fall17-94X-V2-loose")  : photon.photonID("cutBasedPhotonID_Fall17_94X_V2_loose");
+	output.cutBasedIDMedium_ = photon.isPhotonIDAvailable("cutBasedPhotonID-Fall17-94X-V2-medium") ? photon.photonID("cutBasedPhotonID-Fall17-94X-V2-medium") : photon.photonID("cutBasedPhotonID_Fall17_94X_V2_medium");
+	output.cutBasedIDTight_  = photon.isPhotonIDAvailable("cutBasedPhotonID-Fall17-94X-V2-tight")  ? photon.photonID("cutBasedPhotonID-Fall17-94X-V2-tight")  : photon.photonID("cutBasedPhotonID_Fall17_94X_V2_tight");
 	
 	// Isolations FIXME
 	output.chargedIsolation_       = photon.chargedHadronIso();
