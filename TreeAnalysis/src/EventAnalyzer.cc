@@ -79,6 +79,10 @@ void EventAnalyzer::Init(TTree *tree)
   theTree = tree;
   fCurrent = -1;
 
+  Long64_t selectedEvents = theTree->GetEntries();
+  std::cout<<"\nThis sample contains " << Green(selectedEvents) << " selected events.\n"   << std::endl;
+
+  
   // Muons   
   muons     = 0; b_muons     = 0; theTree->SetBranchAddress("muons"    , &muons    , &b_muons    );
   
@@ -320,7 +324,7 @@ void EventAnalyzer::loop(const std::string outputfile){
   theHistograms.write(fout);
 
   fout.Close();
-  cout<<"Events originally in input for the chosen region (" << Blue(regionType(region_)) << "): " << Green(theInputWeightedEvents)<< endl;
+  cout<<"Analyzed events in the chosen region (" << Blue(regionType(region_)) << "): " << Green(theInputWeightedEvents)<< endl;
   cout<<"Events passing all cuts: "<< Green(theCutCounter) << endl;
 }
 

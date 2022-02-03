@@ -173,11 +173,10 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
     // FIXME
     //<<"The efficiency for the baseline selection is " << eventsInSR_  <<"/"<< signalCounter_ << " = " << Green(signalEfficiency()) << ".\n"
 	   <<"Events in the Regions"    << std::endl
-	   <<*eventsInRegions_ 
+	   <<*eventsInRegions_;
     //	   <<", in the 2P2F CR = " << Green(eventsIn2P2FCR_)
     //	   <<", in the 3P1F CR = " << Green(eventsIn3P1FCR_)
     //	   <<"."
-	   <<std::endl;
 	   
 }
 
@@ -213,8 +212,7 @@ void MCInfo::extractDataInfo(TChain *tree){
   *eventsInRegions_     = *totalEventsInRegions;
   analyzedEvents_          = totalAnEvents;
 
-  std::cout<<"\nThe number of analyzed events is " << Green(analyzedEvents()) << "."           << std::endl
-	   <<"The selected events distribute in the Control/Search Regions as follow"    << std::endl
-	   <<*eventsInRegions_ 
-	   <<std::endl;
+  std::cout<<"\nThe number of analyzed events to produce this tree is " << Green(analyzedEvents()) << "."           << std::endl
+	   <<"The selected events distribute in the Control/Search Regions as follow:"    << std::endl
+	   <<*eventsInRegions_; 
 }
