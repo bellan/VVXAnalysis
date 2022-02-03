@@ -9,6 +9,8 @@ using std::cout;
 using std::endl;
 using namespace colour;
 
+std::vector<phys::RegionTypes> regions_from_str(const std::string&);
+
 int main (int argc, char ** argv){
 
   if(argc < 4){ 
@@ -19,7 +21,7 @@ int main (int argc, char ** argv){
   
   AnalysisConfiguration analysisConfig;
   analysisConfig.addParameter("analysisName"    , std::string(argv[1]));
-  analysisConfig.addParameter("region"          , phys::regionType(std::string(argv[2])));
+  analysisConfig.addParameter("regions"         , regions_from_str(std::string(argv[2])));
   analysisConfig.addParameter("filename"        , std::string(argv[3]));
   analysisConfig.addParameter("outputfile"      , std::string(argv[4]));
 
@@ -40,11 +42,22 @@ int main (int argc, char ** argv){
   EventAnalyzer *analysis = AnalysisFactory::get()->createAnalysis(analysisConfig);
 
   analysis->loop(analysisConfig.getParameter<std::string>("outputfile"));
-	       
+
   cout<<"Output saved in --> "<<Green(analysisConfig.getParameter<std::string>("outputfile"))<<endl;
   cout<<"\nAnalysis status: "<<OK("DONE")<<"\n"<<endl;
 
   return 0;
 }
 
+std::vector<phys::RegionTypes> regions_from_str(const std::string& in){
+  // Parses a string like "SR4P;CR3P1F;CR2P2F" and returns a vector of phys::RegionTypes
+  std::istringstream iss(in);
+  std::string item;
+  std::vector<phys::RegionTypes> regions;
+  
+  while(std::getline(iss, item, ';'))
+    regions.push_back(phys::regionType(item));
+  
+  return regions;
+}
 

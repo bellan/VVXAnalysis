@@ -27,17 +27,27 @@ Int_t VVXAnalyzer::cut() {
 
 void VVXAnalyzer::analyze(){
 
-  theHistograms.fill("nZtoChLep"    , "Number of Z->ll per event" , 7,0,7, genVBHelper_.ZtoChLep().size());
-  theHistograms.fill("nZtoNeutrinos", "Number of Z->nn per event" , 7,0,7, genVBHelper_.ZtoNeutrinos().size());
-  theHistograms.fill("nWtoLep"      , "Number of W->lnu per event", 7,0,7, genVBHelper_.WtoLep().size());
-  theHistograms.fill("nZtoQ"        , "Number of Z->qq per event" , 7,0,7, genVBHelper_.ZtoQ().size());
-  theHistograms.fill("nWtoQ"        , "Number of W->qq' per event", 7,0,7, genVBHelper_.WtoQ().size());
+  theHistograms->fill("nZtoChLep"    ,"Number of Z->ll per event" , 7,0,7, genVBHelper_.ZtoChLep().size());
+  theHistograms->fill("nZtoNeutrinos","Number of Z->nn per event" , 7,0,7, genVBHelper_.ZtoNeutrinos().size());
+  theHistograms->fill("nWtoLep"      ,"Number of W->lnu per event", 7,0,7, genVBHelper_.WtoLep().size());
+  theHistograms->fill("nZtoQ"        ,"Number of Z->qq per event" , 7,0,7, genVBHelper_.ZtoQ().size());
+  theHistograms->fill("nWtoQ"        ,"Number of W->qq' per event", 7,0,7, genVBHelper_.WtoQ().size());
 
   int nVBs = genVBHelper_.ZtoChLep().size() + genVBHelper_.ZtoNeutrinos().size() + genVBHelper_.WtoLep().size() + genVBHelper_.ZtoQ().size() + genVBHelper_.WtoQ().size();
-  theHistograms.fill("nVBs", "Number of VB per event", 7,0,7, nVBs);
+  theHistograms->fill("nVBs", "Number of VB per event", 7,0,7, nVBs);
 }
 
+void begin() {
+	cout<<"begin VVXAnalyzer\n";
+}
 
+void end(TFile &) {
+	cout<<"end VVXAnalyzer: [region]\n";//<<regionType(region_)<<'\n';
+}
+
+void true_end() {
+	cout<<"true_end VVXAnalyzer\n";
+}
 
 
 

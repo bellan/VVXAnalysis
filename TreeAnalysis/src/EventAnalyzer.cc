@@ -43,7 +43,7 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
   , maxNumEvents_(configuration.getParameter<int>("maxNumEvents"))
   , doBasicPlots_(configuration.getParameter<bool>("doBasicPlots"))
   , doSF         (configuration.getParameter<bool>("doSF"))
-  , region_      (configuration.getParameter<phys::RegionTypes>("region"))
+  , regions_     (configuration.getParameter<std::vector<phys::RegionTypes>>("regions"))
   , theMCInfo    (configuration.getParameter<std::string>("filename"), 
 		  configuration.getParameter<double>("lumi"), 
 		  configuration.getParameter<double>("externalXSection"))
@@ -171,8 +171,21 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   regionWord = std::bitset<32>(pregionWord);
 
   // FIXME: rise _1P or _1F bits
-  if(!regionWord.test(region_) && region_ != phys::MC)    return 0;
-
+  if(std::any_of(regions_.begin(), regions_.end(), [](phys::RegionTypes r){ return r==phys::MC; })){
+    region_ = phys::MC;
+    goto _continueEvent;
+  }
+  for(phys::RegionTypes region : regions_){
+    if(regionWord.test(region)){
+      region_ = region;
+      goto _continueEvent;
+    }
+  }
+  return 0;
+  
+  _continueEvent:
+  theHistograms = &(mapRegionHisto_[region_]);
+  
 
   if(muons)       stable_sort(muons->begin(),       muons->end(),       phys::PtComparator());
   if(electrons)   stable_sort(electrons->begin(),   electrons->end(),   phys::PtComparator());
@@ -261,13 +274,13 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   }
     
 
-  theHistograms.fill("weight_full"  , "All weights applied"                                    , 1200, -2, 10, theWeight);
-  theHistograms.fill("weight_bare"  , "All weights, but efficiency and fake rate scale factors", 1200, -2, 10, theMCInfo.weight());
-  theHistograms.fill("weight_pu"    , "Weight from PU reweighting procedure"                   , 1200, -2, 10, theMCInfo.puWeight());
-  theHistograms.fill("weight_sample", "Weight from cross-section and luminosity"               , 1200, -2, 10, theMCInfo.sampleWeight());
-  theHistograms.fill("weight_mcProc", "Weight from MC intrinsic event weight"                  , 1200, -2, 10, theMCInfo.mcWeight());
-  theHistograms.fill("weight_efficiencySF", "Weight from data/MC lepton efficiency"            , 1200, -2, 10, ZZ->efficiencySF());
-  theHistograms.fill("weight_fakeRateSF"  , "Weight from fake rate scale factor"               , 1200, -2, 10, ZZ->fakeRateSF());
+  theHistograms->fill("weight_full"  , "All weights applied"                                    , 1200, -2, 10, theWeight);
+  theHistograms->fill("weight_bare"  , "All weights, but efficiency and fake rate scale factors", 1200, -2, 10, theMCInfo.weight());
+  theHistograms->fill("weight_pu"    , "Weight from PU reweighting procedure"                   , 1200, -2, 10, theMCInfo.puWeight());
+  theHistograms->fill("weight_sample", "Weight from cross-section and luminosity"               , 1200, -2, 10, theMCInfo.sampleWeight());
+  theHistograms->fill("weight_mcProc", "Weight from MC intrinsic event weight"                  , 1200, -2, 10, theMCInfo.mcWeight());
+  theHistograms->fill("weight_efficiencySF", "Weight from data/MC lepton efficiency"            , 1200, -2, 10, ZZ->efficiencySF());
+  theHistograms->fill("weight_fakeRateSF"  , "Weight from fake rate scale factor"               , 1200, -2, 10, ZZ->fakeRateSF());
   
   
   theInputWeightedEvents += theWeight;
@@ -310,16 +323,27 @@ void EventAnalyzer::loop(const std::string outputfile){
     if(doBasicPlots_) fillBasicPlots();
     analyze();
   }
-
-
-  TFile fout(TString(outputfile),"RECREATE");
-  fout.cd(); 
-
-  end(fout);
-  theHistograms.write(fout);
-
-  fout.Close();
-  cout<<"Events originally in input for the chosen region (" << Blue(regionType(region_)) << "): " << Green(theInputWeightedEvents)<< endl;
+  
+  for(std::pair<phys::RegionTypes, Histogrammer> regHist : mapRegionHisto_){
+    std::string regionName = phys::regionType(regHist.first);
+    theHistograms = & regHist.second;
+    
+    std::string fout_formatted( Form(outputfile.c_str(), regionName.c_str()) );
+    TFile fout(TString(fout_formatted),"RECREATE");
+    fout.cd();
+    
+    end(fout);
+    theHistograms->write(fout);
+    
+    fout.Close();
+  }
+  
+  finish();
+  
+  std::string regionsString;
+  for(phys::RegionTypes r : regions_) regionsString += regionType(r)+';';
+  regionsString.pop_back();
+  cout<<"Events originally in input for the chosen region(s) (" << Blue(regionsString) << "): " << Green(theInputWeightedEvents)<< endl;
   cout<<"Events passing all cuts: "<< Green(theCutCounter) << endl;
 }
 
@@ -395,10 +419,10 @@ Int_t EventAnalyzer::cut() {
 
 
 void EventAnalyzer::fillBasicPlots(){
-  theHistograms.fill<TH1I>("nvtx"     , "Number of vertices" , 100, 0, 100, nvtx             , theWeight);
-  theHistograms.fill      ("met"      , "Missing energy"     , 200, 0, 800, met->pt()        , theWeight);
-  theHistograms.fill<TH1I>("nmuons"    ,"Number of muons"    ,  10, 0, 10 , muons->size()    , theWeight);
-  theHistograms.fill<TH1I>("nelectrons","Number of electrons",  10, 0, 10 , electrons->size(), theWeight);
+  theHistograms->fill<TH1I>("nvtx"     , "Number of vertices" , 100, 0, 100, nvtx             , theWeight);
+  theHistograms->fill      ("met"      , "Missing energy"     , 200, 0, 800, met->pt()        , theWeight);
+  theHistograms->fill<TH1I>("nmuons"    ,"Number of muons"    ,  10, 0, 10 , muons->size()    , theWeight);
+  theHistograms->fill<TH1I>("nelectrons","Number of electrons",  10, 0, 10 , electrons->size(), theWeight);
 
   foreach(const phys::Lepton& mu , *muons)     fillLeptonPlots("mu",  mu  );
   foreach(const phys::Electron& e, *electrons) fillLeptonPlots("e" ,  e   );
@@ -408,10 +432,10 @@ void EventAnalyzer::fillBasicPlots(){
 
 
 void EventAnalyzer::fillParticlePlots(const std::string &type, const phys::Particle & lepton){
-  theHistograms.fill(type+"_pt" ,    "p_{T} spectrum", 100,   0   , 500   ,lepton.pt()    , theWeight);
-  theHistograms.fill(type+"_eta",    "#eta spectrum" , 100,  -2.5 ,   2.5 ,lepton.eta()   , theWeight);
-  theHistograms.fill(type+"_phi",    "#phi spectrum" ,  50,  -3.15,   3.15,lepton.phi()   , theWeight);
-  theHistograms.fill(type+"_charge", "charge"        ,  50,  -25  ,  25   ,lepton.charge(), theWeight);
+  theHistograms->fill(type+"_pt" ,    "p_{T} spectrum", 100,   0   , 500   ,lepton.pt()    , theWeight);
+  theHistograms->fill(type+"_eta",    "#eta spectrum" , 100,  -2.5 ,   2.5 ,lepton.eta()   , theWeight);
+  theHistograms->fill(type+"_phi",    "#phi spectrum" ,  50,  -3.15,   3.15,lepton.phi()   , theWeight);
+  theHistograms->fill(type+"_charge", "charge"        ,  50,  -25  ,  25   ,lepton.charge(), theWeight);
 }
 
 
@@ -420,9 +444,9 @@ void EventAnalyzer::fillLeptonPlots(const std::string &type, const phys::Lepton 
   
   fillParticlePlots(type, lepton);
 
-  theHistograms.fill(type+"_dxy"             , "d_{xy}"         , 200,   0,   0.5, lepton.dxy()            , theWeight);   
-  theHistograms.fill(type+"_dz"              , "d_{z}"          , 200,   0,   0.5, lepton.dz()             , theWeight);
-  theHistograms.fill(type+"_sip"             , "sip"            , 150,   0,  15  , lepton.sip()            , theWeight); 
+  theHistograms->fill(type+"_dxy"             , "d_{xy}"         , 200,   0,   0.5, lepton.dxy()            , theWeight);
+  theHistograms->fill(type+"_dz"              , "d_{z}"          , 200,   0,   0.5, lepton.dz()             , theWeight);
+  theHistograms->fill(type+"_sip"             , "sip"            , 150,   0,  15  , lepton.sip()            , theWeight);
 }
 
 
@@ -431,15 +455,15 @@ void EventAnalyzer::fillJetPlots(const std::string &type, const phys::Jet      &
 
   fillParticlePlots(type, jet);
 
-  theHistograms.fill(type+"_csvtagger"    , 200,  0, 1   , jet.csvtagger    (), theWeight);
-  theHistograms.fill(type+"_girth"        , 200,  0, 1   , jet.girth        (), theWeight);
-  theHistograms.fill(type+"_girth_charged", 200,  0, 1   , jet.girth_charged(), theWeight);
-  theHistograms.fill(type+"_ptd"          , 100,  0, 1   , jet.ptd          (), theWeight);
-  theHistograms.fill(type+"_jetArea"      ,  60,  0, 1.2 , jet.jetArea      (), theWeight);
-  theHistograms.fill(type+"_secvtxMass"   ,  50,  0, 5   , jet.secvtxMass   (), theWeight);
-  theHistograms.fill(type+"_rawFactor"    ,  50,  0, 2.5 , jet.rawFactor    (), theWeight);
+  theHistograms->fill(type+"_csvtagger"    , 200,  0, 1   , jet.csvtagger    (), theWeight);
+  theHistograms->fill(type+"_girth"        , 200,  0, 1   , jet.girth        (), theWeight);
+  theHistograms->fill(type+"_girth_charged", 200,  0, 1   , jet.girth_charged(), theWeight);
+  theHistograms->fill(type+"_ptd"          , 100,  0, 1   , jet.ptd          (), theWeight);
+  theHistograms->fill(type+"_jetArea"      ,  60,  0, 1.2 , jet.jetArea      (), theWeight);
+  theHistograms->fill(type+"_secvtxMass"   ,  50,  0, 5   , jet.secvtxMass   (), theWeight);
+  theHistograms->fill(type+"_rawFactor"    ,  50,  0, 2.5 , jet.rawFactor    (), theWeight);
 
-  theHistograms.fill(type+"_jecUncertainty", 50, 0, 0.1, jet.jecUncertainty(), theWeight);
+  theHistograms->fill(type+"_jecUncertainty", 50, 0, 0.1, jet.jecUncertainty(), theWeight);
 }
 
 
