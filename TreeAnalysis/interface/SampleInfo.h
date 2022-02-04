@@ -1,5 +1,5 @@
-#ifndef VVXAnalysis_TreeAnalysis_MCInfo_H
-#define VVXAnalysis_TreeAnalysis_MCInfo_H
+#ifndef VVXAnalysis_TreeAnalysis_SampleInfo_H
+#define VVXAnalysis_TreeAnalysis_SampleInfo_H
 
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 #include "VVXAnalysis/DataFormats/interface/Lepton.h"
@@ -10,16 +10,18 @@
 
 class TChain;
 
-class MCInfo {
+class SampleInfo {
 
  public:
-  MCInfo(const std::string &filename="", const double & lumi = -1, const double& externalXSection = -1.);
-  ~MCInfo(){}
+  SampleInfo(const std::string &filename="", const double & lumi = -1, const double& externalXSection = -1., bool blinded = true);
+  ~SampleInfo(){}
 
   int    genEvents()              const {return genEvents_;}
   int    analyzedEvents()         const {return analyzedEvents_;}
   double analyzedEventsWeighted() const {return analyzedEvents() * sampleWeight();}
 
+  inline phys::RegionsCounter eventsInRegions() const {return *eventsInRegions_;}
+  
   double internalCrossSection() const {return internalCrossSection_;}
   double externalCrossSection() const {return externalCrossSection_;}
   double crossSection()         const {return *crossSection_;}
@@ -84,7 +86,7 @@ class MCInfo {
   float alphas_MZ_Up       () const {return genEventWeights_->alphas_MZ_Up       ();}
   float alphas_MZ_Down     () const {return genEventWeights_->alphas_MZ_Down     ();}
 
-  // Not so elegant, as a class named MCInfo is giving info about data
+  // Not so elegant, as a class named SampleInfo is giving info about data
   void extractDataInfo(TChain *tree);
 
  private:
@@ -92,6 +94,7 @@ class MCInfo {
 
   std::string filename_;  
   double luminosity_;
+  bool   blinded_;
   double internalCrossSection_;
   double externalCrossSection_;
   double externalCrossSectionFromCSV_;

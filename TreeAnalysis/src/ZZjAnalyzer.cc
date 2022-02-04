@@ -122,9 +122,9 @@ void ZZjAnalyzer::ZZplots(int id){
   else{
     eventStr+=":-1.00:-1.00";
   }
-  //  cout<<" theweight "<<theWeight<<" SF "<<ZZ->efficiencySF()<<" PU "<<theMCInfo.puWeight()<<endl;
+  //  cout<<" theweight "<<theWeight<<" SF "<<ZZ->efficiencySF()<<" PU "<<theSampleInfo.puWeight()<<endl;
   eventStr+=":";
-  eventStr+=strtool::sRound(ZZ->efficiencySF()*theMCInfo.puWeight(),".4");
+  eventStr+=strtool::sRound(ZZ->efficiencySF()*theSampleInfo.puWeight(),".4");
 
    if(nJets>1) {
     theHistograms.fill(std::string("ZZTo")+decay+"_PtJet2"      , "#p_{T} of the second  most energetic jet"            ,  100, 20, 400,jets->at(1).pt(), theWeight);     
@@ -267,10 +267,10 @@ if(
   
  Float_t w_kf = 1.;
  
- // if((theMCInfo.fileName()=="ggZZ2e2mu") || (theMCInfo.fileName()=="ggZZ4e") || (theMCInfo.fileName()=="ggZZ4mu") || (theMCInfo.fileName()=="ggH125") )   w_kf = theMCInfo.kF_ggZZ() ; 
- //else if((theMCInfo.fileName()=="ZZTo4l") || (theMCInfo.fileName()=="ZZTo4lamcatnlo")) w_kf = theMCInfo.kF_qqZZM() * theMCInfo.kF_EWKqqZZ() ; 
- if((theMCInfo.fileName()=="ggZZ2e2mu") || (theMCInfo.fileName()=="ggZZ4e") || (theMCInfo.fileName()=="ggZZ4mu") || (theMCInfo.fileName()=="ggTo2e2mu_Contin_MCFM701") || (theMCInfo.fileName()=="ggTo4e_Contin_MCFM701") || (theMCInfo.fileName()=="ggTo4mu_Contin_MCFM701"))   w_kf = 1.7 ; 
- else if(theMCInfo.fileName()=="ZZTo4l") w_kf = 1.1; 
+ // if((theSampleInfo.fileName()=="ggZZ2e2mu") || (theSampleInfo.fileName()=="ggZZ4e") || (theSampleInfo.fileName()=="ggZZ4mu") || (theSampleInfo.fileName()=="ggH125") )   w_kf = theSampleInfo.kF_ggZZ() ; 
+ //else if((theSampleInfo.fileName()=="ZZTo4l") || (theSampleInfo.fileName()=="ZZTo4lamcatnlo")) w_kf = theSampleInfo.kF_qqZZM() * theSampleInfo.kF_EWKqqZZ() ; 
+ if((theSampleInfo.fileName()=="ggZZ2e2mu") || (theSampleInfo.fileName()=="ggZZ4e") || (theSampleInfo.fileName()=="ggZZ4mu") || (theSampleInfo.fileName()=="ggTo2e2mu_Contin_MCFM701") || (theSampleInfo.fileName()=="ggTo4e_Contin_MCFM701") || (theSampleInfo.fileName()=="ggTo4mu_Contin_MCFM701"))   w_kf = 1.7 ; 
+ else if(theSampleInfo.fileName()=="ZZTo4l") w_kf = 1.1; 
 
  theWeight*=w_kf;
 

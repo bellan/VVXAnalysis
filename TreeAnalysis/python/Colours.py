@@ -24,3 +24,6 @@ def OK(st):
 
 def Warning(st):
     return '\033[0;43m'+str(st)+'\033[00m'
+
+def Evidence(st):
+    return '\033[1;91;103m'+str(st)+'\033[00m'

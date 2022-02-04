@@ -44,18 +44,18 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
   , doBasicPlots_(configuration.getParameter<bool>("doBasicPlots"))
   , doSF         (configuration.getParameter<bool>("doSF"))
   , region_      (configuration.getParameter<phys::RegionTypes>("region"))
-  , theMCInfo    (configuration.getParameter<std::string>("filename"), 
+  , theSampleInfo(configuration.getParameter<std::string>("filename"), 
 		  configuration.getParameter<double>("lumi"), 
-		  configuration.getParameter<double>("externalXSection"))
+		  configuration.getParameter<double>("externalXSection"),
+		  configuration.getParameter<bool>("blinded"))
   , theWeight(1.)
   , theCutCounter(0.)
   , theInputWeightedEvents(0.)
   , genCategory(-128){
 
-  if(configuration.getParameter<int>("year") != theMCInfo.setup() && theMCInfo.isMC())
-    cout << colour::Warning("Possible mismatch") << ": simulation scenario is " << Green(configuration.getParameter<int>("year")) << ", chosen sample is " << Green(theMCInfo.setup()) << endl;
+  if(configuration.getParameter<int>("year") != theSampleInfo.setup() && theSampleInfo.isMC())
+    cout << colour::Warning("Possible mismatch") << ": simulation scenario is " << Green(configuration.getParameter<int>("year")) << ", chosen sample is " << Green(theSampleInfo.setup()) << endl;
 
-  
   TChain *tree = new TChain("treePlanter/ElderTree");
   tree->Add(configuration.getParameter<std::string>("filename").c_str());
 
@@ -145,7 +145,7 @@ void EventAnalyzer::Init(TTree *tree)
   b_genCategory  = 0; theTree->SetBranchAddress("genCategory" , &genCategory             , &b_genCategory  );
 
   // MC related variables
-  b_genEventWeights = 0; theTree->SetBranchAddress("genEventWeights", &theMCInfo.genEventWeights_ , &b_genEventWeights);
+  b_genEventWeights = 0; theTree->SetBranchAddress("genEventWeights", &theSampleInfo.genEventWeights_ , &b_genEventWeights);
 
   // Info about selections
   b_passTrigger = 0; theTree->SetBranchAddress("passTrigger", &passTrigger, &b_passTrigger); 
@@ -249,13 +249,13 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   if(!regionWord.test(region_) && region_ != phys::MC)    return 0;
 
   if(region_ < phys::SR3P)
-    theWeight = theMCInfo.weight(*ZZ);
+    theWeight = theSampleInfo.weight(*ZZ);
 
   else if(region_ >= phys::SR3P && region_ < phys::CRLFR)
-    theWeight = theMCInfo.weight(*ZW);
+    theWeight = theSampleInfo.weight(*ZW);
  
   else if(region_ > phys::CRLFR && region_ <= phys::CR2P_1F)
-    theWeight = theMCInfo.weight(*Z);
+    theWeight = theSampleInfo.weight(*Z);
   
   else{
     if(region_ != phys::MC){
@@ -267,10 +267,10 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
 
  
   theHistograms.fill("weight_full"  , "All weights applied"                                    , 1200, -2, 10, theWeight);
-  theHistograms.fill("weight_bare"  , "All weights, but efficiency and fake rate scale factors", 1200, -2, 10, theMCInfo.weight());
-  theHistograms.fill("weight_pu"    , "Weight from PU reweighting procedure"                   , 1200, -2, 10, theMCInfo.puWeight());
-  theHistograms.fill("weight_sample", "Weight from cross-section and luminosity"               , 1200, -2, 10, theMCInfo.sampleWeight());
-  theHistograms.fill("weight_mcProc", "Weight from MC intrinsic event weight"                  , 1200, -2, 10, theMCInfo.mcWeight());
+  theHistograms.fill("weight_bare"  , "All weights, but efficiency and fake rate scale factors", 1200, -2, 10, theSampleInfo.weight());
+  theHistograms.fill("weight_pu"    , "Weight from PU reweighting procedure"                   , 1200, -2, 10, theSampleInfo.puWeight());
+  theHistograms.fill("weight_sample", "Weight from cross-section and luminosity"               , 1200, -2, 10, theSampleInfo.sampleWeight());
+  theHistograms.fill("weight_mcProc", "Weight from MC intrinsic event weight"                  , 1200, -2, 10, theSampleInfo.mcWeight());
   theHistograms.fill("weight_efficiencySF", "Weight from data/MC lepton efficiency"            , 1200, -2, 10, ZZ->efficiencySF());
   theHistograms.fill("weight_fakeRateSF"  , "Weight from fake rate scale factor"               , 1200, -2, 10, ZZ->fakeRateSF());
   
@@ -324,6 +324,7 @@ void EventAnalyzer::loop(const std::string outputfile){
   theHistograms.write(fout);
 
   fout.Close();
+
   cout<<"Analyzed events in the chosen region (" << Blue(regionType(region_)) << "): " << Green(theInputWeightedEvents)<< endl;
   cout<<"Events passing all cuts: "<< Green(theCutCounter) << endl;
 }
@@ -351,7 +352,7 @@ Int_t EventAnalyzer::cut() {
 //   // Protection
 //   if(!doSF) return;
 
-//   theWeight = theMCInfo.weight();
+//   theWeight = theSampleInfo.weight();
   
 //   if(region_ == phys::CR2P2F || region_ == phys::CR3P1F || region_ == phys::CR2P2F_HZZ || region_ == phys::CR3P1F_HZZ){
     
@@ -365,7 +366,7 @@ Int_t EventAnalyzer::cut() {
     
 //   }
   
-//   if(theMCInfo.isMC()){
+//   if(theSampleInfo.isMC()){
     
     
 //     std::pair<double,double> lepSF;

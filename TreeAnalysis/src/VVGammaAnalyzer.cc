@@ -150,7 +150,7 @@ void VVGammaAnalyzer::analyze(){
 		}
 	}
 	
-	if(theMCInfo.isMC()){
+	if(theSampleInfo.isMC()){
 		genEventSetup();
 		
 		for(size_t i = 0; i < goodPhotons_->size(); i++){

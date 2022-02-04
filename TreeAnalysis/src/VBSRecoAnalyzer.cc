@@ -42,8 +42,8 @@ void VBSRecoAnalyzer::analyze(){
   nJets = jets->size();
 
 
-  if((theMCInfo.fileName()=="ggZZ2e2mu") || (theMCInfo.fileName()=="ggZZ4e") || (theMCInfo.fileName()=="ggZZ4mu"))   w_kf = 1.7 ; 
-  else if(theMCInfo.fileName()=="ZZTo4l") w_kf = 1.1; 
+  if((theSampleInfo.fileName()=="ggZZ2e2mu") || (theSampleInfo.fileName()=="ggZZ4e") || (theSampleInfo.fileName()=="ggZZ4mu"))   w_kf = 1.7 ; 
+  else if(theSampleInfo.fileName()=="ZZTo4l") w_kf = 1.1; 
               
   theWeight*=w_kf;
 
@@ -56,7 +56,7 @@ void VBSRecoAnalyzer::analyze(){
   if(region_ == phys::CR3P1F || region_ == phys::CR2P2F) FillHistosJets(decay,ZZ->fakeRateSFVar(),jets,"FRVar");
    
   //Data  
-  if(!theMCInfo.isMC()){         
+  if(!theSampleInfo.isMC()){         
     foreach(const phys::Jet &dataJet, *pjets){
       if(!dataJet.fullPuId(1)) continue;
       double dataJetPt = 0;

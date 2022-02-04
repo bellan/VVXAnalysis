@@ -35,6 +35,10 @@ int main (int argc, char ** argv){
   if(atof(argv[9]))   analysisConfig.addParameter("doSF"    , true);
   else   analysisConfig.addParameter("doSF"    , false);
 
+  if(atoi(argv[10])) analysisConfig.addParameter("blinded"  , false);
+  else analysisConfig.addParameter("blinded"  , true);
+  
+    
   cout<<Yellow("Analyzing "+analysisConfig.getParameter<std::string>("filename")+" ... please wait... ")<<endl ;
 
   EventAnalyzer *analysis = AnalysisFactory::get()->createAnalysis(analysisConfig);

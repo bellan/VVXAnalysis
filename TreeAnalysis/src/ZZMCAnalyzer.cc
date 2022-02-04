@@ -89,24 +89,24 @@ void ZZMCAnalyzer::analyze(){
     }
     scaleFacErrSq = ZZ->efficiencySFUnc();
    
-    ScalVarVal = {theMCInfo.QCDscale_muR1F1(),theMCInfo.QCDscale_muR1F2(),theMCInfo.QCDscale_muR1F0p5(), theMCInfo.QCDscale_muR2F1(),theMCInfo.QCDscale_muR2F2(),theMCInfo.QCDscale_muR0p5F1(),theMCInfo.QCDscale_muR0p5F0p5()};
+    ScalVarVal = {theSampleInfo.QCDscale_muR1F1(),theSampleInfo.QCDscale_muR1F2(),theSampleInfo.QCDscale_muR1F0p5(), theSampleInfo.QCDscale_muR2F1(),theSampleInfo.QCDscale_muR2F2(),theSampleInfo.QCDscale_muR0p5F1(),theSampleInfo.QCDscale_muR0p5F0p5()};
     
     
     w_kf = 1; 
-    // if((theMCInfo.fileName()=="ggZZ2e2mu") || (theMCInfo.fileName()=="ggZZ4e") || (theMCInfo.fileName()=="ggZZ4mu"))   w_kf = theMCInfo.kF_ggZZ() ; 
-    // else if((theMCInfo.fileName()=="ZZTo4l") || (theMCInfo.fileName()=="ZZTo4lamcatnlo")) w_kf = theMCInfo.kF_qqZZM() * theMCInfo.kF_EWKqqZZ() ; 
-    if((theMCInfo.fileName()=="ggZZ2e2mu") || (theMCInfo.fileName()=="ggZZ4e") || (theMCInfo.fileName()=="ggZZ4mu"))  w_kf = 1.7 ; 
-    else if(theMCInfo.fileName()=="ZZTo4l") w_kf = 1.1; 
+    // if((theSampleInfo.fileName()=="ggZZ2e2mu") || (theSampleInfo.fileName()=="ggZZ4e") || (theSampleInfo.fileName()=="ggZZ4mu"))   w_kf = theSampleInfo.kF_ggZZ() ; 
+    // else if((theSampleInfo.fileName()=="ZZTo4l") || (theSampleInfo.fileName()=="ZZTo4lamcatnlo")) w_kf = theSampleInfo.kF_qqZZM() * theSampleInfo.kF_EWKqqZZ() ; 
+    if((theSampleInfo.fileName()=="ggZZ2e2mu") || (theSampleInfo.fileName()=="ggZZ4e") || (theSampleInfo.fileName()=="ggZZ4mu"))  w_kf = 1.7 ; 
+    else if(theSampleInfo.fileName()=="ZZTo4l") w_kf = 1.1; 
     
     m4L_gen  = sqrt((genVBParticles->at(0).p4()+genVBParticles->at(1).p4())*(genVBParticles->at(0).p4()+genVBParticles->at(1).p4()));
     
-    FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf,"Gen_01");
-    FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf,"Gen_"+sample);
+    FillHistosBase(decay,theSampleInfo.sampleWeight()*w_kf,"Gen_01");
+    FillHistosBase(decay,theSampleInfo.sampleWeight()*w_kf,"Gen_"+sample);
 
-    FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*theMCInfo.PDFVar_Up(),"Gen_01_pdfUp");
-    FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*theMCInfo.PDFVar_Down(),"Gen_01_pdfDn");
-    FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*theMCInfo.alphas_MZ_Up(),"Gen_01_asMZUp");
-    FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*theMCInfo.alphas_MZ_Down(),"Gen_01_asMZDn");
+    FillHistosBase(decay,theSampleInfo.sampleWeight()*w_kf*theSampleInfo.PDFVar_Up(),"Gen_01_pdfUp");
+    FillHistosBase(decay,theSampleInfo.sampleWeight()*w_kf*theSampleInfo.PDFVar_Down(),"Gen_01_pdfDn");
+    FillHistosBase(decay,theSampleInfo.sampleWeight()*w_kf*theSampleInfo.alphas_MZ_Up(),"Gen_01_asMZUp");
+    FillHistosBase(decay,theSampleInfo.sampleWeight()*w_kf*theSampleInfo.alphas_MZ_Down(),"Gen_01_asMZDn");
 
     //reco
     if((region_ == phys::MC && regionWord.test(phys::SR4P)) || ((region_ == phys::MC_HZZ) && regionWord.test(phys::SR_HZZ))){
@@ -118,13 +118,13 @@ void ZZMCAnalyzer::analyze(){
 
     //fiducial region
     if((region_ == phys::MC && topology.test(3)) || ( region_ == phys::MC_HZZ && topology.test(1)) ){
-      FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf,"Gen_01_fr");
-      FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf,"Gen_"+sample+"_fr");
+      FillHistosBase(decay,theSampleInfo.sampleWeight()*w_kf,"Gen_01_fr");
+      FillHistosBase(decay,theSampleInfo.sampleWeight()*w_kf,"Gen_"+sample+"_fr");
 
-      FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*theMCInfo.PDFVar_Up(),"Gen_01_fr_pdfUp");
-      FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*theMCInfo.PDFVar_Down(),"Gen_01_fr_pdfDn");
-      FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*theMCInfo.alphas_MZ_Up(),"Gen_01_fr_asMZUp");
-      FillHistosBase(decay,theMCInfo.sampleWeight()*w_kf*theMCInfo.alphas_MZ_Down(),"Gen_01_fr_asMZDn");
+      FillHistosBase(decay,theSampleInfo.sampleWeight()*w_kf*theSampleInfo.PDFVar_Up(),"Gen_01_fr_pdfUp");
+      FillHistosBase(decay,theSampleInfo.sampleWeight()*w_kf*theSampleInfo.PDFVar_Down(),"Gen_01_fr_pdfDn");
+      FillHistosBase(decay,theSampleInfo.sampleWeight()*w_kf*theSampleInfo.alphas_MZ_Up(),"Gen_01_fr_asMZUp");
+      FillHistosBase(decay,theSampleInfo.sampleWeight()*w_kf*theSampleInfo.alphas_MZ_Down(),"Gen_01_fr_asMZDn");
 
       //fiducial region reco
       if((region_ == phys::MC && regionWord.test(phys::SR4P)) || ((region_ == phys::MC_HZZ) && regionWord.test(phys::SR_HZZ))){

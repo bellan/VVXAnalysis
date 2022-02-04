@@ -29,7 +29,7 @@
 #include "VVXAnalysis/DataFormats/interface/GenEventWeights.h"
 
 #include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
-#include "VVXAnalysis/TreeAnalysis/interface/MCInfo.h"
+#include "VVXAnalysis/TreeAnalysis/interface/SampleInfo.h"
 
 #include "VVXAnalysis/DataFormats/interface/RegionTypes.h"
 //#include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
@@ -131,7 +131,7 @@ public:
   Histogrammer theHistograms;
 
   // MC helper class
-  MCInfo theMCInfo;
+  SampleInfo theSampleInfo;
 
   double theWeight;
   double theSampleWeight;

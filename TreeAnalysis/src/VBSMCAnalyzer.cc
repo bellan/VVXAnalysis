@@ -33,8 +33,8 @@ void VBSMCAnalyzer::ZZplots(string decay){
 
   Float_t w_kf = 1.;
   
-  if((theMCInfo.fileName()=="ggZZ2e2mu") || (theMCInfo.fileName()=="ggZZ4e") || (theMCInfo.fileName()=="ggZZ4mu") || (theMCInfo.fileName()=="ggTo2e2mu_Contin_MCFM701") || (theMCInfo.fileName()=="ggTo4e_Contin_MCFM701") || (theMCInfo.fileName()=="ggTo4mu_Contin_MCFM701"))  w_kf = 1.7 ; 
-  else if((theMCInfo.fileName()=="ZZTo4l")) w_kf = 1.1; 
+  if((theSampleInfo.fileName()=="ggZZ2e2mu") || (theSampleInfo.fileName()=="ggZZ4e") || (theSampleInfo.fileName()=="ggZZ4mu") || (theSampleInfo.fileName()=="ggTo2e2mu_Contin_MCFM701") || (theSampleInfo.fileName()=="ggTo4e_Contin_MCFM701") || (theSampleInfo.fileName()=="ggTo4mu_Contin_MCFM701"))  w_kf = 1.7 ; 
+  else if((theSampleInfo.fileName()=="ZZTo4l")) w_kf = 1.1; 
   
   
   if(njets>=2){  
@@ -44,7 +44,7 @@ void VBSMCAnalyzer::ZZplots(string decay){
     
     if(mjj_gen>400 && deta_gen>2.4){   
       
-      theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_01_fr", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_kf);
+      theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_01_fr", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theSampleInfo.sampleWeight()*w_kf);
       
       
       if((region_ == phys::MC && regionWord.test(phys::SR4P)) || ((region_ == phys::MC_HZZ) && regionWord.test(phys::SR_HZZ))){

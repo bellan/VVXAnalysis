@@ -1,4 +1,4 @@
-#include "VVXAnalysis/TreeAnalysis/interface/MCInfo.h"
+#include "VVXAnalysis/TreeAnalysis/interface/SampleInfo.h"
 #include "VVXAnalysis/Commons/interface/Colours.h"
 
 #include "TChain.h"
@@ -7,8 +7,9 @@
 
 using namespace colour;
 
-MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& externalXSection)
+SampleInfo::SampleInfo(const std::string& filename, const double & lumi, const double& externalXSection, bool blinded)
   : luminosity_(lumi)
+  , blinded_(blinded)
   , internalCrossSection_(-1)
   , externalCrossSection_(-1)
   , externalCrossSectionFromCSV_(externalXSection)
@@ -120,7 +121,8 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
   
   // ... and the variables used to set the branch address can be overwritten too
   *eventsInRegions_     = *totalEventsInRegions;
-
+  eventsInRegions_->unblind();
+  
   genEvents_               = totalGenEvents;
   preSkimCounter_          = totalPreSkimCounter;
 
@@ -180,19 +182,15 @@ MCInfo::MCInfo(const std::string& filename, const double & lumi, const double& e
 	   
 }
 
-// Not so elegant, as a class named MCInfo is giving info about data
-
-void MCInfo::extractDataInfo(TChain *tree){
+void SampleInfo::extractDataInfo(TChain *tree){
   
   Long64_t nentries = tree->GetEntries();  
 
   TBranch *b_eventsInRegions         = 0;
-  TBranch *b_setup                   = 0;
   TBranch *b_analyzedEvents          = 0;
 
-  tree->SetBranchAddress("eventsInRegions", &eventsInRegions_    , &b_eventsInRegions);
-  tree->SetBranchAddress("setup"         , &setup_         , &b_setup);
-  tree->SetBranchAddress("analyzedEvents"         , &analyzedEvents_         , &b_analyzedEvents         );
+  tree->SetBranchAddress("eventsInRegions", &eventsInRegions_, &b_eventsInRegions);
+  tree->SetBranchAddress("analyzedEvents" , &analyzedEvents_ , &b_analyzedEvents);
 
   phys::RegionsCounter    *totalEventsInRegions = new phys::RegionsCounter();
 
@@ -210,9 +208,13 @@ void MCInfo::extractDataInfo(TChain *tree){
   
   // ... and the variables used to set the branch address can be overwritten too
   *eventsInRegions_     = *totalEventsInRegions;
-  analyzedEvents_          = totalAnEvents;
+  analyzedEvents_       = totalAnEvents;
+
+  if(blinded_) eventsInRegions_->blind();
+  else         eventsInRegions_->unblind();
 
   std::cout<<"\nThe number of analyzed events to produce this tree is " << Green(analyzedEvents()) << "."           << std::endl
 	   <<"The selected events distribute in the Control/Search Regions as follow:"    << std::endl
-	   <<*eventsInRegions_; 
+	   <<eventsInRegions();
 }
+

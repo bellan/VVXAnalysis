@@ -93,7 +93,7 @@ void FakeRateAnalyzer::analyze(){
 
     std::string eventstr=std::to_string(run)+":"+std::to_string(lumiBlock)+":"+std::to_string(event);
     
-    theWeight=theMCInfo.weight(); //TheWeight have problems
+    theWeight=theSampleInfo.weight(); //TheWeight have problems
 
 
         if((met->pt()<25) && (mt < 30)) { //ZZ

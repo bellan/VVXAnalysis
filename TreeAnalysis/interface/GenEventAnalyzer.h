@@ -16,7 +16,7 @@
 #include "VVXAnalysis/DataFormats/interface/Particle.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
-//#include "VVXAnalysis/TreeAnalysis/interface/GenMCInfo.h"
+//#include "VVXAnalysis/TreeAnalysis/interface/GenSampleInfo.h"
 #include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
 
 class TFile;
@@ -69,7 +69,7 @@ public:
   Histogrammer theHistograms;
   
   // MC helper class
-  // GenMCInfo theGenMCInfo;
+  // GenSampleInfo theGenSampleInfo;
   
 /*   double theWeight; */
 /*   double theSampleWeight; */
