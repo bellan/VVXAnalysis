@@ -26,7 +26,7 @@ years   = [2016,2017,2018]
 
 parser = OptionParser(usage="usage: %prog <analysis> <sample> [options]")
 parser.add_option("-r", "--region", dest="region",
-                  default="SR",
+                  default="SR4P",
                   help="Region type are {0:s}. Default is SR.".format(', '.join(regions)))
 
 parser.add_option("-e", "--external-cross-section", dest="getExternalCrossSectionFromFile",
@@ -125,7 +125,13 @@ if (not int(output) ==1):
     print "If you have not mispelled the name of your analysis, then please register it adding {0:s} in the constructor of {1:s} and recompile the code.".format(howToRegister, registry)
     sys.exit(1)
     
+isData = False
+if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:4] == 'MuEG' or typeofsample[0:6] == 'Single' or typeofsample[0:4] == 'test' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:8] == 'DoubleEG' or typeofsample[0:4] == str(year):
+    luminosity = -1
+    isData = True
 
+
+    
 ############################################################################
 ############################ Print the configuration #######################
 ############################################################################
@@ -133,11 +139,14 @@ if (not int(output) ==1):
 print Blue("----------------------------------------------------------------------")
 print Red("Configuration:")
 print "Executable: {0:s} and analysis: {1:s}".format(Blue(executable), Blue(analysis)) 
+if isData:
+    print "Running on", Blue("data")
+else:
+    print "Running on", Blue("MC")
 print "Sample/type of samples:", Blue(typeofsample)
 print "Get (again) cross sections from csv file: ", Blue(getExternalCrossSectionFromFile)
 print "Region type: ", Blue(region)
-print "Use internal scale factor: ",Blue(doSF)
-
+print "Use internal scale factor: ", Blue(doSF)
 
 ############################################################################
 
@@ -157,13 +166,8 @@ def run(executable, analysis, typeofsample, region, year, luminosity, maxNumEven
             sys.exit(1)
 
     #################################################################################
-    ### Special treatment for DATA ###
+    ### Blind DATA by default ###
     #################################################################################
-    isData = False
-
-    if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:4] == 'MuEG' or typeofsample[0:6] == 'Single' or typeofsample[0:4] == 'test' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:8] == 'DoubleEG' or typeofsample[0:4] == str(year):
-        luminosity = -1
-        isData = True
 
     if isData is False:
         unblind = True
@@ -172,9 +176,9 @@ def run(executable, analysis, typeofsample, region, year, luminosity, maxNumEven
     print "Integrated luminosity: ", Blue(luminosity)
     if isData: 
         if unblind:
-            print Evidence("Running unblinded!")
+            print "Running mode:", Evidence("unblinded!")
         else:
-            print Blue("Running blinded")
+            print "Running mode:", Blue("blinded")
 
     print Blue("----------------------------------------------------------------------")
     print "\n"
@@ -313,7 +317,10 @@ def runOverSamples(executable, analysis, typeofsample, region, year, luminosity,
 if year == 1618:
     for year in years:
         if options.csvfile is None:
-            csvfile = "../Producers/python/samples_"+str(year)+"_MC.csv"
+            if isData:
+                csvfile = "../Producers/python/samples_"+str(year)+"UL_Data.csv"
+            else: 
+                csvfile = "../Producers/python/samples_"+str(year)+"UL_MC.csv"
             
         print "CSV file: ", Blue(csvfile)
         knownProcesses = typeOfSamples(csvfile)
@@ -323,7 +330,10 @@ if year == 1618:
 
 elif year in years:
     if options.csvfile is None:
-        csvfile = "../Producers/python/samples_"+str(year)+"_MC.csv"
+        if isData:
+            csvfile = "../Producers/python/samples_"+str(year)+"UL_Data.csv"
+        else:
+            csvfile = "../Producers/python/samples_"+str(year)+"UL_MC.csv"
         
     print "CSV file: ", Blue(csvfile)
     knownProcesses = typeOfSamples(csvfile)
