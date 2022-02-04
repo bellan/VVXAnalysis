@@ -63,7 +63,8 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 
   Init(tree);
   fileName =  configuration.getParameter<std::string>("filename");
- 
+
+  cout<<Yellow("Analyzing "+fileName+" ... please wait... \n")<<endl ;
 }
 
 

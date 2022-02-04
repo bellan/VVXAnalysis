@@ -38,9 +38,6 @@ int main (int argc, char ** argv){
   if(atoi(argv[10])) analysisConfig.addParameter("blinded"  , false);
   else analysisConfig.addParameter("blinded"  , true);
   
-    
-  cout<<Yellow("Analyzing "+analysisConfig.getParameter<std::string>("filename")+" ... please wait... ")<<endl ;
-
   EventAnalyzer *analysis = AnalysisFactory::get()->createAnalysis(analysisConfig);
 
   analysis->loop(analysisConfig.getParameter<std::string>("outputfile"));
