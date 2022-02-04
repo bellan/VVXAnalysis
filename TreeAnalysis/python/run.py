@@ -170,10 +170,11 @@ def run(executable, analysis, typeofsample, region, year, luminosity, maxNumEven
         
     print "Year: ", Blue(year)
     print "Integrated luminosity: ", Blue(luminosity)
-    if unblind is True:
-        print Evidence("Running unblinded!")
-    else:
-        print Blue("Running blinded")
+    if isData: 
+        if unblind:
+            print Evidence("Running unblinded!")
+        else:
+            print Blue("Running blinded")
 
     print Blue("----------------------------------------------------------------------")
     print "\n"
