@@ -150,14 +150,14 @@ void ZVAnalyzer::analyze(){
                         return;
                     }
                     else
-                        theHistograms.fill("Leading e pt", "Leading e pt", HISTO_Pt_Config, electrons->at(0).pt(), theWeight);
-                    theHistograms.fill("Second e pt", "Second e pt", HISTO_Pt_Config, electrons->at(1).pt(), theWeight);
+                        theHistograms->fill("Leading e pt", "Leading e pt", HISTO_Pt_Config, electrons->at(0).pt(), theWeight);
+                    theHistograms->fill("Second e pt", "Second e pt", HISTO_Pt_Config, electrons->at(1).pt(), theWeight);
                     deltaEta = electrons->at(0).eta() - electrons->at(1).eta();
-                    theHistograms.fill("#Delta #eta ee", "#Delta #eta ee", HISTO_JEta_Config, deltaEta, theWeight);
+                    theHistograms->fill("#Delta #eta ee", "#Delta #eta ee", HISTO_JEta_Config, deltaEta, theWeight);
                     deltaPhi = electrons->at(0).phi() - electrons->at(1).phi();
-                    theHistograms.fill("#Delta #phi ee", "#Delta #phi ee", HISTO_Phi_Config, deltaPhi, theWeight);
+                    theHistograms->fill("#Delta #phi ee", "#Delta #phi ee", HISTO_Phi_Config, deltaPhi, theWeight);
                     deltaR = physmath::deltaR(electrons->at(0), electrons->at(1));
-                    theHistograms.fill("#Delta R ee", "#Delta R ee", 100, 0., 2., deltaR, theWeight);
+                    theHistograms->fill("#Delta R ee", "#Delta R ee", 100, 0., 2., deltaR, theWeight);
                     break;
                 case 0:
                     if (!((muons->at(0).charge())*(muons->at(1).charge())<0)){
@@ -165,14 +165,14 @@ void ZVAnalyzer::analyze(){
                         return;
                     }
                     else
-                        theHistograms.fill("Leading m pt", "Leading m pt", HISTO_Pt_Config, muons->at(0).pt(), theWeight);
-                    theHistograms.fill("Second m pt", "Second m pt", HISTO_Pt_Config, muons->at(1).pt(), theWeight);
+                        theHistograms->fill("Leading m pt", "Leading m pt", HISTO_Pt_Config, muons->at(0).pt(), theWeight);
+                    theHistograms->fill("Second m pt", "Second m pt", HISTO_Pt_Config, muons->at(1).pt(), theWeight);
                     deltaEta = muons->at(0).eta() - muons->at(1).eta();
-                    theHistograms.fill("#Delta #eta mm", "#Delta #eta mm", HISTO_JEta_Config, deltaEta, theWeight);
+                    theHistograms->fill("#Delta #eta mm", "#Delta #eta mm", HISTO_JEta_Config, deltaEta, theWeight);
                     deltaPhi = muons->at(0).phi() - muons->at(1).phi();
-                    theHistograms.fill("#Delta #phi mm", "#Delta #phi mm", HISTO_Phi_Config, deltaPhi, theWeight);
+                    theHistograms->fill("#Delta #phi mm", "#Delta #phi mm", HISTO_Phi_Config, deltaPhi, theWeight);
                     deltaR = physmath::deltaR(muons->at(0), muons->at(1));
-                    theHistograms.fill("#Delta R mm", "#Delta R mm", 100, 0., 2., deltaR, theWeight);
+                    theHistograms->fill("#Delta R mm", "#Delta R mm", 100, 0., 2., deltaR, theWeight);
                     
                 default:
                     break;
@@ -208,15 +208,15 @@ void ZVAnalyzer::end(TFile &){
 template<class T, class P>
 void ZVAnalyzer::analyzeResolutionpt(const T& generated, const P& reconstructed, std::string name) {
     double ideltapt = 1./generated.pt() - 1./reconstructed.pt();
-    theHistograms.fill(name+"pt_Resolution", name+"pt_Resolution", 200, -0.2, 0.2, ideltapt/(1./generated.pt()),1);
-    theHistograms.get(name+"pt_Resolution")->GetXaxis()->SetTitle("#Delta(#frac{1}{pt})*pt");
+    theHistograms->fill(name+"pt_Resolution", name+"pt_Resolution", 200, -0.2, 0.2, ideltapt/(1./generated.pt()),1);
+    theHistograms->get(name+"pt_Resolution")->GetXaxis()->SetTitle("#Delta(#frac{1}{pt})*pt");
 };
 
 template <class T, class P>
 void ZVAnalyzer::analyzeResolutionEnergy(const T& generated, const P& reconstructed, std::string name) {
     double deltaE = generated.e() - reconstructed.e();
-    theHistograms.fill(name+"Energy_Resolution", name+"Energy_Resolution", 200, -0.2, 0.2, deltaE/(generated.e()),1);
-    theHistograms.get(name+"Energy_Resolution")->GetXaxis()->SetTitle("#frac{#DeltaE}{E}");
+    theHistograms->fill(name+"Energy_Resolution", name+"Energy_Resolution", 200, -0.2, 0.2, deltaE/(generated.e()),1);
+    theHistograms->get(name+"Energy_Resolution")->GetXaxis()->SetTitle("#frac{#DeltaE}{E}");
 };
 
 template <class T, class P, typename C>
@@ -227,13 +227,13 @@ void ZVAnalyzer::analyzeEfficiency(std::vector<T>* genGroup, std::vector<P>* rec
             counter++;
             if (checkMatch(gen, *cand, tolerance)){
                if(name == "Jets"){
-                    theHistograms.fill(name+"Matched_vs_pt",name+"Matched_vs_pt", HISTO_Pt_Config, gen.pt(), 1);
-                    theHistograms.fill(name+"Matched_vs_eta",name+"Matched_vs_eta", HISTO_JEta_Config, gen.eta(), 1);
+                    theHistograms->fill(name+"Matched_vs_pt",name+"Matched_vs_pt", HISTO_Pt_Config, gen.pt(), 1);
+                    theHistograms->fill(name+"Matched_vs_eta",name+"Matched_vs_eta", HISTO_JEta_Config, gen.eta(), 1);
                 }
                 //Efficiency vs Eta
-            theHistograms.fill(name+"Matched_vs_eta",name+"Matched_vs_eta", HISTO_Eta_Config, gen.eta(), 1);
+            theHistograms->fill(name+"Matched_vs_eta",name+"Matched_vs_eta", HISTO_Eta_Config, gen.eta(), 1);
                 //Efficiency vs pt
-            theHistograms.fill(name+"Matched_vs_pt",name+"Matched_vs_pt",HISTO_Pt_Config, gen.pt(), 1);
+            theHistograms->fill(name+"Matched_vs_pt",name+"Matched_vs_pt",HISTO_Pt_Config, gen.pt(), 1);
             }
         analyzeResolutionpt(gen, *cand, name);
         analyzeResolutionEnergy(gen, *cand, name);
@@ -264,39 +264,39 @@ bool ZVAnalyzer::checkMatch(const /*phys::Particle&*/P& generated, /*const phys:
 
 
 void ZVAnalyzer::normalizeHistograms(std::string name){
-    theHistograms.clone(name+"Matched_vs_eta", name+"Efficiency_vs_eta");
-    theHistograms.get(name+"Efficiency_vs_eta")->Divide(theHistograms.get("gen"+name+"_eta"));
-    theHistograms.get(name+"Efficiency_vs_eta")->SetTitle((name+"Efficiency_vs_eta").std::string::c_str());
+    theHistograms->clone(name+"Matched_vs_eta", name+"Efficiency_vs_eta");
+    theHistograms->get(name+"Efficiency_vs_eta")->Divide(theHistograms->get("gen"+name+"_eta"));
+    theHistograms->get(name+"Efficiency_vs_eta")->SetTitle((name+"Efficiency_vs_eta").std::string::c_str());
     //There's no overload of SetTitle(const char*) with SetTitle(std::string)
-    theHistograms.get(name+"Efficiency_vs_eta")->GetXaxis()->SetTitle("#eta");
+    theHistograms->get(name+"Efficiency_vs_eta")->GetXaxis()->SetTitle("#eta");
     
-    theHistograms.clone(name+"Matched_vs_pt", name+"Efficiency_vs_pt");
-    theHistograms.get(name+"Efficiency_vs_pt")->Divide(theHistograms.get("gen"+name+"_pt"));
-    theHistograms.get(name+"Efficiency_vs_pt")->SetTitle((name+"Efficiency_vs_pt").std::string::c_str());
-    theHistograms.get(name+"Efficiency_vs_pt")->GetXaxis()->SetTitle("pt [GeV/c]");
+    theHistograms->clone(name+"Matched_vs_pt", name+"Efficiency_vs_pt");
+    theHistograms->get(name+"Efficiency_vs_pt")->Divide(theHistograms->get("gen"+name+"_pt"));
+    theHistograms->get(name+"Efficiency_vs_pt")->SetTitle((name+"Efficiency_vs_pt").std::string::c_str());
+    theHistograms->get(name+"Efficiency_vs_pt")->GetXaxis()->SetTitle("pt [GeV/c]");
     
 }
 
 void ZVAnalyzer::fillBasicPlots(){
-        theHistograms.fill<TH1I>("nvtx"     , "Number of vertices" , 100, 0, 100, nvtx             , theWeight);
-        theHistograms.fill<TH1I>("nmuons"    ,"Number of muons"    ,  10, 0, 10 , muons->size()    , theWeight);
-        theHistograms.fill<TH1I>("nelectrons","Number of electrons",  10, 0, 10 , electrons->size(), theWeight);
+        theHistograms->fill<TH1I>("nvtx"     , "Number of vertices" , 100, 0, 100, nvtx             , theWeight);
+        theHistograms->fill<TH1I>("nmuons"    ,"Number of muons"    ,  10, 0, 10 , muons->size()    , theWeight);
+        theHistograms->fill<TH1I>("nelectrons","Number of electrons",  10, 0, 10 , electrons->size(), theWeight);
         
-        theHistograms.get("met")->GetXaxis()->SetTitle("[GeV/c]");
+        theHistograms->get("met")->GetXaxis()->SetTitle("[GeV/c]");
     }
     
     
 template <class P>
 void ZVAnalyzer::fillParticlePlots(const std::string &type, const P& lepton){
     if (type == "genJets") {
-        theHistograms.fill(type+"_eta",    "#eta spectrum" ,HISTO_JEta_Config ,lepton.eta()   , 1);
+        theHistograms->fill(type+"_eta",    "#eta spectrum" ,HISTO_JEta_Config ,lepton.eta()   , 1);
     }
-        theHistograms.fill(type+"_pt" ,    "p_{T} spectrum", HISTO_Pt_Config,lepton.pt()    , 1);
-        theHistograms.fill(type+"_eta",    "#eta spectrum" , HISTO_Eta_Config ,lepton.eta()   , 1);
-        theHistograms.fill(type+"_phi",    "#phi spectrum" ,  HISTO_Phi_Config,lepton.phi()   , 1);
+        theHistograms->fill(type+"_pt" ,    "p_{T} spectrum", HISTO_Pt_Config,lepton.pt()    , 1);
+        theHistograms->fill(type+"_eta",    "#eta spectrum" , HISTO_Eta_Config ,lepton.eta()   , 1);
+        theHistograms->fill(type+"_phi",    "#phi spectrum" ,  HISTO_Phi_Config,lepton.phi()   , 1);
     
         
-        theHistograms.get(type+"_pt")->GetXaxis()->SetTitle("[GeV/c]");
+        theHistograms->get(type+"_pt")->GetXaxis()->SetTitle("[GeV/c]");
     }
 
 void ZVAnalyzer::initStatistics(){
@@ -319,26 +319,26 @@ void ZVAnalyzer::tempStatisticParticles(const phys::Particle &par){
             if(abs(par.id()) == 11) peCounter++;
             if(abs(par.id()) == 13) pmCounter++;
             
-            theHistograms.fill("ptPromptParticle", "p_t (prompt)", 25, 0, 50, par.pt());
-            theHistograms.fill("massPromptParticle", "m (prompt)", 1000, 0, 100, par.p4().M());
+            theHistograms->fill("ptPromptParticle", "p_t (prompt)", 25, 0, 50, par.pt());
+            theHistograms->fill("massPromptParticle", "m (prompt)", 1000, 0, 100, par.p4().M());
         }
-        theHistograms.get("ptPromptParticle")->GetXaxis()->SetTitle("[GeV/c]");
-        theHistograms.get("massPromptParticle")->GetXaxis()->SetTitle("[GeV/c^2]");
-        theHistograms.fill("ptAllAnalyzedParticle", "p_t", 25, 0, 50, par.pt());
-        theHistograms.get("ptAllAnalyzedParticle")->GetXaxis()->SetTitle("[GeV]");
-        theHistograms.fill("ParticlesIDs", "ParticlesIDs", 40, -20, 20, par.id());
+        theHistograms->get("ptPromptParticle")->GetXaxis()->SetTitle("[GeV/c]");
+        theHistograms->get("massPromptParticle")->GetXaxis()->SetTitle("[GeV/c^2]");
+        theHistograms->fill("ptAllAnalyzedParticle", "p_t", 25, 0, 50, par.pt());
+        theHistograms->get("ptAllAnalyzedParticle")->GetXaxis()->SetTitle("[GeV]");
+        theHistograms->fill("ParticlesIDs", "ParticlesIDs", 40, -20, 20, par.id());
     }
     
 void ZVAnalyzer::tempStatisticEvents(){
-        theHistograms.fill("ParticlesPerEvent", "ParticlesPerEvent", 40, 0, 40, counter);
-        theHistograms.fill("genElectronsPerEvent", "genElectronsPerEvent", 25, 0, 25, eCounter);
-        theHistograms.fill("genMuonsPerEvent", "genMuonsPerEvent", 25, 0, 25, mCounter);
+        theHistograms->fill("ParticlesPerEvent", "ParticlesPerEvent", 40, 0, 40, counter);
+        theHistograms->fill("genElectronsPerEvent", "genElectronsPerEvent", 25, 0, 25, eCounter);
+        theHistograms->fill("genMuonsPerEvent", "genMuonsPerEvent", 25, 0, 25, mCounter);
         
-        theHistograms.fill("PromptParticlesPerEvent", "PromptParticlesPerEvent", 25, 0, 25, promptCounter);
-        theHistograms.fill("PromptgenElectronsPerEvent", "PromptgenElectronsPerEvent", 25, 0, 25, peCounter);
-        theHistograms.fill("PromptMuonsPerEvent", "PromptMuonsPerEvent", 25, 0, 25, pmCounter);
+        theHistograms->fill("PromptParticlesPerEvent", "PromptParticlesPerEvent", 25, 0, 25, promptCounter);
+        theHistograms->fill("PromptgenElectronsPerEvent", "PromptgenElectronsPerEvent", 25, 0, 25, peCounter);
+        theHistograms->fill("PromptMuonsPerEvent", "PromptMuonsPerEvent", 25, 0, 25, pmCounter);
         
-        theHistograms.fill("ElectronsPerEvent", "ElectronsPerEvent", 25, 0, 25, electrons->size());
+        theHistograms->fill("ElectronsPerEvent", "ElectronsPerEvent", 25, 0, 25, electrons->size());
     }
     
 void ZVAnalyzer::doSomeFits(std::string name){
@@ -349,14 +349,14 @@ void ZVAnalyzer::doSomeFits(std::string name){
         func1->SetParLimits(0,0,10000000);
         func1->SetParLimits(2,0,2000);
         func1->SetLineColor(4);
-        theHistograms.get(name+"pt_Resolution")->Fit(func1,"R+");
+        theHistograms->get(name+"pt_Resolution")->Fit(func1,"R+");
         
         TF1* func2 = new TF1("func2","[0]*exp(-x*x/(2*[1])) + [2]",-0.05,0.05);
         func2->SetParameters(2000,0.2,100);
         func2->SetParLimits(0,0,10000000);
         func2->SetParLimits(2,0,2000);
         func2->SetLineColor(3);
-        theHistograms.get(name+"Energy_Resolution")->Fit(func2, "R+");
+        theHistograms->get(name+"Energy_Resolution")->Fit(func2, "R+");
     }
     if (name == "Muons"){
         TF1* func3 = new TF1("func3","[0]*exp(-x*x/(2*[1])) + [2]",-0.05,0.05);
@@ -364,14 +364,14 @@ void ZVAnalyzer::doSomeFits(std::string name){
         func3->SetParLimits(0,0,10000000);
         func3->SetParLimits(2,0,2500);
         func3->SetLineColor(4);
-        theHistograms.get(name+"pt_Resolution")->Fit(func3,"R+");
+        theHistograms->get(name+"pt_Resolution")->Fit(func3,"R+");
         
         TF1* func4 = new TF1("func4","[0]*exp(-x*x/(2*[1])) + [2]",-0.05,0.05);
         func4->SetParameters(2500,0.2,100);
         func4->SetParLimits(0,0,10000000);
         func4->SetParLimits(2,0,2500);
         func4->SetLineColor(3);
-        theHistograms.get(name+"Energy_Resolution")->Fit(func4, "R+");
+        theHistograms->get(name+"Energy_Resolution")->Fit(func4, "R+");
     }
 }
     

@@ -17,7 +17,7 @@ void ZZjjAnalyzer::GenAnalysis(DiBosonParticle &genZZ, Particle &Jet0, Particle 
   // ~~~~~~~~~~~~~~~~~~~~ Begin of gen Analysis ~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   int cut = 0;  
-  theHistograms.fill("GenCuts_wei", "Weighted counters", 10, -0.5, 9.5, cut, theWeight);
+  theHistograms->fill("GenCuts_wei", "Weighted counters", 10, -0.5, 9.5, cut, theWeight);
 
   
 
@@ -35,13 +35,13 @@ void ZZjjAnalyzer::GenAnalysis(DiBosonParticle &genZZ, Particle &Jet0, Particle 
   weightGen += theWeight;
   
   cut++;  
-  theHistograms.fill("GenCuts_wei", "Weighted counters", 10, -0.5, 9.5, cut, theWeight);
-  theHistograms.fill("ZZ_Events",   "Weighted counters", 10, -0.5, 9.5,   2, theWeight);
+  theHistograms->fill("GenCuts_wei", "Weighted counters", 10, -0.5, 9.5, cut, theWeight);
+  theHistograms->fill("ZZ_Events",   "Weighted counters", 10, -0.5, 9.5,   2, theWeight);
 
 
   
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Jets ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  theHistograms.fill("GenJets_size", "Jets size", 11, -0.5, 10.5, genJets->size(), theWeight);
+  theHistograms->fill("GenJets_size", "Jets size", 11, -0.5, 10.5, genJets->size(), theWeight);
 
   
   // ----- jets' number > 2 and |eta| < 4.7
@@ -51,7 +51,7 @@ void ZZjjAnalyzer::GenAnalysis(DiBosonParticle &genZZ, Particle &Jet0, Particle 
     return;
   }
   cut++;  
-  theHistograms.fill("GenCuts_wei", "Weighted counters", 10, -0.5, 9.5, cut, theWeight);
+  theHistograms->fill("GenCuts_wei", "Weighted counters", 10, -0.5, 9.5, cut, theWeight);
   
   
   
@@ -62,9 +62,9 @@ void ZZjjAnalyzer::GenAnalysis(DiBosonParticle &genZZ, Particle &Jet0, Particle 
 
 
   // Histograms before cuts
-  theHistograms.fill("Gen4l_mass_BC",   "m_{4l}",   300, 0, 3000, llllp4.M(), theWeight);
-  theHistograms.fill("GenJJ_mass_BC",   "m_{jj}",   400, 0, 4000, jjp4.M(),   theWeight);
-  theHistograms.fill("GenZZJJ_mass_BC", "m_{ZZjj}", 500, 0, 5000, ZZjjp4.M(), theWeight);
+  theHistograms->fill("Gen4l_mass_BC",   "m_{4l}",   300, 0, 3000, llllp4.M(), theWeight);
+  theHistograms->fill("GenJJ_mass_BC",   "m_{jj}",   400, 0, 4000, jjp4.M(),   theWeight);
+  theHistograms->fill("GenZZJJ_mass_BC", "m_{ZZjj}", 500, 0, 5000, ZZjjp4.M(), theWeight);
   
   
 
@@ -73,14 +73,14 @@ void ZZjjAnalyzer::GenAnalysis(DiBosonParticle &genZZ, Particle &Jet0, Particle 
     return;
   
   cut++;  
-  theHistograms.fill("GenCuts_wei", "Weighted counters", 10, -0.5, 9.5, cut, theWeight);
+  theHistograms->fill("GenCuts_wei", "Weighted counters", 10, -0.5, 9.5, cut, theWeight);
 
   if(jjp4.M() < 100.)
     return;
   
   cut++;  
-  theHistograms.fill("GenCuts_wei", "Weighted counters", 10, -0.5, 9.5, cut, theWeight);
-  theHistograms.fill("ZZ_Events",   "Weighted counters", 10, -0.5, 9.5,   3, theWeight);
+  theHistograms->fill("GenCuts_wei", "Weighted counters", 10, -0.5, 9.5, cut, theWeight);
+  theHistograms->fill("ZZ_Events",   "Weighted counters", 10, -0.5, 9.5,   3, theWeight);
   
   genZZ = DiBosonParticle(Z0, Z1);
   eventGenaftercut++;
@@ -90,8 +90,8 @@ void ZZjjAnalyzer::GenAnalysis(DiBosonParticle &genZZ, Particle &Jet0, Particle 
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~ Histograms ~~~~~~~~~~~~~~~~~~~~~~~~~
   // Histograms after cuts (JJmass is in helper histos)
-  theHistograms.fill("Gen4l_mass_AC",   "m_{4l}",   300, 0, 3000, llllp4.M(), theWeight);
-  theHistograms.fill("GenZZJJ_mass_AC", "m_{ZZjj}", 500, 0, 5000, ZZjjp4.M(), theWeight);
+  theHistograms->fill("Gen4l_mass_AC",   "m_{4l}",   300, 0, 3000, llllp4.M(), theWeight);
+  theHistograms->fill("GenZZJJ_mass_AC", "m_{ZZjj}", 500, 0, 5000, ZZjjp4.M(), theWeight);
   
   helper_->PlotBoson(Z0, "GenZ0", theWeight, "AC");
   helper_->PlotBoson(Z1, "GenZ1", theWeight, "AC");
@@ -105,23 +105,23 @@ void ZZjjAnalyzer::GenAnalysis(DiBosonParticle &genZZ, Particle &Jet0, Particle 
   // ~~~~~~~~~~~~~~~~~~~~~ VBS enriched regions ~~~~~~~~~~~~~~~~~~~~
   // -------------------------- Loose VBS --------------------------
   if(jjp4.M() > 400.){
-    theHistograms.fill("Gen4l_mass_AC_Loose",   "m_{4l}",   300, 0, 3000, llllp4.M(), theWeight);
-    theHistograms.fill("GenJJ_mass_AC_Loose",   "m_{jj}",   400, 0, 4000, jjp4.M(),   theWeight);
-    theHistograms.fill("GenZZJJ_mass_AC_Loose", "m_{ZZjj}", 500, 0, 5000, ZZjjp4.M(), theWeight);
+    theHistograms->fill("Gen4l_mass_AC_Loose",   "m_{4l}",   300, 0, 3000, llllp4.M(), theWeight);
+    theHistograms->fill("GenJJ_mass_AC_Loose",   "m_{jj}",   400, 0, 4000, jjp4.M(),   theWeight);
+    theHistograms->fill("GenZZJJ_mass_AC_Loose", "m_{ZZjj}", 500, 0, 5000, ZZjjp4.M(), theWeight);
   
     cut++;  
-    theHistograms.fill("GenCuts_wei", "Weighted counters", 10, -0.5, 9.5, cut, theWeight);
+    theHistograms->fill("GenCuts_wei", "Weighted counters", 10, -0.5, 9.5, cut, theWeight);
   }
 
   
   // -------------------------- Tight VBS -------------------------- 
   if(jjp4.M() > 1000.){
-    theHistograms.fill("Gen4l_mass_AC_Tight",   "m_{4l}",   300, 0, 3000, llllp4.M(), theWeight);
-    theHistograms.fill("GenJJ_mass_AC_Tight",   "m_{jj}",   400, 0, 4000, jjp4.M(),   theWeight);
-    theHistograms.fill("GenZZJJ_mass_AC_Tight", "m_{ZZjj}", 500, 0, 5000, ZZjjp4.M(), theWeight);
+    theHistograms->fill("Gen4l_mass_AC_Tight",   "m_{4l}",   300, 0, 3000, llllp4.M(), theWeight);
+    theHistograms->fill("GenJJ_mass_AC_Tight",   "m_{jj}",   400, 0, 4000, jjp4.M(),   theWeight);
+    theHistograms->fill("GenZZJJ_mass_AC_Tight", "m_{ZZjj}", 500, 0, 5000, ZZjjp4.M(), theWeight);
   
     cut++;  
-    theHistograms.fill("GenCuts_wei", "Weighted counters", 10, -0.5, 9.5, cut, theWeight);
+    theHistograms->fill("GenCuts_wei", "Weighted counters", 10, -0.5, 9.5, cut, theWeight);
   }
 
   
@@ -138,10 +138,10 @@ void ZZjjAnalyzer::RecoAnalysis(DiBosonLepton &recoZZ, Particle &Jet0, Particle 
   // ~~~~~~~~~~~~~~~~~~~~ Begin of reco Analysis ~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   int cut = 0;
-  theHistograms.fill("RecoCut",     "Reco events after cuts", 14, -0.5, 13.5, cut);
-  theHistograms.fill("RecoCut_wei", "Reco events after cuts", 14, -0.5, 13.5, cut, theWeight);
+  theHistograms->fill("RecoCut",     "Reco events after cuts", 14, -0.5, 13.5, cut);
+  theHistograms->fill("RecoCut_wei", "Reco events after cuts", 14, -0.5, 13.5, cut, theWeight);
 
-  theHistograms.fill("theWeight", "weights", 100, -0.000002, 0, theWeight);
+  theHistograms->fill("theWeight", "weights", 100, -0.000002, 0, theWeight);
 
   
 
@@ -151,9 +151,9 @@ void ZZjjAnalyzer::RecoAnalysis(DiBosonLepton &recoZZ, Particle &Jet0, Particle 
   }
   
   cut++;
-  theHistograms.fill("RecoCut",     "Events after cuts", 13, -0.5, 12.5, cut);
-  theHistograms.fill("RecoCut_wei", "Events after cuts", 14, -0.5, 13.5, cut, theWeight);
-  theHistograms.fill("ZZ_Events",   "Weighted counters", 10, -0.5, 9.5,    4, theWeight);
+  theHistograms->fill("RecoCut",     "Events after cuts", 13, -0.5, 12.5, cut);
+  theHistograms->fill("RecoCut_wei", "Events after cuts", 14, -0.5, 13.5, cut, theWeight);
+  theHistograms->fill("ZZ_Events",   "Weighted counters", 10, -0.5, 9.5,    4, theWeight);
   
   eventReco++;
   weightReco += theWeight;
@@ -161,7 +161,7 @@ void ZZjjAnalyzer::RecoAnalysis(DiBosonLepton &recoZZ, Particle &Jet0, Particle 
   
   
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Jets ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  theHistograms.fill("RecoJets_size", "Jets size", 10, -0.5, 9.5, jets->size(), theWeight);
+  theHistograms->fill("RecoJets_size", "Jets size", 10, -0.5, 9.5, jets->size(), theWeight);
 
   
   // ----- jets' number > 2 and |eta| < 4.7
@@ -172,8 +172,8 @@ void ZZjjAnalyzer::RecoAnalysis(DiBosonLepton &recoZZ, Particle &Jet0, Particle 
   }
   
   cut++;
-  theHistograms.fill("RecoCut",     "Events after cuts", 13, -0.5, 12.5, cut);
-  theHistograms.fill("RecoCut_wei", "Events after cuts", 14, -0.5, 13.5, cut, theWeight);
+  theHistograms->fill("RecoCut",     "Events after cuts", 13, -0.5, 12.5, cut);
+  theHistograms->fill("RecoCut_wei", "Events after cuts", 14, -0.5, 13.5, cut, theWeight);
   
   
   
@@ -184,12 +184,12 @@ void ZZjjAnalyzer::RecoAnalysis(DiBosonLepton &recoZZ, Particle &Jet0, Particle 
 
 
   // Histograms before cuts
-  theHistograms.fill("Reco4l_mass_BC",   "m_{4l}",    100,   0, 3000, llllp4.M(),            theWeight);
-  theHistograms.fill("RecoJJ_mass_BC",   "m_{jj}",    100,   0, 4000, jjp4.M(),              theWeight);
-  theHistograms.fill("RecoZZJJ_mass_BC", "m_{ZZjj}",  100,   0, 5000, ZZjjp4.M(),            theWeight);
-  theHistograms.fill("RecoZZ_mass_BC",   "m_{ZZ}",     72, 170, 1610, ZZ->p4().M(),          theWeight);
-  theHistograms.fill("RecoZ0_mass_BC",   "m_{Z_{0}}",  30,  60,  120, ZZ->first().p4().M(),  theWeight);
-  theHistograms.fill("RecoZ1_mass_BC",   "m_{Z_{1}}",  30,  60,  120, ZZ->second().p4().M(), theWeight);
+  theHistograms->fill("Reco4l_mass_BC",   "m_{4l}",    100,   0, 3000, llllp4.M(),            theWeight);
+  theHistograms->fill("RecoJJ_mass_BC",   "m_{jj}",    100,   0, 4000, jjp4.M(),              theWeight);
+  theHistograms->fill("RecoZZJJ_mass_BC", "m_{ZZjj}",  100,   0, 5000, ZZjjp4.M(),            theWeight);
+  theHistograms->fill("RecoZZ_mass_BC",   "m_{ZZ}",     72, 170, 1610, ZZ->p4().M(),          theWeight);
+  theHistograms->fill("RecoZ0_mass_BC",   "m_{Z_{0}}",  30,  60,  120, ZZ->first().p4().M(),  theWeight);
+  theHistograms->fill("RecoZ1_mass_BC",   "m_{Z_{1}}",  30,  60,  120, ZZ->second().p4().M(), theWeight);
   
   helper_->PlotDiBoson(*ZZ, "ZZ", theWeight, "BC");  
   helper_->PlotJets(Jet0, Jet1, "Reco", theWeight, "BC");
@@ -200,40 +200,40 @@ void ZZjjAnalyzer::RecoAnalysis(DiBosonLepton &recoZZ, Particle &Jet0, Particle 
   if(llllp4.M() < 180.)
     return;
   cut++;
-  theHistograms.fill("RecoCut",     "Events after cuts", 13, -0.5, 12.5, cut);
-  theHistograms.fill("RecoCut_wei", "Events after cuts", 14, -0.5, 13.5, cut, theWeight);
+  theHistograms->fill("RecoCut",     "Events after cuts", 13, -0.5, 12.5, cut);
+  theHistograms->fill("RecoCut_wei", "Events after cuts", 14, -0.5, 13.5, cut, theWeight);
 
   if(jjp4.M() < 100.)
     return;
   cut++;
-  theHistograms.fill("RecoCut",     "Events after cuts", 13, -0.5, 12.5, cut);
-  theHistograms.fill("RecoCut_wei", "Events after cuts", 14, -0.5, 13.5, cut, theWeight);
+  theHistograms->fill("RecoCut",     "Events after cuts", 13, -0.5, 12.5, cut);
+  theHistograms->fill("RecoCut_wei", "Events after cuts", 14, -0.5, 13.5, cut, theWeight);
 
   
   // Histograms after cuts (JJ mass and deltaEta in helper histograms)
   helper_->PlotDiBoson(*ZZ, "ZZ", theWeight, "AC");
   
-  theHistograms.fill("Reco4l_mass_AC",   "m_{4l}",   100, 0, 3000, llllp4.M(), theWeight);
-  theHistograms.fill("RecoZZjj_mass_AC", "m_{ZZjj}", 100, 0, 5000, ZZjjp4.M(), theWeight);
+  theHistograms->fill("Reco4l_mass_AC",   "m_{4l}",   100, 0, 3000, llllp4.M(), theWeight);
+  theHistograms->fill("RecoZZjj_mass_AC", "m_{ZZjj}", 100, 0, 5000, ZZjjp4.M(), theWeight);
 
 
 
   // ~~~~~~~~~~~~~~~~~~~~~~ MELA Discriminants ~~~~~~~~~~~~~~~~~~~~~
-  theHistograms.fill("MELA_JJVBF", "JJVBF Nominal", 202, -2, 40, mela->JJVBF_Nominal(), theWeight);
-  theHistograms.fill("MELA_JJQCD", "JJQCD Nominal", 202, -2, 40, mela->JJQCD_Nominal(), theWeight);
-  theHistograms.fill("MELA_JJEW",  "JJEW Nominal",  202, -2, 40, mela->JJEW_Nominal(),  theWeight);
+  theHistograms->fill("MELA_JJVBF", "JJVBF Nominal", 202, -2, 40, mela->JJVBF_Nominal(), theWeight);
+  theHistograms->fill("MELA_JJQCD", "JJQCD Nominal", 202, -2, 40, mela->JJQCD_Nominal(), theWeight);
+  theHistograms->fill("MELA_JJEW",  "JJEW Nominal",  202, -2, 40, mela->JJEW_Nominal(),  theWeight);
 
   float c = 8.5*helper_->getSpline(ZZ->mass());  
   float disc_VBF_QCD = mela->JJVBF_Nominal()/(mela->JJVBF_Nominal() + c*mela->JJQCD_Nominal());
     
-  theHistograms.fill("MELA_discriminant", "Discriminant #frac{JJVBF}{c JJQCD + JJVBF}", 50, 0, 1, disc_VBF_QCD, theWeight);
+  theHistograms->fill("MELA_discriminant", "Discriminant #frac{JJVBF}{c JJQCD + JJVBF}", 50, 0, 1, disc_VBF_QCD, theWeight);
   
   
     
   recoZZ = DiBosonLepton(*ZZ);
   eventRecoaftercut++;
   weightRecoaftercut += theWeight;
-  theHistograms.fill("ZZ_Events", "Weighted counters", 10, -0.5, 9.5, 5, theWeight);
+  theHistograms->fill("ZZ_Events", "Weighted counters", 10, -0.5, 9.5, 5, theWeight);
   
   
 
@@ -249,36 +249,36 @@ void ZZjjAnalyzer::RecoAnalysis(DiBosonLepton &recoZZ, Particle &Jet0, Particle 
   // -------------------------- Loose VBS --------------------------
     cut++;
   if(jjp4.M() > 400. && recoJJdeltaEta > 2.4){
-    theHistograms.fill("Reco4l_mass_AC_Loose",   "m_{4l}",   100, 0, 3000, llllp4.M(), theWeight);
-    theHistograms.fill("Recojj_mass_AC_Loose",   "m_{jj}",   100, 0, 4000, jjp4.M(),   theWeight);
-    theHistograms.fill("RecoZZjj_mass_AC_Loose", "m_{ZZjj}", 100, 0, 5000, ZZjjp4.M(), theWeight);
+    theHistograms->fill("Reco4l_mass_AC_Loose",   "m_{4l}",   100, 0, 3000, llllp4.M(), theWeight);
+    theHistograms->fill("Recojj_mass_AC_Loose",   "m_{jj}",   100, 0, 4000, jjp4.M(),   theWeight);
+    theHistograms->fill("RecoZZjj_mass_AC_Loose", "m_{ZZjj}", 100, 0, 5000, ZZjjp4.M(), theWeight);
     
-    theHistograms.fill("RecoCut", "Events after cuts", 13, -0.5, 12.5, cut);
-    theHistograms.fill("RecoCut_wei", "Events after cuts", 14, -0.5, 13.5, cut, theWeight);
+    theHistograms->fill("RecoCut", "Events after cuts", 13, -0.5, 12.5, cut);
+    theHistograms->fill("RecoCut_wei", "Events after cuts", 14, -0.5, 13.5, cut, theWeight);
   }
 
   
   // -------------------------- Tight VBS --------------------------
     cut++; 
   if(jjp4.M() > 1000. && recoJJdeltaEta > 2.4){
-    theHistograms.fill("Reco4l_mass_AC_Tight",   "m_{4l}",   100, 0, 3000, llllp4.M(), theWeight);
-    theHistograms.fill("Recojj_mass_AC_Tight",   "m_{jj}",   100, 0, 4000, jjp4.M(),   theWeight);
-    theHistograms.fill("RecoZZjj_mass_AC_Tight", "m_{ZZjj}", 100, 0, 5000, ZZjjp4.M(), theWeight);
+    theHistograms->fill("Reco4l_mass_AC_Tight",   "m_{4l}",   100, 0, 3000, llllp4.M(), theWeight);
+    theHistograms->fill("Recojj_mass_AC_Tight",   "m_{jj}",   100, 0, 4000, jjp4.M(),   theWeight);
+    theHistograms->fill("RecoZZjj_mass_AC_Tight", "m_{ZZjj}", 100, 0, 5000, ZZjjp4.M(), theWeight);
     
-    theHistograms.fill("RecoCut", "Events after cuts", 13, -0.5, 12.5, cut);
-    theHistograms.fill("RecoCut_wei", "Events after cuts", 14, -0.5, 13.5, cut, theWeight);
+    theHistograms->fill("RecoCut", "Events after cuts", 13, -0.5, 12.5, cut);
+    theHistograms->fill("RecoCut_wei", "Events after cuts", 14, -0.5, 13.5, cut, theWeight);
   }
 
 
   // ---------------------------------------------------------------
     cut++;
   if(disc_VBF_QCD < 0.7){
-    theHistograms.fill("Reco4l_mass_AM",   "m_{4l}",   100, 0, 3000, llllp4.M(), theWeight);
-    theHistograms.fill("RecoZZjj_mass_AM", "m_{ZZjj}", 100, 0, 5000, ZZjjp4.M(), theWeight);
+    theHistograms->fill("Reco4l_mass_AM",   "m_{4l}",   100, 0, 3000, llllp4.M(), theWeight);
+    theHistograms->fill("RecoZZjj_mass_AM", "m_{ZZjj}", 100, 0, 5000, ZZjjp4.M(), theWeight);
     helper_->PlotDiBoson(*ZZ, "RecoZZ", theWeight, "AM");
     
-    theHistograms.fill("RecoCut", "Events after cuts", 13, -0.5, 12.5, cut);
-    theHistograms.fill("RecoCut_wei", "Events after cuts", 14, -0.5, 13.5, cut, theWeight);
+    theHistograms->fill("RecoCut", "Events after cuts", 13, -0.5, 12.5, cut);
+    theHistograms->fill("RecoCut_wei", "Events after cuts", 14, -0.5, 13.5, cut, theWeight);
   }
 
   
@@ -296,7 +296,7 @@ void ZZjjAnalyzer::GenRecoAnalysis(const DiBosonParticle genZZ, const Particle g
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   eventGenReco++;
   weightGenReco += theWeight;
-  theHistograms.fill("ZZ_Events", "Weighted counters", 10, -0.5, 9.5, 6, theWeight);
+  theHistograms->fill("ZZ_Events", "Weighted counters", 10, -0.5, 9.5, 6, theWeight);
 
   
   // check if gen and reco IDs are the same
@@ -307,15 +307,15 @@ void ZZjjAnalyzer::GenRecoAnalysis(const DiBosonParticle genZZ, const Particle g
   // check if jets are the same
   bool GRJet0 = genJet0.pt() - recoJet0.pt() < 0.1;
   bool GRJet1 = genJet1.pt() - recoJet1.pt() < 0.1;
-  theHistograms.fill("GR_JJ_arethesame", "GenJ0 and RecoJ0 (0,1), GenJ1 and RecoJ1 (2,3) are the same", 6, -1.5, 4.5, GRJet0);
-  theHistograms.fill("GR_JJ_arethesame", "GenJ0 and RecoJ0 (0,1), GenJ1 and RecoJ1 (2,3) are the same", 6, -1.5, 4.5, GRJet1 + 2);
+  theHistograms->fill("GR_JJ_arethesame", "GenJ0 and RecoJ0 (0,1), GenJ1 and RecoJ1 (2,3) are the same", 6, -1.5, 4.5, GRJet0);
+  theHistograms->fill("GR_JJ_arethesame", "GenJ0 and RecoJ0 (0,1), GenJ1 and RecoJ1 (2,3) are the same", 6, -1.5, 4.5, GRJet1 + 2);
 
   
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~ Histograms ~~~~~~~~~~~~~~~~~~~~~~~~~
   // genZ vs recoZ ID
-  theHistograms.fill("GR_ID_genZZ_vs_recoZZ", "GenZZ's and RecoZZ's first daughters ID", 5, 19, 29, 5, 19, 29, genZZID, recoZZID);
+  theHistograms->fill("GR_ID_genZZ_vs_recoZZ", "GenZZ's and RecoZZ's first daughters ID", 5, 19, 29, 5, 19, 29, genZZID, recoZZID);
   if(genZZID != recoZZID)
-    theHistograms.fill("GR_ID_genZZ_vs_recoZZ_2", "GenZZ's and RecoZZ's first daughters ID", 5, 19, 29, 5, 19, 29, genZZID, recoZZID);
+    theHistograms->fill("GR_ID_genZZ_vs_recoZZ_2", "GenZZ's and RecoZZ's first daughters ID", 5, 19, 29, 5, 19, 29, genZZID, recoZZID);
 
   
   
@@ -332,7 +332,7 @@ void ZZjjAnalyzer::GenNoRecoAnalysis(){
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   eventGenNOReco++;
   weightGenNOReco += theWeight;
-  theHistograms.fill("ZZ_Events", "Weighted counters", 10, -0.5, 9.5, 7, theWeight);
+  theHistograms->fill("ZZ_Events", "Weighted counters", 10, -0.5, 9.5, 7, theWeight);
 
   
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Jets ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -341,16 +341,16 @@ void ZZjjAnalyzer::GenNoRecoAnalysis(){
   helper_->FindLeadingJets(jets, recoJet0, recoJet1);
 
   if(recoJet0.pt() == 0)
-    theHistograms.fill("GNR_Events", "Gen not Reco events", 10, -0.5, 9.5, 0, theWeight);
+    theHistograms->fill("GNR_Events", "Gen not Reco events", 10, -0.5, 9.5, 0, theWeight);
   
   if(recoJet1.pt() == 0)
-    theHistograms.fill("GNR_Events", "Gen not Reco events", 10, -0.5, 9.5, 1, theWeight);
+    theHistograms->fill("GNR_Events", "Gen not Reco events", 10, -0.5, 9.5, 1, theWeight);
 
   
 
   // ~~~~~~~~~~~~~~~~~~~~~~~ ZZ candidates ~~~~~~~~~~~~~~~~~~~~~~~~~
   if(ZZ->pt() == 0)
-    theHistograms.fill("GNR_Events", "Gen not Reco events", 10, -0.5, 9.5, 2, theWeight);
+    theHistograms->fill("GNR_Events", "Gen not Reco events", 10, -0.5, 9.5, 2, theWeight);
   
   
   
@@ -404,7 +404,7 @@ void ZZjjAnalyzer::analyze(){
   // ~~~~~~~~~~~~~~~~~~~~~~~~ Main analysis ~~~~~~~~~~~~~~~~~~~~~~~~
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
   eventSample++;
-  theHistograms.fill("ZZ_Events", "Weighted counters", 10, -0.5, 9.5, 1, theWeight);
+  theHistograms->fill("ZZ_Events", "Weighted counters", 10, -0.5, 9.5, 1, theWeight);
     
   if(eventSample%10000 == 0)
     cout << "Event: " << eventSample << endl;
@@ -445,7 +445,7 @@ void ZZjjAnalyzer::analyze(){
     //Reco event not generated for reasons
     eventRecoNOGen++;
     weightRecoNOGen += theWeight;
-    theHistograms.fill("ZZ_Events", "Weighted counters", 10, -0.5, 9.5, 8, theWeight);
+    theHistograms->fill("ZZ_Events", "Weighted counters", 10, -0.5, 9.5, 8, theWeight);
   }
   
 }

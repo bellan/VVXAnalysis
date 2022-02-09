@@ -29,7 +29,7 @@ public:
  WZAnalyzer(const AnalysisConfiguration& configuration)
    : EventAnalyzer(*(new Selector<WZAnalyzer>(*this)), 
 		   configuration){
-    helper_ = new VVjjHelper(&theHistograms);
+    helper_ = new VVjjHelper(theHistograms);
   }
   
   virtual ~WZAnalyzer(){

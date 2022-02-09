@@ -94,41 +94,41 @@ void VVXnocutsAnalyzer::analyze(){
   double massWZ2=sqrt((WZ2.E()*WZ2.E())-(WZ2.Px()*WZ2.Px())-(WZ2.Py()*WZ2.Py())-(WZ2.Pz()*WZ2.Pz()));
   double massZ1Z2=sqrt((Z1Z2.E()*Z1Z2.E())-(Z1Z2.Px()*Z1Z2.Px())-(Z1Z2.Py()*Z1Z2.Py())-(Z1Z2.Pz()*Z1Z2.Pz()));
   double massWZZ=sqrt((WZZ.E()*WZZ.E())-(WZZ.Px()*WZZ.Px())-(WZZ.Py()*WZZ.Py())-(WZZ.Pz()*WZZ.Pz()));
-  theHistograms.fill("mass of ZZ","ZZ mass",100,150,1000,massZ1Z2);
-  theHistograms.fill("mass of WZ1","WZ1 mass",50,150,1000,massWZ1);
-  theHistograms.fill("mass of WZ2","WZ2 mass",50,150,1000,massWZ2);
-  theHistograms.fill("mass of WZ","WZ mass",100,150,1000,massWZ1);
-  theHistograms.fill("mass of WZ","WZ mass",100,150,1000,massWZ2);
-  theHistograms.fill("mass of tribosons","Triboson mass",50,200,1200,massWZZ,theWeight); 
+  theHistograms->fill("mass of ZZ","ZZ mass",100,150,1000,massZ1Z2);
+  theHistograms->fill("mass of WZ1","WZ1 mass",50,150,1000,massWZ1);
+  theHistograms->fill("mass of WZ2","WZ2 mass",50,150,1000,massWZ2);
+  theHistograms->fill("mass of WZ","WZ mass",100,150,1000,massWZ1);
+  theHistograms->fill("mass of WZ","WZ mass",100,150,1000,massWZ2);
+  theHistograms->fill("mass of tribosons","Triboson mass",50,200,1200,massWZZ,theWeight); 
   
-  theHistograms.fill("energy of all bosons","Total boson energy",50,0,3000,WZZ.E());
-  theHistograms.fill("energy of ZZ","ZZ energy",50,0,2000,Z1.e()+Z2.e());
-  theHistograms.fill("energy of WZ1","WZ1 energy",50,0,2000,Z1.e()+WZ.e());
-  theHistograms.fill("energy of WZ2","WZ2 energy",50,0,2000,WZ.e()+Z2.e());
-  theHistograms.fill("energy of Z1","Z1 energy",50,0,1500,Z1.e());
-  theHistograms.fill("energy of Z2","Z2 energy",50,0,1500,Z2.e());
-  theHistograms.fill("energy of W","W energy",50,0,1500,WZ.e());
+  theHistograms->fill("energy of all bosons","Total boson energy",50,0,3000,WZZ.E());
+  theHistograms->fill("energy of ZZ","ZZ energy",50,0,2000,Z1.e()+Z2.e());
+  theHistograms->fill("energy of WZ1","WZ1 energy",50,0,2000,Z1.e()+WZ.e());
+  theHistograms->fill("energy of WZ2","WZ2 energy",50,0,2000,WZ.e()+Z2.e());
+  theHistograms->fill("energy of Z1","Z1 energy",50,0,1500,Z1.e());
+  theHistograms->fill("energy of Z2","Z2 energy",50,0,1500,Z2.e());
+  theHistograms->fill("energy of W","W energy",50,0,1500,WZ.e());
   
   double angleWZ1=Z1.p4().Angle(WZ.p4().Vect());
   double angleWZ2=Z2.p4().Angle(WZ.p4().Vect());
   double angleZZ=Z1.p4().Angle(Z2.p4().Vect());
-  theHistograms.fill("WZ1 angle","WZ1 angle",50,0,3.5,angleWZ1);
-  theHistograms.fill("WZ2 angle","WZ2 angle",50,0,3.5,angleWZ2);
-  theHistograms.fill("ZZ angle","ZZ angle",50,0,3.5,angleZZ);
+  theHistograms->fill("WZ1 angle","WZ1 angle",50,0,3.5,angleWZ1);
+  theHistograms->fill("WZ2 angle","WZ2 angle",50,0,3.5,angleWZ2);
+  theHistograms->fill("ZZ angle","ZZ angle",50,0,3.5,angleZZ);
   
-  theHistograms.fill("total pt scalar sum","Scalar pt sum",100,0,1200,Z1.pt()+Z2.pt()+WZ.pt());
-  theHistograms.fill("total pt vector sum","Vector pt sum",100,0,300,sqrt(WZZ.Px()*WZZ.Px()+WZZ.Py()*WZZ.Py()));
+  theHistograms->fill("total pt scalar sum","Scalar pt sum",100,0,1200,Z1.pt()+Z2.pt()+WZ.pt());
+  theHistograms->fill("total pt vector sum","Vector pt sum",100,0,300,sqrt(WZZ.Px()*WZZ.Px()+WZZ.Py()*WZZ.Py()));
   
-  theHistograms.fill("pt of Z1","Z1 pt",100,0,400,Z1.pt());
-  theHistograms.fill("pt of Z2","Z2 pt",100,0,400,Z2.pt());
-  theHistograms.fill("pt of W","W pt",100,0,400,WZ.pt());
+  theHistograms->fill("pt of Z1","Z1 pt",100,0,400,Z1.pt());
+  theHistograms->fill("pt of Z2","Z2 pt",100,0,400,Z2.pt());
+  theHistograms->fill("pt of W","W pt",100,0,400,WZ.pt());
   
   double elepZ1min= min(Z1.daughter(0).e(),Z1.daughter(1).e());
   double elepZ1max= max(Z1.daughter(0).e(),Z1.daughter(1).e());
-  theHistograms.fill("energy of major Z1 leptons","Major Z1 lepton energy",50,0,2500,elepZ1max);
-  theHistograms.fill("energy of minor Z1 leptons","Minor Z1 lepton energy",50,0,1000,elepZ1min);
+  theHistograms->fill("energy of major Z1 leptons","Major Z1 lepton energy",50,0,2500,elepZ1max);
+  theHistograms->fill("energy of minor Z1 leptons","Minor Z1 lepton energy",50,0,1000,elepZ1min);
   double elepZ2min= min(Z2.daughter(0).e(),Z2.daughter(1).e());
   double elepZ2max= max(Z2.daughter(0).e(),Z2.daughter(1).e());
-  theHistograms.fill("energy of major Z2 leptons","Major Z2 lepton energy",50,0,2500,elepZ2max);
-  theHistograms.fill("energy of minor Z2 leptons","Minor Z2 lepton energy",50,0,1000,elepZ2min);
+  theHistograms->fill("energy of major Z2 leptons","Major Z2 lepton energy",50,0,2500,elepZ2max);
+  theHistograms->fill("energy of minor Z2 leptons","Minor Z2 lepton energy",50,0,1000,elepZ2min);
 }
