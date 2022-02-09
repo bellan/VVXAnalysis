@@ -164,7 +164,7 @@ process.SR4P1LCounter  = cms.EDProducer("SelectedEventCountProducer", names = cm
 
 #### H->ZZ regions ####
 process.cand2P2FHZZ       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("ZZFiltered"), 
-                                          cut = cms.string(BOTHFAIL + " && userFloat('CRZLLos_3P1F')"))
+                                          cut = cms.string(BOTHFAIL + " && userFloat('CRZLLos_2P2F')"))
 process.cand2P2FHZZFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("cand2P2FHZZ"), minNumber = cms.uint32(1))
 process.CR2P2F_HZZ         = cms.Path(process.select4leptonsRegions * process.cand2P2FHZZ * process.cand2P2FHZZFilter)
 process.CR2P2FHZZCounter  = cms.EDProducer("SelectedEventCountProducer", names = cms.vstring("CR2P2F_HZZ","pathFor4LeptonsAnalysis","triggerForZZ"))
