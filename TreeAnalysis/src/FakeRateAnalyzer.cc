@@ -48,32 +48,32 @@ void FakeRateAnalyzer::ZZplots(int id){
   else if (id == 44) {decay = "4e"  ; decay1 = "e"; decay2 = "e";}
 
 
-  theHistograms.fill(std::string("ZZTo")+decay+std::string("_mZ1To2")+decay1, std::string("Invariant mass of Z_{1}#rightarrow 2")+decay1,  15, 60,  120, ZZ->first().mass() , theWeight); 
-  theHistograms.fill(std::string("ZZTo")+decay+std::string("_mZ2To2")+decay2, std::string("Invariant mass of Z_{2}#rightarrow 2")+decay2,  15, 60,  120, ZZ->second().mass(), theWeight); 
-  theHistograms.fill(std::string("ZZTo")+decay+std::string("_mZZTo") +decay , std::string("Invariant mass of ZZ#rightarrow ")    +decay ,  40,  0, 1000, ZZ->mass()         , theWeight); 
+  theHistograms->fill(std::string("ZZTo")+decay+std::string("_mZ1To2")+decay1, std::string("Invariant mass of Z_{1}#rightarrow 2")+decay1,  15, 60,  120, ZZ->first().mass() , theWeight); 
+  theHistograms->fill(std::string("ZZTo")+decay+std::string("_mZ2To2")+decay2, std::string("Invariant mass of Z_{2}#rightarrow 2")+decay2,  15, 60,  120, ZZ->second().mass(), theWeight); 
+  theHistograms->fill(std::string("ZZTo")+decay+std::string("_mZZTo") +decay , std::string("Invariant mass of ZZ#rightarrow ")    +decay ,  40,  0, 1000, ZZ->mass()         , theWeight); 
 
-  theHistograms.fill(std::string("ZZTo")+decay+"_nJets"       , "Number of jets (|#eta|<4.7 and p_T > 30 GeV)"        , 10, 0, 10, jets->size(), theWeight); 
-  theHistograms.fill(std::string("ZZTo")+decay+"_nCentralJets", "Number of central jets (|#eta|<2.5 and p_T > 30 GeV)", 10, 0, 10, centralJets->size(), theWeight); 
+  theHistograms->fill(std::string("ZZTo")+decay+"_nJets"       , "Number of jets (|#eta|<4.7 and p_T > 30 GeV)"        , 10, 0, 10, jets->size(), theWeight); 
+  theHistograms->fill(std::string("ZZTo")+decay+"_nCentralJets", "Number of central jets (|#eta|<2.5 and p_T > 30 GeV)", 10, 0, 10, centralJets->size(), theWeight); 
 
   if(jets->size() >= 2)
-    theHistograms.fill(std::string("ZZTo")+decay+"_deltaEtaJJ", "#Delta #eta(j,j) between the two most energetic jets",  10, 0, 8, fabs(jets->at(0).eta() - jets->at(1).eta()), theWeight); 
+    theHistograms->fill(std::string("ZZTo")+decay+"_deltaEtaJJ", "#Delta #eta(j,j) between the two most energetic jets",  10, 0, 8, fabs(jets->at(0).eta() - jets->at(1).eta()), theWeight); 
   
   
   if(centralJets->size() >= 2){
-    theHistograms.fill(std::string("ZZTo")+decay+"_deltaEtaJJcentral", "#Delta #eta(j,j) between the two most energetyc central jets",  10, 0, 8, fabs(centralJets->at(0).eta() - centralJets->at(1).eta()), theWeight); 
-    theHistograms.fill(std::string("ZZTo")+decay+"_mJJ", "m_{jj}",  20, 0, 1000, (centralJets->at(0).p4() + centralJets->at(1).p4()).M(), theWeight); 
+    theHistograms->fill(std::string("ZZTo")+decay+"_deltaEtaJJcentral", "#Delta #eta(j,j) between the two most energetyc central jets",  10, 0, 8, fabs(centralJets->at(0).eta() - centralJets->at(1).eta()), theWeight); 
+    theHistograms->fill(std::string("ZZTo")+decay+"_mJJ", "m_{jj}",  20, 0, 1000, (centralJets->at(0).p4() + centralJets->at(1).p4()).M(), theWeight); 
   }
-  theHistograms.fill(std::string("ZZTo")+decay+"_nExtraMuons"    , "Number of extra muons in the event"    , 10, 0, 10, muons->size(), theWeight); 
-  theHistograms.fill(std::string("ZZTo")+decay+"_nExtraElectrons", "Number of extra electrons in the event", 10, 0, 10, electrons->size(), theWeight); 
-  theHistograms.fill(std::string("ZZTo")+decay+"_nExtraLeptons"  , "Number of extra leptons in the event"  , 10, 0, 10, muons->size()+electrons->size(), theWeight); 
+  theHistograms->fill(std::string("ZZTo")+decay+"_nExtraMuons"    , "Number of extra muons in the event"    , 10, 0, 10, muons->size(), theWeight); 
+  theHistograms->fill(std::string("ZZTo")+decay+"_nExtraElectrons", "Number of extra electrons in the event", 10, 0, 10, electrons->size(), theWeight); 
+  theHistograms->fill(std::string("ZZTo")+decay+"_nExtraLeptons"  , "Number of extra leptons in the event"  , 10, 0, 10, muons->size()+electrons->size(), theWeight); 
 }
 
 
 void FakeRateAnalyzer::analyze(){
   
-  theHistograms.fill("fakeRateWeight", "FakeRate",  100, -2, 2, ZZ->fakeRateSF() , 1); 
-  if(ZZ->numberOfGoodGrandDaughters() == 3) theHistograms.fill("fakeRateWeight_3p1F", "FakeRate 3P1F",  100, -2, 2, ZZ->fakeRateSF() , 1); 
-  if(ZZ->numberOfGoodGrandDaughters() == 2) theHistograms.fill("fakeRateWeight_2p2F", "FakeRate 2P2F",  100, -2, 2, ZZ->fakeRateSF() , 1); 
+  theHistograms->fill("fakeRateWeight", "FakeRate",  100, -2, 2, ZZ->fakeRateSF() , 1); 
+  if(ZZ->numberOfGoodGrandDaughters() == 3) theHistograms->fill("fakeRateWeight_3p1F", "FakeRate 3P1F",  100, -2, 2, ZZ->fakeRateSF() , 1); 
+  if(ZZ->numberOfGoodGrandDaughters() == 2) theHistograms->fill("fakeRateWeight_2p2F", "FakeRate 2P2F",  100, -2, 2, ZZ->fakeRateSF() , 1); 
   
   // Some basic plots on ZZ
   ZZplots();   // ZZ --> 4l
@@ -86,8 +86,8 @@ void FakeRateAnalyzer::analyze(){
     
     Float_t mt = sqrt(2*met->pt()*(ZL->second.pt())*(1-cos(physmath::deltaPhi(ZL->second.phi(),met->phi()))));
 
-    if( abs(ZL->second.id()) == 13)   theHistograms.fill("MT_mu","Transverse mass",200, 0, 200, mt, theWeight);
-    else if( abs(ZL->second.id()) == 11)   theHistograms.fill("MT_ele","Transverse mass",200, 0, 200, mt, theWeight);
+    if( abs(ZL->second.id()) == 13)   theHistograms->fill("MT_mu","Transverse mass",200, 0, 200, mt, theWeight);
+    else if( abs(ZL->second.id()) == 11)   theHistograms->fill("MT_ele","Transverse mass",200, 0, 200, mt, theWeight);
     else std::cout<<"ERROR check lepton id"<<std::endl;
     
 
@@ -124,28 +124,28 @@ void FakeRateAnalyzer::analyze(){
 	  
 
 	  if( pt > 200 ) pt = 199;
-	  theHistograms.fill("ZL_Muon_pt","Pt of the loose lepton",150,0,300,ZL->second.pt(),theWeight);	  
-	  theHistograms.fill("ZL_Muon_Iso","Iso of the loose lepton",50,0,0.5,ZL->second.pfCombRelIso(),theWeight);
-	  theHistograms.fill("ZL_Muon_sip","Sip of the loose lepton",50,0,4.5,ZL->second.sip(),theWeight);	  
+	  theHistograms->fill("ZL_Muon_pt","Pt of the loose lepton",150,0,300,ZL->second.pt(),theWeight);	  
+	  theHistograms->fill("ZL_Muon_Iso","Iso of the loose lepton",50,0,0.5,ZL->second.pfCombRelIso(),theWeight);
+	  theHistograms->fill("ZL_Muon_sip","Sip of the loose lepton",50,0,4.5,ZL->second.sip(),theWeight);	  
 	  
 	  if(abs(ZL->first.daughterPtr(0)->id()) == 13) { eventsD_mmm.push_back(eventstr); eventsStr.push_back(eventstr+":mmm:"+eventStrInf+":"+std::to_string(ZL->second.passFullSel()));} //eventcouting
 	  else { eventsD_eem.push_back(eventstr); eventsStr.push_back(eventstr+":eem:"+eventStrInf+":"+std::to_string(ZL->second.passFullSel()));} 
 	  
-	  if(fabs(ZL->second.eta()) < 1.2)   theHistograms.fill("FakeRate_denom_muons_barrel_pt","Total number of soft leptons in the barrel",ybins_mu,pt,theWeight);
-	  else                        theHistograms.fill("FakeRate_denom_muons_endcap_pt","Total number of soft leptons in the endcaps",ybins_mu,pt,theWeight);
+	  if(fabs(ZL->second.eta()) < 1.2)   theHistograms->fill("FakeRate_denom_muons_barrel_pt","Total number of soft leptons in the barrel",ybins_mu,pt,theWeight);
+	  else                        theHistograms->fill("FakeRate_denom_muons_endcap_pt","Total number of soft leptons in the endcaps",ybins_mu,pt,theWeight);
 
 
-	  theHistograms.fill("FakeRate_denom_muons","Total number of soft leptons in the barrel",xbins_mu,ybins_mu,ZL->second.eta(),pt,theWeight);
+	  theHistograms->fill("FakeRate_denom_muons","Total number of soft leptons in the barrel",xbins_mu,ybins_mu,ZL->second.eta(),pt,theWeight);
 	  
 	  if(ZL->second.passFullSel()){
 	    
 	    if(abs(ZL->first.daughterPtr(0)->id()) == 13)  eventsN_mmm.push_back(eventstr); //eventcounting
 	    else  eventsN_eem.push_back(eventstr);
 	    
-	    if(fabs(ZL->second.eta()) < 1.2) theHistograms.fill("FakeRate_num_muons_barrel_pt","Number of tight leptons in the barrel",ybins_mu,pt,theWeight);
-	    else theHistograms.fill("FakeRate_num_muons_endcap_pt","Number of tight leptons in the endcaps",ybins_mu,pt,theWeight);
+	    if(fabs(ZL->second.eta()) < 1.2) theHistograms->fill("FakeRate_num_muons_barrel_pt","Number of tight leptons in the barrel",ybins_mu,pt,theWeight);
+	    else theHistograms->fill("FakeRate_num_muons_endcap_pt","Number of tight leptons in the endcaps",ybins_mu,pt,theWeight);
 
-	    theHistograms.fill("FakeRate_num_muons","Total number of soft leptons in the barrel",xbins_mu,ybins_mu,ZL->second.eta(),pt,theWeight);
+	    theHistograms->fill("FakeRate_num_muons","Total number of soft leptons in the barrel",xbins_mu,ybins_mu,ZL->second.eta(),pt,theWeight);
    	  }
 	}
 	
@@ -153,27 +153,27 @@ void FakeRateAnalyzer::analyze(){
 	  
 	  if( pt > 80 ) pt = 79;
 
-	  theHistograms.fill("ZL_Ele_pt","Pt of the loose lepton",150,0,300,pt,theWeight);	  
-	  theHistograms.fill("ZL_Ele_Iso","Iso of the loose lepton",50,0,0.5,ZL->second.pfCombRelIso(),theWeight);
-	  theHistograms.fill("ZL_Ele_sip","Sip of the loose lepton",50,0,4.5,ZL->second.sip(),theWeight);
+	  theHistograms->fill("ZL_Ele_pt","Pt of the loose lepton",150,0,300,pt,theWeight);	  
+	  theHistograms->fill("ZL_Ele_Iso","Iso of the loose lepton",50,0,0.5,ZL->second.pfCombRelIso(),theWeight);
+	  theHistograms->fill("ZL_Ele_sip","Sip of the loose lepton",50,0,4.5,ZL->second.sip(),theWeight);
 	   
 	  if(abs(ZL->first.daughterPtr(0)->id()) == 13) { eventsD_mme.push_back(eventstr); eventsStr.push_back(eventstr+":mme:"+eventStrInf+":"+std::to_string(ZL->second.passFullSel()));} //eventcounting
 	  else  {eventsD_eee.push_back(eventstr); eventsStr.push_back(eventstr+":mmm:"+eventStrInf+":"+std::to_string(ZL->second.passFullSel()));}
 	  
-	  if(fabs(ZL->second.eta()) < 1.45)   theHistograms.fill("FakeRate_denom_electrons_barrel_pt","Total number of soft leptons in the barrel",ybins_ele,pt,theWeight);
-	  else                         theHistograms.fill("FakeRate_denom_electrons_endcap_pt","Total number of soft leptons in the endcaps",ybins_ele,pt,theWeight);
+	  if(fabs(ZL->second.eta()) < 1.45)   theHistograms->fill("FakeRate_denom_electrons_barrel_pt","Total number of soft leptons in the barrel",ybins_ele,pt,theWeight);
+	  else                         theHistograms->fill("FakeRate_denom_electrons_endcap_pt","Total number of soft leptons in the endcaps",ybins_ele,pt,theWeight);
 	  
-	  theHistograms.fill("FakeRate_denom_electrons","Total number of soft leptons in the barrel",xbins_ele,ybins_ele,ZL->second.eta(),pt,theWeight);
+	  theHistograms->fill("FakeRate_denom_electrons","Total number of soft leptons in the barrel",xbins_ele,ybins_ele,ZL->second.eta(),pt,theWeight);
 
 	  if(ZL->second.passFullSel()){
 	    
 	    if(abs(ZL->first.daughterPtr(0)->id()) == 13)  eventsN_mme.push_back(eventstr); //eventcounting
 	    else  eventsN_eee.push_back(eventstr);
 	    
-	    if(fabs(ZL->second.eta()) < 1.45) theHistograms.fill("FakeRate_num_electrons_barrel_pt","Number of tight leptons in the barrel",ybins_ele,pt,theWeight);
-	    else                       theHistograms.fill("FakeRate_num_electrons_endcap_pt","Number of tight leptons in the endcaps",ybins_ele,pt,theWeight);	
+	    if(fabs(ZL->second.eta()) < 1.45) theHistograms->fill("FakeRate_num_electrons_barrel_pt","Number of tight leptons in the barrel",ybins_ele,pt,theWeight);
+	    else                       theHistograms->fill("FakeRate_num_electrons_endcap_pt","Number of tight leptons in the endcaps",ybins_ele,pt,theWeight);	
     
-	    theHistograms.fill("FakeRate_num_electrons","Total number of soft leptons in the barrel",xbins_ele,ybins_ele,ZL->second.eta(),pt,theWeight);
+	    theHistograms->fill("FakeRate_num_electrons","Total number of soft leptons in the barrel",xbins_ele,ybins_ele,ZL->second.eta(),pt,theWeight);
 	  }
 	}
       } 
@@ -193,17 +193,17 @@ void FakeRateAnalyzer::begin() {
 }
 
 void FakeRateAnalyzer::end( TFile &){
-  // theHistograms.clone("FakeRate_num_muons_barrel_pt","FakeRate_muons_barrel_pt");
-  // theHistograms.get("FakeRate_muons_barrel_pt")->Divide(theHistograms.get("FakeRate_denom_muons_barrel_pt"));
+  // theHistograms->clone("FakeRate_num_muons_barrel_pt","FakeRate_muons_barrel_pt");
+  // theHistograms->get("FakeRate_muons_barrel_pt")->Divide(theHistograms->get("FakeRate_denom_muons_barrel_pt"));
   
-  // theHistograms.clone("FakeRate_num_muons_endcap_pt","FakeRate_muons_endcap_pt");
-  // theHistograms.get("FakeRate_muons_endcap_pt")->Divide(theHistograms.get("FakeRate_denom_muons_endcap_pt"));
+  // theHistograms->clone("FakeRate_num_muons_endcap_pt","FakeRate_muons_endcap_pt");
+  // theHistograms->get("FakeRate_muons_endcap_pt")->Divide(theHistograms->get("FakeRate_denom_muons_endcap_pt"));
   
-  // theHistograms.clone("FakeRate_num_electrons_barrel_pt","FakeRate_electrons_barrel_pt");
-  // theHistograms.get("FakeRate_electrons_barrel_pt")->Divide(theHistograms.get("FakeRate_denom_electrons_barrel_pt"));
+  // theHistograms->clone("FakeRate_num_electrons_barrel_pt","FakeRate_electrons_barrel_pt");
+  // theHistograms->get("FakeRate_electrons_barrel_pt")->Divide(theHistograms->get("FakeRate_denom_electrons_barrel_pt"));
   
-  // theHistograms.clone("FakeRate_num_electrons_endcap_pt","FakeRate_electrons_endcap_pt");
-  // theHistograms.get("FakeRate_electrons_endcap_pt")->Divide(theHistograms.get("FakeRate_denom_electrons_endcap_pt"));
+  // theHistograms->clone("FakeRate_num_electrons_endcap_pt","FakeRate_electrons_endcap_pt");
+  // theHistograms->get("FakeRate_electrons_endcap_pt")->Divide(theHistograms->get("FakeRate_denom_electrons_endcap_pt"));
   
   std::sort (eventsStr.begin(), eventsStr.end(), strtool::sortEvents);
   

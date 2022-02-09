@@ -145,20 +145,20 @@ void VBSRecoAnalyzer::FillHistosJets(std::string decay,float Wh,std::vector<phys
     //    if(jetsVec->at(0).pt()>100. && jetsVec->at(1).pt()>70. &&  mjj>300 && deltaEtajj>2.4 && met->pt()<60){
     if(mjj>400 && deltaEtajj>2.4){
       
-      theHistograms.fill("ZZTo"+decay+"_Mass_"+type,"", Xbins_mass,  ZZ->mass(),Wh);
+      theHistograms->fill("ZZTo"+decay+"_Mass_"+type,"", Xbins_mass,  ZZ->mass(),Wh);
     }
   }  
-  //  theHistograms.fill("ZZTo"+decay+"_nJets_"+type, "", Xbins_nJets,njets, Wh);     
+  //  theHistograms->fill("ZZTo"+decay+"_nJets_"+type, "", Xbins_nJets,njets, Wh);     
   // if(njets>0){  
   
   //   stable_sort(jetsVec->begin(), jetsVec->end(), PtComparator());
   //   ptJet1 = jetsVec->at(0).pt();
   //   if (ptJet1>=500) ptJet1 = 499;    
-  //   theHistograms.fill("ZZTo"+decay+"_PtJet1_"+type," ", Xbins_ptJet1, ptJet1, Wh); 
+  //   theHistograms->fill("ZZTo"+decay+"_PtJet1_"+type," ", Xbins_ptJet1, ptJet1, Wh); 
     
   //   etaJet1 = fabs(jetsVec->at(0).eta());
   //   if (etaJet1>=4.7) etaJet1 = 4.6;
-  //   theHistograms.fill("ZZTo"+decay+"_EtaJet1_"+type, "", Xbins_etaJet1, etaJet1, Wh);
+  //   theHistograms->fill("ZZTo"+decay+"_EtaJet1_"+type, "", Xbins_etaJet1, etaJet1, Wh);
   // }
    
   //  if(njets>1){  
@@ -173,21 +173,21 @@ void VBSRecoAnalyzer::FillHistosJets(std::string decay,float Wh,std::vector<phys
   //    dphi = physmath::deltaPhi(jetsVec->at(0).phi(),jetsVec->at(1).phi());
   //    if (dphi>=6) dphi = 5;
      
-  //    theHistograms.fill("ZZTo"+decay+"_PtJet2_"+type, "", Xbins_ptJet2, ptJet2, Wh);
+  //    theHistograms->fill("ZZTo"+decay+"_PtJet2_"+type, "", Xbins_ptJet2, ptJet2, Wh);
      
   //    etaJet2 = fabs(jetsVec->at(1).eta());
   //    if (etaJet2>=4.7) etaJet2 = 4.6;
      
-  //    theHistograms.fill("ZZTo"+decay+"_EtaJet2_"+type, "", Xbins_etaJet2, etaJet2, Wh);
-  //    theHistograms.fill("ZZTo"+decay+"_Mjj_"+type,"",Xbins_mjj,mjj,Wh); 
-  //    theHistograms.fill("ZZTo"+decay+"_Deta_"+type,"",Xbins_deta,deta,Wh); 
-  //    theHistograms.fill("ZZTo"+decay+"_Phi_"+type,"",Xbins_dphi,dphi,Wh); 
+  //    theHistograms->fill("ZZTo"+decay+"_EtaJet2_"+type, "", Xbins_etaJet2, etaJet2, Wh);
+  //    theHistograms->fill("ZZTo"+decay+"_Mjj_"+type,"",Xbins_mjj,mjj,Wh); 
+  //    theHistograms->fill("ZZTo"+decay+"_Deta_"+type,"",Xbins_deta,deta,Wh); 
+  //    theHistograms->fill("ZZTo"+decay+"_Phi_"+type,"",Xbins_dphi,dphi,Wh); 
   //  }
   //  if(njets>2){  
      
   //    ptJet3 = jetsVec->at(2).pt();
   //    if (ptJet3>=500) ptJet3 = 499;
-  //    theHistograms.fill("ZZTo"+decay+"_PtJet3_"+type, "", Xbins_ptJet3, ptJet3, Wh);
+  //    theHistograms->fill("ZZTo"+decay+"_PtJet3_"+type, "", Xbins_ptJet3, ptJet3, Wh);
   //  }
 
 }
@@ -226,21 +226,21 @@ void VBSRecoAnalyzer::FillHistosJets(std::string decay,float Wh,std::vector<phys
 //     events4l.push_back(eventstr);
 //   }
   
-//   theHistograms.fill(std::string("ZZTo")+decay+"_Z0Mass"         , std::string("Z0  mass  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->first().mass(),theWeight);
-//   theHistograms.fill(std::string("ZZTo")+decay+"_Z1Mass"         , std::string("Z1  mass  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->second().mass(),theWeight);
-//   theHistograms.fill(std::string("ZZTo")+decay+"_Z0pt"         , std::string("Z0  p_{T}  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->first().pt(),theWeight);  
-//   theHistograms.fill(std::string("ZZTo")+decay+"_Z1pt"         , std::string("Z1  p_{T}  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->second().pt(),theWeight);
-//   theHistograms.fill(std::string("ZZTo")+decay+"_Mass"         , std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay            ,  200, 50,  1000, ZZ->mass(), theWeight);  
-//   theHistograms.fill(std::string("ZZTo")+decay+"_Mass"+"_FRVar", std::string("Var From FR Invariant mass of ZZ_{1}#rightarrow ")+decay,  200, 50,  1000, ZZ->mass(),ZZ->fakeRateSFVar());
+//   theHistograms->fill(std::string("ZZTo")+decay+"_Z0Mass"         , std::string("Z0  mass  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->first().mass(),theWeight);
+//   theHistograms->fill(std::string("ZZTo")+decay+"_Z1Mass"         , std::string("Z1  mass  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->second().mass(),theWeight);
+//   theHistograms->fill(std::string("ZZTo")+decay+"_Z0pt"         , std::string("Z0  p_{T}  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->first().pt(),theWeight);  
+//   theHistograms->fill(std::string("ZZTo")+decay+"_Z1pt"         , std::string("Z1  p_{T}  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->second().pt(),theWeight);
+//   theHistograms->fill(std::string("ZZTo")+decay+"_Mass"         , std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay            ,  200, 50,  1000, ZZ->mass(), theWeight);  
+//   theHistograms->fill(std::string("ZZTo")+decay+"_Mass"+"_FRVar", std::string("Var From FR Invariant mass of ZZ_{1}#rightarrow ")+decay,  200, 50,  1000, ZZ->mass(),ZZ->fakeRateSFVar());
 
-//   theHistograms.fill(std::string("ZZTo")+decay+"_Met"         , std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay            ,  200, 0,  800, met->pt(),theWeight);
-//   theHistograms.fill(std::string("ZZTo")+decay+"_PtZZ"         , std::string("p_{T} of ZZ_{1}#rightarrow ")+decay            ,  300, 0,  300, ZZ->pt(),theWeight);
+//   theHistograms->fill(std::string("ZZTo")+decay+"_Met"         , std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay            ,  200, 0,  800, met->pt(),theWeight);
+//   theHistograms->fill(std::string("ZZTo")+decay+"_PtZZ"         , std::string("p_{T} of ZZ_{1}#rightarrow ")+decay            ,  300, 0,  300, ZZ->pt(),theWeight);
   
-//   theHistograms.fill(std::string("ZZTo")+decay+"_ptJet1"      , "#Delta Y(j,j) between the two most energetyc central jets"            ,  100, 100, 400,jets->at(0).pt(), theWeight);     
-//   theHistograms.fill(std::string("ZZTo")+decay+"_etaJet1"      , "#Delta Y(j,j) between the two most energetyc central jets"            ,  100, -5, 5,jets->at(0).eta(), theWeight);     
+//   theHistograms->fill(std::string("ZZTo")+decay+"_ptJet1"      , "#Delta Y(j,j) between the two most energetyc central jets"            ,  100, 100, 400,jets->at(0).pt(), theWeight);     
+//   theHistograms->fill(std::string("ZZTo")+decay+"_etaJet1"      , "#Delta Y(j,j) between the two most energetyc central jets"            ,  100, -5, 5,jets->at(0).eta(), theWeight);     
   
-//   theHistograms.fill(std::string("ZZTo")+decay+"_ptJet2"      , "#Delta Y(j,j) between the two most energetyc central jets"            ,  100, 70, 370,jets->at(1).pt(), theWeight);     
-//   theHistograms.fill(std::string("ZZTo")+decay+"_etaJet2"      , "#Delta Y(j,j) between the two most energetyc central jets"            ,  100, -5, 5,jets->at(1).eta(), theWeight);     
+//   theHistograms->fill(std::string("ZZTo")+decay+"_ptJet2"      , "#Delta Y(j,j) between the two most energetyc central jets"            ,  100, 70, 370,jets->at(1).pt(), theWeight);     
+//   theHistograms->fill(std::string("ZZTo")+decay+"_etaJet2"      , "#Delta Y(j,j) between the two most energetyc central jets"            ,  100, -5, 5,jets->at(1).eta(), theWeight);     
   
 //   //  Float_t zZ1 = (jets->at(2).eta()-(jets->at(0).eta() + jets->at(1).eta()))/fabs(jets->at(0).eta() - jets ->at(1).eta());
 //   Float_t zZ1 = ZZ->first().eta()-(jets->at(0).eta() + jets->at(1).eta())/2;
@@ -254,26 +254,26 @@ void VBSRecoAnalyzer::FillHistosJets(std::string decay,float Wh,std::vector<phys
 //     Float_t Dphi = physmath::deltaPhi(jets->at(0).phi(),jets->at(1).phi());    
   
   
-//     theHistograms.fill(std::string("ZZTo")+decay+"_Dphi"     , "Delta phi of the two leading jets",  100, 0, 3.20, Dphi, theWeight); 
-//     theHistograms.fill("ZZTo"+decay+"_Mjj","Invariant mass of the two leading jet",100,300,1600,mjj,theWeight);
-//     theHistograms.fill(std::string("ZZTo")+decay+"_ptRatio"      , "The ratio of transverse momentum of the vector sum of Z1, Z2, tj1, tj2 to the sum of pTs"        ,  50, 0, 0.8, PtRatio, theWeight); 
-//     theHistograms.fill(std::string("ZZTo")+decay+"_ptJRatio"      , "The ratio of transverse momentum of the vector sum of tj1, tj2 to the sum of pTs"        ,  50, 0, 1., PtJRatio, theWeight); 
-//     theHistograms.fill(std::string("ZZTo")+decay+"_Z1z"      , "Zeppenfeld Variable fo Z1 wrt the two leading jets"            ,  49, -6, 6, zZ1, theWeight); 
-//     theHistograms.fill(std::string("ZZTo")+decay+"_Z2z"      , "Zeppenfeld Variable fo Z2 wrt the two leading jets"            ,  49, -6, 6, zZ2, theWeight); 
-//     theHistograms.fill(std::string("ZZTo")+decay+"_deltaEtaJJ"      , "#Delta #eta(j,j) between the two most energetic jets"            ,  10, 0, 8, fabs(jets->at(0).eta() - jets->at(1).eta()), theWeight); 
-//     theHistograms.fill(std::string("ZZTo")+decay+"_deltaEtaJJ_FRVarLow", "VarLow From FR #Delta #eta(j,j) between the two most energetic jets",  10, 0, 8, fabs(jets->at(0).eta() - jets->at(1).eta()),ZZ->fakeRateSFVar());
-//     theHistograms.fill(std::string("ZZTo")+decay+"_deltaYJJ"           , "#Delta Y(j,j) between the two most energetic jets"            ,  10, 0, 8, fabs(jets->at(0).rapidity() - jets->at(1).rapidity()), theWeight); 
-//     theHistograms.fill(std::string("ZZTo")+decay+"_deltaYJJ_FRVarLow", "VarLow From FR #Delta Y(j,j) between the two most energetic jets",  10, 0, 8, fabs(jets->at(0).rapidity() - jets->at(1).rapidity()),ZZ->fakeRateSFVar());
+//     theHistograms->fill(std::string("ZZTo")+decay+"_Dphi"     , "Delta phi of the two leading jets",  100, 0, 3.20, Dphi, theWeight); 
+//     theHistograms->fill("ZZTo"+decay+"_Mjj","Invariant mass of the two leading jet",100,300,1600,mjj,theWeight);
+//     theHistograms->fill(std::string("ZZTo")+decay+"_ptRatio"      , "The ratio of transverse momentum of the vector sum of Z1, Z2, tj1, tj2 to the sum of pTs"        ,  50, 0, 0.8, PtRatio, theWeight); 
+//     theHistograms->fill(std::string("ZZTo")+decay+"_ptJRatio"      , "The ratio of transverse momentum of the vector sum of tj1, tj2 to the sum of pTs"        ,  50, 0, 1., PtJRatio, theWeight); 
+//     theHistograms->fill(std::string("ZZTo")+decay+"_Z1z"      , "Zeppenfeld Variable fo Z1 wrt the two leading jets"            ,  49, -6, 6, zZ1, theWeight); 
+//     theHistograms->fill(std::string("ZZTo")+decay+"_Z2z"      , "Zeppenfeld Variable fo Z2 wrt the two leading jets"            ,  49, -6, 6, zZ2, theWeight); 
+//     theHistograms->fill(std::string("ZZTo")+decay+"_deltaEtaJJ"      , "#Delta #eta(j,j) between the two most energetic jets"            ,  10, 0, 8, fabs(jets->at(0).eta() - jets->at(1).eta()), theWeight); 
+//     theHistograms->fill(std::string("ZZTo")+decay+"_deltaEtaJJ_FRVarLow", "VarLow From FR #Delta #eta(j,j) between the two most energetic jets",  10, 0, 8, fabs(jets->at(0).eta() - jets->at(1).eta()),ZZ->fakeRateSFVar());
+//     theHistograms->fill(std::string("ZZTo")+decay+"_deltaYJJ"           , "#Delta Y(j,j) between the two most energetic jets"            ,  10, 0, 8, fabs(jets->at(0).rapidity() - jets->at(1).rapidity()), theWeight); 
+//     theHistograms->fill(std::string("ZZTo")+decay+"_deltaYJJ_FRVarLow", "VarLow From FR #Delta Y(j,j) between the two most energetic jets",  10, 0, 8, fabs(jets->at(0).rapidity() - jets->at(1).rapidity()),ZZ->fakeRateSFVar());
 
   
 //  if(nJets >= 3){ 
 //     Float_t z =  (jets->at(2).eta()-(jets->at(0).eta() + jets->at(1).eta()))/2.  ;
-//     theHistograms.fill(std::string("ZZTo")+decay+"_z"      , "z between the two most energetic jets"            ,  21, -10, 10, z, theWeight); 
+//     theHistograms->fill(std::string("ZZTo")+decay+"_z"      , "z between the two most energetic jets"            ,  21, -10, 10, z, theWeight); 
 //   }
   
-//   theHistograms.fill(std::string("ZZTo")+decay+"_nExtraMuons"    , "Number of extra muons in the event"    , 10, 0, 10, muons->size(), theWeight); 
-//   theHistograms.fill(std::string("ZZTo")+decay+"_nExtraElectrons", "Number of extra electrons in the event", 10, 0, 10, electrons->size(), theWeight); 
-//   theHistograms.fill(std::string("ZZTo")+decay+"_nExtraLeptons"  , "Number of extra leptons in the event"  , 10, 0, 10, muons->size()+electrons->size(), theWeight);    
+//   theHistograms->fill(std::string("ZZTo")+decay+"_nExtraMuons"    , "Number of extra muons in the event"    , 10, 0, 10, muons->size(), theWeight); 
+//   theHistograms->fill(std::string("ZZTo")+decay+"_nExtraElectrons", "Number of extra electrons in the event", 10, 0, 10, electrons->size(), theWeight); 
+//   theHistograms->fill(std::string("ZZTo")+decay+"_nExtraLeptons"  , "Number of extra leptons in the event"  , 10, 0, 10, muons->size()+electrons->size(), theWeight);    
 // }
 
 

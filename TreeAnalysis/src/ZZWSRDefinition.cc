@@ -20,30 +20,30 @@ Int_t ZZWSRDefinition::cut() {
   //================================================================//
   
  
-  theHistograms.fill("Number of events", "Number of events", 10, 0, 10, 0, theWeight);  // 0: Number of total events ----------------------------------------------------------------------------------------
+  theHistograms->fill("Number of events", "Number of events", 10, 0, 10, 0, theWeight);  // 0: Number of total events ----------------------------------------------------------------------------------------
   
-  theHistograms.fill("MET_beforeCuts", "MET_beforeCuts", 300, 0, 300, met->pt(), theWeight);
+  theHistograms->fill("MET_beforeCuts", "MET_beforeCuts", 300, 0, 300, met->pt(), theWeight);
   
-  theHistograms.fill("Selection", "Selection", 3, 0, 3, 0, theWeight);
+  theHistograms->fill("Selection", "Selection", 3, 0, 3, 0, theWeight);
 
 
   foreach(const Lepton m, *muons) {
-    theHistograms.fill("Leptons_P_{T}_beforeCuts", "Leptons_P_{T}_beforeCuts", 300, 0, 300, m.p4().Pt(), theWeight);
+    theHistograms->fill("Leptons_P_{T}_beforeCuts", "Leptons_P_{T}_beforeCuts", 300, 0, 300, m.p4().Pt(), theWeight);
   }
 
   foreach(const Lepton e, *electrons) {
-    theHistograms.fill("Leptons_P_{T}_beforeCuts", 300, 0, 300, e.p4().Pt(), theWeight );
+    theHistograms->fill("Leptons_P_{T}_beforeCuts", 300, 0, 300, e.p4().Pt(), theWeight );
   }
 
   foreach(const Jet j, *jets) {
-    theHistograms.fill("Jets_P_{T}_beforeCuts", "Jets_P_{T}_beforeCuts", 300, 0, 300, j.p4().Pt(), theWeight );
+    theHistograms->fill("Jets_P_{T}_beforeCuts", "Jets_P_{T}_beforeCuts", 300, 0, 300, j.p4().Pt(), theWeight );
   }
   
   //.......W request
 
   bool passWsize =  Vhad->size() >= 1;    
   
-  if (passWsize) theHistograms.fill("Selection", "Selection", 3, 0, 3, 2, theWeight);
+  if (passWsize) theHistograms->fill("Selection", "Selection", 3, 0, 3, 2, theWeight);
   
   
   //.......Z0,Z1 definition
@@ -101,8 +101,8 @@ Int_t ZZWSRDefinition::cut() {
   
   bool Zdef = (passZsize && passGhost && passllLowMass);
   if (Zdef) {
-    theHistograms.fill("Number of events", 10, 0, 10, 1, theWeight);     //  1: Events with at lest 2 well-defined Z bosons  -----------------------------------------------------------------------------------
-    theHistograms.fill("Selection", "Selection", 3, 0, 3, 1, theWeight);
+    theHistograms->fill("Number of events", 10, 0, 10, 1, theWeight);     //  1: Events with at lest 2 well-defined Z bosons  -----------------------------------------------------------------------------------
+    theHistograms->fill("Selection", "Selection", 3, 0, 3, 1, theWeight);
   }  
  
   
@@ -122,7 +122,7 @@ Int_t ZZWSRDefinition::cut() {
     cout << "Pt Jet2 myW = " << myW.daughter(1).pt() << endl;
     cout << "----------------------------------------" << endl;
     
-    theHistograms.fill("Number of events", 10, 0, 10, 2, theWeight);      //  2: Events with at lest 2 well-defined Z bosons and 1 well-defined W boson  -----------------------------------------------------------------------------------
+    theHistograms->fill("Number of events", 10, 0, 10, 2, theWeight);      //  2: Events with at lest 2 well-defined Z bosons and 1 well-defined W boson  -----------------------------------------------------------------------------------
    
     //   if(!WmassRange) return -1;  
 
@@ -151,12 +151,12 @@ Int_t ZZWSRDefinition::cut() {
     if(passLeptonsPt == false) return -1;
     
    
-    theHistograms.fill("Number of events", 10, 0, 10, 3, theWeight);   
+    theHistograms->fill("Number of events", 10, 0, 10, 3, theWeight);   
 
 
     if ( met->pt() > 80 ) return -1;        // 4: Events with 2 well-defined Z bosons, 1 well-defined W boson, 1lepton pt>10 and 1lepton pt >20, MET < 80--------------
 
-    theHistograms.fill("Number of events", 10, 0, 10, 4, theWeight);  
+    theHistograms->fill("Number of events", 10, 0, 10, 4, theWeight);  
 
 
     TLorentzVector p_myZ0 = myZ0.p4();
@@ -177,7 +177,7 @@ Int_t ZZWSRDefinition::cut() {
 
     if ( p_6f.M() < 300 ) return -1;         // 5: Events with 2 well-defined Z bosons, 1 well-defined W boson, no wrong leptons pairing, massll > 4 GeV, 1lepton pt>10 and 1lepton pt >20, MET < 80, m6f>300GeV--------------
 
-    theHistograms.fill("Number of events", 10, 0, 10, 5, theWeight);  
+    theHistograms->fill("Number of events", 10, 0, 10, 5, theWeight);  
 
 
     double ptj1 = max(p_myj1.Pt(), p_myj2.Pt());
@@ -215,59 +215,59 @@ Int_t ZZWSRDefinition::cut() {
 
     /////-----------------Histograms-------------------
   
-    if(genParticles->size() == 9)  theHistograms.fill("0 jet", "0 jet", 3, 0, 3, 1, theWeight);
+    if(genParticles->size() == 9)  theHistograms->fill("0 jet", "0 jet", 3, 0, 3, 1, theWeight);
     
-    if(genParticles->size() == 10) theHistograms.fill("1 jet", "1 jet", 3, 0, 3, 1, theWeight);
+    if(genParticles->size() == 10) theHistograms->fill("1 jet", "1 jet", 3, 0, 3, 1, theWeight);
     
     
     //------------Mass-------------
     
-    theHistograms.fill("Z0_Mass" , "Z0_Mass" , 200, 0, 200, p_myZ0.M() , theWeight);
-    theHistograms.fill("Z1_Mass" , "Z1_Mass" , 200, 0, 200, p_myZ1.M() , theWeight);
-    theHistograms.fill("Wjj_Mass", "Wjj_Mass", 200, 0, 200, p_myW.M()  , theWeight);  
+    theHistograms->fill("Z0_Mass" , "Z0_Mass" , 200, 0, 200, p_myZ0.M() , theWeight);
+    theHistograms->fill("Z1_Mass" , "Z1_Mass" , 200, 0, 200, p_myZ1.M() , theWeight);
+    theHistograms->fill("Wjj_Mass", "Wjj_Mass", 200, 0, 200, p_myW.M()  , theWeight);  
     
       
     //------------Pt--------------
       
-    theHistograms.fill("Z0_Pt"   , "Z0_Pt"   , 300, 0, 300, myZ0.pt() , theWeight);
-    theHistograms.fill("Z1_Pt"   , "Z1_Pt"   , 300, 0, 300, myZ1.pt() , theWeight);
-    theHistograms.fill("W_Pt"    , "W_Pt"    , 300, 0, 300, myW.pt()  , theWeight);  
+    theHistograms->fill("Z0_Pt"   , "Z0_Pt"   , 300, 0, 300, myZ0.pt() , theWeight);
+    theHistograms->fill("Z1_Pt"   , "Z1_Pt"   , 300, 0, 300, myZ1.pt() , theWeight);
+    theHistograms->fill("W_Pt"    , "W_Pt"    , 300, 0, 300, myW.pt()  , theWeight);  
 
-    theHistograms.fill("j1_Pt"   , "j1_Pt"   , 300, 0, 300, ptj1      , theWeight);
-    theHistograms.fill("j2_Pt"   , "j2_Pt"   , 300, 0, 300, ptj2      , theWeight);
+    theHistograms->fill("j1_Pt"   , "j1_Pt"   , 300, 0, 300, ptj1      , theWeight);
+    theHistograms->fill("j2_Pt"   , "j2_Pt"   , 300, 0, 300, ptj2      , theWeight);
 
-    theHistograms.fill("TotalPt", "TotalPt", 100, 0, 50, (p_myZ0 + p_myZ1 + p_myW).Pt(), theWeight);
+    theHistograms->fill("TotalPt", "TotalPt", 100, 0, 50, (p_myZ0 + p_myZ1 + p_myW).Pt(), theWeight);
 
       
     //----------Fermions Masses--------
           
-    theHistograms.fill("6f_Mass" , "6f_Mass" , 1500, 0, 1500, p_6f.M(), theWeight);
+    theHistograms->fill("6f_Mass" , "6f_Mass" , 1500, 0, 1500, p_6f.M(), theWeight);
 
-    theHistograms.fill("4l_Mass" , "4l_Mass" , 1500, 0 ,1500, p_4l.M() , theWeight);
+    theHistograms->fill("4l_Mass" , "4l_Mass" , 1500, 0 ,1500, p_4l.M() , theWeight);
 
     //-------------MET-------------
 
-    theHistograms.fill("MET after cut", "MET after cut", 300, 0, 300, met->pt(), theWeight);
+    theHistograms->fill("MET after cut", "MET after cut", 300, 0, 300, met->pt(), theWeight);
 
     //-----------delta_R-----------
 
-    theHistograms.fill("Reco_DR_J1L1", "Reco_DR_J1L1", 100, 0, 8, deltaRJets11, theWeight);
-    theHistograms.fill("Reco_DR_J1L2", "Reco_DR_J1L2", 100, 0, 8, deltaRJets12, theWeight);
-    theHistograms.fill("Reco_DR_J1L3", "Reco_DR_J1L3", 100, 0, 8, deltaRJets13, theWeight);
-    theHistograms.fill("Reco_DR_J1L4", "Reco_DR_J1L4", 100, 0, 8, deltaRJets14, theWeight);
-    theHistograms.fill("Reco_DR_J2L1", "Reco_DR_J2L1", 100, 0, 8, deltaRJets21, theWeight);
-    theHistograms.fill("Reco_DR_J2L2", "Reco_DR_J2L2", 100, 0, 8, deltaRJets22, theWeight);
-    theHistograms.fill("Reco_DR_J2L3", "Reco_DR_J2L3", 100, 0, 8, deltaRJets23, theWeight);
-    theHistograms.fill("Reco_DR_J2L4", "Reco_DR_J2L4", 100, 0, 8, deltaRJets24, theWeight);
+    theHistograms->fill("Reco_DR_J1L1", "Reco_DR_J1L1", 100, 0, 8, deltaRJets11, theWeight);
+    theHistograms->fill("Reco_DR_J1L2", "Reco_DR_J1L2", 100, 0, 8, deltaRJets12, theWeight);
+    theHistograms->fill("Reco_DR_J1L3", "Reco_DR_J1L3", 100, 0, 8, deltaRJets13, theWeight);
+    theHistograms->fill("Reco_DR_J1L4", "Reco_DR_J1L4", 100, 0, 8, deltaRJets14, theWeight);
+    theHistograms->fill("Reco_DR_J2L1", "Reco_DR_J2L1", 100, 0, 8, deltaRJets21, theWeight);
+    theHistograms->fill("Reco_DR_J2L2", "Reco_DR_J2L2", 100, 0, 8, deltaRJets22, theWeight);
+    theHistograms->fill("Reco_DR_J2L3", "Reco_DR_J2L3", 100, 0, 8, deltaRJets23, theWeight);
+    theHistograms->fill("Reco_DR_J2L4", "Reco_DR_J2L4", 100, 0, 8, deltaRJets24, theWeight);
 
     //------------Kinematics-------------
 
-    theHistograms.fill("DeltaPhi_j1_j2"   , "DeltaPhi_j1_j2"   , 50, 0, 5, DPhi_j1_j2	, theWeight);
-    theHistograms.fill("DeltaPhi_Z_Z"     , "DeltaPhi_Z_Z"     , 50, 0, 5, DPhi_Z_Z  	, theWeight);
-    theHistograms.fill("DeltaPhi_ZZ_W"    , "DeltaPhi_ZZ_W"    , 50, 0, 5, DPhi_ZZ_W 	, theWeight);
-    theHistograms.fill("DeltaPhi_Z0_W"    , "DeltaPhi_Z0_W"    , 50, 0, 5, DPhi_Z0_W 	, theWeight);
-    theHistograms.fill("DeltaPhi_Z1_W"    , "DeltaPhi_Z1_W"    , 50, 0, 5, DPhi_Z1_W 	, theWeight);
-    theHistograms.fill("DeltaPhi_ZZ_j1j2" , "DeltaPhi_ZZ_j1j2" , 50, 0, 5, DPhi_ZZ_j1j2 , theWeight);
+    theHistograms->fill("DeltaPhi_j1_j2"   , "DeltaPhi_j1_j2"   , 50, 0, 5, DPhi_j1_j2	, theWeight);
+    theHistograms->fill("DeltaPhi_Z_Z"     , "DeltaPhi_Z_Z"     , 50, 0, 5, DPhi_Z_Z  	, theWeight);
+    theHistograms->fill("DeltaPhi_ZZ_W"    , "DeltaPhi_ZZ_W"    , 50, 0, 5, DPhi_ZZ_W 	, theWeight);
+    theHistograms->fill("DeltaPhi_Z0_W"    , "DeltaPhi_Z0_W"    , 50, 0, 5, DPhi_Z0_W 	, theWeight);
+    theHistograms->fill("DeltaPhi_Z1_W"    , "DeltaPhi_Z1_W"    , 50, 0, 5, DPhi_Z1_W 	, theWeight);
+    theHistograms->fill("DeltaPhi_ZZ_j1j2" , "DeltaPhi_ZZ_j1j2" , 50, 0, 5, DPhi_ZZ_j1j2 , theWeight);
       
 
     theCutCounter += theWeight; 
@@ -290,7 +290,7 @@ void ZZWSRDefinition::analyze() {
   
   cout << Yellow("\nCategory= ") << Yellow(genCategory) << endl;
   
-  theHistograms.fill("Event category", "Event category", 11, 0, 11, genCategory, theWeight);  //// Event Category check //////
+  theHistograms->fill("Event category", "Event category", 11, 0, 11, genCategory, theWeight);  //// Event Category check //////
   
  
 
@@ -340,29 +340,29 @@ void ZZWSRDefinition::analyze() {
       
       //------------Mass--------------
   
-      theHistograms.fill("Z0Gen_Mass", "Z0Gen_Mass", 200, 0, 200, Z0gen.p4().M(), theWeight);
-      theHistograms.fill("Z1Gen_Mass", "Z1Gen_Mass", 200, 0, 200, Z1gen.p4().M(), theWeight);
-      theHistograms.fill("WGen_Mass" , "WGen_Mass" , 200, 0, 200, Wgen.p4().M() , theWeight);
+      theHistograms->fill("Z0Gen_Mass", "Z0Gen_Mass", 200, 0, 200, Z0gen.p4().M(), theWeight);
+      theHistograms->fill("Z1Gen_Mass", "Z1Gen_Mass", 200, 0, 200, Z1gen.p4().M(), theWeight);
+      theHistograms->fill("WGen_Mass" , "WGen_Mass" , 200, 0, 200, Wgen.p4().M() , theWeight);
   
       //------------Pt--------------
   
-      theHistograms.fill("Z0Gen_Pt"  , "Z0Gen_Pt"  , 300, 0, 300, Z0gen.pt()    , theWeight);
-      theHistograms.fill("Z1Gen_Pt"  , "Z1Gen_Pt"  , 300, 0, 300, Z1gen.pt()    , theWeight);
-      theHistograms.fill("WGen_Pt"   , "WGen_Pt"   , 300, 0, 300, Wgen.pt()     , theWeight);
+      theHistograms->fill("Z0Gen_Pt"  , "Z0Gen_Pt"  , 300, 0, 300, Z0gen.pt()    , theWeight);
+      theHistograms->fill("Z1Gen_Pt"  , "Z1Gen_Pt"  , 300, 0, 300, Z1gen.pt()    , theWeight);
+      theHistograms->fill("WGen_Pt"   , "WGen_Pt"   , 300, 0, 300, Wgen.pt()     , theWeight);
 
-      theHistograms.fill("j1Gen_Pt"  , "j1Gen_Pt"  , 300, 0, 300, Wgen.daughter(0).pt() , theWeight);
-      theHistograms.fill("j2Gen_Pt"  , "j2Gen_Pt"  , 300, 0, 300, Wgen.daughter(1).pt() , theWeight);
+      theHistograms->fill("j1Gen_Pt"  , "j1Gen_Pt"  , 300, 0, 300, Wgen.daughter(0).pt() , theWeight);
+      theHistograms->fill("j2Gen_Pt"  , "j2Gen_Pt"  , 300, 0, 300, Wgen.daughter(1).pt() , theWeight);
    
       //------------DR--------------
 
-      theHistograms.fill("Gen_DR_J1L1", "Gen_DR_J1L1", 100, 0, 8, DR11, theWeight);
-      theHistograms.fill("Gen_DR_J1L2", "Gen_DR_J1L2", 100, 0, 8, DR12, theWeight);
-      theHistograms.fill("Gen_DR_J1L3", "Gen_DR_J1L3", 100, 0, 8, DR13, theWeight);
-      theHistograms.fill("Gen_DR_J1L4", "Gen_DR_J1L4", 100, 0, 8, DR14, theWeight);
-      theHistograms.fill("Gen_DR_J2L1", "Gen_DR_J2L1", 100, 0, 8, DR21, theWeight);
-      theHistograms.fill("Gen_DR_J2L2", "Gen_DR_J2L2", 100, 0, 8, DR22, theWeight);
-      theHistograms.fill("Gen_DR_J2L3", "Gen_DR_J2L3", 100, 0, 8, DR23, theWeight);
-      theHistograms.fill("Gen_DR_J2L4", "Gen_DR_J2L4", 100, 0, 8, DR24, theWeight);
+      theHistograms->fill("Gen_DR_J1L1", "Gen_DR_J1L1", 100, 0, 8, DR11, theWeight);
+      theHistograms->fill("Gen_DR_J1L2", "Gen_DR_J1L2", 100, 0, 8, DR12, theWeight);
+      theHistograms->fill("Gen_DR_J1L3", "Gen_DR_J1L3", 100, 0, 8, DR13, theWeight);
+      theHistograms->fill("Gen_DR_J1L4", "Gen_DR_J1L4", 100, 0, 8, DR14, theWeight);
+      theHistograms->fill("Gen_DR_J2L1", "Gen_DR_J2L1", 100, 0, 8, DR21, theWeight);
+      theHistograms->fill("Gen_DR_J2L2", "Gen_DR_J2L2", 100, 0, 8, DR22, theWeight);
+      theHistograms->fill("Gen_DR_J2L3", "Gen_DR_J2L3", 100, 0, 8, DR23, theWeight);
+      theHistograms->fill("Gen_DR_J2L4", "Gen_DR_J2L4", 100, 0, 8, DR24, theWeight);
       
       
       //%%%%%%%% Comparison genParticles - recoParticles %%%%%%%%//
@@ -407,11 +407,11 @@ void ZZWSRDefinition::analyze() {
       // bool ZcorrectMatch = (myZ0.p4() == Z0.p4() && myZ1.p4() == Z1.p4()) || (myZ0.p4() == Z1.p4() && myZ1.p4() == Z0.p4());
       // bool WcorrectMatch = myW.p4() == W.p4();
       
-      // if ( ZcorrectMatch ) theHistograms.fill("Efficiency of Z definition", "Efficiency of Z definition", 3, 0, 3, 1, theWeight);
+      // if ( ZcorrectMatch ) theHistograms->fill("Efficiency of Z definition", "Efficiency of Z definition", 3, 0, 3, 1, theWeight);
       
-      // if ( WcorrectMatch ) theHistograms.fill("Efficiency of W definition", "Efficiency of W definition", 3, 0, 3, 1, theWeight);
+      // if ( WcorrectMatch ) theHistograms->fill("Efficiency of W definition", "Efficiency of W definition", 3, 0, 3, 1, theWeight);
       
-      // if ( ZcorrectMatch && WcorrectMatch ) theHistograms.fill("Efficiency of signal definition", "Efficiency of signal definition", 3, 0, 3, 1, theWeight);
+      // if ( ZcorrectMatch && WcorrectMatch ) theHistograms->fill("Efficiency of signal definition", "Efficiency of signal definition", 3, 0, 3, 1, theWeight);
 
       // double deltaRJet1Lep1 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z0.daughter(0).p4().Rapidity(), Z0.daughter(0).p4().Phi());
       // double deltaRJet1Lep2 = deltaR(W.daughter(0).p4().Rapidity(), W.daughter(0).p4().Phi(), Z0.daughter(1).p4().Rapidity(), Z0.daughter(1).p4().Phi());
@@ -422,14 +422,14 @@ void ZZWSRDefinition::analyze() {
       // double deltaRJet2Lep3 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z1.daughter(0).p4().Rapidity(), Z1.daughter(0).p4().Phi());
       // double deltaRJet2Lep4 = deltaR(W.daughter(1).p4().Rapidity(), W.daughter(1).p4().Phi(), Z1.daughter(1).p4().Rapidity(), Z1.daughter(1).p4().Phi());
 
-      // theHistograms.fill("Matched_DR_J1L1", "Matched_DR_J1L1", 100, 0, 8, deltaRJet1Lep1, theWeight);
-      // theHistograms.fill("Matched_DR_J1L2", "Matched_DR_J1L2", 100, 0, 8, deltaRJet1Lep2, theWeight);
-      // theHistograms.fill("Matched_DR_J1L3", "Matched_DR_J1L3", 100, 0, 8, deltaRJet1Lep3, theWeight);
-      // theHistograms.fill("Matched_DR_J1L4", "Matched_DR_J1L4", 100, 0, 8, deltaRJet1Lep4, theWeight);
-      // theHistograms.fill("Matched_DR_J2L1", "Matched_DR_J2L1", 100, 0, 8, deltaRJet2Lep1, theWeight);
-      // theHistograms.fill("Matched_DR_J2L2", "Matched_DR_J2L2", 100, 0, 8, deltaRJet2Lep2, theWeight);
-      // theHistograms.fill("Matched_DR_J2L3", "Matched_DR_J2L3", 100, 0, 8, deltaRJet2Lep3, theWeight);
-      // theHistograms.fill("Matched_DR_J2L4", "Matched_DR_J2L4", 100, 0, 8, deltaRJet2Lep4, theWeight);
+      // theHistograms->fill("Matched_DR_J1L1", "Matched_DR_J1L1", 100, 0, 8, deltaRJet1Lep1, theWeight);
+      // theHistograms->fill("Matched_DR_J1L2", "Matched_DR_J1L2", 100, 0, 8, deltaRJet1Lep2, theWeight);
+      // theHistograms->fill("Matched_DR_J1L3", "Matched_DR_J1L3", 100, 0, 8, deltaRJet1Lep3, theWeight);
+      // theHistograms->fill("Matched_DR_J1L4", "Matched_DR_J1L4", 100, 0, 8, deltaRJet1Lep4, theWeight);
+      // theHistograms->fill("Matched_DR_J2L1", "Matched_DR_J2L1", 100, 0, 8, deltaRJet2Lep1, theWeight);
+      // theHistograms->fill("Matched_DR_J2L2", "Matched_DR_J2L2", 100, 0, 8, deltaRJet2Lep2, theWeight);
+      // theHistograms->fill("Matched_DR_J2L3", "Matched_DR_J2L3", 100, 0, 8, deltaRJet2Lep3, theWeight);
+      // theHistograms->fill("Matched_DR_J2L4", "Matched_DR_J2L4", 100, 0, 8, deltaRJet2Lep4, theWeight);
       
     }
 

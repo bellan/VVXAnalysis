@@ -52,25 +52,25 @@ void ZZjAnalyzer::ZZplots(int id){
   
   if(decay!="4l") eventStr = std::to_string(run)+":"+std::to_string(lumiBlock)+":"+std::to_string(event)+":"+channel+":"+strtool::sRound(ZZ->mass())+":"+strtool::sRound(ZZ->first().mass())+":"+strtool::sRound(ZZ->second().mass())+":"+std::to_string(jets->size());
  
-  theHistograms.fill(std::string("ZZTo")+decay+"_Z0Mass"         , std::string("Z0  mass  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->first().mass(),theWeight);
-  theHistograms.fill(std::string("ZZTo")+decay+"_Z1Mass"         , std::string("Z1  mass  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->second().mass(),theWeight);
-  theHistograms.fill(std::string("ZZTo")+decay+"_Z0pt"           , std::string("Z0  p_{T}  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->first().pt(),theWeight);  
-  theHistograms.fill(std::string("ZZTo")+decay+"_Z1pt"           , std::string("Z1  p_{T}  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->second().pt(),theWeight);
-  theHistograms.fill(std::string("ZZTo")+decay+"_Mass"           , std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay            ,  200, 50,  1000, ZZ->mass(), theWeight);
-  theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep0_sip"         , std::string("sip of  Z0 lep0 of ZZ_{1}#rightarrow ")+decay            ,100, 0,4,ZZ->first().daughterPtr(0)->sip(),theWeight);
-  theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep1_sip"         , std::string("sip of  Z0 lep1 of ZZ_{1}#rightarrow ")+decay            , 100, 0,4,ZZ->first().daughterPtr(1)->sip(),theWeight);
-  theHistograms.fill(std::string("ZZTo")+decay+"_Z1lep0_sip"         , std::string("sip of  Z1 lep0 of ZZ_{1}#rightarrow ")+decay            , 100, 0,4,ZZ->second().daughterPtr(0)->sip(),theWeight);
-  theHistograms.fill(std::string("ZZTo")+decay+"_Z1lep1_sip"         , std::string("sip of  Z1 lep1 of ZZ_{1}#rightarrow ")+decay            , 100, 0,4,ZZ->second().daughterPtr(1)->sip(),theWeight);
-  theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep0_pt"         , std::string("pt of  Z0 lep0 of ZZ_{1}#rightarrow ")+decay            ,  150, 0,  300,ZZ->first().daughterPtr(0)->pt(),theWeight);
-  theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep1_pt"         , std::string("pt of  Z0 lep1 of ZZ_{1}#rightarrow ")+decay            ,  150, 0,  300,ZZ->first().daughterPtr(1)->pt(),theWeight);
-  theHistograms.fill(std::string("ZZTo")+decay+"_Z1lep0_pt"         , std::string("pt of  Z1 lep0 of ZZ_{1}#rightarrow ")+decay            ,  150, 0,  300,ZZ->second().daughterPtr(0)->pt(),theWeight);
-  theHistograms.fill(std::string("ZZTo")+decay+"_Z1lep1_pt"         , std::string("pt of  Z1 lep1 of ZZ_{1}#rightarrow ")+decay            ,  150, 0,  300,ZZ->second().daughterPtr(1)->pt(),theWeight);
-  theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep0_iso"         , std::string("iso of  Z0 lep0 of ZZ_{1}#rightarrow ")+decay            ,  60, 0, 0.6,ZZ->first().daughterPtr(0)->pfCombRelIsoFSRCorr(),theWeight);
-  theHistograms.fill(std::string("ZZTo")+decay+"_Z0lep1_iso"         , std::string("iso of  Z0 lep1 of ZZ_{1}#rightarrow ")+decay            ,  60, 0, 0.6,ZZ->first().daughterPtr(1)->pfCombRelIsoFSRCorr(),theWeight);
-  theHistograms.fill(std::string("ZZTo")+decay+"_Z1lep0_iso"         , std::string("iso of  Z1 lep0 of ZZ_{1}#rightarrow ")+decay            ,  60, 0, 0.6,ZZ->second().daughterPtr(0)->pfCombRelIsoFSRCorr(),theWeight);
-  theHistograms.fill(std::string("ZZTo")+decay+"_Z1lep1_iso"         , std::string("iso of  Z1 lep1 of ZZ_{1}#rightarrow ")+decay            ,  60, 0, 0.6,ZZ->second().daughterPtr(1)->pfCombRelIsoFSRCorr(),theWeight);
-  theHistograms.fill(std::string("ZZTo")+decay+"_Met"         , std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay            ,  200, 0,  800, met->pt(),theWeight);
-  theHistograms.fill(std::string("ZZTo")+decay+"_PtZZ"         , std::string("p_{T} of ZZ_{1}#rightarrow ")+decay            ,  300, 0,  300, ZZ->pt(),theWeight);
+  theHistograms->fill(std::string("ZZTo")+decay+"_Z0Mass"         , std::string("Z0  mass  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->first().mass(),theWeight);
+  theHistograms->fill(std::string("ZZTo")+decay+"_Z1Mass"         , std::string("Z1  mass  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->second().mass(),theWeight);
+  theHistograms->fill(std::string("ZZTo")+decay+"_Z0pt"           , std::string("Z0  p_{T}  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->first().pt(),theWeight);  
+  theHistograms->fill(std::string("ZZTo")+decay+"_Z1pt"           , std::string("Z1  p_{T}  of ZZ_{1}#rightarrow ")+decay            , 200, 0,200,ZZ->second().pt(),theWeight);
+  theHistograms->fill(std::string("ZZTo")+decay+"_Mass"           , std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay            ,  200, 50,  1000, ZZ->mass(), theWeight);
+  theHistograms->fill(std::string("ZZTo")+decay+"_Z0lep0_sip"         , std::string("sip of  Z0 lep0 of ZZ_{1}#rightarrow ")+decay            ,100, 0,4,ZZ->first().daughterPtr(0)->sip(),theWeight);
+  theHistograms->fill(std::string("ZZTo")+decay+"_Z0lep1_sip"         , std::string("sip of  Z0 lep1 of ZZ_{1}#rightarrow ")+decay            , 100, 0,4,ZZ->first().daughterPtr(1)->sip(),theWeight);
+  theHistograms->fill(std::string("ZZTo")+decay+"_Z1lep0_sip"         , std::string("sip of  Z1 lep0 of ZZ_{1}#rightarrow ")+decay            , 100, 0,4,ZZ->second().daughterPtr(0)->sip(),theWeight);
+  theHistograms->fill(std::string("ZZTo")+decay+"_Z1lep1_sip"         , std::string("sip of  Z1 lep1 of ZZ_{1}#rightarrow ")+decay            , 100, 0,4,ZZ->second().daughterPtr(1)->sip(),theWeight);
+  theHistograms->fill(std::string("ZZTo")+decay+"_Z0lep0_pt"         , std::string("pt of  Z0 lep0 of ZZ_{1}#rightarrow ")+decay            ,  150, 0,  300,ZZ->first().daughterPtr(0)->pt(),theWeight);
+  theHistograms->fill(std::string("ZZTo")+decay+"_Z0lep1_pt"         , std::string("pt of  Z0 lep1 of ZZ_{1}#rightarrow ")+decay            ,  150, 0,  300,ZZ->first().daughterPtr(1)->pt(),theWeight);
+  theHistograms->fill(std::string("ZZTo")+decay+"_Z1lep0_pt"         , std::string("pt of  Z1 lep0 of ZZ_{1}#rightarrow ")+decay            ,  150, 0,  300,ZZ->second().daughterPtr(0)->pt(),theWeight);
+  theHistograms->fill(std::string("ZZTo")+decay+"_Z1lep1_pt"         , std::string("pt of  Z1 lep1 of ZZ_{1}#rightarrow ")+decay            ,  150, 0,  300,ZZ->second().daughterPtr(1)->pt(),theWeight);
+  theHistograms->fill(std::string("ZZTo")+decay+"_Z0lep0_iso"         , std::string("iso of  Z0 lep0 of ZZ_{1}#rightarrow ")+decay            ,  60, 0, 0.6,ZZ->first().daughterPtr(0)->pfCombRelIsoFSRCorr(),theWeight);
+  theHistograms->fill(std::string("ZZTo")+decay+"_Z0lep1_iso"         , std::string("iso of  Z0 lep1 of ZZ_{1}#rightarrow ")+decay            ,  60, 0, 0.6,ZZ->first().daughterPtr(1)->pfCombRelIsoFSRCorr(),theWeight);
+  theHistograms->fill(std::string("ZZTo")+decay+"_Z1lep0_iso"         , std::string("iso of  Z1 lep0 of ZZ_{1}#rightarrow ")+decay            ,  60, 0, 0.6,ZZ->second().daughterPtr(0)->pfCombRelIsoFSRCorr(),theWeight);
+  theHistograms->fill(std::string("ZZTo")+decay+"_Z1lep1_iso"         , std::string("iso of  Z1 lep1 of ZZ_{1}#rightarrow ")+decay            ,  60, 0, 0.6,ZZ->second().daughterPtr(1)->pfCombRelIsoFSRCorr(),theWeight);
+  theHistograms->fill(std::string("ZZTo")+decay+"_Met"         , std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay            ,  200, 0,  800, met->pt(),theWeight);
+  theHistograms->fill(std::string("ZZTo")+decay+"_PtZZ"         , std::string("p_{T} of ZZ_{1}#rightarrow ")+decay            ,  300, 0,  300, ZZ->pt(),theWeight);
 
   //JETS
 
@@ -85,25 +85,25 @@ void ZZjAnalyzer::ZZplots(int id){
   if(nJets>3)   nJets=4;
   if(nJets_central>3)   nJets=4;
 
-  theHistograms.fill("ResMat_ZZTo"+decay+"_nJets", "", 5,0,5,5,0,5,nJets,njets_gen, theWeight);   
+  theHistograms->fill("ResMat_ZZTo"+decay+"_nJets", "", 5,0,5,5,0,5,nJets,njets_gen, theWeight);   
 
   Int_t  njets = nJets;
   if(nJets>2)      njets=3;
 
-  theHistograms.fill("ResMat_ZZTo"+decay+"_nJets_4", "", 4,0,4,4,0,4,njets,njets_gen, theWeight);   
-  theHistograms.fill(std::string("ZZTo")+decay+"_nJets"      , "Number of jets (|#eta|<4.7 and p_T > 30 GeV)"            , 5, 0, 5, nJets, theWeight); 
-  theHistograms.fill(std::string("ZZTo")+decay+"_nJets_central"      , "Number of jets (|#eta|<4.7 and p_T > 30 GeV)"            , 5, 0, 5, nJets_central, theWeight); 
+  theHistograms->fill("ResMat_ZZTo"+decay+"_nJets_4", "", 4,0,4,4,0,4,njets,njets_gen, theWeight);   
+  theHistograms->fill(std::string("ZZTo")+decay+"_nJets"      , "Number of jets (|#eta|<4.7 and p_T > 30 GeV)"            , 5, 0, 5, nJets, theWeight); 
+  theHistograms->fill(std::string("ZZTo")+decay+"_nJets_central"      , "Number of jets (|#eta|<4.7 and p_T > 30 GeV)"            , 5, 0, 5, nJets_central, theWeight); 
 
   
   if(nJets>0){
     eventStr+=":";
     eventStr+=strtool::sRound(jets->at(0).pt());
-    theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1"      , "#p_{T} of the most energetic jet"            ,  100, 20, 400,jets->at(0).pt(), theWeight);
-    theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet1"      , "#eta  of the most energetic jet"            ,  100, -5, 5,jets->at(0).eta(), theWeight); 
+    theHistograms->fill(std::string("ZZTo")+decay+"_PtJet1"      , "#p_{T} of the most energetic jet"            ,  100, 20, 400,jets->at(0).pt(), theWeight);
+    theHistograms->fill(std::string("ZZTo")+decay+"_EtaJet1"      , "#eta  of the most energetic jet"            ,  100, -5, 5,jets->at(0).eta(), theWeight); 
 
     if(abs(jets->at(0).eta()) > 2.4){
-    theHistograms.fill(std::string("ZZTo")+decay+"_PtJet1_noCentral"      , "#p_{T} of the most energetic jet"            ,  100, 20, 400,jets->at(0).pt(), theWeight);
-    theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet1_noCentral"      , "#eta  of the most energetic jet"            ,  100, -5, 5,jets->at(0).eta(), theWeight); 
+    theHistograms->fill(std::string("ZZTo")+decay+"_PtJet1_noCentral"      , "#p_{T} of the most energetic jet"            ,  100, 20, 400,jets->at(0).pt(), theWeight);
+    theHistograms->fill(std::string("ZZTo")+decay+"_EtaJet1_noCentral"      , "#eta  of the most energetic jet"            ,  100, -5, 5,jets->at(0).eta(), theWeight); 
     }
   }
 
@@ -127,8 +127,8 @@ void ZZjAnalyzer::ZZplots(int id){
   eventStr+=strtool::sRound(ZZ->efficiencySF()*theMCInfo.puWeight(),".4");
 
    if(nJets>1) {
-    theHistograms.fill(std::string("ZZTo")+decay+"_PtJet2"      , "#p_{T} of the second  most energetic jet"            ,  100, 20, 400,jets->at(1).pt(), theWeight);     
-    theHistograms.fill(std::string("ZZTo")+decay+"_EtaJet2"      , "#eta  of the second most energetic jet"            ,  100, -5, 5,jets->at(1).eta(), theWeight);     
+    theHistograms->fill(std::string("ZZTo")+decay+"_PtJet2"      , "#p_{T} of the second  most energetic jet"            ,  100, 20, 400,jets->at(1).pt(), theWeight);     
+    theHistograms->fill(std::string("ZZTo")+decay+"_EtaJet2"      , "#eta  of the second most energetic jet"            ,  100, -5, 5,jets->at(1).eta(), theWeight);     
     Float_t  mjj =  (jets->at(0).p4() + jets->at(1).p4()).M();
     Float_t  deta = fabs(jets->at(0).eta() - jets->at(1).eta());
 
@@ -139,41 +139,41 @@ void ZZjAnalyzer::ZZplots(int id){
     Float_t PtJRatio = ((jets->at(0).p4()+jets->at(1).p4()).Pt())/(jets->at(0).pt()+jets->at(1).pt());
     Float_t Dphi = physmath::deltaPhi(jets->at(0).phi(),jets->at(1).phi());    
   
-    theHistograms.fill(std::string("ZZTo")+decay+"_Dphi"     , "Delta phi of the two leading jets",  100, 0, 3.20, Dphi, theWeight); 
-    theHistograms.fill("ZZTo"+decay+"_Mjj","Invariant mass of the two leading jet",100,0,900,mjj,theWeight);
-    theHistograms.fill("ZZTo"+decay+"_Deta","Delta eta of the two leading jet",30,0,9,deta,theWeight);
+    theHistograms->fill(std::string("ZZTo")+decay+"_Dphi"     , "Delta phi of the two leading jets",  100, 0, 3.20, Dphi, theWeight); 
+    theHistograms->fill("ZZTo"+decay+"_Mjj","Invariant mass of the two leading jet",100,0,900,mjj,theWeight);
+    theHistograms->fill("ZZTo"+decay+"_Deta","Delta eta of the two leading jet",30,0,9,deta,theWeight);
 
-    theHistograms.fill(std::string("ZZTo")+decay+"_ptRatio"      , "The ratio of transverse momentum of the vector sum of Z1, Z2, tj1, tj2 to the sum of pTs"        ,  50, 0, 0.8, PtRatio, theWeight); 
-    theHistograms.fill(std::string("ZZTo")+decay+"_ptJRatio"      , "The ratio of transverse momentum of the vector sum of tj1, tj2 to the sum of pTs"        ,  50, 0, 1., PtJRatio, theWeight); 
-    theHistograms.fill(std::string("ZZTo")+decay+"_Z1z"      , "Zeppenfeld Variable fo Z1 wrt the two leading jets"            ,  49, -6, 6, zZ1, theWeight);
-    theHistograms.fill(std::string("ZZTo")+decay+"_Z2z"      , "Zeppenfeld Variable fo Z2 wrt the two leading jets"            ,  49, -6, 6, zZ2, theWeight); 
+    theHistograms->fill(std::string("ZZTo")+decay+"_ptRatio"      , "The ratio of transverse momentum of the vector sum of Z1, Z2, tj1, tj2 to the sum of pTs"        ,  50, 0, 0.8, PtRatio, theWeight); 
+    theHistograms->fill(std::string("ZZTo")+decay+"_ptJRatio"      , "The ratio of transverse momentum of the vector sum of tj1, tj2 to the sum of pTs"        ,  50, 0, 1., PtJRatio, theWeight); 
+    theHistograms->fill(std::string("ZZTo")+decay+"_Z1z"      , "Zeppenfeld Variable fo Z1 wrt the two leading jets"            ,  49, -6, 6, zZ1, theWeight);
+    theHistograms->fill(std::string("ZZTo")+decay+"_Z2z"      , "Zeppenfeld Variable fo Z2 wrt the two leading jets"            ,  49, -6, 6, zZ2, theWeight); 
 
-    theHistograms.fill(std::string("ZZTo")+decay+"_deltaYJJ"           , "#Delta Y(j,j) between the two most energetic jets"            ,  10, 0, 8, fabs(jets->at(0).rapidity() - jets->at(1).rapidity()), theWeight); 
+    theHistograms->fill(std::string("ZZTo")+decay+"_deltaYJJ"           , "#Delta Y(j,j) between the two most energetic jets"            ,  10, 0, 8, fabs(jets->at(0).rapidity() - jets->at(1).rapidity()), theWeight); 
 
-    if(nJets==2) theHistograms.fill("ZZTo"+decay+"_Deta2Jet","Delta eta of the two leading jet",30,0,9,deta,theWeight);
-    if(nJets>2)  theHistograms.fill("ZZTo"+decay+"_Deta3Jet","Delta eta of the two leading jet",30,0,9,deta,theWeight);
+    if(nJets==2) theHistograms->fill("ZZTo"+decay+"_Deta2Jet","Delta eta of the two leading jet",30,0,9,deta,theWeight);
+    if(nJets>2)  theHistograms->fill("ZZTo"+decay+"_Deta3Jet","Delta eta of the two leading jet",30,0,9,deta,theWeight);
 
-    if( (abs(jets->at(0).eta()) > 2.4) || (abs(jets->at(1).eta()) > 2.4) )    theHistograms.fill("ZZTo"+decay+"_Deta_1noCentral","Delta eta of the two leading jet",30,0,9,deta,theWeight); 
-    if( (abs(jets->at(0).eta()) > 2.4) && (abs(jets->at(1).eta()) > 2.4) )    theHistograms.fill("ZZTo"+decay+"_Deta_noCentral","Delta eta of the two leading jet",30,0,9,deta,theWeight); 
+    if( (abs(jets->at(0).eta()) > 2.4) || (abs(jets->at(1).eta()) > 2.4) )    theHistograms->fill("ZZTo"+decay+"_Deta_1noCentral","Delta eta of the two leading jet",30,0,9,deta,theWeight); 
+    if( (abs(jets->at(0).eta()) > 2.4) && (abs(jets->at(1).eta()) > 2.4) )    theHistograms->fill("ZZTo"+decay+"_Deta_noCentral","Delta eta of the two leading jet",30,0,9,deta,theWeight); 
   }
     
 
   if(nJets_central>1) {
     Float_t  mjj =  (centralJets->at(0).p4() + centralJets->at(1).p4()).M();
     Float_t  deta = fabs(centralJets->at(0).eta() - centralJets->at(1).eta());
-    theHistograms.fill("ZZTo"+decay+"_Mjj_Central","Invariant mass of the two central leading jet",100,0,900,mjj,theWeight);
-    theHistograms.fill("ZZTo"+decay+"_Deta_Central","Delta eta of the two leading central jet",30,0,6,deta,theWeight);
+    theHistograms->fill("ZZTo"+decay+"_Mjj_Central","Invariant mass of the two central leading jet",100,0,900,mjj,theWeight);
+    theHistograms->fill("ZZTo"+decay+"_Deta_Central","Delta eta of the two leading central jet",30,0,6,deta,theWeight);
   }
 
   if (decay != "4l")  eventsFull.push_back(eventStr);
   if(nJets >= 3){ 
     Float_t z =  (jets->at(2).eta()-(jets->at(0).eta() + jets->at(1).eta()))/2.  ;
-    theHistograms.fill(std::string("ZZTo")+decay+"_z"      , "z between the two most energetic jets"            ,  21, -10, 10, z, theWeight); 
+    theHistograms->fill(std::string("ZZTo")+decay+"_z"      , "z between the two most energetic jets"            ,  21, -10, 10, z, theWeight); 
   }
   
-  theHistograms.fill(std::string("ZZTo")+decay+"_nExtraMuons"    , "Number of extra muons in the event"    , 10, 0, 10, muons->size(), theWeight); 
-  theHistograms.fill(std::string("ZZTo")+decay+"_nExtraElectrons", "Number of extra electrons in the event", 10, 0, 10, electrons->size(), theWeight); 
-  theHistograms.fill(std::string("ZZTo")+decay+"_nExtraLeptons"  , "Number of extra leptons in the event"  , 10, 0, 10, muons->size()+electrons->size(), theWeight);    
+  theHistograms->fill(std::string("ZZTo")+decay+"_nExtraMuons"    , "Number of extra muons in the event"    , 10, 0, 10, muons->size(), theWeight); 
+  theHistograms->fill(std::string("ZZTo")+decay+"_nExtraElectrons", "Number of extra electrons in the event", 10, 0, 10, electrons->size(), theWeight); 
+  theHistograms->fill(std::string("ZZTo")+decay+"_nExtraLeptons"  , "Number of extra leptons in the event"  , 10, 0, 10, muons->size()+electrons->size(), theWeight);    
 }
 
 void ZZjAnalyzer::analyze(){
@@ -235,8 +235,8 @@ void ZZjAnalyzer::analyze(){
   }
   
   Float_t scaleFacErrSq = ZZ->efficiencySFUnc(); 
-  theHistograms.fill("SFErr","Invariant Mass ",200,0,5.,scaleFacErrSq,1);
-  theHistograms.fill("ZZMass","Invariant Mass ",200,55,1000,ZZ->mass(),theWeight);
+  theHistograms->fill("SFErr","Invariant Mass ",200,0,5.,scaleFacErrSq,1);
+  theHistograms->fill("ZZMass","Invariant Mass ",200,55,1000,ZZ->mass(),theWeight);
   
   if((region_ == phys::CR3P1F) && 
      ((((abs(ZZ->second().daughterPtr(0)->id())==11) &&  ZZ->second().daughterPtr(0)->pfCombRelIsoFSRCorr() >0.5) || 
@@ -313,10 +313,10 @@ if(
    ZZplots(48); // ZZ --> 2e2m
    ZZplots(44); // ZZ --> 4e
    ZZplots(52); // ZZ --> 4m
-   if (topology.test(2)) theHistograms.fill("PassDef", "Number of events passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight); 
-   else theHistograms.fill("NoPassDef", "Number of events not passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight);
-   if (topology.test(3)) theHistograms.fill("PassFidDef", "Number of events passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight); 
-   else theHistograms.fill("NoPassFidDef", "Number of events not passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight);
+   if (topology.test(2)) theHistograms->fill("PassDef", "Number of events passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight); 
+   else theHistograms->fill("NoPassDef", "Number of events not passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight);
+   if (topology.test(3)) theHistograms->fill("PassFidDef", "Number of events passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight); 
+   else theHistograms->fill("NoPassFidDef", "Number of events not passing the signal definition", 200, 50,  1000, ZZ->mass(),theWeight);
  
 }
 

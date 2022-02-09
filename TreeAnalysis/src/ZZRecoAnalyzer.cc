@@ -468,18 +468,18 @@ void ZZRecoAnalyzer::analyze(){
 
  void ZZRecoAnalyzer::FillHistosBase(std::string decay, float Wh,std::string type ){
 
-  theHistograms.fill("ZZTo"+decay+"_Mass_"+type,"", Xbins, m4L,Wh);
-  theHistograms.fill("ZZTo"+decay+"_PtZZ_"+type, Xbins_ptzz, ptzz,Wh);
-  theHistograms.fill("ZZTo"+decay+"_DphiZZ_"+type, Xbins_dphizz, dphizz,Wh);
-  theHistograms.fill("ZZTo"+decay+"_dRZZ_"+type,"", Xbins_drzz, drzz,Wh);
+  theHistograms->fill("ZZTo"+decay+"_Mass_"+type,"", Xbins, m4L,Wh);
+  theHistograms->fill("ZZTo"+decay+"_PtZZ_"+type, Xbins_ptzz, ptzz,Wh);
+  theHistograms->fill("ZZTo"+decay+"_DphiZZ_"+type, Xbins_dphizz, dphizz,Wh);
+  theHistograms->fill("ZZTo"+decay+"_dRZZ_"+type,"", Xbins_drzz, drzz,Wh);
   
   if(type=="01_fr" || type=="01"){ 
     for(unsigned int i =0; i<ScalVar.size(); i++){    
       // cout<<ScalVar.at(i)<<" "<<ScalVarVal.at(i)<<endl;
-      theHistograms.fill(std::string("ZZTo"+decay+"_Mass"+type+ScalVar.at(i)), std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L,Wh*ScalVarVal.at(i));
-      theHistograms.fill(std::string("ZZTo"+decay+"_PtZZ"+type+ScalVar.at(i)), std::string("  PtZZ #rightarrow ")+decay , Xbins_ptzz, ptzz,Wh*ScalVarVal.at(i));
-      theHistograms.fill(std::string("ZZTo"+decay+"_DphiZZ"+type+ScalVar.at(i)), std::string(" #Delta #Phi ZZ #rightarrow")+decay , Xbins_dphizz, dphizz,Wh*ScalVarVal.at(i));
-      theHistograms.fill(std::string("ZZTo"+decay+"_dRZZ"+type+ScalVar.at(i)), std::string("  #Delta R  ZZ #rightarrow")+decay , Xbins_dphizz, drzz,Wh*ScalVarVal.at(i));      
+      theHistograms->fill(std::string("ZZTo"+decay+"_Mass"+type+ScalVar.at(i)), std::string("Invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L,Wh*ScalVarVal.at(i));
+      theHistograms->fill(std::string("ZZTo"+decay+"_PtZZ"+type+ScalVar.at(i)), std::string("  PtZZ #rightarrow ")+decay , Xbins_ptzz, ptzz,Wh*ScalVarVal.at(i));
+      theHistograms->fill(std::string("ZZTo"+decay+"_DphiZZ"+type+ScalVar.at(i)), std::string(" #Delta #Phi ZZ #rightarrow")+decay , Xbins_dphizz, dphizz,Wh*ScalVarVal.at(i));
+      theHistograms->fill(std::string("ZZTo"+decay+"_dRZZ"+type+ScalVar.at(i)), std::string("  #Delta R  ZZ #rightarrow")+decay , Xbins_dphizz, drzz,Wh*ScalVarVal.at(i));      
     }
   }
 
@@ -490,12 +490,12 @@ void ZZRecoAnalyzer::FillHistosJets(std::string decay,float Wh,std::vector<phys:
   njets =  jetsVec->size(); 
   
   if (njets>3) njets=3;
-  theHistograms.fill("ZZTo"+decay+"_nJets_"+type, "", Xbins_nJets,njets, Wh);
+  theHistograms->fill("ZZTo"+decay+"_nJets_"+type, "", Xbins_nJets,njets, Wh);
 
-  for(int ijet=0; ijet<=njets; ijet++)   theHistograms.fill("ZZTo"+decay+"_nIncJets_"+type, "Number of jets of ZZ_{1}#rightarrow "+decay,Xbins_nJets,njets-ijet,Wh);    
+  for(int ijet=0; ijet<=njets; ijet++)   theHistograms->fill("ZZTo"+decay+"_nIncJets_"+type, "Number of jets of ZZ_{1}#rightarrow "+decay,Xbins_nJets,njets-ijet,Wh);    
 
-  //      theHistograms.fill(std::string("ZZTo")+decay+"_nJets"+type+ScalVar.at(i), std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,njets,Wh*ScalVarVal.at(i));    
-  //      theHistograms.fill(std::string("ZZTo")+decay+"_nJets_Central"+type+ScalVar.at(i), std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,ncentraljets,Wh*ScalVarVal.at(i));    
+  //      theHistograms->fill(std::string("ZZTo")+decay+"_nJets"+type+ScalVar.at(i), std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,njets,Wh*ScalVarVal.at(i));    
+  //      theHistograms->fill(std::string("ZZTo")+decay+"_nJets_Central"+type+ScalVar.at(i), std::string("Number of jets of ZZ_{1}#rightarrow ")+decay,Xbins_nJets,ncentraljets,Wh*ScalVarVal.at(i));    
   
   if(njets>0){  
   
@@ -513,11 +513,11 @@ void ZZRecoAnalyzer::FillHistosJets(std::string decay,float Wh,std::vector<phys:
 
     //    if (ptJet1>=500) ptJet1 = 499;    
 
-    theHistograms.fill("ZZTo"+decay+"_PtJet1_"+type," ", Xbins_ptJet1, ptJet1, Wh); 
+    theHistograms->fill("ZZTo"+decay+"_PtJet1_"+type," ", Xbins_ptJet1, ptJet1, Wh); 
     
     etaJet1 = fabs(jetsVec->at(0).eta());
     //if (etaJet1>=4.7) etaJet1 = 4.6;
-    theHistograms.fill("ZZTo"+decay+"_EtaJet1_"+type, "", Xbins_etaJet1, etaJet1, Wh);
+    theHistograms->fill("ZZTo"+decay+"_EtaJet1_"+type, "", Xbins_etaJet1, etaJet1, Wh);
   }
    
    if(njets>1){  
@@ -535,28 +535,28 @@ void ZZRecoAnalyzer::FillHistosJets(std::string decay,float Wh,std::vector<phys:
 
 
      dphi = physmath::deltaPhi(jetsVec->at(0).phi(),jetsVec->at(1).phi());
-     theHistograms.fill("ZZTo"+decay+"_PtJet2_"+type, "", Xbins_ptJet2, ptJet2, Wh);
+     theHistograms->fill("ZZTo"+decay+"_PtJet2_"+type, "", Xbins_ptJet2, ptJet2, Wh);
      etaJet2 = fabs(jetsVec->at(1).eta());
           
-     theHistograms.fill("ZZTo"+decay+"_EtaJet2_"+type, "", Xbins_etaJet2, etaJet2, Wh);
-     theHistograms.fill("ZZTo"+decay+"_Mjj_"+type,"",Xbins_mjj,mjj,Wh); 
-     theHistograms.fill("ZZTo"+decay+"_Deta_"+type,"",Xbins_deta,deta,Wh); 
-     theHistograms.fill("ZZTo"+decay+"_Phi_"+type,"",Xbins_dphi,dphi,Wh); 
+     theHistograms->fill("ZZTo"+decay+"_EtaJet2_"+type, "", Xbins_etaJet2, etaJet2, Wh);
+     theHistograms->fill("ZZTo"+decay+"_Mjj_"+type,"",Xbins_mjj,mjj,Wh); 
+     theHistograms->fill("ZZTo"+decay+"_Deta_"+type,"",Xbins_deta,deta,Wh); 
+     theHistograms->fill("ZZTo"+decay+"_Phi_"+type,"",Xbins_dphi,dphi,Wh); 
    }
    if(njets>2){  
      
      ptJet3 = jetsVec->at(2).pt();
      //if (ptJet3>=300) ptJet3 = 299;
-     theHistograms.fill("ZZTo"+decay+"_PtJet3_"+type, "", Xbins_ptJet3, ptJet3, Wh);
+     theHistograms->fill("ZZTo"+decay+"_PtJet3_"+type, "", Xbins_ptJet3, ptJet3, Wh);
    }
 }
 
 
 void ZZRecoAnalyzer::FillMatrixHistosBase(std::string decay, float Wh,std::string type ){
-  theHistograms.fill("ResMat_ZZTo"+decay+"_Mass_"+type,"", Xbins,Xbins, m4L,m4L_gen,Wh);
-  theHistograms.fill("ResMat_ZZTo"+decay+"_PtZZ_"+type, Xbins_ptzz, Xbins_ptzz, ptzz,ptzz_gen,Wh);
-  theHistograms.fill("ResMat_ZZTo"+decay+"_DphiZZ_"+type, Xbins_dphizz,Xbins_dphizz, dphizz,dphizz_gen,Wh);
-  theHistograms.fill("ResMat_ZZTo"+decay+"_dRZZ_"+type,"", Xbins_drzz, Xbins_drzz,  drzz, drzz_gen,Wh);  
+  theHistograms->fill("ResMat_ZZTo"+decay+"_Mass_"+type,"", Xbins,Xbins, m4L,m4L_gen,Wh);
+  theHistograms->fill("ResMat_ZZTo"+decay+"_PtZZ_"+type, Xbins_ptzz, Xbins_ptzz, ptzz,ptzz_gen,Wh);
+  theHistograms->fill("ResMat_ZZTo"+decay+"_DphiZZ_"+type, Xbins_dphizz,Xbins_dphizz, dphizz,dphizz_gen,Wh);
+  theHistograms->fill("ResMat_ZZTo"+decay+"_dRZZ_"+type,"", Xbins_drzz, Xbins_drzz,  drzz, drzz_gen,Wh);  
 }
 
  void ZZRecoAnalyzer::FillMatrixHistosJets(std::string decay,float Wh,std::vector<phys::Jet> *jetsVec,std::vector<phys::Particle> *jetsGenVec,std::string type){
@@ -566,12 +566,12 @@ void ZZRecoAnalyzer::FillMatrixHistosBase(std::string decay, float Wh,std::strin
    if (njets_gen>3) njets_gen=3;
    if (njets>3)     njets=3;
    
-   theHistograms.fill("ResMat_ZZTo"+decay+"_nJets_"+type, "", Xbins_nJets,Xbins_nJets,njets,njets_gen, Wh);      
+   theHistograms->fill("ResMat_ZZTo"+decay+"_nJets_"+type, "", Xbins_nJets,Xbins_nJets,njets,njets_gen, Wh);      
    
    for(int igjet=0; igjet<=njets_gen; igjet++){
      for(int ijet=0; ijet<=njets; ijet++){
        if(igjet != ijet) continue;
-       theHistograms.fill("ResMat_ZZTo"+decay+"_nIncJets_"+type, "Number of jets of ZZ_{1}#rightarrow "+decay,Xbins_nJets,Xbins_nJets,njets-ijet,njets_gen-igjet, Wh);      
+       theHistograms->fill("ResMat_ZZTo"+decay+"_nIncJets_"+type, "Number of jets of ZZ_{1}#rightarrow "+decay,Xbins_nJets,Xbins_nJets,njets-ijet,njets_gen-igjet, Wh);      
      }
    }
 
@@ -599,8 +599,8 @@ void ZZRecoAnalyzer::FillMatrixHistosBase(std::string decay, float Wh,std::strin
      //     if (ptJet1_gen >=500)  ptJet1_gen =499;
      //if (etaJet1_gen >=4.7) etaJet1_gen =4.6;
      
-     theHistograms.fill("ResMat_ZZTo"+decay+"_PtJet1_"+type," ", Xbins_ptJet1,Xbins_ptJet1, ptJet1,ptJet1_gen, Wh); 
-     theHistograms.fill("ResMat_ZZTo"+decay+"_EtaJet1_"+type, "", Xbins_etaJet1,Xbins_etaJet1, etaJet1,etaJet1_gen, Wh);
+     theHistograms->fill("ResMat_ZZTo"+decay+"_PtJet1_"+type," ", Xbins_ptJet1,Xbins_ptJet1, ptJet1,ptJet1_gen, Wh); 
+     theHistograms->fill("ResMat_ZZTo"+decay+"_EtaJet1_"+type, "", Xbins_etaJet1,Xbins_etaJet1, etaJet1,etaJet1_gen, Wh);
    }
    
    if(njets>1){ 
@@ -629,11 +629,11 @@ void ZZRecoAnalyzer::FillMatrixHistosBase(std::string decay, float Wh,std::strin
      dphi        = physmath::deltaPhi(jetsGenVec->at(0).phi(),jetsGenVec->at(1).phi());     
 
      
-     theHistograms.fill("ResMat_ZZTo"+decay+"_PtJet2_"+type, "", Xbins_ptJet2,Xbins_ptJet2, ptJet2,ptJet2_gen, Wh);     
-     theHistograms.fill("ResMat_ZZTo"+decay+"_EtaJet2_"+type, "", Xbins_etaJet2, Xbins_etaJet2, etaJet2, etaJet2_gen, Wh);
-     theHistograms.fill("ResMat_ZZTo"+decay+"_Mjj_" +type,"",Xbins_mjj,Xbins_mjj,mjj,mjj_gen,Wh); 
-     theHistograms.fill("ResMat_ZZTo"+decay+"_Deta_"+type,"",Xbins_deta,Xbins_deta, deta,deta_gen,Wh); 
-     theHistograms.fill("ResMat_ZZTo"+decay+"_Phi_" +type,"",Xbins_dphi,Xbins_dphi,dphi,dphi_gen,Wh); 
+     theHistograms->fill("ResMat_ZZTo"+decay+"_PtJet2_"+type, "", Xbins_ptJet2,Xbins_ptJet2, ptJet2,ptJet2_gen, Wh);     
+     theHistograms->fill("ResMat_ZZTo"+decay+"_EtaJet2_"+type, "", Xbins_etaJet2, Xbins_etaJet2, etaJet2, etaJet2_gen, Wh);
+     theHistograms->fill("ResMat_ZZTo"+decay+"_Mjj_" +type,"",Xbins_mjj,Xbins_mjj,mjj,mjj_gen,Wh); 
+     theHistograms->fill("ResMat_ZZTo"+decay+"_Deta_"+type,"",Xbins_deta,Xbins_deta, deta,deta_gen,Wh); 
+     theHistograms->fill("ResMat_ZZTo"+decay+"_Phi_" +type,"",Xbins_dphi,Xbins_dphi,dphi,dphi_gen,Wh); 
    }
  }
 
@@ -740,8 +740,8 @@ void ZZRecoAnalyzer::end( TFile &) {
     for (std::vector<std::string>::iterator var = Variable.begin() ; var != Variable.end(); ++var){
       for (std::vector<std::string>::iterator it = FinalState.begin() ; it != FinalState.end(); ++it){
 
-	TH1 *hvar =  theHistograms.get(("ZZTo"+*it+"_"+*var+"_FRVar").c_str());	
-  	TH1 *h = theHistograms.get(("ZZTo"+*it+"_"+*var+"_01").c_str());
+	TH1 *hvar =  theHistograms->get(("ZZTo"+*it+"_"+*var+"_FRVar").c_str());	
+  	TH1 *h = theHistograms->get(("ZZTo"+*it+"_"+*var+"_01").c_str());
   	if(!h || !hvar) continue;
   	for(int i = 1; i<=h->GetNbinsX();i++){  
   	  Float_t Err = h->GetBinError(i);

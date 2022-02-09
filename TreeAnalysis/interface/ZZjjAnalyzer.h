@@ -29,7 +29,7 @@ public:
    : EventAnalyzer(*(new Selector<ZZjjAnalyzer>(*this)), 
 		   configuration){
     //theHistograms.profile(genCategory);
-   helper_ = new VVjjHelper(&theHistograms);
+   helper_ = new VVjjHelper(theHistograms);
   }
 
   virtual ~ZZjjAnalyzer(){

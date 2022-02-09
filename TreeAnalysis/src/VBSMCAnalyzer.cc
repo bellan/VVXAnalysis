@@ -44,20 +44,20 @@ void VBSMCAnalyzer::ZZplots(string decay){
     
     if(mjj_gen>400 && deta_gen>2.4){   
       
-      theHistograms.fill(std::string("ZZTo")+decay+"_MassGen_01_fr", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_kf);
+      theHistograms->fill(std::string("ZZTo")+decay+"_MassGen_01_fr", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay , Xbins, m4L_gen,theMCInfo.sampleWeight()*w_kf);
       
       
       if((region_ == phys::MC && regionWord.test(phys::SR4P)) || ((region_ == phys::MC_HZZ) && regionWord.test(phys::SR_HZZ))){
 	
 	
-	theHistograms.fill(std::string("ZZTo")+decay+"_MassGenReco_01_fr", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay+"of reco events" , Xbins , m4L_gen,theWeight*w_kf); 
+	theHistograms->fill(std::string("ZZTo")+decay+"_MassGenReco_01_fr", std::string("Generated invariant mass of ZZ_{1}#rightarrow ")+decay+"of reco events" , Xbins , m4L_gen,theWeight*w_kf); 
 	
 	//SCALE FACTOR HISTOGRAMS
 	
 	Float_t scaleFacErrSq = ZZ->efficiencySFUnc();
 	
-	theHistograms.fill(std::string("ZZTo")+decay+"_MassGenRecoSFErrSqMinus_01_fr", "", Xbins , m4L_gen, theWeight*w_kf*(1-scaleFacErrSq));   
-	theHistograms.fill(std::string("ZZTo")+decay+"_MassGenRecoSFErrSqPlus_01_fr","", Xbins , m4L_gen, theWeight*w_kf*(1+scaleFacErrSq));
+	theHistograms->fill(std::string("ZZTo")+decay+"_MassGenRecoSFErrSqMinus_01_fr", "", Xbins , m4L_gen, theWeight*w_kf*(1-scaleFacErrSq));   
+	theHistograms->fill(std::string("ZZTo")+decay+"_MassGenRecoSFErrSqPlus_01_fr","", Xbins , m4L_gen, theWeight*w_kf*(1+scaleFacErrSq));
 	
       }
     } 
