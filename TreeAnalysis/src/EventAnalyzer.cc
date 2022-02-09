@@ -254,7 +254,10 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
 
   else if(region_ >= phys::SR3P && region_ < phys::CRLFR)
     theWeight = theSampleInfo.weight(*ZW);
- 
+
+  else if(region_ == phys::CRLFR)
+    theWeight = theSampleInfo.weight(ZL->first);
+  
   else if(region_ > phys::CRLFR && region_ <= phys::CR2P_1F)
     theWeight = theSampleInfo.weight(*Z);
   
