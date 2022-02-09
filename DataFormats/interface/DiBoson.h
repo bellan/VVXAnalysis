@@ -72,10 +72,15 @@ namespace phys {
       return daughter0_.numberOfGoodDaughters() + daughter1_.numberOfGoodDaughters();
     }
 
+    int numberOfBadGrandDaughters() const {
+      if(!isValid()) return 0;
+      return daughter0_.numberOfBadDaughters() + daughter1_.numberOfBadDaughters();
+    }
+    
     double fakeRateSF() const {
       if(id_ == 0) return 1.; // To be checked
       double ifakeRateSF = daughter0_.fakeRateSF() * daughter1_.fakeRateSF();
-      return numberOfGoodGrandDaughters() == 2 ? -1*ifakeRateSF : ifakeRateSF;
+      return numberOfBadGrandDaughters() == 2 ? -1*ifakeRateSF : ifakeRateSF;
     }
 
     double efficiencySF() const{return daughter0_.efficiencySF() * daughter1_.efficiencySF();}
