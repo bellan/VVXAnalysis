@@ -197,23 +197,40 @@ void VVGammaAnalyzer::analyze(){
 	
 	// SR: medium photon ID - CR: loose && !medium photon ID
 	Photon& thePhoton = goodPhotons_->front();
-	bool isSR_G = thePhoton.cutBasedIDMedium();  
-	std::string region(isSR_G ? "G Medium" : "G Loose");
 	
-	theHistograms->fill(region+": G pt", Form("p_{t}^{#gamma} %s;GeV/c", region.c_str()), 50,0.,200., thePhoton.pt(), theWeight);
-	if(ZZ && ZZ->pt() > 1.){
-		theHistograms->fill(region+": ZZ mass", Form("m_{4l} %s;GeV/c^{2}", region.c_str()), 25,0.,500., ZZ->mass(), theWeight);
-		theHistograms->fill(region+": Z0 mass", Form("m_{Z0} %s;GeV/c^{2}", region.c_str()), 35,55.,125., ZZ->first().mass(), theWeight);
-		theHistograms->fill(region+": Z1 mass", Form("m_{Z1} %s;GeV/c^{2}", region.c_str()), 35,55.,125., ZZ->second().mass(), theWeight);
-		theHistograms->fill(region+": ZZG mass", Form("m_{ZZ#gamma} %s;GeV/c", region.c_str()), 50,0.,500., (ZZ->p4()+thePhoton.p4()).M(), theWeight);
-		theHistograms->fill(region+": Z0G mass", Form("m_{Z0#gamma} %s;GeV/c", region.c_str()), 50,0.,500., (ZZ->first().p4()+thePhoton.p4()).M(), theWeight);
-		theHistograms->fill(region+": Z1G mass", Form("m_{Z1#gamma} %s;GeV/c", region.c_str()), 50,0.,500., (ZZ->second().p4()+thePhoton.p4()).M(), theWeight);
+	theHistograms->fill("photon_pt", "p_{t}^{#gamma};GeV/c", 50,0.,200., thePhoton.pt(), theWeight);
+	if((region_==CR2P2F || region_==CR3P1F || region_==SR4P) && ZZ && ZZ->pt() > 1.){
+		theHistograms->fill("ZZ_mass", "m_{4l};GeV/c^{2}", 25,0.,500., ZZ->mass(), theWeight);
+		theHistograms->fill("Z0_mass", "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass(), theWeight);
+		theHistograms->fill("Z1_mass", "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass(), theWeight);
+		theHistograms->fill("Z0_l0_pt", "m_{l00};GeV/c", 20,0.,400., ZZ->first().daughter(0).pt(), theWeight);
+		theHistograms->fill("Z0_l1_pt", "m_{l00};GeV/c", 20,0.,400., ZZ->first().daughter(1).pt(), theWeight);
+		theHistograms->fill("Z1_l0_pt", "m_{l00};GeV/c", 20,0.,400., ZZ->second().daughter(0).pt(), theWeight);
+		theHistograms->fill("Z1_l1_pt", "m_{l00};GeV/c", 20,0.,400., ZZ->second().daughter(1).pt(), theWeight);
+		// theHistograms->fill("ZZG mass", "m_{ZZ#gamma};GeV/c", 50,0.,500., (ZZ->p4()+thePhoton.p4()).M(), theWeight);
+		// theHistograms->fill("Z0G mass", "m_{Z0#gamma};GeV/c", 50,0.,500., (ZZ->first().p4()+thePhoton.p4()).M(), theWeight);
+		// theHistograms->fill("Z1G mass", "m_{Z1#gamma};GeV/c", 50,0.,500., (ZZ->second().p4()+thePhoton.p4()).M(), theWeight);
 	}
+	if( ((region_>=CR110 && region_<=CR000) || region_==SR3P ) && ZW && ZW->pt() > 1.){
+		theHistograms->fill("ZW_massT", "m_{T,3l};GeV/c^{2}", 25,0.,500., ZW->p4().Mt(), theWeight);
+		theHistograms->fill("Z_mass", "m_{Z};GeV/c^{2}", 35,55.,125., ZW->first().mass(), theWeight);
+		theHistograms->fill("W_massT", "m_{T,W};GeV/c^{2}", 35,55.,125., ZW->second().p4().Mt(), theWeight);
+		theHistograms->fill("Z_l0_pt", "m_{l00};GeV/c", 20,0.,400., ZW->first().daughter(0).pt(), theWeight);
+		theHistograms->fill("Z_l1_pt", "m_{l00};GeV/c", 20,0.,400., ZW->first().daughter(1).pt(), theWeight);
+		theHistograms->fill("W_l_pt", "m_{l00};GeV/c", 20,0.,400., ZW->second().daughter(0).pt(), theWeight);
+		theHistograms->fill("W_MET_pt", "m_{l00};GeV/c", 20,0.,400., ZW->second().daughter(1).pt(), theWeight);
+	}
+	if(region_==CRLFR && ZL && ZL->first.pt() > 1.){
+		theHistograms->fill("ZL_mass", "m_{3l};GeV/c^{2}", 25,0.,500., (ZL->first.p4()+ZL->second.p4()).M(), theWeight);
+		theHistograms->fill("Z_mass", "m_{Z};GeV/c^{2}", 35,55.,125., ZL->first.mass(), theWeight);
+		theHistograms->fill("Z_l0_pt", "m_{l00};GeV/c", 20,0.,400., ZL->first.daughter(0).pt(), theWeight);
+		theHistograms->fill("Z_l1_pt", "m_{l00};GeV/c", 20,0.,400., ZL->first.daughter(1).pt(), theWeight);
+		theHistograms->fill("L_pt", "m_{l00};GeV/c", 20,0.,400., ZL->second.pt(), theWeight);
+	}
+	return; //TEMP
 	
 	double leadElpt = electrons->size() > 0 ? electrons->at(0).pt() : 0.;
 	double leadMupt = muons->size()     > 0 ? muons->at(0).pt()     : 0.;
-	
-	theHistograms->fill(region+": lead L pt", "Leading lepton p_{t};p_{t} [GeV/c]", 20,0.,400., std::max(leadMupt, leadElpt), theWeight);
 	
 	// electrons
 	for(auto e : *electrons){
