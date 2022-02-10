@@ -25,6 +25,7 @@ class Histogrammer{
    : profile_(false)
    , category_(0){
     TH1F::SetDefaultSumw2(kTRUE);
+    TH1::AddDirectory(false);
   }
   
   ~Histogrammer(){}

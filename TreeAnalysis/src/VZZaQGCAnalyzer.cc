@@ -47,12 +47,12 @@ void VZZaQGCAnalyzer::analyze(){
   phys::Boson<phys::Particle> z1,z2;
   foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
     if((abs(genVBParticle.daughter(0).id())==11||abs(genVBParticle.daughter(0).id())==13)&&genVBParticle.id()==23){
-      theHistograms.fill("theta of generated bosons","Generated boson theta",75 ,0,3.5,genVBParticle.p4().Theta(),theWeight);
-      theHistograms.fill("eta of generated bosons","Generated boson eta",60,-6,6,genVBParticle.eta(),theWeight);
+      theHistograms->fill("theta of generated bosons","Generated boson theta",75 ,0,3.5,genVBParticle.p4().Theta(),theWeight);
+      theHistograms->fill("eta of generated bosons","Generated boson eta",60,-6,6,genVBParticle.eta(),theWeight);
       double angle1=genVBParticle.daughter(0).p4().Angle(genVBParticle.daughter(1).p4().Vect());
-      theHistograms.fill("angle of generated leptons","Generated lepton angle",75,0,3.5,angle1,theWeight);
-      theHistograms.fill("energy of major lepton","Generated major lepton energy",200,0,2000,std::max(genVBParticle.daughter(0).e(),genVBParticle.daughter(1).e()),theWeight);
-      theHistograms.fill("energy of minor lepton","Generated minor lepton energy",200,0,800,std::min(genVBParticle.daughter(0).e(),genVBParticle.daughter(1).e()),theWeight);
+      theHistograms->fill("angle of generated leptons","Generated lepton angle",75,0,3.5,angle1,theWeight);
+      theHistograms->fill("energy of major lepton","Generated major lepton energy",200,0,2000,std::max(genVBParticle.daughter(0).e(),genVBParticle.daughter(1).e()),theWeight);
+      theHistograms->fill("energy of minor lepton","Generated minor lepton energy",200,0,800,std::min(genVBParticle.daughter(0).e(),genVBParticle.daughter(1).e()),theWeight);
       a+=genVBParticle.p4();
      }}
 
@@ -61,7 +61,7 @@ void VZZaQGCAnalyzer::analyze(){
   if(topology.test(0)){
     
     double massZZ=sqrt((a.E()*a.E())-(a.Px()*a.Px())-(a.Py()*a.Py())-(a.Pz()*a.Pz()));
-    theHistograms.fill("mass of generated dibosons","Generated ZZ mass",78,80,600,massZZ,theWeight);
+    theHistograms->fill("mass of generated dibosons","Generated ZZ mass",78,80,600,massZZ,theWeight);
 
     foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
       if((abs(genVBParticle.daughter(0).id())==11||abs(genVBParticle.daughter(0).id())==13)&&genVBParticle.id()==23){
@@ -72,66 +72,66 @@ void VZZaQGCAnalyzer::analyze(){
 	    z1=genVBParticle;}
 	  else{z2=genVBParticle;}}}}
     
-    theHistograms.fill("mass of generated Z1","Generated Z1 mass",180,50,130,z1.mass(),theWeight);
-    theHistograms.fill("mass of generated Z2","Generated Z2 mass",90,50,130,z2.mass(),theWeight);
-    theHistograms.fill("mass of well generated Z1","Generated Z1 mass",10,80,100,z1.mass(),theWeight);
-    theHistograms.fill("mass of well generated Z2","Generated Z2 mass",10,70,110,z2.mass(),theWeight);
+    theHistograms->fill("mass of generated Z1","Generated Z1 mass",180,50,130,z1.mass(),theWeight);
+    theHistograms->fill("mass of generated Z2","Generated Z2 mass",90,50,130,z2.mass(),theWeight);
+    theHistograms->fill("mass of well generated Z1","Generated Z1 mass",10,80,100,z1.mass(),theWeight);
+    theHistograms->fill("mass of well generated Z2","Generated Z2 mass",10,70,110,z2.mass(),theWeight);
     
-    theHistograms.fill("energy of generated Z1","Generated Z1 energy",135,0,2700,z1.e(),theWeight);
-    theHistograms.fill("energy of generated Z2","Generated Z2 energy",135,0,2700,z2.e(),theWeight);
-    theHistograms.fill("energy of well generated Z1","Generated Z1 energy",10,0,1400,z1.e(),theWeight);
-    theHistograms.fill("energy of well generated Z2","Generated Z2 energy",10,0,1400,z2.e(),theWeight);
+    theHistograms->fill("energy of generated Z1","Generated Z1 energy",135,0,2700,z1.e(),theWeight);
+    theHistograms->fill("energy of generated Z2","Generated Z2 energy",135,0,2700,z2.e(),theWeight);
+    theHistograms->fill("energy of well generated Z1","Generated Z1 energy",10,0,1400,z1.e(),theWeight);
+    theHistograms->fill("energy of well generated Z2","Generated Z2 energy",10,0,1400,z2.e(),theWeight);
     
-    theHistograms.fill("pt of generated Z1","Generated Z1 pt",150,0,900,z1.pt(),theWeight);
-    theHistograms.fill("pt of generated Z2","Generated Z2 pt",150,0,900,z2.pt(),theWeight);
-    theHistograms.fill("pt of well generated Z1","Generated Z1 pt",10,0,350,z1.pt(),theWeight);
-    theHistograms.fill("pt of well generated Z2","Generated Z2 pt",10,0,350,z2.pt(),theWeight);
+    theHistograms->fill("pt of generated Z1","Generated Z1 pt",150,0,900,z1.pt(),theWeight);
+    theHistograms->fill("pt of generated Z2","Generated Z2 pt",150,0,900,z2.pt(),theWeight);
+    theHistograms->fill("pt of well generated Z1","Generated Z1 pt",10,0,350,z1.pt(),theWeight);
+    theHistograms->fill("pt of well generated Z2","Generated Z2 pt",10,0,350,z2.pt(),theWeight);
     
-    theHistograms.fill("eta of well generated Z1","Generated Z1 eta",10,-4.5,4.5,z1.eta(),theWeight);
-    theHistograms.fill("eta of well generated Z2","Generated Z2 eta",10,-4.5,4.5,z2.eta(),theWeight);
+    theHistograms->fill("eta of well generated Z1","Generated Z1 eta",10,-4.5,4.5,z1.eta(),theWeight);
+    theHistograms->fill("eta of well generated Z2","Generated Z2 eta",10,-4.5,4.5,z2.eta(),theWeight);
     
-    theHistograms.fill("energy of good Z1 major lepton","Generated Z1 major lepton's energy",10,0,1000,std::max(z1.daughter(0).e(),z1.daughter(1).e()),theWeight);
-    theHistograms.fill("energy of good Z1 minor lepton","Generated Z1 minor lepton's energy",10,0,300,std::min(z1.daughter(0).e(),z1.daughter(1).e()),theWeight);
-    theHistograms.fill("energy of good Z2 major lepton","Generated Z2 major lepton's energy",10,0,1000,std::max(z2.daughter(0).e(),z2.daughter(1).e()),theWeight);
-    theHistograms.fill("energy of good Z2 minor lepton","Generated Z2 minor lepton's energy",10,0,300,std::min(z2.daughter(0).e(),z2.daughter(1).e()),theWeight);
+    theHistograms->fill("energy of good Z1 major lepton","Generated Z1 major lepton's energy",10,0,1000,std::max(z1.daughter(0).e(),z1.daughter(1).e()),theWeight);
+    theHistograms->fill("energy of good Z1 minor lepton","Generated Z1 minor lepton's energy",10,0,300,std::min(z1.daughter(0).e(),z1.daughter(1).e()),theWeight);
+    theHistograms->fill("energy of good Z2 major lepton","Generated Z2 major lepton's energy",10,0,1000,std::max(z2.daughter(0).e(),z2.daughter(1).e()),theWeight);
+    theHistograms->fill("energy of good Z2 minor lepton","Generated Z2 minor lepton's energy",10,0,300,std::min(z2.daughter(0).e(),z2.daughter(1).e()),theWeight);
     
     double ZZangle1=z1.p4().Angle(z2.p4().Vect());
-    theHistograms.fill("angolo bosoni generati","Angolo bosoni generati",35,0,3.5,ZZangle1,theWeight);}
+    theHistograms->fill("angolo bosoni generati","Angolo bosoni generati",35,0,3.5,ZZangle1,theWeight);}
 
   //study of reconstructed boson properties
     
   if(ZZ->passFullSelection()){
     
-    theHistograms.fill("mass of reconstructed Z1","Reconstructed Z1 mass",180,50,130,ZZ->first().mass(),theWeight);
-    theHistograms.fill("mass of reconstructed Z2","Reconstructed Z2 mass",180,50,130,ZZ->second().mass(),theWeight);
+    theHistograms->fill("mass of reconstructed Z1","Reconstructed Z1 mass",180,50,130,ZZ->first().mass(),theWeight);
+    theHistograms->fill("mass of reconstructed Z2","Reconstructed Z2 mass",180,50,130,ZZ->second().mass(),theWeight);
       
-    theHistograms.fill("pt of reconstructed Z1","Reconstructed Z1 pt",150,0,900,ZZ->first().pt(),theWeight);
-    theHistograms.fill("pt of reconstructed Z2","Reconstructed Z2 pt",150,0,900,ZZ->second().pt(),theWeight);
+    theHistograms->fill("pt of reconstructed Z1","Reconstructed Z1 pt",150,0,900,ZZ->first().pt(),theWeight);
+    theHistograms->fill("pt of reconstructed Z2","Reconstructed Z2 pt",150,0,900,ZZ->second().pt(),theWeight);
       
-    theHistograms.fill("theta of reconstructed bosons","Reconstructed boson theta",75 ,0,3.5,ZZ->first().p4().Theta(),theWeight);
-    theHistograms.fill("theta of reconstructed bosons","Reconstructed boson theta",75 ,0,3.5,ZZ->second().p4().Theta(),theWeight);
+    theHistograms->fill("theta of reconstructed bosons","Reconstructed boson theta",75 ,0,3.5,ZZ->first().p4().Theta(),theWeight);
+    theHistograms->fill("theta of reconstructed bosons","Reconstructed boson theta",75 ,0,3.5,ZZ->second().p4().Theta(),theWeight);
       
-    theHistograms.fill("energy of reconstructed Z1","Reconstructed Z1 energy",135,0,2700,ZZ->first().e(),theWeight);
-    theHistograms.fill("energy of reconstructed Z2","Reconstructed Z2 energy",135,0,2700,ZZ->second().e(),theWeight);
+    theHistograms->fill("energy of reconstructed Z1","Reconstructed Z1 energy",135,0,2700,ZZ->first().e(),theWeight);
+    theHistograms->fill("energy of reconstructed Z2","Reconstructed Z2 energy",135,0,2700,ZZ->second().e(),theWeight);
       
-    theHistograms.fill("eta of reconstructed bosons","Reconstructed boson eta",60,-6,6,ZZ->first().eta(),theWeight);
-    theHistograms.fill("eta of reconstructed bosons","Reconstructed boson eta",60,-6,6,ZZ->second().eta(),theWeight);
+    theHistograms->fill("eta of reconstructed bosons","Reconstructed boson eta",60,-6,6,ZZ->first().eta(),theWeight);
+    theHistograms->fill("eta of reconstructed bosons","Reconstructed boson eta",60,-6,6,ZZ->second().eta(),theWeight);
       
     double angle2=ZZ->first().daughter(0).p4().Angle(ZZ->first().daughter(1).p4().Vect());
-    theHistograms.fill("angle of reconstructed leptons","Reconstructed lepton angle",75,0,3.5,angle2,theWeight);
+    theHistograms->fill("angle of reconstructed leptons","Reconstructed lepton angle",75,0,3.5,angle2,theWeight);
     double angle3=ZZ->second().daughter(0).p4().Angle(ZZ->second().daughter(1).p4().Vect());
-    theHistograms.fill("angle of reconstructed leptons","Reconstructed lepton angle",75,0,3.5,angle3,theWeight);
+    theHistograms->fill("angle of reconstructed leptons","Reconstructed lepton angle",75,0,3.5,angle3,theWeight);
     double ZZangle2=ZZ->first().p4().Angle(ZZ->second().p4().Vect());
-    theHistograms.fill("angle of reconstructed bosons","Reconstructed boson angle",35,0,3.5,ZZangle2,theWeight);
+    theHistograms->fill("angle of reconstructed bosons","Reconstructed boson angle",35,0,3.5,ZZangle2,theWeight);
 
     TLorentzVector b=ZZ->first().p4()+ZZ->second().p4();
     double mass2=sqrt((b.E()*b.E())-(b.Px()*b.Px())-(b.Py()*b.Py())-(b.Pz()*b.Pz()));
-    theHistograms.fill("mass of reconstructed dibosons","Reconstructed ZZ mass",78,80,600,mass2,theWeight);
+    theHistograms->fill("mass of reconstructed dibosons","Reconstructed ZZ mass",78,80,600,mass2,theWeight);
 
-    theHistograms.fill("energy of major reconstructed leptons","Major reconstructed lepton energy",200,0,2000,std::max(ZZ->first().daughter(0).e(),ZZ->first().daughter(1).e()),theWeight);
-    theHistograms.fill("energy of minor reconstructed leptons","Minor reconstructd lepton energy",200,0,800,std::min(ZZ->first().daughter(0).e(),ZZ->first().daughter(1).e()),theWeight);
-    theHistograms.fill("energy of major reconstructed leptons","Major reconstructed lepton energy",200,0,2000,std::max(ZZ->second().daughter(0).e(),ZZ->second().daughter(1).e()),theWeight);
-    theHistograms.fill("energy of minor reconstructed leptons","Minor reconstructed lepton energy",200,0,800,std::min(ZZ->second().daughter(0).e(),ZZ->second().daughter(1).e()),theWeight);
+    theHistograms->fill("energy of major reconstructed leptons","Major reconstructed lepton energy",200,0,2000,std::max(ZZ->first().daughter(0).e(),ZZ->first().daughter(1).e()),theWeight);
+    theHistograms->fill("energy of minor reconstructed leptons","Minor reconstructd lepton energy",200,0,800,std::min(ZZ->first().daughter(0).e(),ZZ->first().daughter(1).e()),theWeight);
+    theHistograms->fill("energy of major reconstructed leptons","Major reconstructed lepton energy",200,0,2000,std::max(ZZ->second().daughter(0).e(),ZZ->second().daughter(1).e()),theWeight);
+    theHistograms->fill("energy of minor reconstructed leptons","Minor reconstructed lepton energy",200,0,800,std::min(ZZ->second().daughter(0).e(),ZZ->second().daughter(1).e()),theWeight);
 
     //coupling generated and reconstructed leptonic bosons
 
@@ -146,7 +146,7 @@ void VZZaQGCAnalyzer::analyze(){
 	  z3=genVBParticle;
 	  enlep1=std::max(genVBParticle.daughter(0).e(),genVBParticle.daughter(1).e());
 	  enlep2=std::min(genVBParticle.daughter(0).e(),genVBParticle.daughter(1).e());}}}
-    theHistograms.fill("dR Z1","dR Z1",100,0,0.5,dR);
+    theHistograms->fill("dR Z1","dR Z1",100,0,0.5,dR);
       
     foreach(const phys::Boson<phys::Particle> genVBParticle,*genVBParticles){
       if((abs(genVBParticle.daughter(0).id())==11||abs(genVBParticle.daughter(0).id())==13)&&genVBParticle.id()==23){
@@ -155,38 +155,38 @@ void VZZaQGCAnalyzer::analyze(){
 	  z4=genVBParticle;
 	  enlep3=std::max(genVBParticle.daughter(0).e(),genVBParticle.daughter(1).e());
 	  enlep4=std::min(genVBParticle.daughter(0).e(),genVBParticle.daughter(1).e());}}}
-    theHistograms.fill("dR Z2","dR Z2",100,0,0.5,dR2);
+    theHistograms->fill("dR Z2","dR Z2",100,0,0.5,dR2);
 
     if(dR<0.05&&dR2<0.1&&z3!=z4){
 	
-      theHistograms.fill("comparison of Z1 mass","Difference between generated/reconstructed Z1 mass",40,-8,8,ZZ->first().mass()-z3.mass(),theWeight);
-      theHistograms.fill("comparison of Z1 energy","Difference between generated/reconstructed Z1 energy",200,-40,40,ZZ->first().e()-z3.e(),theWeight);
-      theHistograms.fill("comparison of Z1 pt","Difference between generated/reconstructed Z1 pt",150,-30,30,ZZ->first().pt()-z3.pt());
-      theHistograms.fill("comparison of Z1 eta","Difference between generated/reconstructed Z1 eta",50,-0.1,0.1,ZZ->first().eta()-z3.eta(),theWeight);
+      theHistograms->fill("comparison of Z1 mass","Difference between generated/reconstructed Z1 mass",40,-8,8,ZZ->first().mass()-z3.mass(),theWeight);
+      theHistograms->fill("comparison of Z1 energy","Difference between generated/reconstructed Z1 energy",200,-40,40,ZZ->first().e()-z3.e(),theWeight);
+      theHistograms->fill("comparison of Z1 pt","Difference between generated/reconstructed Z1 pt",150,-30,30,ZZ->first().pt()-z3.pt());
+      theHistograms->fill("comparison of Z1 eta","Difference between generated/reconstructed Z1 eta",50,-0.1,0.1,ZZ->first().eta()-z3.eta(),theWeight);
 	
-      theHistograms.fill("mass of well reconstructed Z1","Reconstructed Z1 mass",10,80,100,z3.mass(),theWeight);
-      theHistograms.fill("pt of well reconstructed Z1","Reconstructed Z1 pt",10,0,350,z3.pt(),theWeight);
-      theHistograms.fill("energy of well reconstructed Z1","Reconstructed Z1 energy",10,0,1400,z3.e(),theWeight);
-      theHistograms.fill("eta of well reconstructed Z1","Reconstructed Z1 eta",10,-4.5,4.5,z3.eta(),theWeight);
+      theHistograms->fill("mass of well reconstructed Z1","Reconstructed Z1 mass",10,80,100,z3.mass(),theWeight);
+      theHistograms->fill("pt of well reconstructed Z1","Reconstructed Z1 pt",10,0,350,z3.pt(),theWeight);
+      theHistograms->fill("energy of well reconstructed Z1","Reconstructed Z1 energy",10,0,1400,z3.e(),theWeight);
+      theHistograms->fill("eta of well reconstructed Z1","Reconstructed Z1 eta",10,-4.5,4.5,z3.eta(),theWeight);
 	
-      theHistograms.fill("comparison of Z1 major lepton energy","Difference between generated/reconstructed Z1 major lepton energy",100,-20,20,std::max(ZZ->first().daughter(0).e(),ZZ->first().daughter(1).e())-enlep1,theWeight);
-      theHistograms.fill("comparison of Z1 minor lepton energy","Difference between generated/reconstructed Z1 minor lepton energy",00,-20,20,std::min(ZZ->first().daughter(0).e(),ZZ->first().daughter(1).e())-enlep2,theWeight);
-      theHistograms.fill("energy of well reconstructed Z1 major lepton","Reconstructed major Z1 lepton energy",10,0,1000,enlep1,theWeight);
-      theHistograms.fill("energy of well reconstructed Z1 minor lepton","Reconstructed minor Z1 lepton energy",10,0,300,enlep2,theWeight);
+      theHistograms->fill("comparison of Z1 major lepton energy","Difference between generated/reconstructed Z1 major lepton energy",100,-20,20,std::max(ZZ->first().daughter(0).e(),ZZ->first().daughter(1).e())-enlep1,theWeight);
+      theHistograms->fill("comparison of Z1 minor lepton energy","Difference between generated/reconstructed Z1 minor lepton energy",00,-20,20,std::min(ZZ->first().daughter(0).e(),ZZ->first().daughter(1).e())-enlep2,theWeight);
+      theHistograms->fill("energy of well reconstructed Z1 major lepton","Reconstructed major Z1 lepton energy",10,0,1000,enlep1,theWeight);
+      theHistograms->fill("energy of well reconstructed Z1 minor lepton","Reconstructed minor Z1 lepton energy",10,0,300,enlep2,theWeight);
        
-      theHistograms.fill("comparison of Z2 mass","Difference between generated/reconstructed Z2 mass",40,-8,8,ZZ->second().mass()-z4.mass(),theWeight);
-      theHistograms.fill("comparison of Z2 energy","Difference between generated/reconstructed Z2 energy",200,-40,40,ZZ->second().e()-z4.e(),theWeight);
-      theHistograms.fill("comparison of Z2 pt","Difference between generated/reconstructed Z2 pt",150,-30,30,ZZ->second().pt()-z4.pt(),theWeight);
-      theHistograms.fill("comparison of Z2 eta","Difference between generated/reconstructed Z2 eta",50,-0.1,0.1,ZZ->second().eta()-z4.eta(),theWeight);
+      theHistograms->fill("comparison of Z2 mass","Difference between generated/reconstructed Z2 mass",40,-8,8,ZZ->second().mass()-z4.mass(),theWeight);
+      theHistograms->fill("comparison of Z2 energy","Difference between generated/reconstructed Z2 energy",200,-40,40,ZZ->second().e()-z4.e(),theWeight);
+      theHistograms->fill("comparison of Z2 pt","Difference between generated/reconstructed Z2 pt",150,-30,30,ZZ->second().pt()-z4.pt(),theWeight);
+      theHistograms->fill("comparison of Z2 eta","Difference between generated/reconstructed Z2 eta",50,-0.1,0.1,ZZ->second().eta()-z4.eta(),theWeight);
 
-      theHistograms.fill("mass of well reconstructed Z2","Reconstructed Z2 mass",10,70,110,z4.mass(),theWeight);
-      theHistograms.fill("pt of well reconstructed Z2","Reconstructed Z2 pt",10,0,350,z4.pt(),theWeight);
-      theHistograms.fill("energy of well reconstructed Z2","Reconstructed Z2 energy",10,0,1400,z4.e(),theWeight);
-      theHistograms.fill("eta of well reconstructed Z2","Reconstructed Z2 eta",10,-4.5,4.5,z4.eta(),theWeight);
-      theHistograms.fill("comparison of Z2 major lepton energy","Difference between generated/reconstructed Z2 major lepton energy",100,-20,20,std::max(ZZ->second().daughter(0).e(),ZZ->second().daughter(1).e())-enlep3,theWeight);
-      theHistograms.fill("comparison of Z2 minor lepton energy","Difference between generated/reconstructed Z2 minor lepton energy",100,-20,20,std::min(ZZ->second().daughter(0).e(),ZZ->second().daughter(1).e())-enlep4,theWeight);
-      theHistograms.fill("energy of well reconstructed Z2 major lepton","Reconstructed Z2 major lepton energy",10,0,1000,enlep3,theWeight);
-      theHistograms.fill("energy of well reconstructed Z2 minor lepton","Reconstructed Z2 minor lepton energy",10,0,300,enlep4,theWeight); }
+      theHistograms->fill("mass of well reconstructed Z2","Reconstructed Z2 mass",10,70,110,z4.mass(),theWeight);
+      theHistograms->fill("pt of well reconstructed Z2","Reconstructed Z2 pt",10,0,350,z4.pt(),theWeight);
+      theHistograms->fill("energy of well reconstructed Z2","Reconstructed Z2 energy",10,0,1400,z4.e(),theWeight);
+      theHistograms->fill("eta of well reconstructed Z2","Reconstructed Z2 eta",10,-4.5,4.5,z4.eta(),theWeight);
+      theHistograms->fill("comparison of Z2 major lepton energy","Difference between generated/reconstructed Z2 major lepton energy",100,-20,20,std::max(ZZ->second().daughter(0).e(),ZZ->second().daughter(1).e())-enlep3,theWeight);
+      theHistograms->fill("comparison of Z2 minor lepton energy","Difference between generated/reconstructed Z2 minor lepton energy",100,-20,20,std::min(ZZ->second().daughter(0).e(),ZZ->second().daughter(1).e())-enlep4,theWeight);
+      theHistograms->fill("energy of well reconstructed Z2 major lepton","Reconstructed Z2 major lepton energy",10,0,1000,enlep3,theWeight);
+      theHistograms->fill("energy of well reconstructed Z2 minor lepton","Reconstructed Z2 minor lepton energy",10,0,300,enlep4,theWeight); }
       }
   
   //analysis of generated hadronic bosons
@@ -207,7 +207,7 @@ void VZZaQGCAnalyzer::analyze(){
   if(nquark==2){
     phys::Boson<phys::Particle> jetboson=phys::Boson<phys::Particle>(quark1,quark2);
 
-    theHistograms.fill("generated hadronic boson mass","generated mass of boson with hadronic decay",50,70,110,jetboson.mass(),theWeight);
+    theHistograms->fill("generated hadronic boson mass","generated mass of boson with hadronic decay",50,70,110,jetboson.mass(),theWeight);
 
     //event weighting
     
@@ -227,9 +227,9 @@ void VZZaQGCAnalyzer::analyze(){
 	  weight=weightarray[j];}}
       weightfile->Close();
 
-      theHistograms.fill("generated energy of all bosons","Sum of generated boson energies",10,0,3000,totalenergy,theWeight);
-      theHistograms.fill("good generated energy of all bosons","Sum of generated boson energies",5,0,3000,totalenergy,theWeight);
-      theHistograms.fill("weighted generated energy of all bosons","Sum of generated boson energies",10,0,3000,totalenergy,theWeight*weight);
+      theHistograms->fill("generated energy of all bosons","Sum of generated boson energies",10,0,3000,totalenergy,theWeight);
+      theHistograms->fill("good generated energy of all bosons","Sum of generated boson energies",5,0,3000,totalenergy,theWeight);
+      theHistograms->fill("weighted generated energy of all bosons","Sum of generated boson energies",10,0,3000,totalenergy,theWeight*weight);
     }
   } 
   
@@ -264,7 +264,7 @@ void VZZaQGCAnalyzer::analyze(){
   Particle WZ;
   if(hadVB){
     WZ=*hadVB;
-    theHistograms.fill("reconstructed hadronic boson mass","reconstructed mass of boson with hadronic decay",15,60,120,WZ.mass(),theWeight);}
+    theHistograms->fill("reconstructed hadronic boson mass","reconstructed mass of boson with hadronic decay",15,60,120,WZ.mass(),theWeight);}
 
   //coupling of generated and reconstructed hadronic bosons
 
@@ -276,9 +276,9 @@ void VZZaQGCAnalyzer::analyze(){
 	dRhad=physmath::deltaR(genVBParticle,Wgen);
 	Wgen=genVBParticle;
       }}}
-  theHistograms.fill("dR hadronic boson","dR hadronic boson",20,0,5,dRhad,theWeight);
+  theHistograms->fill("dR hadronic boson","dR hadronic boson",20,0,5,dRhad,theWeight);
   if(dRhad<5){
-    theHistograms.fill("comparison of w mass","Difference between generated/reconstructed mass of boson with hadronic decay",40,-40,40,WZ.mass()-Wgen.mass(),theWeight);}
+    theHistograms->fill("comparison of w mass","Difference between generated/reconstructed mass of boson with hadronic decay",40,-40,40,WZ.mass()-Wgen.mass(),theWeight);}
 
   //study of the final state with three reconstructed bosons 
 
@@ -295,51 +295,51 @@ void VZZaQGCAnalyzer::analyze(){
     double massWZ2=sqrt((WZ2.E()*WZ2.E())-(WZ2.Px()*WZ2.Px())-(WZ2.Py()*WZ2.Py())-(WZ2.Pz()*WZ2.Pz()));
     double massZ1Z2=sqrt((Z1Z2.E()*Z1Z2.E())-(Z1Z2.Px()*Z1Z2.Px())-(Z1Z2.Py()*Z1Z2.Py())-(Z1Z2.Pz()*Z1Z2.Pz()));
     double massWZZ=sqrt((WZZ.E()*WZZ.E())-(WZZ.Px()*WZZ.Px())-(WZZ.Py()*WZZ.Py())-(WZZ.Pz()*WZZ.Pz()));
-    theHistograms.fill("mass of ZZ","ZZ mass",10,150,1000,massZ1Z2,theWeight);
-    theHistograms.fill("mass of WZ1","WZ1 mass",10,150,1000,massWZ1,theWeight);
-    theHistograms.fill("mass of WZ2","WZ2 mass",10,150,1000,massWZ2,theWeight);
-    theHistograms.fill("mass of WZ","WZ mass",10,150,1000,massWZ1,theWeight);
-    theHistograms.fill("mass of WZ","WZ mass",10,150,1000,massWZ2,theWeight);
-    theHistograms.fill("mass of tribosons","Triboson mass",5,200,1200,massWZZ,theWeight);
-    theHistograms.fill("weighted mass of tribosons","Triboson mass",5,200,1200,massWZZ,theWeight*weight);
+    theHistograms->fill("mass of ZZ","ZZ mass",10,150,1000,massZ1Z2,theWeight);
+    theHistograms->fill("mass of WZ1","WZ1 mass",10,150,1000,massWZ1,theWeight);
+    theHistograms->fill("mass of WZ2","WZ2 mass",10,150,1000,massWZ2,theWeight);
+    theHistograms->fill("mass of WZ","WZ mass",10,150,1000,massWZ1,theWeight);
+    theHistograms->fill("mass of WZ","WZ mass",10,150,1000,massWZ2,theWeight);
+    theHistograms->fill("mass of tribosons","Triboson mass",5,200,1200,massWZZ,theWeight);
+    theHistograms->fill("weighted mass of tribosons","Triboson mass",5,200,1200,massWZZ,theWeight*weight);
 
-    theHistograms.fill("energy of all bosons","Total boson energy",5,0,2200,WZZ.E(),theWeight);
-    theHistograms.fill("weighted energy of all bosons","Weighted total boson energy",5,0,2200,WZZ.E(),theWeight*weight);
-    theHistograms.fill("resolution of total energy","Total energy resolution",1000,-500,500,WZZ.E()-totalenergy,theWeight);
+    theHistograms->fill("energy of all bosons","Total boson energy",5,0,2200,WZZ.E(),theWeight);
+    theHistograms->fill("weighted energy of all bosons","Weighted total boson energy",5,0,2200,WZZ.E(),theWeight*weight);
+    theHistograms->fill("resolution of total energy","Total energy resolution",1000,-500,500,WZZ.E()-totalenergy,theWeight);
     
-    theHistograms.fill("energy of ZZ","ZZ energy",10,0,2000,Z1Z2.E(),theWeight);
-    theHistograms.fill("energy of WZ1","WZ1 energy",10,0,2000,WZ1.E(),theWeight);
-    theHistograms.fill("energy of WZ2","WZ2 energy",10,0,2000,WZ2.E(),theWeight);
-    theHistograms.fill("energy of Z1","Z1 energy",10,0,1500,Z1.e(),theWeight);
-    theHistograms.fill("weighted energy of Z1","Z1 energy",10,0,1500,Z1.e(),theWeight*weight);
-    theHistograms.fill("energy of Z2","Z2 energy",10,0,1500,Z2.e(),theWeight);
-    theHistograms.fill("energy of W","W energy",10,0,1500,WZ.e(),theWeight);
+    theHistograms->fill("energy of ZZ","ZZ energy",10,0,2000,Z1Z2.E(),theWeight);
+    theHistograms->fill("energy of WZ1","WZ1 energy",10,0,2000,WZ1.E(),theWeight);
+    theHistograms->fill("energy of WZ2","WZ2 energy",10,0,2000,WZ2.E(),theWeight);
+    theHistograms->fill("energy of Z1","Z1 energy",10,0,1500,Z1.e(),theWeight);
+    theHistograms->fill("weighted energy of Z1","Z1 energy",10,0,1500,Z1.e(),theWeight*weight);
+    theHistograms->fill("energy of Z2","Z2 energy",10,0,1500,Z2.e(),theWeight);
+    theHistograms->fill("energy of W","W energy",10,0,1500,WZ.e(),theWeight);
   
     double angleWZ1=Z1.p4().Angle(WZ.p4().Vect());
     double angleWZ2=Z2.p4().Angle(WZ.p4().Vect());
     double angleZZ=Z1.p4().Angle(Z2.p4().Vect());
-    theHistograms.fill("WZ1 relative angle","WZ1 relative angle",5,0,3.5,angleWZ1,theWeight);
-    theHistograms.fill("WZ2 relative angle","WZ2 relative angle",5,0,3.5,angleWZ2,theWeight);
-    theHistograms.fill("ZZ relative angle","ZZ relative angle",5,0,3.5,angleZZ,theWeight);
-    theHistograms.fill("weighted WZ1 relative angle","WZ1 relative angle",5,0,3.5,angleWZ1,theWeight*weight);
-    theHistograms.fill("weighted WZ2 relative angle","WZ2 relative angle",5,0,3.5,angleWZ2,theWeight*weight);
-    theHistograms.fill("weighted ZZ relative angle","ZZ relative angle",5,0,3.5,angleZZ,theWeight*weight);
+    theHistograms->fill("WZ1 relative angle","WZ1 relative angle",5,0,3.5,angleWZ1,theWeight);
+    theHistograms->fill("WZ2 relative angle","WZ2 relative angle",5,0,3.5,angleWZ2,theWeight);
+    theHistograms->fill("ZZ relative angle","ZZ relative angle",5,0,3.5,angleZZ,theWeight);
+    theHistograms->fill("weighted WZ1 relative angle","WZ1 relative angle",5,0,3.5,angleWZ1,theWeight*weight);
+    theHistograms->fill("weighted WZ2 relative angle","WZ2 relative angle",5,0,3.5,angleWZ2,theWeight*weight);
+    theHistograms->fill("weighted ZZ relative angle","ZZ relative angle",5,0,3.5,angleZZ,theWeight*weight);
   
-    theHistograms.fill("total pt scalar sum","Scalar pt sum",10,0,1200,Z1.pt()+Z2.pt()+WZ.pt(),theWeight);
-    theHistograms.fill("weighted total pt scalar sum","Scalar pt sum",10,0,1200,Z1.pt()+Z2.pt()+WZ.pt(),theWeight*weight);
-    theHistograms.fill("total pt vector sum","Vector pt sum",10,0,300,sqrt(WZZ.Px()*WZZ.Px()+WZZ.Py()*WZZ.Py()),theWeight);
+    theHistograms->fill("total pt scalar sum","Scalar pt sum",10,0,1200,Z1.pt()+Z2.pt()+WZ.pt(),theWeight);
+    theHistograms->fill("weighted total pt scalar sum","Scalar pt sum",10,0,1200,Z1.pt()+Z2.pt()+WZ.pt(),theWeight*weight);
+    theHistograms->fill("total pt vector sum","Vector pt sum",10,0,300,sqrt(WZZ.Px()*WZZ.Px()+WZZ.Py()*WZZ.Py()),theWeight);
   
-    theHistograms.fill("pt of Z1","Z1 pt",10,0,400,Z1.pt(),theWeight);
-    theHistograms.fill("pt of Z2","Z2 pt",10,0,400,Z2.pt(),theWeight);
-    theHistograms.fill("pt of W","W pt",10,0,400,WZ.pt(),theWeight);
+    theHistograms->fill("pt of Z1","Z1 pt",10,0,400,Z1.pt(),theWeight);
+    theHistograms->fill("pt of Z2","Z2 pt",10,0,400,Z2.pt(),theWeight);
+    theHistograms->fill("pt of W","W pt",10,0,400,WZ.pt(),theWeight);
   
     double elepZ1min= min(Z1.daughter(0).e(),Z1.daughter(1).e());
     double elepZ1max= max(Z1.daughter(0).e(),Z1.daughter(1).e());
-    theHistograms.fill("energy of major Z1 leptons","Major Z1 lepton energy",10,0,800,elepZ1max,theWeight);
-    theHistograms.fill("weighted energy of major Z1 leptons","Major Z1 lepton energy",10,0,800,elepZ1max,theWeight*weight);
-    theHistograms.fill("energy of minor Z1 leptons","Minor Z1 lepton energy",10,0,1000,elepZ1min,theWeight);
+    theHistograms->fill("energy of major Z1 leptons","Major Z1 lepton energy",10,0,800,elepZ1max,theWeight);
+    theHistograms->fill("weighted energy of major Z1 leptons","Major Z1 lepton energy",10,0,800,elepZ1max,theWeight*weight);
+    theHistograms->fill("energy of minor Z1 leptons","Minor Z1 lepton energy",10,0,1000,elepZ1min,theWeight);
     double elepZ2min= min(Z2.daughter(0).e(),Z2.daughter(1).e());
     double elepZ2max= max(Z2.daughter(0).e(),Z2.daughter(1).e());
-    theHistograms.fill("energy of major Z2 leptons","Major Z2 lepton energy",10,0,2500,elepZ2max,theWeight);
-    theHistograms.fill("energy of minor Z2 leptons","Minor Z2 lepton energy",10,0,1000,elepZ2min,theWeight);}
+    theHistograms->fill("energy of major Z2 leptons","Major Z2 lepton energy",10,0,2500,elepZ2max,theWeight);
+    theHistograms->fill("energy of minor Z2 leptons","Minor Z2 lepton energy",10,0,1000,elepZ2min,theWeight);}
 }

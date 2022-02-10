@@ -56,30 +56,30 @@ void WlllnuAnalyzer::analyze(){
     finalid += abs(gen.id());
     //    cout << " genLepton: " << gen << endl;
     cout << "id: " << gen.id() << " pt: " << gen.pt() << " mass: " << gen.mass() << " eta: " << gen.eta() << endl;
-    theHistograms.fill("ptAllGenParticle",   "pt ",   100, 0,   200,  gen.pt());
-    //theHistograms.fill("etaAllGenParticle",  "eta ",  100, -10, 10,   gen.eta());
-    //theHistograms.fill("YAllGenParticle",    "Y ",    100, -10, 10,  gen.rapidity());
+    theHistograms->fill("ptAllGenParticle",   "pt ",   100, 0,   200,  gen.pt());
+    //theHistograms->fill("etaAllGenParticle",  "eta ",  100, -10, 10,   gen.eta());
+    //theHistograms->fill("YAllGenParticle",    "Y ",    100, -10, 10,  gen.rapidity());
     bool isLepton = abs(gen.id()) == 11 || abs(gen.id()) == 13;
     isLepton ? leptons.push_back(gen) : neutrinos.push_back(gen);
     if (gen.id() == 11){
       electrons.insert(electrons.begin(),gen); //first all e-, then all e+
-      //theHistograms.fill("ptElectrons","pt e", 100, 0, 200, gen.pt());
+      //theHistograms->fill("ptElectrons","pt e", 100, 0, 200, gen.pt());
     }
     else if (gen.id() == -11){
       electrons.push_back(gen);
-      //theHistograms.fill("ptElectrons","pt e", 100, 0, 200, gen.pt());
+      //theHistograms->fill("ptElectrons","pt e", 100, 0, 200, gen.pt());
     }
     else if (gen.id() == 13){
       muons.insert(muons.begin(),gen); //first all mu-, then all mu+
-      //theHistograms.fill("ptMuons","pt mu", 100, 0, 200, gen.pt());
+      //theHistograms->fill("ptMuons","pt mu", 100, 0, 200, gen.pt());
     }
     else if (gen.id() == -13){
       muons.push_back(gen);
-      //theHistograms.fill("ptMuons","pt mu", 100, 0, 200, gen.pt());
+      //theHistograms->fill("ptMuons","pt mu", 100, 0, 200, gen.pt());
     }
   }
-  //theHistograms.fill("leptonsNumber",  "number of leptons ",  5, -0.5, 4.5, leptons.size());
-  //theHistograms.fill("idAllGenParticles"," finalid ", 60 , -0.5, 59.5, finalid);
+  //theHistograms->fill("leptonsNumber",  "number of leptons ",  5, -0.5, 4.5, leptons.size());
+  //theHistograms->fill("idAllGenParticles"," finalid ", 60 , -0.5, 59.5, finalid);
 
   //std::vector<pairBosonParticle > Zl; //change Particle to Lepton    
     
@@ -114,10 +114,10 @@ void WlllnuAnalyzer::analyze(){
     foreach(const phys::Boson<phys::Particle> cand, Zcandidates)
       if ( cand.daughter(0).pt() != z0.daughter(0).pt() &&  cand.daughter(1).pt() != z0.daughter(1).pt() ) z1 = cand;
     //!!!need to find a way to check if 2 particles are the same!!!!
-    theHistograms.fill("massGenZ0", "z0 mass ", 1000, 50, 150, z0.mass());
-    theHistograms.fill("massGenZ1", "z1 mass ", 1000, 50, 150, z1.mass());
-    theHistograms.fill("massGenZParticles", "Z mass ", 1000, 50, 150, z0.mass());
-    theHistograms.fill("massGenZParticles", "Z mass ", 1000, 50, 150, z1.mass());
+    theHistograms->fill("massGenZ0", "z0 mass ", 1000, 50, 150, z0.mass());
+    theHistograms->fill("massGenZ1", "z1 mass ", 1000, 50, 150, z1.mass());
+    theHistograms->fill("massGenZParticles", "Z mass ", 1000, 50, 150, z0.mass());
+    theHistograms->fill("massGenZParticles", "Z mass ", 1000, 50, 150, z1.mass());
 
     cout << "\nz0 " "\tmass: " << z0.mass() << "\tmTdaughters-mZ0: "<< mT(z0.daughter(0), z0.daughter(1)) - z0.mass()
 	 << "\n\tz0.daughter(0) \tid: " << z0.daughter(0).id() << "     pt: " << z0.daughter(0).pt()
@@ -126,10 +126,10 @@ void WlllnuAnalyzer::analyze(){
 	 << "\n\tz1.daughter(0) \tid: " << z1.daughter(0).id() << "     pt: " << z1.daughter(0).pt()
 	 << "\n\tz1.daughter(1) \tid: " << z1.daughter(1).id() << "    pt: " << z1.daughter(1).pt() <<  endl;
     //comparing mZ with mT daughters
-    theHistograms.fill("mZmT", "mZ vs mT daughters", 600, 0, 150, 600, 0, 150, mT(z0.daughter(0),z0.daughter(1)), z0.mass());
-    theHistograms.fill("mZmT", "mZ vs mT daughters", 600, 0, 150, 600, 0, 150, mT(z1.daughter(0),z1.daughter(1)), z1.mass());
-    theHistograms.fill("deltamZmT", "mZ - mT daughters", 100, -100, 100, z0.mass() - mT(z0.daughter(0),z0.daughter(1)));
-    theHistograms.fill("deltamZmT", "mZ - mT daughters", 100, -100, 100, z1.mass() - mT(z1.daughter(0),z1.daughter(1)));
+    theHistograms->fill("mZmT", "mZ vs mT daughters", 600, 0, 150, 600, 0, 150, mT(z0.daughter(0),z0.daughter(1)), z0.mass());
+    theHistograms->fill("mZmT", "mZ vs mT daughters", 600, 0, 150, 600, 0, 150, mT(z1.daughter(0),z1.daughter(1)), z1.mass());
+    theHistograms->fill("deltamZmT", "mZ - mT daughters", 100, -100, 100, z0.mass() - mT(z0.daughter(0),z0.daughter(1)));
+    theHistograms->fill("deltamZmT", "mZ - mT daughters", 100, -100, 100, z1.mass() - mT(z1.daughter(0),z1.daughter(1)));
     
     
     //making z0,z1 with mT criteria (mT daughters closer to ZMASS)
@@ -138,14 +138,14 @@ void WlllnuAnalyzer::analyze(){
     phys::Boson<phys::Particle> z1mT;
     foreach(const phys::Boson<phys::Particle> cand, Zcandidates)
       if ( cand.daughter(0).pt() != z0mT.daughter(0).pt() &&  cand.daughter(1).pt() != z0mT.daughter(1).pt() ) z1mT = cand;
-    theHistograms.fill("massGenZmT", "Z (selected by mT) mass ", 1000, 50, 150, z0mT.mass());
-    theHistograms.fill("massGenZmT", "Z (selected by mT) mass ", 1000, 50, 150, z1mT.mass());
+    theHistograms->fill("massGenZmT", "Z (selected by mT) mass ", 1000, 50, 150, z0mT.mass());
+    theHistograms->fill("massGenZmT", "Z (selected by mT) mass ", 1000, 50, 150, z1mT.mass());
     
     //comparing z0mT, z1mT to z0, z1
     int sameZandZmT = ((isTheSame(z0, z0mT) && isTheSame(z1,z1mT)) || (isTheSame(z0, z1mT) && isTheSame(z1,z0mT))) ? 1 : 0;
-    theHistograms.fill("sameGenZ", "Z and ZmT are the same? ", 2 , -0.5, 1.5, sameZandZmT);
+    theHistograms->fill("sameGenZ", "Z and ZmT are the same? ", 2 , -0.5, 1.5, sameZandZmT);
     int sameZ0Z1 = (isTheSame(z0, z0mT) && isTheSame(z1,z1mT)) ? 1 : 0;
-    theHistograms.fill("sameGenZ0z1", "Z and ZmT are the same? (also the order) ", 2 , -0.5, 1.5, sameZ0Z1);
+    theHistograms->fill("sameGenZ0z1", "Z and ZmT are the same? (also the order) ", 2 , -0.5, 1.5, sameZ0Z1);
         
     /*  //deltaR, deltaEta, deltaPhi
     double deltaEta0 = z0.daughter(0).eta() - z1.eta(); //between z1 and z0's first daughter
@@ -164,10 +164,10 @@ void WlllnuAnalyzer::analyze(){
     DiBosonParticle ZZ(z0,z1);
     cout << "\n\n ZZ: " << ZZ.id() << " pt: " << ZZ.pt() << " mass: " << ZZ.mass() << "\n daughters: " << ZZ.daughter<Particle>(0).id() << ", " << ZZ.second().id() << " Y: " << ZZ.rapidity() << endl;
     
-    theHistograms.fill("ptGenZZ",   "pt ",   100,  0,   100, ZZ.pt());
-    //    theHistograms.fill("etaGenZZ",  "eta ",  100,  -10, 10,  ZZ.eta());
-    theHistograms.fill("massGenZZ", "mass ", 100,  0,   400, ZZ.mass());
-    theHistograms.fill("YGenZZ",    "Y ",    100,  -10, 10,  ZZ.rapidity());
+    theHistograms->fill("ptGenZZ",   "pt ",   100,  0,   100, ZZ.pt());
+    //    theHistograms->fill("etaGenZZ",  "eta ",  100,  -10, 10,  ZZ.eta());
+    theHistograms->fill("massGenZZ", "mass ", 100,  0,   400, ZZ.mass());
+    theHistograms->fill("YGenZZ",    "Y ",    100,  -10, 10,  ZZ.rapidity());
     
     return;
   }
@@ -190,9 +190,9 @@ void WlllnuAnalyzer::analyze(){
         
     cout << Violet("\nZL analysis") << endl; 
     cout << "\nZlcand: \t" << std::get<0>(*ZL) << "\n\t\t" << std::get<1>(*ZL) << endl;
-      theHistograms.fill("massBosonRecoZl","mass Z", 100, 0, 500, (std::get<0>(*ZL)).mass());
+      theHistograms->fill("massBosonRecoZl","mass Z", 100, 0, 500, (std::get<0>(*ZL)).mass());
     
-    if(ZL->first.isValid()) theHistograms.fill("idParticlesRecoZL"," leptons & daughters id in ZL", 10 , 30.5, 40.5, finalid);
+    if(ZL->first.isValid()) theHistograms->fill("idParticlesRecoZL"," leptons & daughters id in ZL", 10 , 30.5, 40.5, finalid);
         
     //----my particles----//
     cout << "\nmyZl analysis" << endl; 
@@ -248,18 +248,18 @@ void WlllnuAnalyzer::analyze(){
     cout << "\n # of my Zl candidates: "  << Zl.size() << endl;
     foreach(const pairBosonParticle zl, Zl){
       cout << "\nZlcand: \t" << std::get<0>(zl) << "\n\t\t" << std::get<1>(zl) << endl;
-      theHistograms.fill("massBosonGenZl","mass Z", 100, 0, 500, (std::get<0>(zl)).mass());
+      theHistograms->fill("massBosonGenZl","mass Z", 100, 0, 500, (std::get<0>(zl)).mass());
          
       //cout << "\nZl good cand (right deltaEta and pt)\t" << " leptons forming Z: " << abs(zl.first.daughter(0).id()) << " other lepton: " << abs(zl.second.id()) << endl;
     }
-    if (Zl.size() > 0) theHistograms.fill("idParticlesGenZl"," leptons & daughters id in Zl", 10 , 30.5, 40.5, finalid);
+    if (Zl.size() > 0) theHistograms->fill("idParticlesGenZl"," leptons & daughters id in Zl", 10 , 30.5, 40.5, finalid);
 
     //--------------------------------------------------//
     //comparing mZ with mT daughters
     foreach(const pairBosonParticle zl, Zl){
       if(Zl.size() == 0) continue;
-      theHistograms.fill("mZlmT", "mZ vs mT daughters", 150, 0, 150, 150, 0, 150, mT((std::get<0>(zl)).daughter(0),(std::get<0>(zl)).daughter(1)), (std::get<0>(zl)).mass());
-      theHistograms.fill("deltamZlmT", "mZ - mT daughters", 100, -100, 100, (std::get<0>(zl)).mass() - mT((std::get<0>(zl)).daughter(0),(std::get<0>(zl)).daughter(1)));
+      theHistograms->fill("mZlmT", "mZ vs mT daughters", 150, 0, 150, 150, 0, 150, mT((std::get<0>(zl)).daughter(0),(std::get<0>(zl)).daughter(1)), (std::get<0>(zl)).mass());
+      theHistograms->fill("deltamZlmT", "mZ - mT daughters", 100, -100, 100, (std::get<0>(zl)).mass() - mT((std::get<0>(zl)).daughter(0),(std::get<0>(zl)).daughter(1)));
     }
     
     //return;
@@ -268,7 +268,7 @@ void WlllnuAnalyzer::analyze(){
   //Wlllnu
   if(finalid == 45 || finalid == 49 || finalid == 53){///*(leptons.size() == 3 && neutrinos.size() == 1){3l1nu*/ 
     cout << Blue("\nWlllnu analysis") << endl; 
-    //theHistograms.fill("idlllnuNOcut"," total id lllnu ", 13 , 43.5, 56.5, finalid);
+    //theHistograms->fill("idlllnuNOcut"," total id lllnu ", 13 , 43.5, 56.5, finalid);
     
     //----------------------------------------
     //check pt and eta
@@ -304,19 +304,19 @@ void WlllnuAnalyzer::analyze(){
       Ptot += lep.p4();
     double masslllnu = Ptot.M();
     if (masslllnu > 70 && masslllnu < 90) mass80Counter++;
-    theHistograms.fill("massGenlllnu","mass lllnu", 1040, 0, 1040, masslllnu);
-    //theHistograms.fill("mTGenlllnu","mT lllnu", 400, 40, 440, Ptot.Mt());
-    //theHistograms.fill("massMtlllnu", "mass vs mT lllnu", 400, 40, 440, 400, 40, 440, Ptot.Mt(),masslllnu) ;
+    theHistograms->fill("massGenlllnu","mass lllnu", 1040, 0, 1040, masslllnu);
+    //theHistograms->fill("mTGenlllnu","mT lllnu", 400, 40, 440, Ptot.Mt());
+    //theHistograms->fill("massMtlllnu", "mass vs mT lllnu", 400, 40, 440, 400, 40, 440, Ptot.Mt(),masslllnu) ;
     //    cout <<"\n events with mass < 165 Gev: " << mass80Counter << endl;
     //cout << "\n masslllnu: " << masslllnu << endl;
-    //theHistograms.fill("idlllnu"," total id lllnu ", 13 , 43.5, 56.5, finalid);
+    //theHistograms->fill("idlllnu"," total id lllnu ", 13 , 43.5, 56.5, finalid);
     cout << "mass lllnu: " << masslllnu << "\n" << endl;
     if (masslllnu <= 70 || masslllnu >= 90){
       cout << Yellow("Mass lllnu off shell (70-90 Gev)") << endl;
       return;
     }
     Particle nu = neutrinos[0];
-    theHistograms.fill("ptnu",   "pt nu",   100, 0,   200,  nu.pt());
+    theHistograms->fill("ptnu",   "pt nu",   100, 0,   200,  nu.pt());
     std::vector<boolInt> nuCut;
     nuCut.push_back(boolInt(true, 0));//no nu cut
     nuCut.push_back(boolInt(nu.pt()>5 && nu.eta()<2.4, 5));//"democratic" cut
@@ -413,27 +413,27 @@ void WlllnuAnalyzer::analyze(){
       else cout << Red("invalid total id") << endl;
       cout << Green("\n # of valid Zl: ")  << Green(Zl.size()) << endl;
       
-      theHistograms.fill("isNuAlone","type of diagram", 56, -0.5, 55.5, isNuAlone+theCut.second);
+      theHistograms->fill("isNuAlone","type of diagram", 56, -0.5, 55.5, isNuAlone+theCut.second);
       
       if(theCut.second != 0) continue;
       
       foreach(const pairParticle pcombos, pCombos){
-	theHistograms.fill("mTAllCombos","mT all combo", 100, 0, 100, abs(mT(pcombos.first, pcombos.second)-masslllnu));
+	theHistograms->fill("mTAllCombos","mT all combo", 100, 0, 100, abs(mT(pcombos.first, pcombos.second)-masslllnu));
       }
       
-      theHistograms.fill("mTcombo","mT combo", 100, 0, 100, mT(theCombo.first, theCombo.second));
-      theHistograms.fill("mTcombo1","mT second combo", 100, 0, 100, mT(pCombos[1].first, pCombos[1].second));
-      theHistograms.fill("mTcombo2","mT third combo", 100, 0, 100, mT(pCombos[2].first, pCombos[2].second));
-      theHistograms.fill("mTcomboMasslllnu", "mT theCombo vs mass lllnu", 100, 50, 100, 200, 0, 100, masslllnu,mT(theCombo.first, theCombo.second));
+      theHistograms->fill("mTcombo","mT combo", 100, 0, 100, mT(theCombo.first, theCombo.second));
+      theHistograms->fill("mTcombo1","mT second combo", 100, 0, 100, mT(pCombos[1].first, pCombos[1].second));
+      theHistograms->fill("mTcombo2","mT third combo", 100, 0, 100, mT(pCombos[2].first, pCombos[2].second));
+      theHistograms->fill("mTcomboMasslllnu", "mT theCombo vs mass lllnu", 100, 50, 100, 200, 0, 100, masslllnu,mT(theCombo.first, theCombo.second));
       //diagramId = abs(nu.id()) + abs(Zl[0].second.id()) + abs(Zl[0].first.daughter(0).id());
-      //isNuAlone ? theHistograms.fill("diagramId","type of diagram", 21, -10.5, 10.5, diagramId-30) : theHistograms.fill("diagramId","type of diagram", 21, -10.5, 10.5, -(diagramId-30));
-      //theHistograms.fill("absDiagId","type of diagram", 7, 3.5, 10.5, diagramId-30);
-      isNuAlone ? theHistograms.fill("ptnuAlone",   "pt nu when is alone",   100, 0,   200,  nu.pt()) : theHistograms.fill("ptnuNoAlone",   "pt nu when is forming Z",   100, 0,   200,  nu.pt());
+      //isNuAlone ? theHistograms->fill("diagramId","type of diagram", 21, -10.5, 10.5, diagramId-30) : theHistograms->fill("diagramId","type of diagram", 21, -10.5, 10.5, -(diagramId-30));
+      //theHistograms->fill("absDiagId","type of diagram", 7, 3.5, 10.5, diagramId-30);
+      isNuAlone ? theHistograms->fill("ptnuAlone",   "pt nu when is alone",   100, 0,   200,  nu.pt()) : theHistograms->fill("ptnuNoAlone",   "pt nu when is forming Z",   100, 0,   200,  nu.pt());
     
       if(Zl.size() > 1){
 	//std::stable_sort(Zl.begin(), Zl.end(), deltaRComparator());
-	//theHistograms.fill("deltaRZ0","deltaR best Zcand", 100, 0, 10, physmath::deltaR(Zl[0].first.daughter(0), Zl[0].first.daughter(1)));
-	//theHistograms.fill("deltaRZ1","deltaR other Zcand", 100, 0, 10, physmath::deltaR(Zl[1].first.daughter(0), Zl[1].first.daughter(1)));
+	//theHistograms->fill("deltaRZ0","deltaR best Zcand", 100, 0, 10, physmath::deltaR(Zl[0].first.daughter(0), Zl[0].first.daughter(1)));
+	//theHistograms->fill("deltaRZ1","deltaR other Zcand", 100, 0, 10, physmath::deltaR(Zl[1].first.daughter(0), Zl[1].first.daughter(1)));
 	//cout << "\n Z0: " << Zl[0].first << endl;
 	//cout << "\n l0: " << Zl[0].second << endl;
 	//cout << "\n deltaRZ0:\t " << physmath::deltaR(Zl[0].first.daughter(0), Zl[0].first.daughter(1)) << endl;
@@ -443,9 +443,9 @@ void WlllnuAnalyzer::analyze(){
 	continue;
       }
       
-      //theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[1].p4()));
-      //theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[2].p4()));
-      //theHistograms.fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[1].p4(), leptons[2].p4()));
+      //theHistograms->fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[1].p4()));
+      //theHistograms->fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[0].p4(), leptons[2].p4()));
+      //theHistograms->fill("deltaRl","deltaR leptons couples", 100, 0, 10, deltaR(leptons[1].p4(), leptons[2].p4()));
       
       foreach(const pairBosonParticle zl, Zl){
 	
@@ -459,18 +459,18 @@ void WlllnuAnalyzer::analyze(){
 	cout << "\n W: " << W << endl;
 	
 	if(finalid != 49) continue;
-	isNuAlone ? theHistograms.fill("deltaRZtriplet","deltaR Z and related leptons ", 100, 0, 10, physmath::deltaR(zl.first, zl.second)) : theHistograms.fill("deltaRZtriplet","deltaR Z and related leptons ", 100, 0, 10, physmath::deltaR(zl.first, nu)); //are Z and its "related" lepton collinear?
-	!(isNuAlone) ? theHistograms.fill("deltaRZsinglet","deltaR Z and NOT related leptons ", 100, 0, 10, physmath::deltaR(zl.first, zl.second)) : theHistograms.fill("deltaRZsinglet","deltaR Z and NOT related leptons ", 100, 0, 10, physmath::deltaR(zl.first, nu)); //are Z and its "related" lepton collinear?
-	theHistograms.fill("deltaRZdaughters","deltaR Z daughters", 100, 0, 10, physmath::deltaR(zl.first.daughter(0), zl.first.daughter(1)));
-	theHistograms.fill("massZ","mass Z", 300, 0, 150, zl.first.mass());
-	//theHistograms.fill("mTZ","direct mT Z", 300, 0, 150, zl.first.p4().Mt());
-	theHistograms.fill("mTZdaughters","mT Z from daughters", 300, 0, 150, mT(zl.first.daughter(0), zl.first.daughter(1)));
-	theHistograms.fill("massZmTZdaughters", "mass Z vs mT Z daughters", 100, 0, 100, 100, 0, 100, mT(zl.first.daughter(0), zl.first.daughter(1)), zl.first.mass());
-	theHistograms.fill("ptZ",   "pt Z",   100, 0,   200,  zl.first.pt());
-	theHistograms.fill("ptl",   "pt l",   125, 0,   125,  zl.second.pt());
-	isNuAlone ? theHistograms.fill("ptlAlone",   "pt l when is alone",   125, 0,   125,  zl.second.pt()) : theHistograms.fill("ptlNoAlone",   "pt l when is forming Z",   125, 0,   125,  zl.second.pt());
-	theHistograms.fill("massW","mass W", 300, 0, 150, W.mass());
-	//	theHistograms.fill("chargeW","charge W", 3, -1.5, 1.5, copysign(1, W.id()));
+	isNuAlone ? theHistograms->fill("deltaRZtriplet","deltaR Z and related leptons ", 100, 0, 10, physmath::deltaR(zl.first, zl.second)) : theHistograms->fill("deltaRZtriplet","deltaR Z and related leptons ", 100, 0, 10, physmath::deltaR(zl.first, nu)); //are Z and its "related" lepton collinear?
+	!(isNuAlone) ? theHistograms->fill("deltaRZsinglet","deltaR Z and NOT related leptons ", 100, 0, 10, physmath::deltaR(zl.first, zl.second)) : theHistograms->fill("deltaRZsinglet","deltaR Z and NOT related leptons ", 100, 0, 10, physmath::deltaR(zl.first, nu)); //are Z and its "related" lepton collinear?
+	theHistograms->fill("deltaRZdaughters","deltaR Z daughters", 100, 0, 10, physmath::deltaR(zl.first.daughter(0), zl.first.daughter(1)));
+	theHistograms->fill("massZ","mass Z", 300, 0, 150, zl.first.mass());
+	//theHistograms->fill("mTZ","direct mT Z", 300, 0, 150, zl.first.p4().Mt());
+	theHistograms->fill("mTZdaughters","mT Z from daughters", 300, 0, 150, mT(zl.first.daughter(0), zl.first.daughter(1)));
+	theHistograms->fill("massZmTZdaughters", "mass Z vs mT Z daughters", 100, 0, 100, 100, 0, 100, mT(zl.first.daughter(0), zl.first.daughter(1)), zl.first.mass());
+	theHistograms->fill("ptZ",   "pt Z",   100, 0,   200,  zl.first.pt());
+	theHistograms->fill("ptl",   "pt l",   125, 0,   125,  zl.second.pt());
+	isNuAlone ? theHistograms->fill("ptlAlone",   "pt l when is alone",   125, 0,   125,  zl.second.pt()) : theHistograms->fill("ptlNoAlone",   "pt l when is forming Z",   125, 0,   125,  zl.second.pt());
+	theHistograms->fill("massW","mass W", 300, 0, 150, W.mass());
+	//	theHistograms->fill("chargeW","charge W", 3, -1.5, 1.5, copysign(1, W.id()));
       }
     }
     

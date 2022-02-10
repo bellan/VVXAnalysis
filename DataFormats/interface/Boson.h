@@ -128,9 +128,14 @@ namespace phys {
 
     int daughtersWithFSR() const {return indexFSR_;}
    
-    // Number of good daughters
+    // Number of good (charged) daughters
     int numberOfGoodDaughters() const {return int(daughter0_.passFullSel()) + int(daughter1_.passFullSel());}
 
+    // Number of bad (charged) daughters
+    // the neutrino is always in d1 position and always does not pass the full charged lepton selection, hence the need for a special case
+    int numberOfBadDaughters() const {return int(!daughter0_.passFullSel()) + (daughter1_.charge() != 0 ? int(!daughter1_.passFullSel()) : 0);}
+
+    
     double fakeRateSF()    const {return daughter0_.fakeRateSF() * daughter1_.fakeRateSF();}
     double fakeRateSFUnc() const {return sqrt(pow(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUnc(),2) +
 					      pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc(),2));}    

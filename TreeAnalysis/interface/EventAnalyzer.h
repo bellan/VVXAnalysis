@@ -96,6 +96,7 @@ public:
   virtual Int_t cut();
   virtual void  analyze() = 0;
   virtual void  end(TFile &) {};  
+  virtual void  finish() {};
   virtual void  addOptions(){};
   TTree * tree() const {return theTree;}
   
@@ -125,10 +126,12 @@ public:
  protected:
 
   // Region
-   phys::RegionTypes region_;
+  std::vector<phys::RegionTypes> regions_;
+  phys::RegionTypes region_;  // The current region
 
   // Histograms helper class
-  Histogrammer theHistograms;
+  Histogrammer* theHistograms;  // Points to the Histogrammer for the current region
+  std::map<phys::RegionTypes, Histogrammer> mapRegionHisto_;  // Maps every region to a corresponding Histogrammer
 
   // MC helper class
   SampleInfo theSampleInfo;

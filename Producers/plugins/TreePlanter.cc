@@ -111,7 +111,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , CR010CounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("CR010Counter")))
   , CR000CounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("CR000Counter")))
   , SR3P1LCounterToken_(consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("SR3P1LCounter")))
-  , CRLFRCounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("CRLFRounter")))
+  , CRLFRCounterToken_ (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("CRLFRCounter")))
 
   , SR4PCounterToken_  (consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("SR4PCounter")))
   , CR2P2FCounterToken_(consumes<edm::MergeableCounter,edm::InLumi>(edm::InputTag("CR2P2FCounter")))
