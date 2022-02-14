@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
-import commands, ROOT, sys
+from __future__ import print_function
+import ROOT, sys
 from Colours import *
 from ROOT import gROOT, TTree, gSystem
 
@@ -10,7 +11,7 @@ from ROOT import phys
 
 def convert(input_file_name):
     
-    input_file = file(input_file_name, 'r')
+    input_file = open(input_file_name, 'r')
 
     LorentzVector  = ROOT.Math.LorentzVector('ROOT::Math::PxPyPzE4D<double>')
     ParticleVector = ROOT.std.vector('phys::Particle')
@@ -35,7 +36,7 @@ def convert(input_file_name):
             in_ev = 1
             continue
     
-        if line.startswith("<event>"):
+        if line.startswith("<event"):
             header = False
             in_ev_1 = 1
             continue
@@ -61,15 +62,15 @@ def convert(input_file_name):
                               int(line.split()[0]) )
         
             # Check the status of this particle
-            if int(line.split()[1]) is 1:
+            if int(line.split()[1]) == 1:
                 # We have a final state particle on this line
                 genParticles.push_back(gp)
-            elif int(line.split()[1]) is 2:
+            elif int(line.split()[1]) == 2:
                 genParticles.push_back(gp)            
-            elif int(line.split()[1]) is -1:
+            elif int(line.split()[1]) == -1:
                 genParticlesIn.push_back(gp)
                 
-                
+    input_file.close()     
     output_file_name = input_file_name.replace(".lhe",".root")   
     
     f = ROOT.TFile(output_file_name,"RECREATE")
@@ -77,7 +78,7 @@ def convert(input_file_name):
     f.cd("treePlanter")
     output_tree.Write()
     f.Close()
-    print "Output file is: ", Green(output_file_name)
+    print("Output file is: ", Green(output_file_name))
 
  
 
