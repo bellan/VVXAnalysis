@@ -99,9 +99,9 @@ if 'all' in regions:
     regions = ['all']
 elif 'MC' in regions:
     regions = ['MC']
-elif 'CRLFR' in regions:
-    regions = ['CRLFR']
 else:
+    if 'CRLFR' in regions:
+        regions = [ r for r in regions if not r == 'CR110']  # Until we implement a MET cut, these two overlap
     if 'SR4P' in regions:
         regions = [ r for r in regions if not r.startswith(('SR4P_', 'CR4P_')) ]
     if 'SR3P' in regions:
