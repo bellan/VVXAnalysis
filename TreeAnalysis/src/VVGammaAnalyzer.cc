@@ -266,18 +266,35 @@ void VVGammaAnalyzer::analyze(){
   //   }
   // }
 	
+	if( ((region_>=CR110 && region_<=CR000) || region_==SR3P ) && ZW && ZW->pt() > 1.){
+		theHistograms->fill("ZW_massT", "m_{T,3l};GeV/c^{2}", 25,0.,500., ZW->p4().Mt(), theWeight);
+		theHistograms->fill("Z_mass", "m_{Z};GeV/c^{2}", 35,55.,125., ZW->first().mass(), theWeight);
+		theHistograms->fill("W_massT", "m_{T,W};GeV/c^{2}", 35,55.,125., ZW->second().p4().Mt(), theWeight);
+		theHistograms->fill("Z_l0_pt", "m_{l00};GeV/c", 20,0.,400., ZW->first().daughter(0).pt(), theWeight);
+		theHistograms->fill("Z_l1_pt", "m_{l00};GeV/c", 20,0.,400., ZW->first().daughter(1).pt(), theWeight);
+		theHistograms->fill("W_l_pt", "m_{l00};GeV/c", 20,0.,400., ZW->second().daughter(0).pt(), theWeight);
+		theHistograms->fill("W_MET_pt", "m_{l00};GeV/c", 20,0.,400., ZW->second().daughter(1).pt(), theWeight);
+	}
+	if(region_==CRLFR && ZL && ZL->first.pt() > 1.){
+		theHistograms->fill("ZL_mass", "m_{3l};GeV/c^{2}", 25,0.,500., (ZL->first.p4()+ZL->second.p4()).M(), theWeight);
+		theHistograms->fill("Z_mass", "m_{Z};GeV/c^{2}", 35,55.,125., ZL->first.mass(), theWeight);
+		theHistograms->fill("Z_l0_pt", "m_{l00};GeV/c", 20,0.,400., ZL->first.daughter(0).pt(), theWeight);
+		theHistograms->fill("Z_l1_pt", "m_{l00};GeV/c", 20,0.,400., ZL->first.daughter(1).pt(), theWeight);
+		theHistograms->fill("L_pt", "m_{l00};GeV/c", 20,0.,400., ZL->second.pt(), theWeight);
+	}
+	
   // electrons
-  theHistograms->fill(Form("%s: N electrons", channel.c_str()), "# electrons", 5,0,5, electrons->size(), 1);
+  theHistograms->fill(Form("%s_N_POG_electrons", channel.c_str()), "# POG electrons", 5,0,5, electrons->size(), 1);
   // vector<Lepton> selEle;
   for(auto e : *electrons){
-    theHistograms->fill(Form("%s: pt electrons", channel.c_str()), "p_{t} electrons; p_{t}", 100,0.,100., e.pt(), 1);
+    theHistograms->fill(Form("%s_pt_POG_electrons", channel.c_str()), "p_{t} POG electrons; p_{t}", 100,0.,100., e.pt(), 1);
   }
   
   // muons
-  theHistograms->fill(Form("%s: N muons", channel.c_str()), "# muons", 5,0,5, muons->size(), 1);
+  theHistograms->fill(Form("%s_N_POG_muons", channel.c_str()), "# POG muons", 5,0,5, muons->size(), 1);
   // vector<Lepton> selMuo;
   for(auto mu : *muons){
-    theHistograms->fill(Form("%s: pt muons"    , channel.c_str()), "p_{t} muons; p_{t}"    , 100,0.,100., mu.pt(), 1);
+    theHistograms->fill(Form("%s_pt_POG_muons"    , channel.c_str()), "p_{t} POG muons; p_{t}"    , 100,0.,100., mu.pt(), 1);
   }
   	
   /*
