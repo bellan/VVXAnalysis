@@ -334,7 +334,8 @@ void EventAnalyzer::loop(const std::string outputfile){
   
   for(std::pair<phys::RegionTypes, Histogrammer> regHist : mapRegionHisto_){
     std::string regionName = phys::regionType(regHist.first);
-    theHistograms = & regHist.second;
+    region_ = regHist.first;  // In case some Analyzer wants to do something special in certain regions
+    theHistograms = & regHist.second;  // So that any operation on the histograms is done on the correct ones
     
     std::string fout_formatted( Form(outputfile.c_str(), regionName.c_str()) );
     TFile fout(TString(fout_formatted),"RECREATE");
