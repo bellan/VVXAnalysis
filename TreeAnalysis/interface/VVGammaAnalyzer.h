@@ -61,7 +61,8 @@ public:
 	virtual void analyze();
 
 	virtual void end(TFile &);
-
+	
+	virtual void finish();
 
  private:
  	
@@ -163,10 +164,10 @@ public:
 		static const std::vector<double> aeta_bins;
   
   protected:
-		unsigned long evtN_, analyzedN_; //Used to count processed events.
-		clock_t startTime_; //Used to calculate elapsed time
-		float analyzedW_, totEvtW_;  // Weighted events passing cut and total
-	
+		unsigned long evtN_;  // Used in the print in cut()
+		std::map<phys::RegionTypes, unsigned long> evtNInReg_, analyzedNInReg_;  // Used to count processed events.
+		clock_t startTime_;  // Used to calculate elapsed time
+		std::map<phys::RegionTypes, float> evtWInReg_, analyzedWInReg_;  // Weighted events passing cut and total
 };
 #endif
 
