@@ -47,7 +47,8 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
   , theSampleInfo(configuration.getParameter<std::string>("filename"), 
 		  configuration.getParameter<double>("lumi"), 
 		  configuration.getParameter<double>("externalXSection"),
-		  configuration.getParameter<bool>("blinded"))
+		  configuration.getParameter<bool>("blinded"),
+		  configuration.getParameter<bool>("applyFRSF"))
   , theWeight(1.)
   , theCutCounter(0.)
   , theInputWeightedEvents(0.)
