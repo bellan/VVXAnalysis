@@ -43,6 +43,9 @@ int main (int argc, char ** argv){
   if(atoi(argv[11])) analysisConfig.addParameter("applyFRSF", false);
   else analysisConfig.addParameter("applyFRSF"  , true);
 
+  if(atoi(argv[12])) analysisConfig.addParameter("forcePosWeight", true);
+  else analysisConfig.addParameter("forcePosWeight"  , false);
+
   
   EventAnalyzer *analysis = AnalysisFactory::get()->createAnalysis(analysisConfig);
 

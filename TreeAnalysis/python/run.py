@@ -76,16 +76,22 @@ parser.add_option("--nofr", dest="nofr",
                   default=False,
                   help="do not apply the fake rate scale factors.")
 
+parser.add_option("--fpw","--force-pos-weight", dest="forcePosWeight",
+                  action="store_true",
+                  default=False,
+                  help="Force the weight to be positive.")
+
 
 
 (options, args) = parser.parse_args()
 
-analysis     = args[0]
-typeofsample = args[1]
-regions      = options.regions
-doSF         = options.doSF
-unblind      = options.unblind
-nofr         = options.nofr
+analysis       = args[0]
+typeofsample   = args[1]
+regions        = options.regions
+doSF           = options.doSF
+unblind        = options.unblind
+nofr           = options.nofr
+forcePosWeight =options.forcePosWeight
 
 if doSF:
     print "Option temporarily disabled!"
@@ -187,7 +193,7 @@ print "Use internal scale factor: ",Blue(doSF)
 ############################################################################
 
 
-def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr):
+def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight):
 
     # if luminosity is specified thorugh -l option, overwrite the year <-> luminosity decision
     if luminosity is None:
@@ -266,7 +272,7 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
         print Red('\n------------------------------ {0:s} -------------------------------\n'.format(basefile))
 
         # outputdir_format is something like "results/2016/VVXAnalyzer_%s". EventAnalyzer will use Form() to replace %s with the various regions to obtain the filenames
-        command = "./{0:s} {1:s} '{2:s}' {3:s}/{5:s}.root {4:s}/{5:s}.root {6:.0f} {7:.0f} {8:.5f} {9:.0f} {10:b} {11:b} {12:b}".format(executable,analysis,';'.join(regions),inputdir,outputdir_format, basefile, year, luminosity, externalXsec, maxNumEvents, doSF, unblind, nofr)
+        command = "./{0:s} {1:s} '{2:s}' {3:s}/{5:s}.root {4:s}/{5:s}.root {6:.0f} {7:.0f} {8:.5f} {9:.0f} {10:b} {11:b} {12:b} {13:b}".format(executable,analysis,';'.join(regions),inputdir,outputdir_format, basefile, year, luminosity, externalXsec, maxNumEvents, doSF, unblind, nofr, forcePosWeight)
         print "Command going to be executed (run::command):", Violet(command)
         output = subprocess.check_call(command,shell=True)
         print "\n", output
@@ -303,9 +309,9 @@ def mergeDataSamples(outputLocationsDict):
         print "Command going to be executed (mergeDataSamples::hadd):", Violet(hadd)
         output = subprocess.check_call(hadd,shell=True)
 
-def runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doSF, unblind, nofr, postfix = '', outputLocations = []):
-    outputCR2P2F = run(executable, analysis, sample, 'CR2P2F'+postfix, year, luminosity, maxNumEvents, doSF, unblind, nofr)    # runs over all samples in the CR2P2F control reagion
-    outputCR3P1F = run(executable, analysis, sample, 'CR3P1F'+postfix, year, luminosity, maxNumEvents, doSF, unblind, nofr)    # runs over all samples in the CR3P1F control reagion
+def runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight, postfix = '', outputLocations = []):
+    outputCR2P2F = run(executable, analysis, sample, 'CR2P2F'+postfix, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)    # runs over all samples in the CR2P2F control reagion
+    outputCR3P1F = run(executable, analysis, sample, 'CR3P1F'+postfix, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)    # runs over all samples in the CR3P1F control reagion
 
     if not os.path.exists('results/{0:s}/{1:s}_CR{2:s}'.format(str(year),analysis,postfix)): os.popen('mkdir results/{0:s}/{1:s}_CR{2:s}'.format(str(year),analysis,postfix))
     outputRedBkg = 'results/{0:s}/{1:s}_CR{2:s}/reducible_background_from_{3:s}.root'.format(str(year), analysis, postfix, sample)
@@ -317,7 +323,7 @@ def runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doS
     outputLocations.append(outputRedBkg)
 
     
-def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, knownProcesses, doSF, unblind, nofr):
+def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, knownProcesses, doSF, unblind, nofr, forcePosWeight):
 
     if typeofsample == 'all' or typeofsample == 'data':
         outputLocations = {}
@@ -325,14 +331,14 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
             if typeofsample == 'all' or sample[0:4] == str(year):
                 print sample[0:4]
                 if region == 'all':
-                    run(executable, analysis, sample, _all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr)    # runs over all samples in all signal/control regions
+                    run(executable, analysis, sample, _all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)    # runs over all samples in all signal/control regions
 
                 elif region == 'CR':
-                    runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doSF, unblind, nofr, "",outputLocations)
+                    runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight, "",outputLocations)
                 elif region == 'CR_HZZ': 
-                    runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doSF, unblind, nofr, '_HZZ',outputLocations)
+                    runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight, '_HZZ',outputLocations)
                 else:
-                    outputLocs = run(executable, analysis, sample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr)  # runs over all samples in specific control regions
+                    outputLocs = run(executable, analysis, sample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)  # runs over all samples in specific control regions
                     for r,loc in outputLocs.items():
                         outputLocations.setdefault(r, []).append(loc)
 
@@ -341,14 +347,14 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
             
     else:
         if region == 'all':
-            run(executable, analysis, typeofsample, all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr)  # runs over a specific sample in all signal/control regions
+            run(executable, analysis, typeofsample, all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)  # runs over a specific sample in all signal/control regions
 
         elif region == 'CR':
-            runOverCRs(executable, analysis, typeofsample, year, luminosity, maxNumEvents, doSF, unblind, nofr)
+            runOverCRs(executable, analysis, typeofsample, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)
         elif region == 'CR_HZZ':
-            runOverCRs(executable, analysis, typeofsample, year, luminosity, maxNumEvents, doSF, unblind, nofr, postfix='_HZZ')
+            runOverCRs(executable, analysis, typeofsample, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight, postfix='_HZZ')
         else:
-            run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr) # runs over a specific sample in a specific region
+            run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight) # runs over a specific sample in a specific region
 
 
 ###################################
@@ -367,7 +373,7 @@ if year == 1618:
         knownProcesses = typeOfSamples(csvfile)
         # knownProcesses.append('test')
 
-        runOverSamples(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, knownProcesses, doSF, unblind, nofr)
+        runOverSamples(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, knownProcesses, doSF, unblind, nofr, forcePosWeight)
 
 elif year in years:
     if options.csvfile is None:
@@ -381,7 +387,7 @@ elif year in years:
     # knownProcesses.append('test')
 
 
-    runOverSamples(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, knownProcesses, doSF, unblind, nofr)
+    runOverSamples(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, knownProcesses, doSF, unblind, nofr, forcePosWeight)
 
 else:
     print "Unknown year"

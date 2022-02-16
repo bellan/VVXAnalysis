@@ -48,7 +48,9 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 		  configuration.getParameter<double>("lumi"), 
 		  configuration.getParameter<double>("externalXSection"),
 		  configuration.getParameter<bool>("blinded"),
-		  configuration.getParameter<bool>("applyFRSF"))
+		  configuration.getParameter<bool>("applyFRSF"),
+		  configuration.getParameter<bool>("forcePosWeight")
+		  )
   , theWeight(1.)
   , theCutCounter(0.)
   , theInputWeightedEvents(0.)
