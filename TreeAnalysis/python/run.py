@@ -255,7 +255,7 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
     # ----- Run over the run periods -----
     hadd_cmds = {}
     for region, odir in outputdirs.items():
-      hadd_cmds[region] = 'hadd {0:s}/{1:s}.root'.format(odir,typeofsample)
+      hadd_cmds[region] = 'hadd -k {0:s}/{1:s}.root'.format(odir,typeofsample)
     for period in datasets:
         basefile = sampleprefix+period
         for r,outputdir in outputdirs.items():
@@ -303,7 +303,7 @@ def mergeDataSamples(outputLocationsDict):
     for region,outputLocations in outputLocationsDict.items():
         failure, basename = commands.getstatusoutput('basename {0:s}'.format(outputLocations[0]))
         outputdir = outputLocations[0].replace(basename,'').rstrip('/')
-        hadd = 'hadd {0:s}/data.root {1:s}'.format(outputdir, ' '.join(outputLocations))
+        hadd = 'hadd -k {0:s}/data.root {1:s}'.format(outputdir, ' '.join(outputLocations))
         if os.path.exists('{0:s}/data.root'.format(outputdir)):
             os.popen('rm {0:s}/data.root'.format(outputdir))
         print "Command going to be executed (mergeDataSamples::hadd):", Violet(hadd)
@@ -315,7 +315,7 @@ def runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doS
 
     if not os.path.exists('results/{0:s}/{1:s}_CR{2:s}'.format(str(year),analysis,postfix)): os.popen('mkdir results/{0:s}/{1:s}_CR{2:s}'.format(str(year),analysis,postfix))
     outputRedBkg = 'results/{0:s}/{1:s}_CR{2:s}/reducible_background_from_{3:s}.root'.format(str(year), analysis, postfix, sample)
-    hadd = 'hadd {0:s} {1:s} {2:s}'.format(outputRedBkg, outputCR2P2F, outputCR3P1F)
+    hadd = 'hadd -k {0:s} {1:s} {2:s}'.format(outputRedBkg, outputCR2P2F, outputCR3P1F)
     if os.path.exists('{0:s}'.format(outputRedBkg)):
         os.popen('rm {0:s}'.format(outputRedBkg))
     print "Command going to be executed (runOverCRs::hadd):", Violet(hadd)
