@@ -92,6 +92,7 @@ public:
  	void genEventHistos();
  	
  	// Sub analyses
+	void LeptFakeRate();
  	void effPhotons(); // uses goodPhotons_ and genPhotons_
  	
  	
@@ -159,7 +160,7 @@ public:
   	}
 		
 		static const std::vector<double> pt_bins;
-		
+		static const std::vector<double> pt_bins_LFR;
 		static const std::vector<double> eta_bins;
 		static const std::vector<double> aeta_bins;
   
