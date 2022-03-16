@@ -13,7 +13,7 @@ class TChain;
 class SampleInfo {
 
  public:
-  SampleInfo(const std::string &filename="", const double & lumi = -1, const double& externalXSection = -1., bool blinded = true);
+  SampleInfo(const std::string &filename="", const double & lumi = -1, const double& externalXSection = -1., bool blinded = true, bool applyFRSF = true, bool forcePosWeight = false);
   ~SampleInfo(){}
 
   int    genEvents()              const {return genEvents_;}
@@ -44,8 +44,16 @@ class SampleInfo {
     double weight()               const {return luminosity_ >= 0 ? sampleWeight()*puWeight()*L1PrefiringWeight() : 1.;}
 
   // Total weight of the event, including efficiency scale factors.
-  double weight(const phys::DiBoson<phys::Lepton, phys::Lepton> &VV) const {return VV.fakeRateSF() * (luminosity_ >= 0 ? weight() * VV.efficiencySF() : 1.);}
-  double weight(const phys::Boson<phys::Lepton> &Z) const {return Z.fakeRateSF() * (luminosity_ >= 0 ? weight() * Z.efficiencySF() : 1.);}
+  double weight(const phys::DiBoson<phys::Lepton, phys::Lepton> &VV) const {
+    double w = (applyFRSF_ ? VV.fakeRateSF() : 1.) * (luminosity_ >= 0 ? weight() * VV.efficiencySF() : 1.);
+    if (forcePosWeight_) return abs(w);
+    else return w;
+  }
+  double weight(const phys::Boson<phys::Lepton> &Z) const {
+    double w = (applyFRSF_ ? Z.fakeRateSF() : 1.) * (luminosity_ >= 0 ? weight() * Z.efficiencySF() : 1.);
+    if (forcePosWeight_) return abs(w);
+    else return w;
+  }
 
   double signalEfficiency()           const {return signalEfficiency_;}
   double signalEfficiencyCorrection() const {return 1./signalEfficiency_;}
@@ -95,6 +103,9 @@ class SampleInfo {
   std::string filename_;  
   double luminosity_;
   bool   blinded_;
+  bool   applyFRSF_;
+  bool   forcePosWeight_;
+  
   double internalCrossSection_;
   double externalCrossSection_;
   double externalCrossSectionFromCSV_;

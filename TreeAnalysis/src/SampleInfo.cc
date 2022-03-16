@@ -7,9 +7,11 @@
 
 using namespace colour;
 
-SampleInfo::SampleInfo(const std::string& filename, const double & lumi, const double& externalXSection, bool blinded)
+SampleInfo::SampleInfo(const std::string& filename, const double & lumi, const double& externalXSection, bool blinded, bool applyFRSF, bool forcePosWeight)
   : luminosity_(lumi)
   , blinded_(blinded)
+  , applyFRSF_(applyFRSF)
+  , forcePosWeight_(forcePosWeight)
   , internalCrossSection_(-1)
   , externalCrossSection_(-1)
   , externalCrossSectionFromCSV_(externalXSection)

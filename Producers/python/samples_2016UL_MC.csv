@@ -31,6 +31,7 @@ WWZ,,0.1651,,,/WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-
 ZZTo4l_M1ToInf,qqZZ,1.325,,,/ZZTo4L_M-1toInf_TuneCP5_13TeV_powheg_pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 # ZZTo4lext,qqZZ,1.256,,,/ZZTo4L_13TeV_powheg_pythia8_ext1/?????????/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 # ZZTo4lamcatnlo,qqZZ,1.256,,,/ZZTo4L_13TeV-amcatnloFXFX-pythia8/?????????/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2016,RecoProbabilities.py,
+ZZTo2Q2L,qqZZ,-1,,,/ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM,dbs,,1,GENXSEC=-1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 
 
 ###,gg->ZZ,,,,,,,,,,gg->ZZbackground-MovedtoACOffshell
@@ -57,6 +58,9 @@ DYJetsToLL_M50,,6225.4,,,/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8/Run
 
 WJetsToLNu,Wjets,67350.0,,,/WJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM,dbs,,4,GENXSEC=67350.0;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2016,RecoProbabilities.py,# Generated with 0 1 2 jets @NLO
 # W3JetsToLNu,Wjets,826.3,,,/W3JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM,dbs,,4,GENXSEC=826.3;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2016,RecoProbabilities.py,# Generated with 3 jets @LO
+
+singleT,t,3.549,,,/ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM,dbs,,4,GENXSEC=3.549;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2016,RecoProbabilities.py,
+tW,tX,-1,,,/ST_tW_Dilept_5f_DR_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM,dbs,,4,GENXSEC=-1;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 TTTo2L2Nu,tt,88.29,,,/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM,dbs,,4,GENXSEC=88.29;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 
 
