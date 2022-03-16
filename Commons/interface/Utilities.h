@@ -2,6 +2,10 @@
 #define VVXAnalysis_Commons_Utilities_h
 
 #include "VVXAnalysis/DataFormats/interface/Particle.h"
+#include "VVXAnalysis/Commons/interface/Constants.h"
+
+#include <vector>
+#include <list>
 
 namespace physmath{
  
@@ -63,6 +67,10 @@ namespace physmath{
     return sqrt(mT(p1, p2)*mT(p1, p2) + mT(p1, p3)*mT(p1, p3) + mT(p2, p3)*mT(p2, p3));
   }
   
+  // ----- Minimum of |m - mZ| and |m - mW|
+  inline double minDM(const double& m, const double& m1 = phys::WMASS, const double& m2 = phys::ZMASS){
+    return std::min( fabs(m - m1), fabs(m - m2) );
+  }
 }
 
 
@@ -71,6 +79,35 @@ template <typename T> std::vector<T> concatenate(std::vector<T> &a, std::vector<
   std::vector<T> ab = a;
     ab.insert(ab.end(), b.begin(), b.end());
     return ab;
+}
+
+
+template <class S, class T>
+std::vector<std::pair<const S*, const T*>> matchGenRec(const std::vector<S>& vgen, const std::vector<T>& vrec, const double& tol = 0.2){
+  std::vector<std::pair<const S*, const T*>> out; out.reserve(vgen.size());
+  std::list<size_t> indices_rec;
+  for(size_t i = 0; i < vrec.size(); ++i) indices_rec.push_back(i);
+  
+  for(const S& gen : vgen){
+    std::list<size_t>::iterator it_best = indices_rec.end();
+    double mindr = tol;
+
+    for(auto it = indices_rec.begin(); it != indices_rec.end(); ++it){
+      double dr = physmath::deltaR(gen, vrec.at(*it));
+      if(dr < mindr){
+	mindr = dr;
+	it_best = it;
+      }
+    }
+    
+    const T* p_rec = nullptr;
+    if(it_best != indices_rec.end()){
+      p_rec = & vrec.at(*it_best);
+      indices_rec.erase(it_best);
+    }
+    out.push_back(std::make_pair( &gen, p_rec )); // If no corresponding rec is found, the rec is left as a nullptr
+  }
+  return out;
 }
 
 
