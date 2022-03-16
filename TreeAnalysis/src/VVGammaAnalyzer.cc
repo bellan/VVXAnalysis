@@ -8,7 +8,8 @@
 #include "TTree.h"
 #include "TGraphAsymmErrors.h"
 
-#include <algorithm>
+#include <algorithm>  // std::move
+#include <list>
 
 #include <boost/foreach.hpp>
 // #include <boost/range/join.hpp>  // boost::join
@@ -61,52 +62,43 @@ Int_t VVGammaAnalyzer::cut() {
   theHistograms->fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 1);
 	
   // Cleanup
+  kinPhotons_ ->clear();
   goodPhotons_->clear();
-	
+  
   bool haveZVlep = false;
   bool have2l2j = false;
   bool haveGoodPhoton = false;
 	
   theHistograms->fill("POG_leptons", "n leptons", 7,-0.5,6.5, electrons->size()+muons->size(), theWeight);
-	
-	
-  // ----- BASELINE SELECTION -----
-  // ----- Cut2: require at least a ZZ or a WZ candidate
-  haveZVlep = (ZZ && ZZ->pt() > 1.) || (ZW && ZW->pt() > 1.);	
-	
-  if(haveZVlep){
-    theHistograms->fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 2, theWeight);
-    theHistograms->fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 2);
-  }
-	
-  have2l2j = (muons->size()+electrons->size()==2) && (jets->size()==2 || jetsAK8->size()>=1);
-  if(have2l2j){
-    theHistograms->fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 3, theWeight);
-    theHistograms->fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 3);
-  }
-	
+  
+  
   // Contruct vector with leptons from dibosons
   vector<const Lepton*> leptons;
   if(ZZ && ZZ->pt() > 1.)
     leptons.insert(leptons.end(), {
-	ZZ->first().daughterPtr(0), 
+	  ZZ->first().daughterPtr(0), 
 	  ZZ->first().daughterPtr(1), 
 	  ZZ->second().daughterPtr(0), 
 	  ZZ->second().daughterPtr(1)
 	  });
   if(ZW && ZW->pt() > 1.)
     leptons.insert(leptons.end(), {
-	ZW->first().daughterPtr(0), 
+	  ZW->first().daughterPtr(0), 
 	  ZW->first().daughterPtr(1), 
 	  ZW->second().daughterPtr(0)
 	  });
+  if(ZL && ZL->first.pt() > 1.){
+    leptons.insert(leptons.end(), {
+	  ZL->first.daughterPtr(0),
+	  ZL->first.daughterPtr(1),
+	  &(ZL->second)
+      });
+  }
 	
-  // ----- Cut1: Require at least 1 loose photon with pt > 20 GeV
-	
+  	
   for(auto ph : *photons){
-    //ID and electron veto
+    //Pixel seed and electron veto
     if(ph.hasPixelSeed() || !ph.passElectronVeto()) continue;
-    if(! ph.cutBasedIDLoose()) continue;
 		
     //Kinematic selection
     if(ph.pt() < 20) continue;
@@ -124,21 +116,43 @@ Int_t VVGammaAnalyzer::cut() {
     }
     if(match) continue;
 	        
-    goodPhotons_->push_back(ph);
+    kinPhotons_->push_back(ph);
+    if(ph.cutBasedIDLoose())
+      goodPhotons_->push_back(ph);
   }
-  haveGoodPhoton = goodPhotons_->size() >= 1;
-	
+  
+  // Basic histos
+  baseHistos_cut();
   theHistograms->fill("C: n good ph", "n good #gamma | ZZ/WZ exists", 7,-0.5,6.5, goodPhotons_->size(), theWeight);
+  
+  
+  // ----- BASELINE SELECTION -----
+  // ----- Cut1: require at least a ZZ or a WZ candidate
+  haveZVlep = (ZZ && ZZ->pt() > 1.) || (ZW && ZW->pt() > 1.);	
+  if(haveZVlep){
+    theHistograms->fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 2, theWeight);
+    theHistograms->fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 2);
+  }
 	
+  have2l2j = (muons->size()+electrons->size()==2) && (jets->size()==2 || jetsAK8->size()>=1);
+  if(have2l2j){
+    theHistograms->fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 3, theWeight);
+    theHistograms->fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 3);
+  }
+  
+  // ----- Cut2: Require at least 1 loose photon with pt > 20 GeV
+  haveGoodPhoton = goodPhotons_->size() >= 1;
   if(haveGoodPhoton){
     theHistograms->fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 4, theWeight);
     theHistograms->fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 4);
   }
-	
-	
+  
+  //return (haveGoodPhoton ? 1 : -1);
+  return (haveZVlep ? 1 : -1); //TEMP
+  
   if(!haveZVlep) 
     return -1;
-  else if(!haveGoodPhoton) 
+  else if(!haveGoodPhoton)
     return -1;
   else
     return 1;
@@ -148,70 +162,79 @@ void VVGammaAnalyzer::analyze(){
   analyzedNInReg_[region_]++; analyzedWInReg_[region_] += theWeight;
   theHistograms->fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 5, theWeight);
   theHistograms->fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 5);
-	
-  for(auto ph : *goodPhotons_){
-    theHistograms->fill("A: gamma loose", "loose photons;p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
-    if(ph.cutBasedIDMedium()){
-      theHistograms->fill("A: gamma medium", "medium photons;p_{t} [GeV/c];|#eta|", pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
-      theHistograms->fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 6, theWeight);
-      theHistograms->fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 6);
-      break;
-    }
+  
+  if(goodPhotons_->size() >= 1 && goodPhotons_->front().cutBasedIDLoose()){
+    theHistograms->fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 6, theWeight);
+    theHistograms->fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 6);
   }
-	
-  if(theSampleInfo.isMC())
+  
+  std::string channel("NULL");
+
+  if(theSampleInfo.isMC()){
     genEventSetup();
   
-  vector<Particle> genEle, genMuo;
-  for(const Particle& l : *genChLeptons_){
-    if     (abs(l.id()) == 11) genEle.push_back(l);
-    else if(abs(l.id()) == 13) genMuo.push_back(l);
-    else cout<<">>>genLept: "<<l.id()<<'\n';
+    vector<Particle> genEle, genMuo;
+    for(const Particle& l : *genChLeptons_){
+      if     (abs(l.id()) == 11) genEle.push_back(l);
+      else if(abs(l.id()) == 13) genMuo.push_back(l);
+      else cout<<">>>genLept: "<<l.id()<<'\n';
+    }
+    
+    // if     (genMuo.size() == 2) channel = "mm";
+    // else if(genEle.size() == 2) channel = "ee";
+    // else
+    channel = Form("%lue%lum", genEle.size(), genMuo.size());
   }
-  std::string channel("NULL");
-  if     (genMuo.size() == 2) channel = "mm";
-  else if(genEle.size() == 2) channel = "ee";
   
-  LeptFakeRate();
+  LeptonFakeRate();
+  PhotonFakeRate();
   
-  //cout<<"channel: "<<channel<<"   Form: "<<Form("%s: N electrons", channel)<<"   Form(c_str): "<<Form("%s: N electrons", channel.c_str())<<'\n';
+  // cout<<"channel: "<<channel<<"   Form: "<<Form("%s: N electrons", channel)<<"   Form(c_str): "<<Form("%s: N electrons", channel.c_str())<<'\n';
   // theHistograms->fill("genEle", "genEle", 5, -0.5, 4.5, genEle.size());
   // theHistograms->fill("genMuo", "genMuo", 5, -0.5, 4.5, genMuo.size());
   // theHistograms->fill("genChg", "genChg", 5, -0.5, 4.5, genChLeptons_->size());
   
   
   // electrons
-  theHistograms->fill(Form("%s_N_POG_electrons", channel.c_str()), "# POG electrons", 5,0,5, electrons->size(), 1);
+  theHistograms->fill(Form("POG_electrons_N_%s", channel.c_str()), "# POG electrons", 5,0,5, electrons->size(), 1);
   for(auto e : *electrons){
-    theHistograms->fill(Form("%s_pt_POG_electrons", channel.c_str()), "p_{t} POG electrons; p_{t}", 100,0.,100., e.pt(), 1);
+    theHistograms->fill(Form("POG_electrons_pt_%s", channel.c_str()), "p_{t} POG electrons; p_{t}", 100,0.,100., e.pt(), 1);
   }
   
   // muons
-  theHistograms->fill(Form("%s_N_POG_muons", channel.c_str()), "# POG muons", 5,0,5, muons->size(), 1);
+  theHistograms->fill(Form("POG_muons_N_%s", channel.c_str()), "# POG muons", 5,0,5, muons->size(), 1);
   for(auto mu : *muons){
-    theHistograms->fill(Form("%s_pt_POG_muons"    , channel.c_str()), "p_{t} POG muons; p_{t}"    , 100,0.,100., mu.pt(), 1);
+    theHistograms->fill(Form("POG_muons_pt_%s"    , channel.c_str()), "p_{t} POG muons; p_{t}"    , 100,0.,100., mu.pt(), 1);
   }
 	
 	
-  // SR: medium photon ID - CR: loose && !medium photon ID
-  Photon& thePhoton = goodPhotons_->front();
-  theHistograms->fill("photon_pt", "p_{t}^{#gamma};GeV/c", 50,0.,200., thePhoton.pt(), theWeight);
-	
-  if( ((region_>=CR110 && region_<=CR000) || region_==SR3P ) && ZW && ZW->pt() > 1.){
-    theHistograms->fill("ZW_massT", "m_{T,3l};GeV/c^{2}", 25,0.,500., ZW->p4().Mt(), theWeight);
-    theHistograms->fill("Z_mass", "m_{Z};GeV/c^{2}", 35,55.,125., ZW->first().mass(), theWeight);
-    theHistograms->fill("W_massT", "m_{T,W};GeV/c^{2}", 35,55.,125., ZW->second().p4().Mt(), theWeight);
-    theHistograms->fill("Z_l0_pt", "m_{l00};GeV/c", 20,0.,400., ZW->first().daughter(0).pt(), theWeight);
-    theHistograms->fill("Z_l1_pt", "m_{l00};GeV/c", 20,0.,400., ZW->first().daughter(1).pt(), theWeight);
-    theHistograms->fill("W_l_pt", "m_{l00};GeV/c", 20,0.,400., ZW->second().daughter(0).pt(), theWeight);
-    theHistograms->fill("W_MET_pt", "m_{l00};GeV/c", 20,0.,400., ZW->second().daughter(1).pt(), theWeight);
+  // SR: loose photon ID - CR: kin selection && !loose photon ID
+  // Photon& thePhoton = goodPhotons_->front();
+  // theHistograms->fill("photon_pt", "p_{t}^{#gamma};GeV/c", 50,0.,200., thePhoton.pt(), theWeight);
+  if( (region_ >= SR4P && region_ <= CR4P_1F) && ZZ && ZZ->pt() > 1.){
+    theHistograms->fill("ZZ_mass" , "m_{4l};GeV/c^{2}", 25,0.,500. , ZZ->mass()                   , theWeight);
+    theHistograms->fill("Z0_mass" , "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
+    theHistograms->fill("Z1_mass" , "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
+    theHistograms->fill("Z0_l0_pt", "p_{t,l00};GeV/c" , 20,0.,400. , ZZ->first().daughter(0).pt() , theWeight);
+    theHistograms->fill("Z0_l1_pt", "p_{t,l01};GeV/c" , 20,0.,400. , ZZ->first().daughter(1).pt() , theWeight);
+    theHistograms->fill("Z1_l0_pt", "p_{t,l10};GeV/c" , 20,0.,400. , ZZ->second().daughter(0).pt(), theWeight);
+    theHistograms->fill("Z1_l1_pt", "p_{t,l11};GeV/c" , 20,0.,400. , ZZ->second().daughter(1).pt(), theWeight);
   }
-  if(region_==CRLFR && ZL && ZL->first.pt() > 1.){
-    theHistograms->fill("ZL_mass", "m_{3l};GeV/c^{2}", 25,0.,500., (ZL->first.p4()+ZL->second.p4()).M(), theWeight);
-    theHistograms->fill("Z_mass", "m_{Z};GeV/c^{2}", 35,55.,125., ZL->first.mass(), theWeight);
-    theHistograms->fill("Z_l0_pt", "m_{l00};GeV/c", 20,0.,400., ZL->first.daughter(0).pt(), theWeight);
-    theHistograms->fill("Z_l1_pt", "m_{l00};GeV/c", 20,0.,400., ZL->first.daughter(1).pt(), theWeight);
-    theHistograms->fill("L_pt", "m_{l00};GeV/c", 20,0.,400., ZL->second.pt(), theWeight);
+  else if( ((region_>=CR110 && region_<=CR000) || region_==SR3P ) && ZW && ZW->pt() > 1.){
+    theHistograms->fill("ZW_massT", "m_{T,3l};GeV/c^{2}", 25,0.,500. , ZW->p4().Mt()                , theWeight);
+    theHistograms->fill("Z_mass"  , "m_{Z};GeV/c^{2}"   , 35,55.,125., ZW->first().mass()           , theWeight);
+    theHistograms->fill("W_massT" , "m_{T,W};GeV/c^{2}" , 35,55.,125., ZW->second().p4().Mt()       , theWeight);
+    theHistograms->fill("Z_l0_pt" , "p_{t,l00};GeV/c"   , 20,0.,400. , ZW->first().daughter(0).pt() , theWeight);
+    theHistograms->fill("Z_l1_pt" , "p_{t,l01};GeV/c"   , 20,0.,400. , ZW->first().daughter(1).pt() , theWeight);
+    theHistograms->fill("W_l_pt"  , "p_{t,l10};GeV/c"   , 20,0.,400. , ZW->second().daughter(0).pt(), theWeight);
+    theHistograms->fill("W_MET_pt", "p_{t,l11};GeV/c"   , 20,0.,400. , ZW->second().daughter(1).pt(), theWeight);
+  }
+  else if(region_==CRLFR && ZL && ZL->first.pt() > 1.){
+    theHistograms->fill("ZL_mass", "m_{3l};GeV/c^{2}", 25,0.,500. , (ZL->first.p4()+ZL->second.p4()).M(), theWeight);
+    theHistograms->fill("Z_mass" , "m_{Z};GeV/c^{2}" , 35,55.,125., ZL->first.mass()                    , theWeight);
+    theHistograms->fill("Z_l0_pt", "p_{t,l00};GeV/c" , 20,0.,400. , ZL->first.daughter(0).pt()          , theWeight);
+    theHistograms->fill("Z_l1_pt", "p_{t,l00};GeV/c" , 20,0.,400. , ZL->first.daughter(1).pt()          , theWeight);
+    theHistograms->fill("L_pt"   , "p_{t,l3};GeV/c"  , 20,0.,400. , ZL->second.pt()                     , theWeight);
   }
 	
   	
@@ -231,18 +254,21 @@ void VVGammaAnalyzer::analyze(){
 
 
 void VVGammaAnalyzer::end(TFile& fout){
-  // unsigned long evtN(0), analyzedN(0);
-  // float evtW(0.), analyzedW(0.);
-  // if(evtNInReg_.find(region_) != evtNInReg_.end()){
-  //   evtN      = evtNInReg_.at(region_);
-  //   evtW      = evtWInReg_.at(region_);
-  //   analyzedW = analyzedWInReg_.at(region_);
-  //   analyzedN = analyzedNInReg_.at(region_);
-  // }  // Otherwise there's not a single event in this region
+  unsigned long evtN(0), analyzedN(0);
+  float evtW(0.), analyzedW(0.);
+  if(evtNInReg_.find(region_) != evtNInReg_.end()){
+    evtN      = evtNInReg_.at(region_);
+    evtW      = evtWInReg_.at(region_);
+  }
+  if(analyzedNInReg_.find(region_) != analyzedNInReg_.end()){
+    analyzedN = analyzedNInReg_.at(region_);
+    analyzedW = analyzedWInReg_.at(region_);
+  }  // Otherwise there's not a single event in this region
+  
   cout<<"\n\t----- "<<phys::regionType(region_)<<"-----\n";
-  // cout<<Form("Total events: %lu (weighted: %.2f)\n", evtN, evtW);
-  // cout<<Form("Passing cut:  %lu (weighted: %.2f)\n", analyzedN, analyzedW);
-  // cout<<Form("Fraction:     %.1f %% (weighted: %.1f %%)\n", 100.*analyzedN/evtN, 100.*analyzedW/evtW);
+  cout<<Form("Total events: %lu (weighted: %.3g)\n", evtN, evtW);
+  cout<<Form("Passing cut:  %lu (weighted: %.3g)\n", analyzedN, analyzedW);
+  cout<<Form("Fraction:     %.1f %% (weighted: %.1f %%)\n", 100.*analyzedN/evtN, 100.*analyzedW/evtW);
   
   // Label names
   endNameHistos();
@@ -269,6 +295,14 @@ void VVGammaAnalyzer::endNameHistos(){
     x->SetBinLabel(4, "#gamma loose");
     x->SetBinLabel(5, "analyzed");
     x->SetBinLabel(6, "#gamma medium");
+  }
+  TH1* kinPhotons_ID = theHistograms->get("kinPhotons_ID");
+  if(kinPhotons_ID){
+    TAxis* x = kinPhotons_ID->GetXaxis();
+    x->SetBinLabel(1, "Total");
+    x->SetBinLabel(2, "Loose");
+    x->SetBinLabel(3, "Medium");
+    x->SetBinLabel(4, "Tight");
   }
 }
 
@@ -431,7 +465,66 @@ void VVGammaAnalyzer::genEventHistos(){
 }
 
 
-void VVGammaAnalyzer::LeptFakeRate(){
+void VVGammaAnalyzer::baseHistos_cut(){
+  // Photons
+  for(const Photon& ph: *kinPhotons_){
+    theHistograms->fill("kinPhotons_pt"  , "p_{t} of kinPhotons" , 50, 0., 250.,      ph.pt()  , theWeight);
+    theHistograms->fill("kinPhotons_aeta", "|#eta| of kinPhotons", 50, 0., 2.5 , fabs(ph.eta()), theWeight);
+    
+                              theHistograms->fill("kinPhotons_ID", "Cut Based ID of kinPhotons", 4,-0.5,3.5, 0, theWeight);
+    if(ph.cutBasedIDLoose())  theHistograms->fill("kinPhotons_ID", "Cut Based ID of kinPhotons", 4,-0.5,3.5, 1, theWeight);
+    if(ph.cutBasedIDMedium()) theHistograms->fill("kinPhotons_ID", "Cut Based ID of kinPhotons", 4,-0.5,3.5, 2, theWeight);
+    if(ph.cutBasedIDTight())  theHistograms->fill("kinPhotons_ID", "Cut Based ID of kinPhotons", 4,-0.5,3.5, 3, theWeight);
+  }
+  
+  // JetsAK8
+  vector<std::pair<const Particle*, const Jet*>> vgenrec = matchGenRec(*genJetsAK8, *jetsAK8);
+  for(auto pair: vgenrec){
+    const Particle& gen = * pair.first;
+    theHistograms->fill("AK8_gen_pt"  , "AK8 generated;p_{t} [GeV/c]"             , 40,100,500, gen.pt(), theWeight);
+    theHistograms->fill("AK8_gen_pt_u", "AK8 generated (unweighted);p_{t} [GeV/c]", 40,100,500, gen.pt());
+    
+    if(! pair.second)
+      continue;
+    const Jet& rec = * pair.second;
+    theHistograms->fill("AK8_rec_pt"  , "AK8 reconstructed and matched;p_{t} [GeV/c]"             , 40,100,500, rec.pt(), theWeight);
+    theHistograms->fill("AK8_rec_pt_u", "AK8 reconstructed and matched (unweighted);p_{t} [GeV/c]", 40,100,500, rec.pt());
+    theHistograms->fill("AK8_resolution_dR"        ,"AK8: #DeltaR(reco,gen)"                   ,40,  0.,0.2,physmath::deltaR(gen, rec)    );
+    theHistograms->fill("AK8_resolution_pt"        ,"AK8: pt - genpt;[GeV/c]"                  ,41,-41.,41.,rec.pt()           -gen.pt()  );
+    theHistograms->fill("AK8_resolution_corrPruned","AK8: corrPrunedMass - genMass;[GeV/c^{2}]",41,-41.,41.,rec.corrPrunedMass()-gen.mass());
+    theHistograms->fill("AK8_resolution_pruned"    ,"AK8: prunedMass - genMass;[GeV/c^{2}]"    ,41,-41.,41.,rec.prunedMass()   -gen.mass());
+    theHistograms->fill("AK8_resolution_softDrop"  ,"AK8: softDropMass - genMass;[GeV/c^{2}]"  ,41,-41.,41.,rec.softDropMass() -gen.mass());
+    theHistograms->fill("AK8_resolution_mass"      ,"AK8: mass - genMass;[GeV/c^{2}]"          ,41,-41.,41.,rec.mass()         -gen.mass());
+  }
+  // std::list<size_t> indices_rec;
+  // for(size_t i = 0; i < jetsAK8->size(); ++i) indices_rec.push_back(i);
+  
+  // for(const Particle& gen : *genJetsAK8){
+  //   theHistograms->fill("AK8_gen_pt"  , "AK8 generated;p_{t} [GeV/c]"             , 40,100,500, gen.pt(), theWeight);
+  //   theHistograms->fill("AK8_gen_pt_u", "AK8 generated (unweighted);p_{t} [GeV/c]", 40,100,500, gen.pt());
+  //   for(auto it = indices_rec.begin(); it != indices_rec.end(); ++it){
+  //     const Jet& rec = jetsAK8->at(*it);
+      
+  //     if(physmath::deltaR(gen, rec) > 0.2)
+  // 	continue;
+      
+  //     theHistograms->fill("AK8_rec_pt"  , "AK8 reconstructed and matched;p_{t} [GeV/c]"             , 40,100,500, rec.pt(), theWeight);
+  //     theHistograms->fill("AK8_rec_pt_u", "AK8 reconstructed and matched (unweighted);p_{t} [GeV/c]", 40,100,500, rec.pt());
+  //     theHistograms->fill("AK8_resolution_dR"        , "AK8: #DeltaR(reco,gen)"       , 40,  0.,0.2, physmath::deltaR(gen, rec)       );
+  //     theHistograms->fill("AK8_resolution_pt"        , "AK8: pt - genpt"              , 41,-41.,41., rec.pt()             - gen.pt()  );
+  //     theHistograms->fill("AK8_resolution_corrPruned", "AK8: corrPrunedMass - genMass", 41,-41.,41., rec.corrPrunedMass() - gen.mass());
+  //     theHistograms->fill("AK8_resolution_pruned"    , "AK8: prunedMass - genMass"    , 41,-41.,41., rec.prunedMass()     - gen.mass());
+  //     theHistograms->fill("AK8_resolution_softDrop"  , "AK8: softDropMass - genMass"  , 41,-41.,41., rec.softDropMass()   - gen.mass());
+  //     theHistograms->fill("AK8_resolution_mass"      , "AK8: mass - genMass"          , 41,-41.,41., rec.mass()           - gen.mass());
+
+  //     indices_rec.erase(it);
+  //     break;
+  //   }
+  // }
+}
+
+
+void VVGammaAnalyzer::LeptonFakeRate(){
   if(region_ != phys::CRLFR || !ZL || ZL->first.pt() * ZL->second.pt() <1.)
     return;
   const Lepton& lep = ZL->second;
@@ -450,10 +543,58 @@ void VVGammaAnalyzer::LeptFakeRate(){
   std::string status = lep.isGood() ? "PASS" : "FAIL";
   std::string eta_range = fabs(lep.eta()) < 1.5 ? "EB" : "EE";
   
+  
   theHistograms->fill(Form("LFR_%s_%s_%s", flavour.c_str(), eta_range.c_str(), status.c_str()), 
 		      Form("Fake %s in %s: %s;p_{t} [GeV/c]", flavour.c_str(), eta_range.c_str(), status.c_str()),
 		      pt_bins_LFR, lep.pt(), theWeight);
+  
+  theHistograms->fill(Form("LFR_%s_%s", flavour.c_str(), status.c_str()), 
+		      Form("Fake %s: %s;p_{t} [GeV/c]", flavour.c_str(), status.c_str()),
+		      pt_bins_LFR, aeta_bins, lep.pt(), fabs(lep.eta()), theWeight);
   return;
+}
+
+
+void VVGammaAnalyzer::PhotonFakeRate(){
+  if( !(region_ == phys::CRLFR || region_ == phys::SR2P || region_ == phys::SR2P_1L) )
+    return;
+  if(kinPhotons_->size() < 1)
+    return;
+  
+  if( (region_ == phys::SR2P || region_ == phys::SR2P_1L) ){
+    if(jets->size() >= 2){
+      //Try to reconstruct V hadronic
+      vector<Boson<Jet>> VtojjCands;  VtojjCands.reserve( jets->size()*(jets->size()-1)/2 );
+      for(auto it_i = jets->begin(); it_i <= jets->end() ; ++it_i){
+	for(auto it_j = it_i+1; it_j <= jets->end() ; ++it_j){
+	  Boson<Jet> cand(*it_i, *it_j);
+	  if(physmath::minDM(cand.mass()) < 30.)
+	    VtojjCands.push_back(std::move(cand));
+	}
+      }
+    
+      if(VtojjCands.size() >= 1)
+	return;
+    }
+  
+    if(  std::any_of(jetsAK8->begin(), jetsAK8->end(), [](const Jet& cand){ return physmath::minDM(cand.mass()) < 30.; } )  )
+      return;
+  }
+  
+  // We're not in the signal region
+  for(const Photon& ph : *kinPhotons_){
+    std::string status = ph.cutBasedIDLoose() ? "PASS" : "FAIL";
+    std::string eta_range = fabs(ph.eta()) > 1.5 ? "EE" : "EB";
+    double reg_pt = ph.pt() > pt_bins.back() ? pt_bins.back() : ph.pt();
+    
+    theHistograms->fill(Form("PhFR_%s_%s", eta_range.c_str(), status.c_str()), 
+			Form("Photons that pass kinematic cuts in %s and %s loose ID;p_{t} [GeV/c]", eta_range.c_str(), status.c_str()),
+			pt_bins, ph.pt(), theWeight);
+
+    theHistograms->fill(Form("PhFR_%s", status.c_str()),
+			Form("Photons that pass kinematic cuts and %s loose ID;p_{t} [GeV/c];|#eta|", status.c_str()),
+			pt_bins, aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+  }
 }
 
 
@@ -462,13 +603,10 @@ void VVGammaAnalyzer::effPhotons(){
   vector<Photon> goodPhotonsC(*goodPhotons_);
 	
   for(auto gPh : *genPhotons_){
-    if(gPh.pt() < 20.) continue;
     float ph_aeta = fabs(gPh.eta());
-    if(ph_aeta > 2.4) continue;
     //if(ph_aeta > 1.4442 && ph_aeta < 1.566) continue;
 		
     theHistograms->fill("eff: den G pt", "p_{t} gen #gamma", 25,0.,250., gPh.pt(), theWeight);
-    //theHistograms->fill("eff: den G eta", "#eta gen #gamma",25,-2.5,2.5, gPh.eta(),theWeight);
     theHistograms->fill("eff: den G eta","#eta gen #gamma", eta_bins, gPh.eta(),theWeight);
 		
     if(goodPhotonsC.size() == 0 ) continue;
