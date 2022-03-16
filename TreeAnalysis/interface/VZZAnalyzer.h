@@ -101,8 +101,6 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		static inline double getRefinedMass(const phys::Jet& j) { return j.chosenAlgoMass(); }
 		static inline double getRefinedMass(const phys::Jet* j) { return j->chosenAlgoMass();}
 		
-		static inline double minDM(const double& mass, const double& r1 = phys::ZMASS, const double& r2 = phys::WMASS) { return std::min( fabs(mass-r1), fabs(mass-r2) ); }
-		
 		template <class P>
 		static inline VCandType getCandType(const P& p){
 			double mass = getRefinedMass(p);
