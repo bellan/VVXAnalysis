@@ -1,10 +1,10 @@
 /**
- *	Macro to study cuts from results of VZZAnalyzer
+ *	Macro to study cuts and variable distributions from results of any Analyzer
  *	
  *	It may become necessary to change the path and/or signal and background	
  *	
- *	Usage: 	root [-l] 'WWosCutAnalysis.C("<category of graphs>", "<type of graphs>", "<requested graphs by name>")'
- *	e.g.: 	root [-l] 'WWosCutAnalysis.C("jetlep", 13, "all")'
+ *	Usage: 	root [OPTIONS] 'VZZGraph.C("<category of graphs>", "<type of graphs>", "<requested graphs by name>")'
+ *	e.g.: 	root -l 'VZZGraph.C("jetlep", "13", "all")'
  *
  *	It's possible to use it with standard values, by simply calling:	root -l WWosCutAnalysis.C
  *	
@@ -12,7 +12,7 @@
  *	<type of graphs> = {
  *		"0" sig and bkg same canvas (no stack)
  *		"1" sig and bkg same canvas (stacked)
- *		"2" Integral graps on same canvas (stacked)
+ *		"2" sig, bkg and data same canvas (stacked) // Integral graps on same canvas (stacked)
  *		"3" sig/sqrt(bkg) (integrals)
  *	}
  *	<requested graphs by name> depends on the chosen category of graphs
@@ -48,32 +48,41 @@ using std::cout;
 using std::vector;
 using std::bitset;
 using std::string;
+using std::pair;
 
 TString nullTString = TString("");
 
 struct GNames{
 public:
-	GNames(const TString& a,const vector<TString>& b,const vector<TString>& c) : graphName(a), sigGrNames(b), bkgGrNames(c){};
-	TString graphName; //Type of graph ("Cuts", ...)
+	GNames(const TString& n, const TString& t, const vector<TString>& s,const vector<TString>& b) : graphName(n), graphTitle(t)
+	{
+		for(auto & si : s)
+			sigGrNames.push_back( si.First('_') > 0 ? si(0, si.First('_')) : si );
+		for(auto & bi : b)
+			bkgGrNames.push_back( bi.First('_') > 0 ? bi(0, bi.First('_')) : bi );
+	};
+	TString graphName;   //Type of graph ("Cuts", "leadL pt", ...)
+	TString graphTitle;  //Prettyfication
 	vector <TString> sigGrNames;
 	vector <TString> bkgGrNames;
-/*	TString toString() const{
+	TString toString() const{
 		TString res = "graphName: "+graphName+"\nSIG: ";
 		foreach(const TString& s, sigGrNames) res += s+" \t";
-		res += "\nBKG: "
+		res += "\nBKG: ";
 		foreach(const TString& b, bkgGrNames) res += b+" \t";
 		return res;
-	}*/
+	}
 };
 
 template <class TH=TH1F>
 struct MyGraphs{
-	MyGraphs(vector<TH*> a, vector<TH*> b): vhSigs(a), vhBkgs(b) {};
-	MyGraphs(vector<TH*> a, vector<TH*> b, vector<TH*> c, vector<TH*> d): vhSigs(a), vhBkgs(b), vhSigInt(c), vhBkgInt(d) {};
+	//MyGraphs(vector<TH*> a, vector<TH*> b, TH* D): vhSigs(a), vhBkgs(b), data(D) {};
+	MyGraphs(vector<TH*> a, vector<TH*> b, vector<TH*> c, vector<TH*> d, TH* D): vhSigs(a), vhBkgs(b), vhSigInt(c), vhBkgInt(d), data(D) {};
 	vector<TH*> vhSigs;
 	vector<TH*> vhBkgs;
 	vector<TH*> vhSigInt;
 	vector<TH*> vhBkgInt;
+	TH* data;
 /*	TString toString() const{
 		return TString("vhSigs.size(): ")+vhSigs.size()+" - vhBkgs.size(): "+vhBkgs.size();
 	}*/
@@ -88,7 +97,7 @@ TH1F* sqrtGraph(const TH1F* const origin);		 //Creates a copy which is modified
 bool doThisGraphName(TString graphName, TString reqGrName);
 
 template <size_t N, class TH=TH1F>
-void newPrintGraph(const MyGraphs<TH>& theGraphs, const GNames& theNames, const bitset<N>& typeToDo);
+void printGraphs(const MyGraphs<TH>& theGraphs, const GNames& theNames, const bitset<N>& typeToDo);
 
 // Specific types of graph
 template <class TH>
@@ -98,66 +107,69 @@ void printGraphSame(const MyGraphs<TH>&, const GNames&);
 template <class TH>
 void printGraphStack(const MyGraphs<TH>&, const GNames&);
 template <class TH>
-void printGraphIntegr(const MyGraphs<TH>&, const GNames&);
+void printGraphRatio(const MyGraphs<TH>&, const GNames&);
 template <class TH>
 void printGraphSqrt(const MyGraphs<TH>&, const GNames&);
 
 //Struct building
 template <class TH = TH1F>
-MyGraphs<TH>* buildMyGraphs(const GNames& names, vector<TFile*>& signalFiles, vector<TFile*>& backgroundFiles);
+MyGraphs<TH>* buildMyGraphs(const GNames& names, vector<TFile*>& signalFiles, vector<TFile*>& backgroundFiles, TFile* dataFile);
 
 static const vector<Color_t> myColors =     {kRed  ,kGreen+1,kOrange-3,kAzure+10,kBlue,  kViolet+1,kYellow  ,kYellow+2,kOrange+3,kGray+3, kMagenta+3};
 static const vector<Color_t> myFillColors = {kRed-4,kGreen-7,kOrange-4,kCyan-9  ,kBlue-9, kViolet-4,kYellow-7,kYellow-2,kOrange-7,kGray  , kMagenta-9};
 //vector<Color_t> myFillColors(myColors.size(), 0);
 
+const int _FLIP = -1;
 
 void VZZGraphs(string sReqCateg = string(""), string sReqType = "", string reqGrName = string("")){
+	setTDRStyle();
 	TH1::SetDefaultSumw2(true);
-	TString path = "../results/";  // "../results/VZZAnalyzer_MC/";  //fresh results
+	const char theRegion[] = "CR2P2F";
+	TString path = Form("../results/2018/VVGammaAnalyzer_%s/", theRegion);
 	cout<<"Source path: \""<<path<<"\"\n";
 	
-	vector<TString> signals = {"ZZZ_1618_MC", "WZZ_1618_MC"};//,"VZZ_1618_MC"};
-	vector<TString> backgrounds = {"ZZTo4L"};//{"ZZTo4l"};//, "ggTo4mu_Contin_MCFM701", "ggTo4e_Contin_MCFM701", "ggTo2e2mu_Contin_MCFM701"}; //{"ggZZ2e2mu", "ggZZ4e", "ggZZ4mu", "WZ", "ZZTo2e2muJJ", "ZZTo4eJJ", "ZZTo4lamcatnlo", "ZZTo4muJJ"};
+	vector<TString> signals = {"ZZGJetsTo4L2Nu"};
+	vector<TString> backgrounds = {"ZZTo4lext1", /*"ZGTo2LG",*/ "ggTo2e2mu_Contin_MCFM701", "fake lepton"};
 	
 	std::transform(reqGrName.begin(), reqGrName.end(), reqGrName.begin(), ::tolower);
 	std::transform(sReqCateg.begin(), sReqCateg.end(), sReqCateg.begin(), ::tolower);
 	
 //#####	graphs not categorized by event type	#####
-	vector<TString> jetPlots = {/*"BestZ r4 mass", "BestZ r4 dM", "Cut analysis_f_", "minDM_r_","pt_tot_r_","All8_t21","All8_t32",*/ "Best8_t21_f_", "Best8_t32_f_", "Best8_t32_f_", "Best8_PUPPIt21_f_"};
-		
-	vector<TString> leptonPlots = {};//{"ZZmass", "jet1_pt", "jet2_pt", "jet1_E", "jet2_E", "jets_deltaR", "jets12_M"}; //Maybe create a single vector of plots?
+	//vector<TString> jetPlots = {};
+	
+	//vector<TString> variablePlots = {"G Loose: ZZ mass"}; //, "G Loose: ZZG mass", "G Loose: G pt", "G Loose: lead L pt"}; //"G Medium: ZZ mass", "G Medium: ZZG mass", "G Medium: G pt", "G Medium: lead L pt"
+	vector<std::pair<TString,TString>> variablePlots = {
+		//make_pair("G Loose: ZZ mass" , "3P1F #gamma_{loose}: ZZ mass;m [GeV/c^{2}]"),
+		//make_pair("G Loose: ZZG mass", "3P1F #gamma_{loose}: ZZ#gamma mass;m [GeV/c^{2}]"),
+		//make_pair("G Loose: G pt",     "3P1F #gamma_{loose}: #gamma p_{t};p_{t} [GeV/c]"),
+		//make_pair("G Loose: lead L pt","3P1F #gamma_{loose}: leading lepton p_{t};p_{t} [GeV/c]"),
+		make_pair("G Medium: ZZ mass" , Form("%s #gamma_{medium}: ZZ mass;m [GeV/c^{2}]", theRegion)),
+		make_pair("G Medium: ZZG mass", Form("%s #gamma_{medium}: ZZ#gamma mass;m [GeV/c^{2}]", theRegion)),
+		make_pair("G Medium: G pt",     Form("%s #gamma_{medium}: #gamma p_{t};p_{t} [GeV/c]", theRegion)),
+		make_pair("G Medium: lead L pt",Form("%s #gamma_{medium}: leading lepton p_{t};p_{t} [GeV/c]", theRegion))
+	};
 	
 //#####	end graph names	#####
+	TFile* dataFile = openRootFile(path, "data");
 	
-	vector<TFile*> signalFiles;// = openRootFile(path, sigFileName);
-	vector<size_t> notFoundS;
+	vector<TFile*> signalFiles;
 	for(size_t i = 0; i < signals.size(); i++){
-		//cout<<"backgrounds.at("<<i<<") = "<<backgrounds.at(i)<<'\n';
-		signalFiles.push_back( openRootFile(path, signals.at(i)) );
-		//cout<<" \tnullptr? "<<(signalFiles.at(i) == nullptr);
-		if(signalFiles.at(i) == nullptr)
-			notFoundS.push_back(i);
-	}
-	for(int i = (int) notFoundS.size(); i > 0; i--){
-		//cout<<"\nEreasing "<<i<<"/"<<notFoundS.size()<<" --> "<<signals.at(i);
-		signals.erase(signals.begin() + i);
-		signalFiles.erase(signalFiles.begin() + i);
+		//cout<<"signals.at("<<i<<") = "<<signals.at(i)<<'\n';
+		TFile* f = openRootFile(path, signals.at(i));
+		//cout<<" \tnullptr? "<<(f == nullptr);
+		if(f != nullptr)
+			signalFiles.push_back( f );
 	}
 
 	vector<TFile*> backgroundFiles;
-	vector<size_t> notFoundB;
 	for(size_t i = 0; i < backgrounds.size(); i++){
 		//cout<<"backgrounds.at("<<i<<") = "<<backgrounds.at(i)<<'\n';
-		backgroundFiles.push_back( openRootFile(path, backgrounds.at(i)) );
+		TFile* f = openRootFile(path, backgrounds.at(i));
 		//cout<<" \tnullptr? "<<(backgroundFiles.at(i) == nullptr);
-		if(backgroundFiles.at(i) == nullptr)
-			notFoundB.push_back(i);
+		if(f != nullptr)
+			backgroundFiles.push_back(f);
 	}
-	for(int i = (int) notFoundB.size(); i > 0; i--){
-		//cout<<"\nEreasing "<<i<<"/"<<notFoundB.size()<<" --> "<<backgrounds.at(i);
-		backgrounds.erase(backgrounds.begin() + i);
-		backgroundFiles.erase(backgroundFiles.begin() + i);
-	}
+	
 	#ifdef TEST_MODE
 	cout<<"\nsignals: (size = "<<signals.size()<<')';
 	foreach(TString& b, signals) cout<<"\n\t"<<b;
@@ -172,8 +184,13 @@ void VZZGraphs(string sReqCateg = string(""), string sReqType = "", string reqGr
 	cout<<'\n';
 	#endif
 	
+	if(signalFiles.size() == 0){
+		cout<<"No signal file found.\n";
+		exit(1);
+	}
 	
 	cout<<'\n';
+	/*
 	TIter keyList(signalFiles.at(0)->GetListOfKeys());
 	TKey *key;
 	while ((key = (TKey*)keyList())) {
@@ -181,31 +198,29 @@ void VZZGraphs(string sReqCateg = string(""), string sReqType = "", string reqGr
 		if (!cl->InheritsFrom("TH1")) continue;
 		TString name ( key->ReadObj()->GetName() );
 		if(name.Contains("weight_")) continue;
-		leptonPlots.push_back(name);//cout<<name<<'\n';
-	}
+		variablePlots.push_back(name);//cout<<name<<'\n';
+	}*/
 
 	// ---------- Input interptretation ----------
-	bitset<3> categToDo(string("000"));
+	bitset<2> categToDo(string("10"));
 	if(sReqCateg.find("all") != string::npos) categToDo.set();  //All bits to 1
 	if(sReqCateg.find("cut") != string::npos) categToDo.set(0); //set to 1
-	if(sReqCateg.find("jet") != string::npos) categToDo.set(1);	
-	if(sReqCateg.find("lep") != string::npos) categToDo.set(2);
-	if(sReqCateg == string(""))								categToDo.set(1); //Default
+	if(sReqCateg.find("var") != string::npos) categToDo.set(1);
 	
 	bitset<4> typeToDo;	
 	cout<<"sReqType = \""<<sReqType<<"\"\t";
 	if(sReqType == string("")){ 	//Default
 		cout<<"Setting default\n";
 		//typeToDo.set(0);
-		typeToDo.set(1); //sig and bkg same canvas (stacked)
-		//typeToDo.set(2);
-		typeToDo.set(3); //sig/sqrt(bkg) (integrals)
+		//typeToDo.set(1); //sig and bkg same canvas (stacked)
+		typeToDo.set(2);   //stack + ratio
+		//typeToDo.set(3); //sig/sqrt(bkg) (integrals)
 	}
 	else{
 		cout<<'\n';
-		if(sReqType.find('0') != string::npos) typeToDo.set(0); //sig and bkg same canvas (no stack)
-		if(sReqType.find('1') != string::npos) typeToDo.set(1); //sig and bkg same canvas (stacked)
-		if(sReqType.find('2') != string::npos) typeToDo.set(2); //Integral graps same canvas (stack)
+		if(sReqType.find('0') != string::npos) typeToDo.set(0); //sig and bkg no stack
+		if(sReqType.find('1') != string::npos) typeToDo.set(1); //Stack
+		if(sReqType.find('2') != string::npos) typeToDo.set(2); //Stack + data + ratio
 		if(sReqType.find('3') != string::npos) typeToDo.set(3); //sig/sqrt(bkg) (integrals)
 	}
 	
@@ -214,48 +229,34 @@ void VZZGraphs(string sReqCateg = string(""), string sReqType = "", string reqGr
 	TFile* outFile = nullptr; //Dummy file, created to be the currente dir of the histograms, so that I can close the source files
 	outFile = TFile::Open(path + "graphs.root", "RECREATE");
 	
+	cout<<'\n';
+	
 //################################	EVENT PLOTS ################################
 	if(categToDo.test(0)){
 		
 		//	#####	Struct creation #####
-		GNames theNames("Cuts", signals, backgrounds);
-		MyGraphs<TH1F> theGraphs = *buildMyGraphs(theNames, signalFiles, backgroundFiles);
+		GNames theNames("AAA cuts w", "Cuts", signals, backgrounds);
+		MyGraphs<TH1F> theGraphs = *buildMyGraphs(theNames, signalFiles, backgroundFiles, dataFile);
 		//	#####	--------------- #####
 			
 		compareCutGraphs(theGraphs, theNames);	//Integration makes no sense here
 	}
 	
-//################################	JET PLOTS ################################
-	if(categToDo.test(1)){
-		foreach(TString& graphName, jetPlots){
-			#ifdef TEST_MODE
-			cout<<"\nJet plots: looping over \""<<graphName<<"\"\n";
-			#endif
-			//if(! doThisGraphName(graphName, reqGrName) ) continue;
-			
-			//	#####	Struct creation #####
-			GNames theNames(graphName, signals, backgrounds);
-			MyGraphs<TH1F> theGraphs = *buildMyGraphs(theNames, signalFiles, backgroundFiles);
-			//	#####	--------------- #####
-			
-			newPrintGraph(theGraphs, theNames, typeToDo);
-		}
-	}
 	
-//################################	LEPTON PLOTS ################################
-	if(categToDo.test(2)){
-		foreach(TString& graphName, leptonPlots){
+//################################	VARIABLE PLOTS ################################
+	if(categToDo.test(1)){
+		for(std::pair<TString, TString> nameTitle : variablePlots){
 			#ifdef TEST_MODE
-			cout<<"\nLepton plots: looping over \""<<graphName<<"\"\n";
+			cout<<"Varible plots: looping over \""<<nameTitle.first<<"\"\n";
 			#endif
-			if(! doThisGraphName(graphName, reqGrName) ) continue;
+			if(! doThisGraphName(nameTitle.first, reqGrName) ) continue;
 			
 			//	#####	Struct creation #####
-			GNames theNames(graphName, signals, backgrounds);
-			MyGraphs<TH1F> theGraphs = *buildMyGraphs(theNames, signalFiles, backgroundFiles);
+			GNames theNames(nameTitle.first, nameTitle.second, signals, backgrounds);
+			MyGraphs<TH1F> theGraphs = *buildMyGraphs(theNames, signalFiles, backgroundFiles, dataFile);
 			//	#####	--------------- #####
 			
-			newPrintGraph(theGraphs, theNames, typeToDo);
+			printGraphs(theGraphs, theNames, typeToDo);
 			/*
 			if(graphName == "mll"){
 				int finalCut = (int)(420.)/10;
@@ -277,6 +278,7 @@ void VZZGraphs(string sReqCateg = string(""), string sReqType = "", string reqGr
 				cout<<"\nTotal Background: "<<totBkg<<" +- "<<sqrt(varBkg);
 			}*/
 		}
+		cout<<'\n';
 	}
 	
 	cout<<'\n';
@@ -311,16 +313,14 @@ TFile* openRootFile(const TString& path, const TString& name){
 
 template <class TH1Z = TH1F>
 TH1Z* openGraph(TFile* file, const TString& graphName, const TString& fileName){
-	if(file == nullptr) return nullptr;
-	TH1Z* hSig = (TH1Z*)file->Get(graphName); 
-	if(hSig == nullptr) 
-		cout<<"Could not open \""<<graphName<<"\" from \""<<fileName<<".root"<<"\"\n";
-	else{
-		#ifdef TEST_MODE
-		cout<<"Retrieved \""<<graphName<<"\" from \""<<fileName<<".root"<<"\"\n";
-		#endif
-	}
-	return hSig;
+	if(file == nullptr){
+	  cout<<"Error in openGraph: TFile is null.\n";
+	  return nullptr;
+  }
+	TH1Z* hist = (TH1Z*)file->Get(graphName);
+	if(hist == nullptr) 
+		cout<<Form("Error in openGraph: Could not open \"%s\" from \"%s\"\n", graphName, file->GetName());
+	return hist;
 }
 
 
@@ -328,31 +328,34 @@ TH1Z* openGraph(TFile* file, const TString& graphName, const TString& fileName){
 
 TH1F* integralGraph(const TH1F* const origin){
 	if(origin == nullptr){
-		cout<<" \tError: nullptr in integralGraph \t";
+		cout<<" \tError in integralGraph: nullptr";
 		return nullptr;
 	}
 	TString name = origin->GetName();
 	TH1F* newGraph = (TH1F*)origin->Clone((name+" I").Data());
 	int nbins = origin->GetNbinsX();
 	double error = 0.;
-	double total = origin->IntegralAndError(-1,-1,error);
-	for(int i = 1; i <= nbins; i++)
-		newGraph->SetBinContent(i, origin->Integral(i,-1));
-		
-	//cout<<"Integral: "<<total<<" +- "<<error<<'\n';
+	for(int i = 1; i <= nbins; i++){
+		newGraph->SetBinContent(i, origin->IntegralAndError(i,-1, error));
+		newGraph->SetBinError(i, error);
+	}
+	
 	return newGraph;
 }
 
 TH1F* reverseIntegrGraph(const TH1F* const origin){
 	if(origin == nullptr){
-		cout<<" \tError: nullptr in reverseIntegrGraph \t";
+		cout<<" \tError: nullptr in reverseIntegrGraph";
 		return nullptr;
 	}
 	TString name = origin->GetName();
 	TH1F* newGraph = (TH1F*)origin->Clone((name+" rI").Data());
 	int nbins = origin->GetNbinsX();
-	for(int i = nbins; i >= 1; i--)
-		newGraph->SetBinContent(i, origin->Integral(1, i));
+	double error = 0.;
+	for(int i = nbins; i >= 1; i--){
+		newGraph->SetBinContent(i, origin->IntegralAndError(1, i, error));
+		newGraph->SetBinError(i, error);
+	}
 	
 	return newGraph;
 }
@@ -366,8 +369,19 @@ TH1F* sqrtGraph(const TH1F* const origin){
 	TH1F* newGraph = (TH1F*)origin->Clone((name+" Sqrt").Data());
 	int nbins = origin->GetNbinsX();
 	for(int i = 1; i <= nbins; i++){
-		float s = sqrt(newGraph->GetBinContent(i));
+		float x = newGraph->GetBinContent(i);
+		float s, e;
+		if(x < 0){
+			cout << Form(" \tWarn in sqrtGraph: bin %d is < 0 (%.2g) \t", i, x);
+			s = 0;
+			e = 100;
+		}
+		else{
+			s = sqrt(x);
+			e = newGraph->GetBinError(i)/(2*s);
+		}
 		newGraph->SetBinContent(i, s);
+		newGraph->SetBinError(i, e);
 	}
 	return newGraph;
 }
@@ -378,11 +392,10 @@ bool doThisGraphName(TString graphName, TString reqGrName){
 	reqGrName.ToLower();
 	std::string SgraphName = std::string(graphName.Data());
 	std::string SreqGrName = std::string(reqGrName.Data());
-	if(SgraphName.find(F_PATTERN) == string::npos && SgraphName.find(R_PATTERN) == string::npos){
-		//cout<<Form("Pattern not found, not doing \"%s\"\n", graphName.Data());
-		return false;
+	if(SgraphName.find(F_PATTERN) == string::npos && SgraphName.find(R_PATTERN) ==string::npos){
+		//return false;
 	}
-	cout<<Form("----- doing \"%s\" -----\n", graphName.Data());
+	
 	/*cout<<"\nSgraphName = \""<<SgraphName<<"\" \tSreqGrName = \""<<SreqGrName<<'\"';
 	cout<<"\nSreqGrName != string(\"\") "<<(SreqGrName != string(""));
 	cout<<"\nSgraphName.find(SreqGrName) == string::npos "<<(SgraphName.find(SreqGrName) == string::npos);
@@ -396,6 +409,7 @@ bool doThisGraphName(TString graphName, TString reqGrName){
 			return false;
 		}
 	} //else cout<<"\nReturning true\n";
+	cout<<Form("----- doing \"%s\" -----\n", graphName.Data());
 	return true;
 }
 
@@ -454,7 +468,7 @@ void cutsScaled(const MyGraphs<TH>& theGraphs, const GNames& names, UInt_t nbins
 	for(size_t i = 0; i < theGraphs.vhBkgs.size(); i++){
 		if(theGraphs.vhBkgs.at(i) == nullptr){
 			cout<<"\n\tError: missing \""<<names.graphName<<"\" from \""<<names.bkgGrNames.at(0)<<'\n';
-			return;
+			continue;//return;
 		}
 		TH* cgNorm = (TH*)(theGraphs.vhBkgs.at(i)->Clone(names.bkgGrNames.at(i)+" norm"));
 		cgNorm->Scale(1./cgNorm->GetBinContent(1));
@@ -470,7 +484,7 @@ void cutsScaled(const MyGraphs<TH>& theGraphs, const GNames& names, UInt_t nbins
 	for(size_t i = 0; i < theGraphs.vhSigs.size(); i++){
 		if(theGraphs.vhSigs.at(i) == nullptr){
 			cout<<"\n\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(0)<<'\n';
-			return;
+			continue;//return;
 		}
 		TH* cgNorm = (TH*)(theGraphs.vhSigs.at(i)->Clone(names.sigGrNames.at(i)+" norm"));
 		cgNorm->Scale(1./cgNorm->GetBinContent(1));
@@ -562,7 +576,7 @@ void printGraphSame(const MyGraphs<TH>& graphs, const GNames& names){
 			continue;
 		}
 		TH* cg = (TH*)(graphs.vhBkgs.at(i)->Clone(names.bkgGrNames.at(i)));
-		TString newTitle = names.graphName+" nostack;;# Events";
+		TString newTitle = names.graphTitle + ";# Events";
 		newTitle.ReplaceAll(F_PATTERN, "").ReplaceAll(R_PATTERN, "");
 		cg->SetTitle(newTitle);
 		cg->SetLineColor(myColors.at(i + graphs.vhSigs.size()));
@@ -577,7 +591,7 @@ void printGraphSame(const MyGraphs<TH>& graphs, const GNames& names){
 			continue;
 		}
 		TH* cg = (TH*)(graphs.vhSigs.at(i)->Clone(names.sigGrNames.at(i)));
-		TString newTitle = names.graphName+" nostack;;# Events";
+		TString newTitle = names.graphTitle + ";# Events";
 		newTitle.ReplaceAll(F_PATTERN, "").ReplaceAll(R_PATTERN, "");
 		cg->SetTitle(newTitle);
 		cg->SetLineColor(myColors.at(i));
@@ -592,95 +606,104 @@ void printGraphSame(const MyGraphs<TH>& graphs, const GNames& names){
 
 template <class TH>
 void printGraphStack(const MyGraphs<TH>& graphs, const GNames& names){
-	//cout<<"\n----printGraphStack: "<<names.graphName;
+	#ifdef TEST_MODE
+	cout<<"\n-----printGraphStack: "<<names.graphName<<'\n';
+	#endif
 	TCanvas *c1 = new TCanvas(names.graphName+" stack", names.graphName+" stack", 10,0,1280,1024);
-	THStack* stack1 = new THStack(names.graphName+" stack",names.graphName+" stack;;# Events");
-	
-	for(size_t i = 0; i < graphs.vhBkgs.size(); i++){
-		if(graphs.vhBkgs.at(i) == nullptr){
-			cout<<"\n\tError: missing \""<<names.graphName<<"\" from \""<<names.bkgGrNames.at(i)<<'\n';
-			continue;
-		}
-		TH* cg = (TH*)(graphs.vhBkgs.at(i)->Clone(names.bkgGrNames.at(i)));
-		//vhBkgCs.push_back(cg);
-		cg->SetTitle(names.bkgGrNames.at(i));
-		//cg->SetTitle(Form("%s;%s", names.bkgGrNames.at(i).Data(), "|m_{jj} - m_{Z}| [GeV/c^{2}]"));
-		cg->SetLineColor(myColors.at(i + graphs.vhSigs.size()));
-		cg->SetFillColor(myFillColors.at(i + graphs.vhSigs.size()));
-		stack1->Add(cg);
-		//cout<<"\nAdded: \""<<names.bkgGrNames.at(i)<<'\"';
-	}
+	THStack* stack1 = new THStack(names.graphName+" stack", names.graphTitle+";Events");
 	
 	for(size_t i = 0; i < graphs.vhSigs.size(); i++){
 		if(graphs.vhSigs.at(i) == nullptr){
-			cout<<"\n\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(i)<<'\n';
+			cout<<"\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(i)<<'\n';
 			continue;
 		}
 		TH* cg = (TH*)(graphs.vhSigs.at(i)->Clone(names.sigGrNames.at(i)));
+		cg->Scale(_FLIP);
 		cg->SetTitle(names.sigGrNames.at(i));
-		//cg->SetTitle(Form("%s;%s", names.sigGrNames.at(i).Data(), "|m_{jj} - m_{Z}| [GeV/c^{2}]"));
 		cg->SetLineColor(myColors.at(i));
 		cg->SetFillColor(myFillColors.at(i));
 		stack1->Add(cg);
 	}
 	
-	TString newTitle = stack1->GetTitle();
-	newTitle.ReplaceAll(F_PATTERN, "").ReplaceAll(R_PATTERN, "");
-	//stack1->SetTitle(Form("%s;%s", newTitle.Data(), "|m_{jj} - m_{Z}| [GeV/c^{2}]"));
-	stack1->SetTitle(newTitle);
-	//cout<<"\nstack1->GetXaxis(): "<<stack1->GetXaxis()<<'\n';
-	stack1->Draw("HIST");
-	c1->BuildLegend(0.75,0.68,0.98,0.95);	//It's a kind of magic
-}
-
-template <class TH>
-void printGraphIntegr(const MyGraphs<TH>& graphs, const GNames& names){
-	#ifdef TEST_MODE
-	cout<<"\n----printGraphIntegr: "<<names.graphName;
-	#endif
-	TCanvas *cI = new TCanvas(names.graphName+" Integral", names.graphName+" Integral", 10,0,1280,1024);
-	THStack* stackIS = new THStack(names.graphName+" Integral",names.graphName+" Integral;;# Events");
-	
-	for(size_t i = 0; i < graphs.vhBkgInt.size(); i++){
-		if(graphs.vhBkgInt.at(i) == nullptr){
-			cout<<"\n\tError: missing \""<<names.graphName<<"\" from \""<<names.bkgGrNames.at(i)<<'\n';
+	for(size_t i = 0; i < graphs.vhBkgs.size(); i++){
+		if(graphs.vhBkgs.at(i) == nullptr){
+			cout<<"\tError: missing \""<<names.graphName<<"\" from \""<<names.bkgGrNames.at(i)<<'\n';
 			continue;
 		}
-		TH* cg = (TH*)( graphs.vhBkgInt.at(i)->Clone(names.bkgGrNames.at(i)+" Integral") ); //Copy integral of background
+		TH* cg = (TH*)(graphs.vhBkgs.at(i)->Clone(names.bkgGrNames.at(i)));
+		cg->Scale(_FLIP);
 		cg->SetTitle(names.bkgGrNames.at(i));
 		cg->SetLineColor(myColors.at(i + graphs.vhSigs.size()));
 		cg->SetFillColor(myFillColors.at(i + graphs.vhSigs.size()));
-		stackIS->Add(cg);
-		#ifdef TEST_MODE
-		cout<<'\n'<<names.bkgGrNames.at(i)<<" =\r\t\t";
-		cout<<cg->GetBinContent(1)<<"  \t+- "<<cg->GetBinError(1);
-		//cout<<"\nAdded: \""<<names.bkgGrNames.at(i)<<'\"';
-		#endif
+		stack1->Add(cg);
 	}
 	
-	for(size_t i = 0; i < graphs.vhSigInt.size(); i++){
-		if(graphs.vhSigInt.at(i) == nullptr){
-			cout<<"\n\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(i)<<'\n';
+	stack1->SetMaximum(stack1->GetMaximum() *1.2);
+	stack1->Draw("HIST");
+	
+	c1->BuildLegend(0.65,0.70,0.88,0.88);	//It's a kind of magic
+}
+
+template <class TH>
+void printGraphRatio(const MyGraphs<TH>& graphs, const GNames& names){
+	#ifdef TEST_MODE
+	cout<<"-----printGraphRatio: "<<names.graphName<<'\n';
+	#endif
+	TCanvas *c1 = new TCanvas(names.graphName+" ratio", names.graphName+" ratio", 10,0,1280,1024);
+	THStack* stack1 = new THStack(names.graphName+" stack", names.graphTitle+";Events");
+	
+	for(size_t i = 0; i < graphs.vhSigs.size(); i++){
+		if(graphs.vhSigs.at(i) == nullptr){
+			cout<<"\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(i)<<'\n';
 			continue;
 		}
-		TH* cg = (TH*)( graphs.vhSigInt.at(i)->Clone(names.sigGrNames.at(i)+" Integral") ); //Copy integral of background
+		TH* cg = (TH*)(graphs.vhSigs.at(i)->Clone(names.sigGrNames.at(i)));
+		cg->Scale(_FLIP);
 		cg->SetTitle(names.sigGrNames.at(i));
 		cg->SetLineColor(myColors.at(i));
 		cg->SetFillColor(myFillColors.at(i));
-		stackIS->Add(cg);
-		#ifdef TEST_MODE
-		cout<<'\n'<<names.sigGrNames.at(i)<<" =\r\t\t";
-		cout<<cg->GetBinContent(1)<<"  \t+- "<<cg->GetBinError(1);
-		//cout<<"\nAdded: \""<<names.bkgGrNames.at(i)<<'\"';
-		#endif
+		stack1->Add(cg);
 	}
 	
-	cI->cd();
-	TString newName = stackIS->GetTitle();
-	newName.ReplaceAll(F_PATTERN, "").ReplaceAll(R_PATTERN, "");
-	stackIS->SetTitle(newName);
-	stackIS->Draw("HIST");
-	cI->BuildLegend(0.75,0.68,0.98,0.95);
+	for(size_t i = 0; i < graphs.vhBkgs.size(); i++){
+		if(graphs.vhBkgs.at(i) == nullptr){
+			cout<<"\tError: missing \""<<names.graphName<<"\" from \""<<names.bkgGrNames.at(i)<<'\n';
+			continue;
+		}
+		TH* cg = (TH*)(graphs.vhBkgs.at(i)->Clone(names.bkgGrNames.at(i)));
+		cg->Scale(_FLIP);
+		cg->SetTitle(names.bkgGrNames.at(i));
+		cg->SetLineColor(myColors.at(i + graphs.vhSigs.size()));
+		cg->SetFillColor(myFillColors.at(i + graphs.vhSigs.size()));
+		stack1->Add(cg);
+	}
+	
+	graphs.data->Scale(_FLIP);
+	graphs.data->SetTitle("data");
+	graphs.data->SetMarkerStyle(kFullCircle);
+	graphs.data->SetMarkerColor(kBlack);
+	graphs.data->SetLineColor(kBlack);
+	
+	stack1->SetMaximum(max(stack1->GetMaximum(), graphs.data->GetMaximum()) *1.2);
+	
+	//cout<<"sum name "<<sum->GetName()<<"   "<<sum->GetTitle()<<'\n';
+	TH1F* sum = (TH1F*)stack1->GetStack()->Last()->Clone("sum");
+	TRatioPlot* ratio = new TRatioPlot(graphs.data, sum); //"divsym"
+	ratio->Draw();
+	ratio->GetLowerRefGraph()->SetMarkerStyle(kFullCircle);
+	ratio->GetLowerRefGraph()->SetMarkerColor(kBlack);
+	ratio->GetLowerRefGraph()->SetLineColor(kBlack);
+	//ratio->GetLowerRefGraph()->GetYaxis()->SetNdivisions(6, 12, 60, true);
+	//ratio->GetUpperPad()->SetLogy();
+	ratio->GetLowerRefGraph()->SetMaximum(2.5);
+	ratio->GetLowerRefGraph()->SetMinimum(0.);
+	
+	ratio -> GetUpperPad()->Clear();
+	ratio -> GetUpperPad()->cd();
+	stack1->Draw("HIST A");
+	graphs.data->Draw("SAME");
+	ratio -> GetUpperPad()->BuildLegend(0.65,0.60,0.88,0.88);	//It's a kind of magic
+	//ratio -> GetUpperPad()->Update();
 }
 
 template <class TH>
@@ -758,9 +781,9 @@ void printGraphSqrt(const MyGraphs<TH>& graphs, const GNames& names){
 
 // ########################## All the graphs in one place ####################################
 template <size_t N, class TH=TH1F>
-void newPrintGraph(const MyGraphs<TH>& theGraphs, const GNames& theNames, const bitset<N>& typeToDo){
+void printGraphs(const MyGraphs<TH>& theGraphs, const GNames& theNames, const bitset<N>& typeToDo){
 	#ifdef TEST_MODE
-	cout<<"\n-----newPrintGraph for \""<<theNames.graphName<<"\"\n";
+	cout<<"-----printGraphs for \""<<theNames.graphName<<"\"\n";
 	#endif
 	if(typeToDo.test(0))
 		printGraphSame(theGraphs, theNames);
@@ -769,45 +792,39 @@ void newPrintGraph(const MyGraphs<TH>& theGraphs, const GNames& theNames, const 
 		printGraphStack(theGraphs, theNames);
 	
 	if(typeToDo.test(2))
-		printGraphIntegr(theGraphs,theNames);
+		printGraphRatio(theGraphs,theNames);
 		
 	if(typeToDo.test(3))
 		printGraphSqrt(theGraphs,theNames);
 	#ifdef TEST_MODE
-	cout<<"\n-----returning from printing \""<<theNames.graphName<<"\"\n";
+	cout<<"-----returning from printing \""<<theNames.graphName<<"\"\n";
 	#endif
 	return;
 }
 
 template <class TH = TH1F>
-MyGraphs<TH>* buildMyGraphs(const GNames& names, vector<TFile*>& signalFiles, vector<TFile*>& backgroundFiles){
+MyGraphs<TH>* buildMyGraphs(const GNames& names, vector<TFile*>& signalFiles, vector<TFile*>& backgroundFiles, TFile* dataFile){
 	#ifdef TEST_MODE
-	cout<<"\n-----buildMyGraphs for \""<<names.graphName<<"\"\n";
+	cout<<"-----buildMyGraphs for \""<<names.graphName<<"\"\n";
 	#endif
 	vector<TH*> vhSignals;
 	vector<TH*> vhSigIntegr;
 	vector<TH*> vhBackgrounds;
 	vector<TH*> vhBackgrIntegr;
-	//bool isCuts = names.graphName.Contains("Cuts");
-	bool isReverse = names.graphName.Contains(R_PATTERN);// || names.graphName.Contains("dM");
+	TH* data;
+	
+	bool isReverse = names.graphName.Contains(R_PATTERN);
 	TString strippedGrName(names.graphName);//graphName will be overridden at the end of the func
 	strippedGrName.ReplaceAll(F_PATTERN, "").ReplaceAll(R_PATTERN, "");  // Replacing PATTERNS
 	
 	for(size_t i = 0; i < signalFiles.size(); i++){
-		TH1F* pippo = openGraph(signalFiles.at(i), names.graphName, names.sigGrNames.at(i));
+		TH* pippo = openGraph(signalFiles.at(i), names.graphName, names.sigGrNames.at(i));
 		//cout<<"\tSignal \""<<names.sigGrNames.at(i)<<"\" --> "<<(pippo!=nullptr)<<"\n";
 		if(pippo == nullptr){
-			cout<<"\n\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(i)<<"\"\n";
-			exit(1);
+			cout<<"\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(i)<<"\"\n";
+			continue;//return
 		}
-		TH1F* pippoC = (TH1F*)pippo->Clone(strippedGrName);
-		/*if(isCuts){ //TODO: clear
-			cout<<'\t';
-			int nbins = pippoC->GetNbinsX();
-			for(int k=1; k<= nbins; ++k)
-				cout<<pippoC->GetXaxis()->GetBinLabel(k)<<'\t';
-			cout<<'\n';
-		}*/
+		TH* pippoC = (TH*) ((TH1*)pippo->Clone(strippedGrName))->Rebin(5);
 		vhSignals.push_back( pippoC );
 		if(isReverse)
 			vhSigIntegr.push_back( reverseIntegrGraph(pippoC) );
@@ -816,30 +833,27 @@ MyGraphs<TH>* buildMyGraphs(const GNames& names, vector<TFile*>& signalFiles, ve
 	}
 	
 	for(size_t i = 0; i < backgroundFiles.size(); i++){
-		TH1F* pippo = openGraph(backgroundFiles.at(i), names.graphName, names.bkgGrNames.at(i));
+		TH* pippo = openGraph(backgroundFiles.at(i), names.graphName, names.bkgGrNames.at(i));
 		//cout<<"\tBackground \""<<names.bkgGrNames.at(i)<<"\" --> "<<(pippo!=nullptr)<<"\n";
 		if(pippo == nullptr){
 			cout<<"\n\tError: missing \""<<names.graphName<<"\" from \""<<names.bkgGrNames.at(i)<<"\"\n";
-			exit(1);
+			continue;//return;
 		}
-		TH1F* pippoC = (TH1F*)pippo->Clone(strippedGrName);
-		/*if(isCuts){ //TODO: clear
-			cout<<'\t';
-			int nbins = pippoC->GetNbinsX();
-			for(int k=1; k<= nbins; ++k)
-				cout<<pippoC->GetXaxis()->GetBinLabel(k)<<'\t';
-			cout<<'\n';
-		}*/
+		TH* pippoC = (TH*) ((TH1*) pippo->Clone(strippedGrName))->Rebin(5);
 		vhBackgrounds.push_back( pippoC );
 		if(isReverse)
 			vhBackgrIntegr.push_back( reverseIntegrGraph(pippoC) );
 		else
 			vhBackgrIntegr.push_back( integralGraph(pippoC) );
 	}
+	
+	data = (TH*) openGraph(dataFile, names.graphName, "data");
+	if(data) data->Rebin(5);
+	
 	#ifdef TEST_MODE
 	cout<<"-----Returning from \""<<names.graphName<<"\"\n";
 	#endif
 	//names.graphName = strippedGrName;
-	return new MyGraphs<TH>(vhSignals, vhBackgrounds, vhSigIntegr, vhBackgrIntegr);
+	return new MyGraphs<TH>(vhSignals, vhBackgrounds, vhSigIntegr, vhBackgrIntegr, data);
 }
 
