@@ -159,7 +159,8 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
 					      , (addLHEKinematics_ ? LHEHandler::doHiggsKinematics : LHEHandler::noKinematics)
 					      , setup_ // means year
 					      , LHEHandler::tryNNPDF30
-					      , LHEHandler::tryNLO);
+					      , LHEHandler::tryNLO
+					      , LHEHandler::CMS_Run2_UL);
   }
    
   initTree();
