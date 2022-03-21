@@ -16,15 +16,18 @@ def myformatter(number):
     if(number+1 < 1e-5 or number < 1e-5): return "{:.0f}".format(number)
     else:                                 return "{:.3e}".format(number)
 
-for year in [2016]: #(2016, 2017, 2018):
+for year in (2016, 2017, 2018):
     samples_file = "{:s}/src/VVXAnalysis/Producers/python/samples_{:d}UL_MC.csv".format(environ['CMSSW_BASE'], year)
     print("Year", year, "\tsamples_file:", samples_file)
     with open(samples_file) as f:
         mycsv = pd.read_csv(f, sep=',')
-    #mycsv = mycsv[ [ind.replace('#','').replace(' ','') != '' for ind in mycsv['identifier']] ]
+    
+    # Sanitize input
+    # mycsv = mycsv[ [ind.replace('#','').replace(' ','') != '' for ind in mycsv['identifier']] ]
     mycsv = mycsv[ [type(dataset) == str for dataset in mycsv['dataset']] ]
     mycsv = mycsv[ [not any(s in dataset for s in ('?', '-missing-')) for dataset in mycsv['dataset']] ]
     
+    # Cache results to file to avoid time-expensive queries to McM
     xsec_storage_file = "xsections{:d}.json".format(year)
     if path.exists(xsec_storage_file):
         with open(xsec_storage_file) as f:
@@ -32,7 +35,9 @@ for year in [2016]: #(2016, 2017, 2018):
     else:
         XsecDict = {}
     
-    toUpdate = False
+    toUpdate = False  # Do we have to update cached results?
+    print("{:23.23s}\t{:8s}\t{:8s}\t{:8s}\t{:8s}\t{:s}".format("SAMPLE", "CSV", "MCM", "INTERNAL", "EXTERNAL", "STATUS"))
+    # Loop on the rows of the CSV
     for ind, series in mycsv.iterrows():
         dataset = series['dataset']
         sample = series['identifier'].strip('#').strip(' ')
@@ -61,20 +66,15 @@ for year in [2016]: #(2016, 2017, 2018):
             XsecDict[dataset]['csv'] = csv
             toUpdate = True
         
-        #if(isnan(csv) or abs(csv-mcm)     /max(csv,mcm,1)      > 0.1): print(sample.ljust(16), " \tmcm: ", mcm     , "\tcsv: ",csv, sep='')
-        #if(isnan(csv) or abs(csv-internal)/max(csv,internal,1) > 0.1): print(sample.ljust(16), " \tint: ", internal, "\tcsv: ",csv, sep='')
-        #if(isnan(csv) or abs(csv-external)/max(csv,external,1) > 0.1): print(sample.ljust(16), " \text: ", internal, "\tcsv: ",csv, sep='')
-        
+        # Presentation of data
         if( isnan(csv) or csv == -1 or abs(csv-mcm) / max(csv,mcm,1) > 0.1 or abs(csv-internal)/max(csv,internal,1) > 0.1 or abs(csv-external)/max(csv,external,1) > 0.1 ):
-            print("{:23.23s}\tmcm: {:8s}\tcsv: {:8s}".format(sample, myformatter(mcm     ), myformatter(csv)))
-            print("{:23.23s}\tint: {:8s}\tcsv: {:8s}".format(sample, myformatter(internal), myformatter(csv)))
-            print("{:23.23s}\text: {:8s}\tcsv: {:8s}".format(sample, myformatter(external), myformatter(csv)))
+            sample_status = "PROBLEM"
         else:
-            print("{:23.23s}\tcsv: {:8s}".format(sample, myformatter(csv)))
+            sample_status = "OK"
         
-        print('-'*50)
+        print("{:23.23s}\t{:8s}\t{:8s}\t{:8s}\t{:8s}\t{:s}".format(sample, myformatter(csv), myformatter(mcm), myformatter(internal), myformatter(external), sample_status))
         
-    print()
+    print()  # end of loop on one year
     
     if(toUpdate):
         with open(xsec_storage_file, "w") as f:
