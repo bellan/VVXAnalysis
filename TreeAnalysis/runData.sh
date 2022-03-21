@@ -8,25 +8,24 @@
 
 
 # ~~~~~ Setting options
-prefixcsvfile="-c ../Producers/python/samples_"
+prefixcsvfile="../Producers/python/samples_"
 suffixcsvfile="_Data.csv"
 haddOpt="-k -f -j $(grep processor /proc/cpuinfo | wc -l)"
 rmOpt="-r -f"
-
+years="2016"
+regions="CR110"
 
 # ~~~~~ Analysis on data
 echo "--- Analyses on Data ---"
-echo "  " 
+echo "  "
 
-for year in 2016 2017 2018 ; do
-		# csv file
-		csvfile=$prefixcsvfile$year$suffixcsvfile
-		
- 		for reg in SR CR2P2F CR3P1F ; do    				
-				python/run.py ZZjjAnalyzer data -y $year -r $reg $csvfile
- 		done
+for year in $years ; do
+    # csv file
+    csvfile=$prefixcsvfile${year}UL$suffixcsvfile
     
- 		python/run.py WZAnalyzer data -y $year -r SR3L $csvfile
+    for reg in $regions ; do				
+	./python/run.py VVGammaAnalyzer data -y $year -r $reg -c $csvfile
+    done
 done
 
 
