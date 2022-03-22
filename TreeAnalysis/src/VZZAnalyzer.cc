@@ -378,8 +378,7 @@ void VZZAnalyzer::recSignalGraphs(){
 	TLorentzVector Z2p4(ZZ->second().p4());
 	theHistograms->fill("Rec: pt Had_f_", "Rec: Had pt;pt [GeV/c]", 25,0.,500.,candp4.Pt(), theWeight);
 	float refinedM = getRefinedMass(*candClosest);
-	float minDM = std::min( fabs(refinedM-phys::ZMASS), fabs(refinedM-phys::WMASS) );
-	theHistograms->fill("Rec: minDM Had_r_", "Rec: minDM Had;#DeltaM [GeV/c^{2}]", 30,0.,30., minDM, theWeight);
+	theHistograms->fill("Rec: minDM Had_r_", "Rec: minDM Had;#DeltaM [GeV/c^{2}]", 30,0.,30., physmath::minDM(refinedM), theWeight);
 	
 	// Angles
 	float ang0 = Z1p4.Angle(Z2p4.Vect());
@@ -2179,7 +2178,7 @@ const P* VZZAnalyzer::findBestVFromSing(std::vector<P>* js){
 	const P* thisCandidate = nullptr;
 	auto it_best = std::min_element(js->begin(), js->end(), Mass2Comparator(phys::WMASS, phys::ZMASS));
 		
-	if(VZZAnalyzer::minDM(getRefinedMass(*it_best)) < 30.){
+	if(physmath::minDM(getRefinedMass(*it_best)) < 30.){
 		thisCandidate = &(*it_best);
 	}
 	
@@ -2361,7 +2360,7 @@ vector<double>* VZZAnalyzer::getAK4features(const Boson<Jet>& jj){
 	buffer->push_back(jj.pt());
 	buffer->push_back(d0.pt() + d1.pt());
 	buffer->push_back(jj.mass());
-	buffer->push_back(minDM(jj.mass()));     // 5
+	buffer->push_back(physmath::minDM(jj.mass()));     // 5
 	
 	//Still not included
 	buffer->push_back(d0.mass());
@@ -2391,7 +2390,7 @@ vector<double>* VZZAnalyzer::getAK8features(const Jet& j){
 	
 	buffer->push_back(j.pt());
 	buffer->push_back(j.chosenAlgoMass());  //softDropMass_
-	buffer->push_back(minDM(j.chosenAlgoMass()));
+	buffer->push_back(physmath::minDM(j.chosenAlgoMass()));
 	buffer->push_back(j.corrPrunedMass());
 	buffer->push_back(j.prunedMass());      // 5
 	

@@ -34,7 +34,7 @@ public:
 		genWlepCandidates_ = new std::vector<phys::Boson<phys::Particle>>;
 		genZhadCandidates_ = new std::vector<phys::Boson<phys::Particle>>;
 		genWhadCandidates_ = new std::vector<phys::Boson<phys::Particle>>;
-		
+		kinPhotons_  = new std::vector<phys::Photon>;
 		goodPhotons_ = new std::vector<phys::Photon>;
   }
 
@@ -49,6 +49,7 @@ public:
 		delete genZhadCandidates_;
 		delete genWhadCandidates_;
 		
+		delete kinPhotons_;
 		delete goodPhotons_;
 		
 		//delete photonSFhist;
@@ -67,6 +68,7 @@ public:
  private:
  	
  	// Photons with pt > 20 (already in ntuples), at least loose (cut-based) ID
+	std::vector<phys::Photon>* kinPhotons_;
  	std::vector<phys::Photon>* goodPhotons_;
  	
  	// Vectors of gen particles
@@ -90,9 +92,12 @@ public:
  	
  	// Basic histograms
  	void genEventHistos();
+	void baseHistos_cut();
+	//void baseHistos_analyze();
  	
  	// Sub analyses
-	void LeptFakeRate();
+	void LeptonFakeRate();
+	void PhotonFakeRate();
  	void effPhotons(); // uses goodPhotons_ and genPhotons_
  	
  	
