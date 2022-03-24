@@ -18,6 +18,7 @@
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Photon.h"
 #include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
+#include "DataFormats/ProtonReco/interface/ForwardProton.h"
 #include "DataFormats/Common/interface/MergeableCounter.h"
 
 #include <SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h>
@@ -27,6 +28,8 @@
 #include "VVXAnalysis/DataFormats/interface/Jet.h"
 #include "VVXAnalysis/DataFormats/interface/Photon.h"
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
+#include "VVXAnalysis/DataFormats/interface/Proton.h"
+#include "VVXAnalysis/DataFormats/interface/ProtonPair.h"
 #include "VVXAnalysis/DataFormats/interface/DiBoson.h"
 #include "VVXAnalysis/DataFormats/interface/GenEventWeights.h"
 #include "VVXAnalysis/DataFormats/interface/MELA.h"
@@ -78,6 +81,8 @@ class TreePlanter: public edm::EDAnalyzer {
   phys::Jet fill(const pat::Jet &jet) const;
   
   phys::Photon fill(const pat::Photon &ph) const;
+  
+  phys::Proton fill(const reco::ForwardProton &proton) const;
 
   std::vector<phys::Boson<phys::Lepton> > fillLepBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const;
   std::vector<phys::Boson<phys::Jet> >    fillHadBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const;
@@ -147,6 +152,10 @@ class TreePlanter: public edm::EDAnalyzer {
   Int_t           nvtx_;
   
   // ------------------- Objects in the tree ------------------- //
+  
+  //protons
+  std::vector<phys::Proton>                 protons_;
+  
   // all good isolated muons BUT the ones coming from ZZ decay
   std::vector<phys::Lepton>                 muons_;
   // all good isolated electrons BUT the ones coming from ZZ decay
@@ -184,6 +193,7 @@ class TreePlanter: public edm::EDAnalyzer {
   std::vector<phys::Particle>               genJetsAK8_;
 
   // ------------------- Input Labels ------------------- //
+  edm::EDGetTokenT<std::vector<reco::ForwardProton> >   theProtonToken;
   edm::EDGetTokenT<pat::MuonCollection>                 theMuonToken;
   edm::EDGetTokenT<pat::ElectronCollection>             theElectronToken;
   edm::EDGetTokenT<std::vector<pat::Jet> >              theJetToken;

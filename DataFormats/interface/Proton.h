@@ -19,7 +19,6 @@ class TreePlanter;
 
 namespace phys {
   
-  
   typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
   
   class Proton: public TObject {
@@ -30,32 +29,48 @@ namespace phys {
  
     /// Constructor
 
-    Proton(double xi, double x0, double y0, double thetax0, double thetay0, double Ebeam=6500)
+    Proton(float xi=0., float vx=0., float vy=0., float thetaX=0., float thetaY=0., float time=0., double Ebeam=6500)
       : xi_(xi)
-      , x0_(x0)
-      , y0_(y0)
-      , thetax0_(thetax0)
-      , thetay0_(thetay0)
+      , vx_(vx)
+      , vy_(vy)
+      , thetaX_(thetaX)
+      , thetaY_(thetaY)
+      , time_(time)
       , Ebeam_(Ebeam)
       , E_((1-xi)*Ebeam)
       , efficiencySF_(1.)
-      , efficiencySFUnc_(0.)
-      , fakeRateSF_(1.){
+      , efficiencySFUnc_(0.){
     }
     
     
     /// Destructor
     virtual ~Proton(){};
     
+    Double_t xiError_;
+    Double_t vxError_;
+    Double_t vyError_;
+    Double_t thetaXError_;
+    Double_t thetaYError_;
+    Double_t timeError_;
+    
     // Operations
     Double_t xi() const {return xi_;}
-    Double_t x0() const {return x0_;}
-    Double_t y0() const {return y0_;}
-    Double_t thetax0() const {return thetax0_;}
-    Double_t thetay0() const {return thetay0_;}
+    Double_t vx() const {return vx_;}
+    Double_t vy() const {return vy_;}
+    Double_t thetaX() const {return thetaX_;}
+    Double_t thetaY() const {return thetaY_;}
+    Double_t time() const {return time_;}
+    
     Double_t Ebeam() const {return Ebeam_;}
     
-    TLorentzVector p4() const {return TLorentzVector(E_*thetax0_,E_*thetay0_,E_*sqrt(1-thetax0_*thetax0_-thetay0_*thetay0_),E_);}
+    Double_t xiError() const {return xiError_;}
+    Double_t vxError() const {return vxError_;}
+    Double_t vyError() const {return vyError_;}
+    Double_t thetaXError() const {return thetaXError_;}
+    Double_t thetaYError() const {return thetaYError_;}
+    Double_t timeError() const {return timeError_;}
+    
+    TLorentzVector p4()   const {return TLorentzVector(E_*thetaX_,E_*thetaY_,E_*sqrt(1-thetaX_*thetaX_-thetaY_*thetaY_),E_);}
     Double_t eta()        const {return this->p4().Eta();}
     Double_t rapidity()   const {return this->p4().Rapidity();}
     Double_t phi()        const {return this->p4().Phi();}
@@ -64,16 +79,13 @@ namespace phys {
     
     
     
-    bool isValid() const {if(xi_>0.04) return 1;
-                          else return 0;};
+    bool appropriatexi() const {if(xi_>0.04) return 1;
+                                else return 0;}
 
     void setEfficenySFUnc(float effSfUnc ) {efficiencySFUnc_ = effSfUnc;}
     
     Double_t efficiencySF()  const {return efficiencySF_;}
     Double_t efficiencySFUnc()  const {return efficiencySFUnc_;}
-    Double_t fakeRateSF()    const {return fakeRateSF_;}
-    Double_t fakeRateSFUnc() const {return fakeRateSFUnc_;} 
-    Double_t fakeRateSFVar() const {return fakeRateSFUnc()*fakeRateSFUnc();}
     Bool_t   passFullSel() const {return true;}
     
 
@@ -81,17 +93,21 @@ namespace phys {
  
     //kinematic variables after scattering
     Double_t xi_;
+    Double_t vx_;
+    Double_t vy_;
+    Double_t thetaX_;
+    Double_t thetaY_;
+    
+    Double_t time_;
+    
     Double_t E_;
-    Double_t x0_;
-    Double_t y0_;
-    Double_t thetax0_;
-    Double_t thetay0_;
     Double_t Ebeam_;
     
     Double_t efficiencySF_;
     Double_t efficiencySFUnc_;
-    Double_t fakeRateSF_;
-    Double_t fakeRateSFUnc_;
+    
+    bool valid_fit_;
+ 
     
   public:
 

@@ -25,6 +25,7 @@
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
+#include "DataFormats/ProtonReco/interface/ForwardProton.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/DataFormats/interface/RegionTypes.h"
@@ -70,6 +71,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , postSkimSignalCounter_(0)
   , signalCounter_(0)
   , postSkimSignalEvents_(0)
+  , theProtonToken  (consumes<reco::ForwardProtonCollection>      (config.getParameter<edm::InputTag>("protons")))
   , theMuonToken     (consumes<pat::MuonCollection>                (config.getParameter<edm::InputTag>("muons"    )))
   , theElectronToken (consumes<pat::ElectronCollection>            (config.getParameter<edm::InputTag>("electrons")))
   , theJetToken      (consumes<std::vector<pat::Jet> >             (config.getParameter<edm::InputTag>("jets"     )))
@@ -194,7 +196,8 @@ void TreePlanter::beginJob(){
   theTree->Branch("ZCand"     , &Z_); 
   theTree->Branch("ZZCand"    , &ZZ_); 
   theTree->Branch("ZWCand"    , &ZW_); 
-  theTree->Branch("ZLCand"    , &ZL_); 
+  theTree->Branch("ZLCand"    , &ZL_);
+  theTree->Branch("protons"   , &protons_);
 
   theTree->Branch("genParticles"  , &genParticles_);
   theTree->Branch("genTaus"       , &genTaus_);
@@ -380,6 +383,7 @@ void TreePlanter::initTree(){
   ZZ_        = phys::DiBoson<phys::Lepton  , phys::Lepton>();
   ZL_        = std::pair<phys::Boson<phys::Lepton>, phys::Lepton>();
   ZW_        = phys::DiBoson<phys::Lepton  , phys::Lepton>();
+  protons_   = std::vector<phys::Proton>();
 
   genParticles_ = std::vector<phys::Particle>();
   genTaus_ = std::vector<phys::Particle>();
@@ -597,6 +601,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   edm::Handle<std::vector<pat::Jet> >    jets           ; event.getByToken(theJetToken     ,      jets);
   edm::Handle<std::vector<pat::Jet> >    jetsAK8        ; event.getByToken(theJetAK8Token  ,   jetsAK8);
   edm::Handle<std::vector<pat::Photon> > photons        ; event.getByToken(thePhotonToken  ,   photons);
+  edm::Handle<std::vector<reco::ForwardProton> > protons        ; event.getByToken(theProtonToken  ,   protons);
   //  edm::Handle<edm::View<pat::CompositeCandidate> > Vhad ; event.getByToken(theVhadToken    ,      Vhad);
   edm::Handle<edm::View<pat::CompositeCandidate> > Z    ; event.getByToken(theZToken       ,        Z);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZZ   ; event.getByToken(theZZToken      ,        ZZ);
@@ -942,6 +947,20 @@ phys::Photon TreePlanter::fill(const pat::Photon &photon) const {
 	output.energySigmaPhiDown_ = photon.hasUserFloat("energySigmaPhiDown") ? photon.userFloat("energySigmaPhiDown") : -999.;
 	output.energySigmaRhoUp_ = photon.hasUserFloat("energySigmaRhoUp") ? photon.userFloat("energySigmaRhoUp") : -999.;
 	output.energySigmaRhoDown_ = photon.hasUserFloat("energySigmaRhoDown") ? photon.userFloat("energySigmaRhoDown") : -999.;
+	
+	return output;
+}
+
+phys::Proton TreePlanter::fill(const reco::ForwardProton &proton) const {
+		
+  phys::Proton output(proton.xi(),proton.vx(),proton.vy(),proton.thetaX(),proton.thetaY(),proton.time());
+  output.xiError_    = proton.xiError();
+  output.vxError_    = proton.vxError();
+  output.vyError_    = proton.vyError();
+  output.thetaXError_    = proton.thetaXError();
+  output.thetaYError_    = proton.thetaYError();
+  output.timeError_    = proton.timeError();
+  
 	
 	return output;
 }

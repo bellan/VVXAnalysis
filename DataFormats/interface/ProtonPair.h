@@ -12,28 +12,27 @@
 
 namespace phys {
   
-  template <typename P1, typename P2>
-    class ProtonPair: {
+    class ProtonPair {
     
     friend class ::TreePlanter;
   public:
     /// Constructor
     ProtonPair():
-      , passFullSel_(false)
+       passFullSel_(false)
       {}
       
-  ProtonPair(const Proton<P1>& p1, const Proton<P2>& p2):
-      , daughter0_(p1)
+  ProtonPair(const Proton& p1, const Proton& p2):
+        daughter0_(p1)
       , daughter1_(p2)
       , passFullSel_(false)
       {}
     
 
-    Proton<P1> first()  const {return daughter0_;}
-    Proton<P2> second() const {return daughter1_;}
+    Proton first()  const {return daughter0_;}
+    Proton second() const {return daughter1_;}
 
-    Proton<P1> *firstPtr()  {return &daughter0_;}
-    Proton<P2> *secondPtr() {return &daughter1_;}
+    Proton *firstPtr()  {return &daughter0_;}
+    Proton *secondPtr() {return &daughter1_;}
 
 
     bool passFullSelection() const {return passFullSel_;}
@@ -42,6 +41,9 @@ namespace phys {
     //methods to extract the expected mass and rapidity value of the central system
     Double_t mpp() const {return (daughter0_.Ebeam()+daughter1_.Ebeam())*daughter0_.xi()*daughter1_.xi();}
     Double_t ypp() const {return -0.5*log(daughter0_.xi()/daughter1_.xi());}
+    
+    //method to extract the interaction z position
+    Double_t vz() const {return phys::SPEEDOFLIGHT*(daughter0_.time()-daughter1_.time())/2;}
     
 
   private:
@@ -52,6 +54,6 @@ namespace phys {
     Bool_t  passFullSel_;
 
     ClassDef(ProtonPair, 1) //
-  }
+  };
 }
 #endif
