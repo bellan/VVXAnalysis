@@ -123,6 +123,7 @@ Int_t VVGammaAnalyzer::cut() {
   
   // Basic histos
   baseHistos_cut();
+  PKU_comparison();
   theHistograms->fill("C: n good ph", "n good #gamma | ZZ/WZ exists", 7,-0.5,6.5, goodPhotons_->size(), theWeight);
   
   
@@ -168,44 +169,8 @@ void VVGammaAnalyzer::analyze(){
     theHistograms->fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 6);
   }
   
-  std::string channel("NULL");
-
-  if(theSampleInfo.isMC()){
-    genEventSetup();
-  
-    vector<Particle> genEle, genMuo;
-    for(const Particle& l : *genChLeptons_){
-      if     (abs(l.id()) == 11) genEle.push_back(l);
-      else if(abs(l.id()) == 13) genMuo.push_back(l);
-      else cout<<">>>genLept: "<<l.id()<<'\n';
-    }
-    
-    // if     (genMuo.size() == 2) channel = "mm";
-    // else if(genEle.size() == 2) channel = "ee";
-    // else
-    channel = Form("%lue%lum", genEle.size(), genMuo.size());
-  }
-  
   LeptonFakeRate();
   PhotonFakeRate();
-  
-  // cout<<"channel: "<<channel<<"   Form: "<<Form("%s: N electrons", channel)<<"   Form(c_str): "<<Form("%s: N electrons", channel.c_str())<<'\n';
-  // theHistograms->fill("genEle", "genEle", 5, -0.5, 4.5, genEle.size());
-  // theHistograms->fill("genMuo", "genMuo", 5, -0.5, 4.5, genMuo.size());
-  // theHistograms->fill("genChg", "genChg", 5, -0.5, 4.5, genChLeptons_->size());
-  
-  
-  // electrons
-  theHistograms->fill(Form("POG_electrons_N_%s", channel.c_str()), "# POG electrons", 5,0,5, electrons->size(), 1);
-  for(auto e : *electrons){
-    theHistograms->fill(Form("POG_electrons_pt_%s", channel.c_str()), "p_{t} POG electrons; p_{t}", 100,0.,100., e.pt(), 1);
-  }
-  
-  // muons
-  theHistograms->fill(Form("POG_muons_N_%s", channel.c_str()), "# POG muons", 5,0,5, muons->size(), 1);
-  for(auto mu : *muons){
-    theHistograms->fill(Form("POG_muons_pt_%s"    , channel.c_str()), "p_{t} POG muons; p_{t}"    , 100,0.,100., mu.pt(), 1);
-  }
 	
 	
   // SR: loose photon ID - CR: kin selection && !loose photon ID
@@ -449,19 +414,19 @@ void VVGammaAnalyzer::genEventSetup(){
 
 
 void VVGammaAnalyzer::genEventHistos(){
-  theHistograms->fill("GEN genZlepCandidates_", "# genZlepCandidates_", 4,-0.5,3.5, genZlepCandidates_->size());
-  theHistograms->fill("GEN genWlepCandidates_", "# genWlepCandidates_", 4,-0.5,3.5, genWlepCandidates_->size());
-  theHistograms->fill("GEN genZhadCandidates_", "# genZhadCandidates_", 4,-0.5,3.5, genZhadCandidates_->size());
-  theHistograms->fill("GEN genWhadCandidates_", "# genWhadCandidates_", 4,-0.5,3.5, genWhadCandidates_->size());
+  theHistograms->fill("GEN_genZlepCandidates", "# genZlepCandidates_", 4,-0.5,3.5, genZlepCandidates_->size());
+  theHistograms->fill("GEN_genWlepCandidates", "# genWlepCandidates_", 4,-0.5,3.5, genWlepCandidates_->size());
+  theHistograms->fill("GEN_genZhadCandidates", "# genZhadCandidates_", 4,-0.5,3.5, genZhadCandidates_->size());
+  theHistograms->fill("GEN_genWhadCandidates", "# genWhadCandidates_", 4,-0.5,3.5, genWhadCandidates_->size());
 	
   for(auto v : *genZlepCandidates_)
-    theHistograms->fill("GEN genZlepCandidates_ mass", "mass genZlepCandidates_", 35.,50.,120., v.mass());
+    theHistograms->fill("GEN_genZlepCandidates_mass", "mass genZlepCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass());
   for(auto v : *genWlepCandidates_)
-    theHistograms->fill("GEN genWlepCandidates_ mass", "mass genWlepCandidates_", 35.,50.,120., v.mass());
+    theHistograms->fill("GEN_genWlepCandidates_mass", "mass genWlepCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass());
   for(auto v : *genZhadCandidates_)
-    theHistograms->fill("GEN genZhadCandidates_ mass", "mass genZhadCandidates_", 35.,50.,120., v.mass());
+    theHistograms->fill("GEN_genZhadCandidates_mass", "mass genZhadCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass());
   for(auto v : *genWhadCandidates_)
-    theHistograms->fill("GEN genWhadCandidates_ mass", "mass genWhadCandidates_", 35.,50.,120., v.mass());
+    theHistograms->fill("GEN_genWhadCandidates_mass", "mass genWhadCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass());
 }
 
 
@@ -477,9 +442,18 @@ void VVGammaAnalyzer::baseHistos_cut(){
     if(ph.cutBasedIDTight())  theHistograms->fill("kinPhotons_ID", "Cut Based ID of kinPhotons", 4,-0.5,3.5, 3, theWeight);
   }
   
+  // Leptons
+  auto lead_ele = std::max_element(electrons->begin(), electrons->end(), [](const Lepton& a, const Lepton& b){ return a.pt() < b.pt(); } );
+  auto lead_muo = std::max_element(muons->begin()    , muons->end()    , [](const Lepton& a, const Lepton& b){ return a.pt() < b.pt(); } );
+  if(lead_ele != electrons->end())
+    theHistograms->fill("lead_ele_pt", "Leading electron p_{t}:p_{t} [GeV/c]", 50, 0., 250., lead_ele->pt(), theWeight);
+  if(lead_muo != muons->end())
+    theHistograms->fill("lead_muo_pt", "Leading muoon p_{t}:p_{t} [GeV/c]"   , 50, 0., 250., lead_muo->pt(), theWeight);
+  
+
   // JetsAK8
-  vector<std::pair<const Particle*, const Jet*>> vgenrec = matchGenRec(*genJetsAK8, *jetsAK8);
-  for(auto pair: vgenrec){
+  vector<std::pair<const Particle*, const Jet*>> JetsAK8genrec = matchGenRec(*genJetsAK8, *jetsAK8);
+  for(auto pair: JetsAK8genrec){
     const Particle& gen = * pair.first;
     theHistograms->fill("AK8_gen_pt"  , "AK8 generated;p_{t} [GeV/c]"             , 40,100,500, gen.pt(), theWeight);
     theHistograms->fill("AK8_gen_pt_u", "AK8 generated (unweighted);p_{t} [GeV/c]", 40,100,500, gen.pt());
@@ -487,8 +461,8 @@ void VVGammaAnalyzer::baseHistos_cut(){
     if(! pair.second)
       continue;
     const Jet& rec = * pair.second;
-    theHistograms->fill("AK8_rec_pt"  , "AK8 reconstructed and matched;p_{t} [GeV/c]"             , 40,100,500, rec.pt(), theWeight);
-    theHistograms->fill("AK8_rec_pt_u", "AK8 reconstructed and matched (unweighted);p_{t} [GeV/c]", 40,100,500, rec.pt());
+    theHistograms->fill("AK8_rec_gen_pt"  , "AK8 reconstructed, gen p_{t};p_{t} [GeV/c]"             , 40,100,500, gen.pt(), theWeight);
+    theHistograms->fill("AK8_rec_gen_pt_u", "AK8 reconstructed, gen p_{t} (unweighted);p_{t} [GeV/c]", 40,100,500, gen.pt());
     theHistograms->fill("AK8_resolution_dR"        ,"AK8: #DeltaR(reco,gen)"                   ,40,  0.,0.2,physmath::deltaR(gen, rec)    );
     theHistograms->fill("AK8_resolution_pt"        ,"AK8: pt - genpt;[GeV/c]"                  ,41,-41.,41.,rec.pt()           -gen.pt()  );
     theHistograms->fill("AK8_resolution_corrPruned","AK8: corrPrunedMass - genMass;[GeV/c^{2}]",41,-41.,41.,rec.corrPrunedMass()-gen.mass());
@@ -496,37 +470,69 @@ void VVGammaAnalyzer::baseHistos_cut(){
     theHistograms->fill("AK8_resolution_softDrop"  ,"AK8: softDropMass - genMass;[GeV/c^{2}]"  ,41,-41.,41.,rec.softDropMass() -gen.mass());
     theHistograms->fill("AK8_resolution_mass"      ,"AK8: mass - genMass;[GeV/c^{2}]"          ,41,-41.,41.,rec.mass()         -gen.mass());
   }
-  // std::list<size_t> indices_rec;
-  // for(size_t i = 0; i < jetsAK8->size(); ++i) indices_rec.push_back(i);
   
-  // for(const Particle& gen : *genJetsAK8){
-  //   theHistograms->fill("AK8_gen_pt"  , "AK8 generated;p_{t} [GeV/c]"             , 40,100,500, gen.pt(), theWeight);
-  //   theHistograms->fill("AK8_gen_pt_u", "AK8 generated (unweighted);p_{t} [GeV/c]", 40,100,500, gen.pt());
-  //   for(auto it = indices_rec.begin(); it != indices_rec.end(); ++it){
-  //     const Jet& rec = jetsAK8->at(*it);
-      
-  //     if(physmath::deltaR(gen, rec) > 0.2)
-  // 	continue;
-      
-  //     theHistograms->fill("AK8_rec_pt"  , "AK8 reconstructed and matched;p_{t} [GeV/c]"             , 40,100,500, rec.pt(), theWeight);
-  //     theHistograms->fill("AK8_rec_pt_u", "AK8 reconstructed and matched (unweighted);p_{t} [GeV/c]", 40,100,500, rec.pt());
-  //     theHistograms->fill("AK8_resolution_dR"        , "AK8: #DeltaR(reco,gen)"       , 40,  0.,0.2, physmath::deltaR(gen, rec)       );
-  //     theHistograms->fill("AK8_resolution_pt"        , "AK8: pt - genpt"              , 41,-41.,41., rec.pt()             - gen.pt()  );
-  //     theHistograms->fill("AK8_resolution_corrPruned", "AK8: corrPrunedMass - genMass", 41,-41.,41., rec.corrPrunedMass() - gen.mass());
-  //     theHistograms->fill("AK8_resolution_pruned"    , "AK8: prunedMass - genMass"    , 41,-41.,41., rec.prunedMass()     - gen.mass());
-  //     theHistograms->fill("AK8_resolution_softDrop"  , "AK8: softDropMass - genMass"  , 41,-41.,41., rec.softDropMass()   - gen.mass());
-  //     theHistograms->fill("AK8_resolution_mass"      , "AK8: mass - genMass"          , 41,-41.,41., rec.mass()           - gen.mass());
+  // Jets AK4
+  vector<std::pair<const Particle*, const Jet*>> JetsAK4genrec = matchGenRec(*genJets, *jets);
+  for(auto pair: JetsAK4genrec){
+    const Particle& gen = * pair.first;
+    theHistograms->fill("AK4_gen_pt"  , "AK4 generated;p_{t} [GeV/c]"             , 40,100,500, gen.pt(), theWeight);
+    theHistograms->fill("AK4_gen_pt_u", "AK4 generated (unweighted);p_{t} [GeV/c]", 40,100,500, gen.pt());
+    
+    if(! pair.second)
+      continue;
+    const Jet& rec = * pair.second;
+    theHistograms->fill("AK4_rec_gen_pt"  , "AK4 reconstructed, gen p_{t};p_{t} [GeV/c]"             , 47,30,500, gen.pt(), theWeight);
+    theHistograms->fill("AK4_rec_gen_pt_u", "AK4 reconstructed, gen p_{t} (unweighted);p_{t} [GeV/c]", 47,30,500, gen.pt());
+    theHistograms->fill("AK4_resolution_dR"        ,"AK4: #DeltaR(reco,gen)"                   ,40,  0.,0.2,physmath::deltaR(gen, rec)    );
+    theHistograms->fill("AK4_resolution_pt"        ,"AK4: pt - genpt;[GeV/c]"                  ,41,-20.5,20.5,rec.pt()           -gen.pt()  );
+    theHistograms->fill("AK4_resolution_mass"      ,"AK4: mass - genMass;[GeV/c^{2}]"          ,41,-20.5,20.5,rec.mass()         -gen.mass());
+  }
+}
 
-  //     indices_rec.erase(it);
-  //     break;
-  //   }
-  // }
+
+void VVGammaAnalyzer::PKU_comparison(){
+  std::string channel("??");
+
+  if(theSampleInfo.isMC()){
+    genEventSetup();
+  
+    vector<Particle> genEle, genMuo;
+    for(const Particle& l : *genChLeptons_){
+      if     (abs(l.id()) == 11) genEle.push_back(l);
+      else if(abs(l.id()) == 13) genMuo.push_back(l);
+      else cout<<">>>genLept: "<<l.id()<<'\n';
+    }
+    
+    if     (genMuo.size() == 2) channel = "mm";
+    else if(genEle.size() == 2) channel = "ee";
+    else channel = Form("%lue%lum", genEle.size(), genMuo.size());
+  }
+  
+  std::string title_N( Form("Z #rightarrow %s: Number of %s", channel.c_str(), "%s") );
+  theHistograms->fill(Form("PKU_%s_kinPh_N" ,channel.c_str()),Form(title_N.c_str(), "photons passing kinematics")  ,5,-0.5,4.5,kinPhotons_->size() ,1);
+  theHistograms->fill(Form("PKU_%s_goodPh_N",channel.c_str()),Form(title_N.c_str(), "photons passing cutBasedIDLoose")  ,5,-0.5,4.5,goodPhotons_->size(),1);
+  theHistograms->fill(Form("PKU_%s_POGele_N",channel.c_str()),Form(title_N.c_str(), "electrons")  ,5,-0.5,4.5,electrons->size()   ,1);
+  theHistograms->fill(Form("PKU_%s_POGmuo_N",channel.c_str()),Form(title_N.c_str(), "muon")       ,5,-0.5,4.5,muons->size()       ,1);
+  
+  std::string title_templ( Form("Z #rightarrow %s: p_{t} of %s;p_{t} [GeV/c]", channel.c_str(), "%s") );
+  for(const Photon& ph : *kinPhotons_ )
+    theHistograms->fill(Form("PKU_%s_kinPh_pt" , channel.c_str()), Form(title_templ.c_str(), "photons passing kinematics"),20,0.,200.,ph.pt(),1);
+  for(const Photon& ph : *goodPhotons_)
+    theHistograms->fill(Form("PKU_%s_goodPh_pt", channel.c_str()), Form(title_templ.c_str(), "photons passing cutBasedIDLoose"),20,0.,200.,ph.pt(), 1);
+  
+  for(const Lepton& el : *electrons )
+    theHistograms->fill(Form("PKU_%s_POGele_pt", channel.c_str()), Form(title_templ.c_str(), "electrons"), 20, 0., 200., el.pt(), 1);
+  for(const Lepton& mu : *muons)
+    theHistograms->fill(Form("PKU_%s_POGmuo_pt", channel.c_str()), Form(title_templ.c_str(), "muons")    , 20, 0., 200., mu.pt(), 1);
 }
 
 
 void VVGammaAnalyzer::LeptonFakeRate(){
   if(region_ != phys::CRLFR || !ZL || ZL->first.pt() * ZL->second.pt() <1.)
-    return;
+    return;  // We must be in the LFR control region
+  if(met->pt() > 30)
+    return;  // Exclude WZ phase space
+  
   const Lepton& lep = ZL->second;
 
   std::string flavour;

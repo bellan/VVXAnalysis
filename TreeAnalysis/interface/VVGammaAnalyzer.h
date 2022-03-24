@@ -94,6 +94,7 @@ public:
  	void genEventHistos();
 	void baseHistos_cut();
 	//void baseHistos_analyze();
+	void PKU_comparison();
  	
  	// Sub analyses
 	void LeptonFakeRate();
