@@ -12,28 +12,27 @@
 
 namespace phys {
   
-  template <typename P1, typename P2>
-    class ProtonPair: {
+    class ProtonPair {
     
     friend class ::TreePlanter;
   public:
     /// Constructor
     ProtonPair():
-      , passFullSel_(false)
+      passFullSel_(false)
       {}
       
-  ProtonPair(const Proton<P1>& p1, const Proton<P2>& p2):
-      , daughter0_(p1)
+  ProtonPair(const Proton& p1, const Proton& p2):
+        daughter0_(p1)
       , daughter1_(p2)
       , passFullSel_(false)
       {}
     
 
-    Proton<P1> first()  const {return daughter0_;}
-    Proton<P2> second() const {return daughter1_;}
+    Proton first()  const {return daughter0_;}
+    Proton second() const {return daughter1_;}
 
-    Proton<P1> *firstPtr()  {return &daughter0_;}
-    Proton<P2> *secondPtr() {return &daughter1_;}
+    Proton *firstPtr()  {return &daughter0_;}
+    Proton *secondPtr() {return &daughter1_;}
 
 
     bool passFullSelection() const {return passFullSel_;}
@@ -52,6 +51,6 @@ namespace phys {
     Bool_t  passFullSel_;
 
     ClassDef(ProtonPair, 1) //
-  }
+  };
 }
 #endif

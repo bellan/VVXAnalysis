@@ -19,7 +19,6 @@ class TreePlanter;
 
 namespace phys {
   
-  
   typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
   
   class Proton: public TObject {
@@ -30,7 +29,7 @@ namespace phys {
  
     /// Constructor
 
-    Proton(double xi, double x0, double y0, double thetax0, double thetay0, double Ebeam=6500)
+    Proton(double xi = 0., double x0 = 0., double y0 = 0., double thetax0 = 0., double thetay0 = 0., double Ebeam=6500)
       : xi_(xi)
       , x0_(x0)
       , y0_(y0)
