@@ -48,7 +48,7 @@ void VVGammaAnalyzer::begin(){
   size_t digits = std::to_string(tree()->GetEntries()).length();
   std::string spaces( digits, ' ' );
   cout<<"Analyzed:\t"<<spaces<<'/'<<tree()->GetEntries()<<std::flush;
-  //cout<<'\n'; //TEMP
+  // cout<<'\n'; //TEMP
 	
   return;
 }
@@ -58,8 +58,8 @@ Int_t VVGammaAnalyzer::cut() {
   evtN_++; evtNInReg_[region_]++; evtWInReg_[region_] += theWeight;
   cout<<"\r\t\t"<<evtN_;  //TEMP
 	
-  theHistograms->fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 1, theWeight);
-  theHistograms->fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 1);
+  theHistograms->fill("AAA_cuts"  , "Cuts weighted"  , CUT_LAYOUT, 1, theWeight);
+  theHistograms->fill("AAA_cuts_u", "Cuts unweighted", CUT_LAYOUT, 1);
 	
   // Cleanup
   kinPhotons_ ->clear();
@@ -95,13 +95,16 @@ Int_t VVGammaAnalyzer::cut() {
       });
   }
 	
-  	
+  vector<Photon> kinPhotons_EScale_Up;
+  vector<Photon> kinPhotons_EScale_Down;
+  vector<Photon> goodPhotons_EScale_Up;
+  vector<Photon> goodPhotons_EScale_Down;
   for(auto ph : *photons){
     //Pixel seed and electron veto
     if(ph.hasPixelSeed() || !ph.passElectronVeto()) continue;
 		
     //Kinematic selection
-    if(ph.pt() < 20) continue;
+    // if(ph.pt() < 20) continue;
     float ph_aeta = fabs(ph.eta());
     if(ph_aeta > 2.4) continue;
     if(ph_aeta > 1.4442 && ph_aeta < 1.566) continue;
@@ -115,37 +118,74 @@ Int_t VVGammaAnalyzer::cut() {
       }
     }
     if(match) continue;
-	        
+    
+    if(ph.pt() * ph.energyScaleUp()/ph.e() > 20){
+      kinPhotons_EScale_Up.push_back(ph);
+      if(ph.cutBasedIDLoose())
+	goodPhotons_EScale_Up.push_back(ph);
+    }
+    if(ph.pt() * ph.energyScaleDown()/ph.e() > 20){
+      kinPhotons_EScale_Down.push_back(ph);
+      if(ph.cutBasedIDLoose())
+	goodPhotons_EScale_Down.push_back(ph);
+    }
+
+    if(ph.pt() < 20) continue;
+    
     kinPhotons_->push_back(ph);
     if(ph.cutBasedIDLoose())
       goodPhotons_->push_back(ph);
+    
   }
   
+  if(kinPhotons_->size() > 1)            theHistograms->fill("ph_eScale_count", "Num photons pass selection", 6,-0.5,5.5, 0, theWeight);
+  if(kinPhotons_EScale_Down.size() > 1)  theHistograms->fill("ph_eScale_count", "Num photons pass selection", 6,-0.5,5.5, 1, theWeight);
+  if(kinPhotons_EScale_Up.size() > 1)    theHistograms->fill("ph_eScale_count", "Num photons pass selection", 6,-0.5,5.5, 2, theWeight);
+  if(goodPhotons_->size() > 1)           theHistograms->fill("ph_eScale_count", "Num photons pass selection", 6,-0.5,5.5, 3, theWeight);
+  if(goodPhotons_EScale_Down.size() > 1) theHistograms->fill("ph_eScale_count", "Num photons pass selection", 6,-0.5,5.5, 4, theWeight);
+  if(goodPhotons_EScale_Up.size() > 1)   theHistograms->fill("ph_eScale_count", "Num photons pass selection", 6,-0.5,5.5, 5, theWeight);
+  
   // Basic histos
+  
+  for(size_t i = 0; i < photons->size() ; i++){
+    const Photon& ph = photons->at(i);
+    theHistograms->fill("ph_E"                , "E;[GeV]"                             , 50,0.,500., ph.e()                           , theWeight);
+    theHistograms->fill("ph_E_m_ScaleUp"      , "energyScaleUp - E;#DeltaE[GeV]"      , 60,-1.,5.,  ph.energyScaleUp() - ph.e()      , theWeight);
+    theHistograms->fill("ph_E_m_ScaleDown"    , "E - energyScaleDown;#DeltaE[GeV]"    , 60,-1.,5.,  ph.e() - ph.energyScaleDown()    , theWeight);
+    theHistograms->fill("ph_E_m_ScaleStatUp"  , "energyScaleStatUp - E;#DeltaE[GeV]"  , 60,-1.,5.,  ph.energyScaleStatUp() - ph.e()  , theWeight);
+    theHistograms->fill("ph_E_m_ScaleStatDown", "E - energyScaleStatDown;#DeltaE[GeV]", 60,-1.,5.,  ph.e() - ph.energyScaleStatDown(), theWeight);
+    theHistograms->fill("ph_E_m_ScaleSystUp"  , "energyScaleSystUp - E;#DeltaE[GeV]"  , 60,-1.,5.,  ph.energyScaleSystUp() - ph.e()  , theWeight);
+    theHistograms->fill("ph_E_m_ScaleSystDown", "E - energyScaleSystDown;#DeltaE[GeV]", 60,-1.,5.,  ph.e() - ph.energyScaleSystDown(), theWeight);
+    theHistograms->fill("ph_E_m_ScaleGainUp"  , "energyScaleGainUp - E#;DeltaE[GeV]"  , 60,-1.,5.,  ph.energyScaleGainUp() - ph.e()  , theWeight);
+    theHistograms->fill("ph_E_m_ScaleGainDown", "E - energyScaleGainDown;#DeltaE[GeV]", 60,-1.,5.,  ph.e() - ph.energyScaleGainDown(), theWeight);
+    theHistograms->fill("ph_E_m_ScaleEtUp"    , "energyScaleEtUp - E;#DeltaE[GeV]"    , 60,-1.,5.,  ph.energyScaleEtUp() - ph.e()    , theWeight);
+    theHistograms->fill("ph_E_m_ScaleEtDown"  , "E - energyScaleEtDown;#DeltaE[GeV]"  , 60,-1.,5.,  ph.e() - ph.energyScaleEtDown()  , theWeight);
+  }
+  
   baseHistos_cut();
   PKU_comparison();
-  theHistograms->fill("C: n good ph", "n good #gamma | ZZ/WZ exists", 7,-0.5,6.5, goodPhotons_->size(), theWeight);
+  theHistograms->fill("goodPhoton_N", "n good #gamma | ZZ/WZ exists", 7,-0.5,6.5, goodPhotons_->size(), theWeight);
   
   
   // ----- BASELINE SELECTION -----
   // ----- Cut1: require at least a ZZ or a WZ candidate
   haveZVlep = (ZZ && ZZ->pt() > 1.) || (ZW && ZW->pt() > 1.);	
   if(haveZVlep){
-    theHistograms->fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 2, theWeight);
-    theHistograms->fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 2);
+    theHistograms->fill("AAA_cuts"  , "Cuts weighted"  , CUT_LAYOUT, 2, theWeight);
+    theHistograms->fill("AAA_cuts_u", "Cuts unweighted", CUT_LAYOUT, 2);
   }
 	
   have2l2j = (muons->size()+electrons->size()==2) && (jets->size()==2 || jetsAK8->size()>=1);
   if(have2l2j){
-    theHistograms->fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 3, theWeight);
-    theHistograms->fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 3);
+    theHistograms->fill("AAA_cuts"  , "Cuts weighted"  , CUT_LAYOUT, 3, theWeight);
+    theHistograms->fill("AAA_cuts_u", "Cuts unweighted", CUT_LAYOUT, 3);
   }
   
   // ----- Cut2: Require at least 1 loose photon with pt > 20 GeV
   haveGoodPhoton = goodPhotons_->size() >= 1;
   if(haveGoodPhoton){
-    theHistograms->fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 4, theWeight);
-    theHistograms->fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 4);
+    theHistograms->fill("AAA_cuts"  , "Cuts weighted"  , CUT_LAYOUT, 4, theWeight);
+    theHistograms->fill("AAA_cuts_u", "Cuts unweighted", CUT_LAYOUT, 4);
   }
   
   //return (haveGoodPhoton ? 1 : -1);
@@ -161,22 +201,26 @@ Int_t VVGammaAnalyzer::cut() {
 
 void VVGammaAnalyzer::analyze(){
   analyzedNInReg_[region_]++; analyzedWInReg_[region_] += theWeight;
-  theHistograms->fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 5, theWeight);
-  theHistograms->fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 5);
+  theHistograms->fill("AAA_cuts"  , "Cuts weighted"  , CUT_LAYOUT, 5, theWeight);
+  theHistograms->fill("AAA_cuts_u", "Cuts unweighted", CUT_LAYOUT, 5);
   
   if(goodPhotons_->size() >= 1 && goodPhotons_->front().cutBasedIDLoose()){
-    theHistograms->fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 6, theWeight);
-    theHistograms->fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 6);
+    theHistograms->fill("AAA_cuts"  , "Cuts weighted"  , CUT_LAYOUT, 6, theWeight);
+    theHistograms->fill("AAA_cuts_u", "Cuts unweighted", CUT_LAYOUT, 6);
   }
   
   LeptonFakeRate();
   PhotonFakeRate();
-	
-	
+  
+  Photon* thePh = nullptr;
+  if(goodPhotons_->size() >= 1) thePh = &goodPhotons_->at(0);
+  
   // SR: loose photon ID - CR: kin selection && !loose photon ID
   // Photon& thePhoton = goodPhotons_->front();
   // theHistograms->fill("photon_pt", "p_{t}^{#gamma};GeV/c", 50,0.,200., thePhoton.pt(), theWeight);
   if( (region_ >= SR4P && region_ <= CR4P_1F) && ZZ && ZZ->pt() > 1.){
+    if(thePh)
+      theHistograms->fill("ZZG_mass","m_{4l#gamma};[GeV/c^{2}]",25,0.,500,(ZZ->p4()+thePh->p4()).M(),theWeight);
     theHistograms->fill("ZZ_mass" , "m_{4l};GeV/c^{2}", 25,0.,500. , ZZ->mass()                   , theWeight);
     theHistograms->fill("Z0_mass" , "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
     theHistograms->fill("Z1_mass" , "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
@@ -186,6 +230,8 @@ void VVGammaAnalyzer::analyze(){
     theHistograms->fill("Z1_l1_pt", "p_{t,l11};GeV/c" , 20,0.,400. , ZZ->second().daughter(1).pt(), theWeight);
   }
   else if( ((region_>=CR110 && region_<=CR000) || region_==SR3P ) && ZW && ZW->pt() > 1.){
+    if(thePh)
+      theHistograms->fill("ZWG_massT","m_{T,3l#gamma};[GeV/c^{2}]",25,0.,500,(ZZ->p4()+thePh->p4()).Mt(),theWeight);
     theHistograms->fill("ZW_massT", "m_{T,3l};GeV/c^{2}", 25,0.,500. , ZW->p4().Mt()                , theWeight);
     theHistograms->fill("Z_mass"  , "m_{Z};GeV/c^{2}"   , 35,55.,125., ZW->first().mass()           , theWeight);
     theHistograms->fill("W_massT" , "m_{T,W};GeV/c^{2}" , 35,55.,125., ZW->second().p4().Mt()       , theWeight);
@@ -241,19 +287,11 @@ void VVGammaAnalyzer::end(TFile& fout){
 
 
 void VVGammaAnalyzer::endNameHistos(){
-  TH1* cuts = theHistograms->get("AAA cuts w");
-  if(cuts){
-    TAxis* x = cuts->GetXaxis();
-    x->SetBinLabel(1, "All");
-    x->SetBinLabel(2, "ZZ || ZW");
-    x->SetBinLabel(3, "2l2j || 2l1J");
-    x->SetBinLabel(4, "#gamma loose");
-    x->SetBinLabel(5, "analyzed");
-    x->SetBinLabel(6, "#gamma medium");
-  }
-  TH1* cuts_u = theHistograms->get("AAA cuts u");
-  if(cuts_u){
-    TAxis* x = cuts_u->GetXaxis();
+  TH1* cuts = theHistograms->get("AAA_cuts");
+  TH1* cuts_u = theHistograms->get("AAA_cuts_u");
+  for(TH1* h : {cuts, cuts_u}){
+    if(!h) continue;
+    TAxis* x = h->GetXaxis();
     x->SetBinLabel(1, "All");
     x->SetBinLabel(2, "ZZ || ZW");
     x->SetBinLabel(3, "2l2j || 2l1J");
@@ -262,12 +300,24 @@ void VVGammaAnalyzer::endNameHistos(){
     x->SetBinLabel(6, "#gamma medium");
   }
   TH1* kinPhotons_ID = theHistograms->get("kinPhotons_ID");
-  if(kinPhotons_ID){
-    TAxis* x = kinPhotons_ID->GetXaxis();
+  TH1* kinPhotons_ID_u = theHistograms->get("kinPhotons_ID_u");
+  for(TH1* h : {kinPhotons_ID, kinPhotons_ID_u}){
+    if(!h) continue;
+    TAxis* x = h->GetXaxis();
     x->SetBinLabel(1, "Total");
     x->SetBinLabel(2, "Loose");
     x->SetBinLabel(3, "Medium");
     x->SetBinLabel(4, "Tight");
+  }
+  TH1* ph_eScale_count = theHistograms->get("ph_eScale_count");
+  if(ph_eScale_count){
+    TAxis* x = ph_eScale_count->GetXaxis();
+    x->SetBinLabel(1, "Kin");
+    x->SetBinLabel(2, "Kin_Edown");
+    x->SetBinLabel(3, "Kin_Eup");
+    x->SetBinLabel(4, "Good");
+    x->SetBinLabel(5, "Good_Edown");
+    x->SetBinLabel(6, "Good_Eup");
   }
 }
 
@@ -431,10 +481,16 @@ void VVGammaAnalyzer::genEventHistos(){
 
 
 void VVGammaAnalyzer::baseHistos_cut(){
+  theHistograms->fill("theWeight_cut", "Event weights in cut()", 120, -0.1, 1.1, theWeight);
   // Photons
   for(const Photon& ph: *kinPhotons_){
     theHistograms->fill("kinPhotons_pt"  , "p_{t} of kinPhotons" , 50, 0., 250.,      ph.pt()  , theWeight);
     theHistograms->fill("kinPhotons_aeta", "|#eta| of kinPhotons", 50, 0., 2.5 , fabs(ph.eta()), theWeight);
+
+                              theHistograms->fill("kinPhotons_ID_u", "Cut Based ID of kinPhotons", 4,-0.5,3.5, 0, 1.);
+    if(ph.cutBasedIDLoose())  theHistograms->fill("kinPhotons_ID_u", "Cut Based ID of kinPhotons", 4,-0.5,3.5, 1, 1.);
+    if(ph.cutBasedIDMedium()) theHistograms->fill("kinPhotons_ID_u", "Cut Based ID of kinPhotons", 4,-0.5,3.5, 2, 1.);
+    if(ph.cutBasedIDTight())  theHistograms->fill("kinPhotons_ID_u", "Cut Based ID of kinPhotons", 4,-0.5,3.5, 3, 1.);
     
                               theHistograms->fill("kinPhotons_ID", "Cut Based ID of kinPhotons", 4,-0.5,3.5, 0, theWeight);
     if(ph.cutBasedIDLoose())  theHistograms->fill("kinPhotons_ID", "Cut Based ID of kinPhotons", 4,-0.5,3.5, 1, theWeight);
@@ -640,8 +696,8 @@ void VVGammaAnalyzer::effPhotons(){
   theHistograms->fill("A: tightG num", "# tight #gamma", 5,-0.5,4.5, tightPh, theWeight);
 	
   if(tightPh > 0){
-    theHistograms->fill("AAA cuts w", "Cuts weighted", CUT_LAYOUT, 6, theWeight);
-    theHistograms->fill("AAA cuts u", "Cuts unweighted", CUT_LAYOUT, 6);
+    theHistograms->fill("AAA_cuts"  , "Cuts weighted"  , CUT_LAYOUT, 6, theWeight);
+    theHistograms->fill("AAA_cuts_u", "Cuts unweighted", CUT_LAYOUT, 6);
   }
 }
 
