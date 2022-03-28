@@ -29,29 +29,22 @@ namespace phys {
  
     /// Constructor
 
-    Proton(float xi=0., float vx=0., float vy=0., float thetaX=0., float thetaY=0., float time=0., double Ebeam=6500)
+    Proton(double xi=0., double vx=0., double vy=0., double thetaX=0., double thetaY=0., double time=0., double Ebeam=6500)
       : xi_(xi)
       , vx_(vx)
       , vy_(vy)
       , thetaX_(thetaX)
       , thetaY_(thetaY)
       , time_(time)
-      , Ebeam_(Ebeam)
       , E_((1-xi)*Ebeam)
+      , Ebeam_(Ebeam)
       , efficiencySF_(1.)
       , efficiencySFUnc_(0.){
     }
     
     
     /// Destructor
-    virtual ~Proton(){};
-    
-    Double_t xiError_;
-    Double_t vxError_;
-    Double_t vyError_;
-    Double_t thetaXError_;
-    Double_t thetaYError_;
-    Double_t timeError_;
+    virtual ~Proton(){}
     
     // Operations
     Double_t xi() const {return xi_;}
@@ -97,8 +90,14 @@ namespace phys {
     Double_t vy_;
     Double_t thetaX_;
     Double_t thetaY_;
-    
     Double_t time_;
+
+    Double_t xiError_;
+    Double_t vxError_;
+    Double_t vyError_;
+    Double_t thetaXError_;
+    Double_t thetaYError_;
+    Double_t timeError_;
     
     Double_t E_;
     Double_t Ebeam_;

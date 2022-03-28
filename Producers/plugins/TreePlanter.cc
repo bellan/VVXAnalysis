@@ -26,6 +26,7 @@
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/ProtonReco/interface/ForwardProton.h"
+#include "DataFormats/ProtonReco/interface/ForwardProtonFwd.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
 #include "VVXAnalysis/DataFormats/interface/RegionTypes.h"
@@ -161,7 +162,8 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
 					      , (addLHEKinematics_ ? LHEHandler::doHiggsKinematics : LHEHandler::noKinematics)
 					      , setup_ // means year
 					      , LHEHandler::tryNNPDF30
-					      , LHEHandler::tryNLO);
+					      , LHEHandler::tryNLO
+					      , LHEHandler::CMS_Run2_UL);
   }
    
   initTree();

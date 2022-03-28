@@ -9,6 +9,7 @@
  */
 
 #include "Proton.h"
+#include "VVXAnalysis/Commons/interface/Constants.h"
 
 namespace phys {
   
