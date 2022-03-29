@@ -3,7 +3,7 @@ identifier,process,crossSection=-1,BR=1,execute=True,dataset,prefix,pattern,spli
 
 ###,VZGamma,,,,,,,,,,VVGammasignal
 ZZGTo4LG,VZZ,0.001042,,,/ZZGTo4L_TuneCP5_4f_NLO_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM,dbs,,1,GENXSEC=0.001042;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,
-# WZGTo3LNuG,VZZ,0.,,,/LLWA_WToLNu_4FS_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAOD-106X_mcRun2_asymptotic_v13-v2/MINIAODSIM,dbs,,1,GENXSEC=0.;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,No MiniAODv2 yet
+WZGTo3LNuG,VZZ,0.,,,/LLWA_WToLNu_4FS_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM,dbs,,1,GENXSEC=0.;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,No MiniAODv2 yet
 # ZZGTo2L2jG,VZZ,0.,,,-----missing-----,dbs,,1,GENXSEC=0.;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 # WZGTo2L2jG,VZZ,0.,,,-----missing-----,dbs,,1,GENXSEC=0.;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 # WZGToLNu2jG,,0.04345,,,/WZG_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM,dbs,,1,GENXSEC=0.04345;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,# Z > jj  W > l v
@@ -27,11 +27,12 @@ WWZ,,0.1651,,,/WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-
 
 
 ###,qq->ZZ,,,,,,,,,,qq->ZZbackground
-# ZZTo4l,qqZZ,1.325,,,/ZZTo4L_TuneCP5_13TeV_powheg_pythia8/?????????/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2016,RecoProbabilities.py,
+ZZTo4l,qqZZ,1.325,,,/ZZTo4L_TuneCP5_13TeV_powheg_pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 ZZTo4l_M1ToInf,qqZZ,1.325,,,/ZZTo4L_M-1toInf_TuneCP5_13TeV_powheg_pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 # ZZTo4lext,qqZZ,1.256,,,/ZZTo4L_13TeV_powheg_pythia8_ext1/?????????/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 # ZZTo4lamcatnlo,qqZZ,1.256,,,/ZZTo4L_13TeV-amcatnloFXFX-pythia8/?????????/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 ZZTo2Q2L,qqZZ,-1,,,/ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM,dbs,,1,GENXSEC=-1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,
+ZZTo2L2Nu,qqZZ,0.9738,,,/ZZTo2L2Nu_TuneCP5_13TeV_powheg_pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM,dbs,,1,GENXSEC=0.9738;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 
 
 ###,gg->ZZ,,,,,,,,,,gg->ZZbackground-MovedtoACOffshell
@@ -65,9 +66,12 @@ TTTo2L2Nu,tt,88.29,,,/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL16Mi
 
 
 ###,Rare backgrounds,,,,,,,,,,rare backgrounds targeting ttH categories
-TTZZ,ttX,0.001572,,,/TTZZ_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM,dbs,,4,GENXSEC=0.001572;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,
-TTWW,ttX,0.007883,,,/TTWW_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM,dbs,,4,GENXSEC=0.007883;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,
-TTZToLLNuNu_M10,ttX,0.25271,,,/TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM,dbs,,4,GENXSEC=0.25271;GENBR=1;ADDZTREE=True;LEPTON_SETUP=2016,RecoProbabilities.py,
+TTZZ,ttX,0.001386,,,/TTZZ_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM,dbs,,4,GENXSEC=0.001386;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,
+TTWW,ttX,0.007003,,,/TTWW_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM,dbs,,4,GENXSEC=0.007003;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,
+TTZToLLNuNu_M10,ttX,0.2439,,,/TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM,dbs,,4,GENXSEC=0.2439;GENBR=1;ADDZTREE=True;LEPTON_SETUP=2016,RecoProbabilities.py,
+TTZJets,ttX,0.5407,,,/ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v2/MINIAODSIM,dbs,,4,GENXSEC=0.5407;GENBR=1;ADDZTREE=True;LEPTON_SETUP=2016,RecoProbabilities.py,
+TTWJetsToLNu,ttX,0.0008017,,,/TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM,dbs,,4,GENXSEC=0.0008017;GENBR=1;ADDZTREE=True;LEPTON_SETUP=2016,RecoProbabilities.py,
+TZq,ttX,0.07561,,,/tZq_ll_4f_ckm_NLO_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM,dbs,,4,GENXSEC=0.07561;GENBR=1;ADDZTREE=True;LEPTON_SETUP=2016,RecoProbabilities.py,
 
 
 ###,V+Gamma,,,,,,,,,,V+Gamma background
