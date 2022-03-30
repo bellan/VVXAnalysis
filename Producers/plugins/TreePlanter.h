@@ -82,7 +82,7 @@ class TreePlanter: public edm::EDAnalyzer {
   
   phys::Photon fill(const pat::Photon &ph) const;
   
-  phys::Proton fill(const reco::ForwardProton &proton) const;
+  phys::Proton fill(const reco::ForwardProton &proton, const bool ismultiRP) const;
 
   std::vector<phys::Boson<phys::Lepton> > fillLepBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const;
   std::vector<phys::Boson<phys::Jet> >    fillHadBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const;
@@ -154,7 +154,8 @@ class TreePlanter: public edm::EDAnalyzer {
   // ------------------- Objects in the tree ------------------- //
   
   //protons
-  std::vector<phys::Proton>                 protons_;
+  std::vector<phys::Proton>                 multiRPprotons_;
+  std::vector<phys::Proton>                 singleRPprotons_;
   
   // all good isolated muons BUT the ones coming from ZZ decay
   std::vector<phys::Lepton>                 muons_;
@@ -193,7 +194,8 @@ class TreePlanter: public edm::EDAnalyzer {
   std::vector<phys::Particle>               genJetsAK8_;
 
   // ------------------- Input Labels ------------------- //
-  edm::EDGetTokenT<std::vector<reco::ForwardProton> >   theProtonToken;
+  edm::EDGetTokenT<std::vector<reco::ForwardProton> >   thesingleRPProtonToken;
+  edm::EDGetTokenT<std::vector<reco::ForwardProton> >   themultiRPProtonToken;
   edm::EDGetTokenT<pat::MuonCollection>                 theMuonToken;
   edm::EDGetTokenT<pat::ElectronCollection>             theElectronToken;
   edm::EDGetTokenT<std::vector<pat::Jet> >              theJetToken;

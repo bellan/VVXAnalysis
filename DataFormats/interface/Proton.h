@@ -29,7 +29,7 @@ namespace phys {
  
     /// Constructor
 
-    Proton(double xi=0., double vx=0., double vy=0., double thetaX=0., double thetaY=0., double time=0., double Ebeam=6500)
+    Proton(bool multiRP=0, double xi=0., double vx=0., double vy=0., double thetaX=0., double thetaY=0., double time=0., double Ebeam=6500)
       : xi_(xi)
       , vx_(vx)
       , vy_(vy)
@@ -39,7 +39,8 @@ namespace phys {
       , E_((1-xi)*Ebeam)
       , Ebeam_(Ebeam)
       , efficiencySF_(1.)
-      , efficiencySFUnc_(0.){
+      , efficiencySFUnc_(0.)
+      , ismultiRP_(multiRP){
     }
     
     
@@ -70,7 +71,7 @@ namespace phys {
     Double_t p()          const {return this->p4().P();}
     Double_t e()          const {return this->p4().E();}
     
-    
+    Bool_t ismultiRP()    const {return ismultiRP_;}
     
     bool appropriatexi() const {if(xi_>0.04) return 1;
                                 else return 0;}
@@ -105,7 +106,9 @@ namespace phys {
     Double_t efficiencySF_;
     Double_t efficiencySFUnc_;
     
-    bool valid_fit_;
+    Bool_t valid_fit_;
+    
+    Bool_t ismultiRP_;
  
     
   public:

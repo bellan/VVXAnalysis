@@ -72,7 +72,8 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , postSkimSignalCounter_(0)
   , signalCounter_(0)
   , postSkimSignalEvents_(0)
-  , theProtonToken  (consumes<reco::ForwardProtonCollection>      (config.getParameter<edm::InputTag>("protons")))
+  , thesingleRPProtonToken  (consumes<reco::ForwardProtonCollection>      (config.getParameter<edm::InputTag>("singleRPprotons")))
+  , themultiRPProtonToken  (consumes<reco::ForwardProtonCollection>      (config.getParameter<edm::InputTag>("multiRPprotons")))  
   , theMuonToken     (consumes<pat::MuonCollection>                (config.getParameter<edm::InputTag>("muons"    )))
   , theElectronToken (consumes<pat::ElectronCollection>            (config.getParameter<edm::InputTag>("electrons")))
   , theJetToken      (consumes<std::vector<pat::Jet> >             (config.getParameter<edm::InputTag>("jets"     )))
@@ -199,7 +200,9 @@ void TreePlanter::beginJob(){
   theTree->Branch("ZZCand"    , &ZZ_); 
   theTree->Branch("ZWCand"    , &ZW_); 
   theTree->Branch("ZLCand"    , &ZL_);
-  theTree->Branch("protons"   , &protons_);
+  
+  theTree->Branch("singleRPprotons"   , &singleRPprotons_);
+  theTree->Branch("multiRPprotons"   , &multiRPprotons_);
 
   theTree->Branch("genParticles"  , &genParticles_);
   theTree->Branch("genTaus"       , &genTaus_);
@@ -385,8 +388,8 @@ void TreePlanter::initTree(){
   ZZ_        = phys::DiBoson<phys::Lepton  , phys::Lepton>();
   ZL_        = std::pair<phys::Boson<phys::Lepton>, phys::Lepton>();
   ZW_        = phys::DiBoson<phys::Lepton  , phys::Lepton>();
-  protons_   = std::vector<phys::Proton>();
-
+  singleRPprotons_   = std::vector<phys::Proton>();
+  multiRPprotons_   = std::vector<phys::Proton>();
   genParticles_ = std::vector<phys::Particle>();
   genTaus_ = std::vector<phys::Particle>();
   genVBParticles_ = std::vector<phys::Boson<phys::Particle> >();
@@ -603,7 +606,8 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   edm::Handle<std::vector<pat::Jet> >    jets           ; event.getByToken(theJetToken     ,      jets);
   edm::Handle<std::vector<pat::Jet> >    jetsAK8        ; event.getByToken(theJetAK8Token  ,   jetsAK8);
   edm::Handle<std::vector<pat::Photon> > photons        ; event.getByToken(thePhotonToken  ,   photons);
-  edm::Handle<std::vector<reco::ForwardProton> > protons        ; event.getByToken(theProtonToken  ,   protons);
+  edm::Handle<std::vector<reco::ForwardProton> > singleRPprotons        ; event.getByToken(thesingleRPProtonToken  ,   singleRPprotons);
+  edm::Handle<std::vector<reco::ForwardProton> > multiRPprotons        ; event.getByToken(themultiRPProtonToken  ,   multiRPprotons);
   //  edm::Handle<edm::View<pat::CompositeCandidate> > Vhad ; event.getByToken(theVhadToken    ,      Vhad);
   edm::Handle<edm::View<pat::CompositeCandidate> > Z    ; event.getByToken(theZToken       ,        Z);
   edm::Handle<edm::View<pat::CompositeCandidate> > ZZ   ; event.getByToken(theZZToken      ,        ZZ);
@@ -616,6 +620,9 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   foreach(const pat::Jet&      jet     , *jets     ) jets_.push_back(fill(jet));
   foreach(const pat::Jet&      jet     , *jetsAK8  ) jetsAK8_.push_back(fill(jet)); // FIXME: need jet class extension
   foreach(const pat::Photon&   photon  , *photons  ) photons_.push_back(fill(photon));
+
+  foreach(const reco::ForwardProton&   proton1  , *singleRPprotons  ) singleRPprotons_.push_back(fill(0,proton1));
+  foreach(const reco::ForwardProton&   proton2  , *multiRPprotons  ) multiRPprotons_.push_back(fill(1,proton2));
 
   // The bosons are selected requiring that their daughters pass the quality criteria to be good daughters
   // Vhad_ = fillHadBosons(Vhad, 24);
@@ -953,9 +960,9 @@ phys::Photon TreePlanter::fill(const pat::Photon &photon) const {
 	return output;
 }
 
-phys::Proton TreePlanter::fill(const reco::ForwardProton &proton) const {
+phys::Proton TreePlanter::fill(bool ismultiRP, const reco::ForwardProton &proton) const {
 		
-  phys::Proton output(proton.xi(),proton.vx(),proton.vy(),proton.thetaX(),proton.thetaY(),proton.time());
+  phys::Proton output(ismultiRP,proton.xi(),proton.vx(),proton.vy(),proton.thetaX(),proton.thetaY(),proton.time());
   output.xiError_    = proton.xiError();
   output.vxError_    = proton.vxError();
   output.vyError_    = proton.vyError();
