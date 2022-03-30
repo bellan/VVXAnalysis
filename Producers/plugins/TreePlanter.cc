@@ -621,8 +621,8 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
   foreach(const pat::Jet&      jet     , *jetsAK8  ) jetsAK8_.push_back(fill(jet)); // FIXME: need jet class extension
   foreach(const pat::Photon&   photon  , *photons  ) photons_.push_back(fill(photon));
 
-  foreach(const reco::ForwardProton&   proton1  , *singleRPprotons  ) singleRPprotons_.push_back(fill(0,proton1));
-  foreach(const reco::ForwardProton&   proton2  , *multiRPprotons  ) multiRPprotons_.push_back(fill(1,proton2));
+  foreach(const reco::ForwardProton&   proton1  , *singleRPprotons  ) singleRPprotons_.push_back(fill(false,proton1));
+  foreach(const reco::ForwardProton&   proton2  , *multiRPprotons  ) multiRPprotons_.push_back(fill(true,proton2));
 
   // The bosons are selected requiring that their daughters pass the quality criteria to be good daughters
   // Vhad_ = fillHadBosons(Vhad, 24);

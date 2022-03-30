@@ -82,7 +82,7 @@ class TreePlanter: public edm::EDAnalyzer {
   
   phys::Photon fill(const pat::Photon &ph) const;
   
-  phys::Proton fill(const reco::ForwardProton &proton, const bool ismultiRP) const;
+  phys::Proton fill(bool ismultiRP, const reco::ForwardProton &proton) const;
 
   std::vector<phys::Boson<phys::Lepton> > fillLepBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const;
   std::vector<phys::Boson<phys::Jet> >    fillHadBosons(const edm::Handle<edm::View<pat::CompositeCandidate> > & edmBosons, int type) const;
