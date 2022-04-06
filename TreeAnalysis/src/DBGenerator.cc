@@ -229,14 +229,14 @@ void DBGenerator::mainEvtRec(std::ofstream& outFile){
 	int sigRecType = 0;
 	if(AK4pairs_->size() > 0){
 		std::sort(AK4pairs_->begin(), AK4pairs_->end(), Mass2Comparator(phys::ZMASS, phys::WMASS));
-		if(minDM(AK4pairs_->front().mass()) < 30.){
+		if(physmath::minDM(AK4pairs_->front().mass()) < 30.){
 			candBestV = &AK4pairs_->front();
 			sigRecType = 1;
 		}
 	}
 	if(sigRecType == 0 && jetsAK8->size() > 0){
 		std::sort(jetsAK8->begin(), jetsAK8->end(), Mass2Comparator(phys::ZMASS, phys::WMASS));
-		if(minDM(jetsAK8->front().chosenAlgoMass()) < 30.){
+		if(physmath::minDM(jetsAK8->front().chosenAlgoMass()) < 30.){
 			candBestV = &jetsAK8->front();
 			sigRecType = 2;
 		}
