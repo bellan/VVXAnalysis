@@ -72,8 +72,8 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , postSkimSignalCounter_(0)
   , signalCounter_(0)
   , postSkimSignalEvents_(0)
-  , thesingleRPProtonToken  (consumes<reco::ForwardProtonCollection>      (config.getParameter<edm::InputTag>("singleRPprotons")))
-  , themultiRPProtonToken  (consumes<reco::ForwardProtonCollection>      (config.getParameter<edm::InputTag>("multiRPprotons")))  
+  , thesingleRPProtonToken  (consumes<reco::ForwardProtonCollection>      (config.getParameter<edm::InputTag>("ppsRecoProtonSingleRPTag")))
+  , themultiRPProtonToken  (consumes<reco::ForwardProtonCollection>      (config.getParameter<edm::InputTag>("ppsRecoProtonMultiRPTag")))  
   , theMuonToken     (consumes<pat::MuonCollection>                (config.getParameter<edm::InputTag>("muons"    )))
   , theElectronToken (consumes<pat::ElectronCollection>            (config.getParameter<edm::InputTag>("electrons")))
   , theJetToken      (consumes<std::vector<pat::Jet> >             (config.getParameter<edm::InputTag>("jets"     )))
@@ -149,7 +149,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     consumesMany<std::vector< PileupSummaryInfo > >();
     consumesMany<LHEEventProduct>();
     theGenCategoryToken      = consumes<int>                        (config.getUntrackedParameter<edm::InputTag>("GenCategory"    , edm::InputTag("genCategory")));
-    theGenCollectionToken    = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("genParticlesFromHardProcess")));
+    theGenCollectionToken    = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("prunedGenParticles")));
     theGenTauCollectionToken = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenTaus"  , edm::InputTag("genTaus")));
     //theGenJetCollectionToken = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("selectedGenJets")));
     theGenJetCollectionToken    = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("genCategory","genJets")));

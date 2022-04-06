@@ -1,5 +1,20 @@
 <library name="VVXAnalysis_Producers_plugins" file="*.cc">
-  <use name="FWCore/Framework"/>
+  <use name="FWCore/MessageLogger"/>
+  <use name="FWCore/Common"/>
+  <use name="FWCore/ServiceRegistry"/>
+  <use name="CommonTools/UtilAlgos"/>
+  <use name="CondFormats/JetMETObjects"/>
+  <use name="DataFormats/PatCandidates"/>
+  <use name="DataFormats/CTPPSDetId"/>
+  <use name="DataFormats/CTPPSReco"/>
+  <use name="HLTrigger/HLTcore"/>
+  <use name="PhysicsTools/Utilities"/>
+  <use name="JetMETCorrections/Modules"/>
+  <use name="JetMETCorrections/Objects"/>
+  <use name="DataFormats/ProtonReco"/>
+  <use name="CondFormats/RunInfo"/>
+  <use name="CondFormats/DataRecord"/>
+  <Use name="FWCore/Framework"/>
   <use name="FWCore/PluginManager"/>
   <use name="FWCore/ParameterSet"/>
   <use name="CommonTools/UtilAlgos"/>
