@@ -25,6 +25,7 @@ public:
 		   configuration){
     //theHistograms.profile(genCategory);
     // Memory allocation
+    leptons_      = new std::vector<const phys::Lepton*>;
     genQuarks_    = new std::vector<phys::Particle>;
 		genChLeptons_ = new std::vector<phys::Particle>;
 		genNeutrinos_ = new std::vector<phys::Particle>;
@@ -39,7 +40,8 @@ public:
   }
 
   virtual ~VVGammaAnalyzer(){
-  	delete genQuarks_;
+    delete leptons_;
+    delete genQuarks_;
 		delete genChLeptons_;
 		delete genNeutrinos_;
 		delete genPhotons_;
@@ -67,6 +69,7 @@ public:
 
  private:
  	
+	std::vector<const phys::Lepton*>* leptons_;
  	// Photons with pt > 20 (already in ntuples), at least loose (cut-based) ID
 	std::vector<phys::Photon>* kinPhotons_;
  	std::vector<phys::Photon>* goodPhotons_;
