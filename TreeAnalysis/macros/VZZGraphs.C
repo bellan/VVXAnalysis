@@ -124,12 +124,10 @@ const std::vector<std::string> regions{"SR4P", "CR3P1F", "CR110", "CR101", "CR01
 
 void VZZGraphs(string sReqCateg = string(""), string sReqType = "", string reqGrName = string("")){
   TH1::SetDefaultSumw2(true);
-  //  const char theRegion[] = "CR3P1F";
-  //TString path = Form("../results/2016/VVGammaAnalyzer_%s/", theRegion);
-  //cout<<"Source path: \""<<path<<"\"\n";
   
   for (auto & region : regions)   
-    {    
+    {
+      cout << "\t----- Region: " << region << "-----\n";
       TString path = Form("../results/2016/VVGammaAnalyzer_%s/", region.c_str());
   
       vector<TString> signals = {"ZZGTo4LG"};
@@ -139,12 +137,6 @@ void VZZGraphs(string sReqCateg = string(""), string sReqType = "", string reqGr
       std::transform(reqGrName.begin(), reqGrName.end(), reqGrName.begin(), ::tolower);
       std::transform(sReqCateg.begin(), sReqCateg.end(), sReqCateg.begin(), ::tolower);
   
-      //  std::string region("noGamma");
-
-      //#####graphs not categorized by event type#####
-      //vector<TString> jetPlots = {};
-  
-      //vector<TString> variablePlots = {"G Loose: ZZ mass"}; //, "G Loose: ZZG mass", "G Loose: G pt", "G Loose: lead L pt"}; //"G Medium: ZZ mass", "G Medium: ZZG mass", "G Medium: G pt", "G Medium: lead L pt"
       vector<std::pair<TString,TString>> variablePlots = {};
 
       bool fourlep_region  = false;
@@ -157,53 +149,97 @@ void VZZGraphs(string sReqCateg = string(""), string sReqType = "", string reqGr
 
       if ( fourlep_region )
 	{
-	  variablePlots.push_back({"ZZ_mass", "m_{4l} ;GeV/c^{2}"});
-	  variablePlots.push_back({"ZZ_pT",   "pT_{ZZ} ;GeV/c"});
-	  variablePlots.push_back({"2e2mu_mass", "m_{2e2mu} ;GeV/c^{2}"});
-	  variablePlots.push_back({"4e_mass"   , "m_{4e} ;GeV/c^{2}"});
-	  variablePlots.push_back({"4mu_mass"  , "m_{4mu} ;GeV/c^{2}"});
-	  variablePlots.push_back({"2e2mu_pT",   "pT_{2e2mu} ;GeV/c"});
-	  variablePlots.push_back({"4e_pT",   "pT_{4e} ;GeV/c"});
-	  variablePlots.push_back({"4mu_pT",   "pT_{4mu} ;GeV/c"});
+	  variablePlots.push_back({"ZZ_mass_4e0m", "m_{4l} ;GeV/c^{2}"});
+	  variablePlots.push_back({"ZZ_mass_2e2m", "m_{4l} ;GeV/c^{2}"});
+	  variablePlots.push_back({"ZZ_mass_0e4m", "m_{4l} ;GeV/c^{2}"});
+	  variablePlots.push_back({"ZZ_pT_4e0m",   "pT_{ZZ} ;GeV/c"});
+	  variablePlots.push_back({"ZZ_pT_2e2m",   "pT_{ZZ} ;GeV/c"});
+	  variablePlots.push_back({"ZZ_pT_0e4m",   "pT_{ZZ} ;GeV/c"});
+	  // variablePlots.push_back({"2e2mu_mass", "m_{2e2mu} ;GeV/c^{2}"});
+	  // variablePlots.push_back({"4e_mass"   , "m_{4e} ;GeV/c^{2}"});
+	  // variablePlots.push_back({"4mu_mass"  , "m_{4mu} ;GeV/c^{2}"});
+	  // variablePlots.push_back({"2e2mu_pT",   "pT_{2e2mu} ;GeV/c"});
+	  // variablePlots.push_back({"4e_pT",   "pT_{4e} ;GeV/c"});
+	  // variablePlots.push_back({"4mu_pT",   "pT_{4mu} ;GeV/c"});
 
-	  variablePlots.push_back({"Z0_mass", "m_{Z0} ;GeV/c^{2}"});
-	  variablePlots.push_back({"Z1_mass", "m_{Z1} ;GeV/c^{2}"});
-	  variablePlots.push_back({"Z0_l0_pt", "pT_{l0,Z0} ;GeV/c"});
-	  variablePlots.push_back({"Z0_l1_pt", "pT_{l1,Z0} ;GeV/c"});
-	  variablePlots.push_back({"Z1_l0_pt", "pT_{l0,Z1} ;GeV/c"});
-	  variablePlots.push_back({"Z1_l1_pt", "pT_{l1,Z1} ;GeV/c"});  
-	  variablePlots.push_back({"AAA cuts u"," cutflow u"});
-	  variablePlots.push_back({"AAA cuts w"," cutflow w"});
+	  variablePlots.push_back({"Z0_mass_4e0m", "m_{Z0} ;GeV/c^{2}"});
+	  variablePlots.push_back({"Z0_mass_2e2m", "m_{Z0} ;GeV/c^{2}"});
+	  variablePlots.push_back({"Z0_mass_0e4m", "m_{Z0} ;GeV/c^{2}"});
+	  variablePlots.push_back({"Z1_mass_4e0m", "m_{Z1} ;GeV/c^{2}"});
+	  variablePlots.push_back({"Z1_mass_2e2m", "m_{Z1} ;GeV/c^{2}"});
+	  variablePlots.push_back({"Z1_mass_0e4m", "m_{Z1} ;GeV/c^{2}"});
+	  variablePlots.push_back({"Z0_l0_pt_4e0m", "pT_{l0,Z0} ;GeV/c"});
+	  variablePlots.push_back({"Z0_l0_pt_2e2m", "pT_{l0,Z0} ;GeV/c"});
+	  variablePlots.push_back({"Z0_l0_pt_0e4m", "pT_{l0,Z0} ;GeV/c"});
+	  variablePlots.push_back({"Z0_l1_pt_4e0m", "pT_{l1,Z0} ;GeV/c"});
+	  variablePlots.push_back({"Z0_l1_pt_2e2m", "pT_{l1,Z0} ;GeV/c"});
+	  variablePlots.push_back({"Z0_l1_pt_0e4m", "pT_{l1,Z0} ;GeV/c"});
+	  variablePlots.push_back({"Z1_l0_pt_4e0m", "pT_{l0,Z1} ;GeV/c"});
+	  variablePlots.push_back({"Z1_l0_pt_2e2m", "pT_{l0,Z1} ;GeV/c"});
+	  variablePlots.push_back({"Z1_l0_pt_0e4m", "pT_{l0,Z1} ;GeV/c"});
+	  variablePlots.push_back({"Z1_l1_pt_4e0m", "pT_{l1,Z1} ;GeV/c"});
+	  variablePlots.push_back({"Z1_l1_pt_2e2m", "pT_{l1,Z1} ;GeV/c"});
+	  variablePlots.push_back({"Z1_l1_pt_0e4m", "pT_{l1,Z1} ;GeV/c"});
 	}
 
 
       else if( threelep_region )
 	{
-	  variablePlots.push_back({"ZW_massT", "m_{T,3l}; GeV/c^{2}"});
-	  variablePlots.push_back({"Z_mass",   "m_{Z}; GeV/c^{2}"   });
-	  variablePlots.push_back({"2emu_massT", "m_{T,2emu}; GeV/c^{2}"});
-	  variablePlots.push_back({"2mue_massT", "m_{T,2mue}; GeV/c^{2}"});
-	  variablePlots.push_back({"3e_massT", "m_{T,3e}; GeV/c^{2}"});
-	  variablePlots.push_back({"3mu_massT", "m_{T,3mu}; GeV/c^{2}"});
-    
-	  variablePlots.push_back({"W_massT",  "m_{T,W}; GeV/c^{2}" });
-	  variablePlots.push_back({"Z_l0_pt",  "pT_{l0,Z} ;GeV/c"   });
-	  variablePlots.push_back({"Z_l1_pt",  "pT_{l1,Z} ;GeV/c"   });
-	  variablePlots.push_back({"W_l_pt",   "pT_{l,W} ;GeV/c"    });
-	  variablePlots.push_back({"W_MET_pt", "MET ;GeV/c"         });
-	  variablePlots.push_back({"AAA cuts u"," cutflow u"});
-	  variablePlots.push_back({"AAA cuts w"," cutflow w"});
+	  variablePlots.push_back({"ZW_massT_3e0m", "m_{T,3l}; GeV/c^{2}"});
+	  variablePlots.push_back({"ZW_massT_2e1m", "m_{T,3l}; GeV/c^{2}"});
+	  variablePlots.push_back({"ZW_massT_1e2m", "m_{T,3l}; GeV/c^{2}"});
+	  variablePlots.push_back({"ZW_massT_0e3m", "m_{T,3l}; GeV/c^{2}"});
+	  variablePlots.push_back({"Z_mass_3e0m",   "m_{Z}; GeV/c^{2}"   });
+	  variablePlots.push_back({"Z_mass_2e1m",   "m_{Z}; GeV/c^{2}"   });
+	  variablePlots.push_back({"Z_mass_1e2m",   "m_{Z}; GeV/c^{2}"   });
+	  variablePlots.push_back({"Z_mass_0e3m",   "m_{Z}; GeV/c^{2}"   });
+	  variablePlots.push_back({"W_massT_3e0m",  "m_{T,W}; GeV/c^{2}" });
+	  variablePlots.push_back({"W_massT_2e1m",  "m_{T,W}; GeV/c^{2}" });
+	  variablePlots.push_back({"W_massT_1e2m",  "m_{T,W}; GeV/c^{2}" });
+	  variablePlots.push_back({"W_massT_0e3m",  "m_{T,W}; GeV/c^{2}" });
+	  variablePlots.push_back({"Z_l0_pt_3e0m",  "pT_{l0,Z} ;GeV/c"   });
+	  variablePlots.push_back({"Z_l0_pt_2e1m",  "pT_{l0,Z} ;GeV/c"   });
+	  variablePlots.push_back({"Z_l0_pt_1e2m",  "pT_{l0,Z} ;GeV/c"   });
+	  variablePlots.push_back({"Z_l0_pt_0e3m",  "pT_{l0,Z} ;GeV/c"   });
+	  variablePlots.push_back({"Z_l1_pt_3e0m",  "pT_{l1,Z} ;GeV/c"   });
+	  variablePlots.push_back({"Z_l1_pt_2e1m",  "pT_{l1,Z} ;GeV/c"   });
+	  variablePlots.push_back({"Z_l1_pt_1e2m",  "pT_{l1,Z} ;GeV/c"   });
+	  variablePlots.push_back({"Z_l1_pt_0e3m",  "pT_{l1,Z} ;GeV/c"   });
+	  variablePlots.push_back({"W_l_pt_3e0m",   "pT_{l,W} ;GeV/c"    });
+	  variablePlots.push_back({"W_l_pt_2e1m",   "pT_{l,W} ;GeV/c"    });
+	  variablePlots.push_back({"W_l_pt_1e2m",   "pT_{l,W} ;GeV/c"    });
+	  variablePlots.push_back({"W_l_pt_0e3m",   "pT_{l,W} ;GeV/c"    });
+	  variablePlots.push_back({"W_MET_pt_3e0m", "MET ;GeV/c"         });
+	  variablePlots.push_back({"W_MET_pt_2e1m", "MET ;GeV/c"         });
+	  variablePlots.push_back({"W_MET_pt_1e2m", "MET ;GeV/c"         });
+	  variablePlots.push_back({"W_MET_pt_0e3m", "MET ;GeV/c"         });
 	}
 
       else if( region=="CRLFR" )
 	{
-	  variablePlots.push_back({"ZL_mass", "m_{3l} ;GeV/c^{2}"});
-	  variablePlots.push_back({"Z_mass",  "m_{Z} ;GeV/c^{2}" });
-	  variablePlots.push_back({"Z_l0_pt", "pT_{l0,Z} ;GeV/c" });
-	  variablePlots.push_back({"Z_l1_pt", "pT_{l1,Z} ;GeV/c" });
-	  variablePlots.push_back({"L_pt",    "pT_{l} ;GeV/c"    });
+	  variablePlots.push_back({"ZL_mass_3e0m", "m_{3l} ;GeV/c^{2}"});
+	  variablePlots.push_back({"ZL_mass_2e1m", "m_{3l} ;GeV/c^{2}"});
+	  variablePlots.push_back({"ZL_mass_1e2m", "m_{3l} ;GeV/c^{2}"});
+	  variablePlots.push_back({"ZL_mass_0e3m", "m_{3l} ;GeV/c^{2}"});
+	  variablePlots.push_back({"Z_mass_3e0m",  "m_{Z} ;GeV/c^{2}" });
+	  variablePlots.push_back({"Z_mass_2e1m",  "m_{Z} ;GeV/c^{2}" });
+	  variablePlots.push_back({"Z_mass_1e2m",  "m_{Z} ;GeV/c^{2}" });
+	  variablePlots.push_back({"Z_mass_0e3m",  "m_{Z} ;GeV/c^{2}" });
+	  variablePlots.push_back({"Z_l0_pt_3e0m", "pT_{l0,Z} ;GeV/c" });
+	  variablePlots.push_back({"Z_l0_pt_2e1m", "pT_{l0,Z} ;GeV/c" });
+	  variablePlots.push_back({"Z_l0_pt_1e2m", "pT_{l0,Z} ;GeV/c" });
+	  variablePlots.push_back({"Z_l0_pt_0e3m", "pT_{l0,Z} ;GeV/c" });
+	  variablePlots.push_back({"Z_l1_pt_3e0m", "pT_{l1,Z} ;GeV/c" });
+	  variablePlots.push_back({"Z_l1_pt_2e1m", "pT_{l1,Z} ;GeV/c" });
+	  variablePlots.push_back({"Z_l1_pt_1e2m", "pT_{l1,Z} ;GeV/c" });
+	  variablePlots.push_back({"Z_l1_pt_0e3m", "pT_{l1,Z} ;GeV/c" });
+	  variablePlots.push_back({"L_pt_3e0m",    "pT_{l} ;GeV/c"    });
+	  variablePlots.push_back({"L_pt_2e1m",    "pT_{l} ;GeV/c"    });
+	  variablePlots.push_back({"L_pt_1e2m",    "pT_{l} ;GeV/c"    });
+	  variablePlots.push_back({"L_pt_0e3m",    "pT_{l} ;GeV/c"    });
 	}
-      
+      //variablePlots.push_back({"AAA_cuts_u"," cutflow u"});
+      variablePlots.push_back({"AAA_cuts"," cutflow weighted"});
   
       //#####end graph names#####
       TFile* dataFile = openRootFile(path, "data");
@@ -288,15 +324,15 @@ void VZZGraphs(string sReqCateg = string(""), string sReqType = "", string reqGr
       cout<<'\n';
 
       //################################EVENT PLOTS ################################
-      if(categToDo.test(0)){
+      // if(categToDo.test(0)){
 
-	//#####Struct creation #####
-	GNames theNames("AAA cuts w", "Cuts", signals, backgrounds);
-	MyGraphs<TH1F> theGraphs = *buildMyGraphs(theNames, signalFiles, backgroundFiles, dataFile);
-	//#####--------------- #####
+      // 	//#####Struct creation #####
+      // 	GNames theNames("AAA cuts w", "Cuts", signals, backgrounds);
+      // 	MyGraphs<TH1F> theGraphs = *buildMyGraphs(theNames, signalFiles, backgroundFiles, dataFile);
+      // 	//#####--------------- #####
 
-	compareCutGraphs(theGraphs, theNames);//Integration makes no sense here
-      }
+      // 	compareCutGraphs(theGraphs, theNames);//Integration makes no sense here
+      // }
 
 
       //################################VARIABLE PLOTS ################################
@@ -373,13 +409,13 @@ template <class TH1Z = TH1F>
 TH1Z* openGraph(TFile* file, const TString& graphName, const TString& fileName){
   if(file == nullptr) return nullptr;
   TH1Z* hSig = (TH1Z*)file->Get(graphName); 
+#ifdef TEST_MODE
   if(hSig == nullptr) 
     cout<<"Could not open \""<<graphName<<"\" from \""<<fileName<<".root"<<"\"\n";
   else{
-#ifdef TEST_MODE
     cout<<"Retrieved \""<<graphName<<"\" from \""<<fileName<<".root\""<<"\tEntries: "<<hSig->GetEntries()<<'\n';
-#endif
   }
+#endif
   return hSig;
 }
 
@@ -455,7 +491,7 @@ bool doThisGraphName(TString graphName, TString reqGrName){
       return false;
     }
   } //else cout<<"\nReturning true\n";
-  cout<<Form("----- doing \"%s\" -----\n", graphName.Data());
+  cout<<Form("\n----- doing \"%s\" -----\n", graphName.Data());
   return true;
 }
 
@@ -513,7 +549,7 @@ void cutsScaled(const MyGraphs<TH>& theGraphs, const GNames& names, UInt_t nbins
   
   for(size_t i = 0; i < theGraphs.vhBkgs.size(); i++){
     if(theGraphs.vhBkgs.at(i) == nullptr){
-      cout<<"\n\tError: missing \""<<names.graphName<<"\" from \""<<names.bkgGrNames.at(0)<<'\n';
+      cout<<"\tError: missing \""<<names.graphName<<"\" from \""<<names.bkgGrNames.at(0)<<'\n';
       continue;//return;
     }
     TH* cgNorm = (TH*)(theGraphs.vhBkgs.at(i)->Clone(names.bkgGrNames.at(i)+" norm"));
@@ -529,7 +565,7 @@ void cutsScaled(const MyGraphs<TH>& theGraphs, const GNames& names, UInt_t nbins
   
   for(size_t i = 0; i < theGraphs.vhSigs.size(); i++){
     if(theGraphs.vhSigs.at(i) == nullptr){
-      cout<<"\n\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(0)<<'\n';
+      cout<<"\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(0)<<'\n';
       continue;//return;
     }
     TH* cgNorm = (TH*)(theGraphs.vhSigs.at(i)->Clone(names.sigGrNames.at(i)+" norm"));
@@ -546,7 +582,7 @@ void cutsScaled(const MyGraphs<TH>& theGraphs, const GNames& names, UInt_t nbins
 template <class TH = TH1F>
 void cutSigSqrtBkg(const MyGraphs<TH>& theGraphs, const GNames& names, UInt_t nbins,float xm,float xM){
   if(theGraphs.vhSigs.at(0) == nullptr){
-    cout<<"\n\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(0)<< " --> can't create CutGraph (sig/sqrt(bkg))";
+    cout<<"\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(0)<< " --> can't create CutGraph (sig/sqrt(bkg))";
     return;
   }
   TCanvas* cCut = new TCanvas("Cuts sig/#sqrt{bkg}", "Cuts sig/#sqrt{bkg}", 10,0,1280,1024);
@@ -592,7 +628,7 @@ void compareCutGraphs(const MyGraphs<TH>& theGraphs, const GNames& names){
   cout<<"\n----compareCutGraphs: "<<names.graphName;
 #endif
   if(theGraphs.vhSigs.at(0) == nullptr){
-    cout<<"\n\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(0)<< " --> can't create CutGraph";
+    cout<<"\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(0)<< " --> can't create CutGraph";
     return;
   }
   //Check range
@@ -619,7 +655,7 @@ void printGraphSame(const MyGraphs<TH>& graphs, const GNames& names, const strin
 
   for(size_t i = 0; i < graphs.vhBkgs.size(); i++){
     if(graphs.vhBkgs.at(i) == nullptr){
-      cout<<"\n\tError: missing \""<<names.graphName<<"\" from \""<<names.bkgGrNames.at(i)<<'\n';
+      cout<<"\tError: missing \""<<names.graphName<<"\" from \""<<names.bkgGrNames.at(i)<<'\n';
       continue;
     }
     TH* cg = (TH*)(graphs.vhBkgs.at(i)->Clone(names.bkgGrNames.at(i)));
@@ -634,7 +670,7 @@ void printGraphSame(const MyGraphs<TH>& graphs, const GNames& names, const strin
   
   for(size_t i = 0; i < graphs.vhSigs.size(); i++){
     if(graphs.vhSigs.at(i) == nullptr){
-      cout<<"\n\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(i)<<'\n';
+      cout<<"\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(i)<<'\n';
       continue;
     }
     TH* cg = (TH*)(graphs.vhSigs.at(i)->Clone(names.sigGrNames.at(i)));
@@ -651,7 +687,7 @@ void printGraphSame(const MyGraphs<TH>& graphs, const GNames& names, const strin
   //c0->BuildLegend(0.7,0.8,0.95,0.95);//It's a kind of magic
   TString name = names.graphName;
   name.ReplaceAll(' ', '_');
-  c0->SaveAs("plots/"+region+name+"_nostack.png");
+  c0->SaveAs(Form("plots/%s_%s_nostack.png", region.c_str(),name.Data()));
 
 }
 
@@ -698,7 +734,7 @@ void printGraphStack(const MyGraphs<TH>& graphs, const GNames& names,const strin
 
   TString name = names.graphName;
   name.ReplaceAll(' ', '_');
-  c1->SaveAs("plots/"+region+name+"_stack.png");
+  c1->SaveAs(Form("plots/%s_%s_stack.png", region.c_str(),name.Data()));
 }
 
 template <class TH>
@@ -738,6 +774,10 @@ void printGraphRatio(const MyGraphs<TH>& graphs, const GNames& names,const strin
   }
   
   //graphs.data->Scale(_FLIP);
+  if(graphs.data == nullptr){
+    cout<<"\tError: missing \""<<names.graphName<<"\" from \""<<"DATA"<<"\"\n";
+    return;
+  }
   graphs.data->SetTitle("data");
   graphs.data->SetMarkerStyle(kFullCircle);
   graphs.data->SetMarkerColor(kBlack);
@@ -766,7 +806,7 @@ void printGraphRatio(const MyGraphs<TH>& graphs, const GNames& names,const strin
 
   TString name = names.graphName;
   name.ReplaceAll(' ', '_');
-  c1->SaveAs("plots/"+region+name+"_ratio.png");
+  c1->SaveAs(Form("plots/%s_%s_ratio.png", region.c_str(),name.Data()));
 }
 
 template <class TH>
@@ -779,7 +819,7 @@ void printGraphSqrt(const MyGraphs<TH>& graphs, const GNames& names,const string
   
   //Takes the first signal as a reference for the range
   if(graphs.vhSigInt.at(0) == nullptr){
-    cout<<"\n\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(0)<<" --> can't create the sig/sqrt(bkg) graph";
+    cout<<"\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(0)<<" --> can't create the sig/sqrt(bkg) graph";
     return;
   }
   TH* hSig0 = (TH*)graphs.vhSigInt.at(0);
@@ -797,7 +837,7 @@ void printGraphSqrt(const MyGraphs<TH>& graphs, const GNames& names,const string
   
   for(size_t i = 0; i < graphs.vhSigInt.size(); i++){
     if(graphs.vhSigInt.at(i) == nullptr){
-      cout<<"\n\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(i)<<'\n';
+      cout<<"\tError: missing \""<<names.graphName<<"\" from \""<<names.sigGrNames.at(i)<<'\n';
       continue;
     }
     TH* cg = (TH*)( graphs.vhSigInt.at(i)->Clone(names.sigGrNames.at(i)+" Integral") ); //Copy integral of signal
@@ -815,7 +855,7 @@ void printGraphSqrt(const MyGraphs<TH>& graphs, const GNames& names,const string
   
   for(size_t i = 0; i < graphs.vhBkgInt.size(); i++){
     if(graphs.vhBkgInt.at(i) == nullptr){
-      cout<<"\n\tError: missing \""<<names.graphName<<"\" from \""<<names.bkgGrNames.at(i)<<'\n';
+      cout<<"\tError: missing \""<<names.graphName<<"\" from \""<<names.bkgGrNames.at(i)<<'\n';
       continue;
     }
     TH* cg = (TH*)( graphs.vhBkgInt.at(i)->Clone(names.bkgGrNames.at(i)+" Integral") ); //Copy integral of background
@@ -843,7 +883,7 @@ void printGraphSqrt(const MyGraphs<TH>& graphs, const GNames& names,const string
 
   TString name = names.graphName;
   name.ReplaceAll(' ', '_');
-  cIS->SaveAs("plots/"+region+name+"_sqrt.png");
+  cIS->SaveAs(Form("plots/%s_%s_sqrt.png", region.c_str(),name.Data()));
 }
 
 // ########################## All the graphs in one place ####################################
@@ -903,7 +943,7 @@ MyGraphs<TH>* buildMyGraphs(const GNames& names, vector<TFile*>& signalFiles, ve
     TH* pippo = openGraph(backgroundFiles.at(i), names.graphName, names.bkgGrNames.at(i));
     //cout<<"\tBackground \""<<names.bkgGrNames.at(i)<<"\" --> "<<(pippo!=nullptr)<<"\n";
     if(pippo == nullptr){
-      cout<<"\n\tError: missing \""<<names.graphName<<"\" from \""<<names.bkgGrNames.at(i)<<"\"\n";
+      cout<<"\tError: missing \""<<names.graphName<<"\" from \""<<names.bkgGrNames.at(i)<<"\"\n";
       continue;//return;
     }
     TH* pippoC = (TH*) ((TH1*) pippo->Clone(strippedGrName))->Rebin(1);
