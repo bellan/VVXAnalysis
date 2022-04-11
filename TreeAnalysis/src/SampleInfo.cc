@@ -147,15 +147,15 @@ SampleInfo::SampleInfo(const std::string& filename, const double & lumi, const d
 
   crossSection_ = &internalCrossSection_;
   std::string xsectype = "internal";
-  if(externalCrossSection_ > 0){
-    crossSection_ = &externalCrossSection_;
-    xsectype = "external";
-  }
   if(externalCrossSectionFromCSV_ > 0){
     crossSection_ = &externalCrossSectionFromCSV_;
     xsectype = "externalFromCSV";
   }
-
+  else if(externalCrossSection_ > 0 && externalCrossSectionFromCSV_ > -2){  // Hack: when requesting the internal xsec, run.py passes extFromCSV=-10
+    crossSection_ = &externalCrossSection_;
+    xsectype = "external";
+  }
+  
   sampleWeight_ = luminosity_*crossSection()/genEvents_;
   
   double signalFraction     = double(signalCounter_)/genEvents_;

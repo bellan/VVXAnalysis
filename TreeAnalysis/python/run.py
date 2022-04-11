@@ -34,7 +34,13 @@ parser.add_option("-r", "--region", dest="regions",
 
 parser.add_option("-e", "--external-cross-section", dest="getExternalCrossSectionFromFile",
                   action="store_true",
+                  default = False,
                   help="Use this option if you want to force to read again the cross-section from the csv file")
+
+parser.add_option("-i", "--internal-cross-section", dest="useInternalCrossSection",
+                  action="store_true",
+                  default = False,
+                  help="Use this option if you want to force to use the internal cross section of the original sample")
 
 parser.add_option("-y", "--year", dest="year",
                   type='int',
@@ -91,7 +97,7 @@ regions        = options.regions
 doSF           = options.doSF
 unblind        = options.unblind
 nofr           = options.nofr
-forcePosWeight =options.forcePosWeight
+forcePosWeight = options.forcePosWeight
 
 if doSF:
     print "Option temporarily disabled!"
@@ -126,8 +132,6 @@ else:
 if(len(regions) != len(tmp)):
     print "WARN: some regions have been dropped to avoid overlap:", [r for r in tmp if r not in regions]
     print "Remaining regions:", regions
-
-getExternalCrossSectionFromFile = False if options.getExternalCrossSectionFromFile is None else options.getExternalCrossSectionFromFile
 
 csvfile = options.csvfile
 
@@ -186,7 +190,8 @@ if isData:
 else:
     print "Running on", Blue("MC")
 print "Sample/type of samples:", Blue(typeofsample)
-print "Get (again) cross sections from csv file: ", Blue(getExternalCrossSectionFromFile)
+print "Get (again) cross sections from csv file: ", Blue(options.getExternalCrossSectionFromFile)
+print "Use internal cross section from sample: ", Blue(options.useInternalCrossSection), '[TODO]'
 print "Region type: ", Blue(regions)
 print "Use internal scale factor: ",Blue(doSF)
 
@@ -265,9 +270,12 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
                 os.popen('rm {0:s}'.format(filepath))
 
         externalXsec = -1
-        if not isData and getExternalCrossSectionFromFile:
+        if not isData and options.getExternalCrossSectionFromFile:
             externalXsec = crossSection(period, csvfile)
             print "For {0:s} {1:s} {2:.6f}".format(period, Warning("Using external cross section:"), externalXsec)
+        elif not isData and options.useInternalCrossSection:
+            externalXsec = -10  # This is a hack: values < -2 are used to signal internal cross section
+            print "For {0:s} {1:s}".format(period, Warning("Using internal cross section"))
 
         print Red('\n------------------------------ {0:s} -------------------------------\n'.format(basefile))
 
