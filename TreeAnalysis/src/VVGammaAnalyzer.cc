@@ -45,8 +45,8 @@ void VVGammaAnalyzer::begin(){
 	
   size_t digits = std::to_string(tree()->GetEntries()).length();
   std::string spaces( digits, ' ' );
-  cout<<"Analyzed:\t"<<spaces<<'/'<<tree()->GetEntries()<<std::flush;
-  // cout<<'\n'; //TEMP
+  // cout<<"Analyzed:\t"<<spaces<<'/'<<tree()->GetEntries()<<std::flush;
+  cout<<'\n'; //TEMP
 	
   return;
 }
@@ -54,7 +54,8 @@ void VVGammaAnalyzer::begin(){
 
 Int_t VVGammaAnalyzer::cut() {
   evtN_++; evtNInReg_[region_]++; evtWInReg_[region_] += theWeight;
-  cout<<"\r\t\t"<<evtN_;  //TEMP
+  // cout<<"\r\t\t"<<evtN_;  //TEMP
+  cout << run << ':' << lumiBlock << ':' << event << '\n';
 	
   theHistograms->fill("AAA_cuts"  , "Cuts weighted"  , CUT_LAYOUT, 1, theWeight);
   theHistograms->fill("AAA_cuts_u", "Cuts unweighted", CUT_LAYOUT, 1);
@@ -92,6 +93,11 @@ Int_t VVGammaAnalyzer::cut() {
 	  &(ZL->second)
       });
   }
+  
+  unsigned int nGoodLeptons = 0;
+  for(const Lepton* l : *leptons_)
+    if(l->passFullSel()) nGoodLeptons++;
+  theHistograms->fill("goodLeptons_N", "Number of leptons passing full selection", 5, -0.5, 4.5, nGoodLeptons, theWeight);
 	
   vector<Photon> kinPhotons_EScale_Up;
   vector<Photon> kinPhotons_EScale_Down;
@@ -220,7 +226,7 @@ void VVGammaAnalyzer::analyze(){
       cout<<"Error: found lept from ZZ/ZW/ZL with ID: "<<l->id()<<'\n';
     }
   }
-  std::string channel_reco = Form("_%lue%lum", nEl, nMu);
+  std::string channel_reco = Form("%lue%lum", nEl, nMu);
   
   LeptonFakeRate();
   PhotonFakeRate();
@@ -234,34 +240,63 @@ void VVGammaAnalyzer::analyze(){
   bool four_lep  = (region_ >= SR4P && region_ <= CR4P_1F) && ZZ && ZZ->pt() > 1.;
   bool three_lep = ((region_>=CR110 && region_<= CR000) || region_ == SR3P ) && ZW && ZW->pt() > 1.;
   bool LFR_lep   = region_ == CRLFR && ZL && ZL->first.pt() > 1.;
+  
   if(four_lep){
     if(thePh)
-      theHistograms->fill("ZZG_mass"+channel_reco,"m_{4l#gamma};[GeV/c^{2}]",25,0.,500,(ZZ->p4()+thePh->p4()).M(),theWeight);
-    theHistograms->fill("ZZ_mass" +channel_reco, "m_{4l};GeV/c^{2}", 25,0.,500. , ZZ->mass()                   , theWeight);
-    theHistograms->fill("Z0_mass" +channel_reco, "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
-    theHistograms->fill("Z1_mass" +channel_reco, "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
-    theHistograms->fill("Z0_l0_pt"+channel_reco, "p_{t,l00};GeV/c" , 20,0.,400. , ZZ->first().daughter(0).pt() , theWeight);
-    theHistograms->fill("Z0_l1_pt"+channel_reco, "p_{t,l01};GeV/c" , 20,0.,400. , ZZ->first().daughter(1).pt() , theWeight);
-    theHistograms->fill("Z1_l0_pt"+channel_reco, "p_{t,l10};GeV/c" , 20,0.,400. , ZZ->second().daughter(0).pt(), theWeight);
-    theHistograms->fill("Z1_l1_pt"+channel_reco, "p_{t,l11};GeV/c" , 20,0.,400. , ZZ->second().daughter(1).pt(), theWeight);
+      theHistograms->fill("ZZG_mass_"+channel_reco,"m_{4l#gamma};[GeV/c^{2}]",25,0.,500,(ZZ->p4()+thePh->p4()).M(),theWeight);
+    
+    theHistograms->fill("ZZ_mass"               , "m_{4l};GeV/c^{2}", 25,0.,500. , ZZ->mass()                   , theWeight);
+    theHistograms->fill("Z0_mass"               , "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
+    theHistograms->fill("Z1_mass"               , "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
+    theHistograms->fill("ZZ_pt"                 , "p_{t,ZZ};GeV/c"  , 20,0.,400. , ZZ->pt()                     , theWeight);
+    theHistograms->fill("Z0_l0_pt"              , "p_{t,l00};GeV/c" , 20,0.,400. , ZZ->first().daughter(0).pt() , theWeight);
+    theHistograms->fill("Z0_l1_pt"              , "p_{t,l01};GeV/c" , 20,0.,400. , ZZ->first().daughter(1).pt() , theWeight);
+    theHistograms->fill("Z1_l0_pt"              , "p_{t,l10};GeV/c" , 20,0.,400. , ZZ->second().daughter(0).pt(), theWeight);
+    theHistograms->fill("Z1_l1_pt"              , "p_{t,l11};GeV/c" , 20,0.,400. , ZZ->second().daughter(1).pt(), theWeight);
+
+    theHistograms->fill("ZZ_mass_" +channel_reco, "m_{4l};GeV/c^{2}", 25,0.,500. , ZZ->mass()                   , theWeight);
+    theHistograms->fill("Z0_mass"  +channel_reco, "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
+    theHistograms->fill("Z1_mass_" +channel_reco, "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
+    theHistograms->fill("ZZ_pt_"   +channel_reco, "p_{t,ZZ};GeV/c"  , 20,0.,400. , ZZ->pt()                     , theWeight);
+    theHistograms->fill("Z0_l0_pt_"+channel_reco, "p_{t,l00};GeV/c" , 20,0.,400. , ZZ->first().daughter(0).pt() , theWeight);
+    theHistograms->fill("Z0_l1_pt_"+channel_reco, "p_{t,l01};GeV/c" , 20,0.,400. , ZZ->first().daughter(1).pt() , theWeight);    
+    theHistograms->fill("Z1_l0_pt_"+channel_reco, "p_{t,l10};GeV/c" , 20,0.,400. , ZZ->second().daughter(0).pt(), theWeight);    
+    theHistograms->fill("Z1_l1_pt_"+channel_reco, "p_{t,l11};GeV/c" , 20,0.,400. , ZZ->second().daughter(1).pt(), theWeight);
   }
   else if(three_lep){
     if(thePh)
-      theHistograms->fill("ZWG_massT"+channel_reco,"m_{T,3l#gamma};[GeV/c^{2}]",25,0.,500,(ZZ->p4()+thePh->p4()).Mt(),theWeight);
-    theHistograms->fill("ZW_massT"+channel_reco, "m_{T,3l};GeV/c^{2}", 25,0.,500. , ZW->p4().Mt()                , theWeight);
-    theHistograms->fill("Z_mass"  +channel_reco, "m_{Z};GeV/c^{2}"   , 35,55.,125., ZW->first().mass()           , theWeight);
-    theHistograms->fill("W_massT" +channel_reco, "m_{T,W};GeV/c^{2}" , 35,55.,125., ZW->second().p4().Mt()       , theWeight);
-    theHistograms->fill("Z_l0_pt" +channel_reco, "p_{t,l00};GeV/c"   , 20,0.,400. , ZW->first().daughter(0).pt() , theWeight);
-    theHistograms->fill("Z_l1_pt" +channel_reco, "p_{t,l01};GeV/c"   , 20,0.,400. , ZW->first().daughter(1).pt() , theWeight);
-    theHistograms->fill("W_l_pt"  +channel_reco, "p_{t,l10};GeV/c"   , 20,0.,400. , ZW->second().daughter(0).pt(), theWeight);
-    theHistograms->fill("W_MET_pt"+channel_reco, "p_{t,l11};GeV/c"   , 20,0.,400. , ZW->second().daughter(1).pt(), theWeight);
+      theHistograms->fill("ZWG_massT_"+channel_reco,"m_{T,3l#gamma};[GeV/c^{2}]",25,0.,500,(ZZ->p4()+thePh->p4()).Mt(),theWeight);
+    
+    theHistograms->fill("ZW_massT"              , "m_{T,3l};GeV/c^{2}", 25,0.,500. , ZW->p4().Mt()                , theWeight);
+    theHistograms->fill("Z_mass"                , "m_{Z};GeV/c^{2}"   , 35,55.,125., ZW->first().mass()           , theWeight);
+    theHistograms->fill("W_massT"               , "m_{T,W};GeV/c^{2}" , 35,55.,125., ZW->second().p4().Mt()       , theWeight);
+    theHistograms->fill("ZW_pt"                 , "p_{t,ZW};GeV/c"    , 20,0.,400. , ZW->pt()                     , theWeight);
+    theHistograms->fill("Z_l0_pt"               , "p_{t,l00};GeV/c"   , 20,0.,400. , ZW->first().daughter(0).pt() , theWeight);
+    theHistograms->fill("Z_l1_pt"               , "p_{t,l01};GeV/c"   , 20,0.,400. , ZW->first().daughter(1).pt() , theWeight);
+    theHistograms->fill("W_l_pt"                , "p_{t,l10};GeV/c"   , 20,0.,400. , ZW->second().daughter(0).pt(), theWeight);
+    theHistograms->fill("W_MET_pt"              , "p_{t,MET};GeV/c"   , 20,0.,400. , ZW->second().daughter(1).pt(), theWeight);
+
+    theHistograms->fill("ZW_massT_"+channel_reco, "m_{T,3l};GeV/c^{2}", 25,0.,500. , ZW->p4().Mt()                , theWeight);
+    theHistograms->fill("Z_mass_"  +channel_reco, "m_{Z};GeV/c^{2}"   , 35,55.,125., ZW->first().mass()           , theWeight);
+    theHistograms->fill("W_massT_" +channel_reco, "m_{T,W};GeV/c^{2}" , 35,55.,125., ZW->second().p4().Mt()       , theWeight);
+    theHistograms->fill("ZW_pt_"   +channel_reco, "p_{t,ZW};GeV/c"    , 20,0.,400. , ZW->pt()                     , theWeight);
+    theHistograms->fill("Z_l0_pt_" +channel_reco, "p_{t,l00};GeV/c"   , 20,0.,400. , ZW->first().daughter(0).pt() , theWeight);
+    theHistograms->fill("Z_l1_pt_" +channel_reco, "p_{t,l01};GeV/c"   , 20,0.,400. , ZW->first().daughter(1).pt() , theWeight);
+    theHistograms->fill("W_l_pt_"  +channel_reco, "p_{t,l10};GeV/c"   , 20,0.,400. , ZW->second().daughter(0).pt(), theWeight);
+    theHistograms->fill("W_MET_pt_"+channel_reco, "p_{t,MET};GeV/c"   , 20,0.,400. , ZW->second().daughter(1).pt(), theWeight);
   }
   else if(LFR_lep){
-    theHistograms->fill("ZL_mass" +channel_reco, "m_{3l};GeV/c^{2}", 25,0.,500. , (ZL->first.p4()+ZL->second.p4()).M(), theWeight);
-    theHistograms->fill("Z_mass"  +channel_reco, "m_{Z};GeV/c^{2}" , 35,55.,125., ZL->first.mass()                    , theWeight);
-    theHistograms->fill("Z_l0_pt" +channel_reco, "p_{t,l00};GeV/c" , 20,0.,400. , ZL->first.daughter(0).pt()          , theWeight);
-    theHistograms->fill("Z_l1_pt" +channel_reco, "p_{t,l00};GeV/c" , 20,0.,400. , ZL->first.daughter(1).pt()          , theWeight);
-    theHistograms->fill("L_pt"    +channel_reco, "p_{t,l3};GeV/c"  , 20,0.,400. , ZL->second.pt()                     , theWeight);
+    theHistograms->fill("ZL_mass_"              , "m_{3l};GeV/c^{2}", 25,0.,500. , (ZL->first.p4()+ZL->second.p4()).M(), theWeight);
+    theHistograms->fill("Z_mass_"               , "m_{Z};GeV/c^{2}" , 35,55.,125., ZL->first.mass()                    , theWeight);
+    theHistograms->fill("Z_l0_pt_"              , "p_{t,l00};GeV/c" , 20,0.,400. , ZL->first.daughter(0).pt()          , theWeight);
+    theHistograms->fill("Z_l1_pt_"              , "p_{t,l00};GeV/c" , 20,0.,400. , ZL->first.daughter(1).pt()          , theWeight);
+    theHistograms->fill("L_pt_"                 , "p_{t,l3};GeV/c"  , 20,0.,400. , ZL->second.pt()                     , theWeight);
+
+    theHistograms->fill("ZL_mass_" +channel_reco, "m_{3l};GeV/c^{2}", 25,0.,500. , (ZL->first.p4()+ZL->second.p4()).M(), theWeight);
+    theHistograms->fill("Z_mass_"  +channel_reco, "m_{Z};GeV/c^{2}" , 35,55.,125., ZL->first.mass()                    , theWeight);
+    theHistograms->fill("Z_l0_pt_" +channel_reco, "p_{t,l00};GeV/c" , 20,0.,400. , ZL->first.daughter(0).pt()          , theWeight);
+    theHistograms->fill("Z_l1_pt_" +channel_reco, "p_{t,l00};GeV/c" , 20,0.,400. , ZL->first.daughter(1).pt()          , theWeight);
+    theHistograms->fill("L_pt_"    +channel_reco, "p_{t,l3};GeV/c"  , 20,0.,400. , ZL->second.pt()                     , theWeight);
   }
   	
   /*
