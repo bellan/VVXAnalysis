@@ -10,10 +10,10 @@ def filter(input_file_name):
     output_file = open(output_file_name, 'w')
 
     linelist=[]
-
     in_ev   = 0 # To know if we're inside an event
     in_ev_1 = 0 # The first line after <event> is information so we must skip that as well
     had_num = 0 # Counts the amount of hadrons (excluding protons) in the event
+    lep_num = 0 # Counts the amount of leptons in the event
     header  = True
 
     for line in input_file:
@@ -36,15 +36,16 @@ def filter(input_file_name):
     
         if in_ev == 1 and line.startswith("</event>"):
             in_ev = 0
-            if had_num == 0:
+            if had_num == 0 and lep_num>3:
                 output_file.write("<event>\n")
                 for line1 in linelist:     
-                    print(line1)
+                    #print(line1)
                     output_file.write(line1)
                 output_file.write("</event>\n")
             had_num = 0
-            for line1 in linelist:
-                linelist.remove(line1)    #no clear method in lxplus's python version (?)
+            lep_num = 0
+            linelist=[]
+            #print(linelist)
             continue
             
         if (line.startswith("<") or line.startswith("  <") or line.startswith("   <")):
@@ -54,9 +55,12 @@ def filter(input_file_name):
         
             if (abs(int(line.split()[0]))>23 and int(line.split()[0])!=2212):
                 had_num = had_num + 1
+            elif (abs(int(line.split()[0]))>10 and abs(int(line.split()[0]))<17):
+                linelist.append(line)
+                lep_num = lep_num + 1
             else:
-                #temp_file.write(line)
-                linelist.append(line) 
+                linelist.append(line)
+             
             #print(line)
     output_file.write("</LesHouchesEvents>")
                       
