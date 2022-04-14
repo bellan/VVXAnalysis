@@ -55,7 +55,7 @@ void VVGammaAnalyzer::begin(){
 Int_t VVGammaAnalyzer::cut() {
   evtN_++; evtNInReg_[region_]++; evtWInReg_[region_] += theWeight;
   // cout<<"\r\t\t"<<evtN_;  //TEMP
-  cout << run << ':' << lumiBlock << ':' << event << '\n';
+  cout << regionType(region_) << ':' << run << ':' << lumiBlock << ':' << event << '\n';
 	
   theHistograms->fill("AAA_cuts"  , "Cuts weighted"  , CUT_LAYOUT, 1, theWeight);
   theHistograms->fill("AAA_cuts_u", "Cuts unweighted", CUT_LAYOUT, 1);
@@ -226,7 +226,7 @@ void VVGammaAnalyzer::analyze(){
       cout<<"Error: found lept from ZZ/ZW/ZL with ID: "<<l->id()<<'\n';
     }
   }
-  std::string channel_reco = Form("%lue%lum", nEl, nMu);
+  std::string channel_reco = Form("%ue%um", nEl, nMu);
   
   LeptonFakeRate();
   PhotonFakeRate();
