@@ -8,6 +8,7 @@
 #include "TTree.h"
 
 #include <algorithm>  // std::move
+#include <fstream>
 
 #include <boost/foreach.hpp>
 // #include <boost/range/join.hpp>  // boost::join
@@ -42,12 +43,14 @@ void VVGammaAnalyzer::begin(){
     photonSFfile->Close();
     }
     delete photonSFfile;*/
-	
+
+  initCherryPick();
+
   size_t digits = std::to_string(tree()->GetEntries()).length();
   std::string spaces( digits, ' ' );
   // cout<<"Analyzed:\t"<<spaces<<'/'<<tree()->GetEntries()<<std::flush;
   cout<<'\n'; //TEMP
-	
+
   return;
 }
 
@@ -56,7 +59,12 @@ Int_t VVGammaAnalyzer::cut() {
   evtN_++; evtNInReg_[region_]++; evtWInReg_[region_] += theWeight;
   // cout<<"\r\t\t"<<evtN_;  //TEMP
   cout << regionType(region_) << ':' << run << ':' << lumiBlock << ':' << event << '\n';
-	
+  if(cherrypickEvt()){
+    theHistograms->fill("cherry_ZZ_mass"    , "Events in {UL#backslashLegacy}: m_{ZZ};m_{ZZ} [GeV/c^{2}]", 25,0.,500., ZZ->mass()                      , theWeight);
+    theHistograms->fill("cherry_ZZ_goodLept", "Events in {UL#backslashLegacy}: # good leptons"           , 5,-0.5,4.5, ZZ->numberOfGoodGrandDaughters(), theWeight);
+    theHistograms->fill("cherry_ZZ_badLept" , "Events in {UL#backslashLegacy}: # bad leptons"            , 5,-0.5,4.5, ZZ->numberOfBadGrandDaughters() , theWeight);
+  }
+
   theHistograms->fill("AAA_cuts"  , "Cuts weighted"  , CUT_LAYOUT, 1, theWeight);
   theHistograms->fill("AAA_cuts_u", "Cuts unweighted", CUT_LAYOUT, 1);
 	
@@ -383,6 +391,21 @@ void VVGammaAnalyzer::finish(){
   cout<<" End of VZZAnalyzer ";
   for(char i=0; i<25; ++i) cout<<'-';
   cout<<"\n\n";
+}
+
+
+void VVGammaAnalyzer::initCherryPick(){
+  for(auto R : regions_){
+    FILE* cherryFile = fopen(Form("data/2016D_%s.txt", regionType(R).c_str()), "r");
+    if(!cherryFile){
+      cout << "Warning: no cherry pick file for region " << regionType(R) << '\n';
+      continue;
+    }
+    unsigned long r, l, e;
+    while( fscanf(cherryFile, "%lu:%lu:%lu", &r, &l, &e) == 3 )
+      cherryEvents[R][r][l].insert(e);
+    fclose(cherryFile);
+  }
 }
 
 
@@ -747,6 +770,23 @@ void VVGammaAnalyzer::effPhotons(){
     theHistograms->fill("AAA_cuts"  , "Cuts weighted"  , CUT_LAYOUT, 6, theWeight);
     theHistograms->fill("AAA_cuts_u", "Cuts unweighted", CUT_LAYOUT, 6);
   }
+}
+
+
+bool VVGammaAnalyzer::cherrypickEvt() const {
+  auto R = cherryEvents.find(region_);
+  if(R == cherryEvents.end()) return false;
+
+  auto r = R->second.find(run);
+  if(r == R->second.end())    return false;
+
+  auto l = r->second.find(lumiBlock);
+  if(l == r->second.end())    return false;
+
+  auto e = l->second.find(event);
+  if(e == l->second.end())    return false;
+
+  return true;
 }
 
 
