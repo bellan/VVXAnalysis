@@ -70,7 +70,7 @@ cmsenv
 git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis
 scram b
 cd VVXAnalysis/TreeAnalysis/bin/
-ln -s $CMSSW_BASE/bin/slc6_amd64_gcc530/eventAnalyzer
+ln -s $CMSSW_BASE/bin/$SCRAM_ARCH/eventAnalyzer
 cd ../python/
 ln -s ../../../ZZAnalysis/AnalysisStep/python/readSampleInfo.py
 cd ..
