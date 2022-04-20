@@ -352,7 +352,9 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
             if typeofsample == 'all' or sample[0:4] == str(year):
                 print sample[0:4]
                 if region == 'all':
-                    run(executable, analysis, sample, _all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)    # runs over all samples in all signal/control regions
+                    outputLocs = run(executable, analysis, sample, _all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)    # runs over all samples in all signal/control regions
+                    for r,loc in outputLocs.items():
+                        outputLocations.setdefault(r, []).append(loc)
 
                 elif region == 'CR':
                     runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight, "",outputLocations)
