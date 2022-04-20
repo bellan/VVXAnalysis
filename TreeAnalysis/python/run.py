@@ -29,7 +29,7 @@ parser = OptionParser(usage="usage: %prog <analysis> <sample> [options]")
 
 parser.add_option("-r", "--region", dest="regions",
                   default="SR4P",
-                  help="Region type are {0:s}. Default is SR.".format(', '.join(regions_allowed)))
+                  help="Region type are {0:s}. Default is SR4P.".format(', '.join(regions_allowed)))
 
 
 parser.add_option("-e", "--external-cross-section", dest="getExternalCrossSectionFromFile",
@@ -99,16 +99,23 @@ unblind        = options.unblind
 nofr           = options.nofr
 forcePosWeight = options.forcePosWeight
 
+#samples = list(set(typeofsample.strip(';,').split( (';' if ';' in typeofsample else ',') )))
+
 if doSF:
     print "Option temporarily disabled!"
     sys.exit(1)
 maxNumEvents = options.maxNumEvents
+
 year         = options.year
+if year not in years:
+    print "Unknown year", year
+    sys.exit(1)
+
 luminosity   = options.luminosity
 
 regions = list(set(regions.strip(';,').split( (';' if ';' in regions else ',') )))
 for region in regions:  
-  if region not in regions_allowed:
+  if region not in regions_allowed and not region == 'all':
     print region, "is an unknown region. Run {0:s} -h for more details.".format(sys.argv[0])
     print "Multiple regions must be separated by a ';'"
     sys.exit(1)
@@ -117,6 +124,7 @@ for region in regions:
 tmp = list(regions)  # temporary copy
 if 'all' in regions:
     regions = ['all']
+    regions = _all_regions
 elif 'MC' in regions:
     regions = ['MC']
 else:
@@ -133,6 +141,12 @@ if(len(regions) != len(tmp)):
     print "WARN: some regions have been dropped to avoid overlap:", [r for r in tmp if r not in regions]
     print "Remaining regions:", regions
 
+
+isData = False
+if typeofsample.startswith( ('DoubleMu', 'DoubleEle', 'MuEG', 'Single', 'MuonEG', 'DoubleEG', str(year), 'test', 'data') ):  # giving a tuple of prefixes returns true if at least one matches
+    luminosity = -1
+    isData = True
+    
 csvfile = options.csvfile
 
 ###########################################################################
@@ -169,12 +183,6 @@ if (not int(output) ==1):
     print "If you have not mispelled the name of your analysis, then please register it adding {0:s} in the constructor of {1:s} and recompile the code.".format(howToRegister, registry)
     sys.exit(1)
     
-isData = False
-# FIXME: to be tested the new line
-if typeofsample.startswith( ('DoubleMu', 'DoubleEle', 'MuEG', 'Single', 'MuonEG', 'DoubleEG', str(year), 'test', 'data') ):  # giving a tuple of prefixes returns true if at least one matches
-#if typeofsample[0:8] == 'DoubleMu' or typeofsample[0:9] == 'DoubleEle' or typeofsample[0:4] == 'MuEG' or typeofsample[0:6] == 'Single' or typeofsample[0:4] == 'test' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:6] == 'MuonEG' or  typeofsample[0:8] == 'DoubleEG' or typeofsample[0:4] == str(year) or typeofsample=='data':
-    luminosity = -1
-    isData = True
 
 
     
@@ -199,7 +207,7 @@ print "Use internal scale factor: ",Blue(doSF)
 
 
 def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight):
-
+  
     # if luminosity is specified thorugh -l option, overwrite the year <-> luminosity decision
     if luminosity is None:
         if year == 2016:
@@ -245,11 +253,11 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
     if len(datasets) == 0:
         datasets = getSamplesBy('identifier',typeofsample,csvfile)
     if len(datasets) == 0 and not typeofsample == 'test':
-        print Important('Error! This sample is not available!'), typeofsample
-
-    sampleprefix = ''
-
+        print Warning('The sample {0:s} is not available in the CSV!'.format(typeofsample))
+        return 
     
+    sampleprefix = ''
+  
 
     ### Override configuration, for test only ###
     if typeofsample == 'test':
@@ -261,13 +269,9 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
     hadd_cmds = {}
     for region, odir in outputdirs.items():
       hadd_cmds[region] = 'hadd -k {0:s}/{1:s}.root'.format(odir,typeofsample)
+      
     for period in datasets:
         basefile = sampleprefix+period
-        for r,outputdir in outputdirs.items():
-            filepath = '{0:s}/{1:s}.root'.format(outputdir,basefile)
-            hadd_cmds[r] += ' {0:s}'.format(filepath)
-            if os.path.exists(filepath):
-                os.popen('rm {0:s}'.format(filepath))
 
         externalXsec = -1
         if not isData and options.getExternalCrossSectionFromFile:
@@ -277,15 +281,23 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
             externalXsec = -10  # This is a hack: values < -2 are used to signal internal cross section
             print "For {0:s} {1:s}".format(period, Warning("Using internal cross section"))
 
+        if not os.path.exists('{0:s}/{1}.root'.format(inputdir,basefile)):
+            print Warning("The ROOT file for the sample {0:s} does not exist in {1:s}".format(basefile,inputdir))
+            return 
         print Red('\n------------------------------ {0:s} -------------------------------\n'.format(basefile))
-
+          
+            
         # outputdir_format is something like "results/2016/VVXAnalyzer_%s". EventAnalyzer will use Form() to replace %s with the various regions to obtain the filenames
         command = "./{0:s} {1:s} '{2:s}' {3:s}/{5:s}.root {4:s}/{5:s}.root {6:.0f} {7:.0f} {8:.5f} {9:.0f} {10:b} {11:b} {12:b} {13:b}".format(executable,analysis,';'.join(regions),inputdir,outputdir_format, basefile, year, luminosity, externalXsec, maxNumEvents, doSF, unblind, nofr, forcePosWeight)
         print "Command going to be executed (run::command):", Violet(command)
         output = subprocess.check_call(command,shell=True)
         print "\n", output
 
-
+        for r,outputdir in outputdirs.items():
+            filepath = '{0:s}/{1:s}.root'.format(outputdir,basefile)
+            if os.path.exists(filepath):
+                hadd_cmds[r] += ' {0:s}'.format(filepath)
+                
 
     print Red('----------------------------------------------------------------------\n')
     for region,outputdir in outputdirs.items():
@@ -295,8 +307,9 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
             print "Command going to be executed (run::hadd):", Violet(hadd_cmds[region])
             output = subprocess.check_call(hadd_cmds[region],shell=True)
         elif len(datasets) == 1 and not datasets[0] == typeofsample:
-            print "One sample in the dataset, just copying it."
-            os.popen('cp {0:s}/{1:s}.root {0:s}/{2:s}.root'.format(outputdir,datasets[0],typeofsample))
+            if os.path.exists('{0:s}/{1:s}.root {0:s}/{2:s}.root'.format(outputdir,datasets[0],typeofsample)):
+                print "One sample in the dataset, just copying it."
+                os.popen('cp {0:s}/{1:s}.root {0:s}/{2:s}.root'.format(outputdir,datasets[0],typeofsample))
 
     output = {reg:'{0:s}/{1:s}.root'.format(odir,typeofsample) for reg,odir in outputdirs.items()}
     print "The output is in", Green([v for k,v in output.items()])
@@ -355,7 +368,7 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
             
     else:
         if region == 'all':
-            run(executable, analysis, typeofsample, all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)  # runs over a specific sample in all signal/control regions
+            run(executable, analysis, typeofsample, _all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)  # runs over a specific sample in all signal/control regions
 
         elif region == 'CR':
             runOverCRs(executable, analysis, typeofsample, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)
@@ -374,13 +387,14 @@ if year == 1618:
         if options.csvfile is None:
             if isData:
                 csvfile = "../Producers/python/samples_"+str(year)+"UL_Data.csv"
-            else: 
+            else:
                 csvfile = "../Producers/python/samples_"+str(year)+"UL_MC.csv"
-            
+                
         print "CSV file: ", Blue(csvfile)
+
         knownProcesses = typeOfSamples(csvfile)
         # knownProcesses.append('test')
-
+        
         runOverSamples(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, knownProcesses, doSF, unblind, nofr, forcePosWeight)
 
 elif year in years:
@@ -391,14 +405,14 @@ elif year in years:
             csvfile = "../Producers/python/samples_"+str(year)+"UL_MC.csv"
         
     print "CSV file: ", Blue(csvfile)
+
     knownProcesses = typeOfSamples(csvfile)
     # knownProcesses.append('test')
-
 
     runOverSamples(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, knownProcesses, doSF, unblind, nofr, forcePosWeight)
 
 else:
-    print "Unknown year"
+    print "Unknown year", year
     sys.exit(1)    
        
 print "\nJob status: ", OK("DONE"),"\n"
