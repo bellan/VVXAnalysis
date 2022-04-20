@@ -12,12 +12,12 @@ import operator
 import CMS_lumi, tdrstyle
 from PersonalInfo import*
 
-regions = ['SR','CR','CR2P2F','CR3P1F','SR_HZZ','CR3P1F_HZZ','CR2P2F_HZZ']
+regions = ['SR4P','CR4P','CR2P2F','CR3P1F','SR_HZZ','CR3P1F_HZZ','CR2P2F_HZZ']
 
 parser = OptionParser(usage="usage: %prog <final state> [options]")
 
 parser.add_option("-r", "--region", dest="region",
-                  default="SR",
+                  default="SR4P",
                   help="Region type are {0:s}. Default is SR.".format(', '.join(regions)))
 
 parser.add_option("-f", "--finalstate", dest="FinalState",
@@ -153,14 +153,14 @@ if category=="Sig":
 
 if category=="RedBkg":
     hData = GetFakeRate("results/"+InputDir,"ZZTo"+FinState+"_"+Var,"data",InfoType[Type][2])            
-    (hMC,leg)=GetMCPlot("results/"+InputDir+region.replace("CR","SR")+"/",category,"ZZTo"+FinState+"_"+Var,False,mcSet,InfoType[Type][2])          
+    (hMC,leg)=GetMCPlot("results/"+InputDir+region.replace("CR4P","SR4P")+"/",category,"ZZTo"+FinState+"_"+Var,False,mcSet,InfoType[Type][2])          
 elif category=="IrrBkg":      
     (hMC,leg)=GetMCPlot("results/"+InputDir+region+"/",category,"ZZTo"+FinState+"_"+Var,False,mcSet,InfoType[Type][2])    
     DoData=False
 elif category=="Bkg":      
     (hMC,leg)=GetMCPlot("results/"+InputDir+region+"/",category,"ZZTo"+FinState+"_"+Var,True,mcSet,InfoType[Type][2])    
 
-elif category=="CR":      
+elif category=="CR4P":      
     (hMC,leg)=GetMCPlot("results/"+InputDir+region+"/",category,"ZZTo"+FinState+"_"+Var,False,mcSet,InfoType[Type][2])    
     (hData,histodata)=GetDataPlot("results/"+InputDir+region+"/","ZZTo"+FinState+"_"+Var,region,InfoType[Type][2])
 else:
@@ -299,8 +299,8 @@ elif category == "All13TeV":
     Title = "All13TeV"
 if state == "Fs":
     Title = "Final_State"
-elif category == "CR":
-    Title = "CR"
+elif category == "CR4P":
+    Title = "CR4P"
 elif category == "Sig13TeV":
     Title = "Sig13TeV"
 

@@ -52,7 +52,7 @@ def GetTypeofsamples(category,Set):
          typeofsamples = signal_tot
     elif category == "data":
        typeofsamples = data
-    elif category == "CR":
+    elif category == "CR4P":
        typeofsamples = bkg_red+signal_tot
     else: sys.exit("ERROR, check Category") 
 
@@ -113,7 +113,7 @@ def GetMCPlot(inputdir, category, plot,Addfake,MCSet,rebin):
 
     if Addfake:
         print Red("\n######### Contribution to Reducible Background#########\n")    
-        hfake = GetFakeRate(inputdir.replace("SR/",""),plot,"data",rebin) 
+        hfake = GetFakeRate(inputdir.replace("SR4P/",""),plot,"data",rebin) 
         stack.Add(hfake)
         leg.AddEntry(hfake,"Reducible background","f")
      
@@ -123,7 +123,7 @@ def GetMCPlot(inputdir, category, plot,Addfake,MCSet,rebin):
 
         #if category=="RedBkg":   files[sample["sample"]] = ROOT.TFile(inputdir+"reducible_background_from_"+sample["sample"]+".root") /To take mc reducible bkg with the data drive method
         if category=="RedBkg": 
-            inputdir = inputdir.replace("CR","SR")
+            inputdir = inputdir.replace("CR4P","SR4P")
             files[sample["sample"]] = ROOT.TFile(inputdir+sample["sample"]+".root")
         else:                    files[sample["sample"]] = ROOT.TFile(inputdir+sample["sample"]+".root")
 
@@ -308,7 +308,7 @@ def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
         print Red("\n######### Contribution to Reducible Background#########\n")    
         for i in ["2e2m","4e","4m","4l"]:
             print Blue("### "+i+" ###")
-            hfake = GetFakeRate(inputdir.replace("SR/",""),"ZZTo"+i+Var,"data",rebin) 
+            hfake = GetFakeRate(inputdir.replace("SR4P/",""),"ZZTo"+i+Var,"data",rebin) 
             if i=="4l":
                 stack.Add(hfake)
                 leg.AddEntry(hfake,"Reducible background","f")
@@ -350,7 +350,7 @@ def GetFakeRate(inputdir,plot, method,rebin):
         #fileFake = ROOT.TFile(inputdir+"data.root")
         return 0.
     else:
-        fileFake = ROOT.TFile(inputdir+"CR/data.root")
+        fileFake = ROOT.TFile(inputdir+"CR4P/data.root")
     hFakeRate=ROOT.TH1F()
     #if "Jet" in plot:
      #   plot = plot.replace("_JERCentralSmear","")
@@ -386,7 +386,7 @@ def GetSignalDefPlot(inputdir,category):
     for s in typeofsamples:
         files[s["sample"]] = ROOT.TFile(inputdir+s["sample"]+".root")
     
-    stack = ROOT.THStack("stack","SR: signal definition for "+category)
+    stack = ROOT.THStack("stack","SR4P: signal definition for "+category)
     hSig = ROOT.TH1F()
     hNoSig = ROOT.TH1F()
 
