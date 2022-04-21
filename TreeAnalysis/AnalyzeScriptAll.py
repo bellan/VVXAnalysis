@@ -2,7 +2,8 @@
 import os
 import sys
 from os import walk
-from python.CrossInfo import*
+#from python.CrossInfo import*
+execfile('./python/CrossInfo.py')
 What= sys.argv[1]
 An = sys.argv[2]
 
