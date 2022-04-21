@@ -52,7 +52,7 @@ def GetTypeofsamples(category,Set):
          typeofsamples = signal_tot
     elif category == "data":
        typeofsamples = data
-    elif category == "CR4P":
+    elif category == "CR4L":
        typeofsamples = bkg_red+signal_tot
     else: sys.exit("ERROR, check Category") 
 
@@ -123,7 +123,7 @@ def GetMCPlot(inputdir, category, plot,Addfake,MCSet,rebin):
 
         #if category=="RedBkg":   files[sample["sample"]] = ROOT.TFile(inputdir+"reducible_background_from_"+sample["sample"]+".root") /To take mc reducible bkg with the data drive method
         if category=="RedBkg": 
-            inputdir = inputdir.replace("CR4P","SR4P")
+            inputdir = inputdir.replace("CR4L","SR4P")
             files[sample["sample"]] = ROOT.TFile(inputdir+sample["sample"]+".root")
         else:                    files[sample["sample"]] = ROOT.TFile(inputdir+sample["sample"]+".root")
 
@@ -350,7 +350,7 @@ def GetFakeRate(inputdir,plot, method,rebin):
         #fileFake = ROOT.TFile(inputdir+"data.root")
         return 0.
     else:
-        fileFake = ROOT.TFile(inputdir+"CR4P/data.root")
+        fileFake = ROOT.TFile(inputdir+"CR4L/data.root")
     hFakeRate=ROOT.TH1F()
     #if "Jet" in plot:
      #   plot = plot.replace("_JERCentralSmear","")
