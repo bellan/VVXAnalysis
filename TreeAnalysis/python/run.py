@@ -93,7 +93,6 @@ parser.add_option("--fpw","--force-pos-weight", dest="forcePosWeight",
                   help="Force the weight to be positive.")
 
 
-
 (options, args) = parser.parse_args()
 
 analysis       = args[0]
@@ -119,11 +118,15 @@ if year not in years:
 luminosity   = options.luminosity
 
 regions = list(set(regions.strip(';,').split( (';' if ';' in regions else ',') )))
+    
 for region in regions:  
-  if region not in regions_allowed and not region == 'all':
-    print region, "is an unknown region. Run {0:s} -h for more details.".format(sys.argv[0])
-    print "Multiple regions must be separated by a ';'"
-    sys.exit(1)
+    if region not in regions_allowed and not region == 'all':
+        print region, "is an unknown region. Run {0:s} -h for more details.".format(sys.argv[0])
+        print "Multiple regions must be separated by a ';'"
+        sys.exit(1)
+
+if len(regions) == 1:
+    region = regions[0]
 
 # Some more logic for regions
 tmp = list(regions)  # temporary copy
@@ -209,6 +212,8 @@ print "Get (again) cross sections from csv file: ", Blue(options.getExternalCros
 print "Use internal cross section from sample: ", Blue(options.useInternalCrossSection), '[TODO]'
 print "Region type: ", Blue(regions)
 print "Use internal scale factor: ",Blue(doSF)
+
+print region
 
 ############################################################################
 
@@ -321,9 +326,10 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
     print "The output is in", Green([v for k,v in output.items()])
     return output
 
-
+###------------------------------------------------------------------------------------###
 
 def mergeDataSamples(outputLocs):
+
     outputLocationsDict = {}
     for r,loc in outputLocs.items():
         outputLocationsDict.setdefault(r, []).append(loc)
@@ -332,16 +338,22 @@ def mergeDataSamples(outputLocs):
     if(len(outputLocationsDict) == 0):
         print Red("Error") + ": outputLocations is empty!"
         exit(1)
+        
     for region,outputLocations in outputLocationsDict.items():
         failure, basename = commands.getstatusoutput('basename {0:s}'.format(outputLocations[0]))
         outputdir = outputLocations[0].replace(basename,'').rstrip('/')
         hadd = 'hadd -k -v 0 {0:s}/data.root {1:s}'.format(outputdir, ' '.join(outputLocations))
+        
         if os.path.exists('{0:s}/data.root'.format(outputdir)):
             os.popen('rm {0:s}/data.root'.format(outputdir))
+            
         print "Command going to be executed (mergeDataSamples::hadd):", Violet(hadd)
         output = subprocess.check_call(hadd,shell=True)
 
+###------------------------------------------------------------------------------------###
+        
 def mergeCRs(analysis, year, inputLocs, antype):
+    
     inputLocations = {}
     for r,loc in inputLocs.items():
         if (antype == 'CR4L' and r in CR4L_regions) or (antype == 'CR3L' and r in CR3L_regions) or (antype == 'CR_HZZ' and r in CR_HZZ_regions):
@@ -349,22 +361,22 @@ def mergeCRs(analysis, year, inputLocs, antype):
 
     outdir = 'results/{0:s}/{1:s}_{2:s}'.format(str(year),analysis,antype)
     if not os.path.exists(outdir): os.popen('mkdir {0:s}'.format(outdir))
-    #outputRedBkg = 'results/{0:s}/{1:s}_CR{2:s}/reducible_background_from_{3:s}.root'.format(str(year), analysis, postfix, sample) 
-    # reducible_background_from is used to run the FR method on MC. 
     outputRedBkg = '{0:s}/reducible_background.root'.format(outdir)
     hadd = 'hadd -k -v 0 {0:s}'.format(outputRedBkg)
-
     for key, values in inputLocations.items():
         for value in values:
             hadd += ' {0:s}'.format(value)
     
     if os.path.exists('{0:s}'.format(outputRedBkg)):
         os.popen('rm {0:s}'.format(outputRedBkg))
+        
     print "Command going to be executed (runOverCRs::hadd):", Violet(hadd)
     output = subprocess.check_call(hadd,shell=True)
+    
     if isData:
         subprocess.check_call('ln -sf reducible_background.root {0:s}/data.root'.format(outdir),shell=True)
 
+###------------------------------------------------------------------------------------###        
     
 def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, knownProcesses, doSF, unblind, nofr, forcePosWeight):
 
@@ -374,12 +386,12 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
         for sample in knownProcesses:
             if typeofsample == 'all' or sample[0:4] == str(year):
                 if region == 'all':                
-                    outputLocs = run(executable, analysis, sample, _all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)    # runs over all samples in all signal/control regions
+                    outputLocs = run(executable, analysis, sample, _all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight) # runs over all samples in all regions
                     mergeCRs(analysis, year, outputLocs, 'CR4L')
                     mergeCRs(analysis, year, outputLocs, 'CR3L')
            
                 else:
-                    outputLocs = run(executable, analysis, sample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)  # runs over all samples in specific control regions
+                    outputLocs = run(executable, analysis, sample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)      # runs over all samples in specific regions
 
         if typeofsample == 'data':
             mergeDataSamples(outputLocs)
@@ -389,17 +401,17 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
 
     else:
         if region == 'all':
-            outputLocs = run(executable, analysis, typeofsample, _all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)  # runs over a specific sample in all signal/control regions
+            outputLocs = run(executable, analysis, typeofsample, _all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)   # runs over a specific sample in all signal/control regions
             mergeCRs(analysis, year, outputLocs, 'CR4L')
             mergeCRs(analysis, year, outputLocs, 'CR3L')
            
         else:
-            outputLocs = run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight) # runs over a specific sample in a specific region
+            outputLocs = run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)        # runs over a specific sample in specific regions
             if region == 'CR4L' or region == 'CR_HZZ' or region == 'CR3L':
                 mergeCRs(analysis, year, outputLocs, region)
 
-            
-
+###------------------------------------------------------------------------------------###        
+                
 ###################################
 ### Actual steering of the code ###
 ###################################
