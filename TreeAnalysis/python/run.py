@@ -14,11 +14,11 @@ from Colours import *
 ############################## User's inputs ###############################
 ############################################################################
 # FIXME: change name
-regions_allowed = ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F',    
-           'SR3P', 'CR110'  , 'CR101'  , 'CR011'  , 'CR100'  , 'CR001'  , 'CR010', 'CR000', 'SR3P_1L', 'SR3P_1P', 'CR3P_1F', 'CRLFR',      
-           'SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F', 'CR', 
-           'SR_HZZ', 'CR2P2F_HZZ', 'CR3P1F_HZZ', 'MC_HZZ',     
-           'MC']
+regions_allowed = ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L',    
+                   'SR3P', 'CR110'  , 'CR101'  , 'CR011'  , 'CR100'  , 'CR001'  , 'CR010', 'CR000', 'SR3P_1L', 'SR3P_1P', 'CR3P_1F', 'CRLFR', 'CR3L',
+                   'SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F', 
+                   'SR_HZZ', 'CR2P2F_HZZ', 'CR3P1F_HZZ', 'CR_HZZ', 'MC_HZZ',     
+                   'MC']
 _all_regions = ['SR4P', 'CR3P1F', 'SR3P', 'CR110', 'CR101', 'CR011', 'CR100', 'CR001', 'CR010', 'CR000', 'SR2P']  # Regions tu run on when "all" are requested
 
 
@@ -123,10 +123,13 @@ for region in regions:
 # Some more logic for regions
 tmp = list(regions)  # temporary copy
 if 'all' in regions:
-    regions = ['all']
     regions = _all_regions
 elif 'MC' in regions:
     regions = ['MC']
+elif 'CR4L' in regions:
+    regions = ['CR3P1F','CR2P2F']
+elif 'CR3L' in regions:
+    regions = ['CR110', 'CR101', 'CR011', 'CR100', 'CR001', 'CR010', 'CR000']   
 else:
     if 'CRLFR' in regions:
         regions = [ r for r in regions if not r == 'CR110']  # Until we implement a MET cut, these two overlap
@@ -136,11 +139,10 @@ else:
         regions = [ r for r in regions if not r.startswith(('SR3P_', 'CR3P_')) ]
     if 'SR2P' in regions:
         regions = [ r for r in regions if not r.startswith(('SR2P_', 'CR2P_')) ]
-
+        
 if(len(regions) != len(tmp)):
     print "WARN: some regions have been dropped to avoid overlap:", [r for r in tmp if r not in regions]
     print "Remaining regions:", regions
-
 
 isData = False
 if typeofsample.startswith( ('DoubleMu', 'DoubleEle', 'MuEG', 'Single', 'MuonEG', 'DoubleEG', str(year), 'test', 'data') ):  # giving a tuple of prefixes returns true if at least one matches
@@ -207,7 +209,7 @@ print "Use internal scale factor: ",Blue(doSF)
 
 
 def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight):
-  
+
     # if luminosity is specified thorugh -l option, overwrite the year <-> luminosity decision
     if luminosity is None:
         if year == 2016:
@@ -268,8 +270,8 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
     # ----- Run over the run periods -----
     hadd_cmds = {}
     for region, odir in outputdirs.items():
-      hadd_cmds[region] = 'hadd -k {0:s}/{1:s}.root'.format(odir,typeofsample)
-      
+      hadd_cmds[region] = 'hadd -k -v 0 {0:s}/{1:s}.root'.format(odir,typeofsample)
+
     for period in datasets:
         basefile = sampleprefix+period
 
@@ -286,7 +288,6 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
             return 
         print Red('\n------------------------------ {0:s} -------------------------------\n'.format(basefile))
           
-            
         # outputdir_format is something like "results/2016/VVXAnalyzer_%s". EventAnalyzer will use Form() to replace %s with the various regions to obtain the filenames
         command = "./{0:s} {1:s} '{2:s}' {3:s}/{5:s}.root {4:s}/{5:s}.root {6:.0f} {7:.0f} {8:.5f} {9:.0f} {10:b} {11:b} {12:b} {13:b}".format(executable,analysis,';'.join(regions),inputdir,outputdir_format, basefile, year, luminosity, externalXsec, maxNumEvents, doSF, unblind, nofr, forcePosWeight)
         print "Command going to be executed (run::command):", Violet(command)
@@ -324,24 +325,28 @@ def mergeDataSamples(outputLocationsDict):
     for region,outputLocations in outputLocationsDict.items():
         failure, basename = commands.getstatusoutput('basename {0:s}'.format(outputLocations[0]))
         outputdir = outputLocations[0].replace(basename,'').rstrip('/')
-        hadd = 'hadd -k {0:s}/data.root {1:s}'.format(outputdir, ' '.join(outputLocations))
+        hadd = 'hadd -k -v 0 {0:s}/data.root {1:s}'.format(outputdir, ' '.join(outputLocations))
         if os.path.exists('{0:s}/data.root'.format(outputdir)):
             os.popen('rm {0:s}/data.root'.format(outputdir))
         print "Command going to be executed (mergeDataSamples::hadd):", Violet(hadd)
         output = subprocess.check_call(hadd,shell=True)
 
-def runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight, postfix = '', outputLocations = []):
-    outputCR2P2F = run(executable, analysis, sample, 'CR2P2F'+postfix, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)    # runs over all samples in the CR2P2F control reagion
-    outputCR3P1F = run(executable, analysis, sample, 'CR3P1F'+postfix, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)    # runs over all samples in the CR3P1F control reagion
+def mergeCRs(analysis, year, inputLocations, antype):
 
-    if not os.path.exists('results/{0:s}/{1:s}_CR{2:s}'.format(str(year),analysis,postfix)): os.popen('mkdir results/{0:s}/{1:s}_CR{2:s}'.format(str(year),analysis,postfix))
-    outputRedBkg = 'results/{0:s}/{1:s}_CR{2:s}/reducible_background_from_{3:s}.root'.format(str(year), analysis, postfix, sample)
-    hadd = 'hadd -k {0:s} {1:s} {2:s}'.format(outputRedBkg, outputCR2P2F, outputCR3P1F)
+    if not os.path.exists('results/{0:s}/{1:s}_{2:s}'.format(str(year),analysis,antype)): os.popen('mkdir results/{0:s}/{1:s}_{2:s}'.format(str(year),analysis,antype))
+    #outputRedBkg = 'results/{0:s}/{1:s}_CR{2:s}/reducible_background_from_{3:s}.root'.format(str(year), analysis, postfix, sample) # FIXME: change GL's code to new naming!
+    # reducible_background_from is used to run the FR method on MC. 
+    outputRedBkg = 'results/{0:s}/{1:s}_{2:s}/data.root'.format(str(year), analysis, antype)
+    hadd = 'hadd -k -v 0 {0:s}'.format(outputRedBkg)
+
+    for key, values in inputLocations.items():
+        for value in values:
+            hadd += ' {0:s}'.format(value)
+    
     if os.path.exists('{0:s}'.format(outputRedBkg)):
         os.popen('rm {0:s}'.format(outputRedBkg))
-    print "Command going to be executed (runOverCRs::hadd):", Violet(hadd)
+    print "Command going to be executed (runOverCRs4L::hadd):", Violet(hadd)
     output = subprocess.check_call(hadd,shell=True)
-    outputLocations.append(outputRedBkg)
 
     
 def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, knownProcesses, doSF, unblind, nofr, forcePosWeight):
@@ -350,16 +355,11 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
         outputLocations = {}
         for sample in knownProcesses:
             if typeofsample == 'all' or sample[0:4] == str(year):
-                print sample[0:4]
-                if region == 'all':
+                if region == 'all':                
                     outputLocs = run(executable, analysis, sample, _all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)    # runs over all samples in all signal/control regions
                     for r,loc in outputLocs.items():
                         outputLocations.setdefault(r, []).append(loc)
 
-                elif region == 'CR':
-                    runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight, "",outputLocations)
-                elif region == 'CR_HZZ': 
-                    runOverCRs(executable, analysis, sample, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight, '_HZZ',outputLocations)
                 else:
                     outputLocs = run(executable, analysis, sample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)  # runs over all samples in specific control regions
                     for r,loc in outputLocs.items():
@@ -367,15 +367,27 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
 
         if typeofsample == 'data':
             mergeDataSamples(outputLocations)
+
+            if region == 'CR4L':
+                mergeCRs(analysis, year, outputLocations, region)
+
+            elif region == 'CR_HZZ': 
+                mergeCRs(analysis, year, outputLocations, region)
+
+            if region == 'CR3L':
+                mergeCRs(analysis, year, outputLocations, region)
+                
+                
             
     else:
         if region == 'all':
             run(executable, analysis, typeofsample, _all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)  # runs over a specific sample in all signal/control regions
 
-        elif region == 'CR':
-            runOverCRs(executable, analysis, typeofsample, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)
-        elif region == 'CR_HZZ':
-            runOverCRs(executable, analysis, typeofsample, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight, postfix='_HZZ')
+        # To be fixed!!!
+        #elif region == 'CR4L':
+        #    runOverCRs4L(executable, analysis, typeofsample, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)
+        #elif region == 'CR_HZZ':
+        #    runOverCRs4L(executable, analysis, typeofsample, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight, postfix='_HZZ')
         else:
             run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight) # runs over a specific sample in a specific region
 
