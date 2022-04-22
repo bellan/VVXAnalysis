@@ -328,13 +328,8 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
 
 ###------------------------------------------------------------------------------------###
 
-def mergeDataSamples(outputLocs):
+def mergeDataSamples(outputLocationsDict):
 
-    outputLocationsDict = {}
-    for r,loc in outputLocs.items():
-        outputLocationsDict.setdefault(r, []).append(loc)
-
-    
     if(len(outputLocationsDict) == 0):
         print Red("Error") + ": outputLocations is empty!"
         exit(1)
@@ -355,10 +350,15 @@ def mergeDataSamples(outputLocs):
 def mergeCRs(analysis, year, inputLocs, antype):
     
     inputLocations = {}
-    for r,loc in inputLocs.items():
-        if (antype == 'CR4L' and r in CR4L_regions) or (antype == 'CR3L' and r in CR3L_regions) or (antype == 'CR_HZZ' and r in CR_HZZ_regions):
-            inputLocations.setdefault(r, []).append(loc)
 
+    if antype == 'CR4L':
+        inputLocations = {k: inputLocs[k] for k in CR4L_regions}
+    if antype == 'CR3L':
+        inputLocations = {k: inputLocs[k] for k in CR3L_regions}
+    if antype == 'CR_HZZ':
+        inputLocations = {k: inputLocs[k] for k in CR_HZZ_regions}
+
+        
     outdir = 'results/{0:s}/{1:s}_{2:s}'.format(str(year),analysis,antype)
     if not os.path.exists(outdir): os.popen('mkdir {0:s}'.format(outdir))
     outputRedBkg = '{0:s}/reducible_background.root'.format(outdir)
@@ -380,35 +380,47 @@ def mergeCRs(analysis, year, inputLocs, antype):
     
 def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, knownProcesses, doSF, unblind, nofr, forcePosWeight):
 
-    ouputLocs = {}
+    outputLocations = {}
     
     if typeofsample == 'all' or typeofsample == 'data':
         for sample in knownProcesses:
             if typeofsample == 'all' or sample[0:4] == str(year):
                 if region == 'all':                
                     outputLocs = run(executable, analysis, sample, _all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight) # runs over all samples in all regions
-                    mergeCRs(analysis, year, outputLocs, 'CR4L')
-                    mergeCRs(analysis, year, outputLocs, 'CR3L')
-           
+                    for r,loc in outputLocs.items():
+                        outputLocations.setdefault(r, []).append(loc)
+
                 else:
                     outputLocs = run(executable, analysis, sample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)      # runs over all samples in specific regions
+                    for r,loc in outputLocs.items():
+                        outputLocations.setdefault(r, []).append(loc)
 
         if typeofsample == 'data':
-            mergeDataSamples(outputLocs)
+            mergeDataSamples(outputLocations)
 
-            if region == 'CR4L' or region == 'CR_HZZ' or region == 'CR3L':
-                mergeCRs(analysis, year, outputLocs, region)
+        if region == 'CR4L' or region == 'CR_HZZ' or region == 'CR3L':
+            mergeCRs(analysis, year, outputLocations, region)
+
+        if region == 'all':
+            mergeCRs(analysis, year, outputLocations, 'CR4L')
+            mergeCRs(analysis, year, outputLocations, 'CR3L')
 
     else:
         if region == 'all':
             outputLocs = run(executable, analysis, typeofsample, _all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)   # runs over a specific sample in all signal/control regions
-            mergeCRs(analysis, year, outputLocs, 'CR4L')
-            mergeCRs(analysis, year, outputLocs, 'CR3L')
+            for r,loc in outputLocs.items():
+                outputLocations.setdefault(r, []).append(loc)
+
+            mergeCRs(analysis, year, outputLocations, 'CR4L')
+            mergeCRs(analysis, year, outputLocations, 'CR3L')
            
         else:
             outputLocs = run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)        # runs over a specific sample in specific regions
+            for r,loc in outputLocs.items():
+                outputLocations.setdefault(r, []).append(loc)
+
             if region == 'CR4L' or region == 'CR_HZZ' or region == 'CR3L':
-                mergeCRs(analysis, year, outputLocs, region)
+                mergeCRs(analysis, year, outputLocations, region)
 
 ###------------------------------------------------------------------------------------###        
                 
