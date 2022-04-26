@@ -10,6 +10,7 @@
 #include "VVXAnalysis/DataFormats/interface/RegionsCounter.h"
 #include "VVXAnalysis/DataFormats/interface/RegionTypes.h"
 #include "VVXAnalysis/DataFormats/interface/Proton.h"
+#include "VVXAnalysis/DataFormats/interface/ProtonPair.h"
 
 #ifdef __CINT__
 
@@ -21,6 +22,7 @@
 #pragma link C++ class  phys::Jet::JetScores+;
 
 #pragma link C++ class  phys::Proton+;
+#pragma link C++ class  phys::ProtonPair+;
 #pragma link C++ class  phys::Particle+;
 #pragma link C++ class  phys::Lepton+;
 #pragma link C++ class  phys::Jet+;
@@ -38,6 +40,7 @@
 #pragma link C++ class  phys::DiBoson<phys::Electron, phys::Electron >+;
 
 #pragma link C++ class  std::vector<phys::Proton>;
+#pragma link C++ class  std::vector<phys::ProtonPair>;
 #pragma link C++ class  std::vector<phys::Particle>;
 #pragma link C++ class  std::vector<phys::Lepton>;
 #pragma link C++ class  std::vector<phys::Jet>;

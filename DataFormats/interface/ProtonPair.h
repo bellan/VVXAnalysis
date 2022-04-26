@@ -44,7 +44,7 @@ namespace phys {
     Double_t ypp() const {return -0.5*log(daughter0_.xi()/daughter1_.xi());}
     
     //method to extract the interaction z position
-    Double_t vz() const {return phys::SPEEDOFLIGHT*(daughter0_.time()-daughter1_.time())/2;}
+    //Double_t vz() const {return phys::SPEEDOFLIGHT*(daughter0_.time()-daughter1_.time())/2;}
     
 
   private:

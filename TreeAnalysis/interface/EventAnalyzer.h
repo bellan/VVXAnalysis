@@ -27,6 +27,7 @@
 #include "VVXAnalysis/DataFormats/interface/TypeDefs.h"
 #include "VVXAnalysis/DataFormats/interface/MELA.h"
 #include "VVXAnalysis/DataFormats/interface/GenEventWeights.h"
+#include "VVXAnalysis/DataFormats/interface/Proton.h"
 
 #include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/SampleInfo.h"
@@ -189,6 +190,10 @@ public:
   
   // Photons
   std::vector<phys::Photon> *photons; TBranch *b_photons;
+
+  // Protons
+  std::vector<phys::Proton> *singleRPprotons; TBranch *b_singleRPprotons;
+  std::vector<phys::Proton> *multiRPprotons; TBranch *b_multiRPprotons;
 
   // Bosons Candidate
   std::vector<phys::Boson<phys::Jet> >      *VhadCand; TBranch *b_VhadCand;

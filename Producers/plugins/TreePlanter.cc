@@ -962,16 +962,14 @@ phys::Photon TreePlanter::fill(const pat::Photon &photon) const {
 
 phys::Proton TreePlanter::fill(bool ismultiRP, const reco::ForwardProton &proton) const {
 		
-  phys::Proton output(ismultiRP,proton.xi(),proton.vx(),proton.vy(),proton.thetaX(),proton.thetaY(),proton.time());
+  phys::Proton output(ismultiRP,proton.xi(),proton.vx(),proton.vy(),proton.thetaX(),proton.thetaY());
   output.xiError_    = proton.xiError();
   output.vxError_    = proton.vxError();
   output.vyError_    = proton.vyError();
   output.thetaXError_    = proton.thetaXError();
   output.thetaYError_    = proton.thetaYError();
-  output.timeError_    = proton.timeError();
-  
 	
-	return output;
+  return output;
 }
 
 

@@ -6,10 +6,12 @@
 #include "../interface/Boson.h"
 // #include "../DataFormats/interface/DiBoson.h"
 #include "../interface/Proton.h"
+#include "../interface/ProtonPair.h"
 
 #ifdef __CINT__
 
 #pragma link C++ class  phys::Proton+;
+#pragma link C++ class  phys::ProtonPair+;
 #pragma link C++ class  phys::Particle+;
 // #pragma link C++ class  phys::Lepton+;
 // #pragma link C++ class  phys::Jet+;
@@ -26,6 +28,7 @@
 #pragma link C++ enum GenStatusBits;
 
 #pragma link C++ class  std::vector<phys::Proton>;
+#pragma link C++ class  std::vector<phys::ProtonPair>;
 #pragma link C++ class  std::vector<phys::Particle>;
 // #pragma link C++ class  std::vector<phys::Lepton>;
 // #pragma link C++ class  std::vector<phys::Jet>;

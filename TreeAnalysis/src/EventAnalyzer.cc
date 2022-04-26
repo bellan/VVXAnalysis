@@ -121,6 +121,11 @@ void EventAnalyzer::Init(TTree *tree)
   // Z+L 
   ZL = new ZLCompositeCandidate()    ; b_ZLCand = 0; theTree->SetBranchAddress("ZLCand", &ZL, &b_ZLCand);
 
+  // Protons
+  singleRPprotons = 0;      b_singleRPprotons = 0;    theTree->SetBranchAddress("singleRPprotons", &singleRPprotons, &b_singleRPprotons);
+  //singleRPprotons  = new std::vector<phys::Proton>();
+  multiRPprotons = 0;      b_multiRPprotons = 0;    theTree->SetBranchAddress("multiRPprotons", &multiRPprotons, &b_multiRPprotons);
+  //multiRPprotons  = new std::vector<phys::Proton>();
 
   // Gen Particles   
   genParticles   = 0;                                                b_genParticles   = 0; theTree->SetBranchAddress("genParticles"  , &genParticles  , &b_genParticles);
@@ -202,6 +207,8 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   if(pjetsAK8)    stable_sort(pjetsAK8->begin(),    pjetsAK8->end(),    phys::PtComparator());
   if(pgenJetsAK8) stable_sort(pgenJetsAK8->begin(), pgenJetsAK8->end(), phys::PtComparator());
   if(photons)     stable_sort(photons->begin(),   photons->end(),   phys::PtComparator());
+  if(singleRPprotons)     stable_sort(singleRPprotons->begin(),   singleRPprotons->end(),   phys::PtComparator());
+  if(multiRPprotons)     stable_sort(multiRPprotons->begin(),   multiRPprotons->end(),   phys::PtComparator());
 	
   // Some selection on jets
   jets->clear(); centralJets->clear(); 
