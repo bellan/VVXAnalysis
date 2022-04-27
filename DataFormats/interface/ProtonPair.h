@@ -40,7 +40,7 @@ namespace phys {
     void setPassFullSel(Bool_t  fs) {passFullSel_ = fs;}
 
     //methods to extract the expected mass and rapidity value of the central system
-    Double_t mpp() const {return (daughter0_.Ebeam()+daughter1_.Ebeam())*daughter0_.xi()*daughter1_.xi();}
+    Double_t mpp() const {return (daughter0_.Ebeam()+daughter1_.Ebeam())*sqrt(daughter0_.xi()*daughter1_.xi());}
     Double_t ypp() const {return -0.5*log(daughter0_.xi()/daughter1_.xi());}
     
     //method to extract the interaction z position

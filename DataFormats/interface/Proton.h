@@ -56,6 +56,8 @@ namespace phys {
     
     Double_t Ebeam() const {return Ebeam_;}
     
+    Bool_t LHCSector() const {return LHCSector_;}
+    
     Double_t xiError() const {return xiError_;}
     Double_t vxError() const {return vxError_;}
     Double_t vyError() const {return vyError_;}
@@ -92,6 +94,8 @@ namespace phys {
     Double_t thetaX_;
     Double_t thetaY_;
     //Double_t time_;
+    
+    Bool_t LHCSector_;       //  0 -> sector 45, 1 -> sector 56
 
     Double_t xiError_;
     Double_t vxError_;
