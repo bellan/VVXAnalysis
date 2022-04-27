@@ -40,9 +40,9 @@ void PPZZAnalyzer::analyze(){
   }
   
 
-  for(int i=0; i<eventprotons.size();i++){
+  for(unsigned int i=0; i<eventprotons.size();i++){
     p1=eventprotons[i];
-    for(int j=i+1; j<eventprotons.size();j++){
+    for(unsigned int j=i+1; j<eventprotons.size();j++){
       p2=eventprotons[j];
       pp=phys::ProtonPair(p1,p2);
       theHistograms->fill("mpp","Expected mass of ZZ pair",25,300,2800,pp.mpp(),theWeight);

@@ -22,12 +22,13 @@ namespace phys {
        passFullSel_(false)
       {}
       
-  ProtonPair(const Proton& p1, const Proton& p2):
+    ProtonPair(const Proton& p1, const Proton& p2):
         daughter0_(p1)
       , daughter1_(p2)
       , passFullSel_(false)
       {}
     
+    virtual ~ProtonPair(){}
 
     Proton first()  const {return daughter0_;}
     Proton second() const {return daughter1_;}

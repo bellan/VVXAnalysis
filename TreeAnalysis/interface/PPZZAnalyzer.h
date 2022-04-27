@@ -11,7 +11,7 @@
 #include "EventAnalyzer.h"
 #include "RegistrableAnalysis.h"
 #include "VVXAnalysis/Commons/interface/Constants.h"
-#include "../DataFormats/interface/ProtonPair.h"
+#include "VVXAnalysis/DataFormats/interface/ProtonPair.h"
 
 class PPZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<PPZZAnalyzer>{
 

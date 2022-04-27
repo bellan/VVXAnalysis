@@ -968,8 +968,8 @@ phys::Proton TreePlanter::fill(bool ismultiRP, const reco::ForwardProton &proton
   output.vyError_    = proton.vyError();
   output.thetaXError_    = proton.thetaXError();
   output.thetaYError_    = proton.thetaYError();
-  if(proton.lhcSector()==LHCSector::sector45){output.LHCSector=True;}
-  else{output.LHCSector=False;}
+  if(proton.lhcSector()==proton.LHCSector::sector45){output.LHCSector_=true;}
+  else{output.LHCSector_=false;}
 	
   return output;
 }
