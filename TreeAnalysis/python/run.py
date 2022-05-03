@@ -361,7 +361,10 @@ def mergeCRs(analysis, year, inputLocs, antype):
         
     outdir = 'results/{0:s}/{1:s}_{2:s}'.format(str(year),analysis,antype)
     if not os.path.exists(outdir): os.popen('mkdir {0:s}'.format(outdir))
-    outputRedBkg = '{0:s}/reducible_background.root'.format(outdir) # FIXME! MC overwrites the results!
+    if isData:
+        outputRedBkg = '{0:s}/reducible_background.root'.format(outdir)
+    else:
+        outputRedBkg = '{0:s}/reducible_background_MC.root'.format(outdir)
     hadd = 'hadd -k -v 0 {0:s}'.format(outputRedBkg)
     for key, values in inputLocations.items():
         for value in values:
