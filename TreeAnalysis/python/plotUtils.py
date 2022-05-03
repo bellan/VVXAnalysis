@@ -186,7 +186,7 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin):
         
         h.Scale(sample["kfactor"])
 
-        if any(cr in ['CR2P2F','CR100','CR010','CR001'] for cr in inputdir):
+        if any(cr in inputdir for cr in ['CR2P2F','CR100','CR010','CR001']):
             h.Scale(-1)
 
         
@@ -231,7 +231,7 @@ def GetDataPlot(inputdir, plot, Region,rebin):
     for sample in typeofsamples:
         h = files[sample["sample"]].Get(plot)
 
-        if any(cr in ['CR2P2F','CR100','CR010','CR001'] for cr in inputdir):
+        if any(cr in inputdir for cr in ['CR2P2F','CR100','CR010','CR001']):
             h.Scale(-1)
 
         
