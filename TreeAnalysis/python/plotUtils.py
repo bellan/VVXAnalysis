@@ -18,13 +18,20 @@ vbsZZ    = [{"sample":'ZZ4lJJ'         , "color":ROOT.kAzure-6 , "name":'VBS', "
 HZZ      = [{"sample":'HZZ'            , "color":ROOT.kAzure-7 , "name":'higgs', "kfactor": 1.0}]
     
 WZ       = [{"sample":'WZTo3LNu'             , "color":ROOT.kRed+2   , "name":'WZ', "kfactor": 1.0}]
-tt       = [{"sample":'TTTo2L2Nu'         , "color":ROOT.kRed-4   , "name":'t#bar{t}', "kfactor": 1.0},
+
+WW       = [{"sample":'WWTo2L2Nu'            , "color":ROOT.kRed+6   , "name":'WW', "kfactor": 1.0}]
+
+tt       = [{"sample":'TTTo2L2Nu'      , "color":ROOT.kRed-4   , "name":'t#bar{t}', "kfactor": 1.0},
             {"sample":'TTWJets'        , "color":ROOT.kRed-4   , "name":'t#bar{t}', "kfactor": 1.0},
             {"sample":'TTGJets'        , "color":ROOT.kRed-4   , "name":'t#bar{t}', "kfactor": 1.0}]
 
+W        = [{"sample":'WJetsToLNu' , "color":ROOT.kGreen-1 , "name":'W+jets', "kfactor": 1.0}]
+
 DY       = [{"sample":'DYJetsToLL_M50' , "color":ROOT.kGreen-5 , "name":'DY', "kfactor": 1.0}]
 
-ZG       = [{"sample":'ZGToLLG' , "color":ROOT.kGreen-5 , "name":'Z\gamma', "kfactor": 1.0}]
+ttXY     = [{"sample":'ttX'            , "color":ROOT.kBlue-1 , "name":'ttXY', "kfactor": 1.0}]
+
+ZG       = [{"sample":'ZGToLLG' , "color":ROOT.kGreen-4 , "name":'Z\gamma', "kfactor": 1.0}]
 
 WWW      = [{"sample":'WWW'            , "color":ROOT.kGreen-1 , "name":'others', "kfactor": 1.0}]
 
@@ -33,7 +40,7 @@ ttZ      = [{"sample":'TTZJets_M10_MLM', "color":ROOT.kOrange-5, "name":'t#bar{t
 
 data     = [{"sample":'data'           , "color":ROOT.kBlack   , "name":'Data', "kfactor": 1.0}]
 
-def getSamplesByRegion(region, MCSet):
+def getSamplesByRegion(region, MCSet, predType):
     
     qqZZ = {}
     if MCSet == 'pow':
@@ -44,14 +51,23 @@ def getSamplesByRegion(region, MCSet):
 
     
     if region == 'SR4P':
-        tot = qqZZ + ggZZ + vbsZZ + HZZ + WWZ + ttZ
+        if predType == 'fromCR':
+            tot = qqZZ + ggZZ + vbsZZ + HZZ + WWZ + ttZ    
+        elif predType == 'fullMC':
+            tot = qqZZ + ggZZ + vbsZZ + HZZ + WZ + tt + DY + WWW + WWZ + ttZ + ZG + ttXY + WW + W
+        else:
+            sys.exit("Wrong prediction type, fromCR from MC still needs to be added")
+            
+    elif region == 'SR3P':
+        if predType == 'fromCR':
+            tot = qqZZ + ggZZ + vbsZZ + HZZ + WWZ + ttZ + WZ    
+        elif predType == 'fullMC':
+            tot = qqZZ + ggZZ + vbsZZ + HZZ + WZ + tt + DY + WWW + WWZ + ttZ + ZG + ttXY + WW + W
+        else:
+            sys.exit("Wrong prediction type, fromCR from MC still needs to be added")
 
-    if region == 'SR3P':
-        tot = qqZZ + ggZZ + vbsZZ + HZZ + WZ + tt + DY + WWW + WWZ + ttZ + ZG
-        #tot = qqZZ + ggZZ + vbsZZ + HZZ + WZ + WWW + WWZ + ttZ
-
-    if region == 'CR101':
-        tot = qqZZ + ggZZ + vbsZZ + HZZ + WZ + tt + DY + WWW + WWZ + ttZ + ZG
+    else:
+        tot = qqZZ + ggZZ + vbsZZ + HZZ + WZ + tt + DY + WWW + WWZ + ttZ + ZG + ttXY + WW + W
         
 
     return tot
@@ -107,8 +123,8 @@ def GetTypeofsamples(category,Set):
     return typeofsamples
     
 
-####### Extract MC plot #########
-def GetMCPlot(region, inputdir, category, plot,Addfake,MCSet,rebin):
+####### Extract predictions plot #########
+def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin):
 
     controlRegion = ''
     if region == 'SR4P':
@@ -121,20 +137,19 @@ def GetMCPlot(region, inputdir, category, plot,Addfake,MCSet,rebin):
         
     
     print Red("\n#########################################\n############## Predictions ##############\n#########################################\n")
-    print "Category",category
     print "plot",plot
     leg = TLegend(0.6,0.52,0.79,0.87)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.025)
 
-    typeofsamples = getSamplesByRegion(region, MCSet)
+    typeofsamples = getSamplesByRegion(region, MCSet, predType)
 
     files = {}
     filesbkg = {}
     stack = ROOT.THStack("stack",plot+"_stack")
     ErrStat = ctypes.c_double(0.)
 
-    if Addfake:
+    if predType == 'fromCR':
         print Green("\nNon-prompt leptons background"),
         hfake = GetFakeRate(inputdir.replace(region,controlRegion),plot,"data",rebin) 
         stack.Add(hfake)
@@ -170,7 +185,11 @@ def GetMCPlot(region, inputdir, category, plot,Addfake,MCSet,rebin):
             continue
         
         h.Scale(sample["kfactor"])
-                
+
+        if 'CR2P2F' or 'CR100' or 'CR010' or "CR001" in inputdir:
+            h.Scale(-1)
+
+        
         print "{0} contribution \t {1:.3f} +- {2: .3f} \n".format(sample["sample"], h.IntegralAndError(0,-1,ErrStat), ErrStat.value)
 
         # Get overflow events too#
@@ -178,15 +197,12 @@ def GetMCPlot(region, inputdir, category, plot,Addfake,MCSet,rebin):
 
         if rebin!=1: h.Rebin(rebin) 
 
-        if "IrrBkg" in category:    h.SetLineColor(1)
-        else:   h.SetLineColor(sample["color"])
+        h.SetLineColor(sample["color"])
 
         h.SetFillColor(sample["color"])
         h.SetMarkerStyle(21)
         h.SetMarkerColor(sample["color"])
 
-        if "CR2P2F" in inputdir:
-            h.Scale(-1)
         stack.Add(h)
         if LastColor!=sample["color"]:
             leg.AddEntry(h,sample["name"],"f")
@@ -212,6 +228,11 @@ def GetDataPlot(inputdir, plot, Region,rebin):
     isFirst=1
     for sample in typeofsamples:
         h = files[sample["sample"]].Get(plot)
+
+        if 'CR2P2F' or 'CR100' or 'CR010' or "CR001" in inputdir:
+            h.Scale(-1)
+
+        
         if not h:
             print sample['sample'],'has no entries or is a zombie'
             continue
