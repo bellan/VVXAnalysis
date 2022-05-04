@@ -12,6 +12,8 @@
 #include <TObject.h>
 #include <TLorentzVector.h> 
 
+#include "Particle.h"
+
 #include <iostream>
 #include <cmath>
 
@@ -42,6 +44,9 @@ namespace phys {
       , ismultiRP_(multiRP){
     }
     
+    Proton(Particle genProton)
+      : xi_(1-genProton.e()/6500){
+    }
     
     /// Destructor
     virtual ~Proton(){}
@@ -75,7 +80,7 @@ namespace phys {
     
     Bool_t ismultiRP()    const {return ismultiRP_;}
     
-    bool appropriatexi() const {if(xi_>0.04) return 1;
+    bool appropriatexi() const {if(xi_>0.05) return 1;
                                 else return 0;}
 
     void setEfficenySFUnc(float effSfUnc ) {efficiencySFUnc_ = effSfUnc;}

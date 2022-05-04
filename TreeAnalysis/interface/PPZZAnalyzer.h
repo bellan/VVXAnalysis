@@ -28,6 +28,7 @@ public:
   
   virtual Int_t cut();
 
+  virtual void finish();
 
  private:
   friend class Selector<PPZZAnalyzer>;
