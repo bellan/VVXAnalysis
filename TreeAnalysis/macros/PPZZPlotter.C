@@ -26,29 +26,18 @@ void XiPlotter(TH2F *hist){
   line2y->Draw("same");
 }
 
-double parabula1(double *x, double *par){
-  double xx=x[0];
-  return -0.2+sqrt(0.01-0.65*xx);
-}
-
-double parabula2(double *x, double *par){
-  double xx=x[0];
-  return 0+sqrt(0.01-0.65*xx);
-}
-
 
 void MatchingPlotter(TH2F *histmatch){
-  //TH2F hnew;
-  //histmatch->GetXAxis()->SetTitle("1-m(ZZ)/m(pp)");
-  //histmatch->GetYAxis()->SetTitle("y(pp)-y(ZZ)");
-  histmatch->SetTitle("2D matching distribution (without pileup)");
+  histmatch->SetTitle("2D matching distribution (with pileup)");
   histmatch->GetXaxis()->SetTitle("#bf{1-m_{ZZ}/m_{pp}}");
   histmatch->GetYaxis()->SetTitle("#bf{y_{pp}- y_{ZZ}}");
   gStyle->SetOptStat(0);
   histmatch->DrawCopy("colz");
+  
   TLegend *l = new TLegend(0.6,0.7,0.95,0.8);
   l->AddEntry(histmatch,"a^{0}_{Z}/#Lambda^{2} = 5*10^{-5} GeV^{-2}","f");
   l->Draw("same");
+
   TLine *line1 = new TLine(-0.5,0.4,0,-0.1);
   line1->SetLineColor(kYellow);
   line1->SetLineWidth(4);
@@ -135,7 +124,7 @@ void MatchingPlotter(TH2F *histmatch){
 
 //(TObject*)0
 void mppPlotter(TH1F *mpp){
-  mpp->SetTitle("Mass of ZZ pairs with n>=2 reconstructed protons");
+  //mpp->SetTitle("Mass of ZZ pairs with n>=2 reconstructed protons");
   mpp->GetXaxis()->SetTitle("ZZ mass (GeV)");
   mpp->GetYaxis()->SetTitle("# of events");
   mpp->Draw();
@@ -162,13 +151,16 @@ void PPZZPlotter(){
   TH2F *histxi= (TH2F*)file->Get("th2xi");
   //XiPlotter(histxi);
   TH2F *histmatch = (TH2F*)file->Get("th2");
-  MatchingPlotter(histmatch);
+  //MatchingPlotter(histmatch);
+  //TCanvas *c = new TCanvas();
+  TH2F *histmatch2 = (TH2F*)file->Get("th2good");
+  //MatchingPlotter(histmatch2);
   TH1F *mpphist = (TH1F*)filenoPUP->Get("mZZtwoprotons");
   //mppPlotter(mpphist);
   TH1F *ypphist = (TH1F*)file->Get("ypp");
   //yppPlotter(ypphist);
   TH1F *mZZ = (TH1F*)file->Get("goodmZZ");
-  //mppPlotter(mZZ);
+  mppPlotter(mZZ);
   TH1F *yZZ = (TH1F*)file->Get("goodyZZ");
   //yppPlotter(yZZ);
 
