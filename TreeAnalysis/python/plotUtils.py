@@ -17,21 +17,22 @@ ggZZ     = [{"sample":'ggZZ'           , "color":ROOT.kAzure-5 , "name":'gg #rig
 vbsZZ    = [{"sample":'ZZ4lJJ'         , "color":ROOT.kAzure-6 , "name":'VBS', "kfactor": 1.0}]
 HZZ      = [{"sample":'HZZ'            , "color":ROOT.kAzure-7 , "name":'higgs', "kfactor": 1.0}]
     
-WZ       = [{"sample":'WZTo3LNu'             , "color":ROOT.kRed+2   , "name":'WZ', "kfactor": 1.0}]
+WZ       = [{"sample":'WZTo3LNu'       , "color":ROOT.kRed+2   , "name":'WZ', "kfactor": 1.0}]
 
-WW       = [{"sample":'WWTo2L2Nu'            , "color":ROOT.kRed+6   , "name":'WW', "kfactor": 1.0}]
+WW       = [{"sample":'WWTo2L2Nu'      , "color":ROOT.kRed+6   , "name":'WW', "kfactor": 1.0}]
 
 tt       = [{"sample":'TTTo2L2Nu'      , "color":ROOT.kRed-4   , "name":'t#bar{t}', "kfactor": 1.0},
             {"sample":'TTWJets'        , "color":ROOT.kRed-4   , "name":'t#bar{t}', "kfactor": 1.0},
+            {"sample":'TTZJets'        , "color":ROOT.kRed-4   , "name":'t#bar{t}', "kfactor": 1.0},
             {"sample":'TTGJets'        , "color":ROOT.kRed-4   , "name":'t#bar{t}', "kfactor": 1.0}]
 
-W        = [{"sample":'WJetsToLNu' , "color":ROOT.kGreen-1 , "name":'W+jets', "kfactor": 1.0}]
+W        = [{"sample":'WJetsToLNu'     , "color":ROOT.kGreen-1 , "name":'W+jets', "kfactor": 1.0}]
 
 DY       = [{"sample":'DYJetsToLL_M50' , "color":ROOT.kGreen-5 , "name":'DY', "kfactor": 1.0}]
 
-ttXY     = [{"sample":'ttX'            , "color":ROOT.kBlue-1 , "name":'ttXY', "kfactor": 1.0}]
+ttXY     = [{"sample":'ttXY'           , "color":ROOT.kBlue-1  , "name":'ttXY', "kfactor": 1.0}]
 
-ZG       = [{"sample":'ZGToLLG' , "color":ROOT.kGreen-4 , "name":'Z\gamma', "kfactor": 1.0}]
+ZG       = [{"sample":'ZGToLLG'        , "color":ROOT.kGreen-4 , "name":'Z\gamma', "kfactor": 1.0}]
 
 WWW      = [{"sample":'WWW'            , "color":ROOT.kGreen-1 , "name":'others', "kfactor": 1.0}]
 
