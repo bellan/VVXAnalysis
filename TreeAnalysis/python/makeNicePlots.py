@@ -49,7 +49,7 @@ parser.add_option("-m", "--mcset", dest="mcSet",
 
 parser.add_option("-p", "--prediction-type", dest="predType",
                   default="fromCR",
-                  help= "Type of prediction. fromCR = non-promt leptons from CRs, rare background from MC; fullMC = all from MC. Default is fromCR")
+                  help= "Type of prediction. fromCR = non-prompt leptons from CRs, rare background from MC; fullMC = all from MC. Default is fromCR")
 
 parser.add_option("-l", "--lumiProj", dest="LumiProj",
                   default="",
@@ -61,7 +61,7 @@ parser.add_option("-D", "--Dir", dest="Dir",
 
 parser.add_option("-A", "--Analysis", dest="Analysis",
                   default="VVXAnalyzer",
-                  help="Analysis. Default is ZZ. Othe oprtion is VBS")
+                  help="Analysis. Default is ZZ. Other option is VBS")
 
 parser.add_option("-y", "--year", dest="year",
                   default="2016",
@@ -94,7 +94,26 @@ InfoType_zz = {"Mass":["m_{4l} [GeV]","m_{4\ell}",10],"Mjj":["m_{jj} [GeV]","m_{
 
 InfoType_vbs = {"Mass":["m_{4\ell}","m_{4\ell}",40],"Mjj":["m_{jj}","m_{JJ}",20],"Z1Mass":["Z1 Mass","m_{2\ell}",10,],"Z2Mass":["Z2 Mass","m_{2\ell}",10,],"Z1lep0_sip":["Z1 lep 0 Sip","Sip",4],"Z1lep0_iso":["Z1 lep 0 Iso","Iso",4],"Z0lep0_pt":["Z1 lep 0 pT","p_{T}",4],"nJets":["# jets","# jets",1],"nJets_central":["# jets","# jets",1],"z":["z1","z1",1],"PtJet1":["pT Jet","p_{T}^{jet}",10],"EtaJet1":["#eta Jet","#eta^{jet}",10],"PtJet2":["pT Jet","p_{T}^{jet}",10],"EtaJet2":["#eta Jet","#eta^{jet}",10],"Z1pt":["Z1 p_{T}","p_{T}",20],"Z2pt":["Z2 p_{T}","p_{T}",10],"Z1z":["Z1 z","z_{Z_{1}}",7],"Z2z":["Z2 z","z_{Z_{2}}",7],"ptJRatio":["","#Sigma p_{T}/# Sum  ",2],"ptRatio":["","#Sum p_{T}",2],"PtZZ":["p_{T}^{4\\ell}","Sum p_{T}",60],"deltaEtaJJ":["|#eta_{jj}|","|#eta_{jj}|",2],"Dphi":["#Delta #phi_{jj}","#Delta #phi_{jj}",10],"Deta":["#Delta #eta_{jj}","#Delta #eta_{jj}",5],"Mjj_Central":["m_{jj}","m_{jj}",20],"Deta_Central":["#Delta #eta_{jj}","#Delta #eta_{jj}",5]}
 
-InfoType_vvx = {"ZZ4l_mass":["m_{4\ell}","m_{4\ell}",1],"ZW3l_tmass":["mT_{3\ell\nu}","mT_{3\ell\nu}",1]}
+InfoType_vvx = {
+    "ZZ4l_mass"       : ["m_{4\ell}","m_{4\ell}",1],
+    "ZZ4l_mass_noG"   : ["m_{4\ell}","m_{4\ell}",1],
+    "ZZ4l_mass_looseG": ["m_{4\ell}","m_{4\ell}",1],
+    "ZZ4l_mass_failG" : ["m_{4\ell}","m_{4\ell}",1],
+    "ZZ4l_mass_tightG": ["m_{4\ell}","m_{4\ell}",1],
+    
+    "ZW3l_tmass"       : ["mT_{3\ell\nu}","mT_{3\ell\nu}",1],
+    "ZW3l_tmass_noG"   : ["mT_{3\ell\nu}","mT_{3\ell\nu}",1],
+    "ZW3l_tmass_looseG": ["mT_{3\ell\nu}","mT_{3\ell\nu}",1],
+    "ZW3l_tmass_failG" : ["mT_{3\ell\nu}","mT_{3\ell\nu}",1],
+    "ZW3l_tmass_tightG": ["mT_{3\ell\nu}","mT_{3\ell\nu}",1],
+    
+    "Z2l_mass"       : ["m_{2\ell}","m_{2\ell}",1],
+    "Z2l_mass_noG"   : ["m_{2\ell}","m_{2\ell}",1],
+    "Z2l_mass_looseG": ["m_{2\ell}","m_{2\ell}",1],
+    "Z2l_mass_failG" : ["m_{2\ell}","m_{2\ell}",1],
+    "Z2l_mass_tightG": ["m_{2\ell}","m_{2\ell}",1]
+}
+
 
 if Analysis =="ZZ": InfoType=InfoType_zz
 elif Analysis == "VVXAnalyzer": InfoType=InfoType_vvx
@@ -115,8 +134,10 @@ iPeriod = 0
 
 try:
     os.stat("./Plot/RecoPlots/")
-except:
-    os.mkdir("./Plot/RecoPlots/")
+except OSError as e:
+    if(e.errno == 2):  # 2 = No such file or directory
+        os.makedirs("./Plot/RecoPlots/")
+    else: raise e  # Let it pass
     
 Var = Type
 
@@ -147,6 +168,7 @@ pad1.SetTopMargin    (0.10)
 pad1.SetRightMargin  (0.06)#0.10
 pad1.SetLeftMargin   (0.1)
 pad1.SetBottomMargin (1.5) 
+pad1.SetLogy()
 pad1.Draw()
     
 c1.cd()
@@ -166,6 +188,7 @@ else: histodata = ROOT.TH1F()
 hMC.SetMaximum(YMax)
 hMC.Draw("hist")
 
+hMC.GetHistogram().GetYaxis().SetMaxDigits(4)
 hMC.GetHistogram().GetXaxis().SetLabelSize(0)
 
 hMCErr.SetFillStyle(3005)
