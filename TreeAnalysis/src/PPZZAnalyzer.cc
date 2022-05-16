@@ -3,6 +3,7 @@
 #include "VVXAnalysis/Commons/interface/Utilities.h"
 
 #include <TMath.h>
+#include <TF1.h>
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 #include <boost/assign/std/vector.hpp>
@@ -15,7 +16,8 @@ using std::endl;
 using namespace phys;
 
 Double_t acoplanarity(phys::DiBoson <phys::Lepton,phys::Lepton> *ZZ);
-int regionselection(double x, double y);
+bool regionselection(double x, double y);
+double expfunc(double *x, double *par);
 
 Int_t PPZZAnalyzer::cut() {
   
@@ -58,7 +60,7 @@ void PPZZAnalyzer::analyze(){
   
   if(ZZ->passFullSelection()){
     theHistograms->fill("mZZ","mass of ZZ pair",50,300,10000,ZZ->mass(),theWeight);
-    theHistograms->fill("yZZ","rapidity of ZZ pair",25,0,1,ZZ->rapidity(),theWeight);
+    theHistograms->fill("yZZ","rapidity of ZZ pair",50,-1,1,ZZ->rapidity(),theWeight);
     if(eventprotons.size()>0){
      theHistograms->fill("mZZoneproton","mass of ZZ pair with one reconstructed proton",50,300,10000,ZZ->mass(),theWeight);
     }
@@ -95,7 +97,7 @@ void PPZZAnalyzer::analyze(){
 	  nmatches++;
 	  theHistograms->fill("th2","2D matching distribution",60,-2.5,0.5,60,-1.5,1.5,massdif,ydif,theWeight);
 	  int region = regionselection(massdif,ydif);
-	  if(region>0){
+	  if(region){
 	    if(matched==false){
 	      matched=true;
 	      bestmassdif=massdif;
@@ -103,7 +105,7 @@ void PPZZAnalyzer::analyze(){
 	    else if(massdif*massdif+ydif*ydif<bestmassdif*bestmassdif+bestydif*bestydif && matcheddelta==false){
 		 bestmassdif=massdif;
 	         bestydif=ydif;}		
-	    if(region>1){
+	    if(massdif>-0.05){
 	      matcheddelta=true;}}
 	  else{
 	    if(matched==false && massdif*massdif+ydif*ydif<bestmassdif*bestmassdif+bestydif*bestydif){
@@ -113,9 +115,9 @@ void PPZZAnalyzer::analyze(){
     theHistograms->fill("th2good","2D matching distribution",60,-2.5,0.5,60,-1.5,1.5,bestmassdif,bestydif,theWeight);
     if(matched==true){
       theHistograms->fill("counteromicron","counteromicron",1,0,1,0.5,theWeight);
+      theHistograms->fill("th2matched","2D matching distribution",60,-2.5,0.5,60,-1.5,1.5,bestmassdif,bestydif,theWeight);
       theHistograms->fill("goodmZZ","Mass of matched ZZ pairs",10,650,4500,ZZ->mass(),theWeight);
-      theHistograms->fill("goodyZZ","Rapidity of matched ZZ pairs",10,0,1.3,ZZ->rapidity(),theWeight);
-      
+      theHistograms->fill("goodyZZ","Rapidity of matched ZZ pairs",15,-1.3,1.3,ZZ->rapidity(),theWeight);
     }
     if(matcheddelta==true) theHistograms->fill("counterdelta","counterdelta",1,0,1,0.5,theWeight);
   }
@@ -138,11 +140,13 @@ void PPZZAnalyzer::analyze(){
 }
 
 void PPZZAnalyzer::finish(){
+  
   TH1 *counteromicron = theHistograms->get("counteromicron");
   TH1 *counterdelta = theHistograms->get("counterdelta");
   cout<<"Total # of events in the signal region: "<<counteromicron->GetEntries()*theWeight<<endl;
   cout<<"# of events in the delta signal region: "<<counterdelta->GetEntries()*theWeight<<endl;
   cout<<"# of events in the omicron signal region: "<<(counteromicron->GetEntries()-counterdelta->GetEntries())*theWeight<<endl<<endl;
+  
 }
 
 
@@ -151,14 +155,26 @@ Double_t acoplanarity(phys::DiBoson <phys::Lepton,phys::Lepton> *ZZ){
   return a;
 }
 
-int regionselection(double x, double y){
+//out=0 -> not signal
+//out=1 -> omicron region (one good one bad proton)
+//out=2 -> delta region (both correct protons)
+
+bool regionselection(double x, double y){
   int out=0;
-  if(x<-2||x>0.15) {out=0;}
-  else if(x<-1.5) {out=abs(y) >= -0.4*x+0.3 && abs(y) <= -0.4*x+0.5;}
-  else if(x<-0.5) {out=abs(y) >= -0.5*x+0.15 && abs(y) <= -0.5*x+0.35;}
-  else if(x<0){out=abs(y) > -1*x-0.1 && abs(y) <= -1*x+0.1;
-    if(abs(y)<=x+0.1) out=2;}
-  else if(x<0.05 && abs(y) <= 0.1) {out=2;}
-  else if(abs(y)<= -x + 0.15) {out=2;}
+  TF1 *f1 = new TF1("func1",expfunc,-2,-0.05,1);
+  f1->SetParameter(0,0.95);
+  TF1 *f2 = new TF1("func2",expfunc,-2,-0.05,1);
+  f2->SetParameter(0,1.15);
+  if(x<-2||x>0.1) {out=false;}
+  else if(x<=-0.05) {out=abs(y) >= f1->Eval(x) && abs(y) <= f2->Eval(x);}
+  else if(x<=0) {out=abs(y)<=x+0.1;}
+  else if(x<=0.05) {out=abs(y)<=0.1;}
+  else {out=abs(y)<=-x+0.15;}
   return out;
+}
+
+
+double expfunc(double *x, double *par){
+  double xx=x[0];
+  return log(par[0]*(1-xx));
 }

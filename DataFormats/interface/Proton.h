@@ -79,6 +79,7 @@ namespace phys {
     Double_t e()          const {return this->p4().E();}
     
     Bool_t ismultiRP()    const {return ismultiRP_;}
+    Bool_t valid_fit()    const {return valid_fit_;}
     
     bool appropriatexi() const {if(xi_>0.05) return 1;
                                 else return 0;}
