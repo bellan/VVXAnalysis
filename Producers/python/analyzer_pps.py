@@ -352,7 +352,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      signalDefinition = cms.int32(SIGNALDEFINITION),
                                      AddLHEKinematics = cms.bool(ADDLHEKINEMATICS),
                                      singleRPprotons      = cms.InputTag("ctppsProtons", "singleRP"),
-                                     multiRPprotons      = cms.InputTag("ctppsProtons", "multiRP"),
+                                     multiRPprotons      = cms.InputTag("ppsEfficiencyProducer", "multiRP"),
                                      muons        = cms.InputTag("pogMuons"),     # For comparison
                                      electrons    = cms.InputTag("pogElectrons"), # For comparison
                                      photons      = cms.InputTag("filteredPhotons"),       # all photons that pass pt cut
@@ -454,3 +454,9 @@ process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
 #process.filltrees = cms.EndPath(process.treePlanter *process.dumpUserData)
 
 ########################################################
+
+#process.source = cms.Source("PoolSource",
+#    fileNames = cms.untracked.vstring(
+#        'file:../../../../../miniAOD1.root'
+#    )
+#)

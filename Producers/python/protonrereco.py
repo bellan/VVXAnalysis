@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 from Configuration.EventContent.EventContent_cff import *
+from Configuration.Eras.Modifier_ctpps_2018_cff import ctpps_2018
+from Configuration.ProcessModifiers.run2_miniAOD_UL_cff import run2_miniAOD_UL
 
 # load common code
 import direct_simu_reco_cff as profile
@@ -7,19 +9,34 @@ process = cms.Process('CTPPSTestAcceptance', profile.era)
 profile.LoadConfig(process)
 profile.config.SetDefaults(process)
 
-# minimal logger settings
-process.MessageLogger = cms.Service("MessageLogger",
-  statistics = cms.untracked.vstring(),
-  destinations = cms.untracked.vstring('cerr'),
-  cerr = cms.untracked.PSet(
-    threshold = cms.untracked.string('WARNING')
-  )
+process.load("Validation.CTPPS.simu_config.year_2018_cff")
+process.ctppsRPAlignmentCorrectionsDataESSourceXML.MisalignedFiles = ["PPtoPPWWjets/PPtoPPWWjets/python/PPS_2018_Alignments/2018_postTS2.xml"]
+process.ctppsRPAlignmentCorrectionsDataESSourceXML.RealFiles = ["PPtoPPWWjets/PPtoPPWWjets/python/PPS_2018_Alignments/2018_postTS2.xml"]
+
+process.load("FWCore.MessageService.MessageLogger_cfi")
+process.MessageLogger.cerr.FwkReport = cms.untracked.PSet(
+  optionalPSet = cms.untracked.bool(True),
+  reportEvery = cms.untracked.int32(1),
+    limit = cms.untracked.int32(-1),
 )
 
-# number of events
 process.maxEvents = cms.untracked.PSet(
-  input = cms.untracked.int32(100000)
+    input = cms.untracked.int32(-1)
 )
+
+
+from pileupSamples_cfi import *
+print "Mixing PU samples: "
+print "\n".join(pileupSamples(2018,"D")[:3])
+print "...\n" 
+process.load("protonPreMix.protonPreMix.ctppsProtonMixer_cfi")
+process.ctppsProtonMixer.PUFilesList = cms.vstring(*pileupSamples(2018,"D"))
+process.ctppsProtonMixer.Verbosity = 0
+import FWCore.PythonUtilities.LumiList as LumiList
+pu_jsonFile = "/eos/project-c/ctpps/Operations/DataExternalConditions/2018/CMSgolden_2RPGood_anyarms_Era"+"D"+".json"
+process.ctppsProtonMixer.lumisToProcess = LumiList.LumiList(filename = pu_jsonFile).getVLuminosityBlockRange()
+print "Using JSON file for PU: "+pu_jsonFile+"\n"
+process.RandomNumberGeneratorService.ctppsProtonMixer = cms.PSet(initialSeed = cms.untracked.uint32(42))
 
 # override LHCInfo source
 process.load("CalibPPS.ESProducers.ctppsLHCInfoRandomXangleESSource_cfi")
@@ -67,66 +84,52 @@ process.ctppsBeamParametersESSource.vtxStddevZ = 0
 
 # event source                                                                                                                  
 process.source = cms.Source("PoolSource",
-  fileNames = cms.untracked.vstring(
-      #'file:miniAOD_test100ev.root'
-      #'/store/group/phys_pps/MC/requests_2018/private/AAZZ_bSM/AODSIM/GGToZZ_bSM_A0Z_1E-5_ACZ_0E0_13TeV-fpmc_100kEVT/GGToZZ_bSM_A0Z_1E-5_ACZ_0E0_13TeV-fpmc_100kEVT_AODSIM_0.root'
-      'file:stepAOD1.root'
-  )
+  fileNames = cms.untracked.vstring('file:../../../stepAOD1.root')
 )
 
 # update settings of beam-smearing module
 process.beamDivergenceVtxGenerator.src = cms.InputTag("")
 process.beamDivergenceVtxGenerator.srcGenParticle = cms.VInputTag(
-    cms.InputTag("genPUProtons","genPUProtons"),
     cms.InputTag("genParticles")
-    #cms.InputTag("prunedGenParticles")
 )
 
-# acceptance plotter
-process.ctppsAcceptancePlotter = cms.EDAnalyzer("CTPPSAcceptancePlotter",
-  tagHepMC = cms.InputTag("generator", "unsmeared"),
-  tagTracks = cms.InputTag("ctppsLocalTrackLiteProducer"),
+# rng service for efficiency
+process.load("protonPreMix.protonPreMix.ppsEfficiencyProducer_cfi")
 
-  rpId_45_F = process.rpIds.rp_45_F,
-  rpId_45_N = process.rpIds.rp_45_N,
-  rpId_56_N = process.rpIds.rp_56_N,
-  rpId_56_F = process.rpIds.rp_56_F,
+process.RandomNumberGeneratorService.ppsEfficiencyProducer = cms.PSet(initialSeed = cms.untracked.uint32(43))
+process.ppsEfficiencyProducer.year = cms.int32(2018)
+process.ppsEfficiencyProducer.era = cms.string("D2")
+process.ppsEfficiencyProducer.mixedProtonsSrc = cms.InputTag("ctppsProtonMixer")
+process.ppsEfficiencyProducer.efficiencyFileName_Near = cms.string("file:/afs/cern.ch/user/a/abellora/public/forGiovanni/Efficiency_reMiniAOD/pixelEfficiencies_radiation_reMiniAOD.root")  
+process.ppsEfficiencyProducer.efficiencyFileName_Far = cms.string("file:/afs/cern.ch/user/a/abellora/public/forGiovanni/Efficiency_reMiniAOD/pixelEfficiencies_multiRP_reMiniAOD.root")
 
-  outputFile = cms.string("test_acceptance.root")
-)
 
-# distribution plotter
-process.ctppsTrackDistributionPlotter = cms.EDAnalyzer("CTPPSTrackDistributionPlotter",
-  tagTracks = cms.InputTag("ctppsLocalTrackLiteProducer"),
-  x_pitch_pixels = cms.untracked.double(80E-3), # to be synchronised with process.ctppsDirectProtonSimulation.pitchPixelsVer
-
-  rpId_45_F = process.rpIds.rp_45_F,
-  rpId_45_N = process.rpIds.rp_45_N,
-  rpId_56_N = process.rpIds.rp_56_N,
-  rpId_56_F = process.rpIds.rp_56_F,
-
-  outputFile = cms.string("test_acceptance_xy.root")
-)
-
-# processing path
+# Processing path
 process.p = cms.Path(
   process.generator
   * process.beamDivergenceVtxGenerator
   * process.ctppsDirectProtonSimulation
   * process.reco_local
   * process.ctppsProtons
-  * process.ctppsAcceptancePlotter
-  * process.ctppsTrackDistributionPlotter
+  * process.ctppsProtonMixer
+  * process.ppsEfficiencyProducer
 )
 
 
 process.out = cms.OutputModule('PoolOutputModule',
-    fileName = cms.untracked.string('testoutput.root'),
+    fileName = cms.untracked.string('file:../../../rereco1mix2.root'),
     outputCommands = AODSIMEventContent.outputCommands,
+    #overrideBranchesSplitLevel = cms.untracked.VPSet(
+    #    cms.untracked.PSet(
+    #        branch = cms.untracked.string('recoForwardProtons_ctppsProtonMixer_*'),
+    #        splitLevel = cms.untracked.int32(99)
+    #    )
+                               #),
     splitLevel = cms.untracked.int32(0)
 )
 
 process.out.outputCommands.append('keep *_*_*_*')
+process.out.outputCommands.append('keep recoForwardProtons_ctppsProtonMixer__*')
 
 process.outpath = cms.EndPath(process.out)
 
