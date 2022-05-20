@@ -970,6 +970,8 @@ phys::Proton TreePlanter::fill(bool ismultiRP, const reco::ForwardProton &proton
   output.thetaYError_    = proton.thetaYError();
   if(proton.lhcSector()==proton.LHCSector::sector45){output.LHCSector_=true;}
   else{output.LHCSector_=false;}
+  TVector3 v = TVector3(proton.momentum().X(),proton.momentum().Y(),proton.momentum().Z());
+  output.p4_ = TLorentzVector(v,6500*(1-proton.xi()));
 	
   return output;
 }
