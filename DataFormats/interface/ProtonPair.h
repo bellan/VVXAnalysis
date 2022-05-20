@@ -36,6 +36,10 @@ namespace phys {
     Proton *firstPtr()  {return &daughter0_;}
     Proton *secondPtr() {return &daughter1_;}
 
+    TLorentzVector ppp4() {
+    TLorentzVector nullvector(0.,0.,0.,0.);
+    return nullvector-daughter0_.p4()-daughter1_.p4();
+    }
 
     bool passFullSelection() const {return passFullSel_;}
     void setPassFullSel(Bool_t  fs) {passFullSel_ = fs;}

@@ -93,12 +93,13 @@ void PPZZAnalyzer::analyze(){
 	      bestmassdif=massdif;
 	      bestydif=ydif;}
 	  if(region){
+	    if(region) theHistograms->fill("deltaPhi","deltaPhi distribution",10,0,3.14,physmath::deltaPhi(pp.ppp4(),ZZ->p4()));
 	    if(matched==false){
 	      matched=true;}		
 	    if(massdif>-0.05){
 	      matcheddelta=true;}
-	  }
-	}}}
+	}
+      }}}
     theHistograms->fill("nmatches","Number of possible matches for event",10,-0.5,9.5,nmatches,theWeight);
     theHistograms->fill("th2good","2D matching distribution",60,-2.5,0.5,60,-1.5,1.5,bestmassdif,bestydif,theWeight);
     if(matched==true){
@@ -108,7 +109,7 @@ void PPZZAnalyzer::analyze(){
       theHistograms->fill("goodyZZ","Rapidity of matched ZZ pairs",15,-1.3,1.3,ZZ->rapidity(),theWeight);
     }
     if(matcheddelta==true) theHistograms->fill("counterdelta","counterdelta",1,0,1,0.5,theWeight);
-  }
+}
 
   //test: use the highest xi proton every time
   
