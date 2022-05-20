@@ -1,0 +1,91 @@
+#For 2017 use:
+# --conditions 106X_upgrade2018_realistic_v11_L1v1
+# --era Run2_2018
+# --beamspot Realistic25ns13TeVEarly2018Collision
+
+#To generate events, use FPMC, as explained in https://github.com/fpmc-hep/fpmc
+#To get the needed version of cmake on lxplus:
+source /cvmfs/cms.cern.ch/slc7_amd64_gcc700/external/cmake/3.10.2/etc/profile.d/init.sh
+#Once everything has been compiled, the correct syntax to run the program is e.g.:
+./fpmc-lhe < Datacards/dataQED_ZZanom
+
+
+#After generating the LHE with all decays (1.000.000 events at least) you need to filter only the ZZ->4l decays. To do that, you can use the script in https://github.com/bellan/VVXAnalysis/blob/Diffraction/TreeAnalysis/python/lheFilter.py, just change input and output. Then, you can go forward with the full chain
+
+setup CMSSW:
+scram p CMSSW CMSSW_10_6_20
+curl file:///afs/cern.ch/user/g/gmarozzo/public/pps_production/pythia_fragment --retry 2 --create-dirs -o CMSSW_10_6_20/src/Configuration/GenProduction/python/FSQ-RunIISummer19UL17GEN-00000-fragment.py
+cd CMSSW_10_6_20/src   
+eval `scram runtime -sh`
+scram b
+cd ../../
+    
+echo "GEN-SIM starting"
+cmsDriver.py step1 --filein file:events_filter1.lhe  --fileout file:stepLHE1.root --mc --eventcontent LHE --datatier LHE --conditions 106X_upgrade2018_realistic_v11_L1v1 --step NONE --customise Configuration/DataProcessing/Utils.addMonitoring -n -1
+
+cmsDriver.py Configuration/GenProduction/python/FSQ-RunIISummer19UL17GEN-00000-fragment.py --filein file:stepLHE1.root --fileout file:stepSIM1.root --mc --eventcontent RAWSIM --datatier GEN-SIM --conditions 106X_upgrade2018_realistic_v11_L1v1 --beamspot Realistic25ns13TeVEarly2018Collision --step GEN,SIM --nThreads 8 --geometry DB:Extended --era Run2_2018 --python_filename step1_cfg.py --customise Configuration/DataProcessing/Utils.addMonitoring -n -1
+
+
+echo "DIGI-RECO starting"
+cmsDriver.py --python_filename boh1.py --fileout file:stepDR1.root --eventcontent PREMIXRAW \
+ --customise Configuration/DataProcessing/Utils.addMonitoring --datatier GEN-SIM-DIGI \
+ --pileup_input "dbs:/Neutrino_E-10_gun/RunIISummer20ULPrePremix-UL18_106X_upgrade2018_realistic_v11_L1v1-v2/PREMIX" \
+ --conditions 106X_upgrade2018_realistic_v11_L1v1 --step DIGI,DATAMIX,L1,DIGI2RAW \
+ --procModifiers premix_stage2 --geometry DB:Extended --filein file:stepSIM1.root \
+ --datamix PreMix --era Run2_2018 --runUnscheduled --mc -n -1
+ 
+ 
+echo "HLT starting"
+setup10UL
+cmsDriver.py  --python_filename boh21.py --fileout file:stepHLT1.root --eventcontent RAWSIM \
+ --customise Configuration/DataProcessing/Utils.addMonitoring --datatier GEN-SIM-RAW \
+ --conditions 102X_upgrade2018_realistic_v15 --step HLT:2018v32 \
+ --customise_commands 'process.source.bypassVersionCheck = cms.untracked.bool(True)' \
+ --geometry DB:Extended --filein file:stepDR1.root --era Run2_2018 --mc -n -1
+
+echo "AOD starting"
+cd CMSSW_10_6_20/src
+eval `scram runtime -sh`
+cd -
+
+cmsDriver.py --python_filename boh3.py --eventcontent AODSIM --fileout file:stepAOD1.root \
+ --customise Configuration/DataProcessing/Utils.addMonitoring --datatier AODSIM --runUnscheduled \
+ --conditions 106X_upgrade2018_realistic_v11_L1v1 --step RAW2DIGI,L1Reco,RECO,RECOSIM,EI \
+ --geometry DB:Extended --filein file:stepHLT1.root --era Run2_2018 --mc -n -1
+
+#Before the MINIAOD step, proton direct simulation needs to be run. Instructions are at: https://twiki.cern.ch/twiki/bin/viewauth/CMS/TaggedProtonsDirectSimulation
+#The config file for this step can be found at: https://github.com/bellan/VVXAnalysis/blob/Diffraction/Producers/python/protonrereco.py
+
+#For the MINIAOD step, you need to run the following cmsDriver command, but stop it after it generated the config file:
+
+echo "MINIAODv2 starting"
+cmsDriver.py  --python_filename boh4.py --fileout file:miniAOD1.root --eventcontent MINIAODSIM \
+ --customise Configuration/DataProcessing/Utils.addMonitoring --datatier MINIAODSIM \
+ --conditions 106X_upgrade2018_realistic_v16_L1v1 --step PAT --procModifiers run2_miniAOD_UL \
+ --geometry DB:Extended --filein file:rereco1.root --era Run2_2018 --runUnscheduled --mc -n -1
+ 
+#Then, add to the config file the following lines in process.MINIAODSIMoutput to carry the reconstructed protons forward to the MINIAOD:
+
+process.MINIAODSIMoutput.outputCommands.append('keep recoForwardProtons_ctppsProtonMixer__*')
+process.MINIAODSIMoutput.outputCommands.append('keep recoForwardProtons_ctppsProtons_singleRP_*')
+process.MINIAODSIMoutput.outputCommands.append('keep recoForwardProtons_ctppsProtons_multiRP_*')
+process.MINIAODSIMoutput.outputCommands.append('keep recoForwardProtons_ppsEfficiencyProducer_multiRP_*')
+        
+#After that, you can run the config file with cmsRun.
+
+
+----------------------------------------------------------------
+to setup CMSSW for the trigger, define the following function in the shell file:
+
+setup10UL() {
+    echo scram p CMSSW CMSSW_10_2_16_UL
+    if [ -r CMSSW_10_2_16_UL/src ] ; then
+       echo release CMSSW_10_2_16_UL already exists
+    else
+      scram p CMSSW CMSSW_10_2_16_UL
+    fi
+    cd CMSSW_10_2_16_UL/src
+    eval `scram runtime -sh`
+    cd ../../
+}
+ 
