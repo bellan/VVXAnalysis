@@ -45,14 +45,6 @@ void PPZZAnalyzer::analyze(){
     }
   }
 
-  std::vector<phys::Particle> eventgenprotons;
-  foreach(const phys::Particle genParticle, *genParticles){
-    if(genParticle.id()==2212){
-      eventgenprotons.push_back(genParticle);
-      theHistograms->fill("xigen","xi of gen protons",50,0,1,1-genParticle.e()/6500,theWeight);
-    }
-  }
-
   theHistograms->fill("protonmult","proton multiplicity",10,-0.5,9.5,eventprotons.size(),theWeight);
   theHistograms->fill("forwprotonmult","forward proton multiplicity",10,-0.5,9.5,forweventprotons.size(),theWeight);
   theHistograms->fill("backprotonmult","backward proton multiplicity",10,-0.5,9.5,backeventprotons.size(),theWeight);
@@ -73,7 +65,7 @@ void PPZZAnalyzer::analyze(){
   phys::Proton p1, p2;
   phys::ProtonPair pp;
   
-  if(eventprotons.size()>=2){
+  if(forweventprotons.size()&&backeventprotons.size()){
     int nmatches=0;
     bool matched=false;
     bool matcheddelta=false;
@@ -96,21 +88,17 @@ void PPZZAnalyzer::analyze(){
 	  double ydif = pp.ypp()-ZZ->rapidity();
 	  nmatches++;
 	  theHistograms->fill("th2","2D matching distribution",60,-2.5,0.5,60,-1.5,1.5,massdif,ydif,theWeight);
-	  int region = regionselection(massdif,ydif);
-	  if(region){
-	    if(matched==false){
-	      matched=true;
+	  bool region = regionselection(massdif,ydif);
+	  if(massdif*massdif+ydif*ydif<bestmassdif*bestmassdif+bestydif*bestydif && matcheddelta==false){
 	      bestmassdif=massdif;
 	      bestydif=ydif;}
-	    else if(massdif*massdif+ydif*ydif<bestmassdif*bestmassdif+bestydif*bestydif && matcheddelta==false){
-		 bestmassdif=massdif;
-	         bestydif=ydif;}		
+	  if(region){
+	    if(matched==false){
+	      matched=true;}		
 	    if(massdif>-0.05){
-	      matcheddelta=true;}}
-	  else{
-	    if(matched==false && massdif*massdif+ydif*ydif<bestmassdif*bestmassdif+bestydif*bestydif){
-	      bestmassdif=massdif;
-	      bestydif=ydif;}}}}}
+	      matcheddelta=true;}
+	  }
+	}}}
     theHistograms->fill("nmatches","Number of possible matches for event",10,-0.5,9.5,nmatches,theWeight);
     theHistograms->fill("th2good","2D matching distribution",60,-2.5,0.5,60,-1.5,1.5,bestmassdif,bestydif,theWeight);
     if(matched==true){
@@ -122,33 +110,54 @@ void PPZZAnalyzer::analyze(){
     if(matcheddelta==true) theHistograms->fill("counterdelta","counterdelta",1,0,1,0.5,theWeight);
   }
 
-  phys::ProtonPair ppgen;
+  //test: use the highest xi proton every time
   
-  if(eventgenprotons[0].rapidity()>0) {ppgen = ProtonPair(phys::Proton(eventgenprotons[1]),phys::Proton(eventgenprotons[0]));}
-  else {ppgen = ProtonPair(phys::Proton(eventgenprotons[0]),phys::Proton(eventgenprotons[1]));}
-  
-  //check: association between gen protons and ZZ
-  
-  if(ZZ->passFullSelection()){
-    double genmassdif = 1-ZZ->mass()/ppgen.mpp();
-    double genydif = ppgen.ypp()-ZZ->rapidity();
-    theHistograms->fill("mppgen","gen mpp",50,0,4000,ppgen.mpp(),theWeight);
-    theHistograms->fill("th2gen","2D matching distribution",75,-2.5,0.5,60,-1.5,1.5,genmassdif,genydif,theWeight);
+  if(forweventprotons.size()&&backeventprotons.size()){
+    double ximaxforw=0;
+    double ximaxback=0;
+    phys::Proton forwproton, backproton;
+    foreach(const phys::Proton forwp, forweventprotons){
+      if(forwp.xi()>ximaxforw){
+	ximaxforw=forwp.xi();
+	forwproton=forwp;
+      }
+    }
+    foreach(const phys::Proton backp, backeventprotons){
+      if(backp.xi()>ximaxback){
+	ximaxback=backp.xi();
+	backproton=backp;
+      }
+    }
+    phys::ProtonPair ppxi=phys::ProtonPair(backproton,forwproton);
+    double massdifxi = 1-ZZ->mass()/ppxi.mpp();
+    double ydifxi = ppxi.ypp()-ZZ->rapidity();
+    theHistograms->fill("th2xi","2D matching distribution",60,-2.5,0.5,60,-1.5,1.5,massdifxi,ydifxi,theWeight);
+    bool regionxi = regionselection(massdifxi,ydifxi);
+    if(regionxi){
+      theHistograms->fill("counterxi","counterxi",1,0,1,0.5,theWeight);
+      if(massdifxi>-0.05) theHistograms->fill("counterdeltaxi","counterdeltaxi",1,0,1,0.5,theWeight);} 
   }
-  eventgenprotons.clear();
+
+  
   eventprotons.clear();
+  forweventprotons.clear();
+  backeventprotons.clear();
 }
 
-void PPZZAnalyzer::finish(){
-  
+void PPZZAnalyzer::finish(){ 
   TH1 *counteromicron = theHistograms->get("counteromicron");
   TH1 *counterdelta = theHistograms->get("counterdelta");
+  cout<<"Algorithm A (min distance):"<<endl;
   cout<<"Total # of events in the signal region: "<<counteromicron->GetEntries()*theWeight<<endl;
   cout<<"# of events in the delta signal region: "<<counterdelta->GetEntries()*theWeight<<endl;
   cout<<"# of events in the omicron signal region: "<<(counteromicron->GetEntries()-counterdelta->GetEntries())*theWeight<<endl<<endl;
-  
+  TH1 *counteromicronxi = theHistograms->get("counterxi");
+  TH1 *counterdeltaxi = theHistograms->get("counterdeltaxi");
+  cout<<"Algorithm B (max xi):"<<endl;
+  cout<<"Total # of events in the signal region: "<<counteromicronxi->GetEntries()*theWeight<<endl;
+  cout<<"# of events in the delta signal region: "<<counterdeltaxi->GetEntries()*theWeight<<endl;
+  cout<<"# of events in the omicron signal region: "<<(counteromicronxi->GetEntries()-counterdeltaxi->GetEntries())*theWeight<<endl<<endl;
 }
-
 
 Double_t acoplanarity(phys::DiBoson <phys::Lepton,phys::Lepton> *ZZ){
   double_t a = abs(1-physmath::deltaPhi(ZZ->first().phi(),ZZ->second().phi())/TMath::Pi());
@@ -156,8 +165,7 @@ Double_t acoplanarity(phys::DiBoson <phys::Lepton,phys::Lepton> *ZZ){
 }
 
 //out=0 -> not signal
-//out=1 -> omicron region (one good one bad proton)
-//out=2 -> delta region (both correct protons)
+//out=1 -> signal
 
 bool regionselection(double x, double y){
   int out=0;
@@ -172,7 +180,6 @@ bool regionselection(double x, double y){
   else {out=abs(y)<=-x+0.15;}
   return out;
 }
-
 
 double expfunc(double *x, double *par){
   double xx=x[0];

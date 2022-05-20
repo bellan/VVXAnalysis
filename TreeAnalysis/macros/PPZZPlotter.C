@@ -1,6 +1,7 @@
 #include "TH2F.h"
 #include "TLine.h"
 #include "TLatex.h"
+#include "TPaveLabel.h"
 
 #include "../../Commons/interface/Constants.h"
 
@@ -32,53 +33,55 @@ double f1(double *x, double *par){
 }
 
 void MatchingPlotter(TH2F *histmatch, double kmin, double kmax){
-  histmatch->SetTitle("2D matching distribution");
-  histmatch->GetXaxis()->SetTitle("#bf{1-m_{ZZ}/m_{pp}}");
-  histmatch->GetYaxis()->SetTitle("#bf{y_{pp}- y_{ZZ}}");
+  histmatch->SetTitle("2D pp-ZZ matching distribution");
+  histmatch->GetXaxis()->SetTitle("#bf{m_{match}=1-m_{ZZ}/m_{pp}}");
+  histmatch->GetYaxis()->SetTitle("#bf{y_{match}= y_{pp}- y_{ZZ}}");
   gStyle->SetOptStat(0);
   histmatch->DrawCopy("colz");
   
-  TLegend *l = new TLegend(0.6,0.7,0.95,0.8);
-  l->AddEntry((TObject*)0,"a^{0}_{Z}/#Lambda^{2} = 5*10^{-5} GeV^{-2}","f");
-  l->Draw("same");
+  TPaveLabel *label = new TPaveLabel(-0.35,1.145,0.5,1.495,"a^{0}_{Z}/#Lambda^{2} = 0.9*10^{-5} GeV^{-2}");
+  label->SetFillColor(kSpring-4);
+  label->SetTextColor(kOrange+10);
+  label->SetTextSize(0.5);
+  label->Draw("same");
   
   TLine *line1 = new TLine(-0.05,-0.05,-0.05,0.05);
   line1->SetLineColor(kRed);
-  line1->SetLineWidth(5);
+  line1->SetLineWidth(6);
   line1->Draw("same");
   TLine *line2 = new TLine(-0.05,0.05,0,0.1);
   line2->SetLineColor(kRed);
-  line2->SetLineWidth(5);
+  line2->SetLineWidth(6);
   line2->Draw("same");
   TLine *line3 = new TLine(-0.05,-0.05,0,-0.1);
   line3->SetLineColor(kRed);
-  line3->SetLineWidth(5);
+  line3->SetLineWidth(6);
   line3->Draw("same");
   TLine *line4 = new TLine(0,0.1,0.05,0.1);
   line4->SetLineColor(kRed);
-  line4->SetLineWidth(5);
+  line4->SetLineWidth(6);
   line4->Draw("same");
   TLine *line5 = new TLine(0,-0.1,0.05,-0.1);
   line5->SetLineColor(kRed);
-  line5->SetLineWidth(5);
+  line5->SetLineWidth(6);
   line5->Draw("same");
   TLine *line6 = new TLine(0.05,0.1,0.1,0.05);
   line6->SetLineColor(kRed);
-  line6->SetLineWidth(5);
+  line6->SetLineWidth(6);
   line6->Draw("same");
   TLine *line7 = new TLine(0.05,-0.1,0.1,-0.05);
   line7->SetLineColor(kRed);
-  line7->SetLineWidth(5);
+  line7->SetLineWidth(6);
   line7->Draw("same");
   TLine *line8 = new TLine(0.1,0.05,0.1,-0.05);
   line8->SetLineColor(kRed);
-  line8->SetLineWidth(5);
+  line8->SetLineWidth(6);
   line8->Draw("same");
   
 
-  TF1 *f = new TF1("myfunc",f1,-2,-0.05,2);
-  f->SetLineWidth(5);
-  f->SetLineColor(kYellow);
+  TF1 *f = new TF1("myfunc",f1,-2.01,-0.04,2);
+  f->SetLineWidth(6);
+  f->SetLineColor(kOrange-2);
 
   double y0,y1,y2,y3,y4,y5,y6,y7;
   
@@ -102,20 +105,20 @@ void MatchingPlotter(TH2F *histmatch, double kmin, double kmax){
 
   
   TLine *line9 = new TLine(-2,y4,-2,y5);
-  line9->SetLineColor(kYellow);
-  line9->SetLineWidth(5);
+  line9->SetLineColor(kOrange-2);
+  line9->SetLineWidth(6);
   line9->Draw("same");
   TLine *line10 = new TLine(-2,y6,-2,y7);
-  line10->SetLineColor(kYellow);
-  line10->SetLineWidth(5);
+  line10->SetLineColor(kOrange-2);
+  line10->SetLineWidth(6);
   line10->Draw("same");
   TLine *line11 = new TLine(-0.05,y0,-0.05,y1);
-  line11->SetLineColor(kYellow);
-  line11->SetLineWidth(5);
+  line11->SetLineColor(kOrange-2);
+  line11->SetLineWidth(6);
   line11->Draw("same");
   TLine *line12 = new TLine(-0.05,y2,-0.05,y3);
-  line12->SetLineColor(kYellow);
-  line12->SetLineWidth(5);
+  line12->SetLineColor(kOrange-2);
+  line12->SetLineWidth(6);
   line12->Draw("same");
 
   line1->Draw("same");
@@ -162,7 +165,7 @@ void PPZZPlotter(){
   TFile *file = new TFile("results/2018/PPZZAnalyzer_SR4P/ZZTo4l.root","READ");
   TH2F *histxi= (TH2F*)file->Get("th2xi");
   //XiPlotter(histxi);
-  TH2F *histmatch = (TH2F*)file->Get("th2good");
+  TH2F *histmatch = (TH2F*)file->Get("th2xi");
   MatchingPlotter(histmatch,0.95,1.15);
   //TCanvas *c = new TCanvas();
   TH2F *histmatch2 = (TH2F*)file->Get("th2good");
