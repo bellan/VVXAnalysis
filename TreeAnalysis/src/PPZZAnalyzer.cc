@@ -17,7 +17,7 @@ using namespace phys;
 
 Double_t acoplanarity(phys::DiBoson <phys::Lepton,phys::Lepton> *ZZ);
 bool regionselection(double x, double y);
-double expfunc(double *x, double *par);
+double logfunc(double *x, double *par);
 
 Int_t PPZZAnalyzer::cut() {
   
@@ -64,13 +64,14 @@ void PPZZAnalyzer::analyze(){
 
   phys::Proton p1, p2;
   phys::ProtonPair pp;
+
+  int nmatches=0;
+  bool matched=false;
+  bool matcheddelta=false;
+  double bestmassdif=9999.;
+  double bestydif=9999.;
   
   if(forweventprotons.size()&&backeventprotons.size()){
-    int nmatches=0;
-    bool matched=false;
-    bool matcheddelta=false;
-    double bestmassdif=9999.;
-    double bestydif=9999.;
     for(unsigned int i=0; i<eventprotons.size();i++){
       p1=eventprotons[i];
       if(p1.LHCSector()) continue;
@@ -90,10 +91,14 @@ void PPZZAnalyzer::analyze(){
 	  theHistograms->fill("th2","2D matching distribution",60,-2.5,0.5,60,-1.5,1.5,massdif,ydif,theWeight);
 	  bool region = regionselection(massdif,ydif);
 	  if(massdif*massdif+ydif*ydif<bestmassdif*bestmassdif+bestydif*bestydif && matcheddelta==false){
-	      bestmassdif=massdif;
-	      bestydif=ydif;}
+	    bestmassdif=massdif;
+	    bestydif=ydif;}
 	  if(region){
-	    if(region) theHistograms->fill("deltaPhi","deltaPhi distribution",10,0,3.14,physmath::deltaPhi(pp.ppp4(),ZZ->p4()));
+	    if(matcheddelta==false && massdif>-0.05){
+	      bestmassdif=massdif;
+	      bestydif=ydif;
+	    }
+	    theHistograms->fill("deltaPhi","deltaPhi distribution",10,0,3.14,physmath::deltaPhi(pp.ppp4(),ZZ->p4()));
 	    if(matched==false){
 	      matched=true;}		
 	    if(massdif>-0.05){
@@ -102,16 +107,22 @@ void PPZZAnalyzer::analyze(){
       }}}
     theHistograms->fill("nmatches","Number of possible matches for event",10,-0.5,9.5,nmatches,theWeight);
     theHistograms->fill("th2good","2D matching distribution",60,-2.5,0.5,60,-1.5,1.5,bestmassdif,bestydif,theWeight);
-    if(matched==true){
+    if(regionselection(bestmassdif,bestydif)){
       theHistograms->fill("counteromicron","counteromicron",1,0,1,0.5,theWeight);
       theHistograms->fill("th2matched","2D matching distribution",60,-2.5,0.5,60,-1.5,1.5,bestmassdif,bestydif,theWeight);
       theHistograms->fill("goodmZZ","Mass of matched ZZ pairs",10,650,4500,ZZ->mass(),theWeight);
       theHistograms->fill("goodyZZ","Rapidity of matched ZZ pairs",15,-1.3,1.3,ZZ->rapidity(),theWeight);
     }
-    if(matcheddelta==true) theHistograms->fill("counterdelta","counterdelta",1,0,1,0.5,theWeight);
-}
+    if(matcheddelta==true) {theHistograms->fill("counterdelta","counterdelta",1,0,1,0.5,theWeight);
+      if(abs(ZZ->first().daughter(0).id())==13&&abs(ZZ->second().daughter(0).id())==13) theHistograms->fill("counterdelta4mu","counterdelta4mu",1,0,1,0.5,theWeight);
+      if(abs(ZZ->first().daughter(0).id())==11&&abs(ZZ->second().daughter(0).id())==11) theHistograms->fill("counterdelta4e","counterdelta4e",1,0,1,0.5,theWeight);
+      if(abs(ZZ->first().daughter(0).id())==13&&abs(ZZ->second().daughter(0).id())==11) theHistograms->fill("counterdelta2e2mu","counterdelta2e2mu",1,0,1,0.5,theWeight);
+      if(abs(ZZ->first().daughter(0).id())==11&&abs(ZZ->second().daughter(0).id())==13) theHistograms->fill("counterdelta2e2mu","counterdelta2e2mu",1,0,1,0.5,theWeight);
+      theHistograms->fill("th2goodC","2D matching distribution",60,-2.5,0.5,60,-1.5,1.5,bestmassdif,bestydif,theWeight);
+    }
+  }
 
-  //test: use the highest xi proton every time
+  //Algorithm B and C: use the highest xi proton every time
   
   if(forweventprotons.size()&&backeventprotons.size()){
     double ximaxforw=0;
@@ -132,32 +143,61 @@ void PPZZAnalyzer::analyze(){
     phys::ProtonPair ppxi=phys::ProtonPair(backproton,forwproton);
     double massdifxi = 1-ZZ->mass()/ppxi.mpp();
     double ydifxi = ppxi.ypp()-ZZ->rapidity();
-    theHistograms->fill("th2xi","2D matching distribution",60,-2.5,0.5,60,-1.5,1.5,massdifxi,ydifxi,theWeight);
+    theHistograms->fill("th2goodB","2D matching distribution",60,-2.5,0.5,60,-1.5,1.5,massdifxi,ydifxi,theWeight);
     bool regionxi = regionselection(massdifxi,ydifxi);
+    if(!matcheddelta) theHistograms->fill("th2goodC","2D matching distribution",60,-2.5,0.5,60,-1.5,1.5,massdifxi,ydifxi,theWeight);
     if(regionxi){
-      theHistograms->fill("counterxi","counterxi",1,0,1,0.5,theWeight);
-      if(massdifxi>-0.05) theHistograms->fill("counterdeltaxi","counterdeltaxi",1,0,1,0.5,theWeight);} 
+      theHistograms->fill("counteromicronxi","counteromicronxi",1,0,1,0.5,theWeight);
+      if(massdifxi>-0.05) theHistograms->fill("counterdeltaxi","counterdeltaxi",1,0,1,0.5,theWeight);
+      if(!matcheddelta){
+	theHistograms->fill("counteromicronC","counteromicronC",1,0,1,0.5,theWeight);
+	if(abs(ZZ->first().daughter(0).id())==13&&abs(ZZ->second().daughter(0).id())==13) theHistograms->fill("counteromicron4mu","counteromicron4mu",1,0,1,0.5,theWeight);
+        if(abs(ZZ->first().daughter(0).id())==11&&abs(ZZ->second().daughter(0).id())==11) theHistograms->fill("counteromicron4e","counteromicron4e",1,0,1,0.5,theWeight);
+        if(abs(ZZ->first().daughter(0).id())==13&&abs(ZZ->second().daughter(0).id())==11) theHistograms->fill("counteromicron2e2mu","counteromicron2e2mu",1,0,1,0.5,theWeight);
+        if(abs(ZZ->first().daughter(0).id())==11&&abs(ZZ->second().daughter(0).id())==13) theHistograms->fill("counteromicron2e2mu","counteromicron2e2mu",1,0,1,0.5,theWeight);
+      }
+    }
   }
-
-  
   eventprotons.clear();
   forweventprotons.clear();
   backeventprotons.clear();
 }
 
-void PPZZAnalyzer::finish(){ 
+void PPZZAnalyzer::end(TFile &){
+  
   TH1 *counteromicron = theHistograms->get("counteromicron");
   TH1 *counterdelta = theHistograms->get("counterdelta");
-  cout<<"Algorithm A (min distance):"<<endl;
-  cout<<"Total # of events in the signal region: "<<counteromicron->GetEntries()*theWeight<<endl;
+  cout<<"Algorithm A (check if delta region, if not min distance):"<<endl;
   cout<<"# of events in the delta signal region: "<<counterdelta->GetEntries()*theWeight<<endl;
   cout<<"# of events in the omicron signal region: "<<(counteromicron->GetEntries()-counterdelta->GetEntries())*theWeight<<endl<<endl;
-  TH1 *counteromicronxi = theHistograms->get("counterxi");
+  
+  TH1 *counteromicronxi = theHistograms->get("counteromicronxi");
   TH1 *counterdeltaxi = theHistograms->get("counterdeltaxi");
   cout<<"Algorithm B (max xi):"<<endl;
-  cout<<"Total # of events in the signal region: "<<counteromicronxi->GetEntries()*theWeight<<endl;
   cout<<"# of events in the delta signal region: "<<counterdeltaxi->GetEntries()*theWeight<<endl;
   cout<<"# of events in the omicron signal region: "<<(counteromicronxi->GetEntries()-counterdeltaxi->GetEntries())*theWeight<<endl<<endl;
+   
+  TH1 *counteromicronC = theHistograms->get("counteromicronC");
+  cout<<"Algorithm C (check if delta region, if not max xi):"<<endl;
+  cout<<"# of events in the delta signal region: "<<counterdelta->GetEntries()*theWeight<<endl;
+  cout<<"# of events in the omicron signal region: "<<counteromicronC->GetEntries()*theWeight<<endl<<endl;
+  
+  TH1 *counteromicron4e = theHistograms->get("counteromicron4e");
+  TH1 *counterdelta4e = theHistograms->get("counterdelta4e");
+  TH1 *counteromicron4mu = theHistograms->get("counteromicron4mu");
+  TH1 *counterdelta4mu = theHistograms->get("counterdelta4mu");
+  TH1 *counteromicron2e2mu = theHistograms->get("counteromicron2e2mu");
+  TH1 *counterdelta2e2mu = theHistograms->get("counterdelta2e2mu");
+  cout<<"4mu:"<<endl;
+  cout<<"# of events in the delta signal region: "<<counterdelta4mu->GetEntries()*theWeight<<endl;
+  cout<<"# of events in the omicron signal region: "<<counteromicron4mu->GetEntries()*theWeight<<endl<<endl;
+  cout<<"4e:"<<endl;
+  cout<<"# of events in the delta signal region: "<<counterdelta4e->GetEntries()*theWeight<<endl;
+  cout<<"# of events in the omicron signal region: "<<counteromicron4e->GetEntries()*theWeight<<endl<<endl;
+  cout<<"2e2mu:"<<endl;
+  cout<<"# of events in the delta signal region: "<<counterdelta2e2mu->GetEntries()*theWeight<<endl;
+  cout<<"# of events in the omicron signal region: "<<counteromicron2e2mu->GetEntries()*theWeight<<endl<<endl;
+  
 }
 
 Double_t acoplanarity(phys::DiBoson <phys::Lepton,phys::Lepton> *ZZ){
@@ -169,20 +209,23 @@ Double_t acoplanarity(phys::DiBoson <phys::Lepton,phys::Lepton> *ZZ){
 //out=1 -> signal
 
 bool regionselection(double x, double y){
-  int out=0;
-  TF1 *f1 = new TF1("func1",expfunc,-2,-0.05,1);
+  
+  bool out=false;
+  TF1 *f1 = new TF1("func1",logfunc,-2,-0.05,1);
   f1->SetParameter(0,0.95);
-  TF1 *f2 = new TF1("func2",expfunc,-2,-0.05,1);
+  TF1 *f2 = new TF1("func2",logfunc,-2,-0.05,1);
   f2->SetParameter(0,1.15);
-  if(x<-2||x>0.1) {out=false;}
-  else if(x<=-0.05) {out=abs(y) >= f1->Eval(x) && abs(y) <= f2->Eval(x);}
-  else if(x<=0) {out=abs(y)<=x+0.1;}
-  else if(x<=0.05) {out=abs(y)<=0.1;}
-  else {out=abs(y)<=-x+0.15;}
+  if(x<-2||x>0.1) {return false;}
+  else if(x<=-0.05) {
+    return abs(y) >= f1->Eval(x) && abs(y) <= f2->Eval(x);
+  }
+  else if(x<=0&&x>-0.05) {return abs(y)<=x+0.1;}
+  else if(x<=0.05&&x>0) {return abs(y)<=0.1;}
+  else if(x>0.05&&x<=0.1) {return abs(y)<=-x+0.15;}
   return out;
 }
 
-double expfunc(double *x, double *par){
+double logfunc(double *x, double *par){
   double xx=x[0];
   return log(par[0]*(1-xx));
 }

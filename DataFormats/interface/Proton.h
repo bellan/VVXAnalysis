@@ -54,10 +54,10 @@ namespace phys {
     Double_t vy() const {return vy_;}
     Double_t thetaX() const {return thetaX_;}
     Double_t thetaY() const {return thetaY_;}
-    //Double_t time() const {return time_;}
+    Double_t time() const {return time_;}
     
     Double_t Ebeam() const {return Ebeam_;}
-    Double_t E()          const {return 6500*(1-xi_);}
+    Double_t E()     const {return 6500*(1-xi_);}
     
     Bool_t LHCSector() const {return LHCSector_;}
     
@@ -66,9 +66,14 @@ namespace phys {
     Double_t vyError() const {return vyError_;}
     Double_t thetaXError() const {return thetaXError_;}
     Double_t thetaYError() const {return thetaYError_;}
-    //Double_t timeError() const {return timeError_;}
+    Double_t timeError() const {return timeError_;}
     
-    TLorentzVector p4()   const {return TLorentzVector(this->E()*thetaX_,this->E()*thetaY_,this->E()*sqrt(1-thetaX_*thetaX_-thetaY_*thetaY_),this->E());}
+    TLorentzVector p4()   const {
+    double pz;
+    if(!LHCSector_) pz=this->E();
+    else pz=(-1)*this->E();
+    return TLorentzVector(pz*TMath::Sin(thetaX_),pz*TMath::Sin(thetaY_),pz,this->E());}
+    
     Double_t pt()         const {return this->p4().Pt();}
     Double_t eta()        const {return this->p4().Eta();}
     Double_t rapidity()   const {return this->p4().Rapidity();}
@@ -90,7 +95,7 @@ namespace phys {
     Double_t vy_;
     Double_t thetaX_;
     Double_t thetaY_;
-    //Double_t time_;
+    Double_t time_;
     
     Bool_t LHCSector_;       //  0 -> sector 45, 1 -> sector 56
 
@@ -99,7 +104,7 @@ namespace phys {
     Double_t vyError_;
     Double_t thetaXError_;
     Double_t thetaYError_;
-    //Double_t timeError_;
+    Double_t timeError_;
    
     Double_t Ebeam_;
     
@@ -110,7 +115,7 @@ namespace phys {
 
     
   private:
-    ClassDef(Proton, 1) //     
+    ClassDef(Proton, 3) //     
       };
   
 }

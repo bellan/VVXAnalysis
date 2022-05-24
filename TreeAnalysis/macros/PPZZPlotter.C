@@ -165,7 +165,7 @@ void PPZZPlotter(){
   TFile *file = new TFile("results/2018/PPZZAnalyzer_SR4P/ZZTo4l.root","READ");
   TH2F *histxi= (TH2F*)file->Get("th2xi");
   //XiPlotter(histxi);
-  TH2F *histmatch = (TH2F*)file->Get("th2xi");
+  TH2F *histmatch = (TH2F*)file->Get("th2goodC");
   MatchingPlotter(histmatch,0.95,1.15);
   //TCanvas *c = new TCanvas();
   TH2F *histmatch2 = (TH2F*)file->Get("th2good");
@@ -183,12 +183,12 @@ void PPZZPlotter(){
   TH1F *n = (TH1F*)file->Get("backprotonmult");
   //GeneralPlotter(n);
   /*
-  TH2F *histmatchonlyPUP = (TH2F*)file->Get("th2");
-  TH2F *histmatchwithPUP = (TH2F*)filewithPUP->Get("th2");
+  TH2F *histmatchonlyPUP = (TH2F*)file->Get("th2good");
+  TH2F *histmatchwithPUP = (TH2F*)file->Get("th2goodC");
   histmatchwithPUP->Add(histmatchonlyPUP,-1);
   for(int i=1;i<=3600;i++){
     if(histmatchwithPUP->GetBinContent(i)<0) histmatchwithPUP->SetBinContent(i,0);}
-  MatchingPlotter(histmatchwithPUP);
+  MatchingPlotter(histmatchwithPUP,0.95,1.15);
   */
 }
   

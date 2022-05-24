@@ -37,8 +37,7 @@ namespace phys {
     Proton *secondPtr() {return &daughter1_;}
 
     TLorentzVector ppp4() {
-    TLorentzVector nullvector(0.,0.,0.,0.);
-    return nullvector-daughter0_.p4()-daughter1_.p4();
+    return daughter0_.p4()+daughter1_.p4();
     }
 
     bool passFullSelection() const {return passFullSel_;}
@@ -49,7 +48,7 @@ namespace phys {
     Double_t ypp() const {return -0.5*log(daughter0_.xi()/daughter1_.xi());}
     
     //method to extract the interaction z position
-    //Double_t vz() const {return phys::SPEEDOFLIGHT*(daughter0_.time()-daughter1_.time())/2;}
+    Double_t vz() const {return phys::SPEEDOFLIGHT*(daughter0_.time()-daughter1_.time())/2;}
     
 
   private:
