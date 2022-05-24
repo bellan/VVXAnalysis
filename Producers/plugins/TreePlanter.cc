@@ -963,6 +963,9 @@ phys::Photon TreePlanter::fill(const pat::Photon &photon) const {
 phys::Proton TreePlanter::fill(bool ismultiRP, const reco::ForwardProton &proton) const {
 		
   phys::Proton output(ismultiRP,proton.xi(),proton.vx(),proton.vy(),proton.thetaX(),proton.thetaY());
+  
+  output.time_    = proton.time();
+  output.timeError_    = proton.timeError();
   output.xiError_    = proton.xiError();
   output.vxError_    = proton.vxError();
   output.vyError_    = proton.vyError();
@@ -970,8 +973,6 @@ phys::Proton TreePlanter::fill(bool ismultiRP, const reco::ForwardProton &proton
   output.thetaYError_    = proton.thetaYError();
   if(proton.lhcSector()==proton.LHCSector::sector45){output.LHCSector_=true;}
   else{output.LHCSector_=false;}
-  TVector3 v = TVector3(proton.momentum().X(),proton.momentum().Y(),proton.momentum().Z());
-  output.p4_ = TLorentzVector(v,6500*(1-proton.xi()));
 	
   return output;
 }
