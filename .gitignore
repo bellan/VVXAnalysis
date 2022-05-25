@@ -16,6 +16,8 @@ results/
 databases/
 CMakeFiles/
 JRDatabase/
+samples/
+Plot/
 
 # Ignore specific files
 CMakeCache.txt
