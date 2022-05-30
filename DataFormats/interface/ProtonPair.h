@@ -18,14 +18,11 @@ namespace phys {
     friend class ::TreePlanter;
   public:
     /// Constructor
-    ProtonPair():
-       passFullSel_(false)
-      {}
+    ProtonPair(){}
       
     ProtonPair(const Proton& p1, const Proton& p2):
         daughter0_(p1)
       , daughter1_(p2)
-      , passFullSel_(false)
       {}
     
     virtual ~ProtonPair(){}
@@ -40,8 +37,6 @@ namespace phys {
     return daughter0_.p4()+daughter1_.p4();
     }
 
-    bool passFullSelection() const {return passFullSel_;}
-    void setPassFullSel(Bool_t  fs) {passFullSel_ = fs;}
 
     //methods to extract the expected mass and rapidity value of the central system
     Double_t mpp() const {return 13000*sqrt(daughter0_.xi()*daughter1_.xi());}

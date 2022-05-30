@@ -122,10 +122,8 @@ void EventAnalyzer::Init(TTree *tree)
   ZL = new ZLCompositeCandidate()    ; b_ZLCand = 0; theTree->SetBranchAddress("ZLCand", &ZL, &b_ZLCand);
 
   // Protons
-  singleRPprotons = 0;      b_singleRPprotons = 0;    theTree->SetBranchAddress("singleRPprotons", &singleRPprotons, &b_singleRPprotons);
-  //singleRPprotons  = new std::vector<phys::Proton>();
-  multiRPprotons = 0;      b_multiRPprotons = 0;    theTree->SetBranchAddress("multiRPprotons", &multiRPprotons, &b_multiRPprotons);
-  //multiRPprotons  = new std::vector<phys::Proton>();
+  if(theTree->GetBranch("singleRPprotons")) {singleRPprotons = 0;      b_singleRPprotons = 0;    theTree->SetBranchAddress("singleRPprotons", &singleRPprotons, &b_singleRPprotons);}
+  if(theTree->GetBranch("multiRPprotons")) {multiRPprotons = 0;      b_multiRPprotons = 0;    theTree->SetBranchAddress("multiRPprotons", &multiRPprotons, &b_multiRPprotons);}
 
   // Gen Particles   
   genParticles   = 0;                                                b_genParticles   = 0; theTree->SetBranchAddress("genParticles"  , &genParticles  , &b_genParticles);

@@ -39,7 +39,8 @@ void MatchingPlotter(TH2F *histmatch, double kmin, double kmax){
   gStyle->SetOptStat(0);
   histmatch->DrawCopy("colz");
   
-  TPaveLabel *label = new TPaveLabel(-0.35,1.145,0.5,1.495,"a^{0}_{Z}/#Lambda^{2} = 0.9*10^{-5} GeV^{-2}");
+  //TPaveLabel *label = new TPaveLabel(-0.35,1.145,0.5,1.495,"a^{0}_{Z}/#Lambda^{2} = 0.9*10^{-5} GeV^{-2}");
+  TPaveLabel *label = new TPaveLabel(-0.35,1.145,0.5,1.495,"qq->ZZ->4l");
   label->SetFillColor(kSpring-4);
   label->SetTextColor(kOrange+10);
   label->SetTextSize(0.5);
@@ -127,14 +128,16 @@ void MatchingPlotter(TH2F *histmatch, double kmin, double kmax){
 
 //(TObject*)0
 void mppPlotter(TH1F *mpp){
-  mpp->SetTitle("Matched ZZ invariant mass");
+  mpp->SetTitle("ZZ invariant mass");
   gStyle->SetOptStat(0);
   mpp->GetXaxis()->SetTitle("mass (GeV)");
   mpp->GetYaxis()->SetTitle("# of events");
-  mpp->Draw();
-  TLegend *l = new TLegend(0.6,0.7,0.95,0.8);
-  l->AddEntry((TObject*)0,"a^{c}_{Z}/#Lambda^{2} = 5*10^{-5} GeV^{-2}","f");
-  l->Draw("same");
+  TPaveLabel *label = new TPaveLabel(-0.35,1.145,0.5,1.495,"qq->ZZ->4l");
+  label->SetFillColor(kSpring-4);
+  label->SetTextColor(kOrange+10);
+  label->SetTextSize(0.5);
+  mpp->DrawCopy("same");
+  label->Draw("same");
 }
 
 void yppPlotter(TH1F *ypp){
@@ -160,9 +163,14 @@ void GeneralPlotter(TH1F *th){
 }
 
 void PPZZPlotter(){
+  
   TFile *filenoPUP = new TFile("results/2018/PPZZAnalyzer_SR4P/ZZTo4lnoPUP2018.root","READ");
   TFile *filewithPUP = new TFile("results/2018/PPZZAnalyzer_SR4P/ZZTo4lwithPUP2018.root","READ");
   TFile *file = new TFile("results/2018/PPZZAnalyzer_SR4P/ZZTo4l.root","READ");
+  //TFile *file = new TFile("results/2018/PPZZAnalyzer_SR4P/ZZTo4la0zD2.root","READ");
+
+  double theWeight= ((TH1F*)file->Get("weight_full"))->GetMean();
+  
   TH2F *histxi= (TH2F*)file->Get("th2xi");
   //XiPlotter(histxi);
   TH2F *histmatch = (TH2F*)file->Get("th2goodC");
@@ -170,7 +178,7 @@ void PPZZPlotter(){
   //TCanvas *c = new TCanvas();
   TH2F *histmatch2 = (TH2F*)file->Get("th2good");
   //MatchingPlotter(histmatch2);
-  TH1F *mpphist = (TH1F*)file->Get("mZZtwoprotons");
+  TH1F *mpphist = (TH1F*)file->Get("mZZ");
   //mppPlotter(mpphist);
   TH1F *ypphist = (TH1F*)file->Get("ypp");
   //yppPlotter(ypphist);
@@ -190,5 +198,41 @@ void PPZZPlotter(){
     if(histmatchwithPUP->GetBinContent(i)<0) histmatchwithPUP->SetBinContent(i,0);}
   MatchingPlotter(histmatchwithPUP,0.95,1.15);
   */
+  
+  TH1 *counteromicron = (TH2F*)file->Get("counteromicron2");
+  TH1 *counterdelta = (TH2F*)file->Get("counterdelta2");
+  cout<<endl<<"Algorithm A (check if delta region, if not min distance):"<<endl;
+  if(counterdelta){cout<<"# of events in the delta signal region: "<<counterdelta->GetEntries()*theWeight<<endl;
+    cout<<"# of events in the omicron signal region: "<<(counteromicron->GetEntries()-counterdelta->GetEntries())*theWeight<<endl<<endl;}
+  else{cout<<"# of events in the delta signal region: 0"<<endl;
+    cout<<"# of events in the omicron signal region: "<<(counteromicron->GetEntries())*theWeight<<endl<<endl;}
+  
+  TH1 *counteromicronxi = (TH2F*)file->Get("counteromicronxi");
+  TH1 *counterdeltaxi = (TH2F*)file->Get("counterdeltaxi");
+  cout<<"Algorithm B (max xi):"<<endl;
+  cout<<"# of events in the delta signal region: "<<counterdeltaxi->GetEntries()*theWeight<<endl;
+  cout<<"# of events in the omicron signal region: "<<(counteromicronxi->GetEntries()-counterdeltaxi->GetEntries())*theWeight<<endl<<endl;
+   
+  TH1 *counteromicronC = (TH2F*)file->Get("counteromicronC");
+  cout<<"Algorithm C (check if delta region, if not max xi):"<<endl;
+  cout<<"# of events in the delta signal region: "<<counterdelta->GetEntries()*theWeight<<endl;
+  cout<<"# of events in the omicron signal region: "<<counteromicronC->GetEntries()*theWeight<<endl<<endl;
+  
+  TH1 *counteromicron4e = (TH2F*)file->Get("counteromicron4e");
+  TH1 *counterdelta4e = (TH2F*)file->Get("counterdelta4e");
+  TH1 *counteromicron4mu = (TH2F*)file->Get("counteromicron4mu");
+  TH1 *counterdelta4mu = (TH2F*)file->Get("counterdelta4mu");
+  TH1 *counteromicron2e2mu = (TH2F*)file->Get("counteromicron2e2mu");
+  TH1 *counterdelta2e2mu = (TH2F*)file->Get("counterdelta2e2mu");
+  cout<<"4mu:"<<endl;
+  cout<<"# of events in the delta signal region: "<<counterdelta4mu->GetEntries()*theWeight<<endl;
+  cout<<"# of events in the omicron signal region: "<<counteromicron4mu->GetEntries()*theWeight<<endl<<endl;
+  cout<<"4e:"<<endl;
+  cout<<"# of events in the delta signal region: "<<counterdelta4e->GetEntries()*theWeight<<endl;
+  cout<<"# of events in the omicron signal region: "<<counteromicron4e->GetEntries()*theWeight<<endl<<endl;
+  cout<<"2e2mu:"<<endl;
+  cout<<"# of events in the delta signal region: "<<counterdelta2e2mu->GetEntries()*theWeight<<endl;
+  cout<<"# of events in the omicron signal region: "<<counteromicron2e2mu->GetEntries()*theWeight<<endl<<endl;
+  
 }
   

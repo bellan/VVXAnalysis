@@ -45,6 +45,11 @@ namespace phys {
       : xi_(1-genProton.e()/6500){
     }
     
+    Proton(double xi, bool LHCSector)
+      : xi_(xi)
+      , LHCSector_(LHCSector){
+    }
+      
     /// Destructor
     virtual ~Proton(){}
     
@@ -115,7 +120,7 @@ namespace phys {
 
     
   private:
-    ClassDef(Proton, 3) //     
+    ClassDef(Proton, 4) //     
       };
   
 }

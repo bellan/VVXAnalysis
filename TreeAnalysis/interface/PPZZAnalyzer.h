@@ -28,8 +28,6 @@ public:
   
   virtual Int_t cut();
 
-  virtual void end(TFile &);
-
  private:
   friend class Selector<PPZZAnalyzer>;
   
