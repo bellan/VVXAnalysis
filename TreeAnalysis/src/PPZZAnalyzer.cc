@@ -30,7 +30,7 @@ void PPZZAnalyzer::analyze(){
   Bool_t isPUbg= true;
   
   std::vector<phys::Proton> eventprotons;
-  //forw: sector 45 (ALICE), back: sector 56 (LHCb)
+  //forw: sector 45 (towards ALICE), back: sector 56 (towards LHCb)
   std::vector<phys::Proton> forweventprotons;
   std::vector<phys::Proton> backeventprotons;
 
@@ -86,7 +86,7 @@ void PPZZAnalyzer::analyze(){
 
   
   if(ZZ->passFullSelection()){
-    theHistograms->fill("mZZ","mass of ZZ pair",50,300,1000,ZZ->mass(),theWeight);
+    theHistograms->fill("mZZ","mass of ZZ pair",50,400,2400,ZZ->mass(),theWeight);
     theHistograms->fill("yZZ","rapidity of ZZ pair",50,-1,1,ZZ->rapidity(),theWeight);
     if(eventprotons.size()>0){
       theHistograms->fill("mZZoneproton","mass of ZZ pair with one reconstructed proton",50,300,10000,ZZ->mass(),theWeight);
@@ -107,14 +107,14 @@ void PPZZAnalyzer::analyze(){
   double bestydif=9999.;
   
   if(forweventprotons.size()&&backeventprotons.size()){
-    for(unsigned int i=0; i<eventprotons.size();i++){
-      p1=eventprotons[i];
-      if(p1.LHCSector()) continue;
-      for(unsigned int j=0; j<eventprotons.size();j++){
-	p2=eventprotons[j];
-        if(!p2.LHCSector()) continue;
+    for(unsigned int i=0; i<backeventprotons.size();i++){
+      p1=backeventprotons[i];
+      //if(p1.LHCSector()) continue;
+      for(unsigned int j=0; j<forweventprotons.size();j++){
+	p2=forweventprotons[j];
+        //if(!p2.LHCSector()) continue;
 	pp=phys::ProtonPair(p1,p2);
-        theHistograms->fill("mpp","Expected mass of ZZ pair",20,450,2400,pp.mpp(),theWeight);
+        theHistograms->fill("mpp","Expected mass of ZZ pair",50,400,2400,pp.mpp(),theWeight);
         theHistograms->fill("ypp","Expected rapidity of ZZ pair",15,0,0.75,pp.ypp(),theWeight);
 
         if(ZZ->passFullSelection()){
@@ -125,19 +125,18 @@ void PPZZAnalyzer::analyze(){
 	  nmatches++;
 	  theHistograms->fill("th2","2D matching distribution",60,-2.5,0.5,60,-1.5,1.5,massdif,ydif,theWeight);
 	  bool region = regionselection(massdif,ydif);
-	  if(massdif*massdif+ydif*ydif<bestmassdif*bestmassdif+bestydif*bestydif && matcheddelta==false){
+	  if(massdif*massdif+ydif*ydif<bestmassdif*bestmassdif+bestydif*bestydif && !matcheddelta){
 	    bestmassdif=massdif;
 	    bestydif=ydif;}
 	  if(region){
-	    if(matcheddelta==false && massdif>-0.05){
+	    if(!matcheddelta && massdif>-0.05){
 	      bestmassdif=massdif;
 	      bestydif=ydif;
+	      matcheddelta=true;
 	    }
 	    theHistograms->fill("deltaPhi","deltaPhi distribution",10,0,3.14,physmath::deltaPhi(pp.ppp4(),ZZ->p4()));
-	    if(matched==false){
+	    if(!matched){
 	      matched=true;}		
-	    if(massdif>-0.05){
-	      matcheddelta=true;}
 	  }
 	}
       }}
@@ -150,16 +149,17 @@ void PPZZAnalyzer::analyze(){
       theHistograms->fill("goodmZZ","Mass of matched ZZ pairs",10,650,4500,ZZ->mass(),theWeight);
       theHistograms->fill("goodyZZ","Rapidity of matched ZZ pairs",15,-1.3,1.3,ZZ->rapidity(),theWeight);
     }
-    if(matcheddelta==true) {theHistograms->fill("counterdelta2","counterdelta",1,0,1,0.5,theWeight);
+    if(matcheddelta) {
+      theHistograms->fill("counterdelta2","counterdelta",1,0,1,0.5,theWeight);
       if(abs(ZZ->first().daughter(0).id())==13&&abs(ZZ->second().daughter(0).id())==13) theHistograms->fill("counterdelta4mu","counterdelta4mu",1,0,1,0.5,theWeight);
       if(abs(ZZ->first().daughter(0).id())==11&&abs(ZZ->second().daughter(0).id())==11) theHistograms->fill("counterdelta4e","counterdelta4e",1,0,1,0.5,theWeight);
       if(abs(ZZ->first().daughter(0).id())==13&&abs(ZZ->second().daughter(0).id())==11) theHistograms->fill("counterdelta2e2mu","counterdelta2e2mu",1,0,1,0.5,theWeight);
       if(abs(ZZ->first().daughter(0).id())==11&&abs(ZZ->second().daughter(0).id())==13) theHistograms->fill("counterdelta2e2mu","counterdelta2e2mu",1,0,1,0.5,theWeight);
       theHistograms->fill("th2goodC","2D matching distribution",70,-2.5,1,60,-1.5,1.5,bestmassdif,bestydif,theWeight);
-      cout<<"b"<<endl;
+      //cout<<"b"<<endl;
     }
   }
-
+  
   //Algorithm B and C: use the highest xi proton every time
   
   if(forweventprotons.size()&&backeventprotons.size()){
@@ -186,9 +186,11 @@ void PPZZAnalyzer::analyze(){
     if(!matcheddelta) theHistograms->fill("th2goodC","2D matching distribution",70,-2.5,1,60,-1.5,1.5,massdifxi,ydifxi,theWeight);
     if(regionxi){
       theHistograms->fill("counteromicronxi","counteromicronxi",1,0,1,0.5,theWeight);
-      if(massdifxi>-0.05) theHistograms->fill("counterdeltaxi","counterdeltaxi",1,0,1,0.5,theWeight);
+      if(massdifxi>-0.05) {
+	theHistograms->fill("counterdeltaxi","counterdeltaxi",1,0,1,0.5,theWeight);
+      }
       if(!matcheddelta){
-	cout<<"a"<<endl;
+	//cout<<"a"<<endl;
 	theHistograms->fill("counteromicronC","counteromicronC",1,0,1,0.5,theWeight);
 	if(abs(ZZ->first().daughter(0).id())==13&&abs(ZZ->second().daughter(0).id())==13) theHistograms->fill("counteromicron4mu","counteromicron4mu",1,0,1,0.5,theWeight);
         if(abs(ZZ->first().daughter(0).id())==11&&abs(ZZ->second().daughter(0).id())==11) theHistograms->fill("counteromicron4e","counteromicron4e",1,0,1,0.5,theWeight);
