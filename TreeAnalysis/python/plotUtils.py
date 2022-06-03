@@ -53,22 +53,22 @@ def getSamplesByRegion(region, MCSet, predType):
     
     if region == 'SR4P':
         if predType == 'fromCR':
-            tot = qqZZ + ggZZ + vbsZZ + HZZ + WWZ + ttZ    
+            tot = qqZZ + ggZZ + WWZ + ttZ  # + vbsZZ + HZZ
         elif predType == 'fullMC':
-            tot = qqZZ + ggZZ + vbsZZ + HZZ + WZ + tt + DY + WWW + WWZ + ttZ + ZG + ttXY + WW + W
+            tot = qqZZ + ggZZ + WZ + tt + DY + WWW + WWZ + ttZ + ZG + ttXY + WW + W  # + vbsZZ + HZZ
         else:
             sys.exit("Wrong prediction type, fromCR from MC still needs to be added")
             
     elif region == 'SR3P':
         if predType == 'fromCR':
-            tot = qqZZ + ggZZ + vbsZZ + HZZ + WWZ + ttZ + WZ    
+            tot = qqZZ + ggZZ + WWZ + ttZ + WZ  # + vbsZZ + HZZ
         elif predType == 'fullMC':
-            tot = qqZZ + ggZZ + vbsZZ + HZZ + WZ + tt + DY + WWW + WWZ + ttZ + ZG + ttXY + WW + W
+            tot = qqZZ + ggZZ + WZ + tt + DY + WWW + WWZ + ttZ + ZG + ttXY + WW + W  # + vbsZZ + HZZ
         else:
             sys.exit("Wrong prediction type, fromCR from MC still needs to be added")
 
     else:
-        tot = qqZZ + ggZZ + vbsZZ + HZZ + WZ + tt + DY + WWW + WWZ + ttZ + ZG + ttXY + WW + W
+        tot = qqZZ + ggZZ + WZ + tt + DY + WWW + WWZ + ttZ + ZG + ttXY + WW + W  # + vbsZZ + HZZ
         
 
     return tot
@@ -160,7 +160,10 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin):
 
     for sample in typeofsamples:
         #if os.path.exists(inputdir+sample["sample"]+".root"):
-        files[sample["sample"]] = ROOT.TFile(inputdir+sample["sample"]+".root")
+        try:
+            files[sample["sample"]] = ROOT.TFile(inputdir+sample["sample"]+".root")
+        except OSError:
+            files[sample["sample"]] = ROOT.TFile()
         #else:
         #    print "{0:s} requested, but the corresponding root file does not exist in {1:s}".format(sample["sample"],inputdir)
             
@@ -177,12 +180,16 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin):
         # if f.IsOpen():
         #     h = f.Get(plot)
         #     if not h:
-        #         print sample["sample"],"has no enetries or is a zombie"
+        #         print sample["sample"],"has no entries or is a zombie"
         #         continue
         
-        h = files[sample["sample"]].Get(plot)
+        if files[sample["sample"]].IsOpen():
+            h = files[sample["sample"]].Get(plot)
+        else:
+            h = None
         if not h:
-            print sample["sample"],"has no enetries or is a zombie"
+            #print sample["sample"],"has no entries or is a zombie"
+            print "{0:16.16s} contribution".format(sample["sample"]), "No entries or is a zombie"
             continue
         
         h.Scale(sample["kfactor"])
@@ -191,7 +198,7 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin):
             h.Scale(-1)
 
         
-        print "{0} contribution \t {1:.3f} +- {2: .3f} \n".format(sample["sample"], h.IntegralAndError(0,-1,ErrStat), ErrStat.value)
+        print "{0:16.16} contribution {1:.3f} +- {2: .3f}".format(sample["sample"], h.IntegralAndError(0,-1,ErrStat), ErrStat.value)
 
         # Get overflow events too#
         totalMC += h.Integral(0,-1)
@@ -334,7 +341,7 @@ def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
         for b in bkgsamples:
             hb = filesbkg[b["sample"]].Get("ZZTo"+hbkg["name"]+Var)  
             if hb==None:
-                print "For sample ", b["sample"], "has no enetries or is a zombie"       
+                print "For sample ", b["sample"], "has no entries or is a zombie"       
                 NoSamples+=b["sample"]+" "
                 continue
             if isFirst:
@@ -375,7 +382,7 @@ def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
     for i in hsum:
         if i["name"]=="4l": continue
         if i["state"]==None:
-            print i["state"]," has no enetries" 
+            print i["state"]," has no entries" 
             continue
   
         i["state"].SetLineColor(i["color"])
