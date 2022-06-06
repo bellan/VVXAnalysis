@@ -150,12 +150,12 @@ Int_t VVGammaAnalyzer::cut() {
     
   }
   
-  if(kinPhotons_->size() > 1)            theHistograms->fill("ph_eScale_count", "Num photons pass selection", 6,-0.5,5.5, 0, theWeight);
-  if(kinPhotons_EScale_Down.size() > 1)  theHistograms->fill("ph_eScale_count", "Num photons pass selection", 6,-0.5,5.5, 1, theWeight);
-  if(kinPhotons_EScale_Up.size() > 1)    theHistograms->fill("ph_eScale_count", "Num photons pass selection", 6,-0.5,5.5, 2, theWeight);
-  if(goodPhotons_->size() > 1)           theHistograms->fill("ph_eScale_count", "Num photons pass selection", 6,-0.5,5.5, 3, theWeight);
-  if(goodPhotons_EScale_Down.size() > 1) theHistograms->fill("ph_eScale_count", "Num photons pass selection", 6,-0.5,5.5, 4, theWeight);
-  if(goodPhotons_EScale_Up.size() > 1)   theHistograms->fill("ph_eScale_count", "Num photons pass selection", 6,-0.5,5.5, 5, theWeight);
+  if(kinPhotons_->size() > 0)            theHistograms->fill("ph_eScale_count", "Num photons pass selection", 6,-0.5,5.5, 0, theWeight);
+  if(kinPhotons_EScale_Down.size() > 0)  theHistograms->fill("ph_eScale_count", "Num photons pass selection", 6,-0.5,5.5, 1, theWeight);
+  if(kinPhotons_EScale_Up.size() > 0)    theHistograms->fill("ph_eScale_count", "Num photons pass selection", 6,-0.5,5.5, 2, theWeight);
+  if(goodPhotons_->size() > 0)           theHistograms->fill("ph_eScale_count", "Num photons pass selection", 6,-0.5,5.5, 3, theWeight);
+  if(goodPhotons_EScale_Down.size() > 0) theHistograms->fill("ph_eScale_count", "Num photons pass selection", 6,-0.5,5.5, 4, theWeight);
+  if(goodPhotons_EScale_Up.size() > 0)   theHistograms->fill("ph_eScale_count", "Num photons pass selection", 6,-0.5,5.5, 5, theWeight);
   
   // Basic histos
   
