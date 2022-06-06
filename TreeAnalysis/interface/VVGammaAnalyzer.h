@@ -27,7 +27,7 @@ public:
 		   configuration){
     //theHistograms.profile(genCategory);
     // Memory allocation
-    leptons_      = new std::vector<const phys::Lepton*>;
+    leptons_      = new std::vector<phys::Lepton>;
     genQuarks_    = new std::vector<phys::Particle>;
     genChLeptons_ = new std::vector<phys::Particle>;
     genNeutrinos_ = new std::vector<phys::Particle>;
@@ -61,6 +61,7 @@ public:
 	
 	virtual void begin();
   	
+	void initEvent();
 	virtual Int_t cut();
 
 	virtual void analyze();
@@ -69,9 +70,10 @@ public:
 	
 	virtual void finish();
 
+
  private:
  	
-	std::vector<const phys::Lepton*>* leptons_;
+	std::vector<phys::Lepton>* leptons_;
  	// Photons with pt > 20 (already in ntuples), at least loose (cut-based) ID
 	std::vector<phys::Photon>* kinPhotons_;
  	std::vector<phys::Photon>* goodPhotons_;
@@ -94,10 +96,12 @@ public:
  	
  	// Objects reconstruction for each event
  	void genEventSetup();
+	/* const phys::Jet* candAK8(const std::vector<phys::Jet>*) const; */
  	
  	// Basic histograms
  	void genEventHistos();
 	void baseHistos_cut();
+	void jetHistos();
 	//void baseHistos_analyze();
 	void PKU_comparison();
  	
