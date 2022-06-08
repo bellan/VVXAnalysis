@@ -31,7 +31,8 @@ public:
   virtual void analyze();
   
   virtual Int_t cut();
-
+  
+  virtual void end(TFile&);
 
  private:
   friend class Selector<VVXAnalyzer>;
