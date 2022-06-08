@@ -19,6 +19,7 @@ using namespace colour;
 
 using namespace phys;
 
+#define CUT_LAYOUT 6,0.5,6.5
 
 Int_t VVXAnalyzer::cut() {
   
@@ -39,7 +40,7 @@ void VVXAnalyzer::analyze(){
   theHistograms->fill("ZZ4l_mass"      , "ZZ4l mass"  , 15 , 0, 1500, ZZ->mass(), theWeight);
   theHistograms->fill("ZZ4l_mass_u"    , "ZZ4l mass"  , 15 , 0, 1500, ZZ->mass());
   int ZZsumid = abs(ZZ->first().daughter(0).id())+abs(ZZ->second().daughter(0).id());
-  if(ZZsumid == 22){
+  if     (ZZsumid == 22){
     theHistograms->fill("ZZ4e_mass"    , "ZZ4e mass"  , 15 , 0, 1500, ZZ->mass(), theWeight);
     theHistograms->fill("ZZ4e_mass_u"  , "ZZ4e mass"  , 15 , 0, 1500, ZZ->mass());
   }
@@ -56,16 +57,16 @@ void VVXAnalyzer::analyze(){
   theHistograms->fill("ZW3l_tmass_u", "ZW tmass", 15 , 0, 1500, ZW->p4().Mt());
   
   int ZWsumid = abs(ZW->first().daughter(0).id())+abs(ZW->second().daughter(0).id());
-  if(ZWsumid == 22){
+  if     (ZWsumid == 22){
     theHistograms->fill("ZW3e_tmass"      , "ZW3e tmass"  , 15 , 0, 1500, ZW->p4().Mt(), theWeight);
     theHistograms->fill("ZW3e_tmass"      , "ZW3e tmass"  , 15 , 0, 1500, ZW->p4().Mt());
   }
   else if(ZWsumid == 24){
-    if(abs(ZW->first().daughter(0).id()) == 11){
+    if     (abs(ZW->first().daughter(0).id()) == 11){
       theHistograms->fill("ZZ2e1m_tmass"  , "ZW2e1m tmass", 15 , 0, 1500, ZW->p4().Mt(), theWeight);
       theHistograms->fill("ZZ2e1m_tmass_u", "ZW2e1m tmass", 15 , 0, 1500, ZW->p4().Mt());
     }
-    else if (abs(ZW->first().daughter(0).id()) == 13){
+    else if(abs(ZW->first().daughter(0).id()) == 13){
       theHistograms->fill("ZZ2m1e_tmass"  , "ZW2m1e tmass", 15 , 0, 1500, ZW->p4().Mt(), theWeight);
       theHistograms->fill("ZZ2m1e_tmass_u", "ZW2m1e tmass", 15 , 0, 1500, ZW->p4().Mt());
     }
@@ -74,12 +75,97 @@ void VVXAnalyzer::analyze(){
     theHistograms->fill("ZW3m_tmass"      , "ZW4m tmass"  , 15 , 0, 1500, ZW->p4().Mt(), theWeight);
     theHistograms->fill("ZW3m_tmass_u"    , "ZW4m tmass"  , 15 , 0, 1500, ZW->p4().Mt());
   }
-
-
   
+  std::vector<phys::Lepton> leptons;
+  if     (region_ >= SR4P && region_ <= CR4P_1F)  //(ZZ && ZZ->pt() > 1.){
+    leptons.insert(leptons.end(), {
+    	  ZZ->first().daughter(0), 
+    	  ZZ->first().daughter(1), 
+    	  ZZ->second().daughter(0), 
+    	  ZZ->second().daughter(1)
+        });
+  else if(ZW && ZW->pt() > 1.)
+    leptons.insert(leptons.end(), {
+  	  ZW->first().daughter(0), 
+  	  ZW->first().daughter(1), 
+  	  ZW->second().daughter(0)
+	});
+  else if(ZL && ZL->first.pt() > 1.)
+    leptons.insert(leptons.end(), {
+  	  ZL->first.daughter(0),
+  	  ZL->first.daughter(1),
+  	  ZL->second
+	});
+  
+  
+  std::vector<phys::Photon> kinPhotons ;
+  std::vector<phys::Photon> goodPhotons;
+  for(auto ph : *photons){
+    //Pixel seed and electron veto
+    if(ph.hasPixelSeed() || !ph.passElectronVeto()) continue;
+		
+    //Kinematic selection
+    if(ph.pt() < 20) continue;
+    float ph_aeta = fabs(ph.eta());
+    if(ph_aeta > 2.4) continue;
+    if(ph_aeta > 1.4442 && ph_aeta < 1.566) continue;
+		
+    //Electrons and muons matching
+    bool match = false;
+    for(const Lepton lep : leptons){
+      if(physmath::deltaR(ph,lep) < 0.3){
+	match = true;
+	break;
+      }
+    }
+    if(match) continue;
+
+    kinPhotons.push_back(ph);
+    if(ph.cutBasedIDLoose())
+      goodPhotons.push_back(ph);
+  }
+  
+  
+  theHistograms->fill("AAA_cuts"  , "Cuts weighted"  , CUT_LAYOUT, 1, theWeight);
+  theHistograms->fill("AAA_cuts_u", "Cuts unweighted", CUT_LAYOUT, 1);
+  bool haveZVlep = (ZZ && ZZ->pt() > 1.) || (ZW && ZW->pt() > 1.);
+  if(haveZVlep){
+    theHistograms->fill("AAA_cuts"  , "Cuts weighted"  , CUT_LAYOUT, 2, theWeight);
+    theHistograms->fill("AAA_cuts_u", "Cuts unweighted", CUT_LAYOUT, 2);
+  }
+  bool have2l2j = (muons->size()+electrons->size()==2) && (jets->size()==2 || jetsAK8->size()>=1);
+  if(have2l2j){
+    theHistograms->fill("AAA_cuts"  , "Cuts weighted"  , CUT_LAYOUT, 3, theWeight);
+    theHistograms->fill("AAA_cuts_u", "Cuts unweighted", CUT_LAYOUT, 3);
+  }
+  if(kinPhotons.size() >= 1){
+    theHistograms->fill("AAA_cuts"  , "Cuts weighted"  , CUT_LAYOUT, 4, theWeight);
+    theHistograms->fill("AAA_cuts_u", "Cuts unweighted", CUT_LAYOUT, 4);
+  }
+  bool haveGoodPhoton = goodPhotons.size() >= 1;
+  if(haveGoodPhoton){
+    theHistograms->fill("AAA_cuts"  , "Cuts weighted"  , CUT_LAYOUT, 5, theWeight);
+    theHistograms->fill("AAA_cuts_u", "Cuts unweighted", CUT_LAYOUT, 5);
+  }
+  if(haveZVlep && haveGoodPhoton){
+    theHistograms->fill("AAA_cuts"  , "Cuts weighted"  , CUT_LAYOUT, 6, theWeight);
+    theHistograms->fill("AAA_cuts_u", "Cuts unweighted", CUT_LAYOUT, 6);
+  }
 }
 
-
+void VVXAnalyzer::end(TFile& fout){
+  TH1* hCuts   = theHistograms->get("AAA_cuts");
+  TH1* hCuts_u = theHistograms->get("AAA_cuts_u");
+  for(TH1* h : {hCuts, hCuts_u}){
+    TAxis* x = h->GetXaxis();
+    x->SetBinLabel(1, "All");
+    x->SetBinLabel(2, "ZZ || ZW");
+    x->SetBinLabel(3, "2l2j || 2l1J");
+    x->SetBinLabel(4, "#gamma kin");
+    x->SetBinLabel(5, "#gamma IDloose");
+    x->SetBinLabel(6, "ZZ/ZW && #gamma IDloose");
+  }
+}
 
 
 
