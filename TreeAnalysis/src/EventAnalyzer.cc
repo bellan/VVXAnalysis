@@ -324,11 +324,13 @@ Long64_t EventAnalyzer::LoadTree(Long64_t entry){
 void EventAnalyzer::loop(const std::string outputfile){
 
   if (theTree == 0) return;
-
+  
 
   Long64_t nentries = maxNumEvents_ > 0 ? maxNumEvents_ : theTree->GetEntries();  
 
   begin();
+
+  int logcounter=0;
 
   for (Long64_t jentry=0; jentry<nentries; ++jentry) {
     Long64_t ientry = LoadTree(jentry);
@@ -337,6 +339,9 @@ void EventAnalyzer::loop(const std::string outputfile){
     if (cut() < 0) continue;
     theCutCounter += theWeight;
     if(doBasicPlots_) fillBasicPlots();
+    if((jentry)>=500000*(logcounter+1)) {cout<<Yellow("analyzing entry number ");
+      cout<<Yellow(jentry)<<endl;
+      logcounter++;}
     analyze();
   }
   
