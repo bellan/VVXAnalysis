@@ -1,3 +1,4 @@
+from datetime import datetime
 import FWCore.ParameterSet.Config as cms
 from Configuration.EventContent.EventContent_cff import *
 from Configuration.Eras.Modifier_ctpps_2018_cff import ctpps_2018
@@ -36,7 +37,7 @@ import FWCore.PythonUtilities.LumiList as LumiList
 pu_jsonFile = "/eos/project-c/ctpps/Operations/DataExternalConditions/2018/CMSgolden_2RPGood_anyarms_Era"+"D"+".json"
 process.ctppsProtonMixer.lumisToProcess = LumiList.LumiList(filename = pu_jsonFile).getVLuminosityBlockRange()
 print "Using JSON file for PU: "+pu_jsonFile+"\n"
-process.RandomNumberGeneratorService.ctppsProtonMixer = cms.PSet(initialSeed = cms.untracked.uint32(42))
+process.RandomNumberGeneratorService.ctppsProtonMixer = cms.PSet(initialSeed = cms.untracked.uint32(datetime.now().time().microsecond))
 
 # override LHCInfo source
 process.load("CalibPPS.ESProducers.ctppsLHCInfoRandomXangleESSource_cfi")
@@ -96,7 +97,7 @@ process.beamDivergenceVtxGenerator.srcGenParticle = cms.VInputTag(
 # rng service for efficiency
 process.load("protonPreMix.protonPreMix.ppsEfficiencyProducer_cfi")
 
-process.RandomNumberGeneratorService.ppsEfficiencyProducer = cms.PSet(initialSeed = cms.untracked.uint32(43))
+process.RandomNumberGeneratorService.ppsEfficiencyProducer = cms.PSet(initialSeed = cms.untracked.uint32(datetime.now().time().microsecond))
 process.ppsEfficiencyProducer.year = cms.int32(2018)
 process.ppsEfficiencyProducer.era = cms.string("D2")
 process.ppsEfficiencyProducer.mixedProtonsSrc = cms.InputTag("ctppsProtonMixer")
