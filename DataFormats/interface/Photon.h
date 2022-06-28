@@ -72,6 +72,7 @@ namespace phys {
     /* float cryPhi() const { return cryPhi_; } */
     /* float iEta()   const { return iEta_  ; } */
     /* float iPhi()   const { return iPhi_  ; } */
+    float scEta() const { return scEta_; }
     
     float puppiChargedHadronIso() const { return puppiChargedHadronIso_; }
     float puppiNeutralHadronIso() const { return puppiNeutralHadronIso_; }
@@ -161,6 +162,7 @@ namespace phys {
     /* float cryPhi_; */
     /* float iEta_; */
     /* float iPhi_; */
+    float scEta_;  // superCluster Eta
     
     // PUPPI isolations
     float puppiChargedHadronIso_;
