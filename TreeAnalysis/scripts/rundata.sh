@@ -1,29 +1,28 @@
-#!/bin/bash
+#!/bin/bash -x
 
 
 prefixcsvfile="../Producers/python/samples_"
 suffixcsvfile="_Data.csv"
 haddOpt="-k -f"  # "-j $(grep processor /proc/cpuinfo | wc -l)"
 rmOpt="-r -f"
-analyzer=VVXAnalyzer  # VVGammaAnalyzer
+analyzer=VVGammaAnalyzer  # VVXAnalyzer
 years="2016"
 
 regions="SR4P;CR2P2F;CR3P1F;SR3P;CR000;CR001;CR010;CR011;CR100;CR101;CR110;SR2P"
-options="--nofr --fpw"
+options="" # "--nofr" # "--fpw"  # 
 
 eras="Bver1 Bver2 Chipm Dhipm Ehipm Fhipm F G H"
 
 make || exit
 
 # ~~~~~ Analysis on data
-echo "--- Analyses on Data ---"
-echo "  "
+echo -e "--- Analyses on Data ---\n"
 
 for year in $years ; do
     csvfile=$prefixcsvfile${year}UL$suffixcsvfile
 
     for era in $eras ; do			
-	echo $analyzer -y $year era $era -r $regions -c $csvfile $options -d samples/Data
+	#echo $analyzer -y $year era $era -r $regions -c $csvfile $options -d samples/Data
 	./python/run.py $analyzer 2016$era -y $year -r $regions -c $csvfile $options -d samples/Data &> logdir/data_${year}${era}.log &
     done
 
