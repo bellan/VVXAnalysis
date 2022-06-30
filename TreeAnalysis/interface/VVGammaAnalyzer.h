@@ -109,7 +109,7 @@ public:
 	void LeptonFakeRate();
 	void PhotonFakeRate();
  	void effPhotons(); // uses goodPhotons_ and genPhotons_
- 	
+ 	void photonIsolation(const std::vector<phys::Photon>&, const char*);
  	
  	void endNameHistos();
  	
@@ -185,6 +185,8 @@ public:
 		static const std::vector<double> pt_bins_LFR;
 		static const std::vector<double> eta_bins;
 		static const std::vector<double> aeta_bins;
+		static const std::vector<double> mVV_bins;
+		static const std::vector<double> mVVG_bins;
   
   protected:
 		unsigned long evtN_;  // Used in the print in cut()
