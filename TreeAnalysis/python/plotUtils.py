@@ -13,31 +13,36 @@ import re
 qqZZ_pow = [{"sample":'ZZTo4l'         , "color":ROOT.kAzure-4 , "name":'qq/qg #rightarrow ZZ(+jets)', "kfactor": 1.1}]
 qqZZ_mad = [{"sample":'ZZTo4lamcatnlo' , "color":ROOT.kAzure-4 , "name":'qq/qg #rightarrow ZZ(+jets)', "kfactor": 1.1}]
 
-ggZZ     = [{"sample":'ggZZ'           , "color":ROOT.kAzure-5 , "name":'gg #rightarrow ZZ(+jets)'   , "kfactor": 1.7}]
-vbsZZ    = [{"sample":'ZZ4lJJ'         , "color":ROOT.kAzure-6 , "name":'VBS', "kfactor": 1.0}]
-HZZ      = [{"sample":'HZZ'            , "color":ROOT.kAzure-7 , "name":'higgs', "kfactor": 1.0}]
+ggZZ     = [{"sample":'ggZZ'           , "color":ROOT.kCyan-5  , "name":'gg #rightarrow ZZ(+jets)'   , "kfactor": 1.7}]
+vbsZZ    = [{"sample":'ZZ4lJJ'         , "color":ROOT.kCyan-6  , "name":'VBS', "kfactor": 1.0}]
+HZZ      = [{"sample":'HZZ'            , "color":ROOT.kCyan-7  , "name":'higgs', "kfactor": 1.0}]
     
-WZ       = [{"sample":'WZTo3LNu'       , "color":ROOT.kRed+2   , "name":'WZ', "kfactor": 1.0}]
+WZ       = [{"sample":'WZTo3LNu'       , "color":ROOT.kYellow+2, "name":'WZ', "kfactor": 1.0}]
 
-WW       = [{"sample":'WWTo2L2Nu'      , "color":ROOT.kRed+6   , "name":'WW', "kfactor": 1.0}]
+WW       = [{"sample":'WWTo2L2Nu'      , "color":ROOT.kBlue-4  , "name":'WW', "kfactor": 1.0}]
 
-tt       = [{"sample":'TTTo2L2Nu'      , "color":ROOT.kRed-4   , "name":'t#bar{t}', "kfactor": 1.0},
-            {"sample":'TTWJets'        , "color":ROOT.kRed-4   , "name":'t#bar{t}', "kfactor": 1.0},
-            {"sample":'TTZJets'        , "color":ROOT.kRed-4   , "name":'t#bar{t}', "kfactor": 1.0},
-            {"sample":'TTGJets'        , "color":ROOT.kRed-4   , "name":'t#bar{t}', "kfactor": 1.0}]
+tt       = [{"sample":'TTTo2L2Nu'      , "color":ROOT.kRed-5   , "name":'t#bar{t}', "kfactor": 1.0},
+            {"sample":'TTWJets'        , "color":ROOT.kRed-5   , "name":'t#bar{t}', "kfactor": 1.0},
+            {"sample":'TTZJets'        , "color":ROOT.kRed-5   , "name":'t#bar{t}', "kfactor": 1.0},
+            {"sample":'TTGJets'        , "color":ROOT.kRed-5   , "name":'t#bar{t}', "kfactor": 1.0}]
 
 W        = [{"sample":'WJetsToLNu'     , "color":ROOT.kGreen-1 , "name":'W+jets', "kfactor": 1.0}]
 
-DY       = [{"sample":'DYJetsToLL_M50' , "color":ROOT.kGreen-5 , "name":'DY', "kfactor": 1.0}]
+DY       = [{"sample":'DYJetsToLL_M50' , "color":ROOT.kGreen-10, "name":'DY', "kfactor": 1.0}]
 
 ttXY     = [{"sample":'ttXY'           , "color":ROOT.kBlue-1  , "name":'ttXY', "kfactor": 1.0}]
 
 ZG       = [{"sample":'ZGToLLG'        , "color":ROOT.kGreen-4 , "name":'Z\gamma', "kfactor": 1.0}]
 
-WWW      = [{"sample":'WWW'            , "color":ROOT.kGreen-1 , "name":'others', "kfactor": 1.0}]
+triboson = [{"sample":'WWW'            , "color":ROOT.kOrange  , "name":'VVV', "kfactor": 1.0},
+            {"sample":'WWZ'            , "color":ROOT.kOrange  , "name":'VVV', "kfactor": 1.0},
+            {"sample":'WZZ'            , "color":ROOT.kOrange  , "name":'VVV', "kfactor": 1.0},
+            {"sample":'ZZZ'            , "color":ROOT.kOrange  , "name":'VVV', "kfactor": 1.0}]
 
-WWZ      = [{"sample":'WWZ'            , "color":ROOT.kOrange  , "name":'WWZ', "kfactor": 1.0}]
 ttZ      = [{"sample":'TTZJets_M10_MLM', "color":ROOT.kOrange-5, "name":'t#bar{t}Z', "kfactor": 1.0}]
+
+WZG      = [{"sample":'WZGTo3LNuG'     , "color":ROOT.kMagenta , "name":'WZ\gamma', "kfactor": 1.0}]
+ZZG      = [{"sample":'ZZGTo4LG'       , "color":ROOT.kRed     , "name":'ZZ\gamma', "kfactor": 1.0}]
 
 data     = [{"sample":'data'           , "color":ROOT.kBlack   , "name":'Data', "kfactor": 1.0}]
 
@@ -50,25 +55,25 @@ def getSamplesByRegion(region, MCSet, predType):
         qqZZ = qqZZ_mad
     else: sys.exit("Wrong Set, choose pow or mad")
 
-    
+    tot = WZG + ZZG + qqZZ + ggZZ
     if region == 'SR4P':
         if predType == 'fromCR':
-            tot = qqZZ + ggZZ + WWZ + ttZ  # + vbsZZ + HZZ
+            tot += WWZ + ttZ # + vbsZZ + HZZ
         elif predType == 'fullMC':
-            tot = qqZZ + ggZZ + WZ + tt + DY + WWW + WWZ + ttZ + ZG + ttXY + WW + W  # + vbsZZ + HZZ
+            tot += WZ + tt + DY + triboson + ttZ + ZG + ttXY + WW + W # + vbsZZ + HZZ
         else:
             sys.exit("Wrong prediction type, fromCR from MC still needs to be added")
             
     elif region == 'SR3P':
         if predType == 'fromCR':
-            tot = qqZZ + ggZZ + WWZ + ttZ + WZ  # + vbsZZ + HZZ
+            tot += WWZ + ttZ + WZ # + vbsZZ + HZZ
         elif predType == 'fullMC':
-            tot = qqZZ + ggZZ + WZ + tt + DY + WWW + WWZ + ttZ + ZG + ttXY + WW + W  # + vbsZZ + HZZ
+            tot += WZ + tt + DY + triboson + ttZ + ZG + ttXY + WW + W  # + vbsZZ + HZZ
         else:
             sys.exit("Wrong prediction type, fromCR from MC still needs to be added")
 
     else:
-        tot = qqZZ + ggZZ + WZ + tt + DY + WWW + WWZ + ttZ + ZG + ttXY + WW + W  # + vbsZZ + HZZ
+        tot += WZ + tt + DY + triboson + ttZ + ZG + ttXY + WW + W  # + vbsZZ + HZZ
         
 
     return tot
@@ -137,8 +142,9 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin):
         #sys.exit("ERROR, check region") 
         
     
-    print Red("\n#########################################\n############## Predictions ##############\n#########################################\n")
-    print "plot",plot
+    print Red("\n###############"+'#'*len(plot)+"###############"
+              "\n############## "+    plot     +" ##############"
+              "\n###############"+'#'*len(plot)+"###############")
     leg = TLegend(0.6,0.52,0.79,0.87)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.025)
@@ -163,10 +169,9 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin):
         try:
             files[sample["sample"]] = ROOT.TFile(inputdir+sample["sample"]+".root")
         except OSError:
-            files[sample["sample"]] = ROOT.TFile()
-        #else:
-        #    print "{0:s} requested, but the corresponding root file does not exist in {1:s}".format(sample["sample"],inputdir)
-            
+            pass
+            #files[sample["sample"]] = ROOT.TFile()
+
     totalMC = 0
 
     print Red("\n######### Contribution to {0:s}  #########\n".format(region))
@@ -183,22 +188,22 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin):
         #         print sample["sample"],"has no entries or is a zombie"
         #         continue
         
-        if files[sample["sample"]].IsOpen():
+        if files[sample["sample"]] and files[sample["sample"]].IsOpen():
             h = files[sample["sample"]].Get(plot)
         else:
             h = None
         if not h:
             #print sample["sample"],"has no entries or is a zombie"
-            print "{0:16.16s} contribution".format(sample["sample"]), "No entries or is a zombie"
+            print "{0:16.16s}".format(sample["sample"]), "No entries or is a zombie"
             continue
         
         h.Scale(sample["kfactor"])
 
-        if any(cr in inputdir for cr in ['CR2P2F','CR100','CR010','CR001']):
-            h.Scale(-1)
+        # if any(cr in inputdir for cr in ['CR2P2F','CR100','CR010','CR001']):
+        #     h.Scale(-1)
 
         
-        print "{0:16.16} contribution {1:.3f} +- {2: .3f}".format(sample["sample"], h.IntegralAndError(0,-1,ErrStat), ErrStat.value)
+        print "{0:16.16} {1:.3f} +- {2: .3f}".format(sample["sample"], h.IntegralAndError(0,-1,ErrStat), ErrStat.value)
 
         # Get overflow events too#
         totalMC += h.Integral(0,-1)
@@ -224,8 +229,7 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin):
 #################################################
 
 def GetDataPlot(inputdir, plot, Region,rebin):
-    print "\n",""
-    print Red("\n############################################\n################### DATA ###################\n############################################\n")
+    print Red("\n###################    DATA    ###################\n")
     files = {}
     typeofsamples = data 
     hdata=ROOT.TH1F()
@@ -239,8 +243,8 @@ def GetDataPlot(inputdir, plot, Region,rebin):
     for sample in typeofsamples:
         h = files[sample["sample"]].Get(plot)
 
-        if any(cr in inputdir for cr in ['CR2P2F','CR100','CR010','CR001']):
-            h.Scale(-1)
+        # if any(cr in inputdir for cr in ['CR2P2F','CR100','CR010','CR001']):
+        #     h.Scale(-1)
 
         
         if not h:

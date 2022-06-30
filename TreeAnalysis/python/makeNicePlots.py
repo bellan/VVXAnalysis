@@ -1,4 +1,9 @@
 #! /usr/bin/env python2
+import sys #,ast
+import math
+import operator
+import re
+from copy import deepcopy
 from optparse import OptionParser
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
@@ -6,10 +11,6 @@ import CrossInfo
 from CrossInfo import* 
 from ROOT import TH1F,TCanvas, TLegend
 from plotUtils import*
-import sys,ast
-import math
-import operator
-import re
 import CMS_lumi, tdrstyle
 from PersonalInfo import*
 Lumi   = 35900
@@ -74,16 +75,18 @@ parser.add_option("-y", "--year", dest="year",
 
 (options, args) = parser.parse_args()
 
-DoData     = not options.noData ## Fixme, ratio plot to be removed
+optDoData  = not options.noData ## Fixme, ratio plot to be removed
 predType   = options.predType
 region     = options.region
 Type       = options.Type
 Save       = options.SavePlot
 mcSet      = options.mcSet
 LumiProj   = options.LumiProj
-Dir        = options.Dir
+Dir        = options.Dir if optios.Dir.startswith("/") else PersonalInfo.personalFolder+'/'+options.Dir
 Analysis   = options.Analysis
 year       = options.year
+
+if nor Dir.endswith('/'): Dir += '/'
 
 tdrstyle.setTDRStyle()
 
@@ -94,38 +97,84 @@ InfoType_zz = {"Mass":["m_{4l} [GeV]","m_{4\ell}",10],"Mjj":["m_{jj} [GeV]","m_{
 InfoType_vbs = {"Mass":["m_{4\ell}","m_{4\ell}",40],"Mjj":["m_{jj}","m_{JJ}",20],"Z1Mass":["Z1 Mass","m_{2\ell}",10,],"Z2Mass":["Z2 Mass","m_{2\ell}",10,],"Z1lep0_sip":["Z1 lep 0 Sip","Sip",4],"Z1lep0_iso":["Z1 lep 0 Iso","Iso",4],"Z0lep0_pt":["Z1 lep 0 pT","p_{T}",4],"nJets":["# jets","# jets",1],"nJets_central":["# jets","# jets",1],"z":["z1","z1",1],"PtJet1":["pT Jet","p_{T}^{jet}",10],"EtaJet1":["#eta Jet","#eta^{jet}",10],"PtJet2":["pT Jet","p_{T}^{jet}",10],"EtaJet2":["#eta Jet","#eta^{jet}",10],"Z1pt":["Z1 p_{T}","p_{T}",20],"Z2pt":["Z2 p_{T}","p_{T}",10],"Z1z":["Z1 z","z_{Z_{1}}",7],"Z2z":["Z2 z","z_{Z_{2}}",7],"ptJRatio":["","#Sigma p_{T}/# Sum  ",2],"ptRatio":["","#Sum p_{T}",2],"PtZZ":["p_{T}^{4\\ell}","Sum p_{T}",60],"deltaEtaJJ":["|#eta_{jj}|","|#eta_{jj}|",2],"Dphi":["#Delta #phi_{jj}","#Delta #phi_{jj}",10],"Deta":["#Delta #eta_{jj}","#Delta #eta_{jj}",5],"Mjj_Central":["m_{jj}","m_{jj}",20],"Deta_Central":["#Delta #eta_{jj}","#Delta #eta_{jj}",5]}
 
 InfoType_vvx = {
-    "AAA_cuts"        : ["Cuts"      ,"Cuts"      ,1]
-    ,
-    "ZZ4l_mass"       : ["m_{4\ell}" ,"m_{4\ell}" ,1],
-    "ZZ4e_mass"       : ["m_{4e}"    ,"m_{4e}"    ,1],
-    "ZZ4m_mass"       : ["m_{4\mu}"  ,"m_{4\mu}"  ,1],
-    "ZZ2e2m_mass"     : ["m_{2e2\mu}","m_{2e2\mu}",1],
-    # "ZZ4l_mass_noG"   : ["m_{4\ell}","m_{4\ell}",1],
-    # "ZZ4l_mass_looseG": ["m_{4\ell}","m_{4\ell}",1],
-    # "ZZ4l_mass_failG" : ["m_{4\ell}","m_{4\ell}",1],
-    # "ZZ4l_mass_tightG": ["m_{4\ell}","m_{4\ell}",1]
+    "AAA_cuts"        : ["Cuts", 1, True]
+    # "looseG_pt": ["p_{T}^\gamma", 1, True],
+    # "failG_pt" : ["p_{T}^\gamma", 1, True],
+    # "tightG_pt": ["p_{T}^\gamma", 1, True]
     # ,
-    # "ZW3l_tmass"       : ["mT_{3\ell\nu}","mT_{3\ell\nu}",1],
-    # "ZW3l_tmass_noG"   : ["mT_{3\ell\nu}","mT_{3\ell\nu}",1],
-    # "ZW3l_tmass_looseG": ["mT_{3\ell\nu}","mT_{3\ell\nu}",1],
-    # "ZW3l_tmass_failG" : ["mT_{3\ell\nu}","mT_{3\ell\nu}",1],
-    # "ZW3l_tmass_tightG": ["mT_{3\ell\nu}","mT_{3\ell\nu}",1]
-    # ,
-    # "Z2l_mass"       : ["m_{2\ell}","m_{2\ell}",1],
-    # "Z2l_mass_noG"   : ["m_{2\ell}","m_{2\ell}",1],
-    # "Z2l_mass_looseG": ["m_{2\ell}","m_{2\ell}",1],
-    # "Z2l_mass_failG" : ["m_{2\ell}","m_{2\ell}",1],
-    # "Z2l_mass_tightG": ["m_{2\ell}","m_{2\ell}",1]
-    # ,
-    # "looseG_pt": ["p_{T}^\gamma","p_{T}^\gamma",1],
-    # "failG_pt" : ["p_{T}^\gamma","p_{T}^\gamma",1],
-    # "tightG_pt": ["p_{T}^\gamma","p_{T}^\gamma",1]
 }
 
+if region in ['SR4P', 'CR3P1F', 'CR2P2F']:
+    InfoType_vvx.update({
+        "ZZ_mass" : ["m_{4\ell}"     , 1, True],
+        "Z0_mass" : ["p_{T}^{ZZ}"    , 1, True],
+        "Z1_mass" : ["m_{Z1}"        , 1, True],
+        "ZZ_pt"   : ["p_{T}^{Z1}"    , 1, True],
+        "Z0_l0_pt": ["p_{T}^{Z0, l0}", 1, True],
+        "Z0_l1_pt": ["p_{T}^{Z0, l1}", 1, True],
+        "Z1_l0_pt": ["p_{T}^{Z1, l0}", 1, True],
+        "Z1_l1_pt": ["p_{T}^{Z1, l1}", 1, True]
+    })
+    for name, title in [('4e','4e'), ('2e2m', '2e2\mu'), ('4m', '4\mu')]:
+        InfoType_vvx.update({
+            "ZZ_mass_"+name : ["m_{%s}"     %(title), 1, True],
+            "ZZ_pt_"  +name : ["p_{T}^{%s}" %(title), 1, True],
+        })
+    for name, title in [('ZZ', '4\ell'), ('ZZG', '4\ell\gamma')]:
+        InfoType_vvx.update({
+            name+"_mass_noG"   : ["m_{%s} no photon"          %(title), 1, True],
+            name+"_mass_kinG"  : ["m_{%s} kin photon"         %(title), 1, True],
+            name+"_mass_failG" : ["m_{%s} kin && !loose photon"%(title), 1, True],
+            name+"_mass_looseG": ["m_{%s} loose photon"        %(title), 1, False]
+        })
+        
+elif region in ['SR3P', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110']:
+    InfoType_vvx.update({
+        "ZW_massT": ["mT_{3\ell\nu}"   , 1, True],
+        "ZW_pt"   : ["p_{T}^{3\ell\nu}", 1, True],
+    })
+    for name, title in [('3e','3e'), ('2e1m', '2e1\mu'), ('2m1e', '2\mu1e'), ('3m', '3\mu')]:
+        InfoType_vvx.update({
+            "ZW_massT_"+name : ["m_{%s\nu}"     %(title), 1, True],
+            "ZW_pt_"   +name : ["p_{T}^{%s\nu}" %(title), 1, True],
+        })
+    for name, title in [('ZW', '3\ell\nu'), ('ZWG', '3\ell\nu\gamma')]:
+        InfoType_vvx.update({
+            name+"_massT_noG"   : ["mT_{%s} no photon"          %(title), 1, True],
+            name+"_massT_kinG"  : ["mT_{%s} kin photon"         %(title), 1, True],
+            name+"_massT_failG" : ["mT_{%s} kin && !loose photon"%(title), 1, True],
+            name+"_massT_looseG": ["mT_{%s} loose photon"        %(title), 1, False]
+        })
 
-if Analysis =="ZZ": InfoType=InfoType_zz
-elif Analysis == "VVXAnalyzer": InfoType=InfoType_vvx
-else: InfoType=InfoType_vbs
+# elif region in ['SR2L']:
+#     InfoType_vvx.update({
+#         "Z2l_mass"       : ["m_{2\ell}"              , 1, True],
+#         "Z2l_mass_noG"   : ["m_{2\ell} no \gamma"    , 1, True],
+#         "Z2l_mass_kinG"  : ["m_{2\ell} kin \gamma"   , 1, True],
+#         "Z2l_mass_failG" : ["m_{2\ell} kin && !loose", 1, True],
+#         "Z2l_mass_looseG": ["m_{2\ell} loose"        , 1, False]
+#     })
+
+InfoType_VVGamma = deepcopy(InfoType_vvx)
+for name in ["kin", "loose", "medium", "tight"]:
+    InfoType_VVGamma.update({
+        "sigmaiEtaiEta_"+name+"Photons": ["#sigma_{i#etai#eta}", 1, True]
+})
+InfoType_VVGamma.update({
+    "ph_eScale_count" : ["Number of #gamma passing selection", 1, True],
+    "kinPhotons_ID": ["#gamma ID", 1, True]
+})
+for name in ['all', 'kin', 'loose']:
+    InfoType_VVGamma.update({
+        "maxG_minL_DR_"+name: ["max_{#gamma}(min_{l}(#DeltaR(#gamma_{%s}, l))" %(name), 1, True],
+        "minL_DR_"     +name: ["min_{l}(#DeltaR(#gamma_{%s}, l)"               %(name), 1, True],
+})
+
+
+if   Analysis == "ZZ"             : InfoType = InfoType_zz
+elif Analysis == "VVXAnalyzer"    : InfoType = InfoType_vvx
+elif Analysis == "VVGammaAnalyzer": InfoType = InfoType_VVGamma
+else                              : InfoType = InfoType_vbs
 
 #change the CMS_lumi variables  (see CMS_lumi.py)                                                                                  
 #CMS_lumi.lumi_7TeV = "4.8 fb^{-1}"                               
@@ -140,13 +189,13 @@ iPos = 0
 if( iPos==0 ): CMS_lumi.relPosX = 0.12
 iPeriod = 0
 
+OutputDir = "./Plot/RecoPlots/{:s}/{:s}".format(Analysis, region)
 try:
-    os.stat("./Plot/RecoPlots/")
+    os.stat(OutputDir)
 except OSError as e:
-    if(e.errno == 2):  # 2 = No such file or directory
-        os.makedirs("./Plot/RecoPlots/")  # mkdir() = mkdir  ;  makedirs() = mkdir -p
-    else:  # Let it pass
-        raise e
+    if(not e.errno == 2): raise e  # 2 = No such file or directory
+    os.makedirs(OutputDir)  # mkdir() = mkdir  ;  makedirs() = mkdir -p
+        
     
 InputDir = "results/"+year+"/"+Analysis+"_"+region+"/"
 
@@ -155,14 +204,18 @@ if LumiProj!="":  InputDir+=LumiProj+"fbm1_"
 if Type == 'all':
     variables = InfoType.keys()
 else:
-    variables = [ var for var in InfoType.keys() if re.search(Type, var) ]
+    variables = [ var for var in InfoType.keys() if re.search(Type, var) ]  # Allow for regexp to be specified from command line
+
+c1 = TCanvas( 'c1', mcSet , 200, 10, 900, 1200 )
 
 for Var in variables:
-    c1 = TCanvas( 'c1', Var+"_"+mcSet , 200, 10, 900, 1200 )
+    c1.Clear()
+    DoData = optDoData and InfoType[Var][-1]
     
-    (hMC, leg) = GetPredictionsPlot(region, InputDir, Var, predType, mcSet, InfoType[Var][2])
-    (hData, histodata) = GetDataPlot(InputDir, Var, region, InfoType[Var][2])
+    (hMC, leg) = GetPredictionsPlot(region, InputDir, Var, predType, mcSet, InfoType[Var][-2])
+    (hData, histodata) = GetDataPlot(InputDir, Var, region, InfoType[Var][-2])
     
+    # if(any(s in Var for s in [""]))
     if((not hMC.GetStack()) or (not hData)):
         continue
     
@@ -185,7 +238,7 @@ for Var in variables:
     pad1.SetRightMargin  (0.06)#0.10
     pad1.SetLeftMargin   (0.1)
     pad1.SetBottomMargin (1.5) 
-    pad1.SetLogy()
+    #pad1.SetLogy()
     pad1.Draw()
         
     c1.cd()
@@ -252,11 +305,11 @@ for Var in variables:
     histodata.GetYaxis().SetLabelSize(0.08)
     histodata.GetXaxis().SetTitleSize(0.08)
     
-    yMax_r = histodata.GetBinContent( histodata.GetMaximumBin()) + histodata.GetBinError(histodata.GetMaximumBin() )
-    yMin_r = histodata.GetBinContent( histodata.GetMinimumBin()) - histodata.GetBinError(histodata.GetMinimumBin() )
-    deltaY = (yMax_r - yMin_r)
-    yMax_r = max(min(yMax_r + deltaY*0.1, 2), 1.1)
-    yMin_r = min(max(yMin_r - deltaY*0.1, 0), 0.9)
+    # yMax_r = histodata.GetBinContent( histodata.GetMaximumBin()) + histodata.GetBinError(histodata.GetMaximumBin() )
+    # yMin_r = histodata.GetBinContent( histodata.GetMinimumBin()) - histodata.GetBinError(histodata.GetMinimumBin() )
+    # deltaY = (yMax_r - yMin_r)
+    yMax_r = 2  # max(min(yMax_r + deltaY*0.1, 2), 1.1)
+    yMin_r = 0  # min(max(yMin_r - deltaY*0.1, 0), 0.9)
     histodata.SetMaximum( yMax_r )
     histodata.SetMinimum( yMin_r )
     
@@ -271,34 +324,29 @@ for Var in variables:
     c1.Update()
     
     c1.SetTitle(Title)
-    #c1.SaveAs("Plot/RecoPlots/"+Title+".root")
-    c1.SaveAs("Plot/RecoPlots/"+Title+".png")
-    #c1.SaveAs("Plot/RecoPlots/"+Title+".eps")
-    #c1.SaveAs("Plot/RecoPlots/"+Title+".pdf")
+    #c1.SaveAs(OutputDir+"/"+Title+".root")
+    c1.SaveAs(OutputDir+"/"+Title+".png")
+    #c1.SaveAs(OutputDir+"/"+Title+".eps")
+    c1.SaveAs(OutputDir+"/"+Title+".pdf")
     
     
     if Save:
-    
-        Dir+="/"
-    
+        fullDir = "{Dir}/{Analysis}/{Analysis}".format(Dir=Dir, Analysis=Analysis, region=region)
         try:
-            os.stat(PersonalFolder+Dir)
-        except:
-            os.mkdir(PersonalFolder+Dir)
-            os.system("cp "+PersonalFolder+"index.php "+PersonalFolder+Dir )
-        try:
-            os.stat(PersonalFolder+Dir+"/Reco/")
-        except:
-            os.mkdir(PersonalFolder+Dir+"/Reco/")
-            os.system("cp "+PersonalFolder+"index.php "+PersonalFolder+Dir+"/Reco/" )
+            os.stat(fullDir)
+        except OSError as e:
+            if(not e.errno == 2): raise e  # 2 = No such file or directory. Let other exceptions pass
+            os.makedirs(fullDir)
+            os.system('for d in $(find {Dir} -type d) ; do [ -f $d/index.php ] || echo "cp {Dir}/index.php $d/" ; done'.format(Dir=Dir) )
+        
     
-        if(LumiProj!=""): 
-            c1.SaveAs("~/www/PlotsVV/13TeV_"+LumiProj+"fb/"+Title+".png")        
-            c1.SaveAs("~/www/PlotsVV/13TeV_"+LumiProj+"fb/"+Title+".pdf")        
-        else:
-            c1.SaveAs(PersonalFolder+Dir+"Reco/"+Title+".png")        
-            c1.SaveAs(PersonalFolder+Dir+"Reco/"+Title+".root")        
-            c1.SaveAs(PersonalFolder+Dir+"Reco/"+Title+".pdf")        
-            c1.SaveAs("~/../../../../../eos/user/g/gpinnaan/"+Dir+"Reco/"+Title+".pdf")        
+    #     if(LumiProj!=""):
+    #         c1.SaveAs("~/www/PlotsVV/13TeV_"+LumiProj+"fb/"+Title+".png")
+    #         c1.SaveAs("~/www/PlotsVV/13TeV_"+LumiProj+"fb/"+Title+".pdf")
+    #     else:
+    #         c1.SaveAs(PersonalFolder+Dir+"Reco/"+Title+".png")
+    #         c1.SaveAs(PersonalFolder+Dir+"Reco/"+Title+".root")
+    #         c1.SaveAs(PersonalFolder+Dir+"Reco/"+Title+".pdf")
+    #         c1.SaveAs("~/../../../../../eos/user/g/gpinnaan/"+Dir+"Reco/"+Title+".pdf")
     
 
