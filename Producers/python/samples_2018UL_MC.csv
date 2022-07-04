@@ -25,7 +25,7 @@ identifier,process,crossSection=-1,BR=1,execute=True,dataset,prefix,pattern,spli
 
 
 # VBS,,,,,,,,,,,
-# ZZJJTo4L_EWK,ZZ,,,,/ZZJJTo4L_EWK_TuneCP5_13TeV-madgraph-pythia8/?????????/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+# ZZJJTo4L_EWK,ZZ,0.0009925,,,/ZZJJTo4L_EWKnotop_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,1,GENXSEC=0.0009925;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018,RecoProbabilities.py,
 # WZJJ_EWK,WZ,,,,/WZJJ_EWK_InclusivePolarization_TuneCP5_13TeV_madgraph-madspin-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018,RecoProbabilities.py,
 # WWJJToLNuLNu_EWK,WW,,,,/WWJJToLNuLNu_EWK_noTop_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018,RecoProbabilities.py,
 # WLLJJ,,,,,/WLLJJ_WToLNu_EWK_TuneCP5_13TeV_madgraph-madspin-pythia8/?????????/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018,RecoProbabilities.py,
@@ -79,3 +79,7 @@ identifier,process,crossSection=-1,BR=1,execute=True,dataset,prefix,pattern,spli
 # TTWJetsToLNu,ttX,0.2161,,,/TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM,dbs,,4,GENXSEC=0.2161 ;GENBR=1;ADDZTREE=True;LEPTON_SETUP=2018,RecoProbabilities.py,
 # TZq,,0.07561,,,/tZq_ll_4f_ckm_NLO_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,4,GENXSEC=0.07561;GENBR=1;ADDZTREE=True;LEPTON_SETUP=2018,RecoProbabilities.py,
 
+#TT, background for ZZ->4l
+# TTJets,tt,372.2,,,/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,4,GENXSEC=372.2;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+# TTTo2L2Nu,tt,687.1,,,/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL18MiniAOD-106X_upgrade2018_realistic_v11_L1v1-v2/MINIAODSIM,dbs,,4,GENXSEC=687.1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+ 
