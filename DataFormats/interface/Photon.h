@@ -20,7 +20,7 @@ namespace phys {
     friend class ::TreePlanter;
 
   public:
-    typedef std::pair<std::string, Bool_t> IdPair;
+    enum IDwp {None, Loose, Medium, Tight};  // Working points for ID
     
     // Constructor
     Photon(const TLorentzVector& pin = TLorentzVector(0.,0.,0.,0.), float q =0, int id = 0):
@@ -33,6 +33,8 @@ namespace phys {
     bool cutBasedIDTight()  const { return cutBasedIDTight_ ; }
     bool cutBasedIDMedium() const { return cutBasedIDMedium_; }
     bool cutBasedIDLoose()  const { return cutBasedIDLoose_ ; }
+    
+    float MVAvalue() const { return MVAvalue_; }
     
     float chargedIsolation()      const { return chargedIsolation_      ; } 
     float neutralHadronIsolation()const { return neutralHadronIsolation_; }
@@ -113,6 +115,8 @@ namespace phys {
     bool cutBasedIDTight_;
     bool cutBasedIDMedium_;
     bool cutBasedIDLoose_;
+    
+    float MVAvalue_;  // PhotonMVAEstimatorRunIIFall17v2Values
     
     // ---- Isolations ----
     float chargedIsolation_;
@@ -198,8 +202,102 @@ namespace phys {
     float energySigmaRhoUp_; // energy with the ecal energy smearing value shifted 1 sigma(rho) up
     float energySigmaRhoDown_; // energy with the ecal energy smearing value shifted 1 sigma(rho) down
     
+      #define PHOTON_ETA_TRANSITION 1.5
+    bool passHoverE(IDwp wp) const{
+      if(eta() < PHOTON_ETA_TRANSITION)
+	switch(wp){
+	case IDwp::Tight:  return HoverE() < 0.02148;
+	case IDwp::Medium: return HoverE() < 0.02197;
+	case IDwp::Loose:  return HoverE() < 0.04596;
+	case IDwp::None:   return true;
+	default: return false;
+	}
+      else
+	switch(wp){
+	case IDwp::Tight:  return HoverE() < 0.0321;
+	case IDwp::Medium: return HoverE() < 0.0326;
+	case IDwp::Loose:  return HoverE() < 0.0590;
+	case IDwp::None:   return true;
+	default: return false;
+	}
+    }
+    /* bool passSigmaiEtaiEta(IDwp) const; */
+    /* bool passChargedIsolation(IDwp) const; */
+    /* bool passNeutralIsolation(IDwp) const; */
+    /* bool passPhotonIsolation(IDwp) const; */
+
     ClassDef(Photon, 1)
   };
+
+  /* bool Photon::passSigmaiEtaiEta(IDwp wp) const{ */
+  /*   if(eta() < PHOTON_ETA_TRANSITION) */
+  /*     switch(wp){ */
+  /*     case IDwp::Tight:  return sigmaIetaIeta() < 0.00996; */
+  /*     case IDwp::Medium: return sigmaIetaIeta() < 0.01015; */
+  /*     case IDwp::Loose:  return sigmaIetaIeta() < 0.0106 ; */
+  /*     case IDwp::None:   return true; */
+  /*     } */
+  /*   else */
+  /*     switch(wp){ */
+  /*     case IDwp::Tight:  return sigmaIetaIeta() < 0.0271; */
+  /*     case IDwp::Medium: return sigmaIetaIeta() < 0.0272; */
+  /*     case IDwp::Loose:  return sigmaIetaIeta() < 0.0272; */
+  /*     case IDwp::None:   return true; */
+  /*     } */
+  /* } */
+
+  /* bool Photon::passChargedIsolation(IDwp wp) const{ */
+  /*   if(eta() < PHOTON_ETA_TRANSITION) */
+  /*     switch(wp){ */
+  /*     case IDwp::Tight:  return chargedIsolation() < 0.65 ; */
+  /*     case IDwp::Medium: return chargedIsolation() < 1.141; */
+  /*     case IDwp::Loose:  return chargedIsolation() < 1.694; */
+  /*     case IDwp::None:   return true; */
+  /*     } */
+  /*   else */
+  /*     switch(wp){ */
+  /*     case IDwp::Tight:  return chargedIsolation() < 0.517; */
+  /*     case IDwp::Medium: return chargedIsolation() < 1.051; */
+  /*     case IDwp::Loose:  return chargedIsolation() < 2.089; */
+  /*     case IDwp::None:   return true; */
+  /*     } */
+  /* } */
+
+  /* bool Photon::passNeutralIsolation(IDwp wp) const{ */
+  /*   if(eta() < PHOTON_ETA_TRANSITION) */
+  /*     switch(wp){ */
+  /*     case IDwp::Tight:  return neutralHadronIsolation() < 0.317  + 0.01512 *pt() + 2.259e-05 *pt()*pt(); */
+  /*     case IDwp::Medium: return neutralHadronIsolation() < 1.189  + 0.01512 *pt() + 2.259e-05 *pt()*pt(); */
+  /*     case IDwp::Loose:  return neutralHadronIsolation() < 24.032 + 0.01512 *pt() + 2.259e-05 *pt()*pt(); */
+  /*     case IDwp::None:   return true; */
+  /*     } */
+  /*   else */
+  /*     switch(wp){ */
+  /*     case IDwp::Tight:  return neutralHadronIsolation() < 2.716  + 0.0117 *pt() + 2.3e-05 *pt()*pt(); */
+  /*     case IDwp::Medium: return neutralHadronIsolation() < 2.718  + 0.0117 *pt() + 2.3e-05 *pt()*pt(); */
+  /*     case IDwp::Loose:  return neutralHadronIsolation() < 19.722 + 0.0117 *pt() + 2.3e-05 *pt()*pt(); */
+  /*     case IDwp::None:   return true; */
+  /*     } */
+  /* } */
+
+  /* bool Photon::passPhotonIsolation(IDwp wp) const{ */
+  /*   if(eta() < PHOTON_ETA_TRANSITION) */
+  /*     switch(wp){ */
+  /*     case IDwp::Tight:  return photonIsolation() < 2.044 + 0.004017 *pt(); */
+  /*     case IDwp::Medium: return photonIsolation() < 2.08  + 0.004017 *pt(); */
+  /*     case IDwp::Loose:  return photonIsolation() < 2.876 + 0.004017 *pt(); */
+  /*     case IDwp::None:   return true; */
+  /*     } */
+  /*   else */
+  /*     switch(wp){ */
+  /*     case IDwp::Tight:  return photonIsolation() < 3.032 + 0.0037 *pt(); */
+  /*     case IDwp::Medium: return photonIsolation() < 3.867 + 0.0037 *pt(); */
+  /*     case IDwp::Loose:  return photonIsolation() < 4.162 + 0.0037 *pt(); */
+  /*     case IDwp::None:   return true; */
+  /*     } */
+  /* } */
 }
+
+
 #endif
 
