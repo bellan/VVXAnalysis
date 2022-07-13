@@ -12,7 +12,7 @@ identifier,process,crossSection=-1,BR=1,execute=True,dataset,prefix,pattern,spli
 # WZGTo3LNuG,VZG,0.,,,-----missing-----,dbs,,1,GENXSEC=0.;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2017,RecoProbabilities.py,
 # ZZGTo2L2jG,VZG,0.,,,-----missing-----,dbs,,1,GENXSEC=0.;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2017,RecoProbabilities.py,
 # WZGTo2L2jG,VZG,0.,,,-----missing-----,dbs,,1,GENXSEC=0.;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2017,RecoProbabilities.py,
-# WZGToLNu2jG,,0.04345,,,/WZG_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v1/MINIAODSIM,dbs,,1,GENXSEC=0.;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2017,RecoProbabilities.py,p p > lep nu z a, z > j j (lep = e, mu, ta)
+# WZGToLNu2jG,,0.04345,,,/WZG_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v1/MINIAODSIM,dbs,,1,GENXSEC=0.;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2017,RecoProbabilities.py,p p > lep nu z a; z > j j (lep = e; mu; ta)
 
 
 ###,Triboson,,,,,,,,,,VVV backgrounds
