@@ -37,8 +37,12 @@ public:
     genWlepCandidates_ = new std::vector<phys::Boson<phys::Particle>>;
     genZhadCandidates_ = new std::vector<phys::Boson<phys::Particle>>;
     genWhadCandidates_ = new std::vector<phys::Boson<phys::Particle>>;
-    kinPhotons_  = new std::vector<phys::Photon>;
-    goodPhotons_ = new std::vector<phys::Photon>;
+    /* kinPhotons_  = new std::vector<phys::Photon>; */
+    /* goodPhotons_ = new std::vector<phys::Photon>; */
+    
+    /* for(std::string sys : {"EScale_Up", "EScale_Down", "ESigma_Up", "ESigma_Down"}){ */
+    /*   kinPhotonSyst_[sys] = std::unique_ptr<std::vector<phys::Photon>>; */
+    /* } */
   }
 
   virtual ~VVGammaAnalyzer(){
@@ -53,8 +57,8 @@ public:
     delete genZhadCandidates_;
     delete genWhadCandidates_;
     
-    delete kinPhotons_;
-    delete goodPhotons_;
+    /* delete kinPhotons_; */
+    /* delete goodPhotons_; */
     
     //delete photonSFhist;
   }
@@ -75,8 +79,12 @@ public:
  	
 	std::vector<phys::Lepton>* leptons_;
  	// Photons with pt > 20 (already in ntuples), at least loose (cut-based) ID
-	std::vector<phys::Photon>* kinPhotons_;
- 	std::vector<phys::Photon>* goodPhotons_;
+	/* std::vector<phys::Photon>* kinPhotons_; */
+ 	/* std::vector<phys::Photon>* goodPhotons_; */
+
+	// Systematics: photons {EScale, ESigma} x {Up, Down} + {central}
+	std::map<const char*, std::unique_ptr<std::vector<phys::Photon>>> kinPhotons_;
+	std::map<const char*, std::unique_ptr<std::vector<phys::Photon>>> goodPhotons_;
  	
  	// Vectors of gen particles
  	std::vector<phys::Particle>* genQuarks_;
