@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+##############################################
+#                                         
+# Creates files for photon fake rate
+# 
+##############################################
+
 from __future__ import print_function
 import copy, sys, os
 import ROOT
@@ -15,10 +21,12 @@ import math
 
 class TFileContext(object):
     def __init__(self, *args):
+        print('>>>Opening with args:', args)
         self.tfile = ROOT.TFile(*args)
     def __enter__(self):
         return self.tfile
     def __exit__(self, type, value, traceback):
+        print('<<<Closing TFile "%s"' % (self.tfile.GetName()))
         self.tfile.Close()
 
 
@@ -97,7 +105,7 @@ def beautify(canvas, hist, logx=False, logy=False, logz=False):
         hist.GetZaxis().SetMoreLogLabels()
 
     lines, ticks = linesAndTicks(hist, logx, logy)
-    to_preserve = lines + ticks
+    to_preserve = (*lines, *ticks)
     for l in to_preserve:
         l.Draw("same")
     return to_preserve
@@ -105,9 +113,13 @@ def beautify(canvas, hist, logx=False, logy=False, logz=False):
 def fakeRate(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR", logx=False, logy=False, fixNegBins=False):
     print("Fake Rate: data     =", sample_data  )
     print("Fake Rate: promptMC =", sample_prompt)
+    outfname_data = "Plots/PhFR_from_{:s}.root"     .format(sample_data["name"])
+    print('Output in: "{}"'.format(outfname_data))
     
-    path_base = "results"  # os.environ["CMSSW_BASE"]+"src/VVXAnalysis/TreeAnalysis/results"
+    path_base = "rsync_results/Updated/EXT"  # "VVXAnalysis/TreeAnalysis/results"
     path = "{:s}/2016/{:s}_{:s}".format(path_base, analyzer, region)
+    
+    ##### First: only data ####
     
     hdata_A  , hdata_B  , hdata_C  , hdata_D   = getPlots(path, sample_data  ["file"], [ "PhFR_%s" % (c) for c in 'ABCD' ] )
     assert (hdata_A   and hdata_B   and hdata_C   and hdata_D  ), "Could't get all 4 data histograms!"
@@ -117,22 +129,24 @@ def fakeRate(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR",
             for b in iterate_bins(h):
                 if(h.GetBinContent(b) < 0): h.SetBinContent(b, 0.)
 
-    ##### First: only data ####
-
     ## Fake rate = C/D ##
     cFR_data = ROOT.TCanvas( "cFR_data", "Fake Rate "+sample_data["name"], 200, 10, 1200, 900 )
     cFR_data.cd()
     
     hFR_data = copy.deepcopy(hdata_C)
-    # hFR_data.Sumw2()
     hFR_data.Divide(hdata_D)
     hFR_data.SetTitle( "Photon Fake Rate: C/D (from {})".format(sample_data["title"]) )
+    hFR_data.SetName( "PhFR" )
+
+    with TFileContext(outfname_data, "UPDATE") as tf:
+        tf.cd()
+        hFR_data.Write(hFR_data.GetName(), ROOT.TObject.kOverwrite)
 
     to_preserve_FRdata = beautify(cFR_data, hFR_data, logx, logy)
     # Probably python/ROOT gc deletes these graphic objects and they disappear from the canvas. Holding a reference to them seems to fix it
         
     for ext in ["png"]:
-        cFR_data.SaveAs( "Plot/PhFR_from_{:s}.{:s}".format(sample_data["name"], ext) )
+        cFR_data.SaveAs( "Plots/PhFR_from_{:s}.{:s}".format(sample_data["name"], ext) )
     del cFR_data, to_preserve_FRdata
 
     ## Estimate = B*C/D ##
@@ -142,18 +156,25 @@ def fakeRate(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR",
     hES_data = hFR_data  # rename for clarity
     hES_data.Multiply(hdata_B)
     hES_data.SetTitle( "Fake Photon estimate: B*C/D (from {:s})".format(sample_data["title"]) )
+    hES_data.SetName ( "FakeEstimate" )
+
+    with TFileContext(outfname_data, "UPDATE") as tf:
+        tf.cd()
+        hES_data.Write(hES_data.GetName(), ROOT.TObject.kOverwrite)
 
     to_preserve_ESdata = beautify(cES_data, hES_data, logx, logy, logz=True)
     
     for ext in ["png"]:
-        cES_data.SaveAs( "Plot/PhEstimate_from_{:s}.{:s}".format(sample_data["name"], ext) )
+        cES_data.SaveAs( "Plots/PhEstimate_from_{:s}.{:s}".format(sample_data["name"], ext) )
     del cES_data, to_preserve_ESdata, hES_data
-
     
     ##### Second: data - promptMC #####
     if(sample_prompt is None):
         return
 
+    outfname_full = "Plots/PhFR_from_{:s}-{:s}.root".format(sample_data["name"], sample_prompt["name"])
+    print('Output (with prompt MC subtraction) in "{:s}"'.format(outfname_full))
+    
     hprompt_A, hprompt_B, hprompt_C, hprompt_D = getPlots(path, sample_prompt["file"], [ "PhFR_%s" % (c) for c in 'ABCD' ] )
     assert (hprompt_A and hprompt_B and hprompt_C and hprompt_D), "Could't get all 4 promptMC histograms!"
 
@@ -175,19 +196,20 @@ def fakeRate(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR",
     hFR = hdata_C
     hFR.Divide(hdata_D)
     hFR.SetTitle( "Photon Fake Rate: C/D (from {} - {})".format(sample_data["title"], sample_prompt["title"]) )
+    hFR.SetName( "PhFR" )
     
     if(fixNegBins):
         for b in iterate_bins(hFR):
             if(hFR.GetBinContent(b) < 0): hFR.SetBinContent(b, 0.)
     
-    with TFileContext("Plot/FakeRate_from_{:s}-{:s}.root".format(sample_data["name"], sample_prompt["name"]), "RECREATE") as tf:
+    with TFileContext(outfname_full, "UPDATE") as tf:
         tf.cd()
-        hFR.Write()
+        hFR.Write(hFR.GetName(), ROOT.TObject.kOverwrite)
         
     to_preserve_FR = beautify(cFR, hFR, logx, logy)
         
     for ext in ["png"]: 
-        cFR.SaveAs( "Plot/PhFR_from_{:s}-{:s}.{:s}".format(sample_data["name"], sample_prompt["name"], ext) )
+        cFR.SaveAs( "Plots/PhFR_from_{:s}-{:s}.{:s}".format(sample_data["name"], sample_prompt["name"], ext) )
     del cFR, to_preserve_FR
     
     ## Estimate = B*C/D ##
@@ -197,29 +219,31 @@ def fakeRate(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR",
     hES = hFR  # rename for clarity
     hES.Multiply(hdata_B)
     hES.SetTitle( "Fake Photon estimate: B*C/D (from {:s} - {:s})".format(sample_data["title"], sample_prompt["title"]) )
+    hES.SetName( "FakeEstimate" )
 
     if(fixNegBins):
         for b in iterate_bins(hES):
             if(hES.GetBinContent(b) < 0): hES.SetBinContent(b, 0.)
 
-    with TFileContext("Plot/Estimate_from_{:s}-{:s}.root".format(sample_data["name"], sample_prompt["name"]), "RECREATE") as tf:
+    with TFileContext(outfname_full, "UPDATE") as tf:
         tf.cd()
-        hES.Write()
+        hES.Write(hES.GetName(), ROOT.TObject.kOverwrite)
     
     to_preserve_ESdata = beautify(cES, hES, logx, logy, logz=True)
     
     for ext in ["png"]:
-        cES.SaveAs( "Plot/PhEstimate_from_{:s}-{:s}.{:s}".format(sample_data["name"], sample_prompt["name"], ext) )
+        cES.SaveAs( "Plots/PhEstimate_from_{:s}-{:s}.{:s}".format(sample_data["name"], sample_prompt["name"], ext) )
     del cES, to_preserve_ESdata, hES
+    print()
 
     
 
 def kFactor(sample, logx=False, logy=False):
     print("kFactor: MC sample =", sample)
     
-    with TFileContext("Plot/Estimate_from_{:s}.root".format(sample["name"]), "READ") as tf_MC, TFileContext("Plot/Estimate_from_data.root", "READ") as tf_data:
-        hdata = tf_data.Get("fake_photon_estimate")
-        hMC   = tf_MC  .Get("fake_photon_estimate")
+    with TFileContext("Plots/PhFR_from_{:s}.root".format(sample["name"]), "READ") as tf_MC, TFileContext("Plots/PhFR_from_data.root", "READ") as tf_data:
+        hdata = tf_data.Get("PhFR")
+        hMC   = tf_MC  .Get("PhFR")
         if(not hMC or not hdata):
             print("no histograms:", hMC, hdata)
             return 1
@@ -244,12 +268,12 @@ def kFactor(sample, logx=False, logy=False):
 
     hKF.Draw("colz texte")
     lines, ticks = linesAndTicks(hKF, logx, logy)
-    to_preserve = lines + ticks
+    to_preserve = (*lines, *ticks)
     for l in to_preserve:
         l.Draw("same")
     
     for ext in ["png"]:
-        c.SaveAs( "Plot/kFactor_from_{:s}.{:s}".format(sample["name"], ext) )
+        c.SaveAs( "Plots/kFactor_from_{:s}.{:s}".format(sample["name"], ext) )
     
     del c, to_preserve
 
