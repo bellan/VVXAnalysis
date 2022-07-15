@@ -11,23 +11,30 @@ import copy, sys, os
 import ROOT
 if '-b' in sys.argv:
     ROOT.gROOT.SetBatch(True)
-sys.path.append("VVXAnalysis/TreeAnalysis/python")
+# sys.path.append("VVXAnalysis/TreeAnalysis/python")
 # from readSampleInfo import *
 # from Colours import *
 # import ctypes
 import re
 import math
+from errno import EEXIST
 
 
 class TFileContext(object):
     def __init__(self, *args):
-        print('>>>Opening with args:', args)
+        # print('>>>Opening with args:', args)
         self.tfile = ROOT.TFile(*args)
     def __enter__(self):
         return self.tfile
     def __exit__(self, type, value, traceback):
-        print('<<<Closing TFile "%s"' % (self.tfile.GetName()))
+        # print('<<<Closing TFile "%s"' % (self.tfile.GetName()))
         self.tfile.Close()
+
+# Emulate os.makekdirs(..., exists_ok=True) for python2
+def makedirs_ok(*args):
+    try: os.makedirs(*args)
+    except OSError as e:
+        if(e.errno != EEXIST): raise e  # Catch only "File esists"
 
 
 def getPlots(inputdir, sample, plots):
@@ -39,7 +46,8 @@ def getPlots(inputdir, sample, plots):
             if(not h):
                 print('Warning: Could not get "%s" from "%s"' % (plot, fname))
                 retrieved.append(None)
-            retrieved.append( copy.deepcopy(h) )
+            else:
+                retrieved.append( copy.deepcopy(h) )
     return retrieved
 
 
@@ -105,7 +113,7 @@ def beautify(canvas, hist, logx=False, logy=False, logz=False):
         hist.GetZaxis().SetMoreLogLabels()
 
     lines, ticks = linesAndTicks(hist, logx, logy)
-    to_preserve = (*lines, *ticks)
+    to_preserve = lines + ticks
     for l in to_preserve:
         l.Draw("same")
     return to_preserve
@@ -113,16 +121,20 @@ def beautify(canvas, hist, logx=False, logy=False, logz=False):
 def fakeRate(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR", logx=False, logy=False, fixNegBins=False):
     print("Fake Rate: data     =", sample_data  )
     print("Fake Rate: promptMC =", sample_prompt)
-    outfname_data = "Plots/PhFR_from_{:s}.root"     .format(sample_data["name"])
-    print('Output in: "{}"'.format(outfname_data))
+    makedirs_ok("data")
+    makedirs_ok("Plots")
+    outfname_data = "data/PhFR_from_{:s}.root".format(sample_data["name"])
+    print('Output (without MC subtraction) in: "{:s}"'.format(outfname_data))
     
-    path_base = "rsync_results/Updated/EXT"  # "VVXAnalysis/TreeAnalysis/results"
-    path = "{:s}/2016/{:s}_{:s}".format(path_base, analyzer, region)
+    if(os.environ.get("CMSSW_BASE")):  path_base = os.path.join(os.environ['CMSSW_BASE'], "src/VVXAnalysis/TreeAnalysis/results")
+    else:                              path_base = "results" # "rsync_results/Updated/EXT"
+    assert os.path.exists(path_base), 'Please call this script from "VVXAnalysis/TreeAnalysis" or do `cmsenv`'
+    path_in = "{:s}/2016/{:s}_{:s}".format(path_base, analyzer, region)
     
     ##### First: only data ####
     
-    hdata_A  , hdata_B  , hdata_C  , hdata_D   = getPlots(path, sample_data  ["file"], [ "PhFR_%s" % (c) for c in 'ABCD' ] )
-    assert (hdata_A   and hdata_B   and hdata_C   and hdata_D  ), "Could't get all 4 data histograms!"
+    hdata_A, hdata_B, hdata_C, hdata_D = getPlots(path_in, sample_data  ["file"], [ "PhFR_%s" % (c) for c in 'ABCD' ] )
+    assert (hdata_A and hdata_B and hdata_C and hdata_D), "Could't get all 4 data histograms!"
 
     if(sample_data.get("fixNegBins", False)):
         for h in (hdata_A, hdata_B, hdata_C, hdata_D):
@@ -172,10 +184,10 @@ def fakeRate(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR",
     if(sample_prompt is None):
         return
 
-    outfname_full = "Plots/PhFR_from_{:s}-{:s}.root".format(sample_data["name"], sample_prompt["name"])
-    print('Output (with prompt MC subtraction) in "{:s}"'.format(outfname_full))
+    outfname_full = "data/PhFR_from_{:s}-{:s}.root".format(sample_data["name"], sample_prompt["name"])
+    print('Output (with prompt MC subtraction) in: "{:s}"'.format(outfname_full))
     
-    hprompt_A, hprompt_B, hprompt_C, hprompt_D = getPlots(path, sample_prompt["file"], [ "PhFR_%s" % (c) for c in 'ABCD' ] )
+    hprompt_A, hprompt_B, hprompt_C, hprompt_D = getPlots(path_in, sample_prompt["file"], [ "PhFR_%s" % (c) for c in 'ABCD' ] )
     assert (hprompt_A and hprompt_B and hprompt_C and hprompt_D), "Could't get all 4 promptMC histograms!"
 
     if(sample_prompt.get("fixNegBins", False)):
@@ -268,7 +280,7 @@ def kFactor(sample, logx=False, logy=False):
 
     hKF.Draw("colz texte")
     lines, ticks = linesAndTicks(hKF, logx, logy)
-    to_preserve = (*lines, *ticks)
+    to_preserve = lines + ticks
     for l in to_preserve:
         l.Draw("same")
     
