@@ -1,10 +1,12 @@
 from os.path import expanduser
-from os import environ
+from os import environ, path
 
-user = environ.get('User', None)
+user = environ.get('USER', None)
 home = expanduser("~")
 personalFolder = home+"/VVXStuff" #Change your directory 
 
 if(user is not None):
-    personalFolder = "/eos/home-%s/%s/www/Analysis/last" %(user[0], user, "EXT")
+    site_location = "/eos/home-%s/%s/www/Analysis" %(user[0], user)
+    if(path.exists(site_location)):
+        personalFolder = site_location
     # eg. Analysis = "VVXAnalyzer", region = "CR3P1F"
