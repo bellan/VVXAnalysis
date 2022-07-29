@@ -10,21 +10,21 @@ import re
 
 ##### Define type of samples ##### FIXME: make a class?
 
-qqZZ_pow = [{"sample":'ZZTo4l'         , "color":ROOT.kAzure-4 , "name":'qq/qg #rightarrow ZZ(+jets)', "kfactor": 1.1}]
-qqZZ_mad = [{"sample":'ZZTo4lamcatnlo' , "color":ROOT.kAzure-4 , "name":'qq/qg #rightarrow ZZ(+jets)', "kfactor": 1.1}]
+qqZZ_pow = [{"sample":'ZZTo4l'         , "color":ROOT.kBlue-4  , "name":'qq/qg #rightarrow ZZ(+jets)', "kfactor": 1.}]  # 1.1  #(1.256/1.325)
+qqZZ_mad = [{"sample":'ZZTo4lamcatnlo' , "color":ROOT.kBlue-4  , "name":'qq/qg #rightarrow ZZ(+jets)', "kfactor": 1.1}]
 
-ggZZ     = [{"sample":'ggZZ'           , "color":ROOT.kCyan-5  , "name":'gg #rightarrow ZZ(+jets)'   , "kfactor": 1.7}]
+ggZZ     = [{"sample":'ggZZ'           , "color":ROOT.kAzure-4 , "name":'gg #rightarrow ZZ(+jets)'   , "kfactor": 1.7}]
 vbsZZ    = [{"sample":'ZZ4lJJ'         , "color":ROOT.kCyan-6  , "name":'VBS', "kfactor": 1.0}]
 HZZ      = [{"sample":'HZZ'            , "color":ROOT.kCyan-7  , "name":'higgs', "kfactor": 1.0}]
     
 WZ       = [{"sample":'WZTo3LNu'       , "color":ROOT.kYellow+2, "name":'WZ', "kfactor": 1.0}]
 
-WW       = [{"sample":'WWTo2L2Nu'      , "color":ROOT.kBlue-4  , "name":'WW', "kfactor": 1.0}]
+WW       = [{"sample":'WWTo2L2Nu'      , "color":ROOT.kYellow-7, "name":'WW', "kfactor": 1.0}]
 
-tt       = [{"sample":'TTTo2L2Nu'      , "color":ROOT.kRed-5   , "name":'t#bar{t}', "kfactor": 1.0},
-            {"sample":'TTWJets'        , "color":ROOT.kRed-5   , "name":'t#bar{t}', "kfactor": 1.0},
-            {"sample":'TTZJets'        , "color":ROOT.kRed-5   , "name":'t#bar{t}', "kfactor": 1.0},
-            {"sample":'TTGJets'        , "color":ROOT.kRed-5   , "name":'t#bar{t}', "kfactor": 1.0}]
+tt       = [{"sample":'TTTo2L2Nu'      , "color":ROOT.kMagenta+2, "name":'t#bar{t}', "kfactor": 1.0},
+            {"sample":'TTWJets'        , "color":ROOT.kMagenta+2, "name":'t#bar{t}', "kfactor": 1.0},
+            {"sample":'TTZJets'        , "color":ROOT.kMagenta+2, "name":'t#bar{t}', "kfactor": 1.0},
+            {"sample":'TTGJets'        , "color":ROOT.kMagenta+2, "name":'t#bar{t}', "kfactor": 1.0}]
 
 W        = [{"sample":'WJetsToLNu'     , "color":ROOT.kGreen-1 , "name":'W+jets', "kfactor": 1.0}]
 
@@ -34,10 +34,10 @@ ttXY     = [{"sample":'ttXY'           , "color":ROOT.kBlue-1  , "name":'ttXY', 
 
 ZG       = [{"sample":'ZGToLLG'        , "color":ROOT.kGreen-4 , "name":'Z\gamma', "kfactor": 1.0}]
 
-triboson = [{"sample":'WWW'            , "color":ROOT.kOrange  , "name":'VVV', "kfactor": 1.0},
-            {"sample":'WWZ'            , "color":ROOT.kOrange  , "name":'VVV', "kfactor": 1.0},
-            {"sample":'WZZ'            , "color":ROOT.kOrange  , "name":'VVV', "kfactor": 1.0},
-            {"sample":'ZZZ'            , "color":ROOT.kOrange  , "name":'VVV', "kfactor": 1.0}]
+triboson = [{"sample":'WWW'            , "color":ROOT.kOrange+1, "name":'VVV', "kfactor": 1.0},
+            {"sample":'WWZ'            , "color":ROOT.kOrange+1, "name":'VVV', "kfactor": 1.0},
+            {"sample":'WZZ'            , "color":ROOT.kOrange+1, "name":'VVV', "kfactor": 1.0},
+            {"sample":'ZZZ'            , "color":ROOT.kOrange+1, "name":'VVV', "kfactor": 1.0}]
 
 ttZ      = [{"sample":'TTZJets_M10_MLM', "color":ROOT.kOrange-5, "name":'t#bar{t}Z', "kfactor": 1.0}]
 
@@ -58,22 +58,22 @@ def getSamplesByRegion(region, MCSet, predType):
     tot = WZG + ZZG + qqZZ + ggZZ
     if region == 'SR4P':
         if predType == 'fromCR':
-            tot += WWZ + ttZ # + vbsZZ + HZZ
+            tot += triboson + ttZ + ttXY # + vbsZZ + HZZ
         elif predType == 'fullMC':
-            tot += WZ + tt + DY + triboson + ttZ + ZG + ttXY + WW + W # + vbsZZ + HZZ
+            tot += WZ + tt + DY + ZG + WW + W + triboson + ttZ + ttXY # + vbsZZ + HZZ
         else:
             sys.exit("Wrong prediction type, fromCR from MC still needs to be added")
             
     elif region == 'SR3P':
         if predType == 'fromCR':
-            tot += WWZ + ttZ + WZ # + vbsZZ + HZZ
+            tot += triboson + ttZ + WZ # + vbsZZ + HZZ
         elif predType == 'fullMC':
-            tot += WZ + tt + DY + triboson + ttZ + ZG + ttXY + WW + W  # + vbsZZ + HZZ
+            tot += WZ + tt + DY + ZG + WW + W + triboson + ttZ + ttXY  # + vbsZZ + HZZ
         else:
             sys.exit("Wrong prediction type, fromCR from MC still needs to be added")
 
     else:
-        tot += WZ + tt + DY + triboson + ttZ + ZG + ttXY + WW + W  # + vbsZZ + HZZ
+        tot += WZ + tt + DY + ZG + WW + W + triboson + ttZ + ttXY  # + vbsZZ + HZZ
         
 
     return tot
@@ -132,11 +132,11 @@ def GetTypeofsamples(category,Set):
 ####### Extract predictions plot #########
 def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin):
 
-    controlRegion = ''
+    controlRegions = []
     if region == 'SR4P':
-        controlRegion = 'CR4L'
+        controlRegions = ['CR2P2F', 'CR3P1F']
     elif region == 'SR3P':
-        controlRegion = 'CR3L'
+        controlRegions = ['CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110']
     else:
         print "You should know what you are doing"
         #sys.exit("ERROR, check region") 
@@ -157,8 +157,15 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin):
     ErrStat = ctypes.c_double(0.)
 
     if predType == 'fromCR':
-        print Green("\nNon-prompt leptons background"),
-        hfake = GetFakeRate(inputdir.replace(region,controlRegion),plot,"data",rebin) 
+        print Green("\nNon-prompt leptons background")
+        hfake = None
+        for controlRegion in controlRegions:
+            hfakeTmp = GetFakeRate(inputdir.replace(region,controlRegion),plot,"data",rebin)
+            if(hfakeTmp is None): continue
+            if(hfake is None): hfake = hfakeTmp
+            else:
+                print "Adding for", controlRegion
+                hfake.Add(hfakeTmp)
         stack.Add(hfake)
         leg.AddEntry(hfake,"Non-prompt leptons","f")
      
@@ -215,7 +222,7 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin):
         h.SetFillColor(sample["color"])
         h.SetMarkerStyle(21)
         h.SetMarkerColor(sample["color"])
-
+        
         stack.Add(h)
         if LastColor!=sample["color"]:
             leg.AddEntry(h,sample["name"],"f")
@@ -413,11 +420,15 @@ def GetFakeRate(inputdir,plot, method,rebin):
         return 0.
     else:
         fileFake = ROOT.TFile(inputdir+"data.root")
-
+        
     hFakeRate=ROOT.TH1F()
 
 
     hFakeRate = fileFake.Get(plot)
+    if(not hFakeRate):
+        print Red("Warning:"), 'plot "%s" not found in %s' %(plot, fileFake.GetName())
+        return None
+    
     Err       = ctypes.c_double(0.)
     Integr    = hFakeRate.IntegralAndError(0,-1,Err)
     ErrStat   = ctypes.c_double(0.)
@@ -428,7 +439,7 @@ def GetFakeRate(inputdir,plot, method,rebin):
     hFakeRate.SetLineColor(ROOT.kGray)
     hFakeRate.SetMarkerStyle(21)
     hFakeRate.SetMarkerSize(.5)
-
+    
     print "contribution \t {0:.3f} +- {1: .3f} \n".format(hFakeRate.IntegralAndError(1,-1,ErrStat),ErrStat.value)
 
     return  copy.deepcopy(hFakeRate) 
