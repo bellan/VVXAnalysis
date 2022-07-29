@@ -64,6 +64,31 @@ def iterate_bins(h, **kwargs):
                 yield h.GetBin(i, j, k)
 
 
+def fix_neg_bins(h):
+    for b in iterate_bins(h, underX=True, underY=True, underZ=False, overX=True, overY=True, overZ=False):
+        if(h.GetBinContent(b) < 0):
+            h.SetBinContent(b, 0.)
+
+
+# def _show_overflow_axis(ax, u_label=None, o_label=None):
+#     ax.SetRange(0, ax.GetNbins() + 1)
+#     if(u_label is None): u_label = '0'
+#     if(o_label is None): o_label = '\infty'
+#     ax.ChangeLabel(0                          , -1., -1., -1, -1, -1, u_label)
+#     ax.ChangeLabel(ax.GetNdivisions()%100 - 1 , -1., -1., -1, -1, -1, o_label)
+
+# def show_overflow(h, **kwargs):
+#     doX = kwargs.get("doX") or any([ k in ['ux_label', "ox_label"] for k in kwargs.keys() ])
+#     doY = kwargs.get("doY") or any([ k in ['uy_label', "oy_label"] for k in kwargs.keys() ])
+#     doZ = kwargs.get("doZ") or any([ k in ['uz_label', "oz_label"] for k in kwargs.keys() ])
+#     if(doX):
+#         _show_overflow_axis( h.GetXaxis(), kwargs.get("ux_label"), kwargs.get("ox_label") )
+#     if(doY and h.Class().InheritsFrom("TH2")):
+#         _show_overflow_axis( h.GetYaxis(), kwargs.get("uy_label"), kwargs.get("oy_label") )
+#     if(doZ and h.Class().InheritsFrom("TH3")):
+#         _show_overflow_axis( h.GetZaxis(), kwargs.get("uz_label"), kwargs.get("oz_label") )
+
+
 def linesAndTicks(h, logx=False, logy=False):
     lines = []
     ticks = []
@@ -97,6 +122,7 @@ def linesAndTicks(h, logx=False, logy=False):
 def beautify(canvas, hist, logx=False, logy=False, logz=False):
     canvas.cd()
     # hist.GetXaxis().SetNdivisions(0)
+    hist.GetXaxis().SetRange(1, hist.GetXaxis().GetNbins()+1)
     hist.Draw("colz texte")
 
     if(logx):
@@ -118,6 +144,15 @@ def beautify(canvas, hist, logx=False, logy=False, logz=False):
         l.Draw("same")
     return to_preserve
 
+
+def get_path_base():
+    if(os.environ.get("CMSSW_BASE")): path_base = os.path.join(os.environ['CMSSW_BASE'], "src/VVXAnalysis/TreeAnalysis/results")
+    else:                             path_base = "results" # "rsync_results/Updated/EXT"
+    assert os.path.exists(path_base), 'Please call this script from "VVXAnalysis/TreeAnalysis" or do `cmsenv`'
+    return path_base
+    
+
+
 def fakeRate(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR", logx=False, logy=False, fixNegBins=False):
     print("Fake Rate: data     =", sample_data  )
     print("Fake Rate: promptMC =", sample_prompt)
@@ -126,10 +161,7 @@ def fakeRate(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR",
     outfname_data = "data/PhFR_from_{:s}.root".format(sample_data["name"])
     print('Output (without MC subtraction) in: "{:s}"'.format(outfname_data))
     
-    if(os.environ.get("CMSSW_BASE")):  path_base = os.path.join(os.environ['CMSSW_BASE'], "src/VVXAnalysis/TreeAnalysis/results")
-    else:                              path_base = "results" # "rsync_results/Updated/EXT"
-    assert os.path.exists(path_base), 'Please call this script from "VVXAnalysis/TreeAnalysis" or do `cmsenv`'
-    path_in = "{:s}/2016/{:s}_{:s}".format(path_base, analyzer, region)
+    path_in = "{:s}/2016/{:s}_{:s}".format(get_path_base(), analyzer, region)
     
     ##### First: only data ####
     
@@ -137,9 +169,8 @@ def fakeRate(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR",
     assert (hdata_A and hdata_B and hdata_C and hdata_D), "Could't get all 4 data histograms!"
 
     if(sample_data.get("fixNegBins", False)):
-        for h in (hdata_A, hdata_B, hdata_C, hdata_D):
-            for b in iterate_bins(h):
-                if(h.GetBinContent(b) < 0): h.SetBinContent(b, 0.)
+        for h in [hdata_A, hdata_B, hdata_C, hdata_D]:
+            fix_neg_bins(h)
 
     ## Fake rate = C/D ##
     cFR_data = ROOT.TCanvas( "cFR_data", "Fake Rate "+sample_data["name"], 200, 10, 1200, 900 )
@@ -192,9 +223,7 @@ def fakeRate(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR",
 
     if(sample_prompt.get("fixNegBins", False)):
         for h in (hprompt_A, hprompt_B, hprompt_C, hprompt_D):
-            for b in iterate_bins(h):
-                if(h.GetBinContent(b) < 0):
-                    h.SetBinContent(b, 0.)
+            fix_neg_bins(h)
 
     hdata_A.Add(hprompt_A, -1)
     hdata_B.Add(hprompt_B, -1)
@@ -211,8 +240,7 @@ def fakeRate(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR",
     hFR.SetName( "PhFR" )
     
     if(fixNegBins):
-        for b in iterate_bins(hFR):
-            if(hFR.GetBinContent(b) < 0): hFR.SetBinContent(b, 0.)
+        fix_neg_bins(hFR)
     
     with TFileContext(outfname_full, "UPDATE") as tf:
         tf.cd()
@@ -250,33 +278,31 @@ def fakeRate(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR",
 
     
 
-def kFactor(sample, logx=False, logy=False):
+def kFactor(sample, analyzer, region, logx=False, logy=False, fixNegBins=None):
     print("kFactor: MC sample =", sample)
     
-    with TFileContext("Plots/PhFR_from_{:s}.root".format(sample["name"]), "READ") as tf_MC, TFileContext("Plots/PhFR_from_data.root", "READ") as tf_data:
-        hdata = tf_data.Get("PhFR")
-        hMC   = tf_MC  .Get("PhFR")
-        if(not hMC or not hdata):
-            print("no histograms:", hMC, hdata)
-            return 1
-        hKF = copy.deepcopy(hdata)
-        # hKF.Sumw2()
-        hKF.Divide(hMC)
+    if(fixNegBins is None): fixNegBins = sample.get("fixNegBins", False)
+    
+    path_in = "{:s}/2016/{:s}_{:s}".format(get_path_base(), analyzer, region)
+    hA, hB, hC, hD = getPlots( path_in, sample['file'], [ "PhFR_%s" % (c) for c in 'ABCD' ])
+    assert (hA and hB and hC and hD), "Could not get all 4 histograms!"
+    
+    hKF = copy.deepcopy(hA)
+    hKF.Divide(hB)
+    hKF.Divide(hC)
+    hKF.Multiply(hD)
 
-    hKF.SetTitle("kFactor: data / "+sample["name"])
-    c = ROOT.TCanvas("c", "kFactor", 50, 100, 1200, 900)
-    if(logx):
-        c.SetLogx()
-        hKF.GetXaxis().SetMoreLogLabels()
-        hKF.GetXaxis().SetNoExponent()
-    if(logy):
-        c.SetLogy()
-        hKF.GetYaxis().SetNoExponent()
-        hKF.GetYaxis().SetMoreLogLabels()
-    # if(logz):
-    #     c.SetLogz()
-    #     hKF.GetZaxis().SetNoExponent()
-    #     hKF.GetZaxis().SetMoreLogLabels()
+    if(fixNegBins): fix_neg_bins(hKF)
+    
+    hKF.SetTitle("kFactor: "+sample["name"])
+    
+    with TFileContext("data/PhKF_from_{:s}.root".format(sample["name"]), "RECREATE") as tf:
+        tf.cd()
+        hKF.Write(hKF.GetName(), ROOT.TObject.kOverwrite)
+    
+    c = ROOT.TCanvas("c", "kFactor", 1200, 900)
+
+    beautify(c, hKF, logx, logy)
 
     hKF.Draw("colz texte")
     lines, ticks = linesAndTicks(hKF, logx, logy)
@@ -301,7 +327,7 @@ if __name__ == "__main__":
 
     ROOT.gStyle.SetOptStat(0)
 
-    fakeRate(sampleList["data"], sampleList["ZGToLLG"], analyzer="VVGammaAnalyzer", logx=True, region="CRLFR", fixNegBins=True)
-    fakeRate(sampleList["Drell-Yan"], None            , analyzer="VVGammaAnalyzer", logx=True, region="CRLFR", fixNegBins=True)
+    fakeRate(sampleList["data"], sampleList["ZGToLLG"], analyzer="VVGammaAnalyzer", region="CRLFR", logx=True, fixNegBins=True)
+    fakeRate(sampleList["Drell-Yan"], None            , analyzer="VVGammaAnalyzer", region="CRLFR", logx=True, fixNegBins=True)
 
-    # kFactor(sampleList["Drell-Yan"], logx=True, logy=False)
+    kFactor(sampleList["Drell-Yan"], analyzer='VVGammaAnalyzer', region='CRLFR', logx=True, logy=False)
