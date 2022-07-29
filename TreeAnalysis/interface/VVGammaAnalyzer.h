@@ -135,6 +135,8 @@ public:
  			return photonSFhist->GetBinContent(photonSFhist->FindBin(ph.eta(), ph.pt()));
  		else return 1.;
 	}*/
+
+	static char phABCD(const phys::Photon&, const phys::Photon::IDwp);
  	
  	template<class T, class V>
 	bool haveCommonDaughter(const phys::Boson<T>& a, const phys::Boson<V>& b, const float tol=0.001){
@@ -193,6 +195,8 @@ public:
 		static const std::vector<double> pt_bins_LFR;
 		static const std::vector<double> eta_bins;
 		static const std::vector<double> aeta_bins;
+		static const std::vector<double> ph_pt_bins;
+		static const std::vector<double> ph_aeta_bins;
 		static const std::vector<double> mVV_bins;
 		static const std::vector<double> mVVG_bins;
   
