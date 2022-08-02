@@ -109,6 +109,7 @@ public:
  	// Basic histograms
  	void genEventHistos();
 	void baseHistos_cut();
+	void photonHistos();
 	void jetHistos();
 	//void baseHistos_analyze();
 	void PKU_comparison();
