@@ -3,11 +3,7 @@
 #include <TFile.h>
 #include <iostream>
 
-PhotonScaleFactors::PhotonScaleFactors(int year,
-				       const std::string& Filename, bool preVFP) : phoSFHelper_(preVFP), year_(year){
-  TFile *f = new TFile(Filename.c_str());
-
-}
+PhotonScaleFactors::PhotonScaleFactors(int year, bool preVFP) : phoSFHelper_(year, preVFP) {}
 
 std::pair<double, double> PhotonScaleFactors::efficiencyScaleFactor(const phys::Photon &pho) const{
   /***

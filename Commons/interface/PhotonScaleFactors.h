@@ -19,7 +19,7 @@
 
 class PhotonScaleFactors{
  public:
-  PhotonScaleFactors(int year, const std::string& Filename, bool preVFP); //constructor
+  PhotonScaleFactors(int year, bool preVFP); //constructor
 
   //Photon efficiency SF 
   std::pair<double, double> efficiencyScaleFactor(const double& phoPt, const double& phoEta /*, string phoId*/) const{ 
@@ -40,13 +40,6 @@ class PhotonScaleFactors{
  private:
 
   PhotonSFHelper phoSFHelper_;
-  int year_;
-
-  TH2D *f;
-  //TH2D *hFRMu_;
-  //TH2D *hFREl_;
-
-  std::string year;
 };
 
 

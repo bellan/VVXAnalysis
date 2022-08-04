@@ -1,97 +1,55 @@
 #include <VVXAnalysis/Commons/interface/PhotonSFHelper.h>
 
-using namespace std;
+#include <iostream>
 
-PhotonSFHelper::PhotonSFHelper(bool preVFP)
+#include "TFile.h"
+
+PhotonSFHelper::PhotonSFHelper(int year, bool preVFP)
 {
-   // 2016 preVFP & postVFP
-   TString    fipPhoton_2016 = Form("$CMSSW_BASE/src/VVXAnalysis/Commons/data/PhotonEffScaleFactors/PhotonSF_UL2016postVFP.root");
-   if(preVFP) fipPhoton_2016 = Form("$CMSSW_BASE/src/VVXAnalysis/Commons/data/PhotonEffScaleFactors/PhotonSF_UL2016preVFP.root");
-   root_file = TFile::Open(fipPhoton_2016,"READ");
-   h_Pho_2016 = (TH2F*) root_file->Get("EGamma_SF2D")->Clone();
+  const char dirpath[] = "$CMSSW_BASE/src/VVXAnalysis/Commons/data/PhotonEffScaleFactors/";
+  const char *filename;
+  
+  switch(year){
+    case 2016:
+      filename = preVFP ? "PhotonSF_UL2016preVFP.root" : "PhotonSF_UL2016postVFP.root";
+      break;
+    case 2017:
+      filename = "PhotonSF_UL2017.root";
+      break;
+    case 2018:
+      filename = "PhotonSF_UL2018.root";
+      break;
+    default:
+      edm::LogError("PhotonSFHelper::") << "Photon SFs for " << year << " are not supported!";
+      throw std::logic_error(Form("Photon SFs for %d are not supported", year));  // abort();  // Let's not be so catastrophic
+   }
 
-   // 2017  
-    TString fipPhoton_2017 = Form("$CMSSW_BASE/src/VVXAnalysis/Commons/data/PhotonEffScaleFactors/PhotonSF_UL2017.root");
-    root_file = TFile::Open(fipPhoton_2017,"READ");
-    h_Pho_2017 = (TH2F*) root_file->Get("EGamma_SF2D")->Clone();
- 
-   // 2018
-    TString fipPhoton_2018 = Form("$CMSSW_BASE/src/VVXAnalysis/Commons/data/PhotonEffScaleFactors/PhotonSF_UL2018.root");
-    root_file = TFile::Open(fipPhoton_2018,"READ");
-    h_Pho_2018 = (TH2F*) root_file->Get("EGamma_SF2D")->Clone();
-
-   cout << "[PhotonSFHelper] SF maps opened from root files." << endl;
-}
-
-PhotonSFHelper::~PhotonSFHelper()
-{
-}
-
-float PhotonSFHelper::getSF(int year, float pt, float eta/*, float SCeta*/) const
-{
-  //float RecoSF = 1.0;
-   float SelSF = 1.0;
-   float SF = 1.0;
-
-   //cout << "year = " << year << " pt = " << pt << " eta = " << eta << " SCeta = " << SCeta  << endl;
-
-   // Photon ID SFs
-     if     (year == 2016)
-      {
-       SelSF = h_Pho_2016->GetBinContent(h_Pho_2016->GetXaxis()->FindBin(eta),h_Pho_2016->GetYaxis()->FindBin(pt));
-      }
-     else if (year == 2017)
-      {
-       SelSF = h_Pho_2017->GetBinContent(h_Pho_2017->GetXaxis()->FindBin(eta),h_Pho_2017->GetYaxis()->FindBin(pt));
-      }
-     else if (year == 2018)
-      {
-       SelSF = h_Pho_2018->GetBinContent(h_Pho_2016->GetXaxis()->FindBin(eta),h_Pho_2018->GetYaxis()->FindBin(pt));
-      }
-      else {
-         edm::LogError("PhotonSFHelper::") << "Photon SFs for " << year << " is not supported!";
-         abort();
-      }
-
-      SF = SelSF;
-
-    return SF;
+  TFile root_file(Form("%s/%s", dirpath, filename), "READ");
+  h_Pho.reset(std::move( (TH2F*) root_file.Get("EGamma_SF2D")->Clone() ));
+  std::cout << "[PhotonSFHelper] SF map opened from root file \"" << root_file.GetName() << "\"." << std::endl;
+  root_file.Close();
 }
 
 
-float PhotonSFHelper::getSFError(int year, float pt, float eta/*, float SCeta*/) const
+float PhotonSFHelper::getSF(float pt, float eta/*, float SCeta*/) const
 {
-  //float RecoSF = 1.0;
-   float SelSF = 1.0;
-   //   float RecoSF_Unc = 0.0;
-   float SelSF_Unc = 0.0;
-   float SFError = 0.0;
+  return h_Pho->GetBinContent(h_Pho->GetXaxis()->FindBin(eta), h_Pho->GetYaxis()->FindBin(pt));
+}
 
-   // Photon ID SFs
-     if     (year == 2016)
-      {
-       SelSF = h_Pho_2016->GetBinContent(h_Pho_2016->GetXaxis()->FindBin(eta),h_Pho_2016->GetYaxis()->FindBin(pt));
-       SelSF_Unc=h_Pho_2016->GetBinError(h_Pho_2016->GetXaxis()->FindBin(eta),h_Pho_2016->GetYaxis()->FindBin(pt));
-      }
-     else if (year == 2017)
-      {
-       SelSF = h_Pho_2017->GetBinContent(h_Pho_2017->GetXaxis()->FindBin(eta),h_Pho_2017->GetYaxis()->FindBin(pt));
-       SelSF_Unc=h_Pho_2017->GetBinError(h_Pho_2017->GetXaxis()->FindBin(eta),h_Pho_2017->GetYaxis()->FindBin(pt));
-      }
-     else if (year == 2018)
-      {
-       SelSF = h_Pho_2018->GetBinContent(h_Pho_2016->GetXaxis()->FindBin(eta),h_Pho_2018->GetYaxis()->FindBin(pt));
-       SelSF_Unc=h_Pho_2018->GetBinError(h_Pho_2018->GetXaxis()->FindBin(eta),h_Pho_2018->GetYaxis()->FindBin(pt));
-      }
-      else {
-         edm::LogError("PhotonSFHelper::") << "Photon SFs for " << year << " is not supported!";
-         abort();
-      }
 
-      SFError = SelSF_Unc/SelSF;
-      /**
-SFError = sqrt( RecoSF_Unc*RecoSF_Unc/(RecoSF*RecoSF) + SelSF_Unc*SelSF_Unc/(SelSF*SelSF) ); // assume full correlation between different electrons (and uncorrelated reco and sel uncertainties)
-      **/
+float PhotonSFHelper::getSFError(float pt, float eta/*, float SCeta*/) const
+{
+  float SelSF = 1.0;
+  float SelSF_Unc = 0.0;
+  float SFError = 0.0;
+  
+  SelSF = h_Pho->GetBinContent(h_Pho->GetXaxis()->FindBin(eta), h_Pho->GetYaxis()->FindBin(pt));
+  SelSF_Unc=h_Pho->GetBinError(h_Pho->GetXaxis()->FindBin(eta), h_Pho->GetYaxis()->FindBin(pt));
+  
+  SFError = SelSF != 0. ? SelSF_Unc/SelSF : 1.;
+  /**
+     SFError = sqrt( RecoSF_Unc*RecoSF_Unc/(RecoSF*RecoSF) + SelSF_Unc*SelSF_Unc/(SelSF*SelSF) ); // assume full correlation between different electrons (and uncorrelated reco and sel uncertainties)
+  **/
 
    return SFError;
 }
