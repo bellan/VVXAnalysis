@@ -35,6 +35,7 @@
 
 #include "VVXAnalysis/Producers/interface/FilterController.h"
 #include "VVXAnalysis/Commons/interface/LeptonScaleFactors.h"
+#include "VVXAnalysis/Commons/interface/PhotonScaleFactors.h"
 #include "ZZAnalysis/AnalysisStep/interface/PileUpWeight.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include <JetMETCorrections/Modules/interface/JetResolution.h>
@@ -117,6 +118,7 @@ class TreePlanter: public edm::EDAnalyzer {
   FilterController filterController_;
   // To get Lepton efficiency scale factors. Temporary here!
   LeptonScaleFactors leptonScaleFactors_;
+  PhotonScaleFactors photonScaleFactors_;
   Int_t signalDefinition_;
 
   // ------------------- Event info in the tree ------------------- //

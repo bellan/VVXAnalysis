@@ -23,7 +23,7 @@ class PhotonScaleFactors{
 
   //Photon efficiency SF 
   std::pair<double, double> efficiencyScaleFactor(const double& phoPt, const double& phoEta /*, string phoId*/) const{ 
-    return std::make_pair(phoSFHelper_.getSF(year_, /*phoId,*/ phoPt, phoEta),phoSFHelper_.getSFError(year_, /*phoId,*/ phoPt, phoEta));
+    return std::make_pair(phoSFHelper_.getSF(/*phoId,*/ phoPt, phoEta), phoSFHelper_.getSFError(/*phoId,*/ phoPt, phoEta));
   }
 
   std::pair<double, double> efficiencyScaleFactor(const phys::Photon& photon) const;

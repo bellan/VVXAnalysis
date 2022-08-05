@@ -9,7 +9,7 @@
 #include <FWCore/MessageLogger/interface/MessageLogger.h>
 
 
-enum SFsyst {central = 0, up = 1, down = 2};
+//enum SFsyst {central = 0, up = 1, down = 2};
 
 class PhotonSFHelper
 {
@@ -21,6 +21,8 @@ class PhotonSFHelper
   float getSFError (/*string phoId,*/ float pt, float eta/*, float SCeta*/) const;
    
  private:
+  const char* _getSFFilename(int year, bool preVFP) const;
+  
   // Photon SF histogram
   std::unique_ptr<TH2F> h_Pho;
   //std::unique_ptr<TH2F> h_Pho_2016preVFP, h_Pho_2016postVFP, h_Pho_2017, h_Pho_2018;

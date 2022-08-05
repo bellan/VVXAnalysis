@@ -60,6 +60,8 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
 			edm::FileInPath("VVXAnalysis/Commons/data/fakeRate_20feb2017.root").fullPath(),
 			edm::FileInPath("VVXAnalysis/Commons/data/fakeRate_20feb2017.root").fullPath(),
 			(dataTag=="ULAPV" ? true : false))  // preVFP
+  , photonScaleFactors_(setup_,
+			(dataTag=="ULAPV" ? true : false))
 
   , signalDefinition_(config.getParameter<int>("signalDefinition"   ))
   , passTrigger_(false)
@@ -946,6 +948,11 @@ phys::Photon TreePlanter::fill(const pat::Photon &photon) const {
 	output.energySigmaPhiDown_  = photon.hasUserFloat("energySigmaPhiDown")  ? photon.userFloat("energySigmaPhiDown")  : -999.;
 	output.energySigmaRhoUp_    = photon.hasUserFloat("energySigmaRhoUp")    ? photon.userFloat("energySigmaRhoUp")    : -999.;
 	output.energySigmaRhoDown_  = photon.hasUserFloat("energySigmaRhoDown")  ? photon.userFloat("energySigmaRhoDown")  : -999.;
+	
+	// Efficiency SF
+	std::pair<double, double> effSF = photonScaleFactors_.efficiencyScaleFactor(output);
+	output.efficiencySF_    = effSF.first;
+	output.efficiencySFUnc_ = effSF.second;
 	
 	return output;
 }
