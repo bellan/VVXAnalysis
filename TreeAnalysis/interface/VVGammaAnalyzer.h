@@ -103,8 +103,9 @@ public:
 	//TH2F* photonSFhist = nullptr;
  	
  	// Objects reconstruction for each event
- 	void genEventSetup();
+	void genEventSetup();
 	/* const phys::Jet* candAK8(const std::vector<phys::Jet>*) const; */
+	static std::vector<phys::Boson<phys::Jet>> candVTojj(const std::vector<phys::Jet>&);
  	
  	// Basic histograms
  	void genEventHistos();
@@ -119,6 +120,8 @@ public:
 	void PhotonFakeRate();
  	void effPhotons(); // uses goodPhotons_ and genPhotons_
  	void photonIsolation(const std::vector<phys::Photon>&, const char*);
+	void systematicsStudy();
+	void doPlots(const char* syst, const double& weight, const phys::Photon*);
  	
  	void endNameHistos();
  	
@@ -136,8 +139,22 @@ public:
  			return photonSFhist->GetBinContent(photonSFhist->FindBin(ph.eta(), ph.pt()));
  		else return 1.;
 	}*/
-
+	
+	static bool is4Lregion(const phys::RegionTypes reg){
+	  return reg == phys::SR4P || reg == phys::CR3P1F || reg == phys::CR2P2F ||
+	    reg == phys::SR4P_1L || reg == phys::SR4P_1P || reg == phys::CR4P_1F;
+	}
+	static bool is3Lregion(const phys::RegionTypes reg){
+	  return reg == phys::SR3P || reg == phys::CR110 || reg == phys::CR101 || reg == phys::CR011 ||
+	    reg == phys::CR100 || reg == phys::CR010 || reg == phys::CR001 || reg == phys::CR001 ||
+	    reg == phys::SR3P_1L || reg == phys::SR3P_1P || reg == phys::CR3P_1F;
+	}
+	static bool is2Lregion(const phys::RegionTypes reg){
+	  return reg == phys::SR2P || reg == phys::SR2P_1L || reg == phys::SR2P_1P || reg == phys::CR2P_1F;
+	}
+	
 	static char phABCD(const phys::Photon&, const phys::Photon::IDwp);
+	static char phABCD_study(const phys::Photon&, const double& barrel_thr, const double& endcap_thr);
  	
  	template<class T, class V>
 	bool haveCommonDaughter(const phys::Boson<T>& a, const phys::Boson<V>& b, const float tol=0.001){
