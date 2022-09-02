@@ -1,12 +1,11 @@
 #! /usr/bin/env python
 
 import ROOT, copy, sys, os
-from ROOT import gSystem, TCanvas, TH1,  TPad, gStyle, TLegend, THStack, TGraphAsymmErrors,Math
+from errno import EEXIST
 from readSampleInfo import *
 from collections import OrderedDict
 from Colours import *
 import ctypes
-import re
 
 ##### Define type of samples ##### FIXME: make a class?
 
@@ -30,7 +29,7 @@ W        = [{"sample":'WJetsToLNu'     , "color":ROOT.kGreen-1 , "name":'W+jets'
 
 DY       = [{"sample":'DYJetsToLL_M50' , "color":ROOT.kGreen-10, "name":'DY', "kfactor": 1.0}]
 
-ttXY     = [{"sample":'ttXY'           , "color":ROOT.kBlue-1  , "name":'ttXY', "kfactor": 1.0}]
+#ttXY     = [{"sample":'ttXY'           , "color":ROOT.kBlue-1  , "name":'ttXY', "kfactor": 1.0}]
 
 ZG       = [{"sample":'ZGToLLG'        , "color":ROOT.kGreen-4 , "name":'Z\gamma', "kfactor": 1.0}]
 
@@ -58,9 +57,9 @@ def getSamplesByRegion(region, MCSet, predType):
     tot = WZG + ZZG + qqZZ + ggZZ
     if region == 'SR4P':
         if predType == 'fromCR':
-            tot += triboson + ttZ + ttXY # + vbsZZ + HZZ
+            tot += triboson + ttZ #+ ttXY + vbsZZ + HZZ
         elif predType == 'fullMC':
-            tot += WZ + tt + DY + ZG + WW + W + triboson + ttZ + ttXY # + vbsZZ + HZZ
+            tot += WZ + tt + DY + ZG + WW + W + triboson + ttZ #+ ttXY + vbsZZ + HZZ
         else:
             sys.exit("Wrong prediction type, fromCR from MC still needs to be added")
             
@@ -68,12 +67,12 @@ def getSamplesByRegion(region, MCSet, predType):
         if predType == 'fromCR':
             tot += triboson + ttZ + WZ # + vbsZZ + HZZ
         elif predType == 'fullMC':
-            tot += WZ + tt + DY + ZG + WW + W + triboson + ttZ + ttXY  # + vbsZZ + HZZ
+            tot += WZ + tt + DY + ZG + WW + W + triboson + ttZ #+ ttXY + vbsZZ + HZZ
         else:
             sys.exit("Wrong prediction type, fromCR from MC still needs to be added")
 
     else:
-        tot += WZ + tt + DY + ZG + WW + W + triboson + ttZ + ttXY  # + vbsZZ + HZZ
+        tot += WZ + tt + DY + ZG + WW + W + triboson + ttZ #+ ttXY + vbsZZ + HZZ
         
 
     return tot
@@ -145,7 +144,7 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin):
     print Red("\n###############"+'#'*len(plot)+"###############"
               "\n############## "+    plot     +" ##############"
               "\n###############"+'#'*len(plot)+"###############")
-    leg = TLegend(0.6,0.52,0.79,0.87)
+    leg = ROOT.TLegend(0.6,0.52,0.79,0.87)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.025)
 
@@ -177,7 +176,7 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin):
             files[sample["sample"]] = ROOT.TFile(inputdir+sample["sample"]+".root")
         except OSError:
             pass
-            #files[sample["sample"]] = ROOT.TFile()
+            files[sample["sample"]] = None
 
     totalMC = 0
 
@@ -285,7 +284,7 @@ def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
     print Red("\n#########################################\n############## Monte Carlo ##############\n#########################################\n")
    
     print Red("\n######### Contribution to Signal #########\n")    
-    leg = TLegend(0.51,0.56,0.85,0.81)
+    leg = ROOT.TLegend(0.51,0.56,0.85,0.81)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.025)
     files={}
@@ -448,7 +447,7 @@ def GetFakeRate(inputdir,plot, method,rebin):
 
 def GetSignalDefPlot(inputdir,category):
 
-    leg = TLegend(0.61,0.56,0.82,0.81)
+    leg = ROOT.TLegend(0.61,0.56,0.82,0.81)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.025)
 
@@ -600,5 +599,27 @@ def setCMSStyle(self, canvas, author='N. Woods', textRight=True, dataType='Preli
 #        latex.DrawLatex(0.01, 0.02, "U. Wisconsin Preliminary Exam")
 
 #         # Make frame and tick marks thicker
-#         gStyle.SetFrameLineWidth(3)
-#         gStyle.SetLineWidth(3)
+#         ROOT.gStyle.SetFrameLineWidth(3)
+#         ROOT.gStyle.SetLineWidth(3)
+
+
+##############################################
+# Utilities, function definitions, and stuff #
+##############################################
+
+class TFileContext(object):
+    def __init__(self, *args):
+        # print('>>>Opening with args:', args)
+        self.tfile = ROOT.TFile(*args)
+    def __enter__(self):
+        return self.tfile
+    def __exit__(self, type, value, traceback):
+        # print('<<<Closing TFile "%s"' % (self.tfile.GetName()))
+        self.tfile.Close()
+
+# Emulate os.makekdirs(..., exists_ok=True) for python2
+def makedirs_ok(*args):
+    try: os.makedirs(*args)
+    except OSError as e:
+        if(e.errno != EEXIST): raise e  # Catch only "File esists"
+
