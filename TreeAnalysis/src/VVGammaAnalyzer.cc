@@ -1135,7 +1135,7 @@ void VVGammaAnalyzer::systematicsStudy(){
   doPlots("QCDscale_muR1F2"  , base_w * theSampleInfo.QCDscale_muR1F2()  , ph);
   doPlots("QCDscale_muR2F1"  , base_w * theSampleInfo.QCDscale_muR2F1()  , ph);
   doPlots("QCDscale_muR1F0p5", base_w * theSampleInfo.QCDscale_muR1F0p5(), ph);
-  doPlots("QCDscale_muR0p5F2", base_w * theSampleInfo.QCDscale_muR0p5F1(), ph);
+  doPlots("QCDscale_muR0p5F1", base_w * theSampleInfo.QCDscale_muR0p5F1(), ph);
   
   // PDF var
   doPlots("PDFVar_Up", base_w * theSampleInfo.PDFVar_Up()  , ph);
@@ -1146,17 +1146,17 @@ void VVGammaAnalyzer::systematicsStudy(){
   doPlots("alphas_Dn", base_w * theSampleInfo.alphas_MZ_Down(), ph);
   
   // VV efficiency SF
-  doPlots("VVefficiencySF_Up", base_w * (1 + ZZ->efficiencySFUnc()/ZZ->efficiencySF()), ph);
-  doPlots("VVefficiencySF_Dn", base_w * (1 - ZZ->efficiencySFUnc()/ZZ->efficiencySF()), ph);
+  doPlots("lepEffSF_Up", base_w * (1 + ZZ->efficiencySFUnc()/ZZ->efficiencySF()), ph);
+  doPlots("lepEffSF_Dn", base_w * (1 - ZZ->efficiencySFUnc()/ZZ->efficiencySF()), ph);
 
   // VV fake rate SF
-  doPlots("VVfakeRateSF_Up", base_w * (1 + ZZ->fakeRateSFUnc()/ZZ->fakeRateSF()), ph);
-  doPlots("VVfakeRateSF_Dn", base_w * (1 - ZZ->fakeRateSFUnc()/ZZ->fakeRateSF()), ph);
+  doPlots("lepFakeRateSF_Up", base_w * (1 + ZZ->fakeRateSFUnc()/ZZ->fakeRateSF()), ph);
+  doPlots("lepFakeRateSF_Dn", base_w * (1 - ZZ->fakeRateSFUnc()/ZZ->fakeRateSF()), ph);
   
   if(ph){
     // Photons ID efficiency
-    doPlots("GefficiencySF_Up", base_w * (1 + ph->efficiencySFUnc()/ph->efficiencySF()), ph);
-    doPlots("GefficiencySF_Dn", base_w * (1 - ph->efficiencySFUnc()/ph->efficiencySF()), ph);
+    doPlots("phEffSF_Up", base_w * (1 + ph->efficiencySFUnc()/ph->efficiencySF()), ph);
+    doPlots("phEffSF_Dn", base_w * (1 - ph->efficiencySFUnc()/ph->efficiencySF()), ph);
   }
   
   // doPlots("_Up", base_w * theSampleInfo.() / theSampleInfo.(), ph);
