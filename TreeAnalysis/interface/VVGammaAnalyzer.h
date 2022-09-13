@@ -116,9 +116,9 @@ public:
 	void PKU_comparison();
  	
  	// Sub analyses
-	void LeptonFakeRate();
-	void PhotonFakeRate();
- 	void effPhotons(); // uses goodPhotons_ and genPhotons_
+	void leptonFakeRate();
+	void photonFakeRate();
+ 	void photonEfficiency(const std::vector<phys::Photon>&, const char*);
  	void photonIsolation(const std::vector<phys::Photon>&, const char*);
 	void systematicsStudy();
 	void doPlots(const char* syst, const double& weight, const phys::Photon*);

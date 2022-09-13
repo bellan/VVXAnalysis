@@ -190,7 +190,9 @@ Int_t VVGammaAnalyzer::cut() {
   photonIsolation(*photons     , "all"  );
   photonIsolation(*kinPhotons_["central"] , "kin"  );
   photonIsolation(*goodPhotons_["central"], "loose");
-  effPhotons();
+  photonEfficiency(*    photons            ,"photons");
+  photonEfficiency(* kinPhotons_["central"],  "kinPh");
+  photonEfficiency(*goodPhotons_["central"], "goodPh");
   
   
   // ----- BASELINE SELECTION -----
@@ -291,8 +293,8 @@ void VVGammaAnalyzer::analyze(){
   }
   else                            channel_reco = "??"; //channel_reco = Form("%ue%um", nEl, nMu);
   
-  // LeptonFakeRate();
-  PhotonFakeRate();
+  // leptonFakeRate();
+  photonFakeRate();
   systematicsStudy();
   
   // Photon* thePh = nullptr;
@@ -827,7 +829,7 @@ void VVGammaAnalyzer::PKU_comparison(){
 }
 
 
-void VVGammaAnalyzer::LeptonFakeRate(){
+void VVGammaAnalyzer::leptonFakeRate(){
   if(region_ != phys::CRLFR || !ZL || ZL->first.pt() * ZL->second.pt() <1.)
     return;  // We must be in the LFR control region
   if(met->pt() > 30)
@@ -861,7 +863,7 @@ void VVGammaAnalyzer::LeptonFakeRate(){
 }
 
 
-void VVGammaAnalyzer::PhotonFakeRate(){
+void VVGammaAnalyzer::photonFakeRate(){
   const vector<Photon>& thePhVect = *kinPhotons_["central"];
   if(thePhVect.size() < 1)
     return;
@@ -942,28 +944,28 @@ void studyJetsChoice(std::ofstream& fout){
 }
 
 
-void VVGammaAnalyzer::effPhotons(){
+void VVGammaAnalyzer::photonEfficiency(const std::vector<phys::Photon>& vPh, const char* label){
   // Reconstruction efficiency and resolution
   if(theSampleInfo.isMC()){
-    vector<std::pair<const Particle*, const Photon*>> genRecPh = matchGenRec(*genPhotons_, *kinPhotons_["central"]);  // intrinsic threshold of deltaR = 0.2
+    vector<std::pair<const Particle*, const Photon*>> genRecPh = matchGenRec(*genPhotons_, vPh);  // intrinsic threshold of deltaR = 0.2
     for(auto & [gen, rec] : genRecPh){
-      theHistograms->fill("photonEff_den_pt" , "DEN photons p_{T};p_{T} [GeV/c]", 25,0.,250., gen->pt() , theWeight);
-      theHistograms->fill("photonEff_den_E"  , "DEN photons energy;E [GeV]"     , 25,0.,500., gen->e()  , theWeight);
-      theHistograms->fill("photonEff_den_eta", "DEN photons eta;#eta"           , eta_bins  , gen->eta(), theWeight);
+      theHistograms->fill(Form("%sEff_den_pt" , label), "DEN photons p_{T};p_{T} [GeV/c]", 25,0.,250., gen->pt() , theWeight);
+      theHistograms->fill(Form("%sEff_den_E"  , label), "DEN photons energy;E [GeV]"     , 25,0.,500., gen->e()  , theWeight);
+      theHistograms->fill(Form("%sEff_den_eta", label), "DEN photons eta;#eta"           , eta_bins  , gen->eta(), theWeight);
       
       if(rec == nullptr)
   	continue;
-      theHistograms->fill("photonEff_num_pt" , "NUM photons p_{T};p_{T} [GeV/c]", 25,0.,250., gen->pt() , theWeight);
-      theHistograms->fill("photonEff_num_E"  , "NUM photons energy;E [GeV]"     , 25,0.,500., gen->e()  , theWeight);
-      theHistograms->fill("photonEff_num_eta", "NUM photons eta;#eta"           , eta_bins  , gen->eta(), theWeight);
+      theHistograms->fill(Form("%sEff_num_pt" , label), "NUM photons p_{T};p_{T} [GeV/c]", 25,0.,250., gen->pt() , theWeight);
+      theHistograms->fill(Form("%sEff_num_E"  , label), "NUM photons energy;E [GeV]"     , 25,0.,500., gen->e()  , theWeight);
+      theHistograms->fill(Form("%sEff_num_eta", label), "NUM photons eta;#eta"           , eta_bins  , gen->eta(), theWeight);
       
       double deltaR = physmath::deltaR(*rec, *gen);
       double deltaEoverE = (rec->e() - gen->e()) / gen->e();
       double deltapToverpT = (rec->pt() - gen->pt()) / gen->pt();
-      theHistograms->fill("photonRes_dR", "photon resolution #DeltaR;#DeltaR"        , 20, 0.,0.2, deltaR       , theWeight);
-      theHistograms->fill("photonRes_E" , "photon resolution Energy;#DeltaE/E"       , 50,-1.,1. , deltaEoverE  , theWeight);
-      theHistograms->fill("photonRes_pt", "photon resolution p_{T};#Deltap_{T}/p_{T}", 50,-1.,1. , deltapToverpT, theWeight);
-      theHistograms->fill("photonRes_EvsE", "photon resolution;E;#DeltaE/E", 20,0.,500., 16,-0.4,0.4, gen->e(), deltaEoverE , theWeight);
+      theHistograms->fill(Form("%sRes_dR"  , label), "photon resolution #DeltaR;#DeltaR"        , 20, 0.,0.2, deltaR       , theWeight);
+      theHistograms->fill(Form("%sRes_E"   , label), "photon resolution Energy;#DeltaE/E"       , 50,-1.,1. , deltaEoverE  , theWeight);
+      theHistograms->fill(Form("%sRes_pt"  , label), "photon resolution p_{T};#Deltap_{T}/p_{T}", 50,-1.,1. , deltapToverpT, theWeight);
+      theHistograms->fill(Form("%sRes_EvsE", label), "photon resolution;E;#DeltaE/E", 20,0.,500., 16,-0.4,0.4, gen->e(), deltaEoverE , theWeight);
     }
   }
   
