@@ -1,31 +1,23 @@
-#!/usr/bin/python3
+#!/usr/bin/env python2
 
 from __future__ import print_function
-import sys
+from sys import argv
+from os import path, environ, getcwd
 import ROOT
 from ctypes import c_double
 from math import log10, ceil
+from json import dump
+from plotUtils import TFileContext
+
 
 ROOT.gStyle.SetOptStat('0000')
-if '-b' in sys.argv:
+if '-b' in argv:
     ROOT.gROOT.SetBatch(True)
 
-# from plotUtils import TFileContext  # plotUtils is in python2
-class TFileContext(object):
-    def __init__(self, *args):
-        # print('>>>Opening with args:', args)
-        self.tfile = ROOT.TFile(*args)
-    def __enter__(self):
-        return self.tfile
-    def __exit__(self, type, value, traceback):
-        # print('<<<Closing TFile '%s'' % (self.tfile.GetName()))
-        self.tfile.Close()
 
-
-
-def plotSystematics(hCentral, hUp, hDn, var='[var]', syst='[syst]', sample='[sample]'):
-    formatInfo = dict(var=var, syst=syst)
-    c = ROOT.TCanvas('c_{var}_{syst}'.format(**formatInfo), '{var}: {syst}'.format(**formatInfo), 1600, 900)
+def plotSystematics(hCentral, hUp, hDn, syst_values, var='[var]', syst='[syst]', sample='[sample]'):
+    formatInfo = dict(var=var, syst=syst, sample=sample)
+    c = ROOT.TCanvas('c_{sample}_{var}_{syst}'.format(**formatInfo), '{var}: {syst}'.format(**formatInfo), 1600, 900)
     c.cd()
     pad_histo = ROOT.TPad ('pad_histo', '', 0., 0.34, 1., 1.)
     pad_ratio = ROOT.TPad ('pad_ratio', '', 0., 0.0 , 1., 0.34)
@@ -73,7 +65,8 @@ def plotSystematics(hCentral, hUp, hDn, var='[var]', syst='[syst]', sample='[sam
 
     upVar = (integralUp-integralCentral)/integralCentral
     dnVar = (integralDn-integralCentral)/integralCentral
-    print('\t{var}_{syst}'.format(**formatInfo), ' Up: {:.1f} %  Dn: {:.1f} %'.format(100*upVar, 100*dnVar))
+    # print('\t{var}_{syst}'.format(**formatInfo), ' Up: {:.1f} %  Dn: {:.1f} %'.format(100*upVar, 100*dnVar))
+    syst_values.setdefault(sample, {}).setdefault(var, {})[syst] = {'up':dnVar, 'dn':dnVar}
 
     hCentral.GetXaxis().SetLabelSize(0)  # remove x axis tick labels
     hCentral.SetTitle('{var} {syst} --> {:+.1f}/{:+.1f} %'.format(100*upVar, 100*dnVar, **formatInfo))
@@ -111,10 +104,12 @@ def plotSystematics(hCentral, hUp, hDn, var='[var]', syst='[syst]', sample='[sam
     hRatioUp.Draw('P')
     hRatioDn.Draw('P')
     
-    c.SaveAs('Plots/SYS/{sample}_{var}_{syst}.png'.format(**formatInfo, sample=sample))
+    c.SaveAs('Plots/SYS/{sample}_{var}_{syst}.png'.format(**formatInfo))
+    del c
+    return upVar, dnVar
 
 
-def doSystematics(tf, var, syst):  # TFile, str, str
+def doSystematics(tf, var, syst, syst_values):  # <TFile>, <str>, <str>, <dict> (is modified)
     formatInfo = dict(var=var, syst=syst, file=tf.GetName())
     hCentral = tf.Get('SYS_{var}_central'.format(**formatInfo))
     hUp = tf.Get('SYS_{var}_{syst}_Up'.format(**formatInfo))
@@ -122,10 +117,12 @@ def doSystematics(tf, var, syst):  # TFile, str, str
     if(not hUp or not hDn):
         print('Warning: var={var}, syst={syst} not found in file={file}'.format(**formatInfo))
         return
-    plotSystematics(hCentral, hUp, hDn, var=var, syst=syst, sample=tf.GetName().split('/')[-1].split('.')[0])
+    sample = tf.GetName().split('/')[-1].split('.')[0]
+    upVar, dnVar = plotSystematics(hCentral, hUp, hDn, syst_values, var=var, syst=syst, sample=sample)
+    # syst_values.setdefault(sample, {}).setdefault(var, {})[syst] = {'up':dnVar, 'dn':dnVar}
 
 
-def doSystOnFile(path):
+def doSystOnFile(path, syst_values):  # <str>, <dict> (to be passed to doSystematics(...) in order to be filled
     with TFileContext(path, 'READ') as tf:
         names = set()
         for key in tf.GetListOfKeys():
@@ -149,11 +146,28 @@ def doSystOnFile(path):
                     hmuR2F1   = tf.Get('SYS_{}_QCDscale_muR2F1'  .format(var))
                     hmuR1F0p5 = tf.Get('SYS_{}_QCDscale_muR1F0p5'.format(var))
                     hmuR1F2   = tf.Get('SYS_{}_QCDscale_muR1F2'  .format(var))
-                    plotSystematics(hCentral, hmuR2F1, hmuR0p5F1, var=var, syst='QCD-muR', sample=path.split('/')[-1].split('.')[0])
-                    plotSystematics(hCentral, hmuR1F2, hmuR1F0p5, var=var, syst='QCD-F'  , sample=path.split('/')[-1].split('.')[0])
+                    plotSystematics(hCentral, hmuR2F1, hmuR0p5F1, syst_values, var=var, syst='QCD-muR', sample=path.split('/')[-1].split('.')[0])
+                    plotSystematics(hCentral, hmuR1F2, hmuR1F0p5, syst_values, var=var, syst='QCD-F'  , sample=path.split('/')[-1].split('.')[0])
                 
-                doSystematics(tf, var, syst)
+                doSystematics(tf, var, syst, syst_values)
 
-results_folder = 'results/2016/VVGammaAnalyzer_SR3P'
-doSystOnFile(results_folder+'/WZTo3LNu.root')
-doSystOnFile(results_folder+'/ZZTo4l.root')
+if __name__ == '__main__':
+    syst_values = {} #dict()
+    results_folder = 'results/2016/VVGammaAnalyzer_SR3P'
+    doSystOnFile(path.join(results_folder, 'WZTo3LNu.root'), syst_values)
+    doSystOnFile(path.join(results_folder, 'ZZTo4l.root'  ), syst_values)
+
+    outJSON = 'systematics.json'
+    if(environ.get('CMSSW_BASE', False)):
+        basepath = path.join(environ['CMSSW_BASE'], 'src', 'VVXAnalysis', 'TreeAnalysis', 'data')
+    elif('VVXAnalysis' in getcwd()):
+        basepath = path.join(getcwd().split('VVXAnalysis')[0], 'VVXAnalysis', 'TreeAnalysis', 'data')
+    else:
+        basepath = '.'
+
+    if(path.isdir(basepath)):
+        outJSON = path.join(basepath, outJSON)
+
+    with open(outJSON, 'w') as fout:
+        dump(syst_values, fout, indent=2)
+        print('INFO: wrote systematics to "{}"'.format(outJSON))
