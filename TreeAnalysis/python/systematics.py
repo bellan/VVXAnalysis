@@ -66,7 +66,7 @@ def plotSystematics(hCentral, hUp, hDn, syst_values, var='[var]', syst='[syst]',
     upVar = (integralUp-integralCentral)/integralCentral
     dnVar = (integralDn-integralCentral)/integralCentral
     # print('\t{var}_{syst}'.format(**formatInfo), ' Up: {:.1f} %  Dn: {:.1f} %'.format(100*upVar, 100*dnVar))
-    syst_values.setdefault(sample, {}).setdefault(var, {})[syst] = {'up':dnVar, 'dn':dnVar}
+    syst_values.setdefault(sample, {}).setdefault(var, {})[syst] = {'up':1+upVar, 'dn':1+dnVar}
 
     hCentral.GetXaxis().SetLabelSize(0)  # remove x axis tick labels
     hCentral.SetTitle('{var} {syst} --> {:+.1f}/{:+.1f} %'.format(100*upVar, 100*dnVar, **formatInfo))
@@ -154,8 +154,16 @@ def doSystOnFile(path, syst_values):  # <str>, <dict> (to be passed to doSystema
 if __name__ == '__main__':
     syst_values = {} #dict()
     results_folder = 'results/2016/VVGammaAnalyzer_SR3P'
-    doSystOnFile(path.join(results_folder, 'WZTo3LNu.root'), syst_values)
-    doSystOnFile(path.join(results_folder, 'ZZTo4l.root'  ), syst_values)
+    doSystOnFile(path.join(results_folder, 'WZTo3LNu.root'      ), syst_values)
+    doSystOnFile(path.join(results_folder, 'WZGTo3LNuG.root'    ), syst_values)
+    doSystOnFile(path.join(results_folder, 'ZGToLLG.root'       ), syst_values)
+    doSystOnFile(path.join(results_folder, 'DYJetsToLL_M50.root'), syst_values)
+    # results_folder = 'results/2016/VVGammaAnalyzer_SR4P'
+    # doSystOnFile(path.join(results_folder, 'WZTo3LNu.root'      ), syst_values)
+    # doSystOnFile(path.join(results_folder, 'ZZTo4l.root'        ), syst_values)
+    # doSystOnFile(path.join(results_folder, 'ggTo4l.root'        ), syst_values)
+    # # doSystOnFile(path.join(results_folder, 'ggTo4e_Contin_MCFM701.root'), syst_values)
+    # doSystOnFile(path.join(results_folder, 'ZZGTo4LG.root'      ), syst_values)
 
     outJSON = 'systematics.json'
     if(environ.get('CMSSW_BASE', False)):
