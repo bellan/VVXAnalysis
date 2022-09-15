@@ -1,5 +1,6 @@
 #! /usr/bin/env python2
-import sys #,ast
+import sys
+import os
 import math
 import operator
 import re
@@ -10,20 +11,19 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 import CrossInfo
 from CrossInfo import* 
 from ROOT import TH1F,TCanvas, TLegend
-from plotUtils import*
+import plotUtils  # GetPredictionsPlot, GetDataPlot
 import CMS_lumi, tdrstyle
 import PersonalInfo
-Lumi   = 35900
 
+Lumi   = 35900
 regions = ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L',    
            'SR3P', 'CR110'  , 'CR101'  , 'CR011'  , 'CR100'  , 'CR001'  , 'CR010', 'CR000', 'SR3P_1L', 'SR3P_1P', 'CR3P_1F', 'CRLFR', 'CR3L',
            'SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F', 
            'SR_HZZ', 'CR2P2F_HZZ', 'CR3P1F_HZZ', 'CR_HZZ']
 
+parser = OptionParser()
 
-parser = OptionParser(usage="usage: %prog <final state> [options]")
-
-parser.add_option("-r", "--region", dest="region",
+parser.add_option("-r", "--region", dest="region", type="choice", choices=regions,
                   default="SR4P",
                   help="Region type are {0:s}. Default is SR.".format(', '.join(regions)))
 
@@ -101,7 +101,8 @@ InfoType_vvx = {
     # "looseG_pt": ["p_{T}^\gamma", 1, True],
     # "failG_pt" : ["p_{T}^\gamma", 1, True],
     # "tightG_pt": ["p_{T}^\gamma", 1, True]
-    # ,
+    ,
+    "chIso_kinPhotons": ["Iso_{charged}", 2, True]
 }
 
 if region in ['SR4P', 'CR3P1F', 'CR2P2F']:
@@ -145,30 +146,34 @@ elif region in ['SR3P', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110']:
             name+"_massT_failG" : ["mT_{%s}\:,\ \gamma\:kin\,\land\:!loose"%(title), 1, True],
             name+"_massT_looseG": ["mT_{%s}\:,\ \gamma\:loose"             %(title), 1, False]
         })
-
-# elif region in ['SR2L']:
-#     InfoType_vvx.update({
-#         "Z2l_mass"       : ["m_{2\ell}"              , 1, True],
-#         "Z2l_mass_noG"   : ["m_{2\ell} no \gamma"    , 1, True],
-#         "Z2l_mass_kinG"  : ["m_{2\ell} kin \gamma"   , 1, True],
-#         "Z2l_mass_failG" : ["m_{2\ell} kin && !loose", 1, True],
-#         "Z2l_mass_looseG": ["m_{2\ell} loose"        , 1, False]
-#     })
+elif region in ['SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F']:
+    InfoType_vvx.update({
+        "AK4_N"        : ["# AK4"   , 1, True],
+        "AK4_pt"       : ["p_{T}"   , 1, True],
+        "AK8_N"        : ["# AK8"   , 1, True],
+        "AK8_pt"       : ["p_{T}"   , 1, True],
+        "Z_mass_2e"    : ["m_{2e}"  , 1, True],
+        "Z_mass_2m"    : ["m_{2\mu}", 1, True],
+        "Z_mass_noG"   : ["m_{2\ell}\:,\ no\:\gamma"        , 1, True],
+        "Z_mass_kinG"  : ["m_{2\ell}\:,\ kin\:\gamma"       , 1, True],
+        "Z_mass_failG" : ["m_{2\ell}\:,\ kin\,\land\:!loose", 1, True],
+        "Z_mass_looseG": ["m_{2\ell}\:,\ \gamma\:loose"     , 1, False]
+    })
 
 InfoType_VVGamma = deepcopy(InfoType_vvx)
 for name in ["kin", "loose", "medium", "tight"]:
     InfoType_VVGamma.update({
         "sigmaiEtaiEta_"+name+"Photons": ["#sigma_{i#etai#eta}", 1, True]
-})
+    })
 InfoType_VVGamma.update({
-    "ph_eScale_count" : ["Number of #gamma passing selection", 1, True],
+    "ph_eScale_N" : ["Number of #gamma passing selection", 1, True],
     "kinPhotons_ID": ["#gamma ID", 1, True]
 })
 for name in ['all', 'kin', 'loose']:
     InfoType_VVGamma.update({
         "maxG_minL_DR_"+name: ["max_{#gamma}(min_{l}(#DeltaR(#gamma_{%s}, l))" %(name), 1, True],
         "minL_DR_"     +name: ["min_{l}(#DeltaR(#gamma_{%s}, l)"               %(name), 1, True],
-})
+    })
 
 
 if   Analysis == "ZZ"             : InfoType = InfoType_zz
@@ -204,6 +209,7 @@ if Type == 'all':
     variables = InfoType.keys()
 else:
     variables = [ var for var in InfoType.keys() if re.search(Type, var) ]  # Allow for regexp to be specified from command line
+print "INFO: variables =", variables
 
 c1 = TCanvas( 'c1', mcSet , 900, 1200 )
 
@@ -211,8 +217,8 @@ for Var in variables:
     c1.Clear()
     DoData = optDoData and InfoType[Var][-1]
     
-    (hMC, leg) = GetPredictionsPlot(region, InputDir, Var, predType, mcSet, InfoType[Var][-2])
-    (hData, histodata) = GetDataPlot(InputDir, Var, region, InfoType[Var][-2])
+    (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, Var, predType, mcSet, InfoType[Var][-2])
+    (hData, histodata) = plotUtils.GetDataPlot(InputDir, Var, region, InfoType[Var][-2])
     
     # if(any(s in Var for s in [""]))
     if((not hMC.GetStack()) or (not hData)):
@@ -222,7 +228,7 @@ for Var in variables:
     
     YMaxData = ROOT.TMath.MaxElement(hData.GetN(), hData.GetEYhigh()) + ROOT.TMath.MaxElement(hData.GetN(), hData.GetY())
     
-    hMCErr = copy.deepcopy(hMC.GetStack().Last())
+    hMCErr = deepcopy(hMC.GetStack().Last())
     YMaxMC = hMCErr.GetBinContent(hMCErr.GetMaximumBin()) + hMCErr.GetBinError(hMCErr.GetMaximumBin())
     
     if YMaxData > YMaxMC and DoData: YMax = YMaxData
@@ -230,7 +236,7 @@ for Var in variables:
     
     YMax *= 1.37
     
-    HistoData = copy.deepcopy(histodata)
+    HistoData = deepcopy(histodata)
     c1.cd()
     pad1 = ROOT.TPad ('hist', '', 0., 0.22, 1.0, 1.0)#0.35
     pad1.SetTopMargin    (0.10)
