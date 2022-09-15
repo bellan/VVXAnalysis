@@ -20,25 +20,38 @@ WZ       = [{"sample":'WZTo3LNu'       , "color":ROOT.kYellow+2, "name":'WZ', "k
 
 WW       = [{"sample":'WWTo2L2Nu'      , "color":ROOT.kYellow-7, "name":'WW', "kfactor": 1.0}]
 
-tt       = [{"sample":'TTTo2L2Nu'      , "color":ROOT.kMagenta+2, "name":'t#bar{t}', "kfactor": 1.0},
-            {"sample":'TTWJets'        , "color":ROOT.kMagenta+2, "name":'t#bar{t}', "kfactor": 1.0},
-            {"sample":'TTZJets'        , "color":ROOT.kMagenta+2, "name":'t#bar{t}', "kfactor": 1.0},
-            {"sample":'TTGJets'        , "color":ROOT.kMagenta+2, "name":'t#bar{t}', "kfactor": 1.0}]
+t        = [{'sample': 'singleT'       , "color":ROOT.kGray    , "name":'top'}]
+
+tX       = [{'sample': 'tZq'           , "color":ROOT.kGray    , "name":'tX'},
+            {'sample': 'tW'            , "color":ROOT.kGray    , "name":'tX'}]
+
+tt       = [{"sample":'TTTo2L2Nu'      , "color":ROOT.kMagenta+2, "name":'t#bar{t}', "kfactor": 1.0}]
+
+ttX      = [{"sample":'TTWJetsToLNu'   , "color":ROOT.kMagenta+2, "name":'t#bar{t}', "kfactor": 1.0},
+            #{"sample":'TTGJets'        , "color":ROOT.kMagenta+2, "name":'t#bar{t}', "kfactor": 1.0}
+            {"sample":'TTZJets'        , "color":ROOT.kMagenta+2, "name":'t#bar{t}', "kfactor": 1.0}]
+
+ttXY     = [{"sample": 'TTWW'          , "color":ROOT.kBlue-1  , "name":'ttXY', "kfactor": 1.0},
+            {"sample": 'TTZZ'          , "color":ROOT.kBlue-1  , "name":'ttXY', "kfactor": 1.0}]
+
+ZZTo2L2Nu= [{"sample": 'ZZTo2L2Nu'     , "color":ROOT.kGray    , "name":'ZZTo2L2Nu'}]
+
+ZZTo2Q2L = [{"sample": 'ZZTo2Q2L'      , "color":ROOT.kGray    , "name":'ZZTo2Q2L' }]
 
 W        = [{"sample":'WJetsToLNu'     , "color":ROOT.kGreen-1 , "name":'W+jets', "kfactor": 1.0}]
 
 DY       = [{"sample":'DYJetsToLL_M50' , "color":ROOT.kGreen-10, "name":'DY', "kfactor": 1.0}]
 
-#ttXY     = [{"sample":'ttXY'           , "color":ROOT.kBlue-1  , "name":'ttXY', "kfactor": 1.0}]
-
 ZG       = [{"sample":'ZGToLLG'        , "color":ROOT.kGreen-4 , "name":'Z\gamma', "kfactor": 1.0}]
+
+WG       = [{"sample":'WGToLNuG'       , "color":ROOT.kGray    , "name":'W\gamma'}]
 
 triboson = [{"sample":'WWW'            , "color":ROOT.kOrange+1, "name":'VVV', "kfactor": 1.0},
             {"sample":'WWZ'            , "color":ROOT.kOrange+1, "name":'VVV', "kfactor": 1.0},
             {"sample":'WZZ'            , "color":ROOT.kOrange+1, "name":'VVV', "kfactor": 1.0},
             {"sample":'ZZZ'            , "color":ROOT.kOrange+1, "name":'VVV', "kfactor": 1.0}]
 
-ttZ      = [{"sample":'TTZJets_M10_MLM', "color":ROOT.kOrange-5, "name":'t#bar{t}Z', "kfactor": 1.0}]
+#ttZ      = [{"sample":'TTZJets_M10_MLM', "color":ROOT.kOrange-5, "name":'t#bar{t}Z', "kfactor": 1.0}]
 
 WZG      = [{"sample":'WZGTo3LNuG'     , "color":ROOT.kMagenta , "name":'WZ\gamma', "kfactor": 1.0}]
 ZZG      = [{"sample":'ZZGTo4LG'       , "color":ROOT.kRed     , "name":'ZZ\gamma', "kfactor": 1.0}]
@@ -46,6 +59,8 @@ ZZG      = [{"sample":'ZZGTo4LG'       , "color":ROOT.kRed     , "name":'ZZ\gamm
 data     = [{"sample":'data'           , "color":ROOT.kBlack   , "name":'Data', "kfactor": 1.0}]
 
 def getSamplesByRegion(region, MCSet, predType):
+    if predType not in ['fromCR', 'fullMC']:
+        sys.exit("Wrong prediction type, fromCR from MC still needs to be added")
     
     qqZZ = {}
     if MCSet == 'pow':
@@ -54,25 +69,21 @@ def getSamplesByRegion(region, MCSet, predType):
         qqZZ = qqZZ_mad
     else: sys.exit("Wrong Set, choose pow or mad")
 
-    tot = WZG + ZZG + qqZZ + ggZZ
+    tot = WZG + ZZG + qqZZ + ggZZ + triboson
     if region == 'SR4P':
         if predType == 'fromCR':
-            tot += triboson + ttZ #+ ttXY + vbsZZ + HZZ
+            tot += ttXY #+ vbsZZ + HZZ
         elif predType == 'fullMC':
-            tot += WZ + tt + DY + ZG + WW + W + triboson + ttZ #+ ttXY + vbsZZ + HZZ
-        else:
-            sys.exit("Wrong prediction type, fromCR from MC still needs to be added")
+            tot += WZ + DY + ZG + WG + WW + W + tt + ttX + ttXY + ZZTo2L2Nu + ZZTo2Q2L  # + vbsZZ + HZZ
             
     elif region == 'SR3P':
         if predType == 'fromCR':
-            tot += triboson + ttZ + WZ # + vbsZZ + HZZ
+            tot += WZ + ttX + ttXY # + vbsZZ + HZZ
         elif predType == 'fullMC':
-            tot += WZ + tt + DY + ZG + WW + W + triboson + ttZ #+ ttXY + vbsZZ + HZZ
-        else:
-            sys.exit("Wrong prediction type, fromCR from MC still needs to be added")
+            tot += WZ + DY + ZG + WG + WW + W + tt + ttX + ttXY + ZZTo2L2Nu + ZZTo2Q2L  # + vbsZZ + HZZ
 
     else:
-        tot += WZ + tt + DY + ZG + WW + W + triboson + ttZ #+ ttXY + vbsZZ + HZZ
+        tot += WZ + DY + ZG + WG + WW + W + tt + ttX + ttXY + ZZTo2L2Nu + ZZTo2Q2L  # + vbsZZ + HZZ
         
 
     return tot
@@ -137,7 +148,7 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin):
     elif region == 'SR3P':
         controlRegions = ['CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110']
     else:
-        print "You should know what you are doing"
+        print 'INFO: no fake-lepton bkg for region "{}"'.format(region)  # "You should know what you are doing"
         #sys.exit("ERROR, check region") 
         
     
@@ -203,7 +214,7 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin):
             print "{0:16.16s}".format(sample["sample"]), "No entries or is a zombie"
             continue
         
-        h.Scale(sample["kfactor"])
+        h.Scale(sample.get("kfactor", 1.))
 
         # if any(cr in inputdir for cr in ['CR2P2F','CR100','CR010','CR001']):
         #     h.Scale(-1)
