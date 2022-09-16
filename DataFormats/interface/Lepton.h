@@ -64,7 +64,7 @@ namespace phys {
     }
     
     Double_t fakeRateSF()        const {return passFullSel() ? 1. : fakeRateSF_;}
-    Double_t fakeRateSFUnc()     const {return passFullSel() ? 1. : fakeRateSFUnc_;}
+    Double_t fakeRateSFUnc()     const {return passFullSel() ? 0. : fakeRateSFUnc_;}
 
   protected:
     

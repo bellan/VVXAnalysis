@@ -12,6 +12,7 @@
 
 #include "Particle.h"
 #include "Boson.h"
+#include <cmath>  // hypot(c1, c1) = sqrt(c1*c1 + c2*c2)
 
 namespace phys {
   
@@ -85,21 +86,22 @@ namespace phys {
 
     double efficiencySF() const{return daughter0_.efficiencySF() * daughter1_.efficiencySF();}
     
-    double efficiencySFUnc() const {
-      return daughter0_.muEffSFUnc()+daughter1_.muEffSFUnc()+daughter0_.eleEffSFUnc()+daughter1_.eleEffSFUnc();
-    }
-    
-    double muEffSFUnc() const {
-      return daughter0_.muEffSFUnc()+daughter1_.muEffSFUnc();
-    }
-    double eleEffSFUnc() const {
-      return daughter0_.eleEffSFUnc()+daughter1_.eleEffSFUnc();
-    }
+    double efficiencySFUnc() const { return hypot(daughter0_.efficiencySFUnc(), daughter1_.efficiencySFUnc()); }
+    double muEffSFUnc()      const { return hypot(daughter0_.muEffSFUnc()     , daughter1_.muEffSFUnc()     ); }
+    double eleEffSFUnc()     const { return hypot(daughter0_.eleEffSFUnc()    , daughter1_.eleEffSFUnc()    ); }
     
     
     double fakeRateSFUnc() const{
-      return sqrt(pow(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUnc(),2) +
-    		  pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc(),2));
+      return hypot(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUnc(),
+		   daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc());
+    }
+    double eleFakeRateSFUnc() const{
+      return hypot(daughter0_.fakeRateSF()*daughter1_.eleFakeRateSFUnc(),
+		   daughter1_.fakeRateSF()*daughter0_.eleFakeRateSFUnc());
+    }
+    double muoFakeRateSFUnc() const{
+      return hypot(daughter0_.fakeRateSF()*daughter1_.muFakeRateSFUnc(),
+		   daughter1_.fakeRateSF()*daughter0_.muFakeRateSFUnc());
     }
     
 

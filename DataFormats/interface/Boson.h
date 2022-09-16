@@ -11,6 +11,7 @@
 
 #include "Particle.h"
 #include <bitset>
+#include <cmath>  // hypot(c1, c1) = sqrt(c1*c1 + c2*c2)
 
 namespace phys {
 
@@ -137,26 +138,24 @@ namespace phys {
 
     
     double fakeRateSF()    const {return daughter0_.fakeRateSF() * daughter1_.fakeRateSF();}
-    double fakeRateSFUnc() const {return sqrt(pow(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUnc(),2) +
-					      pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc(),2));}    
+    double fakeRateSFUnc() const {
+      return hypot(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUnc(),
+		   daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc());
+    }
+    double muFakeRateSFUnc() const {
+      return (abs(daughter0_.id()) == 13) ? fakeRateSFUnc() : 0.;
+    }
+    double eleFakeRateSFUnc() const {
+      return (abs(daughter0_.id()) == 11) ? fakeRateSFUnc() : 0.;
+    }
+    
     double efficiencySF() const {return daughter0_.efficiencySF() * daughter1_.efficiencySF();}
     
     double muEffSFUnc() const {
-      if(abs(daughter0_.id())==13){
-	double effSF0Unc = daughter0_.efficiencySFUnc();
-	double effSF1Unc = daughter1_.efficiencySFUnc();      
-	return  effSF0Unc+effSF1Unc;
-      }
-      else return 0;
+      return (abs(daughter0_.id()) == 13) ? hypot(daughter0_.efficiencySFUnc(), daughter1_.efficiencySFUnc()) : 0.;
     }
-    
     double eleEffSFUnc() const {
-      if(abs(daughter0_.id())==11){
-	double effSF0Unc = daughter0_.efficiencySFUnc();
-	double effSF1Unc = daughter1_.efficiencySFUnc();      
-	return  effSF0Unc+effSF1Unc;
-      }
-      else return 0;
+      return (abs(daughter0_.id()) == 11) ? hypot(daughter0_.efficiencySFUnc(), daughter1_.efficiencySFUnc()) : 0.;
     }
 
   protected:
