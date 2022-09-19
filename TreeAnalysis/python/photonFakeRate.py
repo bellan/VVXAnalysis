@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 ##############################################
 #                                         
@@ -7,13 +7,11 @@
 ##############################################
 
 from __future__ import print_function
-import copy, sys, os
+from os import path, environ
+import copy
 import ROOT
-if '-b' in sys.argv:
-    ROOT.gROOT.SetBatch(True)
 # from readSampleInfo import *
 # from Colours import *
-# import ctypes
 from math import log10
 
 from plotUtils import TFileContext, makedirs_ok
@@ -21,7 +19,7 @@ from plotUtils import TFileContext, makedirs_ok
 ROOT.gStyle.SetPaintTextFormat(".2f")
 
 def getPlots(inputdir, sample, plots):
-    fname = os.path.join(inputdir, sample+".root")
+    fname = path.join(inputdir, sample+".root")
     retrieved = []
     with TFileContext(fname) as rFile:
         for plot in plots:
@@ -129,19 +127,19 @@ def beautify(canvas, hist, logx=False, logy=False, logz=False):
 
 
 def get_path_base():
-    if(os.environ.get("CMSSW_BASE")): path_base = os.path.join(os.environ['CMSSW_BASE'], "src/VVXAnalysis/TreeAnalysis/results")
+    if(environ.get("CMSSW_BASE")): path_base = path.join(environ['CMSSW_BASE'], "src/VVXAnalysis/TreeAnalysis/results")
     else:                             path_base = "results" # "rsync_results/Updated/EXT"
-    assert os.path.exists(path_base), 'Please call this script from "VVXAnalysis/TreeAnalysis" or do `cmsenv`'
+    assert path.exists(path_base), 'Please call this script from "VVXAnalysis/TreeAnalysis" or do `cmsenv`'
     return path_base
     
 
 
-def fakeRate(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR", logx=False, logy=False, fixNegBins=False):
+def fakeRateABCD(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR", logx=False, logy=False, fixNegBins=False):
     print("Fake Rate: data     =", sample_data  )
     print("Fake Rate: promptMC =", sample_prompt)
     makedirs_ok("data")
     makedirs_ok("Plots")
-    outfname_data = "data/PhFR_from_{:s}.root".format(sample_data["name"])
+    outfname_data = "data/ABCD_PhFR_from_{:s}.root".format(sample_data["name"])
     print('Output (without MC subtraction) in: "{:s}"'.format(outfname_data))
     
     path_in = "{:s}/2016/{:s}_{:s}".format(get_path_base(), analyzer, region)
@@ -172,7 +170,7 @@ def fakeRate(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR",
     # Probably python/ROOT gc deletes these graphic objects and they disappear from the canvas. Holding a reference to them seems to fix it
         
     for ext in ["png"]:
-        cFR_data.SaveAs( "Plots/PhFR/PhFR_from_{:s}.{:s}".format(sample_data["name"], ext) )
+        cFR_data.SaveAs( "Plots/PhFR/ABCD_PhFR_from_{:s}.{:s}".format(sample_data["name"], ext) )
     del cFR_data, to_preserve_FRdata
 
     ## Estimate = B*C/D ##
@@ -191,14 +189,14 @@ def fakeRate(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR",
     to_preserve_ESdata = beautify(cES_data, hES_data, logx, logy, logz=True)
     
     for ext in ["png"]:
-        cES_data.SaveAs( "Plots/PhFR/PhEstimate_from_{:s}.{:s}".format(sample_data["name"], ext) )
+        cES_data.SaveAs( "Plots/PhFR/ABCD_PhEstimate_from_{:s}.{:s}".format(sample_data["name"], ext) )
     del cES_data, to_preserve_ESdata, hES_data
     
     ##### Second: data - promptMC #####
     if(sample_prompt is None):
         return
 
-    outfname_full = "data/PhFR_from_{:s}-{:s}.root".format(sample_data["name"], sample_prompt["name"])
+    outfname_full = "data/ABCD_PhFR_from_{:s}-{:s}.root".format(sample_data["name"], sample_prompt["name"])
     print('Output (with prompt MC subtraction) in: "{:s}"'.format(outfname_full))
     
     hprompt_A, hprompt_B, hprompt_C, hprompt_D = getPlots(path_in, sample_prompt["file"], [ "PhFR_%s_prompt" % (c) for c in 'ABCD' ] )
@@ -231,8 +229,8 @@ def fakeRate(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR",
         
     to_preserve_FR = beautify(cFR, hFR, logx, logy)
         
-    for ext in ["png"]: 
-        cFR.SaveAs( "Plots/PhFR/PhFR_from_{:s}-{:s}.{:s}".format(sample_data["name"], sample_prompt["name"], ext) )
+    for ext in ["png"]:
+        cFR.SaveAs( "Plots/PhFR/ABCD_PhFR_from_{:s}-{:s}.{:s}".format(sample_data["name"], sample_prompt["name"], ext) )
     del cFR, to_preserve_FR
     
     ## Estimate = B*C/D ##
@@ -255,16 +253,14 @@ def fakeRate(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR",
     to_preserve_ESdata = beautify(cES, hES, logx, logy, logz=True)
     
     for ext in ["png"]:
-        cES.SaveAs( "Plots/PhFR/PhEstimate_from_{:s}-{:s}.{:s}".format(sample_data["name"], sample_prompt["name"], ext) )
+        cES.SaveAs( "Plots/PhFR/ABCD_PhEstimate_from_{:s}-{:s}.{:s}".format(sample_data["name"], sample_prompt["name"], ext) )
     del cES, to_preserve_ESdata, hES
     print()
 
     
 
-def kFactor(sample, analyzer='VVGammaAnalyzer', region='CRLFR', logx=False, logy=False, fixNegBins=None):
+def kFactorABCD(sample, analyzer='VVGammaAnalyzer', region='CRLFR', logx=False, logy=False, fixNegBins=None):
     print("kFactor: MC sample =", sample)  # sample = nonprompt MC
-    
-    if(fixNegBins is None): fixNegBins = sample.get("fixNegBins", False)
     
     path_in = "{:s}/2016/{:s}_{:s}".format(get_path_base(), analyzer, region)
     hA, hB, hC, hD = getPlots( path_in, sample['file'], [ "PhFR_%s_nonprompt" % (c) for c in 'ABCD' ])
@@ -274,19 +270,17 @@ def kFactor(sample, analyzer='VVGammaAnalyzer', region='CRLFR', logx=False, logy
     hKF.Divide(hB)
     hKF.Divide(hC)
     hKF.Multiply(hD)
-
-    if(fixNegBins): fix_neg_bins(hKF)
     
+    if(fixNegBins is None): fixNegBins = sample.get("fixNegBins", False)
+    if(fixNegBins): fix_neg_bins(hKF)
     hKF.SetTitle("kFactor: {} (A/B)/(C/D)".format(sample["name"]))
     
-    with TFileContext("data/PhKF_from_{:s}.root".format(sample["name"]), "RECREATE") as tf:
+    with TFileContext("data/ABCD_kFactor_from_{:s}.root".format(sample["name"]), "RECREATE") as tf:
         tf.cd()
         hKF.Write(hKF.GetName(), ROOT.TObject.kOverwrite)
     
     c = ROOT.TCanvas("c", "kFactor", 1200, 900)
-
     beautify(c, hKF, logx, logy)
-
     hKF.Draw("colz texte")
     lines, ticks = linesAndTicks(hKF, logx, logy)
     to_preserve = lines + ticks
@@ -294,14 +288,93 @@ def kFactor(sample, analyzer='VVGammaAnalyzer', region='CRLFR', logx=False, logy
         l.Draw("same")
     
     for ext in ["png"]:
-        c.SaveAs( "Plots/PhFR/kFactor_from_{:s}.{:s}".format(sample["name"], ext) )
+        c.SaveAs( "Plots/PhFR/ABCD_kFactor_from_{:s}.{:s}".format(sample["name"], ext) )
     
     del c, to_preserve
+
+
+def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVXAnalyzer', region='CRLFR', logx=False, logy=False, fixNegBins=False):
+    print('Fake Rate LtoT: data     =', sample_data  )
+    print('Fake Rate LtoT: promptMC =', sample_prompt)
+    makedirs_ok('data')
+    makedirs_ok('Plots')
+    outfname_data = 'data/LtoT_from_{:s}.root'.format(sample_data['name'])
+    print('Output (without MC subtraction) in: "{:s}"'.format(outfname_data))
+    
+    path_in = '{:s}/2016/{:s}_{:s}'.format(get_path_base(), analyzer, region)
+    
+    ##### First: only data ####
+    hdata_PASS, hdata_FAIL = getPlots(path_in, sample_data['file'], [ 'PhFR_LtoT_%s' % (s) for s in ['PASS', 'FAIL'] ] )
+    assert (hdata_PASS and hdata_FAIL), "Could't get the 2 data histograms!"
+
+    if(sample_data.get('fixNegBins', False)):
+        for h in [hdata_PASS, hdata_FAIL]:
+            fix_neg_bins(h)
+
+    ## Fake rate = PASS/FAIL ##
+    cFR_data = ROOT.TCanvas( 'cFR_data', 'Fake Rate '+sample_data['name'], 1200, 900 )
+    cFR_data.cd()
+    
+    hFR_data = copy.deepcopy(hdata_PASS)
+    hFR_data.Divide(hdata_FAIL)
+    hFR_data.SetTitle( 'Photon Fake Rate: pass5/pass4 (from {:s})'.format(sample_data['title']) )
+    hFR_data.SetName( 'PhFR_LtoT' )
+
+    with TFileContext(outfname_data, 'UPDATE') as tf:
+        tf.cd()
+        hFR_data.Write(hFR_data.GetName(), ROOT.TObject.kOverwrite)
+
+    to_preserve_FRdata = beautify(cFR_data, hFR_data, logx, logy)
+    
+    for ext in ['png']:
+        cFR_data.SaveAs( 'Plots/PhFR/LtoT_from_{:s}.{:s}'.format(sample_data['name'], ext) )
+    del cFR_data, to_preserve_FRdata
+    
+    ##### Second: data - promptMC #####
+    if(sample_prompt is None):
+        return
+
+    outfname_full = 'data/LtoT_from_{:s}-{:s}.root'.format(sample_data['name'], sample_prompt['name'])
+    print('Output (with prompt MC subtraction) in: "{:s}"'.format(outfname_full))
+
+    hprompt_PASS, hprompt_FAIL = getPlots(path_in, sample_prompt['file'], [ 'PhFR_LtoT_%s_prompt' % (s) for s in ['PASS', 'FAIL'] ] ) #[ 'PhFR_LtoT_%s' % (s) for s in ['PASS', 'FAIL'] ] )
+    assert (hprompt_PASS and hprompt_FAIL), "Could't get the 2 prompt MC histograms"
+
+    if(sample_prompt.get('fixNegBins', False)):
+        for h in (hprompt_PASS, hprompt_FAIL):
+            fix_neg_bins(h)
+
+    hdata_PASS.Add(hprompt_PASS, -1)
+    hdata_FAIL.Add(hprompt_FAIL, -1)
+
+    ## Fake rate = PASS/FAIL ##
+    cFR = ROOT.TCanvas( 'cFR', 'Fake Rate {:s} - {:s}'.format(sample_data['name'], sample_prompt['name']), 1200, 900 )
+    cFR.cd()
+    
+    hFR = hdata_PASS
+    hFR.Divide(hdata_FAIL)
+    hFR.SetTitle( 'Photon Fake Rate: pass5/pass4 (from {} - {})'.format(sample_data['title'], sample_prompt['title']) )
+    hFR.SetName( 'PhFR' )
+    
+    if(fixNegBins):
+        fix_neg_bins(hFR)
+    
+    with TFileContext(outfname_full, 'UPDATE') as tf:
+        tf.cd()
+        hFR.Write(hFR.GetName(), ROOT.TObject.kOverwrite)
+        
+    to_preserve_FR = beautify(cFR, hFR, logx, logy)
+        
+    for ext in ['png']: 
+        cFR.SaveAs( 'Plots/PhFR/LtoT_from_{:s}-{:s}.{:s}'.format(sample_data['name'], sample_prompt['name'], ext) )
+    del cFR, to_preserve_FR
+
+
 
 if __name__ == "__main__":
     sampleList = {
         "data"     : {"file": 'data'},
-        "ZGToLLG"  : {"file": 'ZGToLLG', "title": "Z#gamma_MC", "fixNegBins": True},
+        "ZGToLLG"  : {"file": 'ZGToLLG', "title": "Z#gamma_{MC}", "fixNegBins": True},
         "Drell-Yan": {"file": 'DYJetsToLL_M50', "fixNegBins": True}
     }
     for key, sample in sampleList.items():
@@ -309,9 +382,12 @@ if __name__ == "__main__":
         sample.setdefault("title", sample["name"])
 
     ROOT.gStyle.SetOptStat(0)
+    ROOT.gROOT.SetBatch(True)
 
-    fakeRate(sampleList["data"], sampleList["ZGToLLG"], analyzer="VVGammaAnalyzer", region="CRLFR", logx=True, fixNegBins=True)
-    # fakeRate(sampleList["Drell-Yan"], None            , analyzer="VVGammaAnalyzer", region="CRLFR", logx=True, fixNegBins=True)
+    fakeRateABCD(sampleList["data"], sampleList["ZGToLLG"], analyzer="VVGammaAnalyzer", region="CRLFR", logx=True, fixNegBins=True)
+    # fakeRateABCD(sampleList["Drell-Yan"], None            , analyzer="VVGammaAnalyzer", region="CRLFR", logx=True, fixNegBins=True)
 
-    kFactor(sampleList["Drell-Yan"], analyzer='VVGammaAnalyzer', region='CRLFR', logx=True, logy=False)
-    # kFactor(sampleList["data"]     , analyzer='VVGammaAnalyzer', region='CRLFR', logx=True, logy=False)
+    # kFactorABCD(sampleList["Drell-Yan"], analyzer='VVGammaAnalyzer', region='CRLFR', logx=True, logy=False)
+    # kFactorABCD(sampleList["data"]     , analyzer='VVGammaAnalyzer', region='CRLFR', logx=True, logy=False)
+
+    fakeRateLtoT(sampleList["data"], sampleList["ZGToLLG"], analyzer="VVGammaAnalyzer", region="CRLFR", logx=True, fixNegBins=True)
