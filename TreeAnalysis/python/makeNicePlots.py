@@ -98,11 +98,6 @@ ROOT.gROOT.SetBatch(True)
 
 InfoType_vvx = {
     "AAA_cuts"        : ["Cuts", 1, True]
-    # "looseG_pt": ["p_{T}^\gamma", 1, True],
-    # "failG_pt" : ["p_{T}^\gamma", 1, True],
-    # "tightG_pt": ["p_{T}^\gamma", 1, True]
-    ,
-    "chIso_kinPhotons": ["Iso_{charged}", 2, True]
 }
 
 if region in ['SR4P', 'CR3P1F', 'CR2P2F']:
@@ -161,6 +156,10 @@ elif region in ['SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F']:
     })
 
 InfoType_VVGamma = deepcopy(InfoType_vvx)
+InfoType_VVGamma.update({
+    "chIso_kinPhotons": ["Iso_{charged}", 2, True],
+    "kinPhotons_cutflow": ["", 1, True]
+})
 for name in ["kin", "loose", "medium", "tight"]:
     InfoType_VVGamma.update({
         "sigmaiEtaiEta_"+name+"Photons": ["#sigma_{i#etai#eta}", 1, True]
@@ -215,7 +214,7 @@ c1 = TCanvas( 'c1', mcSet , 900, 1200 )
 
 for Var in variables:
     c1.Clear()
-    DoData = optDoData and InfoType[Var][-1]
+    DoData = optDoData and InfoType[Var][-1] and region[:2] == 'SR'
     
     (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, Var, predType, mcSet, InfoType[Var][-2])
     (hData, histodata) = plotUtils.GetDataPlot(InputDir, Var, region, InfoType[Var][-2])
@@ -329,6 +328,13 @@ for Var in variables:
     histodata.SetMarkerStyle(20)
     histodata.Draw("E1")
     Line.Draw("same")
+    
+    if(not DoData):
+        xm, xM = hMC.GetXaxis().GetXmin(), hMC.GetXaxis().GetXmax()
+        xstart = (xm + xM)/2 - (xM - xm)/8
+        text = ROOT.TText(xstart, 1.1, "BLINDED")
+        text.SetTextSize(.12)
+        text.Draw("same")
     
     Title=Var+"_"+mcSet+"_"+region
     

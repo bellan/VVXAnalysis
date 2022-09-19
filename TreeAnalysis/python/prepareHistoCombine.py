@@ -68,7 +68,7 @@ for year in years:
             continue
 
         samples_region = set([ d.rstrip('.root') for d in os.listdir(path_in) if not skipsample(d) ])
-        print(">>> samples:", samples_region)
+        print('INFO: region={} samples:'.format(region), samples_region)
         # samples.update(samples_region)
         files_in = {}  # mapping: sample <str> --> file <ROOT.TFile>
 

@@ -12,7 +12,7 @@ import ctypes
 qqZZ_pow = [{"sample":'ZZTo4l'         , "color":ROOT.kBlue-4  , "name":'qq/qg #rightarrow ZZ(+jets)', "kfactor": 1.}]  # 1.1  #(1.256/1.325)
 qqZZ_mad = [{"sample":'ZZTo4lamcatnlo' , "color":ROOT.kBlue-4  , "name":'qq/qg #rightarrow ZZ(+jets)', "kfactor": 1.1}]
 
-ggZZ     = [{"sample":'ggZZ'           , "color":ROOT.kAzure-4 , "name":'gg #rightarrow ZZ(+jets)'   , "kfactor": 1.7}]
+ggZZ     = [{"sample":'ggTo4l'         , "color":ROOT.kAzure-4 , "name":'gg #rightarrow ZZ(+jets)'   , "kfactor": 1.7}]
 vbsZZ    = [{"sample":'ZZ4lJJ'         , "color":ROOT.kCyan-6  , "name":'VBS', "kfactor": 1.0}]
 HZZ      = [{"sample":'HZZ'            , "color":ROOT.kCyan-7  , "name":'higgs', "kfactor": 1.0}]
     
