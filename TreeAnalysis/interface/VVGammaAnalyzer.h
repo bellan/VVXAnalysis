@@ -78,10 +78,7 @@ public:
  private:
  	
 	std::vector<phys::Lepton>* leptons_;
- 	// Photons with pt > 20 (already in ntuples), at least loose (cut-based) ID
-	/* std::vector<phys::Photon>* kinPhotons_; */
- 	/* std::vector<phys::Photon>* goodPhotons_; */
-
+	
 	// Systematics: photons {EScale, ESigma} x {Up, Down} + {central}
 	std::map<const char*, std::unique_ptr<std::vector<phys::Photon>>> kinPhotons_;
 	std::map<const char*, std::unique_ptr<std::vector<phys::Photon>>> goodPhotons_;
@@ -99,13 +96,17 @@ public:
 	// Gen objects
 	phys::DiBoson<phys::Particle, phys::Particle> genZZ_;
 	phys::DiBoson<phys::Particle, phys::Particle> genWZ_;
+	// V --> j (j)
+	phys::Boson<phys::Jet> candVTojj_, fakeVTojj_;
+	phys::Jet              candVToJ_ , fakeVToJ_ ;
 	
 	//TH2F* photonSFhist = nullptr;
  	
  	// Objects reconstruction for each event
 	void genEventSetup();
 	/* const phys::Jet* candAK8(const std::vector<phys::Jet>*) const; */
-	static std::vector<phys::Boson<phys::Jet>> candVTojj(const std::vector<phys::Jet>&);
+	void hadronicObjectsReconstruction();
+	static std::vector<phys::Boson<phys::Jet>> candidatesVTojj(const std::vector<phys::Jet>&);
  	
  	// Basic histograms
  	void genEventHistos();
@@ -126,6 +127,8 @@ public:
  	void endNameHistos();
  	
  	// Utilities
+	template <class T, class UnaryPredicate>
+	  static std::vector<phys::Boson<T>> makeBosons(const std::vector<T>&, UnaryPredicate);
 	void initCherryPick();
 	bool cherrypickEvt() const;
 	std::map<phys::RegionTypes,
