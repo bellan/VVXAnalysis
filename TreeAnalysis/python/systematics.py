@@ -6,7 +6,7 @@ from os import path, environ, getcwd
 import ROOT
 from ctypes import c_double
 from math import log10, ceil
-from json import dump
+from json import load, dump
 from plotUtils import TFileContext
 
 
@@ -112,10 +112,10 @@ def plotSystematics(hCentral, hUp, hDn, syst_values, var='[var]', syst='[syst]',
 def doSystematics(tf, var, syst, syst_values):  # <TFile>, <str>, <str>, <dict> (is modified)
     formatInfo = dict(var=var, syst=syst, file=tf.GetName())
     hCentral = tf.Get('SYS_{var}_central'.format(**formatInfo))
-    hUp = tf.Get('SYS_{var}_{syst}_Up'.format(**formatInfo))
-    hDn = tf.Get('SYS_{var}_{syst}_Dn'.format(**formatInfo))
-    if(not hUp or not hDn):
-        print('Warning: var={var}, syst={syst} not found in file={file}'.format(**formatInfo))
+    hUp = tf.Get('SYS_{var}_{syst}_Up'  .format(**formatInfo))
+    hDn = tf.Get('SYS_{var}_{syst}_Down'.format(**formatInfo))
+    if((not hUp) or (not hDn)):
+        print('WARN: var={var}, syst={syst} not found in file={file}'.format(**formatInfo))
         return
     sample = tf.GetName().split('/')[-1].split('.')[0]
     upVar, dnVar = plotSystematics(hCentral, hUp, hDn, syst_values, var=var, syst=syst, sample=sample)
@@ -142,10 +142,10 @@ def doSystOnFile(path, syst_values):  # <str>, <dict> (to be passed to doSystema
                     continue
                 elif('QCD' in syst):
                     hCentral  = tf.Get('SYS_{}_central'.format(var))
-                    hmuR0p5F1 = tf.Get('SYS_{}_QCDscale_muR0p5F1'.format(var))
-                    hmuR2F1   = tf.Get('SYS_{}_QCDscale_muR2F1'  .format(var))
-                    hmuR1F0p5 = tf.Get('SYS_{}_QCDscale_muR1F0p5'.format(var))
-                    hmuR1F2   = tf.Get('SYS_{}_QCDscale_muR1F2'  .format(var))
+                    hmuR0p5F1 = tf.Get('SYS_{}_QCDscalemuR_Down'.format(var))
+                    hmuR2F1   = tf.Get('SYS_{}_QCDscalemuR_Up'  .format(var))
+                    hmuR1F0p5 = tf.Get('SYS_{}_QCDscaleF_Down'  .format(var))
+                    hmuR1F2   = tf.Get('SYS_{}_QCDscaleF_Up'    .format(var))
                     plotSystematics(hCentral, hmuR2F1, hmuR0p5F1, syst_values, var=var, syst='QCD-muR', sample=path.split('/')[-1].split('.')[0])
                     plotSystematics(hCentral, hmuR1F2, hmuR1F0p5, syst_values, var=var, syst='QCD-F'  , sample=path.split('/')[-1].split('.')[0])
                 
@@ -153,12 +153,13 @@ def doSystOnFile(path, syst_values):  # <str>, <dict> (to be passed to doSystema
 
 if __name__ == '__main__':
     syst_values = {} #dict()
-    results_folder = 'results/2016/VVGammaAnalyzer_SR3P'
-    doSystOnFile(path.join(results_folder, 'WZTo3LNu.root'      ), syst_values)
-    doSystOnFile(path.join(results_folder, 'WZGTo3LNuG.root'    ), syst_values)
-    doSystOnFile(path.join(results_folder, 'ZGToLLG.root'       ), syst_values)
-    doSystOnFile(path.join(results_folder, 'DYJetsToLL_M50.root'), syst_values)
-    # results_folder = 'results/2016/VVGammaAnalyzer_SR4P'
+    # results_folder = 'results/2016/VVGammaAnalyzer_SR3P'
+    # doSystOnFile(path.join(results_folder, 'WZTo3LNu.root'      ), syst_values)
+    # doSystOnFile(path.join(results_folder, 'WZGTo3LNuG.root'    ), syst_values)
+    # doSystOnFile(path.join(results_folder, 'ZGToLLG.root'       ), syst_values)
+    # doSystOnFile(path.join(results_folder, 'DYJetsToLL_M50.root'), syst_values)
+    results_folder = 'results/2016/VVGammaAnalyzer_SR4P'
+    doSystOnFile(path.join(results_folder, 'fake_leptons.root'  ), syst_values)
     # doSystOnFile(path.join(results_folder, 'WZTo3LNu.root'      ), syst_values)
     # doSystOnFile(path.join(results_folder, 'ZZTo4l.root'        ), syst_values)
     # doSystOnFile(path.join(results_folder, 'ggTo4l.root'        ), syst_values)
@@ -177,5 +178,7 @@ if __name__ == '__main__':
         outJSON = path.join(basepath, outJSON)
 
     with open(outJSON, 'w') as fout:
-        dump(syst_values, fout, indent=2)
+        original = load(fout)
+        original.update(syst_values)
+        dump(original, fout, indent=2)
         print('INFO: wrote systematics to "{}"'.format(outJSON))
