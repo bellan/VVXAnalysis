@@ -46,12 +46,12 @@ class SampleInfo {
   // Total weight of the event, including efficiency scale factors.
   double weight(const phys::DiBoson<phys::Lepton, phys::Lepton> &VV) const {
     double w = (applyFRSF_ ? VV.fakeRateSF() : 1.) * (luminosity_ >= 0 ? weight() * VV.efficiencySF() : 1.);
-    if (forcePosWeight_) return abs(w);
+    if (forcePosWeight_) return copysign(w, weight());  // Don't forget about negative MC weight
     else return w;
   }
   double weight(const phys::Boson<phys::Lepton> &Z) const {
     double w = (applyFRSF_ ? Z.fakeRateSF() : 1.) * (luminosity_ >= 0 ? weight() * Z.efficiencySF() : 1.);
-    if (forcePosWeight_) return abs(w);
+    if (forcePosWeight_) return copysign(w, weight());
     else return w;
   }
 
