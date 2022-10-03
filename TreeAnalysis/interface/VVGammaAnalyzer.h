@@ -101,8 +101,10 @@ public:
 	phys::Jet              candVToJ_ , fakeVToJ_ ;
 	
 	//TH2F* photonSFhist = nullptr;
+        std::string channelReco_;
  	
  	// Objects reconstruction for each event
+        void makeChannelReco();  // sets channelReco_
 	void genEventSetup();
 	/* const phys::Jet* candAK8(const std::vector<phys::Jet>*) const; */
 	void hadronicObjectsReconstruction();
@@ -123,7 +125,8 @@ public:
  	void photonIsolation(const std::vector<phys::Photon>&, const char*);
 	void systematicsStudy();
 	void doPlots(const char* syst, const double& weight, const phys::Photon*);
- 	
+        void debug3Lregion();
+
  	void endNameHistos();
  	
  	// Utilities
@@ -149,7 +152,7 @@ public:
 	}
 	static bool is3Lregion(const phys::RegionTypes reg){
 	  return reg == phys::SR3P || reg == phys::CR110 || reg == phys::CR101 || reg == phys::CR011 ||
-	    reg == phys::CR100 || reg == phys::CR010 || reg == phys::CR001 || reg == phys::CR001 ||
+	    reg == phys::CR100 || reg == phys::CR010 || reg == phys::CR001 || reg == phys::CR000 ||
 	    reg == phys::SR3P_1L || reg == phys::SR3P_1P || reg == phys::CR3P_1F;
 	}
 	static bool is2Lregion(const phys::RegionTypes reg){
