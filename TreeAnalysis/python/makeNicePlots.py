@@ -128,7 +128,9 @@ elif region in ['SR3P', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110']:
     VarInfo_vvx.update({
         "WZ_cutflow": {'title':'Cuts', 'logy':False},
         'ZW_massT': {'title':'mT_{3\ell\\nu}'   , 'rebin':1, 'unblind':True},
-        'ZW_pt'   : {'title':'p_{T}^{3\ell\\nu}', 'rebin':1, 'unblind':True}
+        'ZW_pt'   : {'title':'p_{T}^{3\ell\\nu}', 'rebin':1, 'unblind':True},
+        'W_l_pt'  : {'title': 'p_{t,l10};GeV/c'},
+        'lll_mass': {'title':'m_{lll};GeV/c^{2}'}
         # 'debug3L_l1_FRSF': {'title':'FR(l_{1})' }
         # 'debug3L_l2_FRSF': {'title':'FR(l_{2})' }
         # 'debug3L_l3_FRSF': {'title':'FR(l_{3})' }
@@ -138,6 +140,8 @@ elif region in ['SR3P', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110']:
         VarInfo_vvx.update({
             'ZW_massT_'+name : {'title':'m_{%s\\nu}'     %(title), 'rebin':1, 'unblind':True},
             'ZW_pt_'   +name : {'title':'p_{T}^{%s\\nu}' %(title), 'rebin':1, 'unblind':True},
+            'W_l_pt_'  +name : {'title':'p_{t,l10};GeV/c'},
+            'lll_mass_'+name : {'title':'m_{lll};GeV/c^{2}'}
         })
     for name, title in [('ZW', '3\ell\\nu'), ('ZWG', '3\ell\\nu\gamma')]:
         VarInfo_vvx.update({
@@ -146,6 +150,15 @@ elif region in ['SR3P', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110']:
             name+'_massT_failG' : {'title':'mT_{%s}\:,\ \gamma\:kin\,\land\:!loose'%(title), 'rebin':1, 'unblind':True },
             name+'_massT_looseG': {'title':'mT_{%s}\:,\ \gamma\:loose'             %(title), 'rebin':1, 'unblind':False}
         })
+    for name, title in [('e', 'e'), ('m','\mu')]:
+        VarInfo_vvx.update({
+            'l3_%s_pt'     %(name): {'title': '3^{rd} %s p_{T}'            %(title)},
+            'l3_%s_Iso'    %(name): {'title': '3^{rd} %s combRelIsoFSRCorr'%(title)},
+            'l3_%s_pt_MET' %(name): {'title': '3^{rd} %s p_{T}'            %(title)},
+            'l3_%s_Iso_MET'%(name): {'title': '3^{rd} %s combRelIsoFSRCorr'%(title)}
+            
+        })
+
 elif region in ['SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F']:
     VarInfo_vvx.update({
         'AK4_N'        : {'title':'# AK4'   , 'rebin':1, 'unblind':True},
