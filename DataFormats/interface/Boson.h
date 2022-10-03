@@ -112,7 +112,7 @@ namespace phys {
       if(daughter_index == 0)      fsrPhoton0_ = photon;
     
       else if(daughter_index == 1) fsrPhoton1_ = photon;
-      else { 
+      else {
 	std::cout << "*** (FSR) Boson's daughter not found! ***" << " " << daughter_index << std::endl; 
 	abort();}
       
@@ -138,9 +138,8 @@ namespace phys {
 
     
     double fakeRateSF()    const {return daughter0_.fakeRateSF() * daughter1_.fakeRateSF();}
-    double fakeRateSFUnc() const {
-      return hypot(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUnc(),
-		   daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc());
+    double fakeRateSFUnc() const {  // FR fully correlated for same flavour leptons; a Boson is always made of same flavour leptons
+      return daughter0_.fakeRateSF()*daughter1_.fakeRateSFUnc() + daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc();
     }
     double muFakeRateSFUnc() const {
       return (abs(daughter0_.id()) == 13) ? fakeRateSFUnc() : 0.;
@@ -150,12 +149,15 @@ namespace phys {
     }
     
     double efficiencySF() const {return daughter0_.efficiencySF() * daughter1_.efficiencySF();}
-    
+
+    double efficiencySFUnc() const {  // Efficiency fully correlated for same flavour leptons
+      return daughter0_.efficiencySFUnc() + daughter1_.efficiencySFUnc();
+    }
     double muEffSFUnc() const {
-      return (abs(daughter0_.id()) == 13) ? hypot(daughter0_.efficiencySFUnc(), daughter1_.efficiencySFUnc()) : 0.;
+      return (abs(daughter0_.id()) == 13) ? efficiencySFUnc() : 0.;
     }
     double eleEffSFUnc() const {
-      return (abs(daughter0_.id()) == 11) ? hypot(daughter0_.efficiencySFUnc(), daughter1_.efficiencySFUnc()) : 0.;
+      return (abs(daughter0_.id()) == 11) ? efficiencySFUnc() : 0.;
     }
 
   protected:
@@ -171,7 +173,7 @@ namespace phys {
 
       efficiencySF_  = -1;
       fakeRateSF_    = -1;
-      fakeRateSFUnc_ = -1; 
+      fakeRateSFUnc_ = -1;
       
       charge_ = daughter0_.charge() + daughter1_.charge();
 

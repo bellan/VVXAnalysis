@@ -84,24 +84,21 @@ namespace phys {
       return numberOfBadGrandDaughters() == 2 ? -1*ifakeRateSF : ifakeRateSF;
     }
 
-    double efficiencySF() const{return daughter0_.efficiencySF() * daughter1_.efficiencySF();}
+    double efficiencySF() const{ return daughter0_.efficiencySF() * daughter1_.efficiencySF(); }
     
-    double efficiencySFUnc() const { return hypot(daughter0_.efficiencySFUnc(), daughter1_.efficiencySFUnc()); }
-    double muEffSFUnc()      const { return hypot(daughter0_.muEffSFUnc()     , daughter1_.muEffSFUnc()     ); }
-    double eleEffSFUnc()     const { return hypot(daughter0_.eleEffSFUnc()    , daughter1_.eleEffSFUnc()    ); }
+    double efficiencySFUnc() const { return hypot(eleEffSFUnc(), muEffSFUnc()); }
+    double muEffSFUnc()      const { return daughter0_.muEffSFUnc()  + daughter1_.muEffSFUnc() ; }
+    double eleEffSFUnc()     const { return daughter0_.eleEffSFUnc() + daughter1_.eleEffSFUnc(); }
     
     
-    double fakeRateSFUnc() const{
-      return hypot(daughter0_.fakeRateSF()*daughter1_.fakeRateSFUnc(),
-		   daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc());
+    double fakeRateSFUnc() const{     // Uncorrelated fake rate uncertanties for leptons with different flavours
+      return hypot(eleFakeRateSFUnc(), muoFakeRateSFUnc());
     }
-    double eleFakeRateSFUnc() const{
-      return hypot(daughter0_.fakeRateSF()*daughter1_.eleFakeRateSFUnc(),
-		   daughter1_.fakeRateSF()*daughter0_.eleFakeRateSFUnc());
+    double eleFakeRateSFUnc() const{  // Same flavour leptons have fully correlated fake rate uncertainties
+      return daughter0_.fakeRateSF()*daughter1_.eleFakeRateSFUnc() + daughter1_.fakeRateSF()*daughter0_.eleFakeRateSFUnc();
     }
     double muoFakeRateSFUnc() const{
-      return hypot(daughter0_.fakeRateSF()*daughter1_.muFakeRateSFUnc(),
-		   daughter1_.fakeRateSF()*daughter0_.muFakeRateSFUnc());
+      return daughter0_.fakeRateSF()*daughter1_.muFakeRateSFUnc()  + daughter1_.fakeRateSF()*daughter0_.muFakeRateSFUnc() ;
     }
     
 
@@ -113,7 +110,7 @@ namespace phys {
     Bool_t  passFullSel_;
 
 
-    ClassDef(DiBoson, 1) //
+    ClassDef(DiBoson, 1)
   };
 }
 #endif
