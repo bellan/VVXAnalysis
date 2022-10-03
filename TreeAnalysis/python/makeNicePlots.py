@@ -45,7 +45,7 @@ parser.add_option("-S", "--Save", dest="SavePlot",
                   default=False,
                   help="Save plot option, default is False")
 
-parser.add_option("-m", "--mcset", dest="mcSet",
+parser.add_option("-m", "--mcset", dest="mcSet", type="choice", choices=['mad', 'pow'],
                   default="mad",
                   help= "Monte Carlo Set, pow for Powheg, mad for amcatnlo")
 
@@ -61,9 +61,9 @@ parser.add_option("-o", "--outputDir", dest="outputDir",
                   default="last",
                   help="Directory where save plots")
 
-parser.add_option("-A", "--Analysis", dest="Analysis",
+parser.add_option("-A", "--Analysis", dest="Analysis", type="choice", choices=['VVXAnalyzer', 'VVGammaAnalyzer', 'ZZAnalyzer'],
                   default="VVXAnalyzer",
-                  help="Analysis. Default is ZZ. Other option is VBS")
+                  help="Analysis. Default is VVX; other options are ZZ, VBS and VVGamma")
 
 parser.add_option("-y", "--year", dest="year",
                   default="2016",
@@ -75,14 +75,14 @@ parser.add_option("-y", "--year", dest="year",
 
 (options, args) = parser.parse_args()
 
-optDoData  = not options.noData ## Fixme, ratio plot to be removed
+optDoData  = not options.noData
 predType   = options.predType
 region     = options.region
 Type       = options.Type
-Save       = options.SavePlot
+SavePlot   = options.SavePlot
 mcSet      = options.mcSet
 LumiProj   = options.LumiProj
-OutputDir  = options.outputDir if options.outputDir.startswith("/") else PersonalInfo.personalFolder+'/'+options.outputDir
+OutputDir  = options.outputDir if options.outputDir.startswith("/") else os.path.join(PersonalInfo.personalFolder, options.outputDir)
 Analysis   = options.Analysis
 year       = options.year
 
@@ -92,93 +92,111 @@ tdrstyle.setTDRStyle()
 
 ROOT.gROOT.SetBatch(True)
 
-# InfoType_zz = {"Mass":["m_{4l} [GeV]","m_{4\ell}",10],"Mjj":["m_{jj} [GeV]","m_{JJ}",20],"Z1Mass":["Z1 Mass","m_{2\ell}",10,],"Z2Mass":["Z2 Mass","m_{2\ell}",10,],"Z1lep0_sip":["Z1 lep 0 Sip","Sip",4],"Z1lep0_iso":["Z1 lep 0 Iso","Iso",4],"Z0lep0_pt":["Z1 lep 0 pT","p_{T}",4],"nJets":["N_{jets} (|#eta^{jet}| < 4.7)","N_{jets} (|#eta^{jet}| < 4.7)",1],"nJets_central":["N_{jets} (|#eta^{jet}| < 4.7)","N_{jets} (|#eta^{jet}| < 4.7)",1],"z":["z1","z1",1],"PtJet1":["p_{T}^{jet1} [GeV]","p_{T}^{jet}",1],"EtaJet1":["#eta^{jet1}","#eta^{jet}",9],"PtJet2":["p_{T}^{jet2} [GeV]","p_{T}^{jet}",1],"EtaJet2":["#eta^{jet2}","#eta^{jet}",10],"Z1pt":["Z1 p_{T}","p_{T}",20],"Z2pt":["Z2 p_{T}","p_{T}",10],"Z1z":["Z1 z","z_{Z_{1}}",7],"Z2z":["Z2 z","z_{Z_{2}}",7],"ptJRatio":["","#Sigma p_{T}/# Sum  ",2],"ptRatio":["","#Sum p_{T}",2],"PtZZ":["p_{T}^{4\\ell}","Sum p_{T}",20],"deltaEtaJJ":["|#eta_{jj}|","|#eta_{jj}|",2],"Dphi":["#Delta #phi_{jj}","#Delta #phi_{jj}",10],"Deta":["|#Delta#eta_{jj}|","#Delta #eta_{jj}",5],"Mjj_Central":["m_{jj}","m_{jj}",20],"Deta_Central":["#Delta #eta_{jj}","#Delta #eta_{jj}",5],"Deta2Jet":["#Delta #eta_{jj}, 2 jet","#Delta #eta_{jj} =2 jet",5],"Deta_noCentral":["#Delta #eta_{jj}, >2 jet","#Delta #eta_{jj} > 2 jet",5],"Deta_1noCentral":["#Delta #eta_{jj}, >2 jet","#Delta #eta_{jj} > 2 jet",5],"PtJet1_noCentral":["#eta Jet","#eta^{jet}",9],"EtaJet1_noCentral":["#eta Jet","#eta^{jet}",10]}
+# VarInfo_zz = {"Mass":["m_{4l} [GeV]","m_{4\ell}",10],"Mjj":["m_{jj} [GeV]","m_{JJ}",20],"Z1Mass":["Z1 Mass","m_{2\ell}",10,],"Z2Mass":["Z2 Mass","m_{2\ell}",10,],"Z1lep0_sip":["Z1 lep 0 Sip","Sip",4],"Z1lep0_iso":["Z1 lep 0 Iso","Iso",4],"Z0lep0_pt":["Z1 lep 0 pT","p_{T}",4],"nJets":["N_{jets} (|#eta^{jet}| < 4.7)","N_{jets} (|#eta^{jet}| < 4.7)",1],"nJets_central":["N_{jets} (|#eta^{jet}| < 4.7)","N_{jets} (|#eta^{jet}| < 4.7)",1],"z":["z1","z1",1],"PtJet1":["p_{T}^{jet1} [GeV]","p_{T}^{jet}",1],"EtaJet1":["#eta^{jet1}","#eta^{jet}",9],"PtJet2":["p_{T}^{jet2} [GeV]","p_{T}^{jet}",1],"EtaJet2":["#eta^{jet2}","#eta^{jet}",10],"Z1pt":["Z1 p_{T}","p_{T}",20],"Z2pt":["Z2 p_{T}","p_{T}",10],"Z1z":["Z1 z","z_{Z_{1}}",7],"Z2z":["Z2 z","z_{Z_{2}}",7],"ptJRatio":["","#Sigma p_{T}/# Sum  ",2],"ptRatio":["","#Sum p_{T}",2],"PtZZ":["p_{T}^{4\\ell}","Sum p_{T}",20],"deltaEtaJJ":["|#eta_{jj}|","|#eta_{jj}|",2],"Dphi":["#Delta #phi_{jj}","#Delta #phi_{jj}",10],"Deta":["|#Delta#eta_{jj}|","#Delta #eta_{jj}",5],"Mjj_Central":["m_{jj}","m_{jj}",20],"Deta_Central":["#Delta #eta_{jj}","#Delta #eta_{jj}",5],"Deta2Jet":["#Delta #eta_{jj}, 2 jet","#Delta #eta_{jj} =2 jet",5],"Deta_noCentral":["#Delta #eta_{jj}, >2 jet","#Delta #eta_{jj} > 2 jet",5],"Deta_1noCentral":["#Delta #eta_{jj}, >2 jet","#Delta #eta_{jj} > 2 jet",5],"PtJet1_noCentral":["#eta Jet","#eta^{jet}",9],"EtaJet1_noCentral":["#eta Jet","#eta^{jet}",10]}
 
-# InfoType_vbs = {"Mass":["m_{4\ell}","m_{4\ell}",40],"Mjj":["m_{jj}","m_{JJ}",20],"Z1Mass":["Z1 Mass","m_{2\ell}",10,],"Z2Mass":["Z2 Mass","m_{2\ell}",10,],"Z1lep0_sip":["Z1 lep 0 Sip","Sip",4],"Z1lep0_iso":["Z1 lep 0 Iso","Iso",4],"Z0lep0_pt":["Z1 lep 0 pT","p_{T}",4],"nJets":["# jets","# jets",1],"nJets_central":["# jets","# jets",1],"z":["z1","z1",1],"PtJet1":["pT Jet","p_{T}^{jet}",10],"EtaJet1":["#eta Jet","#eta^{jet}",10],"PtJet2":["pT Jet","p_{T}^{jet}",10],"EtaJet2":["#eta Jet","#eta^{jet}",10],"Z1pt":["Z1 p_{T}","p_{T}",20],"Z2pt":["Z2 p_{T}","p_{T}",10],"Z1z":["Z1 z","z_{Z_{1}}",7],"Z2z":["Z2 z","z_{Z_{2}}",7],"ptJRatio":["","#Sigma p_{T}/# Sum  ",2],"ptRatio":["","#Sum p_{T}",2],"PtZZ":["p_{T}^{4\\ell}","Sum p_{T}",60],"deltaEtaJJ":["|#eta_{jj}|","|#eta_{jj}|",2],"Dphi":["#Delta #phi_{jj}","#Delta #phi_{jj}",10],"Deta":["#Delta #eta_{jj}","#Delta #eta_{jj}",5],"Mjj_Central":["m_{jj}","m_{jj}",20],"Deta_Central":["#Delta #eta_{jj}","#Delta #eta_{jj}",5]}
+# VarInfo_vbs = {"Mass":["m_{4\ell}","m_{4\ell}",40],"Mjj":["m_{jj}","m_{JJ}",20],"Z1Mass":["Z1 Mass","m_{2\ell}",10,],"Z2Mass":["Z2 Mass","m_{2\ell}",10,],"Z1lep0_sip":["Z1 lep 0 Sip","Sip",4],"Z1lep0_iso":["Z1 lep 0 Iso","Iso",4],"Z0lep0_pt":["Z1 lep 0 pT","p_{T}",4],"nJets":["# jets","# jets",1],"nJets_central":["# jets","# jets",1],"z":["z1","z1",1],"PtJet1":["pT Jet","p_{T}^{jet}",10],"EtaJet1":["#eta Jet","#eta^{jet}",10],"PtJet2":["pT Jet","p_{T}^{jet}",10],"EtaJet2":["#eta Jet","#eta^{jet}",10],"Z1pt":["Z1 p_{T}","p_{T}",20],"Z2pt":["Z2 p_{T}","p_{T}",10],"Z1z":["Z1 z","z_{Z_{1}}",7],"Z2z":["Z2 z","z_{Z_{2}}",7],"ptJRatio":["","#Sigma p_{T}/# Sum  ",2],"ptRatio":["","#Sum p_{T}",2],"PtZZ":["p_{T}^{4\\ell}","Sum p_{T}",60],"deltaEtaJJ":["|#eta_{jj}|","|#eta_{jj}|",2],"Dphi":["#Delta #phi_{jj}","#Delta #phi_{jj}",10],"Deta":["#Delta #eta_{jj}","#Delta #eta_{jj}",5],"Mjj_Central":["m_{jj}","m_{jj}",20],"Deta_Central":["#Delta #eta_{jj}","#Delta #eta_{jj}",5]}
 
-InfoType_vvx = {
-    "AAA_cuts"        : ["Cuts", 1, True]
+VarInfo_vvx = {
+    "AAA_cuts"  : {'title':'Cuts', 'unblind':True, 'logy':False}
 }
 
 if region in ['SR4P', 'CR3P1F', 'CR2P2F']:
-    InfoType_vvx.update({
-        "ZZ_mass" : ["m_{4\ell}"     , 1, True],
-        "Z0_mass" : ["m_{ZZ}"        , 1, True],
-        "Z1_mass" : ["m_{Z1}"        , 1, True],
-        "ZZ_pt"   : ["p_{T}^{Z1}"    , 1, True],
-        "Z0_l0_pt": ["p_{T}^{Z0, l0}", 1, True],
-        "Z0_l1_pt": ["p_{T}^{Z0, l1}", 1, True],
-        "Z1_l0_pt": ["p_{T}^{Z1, l0}", 1, True],
-        "Z1_l1_pt": ["p_{T}^{Z1, l1}", 1, True]
+    VarInfo_vvx.update({
+        'ZZ_mass' : {'title':'m_{4\ell}'     , 'rebin':1, 'unblind':True},
+        'Z0_mass' : {'title':'m_{Z0}'        , 'rebin':1, 'unblind':True},
+        'Z1_mass' : {'title':'m_{Z1}'        , 'rebin':1, 'unblind':True},
+        'ZZ_pt'   : {'title':'p_{T}^{Z1}'    , 'rebin':1, 'unblind':True},
+        'Z0_l0_pt': {'title':'p_{T}^{Z0, l0}', 'rebin':1, 'unblind':True},
+        'Z0_l1_pt': {'title':'p_{T}^{Z0, l1}', 'rebin':1, 'unblind':True},
+        'Z1_l0_pt': {'title':'p_{T}^{Z1, l0}', 'rebin':1, 'unblind':True},
+        'Z1_l1_pt': {'title':'p_{T}^{Z1, l1}', 'rebin':1, 'unblind':True}
     })
     for name, title in [('4e','4e'), ('2e2m', '2e2\mu'), ('4m', '4\mu')]:
-        InfoType_vvx.update({
-            "ZZ_mass_"+name : ["m_{%s}"     %(title), 1, True],
-            "ZZ_pt_"  +name : ["p_{T}^{%s}" %(title), 1, True],
+        VarInfo_vvx.update({
+            "ZZ_mass_"+name : {'title':"m_{%s}"     %(title), 'rebin':1, 'unblind':True},
+            "ZZ_pt_"  +name : {'title':"p_{T}^{%s}" %(title), 'rebin':1, 'unblind':True},
         })
     for name, title in [('ZZ', '4\ell'), ('ZZG', '4\ell\gamma')]:
-        InfoType_vvx.update({
-            name+"_mass_noG"   : ["m_{%s}\:,\ no\:\gamma"                %(title), 1, True],
-            name+"_mass_kinG"  : ["m_{%s}\:,\ \gamma\:kin"               %(title), 1, True],
-            name+"_mass_failG" : ["m_{%s}\:,\ \gamma\:kin\,\land\:!loose"%(title), 1, True],
-            name+"_mass_looseG": ["m_{%s}\:,\ \gamma\:loose"             %(title), 1, False]
+        VarInfo_vvx.update({
+            # name+'_mass_noG'   : {'title':'m_{%s}\:,\ no\:\gamma'                %(title), 'rebin':1, 'unblind':True },
+            name+'_mass_kinG'  : {'title':'m_{%s}\:,\ \gamma\:kin'               %(title), 'rebin':1, 'unblind':True },
+            name+'_mass_failG' : {'title':'m_{%s}\:,\ \gamma\:kin\,\land\:!loose'%(title), 'rebin':1, 'unblind':True },
+            name+'_mass_looseG': {'title':'m_{%s}\:,\ \gamma\:loose'             %(title), 'rebin':1, 'unblind':False}
         })
         
 elif region in ['SR3P', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110']:
-    InfoType_vvx.update({
-        "ZW_massT": ["mT_{3\ell\\nu}"   , 1, True],
-        "ZW_pt"   : ["p_{T}^{3\ell\\nu}", 1, True],
+    VarInfo_vvx.update({
+        "WZ_cutflow": {'title':'Cuts', 'logy':False},
+        'ZW_massT': {'title':'mT_{3\ell\\nu}'   , 'rebin':1, 'unblind':True},
+        'ZW_pt'   : {'title':'p_{T}^{3\ell\\nu}', 'rebin':1, 'unblind':True}
+        # 'debug3L_l1_FRSF': {'title':'FR(l_{1})' }
+        # 'debug3L_l2_FRSF': {'title':'FR(l_{2})' }
+        # 'debug3L_l3_FRSF': {'title':'FR(l_{3})' }
+        # 'debug3L_ZW_FRSF': {'title':'FR(ZW)'    }
     })
     for name, title in [('3e','3e'), ('2e1m', '2e1\mu'), ('2m1e', '2\mu1e'), ('3m', '3\mu')]:
-        InfoType_vvx.update({
-            "ZW_massT_"+name : ["m_{%s\\nu}"     %(title), 1, True],
-            "ZW_pt_"   +name : ["p_{T}^{%s\\nu}" %(title), 1, True],
+        VarInfo_vvx.update({
+            'ZW_massT_'+name : {'title':'m_{%s\\nu}'     %(title), 'rebin':1, 'unblind':True},
+            'ZW_pt_'   +name : {'title':'p_{T}^{%s\\nu}' %(title), 'rebin':1, 'unblind':True},
         })
     for name, title in [('ZW', '3\ell\\nu'), ('ZWG', '3\ell\\nu\gamma')]:
-        InfoType_vvx.update({
-            name+"_massT_noG"   : ["mT_{%s}\:,\ no\:\gamma"                %(title), 1, True],
-            name+"_massT_kinG"  : ["mT_{%s}\:,\ \gamma\:kin"               %(title), 1, True],
-            name+"_massT_failG" : ["mT_{%s}\:,\ \gamma\:kin\,\land\:!loose"%(title), 1, True],
-            name+"_massT_looseG": ["mT_{%s}\:,\ \gamma\:loose"             %(title), 1, False]
+        VarInfo_vvx.update({
+            # name+'_massT_noG'   : {'title':'mT_{%s}\:,\ no\:\gamma'                %(title), 'rebin':1, 'unblind':True },
+            name+'_massT_kinG'  : {'title':'mT_{%s}\:,\ \gamma\:kin'               %(title), 'rebin':1, 'unblind':True },
+            name+'_massT_failG' : {'title':'mT_{%s}\:,\ \gamma\:kin\,\land\:!loose'%(title), 'rebin':1, 'unblind':True },
+            name+'_massT_looseG': {'title':'mT_{%s}\:,\ \gamma\:loose'             %(title), 'rebin':1, 'unblind':False}
         })
 elif region in ['SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F']:
-    InfoType_vvx.update({
-        "AK4_N"        : ["# AK4"   , 1, True],
-        "AK4_pt"       : ["p_{T}"   , 1, True],
-        "AK8_N"        : ["# AK8"   , 1, True],
-        "AK8_pt"       : ["p_{T}"   , 1, True],
-        "Z_mass_2e"    : ["m_{2e}"  , 1, True],
-        "Z_mass_2m"    : ["m_{2\mu}", 1, True],
-        "Z_mass_noG"   : ["m_{2\ell}\:,\ no\:\gamma"        , 1, True],
-        "Z_mass_kinG"  : ["m_{2\ell}\:,\ kin\:\gamma"       , 1, True],
-        "Z_mass_failG" : ["m_{2\ell}\:,\ kin\,\land\:!loose", 1, True],
-        "Z_mass_looseG": ["m_{2\ell}\:,\ \gamma\:loose"     , 1, False]
+    VarInfo_vvx.update({
+        'AK4_N'        : {'title':'# AK4'   , 'rebin':1, 'unblind':True},
+        'AK4_pt'       : {'title':'p_{T}'   , 'rebin':1, 'unblind':True},
+        'AK8_N'        : {'title':'# AK8'   , 'rebin':1, 'unblind':True},
+        'AK8_pt'       : {'title':'p_{T}'   , 'rebin':1, 'unblind':True},
+        'Z_mass_2e'    : {'title':'m_{2e}'  , 'rebin':1, 'unblind':True},
+        'Z_mass_2m'    : {'title':'m_{2\mu}', 'rebin':1, 'unblind':True},
+        'Z_mass_noG'   : {'title':'m_{2\ell}\:,\ no\:\gamma'        , 'rebin':1, 'unblind':True },
+        'Z_mass_kinG'  : {'title':'m_{2\ell}\:,\ kin\:\gamma'       , 'rebin':1, 'unblind':True },
+        'Z_mass_failG' : {'title':'m_{2\ell}\:,\ kin\,\land\:!loose', 'rebin':1, 'unblind':True },
+        'Z_mass_looseG': {'title':'m_{2\ell}\:,\ \gamma\:loose'     , 'rebin':1, 'unblind':False}
     })
 
-InfoType_VVGamma = deepcopy(InfoType_vvx)
-InfoType_VVGamma.update({
-    "chIso_kinPhotons": ["Iso_{charged}", 2, True],
-    "kinPhotons_cutflow": ["", 1, True]
+VarInfo_VVGamma = deepcopy(VarInfo_vvx)
+VarInfo_VVGamma.update({
+    'kinPhotons_cutflow': {'title':'cut', 'rebin':1, 'unblind':True, 'logy':True},
+    'kinPhotons_MVA'    : {'title':'MVA score', 'unblind':True}
+    # 'noKinPh_all_genPh_N'  : {'title': '# #gamma_{GEN}'     },
+    # 'noKinPh_all_genPh_pt' : {'title': '#gamma_{GEN} p_{T}' },
+    # 'noKinPh_all_genPh_eta': {'title': '#gamma_{GEN} #eta'  },
+    # 'noKinPh_rec_genPh_pt' : {'title': '#gamma_{GEN} p_{T}' },
+    # 'noKinPh_rec_genPh_eta': {'title': '#gamma_{GEN} #eta'  }
 })
-for name in ["kin", "loose", "medium", "tight"]:
-    InfoType_VVGamma.update({
-        "sigmaiEtaiEta_"+name+"Photons": ["#sigma_{i#etai#eta}", 1, True]
+for e in ['EB', 'EE']:
+    VarInfo_VVGamma.update({
+        'kinPh_sieie_' +e: {'title':'#sigma_{i#etai#eta}', 'rebin':1, 'unblind':True, 'logy':True},
+        'kinPh_HoverE_'+e: {'title':'HoverE'             , 'rebin':2, 'unblind':True, 'logy':True},
+        'kinPh_chIso_' +e: {'title':'chIso'              , 'rebin':1, 'unblind':True, 'logy':True, 'logx':True},
+        'kinPh_neIso_' +e: {'title':'neIso'              , 'rebin':2, 'unblind':True, 'logy':True},
+        'kinPh_phIso_' +e: {'title':'phIso'              , 'rebin':2, 'unblind':True, 'logy':True}
     })
-InfoType_VVGamma.update({
-    "ph_eScale_N" : ["Number of #gamma passing selection", 1, True],
-    "kinPhotons_ID": ["#gamma ID", 1, True]
+# for name in ['kin', 'loose', 'medium', 'tight']:
+#     VarInfo_VVGamma.update({
+#         'sigmaiEtaiEta_'+name+'Photons': ['#sigma_{i#etai#eta}', 1, True]
+#     })
+VarInfo_VVGamma.update({
+    'ph_eScale_N'  : {'title':'Number of #gamma passing selection', 'rebin':1, 'unblind':True},
+    'kinPhotons_ID': {'title':'#gamma ID'                         , 'rebin':1, 'unblind':True}
 })
-for name in ['all', 'kin', 'loose']:
-    InfoType_VVGamma.update({
-        "maxG_minL_DR_"+name: ["max_{#gamma}(min_{l}(#DeltaR(#gamma_{%s}, l))" %(name), 1, True],
-        "minL_DR_"     +name: ["min_{l}(#DeltaR(#gamma_{%s}, l)"               %(name), 1, True],
-    })
+# for name in ['all', 'kin', 'loose']:
+#     VarInfo_VVGamma.update({
+#         'maxG_minL_DR_'+name: {'title':'max_{#gamma}(min_{l}(#DeltaR(#gamma_{%s}, l))' %(name), 'rebin':1, 'unblind':True},
+#         'minL_DR_'     +name: {'title':'min_{l}(#DeltaR(#gamma_{%s}, l)'               %(name), 'rebin':1, 'unblind':True},
+#     })
 
 
-if   Analysis == "ZZ"             : InfoType = InfoType_zz
-elif Analysis == "VVXAnalyzer"    : InfoType = InfoType_vvx
-elif Analysis == "VVGammaAnalyzer": InfoType = InfoType_VVGamma
-else                              : InfoType = InfoType_vbs
+if   Analysis.startswith("ZZ"     ): VarInfo = VarInfo_zz
+elif Analysis.startswith("VVX"    ): VarInfo = VarInfo_vvx
+elif Analysis.startswith("VVGamma"): VarInfo = VarInfo_VVGamma
+else                               : VarInfo = VarInfo_vbs
 
 #change the CMS_lumi variables  (see CMS_lumi.py)                                                                                  
 #CMS_lumi.lumi_7TeV = "4.8 fb^{-1}"                               
@@ -200,32 +218,33 @@ except OSError as e:
     os.makedirs(OutputDir)  # mkdir() = mkdir  ;  makedirs() = mkdir -p
         
     
-InputDir = "results/"+year+"/"+Analysis+"_"+region+"/"
+InputDir = os.path.join('results', year, Analysis+'_'+region, '')
 
 if LumiProj!="":  InputDir+=LumiProj+"fbm1_"
 
 if Type == 'all':
-    variables = InfoType.keys()
+    variables = VarInfo.keys()
 else:
-    variables = [ var for var in InfoType.keys() if re.search(Type, var) ]  # Allow for regexp to be specified from command line
-print "INFO: variables =", variables
+    variables = [ var for var in VarInfo.keys() if re.search(Type, var) ]  # Allow for regexp to be specified from command line
+#print "INFO: variables =", variables
+
+infoTable = {}
 
 c1 = TCanvas( 'c1', mcSet , 900, 1200 )
 
 for Var in variables:
     c1.Clear()
-    DoData = optDoData and InfoType[Var][-1] and region[:2] == 'SR'
+    DoData = optDoData and (VarInfo[Var].get('unblind', True) or region[:2] != 'SR')
+
+    (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, Var, predType, mcSet, VarInfo[Var].get('rebin', 1), forcePositive=False)
+    (graphData, histodata) = plotUtils.GetDataPlot(InputDir, Var, region, VarInfo[Var].get('rebin', 1), forcePositive=False)
     
-    (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, Var, predType, mcSet, InfoType[Var][-2])
-    (hData, histodata) = plotUtils.GetDataPlot(InputDir, Var, region, InfoType[Var][-2])
-    
-    # if(any(s in Var for s in [""]))
-    if((not hMC.GetStack()) or (not hData)):
+    if((not hMC.GetStack()) or (not graphData)):
         continue
     
     YMaxMC = YMax = hMC.GetMaximum()
     
-    YMaxData = ROOT.TMath.MaxElement(hData.GetN(), hData.GetEYhigh()) + ROOT.TMath.MaxElement(hData.GetN(), hData.GetY())
+    YMaxData = ROOT.TMath.MaxElement(graphData.GetN(), graphData.GetEYhigh()) + ROOT.TMath.MaxElement(graphData.GetN(), graphData.GetY())
     
     hMCErr = deepcopy(hMC.GetStack().Last())
     YMaxMC = hMCErr.GetBinContent(hMCErr.GetMaximumBin()) + hMCErr.GetBinError(hMCErr.GetMaximumBin())
@@ -242,7 +261,6 @@ for Var in variables:
     pad1.SetRightMargin  (0.06)#0.10
     pad1.SetLeftMargin   (0.16)
     pad1.SetBottomMargin (1.5) 
-    #pad1.SetLogy()
     pad1.Draw()
         
     c1.cd()
@@ -253,6 +271,9 @@ for Var in variables:
     pad2.SetLeftMargin (0.16)
     pad2.SetBottomMargin(0.3);
     pad2.Draw()
+    if VarInfo[Var].get('logx', False):
+        pad1.SetLogx()
+        pad2.SetLogx()
     
     pad1.cd()
     
@@ -267,6 +288,11 @@ for Var in variables:
     
     hMC.SetMaximum(YMax)
     hMC.Draw("hist")
+    if VarInfo[Var].get('logy', False):
+        pad1.SetLogy()
+        hMC.GetHistogram().GetYaxis().SetMoreLogLabels()
+        if(YMax < 10000):
+            hMC.GetHistogram().GetYaxis().SetNoExponent()
     
     hMC.GetHistogram().GetYaxis().SetTitle("Events")
     hMC.GetHistogram().GetYaxis().SetTitleOffset(1.4)
@@ -280,10 +306,10 @@ for Var in variables:
     leg.AddEntry(hMCErr, "MC Err", "f")
     
     if DoData:
-        hData.SetMarkerStyle(20)
-        hData.SetMarkerSize(.9)
-        hData.Draw("samep")
-        leg.AddEntry(hData, "Data", "lpe")
+        graphData.SetMarkerStyle(20)
+        graphData.SetMarkerSize(.9)
+        graphData.Draw("samep")
+        leg.AddEntry(graphData, "Data", "lpe")
         #HistoData.Draw("same text")
         HistoData.Draw("same")
     
@@ -301,9 +327,13 @@ for Var in variables:
         histodata.GetXaxis().SetBinLabel(3, "2 ")
         histodata.GetXaxis().SetBinLabel(4, "3 ")
         histodata.GetXaxis().SetBinLabel(5, ">3 ")
-    
-    
-    leg.Draw("same")    
+
+    x1 = leg.GetX1()
+    x2 = leg.GetX2()
+    shift = 0.78 - (x1+x2)/2
+    leg.SetX1(x1+shift)
+    leg.SetX2(x2+shift)
+    leg.Draw("same")
     
     CMS_lumi.CMS_lumi(c1, iPeriod, iPos)
     
@@ -312,22 +342,42 @@ for Var in variables:
         
     Line = ROOT.TLine(hMC.GetXaxis().GetXmin(), 1, hMC.GetXaxis().GetXmax(), 1) 
     Line.SetLineWidth(2)
-    histodata.GetXaxis().SetTitle(InfoType[Var][0])
-    histodata.GetXaxis().SetLabelSize(0.08)
-    histodata.GetYaxis().SetLabelSize(0.08)
-    histodata.GetXaxis().SetTitleSize(0.08)
+    Line.SetLineStyle(7)
     
     # yMax_r = histodata.GetBinContent( histodata.GetMaximumBin()) + histodata.GetBinError(histodata.GetMaximumBin() )
     # yMin_r = histodata.GetBinContent( histodata.GetMinimumBin()) - histodata.GetBinError(histodata.GetMinimumBin() )
     # deltaY = (yMax_r - yMin_r)
     yMax_r = 1.5  # max(min(yMax_r + deltaY*0.1, 2), 1.1)
     yMin_r = 0.5  # min(max(yMin_r - deltaY*0.1, 0), 0.9)
+
+    # hArea = deepcopy(hMC.GetStack().Last())  # in ratio plot, the gray area representing MC error
+    # for bin in range(1, hArea.GetNbinsX()+1):
+    #     r = hArea.GetBinContent(bin)
+    #     if(r == 0):
+    #         hArea.SetBinContent(bin, 1)
+    #         hArea.SetBinError  (bin, 0)
+    #     else:
+    #         hArea.SetBinContent(bin, hArea.GetBinContent(bin)/r)
+    #         hArea.SetBinError  (bin, hArea.GetBinContent(bin)/r)
+    # if (hArea.GetXaxis().GetXmin() > 0.001 and hArea.GetXaxis().GetXmax() < 1000):
+    #     hArea.GetXaxis().SetNoExponent()
+    # #hArea.GetXaxis().SetMoreLogLabels()
+    # hArea.SetFillColor(ROOT.kGray)
+    # hArea.Draw("E3")
+    
+    histodata.GetXaxis().SetTitle(VarInfo[Var]['title'])
+    histodata.GetXaxis().SetLabelSize(0.08)
+    histodata.GetYaxis().SetLabelSize(0.08)
+    histodata.GetXaxis().SetTitleSize(0.08)
+    if (histodata.GetXaxis().GetXmin() > 0.001 and histodata.GetXaxis().GetXmax() < 1000):
+        histodata.GetXaxis().SetNoExponent()
     histodata.SetMaximum( yMax_r )
     histodata.SetMinimum( yMin_r )
-    
     histodata.SetMarkerStyle(20)
-    histodata.Draw("E1")
-    Line.Draw("same")
+    #histodata.Draw("E")
+    histodata.Draw("axis")
+    Line.Draw()
+    histodata.Draw("E same")
     
     if(not DoData):
         xm, xM = hMC.GetXaxis().GetXmin(), hMC.GetXaxis().GetXmax()
@@ -336,20 +386,21 @@ for Var in variables:
         text.SetTextSize(.12)
         text.Draw("same")
     
-    Title=Var+"_"+mcSet+"_"+region
+    Title=Var+"_"+mcSet #+"_"+region
     
     ROOT.gStyle.SetOptStat(0);   
     ROOT.gStyle.SetOptTitle(0)
     c1.Update()
     
     c1.SetTitle(Title)
-    #c1.SaveAs(OutputDir + Title+".root")
-    c1.SaveAs(OutputDir + Title+".png")
-    #c1.SaveAs(OutputDir + Title+".eps")
-    c1.SaveAs(OutputDir + Title+".pdf")
+    if SavePlot:
+        # c1.SaveAs(os.path.join(OutputDir, Title+".root"))
+        c1.SaveAs(os.path.join(OutputDir, Title+".png"))
+        # c1.SaveAs(os.path.join(OutputDir, Title+".eps"))
+        c1.SaveAs(os.path.join(OutputDir, Title+".pdf"))
     
     
-    # if Save:
+    # if SavePlot:
     #     fullDir = "{Dir}/{Analysis}/{Analysis}".format(Dir=Dir, Analysis=Analysis, region=region)
     #     try:
     #         os.stat(fullDir)
