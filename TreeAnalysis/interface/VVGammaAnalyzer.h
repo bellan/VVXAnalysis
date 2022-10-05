@@ -80,8 +80,9 @@ public:
 	std::vector<phys::Lepton>* leptons_;
 	
 	// Systematics: photons {EScale, ESigma} x {Up, Down} + {central}
-	std::map<const char*, std::unique_ptr<std::vector<phys::Photon>>> kinPhotons_;
-	std::map<const char*, std::unique_ptr<std::vector<phys::Photon>>> goodPhotons_;
+	std::map<const char*, std::unique_ptr<std::vector<phys::Photon>>> kinPhotons_;    // Only kinematic selection
+	std::map<const char*, std::unique_ptr<std::vector<phys::Photon>>> loosePhotons_;  // Loose ID: currently 3/5 cuts of ID
+	std::map<const char*, std::unique_ptr<std::vector<phys::Photon>>> goodPhotons_;   // Tight ID: currently Loose WP of POG cut-based ID
  	
  	// Vectors of gen particles
  	std::vector<phys::Particle>* genQuarks_;
