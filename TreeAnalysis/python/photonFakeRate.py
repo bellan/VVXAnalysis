@@ -130,7 +130,7 @@ def beautify(canvas, hist, logx=False, logy=False, logz=False):
 
 def get_path_results():
     if(environ.get("CMSSW_BASE")): path_base = path.join(environ['CMSSW_BASE'], "src/VVXAnalysis/TreeAnalysis/results")
-    else:                             path_base = "results" # "rsync_results/Updated/EXT"
+    else:                          path_base = "results" # "~/Work/Analysys/rsync_results/Updated/EXT"
     assert path.exists(path_base), 'Please call this script from "VVXAnalysis/TreeAnalysis" or do `cmsenv`'
     return path_base
     
@@ -213,6 +213,26 @@ def fakeRateABCD(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRL
         cES.SaveAs( "Plot/PhFR/ABCD_Estimate_{:s}-{:s}.{:s}".format(sample_data["name"], sample_prompt["name"], ext) )
     del cES, to_preserve_ESdata
 
+    ## k-Factor = (C/D)/(A/B)
+    cKF = ROOT.TCanvas('cKF', 'kFactor {} - {}'.format(sample_data['name'], sample_prompt['name']), 1200,900)
+    cKF.cd()
+    
+    hKF = copy.deepcopy(hES)
+    hKF.Divide(hdata_A)
+    hKF.SetTitle('k-Factor: (C/D)/(A/B) (from {:s} - {:s})'.format(sample_data['title'], sample_prompt['title']))
+    hKF.SetName('kFactor')
+
+    with TFileContext(outfname, 'UPDATE') as tf:
+        tf.cd()
+        hKF.Write(hKF.GetName(), ROOT.TObject.kOverwrite)
+    
+    to_preserve_KF = beautify(cKF, hKF, logx, logy)
+    cKF.SaveAs( 'Plot/PhFR/ABCD_kFactor_{:s}-{:s}.{:s}'.format(sample_data['name'], sample_prompt['name'], 'png') )
+    del cKF, to_preserve_KF
+    
+    return hFR, hES, hKF
+
+
     return hFR, hES
 
 
@@ -263,48 +283,28 @@ def fakeRateABCD_noSubtract(sample, analyzer="VVXAnalyzer", region="CRLFR", logx
         hES.Write(hES.GetName(), ROOT.TObject.kOverwrite)
 
     to_preserve_ES = beautify(cES, hES, logx, logy, logz=True)
-    
     for ext in ["png"]:
         cES.SaveAs( "Plot/PhFR/ABCD_Estimate_{:s}.{:s}".format(sample["name"], ext) )
     del cES, to_preserve_ES
 
-    return hFR, hES
-    
-    
+    ## k-Factor = (C/D)/(A/B)
+    cKF = ROOT.TCanvas('cKF_nosub', 'kFactor '+sample['name'], 1200,900)
+    cKF.cd()
 
+    hKF = copy.deepcopy(hES)
+    hKF.Divide(hA)
+    hKF.SetTitle('k-Factor: (C/D)/(A/B) from {:s}'.format(sample['title']))
+    hKF.SetName('kFactor')
 
-def kFactorABCD(sample, plotname='PhFR_%s_nonprompt', analyzer='VVGammaAnalyzer', region='CRLFR', logx=False, logy=False, fixNegBins=None):
-    print("kFactor: MC sample =", sample)  # sample = nonprompt MC
-    
-    path_in = "{:s}/2016/{:s}_{:s}".format(get_path_results(), analyzer, region)
-    hA, hB, hC, hD = getPlots( path_in, sample['file'], [ plotname % (c) for c in 'ABCD' ])
-    assert (hA and hB and hC and hD), "Could not get all 4 histograms!"
-    
-    hKF = copy.deepcopy(hA)
-    hKF.Divide(hB)
-    hKF.Divide(hC)
-    hKF.Multiply(hD)
-    
-    if(fixNegBins is None): fixNegBins = sample.get("fixNegBins", False)
-    if(fixNegBins): fix_neg_bins(hKF)
-    hKF.SetTitle("kFactor: {} (A/B)/(C/D)".format(sample["name"]))
-    
-    with TFileContext("data/ABCD_kFactor_{:s}.root".format(sample["name"]), "RECREATE") as tf:
+    with TFileContext(outfname, 'UPDATE') as tf:
         tf.cd()
         hKF.Write(hKF.GetName(), ROOT.TObject.kOverwrite)
     
-    c = ROOT.TCanvas("ckFactor", "kFactor", 1200, 900)
-    beautify(c, hKF, logx, logy)
-    hKF.Draw("colz texte")
-    lines, ticks = linesAndTicks(hKF, logx, logy)
-    to_preserve = lines + ticks
-    for l in to_preserve:
-        l.Draw("same")
+    to_preserve_KF = beautify(cKF, hKF, logx, logy)
+    cKF.SaveAs( 'Plot/PhFR/ABCD_kFactor_{:s}.{:s}'.format(sample['name'], 'png') )
+    del cKF, to_preserve_KF
     
-    for ext in ["png"]:
-        c.SaveAs( "Plot/PhFR/ABCD_kFactor_{:s}.{:s}".format(sample["name"], ext) )
-    
-    del c, to_preserve
+    return hFR, hES, hKF
 
 
 def fakeRateLtoT_noSubtract(sample, plotname='PhFR_LtoT_%s_nonprompt', analyzer='VVXAnalyzer', region='CRLFR', logx=False, logy=False, fixNegBins=False):
@@ -493,15 +493,12 @@ if __name__ == "__main__":
     makedirs_ok('data')
     makedirs_ok('Plot/PhFR')
 
-    hFR_ABCD_data, hES_data = fakeRateABCD(sampleList["data"], sampleList["ZGToLLG"], analyzer="VVGammaAnalyzer", region="CRLFR", logx=True, fixNegBins=True)
+    hFR_ABCD_data, hES_data, hKF_data= fakeRateABCD(sampleList["data"], sampleList["ZGToLLG"], analyzer="VVGammaAnalyzer", region="CRLFR", logx=True, fixNegBins=True)
     print()
-    hFR_ABCD_MC  , hES_MC   = fakeRateABCD_noSubtract(sampleList["Drell-Yan"]       , analyzer="VVGammaAnalyzer", region="CRLFR", logx=True, fixNegBins=True)
+    hFR_ABCD_MC  , hES_MC  , hKF_MC  = fakeRateABCD_noSubtract(sampleList["Drell-Yan"]       , analyzer="VVGammaAnalyzer", region="CRLFR", logx=True, fixNegBins=True)
     print()
     plotRatio(hFR_ABCD_data, hFR_ABCD_MC, picture_name="ABCD_ratio_data-ZG_over_DY", title="Ratio FR(data-Z#gamma)/FR(DY)")
     print()
-
-    kFactorABCD(sampleList["Drell-Yan"], plotname='PhFR_%s_nonprompt', analyzer='VVGammaAnalyzer', region='CRLFR', logx=True, logy=False)
-    # kFactorABCD(sampleList["data"]     , plotname='PhFR_%s'          , analyzer='VVGammaAnalyzer', region='CRLFR', logx=True, logy=False)
 
     hFR_LtoT_data = fakeRateLtoT(sampleList["data"], sampleList["ZGToLLG"], analyzer="VVGammaAnalyzer", region="CRLFR", logx=True, fixNegBins=True)
     print()
