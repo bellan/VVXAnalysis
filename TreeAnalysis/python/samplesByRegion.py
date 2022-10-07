@@ -1,3 +1,4 @@
+import sys
 import ROOT
 
 ##### Define type of samples ##### FIXME: make a class?
@@ -5,7 +6,10 @@ import ROOT
 qqZZ_pow = [{"sample":'ZZTo4l'         , "color":ROOT.kBlue-4  , "name":'qq/qg #rightarrow ZZ(+jets)', "kfactor": 1.}]  # 1.1  #(1.256/1.325)
 qqZZ_mad = [{"sample":'ZZTo4lamcatnlo' , "color":ROOT.kBlue-4  , "name":'qq/qg #rightarrow ZZ(+jets)', "kfactor": 1.1}]
 
-ggZZ     = [{"sample":'ggTo4l'         , "color":ROOT.kAzure-4 , "name":'gg #rightarrow ZZ(+jets)'   , "kfactor": 1.7}]
+ggZZ     = [{"sample":'ggTo2e2mu_Contin_MCFM701', "color":ROOT.kAzure-4 , "name":'gg #rightarrow ZZ(+jets)'   , "kfactor": 1.7},
+            {"sample":'ggTo4e_Contin_MCFM701'   , "color":ROOT.kAzure-4 , "name":'gg #rightarrow ZZ(+jets)'   , "kfactor": 1.7},
+            {"sample":'ggTo4mu_Contin_MCFM701'  , "color":ROOT.kAzure-4 , "name":'gg #rightarrow ZZ(+jets)'   , "kfactor": 1.7}]
+
 vbsZZ    = [{"sample":'ZZ4lJJ'         , "color":ROOT.kCyan-6  , "name":'VBS', "kfactor": 1.0}]
 HZZ      = [{"sample":'HZZ'            , "color":ROOT.kCyan-7  , "name":'higgs', "kfactor": 1.0}]
     
@@ -53,7 +57,7 @@ data_obs = [{"sample":'data'           , "color":ROOT.kBlack   , "name":'Data', 
 
 
 def getSamplesByRegion(region, MCSet, predType):
-    if predType not in ['fromCR', 'fullMC']:
+    if predType not in ['fromCR', 'fullMC', 'fakeMC']:
         sys.exit("Wrong prediction type, fromCR from MC still needs to be added")
     
     qqZZ = {}
@@ -68,8 +72,8 @@ def getSamplesByRegion(region, MCSet, predType):
     if   predType == 'fullMC':
         tot += WZ + DY + ZG + WG + WW + W + tt + ttX + ZZTo2L2Nu + ZZTo2Q2L
 
-    elif predType == 'fromCR':
-        if   region in ['SR4P', 'CR3P1F', 'CR2P2F', 'SR4P_1L', 'SR4P_1F']:
+    elif predType in ['fromCR', 'fakeMC']:
+        if   region in ['SR4P', 'SR4P_1L', 'SR4P_1F']:
             pass
         elif region in ['CR3P1F', 'CR2P2F']:
             pass
@@ -77,10 +81,12 @@ def getSamplesByRegion(region, MCSet, predType):
         elif region in ['SR3P', 'SR3P_1L', 'SR3P_1F']:
             tot += WZ + ttX
         elif region in ['CR000', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CRLFR']:
-            tot += WZ + ttX
+            tot += WZ + ttX + tX + DY + ZG
         elif region == 'CR110':
-            tot += WZ + ttX + DY
+            tot += WZ + ttX + tX + DY + ZG
+        elif region in ['SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F']:
+            tot += WZ + DY + ZG + WG + WW + W + tt + ttX + tX + ZZTo2L2Nu + ZZTo2Q2L
         else:
-            tot += WZ + DY + ZG + WG + WW + W + tt + ttX + ZZTo2L2Nu + ZZTo2Q2L
+            tot += WZ + DY + ZG + WG + WW + W + tt + ttX + tX + ZZTo2L2Nu + ZZTo2Q2L
     
     return tot

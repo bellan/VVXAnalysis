@@ -175,7 +175,6 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin, forcePosi
         else:
             h = None
         if not h:
-            #print sample["sample"],"has no entries or is a zombie"
             print "{0:16.16s}".format(sample["sample"]), "No entries or is a zombie"
             continue
         
@@ -184,16 +183,13 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin, forcePosi
         if forcePositive and any(cr in inputdir for cr in ['CR2P2F','CR100','CR010','CR001']):
             h.Scale(-1)
 
-        
-        print "{0:16.16} {1:.3f} +- {2: .3f}".format(sample["sample"], h.IntegralAndError(0,-1,ErrStat), ErrStat.value)
-
-        # Get overflow events too#
-        totalMC += h.Integral(0,-1)
+        integral = h.IntegralAndError(0,-1,ErrStat)  # Get overflow events too
+        print "{0:16.16} {1:.3f} +- {2: .3f}".format(sample["sample"], integral, ErrStat.value)
+        totalMC += integral
 
         if rebin!=1: h.Rebin(rebin) 
 
-        # h.SetLineColor(sample["color"])
-        h.SetLineColor(ROOT.kBlack)
+        h.SetLineColor(ROOT.kBlack)  # h.SetLineColor(sample["color"])
 
         h.SetFillColor(sample["color"])
         h.SetMarkerStyle(21)
