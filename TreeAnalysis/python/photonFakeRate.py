@@ -136,7 +136,7 @@ def get_path_results():
     
 
 
-def fakeRateABCD(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRLFR", logx=False, logy=False, fixNegBins=False):
+def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", region="CRLFR", logx=False, logy=False, fixNegBins=False):
     print("Fake Rate ABCD: data     =", sample_data  )
     print("Fake Rate ABCD: promptMC =", sample_prompt)
     path_in = "{:s}/2016/{:s}_{:s}".format(get_path_results(), analyzer, region)
@@ -236,7 +236,7 @@ def fakeRateABCD(sample_data, sample_prompt, analyzer="VVXAnalyzer", region="CRL
     return hFR, hES
 
 
-def fakeRateABCD_noSubtract(sample, analyzer="VVXAnalyzer", region="CRLFR", logx=False, logy=False, fixNegBins=False):
+def fakeRateABCD_noSubtract(sample, analyzer="VVGammaAnalyzer", region="CRLFR", logx=False, logy=False, fixNegBins=False):
     print("Fake Rate ABCD: sample   =", sample  )
     path_in = "{:s}/2016/{:s}_{:s}".format(get_path_results(), analyzer, region)
     outfname = "data/ABCD_FR_{:s}.root".format(sample["name"])
@@ -307,15 +307,18 @@ def fakeRateABCD_noSubtract(sample, analyzer="VVXAnalyzer", region="CRLFR", logx
     return hFR, hES, hKF
 
 
-def fakeRateLtoT_noSubtract(sample, plotname='PhFR_LtoT_%s_nonprompt', analyzer='VVXAnalyzer', region='CRLFR', logx=False, logy=False, fixNegBins=False):
+def fakeRateLtoT_noSubtract(sample, plotname='PhFR_LtoT_%s_nonprompt', analyzer='VVGammaAnalyzer', region='CRLFR', logx=False, logy=False, fixNegBins=False):
     print('Fake Rate LtoT: sample   =', sample)
     path_in = '{:s}/2016/{:s}_{:s}'.format(get_path_results(), analyzer, region)
     outfname = 'data/LtoT_FR_{:s}.root'.format(sample['name'])
     print('Output in: "{:s}"'.format(outfname))
 
-    hPASS, hFAIL = getPlots(path_in, sample['file'], [ plotname % (s) for s in ['PASS', 'FAIL'] ] )
-    assert (hPASS and hFAIL), "Could't get the 2 histograms!"
-
+    h5, h4, h3 = getPlots(path_in, sample['file'], [ plotname % (s) for s in [5, 4, 3] ] )
+    assert (h5 and h4 and h3), "Could't get the 3 histograms!"
+    
+    hPASS = h5
+    hFAIL = h3
+    hFAIL.Add(h4)
     hFAIL.Add(hPASS)
 
     if(sample.get('fixNegBins', False) and fixNegBins):
@@ -328,7 +331,7 @@ def fakeRateLtoT_noSubtract(sample, plotname='PhFR_LtoT_%s_nonprompt', analyzer=
     
     hFR = copy.deepcopy(hPASS)
     hFR.Divide(hFAIL)
-    hFR.SetTitle( 'Photon Fake Rate: pass5/pass4 (from {:s})'.format(sample['title']) )
+    hFR.SetTitle( 'Photon Fake Rate: 5/(3+4+5) (from {:s})'.format(sample['title']) )
     hFR.SetName( 'PhFR_LtoT' )
 
     with TFileContext(outfname, 'UPDATE') as tf:
@@ -344,7 +347,7 @@ def fakeRateLtoT_noSubtract(sample, plotname='PhFR_LtoT_%s_nonprompt', analyzer=
     return hFR
 
     
-def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVXAnalyzer', region='CRLFR', logx=False, logy=False, fixNegBins=False):
+def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', region='CRLFR', logx=False, logy=False, fixNegBins=False):
     print('Fake Rate LtoT: data     =', sample_data  )
     print('Fake Rate LtoT: promptMC =', sample_prompt)
     path_in = '{:s}/2016/{:s}_{:s}'.format(get_path_results(), analyzer, region)
@@ -352,11 +355,18 @@ def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVXAnalyzer', region='CRL
     print('Output (with prompt MC subtraction) in: "{:s}"'.format(outfname_full))
     
     ##### First: take data ####
-    hdata_PASS  , hdata_FAIL   = getPlots(path_in, sample_data['file']  , [ 'PhFR_LtoT_%s'        % (s) for s in ['PASS', 'FAIL'] ] )
-    hprompt_PASS, hprompt_FAIL = getPlots(path_in, sample_prompt['file'], [ 'PhFR_LtoT_%s_prompt' % (s) for s in ['PASS', 'FAIL'] ] )
-    assert (hdata_PASS   and hdata_FAIL  ), "Could't get the 2 data histograms!"
-    assert (hprompt_PASS and hprompt_FAIL), "Could't get the 2 prompt MC histograms"
-
+    hdata_5  , hdata_4  , hdata_3   = getPlots(path_in, sample_data['file']  , [ 'PhFR_LToT_%d'        % (s) for s in [5, 4, 3] ] )
+    hprompt_5, hprompt_4, hprompt_3 = getPlots(path_in, sample_prompt['file'], [ 'PhFR_LToT_%d_prompt' % (s) for s in [5, 4, 3] ] )
+    assert (hdata_5   and hdata_4   and hdata_3  ), "Could't get the 3 data histograms!"
+    assert (hprompt_5 and hprompt_4 and hprompt_3), "Could't get the 3 prompt MC histograms"
+    
+    hdata_PASS   = hdata_5
+    hdata_FAIL   = hdata_3
+    hdata_FAIL  .Add(hdata_4  )
+    hprompt_FAIL = hprompt_3
+    hprompt_PASS = hprompt_5
+    hprompt_FAIL.Add(hprompt_4)
+    
     hdata_FAIL  .Add(hdata_PASS  )
     hprompt_FAIL.Add(hprompt_PASS)
 
@@ -376,7 +386,7 @@ def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVXAnalyzer', region='CRL
     
     hFR = hdata_PASS
     hFR.Divide(hdata_FAIL)
-    hFR.SetTitle( 'Photon Fake Rate: pass5/pass4 (from {} - {})'.format(sample_data['title'], sample_prompt['title']) )
+    hFR.SetTitle( 'Photon Fake Rate: 5/(3+4+5) (from {} - {})'.format(sample_data['title'], sample_prompt['title']) )
     hFR.SetName( 'PhFR' )
     
     if(fixNegBins):
@@ -493,16 +503,16 @@ if __name__ == "__main__":
     makedirs_ok('data')
     makedirs_ok('Plot/PhFR')
 
-    hFR_ABCD_data, hES_data, hKF_data= fakeRateABCD(sampleList["data"], sampleList["ZGToLLG"], analyzer="VVGammaAnalyzer", region="CRLFR", logx=True, fixNegBins=True)
+    hFR_ABCD_data, hES_data, hKF_data= fakeRateABCD(sampleList["data"], sampleList["ZGToLLG"], logx=True, fixNegBins=False)
     print()
-    hFR_ABCD_MC  , hES_MC  , hKF_MC  = fakeRateABCD_noSubtract(sampleList["Drell-Yan"]       , analyzer="VVGammaAnalyzer", region="CRLFR", logx=True, fixNegBins=True)
+    hFR_ABCD_MC  , hES_MC  , hKF_MC  = fakeRateABCD_noSubtract(sampleList["Drell-Yan"]       , logx=True, fixNegBins=True)
     print()
     plotRatio(hFR_ABCD_data, hFR_ABCD_MC, picture_name="ABCD_ratio_data-ZG_over_DY", title="Ratio FR(data-Z#gamma)/FR(DY)")
     print()
 
-    hFR_LtoT_data = fakeRateLtoT(sampleList["data"], sampleList["ZGToLLG"], analyzer="VVGammaAnalyzer", region="CRLFR", logx=True, fixNegBins=True)
+    hFR_LtoT_data = fakeRateLtoT(sampleList["data"], sampleList["ZGToLLG"], logx=True, fixNegBins=False)
     print()
-    hFR_LtoT_MC   = fakeRateLtoT_noSubtract(sampleList["Drell-Yan"]       , analyzer="VVGammaAnalyzer", region="CRLFR", logx=True, fixNegBins=True)
+    hFR_LtoT_MC   = fakeRateLtoT_noSubtract(sampleList["Drell-Yan"]       , logx=True, fixNegBins=True)
     print()
     ratioLtoT = plotRatio(hFR_LtoT_data, hFR_LtoT_MC, picture_name="LtoT_ratio_data-ZG_over_DY", title="Ratio FR(data-Z#gamma)/FR(DY)")
     print()
