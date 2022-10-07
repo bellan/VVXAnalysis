@@ -140,6 +140,21 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin, forcePosi
                 hfake.Add(hfakeTmp)
         stack.Add(hfake)
         leg.AddEntry(hfake,"Non-prompt leptons","f")
+    elif predType == 'fakeMC':  # Hack: use MCs in CRs as if they were data
+        print Green('\nNon-prompt leptons from MC in control regions')
+        hfake = None
+        for controlRegion in controlRegions:
+            hfakeTmp, _ = GetPredictionsPlot(controlRegion, inputdir.replace(region,controlRegion), plot, 'fullMC', MCSet, rebin, forcePositive=forcePositive)
+            if hfakeTmp is None: continue
+            if hfakeTmp.GetStack().GetEntries() == 0:
+                print("WARN: got 0 predictions")
+                continue
+            if hfake is None:
+                hfake = copy.deepcopy(hfakeTmp.GetStack().Last())
+            else:
+                hfake.Add(hfakeTmp.GetStack().Last())
+        stack.Add(hfake)
+        leg.AddEntry(hfake,"Non-prompt lept (MC)","f")
      
     LastColor = ROOT.kBlack
 
