@@ -97,7 +97,8 @@ ROOT.gROOT.SetBatch(True)
 # VarInfo_vbs = {"Mass":["m_{4\ell}","m_{4\ell}",40],"Mjj":["m_{jj}","m_{JJ}",20],"Z1Mass":["Z1 Mass","m_{2\ell}",10,],"Z2Mass":["Z2 Mass","m_{2\ell}",10,],"Z1lep0_sip":["Z1 lep 0 Sip","Sip",4],"Z1lep0_iso":["Z1 lep 0 Iso","Iso",4],"Z0lep0_pt":["Z1 lep 0 pT","p_{T}",4],"nJets":["# jets","# jets",1],"nJets_central":["# jets","# jets",1],"z":["z1","z1",1],"PtJet1":["pT Jet","p_{T}^{jet}",10],"EtaJet1":["#eta Jet","#eta^{jet}",10],"PtJet2":["pT Jet","p_{T}^{jet}",10],"EtaJet2":["#eta Jet","#eta^{jet}",10],"Z1pt":["Z1 p_{T}","p_{T}",20],"Z2pt":["Z2 p_{T}","p_{T}",10],"Z1z":["Z1 z","z_{Z_{1}}",7],"Z2z":["Z2 z","z_{Z_{2}}",7],"ptJRatio":["","#Sigma p_{T}/# Sum  ",2],"ptRatio":["","#Sum p_{T}",2],"PtZZ":["p_{T}^{4\\ell}","Sum p_{T}",60],"deltaEtaJJ":["|#eta_{jj}|","|#eta_{jj}|",2],"Dphi":["#Delta #phi_{jj}","#Delta #phi_{jj}",10],"Deta":["#Delta #eta_{jj}","#Delta #eta_{jj}",5],"Mjj_Central":["m_{jj}","m_{jj}",20],"Deta_Central":["#Delta #eta_{jj}","#Delta #eta_{jj}",5]}
 
 VarInfo_vvx = {
-    "AAA_cuts"  : {'title':'Cuts', 'unblind':True, 'logy':False}
+    "AAA_cuts"  : {'title':'Cuts', 'unblind':True, 'logy':False},
+    'channel_lep':{'title':'lepton flavour', 'unblind':True}
 }
 
 if region in ['SR4P', 'CR3P1F', 'CR2P2F']:
@@ -121,10 +122,11 @@ if region in ['SR4P', 'CR3P1F', 'CR2P2F']:
             # name+'_mass_noG'   : {'title':'m_{%s}\:,\ no\:\gamma'                %(title), 'rebin':1, 'unblind':True },
             name+'_mass_kinG'  : {'title':'m_{%s}\:,\ \gamma\:kin'               %(title), 'rebin':1, 'unblind':True },
             name+'_mass_failG' : {'title':'m_{%s}\:,\ \gamma\:kin\,\land\:!loose'%(title), 'rebin':1, 'unblind':True },
-            name+'_mass_looseG': {'title':'m_{%s}\:,\ \gamma\:loose'             %(title), 'rebin':1, 'unblind':False}
+            name+'_mass_looseG': {'title':'m_{%s}\:,\ \gamma\:loose'             %(title), 'rebin':1, 'unblind':True },
+            name+'_mass_tightG': {'title':'m_{%s}\:,\ \gamma\:tight'             %(title), 'rebin':1, 'unblind':False}
         })
         
-elif region in ['SR3P', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110']:
+elif region in ['SR3P', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110', 'CR000']:
     VarInfo_vvx.update({
         "WZ_cutflow": {'title':'Cuts', 'logy':False},
         'ZW_massT': {'title':'mT_{3\ell\\nu}'   , 'rebin':1, 'unblind':True},
@@ -148,7 +150,8 @@ elif region in ['SR3P', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110']:
             # name+'_massT_noG'   : {'title':'mT_{%s}\:,\ no\:\gamma'                %(title), 'rebin':1, 'unblind':True },
             name+'_massT_kinG'  : {'title':'mT_{%s}\:,\ \gamma\:kin'               %(title), 'rebin':1, 'unblind':True },
             name+'_massT_failG' : {'title':'mT_{%s}\:,\ \gamma\:kin\,\land\:!loose'%(title), 'rebin':1, 'unblind':True },
-            name+'_massT_looseG': {'title':'mT_{%s}\:,\ \gamma\:loose'             %(title), 'rebin':1, 'unblind':False}
+            name+'_massT_looseG': {'title':'mT_{%s}\:,\ \gamma\:loose'             %(title), 'rebin':1, 'unblind':True },
+            name+'_massT_tightG': {'title':'mT_{%s}\:,\ \gamma\:tight'             %(title), 'rebin':1, 'unblind':False}
         })
     for name, title in [('e', 'e'), ('m','\mu')]:
         VarInfo_vvx.update({
@@ -161,22 +164,36 @@ elif region in ['SR3P', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110']:
 
 elif region in ['SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F']:
     VarInfo_vvx.update({
-        'AK4_N'        : {'title':'# AK4'   , 'rebin':1, 'unblind':True},
-        'AK4_pt'       : {'title':'p_{T}'   , 'rebin':1, 'unblind':True},
-        'AK8_N'        : {'title':'# AK8'   , 'rebin':1, 'unblind':True},
-        'AK8_pt'       : {'title':'p_{T}'   , 'rebin':1, 'unblind':True},
-        'Z_mass_2e'    : {'title':'m_{2e}'  , 'rebin':1, 'unblind':True},
-        'Z_mass_2m'    : {'title':'m_{2\mu}', 'rebin':1, 'unblind':True},
-        'Z_mass_noG'   : {'title':'m_{2\ell}\:,\ no\:\gamma'        , 'rebin':1, 'unblind':True },
-        'Z_mass_kinG'  : {'title':'m_{2\ell}\:,\ kin\:\gamma'       , 'rebin':1, 'unblind':True },
-        'Z_mass_failG' : {'title':'m_{2\ell}\:,\ kin\,\land\:!loose', 'rebin':1, 'unblind':True },
-        'Z_mass_looseG': {'title':'m_{2\ell}\:,\ \gamma\:loose'     , 'rebin':1, 'unblind':False}
+        'AK4_N'         : {'title':'# AK4'   , 'rebin':1, 'unblind':True},
+        'AK4_pt'        : {'title':'p_{T}'   , 'rebin':1, 'unblind':True},
+        'AK8_N'         : {'title':'# AK8'   , 'rebin':1, 'unblind':True},
+        'AK8_pt'        : {'title':'p_{T}'   , 'rebin':1, 'unblind':True},
+        'Z_mass_2e'     : {'title':'m_{2e}'  , 'rebin':1, 'unblind':True},
+        'Z_mass_2m'     : {'title':'m_{2\mu}', 'rebin':1, 'unblind':True},
+        'Z_mass_noG'    : {'title':'m_{2\ell}\:,\ no\:\gamma'        , 'rebin':1, 'unblind':True },
+        'Z_mass_kinG'   : {'title':'m_{2\ell}\:,\ kin\:\gamma'       , 'rebin':1, 'unblind':True },
+        'Z_mass_failG'  : {'title':'m_{2\ell}\:,\ kin\,\land\:!loose', 'rebin':1, 'unblind':True },
+        'Z_mass_looseG' : {'title':'m_{2\ell}\:,\ \gamma\:loose'     , 'rebin':1, 'unblind':False},
+        'ZG_mass_kinG'  : {'title':'m_{2\ell\gamma}\:,\ \gamma\:kin'},
+        'ZG_mass_looseG': {'title':'m_{2\ell\gamma}\:,\ \gamma\:loose', 'unblind':False},
+        'VToJ_mass'     : {'title': 'm_{J}'},
+        'VTojj_mass'    : {'title': 'm_{jj}'},
+        'VToJFake_mass' : {'title': 'm_{J} fake'},
+        'VTojjFake_mass': {'title': 'm_{jj} fake'}
     })
-
+    for Vhad in ['VToJ', 'VToJFake']:
+        for classifier in ['PNet', 'deepAK8', 'deepAK8MD']:
+            for discriminant in ['TvsQCD', 'WvsQCD', 'ZvsQCD']:
+                VarInfo_vvx.update({
+                    '%s_%s_%s'%(Vhad, classifier, score): {'title': score+' '+classifier, unblind=True}
+                })
+    
 VarInfo_VVGamma = deepcopy(VarInfo_vvx)
 VarInfo_VVGamma.update({
     'kinPhotons_cutflow': {'title':'cut', 'rebin':1, 'unblind':True, 'logy':True},
-    'kinPhotons_MVA'    : {'title':'MVA score', 'unblind':True}
+    'kinPhotons_Nm1'    : {'title':'N-1 cuts', 'unblind':True},
+    'kinPhotons_MVA'    : {'title':'MVA score', 'unblind':True},
+    'kinPhRes_dR'       : {'title': '#DeltaR', 'unblind':False}
     # 'noKinPh_all_genPh_N'  : {'title': '# #gamma_{GEN}'     },
     # 'noKinPh_all_genPh_pt' : {'title': '#gamma_{GEN} p_{T}' },
     # 'noKinPh_all_genPh_eta': {'title': '#gamma_{GEN} #eta'  },
@@ -249,8 +266,8 @@ for Var in variables:
     c1.Clear()
     DoData = optDoData and (VarInfo[Var].get('unblind', True) or region[:2] != 'SR')
 
-    (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, Var, predType, mcSet, VarInfo[Var].get('rebin', 1), forcePositive=False)
-    (graphData, histodata) = plotUtils.GetDataPlot(InputDir, Var, region, VarInfo[Var].get('rebin', 1), forcePositive=False)
+    (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, Var, predType, mcSet, VarInfo[Var].get('rebin', 1), forcePositive=True)
+    (graphData, histodata) = plotUtils.GetDataPlot(InputDir, Var, region, VarInfo[Var].get('rebin', 1), forcePositive=True)
     
     if((not hMC.GetStack()) or (not graphData)):
         continue
@@ -275,7 +292,7 @@ for Var in variables:
     pad1.SetLeftMargin   (0.16)
     pad1.SetBottomMargin (1.5) 
     pad1.Draw()
-        
+    
     c1.cd()
     
     pad2 = ROOT.TPad ('rat', 'Data/MC ratio', 0., 0.0,  1., 0.28)#0.15
