@@ -1,7 +1,6 @@
 #!/usr/bin/env python2
 
 from __future__ import print_function
-from sys import argv
 from os import path, environ, getcwd
 import ROOT
 from ctypes import c_double
@@ -11,8 +10,7 @@ from plotUtils import TFileContext, makedirs_ok
 
 
 ROOT.gStyle.SetOptStat('0000')
-if '-b' in argv:
-    ROOT.gROOT.SetBatch(True)
+ROOT.gROOT.SetBatch(True)
 
 
 def plotSystematics(hCentral, hUp, hDn, syst_values, var='[var]', syst='[syst]', sample='[sample]'):  # <TH1>, <TH1>, <TH1>, <dict> (modified), <str>, <str>, <str>
@@ -66,7 +64,8 @@ def plotSystematics(hCentral, hUp, hDn, syst_values, var='[var]', syst='[syst]',
     upVar = (integralUp-integralCentral)/integralCentral
     dnVar = (integralDn-integralCentral)/integralCentral
     # print('\t{var}_{syst}'.format(**formatInfo), ' Up: {:.1f} %  Dn: {:.1f} %'.format(100*upVar, 100*dnVar))
-    syst_values.setdefault(sample, {}).setdefault(var, {})[syst] = {'up':1+upVar, 'dn':1+dnVar}
+    # syst_values.setdefault(sample, {}).setdefault(var, {})[syst] = {'up':1+upVar, 'dn':1+dnVar}
+    syst_values.setdefault(var, {}).setdefault(sample, {})[syst] = {'up':upVar, 'dn':dnVar} #{'up':1+upVar, 'dn':1+dnVar}  #
 
     hCentral.GetXaxis().SetLabelSize(0)  # remove x axis tick labels
     hCentral.SetTitle('{var} {syst} --> {:+.1f}/{:+.1f} %'.format(100*upVar, 100*dnVar, **formatInfo))
@@ -154,18 +153,6 @@ def doSystOnFile(path, syst_values):  # <str>, <dict> (to be passed to doSystema
 if __name__ == '__main__':
     syst_values = {}
     results_folder = 'results/2016/VVGammaAnalyzer_{region}'
-    
-    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'WZTo3LNu.root'      ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'WZGTo3LNuG.root'    ), syst_values)
-    # doSystOnFile(path.join(results_folder.format(region='SR3P'), 'ZGToLLG.root'       ), syst_values)
-    # doSystOnFile(path.join(results_folder.format(region='SR3P'), 'DYJetsToLL_M50.root'), syst_values)
-    
-    # doSystOnFile(path.join(results_folder.format(region='SR4P'), 'fake_leptons.root'  ), syst_values)
-    # doSystOnFile(path.join(results_folder.format(region='SR4P'), 'WZTo3LNu.root'      ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ZZTo4l.root'        ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ggTo4l.root'        ), syst_values)
-    # doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ggTo4e_Contin_MCFM701.root'), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ZZGTo4LG.root'      ), syst_values)
 
     if(environ.get('CMSSW_BASE', False)):
         basepath = path.join(environ['CMSSW_BASE'], 'src', 'VVXAnalysis', 'TreeAnalysis', 'data')
@@ -178,15 +165,25 @@ if __name__ == '__main__':
         makedirs_ok(basepath)
     
     sysJSON = path.join(basepath, 'systematics.json')
-    original = {}
     try:
         with open(sysJSON, 'r') as f:
-            original = load(f)
-    except (IOError, ValueError):
-        pass
+            syst_values = load(f)
+    except (IOError, OSError, ValueError):
+        syst_values = {}
     
-    original.update(syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'fake_leptons.root'  ), syst_values)
+    # doSystOnFile(path.join(results_folder.format(region='SR3P'), 'WZTo3LNu.root'      ), syst_values)
+    # doSystOnFile(path.join(results_folder.format(region='SR3P'), 'WZGTo3LNuG.root'    ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'ZZTo4l.root'        ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'ZGToLLG.root'       ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'DYJetsToLL_M50.root'), syst_values)
+    
+    # doSystOnFile(path.join(results_folder.format(region='SR4P'), 'fake_leptons.root'  ), syst_values)
+    # doSystOnFile(path.join(results_folder.format(region='SR4P'), 'WZTo3LNu.root'      ), syst_values)
+    # doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ZZTo4l.root'        ), syst_values)
+    # doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ggTo4l.root'        ), syst_values)
+    # doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ZZGTo4LG.root'      ), syst_values)
     
     with open(sysJSON, 'w') as fout:
-        dump(original, fout, indent=2)
+        dump(syst_values, fout, indent=2)
     print('INFO: wrote systematics to "{}"'.format(sysJSON))
