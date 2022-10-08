@@ -124,7 +124,6 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin, forcePosi
     typeofsamples = getSamplesByRegion(region, MCSet, predType)
 
     files = {}
-    filesbkg = {}
     stack = ROOT.THStack("stack",plot+"_stack")
     ErrStat = ctypes.c_double(0.)
 
@@ -155,9 +154,8 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin, forcePosi
                 hfake.Add(hfakeTmp.GetStack().Last())
         stack.Add(hfake)
         leg.AddEntry(hfake,"Non-prompt lept (MC)","f")
-     
-    LastColor = ROOT.kBlack
-
+    
+    
     for sample in typeofsamples:
         try:
             files[sample["sample"]] = ROOT.TFile(inputdir+sample["sample"]+".root")
@@ -168,7 +166,7 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin, forcePosi
 
     print Red("\n######### Contribution to {0:s}  #########\n".format(region))
 
-    for sample in typeofsamples:
+    for index_sample, sample in enumerate(typeofsamples):
         
         if files[sample["sample"]] and files[sample["sample"]].IsOpen():
             h = files[sample["sample"]].Get(plot)
@@ -188,17 +186,95 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin, forcePosi
         totalMC += integral
 
         if rebin!=1: h.Rebin(rebin) 
-
-        h.SetLineColor(ROOT.kBlack)  # h.SetLineColor(sample["color"])
+        
+        if( (index_sample + 1 > len(typeofsamples) - 1) or sample['color'] != typeofsamples[index_sample+1]['color']):
+            # this is the last sample or the next sample has another color
+            h.SetLineColor(ROOT.kBlack)
+            leg.AddEntry(h,sample["name"],"f")
+        else:
+            h.SetLineColor(sample['color'])
 
         h.SetFillColor(sample["color"])
         h.SetMarkerStyle(21)
         h.SetMarkerColor(sample["color"])
         
         stack.Add(h)
-        if LastColor!=sample["color"]:
-            leg.AddEntry(h,sample["name"],"f")
-        LastColor=sample["color"]
+
+    print "\n Total MC .......................... {0:.2f}".format(totalMC)
+    print "____________________________________ "       
+    return (copy.deepcopy(stack),copy.deepcopy(leg))
+
+
+#################################################
+def GetClosureStack(region, inputdir, plot, rebin, forcePositive=True):
+    print Red("\n###############"+'#'*len(plot)+"###############"
+              "\n############## "+    plot     +" ##############"
+              "\n###############"+'#'*len(plot)+"###############")
+    leg = ROOT.TLegend(0.6,0.52,0.79,0.87)
+    leg.SetBorderSize(0)
+    leg.SetTextSize(0.025)
+
+    files = {}
+    stack = ROOT.THStack("stack",plot+"_stack")
+    ErrStat = ctypes.c_double(0.)
+    
+    if region in ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L']:
+        var = 'mZZG'
+    elif region in ['SR3P', 'CR110'  , 'CR101'  , 'CR011'  , 'CR100'  , 'CR001'  , 'CR010', 'CR000', 'SR3P_1L', 'SR3P_1P', 'CR3P_1F', 'CRLFR', 'CR3L']:
+        var = 'mWZG'
+    else:
+        print '[GetClosureStack] unknown region:', region
+        return
+    if   region == 'SR4P':
+        sample_prompt = 'ZZGTo4LG'
+        title_prompt = 'ZZ#gamma'
+        color = ROOT.kRed
+    elif region in ['SR3P', 'CR3P1F']:
+        sample_prompt = 'WZGTo3LNuG'
+        title_prompt = 'WZ#gamma'
+        color = ROOT.kMagenta
+    elif region in ['SR2P', 'CR2P2F', 'CR110', 'CR101', 'CR011']:
+        sample_prompt = 'ZGToLLG'
+        title_prompt = 'Z#gamma'
+        color = ROOT.kGreen-4
+        
+    
+    fFakeData = ROOT.TFile(inputdir+'data.root'   , 'READ')
+    hFakeData = fFakeData.Get('PhFRClosure_reweighted_%s'  % (var))
+    fPromptZG = ROOT.TFile(inputdir+sample_prompt+'.root', 'READ')
+    hPromptZG = fPromptZG.Get('PhFRClosure_PASS_%s'        % (var))
+    
+    totalMC = 0
+
+    samples = [{'sample':'fake-photons', 'color':ROOT.kGray, 'title':'nonprompt #gamma', 'hist':hFakeData},
+               {'sample':sample_prompt , 'color':color     , 'title':title_prompt      , 'hist':hPromptZG}]
+
+    print Red("\n######### Contribution to {0:s}  #########\n".format(region))
+
+    for sample in samples:
+        h = sample['hist']
+        if not h:
+            print "{0:16.16s}".format(sample["sample"]), "No entries or is a zombie"
+            continue
+        
+        #h.Scale(sample.get("kfactor", 1.))
+        # h.Scale(-1)
+        # if forcePositive and any(cr in inputdir for cr in ['CR2P2F','CR100','CR010','CR001']):
+        #     print ">>> inverting sign"
+        #     h.Scale(-1)
+
+        integral = h.IntegralAndError(0,-1,ErrStat)  # Get overflow events too
+        print "{0:16.16} {1:.3f} +- {2: .3f}".format(sample["sample"], integral, ErrStat.value)
+        totalMC += integral
+
+        if rebin!=1: h.Rebin(rebin)
+
+        h.SetLineColor  (ROOT.kBlack)  # h.SetLineColor(sample["color"])
+        h.SetFillColor  (sample["color"])
+        h.SetMarkerColor(sample["color"])
+        h.SetMarkerStyle(21)
+        stack.Add(h)
+        leg.AddEntry(h, sample['title'], "f")
 
     print "\n Total MC .......................... {0:.2f}".format(totalMC)
     print "____________________________________ "       
