@@ -102,6 +102,11 @@ VarInfo_vvx = {
 }
 
 if region in ['SR4P', 'CR3P1F', 'CR2P2F']:
+    rebin_mZZG = 1
+    if(region in ['SR4P', 'CR3P1F']):
+        rebin_mZZG = 2
+    elif(region == 'CR2P2F'):
+        rebin_mZZG = 2
     VarInfo_vvx.update({
         'ZZ_mass' : {'title':'m_{4\ell}'     , 'rebin':1, 'unblind':True},
         'Z0_mass' : {'title':'m_{Z0}'        , 'rebin':1, 'unblind':True},
@@ -110,7 +115,8 @@ if region in ['SR4P', 'CR3P1F', 'CR2P2F']:
         'Z0_l0_pt': {'title':'p_{T}^{Z0, l0}', 'rebin':1, 'unblind':True},
         'Z0_l1_pt': {'title':'p_{T}^{Z0, l1}', 'rebin':1, 'unblind':True},
         'Z1_l0_pt': {'title':'p_{T}^{Z1, l0}', 'rebin':1, 'unblind':True},
-        'Z1_l1_pt': {'title':'p_{T}^{Z1, l1}', 'rebin':1, 'unblind':True}
+        'Z1_l1_pt': {'title':'p_{T}^{Z1, l1}', 'rebin':1, 'unblind':True},
+        'PhFRClosure_PASS_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG}
     })
     for name, title in [('4e','4e'), ('2e2m', '2e2\mu'), ('4m', '4\mu')]:
         VarInfo_vvx.update({
@@ -119,11 +125,11 @@ if region in ['SR4P', 'CR3P1F', 'CR2P2F']:
         })
     for name, title in [('ZZ', '4\ell'), ('ZZG', '4\ell\gamma')]:
         VarInfo_vvx.update({
-            # name+'_mass_noG'   : {'title':'m_{%s}\:,\ no\:\gamma'                %(title), 'rebin':1, 'unblind':True },
-            name+'_mass_kinG'  : {'title':'m_{%s}\:,\ \gamma\:kin'               %(title), 'rebin':1, 'unblind':True },
-            name+'_mass_failG' : {'title':'m_{%s}\:,\ \gamma\:kin\,\land\:!loose'%(title), 'rebin':1, 'unblind':True },
-            name+'_mass_looseG': {'title':'m_{%s}\:,\ \gamma\:loose'             %(title), 'rebin':1, 'unblind':True },
-            name+'_mass_tightG': {'title':'m_{%s}\:,\ \gamma\:tight'             %(title), 'rebin':1, 'unblind':False}
+            # name+'_mass_noG'   : {'title':'m_{%s}\:,\ no\:\gamma'                  %(title), 'rebin':1, 'unblind':True },
+            name+'_mass_kinG'  : {'title':'m_{%s}\:,\ \gamma\:kin'                 %(title), 'rebin':1, 'unblind':True }, # Just kinematic selection + pixelSeed + electron veto
+            name+'_mass_failG' : {'title':'m_{%s}\:,\ \gamma\:loose\,\land\:!tight'%(title), 'rebin':3, 'unblind':True },
+            name+'_mass_looseG': {'title':'m_{%s}\:,\ \gamma\:loose'               %(title), 'rebin':1, 'unblind':True }, # Loose = pass 3 cuts
+            name+'_mass_tightG': {'title':'m_{%s}\:,\ \gamma\:tight'               %(title), 'rebin':3, 'unblind':False}  # Tight = cutBasedIDLoose()
         })
         
 elif region in ['SR3P', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110', 'CR000']:
@@ -131,8 +137,18 @@ elif region in ['SR3P', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110', 'C
         "WZ_cutflow": {'title':'Cuts', 'logy':False},
         'ZW_massT': {'title':'mT_{3\ell\\nu}'   , 'rebin':1, 'unblind':True},
         'ZW_pt'   : {'title':'p_{T}^{3\ell\\nu}', 'rebin':1, 'unblind':True},
-        'W_l_pt'  : {'title': 'p_{t,l10};GeV/c'},
-        'lll_mass': {'title':'m_{lll};GeV/c^{2}'}
+        'W_l_pt'  : {'title':'p_{t,l10};GeV/c'},
+        'lll_mass': {'title':'m_{lll};GeV/c^{2}'},
+        'paperSel_ZW_massT' : {'title':'m_{T,3l} [GeV/c^{2}]'},
+        'paperSel_Z_mass'   : {'title':'m_{Z} [GeV/c^{2}]'   },
+        'paperSel_W_massT'  : {'title':'m_{T,W} [GeV/c^{2}]' },
+        'paperSel_ZW_pt'    : {'title':'p_{t,ZW} [GeV/c]'    },
+        'paperSel_Z_l0_pt'  : {'title':'p_{t,l00} [GeV/c]'   },
+        'paperSel_Z_l1_pt'  : {'title':'p_{t,l01} [GeV/c]'   },
+        'paperSel_W_l_pt'   : {'title':'p_{t,l10} [GeV/c]'   },
+        'paperSel_W_MET_pt' : {'title':'p_{t,MET} [GeV/c]'   },
+        'paperSel_lll_mass' : {'title':'m_{lll} [GeV/c^{2}]' },
+        'PhFRClosure_PASS_mWZG': {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':False}
         # 'debug3L_l1_FRSF': {'title':'FR(l_{1})' }
         # 'debug3L_l2_FRSF': {'title':'FR(l_{2})' }
         # 'debug3L_l3_FRSF': {'title':'FR(l_{3})' }
@@ -185,15 +201,15 @@ elif region in ['SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F']:
         for classifier in ['PNet', 'deepAK8', 'deepAK8MD']:
             for discriminant in ['TvsQCD', 'WvsQCD', 'ZvsQCD']:
                 VarInfo_vvx.update({
-                    '%s_%s_%s'%(Vhad, classifier, score): {'title': score+' '+classifier, unblind=True}
+                    '%s_%s_%s'%(Vhad, classifier, discriminant): {'title': discriminant+' '+classifier, 'rebin':2, 'unblind':True}
                 })
     
 VarInfo_VVGamma = deepcopy(VarInfo_vvx)
 VarInfo_VVGamma.update({
-    'kinPhotons_cutflow': {'title':'cut', 'rebin':1, 'unblind':True, 'logy':True},
-    'kinPhotons_Nm1'    : {'title':'N-1 cuts', 'unblind':True},
-    'kinPhotons_MVA'    : {'title':'MVA score', 'unblind':True},
-    'kinPhRes_dR'       : {'title': '#DeltaR', 'unblind':False}
+    'kinPhotons_cutflow'   : {'title':'cut'      , 'unblind':True, 'logy':True},
+    'kinPhotons_Nm1'       : {'title':'N-1 cuts' , 'unblind':True},
+    'kinPhotons_MVA'       : {'title':'MVA score', 'unblind':True},
+    'kinPhRes_dR'          : {'title':'#DeltaR'  , 'unblind':False},
     # 'noKinPh_all_genPh_N'  : {'title': '# #gamma_{GEN}'     },
     # 'noKinPh_all_genPh_pt' : {'title': '#gamma_{GEN} p_{T}' },
     # 'noKinPh_all_genPh_eta': {'title': '#gamma_{GEN} #eta'  },
@@ -258,17 +274,20 @@ else:
     variables = [ var for var in VarInfo.keys() if re.search(Type, var) ]  # Allow for regexp to be specified from command line
 #print "INFO: variables =", variables
 
-infoTable = {}
-
 c1 = TCanvas( 'c1', mcSet , 900, 1200 )
 
 for Var in variables:
     c1.Clear()
     DoData = optDoData and (VarInfo[Var].get('unblind', True) or region[:2] != 'SR')
-
-    (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, Var, predType, mcSet, VarInfo[Var].get('rebin', 1), forcePositive=True)
-    (graphData, histodata) = plotUtils.GetDataPlot(InputDir, Var, region, VarInfo[Var].get('rebin', 1), forcePositive=True)
+    forcePositive=True
     
+    # "Temporary" hack for closure test of photon fake rate
+    # if 'PhFRClosure_PASS' in Var:
+    #     hMC, leg = plotUtils.GetClosureStack(region, InputDir, Var, VarInfo[Var].get('rebin', 1), forcePositive=False)
+    # else:
+    (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, Var, predType, mcSet, VarInfo[Var].get('rebin', 1), forcePositive=forcePositive)
+    (graphData, histodata) = plotUtils.GetDataPlot(InputDir, Var, region, VarInfo[Var].get('rebin', 1), forcePositive=forcePositive)
+
     if((not hMC.GetStack()) or (not graphData)):
         continue
     
