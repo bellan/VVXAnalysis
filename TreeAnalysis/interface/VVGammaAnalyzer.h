@@ -23,7 +23,7 @@ public:
   //, const std::string& filename, const double& lumi = 1., const double& externalXSection = -1., bool doBasicPlots = false
 
  VVGammaAnalyzer(const AnalysisConfiguration& configuration)
-   : EventAnalyzer(*(new Selector<VVGammaAnalyzer>(*this)), 
+   : EventAnalyzer(*(new Selector<VVGammaAnalyzer>(*this)),
 		   configuration){
     //theHistograms.profile(genCategory);
     // Memory allocation
@@ -37,12 +37,6 @@ public:
     genWlepCandidates_ = new std::vector<phys::Boson<phys::Particle>>;
     genZhadCandidates_ = new std::vector<phys::Boson<phys::Particle>>;
     genWhadCandidates_ = new std::vector<phys::Boson<phys::Particle>>;
-    /* kinPhotons_  = new std::vector<phys::Photon>; */
-    /* goodPhotons_ = new std::vector<phys::Photon>; */
-    
-    /* for(std::string sys : {"EScale_Up", "EScale_Down", "ESigma_Up", "ESigma_Down"}){ */
-    /*   kinPhotonSyst_[sys] = std::unique_ptr<std::vector<phys::Photon>>; */
-    /* } */
   }
 
   virtual ~VVGammaAnalyzer(){
@@ -56,11 +50,6 @@ public:
     delete genWlepCandidates_;
     delete genZhadCandidates_;
     delete genWhadCandidates_;
-    
-    /* delete kinPhotons_; */
-    /* delete goodPhotons_; */
-    
-    //delete photonSFhist;
   }
 	
 	virtual void begin();
@@ -76,7 +65,7 @@ public:
 
 
  private:
- 	
+	
 	std::vector<phys::Lepton>* leptons_;
 	
 	// Systematics: photons {EScale, ESigma} x {Up, Down} + {central}
@@ -101,7 +90,7 @@ public:
 	phys::Boson<phys::Jet> candVTojj_, fakeVTojj_;
 	phys::Jet              candVToJ_ , fakeVToJ_ ;
 	
-	//TH2F* photonSFhist = nullptr;
+	std::unique_ptr<TH2F> hPhotonFR_;
         std::string channelReco_;
  	
  	// Objects reconstruction for each event
@@ -140,12 +129,9 @@ public:
 	    std::map<unsigned long,      // lumi block
 	      std::set<unsigned long>>>> // event
 	        cherryEvents;
- 	/*
- 	double getSF(const phys::Photon& ph){ 
- 		if(photonSFhist)
- 			return photonSFhist->GetBinContent(photonSFhist->FindBin(ph.eta(), ph.pt()));
- 		else return 1.;
-	}*/
+ 	
+        double getPhotonFR   (const phys::Photon& ph) const;
+        double getPhotonFRUnc(const phys::Photon& ph) const;
 	
 	static bool is4Lregion(const phys::RegionTypes reg){
 	  return reg == phys::SR4P || reg == phys::CR3P1F || reg == phys::CR2P2F ||
