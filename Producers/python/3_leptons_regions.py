@@ -87,9 +87,9 @@ process.select3leptonsRegions.minPhotons = cms.int32(0)
 process.select3leptonsRegions.maxPhotons = cms.int32(1000)
 
 
-PASSZW_1 = "daughter(0).daughter(0).daughter(0).masterClone.userFloat('isGood') && daughter(0).daughter(0).daughter(0).masterClone.userFloat('passCombRelIsoPFFSRCorr')"
-PASSZW_2 = "daughter(0).daughter(0).daughter(1).masterClone.userFloat('isGood') && daughter(0).daughter(0).daughter(1).masterClone.userFloat('passCombRelIsoPFFSRCorr')"
-PASSZW_3 = "daughter(0).daughter(1).masterClone.userFloat('isGood')             && daughter(0).daughter(1).masterClone.userFloat('passCombRelIsoPFFSRCorr')"
+PASSZW_1 = "(daughter(0).daughter(0).daughter(0).masterClone.userFloat('isGood') && daughter(0).daughter(0).daughter(0).masterClone.userFloat('passCombRelIsoPFFSRCorr'))"
+PASSZW_2 = "(daughter(0).daughter(0).daughter(1).masterClone.userFloat('isGood') && daughter(0).daughter(0).daughter(1).masterClone.userFloat('passCombRelIsoPFFSRCorr'))"
+PASSZW_3 = "(daughter(0).daughter(1).masterClone.userFloat('isGood')             && daughter(0).daughter(1).masterClone.userFloat('passCombRelIsoPFFSRCorr'))"
 
 SEL111 =       PASSZW_1 + " && " +       PASSZW_2 + " && " +       PASSZW_3
 SEL110 =       PASSZW_1 + " && " +       PASSZW_2 + " && " + "!" + PASSZW_3
