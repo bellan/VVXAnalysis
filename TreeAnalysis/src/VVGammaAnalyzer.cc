@@ -572,11 +572,11 @@ void VVGammaAnalyzer::analyze(){
 	theHistograms->fill("ZZG_mass_tightG" , "ZZG mass with tight #gamma" , mVVG_bins, (ZZ->p4()+goodPhotons_["central"]->front().p4()).M(), theWeight);
       }
       else if(three_lep){
-	theHistograms->fill("ZW_massT_looseG" , "ZW massT with tight #gamma" , mVV_bins , ZW->p4().Mt(),theWeight);
-	theHistograms->fill("ZWG_massT_looseG", "ZWG massT with tight #gamma", mVVG_bins, (ZW->p4()+goodPhotons_["central"]->front().p4()).Mt(), theWeight);
+	theHistograms->fill("ZW_massT_tightG" , "ZW massT with tight #gamma" , mVV_bins , ZW->p4().Mt(),theWeight);
+	theHistograms->fill("ZWG_massT_tightG", "ZWG massT with tight #gamma", mVVG_bins, (ZW->p4()+goodPhotons_["central"]->front().p4()).Mt(), theWeight);
 	if(b_WZpaperSel){
-	  theHistograms->fill("paperSel_ZW_massT_looseG" , "ZW massT with tight #gamma" , mVV_bins , ZW->p4().Mt(),theWeight);
-	  theHistograms->fill("paperSel_ZWG_massT_looseG", "ZWG massT with tight #gamma", mVVG_bins, (ZW->p4()+goodPhotons_["central"]->front().p4()).Mt(), theWeight);
+	  theHistograms->fill("paperSel_ZW_massT_tightG" , "ZW massT with tight #gamma" , mVV_bins , ZW->p4().Mt(),theWeight);
+	  theHistograms->fill("paperSel_ZWG_massT_tightG", "ZWG massT with tight #gamma", mVVG_bins, (ZW->p4()+goodPhotons_["central"]->front().p4()).Mt(), theWeight);
 	}
       }
     }

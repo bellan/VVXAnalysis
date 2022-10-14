@@ -123,9 +123,11 @@ if region in ['SR4P', 'CR3P1F', 'CR2P2F']:
             "ZZ_mass_"+name : {'title':"m_{%s}"     %(title), 'rebin':1, 'unblind':True},
             "ZZ_pt_"  +name : {'title':"p_{T}^{%s}" %(title), 'rebin':1, 'unblind':True},
         })
+    VarInfo_vvx.update({
+        'ZZ_mass_noG'   : {'title':'m_{4\ell}\:,\ no\:\gamma', 'rebin':1, 'unblind':True }
+    })
     for name, title in [('ZZ', '4\ell'), ('ZZG', '4\ell\gamma')]:
         VarInfo_vvx.update({
-            # name+'_mass_noG'   : {'title':'m_{%s}\:,\ no\:\gamma'                  %(title), 'rebin':1, 'unblind':True },
             name+'_mass_kinG'  : {'title':'m_{%s}\:,\ \gamma\:kin'                 %(title), 'rebin':1, 'unblind':True }, # Just kinematic selection + pixelSeed + electron veto
             name+'_mass_failG' : {'title':'m_{%s}\:,\ \gamma\:loose\,\land\:!tight'%(title), 'rebin':3, 'unblind':True },
             name+'_mass_looseG': {'title':'m_{%s}\:,\ \gamma\:loose'               %(title), 'rebin':1, 'unblind':True }, # Loose = pass 3 cuts
@@ -161,13 +163,20 @@ elif region in ['SR3P', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110', 'C
             'W_l_pt_'  +name : {'title':'p_{t,l10};GeV/c'},
             'lll_mass_'+name : {'title':'m_{lll};GeV/c^{2}'}
         })
+    VarInfo_vvx.update({
+        'ZW_massT_noG'   : {'title':'mT_{3\ell\\nu}\:,\ no\:\gamma', 'rebin':1, 'unblind':True },
+    })
     for name, title in [('ZW', '3\ell\\nu'), ('ZWG', '3\ell\\nu\gamma')]:
         VarInfo_vvx.update({
-            # name+'_massT_noG'   : {'title':'mT_{%s}\:,\ no\:\gamma'                %(title), 'rebin':1, 'unblind':True },
-            name+'_massT_kinG'  : {'title':'mT_{%s}\:,\ \gamma\:kin'               %(title), 'rebin':1, 'unblind':True },
-            name+'_massT_failG' : {'title':'mT_{%s}\:,\ \gamma\:kin\,\land\:!loose'%(title), 'rebin':1, 'unblind':True },
-            name+'_massT_looseG': {'title':'mT_{%s}\:,\ \gamma\:loose'             %(title), 'rebin':1, 'unblind':True },
-            name+'_massT_tightG': {'title':'mT_{%s}\:,\ \gamma\:tight'             %(title), 'rebin':1, 'unblind':False}
+            name+'_massT_kinG'  : {'title':'mT_{%s}\:,\ \gamma\:kin'                 %(title), 'rebin':1, 'unblind':True },
+            name+'_massT_failG' : {'title':'mT_{%s}\:,\ \gamma\:loose\,\land\:!tight'%(title), 'rebin':1, 'unblind':True },
+            name+'_massT_looseG': {'title':'mT_{%s}\:,\ \gamma\:loose'               %(title), 'rebin':1, 'unblind':True },
+            name+'_massT_tightG': {'title':'mT_{%s}\:,\ \gamma\:tight'               %(title), 'rebin':1, 'unblind':False},
+            
+            'paperSel_'+name+'_massT_kinG'  : {'title':'mT_{%s}\:,\ \gamma\:kin'                 %(title), 'rebin':1, 'unblind':True },
+            'paperSel_'+name+'_massT_failG' : {'title':'mT_{%s}\:,\ \gamma\:loose\,\land\:!tight'%(title), 'rebin':1, 'unblind':True },
+            'paperSel_'+name+'_massT_looseG': {'title':'mT_{%s}\:,\ \gamma\:loose'               %(title), 'rebin':1, 'unblind':True },
+            'paperSel_'+name+'_massT_tightG': {'title':'mT_{%s}\:,\ \gamma\:tight'               %(title), 'rebin':1, 'unblind':False}
         })
     for name, title in [('e', 'e'), ('m','\mu')]:
         VarInfo_vvx.update({
@@ -183,12 +192,12 @@ elif region in ['SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F']:
         'AK4_N'         : {'title':'# AK4'   , 'rebin':1, 'unblind':True},
         'AK4_pt'        : {'title':'p_{T}'   , 'rebin':1, 'unblind':True},
         'AK8_N'         : {'title':'# AK8'   , 'rebin':1, 'unblind':True},
-        'AK8_pt'        : {'title':'p_{T}'   , 'rebin':1, 'unblind':True},
+        'AK8_pt'        : {'title':'p_{T}'   , 'rebin':1, 'unblind':True, 'logy':True},
         'Z_mass_2e'     : {'title':'m_{2e}'  , 'rebin':1, 'unblind':True},
         'Z_mass_2m'     : {'title':'m_{2\mu}', 'rebin':1, 'unblind':True},
         'Z_mass_noG'    : {'title':'m_{2\ell}\:,\ no\:\gamma'        , 'rebin':1, 'unblind':True },
         'Z_mass_kinG'   : {'title':'m_{2\ell}\:,\ kin\:\gamma'       , 'rebin':1, 'unblind':True },
-        'Z_mass_failG'  : {'title':'m_{2\ell}\:,\ kin\,\land\:!loose', 'rebin':1, 'unblind':True },
+        'Z_mass_failG'  : {'title':'m_{2\ell}\:,\ loose\,\land\:!tight', 'rebin':1, 'unblind':True },
         'Z_mass_looseG' : {'title':'m_{2\ell}\:,\ \gamma\:loose'     , 'rebin':1, 'unblind':False},
         'ZG_mass_kinG'  : {'title':'m_{2\ell\gamma}\:,\ \gamma\:kin'},
         'ZG_mass_looseG': {'title':'m_{2\ell\gamma}\:,\ \gamma\:loose', 'unblind':False},
@@ -335,18 +344,24 @@ for Var in variables:
     histodata.GetYaxis().SetTitleSize(0.12)
     histodata.GetYaxis().SetTitleOffset(0.5)
     
-    hMC.SetMaximum(YMax)
+    if(Var == 'AK8_pt'):
+        for h in hMC.GetStack():
+            h.GetXaxis().SetRangeUser(160., 500.)
+        histodata.GetXaxis().SetRangeUser(160., 500.)
     hMC.Draw("hist")
     if VarInfo[Var].get('logy', False):
+        YMax *= 10
         pad1.SetLogy()
         hMC.GetHistogram().GetYaxis().SetMoreLogLabels()
         if(YMax < 10000):
             hMC.GetHistogram().GetYaxis().SetNoExponent()
+    hMC.SetMaximum(YMax)
     
     hMC.GetHistogram().GetYaxis().SetTitle("Events")
     hMC.GetHistogram().GetYaxis().SetTitleOffset(1.4)
     hMC.GetHistogram().GetYaxis().SetMaxDigits(4)
     hMC.GetHistogram().GetXaxis().SetLabelSize(0)
+    hMC.GetHistogram().GetXaxis().SetRangeUser(160., 500.)
     
     hMCErr.SetFillStyle(3005)
     hMCErr.SetMarkerStyle(1)
@@ -389,7 +404,7 @@ for Var in variables:
     
     pad2.cd()
         
-    Line = ROOT.TLine(hMC.GetXaxis().GetXmin(), 1, hMC.GetXaxis().GetXmax(), 1) 
+    Line = ROOT.TLine(hMC.GetXaxis().GetBinLowEdge(hMC.GetXaxis().GetFirst()), 1, hMC.GetXaxis().GetXmax(), 1) 
     Line.SetLineWidth(2)
     Line.SetLineStyle(7)
     

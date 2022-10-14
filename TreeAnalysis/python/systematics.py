@@ -172,17 +172,18 @@ if __name__ == '__main__':
         syst_values = {}
     
     doSystOnFile(path.join(results_folder.format(region='SR3P'), 'fake_leptons.root'  ), syst_values)
-    # doSystOnFile(path.join(results_folder.format(region='SR3P'), 'WZTo3LNu.root'      ), syst_values)
-    # doSystOnFile(path.join(results_folder.format(region='SR3P'), 'WZGTo3LNuG.root'    ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'WZTo3LNu.root'      ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'WZGTo3LNuG.root'    ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR3P'), 'ZZTo4l.root'        ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR3P'), 'ZGToLLG.root'       ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR3P'), 'DYJetsToLL_M50.root'), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'ZZGTo4LG.root'      ), syst_values)
     
-    # doSystOnFile(path.join(results_folder.format(region='SR4P'), 'fake_leptons.root'  ), syst_values)
-    # doSystOnFile(path.join(results_folder.format(region='SR4P'), 'WZTo3LNu.root'      ), syst_values)
-    # doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ZZTo4l.root'        ), syst_values)
-    # doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ggTo4l.root'        ), syst_values)
-    # doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ZZGTo4LG.root'      ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'fake_leptons.root'  ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'WZTo3LNu.root'      ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ZZTo4l.root'        ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ggTo4l.root'        ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ZZGTo4LG.root'      ), syst_values)
     
     with open(sysJSON, 'w') as fout:
         dump(syst_values, fout, indent=2)
