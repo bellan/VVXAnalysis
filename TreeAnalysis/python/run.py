@@ -14,10 +14,10 @@ from Colours import *
 ############################## User's inputs ###############################
 ############################################################################
 # FIXME: change name
-regions_allowed = ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L',    
+allowed_regions = ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L',
                    'SR3P', 'CR110'  , 'CR101'  , 'CR011'  , 'CR100'  , 'CR001'  , 'CR010', 'CR000', 'SR3P_1L', 'SR3P_1P', 'CR3P_1F', 'CRLFR', 'CR3L',
-                   'SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F', 
-                   'SR_HZZ', 'CR2P2F_HZZ', 'CR3P1F_HZZ', 'CR_HZZ', 'MC_HZZ',     
+                   'SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F',
+                   'SR_HZZ', 'CR2P2F_HZZ', 'CR3P1F_HZZ', 'CR_HZZ', 'MC_HZZ',
                    'MC']
 
 _all_regions = ['SR4P', 'CR3P1F', 'CR2P2F', 'SR3P', 'CR110', 'CR101', 'CR011', 'CR100', 'CR001', 'CR010', 'CR000', 'SR2P']  # Regions tu run on when "all" are requested
@@ -34,7 +34,7 @@ parser = OptionParser(usage="usage: %prog <analysis> <sample> [options]")
 
 parser.add_option("-r", "--region", dest="regions",
                   default="SR4P",
-                  help="Region type are {0:s}. Default is SR4P.".format(', '.join(regions_allowed)))
+                  help="Region type are {0:s}. Default is SR4P.".format(', '.join(allowed_regions)))
 
 
 parser.add_option("-e", "--external-cross-section", dest="getExternalCrossSectionFromFile",
@@ -120,7 +120,7 @@ luminosity   = options.luminosity
 regions = list(set(regions.strip(';,').split( (';' if ';' in regions else ',') )))
     
 for region in regions:  
-    if region not in regions_allowed and not region == 'all':
+    if region not in allowed_regions and not region == 'all':
         print region, "is an unknown region. Run {0:s} -h for more details.".format(sys.argv[0])
         print "Multiple regions must be separated by a ';'"
         sys.exit(1)
@@ -280,7 +280,7 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
     # ----- Run over the run periods -----
     hadd_cmds = {}
     for region, odir in outputdirs.items():
-      hadd_cmds[region] = 'hadd -k -v 0 {0:s}/{1:s}.root'.format(odir,typeofsample)
+      hadd_cmds[region] = 'hadd -k -f {0:s}/{1:s}.root'.format(odir,typeofsample)
 
     for period in datasets:
         basefile = sampleprefix+period
