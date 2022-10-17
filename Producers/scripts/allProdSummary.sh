@@ -37,6 +37,7 @@ get_cause() {
 	81)  echo "Job did not find functioning CMSSW on worker node." ;;
 	84)  echo "Some required file not found; check logs for name of missing file." ;;
 	85)  echo "Error reading file" ;;
+	86)  echo "Fatal ROOT error (probably while reading file)" ;;
 	90)  echo "Application exception" ;;
 	92)  echo "Failed to open file" ;;
 	126) echo "Permission problem or command is not an executable" ;;
@@ -67,7 +68,7 @@ for jobdir in $jobdirs ; do
     prodSummary.sh "$jobdir" | tee $tempfile | sed "s/^/\t/g"
     grep -q TODO $tempfile && totToDo=$(( $totToDo + $(grep -oP "(?<=TODO: )\d+" $tempfile) ))
     lines=$(grep failed $tempfile)
-    [ -n "$lines" ] && echo "$lines" | sed "s/--> \tfailed, exit status = //g" | sed "s/^\t//g" >> $tempfail
+    [ -n "$lines" ] && echo "$lines" | sed -e "s/--> failed, exit status = //g" -e "s/^\t//g" -e "s/^ \+//g" >> $tempfail
     running=$(grep "still running" $tempfile | grep -oP "\d+(?= -->)")
     [ -n "$running" ] && echo "$running 0" >> $tempfail
 done
@@ -76,6 +77,7 @@ printf "\nTotal jobs to do: %d\n" $totToDo  # $(cut -d " " -f 1 $tempfail | past
 
 todoKnown=0
 keys=$(cut -d " " -f 2 $tempfail | sort | uniq)
+
 for key in $keys ; do
     jobs_k=$(grep -oP "\d+(?= $key)" $tempfail | paste -s -d+ | bc)
     todoKnown=$(( $todoKnown + $jobs_k ))
