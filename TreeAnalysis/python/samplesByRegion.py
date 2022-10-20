@@ -13,12 +13,12 @@ vbsZZ    = [{'files':['ZZ4lJJ'        ] , 'color':ROOT.kCyan-6  , 'name':'VBS'}]
 HZZ      = [{'files':['HZZ'           ] , 'color':ROOT.kCyan-7  , 'name':'higgs'}]
 
 WZ       = [{'files':['WZTo3LNu'      ] , 'color':ROOT.kYellow+2, 'name':'WZ'}]
-WW       = [{'files':['WWTo2L2Nu'     ] , 'color':ROOT.kYellow-7, 'name':'WW'}]
+WW       = [{'files':['WWTo2L2Nu'     ] , 'color':ROOT.kYellow-4, 'name':'WW'}]
 
-t        = [{'files':['singleT'       ] , 'color':ROOT.kGray    , 'name':'top'}]
-tX       = [{'files':['tZq','tW'      ] , 'color':ROOT.kGray    , 'name':'tX'}]
+t        = [{'files':['singleT'       ] , 'color':ROOT.kMagenta , 'name':'top'}]
+tX       = [{'files':['tZq','tW'      ] , 'color':ROOT.kMagenta-9, 'name':'tX'}]
 tt       = [{'files':['TTTo2L2Nu'     ] , 'color':ROOT.kMagenta+2, 'name':'t#bar{t}'}]
-ttX      = [{'files':['TTWJetsToLNu', 'TTZJets', 'TTGJets'] , 'color':ROOT.kMagenta+2, 'name':'t#bar{t}'}]
+ttX      = [{'files':['TTWJetsToLNu', 'TTZJets', 'TTGJets'] , 'color':ROOT.kViolet-7, 'name':'ttX'}]
 ttXY     = [{'files':['TTWW','TTZZ'   ] , 'color':ROOT.kBlue-1  , 'name':'ttXY'}]
 
 ZZTo2L2Nu= [{'files':['ZZTo2L2Nu'     ] , 'color':ROOT.kGray    , 'name':'ZZTo2L2Nu'}]
