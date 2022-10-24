@@ -101,41 +101,43 @@ VarInfo_vvx = {
     'channel_lep':{'title':'lepton flavour', 'unblind':True}
 }
 
+VarInfo_VVGamma = deepcopy(VarInfo_vvx)
+
 if region in ['SR4P', 'CR3P1F', 'CR2P2F']:
     rebin_mZZG = 1
     if(region in ['SR4P', 'CR3P1F']):
         rebin_mZZG = 2
     elif(region == 'CR2P2F'):
         rebin_mZZG = 2
-    VarInfo_vvx.update({
-        'ZZ_mass' : {'title':'m_{4\ell}'     , 'rebin':1, 'unblind':True},
-        'Z0_mass' : {'title':'m_{Z0}'        , 'rebin':1, 'unblind':True},
-        'Z1_mass' : {'title':'m_{Z1}'        , 'rebin':1, 'unblind':True},
-        'ZZ_pt'   : {'title':'p_{T}^{Z1}'    , 'rebin':1, 'unblind':True},
-        'Z0_l0_pt': {'title':'p_{T}^{Z0, l0}', 'rebin':1, 'unblind':True},
-        'Z0_l1_pt': {'title':'p_{T}^{Z0, l1}', 'rebin':1, 'unblind':True},
-        'Z1_l0_pt': {'title':'p_{T}^{Z1, l0}', 'rebin':1, 'unblind':True},
-        'Z1_l1_pt': {'title':'p_{T}^{Z1, l1}', 'rebin':1, 'unblind':True},
+    VarInfo_VVGamma.update({
+        'ZZ_mass' : {'title':'m_{4\ell}'     },
+        'Z0_mass' : {'title':'m_{Z0}'        },
+        'Z1_mass' : {'title':'m_{Z1}'        },
+        'ZZ_pt'   : {'title':'p_{T}^{Z1}'    },
+        'Z0_l0_pt': {'title':'p_{T}^{Z0, l0}'},
+        'Z0_l1_pt': {'title':'p_{T}^{Z0, l1}'},
+        'Z1_l0_pt': {'title':'p_{T}^{Z1, l0}'},
+        'Z1_l1_pt': {'title':'p_{T}^{Z1, l1}'},
         'PhFRClosure_PASS_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG}
     })
     for name, title in [('4e','4e'), ('2e2m', '2e2\mu'), ('4m', '4\mu')]:
-        VarInfo_vvx.update({
+        VarInfo_VVGamma.update({
             "ZZ_mass_"+name : {'title':"m_{%s}"     %(title), 'rebin':1, 'unblind':True},
             "ZZ_pt_"  +name : {'title':"p_{T}^{%s}" %(title), 'rebin':1, 'unblind':True},
         })
-    VarInfo_vvx.update({
+    VarInfo_VVGamma.update({
         'ZZ_mass_noG'   : {'title':'m_{4\ell}\:,\ no\:\gamma', 'rebin':1, 'unblind':True }
     })
     for name, title in [('ZZ', '4\ell'), ('ZZG', '4\ell\gamma')]:
-        VarInfo_vvx.update({
+        VarInfo_VVGamma.update({
             name+'_mass_kinG'  : {'title':'m_{%s}\:,\ \gamma\:kin'                 %(title), 'rebin':1, 'unblind':True }, # Just kinematic selection + pixelSeed + electron veto
-            name+'_mass_failG' : {'title':'m_{%s}\:,\ \gamma\:loose\,\land\:!tight'%(title), 'rebin':3, 'unblind':True },
+            name+'_mass_failG' : {'title':'m_{%s}\:,\ \gamma\:loose\,\land\:!tight'%(title), 'rebin':1, 'unblind':True },
             name+'_mass_looseG': {'title':'m_{%s}\:,\ \gamma\:loose'               %(title), 'rebin':1, 'unblind':True }, # Loose = pass 3 cuts
-            name+'_mass_tightG': {'title':'m_{%s}\:,\ \gamma\:tight'               %(title), 'rebin':3, 'unblind':False}  # Tight = cutBasedIDLoose()
+            name+'_mass_tightG': {'title':'m_{%s}\:,\ \gamma\:tight'               %(title), 'rebin':1, 'unblind':False}  # Tight = cutBasedIDLoose()
         })
         
 elif region in ['SR3P', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110', 'CR000']:
-    VarInfo_vvx.update({
+    VarInfo_VVGamma.update({
         "WZ_cutflow": {'title':'Cuts', 'logy':False},
         'ZW_massT': {'title':'mT_{3\ell\\nu}'   , 'rebin':1, 'unblind':True},
         'ZW_pt'   : {'title':'p_{T}^{3\ell\\nu}', 'rebin':1, 'unblind':True},
@@ -157,17 +159,17 @@ elif region in ['SR3P', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110', 'C
         # 'debug3L_ZW_FRSF': {'title':'FR(ZW)'    }
     })
     for name, title in [('3e','3e'), ('2e1m', '2e1\mu'), ('2m1e', '2\mu1e'), ('3m', '3\mu')]:
-        VarInfo_vvx.update({
+        VarInfo_VVGamma.update({
             'ZW_massT_'+name : {'title':'m_{%s\\nu}'     %(title), 'rebin':1, 'unblind':True},
             'ZW_pt_'   +name : {'title':'p_{T}^{%s\\nu}' %(title), 'rebin':1, 'unblind':True},
             'W_l_pt_'  +name : {'title':'p_{t,l10};GeV/c'},
             'lll_mass_'+name : {'title':'m_{lll};GeV/c^{2}'}
         })
-    VarInfo_vvx.update({
+    VarInfo_VVGamma.update({
         'ZW_massT_noG'   : {'title':'mT_{3\ell\\nu}\:,\ no\:\gamma', 'rebin':1, 'unblind':True },
     })
     for name, title in [('ZW', '3\ell\\nu'), ('ZWG', '3\ell\\nu\gamma')]:
-        VarInfo_vvx.update({
+        VarInfo_VVGamma.update({
             name+'_massT_kinG'  : {'title':'mT_{%s}\:,\ \gamma\:kin'                 %(title), 'rebin':1, 'unblind':True },
             name+'_massT_failG' : {'title':'mT_{%s}\:,\ \gamma\:loose\,\land\:!tight'%(title), 'rebin':1, 'unblind':True },
             name+'_massT_looseG': {'title':'mT_{%s}\:,\ \gamma\:loose'               %(title), 'rebin':1, 'unblind':True },
@@ -179,7 +181,7 @@ elif region in ['SR3P', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110', 'C
             'paperSel_'+name+'_massT_tightG': {'title':'mT_{%s}\:,\ \gamma\:tight'               %(title), 'rebin':1, 'unblind':False}
         })
     for name, title in [('e', 'e'), ('m','\mu')]:
-        VarInfo_vvx.update({
+        VarInfo_VVGamma.update({
             'l3_%s_pt'     %(name): {'title': '3^{rd} %s p_{T}'            %(title)},
             'l3_%s_Iso'    %(name): {'title': '3^{rd} %s combRelIsoFSRCorr'%(title)},
             'l3_%s_pt_MET' %(name): {'title': '3^{rd} %s p_{T}'            %(title)},
@@ -188,7 +190,7 @@ elif region in ['SR3P', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110', 'C
         })
 
 elif region in ['SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F']:
-    VarInfo_vvx.update({
+    VarInfo_VVGamma.update({
         'AK4_N'         : {'title':'# AK4'   , 'rebin':1, 'unblind':True},
         'AK4_pt'        : {'title':'p_{T}'   , 'rebin':1, 'unblind':True},
         'AK8_N'         : {'title':'# AK8'   , 'rebin':1, 'unblind':True},
@@ -197,9 +199,10 @@ elif region in ['SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F']:
         'Z_mass_2m'     : {'title':'m_{2\mu}', 'rebin':1, 'unblind':True},
         'Z_mass_noG'    : {'title':'m_{2\ell}\:,\ no\:\gamma'        , 'rebin':1, 'unblind':True },
         'Z_mass_kinG'   : {'title':'m_{2\ell}\:,\ kin\:\gamma'       , 'rebin':1, 'unblind':True },
-        'Z_mass_failG'  : {'title':'m_{2\ell}\:,\ loose\,\land\:!tight', 'rebin':1, 'unblind':True },
+        'Z_mass_failG'  : {'title':'m_{2\ell}\:,\ \gamma loose\,\land\:!tight', 'rebin':1, 'unblind':True },
         'Z_mass_looseG' : {'title':'m_{2\ell}\:,\ \gamma\:loose'     , 'rebin':1, 'unblind':False},
         'ZG_mass_kinG'  : {'title':'m_{2\ell\gamma}\:,\ \gamma\:kin'},
+        'ZG_mass_failG' : {'title':'m_{2\ell\gamma}\:,\ \gamma loose\,\land\:!tight'},
         'ZG_mass_looseG': {'title':'m_{2\ell\gamma}\:,\ \gamma\:loose', 'unblind':False},
         'VToJ_mass'     : {'title': 'm_{J}'},
         'VTojj_mass'    : {'title': 'm_{jj}'},
@@ -209,11 +212,10 @@ elif region in ['SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F']:
     for Vhad in ['VToJ', 'VToJFake']:
         for classifier in ['PNet', 'deepAK8', 'deepAK8MD']:
             for discriminant in ['TvsQCD', 'WvsQCD', 'ZvsQCD']:
-                VarInfo_vvx.update({
+                VarInfo_VVGamma.update({
                     '%s_%s_%s'%(Vhad, classifier, discriminant): {'title': discriminant+' '+classifier, 'rebin':2, 'unblind':True}
                 })
-    
-VarInfo_VVGamma = deepcopy(VarInfo_vvx)
+
 VarInfo_VVGamma.update({
     'kinPhotons_cutflow'   : {'title':'cut'      , 'unblind':True, 'logy':True},
     'kinPhotons_Nm1'       : {'title':'N-1 cuts' , 'unblind':True},
@@ -361,7 +363,6 @@ for Var in variables:
     hMC.GetHistogram().GetYaxis().SetTitleOffset(1.4)
     hMC.GetHistogram().GetYaxis().SetMaxDigits(4)
     hMC.GetHistogram().GetXaxis().SetLabelSize(0)
-    hMC.GetHistogram().GetXaxis().SetRangeUser(160., 500.)
     
     hMCErr.SetFillStyle(3005)
     hMCErr.SetMarkerStyle(1)
