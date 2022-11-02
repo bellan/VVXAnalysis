@@ -32,7 +32,7 @@ years   = [2016,2017,2018]
 
 parser = OptionParser(usage="usage: %prog <analysis> <sample> [options]")
 
-parser.add_option("-r", "--region", dest="regions",
+parser.add_option("-r", "--regions", dest="regions",
                   default="SR4P",
                   help="Region type are {0:s}. Default is SR4P.".format(', '.join(allowed_regions)))
 
@@ -265,8 +265,7 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
     if len(datasets) == 0:
         datasets = getSamplesBy('identifier',typeofsample,csvfile)
     if len(datasets) == 0 and not typeofsample == 'test':
-        print Warning('The sample {0:s} is not available in the CSV!'.format(typeofsample))
-        return 
+        raise ValueError('The sample {0:s} is not available in the CSV!'.format(typeofsample))
     
     sampleprefix = ''
   
