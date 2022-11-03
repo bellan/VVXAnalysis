@@ -81,6 +81,12 @@ CMS_lumi( TPad* pad, int iPeriod, int iPosX )
     {
       lumiText += lumi_sqrtS;
     }
+
+  else if ( iPeriod==18 )
+    {
+      lumiText += lumi_PPS2018;
+      lumiText += " (13 TeV)";
+    }
    
   std::cout << lumiText << endl;
 

@@ -1,10 +1,10 @@
 import os
 import sys
 
-def runera(era,lumi):
-  os.system("cp samples/2018/ZZTo4la0z"+era+".root samples/2018/ZZTo4l.root")
+def runera(sample,era,lumi):
+  os.system("cp samples/2018/ZZTo4l"+sample+era+".root samples/2018/ZZTo4l.root")
   os.system("python python/run.py PPZZAnalyzer ZZTo4l -y 2018 -l "+str(lumi))
-  os.system("mv results/2018/PPZZAnalyzer_SR4P/ZZTo4l.root results/2018/PPZZAnalyzer_SR4P/ZZTo4la0z"+era+".root")
+  os.system("mv results/2018/PPZZAnalyzer_SR4P/ZZTo4l.root results/2018/PPZZAnalyzer_SR4P/ZZTo4l"+sample+era+".root")
   os.system("rm samples/2018/ZZTo4l.root")
   
 def runfinalstate(state):
@@ -15,14 +15,17 @@ def runfinalstate(state):
   
 os.system("make")
 
-if(sys.argv[1]=="signal"):
-  runera("D2",10416)
-  runera("D1",19881)
-  runera("C",6530)
-  runera("B2",401)
-  runera("B1",6384)
-  runera("A",12104)
-  os.system("hadd results/2018/PPZZAnalyzer_SR4P/ZZTo4l.root results/2018/PPZZAnalyzer_SR4P/ZZTo4la0zA.root results/2018/PPZZAnalyzer_SR4P/ZZTo4la0zB1.root results/2018/PPZZAnalyzer_SR4P/ZZTo4la0zB2.root results/2018/PPZZAnalyzer_SR4P/ZZTo4la0zC.root results/2018/PPZZAnalyzer_SR4P/ZZTo4la0zD1.root results/2018/PPZZAnalyzer_SR4P/ZZTo4la0zD2.root")
+if(sys.argv[1]=="a0z" or sys.argv[1]=="aCz" or sys.argv[1]=="mix" or sys.argv[1]=="a0znoPUP"):
+  sample=sys.argv[1]
+  runera(sample,"D2",10416)
+  runera(sample,"D1",19881)
+  runera(sample,"C",6530)
+  runera(sample,"B2",401)
+  runera(sample,"B1",6384)
+  runera(sample,"A",12104)
+  os.system("hadd results/2018/PPZZAnalyzer_SR4P/ZZTo4l.root results/2018/PPZZAnalyzer_SR4P/ZZTo4l"+sample+"A.root results/2018/PPZZAnalyzer_SR4P/ZZTo4l"+sample+"B1.root results/2018/PPZZAnalyzer_SR4P/ZZTo4l"+sample+"B2.root results/2018/PPZZAnalyzer_SR4P/ZZTo4l"+sample+"C.root results/2018/PPZZAnalyzer_SR4P/ZZTo4l"+sample+"D1.root results/2018/PPZZAnalyzer_SR4P/ZZTo4l"+sample+"D2.root")
+  if(sys.argv[1]=="a0znoPUP"): os.system("mv results/2018/PPZZAnalyzer_SR4P/ZZTo4l.root results/2018/PPZZAnalyzer_SR4P/ZZTo4lnoPUP.root")
+  else: os.system("cp results/2018/PPZZAnalyzer_SR4P/ZZTo4l.root results/2018/PPZZAnalyzer_SR4P/"+sample+".root") 
   
 elif(sys.argv[1]=="ggZZ"):
   runfinalstate("4e")
