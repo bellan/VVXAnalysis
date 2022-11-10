@@ -72,7 +72,7 @@ void ZZRecoAnalyzer::analyze(){
   theWeight*=w_kf; 
   
   Float_t scaleFacErrSq    = ZZ->efficiencySFUnc(); 
-  Float_t scaleFacMuErrSq  = ZZ->muEffSFUnc(); 
+  Float_t scaleFacMuErrSq  = ZZ->muoEffSFUnc(); 
   Float_t scaleFacEleErrSq = ZZ->eleEffSFUnc(); 
 
   //  cout<<" new "<<endl;
