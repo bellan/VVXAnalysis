@@ -91,6 +91,7 @@ public:
 	phys::Jet              candVToJ_ , fakeVToJ_ ;
 	
 	std::unique_ptr<TH2F> hPhotonFR_;
+	std::unique_ptr<TH2F> hPhotonEff_;
         std::string channelReco_;
  	
  	// Objects reconstruction for each event
@@ -109,12 +110,13 @@ public:
 	void PKU_comparison();
  	
  	// Sub analyses
+	void plotsVVGstatus(const char* name, const char* title, const TLorentzVector& p4_VV, const char* mType="mass");
 	void leptonFakeRate();
 	void photonFakeRate();
  	void photonEfficiency(const std::vector<phys::Photon>&, const char*);
  	void photonIsolation(const std::vector<phys::Photon>&, const char*);
 	void systematicsStudy();
-	void doPlots(const char* syst, const double& weight, const phys::Photon*);
+	void SYSplots(const char* syst, const double& weight, const phys::Photon*);
         void debug3Lregion();
 
  	void endNameHistos();
@@ -132,6 +134,9 @@ public:
  	
         double getPhotonFR   (const phys::Photon& ph) const;
         double getPhotonFRUnc(const phys::Photon& ph) const;
+
+	double getPhotonEff   (const phys::Photon& ph) const;
+	double getPhotonEffUnc(const phys::Photon& ph) const;
 	
 	static bool is4Lregion(const phys::RegionTypes reg){
 	  return reg == phys::SR4P || reg == phys::CR3P1F || reg == phys::CR2P2F ||
@@ -145,6 +150,8 @@ public:
 	static bool is2Lregion(const phys::RegionTypes reg){
 	  return reg == phys::SR2P || reg == phys::SR2P_1L || reg == phys::SR2P_1P || reg == phys::CR2P_1F;
 	}
+	
+	static bool passVeryLoose(const phys::Photon& ph);
 	
 	static char phABCD(const phys::Photon&, const phys::Photon::IDwp);
 	static char phABCD_study(const phys::Photon&, const double& barrel_thr, const double& endcap_thr);
