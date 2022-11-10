@@ -141,7 +141,7 @@ namespace phys {
     double fakeRateSFUnc() const {  // FR fully correlated for same flavour leptons; a Boson is always made of same flavour leptons
       return daughter0_.fakeRateSF()*daughter1_.fakeRateSFUnc() + daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc();
     }
-    double muFakeRateSFUnc() const {
+    double muoFakeRateSFUnc() const {
       return (abs(daughter0_.id()) == 13) ? fakeRateSFUnc() : 0.;
     }
     double eleFakeRateSFUnc() const {
@@ -153,7 +153,7 @@ namespace phys {
     double efficiencySFUnc() const {  // Efficiency fully correlated for same flavour leptons
       return daughter0_.efficiencySFUnc() + daughter1_.efficiencySFUnc();
     }
-    double muEffSFUnc() const {
+    double muoEffSFUnc() const {
       return (abs(daughter0_.id()) == 13) ? efficiencySFUnc() : 0.;
     }
     double eleEffSFUnc() const {

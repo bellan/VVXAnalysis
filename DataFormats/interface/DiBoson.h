@@ -86,8 +86,8 @@ namespace phys {
 
     double efficiencySF() const{ return daughter0_.efficiencySF() * daughter1_.efficiencySF(); }
     
-    double efficiencySFUnc() const { return hypot(eleEffSFUnc(), muEffSFUnc()); }
-    double muEffSFUnc()      const { return daughter0_.muEffSFUnc()  + daughter1_.muEffSFUnc() ; }
+    double efficiencySFUnc() const { return hypot(eleEffSFUnc(), muoEffSFUnc()); }
+    double muoEffSFUnc()     const { return daughter0_.muoEffSFUnc() + daughter1_.muoEffSFUnc() ; }
     double eleEffSFUnc()     const { return daughter0_.eleEffSFUnc() + daughter1_.eleEffSFUnc(); }
     
     
@@ -98,7 +98,7 @@ namespace phys {
       return daughter0_.fakeRateSF()*daughter1_.eleFakeRateSFUnc() + daughter1_.fakeRateSF()*daughter0_.eleFakeRateSFUnc();
     }
     double muoFakeRateSFUnc() const{
-      return daughter0_.fakeRateSF()*daughter1_.muFakeRateSFUnc()  + daughter1_.fakeRateSF()*daughter0_.muFakeRateSFUnc() ;
+      return daughter0_.fakeRateSF()*daughter1_.muoFakeRateSFUnc() + daughter1_.fakeRateSF()*daughter0_.muoFakeRateSFUnc() ;
     }
     
 
