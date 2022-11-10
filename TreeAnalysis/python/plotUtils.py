@@ -156,26 +156,27 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin, forcePosi
     totalMC = 0
     
     print Red("\n######### Contribution to {0:s}  #########\n".format(region))
-
+    
+    _nameFormat = "{:24.24s}"
     for sample in samples:
         h = None
         for fname in sample['files']:
             if(not os.path.exists(inputdir+fname+".root")):
-               print "{0:16.16s}".format(fname), "No file"
+               print _nameFormat.format(fname), "No file"
                continue
 
             fhandle = ROOT.TFile(inputdir+fname+".root")
             h_current = fhandle.Get(plot)
             
             if(not h_current):
-                print "{0:16.16s}".format(fname), "No entries"
+                print _nameFormat.format(fname), "No histo in file"
                 continue
 
             if forcePositive and any(cr in inputdir for cr in ['CR2P2F','CR100','CR010','CR001']):
                 h_current.Scale(-1)
 
             integral = h_current.IntegralAndError(0,-1,ErrStat)  # Get overflow events too
-            print "{0:16.16} {1:.3f} +- {2: .3f}".format(fname, integral, ErrStat.value)
+            print (_nameFormat+" {: 10.2f} +- {: 10.2f}").format(fname, integral, ErrStat.value)
             totalMC += integral
             
             if(h is None): h = copy.deepcopy(h_current)

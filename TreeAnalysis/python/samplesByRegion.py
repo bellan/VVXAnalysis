@@ -53,7 +53,7 @@ def getSamplesByRegion(region, MCSet, predType):
     tot = WZG + ZZG + qqZZ + ggZZ + triboson + ttXY #+ vbsZZ + HZZ
 
     if   predType == 'fullMC':
-        tot += WZ + DY + ZG + WG + WW + W + tt + ttX + ZZTo2L2Nu + ZZTo2Q2L
+        tot += WZ + DY + ZG + WG + WW + W + tt + ttX # + ZZTo2L2Nu + ZZTo2Q2L
 
     elif predType in ['fromCR', 'fakeMC']:
         if   region in ['SR4P', 'SR4P_1L', 'SR4P_1F']:
