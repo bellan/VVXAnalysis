@@ -51,13 +51,14 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 		  configuration.getParameter<bool>("applyFRSF"),
 		  configuration.getParameter<bool>("forcePosWeight")
 		  )
+  , year(configuration.getParameter<int>("year"))
   , theWeight(1.)
   , theCutCounter(0.)
   , theInputWeightedEvents(0.)
   , genCategory(-128){
 
-  if(configuration.getParameter<int>("year") != theSampleInfo.setup() && theSampleInfo.isMC())
-    cout << colour::Warning("Possible mismatch") << ": simulation scenario is " << Green(configuration.getParameter<int>("year")) << ", chosen sample is " << Green(theSampleInfo.setup()) << endl;
+  if(year != theSampleInfo.setup() && theSampleInfo.isMC())
+    cout << colour::Warning("Possible mismatch") << ": simulation scenario is " << Green(year) << ", chosen sample is " << Green(theSampleInfo.setup()) << endl;
 
   TChain *tree = new TChain("treePlanter/ElderTree");
   tree->Add(configuration.getParameter<std::string>("filename").c_str());
