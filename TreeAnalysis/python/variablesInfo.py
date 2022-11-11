@@ -149,7 +149,7 @@ def getVarInfo_VVGamma(region):
         # 'noKinPh_rec_genPh_eta': {'title': '#gamma_{GEN} #eta'  }
         ,
         'kinPh_pt'    : {'title':  'p_{T} \gamma_{kin}'  },
-        'veyLoosePh_pt'  : {'title':  'p_{T} \gamma_{loose}'},
+        'veryLoosePh_pt'  : {'title':  'p_{T} \gamma_{loose}'},
         'failPh_pt'   : {'title':  'p_{T} \gamma_{fail}' },
         'loosePh_pt'  : {'title':  'p_{T} \gamma_{tight}'}
         ,

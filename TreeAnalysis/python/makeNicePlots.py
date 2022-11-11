@@ -146,7 +146,7 @@ c1 = TCanvas( 'c1', mcSet , 900, 1200 )
 for Var in variables:
     c1.Clear()
     DoData = optDoData and (VarInfo[Var].get('unblind', True) or region[:2] != 'SR')
-    print ">>> DoData =", DoData, ", optDoData =", optDoData, ", VarInfo[Var].get('unblind', True) =", VarInfo[Var].get('unblind', True), ", region[:2] != 'SR'", region[:2] != 'SR'
+
     forcePositive=True
     
     # "Temporary" hack for closure test of photon fake rate
@@ -237,10 +237,7 @@ for Var in variables:
         graphData.SetMarkerStyle(20)
         graphData.SetMarkerSize(.9)
         graphData.Draw("samep")
-        print ">>> INFO: draw data"
         leg.AddEntry(graphData, "Data", "lpe")
-        #histodata.Draw("same text")
-        histodata.Draw("same")
     
     if Var == "nJets":
         hMC.GetHistogram().GetXaxis().SetTitle("N_{jets} (|#eta^{jet}| < 4.7)")
@@ -300,13 +297,17 @@ for Var in variables:
     histodata.GetXaxis().SetTitleSize(0.08)
     if (histodata.GetXaxis().GetXmin() > 0.001 and histodata.GetXaxis().GetXmax() < 1000):
         histodata.GetXaxis().SetNoExponent()
-    histodata.SetMaximum( yMax_r )
-    histodata.SetMinimum( yMin_r )
     histodata.SetMarkerStyle(20)
-    #histodata.Draw("E")
-    histodata.Draw("axis")
+    
+    # Dummy TH1 to act as a frame for the ratio plot
+    frame_ratio = deepcopy(histodata)
+    frame_ratio.GetYaxis().SetRangeUser(yMin_r, yMax_r)
+    frame_ratio.Draw("axis")
+    
     Line.Draw()
-    histodata.Draw("E same")
+    histodata.Draw("E0 same")
+    
+    
     
     if(not DoData):
         xm, xM = hMC.GetXaxis().GetXmin(), hMC.GetXaxis().GetXmax()
