@@ -20,7 +20,18 @@ namespace phys {
     friend class ::TreePlanter;
 
   public:
-    enum IDwp {None, Loose, Medium, Tight};  // Working points for ID
+    enum IDwp {None, VeryLoose, Loose, Medium, Tight};  // Working points for ID
+    
+    enum IDcut {  // See https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedPhotonIdentificationRun2#Applying_Individual_Cuts_of_a_Se
+      c_MinPt = 0x1,
+      c_SCEta = 0x2,
+      c_HoverE= 0x4,
+      c_sieie = 0x8,
+      c_chIso = 0x10,
+      c_neIso = 0x20,
+      c_phIso = 0x40
+    };
+      
     static constexpr float TRANSITION_BARREL_ENDCAP = 1.479;
     
     // Constructor
@@ -116,6 +127,9 @@ namespace phys {
     bool cutBasedIDTight_;
     bool cutBasedIDMedium_;
     bool cutBasedIDLoose_;
+    unsigned int cutIDbitsLoose_ ;  // An integer in which each bit represents a cut;
+    unsigned int cutIDbitsMedium_;  // actually only the last 7 are used (see the enum IDcut).
+    unsigned int cutIDbitsTight_ ;  // Let's trust ROOT's compression to save on the disk usage.
     
     float MVAvalue_;  // PhotonMVAEstimatorRunIIFall17v2Values
     
@@ -205,6 +219,42 @@ namespace phys {
     
   public:
     // Utils
+    bool cutBasedID(IDwp wp) const{
+      switch(wp){
+      case VeryLoose:
+	return (cutIDbitsLoose_ & IDcut::c_HoverE) && (cutIDbitsLoose_ & IDcut::c_neIso) && (cutIDbitsLoose_ & IDcut::c_phIso);
+      case Loose:
+	/* return (cutIDbitsLoose_ & IDcut::c_HoverE) && (cutIDbitsLoose_ & IDcut::c_neIso) && (cutIDbitsLoose_ & IDcut::c_phIso) && (cutIDbitsLoose_ & IDcut::c_sieie) && (cutIDbitsLoose_ & IDcut::c_chIso); */
+	return cutBasedIDLoose() ; break;
+      case Medium:
+	/* return (cutIDbitsMedium_ & IDcut::c_HoverE) && (cutIDbitsMedium_ & IDcut::c_neIso) && (cutIDbitsMedium_ & IDcut::c_phIso) && (cutIDbitsMedium_ & IDcut::c_sieie) && (cutIDbitsMedium_ & IDcut::c_chIso); */
+	return cutBasedIDMedium(); break;
+      case Tight:
+	/* return (cutIDbitsTight_ & IDcut::c_HoverE) && (cutIDbitsTight_ & IDcut::c_neIso) && (cutIDbitsTight_ & IDcut::c_phIso) && (cutIDbitsTight_ & IDcut::c_sieie) && (cutIDbitsTight_ & IDcut::c_chIso); */
+	return cutBasedIDTight() ; break;
+      default:
+	return true;
+      }
+    }
+
+    bool cutBasedID(IDwp wp, IDcut cut) const{
+      const unsigned int* cutBits = nullptr;
+      switch(wp){
+      case VeryLoose:
+	if(cut & (IDcut::c_sieie | IDcut::c_chIso))  // bitwise or
+	  return true;
+      case Loose:
+	cutBits = &cutIDbitsLoose_ ; break;
+      case Medium:
+	cutBits = &cutIDbitsMedium_; break;
+      case Tight:
+	cutBits = &cutIDbitsLoose_ ; break;
+      default:
+	return true;
+      }
+      return (*cutBits) & cut;  // bitwise AND
+    }
+    
     inline bool isBarrel() const { return fabs(eta()) < TRANSITION_BARREL_ENDCAP; }
     
     bool passHoverE(IDwp wp) const{
