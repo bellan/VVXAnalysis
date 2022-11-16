@@ -51,10 +51,10 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 		  configuration.getParameter<bool>("applyFRSF"),
 		  configuration.getParameter<bool>("forcePosWeight")
 		  )
-  , year(configuration.getParameter<int>("year"))
   , theWeight(1.)
   , theCutCounter(0.)
   , theInputWeightedEvents(0.)
+  , year(configuration.getParameter<int>("year"))
   , genCategory(-128){
 
   if(year != theSampleInfo.setup() && theSampleInfo.isMC())
