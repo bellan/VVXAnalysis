@@ -728,7 +728,9 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
 
   phys::Jet output(phys::Particle::convert(jet.p4()),jet.charge(),1);
   
- 
+  output.chargedMultiplicity_ = jet.chargedMultiplicity();
+  output.neutralMultiplicity_ = jet.neutralMultiplicity();
+  
   output.csvtagger_      = jet.hasUserFloat("bTagger")                   ? jet.userFloat("bTagger")                : -999;
   
   output.deepAK8_.TvsQCD      = jet.bDiscriminator("pfDeepBoostedDiscriminatorsJetTags:TvsQCD");
@@ -759,7 +761,12 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   // output.particleNet_MD_.HbbvsQCD = jet.bDiscriminator("pfMassDecorrelatedParticleNetDiscriminatorsJetTags:HbbvsQCD");
   // output.particleNet_MD_.H4qvsQCD = jet.bDiscriminator("pfMassDecorrelatedParticleNetDiscriminatorsJetTags:H4qvsQCD");
   
-  //output.bTaggers = jet.getPairDiscri(); //TEST get the whole list of tags
+  output.deepFlavour_.probb    = jet.bDiscriminator("pfDeepFlavourJetTags:probb"   );
+  output.deepFlavour_.probc    = jet.bDiscriminator("pfDeepFlavourJetTags:probc"   );
+  output.deepFlavour_.probg    = jet.bDiscriminator("pfDeepFlavourJetTags:probg"   );
+  output.deepFlavour_.problepb = jet.bDiscriminator("pfDeepFlavourJetTags:problepb");
+  output.deepFlavour_.probbb   = jet.bDiscriminator("pfDeepFlavourJetTags:probbb"  );
+  output.deepFlavour_.probuds  = jet.bDiscriminator("pfDeepFlavourJetTags:probuds" );
   
   output.qgLikelihood_   = jet.hasUserFloat("qgLikelihood")              ? jet.userFloat("qgLikelihood")           : -999;
   output.fullPuId_       = jet.hasUserInt  ("pileupJetIdUpdated:fullId") ? jet.userInt("pileupJetIdUpdated:fullId"): -999;
@@ -859,7 +866,6 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
 }
 
 phys::Photon TreePlanter::fill(const pat::Photon &photon) const {
-	// TODO isolations!
 	
 	auto corrP4 = photon.p4() * photon.userFloat("ecalEnergyPostCorr") / photon.energy(); // Energy corrections
 	
@@ -869,6 +875,10 @@ phys::Photon TreePlanter::fill(const pat::Photon &photon) const {
 	output.cutBasedIDLoose_  = photon.isPhotonIDAvailable("cutBasedPhotonID-Fall17-94X-V2-loose")  ? photon.photonID("cutBasedPhotonID-Fall17-94X-V2-loose")  : photon.photonID("cutBasedPhotonID_Fall17_94X_V2_loose");
 	output.cutBasedIDMedium_ = photon.isPhotonIDAvailable("cutBasedPhotonID-Fall17-94X-V2-medium") ? photon.photonID("cutBasedPhotonID-Fall17-94X-V2-medium") : photon.photonID("cutBasedPhotonID_Fall17_94X_V2_medium");
 	output.cutBasedIDTight_  = photon.isPhotonIDAvailable("cutBasedPhotonID-Fall17-94X-V2-tight")  ? photon.photonID("cutBasedPhotonID-Fall17-94X-V2-tight")  : photon.photonID("cutBasedPhotonID_Fall17_94X_V2_tight");
+	
+	output.cutIDbitsLoose_  = photon.hasUserInt("cutBasedPhotonID-Fall17-94X-V2-loose" ) ? photon.userInt("cutBasedPhotonID-Fall17-94X-V2-loose" ) : photon.userInt("cutBasedPhotonID_Fall17_94X_V2_loose" );
+	output.cutIDbitsMedium_ = photon.hasUserInt("cutBasedPhotonID-Fall17-94X-V2-medium") ? photon.userInt("cutBasedPhotonID-Fall17-94X-V2-medium") : photon.userInt("cutBasedPhotonID_Fall17_94X_V2_medium");
+	output.cutIDbitsTight_  = photon.hasUserInt("cutBasedPhotonID-Fall17-94X-V2-tight" ) ? photon.userInt("cutBasedPhotonID-Fall17-94X-V2-tight" ) : photon.userInt("cutBasedPhotonID_Fall17_94X_V2_tight" );
 	
 	output.MVAvalue_ = photon.hasUserFloat("PhotonMVAEstimatorRunIIFall17v2Values") ? photon.userFloat("PhotonMVAEstimatorRunIIFall17v2Values") : -1. ;
 	

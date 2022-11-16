@@ -42,7 +42,7 @@ import os
 PyFilePath = os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/"
 
 ### ----------------------------------------------------------------------
-### Standard sequence
+### Import ZZAnalysis
 ### ----------------------------------------------------------------------
 
 execfile(PyFilePath + "MasterPy/ZZ4lAnalysis.py")      
@@ -69,7 +69,6 @@ VVjj_search_path = os.environ['CMSSW_BASE'] + "/src/VVXAnalysis/Producers/python
 ### ----------------------------------------------------------------------
 ### Standard sequence
 ### ----------------------------------------------------------------------
-
 
 ### ---------------------------------- MC --------------------------------
 if IsMC:
@@ -129,11 +128,25 @@ if IsMC:
 
 
 ### ------------------------------- Photons -----------------------------
+process.load("RecoEgamma/PhotonIdentification/photonIDValueMapProducer_cff")  # this creates a process.photonIDValueMapProducer
+
+process.filledPhotons = cms.EDProducer("PhillerVVX",
+                                       # photons = cms.InputTag("filteredPhotons"),
+                                       photons = cms.InputTag("slimmedPhotons"),
+                                       chIsoValueMap = cms.InputTag("photonIDValueMapProducer:phoChargedIsolation")
+)
+
 process.filteredPhotons = cms.EDFilter("PATPhotonSelector",
                                        src = cms.InputTag("slimmedPhotons"),
-                                       cut = cms.string("pt > 15 && abs(eta) < 3.0"))
+                                       # src = cms.InputTag("filledPhotons"),
+                                       cut = cms.string("pt > 15 && abs(eta) < 3.0")
+                                      )
 
-process.photonSelection = cms.Path(process.filteredPhotons)
+process.photonSelection = cms.Path(
+    # process.photonIDValueMapProducer *
+    # process.filledPhotons *
+    process.filteredPhotons
+)
 ### ---------------------------------------------------------------------
 
 
@@ -218,8 +231,8 @@ updateJetCollection(
     pvSource = cms.InputTag('offlineSlimmedPrimaryVertices'),
     svSource = cms.InputTag('slimmedSecondaryVertices'),
     rParam = 0.8,
-    jetCorrections = ('AK8PFPuppi', cms.vstring(), 'None'), #, 'L2Relative', 'L3Absolute', 'L2L3Residual'
-    btagDiscriminators = _pfDeepBoostedJetTagsAll + _pfParticleNetJetTagsAll,
+    jetCorrections = ('AK8PFPuppi', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']), 'None'), #, 'L2Relative', 'L3Absolute', 'L2L3Residual'
+    btagDiscriminators = _pfDeepBoostedJetTagsAll + _pfParticleNetJetTagsAll + ['pfDeepFlavourJetTags:probb','pfDeepFlavourJetTags:probc','pfDeepFlavourJetTags:probg','pfDeepFlavourJetTags:problepb','pfDeepFlavourJetTags:probbb','pfDeepFlavourJetTags:probuds'],
     postfix='AK8WithDeepTags',
     printWarning = True
    )
@@ -246,6 +259,11 @@ execfile(VVjj_search_path + "2_leptons_regions.py")
 
 ### ----------------------------------------------------------------------
 
+process.counters = cms.Task(process.SR4PCounter , process.CR3P1FCounter   , process.CR2P2FCounter, process.SR4P1LCounter,
+                            process.SRHZZCounter, process.CR3P1FHZZCounter, process.CR2P2FHZZCounter,
+                            process.SR3PCounter, process.CR110Counter, process.CR101Counter, process.CR011Counter, process.CR100Counter, process.CR001Counter, process.CR010Counter, process.CR000Counter, process.SR3P1LCounter,
+                            process.CRLFRCounter,
+                            process.SR2PCounter, process.SR2P1LCounter)
 
 
 
@@ -329,9 +347,6 @@ process.jetCleaning = cms.Path(  process.muonsToBeRemovedFromJets
                                + process.jetCounterFilter)
 
 
-#process.photonSelection = cms.Path(process.filteredPhotons)
-
-
 ### ------------------------------------------------------------------------- ###
 ### Fill the tree for the analysis
 ### ------------------------------------------------------------------------- ###
@@ -366,9 +381,8 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      XSection     = cms.untracked.double(XSEC)
      )
 
-
 ### ------------------------------------------------------------------------- ###
-### Run the TreePlanter
+### Triggers
 ### ------------------------------------------------------------------------- ###
 
 triggerFilterForVVX = cms.EDFilter("VVXTriggerFilter",
@@ -394,15 +408,6 @@ process.triggerForZL = triggerFilterForVVX.clone()
 process.triggerForZL.channelType = cms.string("ZL")
 
 
-process.filltrees = cms.EndPath(cms.ignore(process.triggerForZZ) + cms.ignore(process.triggerForZW) + cms.ignore(process.triggerForZV) + cms.ignore(process.triggerForZL) +
-                                process.SR4PCounter  + process.CR3P1FCounter + process.CR2P2FCounter + process.SR4P1LCounter +
-                                process.SRHZZCounter + process.CR3P1FHZZCounter + process.CR2P2FHZZCounter + 
-                                process.SR3PCounter  + process.CR110Counter  + process.CR101Counter  + process.CR011Counter  + process.CR100Counter  + process.CR001Counter  + process.CR010Counter  + process.CR000Counter  + process.SR3P1LCounter + process.CRLFRCounter +
-                                process.SR2PCounter + process.SR2P1LCounter +
-                                process.treePlanter)
-
-########################################################################################################################################################################
-
 ########################################################
 ### Tools for further debuging                       ###
 ########################################################
@@ -414,37 +419,52 @@ process.printTree = cms.EDAnalyzer("ParticleListDrawer",
                                    )
 
 
-process.dumpUserData =  cms.EDAnalyzer("dumpUserData",
-     dumpTrigger = cms.untracked.bool(True),
-     options = cms.PSet(SkipEvent = cms.untracked.vstring('ProductNotFound')),
-      muonSrcs =  cms.PSet(
-     #    slimmedMuons = cms.InputTag("slimmedMuons"),
-     #    calibratedMuons   = cms.InputTag("calibratedMuons"),
-     #    muons        = cms.InputTag("appendPhotons:muons"),
-     #    postCleaningMuons  = cms.InputTag("postCleaningMuons")
+process.dumpUserData =  cms.EDAnalyzer("dumpData", #"dumpUserData",
+    dumpTrigger = cms.untracked.bool(True),
+    options = cms.PSet(SkipEvent = cms.untracked.vstring('ProductNotFound')),
+    muonSrcs =  cms.PSet(
+        # slimmedMuons      = cms.InputTag("slimmedMuons"),
+        # calibratedMuons   = cms.InputTag("calibratedMuons"),
+        # muons             = cms.InputTag("appendPhotons:muons"),
+        # postCleaningMuons = cms.InputTag("postCleaningMuons")
       ),
-
-      electronSrcs = cms.PSet(
-     #    slimmedElectron        = cms.InputTag("slimmedElectrons"),
-     #    calibratedPatElectrons = cms.InputTag("calibratedPatElectrons"),
-     #    electrons              = cms.InputTag("appendPhotons:electrons"),
-     #    postCleaningElectrons  = cms.InputTag("postCleaningElectrons")
-      ),
-      candidateSrcs = cms.PSet(
-     #    Z   = cms.InputTag("ZCand"),
-     #    ZZ  = cms.InputTag("ZZCand"),
-     #    ZLL = cms.InputTag("ZLLCand"),  
-     #    ZL  = cms.InputTag("ZlCand") 
-         ),
-      # jetSrc = cms.PSet(
-      #   cleanJets          = cms.InputTag("cleanJets"),
-      #   JetsWithLeptonsRemover = cms.InputTag("JetsWithLeptonsRemover"),
-      #   disambiguatedJets = cms.InputTag("disambiguatedJets"),
-      #   correctedJetsAK8 = cms.InputTag("correctedJetsAK8"),
-      #   disambiguatedJetsAK8 = cms.InputTag("disambiguatedJetsAK8")
-      #   )
-     jetSrc =  cms.InputTag("disambiguatedJetsAK8")
+    electronSrcs = cms.PSet(
+        # slimmedElectron        = cms.InputTag("slimmedElectrons"),
+        # calibratedPatElectrons = cms.InputTag("calibratedPatElectrons"),
+        # electrons              = cms.InputTag("appendPhotons:electrons"),
+        # postCleaningElectrons  = cms.InputTag("postCleaningElectrons")
+    ),
+    candidateSrcs = cms.PSet(
+        # Z   = cms.InputTag("ZCand"),
+        # ZZ  = cms.InputTag("ZZCand"),
+        # ZLL = cms.InputTag("ZLLCand"),
+        # ZL  = cms.InputTag("ZlCand")
+    ),
+    photonSrc = cms.InputTag("filteredPhotons"),
+    # full5x5SigmaIEtaIEtaMap   = cms.InputTag("photonIDValueMapProducer:phoFull5x5SigmaIEtaIEta"),
+    # phoChargedIsolation       = cms.InputTag("photonIDValueMapProducer:phoChargedIsolation"),
+    # phoNeutralHadronIsolation = cms.InputTag("photonIDValueMapProducer:phoNeutralHadronIsolation"),
+    # phoPhotonIsolation        = cms.InputTag("photonIDValueMapProducer:phoPhotonIsolation"),
+    jetSrc = cms.PSet(
+    #     cleanJets         = cms.InputTag("cleanJets"),
+    #     JetsWithLeptonsRemover = cms.InputTag("JetsWithLeptonsRemover"),
+        disambiguatedJets = cms.InputTag("disambiguatedJets"),
+    #     correctedJetsAK8  = cms.InputTag("correctedJetsAK8"),
+        disambiguatedJetsAK8 = cms.InputTag("disambiguatedJetsAK8")
+    )
+    # jetSrc = cms.InputTag("disambiguatedJetsAK8")
 )
+
+
+### ------------------------------------------------------------------------- ###
+### Run the TreePlanter
+### ------------------------------------------------------------------------- ###
+
+process.filltrees = cms.EndPath(cms.ignore(process.triggerForZZ) + cms.ignore(process.triggerForZW) + cms.ignore(process.triggerForZV) + cms.ignore(process.triggerForZL) +
+                                process.dumpUserData +
+                                process.treePlanter,
+                                process.counters)
+
 
 #process.filltrees = cms.EndPath(cms.ignore(process.zzTrigger) + process.srCounter + process.cr2P2FCounter + process.cr3P1FCounter + process.treePlanter + process.dumpUserData)
 
