@@ -18,6 +18,7 @@
 #pragma link C++ class  phys::RegionsCounter+;
 #pragma link C++ class  std::map<phys::RegionTypes,Int_t>+;
 #pragma link C++ class  phys::Jet::JetScores+;
+#pragma link C++ class  phys::Jet::DeepFlavourScores+;
 
 
 #pragma link C++ class  phys::Particle+;

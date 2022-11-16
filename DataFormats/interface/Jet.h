@@ -32,6 +32,15 @@ namespace phys {
       Double_t H4qvsQCD = -2;
     };
     
+    struct DeepFlavourScores {
+      Double_t probb   = -2.;
+      Double_t probc   = -2.;
+      Double_t probg   = -2.;
+      Double_t problepb= -2.;
+      Double_t probbb  = -2.;
+      Double_t probuds = -2.;
+    };
+    
     /// Constructor
     Jet(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), float q =0, int pid = 0)
       : Particle(p, q, pid)
@@ -68,15 +77,18 @@ namespace phys {
     virtual ~Jet(){};
     
     // Operations
+    Int_t chargedMultiplicity() const { return chargedMultiplicity_; }
+    Int_t neutralMultiplicity() const { return neutralMultiplicity_; }
     
     // B-tagging info
     Double_t csvtagger()     const {return csvtagger_;}         
     
     // DeepAK8 and ParticleNet score getters
-    const JetScores& deepAK8()        const { return deepAK8_; }
-    const JetScores& deepAK8_MD()     const { return deepAK8_MD_; }
+    const JetScores& deepAK8()        const { return deepAK8_;     }
+    const JetScores& deepAK8_MD()     const { return deepAK8_MD_;  }
     const JetScores& particleNet()    const { return particleNet_; }
     // const JetScores& particleNet_MD() const { return particleNet_MD_; }
+    const DeepFlavourScores& deepFlavour() const { return deepFlavour_; }
 
     // Quark-Gluon discrimination variables
     Double_t girth()         const {return girth_;}
@@ -139,11 +151,17 @@ namespace phys {
   protected:
     
   private:
+    Int_t chargedMultiplicity_;
+    Int_t neutralMultiplicity_;
+    
     // B-tagging info
     Double_t csvtagger_;
     
     // DeepAK8 and ParticleNet scores
     JetScores deepAK8_, deepAK8_MD_, particleNet_; //, particleNet_MD_;
+    
+    // Deep Flavour
+    DeepFlavourScores deepFlavour_;
     
     // Quark-Gluon discrimination variables
     Double_t girth_;
