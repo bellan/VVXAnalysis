@@ -73,7 +73,7 @@ VVjj_search_path = os.environ['CMSSW_BASE'] + "/src/VVXAnalysis/Producers/python
 ### ---------------------------------- MC --------------------------------
 if IsMC:
     
-    genleptons = '(status == 1 && (isPromptFinalState && fromHardProcessFinalState && abs(pdgId) <= 16) ||  abs(pdgId) == 22)'
+    genleptons = '(status == 1 && (isPromptFinalState && fromHardProcessFinalState && abs(pdgId) <= 16)'
     genquarks  = '(abs(pdgId) <= 6 && (mother.pdgId == 23 || abs(mother.pdgId) == 24))'
     genphotons = 'pdgId == 22'
     

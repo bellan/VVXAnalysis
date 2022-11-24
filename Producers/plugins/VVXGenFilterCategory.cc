@@ -96,7 +96,7 @@ bool VVXGenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
     if(id == 22)  genPhotons.push_back(php);
     
     // Stable leptons
-    if(id == 11 || id == 13 || id == 12 || id == 14) genLeptons.push_back(php);
+    if(id >= 11 && id <= 14) genLeptons.push_back(php);
   }
   
   
