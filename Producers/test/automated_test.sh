@@ -7,10 +7,12 @@
 # Author: A. Mecca (amecca@cern.ch)                                 # 
 #####################################################################
 
+set -o pipefail
+
 analyzer=../python/analyzer_VVjj.py  # ../python/analyzer_VVjj_dump.py  # 
 specific_file=""  # es. file:/eos/home-a/amecca/samples/.../somefile.root
-csv_file=samples_2016UL_MC.csv  # ../python/samples_PKU_2016UL_MC.csv
-sample_ID=ZZGTo4LG  # ZGToLLG-v17
+csv_file=samples_2017UL_MC.csv  # ../python/samples_PKU_2016UL_MC.csv
+sample_ID=ZGToLLG  # ZGToLLG-v17
 events=100
 
 
