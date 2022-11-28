@@ -111,4 +111,10 @@ std::vector<std::pair<const S*, const T*>> matchGenRec(const std::vector<S>& vge
 }
 
 
+template<class P, class T>
+  const T* closestDeltaRMatch(P p, std::vector<T> vec){
+  auto it = std::min_element(vec.begin(), vec.end(), [p](const T& a, const T& b){ return physmath::deltaR(p, a) < physmath::deltaR(p, b); });
+  return it != vec.end() ? &*it : nullptr;
+}
+
 #endif
