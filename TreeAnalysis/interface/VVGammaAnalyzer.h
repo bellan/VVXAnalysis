@@ -118,6 +118,7 @@ public:
 	void systematicsStudy();
 	void SYSplots(const char* syst, const double& weight, const phys::Photon*);
         void debug3Lregion();
+	void photonGenStudy();
 
  	void endNameHistos();
  	

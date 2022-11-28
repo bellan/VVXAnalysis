@@ -129,7 +129,7 @@ void VVGammaAnalyzer::initEvent(){
     //Electrons and muons matching
     bool match = false;
     for(const Lepton lep : *leptons_){
-      if(deltaR(ph,lep) < 0.3){
+      if(deltaR(ph,lep) < 0.07){  // 0.3
 	match = true;
 	break;
       }
@@ -195,12 +195,18 @@ Int_t VVGammaAnalyzer::cut() {
   evtN_++; evtNInReg_[region_]++; evtWInReg_[region_] += theWeight;
   #ifndef DEBUG
   cout<<"\r\t\t"<<evtN_;
+  #else
+  cout << regionType(region_) << ':' << run << ':' << lumiBlock << ':' << event << '\t'
+       << theWeight << '\n';
+  for(const Particle& p : *genPhotons_)
+    cout << "\tgenStatusFlag = " << p.genStatusFlags() << " --> " << p.genStatusFlags().to_ulong() << std::endl;
+
   #endif
-  //cout << regionType(region_) << ':' << run << ':' << lumiBlock << ':' << event << '\n';
+       // << ZZ->mass() << ' ' << ZW->p4().Mt() << ' ' << kinPhotons_["central"]->size() << ' ' << goodPhotons_["central"]->size() << '\n';
   // if(cherrypickEvt()){
-  //   theHistograms->fill("cherry_ZZ_mass"    , "Events in {UL#backslashLegacy}: m_{ZZ};m_{ZZ} [GeV/c^{2}]", 25,0.,500., ZZ->mass()                      , theWeight);
-  //   theHistograms->fill("cherry_ZZ_goodLept", "Events in {UL#backslashLegacy}: # good leptons"           , 5,-0.5,4.5, ZZ->numberOfGoodGrandDaughters(), theWeight);
-  //   theHistograms->fill("cherry_ZZ_badLept" , "Events in {UL#backslashLegacy}: # bad leptons"            , 5,-0.5,4.5, ZZ->numberOfBadGrandDaughters() , theWeight);
+    // theHistograms->fill("cherry_ZZ_mass"    , "Events in {UL#backslashLegacy}: m_{ZZ};m_{ZZ} [GeV/c^{2}]", 25,0.,500., ZZ->mass()                      , theWeight);
+    // theHistograms->fill("cherry_ZZ_goodLept", "Events in {UL#backslashLegacy}: # good leptons"           , 5,-0.5,4.5, ZZ->numberOfGoodGrandDaughters(), theWeight);
+    // theHistograms->fill("cherry_ZZ_badLept" , "Events in {UL#backslashLegacy}: # bad leptons"            , 5,-0.5,4.5, ZZ->numberOfBadGrandDaughters() , theWeight);
   // }
   
   theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, 0, theWeight);
@@ -210,6 +216,7 @@ Int_t VVGammaAnalyzer::cut() {
   bool have2l2j = false;
   bool haveGoodPhoton = false;
   
+  genEventSetup();
   initEvent();
   
   theHistograms->fill("POG_leptons", "n leptons", 7,-0.5,6.5, electrons->size()+muons->size(), theWeight);  
@@ -315,8 +322,6 @@ void VVGammaAnalyzer::analyze(){
     theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, 8, theWeight);
     theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, 8, 1);
   }
-    
-  genEventSetup();
   
   bool four_lep  = is4Lregion(region_);  // && ZZ && ZZ->pt() > 1.;
   bool three_lep = is3Lregion(region_);  // && ZW && ZW->pt() > 1.;
@@ -334,6 +339,7 @@ void VVGammaAnalyzer::analyze(){
   makeChannelReco();
   
   // leptonFakeRate();
+  photonGenStudy();
   photonFakeRate();
   systematicsStudy();
   
@@ -436,7 +442,7 @@ void VVGammaAnalyzer::analyze(){
     
     for(size_t i = 0; i < leptons_->size(); ++i){
       for(size_t j = i+1; j < leptons_->size(); ++j){
-	double mij = (leptons_->at(i).p4() + leptons_->at(i).p4()).M();
+	double mij = (leptons_->at(i).p4() + leptons_->at(j).p4()).M();
 	if(mij < 4){
 	  theHistograms->fill("ERROR_smartCut", "Smart cut not applied;m_{ll} [GeV/c^2];# pairs", 10,0.,10, mij);
 	}
@@ -494,13 +500,6 @@ void VVGammaAnalyzer::analyze(){
       }
       theHistograms->fill("Z_pt", "Z p_{T}", 30, 0.,300., Zcand.pt(), theWeight);
       
-      // jet histos
-      theHistograms->fill("AK4_N" , "# jets AK4", 6, -0.5, 5.5, jets->size(), theWeight);
-      for(const Jet& jet : *jets)
-	theHistograms->fill("AK4_pt", "p_{T} jets AK4;GeV/c", 50, 0., 500., jet.pt(), theWeight);
-      theHistograms->fill("AK8_N" , "# jets AK8", 6, -0.5, 5.5, jetsAK8->size(), theWeight);
-      for(const Jet& jet : *jetsAK8)
-	theHistograms->fill("AK8_pt", "p_{T} jets AK8;GeV/c", 50, 0., 500., jet.pt(), theWeight);
       theHistograms->fill("Z_mass_"+channelReco_, "m_{ll};GeV/c^{2}", 30, 60., 120., Zcand.mass(), theWeight);
       
       // Vhad histograms
@@ -663,16 +662,18 @@ void VVGammaAnalyzer::endNameHistos(){
     axis->SetBinLabel(5, "Tight");
   }
   
-  TH1* WZ_cutflow = theHistograms->get("WZ_cutflow");
-  if(WZ_cutflow){
-    TAxis* xaxis = WZ_cutflow->GetXaxis();
-    xaxis->SetBinLabel(1, "Total"                );
-    xaxis->SetBinLabel(2, "lepton p_{t}"         );
-    xaxis->SetBinLabel(3, "|m_{ll} - m_{Z}| < 15");
-    xaxis->SetBinLabel(4, "MET > 30"             );
-    xaxis->SetBinLabel(5, "m_{lll} > 100"        );
-    xaxis->SetBinLabel(6, "bveto"                );
-    xaxis->SetBinLabel(7, "All cuts"             );
+  if(is3Lregion(region_)){
+    TH1* WZ_cutflow = theHistograms->get("WZ_cutflow");
+    if(WZ_cutflow){
+      TAxis* xaxis = WZ_cutflow->GetXaxis();
+      xaxis->SetBinLabel(1, "Total"                );
+      xaxis->SetBinLabel(2, "lepton p_{t}"         );
+      xaxis->SetBinLabel(3, "|m_{ll} - m_{Z}| < 15");
+      xaxis->SetBinLabel(4, "MET > 30"             );
+      xaxis->SetBinLabel(5, "m_{lll} > 100"        );
+      xaxis->SetBinLabel(6, "bveto"                );
+      xaxis->SetBinLabel(7, "All cuts"             );
+    }
   }
   
   TH1* channel_lep = theHistograms->get("channel_lep");
@@ -738,7 +739,7 @@ vector<Boson<T>> VVGammaAnalyzer::makeBosons(const std::vector<T>& vec, UnaryPre
   out.reserve(vec.size() * (vec.size()-1) / 2);;
   for  (auto i = vec.cbegin(); i != vec.end(); ++i)
     for(auto j = i+1         ; j != vec.end(); ++j){
-      Boson<T> b(*i, *j, 1);  // last parameter is ID; if not set to something != 0 will cause isValid() to return false and me to waste an afternoon debugging
+      Boson<T> b(*i, *j, -23);  // last parameter is ID; if not set to something != 0 will cause isValid() to return false and me to waste an afternoon debugging
       if(selection(b))
 	out.push_back(b);
     }
@@ -839,15 +840,18 @@ void VVGammaAnalyzer::genEventSetup(){
 	
   // Sort gen particles
   for(auto p : *genParticles){
-    if(abs(p.id()) < 9)
+    unsigned int aPID = abs(p.id());
+    if(aPID < 9)
       genQuarks_->push_back(p);
-    else if(abs(p.id()) == 11 || abs(p.id()) == 13){
+    else if(aPID == 11 || aPID == 13){
       genChLeptons_->push_back(p);
     }
-    else if(abs(p.id()) == 12 || abs(p.id()) == 14)
+    else if(aPID == 12 || aPID == 14)
       genNeutrinos_->push_back(p);
-    else if( p.id() == 22 && p.pt() > 18.)
-      genPhotons_->push_back(p);
+    else if( p.id() == 22 && p.pt() > 18.){
+      if(p.genStatusFlags().test(phys::GenStatusBit::fromHardProcessBeforeFSR))
+	genPhotons_->push_back(p);
+    }
   }
 	
   // Gen W --> l nu
@@ -1161,6 +1165,10 @@ void VVGammaAnalyzer::photonHistos(){
 
 void VVGammaAnalyzer::jetHistos(){
   // JetsAK8
+  theHistograms->fill("AK8_N" , "# jets AK8", 6, -0.5, 5.5, jetsAK8->size(), theWeight);
+  for(const Jet& jet : *jetsAK8)
+    theHistograms->fill("AK8_pt", "p_{T} jets AK8;GeV/c", 50, 0., 500., jet.pt(), theWeight);
+  
   vector<std::pair<const Particle*, const Jet*>> JetsAK8genrec = matchGenRec(*genJetsAK8, *jetsAK8);
   for(auto pair: JetsAK8genrec){
     const Particle& gen = * pair.first;
@@ -1181,6 +1189,10 @@ void VVGammaAnalyzer::jetHistos(){
   }
   
   // Jets AK4
+  theHistograms->fill("AK4_N" , "# jets AK4", 6, -0.5, 5.5, jets->size(), theWeight);
+  for(const Jet& jet : *jets)
+    theHistograms->fill("AK4_pt", "p_{T} jets AK4;GeV/c", 50, 0., 500., jet.pt(), theWeight);
+
   vector<std::pair<const Particle*, const Jet*>> JetsAK4genrec = matchGenRec(*genJets, *jets);
   for(auto pair: JetsAK4genrec){
     const Particle& gen = * pair.first;
@@ -1271,7 +1283,7 @@ void VVGammaAnalyzer::leptonFakeRate(){
 
 void VVGammaAnalyzer::plotsVVGstatus(const char* name, const char* title, const TLorentzVector& p4, const char* mType){
   // return either mass or transverse mass, depending on the request
-  auto mValue = (mType == "massT" ? [](const TLorentzVector& v){ return v.Mt() ; } : [](const TLorentzVector& v){ return v.M() ; });
+  auto mValue = (!strcmp(mType, "massT") ? [](const TLorentzVector& v){ return v.Mt() ; } : [](const TLorentzVector& v){ return v.M() ; });
   
   // Kin photons
   if(kinPhotons_["central"]->size() > 0){
@@ -1765,6 +1777,93 @@ void VVGammaAnalyzer::debug3Lregion(){
 
   theHistograms->fill("debug3L_ZW_mass_w123", "ZW mass, weighted by FR_{l1}*FR_{l2}*FR_{l3};m_{ZW} [GeV/c^{2}]", mVV_bins, mWZ, base_w * l1.fakeRateSF()*l2.fakeRateSF()*l3.fakeRateSF());
 }
+
+
+void VVGammaAnalyzer::photonGenStudy(){
+  // Study the efficiency/background rejection of a cut in deltaR(photon, lepton)
+  // Make collection of genPhotons from hard process
+  vector<Particle> genPhotonsPrompt(genPhotons_->size());
+  auto it = copy_if(genPhotons_->begin(), genPhotons_->end(), genPhotonsPrompt.begin(),
+  		    [](const Particle& p){
+  		      std::bitset<15> flags = p.genStatusFlags();
+  		      return /*status == 1 &&*/ (flags.test(isHardProcess) || flags.test(fromHardProcess)) /*&& fromHardProcessFinalState*/; }
+  		    );
+  genPhotonsPrompt.resize(std::distance(genPhotonsPrompt.begin(), it));
+  
+  // Since the base selection already contains this cut, it is necessary to do it again
+  std::map<const char*, vector<Photon>> recoPhotons;
+  // recoPhotons["kin"]       = vector<Photon>();
+  // recoPhotons["veryLoose"] = vector<Photon>();
+  recoPhotons["loose"]     = vector<Photon>();
+    
+  // Select reco photons except cut on DR(ph, lep)
+  for(const Photon& ph: *photons){
+    //Pixel seed and electron veto
+    if(ph.hasPixelSeed() || !ph.passElectronVeto()) continue;
+		
+    //Kinematic selection
+    if(ph.pt() < 20) continue;
+    float ph_aeta = fabs(ph.eta());
+    if(ph_aeta > 2.4 || (ph_aeta > 1.4442 && ph_aeta < 1.566)) continue;
+    
+    // recoPhotons["kin"].push_back(ph)  // kin.push_back(ph);
+    // if(passVeryLoose(ph))
+    //   recoPhotons["veryLoose"].push_back(ph)  // veryLoose.push_back(ph);
+    if(ph.cutBasedIDLoose())
+      recoPhotons["loose"].push_back(ph);  // loose.push_back(ph);
+  }
+  
+  // The rec-gen matching is done separately for kin, veryLoose and loose, since we don't want e.g. a kin reco photon 
+  // that fails the LooseID to be selected just because it comes before in the photon vector
+  for(auto & [wp, phVect] : recoPhotons){
+    if(phVect.size() == 0)
+      continue;
+    
+    const Photon* best = & phVect.at(0);
+    const char* matched = "nomatch";
+    if(genPhotonsPrompt.size() > 0){
+      for(const Photon& rec : phVect){
+	const Particle* closestGen = closestDeltaRMatch(rec, *genPhotons_);
+	if(deltaR(rec, *closestGen) < 0.1){
+	  best = &rec;
+	  matched = "matchedPrompt";
+	  break;
+	}
+      }
+    }
+    else if(genPhotons_->size() > 0){
+      for(const Photon& rec : phVect){
+	const Particle* closestGen = closestDeltaRMatch(rec, *genPhotons_);
+	if(deltaR(rec, *closestGen) < 0.1){
+	  best = &rec;
+	  matched = "matched";
+	  break;
+	}
+      }
+    }
+    
+    // Find the closest lep and get the DR
+    const Lepton* closestLep = closestDeltaRMatch(*best, *leptons_);
+    float dR = closestLep != nullptr ? deltaR(*best, *closestLep) : 10;
+    theHistograms->fill(Form("PhGenStudy_DRLep_%s_%s", wp, matched), Form("%s;min #DeltaR(l,#gamma);Events", wp), 50, 0., 1., dR   , theWeight);
+    
+    // Closest jet
+    const Jet* closestJet = closestDeltaRMatch(*best, *jets);
+    float dRJet = closestJet != nullptr ? deltaR(*best, *closestJet) : 10;
+    theHistograms->fill(Form("PhGenStudy_DRJet_%s_%s", wp, matched), Form("%s;#DeltaR(#gamma, j);Events"   , wp), 60, 0., 3 , dRJet, theWeight);
+    
+    double pt = best->pt() > ph_pt_bins.back() ? ph_pt_bins.back() : best->pt();
+    theHistograms->fill(Form("PhGenStudy_ptPh_%s_%s", wp, matched) , Form("%s;#gamma p_{T};Events"         , wp), ph_pt_bins, pt   , theWeight);
+    
+    if(is4Lregion(region_))
+      theHistograms->fill(Form("PhGenStudy_m4lG_%s_%s" , wp, matched), Form("%s;m_{4l#gamma};Events" , wp), mVVG_bins, (ZZ->p4() + best->p4()).M() , theWeight);
+    if(is3Lregion(region_))
+      theHistograms->fill(Form("PhGenStudy_mT3lG_%s_%s", wp, matched), Form("%s;mT_{3l#gamma};Events", wp), mVVG_bins, (ZW->p4() + best->p4()).Mt(), theWeight);
+    
+    theHistograms->fill(Form("PhGenStudy_nJets_%s_%s", wp, matched), Form("%s;nJets;Events"                , wp), 5,0,5, jets->size(), theWeight);
+  }
+}
+
 
 // Utilities
 double VVGammaAnalyzer::getPhotonFR   (const phys::Photon& ph) const{
