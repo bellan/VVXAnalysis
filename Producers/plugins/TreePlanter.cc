@@ -148,6 +148,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     consumesMany<LHEEventProduct>();
     theGenCategoryToken      = consumes<int>                        (config.getUntrackedParameter<edm::InputTag>("GenCategory"    , edm::InputTag("genCategory")));
     theGenCollectionToken    = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("genParticlesFromHardProcess")));
+    // theGenPhotonCollectionToken = consumes<edm::View<reco::Candidate>>(config.getUntrackedParameter<edm::InputTag>("GenPhotons"   , edm::InputTag("genPhotons")));
     theGenTauCollectionToken = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenTaus"  , edm::InputTag("genTaus")));
     //theGenJetCollectionToken = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("selectedGenJets")));
     theGenJetCollectionToken    = consumes<edm::View<reco::Candidate> >(config.getUntrackedParameter<edm::InputTag>("GenJets"        , edm::InputTag("genCategory","genJets")));
@@ -200,6 +201,7 @@ void TreePlanter::beginJob(){
   theTree->Branch("ZLCand"    , &ZL_); 
 
   theTree->Branch("genParticles"  , &genParticles_);
+  // theTree->Branch("genPhotons"    , &genPhotons_);
   theTree->Branch("genTaus"       , &genTaus_);
   theTree->Branch("genVBParticles", &genVBParticles_);
   theTree->Branch("genJets"       , &genJets_);
@@ -386,6 +388,7 @@ void TreePlanter::initTree(){
 
   genParticles_ = std::vector<phys::Particle>();
   genTaus_ = std::vector<phys::Particle>();
+  // genPhotons_ = std::vector<phys::Particle>();
   genVBParticles_ = std::vector<phys::Boson<phys::Particle> >();
   genJets_ = std::vector<phys::Particle>();
   genJetsAK8_ = std::vector<phys::Particle>();
@@ -436,11 +439,6 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
   if (!filterController_.passMCFilter(event)) return false;
     
   
-  edm::Handle<edm::View<reco::Candidate> > genParticles; event.getByToken(theGenCollectionToken, genParticles);
-  edm::Handle<edm::View<reco::Candidate> > genTaus     ; event.getByToken(theGenTauCollectionToken, genTaus);
-  edm::Handle<GenEventInfoProduct>         genInfo     ; event.getByToken(theGenInfoToken, genInfo);
-
-
   // Fill Pile-up info 
   std::vector<edm::Handle<std::vector< PileupSummaryInfo > > >  PupInfos; 
   event.getManyByType(PupInfos);
@@ -455,9 +453,9 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
       break;
     }
   
-
   
   // Info about the MC weight
+  edm::Handle<GenEventInfoProduct>         genInfo     ; event.getByToken(theGenInfoToken, genInfo);
   genEventWeights_.mcprocweight_ = genInfo->weight();
   
   // Sum of weight, particularly imprtant for MCs that return also negative weights
@@ -487,28 +485,39 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
   isSignal_ = ((genCategory_ ^ signalDefinition_) & signalDefinition_) == 0; 
   if(isSignal_) ++postSkimSignalEvents_;
   
+  // Collections of gen particles
+  edm::Handle<edm::View<reco::Candidate> > genParticles; event.getByToken(theGenCollectionToken, genParticles);
+  // edm::Handle<edm::View<reco::Candidate> > genPhotons  ; event.getByToken(theGenPhotonCollectionToken, genPhotons);
+  edm::Handle<edm::View<reco::Candidate> > genTaus     ; event.getByToken(theGenTauCollectionToken, genTaus);
+  edm::Handle<edm::View<reco::Candidate> > genVBs      ; event.getByToken(theGenVBCollectionToken, genVBs);
 
   // load only gen leptons and gen photon status 1, from hard process
-  event.getByToken(theGenCollectionToken,  genParticles);
   for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p){
     const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(&(*p));
-    genParticles_.push_back(phys::Particle(gp->p4(), phys::Particle::computeCharge(gp->pdgId()), gp->pdgId()));
+    genParticles_.push_back(phys::Particle(gp->p4(), phys::Particle::computeCharge(gp->pdgId()), gp->pdgId(), gp->statusFlags().flags_));
   }
+  
+  // for (edm::View<reco::Candidate>::const_iterator p = genPhotons->begin(); p != genPhotons->end(); ++p){
+  //   const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(&(*p));
+  //   genPhotons_.push_back(phys::Particle(gp->p4(), phys::Particle::computeCharge(gp->pdgId()), gp->pdgId(), gp->statusFlags().flags_));
+  // }
 
-  event.getByToken(theGenTauCollectionToken,  genTaus);
   for (edm::View<reco::Candidate>::const_iterator p = genTaus->begin(); p != genTaus->end(); ++p){
     const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(&(*p));
-    genTaus_.push_back(phys::Particle(gp->p4(), phys::Particle::computeCharge(gp->pdgId()), gp->pdgId()));
+    genTaus_.push_back(phys::Particle(gp->p4(), phys::Particle::computeCharge(gp->pdgId()), gp->pdgId(), gp->statusFlags().flags_));
   }
- 
-  event.getByToken(theGenVBCollectionToken,  genParticles);
-  for(edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p)
-    { 
-      if(fabs(p->pdgId()) == 24 || p->pdgId() == 23)
-	genVBParticles_.push_back(phys::Boson<phys::Particle>(phys::Particle(p->daughter(0)->p4(), phys::Particle::computeCharge(p->daughter(0)->pdgId()), p->daughter(0)->pdgId()),
-							      phys::Particle(p->daughter(1)->p4(), phys::Particle::computeCharge(p->daughter(1)->pdgId()), p->daughter(1)->pdgId()),
-							      p->pdgId()));
+  
+  for(edm::View<reco::Candidate>::const_iterator p = genVBs->begin(); p != genVBs->end(); ++p){
+    if(abs(p->pdgId()) == 24 || p->pdgId() == 23){
+      auto pdgId0 = p->daughter(0)->pdgId();
+      auto pdgId1 = p->daughter(1)->pdgId();
+      auto genStatusFlags0 = ( dynamic_cast<const reco::GenParticle*>(p->daughter(0)) )->statusFlags().flags_;
+      auto genStatusFlags1 = ( dynamic_cast<const reco::GenParticle*>(p->daughter(1)) )->statusFlags().flags_;
+      phys::Particle d0(p->daughter(0)->p4(), phys::Particle::computeCharge(pdgId0), pdgId0, genStatusFlags0);
+      phys::Particle d1(p->daughter(1)->p4(), phys::Particle::computeCharge(pdgId1), pdgId1, genStatusFlags1);
+      genVBParticles_.push_back(phys::Boson<phys::Particle>(std::move(d0), std::move(d1)));
     }
+  }
 
   // Get the gen jet collection
   edm::Handle<edm::View<reco::Candidate> > genJets;

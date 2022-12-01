@@ -35,31 +35,20 @@ namespace phys {
     static LorentzVector  convert(const TLorentzVector& l) {return LorentzVector(l.Px(),l.Py(),l.Pz(),l.E());}
     
     /// Constructor
-  Particle(const TLorentzVector& mom = TLorentzVector(0.,0.,0.,0.), float q =0, int i = 0)
+    Particle(const TLorentzVector& mom = TLorentzVector(0.,0.,0.,0.), float q = 0, int id = 0, std::bitset<15> flags = 0)
       : p4_(mom)
       , charge_(q)
-      , id_(i)
+      , id_(id)
       , motherId_(-99)
       , efficiencySF_(1.)
       , efficiencySFUnc_(0.)
       , fakeRateSF_(1.)
-      , genStatusFlags_(-99)
-      {}
-
-  Particle(const LorentzVector& l, float q =0, int i = 0,  std::bitset<15> flags = (-99))
-      : p4_(convert(l))
-      , charge_(q)
-      , id_(i)
-      , motherId_(-99)
-      , efficiencySF_(1.)
-      , efficiencySFUnc_(0.)
-      , fakeRateSF_(1.)
-      , genStatusFlags_(flags){
-      // Correct Id for PF charge change
-      if (fabs(id_==13)) id_= fabs(i)*(-1)*q ;
+      , genStatusFlags_(flags)
+    {
+      if (abs(id_)==13) id_= copysign(id, (-1)*q) ;
     }
     
-    
+    Particle(const LorentzVector& l, float q = 0, int i = 0, std::bitset<15> flags = 0) : Particle(convert(l), q, i, flags) {}
     
     /// Destructor
     virtual ~Particle(){};
@@ -115,7 +104,7 @@ namespace phys {
     Bool_t   passFullSel() const {return true;}
     
     // Gen info, in case they are meaningfull
-    std::bitset<15> genStatusFlags() const {return genStatusFlags_;}
+    std::bitset<15> genStatusFlags() const { return genStatusFlags_; }
     void setGenStatusBit(GenStatusBit bit, int val = 1) {genStatusFlags_.set(bit, val);}
 
 

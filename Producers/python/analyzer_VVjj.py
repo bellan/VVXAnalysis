@@ -73,13 +73,16 @@ VVjj_search_path = os.environ['CMSSW_BASE'] + "/src/VVXAnalysis/Producers/python
 ### ---------------------------------- MC --------------------------------
 if IsMC:
     
-    genleptons = '(status == 1 && (isPromptFinalState && fromHardProcessFinalState && abs(pdgId) <= 16)'
-    genquarks  = '(abs(pdgId) <= 6 && (mother.pdgId == 23 || abs(mother.pdgId) == 24))'
-    genphotons = 'pdgId == 22'
+    genparticles_cut = '(status == 1 && isPromptFinalState && fromHardProcessFinalState && abs(pdgId) <= 22)'
+    # genquarks  = '(isPromptFinalState && fromHardProcessFinalState && abs(pdgId) <= 6)'  # && (mother.pdgId == 23) || abs(mother.pdgId) == 24)
     
     process.genParticlesFromHardProcess = cms.EDFilter("GenParticleSelector", filter = cms.bool(False), stableOnly = cms.bool(False),
                                                        src = cms.InputTag("prunedGenParticles"),
-                                                       cut = cms.string(genleptons + " || " + genquarks+" || " + genphotons))
+                                                       cut = cms.string(genparticles_cut))
+    
+    # process.genPhotons = cms.EDFilter("GenParticleSelector", filter = cms.bool(False), stableOnly = cms.bool(False),
+    #                                   src = cms.InputTag("prunedGenParticles"),
+    #                                   cut = cms.string('status == 1 && pdgId == 22'))
     
     process.genTaus = cms.EDFilter("GenParticleSelector", filter = cms.bool(False), stableOnly = cms.bool(False),
                                    src = cms.InputTag("prunedGenParticles"),
@@ -96,7 +99,11 @@ if IsMC:
                                               src = cms.InputTag("slimmedGenJetsAK8"),
                                               cut = cms.string('pt > 20 && abs(eta) < 4.7'))
                                           
-    process.genPath = cms.Path(process.genParticlesFromHardProcess + process.selectedGenJets  + process.selectedGenJetsAK8 + process.genTaus)
+    process.genPath = cms.Path(process.genParticlesFromHardProcess
+                               # + process.genPhotons
+                               + process.selectedGenJets
+                               + process.selectedGenJetsAK8
+                               + process.genTaus)
 
 
 ### ---------- If it is MC, run also the signal definition path -----------
@@ -461,7 +468,7 @@ process.dumpUserData =  cms.EDAnalyzer("dumpData", #"dumpUserData",
 ### ------------------------------------------------------------------------- ###
 
 process.filltrees = cms.EndPath(cms.ignore(process.triggerForZZ) + cms.ignore(process.triggerForZW) + cms.ignore(process.triggerForZV) + cms.ignore(process.triggerForZL) +
-                                process.dumpUserData +
+                                # process.dumpUserData +
                                 process.treePlanter,
                                 process.counters)
 
