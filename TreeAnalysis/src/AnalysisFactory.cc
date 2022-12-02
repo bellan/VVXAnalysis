@@ -21,6 +21,7 @@
 #include "VVXAnalysis/TreeAnalysis/interface/DBGenerator.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZjjAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/VVGammaAnalyzer.h"
+#include "VVXAnalysis/TreeAnalysis/interface/VZGammaAnalyzer.h"
 
 AnalysisFactory::AnalysisFactory(){
   Register("WlllnuAnalyzer"   , &RegistrableAnalysis<WlllnuAnalyzer>::create    );
@@ -45,6 +46,7 @@ AnalysisFactory::AnalysisFactory(){
   Register("DBGenerator"      , &RegistrableAnalysis<DBGenerator>::create       );
   Register("ZZjjAnalyzer"     , &RegistrableAnalysis<ZZjjAnalyzer>::create      );
   Register("VVGammaAnalyzer"  , &RegistrableAnalysis<VVGammaAnalyzer>::create      );
+  Register("VZGammaAnalyzer"  , &RegistrableAnalysis<VZGammaAnalyzer>::create      );
 }
 
 void AnalysisFactory::Register(const std::string &analysisName, CreateAnFn pfnCreate)
