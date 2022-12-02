@@ -2186,42 +2186,6 @@ const P* VZZAnalyzer::findBestVFromSing(std::vector<P>* js){
 }
 
 
-template <class P = phys::Particle>
-const P* VZZAnalyzer::findBestVPoint(std::vector<const P*>& js){
-	if(js.size() < 1)
-		return nullptr;
-	size_t indexZ = 0;
-	size_t indexW = 0;
-	float minDifZ = 50.;
-	float minDifW = 50.;
-	float tmpMass = 0.;
-	for(size_t i = 0; i < js.size(); ++i){
-		tmpMass = getRefinedMass(js.at(i));
-		float diffZa = fabs(tmpMass - phys::ZMASS);
-		float diffWa = fabs(tmpMass - phys::WMASS);
-		if(diffZa < minDifZ){
-			minDifZ = diffZa;
-			indexZ = i;
-		}
-		if(diffWa < minDifW){
-			minDifW = diffWa;
-			indexW = i;
-		}
-	}
-	
-	const P* thisCandidate = nullptr;
-	if(minDifZ < minDifW){
-		thisCandidate = js.at(indexZ);
-		if(!ZBosonDefinition(*thisCandidate))
-			return nullptr;
-	}
-	else{
-		thisCandidate = js.at(indexW);
-		if(!WBosonDefinition(*thisCandidate))
-			return nullptr;
-	}
-	return thisCandidate;
-}
 
 #ifdef USE_PYTHON
 int VZZAnalyzer::initPy(){
