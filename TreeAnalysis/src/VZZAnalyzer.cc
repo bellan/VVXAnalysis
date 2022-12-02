@@ -1810,57 +1810,6 @@ void VZZAnalyzer::closestJetAnalisys(){
 // 	else return nullptr;
 // }
 
-template <class P, class R> //P = Particle or Jet
-P* VZZAnalyzer::furthestSing(vector<P>* cands, const R& reference, const float& minDR, const pair<float,float>& massLimits){
-	if(cands->size() < 1)
-		return nullptr;
-	
-	vector<P> goodCands;
-	for(size_t i = 0; i < cands->size(); ++i){
-		float thisMass = getRefinedMass(cands->at(i));
-		if(thisMass > massLimits.first && thisMass < massLimits.second){
-			goodCands.push_back(cands->at(i));
-		}
-	}
-	if(goodCands.size() > 0){	
-		if(goodCands.size() > 1)
-			std::sort( goodCands.begin(), goodCands.end(), phys::DeltaRComparator(reference) );
-		if(physmath::deltaR(reference, goodCands.back()) > minDR ){
-			P* result = new P(goodCands.back());
-			//double resMass = getRefinedMass(*result);
-			return result;
-		}
-		else return nullptr;
-	}
-	else{
-		return nullptr;
-	}
-}
-
-
-template <class P, class R> // P = Jet or Particle
-Boson<P>* VZZAnalyzer::furthestPair(vector<P>* cands, const R& reference, const float& minDR, const pair<float,float>& massLimits){
-	if(cands->size() < 2)
-		return nullptr;
-	
-	//Find the pair with the furthest p4 that has minMass < mass < maxMass
-	vector<Boson<P>> pairs; //goodPairs
-	for(size_t i = 0; i < cands->size(); ++i)
-		for(size_t j = i+1; j < cands->size(); ++j){
-			Boson<P> thisPair(cands->at(i), cands->at(j));
-			if(thisPair.mass() > massLimits.first && thisPair.mass() < massLimits.second){
-				pairs.push_back(thisPair);
-			}
-		}
-	if(pairs.size() > 0){
-		if(pairs.size() > 1)
-			std::stable_sort(pairs.begin(), pairs.end(), phys::DeltaRComparator(reference));
-		return new Boson<P>( pairs.back() ); //Copy local object
-	}
-	else return nullptr;
-	//pairs.clear();  // Delete other local Boson objects
-}
-
 
 void VZZAnalyzer::endClosestJetAn(){
 	cout<<"Reconstruction of a VB --> AK8: "<<win8_<<" \tAK4 pairs: "<<win4_;
@@ -2129,64 +2078,6 @@ void VZZAnalyzer::ZZGraphs(){
 }
 
 
-template <class J = phys::Jet>
-phys::Boson<J>* VZZAnalyzer::findBestVFromPair(const std::vector<J>* js	){
-	if(js->size() < 2)
-		return nullptr;
-		
-	pair<size_t, size_t> indicesZ(0,0);
-	pair<size_t, size_t> indicesW(0,0);
-	float minDifZ = 50.;
-	float minDifW = 50.;
-	float tmpMass = 0.;
-	for(size_t i = 0; i < js->size(); ++i){
-		for(size_t j = i+1; j < js->size(); ++j){
-			tmpMass = (js->at(i).p4() + js->at(j).p4()).M();
-			float diffZa = fabs(tmpMass - phys::ZMASS);
-			float diffWa = fabs(tmpMass - phys::WMASS);
-			if(diffZa < minDifZ){
-				minDifZ = diffZa;
-				indicesZ = std::make_pair(i,j);
-			}
-			if(diffWa < minDifW){
-				minDifW = diffWa;
-				indicesW = std::make_pair(i,j);
-			}
-		}
-	}
-	
-	phys::Boson<J>* thisCandidate = nullptr;
-	if(minDifZ < minDifW){
-		thisCandidate = new Boson<J>(js->at(indicesZ.first), js->at(indicesZ.second));
-		if(!ZBosonDefinition(*thisCandidate))
-			return nullptr;
-	}
-	else{
-		thisCandidate = new Boson<J>(js->at(indicesW.first), js->at(indicesW.second));
-		if(!WBosonDefinition(*thisCandidate))
-			return nullptr;
-	}
-	return thisCandidate;
-}
-
-
-template<class P = phys::Jet>
-const P* VZZAnalyzer::findBestVFromSing(std::vector<P>* js){
-	if(js->size() < 1)
-		return nullptr;
-	
-	const P* thisCandidate = nullptr;
-	auto it_best = std::min_element(js->begin(), js->end(), Mass2Comparator(phys::WMASS, phys::ZMASS));
-		
-	if(physmath::minDM(getRefinedMass(*it_best)) < 30.){
-		thisCandidate = &(*it_best);
-	}
-	
-	return thisCandidate;
-}
-
-
-
 #ifdef USE_PYTHON
 int VZZAnalyzer::initPy(){
 	Py_Initialize();
@@ -2247,30 +2138,6 @@ int VZZAnalyzer::initPy(){
 }
 
 
-template<class P>
-vector<double>* VZZAnalyzer::getPyPredAll(const vector<P>& vect, PyObject* predictor) const {
-	
-	size_t vsize = vect.size();
-	if(vsize == 0)
-		return new vector<double>();
-	
-	auto temp = getFeatures(vect.front());
-	size_t nfeat = temp->size();
-	delete temp;
-	
-	double* data = new double[vsize*nfeat];
-	for(size_t i = 0; i < vsize; ++i){
-		vector<double>* feat = getFeatures(vect.at(i));
-		std::copy( feat->begin(), feat->end(), &(data[i*nfeat]) );
-		delete feat;
-	}
-	
-	vector<double>* preds = predAll(data, vsize, nfeat, predictor);
-	
-	delete[] data;
-	
-	return preds;
-}
 
 
 vector<double>* VZZAnalyzer::predAll(double* data, size_t vsize, size_t nfeat, PyObject* predictor) const{
