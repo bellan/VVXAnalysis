@@ -1,6 +1,5 @@
 #include "VVXAnalysis/TreeAnalysis/interface/DBGenerator.h"
 #include "VVXAnalysis/TreeAnalysis/interface/VZZAnalyzer.h"
-#include "VVXAnalysis/TreeAnalysis/interface/VZZAnalyzer_impl.h"
 #include "VVXAnalysis/DataFormats/interface/Particle.h"
 #include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"

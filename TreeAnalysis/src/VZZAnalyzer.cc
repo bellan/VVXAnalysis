@@ -1766,49 +1766,49 @@ void VZZAnalyzer::closestJetAnalisys(){
 }
 
 
-template <class P, class R = Boson<Particle>> // P = Jet or Particle
-const P* VZZAnalyzer::closestSing(vector<P>* cands, const R& reference, size_t& k){
-	if(cands->size() == 0) return nullptr;
-	if(cands->size() == 1) { k = 0; return &(cands->front());}
+// template <class P, class R = Boson<Particle>> // P = Jet or Particle
+// const P* VZZAnalyzer::closestSing(vector<P>* cands, const R& reference, size_t& k){
+// 	if(cands->size() == 0) return nullptr;
+// 	if(cands->size() == 1) { k = 0; return &(cands->front());}
 	
-	auto it_best = std::min_element(cands->begin(), cands->end(), Mass2Comparator(phys::WMASS, phys::ZMASS));
-	k = it_best - cands->begin();
+// 	auto it_best = std::min_element(cands->begin(), cands->end(), Mass2Comparator(phys::WMASS, phys::ZMASS));
+// 	k = it_best - cands->begin();
 	
-	if(k < 99 && physmath::deltaR(reference, cands->at(k)) < 0.4) //cands->front()) < 0.4 )
-		return &(*it_best);
-	else return nullptr;
-}
+// 	if(k < 99 && physmath::deltaR(reference, cands->at(k)) < 0.4) //cands->front()) < 0.4 )
+// 		return &(*it_best);
+// 	else return nullptr;
+// }
 
 
-template <class P, class R = Boson<Particle>> // P = Jet or Particle
-Boson<P>* VZZAnalyzer::closestPair(vector<P>* cands, const R& reference){
-	if(cands->size() < 2) return nullptr;
-	if(cands->size() == 2){
-		Boson<P>* res = new Boson<P>( cands->at(0), cands->at(1) );
-		if(physmath::deltaR( *res, reference ) < 0.4 )
-			return res;
-		else{
-			delete res;
-			return nullptr;
-		}
-	}
+// template <class P, class R = Boson<Particle>> // P = Jet or Particle
+// Boson<P>* VZZAnalyzer::closestPair(vector<P>* cands, const R& reference){
+// 	if(cands->size() < 2) return nullptr;
+// 	if(cands->size() == 2){
+// 		Boson<P>* res = new Boson<P>( cands->at(0), cands->at(1) );
+// 		if(physmath::deltaR( *res, reference ) < 0.4 )
+// 			return res;
+// 		else{
+// 			delete res;
+// 			return nullptr;
+// 		}
+// 	}
 	
-	//Find the pair with the closest p4
-	pair<size_t, size_t> indices(0,0);
-	float minDR = 0.4; //starting value = the threshold we use
-	for(size_t i = 0; i < cands->size(); ++i)
-		for(size_t j = i+1; j < cands->size(); ++j){
-			TLorentzVector p4Cand = cands->at(i).p4() + cands->at(j).p4();
-			float DR = physmath::deltaR( p4Cand, reference.p4() );
-			if(DR < minDR){
-				minDR = DR;
-				indices = std::make_pair(i,j);
-			}
-		}
-	if(indices.second != 0) //then we've found a good pair
-		return new Boson<P>( cands->at(indices.first), cands->at(indices.second) );
-	else return nullptr;
-}
+// 	//Find the pair with the closest p4
+// 	pair<size_t, size_t> indices(0,0);
+// 	float minDR = 0.4; //starting value = the threshold we use
+// 	for(size_t i = 0; i < cands->size(); ++i)
+// 		for(size_t j = i+1; j < cands->size(); ++j){
+// 			TLorentzVector p4Cand = cands->at(i).p4() + cands->at(j).p4();
+// 			float DR = physmath::deltaR( p4Cand, reference.p4() );
+// 			if(DR < minDR){
+// 				minDR = DR;
+// 				indices = std::make_pair(i,j);
+// 			}
+// 		}
+// 	if(indices.second != 0) //then we've found a good pair
+// 		return new Boson<P>( cands->at(indices.first), cands->at(indices.second) );
+// 	else return nullptr;
+// }
 
 template <class P, class R> //P = Particle or Jet
 P* VZZAnalyzer::furthestSing(vector<P>* cands, const R& reference, const float& minDR, const pair<float,float>& massLimits){

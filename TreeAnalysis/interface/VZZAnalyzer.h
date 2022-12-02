@@ -76,14 +76,63 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		//Implemented in VZZAnalyzer_impl.cc
 		template <class P, class R = phys::Boson<phys::Particle>> // P = Jet or Particle
-		const P*        closestSing(vector<P>* cands, const R& ref, size_t& k); //max dR=0.4
-		template <class P, class R = phys::Boson<phys::Particle>> // P = Jet or Particle
+		const P*        closestSing(vector<P>* cands, const R& ref, size_t& k){ //max dR=0.4
+
+		  if(cands->size() == 0) return nullptr;
+		  if(cands->size() == 1) { k = 0; return &(cands->front());}
+		  
+		  //std::sort( cands->begin(), cands->end(), phys::DeltaRComparator(reference) );
+		  float minDR = 0.4; //starting value = the threshold we use
+		  for(size_t i = 0; i < cands->size(); ++i){
+		    float DR = physmath::deltaR( cands->at(i), ref );
+		    if(DR < minDR){
+		      minDR = DR;
+		      k = i;
+		    }
+		  }
+		  if(k < 99 && physmath::deltaR(ref, cands->at(k)) < 0.4) //cands->front()) < 0.4 )
+		    return &(cands->at(k));
+		  else return nullptr;
+		}
+		  
+  template <class P, class R = phys::Boson<phys::Particle>> // P = Jet or Particle
 		const P*        closestSing(vector<P>* cands, const R& ref){
 			size_t k = 0;
 			return(closestSing(cands, ref, k));
 		};
 		template <class P, class R = phys::Boson<phys::Particle>> // P = Jet or Particle
-		phys::Boson<P>* closestPair(vector<P>* cands, const R& ref); //max dR = 0.4
+		phys::Boson<P>* closestPair(vector<P>* cands, const R& ref){ //max dR = 0.4
+		  if(cands->size() < 2) return nullptr;
+		  else{
+		if(cands->size() == 2){
+		  phys::Boson<P>* res = new phys::Boson<P>( cands->at(0), cands->at(1) );
+		  if(physmath::deltaR( *res, ref) < 0.4 )
+		    return res;
+		  else{
+		    delete res;
+		    return nullptr;
+		  }
+		}
+		else{
+		  //Find the pair with the closest p4
+		  std::pair<size_t, size_t> indices(0,0);
+		  float minDR = 0.4; //starting value = the threshold we use
+		  for(size_t i = 0; i < cands->size(); ++i)
+		    for(size_t j = i+1; j < cands->size(); ++j){
+		      TLorentzVector p4Cand = cands->at(i).p4() + cands->at(j).p4();
+		      float DR = physmath::deltaR( p4Cand, ref.p4() );
+		      if(DR < minDR){
+			minDR = DR;
+			indices = std::make_pair(i,j);
+		      }
+		    }
+		  if(indices.second != 0) //then we've found a good pair
+		    return new phys::Boson<P>( cands->at(indices.first), cands->at(indices.second) );
+		  else return nullptr;
+		}
+		  }
+		}
+		  
 		template <class P, class R = phys::DiBoson<phys::Lepton, phys::Lepton>>
 		P* furthestSing(vector<P>* cands, const R& reference, const float& minDR = 2., const std::pair<float,float>& massLimits = std::make_pair(1.,1000.));
 		template <class P, class R = phys::DiBoson<phys::Lepton, phys::Lepton>>
