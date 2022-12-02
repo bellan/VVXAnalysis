@@ -67,9 +67,61 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		
 		// ----- ----- Helper functions ----- ----- 
 		template<class P = phys::Jet>
-		const P* findBestVFromSing(vector<P>*);
+		const P* findBestVFromSing(vector<P>*js){
+		  if(js->size() < 1)
+		    return nullptr;
+		  
+		  const P* thisCandidate = nullptr;
+		  auto it_best = std::min_element(js->begin(), js->end(), phys::Mass2Comparator(phys::WMASS, phys::ZMASS));
+		  
+		  if(physmath::minDM(getRefinedMass(*it_best)) < 30.){
+		    thisCandidate = &(*it_best);
+		  }
+		  
+		  return thisCandidate;
+		}
 		template <class J = phys::Jet>
-		phys::Boson<J>* findBestVFromPair(const vector<J>*);
+		phys::Boson<J>* findBestVFromPair(const vector<J>*js){
+
+		  if(js->size() < 2)
+		    return nullptr;
+		
+		  std::pair<size_t, size_t> indicesZ(0,0);
+		  std::pair<size_t, size_t> indicesW(0,0);
+		  float minDifZ = 50.;
+		  float minDifW = 50.;
+		  float tmpMass = 0.;
+		  for(size_t i = 0; i < js->size(); ++i){
+		    for(size_t j = i+1; j < js->size(); ++j){
+		      tmpMass = (js->at(i).p4() + js->at(j).p4()).M();
+		      float diffZa = fabs(tmpMass - phys::ZMASS);
+		      float diffWa = fabs(tmpMass - phys::WMASS);
+		      if(diffZa < minDifZ){
+			minDifZ = diffZa;
+			indicesZ = std::make_pair(i,j);
+		      }
+		      if(diffWa < minDifW){
+			minDifW = diffWa;
+			indicesW = std::make_pair(i,j);
+		      }
+		    }
+	}
+	
+	phys::Boson<J>* thisCandidate = nullptr;
+	if(minDifZ < minDifW){
+		thisCandidate = new phys::Boson<J>(js->at(indicesZ.first), js->at(indicesZ.second));
+		if(!ZBosonDefinition(*thisCandidate))
+			return nullptr;
+	}
+	else{
+		thisCandidate = new phys::Boson<J>(js->at(indicesW.first), js->at(indicesW.second));
+		if(!WBosonDefinition(*thisCandidate))
+			return nullptr;
+	}
+	return thisCandidate;
+
+
+		}
 		//Searches among the Jets in the vector and finds the pair candidate with mass closest to W or Z (modifying "candType"). Returns the candidate only if it fits the (W/Z)BosonDefinition
 		template <class P = phys::Particle>
 		const P* findBestVPoint(vector<const P*>& js){ //Uses a vector<P*> instead of a vector<P>
@@ -170,9 +222,59 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		}
 		  
 		template <class P, class R = phys::DiBoson<phys::Lepton, phys::Lepton>>
-		P* furthestSing(vector<P>* cands, const R& reference, const float& minDR = 2., const std::pair<float,float>& massLimits = std::make_pair(1.,1000.));
+		P* furthestSing(vector<P>* cands, const R& reference, const float& minDR = 2., const std::pair<float,float>& massLimits = std::make_pair(1.,1000.)){
+
+		  if(cands->size() < 1)
+		    return nullptr;
+	
+		  vector<P> goodCands;
+		  for(size_t i = 0; i < cands->size(); ++i){
+		    float thisMass = getRefinedMass(cands->at(i));
+		    if(thisMass > massLimits.first && thisMass < massLimits.second){
+		      goodCands.push_back(cands->at(i));
+		    }
+		  }
+		  if(goodCands.size() > 0){	
+		    if(goodCands.size() > 1)
+		      std::sort( goodCands.begin(), goodCands.end(), phys::DeltaRComparator(reference) );
+		    if(physmath::deltaR(reference, goodCands.back()) > minDR ){
+		      P* result = new P(goodCands.back());
+		      //double resMass = getRefinedMass(*result);
+		      return result;
+		    }
+		    else return nullptr;
+		  }
+		  else{
+		    return nullptr;
+		  }
+
+
+
+
+		}
 		template <class P, class R = phys::DiBoson<phys::Lepton, phys::Lepton>>
-		phys::Boson<P>* furthestPair(vector<P>* cands, const R& reference, const float& minDR = 2., const std::pair<float,float>& massLimits = std::make_pair(1.,1000.));
+		phys::Boson<P>* furthestPair(vector<P>* cands, const R& reference, const float& minDR = 2., const std::pair<float,float>& massLimits = std::make_pair(1.,1000.)){
+		  if(cands->size() < 2)
+		    return nullptr;
+	
+		  //Find the pair with the furthest p4 that has minMass < mass < maxMass
+		  vector<phys::Boson<P>> pairs; //goodPairs
+		  for(size_t i = 0; i < cands->size(); ++i)
+		    for(size_t j = i+1; j < cands->size(); ++j){
+		      phys::Boson<P> thisPair(cands->at(i), cands->at(j));
+		      if(thisPair.mass() > massLimits.first && thisPair.mass() < massLimits.second){
+			pairs.push_back(thisPair);
+		      }
+		    }
+		  if(pairs.size() > 0){
+		    if(pairs.size() > 1)
+		      std::stable_sort(pairs.begin(), pairs.end(), phys::DeltaRComparator(reference));
+		    return new phys::Boson<P>( pairs.back() ); //Copy local object
+		  }
+		  else return nullptr;
+		  //pairs.clear();  // Delete other local Boson objects
+
+		}
 		
 		template <class P = phys::Particle>
 		static inline double getRefinedMass(const P& p){ return p.mass(); } 
@@ -198,7 +300,29 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		static double getPyPrediction(const vector<double>&, PyObject*);
 		vector<double>* predAll(double* data, size_t vsize, size_t nfeat, PyObject* predictor) const;
 		template <class P>
-		vector<double>* getPyPredAll(const vector<P>&, PyObject*) const;
+		vector<double>* getPyPredAll(const vector<P>&, PyObject*) const{
+
+		  size_t vsize = vect.size();
+		  if(vsize == 0)
+		    return new vector<double>();
+		  
+		  auto temp = getFeatures(vect.front());
+		  size_t nfeat = temp->size();
+		  delete temp;
+		  
+		  double* data = new double[vsize*nfeat];
+		  for(size_t i = 0; i < vsize; ++i){
+		    vector<double>* feat = getFeatures(vect.at(i));
+		    std::copy( feat->begin(), feat->end(), &(data[i*nfeat]) );
+		    delete feat;
+		  }
+		  
+		  vector<double>* preds = predAll(data, vsize, nfeat, predictor);
+		  
+		  delete[] data;
+		  
+		  return preds;
+		}
 		#endif
 		static vector<double>* getAK4features(const phys::Boson<phys::Jet>&);
 		static vector<double>* getAK8features(const phys::Jet&);
