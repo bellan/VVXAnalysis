@@ -72,8 +72,44 @@ class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 		phys::Boson<J>* findBestVFromPair(const vector<J>*);
 		//Searches among the Jets in the vector and finds the pair candidate with mass closest to W or Z (modifying "candType"). Returns the candidate only if it fits the (W/Z)BosonDefinition
 		template <class P = phys::Particle>
-		const P* findBestVPoint(vector<const P*>& js); //Uses a vector<P*> instead of a vector<P>
-		
+		const P* findBestVPoint(vector<const P*>& js){ //Uses a vector<P*> instead of a vector<P>
+
+		  if(js.size() < 1)
+		    return nullptr;
+		  size_t indexZ = 0;
+		  size_t indexW = 0;
+		  float minDifZ = 50.;
+		  float minDifW = 50.;
+		  float tmpMass = 0.;
+		  for(size_t i = 0; i < js.size(); ++i){
+		    tmpMass = getRefinedMass(js.at(i));
+		    float diffZa = fabs(tmpMass - phys::ZMASS);
+		    float diffWa = fabs(tmpMass - phys::WMASS);
+		    if(diffZa < minDifZ){
+			minDifZ = diffZa;
+			indexZ = i;
+		    }
+		    if(diffWa < minDifW){
+		      minDifW = diffWa;
+		      indexW = i;
+		    }
+		  }
+		  
+		  const P* thisCandidate = nullptr;
+		  if(minDifZ < minDifW){
+		    thisCandidate = js.at(indexZ);
+		    if(!ZBosonDefinition(*thisCandidate))
+		      return nullptr;
+		  }
+		  else{
+		    thisCandidate = js.at(indexW);
+		    if(!WBosonDefinition(*thisCandidate))
+		      return nullptr;
+		  }
+		  return thisCandidate;
+		}
+
+		  
 		//Implemented in VZZAnalyzer_impl.cc
 		template <class P, class R = phys::Boson<phys::Particle>> // P = Jet or Particle
 		const P*        closestSing(vector<P>* cands, const R& ref, size_t& k){ //max dR=0.4
