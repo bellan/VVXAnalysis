@@ -27,7 +27,7 @@ using namespace colour;
 using namespace phys;
 using namespace physmath;
 
-// #define DEBUG
+#define DEBUG
 
 #define BINS_CUTFLOW 9,-0.5,8.5
 //{"All", "ZZ || ZW", "2l2j || 2l1J", "#gamma kin", "#gamma good", "Analyzed", "#gamma medium"}
@@ -198,9 +198,8 @@ Int_t VVGammaAnalyzer::cut() {
   #else
   cout << regionType(region_) << ':' << run << ':' << lumiBlock << ':' << event << '\t'
        << theWeight << '\n';
-  for(const Particle& p : *genPhotons_)
-    cout << "\tgenStatusFlag = " << p.genStatusFlags() << " --> " << p.genStatusFlags().to_ulong() << std::endl;
-
+  // for(const Particle& p : *genPhotons_)
+  //   cout << "\tgenStatusFlag = " << p.genStatusFlags() << " --> " << p.genStatusFlags().to_ulong() << std::endl;
   #endif
        // << ZZ->mass() << ' ' << ZW->p4().Mt() << ' ' << kinPhotons_["central"]->size() << ' ' << goodPhotons_["central"]->size() << '\n';
   // if(cherrypickEvt()){
@@ -1791,10 +1790,10 @@ void VVGammaAnalyzer::photonGenStudy(){
   genPhotonsPrompt.resize(std::distance(genPhotonsPrompt.begin(), it));
   
   // Since the base selection already contains this cut, it is necessary to do it again
-  std::map<const char*, vector<Photon>> recoPhotons;
-  // recoPhotons["kin"]       = vector<Photon>();
-  // recoPhotons["veryLoose"] = vector<Photon>();
-  recoPhotons["loose"]     = vector<Photon>();
+  std::map<const char*, vector<Photon>> mapWPtoPhotons;
+  // mapWPtoPhotons["kin"]       = vector<Photon>();
+  // mapWPtoPhotons["veryLoose"] = vector<Photon>();
+  mapWPtoPhotons["loose"]     = vector<Photon>();
     
   // Select reco photons except cut on DR(ph, lep)
   for(const Photon& ph: *photons){
@@ -1806,16 +1805,16 @@ void VVGammaAnalyzer::photonGenStudy(){
     float ph_aeta = fabs(ph.eta());
     if(ph_aeta > 2.4 || (ph_aeta > 1.4442 && ph_aeta < 1.566)) continue;
     
-    // recoPhotons["kin"].push_back(ph)  // kin.push_back(ph);
+    // mapWPtoPhotons["kin"].push_back(ph)  // kin.push_back(ph);
     // if(passVeryLoose(ph))
-    //   recoPhotons["veryLoose"].push_back(ph)  // veryLoose.push_back(ph);
+    //   mapWPtoPhotons["veryLoose"].push_back(ph)  // veryLoose.push_back(ph);
     if(ph.cutBasedIDLoose())
-      recoPhotons["loose"].push_back(ph);  // loose.push_back(ph);
+      mapWPtoPhotons["loose"].push_back(ph);  // loose.push_back(ph);
   }
   
   // The rec-gen matching is done separately for kin, veryLoose and loose, since we don't want e.g. a kin reco photon 
   // that fails the LooseID to be selected just because it comes before in the photon vector
-  for(auto & [wp, phVect] : recoPhotons){
+  for(auto & [wp, phVect] : mapWPtoPhotons){
     if(phVect.size() == 0)
       continue;
     
@@ -1826,7 +1825,7 @@ void VVGammaAnalyzer::photonGenStudy(){
 	const Particle* closestGen = closestDeltaRMatch(rec, *genPhotons_);
 	if(deltaR(rec, *closestGen) < 0.1){
 	  best = &rec;
-	  matched = "matchedPrompt";
+	  matched = "promptm";  // Matched to prompt photon
 	  break;
 	}
       }
@@ -1836,31 +1835,47 @@ void VVGammaAnalyzer::photonGenStudy(){
 	const Particle* closestGen = closestDeltaRMatch(rec, *genPhotons_);
 	if(deltaR(rec, *closestGen) < 0.1){
 	  best = &rec;
-	  matched = "matched";
+	  matched = "matched";  // Matched to gen photon, not from hard scattering
 	  break;
 	}
       }
     }
     
+    const char* hname = Form("PhGenStudy_%s_%s_%s", "%s", wp, matched);
+    
     // Find the closest lep and get the DR
     const Lepton* closestLep = closestDeltaRMatch(*best, *leptons_);
     float dR = closestLep != nullptr ? deltaR(*best, *closestLep) : 10;
-    theHistograms->fill(Form("PhGenStudy_DRLep_%s_%s", wp, matched), Form("%s;min #DeltaR(l,#gamma);Events", wp), 50, 0., 1., dR   , theWeight);
+    theHistograms->fill(Form(hname, "DRLep"), Form("%s;min #DeltaR(#gamma, l);Events", wp), 50, 0., 1., dR   , theWeight);
     
     // Closest jet
     const Jet* closestJet = closestDeltaRMatch(*best, *jets);
     float dRJet = closestJet != nullptr ? deltaR(*best, *closestJet) : 10;
-    theHistograms->fill(Form("PhGenStudy_DRJet_%s_%s", wp, matched), Form("%s;#DeltaR(#gamma, j);Events"   , wp), 60, 0., 3 , dRJet, theWeight);
+    theHistograms->fill(Form(hname, "DRJet"), Form("%s;#DeltaR(#gamma, j);Events"    , wp), 60, 0., 3 , dRJet, theWeight);
     
+    // 2D plot
+    theHistograms->fill(Form(hname, "DRLepJet"), Form("%s;#DeltaR(#gamma, l);#DeltaR(#gamma, j);Events", wp), 
+			50,0.,1.,
+			30,0.,3.,
+			dR, dRJet, theWeight);
+    
+    // Distance to ZZ, Z0, Z1
+    theHistograms->fill(Form(hname, "DRZZ"), Form("%s;#DeltaR(#gamma, ZZ);Events", wp), 60, 0., 3., deltaR(*best, *ZZ         ), theWeight);
+    theHistograms->fill(Form(hname, "DRZ0"), Form("%s;#DeltaR(#gamma, Z0);Events", wp), 60, 0., 3., deltaR(*best, ZZ->first() ), theWeight);
+    theHistograms->fill(Form(hname, "DRZ1"), Form("%s;#DeltaR(#gamma, Z1);Events", wp), 60, 0., 3., deltaR(*best, ZZ->second()), theWeight);
+    
+    // Pt
     double pt = best->pt() > ph_pt_bins.back() ? ph_pt_bins.back() : best->pt();
-    theHistograms->fill(Form("PhGenStudy_ptPh_%s_%s", wp, matched) , Form("%s;#gamma p_{T};Events"         , wp), ph_pt_bins, pt   , theWeight);
+    theHistograms->fill(Form(hname, "ptPh") , Form("%s;#gamma p_{T};Events"          , wp), ph_pt_bins, pt   , theWeight);
     
+    // mVVG
     if(is4Lregion(region_))
-      theHistograms->fill(Form("PhGenStudy_m4lG_%s_%s" , wp, matched), Form("%s;m_{4l#gamma};Events" , wp), mVVG_bins, (ZZ->p4() + best->p4()).M() , theWeight);
+      theHistograms->fill(Form(hname, "m4lG"), Form("%s;m_{4l#gamma};Events"         , wp), mVVG_bins, (ZZ->p4() + best->p4()).M() , theWeight);
     if(is3Lregion(region_))
-      theHistograms->fill(Form("PhGenStudy_mT3lG_%s_%s", wp, matched), Form("%s;mT_{3l#gamma};Events", wp), mVVG_bins, (ZW->p4() + best->p4()).Mt(), theWeight);
+      theHistograms->fill(Form(hname, "mT3lG"), Form("%s;mT_{3l#gamma};Events"       , wp), mVVG_bins, (ZW->p4() + best->p4()).Mt(), theWeight);
     
-    theHistograms->fill(Form("PhGenStudy_nJets_%s_%s", wp, matched), Form("%s;nJets;Events"                , wp), 5,0,5, jets->size(), theWeight);
+    // # of Jets
+    theHistograms->fill(Form(hname, "nJets"), Form("%s;nJets;Events"                 , wp), 5,0,5, jets->size(), theWeight);
   }
 }
 
