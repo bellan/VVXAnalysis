@@ -11,7 +11,7 @@
 #printf "Usage: ${0##*/} FOLDER\nFOLDER is the name of a subfolder where the job chunks are\n" && exit 1
 
 print_done () { 
-    [ -d ${1}/AAAOK ] && find ${1}/AAAOK -type d -name "*_Chunk*" | wc -l | xargs printf "Done: %d jobs\n"
+    [ -d ${1}/AAAOK ] && find ${1}/AAAOK -type d -name "*_Chunk*" | wc -l | xargs printf "%d: DONE\n"
 }
 
 [ $# -ne 1 ] && folder="." || folder=$1
@@ -20,17 +20,17 @@ print_done () {
 output=$(cd ${folder} && checkProd.csh 2>/dev/null) #~/work/CMSSW_10_2_18/bin/slc7_amd64_gcc700/checkProd.csh
 [ $? -ne 0 ] && { print_done $folder ;  exit ; }
 
-[ -f $folder/condor.sub ] && grep "JobFlavour" $folder/condor.sub | xargs echo
-keys=$(echo "$output" | cut -d : -f 2 | sort | uniq | sed "s/^ //g")
+[ -f $folder/condor.sub ] && grep --color=never "JobFlavour" $folder/condor.sub
+keys=$(echo "$output" | cut -d : -f 2 | sed "s/^ //g" | sort | uniq)
 
 todo=$(ls $folder | grep Chunk | wc -l)
 [ $todo -eq 0 ] && { print_done $folder && exit 0 ; }
 
-printf "TODO: %d jobs\n" $todo
-[ -z "$output" ] && printf "\t%d --> \t%s\n" $todo "No info on jobs" && exit 0
+printf "%d: TODO\n" $todo
+[ -z "$output" ] && printf "\t%4d: %s\n" $todo "No info on jobs" && exit 0
 
 echo "$keys" | while read -r key; do
-        printf "\t%d --> \t%s\n" $(grep "$key" <<<"$output" | wc -l) "$(sed 's/ \+/ /g' <<<$key)"
+        printf "\t%d:\t%s\n" $(grep "$key" <<<"$output" | wc -l) "$(sed 's/ \+/ /g' <<<$key)"
 done #< <(echo "$keys")
 
 print_done $folder

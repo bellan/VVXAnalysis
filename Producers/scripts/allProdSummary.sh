@@ -13,7 +13,9 @@ source _findJobDirs.sh ; jobdirs=$(findJobDirs $@)  # All subfolders of the argu
 tempfile=$(mktemp)
 tempfail=$(mktemp)
 
-get_cause() {
+trap "rm -- $tempfile $tempfail" EXIT
+
+exitcode_descr() {
     case $1 in
 	-1)  echo "Error return without specification" ;;
 	1)   echo "Hangup (POSIX)" ;;
@@ -66,24 +68,36 @@ totToDo=0
 for jobdir in $jobdirs ; do
     echo "----- $jobdir -----"
     prodSummary.sh "$jobdir" | tee $tempfile | sed "s/^/\t/g"
-    grep -q TODO $tempfile && totToDo=$(( $totToDo + $(grep -oP "(?<=TODO: )\d+" $tempfile) ))
-    lines=$(grep failed $tempfile)
-    [ -n "$lines" ] && echo "$lines" | sed -e "s/--> failed, exit status = //g" -e "s/^\t//g" -e "s/^ \+//g" >> $tempfail
-    running=$(grep "still running" $tempfile | grep -oP "\d+(?= -->)")
-    [ -n "$running" ] && echo "$running 0" >> $tempfail
+    grep ":" $tempfile | tr -d "\t" | sed "s/: /:/g" >> $tempfail
 done
 
-printf "\nTotal jobs to do: %d\n" $totToDo  # $(cut -d " " -f 1 $tempfail | paste -s -d+ | bc)
+echo
+
+done_n=$(grep -oP "\d+(?=:DONE)" $tempfail | paste -s -d+ | bc)
+todo_n=$(grep -oP "\d+(?=:TODO)" $tempfail | paste -s -d+ | bc)
+printf "Total jobs DONE: %d\n" $done_n
+printf "Total jobs TODO: %d\n" $todo_n
 
 todoKnown=0
-keys=$(cut -d " " -f 2 $tempfail | sort | uniq)
-
-for key in $keys ; do
-    jobs_k=$(grep -oP "\d+(?= $key)" $tempfail | paste -s -d+ | bc)
+# The "key" is the full description given by checkProd.csh, e.g.:
+# "failed, exit status = 92 (failed to open file)"
+# "still running (or unknown failure)"
+while read -r key ; do
+    lines_in_tempfail="$(grep "$key" $tempfail)"
+    jobs_k=$(echo "$lines_in_tempfail" | grep -oP "\d+(?=:)" | paste -s -d+ | bc)
     todoKnown=$(( $todoKnown + $jobs_k ))
-    printf "\t%d:\t%d \t%s\n" $key $jobs_k "$(get_cause $key)"
-done
-todoUnknown=$(( $totToDo - $todoKnown )) 
-[ $todoUnknown -gt 0 ] && printf "\t%s:\t%d \t%s\n" "-" $todoUnknown "No info"
+    # If checkProd.csh tried to guess the meaning of the exit status, correct it with the ones we know from https://twiki.cern.ch/twiki/bin/view/CMSPublic/StandardExitCodes
+    status_n=$(echo "$lines_in_tempfail" | head -n 1 | grep -oP "(?<=failed, exit status = )\d+")
+    if [ -n "$status_n" ] ; then
+	description=$(exitcode_descr $status_n)
+    else
+	description="$key"
+	status_n=0
+    fi
+    printf "\t%d:\t%d \t%s\n" $jobs_k $status_n "$description"
+done <<EOF
+$(cut -d ":" -f 2- $tempfail | sort | uniq | grep -v "TODO\|DONE")
+EOF
 
-rm -f $tempfile $tempfail
+todoUnknown=$(( $totToDo - $todoKnown )) 
+[ $todoUnknown -gt 0 ] && printf "\t%s:\t%d \t%s\n" $todoUnknown "-" "No info"
