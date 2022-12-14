@@ -50,7 +50,7 @@ parser.add_option("--nodata", dest="noData",
 parser.add_option("-u", "--unblind", dest='Unblind', action="store_true", default=False, help="Unblinds plots marked as blinded")
 
 parser.add_option("-t", "--type", dest="Type",
-                  default="Mass",
+                  default="all",
                   help= "type type to choose the  plot you want. Mass, Jets, DeltaEta, mjj")
 
 parser.add_option("-S", "--Save", dest="SavePlot",
@@ -102,43 +102,39 @@ OutputDir  = options.outputDir if options.outputDir.startswith("/") else os.path
 Analysis   = options.Analysis
 year       = options.year
 
+InputDir   = os.path.join('results', year, Analysis+'_'+region, '')
 OutputDir  = os.path.join(OutputDir, Analysis, region, "")  # Last "" ensures a trailing '/' is appended to path
-
-tdrstyle.setTDRStyle()
-ROOT.gROOT.SetBatch(True)
-
-VarInfo = getVariablesInfo(Analysis, region)
-
-#change the CMS_lumi variables  (see CMS_lumi.py)                                                                                  
-#CMS_lumi.lumi_7TeV = "4.8 fb^{-1}"                               
-#CMS_lumi.lumi_8TeV = "19.7 fb^{-1}"                                                                                                                                                                                                          
-
-lumi = round(Lumi/1000.,1)
-CMS_lumi.writeExtraText = 1
-CMS_lumi.extraText = "Preliminary"
-CMS_lumi.lumi_sqrtS = "{0}".format(lumi)+" fb^{-1} (13 TeV)\n"
-
-iPos = 0
-if( iPos==0 ): CMS_lumi.relPosX = 0.12
-iPeriod = 0
-
 try:
     os.stat(OutputDir)
 except OSError as e:
     if(not e.errno == 2): raise e  # 2 = No such file or directory
     os.makedirs(OutputDir)  # mkdir() = mkdir  ;  makedirs() = mkdir -p
-        
-    
-InputDir = os.path.join('results', year, Analysis+'_'+region, '')
+
+
+tdrstyle.setTDRStyle()
+ROOT.gROOT.SetBatch(True)
+
+lumi = round(Lumi/1000.,1)
+CMS_lumi.writeExtraText = 1
+CMS_lumi.extraText = "Preliminary"
+CMS_lumi.lumi_sqrtS = "{0} fb^{-1} (13 TeV)\n".format(lumi)
+
+iPos = 0
+if( iPos==0 ): CMS_lumi.relPosX = 0.12
+iPeriod = 0
 
 if LumiProj!="":  InputDir+=LumiProj+"fbm1_"
+
+
+VarInfo = getVariablesInfo(Analysis, region)
 
 if Type == 'all':
     variables = VarInfo.keys()
 else:
     variables = [ var for var in VarInfo.keys() if re.search(Type, var) ]  # Allow for regexp to be specified from command line
+    if len(variables) == 0:
+        print 'WARN: no variables matching regex "{}" for {} in {}'.format(Type, Analysis, region)
 # print "INFO: variables =", variables
-# exit(0)
 variables.sort()
 
 c1 = TCanvas( 'c1', mcSet , 900, 1200 )

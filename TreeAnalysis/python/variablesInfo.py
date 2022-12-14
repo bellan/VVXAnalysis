@@ -107,10 +107,6 @@ def getVarInfo_VVGamma(region):
     # 2L region
     elif region in ['SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F']:
         VarInfo_VVGamma.update({
-            'AK4_N'         : {'title':'# AK4'   , 'rebin':1, 'unblind':True},
-            'AK4_pt'        : {'title':'p_{T}'   , 'rebin':1, 'unblind':True},
-            'AK8_N'         : {'title':'# AK8'   , 'rebin':1, 'unblind':True},
-            'AK8_pt'        : {'title':'p_{T}'   , 'rebin':1, 'unblind':True, 'logy':True},
             'Z_mass_2e'     : {'title':'m_{2e}'  , 'rebin':1, 'unblind':True},
             'Z_mass_2m'     : {'title':'m_{2\mu}', 'rebin':1, 'unblind':True},
             'VToJ_mass'     : {'title': 'm_{J}'},
@@ -179,6 +175,14 @@ def getVarInfo_VVGamma(region):
     #         'maxG_minL_DR_'+name: {'title':'max_{#gamma}(min_{l}(#DeltaR(#gamma_{%s}, l))' %(name), 'rebin':1, 'unblind':True},
     #         'minL_DR_'     +name: {'title':'min_{l}(#DeltaR(#gamma_{%s}, l)'               %(name), 'rebin':1, 'unblind':True},
     #     })
+
+    # Jet stuff
+    VarInfo_VVGamma.update({
+        'AK4_N'         : {'title':'# AK4'   , 'rebin':1, 'unblind':True},
+        'AK4_pt'        : {'title':'p_{T}'   , 'rebin':1, 'unblind':True},
+        'AK8_N'         : {'title':'# AK8'   , 'rebin':1, 'unblind':True},
+        'AK8_pt'        : {'title':'p_{T}'   , 'rebin':1, 'unblind':True, 'logy':True}
+    })
     
     return VarInfo_VVGamma
 
