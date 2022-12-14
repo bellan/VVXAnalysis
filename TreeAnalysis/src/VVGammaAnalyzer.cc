@@ -44,20 +44,30 @@ void VVGammaAnalyzer::begin(){
   cout<<'\n';
   
   // Photon FR
-  const char* file_PhFR = "data/LtoT_FR_data-ZGToLLG.root";
-  TFile fileFR( file_PhFR, "READ" );
-  hPhotonFR_.reset( std::move((TH2F*) fileFR.Get("PhFR")) );
-  hPhotonFR_->SetDirectory(nullptr);  // prevent ROOT from deleting it
-  cout << "INFO: retrieved Photon FR histogram from \""<<fileFR.GetName()<<"\"\n";
-  fileFR.Close();
-
+  TFile fileFR("data/LtoT_FR_data-ZGToLLG.root", "READ" );
+  if(fileFR.IsOpen()){
+    hPhotonFR_.reset( std::move((TH2F*) fileFR.Get("PhFR")) );
+    hPhotonFR_->SetDirectory(nullptr);  // prevent ROOT from deleting it
+    cout << "INFO: retrieved Photon FR histogram from \""<<fileFR.GetName()<<"\"\n";
+    fileFR.Close();
+  }
+  else{
+    cout << "WARN: Photon FR file not found in \""<<fileFR.GetName()<<"\"\n";
+    hPhotonFR_.reset( new TH2F("PhFR", "", 1,0.,1., 1,0.,1.) );
+  }
+  
   // Photon efficiency
-  const char* file_PhEff = Form("data/egammaEffi_%d.root", year);
-  TFile fileEff( file_PhEff, "READ");
-  hPhotonEff_.reset( std::move((TH2F*) fileEff.Get("EGamma_SF2D")) );
-  hPhotonEff_->SetDirectory(nullptr);
-  cout << "INFO: retrieved Photon Eff SF histogram from \""<<fileEff.GetName()<<"\"\n";
-  fileEff.Close();
+  TFile fileEff(Form("data/egammaEffi_%d.root", year), "READ");
+  if(fileEff.IsOpen()){
+    hPhotonEff_.reset( std::move((TH2F*) fileEff.Get("EGamma_SF2D")) );
+    hPhotonEff_->SetDirectory(nullptr);
+    cout << "INFO: retrieved Photon Eff SF histogram from \""<<fileEff.GetName()<<"\"\n";
+    fileEff.Close();
+  }
+  else{
+    cout << "WARN: Photon Eff SF file not found in \""<<fileEff.GetName()<<"\"\n";
+    hPhotonEff_.reset( new TH2F("EGamma_SF2D", "", 1,0.,1., 1,0.,1.) );
+  }
   
   // initCherryPick();
   for(const char* sys : {"central", "EScale_Up", "EScale_Down", "ESigma_Up", "ESigma_Down"}){
