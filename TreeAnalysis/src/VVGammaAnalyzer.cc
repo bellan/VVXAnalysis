@@ -27,7 +27,7 @@ using namespace colour;
 using namespace phys;
 using namespace physmath;
 
-#define DEBUG
+// #define DEBUG
 
 #define BINS_CUTFLOW 9,-0.5,8.5
 //{"All", "ZZ || ZW", "2l2j || 2l1J", "#gamma kin", "#gamma good", "Analyzed", "#gamma medium"}
