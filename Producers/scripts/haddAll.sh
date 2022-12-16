@@ -10,7 +10,7 @@
 #  Author: A. Mecca  (alberto.mecca@cern.ch)                   #
 ################################################################
 
-campaign=Jan2022 #September2021  # May2021
+campaign=Dec2022
 initial=$(printf "%.1s" $USER)
 eosdir="/eos/user/$initial/$USER/samples/$campaign"
 
@@ -35,6 +35,7 @@ for dir in $jobdirs ; do
 	    for sampl in $samples ; do
 		[ -e AAAOK/$sampl/ZZ4lAnalysis.root ] || { echo "Tried to hadd but no rootfile has been created" 1>&2 ; exit 1 ; }
 		stripDir=$(echo $dir | sed -r "s:/[^/]+$::g")
+		mkdir -p "$eosdir/$stripDir"
 		destFile="$eosdir/$stripDir/$sampl.root"
 		[ -e $destFile ] || { rsync -au --progress AAAOK/$sampl/ZZ4lAnalysis.root $destFile && echo "Copied to $destFile" ; }
 	    done
