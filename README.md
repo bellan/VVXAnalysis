@@ -23,7 +23,7 @@ The code is located in this repository: https://github.com/bellan/VVXAnalysis.gi
 Recipe for the tree production step
 -----------------------------------
 
-- In a lxplus like environment, setup your area as for H --> ZZ --> 4l analysis, following the recipe in https://github.com/CJLST/ZZAnalysis/tree/Run2_CutBased_UL.
+- In a lxplus like environment, setup your area as for H --> ZZ --> 4l analysis, following the recipe in https://github.com/CJLST/ZZAnalysis/tree/Run2UL_22.
 - Check-out the code from this repository.
   - ```git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis```
 - Compile the code with ```scram b -j 8```
