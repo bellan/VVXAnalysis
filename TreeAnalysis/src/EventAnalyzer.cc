@@ -180,19 +180,23 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   regionWord = std::bitset<32>(pregionWord);
 
   // FIXME: rise _1P or _1F bits
+  bool foundRegion = false;
   if(std::any_of(regions_.begin(), regions_.end(), [](phys::RegionTypes r){ return r==phys::MC; })){
     region_ = phys::MC;
-    goto _continueEvent;
+    foundRegion = true;
   }
-  for(phys::RegionTypes region : regions_){
-    if(regionWord.test(region)){
-      region_ = region;
-      goto _continueEvent;
+  else{
+    for(phys::RegionTypes region : regions_){
+      if(regionWord.test(region)){
+	region_ = region;
+	foundRegion = true;
+	break;
+      }
     }
   }
-  return 0;
+  if(!foundRegion)
+    return 0;
   
-  _continueEvent:
   theHistograms = &(mapRegionHisto_[region_]);
   
 
@@ -202,7 +206,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   if(pgenJets)    stable_sort(pgenJets->begin(),    pgenJets->end(),    phys::PtComparator());
   if(pjetsAK8)    stable_sort(pjetsAK8->begin(),    pjetsAK8->end(),    phys::PtComparator());
   if(pgenJetsAK8) stable_sort(pgenJetsAK8->begin(), pgenJetsAK8->end(), phys::PtComparator());
-  if(photons)     stable_sort(photons->begin(),   photons->end(),   phys::PtComparator());
+  if(photons)     stable_sort(photons->begin(),     photons->end(),     phys::PtComparator());
 	
   // Some selection on jets
   jets->clear(); centralJets->clear(); 
