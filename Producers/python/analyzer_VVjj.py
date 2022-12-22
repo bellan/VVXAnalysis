@@ -266,12 +266,13 @@ execfile(VVjj_search_path + "2_leptons_regions.py")
 
 ### ----------------------------------------------------------------------
 
-process.counters = cms.Task(process.SR4PCounter , process.CR3P1FCounter   , process.CR2P2FCounter, process.SR4P1LCounter,
+process.countersTask = cms.Task(process.SR4PCounter , process.CR3P1FCounter   , process.CR2P2FCounter, process.SR4P1LCounter,
                             process.SRHZZCounter, process.CR3P1FHZZCounter, process.CR2P2FHZZCounter,
                             process.SR3PCounter, process.CR110Counter, process.CR101Counter, process.CR011Counter, process.CR100Counter, process.CR001Counter, process.CR010Counter, process.CR000Counter, process.SR3P1LCounter,
                             process.CRLFRCounter,
                             process.SR2PCounter, process.SR2P1LCounter)
 
+process.counters = cms.Sequence(process.countersTask)
 
 
 ### ......................................................................... ###
@@ -469,8 +470,8 @@ process.dumpUserData =  cms.EDAnalyzer("dumpData", #"dumpUserData",
 
 process.filltrees = cms.EndPath(cms.ignore(process.triggerForZZ) + cms.ignore(process.triggerForZW) + cms.ignore(process.triggerForZV) + cms.ignore(process.triggerForZL) +
                                 # process.dumpUserData +
-                                process.treePlanter,
-                                process.counters)
+                                process.counters +
+                                process.treePlanter)
 
 
 #process.filltrees = cms.EndPath(cms.ignore(process.zzTrigger) + process.srCounter + process.cr2P2FCounter + process.cr3P1FCounter + process.treePlanter + process.dumpUserData)
