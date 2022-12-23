@@ -23,3 +23,6 @@ Plot/
 CMakeCache.txt
 Makefile
 G__TreeAnalysis.cxx
+
+# Reinclude some data files
+!Commons/data/*root
