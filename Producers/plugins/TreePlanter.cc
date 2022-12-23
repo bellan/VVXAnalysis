@@ -56,9 +56,6 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , PUWeighter_      (setup_,setup_)
   , filterController_(config,consumesCollector())
   , leptonScaleFactors_(setup_,
-			// FIXME need to be updated for Run2Legacy
-			edm::FileInPath("VVXAnalysis/Commons/data/fakeRate_20feb2017.root").fullPath(),
-			edm::FileInPath("VVXAnalysis/Commons/data/fakeRate_20feb2017.root").fullPath(),
 			(dataTag=="ULAPV" ? true : false))  // preVFP
   , photonScaleFactors_(setup_,
 			(dataTag=="ULAPV" ? true : false))

@@ -19,7 +19,7 @@
 
 class LeptonScaleFactors{
  public:
-  LeptonScaleFactors(int year, const std::string& muonFRFilename, const std::string& electronFRFilename, bool preVFP);
+  LeptonScaleFactors(int year, bool preVFP);
 
   std::pair<double, double> efficiencyScaleFactor(const double& lepPt, const double& lepEta, int lepId, bool isInCracks = false) const{ 
     
@@ -38,12 +38,9 @@ class LeptonScaleFactors{
 
   LeptonSFHelper lepSFHelper_;
   int year_;
-
-
-  TH2D *hFRMu_;
-  TH2D *hFREl_;
-
-  std::string year;
+  
+  std::unique_ptr<TH2D> hFRMu_;
+  std::unique_ptr<TH2D> hFREl_;
 };
 
 
