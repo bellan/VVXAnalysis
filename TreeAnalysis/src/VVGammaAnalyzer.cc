@@ -100,29 +100,29 @@ void VVGammaAnalyzer::initEvent(){
   fakeVToJ_ = Jet();
 
   // Contruct vector with leptons from dibosons
-  if     (is4Lregion(region_))  //(ZZ && ZZ->pt() > 1.){
+  if     (is4Lregion(region_) || (region_ == MC && ZZ && ZZ->pt() > 1.))
     leptons_->insert(leptons_->end(), {
     	  ZZ->first().daughter(0), 
     	  ZZ->first().daughter(1), 
     	  ZZ->second().daughter(0), 
     	  ZZ->second().daughter(1)
         });
-  else if(is3Lregion(region_))  //(ZW && ZW->pt() > 1.){
+  else if(is3Lregion(region_) || (region_ == MC && ZW && ZW->pt() > 1.))
     leptons_->insert(leptons_->end(), {
   	  ZW->first().daughter(0), 
   	  ZW->first().daughter(1), 
   	  ZW->second().daughter(0)
 	});
-  else if(is2Lregion(region_)){
-    leptons_->insert(leptons_->cend(), electrons->begin(), electrons->end());
-    leptons_->insert(leptons_->cend(), muons    ->begin(), muons    ->end());
-  }
-  else if(region_ == CRLFR && ZL && ZL->first.pt() > 1.)
+  else if((region_ == CRLFR || region_ == MC) && ZL && ZL->first.pt() > 1.)
     leptons_->insert(leptons_->end(), {
   	  ZL->first.daughter(0),
   	  ZL->first.daughter(1),
   	  ZL->second
 	});
+  else if(is2Lregion(region_) || region_ == MC){
+    leptons_->insert(leptons_->cend(), electrons->begin(), electrons->end());
+    leptons_->insert(leptons_->cend(),     muons->begin(),     muons->end());
+  }
 
   
   // Photon selection
