@@ -10,7 +10,7 @@
 #  Author: A. Mecca  (alberto.mecca@cern.ch)                   #
 ################################################################
 
-campaign=Dec2022
+campaign=Dec2022_v2
 initial=$(printf "%.1s" $USER)
 eosdir="/eos/user/$initial/$USER/samples/$campaign"
 
