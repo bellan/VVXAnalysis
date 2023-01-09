@@ -11,7 +11,7 @@
 #printf "Usage: ${0##*/} FOLDER\nFOLDER is the name of a subfolder where the job chunks are\n" && exit 1
 
 print_done () { 
-    [ -d ${1}/AAAOK ] && find ${1}/AAAOK -type d -name "*_Chunk*" | wc -l | xargs printf "%d: DONE\n"
+    [ -d ${1}/AAAOK ] && find -L ${1}/AAAOK -maxdepth 1 -type d -name "*_Chunk*" | wc -l | xargs printf "%d: DONE\n"
 }
 
 [ $# -ne 1 ] && folder="." || folder=$1
