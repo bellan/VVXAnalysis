@@ -38,7 +38,7 @@ ZZTo4l,qqZZ,1.256,,,/ZZTo4L_TuneCP5_13TeV_powheg_pythia8/RunIISummer20UL18MiniAO
 # ZZTo4lext,qqZZ,1.256,,,/ZZJJTo4L_QCD_TuneCP5_13TeV-madgraph-pythia8/?????????/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2018,RecoProbabilities.py,
 # ZZTo4lamcatnlo,qqZZ,1.256,,,/ZZTo4L_TuneCP5_13TeV-amcatnloFXFX-pythia8/?????????/MINIAODSIM,dbs,,1,GENXSEC=1.256;GENBR=1;PROCESS_CR=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;LEPTON_SETUP=2018,RecoProbabilities.py,
 ZZTo2Q2L,qqZZ,-1,,,/ZZTo2Q2L_mllmin4p0_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v2/MINIAODSIM,dbs,,1,GENXSEC=-1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2018,RecoProbabilities.py,
-ZZTo2L2Nu,qqZZ,0.9738,,,ZZTo2L2Nu_TuneCP5_13TeV_powheg_pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM,dbs,,1,GENXSEC=0.9738;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2017,RecoProbabilities.py,
+ZZTo2L2Nu,qqZZ,0.9738,,,/ZZTo2L2Nu_TuneCP5_13TeV_powheg_pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM,dbs,,1,GENXSEC=0.9738;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2017,RecoProbabilities.py,
 
 
 ###,gg->ZZ,,,,,,,,,,gg->ZZ background - Moved to ACOffshell
