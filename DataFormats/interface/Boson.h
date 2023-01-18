@@ -83,6 +83,12 @@ namespace phys {
       else { std::cout << "*** Boson's daughter not found! ***" << " " << i << std::endl; abort();}
     }
 
+    const P *daughterPtr(int i) const{
+      if(i == 0) return &daughter0_;
+      else if(i == 1) return &daughter1_;
+      else { std::cout << "*** Boson's daughter not found! ***" << " " << i << std::endl; abort();}
+    }
+
     int decayId() const{
       // if it is a leptonic decay, return the abs(id) of the charged lepton (if present). If it is an hadronic decay, return 0
       return abs(daughter0_.id()) > 7 ? std::min(abs(daughter0_.id()), abs(daughter1_.id())) : 0;
