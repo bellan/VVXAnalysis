@@ -11,6 +11,7 @@
 
 #include <set>
 #include <map>
+#include <fstream>
 
 #include "EventAnalyzer.h"
 #include "RegistrableAnalysis.h"
@@ -64,6 +65,32 @@ public:
   virtual void finish();
 
 
+  friend class Selector<VVGammaAnalyzer>;
+  template< class PAR >
+  bool ZBosonDefinition(phys::Boson<PAR> cand) const{
+    bool checkCharge = cand.daughter(0).charge() + cand.daughter(1).charge() == 0;
+    return checkCharge && fabs(cand.p4().M() - phys::ZMASS) < 30;
+  }
+
+
+  template< class PAR >
+  bool WBosonDefinition(phys::Boson<PAR> cand) {
+    bool gooddaughters = (fabs(cand.daughter(0).eta()) < 2.5 && cand.daughter(0).pt() > 30 &&
+			  cand.daughter(0).passPUID() && cand.daughter(0).passLooseJetID() &&
+			  fabs(cand.daughter(1).eta()) < 2.5 && cand.daughter(1).pt() > 30 &&
+			  cand.daughter(1).passPUID() && cand.daughter(1).passLooseJetID());
+    bool goodmass = fabs(cand.p4().M() - phys::WMASS) < 50;
+    return (goodmass && gooddaughters);
+  }
+  
+  bool GenWBosonDefinition(phys::Boson<phys::Particle> cand) {
+    bool gooddaughters = (fabs(cand.daughter(0).eta()) < 2.5 && cand.daughter(0).pt() > 30 &&
+			  fabs(cand.daughter(1).eta()) < 2.5 && cand.daughter(1).pt() > 30);
+    bool goodmass = fabs(cand.p4().M() - phys::WMASS) < 50;
+    return (goodmass && gooddaughters);
+  }
+  
+  
 private:
 	
   std::vector<phys::Lepton>* leptons_;
@@ -93,6 +120,9 @@ private:
   std::unique_ptr<TH2F> hPhotonFR_;
   std::unique_ptr<TH2F> hPhotonEff_;
   std::string channelReco_;
+
+  std::ofstream fAK4_;
+  std::ofstream fAK8_;
  	
   // Objects reconstruction for each event
   void makeChannelReco();  // sets channelReco_
@@ -113,12 +143,19 @@ private:
   void plotsVVGstatus(const char* name, const char* title, const TLorentzVector& p4_VV, const char* mType="mass");
   void leptonFakeRate();
   void photonFakeRate();
-  void photonEfficiency(const std::vector<phys::Photon>&, const char*);
+  void studyJetsChoice();
+  int studyAK4Choice(std::ofstream& fout, const phys::Boson<phys::Particle>& diquark, const double& tolerance);
+  int studyAK8Choice(std::ofstream& fout, const phys::Boson<phys::Particle>& diquark, const double& tolerance);
+  template<class PAR>
+  void efficiency(const std::vector<PAR>& vRec, const std::vector<phys::Particle>& vGen, const char* type, const char* label = nullptr);
   void photonIsolation(const std::vector<phys::Photon>&, const char*);
   void systematicsStudy();
   void SYSplots(const char* syst, const double& weight, const phys::Photon*);
   void debug3Lregion();
   void photonGenStudy();
+
+  // void printCSVheader(std::ofstream&);
+  // void printCSV(std::ofstream&);
 
   void endNameHistos();
  	
@@ -140,16 +177,16 @@ private:
   double getPhotonEffUnc(const phys::Photon& ph) const;
 	
   static bool is4Lregion(const phys::RegionTypes reg){
-    return reg == phys::SR4P || reg == phys::CR3P1F || reg == phys::CR2P2F ||
-      reg == phys::SR4P_1L || reg == phys::SR4P_1P || reg == phys::CR4P_1F;
+    return (reg == phys::SR4P || reg == phys::CR3P1F || reg == phys::CR2P2F ||
+	    reg == phys::SR4P_1L || reg == phys::SR4P_1P || reg == phys::CR4P_1F);
   }
   static bool is3Lregion(const phys::RegionTypes reg){
-    return reg == phys::SR3P || reg == phys::CR110 || reg == phys::CR101 || reg == phys::CR011 ||
-      reg == phys::CR100 || reg == phys::CR010 || reg == phys::CR001 || reg == phys::CR000 ||
-      reg == phys::SR3P_1L || reg == phys::SR3P_1P || reg == phys::CR3P_1F;
+    return (reg == phys::SR3P || reg == phys::CR110 || reg == phys::CR101 || reg == phys::CR011 ||
+	    reg == phys::CR100 || reg == phys::CR010 || reg == phys::CR001 || reg == phys::CR000 ||
+	    reg == phys::SR3P_1L || reg == phys::SR3P_1P || reg == phys::CR3P_1F);
   }
   static bool is2Lregion(const phys::RegionTypes reg){
-    return reg == phys::SR2P || reg == phys::SR2P_1L || reg == phys::SR2P_1P || reg == phys::CR2P_1F;
+    return (reg == phys::SR2P || reg == phys::SR2P_1L || reg == phys::SR2P_1P || reg == phys::CR2P_1F);
   }
 	
   static bool passVeryLoose(const phys::Photon& ph);
@@ -174,41 +211,7 @@ private:
 	    haveCommonDaughter(a.daughter(1), b.daughter(0), tol) ||
 	    haveCommonDaughter(a.daughter(1), b.daughter(1), tol)   );
   }
- 	
- 	
-  friend class Selector<VVGammaAnalyzer>;
-  template< class PAR >
-  bool ZBosonDefinition(phys::Boson<PAR> cand) const{
-    bool checkCharge = cand.daughter(0).charge() + cand.daughter(1).charge() == 0;
-    return checkCharge && fabs(cand.p4().M() - phys::ZMASS) < 30;
-  }
-
-
-  template< class PAR >
-  bool WBosonDefinition(phys::Boson<PAR> cand) {
-    bool gooddaughters = false;
-    if(fabs(cand.daughter(0).eta()) < 2.5 && cand.daughter(0).pt() > 30 &&
-       cand.daughter(0).passPUID() && cand.daughter(0).passLooseJetID() &&
-       fabs(cand.daughter(1).eta()) < 2.5 && cand.daughter(1).pt() > 30 &&
-       cand.daughter(1).passPUID() && cand.daughter(1).passLooseJetID())
-      gooddaughters = true;
-
-    if(fabs(cand.p4().M() - phys::WMASS) < 150 && gooddaughters)
-      return true;
-    return false;
-
-  }
   
-  bool GenWBosonDefinition(phys::Boson<phys::Particle> cand) {
-    bool gooddaughters = false;
-    if(fabs(cand.daughter(0).eta()) < 2.5 && cand.daughter(0).pt() > 30 &&
-       fabs(cand.daughter(1).eta()) < 2.5 && cand.daughter(1).pt() > 30)
-      gooddaughters = true;
-
-    if(fabs(cand.p4().M() - phys::WMASS) < 150 && gooddaughters)
-      return true;
-    return false;
-  }
 		
   static const std::vector<double> pt_bins;
   static const std::vector<double> pt_bins_LFR;

@@ -52,7 +52,7 @@ void VVGammaAnalyzer::begin(){
     fileFR.Close();
   }
   else{
-    cout << "WARN: Photon FR file not found in \""<<fileFR.GetName()<<"\"\n";
+    cout << colour::Red("WARN") << ": Photon FR file not found in \""<<fileFR.GetName()<<"\"\n";
     hPhotonFR_.reset( new TH2F("PhFR", "", 1,0.,1., 1,0.,1.) );
   }
   
@@ -65,7 +65,7 @@ void VVGammaAnalyzer::begin(){
     fileEff.Close();
   }
   else{
-    cout << "WARN: Photon Eff SF file not found in \""<<fileEff.GetName()<<"\"\n";
+    cout << colour::Red("WARN") << ": Photon Eff SF file not found in \""<<fileEff.GetName()<<"\"\n";
     hPhotonEff_.reset( new TH2F("EGamma_SF2D", "", 1,0.,1., 1,0.,1.) );
   }
   
@@ -237,9 +237,9 @@ Int_t VVGammaAnalyzer::cut() {
   photonIsolation(*    photons            , "all" );
   photonIsolation(* kinPhotons_["central"], "kin" );
   photonIsolation(*goodPhotons_["central"], "good");
-  photonEfficiency(*    photons            ,"photons");
-  photonEfficiency(* kinPhotons_["central"],  "kinPh");
-  photonEfficiency(*goodPhotons_["central"], "goodPh");
+  efficiency(*    photons            , *genPhotons_, "photons", "all" );
+  efficiency(* kinPhotons_["central"], *genPhotons_, "photons", "kin" );
+  efficiency(*goodPhotons_["central"], *genPhotons_, "photons", "good");
   
   
   // ----- BASELINE SELECTION -----
@@ -728,7 +728,7 @@ void VVGammaAnalyzer::initCherryPick(){
   for(auto R : regions_){
     FILE* cherryFile = fopen(Form("data/2016D_%s_manual.txt", regionType(R).c_str()), "r");
     if(!cherryFile){
-      cout << "Warning: no cherry pick file for region " << regionType(R) << '\n';
+      cout << colour::Red("WARN") << ": no cherry pick file for region " << regionType(R) << '\n';
       continue;
     }
     unsigned long r, l, e;
@@ -1460,32 +1460,45 @@ void VVGammaAnalyzer::photonFakeRate(){
 }
 
 
-void studyJetsChoice(std::ofstream& fout){
-  // // Study how to choose the correct jet AK8 in case it exists. The problem of rejecting 
-  // // events in which it does not exist is part of the event selection
+void VVGammaAnalyzer::studyJetsChoice(){
+  // Study how to choose the correct jet AK8 in case it exists. The problem of rejecting 
+  // events in which it does not exist is part of the event selection
+  if( !theSampleInfo.isMC() )
+    return;
+  Boson<Particle>* genVhad = nullptr;
+  if     (genZhadCandidates_->size() > 0)
+    *genVhad = genZhadCandidates_->at(0);
+  else if(genWhadCandidates_->size() > 0)
+    *genVhad = genWhadCandidates_->at(0);
+  else
+    return;
   
-  // // Assuming genEventSetup has been called for this event
-  // if( !theSampleInfo.isMC() )
-  //   return;
+  int statusAK8;
+  int statusAK4 = studyAK4Choice(fAK4_, *genVhad, 0.4);
+  if(statusAK4 != 0)
+    statusAK8 = studyAK8Choice(fAK8_, *genVhad, 0.4);
+}
+
+
+int VVGammaAnalyzer::studyAK4Choice(std::ofstream& fout, const phys::Boson<phys::Particle>& diquark, const double& tolerance){
+  if(jets->size() < 2)
+    return 1;  // Not enough jets
+
+  vector<Particle> vQuarks({*diquark.daughterPtr(0), *diquark.daughterPtr(1)});
+  vector<std::pair<const Particle*, const Jet*>> vGenRec = matchDeltaR(vQuarks, *jets, tolerance);
   
-  // // Find the gen quarks
-  // if(genQuarks_->size() != 2)
-  //   return;
-  // Boson<Particle> diquark(genQuarks_->at(0), genQuarks_->at(1));
-  
-  // // Check that the corresponding gen jet exists
-  // vector<Particle>::const_iterator genAK8 = std::min_element(genJetsAK8->begin(), genJetsAK8->end(), DeltaRComparator(diquark));
-  // if(genAK8 == genJetsAK8->end() || deltaR(*genAK8, diquark) < 0.4)
-  //   return;
-  
-  // // Check that at least one reco jet exists
-  // vector<Particle>::const_iterator recAK8 = std::min_element(jetsAK8->begin(), jetsAK8->end(), DeltaRComparator(*genAK8));
-  // if(recAK8 == jetsAK8->end() || deltaR(*recAK8, *genAK8) < 0.4)
-  //   return;
-  
-  // // There should be a file
+  return 0;
+}
+
+
+int VVGammaAnalyzer::studyAK8Choice(std::ofstream& fout, const phys::Boson<phys::Particle>& diquark, const double& tolerance){
+  vector<Jet>::const_iterator rec = std::min_element(jetsAK8->cbegin(), jetsAK8->cend(), DeltaRComparator(diquark));
+  if(rec == jets->cend() || deltaR(*rec, diquark) > tolerance)
+    return 1;  // either jetsAK8->size() == 0 or dR > tol
+
   // for(vector<Jet>::const_iterator rec_it = jetsAK8->cbegin(); jetsAK8 != jetsAK8.cend(); ++rec_it){
-  //   fout << (rec_it == recAK8)           << ',' 
+  //   fout << (rec_it == recAK8)           << ','
+  // 	 << theWeight                    << ','
   // 	 << rec_it->mass()               << ','
   // 	 << rec_it->particleNet().WvsQCD << ','
   // 	 << rec_it->particleNet().ZvsQCD << ','
@@ -1493,33 +1506,39 @@ void studyJetsChoice(std::ofstream& fout){
   // 	 << rec_it->deepAK8_MD().WvsQCD  << ','
   // 	 << rec_it->deepAK8_MD().ZvsQCD  << ','
   // 	 << rec_it->deepAK8_MD().TvsQCD  << '\n';
-  // }
+  
+  return 0;
 }
 
 
-void VVGammaAnalyzer::photonEfficiency(const std::vector<phys::Photon>& vPh, const char* label){
+template <class PAR>
+void VVGammaAnalyzer::efficiency(const vector<PAR>& vRec, const vector<Particle>& vGen, const char* type, const char* label){
   // Reconstruction efficiency and resolution
-  if(theSampleInfo.isMC()){
-    vector<std::pair<const Particle*, const Photon*>> genRecPh = matchDeltaR(*genPhotons_, vPh, 0.4);  // intrinsic threshold of deltaR = 0.2
-    for(auto & [gen, rec] : genRecPh){
-      theHistograms->fill(Form("%sEff_den_pt" , label), "DEN photons p_{T};p_{T} [GeV/c]", 25,0.,250., gen->pt() , theWeight);
-      theHistograms->fill(Form("%sEff_den_E"  , label), "DEN photons energy;E [GeV]"     , 25,0.,500., gen->e()  , theWeight);
-      theHistograms->fill(Form("%sEff_den_eta", label), "DEN photons eta;#eta"           , eta_bins  , gen->eta(), theWeight);
-      
-      if(rec == nullptr)
-  	continue;
-      theHistograms->fill(Form("%sEff_num_pt" , label), "NUM photons p_{T};p_{T} [GeV/c]", 25,0.,250., gen->pt() , theWeight);
-      theHistograms->fill(Form("%sEff_num_E"  , label), "NUM photons energy;E [GeV]"     , 25,0.,500., gen->e()  , theWeight);
-      theHistograms->fill(Form("%sEff_num_eta", label), "NUM photons eta;#eta"           , eta_bins  , gen->eta(), theWeight);
-      
-      double deltaR = physmath::deltaR(*rec, *gen);
-      double deltaEoverE = (rec->e() - gen->e()) / gen->e();
-      double deltapToverpT = (rec->pt() - gen->pt()) / gen->pt();
-      theHistograms->fill(Form("%sRes_dR"  , label), "photon resolution #DeltaR;#DeltaR"        , 20, 0.,0.4, deltaR       , theWeight);
-      theHistograms->fill(Form("%sRes_E"   , label), "photon resolution Energy;#DeltaE/E"       , 20,-1.,1. , deltaEoverE  , theWeight);
-      theHistograms->fill(Form("%sRes_pt"  , label), "photon resolution p_{T};#Deltap_{T}/p_{T}", 20,-1.,1. , deltapToverpT, theWeight);
-      theHistograms->fill(Form("%sRes_EvsE", label), "photon resolution;E;#DeltaE/E", 20,0.,400., 16,-0.4,0.4, gen->e(), deltaEoverE , theWeight);
-    }
+  if(! theSampleInfo.isMC())
+    return;
+
+  const char* nameEff = Form("Eff_%s_%s_%s_%s", type, label, "%s", "%s");  // e.g. Eff_photos_loose_den_pt
+  const char* nameRes = Form("Res_%s_%s_%s"   , type, label, "%s");         // e.g. Res_AK8_all_eta
+  vector<std::pair<const Particle*, const PAR*>> vGenRec = matchDeltaR(vGen, vRec, 0.4);  // intrinsic threshold of deltaR = 0.2
+  
+  for(auto & [gen, rec] : vGenRec){
+    theHistograms->fill(Form(nameEff, "DEN", "pt" ), "DEN p_{T};p_{T} [GeV/c]", 25,0.,250., gen->pt() , theWeight);
+    theHistograms->fill(Form(nameEff, "DEN", "E"  ), "DEN energy;E [GeV]"     , 25,0.,500., gen->e()  , theWeight);
+    theHistograms->fill(Form(nameEff, "DEN", "eta"), "DEN eta;#eta"           , eta_bins  , gen->eta(), theWeight);
+    
+    if(rec == nullptr)
+      continue;
+    theHistograms->fill(Form(nameEff, "NUM", "pt" ), "NUM p_{T};p_{T} [GeV/c]", 25,0.,250., gen->pt() , theWeight);
+    theHistograms->fill(Form(nameEff, "NUM", "E"  ), "NUM energy;E [GeV]"     , 25,0.,500., gen->e()  , theWeight);
+    theHistograms->fill(Form(nameEff, "NUM", "eta"), "NUM eta;#eta"           , eta_bins  , gen->eta(), theWeight);
+    
+    double deltaR = physmath::deltaR(*rec, *gen);
+    double deltaEoverE = (rec->e() - gen->e()) / gen->e();
+    double deltapToverpT = (rec->pt() - gen->pt()) / gen->pt();
+    theHistograms->fill(Form(nameRes, "dR"  ), "Resolution #DeltaR;#DeltaR"        , 20, 0.,0.4, deltaR       , theWeight);
+    theHistograms->fill(Form(nameRes, "E"   ), "Resolution Energy;#DeltaE/E"       , 20,-1.,1. , deltaEoverE  , theWeight);
+    theHistograms->fill(Form(nameRes, "pt"  ), "Resolution p_{T};#Deltap_{T}/p_{T}", 20,-1.,1. , deltapToverpT, theWeight);
+    theHistograms->fill(Form(nameRes, "EvsE"), "Resolution;E;#DeltaE/E", 20,0.,400., 16,-0.4,0.4, gen->e(), deltaEoverE , theWeight);
   }
   
   // Old method for check
