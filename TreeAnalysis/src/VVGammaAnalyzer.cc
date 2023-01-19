@@ -1178,7 +1178,7 @@ void VVGammaAnalyzer::jetHistos(){
   for(const Jet& jet : *jetsAK8)
     theHistograms->fill("AK8_pt", "p_{T} jets AK8;GeV/c", 50, 0., 500., jet.pt(), theWeight);
   
-  vector<std::pair<const Particle*, const Jet*>> JetsAK8genrec = matchGenRec(*genJetsAK8, *jetsAK8);
+  vector<std::pair<const Particle*, const Jet*>> JetsAK8genrec = matchDeltaR(*genJetsAK8, *jetsAK8);
   for(auto pair: JetsAK8genrec){
     const Particle& gen = * pair.first;
     theHistograms->fill("AK8_gen_pt"  , "AK8 generated;p_{t} [GeV/c]"             , 40,100,500, gen.pt(), theWeight);
@@ -1202,7 +1202,7 @@ void VVGammaAnalyzer::jetHistos(){
   for(const Jet& jet : *jets)
     theHistograms->fill("AK4_pt", "p_{T} jets AK4;GeV/c", 50, 0., 500., jet.pt(), theWeight);
 
-  vector<std::pair<const Particle*, const Jet*>> JetsAK4genrec = matchGenRec(*genJets, *jets);
+  vector<std::pair<const Particle*, const Jet*>> JetsAK4genrec = matchDeltaR(*genJets, *jets);
   for(auto pair: JetsAK4genrec){
     const Particle& gen = * pair.first;
     theHistograms->fill("AK4_gen_pt"  , "AK4 generated;p_{t} [GeV/c]"             , 47, 30, 500, gen.pt(), theWeight);
@@ -1500,7 +1500,7 @@ void studyJetsChoice(std::ofstream& fout){
 void VVGammaAnalyzer::photonEfficiency(const std::vector<phys::Photon>& vPh, const char* label){
   // Reconstruction efficiency and resolution
   if(theSampleInfo.isMC()){
-    vector<std::pair<const Particle*, const Photon*>> genRecPh = matchGenRec(*genPhotons_, vPh, 0.4);  // intrinsic threshold of deltaR = 0.2
+    vector<std::pair<const Particle*, const Photon*>> genRecPh = matchDeltaR(*genPhotons_, vPh, 0.4);  // intrinsic threshold of deltaR = 0.2
     for(auto & [gen, rec] : genRecPh){
       theHistograms->fill(Form("%sEff_den_pt" , label), "DEN photons p_{T};p_{T} [GeV/c]", 25,0.,250., gen->pt() , theWeight);
       theHistograms->fill(Form("%sEff_den_E"  , label), "DEN photons energy;E [GeV]"     , 25,0.,500., gen->e()  , theWeight);
@@ -1832,8 +1832,8 @@ void VVGammaAnalyzer::photonGenStudy(){
     const char* matched = "nomatch";
     if(genPhotonsPrompt.size() > 0){
       for(const Photon& rec : phVect){
-	const Particle* closestGen = closestDeltaRMatch(rec, *genPhotons_);
-	if(deltaR(rec, *closestGen) < 0.1){
+        auto closestGen = closestDeltaR(rec, *genPhotons_);  // std::vector<phys::Particle>::const_iterator
+	if(deltaR(rec, *closestGen) < 0.1){  //closestGen != genPhotons_->cend() &&
 	  best = &rec;
 	  matched = "promptm";  // Matched to prompt photon
 	  break;
@@ -1842,7 +1842,7 @@ void VVGammaAnalyzer::photonGenStudy(){
     }
     else if(genPhotons_->size() > 0){
       for(const Photon& rec : phVect){
-	const Particle* closestGen = closestDeltaRMatch(rec, *genPhotons_);
+	auto closestGen = closestDeltaR(rec, *genPhotons_);
 	if(deltaR(rec, *closestGen) < 0.1){
 	  best = &rec;
 	  matched = "matched";  // Matched to gen photon, not from hard scattering
@@ -1854,13 +1854,13 @@ void VVGammaAnalyzer::photonGenStudy(){
     const char* hname = Form("PhGenStudy_%s_%s_%s", "%s", wp, matched);
     
     // Find the closest lep and get the DR
-    const Lepton* closestLep = closestDeltaRMatch(*best, *leptons_);
-    float dR = closestLep != nullptr ? deltaR(*best, *closestLep) : 10;
+    auto closestLep = closestDeltaR(*best, *leptons_);
+    float dR = closestLep != leptons_->cend() ? deltaR(*best, *closestLep) : 10;
     theHistograms->fill(Form(hname, "DRLep"), Form("%s;min #DeltaR(#gamma, l);Events", wp), 50, 0., 1., dR   , theWeight);
     
     // Closest jet
-    const Jet* closestJet = closestDeltaRMatch(*best, *jets);
-    float dRJet = closestJet != nullptr ? deltaR(*best, *closestJet) : 10;
+    auto closestJet = closestDeltaR(*best, *jets);
+    float dRJet = closestJet != jets->cend() ? deltaR(*best, *closestJet) : 10;
     theHistograms->fill(Form(hname, "DRJet"), Form("%s;#DeltaR(#gamma, j);Events"    , wp), 60, 0., 3 , dRJet, theWeight);
     
     // 2D plot

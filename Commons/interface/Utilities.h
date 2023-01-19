@@ -82,39 +82,50 @@ template <typename T> std::vector<T> concatenate(std::vector<T> &a, std::vector<
 }
 
 
-template <class S, class T>
-std::vector<std::pair<const S*, const T*>> matchGenRec(const std::vector<S>& vgen, const std::vector<T>& vrec, const double& tol = 0.2){
-  std::vector<std::pair<const S*, const T*>> out; out.reserve(vgen.size());
-  std::list<size_t> indices_rec;
-  for(size_t i = 0; i < vrec.size(); ++i) indices_rec.push_back(i);
-  
-  for(const S& gen : vgen){
-    std::list<size_t>::iterator it_best = indices_rec.end();
-    double mindr = tol;
+template <class T, class C>
+typename C::const_iterator closestDeltaR(const T& p, const C& container){
+  return std::min_element(container.cbegin(), container.cend(),
+			  [p](typename C::const_reference a, typename C::const_reference b){
+			    return physmath::deltaR(p, a) < physmath::deltaR(p, b);
+			  });
+}
 
-    for(auto it = indices_rec.begin(); it != indices_rec.end(); ++it){
-      double dr = physmath::deltaR(gen, vrec.at(*it));
-      if(dr < mindr){
-	mindr = dr;
-	it_best = it;
-      }
-    }
+template <class T, class C>
+typename C::const_iterator closestDeltaR_p(const T& p, const C& container){  // same as previous, but for containers of pointers
+  return std::min_element(container.cbegin(), container.cend(),
+			  [p](typename C::const_reference a, typename C::const_reference b){
+			    return physmath::deltaR(p, *a) < physmath::deltaR(p, *b);
+			  });
+}
+
+
+template <class F, class T>
+std::vector<std::pair<const F*, const T*>> matchDeltaR(const std::vector<F>& vFrom, const std::vector<T>& vTo, const double& tol = 0.2){
+  // Performs associations in deltaR of objects from vFrom to vTo
+  // Ensures that no more than one object in vFrom is associated to the same object in vTo
+  // Precedence is given following the order in which they appear
+  // If a candidate match for an object in vFrom exceeds the dR threshold, it is discarded and no object from vTo is associated to it
+  
+  std::vector<std::pair<const F*, const T*>> out;
+  out.reserve(vFrom.size());
+  
+  typedef typename std::list< typename std::vector<T>::const_iterator > indices_container;  // "list of iterators to vector<T> elements"
+  indices_container indicesTo;
+  for(auto it = vTo.cbegin(); it != vTo.cend(); ++it) indicesTo.push_back(it);
+  
+  for(const F& from : vFrom){
+    typename indices_container::const_iterator bestTo = closestDeltaR_p(from, indicesTo);
     
-    const T* p_rec = nullptr;
-    if(it_best != indices_rec.end()){
-      p_rec = & vrec.at(*it_best);
-      indices_rec.erase(it_best);
+    if(bestTo != indicesTo.end() && physmath::deltaR(from, **bestTo) < tol){
+      out.push_back( std::make_pair(&from, &(**bestTo)) );
+      indicesTo.erase(bestTo);
     }
-    out.push_back(std::make_pair( &gen, p_rec )); // If no corresponding rec is found, the rec is left as a nullptr
+    else
+      out.push_back( std::make_pair(&from, nullptr  ) ); // If no corresponding "to" is found, pair::second is left as a nullptr
   }
+  
   return out;
 }
 
-
-template<class P, class T>
-  const T* closestDeltaRMatch(P p, std::vector<T> vec){
-  auto it = std::min_element(vec.begin(), vec.end(), [p](const T& a, const T& b){ return physmath::deltaR(p, a) < physmath::deltaR(p, b); });
-  return it != vec.end() ? &*it : nullptr;
-}
 
 #endif

@@ -273,7 +273,7 @@ namespace phys{
 	struct DeltaRComparator{ //Used to sort particles in order of deltaR from a reference momentum
   		template <class P>
   		DeltaRComparator(const P& refParticle) : refp4_(refParticle.p4()) {}
-  		DeltaRComparator(const TLorentzVector p4) : refp4_(p4) {}
+  		DeltaRComparator(const TLorentzVector& p4) : refp4_(p4) {}
   	
   		template <class P1, class P2>
   		bool operator()(const P1& p1, const P2& p2){
