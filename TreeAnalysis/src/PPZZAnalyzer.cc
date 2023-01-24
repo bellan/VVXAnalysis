@@ -31,10 +31,11 @@ Int_t PPZZAnalyzer::cut() {
 void PPZZAnalyzer::analyze(){
   Bool_t effsyst=false;
   Bool_t xisyst=false;
-  Bool_t isPUbg= false;
-  double kmin=0.95;
-  double kmax=1.10;
-  double acomax=99999;
+  Bool_t isPUbg=false;
+  double kmin=0.90;
+  double kmax=1.15;
+  double acomax=0.005;
+  double xilimit=0.05;
   
   //forw: sector 45 (towards ALICE), back: sector 56 (towards LHCb)
   std::vector<phys::Proton> forweventprotons;
@@ -43,7 +44,7 @@ void PPZZAnalyzer::analyze(){
   
   if(!isPUbg){
     foreach(const phys::Proton mproton, *multiRPprotons){
-      if(mproton.appropriatexi()){
+      if(mproton.xi()>=xilimit){
         if(mproton.LHCSector()){
           if(!xisyst){
 	    if(!effsyst){forweventprotons.push_back(mproton);
@@ -131,16 +132,14 @@ void PPZZAnalyzer::analyze(){
 
   theHistograms->fill("forwprotonmult","forward proton multiplicity",6,-0.5,5.5,forweventprotons.size(),theWeight);
   theHistograms->fill("backprotonmult","backward proton multiplicity",6,-0.5,5.5,backeventprotons.size(),theWeight);
-
   
   if(ZZ->passFullSelection()){
-    theHistograms->fill("mZZ","mass of ZZ pair",50,400,8000,ZZ->mass(),theWeight);
+    theHistograms->fill("mZZ","mass of ZZ pair",20,400,8000,ZZ->mass(),theWeight);
     theHistograms->fill("yZZ","rapidity of ZZ pair",100,-5,5,ZZ->rapidity(),theWeight);
-    if(forweventprotons.size()&&backeventprotons.size()) theHistograms->fill("mZZtwoprotons","mass of ZZ pair",50,400,8000,ZZ->mass(),theWeight);
-    if(forweventprotons.size()||backeventprotons.size()) theHistograms->fill("mZZoneproton","mass of ZZ pair",50,400,8000,ZZ->mass(),theWeight);
+    if(forweventprotons.size()&&backeventprotons.size()) theHistograms->fill("mZZtwoprotons","mass of ZZ pair",20,400,8000,ZZ->mass(),theWeight);
+    if(forweventprotons.size()||backeventprotons.size()) theHistograms->fill("mZZoneproton","mass of ZZ pair",20,400,8000,ZZ->mass(),theWeight);
     if(forweventprotons.size()&&backeventprotons.size()) theHistograms->fill("yZZtwoprotons","ZZ rapidity",100,-5,5,ZZ->rapidity(),theWeight);
     if(forweventprotons.size()||backeventprotons.size()) theHistograms->fill("yZZoneproton","ZZ rapidity",100,-5,5,ZZ->rapidity(),theWeight);
-    
   }
 
   bool zetamarker=false;
@@ -169,6 +168,22 @@ void PPZZAnalyzer::analyze(){
     forweventprotons.push_back(PUP45);
     delete hxi45;
   }
+
+  double ximaxforw=0;
+  double ximaxback=0;
+  phys::Proton forwproton, backproton;
+  foreach(const phys::Proton forwp, forweventprotons){
+    if(forwp.xi()>ximaxforw){
+      ximaxforw=forwp.xi();
+      forwproton=forwp;
+      }
+    }
+  foreach(const phys::Proton backp, backeventprotons){
+    if(backp.xi()>ximaxback){
+      ximaxback=backp.xi();
+      backproton=backp;
+      }
+  }
   
   //if(forweventprotons.size()>2) forweventprotons.clear();
   //if(backeventprotons.size()>2) backeventprotons.clear();
@@ -195,7 +210,7 @@ void PPZZAnalyzer::analyze(){
 
         if(ZZ->passFullSelection()){
 	  double a = acoplanarity(ZZ);
-	  theHistograms->fill("acoplanarity","Acoplanarity distribution",25,0,0.005,a,theWeight);
+	  theHistograms->fill("acoplanarity","Acoplanarity distribution",25,0,1,a,theWeight);
 	  double massdif = 1-ZZ->mass()/pp.mpp();
 	  double ydif = pp.ypp()-ZZ->rapidity();
 	  nmatches++;
@@ -209,6 +224,8 @@ void PPZZAnalyzer::analyze(){
 	      bestmassdif=massdif;
 	      bestydif=ydif;
 	      matcheddelta=true;
+	      //theHistograms->fill("xitest","xitest",100,-0.1,0.1,p1.xi()-ZZ->expectedxi2(),theWeight);
+	      //theHistograms->fill("xitest","xitest",100,-0.1,0.1,p2.xi()-ZZ->expectedxi1(),theWeight);
 	    }
 	    if(!matched){
 	      matched=true;}		
@@ -239,21 +256,6 @@ void PPZZAnalyzer::analyze(){
   //Algorithm B and C: use the highest xi proton every time
   
   if(forweventprotons.size()&&backeventprotons.size()){
-    double ximaxforw=0;
-    double ximaxback=0;
-    phys::Proton forwproton, backproton;
-    foreach(const phys::Proton forwp, forweventprotons){
-      if(forwp.xi()>ximaxforw){
-	ximaxforw=forwp.xi();
-	forwproton=forwp;
-      }
-    }
-    foreach(const phys::Proton backp, backeventprotons){
-      if(backp.xi()>ximaxback){
-	ximaxback=backp.xi();
-	backproton=backp;
-      }
-    }
     phys::ProtonPair ppxi= phys::ProtonPair(backproton,forwproton);
     double massdifxi = 1-ZZ->mass()/ppxi.mpp();
     double ydifxi = ppxi.ypp()-ZZ->rapidity();
@@ -314,6 +316,7 @@ bool regionselection(double x, double y, double kmin, double kmax){
   else if(x>0.05&&x<=0.1) {return abs(y)<=-x+0.15;}
   return out;
 }
+
 
 double logfunc(double *x, double *par){
   double xx=x[0];

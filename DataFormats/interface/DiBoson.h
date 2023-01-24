@@ -102,6 +102,14 @@ namespace phys {
     		  pow(daughter1_.fakeRateSF()*daughter0_.fakeRateSFUnc(),2));
     }
     
+    double expectedxi1() const{
+      return (daughter0_.pt() * exp(daughter0_.rapidity()) + daughter1_.pt() * exp(daughter1_.rapidity()))/13000;
+    }
+    
+    double expectedxi2() const{
+      return (daughter0_.pt() * exp((-1)*daughter0_.rapidity()) + daughter1_.pt() * exp((-1)*daughter1_.rapidity()))/13000;
+    }
+    
 
   private:
   
@@ -111,7 +119,7 @@ namespace phys {
     Bool_t  passFullSel_;
 
 
-    ClassDef(DiBoson, 1) //
+    ClassDef(DiBoson, 2) //
   };
 }
 #endif

@@ -21,17 +21,17 @@ scram b
 cd ../../
     
 echo "GEN-SIM starting"
-cmsDriver.py step1 --filein file:events_filter1.lhe  --fileout file:stepLHE1.root --mc --eventcontent LHE --datatier LHE --conditions 106X_upgrade2018_realistic_v11_L1v1 --step NONE --customise Configuration/DataProcessing/Utils.addMonitoring -n -1
+cmsDriver.py step1 --filein file:files/events_filter1.lhe  --fileout file:files/stepLHE1.root --mc --eventcontent LHE --datatier LHE --conditions 106X_upgrade2018_realistic_v11_L1v1 --step NONE --customise Configuration/DataProcessing/Utils.addMonitoring -n -1
 
-cmsDriver.py Configuration/GenProduction/python/FSQ-RunIISummer19UL17GEN-00000-fragment.py --filein file:stepLHE1.root --fileout file:stepSIM1.root --mc --eventcontent RAWSIM --datatier GEN-SIM --conditions 106X_upgrade2018_realistic_v11_L1v1 --beamspot Realistic25ns13TeVEarly2018Collision --step GEN,SIM --nThreads 8 --geometry DB:Extended --era Run2_2018 --python_filename step1_cfg.py --customise Configuration/DataProcessing/Utils.addMonitoring -n -1
+cmsDriver.py Configuration/GenProduction/python/FSQ-RunIISummer19UL17GEN-00000-fragment.py --filein file:files/stepLHE1.root --fileout file:files/stepSIM1.root --mc --eventcontent RAWSIM --datatier GEN-SIM --conditions 106X_upgrade2018_realistic_v11_L1v1 --beamspot Realistic25ns13TeVEarly2018Collision --step GEN,SIM --nThreads 8 --geometry DB:Extended --era Run2_2018 --python_filename configfiles/step1_cfg.py --customise Configuration/DataProcessing/Utils.addMonitoring -n -1
 
 
 echo "DIGI-RECO starting"
-cmsDriver.py --python_filename boh1.py --fileout file:stepDR1.root --eventcontent PREMIXRAW \
+cmsDriver.py --python_filename configfiles/boh1.py --fileout file:files/stepDR1.root --eventcontent PREMIXRAW \
  --customise Configuration/DataProcessing/Utils.addMonitoring --datatier GEN-SIM-DIGI \
  --pileup_input "dbs:/Neutrino_E-10_gun/RunIISummer20ULPrePremix-UL18_106X_upgrade2018_realistic_v11_L1v1-v2/PREMIX" \
  --conditions 106X_upgrade2018_realistic_v11_L1v1 --step DIGI,DATAMIX,L1,DIGI2RAW \
- --procModifiers premix_stage2 --geometry DB:Extended --filein file:stepSIM1.root \
+ --procModifiers premix_stage2 --geometry DB:Extended --filein file:files/stepSIM1.root \
  --datamix PreMix --era Run2_2018 --runUnscheduled --mc -n -1
  
  

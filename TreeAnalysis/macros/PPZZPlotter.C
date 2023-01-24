@@ -17,7 +17,7 @@ void GeneralPlotter(TH1F *th);
 
 void PPZZPlotter(){
   
-  TFile *filenoPUP = new TFile("results/2018/PPZZAnalyzer_SR4P/ZZTo4lnoPUP.root","READ");
+  TFile *filenoPUP = new TFile("results/2017/PPZZAnalyzer_SR4P/ZZTo4lnoPUP.root","READ");
   TFile *file = new TFile("results/2018/PPZZAnalyzer_SR4P/ZZTo4l.root","READ");
   TFile *fileBG = new TFile("results/2018/PPZZAnalyzer_SR4P/BG.root","READ");
   TFile *fileqqZZ = new TFile("results/2018/PPZZAnalyzer_SR4P/qqZZ.root","READ");
@@ -30,8 +30,8 @@ void PPZZPlotter(){
   
   TH2F *histxi= (TH2F*)file->Get("th2xi");
   //XiPlotter(histxi);
-  TH2F *histmatch = (TH2F*)fileBG->Get("th2goodC");
-  TH2F *histmatchZeta = (TH2F*)filedata->Get("th2goodC");
+  TH2F *histmatch = (TH2F*)file->Get("th2goodC");
+  TH2F *histmatchZeta = (TH2F*)filea0z->Get("th2goodCZeta");
   //histmatch->GetXaxis()->SetRangeUser(-0.5,0.5);
   //histmatch->GetYaxis()->SetRangeUser(-0.5,0.5);
   /*
@@ -64,15 +64,15 @@ void PPZZPlotter(){
   f->Close();
   delete f;
   */
-  /*
+  
   TCanvas *c_p = new TCanvas ("c_p","c_p");
-  string p_png = "images/matchingBG.png";
-  MatchingPlotter(histmatch,0.95,1.10);
+  string p_png = "images/matching2017noPUP.png";
+  MatchingPlotter(histmatchZeta,0.8,1.15);
   CMS_lumi(c_p,18,5);
   c_p->Print(p_png.c_str());
-  cout<<"Numero di punti sul grafico: "<<histmatch->GetEntries()<<endl;
-  cout<<"Numero di punti sul grafico: "<<histmatchZeta->GetEntries()<<endl;
-  */
+  //cout<<"Numero di punti sul grafico: "<<histmatch->GetEntries()<<endl;
+  //cout<<"Numero di punti sul grafico: "<<histmatchZeta->GetEntries()<<endl;
+  
   /*
   TH2F *histmatchqqZZ = (TH2F*)fileqqZZ->Get("th2goodC");
   TH2F *histmatchggZZ = (TH2F*)fileggZZ->Get("th2goodC");
@@ -174,18 +174,18 @@ void PPZZPlotter(){
   TH1F *yZZ = (TH1F*)file->Get("goodyZZ");
   //yppPlotter(yZZ);
   */
-  
+  /*
   TCanvas *c_p = new TCanvas ("c_p","c_p");
-  string p_png = "images/yZZcomparison.png";
-  TH1F *mZZ1 = (TH1F*)filenoPUP->Get("yZZ");
-  TH1F *mZZ2 = (TH1F*)filenoPUP->Get("yZZoneproton");
-  TH1F *mZZ3 = (TH1F*)filenoPUP->Get("yZZtwoprotons");
+  string p_png = "images/mZZcomparison2017.png";
+  TH1F *mZZ1 = (TH1F*)file->Get("mZZ");
+  TH1F *mZZ2 = (TH1F*)file->Get("mZZoneproton");
+  TH1F *mZZ3 = (TH1F*)file->Get("mZZtwoprotons");
   mZZ1->SetLineColor(kBlack);
   mZZ2->SetLineColor(kBlue);
   mZZ3->SetLineColor(kRed);
   mZZ1->SetTitle("");
   mZZ1->GetYaxis()->SetRangeUser(0,13);
-  yppPlotter(mZZ1);
+  mppPlotter(mZZ1);
   //gPad->SetLogy();
   mZZ2->SetTitle("");
   mZZ3->SetTitle("");
@@ -193,7 +193,7 @@ void PPZZPlotter(){
   mZZ3->Draw("same");
   CMS_lumi(c_p,18,5);
   c_p->Print(p_png.c_str());
-  
+  */
   
   TH1 *counterdelta = (TH2F*)file->Get("counterdelta2");
   /*
@@ -255,9 +255,9 @@ void MatchingPlotter(TH2F *histmatch, double kmin, double kmax){
   gStyle->SetOptStat(0);
   histmatch->DrawCopy("colz");
   
-  //TPaveLabel *label = new TPaveLabel(-0.35,1.145,1,1.495,"a^{0}_{Z}/#Lambda^{2} = 0.9*10^{-5} GeV^{-2}");
+  TPaveLabel *label = new TPaveLabel(-0.35,1.145,1,1.495,"a^{0}_{Z}/#Lambda^{2} = 0.9*10^{-5} GeV^{-2}");
   //TPaveLabel *label = new TPaveLabel(0.1,0.378,0.5,0.498,"a^{0}_{Z}/#Lambda^{2} = 0.9*10^{-5} GeV^{-2}");
-  TPaveLabel *label = new TPaveLabel(-2.4975,1.145,-1.5,1.495,"background");
+  //TPaveLabel *label = new TPaveLabel(-2.4975,1.145,-1.5,1.495,"background");
   label->SetFillColor(kSpring-4);
   label->SetTextColor(kOrange+10);
   label->SetTextSize(0.5);
@@ -307,39 +307,39 @@ void MatchingPlotter(TH2F *histmatch, double kmin, double kmax){
   f->SetParameter(1,kmax);
   y0=f->Eval(-0.05);
   y4=f->Eval(-2);
-  //f->DrawCopy("same");
+  f->DrawCopy("same");
   f->SetParameter(1,kmin);
   y1=f->Eval(-0.05);
   y5=f->Eval(-2);
-  //f->DrawCopy("same");
+  f->DrawCopy("same");
   f->SetParameter(0,-1);
   y2=f->Eval(-0.05);
   y6=f->Eval(-2);
-  //f->DrawCopy("same");
+  f->DrawCopy("same");
   f->SetParameter(1,kmax);
   y3=f->Eval(-0.05);
   y7=f->Eval(-2);
-  //f->DrawCopy("same");
+  f->DrawCopy("same");
   
     
   TLine *line9 = new TLine(-2,y4,-2,y5);
   line9->SetLineColor(kOrange-2);
   line9->SetLineWidth(6);
-  //line9->Draw("same");
+  line9->Draw("same");
   TLine *line10 = new TLine(-2,y6,-2,y7);
   line10->SetLineColor(kOrange-2);
   line10->SetLineWidth(6);
-  //line10->Draw("same");
+  line10->Draw("same");
   TLine *line11 = new TLine(-0.05,y0,-0.05,y1);
   line11->SetLineColor(kOrange-2);
   line11->SetLineWidth(6);
-  //line11->Draw("same");
+  line11->Draw("same");
   TLine *line12 = new TLine(-0.05,y2,-0.05,y3);
   line12->SetLineColor(kOrange-2);
   line12->SetLineWidth(6);
-  //line12->Draw("same");
+  line12->Draw("same");
    
-  //line1->Draw("same");
+  line1->Draw("same");
   
 }
 
@@ -349,7 +349,7 @@ void mppPlotter(TH1F *mpp){
   gStyle->SetOptStat(0);
   mpp->GetXaxis()->SetTitle("mass (GeV)");
   mpp->GetYaxis()->SetTitle("# of events");
-  mpp->GetYaxis()->SetRangeUser(0,6.5);
+  mpp->GetYaxis()->SetRangeUser(0,16.25);
   mpp->DrawCopy("");
   
   TPaveLabel *label = new TPaveLabel(4570,5.69,8000,6.49,"a^{0}_{Z}/#Lambda^{2} = 0.9*10^{-5} GeV^{-2}");
@@ -464,8 +464,8 @@ void sbvskmin(){
   float kmin[]={0.80,0.85,0.90,0.93,0.94,0.95,0.96,0.97,1.00};
   float kminerror[]={0.,0.,0.,0.,0.,0.,0.,0.,0.};
 
-  //TMultiGraph *mg = new TMultiGraph();
-  //mg->SetTitle("#omicron S/#sqrt{B} vs k_{min}");
+  TMultiGraph *mg = new TMultiGraph();
+  mg->SetTitle("#omicron S/#sqrt{B} vs k_{min}");
 
   TGraphErrors *tge = new TGraphErrors(10,kmin,sb1,kminerror,sberror1);
   tge->SetTitle("");
@@ -495,16 +495,16 @@ void sbvskmin(){
   tge3->SetMarkerStyle(21);
   tge3->SetLineColor(kBlack);
   tge3->SetLineWidth(1);
-  //tge3->GetYaxis()->SetRangeUser(0,300);
+  tge3->GetYaxis()->SetRangeUser(0,300);
 
-  //mg->Add(tge);
-  //mg->Add(tge2);
-  //mg->Add(tge3);
+  mg->Add(tge);
+  mg->Add(tge2);
+  mg->Add(tge3);
 
-  //mg->GetXaxis()->SetTitle("k_{max}");
-  //mg->GetYaxis()->SetTitle("S/#sqrt{B}");
+  mg->GetXaxis()->SetTitle("k_{max}");
+  mg->GetYaxis()->SetTitle("S/#sqrt{B}");
 
-  //mg->Draw("AP");
+  mg->Draw("AP");
 
   TPaveLabel *label = new TPaveLabel(0.7765,45.7,0.89,49.9,"a^{0}_{Z}/#Lambda^{2} = 0.9*10^{-5} GeV^{-2}");
   label->SetFillColor(kSpring-4);
