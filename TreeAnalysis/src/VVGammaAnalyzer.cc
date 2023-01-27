@@ -1513,8 +1513,11 @@ void VVGammaAnalyzer::efficiency(const vector<PAR>& vRec, const vector<Particle>
   // Reconstruction efficiency and resolution
   // cout << "\tefficiency " << recLabel << ' ' << genLabel << '\n';
 
-  const char* nameEff = Form("Eff_%s_%s_%s_%s", recLabel, genLabel, "%s", "%s");  // e.g. Eff_photos_loose_den_pt
-  const char* nameRes = Form("Res_%s_%s_%s"   , recLabel, genLabel, "%s");         // e.g. Res_AK8_all_eta
+  TString tNameEff = TString::Format("Eff_%s_%s_%s_%s", recLabel, genLabel, "%s", "%s");  // e.g. Eff_photos_loose_den_pt
+  TString tNameRes = TString::Format("Res_%s_%s_%s"   , recLabel, genLabel, "%s");         // e.g. Res_AK8_all_eta
+  const char* nameEff = tNameEff.Data();  // The Form() in the global namespace uses a circularq bufffer that can be overwritten
+  const char* nameRes = tNameRes.Data();  // storing and using the returned pointer is unsafe
+
   vector<std::pair<const Particle*, const PAR*>> vGenRec = matchDeltaR(vGen, vRec, tolerance);  // intrinsic threshold of deltaR = 0.2
   size_t nRec = vRec.size();
   
@@ -1532,8 +1535,8 @@ void VVGammaAnalyzer::efficiency(const vector<PAR>& vRec, const vector<Particle>
     theHistograms->fill(Form(nameEff, "NUM", "N"  ), "NUM # rec;# rec"    , 6,-0.5,5.5, nRec      , theWeight);
     
     double deltaR = physmath::deltaR(*rec, *gen);
-    double deltaEoverE = (rec->e() - gen->e()) / gen->e();
-    double deltapToverpT = (rec->pt() - gen->pt()) / gen->pt();
+    double deltaEoverE   = rec->e()  / gen->e()  - 1;  // (rec->e() - gen->e()) / gen->e();
+    double deltapToverpT = rec->pt() / gen->pt() - 1;  // (rec->pt() - gen->pt()) / gen->pt();
     theHistograms->fill(Form(nameRes, "dR"  ), "Resolution #DeltaR;#DeltaR"        , 20, 0.,0.4, deltaR       , theWeight);
     theHistograms->fill(Form(nameRes, "E"   ), "Resolution Energy;#DeltaE/E"       , 20,-1.,1. , deltaEoverE  , theWeight);
     theHistograms->fill(Form(nameRes, "pt"  ), "Resolution p_{T};#Deltap_{T}/p_{T}", 20,-1.,1. , deltapToverpT, theWeight);
