@@ -13,25 +13,7 @@ from copy import deepcopy
 from math import log10, floor
 import pandas as pd
 import ROOT
-from plotUtils import TFileContext, getSamplesByRegion
-
-
-def _getPlot(filename, var):
-    try:
-        with TFileContext(filename) as tf:
-            retrieved = deepcopy(tf.Get(var))
-    except (IOError, OSError) as e:
-        # ROOT prints an error message on its own
-        retrieved = None
-    else:
-        if(retrieved is None):
-            print('WARN: plot "{}" not present in file "{}"'.format(var, filename))
-    return retrieved
-
-
-def getPlot(var, sample, region, inputdir='results', year='2016', analyzer='VVGammaAnalyzer'):
-    filename = path.join(inputdir, year, '{:s}_{:s}'.format(analyzer, region), '{:s}.root'.format(sample))  # '{inputdir}/{year}/{analyzer}_{region}/{sample}.root'
-    return _getPlot(filename, var)
+from plotUtils import TFileContext, getSamplesByRegion, getPlot
 
 
 def getPlots_added(var, samples, region, inputdir='results', year='2016', analyzer='VVGammaAnalyzer'):

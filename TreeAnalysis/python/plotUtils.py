@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import ROOT, copy, sys, os
+from copy import deepcopy
 from errno import EEXIST
 from readSampleInfo import *
 from collections import OrderedDict
@@ -21,6 +22,22 @@ class TFileContext(object):
     def __exit__(self, type, value, traceback):
         # print('<<<Closing TFile "%s"' % (self.tfile.GetName()))
         self.tfile.Close()
+
+def getPlot_impl(filename, var):
+    try:
+        with TFileContext(filename) as tf:
+            retrieved = deepcopy(tf.Get(var))
+    except (IOError, OSError) as e:
+        # ROOT prints an error message on its own
+        retrieved = None
+    else:
+        if(retrieved is None):
+            print('WARN: plot "{}" not present in file "{}"'.format(var, filename))
+    return retrieved
+
+def getPlot(plot, sample, region, inputdir='results', year='2016', analyzer='VVGammaAnalyzer'):
+    filename = os.path.join(inputdir, year, '{:s}_{:s}'.format(analyzer, region), '{:s}.root'.format(sample))  # '{inputdir}/{year}/{analyzer}_{region}/{sample}.root'
+    return getPlot_impl(filename, plot)
 
 # Emulate os.makekdirs(..., exists_ok=True) for python2
 def makedirs_ok(*args):
