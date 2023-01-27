@@ -57,7 +57,7 @@ void VVGammaAnalyzer::begin(){
   }
   
   // Photon efficiency
-  TFile fileEff(Form("data/egammaEffi_%d.root", year), "READ");
+  TFile fileEff(Form("../Commons/data/egammaEffi_%d.root", year), "READ");
   if(fileEff.IsOpen()){
     hPhotonEff_.reset( std::move((TH2F*) fileEff.Get("EGamma_SF2D")) );
     hPhotonEff_->SetDirectory(nullptr);
@@ -237,9 +237,12 @@ Int_t VVGammaAnalyzer::cut() {
   photonIsolation(*    photons            , "all" );
   photonIsolation(* kinPhotons_["central"], "kin" );
   photonIsolation(*goodPhotons_["central"], "good");
-  efficiency(*    photons            , *genPhotons_, "photons", "all" );
-  efficiency(* kinPhotons_["central"], *genPhotons_, "photons", "kin" );
-  efficiency(*goodPhotons_["central"], *genPhotons_, "photons", "good");
+
+  efficiency(*    photons            , *genPhotons_, "photons"    , "gen", 0.2);
+  efficiency(* kinPhotons_["central"], *genPhotons_, "kinPhotons" , "gen", 0.2);
+  efficiency(*goodPhotons_["central"], *genPhotons_, "goodPhotons", "gen", 0.2);
+  
+  efficiency(*jets, *genJets, "AK4", "genJets", 0.4);
   
   
   // ----- BASELINE SELECTION -----
@@ -338,8 +341,10 @@ void VVGammaAnalyzer::analyze(){
   bool LFR_lep   = region_ == CRLFR;     // && ZL && ZL->first.pt() > 1.;
   bool b_WZpaperSel = false;
   
-  if(two_lep)
-    hadronicObjectsReconstruction();  
+  if(two_lep){
+    hadronicObjectsReconstruction();
+    studyJetsChoice();
+  }
 
   if(three_lep)
     debug3Lregion();
@@ -875,8 +880,7 @@ void VVGammaAnalyzer::genEventSetup(){
       }
     }
   }
-	
-  // Gen W --> q q'bar
+  
   if(genQuarks_->size() >= 2){
     for(size_t i = 0  ; i < genQuarks_->size(); ++i){
       Particle& q1 = genQuarks_->at(i);
@@ -884,25 +888,15 @@ void VVGammaAnalyzer::genEventSetup(){
       for(size_t j = i+1; j < genQuarks_->size(); ++j){
 	Particle& q2 = genQuarks_->at(j);
 	if(q2.id() > 5) continue;
-				
+
+	// Gen W --> q q'bar
 	if( (q1.id() * q2.id() < 0) && ( abs(q1.id()+q2.id()) % 2 ==1 ) ){
 	  Boson<Particle> Wcand(q1,q2);
 	  if(GenWBosonDefinition(Wcand))
 	    genWhadCandidates_->push_back(Wcand);
 	}
-      }
-    }
-  }
-	
-  // Gen Z --> q qbar
-  if(genQuarks_->size() >= 2){
-    for(size_t i = 0  ; i < genQuarks_->size(); ++i){
-      Particle& q1 = genQuarks_->at(i);
-      if(q1.id() > 5) continue;
-      for(size_t j = i+1; j < genQuarks_->size(); ++j){
-	Particle& q2 = genQuarks_->at(j);
-	if(q2	.id() > 5) continue;
-				
+
+	// Gen Z --> q qbar
 	if( q1.id() + q2.id() == 0 ){
 	  Boson<Particle> Zcand(q1,q2);
 	  if(ZBosonDefinition(Zcand))
@@ -1467,9 +1461,9 @@ void VVGammaAnalyzer::studyJetsChoice(){
     return;
   Boson<Particle>* genVhad = nullptr;
   if     (genZhadCandidates_->size() > 0)
-    *genVhad = genZhadCandidates_->at(0);
+    genVhad = &(genZhadCandidates_->at(0));
   else if(genWhadCandidates_->size() > 0)
-    *genVhad = genWhadCandidates_->at(0);
+    genVhad = &(genWhadCandidates_->at(0));
   else
     return;
   
@@ -1481,11 +1475,14 @@ void VVGammaAnalyzer::studyJetsChoice(){
 
 
 int VVGammaAnalyzer::studyAK4Choice(std::ofstream& fout, const phys::Boson<phys::Particle>& diquark, const double& tolerance){
-  if(jets->size() < 2)
-    return 1;  // Not enough jets
-
   vector<Particle> vQuarks({*diquark.daughterPtr(0), *diquark.daughterPtr(1)});
-  vector<std::pair<const Particle*, const Jet*>> vGenRec = matchDeltaR(vQuarks, *jets, tolerance);
+  efficiency(*jets, vQuarks, "AK4"   , "quarks", tolerance);
+  efficiency(*genJets, vQuarks, "genAK4", "quarks", tolerance);
+
+  if(jets->size() <= 2)
+    return 1;  // Not enough jets
+  
+  // vector<std::pair<const Particle*, const Jet*>> vGenRec = matchDeltaR(vQuarks, *jets, tolerance);
   
   return 0;
 }
@@ -1512,25 +1509,27 @@ int VVGammaAnalyzer::studyAK8Choice(std::ofstream& fout, const phys::Boson<phys:
 
 
 template <class PAR>
-void VVGammaAnalyzer::efficiency(const vector<PAR>& vRec, const vector<Particle>& vGen, const char* type, const char* label){
+void VVGammaAnalyzer::efficiency(const vector<PAR>& vRec, const vector<Particle>& vGen, const char* recLabel, const char* genLabel, double tolerance){
   // Reconstruction efficiency and resolution
-  if(! theSampleInfo.isMC())
-    return;
+  // cout << "\tefficiency " << recLabel << ' ' << genLabel << '\n';
 
-  const char* nameEff = Form("Eff_%s_%s_%s_%s", type, label, "%s", "%s");  // e.g. Eff_photos_loose_den_pt
-  const char* nameRes = Form("Res_%s_%s_%s"   , type, label, "%s");         // e.g. Res_AK8_all_eta
-  vector<std::pair<const Particle*, const PAR*>> vGenRec = matchDeltaR(vGen, vRec, 0.4);  // intrinsic threshold of deltaR = 0.2
+  const char* nameEff = Form("Eff_%s_%s_%s_%s", recLabel, genLabel, "%s", "%s");  // e.g. Eff_photos_loose_den_pt
+  const char* nameRes = Form("Res_%s_%s_%s"   , recLabel, genLabel, "%s");         // e.g. Res_AK8_all_eta
+  vector<std::pair<const Particle*, const PAR*>> vGenRec = matchDeltaR(vGen, vRec, tolerance);  // intrinsic threshold of deltaR = 0.2
+  size_t nRec = vRec.size();
   
   for(auto & [gen, rec] : vGenRec){
-    theHistograms->fill(Form(nameEff, "DEN", "pt" ), "DEN p_{T};p_{T} [GeV/c]", 25,0.,250., gen->pt() , theWeight);
-    theHistograms->fill(Form(nameEff, "DEN", "E"  ), "DEN energy;E [GeV]"     , 25,0.,500., gen->e()  , theWeight);
-    theHistograms->fill(Form(nameEff, "DEN", "eta"), "DEN eta;#eta"           , eta_bins  , gen->eta(), theWeight);
+    theHistograms->fill(Form(nameEff, "DEN", "pt" ), "DEN p_{T};p_{T} GEN", 25,0.,250., gen->pt() , theWeight);
+    theHistograms->fill(Form(nameEff, "DEN", "E"  ), "DEN energy;E GEN"   , 25,0.,500., gen->e()  , theWeight);
+    theHistograms->fill(Form(nameEff, "DEN", "eta"), "DEN eta;#eta GEN"   , eta_bins  , gen->eta(), theWeight);
+    theHistograms->fill(Form(nameEff, "DEN", "N"  ), "DEN # rec;# rec"    , 6,-0.5,5.5, nRec      , theWeight);
     
     if(rec == nullptr)
       continue;
-    theHistograms->fill(Form(nameEff, "NUM", "pt" ), "NUM p_{T};p_{T} [GeV/c]", 25,0.,250., gen->pt() , theWeight);
-    theHistograms->fill(Form(nameEff, "NUM", "E"  ), "NUM energy;E [GeV]"     , 25,0.,500., gen->e()  , theWeight);
-    theHistograms->fill(Form(nameEff, "NUM", "eta"), "NUM eta;#eta"           , eta_bins  , gen->eta(), theWeight);
+    theHistograms->fill(Form(nameEff, "NUM", "pt" ), "NUM p_{T};p_{T} GEN", 25,0.,250., gen->pt() , theWeight);
+    theHistograms->fill(Form(nameEff, "NUM", "E"  ), "NUM energy;E GEN"   , 25,0.,500., gen->e()  , theWeight);
+    theHistograms->fill(Form(nameEff, "NUM", "eta"), "NUM eta;#eta GEN"   , eta_bins  , gen->eta(), theWeight);
+    theHistograms->fill(Form(nameEff, "NUM", "N"  ), "NUM # rec;# rec"    , 6,-0.5,5.5, nRec      , theWeight);
     
     double deltaR = physmath::deltaR(*rec, *gen);
     double deltaEoverE = (rec->e() - gen->e()) / gen->e();
