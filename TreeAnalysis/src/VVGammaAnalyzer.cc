@@ -208,8 +208,8 @@ Int_t VVGammaAnalyzer::cut() {
   #else
   cout << regionType(region_) << ':' << run << ':' << lumiBlock << ':' << event << '\t'
        << theWeight << '\n';
-  // for(const Particle& p : *genPhotons_)
-  //   cout << "\tgenStatusFlag = " << p.genStatusFlags() << " --> " << p.genStatusFlags().to_ulong() << std::endl;
+  // for(const Particle& p : *genParticles)
+  //   cout << "\tid: " << p.id() << " \tgenStatusFlag = " << p.genStatusFlags() << " --> " << p.genStatusFlags().to_ulong() << std::endl;
   #endif
        // << ZZ->mass() << ' ' << ZW->p4().Mt() << ' ' << kinPhotons_["central"]->size() << ' ' << goodPhotons_["central"]->size() << '\n';
   // if(cherrypickEvt()){
@@ -754,8 +754,8 @@ vector<Boson<T>> VVGammaAnalyzer::makeBosons(const std::vector<T>& vec, UnaryPre
 
   vector<Boson<T>> out;
   out.reserve(vec.size() * (vec.size()-1) / 2);;
-  for  (auto i = vec.cbegin(); i != vec.end(); ++i)
-    for(auto j = i+1         ; j != vec.end(); ++j){
+  for  (auto i = vec.cbegin(); i != vec.end()-1; ++i)
+    for(auto j = i+1         ; j != vec.end()  ; ++j){
       Boson<T> b(*i, *j, -23);  // last parameter is ID; if not set to something != 0 will cause isValid() to return false and me to waste an afternoon debugging
       if(selection(b))
 	out.push_back(b);
@@ -1474,11 +1474,11 @@ void VVGammaAnalyzer::studyJetsChoice(){
   // events in which it does not exist is part of the event selection
   if( !theSampleInfo.isMC() )
     return;
-  Boson<Particle>* genVhad = nullptr;
+  Boson<Particle>* qq = nullptr;
   if     (genZhadCandidates_->size() > 0)
-    genVhad = &(genZhadCandidates_->at(0));
+    qq = &(genZhadCandidates_->at(0));
   else if(genWhadCandidates_->size() > 0)
-    genVhad = &(genWhadCandidates_->at(0));
+    qq = &(genWhadCandidates_->at(0));
   else
     return;
   
@@ -1827,13 +1827,13 @@ void VVGammaAnalyzer::debug3Lregion(){
 void VVGammaAnalyzer::photonGenStudy(){
   // Study the efficiency/background rejection of a cut in deltaR(photon, lepton)
   // Make collection of genPhotons from hard process
-  vector<Particle> genPhotonsPrompt(genPhotons_->size());
-  auto it = copy_if(genPhotons_->begin(), genPhotons_->end(), genPhotonsPrompt.begin(),
-  		    [](const Particle& p){
-  		      std::bitset<15> flags = p.genStatusFlags();
-  		      return /*status == 1 &&*/ (flags.test(isHardProcess) || flags.test(fromHardProcess)) /*&& fromHardProcessFinalState*/; }
-  		    );
-  genPhotonsPrompt.resize(std::distance(genPhotonsPrompt.begin(), it));
+  vector<Particle> genPhotonsPrompt;
+  genPhotonsPrompt.reserve(genPhotons_->size());
+  copy_if(genPhotons_->begin(), genPhotons_->end(), std::back_inserter(genPhotonsPrompt),
+	  [](const Particle& p){
+	    std::bitset<15> flags = p.genStatusFlags();
+	    return /*status == 1 &&*/ (flags.test(isHardProcess) || flags.test(fromHardProcess)) /*&& fromHardProcessFinalState*/; }
+	  );
   
   // Since the base selection already contains this cut, it is necessary to do it again
   std::map<const char*, vector<Photon>> mapWPtoPhotons;

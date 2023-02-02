@@ -25,7 +25,7 @@ for year in $years ; do
     mc_samples=$(ls samples/MC/$year | grep -v $year | grep -oP ".+(?=\.root)" | grep -v "WLLGTo2L2j_5f_LO\|ZZTo4l_M1ToInf" | sort)
 
     for sample in $mc_samples ; do
-	./python/run.py $analyzer $sample -r \"$regions\" -y $year -n $nevents -d samples/MC $options >logdir/${sample}_${year}.log 2>&1 &
+	./python/run.py $analyzer $sample -r $regions -y $year -n $nevents -d samples/MC $options >logdir/${sample}_${year}.log 2>&1 &
     done
     
     wait
