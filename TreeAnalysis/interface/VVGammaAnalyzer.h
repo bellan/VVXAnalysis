@@ -161,7 +161,7 @@ private:
  	
   // Utilities
   template <class T, class UnaryPredicate>
-  static std::vector<phys::Boson<T>> makeBosons(const std::vector<T>&, UnaryPredicate);
+  static std::vector<phys::Boson<T>> makeBosons(const std::vector<T>&, UnaryPredicate); //predicate acts on the newly made bosons
   void initCherryPick();
   bool cherrypickEvt() const;
   std::map<phys::RegionTypes,
@@ -221,6 +221,8 @@ private:
   static const std::vector<double> ph_aeta_bins;
   static const std::vector<double> mVV_bins;
   static const std::vector<double> mVVG_bins;
+  static const std::vector<double> mZ_bins;
+  static const std::vector<double> mZG_bins;
   
 protected:
   unsigned long evtN_;  // Used in the print in cut()

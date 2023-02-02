@@ -225,7 +225,10 @@ Int_t VVGammaAnalyzer::cut() {
   bool have2l2j = false;
   bool haveGoodPhoton = false;
   
-  genEventSetup();
+  if(theSampleInfo.isMC()){
+    genEventSetup();
+    genEventHistos();
+  }
   initEvent();
   
   theHistograms->fill("POG_leptons", "n leptons", 7,-0.5,6.5, electrons->size()+muons->size(), theWeight);  
@@ -881,6 +884,22 @@ void VVGammaAnalyzer::genEventSetup(){
     }
   }
   
+  // Gen Z --> l lbar
+  if(genChLeptons_->size() >= 2){
+    for(size_t i = 0 ; i < genChLeptons_->size(); ++i){
+      Particle& l1 = genChLeptons_->at(i);
+      for(size_t j = i+1; j < genChLeptons_->size(); ++j){
+	Particle& l2 = genChLeptons_->at(j);
+	
+	if( l1.id() + l2.id() == 0 ){
+	  Boson<Particle> Zcand(l1,l2);
+	  if(ZBosonDefinition(Zcand))
+	    genZlepCandidates_->push_back(Zcand);
+	}
+      }
+    }
+  }
+  
   if(genQuarks_->size() >= 2){
     for(size_t i = 0  ; i < genQuarks_->size(); ++i){
       Particle& q1 = genQuarks_->at(i);
@@ -905,23 +924,7 @@ void VVGammaAnalyzer::genEventSetup(){
       }
     }
   }
-	
-  // Gen Z --> l lbar
-  if(genChLeptons_->size() >= 2){
-    for(size_t i = 0 ; i < genChLeptons_->size(); ++i){
-      Particle& l1 = genChLeptons_->at(i);
-      for(size_t j = i+1; j < genChLeptons_->size(); ++j){
-	Particle& l2 = genChLeptons_->at(j);
-				
-	if( l1.id() + l2.id() == 0 ){
-	  Boson<Particle> Zcand(l1,l2);
-	  if(ZBosonDefinition(Zcand))
-	    genZhadCandidates_->push_back(Zcand);
-	}
-      }
-    }
-  }
-	
+  
   // genZZ --> 4l
   if(genChLeptons_->size() >= 4 && genZlepCandidates_->size() >= 2){
     std::sort(genZlepCandidates_->begin(), genZlepCandidates_->end(), MassComparator(phys::ZMASS));
@@ -960,7 +963,12 @@ void VVGammaAnalyzer::genEventHistos(){
   theHistograms->fill("GEN_genWlepCandidates", "# genWlepCandidates_", 4,-0.5,3.5, genWlepCandidates_->size());
   theHistograms->fill("GEN_genZhadCandidates", "# genZhadCandidates_", 4,-0.5,3.5, genZhadCandidates_->size());
   theHistograms->fill("GEN_genWhadCandidates", "# genWhadCandidates_", 4,-0.5,3.5, genWhadCandidates_->size());
-	
+  
+  theHistograms->fill("GEN_genQuarks"   , "# genQuarks"   , 10,-0.5,9.5, genQuarks_   ->size());
+  theHistograms->fill("GEN_genChLeptons", "# genChLeptons", 10,-0.5,9.5, genChLeptons_->size());
+  theHistograms->fill("GEN_genNeutrinos", "# genNeutrinos", 10,-0.5,9.5, genNeutrinos_->size());
+  theHistograms->fill("GEN_genPhotons"  , "# genPhotons"  , 10,-0.5,9.5, genPhotons_  ->size());
+  
   for(auto v : *genZlepCandidates_)
     theHistograms->fill("GEN_genZlepCandidates_mass", "mass genZlepCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass());
   for(auto v : *genWlepCandidates_)
@@ -969,6 +977,9 @@ void VVGammaAnalyzer::genEventHistos(){
     theHistograms->fill("GEN_genZhadCandidates_mass", "mass genZhadCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass());
   for(auto v : *genWhadCandidates_)
     theHistograms->fill("GEN_genWhadCandidates_mass", "mass genWhadCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass());
+  
+  theHistograms->fill("GEN_n_jets"   , "Number of genJets;# genJets"   , 6,-0.5,5.5, genJets->size()   );
+  theHistograms->fill("GEN_n_jetsAK8", "Number of genJetsAK8;# genJets", 6,-0.5,5.5, genJetsAK8->size());
 }
 
 
@@ -1288,31 +1299,35 @@ void VVGammaAnalyzer::plotsVVGstatus(const char* name, const char* title, const 
   // return either mass or transverse mass, depending on the request
   auto mValue = (!strcmp(mType, "massT") ? [](const TLorentzVector& v){ return v.Mt() ; } : [](const TLorentzVector& v){ return v.M() ; });
   
+  bool isSingleBoson = !strcmp(name, "Z");
+  const vector<double>& binsVV  = isSingleBoson ? mZ_bins  : mVV_bins;
+  const vector<double>& binsVVG = isSingleBoson ? mZG_bins : mVVG_bins;
+  
   // Kin photons
   if(kinPhotons_["central"]->size() > 0){
     const TLorentzVector& ph_p4 = kinPhotons_["central"]->front().p4();
-    theHistograms->fill(Form("%s_%s_kinPh" , name, mType), Form("%s %s with Kin #gamma" , title, mType), mVV_bins , mValue(p4      ), theWeight);
-    theHistograms->fill(Form("%sG_%s_kinPh", name, mType), Form("%sG %s with Kin #gamma", title, mType), mVVG_bins, mValue(p4+ph_p4), theWeight);
+    theHistograms->fill(Form("%s_%s_kinPh" , name, mType), Form("%s %s with Kin #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
+    theHistograms->fill(Form("%sG_%s_kinPh", name, mType), Form("%sG %s with Kin #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
   }
   // No photon
   else
-    theHistograms->fill(Form("%s_%s_noPh", name, mType), Form("%s mass with No #gamma", title), mVV_bins, mValue(p4), theWeight);
+    theHistograms->fill(Form("%s_%s_noPh", name, mType), Form("%s mass with No #gamma", title), binsVV, mValue(p4), theWeight);
 
   // Loose photons
   if(loosePhotons_["central"]->size() > 0){
     const TLorentzVector& ph_p4 = loosePhotons_["central"]->front().p4();
-    theHistograms->fill(Form("%s_%s_veryLoosePh" , name, mType), Form("%s %s with VeryLoose #gamma" , title, mType), mVV_bins , mValue(p4      ), theWeight);
-    theHistograms->fill(Form("%sG_%s_veryLoosePh", name, mType), Form("%sG %s with VeryLoose #gamma", title, mType), mVVG_bins, mValue(p4+ph_p4), theWeight);
+    theHistograms->fill(Form("%s_%s_veryLoosePh" , name, mType), Form("%s %s with VeryLoose #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
+    theHistograms->fill(Form("%sG_%s_veryLoosePh", name, mType), Form("%sG %s with VeryLoose #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
     // Tight photons
     if(goodPhotons_["central"]->size() > 0){
       const TLorentzVector& ph_p4 = goodPhotons_["central"]->front().p4();
-      theHistograms->fill(Form("%s_%s_loosePh" , name, mType), Form("%s %s with LooseID #gamma" , title, mType), mVV_bins , mValue(p4      ), theWeight);
-      theHistograms->fill(Form("%sG_%s_loosePh", name, mType), Form("%sG %s with LooseID #gamma", title, mType), mVVG_bins, mValue(p4+ph_p4), theWeight);
+      theHistograms->fill(Form("%s_%s_loosePh" , name, mType), Form("%s %s with LooseID #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
+      theHistograms->fill(Form("%sG_%s_loosePh", name, mType), Form("%sG %s with LooseID #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
     }
     // Fail photon (loose && !tight)
     else{
-      theHistograms->fill(Form("%s_%s_failPh" , name, mType), Form("%s %s with Fail #gamma" , title, mType), mVV_bins , mValue(p4      ), theWeight);
-      theHistograms->fill(Form("%sG_%s_failPh", name, mType), Form("%sG %s with Fail #gamma", title, mType), mVVG_bins, mValue(p4+ph_p4), theWeight);
+      theHistograms->fill(Form("%s_%s_failPh" , name, mType), Form("%s %s with Fail #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
+      theHistograms->fill(Form("%sG_%s_failPh", name, mType), Form("%sG %s with Fail #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
     }
   }
 }
@@ -1974,3 +1989,10 @@ const vector<double> VVGammaAnalyzer::mVVG_bins(
 						{0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000}
 						//{150, 250, 350, 450, 850}
 						);
+const vector<double> VVGammaAnalyzer::mZ_bins(
+					      {60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120}
+					      );
+
+const vector<double> VVGammaAnalyzer::mZG_bins(
+					       {0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250}
+					       );
