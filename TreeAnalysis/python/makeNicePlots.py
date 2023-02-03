@@ -64,7 +64,7 @@ parser.add_option("-m", "--mcset", dest="mcSet", type="choice", choices=['mad', 
 
 parser.add_option("-p", "--prediction-type", dest="predType",
                   default="fromCR",
-                  help= "Type of prediction. fromCR = non-prompt leptons from CRs, rare background from MC; fullMC = all from MC. Default is fromCR")
+                  help= "Type of prediction. fromCR = non-prompt leptons from CRs, rare background from MC; fullMC = all from MC; fakeMC = use MC in CRs instead of data. Default is fromCR")
 
 parser.add_option("-l", "--lumiProj", dest="LumiProj",
                   default="",
@@ -103,7 +103,7 @@ Analysis   = options.Analysis
 year       = options.year
 
 InputDir   = os.path.join('results', year, Analysis+'_'+region, '')
-OutputDir  = os.path.join(OutputDir, Analysis, region, "")  # Last "" ensures a trailing '/' is appended to path
+OutputDir  = os.path.join(OutputDir, Analysis, year, region, "")  # Last "" ensures a trailing '/' is appended to path
 try:
     os.stat(OutputDir)
 except OSError as e:
@@ -117,7 +117,7 @@ ROOT.gROOT.SetBatch(True)
 lumi = round(Lumi/1000.,1)
 CMS_lumi.writeExtraText = 1
 CMS_lumi.extraText = "Preliminary"
-CMS_lumi.lumi_sqrtS = "{0} fb^{-1} (13 TeV)\n".format(lumi)
+CMS_lumi.lumi_sqrtS = "{0} fb^{{-1}} (13 TeV)\n".format(lumi)
 
 iPos = 0
 if( iPos==0 ): CMS_lumi.relPosX = 0.12
@@ -150,23 +150,13 @@ for Var in variables:
     #     hMC, leg = plotUtils.GetClosureStack(region, InputDir, Var, VarInfo[Var].get('rebin', 1), forcePositive=False)
     # else:
     (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, Var, predType, mcSet, VarInfo[Var].get('rebin', 1), forcePositive=forcePositive)
-    (graphData, histodata) = plotUtils.GetDataPlot(InputDir, Var, region            , VarInfo[Var].get('rebin', 1), forcePositive=forcePositive)
+    if(DoData):
+        (graphData, histodata) = plotUtils.GetDataPlot(InputDir, Var, region        , VarInfo[Var].get('rebin', 1), forcePositive=forcePositive)
 
     if( (not hMC.GetStack()) or (DoData and (not graphData)) ):
         continue
     
-    
-    if(DoData):
-        YMaxData = ROOT.TMath.MaxElement(graphData.GetN(), graphData.GetEYhigh()) + ROOT.TMath.MaxElement(graphData.GetN(), graphData.GetY())
-    else:
-        YMaxData = 0.
-    
     hMCErr = deepcopy(hMC.GetStack().Last())
-    YMaxMC = hMCErr.GetBinContent(hMCErr.GetMaximumBin()) + hMCErr.GetBinError(hMCErr.GetMaximumBin())
-    
-    YMax = max(YMaxMC, YMaxData)
-    
-    YMax *= 1.37
     
     c1.cd()
     pad1 = ROOT.TPad ('hist', '', 0., 0.22, 1.0, 1.0)#0.35
@@ -208,14 +198,23 @@ for Var in variables:
     
     if('AAA_cuts' in Var):
         hMC.GetXaxis().SetTickLength(0.)
-        YMax *= 1.3
     
-    if VarInfo[Var].get('logy', False):
-        YMax *= 10
-        pad1.SetLogy()
-        hMC.GetHistogram().GetYaxis().SetMoreLogLabels()
-        if(YMax < 10000):
-            hMC.GetHistogram().GetYaxis().SetNoExponent()
+    YMax = VarInfo[Var].get('ymax', False)
+    if(not YMax):
+        YMaxData = ROOT.TMath.MaxElement(graphData.GetN(), graphData.GetEYhigh()) + ROOT.TMath.MaxElement(graphData.GetN(), graphData.GetY()) if DoData else 0.
+        YMaxMC = hMCErr.GetBinContent(hMCErr.GetMaximumBin()) + hMCErr.GetBinError(hMCErr.GetMaximumBin())
+        YMax = max(YMaxMC, YMaxData)
+        YMax *= 1.37
+        
+        if VarInfo[Var].get('logy', False):
+            YMax *= 10
+            pad1.SetLogy()
+            hMC.GetHistogram().GetYaxis().SetMoreLogLabels()
+            if(YMax < 10000):
+                hMC.GetHistogram().GetYaxis().SetNoExponent()
+        if('AAA_cuts' in Var):
+            YMax *= 1.3
+
     hMC.SetMaximum(YMax)
     
     hMC.GetHistogram().GetYaxis().SetTitle("Events")
@@ -325,24 +324,5 @@ for Var in variables:
         # c1.SaveAs(os.path.join(OutputDir, Title+".eps"))
         c1.SaveAs(os.path.join(OutputDir, Title+".pdf"))
     
-    
-    # if SavePlot:
-    #     fullDir = "{Dir}/{Analysis}/{Analysis}".format(Dir=Dir, Analysis=Analysis, region=region)
-    #     try:
-    #         os.stat(fullDir)
-    #     except OSError as e:
-    #         if(not e.errno == 2): raise e  # 2 = No such file or directory. Let other exceptions pass
-    #         os.makedirs(fullDir)
-    #         os.system('for d in $(find {Dir} -type d) ; do [ -f $d/index.php ] || echo "cp {Dir}/index.php $d/" ; done'.format(Dir=Dir) )
-        
-    
-    #     if(LumiProj!=""):
-    #         c1.SaveAs("~/www/PlotsVV/13TeV_"+LumiProj+"fb/"+Title+".png")
-    #         c1.SaveAs("~/www/PlotsVV/13TeV_"+LumiProj+"fb/"+Title+".pdf")
-    #     else:
-    #         c1.SaveAs(PersonalInfo.PersonalFolder+Dir+"Reco/"+Title+".png")
-    #         c1.SaveAs(PersonalInfo.PersonalFolder+Dir+"Reco/"+Title+".root")
-    #         c1.SaveAs(PersonalInfo.PersonalFolder+Dir+"Reco/"+Title+".pdf")
-    #         c1.SaveAs("~/../../../../../eos/user/g/gpinnaan/"+Dir+"Reco/"+Title+".pdf")
-    
+    del histodata
 
