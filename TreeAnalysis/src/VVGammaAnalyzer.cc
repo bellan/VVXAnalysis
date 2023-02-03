@@ -1483,9 +1483,9 @@ void VVGammaAnalyzer::studyJetsChoice(){
     return;
   
   int statusAK8;
-  int statusAK4 = studyAK4Choice(fAK4_, *genVhad, 0.4);
+  int statusAK4 = studyAK4Choice(fAK4_, *qq, 0.4);
   if(statusAK4 != 0)
-    statusAK8 = studyAK8Choice(fAK8_, *genVhad, 0.4);
+    statusAK8 = studyAK8Choice(fAK8_, *qq, 0.4);
 }
 
 
