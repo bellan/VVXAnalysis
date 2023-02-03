@@ -35,8 +35,14 @@ ttZ      = [{'files':['TTZJets_M10_MLM'], 'color':ROOT.kOrange-5, 'name':'t#bar{
 
 WZG      = [{'files':['WZGTo3LNuG'    ] , 'color':ROOT.kMagenta , 'name':'WZ\gamma'}]
 ZZG      = [{'files':['ZZGTo4LG'      ] , 'color':ROOT.kRed     , 'name':'ZZ\gamma'}]
+ZZGTo2L2jG=[{'files':['ZZGTo2L2jG'    ] , 'color':ROOT.kRed+3   , 'name':'ZZ\gamma #rightarrow 2\ell 2j'}]
+WZGTo2L2jG=[{'files':['WZGTo2L2jG'    ] , 'color':ROOT.kRed-5   , 'name':'WZ\gamma #rightarrow 2\ell 2j'}]
 
 data_obs =  {'files':['data'          ] , 'color':ROOT.kBlack   , 'name':'Data'}
+
+
+def is2Lregion(region):
+    return region in ['SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F']
 
 
 def getSamplesByRegion(region, MCSet, predType):
@@ -51,6 +57,8 @@ def getSamplesByRegion(region, MCSet, predType):
     else: sys.exit("Wrong Set, choose pow or mad")
 
     tot = WZG + ZZG + qqZZ + ggZZ + triboson + ttXY #+ vbsZZ + HZZ
+    if is2Lregion(region):
+        tot += ZZGTo2L2jG + WZGTo2L2jG
 
     if   predType == 'fullMC':
         tot += WZ + DY + ZG + WG + WW + W + tt + ttX # + ZZTo2L2Nu + ZZTo2Q2L
@@ -67,7 +75,7 @@ def getSamplesByRegion(region, MCSet, predType):
             tot += WZ + ttX + tX + DY + ZG
         elif region == 'CR110':
             tot += WZ + ttX + tX + DY + ZG
-        elif region in ['SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F']:
+        elif is2Lregion(region):
             tot += WZ + DY + ZG + WG + WW + W + tt + ttX + tX + ZZTo2L2Nu + ZZTo2Q2L
         else:
             tot += WZ + DY + ZG + WG + WW + W + tt + ttX + tX + ZZTo2L2Nu + ZZTo2Q2L
