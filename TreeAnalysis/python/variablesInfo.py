@@ -107,29 +107,29 @@ def getVarInfo_VVGamma(region):
     # 2L region
     elif region in ['SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F']:
         VarInfo_VVGamma.update({
-            'Z_mass_2e'     : {'title':'m_{2e}'  , 'rebin':1, 'unblind':True},
-            'Z_mass_2m'     : {'title':'m_{2\mu}', 'rebin':1, 'unblind':True},
-            'VToJ_mass'     : {'title': 'm_{J}'},
-            'VTojj_mass'    : {'title': 'm_{jj}'},
-            'VToJFake_mass' : {'title': 'm_{J} fake'},
-            'VTojjFake_mass': {'title': 'm_{jj} fake'}
+            'Z_mass_2e'     : {'title':'m_{2e}'         , 'logy':True},
+            'Z_mass_2m'     : {'title':'m_{2\mu}'       , 'logy':True},
+            'VToJ_mass'     : {'title':'m_{J}'          , 'logy':True},
+            'VTojj_mass'    : {'title':'m_{jj}'         , 'logy':True},
+            'VToJFake_mass' : {'title':'m_{J} sideband' , 'logy':True},
+            'VTojjFake_mass': {'title':'m_{jj} sideband', 'logy':True}
             ,
-            'Z_mass_noG'    : {'title':'m_{2\ell}\:,\ no\:\gamma'        , 'rebin':1, 'unblind':True },
-            'Z_mass_kinPh'  : {'title':'m_{2\ell}\:,\ kin\:\gamma'       , 'rebin':1, 'unblind':True },
-            'Z_mass_veryLooseG':{'title':'m_{2\ell}\:,\ \gamma\:loose'},
-            'Z_mass_failPh' : {'title':'m_{2\ell}\:,\ \gamma loose\,\land\:!tight', 'rebin':1, 'unblind':True },
-            'Z_mass_looseG' : {'title':'m_{2\ell}\:,\ \gamma\:loose'     , 'rebin':1, 'unblind':False},
-            
-            'ZG_mass_kinG'  : {'title':'m_{2\ell\gamma}\:,\ \gamma\:kin'},
-            'ZG_mass_veryLooseG':{'title':'m_{2\ell\gamma}\:,\ \gamma\:loose'},
-            'ZG_mass_failG' : {'title':'m_{2\ell\gamma}\:,\ \gamma loose\,\land\:!tight'},
-            'ZG_mass_looseG': {'title':'m_{2\ell\gamma}\:,\ \gamma\:tight', 'unblind':False}
+            'Z_mass_noPh'       : {'title':'m_{2\ell}\:,\ no\:\gamma'                 , 'logy':True},
+            'Z_mass_kinPh'      : {'title':'m_{2\ell}\:,\ kin\:\gamma'                , 'logy':True},
+            'Z_mass_veryLoosePh': {'title':'m_{2\ell}\:,\ \gamma\:loose'              , 'logy':True},
+            'Z_mass_failPh'     : {'title':'m_{2\ell}\:,\ \gamma loose\,\land\:!tight', 'logy':True},
+            'Z_mass_loosePh'    : {'title':'m_{2\ell}\:,\ \gamma\:loose'              , 'logy':True}
+            ,
+            'ZG_mass_kinPh'      : {'title':'m_{2\ell\gamma}\:,\ \gamma\:kin'                , 'logy':True },
+            'ZG_mass_veryLoosePh': {'title':'m_{2\ell\gamma}\:,\ \gamma\:loose'              , 'logy':True },
+            'ZG_mass_failPh'     : {'title':'m_{2\ell\gamma}\:,\ \gamma loose\,\land\:!tight', 'logy':True },
+            'ZG_mass_loosePh'    : {'title':'m_{2\ell\gamma}\:,\ \gamma\:tight'              , 'logy':True, 'unblind':False}
         })
         for Vhad in ['VToJ', 'VToJFake']:
             for classifier in ['PNet', 'deepAK8', 'deepAK8MD']:
                 for discriminant in ['TvsQCD', 'WvsQCD', 'ZvsQCD']:
                     VarInfo_VVGamma.update({
-                        '%s_%s_%s'%(Vhad, classifier, discriminant): {'title': discriminant+' '+classifier, 'rebin':2, 'unblind':True}
+                        '%s_%s_%s'%(Vhad, classifier, discriminant): {'title': discriminant+' '+classifier, 'rebin':2, 'logy':True, 'unblind':True}
                     })
     
     # Photon stuff
