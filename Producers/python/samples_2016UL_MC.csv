@@ -2,10 +2,10 @@ identifier,process,crossSection=-1,BR=1,execute=True,dataset,prefix,pattern,spli
 
 
 ###,VZGamma,,,,,,,,,,VZGamma signal
-ZZGTo4LG     ,VZG,0.02202,,,/ZZGTo4L_TuneCP5_4f_NLO_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM,dbs,,1,GENXSEC=0.001042;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,
-WZGTo3LNuG   ,VZG,0.03844,,,/LLWA_WToLNu_4FS_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM,dbs,,1,GENXSEC=0.;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016     ,RecoProbabilities.py,No MiniAODv2 yet
-ZZGTo2L2jG   ,VZG,-1     ,,,/ZTo2LZTo2JGToG_TuneCP5_13TeV_amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM,dbs,,1,GENXSEC=0.;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,
-WZGTo2L2jG   ,VZG,-1     ,,,/WTo2JZTo2LG_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM   ,dbs,,1,GENXSEC=0.;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,
+ZZGTo4LG     ,VZG,0.02202,,,/ZZGTo4L_TuneCP5_4f_NLO_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM,dbs,,1,GENXSEC=0.001042;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016;SKIM_REQUIRED=False,RecoProbabilities.py,
+WZGTo3LNuG   ,VZG,0.03844,,,/LLWA_WToLNu_4FS_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM,dbs,,1,GENXSEC=0.;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016;SKIM_REQUIRED=False     ,RecoProbabilities.py,No MiniAODv2 yet
+ZZGTo2L2jG   ,VZG,-1     ,,,/ZTo2LZTo2JGToG_TuneCP5_13TeV_amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM,dbs,,1,GENXSEC=0.;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016;SKIM_REQUIRED=False,RecoProbabilities.py,
+WZGTo2L2jG   ,VZG,-1     ,,,/WTo2JZTo2LG_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v2/MINIAODSIM   ,dbs,,1,GENXSEC=0.;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016;SKIM_REQUIRED=False,RecoProbabilities.py,
 # WZGToLNu2jG,   ,0.04345,,,/WZG_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL16MiniAODv2-106X_mcRun2_asymptotic_v17-v1/MINIAODSIM,dbs,,1,GENXSEC=0.04345;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016,RecoProbabilities.py,# Z > jj  W > l v
 
 
