@@ -146,7 +146,7 @@ void VVGammaAnalyzer::initEvent(){
     }
     if(match) continue;
     
-    Photon::IDwp wp = Photon::IDwp::Loose;
+    // Photon::IDwp wp = Photon::IDwp::Loose;
     TLorentzVector p4_EScale_Up = ph.p4() * (ph.energyScaleUp()  /ph.e());
     TLorentzVector p4_EScale_Dn = ph.p4() * (ph.energyScaleDown()/ph.e());
     TLorentzVector p4_ESigma_Up = ph.p4() * (ph.energySigmaUp()  /ph.e());
@@ -292,8 +292,9 @@ Int_t VVGammaAnalyzer::cut() {
     bool b_Z_mass = fabs(ZW->first().mass() - phys::ZMASS) < 15;
     bool b_MET = met->pt() > 30;
     bool b_lll_mass = (lZ1.p4() + lZ2.p4() + lW.p4()).M() > 100;
-    bool b_bveto = ! std::any_of(jets->begin(), jets->end(), [](const Jet& j){ return j.csvtagger() > 0.7665; }); // TODO: use DeepCSV
-    bool b_bvetoAK8 = ! std::any_of(jetsAK8->begin(), jetsAK8->end(), [](const Jet& j){ return j.csvtagger() > 0.7665; }); // TODO: use DeepCSV
+    bool b_bvetoAK4 = ! std::any_of(jets->begin(), jets->end(), [](const Jet& j){ return j.csvtagger() > 0.7665; }); // TODO: use DeepCSV
+    bool b_bvetoAK8 = ! std::any_of(jetsAK8->begin(), jetsAK8->end(), [](const Jet& j){ return j.csvtagger() > 0.7665; });
+    bool b_bveto = b_bvetoAK4 || b_bvetoAK8;
     
     bool b_WZpaperSel = b_Z_mass && b_MET && b_lll_mass && b_lepton_pt && b_bveto;
     
@@ -342,7 +343,6 @@ void VVGammaAnalyzer::analyze(){
   bool three_lep = is3Lregion(region_);  // && ZW && ZW->pt() > 1.;
   bool two_lep   = is2Lregion(region_);
   bool LFR_lep   = region_ == CRLFR;     // && ZL && ZL->first.pt() > 1.;
-  bool b_WZpaperSel = false;
   
   if(two_lep){
     hadronicObjectsReconstruction();
@@ -424,7 +424,7 @@ void VVGammaAnalyzer::analyze(){
     // Check triggers in signal region
     if(goodPhotons_["central"]->size() > 0){
       std::bitset<16> triggerBits(triggerWord);
-      bool passOneTrigger = triggerBits.test(0);  // triggerWord << 0 & 0x1
+      // bool passOneTrigger = triggerBits.test(0);  // triggerWord << 0 & 0x1
       bool passDiMu       = triggerBits.test(1);  // triggerWord << 1 & 0x1
       bool passDiEle      = triggerBits.test(2);  // triggerWord << 2 & 0x1
       bool passMuEle      = triggerBits.test(3);  // triggerWord << 3 & 0x1
@@ -1482,10 +1482,12 @@ void VVGammaAnalyzer::studyJetsChoice(){
   else
     return;
   
-  int statusAK8;
+  // int statusAK8;
   int statusAK4 = studyAK4Choice(fAK4_, *qq, 0.4);
   if(statusAK4 != 0)
-    statusAK8 = studyAK8Choice(fAK8_, *qq, 0.4);
+    // statusAK8 = studyAK8Choice(fAK8_, *qq, 0.4);
+    studyAK8Choice(fAK8_, *qq, 0.4);
+  
 }
 
 
@@ -1609,7 +1611,7 @@ std::tuple<double, double, double> _nuEquationCoefficients(const TLorentzVector&
   double El  = pl.E();
   ROOT::Math::XYVector plT(pl.Px(), pl.Py());  // Polar2DVector(pl.Pt(), )
   double plz = pl.Pz();
-  double Ev  = pv.E();
+  // double Ev  = pv.E();
   ROOT::Math::XYVector pvT(pv.Px(), pv.Py());
   //double pvz = pv.Pz();
   double pTdot = plT.Dot(pvT);
@@ -1754,7 +1756,7 @@ void VVGammaAnalyzer::systematicsStudy(){
   SYSplots("alphas_Down", base_w * ( isMC ? theSampleInfo.alphas_MZ_Down() : 1.), ph);
   
 
-  double eleEff_w, muoEff_w, eleFake_w, muoFake_w;
+  double eleEff_w=0., muoEff_w=0., eleFake_w=0., muoFake_w=0.;
   if     (is4Lregion(region_)){
     eleEff_w  = ZZ->eleEffSFUnc()/ZZ->efficiencySF();
     muoEff_w  = ZZ->muoEffSFUnc()/ZZ->efficiencySF();
