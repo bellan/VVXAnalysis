@@ -70,19 +70,17 @@ VVjj_search_path = os.environ['CMSSW_BASE'] + "/src/VVXAnalysis/Producers/python
 ### Standard sequence
 ### ----------------------------------------------------------------------
 
+
 ### ---------------------------------- MC --------------------------------
 if IsMC:
     
-    genparticles_cut = '(status == 1 && isPromptFinalState && fromHardProcessFinalState && abs(pdgId) <= 22)'
-    # genquarks  = '(isPromptFinalState && fromHardProcessFinalState && abs(pdgId) <= 6)'  # && (mother.pdgId == 23) || abs(mother.pdgId) == 24)
+    genleptons = '(status == 1 && (isPromptFinalState && fromHardProcessFinalState && abs(pdgId) <= 16) ||  abs(pdgId) == 22)'
+    genquarks  = '(abs(pdgId) <= 6 && (mother.pdgId == 23 || abs(mother.pdgId) == 24))'
+    genphotons = 'pdgId == 22'
     
     process.genParticlesFromHardProcess = cms.EDFilter("GenParticleSelector", filter = cms.bool(False), stableOnly = cms.bool(False),
                                                        src = cms.InputTag("prunedGenParticles"),
-                                                       cut = cms.string(genparticles_cut))
-    
-    # process.genPhotons = cms.EDFilter("GenParticleSelector", filter = cms.bool(False), stableOnly = cms.bool(False),
-    #                                   src = cms.InputTag("prunedGenParticles"),
-    #                                   cut = cms.string('status == 1 && pdgId == 22'))
+                                                       cut = cms.string(genleptons + " || " + genquarks+" || " + genphotons))
     
     process.genTaus = cms.EDFilter("GenParticleSelector", filter = cms.bool(False), stableOnly = cms.bool(False),
                                    src = cms.InputTag("prunedGenParticles"),
