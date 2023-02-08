@@ -114,8 +114,8 @@ private:
   phys::DiBoson<phys::Particle, phys::Particle> genZZ_;
   phys::DiBoson<phys::Particle, phys::Particle> genWZ_;
   // V --> j (j)
-  phys::Boson<phys::Jet> candVTojj_, fakeVTojj_;
-  phys::Jet              candVToJ_ , fakeVToJ_ ;
+  phys::Boson<phys::Jet> candVTojj_;
+  phys::Jet              candVToJ_ ;
 	
   std::unique_ptr<TH2F> hPhotonFR_;
   std::unique_ptr<TH2F> hPhotonEff_;

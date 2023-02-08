@@ -110,9 +110,7 @@ def getVarInfo_VVGamma(region):
             'Z_mass_2e'     : {'title':'m_{2e}'         , 'logy':True},
             'Z_mass_2m'     : {'title':'m_{2\mu}'       , 'logy':True},
             'VToJ_mass'     : {'title':'m_{J}'          , 'logy':True},
-            'VTojj_mass'    : {'title':'m_{jj}'         , 'logy':True},
-            'VToJFake_mass' : {'title':'m_{J} sideband' , 'logy':True},
-            'VTojjFake_mass': {'title':'m_{jj} sideband', 'logy':True}
+            'VTojj_mass'    : {'title':'m_{jj}'         , 'logy':True}
             ,
             'Z_mass_noPh'       : {'title':'m_{2\ell}\:,\ no\:\gamma'                 , 'logy':True},
             'Z_mass_kinPh'      : {'title':'m_{2\ell}\:,\ kin\:\gamma'                , 'logy':True},
@@ -124,8 +122,18 @@ def getVarInfo_VVGamma(region):
             'ZG_mass_veryLoosePh': {'title':'m_{2\ell\gamma}\:,\ \gamma\:loose'              , 'logy':True },
             'ZG_mass_failPh'     : {'title':'m_{2\ell\gamma}\:,\ \gamma loose\,\land\:!tight', 'logy':True },
             'ZG_mass_loosePh'    : {'title':'m_{2\ell\gamma}\:,\ \gamma\:tight'              , 'logy':True, 'unblind':False}
+            ,
+            'ZjjG_mass_'         : {'title':'m_{2\elljj\gamma}\:,\ \gamma\:kin'                , 'logy':True },
+            'ZjjG_mass_'         : {'title':'m_{2\elljj\gamma}\:,\ \gamma\:loose'              , 'logy':True },
+            'ZjjG_mass_'         : {'title':'m_{2\elljj\gamma}\:,\ \gamma loose\,\land\:!tight', 'logy':True },
+            'ZjjG_mass_'         : {'title':'m_{2\elljj\gamma}\:,\ \gamma\:tight'              , 'logy':True, 'unblind':False}
+            ,
+            'ZJG_mass_'          : {'title':'m_{2\ellJ\gamma}\:,\ \gamma\:kin'                , 'logy':True },
+            'ZJG_mass_'          : {'title':'m_{2\ellJ\gamma}\:,\ \gamma\:loose'              , 'logy':True },
+            'ZJG_mass_'          : {'title':'m_{2\ellJ\gamma}\:,\ \gamma loose\,\land\:!tight', 'logy':True },
+            'ZJG_mass_'          : {'title':'m_{2\ellJ\gamma}\:,\ \gamma\:tight'              , 'logy':True, 'unblind':False}
         })
-        for Vhad in ['VToJ', 'VToJFake']:
+        for Vhad in ['VToJ']:
             for classifier in ['PNet', 'deepAK8', 'deepAK8MD']:
                 for discriminant in ['TvsQCD', 'WvsQCD', 'ZvsQCD']:
                     VarInfo_VVGamma.update({

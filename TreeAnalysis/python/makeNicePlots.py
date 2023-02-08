@@ -140,18 +140,19 @@ variables.sort()
 c1 = TCanvas( 'c1', mcSet , 900, 1200 )
 
 for Var in variables:
+    info = VarInfo[Var]
     c1.Clear()
-    DoData = optDoData and (VarInfo[Var].get('unblind', True) or region[:2] != 'SR')
+    DoData = optDoData and (info.get('unblind', True) or region[:2] != 'SR')
 
     forcePositive=True
     
     # "Temporary" hack for closure test of photon fake rate
     # if 'PhFRClosure_PASS' in Var:
-    #     hMC, leg = plotUtils.GetClosureStack(region, InputDir, Var, VarInfo[Var].get('rebin', 1), forcePositive=False)
+    #     hMC, leg = plotUtils.GetClosureStack(region, InputDir, Var, info.get('rebin', 1), forcePositive=False)
     # else:
-    (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, Var, predType, mcSet, VarInfo[Var].get('rebin', 1), forcePositive=forcePositive)
+    (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, Var, predType, mcSet, info.get('rebin', 1), forcePositive=forcePositive)
     if(DoData):
-        (graphData, histodata) = plotUtils.GetDataPlot(InputDir, Var, region        , VarInfo[Var].get('rebin', 1), forcePositive=forcePositive)
+        (graphData, histodata) = plotUtils.GetDataPlot(InputDir, Var, region        , info.get('rebin', 1), forcePositive=forcePositive)
 
     if( (not hMC.GetStack()) or (DoData and (not graphData)) ):
         continue
@@ -174,7 +175,7 @@ for Var in variables:
     pad2.SetLeftMargin (0.16)
     pad2.SetBottomMargin(0.3);
     pad2.Draw()
-    if VarInfo[Var].get('logx', False):
+    if info.get('logx', False):
         pad1.SetLogx()
         pad2.SetLogx()
     
@@ -199,14 +200,15 @@ for Var in variables:
     if('AAA_cuts' in Var):
         hMC.GetXaxis().SetTickLength(0.)
     
-    YMax = VarInfo[Var].get('ymax', False)
+    # Maximum and minimum of upper plot
+    YMax = info.get('ymax', False)
     if(not YMax):
         YMaxData = ROOT.TMath.MaxElement(graphData.GetN(), graphData.GetEYhigh()) + ROOT.TMath.MaxElement(graphData.GetN(), graphData.GetY()) if DoData else 0.
         YMaxMC = hMCErr.GetBinContent(hMCErr.GetMaximumBin()) + hMCErr.GetBinError(hMCErr.GetMaximumBin())
         YMax = max(YMaxMC, YMaxData)
         YMax *= 1.37
         
-        if VarInfo[Var].get('logy', False):
+        if info.get('logy', False):
             YMax *= 10
             pad1.SetLogy()
             hMC.GetHistogram().GetYaxis().SetMoreLogLabels()
@@ -216,6 +218,9 @@ for Var in variables:
             YMax *= 1.3
 
     hMC.SetMaximum(YMax)
+    YMin = info.get('ymin', False)
+    if(YMin):
+        hMC.SetMinimum(YMin)
     
     hMC.GetHistogram().GetYaxis().SetTitle("Events")
     hMC.GetHistogram().GetYaxis().SetTitleOffset(1.4)
@@ -286,7 +291,7 @@ for Var in variables:
     # hArea.SetFillColor(ROOT.kGray)
     # hArea.Draw("E3")
     
-    histodata.GetXaxis().SetTitle(VarInfo[Var]['title'])
+    histodata.GetXaxis().SetTitle(info['title'])
     histodata.GetXaxis().SetLabelSize(0.08)
     histodata.GetYaxis().SetLabelSize(0.08)
     histodata.GetXaxis().SetTitleSize(0.08)

@@ -95,9 +95,7 @@ void VVGammaAnalyzer::initEvent(){
   for(auto const& it: loosePhotons_) it.second->clear();
   for(auto const& it: goodPhotons_)  it.second->clear();
   candVTojj_ = Boson<Jet>();
-  fakeVTojj_ = Boson<Jet>();
   candVToJ_ = Jet();
-  fakeVToJ_ = Jet();
 
   // Contruct vector with leptons from dibosons
   if     (is4Lregion(region_) || (region_ == MC && ZZ && ZZ->pt() > 1.))
@@ -524,8 +522,11 @@ void VVGammaAnalyzer::analyze(){
 	theHistograms->fill("VTojj_mass", "V#rightarrowjj mass;GeV/c^{2}", 30, 50, 125, candVTojj_.mass(), theWeight);
 	theHistograms->fill("VTojj_pt"  , "V#rightarrowjj p_{t};GeV/c"   , 25,  0, 500, candVTojj_.pt()  , theWeight);
 	theHistograms->fill("VTojj_eta" , "V#rightarrowjj #eta;#eta"     , 25, -5,   5, candVTojj_.eta() , theWeight);
+	
+	TLorentzVector pZjj = Zcand.p4() + candVTojj_.p4();
+	plotsVVGstatus("Zjj", "Zjj", pZjj, "mass");
       }
-      else if(candVToJ_.isValid()){
+      if(candVToJ_.isValid()){
 	theHistograms->fill("VToJ_mass" , "V#rightarrowJ mass;GeV/c^{2}" , 30, 50, 125, candVToJ_.mass(), theWeight);
 	theHistograms->fill("VToJ_pt"   , "V#rightarrowJ p_{t};GeV/c"    , 25,  0, 500, candVToJ_.pt()  , theWeight);
 	theHistograms->fill("VToJ_eta"  , "V#rightarrowJ #eta;#eta"      , 25, -5,   5, candVToJ_.eta() , theWeight);
@@ -538,27 +539,9 @@ void VVGammaAnalyzer::analyze(){
 	theHistograms->fill("VToJ_deepAK8MD_TvsQCD", "V#rightarrowJ deepAK8 MD: T vs QCD;T vs QCD" , 40,0,1, candVToJ_.deepAK8_MD() .TvsQCD, theWeight);
 	theHistograms->fill("VToJ_deepAK8MD_WvsQCD", "V#rightarrowJ deepAK8 MD: W vs QCD;W vs QCD" , 40,0,1, candVToJ_.deepAK8_MD() .WvsQCD, theWeight);
 	theHistograms->fill("VToJ_deepAK8MD_ZvsQCD", "V#rightarrowJ deepAK8 MD: Z vs QCD;Z vs QCD" , 40,0,1, candVToJ_.deepAK8_MD() .ZvsQCD, theWeight);
-      }
-      else{
-	if(fakeVTojj_.isValid()){
-	  theHistograms->fill("VTojjFake_mass", "V#rightarrowjj mass;GeV/c^{2}", 30, 0, 180, fakeVTojj_.mass(), theWeight);
-	  theHistograms->fill("VTojjFake_pt"  , "V#rightarrowjj p_{T};GeV/c"   , 25, 0, 500, fakeVTojj_.pt()  , theWeight);
-	  theHistograms->fill("VTojjFake_eta" , "V#rightarrowjj #eta;#eta"     , 25, -5,  5, fakeVTojj_.eta() , theWeight);
-	}
-	else if(fakeVToJ_.isValid()){
-	  theHistograms->fill("VToJFake_mass" , "V#rightarrowJ mass;GeV/c^{2}" , 30, 0, 180, fakeVToJ_.mass(), theWeight);
-	  theHistograms->fill("VToJFake_pt"   , "V#rightarrowJ p_{T};GeV/c"    , 25, 0, 500, fakeVToJ_.pt()  , theWeight);
-	  theHistograms->fill("VToJFake_eta"  , "V#rightarrowJ #eta;#eta"      , 25, -5,  5, fakeVToJ_.eta() , theWeight);
-	  theHistograms->fill("VToJFake_PNet_TvsQCD"     , "V#rightarrowJ ParticleNet: T vs QCD;T vs QCD", 40,0,1, candVToJ_.particleNet().TvsQCD, theWeight);
-	  theHistograms->fill("VToJFake_PNet_WvsQCD"     , "V#rightarrowJ ParticleNet: W vs QCD;W vs QCD", 40,0,1, candVToJ_.particleNet().WvsQCD, theWeight);
-	  theHistograms->fill("VToJFake_PNet_ZvsQCD"     , "V#rightarrowJ ParticleNet: Z vs QCD;Z vs QCD", 40,0,1, candVToJ_.particleNet().ZvsQCD, theWeight);
-	  theHistograms->fill("VToJFake_deepAK8_TvsQCD"  , "V#rightarrowJ deepAK8: T vs QCD;T vs QCD"    , 40,0,1, candVToJ_.deepAK8()    .TvsQCD, theWeight);
-	  theHistograms->fill("VToJFake_deepAK8_WvsQCD"  , "V#rightarrowJ deepAK8: W vs QCD;W vs QCD"    , 40,0,1, candVToJ_.deepAK8()    .WvsQCD, theWeight);
-	  theHistograms->fill("VToJFake_deepAK8_ZvsQCD"  , "V#rightarrowJ deepAK8: Z vs QCD;Z vs QCD"    , 40,0,1, candVToJ_.deepAK8()    .ZvsQCD, theWeight);
-	  theHistograms->fill("VToJFake_deepAK8MD_TvsQCD", "V#rightarrowJ deepAK8 MD: T vs QCD;T vs QCD" , 40,0,1, candVToJ_.deepAK8_MD() .TvsQCD, theWeight);
-	  theHistograms->fill("VToJFake_deepAK8MD_WvsQCD", "V#rightarrowJ deepAK8 MD: W vs QCD;W vs QCD" , 40,0,1, candVToJ_.deepAK8_MD() .WvsQCD, theWeight);
-	  theHistograms->fill("VToJFake_deepAK8MD_ZvsQCD", "V#rightarrowJ deepAK8 MD: Z vs QCD;Z vs QCD" , 40,0,1, candVToJ_.deepAK8_MD() .ZvsQCD, theWeight);
-	}
+	
+	TLorentzVector pZJ = Zcand.p4() + candVToJ_.p4();
+	plotsVVGstatus("ZJ", "ZJ", pZJ, "mass");
       }
       
       plotsVVGstatus("Z", "Z", Zcand.p4(), "mass");
@@ -773,25 +756,16 @@ vector<Boson<Jet>> VVGammaAnalyzer::candidatesVTojj(const std::vector<phys::Jet>
 
 
 void VVGammaAnalyzer::hadronicObjectsReconstruction(){
-  vector<Boson<Jet>> candsjj = candidatesVTojj(*jets);
+  vector<Boson<Jet>> candsjj = candidatesVTojj(*jets);  // all pairs with mW - 30 < m(jj) < mZ + 30
   
   if(candsjj.size() > 0){
     std::sort(candsjj.begin(), candsjj.end(), Mass2Comparator(phys::ZMASS, phys::WMASS));
     candVTojj_ = Boson<Jet>(std::move(candsjj.front()));
   }
-  else if(jetsAK8->size() > 0){
+  if(jetsAK8->size() > 0){
     auto it = std::min_element(jetsAK8->begin(), jetsAK8->end(), Mass2Comparator(phys::ZMASS, phys::WMASS));
     if(minDM(it->mass()) < 30)
       candVToJ_ = *it;
-    else
-      fakeVToJ_ = *it;
-  }
-  else{  // try to find pairs for CRs
-    if(jets->size() >= 2){
-      vector<Boson<Jet>> allPairs = makeBosons(*jets, [](const Boson<Jet>&){ return true; } );
-      std::sort(allPairs.begin(), allPairs.end(), Mass2Comparator(phys::ZMASS, phys::WMASS));
-      fakeVTojj_ = Boson<Jet>(std::move(allPairs.front()));
-    }
   }
 }
 
