@@ -118,7 +118,6 @@ private:
   phys::Jet              candVToJ_ ;
 	
   std::unique_ptr<TH2F> hPhotonFR_;
-  std::unique_ptr<TH2F> hPhotonEff_;
   std::string channelReco_;
 
   std::ofstream fAK4_;
@@ -172,9 +171,6 @@ private:
  	
   double getPhotonFR   (const phys::Photon& ph) const;
   double getPhotonFRUnc(const phys::Photon& ph) const;
-
-  double getPhotonEff   (const phys::Photon& ph) const;
-  double getPhotonEffUnc(const phys::Photon& ph) const;
 	
   static bool is4Lregion(const phys::RegionTypes reg){
     return (reg == phys::SR4P || reg == phys::CR3P1F || reg == phys::CR2P2F ||

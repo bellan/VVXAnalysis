@@ -56,19 +56,6 @@ void VVGammaAnalyzer::begin(){
     hPhotonFR_.reset( new TH2F("PhFR", "", 1,0.,1., 1,0.,1.) );
   }
   
-  // Photon efficiency
-  TFile fileEff(Form("../Commons/data/egammaEffi_%d.root", year), "READ");
-  if(fileEff.IsOpen()){
-    hPhotonEff_.reset( std::move((TH2F*) fileEff.Get("EGamma_SF2D")) );
-    hPhotonEff_->SetDirectory(nullptr);
-    cout << "INFO: retrieved Photon Eff SF histogram from \""<<fileEff.GetName()<<"\"\n";
-    fileEff.Close();
-  }
-  else{
-    cout << colour::Red("WARN") << ": Photon Eff SF file not found in \""<<fileEff.GetName()<<"\"\n";
-    hPhotonEff_.reset( new TH2F("EGamma_SF2D", "", 1,0.,1., 1,0.,1.) );
-  }
-  
   // initCherryPick();
   for(const char* sys : {"central", "EScale_Up", "EScale_Down", "ESigma_Up", "ESigma_Down"}){
     kinPhotons_ [sys]  = std::make_unique<vector<Photon>>();
@@ -1764,7 +1751,7 @@ void VVGammaAnalyzer::systematicsStudy(){
   
   if(ph){
     // Photons ID efficiency
-    double phEff_w = getPhotonEffUnc(*ph)/getPhotonEff(*ph);
+    double phEff_w = ph->efficiencySF()/ph->efficiencySFUnc();
     SYSplots("phEffSF_Up"  , base_w * (1 + phEff_w), ph);
     SYSplots("phEffSF_Down", base_w * (1 - phEff_w), ph);
     // Photon FR uncertaintiy  WARN: for this to have a meaning, the photon FR SF should be applied
@@ -1910,14 +1897,6 @@ double VVGammaAnalyzer::getPhotonFR   (const phys::Photon& ph) const{
 double VVGammaAnalyzer::getPhotonFRUnc(const phys::Photon& ph) const{
   double FRError = hPhotonFR_->GetBinError  (hPhotonFR_->FindBin(ph.pt(), abs(ph.eta())));
   return FRError;
-}
-
-double VVGammaAnalyzer::getPhotonEff   (const phys::Photon& ph) const{
-  return hPhotonEff_->GetBinContent(hPhotonFR_->FindBin(ph.pt(), abs(ph.eta())));
-}
-
-double VVGammaAnalyzer::getPhotonEffUnc(const phys::Photon& ph) const{
-  return hPhotonFR_->GetBinError(hPhotonFR_->FindBin(ph.pt(), abs(ph.eta())));
 }
 
 bool VVGammaAnalyzer::passVeryLoose(const Photon& ph){
