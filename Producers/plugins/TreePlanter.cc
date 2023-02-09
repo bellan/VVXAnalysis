@@ -632,7 +632,7 @@ void TreePlanter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
     // Fill the Z->ll for the 2 leptons analysis
     std::vector<phys::Boson<phys::Lepton> > Zs = fillLepBosons(Z,23);
-    if(!filterController_.passTrigger(phys::ZV, triggerWord_) && !Zs.empty()) Z_ = Zs.front();
+    if(filterController_.passTrigger(phys::ZV, triggerWord_) && !Zs.empty()) Z_ = Zs.front();
   }
   // ---------------------------------------------------
 
@@ -1163,7 +1163,7 @@ TreePlanter::fillZWCandidate(const edm::Handle<edm::View<pat::CompositeCandidate
 
   if(edmZWs->size() != 1) return  phys::DiBoson<phys::Lepton,phys::Lepton>();
 
-  if(!filterController_.passTrigger(phys::ZW, triggerWord_)) return phys::DiBoson<phys::Lepton,phys::Lepton>();;
+  if(!filterController_.passTrigger(phys::ZW, triggerWord_)) return phys::DiBoson<phys::Lepton,phys::Lepton>();
 
 
   // for ZW,  daughter(0) is the ZL while daughter(1) is the MET
