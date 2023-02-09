@@ -143,11 +143,13 @@ bool EventFilter::filter(Event & event, const EventSetup& eventSetup) {
   bool hasPhotons = (nphotons.second >= minPhotons_      && nphotons.second <= maxPhotons_);
   bool hasAK4     = (njetsAK4.second >= minAK4s_);
   bool hasAK8     = (njetsAK8.second >= minAK8s_);
+  
+  bool hasAKX     = minAK4orMinAK8_ ? (hasAK4 || hasAK8) : (hasAK4 && hasAK8);
   bool hasMET     = METSelection_(met->front());
   
   return (hasLooseL  && hasTightL &&  
 	  hasPhotons &&
-	  hasAK4     && hasAK8    &&
+	  hasAKX     &&
 	  hasMET);
 }
 

@@ -29,6 +29,7 @@ process.select4leptonsRegions.minPhotons = cms.int32(0)
 process.select4leptonsRegions.maxPhotons = cms.int32(1000)
 process.select2leptonsRegions.minAK4s = cms.int32(2)
 process.select2leptonsRegions.minAK8s = cms.int32(1)
+process.select2leptonsRegions.minAK4orMinAK8 = cms.bool(True)  # better be sure
 
 process.candSR2P       = cms.EDFilter("PATCompositeCandidateSelector", src = cms.InputTag("selectedZCand"), cut = cms.string(''))
 process.candSR2PFilter = cms.EDFilter("CandViewCountFilter", src = cms.InputTag("candSR2P"), minNumber = cms.uint32(1))
