@@ -56,6 +56,8 @@ namespace phys {
     Bool_t   passFullSelNoFSRCorr()const {return isGood_ && pfCombRelIso_ < (abs(id_) == 13 ? 0.35 : 0.35);}
     //Bool_t   passFullSel()         const {return isGood_ && pfCombRelIsoFSRCorr_ < (abs(id_) == 13 ? 0.35 : 0.35);}
     Bool_t   passFullSel()         const {return isGood_;} // In ZZAnalysis:Run2Legacy the iso is included in the ID
+    
+    Bool_t passPogID()             const {return PogID_;}
 
     // The fake rate is set to a value different from 1 even for true leptons.
     void setFakeRateSF(const std::pair<double,double> & sf) {
@@ -81,8 +83,10 @@ namespace phys {
     Bool_t isGood_;
 
     Bool_t isInCracks_;
+    
+    Bool_t PogID_;
 
-    ClassDef(Lepton, 1) //
+    ClassDef(Lepton, 2) //
   };
 }
 

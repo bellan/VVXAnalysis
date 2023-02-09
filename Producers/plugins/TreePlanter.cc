@@ -128,6 +128,8 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , applyMCSel_      (config.getUntrackedParameter<bool>("DoMCSelection"  , false)) 
   , addLHEKinematics_(config.getParameter<bool>("AddLHEKinematics"))
   , dataTag          (config.getParameter<std::string>("dataTag"))
+  , elePogID_        (config.getParameter<std::string>("elePogID"))
+  , muoPogID_        (config.getParameter<std::string>("muoPogID"))
   , externalCrossSection_(-1.)
   , summcprocweights_    (0.)
   , sumpuweights_        (0.) 
@@ -416,7 +418,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
 
   edm::Handle<std::vector<reco::Vertex> > vertices; event.getByToken(theVertexToken, vertices);
   nvtx_ = vertices->size();
-    
+
   edm::Handle<double> rhoHandle;   
   event.getByToken(theRhoToken, rhoHandle);
   
@@ -721,14 +723,16 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
 }
 
 phys::Lepton TreePlanter::fill(const pat::Electron &electron) const{
-
-  return fillLepton(electron);
-
+  auto lep = fillLepton(electron);
+  lep.PogID_ = elePogID_(electron);
+  return lep;
 }
 
 
 phys::Lepton TreePlanter::fill(const pat::Muon& mu) const{
-  return fillLepton(mu);
+  auto lep = fillLepton(mu);
+  lep.PogID_ = muoPogID_(mu);
+  return lep;
 }
 
 

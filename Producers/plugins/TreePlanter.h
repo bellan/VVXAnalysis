@@ -23,6 +23,8 @@
 #include <SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h>
 #include "SimDataFormats/GeneratorProducts/interface/GenRunInfoProduct.h"
 
+#include "CommonTools/Utils/interface/StringCutObjectSelector.h"
+
 #include "VVXAnalysis/DataFormats/interface/Lepton.h"
 #include "VVXAnalysis/DataFormats/interface/Jet.h"
 #include "VVXAnalysis/DataFormats/interface/Photon.h"
@@ -278,6 +280,9 @@ class TreePlanter: public edm::EDAnalyzer {
 
   bool preVFP = false;
   std::string dataTag;
+  
+  StringCutObjectSelector<pat::Electron> elePogID_;
+  StringCutObjectSelector<pat::Muon>     muoPogID_;
   
   LHEHandler* theLHEHandler; 
 

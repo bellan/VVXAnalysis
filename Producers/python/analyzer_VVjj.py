@@ -278,17 +278,18 @@ process.counters = cms.Sequence(
 ### Build collections of muons and electrons that pass a quality criteria (isGood + isolation) and that are NOT selected to form the ZZ best candidate that pass the full selection
 ### ......................................................................... ###
 
-
+muoPOGID = "passed('CutBasedIdTight') && (pfIsolationR04().sumChargedHadronPt + max(pfIsolationR04().sumNeutralHadronEt + pfIsolationR04().sumPhotonEt - pfIsolationR04().sumPUPt/2,0.0))/pt < 0.15"
 process.pogMuons     = cms.EDFilter("PATMuonSelector", 
                                     src = cms.InputTag("appendPhotons:muons"),
                                     #cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
 ### ID as PKS
-                                    cut = cms.string("pt > 10 && abs(eta) < 2.4 && passed('CutBasedIdTight') && (pfIsolationR04().sumChargedHadronPt + max(pfIsolationR04().sumNeutralHadronEt + pfIsolationR04().sumPhotonEt - pfIsolationR04().sumPUPt/2,0.0))/pt < 0.15"))
+                                    cut = cms.string("pt > 10 && abs(eta) < 2.4 && " + muoPOGID))
 
+elePOGID = "userInt('cutBasedElectronID-Fall17-94X-V2-medium') == 1023 && ((abs(eta) < 1.479 && userFloat('dxy')<0.05 && userFloat('dz')<0.1) || (abs(eta)>1.479 && userFloat('dxy')<0.1 && userFloat('dz')<0.2))"
 process.pogElectrons = cms.EDFilter("PATElectronSelector", 
                                     src = cms.InputTag("appendPhotons:electrons"),
                                     #cut = cms.string("pt > 10 && userFloat('isGood') && userFloat('passCombRelIsoPFFSRCorr')"))
-                                    cut = cms.string("pt > 10 && abs(eta) < 2.5 && userInt('cutBasedElectronID-Fall17-94X-V2-medium') == 1023 && ((abs(eta) < 1.479 && userFloat('dxy')<0.05 && userFloat('dz')<0.1) || (abs(eta)>1.479 && userFloat('dxy')<0.1 && userFloat('dz')<0.2))"))  # userInt() == 1023 <--> electronID('cutBasedElectronID_Fall17_94X_V2_medium'), since it is a bitset containing 9 cuts
+                                    cut = cms.string("pt > 10 && abs(eta) < 2.5 && " + elePOGID))  # userInt() == 1023 <--> electronID('cutBasedElectronID_Fall17_94X_V2_medium'), since it is a bitset containing 9 cuts
 
 
 
@@ -385,6 +386,8 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      ZW           = cms.InputTag("bareZWCand"),
                                      MET          = cms.InputTag("slimmedMETs"),
                                      Vertices     = cms.InputTag("goodPrimaryVertices"),                                    
+                                     elePogID     = cms.string(elePOGID),
+                                     muoPogID     = cms.string(muoPOGID),
                                      XSection     = cms.untracked.double(XSEC)
      )
 
