@@ -1,5 +1,5 @@
 PT20_10     = "((daughter(0).pt > 20 && daughter(1).pt > 10) || (daughter(0).pt() > 10 && daughter(1).pt > 20))"
-ZMASSWINDOW = "abs(mass -91.19) <= 10"
+ZMASSWINDOW = "abs(mass -91.19) <= 30"
 LEPTONSELECTION = "userFloat('isBestZ') && userFloat('Z1Presel') && userFloat('GoodIsoLeptons')"
 
 
