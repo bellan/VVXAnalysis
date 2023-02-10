@@ -5,7 +5,6 @@
 #include "VVXAnalysis/Commons/interface/Constants.h"
 
 #include <vector>
-#include <list>
 
 namespace physmath{
  
@@ -109,7 +108,7 @@ std::vector<std::pair<const F*, const T*>> matchDeltaR(const std::vector<F>& vFr
   std::vector<std::pair<const F*, const T*>> out;
   out.reserve(vFrom.size());
   
-  typedef typename std::list< typename std::vector<T>::const_iterator > indices_container;  // "list of iterators to vector<T> elements"
+  typedef typename std::vector< typename std::vector<T>::const_iterator > indices_container;  // "vector of iterators to vector<T> elements"
   indices_container indicesTo;
   for(auto it = vTo.cbegin(); it != vTo.cend(); ++it) indicesTo.push_back(it);
   
