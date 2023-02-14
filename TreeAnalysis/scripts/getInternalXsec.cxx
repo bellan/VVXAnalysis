@@ -57,7 +57,7 @@ void getInternalXsec(const char* fname){
   for(const double& d : v_external) std_ext += (d - mean_ext)*(d - mean_ext);
   std_int /= ( nentries > 1 ? nentries - 1 : 1 );
   std_ext /= ( nentries > 1 ? nentries - 1 : 1 );
-  std::cout<< mean_int <<';'<< std_int <<';'<< mean_ext <<';'<< std_ext <<'\n';
+  std::cout<< mean_int <<';'<< sqrt(std_int) <<';'<< mean_ext <<';'<< sqrt(std_ext) <<'\n';
     
   // auto result = make_pair( make_pair(h_internal->GetMean(), h_internal->GetStdDev()),
   // 			   make_pair(h_external->GetMean(), h_external->GetStdDev()) );
