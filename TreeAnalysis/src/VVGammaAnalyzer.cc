@@ -688,6 +688,27 @@ void VVGammaAnalyzer::endNameHistos(){
       axis->SetBinLabel(4, "2m+m");
     }
   }
+  
+  TH1* GEN_photons_genStatusFlags = theHistograms->get("GEN_photons_genStatusFlags");
+  if(GEN_photons_genStatusFlags){
+    TAxis* axis = GEN_photons_genStatusFlags->GetXaxis();
+    axis->SetBinLabel( 1, "isPrompt");
+    axis->SetBinLabel( 2, "isDecayedLeptonHadron");
+    axis->SetBinLabel( 3, "isTauDecayProduct");
+    axis->SetBinLabel( 4, "isPromptTauDecayProduct");
+    axis->SetBinLabel( 5, "isDirectTauDecayProduct");
+    axis->SetBinLabel( 6, "isDirectPromptTauDecayProduct");
+    axis->SetBinLabel( 7, "isDirectHadronDecayProduct");
+    axis->SetBinLabel( 8, "isHardProcess");
+    axis->SetBinLabel( 9, "fromHardProcess");
+    axis->SetBinLabel(10, "isHardProcessTauDecayProduct");
+    axis->SetBinLabel(11, "isDirectHardProcessTauDecayProduct");
+    axis->SetBinLabel(12, "fromHardProcessBeforeFSR");
+    axis->SetBinLabel(13, "isFirstCopy");
+    axis->SetBinLabel(14, "isLastCopy");
+    axis->SetBinLabel(15, "isLastCopyBeforeFSR");
+    axis->SetBinLabel(16, "All");
+  }
 }
 
 
@@ -826,9 +847,8 @@ void VVGammaAnalyzer::genEventSetup(){
     }
     else if(aPID == 12 || aPID == 14)
       genNeutrinos_->push_back(p);
-    else if( p.id() == 22 && p.pt() > 18.){
-      if(p.genStatusFlags().test(phys::GenStatusBit::fromHardProcessBeforeFSR))
-	genPhotons_->push_back(p);
+    else if(p.id() == 22){
+      genPhotons_->push_back(p);
     }
   }
 	
@@ -920,15 +940,15 @@ void VVGammaAnalyzer::genEventSetup(){
 
 
 void VVGammaAnalyzer::genEventHistos(){
-  theHistograms->fill("GEN_genZlepCandidates", "# genZlepCandidates_", 4,-0.5,3.5, genZlepCandidates_->size());
-  theHistograms->fill("GEN_genWlepCandidates", "# genWlepCandidates_", 4,-0.5,3.5, genWlepCandidates_->size());
-  theHistograms->fill("GEN_genZhadCandidates", "# genZhadCandidates_", 4,-0.5,3.5, genZhadCandidates_->size());
-  theHistograms->fill("GEN_genWhadCandidates", "# genWhadCandidates_", 4,-0.5,3.5, genWhadCandidates_->size());
+  theHistograms->fill("GEN_ZlepCandidates", "# genZlepCandidates_", 4,-0.5,3.5, genZlepCandidates_->size());
+  theHistograms->fill("GEN_WlepCandidates", "# genWlepCandidates_", 4,-0.5,3.5, genWlepCandidates_->size());
+  theHistograms->fill("GEN_ZhadCandidates", "# genZhadCandidates_", 4,-0.5,3.5, genZhadCandidates_->size());
+  theHistograms->fill("GEN_WhadCandidates", "# genWhadCandidates_", 4,-0.5,3.5, genWhadCandidates_->size());
   
-  theHistograms->fill("GEN_genQuarks"   , "# genQuarks"   , 10,-0.5,9.5, genQuarks_   ->size());
-  theHistograms->fill("GEN_genChLeptons", "# genChLeptons", 10,-0.5,9.5, genChLeptons_->size());
-  theHistograms->fill("GEN_genNeutrinos", "# genNeutrinos", 10,-0.5,9.5, genNeutrinos_->size());
-  theHistograms->fill("GEN_genPhotons"  , "# genPhotons"  , 10,-0.5,9.5, genPhotons_  ->size());
+  theHistograms->fill("GEN_quarks"   , "# genQuarks"   , 10,-0.5,9.5, genQuarks_   ->size());
+  theHistograms->fill("GEN_chLeptons", "# genChLeptons", 10,-0.5,9.5, genChLeptons_->size());
+  theHistograms->fill("GEN_neutrinos", "# genNeutrinos", 10,-0.5,9.5, genNeutrinos_->size());
+  theHistograms->fill("GEN_photons"  , "# genPhotons"  , 10,-0.5,9.5, genPhotons_  ->size());
   
   for(auto v : *genZlepCandidates_)
     theHistograms->fill("GEN_genZlepCandidates_mass", "mass genZlepCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass());
@@ -941,6 +961,15 @@ void VVGammaAnalyzer::genEventHistos(){
   
   theHistograms->fill("GEN_n_jets"   , "Number of genJets;# genJets"   , 6,-0.5,5.5, genJets->size()   );
   theHistograms->fill("GEN_n_jetsAK8", "Number of genJetsAK8;# genJets", 6,-0.5,5.5, genJetsAK8->size());
+  
+  for(const Particle& p : *genPhotons_){
+    theHistograms->fill("GEN_photons_genStatusFlags", "#gamma_{GEN} pass flag", 16, -0.5, 15.5, 15, theWeight);
+    std::bitset<15> flags = p.genStatusFlags();
+    theHistograms->book<TH1F>("GEN_photons_genStatus_ulong", "#gamma_{GEN} flag ulong", vector<double>())->Fill(Form("%zu", flags.to_ulong()), theWeight);
+    for(size_t i = 0; i < 15; ++i)
+      if(flags.test(i))
+	theHistograms->fill("GEN_photons_genStatusFlags", "#gamma_{GEN} pass flag", 16, -0.5, 15.5, i, theWeight);
+  }
 }
 
 
@@ -1885,7 +1914,7 @@ void VVGammaAnalyzer::photonGenStudy(){
     
     // # of Jets
     theHistograms->fill(Form(hname, "nJets"), Form("%s;nJets;Events"                 , wp), 5,0,5, jets->size(), theWeight);
-  }
+  } // end loop on mapWPtoPhotons
 }
 
 
