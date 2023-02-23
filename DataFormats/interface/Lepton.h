@@ -28,12 +28,17 @@ namespace phys {
       , dxy_(-9999.)               
       , dz_(-9999.)                
       , sip_(-9999.)
-       , pfCombRelIso_(-9999.)
+      , pfCombRelIso_(-9999.)
       , pfCombRelIsoFSRCorr_(-9999.)
-       , scEta_(-9999.)
+      , scEta_(-9999.)
       , matchHLT_(false)
       , isGood_(false)
       , isInCracks_(false)
+      , sigmaIetaIeta_(-1.)
+      , HoverE_(-1.)
+      , EoverP_(-1.)
+      , missingHits_(-1)
+      , passConversionVeto_(false)
 
       //, nearestjet(TLorentzVector(0.,0.,0.,0.), 0)
       {}
@@ -58,6 +63,12 @@ namespace phys {
     Bool_t   passFullSel()         const {return isGood_;} // In ZZAnalysis:Run2Legacy the iso is included in the ID
     
     Bool_t passPogID()             const {return PogID_;}
+    
+    Double_t sigmaIetIeta()        const {return sigmaIetaIeta_;}
+    Double_t HoverE()              const {return HoverE_;}
+    Double_t EoverP()              const {return EoverP_;}
+    Int_t missingHits()            const {return missingHits_;}
+    Bool_t passConversionVeto()    const {return passConversionVeto_;}
 
     // The fake rate is set to a value different from 1 even for true leptons.
     void setFakeRateSF(const std::pair<double,double> & sf) {
@@ -67,6 +78,8 @@ namespace phys {
     
     Double_t fakeRateSF()        const {return passFullSel() ? 1. : fakeRateSF_;}
     Double_t fakeRateSFUnc()     const {return passFullSel() ? 0. : fakeRateSFUnc_;}
+    
+    Double_t Em1_Pm1()           const {return (1/EoverP_-1)/p4_.P();}
 
   protected:
     
@@ -78,13 +91,21 @@ namespace phys {
     Double_t pfCombRelIso_;
     Double_t pfCombRelIsoFSRCorr_;
     Double_t scEta_;
-
+    
     Bool_t matchHLT_;
     Bool_t isGood_;
 
     Bool_t isInCracks_;
     
     Bool_t PogID_;
+    
+    // Electron-specific variables
+    float sigmaIetaIeta_;
+    float HoverE_;
+    float EoverP_;
+    Int_t missingHits_;
+    Bool_t passConversionVeto_;
+
 
     ClassDef(Lepton, 2) //
   };

@@ -713,7 +713,7 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
     // Deal with very rare cases when SCeta is out of 2.5 bonds
     if ( output.eta() <= 2.5 && output.scEta_ >= 2.5) output.scEta_ = 2.49;
     else if ( output.eta() >= -2.5 && output.scEta_ <= -2.5) output.scEta_ = -2.49;
-    }
+  }
   std::pair<double,double> effSF = leptonScaleFactors_.efficiencyScaleFactor(output); 
   output.efficiencySF_    = effSF.first;
   output.efficiencySFUnc_ = effSF.second;
@@ -725,6 +725,12 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
 phys::Lepton TreePlanter::fill(const pat::Electron &electron) const{
   auto lep = fillLepton(electron);
   lep.PogID_ = elePogID_(electron);
+  lep.sigmaIetaIeta_      = electron.sigmaIetaIeta();
+  lep.HoverE_             = electron.hadronicOverEm();
+  lep.EoverP_             = electron.trackClusterMatching().eSuperClusterOverP;
+  lep.missingHits_        = electron.gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS);
+  lep.passConversionVeto_ = electron.passConversionVeto();
+  
   return lep;
 }
 
