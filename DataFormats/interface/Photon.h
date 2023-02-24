@@ -20,16 +20,16 @@ namespace phys {
     friend class ::TreePlanter;
 
   public:
-    enum IDwp {None, VeryLoose, Loose, Medium, Tight};  // Working points for ID
+    enum IdWp {None, VeryLoose, Loose, Medium, Tight};  // Working points for ID
     
     enum class IDcut : UInt_t { // https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedPhotonIdentificationRun2#Applying_Individual_Cuts_of_a_Se
-      MinPt = 0x1,
-      SCEta = 0x2,
-      HoverE= 0x4,
-      sieie = 0x8,
-      chIso = 0x10,
-      neIso = 0x20,
-      phIso = 0x40
+      MinPt  = 0x1,
+      SCEta  = 0x2,
+      HoverE = 0x4,
+      sieie  = 0x8,
+      chIso  = 0x10,
+      neIso  = 0x20,
+      phIso  = 0x40
     };
       
     static constexpr float TRANSITION_BARREL_ENDCAP = 1.479;
@@ -219,7 +219,7 @@ namespace phys {
     
   public:
     // Utils
-    bool cutBasedID(IDwp wp) const{
+    bool cutBasedID(IdWp wp) const{
       switch(wp){
       case VeryLoose:
 	return (cutIDbitsLoose_ & static_cast<UInt_t>(IDcut::HoverE))
@@ -236,7 +236,7 @@ namespace phys {
       }
     }
 
-    bool cutBasedID(IDwp wp, IDcut cut) const{
+    bool cutBasedID(IdWp wp, IDcut cut) const{
       const unsigned int* cutBits = nullptr;
       switch(wp){
       case VeryLoose:
@@ -256,87 +256,87 @@ namespace phys {
     
     inline bool isBarrel() const { return fabs(eta()) < TRANSITION_BARREL_ENDCAP; }
     
-    bool passHoverE(IDwp wp) const{
+    bool passHoverE(IdWp wp) const{
       if(isBarrel())
 	switch(wp){
-	case IDwp::Tight:  return HoverE() < 0.02148;
-	case IDwp::Medium: return HoverE() < 0.02197;
-	case IDwp::Loose:  return HoverE() < 0.04596;
+	case IdWp::Tight:  return HoverE() < 0.02148;
+	case IdWp::Medium: return HoverE() < 0.02197;
+	case IdWp::Loose:  return HoverE() < 0.04596;
 	default: return true;
 	}
       else
 	switch(wp){
-	case IDwp::Tight:  return HoverE() < 0.0321;
-	case IDwp::Medium: return HoverE() < 0.0326;
-	case IDwp::Loose:  return HoverE() < 0.0590;
+	case IdWp::Tight:  return HoverE() < 0.0321;
+	case IdWp::Medium: return HoverE() < 0.0326;
+	case IdWp::Loose:  return HoverE() < 0.0590;
 	default: return true;
 	}
     }
 
-    bool passSigmaiEtaiEta(IDwp wp) const{
+    bool passSigmaiEtaiEta(IdWp wp) const{
       if(isBarrel())
 	switch(wp){
-	case IDwp::Tight:  return sigmaIetaIeta() < 0.00996;
-	case IDwp::Medium: return sigmaIetaIeta() < 0.01015;
-	case IDwp::Loose:  return sigmaIetaIeta() < 0.0106 ;
+	case IdWp::Tight:  return sigmaIetaIeta() < 0.00996;
+	case IdWp::Medium: return sigmaIetaIeta() < 0.01015;
+	case IdWp::Loose:  return sigmaIetaIeta() < 0.0106 ;
 	default: return true;
 	}
       else
 	switch(wp){
-	case IDwp::Tight:  return sigmaIetaIeta() < 0.0271;
-	case IDwp::Medium: return sigmaIetaIeta() < 0.0272;
-	case IDwp::Loose:  return sigmaIetaIeta() < 0.0272;
+	case IdWp::Tight:  return sigmaIetaIeta() < 0.0271;
+	case IdWp::Medium: return sigmaIetaIeta() < 0.0272;
+	case IdWp::Loose:  return sigmaIetaIeta() < 0.0272;
 	default: return true;
 	}
     }
 
-    bool passChargedIsolation(IDwp wp) const{
+    bool passChargedIsolation(IdWp wp) const{
       if(isBarrel())
 	switch(wp){
-	case IDwp::Tight:  return chargedIsolation() < 0.65 ;
-	case IDwp::Medium: return chargedIsolation() < 1.141;
-	case IDwp::Loose:  return chargedIsolation() < 1.694;
+	case IdWp::Tight:  return chargedIsolation() < 0.65 ;
+	case IdWp::Medium: return chargedIsolation() < 1.141;
+	case IdWp::Loose:  return chargedIsolation() < 1.694;
 	default: return true;
 	}
       else
 	switch(wp){
-	case IDwp::Tight:  return chargedIsolation() < 0.517;
-	case IDwp::Medium: return chargedIsolation() < 1.051;
-	case IDwp::Loose:  return chargedIsolation() < 2.089;
+	case IdWp::Tight:  return chargedIsolation() < 0.517;
+	case IdWp::Medium: return chargedIsolation() < 1.051;
+	case IdWp::Loose:  return chargedIsolation() < 2.089;
 	default: return true;
 	}
     }
 
-    bool passNeutralIsolation(IDwp wp) const{
+    bool passNeutralIsolation(IdWp wp) const{
       if(isBarrel())
 	switch(wp){
-	case IDwp::Tight:  return neutralHadronIsolation() < 0.317  + 0.01512 *pt() + 2.259e-05 *pt()*pt();
-	case IDwp::Medium: return neutralHadronIsolation() < 1.189  + 0.01512 *pt() + 2.259e-05 *pt()*pt();
-	case IDwp::Loose:  return neutralHadronIsolation() < 24.032 + 0.01512 *pt() + 2.259e-05 *pt()*pt();
+	case IdWp::Tight:  return neutralHadronIsolation() < 0.317  + 0.01512 *pt() + 2.259e-05 *pt()*pt();
+	case IdWp::Medium: return neutralHadronIsolation() < 1.189  + 0.01512 *pt() + 2.259e-05 *pt()*pt();
+	case IdWp::Loose:  return neutralHadronIsolation() < 24.032 + 0.01512 *pt() + 2.259e-05 *pt()*pt();
 	default: return true;
 	}
       else
 	switch(wp){
-	case IDwp::Tight:  return neutralHadronIsolation() < 2.716  + 0.0117 *pt() + 2.3e-05 *pt()*pt();
-	case IDwp::Medium: return neutralHadronIsolation() < 2.718  + 0.0117 *pt() + 2.3e-05 *pt()*pt();
-	case IDwp::Loose:  return neutralHadronIsolation() < 19.722 + 0.0117 *pt() + 2.3e-05 *pt()*pt();
+	case IdWp::Tight:  return neutralHadronIsolation() < 2.716  + 0.0117 *pt() + 2.3e-05 *pt()*pt();
+	case IdWp::Medium: return neutralHadronIsolation() < 2.718  + 0.0117 *pt() + 2.3e-05 *pt()*pt();
+	case IdWp::Loose:  return neutralHadronIsolation() < 19.722 + 0.0117 *pt() + 2.3e-05 *pt()*pt();
 	default: return true;
 	}
     }
     
-    bool passPhotonIsolation(IDwp wp) const{
+    bool passPhotonIsolation(IdWp wp) const{
       if(isBarrel())
 	switch(wp){
-	case IDwp::Tight:  return photonIsolation() < 2.044 + 0.004017 *pt();
-	case IDwp::Medium: return photonIsolation() < 2.08  + 0.004017 *pt();
-	case IDwp::Loose:  return photonIsolation() < 2.876 + 0.004017 *pt();
+	case IdWp::Tight:  return photonIsolation() < 2.044 + 0.004017 *pt();
+	case IdWp::Medium: return photonIsolation() < 2.08  + 0.004017 *pt();
+	case IdWp::Loose:  return photonIsolation() < 2.876 + 0.004017 *pt();
 	default: return true;
 	}
       else
 	switch(wp){
-	case IDwp::Tight:  return photonIsolation() < 3.032 + 0.0037 *pt();
-	case IDwp::Medium: return photonIsolation() < 3.867 + 0.0037 *pt();
-	case IDwp::Loose:  return photonIsolation() < 4.162 + 0.0037 *pt();
+	case IdWp::Tight:  return photonIsolation() < 3.032 + 0.0037 *pt();
+	case IdWp::Medium: return photonIsolation() < 3.867 + 0.0037 *pt();
+	case IdWp::Loose:  return photonIsolation() < 4.162 + 0.0037 *pt();
 	default: return true;
 	}
     }
