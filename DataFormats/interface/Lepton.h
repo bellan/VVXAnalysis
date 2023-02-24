@@ -76,8 +76,8 @@ namespace phys {
     Bool_t passConversionVeto()    const {return passConversionVeto_;}
     
     Double_t mvaValue()            const {return mvaValue_;}
-    Bool_t passPogID(IDWp  wp)     const {return pogID_.test(static_cast<UInt_t>(wp));}
-    Bool_t passIsoPF(IsoWP wp)     const {return isoPF_.test(static_cast<UInt_t>(wp));}
+    Bool_t passPogID(IdWp  wp)     const {return pogID_.test(static_cast<UInt_t>(wp));}
+    Bool_t passIsoPF(IsoWp wp)     const {return isoPF_.test(static_cast<UInt_t>(wp));}
     std::bitset<4> pogID()         const {return pogID_;}  // For test purposes only; analyzers should use the above two functions
     std::bitset<6> isoPF()         const {return isoPF_;}
 

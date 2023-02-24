@@ -744,17 +744,18 @@ phys::Lepton TreePlanter::fill(const pat::Electron &electron) const{
 phys::Lepton TreePlanter::fill(const pat::Muon& mu) const{
   auto lep = fillLepton(mu);
   lep.PogID_ = muoPogID_(mu);
+  lep.missingHits_        = mu.bestTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS);
   
   if(mu.passed(reco::Muon::CutBasedIdLoose )) lep.pogID_.set(static_cast<UInt_t>(phys::Lepton::IdWp::Loose ));
   if(mu.passed(reco::Muon::CutBasedIdMedium)) lep.pogID_.set(static_cast<UInt_t>(phys::Lepton::IdWp::Medium));
   if(mu.passed(reco::Muon::CutBasedIdTight )) lep.pogID_.set(static_cast<UInt_t>(phys::Lepton::IdWp::Tight ));
   
-  if(mu.passed(reco::Muon::PFIsoVeryLoose    )) lep.isoPF_.set(static_cast<UInt_t>(phys::Lepton::IsoWP::VeryLoose    ));
-  if(mu.passed(reco::Muon::PFIsoLoose        )) lep.isoPF_.set(static_cast<UInt_t>(phys::Lepton::IsoWP::Loose        ));
-  if(mu.passed(reco::Muon::PFIsoMedium       )) lep.isoPF_.set(static_cast<UInt_t>(phys::Lepton::IsoWP::Medium       ));
-  if(mu.passed(reco::Muon::PFIsoTight        )) lep.isoPF_.set(static_cast<UInt_t>(phys::Lepton::IsoWP::Tight        ));
-  if(mu.passed(reco::Muon::PFIsoVeryTight    )) lep.isoPF_.set(static_cast<UInt_t>(phys::Lepton::IsoWP::VeryTight    ));
-  if(mu.passed(reco::Muon::PFIsoVeryVeryTight)) lep.isoPF_.set(static_cast<UInt_t>(phys::Lepton::IsoWP::VeryVeryTight));
+  if(mu.passed(reco::Muon::PFIsoVeryLoose    )) lep.isoPF_.set(static_cast<UInt_t>(phys::Lepton::IsoWp::VeryLoose    ));
+  if(mu.passed(reco::Muon::PFIsoLoose        )) lep.isoPF_.set(static_cast<UInt_t>(phys::Lepton::IsoWp::Loose        ));
+  if(mu.passed(reco::Muon::PFIsoMedium       )) lep.isoPF_.set(static_cast<UInt_t>(phys::Lepton::IsoWp::Medium       ));
+  if(mu.passed(reco::Muon::PFIsoTight        )) lep.isoPF_.set(static_cast<UInt_t>(phys::Lepton::IsoWp::Tight        ));
+  if(mu.passed(reco::Muon::PFIsoVeryTight    )) lep.isoPF_.set(static_cast<UInt_t>(phys::Lepton::IsoWp::VeryTight    ));
+  if(mu.passed(reco::Muon::PFIsoVeryVeryTight)) lep.isoPF_.set(static_cast<UInt_t>(phys::Lepton::IsoWp::VeryVeryTight));
   
   return lep;
 }
