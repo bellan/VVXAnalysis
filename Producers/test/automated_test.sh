@@ -24,15 +24,21 @@ cd $CMSSW_BASE/src/VVXAnalysis/Producers/test || { echo "No VVXAnalysis in CMSSW
 # Create the config using the specified template ("analyzer") for all the uncommented lines in csv_file
 batch_Condor.py ${csv_file} -i $analyzer -o auto_test | grep -Pv "N:\s+\d*[1-9]\s" || { return 1 2>/dev/null || exit 1 ; }
 
-# Take the first chunk, which should always exist
-cd auto_test/${sample_ID}_Chunk0/ || { echo "cd into Chunk0 failed." 1>&2 ; return 1 2>/dev/null || exit 1 ; }
+# Check which samples were created
+samples=$(ls auto_test/ | grep -oP ".+(?=run_template_cfg.py)")
+[ -z "$samples" ] && { echo "ERROR: no samples were prepared" 1>&2 ; return 1 2>/dev/null || exit ; }
+if ! echo $samples | grep -q $sample_ID ; then
+    printf 'WARN: "%s" was not in the csv. ' $sample_ID
+    sample_ID=$(echo "$samples" | head -n1)
+    printf 'Using "%s"\n' $sample_ID
+fi
 
-# process.maxEvents is split in more than one line: figure out at which line number does it start...
-line_n=$(( $(grep -n "process.maxEvents" run_cfg.py | grep -oP "([^:]+)(?=:)") + 1 ))
-# ... then edit the next line...
-sed -i "${line_n}s/int32(.*)/int32($events)/" run_cfg.py >/dev/null || { echo "sed maxEvents failed." 1>&2 ; return 1 2>/dev/null || exit 1 ; }
-# and check that everything went well
-[ $(grep -A1 "process\.maxEvents" run_cfg.py | grep -oP "(?<=int32\()[^)*]+(?=\))") -ne $events ] && { echo "Wrong sed maxEvents." 1>&2 ; return 1 2>/dev/null || exit 1 ; }
+# Take the first chunk, which should always exist
+chunk=auto_test/${sample_ID}_Chunk0
+cd $chunk && echo "INFO: running in $chunk" || { echo "cd into $chunk failed." 1>&2 ; return 1 2>/dev/null || exit 1 ; }
+
+# Set the maximum number of events
+printf "process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(%d) )\n" $events >> run_cfg.py
 
 # Optional: insert a custom filename
 [ -n "$specific_file" ] && -i -r "s/(fileNames = cms\.untracked\.vstring).+$/\1('${specific_file}'),/" run_cfg.py 1>/dev/null
