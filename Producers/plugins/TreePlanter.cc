@@ -730,6 +730,12 @@ phys::Lepton TreePlanter::fill(const pat::Electron &electron) const{
   lep.EoverP_             = electron.trackClusterMatching().eSuperClusterOverP;
   lep.missingHits_        = electron.gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS);
   lep.passConversionVeto_ = electron.passConversionVeto();
+  lep.mvaValue_           = electron.userFloat("ElectronMVAEstimatorRun2Fall17IsoV2Values");
+  
+  if(electron.userInt("cutBasedElectronID-Fall17-94X-V2-loose" ) == 1023) lep.pogID_.set(static_cast<UInt_t>(phys::Lepton::IdWp::Loose ));
+  if(electron.userInt("cutBasedElectronID-Fall17-94X-V2-medium") == 1023) lep.pogID_.set(static_cast<UInt_t>(phys::Lepton::IdWp::Medium));
+  if(electron.userInt("cutBasedElectronID-Fall17-94X-V2-tight" ) == 1023) lep.pogID_.set(static_cast<UInt_t>(phys::Lepton::IdWp::Tight ));
+  if(electron.userInt("cutBasedElectronID-Fall17-94X-V2-veto"  ) == 1023) lep.pogID_.set(static_cast<UInt_t>(phys::Lepton::IdWp::Veto  ));
   
   return lep;
 }
@@ -738,6 +744,18 @@ phys::Lepton TreePlanter::fill(const pat::Electron &electron) const{
 phys::Lepton TreePlanter::fill(const pat::Muon& mu) const{
   auto lep = fillLepton(mu);
   lep.PogID_ = muoPogID_(mu);
+  
+  if(mu.passed(reco::Muon::CutBasedIdLoose )) lep.pogID_.set(static_cast<UInt_t>(phys::Lepton::IdWp::Loose ));
+  if(mu.passed(reco::Muon::CutBasedIdMedium)) lep.pogID_.set(static_cast<UInt_t>(phys::Lepton::IdWp::Medium));
+  if(mu.passed(reco::Muon::CutBasedIdTight )) lep.pogID_.set(static_cast<UInt_t>(phys::Lepton::IdWp::Tight ));
+  
+  if(mu.passed(reco::Muon::PFIsoVeryLoose    )) lep.isoPF_.set(static_cast<UInt_t>(phys::Lepton::IsoWP::VeryLoose    ));
+  if(mu.passed(reco::Muon::PFIsoLoose        )) lep.isoPF_.set(static_cast<UInt_t>(phys::Lepton::IsoWP::Loose        ));
+  if(mu.passed(reco::Muon::PFIsoMedium       )) lep.isoPF_.set(static_cast<UInt_t>(phys::Lepton::IsoWP::Medium       ));
+  if(mu.passed(reco::Muon::PFIsoTight        )) lep.isoPF_.set(static_cast<UInt_t>(phys::Lepton::IsoWP::Tight        ));
+  if(mu.passed(reco::Muon::PFIsoVeryTight    )) lep.isoPF_.set(static_cast<UInt_t>(phys::Lepton::IsoWP::VeryTight    ));
+  if(mu.passed(reco::Muon::PFIsoVeryVeryTight)) lep.isoPF_.set(static_cast<UInt_t>(phys::Lepton::IsoWP::VeryVeryTight));
+  
   return lep;
 }
 

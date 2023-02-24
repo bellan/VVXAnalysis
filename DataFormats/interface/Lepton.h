@@ -21,6 +21,8 @@ namespace phys {
     friend class ::TreePlanter;
 
   public:
+    enum class IdWp  : UInt_t { Veto=0     , Loose, Medium, Tight };  // Working points for cut-based ID
+    enum class IsoWp : UInt_t { VeryLoose=0, Loose, Medium, Tight, VeryTight, VeryVeryTight };  // Isolations
     
     /// Constructor
     Lepton(const TLorentzVector& pin = TLorentzVector(0.,0.,0.,0.), float q =0, int pid = 0)
@@ -39,6 +41,9 @@ namespace phys {
       , EoverP_(-1.)
       , missingHits_(-1)
       , passConversionVeto_(false)
+      , mvaValue_(-1.)
+      , pogID_(0)
+      , isoPF_(0)
 
       //, nearestjet(TLorentzVector(0.,0.,0.,0.), 0)
       {}
@@ -64,11 +69,17 @@ namespace phys {
     
     Bool_t passPogID()             const {return PogID_;}
     
-    Double_t sigmaIetIeta()        const {return sigmaIetaIeta_;}
+    Double_t sigmaIetaIeta()       const {return sigmaIetaIeta_;}
     Double_t HoverE()              const {return HoverE_;}
     Double_t EoverP()              const {return EoverP_;}
     Int_t missingHits()            const {return missingHits_;}
     Bool_t passConversionVeto()    const {return passConversionVeto_;}
+    
+    Double_t mvaValue()            const {return mvaValue_;}
+    Bool_t passPogID(IDWp  wp)     const {return pogID_.test(static_cast<UInt_t>(wp));}
+    Bool_t passIsoPF(IsoWP wp)     const {return isoPF_.test(static_cast<UInt_t>(wp));}
+    std::bitset<4> pogID()         const {return pogID_;}  // For test purposes only; analyzers should use the above two functions
+    std::bitset<6> isoPF()         const {return isoPF_;}
 
     // The fake rate is set to a value different from 1 even for true leptons.
     void setFakeRateSF(const std::pair<double,double> & sf) {
@@ -106,6 +117,9 @@ namespace phys {
     Int_t missingHits_;
     Bool_t passConversionVeto_;
 
+    float mvaValue_;
+    std::bitset<4> pogID_;
+    std::bitset<6> isoPF_; // Only for muons
 
     ClassDef(Lepton, 2) //
   };
