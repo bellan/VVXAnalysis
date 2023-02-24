@@ -131,7 +131,7 @@ void VVGammaAnalyzer::initEvent(){
     }
     if(match) continue;
     
-    // Photon::IDwp wp = Photon::IDwp::Loose;
+    // Photon::IdWp wp = Photon::IdWp::Loose;
     TLorentzVector p4_EScale_Up = ph.p4() * (ph.energyScaleUp()  /ph.e());
     TLorentzVector p4_EScale_Dn = ph.p4() * (ph.energyScaleDown()/ph.e());
     TLorentzVector p4_ESigma_Up = ph.p4() * (ph.energySigmaUp()  /ph.e());
@@ -1108,7 +1108,7 @@ void VVGammaAnalyzer::photonHistos(){
   }
   else{
     // Select photon that passes more cuts
-    Photon::IDwp wp = Photon::IDwp::Loose;
+    Photon::IdWp wp = Photon::IdWp::Loose;
     auto bestG = std::max_element(kinPhotons_["central"]->begin(), kinPhotons_["central"]->end(),
 				  [wp](const Photon& a, const Photon& b){
 				    int na = a.passSigmaiEtaiEta(wp)+a.passHoverE(wp)+a.passChargedIsolation(wp)+a.passNeutralIsolation(wp)+a.passPhotonIsolation(wp);
@@ -1116,11 +1116,11 @@ void VVGammaAnalyzer::photonHistos(){
 				    return na < nb;
 				  });  // max_element returns the first among those with max value --> preserve pt ordering
     
-    bool b_sieie  = bestG->passSigmaiEtaiEta(wp);
-    bool b_HoverE = bestG->passHoverE(wp);
-    bool b_chIso  = bestG->passChargedIsolation(wp);
-    bool b_neIso  = bestG->passNeutralIsolation(wp);
-    bool b_phIso  = bestG->passPhotonIsolation(wp);
+    bool b_sieie  = bestG->cutBasedID(wp, Photon::IDcut::sieie);
+    bool b_HoverE = bestG->cutBasedID(wp, Photon::IDcut::HoverE);
+    bool b_chIso  = bestG->cutBasedID(wp, Photon::IDcut::chIso);
+    bool b_neIso  = bestG->cutBasedID(wp, Photon::IDcut::neIso);
+    bool b_phIso  = bestG->cutBasedID(wp, Photon::IDcut::phIso);
     
     // Single cut efficiency
     if(b_sieie)
@@ -1324,9 +1324,9 @@ void VVGammaAnalyzer::plotsVVGstatus(const char* name, const char* title, const 
 
 
 void debugPhotonID(const Photon& ph){
-  Photon::IDwp wp;
+  Photon::IdWp wp;
   if(ph.cutBasedIDLoose()){
-    wp = Photon::IDwp::Loose;
+    wp = Photon::IdWp::Loose;
     bool HoverE           = ph.passHoverE(wp);
     bool sigmaiEtaiEta    = ph.passSigmaiEtaiEta(wp);
     bool chargedIsolation = ph.passChargedIsolation(wp);
@@ -1344,7 +1344,7 @@ void debugPhotonID(const Photon& ph){
     return;
   
   if(ph.cutBasedIDMedium()){
-    wp = Photon::IDwp::Medium;
+    wp = Photon::IdWp::Medium;
     bool HoverE           = ph.passHoverE(wp);
     bool sigmaiEtaiEta    = ph.passSigmaiEtaiEta(wp);
     bool chargedIsolation = ph.passChargedIsolation(wp);
@@ -1362,7 +1362,7 @@ void debugPhotonID(const Photon& ph){
     return;
   
   if(ph.cutBasedIDTight()){
-    wp = Photon::IDwp::Tight;
+    wp = Photon::IdWp::Tight;
     bool HoverE           = ph.passHoverE(wp);
     bool sigmaiEtaiEta    = ph.passSigmaiEtaiEta(wp);
     bool chargedIsolation = ph.passChargedIsolation(wp);
@@ -1384,7 +1384,7 @@ void VVGammaAnalyzer::photonFakeRate(){
   if(thePhVect.size() == 0)
     return;
   
-  Photon::IDwp wp = Photon::IDwp::Loose;
+  Photon::IdWp wp = Photon::IdWp::Loose;
   auto bestG = std::max_element(thePhVect.begin(), thePhVect.end(),
 				[wp](const Photon& a, const Photon& b){
 				  return a.passSigmaiEtaiEta(wp) + a.passChargedIsolation(wp) < b.passSigmaiEtaiEta(wp) + b.passChargedIsolation(wp);
@@ -1658,7 +1658,7 @@ bool isVeryLooseSiEiE(const Photon& ph, const double& barrel_thr=0.012, const do
 }
 
 
-char VVGammaAnalyzer::phABCD(const Photon& ph, const Photon::IDwp wp){
+char VVGammaAnalyzer::phABCD(const Photon& ph, const Photon::IdWp wp){
   char ABCD = '0';  // Defaults to something recognizable
   if( ph.passChargedIsolation(wp) ){    // Signal region: either A or B
     if     (ph.passSigmaiEtaiEta(wp)) ABCD = 'A';
@@ -1929,7 +1929,7 @@ double VVGammaAnalyzer::getPhotonFRUnc(const phys::Photon& ph) const{
 }
 
 bool VVGammaAnalyzer::passVeryLoose(const Photon& ph){
-  Photon::IDwp wp = Photon::IDwp::Loose;
+  Photon::IdWp wp = Photon::IdWp::Loose;
   return ph.passHoverE(wp) && ph.passPhotonIsolation(wp) && ph.passNeutralIsolation(wp);
 }
 

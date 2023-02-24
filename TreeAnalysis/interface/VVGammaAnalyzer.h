@@ -187,7 +187,7 @@ private:
 	
   static bool passVeryLoose(const phys::Photon& ph);
 	
-  static char phABCD(const phys::Photon&, const phys::Photon::IDwp);
+  static char phABCD(const phys::Photon&, const phys::Photon::IdWp);
   static char phABCD_study(const phys::Photon&, const double& barrel_thr, const double& endcap_thr);
  	
   template<class T, class V>

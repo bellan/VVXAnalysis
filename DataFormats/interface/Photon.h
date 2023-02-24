@@ -22,14 +22,14 @@ namespace phys {
   public:
     enum IDwp {None, VeryLoose, Loose, Medium, Tight};  // Working points for ID
     
-    enum IDcut {  // See https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedPhotonIdentificationRun2#Applying_Individual_Cuts_of_a_Se
-      c_MinPt = 0x1,
-      c_SCEta = 0x2,
-      c_HoverE= 0x4,
-      c_sieie = 0x8,
-      c_chIso = 0x10,
-      c_neIso = 0x20,
-      c_phIso = 0x40
+    enum class IDcut : UInt_t { // https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedPhotonIdentificationRun2#Applying_Individual_Cuts_of_a_Se
+      MinPt = 0x1,
+      SCEta = 0x2,
+      HoverE= 0x4,
+      sieie = 0x8,
+      chIso = 0x10,
+      neIso = 0x20,
+      phIso = 0x40
     };
       
     static constexpr float TRANSITION_BARREL_ENDCAP = 1.479;
@@ -222,15 +222,14 @@ namespace phys {
     bool cutBasedID(IDwp wp) const{
       switch(wp){
       case VeryLoose:
-	return (cutIDbitsLoose_ & IDcut::c_HoverE) && (cutIDbitsLoose_ & IDcut::c_neIso) && (cutIDbitsLoose_ & IDcut::c_phIso);
+	return (cutIDbitsLoose_ & static_cast<UInt_t>(IDcut::HoverE))
+	  &&   (cutIDbitsLoose_ & static_cast<UInt_t>(IDcut::neIso ))
+	  &&   (cutIDbitsLoose_ & static_cast<UInt_t>(IDcut::phIso ));
       case Loose:
-	/* return (cutIDbitsLoose_ & IDcut::c_HoverE) && (cutIDbitsLoose_ & IDcut::c_neIso) && (cutIDbitsLoose_ & IDcut::c_phIso) && (cutIDbitsLoose_ & IDcut::c_sieie) && (cutIDbitsLoose_ & IDcut::c_chIso); */
 	return cutBasedIDLoose() ; break;
       case Medium:
-	/* return (cutIDbitsMedium_ & IDcut::c_HoverE) && (cutIDbitsMedium_ & IDcut::c_neIso) && (cutIDbitsMedium_ & IDcut::c_phIso) && (cutIDbitsMedium_ & IDcut::c_sieie) && (cutIDbitsMedium_ & IDcut::c_chIso); */
 	return cutBasedIDMedium(); break;
       case Tight:
-	/* return (cutIDbitsTight_ & IDcut::c_HoverE) && (cutIDbitsTight_ & IDcut::c_neIso) && (cutIDbitsTight_ & IDcut::c_phIso) && (cutIDbitsTight_ & IDcut::c_sieie) && (cutIDbitsTight_ & IDcut::c_chIso); */
 	return cutBasedIDTight() ; break;
       default:
 	return true;
@@ -241,7 +240,7 @@ namespace phys {
       const unsigned int* cutBits = nullptr;
       switch(wp){
       case VeryLoose:
-	if(cut & (IDcut::c_sieie | IDcut::c_chIso))  // bitwise or
+	if(static_cast<UInt_t>(cut) & (static_cast<UInt_t>(IDcut::sieie) | static_cast<UInt_t>(IDcut::chIso)))  // bitwise or
 	  return true;
       case Loose:
 	cutBits = &cutIDbitsLoose_ ; break;
@@ -252,7 +251,7 @@ namespace phys {
       default:
 	return true;
       }
-      return (*cutBits) & cut;  // bitwise AND
+      return (*cutBits) & static_cast<UInt_t>(cut);  // bitwise AND
     }
     
     inline bool isBarrel() const { return fabs(eta()) < TRANSITION_BARREL_ENDCAP; }
