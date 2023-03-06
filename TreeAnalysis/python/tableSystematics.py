@@ -1,20 +1,10 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 from __future__ import print_function
 import json
 import pandas as pd
-from argparse import ArgumentParser
-
-parser = ArgumentParser()
-parser.add_argument('-r', '--regions', dest='regions', nargs='+', choices=['SR4P','CR3P1F','CR2P2F','SR3P'], default=['SR4P','SR3P'])
-parser.add_argument('-p', '--variables', dest='variables', nargs='+', default=['mZZ','mZZG','mWZ','mWZG'])
-args = parser.parse_args()
-print(args)
 
 _padding_length = 80
-
-with open('data/systematics.json') as fin:
-    systematics = json.load(fin)
 
 # Hierarchy: region | variable | sample | syst
 
@@ -27,34 +17,54 @@ def formatVariation(value):
         return '{:+2.2f}/{:+2.2f}'.format(value['up']*100, value['dn']*100)  # For slides or AN
         # return '{:f}'.format(1+abs(value['up']-value['dn'])/2)               # For Combine datacard
 
-for region in args.regions:
+
+def fillDataFrame(raw_data, formatter=formatVariation):
+    # "Unpack" the inner dictionary {'up':x.xx, 'dn':x.xx} into a string
+    data = { sample:
+             { syst: formatter(value) for syst, value in d.items() }
+             for sample, d in raw_data.items() }
+    
+    # Use pandas for pretty formatting
+    return pd.DataFrame.from_dict(data) #, orient='index')
+
+
+def tableRegion(systematics, region, variables):
     if(not region in systematics.keys()):
         print('WARN: region "{}" not found'.format(region))
-        continue
-    nPadding_reg = (_padding_length - len(region))/2 - 1
+        return
+    nPadding_reg = int((_padding_length - len(region))/2) - 1
     print('#'*nPadding_reg, region, '#'*nPadding_reg)
     
-    for variable in args.variables:
+    for variable in variables:
         if(not variable in systematics[region].keys()):
             # print('WARN: variable "{}" not found in region "{}"'.format(variable, region))
             continue
         
-        nPadding = (_padding_length - len(variable))/2 - 1
+        nPadding = int((_padding_length - len(variable))/2) - 1
         print('-'*nPadding, variable, '-'*nPadding)
 
-        raw_data = systematics[region][variable]
-        # "Unpack" the inner dictionary {'up':x.xx, 'dn':x.xx} into a string
-        data = { sample:
-                 { syst: formatVariation(value) for syst, value in d.items() }
-                 for sample, d in raw_data.items() }
+        df = fillDataFrame(systematics[region][variable])
         
-        # Use pandas for pretty formatting
-        df = pd.DataFrame.from_dict(data) #, orient='index')
-        label_order = ['PDFVar', 'QCD-F', 'QCD-muR', 'alphas', 'L1Prefiring', 'puWeight', 'PhEScale', 'PhESigma', 'phEffSF', 'eleEffSF', 'muoEffSF', 'eleFakeRateSF', 'muoFakeRateSF']
-        # if variable.startswith('mZZ'):
-        #     df = df.loc[:, ['ZZGTo4LG', 'ZZTo4l', 'ggTo4l', 'fake_leptons']]
+        # label_order = ['PDFVar', 'QCD-F', 'QCD-muR', 'alphas', 'L1Prefiring', 'puWeight', 'PhEScale', 'PhESigma', 'phEffSF', 'eleEffSF', 'muoEffSF', 'eleFakeRateSF', 'muoFakeRateSF']
+        # df = df.loc[label_order, :]
         
-        print(df.loc[label_order, :].to_string())
+        print(df.to_string())
         
         print('-'*_padding_length, end='\n\n')
     print('#'*_padding_length, end='\n\n')
+
+if __name__ == '__main__':
+    from argparse import ArgumentParser
+
+    parser = ArgumentParser()
+    parser.add_argument('-y', '--year', default=2016)
+    parser.add_argument('-r', '--regions', dest='regions', nargs='+', choices=['SR4P','CR3P1F','CR2P2F','SR3P'], default=['SR4P','SR3P'])
+    parser.add_argument('-p', '--variables', dest='variables', nargs='+', default=['mZZ','mZZG','mWZ','mWZG'])
+    args = parser.parse_args()
+    # print(args)
+
+    with open('data/systematics_{year}.json'.format(year=args.year)) as fin:
+        systematics = json.load(fin)
+    
+    for region in args.regions:
+        tableRegion(systematics, region, args.variables)

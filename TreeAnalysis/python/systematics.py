@@ -194,7 +194,8 @@ def doSystOnFile(path, syst_values):  # <str>, <dict> (to be passed to doSystema
 
         sample = path.split('/')[-1].split('.')[0]
         region = path.split('/')[-2].split('_')[-1]
-        makedirs_ok('Plot/SYS/{}'.format(region))
+        if(_do_plots):
+            makedirs_ok('Plot/SYS/{}'.format(region))
     
         for var in variables:
             for syst in systematics:
@@ -208,16 +209,17 @@ def doSystOnFile(path, syst_values):  # <str>, <dict> (to be passed to doSystema
                     hmuR1F2   = tf.Get('SYS_{}_QCDscaleF_Up'    .format(var))
                     plotSystematics(hCentral, hmuR2F1, hmuR0p5F1, syst_values, var=var, syst='QCD-muR', sample=sample, region=region)
                     plotSystematics(hCentral, hmuR1F2, hmuR1F0p5, syst_values, var=var, syst='QCD-F'  , sample=sample, region=region)
-                
-                doSystematics(tf, var, syst, syst_values, sample=sample, region=region)
+                else:
+                    doSystematics(tf, var, syst, syst_values, sample=sample, region=region)
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='Calculate systematic variations from rootfiles produced by VVGammaAnalyzer')
     parser.add_argument('-p', '--plots', dest='do_plots', action='store_true')
+    parser.add_argument('-y', '--year', default='2016')
     args = parser.parse_args()
     
     syst_values = {}
-    results_folder = 'results/2016/VVGammaAnalyzer_{region}'
+    results_folder = 'results/{year}/VVGammaAnalyzer_{region}'.format(year=args.year, region='{region}')
 
     if(environ.get('CMSSW_BASE', False)):
         basepath = path.join(environ['CMSSW_BASE'], 'src', 'VVXAnalysis', 'TreeAnalysis')
@@ -230,7 +232,7 @@ if __name__ == '__main__':
     if(not path.isdir(datapath)):
         makedirs_ok(datapath)
     
-    sysJSON = path.join(datapath, 'systematics.json')
+    sysJSON = path.join(datapath, 'systematics_{}.json'.format(args.year))
     try:
         with open(sysJSON, 'r') as f:
             syst_values = load(f)
