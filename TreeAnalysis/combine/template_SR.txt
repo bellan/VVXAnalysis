@@ -1,0 +1,16 @@
+imax {imax} number of channels
+jmax {jmax} number of backgrounds
+kmax {kmax} number of nuisance parameters
+------------
+
+shapes * {path} $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
+------------
+
+{bins}
+------------
+
+{processes}
+------------
+
+{systematics}
+
