@@ -18,6 +18,9 @@ class TFileContext(object):
 def getPlots(inputdir, sample, plots):
     fname = path.join(inputdir, sample+".root")
     retrieved = []
+    if(not path.exists(fname)):
+        print('WARN: file "{}" does not exist'.format(fname))
+        return [None for plot in plots]
     with TFileContext(fname) as rFile:
         for plot in plots:
             h = rFile.Get(plot)
@@ -71,14 +74,11 @@ _xlabels = {
 _line_styles = (1, 2, 7)
 
 
-def stackPlots(ZZpromptmO, ZZmatchedO, ZZnomatchO, ZZGpromptmO, ZZGmatchedO, ZZGnomatchO, variable, phID, region):
+def stackPlots(promptmO, matchedO, nomatchO, variable, phID, region, sample='[sample]'):
     # copy plots to avoid accidentaly modifying them
-    ZZpromptm  = ZZpromptmO.Clone( ZZpromptmO.GetName() +'_copy')
-    ZZmatched  = ZZmatchedO.Clone( ZZmatchedO.GetName() +'_copy')
-    ZZnomatch  = ZZnomatchO.Clone( ZZnomatchO.GetName() +'_copy')
-    ZZGpromptm = ZZGpromptmO.Clone(ZZGpromptmO.GetName()+'_copy')
-    ZZGmatched = ZZGmatchedO.Clone(ZZGmatchedO.GetName()+'_copy')
-    ZZGnomatch = ZZGnomatchO.Clone(ZZGnomatchO.GetName()+'_copy')
+    promptm  = promptmO.Clone( promptmO.GetName() +'_copy')
+    matched  = matchedO.Clone( matchedO.GetName() +'_copy')
+    nomatch  = nomatchO.Clone( nomatchO.GetName() +'_copy')
     
     def normalize_stack(stack):
         print('>>> nomalizing',stack.GetName())
@@ -105,56 +105,60 @@ def stackPlots(ZZpromptmO, ZZmatchedO, ZZnomatchO, ZZGpromptmO, ZZGmatchedO, ZZG
         stack.Draw()
         legend.Draw("same")
         stack.GetXaxis().SetTitle(h_nomatch.GetXaxis().GetTitle())
-        stack.GetYaxis().SetTitle('Fraction of events')
+        stack.GetYaxis().SetTitle('Fraction of events' if do_normalize else 'Events')
         return stack, legend  # Prevent garbage collection from destroying them
 
     do_normalize = variable != 'm4lG'
     
-    canvas_stackZZ  = ROOT.TCanvas("canvas_stackZZ", "stackZZ", 1600, 900)
-    canvas_stackZZ.cd()
-    stackZZ, legendZZ   = fill_stack(ZZpromptm , ZZmatched , ZZnomatch , 'ZZ' , colors=(ROOT.kGreen -3, ROOT.kYellow+1, ROOT.kOrange+7), do_normalize=do_normalize)
-    canvas_stackZZ.SaveAs(  path.join('Plot', 'photonGenStudy',  '{}_{}_{}_stackZZ.png'.format(variable, phID, region)) )
+    canvas_stack  = ROOT.TCanvas("canvas_stack", "stack", 1600, 900)
+    canvas_stack.cd()
+    stack, legend   = fill_stack(promptm , matched , nomatch , sample , colors=(ROOT.kGreen -3, ROOT.kYellow+1, ROOT.kOrange+7), do_normalize=do_normalize)
+    canvas_stack.SaveAs(  path.join('Plot', 'photonGenStudy',  '{}_{}_{}_stack{}.png'.format(variable, phID, region, sample)) )
     
-    canvas_stackZZG = ROOT.TCanvas("canvas_stackZZG", "stackZZG", 1600, 900)
-    canvas_stackZZG.cd()
-    stackZZG, legendZZG = fill_stack(ZZGpromptm, ZZGmatched, ZZGnomatch, 'ZZG', colors=(ROOT.kGreen -3, ROOT.kYellow+1, ROOT.kOrange+7), do_normalize=do_normalize)
-    canvas_stackZZG.SaveAs( path.join('Plot', 'photonGenStudy', '{}_{}_{}_stackZZG.png'.format(variable, phID, region)) )
 
-
-def myPlots(variable, phID, region):
+def myPlots(variable, phID, region, year):
     # basedir = 'rsync_results/Updated/EXT/2016/VVGammaAnalyzer_{}'.format(region)
-    basedir = 'results/2016/VVGammaAnalyzer_{}'.format(region)
+    basedir = 'results/{}/VVGammaAnalyzer_{}'.format(year, region)
     name = 'PhGenStudy_{variable}_{phID}_{matched}'.format(variable=variable, phID=phID, matched='{}')
-    ZZpromptm , ZZmatched , ZZnomatch  = getPlots(basedir, 'ZZTo4l'  , [name.format('matchedPrompt'), name.format('matched'), name.format('nomatch')] )
-    ZZGpromptm, ZZGmatched, ZZGnomatch = getPlots(basedir, 'ZZGTo4LG', [name.format('matchedPrompt'), name.format('matched'), name.format('nomatch')] )
+    ZZpromptm , ZZmatched , ZZnomatch  = getPlots(basedir, 'ZZTo4l'  , [name.format('promptm'), name.format('matched'), name.format('nomatch')] )
+    ZZGpromptm, ZZGmatched, ZZGnomatch = getPlots(basedir, 'ZZGTo4LG', [name.format('promptm'), name.format('matched'), name.format('nomatch')] )
     
-    if(ZZnomatch is None or ZZGnomatch is None):
-        print('ERROR: one of "nomatch" plots is missing. Skipping', region, variable, phID)
+    if(ZZnomatch is None and ZZGnomatch is None):
+        print('ERROR: both ZZnomatch and ZZGnomatch are missing. Skipping', region, variable, phID)
         return
-    if(ZZpromptm  is None):
-        # PyRoot is not made to manipulate arrays: TAxis::GetXbins().GetArray() is simply unusable here!
-        # ZZpromptm  = ROOT.TH1F('PhGenStudy_DRLep_loose_matchedPrompt',phID.capitalize(), ZZnomatch. GetNbinsX(), ZZnomatch. GetXaxis().GetXbins().GetArray())
-        ZZpromptm = ZZnomatch.Clone('PhGenStudy_DRLep_loose_matchedPrompt')
-        for b in range(0, ZZnomatch.GetNcells()+2):
-            ZZpromptm.SetBinContent(b, 0)
-            ZZpromptm.SetBinError(b, 0)
-    if(ZZmatched  is None):
-        ZZmatched = ZZnomatch.Clone('PhGenStudy_DRLep_loose_matched')
-        for b in range(0, ZZnomatch.GetNcells()+2):
-            ZZmatched.SetBinContent(b, 0)
-            ZZmatched.SetBinError(b, 0)
-    if(ZZGpromptm is None):
-        ZZGpromptm = ZZGnomatch.Clone('PhGenStudy_DRLep_loose_matchedPrompt')
-        for b in range(0, ZZGnomatch.GetNcells()+2):
-            ZZGpromptm.SetBinContent(b, 0)
-            ZZGpromptm.SetBinError(b, 0)
-    if(ZZGmatched is None):
-        ZZGmatched = ZZGnomatch.Clone('PhGenStudy_DRLep_loose_matched')
-        for b in range(0, ZZGnomatch.GetNcells()+2):
-            ZZGmatched.SetBinContent(b, 0)
-            ZZGmatched.SetBinError(b, 0)
+    
+    if(ZZnomatch is None):
+        print('WARN: ZZnomatch is missing in', region, variable, phID)
+    else:
+        if(ZZpromptm  is None):
+            # PyRoot is not made to manipulate arrays: TAxis::GetXbins().GetArray() is simply unusable here!
+            # ZZpromptm  = ROOT.TH1F('PhGenStudy_DRLep_loose_matchedPrompt',phID.capitalize(), ZZnomatch. GetNbinsX(), ZZnomatch. GetXaxis().GetXbins().GetArray())
+            ZZpromptm = ZZnomatch.Clone('PhGenStudy_DRLep_loose_matchedPrompt')
+            for b in range(0, ZZnomatch.GetNcells()+2):
+                ZZpromptm.SetBinContent(b, 0)
+                ZZpromptm.SetBinError(b, 0)
+        if(ZZmatched  is None):
+            ZZmatched = ZZnomatch.Clone('PhGenStudy_DRLep_loose_matched')
+            for b in range(0, ZZnomatch.GetNcells()+2):
+                ZZmatched.SetBinContent(b, 0)
+                ZZmatched.SetBinError(b, 0)
+    
+    if(ZZGnomatch is None):
+        print('WARN: ZZGnomatch is missing in', region, variable, phID)
+    else:
+        if(ZZGpromptm is None):
+            ZZGpromptm = ZZGnomatch.Clone('PhGenStudy_DRLep_loose_promptm')
+            for b in range(0, ZZGnomatch.GetNcells()+2):
+                ZZGpromptm.SetBinContent(b, 0)
+                ZZGpromptm.SetBinError(b, 0)
+        if(ZZGmatched is None):
+            ZZGmatched = ZZGnomatch.Clone('PhGenStudy_DRLep_loose_matched')
+            for b in range(0, ZZGnomatch.GetNcells()+2):
+                ZZGmatched.SetBinContent(b, 0)
+                ZZGmatched.SetBinError(b, 0)
     
     for h in (ZZpromptm, ZZmatched, ZZnomatch, ZZGpromptm, ZZGmatched, ZZGnomatch):
+        if h is None: continue
         # print(h)
         h.SetTitle('{} photons (in {})'.format(phID.capitalize(), region))
         axis = h.GetYaxis()
@@ -165,10 +169,16 @@ def myPlots(variable, phID, region):
 
     ################################################################################
     # Stack Plots        
-    stackPlots(ZZpromptm, ZZmatched, ZZnomatch, ZZGpromptm, ZZGmatched, ZZGnomatch, variable, phID, region)
+    if(ZZnomatch is not None):
+        stackPlots(ZZpromptm , ZZmatched , ZZnomatch , variable, phID, region, 'ZZ' )
+    if(ZZGnomatch is not None):
+        stackPlots(ZZGpromptm, ZZGmatched, ZZGnomatch, variable, phID, region, 'ZZG')
 
     ################################################################################
     # Old Plots
+    if(ZZnomatch is None or ZZGnomatch is None):
+        print('WARN: one or more of "nomatch" plots is missing. Skipping old plots in', region, variable, phID)
+        return
     yMax  = max([max(h.GetBinContent(h.GetMaximumBin()), h.GetBinContent(h.GetNbinsX() + 1))
                  for h in (ZZpromptm, ZZmatched, ZZnomatch, ZZGpromptm, ZZGmatched, ZZGnomatch)])
     yMax *= 1.1
@@ -306,4 +316,4 @@ if __name__ == '__main__':
     for region in ['SR4P']:
         for variable in ['DRJet', 'DRPhLep', 'm4lG', 'nJets', 'ptPh']:
             for phID in ['kin', 'veryLoose', 'fail', 'loose']:
-                myPlots(variable, phID, 'SR4P')
+                myPlots(variable, phID, 'SR4P', 2018)
