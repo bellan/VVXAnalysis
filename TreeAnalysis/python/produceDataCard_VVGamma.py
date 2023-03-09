@@ -182,7 +182,7 @@ template = PartialFormatter().format(template,
     imax=1,
     jmax=len(signals)+len(backgrounds)-1,
     kmax=len(df_syst),
-    path=args.path,
+    path=os.path.join(args.path, str(args.year), args.region+'.root'),
     bins=df_bin.to_string(header=False),
     processes=df_rate.to_string(header=False),
     systematics='#'+df_syst.to_string()
