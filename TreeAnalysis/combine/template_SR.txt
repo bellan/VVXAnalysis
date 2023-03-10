@@ -3,7 +3,7 @@ jmax {jmax} number of backgrounds
 kmax {kmax} number of nuisance parameters
 ------------
 
-shapes * {path} $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
+shapes * * {path} $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
 ------------
 
 {bins}
