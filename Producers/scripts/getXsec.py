@@ -103,7 +103,7 @@ def getXsec_file(sample, **kwargs):
     result = subprocess.run(command, shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     match = re.search("([-\d\.e]+;){3}[-\d\.e]+", result.stdout)
     if(match is None):
-        return dict(zip(labels, [-1, 0, -1, 0]))
+        return dict(zip(labels, [-2, 0, -2, 0]))
     
     return dict(zip(labels, [ float(s) for s in match.group().split(';')] ))
 
@@ -113,8 +113,7 @@ def getXsec_xsecdb(dataset, **kwargs):
     if(rw is None):
         rw = RequestWrapper()
     
-    dataset_name = dataset.strip('/').split('/')[0]
-    results = rw.simple_search({'DAS':dataset_name})
+    results = rw.simple_search({'DAS':dataset})
     if(kwargs.get('verbose', 0)):
         print(json.dumps(results, indent=2))
     return [float(result.get('cross_section', -1)) for result in results]

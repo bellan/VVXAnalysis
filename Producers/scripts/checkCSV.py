@@ -10,7 +10,13 @@ import pandas as pd
 import json
 from os import path, environ
 from math import isnan, floor, log10
+from argparse import ArgumentParser
 from getXsec import getXsec_McM, getXsec_xsecdb, getXsec_file
+
+parser = parser = ArgumentParser()
+parser.add_argument('-y', '--years', choices=['2016preVFP', '2016', '2017', '2018'], nargs='+', default='2016')
+parser.add_argument('-f', '--force', choices=['mcm', 'xsecdb', 'internal'], nargs='+', default=[])
+args = parser.parse_args()
 
 def myformatter(number):
     if(number+1 < 1e-5 or number < 1e-5): return "{:.0f}".format(number)
@@ -25,14 +31,19 @@ def isInvalid(xsec):
             return True
         return False
 
-for year in [2016]:  # (2016, 2017, 2018):
-    samples_file = "{:s}/src/VVXAnalysis/Producers/python/samples_{:d}UL_MC.csv".format(environ['CMSSW_BASE'], year)
-    print("Year", year, "\tsamples_file:", samples_file)
-    with open(samples_file) as f:
+for year in args.years:  # (2016, 2017, 2018):
+    csv_dir = '{:s}/src/VVXAnalysis/Producers/python'.format(environ['CMSSW_BASE'])
+    if year == '2016preVFP':
+        csv_file = 'samples_2016ULpreVFP_MC.csv'
+    else:
+        csv_file = 'samples_{}UL_MC.csv'.format(year)
+    csv_file = path.join(csv_dir, csv_file)
+    print("Year", year, "\tcsv_file:", csv_file)
+    with open(csv_file) as f:
         mycsv = pd.read_csv(f, sep=',')
     
     # Cache results to file to avoid time-expensive queries to McM
-    xsec_storage_file = "xsections{:d}.json".format(year)
+    xsec_storage_file = "xsections{}.json".format(year)
     if path.exists(xsec_storage_file):
         with open(xsec_storage_file) as f:
             XsecDict = json.load(f)
@@ -58,7 +69,7 @@ for year in [2016]:  # (2016, 2017, 2018):
         
         # McM
         mcm = XsecDict[dataset].get("mcm", None)
-        if(isInvalid(mcm)):
+        if(isInvalid(mcm) or 'mcm' in args.force):
             print(">>>getXsec_McM(%s)" % (dataset), end = ' --> ')
             mcm = getXsec_McM(dataset)
             XsecDict[dataset]['mcm'] = mcm
@@ -67,7 +78,7 @@ for year in [2016]:  # (2016, 2017, 2018):
         
         # xsecDB
         xsecdb = XsecDict[dataset].get("xsecdb", None)
-        if(isInvalid(xsecdb)):
+        if(isInvalid(xsecdb) or 'xsecdb' in args.force):
             print(">>>getXsec_xsecDB(%s)" % (dataset), end=' --> ')
             xsecdb = getXsec_xsecdb(dataset)
             XsecDict[dataset]['xsecdb'] = xsecdb
@@ -77,7 +88,7 @@ for year in [2016]:  # (2016, 2017, 2018):
         # the one written to file (internal + "external" --> written in the CSV when the ntuple was produced)
         internal = XsecDict[dataset].get("internal", None)
         external = XsecDict[dataset].get("external", None)
-        if(internal is None or external is None):
+        if(internal is None or external is None or 'internal' in args.force):
             print(">>>getXsec_file(%s)" % (sample), end=' --> ')
             Xsec_file = getXsec_file(sample, year=year)
             internal = Xsec_file['internal']
