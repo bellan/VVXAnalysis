@@ -1,5 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
+from __future__ import print_function
 import os
 import sys
 import json
@@ -23,7 +24,7 @@ parser.add_argument(      '--path', default='/afs/cern.ch/user/a/amecca/public/h
 
 args = parser.parse_args()
 if(args.verbose):
-    print(f'INFO: writing card for {args.year}, {args.region}')
+    print('INFO: writing card for {args.year}, {args.region}'.format(*globals()))
 
 ### Hardcoded configuration ###
 config = {
@@ -125,14 +126,15 @@ signals     = [proc for proc in region_config['processes'] if proc in config['si
 backgrounds = [proc for proc in region_config['processes'] if proc in config['backgrounds']]
 
 if(args.verbose):
-    print(f'>>> {signals=}')
-    print(f'>>> {backgrounds=}')
-    print(f'>>> {observables=}')
+    print('>>> {signals=}'    .format(*globals))
+    print('>>> {backgrounds=}'.format(*globals))
+    print('>>> {observables=}'.format(*globals))
 
 minProc = 1 - len(signals)
-samples_to_idx = {**{s:minProc+i for i,s in enumerate(signals)}, **{b:i+1 for i, b in enumerate(backgrounds)}}
+samples_to_idx      = {s:minProc+i for i,s in enumerate(signals)    }
+samples_to_idx.update({b:i+1       for i,b in enumerate(backgrounds)})
 if(args.verbose):
-    print(f'>>> {samples_to_idx=}')
+    print('>>> {samples_to_idx=}'.format(*globals))
 
 df_rate = pd.DataFrame(
     [[getBinName(args.region, region_config['observable']['name']), k, samples_to_idx[k], v] for k,v in region_config['processes'].items()],
