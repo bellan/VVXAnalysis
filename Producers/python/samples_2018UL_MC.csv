@@ -83,7 +83,7 @@ TZq,,0.07561,,,/tZq_ll_4f_ckm_NLO_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL
 
 
 ###,V+Gamma,,,,,,,,,,V+Gamma background
-# ZGToLLG,VG,55.48,,,/ZGToLLG_01J_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM,dbs,,1,GENXSEC=55.48;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2018,RecoProbabilities.py,
-# WGToLNuG,VG,190.8,,,/WGToLNuG_01J_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM,dbs,,1,GENXSEC=190.8;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+ZGToLLG,VG,55.48,,,/ZGToLLG_01J_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM,dbs,,1,GENXSEC=55.48;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2018,RecoProbabilities.py,
+WGToLNuG,VG,190.8,,,/WGToLNuG_01J_5f_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM,dbs,,1,GENXSEC=190.8;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2018,RecoProbabilities.py,
 # WGToLNuG130,VG,1.019,,,/WGToLNuG_01J_5f_PtG_130_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM,dbs,,1,GENXSEC=1.019;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2018,RecoProbabilities.py,
 # WGToLNuG300,VG,0.07074,,,/WGToLNuG_01J_5f_PtG_300_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL18MiniAODv2-106X_upgrade2018_realistic_v16_L1v1-v1/MINIAODSIM,dbs,,1,GENXSEC=0.07074;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2018,RecoProbabilities.py,
