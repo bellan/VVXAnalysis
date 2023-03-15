@@ -1,17 +1,15 @@
-#!/bin/bash -x
+#!/bin/bash -xu
 
 
 prefixcsvfile="../Producers/python/samples_"
 suffixcsvfile="_Data.csv"
-haddOpt="-k -f -j 10"  # "-j $(grep processor /proc/cpuinfo | wc -l)"
+haddOpt="-k -f"
 rmOpt="-r -f"
 analyzer=VVGammaAnalyzer  # VVXAnalyzer
 years="2016"
 
 regions="SR4P;CR3P1F;CR2P2F;SR3P;CR110;CR101;CR011;CR100;CR010;CR001;CR000;SR2P"  # "CRLFR"  # 
 options=""  # "--nofr"  # 
-
-eras="Bver2 Chipm Dhipm Ehipm Fhipm F G H"  # Bver1
 
 make || exit
 
@@ -21,33 +19,37 @@ echo -e "--- Analyses on Data ---\n"
 for year in $years ; do
     csvfile=$prefixcsvfile${year}UL$suffixcsvfile
 
-    for era in $eras ; do			
-    	./python/run.py $analyzer 2016$era -y $year -r $regions -c $csvfile $options -d samples/Data &> logdir/data_${year}${era}.log &
+    data_samples=$(ls samples/Data/$year | grep $year | grep -oP ".+(?=\.root)" | sort)
+    for sample in ${data_samples} ; do
+        ./python/run.py $analyzer $sample -y $year -r $regions -c $csvfile $options -d samples/Data &> logdir/${sample}.log &
     done
 
     wait
 
     for region in $(echo $regions | tr ';' ' ') ; do
-    	folder="results/$year/${analyzer}_${region}"
-    	(
-    	    cd $folder
-    	    for era in $eras ; do
-    		ls | grep -q ".\+${year}${era}.root" && hadd $haddOpt ${year}${era}.root $(ls | grep ".\+${year}${era}.root") || echo "Warning: no files for ${year}${era}.root"
-    	    done
-    	    hadd $haddOpt data.root $(printf "${year}%s.root " $eras)  # printf reuses the format string to consume all of its arguments
-    	)
+        folder="results/$year/${analyzer}_${region}"
+        (
+            cd $folder
+            hadd $haddOpt data.root $(printf "%s.root " ${data_samples})  # printf reuses the format string to consume all of its arguments
+        )
     done
     
-    hadd -k -f results/$year/${analyzer}_SR4P/fake_leptons.root \
-	results/$year/${analyzer}_CR3P1F/data.root \
-	results/$year/${analyzer}_CR2P2F/data.root
+    # Hadd lepton CRs only if they've been regenerated
+    if echo $regions | grep -q CR3P1F || echo $regions | grep -q CR2P2F ; then
+        hadd -k -f results/$year/${analyzer}_SR4P/fake_leptons.root \
+            results/$year/${analyzer}_CR3P1F/data.root \
+            results/$year/${analyzer}_CR2P2F/data.root
+    fi
     
-    hadd -k -f results/$year/${analyzer}_SR3P/fake_leptons.root \
-	results/$year/${analyzer}_CR110/data.root \
-	results/$year/${analyzer}_CR101/data.root \
-	results/$year/${analyzer}_CR011/data.root \
-	results/$year/${analyzer}_CR100/data.root \
-	results/$year/${analyzer}_CR010/data.root \
-	results/$year/${analyzer}_CR001/data.root \
-	results/$year/${analyzer}_CR000/data.root
+    if echo $regions | grep -q CR110 || echo $regions | grep -q CR101 || echo $regions | grep -q CR011 || \
+       echo $regions | grep -q CR100 || echo $regions | grep -q CR010 || echo $regions | grep -q CR001 || echo $regions | grep -q CR000 ; then
+        hadd -k -f results/$year/${analyzer}_SR3P/fake_leptons.root \
+            results/$year/${analyzer}_CR110/data.root \
+            results/$year/${analyzer}_CR101/data.root \
+            results/$year/${analyzer}_CR011/data.root \
+            results/$year/${analyzer}_CR100/data.root \
+            results/$year/${analyzer}_CR010/data.root \
+            results/$year/${analyzer}_CR001/data.root \
+            results/$year/${analyzer}_CR000/data.root
+    fi
 done

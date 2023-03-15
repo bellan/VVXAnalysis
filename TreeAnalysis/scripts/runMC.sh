@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh -xu
 
 prefixcsvfile="../Producers/python/samples_"
 suffixcsvfile="_MC.csv"
