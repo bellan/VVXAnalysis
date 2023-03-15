@@ -207,8 +207,8 @@ def doSystOnFile(path, syst_values):  # <str>, <dict> (to be passed to doSystema
                     hmuR2F1   = tf.Get('SYS_{}_QCDscalemuR_Up'  .format(var))
                     hmuR1F0p5 = tf.Get('SYS_{}_QCDscaleF_Down'  .format(var))
                     hmuR1F2   = tf.Get('SYS_{}_QCDscaleF_Up'    .format(var))
-                    plotSystematics(hCentral, hmuR2F1, hmuR0p5F1, syst_values, var=var, syst='QCD-muR', sample=sample, region=region)
-                    plotSystematics(hCentral, hmuR1F2, hmuR1F0p5, syst_values, var=var, syst='QCD-F'  , sample=sample, region=region)
+                    plotSystematics(hCentral, hmuR2F1, hmuR0p5F1, syst_values, var=var, syst='QCDscalemuR', sample=sample, region=region)
+                    plotSystematics(hCentral, hmuR1F2, hmuR1F0p5, syst_values, var=var, syst='QCDscaleF'  , sample=sample, region=region)
                 else:
                     doSystematics(tf, var, syst, syst_values, sample=sample, region=region)
 
