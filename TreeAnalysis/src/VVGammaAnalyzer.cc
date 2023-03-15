@@ -595,7 +595,7 @@ void VVGammaAnalyzer::end(TFile& fout){
 
 
 void VVGammaAnalyzer::endNameHistos(){
-  for(const char* name : {"AAA_cuts", "AAA_cuts_u", "kinPhotons_ID", "kinPh_eScale_N", "kinPhotons_cutflow"}){
+  for(const char* name : {"AAA_cuts", "AAA_cuts_u", "kinPhotons_ID", "kinPh_eScale_N", "kinPhotons_cuts"}){
     TH1* h = theHistograms->get(name);
     if(h) h->LabelsDeflate("X");
   }
@@ -1111,8 +1111,8 @@ void VVGammaAnalyzer::photonHistos(){
     Photon::IdWp wp = Photon::IdWp::Loose;
     auto bestG = std::max_element(kinPhotons_["central"]->begin(), kinPhotons_["central"]->end(),
 				  [wp](const Photon& a, const Photon& b){
-				    int na = a.passSigmaiEtaiEta(wp)+a.passHoverE(wp)+a.passChargedIsolation(wp)+a.passNeutralIsolation(wp)+a.passPhotonIsolation(wp);
-				    int nb = b.passSigmaiEtaiEta(wp)+b.passHoverE(wp)+b.passChargedIsolation(wp)+b.passNeutralIsolation(wp)+b.passPhotonIsolation(wp);
+				    int na = a.cutBasedID(wp, Photon::IDcut::sieie) + a.cutBasedID(wp, Photon::IDcut::HoverE) + a.cutBasedID(wp, Photon::IDcut::chIso) + a.cutBasedID(wp, Photon::IDcut::neIso) + a.cutBasedID(wp, Photon::IDcut::phIso);
+				    int nb = b.cutBasedID(wp, Photon::IDcut::sieie) + b.cutBasedID(wp, Photon::IDcut::HoverE) + b.cutBasedID(wp, Photon::IDcut::chIso) + b.cutBasedID(wp, Photon::IDcut::neIso) + b.cutBasedID(wp, Photon::IDcut::phIso);
 				    return na < nb;
 				  });  // max_element returns the first among those with max value --> preserve pt ordering
     
@@ -1387,10 +1387,10 @@ void VVGammaAnalyzer::photonFakeRate(){
   Photon::IdWp wp = Photon::IdWp::Loose;
   auto bestG = std::max_element(thePhVect.begin(), thePhVect.end(),
 				[wp](const Photon& a, const Photon& b){
-				  return a.passSigmaiEtaiEta(wp) + a.passChargedIsolation(wp) < b.passSigmaiEtaiEta(wp) + b.passChargedIsolation(wp);
+				  return a.cutBasedID(wp,Photon::IDcut::sieie) + a.cutBasedID(wp,Photon::IDcut::chIso) < b.cutBasedID(wp,Photon::IDcut::sieie) + b.cutBasedID(wp,Photon::IDcut::chIso);
 				});  // max_element returns the first among those with max value --> preserve pt ordering
   
-  if( !bestG->passHoverE(wp) || !bestG->passNeutralIsolation(wp) || !bestG->passPhotonIsolation(wp))
+  if( !bestG->cutBasedID(wp,Photon::IDcut::HoverE) || !bestG->cutBasedID(wp,Photon::IDcut::neIso) || !bestG->cutBasedID(wp,Photon::IDcut::phIso) )
     throw std::logic_error("Best of loose photon does not pass one of {HoverE, neutralIso, photonIso}");
   
   bool isPrompt = false;
@@ -1423,7 +1423,7 @@ void VVGammaAnalyzer::photonFakeRate(){
   theHistograms->fill(name, Form("Photons: %c;p_{T} [GeV/c];#eta", ABCD), ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
   
   // Fake rate with Loose-to-Tight (loose = 3/5 cutBasedIDLoose, tight = 5/5 cutBasedIDLoose)
-  int nPass = 3 + bestG->passSigmaiEtaiEta(wp) + bestG->passChargedIsolation(wp);
+  int nPass = 3 + bestG->cutBasedID(wp,Photon::IDcut::sieie) + bestG->cutBasedID(wp,Photon::IDcut::chIso);
 
   name = Form("PhFR_LToT_%d", nPass);
   if(theSampleInfo.isMC())
@@ -1660,13 +1660,13 @@ bool isVeryLooseSiEiE(const Photon& ph, const double& barrel_thr=0.012, const do
 
 char VVGammaAnalyzer::phABCD(const Photon& ph, const Photon::IdWp wp){
   char ABCD = '0';  // Defaults to something recognizable
-  if( ph.passChargedIsolation(wp) ){    // Signal region: either A or B
-    if     (ph.passSigmaiEtaiEta(wp)) ABCD = 'A';
-    else if(isVeryLooseSiEiE(ph)    ) ABCD = 'B';
+  if( ph.cutBasedID(wp, Photon::IDcut::chIso) ){    // Signal region: either A or B
+    if     (ph.cutBasedID(wp, Photon::IDcut::sieie)) ABCD = 'A';
+    else if(isVeryLooseSiEiE(ph)                   ) ABCD = 'B';
   }
   else{                                 // Measurement region
-    if     (ph.passSigmaiEtaiEta(wp)) ABCD = 'C';
-    else if(isVeryLooseSiEiE(ph)    ) ABCD = 'D';
+    if     (ph.cutBasedID(wp, Photon::IDcut::sieie)) ABCD = 'C';
+    else if(isVeryLooseSiEiE(ph)                   ) ABCD = 'D';
   }
   return ABCD;
 }
@@ -1930,7 +1930,7 @@ double VVGammaAnalyzer::getPhotonFRUnc(const phys::Photon& ph) const{
 
 bool VVGammaAnalyzer::passVeryLoose(const Photon& ph){
   Photon::IdWp wp = Photon::IdWp::Loose;
-  return ph.passHoverE(wp) && ph.passPhotonIsolation(wp) && ph.passNeutralIsolation(wp);
+  return ph.cutBasedID(wp, Photon::IDcut::HoverE) && ph.cutBasedID(wp, Photon::IDcut::phIso) && ph.cutBasedID(wp, Photon::IDcut::neIso);
 }
 
 
