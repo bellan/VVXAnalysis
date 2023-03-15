@@ -29,6 +29,7 @@ using namespace physmath;
 
 // #define DEBUG
 
+#define BIN_GENCATEGORY 10,-0.5,9.5
 #define BINS_CUTFLOW 9,-0.5,8.5
 //{"All", "ZZ || ZW", "2l2j || 2l1J", "#gamma kin", "#gamma good", "Analyzed", "#gamma medium"}
 #define BINS_PHCUTFLOW 6,-0.5,5.5
@@ -68,7 +69,7 @@ void VVGammaAnalyzer::begin(){
   std::string spaces( digits, ' ' );
   cout<<"Analyzed:\t"<<spaces<<'/'<<tree()->GetEntries()<<std::flush;
   #else
-  cout<<'\n';
+  cout<<"\tSizes: Particle="<<sizeof(Particle)<<" , Lepton="<<sizeof(Lepton)<<" , Photon="<<sizeof(Photon)<<" Jet="<<sizeof(Jet)<<" , Boson<Particle>="<<sizeof(Boson<Particle>)<<" , DiBoson<Particle,Particle>="<<sizeof(DiBoson<Particle,Particle>)<<'\n';
   #endif
 
   return;
@@ -203,6 +204,20 @@ Int_t VVGammaAnalyzer::cut() {
     // theHistograms->fill("cherry_ZZ_badLept" , "Events in {UL#backslashLegacy}: # bad leptons"            , 5,-0.5,4.5, ZZ->numberOfBadGrandDaughters() , theWeight);
   // }
   
+  std::bitset<32> genCategory_bits(genCategory);
+  theHistograms->fill("AAA_genCategory"  , "gen category weighted"  , BIN_GENCATEGORY, 0, theWeight);
+  theHistograms->fill("AAA_genCategory_u", "gen category unweighted", BIN_GENCATEGORY, 0);
+  for(int i = 0; i < 8; ++i){
+    if(genCategory_bits.test(i)){
+      theHistograms->fill("AAA_genCategory"  , "gen category weighted"  , BIN_GENCATEGORY, i+1, theWeight);
+      theHistograms->fill("AAA_genCategory_u", "gen category unweighted", BIN_GENCATEGORY, i+1);
+    }
+  }
+  if((genCategory_bits.test(0) || genCategory_bits.test(1)) && genCategory_bits.test(4) && genCategory_bits.test(5) && genCategory_bits.test(6) && genCategory_bits.test(7)){
+     theHistograms->fill("AAA_genCategory"  , "gen category weighted"  , BIN_GENCATEGORY, 9, theWeight);
+     theHistograms->fill("AAA_genCategory_u", "gen category unweighted", BIN_GENCATEGORY, 9);
+  }
+
   theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, 0, theWeight);
   theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, 0, 1);
 
@@ -600,6 +615,23 @@ void VVGammaAnalyzer::endNameHistos(){
     if(h) h->LabelsDeflate("X");
   }
   
+  TH1* AAA_genCategory   = theHistograms->get("AAA_genCategory"  );
+  TH1* AAA_genCategory_u = theHistograms->get("AAA_genCategory_u");
+  for(TH1* h : {AAA_genCategory, AAA_genCategory_u}){
+    if(!h) continue;
+    TAxis* axis = h->GetXaxis();
+    axis->SetBinLabel(1, "All");
+    axis->SetBinLabel(2, "ZZ");
+    axis->SetBinLabel(3, "ZW");
+    axis->SetBinLabel(4, "unused");
+    axis->SetBinLabel(5, "Z");
+    axis->SetBinLabel(6, "Fid accept");
+    axis->SetBinLabel(7, "Detect accept");
+    axis->SetBinLabel(8, "Trig plateau");
+    axis->SetBinLabel(9, "mVV > 100");
+    axis->SetBinLabel(10, "0|1 & 4 & 5 & 6 & 7");
+  }
+  
   TH1* AAA_cuts   = theHistograms->get("AAA_cuts"  );
   TH1* AAA_cuts_u = theHistograms->get("AAA_cuts_u");
   for(TH1* h : {AAA_cuts, AAA_cuts_u}){
@@ -965,7 +997,7 @@ void VVGammaAnalyzer::genEventHistos(){
   for(const Particle& p : *genPhotons_){
     theHistograms->fill("GEN_photons_genStatusFlags", "#gamma_{GEN} pass flag", 16, -0.5, 15.5, 15, theWeight);
     std::bitset<15> flags = p.genStatusFlags();
-    theHistograms->book<TH1F>("GEN_photons_genStatus_ulong", "#gamma_{GEN} flag ulong", vector<double>({0.}))->Fill(Form("%zu", flags.to_ulong()), theWeight);
+    theHistograms->book<TH1F>("GEN_photons_genStatus_ulong", "#gamma_{GEN} flag ulong", vector<double>({0.,1.}))->Fill(Form("%zu", flags.to_ulong()), theWeight);
     for(size_t i = 0; i < 15; ++i)
       if(flags.test(i))
 	theHistograms->fill("GEN_photons_genStatusFlags", "#gamma_{GEN} pass flag", 16, -0.5, 15.5, i, theWeight);
