@@ -26,7 +26,7 @@ from variablesInfo import getVariablesInfo
 import CMS_lumi, tdrstyle
 import PersonalInfo
 
-Lumi   = 35900
+lumi_dict = {'2016': 35900, '2017': 41500, '2018': 59700}
 regions = ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L',    
            'SR3P', 'CR110'  , 'CR101'  , 'CR011'  , 'CR100'  , 'CR001'  , 'CR010', 'CR000', 'SR3P_1L', 'SR3P_1P', 'CR3P_1F', 'CRLFR', 'CR3L',
            'SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F', 
@@ -114,7 +114,12 @@ except OSError as e:
 tdrstyle.setTDRStyle()
 ROOT.gROOT.SetBatch(True)
 
-lumi = round(Lumi/1000.,1)
+if LumiProj != "":
+    InputDir+=LumiProj+"fbm1_"
+    lumi = LumiProj
+else:
+    lumi = lumi_dict[year]
+lumi = round(lumi/1000.,1)
 CMS_lumi.writeExtraText = 1
 CMS_lumi.extraText = "Preliminary"
 CMS_lumi.lumi_sqrtS = "{0} fb^{{-1}} (13 TeV)\n".format(lumi)
@@ -122,8 +127,6 @@ CMS_lumi.lumi_sqrtS = "{0} fb^{{-1}} (13 TeV)\n".format(lumi)
 iPos = 0
 if( iPos==0 ): CMS_lumi.relPosX = 0.12
 iPeriod = 0
-
-if LumiProj!="":  InputDir+=LumiProj+"fbm1_"
 
 
 VarInfo = getVariablesInfo(Analysis, region)
