@@ -142,7 +142,7 @@ def getVarInfo_VVGamma(region):
     
     # Photon stuff
     VarInfo_VVGamma.update({
-        'kinPhotons_cutflow'   : {'title':'cut'      , 'unblind':True, 'logy':True},
+        'kinPhotons_cuts'      : {'title':'cut'      , 'unblind':True, 'logy':True},
         'kinPhotons_Nm1'       : {'title':'N-1 cuts' , 'unblind':True},
         'kinPhotons_MVA'       : {'title':'MVA score', 'unblind':True}
         # 'kinPhRes_dR'          : {'title':'#DeltaR'  , 'unblind':False},

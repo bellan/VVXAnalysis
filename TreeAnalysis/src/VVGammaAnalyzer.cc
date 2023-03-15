@@ -625,11 +625,11 @@ void VVGammaAnalyzer::endNameHistos(){
     axis->SetBinLabel(4, "extraTrig");
   }
   
-  TH1* kinPhotons_cutflow = theHistograms->get("kinPhotons_cutflow");
-  TH1* kinPhotons_Nm1     = theHistograms->get("kinPhotons_Nm1"    );
-  if(kinPhotons_cutflow) kinPhotons_cutflow->GetXaxis()->SetBinLabel(1, "No #gamma" );
-  if(kinPhotons_Nm1    ) kinPhotons_Nm1    ->GetXaxis()->SetBinLabel(1, "All #gamma");
-  for(TH1* h : {kinPhotons_cutflow, kinPhotons_Nm1}){
+  TH1* kinPhotons_cuts = theHistograms->get("kinPhotons_cuts");
+  TH1* kinPhotons_Nm1  = theHistograms->get("kinPhotons_Nm1" );
+  if(kinPhotons_cuts) kinPhotons_cuts->GetXaxis()->SetBinLabel(1, "No #gamma" );
+  if(kinPhotons_Nm1 ) kinPhotons_Nm1 ->GetXaxis()->SetBinLabel(1, "All #gamma");
+  for(TH1* h : {kinPhotons_cuts, kinPhotons_Nm1}){
     if(!h) continue;
     TAxis* axis = h->GetXaxis();
     axis->SetBinLabel(2, "#sigma_{i#etai#eta}");
@@ -965,7 +965,7 @@ void VVGammaAnalyzer::genEventHistos(){
   for(const Particle& p : *genPhotons_){
     theHistograms->fill("GEN_photons_genStatusFlags", "#gamma_{GEN} pass flag", 16, -0.5, 15.5, 15, theWeight);
     std::bitset<15> flags = p.genStatusFlags();
-    theHistograms->book<TH1F>("GEN_photons_genStatus_ulong", "#gamma_{GEN} flag ulong", vector<double>())->Fill(Form("%zu", flags.to_ulong()), theWeight);
+    theHistograms->book<TH1F>("GEN_photons_genStatus_ulong", "#gamma_{GEN} flag ulong", vector<double>({0.}))->Fill(Form("%zu", flags.to_ulong()), theWeight);
     for(size_t i = 0; i < 15; ++i)
       if(flags.test(i))
 	theHistograms->fill("GEN_photons_genStatusFlags", "#gamma_{GEN} pass flag", 16, -0.5, 15.5, i, theWeight);
@@ -1103,7 +1103,7 @@ void VVGammaAnalyzer::photonHistos(){
   
   // Test data/MC for each cut separately
   if(kinPhotons_["central"]->size() == 0){
-    theHistograms->fill("kinPhotons_cutflow", "Cutflow of photons;;Events", BINS_PHCUTFLOW, 0, theWeight);  // No photons
+    theHistograms->fill("kinPhotons_cuts", "Cutflow of photons;;Events", BINS_PHCUTFLOW, 0, theWeight);  // No photons
     return;
   }
   else{
@@ -1124,15 +1124,15 @@ void VVGammaAnalyzer::photonHistos(){
     
     // Single cut efficiency
     if(b_sieie)
-      theHistograms->fill("kinPhotons_cutflow", "Cutflow of photons;;Events", BINS_PHCUTFLOW, 1, theWeight);
+      theHistograms->fill("kinPhotons_cuts", "Cutflow of photons;;Events", BINS_PHCUTFLOW, 1, theWeight);
     if(b_HoverE)
-      theHistograms->fill("kinPhotons_cutflow", "Cutflow of photons;;Events", BINS_PHCUTFLOW, 2, theWeight);
+      theHistograms->fill("kinPhotons_cuts", "Cutflow of photons;;Events", BINS_PHCUTFLOW, 2, theWeight);
     if(b_chIso)
-      theHistograms->fill("kinPhotons_cutflow", "Cutflow of photons;;Events", BINS_PHCUTFLOW, 3, theWeight);
+      theHistograms->fill("kinPhotons_cuts", "Cutflow of photons;;Events", BINS_PHCUTFLOW, 3, theWeight);
     if(b_neIso)
-      theHistograms->fill("kinPhotons_cutflow", "Cutflow of photons;;Events", BINS_PHCUTFLOW, 4, theWeight);
+      theHistograms->fill("kinPhotons_cuts", "Cutflow of photons;;Events", BINS_PHCUTFLOW, 4, theWeight);
     if(b_phIso)
-      theHistograms->fill("kinPhotons_cutflow", "Cutflow of photons;;Events", BINS_PHCUTFLOW, 5, theWeight);
+      theHistograms->fill("kinPhotons_cuts", "Cutflow of photons;;Events", BINS_PHCUTFLOW, 5, theWeight);
     
     // N-1 efficiency of the cuts
     theHistograms->fill("kinPhotons_Nm1", "N-1 cutflow of photons;;Events", BINS_PHCUTFLOW, 0, theWeight);  // All photons
