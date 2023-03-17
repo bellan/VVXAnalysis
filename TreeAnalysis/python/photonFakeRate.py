@@ -136,10 +136,10 @@ def get_path_results():
     
 
 
-def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", region="CRLFR", logx=False, logy=False, fixNegBins=False):
+def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", year=2016, region="CRLFR", logx=False, logy=False, fixNegBins=False):
     print("Fake Rate ABCD: data     =", sample_data  )
     print("Fake Rate ABCD: promptMC =", sample_prompt)
-    path_in = "{:s}/2016/{:s}_{:s}".format(get_path_results(), analyzer, region)
+    path_in = "{:s}/{}/{:s}_{:s}".format(get_path_results(), year, analyzer, region)
     outfname = "data/ABCD_FR_{:s}-{:s}.root".format(sample_data["name"], sample_prompt["name"])
     print('Output (with prompt MC subtraction) in: "{:s}"'.format(outfname))
     
@@ -236,9 +236,9 @@ def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", region=
     return hFR, hES
 
 
-def fakeRateABCD_noSubtract(sample, analyzer="VVGammaAnalyzer", region="CRLFR", logx=False, logy=False, fixNegBins=False):
+def fakeRateABCD_noSubtract(sample, analyzer="VVGammaAnalyzer", year=2016, region="CRLFR", logx=False, logy=False, fixNegBins=False):
     print("Fake Rate ABCD: sample   =", sample  )
-    path_in = "{:s}/2016/{:s}_{:s}".format(get_path_results(), analyzer, region)
+    path_in = "{:s}/{}/{:s}_{:s}".format(get_path_results(), year, analyzer, region)
     outfname = "data/ABCD_FR_{:s}.root".format(sample["name"])
     print('Output (without MC subtraction) in: "{:s}"'.format(outfname))
     
@@ -307,9 +307,9 @@ def fakeRateABCD_noSubtract(sample, analyzer="VVGammaAnalyzer", region="CRLFR", 
     return hFR, hES, hKF
 
 
-def fakeRateLtoT_noSubtract(sample, plotname='PhFR_LtoT_%s_nonprompt', analyzer='VVGammaAnalyzer', region='CRLFR', logx=False, logy=False, fixNegBins=False):
+def fakeRateLtoT_noSubtract(sample, plotname='PhFR_LtoT_%s_nonprompt', analyzer='VVGammaAnalyzer', year=2016, region='CRLFR', logx=False, logy=False, fixNegBins=False):
     print('Fake Rate LtoT: sample   =', sample)
-    path_in = '{:s}/2016/{:s}_{:s}'.format(get_path_results(), analyzer, region)
+    path_in = '{:s}/{}/{:s}_{:s}'.format(get_path_results(), year, analyzer, region)
     outfname = 'data/LtoT_FR_{:s}.root'.format(sample['name'])
     print('Output in: "{:s}"'.format(outfname))
 
@@ -347,10 +347,10 @@ def fakeRateLtoT_noSubtract(sample, plotname='PhFR_LtoT_%s_nonprompt', analyzer=
     return hFR
 
     
-def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', region='CRLFR', logx=False, logy=False, fixNegBins=False):
+def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=2016, region='CRLFR', logx=False, logy=False, fixNegBins=False):
     print('Fake Rate LtoT: data     =', sample_data  )
     print('Fake Rate LtoT: promptMC =', sample_prompt)
-    path_in = '{:s}/2016/{:s}_{:s}'.format(get_path_results(), analyzer, region)
+    path_in = '{:s}/{}/{:s}_{:s}'.format(get_path_results(), year, analyzer, region)
     outfname_full = 'data/LtoT_FR_{:s}-{:s}.root'.format(sample_data['name'], sample_prompt['name'])
     print('Output (with prompt MC subtraction) in: "{:s}"'.format(outfname_full))
     
@@ -497,26 +497,46 @@ if __name__ == "__main__":
         sample.setdefault("name" , key)
         sample.setdefault("title", sample["name"])
 
+    from argparse import ArgumentParser
+    parser = ArgumentParser()
+    parser.add_argument("-y", "--year"   , type=int, default=2016, choices=[2016, 2017, 2018])
+    parser.add_argument("-m", "--method" , nargs="+", choices=["LtoT", "ABCD"], default="LtoT")
+    parser.add_argument(      "--no-mc"  , dest="do_mc"  , action="store_false", help="Skip MC plots"  )
+    parser.add_argument(      "--no-data", dest="do_data", action="store_false", help="Skip data plots")
+    args = parser.parse_args()
+
     ROOT.gStyle.SetOptStat(0)
     ROOT.gROOT.SetBatch(True)
 
     makedirs_ok('data')
     makedirs_ok('Plot/PhFR')
 
-    hFR_ABCD_data, hES_data, hKF_data= fakeRateABCD(sampleList["data"], sampleList["ZGToLLG"], logx=True, fixNegBins=False)
-    print()
-    hFR_ABCD_MC  , hES_MC  , hKF_MC  = fakeRateABCD_noSubtract(sampleList["Drell-Yan"]       , logx=True, fixNegBins=True)
-    print()
-    plotRatio(hFR_ABCD_data, hFR_ABCD_MC, picture_name="ABCD_ratio_data-ZG_over_DY", title="Ratio FR(data-Z#gamma)/FR(DY)")
-    print()
+    if("ABCD" in args.method):
+        if(args.do_data):
+            print('>>>ABCD data')
+            hFR_ABCD_data, hES_data, hKF_data= fakeRateABCD(sampleList["data"], sampleList["ZGToLLG"], year=args.year, logx=True, fixNegBins=False)
+            print()
+        if(args.do_mc):
+            print('>>>ABCD MC')
+            hFR_ABCD_MC  , hES_MC  , hKF_MC  = fakeRateABCD_noSubtract(sampleList["Drell-Yan"]       , year=args.year, logx=True, fixNegBins=True)
+            print()
+        if(args.do_data and args.do_mc):
+            print('>>>ABCD ratio')
+            plotRatio(hFR_ABCD_data, hFR_ABCD_MC, picture_name="ABCD_ratio_data-ZG_over_DY_{}".format(args.year), title="Ratio FR(data-Z#gamma)/FR(DY)")
+            print()
 
-    hFR_LtoT_data = fakeRateLtoT(sampleList["data"], sampleList["ZGToLLG"], logx=True, fixNegBins=False)
-    print()
-    hFR_LtoT_MC   = fakeRateLtoT_noSubtract(sampleList["Drell-Yan"]       , logx=True, fixNegBins=True)
-    print()
-    ratioLtoT = plotRatio(hFR_LtoT_data, hFR_LtoT_MC, picture_name="LtoT_ratio_data-ZG_over_DY", title="Ratio FR(data-Z#gamma)/FR(DY)")
-    print()
-
-    # plotProfiled(hFR_LtoT_data, picture_name='LtoT_FR_profiledX_data-ZGToLLG', title='FR(#gamma) vs #eta' , direction='X')
-    # plotProfiled(hFR_LtoT_data, picture_name='LtoT_FR_profiledY_data-ZGToLLG', title='FR(#gamma) vs p_{T}', direction='Y')
-
+    if("LtoT" in args.method):
+        if(args.do_data):
+            print('>>>LtoT data')
+            hFR_LtoT_data = fakeRateLtoT(sampleList["data"], sampleList["ZGToLLG"], year=args.year, logx=True, fixNegBins=False)
+            plotProfiled(hFR_LtoT_data, picture_name='LtoT_FR_profiledX_data-ZGToLLG', title='FR(#gamma) vs #eta' , direction='X')
+            plotProfiled(hFR_LtoT_data, picture_name='LtoT_FR_profiledY_data-ZGToLLG', title='FR(#gamma) vs p_{T}', direction='Y')
+            print()
+        if(args.do_mc):
+            print('>>>LtoT MC')
+            hFR_LtoT_MC   = fakeRateLtoT_noSubtract(sampleList["Drell-Yan"]       , year=args.year, logx=True, fixNegBins=True)
+            print()
+        if(args.do_data and args.do_mc):
+            print('>>>LtoT ratio')
+            ratioLtoT = plotRatio(hFR_LtoT_data, hFR_LtoT_MC, picture_name="LtoT_ratio_data-ZG_over_DY_{}".format(args.year), title="Ratio FR(data-Z#gamma)/FR(DY)")
+            print()
