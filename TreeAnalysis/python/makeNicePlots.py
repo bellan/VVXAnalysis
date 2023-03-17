@@ -103,7 +103,7 @@ Analysis   = options.Analysis
 year       = options.year
 
 InputDir   = os.path.join('results', year, Analysis+'_'+region, '')
-OutputDir  = os.path.join(OutputDir, Analysis, year, region, "")  # Last "" ensures a trailing '/' is appended to path
+OutputDir  = os.path.join(OutputDir, Analysis, year, predType, region, "")  # Last "" ensures a trailing '/' is appended to path
 try:
     os.stat(OutputDir)
 except OSError as e:
@@ -150,10 +150,11 @@ for Var in variables:
     forcePositive=True
     
     # "Temporary" hack for closure test of photon fake rate
-    # if 'PhFRClosure_PASS' in Var:
-    #     hMC, leg = plotUtils.GetClosureStack(region, InputDir, Var, info.get('rebin', 1), forcePositive=False)
-    # else:
-    (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, Var, predType, mcSet, info.get('rebin', 1), forcePositive=forcePositive)
+    if 'PhFRClosure_PASS' in Var:
+        hMC, leg = plotUtils.GetClosureStack(region, InputDir, Var, info.get('rebin', 1), forcePositive=False)
+    else:
+        (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, Var, predType, mcSet, info.get('rebin', 1), forcePositive=forcePositive)
+
     if(DoData):
         (graphData, histodata) = plotUtils.GetDataPlot(InputDir, Var, region        , info.get('rebin', 1), forcePositive=forcePositive)
 
