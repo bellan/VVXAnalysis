@@ -32,7 +32,8 @@ using namespace physmath;
 #define BIN_GENCATEGORY 10,-0.5,9.5
 #define BINS_CUTFLOW 9,-0.5,8.5
 //{"All", "ZZ || ZW", "2l2j || 2l1J", "#gamma kin", "#gamma good", "Analyzed", "#gamma medium"}
-#define BINS_PHCUTFLOW 6,-0.5,5.5
+#define BINS_PHCUTFLOW 7,-0.5,6.5
+#define BINS_PHCUTNM1 6,-0.5,5.5
 #define BINS_KINPHID 5,-0.5,4.5
 
 std::pair<TLorentzVector, TLorentzVector> solveNuPz(const Boson<Lepton>& W, int& error);
@@ -182,7 +183,14 @@ void VVGammaAnalyzer::initEvent(){
 	goodPhotons_["central"]->push_back(ph);
     }
     
-  }
+  } // end loop on *photons
+  
+  if(kinPhotons_["central"]->size() > 0)
+    bestKinPh_ = &*std::max_element(kinPhotons_["central"]->begin(), kinPhotons_["central"]->end(),
+				    [](const Photon& a, const Photon& b){ return a.nCutsPass(Photon::IdWp::Loose) < b.nCutsPass(Photon::IdWp::Loose); }
+				    );  // max_element returns the first among those with max value --> preserve pt ordering
+  else
+    bestKinPh_ = nullptr;
   
 }
 
@@ -292,9 +300,7 @@ Int_t VVGammaAnalyzer::cut() {
     bool b_Z_mass = fabs(ZW->first().mass() - phys::ZMASS) < 15;
     bool b_MET = met->pt() > 30;
     bool b_lll_mass = (lZ1.p4() + lZ2.p4() + lW.p4()).M() > 100;
-    bool b_bvetoAK4 = ! std::any_of(jets->begin(), jets->end(), [](const Jet& j){ return j.csvtagger() > 0.7665; }); // TODO: use DeepCSV
-    bool b_bvetoAK8 = ! std::any_of(jetsAK8->begin(), jetsAK8->end(), [](const Jet& j){ return j.csvtagger() > 0.7665; });
-    bool b_bveto = b_bvetoAK4 || b_bvetoAK8;
+    bool b_bveto = ! std::any_of(jets->begin(), jets->end(), [](const Jet& j){ auto dF = j.deepFlavour(); return dF.probb + dF.probbb + dF.problepb > 0.2770; });    // Note: this is the medium WP for Legacy samples (102X)
     
     bool b_WZpaperSel = b_Z_mass && b_MET && b_lll_mass && b_lepton_pt && b_bveto;
     
@@ -315,11 +321,11 @@ Int_t VVGammaAnalyzer::cut() {
   }
   
   
-  return 1 ; //TEMP
-  
   if(!haveZVlep) 
     return -1;
-  else if(!haveGoodPhoton)
+  return 1;  //TEMP
+  
+  if(!haveGoodPhoton)
     return -1;
   else
     return 1;
@@ -358,6 +364,7 @@ void VVGammaAnalyzer::analyze(){
   // leptonFakeRate();
   photonGenStudy();
   photonFakeRate();
+  photonFakeRate_extended();
   systematicsStudy();
   
   // Basic histograms on leptonic side
@@ -658,12 +665,21 @@ void VVGammaAnalyzer::endNameHistos(){
   }
   
   TH1* kinPhotons_cuts = theHistograms->get("kinPhotons_cuts");
+  if(kinPhotons_cuts){
+    TAxis* axis = kinPhotons_cuts->GetXaxis();
+    axis->SetBinLabel(1, "No #gamma");
+    axis->SetBinLabel(2, "All #gamma");
+    axis->SetBinLabel(3, "#sigma_{i#etai#eta}");
+    axis->SetBinLabel(4, "HoverE");
+    axis->SetBinLabel(5, "IsoCH");
+    axis->SetBinLabel(6, "IsoNE");
+    axis->SetBinLabel(7, "IsoPh");
+  }
+  
   TH1* kinPhotons_Nm1  = theHistograms->get("kinPhotons_Nm1" );
-  if(kinPhotons_cuts) kinPhotons_cuts->GetXaxis()->SetBinLabel(1, "No #gamma" );
-  if(kinPhotons_Nm1 ) kinPhotons_Nm1 ->GetXaxis()->SetBinLabel(1, "All #gamma");
-  for(TH1* h : {kinPhotons_cuts, kinPhotons_Nm1}){
-    if(!h) continue;
-    TAxis* axis = h->GetXaxis();
+  if(kinPhotons_Nm1){
+    TAxis* axis = kinPhotons_Nm1->GetXaxis();
+    axis->SetBinLabel(1, ">= 4");
     axis->SetBinLabel(2, "#sigma_{i#etai#eta}");
     axis->SetBinLabel(3, "HoverE");
     axis->SetBinLabel(4, "IsoCH");
@@ -1046,25 +1062,38 @@ void VVGammaAnalyzer::photonHistos(){
   // pt and eta distribution of photons
   if(kinPhotons_["central"]->size() > 0){
     const Photon& ph = kinPhotons_["central"]->at(0);
-    theHistograms->fill("kinPh_pt"  , "p_{t} of Kinematic photons;p_{T} [GeV/c];Events", ph_pt_bins  ,      ph.pt()  , theWeight);
-    theHistograms->fill("kinPh_aeta", "|#eta| of Kinematic photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
-    theHistograms->fill("kinPh_pt_aeta", "Kinematic photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+    theHistograms->fill("kinPh_lead_pt"  , "p_{t} of Kinematic photons;p_{T} [GeV/c];Events", ph_pt_bins  ,      ph.pt()  , theWeight);
+    theHistograms->fill("kinPh_lead_aeta", "|#eta| of Kinematic photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
+    theHistograms->fill("kinPh_lead_pt_aeta", "Kinematic photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+    
+    if(kinPhotons_["central"]->size() > 1)
+      theHistograms->fill("kinPh_sublead_pt", "Subleading Kin #gamma;p_{T} [GeV/c]", 20,0.,100., kinPhotons_["central"]->at(1).pt());
   }
+  
   if(loosePhotons_["central"]->size() > 0){
     const Photon& ph = loosePhotons_["central"]->at(0);
-    theHistograms->fill("veryLoosePh_pt"  , "p_{t} of VeryLoose photons;p_{T} [GeV/c];Events", ph_pt_bins  ,      ph.pt()  , theWeight);
-    theHistograms->fill("veryLoosePh_aeta", "|#eta| of VeryLoose photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
-    theHistograms->fill("veryLoosePh_pt_aeta", "VeryLoose photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+    theHistograms->fill("veryLoosePh_lead_pt"  , "p_{t} of VeryLoose photons;p_{T} [GeV/c];Events", ph_pt_bins  ,      ph.pt()  , theWeight);
+    theHistograms->fill("veryLoosePh_lead_aeta", "|#eta| of VeryLoose photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
+    theHistograms->fill("veryLoosePh_lead_pt_aeta", "VeryLoose photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
     
     if(ph.cutBasedIDLoose()){
-      theHistograms->fill("loosePh_pt"  , "p_{t} of LooseID photons;p_{T} [GeV/c];Events", ph_pt_bins  ,      ph.pt()  , theWeight);
-      theHistograms->fill("loosePh_aeta", "|#eta| of LooseID photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
-      theHistograms->fill("loosePh_pt_aeta", "LooseID photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+      theHistograms->fill("loosePh_lead_pt"  , "p_{t} of LooseID photons;p_{T} [GeV/c];Events", ph_pt_bins  ,      ph.pt()  , theWeight);
+      theHistograms->fill("loosePh_lead_aeta", "|#eta| of LooseID photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
+      theHistograms->fill("loosePh_lead_pt_aeta", "LooseID photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
     }
     else{
-      theHistograms->fill("failPh_pt"  , "p_{t} of Fail photons;p_{T} [GeV/c];Events", ph_pt_bins  ,      ph.pt()  , theWeight);
-      theHistograms->fill("failPh_aeta", "|#eta| of Fail photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
-      theHistograms->fill("failPh_pt_aeta", "Fail photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+      theHistograms->fill("failPh_lead_pt"  , "p_{t} of Fail photons;p_{T} [GeV/c];Events", ph_pt_bins  ,      ph.pt()  , theWeight);
+      theHistograms->fill("failPh_lead_aeta", "|#eta| of Fail photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
+      theHistograms->fill("failPh_lead_pt_aeta", "Fail photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+    }
+    
+    if(loosePhotons_["central"]->size() > 1){
+      const Photon& ph_sublead = loosePhotons_["central"]->at(1);
+      theHistograms->fill("veryLoosePh_sublead_pt", "Subleading VeryLoose #gamma;p_{T} [GeV/c]", ph_pt_bins, ph_sublead.pt());
+      if(ph_sublead.cutBasedIDLoose())
+	theHistograms->fill("loosePh_sublead_pt", "Subleading Loose #gamma;p_{T} [GeV/c]", ph_pt_bins, ph_sublead.pt());
+      else
+	theHistograms->fill("failPh_sublead_pt" , "Subleading Fail #gamma;p_{T} [GeV/c]" , ph_pt_bins, ph_sublead.pt());
     }
   }
 
@@ -1117,69 +1146,60 @@ void VVGammaAnalyzer::photonHistos(){
     if(phVect->size() > 0)
       theHistograms->book<TH1F>("kinPh_eScale_N", "Number of #gamma passing selection", 1,0,0)->Fill(Form("good_%s", syst), theWeight);
   
-  // How important are subleading photons?
+  // How many photons are there in each event?
   for(const auto& [syst, phVect] : goodPhotons_)
     theHistograms->fill(Form("loosePh_%s_N", syst), Form("Number of Loose photons (%s)", syst), 5,-0.5,4.5, phVect->size(), theWeight);
-  if(goodPhotons_["central"]->size() > 1)
-    theHistograms->fill("loosePh_sublead_pt", "Subleading Loose #gamma;p_{T} [GeV/c]", 20,0.,100., goodPhotons_["central"]->at(1).pt());
   
   for(const auto& [syst, phVect] : loosePhotons_)
     theHistograms->fill(Form("veryLoosePh_%s_N", syst), Form("Number of VeryLoose photons (%s)", syst), 5,-0.5,4.5, phVect->size(), theWeight);
-  if(loosePhotons_["central"]->size() > 1)
-    theHistograms->fill("veryLoosePh_sublead_pt", "Subleading VeryLoose #gamma;p_{T} [GeV/c]", 20,0.,100., loosePhotons_["central"]->at(1).pt());
 
   for(const auto& [syst, phVect] : kinPhotons_)
     theHistograms->fill(Form(  "kinPh_%s_N", syst), Form("Number of Kinematic photons (%s)"  , syst), 5,-0.5,4.5, phVect->size(), theWeight);
-  if( kinPhotons_["central"]->size() > 1)
-    theHistograms->fill(  "kinPh_sublead_pt", "Subleading Kinematic #gamma;p_{T} [GeV/c]"  , 20,0.,100.,  kinPhotons_["central"]->at(1).pt());
   
   // Test data/MC for each cut separately
   if(kinPhotons_["central"]->size() == 0){
-    theHistograms->fill("kinPhotons_cuts", "Cutflow of photons;;Events", BINS_PHCUTFLOW, 0, theWeight);  // No photons
+    theHistograms->fill("kinPhotons_cuts", "Single cut efficiency;;Events", BINS_PHCUTFLOW, 0, theWeight);  // No photons
     return;
   }
   else{
-    // Select photon that passes more cuts
-    Photon::IdWp wp = Photon::IdWp::Loose;
-    auto bestG = std::max_element(kinPhotons_["central"]->begin(), kinPhotons_["central"]->end(),
-				  [wp](const Photon& a, const Photon& b){
-				    int na = a.cutBasedID(wp, Photon::IDcut::sieie) + a.cutBasedID(wp, Photon::IDcut::HoverE) + a.cutBasedID(wp, Photon::IDcut::chIso) + a.cutBasedID(wp, Photon::IDcut::neIso) + a.cutBasedID(wp, Photon::IDcut::phIso);
-				    int nb = b.cutBasedID(wp, Photon::IDcut::sieie) + b.cutBasedID(wp, Photon::IDcut::HoverE) + b.cutBasedID(wp, Photon::IDcut::chIso) + b.cutBasedID(wp, Photon::IDcut::neIso) + b.cutBasedID(wp, Photon::IDcut::phIso);
-				    return na < nb;
-				  });  // max_element returns the first among those with max value --> preserve pt ordering
     
-    bool b_sieie  = bestG->cutBasedID(wp, Photon::IDcut::sieie);
-    bool b_HoverE = bestG->cutBasedID(wp, Photon::IDcut::HoverE);
-    bool b_chIso  = bestG->cutBasedID(wp, Photon::IDcut::chIso);
-    bool b_neIso  = bestG->cutBasedID(wp, Photon::IDcut::neIso);
-    bool b_phIso  = bestG->cutBasedID(wp, Photon::IDcut::phIso);
+    Photon::IdWp wp = Photon::IdWp::Loose;
+    
+    bool b_sieie  = bestKinPh_->cutBasedID(wp, Photon::IDcut::sieie );
+    bool b_HoverE = bestKinPh_->cutBasedID(wp, Photon::IDcut::HoverE);
+    bool b_chIso  = bestKinPh_->cutBasedID(wp, Photon::IDcut::chIso );
+    bool b_neIso  = bestKinPh_->cutBasedID(wp, Photon::IDcut::neIso );
+    bool b_phIso  = bestKinPh_->cutBasedID(wp, Photon::IDcut::phIso );
+    UInt_t nCutsPass = bestKinPh_->nCutsPass(wp);
     
     // Single cut efficiency
+    theHistograms->fill("kinPhotons_cuts", "Single cut efficiency;;Events", BINS_PHCUTFLOW, 1, theWeight);  // All photons
     if(b_sieie)
-      theHistograms->fill("kinPhotons_cuts", "Cutflow of photons;;Events", BINS_PHCUTFLOW, 1, theWeight);
+      theHistograms->fill("kinPhotons_cuts", "Single cut efficiency;;Events", BINS_PHCUTFLOW, 2, theWeight);
     if(b_HoverE)
-      theHistograms->fill("kinPhotons_cuts", "Cutflow of photons;;Events", BINS_PHCUTFLOW, 2, theWeight);
+      theHistograms->fill("kinPhotons_cuts", "Single cut efficiency;;Events", BINS_PHCUTFLOW, 3, theWeight);
     if(b_chIso)
-      theHistograms->fill("kinPhotons_cuts", "Cutflow of photons;;Events", BINS_PHCUTFLOW, 3, theWeight);
+      theHistograms->fill("kinPhotons_cuts", "Single cut efficiency;;Events", BINS_PHCUTFLOW, 4, theWeight);
     if(b_neIso)
-      theHistograms->fill("kinPhotons_cuts", "Cutflow of photons;;Events", BINS_PHCUTFLOW, 4, theWeight);
+      theHistograms->fill("kinPhotons_cuts", "Single cut efficiency;;Events", BINS_PHCUTFLOW, 5, theWeight);
     if(b_phIso)
-      theHistograms->fill("kinPhotons_cuts", "Cutflow of photons;;Events", BINS_PHCUTFLOW, 5, theWeight);
+      theHistograms->fill("kinPhotons_cuts", "Single cut efficiency;;Events", BINS_PHCUTFLOW, 6, theWeight);
     
     // N-1 efficiency of the cuts
-    theHistograms->fill("kinPhotons_Nm1", "N-1 cutflow of photons;;Events", BINS_PHCUTFLOW, 0, theWeight);  // All photons
-    if(!b_sieie &&  b_HoverE &&  b_chIso &&  b_neIso &&  b_phIso)
-      theHistograms->fill("kinPhotons_Nm1", "N-1 cutflow of photons;;Events", BINS_PHCUTFLOW, 1, theWeight);
-    if( b_sieie && !b_HoverE &&  b_chIso &&  b_neIso &&  b_phIso)
-      theHistograms->fill("kinPhotons_Nm1", "N-1 cutflow of photons;;Events", BINS_PHCUTFLOW, 2, theWeight);
-    if( b_sieie &&  b_HoverE && !b_chIso &&  b_neIso &&  b_phIso)
-      theHistograms->fill("kinPhotons_Nm1", "N-1 cutflow of photons;;Events", BINS_PHCUTFLOW, 3, theWeight);
-    if( b_sieie &&  b_HoverE &&  b_chIso && !b_neIso &&  b_phIso)
-      theHistograms->fill("kinPhotons_Nm1", "N-1 cutflow of photons;;Events", BINS_PHCUTFLOW, 4, theWeight);
-    if( b_sieie &&  b_HoverE &&  b_chIso &&  b_neIso && !b_phIso)
-      theHistograms->fill("kinPhotons_Nm1", "N-1 cutflow of photons;;Events", BINS_PHCUTFLOW, 5, theWeight);
+    if(nCutsPass >= 4)
+      theHistograms->fill("kinPhotons_Nm1", "N-1 cut efficiency;;Events", BINS_PHCUTNM1, 0, theWeight);
+    if(           b_HoverE && b_chIso && b_neIso && b_phIso)
+      theHistograms->fill("kinPhotons_Nm1", "N-1 cut efficiency;;Events", BINS_PHCUTNM1, 1, theWeight);
+    if(b_sieie             && b_chIso && b_neIso && b_phIso)
+      theHistograms->fill("kinPhotons_Nm1", "N-1 cut efficiency;;Events", BINS_PHCUTNM1, 2, theWeight);
+    if(b_sieie && b_HoverE            && b_neIso && b_phIso)
+      theHistograms->fill("kinPhotons_Nm1", "N-1 cut efficiency;;Events", BINS_PHCUTNM1, 3, theWeight);
+    if(b_sieie && b_HoverE && b_chIso            && b_phIso)
+      theHistograms->fill("kinPhotons_Nm1", "N-1 cut efficiency;;Events", BINS_PHCUTNM1, 4, theWeight);
+    if(b_sieie && b_HoverE && b_chIso && b_neIso           )
+      theHistograms->fill("kinPhotons_Nm1", "N-1 cut efficiency;;Events", BINS_PHCUTNM1, 5, theWeight);
     
-    theHistograms->fill("kinPhotons_MVA", "kinematic #gamma MVA", 41,-1.025,1.025, bestG->MVAvalue(), theWeight);
+    theHistograms->fill("kinPhotons_MVA", "kinematic #gamma MVA", 41,-1.025,1.025, bestKinPh_->MVAvalue(), theWeight);
   }  // END if(kinPhoton["central"]->size() == 0)
   
   // Systematics histos
@@ -1418,8 +1438,7 @@ void VVGammaAnalyzer::photonFakeRate(){
   
   Photon::IdWp wp = Photon::IdWp::Loose;
   auto bestG = std::max_element(thePhVect.begin(), thePhVect.end(),
-				[wp](const Photon& a, const Photon& b){
-				  return a.cutBasedID(wp,Photon::IDcut::sieie) + a.cutBasedID(wp,Photon::IDcut::chIso) < b.cutBasedID(wp,Photon::IDcut::sieie) + b.cutBasedID(wp,Photon::IDcut::chIso);
+				[wp](const Photon& a, const Photon& b){ return a.nCutsPass(wp) < b.nCutsPass(wp);
 				});  // max_element returns the first among those with max value --> preserve pt ordering
   
   if( !bestG->cutBasedID(wp,Photon::IDcut::HoverE) || !bestG->cutBasedID(wp,Photon::IDcut::neIso) || !bestG->cutBasedID(wp,Photon::IDcut::phIso) )
@@ -1428,7 +1447,7 @@ void VVGammaAnalyzer::photonFakeRate(){
   bool isPrompt = false;
   if(theSampleInfo.isMC())
     isPrompt = std::any_of(genPhotons_->begin(), genPhotons_->end(), 
-			   [bestG](const Particle& gen){ return physmath::deltaR(*bestG, gen) < 0.4; }
+			   [bestG](const Particle& gen){ return gen.genStatusFlags().test(phys::isPrompt) && physmath::deltaR(*bestG, gen) < 0.2; }
 			   );
   
   // Debug photon ID
@@ -1442,11 +1461,6 @@ void VVGammaAnalyzer::photonFakeRate(){
   
   // Fake rate with ABCD
   char ABCD = phABCD(*bestG, wp);
-  //TEMP check
-  if(ABCD == 'A' && !bestG->cutBasedIDLoose()){
-  //   cout << "\tHoverE: " << bestG->passHoverE(wp) << " - sigmaiEtaiEta: " << bestG->passSigmaiEtaiEta(wp) << " - chargedIsolation:" << bestG->passChargedIsolation(wp) << " - neutralIsolation: " << bestG->passNeutralIsolation(wp) << " - photonIsolation: " << bestG->passPhotonIsolation(wp) << '\n';
-    throw std::logic_error("Inconsistency in Photon ID!");
-  }
 
   const char* name = Form("PhFR_%c", ABCD);
   if(theSampleInfo.isMC())
@@ -1455,7 +1469,7 @@ void VVGammaAnalyzer::photonFakeRate(){
   theHistograms->fill(name, Form("Photons: %c;p_{T} [GeV/c];#eta", ABCD), ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
   
   // Fake rate with Loose-to-Tight (loose = 3/5 cutBasedIDLoose, tight = 5/5 cutBasedIDLoose)
-  int nPass = 3 + bestG->cutBasedID(wp,Photon::IDcut::sieie) + bestG->cutBasedID(wp,Photon::IDcut::chIso);
+  int nPass = bestG->nCutsPass(wp);
 
   name = Form("PhFR_LToT_%d", nPass);
   if(theSampleInfo.isMC())
@@ -1490,6 +1504,36 @@ void VVGammaAnalyzer::photonFakeRate(){
   }
 }
 
+
+void VVGammaAnalyzer::photonFakeRate_extended(){
+  if(!bestKinPh_)
+    return;
+
+  double theAeta = fabs(bestKinPh_->eta());
+  double thePt   = bestKinPh_->pt();
+  if(thePt > ph_pt_bins.back())
+    thePt = ph_pt_bins.back() - 0.1;
+
+  bool isPassVL = bestKinPh_->cutBasedID(Photon::IdWp::VeryLoose);
+  const char* strPassVL = isPassVL ? "PASS" : "FAIL";
+  const char* strPrompt = "";
+  if(theSampleInfo.isMC()){
+    bool isPrompt = std::any_of(genPhotons_->begin(), genPhotons_->end(), 
+  				[this](const Particle& gen){ return gen.genStatusFlags().test(phys::isPrompt) && physmath::deltaR(*bestKinPh_, gen) < 0.2; }
+  				);
+    strPrompt = isPrompt ? "_nonprompt" : "_prompt";
+  }
+
+  // PhFR_KToL_[FAIL/PASS]
+  const char* name_KtoVL = Form("PhFR_KtoVL%s_%s", strPrompt, strPassVL);
+  theHistograms->fill(name_KtoVL, "Photon fake rate Kin to VeryLoose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
+
+  // PhFR_KToLexcl_[FAIL/PASS]
+  if(!bestKinPh_->cutBasedIDLoose()){
+    const char* name_KtoVLexcl = Form("PhFR_KtoVLexcl%s_%s", strPrompt, strPassVL);
+    theHistograms->fill(name_KtoVLexcl, "Photon fake rate Kin to VeryLoose&&!Loose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
+  }
+}
 
 void VVGammaAnalyzer::studyJetsChoice(){
   // Study how to choose the correct jet AK8 in case it exists. The problem of rejecting 
@@ -1554,7 +1598,7 @@ void VVGammaAnalyzer::efficiency(const vector<PAR>& vRec, const vector<Particle>
 
   TString tNameEff = TString::Format("Eff_%s_%s_%s_%s", recLabel, genLabel, "%s", "%s");  // e.g. Eff_photos_loose_den_pt
   TString tNameRes = TString::Format("Res_%s_%s_%s"   , recLabel, genLabel, "%s");         // e.g. Res_AK8_all_eta
-  const char* nameEff = tNameEff.Data();  // The Form() in the global namespace uses a circularq bufffer that can be overwritten
+  const char* nameEff = tNameEff.Data();  // The Form() in the global namespace uses a circulary buffer that can be overwritten
   const char* nameRes = tNameRes.Data();  // storing and using the returned pointer is unsafe
 
   vector<std::pair<const Particle*, const PAR*>> vGenRec = matchDeltaR(vGen, vRec, tolerance);  // intrinsic threshold of deltaR = 0.2
@@ -1936,7 +1980,7 @@ void VVGammaAnalyzer::photonGenStudy(){
     
     // Pt
     double pt = best->pt() > ph_pt_bins.back() ? ph_pt_bins.back() : best->pt();
-    theHistograms->fill(Form(hname, "ptPh") , Form("%s;#gamma p_{T};Events"          , wp), ph_pt_bins, pt   , theWeight);
+    theHistograms->fill(Form(hname, "ptPh") , Form("%s;#gamma p_{T};Events"          , wp), 20,20.,120., pt   , theWeight);
     
     // mVVG
     if(is4Lregion(region_))
@@ -1986,12 +2030,12 @@ const vector<double> VVGammaAnalyzer::aeta_bins(
 						);
 
 const vector<double> VVGammaAnalyzer::ph_aeta_bins(
-						   {0., 0.783, 1.4442, 1.566, 2, 2.5}
+						   {0., 0.8, 1.4442, 1.566, 2, 2.5}
 						   // {0., 0.435, 0.783, 1.13, 1.4442, 1.566, 1.8, 2.1, 2.5}
 						   );
 
 const vector<double> VVGammaAnalyzer::ph_pt_bins(
-						 {20., 45., 70., 120}
+						 {20., 35., 50., 80., 120}
 						 // {20., 30., 45., 70., 120}
 						 // {20., 25., 30, 45., 70., 100}
 						 );

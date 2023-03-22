@@ -116,7 +116,9 @@ private:
   // V --> j (j)
   phys::Boson<phys::Jet> candVTojj_;
   phys::Jet              candVToJ_ ;
-	
+  // KinPhoton that passes the largest number of cuts of the Loose ID
+  phys::Photon* bestKinPh_;
+
   std::unique_ptr<TH2F> hPhotonFR_;
   std::string channelReco_;
 
@@ -142,6 +144,7 @@ private:
   void plotsVVGstatus(const char* name, const char* title, const TLorentzVector& p4_VV, const char* mType="mass");
   void leptonFakeRate();
   void photonFakeRate();
+  void photonFakeRate_extended();
   void studyJetsChoice();
   int studyAK4Choice(std::ofstream& fout, const phys::Boson<phys::Particle>& diquark, const double& tolerance);
   int studyAK8Choice(std::ofstream& fout, const phys::Boson<phys::Particle>& diquark, const double& tolerance);

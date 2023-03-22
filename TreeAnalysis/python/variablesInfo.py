@@ -152,16 +152,22 @@ def getVarInfo_VVGamma(region):
         # 'noKinPh_rec_genPh_pt' : {'title': '#gamma_{GEN} p_{T}' },
         # 'noKinPh_rec_genPh_eta': {'title': '#gamma_{GEN} #eta'  }
         ,
-        'kinPh_pt'    : {'title':  'p_{T} \gamma_{kin}'  },
-        'veryLoosePh_pt'  : {'title':  'p_{T} \gamma_{loose}'},
-        'failPh_pt'   : {'title':  'p_{T} \gamma_{fail}' },
-        'loosePh_pt'  : {'title':  'p_{T} \gamma_{tight}'}
+        'kinPh_lead_pt'        : {'title':  'p_{T} \gamma_{kin}^{leading}'  },
+        'veryLoosePh_lead_pt'  : {'title':  'p_{T} \gamma_{loose}^{leading}'},
+        'failPh_lead_pt'       : {'title':  'p_{T} \gamma_{fail}^{leading}' },
+        'loosePh_lead_pt'      : {'title':  'p_{T} \gamma_{tight}^{leading}', 'unblind':True}
         ,
-        'kinPh_aeta'  : {'title': '|\eta| \gamma_{kin}'  },
-        'veryLoosePh_aeta': {'title': '|\eta| \gamma_{loose}'},
-        'failPh_aeta' : {'title': '|\eta| \gamma_{fail}' },
-        'loosePh_aeta': {'title': '|\eta| \gamma_{tight}'}
+        'kinPh_lead_aeta'      : {'title': '|\eta| \gamma_{kin}^{leading}'  },
+        'veryLoosePh_lead_aeta': {'title': '|\eta| \gamma_{loose}^{leading}'},
+        'failPh_lead_aeta'     : {'title': '|\eta| \gamma_{fail}^{leading}' },
+        'loosePh_lead_aeta'    : {'title': '|\eta| \gamma_{tight}^{leading}', 'unblind':True}
+        ,
+        'kinPh_sublead_pt'      : {'title': 'p_{T} \gamma_{kin}^{sublead}'  }
+        # 'veryLoosePh_sublead_pt': {'title': 'p_{T} sublead \gamma_{loose}'}
+        # 'failPh_sublead_pt'     : {'title': 'p_{T} sublead \gamma_{fail}' },
+        # 'loosePh_sublead_pt'    : {'title': 'p_{T} sublead \gamma_{tight}'}
     })
+
     for e in ['EB', 'EE']:
         VarInfo_VVGamma.update({
             'kinPh_sieie_' +e: {'title':'#sigma_{i#etai#eta}', 'rebin':1, 'unblind':True, 'logy':True},
@@ -175,6 +181,9 @@ def getVarInfo_VVGamma(region):
     #         'sigmaiEtaiEta_'+name+'Photons': ['#sigma_{i#etai#eta}', 1, True]
     #     })
     VarInfo_VVGamma.update({
+        'kinPh_central_N'     : {'title':'Number of #gamma_{kin}'  },
+        # 'veryLoose_central_N' : {'title':'Number of #gamma_{loose}'},
+        'loose_central_N'     : {'title':'Number of #gamma_{tight}', 'unblind':False},
         'kinPh_eScale_N'  : {'title':'Number of #gamma passing selection', 'rebin':1, 'unblind':True},
         'kinPhotons_ID': {'title':'#gamma ID'                         , 'rebin':1, 'unblind':True}
     })
