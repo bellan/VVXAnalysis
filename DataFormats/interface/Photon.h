@@ -31,7 +31,14 @@ namespace phys {
       neIso  = 0x20,
       phIso  = 0x40
     };
-      
+
+    static constexpr UInt_t ID_BITMASK =
+      static_cast<UInt_t>(IDcut::HoverE) |
+      static_cast<UInt_t>(IDcut::sieie ) |
+      static_cast<UInt_t>(IDcut::chIso ) |
+      static_cast<UInt_t>(IDcut::neIso ) |
+      static_cast<UInt_t>(IDcut::phIso ) ;
+
     static constexpr float TRANSITION_BARREL_ENDCAP = 1.479;
     
     // Constructor
@@ -236,23 +243,29 @@ namespace phys {
       }
     }
 
+    UInt_t nCutsPass(IdWp wp) const{
+      return std::bitset<32>(ID_BITMASK & getCutIdBits(wp)).count();
+    }
+
     bool cutBasedID(IdWp wp, IDcut cut) const{
-      const unsigned int* cutBits = nullptr;
+	return getCutIdBits(wp) & static_cast<UInt_t>(cut);  // bitwise AND
+    }
+
+    UInt_t getCutIdBits(IdWp wp) const{
       switch(wp){
       case VeryLoose:
-	if(static_cast<UInt_t>(cut) & (static_cast<UInt_t>(IDcut::sieie) | static_cast<UInt_t>(IDcut::chIso)))  // bitwise or
-	  return true;
+	return cutIDbitsLoose_ | (static_cast<UInt_t>(IDcut::chIso) | static_cast<UInt_t>(IDcut::sieie)) ; break;
       case Loose:
-	cutBits = &cutIDbitsLoose_ ; break;
+	return cutIDbitsLoose_ ; break;
       case Medium:
-	cutBits = &cutIDbitsMedium_; break;
+	return cutIDbitsMedium_; break;
       case Tight:
-	cutBits = &cutIDbitsLoose_ ; break;
+	return cutIDbitsLoose_ ; break;
       default:
-	return true;
+	return ID_BITMASK; // equivalent to return true
       }
-      return (*cutBits) & static_cast<UInt_t>(cut);  // bitwise AND
     }
+
     
     inline bool isBarrel() const { return fabs(eta()) < TRANSITION_BARREL_ENDCAP; }
     
