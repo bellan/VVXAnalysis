@@ -27,11 +27,21 @@ def getPlots(inputdir, sample, plots):
         for plot in plots:
             h = rFile.Get(plot)
             if(not h):
-                print('Warning: Could not get "%s" from "%s"' % (plot, fname))
+                print('WARN: Could not get "%s" from "%s"' % (plot, fname))
                 retrieved.append(None)
             else:
                 retrieved.append( copy.deepcopy(h) )
     return retrieved
+
+
+def addIfExisting(*args):
+    result = None
+    for a in [ a for a in args if a is not None ]:
+        if result is None:
+            result = a
+        else:
+            result.Add(a)
+    return result
 
 
 def iterate_bins(h, **kwargs):
@@ -140,7 +150,7 @@ def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", year=20
     print("Fake Rate ABCD: data     =", sample_data  )
     print("Fake Rate ABCD: promptMC =", sample_prompt)
     path_in = "{:s}/{}/{:s}_{:s}".format(get_path_results(), year, analyzer, region)
-    outfname = "data/ABCD_FR_{:s}-{:s}.root".format(sample_data["name"], sample_prompt["name"])
+    outfname = "data/ABCD_FR_{dataname:s}-{promptname:s}_{year}.root".format(dataname=sample_data["name"], promptname=sample_prompt["name"], year=year)
     print('Output (with prompt MC subtraction) in: "{:s}"'.format(outfname))
     
     ##### First: only data ####
@@ -187,7 +197,7 @@ def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", year=20
     to_preserve_FR = beautify(cFR, hFR, logx, logy)
     
     for ext in ["png"]:
-        cFR.SaveAs( "Plot/PhFR/ABCD_FR_{:s}-{:s}.{:s}".format(sample_data["name"], sample_prompt["name"], ext) )
+        cFR.SaveAs( "Plot/PhFR/ABCD_FR_{dataname:s}-{promptname:s}_{year}.{ext:s}".format(dataname=sample_data["name"], promptname=sample_prompt["name"], year=year, ext=ext) )
     del cFR, to_preserve_FR
     
     ## Estimate = B*C/D ##
@@ -210,7 +220,7 @@ def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", year=20
     to_preserve_ESdata = beautify(cES, hES, logx, logy, logz=True)
     
     for ext in ["png"]:
-        cES.SaveAs( "Plot/PhFR/ABCD_Estimate_{:s}-{:s}.{:s}".format(sample_data["name"], sample_prompt["name"], ext) )
+        cES.SaveAs( "Plot/PhFR/ABCD_Estimate_{dataname:s}-{promptname:s}_{year}.{ext:s}".format(dataname=sample_data["name"], promptname=sample_prompt["name"], year=year, ext=ext) )
     del cES, to_preserve_ESdata
 
     ## k-Factor = (C/D)/(A/B)
@@ -227,7 +237,7 @@ def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", year=20
         hKF.Write(hKF.GetName(), ROOT.TObject.kOverwrite)
     
     to_preserve_KF = beautify(cKF, hKF, logx, logy)
-    cKF.SaveAs( 'Plot/PhFR/ABCD_kFactor_{:s}-{:s}.{:s}'.format(sample_data['name'], sample_prompt['name'], 'png') )
+    cKF.SaveAs( 'Plot/PhFR/ABCD_kFactor_{dataname:s}-{promptname:s}_{year}.{ext:s}'.format(dataname=sample_data['name'], promptname=sample_prompt['name'], year=year, ext='png') )
     del cKF, to_preserve_KF
     
     return hFR, hES, hKF
@@ -239,10 +249,15 @@ def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", year=20
 def fakeRateABCD_noSubtract(sample, analyzer="VVGammaAnalyzer", year=2016, region="CRLFR", logx=False, logy=False, fixNegBins=False):
     print("Fake Rate ABCD: sample   =", sample  )
     path_in = "{:s}/{}/{:s}_{:s}".format(get_path_results(), year, analyzer, region)
-    outfname = "data/ABCD_FR_{:s}.root".format(sample["name"])
+    outfname = "data/ABCD_FR_{samplename:s}_{year}.root".format(samplename=sample["name"], year=year)
     print('Output (without MC subtraction) in: "{:s}"'.format(outfname))
     
-    hA, hB, hC, hD = getPlots(path_in, sample["file"], [ "PhFR_%s_nonprompt" % (c) for c in 'ABCD' ] )
+    hAp, hBp, hCp, hDp = getPlots(path_in, sample["file"], [ "PhFR_%s_nonprompt" % (c) for c in 'ABCD' ] )
+    hAn, hBn, hCn, hDn = getPlots(path_in, sample["file"], [ "PhFR_%s_prompt"    % (c) for c in 'ABCD' ] )
+    hA = addIfExisting(hAp, hAn)
+    hB = addIfExisting(hAp, hBn)
+    hC = addIfExisting(hAp, hCn)
+    hD = addIfExisting(hAp, hDn)
     assert (hA and hB and hC and hD), "Could't get all 4 data histograms!"
 
     if(sample.get("fixNegBins", False) and fixNegBins):
@@ -266,7 +281,7 @@ def fakeRateABCD_noSubtract(sample, analyzer="VVGammaAnalyzer", year=2016, regio
     # Probably python/ROOT gc deletes these graphic objects and they disappear from the canvas. Holding a reference to them seems to fix it
         
     for ext in ["png"]:
-        cFR.SaveAs( "Plot/PhFR/ABCD_FR_{:s}.{:s}".format(sample["name"], ext) )
+        cFR.SaveAs( "Plot/PhFR/ABCD_FR_{samplename:s}_{year}.{ext:s}".format(samplename=sample["name"], year=year, ext=ext) )
     del cFR, to_preserve_FR
 
     ## Estimate = B*C/D ##
@@ -284,7 +299,7 @@ def fakeRateABCD_noSubtract(sample, analyzer="VVGammaAnalyzer", year=2016, regio
 
     to_preserve_ES = beautify(cES, hES, logx, logy, logz=True)
     for ext in ["png"]:
-        cES.SaveAs( "Plot/PhFR/ABCD_Estimate_{:s}.{:s}".format(sample["name"], ext) )
+        cES.SaveAs( "Plot/PhFR/ABCD_Estimate_{samplename:s}_{year}.{ext:s}".format(samplename=sample["name"], year=year, ext=ext) )
     del cES, to_preserve_ES
 
     ## k-Factor = (C/D)/(A/B)
@@ -301,24 +316,34 @@ def fakeRateABCD_noSubtract(sample, analyzer="VVGammaAnalyzer", year=2016, regio
         hKF.Write(hKF.GetName(), ROOT.TObject.kOverwrite)
     
     to_preserve_KF = beautify(cKF, hKF, logx, logy)
-    cKF.SaveAs( 'Plot/PhFR/ABCD_kFactor_{:s}.{:s}'.format(sample['name'], 'png') )
+    cKF.SaveAs( 'Plot/PhFR/ABCD_kFactor_{samplename:s}_{year}.{ext:s}'.format(samplename=sample['name'], year=year, ext='png') )
     del cKF, to_preserve_KF
     
     return hFR, hES, hKF
 
 
-def fakeRateLtoT_noSubtract(sample, plotname='PhFR_LtoT_%s_nonprompt', analyzer='VVGammaAnalyzer', year=2016, region='CRLFR', logx=False, logy=False, fixNegBins=False):
-    print('Fake Rate LtoT: sample   =', sample)
+def fakeRateLtoT_noSubtract(sample, analyzer='VVGammaAnalyzer', year=2016, region='CRLFR', method='LtoT', logx=False, logy=False, fixNegBins=False):
+    print('Fake Rate {}: sample   ='.format(method), sample)
     path_in = '{:s}/{}/{:s}_{:s}'.format(get_path_results(), year, analyzer, region)
-    outfname = 'data/LtoT_FR_{:s}.root'.format(sample['name'])
+    outfname = 'data/{}_FR_{:s}_{}.root'.format(method, sample['name'], year)
+    picname = 'Plot/PhFR/{method}_FR_{samplename}{region}_{year}'.format(method=method, samplename=sample['name'], region='' if region=='CRLFR' else '_'+region, year=year)
     print('Output in: "{:s}"'.format(outfname))
 
-    h5, h4, h3 = getPlots(path_in, sample['file'], [ plotname % (s) for s in [5, 4, 3] ] )
-    assert (h5 and h4 and h3), "Could't get the 3 histograms!"
-    
-    hPASS = h5
-    hFAIL = h3
-    hFAIL.Add(h4)
+    if(method == 'LtoT'):
+        h5p, h4p, h3p = getPlots(path_in, sample['file'], [ 'PhFR_LToT_%d_prompt'    % (s) for s in [5, 4, 3] ] )
+        h5n, h4n, h3n = getPlots(path_in, sample['file'], [ 'PhFR_LToT_%d_nonprompt' % (s) for s in [5, 4, 3] ] )
+        
+        hPASS = addIfExisting(h5p, h5n)
+        hFAIL = addIfExisting(h3p, h3n, h4p, h4n)
+        assert (hPASS and hFAIL), "Could't get the 3*2 MC histograms!"
+    else:
+        hPASSp, hFAILp = getPlots(path_in, sample['file'], [ 'PhFR_%s_prompt_%s'    % (method, s) for s in ['PASS', 'FAIL'] ] )
+        hPASSn, hFAILn = getPlots(path_in, sample['file'], [ 'PhFR_%s_nonprompt_%s' % (method, s) for s in ['PASS', 'FAIL'] ] )
+        
+        hPASS = addIfExisting(hPASSp, hPASSn)
+        hFAIL = addIfExisting(hFAILp, hFAILp)
+        assert (hPASS and hFAIL), "Could't get the 2*2 MC histograms!"
+
     hFAIL.Add(hPASS)
 
     if(sample.get('fixNegBins', False) and fixNegBins):
@@ -326,13 +351,16 @@ def fakeRateLtoT_noSubtract(sample, plotname='PhFR_LtoT_%s_nonprompt', analyzer=
             fix_neg_bins(h)
 
     ## Fake rate = PASS/FAIL ##
-    cFR = ROOT.TCanvas( 'cFR_LtoT_nosub', 'Fake Rate '+sample['name'], 1200, 900 )
+    cFR = ROOT.TCanvas( 'cFR_{}_nosub'.format(method), 'Fake Rate '+sample['name'], 1200, 900 )
     cFR.cd()
     
     hFR = copy.deepcopy(hPASS)
     hFR.Divide(hFAIL)
-    hFR.SetTitle( 'Photon Fake Rate: 5/(3+4+5) (from {:s})'.format(sample['title']) )
-    hFR.SetName( 'PhFR_LtoT' )
+    if(method == 'LtoT'):
+        hFR.SetTitle( 'Photon Fake Rate: 5/(3+4+5) (from {:s})'.format(sample['title']) )
+    else:
+        hFR.SetTitle( 'Photon Fake Rate: {} (from {:s})'.format(method,sample['title']) )
+    hFR.SetName( 'PhFR_{}'.format(method) )
 
     with TFileContext(outfname, 'UPDATE') as tf:
         tf.cd()
@@ -341,32 +369,39 @@ def fakeRateLtoT_noSubtract(sample, plotname='PhFR_LtoT_%s_nonprompt', analyzer=
     to_preserve = beautify(cFR, hFR, logx, logy)
     
     for ext in ['png']:
-        cFR.SaveAs( 'Plot/PhFR/LtoT_FR_{:s}.{:s}'.format(sample['name'], ext) )
+        cFR.SaveAs( picname+'.'+ext )
     del cFR, to_preserve
 
     return hFR
 
     
-def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=2016, region='CRLFR', logx=False, logy=False, fixNegBins=False):
-    print('Fake Rate LtoT: data     =', sample_data  )
-    print('Fake Rate LtoT: promptMC =', sample_prompt)
+def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=2016, region='CRLFR', method='LtoT', logx=False, logy=False, fixNegBins=False):
+    print('Fake Rate {}: data     ='.format(method), sample_data  )
+    print('Fake Rate {}: promptMC ='.format(method), sample_prompt)
     path_in = '{:s}/{}/{:s}_{:s}'.format(get_path_results(), year, analyzer, region)
-    outfname_full = 'data/LtoT_FR_{:s}-{:s}.root'.format(sample_data['name'], sample_prompt['name'])
+    outfname_full = 'data/{method}_FR_{dataname}-{promptname}_{year}.root'.format(method=method, dataname=sample_data['name'], promptname=sample_prompt['name'], year=year)
+    picname = 'Plot/PhFR/{method}_FR_{dataname}-{promptname}{region}_{year}'.format(method=method, dataname=sample_data['name'], promptname=sample_prompt['name'], region='' if region=='CRLFR' else '_'+region, year=year)
     print('Output (with prompt MC subtraction) in: "{:s}"'.format(outfname_full))
     
     ##### First: take data ####
-    hdata_5  , hdata_4  , hdata_3   = getPlots(path_in, sample_data['file']  , [ 'PhFR_LToT_%d'        % (s) for s in [5, 4, 3] ] )
-    hprompt_5, hprompt_4, hprompt_3 = getPlots(path_in, sample_prompt['file'], [ 'PhFR_LToT_%d_prompt' % (s) for s in [5, 4, 3] ] )
-    assert (hdata_5   and hdata_4   and hdata_3  ), "Could't get the 3 data histograms!"
-    assert (hprompt_5 and hprompt_4 and hprompt_3), "Could't get the 3 prompt MC histograms"
-    
-    hdata_PASS   = hdata_5
-    hdata_FAIL   = hdata_3
-    hdata_FAIL  .Add(hdata_4  )
-    hprompt_FAIL = hprompt_3
-    hprompt_PASS = hprompt_5
-    hprompt_FAIL.Add(hprompt_4)
-    
+    if(method == 'LtoT'):
+        hdata_5  , hdata_4  , hdata_3   = getPlots(path_in, sample_data['file']  , [ 'PhFR_LToT_%d'        % (s) for s in [5, 4, 3] ] )
+        hprompt_5, hprompt_4, hprompt_3 = getPlots(path_in, sample_prompt['file'], [ 'PhFR_LToT_%d_prompt' % (s) for s in [5, 4, 3] ] )
+        assert (hdata_5   and (hdata_4   or  hdata_3  )), "Could't get the 3 data histograms!"
+        assert (hprompt_5 and (hprompt_4 or  hprompt_3)), "Could't get the 3 prompt MC histograms"
+
+        hdata_PASS   = hdata_5
+        hdata_FAIL   = addIfExisting(hdata_3  , hdata_4  )
+        hprompt_PASS = hprompt_5
+        hprompt_FAIL = addIfExisting(hprompt_3, hprompt_4)
+
+    else:
+        hdata_PASS  , hdata_FAIL   = getPlots(path_in, sample_data['file']  , [ 'PhFR_%s_%s'        % (method, s) for s in ['PASS', 'FAIL'] ] )
+        hprompt_PASS, hprompt_FAIL = getPlots(path_in, sample_prompt['file'], [ 'PhFR_%s_prompt_%s' % (method, s) for s in ['PASS', 'FAIL'] ] )
+        
+        assert (hdata_PASS   and hdata_FAIL  ), "Could't get the 2 data histograms!"
+        assert (hprompt_PASS and hprompt_FAIL), "Could't get the 2 prompt MC histograms!"
+
     hdata_FAIL  .Add(hdata_PASS  )
     hprompt_FAIL.Add(hprompt_PASS)
 
@@ -381,12 +416,15 @@ def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=20
     hdata_FAIL.Add(hprompt_FAIL, -1)
 
     ## Fake rate = PASS/FAIL ##
-    cFR = ROOT.TCanvas( 'cFR_LtoT', 'Fake Rate {:s} - {:s}'.format(sample_data['name'], sample_prompt['name']), 1200, 900 )
+    cFR = ROOT.TCanvas( 'cFR_{}'.format(method), 'Fake Rate {:s} - {:s}'.format(sample_data['name'], sample_prompt['name']), 1200, 900 )
     cFR.cd()
     
     hFR = hdata_PASS
     hFR.Divide(hdata_FAIL)
-    hFR.SetTitle( 'Photon Fake Rate: 5/(3+4+5) (from {} - {})'.format(sample_data['title'], sample_prompt['title']) )
+    if(method == 'LtoT'):
+        hFR.SetTitle( 'Photon Fake Rate: 5/(3+4+5) (from {} - {})'.format(sample_data['title'], sample_prompt['title']) )
+    else:
+        hFR.SetTitle( 'Photon Fake Rate: {} (from {} - {})'.format(method,sample_data['title'], sample_prompt['title']) )
     hFR.SetName( 'PhFR' )
     
     if(fixNegBins):
@@ -399,7 +437,7 @@ def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=20
     to_preserve_FR = beautify(cFR, hFR, logx, logy)
         
     for ext in ['png']: 
-        cFR.SaveAs( 'Plot/PhFR/LtoT_FR_{:s}-{:s}.{:s}'.format(sample_data['name'], sample_prompt['name'], ext) )
+        cFR.SaveAs( picname+'.'+ext )
     del cFR, to_preserve_FR
 
     return hFR
@@ -491,7 +529,9 @@ if __name__ == "__main__":
     sampleList = {
         "data"     : {"file": 'data'},
         "ZGToLLG"  : {"file": 'ZGToLLG', "title": "Z#gamma_{MC}", "fixNegBins": True},
-        "Drell-Yan": {"file": 'DYJetsToLL_M50', "fixNegBins": True}
+        "Drell-Yan": {"file": 'DYJetsToLL_M50', "fixNegBins": True},
+        "ZZTo4l"   : {"file": 'ZZTo4l', "fixNegBins": True},
+        "ggTo4l"   : {"file": 'ggTo4l', "fixNegBins": True}
     }
     for key, sample in sampleList.items():
         sample.setdefault("name" , key)
@@ -500,7 +540,7 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser()
     parser.add_argument("-y", "--year"   , type=int, default=2016, choices=[2016, 2017, 2018])
-    parser.add_argument("-m", "--method" , nargs="+", choices=["LtoT", "ABCD"], default="LtoT")
+    parser.add_argument("-m", "--method" , nargs="+", choices=["LtoT", "KtoVL", "KtoVLexcl", "ABCD"], default="LtoT")
     parser.add_argument(      "--no-mc"  , dest="do_mc"  , action="store_false", help="Skip MC plots"  )
     parser.add_argument(      "--no-data", dest="do_data", action="store_false", help="Skip data plots")
     args = parser.parse_args()
@@ -525,18 +565,24 @@ if __name__ == "__main__":
             plotRatio(hFR_ABCD_data, hFR_ABCD_MC, picture_name="ABCD_ratio_data-ZG_over_DY_{}".format(args.year), title="Ratio FR(data-Z#gamma)/FR(DY)")
             print()
 
-    if("LtoT" in args.method):
+    for method in set(args.method) & {"LtoT", "KtoVL", "KtoVLexcl"}:
         if(args.do_data):
-            print('>>>LtoT data')
-            hFR_LtoT_data = fakeRateLtoT(sampleList["data"], sampleList["ZGToLLG"], year=args.year, logx=True, fixNegBins=False)
+            print('>>>', method, 'data')
+            hFR_LtoT_data = fakeRateLtoT(sampleList["data"], sampleList["ZGToLLG"], year=args.year, method=method, logx=True, fixNegBins=False)
             plotProfiled(hFR_LtoT_data, picture_name='LtoT_FR_profiledX_data-ZGToLLG', title='FR(#gamma) vs #eta' , direction='X')
             plotProfiled(hFR_LtoT_data, picture_name='LtoT_FR_profiledY_data-ZGToLLG', title='FR(#gamma) vs p_{T}', direction='Y')
             print()
         if(args.do_mc):
-            print('>>>LtoT MC')
-            hFR_LtoT_MC   = fakeRateLtoT_noSubtract(sampleList["Drell-Yan"]       , year=args.year, logx=True, fixNegBins=True)
+            print('>>>', method, 'MC')
+            hFR_LtoT_MC   = fakeRateLtoT_noSubtract(sampleList["Drell-Yan"]       , year=args.year, method=method, logx=True, fixNegBins=True)
+            hFR_LtoT_ZZ   = fakeRateLtoT_noSubtract(sampleList["ZZTo4l"]          , year=args.year, method=method, logx=True, fixNegBins=True)
+            hFR_LtoT_ZZ_4P= fakeRateLtoT_noSubtract(sampleList["ZZTo4l"]          , year=args.year, method=method, logx=True, fixNegBins=True, region='SR4P')
+            hFR_LtoT_gg   = fakeRateLtoT_noSubtract(sampleList["ggTo4l"]          , year=args.year, method=method, logx=True, fixNegBins=True)
             print()
         if(args.do_data and args.do_mc):
-            print('>>>LtoT ratio')
-            ratioLtoT = plotRatio(hFR_LtoT_data, hFR_LtoT_MC, picture_name="LtoT_ratio_data-ZG_over_DY_{}".format(args.year), title="Ratio FR(data-Z#gamma)/FR(DY)")
+            print('>>>', method, 'ratio')
+            ratioLtoT = plotRatio(hFR_LtoT_data, hFR_LtoT_MC, picture_name="{}_ratio_data-ZG_over_DY_{}".format(method, args.year), title="Ratio FR(data-Z#gamma)/FR(DY)")
+            ratioLtoT = plotRatio(hFR_LtoT_data, hFR_LtoT_ZZ, picture_name="{}_ratio_data-ZG_over_ZZ_{}".format(method, args.year), title="Ratio FR(data-Z#gamma)/FR(ZZ)")
+            ratioLtoT_4P = plotRatio(hFR_LtoT_data, hFR_LtoT_ZZ_4P, picture_name="{}_ratio_data-ZG_over_ZZ_4P_{}".format(method, args.year), title="Ratio FR(data-Z#gamma)_{CRLFR}/FR(ZZ_{4P})")
+            ratioLtoT = plotRatio(hFR_LtoT_data, hFR_LtoT_gg, picture_name="{}_ratio_data-ZG_over_gg_{}".format(method, args.year), title="Ratio FR(data-Z#gamma)/FR(gg)")
             print()
