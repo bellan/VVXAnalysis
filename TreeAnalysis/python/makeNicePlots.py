@@ -15,7 +15,7 @@ import math
 import operator
 import re
 from copy import deepcopy
-from optparse import OptionParser
+from argparse import ArgumentParser
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 import CrossInfo
@@ -32,61 +32,69 @@ regions = ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L'
            'SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F', 
            'SR_HZZ', 'CR2P2F_HZZ', 'CR3P1F_HZZ', 'CR_HZZ']
 
-parser = OptionParser()
+parser = ArgumentParser()
 
-parser.add_option("-r", "--region", dest="region", type="choice", choices=regions,
+parser.add_argument("-r", "--region", dest="region", choices=regions,
                   default="SR4P",
                   help="Available regions are {0:s}. Default is SR4P.".format(', '.join(regions)))
 
-parser.add_option("-f", "--finalstate", dest="FinalState",
+parser.add_argument("-f", "--finalstate", dest="FinalState",
                   default="4l",
                   help="Final state are 4l, 4m, 2e2m and 4e. Default is 4l")
 
-parser.add_option("--nodata", dest="doData",
+parser.add_argument("--nodata", dest="doData",
                   action="store_false",
                   default=True,
                   help="Forces to NOT draw data on every plot")
 
-parser.add_option("-u", "--unblind", dest='unblind', action="store_true", default=False, help="Unblinds plots marked as blinded")
+parser.add_argument("-u", "--unblind", dest='unblind', action="store_true", default=False, help="Unblinds plots marked as blinded")
 
-parser.add_option("-t", "--type", dest="Type",
+parser.add_argument("-t", "--type", dest="Type",
                   default="all",
                   help= "type type to choose the  plot you want. Mass, Jets, DeltaEta, mjj")
 
-parser.add_option("-S", "--Save", dest="SavePlot",
+parser.add_argument("-S", "--Save", dest="SavePlot",
                   action="store_true",
                   default=False,
                   help="Save plot option, default is False")
 
-parser.add_option("-m", "--mcset", dest="mcSet", type="choice", choices=['mad', 'pow'],
+parser.add_argument("-m", "--mcset", dest="mcSet", choices=['mad', 'pow'],
                   default="mad",
                   help= "Monte Carlo Set, pow for Powheg, mad for amcatnlo")
 
-parser.add_option("-p", "--prediction-type", dest="predType",
+parser.add_argument("-p", "--prediction-type", dest="predType",
                   default="fromCR",
                   help= "Type of prediction. fromCR = non-prompt leptons from CRs, rare background from MC; fullMC = all from MC; fakeMC = use MC in CRs instead of data. Default is fromCR")
 
-parser.add_option("-l", "--lumiProj", dest="LumiProj",
+parser.add_argument("-l", "--lumiProj", dest="LumiProj",
                   default="",
                   help="Lumi projection")
 
-parser.add_option("-o", "--outputDir", dest="outputDir",
+parser.add_argument("-o", "--outputDir", dest="outputDir",
                   default="last",
                   help="Directory where save plots")
 
-parser.add_option("-A", "--Analysis", dest="Analysis", type="choice", choices=['VVXAnalyzer', 'VVGammaAnalyzer', 'ZZAnalyzer'],
+parser.add_argument("-A", "--Analysis", dest="Analysis", choices=['VVXAnalyzer', 'VVGammaAnalyzer', 'ZZAnalyzer'],
                   default="VVXAnalyzer",
                   help="Analysis. Default is VVX; other options are ZZ, VBS and VVGamma")
 
-parser.add_option("-y", "--year", dest="year",
+parser.add_argument("-y", "--year", dest="year",
                   default="2016",
                   help= "valid inputs are 2016, 2017, 2018")
 
+parser.add_argument("-v", "--verbose", dest="verbosity",
+                    action="count", default=1,
+                    help="Increase verbosity")
+parser.add_argument("--verbosity", type=int,
+                    help="Set verbosity")
+parser.add_argument("-q", "--quiet", dest="verbosity",
+                    action="store_const", const=0,
+                    help="Set verbose to minimum")
 
 #REMEMBER ADD DEFINTION PLOT
 
 
-(options, args) = parser.parse_args()
+options = parser.parse_args()
 
 if(not options.doData and options.unblind):
     parser.error('"--nodata" and "--unblind" are mutually exclusive.')
@@ -137,7 +145,9 @@ else:
     variables = [ var for var in VarInfo.keys() if re.search(Type, var) ]  # Allow for regexp to be specified from command line
     if len(variables) == 0:
         print 'WARN: no variables matching regex "{}" for {} in {}'.format(Type, Analysis, region)
-# print "INFO: variables =", variables
+        exit(0)
+if(options.verbosity >= 2):
+    print 'INFO: variables =', variables
 variables.sort()
 
 c1 = TCanvas( 'c1', mcSet , 900, 1200 )
@@ -151,14 +161,15 @@ for Var in variables:
     
     # "Temporary" hack for closure test of photon fake rate
     if 'PhFRClosure' in Var and 'PASS' in Var:
-        hMC, leg = plotUtils.GetClosureStack(region, InputDir, Var, info.get('rebin', 1), forcePositive=False)
+        hMC, leg = plotUtils.GetClosureStack(region, InputDir, Var, info.get('rebin', 1), forcePositive=False, verbosity=options.verbosity)
     else:
-        (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, Var, predType, mcSet, info.get('rebin', 1), forcePositive=forcePositive)
+        (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, Var, predType, mcSet, info.get('rebin', 1), forcePositive=forcePositive, verbosity=options.verbosity)
 
     if(DoData):
-        (graphData, histodata) = plotUtils.GetDataPlot(InputDir, Var, region        , info.get('rebin', 1), forcePositive=forcePositive)
+        (graphData, histodata) = plotUtils.GetDataPlot(InputDir, Var, region        , info.get('rebin', 1), forcePositive=forcePositive, verbosity=options.verbosity)
 
     if( (not hMC.GetStack()) or (DoData and (not graphData)) ):
+        print 'WARN: skipping', Var, 'because:', 'no MC' if (not hMC.GetStack) else '', 'no data' if (not graphData) else ''
         continue
     
     hMCErr = deepcopy(hMC.GetStack().Last())
