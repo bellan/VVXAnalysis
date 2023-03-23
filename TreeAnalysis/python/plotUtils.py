@@ -7,7 +7,7 @@ from readSampleInfo import *
 from collections import OrderedDict
 from Colours import *
 import ctypes
-from samplesByRegion import getSamplesByRegion, data_obs
+import samplesByRegion # getSamplesByRegion, data_obs, ZZG, WZG, ...
 
 ##############################################
 # Utilities, function definitions, and stuff #
@@ -57,10 +57,17 @@ def iterate_bins(h, **kwargs):
             for k in range(loZ, h.GetNbinsZ() + 1 + upZ):
                 yield h.GetBin(i, j, k)
 
+def is4Lregion(region):
+    return region in ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L']
+def is3Lregion(region):
+    return region in ['SR3P', 'CR110'  , 'CR101'  , 'CR011'  , 'CR100'  , 'CR001'  , 'CR010', 'CR000', 'SR3P_1L', 'SR3P_1P', 'CR3P_1F', 'CRLFR', 'CR3L']
+def is2Lregion(region):
+    return region in ['SR2P', 'SR2P_1L', 'CR2P_1F']
+
 ###################################################
 # Functions used to retrieve and manipulate plots #
 ###################################################
-            
+
 def GetTypeofsamples(category,Set):
     
     signal_qq_pow =  [{"sample":'ZZTo4l'        ,"color":ROOT.kAzure-4,"name":'qq/qg #rightarrow ZZ(+jets)'}]
@@ -137,7 +144,7 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin, forcePosi
     leg.SetBorderSize(0)
     leg.SetTextSize(0.025)
 
-    samples = getSamplesByRegion(region, MCSet, predType)
+    samples = samplesByRegion.getSamplesByRegion(region, MCSet, predType)
 
     stack = ROOT.THStack("stack",plot+"_stack")
     ErrStat = ctypes.c_double(0.)
@@ -221,7 +228,7 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin, forcePosi
 
 
 #################################################
-def GetClosureStack(region, inputdir, plot, rebin, forcePositive=True):
+def GetClosureStack(region, inputDir, plot, rebin, forcePositive=False):
     print Red("\n###############"+'#'*len(plot)+"###############"
               "\n############## "+    plot     +" ##############"
               "\n###############"+'#'*len(plot)+"###############")
@@ -229,47 +236,51 @@ def GetClosureStack(region, inputdir, plot, rebin, forcePositive=True):
     leg.SetBorderSize(0)
     leg.SetTextSize(0.025)
 
-    files = {}
     stack = ROOT.THStack("stack",plot+"_stack")
-    ErrStat = ctypes.c_double(0.)
     
-    if region in ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L']:
-        var = 'mZZG'
-    elif region in ['SR3P', 'CR110'  , 'CR101'  , 'CR011'  , 'CR100'  , 'CR001'  , 'CR010', 'CR000', 'SR3P_1L', 'SR3P_1P', 'CR3P_1F', 'CRLFR', 'CR3L']:
-        var = 'mWZG'
-    else:
-        print '[GetClosureStack] unknown region:', region
-        return
     if   region == 'SR4P':
-        sample_prompt = 'ZZGTo4LG'
-        title_prompt = 'ZZ#gamma'
-        color = ROOT.kRed
+        samples_prompt = samplesByRegion.ZZG
     elif region in ['SR3P', 'CR3P1F']:
-        sample_prompt = 'WZGTo3LNuG'
-        title_prompt = 'WZ#gamma'
-        color = ROOT.kMagenta
+        samples_prompt = samplesByRegion.ZZG + samplesByRegion.WZG
     elif region in ['SR2P', 'CR2P2F', 'CR110', 'CR101', 'CR011']:
-        sample_prompt = 'ZGToLLG'
-        title_prompt = 'Z#gamma'
-        color = ROOT.kGreen-4
-        
+        samples_prompt = samplesByRegion.ZG
     
-    fFakeData = ROOT.TFile(inputdir+'data.root'   , 'READ')
-    hFakeData = fFakeData.Get('PhFRClosure_reweighted_%s'  % (var))
-    fPromptZG = ROOT.TFile(inputdir+sample_prompt+'.root', 'READ')
-    hPromptZG = fPromptZG.Get('PhFRClosure_PASS_%s'        % (var))
+    for sample in samples_prompt:
+        sample.update({'title': sample['name' ]   })  # TEMP, must change convention also in samplesByRegion
+        sample.update({'name' : sample['files'][0]})
+    # plot ~ PhFRClosure_KtoVL_reweighted_mZZG
+    plot_reweight = plot.replace('PASS', 'reweighted')
     
     totalMC = 0
+    ErrStat = ctypes.c_double(0.)
 
-    samples = [{'sample':'fake-photons', 'color':ROOT.kGray, 'title':'nonprompt #gamma', 'hist':hFakeData},
-               {'sample':sample_prompt , 'color':color     , 'title':title_prompt      , 'hist':hPromptZG}]
+    print Red("\n######### Nonprompt photon background for {0:s}  #########\n".format(region))
+    with TFileContext(inputDir+'data.root', 'READ') as tf:
+        hFakeData   = tf.Get(plot_reweight)
+        hFakeData.SetDirectory(0)  # Prevent ROOT from deleting stuff under my nose
+    integral = hFakeData.IntegralAndError(0,-1,ErrStat)  # Get overflow events too
+    print "{0:16.16} {1:.3f} +- {2: .3f}".format('data', integral, ErrStat.value)
+
+    for sample_prompt in samples_prompt:
+        with TFileContext(inputDir+sample_prompt['files'][0]+'.root', 'READ') as tf:
+            hFakePrompt = tf.Get(plot_reweight)
+            hPrompt     = tf.Get(plot)
+            hFakePrompt.SetDirectory(0)
+            hPrompt    .SetDirectory(0)
+        integral = hFakePrompt.IntegralAndError(0,-1,ErrStat)  # Get overflow events too
+        print "{0:16.16} {1:.3f} +- {2: .3f}".format(sample_prompt['files'][0], integral, ErrStat.value)
+
+        hFakeData.Add(hFakePrompt, -1)  # subtract prompt contribution from "fail" region; it is already weighted by the FR
+        sample_prompt.update({'hist': hPrompt})
+
+    samples = [{'name':'fake-photons', 'color':ROOT.kGray, 'title':'nonprompt #gamma', 'hist':hFakeData}] + samples_prompt
 
     print Red("\n######### Contribution to {0:s}  #########\n".format(region))
 
     for sample in samples:
         h = sample['hist']
         if not h:
-            print "{0:16.16s}".format(sample["sample"]), "No entries or is a zombie"
+            print "{0:16.16s}".format(sample['name']), "No entries or is a zombie"
             continue
         
         #h.Scale(sample.get("kfactor", 1.))
@@ -279,7 +290,7 @@ def GetClosureStack(region, inputdir, plot, rebin, forcePositive=True):
         #     h.Scale(-1)
 
         integral = h.IntegralAndError(0,-1,ErrStat)  # Get overflow events too
-        print "{0:16.16} {1:.3f} +- {2: .3f}".format(sample["sample"], integral, ErrStat.value)
+        print "{0:16.16} {1:.3f} +- {2: .3f}".format(sample['name'], integral, ErrStat.value)
         totalMC += integral
 
         if rebin!=1: h.Rebin(rebin)
@@ -291,6 +302,8 @@ def GetClosureStack(region, inputdir, plot, rebin, forcePositive=True):
         stack.Add(h)
         leg.AddEntry(h, sample['title'], "f")
 
+    # print '>>> legend', [(p.GetLabel(), p.GetObject().GetEntries()) for p in leg.GetListOfPrimitives()]
+    # print '>>> stack ', [(p.GetName(), p.GetTitle(), p.GetEntries()) for p in stack.GetHists()]
     print "\n Total MC .......................... {0:.2f}".format(totalMC)
     print "____________________________________ "       
     return (copy.deepcopy(stack),copy.deepcopy(leg))
@@ -300,7 +313,7 @@ def GetClosureStack(region, inputdir, plot, rebin, forcePositive=True):
 
 def GetDataPlot(inputdir, plot, Region,rebin, forcePositive=False):
     print Red("\n###################    DATA    ###################\n")
-    sample = data_obs
+    sample = samplesByRegion.data_obs
     hdata = None
     
     isFirst=1
@@ -327,6 +340,7 @@ def GetDataPlot(inputdir, plot, Region,rebin, forcePositive=False):
         else:
             hdata.Add(h)
         
+    assert hdata is not None, 'ERROR: no data plot "{}" in {}, {}'.format(plot, inputdir, Region)
     hdata.SetMarkerColor(ROOT.kBlack)
     hdata.SetLineColor(ROOT.kBlack)
     hdata.SetMarkerStyle(20)
@@ -498,7 +512,7 @@ def GetFakeRate(inputdir, plot, method, rebin=1, region=None, MCSet='mad'):
 
     if method=="MC":  # MC subtraction of prompt processes from CRs
         assert region is not None, "Must provide the region to subtract prompt background"
-        samples = getSamplesByRegion(region, MCSet, predType)
+        samples = samplesByRegion.getSamplesByRegion(region, MCSet, predType)
 
         for sample in samples:
             for fname in sample['files']:

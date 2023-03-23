@@ -150,7 +150,7 @@ for Var in variables:
     forcePositive=True
     
     # "Temporary" hack for closure test of photon fake rate
-    if 'PhFRClosure_PASS' in Var:
+    if 'PhFRClosure' in Var and 'PASS' in Var:
         hMC, leg = plotUtils.GetClosureStack(region, InputDir, Var, info.get('rebin', 1), forcePositive=False)
     else:
         (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, Var, predType, mcSet, info.get('rebin', 1), forcePositive=forcePositive)

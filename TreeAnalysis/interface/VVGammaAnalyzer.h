@@ -120,6 +120,8 @@ private:
   phys::Photon* bestKinPh_;
 
   std::unique_ptr<TH2F> hPhotonFR_;
+  std::unique_ptr<TH2F> hPhotonFR_KtoVL_;
+  std::unique_ptr<TH2F> hPhotonFR_KtoVLexcl_;
   std::string channelReco_;
 
   std::ofstream fAK4_;
@@ -174,6 +176,8 @@ private:
  	
   double getPhotonFR   (const phys::Photon& ph) const;
   double getPhotonFRUnc(const phys::Photon& ph) const;
+  double getPhotonFR_KtoVL(const phys::Photon& ph) const;
+  double getPhotonFR_KtoVLexcl(const phys::Photon& ph) const;
 	
   static bool is4Lregion(const phys::RegionTypes reg){
     return (reg == phys::SR4P || reg == phys::CR3P1F || reg == phys::CR2P2F ||

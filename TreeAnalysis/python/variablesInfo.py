@@ -30,7 +30,9 @@ def getVarInfo_VVGamma(region):
             'Z0_l1_pt': {'title':'p_{T}^{Z0, l1}'},
             'Z1_l0_pt': {'title':'p_{T}^{Z1, l0}'},
             'Z1_l1_pt': {'title':'p_{T}^{Z1, l1}'},
-            'PhFRClosure_PASS_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG}
+            'PhFRClosure_LtoT_PASS_mZZG'     : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG},
+            'PhFRClosure_KtoVL_PASS_mZZG'    : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG},
+            'PhFRClosure_KtoVLexcl_PASS_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG}
         })
         
         for name, title in [('4e','4e'), ('2e2m', '2e2\mu'), ('4m', '4\mu')]:
@@ -69,7 +71,9 @@ def getVarInfo_VVGamma(region):
             # 'paperSel_W_l_pt'   : {'title':'p_{t,l10} [GeV/c]'   },
             # 'paperSel_W_MET_pt' : {'title':'p_{t,MET} [GeV/c]'   },
             # 'paperSel_lll_mass' : {'title':'m_{lll} [GeV/c^{2}]' },
-            'PhFRClosure_PASS_mWZG': {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':False}
+            'PhFRClosure_LtoT_PASS_mWZG'     : {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':False},
+            'PhFRClosure_KtoVL_PASS_mWZG'    : {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':False},
+            'PhFRClosure_KtoVLexcl_PASS_mWZG': {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':True }
             # 'debug3L_l1_FRSF': {'title':'FR(l_{1})' }
             # 'debug3L_l2_FRSF': {'title':'FR(l_{2})' }
             # 'debug3L_l3_FRSF': {'title':'FR(l_{3})' }
