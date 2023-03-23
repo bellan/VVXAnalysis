@@ -42,12 +42,12 @@ parser.add_option("-f", "--finalstate", dest="FinalState",
                   default="4l",
                   help="Final state are 4l, 4m, 2e2m and 4e. Default is 4l")
 
-parser.add_option("--nodata", dest="noData",
-                  action="store_true",
-                  default=False,
+parser.add_option("--nodata", dest="doData",
+                  action="store_false",
+                  default=True,
                   help="Forces to NOT draw data on every plot")
 
-parser.add_option("-u", "--unblind", dest='Unblind', action="store_true", default=False, help="Unblinds plots marked as blinded")
+parser.add_option("-u", "--unblind", dest='unblind', action="store_true", default=False, help="Unblinds plots marked as blinded")
 
 parser.add_option("-t", "--type", dest="Type",
                   default="all",
@@ -88,10 +88,10 @@ parser.add_option("-y", "--year", dest="year",
 
 (options, args) = parser.parse_args()
 
-if(options.noData and options.Unblind):
+if(not options.doData and options.unblind):
     parser.error('"--nodata" and "--unblind" are mutually exclusive.')
 
-optDoData  = not options.noData
+optDoData  = options.doData
 predType   = options.predType
 region     = options.region
 Type       = options.Type
@@ -145,7 +145,7 @@ c1 = TCanvas( 'c1', mcSet , 900, 1200 )
 for Var in variables:
     info = VarInfo[Var]
     c1.Clear()
-    DoData = optDoData and (info.get('unblind', True) or region[:2] != 'SR')
+    DoData = optDoData and (info.get('unblind', True) or options.unblind or region[:2] != 'SR')
 
     forcePositive=True
     
