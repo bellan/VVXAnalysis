@@ -224,7 +224,7 @@ void VVGammaAnalyzer::initEvent(){
 Int_t VVGammaAnalyzer::cut() {
   evtN_++; evtNInReg_[region_]++; evtWInReg_[region_] += theWeight;
   #ifndef DEBUG
-  cout<<"\r\t\t"<<evtN_;
+  // cout<<"\r\t\t"<<evtN_;
   #else
   cout << regionType(region_) << ':' << run << ':' << lumiBlock << ':' << event << '\t'
        << theWeight << '\n';
