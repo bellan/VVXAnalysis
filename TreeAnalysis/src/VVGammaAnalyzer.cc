@@ -83,6 +83,18 @@ void VVGammaAnalyzer::begin(){
     hPhotonFR_KtoVLexcl_.reset( new TH2F("PhFR", "", 1,0.,1., 1,0.,1.) );
   }
   
+  // FR SF
+  TFile fileFRSF_LtoT(Form("data/LtoT_ratio_data-ZG_over_ZZ_%d.root", year), "READ");
+  if(fileFRSF_LtoT.IsOpen()){
+    hPhotonFRSF_LtoT_.reset( std::move((TH2F*) fileFRSF_LtoT.Get("PhFRSF")) );
+    hPhotonFRSF_LtoT_->SetDirectory(nullptr);  // prevent ROOT from deleting it
+    cout << "INFO: retrieved Photon FRSF LtoT histogram from \""<<fileFRSF_LtoT.GetName()<<"\"\n";
+    fileFRSF_LtoT.Close();
+  }
+  else{
+    cout << colour::Red("WARN") << ": Photon FRSF LtoT file not found in \""<<fileFRSF_LtoT.GetName()<<"\"\n";
+    hPhotonFRSF_LtoT_.reset( new TH2F("PhFRSF", "", 1,0.,1., 1,0.,1.) );
+  }
   
   // initCherryPick();
   for(const char* sys : {"central", "EScale_Up", "EScale_Down", "ESigma_Up", "ESigma_Down"}){
@@ -1063,7 +1075,7 @@ void VVGammaAnalyzer::baseHistos_cut(){
   if(lead_ele != electrons->end())
     theHistograms->fill("lead_ele_pt", "Leading electron p_{t}:p_{t} [GeV/c]", 50, 0., 250., lead_ele->pt(), theWeight);
   if(lead_muo != muons->end())
-    theHistograms->fill("lead_muo_pt", "Leading muoon p_{t}:p_{t} [GeV/c]"   , 50, 0., 250., lead_muo->pt(), theWeight);
+    theHistograms->fill("lead_muo_pt", "Leading muon p_{t}:p_{t} [GeV/c]"   , 50, 0., 250., lead_muo->pt(), theWeight);
   
   // MET
   theHistograms->fill("MET", "MET;#slash{E}_{T} [GeV/c]", 50, 0., 250., met->pt(), theWeight);
@@ -1092,6 +1104,17 @@ void VVGammaAnalyzer::photonHistos(){
     theHistograms->fill("kinPh_lead_aeta", "|#eta| of Kinematic photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
     theHistograms->fill("kinPh_lead_pt_aeta", "Kinematic photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
     
+    if(!ph.cutBasedIDLoose()){
+      theHistograms->fill("kinVetoLPh_lead_pt"  , "p_{t} of Kin-L photons;p_{T} [GeV/c];Events", ph_pt_bins  ,      ph.pt()  , theWeight);
+      theHistograms->fill("kinVetoLPh_lead_aeta", "|#eta| of Kin-L photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
+      theHistograms->fill("kinVetoLPh_lead_pt_aeta", "Kin-L photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+    }
+    if(!ph.cutBasedID(Photon::IdWp::VeryLoose)){
+      theHistograms->fill("kinVetoVLPh_lead_pt"  , "p_{t} of Kin-VL photons;p_{T} [GeV/c];Events", ph_pt_bins  ,      ph.pt()  , theWeight);
+      theHistograms->fill("kinVetoVLPh_lead_aeta", "|#eta| of Kin-VL photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
+      theHistograms->fill("kinVetoVLPh_lead_pt_aeta", "Kin-VL photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+    }
+
     if(kinPhotons_["central"]->size() > 1)
       theHistograms->fill("kinPh_sublead_pt", "Subleading Kin #gamma;p_{T} [GeV/c]", 20,0.,100., kinPhotons_["central"]->at(1).pt());
   }
@@ -1519,6 +1542,8 @@ void VVGammaAnalyzer::photonFakeRate(){
   
   double f = getPhotonFR(*bestG); //photonScaleFactors_.fakeRate(*bestG);
   double weight = theWeight * f/(1-f);
+  double fSF = f * getPhotonFRSF_LtoT(*bestG);
+  double weightSF = theWeight * fSF / (1-fSF);
   // cout << region_ << ' ' << varName << "=" << varValue << "  theWeight=" << theWeight;
   // cout << "  f=" << f << "  weight=" << weight << "  pt=" << bestG->pt() << "  eta=" << bestG->eta() << '\n';
   
@@ -1526,7 +1551,9 @@ void VVGammaAnalyzer::photonFakeRate(){
     theHistograms->fill(Form("PhFRClosure_LtoT_PASS_%s"      , varName), "Closure test: PASS"    , mVVG_bins, varValue, theWeight);
   else if(nPass == 3 || nPass == 4){  // LOOSE && !TIGHT
     theHistograms->fill(Form("PhFRClosure_LtoT_FAIL_%s"      , varName), "Closure test: FAIL"    , mVVG_bins, varValue, theWeight);
-    theHistograms->fill(Form("PhFRClosure_LtoT_reweighted_%s", varName), "Closure test: (3+4)*SF", mVVG_bins, varValue, weight   );
+    theHistograms->fill(Form("PhFRClosure_LtoT_reweighted_%s", varName), "Closure test: (3+4)*TF", mVVG_bins, varValue, weight   );
+    if(fileName.find("ZZTo4l") != std::string::npos || fileName.find("ggTo") != std::string::npos)
+      theHistograms->fill(Form("PhFRClosure_LtoT_reweigh-SF_%s", varName), "Closure test: (3+4)*TF*SF", mVVG_bins, varValue, weightSF );
   }
 }
 
@@ -1539,6 +1566,15 @@ void VVGammaAnalyzer::photonFakeRate_extended(){
   double thePt   = bestKinPh_->pt();
   if(thePt > ph_pt_bins.back())
     thePt = ph_pt_bins.back() - 0.1;
+
+  char channel[8]; int e;
+  if(region_ == CRLFR){
+    bool lepPass = ZL->second.passFullSel();
+    e = snprintf(channel, 8, "%s%c", channelReco_.c_str(), lepPass ? 'P' : 'F');
+  }
+  else
+    e = snprintf(channel, 8, "%s", channelReco_.c_str());
+  if(!(e >= 0 && e < 8)) std::cerr << "WARN: problem encoding channel string\n";
 
   bool isPassVL = bestKinPh_->cutBasedID(Photon::IdWp::VeryLoose);
   bool isPassLoose = bestKinPh_->cutBasedIDLoose();
@@ -1554,11 +1590,15 @@ void VVGammaAnalyzer::photonFakeRate_extended(){
   // PhFR_KToL_[FAIL/PASS]
   const char* name_KtoVL = Form("PhFR_KtoVL%s_%s", strPrompt, strPassVL);
   theHistograms->fill(name_KtoVL, "Photon fake rate Kin to VeryLoose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
+  const char* name_KtoVL_channel = Form("PhFR_KtoVL_%s%s_%s", channel, strPrompt, strPassVL);  // something like PhFR_KtoVL_prompt_2m+eP_FAIL
+  theHistograms->fill(name_KtoVL_channel, "Photon fake rate Kin to VeryLoose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
 
   // PhFR_KToLexcl_[FAIL/PASS]
   if(!isPassLoose){
     const char* name_KtoVLexcl = Form("PhFR_KtoVLexcl%s_%s", strPrompt, strPassVL);
     theHistograms->fill(name_KtoVLexcl, "Photon fake rate Kin to VeryLoose&&!Loose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
+    const char* name_KtoVLexcl_channel = Form("PhFR_KtoVLexcl_%s%s_%s", channel, strPrompt, strPassVL);
+    theHistograms->fill(name_KtoVLexcl_channel, "Photon fake rate Kin to VeryLoose&&!Loose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
   }
 
   // Closure test extended
@@ -1579,11 +1619,15 @@ void VVGammaAnalyzer::photonFakeRate_extended(){
   double f_KToVL = getPhotonFR_KtoVL(*bestKinPh_);
   double weight_KtoVL = theWeight * f_KToVL/(1-f_KToVL);
   
-  if(isPassVL)
+  if(isPassVL){
     theHistograms->fill(Form("PhFRClosure_KtoVL_PASS_%s"      , varName), "Closure test KtoVL: PASS"   , mVVG_bins, varValue, theWeight);
+    theHistograms->fill(Form("PhFRClosure_KtoVL_%s_PASS_%s"   , channel, varName), "Closure test KtoVL: PASS"   , mVVG_bins, varValue, theWeight);
+  }
   else{
     theHistograms->fill(Form("PhFRClosure_KtoVL_FAIL_%s"      , varName), "Closure test KtoVL: FAIL"   , mVVG_bins, varValue, theWeight);
-    theHistograms->fill(Form("PhFRClosure_KtoVL_reweighted_%s", varName), "Closure test KtoVL: FAIL*SF", mVVG_bins, varValue, weight_KtoVL);
+    theHistograms->fill(Form("PhFRClosure_KtoVL_reweighted_%s", varName), "Closure test KtoVL: FAIL*TF", mVVG_bins, varValue, weight_KtoVL);
+    theHistograms->fill(Form("PhFRClosure_KtoVL_%s_FAIL_%s"      , channel, varName), "Closure test KtoVL: FAIL"   , mVVG_bins, varValue, theWeight);
+    theHistograms->fill(Form("PhFRClosure_KtoVL_%s_reweighted_%s", channel, varName), "Closure test KtoVL: FAIL*TF", mVVG_bins, varValue, weight_KtoVL);
   }
   
   // Kin && !Loose --> VeryLoose && !Loose
@@ -1591,33 +1635,38 @@ void VVGammaAnalyzer::photonFakeRate_extended(){
     double f_KtoVLexcl = getPhotonFR_KtoVLexcl(*bestKinPh_);
     double weight_KtoVLexcl = theWeight * f_KtoVLexcl/(1-f_KtoVLexcl);
   
-    if     (isPassVL)
+    if(isPassVL){
       theHistograms->fill(Form("PhFRClosure_KtoVLexcl_PASS_%s"      , varName), "Closure test KtoVLexcl: PASS"   , mVVG_bins, varValue, theWeight);
+      theHistograms->fill(Form("PhFRClosure_KtoVLexcl_%s_PASS_%s"   , channel, varName), "Closure test KtoVLexcl: PASS"   , mVVG_bins, varValue, theWeight);
+    }
     else{
       theHistograms->fill(Form("PhFRClosure_KtoVLexcl_FAIL_%s"      , varName), "Closure test KtoVLexcl: FAIL"   , mVVG_bins, varValue, theWeight);
-      theHistograms->fill(Form("PhFRClosure_KtoVLexcl_reweighted_%s", varName), "Closure test KtoVLexcl: FAIL*SF", mVVG_bins, varValue, weight_KtoVLexcl);
+      theHistograms->fill(Form("PhFRClosure_KtoVLexcl_reweighted_%s", varName), "Closure test KtoVLexcl: FAIL*TF", mVVG_bins, varValue, weight_KtoVLexcl);
+      theHistograms->fill(Form("PhFRClosure_KtoVLexcl_%s_FAIL_%s"      , channel, varName), "Closure test KtoVLexcl: FAIL"   , mVVG_bins, varValue, theWeight);
+      theHistograms->fill(Form("PhFRClosure_KtoVLexcl_%s_reweighted_%s", channel, varName), "Closure test KtoVLexcl: FAIL*TF", mVVG_bins, varValue, weight_KtoVLexcl);
     }
   }
 }
+
 
 void VVGammaAnalyzer::studyJetsChoice(){
   // Study how to choose the correct jet AK8 in case it exists. The problem of rejecting 
   // events in which it does not exist is part of the event selection
   if( !theSampleInfo.isMC() )
     return;
-  Boson<Particle>* qq = nullptr;
-  if     (genZhadCandidates_->size() > 0)
-    qq = &(genZhadCandidates_->at(0));
-  else if(genWhadCandidates_->size() > 0)
-    qq = &(genWhadCandidates_->at(0));
-  else
-    return;
+  // Boson<Particle>* qq = nullptr;
+  // if     (genZhadCandidates_->size() > 0)
+  //   qq = &(genZhadCandidates_->at(0));
+  // else if(genWhadCandidates_->size() > 0)
+  //   qq = &(genWhadCandidates_->at(0));
+  // else
+  //   return;
   
   // int statusAK8;
-  int statusAK4 = studyAK4Choice(fAK4_, *qq, 0.4);
-  if(statusAK4 != 0)
-    // statusAK8 = studyAK8Choice(fAK8_, *qq, 0.4);
-    studyAK8Choice(fAK8_, *qq, 0.4);
+  // int statusAK4 = studyAK4Choice(fAK4_, *qq, 0.4);
+  // if(statusAK4 != 0)
+  //   // statusAK8 = studyAK8Choice(fAK8_, *qq, 0.4);
+  //   studyAK8Choice(fAK8_, *qq, 0.4);
   
 }
 
@@ -1823,35 +1872,49 @@ void VVGammaAnalyzer::SYSplots(const char* syst, const double& weight, const Pho
     theHistograms->fill(  Form("SYS_mZZ_%s" , syst), Form("m_{ZZ} %s"      , syst), mVV_bins , ZZ->mass()               , weight);
     
     if(ph){
-      double w = weight * ph->efficiencySF();
-      theHistograms->fill(Form("SYS_mZZGloose_%s", syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, (ZZ->p4() + ph->p4()).M(), w);
-      if(ph->cutBasedIDMedium())
-      	theHistograms->fill(Form("SYS_mZZGmedium_%s", syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, (ZZ->p4() + ph->p4()).M(), w);
-      if(ph->cutBasedIDTight())
-      	theHistograms->fill(Form("SYS_mZZGtight_%s" , syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, (ZZ->p4() + ph->p4()).M(), w);
+      double mZZG = (ZZ->p4() + ph->p4()).M();
+      if(ph->cutBasedIDLoose()){
+	double w = weight * ph->efficiencySF();  // In data the SF is 1
+	theHistograms->fill(Form("SYS_mZZGloose_%s", syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, mZZG, w);
+      }
+      else if(ph->cutBasedID(Photon::IdWp::VeryLoose)){
+	// VeryLoose && !Loose --> Fail
+	theHistograms->fill(Form("SYS_mZZGfail_%s"        , syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, mZZG, weight);
+	theHistograms->fill(Form("SYS_mZZGfailReweight_%s", syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, mZZG, weight * getPhotonFR(*ph));
+      }
     }
   }
+
   else if(is3Lregion(region_)){
     theHistograms->fill(  Form("SYS_mWZ_%s" , syst), Form("m_{WZ} %s"      , syst), mVV_bins , ZW->mass()               , weight);
     
     if(ph){
-      double w = weight * ph->efficiencySF();
-      theHistograms->fill(Form("SYS_mWZGloose_%s", syst), Form("m_{WZ#gamma} %s", syst), mVVG_bins, (ZW->p4() + ph->p4()).M(), w);
-      if(ph->cutBasedIDMedium())
-      	theHistograms->fill(Form("SYS_mWZGmedium_%s", syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, (ZW->p4() + ph->p4()).M(), w);
-      if(ph->cutBasedIDTight())
-      	theHistograms->fill(Form("SYS_mWZGtight_%s" , syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, (ZW->p4() + ph->p4()).M(), w);
+      double mWZG = (ZW->p4() + ph->p4()).M();
+      if(ph->cutBasedIDLoose()){
+	double w = weight * ph->efficiencySF();
+	theHistograms->fill(Form("SYS_mWZGloose_%s", syst), Form("m_{WZ#gamma} %s", syst), mVVG_bins, mWZG, w);
+	// if(ph->cutBasedIDMedium())
+	// 	theHistograms->fill(Form("SYS_mWZGmedium_%s", syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, (ZW->p4() + ph->p4()).M(), w);
+	// if(ph->cutBasedIDTight())
+	// 	theHistograms->fill(Form("SYS_mWZGtight_%s" , syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, (ZW->p4() + ph->p4()).M(), w);
+      }
+      else if(ph->cutBasedID(Photon::IdWp::VeryLoose)){
+	theHistograms->fill(Form("SYS_mWZGfail_%s"        , syst), Form("m_{WZ#gamma} %s", syst), mVVG_bins, mWZG, weight);
+	theHistograms->fill(Form("SYS_mWZGfailReweight_%s", syst), Form("m_{WZ#gamma} %s", syst), mVVG_bins, mWZG, weight * getPhotonFR(*ph));
+      }
     }
-    
   }
+
 }
 
 void VVGammaAnalyzer::systematicsStudy(){
-  double base_w = theWeight; // * ph.efficiencySF_
+  double base_w = theWeight;
   
   const Photon* ph = nullptr;
   if(goodPhotons_["central"]->size() >= 1)
     ph = & (goodPhotons_["central"]->front());
+  else if(loosePhotons_["central"]->size() >= 1)
+    ph = & (loosePhotons_["central"]->front());
   
   // central
   SYSplots("central", base_w, ph);
@@ -1921,13 +1984,22 @@ void VVGammaAnalyzer::systematicsStudy(){
   
   if(ph){
     // Photons ID efficiency
-    double phEff_w = ph->efficiencySF()/ph->efficiencySFUnc();
+    double phEff_w = ph->efficiencySFUnc()/ph->efficiencySF();
     SYSplots("phEffSF_Up"  , base_w * (1 + phEff_w), ph);
     SYSplots("phEffSF_Down", base_w * (1 - phEff_w), ph);
     // Photon FR uncertaintiy  WARN: for this to have a meaning, the photon FR SF should be applied
-    double phFake_w = getPhotonFRUnc(*ph)/getPhotonFR(*ph);
-    SYSplots("phFakeRate_Up"  , base_w * (1 + phFake_w), ph);
-    SYSplots("phFakeRate_Down", base_w * (1 - phFake_w), ph);
+    double f_ce = getPhotonFR(*ph);
+    double func = getPhotonFRUnc(*ph);
+    double f_up = f_ce + func;
+    double f_dn = f_ce - func;
+    double sf_ce = f_ce/(1 - f_ce);
+    double sf_up = f_up/(1 - f_up);
+    double sf_dn = f_dn/(1 - f_dn);
+    SYSplots("phFakeRate_Up"  , base_w * sf_up/sf_ce, ph);
+    SYSplots("phFakeRate_Down", base_w * sf_dn/sf_ce, ph);
+
+    SYSplots("phFakeRateSymmetric_Up"  , base_w * (1 + func/(1 - f_ce)), ph);
+    SYSplots("phFakeRateSymmetric_Down", base_w * (1 - func/(1 - f_ce)), ph);
   }
 }
 
@@ -2061,20 +2133,38 @@ void VVGammaAnalyzer::photonGenStudy(){
 
 // Utilities
 double VVGammaAnalyzer::getPhotonFR   (const phys::Photon& ph) const{
-  return hPhotonFR_->GetBinContent(hPhotonFR_->FindBin(ph.pt(), abs(ph.eta())));
+  return hPhotonFR_->GetBinContent(hPhotonFR_->FindBin(
+						       ph.pt() < 120 ? ph.pt() : 119.9,
+						       abs(ph.eta())
+						       ));
 }
 
 double VVGammaAnalyzer::getPhotonFRUnc(const phys::Photon& ph) const{
-  double FRError = hPhotonFR_->GetBinError  (hPhotonFR_->FindBin(ph.pt(), abs(ph.eta())));
-  return FRError;
+  return hPhotonFR_->GetBinError(hPhotonFR_->FindBin(
+						     ph.pt() < 120 ? ph.pt() : 119.9,
+						     abs(ph.eta())
+						     ));
 }
 
 double VVGammaAnalyzer::getPhotonFR_KtoVL(const phys::Photon& ph) const{
-  return hPhotonFR_KtoVL_->GetBinContent(hPhotonFR_KtoVL_->FindBin(ph.pt(), abs(ph.eta())));
+  return hPhotonFR_KtoVL_->GetBinContent(hPhotonFR_KtoVL_->FindBin(
+								   ph.pt() < 120 ? ph.pt() : 119.9,
+								   abs(ph.eta())
+								   ));
 }
 
 double VVGammaAnalyzer::getPhotonFR_KtoVLexcl(const phys::Photon& ph) const{
-  return hPhotonFR_KtoVLexcl_->GetBinContent(hPhotonFR_KtoVLexcl_->FindBin(ph.pt(), abs(ph.eta())));
+  return hPhotonFR_KtoVLexcl_->GetBinContent(hPhotonFR_KtoVLexcl_->FindBin(
+									   ph.pt() < 120 ? ph.pt() : 119.9,
+									   abs(ph.eta())
+									   ));
+}
+
+double VVGammaAnalyzer::getPhotonFRSF_LtoT(const phys::Photon& ph) const{
+  return hPhotonFRSF_LtoT_->GetBinContent(hPhotonFRSF_LtoT_->FindBin(
+								     ph.pt() < 120 ? ph.pt() : 119.9,
+								     abs(ph.eta())
+								     ));
 }
 
 bool VVGammaAnalyzer::passVeryLoose(const Photon& ph){

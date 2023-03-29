@@ -32,7 +32,10 @@ def getVarInfo_VVGamma(region):
             'Z1_l1_pt': {'title':'p_{T}^{Z1, l1}'},
             'PhFRClosure_LtoT_PASS_mZZG'     : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG},
             'PhFRClosure_KtoVL_PASS_mZZG'    : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG},
-            'PhFRClosure_KtoVLexcl_PASS_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG}
+            'PhFRClosure_KtoVLexcl_PASS_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG},
+            'PhFRClosure_LtoT_FAIL_mZZG'     : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG},
+            'PhFRClosure_KtoVL_FAIL_mZZG'    : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG},
+            'PhFRClosure_KtoVLexcl_FAIL_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG}  #This is probably the same as the previous one
         })
         
         for name, title in [('4e','4e'), ('2e2m', '2e2\mu'), ('4m', '4\mu')]:
@@ -44,7 +47,7 @@ def getVarInfo_VVGamma(region):
             'ZZ_mass_noPh'        : {'title':'m_{4\ell}\:,\ no\:\gamma', 'rebin':1, 'unblind':True },
             'ZZ_mass_kinPh'       : {'title':'m_{4\ell}\:,\ \gamma\:kin'                       , 'rebin':1, 'unblind':True },
             # Kinematic selection + pixelSeed + electron veto
-            'ZZ_mass_veryLoosePh' : {'title':'m_{4\ell}\:,\ \gamma\:loose'                     , 'rebin':1, 'unblind':True },  # Loose = pass 3 cuts
+            'ZZ_mass_veryLoosePh' : {'title':'m_{4\ell}\:,\ \gamma\:loose'                     , 'rebin':1, 'unblind':False},  # Loose = pass 3 cuts
             'ZZ_mass_failPh'      : {'title':'m_{4\ell}\:,\ \gamma\:loose\,\land\:!tight'      , 'rebin':1, 'unblind':True },
             'ZZ_mass_loosePh'     : {'title':'m_{4\ell}\:,\ \gamma\:tight'                     , 'rebin':1, 'unblind':False},  # Tight = cutBasedIDLoose()
             
@@ -73,7 +76,10 @@ def getVarInfo_VVGamma(region):
             # 'paperSel_lll_mass' : {'title':'m_{lll} [GeV/c^{2}]' },
             'PhFRClosure_LtoT_PASS_mWZG'     : {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':False},
             'PhFRClosure_KtoVL_PASS_mWZG'    : {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':False},
-            'PhFRClosure_KtoVLexcl_PASS_mWZG': {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':True }
+            'PhFRClosure_KtoVLexcl_PASS_mWZG': {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':True },
+            'PhFRClosure_LtoT_FAIL_mWZG'     : {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':True },
+            'PhFRClosure_KtoVL_FAIL_mWZG'    : {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':True },
+            'PhFRClosure_KtoVLexcl_FAIL_mWZG': {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':True }
             # 'debug3L_l1_FRSF': {'title':'FR(l_{1})' }
             # 'debug3L_l2_FRSF': {'title':'FR(l_{2})' }
             # 'debug3L_l3_FRSF': {'title':'FR(l_{3})' }
