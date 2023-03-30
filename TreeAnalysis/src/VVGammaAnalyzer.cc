@@ -401,8 +401,9 @@ void VVGammaAnalyzer::analyze(){
   
   // leptonFakeRate();
   photonGenStudy();
-  photonFakeRate();
-  photonFakeRate_extended();
+  photonIsolation_bestKin();
+  photonFakeRate_ABCD();
+  photonFakeRate_LtoT();
   systematicsStudy();
   
   // Basic histograms on leptonic side
@@ -1480,7 +1481,7 @@ void debugPhotonID(const Photon& ph){
 }
 
 
-void VVGammaAnalyzer::photonFakeRate(){
+void VVGammaAnalyzer::photonFakeRate_ABCD(){
   const vector<Photon>& thePhVect = *loosePhotons_["central"];  // *kinPhotons_["central"];
   if(thePhVect.size() == 0)
     return;
@@ -1558,7 +1559,7 @@ void VVGammaAnalyzer::photonFakeRate(){
 }
 
 
-void VVGammaAnalyzer::photonFakeRate_extended(){
+void VVGammaAnalyzer::photonFakeRate_LtoT(){
   if(!bestKinPh_)
     return;
 
@@ -1579,6 +1580,7 @@ void VVGammaAnalyzer::photonFakeRate_extended(){
   bool isPassVL = bestKinPh_->cutBasedID(Photon::IdWp::VeryLoose);
   bool isPassLoose = bestKinPh_->cutBasedIDLoose();
   const char* strPassVL = isPassVL ? "PASS" : "FAIL";
+  const char* strPassLoose = isPassLoose ? "PASS" : "FAIL";
   const char* strPrompt = "";
   if(theSampleInfo.isMC()){
     bool isPrompt = std::any_of(genPhotons_->begin(), genPhotons_->end(), 
@@ -1587,13 +1589,21 @@ void VVGammaAnalyzer::photonFakeRate_extended(){
     strPrompt = isPrompt ? "_nonprompt" : "_prompt";
   }
 
-  // PhFR_KToL_[FAIL/PASS]
+  // PhFR_VLtoL
+  if(isPassVL){
+    const char* name_VLtoL         = Form("PhFR_VLtoL%s_%s"            , strPrompt, strPassLoose);
+    theHistograms->fill(name_VLtoL        , "Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
+    const char* name_VLtoL_channel = Form("PhFR_VLtoL_%s%s_%s", channel, strPrompt, strPassLoose);
+    theHistograms->fill(name_VLtoL_channel, "Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
+  }
+
+  // PhFR_KtoVL_[FAIL/PASS]
   const char* name_KtoVL = Form("PhFR_KtoVL%s_%s", strPrompt, strPassVL);
   theHistograms->fill(name_KtoVL, "Photon fake rate Kin to VeryLoose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
   const char* name_KtoVL_channel = Form("PhFR_KtoVL_%s%s_%s", channel, strPrompt, strPassVL);  // something like PhFR_KtoVL_prompt_2m+eP_FAIL
   theHistograms->fill(name_KtoVL_channel, "Photon fake rate Kin to VeryLoose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
 
-  // PhFR_KToLexcl_[FAIL/PASS]
+  // PhFR_KtoVLexcl_[FAIL/PASS]
   if(!isPassLoose){
     const char* name_KtoVLexcl = Form("PhFR_KtoVLexcl%s_%s", strPrompt, strPassVL);
     theHistograms->fill(name_KtoVLexcl, "Photon fake rate Kin to VeryLoose&&!Loose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
@@ -1601,7 +1611,7 @@ void VVGammaAnalyzer::photonFakeRate_extended(){
     theHistograms->fill(name_KtoVLexcl_channel, "Photon fake rate Kin to VeryLoose&&!Loose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
   }
 
-  // Closure test extended
+  // Closure test
   const char* varName;
   double varValue;
   if     (is4Lregion(region_)){
@@ -1615,6 +1625,22 @@ void VVGammaAnalyzer::photonFakeRate_extended(){
   else
     return;
   
+  // VeryLoose --> Loose
+  if(isPassVL){
+    double f_VLtoL = getPhotonFR(*bestKinPh_); //getPhotonFR_VLtoL
+    double weight_VLtoL = theWeight * f_VLtoL/(1-f_VLtoL);
+    if(isPassLoose){
+      theHistograms->fill(Form("PhFRClosure_VLtoL_PASS_%s"         ,          varName), "Closure test VLtoL: PASS"   , mVVG_bins, varValue, theWeight   );
+      theHistograms->fill(Form("PhFRClosure_VLtoL_%s_PASS_%s"      , channel, varName), "Closure test VLtoL: PASS"   , mVVG_bins, varValue, theWeight   );
+    }
+    else{
+      theHistograms->fill(Form("PhFRClosure_VLtoL_FAIL_%s"         ,          varName), "Closure test VLtoL: FAIL"   , mVVG_bins, varValue, theWeight   );
+      theHistograms->fill(Form("PhFRClosure_VLtoL_reweighted_%s"   ,          varName), "Closure test VLtoL: FAIL*TF", mVVG_bins, varValue, weight_VLtoL);
+      theHistograms->fill(Form("PhFRClosure_VLtoL_%s_FAIL_%s"      , channel, varName), "Closure test VLtoL: FAIL"   , mVVG_bins, varValue, theWeight   );
+      theHistograms->fill(Form("PhFRClosure_VLtoL_%s_reweighted_%s", channel, varName), "Closure test VLtoL: FAIL*TF", mVVG_bins, varValue, weight_VLtoL);
+    }
+  }
+
   // Kin --> VeryLoose
   double f_KToVL = getPhotonFR_KtoVL(*bestKinPh_);
   double weight_KtoVL = theWeight * f_KToVL/(1-f_KToVL);
@@ -1784,6 +1810,55 @@ void VVGammaAnalyzer::photonIsolation(const vector<Photon>& vPh, const char* lab
   }
   if(maxG_minL_DR > 0)
     theHistograms->fill(Form("maxG_minL_DR_%s", label), Form("max_{#gamma}(min_{l}(#DeltaR(#gamma, l))) %s;#DeltaR;Events",label), 50, 0.,1., maxG_minL_DR, theWeight);
+}
+
+void VVGammaAnalyzer::photonIsolation_bestKin(){
+  if(!bestKinPh_)
+    return;
+
+  // Photon ID: Kin, VeryLooseL, Loose
+  bool isPassVL = bestKinPh_->cutBasedID(Photon::IdWp::VeryLoose);
+  bool isPassLoose = bestKinPh_->cutBasedIDLoose();
+  char phStatus[8] = "Kin";
+  if     (isPassLoose) sprintf(phStatus, "Pass");
+  else if(isPassVL   ) sprintf(phStatus, "Fail");
+
+  // Photon eta and pt
+  char phEtaRegion[4]; sprintf(phEtaRegion, bestKinPh_->isBarrel() ? "EB" : "EE");
+  float phPtValue = bestKinPh_->pt();
+  char phPtRegion[8] = "20-35";
+  if     (phPtValue > 50) sprintf(phPtRegion, "50-"  );
+  else if(phPtValue > 35) sprintf(phPtRegion, "35-50");
+
+  // Closest lep
+  std::vector<Lepton>::const_iterator closestLep = closestDeltaR(*bestKinPh_, *leptons_);
+  float dR_l = physmath::deltaR(*closestLep, *bestKinPh_);
+
+  // Closest Z
+  const Boson<Lepton> *closestZ;
+  if(is4Lregion(region_)){
+    vector<Boson<Lepton>> Zs {ZZ->first(), ZZ->second()};
+    closestZ = &*closestDeltaR(*bestKinPh_, Zs);
+  }
+  else if(is3Lregion(region_)){
+    closestZ = ZW->firstPtr();
+  }
+  float dM_Z = closestZ->mass() - phys::ZMASS;
+  float dR_Z = physmath::deltaR(*closestZ, *bestKinPh_);
+
+  // Fill the plots
+  char all_str[4]; sprintf(all_str, "all");
+  vector<double> edges_dR {0., 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00};
+  for(auto phEta : {all_str, phEtaRegion}){
+    for(auto phSt : {all_str, phStatus}){
+      for(auto phPt : {all_str, phPtRegion}){
+	theHistograms->fill(Form("photon_dRl_dMZ_%s_%s_%s", phSt, phPt, phEta), ";#DeltaR(#gamma, l);m_{Z}-m_{Z0};Events", 20,0.,1., 30,-20.,10., dR_l, dM_Z, theWeight);
+	theHistograms->fill(Form("photon_dRZ_dMZ_%s_%s_%s", phSt, phPt, phEta), ";#DeltaR(#gamma, Z);m_{Z}-m_{Z0};Events", 20,0.,1., 30,-20.,10., dR_Z, dM_Z, theWeight);
+      }
+      theHistograms->fill(Form("photon_dRl_pt_%s_%s", phSt, phEta), ";#DeltaR(#gamma, l);p_{T}^{#gamma};Events", edges_dR, ph_pt_bins, dR_l, phPtValue, theWeight);
+      theHistograms->fill(Form("photon_dRZ_pt_%s_%s", phSt, phEta), ";#DeltaR(#gamma, Z);p_{T}^{#gamma};Events", edges_dR, ph_pt_bins, dR_Z, phPtValue, theWeight);
+    }
+  }
 }
 
 
@@ -1998,8 +2073,8 @@ void VVGammaAnalyzer::systematicsStudy(){
     SYSplots("phFakeRate_Up"  , base_w * sf_up/sf_ce, ph);
     SYSplots("phFakeRate_Down", base_w * sf_dn/sf_ce, ph);
 
-    SYSplots("phFakeRateSymmetric_Up"  , base_w * (1 + func/(1 - f_ce)), ph);
-    SYSplots("phFakeRateSymmetric_Down", base_w * (1 - func/(1 - f_ce)), ph);
+    SYSplots("phFakeRateSymmetric_Up"  , base_w * (1 + func/((1 - f_ce)*(1 - f_ce))), ph);
+    SYSplots("phFakeRateSymmetric_Down", base_w * (1 - func/((1 - f_ce)*(1 - f_ce))), ph);
   }
 }
 

@@ -146,14 +146,15 @@ private:
   // Sub analyses
   void plotsVVGstatus(const char* name, const char* title, const TLorentzVector& p4_VV, const char* mType="mass");
   void leptonFakeRate();
-  void photonFakeRate();
-  void photonFakeRate_extended();
+  void photonFakeRate_ABCD();
+  void photonFakeRate_LtoT();
   void studyJetsChoice();
   int studyAK4Choice(std::ofstream& fout, const phys::Boson<phys::Particle>& diquark, const double& tolerance);
   int studyAK8Choice(std::ofstream& fout, const phys::Boson<phys::Particle>& diquark, const double& tolerance);
   template<class PAR>
   void efficiency(const std::vector<PAR>& vRec, const std::vector<phys::Particle>& vGen, const char* recLabel, const char* genLabel, double tolerance=0.4);
   void photonIsolation(const std::vector<phys::Photon>&, const char*);
+  void photonIsolation_bestKin();
   void systematicsStudy();
   void SYSplots(const char* syst, const double& weight, const phys::Photon*);
   void debug3Lregion();
