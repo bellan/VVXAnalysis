@@ -125,20 +125,20 @@ void VVGammaAnalyzer::initEvent(){
   candVToJ_ = Jet();
 
   // Contruct vector with leptons from dibosons
-  if     (is4Lregion(region_) || (region_ == MC && ZZ && ZZ->pt() > 1.))
+  if     (is4Lregion(region_) || (region_ == MC && ZZ && ZZ->pt() > 0.001))
     leptons_->insert(leptons_->end(), {
     	  ZZ->first().daughter(0), 
     	  ZZ->first().daughter(1), 
     	  ZZ->second().daughter(0), 
     	  ZZ->second().daughter(1)
         });
-  else if(is3Lregion(region_) || (region_ == MC && ZW && ZW->pt() > 1.))
+  else if(is3Lregion(region_) || (region_ == MC && ZW && ZW->pt() > 0.001))
     leptons_->insert(leptons_->end(), {
   	  ZW->first().daughter(0), 
   	  ZW->first().daughter(1), 
   	  ZW->second().daughter(0)
 	});
-  else if((region_ == CRLFR || region_ == MC) && ZL && ZL->first.pt() > 1.)
+  else if(region_ == CRLFR || (region_ == MC && ZL && ZL->first.pt() > 0.001))
     leptons_->insert(leptons_->end(), {
   	  ZL->first.daughter(0),
   	  ZL->first.daughter(1),
@@ -296,7 +296,7 @@ Int_t VVGammaAnalyzer::cut() {
   
   // ----- BASELINE SELECTION -----
   // ----- Cut1: require at least a ZZ or a WZ candidate
-  haveZVlep = (ZZ && ZZ->pt() > 1.) || (ZW && ZW->pt() > 1.);	
+  haveZVlep = (ZZ && ZZ->pt() > 0.001) || (ZW && ZW->pt() > 0.001);
   if(haveZVlep){
     theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, 1, theWeight);
     theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, 1, 1);
@@ -1835,20 +1835,26 @@ void VVGammaAnalyzer::photonIsolation_bestKin(){
   float dR_l = physmath::deltaR(*closestLep, *bestKinPh_);
 
   // Closest Z
-  const Boson<Lepton> *closestZ;
+  const Boson<Lepton> *closestZ = nullptr;
   if(is4Lregion(region_)){
-    vector<Boson<Lepton>> Zs {ZZ->first(), ZZ->second()};
-    closestZ = &*closestDeltaR(*bestKinPh_, Zs);
+    vector<Boson<Lepton>*> Zs {ZZ->firstPtr(), ZZ->secondPtr()};
+    closestZ = *closestDeltaR_p(*bestKinPh_, Zs);
   }
   else if(is3Lregion(region_)){
     closestZ = ZW->firstPtr();
+  }
+  else if(is2Lregion(region_)){
+    closestZ = Z;
+  }
+  else if(region_ == CRLFR){
+    closestZ = &ZL->first;
   }
   float dM_Z = closestZ->mass() - phys::ZMASS;
   float dR_Z = physmath::deltaR(*closestZ, *bestKinPh_);
 
   // Fill the plots
   char all_str[4]; sprintf(all_str, "all");
-  vector<double> edges_dR {0., 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00};
+  vector<double> edges_dR {0., 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00};
   for(auto phEta : {all_str, phEtaRegion}){
     for(auto phSt : {all_str, phStatus}){
       for(auto phPt : {all_str, phPtRegion}){
