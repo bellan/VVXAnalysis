@@ -358,28 +358,6 @@ def getPassFailLtoT_noSubtract_regex(sample, method, regex, year, analyzer, regi
     return hPASS, hFAIL
 
 
-def fakeRateLtoT_noSubtract_regex(sample, method, regex, year=2016, analyzer='VVGammaAnalyzer', region='CRLFR', pattern_printable=None, logx=False, logy=False, fixNegBins=False):
-    print('Fake Rate {}: sample   ='.format(method), sample)
-    # channel ~ '[^PF]P'
-
-    if(pattern_printable is None):
-        pattern_printable = regex.replace('\\','').replace('"','').replace("'","")
-    outname = 'FR_{method}_{regex}_{samplename}{region}_{year}'.format(method=method, samplename=sample['name'], region='' if region=='CRLFR' else '_'+region, year=year, regex=pattern_printable)
-    title = 'Photon Fake Rate: {method} {regex} (from {sampletitle} in {region})'.format(method=method, sampletitle=sample['title'], regex=pattern_printable, region=region)
-
-    hPASS, hFAIL = getPassFailLtoT_noSubtract_regex(sample, method=method, regex=regex, year=year, analyzer=analyzer, region=region, fixNegBins=fixNegBins)
-    hTOTAL = hFAIL
-    hTOTAL.Add(hPASS)
-
-    ## Fake rate = PASS/TOTAL ##
-    hFR = hPASS
-    hFR.Divide(hTOTAL)
-
-    plotFR_LtoT(hFR, outname, title, logx=logx, logy=logy)
-
-    return hFR
-
-
 def getPassFailLtoT_regex(sample_data, sample_prompt, method, regex, year, analyzer, region, fixNegBins=False):
     regex_compiled = re.compile(regex)
     path_in = get_path_results(year=year, analyzer=analyzer, region=region)
@@ -431,13 +409,24 @@ def getPassFailLtoT_regex(sample_data, sample_prompt, method, regex, year, analy
 def fakeRateLtoT_regex(sample_data, sample_prompt, method, regex, year=2016, analyzer='VVGammaAnalyzer', region='CRLFR', pattern_printable=None, logx=False, logy=False, fixNegBins=False):
     if(pattern_printable is None):
         pattern_printable = regex.replace('\\','').replace('"','').replace("'","")
-    print('Fake Rate {}_{}: data     ='.format(method, pattern_printable), sample_data  )
-    print('Fake Rate {}_{}: promptMC ='.format(method, pattern_printable), sample_prompt)
 
-    outname = 'FR_{method}_{regex}_{samplename}{region}_{year}'.format(method=method, samplename=sample_data['name']+'-'+sample_prompt['name'], region='' if region=='CRLFR' else '_'+region, year=year, regex=pattern_printable)
-    title = 'Photon Fake Rate: {method} {regex} (from {sampletitle} in {region})'.format(method=method, sampletitle=sample_data['title']+' - '+sample_prompt['title'], regex=pattern_printable, region=region)
+    if(sample_prompt is None):
+        print('Fake Rate {}: sample   ='.format(method), sample_data)
+        samplename  = sample_data['name']
+        sampletitle = sample_data['title']
 
-    hPASS, hFAIL = getPassFailLtoT_regex(sample_data, sample_prompt, method=method, regex=regex, year=year, analyzer=analyzer, region=region, fixNegBins=fixNegBins)
+        hPASS, hFAIL = getPassFailLtoT_noSubtract_regex(sample_data, method=method, regex=regex, year=year, analyzer=analyzer, region=region, fixNegBins=fixNegBins)
+    else:
+        print('Fake Rate {}_{}: data     ='.format(method, pattern_printable), sample_data  )
+        print('Fake Rate {}_{}: promptMC ='.format(method, pattern_printable), sample_prompt)
+        samplename  = sample_data['name']  +  '-'  + sample_prompt['name']
+        sampletitle = sample_data['title'] + ' - ' + sample_prompt['title']
+
+        hPASS, hFAIL = getPassFailLtoT_regex(sample_data, sample_prompt, method=method, regex=regex, year=year, analyzer=analyzer, region=region, fixNegBins=fixNegBins)
+
+    outname = 'FR_{method}_{regex}_{samplename}{region}_{year}'.format(method=method, samplename=samplename, region='' if region=='CRLFR' else '_'+region, year=year, regex=pattern_printable)
+    title = 'Photon Fake Rate: {method} {regex} (from {sampletitle} in {region})'.format(method=method, sampletitle=sampletitle, regex=pattern_printable, region=region)
+
     hTOTAL = hFAIL
     hTOTAL.Add(hPASS)
 
@@ -479,28 +468,6 @@ def getPassFailLtoT_noSubtract(sample, analyzer, year, region, method, fixNegBin
     return hPASS, hFAIL
 
 
-def fakeRateLtoT_noSubtract(sample, analyzer='VVGammaAnalyzer', year=2016, region='CRLFR', method='LtoT', logx=False, logy=False, fixNegBins=False):
-    print('Fake Rate {}: sample   ='.format(method), sample)
-    outname = '{method}_FR_{samplename}{region}_{year}'.format(method=method, samplename=sample['name'], region='' if region=='CRLFR' else '_'+region, year=year)
-
-    hPASS, hFAIL = getPassFailLtoT_noSubtract(sample, analyzer=analyzer, year=year, region=region, method=method, fixNegBins=fixNegBins)
-    hTOTAL = hFAIL
-    hTOTAL.Add(hPASS)
-
-    ## Fake rate = PASS/TOTAL ##
-    hFR = hPASS
-    hFR.Divide(hTOTAL)
-    
-    if(method.startswith('LtoT')):
-        title = 'Photon Fake Rate: 5/(3+4+5) (from {:s})'.format(sample['title'])
-    else:
-        title = 'Photon Fake Rate: {} (from {:s})'.format(method,sample['title'])
-
-    plotFR_LtoT(hFR, outname, title, logx=logx, logy=logy)
-
-    return hFR
-
-
 def getPassFailLtoT(sample_data, sample_prompt, analyzer, year, region, method, fixNegBins):
     path_in = get_path_results(year=year, analyzer=analyzer, region=region)
     
@@ -536,22 +503,32 @@ def getPassFailLtoT(sample_data, sample_prompt, analyzer, year, region, method, 
 
 
 def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=2016, region='CRLFR', method='LtoT', logx=False, logy=False, fixNegBins=False):
-    print('Fake Rate {}: data     ='.format(method), sample_data  )
-    print('Fake Rate {}: promptMC ='.format(method), sample_prompt)
-    outname = '{method}_FR_{dataname}-{promptname}{region}_{year}'.format(method=method, dataname=sample_data['name'], promptname=sample_prompt['name'], region='' if region=='CRLFR' else '_'+region, year=year)
+    if(sample_prompt is None):
+        print('Fake Rate {}: sample   ='.format(method), sample)
+        samplename  = sample_data['name']
+        sampletitle = sample_data['title']
 
-    hPASS, hFAIL = getPassFailLtoT(sample_data=sample_data, sample_prompt=sample_prompt, analyzer=analyzer, year=year, region=region, method=method, fixNegBins=fixNegBins)
+        hPASS, hFAIL = getPassFailLtoT_noSubtract(sample_data, analyzer=analyzer, year=year, region=region, method=method, fixNegBins=fixNegBins)
+    else:
+        print('Fake Rate {}: data     ='.format(method), sample_data  )
+        print('Fake Rate {}: promptMC ='.format(method), sample_prompt)
+        samplename  = sample_data['name']  +  '-'  + sample_prompt['name']
+        sampletitle = sample_data['title'] + ' - ' + sample_prompt['title']
+
+        hPASS, hFAIL = getPassFailLtoT(sample_data=sample_data, sample_prompt=sample_prompt, analyzer=analyzer, year=year, region=region, method=method, fixNegBins=fixNegBins)
+
+    outname = '{method}_FR_{samplename}{region}_{year}'.format(method=method, samplename=samplename, region='' if region=='CRLFR' else '_'+region, year=year)
+    if(method.startswith('LtoT')):
+        title = 'Photon Fake Rate: 5/(3+4+5) (from {sampletitle} in {region})'.format(sampletitle=sampletitle, region=region)
+    else:
+        title = 'Photon Fake Rate: {method} (from {sampletitle} in {region})'.format(method=method, sampletitle=sampletitle, region=region)
+
     hTOTAL = hFAIL
     hTOTAL.Add(hPASS)
 
     ## Fake rate = PASS/TOTAL ##
     hFR = hPASS
     hFR.Divide(hTOTAL)
-
-    if(method.startswith('LtoT')):
-        title = 'Photon Fake Rate: 5/(3+4+5) (from {} - {})'.format(sample_data['title'], sample_prompt['title'])
-    else:
-        title = 'Photon Fake Rate: {} (from {} - {})'.format(method,sample_data['title'], sample_prompt['title'])
 
     plotFR_LtoT(hFR, outname, title, logx=logx, logy=logy)
 
@@ -763,18 +740,18 @@ if __name__ == "__main__":
         if(args.do_mc):
             print('>>>', method, 'MC')
             if(args.channels):
-                he  = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2[me]\+e[PF]', year=args.year, pattern_printable='2x+e' , logx=True, fixNegBins=True)
-                hm  = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2[me]\+m[PF]', year=args.year, pattern_printable='2x+m' , logx=True, fixNegBins=True)
-                hP  = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2[me]\+[em]P', year=args.year, pattern_printable='2x+P' , logx=True, fixNegBins=True)
-                hF  = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2[me]\+[em]F', year=args.year, pattern_printable='2x+F' , logx=True, fixNegBins=True)
+                he  = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, method=method, regex='2[me]\+e[PF]', year=args.year, pattern_printable='2x+e' , logx=True, fixNegBins=True)
+                hm  = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, method=method, regex='2[me]\+m[PF]', year=args.year, pattern_printable='2x+m' , logx=True, fixNegBins=True)
+                hP  = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, method=method, regex='2[me]\+[em]P', year=args.year, pattern_printable='2x+P' , logx=True, fixNegBins=True)
+                hF  = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, method=method, regex='2[me]\+[em]F', year=args.year, pattern_printable='2x+F' , logx=True, fixNegBins=True)
 
-                heP = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2[me]\+eP'   , year=args.year, pattern_printable='2x+eP', logx=True, fixNegBins=True)
-                heF = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2[me]\+eF'   , year=args.year, pattern_printable='2x+eF', logx=True, fixNegBins=True)
-                hmP = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2[me]\+mP'   , year=args.year, pattern_printable='2x+mP', logx=True, fixNegBins=True)
-                hmF = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2[me]\+mF'   , year=args.year, pattern_printable='2x+mF', logx=True, fixNegBins=True)
+                heP = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, method=method, regex='2[me]\+eP'   , year=args.year, pattern_printable='2x+eP', logx=True, fixNegBins=True)
+                heF = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, method=method, regex='2[me]\+eF'   , year=args.year, pattern_printable='2x+eF', logx=True, fixNegBins=True)
+                hmP = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, method=method, regex='2[me]\+mP'   , year=args.year, pattern_printable='2x+mP', logx=True, fixNegBins=True)
+                hmF = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, method=method, regex='2[me]\+mF'   , year=args.year, pattern_printable='2x+mF', logx=True, fixNegBins=True)
 
-                h2e = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2e\+[em][PF]', year=args.year, pattern_printable='2e+x' , logx=True, fixNegBins=True)
-                h2m = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2m\+[em][PF]', year=args.year, pattern_printable='2m+x' , logx=True, fixNegBins=True)
+                h2e = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, method=method, regex='2e\+[em][PF]', year=args.year, pattern_printable='2e+x' , logx=True, fixNegBins=True)
+                h2m = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, method=method, regex='2m\+[em][PF]', year=args.year, pattern_printable='2m+x' , logx=True, fixNegBins=True)
 
                 plotRatio(h2e, h2m, picture_name="ratio_{}_ZZ_2e_over_2m_{}".format(method, args.year), title="Ratio FR(2e+x)/FR(2m+x) in ZZTo4l")
                 plotRatio(he , hm , picture_name="ratio_{}_ZZ_e_over_m_{}".format(  method, args.year), title="Ratio FR(2x+e)/FR(2x+m) in ZZTo4l")
@@ -782,12 +759,13 @@ if __name__ == "__main__":
                 plotRatio(heF, heP, picture_name="ratio_{}_ZZ_eF_over_eP_{}".format(method, args.year), title="Ratio FR(2x+eF)/FR(2x+eP) in ZZTo4l")
                 plotRatio(hmF, hmP, picture_name="ratio_{}_ZZ_mF_over_mP_{}".format(method, args.year), title="Ratio FR(2x+mF)/FR(2x+mP) in ZZTo4l")
             else:
-                hFR_LtoT_DY   = fakeRateLtoT_noSubtract(sampleList["Drell-Yan"]       , year=args.year, method=method, logx=True, fixNegBins=True)
-                hFR_LtoT_ZG   = fakeRateLtoT_noSubtract(sampleList["ZGToLLG"]         , year=args.year, method=method, logx=True, fixNegBins=True)
-                hFR_LtoT_ZZ   = fakeRateLtoT_noSubtract(sampleList["ZZTo4l"]          , year=args.year, method=method, logx=True, fixNegBins=True)
-                hFR_LtoT_ZZ_4P= fakeRateLtoT_noSubtract(sampleList["ZZTo4l"]          , year=args.year, method=method, logx=True, fixNegBins=True, region='SR4P')
+                hFR_LtoT_DY   = fakeRateLtoT(sampleList["Drell-Yan"]       , None, year=args.year, method=method, logx=True, fixNegBins=True)
+                hFR_LtoT_ZG   = fakeRateLtoT(sampleList["ZGToLLG"]         , None, year=args.year, method=method, logx=True, fixNegBins=True)
+                hFR_LtoT_ZZ   = fakeRateLtoT(sampleList["ZZTo4l"]          , None, year=args.year, method=method, logx=True, fixNegBins=True)
+                hFR_LtoT_ZZ_4P= fakeRateLtoT(sampleList["ZZTo4l"]          , None, year=args.year, method=method, logx=True, fixNegBins=True, region='SR4P')
+                hFR_LtoT_gg   = fakeRateLtoT(sampleList["ggTo4l"]          , None, year=args.year, method=method, logx=True, fixNegBins=True)
+
                 plotRatio(hFR_LtoT_ZZ_4P, hFR_LtoT_ZZ, picture_name="{}_ratio_ZZ4P_over_ZZCRLFR_{}".format(method, args.year), title="Ratio FR(ZZ_{4P})/FR(ZZ_{CRLFR})")
-                hFR_LtoT_gg   = fakeRateLtoT_noSubtract(sampleList["ggTo4l"]          , year=args.year, method=method, logx=True, fixNegBins=True)
             print()
 
         if(args.do_data and args.do_mc and not args.channels):
