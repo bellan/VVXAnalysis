@@ -915,6 +915,7 @@ void VVGammaAnalyzer::genEventSetup(){
   genChLeptons_->clear();
   genNeutrinos_->clear();
   genPhotons_->clear();
+  genPhotonsPrompt_->clear();
 	
   genZlepCandidates_->clear();
   genWlepCandidates_->clear();
@@ -936,6 +937,8 @@ void VVGammaAnalyzer::genEventSetup(){
       genNeutrinos_->push_back(p);
     else if(p.id() == 22){
       genPhotons_->push_back(p);
+      if(p.genStatusFlags().test(phys::isPrompt))
+	genPhotonsPrompt_->push_back(p);
     }
   }
 	
@@ -1496,8 +1499,8 @@ void VVGammaAnalyzer::photonFakeRate_ABCD(){
   
   bool isPrompt = false;
   if(theSampleInfo.isMC())
-    isPrompt = std::any_of(genPhotons_->begin(), genPhotons_->end(), 
-			   [bestG](const Particle& gen){ return gen.genStatusFlags().test(phys::isPrompt) && physmath::deltaR(*bestG, gen) < 0.2; }
+    isPrompt = std::any_of(genPhotonsPrompt_->begin(), genPhotonsPrompt_->end(), 
+			   [bestG](const Particle& gen){ return physmath::deltaR(*bestG, gen) < 0.2; }
 			   );
   
   // Debug photon ID
@@ -1514,7 +1517,7 @@ void VVGammaAnalyzer::photonFakeRate_ABCD(){
 
   const char* name = Form("PhFR_%c", ABCD);
   if(theSampleInfo.isMC())
-    name = Form("%s_%s", name, (isPrompt ? "nonprompt" : "prompt"));
+    name = Form("%s_%s", name, (isPrompt ? "prompt" : "nonprompt"));
   
   theHistograms->fill(name, Form("Photons: %c;p_{T} [GeV/c];#eta", ABCD), ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
   
@@ -1523,7 +1526,7 @@ void VVGammaAnalyzer::photonFakeRate_ABCD(){
 
   name = Form("PhFR_LtoT_%d", nPass);
   if(theSampleInfo.isMC())
-    name = Form("%s_%s", name, (isPrompt ? "nonprompt" : "prompt"));
+    name = Form("%s_%s", name, (isPrompt ? "prompt" : "nonprompt"));
   
   theHistograms->fill(name, "Photon fake rate with loose to tight;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
 
@@ -1583,10 +1586,10 @@ void VVGammaAnalyzer::photonFakeRate_LtoT(){
   const char* strPassLoose = isPassLoose ? "PASS" : "FAIL";
   const char* strPrompt = "";
   if(theSampleInfo.isMC()){
-    bool isPrompt = std::any_of(genPhotons_->begin(), genPhotons_->end(), 
-  				[this](const Particle& gen){ return gen.genStatusFlags().test(phys::isPrompt) && physmath::deltaR(*bestKinPh_, gen) < 0.2; }
+    bool isPrompt = std::any_of(genPhotonsPrompt_->begin(), genPhotonsPrompt_->end(),
+                                [this](const Particle& gen){ return physmath::deltaR(*bestKinPh_, gen) < 0.2; }
   				);
-    strPrompt = isPrompt ? "_nonprompt" : "_prompt";
+    strPrompt = isPrompt ? "_prompt" : "_nonprompt";
   }
 
   // PhFR_VLtoL
@@ -2113,13 +2116,13 @@ void VVGammaAnalyzer::debug3Lregion(){
 void VVGammaAnalyzer::photonGenStudy(){
   // Study the efficiency/background rejection of a cut in deltaR(photon, lepton)
   // Make collection of genPhotons from hard process
-  vector<Particle> genPhotonsPrompt;
-  genPhotonsPrompt.reserve(genPhotons_->size());
-  copy_if(genPhotons_->begin(), genPhotons_->end(), std::back_inserter(genPhotonsPrompt),
-	  [](const Particle& p){
-	    std::bitset<15> flags = p.genStatusFlags();
-	    return /*status == 1 &&*/ (flags.test(isHardProcess) || flags.test(fromHardProcess)) /*&& fromHardProcessFinalState*/; }
-	  );
+  // vector<Particle> genPhotonsHard;
+  // genPhotonsHard.reserve(genPhotonsPrompt_->size());
+  // copy_if(genPhotonsPrompt_->begin(), genPhotonsPrompt_->end(), std::back_inserter(genPhotonsHard),
+  //         [](const Particle& p){
+  //           std::bitset<15> flags = p.genStatusFlags();
+  //           return (flags.test(isHardProcess) || flags.test(fromHardProcess)); }
+  //         );
   
   // Since the base selection already contains this cut, it is necessary to do it again
   std::map<const char*, vector<Photon>> mapWPtoPhotons;
@@ -2150,26 +2153,30 @@ void VVGammaAnalyzer::photonGenStudy(){
     if(phVect.size() == 0)
       continue;
     
-    const Photon* best = & phVect.at(0);
+    auto best = phVect.cbegin();  // vector<Photon>::const_iterator
     const char* matched = "nomatch";
-    if(genPhotonsPrompt.size() > 0){
-      for(const Photon& rec : phVect){
-        auto closestGen = closestDeltaR(rec, *genPhotons_);  // std::vector<phys::Particle>::const_iterator
-	if(deltaR(rec, *closestGen) < 0.1){  //closestGen != genPhotons_->cend() &&
-	  best = &rec;
-	  matched = "promptm";  // Matched to prompt photon
-	  break;
-	}
+    bool isMatched = false;
+
+    // First try matching with prompt gen photons
+    for(auto gen : *genPhotonsPrompt_){
+      auto closestRec = closestDeltaR(gen, phVect);
+      if(closestRec != phVect.cend() && deltaR(gen, *closestRec) < 0.1){
+	best = closestRec;
+	matched = "promptm";
+	isMatched = true;
+	break;
       }
     }
-    else if(genPhotons_->size() > 0){
-      for(const Photon& rec : phVect){
-	auto closestGen = closestDeltaR(rec, *genPhotons_);
-	if(deltaR(rec, *closestGen) < 0.1){
-	  best = &rec;
-	  matched = "matched";  // Matched to gen photon, not from hard scattering
-	  break;
-	}
+    if(isMatched)
+      break;
+
+    // Try again with all gen photons
+    for(auto gen : *genPhotons_){
+      auto closestRec = closestDeltaR(gen, phVect);
+      if(closestRec != phVect.cend() && deltaR(gen, *closestRec) < 0.1){
+	best = closestRec;
+	matched = "matched";
+	break;
       }
     }
     

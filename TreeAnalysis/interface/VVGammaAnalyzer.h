@@ -33,6 +33,7 @@ public:
     genChLeptons_ = new std::vector<phys::Particle>;
     genNeutrinos_ = new std::vector<phys::Particle>;
     genPhotons_   = new std::vector<phys::Particle>;
+    genPhotonsPrompt_.reset(new std::vector<phys::Particle>);
     
     genZlepCandidates_ = new std::vector<phys::Boson<phys::Particle>>;
     genWlepCandidates_ = new std::vector<phys::Boson<phys::Particle>>;
@@ -105,6 +106,7 @@ private:
   std::vector<phys::Particle>* genChLeptons_;
   std::vector<phys::Particle>* genNeutrinos_;
   std::vector<phys::Particle>* genPhotons_;
+  std::unique_ptr<std::vector<phys::Particle>> genPhotonsPrompt_;
   // Vectors of gen Bosons
   std::vector<phys::Boson<phys::Particle>>* genZlepCandidates_;
   std::vector<phys::Boson<phys::Particle>>* genWlepCandidates_;
