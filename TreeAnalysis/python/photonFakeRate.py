@@ -15,19 +15,21 @@ import ROOT
 from math import log10
 from ctypes import c_int
 from array import array
+import itertools
+import re
 
 from plotUtils import TFileContext, makedirs_ok
 
 ROOT.gStyle.SetPaintTextFormat(".2f")
 
-def getPlots(inputdir, sample, plots):
+def getPlots(inputdir, sample, plots, verbose=True):
     fname = path.join(inputdir, sample+".root")
     retrieved = []
     with TFileContext(fname) as rFile:
         for plot in plots:
             h = rFile.Get(plot)
             if(not h):
-                print('WARN: Could not get "%s" from "%s"' % (plot, fname))
+                if(verbose): print('WARN: Could not get "%s" from "%s"' % (plot, fname))
                 retrieved.append(None)
             else:
                 retrieved.append( copy.deepcopy(h) )
@@ -138,18 +140,22 @@ def beautify(canvas, hist, logx=False, logy=False, logz=False):
     return to_preserve
 
 
-def get_path_results():
+def get_path_results_base():
     if(environ.get("CMSSW_BASE")): path_base = path.join(environ['CMSSW_BASE'], "src/VVXAnalysis/TreeAnalysis/results")
     else:                          path_base = "results" # "~/Work/Analysys/rsync_results/Updated/EXT"
     assert path.exists(path_base), 'Please call this script from "VVXAnalysis/TreeAnalysis" or do `cmsenv`'
     return path_base
-    
+
+
+def get_path_results(year, analyzer, region):
+    # return "{:s}/{}/{:s}_{:s}".format(get_path_results_base(), year, analyzer, region)
+    return path.join(get_path_results_base(), str(year), '_'.join([analyzer, region]))
 
 
 def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", year=2016, region="CRLFR", logx=False, logy=False, fixNegBins=False):
     print("Fake Rate ABCD: data     =", sample_data  )
     print("Fake Rate ABCD: promptMC =", sample_prompt)
-    path_in = "{:s}/{}/{:s}_{:s}".format(get_path_results(), year, analyzer, region)
+    path_in = get_path_results(year=year, analyzer=analyzer, region=region)
     outfname = "data/ABCD_FR_{dataname:s}-{promptname:s}_{year}.root".format(dataname=sample_data["name"], promptname=sample_prompt["name"], year=year)
     print('Output (with prompt MC subtraction) in: "{:s}"'.format(outfname))
     
@@ -210,8 +216,7 @@ def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", year=20
     hES.SetName( "FakeEstimate" )
 
     if(fixNegBins):
-        for b in iterate_bins(hES):
-            if(hES.GetBinContent(b) < 0): hES.SetBinContent(b, 0.)
+        fix_neg_bins(hES)
 
     with TFileContext(outfname, "UPDATE") as tf:
         tf.cd()
@@ -248,7 +253,7 @@ def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", year=20
 
 def fakeRateABCD_noSubtract(sample, analyzer="VVGammaAnalyzer", year=2016, region="CRLFR", logx=False, logy=False, fixNegBins=False):
     print("Fake Rate ABCD: sample   =", sample  )
-    path_in = "{:s}/{}/{:s}_{:s}".format(get_path_results(), year, analyzer, region)
+    path_in = get_path_results(year=year, analyzer=analyzer, region=region)
     outfname = "data/ABCD_FR_{samplename:s}_{year}.root".format(samplename=sample["name"], year=year)
     print('Output (without MC subtraction) in: "{:s}"'.format(outfname))
     
@@ -322,20 +327,143 @@ def fakeRateABCD_noSubtract(sample, analyzer="VVGammaAnalyzer", year=2016, regio
     return hFR, hES, hKF
 
 
-def fakeRateLtoT_noSubtract(sample, analyzer='VVGammaAnalyzer', year=2016, region='CRLFR', method='LtoT', logx=False, logy=False, fixNegBins=False):
-    print('Fake Rate {}: sample   ='.format(method), sample)
-    path_in = '{:s}/{}/{:s}_{:s}'.format(get_path_results(), year, analyzer, region)
-    outfname = 'data/{}_FR_{:s}_{}.root'.format(method, sample['name'], year)
-    picname = 'Plot/PhFR/{method}_FR_{samplename}{region}_{year}'.format(method=method, samplename=sample['name'], region='' if region=='CRLFR' else '_'+region, year=year)
-    print('Output in: "{:s}"'.format(outfname))
+def getPassFailLtoT_noSubtract_regex(sample, method, regex, year, analyzer, region, fixNegBins=False):
+    regex_compiled = re.compile(regex)
+    path_in = get_path_results(year=year, analyzer=analyzer, region=region)
+    channels = findChannelsInFile(path.join(path_in, sample['file']+'.root'), method)
 
-    if(method == 'LtoT'):
-        h5p, h4p, h3p = getPlots(path_in, sample['file'], [ 'PhFR_LToT_%d_prompt'    % (s) for s in [5, 4, 3] ] )
-        h5n, h4n, h3n = getPlots(path_in, sample['file'], [ 'PhFR_LToT_%d_nonprompt' % (s) for s in [5, 4, 3] ] )
+    print('\tDEBUG: regex    =', regex_compiled.pattern)
+    selected = [ c  for c in channels if regex_compiled.search(c) ]
+    print('\tDEBUG: selected =', selected)
+
+    if(method.startswith('LtoT')):
+        raise NotImplementedError('Use VLtoL')
+
+    listPASS = []
+    listFAIL = []
+    for channel in selected:
+        hPASSp, hFAILp = getPlots(path_in, sample['file'], [ 'PhFR_%s_%s_prompt_%s'    % (method, channel, s) for s in ['PASS', 'FAIL'] ] , verbose=False)
+        hPASSn, hFAILn = getPlots(path_in, sample['file'], [ 'PhFR_%s_%s_nonprompt_%s' % (method, channel, s) for s in ['PASS', 'FAIL'] ] , verbose=False)
+
+        listPASS.append( addIfExisting(hPASSp, hPASSn) )
+        listFAIL.append( addIfExisting(hFAILp, hFAILp) )
+
+    hPASS = addIfExisting(*listPASS)
+    hFAIL = addIfExisting(*listFAIL)
+
+    if(sample.get('fixNegBins') and fixNegBins):
+        fix_neg_bins(hPASS)
+        fix_neg_bins(hFAIL)
+
+    return hPASS, hFAIL
+
+
+def fakeRateLtoT_noSubtract_regex(sample, method, regex, year=2016, analyzer='VVGammaAnalyzer', region='CRLFR', pattern_printable=None, logx=False, logy=False, fixNegBins=False):
+    print('Fake Rate {}: sample   ='.format(method), sample)
+    # channel ~ '[^PF]P'
+
+    if(pattern_printable is None):
+        pattern_printable = regex.replace('\\','').replace('"','').replace("'","")
+    outname = 'FR_{method}_{regex}_{samplename}{region}_{year}'.format(method=method, samplename=sample['name'], region='' if region=='CRLFR' else '_'+region, year=year, regex=pattern_printable)
+    title = 'Photon Fake Rate: {method} {regex} (from {sampletitle} in {region})'.format(method=method, sampletitle=sample['title'], regex=pattern_printable, region=region)
+
+    hPASS, hFAIL = getPassFailLtoT_noSubtract_regex(sample, method=method, regex=regex, year=year, analyzer=analyzer, region=region, fixNegBins=fixNegBins)
+    hTOTAL = hFAIL
+    hTOTAL.Add(hPASS)
+
+    ## Fake rate = PASS/TOTAL ##
+    hFR = hPASS
+    hFR.Divide(hTOTAL)
+
+    plotFR_LtoT(hFR, outname, title, logx=logx, logy=logy)
+
+    return hFR
+
+
+def getPassFailLtoT_regex(sample_data, sample_prompt, method, regex, year, analyzer, region, fixNegBins=False):
+    regex_compiled = re.compile(regex)
+    path_in = get_path_results(year=year, analyzer=analyzer, region=region)
+    channels = findChannelsInFile(path.join(path_in, sample_data['file']+'.root'), method)
+
+    print('\tDEBUG: regex    =', regex_compiled.pattern)
+    selected = [ c  for c in channels if regex_compiled.search(c) ]
+    print('\tDEBUG: selected =', selected)
+
+    if(method.startswith('LtoT')):
+        raise NotImplementedError('Use VLtoL')
+
+    listDataPASS   = []
+    listDataFAIL   = []
+    listPromptPASS = []
+    listPromptFAIL = []
+    for channel in selected:
+        hdata_PASS  , hdata_FAIL   = getPlots(path_in, sample_data['file']  , [ 'PhFR_%s_%s_%s'        % (method, channel, s) for s in ['PASS', 'FAIL'] ] , verbose=True)
+        hprompt_PASS, hprompt_FAIL = getPlots(path_in, sample_prompt['file'], [ 'PhFR_%s_%s_prompt_%s' % (method, channel, s) for s in ['PASS', 'FAIL'] ] , verbose=True)
+
+        listDataPASS  .append(hdata_PASS)
+        listDataFAIL  .append(hdata_FAIL)
+        listPromptPASS.append(hprompt_PASS)
+        listPromptFAIL.append(hprompt_FAIL)
+
+    hDataPASS   = addIfExisting(*listDataPASS)
+    hDataFAIL   = addIfExisting(*listDataFAIL)
+    hPromptPASS = addIfExisting(*listPromptPASS)
+    hPromptFAIL = addIfExisting(*listPromptFAIL)
+
+    assert hDataPASS   and hDataFAIL  , 'Could not get the 2 data sums of histograms'
+    assert hPromptPASS and hPromptFAIL, 'Could not get the 2 MC sums of histograms'
+
+    if(sample_data.get('fixNegBins') and fixNegBins):
+        fix_neg_bins(hDataPASS)
+        fix_neg_bins(hDataFAIL)
+    if(sample_prompt.get('fixNegBins') and fixNegBins):
+        fix_neg_bins(hPromptPASS)
+        fix_neg_bins(hPromptFAIL)
+
+    hPASS = hDataPASS
+    hPASS.Add(hPromptPASS, -1)
+    hFAIL = hDataFAIL
+    hFAIL.Add(hPromptFAIL, -1)
+
+    return hPASS, hFAIL
+
+
+def fakeRateLtoT_regex(sample_data, sample_prompt, method, regex, year=2016, analyzer='VVGammaAnalyzer', region='CRLFR', pattern_printable=None, logx=False, logy=False, fixNegBins=False):
+    if(pattern_printable is None):
+        pattern_printable = regex.replace('\\','').replace('"','').replace("'","")
+    print('Fake Rate {}_{}: data     ='.format(method, pattern_printable), sample_data  )
+    print('Fake Rate {}_{}: promptMC ='.format(method, pattern_printable), sample_prompt)
+
+    outname = 'FR_{method}_{regex}_{samplename}{region}_{year}'.format(method=method, samplename=sample_data['name']+'-'+sample_prompt['name'], region='' if region=='CRLFR' else '_'+region, year=year, regex=pattern_printable)
+    title = 'Photon Fake Rate: {method} {regex} (from {sampletitle} in {region})'.format(method=method, sampletitle=sample_data['title']+' - '+sample_prompt['title'], regex=pattern_printable, region=region)
+
+    hPASS, hFAIL = getPassFailLtoT_regex(sample_data, sample_prompt, method=method, regex=regex, year=year, analyzer=analyzer, region=region, fixNegBins=fixNegBins)
+    hTOTAL = hFAIL
+    hTOTAL.Add(hPASS)
+
+    ## Fake rate = PASS/TOTAL ##
+    hFR = hPASS
+    hFR.Divide(hTOTAL)
+
+    plotFR_LtoT(hFR, outname, title, logx=logx, logy=logy)
+
+    return hFR
+
+
+def getPassFailLtoT_noSubtract(sample, analyzer, year, region, method, fixNegBins=False):
+    path_in = get_path_results(year=year, analyzer=analyzer, region=region)
+    if(method.startswith('LtoT')):
+        if(sample['name'] == 'ZZTo4l' and region=='CRLFR'):
+            h5p, h4p, h3p = getPlots(path_in, sample['file'], [ 'PhFR_%s_%d_prompt'    % (method, s) for s in [5, 4, 3] ] )
+            h5n, h4n, h3n = getPlots(path_in, sample['file'], [ 'PhFR_%s_%d_nonprompt' % (method, s) for s in [5, 4, 3] ] )
+        else:
+            h5p, h4p, h3p = getPlots(path_in, sample['file'], [ 'PhFR_%s_%d_prompt'    % (method, s) for s in [5, 4, 3] ] )
+            h5n, h4n, h3n = getPlots(path_in, sample['file'], [ 'PhFR_%s_%d_nonprompt' % (method, s) for s in [5, 4, 3] ] )
         
         hPASS = addIfExisting(h5p, h5n)
         hFAIL = addIfExisting(h3p, h3n, h4p, h4n)
-        assert (hPASS and hFAIL), "Could't get the 3*2 MC histograms!"
+        assert hPASS, "Could't get the PASS LtoT MC histogram!"
+        assert hFAIL, "Could't get any of the FAIL LtoT MC histograms!"
     else:
         hPASSp, hFAILp = getPlots(path_in, sample['file'], [ 'PhFR_%s_prompt_%s'    % (method, s) for s in ['PASS', 'FAIL'] ] )
         hPASSn, hFAILn = getPlots(path_in, sample['file'], [ 'PhFR_%s_nonprompt_%s' % (method, s) for s in ['PASS', 'FAIL'] ] )
@@ -344,49 +472,41 @@ def fakeRateLtoT_noSubtract(sample, analyzer='VVGammaAnalyzer', year=2016, regio
         hFAIL = addIfExisting(hFAILp, hFAILp)
         assert (hPASS and hFAIL), "Could't get the 2*2 MC histograms!"
 
-    hFAIL.Add(hPASS)
-
     if(sample.get('fixNegBins', False) and fixNegBins):
         for h in [hPASS, hFAIL]:
             fix_neg_bins(h)
 
-    ## Fake rate = PASS/FAIL ##
-    cFR = ROOT.TCanvas( 'cFR_{}_nosub'.format(method), 'Fake Rate '+sample['name'], 1200, 900 )
-    cFR.cd()
+    return hPASS, hFAIL
+
+
+def fakeRateLtoT_noSubtract(sample, analyzer='VVGammaAnalyzer', year=2016, region='CRLFR', method='LtoT', logx=False, logy=False, fixNegBins=False):
+    print('Fake Rate {}: sample   ='.format(method), sample)
+    outname = '{method}_FR_{samplename}{region}_{year}'.format(method=method, samplename=sample['name'], region='' if region=='CRLFR' else '_'+region, year=year)
+
+    hPASS, hFAIL = getPassFailLtoT_noSubtract(sample, analyzer=analyzer, year=year, region=region, method=method, fixNegBins=fixNegBins)
+    hTOTAL = hFAIL
+    hTOTAL.Add(hPASS)
+
+    ## Fake rate = PASS/TOTAL ##
+    hFR = hPASS
+    hFR.Divide(hTOTAL)
     
-    hFR = copy.deepcopy(hPASS)
-    hFR.Divide(hFAIL)
-    if(method == 'LtoT'):
-        hFR.SetTitle( 'Photon Fake Rate: 5/(3+4+5) (from {:s})'.format(sample['title']) )
+    if(method.startswith('LtoT')):
+        title = 'Photon Fake Rate: 5/(3+4+5) (from {:s})'.format(sample['title'])
     else:
-        hFR.SetTitle( 'Photon Fake Rate: {} (from {:s})'.format(method,sample['title']) )
-    hFR.SetName( 'PhFR_{}'.format(method) )
+        title = 'Photon Fake Rate: {} (from {:s})'.format(method,sample['title'])
 
-    with TFileContext(outfname, 'UPDATE') as tf:
-        tf.cd()
-        hFR.Write(hFR.GetName(), ROOT.TObject.kOverwrite)
-
-    to_preserve = beautify(cFR, hFR, logx, logy)
-    
-    for ext in ['png']:
-        cFR.SaveAs( picname+'.'+ext )
-    del cFR, to_preserve
+    plotFR_LtoT(hFR, outname, title, logx=logx, logy=logy)
 
     return hFR
 
+
+def getPassFailLtoT(sample_data, sample_prompt, analyzer, year, region, method, fixNegBins):
+    path_in = get_path_results(year=year, analyzer=analyzer, region=region)
     
-def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=2016, region='CRLFR', method='LtoT', logx=False, logy=False, fixNegBins=False):
-    print('Fake Rate {}: data     ='.format(method), sample_data  )
-    print('Fake Rate {}: promptMC ='.format(method), sample_prompt)
-    path_in = '{:s}/{}/{:s}_{:s}'.format(get_path_results(), year, analyzer, region)
-    outfname_full = 'data/{method}_FR_{dataname}-{promptname}_{year}.root'.format(method=method, dataname=sample_data['name'], promptname=sample_prompt['name'], year=year)
-    picname = 'Plot/PhFR/{method}_FR_{dataname}-{promptname}{region}_{year}'.format(method=method, dataname=sample_data['name'], promptname=sample_prompt['name'], region='' if region=='CRLFR' else '_'+region, year=year)
-    print('Output (with prompt MC subtraction) in: "{:s}"'.format(outfname_full))
-    
-    ##### First: take data ####
-    if(method == 'LtoT'):
-        hdata_5  , hdata_4  , hdata_3   = getPlots(path_in, sample_data['file']  , [ 'PhFR_LToT_%d'        % (s) for s in [5, 4, 3] ] )
-        hprompt_5, hprompt_4, hprompt_3 = getPlots(path_in, sample_prompt['file'], [ 'PhFR_LToT_%d_prompt' % (s) for s in [5, 4, 3] ] )
+    if(method.startswith('LtoT')):
+        hdata_5  , hdata_4  , hdata_3   = getPlots(path_in, sample_data['file']  , [ 'PhFR_LtoT_%d'        % (s) for s in [5, 4, 3] ] )
+        hprompt_5, hprompt_4, hprompt_3 = getPlots(path_in, sample_prompt['file'], [ 'PhFR_LtoT_%d_prompt' % (s) for s in [5, 4, 3] ] )
         assert (hdata_5   and (hdata_4   or  hdata_3  )), "Could't get the 3 data histograms!"
         assert (hprompt_5 and (hprompt_4 or  hprompt_3)), "Could't get the 3 prompt MC histograms"
 
@@ -402,9 +522,6 @@ def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=20
         assert (hdata_PASS   and hdata_FAIL  ), "Could't get the 2 data histograms!"
         assert (hprompt_PASS and hprompt_FAIL), "Could't get the 2 prompt MC histograms!"
 
-    hdata_FAIL  .Add(hdata_PASS  )
-    hprompt_FAIL.Add(hprompt_PASS)
-
     if(sample_data.get('fixNegBins', False) and fixNegBins):
         for h in [hdata_PASS, hdata_FAIL]:
             fix_neg_bins(h)
@@ -415,32 +532,52 @@ def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=20
     hdata_PASS.Add(hprompt_PASS, -1)
     hdata_FAIL.Add(hprompt_FAIL, -1)
 
-    ## Fake rate = PASS/FAIL ##
-    cFR = ROOT.TCanvas( 'cFR_{}'.format(method), 'Fake Rate {:s} - {:s}'.format(sample_data['name'], sample_prompt['name']), 1200, 900 )
-    cFR.cd()
-    
-    hFR = hdata_PASS
-    hFR.Divide(hdata_FAIL)
-    if(method == 'LtoT'):
-        hFR.SetTitle( 'Photon Fake Rate: 5/(3+4+5) (from {} - {})'.format(sample_data['title'], sample_prompt['title']) )
+    return hdata_PASS, hdata_FAIL
+
+
+def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=2016, region='CRLFR', method='LtoT', logx=False, logy=False, fixNegBins=False):
+    print('Fake Rate {}: data     ='.format(method), sample_data  )
+    print('Fake Rate {}: promptMC ='.format(method), sample_prompt)
+    outname = '{method}_FR_{dataname}-{promptname}{region}_{year}'.format(method=method, dataname=sample_data['name'], promptname=sample_prompt['name'], region='' if region=='CRLFR' else '_'+region, year=year)
+
+    hPASS, hFAIL = getPassFailLtoT(sample_data=sample_data, sample_prompt=sample_prompt, analyzer=analyzer, year=year, region=region, method=method, fixNegBins=fixNegBins)
+    hTOTAL = hFAIL
+    hTOTAL.Add(hPASS)
+
+    ## Fake rate = PASS/TOTAL ##
+    hFR = hPASS
+    hFR.Divide(hTOTAL)
+
+    if(method.startswith('LtoT')):
+        title = 'Photon Fake Rate: 5/(3+4+5) (from {} - {})'.format(sample_data['title'], sample_prompt['title'])
     else:
-        hFR.SetTitle( 'Photon Fake Rate: {} (from {} - {})'.format(method,sample_data['title'], sample_prompt['title']) )
-    hFR.SetName( 'PhFR' )
-    
-    if(fixNegBins):
-        fix_neg_bins(hFR)
-    
-    with TFileContext(outfname_full, 'UPDATE') as tf:
-        tf.cd()
-        hFR.Write(hFR.GetName(), ROOT.TObject.kOverwrite)
-        
-    to_preserve_FR = beautify(cFR, hFR, logx, logy)
-        
-    for ext in ['png']: 
-        cFR.SaveAs( picname+'.'+ext )
-    del cFR, to_preserve_FR
+        title = 'Photon Fake Rate: {} (from {} - {})'.format(method,sample_data['title'], sample_prompt['title'])
+
+    plotFR_LtoT(hFR, outname, title, logx=logx, logy=logy)
 
     return hFR
+
+
+def plotFR_LtoT(hFR, outname, title, logx=False, logy=False):
+    outfname = 'data/{}.root'.format(outname)
+    picname = 'Plot/PhFR/{}'.format(outname)
+
+    cFR = ROOT.TCanvas( 'cFR_{}'.format(outname), title, 1200, 900 )
+    cFR.cd()
+    
+    hFR.SetTitle(title)
+    hFR.SetName( 'PhFR' )
+    
+    with TFileContext(outfname, 'UPDATE') as tf:
+        tf.cd()
+        hFR.Write(hFR.GetName(), ROOT.TObject.kOverwrite)
+    print('Output (with prompt MC subtraction) in: "{:s}"'.format(outfname))
+
+    to_preserve_FR = beautify(cFR, hFR, logx, logy)
+
+    for ext in ['png']:
+        cFR.SaveAs( picname+'.'+ext )
+    del cFR, to_preserve_FR
 
 
 def plotRatio(h1, h2, picture_name="ratio", title="ratio"):
@@ -449,6 +586,7 @@ def plotRatio(h1, h2, picture_name="ratio", title="ratio"):
 
     ratio = copy.deepcopy(h1)
     ratio.Divide(h2)
+    ratio.SetName('PhFRSF')
     ratio.SetTitle(title)
     
     c = ROOT.TCanvas("cratio_{:s}".format(picture_name), "ratio", 1200, 900)
@@ -458,6 +596,10 @@ def plotRatio(h1, h2, picture_name="ratio", title="ratio"):
     to_preserve = beautify(c, ratio, True, False)
     # ratio.GetYaxis().SetRange(1, ratio.GetXaxis().GetNbins())
     c.SaveAs('Plot/PhFR/{:s}.png'.format(picture_name))
+    with TFileContext(path.join('data', picture_name+'.root'), 'RECREATE') as tf:
+        tf.cd()
+        ratio.Write()
+        print('Output (ratio) in "{:s}"'.format(tf.GetName()))
     del to_preserve, c
 
     return ratio
@@ -479,11 +621,15 @@ def plotProfiled(h2, picture_name=None, title='profile', direction='X'):
         axis_2D_draw = h2.GetXaxis()
         nbins_proj = h2.GetNbinsY()
         nbins_draw = h2.GetNbinsX()
+        def get_bin_2d(h, x, y):
+            return h.GetBin(x, y)
     elif(direction=='X'):
         axis_2D_proj = h2.GetXaxis()
         axis_2D_draw = h2.GetYaxis()
         nbins_proj = h2.GetNbinsX()
         nbins_draw = h2.GetNbinsY()
+        def get_bin_2d(h, x, y):
+            return h.GetBin(y, x)
     
     h1s = []
     draw_edges = array('d')
@@ -499,7 +645,7 @@ def plotProfiled(h2, picture_name=None, title='profile', direction='X'):
         h1 = ROOT.TH1D("{:s}_bin{:d}".format(h2.GetName(), j), title, nbins_draw+1, draw_edges)#, axis_2D_draw.GetNbins(), axis_2D_draw.GetXbins().GetArray())
         h1.GetXaxis().SetTitle(axis_2D_draw.GetTitle())
         for i in range(0, h1.GetNbinsX()+2):
-            bin_2d = h2.GetBin(i, j)
+            bin_2d = get_bin_2d(h2, i, j)
             content = h2.GetBinContent(bin_2d)
             error = h2.GetBinError  (bin_2d)
             zmax = max(zmax, content+error)
@@ -516,13 +662,31 @@ def plotProfiled(h2, picture_name=None, title='profile', direction='X'):
         h.SetMarkerStyle(_style[i]["marker"])
     
     h1s[0].GetYaxis().SetRangeUser(zmin - (zmax-zmin)/10, zmax + (zmax-zmin)/10)
-    h1s[0].Draw()
+    h1s[0].Draw("P0 E1")
     for h1 in h1s[1:]:
         h1.Draw("P0 E1 same")
     
     legend.Draw("SAME")
     
     cprof.SaveAs( "Plot/PhFR/{:s}.png".format(picture_name) )
+
+
+def findChannelsInFile(fname, method):
+    regex_compiled = re.compile('PhFR_{method}_([^_]+)_((non)?prompt_)?(PASS|FAIL)'.format(method=method))
+
+    with TFileContext(fname) as tf:
+        keys = [ k.GetName() for k in tf.GetListOfKeys() ]
+
+    matches = []
+    for key in keys:
+        m = regex_compiled.match(key)
+        if(m):
+            matches.append(m.group(1))  # group(0) is the whole expression
+
+    if(len(matches) == 0):
+        print("\tERROR: no key matching the following regex:", regex_compiled.pattern,
+              "\n\t       Keys starting with PhFR:", [k for k in keys if k.startswith('PhFR')])
+    return matches
 
 
 if __name__ == "__main__":
@@ -537,10 +701,13 @@ if __name__ == "__main__":
         sample.setdefault("name" , key)
         sample.setdefault("title", sample["name"])
 
+    possible_methods = {"LtoT", "VLtoL", "KtoVL", "KtoVLexcl", "ABCD"}
+
     from argparse import ArgumentParser
     parser = ArgumentParser()
     parser.add_argument("-y", "--year"   , type=int, default=2016, choices=[2016, 2017, 2018])
-    parser.add_argument("-m", "--method" , nargs="+", choices=["LtoT", "KtoVL", "KtoVLexcl", "ABCD"], default="LtoT")
+    parser.add_argument("-m", "--method" , nargs="+", choices=possible_methods, default=["LtoT"])
+    parser.add_argument(      "--channels", action='store_true')
     parser.add_argument(      "--no-mc"  , dest="do_mc"  , action="store_false", help="Skip MC plots"  )
     parser.add_argument(      "--no-data", dest="do_data", action="store_false", help="Skip data plots")
     args = parser.parse_args()
@@ -565,24 +732,68 @@ if __name__ == "__main__":
             plotRatio(hFR_ABCD_data, hFR_ABCD_MC, picture_name="ABCD_ratio_data-ZG_over_DY_{}".format(args.year), title="Ratio FR(data-Z#gamma)/FR(DY)")
             print()
 
-    for method in set(args.method) & {"LtoT", "KtoVL", "KtoVLexcl"}:
+    for method in set(args.method) & possible_methods:
         if(args.do_data):
             print('>>>', method, 'data')
-            hFR_LtoT_data = fakeRateLtoT(sampleList["data"], sampleList["ZGToLLG"], year=args.year, method=method, logx=True, fixNegBins=False)
-            plotProfiled(hFR_LtoT_data, picture_name='LtoT_FR_profiledX_data-ZGToLLG', title='FR(#gamma) vs #eta' , direction='X')
-            plotProfiled(hFR_LtoT_data, picture_name='LtoT_FR_profiledY_data-ZGToLLG', title='FR(#gamma) vs p_{T}', direction='Y')
+            if(args.channels):
+                hDe  = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], year=args.year, method=method, regex='2[me]\+e[PF]', pattern_printable='2x+e', logx=True,logy=False,fixNegBins=False)
+                hDm  = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], year=args.year, method=method, regex='2[me]\+m[PF]', pattern_printable='2x+m', logx=True,logy=False,fixNegBins=False)
+                hDP  = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], year=args.year, method=method, regex='2[me]\+[em]P', pattern_printable='2x+P', logx=True,logy=False,fixNegBins=False)
+                hDF  = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], year=args.year, method=method, regex='2[me]\+[em]F', pattern_printable='2x+F', logx=True,logy=False,fixNegBins=False)
+
+                hDeP = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], year=args.year, method=method, regex='2[me]\+eP'   , pattern_printable='2x+eP', logx=True, fixNegBins=True)
+                hDeF = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], year=args.year, method=method, regex='2[me]\+eF'   , pattern_printable='2x+eF', logx=True, fixNegBins=True)
+                hDmP = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], year=args.year, method=method, regex='2[me]\+mP'   , pattern_printable='2x+mP', logx=True, fixNegBins=True)
+                hDmF = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], year=args.year, method=method, regex='2[me]\+mF'   , pattern_printable='2x+mF', logx=True, fixNegBins=True)
+
+                hD2e = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], year=args.year, method=method, regex='2e\+[em][PF]', pattern_printable='2e+x' , logx=True, fixNegBins=True)
+                hD2m = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], year=args.year, method=method, regex='2m\+[em][PF]', pattern_printable='2m+x' , logx=True, fixNegBins=True)
+
+                plotRatio(hDe , hDm , picture_name="ratio_{}_data-ZG_e_over_m_{}".format(  method, args.year), title="Ratio FR(2x+e)/FR(2x+m) in data-Z#gamma"  )
+                plotRatio(hDF , hDP , picture_name="ratio_{}_data-ZG_F_over_P_{}".format(  method, args.year), title="Ratio FR(2x+F)/FR(2x+P) in data-Z#gamma"  )
+                plotRatio(hDeF, hDeP, picture_name="ratio_{}_data-ZG_eF_over_eP_{}".format(method, args.year), title="Ratio FR(2x+eF)/FR(2x+eP) in data-Z#gamma")
+                plotRatio(hDmF, hDmP, picture_name="ratio_{}_data-ZG_mF_over_mP_{}".format(method, args.year), title="Ratio FR(2x+mF)/FR(2x+mP) in data-Z#gamma")
+                plotRatio(hD2e, hD2m, picture_name="ratio_{}_data-ZG_2e_over_2m_{}".format(method, args.year), title="Ratio FR(2e+x)/FR(2m+x) in data-Z#gamma"  )
+            else:
+                hFR_LtoT_data = fakeRateLtoT(sampleList["data"], sampleList["ZGToLLG"], year=args.year, method=method, logx=True, fixNegBins=False)
+                plotProfiled(hFR_LtoT_data, picture_name='LtoT_FR_profiledX_data-ZGToLLG', title='FR(#gamma) vs #eta' , direction='X')
+                plotProfiled(hFR_LtoT_data, picture_name='LtoT_FR_profiledY_data-ZGToLLG', title='FR(#gamma) vs p_{T}', direction='Y')
             print()
+
         if(args.do_mc):
             print('>>>', method, 'MC')
-            hFR_LtoT_MC   = fakeRateLtoT_noSubtract(sampleList["Drell-Yan"]       , year=args.year, method=method, logx=True, fixNegBins=True)
-            hFR_LtoT_ZZ   = fakeRateLtoT_noSubtract(sampleList["ZZTo4l"]          , year=args.year, method=method, logx=True, fixNegBins=True)
-            hFR_LtoT_ZZ_4P= fakeRateLtoT_noSubtract(sampleList["ZZTo4l"]          , year=args.year, method=method, logx=True, fixNegBins=True, region='SR4P')
-            hFR_LtoT_gg   = fakeRateLtoT_noSubtract(sampleList["ggTo4l"]          , year=args.year, method=method, logx=True, fixNegBins=True)
+            if(args.channels):
+                he  = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2[me]\+e[PF]', year=args.year, pattern_printable='2x+e' , logx=True, fixNegBins=True)
+                hm  = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2[me]\+m[PF]', year=args.year, pattern_printable='2x+m' , logx=True, fixNegBins=True)
+                hP  = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2[me]\+[em]P', year=args.year, pattern_printable='2x+P' , logx=True, fixNegBins=True)
+                hF  = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2[me]\+[em]F', year=args.year, pattern_printable='2x+F' , logx=True, fixNegBins=True)
+
+                heP = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2[me]\+eP'   , year=args.year, pattern_printable='2x+eP', logx=True, fixNegBins=True)
+                heF = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2[me]\+eF'   , year=args.year, pattern_printable='2x+eF', logx=True, fixNegBins=True)
+                hmP = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2[me]\+mP'   , year=args.year, pattern_printable='2x+mP', logx=True, fixNegBins=True)
+                hmF = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2[me]\+mF'   , year=args.year, pattern_printable='2x+mF', logx=True, fixNegBins=True)
+
+                h2e = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2e\+[em][PF]', year=args.year, pattern_printable='2e+x' , logx=True, fixNegBins=True)
+                h2m = fakeRateLtoT_noSubtract_regex(sampleList['ZZTo4l'], method=args.method[0], regex='2m\+[em][PF]', year=args.year, pattern_printable='2m+x' , logx=True, fixNegBins=True)
+
+                plotRatio(h2e, h2m, picture_name="ratio_{}_ZZ_2e_over_2m_{}".format(method, args.year), title="Ratio FR(2e+x)/FR(2m+x) in ZZTo4l")
+                plotRatio(he , hm , picture_name="ratio_{}_ZZ_e_over_m_{}".format(  method, args.year), title="Ratio FR(2x+e)/FR(2x+m) in ZZTo4l")
+                plotRatio(hF , hP , picture_name="ratio_{}_ZZ_F_over_P_{}".format(  method, args.year), title="Ratio FR(2x+F)/FR(2x+P) in ZZTo4l")
+                plotRatio(heF, heP, picture_name="ratio_{}_ZZ_eF_over_eP_{}".format(method, args.year), title="Ratio FR(2x+eF)/FR(2x+eP) in ZZTo4l")
+                plotRatio(hmF, hmP, picture_name="ratio_{}_ZZ_mF_over_mP_{}".format(method, args.year), title="Ratio FR(2x+mF)/FR(2x+mP) in ZZTo4l")
+            else:
+                hFR_LtoT_DY   = fakeRateLtoT_noSubtract(sampleList["Drell-Yan"]       , year=args.year, method=method, logx=True, fixNegBins=True)
+                hFR_LtoT_ZG   = fakeRateLtoT_noSubtract(sampleList["ZGToLLG"]         , year=args.year, method=method, logx=True, fixNegBins=True)
+                hFR_LtoT_ZZ   = fakeRateLtoT_noSubtract(sampleList["ZZTo4l"]          , year=args.year, method=method, logx=True, fixNegBins=True)
+                hFR_LtoT_ZZ_4P= fakeRateLtoT_noSubtract(sampleList["ZZTo4l"]          , year=args.year, method=method, logx=True, fixNegBins=True, region='SR4P')
+                plotRatio(hFR_LtoT_ZZ_4P, hFR_LtoT_ZZ, picture_name="{}_ratio_ZZ4P_over_ZZCRLFR_{}".format(method, args.year), title="Ratio FR(ZZ_{4P})/FR(ZZ_{CRLFR})")
+                hFR_LtoT_gg   = fakeRateLtoT_noSubtract(sampleList["ggTo4l"]          , year=args.year, method=method, logx=True, fixNegBins=True)
             print()
-        if(args.do_data and args.do_mc):
+
+        if(args.do_data and args.do_mc and not args.channels):
             print('>>>', method, 'ratio')
-            ratioLtoT = plotRatio(hFR_LtoT_data, hFR_LtoT_MC, picture_name="{}_ratio_data-ZG_over_DY_{}".format(method, args.year), title="Ratio FR(data-Z#gamma)/FR(DY)")
-            ratioLtoT = plotRatio(hFR_LtoT_data, hFR_LtoT_ZZ, picture_name="{}_ratio_data-ZG_over_ZZ_{}".format(method, args.year), title="Ratio FR(data-Z#gamma)/FR(ZZ)")
-            ratioLtoT_4P = plotRatio(hFR_LtoT_data, hFR_LtoT_ZZ_4P, picture_name="{}_ratio_data-ZG_over_ZZ_4P_{}".format(method, args.year), title="Ratio FR(data-Z#gamma)_{CRLFR}/FR(ZZ_{4P})")
-            ratioLtoT = plotRatio(hFR_LtoT_data, hFR_LtoT_gg, picture_name="{}_ratio_data-ZG_over_gg_{}".format(method, args.year), title="Ratio FR(data-Z#gamma)/FR(gg)")
+            ratioLtoT = plotRatio(hFR_LtoT_data, hFR_LtoT_DY, picture_name="{}_ratio_data-ZG_over_DY_{}".format(method, args.year), title="Ratio FR(data-Z#gamma)/FR(DY)")
+            plotRatio(hFR_LtoT_data, hFR_LtoT_ZZ, picture_name="{}_ratio_data-ZG_over_ZZ_{}".format(method, args.year), title="Ratio FR(data-Z#gamma)/FR(ZZ)")
+            # ratioLtoT_4P = plotRatio(hFR_LtoT_data, hFR_LtoT_ZZ_4P, picture_name="{}_ratio_data-ZG_over_ZZ_4P_{}".format(method, args.year), title="Ratio FR(data-Z#gamma)_{CRLFR}/FR(ZZ_{4P})")
+            # ratioLtoT = plotRatio(hFR_LtoT_data, hFR_LtoT_gg, picture_name="{}_ratio_data-ZG_over_gg_{}".format(method, args.year), title="Ratio FR(data-Z#gamma)/FR(gg)")
             print()
