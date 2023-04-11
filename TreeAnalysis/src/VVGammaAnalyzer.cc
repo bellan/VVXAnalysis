@@ -404,6 +404,7 @@ void VVGammaAnalyzer::analyze(){
   photonIsolation_bestKin();
   photonFakeRate_ABCD();
   photonFakeRate_LtoT();
+  orphanPhotonStudy();
   systematicsStudy();
   
   // Basic histograms on leptonic side
@@ -1039,6 +1040,7 @@ void VVGammaAnalyzer::genEventHistos(){
   theHistograms->fill("GEN_chLeptons", "# genChLeptons", 10,-0.5,9.5, genChLeptons_->size());
   theHistograms->fill("GEN_neutrinos", "# genNeutrinos", 10,-0.5,9.5, genNeutrinos_->size());
   theHistograms->fill("GEN_photons"  , "# genPhotons"  , 10,-0.5,9.5, genPhotons_  ->size());
+  theHistograms->fill("GEN_photonsPrompt", "# genPhotonsPrompt", 10,-0.5,9.5, genPhotonsPrompt_->size());
   
   for(auto v : *genZlepCandidates_)
     theHistograms->fill("GEN_genZlepCandidates_mass", "mass genZlepCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass());
@@ -1592,6 +1594,24 @@ void VVGammaAnalyzer::photonFakeRate_LtoT(){
     strPrompt = isPrompt ? "_prompt" : "_nonprompt";
   }
 
+  char phEtaRegion[4]; sprintf(phEtaRegion, bestKinPh_->isBarrel() ? "EB" : "EE");
+  float phPtValue = bestKinPh_->pt();
+
+  // Closest lep
+  std::vector<Lepton>::const_iterator closestLep = closestDeltaR(*bestKinPh_, *leptons_);
+  float dR_l = physmath::deltaR(*closestLep, *bestKinPh_);
+
+  char lepFlavour = '?';
+  unsigned int aLepID = abs(closestLep->id());
+  if     (aLepID == 11) lepFlavour = 'e';
+  else if(aLepID == 13) lepFlavour = 'm';
+
+  char lepStatus = closestLep->passFullSel() ? 'P' : 'F';
+
+  char all_str[4]; sprintf(all_str, "all");
+  char all_char = 'a';
+  static vector<double> edges_dR {0., 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00};
+
   // PhFR_VLtoL
   if(isPassVL){
     const char* name_VLtoL         = Form("PhFR_VLtoL%s_%s"            , strPrompt, strPassLoose);
@@ -1599,6 +1619,22 @@ void VVGammaAnalyzer::photonFakeRate_LtoT(){
     const char* name_VLtoL_channel = Form("PhFR_VLtoL_%s%s_%s", channel, strPrompt, strPassLoose);
     theHistograms->fill(name_VLtoL_channel, "Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
   }
+
+  for(char* phEta : {all_str, phEtaRegion}){
+    for(char lepSt : {all_char, lepStatus}){
+      for(char lepFl : {all_char, lepFlavour}){
+	const char* name_byChannel = Form("PhFR_VLtoL-%c-%c-%s%s_%s"     ,
+					  lepSt,
+					  lepFl,
+					  phEta,
+					  strPrompt,
+					  strPassLoose
+					  );
+	theHistograms->fill(name_byChannel, "FR #gamma VL to L;#DeltaR(#gamma, l);p_{T}^{#gamma};Events", edges_dR, ph_pt_bins, dR_l, phPtValue, theWeight);
+      }
+    }
+  }
+
 
   // PhFR_KtoVL_[FAIL/PASS]
   const char* name_KtoVL = Form("PhFR_KtoVL%s_%s", strPrompt, strPassVL);
@@ -1868,6 +1904,43 @@ void VVGammaAnalyzer::photonIsolation_bestKin(){
       theHistograms->fill(Form("photon_dRZ_pt_%s_%s", phSt, phEta), ";#DeltaR(#gamma, Z);p_{T}^{#gamma};Events", edges_dR, ph_pt_bins, dR_Z, phPtValue, theWeight);
     }
   }
+}
+
+
+void VVGammaAnalyzer::orphanPhotonStudy(){
+  if(!theSampleInfo.isMC() || !bestKinPh_)
+    return;
+
+  // One photon per event
+  vector<Particle>::const_iterator gen_it;
+  gen_it = closestDeltaR(*bestKinPh_, *genPhotons_);
+
+  float dR;
+  if(gen_it != genPhotons_->cend() && (dR = deltaR(*gen_it, *bestKinPh_)) < 0.1){
+    theHistograms->fill("orphanPh_22_dR", "bestKinPh matched to genPhoton;#DeltaR(gen, #gamma);Events", 40,0.,0.4, dR, theWeight);
+    return;
+  }
+
+  // Any gen particle
+  gen_it = closestDeltaR(*bestKinPh_, *genParticles);
+  if(gen_it != genParticles->cend() && (dR = deltaR(*gen_it, *bestKinPh_)) < 0.4){
+    theHistograms->fill(Form("orphanPh_%d_dR", abs(gen_it->id())), "bestKinPh matched with genParticle;#DeltaR(gen, #gamma);Events", 40,0.,0.4, dR, theWeight);
+    return;
+  }
+
+  // GenJets
+  gen_it = closestDeltaR(*bestKinPh_, *genJets);
+  if(gen_it != genJets->cend() && (dR = deltaR(*gen_it, *bestKinPh_)) < 0.4){
+    theHistograms->fill(Form("orphanPh_%d_dR", abs(gen_it->id())), "bestKinPh matched with genJet;#DeltaR(gen, #gamma);Events", 40,0.,0.4, dR, theWeight);
+    return;
+  }
+
+  // If we're still here, these photons are not associated with anything; are they real?
+  auto closestLep = closestDeltaR(*bestKinPh_, *leptons_);
+  float dRlep = deltaR(*closestLep, *bestKinPh_);
+  theHistograms->fill("orphanPh_unmatched_pt"   , "bestKinPh unmatched;p_{T}^#gamma;Events"       , 40,20.,180., bestKinPh_->pt() , theWeight);
+  theHistograms->fill("orphanPh_unmatched_eta"  , "bestKinPh unmatched;#eta^#gamma;Events"        , 40,-2.4,2.4, bestKinPh_->eta(), theWeight);
+  theHistograms->fill("orphanPh_unmatched_dRlep", "bestKinPh unmatched;#DeltaR(#gamma, l);Events" , 40,0.,1.   , dRlep            , theWeight);
 }
 
 

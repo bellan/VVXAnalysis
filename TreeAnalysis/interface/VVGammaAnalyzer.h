@@ -157,6 +157,7 @@ private:
   void efficiency(const std::vector<PAR>& vRec, const std::vector<phys::Particle>& vGen, const char* recLabel, const char* genLabel, double tolerance=0.4);
   void photonIsolation(const std::vector<phys::Photon>&, const char*);
   void photonIsolation_bestKin();
+  void orphanPhotonStudy();  // study reco photons that are not matched to gen
   void systematicsStudy();
   void SYSplots(const char* syst, const double& weight, const phys::Photon*);
   void debug3Lregion();
