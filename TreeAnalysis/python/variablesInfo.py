@@ -154,7 +154,7 @@ def getVarInfo_VVGamma(region):
     VarInfo_VVGamma.update({
         'kinPhotons_cuts'      : {'title':'cut'      , 'unblind':True, 'logy':True},
         'kinPhotons_Nm1'       : {'title':'N-1 cuts' , 'unblind':True},
-        'kinPhotons_MVA'       : {'title':'MVA score', 'unblind':True}
+        'kinPhotons_MVA'       : {'title':'MVA score', 'unblind':True, 'logy':True}
         # 'kinPhRes_dR'          : {'title':'#DeltaR'  , 'unblind':False},
         # 'noKinPh_all_genPh_N'  : {'title': '# #gamma_{GEN}'     },
         # 'noKinPh_all_genPh_pt' : {'title': '#gamma_{GEN} p_{T}' },
@@ -193,7 +193,7 @@ def getVarInfo_VVGamma(region):
     VarInfo_VVGamma.update({
         'kinPh_central_N'     : {'title':'Number of #gamma_{kin}'  },
         # 'veryLoose_central_N' : {'title':'Number of #gamma_{loose}'},
-        'loose_central_N'     : {'title':'Number of #gamma_{tight}', 'unblind':False},
+        'loosePh_central_N'     : {'title':'Number of #gamma_{tight}', 'unblind':False},
         'kinPh_eScale_N'  : {'title':'Number of #gamma passing selection', 'rebin':1, 'unblind':True},
         'kinPhotons_ID': {'title':'#gamma ID'                         , 'rebin':1, 'unblind':True}
     })

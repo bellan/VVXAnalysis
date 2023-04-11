@@ -451,14 +451,17 @@ def getPassFailLtoT_noSubtract(sample, analyzer, year, region, method, fixNegBin
         
         hPASS = addIfExisting(h5p, h5n)
         hFAIL = addIfExisting(h3p, h3n, h4p, h4n)
-        assert hPASS, "Could't get the PASS LtoT MC histogram!"
-        assert hFAIL, "Could't get any of the FAIL LtoT MC histograms!"
+        if(not hPASS): print('Could not get the PASS LtoT histogram')
+        if(not hFAIL): print('Could not get any of the the FAIL LtoT histogram')
+        assert (hPASS and hFAIL), "Could't get the 2*3 LtoT MC histograms!"
     else:
         hPASSp, hFAILp = getPlots(path_in, sample['file'], [ 'PhFR_%s_prompt_%s'    % (method, s) for s in ['PASS', 'FAIL'] ] )
         hPASSn, hFAILn = getPlots(path_in, sample['file'], [ 'PhFR_%s_nonprompt_%s' % (method, s) for s in ['PASS', 'FAIL'] ] )
         
         hPASS = addIfExisting(hPASSp, hPASSn)
-        hFAIL = addIfExisting(hFAILp, hFAILp)
+        hFAIL = addIfExisting(hFAILp, hFAILn)
+        if(not hPASS): print('Could not get the PASS histogram')
+        if(not hFAIL): print('Could not get the FAIL histogram')
         assert (hPASS and hFAIL), "Could't get the 2*2 MC histograms!"
 
     if(sample.get('fixNegBins', False) and fixNegBins):
@@ -672,7 +675,8 @@ if __name__ == "__main__":
         "ZGToLLG"  : {"file": 'ZGToLLG', "title": "Z#gamma_{MC}", "fixNegBins": True},
         "Drell-Yan": {"file": 'DYJetsToLL_M50', "fixNegBins": True},
         "ZZTo4l"   : {"file": 'ZZTo4l', "fixNegBins": True},
-        "ggTo4l"   : {"file": 'ggTo4l', "fixNegBins": True}
+        "ggTo4l"   : {"file": 'ggTo4l', "fixNegBins": True},
+        "WZ"       : {"file": "WZTo3LNu", "fixNegBins":True}
     }
     for key, sample in sampleList.items():
         sample.setdefault("name" , key)
@@ -744,12 +748,10 @@ if __name__ == "__main__":
                 hm  = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, method=method, regex='2[me]\+m[PF]', year=args.year, pattern_printable='2x+m' , logx=True, fixNegBins=True)
                 hP  = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, method=method, regex='2[me]\+[em]P', year=args.year, pattern_printable='2x+P' , logx=True, fixNegBins=True)
                 hF  = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, method=method, regex='2[me]\+[em]F', year=args.year, pattern_printable='2x+F' , logx=True, fixNegBins=True)
-
                 heP = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, method=method, regex='2[me]\+eP'   , year=args.year, pattern_printable='2x+eP', logx=True, fixNegBins=True)
                 heF = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, method=method, regex='2[me]\+eF'   , year=args.year, pattern_printable='2x+eF', logx=True, fixNegBins=True)
                 hmP = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, method=method, regex='2[me]\+mP'   , year=args.year, pattern_printable='2x+mP', logx=True, fixNegBins=True)
                 hmF = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, method=method, regex='2[me]\+mF'   , year=args.year, pattern_printable='2x+mF', logx=True, fixNegBins=True)
-
                 h2e = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, method=method, regex='2e\+[em][PF]', year=args.year, pattern_printable='2e+x' , logx=True, fixNegBins=True)
                 h2m = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, method=method, regex='2m\+[em][PF]', year=args.year, pattern_printable='2m+x' , logx=True, fixNegBins=True)
 
@@ -762,10 +764,10 @@ if __name__ == "__main__":
                 hFR_LtoT_DY   = fakeRateLtoT(sampleList["Drell-Yan"]       , None, year=args.year, method=method, logx=True, fixNegBins=True)
                 hFR_LtoT_ZG   = fakeRateLtoT(sampleList["ZGToLLG"]         , None, year=args.year, method=method, logx=True, fixNegBins=True)
                 hFR_LtoT_ZZ   = fakeRateLtoT(sampleList["ZZTo4l"]          , None, year=args.year, method=method, logx=True, fixNegBins=True)
-                hFR_LtoT_ZZ_4P= fakeRateLtoT(sampleList["ZZTo4l"]          , None, year=args.year, method=method, logx=True, fixNegBins=True, region='SR4P')
+                # hFR_LtoT_ZZ_4P= fakeRateLtoT(sampleList["ZZTo4l"]          , None, year=args.year, method=method, logx=True, fixNegBins=True, region='SR4P')
                 hFR_LtoT_gg   = fakeRateLtoT(sampleList["ggTo4l"]          , None, year=args.year, method=method, logx=True, fixNegBins=True)
 
-                plotRatio(hFR_LtoT_ZZ_4P, hFR_LtoT_ZZ, picture_name="{}_ratio_ZZ4P_over_ZZCRLFR_{}".format(method, args.year), title="Ratio FR(ZZ_{4P})/FR(ZZ_{CRLFR})")
+                # plotRatio(hFR_LtoT_ZZ_4P, hFR_LtoT_ZZ, picture_name="{}_ratio_ZZ4P_over_ZZCRLFR_{}".format(method, args.year), title="Ratio FR(ZZ_{4P})/FR(ZZ_{CRLFR})")
             print()
 
         if(args.do_data and args.do_mc and not args.channels):
