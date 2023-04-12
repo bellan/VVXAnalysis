@@ -389,11 +389,17 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
             if typeofsample == 'all' or sample[0:4] == str(year):
                 if region == 'all':                
                     outputLocs = run(executable, analysis, sample, _all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight) # runs over all samples in all regions
+                    if(outputLocs is None):
+                        print "No output produced"
+                        return 1
                     for r,loc in outputLocs.items():
                         outputLocations.setdefault(r, []).append(loc)
 
                 else:
                     outputLocs = run(executable, analysis, sample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)      # runs over all samples in specific regions
+                    if(outputLocs is None):
+                        print "No output produced"
+                        return 1
                     for r,loc in outputLocs.items():
                         outputLocations.setdefault(r, []).append(loc)
 
@@ -410,6 +416,9 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
     else:
         if region == 'all':
             outputLocs = run(executable, analysis, typeofsample, _all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)   # runs over a specific sample in all signal/control regions
+            if(outputLocs is None):
+                print "No output produced"
+                return 1
             for r,loc in outputLocs.items():
                 outputLocations.setdefault(r, []).append(loc)
 
@@ -418,11 +427,15 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
            
         else:
             outputLocs = run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)        # runs over a specific sample in specific regions
+            if(outputLocs is None):
+                print "No output produced"
+                return 1
             for r,loc in outputLocs.items():
                 outputLocations.setdefault(r, []).append(loc)
 
             if region == 'CR4L' or region == 'CR_HZZ' or region == 'CR3L':
                 mergeCRs(analysis, year, outputLocations, region)
+    return 0
 
 ###------------------------------------------------------------------------------------###        
                 
@@ -430,6 +443,7 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
 ### Actual steering of the code ###
 ###################################
 
+runStatus = 0
 if year == 1618:
     for year in years:
         if options.csvfile is None:
@@ -443,7 +457,7 @@ if year == 1618:
         knownProcesses = typeOfSamples(csvfile)
         # knownProcesses.append('test')
         
-        runOverSamples(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, knownProcesses, doSF, unblind, nofr, forcePosWeight)
+        runStatus = runOverSamples(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, knownProcesses, doSF, unblind, nofr, forcePosWeight)
 
 elif year in years:
     if options.csvfile is None:
@@ -457,10 +471,10 @@ elif year in years:
     knownProcesses = typeOfSamples(csvfile)
     # knownProcesses.append('test')
 
-    runOverSamples(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, knownProcesses, doSF, unblind, nofr, forcePosWeight)
+    runStatus = runOverSamples(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, knownProcesses, doSF, unblind, nofr, forcePosWeight)
 
 else:
     print "Unknown year", year
     sys.exit(1)    
        
-print "\nJob status: ", OK("DONE"),"\n"
+print "\nJob status: ", OK("DONE") if runStatus == 0 else Red("FAILED"),"\n"
