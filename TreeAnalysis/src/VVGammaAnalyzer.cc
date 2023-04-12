@@ -1517,50 +1517,13 @@ void VVGammaAnalyzer::photonFakeRate_ABCD(){
   // Fake rate with ABCD
   char ABCD = phABCD(*bestG, wp);
 
-  const char* name = Form("PhFR_%c", ABCD);
+  const char* name;
   if(theSampleInfo.isMC())
-    name = Form("%s_%s", name, (isPrompt ? "prompt" : "nonprompt"));
+    name = Form("PhFR_%c_%s", ABCD, (isPrompt ? "prompt" : "nonprompt"));
+  else
+    name = Form("PhFR_%c_%s", ABCD, "data");
   
   theHistograms->fill(name, Form("Photons: %c;p_{T} [GeV/c];#eta", ABCD), ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
-  
-  // Fake rate with Loose-to-Tight (loose = 3/5 cutBasedIDLoose, tight = 5/5 cutBasedIDLoose)
-  int nPass = bestG->nCutsPass(wp);
-
-  name = Form("PhFR_LtoT_%d", nPass);
-  if(theSampleInfo.isMC())
-    name = Form("%s_%s", name, (isPrompt ? "prompt" : "nonprompt"));
-  
-  theHistograms->fill(name, "Photon fake rate with loose to tight;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
-
-  // Closure test
-  const char* varName;
-  double varValue;
-  if     (is4Lregion(region_)){
-    varName = "mZZG";
-    varValue = ( ZZ->p4() + bestG->p4() ).M();
-  }
-  else if(is3Lregion(region_)){
-    varName = "mWZG";
-    varValue = ( ZW->p4() + bestG->p4() ).M();
-  }
-  else
-    return;
-  
-  double f = getPhotonFR(*bestG); //photonScaleFactors_.fakeRate(*bestG);
-  double weight = theWeight * f/(1-f);
-  double fSF = f * getPhotonFRSF_LtoT(*bestG);
-  double weightSF = theWeight * fSF / (1-fSF);
-  // cout << region_ << ' ' << varName << "=" << varValue << "  theWeight=" << theWeight;
-  // cout << "  f=" << f << "  weight=" << weight << "  pt=" << bestG->pt() << "  eta=" << bestG->eta() << '\n';
-  
-  if     (nPass == 5)   // TIGHT           //bestG->cutBasedIDLoose()
-    theHistograms->fill(Form("PhFRClosure_LtoT_PASS_%s"      , varName), "Closure test: PASS"    , mVVG_bins, varValue, theWeight);
-  else if(nPass == 3 || nPass == 4){  // LOOSE && !TIGHT
-    theHistograms->fill(Form("PhFRClosure_LtoT_FAIL_%s"      , varName), "Closure test: FAIL"    , mVVG_bins, varValue, theWeight);
-    theHistograms->fill(Form("PhFRClosure_LtoT_reweighted_%s", varName), "Closure test: (3+4)*TF", mVVG_bins, varValue, weight   );
-    if(fileName.find("ZZTo4l") != std::string::npos || fileName.find("ggTo") != std::string::npos)
-      theHistograms->fill(Form("PhFRClosure_LtoT_reweigh-SF_%s", varName), "Closure test: (3+4)*TF*SF", mVVG_bins, varValue, weightSF );
-  }
 }
 
 
@@ -1586,16 +1549,15 @@ void VVGammaAnalyzer::photonFakeRate_LtoT(){
   bool isPassLoose = bestKinPh_->cutBasedIDLoose();
   const char* strPassVL = isPassVL ? "PASS" : "FAIL";
   const char* strPassLoose = isPassLoose ? "PASS" : "FAIL";
-  const char* strPrompt = "";
+  const char* strPrompt = "data";
   if(theSampleInfo.isMC()){
     bool isPrompt = std::any_of(genPhotonsPrompt_->begin(), genPhotonsPrompt_->end(),
                                 [this](const Particle& gen){ return physmath::deltaR(*bestKinPh_, gen) < 0.2; }
   				);
-    strPrompt = isPrompt ? "_prompt" : "_nonprompt";
+    strPrompt = isPrompt ? "prompt" : "nonprompt";
   }
 
   char phEtaRegion[4]; sprintf(phEtaRegion, bestKinPh_->isBarrel() ? "EB" : "EE");
-  float phPtValue = bestKinPh_->pt();
 
   // Closest lep
   std::vector<Lepton>::const_iterator closestLep = closestDeltaR(*bestKinPh_, *leptons_);
@@ -1611,46 +1573,47 @@ void VVGammaAnalyzer::photonFakeRate_LtoT(){
   char all_str[4]; sprintf(all_str, "all");
   char all_char = 'a';
   static vector<double> edges_dR {0., 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00};
+  if(dR_l > edges_dR.back()) dR_l = edges_dR.back() - 0.001;
 
   // PhFR_VLtoL
   if(isPassVL){
-    const char* name_VLtoL         = Form("PhFR_VLtoL%s_%s"            , strPrompt, strPassLoose);
+    const char* name_VLtoL         = Form("PhFR_VLtoL_pt-aeta_%s_%s"            , strPrompt, strPassLoose);
     theHistograms->fill(name_VLtoL        , "Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
-    const char* name_VLtoL_channel = Form("PhFR_VLtoL_%s%s_%s", channel, strPrompt, strPassLoose);
+    const char* name_VLtoL_channel = Form("PhFR_VLtoL_pt-aeta_%s_%s_%s", channel, strPrompt, strPassLoose);
     theHistograms->fill(name_VLtoL_channel, "Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
-  }
 
-  for(char* phEta : {all_str, phEtaRegion}){
-    for(char lepSt : {all_char, lepStatus}){
-      for(char lepFl : {all_char, lepFlavour}){
-	const char* name_byChannel = Form("PhFR_VLtoL-%c-%c-%s%s_%s"     ,
-					  lepSt,
-					  lepFl,
-					  phEta,
-					  strPrompt,
-					  strPassLoose
-					  );
-	theHistograms->fill(name_byChannel, "FR #gamma VL to L;#DeltaR(#gamma, l);p_{T}^{#gamma};Events", edges_dR, ph_pt_bins, dR_l, phPtValue, theWeight);
+    for(char* phEta : {all_str, phEtaRegion}){
+      for(char lepSt : {all_char, lepStatus}){
+	for(char lepFl : {all_char, lepFlavour}){
+	  const char* name_byChannel = Form("PhFR_VLtoL_pt-dRl_%c-%c-%s_%s_%s" ,
+					    lepSt,
+					    lepFl,
+					    phEta,
+					    strPrompt,
+					    strPassLoose
+					    );
+	  theHistograms->fill(name_byChannel, "FR #gamma VL to L;p_{T}^{#gamma};#DeltaR(#gamma, l);Events", ph_pt_bins, edges_dR, thePt, dR_l, theWeight);
+	}
       }
     }
   }
 
-
   // PhFR_KtoVL_[FAIL/PASS]
-  const char* name_KtoVL = Form("PhFR_KtoVL%s_%s", strPrompt, strPassVL);
-  theHistograms->fill(name_KtoVL, "Photon fake rate Kin to VeryLoose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
-  const char* name_KtoVL_channel = Form("PhFR_KtoVL_%s%s_%s", channel, strPrompt, strPassVL);  // something like PhFR_KtoVL_prompt_2m+eP_FAIL
+  const char* name_KtoVL         = Form("PhFR_KtoVL_pt-aeta_%s_%s"            , strPrompt, strPassVL);
+  const char* name_KtoVL_channel = Form("PhFR_KtoVL_pt-aeta_%s_%s_%s", channel, strPrompt, strPassVL);  // something like PhFR_KtoVL_pt-aeta_prompt_2m+eP_FAIL
+  theHistograms->fill(name_KtoVL        , "Photon fake rate Kin to VeryLoose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
   theHistograms->fill(name_KtoVL_channel, "Photon fake rate Kin to VeryLoose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
 
   // PhFR_KtoVLexcl_[FAIL/PASS]
   if(!isPassLoose){
-    const char* name_KtoVLexcl = Form("PhFR_KtoVLexcl%s_%s", strPrompt, strPassVL);
-    theHistograms->fill(name_KtoVLexcl, "Photon fake rate Kin to VeryLoose&&!Loose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
-    const char* name_KtoVLexcl_channel = Form("PhFR_KtoVLexcl_%s%s_%s", channel, strPrompt, strPassVL);
+    const char* name_KtoVLexcl         = Form("PhFR_KtoVLexcl_pt-aeta_%s_%s"            , strPrompt, strPassVL);
+    const char* name_KtoVLexcl_channel = Form("PhFR_KtoVLexcl_pt-aeta_%s_%s_%s", channel, strPrompt, strPassVL);
+    theHistograms->fill(name_KtoVLexcl        , "Photon fake rate Kin to VeryLoose&&!Loose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
     theHistograms->fill(name_KtoVLexcl_channel, "Photon fake rate Kin to VeryLoose&&!Loose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
   }
 
-  // Closure test
+
+  // ##### Closure tests #####
   const char* varName;
   double varValue;
   if     (is4Lregion(region_)){
@@ -1669,14 +1632,14 @@ void VVGammaAnalyzer::photonFakeRate_LtoT(){
     double f_VLtoL = getPhotonFR(*bestKinPh_); //getPhotonFR_VLtoL
     double weight_VLtoL = theWeight * f_VLtoL/(1-f_VLtoL);
     if(isPassLoose){
-      theHistograms->fill(Form("PhFRClosure_VLtoL_PASS_%s"         ,          varName), "Closure test VLtoL: PASS"   , mVVG_bins, varValue, theWeight   );
-      theHistograms->fill(Form("PhFRClosure_VLtoL_%s_PASS_%s"      , channel, varName), "Closure test VLtoL: PASS"   , mVVG_bins, varValue, theWeight   );
+      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_PASS_%s"         ,          varName), "Closure test VLtoL: PASS"   , mVVG_bins, varValue, theWeight   );
+      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_%s_PASS_%s"      , channel, varName), "Closure test VLtoL: PASS"   , mVVG_bins, varValue, theWeight   );
     }
     else{
-      theHistograms->fill(Form("PhFRClosure_VLtoL_FAIL_%s"         ,          varName), "Closure test VLtoL: FAIL"   , mVVG_bins, varValue, theWeight   );
-      theHistograms->fill(Form("PhFRClosure_VLtoL_reweighted_%s"   ,          varName), "Closure test VLtoL: FAIL*TF", mVVG_bins, varValue, weight_VLtoL);
-      theHistograms->fill(Form("PhFRClosure_VLtoL_%s_FAIL_%s"      , channel, varName), "Closure test VLtoL: FAIL"   , mVVG_bins, varValue, theWeight   );
-      theHistograms->fill(Form("PhFRClosure_VLtoL_%s_reweighted_%s", channel, varName), "Closure test VLtoL: FAIL*TF", mVVG_bins, varValue, weight_VLtoL);
+      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_FAIL_%s"         ,          varName), "Closure test VLtoL: FAIL"   , mVVG_bins, varValue, theWeight   );
+      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_reweighted_%s"   ,          varName), "Closure test VLtoL: FAIL*TF", mVVG_bins, varValue, weight_VLtoL);
+      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_%s_FAIL_%s"      , channel, varName), "Closure test VLtoL: FAIL"   , mVVG_bins, varValue, theWeight   );
+      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_%s_reweighted_%s", channel, varName), "Closure test VLtoL: FAIL*TF", mVVG_bins, varValue, weight_VLtoL);
     }
   }
 
@@ -1685,14 +1648,14 @@ void VVGammaAnalyzer::photonFakeRate_LtoT(){
   double weight_KtoVL = theWeight * f_KToVL/(1-f_KToVL);
   
   if(isPassVL){
-    theHistograms->fill(Form("PhFRClosure_KtoVL_PASS_%s"      , varName), "Closure test KtoVL: PASS"   , mVVG_bins, varValue, theWeight);
-    theHistograms->fill(Form("PhFRClosure_KtoVL_%s_PASS_%s"   , channel, varName), "Closure test KtoVL: PASS"   , mVVG_bins, varValue, theWeight);
+    theHistograms->fill(Form("PhFRClosure_KtoVL_pt-aeta_PASS_%s"      , varName), "Closure test KtoVL: PASS"   , mVVG_bins, varValue, theWeight);
+    theHistograms->fill(Form("PhFRClosure_KtoVL_pt-aeta_%s_PASS_%s"   , channel, varName), "Closure test KtoVL: PASS"   , mVVG_bins, varValue, theWeight);
   }
   else{
-    theHistograms->fill(Form("PhFRClosure_KtoVL_FAIL_%s"      , varName), "Closure test KtoVL: FAIL"   , mVVG_bins, varValue, theWeight);
-    theHistograms->fill(Form("PhFRClosure_KtoVL_reweighted_%s", varName), "Closure test KtoVL: FAIL*TF", mVVG_bins, varValue, weight_KtoVL);
-    theHistograms->fill(Form("PhFRClosure_KtoVL_%s_FAIL_%s"      , channel, varName), "Closure test KtoVL: FAIL"   , mVVG_bins, varValue, theWeight);
-    theHistograms->fill(Form("PhFRClosure_KtoVL_%s_reweighted_%s", channel, varName), "Closure test KtoVL: FAIL*TF", mVVG_bins, varValue, weight_KtoVL);
+    theHistograms->fill(Form("PhFRClosure_KtoVL_pt-aeta_FAIL_%s"      , varName), "Closure test KtoVL: FAIL"   , mVVG_bins, varValue, theWeight);
+    theHistograms->fill(Form("PhFRClosure_KtoVL_pt-aeta_reweighted_%s", varName), "Closure test KtoVL: FAIL*TF", mVVG_bins, varValue, weight_KtoVL);
+    theHistograms->fill(Form("PhFRClosure_KtoVL_pt-aeta_%s_FAIL_%s"      , channel, varName), "Closure test KtoVL: FAIL"   , mVVG_bins, varValue, theWeight);
+    theHistograms->fill(Form("PhFRClosure_KtoVL_pt-aeta_%s_reweighted_%s", channel, varName), "Closure test KtoVL: FAIL*TF", mVVG_bins, varValue, weight_KtoVL);
   }
   
   // Kin && !Loose --> VeryLoose && !Loose
@@ -1701,14 +1664,14 @@ void VVGammaAnalyzer::photonFakeRate_LtoT(){
     double weight_KtoVLexcl = theWeight * f_KtoVLexcl/(1-f_KtoVLexcl);
   
     if(isPassVL){
-      theHistograms->fill(Form("PhFRClosure_KtoVLexcl_PASS_%s"      , varName), "Closure test KtoVLexcl: PASS"   , mVVG_bins, varValue, theWeight);
-      theHistograms->fill(Form("PhFRClosure_KtoVLexcl_%s_PASS_%s"   , channel, varName), "Closure test KtoVLexcl: PASS"   , mVVG_bins, varValue, theWeight);
+      theHistograms->fill(Form("PhFRClosure_KtoVLexcl_pt-aeta_PASS_%s"      , varName), "Closure test KtoVLexcl: PASS"   , mVVG_bins, varValue, theWeight);
+      theHistograms->fill(Form("PhFRClosure_KtoVLexcl_pt-aeta_%s_PASS_%s"   , channel, varName), "Closure test KtoVLexcl: PASS"   , mVVG_bins, varValue, theWeight);
     }
     else{
-      theHistograms->fill(Form("PhFRClosure_KtoVLexcl_FAIL_%s"      , varName), "Closure test KtoVLexcl: FAIL"   , mVVG_bins, varValue, theWeight);
-      theHistograms->fill(Form("PhFRClosure_KtoVLexcl_reweighted_%s", varName), "Closure test KtoVLexcl: FAIL*TF", mVVG_bins, varValue, weight_KtoVLexcl);
-      theHistograms->fill(Form("PhFRClosure_KtoVLexcl_%s_FAIL_%s"      , channel, varName), "Closure test KtoVLexcl: FAIL"   , mVVG_bins, varValue, theWeight);
-      theHistograms->fill(Form("PhFRClosure_KtoVLexcl_%s_reweighted_%s", channel, varName), "Closure test KtoVLexcl: FAIL*TF", mVVG_bins, varValue, weight_KtoVLexcl);
+      theHistograms->fill(Form("PhFRClosure_KtoVLexcl_pt-aeta_FAIL_%s"      , varName), "Closure test KtoVLexcl: FAIL"   , mVVG_bins, varValue, theWeight);
+      theHistograms->fill(Form("PhFRClosure_KtoVLexcl_pt-aeta_reweighted_%s", varName), "Closure test KtoVLexcl: FAIL*TF", mVVG_bins, varValue, weight_KtoVLexcl);
+      theHistograms->fill(Form("PhFRClosure_KtoVLexcl_pt-aeta_%s_FAIL_%s"      , channel, varName), "Closure test KtoVLexcl: FAIL"   , mVVG_bins, varValue, theWeight);
+      theHistograms->fill(Form("PhFRClosure_KtoVLexcl_pt-aeta_%s_reweighted_%s", channel, varName), "Closure test KtoVLexcl: FAIL*TF", mVVG_bins, varValue, weight_KtoVLexcl);
     }
   }
 }
