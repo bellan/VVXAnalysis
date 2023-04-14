@@ -600,14 +600,14 @@ void VVGammaAnalyzer::analyze(){
   else if(LFR_lep){
     theHistograms->fill("ZL_mass"               , "m_{3l};GeV/c^{2}", 25,0.,500. , (ZL->first.p4()+ZL->second.p4()).M(), theWeight);
     theHistograms->fill("Z_mass"                , "m_{Z};GeV/c^{2}" , 35,55.,125., ZL->first.mass()                    , theWeight);
-    theHistograms->fill("Z_l0_pt"               , "p_{t,l00};GeV/c" , 20,0.,400. , ZL->first.daughter(0).pt()          , theWeight);
-    theHistograms->fill("Z_l1_pt"               , "p_{t,l00};GeV/c" , 20,0.,400. , ZL->first.daughter(1).pt()          , theWeight);
+    theHistograms->fill("Z_l0_pt"               , "p_{t,lZ0};GeV/c" , 20,0.,400. , ZL->first.daughter(0).pt()          , theWeight);
+    theHistograms->fill("Z_l1_pt"               , "p_{t,lZ1};GeV/c" , 20,0.,400. , ZL->first.daughter(1).pt()          , theWeight);
     theHistograms->fill("L_pt"                  , "p_{t,l3};GeV/c"  , 20,0.,400. , ZL->second.pt()                     , theWeight);
 
     theHistograms->fill("ZL_mass_" +channelReco_, "m_{3l};GeV/c^{2}", 25,0.,500. , (ZL->first.p4()+ZL->second.p4()).M(), theWeight);
     theHistograms->fill("Z_mass_"  +channelReco_, "m_{Z};GeV/c^{2}" , 35,55.,125., ZL->first.mass()                    , theWeight);
-    theHistograms->fill("Z_l0_pt_" +channelReco_, "p_{t,l00};GeV/c" , 20,0.,400. , ZL->first.daughter(0).pt()          , theWeight);
-    theHistograms->fill("Z_l1_pt_" +channelReco_, "p_{t,l00};GeV/c" , 20,0.,400. , ZL->first.daughter(1).pt()          , theWeight);
+    theHistograms->fill("Z_l0_pt_" +channelReco_, "p_{t,lZ0};GeV/c" , 20,0.,400. , ZL->first.daughter(0).pt()          , theWeight);
+    theHistograms->fill("Z_l1_pt_" +channelReco_, "p_{t,lZ1};GeV/c" , 20,0.,400. , ZL->first.daughter(1).pt()          , theWeight);
     theHistograms->fill("L_pt_"    +channelReco_, "p_{t,l3};GeV/c"  , 20,0.,400. , ZL->second.pt()                     , theWeight);
   }
   
@@ -808,6 +808,34 @@ void VVGammaAnalyzer::finish(){
   cout<<" End of VZZAnalyzer ";
   for(char i=0; i<25; ++i) cout<<'-';
   cout<<"\n\n";
+}
+
+
+bool VVGammaAnalyzer::canBeFSR(const Photon& ph, const vector<Lepton>& leptons) const{
+  // See: https://github.com/CJLST/ZZAnalysis/blob/Run2UL_22/AnalysisStep/plugins/LeptonPhotonMatcher.cc#L187-L250
+  float dRmin = 1.;
+  for(const Lepton& lep : leptons){
+    // See:
+    //   ZZAnalysis/AnalysisStep/test/MasterPy/ZZ4lAnalysis.py:321        :SIP =  "abs(dB('PV3D')/edB('PV3D')) < 4"
+    //   ZZAnalysis/AnalysisStep/test/MasterPy/ZZ4lAnalysis.py:396,481,509:        isSIP = cms.string(SIP),
+    if(! (lep.sip() < 4))
+      continue;
+
+    float dR = deltaR(ph, lep);
+    if(dR > 0.5)
+      continue;
+    else if(dR < dRmin)
+      dRmin = dR;
+  }
+
+  float pt = ph.pt();
+  if(dRmin < 0.5 && dRmin/(pt*pt) < 0.012){
+    // Check the relative isolation
+    // Trying to replicate https://github.com/CJLST/ZZAnalysis/blob/Run2UL_22/AnalysisStep/src/LeptonIsoHelper.cc#L210-245
+    return true;
+  }
+  else
+    return false;
 }
 
 
@@ -1275,6 +1303,10 @@ void VVGammaAnalyzer::photonHistos(){
 
 
 void VVGammaAnalyzer::jetHistos(){
+  bool haveKinPh   = bestKinPh_ != nullptr;
+  bool haveVLPh    = bestKinPh_ && bestKinPh_->cutBasedID(Photon::IdWp::VeryLoose);
+  bool haveLoosePh = bestKinPh_ && bestKinPh_->cutBasedID(Photon::IdWp::Loose    );
+
   // JetsAK8
   theHistograms->fill("AK8_N" , "# jets AK8", 6, -0.5, 5.5, jetsAK8->size(), theWeight);
   for(const Jet& jet : *jetsAK8)
@@ -1301,6 +1333,10 @@ void VVGammaAnalyzer::jetHistos(){
   
   // Jets AK4
   theHistograms->fill("AK4_N" , "# jets AK4", 6, -0.5, 5.5, jets->size(), theWeight);
+  if(haveKinPh  ) theHistograms->fill("AK4_N_KinPh"   , "# jets AK4 when there is a Kin photon"  , 6, -0.5, 5.5, jets->size(), theWeight);
+  if(haveVLPh   ) theHistograms->fill("AK4_N_VLPh"    , "# jets AK4 when there is a VL photon"   , 6, -0.5, 5.5, jets->size(), theWeight);
+  if(haveLoosePh) theHistograms->fill("AK4_N_LoosePh" , "# jets AK4 when there is a Loose photon", 6, -0.5, 5.5, jets->size(), theWeight);
+
   for(const Jet& jet : *jets)
     theHistograms->fill("AK4_pt", "p_{T} jets AK4;GeV/c", 50, 0., 500., jet.pt(), theWeight);
 
@@ -1536,13 +1572,15 @@ void VVGammaAnalyzer::photonFakeRate_LtoT(){
   if(thePt > ph_pt_bins.back())
     thePt = ph_pt_bins.back() - 0.1;
 
+  char phFSRch = canBeFSR(*bestKinPh_, *leptons_) ? 'Y' : 'N';
+
   char channel[8]; int e;
   if(region_ == CRLFR){
     bool lepPass = ZL->second.passFullSel();
-    e = snprintf(channel, 8, "%s%c", channelReco_.c_str(), lepPass ? 'P' : 'F');
+    e = snprintf(channel, 8, "%s%c-%c", channelReco_.c_str(), lepPass ? 'P' : 'F', phFSRch);
   }
   else
-    e = snprintf(channel, 8, "%s", channelReco_.c_str());
+    e = snprintf(channel, 8, "%s-%c", channelReco_.c_str(), phFSRch);
   if(!(e >= 0 && e < 8)) std::cerr << "WARN: problem encoding channel string\n";
 
   bool isPassVL = bestKinPh_->cutBasedID(Photon::IdWp::VeryLoose);
@@ -1582,17 +1620,25 @@ void VVGammaAnalyzer::photonFakeRate_LtoT(){
     const char* name_VLtoL_channel = Form("PhFR_VLtoL_pt-aeta_%s_%s_%s", channel, strPrompt, strPassLoose);
     theHistograms->fill(name_VLtoL_channel, "Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
 
-    for(char* phEta : {all_str, phEtaRegion}){
-      for(char lepSt : {all_char, lepStatus}){
-	for(char lepFl : {all_char, lepFlavour}){
-	  const char* name_byChannel = Form("PhFR_VLtoL_pt-dRl_%c-%c-%s_%s_%s" ,
-					    lepSt,
-					    lepFl,
-					    phEta,
-					    strPrompt,
-					    strPassLoose
-					    );
-	  theHistograms->fill(name_byChannel, "FR #gamma VL to L;p_{T}^{#gamma};#DeltaR(#gamma, l);Events", ph_pt_bins, edges_dR, thePt, dR_l, theWeight);
+    const char* name_VLtoL_dRl        = Form("PhFR_VLtoL_pt-dRl_%s_%s"             , strPrompt, strPassLoose);
+    theHistograms->fill(name_VLtoL_dRl        ,"Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#DeltaR(#gamma, l);Events", ph_pt_bins,edges_dR, thePt, dR_l, theWeight);
+    const char* name_VLtoL_dRl_channel = Form("PhFR_VLtoL_pt-dRl_%s_%s_%s", channel, strPrompt, strPassLoose);
+    theHistograms->fill(name_VLtoL_dRl_channel,"Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#DeltaR(#gamma, l);Events", ph_pt_bins,edges_dR, thePt, dR_l, theWeight);
+
+    for(char lepSt : {all_char, lepStatus}){
+      for(char lepFl : {all_char, lepFlavour}){
+	for(char* phEta : {all_str, phEtaRegion}){
+	  for(char phFSR : {all_char, phFSRch}){
+	    const char* name_byChannel = Form("PhFR_VLtoL_pt-dRl_%c-%c-%s-%c_%s_%s" ,
+					      lepSt,
+					      lepFl,
+					      phEta,
+					      phFSR,
+					      strPrompt,
+					      strPassLoose
+					      );
+	    theHistograms->fill(name_byChannel, "FR #gamma VL to L;p_{T}^{#gamma};#DeltaR(#gamma, l);Events", ph_pt_bins, edges_dR, thePt, dR_l, theWeight);
+	  }
 	}
       }
     }
@@ -1875,35 +1921,78 @@ void VVGammaAnalyzer::orphanPhotonStudy(){
     return;
 
   // One photon per event
+  bool isPassVL    = bestKinPh_->cutBasedID(Photon::IdWp::VeryLoose);
+  bool isPassLoose = bestKinPh_->cutBasedID(Photon::IdWp::Loose    );
+
   vector<Particle>::const_iterator gen_it;
   gen_it = closestDeltaR(*bestKinPh_, *genPhotons_);
 
   float dR;
   if(gen_it != genPhotons_->cend() && (dR = deltaR(*gen_it, *bestKinPh_)) < 0.1){
-    theHistograms->fill("orphanPh_22_dR", "bestKinPh matched to genPhoton;#DeltaR(gen, #gamma);Events", 40,0.,0.4, dR, theWeight);
+    float pr = bestKinPh_->p() / gen_it->p();  // p-ratio
+    theHistograms->fill("orphanKin_22_dR", "bestKinPh matched to genPhoton;#DeltaR(gen, #gamma);Events", 40,0.,0.4, dR, theWeight);
+    theHistograms->fill("orphanKin_22_pr", "bestKinPh matched to genPhoton;p^{#gamma}/p^{GEN};Events"  , 40,0.,2. , pr, theWeight);
+    if(isPassVL){
+      theHistograms->fill("orphanVL_22_dR", "bestVLPh matched to genPhoton;#DeltaR(gen, #gamma);Events", 40,0.,0.4, dR, theWeight);
+      theHistograms->fill("orphanVL_22_dR", "bestVLPh matched to genPhoton;p^{#gamma}/p^{GEN};Events"  , 40,0.,2. , pr, theWeight);
+    }
+    if(isPassLoose){
+      theHistograms->fill("orphanLoose_22_dR", "bestLoosePh matched to genPhoton;#DeltaR(gen, #gamma);Events", 40,0.,0.4, dR, theWeight);
+      theHistograms->fill("orphanLoose_22_pr", "bestLoosePh matched to genPhoton;p^{#gamma}/p^{GEN};Events"  , 40,0.,2. , pr, theWeight);
+    }
     return;
   }
 
   // Any gen particle
   gen_it = closestDeltaR(*bestKinPh_, *genParticles);
   if(gen_it != genParticles->cend() && (dR = deltaR(*gen_it, *bestKinPh_)) < 0.4){
-    theHistograms->fill(Form("orphanPh_%d_dR", abs(gen_it->id())), "bestKinPh matched with genParticle;#DeltaR(gen, #gamma);Events", 40,0.,0.4, dR, theWeight);
+    float pr = bestKinPh_->p() / gen_it->p();  // p-ratio
+    theHistograms->fill(Form("orphanKin_%d_dR", abs(gen_it->id())), "bestKinPh matched with genParticle;#DeltaR(gen, #gamma);Events", 40,0.,0.4, dR, theWeight);
+    theHistograms->fill(Form("orphanKin_%d_pr", abs(gen_it->id())), "bestKinPh matched with genParticle;p^{#gamma}/p^{GEN};Events"  , 40,0.,2. , pr, theWeight);
+    if(isPassVL){
+      theHistograms->fill(Form("orphanVL_%d_dR", abs(gen_it->id())), "bestVLPh matched with genParticle;#DeltaR(gen, #gamma);Events", 40,0.,0.4, dR, theWeight);
+      theHistograms->fill(Form("orphanVL_%d_pr", abs(gen_it->id())), "bestVLPh matched with genParticle;p^{#gamma}/p^{GEN};Events"  , 40,0.,2. , pr, theWeight);
+    }
+    if(isPassLoose){
+      theHistograms->fill(Form("orphanLoose_%d_dR", abs(gen_it->id())), "bestLoosePh matched with genParticle;#DeltaR(gen, #gamma);Events", 40,0.,0.4, dR, theWeight);
+      theHistograms->fill(Form("orphanLoose_%d_pr", abs(gen_it->id())), "bestLoosePh matched with genParticle;p^{#gamma}/p^{GEN};Events"  , 40,0.,2. , pr, theWeight);
+    }
     return;
   }
 
   // GenJets
   gen_it = closestDeltaR(*bestKinPh_, *genJets);
   if(gen_it != genJets->cend() && (dR = deltaR(*gen_it, *bestKinPh_)) < 0.4){
-    theHistograms->fill(Form("orphanPh_%d_dR", abs(gen_it->id())), "bestKinPh matched with genJet;#DeltaR(gen, #gamma);Events", 40,0.,0.4, dR, theWeight);
+    float pr = bestKinPh_->p() / gen_it->p();  // p-ratio
+    theHistograms->fill(Form("orphanKin_%d_dR", abs(gen_it->id())), "bestKinPh matched with genJet;#DeltaR(gen, #gamma);Events", 40,0.,0.4, dR, theWeight);
+    theHistograms->fill(Form("orphanKin_%d_pr", abs(gen_it->id())), "bestKinPh matched with genJet;p^{#gamma}/p^{GEN};Events"  , 40,0.,2.0, pr, theWeight);
+    if(isPassVL){
+      theHistograms->fill(Form("orphanVL_%d_dR", abs(gen_it->id())), "bestVLPh matched with genJet;#DeltaR(gen, #gamma);Events", 40,0.,0.4, dR, theWeight);
+      theHistograms->fill(Form("orphanVL_%d_pr", abs(gen_it->id())), "bestVLPh matched with genJet;p^{#gamma}/p^{GEN};Events"  , 40,0.,2.0, pr, theWeight);
+    }
+    if(isPassLoose){
+      theHistograms->fill(Form("orphanLoose_%d_dR", abs(gen_it->id())), "bestLoosePh matched with genJet;#DeltaR(gen, #gamma);Events", 40,0.,0.4, dR, theWeight);
+      theHistograms->fill(Form("orphanLoose_%d_pr", abs(gen_it->id())), "bestLoosePh matched with genJet;p^{#gamma}/p^{GEN};Events"  , 40,0.,2.0, pr, theWeight);
+    }
     return;
   }
 
   // If we're still here, these photons are not associated with anything; are they real?
   auto closestLep = closestDeltaR(*bestKinPh_, *leptons_);
   float dRlep = deltaR(*closestLep, *bestKinPh_);
-  theHistograms->fill("orphanPh_unmatched_pt"   , "bestKinPh unmatched;p_{T}^#gamma;Events"       , 40,20.,180., bestKinPh_->pt() , theWeight);
-  theHistograms->fill("orphanPh_unmatched_eta"  , "bestKinPh unmatched;#eta^#gamma;Events"        , 40,-2.4,2.4, bestKinPh_->eta(), theWeight);
-  theHistograms->fill("orphanPh_unmatched_dRlep", "bestKinPh unmatched;#DeltaR(#gamma, l);Events" , 40,0.,1.   , dRlep            , theWeight);
+  theHistograms->fill("orphanKin_unmatched_pt"   , "bestKinPh unmatched;p_{T}^#gamma;Events"       , 40,20.,180., bestKinPh_->pt() , theWeight);
+  theHistograms->fill("orphanKin_unmatched_eta"  , "bestKinPh unmatched;#eta^#gamma;Events"        , 40,-2.4,2.4, bestKinPh_->eta(), theWeight);
+  theHistograms->fill("orphanKin_unmatched_dRlep", "bestKinPh unmatched;#DeltaR(#gamma, l);Events" , 40,0.,1.   , dRlep            , theWeight);
+  if(isPassVL){
+      theHistograms->fill("orphanVL_unmatched_pt"   , "bestVLPh unmatched;p_{T}^#gamma;Events"       , 40,20.,180., bestKinPh_->pt() , theWeight);
+      theHistograms->fill("orphanVL_unmatched_eta"  , "bestVLPh unmatched;#eta^#gamma;Events"        , 40,-2.4,2.4, bestKinPh_->eta(), theWeight);
+      theHistograms->fill("orphanVL_unmatched_dRlep", "bestVLPh unmatched;#DeltaR(#gamma, l);Events" , 40,0.,1.   , dRlep            , theWeight);
+  }
+  if(isPassLoose){
+      theHistograms->fill("orphanLoose_unmatched_pt"   , "bestLoosePh unmatched;p_{T}^#gamma;Events"       , 40,20.,180., bestKinPh_->pt() , theWeight);
+      theHistograms->fill("orphanLoose_unmatched_eta"  , "bestLoosePh unmatched;#eta^#gamma;Events"        , 40,-2.4,2.4, bestKinPh_->eta(), theWeight);
+      theHistograms->fill("orphanLoose_unmatched_dRlep", "bestLoosePh unmatched;#DeltaR(#gamma, l);Events" , 40,0.,1.   , dRlep            , theWeight);
+  }
 }
 
 

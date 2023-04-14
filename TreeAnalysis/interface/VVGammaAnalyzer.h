@@ -169,6 +169,8 @@ private:
   void endNameHistos();
  	
   // Utilities
+  bool canBeFSR(const phys::Photon&, const std::vector<phys::Lepton>&) const;
+
   template <class T, class UnaryPredicate>
   static std::vector<phys::Boson<T>> makeBosons(const std::vector<T>&, UnaryPredicate); //predicate acts on the newly made bosons
   void initCherryPick();
