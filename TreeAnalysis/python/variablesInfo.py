@@ -30,12 +30,12 @@ def getVarInfo_VVGamma(region):
             'Z0_l1_pt': {'title':'p_{T}^{Z0, l1}'},
             'Z1_l0_pt': {'title':'p_{T}^{Z1, l0}'},
             'Z1_l1_pt': {'title':'p_{T}^{Z1, l1}'},
-            'PhFRClosure_LtoT_PASS_mZZG'     : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG},
-            'PhFRClosure_KtoVL_PASS_mZZG'    : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG},
-            'PhFRClosure_KtoVLexcl_PASS_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG},
-            'PhFRClosure_LtoT_FAIL_mZZG'     : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG},
-            'PhFRClosure_KtoVL_FAIL_mZZG'    : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG},
-            'PhFRClosure_KtoVLexcl_FAIL_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG}  #This is probably the same as the previous one
+            'PhFRClosure_LtoT_pt-aeta_PASS_mZZG'     : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG},
+            'PhFRClosure_KtoVL_pt-aeta_PASS_mZZG'    : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG},
+            'PhFRClosure_KtoVLexcl_pt-aeta_PASS_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG},
+            'PhFRClosure_LtoT_pt-aeta_FAIL_mZZG'     : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG},
+            'PhFRClosure_KtoVL_pt-aeta_FAIL_mZZG'    : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG},
+            'PhFRClosure_KtoVLexcl_pt-aeta_FAIL_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG}  #This is probably the same as the previous one
         })
         
         for name, title in [('4e','4e'), ('2e2m', '2e2\mu'), ('4m', '4\mu')]:
@@ -74,12 +74,12 @@ def getVarInfo_VVGamma(region):
             # 'paperSel_W_l_pt'   : {'title':'p_{t,l10} [GeV/c]'   },
             # 'paperSel_W_MET_pt' : {'title':'p_{t,MET} [GeV/c]'   },
             # 'paperSel_lll_mass' : {'title':'m_{lll} [GeV/c^{2}]' },
-            'PhFRClosure_LtoT_PASS_mWZG'     : {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':False},
-            'PhFRClosure_KtoVL_PASS_mWZG'    : {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':False},
-            'PhFRClosure_KtoVLexcl_PASS_mWZG': {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':True },
-            'PhFRClosure_LtoT_FAIL_mWZG'     : {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':True },
-            'PhFRClosure_KtoVL_FAIL_mWZG'    : {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':True },
-            'PhFRClosure_KtoVLexcl_FAIL_mWZG': {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':True }
+            'PhFRClosure_LtoT_pt-aeta_PASS_mWZG'     : {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':False},
+            'PhFRClosure_KtoVL_pt-aeta_PASS_mWZG'    : {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':False},
+            'PhFRClosure_KtoVLexcl_pt-aeta_PASS_mWZG': {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':True },
+            'PhFRClosure_LtoT_pt-aeta_FAIL_mWZG'     : {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':True },
+            'PhFRClosure_KtoVL_pt-aeta_FAIL_mWZG'    : {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':True },
+            'PhFRClosure_KtoVLexcl_pt-aeta_FAIL_mWZG': {'title':'m_{WZ#gamma} [GeV/c^{2}]', 'unblind':True }
             # 'debug3L_l1_FRSF': {'title':'FR(l_{1})' }
             # 'debug3L_l2_FRSF': {'title':'FR(l_{2})' }
             # 'debug3L_l3_FRSF': {'title':'FR(l_{3})' }
@@ -133,15 +133,15 @@ def getVarInfo_VVGamma(region):
             'ZG_mass_failPh'     : {'title':'m_{2\ell\gamma}\:,\ \gamma loose\,\land\:!tight', 'logy':True },
             'ZG_mass_loosePh'    : {'title':'m_{2\ell\gamma}\:,\ \gamma\:tight'              , 'logy':True, 'unblind':False}
             ,
-            'ZjjG_mass_'         : {'title':'m_{2\elljj\gamma}\:,\ \gamma\:kin'                , 'logy':True },
-            'ZjjG_mass_'         : {'title':'m_{2\elljj\gamma}\:,\ \gamma\:loose'              , 'logy':True },
-            'ZjjG_mass_'         : {'title':'m_{2\elljj\gamma}\:,\ \gamma loose\,\land\:!tight', 'logy':True },
-            'ZjjG_mass_'         : {'title':'m_{2\elljj\gamma}\:,\ \gamma\:tight'              , 'logy':True, 'unblind':False}
+            'ZjjG_mass_kinPh'      : {'title':'m_{2\elljj\gamma}\:,\ \gamma\:kin'                , 'logy':True },
+            'ZjjG_mass_veryLoosePh': {'title':'m_{2\elljj\gamma}\:,\ \gamma\:loose'              , 'logy':True },
+            'ZjjG_mass_failPh'     : {'title':'m_{2\elljj\gamma}\:,\ \gamma loose\,\land\:!tight', 'logy':True },
+            'ZjjG_mass_loosePh'    : {'title':'m_{2\elljj\gamma}\:,\ \gamma\:tight'              , 'logy':True, 'unblind':False}
             ,
-            'ZJG_mass_'          : {'title':'m_{2\ellJ\gamma}\:,\ \gamma\:kin'                , 'logy':True },
-            'ZJG_mass_'          : {'title':'m_{2\ellJ\gamma}\:,\ \gamma\:loose'              , 'logy':True },
-            'ZJG_mass_'          : {'title':'m_{2\ellJ\gamma}\:,\ \gamma loose\,\land\:!tight', 'logy':True },
-            'ZJG_mass_'          : {'title':'m_{2\ellJ\gamma}\:,\ \gamma\:tight'              , 'logy':True, 'unblind':False}
+            'ZJG_mass_kinPh'      : {'title':'m_{2\ellJ\gamma}\:,\ \gamma\:kin'                , 'logy':True },
+            'ZJG_mass_veryLoosePh': {'title':'m_{2\ellJ\gamma}\:,\ \gamma\:loose'              , 'logy':True },
+            'ZJG_mass_failPh'     : {'title':'m_{2\ellJ\gamma}\:,\ \gamma loose\,\land\:!tight', 'logy':True },
+            'ZJG_mass_loosePh'    : {'title':'m_{2\ellJ\gamma}\:,\ \gamma\:tight'              , 'logy':True, 'unblind':False}
         })
         for Vhad in ['VToJ']:
             for classifier in ['PNet', 'deepAK8', 'deepAK8MD']:
@@ -149,6 +149,15 @@ def getVarInfo_VVGamma(region):
                     VarInfo_VVGamma.update({
                         '%s_%s_%s'%(Vhad, classifier, discriminant): {'title': discriminant+' '+classifier, 'rebin':2, 'logy':True, 'unblind':True}
                     })
+
+    elif(region == 'CRLFR'):
+        VarInfo_VVGamma.update({
+            'ZL_mass' :{'title': 'm_{3l} [GeV/c^{2}]'},
+            'Z_mass'  :{'title': 'm_{Z} [GeV/c^{2}]' },
+            'Z_l0_pt' :{'title': 'p_{t,lZ0} [GeV/c]' },
+            'Z_l1_pt' :{'title': 'p_{t,lZ1} [GeV/c]' },
+            'L_pt'    :{'title': 'p_{t,l3} [GeV/c]'  }
+        })
     
     # Photon stuff
     VarInfo_VVGamma.update({
@@ -182,7 +191,7 @@ def getVarInfo_VVGamma(region):
         VarInfo_VVGamma.update({
             'kinPh_sieie_' +e: {'title':'#sigma_{i#etai#eta}', 'rebin':1, 'unblind':True, 'logy':True},
             'kinPh_HoverE_'+e: {'title':'HoverE'             , 'rebin':2, 'unblind':True, 'logy':True},
-            'kinPh_chIso_' +e: {'title':'chIso'              , 'rebin':1, 'unblind':True, 'logy':True, 'logx':True},
+            'kinPh_chIso_' +e: {'title':'chIso'              , 'rebin':1, 'unblind':True, 'logy':True},# 'logx':True},
             'kinPh_neIso_' +e: {'title':'neIso'              , 'rebin':2, 'unblind':True, 'logy':True},
             'kinPh_phIso_' +e: {'title':'phIso'              , 'rebin':2, 'unblind':True, 'logy':True}
         })

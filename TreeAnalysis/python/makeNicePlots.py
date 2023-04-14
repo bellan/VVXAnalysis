@@ -110,7 +110,7 @@ OutputDir  = options.outputDir if options.outputDir.startswith("/") else os.path
 Analysis   = options.Analysis
 year       = options.year
 
-InputDir   = os.path.join('results', year, Analysis+'_'+region, '')
+InputDir   = os.path.join('results_EXT', year, Analysis+'_'+region, '')
 OutputDir  = os.path.join(OutputDir, Analysis, year, predType, region, "")  # Last "" ensures a trailing '/' is appended to path
 try:
     os.stat(OutputDir)
@@ -306,7 +306,8 @@ for Var in variables:
     # hArea.SetFillColor(ROOT.kGray)
     # hArea.Draw("E3")
     
-    histodata.GetXaxis().SetTitle(info['title'])
+    if(info.get('title')):
+        histodata.GetXaxis().SetTitle(info['title'])
     histodata.GetXaxis().SetLabelSize(0.08)
     histodata.GetYaxis().SetLabelSize(0.08)
     histodata.GetXaxis().SetTitleSize(0.08)
