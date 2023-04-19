@@ -165,12 +165,9 @@ void VVGammaAnalyzer::initEvent(){
     if(fsrIndex.test(0)) fsrPhotons_->push_back(bos.fsrPhoton(0));
     if(fsrIndex.test(1)) fsrPhotons_->push_back(bos.fsrPhoton(1));
 
-    auto closestPh = closestDeltaR(ZL->second, *photons);
-    if(closestPh != photons->cend()){
-      float dR = deltaR(ZL->second, *closestPh);
-      float pt = closestPh->pt();
-      if(dR < 0.5 && dR/(pt*pt) < 0.012)
-	fsrPhotons_->push_back(*closestPh);
+    for(auto ph : *photons){
+      if(canBeFSR(ph, std::vector<Lepton> {ZL->second}))
+	fsrPhotons_->push_back(ph);
     }
   }
   else if(is2Lregion(region_) || region_ == MC){
@@ -184,14 +181,9 @@ void VVGammaAnalyzer::initEvent(){
     // if(fsrIndex.test(1)) fsrPhotons_->push_back(bos.fsrPhoton(1));
 
     // By hand for now
-    for(auto lep : *leptons_){
-      auto closestPh = closestDeltaR(lep, *photons);
-      if(closestPh != photons->cend()){
-	float dR = deltaR(ZL->second, *closestPh);
-	float pt = closestPh->pt();
-	if(dR < 0.5 && dR/(pt*pt) < 0.012)
-	  fsrPhotons_->push_back(*closestPh);
-      }
+    for(auto ph : *photons){
+      if(canBeFSR(ph, *leptons_))
+	fsrPhotons_->push_back(ph);
     }
   }
 
@@ -236,7 +228,7 @@ void VVGammaAnalyzer::initEvent(){
 
     // Remove photons that were used for FSR
     auto closestFSR = closestDeltaR(ph, *fsrPhotons_);
-    if(closestFSR != leptons_->cend() && deltaR(ph, *closestFSR) < 1e-3)
+    if(closestFSR != fsrPhotons_->cend() && deltaR(ph, *closestFSR) < 1e-3)
       continue;
 
     if(ph.pt() > 20){
@@ -914,10 +906,15 @@ bool VVGammaAnalyzer::canBeFSR(const Photon& ph, const vector<Lepton>& leptons) 
     if(! (lep.sip() < 4))
       continue;
 
+    // Preliminary check to save the next computations
     float dR = deltaR(ph, lep);
     if(dR > 0.5)
       continue;
-    else if(dR < dRmin)
+
+    // Undo the FSR correction and check again
+    TLorentzVector lepUncorrected = lep.p4() - ph.p4();
+    dR = deltaR(lepUncorrected, ph.p4());
+    if(dR < 0.5 && dR < dRmin)
       dRmin = dR;
   }
 
