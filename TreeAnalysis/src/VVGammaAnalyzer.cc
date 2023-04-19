@@ -118,39 +118,90 @@ void VVGammaAnalyzer::begin(){
 void VVGammaAnalyzer::initEvent(){
   // Cleanup
   leptons_    ->clear();
+  fsrPhotons_ ->clear();
   for(auto const& it: kinPhotons_ )  it.second->clear();
   for(auto const& it: loosePhotons_) it.second->clear();
   for(auto const& it: goodPhotons_)  it.second->clear();
   candVTojj_ = Boson<Jet>();
   candVToJ_ = Jet();
 
-  // Contruct vector with leptons from dibosons
-  if     (is4Lregion(region_) || (region_ == MC && ZZ && ZZ->pt() > 0.001))
+  // Contruct vector with leptons from dibosons and FSR photons
+  if     (is4Lregion(region_) || (region_ == MC && ZZ && ZZ->pt() > 0.001)){
     leptons_->insert(leptons_->end(), {
     	  ZZ->first().daughter(0), 
     	  ZZ->first().daughter(1), 
     	  ZZ->second().daughter(0), 
     	  ZZ->second().daughter(1)
         });
-  else if(is3Lregion(region_) || (region_ == MC && ZW && ZW->pt() > 0.001))
+
+    for(auto bos : {ZZ->first(), ZZ->second()}){
+      std::bitset<2> fsrIndex = std::bitset<2>(bos.daughtersWithFSR());
+      if(fsrIndex.test(0)) fsrPhotons_->push_back(bos.fsrPhoton(0));
+      if(fsrIndex.test(1)) fsrPhotons_->push_back(bos.fsrPhoton(1));
+    }
+  }
+  else if(is3Lregion(region_) || (region_ == MC && ZW && ZW->pt() > 0.001)){
     leptons_->insert(leptons_->end(), {
   	  ZW->first().daughter(0), 
   	  ZW->first().daughter(1), 
   	  ZW->second().daughter(0)
 	});
-  else if(region_ == CRLFR || (region_ == MC && ZL && ZL->first.pt() > 0.001))
+
+    for(auto bos : {ZW->first(), ZW->second()}){
+      std::bitset<2> fsrIndex = std::bitset<2>(bos.daughtersWithFSR());
+      if(fsrIndex.test(0)) fsrPhotons_->push_back(bos.fsrPhoton(0));
+      if(fsrIndex.test(1)) fsrPhotons_->push_back(bos.fsrPhoton(1));
+    }
+  }
+  else if(region_ == CRLFR || (region_ == MC && ZL && ZL->first.pt() > 0.001)){
     leptons_->insert(leptons_->end(), {
   	  ZL->first.daughter(0),
   	  ZL->first.daughter(1),
   	  ZL->second
 	});
+
+    const Boson<Lepton>& bos = ZL->first;
+    std::bitset<2> fsrIndex = std::bitset<2>(bos.daughtersWithFSR());
+    if(fsrIndex.test(0)) fsrPhotons_->push_back(bos.fsrPhoton(0));
+    if(fsrIndex.test(1)) fsrPhotons_->push_back(bos.fsrPhoton(1));
+
+    auto closestPh = closestDeltaR(ZL->second, *photons);
+    if(closestPh != photons->cend()){
+      float dR = deltaR(ZL->second, *closestPh);
+      float pt = closestPh->pt();
+      if(dR < 0.5 && dR/(pt*pt) < 0.012)
+	fsrPhotons_->push_back(*closestPh);
+    }
+  }
   else if(is2Lregion(region_) || region_ == MC){
     leptons_->insert(leptons_->cend(), electrons->begin(), electrons->end());
     leptons_->insert(leptons_->cend(),     muons->begin(),     muons->end());
+
+    // Correct method for when we'll have ntuples with ZCand filled correctly
+    // const Boson<Lepton>& bos = *Z;
+    // std::bitset<2> fsrIndex = std::bitset<2>(bos.daughtersWithFSR());
+    // if(fsrIndex.test(0)) fsrPhotons_->push_back(bos.fsrPhoton(0));
+    // if(fsrIndex.test(1)) fsrPhotons_->push_back(bos.fsrPhoton(1));
+
+    // By hand for now
+    for(auto lep : *leptons_){
+      auto closestPh = closestDeltaR(lep, *photons);
+      if(closestPh != photons->cend()){
+	float dR = deltaR(ZL->second, *closestPh);
+	float pt = closestPh->pt();
+	if(dR < 0.5 && dR/(pt*pt) < 0.012)
+	  fsrPhotons_->push_back(*closestPh);
+      }
+    }
   }
 
   
   // Photon selection
+  unsigned int nKinPh_0p07 (0), nVLPh_0p07 (0), nLoosePh_0p07 (0);
+  unsigned int nKinPh_0p5  (0), nVLPh_0p5  (0), nLoosePh_0p5  (0);
+  unsigned int nKinPh_0p7  (0), nVLPh_0p7  (0), nLoosePh_0p7  (0);
+  unsigned int nKinPh_noFSR(0), nVLPh_noFSR(0), nLoosePh_noFSR(0);
+
   for(auto ph : *photons){
     //Pixel seed and electron veto
     if(ph.hasPixelSeed() || !ph.passElectronVeto()) continue;
@@ -161,17 +212,40 @@ void VVGammaAnalyzer::initEvent(){
     if(ph_aeta > 2.4) continue;
     if(ph_aeta > 1.4442 && ph_aeta < 1.566) continue;
 		
-    //Electrons and muons matching
-    bool match = false;
-    for(const Lepton lep : *leptons_){
-      if(deltaR(ph,lep) < 0.07){  // 0.3
-	match = true;
-	break;
-      }
+    // Check ID
+    bool isPassVL    = ph.cutBasedID(Photon::IdWp::VeryLoose);
+    bool isPassLoose = ph.cutBasedIDLoose();
+
+    auto closestLep = closestDeltaR(ph, *leptons_);
+    float minDR_lep = closestLep != leptons_->cend() ? deltaR(ph, *closestLep) : 10.;
+    if(minDR_lep > 0.07 && ph.pt() > 20){
+      if(true)        ++nKinPh_0p07;
+      if(isPassVL)    ++nVLPh_0p07;
+      if(isPassLoose) ++nLoosePh_0p07;
     }
-    if(match) continue;
-    
-    // Photon::IdWp wp = Photon::IdWp::Loose;
+    if(minDR_lep > 0.5  && ph.pt() > 20){
+      if(true)        ++nKinPh_0p5;
+      if(isPassVL)    ++nVLPh_0p5;
+      if(isPassLoose) ++nLoosePh_0p5;
+    }
+    if(minDR_lep > 0.7  && ph.pt() > 20){
+      if(true)        ++nKinPh_0p7;
+      if(isPassVL)    ++nVLPh_0p7;
+      if(isPassLoose) ++nLoosePh_0p7;
+    }
+
+    // Remove photons that were used for FSR
+    auto closestFSR = closestDeltaR(ph, *fsrPhotons_);
+    if(closestFSR != leptons_->cend() && deltaR(ph, *closestFSR) < 1e-3)
+      continue;
+
+    if(ph.pt() > 20){
+      if(true)        ++nKinPh_noFSR;
+      if(isPassVL)    ++nVLPh_noFSR;
+      if(isPassLoose) ++nLoosePh_noFSR;
+    }
+
+
     TLorentzVector p4_EScale_Up = ph.p4() * (ph.energyScaleUp()  /ph.e());
     TLorentzVector p4_EScale_Dn = ph.p4() * (ph.energyScaleDown()/ph.e());
     TLorentzVector p4_ESigma_Up = ph.p4() * (ph.energySigmaUp()  /ph.e());
@@ -181,55 +255,77 @@ void VVGammaAnalyzer::initEvent(){
       Photon copy(ph);
       copy.setP4(p4_EScale_Up);
       kinPhotons_["EScale_Up"]->push_back(copy);
-      if(passVeryLoose(ph))
+      if(isPassVL)
 	loosePhotons_["EScale_Up"]->push_back(copy);
-      if(copy.cutBasedIDLoose())
+      if(isPassLoose)
 	goodPhotons_["EScale_Up"]->push_back(std::move(copy));
     }
     if(p4_EScale_Dn.Pt() > 20){
       Photon copy(ph);
       copy.setP4(p4_EScale_Dn);
       kinPhotons_["EScale_Down"]->push_back(copy);
-      if(passVeryLoose(ph))
+      if(isPassVL)
     	loosePhotons_["EScale_Down"]->push_back(copy);
-      if(copy.cutBasedIDLoose())
+      if(isPassLoose)
     	goodPhotons_["EScale_Down"]->push_back(std::move(copy));
     }
     if(p4_ESigma_Up.Pt() > 20){
       Photon copy(ph);
       copy.setP4(p4_ESigma_Up);
       kinPhotons_["ESigma_Up"]->push_back(copy);
-      if(passVeryLoose(ph))
+      if(isPassVL)
         loosePhotons_["ESigma_Up"]->push_back(copy);
-      if(copy.cutBasedIDLoose())
+      if(isPassLoose)
     	goodPhotons_["ESigma_Up"]->push_back(std::move(copy));
     }
     if(p4_ESigma_Dn.Pt() > 20){
       Photon copy(ph);
       copy.setP4(p4_ESigma_Dn);
       kinPhotons_["ESigma_Down"]->push_back(copy);
-      if(passVeryLoose(ph))
+      if(isPassVL)
     	loosePhotons_["ESigma_Down"]->push_back(copy);
-      if(copy.cutBasedIDLoose())
+      if(isPassLoose)
     	goodPhotons_["ESigma_Down"]->push_back(std::move(copy));
     }
     if(ph.pt() > 20){
       kinPhotons_["central"]->push_back(ph);
-      if(passVeryLoose(ph))
+      if(isPassVL)
 	loosePhotons_["central"]->push_back(ph);
-      if(ph.cutBasedIDLoose())
+      if(isPassLoose)
 	goodPhotons_["central"]->push_back(ph);
     }
     
   } // end loop on *photons
-  
+
+  // plots on surviving photons
+  if(true)           theHistograms->fill("cuts_kinPhIso"      , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, "All"  , theWeight);
+  if(nKinPh_0p07)    theHistograms->fill("cuts_kinPhIso"      , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, ">0.07", theWeight);
+  if(nKinPh_noFSR)   theHistograms->fill("cuts_kinPhIso"      , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, "noFSR", theWeight);
+  if(nKinPh_0p5)     theHistograms->fill("cuts_kinPhIso"      , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, ">0.5" , theWeight);
+  if(nKinPh_0p7)     theHistograms->fill("cuts_kinPhIso"      , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, ">0.7" , theWeight);
+
+  if(true)           theHistograms->fill("cuts_veryLoosePhIso", ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, "All"  , theWeight);
+  if(nVLPh_0p07)     theHistograms->fill("cuts_veryLoosePhIso", ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, ">0.07", theWeight);
+  if(nVLPh_noFSR)    theHistograms->fill("cuts_veryLoosePhIso", ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, "noFSR", theWeight);
+  if(nVLPh_0p5)      theHistograms->fill("cuts_veryLoosePhIso", ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, ">0.5" , theWeight);
+  if(nVLPh_0p7)      theHistograms->fill("cuts_veryLoosePhIso", ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, ">0.7" , theWeight);
+
+  if(true)           theHistograms->fill("cuts_loosePhIso"    , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, "All"  , theWeight);
+  if(nLoosePh_0p07)  theHistograms->fill("cuts_loosePhIso"    , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, ">0.07", theWeight);
+  if(nLoosePh_noFSR) theHistograms->fill("cuts_loosePhIso"    , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, "noFSR", theWeight);
+  if(nLoosePh_0p5)   theHistograms->fill("cuts_loosePhIso"    , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, ">0.5" , theWeight);
+  if(nLoosePh_0p7)   theHistograms->fill("cuts_loosePhIso"    , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, ">0.7" , theWeight);
+
+
   if(kinPhotons_["central"]->size() > 0)
     bestKinPh_ = &*std::max_element(kinPhotons_["central"]->begin(), kinPhotons_["central"]->end(),
 				    [](const Photon& a, const Photon& b){ return a.nCutsPass(Photon::IdWp::Loose) < b.nCutsPass(Photon::IdWp::Loose); }
 				    );  // max_element returns the first among those with max value --> preserve pt ordering
   else
     bestKinPh_ = nullptr;
-  
+
+  // Decide channel name depending on leptons
+  makeChannelReco();
 }
 
 
@@ -395,9 +491,6 @@ void VVGammaAnalyzer::analyze(){
 
   if(three_lep)
     debug3Lregion();
-  
-  // Decide channel name depending on leptons
-  makeChannelReco();
   
   // leptonFakeRate();
   photonGenStudy();
@@ -1117,6 +1210,16 @@ void VVGammaAnalyzer::baseHistos_cut(){
 
 
 void VVGammaAnalyzer::photonHistos(){
+  theHistograms->fill("fsrPhotons_N", "# #gamma_{FSR};;Events", 5, -0.5, 4.5, fsrPhotons_->size(), theWeight);
+  if(fsrPhotons_->size() >= 1){
+    theHistograms->fill("fsrPhotons_lead_pt"   , ";p_{T};Events" , 50,0.,200., fsrPhotons_->at(0).pt() , theWeight);
+    theHistograms->fill("fsrPhotons_lead_eta"  , ";#eta;Events"  , 50,-5.,5. , fsrPhotons_->at(0).eta(), theWeight);
+  }
+  if(fsrPhotons_->size() >= 2){
+    theHistograms->fill("fsrPhotons_sublead_pt" , ";p_{T};Events", 50,0.,200., fsrPhotons_->at(1).pt() , theWeight);
+    theHistograms->fill("fsrPhotons_sublead_eta", ";#eta;Events" , 50,-5.,5. , fsrPhotons_->at(1).eta(), theWeight);
+  }
+
   // No photons passing kinematic cuts
   if(theSampleInfo.isMC() && kinPhotons_["central"]->size() == 0 && genPhotons_->size() > 0){
     theHistograms->fill("noKinPh_all_genPh_N" , "Number of #gamma_{GEN} when no #gamma_{REC};# #gamma_{GEN}", 5,-0.5,4.5, genPhotons_->size(), theWeight);
@@ -1282,7 +1385,16 @@ void VVGammaAnalyzer::photonHistos(){
     if(b_sieie && b_HoverE && b_chIso && b_neIso           )
       theHistograms->fill("kinPhotons_Nm1", "N-1 cut efficiency;;Events", BINS_PHCUTNM1, 5, theWeight);
     
-    theHistograms->fill("kinPhotons_MVA", "kinematic #gamma MVA", 41,-1.025,1.025, bestKinPh_->MVAvalue(), theWeight);
+    theHistograms->fill(  "kinPhoton_MVA"                    , "Kin #gamma MVA"                    , 40,-1.,1., bestKinPh_->MVAvalue(), theWeight);
+    theHistograms->fill(  "kinPhoton_MVA_"      +channelReco_, "Kin #gamma MVA in "   +channelReco_, 40,-1.,1., bestKinPh_->MVAvalue(), theWeight);
+    if(bestKinPh_->cutBasedID(Photon::IdWp::VeryLoose)){
+      theHistograms->fill("veryLoosePhoton_MVA"              , "VeryLoose #gamma MVA"              , 40,-1.,1., bestKinPh_->MVAvalue(), theWeight);
+      theHistograms->fill("veryLoosePhoton_MVA_"+channelReco_, "VeryLoose #gamma MVA "+channelReco_, 40,-1.,1., bestKinPh_->MVAvalue(), theWeight);
+    }
+    if(bestKinPh_->cutBasedID(Photon::IdWp::Loose    )){
+      theHistograms->fill("loosePhoton_MVA"                  , "Loose #gamma MVA"                  , 40,-1.,1., bestKinPh_->MVAvalue(), theWeight);
+      theHistograms->fill("loosePhoton_MVA"     +channelReco_, "Loose #gamma MVA "    +channelReco_, 40,-1.,1., bestKinPh_->MVAvalue(), theWeight);
+    }
   }  // END if(kinPhoton["central"]->size() == 0)
   
   // Systematics histos
@@ -1845,16 +1957,17 @@ void VVGammaAnalyzer::efficiency(const vector<PAR>& vRec, const vector<Particle>
 void VVGammaAnalyzer::photonIsolation(const vector<Photon>& vPh, const char* label){
   // DeltaR(lep, ph): How many events would we loose if we excluded photons with DR(g, any l) < DR0 ?
   double maxG_minL_DR = -1;
+  vector<Photon> isolatedPh;
 
   for(const Photon& ph : vPh){
-    double minL_DR = 10;
-    for(const Lepton& lep: *leptons_){
-      double DR = physmath::deltaR(ph, lep);
-      minL_DR = DR < minL_DR ? DR : minL_DR;
-    }
-    // const std::vector<Lepton>::iterator closestLep = std::min_element(leptons_->begin(), leptons_->end(), [](const Lepton& a, const Lepton& b){ return physmath::deltaR(ph, a) < physmath::deltaR(ph, b); } );
+    const std::vector<Lepton>::iterator closestLep = std::min_element(leptons_->begin(), leptons_->end(),
+								      [ph](const Lepton& a, const Lepton& b){
+									return physmath::deltaR(ph, a) < physmath::deltaR(ph, b);
+								      } );
+    double minL_DR = closestLep != leptons_->end() ? deltaR(ph, *closestLep) : 10;
+
     theHistograms->fill(Form("minL_DR_%s", label), Form("min_{l}(#DeltaR(#gamma, l)) for each #gamma %s;#DeltaR;# of #gamma", label), 50, 0.,1., minL_DR, theWeight);
-    maxG_minL_DR = minL_DR > maxG_minL_DR ? minL_DR : maxG_minL_DR;
+    maxG_minL_DR = std::max(maxG_minL_DR, minL_DR);
   }
   if(maxG_minL_DR > 0)
     theHistograms->fill(Form("maxG_minL_DR_%s", label), Form("max_{#gamma}(min_{l}(#DeltaR(#gamma, l))) %s;#DeltaR;Events",label), 50, 0.,1., maxG_minL_DR, theWeight);
@@ -2110,6 +2223,29 @@ void VVGammaAnalyzer::SYSplots(const char* syst, const double& weight, const Pho
       else if(ph->cutBasedID(Photon::IdWp::VeryLoose)){
 	theHistograms->fill(Form("SYS_mWZGfail_%s"        , syst), Form("m_{WZ#gamma} %s", syst), mVVG_bins, mWZG, weight);
 	theHistograms->fill(Form("SYS_mWZGfailReweight_%s", syst), Form("m_{WZ#gamma} %s", syst), mVVG_bins, mWZG, weight * getPhotonFR(*ph));
+      }
+    }
+  }
+
+  else if(region_ == CRLFR){
+    Boson<Lepton>& theZ = ZL->first;
+    Lepton&        theL = ZL->second;
+    theHistograms->fill(  Form("SYS_mZ_%s"  , syst), Form("m_{Z} %s"       , syst), mZ_bins  , theZ.mass()               , weight);
+    theHistograms->fill(  Form("SYS_mZL_%s" , syst), Form("m_{ZL} %s"      , syst), mZG_bins , (theZ.p4()+theL.p4()).M() , weight);
+
+    if(ph){
+      double mZG  = (theZ.p4()             + ph->p4()).M();
+      double mZLG = (theZ.p4() + theL.p4() + ph->p4()).M();
+      if(ph->cutBasedIDLoose()){
+	double w = weight * ph->efficiencySF();
+	theHistograms->fill(Form("SYS_mZGloose_%s" , syst), Form("m_{Z#gamma} %s" , syst), mZG_bins, mZG , w);
+	theHistograms->fill(Form("SYS_mZLGloose_%s", syst), Form("m_{ZL#gamma} %s", syst), mZG_bins, mZLG, w);
+      }
+      else if(ph->cutBasedID(Photon::IdWp::VeryLoose)){
+	theHistograms->fill(Form("SYS_mZGfail_%s"         , syst), Form("m_{Z#gamma} %s" , syst), mZG_bins, mZG , weight);
+	theHistograms->fill(Form("SYS_mZLGfail_%s"        , syst), Form("m_{ZL#gamma} %s", syst), mZG_bins, mZLG, weight);
+	theHistograms->fill(Form("SYS_mZGfailReweight_%s" , syst), Form("m_{Z#gamma} %s" , syst), mZG_bins, mZG , weight * getPhotonFR(*ph));
+	theHistograms->fill(Form("SYS_mZLGfailReweight_%s", syst), Form("m_{ZL#gamma} %s", syst), mZG_bins, mZLG, weight * getPhotonFR(*ph));
       }
     }
   }

@@ -29,6 +29,7 @@ public:
     //theHistograms.profile(genCategory);
     // Memory allocation
     leptons_      = new std::vector<phys::Lepton>;
+    fsrPhotons_.reset(new std::vector<phys::Particle>);
     genQuarks_    = new std::vector<phys::Particle>;
     genChLeptons_ = new std::vector<phys::Particle>;
     genNeutrinos_ = new std::vector<phys::Particle>;
@@ -100,6 +101,7 @@ private:
   std::map<const char*, std::unique_ptr<std::vector<phys::Photon>>> kinPhotons_;    // Only kinematic selection
   std::map<const char*, std::unique_ptr<std::vector<phys::Photon>>> loosePhotons_;  // Loose ID: currently 3/5 cuts of ID
   std::map<const char*, std::unique_ptr<std::vector<phys::Photon>>> goodPhotons_;   // Tight ID: currently Loose WP of POG cut-based ID
+  std::unique_ptr<std::vector<phys::Particle>> fsrPhotons_;
  	
   // Vectors of gen particles
   std::vector<phys::Particle>* genQuarks_;
