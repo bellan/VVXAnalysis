@@ -1393,7 +1393,7 @@ void VVGammaAnalyzer::photonHistos(){
     }
     if(bestKinPh_->cutBasedID(Photon::IdWp::Loose    )){
       theHistograms->fill("loosePhoton_MVA"                  , "Loose #gamma MVA"                  , 40,-1.,1., bestKinPh_->MVAvalue(), theWeight);
-      theHistograms->fill("loosePhoton_MVA"     +channelReco_, "Loose #gamma MVA "    +channelReco_, 40,-1.,1., bestKinPh_->MVAvalue(), theWeight);
+      theHistograms->fill("loosePhoton_MVA_"    +channelReco_, "Loose #gamma MVA "    +channelReco_, 40,-1.,1., bestKinPh_->MVAvalue(), theWeight);
     }
   }  // END if(kinPhoton["central"]->size() == 0)
   
