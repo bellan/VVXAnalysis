@@ -898,7 +898,8 @@ void VVGammaAnalyzer::finish(){
 
 bool VVGammaAnalyzer::canBeFSR(const Photon& ph, const vector<Lepton>& leptons) const{
   // See: https://github.com/CJLST/ZZAnalysis/blob/Run2UL_22/AnalysisStep/plugins/LeptonPhotonMatcher.cc#L187-L250
-  float dRmin = 1.;
+  float pt = ph.pt();
+
   for(const Lepton& lep : leptons){
     // See:
     //   ZZAnalysis/AnalysisStep/test/MasterPy/ZZ4lAnalysis.py:321        :SIP =  "abs(dB('PV3D')/edB('PV3D')) < 4"
@@ -906,26 +907,15 @@ bool VVGammaAnalyzer::canBeFSR(const Photon& ph, const vector<Lepton>& leptons) 
     if(! (lep.sip() < 4))
       continue;
 
-    // Preliminary check to save the next computations
     float dR = deltaR(ph, lep);
-    if(dR > 0.5)
-      continue;
-
-    // Undo the FSR correction and check again
-    TLorentzVector lepUncorrected = lep.p4() - ph.p4();
-    dR = deltaR(lepUncorrected, ph.p4());
-    if(dR < 0.5 && dR < dRmin)
-      dRmin = dR;
+    if(dR < 0.5  && dR/(pt*pt) < 0.012){
+      // TODO? Check the relative isolation
+      // Trying to replicate https://github.com/CJLST/ZZAnalysis/blob/Run2UL_22/AnalysisStep/src/LeptonIsoHelper.cc#L210-245
+      return true;
+    }
   }
 
-  float pt = ph.pt();
-  if(dRmin < 0.5 && dRmin/(pt*pt) < 0.012){
-    // Check the relative isolation
-    // Trying to replicate https://github.com/CJLST/ZZAnalysis/blob/Run2UL_22/AnalysisStep/src/LeptonIsoHelper.cc#L210-245
-    return true;
-  }
-  else
-    return false;
+  return false;
 }
 
 
