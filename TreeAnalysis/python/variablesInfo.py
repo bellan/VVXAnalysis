@@ -17,6 +17,7 @@ def getVarInfo_VVGamma(region):
     # 4L region
     if region in ['SR4P', 'CR3P1F', 'CR2P2F']:
         rebin_mZZG = 1
+        channels = (('4e','4e'), ('2e2m', '2e2\mu'), ('4m', '4\mu'))
         if(region in ['SR4P', 'CR3P1F']):
             rebin_mZZG = 2
         elif(region == 'CR2P2F'):
@@ -38,7 +39,7 @@ def getVarInfo_VVGamma(region):
             'PhFRClosure_KtoVLexcl_pt-aeta_FAIL_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG}  #This is probably the same as the previous one
         })
         
-        for name, title in [('4e','4e'), ('2e2m', '2e2\mu'), ('4m', '4\mu')]:
+        for name, title in channels:
             VarInfo_VVGamma.update({
                 "ZZ_mass_"+name : {'title':"m_{%s}"     %(title), 'rebin':1, 'unblind':True},
                 "ZZ_pt_"  +name : {'title':"p_{T}^{%s}" %(title), 'rebin':1, 'unblind':True},
@@ -59,6 +60,7 @@ def getVarInfo_VVGamma(region):
     
     # 3L region
     elif region in ['SR3P', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110', 'CR000']:
+        channels = (('3e','3e'), ('2e1m', '2e1\mu'), ('2m1e', '2\mu1e'), ('3m', '3\mu'))
         VarInfo_VVGamma.update({
             "WZ_cutflow": {'title':'Cuts', 'logy':False},
             'ZW_massT': {'title':'mT_{3\ell\\nu}'   , 'rebin':1, 'unblind':True},
@@ -85,7 +87,7 @@ def getVarInfo_VVGamma(region):
             # 'debug3L_l3_FRSF': {'title':'FR(l_{3})' }
             # 'debug3L_ZW_FRSF': {'title':'FR(ZW)'    }
         })
-        for name, title in [('3e','3e'), ('2e1m', '2e1\mu'), ('2m1e', '2\mu1e'), ('3m', '3\mu')]:
+        for name, title in channels:
             VarInfo_VVGamma.update({
                 'ZW_massT_'+name : {'title':'m_{%s\\nu}'     %(title), 'rebin':1, 'unblind':True},
                 'ZW_pt_'   +name : {'title':'p_{T}^{%s\\nu}' %(title), 'rebin':1, 'unblind':True},
@@ -116,6 +118,7 @@ def getVarInfo_VVGamma(region):
     
     # 2L region
     elif region in ['SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F']:
+        channels = (('2e','2e'), ('2m', '2\mu'))
         VarInfo_VVGamma.update({
             'Z_mass_2e'     : {'title':'m_{2e}'         , 'logy':True},
             'Z_mass_2m'     : {'title':'m_{2\mu}'       , 'logy':True},
@@ -151,6 +154,7 @@ def getVarInfo_VVGamma(region):
                     })
 
     elif(region == 'CRLFR'):
+        channels = (('2e+e','2e+e'), ('2e+m', '2e+\mu'), ('2m+e', '2\mu+e'), ('2m+m', '2\mu+\mu'))
         VarInfo_VVGamma.update({
             'ZL_mass' :{'title': 'm_{3l} [GeV/c^{2}]'},
             'Z_mass'  :{'title': 'm_{Z} [GeV/c^{2}]' },
@@ -163,7 +167,10 @@ def getVarInfo_VVGamma(region):
     VarInfo_VVGamma.update({
         'kinPhotons_cuts'      : {'title':'cut'      , 'unblind':True, 'logy':True},
         'kinPhotons_Nm1'       : {'title':'N-1 cuts' , 'unblind':True},
-        'kinPhotons_MVA'       : {'title':'MVA score', 'unblind':True, 'logy':True}
+        'kinPhoton_MVA'        : {'title':'MVA score', 'unblind':True , 'logy':True},
+        'veryLoosePhoton_MVA'  : {'title':'MVA score', 'unblind':False, 'logy':True},
+        'loosePhoton_MVA'      : {'title':'MVA score', 'unblind':False, 'logy':True}
+        # ,
         # 'kinPhRes_dR'          : {'title':'#DeltaR'  , 'unblind':False},
         # 'noKinPh_all_genPh_N'  : {'title': '# #gamma_{GEN}'     },
         # 'noKinPh_all_genPh_pt' : {'title': '#gamma_{GEN} p_{T}' },
@@ -186,6 +193,12 @@ def getVarInfo_VVGamma(region):
         # 'failPh_sublead_pt'     : {'title': 'p_{T} sublead \gamma_{fail}' },
         # 'loosePh_sublead_pt'    : {'title': 'p_{T} sublead \gamma_{tight}'}
     })
+    for chName, chTitle in channels:
+        VarInfo_VVGamma.update({
+            'kinPhoton_MVA_'      +chName : {'title':'MVA score', 'unblind':True , 'logy':True},
+            'veryLoosePhoton_MVA_'+chName : {'title':'MVA score', 'unblind':False, 'logy':True},
+            'loosePhoton_MVA_'    +chName : {'title':'MVA score', 'unblind':False, 'logy':True}
+        })
 
     for e in ['EB', 'EE']:
         VarInfo_VVGamma.update({
