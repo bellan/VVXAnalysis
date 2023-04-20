@@ -91,6 +91,10 @@ parser.add_argument("-q", "--quiet", dest="verbosity",
                     action="store_const", const=0,
                     help="Set verbose to minimum")
 
+parser.add_argument("-i", "--inputDir",
+                    default="results",
+                    help="Directory containing the input rootfiles")
+
 #REMEMBER ADD DEFINTION PLOT
 
 
@@ -110,7 +114,7 @@ OutputDir  = options.outputDir if options.outputDir.startswith("/") else os.path
 Analysis   = options.Analysis
 year       = options.year
 
-InputDir   = os.path.join('results_EXT', year, Analysis+'_'+region, '')
+InputDir   = os.path.join(options.inputDir, year, Analysis+'_'+region, '')
 OutputDir  = os.path.join(OutputDir, Analysis, year, predType, region, "")  # Last "" ensures a trailing '/' is appended to path
 try:
     os.stat(OutputDir)
