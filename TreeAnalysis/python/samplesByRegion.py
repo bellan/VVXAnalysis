@@ -3,7 +3,7 @@ import ROOT
 
 ##### Define type of samples ##### FIXME: make a class?
 
-qqZZ_pow = [{'files':['ZZTo4l'        ] , 'color':ROOT.kBlue-4  , 'name':'qq/qg #rightarrow ZZ(+jets)', 'kfactor': 1.}]  # 1.1  #(1.256/1.325)
+qqZZ_pow = [{'files':['ZZTo4l'        ] , 'color':ROOT.kBlue-4  , 'name':'qq/qg #rightarrow ZZ(+jets)', 'kfactor': 1.325/1.256}]  # 1.1  #(1.256/1.325)
 qqZZ_mad = [{'files':['ZZTo4lamcatnlo'] , 'color':ROOT.kBlue-4  , 'name':'qq/qg #rightarrow ZZ(+jets)', 'kfactor': 1.}]
 
 ggZZ     = [{'files': ['ggTo2e2mu_Contin_MCFM701', 'ggTo4e_Contin_MCFM701', 'ggTo4mu_Contin_MCFM701'],
