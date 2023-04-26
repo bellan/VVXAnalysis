@@ -127,4 +127,44 @@ std::vector<std::pair<const F*, const T*>> matchDeltaR(const std::vector<F>& vFr
 }
 
 
+template <class T, class S>
+std::pair<typename T::const_iterator, double> furthestFromAny(const T& v1, const S& v2, bool debug=false){
+  // Finds the object in v1 that has the largest minimum distance from the objects in v2
+
+  debug &= v1.size() > 1;
+  if(debug)
+    std::cout << "### furthestDeltaR ###\n"
+	      << "v1: " << v1.size() << "  v2: "<< v2.size() << '\n';
+  typename T::const_iterator result = v1.cbegin();
+  if(v2.size() == 0)
+    return std::make_pair(result, 10.);
+
+  double dRmax = -1.;
+  for(auto it1 = v1.cbegin() ; it1 != v1.cend(); ++it1){
+    if(debug){
+      for(auto it2 = v2.cbegin() ; it2 != v2.cend(); ++it2)
+	std::cout << "\t\t" << std::distance(v2.cbegin(), it2) << " -> " << physmath::deltaR(*it1, *it2) << '\n';
+      std::cout << '\t' << std::distance(v1.cbegin(), it1) << " -> ";
+    }
+
+    auto it2 = closestDeltaR(*it1, v2);
+    double dR = physmath::deltaR(*it1, *it2);
+    if(debug)
+      std::cout << std::distance(v2.cbegin(), it2) << " (" << dR << ')';
+    if(dR > dRmax){
+      result = it1;
+      dRmax = dR;
+      if(debug)
+	std::cout << " updating";
+    }
+    if(debug)
+      std::cout << '\n';
+  }
+
+  if(debug)
+    std::cout << ">>> returning " << std::distance(v1.cbegin(), result) << " (" << dRmax << ")\n\n";
+  return std::make_pair(result, dRmax);
+}
+
+
 #endif

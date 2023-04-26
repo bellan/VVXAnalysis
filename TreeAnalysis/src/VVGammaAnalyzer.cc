@@ -1270,6 +1270,25 @@ void VVGammaAnalyzer::photonHistos(){
     }
   }
 
+  // Furthest from leptons
+  {
+    double dRl;
+    std::vector<Photon>::const_iterator itPh;
+    if(kinPhotons_["central"]->size() > 0){
+      std::tie(itPh, dRl) = furthestFromAny(*kinPhotons_["central"], *leptons_);
+      theHistograms->fill("furthestKinPh" , "Kin photon furthest from any lepton;#DeltaR(#gamma, l);Events"      , 40,0.,1., dRl, theWeight);
+    }
+    if(loosePhotons_["central"]->size() > 0){
+      std::tie(itPh, dRl) = furthestFromAny(*loosePhotons_["central"], *leptons_);
+      theHistograms->fill("furthestVLPh"  , "VeryLoose photon furthest from any lepton;#DeltaR(#gamma, l);Events", 40,0.,1., dRl, theWeight);
+      if(!itPh->cutBasedIDLoose())
+	theHistograms->fill("furthestFailPh", "Fail photon furthest from any lepton;#DeltaR(#gamma, l);Events"   , 40,0.,1., dRl, theWeight);
+    }
+    if(goodPhotons_["central"]->size() > 0){
+      std::tie(itPh, dRl) = furthestFromAny(*goodPhotons_["central"], *leptons_);
+      theHistograms->fill("furthestLoosePh", "Loose photon furthest from any lepton;#DeltaR(#gamma, l);Events"   , 40,0.,1., dRl, theWeight);
+    }
+  }
   
   // Photons passing kinematic cuts; pt, eta, ID variables
   for(const Photon& ph : *kinPhotons_["central"]){

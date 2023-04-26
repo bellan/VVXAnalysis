@@ -192,6 +192,11 @@ def getVarInfo_VVGamma(region):
         # 'veryLoosePh_sublead_pt': {'title': 'p_{T} sublead \gamma_{loose}'}
         # 'failPh_sublead_pt'     : {'title': 'p_{T} sublead \gamma_{fail}' },
         # 'loosePh_sublead_pt'    : {'title': 'p_{T} sublead \gamma_{tight}'}
+        ,
+        'furthestKinPh'   : {},
+        'furthestVLPh'    : {},
+        'furthestFailPh'  : {},
+        'furthestLoosePh' : {'unblind':False}
     })
     for chName, chTitle in channels:
         VarInfo_VVGamma.update({
