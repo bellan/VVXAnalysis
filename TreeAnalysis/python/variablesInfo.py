@@ -178,26 +178,27 @@ def getVarInfo_VVGamma(region):
         # 'noKinPh_rec_genPh_pt' : {'title': '#gamma_{GEN} p_{T}' },
         # 'noKinPh_rec_genPh_eta': {'title': '#gamma_{GEN} #eta'  }
         ,
-        'kinPh_lead_pt'        : {'title':  'p_{T} \gamma_{kin}^{leading}'  },
-        'veryLoosePh_lead_pt'  : {'title':  'p_{T} \gamma_{loose}^{leading}'},
-        'failPh_lead_pt'       : {'title':  'p_{T} \gamma_{fail}^{leading}' },
-        'loosePh_lead_pt'      : {'title':  'p_{T} \gamma_{tight}^{leading}', 'unblind':True}
-        ,
-        'kinPh_lead_aeta'      : {'title': '|\eta| \gamma_{kin}^{leading}'  },
-        'veryLoosePh_lead_aeta': {'title': '|\eta| \gamma_{loose}^{leading}'},
-        'failPh_lead_aeta'     : {'title': '|\eta| \gamma_{fail}^{leading}' },
-        'loosePh_lead_aeta'    : {'title': '|\eta| \gamma_{tight}^{leading}', 'unblind':True}
-        ,
-        'kinPh_sublead_pt'      : {'title': 'p_{T} \gamma_{kin}^{sublead}'  }
-        # 'veryLoosePh_sublead_pt': {'title': 'p_{T} sublead \gamma_{loose}'}
-        # 'failPh_sublead_pt'     : {'title': 'p_{T} sublead \gamma_{fail}' },
-        # 'loosePh_sublead_pt'    : {'title': 'p_{T} sublead \gamma_{tight}'}
+        'sublead_kin_pt'      : {'title': 'p_{T} \gamma_{kin}^{sublead}'},
+        'sublead_veryLoose_pt': {'title': 'p_{T} sublead \gamma_{loose}'},
+        'sublead_fail_pt'     : {'title': 'p_{T} sublead \gamma_{fail}' },
+        'sublead_loose_pt'    : {'title': 'p_{T} sublead \gamma_{tight}'}
         ,
         'furthestKinPh'   : {},
         'furthestVLPh'    : {},
         'furthestFailPh'  : {},
         'furthestLoosePh' : {'unblind':False}
     })
+
+    for status in ('kin', 'kinVetoVL', 'kinVetoL', 'veryLoose', 'fail', 'fail4a', 'fail4b', 'loose'):
+        variables = [('pt', 'p_{T}'), ('aeta', '|#eta|'), ('dRl', '#DeltaR(l, #gamma)'), ('MVA', 'MVA')]
+        unblind = not (status == 'veryLoose' or status == 'loose')
+        if(not status.startswith('kin')):
+            variables += [('chIso', 'chIso'), ('sieie', '#sigma_{i#etai#eta}')]
+        for varname, vartitle in variables:
+            VarInfo_VVGamma.update({
+                'lead_{}_{}'.format(status, varname): {'title': '%s #gamma_{kin}^{leading}' %(vartitle), 'unblind':unblind }
+            })
+
     for chName, chTitle in channels:
         VarInfo_VVGamma.update({
             'kinPhoton_MVA_'      +chName : {'title':'MVA score', 'unblind':True , 'logy':True},

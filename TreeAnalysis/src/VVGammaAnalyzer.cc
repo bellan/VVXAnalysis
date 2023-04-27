@@ -1224,49 +1224,93 @@ void VVGammaAnalyzer::photonHistos(){
   // pt and eta distribution of photons
   if(kinPhotons_["central"]->size() > 0){
     const Photon& ph = kinPhotons_["central"]->at(0);
-    theHistograms->fill("kinPh_lead_pt"  , "p_{t} of Kinematic photons;p_{T} [GeV/c];Events", ph_pt_bins  ,      ph.pt()  , theWeight);
-    theHistograms->fill("kinPh_lead_aeta", "|#eta| of Kinematic photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
-    theHistograms->fill("kinPh_lead_pt_aeta", "Kinematic photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+    auto closestLep = closestDeltaR(ph, *leptons_);
+    float dRl = closestLep != leptons_->cend() ? deltaR(ph, *closestLep) : 10;
+    theHistograms->fill("lead_kin_pt"  , "p_{t} of Kinematic photons;p_{T} [GeV/c];Events", ph_pt_bins  ,      ph.pt()  , theWeight);
+    theHistograms->fill("lead_kin_aeta", "|#eta| of Kinematic photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
+    theHistograms->fill("lead_kin_pt_aeta", "Kinematic photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+    theHistograms->fill("lead_kin_dRl" , "#DeltaR(#gamma, l) Kinematic photons;#DeltaR(#gamma, l);Events", 20,0.,1., dRl, theWeight);
+    theHistograms->fill("lead_kin_MVA" , "Leading Kinematic photon;MVA"                   , 40,-1.,1.   , ph.MVAvalue() , theWeight);
     
     if(!ph.cutBasedIDLoose()){
-      theHistograms->fill("kinVetoLPh_lead_pt"  , "p_{t} of Kin-L photons;p_{T} [GeV/c];Events", ph_pt_bins  ,      ph.pt()  , theWeight);
-      theHistograms->fill("kinVetoLPh_lead_aeta", "|#eta| of Kin-L photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
-      theHistograms->fill("kinVetoLPh_lead_pt_aeta", "Kin-L photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+      theHistograms->fill("lead_kinVetoL_pt"  , "p_{t} of Kin-L photons;p_{T} [GeV/c];Events", ph_pt_bins  ,      ph.pt()  , theWeight);
+      theHistograms->fill("lead_kinVetoL_aeta", "|#eta| of Kin-L photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
+      theHistograms->fill("lead_kinVetoL_pt_aeta", "Kin-L photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+      theHistograms->fill("lead_kinVetoL_dRl" , "#DeltaR(#gamma, l) Kin-L photons;#DeltaR(#gamma, l);Events", 20,0.,1., dRl, theWeight);
+      theHistograms->fill("lead_kinVetoL_MVA" , "Leading Kin-L photon;MVA"                   , 40,-1.,1.   , ph.MVAvalue() , theWeight);
     }
     if(!ph.cutBasedID(Photon::IdWp::VeryLoose)){
-      theHistograms->fill("kinVetoVLPh_lead_pt"  , "p_{t} of Kin-VL photons;p_{T} [GeV/c];Events", ph_pt_bins  ,      ph.pt()  , theWeight);
-      theHistograms->fill("kinVetoVLPh_lead_aeta", "|#eta| of Kin-VL photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
-      theHistograms->fill("kinVetoVLPh_lead_pt_aeta", "Kin-VL photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+      theHistograms->fill("lead_kinVetoVL_pt"  , "p_{t} of Kin-VL photons;p_{T} [GeV/c];Events", ph_pt_bins  ,      ph.pt()  , theWeight);
+      theHistograms->fill("lead_kinVetoVL_aeta", "|#eta| of Kin-VL photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
+      theHistograms->fill("lead_kinVetoVL_pt_aeta", "Kin-VL photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+      theHistograms->fill("lead_kinVetoVL_dRl" , "#DeltaR(#gamma, l) Kin-VL photons;#DeltaR(#gamma, l);Events", 20,0.,1., dRl, theWeight);
+      theHistograms->fill("lead_kinVetoVL_MVA" , "Leading Kin-VL photon;MVA"                   , 40,-1.,1.   , ph.MVAvalue() , theWeight);
     }
 
     if(kinPhotons_["central"]->size() > 1)
-      theHistograms->fill("kinPh_sublead_pt", "Subleading Kin #gamma;p_{T} [GeV/c]", 20,0.,100., kinPhotons_["central"]->at(1).pt());
+      theHistograms->fill("sublead_kin_pt", "Subleading Kin #gamma;p_{T} [GeV/c]", 20,0.,100., kinPhotons_["central"]->at(1).pt());
   }
   
   if(loosePhotons_["central"]->size() > 0){
     const Photon& ph = loosePhotons_["central"]->at(0);
-    theHistograms->fill("veryLoosePh_lead_pt"  , "p_{t} of VeryLoose photons;p_{T} [GeV/c];Events", ph_pt_bins  ,      ph.pt()  , theWeight);
-    theHistograms->fill("veryLoosePh_lead_aeta", "|#eta| of VeryLoose photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
-    theHistograms->fill("veryLoosePh_lead_pt_aeta", "VeryLoose photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
-    
+    auto closestLep = closestDeltaR(ph, *leptons_);
+    float dRl = closestLep != leptons_->cend() ? deltaR(ph, *closestLep) : 10;
+
+    theHistograms->fill("lead_veryLoose_pt"     , "Leading VeryLoose photon;p_{T} [GeV/c];Events"     , ph_pt_bins  , ph.pt()              , theWeight);
+    theHistograms->fill("lead_veryLoose_aeta"   , "Leading VeryLoose photon;#eta;Events"              , ph_aeta_bins, fabs(ph.eta())       , theWeight);
+    theHistograms->fill("lead_veryLoose_pt_aeta", "Leading VeryLoose photon;p_{t};|#eta|;Events"      , ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+    theHistograms->fill("lead_veryLoose_dRl"    , "Leading VeryLoose photon;#DeltaR(#gamma, l);Events", 20, 0., 1.  , dRl                  , theWeight);
+    theHistograms->fill("lead_veryLoose_MVA"    , "Leading VeryLoose photon;MVA"                      , 40,-1.,1.   , ph.MVAvalue()        , theWeight);
+    theHistograms->fill("lead_veryLoose_chIso"  , "Leading VeryLoose photon;chIso (uncorrected)"      , 40, 0., 10  , ph.chargedIsolation(), theWeight);
+    theHistograms->fill("lead_veryLoose_sieie"  , "Leading VeryLoose photon;#sigma_{i#etai#eta}"      , 40, 0., .08  , ph.sigmaIetaIeta()   , theWeight);
+
+    bool passChIso = ph.cutBasedID(Photon::IdWp::Loose, Photon::IDcut::chIso);
+    bool passSieie = ph.cutBasedID(Photon::IdWp::Loose, Photon::IDcut::sieie);
+
     if(ph.cutBasedIDLoose()){
-      theHistograms->fill("loosePh_lead_pt"  , "p_{t} of LooseID photons;p_{T} [GeV/c];Events", ph_pt_bins  ,      ph.pt()  , theWeight);
-      theHistograms->fill("loosePh_lead_aeta", "|#eta| of LooseID photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
-      theHistograms->fill("loosePh_lead_pt_aeta", "LooseID photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+      theHistograms->fill("lead_loose_pt"     , "Leading Loose photon;p_{T} [GeV/c];Events"     , ph_pt_bins  , ph.pt()              , theWeight);
+      theHistograms->fill("lead_loose_aeta"   , "Leading Loose photon;#eta;Events"              , ph_aeta_bins, fabs(ph.eta())       , theWeight);
+      theHistograms->fill("lead_loose_pt_aeta", "Leading Loose photon;p_{t};|#eta|;Events"      , ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+      theHistograms->fill("lead_loose_dRl"    , "Leading Loose photon;#DeltaR(#gamma, l);Events", 20, 0., 1.  , dRl                  , theWeight);
+      theHistograms->fill("lead_loose_MVA"    , "Leading Loose photon;MVA;Events"               , 20, 0., 1.  , ph.MVAvalue()        , theWeight);
+      theHistograms->fill("lead_loose_chIso"  , "Leading Loose photon;chIso (uncorrected)"      , 40, 0., 10  , ph.chargedIsolation(), theWeight);
+      theHistograms->fill("lead_loose_sieie"  , "Leading Loose photon;#sigma_{i#etai#eta}"      , 40, 0., .08 , ph.sigmaIetaIeta()   , theWeight);
+    }
+    else if(passChIso && !passSieie){  // 4a = passChIso
+      theHistograms->fill("lead_fail4a_pt"     , "Leading 4a: pass chIso;p_{T} [GeV/c];Events"     , ph_pt_bins  , ph.pt()              , theWeight);
+      theHistograms->fill("lead_fail4a_aeta"   , "Leading 4a: pass chIso;#eta;Events"              , ph_aeta_bins, fabs(ph.eta())       , theWeight);
+      theHistograms->fill("lead_fail4a_pt_aeta", "Leading 4a: pass chIso;p_{t};|#eta|;Events"      , ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+      theHistograms->fill("lead_fail4a_dRl"    , "Leading 4a: pass chIso;#DeltaR(#gamma, l);Events", 20, 0., 1.  , dRl                  , theWeight);
+      theHistograms->fill("lead_fail4a_MVA"    , "Leading 4a: pass chIso;MVA"                      , 40,-1.,1.   , ph.MVAvalue()        , theWeight);
+      theHistograms->fill("lead_fail4a_chIso"  , "Leading 4a: pass chIso;chIso (uncorrected)"      , 40, 0., 10  , ph.chargedIsolation(), theWeight);
+      theHistograms->fill("lead_fail4a_sieie"  , "Leading 4a: pass chIso;#sigma_{i#etai#eta}"      , 40, 0., .08 , ph.sigmaIetaIeta()   , theWeight);
+    }
+    else if(!passChIso && passSieie){  // 4b = passSieie
+      theHistograms->fill("lead_fail4b_pt"     , "Leading 4b: pass sieie;p_{T} [GeV/c];Events"     , ph_pt_bins  , ph.pt()              , theWeight);
+      theHistograms->fill("lead_fail4b_aeta"   , "Leading 4b: pass sieie;#eta;Events"              , ph_aeta_bins, fabs(ph.eta())       , theWeight);
+      theHistograms->fill("lead_fail4b_pt_aeta", "Leading 4b: pass sieie;p_{t};|#eta|;Events"      , ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+      theHistograms->fill("lead_fail4b_dRl"    , "Leading 4b: pass sieie;#DeltaR(#gamma, l);Events", 20, 0., 1.  , dRl                  , theWeight);
+      theHistograms->fill("lead_fail4b_MVA"    , "Leading 4a: pass sieie;MVA"                      , 40,-1.,1.   , ph.MVAvalue()        , theWeight);
+      theHistograms->fill("lead_fail4b_chIso"  , "Leading 4b: pass sieie;chIso (uncorrected)"      , 40, 0., 10  , ph.chargedIsolation(), theWeight);
+      theHistograms->fill("lead_fail4b_sieie"  , "Leading 4b: pass sieie;#sigma_{i#etai#eta}"      , 40, 0., .08 , ph.sigmaIetaIeta()   , theWeight);
     }
     else{
-      theHistograms->fill("failPh_lead_pt"  , "p_{t} of Fail photons;p_{T} [GeV/c];Events", ph_pt_bins  ,      ph.pt()  , theWeight);
-      theHistograms->fill("failPh_lead_aeta", "|#eta| of Fail photons;#eta;Events"        , ph_aeta_bins, fabs(ph.eta()), theWeight);
-      theHistograms->fill("failPh_lead_pt_aeta", "Fail photons;p_{t};|#eta|;Events", ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+      theHistograms->fill("lead_fail_pt"     , "Leading Fail photon;p_{T} [GeV/c];Events"     , ph_pt_bins  , ph.pt()              , theWeight);
+      theHistograms->fill("lead_fail_aeta"   , "Leading Fail photon;#eta;Events"              , ph_aeta_bins, fabs(ph.eta())       , theWeight);
+      theHistograms->fill("lead_fail_pt_aeta", "Leading Fail photon;p_{t};|#eta|;Events"      , ph_pt_bins, ph_aeta_bins, ph.pt(), fabs(ph.eta()), theWeight);
+      theHistograms->fill("lead_fail_dRl"    , "Leading Fail photon;#DeltaR(#gamma, l);Events", 20, 0., 1.  , dRl                  , theWeight);
+      theHistograms->fill("lead_fail_MVA"    , "Leading Fail photon;MVA"                      , 40,-1.,1.   , ph.MVAvalue()        , theWeight);
+      theHistograms->fill("lead_fail_chIso"  , "Leading Fail photon;chIso (uncorrected)"      , 40, 0., 10  , ph.chargedIsolation(), theWeight);
+      theHistograms->fill("lead_fail_sieie"  , "Leading Fail photon;#sigma_{i#etai#eta}"      , 40, 0., .08 , ph.sigmaIetaIeta()   , theWeight);
     }
     
     if(loosePhotons_["central"]->size() > 1){
       const Photon& ph_sublead = loosePhotons_["central"]->at(1);
-      theHistograms->fill("veryLoosePh_sublead_pt", "Subleading VeryLoose #gamma;p_{T} [GeV/c]", ph_pt_bins, ph_sublead.pt());
+      theHistograms->fill("sublead_veryLoose_pt", "Subleading VeryLoose #gamma;p_{T} [GeV/c]", ph_pt_bins, ph_sublead.pt());
       if(ph_sublead.cutBasedIDLoose())
-	theHistograms->fill("loosePh_sublead_pt", "Subleading Loose #gamma;p_{T} [GeV/c]", ph_pt_bins, ph_sublead.pt());
+	theHistograms->fill("sublead_loose_pt", "Subleading Loose #gamma;p_{T} [GeV/c]", ph_pt_bins, ph_sublead.pt());
       else
-	theHistograms->fill("failPh_sublead_pt" , "Subleading Fail #gamma;p_{T} [GeV/c]" , ph_pt_bins, ph_sublead.pt());
+	theHistograms->fill("sublead_fail_pt" , "Subleading Fail #gamma;p_{T} [GeV/c]" , ph_pt_bins, ph_sublead.pt());
     }
   }
 
