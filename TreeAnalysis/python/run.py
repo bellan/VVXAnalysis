@@ -287,13 +287,13 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
         externalXsec = -1
         if not isData and options.getExternalCrossSectionFromFile:
             externalXsec = crossSection(period, csvfile)
-            print "For {0:s} {1:s} {2:.6f}".format(period, Warning("Using external cross section:"), externalXsec)
+            print "For {0:s} {1:s} {2:.6f}".format(period, Warn("Using external cross section:"), externalXsec)
         elif not isData and options.useInternalCrossSection:
             externalXsec = -10  # This is a hack: values < -2 are used to signal internal cross section
-            print "For {0:s} {1:s}".format(period, Warning("Using internal cross section"))
+            print "For {0:s} {1:s}".format(period, Warn("Using internal cross section"))
 
         if not os.path.exists('{0:s}/{1}.root'.format(inputdir,basefile)):
-            print Warning("The ROOT file for the sample {0:s} does not exist in {1:s}".format(basefile,inputdir))
+            print Warn("The ROOT file for the sample {0:s} does not exist in {1:s}".format(basefile,inputdir))
             return 
         print Red('\n------------------------------ {0:s} -------------------------------\n'.format(basefile))
           

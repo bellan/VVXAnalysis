@@ -22,7 +22,7 @@ def Important(st):
 def OK(st):
     return '\033[0;42m'+str(st)+'\033[00m'
 
-def Warning(st):
+def Warn(st):
     return '\033[0;43m'+str(st)+'\033[00m'
 
 def Evidence(st):
