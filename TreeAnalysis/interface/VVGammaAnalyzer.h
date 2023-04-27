@@ -231,7 +231,9 @@ private:
   static const std::vector<double> eta_bins;
   static const std::vector<double> aeta_bins;
   static const std::vector<double> ph_pt_bins;
+  static const std::vector<double> ph_ptExtended_bins;
   static const std::vector<double> ph_aeta_bins;
+  static const std::vector<double> ph_aetaExtended_bins;
   static const std::vector<double> mVV_bins;
   static const std::vector<double> mVVG_bins;
   static const std::vector<double> mZ_bins;
