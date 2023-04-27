@@ -25,6 +25,7 @@ import plotUtils  # GetPredictionsPlot, GetDataPlot
 from variablesInfo import getVariablesInfo
 import CMS_lumi, tdrstyle
 import PersonalInfo
+from Colours import Evidence
 
 lumi_dict = {'2016': 35900, '2017': 41500, '2018': 59700}
 regions = ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L',    
@@ -53,10 +54,9 @@ parser.add_argument("-t", "--type", dest="Type",
                   default="all",
                   help= "type type to choose the  plot you want. Mass, Jets, DeltaEta, mjj")
 
-parser.add_argument("-S", "--Save", dest="SavePlot",
-                  action="store_true",
-                  default=False,
-                  help="Save plot option, default is False")
+parser.add_argument("-s", "--skip", dest="Skip",
+                  default=None,
+                  help= "Plots names that match this regex will be skipped")
 
 parser.add_argument("-m", "--mcset", dest="mcSet", choices=['mad', 'pow'],
                   default="mad",
@@ -107,7 +107,6 @@ optDoData  = options.doData
 predType   = options.predType
 region     = options.region
 Type       = options.Type
-SavePlot   = options.SavePlot
 mcSet      = options.mcSet
 LumiProj   = options.LumiProj
 OutputDir  = options.outputDir if options.outputDir.startswith("/") else os.path.join(PersonalInfo.personalFolder, options.outputDir)
@@ -150,6 +149,13 @@ else:
     if len(variables) == 0:
         print 'WARN: no variables matching regex "{}" for {} in {}'.format(Type, Analysis, region)
         exit(0)
+
+if options.Skip is not None:
+    variables = [ var for var in variables if not re.search(options.Skip, var) ]
+    if len(variables) == 0:
+        print 'WARN: using regex "{}" all variables are skipped'
+        exit(0)
+
 if(options.verbosity >= 2):
     print 'INFO: variables =', variables
 variables.sort()
@@ -169,12 +175,16 @@ for Var in variables:
     else:
         (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, Var, predType, mcSet, info.get('rebin', 1), forcePositive=forcePositive, verbosity=options.verbosity)
 
+    if(not hMC.GetStack()):
+        print Evidence('ERROR'), 'skipping', Var, 'because: no MC'
+        continue
+
     if(DoData):
         (graphData, histodata) = plotUtils.GetDataPlot(InputDir, Var, region        , info.get('rebin', 1), forcePositive=forcePositive, verbosity=options.verbosity)
 
-    if( (not hMC.GetStack()) or (DoData and (not graphData)) ):
-        print 'WARN: skipping', Var, 'because:', 'no MC' if (not hMC.GetStack) else '', 'no data' if (not graphData) else ''
-        continue
+        if(not (graphData and histodata)):
+            print Evidence('ERROR'), 'skipping', Var, 'because: no data'
+            continue
     
     hMCErr = deepcopy(hMC.GetStack().Last())
     
@@ -343,11 +353,11 @@ for Var in variables:
     c1.Update()
     
     c1.SetTitle(Title)
-    if SavePlot:
-        # c1.SaveAs(os.path.join(OutputDir, Title+".root"))
-        c1.SaveAs(os.path.join(OutputDir, Title+".png"))
-        # c1.SaveAs(os.path.join(OutputDir, Title+".eps"))
-        c1.SaveAs(os.path.join(OutputDir, Title+".pdf"))
+
+    # c1.SaveAs(os.path.join(OutputDir, Title+".root"))
+    c1.SaveAs(os.path.join(OutputDir, Title+".png"))
+    # c1.SaveAs(os.path.join(OutputDir, Title+".eps"))
+    c1.SaveAs(os.path.join(OutputDir, Title+".pdf"))
     
     del histodata
 
