@@ -178,6 +178,11 @@ def getVarInfo_VVGamma(region):
         # 'noKinPh_rec_genPh_pt' : {'title': '#gamma_{GEN} p_{T}' },
         # 'noKinPh_rec_genPh_eta': {'title': '#gamma_{GEN} #eta'  }
         ,
+        'fsrPhotons_lead_pt'    : {},
+        'fsrPhotons_lead_eta'   : {},
+        'fsrPhotons_sublead_pt' : {},
+        'fsrPhotons_sublead_eta': {}
+        ,
         'sublead_kin_pt'      : {'title': 'p_{T} \gamma_{kin}^{sublead}'},
         'sublead_veryLoose_pt': {'title': 'p_{T} sublead \gamma_{loose}'},
         'sublead_fail_pt'     : {'title': 'p_{T} sublead \gamma_{fail}' },
@@ -189,14 +194,14 @@ def getVarInfo_VVGamma(region):
         'furthestLoosePh' : {'unblind':False}
     })
 
-    for status in ('kin', 'kinVetoVL', 'kinVetoL', 'veryLoose', 'fail', 'fail4a', 'fail4b', 'loose'):
+    for status in ('kin', 'kinVetoVL', 'kinVetoL', 'veryLoose', 'VLchIso', 'VLsieie', 'fail', 'fail3', 'fail4a', 'fail4b', 'loose'):
         variables = [('pt', 'p_{T}'), ('aeta', '|#eta|'), ('dRl', '#DeltaR(l, #gamma)'), ('MVA', 'MVA')]
-        unblind = not (status == 'veryLoose' or status == 'loose')
+        unblind = not (status == 'veryLoose' or status == 'loose' or status ==  'VLchIso' or status == 'VLsieie')
         if(not status.startswith('kin')):
             variables += [('chIso', 'chIso'), ('sieie', '#sigma_{i#etai#eta}')]
         for varname, vartitle in variables:
             VarInfo_VVGamma.update({
-                'lead_{}_{}'.format(status, varname): {'title': '%s #gamma_{kin}^{leading}' %(vartitle), 'unblind':unblind }
+                'lead_{}_{}'.format(status, varname): {'title': '%s #gamma_{%s}^{leading}' %(vartitle, status), 'unblind':unblind }
             })
 
     for chName, chTitle in channels:
@@ -219,9 +224,9 @@ def getVarInfo_VVGamma(region):
     #         'sigmaiEtaiEta_'+name+'Photons': ['#sigma_{i#etai#eta}', 1, True]
     #     })
     VarInfo_VVGamma.update({
-        'kinPh_central_N'     : {'title':'Number of #gamma_{kin}'  },
-        # 'veryLoose_central_N' : {'title':'Number of #gamma_{loose}'},
-        'loosePh_central_N'     : {'title':'Number of #gamma_{tight}', 'unblind':False},
+        'kinPh_central_N'     : {'title':'Number of #gamma_{kin}'    , 'unblind'=True , 'logy':True},
+        'veryLoose_central_N' : {'title':'Number of #gamma_{loose}'  , 'unblind'=False, 'logy':True},
+        'loosePh_central_N'     : {'title':'Number of #gamma_{tight}', 'unblind':False, 'logy':True},
         'kinPh_eScale_N'  : {'title':'Number of #gamma passing selection', 'rebin':1, 'unblind':True},
         'kinPhotons_ID': {'title':'#gamma ID'                         , 'rebin':1, 'unblind':True}
     })
@@ -233,9 +238,9 @@ def getVarInfo_VVGamma(region):
 
     # Jet stuff
     VarInfo_VVGamma.update({
-        'AK4_N'         : {'title':'# AK4'   , 'rebin':1, 'unblind':True},
-        'AK4_pt'        : {'title':'p_{T}'   , 'rebin':1, 'unblind':True},
-        'AK8_N'         : {'title':'# AK8'   , 'rebin':1, 'unblind':True},
+        'AK4_N'         : {'title':'# AK4'   , 'rebin':1, 'unblind':True, 'logy':True},
+        'AK4_pt'        : {'title':'p_{T}'   , 'rebin':1, 'unblind':True, 'logy':True},
+        'AK8_N'         : {'title':'# AK8'   , 'rebin':1, 'unblind':True, 'logy':True},
         'AK8_pt'        : {'title':'p_{T}'   , 'rebin':1, 'unblind':True, 'logy':True}
     })
     
