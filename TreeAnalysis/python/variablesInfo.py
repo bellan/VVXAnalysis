@@ -224,8 +224,8 @@ def getVarInfo_VVGamma(region):
     #         'sigmaiEtaiEta_'+name+'Photons': ['#sigma_{i#etai#eta}', 1, True]
     #     })
     VarInfo_VVGamma.update({
-        'kinPh_central_N'     : {'title':'Number of #gamma_{kin}'    , 'unblind'=True , 'logy':True},
-        'veryLoose_central_N' : {'title':'Number of #gamma_{loose}'  , 'unblind'=False, 'logy':True},
+        'kinPh_central_N'       : {'title':'Number of #gamma_{kin}'    , 'unblind':True , 'logy':True},
+        'veryLoosePh_central_N' : {'title':'Number of #gamma_{loose}'  , 'unblind':False, 'logy':True},
         'loosePh_central_N'     : {'title':'Number of #gamma_{tight}', 'unblind':False, 'logy':True},
         'kinPh_eScale_N'  : {'title':'Number of #gamma passing selection', 'rebin':1, 'unblind':True},
         'kinPhotons_ID': {'title':'#gamma ID'                         , 'rebin':1, 'unblind':True}
