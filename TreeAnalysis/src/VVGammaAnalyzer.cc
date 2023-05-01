@@ -189,21 +189,22 @@ void VVGammaAnalyzer::initEvent(){
 
   
   // Photon selection
-  unsigned int nKinPh_0p07 (0), nVLPh_0p07 (0), nLoosePh_0p07 (0);
-  unsigned int nKinPh_0p5  (0), nVLPh_0p5  (0), nLoosePh_0p5  (0);
-  unsigned int nKinPh_0p7  (0), nVLPh_0p7  (0), nLoosePh_0p7  (0);
-  unsigned int nKinPh_noFSR(0), nVLPh_noFSR(0), nLoosePh_noFSR(0);
+  unsigned int nKinPh_0p07 (0), nVLPh_0p07 (0), nFailPh_0p07 (0), nLoosePh_0p07 (0);
+  unsigned int nKinPh_0p3  (0), nVLPh_0p3  (0), nFailPh_0p3  (0), nLoosePh_0p3  (0);
+  unsigned int nKinPh_0p5  (0), nVLPh_0p5  (0), nFailPh_0p5  (0), nLoosePh_0p5  (0);
+  unsigned int nKinPh_0p7  (0), nVLPh_0p7  (0), nFailPh_0p7  (0), nLoosePh_0p7  (0);
+  unsigned int nKinPh_noFSR(0), nVLPh_noFSR(0), nFailPh_noFSR(0), nLoosePh_noFSR(0);
 
   for(auto ph : *photons){
     //Pixel seed and electron veto
     if(ph.hasPixelSeed() || !ph.passElectronVeto()) continue;
-		
+
     //Kinematic selection
     // if(ph.pt() < 20) continue;
     float ph_aeta = fabs(ph.eta());
     if(ph_aeta > 2.4) continue;
     if(ph_aeta > 1.4442 && ph_aeta < 1.566) continue;
-		
+
     // Check ID
     bool isPassVL    = ph.cutBasedID(Photon::IdWp::VeryLoose);
     bool isPassLoose = ph.cutBasedIDLoose();
@@ -213,16 +214,25 @@ void VVGammaAnalyzer::initEvent(){
     if(minDR_lep > 0.07 && ph.pt() > 20){
       if(true)        ++nKinPh_0p07;
       if(isPassVL)    ++nVLPh_0p07;
+      if(isPassVL && !isPassLoose) ++nFailPh_0p07;
       if(isPassLoose) ++nLoosePh_0p07;
+    }
+    if(minDR_lep > 0.3  && ph.pt() > 20){
+      if(true)        ++nKinPh_0p3;
+      if(isPassVL)    ++nVLPh_0p3;
+      if(isPassVL && !isPassLoose) ++nFailPh_0p3;
+      if(isPassLoose) ++nLoosePh_0p3;
     }
     if(minDR_lep > 0.5  && ph.pt() > 20){
       if(true)        ++nKinPh_0p5;
       if(isPassVL)    ++nVLPh_0p5;
+      if(isPassVL && !isPassLoose) ++nFailPh_0p5;
       if(isPassLoose) ++nLoosePh_0p5;
     }
     if(minDR_lep > 0.7  && ph.pt() > 20){
       if(true)        ++nKinPh_0p7;
       if(isPassVL)    ++nVLPh_0p7;
+      if(isPassVL && !isPassLoose) ++nFailPh_0p7;
       if(isPassLoose) ++nLoosePh_0p7;
     }
 
@@ -235,6 +245,7 @@ void VVGammaAnalyzer::initEvent(){
       if(true)        ++nKinPh_noFSR;
       if(isPassVL)    ++nVLPh_noFSR;
       if(isPassLoose) ++nLoosePh_noFSR;
+      if(isPassVL && !isPassLoose) ++nFailPh_noFSR;
     }
 
 
@@ -290,23 +301,33 @@ void VVGammaAnalyzer::initEvent(){
   } // end loop on *photons
 
   // plots on surviving photons
-  if(true)           theHistograms->fill("cuts_kinPhIso"      , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, "All"  , theWeight);
-  if(nKinPh_0p07)    theHistograms->fill("cuts_kinPhIso"      , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, ">0.07", theWeight);
-  if(nKinPh_noFSR)   theHistograms->fill("cuts_kinPhIso"      , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, "noFSR", theWeight);
-  if(nKinPh_0p5)     theHistograms->fill("cuts_kinPhIso"      , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, ">0.5" , theWeight);
-  if(nKinPh_0p7)     theHistograms->fill("cuts_kinPhIso"      , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, ">0.7" , theWeight);
+  if(true)           theHistograms->fill("cuts_kinPhIso"      , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, "All"  , theWeight);
+  if(nKinPh_0p07)    theHistograms->fill("cuts_kinPhIso"      , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, ">0.07", theWeight);
+  if(nKinPh_noFSR)   theHistograms->fill("cuts_kinPhIso"      , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, "noFSR", theWeight);
+  if(nKinPh_0p3)     theHistograms->fill("cuts_kinPhIso"      , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, ">0.3" , theWeight);
+  if(nKinPh_0p5)     theHistograms->fill("cuts_kinPhIso"      , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, ">0.5" , theWeight);
+  if(nKinPh_0p7)     theHistograms->fill("cuts_kinPhIso"      , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, ">0.7" , theWeight);
 
-  if(true)           theHistograms->fill("cuts_veryLoosePhIso", ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, "All"  , theWeight);
-  if(nVLPh_0p07)     theHistograms->fill("cuts_veryLoosePhIso", ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, ">0.07", theWeight);
-  if(nVLPh_noFSR)    theHistograms->fill("cuts_veryLoosePhIso", ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, "noFSR", theWeight);
-  if(nVLPh_0p5)      theHistograms->fill("cuts_veryLoosePhIso", ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, ">0.5" , theWeight);
-  if(nVLPh_0p7)      theHistograms->fill("cuts_veryLoosePhIso", ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, ">0.7" , theWeight);
+  if(true)           theHistograms->fill("cuts_veryLoosePhIso", ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, "All"  , theWeight);
+  if(nVLPh_0p07)     theHistograms->fill("cuts_veryLoosePhIso", ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, ">0.07", theWeight);
+  if(nVLPh_noFSR)    theHistograms->fill("cuts_veryLoosePhIso", ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, "noFSR", theWeight);
+  if(nVLPh_0p3)      theHistograms->fill("cuts_veryLoosePhIso", ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, ">0.3" , theWeight);
+  if(nVLPh_0p5)      theHistograms->fill("cuts_veryLoosePhIso", ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, ">0.5" , theWeight);
+  if(nVLPh_0p7)      theHistograms->fill("cuts_veryLoosePhIso", ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, ">0.7" , theWeight);
 
-  if(true)           theHistograms->fill("cuts_loosePhIso"    , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, "All"  , theWeight);
-  if(nLoosePh_0p07)  theHistograms->fill("cuts_loosePhIso"    , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, ">0.07", theWeight);
-  if(nLoosePh_noFSR) theHistograms->fill("cuts_loosePhIso"    , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, "noFSR", theWeight);
-  if(nLoosePh_0p5)   theHistograms->fill("cuts_loosePhIso"    , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, ">0.5" , theWeight);
-  if(nLoosePh_0p7)   theHistograms->fill("cuts_loosePhIso"    , ";cut;Events", {"All", ">0.07", "noFSR", ">0.5", ">0.7"}, ">0.7" , theWeight);
+  if(true)           theHistograms->fill("cuts_failPhIso"     , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, "All"  , theWeight);
+  if(nFailPh_0p07)   theHistograms->fill("cuts_failPhIso"     , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, ">0.07", theWeight);
+  if(nFailPh_noFSR)  theHistograms->fill("cuts_failPhIso"     , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, "noFSR", theWeight);
+  if(nFailPh_0p3)    theHistograms->fill("cuts_failPhIso"     , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, ">0.3" , theWeight);
+  if(nFailPh_0p5)    theHistograms->fill("cuts_failPhIso"     , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, ">0.5" , theWeight);
+  if(nFailPh_0p7)    theHistograms->fill("cuts_failPhIso"     , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, ">0.7" , theWeight);
+
+  if(true)           theHistograms->fill("cuts_loosePhIso"    , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, "All"  , theWeight);
+  if(nLoosePh_0p07)  theHistograms->fill("cuts_loosePhIso"    , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, ">0.07", theWeight);
+  if(nLoosePh_noFSR) theHistograms->fill("cuts_loosePhIso"    , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, "noFSR", theWeight);
+  if(nLoosePh_0p3)   theHistograms->fill("cuts_loosePhIso"    , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, ">0.3" , theWeight);
+  if(nLoosePh_0p5)   theHistograms->fill("cuts_loosePhIso"    , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, ">0.5" , theWeight);
+  if(nLoosePh_0p7)   theHistograms->fill("cuts_loosePhIso"    , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, ">0.7" , theWeight);
 
 
   if(kinPhotons_["central"]->size() > 0)

@@ -170,6 +170,11 @@ def getVarInfo_VVGamma(region):
         'kinPhoton_MVA'        : {'title':'MVA score', 'unblind':True , 'logy':True},
         'veryLoosePhoton_MVA'  : {'title':'MVA score', 'unblind':False, 'logy':True},
         'loosePhoton_MVA'      : {'title':'MVA score', 'unblind':False, 'logy':True}
+        ,
+        'cuts_kinPhIso'        : {'logy':True, 'unblind':True },
+        'cuts_veryLoosePhIso'  : {'logy':True, 'unblind':False},
+        'cuts_failPhIso'       : {'logy':True, 'unblind':True },
+        'cuts_loosePhIso'      : {'logy':True, 'unblind':False}
         # ,
         # 'kinPhRes_dR'          : {'title':'#DeltaR'  , 'unblind':False},
         # 'noKinPh_all_genPh_N'  : {'title': '# #gamma_{GEN}'     },
