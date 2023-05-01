@@ -97,6 +97,43 @@ parser.add_argument("-i", "--inputDir",
 
 #REMEMBER ADD DEFINTION PLOT
 
+ROOT.gInterpreter.Declare(
+'''\
+#import "TMath.h"
+void drawtext(const char* graphName, const char* format="%.5g")
+{
+    Int_t i, n;
+    Double_t x, y, xm1, xp1;
+    TLatex *l;
+    TGraph *g = (TGraph*)gPad->GetListOfPrimitives()->FindObject(graphName);
+    if(!g){
+        printf(">>> drawtext(%s, %s): graph not found!\\n", graphName, format);
+        return;
+    }
+
+    Double_t xmin, ymin, xmax, ymax;
+    g->ComputeRange(xmin, ymin, xmax, ymax);
+    Double_t y_range = ymax-ymin;
+    //printf(">>> xmin: %f ymin: %f xmax: %f ymax: %f\\n", xmin, ymin, xmax, ymax);
+
+    n = g->GetN();
+    g->GetPoint(1,xp1,y);
+    for (i=0; i<n; i++) {
+        g->GetPoint(i,x,y);
+        Double_t xwidth = (i == 0 ? xp1-x : x-xm1);
+        Double_t xposition = x - xwidth/3;
+        Double_t yposition = y + y_range*(gPad->GetLogy() ? y*0.0002 : 0.025);
+        //printf("\\t%2d: x: %f, xm1: %f, width: %f\\n", i, x, xm1, xwidth);
+        l = new TLatex(xposition, yposition, Form(format,y));
+        l->SetTextSize(0.025);
+        //l->SetTextFont(42);
+        //l->SetTextAlign(21);
+        l->Paint();
+        xm1 = x;
+    }
+}
+'''
+)
 
 options = parser.parse_args()
 
@@ -241,7 +278,7 @@ for Var in variables:
             YMax *= 10
             pad1.SetLogy()
             hMC.GetHistogram().GetYaxis().SetMoreLogLabels()
-            if(YMax < 10000):
+            if(YMax < 100000):
                 hMC.GetHistogram().GetYaxis().SetNoExponent()
         if('AAA_cuts' in Var):
             YMax *= 1.3
@@ -265,7 +302,12 @@ for Var in variables:
     if DoData:
         graphData.SetMarkerStyle(20)
         graphData.SetMarkerSize(.9)
-        graphData.Draw("samep")
+        if(info.get('text')):
+            texec = ROOT.TExec("texec", 'drawtext("{}");'.format(graphData.GetName()))
+            graphData.GetListOfFunctions().Add(texec)
+            graphData.Draw("samep text")
+        else:
+            graphData.Draw("samep")
         leg.AddEntry(graphData, "Data", "lpe")
     
     if Var == "nJets":
@@ -336,7 +378,6 @@ for Var in variables:
     
     Line.Draw()
     histodata.Draw("E0 same")
-    
     
     
     if(not DoData):

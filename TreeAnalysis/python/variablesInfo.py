@@ -6,8 +6,8 @@ VarInfo_vbs = {"Mass":["m_{4\ell}","m_{4\ell}",40],"Mjj":["m_{jj}","m_{JJ}",20],
 
 def getVarInfo_VVX(region):
     VarInfo_VVX = {
-        "AAA_cuts"  : {'title':'Cuts', 'unblind':True, 'logy':False},
-        'channel_lep':{'title':'lepton flavour', 'unblind':True}
+        "AAA_cuts"  : {'title':'Cuts', 'text':True, 'unblind':True, 'logy':False},
+        'channel_lep':{'title':'lepton flavour', 'text':True, 'unblind':True}
     }
     return VarInfo_VVX
 
@@ -171,10 +171,10 @@ def getVarInfo_VVGamma(region):
         'veryLoosePhoton_MVA'  : {'title':'MVA score', 'unblind':False, 'logy':True},
         'loosePhoton_MVA'      : {'title':'MVA score', 'unblind':False, 'logy':True}
         ,
-        'cuts_kinPhIso'        : {'logy':True, 'unblind':True },
-        'cuts_veryLoosePhIso'  : {'logy':True, 'unblind':False},
-        'cuts_failPhIso'       : {'logy':True, 'unblind':True },
-        'cuts_loosePhIso'      : {'logy':True, 'unblind':False}
+        'cuts_kinPhIso'        : {'logy':True, 'text':True, 'unblind':True },
+        'cuts_veryLoosePhIso'  : {'logy':True, 'text':True, 'unblind':False},
+        'cuts_failPhIso'       : {'logy':True, 'text':True, 'unblind':True },
+        'cuts_loosePhIso'      : {'logy':True, 'text':True, 'unblind':False}
         # ,
         # 'kinPhRes_dR'          : {'title':'#DeltaR'  , 'unblind':False},
         # 'noKinPh_all_genPh_N'  : {'title': '# #gamma_{GEN}'     },
