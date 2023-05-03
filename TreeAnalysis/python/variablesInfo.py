@@ -31,6 +31,8 @@ def getVarInfo_VVGamma(region):
             'Z0_l1_pt': {'title':'p_{T}^{Z0, l1}'},
             'Z1_l0_pt': {'title':'p_{T}^{Z1, l0}'},
             'Z1_l1_pt': {'title':'p_{T}^{Z1, l1}'},
+            'Z0_dRll' : {},
+            'Z1_dRll' : {},
             'PhFRClosure_LtoT_pt-aeta_PASS_mZZG'     : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG},
             'PhFRClosure_KtoVL_pt-aeta_PASS_mZZG'    : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG},
             'PhFRClosure_KtoVLexcl_pt-aeta_PASS_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG},
@@ -67,6 +69,7 @@ def getVarInfo_VVGamma(region):
             'ZW_pt'   : {'title':'p_{T}^{3\ell\\nu}', 'rebin':1, 'unblind':True},
             'W_l_pt'  : {'title':'p_{t,l10};GeV/c'},
             'lll_mass': {'title':'m_{lll};GeV/c^{2}'},
+            'Z_dRll'  : {},
             # 'paperSel_ZW_massT' : {'title':'m_{T,3l} [GeV/c^{2}]'},
             # 'paperSel_Z_mass'   : {'title':'m_{Z} [GeV/c^{2}]'   },
             # 'paperSel_W_massT'  : {'title':'m_{T,W} [GeV/c^{2}]' },
@@ -160,13 +163,14 @@ def getVarInfo_VVGamma(region):
             'Z_mass'  :{'title': 'm_{Z} [GeV/c^{2}]' },
             'Z_l0_pt' :{'title': 'p_{t,lZ0} [GeV/c]' },
             'Z_l1_pt' :{'title': 'p_{t,lZ1} [GeV/c]' },
+            'Z_dRll'  :{},
             'L_pt'    :{'title': 'p_{t,l3} [GeV/c]'  }
         })
     
     # Photon stuff
     VarInfo_VVGamma.update({
         'kinPhotons_cuts'      : {'title':'cut'      , 'unblind':True, 'logy':True},
-        'kinPhotons_Nm1'       : {'title':'N-1 cuts' , 'unblind':True},
+        'kinPhotons_Nm1'       : {'title':'N-1 cuts' , 'unblind':True, 'text':True},
         'kinPhoton_MVA'        : {'title':'MVA score', 'unblind':True , 'logy':True},
         'veryLoosePhoton_MVA'  : {'title':'MVA score', 'unblind':False, 'logy':True},
         'loosePhoton_MVA'      : {'title':'MVA score', 'unblind':False, 'logy':True}
@@ -185,7 +189,9 @@ def getVarInfo_VVGamma(region):
         ,
         'fsrPhotons_lead_pt'    : {},
         'fsrPhotons_lead_eta'   : {},
+        'fsrPhotons_lead_dRl'   : {},
         'fsrPhotons_sublead_pt' : {},
+        'fsrPhotons_sublead_dRl': {},
         'fsrPhotons_sublead_eta': {}
         ,
         'sublead_kin_pt'      : {'title': 'p_{T} \gamma_{kin}^{sublead}'},
