@@ -243,9 +243,9 @@ def getVarInfo_VVGamma(region):
 
     # Jet stuff
     VarInfo_VVGamma.update({
-        'AK4_N'         : {'title':'# AK4'   , 'rebin':1, 'unblind':True, 'logy':True},
+        'AK4_N'         : {'title':'# AK4'   , 'rebin':1, 'unblind':True, 'logy':True, 'text':True},
         'AK4_pt'        : {'title':'p_{T}'   , 'rebin':1, 'unblind':True, 'logy':True},
-        'AK8_N'         : {'title':'# AK8'   , 'rebin':1, 'unblind':True, 'logy':True},
+        'AK8_N'         : {'title':'# AK8'   , 'rebin':1, 'unblind':True, 'logy':True, 'text':True},
         'AK8_pt'        : {'title':'p_{T}'   , 'rebin':1, 'unblind':True, 'logy':True}
     })
     

@@ -193,12 +193,13 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin, forcePosi
     for sample in samples:
         h = None
         for fname in sample['files']:
-            if(not os.path.exists(inputdir+fname+".root")):
+            rootfilename = inputdir+fname+".root"
+            if(not os.path.exists(rootfilename)):
                 if(verbosity >= 2):
-                    print _nameFormat.format(fname), "No file"
+                    print _nameFormat.format(fname), "No file" + ("" if(verbosity < 3) else " (%s)"%(rootfilename))
                 continue
 
-            fhandle = ROOT.TFile(inputdir+fname+".root")
+            fhandle = ROOT.TFile(rootfilename)
             h_current = fhandle.Get(plot)
             
             if(not h_current):

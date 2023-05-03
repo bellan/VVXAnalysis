@@ -100,7 +100,7 @@ parser.add_argument("-i", "--inputDir",
 ROOT.gInterpreter.Declare(
 '''\
 #import "TMath.h"
-void drawtext(const char* graphName, const char* format="%.5g")
+void drawtext(const char* graphName, const char* format="%.4g")
 {
     Int_t i, n;
     Double_t x, y, xm1, xp1;
@@ -111,10 +111,16 @@ void drawtext(const char* graphName, const char* format="%.5g")
         return;
     }
 
-    Double_t xmin, ymin, xmax, ymax;
-    g->ComputeRange(xmin, ymin, xmax, ymax);
-    Double_t y_range = ymax-ymin;
-    //printf(">>> xmin: %f ymin: %f xmax: %f ymax: %f\\n", xmin, ymin, xmax, ymax);
+    Double_t dummy, xmin, ymin, xmax, ymax;
+    gPad->GetRangeAxis(dummy, ymin, dummy, ymax);
+    g->ComputeRange(xmin, dummy, xmax, dummy);
+    Double_t factor = TMath::Exp((ymax/ymin)*0.08);
+    Double_t step   = (ymax-ymin)*0.03;
+    // printf(">>> xmin: %f, xmax: %f, ymin: %.4e, ymax: %.4e", xmin, xmax, ymin, ymax);
+    // if(gPad->GetLogy())
+    //     printf(" --> ratio: %.4f , factor: %.4f\\n", ymax/ymin, factor);
+    // else
+    //     printf(" --> diff : %.4f , step  : %.4f\\n", ymax-ymin, step  );
 
     n = g->GetN();
     g->GetPoint(1,xp1,y);
@@ -122,10 +128,11 @@ void drawtext(const char* graphName, const char* format="%.5g")
         g->GetPoint(i,x,y);
         Double_t xwidth = (i == 0 ? xp1-x : x-xm1);
         Double_t xposition = x - xwidth/3;
-        Double_t yposition = y + y_range*(gPad->GetLogy() ? y*0.0002 : 0.025);
+        Double_t yposition = gPad->GetLogy() ? y*factor : y+step;
+        //printf("\\t%2d: y: %.4g, yposition: %.4g\\n", i, y, yposition);
         //printf("\\t%2d: x: %f, xm1: %f, width: %f\\n", i, x, xm1, xwidth);
         l = new TLatex(xposition, yposition, Form(format,y));
-        l->SetTextSize(0.025);
+        l->SetTextSize(0.02 + 0.01/n);
         //l->SetTextFont(42);
         //l->SetTextAlign(21);
         l->Paint();
