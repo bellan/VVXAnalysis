@@ -187,12 +187,12 @@ def getVarInfo_VVGamma(region):
         # 'noKinPh_rec_genPh_pt' : {'title': '#gamma_{GEN} p_{T}' },
         # 'noKinPh_rec_genPh_eta': {'title': '#gamma_{GEN} #eta'  }
         ,
-        'fsrPhotons_lead_pt'    : {},
-        'fsrPhotons_lead_eta'   : {},
-        'fsrPhotons_lead_dRl'   : {},
-        'fsrPhotons_sublead_pt' : {},
-        'fsrPhotons_sublead_dRl': {},
-        'fsrPhotons_sublead_eta': {}
+        'lead_fsrPhotons_pt'    : {},
+        'lead_fsrPhotons_eta'   : {},
+        'lead_fsrPhotons_dRl'   : {},
+        'sublead_fsrPhotons_pt' : {},
+        'sublead_fsrPhotons_dRl': {},
+        'sublead_fsrPhotons_eta': {}
         ,
         'sublead_kin_pt'      : {'title': 'p_{T} \gamma_{kin}^{sublead}'},
         'sublead_veryLoose_pt': {'title': 'p_{T} sublead \gamma_{loose}'},
