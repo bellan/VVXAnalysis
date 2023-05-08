@@ -142,6 +142,7 @@ private:
   // Basic histograms
   void genEventHistos();
   void baseHistos_cut();
+  void fillPhotonPlots(const phys::Photon& ph, const char* name, const char* title);
   void photonHistos();
   void jetHistos();
   //void baseHistos_analyze();

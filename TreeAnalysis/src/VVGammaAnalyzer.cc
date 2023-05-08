@@ -202,6 +202,10 @@ void VVGammaAnalyzer::initEvent(){
   unsigned int nKinPh_0p7  (0), nVLPh_0p7  (0), nFailPh_0p7  (0), nLoosePh_0p7  (0);
   unsigned int nKinPh_noFSR(0), nVLPh_noFSR(0), nFailPh_noFSR(0), nLoosePh_noFSR(0);
 
+  // DEBUG
+  vector<Photon> fsrMatched; fsrMatched.reserve(fsrPhotons_->size());
+  vector<Photon> kinPhotonsWithFSR;  // do not veto FSR photons
+
   for(auto ph : *photons){
     //Pixel seed and electron veto
     if(ph.hasPixelSeed() || !ph.passElectronVeto()) continue;
@@ -243,10 +247,15 @@ void VVGammaAnalyzer::initEvent(){
       if(isPassLoose) ++nLoosePh_0p7;
     }
 
+    if(ph.pt() > 20)
+      kinPhotonsWithFSR.push_back(ph);
     // Remove photons that were used for FSR
     auto closestFSR = closestDeltaR(ph, *fsrPhotons_);
-    if(closestFSR != fsrPhotons_->cend() && deltaR(ph, *closestFSR) < 1e-3)
+    if(closestFSR != fsrPhotons_->cend() && deltaR(ph, *closestFSR) < 1e-3){
+      if(ph.pt() > 20)
+	fsrMatched.push_back(ph);
       continue;
+    }
 
     if(ph.pt() > 20){
       if(true)        ++nKinPh_noFSR;
@@ -306,6 +315,18 @@ void VVGammaAnalyzer::initEvent(){
     }
     
   } // end loop on *photons
+
+  // DEBUG
+  theHistograms->fill("kinPhotonsWithFSR_N"  , "Kin photons including FSR;N #gamma;Events", 5,-0.5,4.5, kinPhotonsWithFSR.size(), theWeight);
+  if(kinPhotonsWithFSR.size() > 0){
+    const Photon& ph = kinPhotonsWithFSR.at(0);
+    fillPhotonPlots(ph, "lead_kinPhotonsWithFSR", "Leading Kin including FSR");
+  }
+  theHistograms->fill("fsrMatched_N"         , "FSR matched photons;N #gamma;Events", 5,-0.5,4.5, fsrMatched.size(), theWeight);
+  if(fsrMatched.size() > 0){
+    const Photon& ph = fsrMatched.at(0);
+    fillPhotonPlots(ph, "lead_fsrMatched", "Leading FSR matched");
+  }
 
   // plots on surviving photons
   if(true)           theHistograms->fill("cuts_kinPhIso"      , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, "All"  , theWeight);
@@ -1292,6 +1313,7 @@ void VVGammaAnalyzer::photonHistos(){
   }
   
   // pt and eta distribution of photons
+  theHistograms->fill("kinPhotons_N"  , "Kin photons;N #gamma;Events", 5,-0.5,4.5, kinPhotons_["central"]->size(), theWeight);
   if(kinPhotons_["central"]->size() > 0){
     const Photon& ph = kinPhotons_["central"]->at(0);
     fillPhotonPlots(ph, "lead_kin", "Leading Kin");
