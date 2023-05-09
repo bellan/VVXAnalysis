@@ -46,7 +46,7 @@ void VVGammaAnalyzer::begin(){
   cout<<'\n';
   
   // Photon FR
-  TFile fileFR(Form("data/LtoT_FR_data-ZGToLLG_%d.root", year), "READ" );
+  TFile fileFR(Form("data/FR_VLtoL_pt-aeta_data_%d.root", year), "READ" );
   if(fileFR.IsOpen()){
     hPhotonFR_.reset( std::move((TH2F*) fileFR.Get("PhFR")) );
     hPhotonFR_->SetDirectory(nullptr);  // prevent ROOT from deleting it
@@ -59,7 +59,7 @@ void VVGammaAnalyzer::begin(){
   }
   
   // FR extended
-  TFile fileFR_KtoVL(Form("data/KtoVL_FR_data-ZGToLLG_%d.root", year), "READ" );
+  TFile fileFR_KtoVL(Form("data/FR_KtoVL_pt-aeta_data_%d.root", year), "READ" );
   if(fileFR_KtoVL.IsOpen()){
     hPhotonFR_KtoVL_.reset( std::move((TH2F*) fileFR_KtoVL.Get("PhFR")) );
     hPhotonFR_KtoVL_->SetDirectory(nullptr);  // prevent ROOT from deleting it
@@ -71,7 +71,7 @@ void VVGammaAnalyzer::begin(){
     hPhotonFR_KtoVL_.reset( new TH2F("PhFR", "", 1,0.,1., 1,0.,1.) );
   }
   
-  TFile fileFR_KtoVLexcl(Form("data/KtoVLexcl_FR_data-ZGToLLG_%d.root", year), "READ" );
+  TFile fileFR_KtoVLexcl(Form("data/FR_KtoVLexcl_pt-aeta_data_%d.root", year), "READ" );
   if(fileFR_KtoVLexcl.IsOpen()){
     hPhotonFR_KtoVLexcl_.reset( std::move((TH2F*) fileFR_KtoVLexcl.Get("PhFR")) );
     hPhotonFR_KtoVLexcl_->SetDirectory(nullptr);  // prevent ROOT from deleting it
@@ -84,7 +84,7 @@ void VVGammaAnalyzer::begin(){
   }
   
   // FR SF
-  TFile fileFRSF_LtoT(Form("data/LtoT_ratio_data-ZG_over_ZZ_%d.root", year), "READ");
+  TFile fileFRSF_LtoT(Form("data/ratio_VLtoL_pt-aeta_data_over_ZZ_%d.root", year), "READ");
   if(fileFRSF_LtoT.IsOpen()){
     hPhotonFRSF_LtoT_.reset( std::move((TH2F*) fileFRSF_LtoT.Get("PhFRSF")) );
     hPhotonFRSF_LtoT_->SetDirectory(nullptr);  // prevent ROOT from deleting it
