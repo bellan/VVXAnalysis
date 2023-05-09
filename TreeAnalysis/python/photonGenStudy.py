@@ -4,32 +4,7 @@ from os import path, mkdir
 from copy import deepcopy
 import ROOT
 from ctypes import c_double
-
-
-class TFileContext(object):
-    def __init__(self, *args):
-        self.tfile = ROOT.TFile(*args)
-    def __enter__(self):
-        return self.tfile
-    def __exit__(self, type, value, traceback):
-        self.tfile.Close()
-
-
-def getPlots(inputdir, sample, plots):
-    fname = path.join(inputdir, sample+".root")
-    retrieved = []
-    if(not path.exists(fname)):
-        print('WARN: file "{}" does not exist'.format(fname))
-        return [None for plot in plots]
-    with TFileContext(fname) as rFile:
-        for plot in plots:
-            h = rFile.Get(plot)
-            if(not h):
-                print('Warning: Could not get "%s" from "%s"' % (plot, fname))
-                retrieved.append(None)
-            else:
-                retrieved.append( deepcopy(h) )
-    return retrieved
+from plotUtils3 import TFileContext, getPlots
 
 
 def integralTH1(h, direction=+1):

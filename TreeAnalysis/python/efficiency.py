@@ -3,18 +3,9 @@
 from __future__ import print_function
 import sys, os
 import ROOT
+from plotUtils3 import TFileContext
 
 ROOT.gROOT.SetBatch(True)
-
-class TFileContext(object):
-    def __init__(self, *args):
-        # print('>>>Opening file with args:', args)
-        self.tfile = ROOT.TFile(*args)
-    def __enter__(self):
-        return self.tfile
-    def __exit__(self, type, value, traceback):
-        # print('<<<Closing TFile "%s"' % (self.tfile.GetName()))
-        self.tfile.Close()
 
 # input
 config = {
