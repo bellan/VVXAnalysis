@@ -205,7 +205,7 @@ def getVarInfo_VVGamma(region):
         'furthestLoosePh' : {'unblind':False}
     })
 
-    for status in ('kin', 'kinVetoVL', 'kinVetoL', 'veryLoose', 'VLchIso', 'VLsieie', 'fail', 'fail3', 'fail4a', 'fail4b', 'loose'):
+    for status in ('kin', 'kinVetoVL', 'kinVetoL', 'veryLoose', 'VLchIso', 'VLsieie', 'fail', 'fail3', 'fail4a', 'fail4b', 'loose', 'fsrMatched'):
         variables = [('pt', 'p_{T}'), ('aeta', '|#eta|'), ('dRl', '#DeltaR(l, #gamma)'), ('MVA', 'MVA')]
         unblind = not (status == 'veryLoose' or status == 'loose' or status ==  'VLchIso' or status == 'VLsieie')
         if(not status.startswith('kin')):
