@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 ##############################################
 #                                         
@@ -7,7 +7,8 @@
 ##############################################
 
 from __future__ import print_function
-from os import path, environ
+import sys
+from os import path, environ, makedirs
 import copy
 import ROOT
 # from readSampleInfo import *
@@ -18,7 +19,13 @@ from array import array
 import itertools
 import re
 
-from plotUtils import TFileContext, makedirs_ok
+if(sys.version_info.major == 2):
+    from plotUtils import TFileContext, makedirs_ok
+else:
+    from plotUtils3 import TFileContext
+    def makedirs_ok(*args):
+        makedirs(*args, exist_ok=True)
+
 
 ROOT.gStyle.SetPaintTextFormat(".2f")
 
@@ -648,8 +655,8 @@ def plotProfiled(h2, name=None, title='profile', direction='X'):
         {"color":ROOT.kCyan    , "marker":ROOT.kFullStar},
         {"color":ROOT.kYellow+3, "marker":ROOT.kFullCross}
     ]
-    
-    cprof = ROOT.TCanvas("c_"+h2.GetName(), h2.GetName(), 1200, 900)
+
+    cprof = ROOT.TCanvas("c_"+name, h2.GetName(), 1200, 900)
     cprof.cd()
     if  (direction=='Y'):
         axis_2D_proj = h2.GetYaxis()
@@ -717,6 +724,7 @@ def plotProfiled(h2, name=None, title='profile', direction='X'):
     legend.Draw("SAME")
     
     cprof.SaveAs( "Plot/PhFR/{:s}.png".format(name) )
+    del legend, cprof
 
 
 def findChannelsInFile(fname, method, variable):
