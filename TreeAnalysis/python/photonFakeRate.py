@@ -132,7 +132,7 @@ def linesAndTicks(h, logx=False, logy=False):
 def beautify(canvas, hist, logx=False, logy=False, logz=False):
     canvas.cd()
     # hist.GetXaxis().SetNdivisions(0)
-    hist.GetXaxis().SetRange(1, hist.GetXaxis().GetNbins())
+    # hist.GetXaxis().SetRange(0, hist.GetXaxis().GetNbins()+1)
     hist.Draw("colz texte")
 
     if(logx):
@@ -162,9 +162,11 @@ def get_path_results_base():
     return path_base
 
 
+_path_base = None  # Module-wide variable
 def get_path_results(year, analyzer, region):
+    path_base = _path_base if _path_base is not None else get_path_results_base()
     # return "{:s}/{}/{:s}_{:s}".format(get_path_results_base(), year, analyzer, region)
-    return path.join(get_path_results_base(), str(year), '_'.join([analyzer, region]))
+    return path.join(path_base, str(year), '_'.join([analyzer, region]))
 
 
 def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", year=2016, region="CRLFR", logx=False, logy=False, fixNegBins=False):
@@ -767,10 +769,13 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--method" , choices=possible_methods, default="VLtoL")
     parser.add_argument("-t", "--variable", default = "pt-aeta")
     parser.add_argument("-s", "--final-state", default=None)
+    parser.add_argument("-i", "--inputdir", default="results")
     parser.add_argument(      "--channels", action='store_true')
     parser.add_argument(      "--no-mc"  , dest="do_mc"  , action="store_false", help="Skip MC plots"  )
     parser.add_argument(      "--no-data", dest="do_data", action="store_false", help="Skip data plots")
     args = parser.parse_args()
+
+    _path_base = args.inputdir
 
     ROOT.gStyle.SetOptStat(0)
     ROOT.gROOT.SetBatch(True)
@@ -917,39 +922,32 @@ if __name__ == "__main__":
 
     else:  # args.channels is false
         print("########## INCLUSIVE   method:", args.method, " variable:", args.variable, " final_state:", args.final_state, "##########")
-        if(True):
-        # if(args.variable.startswith('pt-dRL')):
-            if(args.do_data):
-                pass
-            if(args.do_mc):
-                pass
-            if(args.do_data and args.do_mc):
-                pass
-        # elif(args.variable.startswith('pt-aeta')):
-            if(args.do_data):
-                pass
-            if(args.do_mc):
-                hFR_DY   = fakeRateLtoT(sampleList["Drell-Yan"]       , None, year=args.year, method=method, variable=varState, logx=True, fixNegBins=True)
-                hFR_ZG   = fakeRateLtoT(sampleList["ZGToLLG"]         , None, year=args.year, method=method, variable=varState, logx=True, fixNegBins=True)
-                hFR_ZZ   = fakeRateLtoT(sampleList["ZZTo4l"]          , None, year=args.year, method=method, variable=varState, logx=True, fixNegBins=True)
-                hFR_ZZ_4P= fakeRateLtoT(sampleList["ZZTo4l"]          , None, year=args.year, method=method, variable=varState, logx=True, fixNegBins=True, region='SR4P')
-                # hFR_gg   = fakeRateLtoT(sampleList["ggTo4l"]          , None, year=args.year, method=method, variable=varState, logx=True, fixNegBins=True)
+        if(args.do_data):
+            pass
+        if(args.do_mc):
+            hFR_DY   = fakeRateLtoT(sampleList["Drell-Yan"]       , None, year=args.year, method=method, variable=varState, logx=True, fixNegBins=True)
+            hFR_ZG   = fakeRateLtoT(sampleList["ZGToLLG"]         , None, year=args.year, method=method, variable=varState, logx=True, fixNegBins=True)
+            hFR_ZZ   = fakeRateLtoT(sampleList["ZZTo4l"]          , None, year=args.year, method=method, variable=varState, logx=True, fixNegBins=True)
+            hFR_ZZ_4P= fakeRateLtoT(sampleList["ZZTo4l"]          , None, year=args.year, method=method, variable=varState, logx=True, fixNegBins=True, region='SR4P')
+            # hFR_gg   = fakeRateLtoT(sampleList["ggTo4l"]          , None, year=args.year, method=method, variable=varState, logx=True, fixNegBins=True)
 
-                plotRatio(hFR_ZZ_4P, hFR_ZZ, name="ratio_{}_{}_ZZ4P_over_ZZCRLFR_{}".format(method, varState, args.year), title="Ratio FR(ZZ_{4P})/FR(ZZ_{CRLFR}) with "+joinIfNotNone([method, args.final_state], " "))
-                print()
-            if(args.do_data and args.do_mc):
-                hFR_data_ZG = fakeRateLtoT(sampleList["data"], sampleList["ZGToLLG"], year=args.year, method=method, variable=varState, logx=True, fixNegBins=False)
-                hFR_data    = fakeRateLtoT(sampleList["data"], None                 , year=args.year, method=method, variable=varState, logx=True, fixNegBins=False)
-                plotProfiled(hFR_data_ZG, name='FR_profiledX_{}_{}_data-ZGToLLG'.format(method, varState), title='FR(#gamma) vs #eta' , direction='X')
-                plotProfiled(hFR_data_ZG, name='FR_profiledY_{}_{}_data-ZGToLLG'.format(method, varState), title='FR(#gamma) vs p_{T}', direction='Y')
-                plotProfiled(hFR_data   , name='FR_profiledX_{}_{}_data'        .format(method, varState), title='FR(#gamma) vs #eta' , direction='X')
-                plotProfiled(hFR_data   , name='FR_profiledY_{}_{}_data'        .format(method, varState), title='FR(#gamma) vs p_{T}', direction='Y')
+            plotRatio(hFR_ZZ_4P, hFR_ZZ, name="ratio_{}_{}_ZZ4P_over_ZZCRLFR_{}".format(method, varState, args.year), title="Ratio FR(ZZ_{4P})/FR(ZZ_{CRLFR}) with "+joinIfNotNone([method, args.final_state], " "))
+            print()
+        if(args.do_data and args.do_mc):
+            hFR_data_ZG = fakeRateLtoT(sampleList["data"], sampleList["ZGToLLG"], year=args.year, method=method, variable=varState, logx=True, fixNegBins=False)
+            hFR_data    = fakeRateLtoT(sampleList["data"], None                 , year=args.year, method=method, variable=varState, logx=True, fixNegBins=False)
+            plotProfiled(hFR_data_ZG, name='FR_profiledX_{}_{}_data-ZGToLLG'.format(method, varState), title='FR(#gamma) vs #eta' , direction='X')
+            plotProfiled(hFR_data_ZG, name='FR_profiledY_{}_{}_data-ZGToLLG'.format(method, varState), title='FR(#gamma) vs p_{T}', direction='Y')
+            plotProfiled(hFR_data   , name='FR_profiledX_{}_{}_data'        .format(method, varState), title='FR(#gamma) vs #eta' , direction='X')
+            plotProfiled(hFR_data   , name='FR_profiledY_{}_{}_data'        .format(method, varState), title='FR(#gamma) vs p_{T}', direction='Y')
 
-                plotRatio(hFR_data   , hFR_DY, name="ratio_{}_{}_data_over_DY_{}"   .format(method, varState, args.year), title="Ratio FR(data)/FR(DY) with "        +joinIfNotNone([method, args.final_state], " "))
-                plotRatio(hFR_data   , hFR_ZZ, name="ratio_{}_{}_data_over_ZZ_{}"   .format(method, varState, args.year), title="Ratio FR(data)/FR(ZZ) with "        +joinIfNotNone([method, args.final_state], " "))
-                plotRatio(hFR_data_ZG, hFR_DY, name="ratio_{}_{}_data-ZG_over_DY_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(DY) with "+joinIfNotNone([method, args.final_state], " "))
-                plotRatio(hFR_data_ZG, hFR_ZZ, name="ratio_{}_{}_data-ZG_over_ZZ_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(ZZ) with "+joinIfNotNone([method, args.final_state], " "))
-                # plotRatio(hFR_LtoT_data, hFR_LtoT_ZZ_4P, name="ratio_{}_{}_data-ZG_over_ZZ_4P_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)_{CRLFR}/FR(ZZ_{4P}) with "+joinIfNotNone([method, args.final_state], " "))
-                # plotRatio(hFR_LtoT_data, hFR_LtoT_gg, name="ratio_{}_{}_data-ZG_over_gg_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(gg) with "+joinIfNotNone([method, args.final_state], " "))
-                print()
+            plotRatio(hFR_data   , hFR_DY, name="ratio_{}_{}_data_over_DY_{}"   .format(method, varState, args.year), title="Ratio FR(data)/FR(DY) with "        +joinIfNotNone([method, args.final_state], " "))
+            plotRatio(hFR_data   , hFR_ZZ, name="ratio_{}_{}_data_over_ZZ_{}"   .format(method, varState, args.year), title="Ratio FR(data)/FR(ZZ) with "        +joinIfNotNone([method, args.final_state], " "))
+            plotRatio(hFR_data   , hFR_ZZ_4P, name="ratio_{}_{}_data_over_ZZ4P_{}".format(method, varState, args.year), title="Ratio FR(data)/FR(ZZ_{SR4P}) with "+joinIfNotNone([method, args.final_state], " "))
+            plotRatio(hFR_data_ZG, hFR_DY, name="ratio_{}_{}_data-ZG_over_DY_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(DY) with "+joinIfNotNone([method, args.final_state], " "))
+            plotRatio(hFR_data_ZG, hFR_ZZ, name="ratio_{}_{}_data-ZG_over_ZZ_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(ZZ) with "+joinIfNotNone([method, args.final_state], " "))
+            plotRatio(hFR_data_ZG, hFR_ZZ_4P, name="ratio_{}_{}_data-ZG_over_ZZ4P_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(ZZ_{SR4P}) with "+joinIfNotNone([method, args.final_state], " "))
+            # plotRatio(hFR_LtoT_data, hFR_LtoT_ZZ_4P, name="ratio_{}_{}_data-ZG_over_ZZ_4P_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)_{CRLFR}/FR(ZZ_{4P}) with "+joinIfNotNone([method, args.final_state], " "))
+            # plotRatio(hFR_LtoT_data, hFR_LtoT_gg, name="ratio_{}_{}_data-ZG_over_gg_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(gg) with "+joinIfNotNone([method, args.final_state], " "))
+            print()
 
