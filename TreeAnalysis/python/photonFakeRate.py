@@ -27,6 +27,9 @@ else:
         makedirs(*args, exist_ok=True)
 
 
+_path_base = None  # Module-wide variable
+_outdir_data = "data"
+_outdir_plot = path.join("Plot","PhFR")
 ROOT.gStyle.SetPaintTextFormat(".2f")
 
 def getPlots(inputdir, sample, plots, verbose=0):
@@ -162,7 +165,6 @@ def get_path_results_base():
     return path_base
 
 
-_path_base = None  # Module-wide variable
 def get_path_results(year, analyzer, region):
     path_base = _path_base if _path_base is not None else get_path_results_base()
     # return "{:s}/{}/{:s}_{:s}".format(get_path_results_base(), year, analyzer, region)
@@ -173,7 +175,7 @@ def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", year=20
     print("Fake Rate ABCD: data     =", sample_data  )
     print("Fake Rate ABCD: promptMC =", sample_prompt)
     path_in = get_path_results(year=year, analyzer=analyzer, region=region)
-    outfname = "data/ABCD_FR_{dataname:s}-{promptname:s}_{year}.root".format(dataname=sample_data["name"], promptname=sample_prompt["name"], year=year)
+    outfname = "{outdir}/ABCD_FR_{dataname:s}-{promptname:s}_{year}.root".format(outdir=_outdir_data, dataname=sample_data["name"], promptname=sample_prompt["name"], year=year)
     print('Output (with prompt MC subtraction) in: "{:s}"'.format(outfname))
     
     ##### First: only data ####
@@ -220,7 +222,7 @@ def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", year=20
     to_preserve_FR = beautify(cFR, hFR, logx, logy)
     
     for ext in ["png"]:
-        cFR.SaveAs( "Plot/PhFR/ABCD_FR_{dataname:s}-{promptname:s}_{year}.{ext:s}".format(dataname=sample_data["name"], promptname=sample_prompt["name"], year=year, ext=ext) )
+        cFR.SaveAs( "{outdir}/ABCD_FR_{dataname:s}-{promptname:s}_{year}.{ext:s}".format(outdir=_outdir_plot, dataname=sample_data["name"], promptname=sample_prompt["name"], year=year, ext=ext) )
     del cFR, to_preserve_FR
     
     ## Estimate = B*C/D ##
@@ -242,7 +244,7 @@ def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", year=20
     to_preserve_ESdata = beautify(cES, hES, logx, logy, logz=True)
     
     for ext in ["png"]:
-        cES.SaveAs( "Plot/PhFR/ABCD_Estimate_{dataname:s}-{promptname:s}_{year}.{ext:s}".format(dataname=sample_data["name"], promptname=sample_prompt["name"], year=year, ext=ext) )
+        cES.SaveAs( "{outdir}/ABCD_Estimate_{dataname:s}-{promptname:s}_{year}.{ext:s}".format(outdir=_outdir_plot, dataname=sample_data["name"], promptname=sample_prompt["name"], year=year, ext=ext) )
     del cES, to_preserve_ESdata
 
     ## k-Factor = (C/D)/(A/B)
@@ -259,7 +261,7 @@ def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", year=20
         hKF.Write(hKF.GetName(), ROOT.TObject.kOverwrite)
     
     to_preserve_KF = beautify(cKF, hKF, logx, logy)
-    cKF.SaveAs( 'Plot/PhFR/ABCD_kFactor_{dataname:s}-{promptname:s}_{year}.{ext:s}'.format(dataname=sample_data['name'], promptname=sample_prompt['name'], year=year, ext='png') )
+    cKF.SaveAs( '{outdir}/ABCD_kFactor_{dataname:s}-{promptname:s}_{year}.{ext:s}'.format(outdir=_outdir_plot, dataname=sample_data['name'], promptname=sample_prompt['name'], year=year, ext='png') )
     del cKF, to_preserve_KF
     
     return hFR, hES, hKF
@@ -271,7 +273,7 @@ def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", year=20
 def fakeRateABCD_noSubtract(sample, analyzer="VVGammaAnalyzer", year=2016, region="CRLFR", logx=False, logy=False, fixNegBins=False):
     print("Fake Rate ABCD: sample   =", sample  )
     path_in = get_path_results(year=year, analyzer=analyzer, region=region)
-    outfname = "data/ABCD_FR_{samplename:s}_{year}.root".format(samplename=sample["name"], year=year)
+    outfname = "{outdir:s}/ABCD_FR_{samplename:s}_{year}.root".format(outdir=_outdir_data, samplename=sample["name"], year=year)
     print('Output (without MC subtraction) in: "{:s}"'.format(outfname))
     
     hAp, hBp, hCp, hDp = getPlots(path_in, sample["file"], [ "PhFR_%s_nonprompt" % (c) for c in 'ABCD' ] )
@@ -303,7 +305,7 @@ def fakeRateABCD_noSubtract(sample, analyzer="VVGammaAnalyzer", year=2016, regio
     # Probably python/ROOT gc deletes these graphic objects and they disappear from the canvas. Holding a reference to them seems to fix it
         
     for ext in ["png"]:
-        cFR.SaveAs( "Plot/PhFR/ABCD_FR_{samplename:s}_{year}.{ext:s}".format(samplename=sample["name"], year=year, ext=ext) )
+        cFR.SaveAs( "{outdir}/ABCD_FR_{samplename:s}_{year}.{ext:s}".format(outdir=_outdir_plot, samplename=sample["name"], year=year, ext=ext) )
     del cFR, to_preserve_FR
 
     ## Estimate = B*C/D ##
@@ -321,7 +323,7 @@ def fakeRateABCD_noSubtract(sample, analyzer="VVGammaAnalyzer", year=2016, regio
 
     to_preserve_ES = beautify(cES, hES, logx, logy, logz=True)
     for ext in ["png"]:
-        cES.SaveAs( "Plot/PhFR/ABCD_Estimate_{samplename:s}_{year}.{ext:s}".format(samplename=sample["name"], year=year, ext=ext) )
+        cES.SaveAs( "{outdir}/ABCD_Estimate_{samplename:s}_{year}.{ext:s}".format(outdir=_outdir_plot, samplename=sample["name"], year=year, ext=ext) )
     del cES, to_preserve_ES
 
     ## k-Factor = (C/D)/(A/B)
@@ -338,7 +340,7 @@ def fakeRateABCD_noSubtract(sample, analyzer="VVGammaAnalyzer", year=2016, regio
         hKF.Write(hKF.GetName(), ROOT.TObject.kOverwrite)
     
     to_preserve_KF = beautify(cKF, hKF, logx, logy)
-    cKF.SaveAs( 'Plot/PhFR/ABCD_kFactor_{samplename:s}_{year}.{ext:s}'.format(samplename=sample['name'], year=year, ext='png') )
+    cKF.SaveAs( '{outdir}/ABCD_kFactor_{samplename:s}_{year}.{ext:s}'.format(outdir=_outdir_plot, samplename=sample['name'], year=year, ext='png') )
     del cKF, to_preserve_KF
     
     return hFR, hES, hKF
@@ -590,8 +592,8 @@ def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=20
 
 
 def plotFR_LtoT(hFR, outname, title, logx=False, logy=False):
-    outfname = 'data/{}.root'.format(outname)
-    picname = 'Plot/PhFR/{}'.format(outname)
+    outfname = path.join(_outdir_data, outname+'.root')
+    picname  = path.join(_outdir_plot, outname)
 
     cFR = ROOT.TCanvas( 'cFR_{}'.format(outname), title, 1200, 900 )
     cFR.cd()
@@ -631,8 +633,8 @@ def plotRatio(h1, h2, name="ratio", title="ratio"):
     ratio.Draw("colz texte")
     to_preserve = beautify(c, ratio, True, False)
     # ratio.GetYaxis().SetRange(1, ratio.GetXaxis().GetNbins())
-    c.SaveAs('Plot/PhFR/{:s}.png'.format(name))
-    with TFileContext(path.join('data', name+'.root'), 'RECREATE') as tf:
+    c.SaveAs('{:s}/{:s}.png'.format(_outdir_plot, name))
+    with TFileContext(path.join(_outdir_data, name+'.root'), 'RECREATE') as tf:
         tf.cd()
         ratio.Write()
         print('Output (ratio) in "{:s}"'.format(tf.GetName()))
@@ -725,7 +727,7 @@ def plotProfiled(h2, name=None, title='profile', direction='X'):
     
     legend.Draw("SAME")
     
-    cprof.SaveAs( "Plot/PhFR/{:s}.png".format(name) )
+    cprof.SaveAs( "{:s}/{:s}.png".format(_outdir_plot, name) )
     del legend, cprof
 
 
@@ -770,19 +772,30 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--variable", default = "pt-aeta")
     parser.add_argument("-s", "--final-state", default=None)
     parser.add_argument("-i", "--inputdir", default="results")
+    parser.add_argument("-o", "--outputdir", default=None)
     parser.add_argument(      "--channels", action='store_true')
     parser.add_argument(      "--no-mc"  , dest="do_mc"  , action="store_false", help="Skip MC plots"  )
     parser.add_argument(      "--no-data", dest="do_data", action="store_false", help="Skip data plots")
     args = parser.parse_args()
 
+    # Set paths for output
     _path_base = args.inputdir
+    if(args.outputdir is not None):
+        _outdir_data = path.join(_outdir_data, args.outputdir)
+        _outdir_plot = path.join(_outdir_plot, args.outputdir)
+    elif(args.inputdir != parser.get_default('inputdir')):
+        _outdir_data = path.join(_outdir_data, args.inputdir.split('results_')[-1])
+        _outdir_plot = path.join(_outdir_plot, args.inputdir.split('results_')[-1])
+    print(f'{_outdir_data=}\n{_outdir_plot=}')
 
+    # Set up ROOT options and create dirs
     ROOT.gStyle.SetOptStat(0)
     ROOT.gROOT.SetBatch(True)
 
-    makedirs_ok('data')
-    makedirs_ok('Plot/PhFR')
+    makedirs_ok(_outdir_data)
+    makedirs_ok(_outdir_plot)
 
+    # Start FR plots
     if(args.method == "ABCD"):
         if(args.do_data):
             print('##### ABCD data #####')
