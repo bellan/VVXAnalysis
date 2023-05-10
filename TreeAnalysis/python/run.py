@@ -33,7 +33,7 @@ years   = [2016,2017,2018]
 parser = OptionParser(usage="usage: %prog <analysis> <sample> [options]")
 
 parser.add_option("-r", "--regions", dest="regions",
-                  default="SR4P",
+                  default="SR2P", #SR4P
                   help="Region type are {0:s}. Default is SR4P.".format(', '.join(allowed_regions)))
 
 

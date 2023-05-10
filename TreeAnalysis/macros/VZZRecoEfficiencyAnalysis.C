@@ -27,8 +27,8 @@ using namespace std;
 void VZZRecoEfficiencyAnalysis(TString requestedSample){
 
   
-  TString path = "~/VVXAnalysis/TreeAnalysis/results/WZZAnalyzer_MC/";
-  TString otherPath =  "~/VVXAnalysis/TreeAnalysis/results/WZZAnalyzer_SR/";
+  TString path = "~/VVXAnalysis/TreeAnalysis/results/2017/WZZAnalyzer_SR2P/";
+  //TString otherPath =  "~/VVXAnalysis/TreeAnalysis/results/WZZAnalyzer_SR/";
   
   vector<TString> samples = {"WZZ", "ZZZ"};
   vector<TString> parNames = {"W","Z"};
