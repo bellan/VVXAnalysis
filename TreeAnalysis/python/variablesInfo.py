@@ -33,12 +33,12 @@ def getVarInfo_VVGamma(region):
             'Z1_l1_pt': {'title':'p_{T}^{Z1, l1}'},
             'Z0_dRll' : {},
             'Z1_dRll' : {},
-            'PhFRClosure_LtoT_pt-aeta_PASS_mZZG'     : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG},
-            'PhFRClosure_KtoVL_pt-aeta_PASS_mZZG'    : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG},
-            'PhFRClosure_KtoVLexcl_pt-aeta_PASS_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG},
-            'PhFRClosure_LtoT_pt-aeta_FAIL_mZZG'     : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG},
-            'PhFRClosure_KtoVL_pt-aeta_FAIL_mZZG'    : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG},
-            'PhFRClosure_KtoVLexcl_pt-aeta_FAIL_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG}  #This is probably the same as the previous one
+            'PhFRClosure_VLtoL_pt-aeta_data_PASS_mZZG'  : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG},
+            'PhFRClosure_VLtoL_pt-aeta_dataZG_PASS_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG},
+            'PhFRClosure_KtoVLexcl_pt-aeta_PASS_mZZG'   : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG},
+            'PhFRClosure_VLtoL_pt-aeta_data_FAIL_mZZG'  : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG},
+            'PhFRClosure_VLtoL_pt-aeta_dataZG_FAIL_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG},
+            'PhFRClosure_KtoVLexcl_pt-aeta_FAIL_mZZG'   : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG}
         })
         
         for name, title in channels:

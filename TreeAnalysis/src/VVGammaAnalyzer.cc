@@ -46,55 +46,15 @@ void VVGammaAnalyzer::begin(){
   cout<<'\n';
   
   // Photon FR
-  TFile fileFR(Form("data/FR_VLtoL_pt-aeta_data_%d.root", year), "READ" );
-  if(fileFR.IsOpen()){
-    hPhotonFR_.reset( std::move((TH2F*) fileFR.Get("PhFR")) );
-    hPhotonFR_->SetDirectory(nullptr);  // prevent ROOT from deleting it
-    cout << "INFO: retrieved Photon FR histogram from \""<<fileFR.GetName()<<"\"\n";
-    fileFR.Close();
-  }
-  else{
-    cout << colour::Red("WARN") << ": Photon FR file not found in \""<<fileFR.GetName()<<"\"\n";
-    hPhotonFR_.reset( new TH2F("PhFR", "", 1,0.,1., 1,0.,1.) );
-  }
+  hPhotonFR_VLtoL_data_   = getHistfromFile(Form("data/FR_VLtoL_pt-aeta_data_%d.root"        , year), "PhFR", " VLtoL (data)"   );
   
   // FR extended
-  TFile fileFR_KtoVL(Form("data/FR_KtoVL_pt-aeta_data_%d.root", year), "READ" );
-  if(fileFR_KtoVL.IsOpen()){
-    hPhotonFR_KtoVL_.reset( std::move((TH2F*) fileFR_KtoVL.Get("PhFR")) );
-    hPhotonFR_KtoVL_->SetDirectory(nullptr);  // prevent ROOT from deleting it
-    cout << "INFO: retrieved Photon FR KtoVL histogram from \""<<fileFR_KtoVL.GetName()<<"\"\n";
-    fileFR_KtoVL.Close();
-  }
-  else{
-    cout << colour::Red("WARN") << ": Photon FR KtoVL file not found in \""<<fileFR_KtoVL.GetName()<<"\"\n";
-    hPhotonFR_KtoVL_.reset( new TH2F("PhFR", "", 1,0.,1., 1,0.,1.) );
-  }
-  
-  TFile fileFR_KtoVLexcl(Form("data/FR_KtoVLexcl_pt-aeta_data_%d.root", year), "READ" );
-  if(fileFR_KtoVLexcl.IsOpen()){
-    hPhotonFR_KtoVLexcl_.reset( std::move((TH2F*) fileFR_KtoVLexcl.Get("PhFR")) );
-    hPhotonFR_KtoVLexcl_->SetDirectory(nullptr);  // prevent ROOT from deleting it
-    cout << "INFO: retrieved Photon FR KtoVLexcl histogram from \""<<fileFR_KtoVLexcl.GetName()<<"\"\n";
-    fileFR_KtoVLexcl.Close();
-  }
-  else{
-    cout << colour::Red("WARN") << ": Photon FR KtoVLexcl file not found in \""<<fileFR_KtoVLexcl.GetName()<<"\"\n";
-    hPhotonFR_KtoVLexcl_.reset( new TH2F("PhFR", "", 1,0.,1., 1,0.,1.) );
-  }
+  hPhotonFR_VLtoL_dataZG_ = getHistfromFile(Form("data/FR_KtoVL_pt-aeta_data-ZGToLLG_%d.root", year), "PhFR", " VLtoL (data-ZG)");
+  hPhotonFR_KtoVLexcl_    = getHistfromFile(Form("data/FR_KtoVLexcl_pt-aeta_data_%d.root"    , year), "PhFR", " KtoVLexcl"      );
+  hPhotonFR_VLtoL_ = hPhotonFR_VLtoL_data_.get();
   
   // FR SF
-  TFile fileFRSF_LtoT(Form("data/ratio_VLtoL_pt-aeta_data_over_ZZ_%d.root", year), "READ");
-  if(fileFRSF_LtoT.IsOpen()){
-    hPhotonFRSF_LtoT_.reset( std::move((TH2F*) fileFRSF_LtoT.Get("PhFRSF")) );
-    hPhotonFRSF_LtoT_->SetDirectory(nullptr);  // prevent ROOT from deleting it
-    cout << "INFO: retrieved Photon FRSF LtoT histogram from \""<<fileFRSF_LtoT.GetName()<<"\"\n";
-    fileFRSF_LtoT.Close();
-  }
-  else{
-    cout << colour::Red("WARN") << ": Photon FRSF LtoT file not found in \""<<fileFRSF_LtoT.GetName()<<"\"\n";
-    hPhotonFRSF_LtoT_.reset( new TH2F("PhFRSF", "", 1,0.,1., 1,0.,1.) );
-  }
+  hPhotonFRSF_VLtoL_      = getHistfromFile(Form("data/ratio_VLtoL_pt-aeta_data_over_ZZ_%d.root", year), "PhFRSF");
   
   // initCherryPick();
   for(const char* sys : {"central", "EScale_Up", "EScale_Down", "ESigma_Up", "ESigma_Down"}){
@@ -942,6 +902,25 @@ void VVGammaAnalyzer::finish(){
   cout<<" End of VZZAnalyzer ";
   for(char i=0; i<25; ++i) cout<<'-';
   cout<<"\n\n";
+}
+
+
+std::unique_ptr<TH2F> VVGammaAnalyzer::getHistfromFile(const char* fname, const char* hname, const char* info){
+  std::unique_ptr<TH2F> result;
+
+  TFile fileFR(Form(fname, "READ" ));
+  if(fileFR.IsOpen()){
+    result.reset( std::move((TH2F*) fileFR.Get(hname)) );
+    result->SetDirectory(nullptr);  // prevent ROOT from deleting it
+    cout << "INFO: retrieved histogram \""<<hname<<"\""<<info<<" from \""<<fname<<"\"\n";
+    fileFR.Close();
+  }
+  else{
+    cout << colour::Red("WARN") << ": file"<<info<<" not found in \""<<fname<<"\"\n";
+    result.reset( new TH2F("PhFR", "", 1,0.,1., 1,0.,1.) );
+  }
+
+  return result;
 }
 
 
@@ -1893,35 +1872,34 @@ void VVGammaAnalyzer::photonFakeRate_LtoT(){
   else
     return;
   
-  // VeryLoose --> Loose
+  // VeryLoose --> Loose (data)
   if(isPassVL){
-    double f_VLtoL = getPhotonFR(*bestKinPh_); //getPhotonFR_VLtoL
-    double weight_VLtoL = theWeight * f_VLtoL/(1-f_VLtoL);
+    double f_VLtoL_data = getPhotonFR_VLtoL_data(*bestKinPh_); //getPhotonFR_VLtoL
+    double weight_VLtoL_data = theWeight * f_VLtoL_data/(1-f_VLtoL_data);
     if(isPassLoose){
-      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_PASS_%s"         ,          varName), "Closure test VLtoL: PASS"   , mVVG_bins, varValue, theWeight   );
-      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_%s_PASS_%s"      , channel, varName), "Closure test VLtoL: PASS"   , mVVG_bins, varValue, theWeight   );
+      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_data_PASS_%s"         ,          varName), "Closure test VLtoL (data): PASS"   , mVVG_bins, varValue, theWeight   );
+      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_data_%s_PASS_%s"      , channel, varName), "Closure test VLtoL (data): PASS"   , mVVG_bins, varValue, theWeight   );
     }
     else{
-      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_FAIL_%s"         ,          varName), "Closure test VLtoL: FAIL"   , mVVG_bins, varValue, theWeight   );
-      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_reweighted_%s"   ,          varName), "Closure test VLtoL: FAIL*TF", mVVG_bins, varValue, weight_VLtoL);
-      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_%s_FAIL_%s"      , channel, varName), "Closure test VLtoL: FAIL"   , mVVG_bins, varValue, theWeight   );
-      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_%s_reweighted_%s", channel, varName), "Closure test VLtoL: FAIL*TF", mVVG_bins, varValue, weight_VLtoL);
+      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_data_FAIL_%s"         ,          varName), "Closure test VLtoL (data): FAIL"   , mVVG_bins, varValue, theWeight   );
+      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_data_reweighted_%s"   ,          varName), "Closure test VLtoL (data): FAIL*TF", mVVG_bins, varValue, weight_VLtoL_data);
+      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_data_%s_FAIL_%s"      , channel, varName), "Closure test VLtoL (data): FAIL"   , mVVG_bins, varValue, theWeight   );
+      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_data_%s_reweighted_%s", channel, varName), "Closure test VLtoL (data): FAIL*TF", mVVG_bins, varValue, weight_VLtoL_data);
     }
-  }
 
-  // Kin --> VeryLoose
-  double f_KToVL = getPhotonFR_KtoVL(*bestKinPh_);
-  double weight_KtoVL = theWeight * f_KToVL/(1-f_KToVL);
-  
-  if(isPassVL){
-    theHistograms->fill(Form("PhFRClosure_KtoVL_pt-aeta_PASS_%s"      , varName), "Closure test KtoVL: PASS"   , mVVG_bins, varValue, theWeight);
-    theHistograms->fill(Form("PhFRClosure_KtoVL_pt-aeta_%s_PASS_%s"   , channel, varName), "Closure test KtoVL: PASS"   , mVVG_bins, varValue, theWeight);
-  }
-  else{
-    theHistograms->fill(Form("PhFRClosure_KtoVL_pt-aeta_FAIL_%s"      , varName), "Closure test KtoVL: FAIL"   , mVVG_bins, varValue, theWeight);
-    theHistograms->fill(Form("PhFRClosure_KtoVL_pt-aeta_reweighted_%s", varName), "Closure test KtoVL: FAIL*TF", mVVG_bins, varValue, weight_KtoVL);
-    theHistograms->fill(Form("PhFRClosure_KtoVL_pt-aeta_%s_FAIL_%s"      , channel, varName), "Closure test KtoVL: FAIL"   , mVVG_bins, varValue, theWeight);
-    theHistograms->fill(Form("PhFRClosure_KtoVL_pt-aeta_%s_reweighted_%s", channel, varName), "Closure test KtoVL: FAIL*TF", mVVG_bins, varValue, weight_KtoVL);
+    // VeryLoose --> Loose (data - ZG)
+    double f_VLtoL_dataZG = getPhotonFR_VLtoL_dataZG(*bestKinPh_);
+    double weight_VLtoL_dataZG = theWeight * f_VLtoL_dataZG/(1-f_VLtoL_dataZG);
+    if(isPassLoose){
+      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_dataZG_PASS_%s"         ,          varName), "Closure test VLtoL (data-Z#gamma): PASS"   , mVVG_bins, varValue, theWeight   );
+      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_dataZG_%s_PASS_%s"      , channel, varName), "Closure test VLtoL (data-Z#gamma): PASS"   , mVVG_bins, varValue, theWeight   );
+    }
+    else{
+      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_dataZG_FAIL_%s"         ,          varName), "Closure test VLtoL (data-Z#gamma): FAIL"   , mVVG_bins, varValue, theWeight   );
+      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_dataZG_reweighted_%s"   ,          varName), "Closure test VLtoL (data-Z#gamma): FAIL*TF", mVVG_bins, varValue, weight_VLtoL_dataZG);
+      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_dataZG_%s_FAIL_%s"      , channel, varName), "Closure test VLtoL (data-Z#gamma): FAIL"   , mVVG_bins, varValue, theWeight   );
+      theHistograms->fill(Form("PhFRClosure_VLtoL_pt-aeta_dataZG_%s_reweighted_%s", channel, varName), "Closure test VLtoL (data-Z#gamma): FAIL*TF", mVVG_bins, varValue, weight_VLtoL_dataZG);
+    }
   }
   
   // Kin && !Loose --> VeryLoose && !Loose
@@ -2310,7 +2288,7 @@ void VVGammaAnalyzer::SYSplots(const char* syst, const double& weight, const Pho
       else if(ph->cutBasedID(Photon::IdWp::VeryLoose)){
 	// VeryLoose && !Loose --> Fail
 	theHistograms->fill(Form("SYS_mZZGfail_%s"        , syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, mZZG, weight);
-	theHistograms->fill(Form("SYS_mZZGfailReweight_%s", syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, mZZG, weight * getPhotonFR(*ph));
+	theHistograms->fill(Form("SYS_mZZGfailReweight_%s", syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, mZZG, weight * getPhotonFR_VLtoL(*ph));
       }
     }
   }
@@ -2330,7 +2308,7 @@ void VVGammaAnalyzer::SYSplots(const char* syst, const double& weight, const Pho
       }
       else if(ph->cutBasedID(Photon::IdWp::VeryLoose)){
 	theHistograms->fill(Form("SYS_mWZGfail_%s"        , syst), Form("m_{WZ#gamma} %s", syst), mVVG_bins, mWZG, weight);
-	theHistograms->fill(Form("SYS_mWZGfailReweight_%s", syst), Form("m_{WZ#gamma} %s", syst), mVVG_bins, mWZG, weight * getPhotonFR(*ph));
+	theHistograms->fill(Form("SYS_mWZGfailReweight_%s", syst), Form("m_{WZ#gamma} %s", syst), mVVG_bins, mWZG, weight * getPhotonFR_VLtoL(*ph));
       }
     }
   }
@@ -2352,8 +2330,8 @@ void VVGammaAnalyzer::SYSplots(const char* syst, const double& weight, const Pho
       else if(ph->cutBasedID(Photon::IdWp::VeryLoose)){
 	theHistograms->fill(Form("SYS_mZGfail_%s"         , syst), Form("m_{Z#gamma} %s" , syst), mZG_bins, mZG , weight);
 	theHistograms->fill(Form("SYS_mZLGfail_%s"        , syst), Form("m_{ZL#gamma} %s", syst), mZG_bins, mZLG, weight);
-	theHistograms->fill(Form("SYS_mZGfailReweight_%s" , syst), Form("m_{Z#gamma} %s" , syst), mZG_bins, mZG , weight * getPhotonFR(*ph));
-	theHistograms->fill(Form("SYS_mZLGfailReweight_%s", syst), Form("m_{ZL#gamma} %s", syst), mZG_bins, mZLG, weight * getPhotonFR(*ph));
+	theHistograms->fill(Form("SYS_mZGfailReweight_%s" , syst), Form("m_{Z#gamma} %s" , syst), mZG_bins, mZG , weight * getPhotonFR_VLtoL(*ph));
+	theHistograms->fill(Form("SYS_mZLGfailReweight_%s", syst), Form("m_{ZL#gamma} %s", syst), mZG_bins, mZLG, weight * getPhotonFR_VLtoL(*ph));
       }
     }
   }
@@ -2441,8 +2419,8 @@ void VVGammaAnalyzer::systematicsStudy(){
     SYSplots("phEffSF_Up"  , base_w * (1 + phEff_w), ph);
     SYSplots("phEffSF_Down", base_w * (1 - phEff_w), ph);
     // Photon FR uncertaintiy  WARN: for this to have a meaning, the photon FR SF should be applied
-    double f_ce = getPhotonFR(*ph);
-    double func = getPhotonFRUnc(*ph);
+    double f_ce = getPhotonFR_VLtoL(*ph);
+    double func = getPhotonFRUnc_VLtoL(*ph);
     double f_up = f_ce + func;
     double f_dn = f_ce - func;
     double sf_ce = f_ce/(1 - f_ce);
@@ -2589,36 +2567,45 @@ void VVGammaAnalyzer::photonGenStudy(){
 
 
 // Utilities
-double VVGammaAnalyzer::getPhotonFR   (const phys::Photon& ph) const{
-  return hPhotonFR_->GetBinContent(hPhotonFR_->FindBin(
+double VVGammaAnalyzer::getPhotonFR_VLtoL   (const phys::Photon& ph) const{
+  return hPhotonFR_VLtoL_->GetBinContent(hPhotonFR_VLtoL_->FindFixBin(
 						       ph.pt() < 120 ? ph.pt() : 119.9,
 						       abs(ph.eta())
 						       ));
 }
 
-double VVGammaAnalyzer::getPhotonFRUnc(const phys::Photon& ph) const{
-  return hPhotonFR_->GetBinError(hPhotonFR_->FindBin(
+double VVGammaAnalyzer::getPhotonFRUnc_VLtoL(const phys::Photon& ph) const{
+  return hPhotonFR_VLtoL_->GetBinError(hPhotonFR_VLtoL_->FindFixBin(
 						     ph.pt() < 120 ? ph.pt() : 119.9,
 						     abs(ph.eta())
 						     ));
 }
 
-double VVGammaAnalyzer::getPhotonFR_KtoVL(const phys::Photon& ph) const{
-  return hPhotonFR_KtoVL_->GetBinContent(hPhotonFR_KtoVL_->FindBin(
+
+double VVGammaAnalyzer::getPhotonFR_VLtoL_data(const phys::Photon& ph) const{
+  return hPhotonFR_VLtoL_data_->GetBinContent(hPhotonFR_VLtoL_data_->FindFixBin(
+								   ph.pt() < 120 ? ph.pt() : 119.9,
+								   abs(ph.eta())
+								   ));
+}
+
+
+double VVGammaAnalyzer::getPhotonFR_VLtoL_dataZG(const phys::Photon& ph) const{
+  return hPhotonFR_VLtoL_dataZG_->GetBinContent(hPhotonFR_VLtoL_dataZG_->FindFixBin(
 								   ph.pt() < 120 ? ph.pt() : 119.9,
 								   abs(ph.eta())
 								   ));
 }
 
 double VVGammaAnalyzer::getPhotonFR_KtoVLexcl(const phys::Photon& ph) const{
-  return hPhotonFR_KtoVLexcl_->GetBinContent(hPhotonFR_KtoVLexcl_->FindBin(
+  return hPhotonFR_KtoVLexcl_->GetBinContent(hPhotonFR_KtoVLexcl_->FindFixBin(
 									   ph.pt() < 120 ? ph.pt() : 119.9,
 									   abs(ph.eta())
 									   ));
 }
 
-double VVGammaAnalyzer::getPhotonFRSF_LtoT(const phys::Photon& ph) const{
-  return hPhotonFRSF_LtoT_->GetBinContent(hPhotonFRSF_LtoT_->FindBin(
+double VVGammaAnalyzer::getPhotonFRSF_VLtoL(const phys::Photon& ph) const{
+  return hPhotonFRSF_VLtoL_->GetBinContent(hPhotonFRSF_VLtoL_->FindFixBin(
 								     ph.pt() < 120 ? ph.pt() : 119.9,
 								     abs(ph.eta())
 								     ));

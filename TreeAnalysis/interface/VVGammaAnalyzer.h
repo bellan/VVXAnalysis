@@ -123,10 +123,12 @@ private:
   // KinPhoton that passes the largest number of cuts of the Loose ID
   phys::Photon* bestKinPh_;
 
-  std::unique_ptr<TH2F> hPhotonFR_;
-  std::unique_ptr<TH2F> hPhotonFR_KtoVL_;
+  const TH2F* hPhotonFR_VLtoL_;  // Will point to one of the owning pointers below
+  std::unique_ptr<TH2F> hPhotonFR_VLtoL_data_;
+  std::unique_ptr<TH2F> hPhotonFR_VLtoL_dataZG_;
   std::unique_ptr<TH2F> hPhotonFR_KtoVLexcl_;
-  std::unique_ptr<TH2F> hPhotonFRSF_LtoT_;
+  std::unique_ptr<TH2F> hPhotonFRSF_VLtoL_;
+
   std::string channelReco_;
 
   std::ofstream fAK4_;
@@ -172,6 +174,7 @@ private:
   void endNameHistos();
  	
   // Utilities
+  static std::unique_ptr<TH2F> getHistfromFile(const char* fname, const char* hname="PhFR", const char* info="");
   bool canBeFSR(const phys::Photon&, const std::vector<phys::Lepton>&) const;
 
   template <class T, class UnaryPredicate>
@@ -184,11 +187,12 @@ private:
 			     std::set<unsigned long>>>> // event
   cherryEvents;
  	
-  double getPhotonFR   (const phys::Photon& ph) const;
-  double getPhotonFRUnc(const phys::Photon& ph) const;
-  double getPhotonFR_KtoVL(const phys::Photon& ph) const;
-  double getPhotonFR_KtoVLexcl(const phys::Photon& ph) const;
-  double getPhotonFRSF_LtoT(const phys::Photon& ph) const;
+  double getPhotonFR_VLtoL       (const phys::Photon& ph) const;
+  double getPhotonFRUnc_VLtoL    (const phys::Photon& ph) const;
+  double getPhotonFR_VLtoL_data  (const phys::Photon& ph) const;
+  double getPhotonFR_VLtoL_dataZG(const phys::Photon& ph) const;
+  double getPhotonFR_KtoVLexcl   (const phys::Photon& ph) const;
+  double getPhotonFRSF_VLtoL     (const phys::Photon& ph) const;
 	
   static bool is4Lregion(const phys::RegionTypes reg){
     return (reg == phys::SR4P || reg == phys::CR3P1F || reg == phys::CR2P2F ||
