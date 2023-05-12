@@ -76,6 +76,9 @@ parser.add_option("-n", "--nevents", dest="maxNumEvents",
                   default= -1,
                   help="Set max number of events to run over. Default is -1, meaning all events in the tree")
 
+parser.add_option("-o", "--outputdir",
+                  default="result",
+                  help="Directory in which the output will be stored")
 
 parser.add_option("-u", "--unblind", dest="unblind",
                   action="store_true",
@@ -253,7 +256,7 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
     
     inputdir = options.directory+'/'+str(year)
     
-    outputdir_format = 'results/'+str(year)+'/'+analysis+'_%s'
+    outputdir_format = os.path.join(options.outputdir, str(year), analysis+'_%s')
     outputdirs = {}
     for region in regions:
         odir = outputdir_format %region
@@ -358,7 +361,7 @@ def mergeCRs(analysis, year, inputLocs, antype):
         inputLocations = {k: inputLocs[k] for k in CR_HZZ_regions}
 
         
-    outdir = 'results/{0:s}/{1:s}_{2:s}'.format(str(year),analysis,antype)
+    outdir = '{0:s}/{1:s}/{2:s}_{3:s}'.format(options.outputdir, str(year), analysis, antype)
     if not os.path.exists(outdir): os.popen('mkdir {0:s}'.format(outdir))
     if isData:
         outputRedBkg = '{0:s}/reducible_background.root'.format(outdir)
