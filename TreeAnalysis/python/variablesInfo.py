@@ -235,11 +235,11 @@ def getVarInfo_VVGamma(region):
     #         'sigmaiEtaiEta_'+name+'Photons': ['#sigma_{i#etai#eta}', 1, True]
     #     })
     VarInfo_VVGamma.update({
-        'kinPh_central_N'       : {'title':'Number of #gamma_{kin}'    , 'unblind':True , 'logy':True},
-        'veryLoosePh_central_N' : {'title':'Number of #gamma_{loose}'  , 'unblind':False, 'logy':True},
-        'loosePh_central_N'     : {'title':'Number of #gamma_{tight}', 'unblind':False, 'logy':True},
-        'kinPh_eScale_N'  : {'title':'Number of #gamma passing selection', 'rebin':1, 'unblind':True},
-        'kinPhotons_ID': {'title':'#gamma ID'                         , 'rebin':1, 'unblind':True}
+        'kinPh_central_N'       : {'title':'Number of #gamma_{kin}'    , 'unblind':True , 'logy':True, 'text':True},
+        'veryLoosePh_central_N' : {'title':'Number of #gamma_{loose}'  , 'unblind':False, 'logy':True, 'text':True},
+        'loosePh_central_N'     : {'title':'Number of #gamma_{tight}'  , 'unblind':False, 'logy':True, 'text':True},
+        'kinPh_eScale_N'  : {'title':'Number of #gamma passing selection', 'rebin':1, 'unblind':True, 'text':True},
+        'kinPhotons_ID'   : {'title':'#gamma ID'                         , 'rebin':1, 'unblind':True, 'text':True}
     })
     # for name in ['all', 'kin', 'loose']:
     #     VarInfo_VVGamma.update({
