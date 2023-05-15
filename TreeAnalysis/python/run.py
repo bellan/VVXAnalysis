@@ -77,7 +77,7 @@ parser.add_option("-n", "--nevents", dest="maxNumEvents",
                   help="Set max number of events to run over. Default is -1, meaning all events in the tree")
 
 parser.add_option("-o", "--outputdir",
-                  default="result",
+                  default="results",
                   help="Directory in which the output will be stored")
 
 parser.add_option("-u", "--unblind", dest="unblind",
