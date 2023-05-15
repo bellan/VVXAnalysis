@@ -786,7 +786,7 @@ if __name__ == "__main__":
     elif(args.inputdir != parser.get_default('inputdir')):
         _outdir_data = path.join(_outdir_data, args.inputdir.split('results_')[-1])
         _outdir_plot = path.join(_outdir_plot, args.inputdir.split('results_')[-1])
-    print(f'{_outdir_data=}\n{_outdir_plot=}')
+    # print(f'{_outdir_data=}\n{_outdir_plot=}')
 
     # Set up ROOT options and create dirs
     ROOT.gStyle.SetOptStat(0)
