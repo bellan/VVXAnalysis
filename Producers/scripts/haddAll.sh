@@ -10,7 +10,7 @@
 #  Author: A. Mecca  (alberto.mecca@cern.ch)                   #
 ################################################################
 
-campaign=Dec2022_v2
+campaign=$(git describe --tags --abbrev=0)
 initial=$(printf "%.1s" $USER)
 eosdir="/eos/user/$initial/$USER/samples/$campaign"
 
