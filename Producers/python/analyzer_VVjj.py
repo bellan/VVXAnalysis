@@ -190,7 +190,7 @@ if AK8_JEC_tag is not None:
                                        label  = cms.untracked.string('AK8PFPuppi')
                                    ))
 else:
-    print "UNKNOWN YEAR", SAMPLE_TYPE    
+    print("UNKNOWN YEAR", SAMPLE_TYPE)
 
 
 
