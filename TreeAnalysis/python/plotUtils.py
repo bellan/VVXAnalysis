@@ -261,6 +261,8 @@ def GetClosureStack(region, inputDir, plot, rebin, forcePositive=False, verbosit
     elif region in ['SR2P', 'CR2P2F', 'CR110', 'CR101', 'CR011']:
         samples_prompt = samplesByRegion.ZG
     
+    isReversed = region in ['CR2P2F','CR100','CR010','CR001']
+
     for sample in samples_prompt:
         sample.update({'title': sample['name' ]   })  # TEMP, must change convention also in samplesByRegion
         sample.update({'name' : sample['files'][0]})
@@ -273,6 +275,7 @@ def GetClosureStack(region, inputDir, plot, rebin, forcePositive=False, verbosit
     with TFileContext(inputDir+'data.root', 'READ') as tf:
         hFakeData   = tf.Get(plot_reweight)
         hFakeData.SetDirectory(0)  # Prevent ROOT from deleting stuff under my nose
+        if(isReversed): hFakeData.Scale(-1)
     if  (verbosity >= 2):
         print Red("\n######### Nonprompt photon background for {0:s}  #########\n".format(region))
         integral = hFakeData.IntegralAndError(0,-1,ErrStat)  # Get overflow events too
@@ -284,6 +287,10 @@ def GetClosureStack(region, inputDir, plot, rebin, forcePositive=False, verbosit
             hPrompt     = tf.Get(plot)
             hFakePrompt.SetDirectory(0)
             hPrompt    .SetDirectory(0)
+            if(isReversed):
+                hPrompt.Scale(-1)
+                hFakePrompt.Scale(-1)
+                pass
         if  (verbosity >= 2):
             integral = hFakePrompt.IntegralAndError(0,-1,ErrStat)  # Get overflow events too
             print "{0:16.16} {1:.3f} +- {2: .3f}".format(sample_prompt['files'][0], integral, ErrStat.value)
@@ -304,10 +311,6 @@ def GetClosureStack(region, inputDir, plot, rebin, forcePositive=False, verbosit
             continue
         
         #h.Scale(sample.get("kfactor", 1.))
-        # h.Scale(-1)
-        # if forcePositive and any(cr in inputdir for cr in ['CR2P2F','CR100','CR010','CR001']):
-        #     print ">>> inverting sign"
-        #     h.Scale(-1)
 
         integral = h.IntegralAndError(0,-1,ErrStat)  # Get overflow events too
         if  (verbosity >= 2):
