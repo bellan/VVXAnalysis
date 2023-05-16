@@ -206,13 +206,15 @@ def getVarInfo_VVGamma(region):
     })
 
     for status in ('kin', 'kinVetoVL', 'kinVetoL', 'veryLoose', 'VLchIso', 'VLsieie', 'fail', 'fail3', 'fail4a', 'fail4b', 'loose', 'fsrMatched'):
-        variables = [('pt', 'p_{T}'), ('aeta', '|#eta|'), ('dRl', '#DeltaR(l, #gamma)'), ('MVA', 'MVA')]
+        variables = [('pt', 'p_{T}'), ('aeta', '|#eta|'), ('dRl', '#DeltaR(l, #gamma)'), ('MVA', 'MVA'), ('chIso', 'chIso'), ('sieie', '#sigma_{i#etai#eta}')]
         unblind = not (status == 'veryLoose' or status == 'loose' or status ==  'VLchIso' or status == 'VLsieie')
-        if(not status.startswith('kin')):
-            variables += [('chIso', 'chIso'), ('sieie', '#sigma_{i#etai#eta}')]
+        isLowStat = region in ('CR3P1F', 'CR2P2F') or ( region=='SR4P' and not status.startswith(('kin', 'fsrMatched')) )
+        rebin = 4 if isLowStat else 1
         for varname, vartitle in variables:
             VarInfo_VVGamma.update({
-                'lead_{}_{}'.format(status, varname): {'title': '%s #gamma_{%s}^{leading}' %(vartitle, status), 'unblind':unblind }
+                'lead_{}_{}'.format(status, varname): {'title': '%s #gamma_{%s}^{leading}' %(vartitle, status),
+                                                       'unblind':unblind,
+                                                       'rebin':rebin }
             })
 
     for chName, chTitle in channels:
