@@ -298,7 +298,7 @@ def GetClosureStack(region, inputDir, plot, rebin, forcePositive=False, verbosit
         hFakeData.Add(hFakePrompt, -1)  # subtract prompt contribution from "fail" region; it is already weighted by the FR
         sample_prompt.update({'hist': hPrompt})
 
-    samples = [{'name':'fake-photons', 'color':ROOT.kGray, 'title':'nonprompt #gamma', 'hist':hFakeData}] + samples_prompt
+    samples = samples_prompt + [{'name':'fake-photons', 'color':ROOT.kGray, 'title':'nonprompt #gamma', 'hist':hFakeData}]
 
     if  (verbosity >= 1):
         print Red("\n######### Contribution to {0:s}  #########\n".format(region))
