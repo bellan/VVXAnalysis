@@ -224,6 +224,9 @@ void VVGammaAnalyzer::initEvent(){
       if(isPassVL && !isPassLoose) ++nFailPh_noFSR;
     }
 
+    // CUT: dRl > 0.5
+    if(minDR_lep < 0.5)
+      continue;
 
     TLorentzVector p4_EScale_Up = ph.p4() * (ph.energyScaleUp()  /ph.e());
     TLorentzVector p4_EScale_Dn = ph.p4() * (ph.energyScaleDown()/ph.e());
