@@ -1233,8 +1233,10 @@ void VVGammaAnalyzer::fillPhotonPlots(const Photon& ph, const char* name, const 
     float chIso = ph.chargedIsolation();
     float sieie = ph.sigmaIetaIeta();
 
-    theHistograms->fill(Form("%s_pt"     , name), Form("%s photon;p_{T} [GeV/c];Events"     , title), ph_ptExtended_bins  , pt   , theWeight);
-    theHistograms->fill(Form("%s_aeta"   , name), Form("%s photon;#eta;Events"              , title), ph_aetaExtended_bins, aeta , theWeight);
+    theHistograms->fill(Form("%s_pt_fine", name), Form("%s photon;p_{T} [GeV/c];Events"     , title), ph_ptExtended_bins  , pt   , theWeight);
+    theHistograms->fill(Form("%s_pt"     , name), Form("%s photon;p_{T} [GeV/c];Events"     , title), ph_pt_bins          , pt   , theWeight);
+    theHistograms->fill(Form("%s_aeta"   , name), Form("%s photon;#eta;Events"              , title), ph_aeta_bins        , aeta , theWeight);
+    theHistograms->fill(Form("%s_aeta_fine",name),Form("%s photon;#eta;Events"              , title), ph_aetaExtended_bins, aeta , theWeight);
     theHistograms->fill(Form("%s_dRl"    , name), Form("%s photon;#DeltaR(#gamma, l);Events", title), 40,0.,1.            , dRl  , theWeight);
     theHistograms->fill(Form("%s_dRl_fine",name),Form("%s photon;#DeltaR(#gamma, l);Events", title), 100,0.,1.           , dRl  , theWeight);
     theHistograms->fill(Form("%s_MVA"    , name), Form("%s photon;MVA"                      , title), 40,-1.,1.           , MVAv , theWeight);
@@ -1652,9 +1654,18 @@ void VVGammaAnalyzer::plotsVVGstatus(const char* name, const char* title, const 
     theHistograms->fill(Form("%sG_%s_veryLoosePh", name, mType), Form("%sG %s with VeryLoose #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
     // Tight photons
     if(goodPhotons_["central"]->size() > 0){
+      const Photon& ph = goodPhotons_["central"]->front();
       const TLorentzVector& ph_p4 = goodPhotons_["central"]->front().p4();
       theHistograms->fill(Form("%s_%s_loosePh" , name, mType), Form("%s %s with LooseID #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
       theHistograms->fill(Form("%sG_%s_loosePh", name, mType), Form("%sG %s with LooseID #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
+
+      std::string phStatus = "nomatch";
+      std::vector<Particle>::const_iterator itGenPh;
+      if     ((itGenPh = closestDeltaR(ph, *genPhotonsPrompt_)) != genPhotonsPrompt_->cend() && deltaR(ph, *itGenPh) < 0.2)
+	phStatus = "promptm";
+      else if((itGenPh = closestDeltaR(ph, *genPhotons_      )) != genPhotons_->cend()       && deltaR(ph, *itGenPh) < 0.2)
+	phStatus = "nonprom";
+      theHistograms->fill(Form("%sG_%s_loosePh_%s", name, mType, phStatus.c_str()), Form("%sG %s %s with LooseID #gamma", title, mType, phStatus.c_str()), binsVVG, mValue(p4+ph_p4), theWeight);
     }
     // Fail photon (loose && !tight)
     else{
