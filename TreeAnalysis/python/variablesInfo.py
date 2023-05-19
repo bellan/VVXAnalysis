@@ -18,9 +18,9 @@ def getVarInfo_VVGamma(region):
     if region in ['SR4P', 'CR3P1F', 'CR2P2F']:
         rebin_mZZG = 1
         channels = (('4e','4e'), ('2e2m', '2e2\mu'), ('4m', '4\mu'))
-        if(region in ['SR4P', 'CR3P1F']):
-            rebin_mZZG = 2
-        elif(region == 'CR2P2F'):
+        if(region in ['SR4P', 'CR2P2F']):
+            rebin_mZZG = 1
+        elif(region == 'CR3P1F'):
             rebin_mZZG = 2
         VarInfo_VVGamma.update({
             'ZZ_mass' : {'title':'m_{4\ell}'     },
@@ -207,7 +207,7 @@ def getVarInfo_VVGamma(region):
 
     for status in ('kin', 'kinVetoVL', 'kinVetoL', 'veryLoose', 'VLchIso', 'VLsieie', 'fail', 'fail3', 'fail4a', 'fail4b', 'loose', 'fsrMatched'):
         variables = [('pt', 'p_{T}'), ('aeta', '|#eta|'), ('dRl', '#DeltaR(l, #gamma)'), ('MVA', 'MVA'), ('chIso', 'chIso'), ('sieie', '#sigma_{i#etai#eta}')]
-        unblind = not (status == 'veryLoose' or status == 'loose' or status ==  'VLchIso' or status == 'VLsieie')
+        unblind = not (status == 'kin', status == 'veryLoose' or status == 'loose' or status ==  'VLchIso' or status == 'VLsieie')
         isLowStat = region in ('CR3P1F', 'CR2P2F') or ( region=='SR4P' and not status.startswith(('kin', 'fsrMatched')) )
         rebin = 4 if isLowStat else 1
         for varname, vartitle in variables:
