@@ -351,9 +351,11 @@ def getPassFailLtoT_noSubtract_regex(sample, method, variable, regex, year, anal
     path_in = get_path_results(year=year, analyzer=analyzer, region=region)
     channels = findChannelsInFile(path.join(path_in, sample['file']+'.root'), method, variable)
 
+    print('\tDEBUG: channels =', channels)
     print('\tDEBUG: regex    =', regex_compiled.pattern)
     selected = [ c  for c in channels if regex_compiled.search(c) ]
     print('\tDEBUG: selected =', selected)
+    assert len(selected) > 0, "No matches for regex:{regex}, method:{method}, variable:{variable} in {fname}".format(regex=regex, method=method, variable=variable, fname=path.join(path_in, sample['file']+'.root'))
 
     if(method.startswith('LtoT')):
         raise NotImplementedError('Use VLtoL')
@@ -779,6 +781,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Set paths for output
+    args.inputdir = args.inputdir.strip('/')
     _path_base = args.inputdir
     if(args.outputdir is not None):
         _outdir_data = path.join(_outdir_data, args.outputdir)
@@ -824,9 +827,6 @@ if __name__ == "__main__":
                 hd_P  = fakeRateLtoT(sampleList['data'], None, year=args.year, method=method, variable='pt-dRl_P-a-all-a', logx=True ,fixNegBins=False)
                 hd_F  = fakeRateLtoT(sampleList['data'], None, year=args.year, method=method, variable='pt-dRl_F-a-all-a', logx=True ,fixNegBins=False)
 
-                hd_Y  = fakeRateLtoT(sampleList['data'], None, year=args.year, method=method, variable='pt-dRl_a-a-all-Y', logx=True ,fixNegBins=False) # is FSR
-                hd_N  = fakeRateLtoT(sampleList['data'], None, year=args.year, method=method, variable='pt-dRl_a-a-all-N', logx=True ,fixNegBins=False) # not FSR
-
                 hd_eP = fakeRateLtoT(sampleList['data'], None, year=args.year, method=method, variable='pt-dRl_P-e-all-a', logx=True, fixNegBins=True)
                 hd_eF = fakeRateLtoT(sampleList['data'], None, year=args.year, method=method, variable='pt-dRl_F-m-all-a', logx=True, fixNegBins=True)
                 hd_mP = fakeRateLtoT(sampleList['data'], None, year=args.year, method=method, variable='pt-dRl_P-m-all-a', logx=True, fixNegBins=True)
@@ -836,7 +836,6 @@ if __name__ == "__main__":
                 plotRatio(hd_F ,hd_P , name="ratio_{}_{}_data_F_over_P_{}".format(  method, args.variable, args.year), title="Ratio FR(l=F)/FR(l=P) in data"  )
                 plotRatio(hd_eF,hd_eP, name="ratio_{}_{}_data_eF_over_eP_{}".format(method, args.variable, args.year), title="Ratio FR(l=eF)/FR(l=eP) in data")
                 plotRatio(hd_mF,hd_mP, name="ratio_{}_{}_data_mF_over_mP_{}".format(method, args.variable, args.year), title="Ratio FR(l=mF)/FR(l=mP) in data")
-                plotRatio(hd_Y ,hd_N , name="ratio_{}_{}_data_Y_over_N_{}".format(  method, args.variable, args.year), title="Ratio FR(#gamma FSR)/FR(#gamma no FSR) in data")
                 print()
 
             if(args.do_data and args.do_mc):
@@ -844,9 +843,6 @@ if __name__ == "__main__":
                 hdZG_m  = fakeRateLtoT(sampleList['data'], sampleList['ZGToLLG'], year=args.year, method=method, variable='pt-dRl_a-m-all-a', logx=True ,fixNegBins=False)
                 hdZG_P  = fakeRateLtoT(sampleList['data'], sampleList['ZGToLLG'], year=args.year, method=method, variable='pt-dRl_P-a-all-a', logx=True ,fixNegBins=False)
                 hdZG_F  = fakeRateLtoT(sampleList['data'], sampleList['ZGToLLG'], year=args.year, method=method, variable='pt-dRl_F-a-all-a', logx=True ,fixNegBins=False)
-
-                hdZG_Y  = fakeRateLtoT(sampleList['data'], sampleList['ZGToLLG'], year=args.year, method=method, variable='pt-dRl_a-a-all-Y', logx=True ,fixNegBins=False)
-                hdZG_N  = fakeRateLtoT(sampleList['data'], sampleList['ZGToLLG'], year=args.year, method=method, variable='pt-dRl_a-a-all-N', logx=True ,fixNegBins=False)
 
                 hdZG_eP = fakeRateLtoT(sampleList['data'], sampleList['ZGToLLG'], year=args.year, method=method, variable='pt-dRl_P-e-all-a', logx=True, fixNegBins=True)
                 hdZG_eF = fakeRateLtoT(sampleList['data'], sampleList['ZGToLLG'], year=args.year, method=method, variable='pt-dRl_F-m-all-a', logx=True, fixNegBins=True)
@@ -857,7 +853,6 @@ if __name__ == "__main__":
                 plotRatio(hdZG_F ,hdZG_P , name="ratio_{}_{}_data-ZG_F_over_P_{}".format(  method,args.variable,args.year), title="Ratio FR(l=F)/FR(l=P) in data-Z#gamma"  )
                 plotRatio(hdZG_eF,hdZG_eP, name="ratio_{}_{}_data-ZG_eF_over_eP_{}".format(method,args.variable,args.year), title="Ratio FR(l=eF)/FR(l=eP) in data-Z#gamma")
                 plotRatio(hdZG_mF,hdZG_mP, name="ratio_{}_{}_data-ZG_mF_over_mP_{}".format(method,args.variable,args.year), title="Ratio FR(l=mF)/FR(l=mP) in data-Z#gamma")
-                plotRatio(hdZG_Y ,hdZG_N , name="ratio_{}_{}_data-ZG_Y_over_N_{}".format(  method,args.variable,args.year), title="Ratio FR(#gamma FSR)/FR(#gamma no FSR) in data-Z#gamma")
                 print()
 
         elif(args.variable.startswith('pt-aeta')):
@@ -867,9 +862,6 @@ if __name__ == "__main__":
                 hd_m  = fakeRateLtoT_regex(sampleList['data'], None, year=args.year, method=method, variable=args.variable, regex='2[me]\+m[PF]-[YN]', pattern_printable='2x+m', logx=True,logy=False,fixNegBins=False)
                 hd_P  = fakeRateLtoT_regex(sampleList['data'], None, year=args.year, method=method, variable=args.variable, regex='2[me]\+[em]P-[YN]', pattern_printable='2x+P', logx=True,logy=False,fixNegBins=False)
                 hd_F  = fakeRateLtoT_regex(sampleList['data'], None, year=args.year, method=method, variable=args.variable, regex='2[me]\+[em]F-[YN]', pattern_printable='2x+F', logx=True,logy=False,fixNegBins=False)
-
-                hd_Y  = fakeRateLtoT_regex(sampleList['data'], None, year=args.year, method=method, variable=args.variable, regex='2[me]\+[em][PF]-Y', pattern_printable='2x+y-Y', logx=True,logy=False,fixNegBins=False)
-                hd_N  = fakeRateLtoT_regex(sampleList['data'], None, year=args.year, method=method, variable=args.variable, regex='2[me]\+[em][PF]-N', pattern_printable='2x+y-N', logx=True,logy=False,fixNegBins=False)
 
                 hd_eP = fakeRateLtoT_regex(sampleList['data'], None, year=args.year, method=method, variable=args.variable, regex='2[me]\+eP-[YN]'   , pattern_printable='2x+eP', logx=True, fixNegBins=True)
                 hd_eF = fakeRateLtoT_regex(sampleList['data'], None, year=args.year, method=method, variable=args.variable, regex='2[me]\+eF-[YN]'   , pattern_printable='2x+eF', logx=True, fixNegBins=True)
@@ -884,7 +876,6 @@ if __name__ == "__main__":
                 plotRatio(hd_eF,hd_eP, name="ratio_{}_{}_data_eF_over_eP_{}".format(method,args.variable,args.year),title="Ratio FR(2x+eF)/FR(2x+eP) in data")
                 plotRatio(hd_mF,hd_mP, name="ratio_{}_{}_data_mF_over_mP_{}".format(method,args.variable,args.year),title="Ratio FR(2x+mF)/FR(2x+mP) in data")
                 plotRatio(hd_2e,hd_2m, name="ratio_{}_{}_data_2e_over_2m_{}".format(method,args.variable,args.year),title="Ratio FR(2e+x)/FR(2m+x) in data"  )
-                plotRatio(hd_Y ,hd_N , name="ratio_{}_{}_data_Y_over_N_{}".format(  method,args.variable,args.year),title="Ratio FR(#gamma FSR)/FR(#gamma no FSR) in data"  )
                 print()
 
             if(args.do_mc):
@@ -914,9 +905,6 @@ if __name__ == "__main__":
                 hdZG_P  = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], year=args.year, method=method, variable=args.variable, regex='2[me]\+[em]P', pattern_printable='2x+P', logx=True,logy=False,fixNegBins=False)
                 hdZG_F  = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], year=args.year, method=method, variable=args.variable, regex='2[me]\+[em]F', pattern_printable='2x+F', logx=True,logy=False,fixNegBins=False)
 
-                hdZG_Y  = fakeRateLtoT_regex(sampleList['data'], sampleList['ZGToLLG'], year=args.year, method=method, variable=args.variable, regex='2[me]\+[em][PF]-Y', pattern_printable='2x+y-Y', logx=True ,fixNegBins=False)
-                hdZG_N  = fakeRateLtoT_regex(sampleList['data'], sampleList['ZGToLLG'], year=args.year, method=method, variable=args.variable, regex='2[me]\+[em][PF]-N', pattern_printable='2x+y-N', logx=True ,fixNegBins=False)
-
                 hdZG_eP = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], year=args.year, method=method, variable=args.variable, regex='2[me]\+eP'   , pattern_printable='2x+eP', logx=True, fixNegBins=True)
                 hdZG_eF = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], year=args.year, method=method, variable=args.variable, regex='2[me]\+eF'   , pattern_printable='2x+eF', logx=True, fixNegBins=True)
                 hdZG_mP = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], year=args.year, method=method, variable=args.variable, regex='2[me]\+mP'   , pattern_printable='2x+mP', logx=True, fixNegBins=True)
@@ -930,7 +918,6 @@ if __name__ == "__main__":
                 plotRatio(hdZG_eF,hdZG_eP, name="ratio_{}_{}_data-ZG_eF_over_eP_{}".format(method,args.variable,args.year),title="Ratio FR(2x+eF)/FR(2x+eP) in data-Z#gamma")
                 plotRatio(hdZG_mF,hdZG_mP, name="ratio_{}_{}_data-ZG_mF_over_mP_{}".format(method,args.variable,args.year),title="Ratio FR(2x+mF)/FR(2x+mP) in data-Z#gamma")
                 plotRatio(hdZG_2e,hdZG_2m, name="ratio_{}_{}_data-ZG_2e_over_2m_{}".format(method,args.variable,args.year),title="Ratio FR(2e+x)/FR(2m+x) in data-Z#gamma"  )
-                plotRatio(hdZG_Y ,hdZG_N , name="ratio_{}_{}_data-ZG_Y_over_N_{}".format(  method,args.variable,args.year),title="Ratio FR(#gamma FSR)/FR(#gamma no FSR) in data-Z#gamma")
                 print()
 
     else:  # args.channels is false
