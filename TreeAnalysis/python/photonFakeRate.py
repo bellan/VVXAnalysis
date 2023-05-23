@@ -18,11 +18,11 @@ from ctypes import c_int, c_double
 from array import array
 import itertools
 import re
+from plotUtils23 import TFileContext, addIfExisting
 
 if(sys.version_info.major == 2):
-    from plotUtils import TFileContext, makedirs_ok
+    from plotUtils import makedirs_ok
 else:
-    from plotUtils3 import TFileContext
     def makedirs_ok(*args):
         makedirs(*args, exist_ok=True)
 
@@ -48,16 +48,6 @@ def getPlots(inputdir, sample, plots, verbose=0):
                     n = h.IntegralAndError(0, -1, 0, -1, ignore)
                     print('\t\t{:s} - entries: {:6.0f}'.format(plot, n))
     return retrieved
-
-
-def addIfExisting(*args):
-    result = None
-    for a in [ a for a in args if a is not None ]:
-        if result is None:
-            result = a
-        else:
-            result.Add(a)
-    return result
 
 
 def joinIfNotNone(strings, connection='_'):

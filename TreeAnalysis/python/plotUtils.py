@@ -7,21 +7,12 @@ from readSampleInfo import *
 from collections import OrderedDict
 from Colours import *
 import ctypes
+from plotUtils23 import TFileContext, addIfExisting
 import samplesByRegion # getSamplesByRegion, data_obs, ZZG, WZG, ...
 
 ##############################################
 # Utilities, function definitions, and stuff #
 ##############################################
-
-class TFileContext(object):
-    def __init__(self, *args):
-        # print('>>>Opening with args:', args)
-        self.tfile = ROOT.TFile(*args)
-    def __enter__(self):
-        return self.tfile
-    def __exit__(self, type, value, traceback):
-        # print('<<<Closing TFile "%s"' % (self.tfile.GetName()))
-        self.tfile.Close()
 
 def getPlot_impl(filename, var):
     try:
