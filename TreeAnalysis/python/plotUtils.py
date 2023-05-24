@@ -108,7 +108,45 @@ def GetTypeofsamples(category,Set):
     else: sys.exit("ERROR, check Category") 
 
     return typeofsamples
-    
+
+
+def getPlotFromSample(inputdir, sample, plot, verbosity, forcePositive, **kwargs):
+    _nameFormat = "{:24.24s}"
+    errStat = ctypes.c_double(0.)
+    totalIntegral = 0
+    h = None
+
+    for fname in sample['files']:
+        rootfilename = os.path.join(inputdir, fname+".root")
+        if(not os.path.exists(rootfilename)):
+            if(verbosity >= 2):
+                print _nameFormat.format(fname), "No file" + ("" if(verbosity < 3) else " (%s)"%(rootfilename))
+            continue
+
+        fhandle = ROOT.TFile(rootfilename)
+        h_current = fhandle.Get(plot)
+
+        if(not h_current):
+            if(verbosity >= 2):
+                print _nameFormat.format(fname), "No histo in file"
+            continue
+
+        if forcePositive and any(cr in inputdir for cr in ['CR2P2F','CR100','CR010','CR001']):
+            h_current.Scale(-1)
+
+        integral = h_current.IntegralAndError(0, -1, errStat)  # Get overflow events too
+        if(verbosity >= 2):
+            if(kwargs.get('note')): fname_print = fname + ' ' + kwargs['note']
+            else:                   fname_print = fname
+            print (_nameFormat+" {: 10.2f} +- {: 10.2f}").format(fname_print, integral, errStat.value)
+        totalIntegral += integral
+
+        if(h is None): h = copy.deepcopy(h_current)
+        else         : h.Add(h_current)
+        fhandle.Close()
+
+    return h, totalIntegral
+
 
 ####### Extract predictions plot #########
 def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin, forcePositive=False, verbosity=1):
@@ -175,50 +213,51 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin, forcePosi
     if(verbosity >= 1):
         print Red("\n######### Contribution to {0:s}  #########\n".format(region))
     
-    _nameFormat = "{:24.24s}"
     for sample in samples:
         h = None
-        for fname in sample['files']:
-            rootfilename = inputdir+fname+".root"
-            if(not os.path.exists(rootfilename)):
-                if(verbosity >= 2):
-                    print _nameFormat.format(fname), "No file" + ("" if(verbosity < 3) else " (%s)"%(rootfilename))
-                continue
+        splitPromptPh = sample.get('split_prompt_ph', False) #TODO and plot is splittable
 
-            fhandle = ROOT.TFile(rootfilename)
-            h_current = fhandle.Get(plot)
-            
-            if(not h_current):
-                if(verbosity >= 2):
-                    print _nameFormat.format(fname), "No histo in file"
-                continue
+        if(splitPromptPh):
+            h_prompt, integralPrompt = getPlotFromSample(inputdir, sample, plot+'_prompt', verbosity, forcePositive, note='prompt')
+            h_nonpro, integralNonpro = getPlotFromSample(inputdir, sample, plot+'_nonpro', verbosity, forcePositive, note='nonpro')
+            totalMC += integralPrompt + integralNonpro
 
-            if forcePositive and any(cr in inputdir for cr in ['CR2P2F','CR100','CR010','CR001']):
-                h_current.Scale(-1)
+            for h in [h_prompt, h_nonpro]:
+                if(h is None):
+                    continue
+                h.Scale(sample.get("kfactor", 1.))
+                if rebin!=1: h.Rebin(rebin)
 
-            integral = h_current.IntegralAndError(0,-1,ErrStat)  # Get overflow events too
-            if(verbosity >= 2):
-                print (_nameFormat+" {: 10.2f} +- {: 10.2f}").format(fname, integral, ErrStat.value)
+                h.SetLineColor(ROOT.kBlack)
+                h.SetFillColor(sample["color"])
+                h.SetMarkerStyle(21)
+
+            if(h_prompt):
+                leg.AddEntry(h_nonpro, sample["name"]+'\: nonpro', "f")
+                stack.Add(h_prompt)
+            if(h_nonpro):
+                h_nonpro.SetFillStyle(3013)
+                leg.AddEntry(h_prompt, sample["name"]+'\: prompt', "f")
+                stack.Add(h_nonpro)
+
+        else:
+            h, integral = getPlotFromSample(inputdir, sample, plot, verbosity, forcePositive)
             totalMC += integral
-            
-            if(h is None): h = copy.deepcopy(h_current)
-            else         : h.Add(h_current)
-            fhandle.Close()
-            
-        if(h is None):
-            continue
-        
-        h.Scale(sample.get("kfactor", 1.))
-        if rebin!=1: h.Rebin(rebin)
-        
-        h.SetLineColor(ROOT.kBlack)
-        leg.AddEntry(h,sample["name"],"f")
 
-        h.SetFillColor(sample["color"])
-        h.SetMarkerStyle(21)
-        h.SetMarkerColor(sample["color"])
-        
-        stack.Add(h)
+            if(h is None):
+                continue
+
+            h.Scale(sample.get("kfactor", 1.))
+            if rebin!=1: h.Rebin(rebin)
+
+            h.SetLineColor(ROOT.kBlack)
+            leg.AddEntry(h,sample["name"],"f")
+
+            h.SetFillColor(sample["color"])
+            h.SetMarkerStyle(21)
+            h.SetMarkerColor(sample["color"])
+
+            stack.Add(h)
     
     if(verbosity >= 1):
         print "\n Total MC .......................... {0:.2f}".format(totalMC)
