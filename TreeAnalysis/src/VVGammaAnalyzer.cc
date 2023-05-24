@@ -2340,6 +2340,25 @@ char phABCD_study(const phys::Photon&, const double& barrel_thr, const double& e
 
 
 void VVGammaAnalyzer::SYSplots(const char* syst, const double& weight, const Photon* ph){
+  float f_VLtoL(0.), w_VLtoL(0.);
+  if(ph){
+    if(ph->cutBasedID(Photon::IdWp::VeryLoose)){
+      theHistograms->fill(Form("SYS_veryLooseMVA_%s", syst), Form("MVA veryLoose %s" , syst), 40,-1,1   , ph->MVAvalue(), weight);
+      theHistograms->fill(Form("SYS_veryLoosept_%s" , syst), Form("pt veryLoose %s"  , syst), ph_pt_bins, ph->pt()      , weight);
+      if(ph->cutBasedIDLoose()){
+	double w = weight * ph->efficiencySF();  // In data the SF is 1
+	theHistograms->fill(Form("SYS_looseMVA_%s", syst), Form("MVA loose %s", syst), 40,-1,1   , ph->MVAvalue(), w);
+	theHistograms->fill(Form("SYS_loosept_%s" , syst), Form("pt loose %s", syst) , ph_pt_bins, ph->pt()      , w);
+      }
+      else{
+	f_VLtoL = getPhotonFR_VLtoL(*ph);
+	w_VLtoL = f_VLtoL / (1 - f_VLtoL);
+	theHistograms->fill(Form("SYS_failMVA_%s", syst), Form("MVA fail %s" , syst), 40,-1,1   , ph->MVAvalue(), weight);
+	theHistograms->fill(Form("SYS_failpt_%s" , syst), Form("pt fail %s"  , syst), ph_pt_bins, ph->pt()      , weight);
+      }
+    }
+  }
+
   if(is4Lregion(region_)){
     theHistograms->fill(  Form("SYS_mZZ_%s" , syst), Form("m_{ZZ} %s"      , syst), mVV_bins , ZZ->mass()               , weight);
     
@@ -2352,7 +2371,7 @@ void VVGammaAnalyzer::SYSplots(const char* syst, const double& weight, const Pho
       else if(ph->cutBasedID(Photon::IdWp::VeryLoose)){
 	// VeryLoose && !Loose --> Fail
 	theHistograms->fill(Form("SYS_mZZGfail_%s"        , syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, mZZG, weight);
-	theHistograms->fill(Form("SYS_mZZGfailReweight_%s", syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, mZZG, weight * getPhotonFR_VLtoL(*ph));
+	theHistograms->fill(Form("SYS_mZZGfailReweight_%s", syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, mZZG, weight * w_VLtoL);
       }
     }
   }
@@ -2372,7 +2391,7 @@ void VVGammaAnalyzer::SYSplots(const char* syst, const double& weight, const Pho
       }
       else if(ph->cutBasedID(Photon::IdWp::VeryLoose)){
 	theHistograms->fill(Form("SYS_mWZGfail_%s"        , syst), Form("m_{WZ#gamma} %s", syst), mVVG_bins, mWZG, weight);
-	theHistograms->fill(Form("SYS_mWZGfailReweight_%s", syst), Form("m_{WZ#gamma} %s", syst), mVVG_bins, mWZG, weight * getPhotonFR_VLtoL(*ph));
+	theHistograms->fill(Form("SYS_mWZGfailReweight_%s", syst), Form("m_{WZ#gamma} %s", syst), mVVG_bins, mWZG, weight * w_VLtoL);
       }
     }
   }
@@ -2394,8 +2413,8 @@ void VVGammaAnalyzer::SYSplots(const char* syst, const double& weight, const Pho
       else if(ph->cutBasedID(Photon::IdWp::VeryLoose)){
 	theHistograms->fill(Form("SYS_mZGfail_%s"         , syst), Form("m_{Z#gamma} %s" , syst), mZG_bins, mZG , weight);
 	theHistograms->fill(Form("SYS_mZLGfail_%s"        , syst), Form("m_{ZL#gamma} %s", syst), mZG_bins, mZLG, weight);
-	theHistograms->fill(Form("SYS_mZGfailReweight_%s" , syst), Form("m_{Z#gamma} %s" , syst), mZG_bins, mZG , weight * getPhotonFR_VLtoL(*ph));
-	theHistograms->fill(Form("SYS_mZLGfailReweight_%s", syst), Form("m_{ZL#gamma} %s", syst), mZG_bins, mZLG, weight * getPhotonFR_VLtoL(*ph));
+	theHistograms->fill(Form("SYS_mZGfailReweight_%s" , syst), Form("m_{Z#gamma} %s" , syst), mZG_bins, mZG , weight * w_VLtoL);
+	theHistograms->fill(Form("SYS_mZLGfailReweight_%s", syst), Form("m_{ZL#gamma} %s", syst), mZG_bins, mZLG, weight * w_VLtoL);
       }
     }
   }
@@ -2493,8 +2512,8 @@ void VVGammaAnalyzer::systematicsStudy(){
     SYSplots("phFakeRate_Up"  , base_w * sf_up/sf_ce, ph);
     SYSplots("phFakeRate_Down", base_w * sf_dn/sf_ce, ph);
 
-    SYSplots("phFakeRateSymmetric_Up"  , base_w * (1 + func/((1 - f_ce)*(1 - f_ce))), ph);
-    SYSplots("phFakeRateSymmetric_Down", base_w * (1 - func/((1 - f_ce)*(1 - f_ce))), ph);
+    // SYSplots("phFakeRateSymmetric_Up"  , base_w * (1 + func/((1 - f_ce)*(1 - f_ce))), ph);
+    // SYSplots("phFakeRateSymmetric_Down", base_w * (1 - func/((1 - f_ce)*(1 - f_ce))), ph);
   }
 }
 
