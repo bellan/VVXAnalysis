@@ -146,13 +146,8 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin, forcePosi
     if predType == 'fromCR':
         if(verbosity >= 1):
             print Green("\nNon-prompt leptons background")
-        hfake = None
-        for controlRegion in controlRegions:
-            hfakeTmp = GetFakeRate(inputdir.replace(region,controlRegion), plot, "data", rebin, controlRegion, MCSet)
-            if(hfakeTmp is None): continue
-            if(hfake is None): hfake = hfakeTmp
-            else:
-                hfake.Add(hfakeTmp)
+        hfake = addIfExisting(*[GetFakeRate(inputdir.replace(region,controlRegion), plot, "data", rebin, CR, MCSet) for CR in controlRegions])
+
         hfake.SetLineColor(ROOT.kBlack)
         stack.Add(hfake)
         leg.AddEntry(hfake,"Non-prompt leptons","f")
