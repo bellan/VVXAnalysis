@@ -1718,8 +1718,13 @@ void VVGammaAnalyzer::plotsVVGstatus(const char* name, const char* title, const 
     }
     // Fail photon (loose && !tight)
     else{
+      float f_VLtoL = getPhotonFR_VLtoL(ph);
+      float w_VLtoL = f_VLtoL / (1 - f_VLtoL);
+
       theHistograms->fill(Form("%s_%s_failPh" , name, mType), Form("%s %s with Fail #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
       theHistograms->fill(Form("%sG_%s_failPh", name, mType), Form("%sG %s with Fail #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
+      theHistograms->fill(Form("%s_%s_reweightPh" , name, mType), Form("%s %s with Reweighted #gamma" , title, mType), binsVV , mValue(p4      ), theWeight * w_VLtoL);
+      theHistograms->fill(Form("%sG_%s_reweightPh", name, mType), Form("%sG %s with Reweighted #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight * w_VLtoL);
 
       const char* genStatus = (genPhotonsPrompt_->size() > 0 && deltaR( closestDeltaR(ph, *genPhotonsPrompt_)->p4(), ph_p4 ) < 0.2) ? "prompt" : "nonpro" ;
       theHistograms->fill(Form("%s_%s_failPh_%s" , name, mType, genStatus), Form("%s %s with Fail #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
@@ -2355,6 +2360,8 @@ void VVGammaAnalyzer::SYSplots(const char* syst, const double& weight, const Pho
 	w_VLtoL = f_VLtoL / (1 - f_VLtoL);
 	theHistograms->fill(Form("SYS_failMVA_%s", syst), Form("MVA fail %s" , syst), 40,-1,1   , ph->MVAvalue(), weight);
 	theHistograms->fill(Form("SYS_failpt_%s" , syst), Form("pt fail %s"  , syst), ph_pt_bins, ph->pt()      , weight);
+	theHistograms->fill(Form("SYS_reweigthMVA_%s", syst), Form("MVA reweighted %s" , syst), 40,-1,1   , ph->MVAvalue(), weight * w_VLtoL);
+	theHistograms->fill(Form("SYS_reweighpt_%s"  , syst), Form("pt reweighted %s"  , syst), ph_pt_bins, ph->pt()      , weight * w_VLtoL);
       }
     }
   }
