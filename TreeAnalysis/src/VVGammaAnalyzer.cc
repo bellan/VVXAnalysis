@@ -1246,16 +1246,44 @@ void VVGammaAnalyzer::fillPhotonPlots(const Photon& ph, const char* name, const 
     theHistograms->fill(Form("%s_chIso"  , name), Form("%s photon;chIso (uncorrected)"      , title), 40, 0., 10          , chIso, theWeight);
     theHistograms->fill(Form("%s_sieie"  , name), Form("%s photon;#sigma_{i#etai#eta}"      , title), 40, 0., .08         , sieie, theWeight);
 
-    const char* genStatus = (genPhotonsPrompt_->size() > 0 && deltaR( *closestDeltaR(ph, *genPhotonsPrompt_), ph ) < 0.2) ? "prompt" : "nonpro" ;
-    theHistograms->fill(Form("%s_pt_fine_%s"  , name, genStatus), Form("%s photon;p_{T} [GeV/c];Events"      , title), ph_ptExtended_bins  , pt   , theWeight);
-    theHistograms->fill(Form("%s_pt_%s"       , name, genStatus), Form("%s photon;p_{T} [GeV/c];Events"      , title), ph_pt_bins          , pt   , theWeight);
-    theHistograms->fill(Form("%s_aeta_%s"     , name, genStatus), Form("%s photon;#eta;Events"               , title), ph_aeta_bins        , aeta , theWeight);
-    theHistograms->fill(Form("%s_aeta_fine_%s", name, genStatus), Form("%s photon;#eta;Events"               , title), ph_aetaExtended_bins, aeta , theWeight);
-    theHistograms->fill(Form("%s_dRl_%s"      , name, genStatus), Form("%s photon;#DeltaR(#gamma, l);Events" , title),  40, 0.,1.          , dRl  , theWeight);
-    theHistograms->fill(Form("%s_dRl_fine_%s" , name, genStatus), Form("%s photon;#DeltaR(#gamma, l);Events" , title), 100, 0.,1.          , dRl  , theWeight);
-    theHistograms->fill(Form("%s_MVA_%s"      , name, genStatus), Form("%s photon;MVA;Events"                , title),  40,-1.,1.          , MVAv , theWeight);
-    theHistograms->fill(Form("%s_chIso_%s"    , name, genStatus), Form("%s photon;chIso (uncorrected);Events", title),  40, 0.,10          , chIso, theWeight);
-    theHistograms->fill(Form("%s_sieie_%s"    , name, genStatus), Form("%s photon;#sigma_{i#etai#eta};Events", title),  40, 0.,.08        , sieie, theWeight);
+    if(theSampleInfo.isMC()){
+      const char* genStatus = (genPhotonsPrompt_->size() > 0 && deltaR( *closestDeltaR(ph, *genPhotonsPrompt_), ph ) < 0.2) ? "prompt" : "nonpro" ;
+      theHistograms->fill(Form("%s_pt_fine_%s"  , name, genStatus), Form("%s photon;p_{T} [GeV/c];Events"      , title), ph_ptExtended_bins  , pt   , theWeight);
+      theHistograms->fill(Form("%s_pt_%s"       , name, genStatus), Form("%s photon;p_{T} [GeV/c];Events"      , title), ph_pt_bins          , pt   , theWeight);
+      theHistograms->fill(Form("%s_aeta_%s"     , name, genStatus), Form("%s photon;#eta;Events"               , title), ph_aeta_bins        , aeta , theWeight);
+      theHistograms->fill(Form("%s_aeta_fine_%s", name, genStatus), Form("%s photon;#eta;Events"               , title), ph_aetaExtended_bins, aeta , theWeight);
+      theHistograms->fill(Form("%s_dRl_%s"      , name, genStatus), Form("%s photon;#DeltaR(#gamma, l);Events" , title),  40, 0., 1.         , dRl  , theWeight);
+      theHistograms->fill(Form("%s_dRl_fine_%s" , name, genStatus), Form("%s photon;#DeltaR(#gamma, l);Events" , title), 100, 0., 1.         , dRl  , theWeight);
+      theHistograms->fill(Form("%s_MVA_%s"      , name, genStatus), Form("%s photon;MVA;Events"                , title),  40,-1., 1.         , MVAv , theWeight);
+      theHistograms->fill(Form("%s_chIso_%s"    , name, genStatus), Form("%s photon;chIso (uncorrected);Events", title),  40, 0., 10         , chIso, theWeight);
+      theHistograms->fill(Form("%s_sieie_%s"    , name, genStatus), Form("%s photon;#sigma_{i#etai#eta};Events", title),  40, 0., .08        , sieie, theWeight);
+    }
+    else if(strcmp(name, "lead_fail") == 0){  // is data and photon is fail (VL && !L) --> reweight
+      double f_VLtoL_data   = getPhotonFR_VLtoL_data(  ph);
+      double f_VLtoL_dataZG = getPhotonFR_VLtoL_dataZG(ph);
+      double weight_VLtoL_data   = theWeight * f_VLtoL_data  /(1-f_VLtoL_data  );
+      double weight_VLtoL_dataZG = theWeight * f_VLtoL_dataZG/(1-f_VLtoL_dataZG);
+
+      theHistograms->fill(Form("%s_pt_fine_%s"  , name, "reweight_data"), Form("%s photon;p_{T} [GeV/c];Events"      , title), ph_ptExtended_bins  , pt   , weight_VLtoL_data);
+      theHistograms->fill(Form("%s_pt_%s"       , name, "reweight_data"), Form("%s photon;p_{T} [GeV/c];Events"      , title), ph_pt_bins          , pt   , weight_VLtoL_data);
+      theHistograms->fill(Form("%s_aeta_%s"     , name, "reweight_data"), Form("%s photon;#eta;Events"               , title), ph_aeta_bins        , aeta , weight_VLtoL_data);
+      theHistograms->fill(Form("%s_aeta_fine_%s", name, "reweight_data"), Form("%s photon;#eta;Events"               , title), ph_aetaExtended_bins, aeta , weight_VLtoL_data);
+      theHistograms->fill(Form("%s_dRl_%s"      , name, "reweight_data"), Form("%s photon;#DeltaR(#gamma, l);Events" , title),  40, 0., 1.         , dRl  , weight_VLtoL_data);
+      theHistograms->fill(Form("%s_dRl_fine_%s" , name, "reweight_data"), Form("%s photon;#DeltaR(#gamma, l);Events" , title), 100, 0., 1.         , dRl  , weight_VLtoL_data);
+      theHistograms->fill(Form("%s_MVA_%s"      , name, "reweight_data"), Form("%s photon;MVA;Events"                , title),  40,-1., 1.         , MVAv , weight_VLtoL_data);
+      theHistograms->fill(Form("%s_chIso_%s"    , name, "reweight_data"), Form("%s photon;chIso (uncorrected);Events", title),  40, 0., 10         , chIso, weight_VLtoL_data);
+      theHistograms->fill(Form("%s_sieie_%s"    , name, "reweight_data"), Form("%s photon;#sigma_{i#etai#eta};Events", title),  40, 0., .08        , sieie, weight_VLtoL_data);
+
+      theHistograms->fill(Form("%s_pt_fine_%s"  , name, "reweight_dataZG"), Form("%s photon;p_{T} [GeV/c];Events"      , title), ph_ptExtended_bins  , pt   , weight_VLtoL_dataZG);
+      theHistograms->fill(Form("%s_pt_%s"       , name, "reweight_dataZG"), Form("%s photon;p_{T} [GeV/c];Events"      , title), ph_pt_bins          , pt   , weight_VLtoL_dataZG);
+      theHistograms->fill(Form("%s_aeta_%s"     , name, "reweight_dataZG"), Form("%s photon;#eta;Events"               , title), ph_aeta_bins        , aeta , weight_VLtoL_dataZG);
+      theHistograms->fill(Form("%s_aeta_fine_%s", name, "reweight_dataZG"), Form("%s photon;#eta;Events"               , title), ph_aetaExtended_bins, aeta , weight_VLtoL_dataZG);
+      theHistograms->fill(Form("%s_dRl_%s"      , name, "reweight_dataZG"), Form("%s photon;#DeltaR(#gamma, l);Events" , title),  40, 0., 1.         , dRl  , weight_VLtoL_dataZG);
+      theHistograms->fill(Form("%s_dRl_fine_%s" , name, "reweight_dataZG"), Form("%s photon;#DeltaR(#gamma, l);Events" , title), 100, 0., 1.         , dRl  , weight_VLtoL_dataZG);
+      theHistograms->fill(Form("%s_MVA_%s"      , name, "reweight_dataZG"), Form("%s photon;MVA;Events"                , title),  40,-1., 1.         , MVAv , weight_VLtoL_dataZG);
+      theHistograms->fill(Form("%s_chIso_%s"    , name, "reweight_dataZG"), Form("%s photon;chIso (uncorrected);Events", title),  40, 0., 10         , chIso, weight_VLtoL_dataZG);
+      theHistograms->fill(Form("%s_sieie_%s"    , name, "reweight_dataZG"), Form("%s photon;#sigma_{i#etai#eta};Events", title),  40, 0., .08        , sieie, weight_VLtoL_dataZG);
+    }
 
     static vector<double> dRl_bins {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.};
     float ptl        = closestLep != leptons_->cend() ? closestLep->pt()                  : -1.;
