@@ -1246,6 +1246,17 @@ void VVGammaAnalyzer::fillPhotonPlots(const Photon& ph, const char* name, const 
     theHistograms->fill(Form("%s_chIso"  , name), Form("%s photon;chIso (uncorrected)"      , title), 40, 0., 10          , chIso, theWeight);
     theHistograms->fill(Form("%s_sieie"  , name), Form("%s photon;#sigma_{i#etai#eta}"      , title), 40, 0., .08         , sieie, theWeight);
 
+    const char* genStatus = (genPhotonsPrompt_->size() > 0 && deltaR( *closestDeltaR(ph, *genPhotonsPrompt_), ph ) < 0.2) ? "prompt" : "nonpro" ;
+    theHistograms->fill(Form("%s_pt_fine_%s"  , name, genStatus), Form("%s photon;p_{T} [GeV/c];Events"      , title), ph_ptExtended_bins  , pt   , theWeight);
+    theHistograms->fill(Form("%s_pt_%s"       , name, genStatus), Form("%s photon;p_{T} [GeV/c];Events"      , title), ph_pt_bins          , pt   , theWeight);
+    theHistograms->fill(Form("%s_aeta_%s"     , name, genStatus), Form("%s photon;#eta;Events"               , title), ph_aeta_bins        , aeta , theWeight);
+    theHistograms->fill(Form("%s_aeta_fine_%s", name, genStatus), Form("%s photon;#eta;Events"               , title), ph_aetaExtended_bins, aeta , theWeight);
+    theHistograms->fill(Form("%s_dRl_%s"      , name, genStatus), Form("%s photon;#DeltaR(#gamma, l);Events" , title),  40, 0.,1.          , dRl  , theWeight);
+    theHistograms->fill(Form("%s_dRl_fine_%s" , name, genStatus), Form("%s photon;#DeltaR(#gamma, l);Events" , title), 100, 0.,1.          , dRl  , theWeight);
+    theHistograms->fill(Form("%s_MVA_%s"      , name, genStatus), Form("%s photon;MVA;Events"                , title),  40,-1.,1.          , MVAv , theWeight);
+    theHistograms->fill(Form("%s_chIso_%s"    , name, genStatus), Form("%s photon;chIso (uncorrected);Events", title),  40, 0.,10          , chIso, theWeight);
+    theHistograms->fill(Form("%s_sieie_%s"    , name, genStatus), Form("%s photon;#sigma_{i#etai#eta};Events", title),  40, 0.,.08        , sieie, theWeight);
+
     static vector<double> dRl_bins {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.};
     float ptl        = closestLep != leptons_->cend() ? closestLep->pt()                  : -1.;
     float RelIso     = closestLep != leptons_->cend() ? closestLep->pfCombRelIso()        : -1.;
@@ -1642,9 +1653,14 @@ void VVGammaAnalyzer::plotsVVGstatus(const char* name, const char* title, const 
   
   // Kin photons
   if(kinPhotons_["central"]->size() > 0){
-    const TLorentzVector& ph_p4 = kinPhotons_["central"]->front().p4();
+    const Photon& ph = kinPhotons_["central"]->front();
+    const TLorentzVector& ph_p4 = ph.p4();
     theHistograms->fill(Form("%s_%s_kinPh" , name, mType), Form("%s %s with Kin #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
     theHistograms->fill(Form("%sG_%s_kinPh", name, mType), Form("%sG %s with Kin #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
+
+    const char* genStatus = (genPhotonsPrompt_->size() > 0 && deltaR( closestDeltaR(ph, *genPhotonsPrompt_)->p4(), ph_p4 ) < 0.2) ? "prompt" : "nonpro" ;
+    theHistograms->fill(Form("%s_%s_kinPh_%s" , name, mType, genStatus), Form("%s %s with Kin #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
+    theHistograms->fill(Form("%sG_%s_kinPh_%s", name, mType, genStatus), Form("%sG %s with Kin #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
   }
   // No photon
   else
@@ -1652,28 +1668,34 @@ void VVGammaAnalyzer::plotsVVGstatus(const char* name, const char* title, const 
 
   // Loose photons
   if(loosePhotons_["central"]->size() > 0){
-    const TLorentzVector& ph_p4 = loosePhotons_["central"]->front().p4();
+    const Photon& ph = loosePhotons_["central"]->front();
+    const TLorentzVector& ph_p4 = ph.p4();
     theHistograms->fill(Form("%s_%s_veryLoosePh" , name, mType), Form("%s %s with VeryLoose #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
     theHistograms->fill(Form("%sG_%s_veryLoosePh", name, mType), Form("%sG %s with VeryLoose #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
+
+    const char* genStatus = (genPhotonsPrompt_->size() > 0 && deltaR( closestDeltaR(ph, *genPhotonsPrompt_)->p4(), ph_p4 ) < 0.2) ? "prompt" : "nonpro" ;
+    theHistograms->fill(Form("%s_%s_veryLoosePh_%s" , name, mType, genStatus), Form("%s %s with VeryLoose #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
+    theHistograms->fill(Form("%sG_%s_veryLoosePh_%s", name, mType, genStatus), Form("%sG %s with VeryLoose #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
+
     // Tight photons
     if(goodPhotons_["central"]->size() > 0){
       const Photon& ph = goodPhotons_["central"]->front();
-      const TLorentzVector& ph_p4 = goodPhotons_["central"]->front().p4();
+      const TLorentzVector& ph_p4 = ph.p4();
       theHistograms->fill(Form("%s_%s_loosePh" , name, mType), Form("%s %s with LooseID #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
       theHistograms->fill(Form("%sG_%s_loosePh", name, mType), Form("%sG %s with LooseID #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
 
-      std::string phStatus = "nomatch";
-      std::vector<Particle>::const_iterator itGenPh;
-      if     ((itGenPh = closestDeltaR(ph, *genPhotonsPrompt_)) != genPhotonsPrompt_->cend() && deltaR(ph, *itGenPh) < 0.2)
-	phStatus = "promptm";
-      else if((itGenPh = closestDeltaR(ph, *genPhotons_      )) != genPhotons_->cend()       && deltaR(ph, *itGenPh) < 0.2)
-	phStatus = "nonprom";
-      theHistograms->fill(Form("%sG_%s_loosePh_%s", name, mType, phStatus.c_str()), Form("%sG %s %s with LooseID #gamma", title, mType, phStatus.c_str()), binsVVG, mValue(p4+ph_p4), theWeight);
+      const char* genStatus = (genPhotonsPrompt_->size() > 0 && deltaR( closestDeltaR(ph, *genPhotonsPrompt_)->p4(), ph_p4 ) < 0.2) ? "prompt" : "nonpro" ;
+      theHistograms->fill(Form("%s_%s_loosePh_%s" , name, mType, genStatus), Form("%s %s with LooseID #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
+      theHistograms->fill(Form("%sG_%s_loosePh_%s", name, mType, genStatus), Form("%sG %s with LooseID #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
     }
     // Fail photon (loose && !tight)
     else{
       theHistograms->fill(Form("%s_%s_failPh" , name, mType), Form("%s %s with Fail #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
       theHistograms->fill(Form("%sG_%s_failPh", name, mType), Form("%sG %s with Fail #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
+
+      const char* genStatus = (genPhotonsPrompt_->size() > 0 && deltaR( closestDeltaR(ph, *genPhotonsPrompt_)->p4(), ph_p4 ) < 0.2) ? "prompt" : "nonpro" ;
+      theHistograms->fill(Form("%s_%s_failPh_%s" , name, mType, genStatus), Form("%s %s with Fail #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
+      theHistograms->fill(Form("%sG_%s_failPh_%s", name, mType, genStatus), Form("%sG %s with Fail #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
     }
   }
 }
