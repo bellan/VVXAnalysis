@@ -765,10 +765,21 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   
 
   phys::Jet output(phys::Particle::convert(jet.p4()),jet.charge(),1);
-  
+
   output.chargedMultiplicity_ = jet.chargedMultiplicity();
   output.neutralMultiplicity_ = jet.neutralMultiplicity();
-  
+  output.partonId_            = jet.genParton() != nullptr ? jet.genParton()->pdgId() : 0;
+  output.partonFlavour_       = jet.partonFlavour();
+  output.hadronFlavour_       = jet.hadronFlavour();
+
+  output.chargedEmEnergyFraction_     = jet.chargedEmEnergy();
+  output.neutralEmEnergyFraction_     = jet.neutralEmEnergy();
+  output.chargedHadronEnergyFraction_ = jet.chargedHadronEnergyFraction();
+  output.neutralHadronEnergyFraction_ = jet.neutralHadronEnergyFraction();
+  output.muonEnergyFraction_          = jet.muonEnergyFraction();
+  output.electronEnergyFraction_      = jet.electronEnergyFraction();
+  output.photonEnergyFraction_        = jet.photonEnergyFraction();
+
   output.csvtagger_      = jet.hasUserFloat("bTagger")                   ? jet.userFloat("bTagger")                : -999;
   
   output.deepAK8_.TvsQCD      = jet.bDiscriminator("pfDeepBoostedDiscriminatorsJetTags:TvsQCD");

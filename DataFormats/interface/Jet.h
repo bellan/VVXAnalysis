@@ -44,6 +44,15 @@ namespace phys {
     /// Constructor
     Jet(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), float q =0, int pid = 0)
       : Particle(p, q, pid)
+      , chargedMultiplicity_(-1)
+      , neutralMultiplicity_(-1)
+      , neutralHadronEnergyFraction_(-9999.)
+      , chargedHadronEnergyFraction_(-9999.)
+      , chargedEmEnergyFraction_(-9999.)
+      , neutralEmEnergyFraction_(-9999.)
+      , muonEnergyFraction_(-9999.)
+      , electronEnergyFraction_(-9999.)
+      , photonEnergyFraction_(-9999.)
       , csvtagger_(-2)
       , deepAK8_()
       , deepAK8_MD_()
@@ -77,9 +86,18 @@ namespace phys {
     virtual ~Jet(){};
     
     // Operations
+
     Int_t chargedMultiplicity() const { return chargedMultiplicity_; }
     Int_t neutralMultiplicity() const { return neutralMultiplicity_; }
-    
+
+    float neutralHadronEnergyFraction() const { return neutralHadronEnergyFraction_; }
+    float chargedHadronEnergyFraction() const { return chargedHadronEnergyFraction_; }
+    float chargedEmEnergyFraction()     const { return chargedEmEnergyFraction_; }
+    float neutralEmEnergyFraction()     const { return neutralEmEnergyFraction_; }
+    float muonEnergyFraction()          const { return muonEnergyFraction_; }
+    float electronEnergyFraction()      const { return electronEnergyFraction_; }
+    float photonEnergyFraction()        const { return photonEnergyFraction_; }
+
     // B-tagging info
     Double_t csvtagger()     const {return csvtagger_;}         
     
@@ -153,7 +171,19 @@ namespace phys {
   private:
     Int_t chargedMultiplicity_;
     Int_t neutralMultiplicity_;
-    
+    Int_t pileUpId_;
+    Int_t partonId_;
+    Int_t partonFlavour_;
+    Int_t hadronFlavour_;
+
+    float neutralHadronEnergyFraction_;
+    float chargedHadronEnergyFraction_;
+    float chargedEmEnergyFraction_;
+    float neutralEmEnergyFraction_;
+    float muonEnergyFraction_;
+    float electronEnergyFraction_;
+    float photonEnergyFraction_;
+
     // B-tagging info
     Double_t csvtagger_;
     
