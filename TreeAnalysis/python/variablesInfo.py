@@ -54,10 +54,10 @@ def getVarInfo_VVGamma(region):
             'ZZ_mass_failPh'      : {'title':'m_{4\ell}\:,\ \gamma\:loose\,\land\:!tight'      , 'rebin':1, 'unblind':True },
             'ZZ_mass_loosePh'     : {'title':'m_{4\ell}\:,\ \gamma\:tight'                     , 'rebin':1, 'unblind':False},  # Tight = cutBasedIDLoose()
             
-            'ZZG_mass_kinPh'      : {'title':'m_{4\ell\gamma}\:,\ \gamma\:kin'                 , 'rebin':1, 'unblind':True },
-            'ZZG_mass_veryLoosePh': {'title':'m_{4\ell\gamma}\:,\ \gamma\:loose'               , 'rebin':1, 'unblind':True },
-            'ZZG_mass_failPh'     : {'title':'m_{4\ell\gamma}\:,\ \gamma\:loose\,\land\:!tight', 'rebin':1, 'unblind':True },
-            'ZZG_mass_loosePh'    : {'title':'m_{4\ell\gamma}\:,\ \gamma\:tight'               , 'rebin':1, 'unblind':False}
+            'ZZG_mass_kinPh'      : {'title':'m_{4\ell\gamma}\:,\ \gamma\:kin'                 , 'rebin':1, 'split_prompt_ph':True, 'unblind':True },
+            'ZZG_mass_veryLoosePh': {'title':'m_{4\ell\gamma}\:,\ \gamma\:loose'               , 'rebin':1, 'split_prompt_ph':True, 'unblind':True },
+            'ZZG_mass_failPh'     : {'title':'m_{4\ell\gamma}\:,\ \gamma\:loose\,\land\:!tight', 'rebin':1, 'split_prompt_ph':True, 'unblind':True },
+            'ZZG_mass_loosePh'    : {'title':'m_{4\ell\gamma}\:,\ \gamma\:tight'               , 'rebin':1, 'split_prompt_ph':True, 'unblind':False}
         })
     
     # 3L region
@@ -214,6 +214,7 @@ def getVarInfo_VVGamma(region):
             VarInfo_VVGamma.update({
                 'lead_{}_{}'.format(status, varname): {'title': '%s #gamma_{%s}^{leading}' %(vartitle, status),
                                                        'unblind':unblind,
+                                                       'split_prompt_ph': True,
                                                        'rebin':rebin }
             })
 
