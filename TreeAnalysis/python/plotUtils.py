@@ -128,7 +128,7 @@ def getPlotFromSample(inputdir, sample, plot, verbosity, forcePositive, **kwargs
 
         if(not h_current):
             if(verbosity >= 2):
-                print _nameFormat.format(fname), "No histo in file"
+                print _nameFormat.format(fname), "No histo in file" + ("" if(verbosity < 3) else " (%s)"%(plot))
             continue
 
         if forcePositive and any(cr in inputdir for cr in ['CR2P2F','CR100','CR010','CR001']):
@@ -183,7 +183,7 @@ def GetPredictionsPlot(region, inputdir, plotInfo, predType, MCSet, forcePositiv
     stack = ROOT.THStack("stack",plot+"_stack")
     ErrStat = ctypes.c_double(0.)
 
-    if predType == 'fromCR':
+    if predType in ('fromCR', 'lepCR', 'fullCR'):
         if(verbosity >= 1):
             print Green("\nNon-prompt leptons background")
         hfake = addIfExisting(*[GetFakeRate(inputdir.replace(region, CR), plotInfo, "data", CR, MCSet) for CR in controlRegions])
@@ -191,6 +191,7 @@ def GetPredictionsPlot(region, inputdir, plotInfo, predType, MCSet, forcePositiv
         hfake.SetLineColor(ROOT.kBlack)
         stack.Add(hfake)
         leg.AddEntry(hfake,"Non-prompt leptons","f")
+
     elif predType == 'fakeMC':  # Hack: use MCs in CRs as if they were data
         if(verbosity >= 1):
             print Green('\nNon-prompt leptons from MC in control regions')
@@ -212,6 +213,15 @@ def GetPredictionsPlot(region, inputdir, plotInfo, predType, MCSet, forcePositiv
         stack.Add(hfake)
         leg.AddEntry(hfake,"Non-prompt lept (MC)","f")
     
+    if(predType in ('fullCR', 'phoCR') and plotInfo.get('fake_photons')):
+        if(verbosity >= 1):
+            print Green("\nNon-prompt photons background")
+        fakeName = plotInfo['fake_photons']
+        hfakePho, integral = getPlotFromSample(inputdir, samplesByRegion.data_obs, fakeName, verbosity, forcePositive)
+        hfakePho.SetLineColor(ROOT.kBlack)
+        hfakePho.SetFillColor(ROOT.kGreen-8)
+        stack.Add(hfakePho)
+        leg.AddEntry(hfakePho, "Non-prompt photons", "f")
     
     totalMC = 0
     
@@ -220,11 +230,15 @@ def GetPredictionsPlot(region, inputdir, plotInfo, predType, MCSet, forcePositiv
     
     for sample in samples:
         h = None
-        splitPromptPh = sample.get('split_prompt_ph') and plotInfo.get('split_prompt_ph')
+        splitPromptPh = sample.get('split_prompt_ph') and plotInfo.get('fake_photons')
 
         if(splitPromptPh):
-            h_prompt, integralPrompt = getPlotFromSample(inputdir, sample, plot+'_prompt', verbosity, forcePositive, note='prompt')
-            h_nonpro, integralNonpro = getPlotFromSample(inputdir, sample, plot+'_nonpro', verbosity, forcePositive, note='nonpro')
+            if(True): #For alignment
+                h_prompt, integralPrompt = getPlotFromSample(inputdir, sample, plot+'_prompt', verbosity, forcePositive, note='prompt')
+            if(not predType in ('fullCR', 'phoCR')):
+                h_nonpro, integralNonpro = getPlotFromSample(inputdir, sample, plot+'_nonpro', verbosity, forcePositive, note='nonpro')
+            else:
+                h_nonpro, integralNonpro = None, 0
             totalMC += integralPrompt + integralNonpro
 
             for h in [h_prompt, h_nonpro]:

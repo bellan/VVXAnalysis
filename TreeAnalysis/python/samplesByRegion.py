@@ -46,10 +46,10 @@ def is2Lregion(region):
 
 
 def getSamplesByRegion(region, MCSet, predType):
-    if predType not in ['fromCR', 'fullMC', 'fakeMC']:
-        sys.exit("Wrong prediction type, fromCR from MC still needs to be added")
-    
-    qqZZ = {}
+    availablePredTypes = ['fromCR', 'lepCR', 'phoCR', 'fullCR', 'fullMC', 'fakeMC']  # Notes: fromCR is a legacy equivalent of lepCR; fullCR = lepCR + phoCR
+    if predType not in availablePredTypes:
+        sys.exit("Wrong prediction type ("+predType+"), available: "+str(availablePredTypes))
+
     if MCSet == 'pow':
         qqZZ = qqZZ_pow
     elif MCSet == 'mad':
@@ -60,10 +60,10 @@ def getSamplesByRegion(region, MCSet, predType):
     if is2Lregion(region):
         tot += ZZGTo2L2jG + WZGTo2L2jG
 
-    if   predType == 'fullMC':
+    if   predType in ['fullMC', 'phoCR']:
         tot += DY + WZ + WG + WW + W + tt + ttX + ZG # + ZZTo2L2Nu + ZZTo2Q2L
 
-    elif predType in ['fromCR', 'fakeMC']:
+    elif predType in ['fromCR', 'lepCR', 'fullCR', 'fakeMC']:
         if   region in ['SR4P', 'SR4P_1L', 'SR4P_1F']:
             pass
         elif region in ['CR3P1F', 'CR2P2F']:

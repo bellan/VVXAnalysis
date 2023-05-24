@@ -63,8 +63,8 @@ parser.add_argument("-m", "--mcset", dest="mcSet", choices=['mad', 'pow'],
                   help= "Monte Carlo Set, pow for Powheg, mad for amcatnlo")
 
 parser.add_argument("-p", "--prediction-type", dest="predType",
-                  default="fromCR",
-                  help= "Type of prediction. fromCR = non-prompt leptons from CRs, rare background from MC; fullMC = all from MC; fakeMC = use MC in CRs instead of data. Default is fromCR")
+                  default="fullMC",
+                  help= "Type of prediction. fromCR = non-prompt leptons from CRs, rare background from MC; fullMC = all from MC; fakeMC = use MC in CRs instead of data")
 
 parser.add_argument("-l", "--lumiProj", dest="LumiProj",
                   default="",
@@ -215,7 +215,7 @@ for Var in variables:
     forcePositive=True
     
     # "Temporary" hack for closure test of photon fake rate
-    if 'PhFRClosure' in Var and 'PASS' in Var:
+    if False: #'PhFRClosure' in Var and 'PASS' in Var:
         hMC, leg = plotUtils.GetClosureStack(region, InputDir, info, forcePositive=False, verbosity=options.verbosity)
     else:
         (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, info, predType, mcSet, forcePositive=forcePositive, verbosity=options.verbosity)
