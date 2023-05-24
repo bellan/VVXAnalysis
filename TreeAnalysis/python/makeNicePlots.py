@@ -208,6 +208,7 @@ c1 = TCanvas( 'c1', mcSet , 900, 1200 )
 
 for Var in variables:
     info = VarInfo[Var]
+    info.update({'name':Var})
     c1.Clear()
     DoData = optDoData and (info.get('unblind', True) or options.unblind or region[:2] != 'SR')
 
@@ -215,16 +216,16 @@ for Var in variables:
     
     # "Temporary" hack for closure test of photon fake rate
     if 'PhFRClosure' in Var and 'PASS' in Var:
-        hMC, leg = plotUtils.GetClosureStack(region, InputDir, Var, info.get('rebin', 1), forcePositive=False, verbosity=options.verbosity)
+        hMC, leg = plotUtils.GetClosureStack(region, InputDir, info, forcePositive=False, verbosity=options.verbosity)
     else:
-        (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, Var, predType, mcSet, info.get('rebin', 1), forcePositive=forcePositive, verbosity=options.verbosity)
+        (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, info, predType, mcSet, forcePositive=forcePositive, verbosity=options.verbosity)
 
     if(not hMC.GetStack()):
         print Evidence('ERROR'), 'skipping', Var, 'because: no MC'
         continue
 
     if(DoData):
-        (graphData, histodata) = plotUtils.GetDataPlot(InputDir, Var, region        , info.get('rebin', 1), forcePositive=forcePositive, verbosity=options.verbosity)
+        (graphData, histodata) = plotUtils.GetDataPlot(region, InputDir, info, forcePositive=forcePositive, verbosity=options.verbosity)
 
         if(not (graphData and histodata)):
             print Evidence('ERROR'), 'skipping', Var, 'because: no data'

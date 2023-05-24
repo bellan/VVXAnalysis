@@ -149,7 +149,9 @@ def getPlotFromSample(inputdir, sample, plot, verbosity, forcePositive, **kwargs
 
 
 ####### Extract predictions plot #########
-def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin, forcePositive=False, verbosity=1):
+def GetPredictionsPlot(region, inputdir, plotInfo, predType, MCSet, forcePositive=False, verbosity=1):
+    plot = plotInfo['name']
+    rebin = plotInfo.get('rebin', 1)
 
     controlRegions = []
     if region == 'SR4P':
@@ -184,7 +186,7 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin, forcePosi
     if predType == 'fromCR':
         if(verbosity >= 1):
             print Green("\nNon-prompt leptons background")
-        hfake = addIfExisting(*[GetFakeRate(inputdir.replace(region,controlRegion), plot, "data", rebin, CR, MCSet) for CR in controlRegions])
+        hfake = addIfExisting(*[GetFakeRate(inputdir.replace(region, CR), plotInfo, "data", CR, MCSet) for CR in controlRegions])
 
         hfake.SetLineColor(ROOT.kBlack)
         stack.Add(hfake)
@@ -194,8 +196,11 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin, forcePosi
             print Green('\nNon-prompt leptons from MC in control regions')
         hfake = None
         for controlRegion in controlRegions:
-            hfakeTmp, _ = GetPredictionsPlot(controlRegion, inputdir.replace(region,controlRegion), plot, 'fullMC', MCSet, rebin, forcePositive=forcePositive)
+            hfakeTmp, _ = GetPredictionsPlot(controlRegion, inputdir.replace(region,controlRegion), plotInfo, 'fullMC', MCSet, forcePositive=forcePositive)
             if hfakeTmp is None: continue
+            if not hfakeTmp.GetStack():
+                print("WARN: fakeMC stack is null!")
+                continue
             if hfakeTmp.GetStack().GetEntries() == 0:
                 print("WARN: got 0 predictions from fakeMC")
                 continue
@@ -215,7 +220,7 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin, forcePosi
     
     for sample in samples:
         h = None
-        splitPromptPh = sample.get('split_prompt_ph', False) #TODO and plot is splittable
+        splitPromptPh = sample.get('split_prompt_ph') and plotInfo.get('split_prompt_ph')
 
         if(splitPromptPh):
             h_prompt, integralPrompt = getPlotFromSample(inputdir, sample, plot+'_prompt', verbosity, forcePositive, note='prompt')
@@ -266,7 +271,9 @@ def GetPredictionsPlot(region, inputdir, plot, predType, MCSet, rebin, forcePosi
 
 
 #################################################
-def GetClosureStack(region, inputDir, plot, rebin, forcePositive=False, verbosity=1):
+def GetClosureStack(region, inputDir, plotInfo, forcePositive=False, verbosity=1):
+    plot  = plotInfo['name']
+
     if  (verbosity >= 1):
         print Red("\n############## "+    plot     +" ##############")
     elif(verbosity >= 2):
@@ -342,7 +349,7 @@ def GetClosureStack(region, inputDir, plot, rebin, forcePositive=False, verbosit
             print "{0:16.16} {1:.3f} +- {2: .3f}".format(sample['name'], integral, ErrStat.value)
         totalMC += integral
 
-        if rebin!=1: h.Rebin(rebin)
+        h.Rebin(plotInfo.get('rebin', 1))
 
         h.SetLineColor  (ROOT.kBlack)  # h.SetLineColor(sample["color"])
         h.SetFillColor  (sample["color"])
@@ -361,7 +368,9 @@ def GetClosureStack(region, inputDir, plot, rebin, forcePositive=False, verbosit
 
 #################################################
 
-def GetDataPlot(inputdir, plot, Region,rebin, forcePositive=False, verbosity=1):
+def GetDataPlot(Region, inputdir, plotInfo, forcePositive=False, verbosity=1):
+    plot = plotInfo['name']
+
     if  (verbosity >= 1):
         print Red("\n###################    DATA    ###################\n")
     sample = samplesByRegion.data_obs
@@ -399,7 +408,7 @@ def GetDataPlot(inputdir, plot, Region,rebin, forcePositive=False, verbosity=1):
     hdata.SetMarkerStyle(20)
     hdata.SetMarkerSize(.8)
 
-    if rebin!=1: hdata.Rebin(rebin) 
+    hdata.Rebin(plotInfo.get('rebin', 1))
 
     if  (verbosity >= 1):
         print "Total data in {0:s} region .......................... {1:.2f}".format(Region,hdata.Integral(0,-1))
@@ -511,7 +520,7 @@ def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
         print Red("\n######### Contribution to Reducible Background#########\n")    
         for i in ["2e2m","4e","4m","4l"]:
             print Blue("### "+i+" ###")
-            hfake = GetFakeRate(inputdir.replace("SR4P/",""),"ZZTo"+i+Var,"data",rebin) 
+            hfake = GetFakeRate(inputdir.replace("SR4P/",""), {'name':"ZZTo"+i+Var, 'rebin':rebin}, "data")
             if i=="4l":
                 stack.Add(hfake)
                 leg.AddEntry(hfake,"Reducible background","f")
@@ -542,8 +551,9 @@ def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
 ###############################################################
 
 
-def GetFakeRate(inputdir, plot, method, rebin=1, region=None, MCSet='mad'):
-    
+def GetFakeRate(inputdir, plotInfo, method, region=None, MCSet='mad'):
+    plot = plotInfo['name']
+
     fileFake = ROOT.TFile(inputdir+"data.root")
     # print 'fileFake:', fileFake.GetName()
         
@@ -556,7 +566,7 @@ def GetFakeRate(inputdir, plot, method, rebin=1, region=None, MCSet='mad'):
     Err       = ctypes.c_double(0.)
     Integr    = hFakeRate.IntegralAndError(0,-1,Err)
 
-    if rebin != 1: hFakeRate.Rebin(rebin)
+    hFakeRate.Rebin(plotInfo.get('rebin', 1))
 
     hFakeRate.SetFillColor(ROOT.kGray)
     hFakeRate.SetLineColor(ROOT.kGray)
