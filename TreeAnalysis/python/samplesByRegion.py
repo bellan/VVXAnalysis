@@ -3,11 +3,11 @@ import ROOT
 
 ##### Define type of samples ##### FIXME: make a class?
 
-qqZZ_pow = [{'files':['ZZTo4l'        ] , 'color':ROOT.kBlue-4  , 'name':'qq/qg #rightarrow ZZ(+jets)', 'split_prompt_ph':True, 'kfactor': 1.325/1.256}]  # 1.1  #(1.256/1.325)
-qqZZ_mad = [{'files':['ZZTo4lamcatnlo'] , 'color':ROOT.kBlue-4  , 'name':'qq/qg #rightarrow ZZ(+jets)', 'split_prompt_ph':True, 'kfactor': 1.}]
+qqZZ_pow = [{'files':['ZZTo4l'        ] , 'color':ROOT.kBlue-4  , 'name':'qq/qg #rightarrow ZZ', 'split_prompt_ph':True, 'kfactor': 1.325/1.256}]  # 1.1  #(1.256/1.325)
+qqZZ_mad = [{'files':['ZZTo4lamcatnlo'] , 'color':ROOT.kBlue-4  , 'name':'qq/qg #rightarrow ZZ', 'split_prompt_ph':True, 'kfactor': 1.}]
 
 ggZZ     = [{'files': ['ggTo2e2mu_Contin_MCFM701', 'ggTo4e_Contin_MCFM701', 'ggTo4mu_Contin_MCFM701'],
-            'color':ROOT.kAzure-4 , 'name':'gg #rightarrow ZZ(+jets)'   , 'kfactor': 1.7}]
+            'color':ROOT.kAzure-4 , 'name':'gg #rightarrow ZZ'   , 'split_prompt_ph':True, 'kfactor': 1.7}]
 
 vbsZZ    = [{'files':['ZZ4lJJ'        ] , 'color':ROOT.kCyan-6  , 'name':'VBS'}]
 HZZ      = [{'files':['HZZ'           ] , 'color':ROOT.kCyan-7  , 'name':'higgs'}]
@@ -33,10 +33,10 @@ triboson = [{'files':['WWW','WWZ','WZZ','ZZZ'], 'color':ROOT.kOrange+1, 'name':'
 
 ttZ      = [{'files':['TTZJets_M10_MLM'], 'color':ROOT.kOrange-5, 'name':'t#bar{t}Z'}]
 
-WZG      = [{'files':['WZGTo3LNuG'    ] , 'color':ROOT.kMagenta , 'name':'WZ\gamma'}]
-ZZG      = [{'files':['ZZGTo4LG'      ] , 'color':ROOT.kRed     , 'name':'ZZ\gamma', 'split_prompt_ph':True}]
-ZZGTo2L2jG=[{'files':['ZZGTo2L2jG'    ] , 'color':ROOT.kRed+3   , 'name':'ZZ\gamma #rightarrow 2\ell 2j'}]
-WZGTo2L2jG=[{'files':['WZGTo2L2jG'    ] , 'color':ROOT.kRed-5   , 'name':'WZ\gamma #rightarrow 2\ell 2j'}]
+WZG      = [{'files':['WZGTo3LNuG'    ] , 'color':ROOT.kMagenta , 'name':'WZ#gamma'}]
+ZZG      = [{'files':['ZZGTo4LG'      ] , 'color':ROOT.kRed     , 'name':'ZZ#gamma', 'split_prompt_ph':True}]
+ZZGTo2L2jG=[{'files':['ZZGTo2L2jG'    ] , 'color':ROOT.kRed+3   , 'name':'ZZ#gamma #rightarrow 2\ell 2j'}]
+WZGTo2L2jG=[{'files':['WZGTo2L2jG'    ] , 'color':ROOT.kRed-5   , 'name':'WZ#gamma #rightarrow 2\ell 2j'}]
 
 data_obs =  {'files':['data'          ] , 'color':ROOT.kBlack   , 'name':'Data'}
 
