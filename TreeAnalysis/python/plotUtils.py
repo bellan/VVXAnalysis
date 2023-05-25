@@ -166,7 +166,9 @@ def GetPredictionsPlot(region, inputdir, plotInfo, predType, MCSet, forcePositiv
     else:
         if(predType in ['fromCR', 'fakeMC']):
             print 'WARN: no rule for fake-lepton bkg for region "{}"'.format(region)  # "You should know what you are doing"
-        
+
+    useFakeLeptonsFromData = predType in ('fromCR', 'lepCR', 'fullCR')
+    useFakePhotonsFromData = predType in ('fullCR', 'phoCR') and plotInfo.get('fake_photons')
     
     if(verbosity == 1):
         print Red("\n############## "+    plot     +" ##############")
@@ -174,16 +176,18 @@ def GetPredictionsPlot(region, inputdir, plotInfo, predType, MCSet, forcePositiv
         print Red("\n###############"+'#'*len(plot)+"###############"
                   "\n############## "+    plot     +" ##############"
                   "\n###############"+'#'*len(plot)+"###############")
-    leg = ROOT.TLegend(0.6,0.52,0.79,0.87)
+
+    leg = ROOT.TLegend(0.5,0.52,0.79,0.87)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.025)
+    leg.SetFillStyle(0)
 
     samples = samplesByRegion.getSamplesByRegion(region, MCSet, predType)
 
     stack = ROOT.THStack("stack",plot+"_stack")
     ErrStat = ctypes.c_double(0.)
 
-    if predType in ('fromCR', 'lepCR', 'fullCR'):
+    if useFakeLeptonsFromData:
         if(verbosity >= 1):
             print Green("\nNon-prompt leptons background")
         hfake = addIfExisting(*[GetFakeRate(inputdir.replace(region, CR), plotInfo, "data", CR, MCSet) for CR in controlRegions])
@@ -212,8 +216,8 @@ def GetPredictionsPlot(region, inputdir, plotInfo, predType, MCSet, forcePositiv
         hfake.SetLineColor(ROOT.kBlack)
         stack.Add(hfake)
         leg.AddEntry(hfake,"Non-prompt lept (MC)","f")
-    
-    if(predType in ('fullCR', 'phoCR') and plotInfo.get('fake_photons')):
+
+    if useFakePhotonsFromData:
         if(verbosity >= 1):
             print Green("\nNon-prompt photons background")
         fakeName = plotInfo['fake_photons']
@@ -230,12 +234,12 @@ def GetPredictionsPlot(region, inputdir, plotInfo, predType, MCSet, forcePositiv
     
     for sample in samples:
         h = None
-        splitPromptPh = sample.get('split_prompt_ph') and plotInfo.get('fake_photons')
+        splitPromptPh = sample.get('split_prompt_ph') and plotInfo.get('split_prompt_ph')
 
         if(splitPromptPh):
             if(True): #For alignment
                 h_prompt, integralPrompt = getPlotFromSample(inputdir, sample, plot+'_prompt', verbosity, forcePositive, note='prompt')
-            if(not predType in ('fullCR', 'phoCR')):
+            if(not useFakePhotonsFromData):
                 h_nonpro, integralNonpro = getPlotFromSample(inputdir, sample, plot+'_nonpro', verbosity, forcePositive, note='nonpro')
             else:
                 h_nonpro, integralNonpro = None, 0
@@ -252,11 +256,11 @@ def GetPredictionsPlot(region, inputdir, plotInfo, predType, MCSet, forcePositiv
                 h.SetMarkerStyle(21)
 
             if(h_prompt):
-                leg.AddEntry(h_nonpro, sample["name"]+'\: nonpro', "f")
+                leg.AddEntry(h_prompt, sample["name"]+' prompt', "f")
                 stack.Add(h_prompt)
             if(h_nonpro):
                 h_nonpro.SetFillStyle(3013)
-                leg.AddEntry(h_prompt, sample["name"]+'\: prompt', "f")
+                leg.AddEntry(h_nonpro, sample["name"]+' nonprompt', "f")
                 stack.Add(h_nonpro)
 
         else:
@@ -297,6 +301,7 @@ def GetClosureStack(region, inputDir, plotInfo, forcePositive=False, verbosity=1
     leg = ROOT.TLegend(0.6,0.52,0.79,0.87)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.025)
+    leg.SetFillStyle(0)
 
     stack = ROOT.THStack("stack",plot+"_stack")
     
