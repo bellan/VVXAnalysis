@@ -259,7 +259,7 @@ def GetPredictionsPlot(region, inputdir, plotInfo, predType, MCSet, forcePositiv
                 leg.AddEntry(h_prompt, sample["name"]+' prompt', "f")
                 stack.Add(h_prompt)
             if(h_nonpro):
-                h_nonpro.SetFillStyle(3013)
+                h_nonpro.SetFillStyle(3002)
                 leg.AddEntry(h_nonpro, sample["name"]+' nonprompt', "f")
                 stack.Add(h_nonpro)
 
