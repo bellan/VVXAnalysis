@@ -33,9 +33,9 @@ def getVarInfo_VVGamma(region):
             'Z1_l1_pt': {'title':'p_{T}^{Z1, l1}'},
             'Z0_dRll' : {},
             'Z1_dRll' : {},
-            'PhFRClosure_VLtoL_pt-aeta_data_PASS_mZZG'  : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG},
-            'PhFRClosure_VLtoL_pt-aeta_dataZG_PASS_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG},
-            'PhFRClosure_KtoVLexcl_pt-aeta_PASS_mZZG'   : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG},
+            'PhFRClosure_VLtoL_pt-aeta_data_PASS_mZZG'  : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG}, #, 'fake_photons':'PhFRClosure_VLtoL_pt-aeta_data_reweighted_mZZG'},
+            'PhFRClosure_VLtoL_pt-aeta_dataZG_PASS_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':False, 'rebin':rebin_mZZG}, #, 'fake_photons':'PhFRClosure_VLtoL_pt-aeta_dataZG_reweighted_mZZG'},
+            'PhFRClosure_KtoVLexcl_pt-aeta_PASS_mZZG'   : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG}, #, 'fake_photons':'PhFRClosure_KtoVLexcl_pt-aeta_reweighted_mZZG'   },
             'PhFRClosure_VLtoL_pt-aeta_data_FAIL_mZZG'  : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG},
             'PhFRClosure_VLtoL_pt-aeta_dataZG_FAIL_mZZG': {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG},
             'PhFRClosure_KtoVLexcl_pt-aeta_FAIL_mZZG'   : {'title':'m_{ZZ#gamma} [GeV/c^{2}]', 'unblind':True , 'rebin':rebin_mZZG}
@@ -57,7 +57,7 @@ def getVarInfo_VVGamma(region):
             'ZZG_mass_kinPh'      : {'title':'m_{4\ell\gamma}\:,\ \gamma\:kin'                 , 'rebin':1, 'split_prompt_ph':True, 'unblind':True },
             'ZZG_mass_veryLoosePh': {'title':'m_{4\ell\gamma}\:,\ \gamma\:loose'               , 'rebin':1, 'split_prompt_ph':True, 'unblind':True },
             'ZZG_mass_failPh'     : {'title':'m_{4\ell\gamma}\:,\ \gamma\:loose\,\land\:!tight', 'rebin':1, 'split_prompt_ph':True, 'unblind':True },
-            'ZZG_mass_loosePh'    : {'title':'m_{4\ell\gamma}\:,\ \gamma\:tight'               , 'rebin':1, 'split_prompt_ph':True, 'unblind':False}
+            'ZZG_mass_loosePh'    : {'title':'m_{4\ell\gamma}\:,\ \gamma\:tight'               , 'rebin':1, 'split_prompt_ph':True, 'unblind':False, 'fake_photons': 'ZZG_mass_reweightPh'}
         })
     
     # 3L region
@@ -207,16 +207,21 @@ def getVarInfo_VVGamma(region):
 
     for status in ('kin', 'kinVetoVL', 'kinVetoL', 'veryLoose', 'VLchIso', 'VLsieie', 'fail', 'fail3', 'fail4a', 'fail4b', 'loose', 'fsrMatched'):
         variables = [('pt', 'p_{T}'), ('aeta', '|#eta|'), ('dRl', '#DeltaR(l, #gamma)'), ('MVA', 'MVA'), ('chIso', 'chIso'), ('sieie', '#sigma_{i#etai#eta}')]
-        unblind = not (status == 'kin', status == 'veryLoose' or status == 'loose' or status ==  'VLchIso' or status == 'VLsieie')
-        isLowStat = region in ('CR3P1F', 'CR2P2F') or ( region=='SR4P' and not status.startswith(('kin', 'fsrMatched')) )
-        rebin = 4 if isLowStat else 1
+        unblind = not (status == 'kin' or status == 'veryLoose' or status == 'loose' or status ==  'VLchIso' or status == 'VLsieie')
+        if region in ('CR3P1F', 'CR2P2F', 'SR4P'): rebin = 4
+        else:                                      rebin = 1
         for varname, vartitle in variables:
-            VarInfo_VVGamma.update({
-                'lead_{}_{}'.format(status, varname): {'title': '%s #gamma_{%s}^{leading}' %(vartitle, status),
-                                                       'unblind':unblind,
-                                                       'split_prompt_ph': True,
-                                                       'rebin':rebin }
-            })
+            n = 'lead_{}_{}'.format(status, varname)
+            d = {'title': '%s #gamma_{%s}^{leading}' %(vartitle, status),
+                 'unblind': unblind,
+                 'logy': True,
+                 'split_prompt_ph': True,
+                 'rebin': rebin }
+            if status == 'loose':
+                d.update({
+                    'fake_photons': 'lead_fail_MVA_reweight_data'
+                })
+            VarInfo_VVGamma.update({n: d})
 
     for chName, chTitle in channels:
         VarInfo_VVGamma.update({
