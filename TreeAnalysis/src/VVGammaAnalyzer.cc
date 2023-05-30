@@ -2561,32 +2561,15 @@ void VVGammaAnalyzer::photonGenStudy(){
   //           return (flags.test(isHardProcess) || flags.test(fromHardProcess)); }
   //         );
   
-  // Since the base selection already contains this cut, it is necessary to do it again
-  std::map<const char*, vector<Photon>> mapWPtoPhotons;
-  // mapWPtoPhotons["kin"]       = vector<Photon>();
-  // mapWPtoPhotons["veryLoose"] = vector<Photon>();
-  mapWPtoPhotons["loose"]     = vector<Photon>();
-    
-  // Select reco photons except cut on DR(ph, lep)
-  for(const Photon& ph: *photons){
-    //Pixel seed and electron veto
-    if(ph.hasPixelSeed() || !ph.passElectronVeto()) continue;
-		
-    //Kinematic selection
-    if(ph.pt() < 20) continue;
-    float ph_aeta = fabs(ph.eta());
-    if(ph_aeta > 2.4 || (ph_aeta > 1.4442 && ph_aeta < 1.566)) continue;
-    
-    // mapWPtoPhotons["kin"].push_back(ph)  // kin.push_back(ph);
-    // if(passVeryLoose(ph))
-    //   mapWPtoPhotons["veryLoose"].push_back(ph)  // veryLoose.push_back(ph);
-    if(ph.cutBasedIDLoose())
-      mapWPtoPhotons["loose"].push_back(ph);  // loose.push_back(ph);
-  }
+  std::map<const char*, const vector<Photon>*> mapWPtoPhotons;
+  mapWPtoPhotons["kin"]       = kinPhotons_["central"].get();
+  mapWPtoPhotons["veryLoose"] = loosePhotons_["central"].get();
+  mapWPtoPhotons["loose"]     = goodPhotons_["central"].get();
   
   // The rec-gen matching is done separately for kin, veryLoose and loose, since we don't want e.g. a kin reco photon 
   // that fails the LooseID to be selected just because it comes before in the photon vector
-  for(auto & [wp, phVect] : mapWPtoPhotons){
+  for(auto & [wp, pPhVect] : mapWPtoPhotons){
+    const vector<Photon>& phVect = *pPhVect;
     if(phVect.size() == 0)
       continue;
     
