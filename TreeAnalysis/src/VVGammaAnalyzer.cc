@@ -1337,61 +1337,35 @@ void VVGammaAnalyzer::photonHistos(){
   
   // pt and eta distribution of photons
   theHistograms->fill("kinPhotons_N"  , "Kin photons;N #gamma;Events", 5,-0.5,4.5, kinPhotons_["central"]->size(), theWeight);
-  if(kinPhotons_["central"]->size() > 0){
-    const Photon& ph = kinPhotons_["central"]->at(0);
-    fillPhotonPlots(ph, "lead_kin", "Leading Kin");
-    
-    if(!ph.cutBasedIDLoose()){
-      fillPhotonPlots(ph, "lead_kinVetoL", "Leading Kin-L");
-    }
-    if(!ph.cutBasedID(Photon::IdWp::VeryLoose)){
-      fillPhotonPlots(ph, "lead_kinVetoVL", "Leading Kin-VL");
-    }
+  theHistograms->fill("veryLoosePhotons_N", "VeryLoose photons;N #gamma;Events", 5,-0.5,4.5, loosePhotons_["central"]->size(), theWeight);
+  theHistograms->fill("loosePhotons_N"    , "Loose photons;N #gamma;Events"    , 5,-0.5,4.5,  goodPhotons_["central"]->size(), theWeight);
 
-    if(kinPhotons_["central"]->size() > 1)
-      theHistograms->fill("sublead_kin_pt", "Subleading Kin #gamma;p_{T} [GeV/c]", ph_ptExtended_bins, kinPhotons_["central"]->at(1).pt());
+  if  ( goodPhotons_["central"]->size() > 0){
+    fillPhotonPlots(goodPhotons_["central"]->at(0), "lead_loose", "Leading Loose");
+    if( goodPhotons_["central"]->size() > 1)
+	theHistograms->fill("sublead_loose_pt", "Subleading Loose #gamma;p_{T} [GeV/c]", ph_pt_bins, goodPhotons_["central"]->at(1).pt());
   }
-
-
-  if(loosePhotons_["central"]->size() > 0){
-    const Photon& ph = loosePhotons_["central"]->at(0);
-    fillPhotonPlots(ph, "lead_veryLoose", "Leading VeryLoose");
-
-    if(ph.cutBasedIDLoose()){
-      fillPhotonPlots(ph, "lead_loose", "Leading Loose");
-    }
-    else{
+  else{
+    if(loosePhotons_["central"]->size() > 0){
+      const Photon& ph = loosePhotons_["central"]->at(0);
       fillPhotonPlots(ph, "lead_fail", "Leading Fail");
+      if(loosePhotons_["central"]->size() > 1)
+	theHistograms->fill("sublead_fail_pt", "Subleading Fail #gamma;p_{T} [GeV/c]", ph_pt_bins, loosePhotons_["central"]->at(1).pt());
+      bool passChIso = ph.cutBasedID(Photon::IdWp::Loose, Photon::IDcut::chIso);
+      bool passSieie = ph.cutBasedID(Photon::IdWp::Loose, Photon::IDcut::sieie);
+
+      if( passChIso && !passSieie)  // 4a = passChIso
+	  fillPhotonPlots(ph, "lead_fail4a", "Leading 4a: pass chIso");
+      if(!passChIso &&  passSieie)  // 4b = passSieie
+	  fillPhotonPlots(ph, "lead_fail4b", "Leading 4a: pass sieie");
+      if(!passChIso && !passSieie)
+	fillPhotonPlots(ph, "lead_fail3", "Leading fail3");
     }
 
-    bool passChIso = ph.cutBasedID(Photon::IdWp::Loose, Photon::IDcut::chIso);
-    bool passSieie = ph.cutBasedID(Photon::IdWp::Loose, Photon::IDcut::sieie);
-
-    if(passChIso){
-      fillPhotonPlots(ph, "lead_VLchIso", "Leading pass VL+chIso");
-      if(!passSieie){  // 4a = passChIso
-	fillPhotonPlots(ph, "lead_fail4a", "Leading 4a: pass chIso");
-      }
-    }
-
-    if(passSieie){
-      fillPhotonPlots(ph, "lead_VLsieie", "Leading pass VL+sieie");
-      if(!passChIso){  // 4b = passSieie
-	fillPhotonPlots(ph, "lead_fail4b", "Leading 4a: pass sieie");
-      }
-    }
-
-    if(!passChIso && !passSieie){
-      fillPhotonPlots(ph, "lead_fail3", "Leading Fail");
-    }
-
-    if(loosePhotons_["central"]->size() > 1){
-      const Photon& ph_sublead = loosePhotons_["central"]->at(1);
-      theHistograms->fill("sublead_veryLoose_pt", "Subleading VeryLoose #gamma;p_{T} [GeV/c]", ph_ptExtended_bins, ph_sublead.pt());
-      if(ph_sublead.cutBasedIDLoose())
-	theHistograms->fill("sublead_loose_pt", "Subleading Loose #gamma;p_{T} [GeV/c]", ph_ptExtended_bins, ph_sublead.pt());
-      else
-	theHistograms->fill("sublead_fail_pt" , "Subleading Fail #gamma;p_{T} [GeV/c]" , ph_ptExtended_bins, ph_sublead.pt());
+    if(  kinPhotons_["central"]->size() > 0){
+      fillPhotonPlots(kinPhotons_["central"]->at(0), "lead_kinVetoL", "Leading Kin-L");
+      if(kinPhotons_["central"]->size() > 1)
+	theHistograms->fill("sublead_kinVetoL_pt", "Subleading Kin-L #gamma;p_{T} [GeV/c]", ph_pt_bins, kinPhotons_["central"]->at(1).pt());
     }
   }
 

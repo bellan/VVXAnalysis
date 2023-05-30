@@ -194,8 +194,7 @@ def getVarInfo_VVGamma(region):
         'sublead_fsrPhotons_dRl': {},
         'sublead_fsrPhotons_eta': {}
         ,
-        'sublead_kin_pt'      : {'title': 'p_{T} \gamma_{kin}^{sublead}'},
-        'sublead_veryLoose_pt': {'title': 'p_{T} sublead \gamma_{loose}'},
+        'sublead_kinVetoL_pt' : {'title': 'p_{T} \gamma_{kin}^{sublead}'},
         'sublead_fail_pt'     : {'title': 'p_{T} sublead \gamma_{fail}' },
         'sublead_loose_pt'    : {'title': 'p_{T} sublead \gamma_{tight}'}
         ,
@@ -205,9 +204,9 @@ def getVarInfo_VVGamma(region):
         'furthestLoosePh' : {'unblind':False}
     })
 
-    for status in ('kin', 'kinVetoVL', 'kinVetoL', 'veryLoose', 'VLchIso', 'VLsieie', 'fail', 'fail3', 'fail4a', 'fail4b', 'loose', 'fsrMatched'):
+    for status in ('kinVetoL', 'fail', 'fail3', 'fail4a', 'fail4b', 'loose', 'fsrMatched'):
         variables = [('pt', 'p_{T}'), ('aeta', '|#eta|'), ('dRl', '#DeltaR(l, #gamma)'), ('MVA', 'MVA'), ('chIso', 'chIso'), ('sieie', '#sigma_{i#etai#eta}')]
-        unblind = not (status == 'kin' or status == 'veryLoose' or status == 'loose' or status ==  'VLchIso' or status == 'VLsieie')
+        unblind = status != 'loose'
         if region in ('CR3P1F', 'CR2P2F', 'SR4P'): rebin = 4
         else:                                      rebin = 1
         for varname, vartitle in variables:
