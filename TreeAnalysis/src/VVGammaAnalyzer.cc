@@ -1395,6 +1395,12 @@ void VVGammaAnalyzer::photonHistos(){
     }
   }
 
+  // SCEta effect on VeryLoose wp
+  auto n_SCEta = std::count_if(loosePhotons_["central"]->begin(), loosePhotons_["central"]->end(),
+			       [](const Photon& ph) { return ph.cutBasedID(Photon::IdWp::VeryLoose, Photon::IDcut::SCEta); }
+			       );
+  theHistograms->fill("veryLoosePh_SCEta_N", "Number of VeryLoose (+SCEta) photons", 5,-0.5,4.5, n_SCEta, theWeight);
+
   // Furthest from leptons
   {
     double dRl;
@@ -1527,7 +1533,7 @@ void VVGammaAnalyzer::photonHistos(){
       theHistograms->fill("loosePhoton_MVA_"    +channelReco_, "Loose #gamma MVA "    +channelReco_, 40,-1.,1., bestKinPh_->MVAvalue(), theWeight);
     }
   }  // END if(kinPhoton["central"]->size() == 0)
-  
+
   // Systematics histos
   // for(const Photon& ph : *photons){
   //   theHistograms->fill("ph_E"                , "E;[GeV]"                             , 50,0.,500., ph.e()                           , theWeight);
