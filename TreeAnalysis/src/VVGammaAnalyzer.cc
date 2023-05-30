@@ -2604,19 +2604,19 @@ void VVGammaAnalyzer::photonGenStudy(){
 	break;
       }
     }
-    if(isMatched)
-      break;
-
-    // Try again with all gen photons
-    for(auto gen : *genPhotons_){
-      auto closestRec = closestDeltaR(gen, phVect);
-      if(closestRec != phVect.cend() && deltaR(gen, *closestRec) < 0.1){
-	best = closestRec;
-	matched = "matched";
-	break;
+    if(!isMatched){       // Try again with all gen photons
+      for(auto gen : *genPhotons_){
+	auto closestRec = closestDeltaR(gen, phVect);
+	if(closestRec != phVect.cend() && deltaR(gen, *closestRec) < 0.1){
+	  best = closestRec;
+	  matched = "matched";
+	  break;
+	}
       }
     }
     
+    theHistograms->fill(Form("PhGenStudy_status_%s", wp), Form("%s;;Events", wp), {"promptm", "matched", "nomatch"}, matched, theWeight);
+
     const char* hname = Form("PhGenStudy_%s_%s_%s", "%s", wp, matched);
     
     // Find the closest lep and get the DR
