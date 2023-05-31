@@ -56,9 +56,10 @@ def getSamplesByRegion(region, MCSet, predType):
         qqZZ = qqZZ_mad
     else: sys.exit("Wrong Set, choose pow or mad")
 
-    tot = WZG + ZZG + qqZZ + ggZZ + triboson + ttXY #+ vbsZZ + HZZ
+    tot = WZG + ZZG
     if is2Lregion(region):
         tot += ZZGTo2L2jG + WZGTo2L2jG
+    tot += qqZZ + ggZZ + triboson + ttXY #+ vbsZZ + HZZ
 
     if   predType in ['fullMC', 'phoCR']:
         tot += DY + WZ + WG + WW + W + tt + ttX + ZG # + ZZTo2L2Nu + ZZTo2Q2L
@@ -80,4 +81,5 @@ def getSamplesByRegion(region, MCSet, predType):
         else:
             tot += WZ + DY + ZG + WG + WW + W + tt + ttX + tX + ZZTo2L2Nu + ZZTo2Q2L
     
+    tot.reverse()
     return tot
