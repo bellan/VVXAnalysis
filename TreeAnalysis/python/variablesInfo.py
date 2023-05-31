@@ -49,13 +49,15 @@ def getVarInfo_VVGamma(region):
         VarInfo_VVGamma.update({
             'ZZ_mass_noPh'        : {'title':'m_{4\ell}\:,\ no\:\gamma', 'rebin':1, 'unblind':True },
             'ZZ_mass_kinPh'       : {'title':'m_{4\ell}\:,\ \gamma\:kin'                       , 'rebin':1, 'unblind':True },
+            'ZZ_mass_kinVetoL'    : {'title':'m_{4\ell}\:,\ \gamma\:kin\,\land\:!tight'        , 'rebin':1, 'unblind':False},
             # Kinematic selection + pixelSeed + electron veto
             'ZZ_mass_veryLoosePh' : {'title':'m_{4\ell}\:,\ \gamma\:loose'                     , 'rebin':1, 'unblind':False},  # Loose = pass 3 cuts
             'ZZ_mass_failPh'      : {'title':'m_{4\ell}\:,\ \gamma\:loose\,\land\:!tight'      , 'rebin':1, 'unblind':True },
             'ZZ_mass_loosePh'     : {'title':'m_{4\ell}\:,\ \gamma\:tight'                     , 'rebin':1, 'unblind':False},  # Tight = cutBasedIDLoose()
             
-            'ZZG_mass_kinPh'      : {'title':'m_{4\ell\gamma}\:,\ \gamma\:kin'                 , 'rebin':1, 'split_prompt_ph':True, 'unblind':True },
-            'ZZG_mass_veryLoosePh': {'title':'m_{4\ell\gamma}\:,\ \gamma\:loose'               , 'rebin':1, 'split_prompt_ph':True, 'unblind':True },
+            'ZZG_mass_kinPh'      : {'title':'m_{4\ell\gamma}\:,\ \gamma\:kin'                 , 'rebin':1, 'split_prompt_ph':True, 'unblind':False},
+            'ZZG_mass_kinVetoL'   : {'title':'m_{4\ell\gamma}\:,\ \gamma\:kin\,\land\:!tight'  , 'rebin':1, 'split_prompt_ph':True, 'unblind':True },
+            'ZZG_mass_veryLoosePh': {'title':'m_{4\ell\gamma}\:,\ \gamma\:loose'               , 'rebin':1, 'split_prompt_ph':True, 'unblind':False},
             'ZZG_mass_failPh'     : {'title':'m_{4\ell\gamma}\:,\ \gamma\:loose\,\land\:!tight', 'rebin':1, 'split_prompt_ph':True, 'unblind':True },
             'ZZG_mass_loosePh'    : {'title':'m_{4\ell\gamma}\:,\ \gamma\:tight'               , 'rebin':1, 'split_prompt_ph':True, 'unblind':False, 'fake_photons': 'ZZG_mass_reweightPh'}
         })
@@ -101,15 +103,17 @@ def getVarInfo_VVGamma(region):
             'ZW_massT_noPh'   : {'title':'mT_{3\ell\\nu}\:,\ no\:\gamma', 'rebin':1, 'unblind':True },
         })
         VarInfo_VVGamma.update({
-            'ZW_massT_kinPh'       : {'title':'mT_{3\ell\\nu}\:,\ \gamma\:kin'                       , 'rebin':1, 'unblind':True },
-            'ZW_massT_veryLoosePh' : {'title':'mT_{3\ell\\nu}\:,\ \gamma\:loose'                     , 'rebin':1, 'unblind':True },
+            'ZW_massT_kinPh'       : {'title':'mT_{3\ell\\nu}\:,\ \gamma\:kin'                       , 'rebin':1, 'unblind':False},
+            'ZW_massT_kinVetoL'    : {'title':'mT_{3\ell\\nu}\:,\ \gamma\:kin\,\land\:!tight'        , 'rebin':1, 'unblind':True },
+            'ZW_massT_veryLoosePh' : {'title':'mT_{3\ell\\nu}\:,\ \gamma\:loose'                     , 'rebin':1, 'unblind':False},
             'ZW_massT_failPh'      : {'title':'mT_{3\ell\\nu}\:,\ \gamma\:loose\,\land\:!tight'      , 'rebin':1, 'unblind':True },
             'ZW_massT_loosePh'     : {'title':'mT_{3\ell\\nu}\:,\ \gamma\:tight'                     , 'rebin':1, 'unblind':False},
             
-            'ZWG_massT_kinPh'      : {'title':'mT_{3\ell\\nu\gamma}\:,\ \gamma\:kin'                 , 'rebin':1, 'unblind':True },
-            'ZWG_massT_veryLoosePh': {'title':'mT_{3\ell\\nu\gamma}\:,\ \gamma\:loose'               , 'rebin':1, 'unblind':True },
+            'ZWG_massT_kinPh'      : {'title':'mT_{3\ell\\nu\gamma}\:,\ \gamma\:kin'                 , 'rebin':1, 'unblind':False},
+            'ZWG_massT_kinVetoL'   : {'title':'mT_{3\ell\\nu\gamma}\:,\ \gamma\:kin\,\land\:!tight'  , 'rebin':1, 'unblind':True },
+            'ZWG_massT_veryLoosePh': {'title':'mT_{3\ell\\nu\gamma}\:,\ \gamma\:loose'               , 'rebin':1, 'unblind':False},
             'ZWG_massT_failPh'     : {'title':'mT_{3\ell\\nu\gamma}\:,\ \gamma\:loose\,\land\:!tight', 'rebin':1, 'unblind':True },
-            'ZWG_massT_loosePh'    : {'title':'mT_{3\ell\\nu\gamma}\:,\ \gamma\:tight'               , 'rebin':1, 'unblind':False}
+            'ZWG_massT_loosePh'    : {'title':'mT_{3\ell\\nu\gamma}\:,\ \gamma\:tight'               , 'rebin':1, 'unblind':False, 'fake_photons': 'ZWG_massT_reweightPh'}
         })
         # for name, title in [('e', 'e'), ('m','\mu')]:
         #     VarInfo_VVGamma.update({
@@ -129,25 +133,29 @@ def getVarInfo_VVGamma(region):
             'VTojj_mass'    : {'title':'m_{jj}'         , 'logy':True}
             ,
             'Z_mass_noPh'       : {'title':'m_{2\ell}\:,\ no\:\gamma'                 , 'logy':True},
-            'Z_mass_kinPh'      : {'title':'m_{2\ell}\:,\ kin\:\gamma'                , 'logy':True},
-            'Z_mass_veryLoosePh': {'title':'m_{2\ell}\:,\ \gamma\:loose'              , 'logy':True},
+            'Z_mass_kinPh'      : {'title':'m_{2\ell}\:,\ \gamma\:kin'                , 'logy':True, 'unblind':False},
+            'Z_mass_kinVetoL'   : {'title':'m_{2\ell}\:,\ \gamma\:kin\,\land\:!tight' , 'logy':True},
+            'Z_mass_veryLoosePh': {'title':'m_{2\ell}\:,\ \gamma\:loose'              , 'logy':True, 'unblind':False},
             'Z_mass_failPh'     : {'title':'m_{2\ell}\:,\ \gamma loose\,\land\:!tight', 'logy':True},
-            'Z_mass_loosePh'    : {'title':'m_{2\ell}\:,\ \gamma\:loose'              , 'logy':True}
+            'Z_mass_loosePh'    : {'title':'m_{2\ell}\:,\ \gamma\:loose'              , 'logy':True, 'unblind':False}
             ,
-            'ZG_mass_kinPh'      : {'title':'m_{2\ell\gamma}\:,\ \gamma\:kin'                , 'logy':True },
-            'ZG_mass_veryLoosePh': {'title':'m_{2\ell\gamma}\:,\ \gamma\:loose'              , 'logy':True },
-            'ZG_mass_failPh'     : {'title':'m_{2\ell\gamma}\:,\ \gamma loose\,\land\:!tight', 'logy':True },
-            'ZG_mass_loosePh'    : {'title':'m_{2\ell\gamma}\:,\ \gamma\:tight'              , 'logy':True, 'unblind':False}
+            'ZG_mass_kinPh'      : {'title':'m_{2\ell\gamma}\:,\ \gamma\:kin'                , 'logy':True, 'split_prompt_ph':True, 'unblind':False},
+            'ZG_mass_kinVetoL'   : {'title':'m_{2\ell\gamma}\:,\ \gamma\:kin,\land\:!tight'  , 'logy':True, 'split_prompt_ph':True },
+            'ZG_mass_veryLoosePh': {'title':'m_{2\ell\gamma}\:,\ \gamma\:loose'              , 'logy':True, 'split_prompt_ph':True, 'unblind':False},
+            'ZG_mass_failPh'     : {'title':'m_{2\ell\gamma}\:,\ \gamma loose\,\land\:!tight', 'logy':True, 'split_prompt_ph':True },
+            'ZG_mass_loosePh'    : {'title':'m_{2\ell\gamma}\:,\ \gamma\:tight'              , 'logy':True, 'split_prompt_ph':True, 'unblind':False, 'fake_photons': 'ZG_mass_reweightPh'}
             ,
-            'ZjjG_mass_kinPh'      : {'title':'m_{2\elljj\gamma}\:,\ \gamma\:kin'                , 'logy':True },
-            'ZjjG_mass_veryLoosePh': {'title':'m_{2\elljj\gamma}\:,\ \gamma\:loose'              , 'logy':True },
-            'ZjjG_mass_failPh'     : {'title':'m_{2\elljj\gamma}\:,\ \gamma loose\,\land\:!tight', 'logy':True },
-            'ZjjG_mass_loosePh'    : {'title':'m_{2\elljj\gamma}\:,\ \gamma\:tight'              , 'logy':True, 'unblind':False}
+            'ZjjG_mass_kinPh'      : {'title':'m_{2\elljj\gamma}\:,\ \gamma\:kin'                , 'logy':True, 'split_prompt_ph':True, 'unblind':False},
+            'ZjjG_mass_kinVetoL'   : {'title':'m_{2\elljj\gamma}\:,\ \gamma\:kin\,\land\:!tight' , 'logy':True, 'split_prompt_ph':True },
+            'ZjjG_mass_veryLoosePh': {'title':'m_{2\elljj\gamma}\:,\ \gamma\:loose'              , 'logy':True, 'split_prompt_ph':True, 'unblind':False},
+            'ZjjG_mass_failPh'     : {'title':'m_{2\elljj\gamma}\:,\ \gamma loose\,\land\:!tight', 'logy':True, 'split_prompt_ph':True },
+            'ZjjG_mass_loosePh'    : {'title':'m_{2\elljj\gamma}\:,\ \gamma\:tight'              , 'logy':True, 'split_prompt_ph':True, 'unblind':False, 'fake_photons': 'ZjjG_mass_reweightPh'}
             ,
-            'ZJG_mass_kinPh'      : {'title':'m_{2\ellJ\gamma}\:,\ \gamma\:kin'                , 'logy':True },
-            'ZJG_mass_veryLoosePh': {'title':'m_{2\ellJ\gamma}\:,\ \gamma\:loose'              , 'logy':True },
-            'ZJG_mass_failPh'     : {'title':'m_{2\ellJ\gamma}\:,\ \gamma loose\,\land\:!tight', 'logy':True },
-            'ZJG_mass_loosePh'    : {'title':'m_{2\ellJ\gamma}\:,\ \gamma\:tight'              , 'logy':True, 'unblind':False}
+            'ZJG_mass_kinPh'      : {'title':'m_{2\ellJ\gamma}\:,\ \gamma\:kin'                , 'logy':True, 'split_prompt_ph':True, 'unblind':False},
+            'ZJG_mass_kinVetoL'   : {'title':'m_{2\ellJ\gamma}\:,\ \gamma\:kin\,\land\:!tight' , 'logy':True, 'split_prompt_ph':True },
+            'ZJG_mass_veryLoosePh': {'title':'m_{2\ellJ\gamma}\:,\ \gamma\:loose'              , 'logy':True, 'split_prompt_ph':True, 'unblind':False},
+            'ZJG_mass_failPh'     : {'title':'m_{2\ellJ\gamma}\:,\ \gamma loose\,\land\:!tight', 'logy':True, 'split_prompt_ph':True },
+            'ZJG_mass_loosePh'    : {'title':'m_{2\ellJ\gamma}\:,\ \gamma\:tight'              , 'logy':True, 'split_prompt_ph':True, 'unblind':False, 'fake_photons': 'ZJG_mass_reweightPh'}
         })
         for Vhad in ['VToJ']:
             for classifier in ['PNet', 'deepAK8', 'deepAK8MD']:

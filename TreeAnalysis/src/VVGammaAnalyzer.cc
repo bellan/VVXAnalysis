@@ -1658,7 +1658,7 @@ void VVGammaAnalyzer::plotsVVGstatus(const char* name, const char* title, const 
   bool isSingleBoson = !strcmp(name, "Z");
   const vector<double>& binsVV  = isSingleBoson ? mZ_bins  : mVV_bins;
   const vector<double>& binsVVG = isSingleBoson ? mZG_bins : mVVG_bins;
-  
+
   // Kin photons
   if(kinPhotons_["central"]->size() > 0){
     const Photon& ph = kinPhotons_["central"]->front();
@@ -1669,6 +1669,13 @@ void VVGammaAnalyzer::plotsVVGstatus(const char* name, const char* title, const 
     const char* genStatus = (genPhotonsPrompt_->size() > 0 && deltaR( closestDeltaR(ph, *genPhotonsPrompt_)->p4(), ph_p4 ) < 0.2) ? "prompt" : "nonpro" ;
     theHistograms->fill(Form("%s_%s_kinPh_%s" , name, mType, genStatus), Form("%s %s with Kin #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
     theHistograms->fill(Form("%sG_%s_kinPh_%s", name, mType, genStatus), Form("%sG %s with Kin #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
+
+    if(! goodPhotons_["central"]->size() > 0){
+      theHistograms->fill(Form("%s_%s_kinVetoL" , name, mType), Form("%s %s with Kin #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
+      theHistograms->fill(Form("%sG_%s_kinVetoL", name, mType), Form("%sG %s with Kin #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
+      theHistograms->fill(Form("%s_%s_kinVetoL_%s" , name, mType, genStatus), Form("%s %s with Kin #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
+      theHistograms->fill(Form("%sG_%s_kinVetoL_%s", name, mType, genStatus), Form("%sG %s with Kin #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
+    }
   }
   // No photon
   else
