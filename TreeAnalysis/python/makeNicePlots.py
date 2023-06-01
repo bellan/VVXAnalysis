@@ -275,8 +275,9 @@ for Var in variables:
                 tgaData.SetPointEYhigh(i, ey)
                 tgaData.SetPointEYlow (i, ey)
     else:
-        temp_xaxis = hMC.GetStack().Last().GetXaxis()
-        histodata = ROOT.TH1F( "histodata", "", temp_xaxis.GetNbins(), temp_xaxis.GetBinLowEdge(1), temp_xaxis.GetBinUpEdge(temp_xaxis.GetNbins()) )
+        histodata = ROOT.TH1F(hMC.GetStack().Last())
+        histodata.SetName("histodata")
+        histodata.Reset()
     
     hMC.Draw("hist")
     
