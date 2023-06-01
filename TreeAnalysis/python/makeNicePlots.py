@@ -267,6 +267,13 @@ for Var in variables:
         for i in range(tgaData.GetN()):
             tgaData.SetPointEXhigh(i,0.)
             tgaData.SetPointEXlow (i,0.)
+            if(abs(tgaData.GetPointY(i)) < 1e-6):
+                tgaData.SetPointEYhigh(i, 0.)
+                tgaData.SetPointEYlow (i, 0.)
+            else:
+                ey = math.sqrt(histodata.GetBinContent(i+1))/hMC.GetStack().Last().GetBinContent(i+1)
+                tgaData.SetPointEYhigh(i, ey)
+                tgaData.SetPointEYlow (i, ey)
     else:
         temp_xaxis = hMC.GetStack().Last().GetXaxis()
         histodata = ROOT.TH1F( "histodata", "", temp_xaxis.GetNbins(), temp_xaxis.GetBinLowEdge(1), temp_xaxis.GetBinUpEdge(temp_xaxis.GetNbins()) )
