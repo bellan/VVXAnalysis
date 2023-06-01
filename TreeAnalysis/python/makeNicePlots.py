@@ -264,11 +264,6 @@ for Var in variables:
     histodata.GetYaxis().SetTitleSize(0.12)
     histodata.GetYaxis().SetTitleOffset(0.5)
     
-    if(Var == 'AK8_pt'):
-        for h in hMC.GetStack():
-            h.GetXaxis().SetRangeUser(160., 500.)
-        histodata.GetXaxis().SetRangeUser(160., 500.)
-    
     hMC.Draw("hist")
     
     if('AAA_cuts' in Var):
@@ -317,21 +312,6 @@ for Var in variables:
         else:
             graphData.Draw("samep")
         leg.AddEntry(graphData, "Data", "lpe")
-    
-    if Var == "nJets":
-        hMC.GetHistogram().GetXaxis().SetTitle("N_{jets} (|#eta^{jet}| < 4.7)")
-        hMC.GetHistogram().GetXaxis().SetBinLabel(1, "0 ")
-        hMC.GetHistogram().GetXaxis().SetBinLabel(2, "1 ")
-        hMC.GetHistogram().GetXaxis().SetBinLabel(3, "2 ")
-        hMC.GetHistogram().GetXaxis().SetBinLabel(4, "3 ")
-        hMC.GetHistogram().GetXaxis().SetBinLabel(5, ">3 ")
-    
-        histodata.GetXaxis().SetTitle("N_{jets} (|#eta^{jet}| < 4.7)")
-        histodata.GetXaxis().SetBinLabel(1, "0 ")
-        histodata.GetXaxis().SetBinLabel(2, "1 ")
-        histodata.GetXaxis().SetBinLabel(3, "2 ")
-        histodata.GetXaxis().SetBinLabel(4, "3 ")
-        histodata.GetXaxis().SetBinLabel(5, ">3 ")
 
     x1 = leg.GetX1()
     x2 = leg.GetX2()
