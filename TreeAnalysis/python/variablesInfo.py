@@ -215,9 +215,12 @@ def getVarInfo_VVGamma(region):
     for status in ('kinVetoL', 'fail', 'fail3', 'fail4a', 'fail4b', 'loose', 'fsrMatched'):
         variables = [('pt', 'p_{T}'), ('aeta', '|#eta|'), ('dRl', '#DeltaR(l, #gamma)'), ('MVA', 'MVA'), ('chIso', 'chIso'), ('sieie', '#sigma_{i#etai#eta}')]
         unblind = status != 'loose'
-        if region in ('CR3P1F', 'CR2P2F', 'SR4P'): rebin = 4
-        else:                                      rebin = 1
         for varname, vartitle in variables:
+            if region in ('CR3P1F', 'CR2P2F', 'SR4P') and not varname in ('pt', 'aeta'):
+                rebin = 4
+            else:
+                rebin = 1
+
             n = 'lead_{}_{}'.format(status, varname)
             d = {'title': '%s #gamma_{%s}^{leading}' %(vartitle, status),
                  'unblind': unblind,
