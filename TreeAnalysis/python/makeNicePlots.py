@@ -167,6 +167,7 @@ except OSError as e:
 
 
 tdrstyle.setTDRStyle()
+ROOT.gStyle.SetErrorX(0.5)
 ROOT.gROOT.SetBatch(True)
 
 if LumiProj != "":
@@ -230,6 +231,9 @@ for Var in variables:
         if(not (graphData and histodata)):
             print Evidence('ERROR'), 'skipping', Var, 'because: no data'
             continue
+        for i in range(graphData.GetN()):
+            graphData.SetPointEXhigh(i,0.)
+            graphData.SetPointEXlow (i,0.)
     
     hMCErr = deepcopy(hMC.GetStack().Last())
     
@@ -255,7 +259,14 @@ for Var in variables:
     
     pad1.cd()
     
-    if DoData: histodata.Divide(hMC.GetStack().Last())
+    # Create TGraphAsymmErrors from histodata and set x errors to 0
+    # This is to avoid interference with gStyle.SetErrorX(0.5) which is needed to draw MC error rectangles
+    tgaData = ROOT.TGraphAsymmErrors()
+    if DoData:
+        tgaData.Divide(histodata, hMC.GetStack().Last(), 'pois')
+        for i in range(tgaData.GetN()):
+            tgaData.SetPointEXhigh(i,0.)
+            tgaData.SetPointEXlow (i,0.)
     else:
         temp_xaxis = hMC.GetStack().Last().GetXaxis()
         histodata = ROOT.TH1F( "histodata", "", temp_xaxis.GetNbins(), temp_xaxis.GetBinLowEdge(1), temp_xaxis.GetBinUpEdge(temp_xaxis.GetNbins()) )
@@ -359,13 +370,11 @@ for Var in variables:
         histodata.GetXaxis().SetNoExponent()
     histodata.SetMarkerStyle(20)
     
-    # Dummy TH1 to act as a frame for the ratio plot
-    frame_ratio = deepcopy(histodata)
-    frame_ratio.GetYaxis().SetRangeUser(yMin_r, yMax_r)
-    frame_ratio.Draw("axis")
+    histodata.GetYaxis().SetRangeUser(yMin_r, yMax_r)
+    histodata.Draw("axis")
     
     Line.Draw()
-    histodata.Draw("E0 same")
+    tgaData.Draw("PE0 same")
     
     
     if(not DoData):
@@ -387,6 +396,6 @@ for Var in variables:
     c1.SaveAs(os.path.join(OutputDir, Title+".png"))
     # c1.SaveAs(os.path.join(OutputDir, Title+".eps"))
     c1.SaveAs(os.path.join(OutputDir, Title+".pdf"))
-    
-    del histodata
+
+    del histodata, tgaData
 
