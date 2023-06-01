@@ -271,10 +271,6 @@ for Var in variables:
         temp_xaxis = hMC.GetStack().Last().GetXaxis()
         histodata = ROOT.TH1F( "histodata", "", temp_xaxis.GetNbins(), temp_xaxis.GetBinLowEdge(1), temp_xaxis.GetBinUpEdge(temp_xaxis.GetNbins()) )
     
-    histodata.GetYaxis().SetTitle("data/MC")
-    histodata.GetYaxis().SetTitleSize(0.12)
-    histodata.GetYaxis().SetTitleOffset(0.5)
-    
     hMC.Draw("hist")
     
     if('AAA_cuts' in Var):
@@ -363,9 +359,12 @@ for Var in variables:
     
     if(info.get('title')):
         histodata.GetXaxis().SetTitle(info['title'])
-    histodata.GetXaxis().SetLabelSize(0.08)
+    histodata.GetYaxis().SetTitle("data/MC")
+    histodata.GetYaxis().SetTitleOffset(0.5)
+    histodata.GetYaxis().SetTitleSize(0.12)
     histodata.GetYaxis().SetLabelSize(0.08)
     histodata.GetXaxis().SetTitleSize(0.08)
+    histodata.GetXaxis().SetLabelSize(0.08)
     if (histodata.GetXaxis().GetXmin() > 0.001 and histodata.GetXaxis().GetXmax() < 1000):
         histodata.GetXaxis().SetNoExponent()
     histodata.SetMarkerStyle(20)
