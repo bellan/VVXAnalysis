@@ -37,8 +37,7 @@ args = parser.parse_args()
 def skipsample(filename):
     if '201' in filename: return True
     if filename == 'data.root': return True
-    if(filename.startswith(('ggTo4e', 'ggTo2e2mu', 'ggTo4mu', 'ggZZ', 'ZZZ', 'WZZ', 'WWZ', 'TTWW', 'TTZZ'))):
-        return True
+    if filename in ('ggTo4l', 'ttXY', 'triboson'): return True
     if filename.split('.')[-1] != 'root':
         print(">>> strange sample:", filename)
         return True
