@@ -27,7 +27,8 @@ parser.add_argument(      '--blind'    , dest='unblind', action='store_false', d
 parser.add_argument('-i', '--inputdir' , default='results')
 parser.add_argument('-o', '--outputdir', default='histogramsForCombine')
 parser.add_argument('-A', '--analyzer' , default='VVGammaAnalyzer')
-parser.add_argument('-r', '--regions'  , default=regions, nargs='+', choices=regions)
+parser.add_argument('-r', '--regions'  , default=['SR4P'], nargs='+', choices=regions)
+parser.add_argument(      '--remake-fake-photons', action='store_true', help='Force to recreate the fake_photons.root file from data.root')
 parser.add_argument('-v', '--verbose'  , dest='verbosity', action='count', default=1, help='Increase the verbosity level')
 parser.add_argument('-q', '--quiet'    , dest='verbosity', action='store_const', const=0)
 args = parser.parse_args()
@@ -60,7 +61,7 @@ if __name__ == '__main__':
         call(['rm', '-r', args.outputdir])  # clean up the directory so that old files don't clutter it
 
     # samples = set()  # deduce from files found
-    n_retrieved = 0
+    ok_retrieved  = []
     not_retrieved = []
 
     # Start
@@ -80,10 +81,11 @@ if __name__ == '__main__':
         files_in = {}  # mapping: sample <str> --> file <ROOT.TFile>
 
         # retrieve the full list of variables in this region. Open input files but don't close them
-        variables_region = set()
+        variables_set = set()
         for sample in samples_region:
             files_in[sample] = ROOT.TFile(os.path.join(path_in, sample+'.root'))
-            variables_region.update([ key.GetName() for key in files_in[sample].GetListOfKeys() if key.ReadObj().Class().InheritsFrom("TH1") and isVarSystematic(key.GetName())])
+            variables_set.update([ key.GetName() for key in files_in[sample].GetListOfKeys() if key.ReadObj().Class().InheritsFrom("TH1") and isVarSystematic(key.GetName())])
+        variables_region = sorted(variables_set)
 
         # print('DEBUG: in', region, 'the variables are:', variables_region)
         # Add data
@@ -96,23 +98,31 @@ if __name__ == '__main__':
                 files_in['data_obs'] = data_obs
 
         # Write fake_photons
-        if(not 'fake_photons' in files_in):
-            with TFileContext(os.path.join(path_in, 'fake_leptons.root'), 'RECREATE') as fFakePh:
+        if((not 'fake_photons' in files_in) or args.remake_fake_photons):
+            print('INFO: recreating fake_photons file')
+            with TFileContext(os.path.join(path_in, 'fake_photons.root'), 'RECREATE') as fFakePh:
+                fFakePh.cd()
                 for variable in variables_region:
                     split = variable.split('_')
                     var_name = split[1]
                     syst = split[2]
-                    if(var_name.endswith('failReweight')):
-                        h = files_in['data_obs'].Get(variable)
-                        new_name = var_name.replace('failReweight', 'loose')
-                        h.SetName( h.GetName().replace(var_name, new_name) )
-                        h.Write()
-            try:
-                fFakePh = ROOT.TFile(os.path.join(path_in, 'data.root'))
-            except OSError as e:
-                print('WARN: While opening {}, caught'.format(fFakePh.GetName()), e)
-            else:
-                files_in['fake_photons'] = fFakePh
+
+                    if('loose' in var_name):
+                        if(var_name in ('looseMVA', 'loosept')):
+                            reweight_name = var_name.replace('loose', 'reweigth')
+                        else:
+                            reweight_name = var_name.replace('loose', 'failReweight')
+                        full_name = variable.replace(var_name, reweight_name)
+                        h = files_in['data_obs'].Get(full_name)
+                        if(h):
+                            h.SetName( h.GetName().replace(reweight_name, var_name) )
+                            h.Write()
+        try:
+            fFakePh = ROOT.TFile(os.path.join(path_in, 'fake_photons.root'))
+        except OSError as e:
+            print('WARN: While opening {}, caught'.format(fFakePh.GetName()), e)
+        else:
+            files_in['fake_photons'] = fFakePh
 
         # Write to output
         with TFileContext(os.path.join(path_out, region+'.root'), "RECREATE") as fout:
@@ -143,38 +153,40 @@ if __name__ == '__main__':
                     if(h):
                         h.SetName(out_name %(sample))
                         h.Write()
-                        n_retrieved += 1
+                        ok_retrieved.append( {'file':files_in[sample].GetName(), 'variable':variable})
                     else:
-                        not_retrieved.append([files_in[sample].GetName(), variable])
+                        not_retrieved.append({'file':files_in[sample].GetName(), 'variable':variable})
 
         del samples_region
         for _, handler in files_in.items():
             handler.Close()
 
-if(args.verbosity >= 1):
-    files_prob = set([e[0] for e in not_retrieved])
-    for file_prob in files_prob:
-        problems = [e[1] for e in not_retrieved if e[0] == file_prob]
-        print('WARN: From file {:60.60s} could not retrieve {:2d} plots'.format(file_prob, len(problems)))
+    if(args.verbosity >= 1):
+        files_prob = { e['file'] for e in not_retrieved }  # set()
+        max_len = max([len(f) for f in files_prob])
+        format_str = 'WARN: From file {:%d.%ds} could not retrieve {:d}/{:d} plots' % (max_len, max_len)
+        for file_prob in files_prob:
+            problems = [e['variable'] for e in not_retrieved if e['file'] == file_prob]
+            good     = [e['variable'] for e in  ok_retrieved if e['file'] == file_prob]
+            print(format_str.format(file_prob, len(problems), len(problems)+len(good)))
 
-if(args.verbosity >= 2):
-    hists_prob         = { e[1] for e in not_retrieved }
-    hists_prob_central = { e for e in hists_prob if e.endswith('central') }
-    hists_prob_updn    = { e.rstrip('_Up').rstrip('_Down') for e in hists_prob if e.endswith(('Up', 'Down')) }
-    for hist_prob in hists_prob_central:
-        problems = { e[0] for e in not_retrieved if e[1] == hist_prob }
-        print('WARN: Histogram {:40.40s} was missing from {:2d} files'.format(hist_prob, len(problems)), end='')
-        if(len(problems) < 10):
-            print(':', *[f.split('/')[-1] for f in problems])
-        else:
-            print()
-    for hist_prob in hists_prob_updn:
-        problems = { e[0] for e in not_retrieved if e[1].startswith(hist_prob) }
-        print('WARN: Histogram {:40.40s} was missing from {:2d} files'.format(hist_prob+'(Up/Down)', len(problems)), end='')
-        if(len(problems) < 10):
-            print(':', *[f.split('/')[-1] for f in problems])
-        else:
-            print()
+    if(args.verbosity >= 2):
+        hists_prob         = { e['variable'] for e in not_retrieved }
+        hists_prob_central = { e for e in hists_prob if e.endswith('central') }
+        hists_prob_updn    = { e.rstrip('_Up').rstrip('_Down') for e in hists_prob if e.endswith(('Up', 'Down')) }
+        for hist_prob in hists_prob_central:
+            problems = { e['file'] for e in not_retrieved if e['variable'] == hist_prob }
+            print('WARN: Histogram {:40.40s} was missing from {:2d} files'.format(hist_prob, len(problems)), end='')
+            if(len(problems) < 10):
+                print(':', *[f.split('/')[-1] for f in problems])
+            else:
+                print()
+        for hist_prob in hists_prob_updn:
+            problems = { e['file'] for e in not_retrieved if e['variable'].startswith(hist_prob) }
+            print('WARN: Histogram {:40.40s} was missing from {:2d} files'.format(hist_prob+'(Up/Down)', len(problems)), end='')
+            if(len(problems) < 10):
+                print(':', *[f.split('/')[-1] for f in problems])
+            else:
+                print()
 
-print('INFO: Total missing plots:', len(not_retrieved))
-print('INFO: Retrieved and wrote {:d} histograms'.format(n_retrieved))
+    print('INFO: Retrieved and wrote {:d} histograms. {:d} were missing. Total: {:d}'.format(len(ok_retrieved), len(not_retrieved), len(ok_retrieved)+len(not_retrieved)))
