@@ -2430,8 +2430,14 @@ void VVGammaAnalyzer::systematicsStudy(){
   // Photons energy scale and resolution
   for(const auto& [syst, phVect] : goodPhotons_){
     if(strcmp(syst, "central") == 0) continue;
-    if(phVect->size() == 0) continue;
-    SYSplots(Form("ph%s", syst), base_w, & phVect->front());
+    if(phVect->size() > 0){
+      SYSplots(Form("ph%s", syst), base_w, & phVect->front());
+    }
+    else{  // If no good photons found, try with loose photons
+      const vector<Photon>* loosePhVect = loosePhotons_[syst].get();
+      if(loosePhVect->size() > 0)
+	SYSplots(Form("ph%s", syst), base_w, & loosePhVect->front());
+    }
   }
   
   bool isMC = theSampleInfo.isMC();
