@@ -1247,7 +1247,7 @@ void VVGammaAnalyzer::fillPhotonPlots(const Photon& ph, const char* name, const 
     theHistograms->fill(Form("%s_sieie"  , name), Form("%s photon;#sigma_{i#etai#eta}"      , title), 40, 0., .08         , sieie, theWeight);
 
     if(theSampleInfo.isMC()){
-      const char* genStatus = (genPhotonsPrompt_->size() > 0 && deltaR( *closestDeltaR(ph, *genPhotonsPrompt_), ph ) < 0.2) ? "prompt" : "nonpro" ;
+      const char* genStatus = isPhotonPrompt(ph) ? "prompt" : "nonpro" ;
       theHistograms->fill(Form("%s_pt_fine_%s"  , name, genStatus), Form("%s photon;p_{T} [GeV/c];Events"      , title), ph_ptExtended_bins  , pt   , theWeight);
       theHistograms->fill(Form("%s_pt_%s"       , name, genStatus), Form("%s photon;p_{T} [GeV/c];Events"      , title), ph_pt_bins          , pt   , theWeight);
       theHistograms->fill(Form("%s_aeta_%s"     , name, genStatus), Form("%s photon;#eta;Events"               , title), ph_aeta_bins        , aeta , theWeight);
@@ -1666,7 +1666,7 @@ void VVGammaAnalyzer::plotsVVGstatus(const char* name, const char* title, const 
     theHistograms->fill(Form("%s_%s_kinPh" , name, mType), Form("%s %s with Kin #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
     theHistograms->fill(Form("%sG_%s_kinPh", name, mType), Form("%sG %s with Kin #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
 
-    const char* genStatus = (genPhotonsPrompt_->size() > 0 && deltaR( closestDeltaR(ph, *genPhotonsPrompt_)->p4(), ph_p4 ) < 0.2) ? "prompt" : "nonpro" ;
+    const char* genStatus = isPhotonPrompt(ph) ? "prompt" : "nonpro" ;
     theHistograms->fill(Form("%s_%s_kinPh_%s" , name, mType, genStatus), Form("%s %s with Kin #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
     theHistograms->fill(Form("%sG_%s_kinPh_%s", name, mType, genStatus), Form("%sG %s with Kin #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
 
@@ -1688,7 +1688,7 @@ void VVGammaAnalyzer::plotsVVGstatus(const char* name, const char* title, const 
     theHistograms->fill(Form("%s_%s_veryLoosePh" , name, mType), Form("%s %s with VeryLoose #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
     theHistograms->fill(Form("%sG_%s_veryLoosePh", name, mType), Form("%sG %s with VeryLoose #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
 
-    const char* genStatus = (genPhotonsPrompt_->size() > 0 && deltaR( closestDeltaR(ph, *genPhotonsPrompt_)->p4(), ph_p4 ) < 0.2) ? "prompt" : "nonpro" ;
+    const char* genStatus = isPhotonPrompt(ph) ? "prompt" : "nonpro" ;
     theHistograms->fill(Form("%s_%s_veryLoosePh_%s" , name, mType, genStatus), Form("%s %s with VeryLoose #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
     theHistograms->fill(Form("%sG_%s_veryLoosePh_%s", name, mType, genStatus), Form("%sG %s with VeryLoose #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
 
@@ -1713,7 +1713,7 @@ void VVGammaAnalyzer::plotsVVGstatus(const char* name, const char* title, const 
       theHistograms->fill(Form("%s_%s_reweightPh" , name, mType), Form("%s %s with Reweighted #gamma" , title, mType), binsVV , mValue(p4      ), theWeight * w_VLtoL);
       theHistograms->fill(Form("%sG_%s_reweightPh", name, mType), Form("%sG %s with Reweighted #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight * w_VLtoL);
 
-      const char* genStatus = (genPhotonsPrompt_->size() > 0 && deltaR( closestDeltaR(ph, *genPhotonsPrompt_)->p4(), ph_p4 ) < 0.2) ? "prompt" : "nonpro" ;
+      const char* genStatus = isPhotonPrompt(ph) ? "prompt" : "nonpro" ;
       theHistograms->fill(Form("%s_%s_failPh_%s" , name, mType, genStatus), Form("%s %s with Fail #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
       theHistograms->fill(Form("%sG_%s_failPh_%s", name, mType, genStatus), Form("%sG %s with Fail #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
     }

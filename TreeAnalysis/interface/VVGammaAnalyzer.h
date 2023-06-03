@@ -91,6 +91,10 @@ public:
     bool goodmass = fabs(cand.p4().M() - phys::WMASS) < 50;
     return (goodmass && gooddaughters);
   }
+
+  bool isPhotonPrompt(const phys::Photon& ph, double tolerance=0.2) const {
+    return genPhotonsPrompt_->size() > 0 && physmath::deltaR( *closestDeltaR(ph, *genPhotonsPrompt_), ph ) < tolerance;
+  }
   
   
 private:
