@@ -68,7 +68,7 @@ void VVGammaAnalyzer::begin(){
   std::string spaces( digits, ' ' );
   cout<<"Analyzed:\t"<<spaces<<'/'<<tree()->GetEntries()<<std::flush;
   #else
-  cout<<"\tSizes: Particle="<<sizeof(Particle)<<" , Lepton="<<sizeof(Lepton)<<" , Photon="<<sizeof(Photon)<<" Jet="<<sizeof(Jet)<<" , Boson<Particle>="<<sizeof(Boson<Particle>)<<" , DiBoson<Particle,Particle>="<<sizeof(DiBoson<Particle,Particle>)<<'\n';
+  cout<<"\tSizes: Particle="<<sizeof(Particle)<<" , Lepton="<<sizeof(Lepton)<<" , Photon="<<sizeof(Photon)<<" , Jet="<<sizeof(Jet)<<" , Boson<Particle>="<<sizeof(Boson<Particle>)<<" , DiBoson<Particle,Particle>="<<sizeof(DiBoson<Particle,Particle>)<<'\n';
   #endif
 
   return;
