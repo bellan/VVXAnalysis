@@ -161,7 +161,7 @@ if __name__ == '__main__':
         files_prob = { e['file'] for e in not_retrieved }  # set()
         max_len = max([len(f) for f in files_prob])
         format_str = 'WARN: From file {:%d.%ds} could not retrieve {:d}/{:d} plots' % (max_len, max_len)
-        for file_prob in files_prob:
+        for file_prob in sorted(files_prob):
             problems = [e['variable'] for e in not_retrieved if e['file'] == file_prob]
             good     = [e['variable'] for e in  ok_retrieved if e['file'] == file_prob]
             print(format_str.format(file_prob, len(problems), len(problems)+len(good)))
@@ -170,16 +170,18 @@ if __name__ == '__main__':
         hists_prob         = { e['variable'] for e in not_retrieved }
         hists_prob_central = { e for e in hists_prob if e.endswith('central') }
         hists_prob_updn    = { e.rstrip('_Up').rstrip('_Down') for e in hists_prob if e.endswith(('Up', 'Down')) }
-        for hist_prob in hists_prob_central:
-            problems = { e['file'] for e in not_retrieved if e['variable'] == hist_prob }
-            print('WARN: Histogram {:40.40s} was missing from {:2d} files'.format(hist_prob, len(problems)), end='')
+        for hist_prob in sorted(hists_prob_central):
+            problems = [ e['file'] for e in not_retrieved if e['variable'] == hist_prob ]
+            good     = [ e['file'] for e in  ok_retrieved if e['variable'] == hist_prob ]
+            print('WARN: Histogram {:40.40s} was missing {:2d}/{:2d} times'.format(hist_prob            , len(problems), len(good)+len(problems)), end='')
             if(len(problems) < 10):
                 print(':', *[f.split('/')[-1] for f in problems])
             else:
                 print()
-        for hist_prob in hists_prob_updn:
-            problems = { e['file'] for e in not_retrieved if e['variable'].startswith(hist_prob) }
-            print('WARN: Histogram {:40.40s} was missing from {:2d} files'.format(hist_prob+'(Up/Down)', len(problems)), end='')
+        for hist_prob in sorted(hists_prob_updn):
+            problems = [ e['file'] for e in not_retrieved if e['variable'].startswith(hist_prob) ]
+            good     = [ e['file'] for e in  ok_retrieved if e['variable'].startswith(hist_prob) ]
+            print('WARN: Histogram {:40.40s} was missing {:2d}/{:2d} times'.format(hist_prob+'(Up/Down)', len(problems), len(good)+len(problems)), end='')
             if(len(problems) < 10):
                 print(':', *[f.split('/')[-1] for f in problems])
             else:
