@@ -14,7 +14,9 @@ from tableSystematics import fillDataFrame
 
 parser = ArgumentParser()
 parser.add_argument('template', help='Template for the datacard')
-parser.add_argument('-v', '--verbose', action='count', default=0, help='Increase the verbosity level')
+parser.add_argument('-v', '--verbose'  , dest='verbosity', action='count', default=1, help='Increase verbosity')
+parser.add_argument(      '--verbosity', type=int, help='Set verbosity')
+parser.add_argument('-q', '--quiet'    , dest='verbosity', action='store_const', const=0, help='Set verbose to minimum')
 parser.add_argument('-r', '--region', default='SR4P')
 parser.add_argument('-y', '--year', type=int, default=2016)
 parser.add_argument('-C', '--config-file', help='Configuration file. Defaults to one hardcoded in this script')
@@ -23,14 +25,13 @@ parser.add_argument(      '--unblind', action='store_true')
 parser.add_argument(      '--path', default='/afs/cern.ch/user/a/amecca/public/histogramsForCombine')
 
 args = parser.parse_args()
-if(args.verbose):
-    print('INFO: writing card for {args.year}, {args.region}'.format(*globals()))
+if(args.verbosity >= 1):
+    print('INFO: writing card for {args.year}, {args.region}'.format(**globals()))
 
 ### Hardcoded configuration ###
 config = {
     # Define which samples are signals and which are background
     'signals': ['ZZGTo4LG', 'WZGTo3LNuG'],
-    'backgrounds': ['ZZTo4l', 'ggTo4l', 'WZTo3LNu'],
     # Define the observable and the samples in each region
     'regions': {
         'SR4P': {
@@ -68,6 +69,10 @@ if(args.config_file is not None):
 # Update from command line
 config.update(args.config)
 
+if(args.verbosity >= 2):
+    print('### Configuration ###')
+    print(json.dumps(config, indent=2))
+    print()
 
 # Utility functions
 def getSystType(syst):
@@ -119,28 +124,30 @@ observables=[[
 ]]
 df_bin = pd.DataFrame(observables, columns=['bin', 'observation']).transpose()
 
-if(args.verbose > 1): print(df_bin.to_string(header=False))
+if(args.verbosity >= 3):
+    print(df_bin.to_string(header=False))
+    print()
 
 ### Observable section ###
 signals     = [proc for proc in region_config['processes'] if proc in config['signals']    ]
-backgrounds = [proc for proc in region_config['processes'] if proc in config['backgrounds']]
+backgrounds = [proc for proc in region_config['processes'] if proc not in config['signals']]
 
-if(args.verbose):
-    print('>>> {signals=}'    .format(*globals))
-    print('>>> {backgrounds=}'.format(*globals))
-    print('>>> {observables=}'.format(*globals))
+if(args.verbosity >= 1):
+    print('>>> signals:     {signals}'    .format(**globals()))
+    print('>>> backgrounds: {backgrounds}'.format(**globals()))
+    print('>>> observables: {observables}'.format(**globals()))
 
 minProc = 1 - len(signals)
 samples_to_idx      = {s:minProc+i for i,s in enumerate(signals)    }
 samples_to_idx.update({b:i+1       for i,b in enumerate(backgrounds)})
-if(args.verbose):
-    print('>>> {samples_to_idx=}'.format(*globals))
+if(args.verbosity >= 1):
+    print('>>> samples_to_idx: {samples_to_idx}'.format(**globals()))
 
 df_rate = pd.DataFrame(
     [[getBinName(args.region, region_config['observable']['name']), k, samples_to_idx[k], v] for k,v in region_config['processes'].items()],
     columns=['bin', 'process', 'process', 'rate']
 ).transpose()
-if(args.verbose > 1):
+if(args.verbosity >= 3):
     print(df_rate.to_string(header=False))
     print()
 
@@ -170,7 +177,7 @@ lumi = config['systematics']['lumi'][args.year]
 df_syst.loc['CMS_lumi_13TeV'] = pd.Series({ sample: lumi for sample in df_syst.columns })
 df_syst.insert(0, 'type', [ getSystType(syst) for syst in df_syst.index ], True)
 
-if(args.verbose > 1):
+if(args.verbosity >= 4):
     print(df_syst)
     print()
 
