@@ -98,19 +98,15 @@ if __name__ == '__main__':
 
         # Write fake_photons
         if((not 'fake_photons' in files_in) or args.remake_fake_photons):
-            print('INFO: recreating fake_photons file')
+            print('INFO: recreating fake_photons file:', os.path.join(path_in, 'fake_photons.root'))
             with TFileContext(os.path.join(path_in, 'fake_photons.root'), 'RECREATE') as fFakePh:
                 fFakePh.cd()
                 for variable in variables_region:
                     split = variable.split('_')
                     var_name = split[1]
-                    syst = split[2]
 
                     if('loose' in var_name):
-                        if(var_name in ('looseMVA', 'loosept')):
-                            reweight_name = var_name.replace('loose', 'reweigth')
-                        else:
-                            reweight_name = var_name.replace('loose', 'failReweight')
+                        reweight_name = var_name.replace('loose', 'failReweight')
                         full_name = variable.replace(var_name, reweight_name)
                         h = files_in['data_obs'].Get(full_name)
                         if(h):
@@ -127,18 +123,19 @@ if __name__ == '__main__':
         with TFileContext(os.path.join(path_out, region+'.root'), "RECREATE") as fout:
             for variable in variables_region:
                 split = variable.split('_')
-                var_name = split[1]
+                var_split = split[1].split('-')
+                var_name = var_split[0]
+                prompt = '-'+var_split[1] if len(var_split) > 1 else ''
                 syst = split[2]
                 if(var_name.endswith('failReweight')):
                     continue
                 if(syst == 'central'):
-                    skipIfData = False
-                    out_name = '{sample}'.format(sample='%s')
+                    skipIfData = False if len(var_split) == 1 else True
+                    out_name = '{sample}{prompt}'.format(sample='%s', prompt=prompt)
                 else:
                     skipIfData = True
                     direction = split[3]
-                    if(direction == 'Dn'): direction='Down'
-                    out_name = '{sample}_CMS_{syst}{direction}'.format(sample='%s', syst=syst, direction=direction)
+                    out_name = '{sample}{prompt}_CMS_{syst}{direction}'.format(sample='%s', prompt=prompt, syst=syst, direction=direction)
 
                 subdir = fout.Get(var_name)  # e.g. mZZ, mZZG
                 if(not subdir):
