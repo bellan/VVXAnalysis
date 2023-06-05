@@ -32,12 +32,20 @@ def getYrange(*graphs, **kwargs):  # <TGraphAsymmErrors>
 def plotSystematics(hCentral, hUp, hDn, syst_values, var='[var]', syst='[syst]', sample='[sample]', region='[region]'):  # <TH1>, <TH1>, <TH1>, <dict> (modified), <str>, <str>, <str>, <str>
     formatInfo = dict(var=var, syst=syst, sample=sample, region=region)
 
+    var_split = var.split('-')
+    if(len(var_split) > 1):  # prompt/nonpro
+        var = var_split[0]
+        sample = '-'.join((sample, var_split[1]))
+
     errorCentral = c_double(0.)
     errorUp = c_double(0.)
     errorDn = c_double(0.)
     integralCentral = hCentral.IntegralAndError(0, hCentral.GetNbinsX()+1, errorCentral)
     integralUp = hUp.IntegralAndError(0, hUp.GetNbinsX()+1, errorUp)
     integralDn = hDn.IntegralAndError(0, hDn.GetNbinsX()+1, errorDn)
+    if(integralCentral == 0):
+        print('ERROR: integralCentral is 0 for', formatInfo)
+        return 0., 0.
 
     upVar = (integralUp-integralCentral)/integralCentral
     dnVar = (integralDn-integralCentral)/integralCentral
@@ -216,10 +224,11 @@ if __name__ == '__main__':
     parser = ArgumentParser(description='Calculate systematic variations from rootfiles produced by VVGammaAnalyzer')
     parser.add_argument('-p', '--plots', dest='do_plots', action='store_true')
     parser.add_argument('-y', '--year', default='2016')
+    parser.add_argument('-i', '--inputdir', default='results')
     args = parser.parse_args()
     
     syst_values = {}
-    results_folder = 'results/{year}/VVGammaAnalyzer_{region}'.format(year=args.year, region='{region}')
+    results_folder = '{inputdir}/{year}/VVGammaAnalyzer_{region}'.format(inputdir=args.inputdir, year=args.year, region='{region}')
 
     if(environ.get('CMSSW_BASE', False)):
         basepath = path.join(environ['CMSSW_BASE'], 'src', 'VVXAnalysis', 'TreeAnalysis')
@@ -254,7 +263,9 @@ if __name__ == '__main__':
     doSystOnFile(path.join(results_folder.format(region='SR4P'), 'fake_leptons.root'  ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR4P'), 'WZTo3LNu.root'      ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ZZTo4l.root'        ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ggTo4l.root'        ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ggTo4e_Contin_MCFM701.root'   ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ggTo2e2mu_Contin_MCFM701.root'), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ggTo4mu_Contin_MCFM701.root'  ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ZZGTo4LG.root'      ), syst_values)
     
     with open(sysJSON, 'w') as fout:
