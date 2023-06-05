@@ -2339,6 +2339,13 @@ void VVGammaAnalyzer::SYSplots(const char* syst, const double& weight, const Pho
     if(theSampleInfo.isMC())
       phGenStatus = isPhotonPrompt(*ph) ? "prompt" : "nonpro" ;
 
+    theHistograms->fill(Form("SYS_kinMVA_%s", syst), Form("MVA kin %s" , syst), 40,-1,1   , ph->MVAvalue(), weight);
+    theHistograms->fill(Form("SYS_kinpt_%s" , syst), Form("pt kin %s"  , syst), ph_pt_bins, ph->pt()      , weight);
+    if(theSampleInfo.isMC()){
+      theHistograms->fill(Form("SYS_kinMVA-%s_%s", phGenStatus, syst), Form("MVA kin %s %s" , phGenStatus, syst), 40,-1,1   , ph->MVAvalue(), weight);
+      theHistograms->fill(Form("SYS_kinpt-%s_%s" , phGenStatus, syst), Form("pt kin %s %s"  , phGenStatus, syst), ph_pt_bins, ph->pt()      , weight);
+    }
+
     if(ph->cutBasedID(Photon::IdWp::VeryLoose)){
       theHistograms->fill(Form("SYS_veryLooseMVA_%s", syst), Form("MVA veryLoose %s" , syst), 40,-1,1   , ph->MVAvalue(), weight);
       theHistograms->fill(Form("SYS_veryLoosept_%s" , syst), Form("pt veryLoose %s"  , syst), ph_pt_bins, ph->pt()      , weight);
@@ -2453,6 +2460,8 @@ void VVGammaAnalyzer::systematicsStudy(){
     ph = & (goodPhotons_["central"]->front());
   else if(loosePhotons_["central"]->size() >= 1)
     ph = & (loosePhotons_["central"]->front());
+  else if(kinPhotons_["central"]->size() >= 1)
+    ph = & (kinPhotons_["central"]->front());
   
   // central
   SYSplots("central", base_w, ph);
@@ -2467,6 +2476,11 @@ void VVGammaAnalyzer::systematicsStudy(){
       const vector<Photon>* loosePhVect = loosePhotons_[syst].get();
       if(loosePhVect->size() > 0)
 	SYSplots(Form("ph%s", syst), base_w, & loosePhVect->front());
+      else{
+	const vector<Photon>* kinPhVect = kinPhotons_[syst].get();
+	if(kinPhVect->size() > 0)
+	  SYSplots(Form("ph%s", syst), base_w, & kinPhVect->front());
+      }
     }
   }
   
