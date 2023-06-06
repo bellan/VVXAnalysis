@@ -1304,7 +1304,7 @@ void VVGammaAnalyzer::photonHistos(){
     auto closestLep = closestDeltaR(ph, *leptons_);
     float dRl = closestLep != leptons_->cend() ? deltaR(ph, *closestLep) : 10;
     theHistograms->fill("lead_fsrPhotons_pt"  , ";p_{T};Events"              , 40, 0., 200       , ph.pt()       , theWeight);
-    theHistograms->fill("lead_fsrPhotons_eta", ";#eta;Events"                , 40, -4., 4.       , fabs(ph.eta()), theWeight);
+    theHistograms->fill("lead_fsrPhotons_eta", ";#eta;Events"                , 40, 0., 4.       , fabs(ph.eta()), theWeight);
     theHistograms->fill("lead_fsrPhotons_dRl" , ";#DeltaR(#gamma, l);Events" , 40, 0., 1.        , dRl           , theWeight);
     theHistograms->fill("lead_fsrPhotons_dRl_fine",";#DeltaR(#gamma, l);Events",100, 0., 1.      , dRl           , theWeight);
   }
@@ -1313,7 +1313,7 @@ void VVGammaAnalyzer::photonHistos(){
     auto closestLep = closestDeltaR(ph, *leptons_);
     float dRl = closestLep != leptons_->cend() ? deltaR(ph, *closestLep) : 10;
     theHistograms->fill("sublead_fsrPhotons_pt"  , ";p_{T};Events"              , 40, 0., 200       , ph.pt()       , theWeight);
-    theHistograms->fill("sublead_fsrPhotons_eta", ";#eta;Events"                , 40, -4., 4.       , fabs(ph.eta()), theWeight);
+    theHistograms->fill("sublead_fsrPhotons_eta", ";#eta;Events"                , 40, 0., 4.       , fabs(ph.eta()), theWeight);
     theHistograms->fill("sublead_fsrPhotons_dRl" , ";#DeltaR(#gamma, l);Events" , 40, 0., 1.        , dRl           , theWeight);
   }
 
@@ -1408,8 +1408,8 @@ void VVGammaAnalyzer::photonHistos(){
       theHistograms->fill("kinPh_sieie_EB" , "kinPhotons in Barrel;#sigma_{i#etai#eta}", sieie_bins, ph.sigmaIetaIeta()         , theWeight);
       theHistograms->fill("kinPh_chIso_EB" , "kinPhotons in Barrel;chIso"              , chIso_bins, ph.chargedIsolation()      , theWeight);
       theHistograms->fill("kinPh_HoverE_EB", "kinPhotons in Barrel;HoverE"             , 75,0.,0.15, ph.HoverE()                , theWeight);
-      theHistograms->fill("kinPh_neIso_EB" , "kinPhotons in Barrel;neIso"              , 180,0., 30, ph.neutralHadronIsolation(), theWeight);
-      theHistograms->fill("kinPh_phIso_EB" , "kinPhotons in Barrel;phIso"              , 200,0.,100, ph.photonIsolation()       , theWeight);
+      theHistograms->fill("kinPh_neIso_EB" , "kinPhotons in Barrel;neIso"              , 120,0., 20, ph.neutralHadronIsolation(), theWeight);
+      theHistograms->fill("kinPh_phIso_EB" , "kinPhotons in Barrel;phIso"              , 120,0., 80, ph.photonIsolation()       , theWeight);
     }
     else{
       vector<double> sieie_bins(28);
@@ -1422,8 +1422,8 @@ void VVGammaAnalyzer::photonHistos(){
       theHistograms->fill("kinPh_sieie_EE" , "kinPhotons in Endcap;#sigma_{i#etai#eta}", sieie_bins, ph.sigmaIetaIeta()         , theWeight);
       theHistograms->fill("kinPh_chIso_EE" , "kinPhotons in Endcap;chIso"              , chIso_bins, ph.chargedIsolation()      , theWeight);
       theHistograms->fill("kinPh_HoverE_EE", "kinPhotons in Endcap;HoverE"             , 75,0.,0.15, ph.HoverE()                , theWeight);
-      theHistograms->fill("kinPh_neIso_EE" , "kinPhotons in Endcap;neIso"              , 200,0., 40, ph.neutralHadronIsolation(), theWeight);
-      theHistograms->fill("kinPh_phIso_EE" , "kinPhotons in Endcap;phIso"              , 200,0.,100, ph.photonIsolation()       , theWeight);
+      theHistograms->fill("kinPh_neIso_EE" , "kinPhotons in Endcap;neIso"              , 120,0., 20, ph.neutralHadronIsolation(), theWeight);
+      theHistograms->fill("kinPh_phIso_EE" , "kinPhotons in Endcap;phIso"              , 120,0., 80, ph.photonIsolation()       , theWeight);
     }
     
     theHistograms->fill("kinPhotons_ID", "Cut Based ID", BINS_KINPHID, 0, theWeight);
