@@ -10,12 +10,13 @@
 		"ZZGTo4LG-nonpro": -1,
 		"ZZTo4l-prompt": -1,
 		"ZZTo4l-nonpro": -1,
-		"ggTo4e_Contin_MCFM701": -1,
-		"ggTo2e2mu_Contin_MCFM701": -1,
-		"ggTo4mu_Contin_MCFM701": -1
+		"ggTo4e_Contin_MCFM701-nonpro": -1,
+		"ggTo2e2mu_Contin_MCFM701-nonpro": -1,
+		"ggTo4mu_Contin_MCFM701-nonpro": -1,
+		"fake_leptons": -1
 	    },
             "observable": {
-		"name":"looseMVA",
+		"name":"kinMVA",
 		"observation":-1
 	    }
 	}
