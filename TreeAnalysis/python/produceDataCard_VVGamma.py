@@ -198,6 +198,9 @@ template = PartialFormatter().format(template,
 )
 
 ### Write card ###
-with open('combine/{}_{}.txt'.format(args.year, args.region), 'w') as fout:
+cardname = os.path.join('combine', '{}_{}_{}.txt'.format(args.year, args.region,
+                                                         args.config_file.split('/')[-1].split('.')[0] if args.config_file is not None else 'default'
+                                                         ))
+with open(cardname, 'w') as fout:
     fout.write(template)
     print('INFO: config written to "{}"'.format(fout.name))
