@@ -24,21 +24,21 @@ namespace phys {
     //    enum JERVariations{central,up,down}; /DEL
     
     struct JetScores {
-      Double_t TvsQCD = -2;
-      Double_t WvsQCD = -2;
-      Double_t ZvsQCD = -2;
-      Double_t ZbbvsQCD = -2;
-      Double_t HbbvsQCD = -2;
-      Double_t H4qvsQCD = -2;
+      float TvsQCD   = -2;
+      float WvsQCD   = -2;
+      float ZvsQCD   = -2;
+      float ZbbvsQCD = -2;
+      float HbbvsQCD = -2;
+      float H4qvsQCD = -2;
     };
     
     struct DeepFlavourScores {
-      Double_t probb   = -2.;
-      Double_t probc   = -2.;
-      Double_t probg   = -2.;
-      Double_t problepb= -2.;
-      Double_t probbb  = -2.;
-      Double_t probuds = -2.;
+      float probb    = -2.;
+      float probc    = -2.;
+      float probg    = -2.;
+      float problepb = -2.;
+      float probbb   = -2.;
+      float probuds  = -2.;
     };
     
     /// Constructor
@@ -185,7 +185,7 @@ namespace phys {
     float photonEnergyFraction_;
 
     // B-tagging info
-    Double_t csvtagger_;
+    float csvtagger_;
     
     // DeepAK8 and ParticleNet scores
     JetScores deepAK8_, deepAK8_MD_, particleNet_; //, particleNet_MD_;
@@ -199,18 +199,18 @@ namespace phys {
     // sum pt^2 / (sum pt)^2
     Double_t ptd_;
     // jet width (area) 
-    Double_t jetArea_;
+    float jetArea_;
 
     // return secondary vertex b-tagging information
-    Double_t secvtxMass_;
+    float secvtxMass_;
 
-    Double_t qgLikelihood_;
+    float qgLikelihood_;
       
     // return a correction factor that can be applied to the jet energy or pT to bring it back to the uncorrected value
-    Double_t rawFactor_;
+    float rawFactor_;
     
     // Uncertainty on four vector energy scale
-    Double_t jecUnc_;
+    float jecUnc_;
 
     // return the matched MC parton flavour
     Int_t mcPartonFlavour_;
@@ -222,22 +222,21 @@ namespace phys {
     Int_t fullPuId_;
     
     // Jet MC resolution, for JER determination. 
-    Double_t pt_nojer_;
-    Double_t pt_jerup_;
-    Double_t pt_jerdn_;
-
+    float pt_nojer_;
+    float pt_jerup_;
+    float pt_jerdn_;
 
     // AK8
-    Double_t tau1_;
-    Double_t tau2_;
-    Double_t tau3_;
-    Double_t corrPrunedMass_;
-    Double_t prunedMass_;
-    Double_t softDropMass_;
-    Double_t puppiTau1_;
-    Double_t puppiTau2_;
-    Double_t puppiTau3_;
-    Double_t puppiMass_;
+    float tau1_;
+    float tau2_;
+    float tau3_;
+    float corrPrunedMass_;
+    float prunedMass_;
+    float softDropMass_;
+    float puppiTau1_;
+    float puppiTau2_;
+    float puppiTau3_;
+    float puppiMass_;
 
 
     ClassDef(Jet, 2)
