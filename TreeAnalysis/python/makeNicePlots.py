@@ -267,11 +267,14 @@ for Var in variables:
         for i in range(tgaData.GetN()):
             tgaData.SetPointEXhigh(i,0.)
             tgaData.SetPointEXlow (i,0.)
+            y_MC = hMC.GetStack().Last().GetBinContent(i+1)
+            # Do not draw error in empty bins
             if(abs(tgaData.GetPointY(i)) < 1e-6):
                 tgaData.SetPointEYhigh(i, 0.)
                 tgaData.SetPointEYlow (i, 0.)
-            else:
-                ey = math.sqrt(histodata.GetBinContent(i+1))/hMC.GetStack().Last().GetBinContent(i+1)
+            # Skip bins with MC = 0
+            elif(abs(y_MC) > 1e-6):
+                ey = math.sqrt(histodata.GetBinContent(i+1))/y_MC
                 tgaData.SetPointEYhigh(i, ey)
                 tgaData.SetPointEYlow (i, ey)
     else:
