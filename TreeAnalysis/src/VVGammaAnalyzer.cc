@@ -2331,7 +2331,7 @@ char phABCD_study(const phys::Photon&, const double& barrel_thr, const double& e
 }
 
 
-void VVGammaAnalyzer::SYSplots(const char* syst, const double& weight, const Photon* ph){
+void VVGammaAnalyzer::SYSplots(const char* syst, const double weight, const Photon* ph){
   float f_VLtoL(0.), w_VLtoL(0.);
   const char* phGenStatus;
 
@@ -2540,7 +2540,7 @@ void VVGammaAnalyzer::systematicsStudy(){
   SYSplots("muoFakeRateSF_Up"  , base_w * (1 + muoFake_w), ph);
   SYSplots("muoFakeRateSF_Down", base_w * (1 - muoFake_w), ph);
   
-  if(ph){
+  if(ph && ph->efficiencySF() != 0){
     // Photons ID efficiency
     double phEff_w = ph->efficiencySFUnc()/ph->efficiencySF();
     SYSplots("phEffSF_Up"  , base_w * (1 + phEff_w), ph);

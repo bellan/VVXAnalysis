@@ -168,7 +168,7 @@ private:
   void photonIsolation_bestKin();
   void orphanPhotonStudy();  // study reco photons that are not matched to gen
   void systematicsStudy();
-  void SYSplots(const char* syst, const double& weight, const phys::Photon*);
+  void SYSplots(const char* syst, const double weight, const phys::Photon*);
   void debug3Lregion();
   void photonGenStudy();
 
