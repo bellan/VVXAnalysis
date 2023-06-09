@@ -219,6 +219,8 @@ for Var in variables:
     if False: #'PhFRClosure' in Var and 'PASS' in Var:
         hMC, leg = plotUtils.GetClosureStack(region, InputDir, info, forcePositive=False, verbosity=options.verbosity)
     else:
+        if info.get('special'):
+            info['name'] = info['stack']['plot']
         (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, info, predType, mcSet, forcePositive=forcePositive, verbosity=options.verbosity)
 
     if(not hMC.GetStack()):
@@ -226,6 +228,8 @@ for Var in variables:
         continue
 
     if(DoData):
+        if info.get('special'):
+            info['name'] = info['data']['plot']
         (graphData, histodata) = plotUtils.GetDataPlot(region, InputDir, info, forcePositive=forcePositive, verbosity=options.verbosity)
 
         if(not (graphData and histodata)):
@@ -329,7 +333,7 @@ for Var in variables:
             graphData.Draw("samep text")
         else:
             graphData.Draw("samep")
-        leg.AddEntry(graphData, "Data", "lpe")
+        leg.AddEntry(graphData, info.get('data', dict()).get('legend', 'Data'), "lpe")
 
     x1 = leg.GetX1()
     x2 = leg.GetX2()
@@ -370,7 +374,7 @@ for Var in variables:
     
     if(info.get('title')):
         histodata.GetXaxis().SetTitle(info['title'])
-    histodata.GetYaxis().SetTitle("data/MC")
+    histodata.GetYaxis().SetTitle(info.get('ratio_title', 'data/MC'))
     histodata.GetYaxis().SetTitleOffset(0.5)
     histodata.GetYaxis().SetTitleSize(0.12)
     histodata.GetYaxis().SetLabelSize(0.08)

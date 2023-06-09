@@ -61,6 +61,23 @@ def getVarInfo_VVGamma(region):
             'ZZG_mass_failPh'     : {'title':'m_{4\ell\gamma}\:,\ \gamma\:loose\,\land\:!tight', 'rebin':1, 'split_prompt_ph':True, 'unblind':True },
             'ZZG_mass_loosePh'    : {'title':'m_{4\ell\gamma}\:,\ \gamma\:tight'               , 'rebin':1, 'split_prompt_ph':True, 'unblind':False, 'fake_photons': 'ZZG_mass_reweightPh'}
         })
+
+        VarInfo_VVGamma.update({
+            'mZZG_compare': {
+                'special':True,
+                'unblind':True,
+                'title':'m_{4\ell\gamma}\:,\ \gamma\:tight',
+                'ratio_title': 'from data/from MC',
+                'rebin': 2,
+                'data': {
+                    'plot' :'ZZG_mass_reweightPh',
+                    'legend': 'from data'
+                },
+                'stack':{
+                    'plot' :'ZZG_mass_loosePh_nonpro'
+                }
+            }
+        })
     
     # 3L region
     elif region in ['SR3P', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110', 'CR000']:
