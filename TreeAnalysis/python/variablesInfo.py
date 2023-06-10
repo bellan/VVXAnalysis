@@ -55,11 +55,11 @@ def getVarInfo_VVGamma(region):
             'ZZ_mass_failPh'      : {'title':'m_{4\ell}\:,\ \gamma\:loose\,\land\:!tight'      , 'rebin':1, 'unblind':True },
             'ZZ_mass_loosePh'     : {'title':'m_{4\ell}\:,\ \gamma\:tight'                     , 'rebin':1, 'unblind':False},  # Tight = cutBasedIDLoose()
             
-            'ZZG_mass_kinPh'      : {'title':'m_{4\ell\gamma}\:,\ \gamma\:kin'                 , 'rebin':1, 'split_prompt_ph':True, 'unblind':False},
-            'ZZG_mass_kinVetoL'   : {'title':'m_{4\ell\gamma}\:,\ \gamma\:kin\,\land\:!tight'  , 'rebin':1, 'split_prompt_ph':True, 'unblind':True },
-            'ZZG_mass_veryLoosePh': {'title':'m_{4\ell\gamma}\:,\ \gamma\:loose'               , 'rebin':1, 'split_prompt_ph':True, 'unblind':False},
-            'ZZG_mass_failPh'     : {'title':'m_{4\ell\gamma}\:,\ \gamma\:loose\,\land\:!tight', 'rebin':1, 'split_prompt_ph':True, 'unblind':True },
-            'ZZG_mass_loosePh'    : {'title':'m_{4\ell\gamma}\:,\ \gamma\:tight'               , 'rebin':1, 'split_prompt_ph':True, 'unblind':False, 'fake_photons': 'ZZG_mass_reweightPh'}
+            'ZZG_mass_kinPh'      : {'title':'m_{4\ell\gamma}\:,\ \gamma\:kin'                 , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':False},
+            'ZZG_mass_kinVetoL'   : {'title':'m_{4\ell\gamma}\:,\ \gamma\:kin\,\land\:!tight'  , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':True },
+            'ZZG_mass_veryLoosePh': {'title':'m_{4\ell\gamma}\:,\ \gamma\:loose'               , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':False},
+            'ZZG_mass_failPh'     : {'title':'m_{4\ell\gamma}\:,\ \gamma\:loose\,\land\:!tight', 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':True },
+            'ZZG_mass_loosePh'    : {'title':'m_{4\ell\gamma}\:,\ \gamma\:tight'               , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':False, 'fake_photons': 'ZZG_mass_reweightPh'}
         })
 
         VarInfo_VVGamma.update({
@@ -242,7 +242,7 @@ def getVarInfo_VVGamma(region):
             d = {'title': '%s #gamma_{%s}^{leading}' %(vartitle, status),
                  'unblind': unblind,
                  'logy': True,
-                 'split_prompt_ph': True,
+                 'split_prompt_ph': region == 'SR4P',
                  'rebin': rebin }
             if status == 'loose':
                 d.update({
