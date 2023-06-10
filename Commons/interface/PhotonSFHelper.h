@@ -19,9 +19,13 @@ class PhotonSFHelper
   
   float getSF      (/*string phoId,*/ float pt, float eta/*, float SCeta*/) const;
   float getSFError (/*string phoId,*/ float pt, float eta/*, float SCeta*/) const;
-   
+
+ protected:
+  int findPhotonBin(float pt, float eta) const;
+
  private:
   const char* _getSFFilename(int year, bool preVFP) const;
+  float maxPt;
   
   // Photon SF histogram
   std::unique_ptr<TH2F> h_Pho;

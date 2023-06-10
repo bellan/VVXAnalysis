@@ -20,6 +20,8 @@ PhotonSFHelper::PhotonSFHelper(int year, bool preVFP)
   TFile root_file(filename, "READ");
   
   h_Pho.reset(std::move( (TH2F*) root_file.Get("EGamma_SF2D")->Clone() ));
+
+  maxPt = h_Pho->GetYaxis()->GetBinUpEdge(h_Pho->GetNbinsY());
   
   edm::LogInfo("VVXAnalysis|Commons|PhotonSFHelper") << "[PhotonSFHelper] SF map opened from root file \"" << root_file.GetName() << "\".";
   std::cout << "[PhotonSFHelper] SF map opened from root file \"" << root_file.GetName() << "\".\n";
@@ -27,27 +29,23 @@ PhotonSFHelper::PhotonSFHelper(int year, bool preVFP)
 }
 
 
+int PhotonSFHelper::findPhotonBin(float pt, float eta) const
+{
+  // Check for pt greater than last bin
+  if(pt > maxPt) pt = maxPt - 0.1;
+  return h_Pho->FindFixBin(eta, pt);
+}
+
+
 float PhotonSFHelper::getSF(float pt, float eta/*, float SCeta*/) const
 {
-  return h_Pho->GetBinContent(h_Pho->GetXaxis()->FindBin(eta), h_Pho->GetYaxis()->FindBin(pt));
+  return h_Pho->GetBinContent(findPhotonBin(pt, eta));
 }
 
 
 float PhotonSFHelper::getSFError(float pt, float eta/*, float SCeta*/) const
 {
-  float SelSF = 1.0;
-  float SelSF_Unc = 0.0;
-  float SFError = 0.0;
-  
-  SelSF = h_Pho->GetBinContent(h_Pho->GetXaxis()->FindBin(eta), h_Pho->GetYaxis()->FindBin(pt));
-  SelSF_Unc=h_Pho->GetBinError(h_Pho->GetXaxis()->FindBin(eta), h_Pho->GetYaxis()->FindBin(pt));
-  
-  SFError = SelSF != 0. ? SelSF_Unc/SelSF : 1.;
-  /**
-     SFError = sqrt( RecoSF_Unc*RecoSF_Unc/(RecoSF*RecoSF) + SelSF_Unc*SelSF_Unc/(SelSF*SelSF) ); // assume full correlation between different electrons (and uncorrelated reco and sel uncertainties)
-  **/
-
-   return SFError;
+  return h_Pho->GetBinError(findPhotonBin(pt, eta));
 }
 
 
