@@ -55,6 +55,10 @@ void VVGammaAnalyzer::begin(){
   
   // FR SF
   hPhotonFRSF_VLtoL_      = getHistfromFile(Form("data/ratio_VLtoL_pt-aeta_data_over_ZZ_%d.root", year), "PhFRSF");
+
+  // Photon efficiency SF for cut-based ID (temporary)
+  hPhotonEffSF_           = getHistfromFile(Form("../Commons/data/egammaEffi.txt_EGM2D_Pho_Loose_UL%d.root", year%100), "EGamma_SF2D");
+  hPhotonEffSF_maxPt_     = hPhotonEffSF_->GetYaxis()->GetBinUpEdge(hPhotonEffSF_->GetNbinsY());
   
   // initCherryPick();
   for(const char* sys : {"central", "EScale_Up", "EScale_Down", "ESigma_Up", "ESigma_Down"}){
@@ -2384,7 +2388,7 @@ void VVGammaAnalyzer::SYSplots(const char* syst, const double weight, const Phot
     if(ph){
       double mZZG = (ZZ->p4() + ph->p4()).M();
       if(ph->cutBasedIDLoose()){
-	double w = weight * ph->efficiencySF();  // In data the SF is 1
+	double w = weight * getPhotonEffSF(*ph);  // In data the SF is 1
 	theHistograms->fill(Form("SYS_mZZGloose_%s", syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, mZZG, w);
 	if(theSampleInfo.isMC())
 	  theHistograms->fill(Form("SYS_mZZGloose-%s_%s", phGenStatus, syst), Form("m_{ZZ#gamma} %s %s", phGenStatus, syst), mVVG_bins, mZZG, w);
@@ -2405,7 +2409,7 @@ void VVGammaAnalyzer::SYSplots(const char* syst, const double weight, const Phot
     if(ph){
       double mWZG = (ZW->p4() + ph->p4()).M();
       if(ph->cutBasedIDLoose()){
-	double w = weight * ph->efficiencySF();
+	double w = weight * getPhotonEffSF(*ph);
 	theHistograms->fill(Form("SYS_mWZGloose_%s", syst), Form("m_{WZ#gamma} %s", syst), mVVG_bins, mWZG, w);
 	if(theSampleInfo.isMC())
 	  theHistograms->fill(Form("SYS_mWZGloose-%s_%s", phGenStatus, syst), Form("m_{WZ#gamma} %s %s", phGenStatus, syst), mVVG_bins, mWZG, w);
@@ -2429,7 +2433,7 @@ void VVGammaAnalyzer::SYSplots(const char* syst, const double weight, const Phot
       double mZG  = (theZ.p4()             + ph->p4()).M();
       double mZLG = (theZ.p4() + theL.p4() + ph->p4()).M();
       if(ph->cutBasedIDLoose()){
-	double w = weight * ph->efficiencySF();
+	double w = weight * getPhotonEffSF(*ph);
 	theHistograms->fill(Form("SYS_mZGloose_%s" , syst), Form("m_{Z#gamma} %s" , syst), mZG_bins, mZG , w);
 	theHistograms->fill(Form("SYS_mZLGloose_%s", syst), Form("m_{ZL#gamma} %s", syst), mZG_bins, mZLG, w);
 	if(theSampleInfo.isMC()){
@@ -2539,13 +2543,18 @@ void VVGammaAnalyzer::systematicsStudy(){
   SYSplots("eleFakeRateSF_Down", base_w * (1 - eleFake_w), ph);
   SYSplots("muoFakeRateSF_Up"  , base_w * (1 + muoFake_w), ph);
   SYSplots("muoFakeRateSF_Down", base_w * (1 - muoFake_w), ph);
-  
-  if(ph && ph->efficiencySF() != 0){
-    // Photons ID efficiency
-    double phEff_w = ph->efficiencySFUnc()/ph->efficiencySF();
-    SYSplots("phEffSF_Up"  , base_w * (1 + phEff_w), ph);
-    SYSplots("phEffSF_Down", base_w * (1 - phEff_w), ph);
-    // Photon FR uncertaintiy  WARN: for this to have a meaning, the photon FR SF should be applied
+
+  // Photons ID efficiency
+  if(ph){
+    double phEff_dw = 0.;
+    if(ph->cutBasedID(Photon::IdWp::Loose) && getPhotonEffSF(*ph) != 0)
+      phEff_dw = getPhotonEffSFUnc(*ph)/getPhotonEffSF(*ph);
+    SYSplots("phEffSF_Up"  , base_w * (1 + phEff_dw), ph);
+    SYSplots("phEffSF_Down", base_w * (1 - phEff_dw), ph);
+  }
+
+  // Photon FR uncertaintiy  WARN: for this to have a meaning, the photon FR SF should be applied
+  if(ph && ph->cutBasedID(Photon::IdWp::VeryLoose) && ! ph->cutBasedID(Photon::IdWp::Loose)){
     double f_ce = getPhotonFR_VLtoL(*ph);
     double func = getPhotonFRUnc_VLtoL(*ph);
     double f_up = f_ce + func;

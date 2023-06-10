@@ -133,11 +133,14 @@ private:
   std::unique_ptr<TH2F> hPhotonFR_KtoVLexcl_;
   std::unique_ptr<TH2F> hPhotonFRSF_VLtoL_;
 
+  std::unique_ptr<TH2F> hPhotonEffSF_;
+  double hPhotonEffSF_maxPt_;
+
   std::string channelReco_;
 
   std::ofstream fAK4_;
   std::ofstream fAK8_;
- 	
+
   // Objects reconstruction for each event
   void makeChannelReco();  // sets channelReco_
   void genEventSetup();
@@ -197,7 +200,20 @@ private:
   double getPhotonFR_VLtoL_dataZG(const phys::Photon& ph) const;
   double getPhotonFR_KtoVLexcl   (const phys::Photon& ph) const;
   double getPhotonFRSF_VLtoL     (const phys::Photon& ph) const;
-	
+
+  int photonEffSF_getBin(const phys::Photon& ph) const{
+    double pt = ph.pt() < hPhotonEffSF_maxPt_ ? ph.pt() : hPhotonEffSF_maxPt_ - 0.1;
+    return hPhotonEffSF_->FindFixBin(ph.eta(), pt);
+  }
+
+  inline float getPhotonEffSF(   const phys::Photon& ph) const{
+    return hPhotonEffSF_->GetBinContent(photonEffSF_getBin(ph));  // ph->efficiencySF();     // Note: to be restored when using new ntuples
+  }
+
+  inline float getPhotonEffSFUnc(const phys::Photon& ph) const{
+    return hPhotonEffSF_->GetBinError(  photonEffSF_getBin(ph));  // ph->efficiencySF();     // Note: to be restored when using new ntuples
+  }
+
   static bool is4Lregion(const phys::RegionTypes reg){
     return (reg == phys::SR4P || reg == phys::CR3P1F || reg == phys::CR2P2F ||
 	    reg == phys::SR4P_1L || reg == phys::SR4P_1P || reg == phys::CR4P_1F);
