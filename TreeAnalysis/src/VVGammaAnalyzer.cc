@@ -2338,28 +2338,31 @@ char phABCD_study(const phys::Photon&, const double& barrel_thr, const double& e
 void VVGammaAnalyzer::SYSplots(const char* syst, const double weight, const Photon* ph){
   float f_VLtoL(0.), w_VLtoL(0.);
   const char* phGenStatus;
+  bool onlyLoose    = strstr(syst, "phEffSF"   ) != nullptr;
+  bool onlyReweight = strstr(syst, "phFakeRate") != nullptr;
+  double weightIncl = !(onlyLoose || onlyReweight) ? weight : theWeight;
 
   if(ph){
     if(theSampleInfo.isMC())
       phGenStatus = isPhotonPrompt(*ph) ? "prompt" : "nonpro" ;
 
-    theHistograms->fill(Form("SYS_kinMVA_%s", syst), Form("MVA kin %s" , syst), 40,-1,1   , ph->MVAvalue(), weight);
-    theHistograms->fill(Form("SYS_kinpt_%s" , syst), Form("pt kin %s"  , syst), ph_pt_bins, ph->pt()      , weight);
+    theHistograms->fill(Form("SYS_kinMVA_%s", syst), Form("MVA kin %s" , syst), 40,-1,1   , ph->MVAvalue(), weightIncl);
+    theHistograms->fill(Form("SYS_kinpt_%s" , syst), Form("pt kin %s"  , syst), ph_pt_bins, ph->pt()      , weightIncl);
     if(theSampleInfo.isMC()){
-      theHistograms->fill(Form("SYS_kinMVA-%s_%s", phGenStatus, syst), Form("MVA kin %s %s" , phGenStatus, syst), 40,-1,1   , ph->MVAvalue(), weight);
-      theHistograms->fill(Form("SYS_kinpt-%s_%s" , phGenStatus, syst), Form("pt kin %s %s"  , phGenStatus, syst), ph_pt_bins, ph->pt()      , weight);
+      theHistograms->fill(Form("SYS_kinMVA-%s_%s", phGenStatus, syst), Form("MVA kin %s %s" , phGenStatus, syst), 40,-1,1   , ph->MVAvalue(), weightIncl);
+      theHistograms->fill(Form("SYS_kinpt-%s_%s" , phGenStatus, syst), Form("pt kin %s %s"  , phGenStatus, syst), ph_pt_bins, ph->pt()      , weightIncl);
     }
 
     if(ph->cutBasedID(Photon::IdWp::VeryLoose)){
-      theHistograms->fill(Form("SYS_veryLooseMVA_%s", syst), Form("MVA veryLoose %s" , syst), 40,-1,1   , ph->MVAvalue(), weight);
-      theHistograms->fill(Form("SYS_veryLoosept_%s" , syst), Form("pt veryLoose %s"  , syst), ph_pt_bins, ph->pt()      , weight);
+      theHistograms->fill(Form("SYS_veryLooseMVA_%s", syst), Form("MVA veryLoose %s" , syst), 40,-1,1   , ph->MVAvalue(), weightIncl);
+      theHistograms->fill(Form("SYS_veryLoosept_%s" , syst), Form("pt veryLoose %s"  , syst), ph_pt_bins, ph->pt()      , weightIncl);
       if(theSampleInfo.isMC()){
-	theHistograms->fill(Form("SYS_veryLooseMVA-%s_%s", phGenStatus, syst), Form("MVA veryLoose %s %s" , phGenStatus, syst), 40,-1,1   , ph->MVAvalue(), weight);
-	theHistograms->fill(Form("SYS_veryLoosept-%s_%s" , phGenStatus, syst), Form("pt veryLoose %s %s"  , phGenStatus, syst), ph_pt_bins, ph->pt()      , weight);
+	theHistograms->fill(Form("SYS_veryLooseMVA-%s_%s", phGenStatus, syst), Form("MVA veryLoose %s %s" , phGenStatus, syst), 40,-1,1   , ph->MVAvalue(), weightIncl);
+	theHistograms->fill(Form("SYS_veryLoosept-%s_%s" , phGenStatus, syst), Form("pt veryLoose %s %s"  , phGenStatus, syst), ph_pt_bins, ph->pt()      , weightIncl);
       }
 
       if(ph->cutBasedIDLoose()){
-	double w = weight * ph->efficiencySF();  // In data the SF is 1
+	double w = (!onlyReweight ? weight : theWeight) * getPhotonEffSF(*ph);  // In data the SF is 1
 	theHistograms->fill(Form("SYS_looseMVA_%s", syst), Form("MVA loose %s", syst), 40,-1,1   , ph->MVAvalue(), w);
 	theHistograms->fill(Form("SYS_loosept_%s" , syst), Form("pt loose %s", syst) , ph_pt_bins, ph->pt()      , w);
 	if(theSampleInfo.isMC()){
@@ -2368,15 +2371,16 @@ void VVGammaAnalyzer::SYSplots(const char* syst, const double weight, const Phot
 	}
       }
       else{
+	double w = (!onlyLoose ? weight : theWeight); //weight;
 	f_VLtoL = getPhotonFR_VLtoL(*ph);
 	w_VLtoL = f_VLtoL / (1 - f_VLtoL);
-	theHistograms->fill(Form("SYS_failMVA_%s"        , syst), Form("MVA fail %s"       , syst), 40,-1,1   , ph->MVAvalue(), weight);
-	theHistograms->fill(Form("SYS_failpt_%s"         , syst), Form("pt fail %s"        , syst), ph_pt_bins, ph->pt()      , weight);
-	theHistograms->fill(Form("SYS_failReweightMVA_%s", syst), Form("MVA reweighted %s" , syst), 40,-1,1   , ph->MVAvalue(), weight * w_VLtoL);
-	theHistograms->fill(Form("SYS_failReweightpt_%s" , syst), Form("pt reweighted %s"  , syst), ph_pt_bins, ph->pt()      , weight * w_VLtoL);
+	theHistograms->fill(Form("SYS_failMVA_%s"        , syst), Form("MVA fail %s"       , syst), 40,-1,1   , ph->MVAvalue(), w);
+	theHistograms->fill(Form("SYS_failpt_%s"         , syst), Form("pt fail %s"        , syst), ph_pt_bins, ph->pt()      , w);
+	theHistograms->fill(Form("SYS_failReweightMVA_%s", syst), Form("MVA reweighted %s" , syst), 40,-1,1   , ph->MVAvalue(), w * w_VLtoL);
+	theHistograms->fill(Form("SYS_failReweightpt_%s" , syst), Form("pt reweighted %s"  , syst), ph_pt_bins, ph->pt()      , w * w_VLtoL);
 	if(theSampleInfo.isMC()){
-	  theHistograms->fill(Form("SYS_failMVA-%s_%s", phGenStatus, syst), Form("MVA fail %s %s", phGenStatus, syst), 40,-1,1   , ph->MVAvalue(), weight);
-	  theHistograms->fill(Form("SYS_failpt-%s_%s" , phGenStatus, syst), Form("pt fail %s %s" , phGenStatus, syst), ph_pt_bins, ph->pt()      , weight);
+	  theHistograms->fill(Form("SYS_failMVA-%s_%s", phGenStatus, syst), Form("MVA fail %s %s", phGenStatus, syst), 40,-1,1   , ph->MVAvalue(), w);
+	  theHistograms->fill(Form("SYS_failpt-%s_%s" , phGenStatus, syst), Form("pt fail %s %s" , phGenStatus, syst), ph_pt_bins, ph->pt()      , w);
 	}
       }
     }
@@ -2567,6 +2571,10 @@ void VVGammaAnalyzer::systematicsStudy(){
 
     // SYSplots("phFakeRateSymmetric_Up"  , base_w * (1 + func/((1 - f_ce)*(1 - f_ce))), ph);
     // SYSplots("phFakeRateSymmetric_Down", base_w * (1 - func/((1 - f_ce)*(1 - f_ce))), ph);
+  }
+  else{
+    SYSplots("phFakeRate_Up"  , base_w, ph);
+    SYSplots("phFakeRate_Down", base_w, ph);
   }
 }
 
