@@ -59,11 +59,17 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-y', '--year', default=2016)
     parser.add_argument('-r', '--regions', dest='regions', nargs='+', choices=['SR4P','CR3P1F','CR2P2F','SR3P'], default=['SR4P','SR3P'])
+    parser.add_argument('-i', '--inputfile', help='JSON file with systematics. Overrides year')
     parser.add_argument('-p', '--variables', dest='variables', nargs='+', default=['mZZ','mZZG','mWZ','mWZG'])
     args = parser.parse_args()
     # print(args)
 
-    with open('data/systematics_{year}.json'.format(year=args.year)) as fin:
+    if(args.inputfile):
+        sysFileName = args.inputfile
+    else:
+        sysFileName = 'data/systematics_{year}.json'.format(year=args.year)
+
+    with open(sysFileName) as fin:
         systematics = json.load(fin)
     
     for region in args.regions:

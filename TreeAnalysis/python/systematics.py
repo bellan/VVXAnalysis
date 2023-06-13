@@ -225,6 +225,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--plots', dest='do_plots', action='store_true')
     parser.add_argument('-y', '--year', default='2016')
     parser.add_argument('-i', '--inputdir', default='results')
+    parser.add_argument('-o', '--output', help='Manually specify output file')
     args = parser.parse_args()
     
     syst_values = {}
@@ -267,7 +268,9 @@ if __name__ == '__main__':
     doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ggTo2e2mu_Contin_MCFM701.root'), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ggTo4mu_Contin_MCFM701.root'  ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ZZGTo4LG.root'      ), syst_values)
-    
+
+    if args.output is not None:
+        sysJSON = args.output
     with open(sysJSON, 'w') as fout:
         dump(syst_values, fout, indent=2)
     print('INFO: wrote systematics to "{}"'.format(sysJSON))
