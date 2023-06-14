@@ -213,7 +213,7 @@ for Var in variables:
     c1.Clear()
     DoData = optDoData and (info.get('unblind', True) or options.unblind or region[:2] != 'SR')
 
-    forcePositive=True
+    forcePositive = region in ('CR2P2F', 'CR100', 'CR010', 'CR001')
     
     # "Temporary" hack for closure test of photon fake rate
     if False: #'PhFRClosure' in Var and 'PASS' in Var:
@@ -269,18 +269,13 @@ for Var in variables:
     if DoData:
         tgaData.Divide(histodata, hMC.GetStack().Last(), 'pois')
         for i in range(tgaData.GetN()):
+            # Set x errors to 0 to avoid drawing error bars
             tgaData.SetPointEXhigh(i,0.)
             tgaData.SetPointEXlow (i,0.)
-            y_MC = hMC.GetStack().Last().GetBinContent(i+1)
             # Do not draw error in empty bins
             if(abs(tgaData.GetPointY(i)) < 1e-6):
                 tgaData.SetPointEYhigh(i, 0.)
                 tgaData.SetPointEYlow (i, 0.)
-            # Skip bins with MC = 0
-            elif(abs(y_MC) > 1e-6):
-                ey = math.sqrt(histodata.GetBinContent(i+1))/y_MC
-                tgaData.SetPointEYhigh(i, ey)
-                tgaData.SetPointEYlow (i, ey)
     else:
         histodata = ROOT.TH1F(hMC.GetStack().Last())
         histodata.SetName("histodata")
