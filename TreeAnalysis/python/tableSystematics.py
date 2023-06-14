@@ -28,7 +28,7 @@ def fillDataFrame(raw_data, formatter=formatVariation):
     return pd.DataFrame.from_dict(data) #, orient='index')
 
 
-def tableRegion(systematics, region, variables):
+def tableRegion(systematics, region, variables, **kwargs):
     if(not region in systematics.keys()):
         print('WARN: region "{}" not found'.format(region))
         return
@@ -44,10 +44,30 @@ def tableRegion(systematics, region, variables):
         print('-'*nPadding, variable, '-'*nPadding)
 
         df = fillDataFrame(systematics[region][variable])
-        
+
+        base_samples = {s.split('-prompt')[0].split('-nonpro')[0] for s in df.columns}
+        if  (kwargs.get('phstatus') == 'skip'):
+            df = df.loc[:, list(base_samples)]
+        elif(kwargs.get('phstatus') == 'only'):
+            phstat_samples = []
+            for sample in base_samples:
+                s_prompt = sample+'-prompt'
+                s_nonpro = sample+'-nonpro'
+                if  (s_prompt in df.columns):
+                    phstat_samples.append(s_prompt)
+                elif(s_nonpro in df.columns):
+                    phstat_samples.append(s_nonpro)
+                else:
+                    phstat_samples.append(sample)
+            df = df.loc[:, phstat_samples]
+
         # label_order = ['PDFVar', 'QCD-F', 'QCD-muR', 'alphas', 'L1Prefiring', 'puWeight', 'PhEScale', 'PhESigma', 'phEffSF', 'eleEffSF', 'muoEffSF', 'eleFakeRateSF', 'muoFakeRateSF']
         # df = df.loc[label_order, :]
-        
+        # df = df.loc[:, sample_order]
+        df = df.reindex(sorted(df.index  ), axis=0)
+        df = df.reindex(sorted(df.columns), axis=1)
+        if(kwargs.get('transpose')):
+            df = df.transpose()
         print(df.to_string())
         
         print('-'*_padding_length, end='\n\n')
@@ -61,8 +81,11 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--regions', dest='regions', nargs='+', choices=['SR4P','CR3P1F','CR2P2F','SR3P'], default=['SR4P','SR3P'])
     parser.add_argument('-i', '--inputfile', help='JSON file with systematics. Overrides year')
     parser.add_argument('-p', '--variables', dest='variables', nargs='+', default=['mZZ','mZZG','mWZ','mWZG'])
+    parser.add_argument(      '--transpose', action='store_true', help='Transpose the table')
+    parser.add_argument(      '--skip-phstatus', dest='phstatus', action='store_const', const='skip', help='Skip samples prompt/nonpro')
+    parser.add_argument(      '--only-phstatus', dest='phstatus', action='store_const', const='only', help='Use only prompt-nonpro samples when available')
+    parser.add_argument(      '--phstatus', choices=['skip', 'only', 'default'])
     args = parser.parse_args()
-    # print(args)
 
     if(args.inputfile):
         sysFileName = args.inputfile
@@ -73,4 +96,4 @@ if __name__ == '__main__':
         systematics = json.load(fin)
     
     for region in args.regions:
-        tableRegion(systematics, region, args.variables)
+        tableRegion(systematics, region, args.variables, transpose=args.transpose, phstatus=args.phstatus)
