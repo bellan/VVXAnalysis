@@ -913,7 +913,11 @@ if __name__ == "__main__":
     else:  # args.channels is false
         print("########## INCLUSIVE   method:", args.method, " variable:", args.variable, " final_state:", args.final_state, "##########")
         if(args.do_data):
-            pass
+            hFR_data    = fakeRateLtoT(sampleList["data"], None                 , year=args.year, method=method, variable=varState, logx=True, fixNegBins=False)
+            plotProfiled(hFR_data   , name='FR_profiledX_{}_{}_data'        .format(method, varState), title='FR(#gamma) vs #eta' , direction='X')
+            plotProfiled(hFR_data   , name='FR_profiledY_{}_{}_data'        .format(method, varState), title='FR(#gamma) vs p_{T}', direction='Y')
+            print()
+
         if(args.do_mc):
             hFR_DY   = fakeRateLtoT(sampleList["Drell-Yan"]       , None, year=args.year, method=method, variable=varState, logx=True, fixNegBins=True)
             hFR_ZG   = fakeRateLtoT(sampleList["ZGToLLG"]         , None, year=args.year, method=method, variable=varState, logx=True, fixNegBins=True)
@@ -925,11 +929,8 @@ if __name__ == "__main__":
             print()
         if(args.do_data and args.do_mc):
             hFR_data_ZG = fakeRateLtoT(sampleList["data"], sampleList["ZGToLLG"], year=args.year, method=method, variable=varState, logx=True, fixNegBins=False)
-            hFR_data    = fakeRateLtoT(sampleList["data"], None                 , year=args.year, method=method, variable=varState, logx=True, fixNegBins=False)
             plotProfiled(hFR_data_ZG, name='FR_profiledX_{}_{}_data-ZGToLLG'.format(method, varState), title='FR(#gamma) vs #eta' , direction='X')
             plotProfiled(hFR_data_ZG, name='FR_profiledY_{}_{}_data-ZGToLLG'.format(method, varState), title='FR(#gamma) vs p_{T}', direction='Y')
-            plotProfiled(hFR_data   , name='FR_profiledX_{}_{}_data'        .format(method, varState), title='FR(#gamma) vs #eta' , direction='X')
-            plotProfiled(hFR_data   , name='FR_profiledY_{}_{}_data'        .format(method, varState), title='FR(#gamma) vs p_{T}', direction='Y')
 
             plotRatio(hFR_data   , hFR_DY, name="ratio_{}_{}_data_over_DY_{}"   .format(method, varState, args.year), title="Ratio FR(data)/FR(DY) with "        +joinIfNotNone([method, args.final_state], " "))
             plotRatio(hFR_data   , hFR_ZZ, name="ratio_{}_{}_data_over_ZZ_{}"   .format(method, varState, args.year), title="Ratio FR(data)/FR(ZZ) with "        +joinIfNotNone([method, args.final_state], " "))
