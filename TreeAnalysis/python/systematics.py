@@ -262,6 +262,7 @@ if __name__ == '__main__':
     doSystOnFile(path.join(results_folder.format(region='CR3P1F'), 'data.root'  ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='CR2P2F'), 'data.root'  ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR4P'), 'fake_leptons.root'  ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'fake_photons.root'  ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR4P'), 'WZTo3LNu.root'      ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ZZTo4l.root'        ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ggTo4e_Contin_MCFM701.root'   ), syst_values)
