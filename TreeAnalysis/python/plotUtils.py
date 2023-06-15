@@ -191,6 +191,7 @@ def GetPredictionsPlot(region, inputdir, plotInfo, predType, MCSet, forcePositiv
         if(verbosity >= 1):
             print Green("\nNon-prompt leptons background")
         hfake = addIfExisting(*[GetFakeRate(inputdir.replace(region, CR), plotInfo, "data", CR, MCSet) for CR in controlRegions])
+        assert hfake is not None, 'Fake lepton plot not found for ' + plotInfo['name']
 
         hfake.SetLineColor(ROOT.kBlack)
         stack.Add(hfake)
