@@ -114,7 +114,7 @@ void drawtext(const char* graphName, const char* format="%.4g")
     Double_t dummy, xmin, ymin, xmax, ymax;
     gPad->GetRangeAxis(dummy, ymin, dummy, ymax);
     g->ComputeRange(xmin, dummy, xmax, dummy);
-    Double_t factor = TMath::Exp((ymax/ymin)*0.08);
+    Double_t factor = TMath::Exp(fabs(ymax/ymin)*0.08);
     Double_t step   = (ymax-ymin)*0.03;
     // printf(">>> xmin: %f, xmax: %f, ymin: %.4e, ymax: %.4e", xmin, xmax, ymin, ymax);
     // if(gPad->GetLogy())
@@ -296,12 +296,14 @@ for Var in variables:
         
         if info.get('logy', False):
             YMax *= 10
-            pad1.SetLogy()
-            hMC.GetHistogram().GetYaxis().SetMoreLogLabels()
-            if(YMax < 100000):
-                hMC.GetHistogram().GetYaxis().SetNoExponent()
         if('AAA_cuts' in Var):
             YMax *= 1.3
+
+    if info.get('logy', False):
+        pad1.SetLogy()
+        hMC.GetHistogram().GetYaxis().SetMoreLogLabels()
+        if(YMax < 100000):
+            hMC.GetHistogram().GetYaxis().SetNoExponent()
 
     hMC.SetMaximum(YMax)
     YMin = info.get('ymin', False)
@@ -349,8 +351,8 @@ for Var in variables:
     # yMax_r = histodata.GetBinContent( histodata.GetMaximumBin()) + histodata.GetBinError(histodata.GetMaximumBin() )
     # yMin_r = histodata.GetBinContent( histodata.GetMinimumBin()) - histodata.GetBinError(histodata.GetMinimumBin() )
     # deltaY = (yMax_r - yMin_r)
-    yMax_r = 1.5  # max(min(yMax_r + deltaY*0.1, 2), 1.1)
-    yMin_r = 0.5  # min(max(yMin_r - deltaY*0.1, 0), 0.9)
+    yMax_r = 2.  # max(min(yMax_r + deltaY*0.1, 2), 1.1)
+    yMin_r = 0.  # min(max(yMin_r - deltaY*0.1, 0), 0.9)
 
     # hArea = deepcopy(hMC.GetStack().Last())  # in ratio plot, the gray area representing MC error
     # for bin in range(1, hArea.GetNbinsX()+1):
