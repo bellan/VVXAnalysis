@@ -1,14 +1,12 @@
 #!/bin/sh -xu
 
-prefixcsvfile="../Producers/python/samples_"
-suffixcsvfile="_MC.csv"
 haddOpt="-k -f"  # "-j $(grep processor /proc/cpuinfo | wc -l)"
 rmOpt="-r -f"
 analyzer=VVGammaAnalyzer # VVXAnalyzer
-years="2016"
+years="2018"
 nevents=-1
 
-regions="SR4P;CR2P2F;CR3P1F;SR3P;CR000;CR001;CR010;CR011;CR100;CR101;CR110;SR2P"  # "CRLFR"  # 
+regions="SR4P;CR3P1F;CR2P2F;SR3P;CR110;CR101;CR011;CR100;CR010;CR001;CR000;SR2P;CRLFR"
 options="--external-cross-section"  # --internal-cross-section --nofr
 
 

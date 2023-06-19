@@ -142,8 +142,6 @@ elif 'CR4L' in regions:
 elif 'CR3L' in regions:
     regions = CR3L_regions
 else:
-    if 'CRLFR' in regions:
-        regions = [ r for r in regions if not r == 'CR110']  # Until we implement a MET cut, these two overlap
     if 'SR4P' in regions:
         regions = [ r for r in regions if not r.startswith(('SR4P_', 'CR4P_')) ]
     if 'SR3P' in regions:

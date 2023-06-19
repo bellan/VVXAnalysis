@@ -1,14 +1,11 @@
 #!/bin/bash -xu
 
-
-prefixcsvfile="../Producers/python/samples_"
-suffixcsvfile="_Data.csv"
 haddOpt="-k -f"
 rmOpt="-r -f"
 analyzer=VVGammaAnalyzer  # VVXAnalyzer
-years="2016"
+years="2018"
 
-regions="SR4P;CR3P1F;CR2P2F;SR3P;CR110;CR101;CR011;CR100;CR010;CR001;CR000;SR2P"  # "CRLFR"  # 
+regions="SR4P;CR3P1F;CR2P2F;SR3P;CR110;CR101;CR011;CR100;CR010;CR001;CR000;SR2P;CRLFR"
 options=""  # "--nofr"  # 
 
 make || exit
@@ -17,11 +14,9 @@ make || exit
 echo -e "--- Analyses on Data ---\n"
 
 for year in $years ; do
-    csvfile=$prefixcsvfile${year}UL$suffixcsvfile
-
     data_samples=$(ls samples/Data/$year | grep $year | grep -oP ".+(?=\.root)" | sort)
     for sample in ${data_samples} ; do
-        ./python/run.py $analyzer $sample -y $year -r $regions -c $csvfile $options -d samples/Data &> logdir/${sample}.log &
+        ./python/run.py $analyzer $sample -y $year -r $regions $options -d samples/Data &> logdir/${sample}.log &
     done
 
     wait
