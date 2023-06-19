@@ -342,8 +342,7 @@ Int_t VVGammaAnalyzer::cut() {
   #ifndef DEBUG
   // cout<<"\r\t\t"<<evtN_;
   #else
-  cout << regionType(region_) << ':' << run << ':' << lumiBlock << ':' << event << '\t'
-       << theWeight << '\n';
+  // cout << regionType(region_) << ':' << run << ':' << lumiBlock << ':' << event << '\t' << theWeight << '\n';
   // for(const Particle& p : *genParticles)
   //   cout << "\tid: " << p.id() << " \tgenStatusFlag = " << p.genStatusFlags() << " --> " << p.genStatusFlags().to_ulong() << std::endl;
   #endif
@@ -747,7 +746,7 @@ void VVGammaAnalyzer::end(TFile& fout){
     analyzedW = analyzedWInReg_.at(region_);
   }  // Otherwise there's not a single event in this region
   
-  cout<<"\n\t----- "<<phys::regionType(region_)<<"-----\n";
+  cout<<"\n\t----- "<<phys::regionType(region_)<<" -----\n";
   cout<<Form("Total events: %lu (weighted: %.3g)\n", evtN, evtW);
   cout<<Form("Passing cut:  %lu (weighted: %.3g)\n", analyzedN, analyzedW);
   cout<<Form("Fraction:     %.1f %% (weighted: %.1f %%)\n", 100.*analyzedN/evtN, 100.*analyzedW/evtW);
