@@ -955,17 +955,15 @@ bool VVGammaAnalyzer::canBeFSR(const Photon& ph, const vector<Lepton>& leptons) 
 
 
 void VVGammaAnalyzer::initCherryPick(){
-  for(auto R : regions_){
-    FILE* cherryFile = fopen(Form("data/2016D_%s_manual.txt", regionType(R).c_str()), "r");
-    if(!cherryFile){
-      cout << colour::Red("WARN") << ": no cherry pick file for region " << regionType(R) << '\n';
-      continue;
-    }
-    unsigned long r, l, e;
-    while( fscanf(cherryFile, "%lu:%lu:%lu", &r, &l, &e) == 3 )
-      cherryEvents[R][r][l].insert(e);
-    fclose(cherryFile);
+  FILE* cherryFile = fopen(Form("data/cherry-pick.txt"), "r");
+  if(!cherryFile){
+    cout << colour::Red("WARN") << ": no cherry pick file\n";
+    return;
   }
+  unsigned long r, l, e;
+  while( fscanf(cherryFile, "%lu:%lu:%lu", &r, &l, &e) == 3 )
+    cherryEvents[r][l].insert(e);
+  fclose(cherryFile);
 }
 
 
@@ -2295,11 +2293,8 @@ std::pair<TLorentzVector, TLorentzVector> solveNuPz(const Boson<Lepton>& W, int&
 
 
 bool VVGammaAnalyzer::cherrypickEvt() const {
-  auto R = cherryEvents.find(region_);
-  if(R == cherryEvents.end()) return false;
-
-  auto r = R->second.find(run);
-  if(r == R->second.end())    return false;
+  auto r = cherryEvents.find(run);
+  if(r == cherryEvents.end()) return false;
 
   auto l = r->second.find(lumiBlock);
   if(l == r->second.end())    return false;

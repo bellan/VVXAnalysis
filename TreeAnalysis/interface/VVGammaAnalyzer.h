@@ -188,10 +188,11 @@ private:
   static std::vector<phys::Boson<T>> makeBosons(const std::vector<T>&, UnaryPredicate); //predicate acts on the newly made bosons
   void initCherryPick();
   bool cherrypickEvt() const;
-  std::map<phys::RegionTypes,
-	   std::map<unsigned long,        // run
-		    std::map<unsigned long,      // lumi block
-			     std::set<unsigned long>>>> // event
+  std::map<unsigned long,                    // run
+	   std::map<unsigned long,           // lumi block
+		    std::set<unsigned long>  // event
+		    >
+	   >
   cherryEvents;
  	
   double getPhotonFR_VLtoL       (const phys::Photon& ph) const;
