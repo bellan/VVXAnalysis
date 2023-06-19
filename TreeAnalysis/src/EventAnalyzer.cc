@@ -188,6 +188,8 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   else{
     for(phys::RegionTypes region : regions_){
       if(regionWord.test(region)){
+	if(region == phys::CRLFR && met->pt() > 30) continue;
+	if((region == phys::SR3P || region == phys::CR110) && met->pt() < 30) continue;
 	region_ = region;
 	foundRegion = true;
 	break;
