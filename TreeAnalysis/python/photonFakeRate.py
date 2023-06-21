@@ -618,6 +618,7 @@ def plotRatio(h1, h2, name="ratio", title="ratio"):
 
     ratio.SetMaximum(2.)
     ratio.SetMinimum(0.)
+    ratio.SetContour(21)  # Set to an odd number so that 1 is in the middle of a bin in the color gradient
     
     c = ROOT.TCanvas("cratio_{:s}".format(name), "ratio", 1200, 900)
     c.cd()
@@ -787,6 +788,13 @@ if __name__ == "__main__":
 
     makedirs_ok(_outdir_data)
     makedirs_ok(_outdir_plot)
+
+    # Define color palette for z axis in TH2
+    red   = array('d', (1., 0. , 0.))
+    green = array('d', (0., 1. , 0.))
+    blue  = array('d', (0., 0. , 1.))
+    stops = array('d', (0., 0.5, 1.))
+    ROOT.TColor.CreateGradientColorTable(len(stops), stops, red, green, blue, 100)
 
     # Start FR plots
     if(args.method == "ABCD"):
