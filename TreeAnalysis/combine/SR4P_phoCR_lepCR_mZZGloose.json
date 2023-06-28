@@ -1,0 +1,19 @@
+{
+    "signals": [
+	"ZZGTo4LG-prompt",
+	"WZGTo3LNuG-prompt"
+    ],
+    "regions": {
+	"SR4P": {
+            "processes": {
+		"ZZGTo4LG-prompt": -1,
+		"ZZTo4l-prompt": -1,
+		"fake_photons": -1
+	    },
+            "observable": {
+		"name":"mZZGloose",
+		"observation":-1
+	    }
+	}
+    }
+}
