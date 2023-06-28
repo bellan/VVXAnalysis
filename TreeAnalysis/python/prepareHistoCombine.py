@@ -56,15 +56,10 @@ def isVarSystematic(variable):
 
 if __name__ == '__main__':
     # Setup
-    if(os.path.isdir(args.outputdir)):
-        call(['rm', '-r', args.outputdir])  # clean up the directory so that old files don't clutter it
-
-    # samples = set()  # deduce from files found
     ok_retrieved  = []
     not_retrieved = []
 
     # Start
-
     path_out = os.path.join(args.outputdir, args.year)
     makedirs_ok(path_out)
     
