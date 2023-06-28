@@ -198,7 +198,7 @@ def doSystOnFile(path, syst_values):  # <str>, <dict> (to be passed to doSystema
         systematics = set([n.split('_')[2] for n in names])
     
         print('variables =', variables)
-        print('systematics =', systematics)
+        # print('systematics =', systematics)
 
         sample = path.split('/')[-1].split('.')[0]
         region = path.split('/')[-2].split('_')[-1]
@@ -258,12 +258,18 @@ if __name__ == '__main__':
     doSystOnFile(path.join(results_folder.format(region='SR3P'), 'ZGToLLG.root'       ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR3P'), 'DYJetsToLL_M50.root'), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR3P'), 'ZZGTo4LG.root'      ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'fake_photons.root'  ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'TTTo2L2Nu.root'     ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'TTWJetsToLNu.root'  ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'TTZJets.root'       ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'tW.root'            ), syst_values)
     
     doSystOnFile(path.join(results_folder.format(region='CR3P1F'), 'data.root'  ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='CR2P2F'), 'data.root'  ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR4P'), 'fake_leptons.root'  ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR4P'), 'fake_photons.root'  ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR4P'), 'WZTo3LNu.root'      ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'WZGTo3LNuG.root'    ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ZZTo4l.root'        ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ggTo4e_Contin_MCFM701.root'   ), syst_values)
     doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ggTo2e2mu_Contin_MCFM701.root'), syst_values)
