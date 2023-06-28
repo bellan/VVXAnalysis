@@ -11,6 +11,8 @@
 from __future__ import print_function
 import os
 from array import array
+from ctypes import c_double
+from argparse import ArgumentParser
 
 import ROOT
 
@@ -21,6 +23,17 @@ class TFileContext(object):
         return self.tfile
     def __exit__(self, type, value, traceback):
         self.tfile.Close()
+
+_allowed_years = (2016, 2017, 2018)
+
+parser = ArgumentParser()
+parser.add_argument('-y', '--years', nargs='+', choices=_allowed_years, default=_allowed_years)
+parser.add_argument('-p', '--print-graphs', dest='do_print'    , action='store_true')
+parser.add_argument(      '--no-root'     , dest='do_rootfiles', action='store_false', default=True)
+args = parser.parse_args()
+
+if(args.do_print):
+    ROOT.gROOT.SetBatch(True)
 
 # Locate the directory in which VVXAnalysis and ZZAnalysis are
 if(os.environ.get('CMSSW_BASE', False)):
@@ -43,6 +56,73 @@ assert os.path.isdir(fr_dir), 'FakeRates folder not found in ZZAnalysis'
 out_dir = os.path.join(basepath, 'VVXAnalysis', 'Commons', 'data')
 assert os.path.isdir(out_dir), 'Cannot find VVXAnalysis/Commons/data to store output rootfiles'
 
+
+def print_graphs(fin, year):
+    ele_EB = fin.Get("FR_OS_electron_EB")
+    ele_EE = fin.Get("FR_OS_electron_EE")
+    muo_EB = fin.Get("FR_OS_muon_EB")
+    muo_EE = fin.Get("FR_OS_muon_EE")
+    if(not (ele_EB and ele_EE and muo_EB and muo_EE)):
+        print('Could not get all 4 FakeRate histograms from "{}"!'.format(fin.GetName()))
+        return
+
+    c = ROOT.TCanvas('c', 'canvas', 1600, 1200)
+    xmin = ymin = 100
+    xmax = ymax = -100
+    for g in (ele_EE, ele_EB, muo_EB, muo_EE):
+        xmin_ = c_double(0.)
+        ymin_ = c_double(0.)
+        xmax_ = c_double(0.)
+        ymax_ = c_double(0.)
+        g.ComputeRange(xmin_, ymin_, xmax_, ymax_)
+        xmin = min(xmin, xmin_.value)
+        ymin = min(ymin, ymin_.value)
+        xmax = max(xmax, xmax_.value)
+        ymax = max(ymax, ymax_.value)
+    yrange = ymax - ymin
+    assert yrange > 0
+    ymin_draw = ymin - 0.1*yrange
+    ymax_draw = ymax + 0.1*yrange
+
+    ele_EB.SetMinimum(0)  # (ymin_draw)
+    ele_EB.SetMaximum(.16)# (ymax_draw)
+
+    legend = ROOT.TLegend(*list(map(lambda x,y: x+y, [0.3, 0.7]*2, [0, 0, .22, .18])))
+
+    ele_EB.SetMarkerStyle(ROOT.kFullSquare)
+    ele_EE.SetMarkerStyle(ROOT.kOpenSquare)
+    muo_EB.SetMarkerStyle(ROOT.kFullCircle)
+    muo_EE.SetMarkerStyle(ROOT.kOpenCircle)
+    ele_EB.SetMarkerSize(1.2)
+    ele_EE.SetMarkerSize(1.2)
+    muo_EB.SetMarkerSize(1.2)
+    muo_EE.SetMarkerSize(1.2)
+    ele_EB.SetLineStyle(1)
+    ele_EE.SetLineStyle(1)
+    muo_EB.SetLineStyle(1)
+    muo_EE.SetLineStyle(1)
+    ele_EB.SetLineColor(ROOT.kRed)
+    ele_EE.SetLineColor(ROOT.kRed)
+    muo_EB.SetLineColor(ROOT.kBlue)
+    muo_EE.SetLineColor(ROOT.kBlue)
+    ele_EB.SetMarkerColor(ele_EB.GetLineColor())
+    ele_EE.SetMarkerColor(ele_EE.GetLineColor())
+    muo_EB.SetMarkerColor(muo_EB.GetLineColor())
+    muo_EE.SetMarkerColor(muo_EE.GetLineColor())
+
+    ele_EB.SetTitle('Lepton fake rates - {}'.format(year))
+    ele_EB.GetXaxis().SetTitle('p_{T} [GeV/c]')
+    legend.AddEntry(ele_EB, 'electron barrel', 'lp')
+    legend.AddEntry(ele_EE, 'electron endcap', 'lp')
+    legend.AddEntry(muo_EB, 'muon barrel'    , 'lp')
+    legend.AddEntry(muo_EE, 'muon endcap'    , 'lp')
+    ele_EB.Draw('APE')
+    ele_EE.Draw('PE')
+    muo_EB.Draw('PE')
+    muo_EE.Draw('PE')
+
+    legend.Draw('same')
+    c.SaveAs('{}.png'.format(year))
 
 def write_new_file(fout, fin):
     ele_EB = fin.Get("FR_OS_electron_EB")
@@ -106,7 +186,7 @@ def write_new_file(fout, fin):
 
 
 # Loop over the years
-for year in ('2016', '2017', '2018'):
+for year in args.years:
     fr_fname = 'newData_FakeRates_OS_{}.root'.format(year)
     fr_fpath = os.path.join(fr_dir, fr_fname)
     if(not os.path.isfile(fr_fpath)):
@@ -116,5 +196,10 @@ for year in ('2016', '2017', '2018'):
     out_fname = 'leptonFakeRates_{}.root'.format(year)
     out_fpath = os.path.join(out_dir, out_fname)
 
-    with TFileContext(fr_fpath, 'READ') as fin, TFileContext(out_fpath, 'RECREATE') as fout:
-        write_new_file(fout, fin)
+    if(args.do_print):
+        with TFileContext(fr_fpath, 'READ') as fin:
+            print_graphs(fin, year)
+
+    if(args.do_rootfiles):
+        with TFileContext(fr_fpath, 'READ') as fin, TFileContext(out_fpath, 'RECREATE') as fout:
+            write_new_file(fout, fin)
