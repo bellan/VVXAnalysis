@@ -6,7 +6,7 @@ VarInfo_vbs = {"Mass":["m_{4\ell}","m_{4\ell}",40],"Mjj":["m_{jj}","m_{JJ}",20],
 
 def getVarInfo_VVX(region):
     VarInfo_VVX = {
-        "AAA_cuts"  : {'title':'Cuts', 'text':True, 'unblind':True, 'logy':False},
+        "AAA_cuts"  : {'title':'Cuts', 'text':True, 'unblind':True, 'logy':True, 'ymin':1},
         'channel_lep':{'title':'lepton flavour', 'text':True, 'unblind':True}
     }
     return VarInfo_VVX
@@ -67,11 +67,11 @@ def getVarInfo_VVGamma(region):
                 'special':True,
                 'unblind':True,
                 'title':'m_{4\ell\gamma}\:,\ \gamma\:tight',
-                'ratio_title': 'from data/from MC',
+                'ratio_title': 'data-driven/MC',
                 'rebin': 2,
                 'data': {
                     'plot' :'ZZG_mass_reweightPh',
-                    'legend': 'from data'
+                    'legend': 'data-driven'
                 },
                 'stack':{
                     'plot' :'ZZG_mass_loosePh_nonpro'
@@ -194,9 +194,9 @@ def getVarInfo_VVGamma(region):
     
     # Photon stuff
     VarInfo_VVGamma.update({
-        'kinPhotons_cuts'      : {'title':'cut'      , 'unblind':True, 'logy':True},
-        'kinPhotons_Nm1'       : {'title':'N-1 cuts' , 'unblind':True, 'text':True},
-        'kinPhoton_MVA'        : {'title':'MVA score', 'unblind':True , 'logy':True},
+        'kinPhotons_cuts'      : {'title':'cut'      , 'unblind':True , 'logy':True},
+        'kinPhotons_Nm1'       : {'title':'N-1 cuts' , 'unblind':False, 'text':True},
+        'kinPhoton_MVA'        : {'title':'MVA score', 'unblind':False, 'logy':True, 'rebin':2},
         'veryLoosePhoton_MVA'  : {'title':'MVA score', 'unblind':False, 'logy':True},
         'loosePhoton_MVA'      : {'title':'MVA score', 'unblind':False, 'logy':True}
         ,
@@ -243,7 +243,7 @@ def getVarInfo_VVGamma(region):
             n = 'lead_{}_{}'.format(status, varname)
             d = {'title': '%s #gamma_{%s}^{leading}' %(vartitle, status),
                  'unblind': unblind,
-                 'logy': False,
+                 'logy': varname in ('MVA',),
                  'split_prompt_ph': region == 'SR4P',
                  'rebin': rebin }
             if status == 'loose':
