@@ -6,6 +6,7 @@ import sys
 import json
 import re
 import string
+import copy
 from math import isnan
 import pandas as pd
 from argparse import ArgumentParser
@@ -13,13 +14,13 @@ from samplesByRegion import getSamplesByRegion
 from tableSystematics import fillDataFrame
 
 parser = ArgumentParser()
-parser.add_argument('template', help='Template for the datacard')
+parser.add_argument('config_file', help='Configuration file. Defaults to the one hardcoded in this script', default=None)
+parser.add_argument('-t', '--template', help='Template for the datacard')
 parser.add_argument('-v', '--verbose'  , dest='verbosity', action='count', default=1, help='Increase verbosity')
 parser.add_argument(      '--verbosity', type=int, help='Set verbosity')
 parser.add_argument('-q', '--quiet'    , dest='verbosity', action='store_const', const=0, help='Set verbose to minimum')
 parser.add_argument('-r', '--region', default='SR4P')
 parser.add_argument('-y', '--year', type=int, default=2016)
-parser.add_argument('-C', '--config-file', help='Configuration file. Defaults to one hardcoded in this script')
 parser.add_argument('-c', '--config', type=json.loads, help='String convertible to dictionary used to override the config', default={})
 parser.add_argument(      '--unblind', action='store_true')
 parser.add_argument(      '--path', default='/afs/cern.ch/user/a/amecca/public/histogramsForCombine')
@@ -29,7 +30,7 @@ if(args.verbosity >= 1):
     print('INFO: writing card for {args.year}, {args.region}'.format(**globals()))
 
 ### Hardcoded configuration ###
-config = {
+__builtin_config__ = {
     # Define which samples are signals and which are background
     'signals': ['ZZGTo4LG', 'WZGTo3LNuG'],
     # Define the observable and the samples in each region
@@ -59,17 +60,41 @@ config = {
         'has_shape': ['QCDscaleF', 'QCD-F']
     }
 }
+config = copy.deepcopy(__builtin_config__)
+
+__builtin_template__ = '''\
+imax {imax} number of channels
+jmax {jmax} number of backgrounds
+kmax {kmax} number of nuisance parameters
+------------
+
+shapes * * {path} $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
+------------
+
+{bins}
+------------
+
+{processes}
+------------
+
+{systematics}
+'''
 
 # Update from config file
 if(args.config_file is not None):
-    with open(args.config_file) as f:
-        fconfig = json.load(f)
+    try:
+        with open(args.config_file) as f:
+            fconfig = json.load(f)
+    except json.decoder.JSONDecodeError as e:
+        print('ERROR: Caught', type(e), 'while reading', args.config_file)
+        print(e)
+        exit(1)
     config.update(fconfig)
 
 # Update from command line
 config.update(args.config)
 
-if(args.verbosity >= 2):
+if(args.verbosity >= 3):
     print('### Configuration ###')
     print(json.dumps(config, indent=2))
     print()
@@ -186,8 +211,11 @@ if(args.verbosity >= 4):
 
 
 ### Open template ###
-with open(args.template) as ftemplate:
-    template = ftemplate.read()
+if(args.template is not None):
+    with open(args.template) as ftemplate:
+        template = ftemplate.read()
+else:
+    template = __builtin_template__
     
 # template = template.format(
 template = PartialFormatter().format(template,
@@ -201,7 +229,7 @@ template = PartialFormatter().format(template,
 )
 
 ### Write card ###
-cardname = os.path.join('combine', '{}_{}_{}.txt'.format(args.year, args.region,
+cardname = os.path.join('combine', '{}_{}.txt'.format(args.year,# args.region,
                                                          args.config_file.split('/')[-1].split('.')[0] if args.config_file is not None else 'default'
                                                          ))
 with open(cardname, 'w') as fout:
