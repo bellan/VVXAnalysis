@@ -145,8 +145,11 @@ if(args.verbosity >= 1):
 
 df_rate = pd.DataFrame(
     [[getBinName(args.region, region_config['observable']['name']), k, samples_to_idx[k], v] for k,v in region_config['processes'].items()],
-    columns=['bin', 'process', 'process', 'rate']
+    columns=['bin', 'process', 'process_number', 'rate']
 ).transpose()
+df_rate.sort_values('process_number', axis=1, inplace=True)
+df_rate.rename(index={'process_number':'process'}, inplace=True)
+
 if(args.verbosity >= 3):
     print(df_rate.to_string(header=False))
     print()
