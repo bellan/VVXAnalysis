@@ -45,7 +45,7 @@ inCSV=$(echo $positional | cut -d " " -f 1)
 [ -z $inCSV ] && echo "Error: CSV file needed (positional arg)" >&2 && exit
 positional=$(echo "$positional" | sed "s:\s*$inCSV\s*::")
 
-year=$(echo "$inCSV" | grep -oP "\d{4}" )
+year=$(echo "$inCSV" | grep -oP "\d{4}[^_]+" )
 CSVcontent=$(grep -P '^\s*[^#$]' $inCSV)
 header=$(echo "$CSVcontent" | head -n 1)
 lines=$(echo "$CSVcontent" | tail -n +2)
