@@ -32,6 +32,11 @@ namespace phys {
       phIso  = 0x40
     };
 
+    enum class MVAwp {
+      wp80,
+      wp90
+    };
+
     static constexpr UInt_t ID_BITMASK =
       static_cast<UInt_t>(IDcut::HoverE) |
       static_cast<UInt_t>(IDcut::sieie ) |
@@ -266,7 +271,19 @@ namespace phys {
       }
     }
 
-    
+    bool passMVA(MVAwp wp) const{
+      // See https://github.com/cms-sw/cmssw/blob/CMSSW_10_6_X/RecoEgamma/PhotonIdentification/python/Identification/mvaPhotonID_Fall17_94X_V2_cff.py
+      switch(wp){
+      case MVAwp::wp90:
+	return MVAvalue_ > (isBarrel() ? -0.02 : -0.26);
+      case MVAwp::wp80:
+	return MVAvalue_ > (isBarrel() ? +0.42 : +0.14);
+      default:
+	std::cerr << "WARN: unknown MVAwp in Photon::passMVA()\n";
+	return true;
+      }
+    }
+
     inline bool isBarrel() const { return fabs(eta()) < TRANSITION_BARREL_ENDCAP; }
     
     bool passHoverE(IdWp wp) const{
