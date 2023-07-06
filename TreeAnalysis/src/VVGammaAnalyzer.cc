@@ -534,16 +534,17 @@ void VVGammaAnalyzer::analyze(){
     // photonFakeRate_LtoT("KtoVL", *bestKinPh_, isPassVL);
   }
 
-  auto it_bestMVA = std::max_element(kinPhotons_["central"]->begin(), kinPhotons_["central"]->end(), [](const Photon& a, const Photon& b){ return a.MVAvalue() > b.MVAvalue(); });
-  if(it_bestMVA != kinPhotons_["central"]->end()){
-    bool pass80 = it_bestMVA->passMVA(Photon::MVAwp::wp80);
-    bool pass90 = it_bestMVA->passMVA(Photon::MVAwp::wp90);
+  auto it_bestMVA = std::max_element(kinPhotons_["central"]->begin(), kinPhotons_["central"]->end(), [](const Photon& a, const Photon& b){ return a.MVAvalue() < b.MVAvalue(); });
+  const Photon* bestMVA = it_bestMVA != kinPhotons_["central"]->end() ? &*it_bestMVA : nullptr;
+  if(bestMVA){
+    bool pass80 = bestMVA->passMVA(Photon::MVAwp::wp80);
+    bool pass90 = bestMVA->passMVA(Photon::MVAwp::wp90);
 
     if(pass90){
-      photonFakeRate_LtoT("90to80", *it_bestMVA, pass80);
+      photonFakeRate_LtoT("90to80", *bestMVA, pass80);
 
       // double f_90to80_data = getPhotonFR_90to80_data(thePh);
-      // photonFRClosure("90to80_pt-aeta_data", *it_bestMVA, pass80, f_90to80_data);
+      // photonFRClosure("90to80_pt-aeta_data", *bestMVA, pass80, f_90to80_data);
     }
   }
 
