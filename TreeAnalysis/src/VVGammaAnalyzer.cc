@@ -59,7 +59,13 @@ void VVGammaAnalyzer::begin(){
   // Photon efficiency SF for cut-based ID (temporary)
   hPhotonEffSF_           = getHistfromFile(Form("../Commons/data/egammaEffi.txt_EGM2D_Pho_Loose_UL%d.root", year%100), "EGamma_SF2D");
   hPhotonEffSF_maxPt_     = hPhotonEffSF_->GetYaxis()->GetBinUpEdge(hPhotonEffSF_->GetNbinsY());
-  
+
+  // Photon MVA SF
+  mapPhotonMVASF_[Photon::MVAwp::wp80] = getHistfromFile(Form("../Commons/data/%d_PhotonsMVAwp80.root", year), "EGamma_SF2D");
+  mapPhotonMVASF_[Photon::MVAwp::wp90] = getHistfromFile(Form("../Commons/data/%d_PhotonsMVAwp90.root", year), "EGamma_SF2D");
+  for(auto& it: mapPhotonMVASF_)  // std::pair<const Photon::MVAwp, std::unique_ptr<TH2F>>
+    mapPhotonMVASF_maxPt_[it.first] = it.second->GetYaxis()->GetBinUpEdge(it.second->GetNbinsY());
+
   // initCherryPick();
   for(const char* sys : {"central", "EScale_Up", "EScale_Down", "ESigma_Up", "ESigma_Down"}){
     kinPhotons_ [sys]  = std::make_unique<vector<Photon>>();
@@ -2732,6 +2738,16 @@ double VVGammaAnalyzer::getPhotonFRSF_VLtoL(const phys::Photon& ph) const{
 								     ph.pt() < 120 ? ph.pt() : 119.9,
 								     abs(ph.eta())
 								     ));
+}
+
+double VVGammaAnalyzer::getPhotonEffSF_MVA(const phys::Photon& ph, Photon::MVAwp wp) const{
+  const TH2F* hSF = mapPhotonMVASF_.at(wp).get();
+  float maxPt = mapPhotonMVASF_maxPt_.at(wp);
+  Int_t bin = hSF->FindFixBin(
+			      ph.eta(),
+			      ph.pt() < maxPt ? ph.pt() : maxPt-0.1
+			      );
+  return hSF->GetBinContent(bin);
 }
 
 bool VVGammaAnalyzer::passVeryLoose(const Photon& ph){

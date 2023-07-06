@@ -136,6 +136,9 @@ private:
   std::unique_ptr<TH2F> hPhotonEffSF_;
   double hPhotonEffSF_maxPt_;
 
+  std::map<phys::Photon::MVAwp, std::unique_ptr<TH2F>> mapPhotonMVASF_;
+  std::map<phys::Photon::MVAwp, float                > mapPhotonMVASF_maxPt_;
+
   std::string channelReco_;
 
   std::ofstream fAK4_;
@@ -202,6 +205,8 @@ private:
   double getPhotonFR_VLtoL_dataZG(const phys::Photon& ph) const;
   double getPhotonFR_KtoVLexcl   (const phys::Photon& ph) const;
   double getPhotonFRSF_VLtoL     (const phys::Photon& ph) const;
+
+  double getPhotonEffSF_MVA(const phys::Photon&, phys::Photon::MVAwp) const;
 
   int photonEffSF_getBin(const phys::Photon& ph) const{
     double pt = ph.pt() < hPhotonEffSF_maxPt_ ? ph.pt() : hPhotonEffSF_maxPt_ - 0.1;
