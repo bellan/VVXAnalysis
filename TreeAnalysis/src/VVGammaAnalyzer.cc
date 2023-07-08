@@ -548,6 +548,19 @@ void VVGammaAnalyzer::analyze(){
     }
   }
 
+  if(bestKinPh_ and bestMVA){
+    if(bestMVA != bestKinPh_){
+      theHistograms->fill("best_CutVsMVA_nKinPh_disagree", ";# #gamma_{KIN};Events", 5,-0.5,4.5, kinPhotons_["central"]->size(), theWeight);
+      theHistograms->fill("best_CutVsMVA_nCuts_disagree" , ";# cuts passed;Events" , 6,-0.5,5.5, bestKinPh_->nCutsPass(Photon::IdWp::Loose), theWeight);
+      theHistograms->fill("best_CutVsMVA_MVA_disagree"   , ";# MVA score;Events"   , 10,-1,1   , bestMVA->MVAvalue(), theWeight);
+    }
+    else{
+      theHistograms->fill("best_CutVsMVA_nKinPh_agree"   , ";# #gamma_{KIN};Events", 5,-0.5,4.5, kinPhotons_["central"]->size(), theWeight);
+      theHistograms->fill("best_CutVsMVA_nCuts_agree"    , ";# cuts passed;Events" , 6,-0.5,5.5, bestKinPh_->nCutsPass(Photon::IdWp::Loose), theWeight);
+      theHistograms->fill("best_CutVsMVA_MVA_agree"      , ";# MVA score;Events"   , 10,-1,1   , bestMVA->MVAvalue(), theWeight);
+    }
+  }
+
   orphanPhotonStudy();
   systematicsStudy();
   
