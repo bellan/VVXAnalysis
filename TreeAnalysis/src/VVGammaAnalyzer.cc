@@ -2351,12 +2351,43 @@ char phABCD_study(const phys::Photon&, const double& barrel_thr, const double& e
 }
 
 
-void VVGammaAnalyzer::SYSplots(const char* syst, const double weight, const Photon* ph){
-  float f_VLtoL(0.), w_VLtoL(0.);
+void VVGammaAnalyzer::SYSplots(const char* syst, const double weight, const Photon* ph, const Photon* phMVA){
+  // Variables that are computed once and resused thoughout the funcion
   const char* phGenStatus;
   bool onlyLoose    = strstr(syst, "phEffSF"   ) != nullptr;
   bool onlyReweight = strstr(syst, "phFakeRate") != nullptr;
   double weightIncl = !(onlyLoose || onlyReweight) ? weight : theWeight;
+  const char* phMVAGenStatus;
+  double effSF_wp90, effSF_wp80, w_wp90, w_wp80, w_90not80, w_VLtoL, TF_90to80;
+
+  // Look for specific systematics
+  bool phEff_Loose  = strstr(syst, "phEffSF"      ) != nullptr;  // TODO: rename string
+  bool phFR_VLtoL   = strstr(syst, "phFakeRate"   ) != nullptr;  // TODO: rename string
+  bool phEff_wp90   = strstr(syst, "phEffwp90"    ) != nullptr;
+  bool phEff_wp80   = strstr(syst, "phEffwp80"    ) != nullptr;
+  bool phFR_MVA     = strstr(syst, "phFakeRateMVA") != nullptr;
+  // These systematics do not affect plots that do not require photons with their particular ID or use their fake rate transfer factor
+  bool specialSyst  = phEff_Loose || phFR_VLtoL || phEff_wp90 || phEff_wp80 || phFR_MVA;
+  double weightIncl2= specialSyst ? theWeight : weight;  // In this case the plots that are not relevant should use the base weight for this iteration
+#ifdef DEBUG
+  if(weightIncl - weightIncl2 > 1e-7)
+    printf("%-24s: (onlyLoose || onlyRew): %d  specialSyst: %d  w1: %8f  w2: %8f\n", syst, (onlyLoose || onlyReweight), specialSyst, weightIncl, weightIncl2);
+#endif
+
+
+  // Setting up the weights for each pair of (SELECTION, SYSTEMATIC)
+  // If a ystematics does not affect the selection, the corresponding wUp = wDn = wCentral
+  if(phMVA){
+    if(theSampleInfo.isMC()){
+      effSF_wp90 = getPhotonEffSF_MVA(*ph, Photon::MVAwp::wp90);
+      effSF_wp80 = getPhotonEffSF_MVA(*ph, Photon::MVAwp::wp80);
+    }
+    else
+      effSF_wp90 = effSF_wp80 = 1.;
+    w_wp90 = (phEff_wp90 ? weight : theWeight) * effSF_wp90;  // weight with Efficiency Scale Factor applied
+    w_wp80 = (phEff_wp80 ? weight : theWeight) * effSF_wp80;
+    w_90not80 = (phFR_MVA || phEff_wp90 ? weight : theWeight) * effSF_wp80;  // For "90 && !80" the efficiency SF is still the same for wp90
+  }
 
   if(ph){
     if(theSampleInfo.isMC())
@@ -2379,6 +2410,11 @@ void VVGammaAnalyzer::SYSplots(const char* syst, const double weight, const Phot
 
       if(ph->cutBasedIDLoose()){
 	double w = (!onlyReweight ? weight : theWeight) * getPhotonEffSF(*ph);  // In data the SF is 1
+	double w2= (!specialSyst || phEff_Loose ? weight : theWeight) * getPhotonEffSF(*ph);  // In data the SF is 1
+#ifdef DEBUG
+	if(w - w2 > 1e-7)
+	  printf("%-24s loosept, looseMVA:  !onlyRew: %d  special && phEff_Loose: %d  w1: %8f  w2: %8f\n", syst, !onlyReweight, specialSyst && phEff_Loose, w, w2);
+#endif
 	theHistograms->fill(Form("SYS_looseMVA_%s", syst), Form("MVA loose %s", syst), 40,-1,1   , ph->MVAvalue(), w);
 	theHistograms->fill(Form("SYS_loosept_%s" , syst), Form("pt loose %s", syst) , ph_pt_bins, ph->pt()      , w);
 	if(theSampleInfo.isMC()){
@@ -2388,7 +2424,8 @@ void VVGammaAnalyzer::SYSplots(const char* syst, const double weight, const Phot
       }
       else{
 	double w = (!onlyLoose ? weight : theWeight); //weight;
-	f_VLtoL = getPhotonFR_VLtoL(*ph);
+	float f_VLtoL = getPhotonFR_VLtoL(*ph);
+	double w2= (!specialSyst || phFR_VLtoL ? weight : theWeight); //weight;
 	w_VLtoL = f_VLtoL / (1 - f_VLtoL);
 	theHistograms->fill(Form("SYS_failMVA_%s"        , syst), Form("MVA fail %s"       , syst), 40,-1,1   , ph->MVAvalue(), w);
 	theHistograms->fill(Form("SYS_failpt_%s"         , syst), Form("pt fail %s"        , syst), ph_pt_bins, ph->pt()      , w);
@@ -2397,6 +2434,34 @@ void VVGammaAnalyzer::SYSplots(const char* syst, const double weight, const Phot
 	if(theSampleInfo.isMC()){
 	  theHistograms->fill(Form("SYS_failMVA-%s_%s", phGenStatus, syst), Form("MVA fail %s %s", phGenStatus, syst), 40,-1,1   , ph->MVAvalue(), w);
 	  theHistograms->fill(Form("SYS_failpt-%s_%s" , phGenStatus, syst), Form("pt fail %s %s" , phGenStatus, syst), ph_pt_bins, ph->pt()      , w);
+	}
+      }
+    }
+  }
+
+  if(phMVA){
+    if(theSampleInfo.isMC())
+      phMVAGenStatus = isPhotonPrompt(*phMVA) ? "prompt" : "nonpro" ;
+
+    if  (phMVA->passMVA(Photon::MVAwp::wp90)){
+      theHistograms->fill(Form("SYS_wp90pt_%s" , syst), Form("pt wp90 %s", syst) , ph_pt_bins, ph->pt()      , w_wp90);
+      if(theSampleInfo.isMC()){
+	theHistograms->fill(Form("SYS_wp90pt-%s_%s" , phMVAGenStatus, syst), Form("pt wp90 %s %s" , phMVAGenStatus, syst), ph_pt_bins, ph->pt()      , w_wp90);
+      }
+
+      if(phMVA->passMVA(Photon::MVAwp::wp80)){
+	theHistograms->fill(Form("SYS_wp80pt_%s" , syst), Form("pt wp80 %s", syst) , ph_pt_bins, ph->pt()      , w_wp80);
+	if(theSampleInfo.isMC()){
+	  theHistograms->fill(Form("SYS_wp80pt-%s_%s" , phMVAGenStatus, syst), Form("pt wp80 %s %s" , phMVAGenStatus, syst), ph_pt_bins, ph->pt()      , w_wp80);
+	}
+      }
+      else{
+	// double f_90to80 = getPhotonFR_90to80(*ph);     // "fake rate"
+	// TF_90to80 = f_90to80 / (1 - f_90to80); // "transfer factor"
+	theHistograms->fill(Form("SYS_90not80pt_%s"        , syst), Form("pt wp80 fail wp90 %s", syst) , ph_pt_bins, ph->pt()      , w_90not80);
+	// theHistograms->fill(Form("SYS_90not80Reweightpt_%s", syst), Form("pt wp80 fail wp90 %s", syst) , ph_pt_bins, ph->pt()      , w_90not80 * TF_90to80);
+	if(theSampleInfo.isMC()){
+	  theHistograms->fill(Form("SYS_90not80pt-%s_%s" , phMVAGenStatus, syst), Form("pt wp80 fail wp90 %s %s" , phMVAGenStatus, syst), ph_pt_bins, ph->pt()      , w_90not80);
 	}
       }
     }
@@ -2419,6 +2484,22 @@ void VVGammaAnalyzer::SYSplots(const char* syst, const double weight, const Phot
 	theHistograms->fill(Form("SYS_mZZGfailReweight_%s", syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, mZZG, weight * w_VLtoL);
 	if(theSampleInfo.isMC())
 	  theHistograms->fill(Form("SYS_mZZGfail-%s_%s", phGenStatus, syst), Form("m_{ZZ#gamma} %s %s", phGenStatus, syst), mVVG_bins, mZZG, weight);
+      }
+    }
+
+    if(phMVA){
+      double mZZG = (ZZ->p4() + phMVA->p4()).M();
+      if     (phMVA->passMVA(Photon::MVAwp::wp80)){
+	theHistograms->fill(Form("SYS_mZZGwp80_%s", syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, mZZG, w_wp80);
+	if(theSampleInfo.isMC())
+	  theHistograms->fill(Form("SYS_mZZGwp80-%s_%s", phGenStatus, syst), Form("m_{ZZ#gamma} %s %s", phMVAGenStatus, syst), mVVG_bins, mZZG, w_wp80);
+      }
+      else if(phMVA->passMVA(Photon::MVAwp::wp90)){
+	// VeryLoose && !Loose --> Fail
+	theHistograms->fill(Form("SYS_mZZG90not80fail_%s"        , syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, mZZG, w_wp90);
+	// theHistograms->fill(Form("SYS_mZZG90not80failReweight_%s", syst), Form("m_{ZZ#gamma} %s", syst), mVVG_bins, mZZG, w_wp90 * w_VLtoL);
+	if(theSampleInfo.isMC())
+	  theHistograms->fill(Form("SYS_mZZG90not80-%s_%s", phGenStatus, syst), Form("m_{ZZ#gamma} %s %s", phGenStatus, syst), mVVG_bins, mZZG, w_wp90);
       }
     }
   }
