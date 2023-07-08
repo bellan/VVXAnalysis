@@ -331,12 +331,18 @@ void VVGammaAnalyzer::initEvent(){
   if(nLoosePh_0p7)   theHistograms->fill("cuts_loosePhIso"    , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, ">0.7" , theWeight);
 
 
-  if(kinPhotons_["central"]->size() > 0)
+  if(kinPhotons_["central"]->size() > 0){
     bestKinPh_ = &*std::max_element(kinPhotons_["central"]->begin(), kinPhotons_["central"]->end(),
 				    [](const Photon& a, const Photon& b){ return a.nCutsPass(Photon::IdWp::Loose) < b.nCutsPass(Photon::IdWp::Loose); }
 				    );  // max_element returns the first among those with max value --> preserve pt ordering
-  else
+    bestMVAPh_ = &*std::max_element(kinPhotons_["central"]->begin(), kinPhotons_["central"]->end(),
+				    [](const Photon& a, const Photon& b){ return a.MVAvalue() < b.MVAvalue(); }
+				    );
+  }
+  else{
     bestKinPh_ = nullptr;
+    bestMVAPh_ = nullptr;
+  }
 
   // Decide channel name depending on leptons
   makeChannelReco();

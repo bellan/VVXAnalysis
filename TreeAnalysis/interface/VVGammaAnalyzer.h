@@ -126,6 +126,7 @@ private:
   phys::Jet              candVToJ_ ;
   // KinPhoton that passes the largest number of cuts of the Loose ID
   phys::Photon* bestKinPh_;
+  phys::Photon* bestMVAPh_;
 
   const TH2F* hPhotonFR_VLtoL_;  // Will point to one of the owning pointers below
   std::unique_ptr<TH2F> hPhotonFR_VLtoL_data_;
