@@ -1732,7 +1732,7 @@ void VVGammaAnalyzer::plotsVVGstatus(const char* name, const char* title, const 
     theHistograms->fill(Form("%s_%s_kinPh_%s" , name, mType, genStatus), Form("%s %s with Kin #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
     theHistograms->fill(Form("%sG_%s_kinPh_%s", name, mType, genStatus), Form("%sG %s with Kin #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
 
-    if(! goodPhotons_["central"]->size() > 0){
+    if(goodPhotons_["central"]->size() == 0){
       theHistograms->fill(Form("%s_%s_kinVetoL" , name, mType), Form("%s %s with Kin #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
       theHistograms->fill(Form("%sG_%s_kinVetoL", name, mType), Form("%sG %s with Kin #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
       theHistograms->fill(Form("%s_%s_kinVetoL_%s" , name, mType, genStatus), Form("%s %s with Kin #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
