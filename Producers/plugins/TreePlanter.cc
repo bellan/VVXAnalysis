@@ -55,11 +55,12 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   : setup_(config.getParameter<int>("setup"))
   , PUWeighter_      (setup_,setup_)
   , filterController_(config,consumesCollector())
+  , dataTag_         (config.getParameter<std::string>("dataTag"))
+  , preVFP_          (dataTag_ == "ULAPV")
   , leptonScaleFactors_(setup_,
-			(dataTag=="ULAPV" ? true : false))  // preVFP
+			preVFP_)
   , photonScaleFactors_(setup_,
-			(dataTag=="ULAPV" ? true : false))
-
+			preVFP_)
   , signalDefinition_(config.getParameter<int>("signalDefinition"   ))
   , passTrigger_(false)
   , passSkim_(false)
@@ -127,7 +128,6 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , applySkim_       (config.getUntrackedParameter<bool>("SkimRequired"   , true)) 
   , applyMCSel_      (config.getUntrackedParameter<bool>("DoMCSelection"  , false)) 
   , addLHEKinematics_(config.getParameter<bool>("AddLHEKinematics"))
-  , dataTag          (config.getParameter<std::string>("dataTag"))
   , elePogID_        (config.getParameter<std::string>("elePogID"))
   , muoPogID_        (config.getParameter<std::string>("muoPogID"))
   , externalCrossSection_(-1.)
