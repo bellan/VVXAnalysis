@@ -118,6 +118,9 @@ class TreePlanter: public edm::EDAnalyzer {
   Int_t            setup_;
   PileUpWeight     PUWeighter_; 
   FilterController filterController_;
+  std::string dataTag_;
+  bool preVFP_;
+
   // To get Lepton efficiency scale factors. Temporary here!
   LeptonScaleFactors leptonScaleFactors_;
   PhotonScaleFactors photonScaleFactors_;
@@ -277,9 +280,6 @@ class TreePlanter: public edm::EDAnalyzer {
 
   std::vector<double> theXSections;
   double rho_;
-
-  bool preVFP = false;
-  std::string dataTag;
   
   StringCutObjectSelector<pat::Electron> elePogID_;
   StringCutObjectSelector<pat::Muon>     muoPogID_;
