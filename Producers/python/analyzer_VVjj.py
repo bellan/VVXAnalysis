@@ -162,25 +162,21 @@ process.photonSelection = cms.Path(
 AK8_JEC_tag = None
 if IsMC:
     if   (SAMPLE_TYPE == 2016):
-        #AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer16_07Aug2017_V11_MC_AK8PFPuppi', 
-        #AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer19UL16APV_V7_MC_AK8PFPuppi', # APV
-        AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer19UL16_V7_MC_AK8PFPuppi' # NON APV
+        if(DATA_TAG=='ULAPV'):
+            AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer19UL16APV_V7_MC_AK8PFPuppi'  # APV, preVFP , HIPM
+        else:
+            AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer19UL16_V7_MC_AK8PFPuppi' # NON APV, postVFP, no-HIPM
     elif (SAMPLE_TYPE == 2017):
-        #AK8_JEC_tag    = 'JetCorrectorParametersCollection_Fall17_17Nov2017_V32_94X_MC_AK8PFPuppi', #FIXME: need to be tested
         AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer19UL17_V5_MC_AK8PFPuppi'
     elif (SAMPLE_TYPE == 2018):
-        #AK8_JEC_tag    = 'JetCorrectorParametersCollection_Autumn18_V19_MC_AK8PFPuppi',
         AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer19UL18_V5_MC_AK8PFPuppi'
 
 else:
     if   (SAMPLE_TYPE == 2016):
-        #AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer16_07Aug2017All_V11_DATA_AK8PFPuppi', #for 80X/Moriond17
         AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer19UL16_RunBCDEFGH_Combined_V7_DATA_AK8PFPuppi'
     elif (SAMPLE_TYPE == 2017):
-        #AK8_JEC_tag    = 'JetCorrectorParametersCollection_Fall17_17Nov2017_V32_94X_DATA_AK8PFPuppi', #FIXME: need to be tested
         AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer19UL17_RunBCDEF_V5_DATA_AK8PFPuppi'
     elif (SAMPLE_TYPE == 2018):
-        #AK8_JEC_tag    = 'JetCorrectorParametersCollection_Autumn18_RunABCD_V19_DATA_AK8PFPuppi',
         AK8_JEC_tag    = 'JetCorrectorParametersCollection_Summer19UL18_V5_DATA_AK8PFPuppi'
 
 
