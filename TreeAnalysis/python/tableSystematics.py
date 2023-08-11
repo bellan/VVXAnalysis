@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 import json
+import re
 import pandas as pd
 
 _padding_length = 80
@@ -31,8 +32,11 @@ def tableRegion(systematics, region, variables, **kwargs):
         return
     nPadding_reg = int((_padding_length - len(region))/2) - 1
     print('#'*nPadding_reg, region, '#'*nPadding_reg)
-    
-    for variable in variables:
+
+    available_variables = systematics[region].keys()
+    selected_variables = {var for var in available_variables if any(re.search(pat, var) for pat in variables)} # Note: "normal" strings match themselves
+
+    for variable in selected_variables:
         if(not variable in systematics[region].keys()):
             # print('WARN: variable "{}" not found in region "{}"'.format(variable, region))
             continue
