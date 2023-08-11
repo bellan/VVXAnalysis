@@ -32,6 +32,10 @@ def getYrange(*graphs, **kwargs):  # <TGraphAsymmErrors>
 def plotSystematics(hCentral, hUp, hDn, syst_values, var='[var]', syst='[syst]', sample='[sample]', region='[region]'):  # <TH1>, <TH1>, <TH1>, <dict> (modified), <str>, <str>, <str>, <str>
     formatInfo = dict(var=var, syst=syst, sample=sample, region=region)
 
+    assert hCentral, "ERROR: hCentral is null for"+str(formatInfo)
+    assert hUp, "ERROR: hUp is null for"+str(formatInfo)
+    assert hDn, "ERROR: hDn is null for"+str(formatInfo)
+
     var_split = var.split('-')
     if(len(var_split) > 1):  # prompt/nonpro
         var = var_split[0]
