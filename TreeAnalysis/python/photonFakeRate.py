@@ -756,7 +756,7 @@ if __name__ == "__main__":
         sample.setdefault("name" , key)
         sample.setdefault("title", sample["name"])
 
-    possible_methods = {"VLtoL", "KtoVL", "KtoVLexcl", "ABCD"} #"LtoT", 
+    possible_methods = {"VLtoL", "KtoVL", "KtoVLexcl", "90to80", "ABCD"}
 
     from argparse import ArgumentParser
     parser = ArgumentParser()
