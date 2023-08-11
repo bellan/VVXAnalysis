@@ -176,7 +176,11 @@ private:
   void photonIsolation_bestKin();
   void orphanPhotonStudy();  // study reco photons that are not matched to gen
   void systematicsStudy();
-  void SYSplots(const char* syst, const double weight, const phys::Photon* bestKin, const phys::Photon* bestMVA = nullptr);
+  void SYSplots_inclusive(const char* syst, double weight);
+  void SYSplots_photon(   const char* syst, double weight, const phys::Photon& ph, const char* ph_selection);
+  void SYSplots_phCut(    const char* syst, double weight, const phys::Photon& phCut);
+  void SYSplots_phMVA(    const char* syst, double weight, const phys::Photon& phMVA);
+  void SYSplots(          const char* syst, double weight, const phys::Photon* phCut, const phys::Photon* phMVA);
   void debug3Lregion();
   void photonGenStudy();
 
@@ -208,6 +212,7 @@ private:
   double getPhotonFRSF_VLtoL     (const phys::Photon& ph) const;
 
   double getPhotonEffSF_MVA(const phys::Photon&, phys::Photon::MVAwp) const;
+  double getPhotonEffSFUnc_MVA(const phys::Photon&, phys::Photon::MVAwp) const;
 
   int photonEffSF_getBin(const phys::Photon& ph) const{
     double pt = ph.pt() < hPhotonEffSF_maxPt_ ? ph.pt() : hPhotonEffSF_maxPt_ - 0.1;
