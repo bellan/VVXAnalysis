@@ -9,6 +9,7 @@ from math import log10, ceil
 from json import load, dump
 from plotUtils import TFileContext, makedirs_ok
 from argparse import ArgumentParser
+import logging
 
 ROOT.gStyle.SetOptStat('0000')
 ROOT.gROOT.SetBatch(True)
@@ -29,7 +30,7 @@ def getYrange(*graphs, **kwargs):  # <TGraphAsymmErrors>
                extremes.append( y )
     return min(extremes), max(extremes)
 
-def plotSystematics(hCentral, hUp, hDn, syst_values, var='[var]', syst='[syst]', sample='[sample]', region='[region]'):  # <TH1>, <TH1>, <TH1>, <dict> (modified), <str>, <str>, <str>, <str>
+def plotSystematics(hCentral, hUp, hDn, syst_values, var='[var]', syst='[syst]', sample='[sample]', region='[region]', **kwargs):  # <TH1>, <TH1>, <TH1>, <dict> (modified), <str>, <str>, <str>, <str>
     formatInfo = dict(var=var, syst=syst, sample=sample, region=region)
 
     assert hCentral, "ERROR: hCentral is null for"+str(formatInfo)
@@ -48,19 +49,19 @@ def plotSystematics(hCentral, hUp, hDn, syst_values, var='[var]', syst='[syst]',
     integralUp = hUp.IntegralAndError(0, hUp.GetNbinsX()+1, errorUp)
     integralDn = hDn.IntegralAndError(0, hDn.GetNbinsX()+1, errorDn)
     if(integralCentral == 0):
-        print('ERROR: integralCentral is 0 for', formatInfo)
+        logging.error('ERROR: integralCentral is 0 for', formatInfo)
         return 0., 0.
 
     upVar = (integralUp-integralCentral)/integralCentral
     dnVar = (integralDn-integralCentral)/integralCentral
-    # print('\t{var}_{syst}'.format(**formatInfo), ' Up: {:.1f} %  Dn: {:.1f} %'.format(100*upVar, 100*dnVar))
+    # logging.debug('\t{var}_{syst}'.format(**formatInfo), ' Up: {:.1f} %  Dn: {:.1f} %'.format(100*upVar, 100*dnVar))
 
     ################################### Definition of the schema for the dict ####################################
     syst_values.setdefault(region, {}).setdefault(var, {}).setdefault(sample, {})[syst] = {'up':upVar, 'dn':dnVar}
     ##############################################################################################################
 
     
-    if(_do_plots):
+    if(kwargs.get('do_plots')):
         c = ROOT.TCanvas('c_{region}_{sample}_{var}_{syst}'.format(**formatInfo), '{var}: {syst} ({region})'.format(**formatInfo), 1600, 900)
         c.cd()
         pad_histo = ROOT.TPad ('pad_histo', '', 0., 0.34, 1., 1.)
@@ -137,9 +138,9 @@ def plotSystematics(hCentral, hUp, hDn, syst_values, var='[var]', syst='[syst]',
                 nu = hUp.GetBinContent(i)
                 nd = hDn.GetBinContent(i)
                 if(nc != 0):
-                    print('>>> bin:{:d} ({:.0f}), central:{:+.3f}, up:{:+.3f} ({:+.3f}), dn:{:+.3f} ({:+.3f})'.format(i, xc, nc, nu, nu/nc, nd, nd/nc))
+                    logging.debug('>>> bin:{:d} ({:.0f}), central:{:+.3f}, up:{:+.3f} ({:+.3f}), dn:{:+.3f} ({:+.3f})'.format(i, xc, nc, nu, nu/nc, nd, nd/nc))
                 else:
-                    print('>>> bin:{:d} ({:.0f}), central:{:+.3f}, up:{:+.3f} (  nan ), dn:{:.3f} (  nan )'.format(i, xc, nc, nu, nd))
+                    logging.debug('>>> bin:{:d} ({:.0f}), central:{:+.3f}, up:{:+.3f} (  nan ), dn:{:.3f} (  nan )'.format(i, xc, nc, nu, nd))
     
         hRatioUp.SetTitle(';'+hCentral.GetXaxis().GetTitle())
         hRatioUp.SetMarkerStyle(ROOT.kFullTriangleUp)
@@ -183,14 +184,14 @@ def doSystematics(tf, var, syst, syst_values, **kwargs):  # <TFile>, <str>, <str
     hUp = tf.Get('SYS_{var}_{syst}_Up'  .format(**formatInfo))
     hDn = tf.Get('SYS_{var}_{syst}_Down'.format(**formatInfo))
     if((not hUp) or (not hDn)):
-        print('WARN: var={var}, syst={syst} not found in file={file}'.format(**formatInfo))
+        logging.warning('var={var}, syst={syst} not found in file={file}'.format(**formatInfo))
         return
     
     upVar, dnVar = plotSystematics(hCentral, hUp, hDn, syst_values, var=var, syst=syst, **kwargs)
     # syst_values.setdefault(sample, {}).setdefault(var, {})[syst] = {'up':dnVar, 'dn':dnVar}
 
 
-def doSystOnFile(path, syst_values):  # <str>, <dict> (to be passed to doSystematics(...) in order to be filled
+def doSystOnFile(path, syst_values, **kwargs):  # <str>, <dict> (to be passed to doSystematics(...) in order to be filled
     with TFileContext(path, 'READ') as tf:
         names = set()
         for key in tf.GetListOfKeys():
@@ -201,12 +202,12 @@ def doSystOnFile(path, syst_values):  # <str>, <dict> (to be passed to doSystema
         variables   = set([n.split('_')[1] for n in names])
         systematics = set([n.split('_')[2] for n in names])
     
-        print('variables =', variables)
-        # print('systematics =', systematics)
+        logging.info('variables = '+str(variables))
+        # logging.info('systematics = '+str(systematics))
 
         sample = path.split('/')[-1].split('.')[0]
         region = path.split('/')[-2].split('_')[-1]
-        if(_do_plots):
+        if(kwargs.get('do_plots')):
             makedirs_ok('Plot/SYS/{}'.format(region))
     
         for var in variables:
@@ -222,15 +223,21 @@ def doSystOnFile(path, syst_values):  # <str>, <dict> (to be passed to doSystema
                     plotSystematics(hCentral, hmuR2F1, hmuR0p5F1, syst_values, var=var, syst='QCDscalemuR', sample=sample, region=region)
                     plotSystematics(hCentral, hmuR1F2, hmuR1F0p5, syst_values, var=var, syst='QCDscaleF'  , sample=sample, region=region)
                 else:
-                    doSystematics(tf, var, syst, syst_values, sample=sample, region=region)
+                    doSystematics(tf, var, syst, syst_values, sample=sample, region=region, **kwargs)
 
-if __name__ == '__main__':
+
+def main():
     parser = ArgumentParser(description='Calculate systematic variations from rootfiles produced by VVGammaAnalyzer')
     parser.add_argument('-p', '--plots', dest='do_plots', action='store_true')
     parser.add_argument('-y', '--year', default='2016')
     parser.add_argument('-i', '--inputdir', default='results')
-    parser.add_argument('-o', '--output', help='Manually specify output file')
+    parser.add_argument('-o', '--output', help='Manually specify output file. Defaults to data/systematics_{year}.json')
+    parser.add_argument('--log', dest='loglevel', type=str.upper, metavar='LEVEL', default='WARNING')
     args = parser.parse_args()
+
+    if(not hasattr(logging, args.loglevel)):
+        raise ValueError('Invalid log level: %s' % args.loglevel)
+    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=getattr(logging, args.loglevel))
     
     syst_values = {}
     results_folder = '{inputdir}/{year}/VVGammaAnalyzer_{region}'.format(inputdir=args.inputdir, year=args.year, region='{region}')
@@ -252,36 +259,38 @@ if __name__ == '__main__':
             syst_values = load(f)
     except (IOError, OSError, ValueError):
         syst_values = {}
-
-    _do_plots = args.do_plots
     
-    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'fake_leptons.root'  ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'WZTo3LNu.root'      ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'WZGTo3LNuG.root'    ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'ZZTo4l.root'        ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'ZGToLLG.root'       ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'DYJetsToLL_M50.root'), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'ZZGTo4LG.root'      ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'fake_photons.root'  ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'TTTo2L2Nu.root'     ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'TTWJetsToLNu.root'  ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'TTZJets.root'       ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR3P'), 'tW.root'            ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'fake_leptons.root'            ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'WZTo3LNu.root'                ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'WZGTo3LNuG.root'              ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'ZZTo4l.root'                  ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'ZGToLLG.root'                 ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'DYJetsToLL_M50.root'          ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'ZZGTo4LG.root'                ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'fake_photons.root'            ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'TTTo2L2Nu.root'               ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'TTWJetsToLNu.root'            ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'TTZJets.root'                 ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'tW.root'                      ), syst_values, do_plots=args.do_plots)
     
-    doSystOnFile(path.join(results_folder.format(region='CR3P1F'), 'data.root'  ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='CR2P2F'), 'data.root'  ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'fake_leptons.root'  ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'fake_photons.root'  ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'WZTo3LNu.root'      ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'WZGTo3LNuG.root'    ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ZZTo4l.root'        ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ggTo4e_Contin_MCFM701.root'   ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ggTo2e2mu_Contin_MCFM701.root'), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ggTo4mu_Contin_MCFM701.root'  ), syst_values)
-    doSystOnFile(path.join(results_folder.format(region='SR4P'), 'ZZGTo4LG.root'      ), syst_values)
+    doSystOnFile(path.join(results_folder.format(region='CR3P1F'), 'data.root'                    ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='CR2P2F'), 'data.root'                    ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'fake_leptons.root'            ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'fake_photons.root'            ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'WZTo3LNu.root'                ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'WZGTo3LNuG.root'              ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ZZTo4l.root'                  ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ggTo4e_Contin_MCFM701.root'   ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ggTo2e2mu_Contin_MCFM701.root'), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ggTo4mu_Contin_MCFM701.root'  ), syst_values, do_plots=args.do_plots)
+    doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ZZGTo4LG.root'                ), syst_values, do_plots=args.do_plots)
 
     if args.output is not None:
         sysJSON = args.output
     with open(sysJSON, 'w') as fout:
         dump(syst_values, fout, indent=2)
-    print('INFO: wrote systematics to "{}"'.format(sysJSON))
+    logging.info('wrote systematics to "{}"'.format(sysJSON))
+
+
+if __name__ == '__main__':
+    main()
