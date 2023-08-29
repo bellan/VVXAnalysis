@@ -12,26 +12,8 @@ import ROOT
 from plotUtils import TFileContext, makedirs_ok
 from subprocess import call
 from argparse import ArgumentParser
+import logging
 
-# The configuration
-regions = ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L',    
-           'SR3P', 'CR110'  , 'CR101'  , 'CR011'  , 'CR100'  , 'CR001'  , 'CR010', 'CR000', 'SR3P_1L', 'SR3P_1P', 'CR3P_1F', 'CRLFR', 'CR3L',
-           'SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F'
-           # 'SR_HZZ', 'CR2P2F_HZZ', 'CR3P1F_HZZ', 'CR_HZZ', 'MC_HZZ',     
-           # 'MC'
-]
-
-parser = ArgumentParser()
-parser.add_argument('-y', '--year'     , default='2016')
-parser.add_argument(      '--blind'    , dest='unblind', action='store_false', default=True)
-parser.add_argument('-i', '--inputdir' , default='results')
-parser.add_argument('-o', '--outputdir', default='histogramsForCombine')
-parser.add_argument('-A', '--analyzer' , default='VVGammaAnalyzer')
-parser.add_argument('-r', '--regions'  , default=['SR4P'], nargs='+', choices=regions)
-parser.add_argument(      '--remake-fake-photons', action='store_true', help='Force to recreate the fake_photons.root file from data.root')
-parser.add_argument('-v', '--verbose'  , dest='verbosity', action='count', default=1, help='Increase the verbosity level')
-parser.add_argument('-q', '--quiet'    , dest='verbosity', action='store_const', const=0)
-args = parser.parse_args()
 
 # Utility functions
 def skipsample(filename):
@@ -39,7 +21,7 @@ def skipsample(filename):
     if filename == 'data.root': return True
     if filename in ('ggTo4l', 'ttXY', 'triboson'): return True
     if filename.split('.')[-1] != 'root':
-        print(">>> strange sample:", filename)
+        logging.error("strange sample:", filename)
         return True
     return False
 
@@ -54,7 +36,32 @@ def isVarSystematic(variable):
 # schema: <year>/<region>.root -> <variable>/<sample>_CMS_<syst>(Up|Down)
 # example: 2016/SR4P.root      -> mZZ/ZZTo4l_CMS_QCDScale-muRUp
 
-if __name__ == '__main__':
+def main():
+    # The configuration
+    regions = ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L',
+               'SR3P', 'CR110'  , 'CR101'  , 'CR011'  , 'CR100'  , 'CR001'  , 'CR010', 'CR000', 'SR3P_1L', 'SR3P_1P', 'CR3P_1F', 'CRLFR', 'CR3L',
+               'SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F'
+               # 'SR_HZZ', 'CR2P2F_HZZ', 'CR3P1F_HZZ', 'CR_HZZ', 'MC_HZZ',
+               # 'MC'
+    ]
+
+    parser = ArgumentParser()
+    parser.add_argument('-y', '--year'     , default='2016')
+    parser.add_argument(      '--blind'    , dest='unblind', action='store_false', default=True)
+    parser.add_argument('-i', '--inputdir' , default='results')
+    parser.add_argument('-o', '--outputdir', default='histogramsForCombine')
+    parser.add_argument('-A', '--analyzer' , default='VVGammaAnalyzer')
+    parser.add_argument('-r', '--regions'  , default=['SR4P'], nargs='+', choices=regions)
+    parser.add_argument(      '--remake-fake-photons', action='store_true', help='Force to recreate the fake_photons.root file from data.root')
+    parser.add_argument('-v', '--verbose'  , dest='verbosity', action='count', default=1, help='Increase the verbosity level')
+    parser.add_argument('-q', '--quiet'    , dest='verbosity', action='store_const', const=0)
+    parser.add_argument('--log', dest='loglevel', type=str.upper, metavar='LEVEL', default='WARNING')
+    args = parser.parse_args()
+
+    if(not hasattr(logging, args.loglevel)):
+        raise ValueError('Invalid log level: %s' % args.loglevel)
+    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=getattr(logging, args.loglevel))
+
     # Setup
     ok_retrieved  = []
     not_retrieved = []
@@ -66,11 +73,11 @@ if __name__ == '__main__':
     for region in args.regions:
         path_in  = os.path.join(args.inputdir , args.year, args.analyzer+'_'+region)
         if(not os.path.isdir(path_in)):
-            print("WARN: Skipping non-existent dir:", path_in)
+            logging.warning('Skipping non-existent dir: '+path_in)
             continue
 
         samples_region = set([ d.rstrip('.root') for d in os.listdir(path_in) if not skipsample(d) ])
-        print('INFO: region={} samples:'.format(region), samples_region)
+        logging.info('INFO: region=%s samples: %s', region, samples_region)
 
         files_in = {}  # mapping: sample <str> --> file <ROOT.TFile>
 
@@ -81,19 +88,19 @@ if __name__ == '__main__':
             variables_set.update([ key.GetName() for key in files_in[sample].GetListOfKeys() if key.ReadObj().Class().InheritsFrom("TH1") and isVarSystematic(key.GetName())])
         variables_region = sorted(variables_set)
 
-        # print('DEBUG: in', region, 'the variables are:', variables_region)
+        # logging.debug('in {} 'the variables are: {}'.format(region, variables_region))
         # Add data
         if(args.unblind):
             try:
                 data_obs = ROOT.TFile(os.path.join(path_in, 'data.root'))
             except OSError as e:
-                print('WARN: While opening {}, caught'.format(data_obs.GetName()), e)
+                logging.warning('While opening %s, caught %s', data_obs.GetName(), e)
             else:
                 files_in['data_obs'] = data_obs
 
         # Write fake_photons
         if((not 'fake_photons' in files_in) or args.remake_fake_photons):
-            print('INFO: recreating fake_photons file:', os.path.join(path_in, 'fake_photons.root'))
+            logging.info('recreating fake_photons file: %s', os.path.join(path_in, 'fake_photons.root'))
             with TFileContext(os.path.join(path_in, 'fake_photons.root'), 'RECREATE') as fFakePh:
                 fFakePh.cd()
                 for variable in variables_region:
@@ -110,7 +117,7 @@ if __name__ == '__main__':
         try:
             fFakePh = ROOT.TFile(os.path.join(path_in, 'fake_photons.root'))
         except OSError as e:
-            print('WARN: While opening {}, caught'.format(fFakePh.GetName()), e)
+            logging.warning('While opening %s, caught %s', fFakePh.GetName(), e)
         else:
             files_in['fake_photons'] = fFakePh
 
@@ -155,11 +162,11 @@ if __name__ == '__main__':
     if(args.verbosity >= 1):
         files_prob = { e['file'] for e in not_retrieved }  # set()
         max_len = max([len(f) for f in files_prob])
-        format_str = 'WARN: From file {:%d.%ds} could not retrieve {:d}/{:d} plots' % (max_len, max_len)
+        format_str = 'From file {:%d.%ds} could not retrieve {:d}/{:d} plots' % (max_len, max_len)
         for file_prob in sorted(files_prob):
             problems = [e['variable'] for e in not_retrieved if e['file'] == file_prob]
             good     = [e['variable'] for e in  ok_retrieved if e['file'] == file_prob]
-            print(format_str.format(file_prob, len(problems), len(problems)+len(good)))
+            logging.warning(format_str.format(file_prob, len(problems), len(problems)+len(good)))
 
     if(args.verbosity >= 2):
         hists_prob         = { e['variable'] for e in not_retrieved }
@@ -168,18 +175,20 @@ if __name__ == '__main__':
         for hist_prob in sorted(hists_prob_central):
             problems = [ e['file'] for e in not_retrieved if e['variable'] == hist_prob ]
             good     = [ e['file'] for e in  ok_retrieved if e['variable'] == hist_prob ]
-            print('WARN: Histogram {:40.40s} was missing {:2d}/{:2d} times'.format(hist_prob            , len(problems), len(good)+len(problems)), end='')
+            msg = 'Histogram {:40.40s} was missing {:2d}/{:2d} times'.format(hist_prob            , len(problems), len(good)+len(problems))
             if(len(problems) < 10):
-                print(':', *[f.split('/')[-1] for f in problems])
-            else:
-                print()
+                msg += ': '+' '.join([f.split('/')[-1] for f in problems])
+            logging.warning(msg)
+
         for hist_prob in sorted(hists_prob_updn):
             problems = [ e['file'] for e in not_retrieved if e['variable'].startswith(hist_prob) ]
             good     = [ e['file'] for e in  ok_retrieved if e['variable'].startswith(hist_prob) ]
-            print('WARN: Histogram {:40.40s} was missing {:2d}/{:2d} times'.format(hist_prob+'(Up/Down)', len(problems), len(good)+len(problems)), end='')
+            msg = 'Histogram {:40.40s} was missing {:2d}/{:2d} times'.format(hist_prob+'(Up/Down)', len(problems), len(good)+len(problems))
             if(len(problems) < 10):
-                print(':', *[f.split('/')[-1] for f in problems])
-            else:
-                print()
+                msg += ': '+' '.join([f.split('/')[-1] for f in problems])
+            logging.warning(msg)
 
-    print('INFO: Retrieved and wrote {:d} histograms. {:d} were missing. Total: {:d}'.format(len(ok_retrieved), len(not_retrieved), len(ok_retrieved)+len(not_retrieved)))
+    logging.info('Retrieved and wrote {:d} histograms. {:d} were missing. Total: {:d}'.format(len(ok_retrieved), len(not_retrieved), len(ok_retrieved)+len(not_retrieved)))
+
+if __name__ == '__main__':
+    main()
