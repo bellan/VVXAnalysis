@@ -11,6 +11,7 @@
 
 #include <set>
 #include <map>
+#include <unordered_map>
 #include <fstream>
 
 #include "EventAnalyzer.h"
@@ -102,9 +103,10 @@ private:
   std::vector<phys::Lepton>* leptons_;
 	
   // Systematics: photons {EScale, ESigma} x {Up, Down} + {central}
-  std::map<const char*, std::unique_ptr<std::vector<phys::Photon>>> kinPhotons_;    // Only kinematic selection
-  std::map<const char*, std::unique_ptr<std::vector<phys::Photon>>> loosePhotons_;  // Loose ID: currently 3/5 cuts of ID
-  std::map<const char*, std::unique_ptr<std::vector<phys::Photon>>> goodPhotons_;   // Tight ID: currently Loose WP of POG cut-based ID
+  const std::vector<const char*> photonSystKeys_ = {"central", "EScale_Up", "EScale_Down", "ESigma_Up", "ESigma_Down"};
+  std::unordered_map<std::string, std::unique_ptr<std::vector<phys::Photon>>> kinPhotons_;    // Only kinematic selection
+  std::unordered_map<std::string, std::unique_ptr<std::vector<phys::Photon>>> loosePhotons_;  // Loose ID: currently 3/5 cuts of ID
+  std::unordered_map<std::string, std::unique_ptr<std::vector<phys::Photon>>> goodPhotons_;   // Tight ID: currently Loose WP of POG cut-based ID
   std::unique_ptr<std::vector<phys::Particle>> fsrPhotons_;
  	
   // Vectors of gen particles

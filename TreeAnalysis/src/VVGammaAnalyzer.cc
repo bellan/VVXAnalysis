@@ -67,19 +67,19 @@ void VVGammaAnalyzer::begin(){
     mapPhotonMVASF_maxPt_[it.first] = it.second->GetYaxis()->GetBinUpEdge(it.second->GetNbinsY());
 
   // initCherryPick();
-  for(const char* sys : {"central", "EScale_Up", "EScale_Down", "ESigma_Up", "ESigma_Down"}){
+  for(const char* sys : photonSystKeys_){
     kinPhotons_ [sys]  = std::make_unique<vector<Photon>>();
     loosePhotons_[sys] = std::make_unique<vector<Photon>>();
     goodPhotons_[sys]  = std::make_unique<vector<Photon>>();
   }
-  
-  #ifndef DEBUG
+
+#ifndef DEBUG
   size_t digits = std::to_string(tree()->GetEntries()).length();
   std::string spaces( digits, ' ' );
   cout<<"Analyzed:\t"<<spaces<<'/'<<tree()->GetEntries()<<std::flush;
-  #else
+#else
   cout<<"\tSizes: Particle="<<sizeof(Particle)<<" , Lepton="<<sizeof(Lepton)<<" , Photon="<<sizeof(Photon)<<" , Jet="<<sizeof(Jet)<<" , Boson<Particle>="<<sizeof(Boson<Particle>)<<" , DiBoson<Particle,Particle>="<<sizeof(DiBoson<Particle,Particle>)<<'\n';
-  #endif
+#endif
 
   return;
 }
@@ -1499,21 +1499,21 @@ void VVGammaAnalyzer::photonHistos(){
   for(auto & [syst, phVect] : kinPhotons_)
     if(phVect->size() > 0)
       // Creating void histograms, then filling alphanumeric labels --> new ones are created as they are encountered
-      theHistograms->book<TH1F>("kinPh_eScale_N", "Number of #gamma passing selection", 1,0,0)->Fill(Form("kin_%s" , syst), theWeight);
+      theHistograms->book<TH1F>("kinPh_eScale_N", "Number of #gamma passing selection", 1,0,0)->Fill(Form("kin_%s" , syst.c_str()), theWeight);
   
   for(auto & [syst, phVect] : goodPhotons_)
     if(phVect->size() > 0)
-      theHistograms->book<TH1F>("kinPh_eScale_N", "Number of #gamma passing selection", 1,0,0)->Fill(Form("good_%s", syst), theWeight);
+      theHistograms->book<TH1F>("kinPh_eScale_N", "Number of #gamma passing selection", 1,0,0)->Fill(Form("good_%s", syst.c_str()), theWeight);
   
   // How many photons are there in each event?
   for(const auto& [syst, phVect] : goodPhotons_)
-    theHistograms->fill(Form("loosePh_%s_N", syst), Form("Number of Loose photons (%s)", syst), 5,-0.5,4.5, phVect->size(), theWeight);
+    theHistograms->fill(Form("loosePh_%s_N", syst.c_str()), Form("Number of Loose photons (%s)", syst.c_str()), 5,-0.5,4.5, phVect->size(), theWeight);
   
   for(const auto& [syst, phVect] : loosePhotons_)
-    theHistograms->fill(Form("veryLoosePh_%s_N", syst), Form("Number of VeryLoose photons (%s)", syst), 5,-0.5,4.5, phVect->size(), theWeight);
+    theHistograms->fill(Form("veryLoosePh_%s_N", syst.c_str()), Form("Number of VeryLoose photons (%s)", syst.c_str()), 5,-0.5,4.5, phVect->size(), theWeight);
 
   for(const auto& [syst, phVect] : kinPhotons_)
-    theHistograms->fill(Form(  "kinPh_%s_N", syst), Form("Number of Kinematic photons (%s)"  , syst), 5,-0.5,4.5, phVect->size(), theWeight);
+    theHistograms->fill(Form(  "kinPh_%s_N", syst.c_str()), Form("Number of Kinematic photons (%s)"  , syst.c_str()), 5,-0.5,4.5, phVect->size(), theWeight);
   
   // Test data/MC for each cut separately
   if(kinPhotons_["central"]->size() == 0){
@@ -2471,7 +2471,7 @@ void VVGammaAnalyzer::SYSplots(const char* syst, double weight, const Photon* ph
 
 void VVGammaAnalyzer::systematicsStudy(){
   double base_w = theWeight;
-  
+
   const Photon* ph = nullptr;
   if(goodPhotons_["central"]->size() >= 1)
     ph = & (goodPhotons_["central"]->front());
@@ -2479,26 +2479,32 @@ void VVGammaAnalyzer::systematicsStudy(){
     ph = & (loosePhotons_["central"]->front());
   else if(kinPhotons_["central"]->size() >= 1)
     ph = & (kinPhotons_["central"]->front());
-  
+
   // central
   SYSplots("central", base_w, ph, bestMVAPh_);
-  
+
   // Photons energy scale and resolution
-  for(const auto& [syst, goodPhotons_syst] : goodPhotons_){
+  for(const char* syst : photonSystKeys_){
     if(strcmp(syst, "central") == 0) continue;
 
     std::string syst_name = Form("ph%s", syst);
-    SYSplots_inclusive(syst_name.c_str(), base_w);
 
-    if(goodPhotons_syst->size() > 0){
-      SYSplots_photon(syst_name.c_str(), base_w, goodPhotons_syst->front(), "loose");
-    }
-    else{  // If no good photons found, try with veryLoose photons
-      if(loosePhotons_[syst]->size() > 0)
-	SYSplots_photon(syst_name.c_str(), base_w, loosePhotons_[syst]->front(), "veryLoose");
-      else{// If no veryLoose photons found, try with kin
-	if(kinPhotons_[syst]->size() > 0)
-	  SYSplots_photon(syst_name.c_str(), base_w, kinPhotons_[syst]->front(), "kin");
+    SYSplots_inclusive( syst_name.c_str(), base_w);
+
+    if(kinPhotons_[syst]->size() > 0)
+      SYSplots_photon(  syst_name.c_str(), base_w, kinPhotons_[syst]->front()  , "kin");
+
+    if(loosePhotons_[syst]->size() > 0){
+      SYSplots_photon(  syst_name.c_str(), base_w, loosePhotons_[syst]->front(), "veryLoose");
+
+      if(goodPhotons_[syst]->size() > 0)
+	SYSplots_photon(syst_name.c_str(), base_w, goodPhotons_[syst]->front() , "loose");
+      else{
+	const Photon& failPh = loosePhotons_[syst]->front();
+	SYSplots_photon(syst_name.c_str(), base_w          , failPh, "fail"        );
+	double f_VLtoL = getPhotonFR_VLtoL(failPh);
+	double w_VLtoL = f_VLtoL / (1 - f_VLtoL);
+	SYSplots_photon(syst_name.c_str(), base_w * w_VLtoL, failPh, "failReweight");
       }
     }
 
@@ -2508,7 +2514,7 @@ void VVGammaAnalyzer::systematicsStudy(){
     if(bestMVA_syst != kinPhotons_[syst]->end())
       SYSplots_phMVA(syst_name.c_str(), base_w, *bestMVA_syst);
   }
-  
+
   bool isMC = theSampleInfo.isMC();
   // puWeightUnc
   SYSplots("puWeight_Up"  , base_w * ( isMC ? theSampleInfo.puWeightUncUp() / theSampleInfo.puWeight() : 1.), ph, bestMVAPh_);
