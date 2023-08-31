@@ -36,6 +36,26 @@ def isVarSystematic(variable):
 # schema: <year>/<region>.root -> <variable>/<sample>_CMS_<syst>(Up|Down)
 # example: 2016/SR4P.root      -> mZZ/ZZTo4l_CMS_QCDScale-muRUp
 
+def write_fake_photons(fFakePh, data_obs, variables): # <TFile>, <TFile>, <iterable> of <str>
+    logging.info('recreating fake_photons file: %s', fFakePh.GetName())
+    fFakePh.cd()
+    for variable in variables:
+        split = variable.split('_')
+        var_name = split[1]
+
+        if('loose' in var_name):
+            reweight_var_name = var_name.replace('loose', 'failReweight')
+            reweight_split = [split[0]] + [reweight_var_name] + split[2:]
+            reweight = '_'.join(reweight_split)
+            logging.debug('variable=%40s  reweight=%40s', variable, reweight)
+            h = data_obs.Get(reweight)
+            if(h):
+                h.SetName(variable)
+                h.Write()
+            else:
+                logging.warning('No failReweight histogram in data for variable %s --> could not retrieve %s', var_name, reweight)
+    logging.info('Wrote fake photons file to %s', fFakePh.GetName())
+
 def main():
     # The configuration
     regions = ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L',
@@ -100,25 +120,14 @@ def main():
 
         # Write fake_photons
         if((not 'fake_photons' in files_in) or args.remake_fake_photons):
-            logging.info('recreating fake_photons file: %s', os.path.join(path_in, 'fake_photons.root'))
             with TFileContext(os.path.join(path_in, 'fake_photons.root'), 'RECREATE') as fFakePh:
-                fFakePh.cd()
-                for variable in variables_region:
-                    split = variable.split('_')
-                    var_name = split[1]
+                write_fake_photons(fFakePh, data_obs=files_in['data_obs'], variables=variables_region)
 
-                    if('loose' in var_name):
-                        reweight_var_name = var_name.replace('loose', 'failReweight')
-                        reweight_split = [split[0]] + [reweight_var_name] + split[2:]
-                        reweight = '_'.join(reweight_split)
-                        logging.debug('variable=%40s  reweight=%40s', variable, reweight)
-                        h = files_in['data_obs'].Get(reweight)
-                        if(h):
-                            h.SetName(variable)
-                            h.Write()
-                        else:
-                            logging.warning('No failReweight histogram in data for variable %s --> could not retrieve %s', var_name, reweight)
-            logging.info('Wrote fake photons file to %s', fFakePh.GetName())
+        # If the program was run just to remake fake_photons, exit now
+        if(args.remake_fake_photons):
+            logging.info('Remade fake_photons, now exiting')
+            for _, handle in files_in.items(): handle.Close()
+            return 0
 
         # Open fake_photons
         try:
@@ -127,10 +136,6 @@ def main():
             logging.warning('While opening %s, caught %s', fFakePh.GetName(), e)
         else:
             files_in['fake_photons'] = fFakePh
-
-        if(args.remake_fake_photons):
-            logging.info('Remade fake_photons, now exiting')
-            return 0
 
         # Write to output
         with TFileContext(os.path.join(path_out, region+'.root'), "RECREATE") as fout:
