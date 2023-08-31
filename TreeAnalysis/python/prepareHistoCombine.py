@@ -11,7 +11,7 @@ import os, sys
 import ROOT
 from plotUtils import TFileContext, makedirs_ok
 from subprocess import call
-from argparse import ArgumentParser
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
 
 
@@ -45,22 +45,22 @@ def main():
                # 'MC'
     ]
 
-    parser = ArgumentParser()
+    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('-y', '--year'     , default='2016')
-    parser.add_argument(      '--blind'    , dest='unblind', action='store_false', default=True)
-    parser.add_argument('-i', '--inputdir' , default='results')
-    parser.add_argument('-o', '--outputdir', default='histogramsForCombine')
-    parser.add_argument('-A', '--analyzer' , default='VVGammaAnalyzer')
-    parser.add_argument('-r', '--regions'  , default=['SR4P'], nargs='+', choices=regions)
+    parser.add_argument(      '--blind'    , action='store_true', help='Do not write data_obs in output files')
+    parser.add_argument('-i', '--inputdir' , default='results', help='Top level directory where the results of analyzers are stored')
+    parser.add_argument('-o', '--outputdir', default='histogramsForCombine', help='Output location')
+    parser.add_argument('-A', '--analyzer' , default='VVGammaAnalyzer', help='Name of the analyzer, used to compose the path of the input files')
+    parser.add_argument('-r', '--regions'  , default=['SR4P'], nargs='+', choices=regions, metavar='REGION', help=' ')
     parser.add_argument(      '--remake-fake-photons', action='store_true', help='Force to recreate the fake_photons.root file from data.root')
     parser.add_argument('-v', '--verbose'  , dest='verbosity', action='count', default=1, help='Increase the verbosity level')
     parser.add_argument('-q', '--quiet'    , dest='verbosity', action='store_const', const=0)
-    parser.add_argument('--log', dest='loglevel', type=str.upper, metavar='LEVEL', default='WARNING')
+    parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
     args = parser.parse_args()
+    args.unblind = not args.blind
 
-    if(not hasattr(logging, args.loglevel)):
-        raise ValueError('Invalid log level: %s' % args.loglevel)
-    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=getattr(logging, args.loglevel))
+    loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
+    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
 
     # Setup
     ok_retrieved  = []
@@ -88,13 +88,13 @@ def main():
             variables_set.update([ key.GetName() for key in files_in[sample].GetListOfKeys() if key.ReadObj().Class().InheritsFrom("TH1") and isVarSystematic(key.GetName())])
         variables_region = sorted(variables_set)
 
-        # logging.debug('in {} 'the variables are: {}'.format(region, variables_region))
+        logging.debug('in {} the variables are: {}'.format(region, variables_region))
         # Add data
         if(args.unblind):
             try:
                 data_obs = ROOT.TFile(os.path.join(path_in, 'data.root'))
             except OSError as e:
-                logging.warning('While opening %s, caught %s', data_obs.GetName(), e)
+                logging.error('While opening %s, caught %s\nIt will be skipped and data_obs will NOT appear in the output', data_obs.GetName(), e)
             else:
                 files_in['data_obs'] = data_obs
 
@@ -108,18 +108,29 @@ def main():
                     var_name = split[1]
 
                     if('loose' in var_name):
-                        reweight_name = var_name.replace('loose', 'failReweight')
-                        full_name = variable.replace(var_name, reweight_name)
-                        h = files_in['data_obs'].Get(full_name)
+                        reweight_var_name = var_name.replace('loose', 'failReweight')
+                        reweight_split = [split[0]] + [reweight_var_name] + split[2:]
+                        reweight = '_'.join(reweight_split)
+                        logging.debug('variable=%40s  reweight=%40s', variable, reweight)
+                        h = files_in['data_obs'].Get(reweight)
                         if(h):
-                            h.SetName( h.GetName().replace(reweight_name, var_name) )
+                            h.SetName(variable)
                             h.Write()
+                        else:
+                            logging.warning('No failReweight histogram in data for variable %s --> could not retrieve %s', var_name, reweight)
+            logging.info('Wrote fake photons file to %s', fFakePh.GetName())
+
+        # Open fake_photons
         try:
             fFakePh = ROOT.TFile(os.path.join(path_in, 'fake_photons.root'))
         except OSError as e:
             logging.warning('While opening %s, caught %s', fFakePh.GetName(), e)
         else:
             files_in['fake_photons'] = fFakePh
+
+        if(args.remake_fake_photons):
+            logging.info('Remade fake_photons, now exiting')
+            return 0
 
         # Write to output
         with TFileContext(os.path.join(path_out, region+'.root'), "RECREATE") as fout:
@@ -189,6 +200,7 @@ def main():
             logging.warning(msg)
 
     logging.info('Retrieved and wrote {:d} histograms. {:d} were missing. Total: {:d}'.format(len(ok_retrieved), len(not_retrieved), len(ok_retrieved)+len(not_retrieved)))
+    return 0
 
 if __name__ == '__main__':
-    main()
+    exit(main())
