@@ -34,13 +34,9 @@ def tableRegion(systematics, region, variables, **kwargs):
     print('#'*nPadding_reg, region, '#'*nPadding_reg)
 
     available_variables = systematics[region].keys()
-    selected_variables = {var for var in available_variables if any(re.search(pat, var) for pat in variables)} # Note: "normal" strings match themselves
+    selected_variables = [var for var in available_variables if any(re.search(pat, var) for pat in variables)] # Note: "normal" strings match themselves
 
     for variable in selected_variables:
-        if(not variable in systematics[region].keys()):
-            # print('WARN: variable "{}" not found in region "{}"'.format(variable, region))
-            continue
-        
         nPadding = int((_padding_length - len(variable))/2) - 1
         print('-'*nPadding, variable, '-'*nPadding)
 
@@ -71,7 +67,10 @@ def tableRegion(systematics, region, variables, **kwargs):
 
             df = df.reindex(sorted(df.columns), axis=1)
 
-        df = df.reindex(sorted(df.index  ), axis=0)
+        if(kwargs.get('sysdisplay') is not None):
+            df = df.loc[kwargs['sysdisplay'],:]  # Reindex fills missing keys, loc raises a KeyError
+        else:
+            df = df.reindex(sorted(df.index  ), axis=0)
 
         if(kwargs.get('transpose')):
             df = df.transpose()
@@ -89,6 +88,7 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--inputfile', help='JSON file with systematics. Overrides year')
     parser.add_argument('-p', '--variables', dest='variables', nargs='+', default=['mZZ','mZZG','mWZ','mWZG'])
     parser.add_argument('-s', '--samples'  , nargs='+', help='Manually specify which samples to list')
+    parser.add_argument('-S', '--systematics', nargs='+', help='Manually specify which systematics to display')
     parser.add_argument(      '--transpose', action='store_true', help='Transpose the table')
     parser.add_argument(      '--skip-phstatus', dest='phstatus', action='store_const', const='skip', help='Skip samples prompt/nonpro')
     parser.add_argument(      '--only-phstatus', dest='phstatus', action='store_const', const='only', help='Use only prompt-nonpro samples when available')
@@ -103,4 +103,4 @@ if __name__ == '__main__':
     with open(sysFileName) as fin:
         systematics = json.load(fin)
 
-    tableRegion(systematics, args.region, args.variables, transpose=args.transpose, phstatus=args.phstatus, samples=args.samples)
+    tableRegion(systematics, args.region, args.variables, transpose=args.transpose, phstatus=args.phstatus, samples=args.samples, sysdisplay=args.systematics)
