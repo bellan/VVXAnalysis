@@ -12,22 +12,7 @@ import pandas as pd
 from argparse import ArgumentParser
 from samplesByRegion import getSamplesByRegion
 from tableSystematics import fillDataFrame
-
-parser = ArgumentParser()
-parser.add_argument('config_file', help='Configuration file. Defaults to the one hardcoded in this script', default=None)
-parser.add_argument('-t', '--template', help='Template for the datacard')
-parser.add_argument('-v', '--verbose'  , dest='verbosity', action='count', default=1, help='Increase verbosity')
-parser.add_argument(      '--verbosity', type=int, help='Set verbosity')
-parser.add_argument('-q', '--quiet'    , dest='verbosity', action='store_const', const=0, help='Set verbose to minimum')
-parser.add_argument('-r', '--region', default='SR4P')
-parser.add_argument('-y', '--year', type=int, default=2016)
-parser.add_argument('-c', '--config', type=json.loads, help='String convertible to dictionary used to override the config', default={})
-parser.add_argument(      '--unblind', action='store_true')
-parser.add_argument(      '--path', default='/afs/cern.ch/user/a/amecca/public/histogramsForCombine')
-
-args = parser.parse_args()
-if(args.verbosity >= 1):
-    print('INFO: writing card for {args.year}, {args.region}'.format(**globals()))
+import logging
 
 ### Hardcoded configuration ###
 __builtin_config__ = {
@@ -60,7 +45,6 @@ __builtin_config__ = {
         'has_shape': ['QCDscaleF', 'QCD-F']
     }
 }
-config = copy.deepcopy(__builtin_config__)
 
 __builtin_template__ = '''\
 imax {imax} number of channels
@@ -80,27 +64,9 @@ shapes * * {path} $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
 {systematics}
 '''
 
-# Update from config file
-if(args.config_file is not None):
-    try:
-        with open(args.config_file) as f:
-            fconfig = json.load(f)
-    except json.decoder.JSONDecodeError as e:
-        print('ERROR: Caught', type(e), 'while reading', args.config_file)
-        print(e)
-        exit(1)
-    config.update(fconfig)
-
-# Update from command line
-config.update(args.config)
-
-if(args.verbosity >= 3):
-    print('### Configuration ###')
-    print(json.dumps(config, indent=2))
-    print()
 
 # Utility functions
-def getSystType(syst):
+def getSystType(syst, config):
     if(any(re.search(expr, syst) for expr in config['systematics']['has_shape'])):
         return 'shape'
     else:
@@ -140,98 +106,144 @@ class PartialFormatter(string.Formatter):
         return val
 
 
-### Bin section ###
-region_config = config['regions'][args.region]
+def main():
+    parser = ArgumentParser()
+    parser.add_argument('config_file', help='Configuration file. Defaults to the one hardcoded in this script', default=None)
+    parser.add_argument('-t', '--template', help='Template for the datacard')
+    parser.add_argument('-v', '--verbose'  , dest='verbosity', action='count', default=1, help='Increase verbosity')
+    parser.add_argument(      '--verbosity', type=int, help='Set verbosity')
+    parser.add_argument('-q', '--quiet'    , dest='verbosity', action='store_const', const=0, help='Set verbose to minimum')
+    parser.add_argument('-r', '--region', default='SR4P')
+    parser.add_argument('-y', '--year', type=int, default=2016)
+    parser.add_argument('-c', '--config', type=json.loads, help='String convertible to dictionary used to override the config', default={})
+    parser.add_argument(      '--unblind', action='store_true')
+    parser.add_argument(      '--path', default='/afs/cern.ch/user/a/amecca/public/histogramsForCombine', help='Path to the histograms')
+    parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
 
-observables=[[
-    getBinName(args.region, region_config['observable']['name']),
-    region_config['observable']['observation']
-]]
-df_bin = pd.DataFrame(observables, columns=['bin', 'observation']).transpose()
+    args = parser.parse_args()
+    loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
+    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
 
-if(args.verbosity >= 3):
-    print(df_bin.to_string(header=False))
-    print()
-
-### Observable section ###
-signals     = [proc for proc in region_config['processes'] if proc in config['signals']    ]
-backgrounds = [proc for proc in region_config['processes'] if proc not in config['signals']]
-
-if(args.verbosity >= 1):
-    print('>>> signals:     {signals}'    .format(**globals()))
-    print('>>> backgrounds: {backgrounds}'.format(**globals()))
-    print('>>> observables: {observables}'.format(**globals()))
-
-minProc = 1 - len(signals)
-samples_to_idx      = {s:minProc+i for i,s in enumerate(signals)    }
-samples_to_idx.update({b:i+1       for i,b in enumerate(backgrounds)})
-if(args.verbosity >= 1):
-    print('>>> samples_to_idx: {samples_to_idx}'.format(**globals()))
-
-df_rate = pd.DataFrame(
-    [[getBinName(args.region, region_config['observable']['name']), k, samples_to_idx[k], v] for k,v in region_config['processes'].items()],
-    columns=['bin', 'process', 'process_number', 'rate']
-).transpose()
-df_rate.sort_values('process_number', axis=1, inplace=True)
-df_rate.rename(index={'process_number':'process'}, inplace=True)
-
-if(args.verbosity >= 3):
-    print(df_rate.to_string(header=False))
-    print()
+    logging.info('writing card for %(year)s, %(region)s', vars(args))
 
 
-##### SYSTEMATICS #####
-### Read systematics ###
-sysFile = 'data/systematics_{year}.json'.format(year=args.year)
-systematics = {}
-if(os.path.exists(sysFile)):
-    with open(sysFile) as f:
-        systematics = json.load(f)
-else:
-    print('ERROR: "{}" does not exist. Try (re-)running systematics.py to generate it'.format(sysFile))
-    exit(2)
+    config = copy.deepcopy(__builtin_config__)
+
+    # Update from config file
+    if(args.config_file is not None):
+        try:
+            with open(args.config_file) as f:
+                fconfig = json.load(f)
+        except json.decoder.JSONDecodeError as e:
+            print('ERROR: Caught', type(e), 'while reading', args.config_file)
+            print(e)
+            exit(1)
+        config.update(fconfig)
+
+    # Update from command line
+    config.update(args.config)
+
+    if(args.verbosity >= 3):
+        print('### Configuration ###')
+        print(json.dumps(config, indent=2))
+        print()
 
 
-### Process systematics ###
-# MEMO: setdefault(region, {}).setdefault(var, {}).setdefault(sample, {})[syst] = {'up':upVar, 'dn':dnVar}
+    ### Bin section ###
+    region_config = config['regions'][args.region]
 
-# Order the systematics so that the samples have the same order of the observable section
-data_syst = { sample:systematics[args.region][region_config['observable']['name']][sample] for sample in samples_to_idx }
-df_syst = fillDataFrame(data_syst, formatter=formatForCombine)
+    observables=[[
+        getBinName(args.region, region_config['observable']['name']),
+        region_config['observable']['observation']
+    ]]
+    df_bin = pd.DataFrame(observables, columns=['bin', 'observation']).transpose()
 
-df_syst = df_syst.rename(lambda x: 'CMS_'+x)
+    if(args.verbosity >= 3):
+        print(df_bin.to_string(header=False))
+        print()
 
-lumi = config['systematics']['lumi'][args.year]
-df_syst.loc['CMS_lumi_13TeV'] = pd.Series({ sample: lumi for sample in df_syst.columns })
-df_syst.insert(0, 'type', [ getSystType(syst) for syst in df_syst.index ], True)
+    ### Observable section ###
+    signals     = [proc for proc in region_config['processes'] if proc in config['signals']    ]
+    backgrounds = [proc for proc in region_config['processes'] if proc not in config['signals']]
 
-if(args.verbosity >= 4):
-    print(df_syst)
-    print()
+    logging.info('signals:     %s', signals    )
+    logging.info('backgrounds: %s', backgrounds)
+    logging.info('observables: %s', observables)
+
+    minProc = 1 - len(signals)
+    samples_to_idx      = {s:minProc+i for i,s in enumerate(signals)    }
+    samples_to_idx.update({b:i+1       for i,b in enumerate(backgrounds)})
+
+    logging.info('samples_to_idx: %s', samples_to_idx)
+
+    df_rate = pd.DataFrame(
+        [[getBinName(args.region, region_config['observable']['name']), k, samples_to_idx[k], v] for k,v in region_config['processes'].items()],
+        columns=['bin', 'process', 'process_number', 'rate']
+    ).transpose()
+    df_rate.sort_values('process_number', axis=1, inplace=True)
+    df_rate.rename(index={'process_number':'process'}, inplace=True)
+
+    if(args.verbosity >= 3):
+        print(df_rate.to_string(header=False))
+        print()
 
 
-### Open template ###
-if(args.template is not None):
-    with open(args.template) as ftemplate:
-        template = ftemplate.read()
-else:
-    template = __builtin_template__
-    
-# template = template.format(
-template = PartialFormatter().format(template,
-    imax=1,
-    jmax=len(signals)+len(backgrounds)-1,
-    kmax=len(df_syst),
-    path=os.path.join(args.path, str(args.year), args.region+'.root'),
-    bins=df_bin.to_string(header=False),
-    processes=df_rate.to_string(header=False),
-    systematics='#'+df_syst.to_string()
-)
+    ##### SYSTEMATICS #####
+    ### Read systematics ###
+    sysFile = 'data/systematics_{year}.json'.format(year=args.year)
+    logging.debug('sysFile = %s', sysFile)
+    systematics = {}
+    if(os.path.exists(sysFile)):
+        with open(sysFile) as f:
+            systematics = json.load(f)
+    else:
+        logging.critical('"%s" does not exist. Try (re-)running systematics.py to generate it', sysFile)
+        exit(2)
 
-### Write card ###
-cardname = os.path.join('combine', '{}_{}.txt'.format(args.year,# args.region,
-                                                         args.config_file.split('/')[-1].split('.')[0] if args.config_file is not None else 'default'
-                                                         ))
-with open(cardname, 'w') as fout:
-    fout.write(template)
-    print('INFO: config written to "{}"'.format(fout.name))
+
+    ### Process systematics ###
+    # MEMO: setdefault(region, {}).setdefault(var, {}).setdefault(sample, {})[syst] = {'up':upVar, 'dn':dnVar}
+
+    # Order the systematics so that the samples have the same order of the observable section
+    data_syst = { sample:systematics[args.region][region_config['observable']['name']][sample] for sample in samples_to_idx }
+    df_syst = fillDataFrame(data_syst, formatter=formatForCombine)
+
+    df_syst = df_syst.rename(lambda x: 'CMS_'+x)
+
+    lumi = config['systematics']['lumi'][args.year]
+    df_syst.loc['CMS_lumi_13TeV'] = pd.Series({ sample: lumi for sample in df_syst.columns })
+    df_syst.insert(0, 'type', [ getSystType(syst, config) for syst in df_syst.index ], True)
+
+    if(args.verbosity >= 4):
+        print(df_syst)
+        print()
+
+
+    ### Open template ###
+    if(args.template is not None):
+        with open(args.template) as ftemplate:
+            template = ftemplate.read()
+    else:
+        template = __builtin_template__
+
+    # template = template.format(
+    template = PartialFormatter().format(template,
+        imax=1,
+        jmax=len(signals)+len(backgrounds)-1,
+        kmax=len(df_syst),
+        path=os.path.join(args.path, str(args.year), args.region+'.root'),
+        bins=df_bin.to_string(header=False),
+        processes=df_rate.to_string(header=False),
+        systematics='#'+df_syst.to_string()
+    )
+
+    ### Write card ###
+    cardname = os.path.join('combine', '{}_{}.txt'.format(args.year,# args.region,
+                                                             args.config_file.split('/')[-1].split('.')[0] if args.config_file is not None else 'default'
+                                                             ))
+    with open(cardname, 'w') as fout:
+        fout.write(template)
+        logging.info('config written to "%s"', fout.name)
+
+if __name__ == '__main__':
+    main()
