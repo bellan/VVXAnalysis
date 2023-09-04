@@ -128,7 +128,7 @@ def getPlotFromSample(inputdir, sample, plot, verbosity, forcePositive, **kwargs
 
         if(not h_current):
             if(verbosity >= 2):
-                print _nameFormat.format(fname), "No histo in file" + ("" if(verbosity < 3) else " (%s)"%(plot))
+                print _nameFormat.format(fname), "No histo" + ("" if(verbosity < 3) else " (%s)"%(plot)) + " in file" + ("" if(verbosity < 4) else " (%s)"%(rootfilename))
             continue
 
         if forcePositive and any(cr in inputdir for cr in ['CR2P2F','CR100','CR010','CR001']):
