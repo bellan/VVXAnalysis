@@ -214,14 +214,6 @@ def doSystOnFile(path, syst_values, **kwargs):  # <str>, <dict> (to be passed to
             for syst in systematics:
                 if('central' in syst):
                     continue
-                elif('QCD' in syst):
-                    hCentral  = tf.Get('SYS_{}_central'.format(var))
-                    hmuR0p5F1 = tf.Get('SYS_{}_QCDscalemuR_Down'.format(var))
-                    hmuR2F1   = tf.Get('SYS_{}_QCDscalemuR_Up'  .format(var))
-                    hmuR1F0p5 = tf.Get('SYS_{}_QCDscaleF_Down'  .format(var))
-                    hmuR1F2   = tf.Get('SYS_{}_QCDscaleF_Up'    .format(var))
-                    plotSystematics(hCentral, hmuR2F1, hmuR0p5F1, syst_values, var=var, syst='QCDscalemuR', sample=sample, region=region)
-                    plotSystematics(hCentral, hmuR1F2, hmuR1F0p5, syst_values, var=var, syst='QCDscaleF'  , sample=sample, region=region)
                 else:
                     doSystematics(tf, var, syst, syst_values, sample=sample, region=region, **kwargs)
 

@@ -2525,10 +2525,22 @@ void VVGammaAnalyzer::systematicsStudy(){
   SYSplots("L1Prefiring_Down", base_w * ( isMC ? theSampleInfo.L1PrefiringWeightDn() / theSampleInfo.L1PrefiringWeight() : 1.), ph, bestMVAPh_);
   
   // QCD scale
-  SYSplots("QCDscaleF_Up"    , base_w * ( isMC ? theSampleInfo.QCDscale_muR1F2()   : 1.), ph, bestMVAPh_);  // "QCDscale_muR1F2"
-  SYSplots("QCDscaleF_Down"  , base_w * ( isMC ? theSampleInfo.QCDscale_muR1F0p5() : 1.), ph, bestMVAPh_);  // "QCDscale_muR1F0p5"
-  SYSplots("QCDscalemuR_Up"  , base_w * ( isMC ? theSampleInfo.QCDscale_muR2F1()   : 1.), ph, bestMVAPh_);  // "QCDscale_muR2F1"
-  SYSplots("QCDscalemuR_Down", base_w * ( isMC ? theSampleInfo.QCDscale_muR0p5F1() : 1.), ph, bestMVAPh_);  // "QCDscale_muR0p5F1"
+  // envelope: consider the six variations: {Do, Central, Up} x {Dn, Central, Up} - (central, central) - (Dn, Dn) - (Up, Up) and use the max and min
+  float QCDscale_Up(1.), QCDscale_Dn(1.);
+  if(isMC){
+    std::vector<float> envelope {
+      theSampleInfo.QCDscale_muR0p5F1(),
+      theSampleInfo.QCDscale_muR0p5F2(),
+      theSampleInfo.QCDscale_muR1F0p5(),
+      theSampleInfo.QCDscale_muR1F2(),
+      theSampleInfo.QCDscale_muR2F0p5(),
+      theSampleInfo.QCDscale_muR2F1()
+    };
+    QCDscale_Up = *max_element(envelope.begin(), envelope.end());
+    QCDscale_Dn = *min_element(envelope.begin(), envelope.end());
+  }
+  SYSplots("QCDscale_Up"  , base_w * QCDscale_Up, ph, bestMVAPh_);
+  SYSplots("QCDscale_Down", base_w * QCDscale_Dn, ph, bestMVAPh_);
   
   // PDF var
   SYSplots("PDFVar_Up"  , base_w * ( isMC ? theSampleInfo.PDFVar_Up()   : 1.), ph, bestMVAPh_);
