@@ -28,13 +28,13 @@ CR3L_regions = ['CR110', 'CR101', 'CR011', 'CR100', 'CR001', 'CR010', 'CR000']
 
 CR_HZZ_regions = ['CR3P1F_HZZ', 'CR2P2F_HZZ']
 
-years   = [2016,2017,2018]
+years   = ['2016preVFP', '2016postVFP', '2016', '2017', '2018']
 
 parser = OptionParser(usage="usage: %prog <analysis> <sample> [options]")
 
 parser.add_option("-r", "--regions", dest="regions",
                   default="SR4P",
-                  help="Region type are {0:s}. Default is SR4P.".format(', '.join(allowed_regions)))
+                  help="Region type are {0:s}. Default is %(default).".format(', '.join(allowed_regions)))
 
 
 parser.add_option("-e", "--external-cross-section", dest="getExternalCrossSectionFromFile",
@@ -48,18 +48,18 @@ parser.add_option("-i", "--internal-cross-section", dest="useInternalCrossSectio
                   help="Use this option if you want to force to use the internal cross section of the original sample")
 
 parser.add_option("-y", "--year", dest="year",
-                  type='int',
-                  default= 2016,
-                  help="Set year scenario from command line. Default is 2016.")
+                  type=str,
+                  default='2018',
+                  help="Set year scenario from command line (default: %(default)s)")
 
 parser.add_option("-l", "--luminosity", dest="luminosity",
                   type='int',
                   default= None,
-                  help="Set luminosity scenario from command line. The default is the one taken from the target year. Default year is 2016 and L = 35900/pb. Full lumi is 137100/pb.")
+                  help="Set luminosity scenario from command line. The default is the one taken from the target year. Full lumi for Run2 is 137100/pb.")
 
 parser.add_option("-d", "--directory", dest="directory",
                   default="samples",
-                  help="Sample location, default is ./samples/2016")
+                  help="Sample location (default: %(default))")
 
 parser.add_option("-c", "--csv", dest="csvfile",
                   #default="../Producers/python/samples_2016_MC.csv",
@@ -78,7 +78,7 @@ parser.add_option("-n", "--nevents", dest="maxNumEvents",
 
 parser.add_option("-o", "--outputdir",
                   default="results",
-                  help="Directory in which the output will be stored")
+                  help="Directory in which the output will be stored (default: %(default)s)")
 
 parser.add_option("-u", "--unblind", dest="unblind",
                   action="store_true",
@@ -223,11 +223,15 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
 
     # if luminosity is specified thorugh -l option, overwrite the year <-> luminosity decision
     if luminosity is None:
-        if year == 2016:
+        if   year == '2016':
             luminosity =  35900
-        elif year == 2017: 
+        elif year == '2016preVFP':
+            luminosity =  19500
+        elif year == '2016postVFP':
+            luminosity =  16800
+        elif year == '2017':
             luminosity =  41500
-        elif year == 2018: 
+        elif year == '2018':
             luminosity =  59700
         else :
             print"{0:s}: Unknown year, please specify a luminosity with -l option".format(year)
@@ -299,7 +303,9 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
         print Red('\n------------------------------ {0:s} -------------------------------\n'.format(basefile))
           
         # outputdir_format is something like "results/2016/VVXAnalyzer_%s". EventAnalyzer will use Form() to replace %s with the various regions to obtain the filenames
-        command = "./{0:s} {1:s} '{2:s}' {3:s}/{5:s}.root {4:s}/{5:s}.root {6:.0f} {7:.0f} {8:.5f} {9:.0f} {10:b} {11:b} {12:b} {13:b}".format(executable,analysis,';'.join(regions),inputdir,outputdir_format, basefile, year, luminosity, externalXsec, maxNumEvents, doSF, unblind, nofr, forcePosWeight)
+        keywords = locals()
+        keywords.update({'regions':';'.join(regions)})
+        command = "./{executable} {analysis} '{regions}' {inputdir}/{basefile}.root {outputdir_format}/{basefile}.root {year} {luminosity:.0f} {externalXsec:.5f} {maxNumEvents:d} {doSF:b} {unblind:b} {nofr:b} {forcePosWeight:b}".format(**keywords)
         print "Command going to be executed (run::command):", Violet(command)
         output = subprocess.check_call(command,shell=True)
         print "\n", output
