@@ -25,7 +25,11 @@ int main (int argc, char ** argv){
   analysisConfig.addParameter("filename"        , std::string(argv[3]));
   analysisConfig.addParameter("outputfile"      , std::string(argv[4]));
 
+  // argv[5] can have a sub-era like "2016preVFP"; however atoi("2016preVFP") --> 2016
   analysisConfig.addParameter("year"            , atoi(argv[5]));
+  // A boolean flag would be sufficient for 2016 pre/post VFP, but let's try to be general
+  std::string subEra(argv[5] + 4);  // No experiment was run before year 1000, and from year 10000 this will create problems
+  analysisConfig.addParameter("subEra"          , subEra);
 
   analysisConfig.addParameter("lumi"            , atof(argv[6]));
   analysisConfig.addParameter("externalXSection", atof(argv[7]));
@@ -34,7 +38,7 @@ int main (int argc, char ** argv){
   analysisConfig.addParameter("test"    , phys::RegionTypes::CR3P1F);
   
 
-  if(atof(argv[9]))   analysisConfig.addParameter("doSF"    , true);
+  if(atoi(argv[9]))   analysisConfig.addParameter("doSF"    , true);
   else   analysisConfig.addParameter("doSF"    , false);
 
   if(atoi(argv[10])) analysisConfig.addParameter("blinded"  , false);
