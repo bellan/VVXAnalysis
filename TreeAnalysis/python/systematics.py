@@ -216,9 +216,10 @@ def doSystOnFile(path, **kwargs):  # <str>
     
         variables   = set([n.split('_')[1] for n in names])
         systematics = set([n.split('_')[2] for n in names])
-    
-        logging.info('variables = '+str(variables))
-        # logging.info('systematics = '+str(systematics))
+
+        logging.debug('path = %s', path)
+        logging.debug('\tvariables = %s', variables)
+        logging.debug('\tsystematics = %s', systematics)
 
         sample = path.split('/')[-1].split('.')[0]
         region = path.split('/')[-2].split('_')[-1]
@@ -241,12 +242,11 @@ def main():
     parser.add_argument('-y', '--year', default='2016')
     parser.add_argument('-i', '--inputdir', default='results')
     parser.add_argument('-o', '--output', help='Manually specify output file. Defaults to data/systematics_{year}.json')
-    parser.add_argument('--log', dest='loglevel', type=str.upper, metavar='LEVEL', default='WARNING')
+    parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='INFO')
     args = parser.parse_args()
 
-    if(not hasattr(logging, args.loglevel)):
-        raise ValueError('Invalid log level: %s' % args.loglevel)
-    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=getattr(logging, args.loglevel))
+    loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
+    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
     
     syst_values = {}
     results_folder = '{inputdir}/{year}/VVGammaAnalyzer_{region}'.format(inputdir=args.inputdir, year=args.year, region='{region}')
@@ -266,7 +266,9 @@ def main():
     try:
         with open(sysJSON, 'r') as f:
             syst_values = load(f)
+        logging.info('Retrieved previous dict from "%s"', sysJSON)
     except (IOError, OSError, ValueError):
+        logging.info('Could not retrieve existing dictionay from "%s". Starting from a new one', sysJSON)
         syst_values = {}
     
     deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'fake_leptons.root'            ), do_plots=args.do_plots) )
