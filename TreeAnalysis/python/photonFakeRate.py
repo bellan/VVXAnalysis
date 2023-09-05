@@ -760,19 +760,19 @@ if __name__ == "__main__":
 
     from argparse import ArgumentParser
     parser = ArgumentParser()
-    parser.add_argument("-y", "--year"   , type=int, default=2016, choices=[2016, 2017, 2018])
-    parser.add_argument("-m", "--method" , choices=possible_methods, default="VLtoL")
-    parser.add_argument("-t", "--variable", default = "pt-aeta")
-    parser.add_argument("-s", "--final-state", default=None)
-    parser.add_argument("-i", "--inputdir", default="results")
-    parser.add_argument("-o", "--outputdir", default=None)
-    parser.add_argument(      "--channels", action='store_true')
-    parser.add_argument(      "--no-mc"  , dest="do_mc"  , action="store_false", help="Skip MC plots"  )
+    parser.add_argument("-y", "--year"   , type=int, default=2016, choices=[2016, 2017, 2018], help='Default: %(default)s')
+    parser.add_argument("-m", "--method" , choices=possible_methods, default="VLtoL", help='Default: %(default)s')
+    parser.add_argument("-t", "--variable", default = "pt-aeta", help='Default: %(default)s')
+    parser.add_argument("-s", "--final-state", default=None, help='Default: %(default)s')
+    parser.add_argument("-i", "--inputdir", default="results", help='Top directory containing input (default: %(default)s)')
+    parser.add_argument("-o", "--outputdir", default=None, help='Subdirectory name for output. If None will use the name of the input dir')
+    parser.add_argument(      "--channels", action='store_true', help='Divide by channel (e.g. 2e1m, lepton fails, etc.)')
+    parser.add_argument(      "--no-mc"  , dest="do_mc"  , action="store_false", help="Skip MC plots" )
     parser.add_argument(      "--no-data", dest="do_data", action="store_false", help="Skip data plots")
     args = parser.parse_args()
 
     # Set paths for output
-    args.inputdir = args.inputdir.strip('/')
+    args.inputdir = args.inputdir.rstrip('/')
     _path_base = args.inputdir
     if(args.outputdir is not None):
         _outdir_data = path.join(_outdir_data, args.outputdir)
@@ -790,9 +790,10 @@ if __name__ == "__main__":
     makedirs_ok(_outdir_plot)
 
     # Define color palette for z axis in TH2
-    red   = array('d', (1., 0. , 0.))
-    green = array('d', (0., 1. , 0.))
-    blue  = array('d', (0., 0. , 1.))
+    light = 32/256
+    red   = array('d', (1.   , light, light))
+    green = array('d', (light, 1.   , light))
+    blue  = array('d', (light, light, 1.   ))
     stops = array('d', (0., 0.5, 1.))
     ROOT.TColor.CreateGradientColorTable(len(stops), stops, red, green, blue, 100)
 
