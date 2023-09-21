@@ -601,6 +601,16 @@ void VVGammaAnalyzer::analyze(){
     theHistograms->fill("Z0_l1_pt_"+channelReco_, "p_{t,l01};GeV/c" , 20,0.,400. , ZZ->first().daughter(1).pt() , theWeight);
     theHistograms->fill("Z1_l0_pt_"+channelReco_, "p_{t,l10};GeV/c" , 20,0.,400. , ZZ->second().daughter(0).pt(), theWeight);
     theHistograms->fill("Z1_l1_pt_"+channelReco_, "p_{t,l11};GeV/c" , 20,0.,400. , ZZ->second().daughter(1).pt(), theWeight);
+
+    double Zll_mass(0.), ZllG_mass(0.);
+    std::tie(Zll_mass, ZllG_mass) = getZllAndZllgMasses(*goodPhotons_["central"]);
+
+    if(Zll_mass > 0){
+      theHistograms->fill("ZllG_mass_vs_Zll_mass", ";m_{ll#gamma};m_{ll}", 30,60,210., 20,60.,160., ZllG_mass, Zll_mass, theWeight);
+      theHistograms->fill("Zll_mass" , ";m_{ll}"      , 20,60.,160., Zll_mass, theWeight);
+      theHistograms->fill("ZllG_mass", ";m_{ll#gamma}", 20,60.,160., ZllG_mass, theWeight);
+      theHistograms->fill("Zll_mass_plus_ZllG_mass", ";m_{ll}+m_{ll#gamma}", 40,120.,320., Zll_mass+ZllG_mass, theWeight);
+    }
     
     plotsVVGstatus("ZZ", "ZZ", ZZ->p4(), "mass");
   }
@@ -2355,6 +2365,51 @@ char phABCD_study(const phys::Photon&, const double& barrel_thr, const double& e
 }
 
 
+std::pair<double, double> VVGammaAnalyzer::getZllAndZllgMasses(const phys::Photon& ph){
+  vector<Boson<Lepton>*> tmp {ZZ->firstPtr(), ZZ->secondPtr()};
+  Boson<Lepton>* closestZ = *std::min_element(tmp.begin(), tmp.end(),
+					      [ph](const Boson<Lepton>* pZ1, const Boson<Lepton>* pZ2){
+						double minZ1 = std::min(deltaR(pZ1->daughter(0), ph), deltaR(pZ1->daughter(1), ph));
+						double minZ2 = std::min(deltaR(pZ1->daughter(0), ph), deltaR(pZ1->daughter(1), ph));
+						return minZ1 < minZ2;
+					      });
+  const Boson<Lepton> *furthestZ = (closestZ == ZZ->firstPtr() ? ZZ->secondPtr() : ZZ->firstPtr());
+  double Zll_mass = furthestZ->mass();
+  double ZllG_mass = (closestZ->p4() + ph.p4()).M();
+  return std::make_pair(Zll_mass, ZllG_mass);
+}
+
+
+std::pair<double, double> VVGammaAnalyzer::getZllAndZllgMasses(const std::vector<phys::Photon>& phVect){
+  if(phVect.size() == 0)
+    return std::make_pair(-1., -1.);
+
+  const Photon* closestPhoton = nullptr;
+  const Boson<Lepton>* closestZ = nullptr;
+  float dRmin(10.);
+  for(auto ZbosonP : {ZZ->firstPtr(), ZZ->secondPtr()}){
+    for(auto lepton : {ZbosonP->daughter(0) , ZbosonP->daughter(1) }){
+      auto closestPh = std::min_element(phVect.begin(), phVect.end(), DeltaRComparator(lepton));
+      float dR = deltaR(*closestPh, lepton);
+      if(dR < dRmin){
+	dRmin = dR;
+	closestPhoton = &*closestPh;
+	closestZ = ZbosonP;
+      }
+    }
+  }
+
+  if(closestPhoton){
+    const Boson<Lepton> *furthestZ = (closestZ == ZZ->firstPtr() ? ZZ->secondPtr() : ZZ->firstPtr());
+    double Zll_mass = furthestZ->mass();
+    double ZllG_mass = (closestZ->p4() + closestPhoton->p4()).M();
+    return std::make_pair(Zll_mass, ZllG_mass);
+  }
+  else
+    return std::make_pair(-2., -2.);
+}
+
+
 void VVGammaAnalyzer::SYSplots_inclusive(const char* syst, double weight){
   if(is4Lregion(region_))
     theHistograms->fill(  Form("SYS_mZZ_%s" , syst), Form("m_{ZZ} %s"      , syst), mVV_bins , ZZ->mass()               , weight);
@@ -2391,6 +2446,12 @@ void VVGammaAnalyzer::SYSplots_photon(const char* syst, double weight, const Pho
     theHistograms->fill(  Form("SYS_mZZG%s_%s"   , ph_selection             , syst), Form("m_{ZZ#gamma %s} %s", ph_selection, syst), mVVG_bins, mZZG, weight);
     if(theSampleInfo.isMC())
       theHistograms->fill(Form("SYS_mZZG%s-%s_%s", ph_selection, phGenStatus, syst), Form("m_{ZZ#gamma %s} %s", ph_selection, syst), mVVG_bins, mZZG, weight);
+
+    double Zll_mass(0.), ZllG_mass(0.);
+    std::tie(Zll_mass, ZllG_mass) = getZllAndZllgMasses(ph);
+    theHistograms->fill(  Form("SYS_mZllplusZllG%s_%s"   , ph_selection             , syst), Form("m_{ZZ} + m_{ZZ#gamma %s} %s", ph_selection, syst), mVVG_bins, mZZG, weight);
+    if(theSampleInfo.isMC())
+      theHistograms->fill(Form("SYS_mZllplusZllG%s-%s_%s", ph_selection, phGenStatus, syst), Form("m_{ZZ} + m_{ZZ#gamma %s} %s", ph_selection, syst), mVVG_bins, mZZG, weight);
   }
 
   else if(is3Lregion(region_)){

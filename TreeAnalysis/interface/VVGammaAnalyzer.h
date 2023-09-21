@@ -264,7 +264,9 @@ private:
 	    haveCommonDaughter(a.daughter(1), b.daughter(0), tol) ||
 	    haveCommonDaughter(a.daughter(1), b.daughter(1), tol)   );
   }
-  
+
+  std::pair<double, double> getZllAndZllgMasses(const phys::Photon&);
+  std::pair<double, double> getZllAndZllgMasses(const std::vector<phys::Photon>&);
 		
   static const std::vector<double> pt_bins;
   static const std::vector<double> pt_bins_LFR;
