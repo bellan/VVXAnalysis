@@ -5,6 +5,7 @@ from copy import deepcopy
 import ROOT
 from ctypes import c_double
 from plotUtils3 import TFileContext, getPlots
+import logging
 
 
 def integralTH1(h, direction=+1):
@@ -56,7 +57,7 @@ def stackPlots(promptmO, matchedO, nomatchO, variable, phID, region, sample='[sa
     nomatch  = nomatchO.Clone( nomatchO.GetName() +'_copy')
     
     def normalize_stack(stack):
-        print('>>> nomalizing',stack.GetName())
+        logging.info('nomalizing %s',stack.GetName())
         htot = stack.GetStack().Last().Clone('htot')
         for b in range(0, htot.GetNcells()): htot.SetBinError(b, 0)
         for h in stack.GetStack(): h.Divide(htot)
@@ -91,19 +92,18 @@ def stackPlots(promptmO, matchedO, nomatchO, variable, phID, region, sample='[sa
     canvas_stack.SaveAs(  path.join('Plot', 'photonGenStudy',  '{}_{}_{}_stack{}.png'.format(variable, phID, region, sample)) )
     
 
-def myPlots(variable, phID, region, year):
-    # basedir = 'rsync_results/Updated/EXT/2016/VVGammaAnalyzer_{}'.format(region)
-    basedir = 'results/{}/VVGammaAnalyzer_{}'.format(year, region)
+def myPlots(variable, phID, region, year, **kwargs):
+    inputdir = '{basedir}/{}/VVGammaAnalyzer_{}'.format(year, region, basedir=kwargs.get('basedir', 'results'))
     name = 'PhGenStudy_{variable}_{phID}_{matched}'.format(variable=variable, phID=phID, matched='{}')
-    ZZpromptm , ZZmatched , ZZnomatch  = getPlots(basedir, 'ZZTo4l'  , [name.format('promptm'), name.format('matched'), name.format('nomatch')] )
-    ZZGpromptm, ZZGmatched, ZZGnomatch = getPlots(basedir, 'ZZGTo4LG', [name.format('promptm'), name.format('matched'), name.format('nomatch')] )
+    ZZpromptm , ZZmatched , ZZnomatch  = getPlots(inputdir, 'ZZTo4l'  , [name.format('promptm'), name.format('matched'), name.format('nomatch')] )
+    ZZGpromptm, ZZGmatched, ZZGnomatch = getPlots(inputdir, 'ZZGTo4LG', [name.format('promptm'), name.format('matched'), name.format('nomatch')] )
     
     if(ZZnomatch is None and ZZGnomatch is None):
-        print('ERROR: both ZZnomatch and ZZGnomatch are missing. Skipping', region, variable, phID)
+        logging.error('Both ZZnomatch and ZZGnomatch are missing. Skipping region=%s, variable=%s, phID=%s', region, variable, phID)
         return
     
     if(ZZnomatch is None):
-        print('WARN: ZZnomatch is missing in', region, variable, phID)
+        logging.warning('ZZnomatch is missing in region=%s, variable=%s, phID=%s', region, variable, phID)
     else:
         if(ZZpromptm  is None):
             # PyRoot is not made to manipulate arrays: TAxis::GetXbins().GetArray() is simply unusable here!
@@ -119,7 +119,7 @@ def myPlots(variable, phID, region, year):
                 ZZmatched.SetBinError(b, 0)
     
     if(ZZGnomatch is None):
-        print('WARN: ZZGnomatch is missing in', region, variable, phID)
+        logging.warning('ZZGnomatch is missing in region=%s, variable=%s, phID=%s', region, variable, phID)
     else:
         if(ZZGpromptm is None):
             ZZGpromptm = ZZGnomatch.Clone('PhGenStudy_DRLep_loose_promptm')
@@ -140,7 +140,7 @@ def myPlots(variable, phID, region, year):
         axis.SetMoreLogLabels()
         axis.SetNoExponent()
         h.Rebin(_rebinning.get(variable, 1))
-        print('>>> rebinning', variable, _rebinning.get(variable, 1))
+        logging.info('rebinning(%d) %s', _rebinning.get(variable, 1), variable)
 
     ################################################################################
     # Stack Plots        
@@ -152,7 +152,7 @@ def myPlots(variable, phID, region, year):
     ################################################################################
     # Old Plots
     if(ZZnomatch is None or ZZGnomatch is None):
-        print('WARN: one or more of "nomatch" plots is missing. Skipping old plots in', region, variable, phID)
+        logging.warning('One or more of "nomatch" plots is missing. Skipping old plots in region=%s, variable=%s, phID=%s', region, variable, phID)
         return
     yMax  = max([max(h.GetBinContent(h.GetMaximumBin()), h.GetBinContent(h.GetNbinsX() + 1))
                  for h in (ZZpromptm, ZZmatched, ZZnomatch, ZZGpromptm, ZZGmatched, ZZGnomatch)])
@@ -277,7 +277,27 @@ def myPlots(variable, phID, region, year):
     canvas_sig.SaveAs( path.join('Plot', 'photonGenStudy', '{}_{}_{}_significance.png'.format(variable, phID, region)) )
 
 
-if __name__ == '__main__':
+def main():
+    allowed_regions = ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L',
+               'SR3P', 'CR110'  , 'CR101'  , 'CR011'  , 'CR100'  , 'CR001'  , 'CR010', 'CR000', 'SR3P_1L', 'SR3P_1P', 'CR3P_1F', 'CRLFR', 'CR3L',
+               'SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F'
+               # 'SR_HZZ', 'CR2P2F_HZZ', 'CR3P1F_HZZ', 'CR_HZZ', 'MC_HZZ',
+               # 'MC'
+    ]
+    allowed_variables = ['DRJet', 'DRPhLep', 'm4lG', 'nJets', 'ptPh']
+    allowed_phIDs = ['kin', 'veryLoose', 'fail', 'loose']
+    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-y', '--year'     , default='2016')
+    parser.add_argument('-r', '--regions'  , nargs='+', choices=allowed_regions  , default=['SR4P'], metavar='REGION', help=' ')
+    parser.add_argument('-p', '--variables', nargs='+', choices=allowed_variables, default=allowed_variables, help='Variables on the x axis')
+    parser.add_argument(      '--phids'    , nargs='+', choices=allowed_phIDs    , default=allowed_phIDs    , help='IDs to consider for reco photons')
+    parser.add_argument('-i', '--inputdir' , default='results', help='Base input directory, where the results of the analyzers are')
+    parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
+    args = parser.parse_args()
+    loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
+    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
+
     try:
         mkdir('Plot/photonGenStudy')
     except FileExistsError:
@@ -288,7 +308,11 @@ if __name__ == '__main__':
     
     # myPlots('DRLep', 'loose', 'SR4P')
     # myPlots('DRJet', 'loose', 'SR4P')
-    for region in ['SR4P']:
-        for variable in ['DRJet', 'DRPhLep', 'm4lG', 'nJets', 'ptPh']:
-            for phID in ['kin', 'veryLoose', 'fail', 'loose']:
-                myPlots(variable, phID, 'SR4P', 2018)
+    for region in args.regions:
+        for variable in args.variables:
+            for phID in args.phids:
+                myPlots(variable, phID, 'SR4P', args.year, basedir=args.inputdir)
+    return 0
+
+if __name__ == '__main__':
+    exit(main())
