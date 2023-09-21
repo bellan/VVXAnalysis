@@ -36,7 +36,7 @@ def getYrange(*graphs, **kwargs):  # <TGraphAsymmErrors>
     return min(extremes), max(extremes)
 
 def deep_update(orig, new):
-    for k, v in new.iteritems():
+    for k, v in new.items():
         if isinstance(v, Mapping):
             orig[k] = deep_update(orig.get(k, {}), v)
         else:
@@ -62,8 +62,9 @@ def plotSystematics(hCentral, hUp, hDn, var='[var]', syst='[syst]', sample='[sam
     integralUp = hUp.IntegralAndError(0, hUp.GetNbinsX()+1, errorUp)
     integralDn = hDn.IntegralAndError(0, hDn.GetNbinsX()+1, errorDn)
     if(integralCentral == 0):
-        logging.error('ERROR: integralCentral is 0 for', formatInfo)
-        return 0., 0.
+        logging.error('integralCentral is 0 for %s', formatInfo)
+        logging.debug('\tintegralCentral = %s', hCentral.GetName())
+        return dict()
 
     upVar = (integralUp-integralCentral)/integralCentral
     dnVar = (integralDn-integralCentral)/integralCentral
@@ -199,7 +200,7 @@ def doSystematics(tf, var, syst, **kwargs):  # <TFile>, <str>, <str>, <dict> (is
     hDn = tf.Get('SYS_{var}_{syst}_Down'.format(**formatInfo))
     if((not hUp) or (not hDn)):
         logging.warning('var={var}, syst={syst} not found in file={file}'.format(**formatInfo))
-        return
+        return dict()
 
     new_syst = plotSystematics(hCentral, hUp, hDn, var=var, syst=syst, **kwargs)
     return new_syst
@@ -227,12 +228,13 @@ def doSystOnFile(path, **kwargs):  # <str>
             makedirs_ok('Plot/SYS/{}'.format(region))
 
         for var in variables:
-            for syst in systematics:
-                if('central' in syst):
-                    continue
-                else:
-                    new_syst = doSystematics(tf, var, syst, sample=sample, region=region, **kwargs)
-                    deep_update(syst_values, new_syst)
+            syst_empty = set()
+            for syst in systematics - {'central'}:
+                new_syst = doSystematics(tf, var, syst, sample=sample, region=region, **kwargs)
+                if(len(new_syst) == 0): syst_empty.add(syst)
+                deep_update(syst_values, new_syst)
+            if(len(systematics - syst_empty - {'central'}) == 0):
+                logging.error('All the systematics for variable "%s" are empty!!!\n', var)
     return syst_values
 
 
