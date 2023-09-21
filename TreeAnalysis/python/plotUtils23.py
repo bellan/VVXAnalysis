@@ -11,6 +11,10 @@ class TFileContext(object):
         self.tfile.Close()
 
 
+class PlotNotFoundError(Exception):
+    pass
+
+
 def addIfExisting(*args):
     result = None
     for a in [ a for a in args if a is not None ]:

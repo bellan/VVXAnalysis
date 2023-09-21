@@ -7,7 +7,7 @@ from readSampleInfo import *
 from collections import OrderedDict
 from Colours import *
 import ctypes
-from plotUtils23 import TFileContext, addIfExisting
+from plotUtils23 import TFileContext, addIfExisting, PlotNotFoundError
 import samplesByRegion # getSamplesByRegion, data_obs, ZZG, WZG, ...
 
 ##############################################
@@ -191,7 +191,8 @@ def GetPredictionsPlot(region, inputdir, plotInfo, predType, MCSet, forcePositiv
         if(verbosity >= 1):
             print Green("\nNon-prompt leptons background")
         hfake = addIfExisting(*[GetFakeRate(inputdir.replace(region, CR), plotInfo, "data", CR, MCSet) for CR in controlRegions])
-        assert hfake is not None, 'Fake lepton plot not found for ' + plotInfo['name']
+        if(hfake is None):
+            raise PlotNotFoundError('Fake lepton plot not found for ' + plotInfo['name'])
 
         hfake.SetLineColor(ROOT.kBlack)
         stack.Add(hfake)
@@ -223,6 +224,8 @@ def GetPredictionsPlot(region, inputdir, plotInfo, predType, MCSet, forcePositiv
             print Green("\nNon-prompt photons background")
         fakeName = plotInfo['fake_photons']
         hfakePho, integral = getPlotFromSample(inputdir, samplesByRegion.data_obs, fakeName, verbosity, forcePositive)
+        if(not hfakePho):
+            raise PlotNotFoundError('Missing non-prompt photon plot {} (in {})'.format(fakeName, inputdir))
         hfakePho.SetLineColor(ROOT.kBlack)
         hfakePho.SetFillColor(ROOT.kGreen-8)
         stack.Add(hfakePho)
@@ -421,8 +424,9 @@ def GetDataPlot(Region, inputdir, plotInfo, forcePositive=False, verbosity=1):
             hdata = copy.deepcopy(h)
         else:
             hdata.Add(h)
-        
-    assert hdata is not None, 'ERROR: no data plot "{}" in {}, {}'.format(plot, inputdir, Region)
+
+    if(hdata is None):
+        raise PlotNotFoundError('no data plot "{}" in {}, {}'.format(plot, inputdir, Region))
     hdata.SetMarkerColor(ROOT.kBlack)
     hdata.SetLineColor(ROOT.kBlack)
     hdata.SetMarkerStyle(20)

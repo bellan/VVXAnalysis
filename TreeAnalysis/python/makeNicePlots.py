@@ -22,6 +22,7 @@ import CrossInfo
 from CrossInfo import* 
 from ROOT import TH1F,TCanvas, TLegend
 import plotUtils  # GetPredictionsPlot, GetDataPlot
+from plotUtils23 import PlotNotFoundError
 from variablesInfo import getVariablesInfo
 import CMS_lumi, tdrstyle
 import PersonalInfo
@@ -94,6 +95,9 @@ parser.add_argument("-q", "--quiet", dest="verbosity",
 parser.add_argument("-i", "--inputDir",
                     default="results",
                     help="Directory containing the input rootfiles")
+
+parser.add_argument('--skip-missing', action='store_true',
+                    help='Don\'t crash if a plot is missing; instead continue with the others')
 
 #REMEMBER ADD DEFINTION PLOT
 
@@ -207,6 +211,7 @@ variables.sort()
 
 c1 = TCanvas( 'c1', mcSet , 900, 1200 )
 
+missing_plots = []
 for Var in variables:
     info = VarInfo[Var]
     info.update({'name':Var})
@@ -221,7 +226,14 @@ for Var in variables:
     else:
         if info.get('special'):
             info['name'] = info['stack']['plot']
-        (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, info, predType, mcSet, forcePositive=forcePositive, verbosity=options.verbosity)
+        try:
+            (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, info, predType, mcSet, forcePositive=forcePositive, verbosity=options.verbosity)
+        except PlotNotFoundError as e:
+            if(options.skip_missing):
+                missing_plots.append(e)
+                continue
+            else:
+                raise e
 
     if(not hMC.GetStack()):
         print Evidence('ERROR'), 'skipping', Var, 'because: no MC'
@@ -230,7 +242,14 @@ for Var in variables:
     if(DoData):
         if info.get('special'):
             info['name'] = info['data']['plot']
-        (graphData, histodata) = plotUtils.GetDataPlot(region, InputDir, info, forcePositive=forcePositive, verbosity=options.verbosity)
+        try:
+            (graphData, histodata) = plotUtils.GetDataPlot(region, InputDir, info, forcePositive=forcePositive, verbosity=options.verbosity)
+        except PlotNotFoundError as e:
+            if(options.skip_missing):
+                missing_plots.append(e)
+                continue
+            else:
+                raise e
 
         if(not (graphData and histodata)):
             print Evidence('ERROR'), 'skipping', Var, 'because: no data'
@@ -410,3 +429,5 @@ for Var in variables:
 
     del histodata, tgaData
 
+for missing_plot in missing_plots:
+    print(missing_plot)
