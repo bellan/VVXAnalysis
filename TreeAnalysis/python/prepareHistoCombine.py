@@ -13,6 +13,7 @@ from plotUtils import TFileContext, makedirs_ok
 from subprocess import call
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
+import re
 
 
 # Utility functions
@@ -22,6 +23,9 @@ def skipsample(filename):
     if filename in ('ggTo4l', 'ttXY', 'triboson'): return True
     if filename.split('.')[-1] != 'root':
         logging.error("strange sample:", filename)
+        return True
+    if re.search(r'part\d', filename):
+        logging.info('Skipping %s', filename)
         return True
     return False
 
@@ -55,6 +59,11 @@ def write_fake_photons(fFakePh, data_obs, variables): # <TFile>, <TFile>, <itera
             else:
                 logging.warning('No failReweight histogram in data for variable %s --> could not retrieve %s', var_name, reweight)
     logging.info('Wrote fake photons file to %s', fFakePh.GetName())
+
+def get_TH1keys_from_file(tfhandle):
+    return [ key.GetName()
+             for key in tfhandle.GetListOfKeys()
+             if ROOT.TClass(key.GetClassName()).InheritsFrom("TH1") and isVarSystematic(key.GetName()) ]
 
 def main():
     # The configuration
@@ -101,14 +110,6 @@ def main():
 
         files_in = {}  # mapping: sample <str> --> file <ROOT.TFile>
 
-        # retrieve the full list of variables in this region. Open input files but don't close them
-        variables_set = set()
-        for sample in samples_region:
-            files_in[sample] = ROOT.TFile(os.path.join(path_in, sample+'.root'))
-            variables_set.update([ key.GetName() for key in files_in[sample].GetListOfKeys() if key.ReadObj().Class().InheritsFrom("TH1") and isVarSystematic(key.GetName())])
-        variables_region = sorted(variables_set)
-
-        logging.debug('in {} the variables are: {}'.format(region, variables_region))
         # Add data
         if(args.unblind):
             try:
@@ -118,10 +119,21 @@ def main():
             else:
                 files_in['data_obs'] = data_obs
 
+        # Try to open fake_photons
+        fake_photons_fname = os.path.join(path_in, 'fake_photons.root')
+        try:
+            fFakePh = ROOT.TFile(fake_photons_fname)
+        except OSError as e:
+            logging.warning('While opening %s, caught %s', fake_photons_fname, e)
+        else:
+            files_in['fake_photons'] = fFakePh
+
         # Write fake_photons
         if((not 'fake_photons' in files_in) or args.remake_fake_photons):
-            with TFileContext(os.path.join(path_in, 'fake_photons.root'), 'RECREATE') as fFakePh:
-                write_fake_photons(fFakePh, data_obs=files_in['data_obs'], variables=variables_region)
+            with TFileContext(fake_photons_fname, 'RECREATE') as fFakePh:
+                variables_data = get_TH1keys_from_file(files_in['data_obs'])
+                write_fake_photons(fFakePh, data_obs=files_in['data_obs'], variables=variables_data)
+            files_in['fake_photons'] = ROOT.TFile(fake_photons_fname)
 
         # If the program was run just to remake fake_photons, exit now
         if(args.remake_fake_photons):
@@ -129,13 +141,15 @@ def main():
             for _, handle in files_in.items(): handle.Close()
             return 0
 
-        # Open fake_photons
-        try:
-            fFakePh = ROOT.TFile(os.path.join(path_in, 'fake_photons.root'))
-        except OSError as e:
-            logging.warning('While opening %s, caught %s', fFakePh.GetName(), e)
-        else:
-            files_in['fake_photons'] = fFakePh
+        # Open all the MC file handles and retrieve the full list of variables in this region
+        variables_set = set()
+        for sample in samples_region:
+            files_in[sample] = ROOT.TFile(os.path.join(path_in, sample+'.root'))
+            variables_set.update(get_TH1keys_from_file(files_in[sample]))
+        variables_region = sorted(variables_set)
+
+        logging.info('in %s there are %d variables', region, len(variables_region))
+        logging.debug('in {} the variables are: {}'.format(region, variables_region))
 
         # Write to output
         with TFileContext(os.path.join(path_out, region+'.root'), "RECREATE") as fout:
@@ -200,8 +214,8 @@ def main():
             problems = [ e['file'] for e in not_retrieved if e['variable'].startswith(hist_prob) ]
             good     = [ e['file'] for e in  ok_retrieved if e['variable'].startswith(hist_prob) ]
             msg = 'Histogram {:40.40s} was missing {:2d}/{:2d} times'.format(hist_prob+'(Up/Down)', len(problems), len(good)+len(problems))
-            if(len(problems) < 10):
-                msg += ': '+' '.join([f.split('/')[-1] for f in problems])
+            if(len(problems)/2 < 10):
+                msg += ': '+' '.join({f.split('/')[-1] for f in problems})
             logging.warning(msg)
 
     logging.info('Retrieved and wrote {:d} histograms. {:d} were missing. Total: {:d}'.format(len(ok_retrieved), len(not_retrieved), len(ok_retrieved)+len(not_retrieved)))
