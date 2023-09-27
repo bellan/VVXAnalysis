@@ -250,7 +250,7 @@ def getVarInfo_VVGamma(region):
                  'rebin': rebin }
             if status == 'loose':
                 d.update({
-                    'fake_photons': 'lead_fail_MVA_reweight_data'
+                    'fake_photons': 'lead_fail_{var}_reweight_data'.format(var=varname)
                 })
             VarInfo_VVGamma.update({n: d})
 
