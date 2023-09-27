@@ -241,10 +241,13 @@ def GetPredictionsPlot(region, inputdir, plotInfo, predType, MCSet, forcePositiv
         splitPromptPh = sample.get('split_prompt_ph') and plotInfo.get('split_prompt_ph')
 
         if(splitPromptPh):
+            split_pattern = plotInfo.get('split_prompt_ph_pattern', plot+'_%s')
+
             if(True): #For alignment
-                h_prompt, integralPrompt = getPlotFromSample(inputdir, sample, plot+'_prompt', verbosity, forcePositive, note='prompt')
+                h_prompt, integralPrompt = getPlotFromSample(inputdir, sample, split_pattern % ('prompt'), verbosity, forcePositive, note='prompt')
+
             if(not useFakePhotonsFromData):
-                h_nonpro, integralNonpro = getPlotFromSample(inputdir, sample, plot+'_nonpro', verbosity, forcePositive, note='nonpro')
+                h_nonpro, integralNonpro = getPlotFromSample(inputdir, sample, split_pattern % ('nonpro'), verbosity, forcePositive, note='nonpro')
             else:
                 h_nonpro, integralNonpro = None, 0
             totalMC += integralPrompt + integralNonpro
