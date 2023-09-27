@@ -57,6 +57,11 @@ def getVarInfo_VVGamma(region):
             'ZZG_mass_veryLoosePh': {'title':'m_{4\ell\gamma}\:,\ \gamma\:loose'               , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':False},
             'ZZG_mass_failPh'     : {'title':'m_{4\ell\gamma}\:,\ \gamma\:loose\,\land\:!tight', 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':True },
             'ZZG_mass_loosePh'    : {'title':'m_{4\ell\gamma}\:,\ \gamma\:tight'               , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':False, 'fake_photons': 'ZZG_mass_reweightPh'}
+            ,
+            'SYS_mZZGwp90_central': {'title':'m_{4\ell\gamma}\:,\ \gamma\:wp90', 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_mZZGwp90-%s_central', 'unblind':False},
+            'SYS_mZZGwp80_central': {'title':'m_{4\ell\gamma}\:,\ \gamma\:wp80', 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_mZZGwp80-%s_central', 'unblind':False},
+            'SYS_wp90pt_central'  : {'title':'p_{T} #gamma_{wp90}'             , 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_wp90pt-%s_central'  , 'unblind':False},
+            'SYS_wp80pt_central'  : {'title':'p_{T} #gamma_{wp80}'             , 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_wp80pt-%s_central'  , 'unblind':False}
         })
 
         VarInfo_VVGamma.update({
