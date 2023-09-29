@@ -3,8 +3,8 @@ import ROOT
 
 ##### Define type of samples ##### FIXME: make a class?
 
-qqZZ_pow = [{'files':['ZZTo4l'        ] , 'color':ROOT.kBlue-4  , 'name':'qq/qg #rightarrow ZZ', 'split_prompt_ph':True, 'kfactor': 1.325/1.256}]  # 1.1  #(1.256/1.325)
-qqZZ_mad = [{'files':['ZZTo4lamcatnlo'] , 'color':ROOT.kBlue-4  , 'name':'qq/qg #rightarrow ZZ', 'split_prompt_ph':True, 'kfactor': 1.}]
+qqZZ_pow = [{'files':['ZZTo4l'        ] , 'color':ROOT.kBlue-4  , 'name':'qq #rightarrow ZZ', 'split_prompt_ph':True, 'kfactor': 1.325/1.256}]  # 1.1  #(1.256/1.325)
+qqZZ_mad = [{'files':['ZZTo4lamcatnlo'] , 'color':ROOT.kBlue-4  , 'name':'qq #rightarrow ZZ', 'split_prompt_ph':True, 'kfactor': 1.}]
 
 ggZZ     = [{'files': ['ggTo2e2mu_Contin_MCFM701', 'ggTo4e_Contin_MCFM701', 'ggTo4mu_Contin_MCFM701'],
             'color':ROOT.kAzure-4 , 'name':'gg #rightarrow ZZ'   , 'split_prompt_ph':False, 'kfactor': 1.7}]
@@ -15,12 +15,15 @@ HZZ      = [{'files':['HZZ'           ] , 'color':ROOT.kCyan-7  , 'name':'higgs'
 WZ       = [{'files':['WZTo3LNu'      ] , 'color':ROOT.kOrange  , 'name':'WZ'}]
 WW       = [{'files':['WWTo2L2Nu'     ] , 'color':ROOT.kYellow-4, 'name':'WW'}]
 
+# tt   with >= 4 leptons
+tt_X_4l  = [{'files':['TTZZ', 'TTWW', 'TTZJets']                , 'color':ROOT.kViolet-7, 'name':'t#bar{t}+any'}]
+# t(t) with >= 3 leptons
+tt_X_3l  = [{'files':tt_X_4l[0]['files']+['TZq', 'TTWJetsToLNu'], 'color':ROOT.kViolet-7, 'name':'t#bar{t}+any'}]
+# t(t) with >= 2 leptons
+tt_X_2l  = [{'files':tt_X_3l[0]['files']+['tW', 'TTTo2L2Nu']    , 'color':ROOT.kViolet-7, 'name':'t#bar{t}+tW' }]
+# single top, single lepton
 t        = [{'files':['singleT'       ] , 'color':ROOT.kMagenta , 'name':'top'}]
-tX       = [{'files':['tZq','tW'      ] , 'color':ROOT.kMagenta-9, 'name':'tX'}]
-tt       = [{'files':['TTTo2L2Nu'     ] , 'color':ROOT.kMagenta+2, 'name':'t#bar{t}'}]
-ttX      = [{'files':['TTWJetsToLNu', 'TTZJets', 'TTGJets'] , 'color':ROOT.kViolet-7, 'name':'ttX'}]
-ttXY     = [{'files':['TTWW','TTZZ'   ] , 'color':ROOT.kBlue-1  , 'name':'ttXY'}]
-tt_X     = [{'files':tt[0]['files']+ttX[0]['files']+ttXY[0]['files'], 'color':ROOT.kViolet-7, 'name':'t#bar{t}+X'}]
+# files missing for now: singleT, tt+gamma (/TTGJets or /TTGamma_Dilept)
 
 ZZTo2L2Nu= [{'files':['ZZTo2L2Nu'     ] , 'color':ROOT.kCyan    , 'name':'ZZ #rightarrow 2l 2#nu'}]
 ZZTo2Q2L = [{'files':['ZZTo2Q2L'      ] , 'color':ROOT.kGray    , 'name':'ZZ #rightarrow 2l 2q' }]
@@ -32,8 +35,6 @@ WG       = [{'files':['WGToLNuG'      ] , 'color':ROOT.kGray    , 'name':'W#gamm
 
 triboson = [{'files':['WWW','WWZ','WZZ','ZZZ'], 'color':ROOT.kYellow, 'name':'VVV'}]
 
-ttZ      = [{'files':['TTZJets_M10_MLM'], 'color':ROOT.kOrange-5, 'name':'t#bar{t}Z'}]
-
 WZG      = [{'files':['WZGTo3LNuG'    ] , 'color':ROOT.kMagenta , 'name':'WZ#gamma'}]
 ZZG      = [{'files':['ZZGTo4LG'      ] , 'color':ROOT.kRed     , 'name':'ZZ#gamma', 'split_prompt_ph':True}]
 ZZGTo2L2jG=[{'files':['ZZGTo2L2jG'    ] , 'color':ROOT.kRed+3   , 'name':'ZZ#gamma #rightarrow 2l 2j'}]
@@ -43,7 +44,7 @@ data_obs =  {'files':['data'          ] , 'color':ROOT.kBlack   , 'name':'Data'}
 
 
 def is3Lregion(region):
-    return region in ('SR3P', 'SR3P_1L', 'SR3P_1F', 'CR000', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CRLFR')
+    return region in ('SR3P', 'SR3P_1L', 'SR3P_1F', 'CR000', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110')
 
 def is2Lregion(region):
     return region in ('SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F')
@@ -52,7 +53,7 @@ def is2Lregion(region):
 def getSamplesByRegion(region, MCSet, predType):
     availablePredTypes = ['fromCR', 'lepCR', 'phoCR', 'fullCR', 'fullMC', 'fakeMC']  # Notes: fromCR is a legacy equivalent of lepCR; fullCR = lepCR + phoCR
     if predType not in availablePredTypes:
-        sys.exit("Wrong prediction type ("+predType+"), available: "+str(availablePredTypes))
+        raise ValueError("Wrong prediction type ("+predType+"), available: "+str(availablePredTypes))
 
     if MCSet == 'pow':
         qqZZ = qqZZ_pow
@@ -61,36 +62,40 @@ def getSamplesByRegion(region, MCSet, predType):
     else: sys.exit("Wrong Set, choose pow or mad")
 
     tot = WZG + ZZG
-    if is2Lregion(region):
-        tot += ZZGTo2L2jG + WZGTo2L2jG
-    tot += qqZZ + triboson #+ ggZZ #+ vbsZZ + HZZ
 
-    if   predType in ['fullMC', 'phoCR']:
-        if   region in ['SR4P', 'SR4P_1L', 'SR4P_1F', 'CR3P1F', 'CR2P2F']:
-            tot += ZG + tt_X + WZ + DY
-        elif is3Lregion(region):
-            tot += ZG + tt_X + WZ + DY
-        elif is2Lregion(region):
-            tot = DY + ggZZ + qqZZ_pow + t + tX + triboson + tt + ttX + ttXY + WG + ZG + WZ + ZZTo2Q2L + ZZTo2L2Nu + WZG + ZZG + ZZGTo2L2jG + WZGTo2L2jG
-            # tot += tt_X + WZ + DY
-        # tot += DY + WZ + W + tt_X + ZG # + WG + WW # + ZZTo2L2Nu + ZZTo2Q2L
+    if   region in ['SR4P', 'SR4P_1L', 'SR4P_1F', 'CR3P1F', 'CR2P2F']:
+        if   predType == 'fullMC':
+            tot += tt_X_3l + triboson + qqZZ + ggZZ + WZ + WW + DY + ZG
+        elif predType in ('lepCR', 'fromCR'):
+            tot += tt_X_4l + triboson + qqZZ + ggZZ
+        elif predType == 'phoCR':
+            tot += qqZZ + ggZZ # only the prompt part
 
-    elif predType in ['fromCR', 'lepCR', 'fullCR', 'fakeMC']:
-        if   region in ['SR4P', 'SR4P_1L', 'SR4P_1F']:
-            tot += ttXY
-        elif region in ['CR3P1F', 'CR2P2F']:
-            tot += tt_X
-        
-        elif region in ['SR3P', 'SR3P_1L', 'SR3P_1F']:
-            tot += WZ + tt_X
-        elif region in ['CR000', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CRLFR']:
-            tot += WZ + tt_X + tX + DY + ZG
-        elif region == 'CR110':
-            tot += WZ + tt_X + tX + DY + ZG
-        elif is2Lregion(region):
-            tot += WZ + DY + ZG + WG + WW + W + tt_X + tX + ZZTo2L2Nu + ZZTo2Q2L
+    elif is3Lregion(region):
+        tot += tt_X_3l + triboson + ggZZ + qqZZ
+        if   predType == 'fullMC':
+            tot += ZZTo2Q2L + ZZTo2L2Nu + WZ + WW + ZG + DY
+        elif predType in ('lepCR', 'fromCR'):
+            tot += ZG
+        elif predType == 'phoCR':
+            pass
+
+    elif is2Lregion(region):
+        tot += ZZGTo2L2jG + WZGTo2L2jG + tt_X_2l + qqZZ + ggZZ + ZZTo2Q2L + ZZTo2L2Nu + WZ + WW + ZG
+        if   predType == 'fullMC':
+            tot += DY + WG
+        elif predType in ('lepCR', 'fromCR'):
+            raise ValueError('No fake lepton method exists for 2L regions')
+        elif predType == 'phoCR':
+            pass
+
+    elif region == 'CRLFR':
+        if   predType == 'fullMC':
+            tot += tt_X_2l + qqZZ + ZZTo2Q2L + WZ + ZG + DY
         else:
-            tot += WZ + DY + ZG + WG + WW + W + tt_X + tX + ZZTo2L2Nu + ZZTo2Q2L
-    
+            raise ValueError('Method "%s" not available for CRLFR'%(predType))
+    else:
+        raise ValueError('Don\'t know how to categorise region "%s"' %(region))
+
     tot.reverse()
     return tot
