@@ -2497,24 +2497,35 @@ void VVGammaAnalyzer::SYSplots_phCut(const char* syst, double weight, const Phot
 void VVGammaAnalyzer::SYSplots_phMVA(const char* syst, double weight, const Photon& phMVA){
   // Note: unlinke the plots for phCut, there's no category for kin photons to avoid duplication
 
-  double effSF_wp90 = 1.;
-  double effSF_wp80 = 1.;
+  double effSF = 1.;
+  std::string MVACut_s("none");
 
   if  (phMVA.passMVA(Photon::MVAwp::wp90)){
+    MVACut_s = "wp90";
     if(theSampleInfo.isMC())
-      effSF_wp90 = getPhotonEffSF_MVA(phMVA, Photon::MVAwp::wp90);
+      effSF = getPhotonEffSF_MVA(phMVA, Photon::MVAwp::wp90);
 
-    SYSplots_photon(syst, weight * effSF_wp90, phMVA, "wp90");
+    SYSplots_photon(syst, weight * effSF, phMVA, "wp90");
+
     if  (phMVA.passMVA(Photon::MVAwp::wp80)){
+      MVACut_s = "wp80";
       if(theSampleInfo.isMC())
-	effSF_wp80 = getPhotonEffSF_MVA(phMVA, Photon::MVAwp::wp80);
-      SYSplots_photon(syst, weight * effSF_wp80, phMVA, "wp80");
+        effSF = getPhotonEffSF_MVA(phMVA, Photon::MVAwp::wp80);
+
+      SYSplots_photon(syst, weight * effSF, phMVA, "wp80");
     }
     else{
-      SYSplots_photon(syst, weight * effSF_wp90, phMVA, "90not80");
+      SYSplots_photon(syst, weight * effSF, phMVA, "90not80");
 
       // Here the reweight when we will have the fake rate transfer factors
     }
+  }
+
+  theHistograms->fill(  Form("SYS_MVAcut_%s"                , syst), Form("MVAcut %s"               ,syst), {"none","wp90","wp80"}, MVACut_s.c_str(), weight*effSF);
+  if(theSampleInfo.isMC()){
+    const char* phGenStatus;
+    phGenStatus = isPhotonPrompt(phMVA) ? "prompt" : "nonpro" ;
+    theHistograms->fill(Form("SYS_MVAcut-%s_%s", phGenStatus, syst), Form("MVAcut %s %s",phGenStatus,syst), {"none","wp90","wp80"}, MVACut_s.c_str(), weight*effSF);
   }
 }
 
@@ -2676,16 +2687,22 @@ void VVGammaAnalyzer::systematicsStudy(){
     bool pass90 = bestMVAPh_->passMVA(Photon::MVAwp::wp90);
     double effSF_wp80 = getPhotonEffSF_MVA(*bestMVAPh_, Photon::MVAwp::wp80);
     double effSF_wp90 = getPhotonEffSF_MVA(*bestMVAPh_, Photon::MVAwp::wp80);
+    std::string MVAcut_s = "none";
+    double effSF(1.), effdw(0.);
 
     if(pass90 && effSF_wp90 != 0){
+      effSF = effSF_wp90;
+      MVAcut_s = "wp90";
       getPhotonEffSFUnc_MVA(*bestMVAPh_, Photon::MVAwp::wp90);
-      double effdw90 = getPhotonEffSFUnc(*ph)/effSF_wp90;
+      double effdw90 = effdw = getPhotonEffSFUnc(*ph)/effSF_wp90;
       SYSplots_photon("phEffMVASF_Up"  , base_w * effSF_wp90 * (1 + effdw90), *bestMVAPh_, "wp90");
       SYSplots_photon("phEffMVASF_Down", base_w * effSF_wp90 * (1 - effdw90), *bestMVAPh_, "wp90");
 
       if(pass80 && effSF_wp80 != 0){
+	effSF = effSF_wp80;
+	MVAcut_s = "wp80";
 	getPhotonEffSFUnc_MVA(*bestMVAPh_, Photon::MVAwp::wp80);
-	double effdw80 = getPhotonEffSFUnc(*ph)/effSF_wp80;
+	double effdw80 = effdw = getPhotonEffSFUnc(*ph)/effSF_wp80;
 	SYSplots_photon("phEffMVASF_Up"  , base_w * effSF_wp80 * (1 + effdw80), *bestMVAPh_, "wp80");
 	SYSplots_photon("phEffMVASF_Down", base_w * effSF_wp80 * (1 - effdw80), *bestMVAPh_, "wp80");
       }
@@ -2693,6 +2710,15 @@ void VVGammaAnalyzer::systematicsStudy(){
 	SYSplots_photon("phEffMVASF_Up"  , base_w * effSF_wp90 * (1 + effdw90), *bestMVAPh_, "90not80");
 	SYSplots_photon("phEffMVASF_Down", base_w * effSF_wp90 * (1 - effdw90), *bestMVAPh_, "90not80");
       }
+    }
+
+    theHistograms->fill("SYS_MVAcut_phEffMVASF_Up"  , "MVAcut phEffMVASF_Up"  , {"none","wp90","wp80"}, MVAcut_s.c_str(), base_w * effSF * (1 + effdw));
+    theHistograms->fill("SYS_MVAcut_phEffMVASF_Down", "MVAcut phEffMVASF_Down", {"none","wp90","wp80"}, MVAcut_s.c_str(), base_w * effSF * (1 - effdw));
+    if(theSampleInfo.isMC()){
+      const char* phGenStatus;
+      phGenStatus = isPhotonPrompt(*bestMVAPh_) ? "prompt" : "nonpro" ;
+      theHistograms->fill(Form("SYS_MVAcut-%s_phEffMVASF_Up"  , phGenStatus), Form("MVAcut %s phEffMVASF_Up"  , phGenStatus), {"none","wp90","wp80"}, MVAcut_s.c_str(), base_w * effSF * (1 + effdw));
+      theHistograms->fill(Form("SYS_MVAcut-%s_phEffMVASF_Down", phGenStatus), Form("MVAcut %s phEffMVASF_Down", phGenStatus), {"none","wp90","wp80"}, MVAcut_s.c_str(), base_w * effSF * (1 - effdw));
     }
   }
 
