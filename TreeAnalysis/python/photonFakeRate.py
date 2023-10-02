@@ -18,7 +18,7 @@ from ctypes import c_int, c_double
 from array import array
 import itertools
 import re
-from plotUtils23 import TFileContext, addIfExisting
+from plotUtils23 import TFileContext, addIfExisting, rebin2D
 import Colours
 
 if(sys.version_info.major == 2):
@@ -127,6 +127,7 @@ def beautify(canvas, hist, logx=False, logy=False, logz=False):
     canvas.cd()
     # hist.GetXaxis().SetNdivisions(0)
     # hist.GetXaxis().SetRange(0, hist.GetXaxis().GetNbins()+1)
+
     hist.Draw("colz texte")
 
     if(logx):
@@ -434,7 +435,7 @@ def getPassFailLtoT_regex(sample_data, sample_prompt, method, variable, regex, y
     return hPASS, hFAIL
 
 
-def fakeRateLtoT_regex(sample_data, sample_prompt, method, variable, regex, year=2016, analyzer='VVGammaAnalyzer', region='CRLFR', pattern_printable=None, fixNegBins=False, **kwargs):
+def fakeRateLtoT_regex(sample_data, sample_prompt, method, variable, regex, year=2016, analyzer='VVGammaAnalyzer', region='CRLFR', pattern_printable=None, fixNegBins=False, rebin_eta=False, rebin_pt=False, **kwargs):
     if(pattern_printable is None):
         pattern_printable = regex.replace('\\','').replace('"','').replace("'","")
 
@@ -464,9 +465,23 @@ def fakeRateLtoT_regex(sample_data, sample_prompt, method, variable, regex, year
     print('\tPASS: {:6.0f} - TOTAL: {:6.0f} - <FR>: {:.2f}'.format(nP, nT, nP/nT))
 
     ## Fake rate = PASS/TOTAL ##
+    if(rebin_eta):
+        y_bins_orig = array('d', hPASS.GetYaxis().GetXbins())
+        y_bins      = array('d', (y_bins_orig[0], y_bins_orig[2], y_bins_orig[3], y_bins_orig[5]))
+        hPASS       = rebin2D(hPASS , y_bins=y_bins)
+        hTOTAL      = rebin2D(hTOTAL, y_bins=y_bins)
+    if(rebin_pt):
+        x_bins_orig = array('d', hPASS.GetXaxis().GetXbins())
+        x_bins      = array('d', (x_bins_orig[0], x_bins_orig[1], x_bins_orig[2], x_bins_orig[4]))
+        hPASS       = rebin2D(hPASS , x_bins=x_bins)
+        hTOTAL      = rebin2D(hTOTAL, x_bins=x_bins)
+
     hFR = hPASS
     hFR.Divide(hTOTAL)
 
+    x_name, y_name = variable.split('-')
+    hFR.GetXaxis().SetTitle(varname_to_title(x_name))
+    hFR.GetYaxis().SetTitle(varname_to_title(y_name))
     plotFR_LtoT(hFR, outname, title, **kwargs)
     return hFR
 
@@ -546,7 +561,12 @@ def getPassFailLtoT(sample_data, sample_prompt, analyzer, year, region, method, 
     return hdata_PASS, hdata_FAIL
 
 
-def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=2016, region='CRLFR', method='LtoT', variable='pt-aeta', fixNegBins=False, do_title=True, **kwargs):
+def varname_to_title(name):
+    if  (name == 'pt'  ): return 'p_{T} [GeV/c]'
+    elif(name == 'aeta'): return '|#eta|'
+    if  (name == 'dRl' ): return '#DeltaR(l, #gamma)'
+
+def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=2016, region='CRLFR', method='LtoT', variable='pt-aeta', fixNegBins=False, rebin_eta=False, rebin_pt=False, **kwargs):
     if(sample_prompt is None):
         print('Fake Rate {}: sample   ='.format(method), sample)
         samplename  = sample_data['name']
@@ -576,9 +596,23 @@ def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=20
     print('\tPASS: {:6.0f} - TOTAL: {:6.0f} - <FR>: {:.2f}'.format(nP, nT, nP/nT))
 
     ## Fake rate = PASS/TOTAL ##
+    if(rebin_eta):
+        y_bins_orig = array('d', hPASS.GetYaxis().GetXbins())
+        y_bins      = array('d', (y_bins_orig[0], y_bins_orig[2], y_bins_orig[3], y_bins_orig[5]))
+        hPASS       = rebin2D(hPASS , y_bins=y_bins)
+        hTOTAL      = rebin2D(hTOTAL, y_bins=y_bins)
+    if(rebin_pt):
+        x_bins_orig = array('d', hPASS.GetXaxis().GetXbins())
+        x_bins      = array('d', (x_bins_orig[0], x_bins_orig[1], x_bins_orig[2], x_bins_orig[4]))
+        hPASS       = rebin2D(hPASS , x_bins=x_bins)
+        hTOTAL      = rebin2D(hTOTAL, x_bins=x_bins)
+
     hFR = hPASS
     hFR.Divide(hTOTAL)
 
+    x_name, y_name = variable.split('-')
+    hFR.GetXaxis().SetTitle(varname_to_title(x_name))
+    hFR.GetYaxis().SetTitle(varname_to_title(y_name))
     plotFR_LtoT(hFR, outname, title, **kwargs)
 
     return hFR
@@ -783,6 +817,8 @@ if __name__ == "__main__":
     parser.add_argument(      "--logy"   , dest='logy', action="store_true" , default=False)
     parser.add_argument(      "--range-FR-z"   , type=float, nargs=2, default=[0., 1.], help='Manually set the z range for FR plots    (default: %(default)s)')
     parser.add_argument(      "--range-ratio-z", type=float, nargs=2, default=[0., 2.], help='Manually set the z range for ratio plots (default: %(default)s)')
+    parser.add_argument(      "--rebin-eta", action='store_true', help='Rebin the y axis (eta) so that it has only 3 bins: EB, gap, EE')
+    parser.add_argument(      "--rebin-pt" , action='store_true', help='Rebin the x axis (pt) so that it has only 3 bins: [20-35], [35,50], [50,120]')
 
     args = parser.parse_args()
 
