@@ -643,7 +643,7 @@ def plotFR_LtoT(hFR, outname, title, logx=False, logy=False, do_title=True, rang
 
     to_preserve_FR = beautify(cFR, hFR, logx, logy)
 
-    for ext in ['png']:
+    for ext in ['png', 'pdf']:
         cFR.SaveAs( picname+'.'+ext )
     del cFR, to_preserve_FR
 
@@ -677,7 +677,7 @@ def plotRatio(h1, h2, name="ratio", title="ratio", do_title=True):
     return ratio
 
 
-def plotProfiled(h2, name=None, title='profile', direction='X'):
+def plotProfiled(h2, name=None, title='profile', direction='X', do_title=True, **kwargs):
     if(not h2.Class().InheritsFrom("TH2")):
         print(Important('ERROR')+': "{:s}" does not inherit from TH2'.format(h2.GetName()))
         return
@@ -735,8 +735,10 @@ def plotProfiled(h2, name=None, title='profile', direction='X'):
     legend = ROOT.TLegend(.7,.7,.9,.9)
     
     for j in range(1, axis_2D_proj.GetNbins()+1):
-        h1 = ROOT.TH1D("{:s}_bin{:d}".format(h2.GetName(), j), title, nbins_draw+1, draw_edges)#, axis_2D_draw.GetNbins(), axis_2D_draw.GetXbins().GetArray())
+        h1 = ROOT.TH1D("{:s}_bin{:d}".format(h2.GetName(), j), title if do_title else '', nbins_draw+1, draw_edges)#, axis_2D_draw.GetNbins(), axis_2D_draw.GetXbins().GetArray())
         h1.GetXaxis().SetTitle(axis_2D_draw.GetTitle())
+        h1.GetYaxis().SetTitle('FR^{#gamma}')
+        allzeroes = True
         for i in range(0, h1.GetNbinsX()+2):
             bin_2d = get_bin_2d(h2, i, j)
             content = h2.GetBinContent(bin_2d)
@@ -746,22 +748,34 @@ def plotProfiled(h2, name=None, title='profile', direction='X'):
             # print("\t>>> bin:", i, "bin_2d:", bin_2d, "content: {:.2f} +- {:.2f}".format(content, error))
             h1.SetBinContent(i, content)
             h1.SetBinError  (i, error)
-        h1s.append(h1)
-        legend.AddEntry( h1, "{}<{:s}<{}".format(axis_2D_proj.GetBinLowEdge(j), axis_2D_proj.GetTitle().split(' ')[0], axis_2D_proj.GetBinUpEdge(j)) )
+            if(content > 0): allzeroes = False
+
+        varTitle = axis_2D_proj.GetTitle()
+        match = re.search('[^[]+', varTitle)
+        if(match): varTitle = match.group().strip()
+        legendTitle = "{}<{:s}<{}".format(axis_2D_proj.GetBinLowEdge(j), varTitle, axis_2D_proj.GetBinUpEdge(j))
+
+        if(allzeroes):
+            del h1
+            print('INFO: skipping slice "%s" because all bins are empty' % (legendTitle))
+        else:
+            h1s.append(h1)
+            legend.AddEntry(h1, legendTitle)
 
     for i,h in enumerate(h1s):
         h.SetLineColor(  _style[i]["color"] )
         h.SetMarkerColor(_style[i]["color"] )
         h.SetMarkerStyle(_style[i]["marker"])
     
-    h1s[0].GetYaxis().SetRangeUser(zmin - (zmax-zmin)/10, zmax + (zmax-zmin)/10)
+    h1s[0].GetYaxis().SetRangeUser(max(0, zmin - (zmax-zmin)/10), zmax + (zmax-zmin)/10)
     h1s[0].Draw("P0 E1")
     for h1 in h1s[1:]:
         h1.Draw("P0 E1 same")
     
     legend.Draw("SAME")
-    
-    cprof.SaveAs( "{:s}/{:s}.png".format(_outdir_plot, name) )
+
+    for ext in ('png','pdf'):
+        cprof.SaveAs( "{:s}/{:s}.{:s}".format(_outdir_plot, name, ext) )
     del legend, cprof
 
 
@@ -970,8 +984,8 @@ if __name__ == "__main__":
         print("########## INCLUSIVE   method:", args.method, " variable:", args.variable, " final_state:", args.final_state, "##########")
         if(args.do_data):
             hFR_data    = fakeRateLtoT(sampleList["data"], None                 , **dict(argsdict, variable=varState))
-            plotProfiled(hFR_data   , name='FR_profiledX_{}_{}_data'        .format(method, varState), title='FR(#gamma) vs #eta' , direction='X')
-            plotProfiled(hFR_data   , name='FR_profiledY_{}_{}_data'        .format(method, varState), title='FR(#gamma) vs p_{T}', direction='Y')
+            plotProfiled(hFR_data   , name='FR_profiledX_{}_{}_{}_data'        .format(method, varState, args.year), title='FR(#gamma) vs #eta' , direction='X', **argsdict)
+            plotProfiled(hFR_data   , name='FR_profiledY_{}_{}_{}_data'        .format(method, varState, args.year), title='FR(#gamma) vs p_{T}', direction='Y', **argsdict)
             print()
 
         if(args.do_mc):
@@ -985,8 +999,8 @@ if __name__ == "__main__":
             print()
         if(args.do_data and args.do_mc):
             hFR_data_ZG = fakeRateLtoT(sampleList["data"], sampleList["ZGToLLG"], **dict(argsdict, variable=varState))
-            plotProfiled(hFR_data_ZG, name='FR_profiledX_{}_{}_data-ZGToLLG'.format(method, varState), title='FR(#gamma) vs #eta' , direction='X')
-            plotProfiled(hFR_data_ZG, name='FR_profiledY_{}_{}_data-ZGToLLG'.format(method, varState), title='FR(#gamma) vs p_{T}', direction='Y')
+            plotProfiled(hFR_data_ZG, name='FR_profiledX_{}_{}_{}_data-ZGToLLG'.format(method, varState, args.year), title='FR(#gamma) vs #eta' , direction='X', **argsdict)
+            plotProfiled(hFR_data_ZG, name='FR_profiledY_{}_{}_{}_data-ZGToLLG'.format(method, varState, args.year), title='FR(#gamma) vs p_{T}', direction='Y', **argsdict)
 
             plotRatio(hFR_data   , hFR_DY, name="ratio_{}_{}_data_over_DY_{}"   .format(method, varState, args.year), title="Ratio FR(data)/FR(DY) with "        +joinIfNotNone([method, args.final_state], " "))
             plotRatio(hFR_data   , hFR_ZZ, name="ratio_{}_{}_data_over_ZZ_{}"   .format(method, varState, args.year), title="Ratio FR(data)/FR(ZZ) with "        +joinIfNotNone([method, args.final_state], " "))
