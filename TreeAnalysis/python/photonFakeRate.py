@@ -31,7 +31,6 @@ else:
 _path_base = None  # Module-wide variable
 _outdir_data = "data"
 _outdir_plot = path.join("Plot","PhFR")
-ROOT.gStyle.SetPaintTextFormat(".2f")
 
 def getPlots(inputdir, sample, plots, verbose=0):
     fname = path.join(inputdir, sample+".root")
@@ -486,79 +485,54 @@ def fakeRateLtoT_regex(sample_data, sample_prompt, method, variable, regex, year
     return hFR
 
 
-def getPassFailLtoT_noSubtract(sample, analyzer, year, region, method, variable, fixNegBins=False):
-    path_in = get_path_results(year=year, analyzer=analyzer, region=region)
-    if(sample['name'] == 'data'):
-        hPASS, hFAIL = getPlots(path_in, sample['file'], [ 'PhFR_%s_%s_data_%s'      % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
-        if(not hPASS): print('Could not get the PASS histogram for data')
-        if(not hFAIL): print('Could not get the FAIL histogram for data')
-    else:
-        if(method.startswith('LtoT')):
-            h5p, h4p, h3p = getPlots(path_in, sample['file'], [ 'PhFR_%s_%d_prompt'    % (method, s) for s in [5, 4, 3] ] )
-            h5n, h4n, h3n = getPlots(path_in, sample['file'], [ 'PhFR_%s_%d_nonprompt' % (method, s) for s in [5, 4, 3] ] )
-
-            hPASS = addIfExisting(h5p, h5n)
-            hFAIL = addIfExisting(h3p, h3n, h4p, h4n)
-            if(not hPASS): print('Could not get the PASS LtoT histogram')
-            if(not hFAIL): print('Could not get any of the the FAIL LtoT histogram')
-            assert (hPASS and hFAIL), "Could't get the 2*3 LtoT MC histograms!"
-        else:
-            hPASSp, hFAILp = getPlots(path_in, sample['file'], [ 'PhFR_%s_%s_prompt_%s'    % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
-            hPASSn, hFAILn = getPlots(path_in, sample['file'], [ 'PhFR_%s_%s_nonprompt_%s' % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
-
-            hPASS = addIfExisting(hPASSp, hPASSn)
-            hFAIL = addIfExisting(hFAILp, hFAILn)
-            if(not hPASS): print('Could not get the PASS histogram')
-            if(not hFAIL): print('Could not get the FAIL histogram')
-    assert (hPASS and hFAIL)
-
-    if(variable.startswith('pt-dRl')):
-        for h in [hPASS, hFAIL]:
-            h.RebinY(5) #4
-
-    if(sample.get('fixNegBins', False) and fixNegBins):
-        for h in [hPASS, hFAIL]:
-            fix_neg_bins(h)
-
-    return hPASS, hFAIL
-
-
-def getPassFailLtoT(sample_data, sample_prompt, analyzer, year, region, method, variable, fixNegBins):
-    path_in = get_path_results(year=year, analyzer=analyzer, region=region)
-    
+def getPassFailLtoT(sample_main, sample_subtr, analyzer, year, region, method, variable, fixNegBins):
     if(method.startswith('LtoT')):
-        hdata_5  , hdata_4  , hdata_3   = getPlots(path_in, sample_data['file']  , [ 'PhFR_LtoT_%d_data'   % (s) for s in [5, 4, 3] ] )
-        hprompt_5, hprompt_4, hprompt_3 = getPlots(path_in, sample_prompt['file'], [ 'PhFR_LtoT_%d_prompt' % (s) for s in [5, 4, 3] ] )
-        assert (hdata_5   and (hdata_4   or  hdata_3  )), "Could't get the 3 data histograms!"
-        assert (hprompt_5 and (hprompt_4 or  hprompt_3)), "Could't get the 3 prompt MC histograms"
+        raise NotImplementedException('LtoT is deprecated. Use VLtoL')
 
-        hdata_PASS   = hdata_5
-        hdata_FAIL   = addIfExisting(hdata_3  , hdata_4  )
-        hprompt_PASS = hprompt_5
-        hprompt_FAIL = addIfExisting(hprompt_3, hprompt_4)
+    path_in = get_path_results(year=year, analyzer=analyzer, region=region)
 
+    if(sample_main['name'] == 'data'):
+        hmain_PASS, hmain_FAIL   = getPlots(path_in, sample_main['file'] , [ 'PhFR_%s_%s_data_%s'    % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
+        assert hmain_PASS, 'Could not get the PASS histogram for data'
+        assert hmain_FAIL, 'Could not get the FAIL histogram for data'
     else:
-        hdata_PASS  , hdata_FAIL   = getPlots(path_in, sample_data['file']  , [ 'PhFR_%s_%s_data_%s'   % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
-        hprompt_PASS, hprompt_FAIL = getPlots(path_in, sample_prompt['file'], [ 'PhFR_%s_%s_prompt_%s' % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
-        
-        assert (hdata_PASS   and hdata_FAIL  ), "Could't get the 2 data histograms!"
-        assert (hprompt_PASS and hprompt_FAIL), "Could't get the 2 prompt MC histograms!"
+        hmain_PASSp, hmain_FAILp = getPlots(path_in, sample_main['file'], [ 'PhFR_%s_%s_prompt_%s'    % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
+        hmain_PASSn, hmain_FAILn = getPlots(path_in, sample_main['file'], [ 'PhFR_%s_%s_nonprompt_%s' % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
+
+        hmain_PASS = addIfExisting(hmain_PASSp, hmain_PASSn)
+        hmain_FAIL = addIfExisting(hmain_FAILp, hmain_FAILn)
+        assert hmain_PASS, 'Could not get the PASS main (data) histogram'
+        assert hmain_FAIL, 'Could not get the FAIL main (data) histogram'
+
+    assert (hmain_PASS   and hmain_FAIL  ), "Could't get the 2 main (data) histograms!"
+
+    if(sample_subtr is not None):
+        hsubtr_PASS, hsubtr_FAIL = getPlots(path_in, sample_subtr['file'], [ 'PhFR_%s_%s_prompt_%s' % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
+        assert (hsubtr_PASS and hsubtr_FAIL), "Could't get the 2 prompt MC histograms!"
 
     if(variable.startswith('pt-dRl')):
-        for h in [hdata_PASS, hdata_FAIL, hprompt_PASS, hprompt_FAIL]:
+        to_rebin = [hmain_PASS, hmain_FAIL]
+        if(sample_subtr is not None):
+            to_rebin += [hsubtr_PASS, hsubtr_FAIL]
+        for h in to_rebin:
             h.RebinY(5) #4
 
-    if(sample_data.get('fixNegBins', False) and fixNegBins):
-        for h in [hdata_PASS, hdata_FAIL]:
-            fix_neg_bins(h)
-    if(sample_prompt.get('fixNegBins', False) and fixNegBins):
-        for h in [hprompt_PASS, hprompt_FAIL]:
+    # if(sample_main.get('fixNegBins', False) and fixNegBins):
+    #     for h in [hmain_PASS, hmain_FAIL]:
+    #         fix_neg_bins(h)
+    # if(sample_subtr is not None and sample_subtr.get('fixNegBins', False) and fixNegBins):
+    #     for h in [hsubtr_PASS, hsubtr_FAIL]:
+    #         fix_neg_bins(h)
+
+    if(sample_subtr is not None):
+        hmain_PASS.Add(hsubtr_PASS, -1)
+        hmain_FAIL.Add(hsubtr_FAIL, -1)
+
+    if(fixNegBins):
+        for h in [hmain_PASS, hmain_FAIL]:
             fix_neg_bins(h)
 
-    hdata_PASS.Add(hprompt_PASS, -1)
-    hdata_FAIL.Add(hprompt_FAIL, -1)
-
-    return hdata_PASS, hdata_FAIL
+    return hmain_PASS, hmain_FAIL
 
 
 def varname_to_title(name):
@@ -568,18 +542,16 @@ def varname_to_title(name):
 
 def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=2016, region='CRLFR', method='LtoT', variable='pt-aeta', fixNegBins=False, rebin_eta=False, rebin_pt=False, **kwargs):
     if(sample_prompt is None):
-        print('Fake Rate {}: sample   ='.format(method), sample)
+        print('Fake Rate {}: sample   ='.format(method), sample_data)
         samplename  = sample_data['name']
         sampletitle = sample_data['title']
-
-        hPASS, hFAIL = getPassFailLtoT_noSubtract(sample_data, analyzer=analyzer, year=year, region=region, method=method, variable=variable, fixNegBins=fixNegBins)
     else:
         print('Fake Rate {}: data     ='.format(method), sample_data  )
         print('Fake Rate {}: promptMC ='.format(method), sample_prompt)
         samplename  = sample_data['name']  +  '-'  + sample_prompt['name']
         sampletitle = sample_data['title'] + ' - ' + sample_prompt['title']
 
-        hPASS, hFAIL = getPassFailLtoT(sample_data=sample_data, sample_prompt=sample_prompt, analyzer=analyzer, year=year, region=region, method=method, variable=variable, fixNegBins=fixNegBins)
+    hPASS, hFAIL = getPassFailLtoT(sample_data, sample_prompt, analyzer=analyzer, year=year, region=region, method=method, variable=variable, fixNegBins=fixNegBins)
 
     outname = 'FR_{method}_{variable}_{samplename}{region}_{year}'.format(method=method, variable=variable, samplename=samplename, region='' if region=='CRLFR' else '_'+region, year=year)
     if(method.startswith('LtoT')):
@@ -799,6 +771,8 @@ def findChannelsInFile(fname, method, variable):
 
 
 if __name__ == "__main__":
+    ROOT.gStyle.SetPaintTextFormat(".2f")
+
     sampleList = {
         "data"     : {"file": 'data'},
         "ZGToLLG"  : {"file": 'ZGToLLG', "title": "Z#gamma_{MC}", "fixNegBins": True},
@@ -833,6 +807,8 @@ if __name__ == "__main__":
     parser.add_argument(      "--range-ratio-z", type=float, nargs=2, default=[0., 2.], help='Manually set the z range for ratio plots (default: %(default)s)')
     parser.add_argument(      "--rebin-eta", action='store_true', help='Rebin the y axis (eta) so that it has only 3 bins: EB, gap, EE')
     parser.add_argument(      "--rebin-pt" , action='store_true', help='Rebin the x axis (pt) so that it has only 3 bins: [20-35], [35,50], [50,120]')
+    parser.add_argument(      "--fix-negative"   , dest='fixNegBins', action='store_true' , help='Set bins with negative content to zero (default: %(default)s)')
+    parser.add_argument(      "--no-fix-negative", dest='fixNegBins', action='store_false', help='Set bins with negative content to zero')
 
     args = parser.parse_args()
 
@@ -876,7 +852,6 @@ if __name__ == "__main__":
     method   = args.method
     varState = joinIfNotNone([args.variable, args.final_state])
     argsdict = vars(args)
-    argsdict.update({'fixNegBins':False})
 
     if(args.channels):
         print("########## CHANNELS   method:", args.method, " variable:", args.variable, " final_state:", args.final_state, "##########")
