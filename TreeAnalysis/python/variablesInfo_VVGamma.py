@@ -61,7 +61,9 @@ def getVarInfo_VVGamma(region):
             'SYS_mZZGwp90_central': {'title':'m_{4\ell\gamma}\:,\ \gamma\:wp90', 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_mZZGwp90-%s_central', 'unblind':False},
             'SYS_mZZGwp80_central': {'title':'m_{4\ell\gamma}\:,\ \gamma\:wp80', 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_mZZGwp80-%s_central', 'unblind':False},
             'SYS_wp90pt_central'  : {'title':'p_{T} #gamma_{wp90}'             , 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_wp90pt-%s_central'  , 'unblind':False},
-            'SYS_wp80pt_central'  : {'title':'p_{T} #gamma_{wp80}'             , 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_wp80pt-%s_central'  , 'unblind':False}
+            'SYS_wp80pt_central'  : {'title':'p_{T} #gamma_{wp80}'             , 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_wp80pt-%s_central'  , 'unblind':False},
+            'SYS_mZZGloose_central':{'title':'m_{4\ell\gamma}\:,\ \gamma\:tight', 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_mZZGloose-%s_central', 'fake_photons': 'SYS_mZZGfailReweight_central','unblind':False},
+            'SYS_mZllplusZllGloose_central':{'title':'m_{\ell\ell\gamma}+m_{\ell\ell}\:,\ \gamma\:tight', 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_mZllplusZllGloose-%s_central', 'fake_photons': 'SYS_mZllplusZllGfailReweight_central', 'unblind':False}
         })
 
         VarInfo_VVGamma.update({
@@ -229,6 +231,8 @@ def getVarInfo_VVGamma(region):
         'furthestVLPh'    : {},
         'furthestFailPh'  : {},
         'furthestLoosePh' : {'unblind':False}
+        ,
+        'SYS_MVAcut_central'  : {'title':'MVA cut passed'                  , 'split_prompt_ph':True          , 'split_prompt_ph_pattern': 'SYS_MVAcut-%s_central'  , 'unblind':False, 'logy':True}
     })
 
     for status in ('kinVetoL', 'fail', 'fail3', 'fail4a', 'fail4b', 'loose', 'fsrMatched'):
@@ -292,6 +296,10 @@ def getVarInfo_VVGamma(region):
         'AK4_pt'        : {'title':'p_{T}'   , 'rebin':1, 'unblind':True, 'logy':True},
         'AK8_N'         : {'title':'# AK8'   , 'rebin':1, 'unblind':True, 'logy':True, 'text':True},
         'AK8_pt'        : {'title':'p_{T}'   , 'rebin':1, 'unblind':True, 'logy':True}
+    })
+
+    VarInfo_VVGamma.update({
+        'GEN_chLeptons' : {'title':'# GEN charged leptons' ,'unblind':False, 'logy':True, 'ymin':1}
     })
 
     return VarInfo_VVGamma
