@@ -524,9 +524,21 @@ def getPassFailLtoT(sample_main, sample_subtr, analyzer, year, region, method, v
     #     for h in [hsubtr_PASS, hsubtr_FAIL]:
     #         fix_neg_bins(h)
 
+    outname = 'debug/%s_{method}_{variable}_%s{region}_{year}'.format(method=method, variable=variable, region='' if region=='CRLFR' else '_'+region, year=year)
+    title   = 'debug/%s {method} (from %s in {region})'.format(method=method, region=region)
+
+    plotFR_LtoT(     hmain_PASS, outname %('PASS', sample_main ['name']), title %('PASS', sample_main ['title']), range_FR_z=[0., hmain_PASS.GetMaximum()])
+    plotFR_LtoT(     hmain_FAIL, outname %('FAIL', sample_main ['name']), title %('FAIL', sample_main ['title']), range_FR_z=[0., hmain_FAIL.GetMaximum()])
+    if(sample_subtr is not None):
+        plotFR_LtoT(hsubtr_PASS, outname %('PASS', sample_subtr['name']), title %('PASS', sample_subtr['title']), range_FR_z=[0., max(hsubtr_PASS.GetMaximum(), hmain_PASS.GetMaximum())])
+        plotFR_LtoT(hsubtr_FAIL, outname %('FAIL', sample_subtr['name']), title %('FAIL', sample_subtr['title']), range_FR_z=[0., max(hsubtr_FAIL.GetMaximum(), hmain_FAIL.GetMaximum())])
+
     if(sample_subtr is not None):
         hmain_PASS.Add(hsubtr_PASS, -1)
         hmain_FAIL.Add(hsubtr_FAIL, -1)
+
+    plotFR_LtoT( hmain_PASS, outname %('PASS', 'result'), f'debug PASS {method} (after subtraction)', range_FR_z=[hmain_PASS.GetMinimum(), hmain_PASS.GetMaximum()])
+    plotFR_LtoT( hmain_FAIL, outname %('FAIL', 'result'), f'debug FAIL {method} (after subtraction)', range_FR_z=[hmain_FAIL.GetMinimum(), hmain_FAIL.GetMaximum()])
 
     if(fixNegBins):
         for h in [hmain_PASS, hmain_FAIL]:
@@ -829,6 +841,8 @@ if __name__ == "__main__":
 
     makedirs_ok(_outdir_data)
     makedirs_ok(_outdir_plot)
+    makedirs_ok(path.join(_outdir_data, 'debug'))
+    makedirs_ok(path.join(_outdir_plot, 'debug'))
 
     # ROOT.gStyle.SetPalette(ROOT.kBird)
 
