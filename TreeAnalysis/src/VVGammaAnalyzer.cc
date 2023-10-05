@@ -2686,7 +2686,7 @@ void VVGammaAnalyzer::systematicsStudy(){
     bool pass80 = bestMVAPh_->passMVA(Photon::MVAwp::wp80);
     bool pass90 = bestMVAPh_->passMVA(Photon::MVAwp::wp90);
     double effSF_wp80 = getPhotonEffSF_MVA(*bestMVAPh_, Photon::MVAwp::wp80);
-    double effSF_wp90 = getPhotonEffSF_MVA(*bestMVAPh_, Photon::MVAwp::wp80);
+    double effSF_wp90 = getPhotonEffSF_MVA(*bestMVAPh_, Photon::MVAwp::wp90);
     std::string MVAcut_s = "none";
     double effSF(1.), effdw(0.);
 
