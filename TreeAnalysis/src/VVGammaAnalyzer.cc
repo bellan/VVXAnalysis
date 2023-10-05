@@ -520,9 +520,10 @@ void VVGammaAnalyzer::analyze(){
   if(bestKinPh_){
     bool isPassVL    = bestKinPh_->cutBasedID(Photon::IdWp::VeryLoose);
     bool isPassLoose = bestKinPh_->cutBasedIDLoose();
+    double cutEffSF = isPassLoose ? getPhotonEffSF(*bestKinPh_) : 1.;
 
     if(isPassVL){
-      photonFakeRate_LtoT("VLtoL", *bestKinPh_, isPassLoose);
+      photonFakeRate_LtoT("VLtoL", *bestKinPh_, isPassLoose, cutEffSF);
 
       double f_VLtoL_data = getPhotonFR_VLtoL_data(*bestKinPh_);
       photonFRClosure("VLtoL_pt-aeta_data"  , *bestKinPh_, isPassLoose, f_VLtoL_data  );
@@ -532,20 +533,22 @@ void VVGammaAnalyzer::analyze(){
     }
 
     if(!isPassLoose){
-      photonFakeRate_LtoT("KtoVLexcl", *bestKinPh_, isPassVL);
+      photonFakeRate_LtoT("KtoVLexcl", *bestKinPh_, isPassVL, 1.);
 
       double f_KtoVLexcl = getPhotonFR_KtoVLexcl(*bestKinPh_);
       photonFRClosure("KtoVLexcl_pt-aeta" /*_data*/ , *bestKinPh_, isPassVL, f_KtoVLexcl  );
     }
-    // photonFakeRate_LtoT("KtoVL", *bestKinPh_, isPassVL);
+    // photonFakeRate_LtoT("KtoVL", *bestKinPh_, isPassVL, 1.);
   }
 
   if(bestMVAPh_){
     bool pass80 = bestMVAPh_->passMVA(Photon::MVAwp::wp80);
     bool pass90 = bestMVAPh_->passMVA(Photon::MVAwp::wp90);
+    double mvaEffSF = 1.;
 
     if(pass90){
-      photonFakeRate_LtoT("90to80", *bestMVAPh_, pass80);
+      mvaEffSF = pass80 ? getPhotonEffSF_MVA(*bestMVAPh_, Photon::MVAwp::wp80) : getPhotonEffSF_MVA(*bestMVAPh_, Photon::MVAwp::wp90);
+      photonFakeRate_LtoT("90to80", *bestMVAPh_, pass80, mvaEffSF);
 
       // double f_90to80_data = getPhotonFR_90to80_data(thePh);
       // photonFRClosure("90to80_pt-aeta_data", *bestMVA, pass80, f_90to80_data);
@@ -1890,7 +1893,7 @@ void VVGammaAnalyzer::photonFakeRate_ABCD(){
 }
 
 
-void VVGammaAnalyzer::photonFakeRate_LtoT(const char* method, const Photon& thePh, bool isPass){
+void VVGammaAnalyzer::photonFakeRate_LtoT(const char* method, const Photon& thePh, bool isPass, double effSF){
   double theAeta = fabs(thePh.eta());
   double thePt   = thePh.pt();
   if(thePt > ph_pt_bins.back())
@@ -1938,14 +1941,14 @@ void VVGammaAnalyzer::photonFakeRate_LtoT(const char* method, const Photon& theP
 
   // Fill photon FR plots
   const char* name_aeta_inclusive = Form("PhFR_%s_pt-aeta_%s_%s"   , method,          strPrompt, strPass);
-  theHistograms->fill(name_aeta_inclusive, "Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
+  theHistograms->fill(name_aeta_inclusive, "Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#eta;Events"             , ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight*effSF);
   const char* name_aeta_channel   = Form("PhFR_%s_pt-aeta_%s_%s_%s", method, channel, strPrompt, strPass);
-  theHistograms->fill(name_aeta_channel  , "Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#eta", ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight);
+  theHistograms->fill(name_aeta_channel  , "Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#eta;Events"             , ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight*effSF);
 
   const char* name_dRl_inclusive  = Form("PhFR_%s_pt-dRl_%s_%s"   , method,          strPrompt, strPass);
-  theHistograms->fill(name_dRl_inclusive ,"Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#DeltaR(#gamma, l);Events", ph_pt_bins,edges_dR, thePt, dR_l, theWeight);
+  theHistograms->fill(name_dRl_inclusive ,"Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#DeltaR(#gamma, l);Events", ph_pt_bins, edges_dR    , thePt, dR_l   , theWeight*effSF);
   const char* name_dRl_channel    = Form("PhFR_%s_pt-dRl_%s_%s_%s", method, channel, strPrompt, strPass);
-  theHistograms->fill(name_dRl_channel   ,"Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#DeltaR(#gamma, l);Events", ph_pt_bins,edges_dR, thePt, dR_l, theWeight);
+  theHistograms->fill(name_dRl_channel   ,"Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#DeltaR(#gamma, l);Events", ph_pt_bins, edges_dR    , thePt, dR_l   , theWeight*effSF);
 
   for(char lepSt : {all_char, lepStatus}){
     for(char lepFl : {all_char, lepFlavour}){
@@ -1960,7 +1963,7 @@ void VVGammaAnalyzer::photonFakeRate_LtoT(const char* method, const Photon& theP
 					    strPrompt,
 					    strPass
 					    );
-	  theHistograms->fill(name_byChannel, Form("FR #gamma %s;p_{T}^{#gamma};#DeltaR(#gamma, l);Events", method), ph_pt_bins, edges_dR, thePt, dR_l, theWeight);
+	  theHistograms->fill(name_byChannel, Form("FR #gamma %s;p_{T}^{#gamma};#DeltaR(#gamma, l);Events", method), ph_pt_bins, edges_dR, thePt, dR_l, theWeight*effSF);
 	}
       }
     }

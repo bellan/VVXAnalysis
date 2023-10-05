@@ -167,7 +167,7 @@ private:
   void plotsVVGstatus(const char* name, const char* title, const TLorentzVector& p4_VV, const char* mType="mass");
   void leptonFakeRate();
   void photonFakeRate_ABCD();
-  void photonFakeRate_LtoT(const char* method, const phys::Photon& thePh, bool isPass);
+  void photonFakeRate_LtoT(const char* method, const phys::Photon& thePh, bool isPass, double effSF);
   void photonFRClosure(const char* method, const phys::Photon& thePh, bool isPass, double f_FR);
   void studyJetsChoice();
   int studyAK4Choice(std::ofstream& fout, const phys::Boson<phys::Particle>& diquark, const double& tolerance);
