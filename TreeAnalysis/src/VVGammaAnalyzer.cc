@@ -2668,8 +2668,8 @@ void VVGammaAnalyzer::systematicsStudy(){
     SYSplots_phCut("phEffSF_Down", base_w * (1 - phEff_dw), *ph);
   }
   if(bestMVAPh_){  // Should be true if the previous ph != nullptr is true
-    SYSplots_phMVA("phEffSF_Up"  , base_w, *ph);
-    SYSplots_phMVA("phEffSF_Down", base_w, *ph);
+    SYSplots_phMVA("phEffSF_Up"  , base_w, *bestMVAPh_);
+    SYSplots_phMVA("phEffSF_Down", base_w, *bestMVAPh_);
   }
 
   // Photon MVA ID efficiency
