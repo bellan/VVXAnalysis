@@ -263,8 +263,12 @@ def main():
     datapath = path.join(basepath, 'data')
     if(not path.isdir(datapath)):
         makedirs_ok(datapath)
-    
-    sysJSON = path.join(datapath, 'systematics_{}.json'.format(args.year))
+
+    if args.output is not None:
+        sysJSON = args.output
+    else:
+        sysJSON = path.join(datapath, 'systematics_{}.json'.format(args.year))
+
     try:
         with open(sysJSON, 'r') as f:
             syst_values = load(f)
@@ -296,10 +300,12 @@ def main():
     deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ggTo4e_Contin_MCFM701.root'   ), do_plots=args.do_plots) )
     deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ggTo2e2mu_Contin_MCFM701.root'), do_plots=args.do_plots) )
     deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ggTo4mu_Contin_MCFM701.root'  ), do_plots=args.do_plots) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ZZZ.root'                     ), do_plots=args.do_plots) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'WZZ.root'                     ), do_plots=args.do_plots) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'WWZ.root'                     ), do_plots=args.do_plots) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'TTZJets.root'                 ), do_plots=args.do_plots) )
     deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ZZGTo4LG.root'                ), do_plots=args.do_plots) )
 
-    if args.output is not None:
-        sysJSON = args.output
     with open(sysJSON, 'w') as fout:
         dump(syst_values, fout, indent=2)
     logging.info('wrote systematics to "{}"'.format(sysJSON))
