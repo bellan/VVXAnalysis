@@ -2967,9 +2967,7 @@ const vector<double> VVGammaAnalyzer::ph_aetaExtended_bins {
 							     };
 
 const vector<double> VVGammaAnalyzer::ph_pt_bins(
-						 {20., 35., 50., 80., 120}
-						 // {20., 30., 45., 70., 120}
-						 // {20., 25., 30, 45., 70., 100}
+						 {20., 25., 35., 50., 80., 120}
 						 );
 
 const vector<double> VVGammaAnalyzer::ph_ptExtended_bins {
