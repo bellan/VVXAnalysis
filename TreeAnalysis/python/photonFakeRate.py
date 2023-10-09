@@ -8,7 +8,7 @@
 
 from __future__ import print_function
 import sys
-from os import path, environ, makedirs
+from os import path, environ
 import copy
 import ROOT
 # from readSampleInfo import *
@@ -24,6 +24,7 @@ import Colours
 if(sys.version_info.major == 2):
     from plotUtils import makedirs_ok
 else:
+    from os import makedirs
     def makedirs_ok(*args):
         makedirs(*args, exist_ok=True)
 
@@ -782,6 +783,103 @@ def findChannelsInFile(fname, method, variable):
     return matches
 
 
+def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_FR_z=[0.,1.], do_title=True, **kwargs):
+    hRef = thelist[0][1]
+    x_axis_ref = hRef.GetXaxis()
+    y_axis_ref = hRef.GetYaxis()
+    x_axis_title = x_axis_ref.GetTitle().split(' ')[0]
+    y_axis_title = y_axis_ref.GetTitle()
+    x_labels = {}
+    y_labels = {}
+
+    for bx in range(1, x_axis_ref.GetNbins()+1):
+        x_labels[bx] = "{}<{:s}<{}".format(x_axis_ref.GetBinLowEdge(bx), x_axis_title, x_axis_ref.GetBinUpEdge(bx))
+    for by in range(1, y_axis_ref.GetNbins()+1):
+        y_labels[by] = "{}<{:s}<{}".format(y_axis_ref.GetBinLowEdge(by), y_axis_title, y_axis_ref.GetBinUpEdge(by))
+
+    makedirs_ok('{:s}/time'.format(_outdir_plot))
+
+    canvas = ROOT.TCanvas('canvas_time', 'Time Evolution', 1200, 900)
+    canvas.cd()
+    gTime_list = []
+    for by in range(1, y_axis_ref.GetNbins()+1):
+        for bx in range(1, x_axis_ref.GetNbins()+1):
+            b  = hRef.GetBin(bx, by)
+            theTitle = title+' {} {}'.format(x_labels[bx], y_labels[by])
+            theName  = outname+'_{}_{}'.format(bx, by)
+            hTime = ROOT.TH1F(theName, theTitle if do_title else '', len(thelist),0,len(thelist))
+            is_empty = True
+            for bt, (time_label, hFR) in enumerate(thelist):
+                bt += 1
+                val = hFR.GetBinContent(b)
+                err = hFR.GetBinError  (b)
+                # print(f'{b=} {bt=}', '{:.3g} +- {:.3g}'.format(val, err))
+                hTime.SetBinContent(bt, val)
+                hTime.SetBinError  (bt, err)
+                hTime.GetXaxis().SetBinLabel(bt, time_label)
+                if(val > 0): is_empty = False
+
+            if(is_empty):
+                continue
+
+            leg_entry_title = '{}, {}'.format(x_labels[bx], y_labels[by])
+            legend_single = ROOT.TLegend(.5,.825,.89,.89)
+            legend_single.AddEntry(hTime, leg_entry_title)
+            hTime.SetMinimum(range_FR_z[0])
+            hTime.SetMaximum(range_FR_z[1])
+            hTime.SetMarkerStyle(ROOT.kFullTriangleUp)
+            hTime.SetMarkerColor(ROOT.kBlack)
+            hTime.SetLineColor  (ROOT.kBlack)
+            gTime_list.append([ROOT.TGraphErrors(hTime), leg_entry_title])
+
+            hTime.GetYaxis().SetTitle('FR #gamma')
+            hTime.Draw('E1X0')
+            legend_single.Draw('same')
+
+            # print('would save as:', '{:s}/time/{:s}.png'.format(_outdir_plot, theName))
+            canvas.SaveAs('{:s}/time/{:s}.png'.format(_outdir_plot, theName))
+            canvas.Clear()
+
+    _style = [
+        {'color':ROOT.kRed     , 'marker':ROOT.kFullTriangleUp},
+        {'color':ROOT.kBlue    , 'marker':ROOT.kFullTriangleDown},
+        {'color':ROOT.kGreen   , 'marker':ROOT.kFullSquare},
+        {'color':ROOT.kOrange  , 'marker':ROOT.kFullCircle},
+        {'color':ROOT.kCyan    , 'marker':ROOT.kFullStar},
+        {'color':ROOT.kMagenta , 'marker':ROOT.kFullTriangleUp},
+        {'color':ROOT.kSpring  , 'marker':ROOT.kFullCross},
+        {'color':ROOT.kViolet-6, 'marker':ROOT.kFullCrossX},
+        {'color':ROOT.kOrange-7, 'marker':ROOT.kFullDiamond},
+        {'color':ROOT.kGray+1  , 'marker':ROOT.kFullFourTrianglesX}
+        ]
+
+    hTime.Draw('AXIS')
+    if(do_title):
+        hTime.SetTitle(title)
+        hTime.GetPainter().PaintTitle()
+    n_hists = len(gTime_list)
+    b_width = 1
+    margin  = 0.4
+    step    = (1 - 2*margin)/n_hists
+    legend_all = ROOT.TLegend(0.55, 0.89 - 0.03*n_hists, 0.89, 0.89)
+    for i, [g, leg_title] in enumerate(gTime_list):
+        g.SetMarkerStyle(_style[i]['marker'])
+        g.SetMarkerColor(_style[i]['color' ])
+        g.SetLineColor  (_style[i]['color' ])
+        legend_all.AddEntry(g, leg_title)
+
+        for p in range(g.GetN()):
+            x_old = g.GetPointX(p)
+            x_new = x_old - b_width/2 + margin + i*step
+            g.SetPointX(p, x_new)
+            g.SetPointError(p, 0., g.GetErrorY(p))
+        g.Draw('P')
+
+    legend_all.Draw('same')
+    for ext in ('png', 'pdf'):
+        canvas.SaveAs('{:s}/time/{:s}_time.{ext:s}'.format(_outdir_plot, outname, ext=ext))
+
+
 if __name__ == "__main__":
     ROOT.gStyle.SetPaintTextFormat(".2f")
 
@@ -799,9 +897,11 @@ if __name__ == "__main__":
 
     possible_methods = {"VLtoL", "KtoVL", "KtoVLexcl", "90to80", "ABCD"}
 
+    possible_eras = ["2016preVFP", "2016postVFP", "2017", "2018"]
+
     from argparse import ArgumentParser
     parser = ArgumentParser()
-    parser.add_argument("-y", "--year"   , type=int, default=2016, choices=[2016, 2017, 2018], help='Default: %(default)s')
+    parser.add_argument("-y", "--year"   , default="2018", choices=possible_eras, help='Default: %(default)s')
     parser.add_argument("-m", "--method" , choices=possible_methods, default="VLtoL", help='Default: %(default)s')
     parser.add_argument("-t", "--variable", default = "pt-aeta", help='Default: %(default)s')
     parser.add_argument("-s", "--final-state", default=None, help='Default: %(default)s')
@@ -810,6 +910,8 @@ if __name__ == "__main__":
     parser.add_argument(      "--channels", action='store_true', help='Divide by channel (e.g. 2e1m, lepton fails, etc.)')
     parser.add_argument(      "--no-mc"  , dest="do_mc"  , action="store_false", help="Skip MC plots" )
     parser.add_argument(      "--no-data", dest="do_data", action="store_false", help="Skip data plots")
+    parser.add_argument(      "--time-evolution", action="store_true", help="Draw the time evolution of PhFR")
+    # Graphic options
     parser.add_argument(      "--no-title",dest="do_title",action="store_false", help="Do not paint the title on the canvas (default: False)")
     parser.add_argument(      "--linearx", dest='logx', action="store_false", default=True )
     parser.add_argument(      "--logx"   , dest='logx', action="store_true" , default=True )
@@ -866,6 +968,29 @@ if __name__ == "__main__":
     method   = args.method
     varState = joinIfNotNone([args.variable, args.final_state])
     argsdict = vars(args)
+
+    if(args.time_evolution):
+        print("########## TIME EVOL. method:", args.method, " variable:", args.variable, " final_state:", args.final_state, "##########")
+        hFR_data_l   = []
+        hFR_dataZG_l = []
+        for year in possible_eras:
+            try:
+                hFR = fakeRateLtoT(sampleList["data"], None                 , **dict(argsdict, variable=varState, year=year))
+            except OSError as e:
+                print('WARNING: skipping year beacause:', e)
+            else:
+                hFR_data_l.append([year, hFR])
+
+            try:
+                hFR = fakeRateLtoT(sampleList["data"], sampleList['ZGToLLG'], **dict(argsdict, variable=varState, year=year))
+            except OSError as e:
+                print('WARNING: skipping year beacause:', e)
+            else:
+                hFR_dataZG_l.append([year, hFR])
+
+        time_evolution(hFR_data_l  , outname='FR_{method}_{variable}_data'        .format(method=args.method, variable=args.variable), title='FR vs time (data)'        , **argsdict)
+        time_evolution(hFR_dataZG_l, outname='FR_{method}_{variable}_data-ZGToLLG'.format(method=args.method, variable=args.variable), title='FR vs time (data-Z#gamma)', **argsdict)
+        exit(0)
 
     if(args.channels):
         print("########## CHANNELS   method:", args.method, " variable:", args.variable, " final_state:", args.final_state, "##########")
@@ -1000,4 +1125,3 @@ if __name__ == "__main__":
             # plotRatio(hFR_LtoT_data, hFR_LtoT_ZZ_4P, name="ratio_{}_{}_data-ZG_over_ZZ_4P_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)_{CRLFR}/FR(ZZ_{4P}) with "+joinIfNotNone([method, args.final_state], " "))
             # plotRatio(hFR_LtoT_data, hFR_LtoT_gg, name="ratio_{}_{}_data-ZG_over_gg_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(gg) with "+joinIfNotNone([method, args.final_state], " "))
             print()
-
