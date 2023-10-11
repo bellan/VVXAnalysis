@@ -8,13 +8,11 @@ from ctypes import c_double
 from copy import deepcopy
 from math import log10, ceil
 from json import load, dump
-from plotUtils import TFileContext, makedirs_ok
+from plotUtils import makedirs_ok
+from plotUtils23 import TFileContext
+from utils23 import deep_update
 from argparse import ArgumentParser
 import logging
-if sys.version_info.major <= 2:
-    from collections import Mapping
-else:
-    from collections.abc import Mapping
 
 ROOT.gStyle.SetOptStat('0000')
 ROOT.gROOT.SetBatch(True)
@@ -34,14 +32,6 @@ def getYrange(*graphs, **kwargs):  # <TGraphAsymmErrors>
             else:
                extremes.append( y )
     return min(extremes), max(extremes)
-
-def deep_update(orig, new):
-    for k, v in new.items():
-        if isinstance(v, Mapping):
-            orig[k] = deep_update(orig.get(k, {}), v)
-        else:
-            orig[k] = v
-    return orig
 
 def plotSystematics(hCentral, hUp, hDn, var='[var]', syst='[syst]', sample='[sample]', region='[region]', **kwargs):  # <TH1>, <TH1>, <TH1>, <dict> (modified), <str>, <str>, <str>, <str>
     formatInfo = dict(var=var, syst=syst, sample=sample, region=region)
