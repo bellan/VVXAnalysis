@@ -137,7 +137,7 @@ def main():
         except json.decoder.JSONDecodeError as e:
             print('ERROR: Caught', type(e), 'while reading', args.config_file)
             print(e)
-            exit(1)
+            return 1
         config.update(fconfig)
 
     # Update from command line
@@ -198,15 +198,23 @@ def main():
             systematics = json.load(f)
     else:
         logging.critical('"%s" does not exist. Try (re-)running systematics.py to generate it', sysFile)
-        exit(2)
+        return 1
 
 
     ### Process systematics ###
     # MEMO: setdefault(region, {}).setdefault(var, {}).setdefault(sample, {})[syst] = {'up':upVar, 'dn':dnVar}
 
     # Order the systematics so that the samples have the same order of the observable section
-    data_syst = { sample:systematics[args.region][region_config['observable']['name']][sample] for sample in samples_to_idx }
-    df_syst = fillDataFrame(data_syst, formatter=formatForCombine)
+    missing_systematics = False
+    data_syst = {}
+    for sample in samples_to_idx:
+        try:
+            data_syst[sample] = systematics[args.region][region_config['observable']['name']][sample]
+        except KeyError:
+            logging.error('Systematics empty for %s', sample)
+            data_syst[sample] = {}
+            missing_systematics = True
+    df_syst = fillDataFrame(data_syst, formatter=formatForCombine).fillna(0)
 
     df_syst = df_syst.rename(lambda x: 'CMS_'+x)
 
@@ -242,8 +250,13 @@ def main():
                                                              args.config_file.split('/')[-1].split('.')[0] if args.config_file is not None else 'default'
                                                              ))
     with open(cardname, 'w') as fout:
+        if(missing_systematics): fout.write('### WARNING systematics missing for one or more samples ###\n\n')
         fout.write(template)
         logging.info('config written to "%s"', fout.name)
 
+    if(missing_systematics):
+        return 2
+    return 0
+
 if __name__ == '__main__':
-    main()
+    exit(main())
