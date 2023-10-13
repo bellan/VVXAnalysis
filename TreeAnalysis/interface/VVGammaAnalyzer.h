@@ -130,7 +130,6 @@ private:
   phys::Photon* bestKinPh_;
   phys::Photon* bestMVAPh_;
 
-  const TH2F* hPhotonFR_VLtoL_;  // Will point to one of the owning pointers below
   std::unique_ptr<TH2F> hPhotonFR_VLtoL_data_;
   std::unique_ptr<TH2F> hPhotonFR_VLtoL_dataZG_;
   std::unique_ptr<TH2F> hPhotonFR_KtoVLexcl_;
