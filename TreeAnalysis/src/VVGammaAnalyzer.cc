@@ -44,17 +44,20 @@ void VVGammaAnalyzer::begin(){
   cout<<" Start of VVGammaAnalyzer ";
   for(char i=0; i<25; ++i) cout<<'-';
   cout<<'\n';
+
+  std::string year_str(std::to_string(year));
+  if(year == 2016)
+    year_str += subEra_;
   
   // Photon FR
-  hPhotonFR_VLtoL_data_   = getHistfromFile(Form("data/FR_VLtoL_pt-aeta_data_%d.root"        , year), "PhFR", " VLtoL (data)"   );
-  
+  hPhotonFR_VLtoL_data_   = getHistfromFile(Form("data/FR_VLtoL_pt-aeta_data_%s.root"        , year_str.c_str()), "PhFR", " VLtoL (data)"   );
+
   // FR extended
-  hPhotonFR_VLtoL_dataZG_ = getHistfromFile(Form("data/FR_VLtoL_pt-aeta_data-ZGToLLG_%d.root", year), "PhFR", " VLtoL (data-ZG)");
-  hPhotonFR_KtoVLexcl_    = getHistfromFile(Form("data/FR_KtoVLexcl_pt-aeta_data_%d.root"    , year), "PhFR", " KtoVLexcl"      );
-  hPhotonFR_VLtoL_ = hPhotonFR_VLtoL_data_.get();
-  
+  hPhotonFR_VLtoL_dataZG_ = getHistfromFile(Form("data/FR_VLtoL_pt-aeta_data-ZGToLLG_%s.root", year_str.c_str()), "PhFR", " VLtoL (data-ZG)");
+  hPhotonFR_KtoVLexcl_    = getHistfromFile(Form("data/FR_KtoVLexcl_pt-aeta_data_%s.root"    , year_str.c_str()), "PhFR", " KtoVLexcl"      );
+
   // FR SF
-  hPhotonFRSF_VLtoL_      = getHistfromFile(Form("data/ratio_VLtoL_pt-aeta_data_over_ZZ_%d.root", year), "PhFRSF");
+  hPhotonFRSF_VLtoL_      = getHistfromFile(Form("data/ratio_VLtoL_pt-aeta_data_over_ZZ_%s.root", year_str.c_str()), "PhFRSF");
 
   // Photon efficiency SF for cut-based ID (temporary)
   std::string pathPhotonEffSF(Form("../Commons/data/egammaEffi.txt_EGM2D_Pho_Loose_UL%d%s.root", year%100, (subEra_.size() > 0 ? ('_'+subEra_).c_str() : "")));
@@ -2875,47 +2878,53 @@ void VVGammaAnalyzer::photonGenStudy(){
 
 // Utilities
 double VVGammaAnalyzer::getPhotonFR_VLtoL   (const phys::Photon& ph) const{
-  return hPhotonFR_VLtoL_->GetBinContent(hPhotonFR_VLtoL_->FindFixBin(
-						       ph.pt() < 120 ? ph.pt() : 119.9,
-						       abs(ph.eta())
-						       ));
+  const TH2F* h = hPhotonFR_VLtoL_data_.get();  // TODO: move it to dataZG
+  return h->GetBinContent(h->FindFixBin(
+					ph.pt() < 120 ? ph.pt() : 119.9,
+					abs(ph.eta())
+					));
 }
 
 double VVGammaAnalyzer::getPhotonFRUnc_VLtoL(const phys::Photon& ph) const{
-  return hPhotonFR_VLtoL_->GetBinError(hPhotonFR_VLtoL_->FindFixBin(
-						     ph.pt() < 120 ? ph.pt() : 119.9,
-						     abs(ph.eta())
-						     ));
+  const TH2F* h = hPhotonFR_VLtoL_data_.get();  // TODO: move it to dataZG
+  return h->GetBinError(h->FindFixBin(
+				      ph.pt() < 120 ? ph.pt() : 119.9,
+				      abs(ph.eta())
+				      ));
 }
 
 
 double VVGammaAnalyzer::getPhotonFR_VLtoL_data(const phys::Photon& ph) const{
-  return hPhotonFR_VLtoL_data_->GetBinContent(hPhotonFR_VLtoL_data_->FindFixBin(
-								   ph.pt() < 120 ? ph.pt() : 119.9,
-								   abs(ph.eta())
-								   ));
+  const TH2F* h = hPhotonFR_VLtoL_data_.get();  // TODO: move it to dataZG
+  return h->GetBinContent(h->FindFixBin(
+					ph.pt() < 120 ? ph.pt() : 119.9,
+					abs(ph.eta())
+					));
 }
 
 
 double VVGammaAnalyzer::getPhotonFR_VLtoL_dataZG(const phys::Photon& ph) const{
-  return hPhotonFR_VLtoL_dataZG_->GetBinContent(hPhotonFR_VLtoL_dataZG_->FindFixBin(
-								   ph.pt() < 120 ? ph.pt() : 119.9,
-								   abs(ph.eta())
-								   ));
+  const TH2F* h = hPhotonFR_VLtoL_dataZG_.get();
+  return h->GetBinContent(h->FindFixBin(
+					ph.pt() < 120 ? ph.pt() : 119.9,
+					abs(ph.eta())
+					));
 }
 
 double VVGammaAnalyzer::getPhotonFR_KtoVLexcl(const phys::Photon& ph) const{
-  return hPhotonFR_KtoVLexcl_->GetBinContent(hPhotonFR_KtoVLexcl_->FindFixBin(
-									   ph.pt() < 120 ? ph.pt() : 119.9,
-									   abs(ph.eta())
-									   ));
+  const TH2F* h = hPhotonFR_KtoVLexcl_.get();
+  return h->GetBinContent(h->FindFixBin(
+					ph.pt() < 120 ? ph.pt() : 119.9,
+					abs(ph.eta())
+					));
 }
 
 double VVGammaAnalyzer::getPhotonFRSF_VLtoL(const phys::Photon& ph) const{
-  return hPhotonFRSF_VLtoL_->GetBinContent(hPhotonFRSF_VLtoL_->FindFixBin(
-								     ph.pt() < 120 ? ph.pt() : 119.9,
-								     abs(ph.eta())
-								     ));
+  const TH2F* h = hPhotonFRSF_VLtoL_.get();
+  return h->GetBinContent(h->FindFixBin(
+					ph.pt() < 120 ? ph.pt() : 119.9,
+					abs(ph.eta())
+					));
 }
 
 double VVGammaAnalyzer::getPhotonEffSF_MVA(const phys::Photon& ph, Photon::MVAwp wp) const{
