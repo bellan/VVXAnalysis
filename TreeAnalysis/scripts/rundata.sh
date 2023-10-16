@@ -19,10 +19,12 @@ echo -e "--- Analyses on Data ---\n"
 git log -1 --oneline HEAD
 
 make || exit
-
-data_samples=$(ls samples/Data/$year | grep $year | grep -oP ".+(?=\.root)" | sort)
+year_int=$(echo $year | grep -oP "^\d+")
+year_subera=$(echo $year | grep -oP "(?<=\d)[^\d]+")
+csv=../Producers/python/samples_${year_int}UL_Data.csv
+data_samples=$(ls samples/Data/$year | grep -oP ".+(?=\.root)" | sort)
 for sample in ${data_samples} ; do
-    ./python/run.py $analyzer $sample -y $year -r $regions $options -d samples/Data &> logdir/${sample}.log &
+    ./python/run.py $analyzer $sample -y $year -r $regions -c $csv -d samples/Data $options &> logdir/${sample}.log &
 done
 
 wait
