@@ -55,6 +55,7 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
   , theCutCounter(0.)
   , theInputWeightedEvents(0.)
   , year(configuration.getParameter<int>("year"))
+  , subEra_(configuration.getParameter<std::string>("subEra"))
   , genCategory(-128){
 
   if(year != theSampleInfo.setup() && theSampleInfo.isMC())

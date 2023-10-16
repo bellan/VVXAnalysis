@@ -143,6 +143,7 @@ public:
 
   // Counters about SR and CRs, with trigger requirements too. The numbers are unweighted.
   int year;
+  std::string subEra_;
   
   // Access to the branches
   Long64_t event     ; TBranch *b_event;
