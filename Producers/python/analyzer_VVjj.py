@@ -370,6 +370,7 @@ process.treePlanter = cms.EDAnalyzer("TreePlanter",
                                      VVDecayMode = cms.int32(int(VVDECAYMODE)),
                                      signalDefinition = cms.int32(SIGNALDEFINITION),
                                      AddLHEKinematics = cms.bool(ADDLHEKINEMATICS),
+                                     GenCollection= cms.InputTag("genParticlesFromHardProcess"),
                                      muons        = cms.InputTag("pogMuons"),     # For comparison
                                      electrons    = cms.InputTag("pogElectrons"), # For comparison
                                      photons      = cms.InputTag("filteredPhotons"),       # all photons that pass pt cut

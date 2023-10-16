@@ -33,6 +33,7 @@
 #include "VVXAnalysis/DataFormats/interface/GenEventWeights.h"
 #include "VVXAnalysis/DataFormats/interface/MELA.h"
 #include "VVXAnalysis/DataFormats/interface/RegionsCounter.h"
+#include "VVXAnalysis/Producers/interface/FrixioneIsoCalculator.h"
 
 
 #include "VVXAnalysis/Producers/interface/FilterController.h"
@@ -120,6 +121,8 @@ class TreePlanter: public edm::EDAnalyzer {
   FilterController filterController_;
   std::string dataTag_;
   bool preVFP_;
+
+  FrixioneIsoCalculator frixioneIsoCalculator_;
 
   // To get Lepton efficiency scale factors. Temporary here!
   LeptonScaleFactors leptonScaleFactors_;
@@ -216,9 +219,10 @@ class TreePlanter: public edm::EDAnalyzer {
   // thePUInfoLabel;
   edm::EDGetTokenT<int>                         theGenCategoryToken;
   edm::EDGetTokenT<edm::View<reco::Candidate> > theGenVBCollectionToken;
-  edm::EDGetTokenT<edm::View<reco::Candidate> >	theGenCollectionToken;
+  edm::EDGetTokenT<edm::View<reco::GenParticle> > theGenCollectionToken;
   /* edm::EDGetTokenT<edm::View<reco::Candidate> > theGenPhotonCollectionToken; */
-  edm::EDGetTokenT<edm::View<reco::Candidate> >	theGenTauCollectionToken;
+  edm::EDGetTokenT<edm::View<reco::GenParticle> > theInclusiveGenToken; // prunedGenParticles
+  edm::EDGetTokenT<edm::View<reco::GenParticle> > theGenTauCollectionToken;
   edm::EDGetTokenT<edm::View<reco::Candidate> > theGenJetCollectionToken;
   edm::EDGetTokenT<edm::View<reco::Candidate> > theGenJetAK8CollectionToken;
   edm::EDGetTokenT<GenEventInfoProduct>         theGenInfoToken;
