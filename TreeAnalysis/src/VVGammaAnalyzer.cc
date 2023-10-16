@@ -986,20 +986,26 @@ void VVGammaAnalyzer::finish(){
 
 
 std::unique_ptr<TH2F> VVGammaAnalyzer::getHistfromFile(const char* fname, const char* hname, const char* info){
-  std::unique_ptr<TH2F> result;
-
   TFile fileFR(Form(fname, "READ" ));
-  if(fileFR.IsOpen()){
-    result.reset( std::move((TH2F*) fileFR.Get(hname)) );
-    result->SetDirectory(nullptr);  // prevent ROOT from deleting it
-    cout << "INFO: retrieved histogram \""<<hname<<"\""<<info<<" from \""<<fname<<"\"\n";
-    fileFR.Close();
-  }
-  else{
+  if(!fileFR.IsOpen()){
     cout << colour::Red("WARN") << ": file"<<info<<" not found in \""<<fname<<"\"\n";
-    result.reset( new TH2F("PhFR", "", 1,0.,1., 1,0.,1.) );
+    return std::unique_ptr<TH2F> (new TH2F(hname, "DEFAULT", 1,0.,1., 1,0.,1.) );
   }
 
+  TObject* retrievedObj = fileFR.Get(hname);
+  if(!retrievedObj){
+    cout << colour::Red("WARN") << ": histogram \""<<hname<<"\""<<info<<" not found in \""<<fname<<"\"\n"
+	 << "\tavailable keys:" ;
+    for(auto key : *fileFR.GetListOfKeys()) cout << ' ' << key->GetName() << ',';
+    cout << std::endl;
+    fileFR.Close();
+    return std::unique_ptr<TH2F> (new TH2F(hname, "DEFAULT", 1,0.,1., 1,0.,1.) );
+  }
+
+  std::unique_ptr<TH2F> result((TH2F*) retrievedObj);
+  result->SetDirectory(nullptr);  // prevent ROOT from deleting it
+  cout << "INFO: retrieved histogram \""<<hname<<"\""<<info<<" from \""<<fname<<"\"\n";
+  fileFR.Close();
   return result;
 }
 
