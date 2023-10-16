@@ -57,7 +57,8 @@ void VVGammaAnalyzer::begin(){
   hPhotonFRSF_VLtoL_      = getHistfromFile(Form("data/ratio_VLtoL_pt-aeta_data_over_ZZ_%d.root", year), "PhFRSF");
 
   // Photon efficiency SF for cut-based ID (temporary)
-  hPhotonEffSF_           = getHistfromFile(Form("../Commons/data/egammaEffi.txt_EGM2D_Pho_Loose_UL%d.root", year%100), "EGamma_SF2D");
+  std::string pathPhotonEffSF(Form("../Commons/data/egammaEffi.txt_EGM2D_Pho_Loose_UL%d%s.root", year%100, (subEra_.size() > 0 ? ('_'+subEra_).c_str() : "")));
+  hPhotonEffSF_           = getHistfromFile(pathPhotonEffSF.c_str(), "EGamma_SF2D");
   hPhotonEffSF_maxPt_     = hPhotonEffSF_->GetYaxis()->GetBinUpEdge(hPhotonEffSF_->GetNbinsY());
 
   // Photon MVA SF
