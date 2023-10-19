@@ -12,6 +12,15 @@ if sys.version_info.major <= 2:
 else:
     from collections.abc import Mapping
 
+# Contains luminosity [pb^-1], error (as a lnN width suitable for Combine datacards)
+lumi_dict = {
+    '2016':        {'value': 36300, 'error_uncorrelated': 1.010, 'error_correlated':1.006, 'error_1718': 0    },
+    '2016preVFP':  {'value': 19500, 'error_uncorrelated': 1.010, 'error_correlated':1.006, 'error_1718': 0    },
+    '2016postVFP': {'value': 16800, 'error_uncorrelated': 1.010, 'error_correlated':1.006, 'error_1718': 0    },
+    '2017':        {'value': 41480, 'error_uncorrelated': 1.020, 'error_correlated':1.009, 'error_1718': 1.006},
+    '2018':        {'value': 59830, 'error_uncorrelated': 1.015, 'error_correlated':1.020, 'error_1718': 1.002},
+    'Run2':        {'value':137620, 'error_uncorrelated': 1.0092,'error_correlated':1.013, 'error_1718': 1.0027}
+}
 
 def deep_update(orig, new):
     for k, v in new.items():

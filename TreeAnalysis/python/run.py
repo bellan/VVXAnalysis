@@ -8,6 +8,7 @@ import sys, os, commands, math, subprocess
 from optparse import OptionParser
 from readSampleInfo import *
 from Colours import *
+from utils23 import lumi_dict
 
 
 ############################################################################
@@ -223,19 +224,7 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
 
     # if luminosity is specified thorugh -l option, overwrite the year <-> luminosity decision
     if luminosity is None:
-        if   year == '2016':
-            luminosity =  35900
-        elif year == '2016preVFP':
-            luminosity =  19500
-        elif year == '2016postVFP':
-            luminosity =  16800
-        elif year == '2017':
-            luminosity =  41500
-        elif year == '2018':
-            luminosity =  59700
-        else :
-            print"{0:s}: Unknown year, please specify a luminosity with -l option".format(year)
-            sys.exit(1)
+        luminosity = lumi_dict[year]['value']
 
     #################################################################################
     ### Blind DATA by default ###

@@ -12,6 +12,7 @@ import pandas as pd
 from argparse import ArgumentParser
 from samplesByRegion import getSamplesByRegion
 from tableSystematics import fillDataFrame
+from utils23 import lumi_dict
 import logging
 
 ### Hardcoded configuration ###
@@ -36,13 +37,7 @@ __builtin_config__ = {
 
     # General configuration
     'systematics':{
-        'lumi': {
-            2016: 1.012,
-            2017: 1.023,
-            2018: 1.025,
-            1618: 1.016
-        },
-        'has_shape': ['QCDscaleF', 'QCD-F']
+        'has_shape': ['QCDscale']
     }
 }
 
@@ -114,7 +109,7 @@ def main():
     parser.add_argument(      '--verbosity', type=int, help='Set verbosity')
     parser.add_argument('-q', '--quiet'    , dest='verbosity', action='store_const', const=0, help='Set verbose to minimum')
     parser.add_argument('-r', '--region', default='SR4P')
-    parser.add_argument('-y', '--year', type=int, default=2016)
+    parser.add_argument('-y', '--year', default=2018)
     parser.add_argument('-c', '--config', type=json.loads, help='String convertible to dictionary used to override the config', default={})
     parser.add_argument(      '--unblind', action='store_true')
     parser.add_argument(      '--path', default='/afs/cern.ch/user/a/amecca/public/histogramsForCombine', help='Path to the histograms')
@@ -218,7 +213,7 @@ def main():
 
     df_syst = df_syst.rename(lambda x: 'CMS_'+x)
 
-    lumi = config['systematics']['lumi'][args.year]
+    lumi = lumi_dict[args.year][1]
     df_syst.loc['CMS_lumi_13TeV'] = pd.Series({ sample: lumi for sample in df_syst.columns })
     df_syst.insert(0, 'type', [ getSystType(syst, config) for syst in df_syst.index ], True)
 
