@@ -23,12 +23,12 @@ from CrossInfo import*
 from ROOT import TH1F,TCanvas, TLegend
 import plotUtils  # GetPredictionsPlot, GetDataPlot
 from plotUtils23 import PlotNotFoundError
+from utils23 import lumi_dict
 from variablesInfo import getVariablesInfo
 import CMS_lumi, tdrstyle
 import PersonalInfo
 from Colours import Evidence
 
-lumi_dict = {'2016': 35900, '2017': 41500, '2018': 59700}
 regions = ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L',    
            'SR3P', 'CR110'  , 'CR101'  , 'CR011'  , 'CR100'  , 'CR001'  , 'CR010', 'CR000', 'SR3P_1L', 'SR3P_1P', 'CR3P_1F', 'CRLFR', 'CR3L',
            'SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F', 
@@ -178,7 +178,7 @@ if LumiProj != "":
     InputDir+=LumiProj+"fbm1_"
     lumi = LumiProj
 else:
-    lumi = lumi_dict[year]
+    lumi = lumi_dict[year]['value']
 lumi = round(lumi/1000.,1)
 CMS_lumi.writeExtraText = 1
 CMS_lumi.extraText = "Preliminary"
