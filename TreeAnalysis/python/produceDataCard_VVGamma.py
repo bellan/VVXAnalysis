@@ -12,6 +12,7 @@ import pandas as pd
 from argparse import ArgumentParser
 from samplesByRegion import getSamplesByRegion
 from tableSystematics import fillDataFrame
+from plotUtils23 import TFileContext
 from utils23 import lumi_dict
 import logging
 
@@ -100,6 +101,32 @@ class PartialFormatter(string.Formatter):
             val = '{' + field_name + '}', first
         return val
 
+def check_exisiting_histograms(fname, observable, processes):
+    '''
+    Filters the list "processes" and returns only those that actually have an histogram in the files for the observable
+    '''
+    logging.debug('fname     : %s', fname     )
+    logging.debug('observable: %s', observable)
+    logging.debug('processes : %s', processes )
+    existing_processes = []
+    with TFileContext(fname) as tf:
+        obs_folder = tf.Get(observable)
+        if(not obs_folder):
+            raise KeyError('Observable "%s" missing from file "%s"' %(observable, fpath))
+        # logging.debug('obs_folder: %s', obs_folder)
+        keys = obs_folder.GetListOfKeys()
+        # logging.debug('keys: %s', '\n\t'+'\n\t'.join(sorted([k.GetName() for k in keys if not 'CMS' in k.GetName()])))
+        for process in processes:
+            if  (not keys.Contains(process)):
+                logging.warning('dropping %s, since it is missing for observable "%s" in %s', process, observable, fname)
+            else:
+                h = obs_folder.Get(process)
+                integral = h.Integral(1, h.GetNbinsX())
+                if(integral <= 0):
+                    logging.warning('dropping %s, since it has norm %.3g for observable "%s" in %s', process, integral, observable, fname)
+                else:
+                    existing_processes.append(process)
+    return existing_processes
 
 def main():
     parser = ArgumentParser()
@@ -112,7 +139,8 @@ def main():
     parser.add_argument('-y', '--year', default=2018)
     parser.add_argument('-c', '--config', type=json.loads, help='String convertible to dictionary used to override the config', default={})
     parser.add_argument(      '--unblind', action='store_true')
-    parser.add_argument(      '--path', default='/afs/cern.ch/user/a/amecca/public/histogramsForCombine', help='Path to the histograms')
+    parser.add_argument(      '--path'     , default='/afs/cern.ch/user/a/amecca/public/histogramsForCombine', help='Path to the histograms (default: %(default)s)')
+    parser.add_argument(      '--localpath', default='histogramsForCombine'                                  , help='Path to the histograms for local checks (default: %(default)s)')
     parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
 
     args = parser.parse_args()
@@ -143,6 +171,9 @@ def main():
         print(json.dumps(config, indent=2))
         print()
 
+    # Path
+    path_to_histograms = os.path.join(args.path, str(args.year), args.region+'.root')
+    path_to_histograms_local = os.path.join(args.localpath, str(args.year), args.region+'.root')
 
     ### Bin section ###
     region_config = config['regions'][args.region]
@@ -156,6 +187,10 @@ def main():
     if(args.verbosity >= 3):
         print(df_bin.to_string(header=False))
         print()
+
+    # Test that all the processes have at least one event - otherwise Combine will crash later
+    existing_processes = check_exisiting_histograms(path_to_histograms_local, observables[0][0], region_config['processes'])
+    region_config['processes'] = {k:v for k,v in region_config['processes'].items() if k in existing_processes}
 
     ### Observable section ###
     signals     = [proc for proc in region_config['processes'] if proc in config['signals']    ]
@@ -234,7 +269,7 @@ def main():
         imax=1,
         jmax=len(signals)+len(backgrounds)-1,
         kmax=len(df_syst),
-        path=os.path.join(args.path, str(args.year), args.region+'.root'),
+        path=path_to_histograms,
         bins=df_bin.to_string(header=False),
         processes=df_rate.to_string(header=False),
         systematics='#'+df_syst.to_string()
