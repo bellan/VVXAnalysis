@@ -40,7 +40,10 @@ namespace phys {
       , charge_(q)
       , id_(id)
       , motherId_(-99)
-      , frixioneIsolation_(false)
+      , frixioneIsolation_0p05_(false)
+      , frixioneIsolation_0p1_ (false)
+      , frixioneIsolation_0p2_ (false)
+      , frixioneIsolation_0p4_ (false)
       , efficiencySF_(1.)
       , efficiencySFUnc_(0.)
       , fakeRateSF_(1.)
@@ -103,7 +106,10 @@ namespace phys {
     virtual Double_t fakeRateSFUnc() const {return fakeRateSFUnc_;} 
     virtual Double_t fakeRateSFVar() const {return fakeRateSFUnc()*fakeRateSFUnc();}
     Bool_t   passFullSel() const {return true;}
-    Bool_t frixioneIsolation() const {return frixioneIsolation_;}
+    Bool_t frixioneIsolation_0p05() const {return frixioneIsolation_0p05_;}
+    Bool_t frixioneIsolation_0p1 () const {return frixioneIsolation_0p1_ ;}
+    Bool_t frixioneIsolation_0p2 () const {return frixioneIsolation_0p2_ ;}
+    Bool_t frixioneIsolation_0p4 () const {return frixioneIsolation_0p4_ ;}
     
     // Gen info, in case they are meaningfull
     std::bitset<15> genStatusFlags() const { return genStatusFlags_; }
@@ -115,7 +121,10 @@ namespace phys {
     Float_t charge_;
     Int_t id_;    
     Int_t motherId_;
-    Bool_t frixioneIsolation_;
+    Bool_t frixioneIsolation_0p05_;
+    Bool_t frixioneIsolation_0p1_ ;
+    Bool_t frixioneIsolation_0p2_ ;
+    Bool_t frixioneIsolation_0p4_ ;
     Double_t efficiencySF_;
     Double_t efficiencySFUnc_;
     Double_t fakeRateSF_;

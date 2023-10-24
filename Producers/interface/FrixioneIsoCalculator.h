@@ -20,24 +20,24 @@
 
 class FrixioneIsoCalculator {
  public:
-  explicit FrixioneIsoCalculator(double delta0=0.4, double epsilon=1.0/* , int nExponent=1 */)
-    : delta0_   (delta0)
-    , epsilon_  (epsilon)
+  explicit FrixioneIsoCalculator(/* double delta0=0.4,  */double epsilon=1.0/* , int nExponent=1 */)
+    /* : delta0_   (delta0) */
+    : epsilon_  (epsilon)
     /* , nExponent_(nExponent) */
   {}
 
-  bool isIsolated(const reco::GenParticle *photon, const edm::View<reco::GenParticle>    &genParticles);
-  bool isIsolated(const reco::GenParticle *photon);
+  bool isIsolated(const reco::GenParticle *photon, const edm::View<reco::GenParticle>    &genParticles, double delta0);
+  bool isIsolated(const reco::GenParticle *photon, double delta0);
 
   void cacheVector(const edm::View<reco::GenParticle>& genParticles);
   void cacheVector(std::vector<const reco::GenParticle*>& genParticles);
 
  protected:
-  double maxEnergyFraction(double delta) const; // max (transverse) energy divided by photon pt
+  double maxEnergyFraction(double delta, double delta0) const; // max (transverse) energy divided by photon pt
 
  private:
   // Parameters of the equation for E_T^max
-  double delta0_;  // Isolation cone radius of the photon
+  /* double delta0_;  // Isolation cone radius of the photon */
   double epsilon_;
   /* int nExponent_; */
 

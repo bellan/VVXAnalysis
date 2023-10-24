@@ -147,7 +147,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
     consumesMany<std::vector< PileupSummaryInfo > >();
     consumesMany<LHEEventProduct>();
     theGenCategoryToken      = consumes<int>                        (config.getUntrackedParameter<edm::InputTag>("GenCategory"    , edm::InputTag("genCategory")));
-    theGenCollectionToken    = consumes<edm::View<reco::GenParticle> >(config.getUntrackedParameter<edm::InputTag>("GenCollection"  , edm::InputTag("genParticlesFromHardProcess")));
+    theGenCollectionToken    = consumes<edm::View<reco::GenParticle> >(config.getParameter<edm::InputTag>("GenCollection"));
     theInclusiveGenToken     = consumes<edm::View<reco::GenParticle> >(edm::InputTag("prunedGenParticles"));
     // theGenPhotonCollectionToken = consumes<edm::View<reco::Candidate>>(config.getUntrackedParameter<edm::InputTag>("GenPhotons"   , edm::InputTag("genPhotons")));
     theGenTauCollectionToken = consumes<edm::View<reco::GenParticle> >(config.getUntrackedParameter<edm::InputTag>("GenTaus"  , edm::InputTag("genTaus")));
@@ -502,8 +502,12 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
     phys::Particle out(gp->p4(), phys::Particle::computeCharge(gp->pdgId()), gp->pdgId(), gp->statusFlags().flags_);
     if(gp->numberOfMothers() == 1)
       out.motherId_ = gp->mother(0)->pdgId();
-    if(gp->pdgId() == 22)
-      out.frixioneIsolation_ = frixioneIsoCalculator_.isIsolated(&*gp);
+    if(gp->pdgId() == 22){
+      out.frixioneIsolation_0p05_ = frixioneIsoCalculator_.isIsolated(&*gp, 0.05);
+      out.frixioneIsolation_0p1_  = frixioneIsoCalculator_.isIsolated(&*gp, 0.1 );
+      out.frixioneIsolation_0p2_  = frixioneIsoCalculator_.isIsolated(&*gp, 0.2 );
+      out.frixioneIsolation_0p4_  = frixioneIsoCalculator_.isIsolated(&*gp, 0.4 );
+    }
     genParticles_.push_back(std::move(out));
   }
   

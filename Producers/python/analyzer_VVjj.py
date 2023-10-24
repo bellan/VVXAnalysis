@@ -51,6 +51,7 @@ execfile(PyFilePath + "MasterPy/ZZ4lAnalysis.py")
 ### Replace parameters
 ### ----------------------------------------------------------------------
 
+process.MessageLogger.categories.extend(cms.untracked.vstring('FrixioneIsoCalculator'))
 
 ### ----------------------------------------------------------------------
 ### Output root file
