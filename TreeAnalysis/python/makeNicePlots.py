@@ -22,7 +22,7 @@ import CrossInfo
 from CrossInfo import* 
 from ROOT import TH1F,TCanvas, TLegend
 import plotUtils  # GetPredictionsPlot, GetDataPlot
-from plotUtils23 import PlotNotFoundError
+from plotUtils23 import PlotNotFoundError, InputDir
 from utils23 import lumi_dict
 from variablesInfo import getVariablesInfo
 import CMS_lumi, tdrstyle
@@ -81,7 +81,7 @@ parser.add_argument("-A", "--Analysis", dest="Analysis", choices=['VVXAnalyzer',
 
 parser.add_argument("-y", "--year", dest="year",
                   default="2016",
-                  help= "valid inputs are 2016, 2017, 2018")
+                  help= "valid inputs are 2016preVFP, 2016postVFP, 2017, 2018, Run2")
 
 parser.add_argument("-v", "--verbose", dest="verbosity",
                     action="count", default=1,
@@ -161,7 +161,7 @@ OutputDir  = options.outputDir if options.outputDir.startswith("/") else os.path
 Analysis   = options.Analysis
 year       = options.year
 
-InputDir   = os.path.join(options.inputDir, year, Analysis+'_'+region, '')
+inputDir   = InputDir(basedir=options.inputDir, year=year, region=region, analyzer=Analysis)
 OutputDir  = os.path.join(OutputDir, Analysis, year, predType, region, "")  # Last "" ensures a trailing '/' is appended to path
 try:
     os.stat(OutputDir)
@@ -175,7 +175,7 @@ ROOT.gStyle.SetErrorX(0.5)
 ROOT.gROOT.SetBatch(True)
 
 if LumiProj != "":
-    InputDir+=LumiProj+"fbm1_"
+    inputDir.basedir += LumiProj+"fbm1_"
     lumi = LumiProj
 else:
     lumi = lumi_dict[year]['value']
@@ -222,12 +222,12 @@ for Var in variables:
     
     # "Temporary" hack for closure test of photon fake rate
     if False: #'PhFRClosure' in Var and 'PASS' in Var:
-        hMC, leg = plotUtils.GetClosureStack(region, InputDir, info, forcePositive=False, verbosity=options.verbosity)
+        hMC, leg = plotUtils.GetClosureStack(region, inputDir.get_path(), info, forcePositive=False, verbosity=options.verbosity)
     else:
         if info.get('special'):
             info['name'] = info['stack']['plot']
         try:
-            (hMC, leg) = plotUtils.GetPredictionsPlot(region, InputDir, info, predType, mcSet, forcePositive=forcePositive, verbosity=options.verbosity)
+            (hMC, leg) = plotUtils.GetPredictionsPlot(inputDir, info, predType, mcSet, forcePositive=forcePositive, verbosity=options.verbosity)
         except PlotNotFoundError as e:
             if(options.skip_missing):
                 missing_plots.append(e)
@@ -243,7 +243,7 @@ for Var in variables:
         if info.get('special'):
             info['name'] = info['data']['plot']
         try:
-            (graphData, histodata) = plotUtils.GetDataPlot(region, InputDir, info, forcePositive=forcePositive, verbosity=options.verbosity)
+            (graphData, histodata) = plotUtils.GetDataPlot(inputDir, info, forcePositive=forcePositive, verbosity=options.verbosity)
         except PlotNotFoundError as e:
             if(options.skip_missing):
                 missing_plots.append(e)
