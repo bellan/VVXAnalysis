@@ -1,5 +1,6 @@
 from array import array
 from math import sqrt
+import os
 import ROOT
 
 class TFileContext(object):
@@ -15,6 +16,23 @@ class TFileContext(object):
 
 class PlotNotFoundError(Exception):
     pass
+
+
+class InputDir:
+    def __init__(self, basedir, year, region, analyzer):
+        self.basedir  = basedir
+        self.year     = year
+        self.region   = region
+        self.analyzer = analyzer
+
+    def path(self):
+        return os.path.join(self.basedir, self.year, '{}_{}'.format(self.analyzer, self.region))
+
+    def __str__(self):
+        return self.path()
+
+    def __repr__(self):
+        return str(vars(self))
 
 
 def addIfExisting(*args):
