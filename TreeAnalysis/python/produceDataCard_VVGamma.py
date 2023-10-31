@@ -23,15 +23,15 @@ __builtin_config__ = {
     # Define the observable and the samples in each region
     'regions': {
         'SR4P': {
-            'processes': {'ZZGTo4LG': -1, 'ZZTo4l':-1, 'ggTo4l':-1, 'WZTo3LNu':-1},
+            'processes': {'ZZGTo4LG': -1, 'ZZTo4l':-1, 'WZTo3LNu':-1},
             'observable': {'name':'mZZGloose', 'observation':-1}  # Combine's name for "observable"
         },
         'CR3P1F':{
-            'processes': {'ZZTo4l':-1, 'ggTo4l':-1, 'WZTo3LNu':-1},
+            'processes': {'ZZTo4l':-1, 'WZTo3LNu':-1},
             'observable': {'name':'mZZ', 'observation':-1}
         },
         'SR3P': {
-            'processes': {'WZGTo3LNuG':-1, 'ZZGTo4LG':-1, 'ZZTo4l':-1, 'ggTo4l':-1, 'WZTo3LNu':-1},
+            'processes': {'WZGTo3LNuG':-1, 'ZZGTo4LG':-1, 'ZZTo4l':-1, 'WZTo3LNu':-1},
             'observable': {'name':'mWZG', 'observation':-1}
         }
     },
@@ -154,7 +154,7 @@ def get_gmN_params(syst, data_syst):
 
 def main():
     parser = ArgumentParser()
-    parser.add_argument('config_file', help='Configuration file. Defaults to the one hardcoded in this script', default=None)
+    parser.add_argument('config_file', help='Configuration file')
     parser.add_argument('-t', '--template', help='Template for the datacard')
     parser.add_argument('-v', '--verbose'  , dest='verbosity', action='count', default=1, help='Increase verbosity')
     parser.add_argument(      '--verbosity', type=int, help='Set verbosity')
@@ -177,15 +177,14 @@ def main():
     config = copy.deepcopy(__builtin_config__)
 
     # Update from config file
-    if(args.config_file is not None):
-        try:
-            with open(args.config_file) as f:
-                fconfig = json.load(f)
-        except json.decoder.JSONDecodeError as e:
-            print('ERROR: Caught', type(e), 'while reading', args.config_file)
-            print(e)
-            return 1
-        config.update(fconfig)
+    try:
+        with open(args.config_file) as f:
+            fconfig = json.load(f)
+    except json.decoder.JSONDecodeError as e:
+        print('ERROR: Caught', type(e), 'while reading', args.config_file)
+        print(e)
+        return 1
+    config.update(fconfig)
 
     # Update from command line
     config.update(args.config)
