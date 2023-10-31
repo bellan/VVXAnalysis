@@ -37,6 +37,11 @@ def _test_deep_update():
     target = {'A': {'a1': 1, 'a2':2}, 'B': {'b1':3, 'b2': 2}}
     assert deep_update(d1, d2) == target, 'deep_update test failed'
 
+    d3 = {'A': [1,2,3]}
+    d4 = {'A': [4,5]}
+    target = {'A': [4,5]}
+    assert deep_update(d3, d4) == target, 'deep_update failed to replace a list'
+
 
 def main():
     '''
