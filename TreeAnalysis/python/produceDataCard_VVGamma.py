@@ -38,7 +38,7 @@ __builtin_config__ = {
 
     # General configuration
     'systematics':{
-        'has_shape': ['QCDscale']
+        'shape': ['QCDscale']
     }
 }
 
@@ -63,8 +63,10 @@ shapes * * {path} $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
 
 # Utility functions
 def getSystType(syst, config):
-    if(any(re.search(expr, syst) for expr in config['systematics']['has_shape'])):
+    if  (any(re.search(expr, syst) for expr in config['systematics'].get('shape', []))):
         return 'shape'
+    elif(any(re.search(expr, syst) for expr in config['systematics'].get('gmN'  , []))):
+        return 'gmN'
     else:
         return 'lnN'
 
@@ -127,6 +129,28 @@ def check_exisiting_histograms(fname, observable, processes):
                 else:
                     existing_processes.append(process)
     return existing_processes
+
+def get_gmN_params(syst, data_syst):
+    n_affected = 0
+    sample_affected = None
+    N = 0
+    alpha = 0
+    for sample, sample_data in data_syst.items():
+        syst_data = sample_data[syst]
+        if(syst_data['up'] - syst_data['dn'] > 0):
+            n_affected += 1
+            sample_affected = sample
+            N      = syst_data['N']
+            integr = syst_data['integr']
+            alpha  = integr/N
+            logging.debug('sample: %s - N: %d - integr: %g - alpha: %g', sample, N, integr, alpha)
+
+    if  (n_affected >  1):
+        raise RuntimeError('The number of samples affected by "%s" is %d, but the specified type is gmN!' %(syst, n_affected))
+    elif(n_affected == 0):
+        logging.warning('No sample is affected by "%s", but the specified type is "gmN"' %(syst))
+
+    return sample_affected, N, alpha
 
 def main():
     parser = ArgumentParser()
@@ -244,13 +268,27 @@ def main():
             logging.error('Systematics empty for %s', sample)
             data_syst[sample] = {}
             missing_systematics = True
+
     df_syst = fillDataFrame(data_syst, formatter=formatForCombine).fillna(0)
+    type_column = []
+    for syst in df_syst.index:
+        syst_type = getSystType(syst, config)
+        if(syst_type == 'gmN'):
+            sample_affected, N, alpha = get_gmN_params(syst, data_syst)
+            if(N > 0):
+                df_syst[sample_affected].loc[syst] = alpha
+                type_column.append('gmN %d' %(N))
+            else:
+                type_column.append('lnN')
+        else:
+            type_column.append(syst_type)
 
     df_syst = df_syst.rename(lambda x: 'CMS_'+x)
 
     lumi = lumi_dict[args.year][1]
     df_syst.loc['CMS_lumi_13TeV'] = pd.Series({ sample: lumi for sample in df_syst.columns })
-    df_syst.insert(0, 'type', [ getSystType(syst, config) for syst in df_syst.index ], True)
+    type_column.append('lnN')
+    df_syst.insert(0, 'type', type_column, False)
 
     if(args.verbosity >= 4):
         print(df_syst)
