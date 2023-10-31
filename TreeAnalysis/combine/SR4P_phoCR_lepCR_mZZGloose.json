@@ -15,5 +15,9 @@
 		"observation":-1
 	    }
 	}
+    },
+    "systematics": {
+	"shape": ["QCDscale"],
+	"gmN"  : ["phFakeRate"]
     }
 }

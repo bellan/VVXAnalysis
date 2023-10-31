@@ -62,7 +62,7 @@ def plotSystematics(hCentral, hUp, hDn, var='[var]', syst='[syst]', sample='[sam
 
     ################################### Definition of the schema for the dict ####################################
     syst_values = {}
-    syst_values.setdefault(region, {}).setdefault(var, {}).setdefault(sample, {})[syst] = {'up':upVar, 'dn':dnVar}
+    syst_values.setdefault(region, {}).setdefault(var, {}).setdefault(sample, {})[syst] = {'up':upVar, 'dn':dnVar, 'integr': hCentral.Integral(1, hCentral.GetNbinsX()), 'N': hCentral.GetEntries()}
     ##############################################################################################################
 
     
