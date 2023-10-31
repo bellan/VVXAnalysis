@@ -13,6 +13,7 @@ from plotUtils import TFileContext, makedirs_ok
 from subprocess import call
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
+from utils23 import lumi_dict
 import re
 
 
@@ -75,7 +76,7 @@ def main():
     ]
 
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-y', '--year'     , default='2016')
+    parser.add_argument('-y', '--year'     , default='2018', choices=lumi_dict.keys())
     parser.add_argument(      '--blind'    , action='store_true', help='Do not write data_obs in output files')
     parser.add_argument('-i', '--inputdir' , default='results', help='Top level directory where the results of analyzers are stored')
     parser.add_argument('-o', '--outputdir', default='histogramsForCombine', help='Output location')
