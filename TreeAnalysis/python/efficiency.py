@@ -111,8 +111,12 @@ def main():
         # "genAK4_quarks",
         "AK4_genJets",
         "goodPhotons_gen",
-        "kinPhotons_gen"
-        # ("photons", "kin")
+        "kinPhotons_gen",
+        "goodPhotons_genKin",
+        "goodPhotons_genDRl",
+        "goodPhotons_genPrompt",
+        "goodPhotons_genKinPrompt",
+        "goodPhotons_genKinDRl"
     ]
     effVars = {'pt', 'E', 'eta', 'N'}
     # resVars = {'dR', 'E', 'pt'}

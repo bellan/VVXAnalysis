@@ -402,6 +402,22 @@ Int_t VVGammaAnalyzer::cut() {
   photonHistos();
   jetHistos();
   // PKU_comparison();
+
+  std::vector<Particle> genPhotonsKin;
+  std::vector<Particle> genPhotonsKinPrompt;
+  std::vector<Particle> genPhotonsDRl;
+  std::vector<Particle> genPhotonsKinDRl;
+  for(const Particle& p : *genPhotons_){
+    double aeta = fabs(p.eta());
+    bool isPrompt = p.genStatusFlags().test(phys::isPrompt);
+    bool passKin  = p.pt() > 20 && aeta < 2.4 && (aeta < 1.4442 || aeta > 1.566);
+    bool passDRl  = physmath::deltaR(p, *std::min_element(genChLeptons_->begin(), genChLeptons_->end(), DeltaRComparator(p))) > 0.5;
+    if(passKin            ) genPhotonsKin      .push_back(p);
+    if(passKin && isPrompt) genPhotonsKinPrompt.push_back(p);
+    if(passDRl            ) genPhotonsDRl      .push_back(p);
+    if(passKin && passDRl ) genPhotonsKinDRl   .push_back(p);
+  }
+
   photonIsolation(*    photons            , "all" );
   photonIsolation(* kinPhotons_["central"], "kin" );
   photonIsolation(*goodPhotons_["central"], "good");
@@ -409,7 +425,12 @@ Int_t VVGammaAnalyzer::cut() {
   efficiency(*    photons            , *genPhotons_, "photons"    , "gen", 0.2);
   efficiency(* kinPhotons_["central"], *genPhotons_, "kinPhotons" , "gen", 0.2);
   efficiency(*goodPhotons_["central"], *genPhotons_, "goodPhotons", "gen", 0.2);
-  
+  efficiency(*goodPhotons_["central"],  genPhotonsKin      , "goodPhotons", "genKin"      , 0.2);
+  efficiency(*goodPhotons_["central"],  genPhotonsDRl      , "goodPhotons", "genDRl"      , 0.2);
+  efficiency(*goodPhotons_["central"], *genPhotonsPrompt_  , "goodPhotons", "genPrompt"   , 0.2);
+  efficiency(*goodPhotons_["central"],  genPhotonsKinPrompt, "goodPhotons", "genKinPrompt", 0.2);
+  efficiency(*goodPhotons_["central"],  genPhotonsKinDRl   , "goodPhotons", "genKinDRl"   , 0.2);
+
   efficiency(*jets, *genJets, "AK4", "genJets", 0.4);
   
   
