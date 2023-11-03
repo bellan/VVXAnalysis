@@ -1,11 +1,8 @@
 #include "VVXAnalysis/Producers/interface/FrixioneIsoCalculator.h"
 
 #include "DataFormats/Math/interface/deltaR.h"
-#include "FWCore/Utilities/interface/EDMException.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 #include <cmath>
-#include <sstream>
 
 double FrixioneIsoCalculator::maxEnergyFraction(double delta, double delta0) const{
   // Case nExponent_ != 1 is not handled
@@ -26,16 +23,12 @@ bool FrixioneIsoCalculator::isIsolated(const reco::GenParticle* photon, double d
     });
 
   // Compute the isolation
-  std::stringstream ss;
-  ss << "Total particles: " << cachedGenParticles_.size() << " - ph p4: " << photon->p4() << '\n';
   bool excluded_self = false;
   double frixione_sum = 0.;
   double photon_pt = photon->pt();
   for(const reco::GenParticle* gp : cachedGenParticles_){
-    ss << "\tgp p4: " << gp->p4();
     // Exclude the photon iself from the computation
     if(!excluded_self && gp->p4() == photon->p4()){ // Same particle in different collections
-      ss << " (*)\n";
       // Comparing `LorentzVector`s is probably costly, and there is only one genParticle that corresponds
       // to this photon. Therefore I added a guard bool so that the comparison is only done once
       excluded_self = true;
@@ -44,26 +37,16 @@ bool FrixioneIsoCalculator::isIsolated(const reco::GenParticle* photon, double d
 
     // Compute the isolation
     double dr = deltaR(*gp, *photon);
-    ss << "\t - dr = " << dr;
-    if (dr >= delta0){
-      ss <<" - breaking out of loop\n";
+    if (dr >= delta0)
       break;
-    }
-    ss << "\t - energy: " << gp->pt() << '\n';
 
     frixione_sum += gp->pt();
 
     double e_max = photon_pt*maxEnergyFraction(dr, delta0);
-    if (frixione_sum > e_max){
-      ss << "FAIL - sum (" << frixione_sum << ") > e_max ("<<e_max<<")\n";
-      edm::LogInfo("FrixioneIsoCalculator") << ss.str();
+    if (frixione_sum > e_max)
       return false;
-    }
   }
 
-  double e_max = photon->pt()*maxEnergyFraction(delta0, delta0);
-  ss     << "PASS - sum (" << frixione_sum << ") < e_max ("<<e_max<<")\n";
-  edm::LogInfo("FrixioneIsoCalculator") << ss.str();
   return true;
 }
 
