@@ -472,7 +472,7 @@ def fakeRateLtoT_regex(sample_data, sample_prompt, method, variable, regex, year
         hTOTAL      = rebin2D(hTOTAL, y_bins=y_bins)
     if(rebin_pt):
         x_bins_orig = array('d', hPASS.GetXaxis().GetXbins())
-        x_bins      = array('d', (x_bins_orig[0], x_bins_orig[1], x_bins_orig[2], x_bins_orig[4]))
+        x_bins      = array('d', ( x for i,x in enumerate(x_bins_orig) if i != len(x_bins_orig)-2 ))
         hPASS       = rebin2D(hPASS , x_bins=x_bins)
         hTOTAL      = rebin2D(hTOTAL, x_bins=x_bins)
 
@@ -588,7 +588,7 @@ def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=20
         hTOTAL      = rebin2D(hTOTAL, y_bins=y_bins)
     if(rebin_pt):
         x_bins_orig = array('d', hPASS.GetXaxis().GetXbins())
-        x_bins      = array('d', (x_bins_orig[0], x_bins_orig[1], x_bins_orig[2], x_bins_orig[4]))
+        x_bins      = array('d', ( x for i,x in enumerate(x_bins_orig) if i != len(x_bins_orig)-2 ))
         hPASS       = rebin2D(hPASS , x_bins=x_bins)
         hTOTAL      = rebin2D(hTOTAL, x_bins=x_bins)
 
