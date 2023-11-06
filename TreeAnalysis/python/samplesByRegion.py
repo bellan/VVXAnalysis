@@ -20,7 +20,7 @@ tt_X_4l  = [{'files':['TTZZ', 'TTWW', 'TTZJets']                , 'color':ROOT.k
 # t(t) with >= 3 leptons
 tt_X_3l  = [{'files':tt_X_4l[0]['files']+['TZq', 'TTWJetsToLNu'], 'color':ROOT.kViolet-7, 'name':'t#bar{t}+any'}]
 # t(t) with >= 2 leptons
-tt_X_2l  = [{'files':tt_X_3l[0]['files']+['tW', 'TTTo2L2Nu']    , 'color':ROOT.kViolet-7, 'name':'t#bar{t}+tW' }]
+tt_X_2l  = [{'files':tt_X_3l[0]['files']+['tW', 'TTTo2L2Nu']    , 'color':ROOT.kViolet-7, 'name':'t#bar{t}+any'}]
 # single top, single lepton
 t        = [{'files':['singleT'       ] , 'color':ROOT.kMagenta , 'name':'top'}]
 # files missing for now: singleT, tt+gamma (/TTGJets or /TTGamma_Dilept)
@@ -65,7 +65,11 @@ def getSamplesByRegion(region, MCSet, predType):
 
     if   region in ['SR4P', 'SR4P_1L', 'SR4P_1F', 'CR3P1F', 'CR2P2F']:
         if   predType == 'fullMC':
-            tot += tt_X_3l + triboson + qqZZ + ggZZ + WZ + WW + DY + ZG
+            if region in ('SR4P', 'SR4P_1L', 'SR4P_1F'):
+                tot += tt_X_3l
+            else:
+                tot += tt_X_2l
+            tot += triboson + qqZZ + ggZZ + WZ + DY + ZG
         elif predType in ('lepCR', 'fromCR'):
             tot += tt_X_4l + triboson + qqZZ + ggZZ
         elif predType == 'phoCR':
