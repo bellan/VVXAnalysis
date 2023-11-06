@@ -4,6 +4,7 @@ from __future__ import print_function
 from os import path, environ, getcwd
 import ROOT
 import sys
+import re
 from ctypes import c_double
 from copy import deepcopy
 from math import log10, ceil
@@ -196,7 +197,7 @@ def doSystematics(tf, var, syst, **kwargs):  # <TFile>, <str>, <str>, <dict> (is
     return new_syst
 
 
-def doSystOnFile(path, **kwargs):  # <str>
+def doSystOnFile(path, syst_regex=None, **kwargs):  # <str>, <re.Pattern>
     syst_values = {}
     with TFileContext(path, 'READ') as tf:
         names = set()
@@ -207,6 +208,8 @@ def doSystOnFile(path, **kwargs):  # <str>
     
         variables   = set([n.split('_')[1] for n in names])
         systematics = set([n.split('_')[2] for n in names])
+        if(syst_regex is not None):
+            systematics = {s for s in systematics if syst_regex.search(s)}
 
         logging.debug('path = %s', path)
         logging.debug('\tvariables = %s', variables)
@@ -234,6 +237,7 @@ def main():
     parser.add_argument('-y', '--year', default='2016')
     parser.add_argument('-i', '--inputdir', default='results')
     parser.add_argument('-o', '--output', help='Manually specify output file. Defaults to data/systematics_{year}.json')
+    parser.add_argument('-S', '--syst-regex', default='.+', type=re.compile, help='Filter systematics with a regular expression')
     parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='INFO')
     args = parser.parse_args()
 
@@ -266,35 +270,40 @@ def main():
     except (IOError, OSError, ValueError):
         logging.info('Could not retrieve existing dictionay from "%s". Starting from a new one', sysJSON)
         syst_values = {}
-    
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'fake_leptons.root'            ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'WZTo3LNu.root'                ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'WZGTo3LNuG.root'              ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'ZZTo4l.root'                  ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'ZGToLLG.root'                 ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'DYJetsToLL_M50.root'          ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'ZZGTo4LG.root'                ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'fake_photons.root'            ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'TTTo2L2Nu.root'               ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'TTWJetsToLNu.root'            ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'TTZJets.root'                 ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'tW.root'                      ), do_plots=args.do_plots) )
-    
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='CR3P1F'), 'data.root'                    ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='CR2P2F'), 'data.root'                    ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'fake_leptons.root'            ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'fake_photons.root'            ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'WZTo3LNu.root'                ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'WZGTo3LNuG.root'              ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ZZTo4l.root'                  ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ggTo4e_Contin_MCFM701.root'   ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ggTo2e2mu_Contin_MCFM701.root'), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ggTo4mu_Contin_MCFM701.root'  ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ZZZ.root'                     ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'WZZ.root'                     ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'WWZ.root'                     ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'TTZJets.root'                 ), do_plots=args.do_plots) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ZZGTo4LG.root'                ), do_plots=args.do_plots) )
+
+    argsdict = vars(args)
+
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'fake_leptons.root'            ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'WZTo3LNu.root'                ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'WZGTo3LNuG.root'              ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'ZZTo4l.root'                  ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'ZGToLLG.root'                 ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'DYJetsToLL_M50.root'          ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'ZZGTo4LG.root'                ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'fake_photons.root'            ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'TTTo2L2Nu.root'               ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'TTWJetsToLNu.root'            ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'TTZJets.root'                 ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'tW.root'                      ), **argsdict) )
+
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='CR3P1F'), 'data.root'                    ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='CR2P2F'), 'data.root'                    ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'fake_leptons.root'            ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'fake_photons.root'            ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'WZTo3LNu.root'                ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'WZGTo3LNuG.root'              ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ZZTo4l.root'                  ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ggTo4e_Contin_MCFM701.root'   ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ggTo2e2mu_Contin_MCFM701.root'), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ggTo4mu_Contin_MCFM701.root'  ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ZZZ.root'                     ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'WZZ.root'                     ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'WWZ.root'                     ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'TTZJets.root'                 ), **argsdict) )
+    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ZZGTo4LG.root'                ), **argsdict) )
+
+    if(args.do_plots):
+        return 0
 
     with open(sysJSON, 'w') as fout:
         dump(syst_values, fout, indent=2)
