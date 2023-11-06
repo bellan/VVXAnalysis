@@ -395,7 +395,7 @@ for Var in variables:
     histodata.GetYaxis().SetTitleSize(0.12)
     histodata.GetYaxis().SetLabelSize(0.08)
     histodata.GetXaxis().SetTitleSize(0.08)
-    histodata.GetXaxis().SetLabelSize(0.08)
+    histodata.GetXaxis().SetLabelSize(max(0.12, 0.08 + 0.2/histodata.GetXaxis().GetNbins() ))
     if (histodata.GetXaxis().GetXmin() > 0.001 and histodata.GetXaxis().GetXmax() < 1000):
         histodata.GetXaxis().SetNoExponent()
     histodata.SetMarkerStyle(20)
