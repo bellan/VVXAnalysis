@@ -262,19 +262,19 @@ for Var in variables:
     hMCErr = deepcopy(hMC.GetStack().Last())
     
     c1.cd()
-    pad1 = ROOT.TPad ('hist', '', 0., 0.22, 1.0, 1.0)#0.35
+    pad1 = ROOT.TPad ('hist', '', 0., 0.28, 1.0, 1.0)
     pad1.SetTopMargin    (0.10)
-    pad1.SetRightMargin  (0.06)#0.10
-    pad1.SetLeftMargin   (0.16)
-    pad1.SetBottomMargin (1.5) 
+    pad1.SetRightMargin  (0.04)
+    pad1.SetLeftMargin   (0.18)
+    pad1.SetBottomMargin (0.025)
     pad1.Draw()
     
     c1.cd()
     
     pad2 = ROOT.TPad ('rat', 'Data/MC ratio', 0., 0.0,  1., 0.28)#0.15
     pad2.SetTopMargin (0.01)
-    pad2.SetRightMargin (0.06)#0.10
-    pad2.SetLeftMargin (0.16)
+    pad2.SetRightMargin (0.04)
+    pad2.SetLeftMargin (0.18)
     pad2.SetBottomMargin(0.3);
     pad2.Draw()
     if info.get('logx', False):
