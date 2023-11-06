@@ -25,8 +25,19 @@ class InputDir:
         self.region   = region
         self.analyzer = analyzer
 
-    def path(self):
-        return os.path.join(self.basedir, self.year, '{}_{}'.format(self.analyzer, self.region))
+    def path(self, **kwargs):
+        '''
+        Returns a string corresponding to the path.
+        Accepts keyword args for quick substitutions
+        '''
+        return os.path.join(
+            kwargs.get('basedir', self.basedir),
+            kwargs.get('year'   , self.year   ),
+            '{}_{}'.format(
+                kwargs.get('analyzer', self.analyzer),
+                kwargs.get('region'  , self.region  )
+            )
+        )
 
     def __str__(self):
         return self.path()
