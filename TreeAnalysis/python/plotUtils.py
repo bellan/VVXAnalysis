@@ -130,6 +130,7 @@ def getPlotFromSample(inputdir, sample, plot, verbosity, forcePositive, note=Non
     if(inputdir.year == 'Run2'): years = ('2016preVFP', '2016postVFP', '2017', '2018')
     else:                        years = (inputdir.year,)
     multiyear = len(years) > 1
+    isReversed = forcePositive and inputdir.region in ['CR2P2F','CR100','CR010','CR001']
 
     for fname in sample['files']:
         integralFile = errorFile = 0.
@@ -151,7 +152,7 @@ def getPlotFromSample(inputdir, sample, plot, verbosity, forcePositive, note=Non
                         print _nameFormat.format(fname_year), "No histo" + ("" if(verbosity < 3) else " (%s)"%(plot)) + " in file" + ("" if(verbosity < 4) else " (%s)"%(rootfilename))
                     continue
 
-                if forcePositive and any(cr in inputdir.region for cr in ['CR2P2F','CR100','CR010','CR001']):
+                if isReversed:
                     h_current.Scale(-1)
 
                 integral = h_current.IntegralAndError(0, -1, errStat)  # Get overflow events too
@@ -350,7 +351,7 @@ def GetClosureStack(region, inputDir, plotInfo, forcePositive=False, verbosity=1
     elif region in ['SR2P', 'CR2P2F', 'CR110', 'CR101', 'CR011']:
         samples_prompt = samplesByRegion.ZG
     
-    isReversed = region in ['CR2P2F','CR100','CR010','CR001']
+    isReversed = forcePositive and region in ['CR2P2F','CR100','CR010','CR001']
 
     for sample in samples_prompt:
         sample.update({'title': sample['name' ]   })  # TEMP, must change convention also in samplesByRegion
@@ -439,7 +440,7 @@ def GetDataPlot(inputdir, plotInfo, forcePositive=False, verbosity=1):
         if(not h):
             continue
 
-        if forcePositive and any(cr in inputdir for cr in ['CR2P2F','CR100','CR010','CR001']):
+        if forcePositive and any(cr in inputdir.region for cr in ['CR2P2F','CR100','CR010','CR001']):
             h.Scale(-1)
         
         if not h:
