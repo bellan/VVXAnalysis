@@ -53,7 +53,7 @@ parser.add_argument("-u", "--unblind", dest='unblind', action="store_true", defa
 
 parser.add_argument("-t", "--type", dest="Type",
                   default="all",
-                  help= "type type to choose the  plot you want. Mass, Jets, DeltaEta, mjj")
+                  help= "Regular expression; only plot names that match it will be used. Default: all")
 
 parser.add_argument("-s", "--skip", dest="Skip",
                   default=None,
@@ -65,7 +65,7 @@ parser.add_argument("-m", "--mcset", dest="mcSet", choices=['mad', 'pow'],
 
 parser.add_argument("-p", "--prediction-type", dest="predType",
                   default="fullMC",
-                  help= "Type of prediction. fromCR = non-prompt leptons from CRs, rare background from MC; fullMC = all from MC; fakeMC = use MC in CRs instead of data")
+                  help= "Type of prediction. lepCR = non-prompt leptons from CRs, rare background from MC; fullMC = all from MC; fakeMC = use MC in CRs instead of data")
 
 parser.add_argument("-l", "--lumiProj", dest="LumiProj",
                   default="",
@@ -98,6 +98,9 @@ parser.add_argument("-i", "--inputDir",
 
 parser.add_argument('--skip-missing', action='store_true',
                     help='Don\'t crash if a plot is missing; instead continue with the others')
+
+parser.add_argument('--force-positive'   , action='store_true' , dest='forcePositive', help='Do `Scale(-1)` in regions with negative fake lepton transfer factor (default = %(default)s)')
+parser.add_argument('--no-force-positive', action='store_false', dest='forcePositive')
 
 #REMEMBER ADD DEFINTION PLOT
 
@@ -217,17 +220,15 @@ for Var in variables:
     info.update({'name':Var})
     c1.Clear()
     DoData = optDoData and (info.get('unblind', True) or options.unblind or region[:2] != 'SR')
-
-    forcePositive = region in ('CR2P2F', 'CR100', 'CR010', 'CR001')
     
     # "Temporary" hack for closure test of photon fake rate
     if False: #'PhFRClosure' in Var and 'PASS' in Var:
-        hMC, leg = plotUtils.GetClosureStack(region, inputDir.get_path(), info, forcePositive=False, verbosity=options.verbosity)
+        hMC, leg = plotUtils.GetClosureStack(region, inputDir.get_path(), info, forcePositive=options.forcePositive, verbosity=options.verbosity)
     else:
         if info.get('special'):
             info['name'] = info['stack']['plot']
         try:
-            (hMC, leg) = plotUtils.GetPredictionsPlot(inputDir, info, predType, mcSet, forcePositive=forcePositive, verbosity=options.verbosity)
+            (hMC, leg) = plotUtils.GetPredictionsPlot(inputDir, info, predType, mcSet, forcePositive=options.forcePositive, verbosity=options.verbosity)
         except PlotNotFoundError as e:
             if(options.skip_missing):
                 missing_plots.append(e)
@@ -243,7 +244,7 @@ for Var in variables:
         if info.get('special'):
             info['name'] = info['data']['plot']
         try:
-            (graphData, histodata) = plotUtils.GetDataPlot(inputDir, info, forcePositive=forcePositive, verbosity=options.verbosity)
+            (graphData, histodata) = plotUtils.GetDataPlot(inputDir, info, forcePositive=options.forcePositive, verbosity=options.verbosity)
         except PlotNotFoundError as e:
             if(options.skip_missing):
                 missing_plots.append(e)
@@ -395,7 +396,11 @@ for Var in variables:
     histodata.GetYaxis().SetTitleSize(0.12)
     histodata.GetYaxis().SetLabelSize(0.08)
     histodata.GetXaxis().SetTitleSize(0.08)
-    histodata.GetXaxis().SetLabelSize(max(0.12, 0.08 + 0.2/histodata.GetXaxis().GetNbins() ))
+    if(histodata.GetXaxis().IsAlphanumeric()):
+        histodata.GetXaxis().SetLabelSize(0.08 + 0.005 * max(0, 12-histodata.GetXaxis().GetNbins()) )
+    else:
+        histodata.GetXaxis().SetLabelSize(0.08)
+
     if (histodata.GetXaxis().GetXmin() > 0.001 and histodata.GetXaxis().GetXmax() < 1000):
         histodata.GetXaxis().SetNoExponent()
     histodata.SetMarkerStyle(20)
