@@ -11,13 +11,12 @@ import sys
 from os import path, environ
 import copy
 import ROOT
-# from readSampleInfo import *
-# from Colours import *
 from math import log10
 from ctypes import c_int, c_double
 from array import array
 import itertools
 import re
+import logging
 from plotUtils23 import TFileContext, addIfExisting, rebin2D
 import Colours
 
@@ -164,11 +163,11 @@ def get_path_results(year, analyzer, region):
 
 
 def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", year=2016, region="CRLFR", logx=False, logy=False, fixNegBins=False):
-    print("Fake Rate ABCD: data     =", sample_data  )
-    print("Fake Rate ABCD: promptMC =", sample_prompt)
+    logging.info("Fake Rate ABCD: data     = %s", sample_data  )
+    logging.info("Fake Rate ABCD: promptMC = %s", sample_prompt)
     path_in = get_path_results(year=year, analyzer=analyzer, region=region)
     outfname = "{outdir}/ABCD_FR_{dataname:s}-{promptname:s}_{year}.root".format(outdir=_outdir_data, dataname=sample_data["name"], promptname=sample_prompt["name"], year=year)
-    print('Output (with prompt MC subtraction) in: "{:s}"'.format(outfname))
+    logging.info('Output (with prompt MC subtraction) in: "{:s}"'.format(outfname))
     
     ##### First: only data ####
     
@@ -263,10 +262,10 @@ def fakeRateABCD(sample_data, sample_prompt, analyzer="VVGammaAnalyzer", year=20
 
 
 def fakeRateABCD_noSubtract(sample, analyzer="VVGammaAnalyzer", year=2016, region="CRLFR", logx=False, logy=False, fixNegBins=False):
-    print("Fake Rate ABCD: sample   =", sample  )
+    logging.info("Fake Rate ABCD: sample   = %s", sample  )
     path_in = get_path_results(year=year, analyzer=analyzer, region=region)
     outfname = "{outdir:s}/ABCD_FR_{samplename:s}_{year}.root".format(outdir=_outdir_data, samplename=sample["name"], year=year)
-    print('Output (without MC subtraction) in: "{:s}"'.format(outfname))
+    logging.info('Output (without MC subtraction) in: "{:s}"'.format(outfname))
     
     hAp, hBp, hCp, hDp = getPlots(path_in, sample["file"], [ "PhFR_%s_nonprompt" % (c) for c in 'ABCD' ] )
     hAn, hBn, hCn, hDn = getPlots(path_in, sample["file"], [ "PhFR_%s_prompt"    % (c) for c in 'ABCD' ] )
@@ -343,10 +342,10 @@ def getPassFailLtoT_noSubtract_regex(sample, method, variable, regex, year, anal
     path_in = get_path_results(year=year, analyzer=analyzer, region=region)
     channels = findChannelsInFile(path.join(path_in, sample['file']+'.root'), method, variable)
 
-    print('\tDEBUG: channels =', channels)
-    print('\tDEBUG: regex    =', regex_compiled.pattern)
+    logging.debug('\tchannels = %s', channels)
+    logging.debug('\tregex    = %s', regex_compiled.pattern)
     selected = [ c  for c in channels if regex_compiled.search(c) ]
-    print('\tDEBUG: selected =', selected)
+    logging.debug('\tselected = %s', selected)
     assert len(selected) > 0, "No matches for regex:{regex}, method:{method}, variable:{variable} in {fname}".format(regex=regex, method=method, variable=variable, fname=path.join(path_in, sample['file']+'.root'))
 
     if(method.startswith('LtoT')):
@@ -440,14 +439,14 @@ def fakeRateLtoT_regex(sample_data, sample_prompt, method, variable, regex, year
         pattern_printable = regex.replace('\\','').replace('"','').replace("'","")
 
     if(sample_prompt is None):
-        print('Fake Rate {}: sample   ='.format(method), sample_data)
+        logging.info('Fake Rate %s: sample   = %s', method, sample_data)
         samplename  = sample_data['name']
         sampletitle = sample_data['title']
 
         hPASS, hFAIL = getPassFailLtoT_noSubtract_regex(sample_data, method=method, variable=variable, regex=regex, year=year, analyzer=analyzer, region=region, fixNegBins=fixNegBins)
     else:
-        print('Fake Rate {}_{}: data     ='.format(method, pattern_printable), sample_data  )
-        print('Fake Rate {}_{}: promptMC ='.format(method, pattern_printable), sample_prompt)
+        logging.info('Fake Rate %s_%s: data     = %s', method, pattern_printable, sample_data  )
+        logging.info('Fake Rate %s_%s: promptMC = %s', method, pattern_printable, sample_prompt)
         samplename  = sample_data['name']  +  '-'  + sample_prompt['name']
         sampletitle = sample_data['title'] + ' - ' + sample_prompt['title']
 
@@ -462,7 +461,7 @@ def fakeRateLtoT_regex(sample_data, sample_prompt, method, variable, regex, year
     ignore = c_double(0)
     nP = hPASS .IntegralAndError(0, -1, 0, -1, ignore)
     nT = hTOTAL.IntegralAndError(0, -1, 0, -1, ignore)
-    print('\tPASS: {:6.0f} - TOTAL: {:6.0f} - <FR>: {:.2f}'.format(nP, nT, nP/nT))
+    logging.info('\tPASS: {:6.0f} - TOTAL: {:6.0f} - <FR>: {:.2f}'.format(nP, nT, nP/nT))
 
     ## Fake rate = PASS/TOTAL ##
     if(rebin_eta):
@@ -525,21 +524,23 @@ def getPassFailLtoT(sample_main, sample_subtr, analyzer, year, region, method, v
     #     for h in [hsubtr_PASS, hsubtr_FAIL]:
     #         fix_neg_bins(h)
 
-    outname = 'debug/%s_{method}_{variable}_%s{region}_{year}'.format(method=method, variable=variable, region='' if region=='CRLFR' else '_'+region, year=year)
-    title   = 'debug/%s {method} (from %s in {region})'.format(method=method, region=region)
+    if(logging.getLogger().isEnabledFor(logging.DEBUG)):
+        outname = 'debug/%s_{method}_{variable}_%s{region}_{year}'.format(method=method, variable=variable, region='' if region=='CRLFR' else '_'+region, year=year)
+        title   = 'debug/%s {method} (from %s in {region})'.format(method=method, region=region)
 
-    plotFR_LtoT(     hmain_PASS, outname %('PASS', sample_main ['name']), title %('PASS', sample_main ['title']), range_FR_z=[0., hmain_PASS.GetMaximum()])
-    plotFR_LtoT(     hmain_FAIL, outname %('FAIL', sample_main ['name']), title %('FAIL', sample_main ['title']), range_FR_z=[0., hmain_FAIL.GetMaximum()])
-    if(sample_subtr is not None):
-        plotFR_LtoT(hsubtr_PASS, outname %('PASS', sample_subtr['name']), title %('PASS', sample_subtr['title']), range_FR_z=[0., max(hsubtr_PASS.GetMaximum(), hmain_PASS.GetMaximum())])
-        plotFR_LtoT(hsubtr_FAIL, outname %('FAIL', sample_subtr['name']), title %('FAIL', sample_subtr['title']), range_FR_z=[0., max(hsubtr_FAIL.GetMaximum(), hmain_FAIL.GetMaximum())])
+        plotFR_LtoT(     hmain_PASS, outname %('PASS', sample_main ['name']), title %('PASS', sample_main ['title']), range_FR_z=[0., hmain_PASS.GetMaximum()])
+        plotFR_LtoT(     hmain_FAIL, outname %('FAIL', sample_main ['name']), title %('FAIL', sample_main ['title']), range_FR_z=[0., hmain_FAIL.GetMaximum()])
+        if(sample_subtr is not None):
+            plotFR_LtoT(hsubtr_PASS, outname %('PASS', sample_subtr['name']), title %('PASS', sample_subtr['title']), range_FR_z=[0., max(hsubtr_PASS.GetMaximum(), hmain_PASS.GetMaximum())])
+            plotFR_LtoT(hsubtr_FAIL, outname %('FAIL', sample_subtr['name']), title %('FAIL', sample_subtr['title']), range_FR_z=[0., max(hsubtr_FAIL.GetMaximum(), hmain_FAIL.GetMaximum())])
 
     if(sample_subtr is not None):
         hmain_PASS.Add(hsubtr_PASS, -1)
         hmain_FAIL.Add(hsubtr_FAIL, -1)
 
-    plotFR_LtoT( hmain_PASS, outname %('PASS', 'result'), f'debug PASS {method} (after subtraction)', range_FR_z=[hmain_PASS.GetMinimum(), hmain_PASS.GetMaximum()])
-    plotFR_LtoT( hmain_FAIL, outname %('FAIL', 'result'), f'debug FAIL {method} (after subtraction)', range_FR_z=[hmain_FAIL.GetMinimum(), hmain_FAIL.GetMaximum()])
+    if(logging.getLogger().isEnabledFor(logging.DEBUG)):
+        plotFR_LtoT( hmain_PASS, outname %('PASS', 'result'), f'debug PASS {method} (after subtraction)', range_FR_z=[hmain_PASS.GetMinimum(), hmain_PASS.GetMaximum()])
+        plotFR_LtoT( hmain_FAIL, outname %('FAIL', 'result'), f'debug FAIL {method} (after subtraction)', range_FR_z=[hmain_FAIL.GetMinimum(), hmain_FAIL.GetMaximum()])
 
     if(fixNegBins):
         for h in [hmain_PASS, hmain_FAIL]:
@@ -555,12 +556,12 @@ def varname_to_title(name):
 
 def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=2016, region='CRLFR', method='LtoT', variable='pt-aeta', fixNegBins=False, rebin_eta=False, rebin_pt=False, **kwargs):
     if(sample_prompt is None):
-        print('Fake Rate {}: sample   ='.format(method), sample_data)
+        logging.info('Fake Rate %s: sample   = %s', method, sample_data)
         samplename  = sample_data['name']
         sampletitle = sample_data['title']
     else:
-        print('Fake Rate {}: data     ='.format(method), sample_data  )
-        print('Fake Rate {}: promptMC ='.format(method), sample_prompt)
+        logging.info('Fake Rate %s: data     = %s', method, sample_data  )
+        logging.info('Fake Rate %s: promptMC = %s', method, sample_prompt)
         samplename  = sample_data['name']  +  '-'  + sample_prompt['name']
         sampletitle = sample_data['title'] + ' - ' + sample_prompt['title']
 
@@ -578,7 +579,7 @@ def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=20
     ignore = c_double(0)
     nP = hPASS .IntegralAndError(0, -1, 0, -1, ignore)
     nT = hTOTAL.IntegralAndError(0, -1, 0, -1, ignore)
-    print('\tPASS: {:6.0f} - TOTAL: {:6.0f} - <FR>: {:.2f}'.format(nP, nT, nP/nT))
+    logging.info('\tPASS: {:6.0f} - TOTAL: {:6.0f} - <FR>: {:.2f}'.format(nP, nT, nP/nT))
 
     ## Fake rate = PASS/TOTAL ##
     if(rebin_eta):
@@ -613,8 +614,8 @@ def plotFR_LtoT(hFR, outname, title, logx=False, logy=False, do_title=True, rang
     min_draw , max_draw  = range_FR_z
     min_value = hFR.GetBinContent(hFR.GetMinimumBin())
     max_value = hFR.GetBinContent(hFR.GetMaximumBin())
-    if(min_value < min_draw): print(Colours.Warn('WARN')+': MIN value (%f) smaller than Z draw limit (%f) for %s' % (min_value, min_draw, outname))
-    if(max_value > max_draw): print(Colours.Warn('WARN')+': MAX value (%f) greater than Z draw limit (%f) for %s' % (max_value, max_draw, outname))
+    if(min_value < min_draw): logging.warning('MIN value (%f) smaller than Z draw limit (%f) for %s', min_value, min_draw, outname)
+    if(max_value > max_draw): logging.warning('MAX value (%f) greater than Z draw limit (%f) for %s', max_value, max_draw, outname)
 
     hFR.SetTitle(title if do_title else '')
     hFR.SetName( 'PhFR' )
@@ -624,7 +625,7 @@ def plotFR_LtoT(hFR, outname, title, logx=False, logy=False, do_title=True, rang
     with TFileContext(outfname, 'UPDATE') as tf:
         tf.cd()
         hFR.Write(hFR.GetName(), ROOT.TObject.kOverwrite)
-    print('Output (with prompt MC subtraction) in: "{:s}"'.format(outfname))
+    logging.info('Output (with prompt MC subtraction) in: "{:s}"'.format(outfname))
 
     to_preserve_FR = beautify(cFR, hFR, logx, logy)
 
@@ -656,7 +657,7 @@ def plotRatio(h1, h2, name="ratio", title="ratio", do_title=True):
     with TFileContext(path.join(_outdir_data, name+'.root'), 'RECREATE') as tf:
         tf.cd()
         ratio.Write()
-        print('Output (ratio) in "{:s}"'.format(tf.GetName()))
+        logging.info('Output (ratio) in "{:s}"'.format(tf.GetName()))
     del to_preserve, c
 
     return ratio
@@ -698,7 +699,7 @@ def plotProfiled(h2, name=None, title='profile', direction='X', do_title=True, *
 
     if(nbins_proj > len(_style)):
         to_divide = nbins_proj // len(_style)
-        print(Colours.Warn("WARN")+": style(%d) insufficient for %d. Rebinning(%d)" %(len(_style), nbins_proj, to_divide))
+        logging.warning('style(%d) insufficient for %d. Rebinning(%d)', len(_style), nbins_proj, to_divide)
 
         if  (direction=='Y'):
             h2.RebinY(to_divide)
@@ -707,7 +708,7 @@ def plotProfiled(h2, name=None, title='profile', direction='X', do_title=True, *
             h2.RebinX(to_divide)
             nbins_proj = h2.GetNbinsX()
 
-        print("INFO: resulting in:", nbins_proj)
+        logging.info('resulting in: %d', nbins_proj)
 
     h1s = []
     draw_edges = array('d')
@@ -742,7 +743,7 @@ def plotProfiled(h2, name=None, title='profile', direction='X', do_title=True, *
 
         if(allzeroes):
             del h1
-            print('INFO: skipping slice "%s" because all bins are empty' % (legendTitle))
+            logging.info('skipping slice "%s" because all bins are empty' % (legendTitle))
         else:
             h1s.append(h1)
             legend.AddEntry(h1, legendTitle)
@@ -778,8 +779,7 @@ def findChannelsInFile(fname, method, variable):
 
     if(len(matches) == 0):
         start = "PhFR_{}:".format(method)
-        print("\tERROR: no key matching the following regex:", regex_compiled.pattern,
-              "\n\t       Keys starting with", start, [k for k in keys if k.startswith(start)])
+        logging.error('no key matching the following regex: %s\n\tKeys starting with %s: %s', regex_compiled.pattern, start, [k for k in keys if k.startswith(start)])
     return matches
 
 
@@ -859,7 +859,7 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
         hTime.GetPainter().PaintTitle()
     n_hists = len(gTime_list)
     b_width = 1
-    margin  = 0.4
+    margin  = 0.3
     step    = (1 - 2*margin)/n_hists
     legend_all = ROOT.TLegend(0.55, 0.89 - 0.03*n_hists, 0.89, 0.89)
     for i, [g, leg_title] in enumerate(gTime_list):
@@ -923,8 +923,13 @@ if __name__ == "__main__":
     parser.add_argument(      "--rebin-pt" , action='store_true', help='Rebin the x axis (pt) so that it has only 3 bins: [20-35], [35,50], [50,120]')
     parser.add_argument(      "--fix-negative"   , dest='fixNegBins', action='store_true' , help='Set bins with negative content to zero (default: %(default)s)')
     parser.add_argument(      "--no-fix-negative", dest='fixNegBins', action='store_false', help='Set bins with negative content to zero')
+    # Output control
+    parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
 
     args = parser.parse_args()
+    loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
+    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
+
 
     # Set paths for output
     args.inputdir = args.inputdir.rstrip('/')
@@ -977,14 +982,14 @@ if __name__ == "__main__":
             try:
                 hFR = fakeRateLtoT(sampleList["data"], None                 , **dict(argsdict, variable=varState, year=year))
             except OSError as e:
-                print('WARNING: skipping year beacause:', e)
+                logging.warning('skipping year beacause: %s', e)
             else:
                 hFR_data_l.append([year, hFR])
 
             try:
                 hFR = fakeRateLtoT(sampleList["data"], sampleList['ZGToLLG'], **dict(argsdict, variable=varState, year=year))
             except OSError as e:
-                print('WARNING: skipping year beacause:', e)
+                logging.warning('skipping year beacause: %s', e)
             else:
                 hFR_dataZG_l.append([year, hFR])
 
@@ -1103,7 +1108,7 @@ if __name__ == "__main__":
             print()
 
         if(args.do_mc):
-            hFR_DY   = fakeRateLtoT(sampleList["Drell-Yan"]       , None, **dict(argsdict, variable=varState, fixNegBins=True))
+            # hFR_DY   = fakeRateLtoT(sampleList["Drell-Yan"]       , None, **dict(argsdict, variable=varState, fixNegBins=True))
             hFR_ZG   = fakeRateLtoT(sampleList["ZGToLLG"]         , None, **dict(argsdict, variable=varState, fixNegBins=True))
             hFR_ZZ   = fakeRateLtoT(sampleList["ZZTo4l"]          , None, **dict(argsdict, variable=varState, fixNegBins=True))
             hFR_ZZ_4P= fakeRateLtoT(sampleList["ZZTo4l"]          , None, **dict(argsdict, variable=varState, fixNegBins=True, region='SR4P'))
@@ -1116,10 +1121,10 @@ if __name__ == "__main__":
             plotProfiled(hFR_data_ZG, name='FR_profiledX_{}_{}_{}_data-ZGToLLG'.format(method, varState, args.year), title='FR(#gamma) vs #eta' , direction='X', **argsdict)
             plotProfiled(hFR_data_ZG, name='FR_profiledY_{}_{}_{}_data-ZGToLLG'.format(method, varState, args.year), title='FR(#gamma) vs p_{T}', direction='Y', **argsdict)
 
-            plotRatio(hFR_data   , hFR_DY, name="ratio_{}_{}_data_over_DY_{}"   .format(method, varState, args.year), title="Ratio FR(data)/FR(DY) with "        +joinIfNotNone([method, args.final_state], " "))
+            # plotRatio(hFR_data   , hFR_DY, name="ratio_{}_{}_data_over_DY_{}"   .format(method, varState, args.year), title="Ratio FR(data)/FR(DY) with "        +joinIfNotNone([method, args.final_state], " "))
             plotRatio(hFR_data   , hFR_ZZ, name="ratio_{}_{}_data_over_ZZ_{}"   .format(method, varState, args.year), title="Ratio FR(data)/FR(ZZ) with "        +joinIfNotNone([method, args.final_state], " "))
             plotRatio(hFR_data   , hFR_ZZ_4P, name="ratio_{}_{}_data_over_ZZ4P_{}".format(method, varState, args.year), title="Ratio FR(data)/FR(ZZ_{SR4P}) with "+joinIfNotNone([method, args.final_state], " "))
-            plotRatio(hFR_data_ZG, hFR_DY, name="ratio_{}_{}_data-ZG_over_DY_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(DY) with "+joinIfNotNone([method, args.final_state], " "))
+            # plotRatio(hFR_data_ZG, hFR_DY, name="ratio_{}_{}_data-ZG_over_DY_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(DY) with "+joinIfNotNone([method, args.final_state], " "))
             plotRatio(hFR_data_ZG, hFR_ZZ, name="ratio_{}_{}_data-ZG_over_ZZ_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(ZZ) with "+joinIfNotNone([method, args.final_state], " "))
             plotRatio(hFR_data_ZG, hFR_ZZ_4P, name="ratio_{}_{}_data-ZG_over_ZZ4P_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(ZZ_{SR4P}) with "+joinIfNotNone([method, args.final_state], " "))
             # plotRatio(hFR_LtoT_data, hFR_LtoT_ZZ_4P, name="ratio_{}_{}_data-ZG_over_ZZ_4P_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)_{CRLFR}/FR(ZZ_{4P}) with "+joinIfNotNone([method, args.final_state], " "))
