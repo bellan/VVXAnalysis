@@ -38,7 +38,10 @@ __builtin_config__ = {
 
     # General configuration
     'systematics':{
-        'shape': ['QCDscale']
+        'shape': ['QCDscale'],
+        'gmN'  : ['phFakeRate'],
+        'correlated'  : ['L1Prefiring', 'PDFVar', 'QCDscale', 'alphas', 'phEffSF', 'phEffMVASF', 'phEScale', 'phESigma', 'muoEffSF', 'eleEffSF', 'puWeight'],
+        'uncorrelated': ['electronVeto', 'phFakeRate', 'muoFakeRateSF', 'eleFakeRateSF']
     }
 }
 
@@ -160,7 +163,7 @@ def main():
     parser.add_argument(      '--verbosity', type=int, help='Set verbosity')
     parser.add_argument('-q', '--quiet'    , dest='verbosity', action='store_const', const=0, help='Set verbose to minimum')
     parser.add_argument('-r', '--region', default='SR4P')
-    parser.add_argument('-y', '--year', default=2018)
+    parser.add_argument('-y', '--year'  , default='2018', choices=lumi_dict.keys())
     parser.add_argument('-c', '--config', type=json.loads, help='String convertible to dictionary used to override the config', default={})
     parser.add_argument(      '--unblind', action='store_true')
     parser.add_argument(      '--path'     , default='/afs/cern.ch/user/a/amecca/public/histogramsForCombine', help='Path to the histograms (default: %(default)s)')
@@ -185,6 +188,9 @@ def main():
         print(e)
         return 1
     config.update(fconfig)
+    # Update 'systematics' with more granularity
+    config['systematics'] = copy.deepcopy(__builtin_config__['systematics'])
+    config['systematics'].update(fconfig.get('systematics', {}))
 
     # Update from command line
     config.update(args.config)
@@ -271,6 +277,11 @@ def main():
     df_syst = fillDataFrame(data_syst, formatter=formatForCombine).fillna(0)
     type_column = []
     for syst in df_syst.index:
+        if(all(df_syst[column].loc[syst] == '-' for column in df_syst.columns)):
+            logging.info('dropping systematic "%s"', syst)
+            df_syst.drop(syst, inplace=True)
+            continue
+
         syst_type = getSystType(syst, config)
         if(syst_type == 'gmN'):
             sample_affected, N, alpha = get_gmN_params(syst, data_syst)
@@ -282,11 +293,27 @@ def main():
         else:
             type_column.append(syst_type)
 
-    df_syst = df_syst.rename(lambda x: 'CMS_'+x)
+    def rename_syst(syst):
+        # Uses implicitly: config, year
+        if  (syst in config['systematics'][  'correlated']): suffix = ''
+        elif(syst in config['systematics']['uncorrelated']): suffix = '_'+args.year
+        else: raise RuntimeError('Systematic "%s": unspecified if correlated' %(syst))
+        return 'CMS_{}{}'.format(syst, suffix)
 
-    lumi = lumi_dict[args.year][1]
-    df_syst.loc['CMS_lumi_13TeV'] = pd.Series({ sample: lumi for sample in df_syst.columns })
+    df_syst = df_syst.rename(rename_syst)
+
+    lumi_uncorrelated = lumi_dict[args.year]['error_uncorrelated']
+    lumi_correlated   = lumi_dict[args.year]['error_correlated']
+    lumi_1718         = lumi_dict[args.year]['error_1718']
+
+    df_syst.loc['CMS_lumi_13TeV_%s'%(args.year)] = pd.Series({ sample: lumi_uncorrelated for sample in df_syst.columns })
     type_column.append('lnN')
+    df_syst.loc['CMS_lumi_13TeV_correlated']     = pd.Series({ sample: lumi_correlated   for sample in df_syst.columns })
+    type_column.append('lnN')
+    if(args.year in ('2017', '2018')):
+        df_syst.loc['CMS_lumi_13TeV_1718']       = pd.Series({ sample: lumi_1718         for sample in df_syst.columns })
+        type_column.append('lnN')
+
     df_syst.insert(0, 'type', type_column, False)
 
     if(args.verbosity >= 4):
