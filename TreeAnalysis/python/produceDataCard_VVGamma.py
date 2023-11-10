@@ -38,7 +38,7 @@ __builtin_config__ = {
 
     # General configuration
     'systematics':{
-        'shape': ['QCDscale'],
+        'shape': [],
         'gmN'  : ['phFakeRate'],
         'correlated'  : ['L1Prefiring', 'PDFVar', 'QCDscale', 'alphas', 'phEffSF', 'phEffMVASF', 'phEScale', 'phESigma', 'muoEffSF', 'eleEffSF', 'puWeight'],
         'uncorrelated': ['electronVeto', 'phFakeRate', 'muoFakeRateSF', 'eleFakeRateSF']
