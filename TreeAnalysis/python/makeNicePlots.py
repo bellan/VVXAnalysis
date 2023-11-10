@@ -72,8 +72,7 @@ parser.add_argument("-l", "--lumiProj", dest="LumiProj",
                   help="Lumi projection")
 
 parser.add_argument("-o", "--outputDir", dest="outputDir",
-                  default="last",
-                  help="Directory where save plots")
+                  help="Directory where save plots. Default is based on inputDir")
 
 parser.add_argument("-A", "--Analysis", dest="Analysis", choices=['VVXAnalyzer', 'VVGammaAnalyzer', 'ZZAnalyzer'],
                   default="VVXAnalyzer",
@@ -160,12 +159,17 @@ region     = options.region
 Type       = options.Type
 mcSet      = options.mcSet
 LumiProj   = options.LumiProj
-OutputDir  = options.outputDir if options.outputDir.startswith("/") else os.path.join(PersonalInfo.personalFolder, options.outputDir)
 Analysis   = options.Analysis
 year       = options.year
 
 inputDir   = InputDir(basedir=options.inputDir, year=year, region=region, analyzer=Analysis)
-OutputDir  = os.path.join(OutputDir, Analysis, year, predType, region, "")  # Last "" ensures a trailing '/' is appended to path
+if(options.outputDir is None):
+    split = options.inputDir.split('_')
+    outputPrefix = os.path.join(PersonalInfo.personalFolder, '_'.join(split[1:]) if len(split) > 1 else 'last')
+else:
+    outputPrefix = os.path.join('' if options.outputDir.startswith('/') else PersonalInfo.personalFolder, options.outputDir)
+OutputDir  = os.path.join(outputPrefix, Analysis, year, predType, region)
+
 try:
     os.stat(OutputDir)
 except OSError as e:
@@ -371,8 +375,8 @@ for Var in variables:
     # yMax_r = histodata.GetBinContent( histodata.GetMaximumBin()) + histodata.GetBinError(histodata.GetMaximumBin() )
     # yMin_r = histodata.GetBinContent( histodata.GetMinimumBin()) - histodata.GetBinError(histodata.GetMinimumBin() )
     # deltaY = (yMax_r - yMin_r)
-    yMax_r = 2.  # max(min(yMax_r + deltaY*0.1, 2), 1.1)
-    yMin_r = 0.  # min(max(yMin_r - deltaY*0.1, 0), 0.9)
+    yMax_r = info.get('ratio_ymax', 2.) # max(min(yMax_r + deltaY*0.1, 2), 1.1)
+    yMin_r = info.get('ratio_ymin', 0.) # min(max(yMin_r - deltaY*0.1, 0), 0.9)
 
     # hArea = deepcopy(hMC.GetStack().Last())  # in ratio plot, the gray area representing MC error
     # for bin in range(1, hArea.GetNbinsX()+1):
