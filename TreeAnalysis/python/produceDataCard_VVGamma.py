@@ -155,6 +155,19 @@ def get_gmN_params(syst, data_syst):
 
     return sample_affected, N, alpha
 
+def get_shape_affected(syst, data_syst):
+    samples_affected = []
+    for sample, sample_data in data_syst.items():
+        syst_data = sample_data[syst]
+        if(syst_data['up'] - syst_data['dn'] != 0.):
+            samples_affected.append(sample)
+
+    if(len(samples_affected) == 0):
+        logging.warning('No sample is affected by "%s", but the specified type is "shape"' %(syst))
+
+    logging.debug('syst: %-12s - affected(%d): %s', syst, len(samples_affected), samples_affected)
+    return samples_affected
+
 def main():
     parser = ArgumentParser()
     parser.add_argument('config_file', help='Configuration file')
@@ -290,6 +303,10 @@ def main():
                 type_column.append('gmN %d' %(N))
             else:
                 type_column.append('lnN')
+        elif(syst_type == 'shape'):
+            for sample in get_shape_affected(syst, data_syst):
+                df_syst[sample].loc[syst] = 1
+            type_column.append('shape')
         else:
             type_column.append(syst_type)
 
