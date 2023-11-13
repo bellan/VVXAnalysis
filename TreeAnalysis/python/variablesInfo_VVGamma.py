@@ -45,8 +45,8 @@ def getVarInfo_VVGamma(region):
             })
         VarInfo_VVGamma.update({
             'ZZ_mass_noPh'        : {'title':'m_{4\ell}\:,\ no\:\gamma', 'rebin':1, 'unblind':True },
-            'ZZ_mass_kinPh'       : {'title':'m_{4\ell}\:,\ \gamma\:kin'                       , 'rebin':1, 'unblind':True },
-            'ZZ_mass_kinVetoL'    : {'title':'m_{4\ell}\:,\ \gamma\:kin\,\land\:!tight'        , 'rebin':1, 'unblind':False},
+            'ZZ_mass_kinPh'       : {'title':'m_{4\ell}\:,\ \gamma\:kin'                       , 'rebin':1, 'unblind':False},
+            'ZZ_mass_kinVetoL'    : {'title':'m_{4\ell}\:,\ \gamma\:kin\,\land\:!tight'        , 'rebin':1, 'unblind':True },
             # Kinematic selection + pixelSeed + electron veto
             'ZZ_mass_veryLoosePh' : {'title':'m_{4\ell}\:,\ \gamma\:loose'                     , 'rebin':1, 'unblind':False},  # Loose = pass 3 cuts
             'ZZ_mass_failPh'      : {'title':'m_{4\ell}\:,\ \gamma\:loose\,\land\:!tight'      , 'rebin':1, 'unblind':True },
@@ -73,6 +73,7 @@ def getVarInfo_VVGamma(region):
                 'title':'m_{4\ell\gamma}\:,\ \gamma\:tight',
                 'ratio_title': 'data-driven/MC',
                 'rebin': 2,
+                'ratio_ymax': 5,
                 'data': {
                     'plot' :'ZZG_mass_reweightPh',
                     'legend': 'data-driven'
@@ -268,7 +269,7 @@ def getVarInfo_VVGamma(region):
     for e in ['EB', 'EE']:
         VarInfo_VVGamma.update({
             'kinPh_sieie_' +e: {'title':'#sigma_{i#etai#eta}', 'rebin':1, 'unblind':True, 'logy':True},
-            'kinPh_HoverE_'+e: {'title':'HoverE'             , 'rebin':2, 'unblind':True, 'logy':True},
+            'kinPh_HoverE_'+e: {'title':'HoverE'             , 'rebin':3, 'unblind':True, 'logy':True},
             'kinPh_chIso_' +e: {'title':'chIso'              , 'rebin':1, 'unblind':True, 'logy':True},# 'logx':True},
             'kinPh_neIso_' +e: {'title':'neIso'              , 'rebin':2, 'unblind':True, 'logy':True},
             'kinPh_phIso_' +e: {'title':'phIso'              , 'rebin':2, 'unblind':True, 'logy':True}
