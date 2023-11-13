@@ -219,7 +219,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
         for CR in controlRegions:
             newdir = copy.deepcopy(inputdir)
             newdir.region = CR
-            hfakes.append( GetFakeRate(newdir, plotInfo, "data", MCSet) )
+            hfakes.append( GetFakeRate(newdir, plotInfo, "data", MCSet, verbosity=verbosity) )
         hfake = addIfExisting(*hfakes)
         if(hfake is None):
             raise PlotNotFoundError('Fake lepton plot not found for ' + plotInfo['name'])
@@ -605,11 +605,11 @@ def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
 ###############################################################
 
 
-def GetFakeRate(inputdir, plotInfo, method, MCSet='mad'):
+def GetFakeRate(inputdir, plotInfo, method, MCSet='mad', verbosity=1):
     plot = plotInfo['name']
     region = inputdir.region
 
-    hFakeRate, (integral, error) = getPlotFromSample(inputdir, samplesByRegion.data_obs, plot, verbosity=1, forcePositive=False, note=None)
+    hFakeRate, (integral, error) = getPlotFromSample(inputdir, samplesByRegion.data_obs, plot, verbosity=verbosity, forcePositive=False, note=None)
     if(hFakeRate is None):
         return None
 
