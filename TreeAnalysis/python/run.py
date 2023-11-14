@@ -35,7 +35,7 @@ parser = OptionParser(usage="usage: %prog <analysis> <sample> [options]")
 
 parser.add_option("-r", "--regions", dest="regions",
                   default="SR4P",
-                  help="Region type are {0:s}. Default is %(default).".format(', '.join(allowed_regions)))
+                  help="Region type are {0:s}. Default is %default.".format(', '.join(allowed_regions)))
 
 
 parser.add_option("-e", "--external-cross-section", dest="getExternalCrossSectionFromFile",
@@ -51,7 +51,7 @@ parser.add_option("-i", "--internal-cross-section", dest="useInternalCrossSectio
 parser.add_option("-y", "--year", dest="year",
                   type=str,
                   default='2018',
-                  help="Set year scenario from command line (default: %(default)s)")
+                  help="Set year scenario from command line (default: %default)")
 
 parser.add_option("-l", "--luminosity", dest="luminosity",
                   type='int',
@@ -60,7 +60,7 @@ parser.add_option("-l", "--luminosity", dest="luminosity",
 
 parser.add_option("-d", "--directory", dest="directory",
                   default="samples",
-                  help="Sample location (default: %(default))")
+                  help="Sample location (default: %default)")
 
 parser.add_option("-c", "--csv", dest="csvfile",
                   #default="../Producers/python/samples_2016_MC.csv",
@@ -79,7 +79,7 @@ parser.add_option("-n", "--nevents", dest="maxNumEvents",
 
 parser.add_option("-o", "--outputdir",
                   default="results",
-                  help="Directory in which the output will be stored (default: %(default)s)")
+                  help="Directory in which the output will be stored (default: %default)")
 
 parser.add_option("-u", "--unblind", dest="unblind",
                   action="store_true",
