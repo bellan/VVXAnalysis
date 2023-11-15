@@ -41,7 +41,8 @@ __builtin_config__ = {
         'shape': [],
         'gmN'  : ['phFakeRate'],
         'correlated'  : ['L1Prefiring', 'PDFVar', 'QCDscale', 'alphas', 'phEffSF', 'phEffMVASF', 'phEScale', 'phESigma', 'muoEffSF', 'eleEffSF', 'puWeight'],
-        'uncorrelated': ['electronVeto', 'phFakeRate', 'muoFakeRateSF', 'eleFakeRateSF']
+        'uncorrelated': ['electronVeto', 'phFakeRate', 'muoFakeRateSF', 'eleFakeRateSF'],
+        'skip-if-signal': ['PDFVar', 'QCDscale', 'alphas']
     }
 }
 
@@ -286,6 +287,13 @@ def main():
             logging.error('Systematics empty for %s', sample)
             data_syst[sample] = {}
             missing_systematics = True
+
+        # Zero theoretical uncertainty on signal cross section, since we are measuring it
+        if(sample in config['signals']):
+            for syst, val in data_syst[sample].items():
+                if(syst in config['systematics']['skip-if-signal']):
+                    val['dn'] = val['up'] = 0
+                    logging.debug('Zeroed systematic "%s" for sample "%s"', syst, sample)
 
     df_syst = fillDataFrame(data_syst, formatter=formatForCombine).fillna(0)
     type_column = []
