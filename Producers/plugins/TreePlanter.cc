@@ -493,8 +493,13 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
   edm::Handle<edm::View<reco::Candidate> > genVBs      ; event.getByToken(theGenVBCollectionToken, genVBs);
   edm::Handle<edm::View<reco::GenParticle> > inclusiveGenParticles; event.getByToken(theInclusiveGenToken, inclusiveGenParticles);
 
+  // Get the gen jet collection
+  edm::Handle<edm::View<reco::Candidate> > genJets;
+  event.getByToken(theGenJetCollectionToken,  genJets);
+
   // Prepare FrixioneIsoCalculator
-  frixioneIsoCalculator_.cacheVector(*inclusiveGenParticles);
+  frixioneIsoCalculator_.cacheVector(*genJets);
+  // frixioneIsoCalculator_.cacheVector(*inclusiveGenParticles);
 
   // load only gen leptons and gen photon status 1, from hard process
   for (edm::View<reco::GenParticle>::const_iterator gp = genParticles->begin(); gp != genParticles->end(); ++gp){
@@ -510,7 +515,7 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
     }
     genParticles_.push_back(std::move(out));
   }
-  
+
   // for (edm::View<reco::Candidate>::const_iterator p = genPhotons->begin(); p != genPhotons->end(); ++p){
   //   const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(&(*p));
   //   genPhotons_.push_back(phys::Particle(gp->p4(), phys::Particle::computeCharge(gp->pdgId()), gp->pdgId(), gp->statusFlags().flags_));
@@ -533,10 +538,6 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
     }
   }
 
-  // Get the gen jet collection
-  edm::Handle<edm::View<reco::Candidate> > genJets;
-  event.getByToken(theGenJetCollectionToken,  genJets);
-    
   // Still need to clean the genjets. In SignalDefinition, each category cleans the jet collection when it set the bits.
   // However, for the final... REMOVE this comment
   for(edm::View<reco::Candidate>::const_iterator jet = genJets->begin(); jet != genJets->end(); ++jet)

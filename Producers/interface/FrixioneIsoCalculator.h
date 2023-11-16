@@ -14,7 +14,7 @@
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "DataFormats/Common/interface/View.h"
-#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/Candidate/interface/Candidate.h"
 
 #include <vector>
 
@@ -26,11 +26,11 @@ class FrixioneIsoCalculator {
     /* , nExponent_(nExponent) */
   {}
 
-  bool isIsolated(const reco::GenParticle *photon, const edm::View<reco::GenParticle>    &genParticles, double delta0);
-  bool isIsolated(const reco::GenParticle *photon, double delta0);
+  bool isIsolated(const reco::Candidate *photon, const edm::View<reco::Candidate>    &genParticles, double delta0);
+  bool isIsolated(const reco::Candidate *photon, double delta0);
 
-  void cacheVector(const edm::View<reco::GenParticle>& genParticles);
-  void cacheVector(std::vector<const reco::GenParticle*>& genParticles);
+  template <class T>
+  void cacheVector(const edm::View<T>& genParticles);
 
  protected:
   double maxEnergyFraction(double delta, double delta0) const; // max (transverse) energy divided by photon pt
@@ -42,7 +42,7 @@ class FrixioneIsoCalculator {
   /* int nExponent_; */
 
   // Cached vector of pointers (useful in case this is called multiple times per event)
-  std::vector<const reco::GenParticle*> cachedGenParticles_;
+  std::vector<const reco::Candidate*> cachedGenParticles_;
 };
 
 #endif
