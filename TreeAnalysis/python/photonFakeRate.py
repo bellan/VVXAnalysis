@@ -879,6 +879,71 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
     for ext in ('png', 'pdf'):
         canvas.SaveAs('{:s}/time/{:s}_time.{ext:s}'.format(_outdir_plot, outname, ext=ext))
 
+    # Bin evolution across years
+    canvas.SetBottomMargin(0.12)
+    print('\n\n')
+    gBinEvol_list = []
+    for time_label, hFR in thelist:
+        theTitle = title  +' {}'.format(time_label)
+        theName  = outname+'_{}'.format(time_label)
+        nTimeBins = (y_axis_ref.GetNbins()-1)*x_axis_ref.GetNbins()
+        logging.debug('time_label: %s, nTimeBins: %s', time_label, nTimeBins)
+        hBinEvol = ROOT.TH1F(theName, theTitle if do_title else '', nTimeBins,0,nTimeBins)
+        is_empty = True
+
+        for by in range(1, y_axis_ref.GetNbins()+1):
+            byCentre = y_axis_ref.GetBinCenter(by)
+            if(1.4442 < byCentre and byCentre < 1.566):
+                continue  # skip 1.4442 < |eta| < 1.566
+
+            for bx in range(1, x_axis_ref.GetNbins()+1):
+                b  = hRef.GetBin(bx, by)
+                bLabel = ', '.join([x_labels[bx], y_labels[by]])
+                val = hFR.GetBinContent(b)
+                err = hFR.GetBinError  (b)
+                bBinEvol = (by-1 - (1 if byCentre > 1.566 else 0)) * x_axis_ref.GetNbins() + bx  # Hack: account for skipping a specific eta bin
+                logging.debug('\tby: %d - bx: %d - b: %d - label: %16s - val: %5.3f - err: %5.3f', by, bx, bBinEvol, bLabel, val, err)
+                hBinEvol.SetBinContent(bBinEvol, val)
+                hBinEvol.SetBinError  (bBinEvol, err)
+                hBinEvol.GetXaxis().SetBinLabel(bBinEvol, bLabel)
+                if(val > 0): is_empty = False
+
+        if(is_empty):
+            continue
+
+        hBinEvol.SetMinimum(range_FR_z[0])
+        hBinEvol.SetMaximum(range_FR_z[1])
+        hBinEvol.SetMarkerStyle(ROOT.kFullTriangleUp)
+        gBinEvol = ROOT.TGraphErrors(hBinEvol)
+        logging.debug('gBinEvol.GetN(): %d', gBinEvol.GetN())
+        gBinEvol_list.append([gBinEvol, time_label])
+
+    hBinEvol.Draw('AXIS') # Use the axis of the last histogram to draw the frame
+    if(do_title):
+        hBinEvol.SetTitle(title)
+        hBinEvol.GetPainter().PaintTitle()
+    n_hists = len(gBinEvol_list)
+    step    = (1 - 2*margin)/n_hists
+    legend_all = ROOT.TLegend(0.60, 0.89 - 0.04*n_hists, 0.89, 0.89)
+    for i, [g, leg_title] in enumerate(gBinEvol_list):
+        g.SetMarkerStyle(_style[i]['marker'])
+        g.SetMarkerColor(_style[i]['color' ])
+        g.SetLineColor  (_style[i]['color' ])
+        legend_all.AddEntry(g, leg_title)
+
+        for p in range(g.GetN()):
+            logging.debug('title: %s - p: %d', leg_title, p)
+            x_old = g.GetPointX(p)
+            x_new = x_old - b_width/2 + margin + i*step
+            g.SetPointX(p, x_new)
+            g.SetPointError(p, 0., g.GetErrorY(p))
+        g.Draw('P')
+
+    legend_all.Draw('same')
+    for ext in ('png', 'pdf'):
+        canvas.SaveAs('{:s}/time/{:s}_binEvol.{ext:s}'.format(_outdir_plot, outname, ext=ext))
+
+
 
 if __name__ == "__main__":
     ROOT.gStyle.SetPaintTextFormat(".2f")
