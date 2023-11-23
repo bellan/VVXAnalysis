@@ -343,7 +343,7 @@ for Var in variables:
     hMCErr.SetMarkerStyle(1)
     hMCErr.SetFillColor(ROOT.kBlack)
     hMCErr.Draw("sameE2")
-    leg.AddEntry(hMCErr, "MC Err", "f")
+    leg.AddEntry(hMCErr, "Pred. unc.", "f")
     
     if DoData:
         graphData.SetMarkerStyle(20)
