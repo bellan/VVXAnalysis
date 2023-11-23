@@ -10,8 +10,9 @@ from copy import deepcopy
 from math import log10, ceil
 from json import load, dump
 from plotUtils import makedirs_ok
-from plotUtils23 import TFileContext
+from plotUtils23 import TFileContext, InputDir
 from utils23 import deep_update
+from samplesByRegion import getSamplesByRegion
 from argparse import ArgumentParser
 import logging
 
@@ -197,7 +198,7 @@ def doSystematics(tf, var, syst, **kwargs):  # <TFile>, <str>, <str>, <dict> (is
     return new_syst
 
 
-def doSystOnFile(path, syst_regex=None, **kwargs):  # <str>, <re.Pattern>
+def doSystOnFile(path, syst_regex=None, region=None, **kwargs):  # <str>, <re.Pattern>
     syst_values = {}
     with TFileContext(path, 'READ') as tf:
         names = set()
@@ -216,7 +217,6 @@ def doSystOnFile(path, syst_regex=None, **kwargs):  # <str>, <re.Pattern>
         logging.debug('\tsystematics = %s', systematics)
 
         sample = path.split('/')[-1].split('.')[0]
-        region = path.split('/')[-2].split('_')[-1]
         if(kwargs.get('do_plots')):
             makedirs_ok('Plot/SYS/{}'.format(region))
 
@@ -237,6 +237,8 @@ def main():
     parser.add_argument('-y', '--year', default='2016')
     parser.add_argument('-i', '--inputdir', default='results')
     parser.add_argument('-o', '--output', help='Manually specify output file. Defaults to data/systematics_{year}.json')
+    parser.add_argument('-r', '--region', default='SR4P', help='Default: %(default)s')
+    parser.add_argument('-A', '--analyzer' , default='VVGammaAnalyzer', help='Name of the analyzer, used to compose the path of the input files')
     parser.add_argument('-S', '--syst-regex', default='.+', type=re.compile, help='Filter systematics with a regular expression')
     parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='INFO')
     args = parser.parse_args()
@@ -245,7 +247,7 @@ def main():
     logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
     
     syst_values = {}
-    results_folder = '{inputdir}/{year}/VVGammaAnalyzer_{region}'.format(inputdir=args.inputdir, year=args.year, region='{region}')
+    results_folder = InputDir(args.inputdir, year=args.year, region=args.region, analyzer=args.analyzer)
 
     if(environ.get('CMSSW_BASE', False)):
         basepath = path.join(environ['CMSSW_BASE'], 'src', 'VVXAnalysis', 'TreeAnalysis')
@@ -273,34 +275,23 @@ def main():
 
     argsdict = vars(args)
 
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'fake_leptons.root'            ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'WZTo3LNu.root'                ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'WZGTo3LNuG.root'              ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'ZZTo4l.root'                  ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'ZGToLLG.root'                 ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'DYJetsToLL_M50.root'          ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'ZZGTo4LG.root'                ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'fake_photons.root'            ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'TTTo2L2Nu.root'               ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'TTWJetsToLNu.root'            ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'TTZJets.root'                 ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR3P'  ), 'tW.root'                      ), **argsdict) )
+    # Get the file list for this region from samplesByRegion
+    file_list = set('data')
+    # Signal regions may have data-driven prediction of fakes
+    if(args.region.startswith('SR')):
+        file_list.update(('fake_leptons', 'fake_photons'))
+    # Delegate the appropriate list of MC
+    for method in ('fullMC', 'lepCR', 'phoCR'):
+        for sample in getSamplesByRegion(args.region, 'pow', method):
+            file_list.update(sample['files'])
+    logging.info('file list: %s', file_list)
 
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='CR3P1F'), 'data.root'                    ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='CR2P2F'), 'data.root'                    ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'fake_leptons.root'            ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'fake_photons.root'            ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'WZTo3LNu.root'                ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'WZGTo3LNuG.root'              ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ZZTo4l.root'                  ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ggTo4e_Contin_MCFM701.root'   ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ggTo2e2mu_Contin_MCFM701.root'), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ggTo4mu_Contin_MCFM701.root'  ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ZZZ.root'                     ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'WZZ.root'                     ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'WWZ.root'                     ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'TTZJets.root'                 ), **argsdict) )
-    deep_update( syst_values, doSystOnFile(path.join(results_folder.format(region='SR4P'  ), 'ZZGTo4LG.root'                ), **argsdict) )
+    for fname in file_list:
+        try:
+            deep_update( syst_values, doSystOnFile(path.join(results_folder.path(), fname+'.root'), **argsdict) )
+        except OSError as e:
+            # At the moment some samples are still missing (amecca 23/11/2023)
+            logging.error('%s', e)
 
     if(args.do_plots):
         return 0
