@@ -27,7 +27,7 @@ from utils23 import lumi_dict
 from variablesInfo import getVariablesInfo
 import CMS_lumi, tdrstyle
 import PersonalInfo
-from Colours import Evidence
+from Colours import Evidence, Warn
 
 regions = ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L',    
            'SR3P', 'CR110'  , 'CR101'  , 'CR011'  , 'CR100'  , 'CR001'  , 'CR010', 'CR000', 'SR3P_1L', 'SR3P_1P', 'CR3P_1F', 'CRLFR', 'CR3L',
@@ -187,8 +187,8 @@ if LumiProj != "":
 else:
     lumi = lumi_dict[year]['value']
 lumi = round(lumi/1000.,1)
-CMS_lumi.writeExtraText = 1
-CMS_lumi.extraText = "Preliminary"
+CMS_lumi.writeExtraText = True
+CMS_lumi.extraText = "Private work"
 CMS_lumi.lumi_sqrtS = "{0} fb^{{-1}} (13 TeV)\n".format(lumi)
 
 iPos = 0
@@ -262,7 +262,19 @@ for Var in variables:
         for i in range(graphData.GetN()):
             graphData.SetPointEXhigh(i,0.)
             graphData.SetPointEXlow (i,0.)
-    
+
+    hStackSum = hMC.GetStack().Last()
+    overflow_fraction  = hStackSum.GetBinContent(hStackSum.GetNbinsX()+1) / hStackSum.Integral(0, -1)
+    underflow_fraction = hStackSum.GetBinContent(0                      ) / hStackSum.Integral(0, -1)
+    has_overflow  = overflow_fraction  > 0.1 # Overflow  is > 10% of total
+    has_underflow = underflow_fraction > 0.1 # Underflow is > 10% of total
+    if(has_overflow ):
+        if(options.verbosity >= 1):
+            print Warn('WARN'), 'overflow (%.1f %%)'  %(100*overflow_fraction )
+    if(has_underflow):
+        if(options.verbosity >= 1):
+            print Warn('WARN'), 'underflow (%.1f %%)' %(100*underflow_fraction)
+
     hMCErr = deepcopy(hMC.GetStack().Last())
     
     c1.cd()
