@@ -176,8 +176,12 @@ def get_yield(card, unblind=False, **kwargs):
             # logging.debug('post sub  filepath=%s  rootpath=%s', filepath, rootpath)
 
             if not filepath in tf_handles.keys():
-                tf_handles[filepath] = ROOT.TFile(filepath)
-                logging.debug('opening %s', filepath)
+                tf = ROOT.TFile(filepath)
+                if(not tf or not tf.IsOpen()):
+                    raise FileNotFoundError(filepath)
+                else:
+                    tf_handles[filepath] = tf
+                    logging.debug('opened %s', filepath)
             h = tf_handles[filepath].Get(rootpath)
             error = c_double(0.)
             integral = h.IntegralAndError(0,-1, error)
