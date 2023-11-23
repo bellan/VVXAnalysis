@@ -48,6 +48,24 @@ class InputDir:
         return str(vars(self))
 
 
+class InputFile:
+    def __init__(self, inputDir, fname):
+        self.inputDir = inputDir
+        self.fname = fname
+
+    def path(self, **kwargs):
+        return os.path.join(
+            self.inputDir.path(**kwargs),
+            kwargs.get('fname', self.fname)
+        )
+
+    def __str__(self):
+        return self.path()
+
+    def __repr__(self):
+        return str(vars(self))
+
+
 def addIfExisting(*args):
     result = None
     for a in [ a for a in args if a is not None ]:
