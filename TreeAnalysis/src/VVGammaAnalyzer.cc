@@ -1982,6 +1982,12 @@ void VVGammaAnalyzer::photonFakeRate_LtoT(const char* method, const Photon& theP
   static vector<double> edges_dR {0., 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00};
   if(dR_l > edges_dR.back()) dR_l = edges_dR.back() - 0.001;
 
+  unsigned int njets = jets_noph_->size();
+  static vector<double> edges_njets {-0.5, 0.5, 1.5, 2.5, 3.5};
+  float dR_j = edges_dR.back() - 0.001;
+  if(njets > 0)
+    dR_j = physmath::deltaR(*closestDeltaR(thePh, *jets_noph_), thePh);
+
   // Fill photon FR plots
   const char* name_aeta_inclusive = Form("PhFR_%s_pt-aeta_%s_%s"   , method,          strPrompt, strPass);
   theHistograms->fill(name_aeta_inclusive, "Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#eta;Events"             , ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight*effSF);
@@ -1993,24 +1999,34 @@ void VVGammaAnalyzer::photonFakeRate_LtoT(const char* method, const Photon& theP
   const char* name_dRl_channel    = Form("PhFR_%s_pt-dRl_%s_%s_%s", method, channel, strPrompt, strPass);
   theHistograms->fill(name_dRl_channel   ,"Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#DeltaR(#gamma, l);Events", ph_pt_bins, edges_dR    , thePt, dR_l   , theWeight*effSF);
 
-  for(char lepSt : {all_char, lepStatus}){
-    for(char lepFl : {all_char, lepFlavour}){
-      for(char* phEta : {all_str, phEtaRegion}){
-	for(char phFSR : {all_char, phFSRch}){
-	  const char* name_byChannel = Form("PhFR_%s_pt-dRl_%c-%c-%s-%c_%s_%s" ,
-					    method,
-					    lepSt,
-					    lepFl,
-					    phEta,
-					    phFSR,
-					    strPrompt,
-					    strPass
-					    );
-	  theHistograms->fill(name_byChannel, Form("FR #gamma %s;p_{T}^{#gamma};#DeltaR(#gamma, l);Events", method), ph_pt_bins, edges_dR, thePt, dR_l, theWeight*effSF);
-	}
-      }
-    }
-  }
+  const char* name_njets_inclusive= Form("PhFR_%s_%s_pt-njets_%s_%s"   , method, phEtaRegion,          strPrompt, strPass);
+  theHistograms->fill(name_njets_inclusive,"Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];# jets);Events"          , ph_pt_bins, edges_njets , thePt, njets  , theWeight*effSF);
+  const char* name_njets_channel  = Form("PhFR_%s_%s_pt-njets_%s_%s_%s", method, phEtaRegion, channel, strPrompt, strPass);
+  theHistograms->fill(name_njets_channel ,"Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];# jets);Events"           , ph_pt_bins, edges_njets , thePt, njets  , theWeight*effSF);
+
+  const char* name_dRj_inclusive  = Form("PhFR_%s_%s_pt-dRj_%s_%s"   , method, phEtaRegion,          strPrompt, strPass);
+  theHistograms->fill(name_dRj_inclusive ,"Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#DeltaR(#gamma, j);Events", ph_pt_bins, edges_dR    , thePt, dR_j   , theWeight*effSF);
+  const char* name_dRj_channel    = Form("PhFR_%s_%s_pt-dRj_%s_%s_%s", method, phEtaRegion, channel, strPrompt, strPass);
+  theHistograms->fill(name_dRj_channel   ,"Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#DeltaR(#gamma, j);Events", ph_pt_bins, edges_dR    , thePt, dR_j   , theWeight*effSF);
+
+  // for(char lepSt : {all_char, lepStatus}){
+  //   for(char lepFl : {all_char, lepFlavour}){
+  //     for(char* phEta : {all_str, phEtaRegion}){
+  // 	for(char phFSR : {all_char, phFSRch}){
+  // 	  const char* name_byChannel = Form("PhFR_%s_pt-dRl_%c-%c-%s-%c_%s_%s" ,
+  // 					    method,
+  // 					    lepSt,
+  // 					    lepFl,
+  // 					    phEta,
+  // 					    phFSR,
+  // 					    strPrompt,
+  // 					    strPass
+  // 					    );
+  // 	  theHistograms->fill(name_byChannel, Form("FR #gamma %s;p_{T}^{#gamma};#DeltaR(#gamma, l);Events", method), ph_pt_bins, edges_dR, thePt, dR_l, theWeight*effSF);
+  // 	}
+  //     }
+  //   }
+  // }
 }
 
 
