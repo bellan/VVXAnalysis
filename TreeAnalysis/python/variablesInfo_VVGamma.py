@@ -10,6 +10,7 @@ from variablesInfo_VVX import getVarInfo_VVX
 
 def getVarInfo_VVGamma(region):
     VarInfo_VVGamma = getVarInfo_VVX(region)
+    is_SR = region.startswith('SR')
 
     # 4L region
     if region in ['SR4P', 'CR3P1F', 'CR2P2F']:
@@ -60,8 +61,6 @@ def getVarInfo_VVGamma(region):
             ,
             'SYS_mZZGwp90_central': {'title':'m_{4\ell\gamma}\:,\ \gamma\:wp90', 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_mZZGwp90-%s_central', 'unblind':False},
             'SYS_mZZGwp80_central': {'title':'m_{4\ell\gamma}\:,\ \gamma\:wp80', 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_mZZGwp80-%s_central', 'unblind':False},
-            'SYS_wp90pt_central'  : {'title':'p_{T} #gamma_{wp90}'             , 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_wp90pt-%s_central'  , 'unblind':False},
-            'SYS_wp80pt_central'  : {'title':'p_{T} #gamma_{wp80}'             , 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_wp80pt-%s_central'  , 'unblind':False},
             'SYS_mZZGloose_central':{'title':'m_{4\ell\gamma}\:,\ \gamma\:tight', 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_mZZGloose-%s_central', 'fake_photons': 'SYS_mZZGfailReweight_central','unblind':False},
             'SYS_mZllplusZllGloose_central':{'title':'m_{\ell\ell\gamma}+m_{\ell\ell}\:,\ \gamma\:tight', 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_mZllplusZllGloose-%s_central', 'fake_photons': 'SYS_mZllplusZllGfailReweight_central', 'unblind':False}
         })
@@ -136,6 +135,10 @@ def getVarInfo_VVGamma(region):
             'ZWG_massT_veryLoosePh': {'title':'mT_{3\ell\\nu\gamma}\:,\ \gamma\:loose'               , 'rebin':1, 'unblind':False},
             'ZWG_massT_failPh'     : {'title':'mT_{3\ell\\nu\gamma}\:,\ \gamma\:loose\,\land\:!tight', 'rebin':1, 'unblind':True },
             'ZWG_massT_loosePh'    : {'title':'mT_{3\ell\\nu\gamma}\:,\ \gamma\:tight'               , 'rebin':1, 'unblind':False, 'fake_photons': 'ZWG_massT_reweightPh'}
+            ,
+            'SYS_mWZGwp90_central': {'title':'m_{4\ell\gamma}\:,\ \gamma\:wp90' , 'split_prompt_ph':region=='SR3P', 'split_prompt_ph_pattern': 'SYS_mWZGwp90-%s_central', 'unblind':False},
+            'SYS_mWZGwp80_central': {'title':'m_{4\ell\gamma}\:,\ \gamma\:wp80' , 'split_prompt_ph':region=='SR3P', 'split_prompt_ph_pattern': 'SYS_mWZGwp80-%s_central', 'unblind':False},
+            'SYS_mWZGloose_central':{'title':'m_{4\ell\gamma}\:,\ \gamma\:tight', 'split_prompt_ph':region=='SR3P', 'split_prompt_ph_pattern': 'SYS_mWZGloose-%s_central', 'fake_photons': 'SYS_mWZGfailReweight_central','unblind':False},
         })
         # for name, title in [('e', 'e'), ('m','\mu')]:
         #     VarInfo_VVGamma.update({
@@ -233,7 +236,9 @@ def getVarInfo_VVGamma(region):
         'furthestFailPh'  : {},
         'furthestLoosePh' : {'unblind':False}
         ,
-        'SYS_MVAcut_central'  : {'title':'MVA cut passed'                  , 'split_prompt_ph':True          , 'split_prompt_ph_pattern': 'SYS_MVAcut-%s_central'  , 'unblind':False, 'logy':True}
+        'SYS_MVAcut_central'  : {'title':'MVA cut passed'                  , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_MVAcut-%s_central'  , 'unblind':False, 'logy':True},
+        'SYS_wp90pt_central'  : {'title':'p_{T} #gamma_{wp90}'             , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_wp90pt-%s_central'  , 'unblind':False},
+        'SYS_wp80pt_central'  : {'title':'p_{T} #gamma_{wp80}'             , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_wp80pt-%s_central'  , 'unblind':False},
     })
 
     for status in ('kinVetoL', 'fail', 'fail3', 'fail4a', 'fail4b', 'loose', 'fsrMatched'):
@@ -268,11 +273,11 @@ def getVarInfo_VVGamma(region):
 
     for e in ['EB', 'EE']:
         VarInfo_VVGamma.update({
-            'kinPh_sieie_' +e: {'title':'#sigma_{i#etai#eta}', 'rebin':1, 'unblind':True, 'logy':True},
-            'kinPh_HoverE_'+e: {'title':'HoverE'             , 'rebin':3, 'unblind':True, 'logy':True},
-            'kinPh_chIso_' +e: {'title':'chIso'              , 'rebin':1, 'unblind':True, 'logy':True},# 'logx':True},
-            'kinPh_neIso_' +e: {'title':'neIso'              , 'rebin':2, 'unblind':True, 'logy':True},
-            'kinPh_phIso_' +e: {'title':'phIso'              , 'rebin':2, 'unblind':True, 'logy':True}
+            'kinPh_sieie_' +e: {'title':'#sigma_{i#etai#eta}', 'rebin':1, 'unblind':True, 'logy':False},
+            'kinPh_HoverE_'+e: {'title':'HoverE'             , 'rebin':3, 'unblind':True, 'logy':False},
+            'kinPh_chIso_' +e: {'title':'chIso'              , 'rebin':1, 'unblind':True, 'logy':False},# 'logx':True},
+            'kinPh_neIso_' +e: {'title':'neIso'              , 'rebin':3, 'unblind':True, 'logy':False},
+            'kinPh_phIso_' +e: {'title':'phIso'              , 'rebin':3, 'unblind':True, 'logy':False}
         })
     # for name in ['kin', 'loose', 'medium', 'tight']:
     #     VarInfo_VVGamma.update({
