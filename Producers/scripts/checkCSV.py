@@ -8,15 +8,11 @@
 
 import pandas as pd
 import json
-from os import path, environ
+import os
 from math import isnan, floor, log10
 from argparse import ArgumentParser
+import logging
 from getXsec import getXsec_McM, getXsec_xsecdb, getXsec_file
-
-parser = parser = ArgumentParser()
-parser.add_argument('-y', '--years', choices=['2016preVFP', '2016', '2017', '2018'], nargs='+', default='2016')
-parser.add_argument('-f', '--force', choices=['mcm', 'xsecdb', 'internal'], nargs='+', default=[])
-args = parser.parse_args()
 
 def myformatter(number):
     if(number+1 < 1e-5 or number < 1e-5): return "{:.0f}".format(number)
@@ -31,20 +27,10 @@ def isInvalid(xsec):
             return True
         return False
 
-for year in args.years:  # (2016, 2017, 2018):
-    csv_dir = '{:s}/src/VVXAnalysis/Producers/python'.format(environ['CMSSW_BASE'])
-    if year == '2016preVFP':
-        csv_file = 'samples_2016ULpreVFP_MC.csv'
-    else:
-        csv_file = 'samples_{}UL_MC.csv'.format(year)
-    csv_file = path.join(csv_dir, csv_file)
-    print("Year", year, "\tcsv_file:", csv_file)
-    with open(csv_file) as f:
-        mycsv = pd.read_csv(f, sep=',')
-    
+def check_csv(mycsv, year=None, types=[]):
     # Cache results to file to avoid time-expensive queries to McM
     xsec_storage_file = "xsections{}.json".format(year)
-    if path.exists(xsec_storage_file):
+    if os.path.exists(xsec_storage_file):
         with open(xsec_storage_file) as f:
             XsecDict = json.load(f)
     else:
@@ -69,7 +55,7 @@ for year in args.years:  # (2016, 2017, 2018):
         
         # McM
         mcm = XsecDict[dataset].get("mcm", None)
-        if(isInvalid(mcm) or 'mcm' in args.force):
+        if(isInvalid(mcm) or 'mcm' in args.types):
             print(">>>getXsec_McM(%s)" % (dataset), end = ' --> ')
             mcm = getXsec_McM(dataset)
             XsecDict[dataset]['mcm'] = mcm
@@ -78,7 +64,7 @@ for year in args.years:  # (2016, 2017, 2018):
         
         # xsecDB
         xsecdb = XsecDict[dataset].get("xsecdb", None)
-        if(isInvalid(xsecdb) or 'xsecdb' in args.force):
+        if(isInvalid(xsecdb) or 'xsecdb' in args.types):
             print(">>>getXsec_xsecDB(%s)" % (dataset), end=' --> ')
             xsecdb = getXsec_xsecdb(dataset)
             XsecDict[dataset]['xsecdb'] = xsecdb
@@ -88,7 +74,7 @@ for year in args.years:  # (2016, 2017, 2018):
         # the one written to file (internal + "external" --> written in the CSV when the ntuple was produced)
         internal = XsecDict[dataset].get("internal", None)
         external = XsecDict[dataset].get("external", None)
-        if(internal is None or external is None or 'internal' in args.force):
+        if(internal is None or external is None or 'internal' in args.types):
             print(">>>getXsec_file(%s)" % (sample), end=' --> ')
             Xsec_file = getXsec_file(sample, year=year)
             internal = Xsec_file['internal']
@@ -133,3 +119,32 @@ for year in args.years:  # (2016, 2017, 2018):
     if(jsonUpdate):
         with open(xsec_storage_file, "w") as f:
             json.dump(XsecDict, f, indent=2)
+
+def main():
+    parser = parser = ArgumentParser()
+    parser.add_argument('-y', '--year' , choices=['2016preVFP', '2016postVFP', '2017', '2018'], default='2018')
+    parser.add_argument('-t', '--types', choices=['mcm', 'xsecdb', 'internal'], nargs='+', default=[])
+    parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
+
+    args = parser.parse_args()
+    loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
+    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
+
+    # Find VVXAnalysis
+    if('CMSSW_BASE' in os.environ):
+        VVX_dir = os.path.join(os.environ['CMSSW_BASE'], 'src', 'VVXAnalysis')
+    else:
+        split_path = os.path.realpath('.').split(os.sep)
+        VVX_position = split_path.index('VVXAnalysis')
+        VVX_dir = os.path.join(split_path[:VVX_position+1])
+    csv_dir = os.path.join(VVX_dir, 'Producers', 'python')
+    csv_file = os.path.join(csv_dir, 'samples_{}UL_MC.csv'.format(year))
+    logging.info("Year: %s - csv_file:", year, csv_file)
+
+    with open(csv_file) as f:
+        mycsv = pd.read_csv(f, sep=',')
+
+    check_csv(mycsv, vars(args))
+
+if __name__ == '__main__':
+    exit(main())
