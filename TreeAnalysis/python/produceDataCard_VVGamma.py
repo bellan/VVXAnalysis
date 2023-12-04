@@ -284,7 +284,7 @@ def main():
         try:
             data_syst[sample] = systematics[args.region][region_config['observable']['name']][sample]
         except KeyError:
-            logging.error('Systematics empty for %s', sample)
+            logging.error('Systematics from JSON empty for %s', sample)
             data_syst[sample] = {}
             missing_systematics = True
 
