@@ -276,7 +276,7 @@ def main():
     argsdict = vars(args)
 
     # Get the file list for this region from samplesByRegion
-    file_list = set('data')
+    file_list = set()
     # Signal regions may have data-driven prediction of fakes
     if(args.region.startswith('SR')):
         file_list.update(('fake_leptons', 'fake_photons'))
