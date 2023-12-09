@@ -5,12 +5,14 @@ import ROOT
 
 class TFileContext(object):
     def __init__(self, *args):
-        # print('>>>Opening with args:', args)
         self.tfile = ROOT.TFile(*args)
+        if(not (self.tfile and self.tfile.IsOpen())):
+            raise FileNotFoundError(args[0] if len(args) > 0 else '')
+
     def __enter__(self):
         return self.tfile
-    def __exit__(self, type, value, traceback):
-        # print('<<<Closing TFile "%s"' % (self.tfile.GetName()))
+
+    def __exit__(self, exc_type, exc_value, traceback):
         self.tfile.Close()
 
 
