@@ -183,7 +183,7 @@ void VVGammaAnalyzer::initEvent(){
 
   for(auto ph : *photons){
     //Pixel seed and electron veto
-    if(ph.hasPixelSeed() || !ph.passElectronVeto()) continue;
+    if(!ph.passElectronVeto()) continue;
 
     //Kinematic selection
     // if(ph.pt() < 20) continue;
