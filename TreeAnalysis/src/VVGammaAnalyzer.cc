@@ -2868,7 +2868,16 @@ void VVGammaAnalyzer::photonGenStudy(){
     // Closest jet
     auto closestJet = closestDeltaR(*best, *jets);
     float dRJet = closestJet != jets->cend() ? deltaR(*best, *closestJet) : 10;
-    theHistograms->fill(Form(hname, "DRJet"), Form("%s;#DeltaR(#gamma, j);Events"    , wp), 60, 0., 3 , dRJet, theWeight);
+    theHistograms->fill(Form(hname, "DRJet"), Form("%s;#DeltaR(#gamma, j);Events"    , wp), 50, 0., 1 , dRJet, theWeight);
+    if(closestJet != jets->cend()){
+      float dPJet = (closestJet->p4()     - best->p4()    ).P() / closestJet->p4().P();
+      float fPJet = best->p4().P() / closestJet->p4().P();
+      theHistograms->fill(Form(hname, "vsJet"), Form("%s;P^{#gamma}/P^{j};#DeltaR(#gamma,j);Events"    , wp), 10,0., 1., 10,0.,1., fPJet, dRJet, theWeight);
+      if(dRJet < 0.2){
+	theHistograms->fill(Form(hname, "DPJet"), Form("%s;(#vec{P^{#gamma}}-#vec{P^{j}})/P^{j};Events", wp), 40,  0., 1 , dPJet, theWeight);
+	theHistograms->fill(Form(hname, "FPJet"), Form("%s;P^{#gamma}/P^{j};Events"                    , wp), 40,  0., 1., fPJet, theWeight);
+      }
+    }
     
     // 2D plot
     theHistograms->fill(Form(hname, "DRLepJet"), Form("%s;#DeltaR(#gamma, l);#DeltaR(#gamma, j);Events", wp), 
