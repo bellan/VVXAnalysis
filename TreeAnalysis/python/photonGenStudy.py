@@ -4,6 +4,7 @@ from os import path, mkdir
 from copy import deepcopy
 import ROOT
 from ctypes import c_double
+from array import array
 from plotUtils3 import TFileContext, getPlots
 import logging
 
@@ -42,15 +43,22 @@ def transformTH1(h, f, ferr, label='transformed'):
 
 
 _rebinning = {
-    'DRJet': 4
+    'DRJet': 4,
+    'DRLep': array('d', [0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1+1/50.]),
+    'ptPh': 2
 }
 _xlabels = {
-    'DRPhLep': r'\Delta\!R(\upgamma, \ell_{closest})'
+    'DRLep': r'\Delta\!R(\upgamma, \ell_{closest})'
 }
 _line_styles = (1, 2, 7)
 
+_sample_title = {
+    'ZZ' : 'ZZ #rightarrow 4l',
+    'ZZG': 'ZZ#gamma #rightarrow 4l #gamma'
+}
 
-def stackPlots(promptmO, matchedO, nomatchO, variable, phID, region, sample='[sample]'):
+
+def stackPlots(promptmO, matchedO, nomatchO, variable, phID, region, sample='[sample]', do_title=True):
     # copy plots to avoid accidentaly modifying them
     promptm  = promptmO.Clone( promptmO.GetName() +'_copy')
     matched  = matchedO.Clone( matchedO.GetName() +'_copy')
@@ -64,8 +72,9 @@ def stackPlots(promptmO, matchedO, nomatchO, variable, phID, region, sample='[sa
         stack.SetMaximum(1.)
 
     def fill_stack(h_promptm, h_matched, h_nomatch, sample, colors, do_normalize=True):
-        stack = ROOT.THStack( '_'.join(('stack', sample, variable, phID.capitalize())), ' '.join((sample, variable, phID.capitalize())) )
-        legend = ROOT.TLegend(0.7,0.7,0.87,0.87, '' ,'brNDC')
+        stack = ROOT.THStack( '_'.join(('stack', sample, variable, phID.capitalize())), ' '.join((sample, variable, phID.capitalize())) if do_title else '' )
+        x1_legend = 0.7 if variable != 'DRLep' else 0.15
+        legend = ROOT.TLegend(x1_legend, 0.7, x1_legend+0.18, 0.87, _sample_title.get(sample, sample) ,'brNDC')
         _labels = ("match prompt", "match noprompt", "no match")
         for i,h in enumerate([h_promptm, h_matched, h_nomatch]):
             h.SetFillColor(colors[i])
@@ -92,7 +101,7 @@ def stackPlots(promptmO, matchedO, nomatchO, variable, phID, region, sample='[sa
     canvas_stack.SaveAs(  path.join('Plot', 'photonGenStudy',  '{}_{}_{}_stack{}.png'.format(variable, phID, region, sample)) )
     
 
-def myPlots(variable, phID, region, year, **kwargs):
+def myPlots(variable, phID, region, year, do_title=True, **kwargs):
     inputdir = '{basedir}/{}/VVGammaAnalyzer_{}'.format(year, region, basedir=kwargs.get('basedir', 'results'))
     name = 'PhGenStudy_{variable}_{phID}_{matched}'.format(variable=variable, phID=phID, matched='{}')
     ZZpromptm , ZZmatched , ZZnomatch  = getPlots(inputdir, 'ZZTo4l'  , [name.format('promptm'), name.format('matched'), name.format('nomatch')] )
@@ -131,23 +140,41 @@ def myPlots(variable, phID, region, year, **kwargs):
             for b in range(0, ZZGnomatch.GetNcells()+2):
                 ZZGmatched.SetBinContent(b, 0)
                 ZZGmatched.SetBinError(b, 0)
-    
-    for h in (ZZpromptm, ZZmatched, ZZnomatch, ZZGpromptm, ZZGmatched, ZZGnomatch):
+
+    for h in [ZZpromptm, ZZmatched, ZZnomatch, ZZGpromptm, ZZGmatched, ZZGnomatch]:
         if h is None: continue
         # print(h)
-        h.SetTitle('{} photons (in {})'.format(phID.capitalize(), region))
+        h.SetTitle('{} photons (in {})'.format(phID.capitalize(), region) if do_title else '')
         axis = h.GetYaxis()
         axis.SetMoreLogLabels()
         axis.SetNoExponent()
-        h.Rebin(_rebinning.get(variable, 1))
-        logging.info('rebinning(%d) %s', _rebinning.get(variable, 1), variable)
+
+    # Rebinning
+    rebin = _rebinning.get(variable, 1)
+    logging.info('rebinning(%s) %s', rebin, variable)
+    if(isinstance(rebin, int)):
+        for h in [ZZpromptm, ZZmatched, ZZnomatch, ZZGpromptm, ZZGmatched, ZZGnomatch]:
+            h.Rebin(rebin)
+    else:
+        # ROOT creates new histograms when given rebin edges, so one cannot modify them in a loop. Instead, one must manually assign the new one to the same name...
+        def rebinned(h_old, rebin):
+            logging.debug('bins: %d - overflow old: %g', h_old.GetNbinsX(), h_old.GetBinContent(h_old.GetNbinsX()+1))
+            h_new = h.Rebin(len(rebin)-1, h.GetName(), rebin)
+            logging.debug('bins: %d - overflow new: %g', h_new.GetNbinsX(), h_new.GetBinContent(h_new.GetNbinsX()+1))
+            return h_new
+        ZZpromptm  = rebinned(ZZpromptm , rebin)
+        ZZmatched  = rebinned(ZZmatched , rebin)
+        ZZnomatch  = rebinned(ZZnomatch , rebin)
+        ZZGpromptm = rebinned(ZZGpromptm, rebin)
+        ZZGmatched = rebinned(ZZGmatched, rebin)
+        ZZGnomatch = rebinned(ZZGnomatch, rebin)
 
     ################################################################################
     # Stack Plots        
     if(ZZnomatch is not None):
-        stackPlots(ZZpromptm , ZZmatched , ZZnomatch , variable, phID, region, 'ZZ' )
+        stackPlots(ZZpromptm , ZZmatched , ZZnomatch , variable, phID, region, 'ZZ' , do_title=do_title)
     if(ZZGnomatch is not None):
-        stackPlots(ZZGpromptm, ZZGmatched, ZZGnomatch, variable, phID, region, 'ZZG')
+        stackPlots(ZZGpromptm, ZZGmatched, ZZGnomatch, variable, phID, region, 'ZZG', do_title=do_title)
 
     ################################################################################
     # Old Plots
@@ -155,7 +182,7 @@ def myPlots(variable, phID, region, year, **kwargs):
         logging.warning('One or more of "nomatch" plots is missing. Skipping old plots in region=%s, variable=%s, phID=%s', region, variable, phID)
         return
     yMax  = max([max(h.GetBinContent(h.GetMaximumBin()), h.GetBinContent(h.GetNbinsX() + 1))
-                 for h in (ZZpromptm, ZZmatched, ZZnomatch, ZZGpromptm, ZZGmatched, ZZGnomatch)])
+                 for h in [ZZpromptm, ZZmatched, ZZnomatch, ZZGpromptm, ZZGmatched, ZZGnomatch]])
     yMax *= 1.1
     yMin = 0 #10e-5 #max(ZZGnomatch.GetMinimum() * 0.1, 10e-4)
         
@@ -172,7 +199,7 @@ def myPlots(variable, phID, region, year, **kwargs):
     frame.Draw("axis")
     
     # For some reason the title is not drawn
-    title = '{} photons (in {}): {}'.format(phID.capitalize(), region, variable)
+    title = '{} photons (in {}): {}'.format(phID.capitalize(), region, variable) if do_title else ''
     titlePave = ROOT.TPaveText(.25, .92, .75, .98, 'NB NDC')
     titlePave.AddText(title)
     titlePave.SetFillColor(ROOT.kWhite)
@@ -190,7 +217,8 @@ def myPlots(variable, phID, region, year, **kwargs):
             legend.AddEntry(h, sample+' '+_labels[i], 'pl')
             h.Draw('CP hist same')
         
-    legend = ROOT.TLegend(0.70,0.60,0.88,0.87, '' ,'brNDC')
+    x1_legend = 0.7 if variable != 'DRLep' else 0.15
+    legend = ROOT.TLegend(x1_legend, 0.60, x1_legend+0.18, 0.87, '' ,'brNDC')
     style_plots(ZZpromptm , ZZmatched , ZZnomatch , legend, sample='ZZ' , color=ROOT.kRed )
     style_plots(ZZGpromptm, ZZGmatched, ZZGnomatch, legend, sample='ZZG', color=ROOT.kBlue)
     legend.Draw('same')
@@ -264,7 +292,7 @@ def myPlots(variable, phID, region, year, **kwargs):
     # for b in range(0, hSignif.GetNbinsX() + 2):
     #     print(b, hSignif.GetBinContent(b), '+-', hSignif.GetBinError(b))
 
-    hSignif.SetTitle(title + ' - S/#sqrt{S+B}')
+    hSignif.SetTitle(title + ' - S/#sqrt{S+B}' if do_title else '')
     hSignif.SetLineColor(ROOT.kBlack)
     hSignif.SetMarkerStyle(ROOT.kFullTriangleUp)
     hSignif.SetMarkerColor(hSignif.GetLineColor())
@@ -284,7 +312,7 @@ def main():
                # 'SR_HZZ', 'CR2P2F_HZZ', 'CR3P1F_HZZ', 'CR_HZZ', 'MC_HZZ',
                # 'MC'
     ]
-    allowed_variables = ['DRJet', 'DRPhLep', 'm4lG', 'nJets', 'ptPh']
+    allowed_variables = ['DRJet', 'DRLep', 'm4lG', 'nJets', 'ptPh']
     allowed_phIDs = ['kin', 'veryLoose', 'fail', 'loose']
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
@@ -293,6 +321,7 @@ def main():
     parser.add_argument('-p', '--variables', nargs='+', choices=allowed_variables, default=allowed_variables, help='Variables on the x axis')
     parser.add_argument(      '--phids'    , nargs='+', choices=allowed_phIDs    , default=allowed_phIDs    , help='IDs to consider for reco photons')
     parser.add_argument('-i', '--inputdir' , default='results', help='Base input directory, where the results of the analyzers are')
+    parser.add_argument(      '--no-title' , dest='do_title', action='store_false')
     parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
     args = parser.parse_args()
     loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
@@ -311,7 +340,7 @@ def main():
     for region in args.regions:
         for variable in args.variables:
             for phID in args.phids:
-                myPlots(variable, phID, 'SR4P', args.year, basedir=args.inputdir)
+                myPlots(variable, phID, 'SR4P', args.year, basedir=args.inputdir, do_title=args.do_title)
     return 0
 
 if __name__ == '__main__':
