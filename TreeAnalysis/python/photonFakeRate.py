@@ -434,7 +434,7 @@ def getPassFailLtoT_regex(sample_data, sample_prompt, method, variable, regex, y
     return hPASS, hFAIL
 
 
-def fakeRateLtoT_regex(sample_data, sample_prompt, method, variable, regex, year=2016, analyzer='VVGammaAnalyzer', region='CRLFR', pattern_printable=None, fixNegBins=False, rebin_eta=False, rebin_pt=False, **kwargs):
+def fakeRateLtoT_regex(sample_data, sample_prompt, method, variable, regex, year=2016, analyzer='VVGammaAnalyzer', region='CRLFR', pattern_printable=None, fixNegBins=False, rebin_eta=False, rebin_pt=False, rebin_dRj=False, **kwargs):
     if(pattern_printable is None):
         pattern_printable = regex.replace('\\','').replace('"','').replace("'","")
 
@@ -467,6 +467,10 @@ def fakeRateLtoT_regex(sample_data, sample_prompt, method, variable, regex, year
     if(rebin_eta):
         y_bins_orig = array('d', hPASS.GetYaxis().GetXbins())
         y_bins      = array('d', (y_bins_orig[0], y_bins_orig[2], y_bins_orig[3], y_bins_orig[5]))
+        hPASS       = rebin2D(hPASS , y_bins=y_bins)
+        hTOTAL      = rebin2D(hTOTAL, y_bins=y_bins)
+    elif(rebin_dRj):
+        y_bins      = array('d', (0, 0.1, 0.2, 0.3, 0.4, 0.8, 1.))
         hPASS       = rebin2D(hPASS , y_bins=y_bins)
         hTOTAL      = rebin2D(hTOTAL, y_bins=y_bins)
     if(rebin_pt):
@@ -552,9 +556,13 @@ def getPassFailLtoT(sample_main, sample_subtr, analyzer, year, region, method, v
 def varname_to_title(name):
     if  (name == 'pt'  ): return 'p_{T} [GeV/c]'
     elif(name == 'aeta'): return '|#eta|'
-    if  (name == 'dRl' ): return '#DeltaR(l, #gamma)'
+    elif(name == 'dRl' ): return '#DeltaR(l, #gamma)'
+    elif(name == 'dRj' ): return '#DeltaR(j, #gamma)'
+    elif(name =='njets'): return '# jets'
+    else:
+        raise KeyError(name)
 
-def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=2016, region='CRLFR', method='LtoT', variable='pt-aeta', fixNegBins=False, rebin_eta=False, rebin_pt=False, **kwargs):
+def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=2016, region='CRLFR', method='LtoT', variable='pt-aeta', fixNegBins=False, rebin_eta=False, rebin_pt=False, rebin_dRj=False, **kwargs):
     if(sample_prompt is None):
         logging.info('Fake Rate %s: sample   = %s', method, sample_data)
         samplename  = sample_data['name']
@@ -585,6 +593,10 @@ def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=20
     if(rebin_eta):
         y_bins_orig = array('d', hPASS.GetYaxis().GetXbins())
         y_bins      = array('d', (y_bins_orig[0], y_bins_orig[2], y_bins_orig[3], y_bins_orig[5]))
+        hPASS       = rebin2D(hPASS , y_bins=y_bins)
+        hTOTAL      = rebin2D(hTOTAL, y_bins=y_bins)
+    elif(rebin_dRj):
+        y_bins      = array('d', (0, 0.1, 0.2, 0.3, 0.4, 0.8, 1.))
         hPASS       = rebin2D(hPASS , y_bins=y_bins)
         hTOTAL      = rebin2D(hTOTAL, y_bins=y_bins)
     if(rebin_pt):
@@ -960,7 +972,7 @@ if __name__ == "__main__":
         sample.setdefault("name" , key)
         sample.setdefault("title", sample["name"])
 
-    possible_methods = {"VLtoL", "KtoVL", "KtoVLexcl", "90to80", "ABCD"}
+    possible_methods = {"VLtoL", "KtoVL", "KtoVLexcl", "90to80", "ABCD", "dRj_EB", "dRj_EE"}
 
     possible_eras = ["2016preVFP", "2016postVFP", "2017", "2018"]
 
@@ -986,6 +998,7 @@ if __name__ == "__main__":
     parser.add_argument(      "--range-ratio-z", type=float, nargs=2, default=[0., 2.], help='Manually set the z range for ratio plots (default: %(default)s)')
     parser.add_argument(      "--rebin-eta", action='store_true', help='Rebin the y axis (eta) so that it has only 3 bins: EB, gap, EE')
     parser.add_argument(      "--rebin-pt" , action='store_true', help='Rebin the x axis (pt) so that it has only 3 bins: [20-35], [35,50], [50,120]')
+    parser.add_argument(      "--rebin-dRj", action='store_true', help='Rebin the y axis (dRj)')
     parser.add_argument(      "--fix-negative"   , dest='fixNegBins', action='store_true' , help='Set bins with negative content to zero (default: %(default)s)')
     parser.add_argument(      "--no-fix-negative", dest='fixNegBins', action='store_false', help='Set bins with negative content to zero')
     # Output control
