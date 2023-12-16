@@ -27,9 +27,10 @@ class TFileContext(object):
 _allowed_years = (2016, 2017, 2018)
 
 parser = ArgumentParser()
-parser.add_argument('-y', '--years', nargs='+', choices=_allowed_years, default=_allowed_years)
+parser.add_argument('-y', '--years', nargs='+', choices=_allowed_years, default=_allowed_years, type=int)
 parser.add_argument('-p', '--print-graphs', dest='do_print'    , action='store_true')
 parser.add_argument(      '--no-root'     , dest='do_rootfiles', action='store_false', default=True)
+parser.add_argument(      '--no-title'    , dest='do_title'    ,action='store_false', help='Do not paint the title')
 args = parser.parse_args()
 
 if(args.do_print):
@@ -40,11 +41,12 @@ if(os.environ.get('CMSSW_BASE', False)):
     basepath = os.path.join(environ['CMSSW_BASE'], 'src')
 else:
     try:
-        cwd_split = os.getcwd().split('/')
+        cwd_split = os.getcwd().split(os.sep)
         idx = cwd_split.index('VVXAnalysis')
         basepath = '/'.join(cwd_split[:idx])
     except ValueError:
-        basepath = '../../..'
+        print('ERROR: could not locate top directory of VVXAnalysis')
+        exit(2)
 
 # Check that the input dir exists
 ZZpath = os.path.join(basepath, 'ZZAnalysis')
@@ -67,6 +69,7 @@ def print_graphs(fin, year):
         return
 
     c = ROOT.TCanvas('c', 'canvas', 1600, 1200)
+    c.SetRightMargin(0.05)
     xmin = ymin = 100
     xmax = ymax = -100
     for g in (ele_EE, ele_EB, muo_EB, muo_EE):
@@ -110,8 +113,9 @@ def print_graphs(fin, year):
     muo_EB.SetMarkerColor(muo_EB.GetLineColor())
     muo_EE.SetMarkerColor(muo_EE.GetLineColor())
 
-    ele_EB.SetTitle('Lepton fake rates - {}'.format(year))
+    ele_EB.SetTitle('Lepton fake rates - {}'.format(year) if args.do_title else '')
     ele_EB.GetXaxis().SetTitle('p_{T} [GeV/c]')
+    ele_EB.GetYaxis().SetTitle('Fake Rate')
     legend.AddEntry(ele_EB, 'electron barrel', 'lp')
     legend.AddEntry(ele_EE, 'electron endcap', 'lp')
     legend.AddEntry(muo_EB, 'muon barrel'    , 'lp')
@@ -122,7 +126,7 @@ def print_graphs(fin, year):
     muo_EE.Draw('PE')
 
     legend.Draw('same')
-    c.SaveAs('{}.png'.format(year))
+    c.SaveAs('leptonFakeRate_{}.eps'.format(year))
 
 def write_new_file(fout, fin):
     ele_EB = fin.Get("FR_OS_electron_EB")
