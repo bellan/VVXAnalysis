@@ -461,8 +461,13 @@ Int_t VVGammaAnalyzer::cut() {
   efficiency(*goodPhotons_["central"],  genPhotonsKinDRl   , "goodPhotons", "genKinDRl"   , 0.2);
 
   efficiency(*jets, *genJets, "AK4", "genJets", 0.4);
-  
-  
+
+
+  // ----- SIGNAL DEFINITION -----
+  if(theSampleInfo.isMC()) sigdefHelper.eval();
+  if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef","", {"All"}, "All", theWeight);
+
+
   // ----- BASELINE SELECTION -----
   vector<Photon>& phVect_CUT_mllimprov = *kinPhotons_["central"];  // Photon vector used for the "Improves mll" CUT
   bool mll_improves = false;
@@ -475,6 +480,7 @@ Int_t VVGammaAnalyzer::cut() {
     if(haveZZlep){
       theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "ZZ", theWeight);
       theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "ZZ", 1);
+      if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef", "", {}, "ZZ", theWeight);
     }
     else return -1;
 
@@ -495,6 +501,7 @@ Int_t VVGammaAnalyzer::cut() {
     if(haveWZlep){
       theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "WZ", theWeight);
       theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "WZ", 1);
+      if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef", "", {}, "WZ", theWeight);
     }
     else return -1;
 
@@ -524,6 +531,7 @@ Int_t VVGammaAnalyzer::cut() {
     if(b_WZpaperSel){
       theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "paperSel", theWeight);
       theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "paperSel", 1);
+      if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef", "", {}, "paperSel", theWeight);
     }
     else return -1;
 
@@ -548,6 +556,7 @@ Int_t VVGammaAnalyzer::cut() {
     if(haveZlep){
       theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "Z lep", theWeight);
       theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "Z lep", 1);
+      if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef", "", {}, "Z lep", theWeight);
     }
     else return -1;
 
@@ -556,6 +565,7 @@ Int_t VVGammaAnalyzer::cut() {
     if(haveJets){
       theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "2l2j || 2l1J", theWeight);
       theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "2l2j || 2l1J", 1);
+      if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef", "", {}, "2l2j || 2l1J", theWeight);
     }
     else return -1;
 
@@ -580,6 +590,7 @@ Int_t VVGammaAnalyzer::cut() {
     if(haveZL){
       theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "ZL", theWeight);
       theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "ZL", 1);
+      if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef", "", {}, "ZL", theWeight);
     }
     else return -1;
 
@@ -603,6 +614,7 @@ Int_t VVGammaAnalyzer::cut() {
   if(passFSRcut){
     theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "FSR cut", theWeight);
     theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "FSR cut", 1);
+    if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef", "", {}, "FSR cut", theWeight);
   }
   else if(APPLY_FSR_CUT) return -1;
 
@@ -614,36 +626,30 @@ void VVGammaAnalyzer::analyze(){
   analyzedNInReg_[region_]++; analyzedWInReg_[region_] += theWeight;
   theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "Analyzed", theWeight);
   theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "Analyzed", 1);
+  if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef", "", {}, "Analyzed", theWeight);
 
   // Disabled cuts
   // disabled.gamma_kin: Require at least 1 kin photon with pt > 20 GeV
   if(kinPhotons_["central"]->size() >= 1){
     theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "#gamma kin", theWeight);
     theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "#gamma kin", 1);
+    if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef", "", {}, "#gamma kin", theWeight);
   }
-  // else{
-  //   theHistograms->get("AAA_cuts"  )->GetXaxis()->FindBin("#gamma kin");
-  //   theHistograms->get("AAA_cuts_u")->GetXaxis()->FindBin("#gamma kin");
-  // }
+
   // disabled.gamma_veryloose: Require at least 1 veryLoose photon with pt > 20 GeV
   if(loosePhotons_["central"]->size() >= 1){
     theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "#gamma veryLoose", theWeight);
     theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "#gamma veryLoose", 1);
+    if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef", "", {}, "#gamma VeryLoose", theWeight);
   }
-  // else{
-  //   theHistograms->get("AAA_cuts"  )->GetXaxis()->FindBin("#gamma veryLoose");
-  //   theHistograms->get("AAA_cuts_u")->GetXaxis()->FindBin("#gamma veryLoose");
-  // }
+
   // disabled.gamma_loose: Require at least 1 loose photon with pt > 20 GeV
   bool haveGoodPhoton = goodPhotons_["central"]->size() >= 1;
   if(haveGoodPhoton){
     theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "#gamma loose", theWeight);
     theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "#gamma loose", 1);
+    if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef", "", {}, "#gamma loose", theWeight);
   }
-  // else{
-  //   theHistograms->get("AAA_cuts"  )->GetXaxis()->FindBin("#gamma loose");
-  //   theHistograms->get("AAA_cuts_u")->GetXaxis()->FindBin("#gamma loose");
-  // }
 
   if( std::any_of(goodPhotons_["central"]->cbegin(),
 		  goodPhotons_["central"]->cend(), 
@@ -651,6 +657,7 @@ void VVGammaAnalyzer::analyze(){
   {
     theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "#gamma medium", theWeight);
     theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "#gamma medium", 1);
+    if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef", "", {}, "#gamma medium", theWeight);
   }
   
   bool four_lep  = is4Lregion(region_);  // && ZZ && ZZ->pt() > 1.;
@@ -1162,6 +1169,160 @@ void VVGammaAnalyzer::finish(){
 }
 
 
+bool VVGammaAnalyzer::SignalDefinitionHelper::pass() const{
+  if     (is4Lregion(analyzer_->region_)){
+    return photon_ && ZZ4L_;
+  }
+  else if(is3Lregion(analyzer_->region_)){
+    // 3L signal definition
+    return photon_ && WZ3L_;
+  }
+  else if(is2Lregion(analyzer_->region_)){
+    // 2L 2j signal definition
+    return photon_ && ZV2L2j_;
+  }
+  else if(analyzer_->region_ == CRLFR){
+    // TODO
+    return photon_;
+  }
+  else
+    std::cerr << "SignalDefinitionHelper::pass(): Unknown region: " << regionType(analyzer_->region_);
+    return false;
+}
+
+void VVGammaAnalyzer::SignalDefinitionHelper::eval(/*const VVGammaAnalyzer* analyzer*/){
+  VVGammaAnalyzer* analyzer = analyzer_;
+  Histogrammer* theHistograms = analyzer_->theHistograms;
+  double theWeight = analyzer_->theWeight;
+  phys::RegionTypes region_ = analyzer->region_;
+
+  // General cuts
+  bool passllLowMass_ = true;
+  if(analyzer->genChLeptons_->size() >= 2){
+    for(auto l1 = analyzer->genChLeptons_->begin(); l1 != analyzer->genChLeptons_->end() && passllLowMass_; ++l1)
+      for(auto l2 = l1 + 1; l2 != analyzer->genChLeptons_->end(); ++l2)
+	if( (l1->p4() + l2->p4()).M() ){
+	  passllLowMass_ = false;
+	  break;
+	}
+  }
+
+  bool regional = false;
+  if     (is4Lregion(region_)) // 4L signal definition
+    regional = eval_ZZ4L();
+  else if(is3Lregion(region_)) // 3L signal definition
+    regional = eval_WZ3L();
+  else if(is2Lregion(region_)) // 2L 2j signal definition
+    regional = eval_ZV2L2j();
+  else if(region_ == CRLFR)    // CRLFR
+    regional = true; // Nothing so far
+
+  // Photon
+  photon_ = eval_photon();
+  if(photon_) theHistograms->fill("DEBUG_sigdef", "Signal definition", {}, "photon", theWeight);
+
+  if(photon_ && regional)
+    theHistograms->fill("DEBUG_sigdef", "Signal definition", {}, "passVVG", theWeight);
+
+}
+
+bool VVGammaAnalyzer::SignalDefinitionHelper::eval_photon(){
+  return std::any_of(analyzer_->genPhotonsPrompt_->begin(), analyzer_->genPhotonsPrompt_->end(),
+		     [](const Particle& ph){
+		       float aeta = fabs(ph.eta());
+		       return ph.pt() > 20 && aeta < 2.4;
+		     });
+}
+
+bool VVGammaAnalyzer::SignalDefinitionHelper::eval_ZZ4L(){
+  double theWeight = analyzer_->theWeight;
+
+  // TODO analyzer->genChLeptons_->size() == 4
+  bool topology = analyzer_->topology.test(TopologyBit::ZZto4L);
+  bool l0_pt    = analyzer_->genChLeptons_->size() > 0 && analyzer_->genChLeptons_->at(0).pt() > 20;
+  bool l1_pt    = analyzer_->genChLeptons_->size() > 1 && analyzer_->genChLeptons_->at(1).pt() > 10;
+  bool fiducial = analyzer_->topology.test(TopologyBit::Fiducial);
+
+  bool Z0def = analyzer_->GenZtoLLDefinition(analyzer_->genZZ_.first ());
+  bool Z1def = analyzer_->GenZtoLLDefinition(analyzer_->genZZ_.second());
+
+  ZZ4L_ = topology && l0_pt && l1_pt && fiducial && Z0def && Z1def;
+
+  analyzer_->theHistograms->fill("DEBUG_sigdef", "", {"All","photon","topology","l0_pt","l1_pt","fiducial","Z0def","Z1def","passVV","passVVG"}, "All", theWeight);
+  if(topology) analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "topology", theWeight);
+  if(l0_pt)    analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "l0_pt"   , theWeight);
+  if(l1_pt)    analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "l1_pt"   , theWeight);
+  if(fiducial) analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "fiducial", theWeight);
+  if(Z0def)    analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "Z0def"   , theWeight);
+  if(Z1def)    analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "Z1def"   , theWeight);
+  if(ZZ4L_)    analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "passVV"  , theWeight);
+
+  return ZZ4L_;
+}
+
+bool VVGammaAnalyzer::SignalDefinitionHelper::eval_WZ3L(){
+  double theWeight = analyzer_->theWeight;
+
+  // TODO analyzer->genChLeptons_->size() == 3
+  bool topology = analyzer_->topology.test(TopologyBit::WZto3LNu);
+  bool lZ0_pt   = analyzer_->genWZ_.first() .daughter(0).pt() > 20;
+  bool lZ1_pt   = analyzer_->genWZ_.first() .daughter(1).pt() > 10;
+  bool lW_pt    = analyzer_->genWZ_.second().daughter(0).pt() > 20;
+  bool fiducial = analyzer_->topology.test(TopologyBit::Fiducial);
+
+  bool Zdef = analyzer_->GenZtoLLDefinition (analyzer_->genWZ_.first ());
+  bool Wdef = analyzer_->GenWtoLNuDefinition(analyzer_->genWZ_.second());
+
+  WZ3L_ = topology && lZ0_pt && lZ1_pt && lW_pt && Zdef && fiducial;
+
+  analyzer_->theHistograms->fill("DEBUG_sigdef", "", {"All","photon","topology","lZ0_pt","lZ1_pt","lW_pt","fiducial","Zdef","Wdef","passVV","passVVG"}, "All", theWeight);
+  if(topology) analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "topology", theWeight);
+  if(lZ0_pt)   analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "lZ0_pt"  , theWeight);
+  if(lZ1_pt)   analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "lZ1_pt"  , theWeight);
+  if(lW_pt)    analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "lW_pt"   , theWeight);
+  if(fiducial) analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "fiducial", theWeight);
+  if(Zdef)     analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "Zdef"    , theWeight);
+  if(Wdef)     analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "Wdef"    , theWeight);
+  if(WZ3L_)    analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "passVV"  , theWeight);
+
+  return WZ3L_;
+}
+
+bool VVGammaAnalyzer::SignalDefinitionHelper::eval_ZV2L2j(){
+  double theWeight = analyzer_->theWeight;
+  // TODO analyzer_->genChLeptons_->size() == 2
+
+  // Z --> ll
+  Zll_ = analyzer_->topology.test(TopologyBit::ZtoLL);//(analyzer_->genZlepCandidates_->size() == 1) && analyzer->GenZtoLLDefinition(analyzer_->genZlepCandidates_->at(0));
+
+  // V --> qq
+  bool Zhad = analyzer_->genZhadCandidates_->size() >= 1;
+  bool Whad = analyzer_->genWhadCandidates_->size() >= 1;
+  // TODO: fix quark pt and aeta requirements
+  bool qq_accept = false;
+  if(Zhad)
+    qq_accept = std::any_of(analyzer_->genZhadCandidates_->begin(), analyzer_->genZhadCandidates_->end(),
+				 [this](const Boson<Particle>& VB){ return analyzer_->GenVtoQQDefinition(VB); }
+				 );
+
+  if(Whad && !qq_accept)
+    qq_accept = std::any_of(analyzer_->genWhadCandidates_->begin(), analyzer_->genWhadCandidates_->end(),
+				 [this](const Boson<Particle>& VB){ return analyzer_->GenVtoQQDefinition(VB); }
+				 );
+
+  Vhad_ = (Zhad || Whad) && qq_accept;
+  ZV2L2j_ = Zll_ && Vhad_;
+
+  analyzer_->theHistograms->fill("DEBUG_sigdef", "", {"All","photon","Zll_topo","Vhad","qq_accept","passVV","passVVG"}, "All", theWeight);
+  if(Zll_)     analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "Zll_topo" , theWeight);
+  if(Vhad_)    analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "Vhad"     , theWeight);
+  if(qq_accept)analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "qq_accept",theWeight);
+  if(ZV2L2j_)  analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "passVV"   , theWeight);
+
+  return ZV2L2j_;
+}
+
+
 std::unique_ptr<TH2F> VVGammaAnalyzer::getHistfromFile(const char* fname, const char* hname, const char* info){
   TFile fileFR(Form(fname, "READ" ));
   if(!fileFR.IsOpen()){
@@ -1346,7 +1507,7 @@ void VVGammaAnalyzer::genEventSetup(){
       for(auto v : *genNeutrinos_){
 	if( abs(l.id() + v.id()) == 1 ){
 	  Boson<Particle> Wcand(l,v);
-	  if(GenWBosonDefinition(Wcand))
+	  if(GenVtoQQDefinition(Wcand))
 	    genWlepCandidates_->push_back(Wcand);
 	}
       }
@@ -1380,7 +1541,7 @@ void VVGammaAnalyzer::genEventSetup(){
 	// Gen W --> q q'bar
 	if( (q1.id() * q2.id() < 0) && ( abs(q1.id()+q2.id()) % 2 ==1 ) ){
 	  Boson<Particle> Wcand(q1,q2);
-	  if(GenWBosonDefinition(Wcand))
+	  if(GenVtoQQDefinition(Wcand))
 	    genWhadCandidates_->push_back(Wcand);
 	}
 
@@ -1423,7 +1584,14 @@ void VVGammaAnalyzer::genEventSetup(){
 		
     genWZ_ = DiBoson<Particle, Particle>(Z0, W0);
   }
-	
+
+  bool hasGenPhoton = genPhotonsPrompt_->size() > 0;
+
+  std::sort(genQuarks_       ->begin(), genQuarks_       ->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
+  std::sort(genChLeptons_    ->begin(), genChLeptons_    ->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
+  std::sort(genNeutrinos_    ->begin(), genNeutrinos_    ->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
+  std::sort(genPhotons_      ->begin(), genPhotons_      ->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
+  std::sort(genPhotonsPrompt_->begin(), genPhotonsPrompt_->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
 }
 
 

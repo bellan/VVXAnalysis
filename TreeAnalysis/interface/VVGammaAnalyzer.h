@@ -19,6 +19,45 @@
 #include "VVXAnalysis/Commons/interface/Constants.h"
 
 class VVGammaAnalyzer: public EventAnalyzer, RegistrableAnalysis<VVGammaAnalyzer>{
+  class SignalDefinitionHelper {
+    /*
+      Aggregate the information about the signal definition status for the current event.
+      Provides a common method pass() to check the appropriate logic
+     */
+  public:
+    SignalDefinitionHelper(VVGammaAnalyzer* a) : analyzer_(a) {}
+    bool pass() const;
+    bool pass_photon() const { return photon_; };
+    void eval(/*const VVGammaAnalyzer* analyzer*/);
+
+    // This enum should probably be declared in Commons/interface/SignalDefinition.h
+    enum TopologyBit : unsigned int {
+      ZZto4L      = 0,
+      WZto3LNu    = 1,
+      ZtoLL       = 2,
+      Fiducial    = 4,
+      Detector    = 5,
+      TrigPlateau = 6,
+      VVmass100   = 7
+    };
+
+  protected:
+    bool eval_photon();
+    bool eval_ZZ4L  ();
+    bool eval_WZ3L  ();
+    bool eval_ZV2L2j();
+
+  private:
+    VVGammaAnalyzer* analyzer_;
+
+    bool photon_;  // There is a gen photon that passes the signal definition
+    bool passllLowMass_;
+    bool ZZ4L_;
+    bool WZ3L_;
+    bool ZV2L2j_;
+    bool Vhad_;
+    bool Zll_;
+  };
 
 public:
 
@@ -26,7 +65,8 @@ public:
 
   VVGammaAnalyzer(const AnalysisConfiguration& configuration)
     : EventAnalyzer(*(new Selector<VVGammaAnalyzer>(*this)),
-		    configuration){
+		    configuration)
+    , sigdefHelper(this) {
     //theHistograms.profile(genCategory);
     // Memory allocation
     leptons_      = new std::vector<phys::Lepton>;
@@ -86,12 +126,24 @@ public:
     bool goodmass = fabs(cand.p4().M() - phys::WMASS) < 50;
     return (goodmass && gooddaughters);
   }
-  
-  bool GenWBosonDefinition(phys::Boson<phys::Particle> cand) {
-    bool gooddaughters = (fabs(cand.daughter(0).eta()) < 2.5 && cand.daughter(0).pt() > 30 &&
-			  fabs(cand.daughter(1).eta()) < 2.5 && cand.daughter(1).pt() > 30);
-    bool goodmass = fabs(cand.p4().M() - phys::WMASS) < 50;
-    return (goodmass && gooddaughters);
+
+  bool GenWtoLNuDefinition(phys::Boson<phys::Particle> cand) const {
+    bool gooddaughters = (fabs(cand.daughter(0).eta()) < 2.5 && cand.daughter(0).pt() > 20);
+    return gooddaughters;
+  }
+
+  bool GenZtoLLDefinition(phys::Boson<phys::Particle> cand) const {
+    bool gooddaughters = (fabs(cand.daughter(0).eta()) < 2.5 && cand.daughter(0).pt() > 5 &&
+			  fabs(cand.daughter(1).eta()) < 2.5 && cand.daughter(1).pt() > 5);
+    bool goodmass = 60 < cand.p4().M() && cand.p4().M() < 120;
+    return goodmass && gooddaughters;
+  }
+
+  bool GenVtoQQDefinition(phys::Boson<phys::Particle> cand) const {
+    bool gooddaughters = (fabs(cand.daughter(0).eta()) < 4.7 && cand.daughter(0).pt() > 30 &&
+			  fabs(cand.daughter(1).eta()) < 4.7 && cand.daughter(1).pt() > 30);
+    bool goodmass = 60 < cand.p4().M() && cand.p4().M() < 120;
+    return goodmass && gooddaughters;
   }
 
   bool isPhotonPrompt(const phys::Photon& ph, double tolerance=0.2) const {
@@ -288,6 +340,7 @@ protected:
   std::map<phys::RegionTypes, unsigned long> evtNInReg_, analyzedNInReg_;  // Used to count processed events.
   clock_t startTime_;  // Used to calculate elapsed time
   std::map<phys::RegionTypes, float> evtWInReg_, analyzedWInReg_;  // Weighted events passing cut and total
+  SignalDefinitionHelper sigdefHelper;
 };
 #endif
 
