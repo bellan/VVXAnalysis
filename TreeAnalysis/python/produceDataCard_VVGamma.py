@@ -74,17 +74,27 @@ def getSystType(syst, config):
     else:
         return 'lnN'
 
-def formatForCombine(value):
-    if   any(isnan(v)      for v in [value['up'], value['dn']]):
+def format_lnN(value):
+    # up = 1 - yield_up/yield --> k_up = 1 + up
+    up = value['up']
+    dn = value['dn']
+    if   any(isnan(v)      for v in [up, dn]):
         return '-'
-    if   all(abs(v) < 1e-4 for v in [value['up'], value['dn']]):
+    if   all(abs(v) < 1e-4 for v in [up, dn]):
         # print('WARN: negligible syst:', value)
         return '-'
-    if   any(abs(v) > 1    for v in [value['up'], value['dn']]):
-        print('WARN: very large syst:', value)
+    if   any(abs(v) > 1    for v in [up, dn]):
+        logging.warning('very large syst: %s', value)
         return '-'
     else:
-        return '{:f}'.format(1+abs(value['up']-value['dn'])/2)
+        symmetric = abs(up-dn)/2
+        asymmetry = abs(up+dn)/2  # In case of symmetric effect up and dn have opposite sign
+        if  (symmetric == 0):
+            return '-'
+        elif( up*dn > 0 or asymmetry > 0.01 ):
+            return '{:f}/{:f}'.format(1+dn, 1+up)
+        else:
+            return '{:f}'.format(1 + symmetric)
 
 
 def getBinName(region, observable):
@@ -295,7 +305,7 @@ def main():
                     val['dn'] = val['up'] = 0
                     logging.debug('Zeroed systematic "%s" for sample "%s"', syst, sample)
 
-    df_syst = fillDataFrame(data_syst, formatter=formatForCombine).fillna(0)
+    df_syst = fillDataFrame(data_syst, formatter=format_lnN).fillna(0)
     type_column = []
     for syst in df_syst.index:
         if(all(df_syst[column].loc[syst] == '-' for column in df_syst.columns)):
