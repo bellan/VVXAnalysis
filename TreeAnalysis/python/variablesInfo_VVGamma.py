@@ -241,7 +241,7 @@ def getVarInfo_VVGamma(region):
         'SYS_wp80pt_central'  : {'title':'p_{T} #gamma_{wp80}'             , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_wp80pt-%s_central'  , 'unblind':False},
     })
 
-    for status in ('kinVetoL', 'fail', 'fail3', 'fail4a', 'fail4b', 'loose', 'fsrMatched'):
+    for status in ('kinVetoL', 'fail', 'fail3', 'fail4a', 'fail4b', 'loose', 'fsrMatched', 'FSRkin', 'FSRloose'):
         variables = [('pt', 'p_{T}'), ('aeta', '|#eta|'), ('dRl', '#DeltaR(l, #gamma)'), ('MVA', 'MVA'), ('chIso', 'chIso'), ('sieie', '#sigma_{i#etai#eta}')
                      , ('pt_fine', 'p_{T}'), ('aeta_fine', '|#eta|')
                      ]
