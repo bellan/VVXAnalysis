@@ -92,6 +92,7 @@ void VVGammaAnalyzer::begin(){
 void VVGammaAnalyzer::initEvent(){
   // Cleanup
   leptons_    ->clear();
+  jets_noph_  ->clear();
   fsrPhotons_ ->clear();
   for(auto const& it: kinPhotons_ )  it.second->clear();
   for(auto const& it: loosePhotons_) it.second->clear();
@@ -350,6 +351,16 @@ void VVGammaAnalyzer::initEvent(){
 
   // Decide channel name depending on leptons
   makeChannelReco();
+
+  // Initialize the collection of jets disambiguated from photons with deltaR = 0.2
+  vector<Photon>& phvect = *kinPhotons_["central"];
+  if(phvect.size() == 0)
+    std::copy(   jets->begin(), jets->end(), std::back_inserter(*jets_noph_));
+  else
+    std::copy_if(jets->begin(), jets->end(), std::back_inserter(*jets_noph_),
+		 [&phvect](const Jet& j){
+		   return deltaR(j, *closestDeltaR(j, phvect)) > 0.2;
+		 });
 }
 
 
@@ -1662,6 +1673,7 @@ void VVGammaAnalyzer::jetHistos(){
   
   // Jets AK4
   theHistograms->fill("AK4_N" , "# jets AK4", 6, -0.5, 5.5, jets->size(), theWeight);
+  theHistograms->fill("AK4_noph_N" , "# jets AK4 (disambiguated)", 6, -0.5, 5.5, jets_noph_->size(), theWeight);
   if(haveKinPh  ) theHistograms->fill("AK4_N_KinPh"   , "# jets AK4 when there is a Kin photon"  , 6, -0.5, 5.5, jets->size(), theWeight);
   if(haveVLPh   ) theHistograms->fill("AK4_N_VLPh"    , "# jets AK4 when there is a VL photon"   , 6, -0.5, 5.5, jets->size(), theWeight);
   if(haveLoosePh) theHistograms->fill("AK4_N_LoosePh" , "# jets AK4 when there is a Loose photon", 6, -0.5, 5.5, jets->size(), theWeight);

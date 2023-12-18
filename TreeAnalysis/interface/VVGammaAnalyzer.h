@@ -30,6 +30,7 @@ public:
     //theHistograms.profile(genCategory);
     // Memory allocation
     leptons_      = new std::vector<phys::Lepton>;
+    jets_noph_ .reset(new std::vector<phys::Jet>);
     fsrPhotons_.reset(new std::vector<phys::Particle>);
     genQuarks_    = new std::vector<phys::Particle>;
     genChLeptons_ = new std::vector<phys::Particle>;
@@ -101,6 +102,7 @@ public:
 private:
 	
   std::vector<phys::Lepton>* leptons_;
+  std::unique_ptr<std::vector<phys::Jet>> jets_noph_;
 	
   // Systematics: photons {EScale, ESigma} x {Up, Down} + {central}
   const std::vector<const char*> photonSystKeys_ = {"central", "EScale_Up", "EScale_Down", "ESigma_Up", "ESigma_Down"};
