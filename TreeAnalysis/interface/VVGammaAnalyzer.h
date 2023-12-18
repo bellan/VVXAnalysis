@@ -173,6 +173,7 @@ private:
   void studyJetsChoice();
   int studyAK4Choice(std::ofstream& fout, const phys::Boson<phys::Particle>& diquark, const double& tolerance);
   int studyAK8Choice(std::ofstream& fout, const phys::Boson<phys::Particle>& diquark, const double& tolerance);
+  void studyFSRregion(const std::vector<phys::Photon>&);
   template<class PAR>
   void efficiency(const std::vector<PAR>& vRec, const std::vector<phys::Particle>& vGen, const char* recLabel, const char* genLabel, double tolerance=0.4);
   void photonIsolation(const std::vector<phys::Photon>&, const char*);

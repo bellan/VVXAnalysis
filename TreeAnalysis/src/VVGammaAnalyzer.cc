@@ -335,6 +335,7 @@ void VVGammaAnalyzer::initEvent(){
   if(nLoosePh_0p5)   theHistograms->fill("cuts_loosePhIso"    , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, ">0.5" , theWeight);
   if(nLoosePh_0p7)   theHistograms->fill("cuts_loosePhIso"    , ";cut;Events", {"All", ">0.07", "noFSR", ">0.3", ">0.5", ">0.7"}, ">0.7" , theWeight);
 
+  studyFSRregion(fsrMatched);
 
   if(kinPhotons_["central"]->size() > 0){
     bestKinPh_ = &*std::max_element(kinPhotons_["central"]->begin(), kinPhotons_["central"]->end(),
@@ -2131,6 +2132,24 @@ int VVGammaAnalyzer::studyAK8Choice(std::ofstream& fout, const phys::Boson<phys:
   return 0;
 }
 
+void VVGammaAnalyzer::studyFSRregion(const vector<Photon>& fsrMatched){
+  /*
+    Study the overalp between ZZTo4l and ZZGTo4LG in the FSR region (dRl < 0.5)
+   */
+  if(fsrMatched.size() == 0)
+    return;
+
+  // Kin
+  if(kinPhotons_["central"]->size() == 0){ // Exclude events which may be in the signal region
+    const Photon& ph = fsrMatched[0];
+    fillPhotonPlots(ph, "lead_FSRkin", "FSR (kin) veto others");
+  }
+
+  if(loosePhotons_["central"]->size() == 0){ // Exclude events which may be in the signal region
+    const Photon& ph = fsrMatched[0];
+    fillPhotonPlots(ph, "lead_FSRloose", "FSR (loose) veto others");
+  }
+}
 
 template <class PAR>
 void VVGammaAnalyzer::efficiency(const vector<PAR>& vRec, const vector<Particle>& vGen, const char* recLabel, const char* genLabel, double tolerance){
