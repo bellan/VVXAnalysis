@@ -2448,10 +2448,10 @@ char phABCD_study(const phys::Photon&, const double& barrel_thr, const double& e
 
 std::pair<double, double> VVGammaAnalyzer::getZllAndZllgMasses(const phys::Photon& ph){
   vector<Boson<Lepton>*> tmp {ZZ->firstPtr(), ZZ->secondPtr()};
-  Boson<Lepton>* closestZ = *std::min_element(tmp.begin(), tmp.end(),
-					      [ph](const Boson<Lepton>* pZ1, const Boson<Lepton>* pZ2){
+  const Boson<Lepton>* closestZ = *std::min_element(tmp.begin(), tmp.end(),
+                                             [&ph](const Boson<Lepton>* pZ1, const Boson<Lepton>* pZ2){
 						double minZ1 = std::min(deltaR(pZ1->daughter(0), ph), deltaR(pZ1->daughter(1), ph));
-						double minZ2 = std::min(deltaR(pZ1->daughter(0), ph), deltaR(pZ1->daughter(1), ph));
+						double minZ2 = std::min(deltaR(pZ2->daughter(0), ph), deltaR(pZ2->daughter(1), ph));
 						return minZ1 < minZ2;
 					      });
   // const Boson<Lepton> *furthestZ = (closestZ == ZZ->firstPtr() ? ZZ->secondPtr() : ZZ->firstPtr());
