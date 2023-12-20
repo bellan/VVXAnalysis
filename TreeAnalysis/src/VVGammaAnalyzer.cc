@@ -348,7 +348,14 @@ void VVGammaAnalyzer::initEvent(){
 				    [](const Photon& a, const Photon& b){ return a.nCutsPass(Photon::IdWp::Loose) < b.nCutsPass(Photon::IdWp::Loose); }
 				    );  // max_element returns the first among those with max value --> preserve pt ordering
     bestMVAPh_ = &*std::max_element(kinPhotons_["central"]->begin(), kinPhotons_["central"]->end(),
-				    [](const Photon& a, const Photon& b){ return a.MVAvalue() < b.MVAvalue(); }
+                                    [](const Photon& a, const Photon& b){
+                                        int score_a = 2*(a.passMVA(Photon::MVAwp::wp80)) + (a.passMVA(Photon::MVAwp::wp90));
+                                        int score_b = 2*(b.passMVA(Photon::MVAwp::wp80)) + (b.passMVA(Photon::MVAwp::wp90));
+                                        if(score_a == score_b)
+                                          return a.MVAvalue() < b.MVAvalue();
+                                        else
+                                         return score_a < score_b;
+                                      }
 				    );
   }
   else{
