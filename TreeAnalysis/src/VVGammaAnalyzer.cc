@@ -36,6 +36,12 @@ using namespace physmath;
 #define BINS_PHCUTNM1 6,-0.5,5.5
 #define BINS_KINPHID 5,-0.5,4.5
 
+namespace {
+  // Anonymous namespace that holds constants specific to this analyzer
+  constexpr float CUT_MLL_MIN = 81.;
+  constexpr float CUT_PTG_MIN = 20.;
+}
+
 std::pair<TLorentzVector, TLorentzVector> solveNuPz(const Boson<Lepton>& W, int& error);
 
 void VVGammaAnalyzer::begin(){
@@ -197,42 +203,42 @@ void VVGammaAnalyzer::initEvent(){
 
     auto closestLep = closestDeltaR(ph, *leptons_);
     float minDR_lep = closestLep != leptons_->cend() ? deltaR(ph, *closestLep) : 10.;
-    if(minDR_lep > 0.07 && ph.pt() > 20){
+    if(minDR_lep > 0.07 && ph.pt() > CUT_PTG_MIN){
       if(true)        ++nKinPh_0p07;
       if(isPassVL)    ++nVLPh_0p07;
       if(isPassVL && !isPassLoose) ++nFailPh_0p07;
       if(isPassLoose) ++nLoosePh_0p07;
     }
-    if(minDR_lep > 0.3  && ph.pt() > 20){
+    if(minDR_lep > 0.3  && ph.pt() > CUT_PTG_MIN){
       if(true)        ++nKinPh_0p3;
       if(isPassVL)    ++nVLPh_0p3;
       if(isPassVL && !isPassLoose) ++nFailPh_0p3;
       if(isPassLoose) ++nLoosePh_0p3;
     }
-    if(minDR_lep > 0.5  && ph.pt() > 20){
+    if(minDR_lep > 0.5  && ph.pt() > CUT_PTG_MIN){
       if(true)        ++nKinPh_0p5;
       if(isPassVL)    ++nVLPh_0p5;
       if(isPassVL && !isPassLoose) ++nFailPh_0p5;
       if(isPassLoose) ++nLoosePh_0p5;
     }
-    if(minDR_lep > 0.7  && ph.pt() > 20){
+    if(minDR_lep > 0.7  && ph.pt() > CUT_PTG_MIN){
       if(true)        ++nKinPh_0p7;
       if(isPassVL)    ++nVLPh_0p7;
       if(isPassVL && !isPassLoose) ++nFailPh_0p7;
       if(isPassLoose) ++nLoosePh_0p7;
     }
 
-    if(ph.pt() > 20)
+    if(ph.pt() > CUT_PTG_MIN)
       kinPhotonsWithFSR.push_back(ph);
     // Remove photons that were used for FSR
     auto closestFSR = closestDeltaR(ph, *fsrPhotons_);
     if(closestFSR != fsrPhotons_->cend() && deltaR(ph, *closestFSR) < 1e-3){
-      if(ph.pt() > 20)
+      if(ph.pt() > CUT_PTG_MIN)
 	fsrMatched.push_back(ph);
       continue;
     }
 
-    if(ph.pt() > 20){
+    if(ph.pt() > CUT_PTG_MIN){
       if(true)        ++nKinPh_noFSR;
       if(isPassVL)    ++nVLPh_noFSR;
       if(isPassLoose) ++nLoosePh_noFSR;
@@ -248,7 +254,7 @@ void VVGammaAnalyzer::initEvent(){
     TLorentzVector p4_ESigma_Up = ph.p4() * (ph.energySigmaUp()  /ph.e());
     TLorentzVector p4_ESigma_Dn = ph.p4() * (ph.energySigmaDown()/ph.e());
     
-    if(p4_EScale_Up.Pt() > 20){
+    if(p4_EScale_Up.Pt() > CUT_PTG_MIN){
       Photon copy(ph);
       copy.setP4(p4_EScale_Up);
       kinPhotons_["EScale_Up"]->push_back(copy);
@@ -257,7 +263,7 @@ void VVGammaAnalyzer::initEvent(){
       if(isPassLoose)
 	goodPhotons_["EScale_Up"]->push_back(std::move(copy));
     }
-    if(p4_EScale_Dn.Pt() > 20){
+    if(p4_EScale_Dn.Pt() > CUT_PTG_MIN){
       Photon copy(ph);
       copy.setP4(p4_EScale_Dn);
       kinPhotons_["EScale_Down"]->push_back(copy);
@@ -266,7 +272,7 @@ void VVGammaAnalyzer::initEvent(){
       if(isPassLoose)
     	goodPhotons_["EScale_Down"]->push_back(std::move(copy));
     }
-    if(p4_ESigma_Up.Pt() > 20){
+    if(p4_ESigma_Up.Pt() > CUT_PTG_MIN){
       Photon copy(ph);
       copy.setP4(p4_ESigma_Up);
       kinPhotons_["ESigma_Up"]->push_back(copy);
@@ -275,7 +281,7 @@ void VVGammaAnalyzer::initEvent(){
       if(isPassLoose)
     	goodPhotons_["ESigma_Up"]->push_back(std::move(copy));
     }
-    if(p4_ESigma_Dn.Pt() > 20){
+    if(p4_ESigma_Dn.Pt() > CUT_PTG_MIN){
       Photon copy(ph);
       copy.setP4(p4_ESigma_Dn);
       kinPhotons_["ESigma_Down"]->push_back(copy);
@@ -284,7 +290,7 @@ void VVGammaAnalyzer::initEvent(){
       if(isPassLoose)
     	goodPhotons_["ESigma_Down"]->push_back(std::move(copy));
     }
-    if(ph.pt() > 20){
+    if(ph.pt() > CUT_PTG_MIN){
       kinPhotons_["central"]->push_back(ph);
       if(isPassVL)
 	loosePhotons_["central"]->push_back(ph);
@@ -422,7 +428,7 @@ Int_t VVGammaAnalyzer::cut() {
   for(const Particle& p : *genPhotons_){
     double aeta = fabs(p.eta());
     bool isPrompt = p.genStatusFlags().test(phys::isPrompt);
-    bool passKin  = p.pt() > 20 && aeta < 2.4 && (aeta < 1.4442 || aeta > 1.566);
+    bool passKin  = p.pt() > CUT_PTG_MIN && aeta < 2.4 && (aeta < 1.4442 || aeta > 1.566);
     bool passDRl  = physmath::deltaR(p, *std::min_element(genChLeptons_->begin(), genChLeptons_->end(), DeltaRComparator(p))) > 0.5;
     if(passKin            ) genPhotonsKin      .push_back(p);
     if(passKin && isPrompt) genPhotonsKinPrompt.push_back(p);
