@@ -638,6 +638,7 @@ void VVGammaAnalyzer::analyze(){
     theHistograms->fill("Z0_l1_pt"              , "p_{t,l01};GeV/c" , 20,0.,400. , ZZ->first().daughter(1).pt() , theWeight);
     theHistograms->fill("Z1_l0_pt"              , "p_{t,l10};GeV/c" , 20,0.,400. , ZZ->second().daughter(0).pt(), theWeight);
     theHistograms->fill("Z1_l1_pt"              , "p_{t,l11};GeV/c" , 20,0.,400. , ZZ->second().daughter(1).pt(), theWeight);
+    theHistograms->fill("Z0_vs_Z1_mass"         , "m_{Z0} [GeV/c^{2}];m_{Z1} [GeV/c^{2}]", 30,60.,90., 30,60.,90., ZZ->first().mass(), ZZ->second().mass(), theWeight);
 
     theHistograms->fill("ZZ_mass_" +channelReco_, "m_{4l};GeV/c^{2}", mVV_bins   , ZZ->mass()                   , theWeight);
     theHistograms->fill("Z0_mass"  +channelReco_, "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
@@ -649,11 +650,22 @@ void VVGammaAnalyzer::analyze(){
     theHistograms->fill("Z1_l1_pt_"+channelReco_, "p_{t,l11};GeV/c" , 20,0.,400. , ZZ->second().daughter(1).pt(), theWeight);
 
     double Zll_mass(0.), ZllG_mass(0.);
-    std::tie(Zll_mass, ZllG_mass) = getZllAndZllgMasses(*photons);
+    std::tie(Zll_mass, ZllG_mass) = getZllAndZllgMasses(*kinPhotons_["central"]);
 
     if(Zll_mass > 0){
-      theHistograms->fill("ZllG_mass_vs_Zll_mass", ";m_{ll#gamma};m_{ll}", 44,60,170., 40,40.,140., ZllG_mass, Zll_mass, theWeight);
-      theHistograms->fill("Zll_mass" , ";m_{ll}"      , 40,60.,160., Zll_mass, theWeight);
+      bool improves = ( fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS) ); // The addition of the photon momentum improved the mass
+      const char* improv_str = improves ? "improves" : "noimprov";
+      theHistograms->fill(Form("Zll_mass_%s" , improv_str), ";m_{ll} [GeV/c^{2}]"      , 30,60,120, Zll_mass , theWeight);
+      theHistograms->fill(Form("ZllG_mass_%s", improv_str), ";m_{ll#gamma} [GeV/c^{2}]", 30,60,210, ZllG_mass, theWeight);
+      if(theSampleInfo.isMC()){
+	bool signaldef = genPhotonsPrompt_->size() > 0;  // Test if the event passes the GEN signal definition
+	const char* sigdef_str = signaldef ? "prompt" : "nonpro";
+	theHistograms->fill(Form("Zll_mass_%s_%s" , improv_str, sigdef_str), ";m_{ll} [GeV/c^{2}]"      , 30,60,120, Zll_mass , theWeight);
+	theHistograms->fill(Form("ZllG_mass_%s_%s", improv_str, sigdef_str), ";m_{ll#gamma} [GeV/c^{2}]", 30,60,210, ZllG_mass, theWeight);
+      }
+
+      theHistograms->fill("ZllG_mass_vs_Zll_mass", ";m_{ll#gamma};m_{ll}", 60,60,150., 30,60.,120., ZllG_mass, Zll_mass, theWeight);
+      theHistograms->fill("Zll_mass" , ";m_{ll}"      , 30,60.,120., Zll_mass, theWeight);
       theHistograms->fill("ZllG_mass", ";m_{ll#gamma}", 40,60.,160., ZllG_mass, theWeight);
       theHistograms->fill("Zll_mass_plus_ZllG_mass", ";m_{ll}+m_{ll#gamma}", 40,120.,320., Zll_mass+ZllG_mass, theWeight);
     }
