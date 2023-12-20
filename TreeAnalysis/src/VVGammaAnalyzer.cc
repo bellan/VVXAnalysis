@@ -656,6 +656,32 @@ void VVGammaAnalyzer::analyze(){
     theHistograms->fill("Z1_l0_pt_"+channelReco_, "p_{t,l10};GeV/c" , 20,0.,400. , ZZ->second().daughter(0).pt(), theWeight);
     theHistograms->fill("Z1_l1_pt_"+channelReco_, "p_{t,l11};GeV/c" , 20,0.,400. , ZZ->second().daughter(1).pt(), theWeight);
 
+    const char* ph_cutID = "noph";
+    if     (goodPhotons_["central"]->size() > 0) ph_cutID = "loose";
+    else if( kinPhotons_["central"]->size() > 0) ph_cutID = "kinVetoL";
+
+    const char* jets_str = (jets_noph_->size() > 0 ? "gt1j" : "0j");
+
+    theHistograms->fill(Form("Z0_mass_%s", ph_cutID), "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
+    theHistograms->fill(Form("Z1_mass_%s", ph_cutID), "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
+
+    theHistograms->fill(Form("Z0_mass_%s", jets_str), "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
+    theHistograms->fill(Form("Z1_mass_%s", jets_str), "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
+
+    if(theSampleInfo.isMC()){
+	bool signaldef = genPhotonsPrompt_->size() > 0;  // Test if the event passes the GEN signal definition
+	const char* sigdef_str = signaldef ? "prompt" : "nonpro";
+
+	theHistograms->fill(Form("Z0_mass_%s"             , sigdef_str), "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
+	theHistograms->fill(Form("Z1_mass_%s"             , sigdef_str), "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
+
+	theHistograms->fill(Form("Z0_mass_%s_%s", ph_cutID, sigdef_str), "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
+	theHistograms->fill(Form("Z1_mass_%s_%s", ph_cutID, sigdef_str), "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
+
+	theHistograms->fill(Form("Z0_mass_%s_%s", jets_str, sigdef_str), "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
+	theHistograms->fill(Form("Z1_mass_%s_%s", jets_str, sigdef_str), "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
+    }
+
     double Zll_mass(0.), ZllG_mass(0.);
     std::tie(Zll_mass, ZllG_mass) = getZllAndZllgMasses(*kinPhotons_["central"]);
 
