@@ -8,7 +8,7 @@ from readSampleInfo import *
 from collections import OrderedDict
 from Colours import *
 import ctypes
-from plotUtils23 import TFileContext, addIfExisting, PlotNotFoundError, InputDir
+from plotUtils23 import TFileContext, addIfExisting, PlotNotFoundError, InputDir, InputFile
 import samplesByRegion # getSamplesByRegion, data_obs, ZZG, WZG, ...
 
 ##############################################
@@ -30,15 +30,17 @@ def getPlot_impl(filename, var):
     return retrieved
 
 def getPlot(plot, sample, region, inputdir='results', year='2016', analyzer='VVGammaAnalyzer'):
+    theInputDir  = InputDir(inputdir, year=year, region=region, analyzer=analyzer)
+    theInputFile = InputFile(theInputDir, '{:s}.root'.format(sample))
     if year == 'Run2':
         plots = []
         for y in ['2016preVFP', '2016postVFP', '2017', '2018']:
-            filename = os.path.join(inputdir, y, '{:s}_{:s}'.format(analyzer, region), '{:s}.root'.format(sample))
+            filename = theInputFile.path(year=y)
             h = getPlot_impl(filename, plot)
             plots.append( h )
         return addIfExisting(*plots)
     else:
-        filename = os.path.join(inputdir, year, '{:s}_{:s}'.format(analyzer, region), '{:s}.root'.format(sample))  # '{inputdir}/{year}/{analyzer}_{region}/{sample}.root'
+        filename = theInputFile.path()
         return getPlot_impl(filename, plot)
 
 # Emulate os.makekdirs(..., exists_ok=True) for python2
@@ -135,9 +137,7 @@ def getPlotFromSample(inputdir, sample, plot, verbosity, forcePositive, note=Non
     for fname in sample['files']:
         integralFile = errorFile = 0.
         for year in years:
-            newdir = copy.deepcopy(inputdir)
-            newdir.year = year
-            rootfilename = os.path.join(newdir.path(), fname+".root")
+            rootfilename = os.path.join(inputdir.path(year=year), fname+".root")
             fname_year = fname if not multiyear else fname+' '+year
             if(not os.path.exists(rootfilename)):
                 if(verbosity >= 2):
