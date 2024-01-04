@@ -10,6 +10,7 @@ from __future__ import print_function
 import os, sys
 import ROOT
 from plotUtils import TFileContext, makedirs_ok
+from plotUtils23 import retrieve_bin_edges
 from subprocess import call
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
@@ -152,6 +153,9 @@ def main():
         logging.info('in %s there are %d variables', region, len(variables_region))
         logging.debug('in {} the variables are: {}'.format(region, variables_region))
 
+        # Sometimes the yield in data.root may be 0. In this case we must insert an empty histogram with the appropriate xaxis
+        xbins_dict = dict()
+
         # Write to output
         with TFileContext(os.path.join(path_out, region+'.root'), "RECREATE") as fout:
             for variable in variables_region:
@@ -174,17 +178,27 @@ def main():
                 if(not subdir):
                     subdir = fout.mkdir(var_name)
                 subdir.cd()  # cd into this TDirectory
-                
-                for sample, file_in in files_in.items():
+
+                ordered_files_in = [[k, v] for k,v in files_in.items() if k != 'data_obs']
+                ordered_files_in.append(['data_obs', files_in['data_obs']])
+                for sample, file_in in ordered_files_in:
                     if(sample == 'data_obs' and skipIfData):
                         continue
                     h = file_in.Get(variable)
                     if(h):
                         h.SetName(out_name %(sample))
                         h.Write()
-                        ok_retrieved.append( {'file':files_in[sample].GetName(), 'variable':variable})
+                        ok_retrieved.append( {'file':file_in.GetName(), 'variable':variable})
+                        if(syst == 'central'):  # Save bin edges in case we need it
+                            xbins = retrieve_bin_edges(h.GetXaxis())
+                            xbins_dict.setdefault(variable, xbins)
                     else:
-                        not_retrieved.append({'file':files_in[sample].GetName(), 'variable':variable})
+                        not_retrieved.append({'file':file_in.GetName(), 'variable':variable})
+                        if(sample == 'data_obs'):  # data_obs must not be missing
+                            logging.error('data_obs is missing "%s" - replacing with empty histogram', variable)
+                            xbins = xbins_dict[variable]
+                            h = ROOT.TH1F(out_name %(sample), '', len(xbins) - 1, xbins)
+                            h.Write()
 
         del samples_region
         for _, handler in files_in.items():

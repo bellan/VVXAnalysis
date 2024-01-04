@@ -1,6 +1,7 @@
 from array import array
 from math import sqrt
 import os
+import numpy as np
 import ROOT
 
 class TFileContext(object):
@@ -134,3 +135,16 @@ def rebin2D(hist_orig, x_bins=None, y_bins=None, verbose=False):
         print('    * rebinned *')
         print(debug_hist(hist))
     return hist
+
+
+def retrieve_bin_edges(axis):
+    '''
+    Return an array.array of nbins+1 bin edges both in case of fixed and variable bins
+    '''
+    if( len(axis.GetXbins()) > 0 ):
+        # variable bin size
+        edges = array('d', axis.GetXbins())
+    else:
+        # fixed bin size
+        edges = array('d', np.linspace(axis.GetXmin(), axis.GetXmax(), axis.GetNbins()+1))
+    return edges
