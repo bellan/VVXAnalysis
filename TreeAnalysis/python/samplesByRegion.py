@@ -49,11 +49,16 @@ def is3Lregion(region):
 def is2Lregion(region):
     return region in ('SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F')
 
+def isLepCR(region):
+    return region in ('CR3P1F', 'CR2P2F', 'CR000', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110')
 
 def getSamplesByRegion(region, MCSet, predType):
     availablePredTypes = ['fromCR', 'lepCR', 'phoCR', 'fullCR', 'fullMC', 'fakeMC']  # Notes: fromCR is a legacy equivalent of lepCR; fullCR = lepCR + phoCR
     if predType not in availablePredTypes:
         raise ValueError("Wrong prediction type ("+predType+"), available: "+str(availablePredTypes))
+
+    if(isLepCR(region) and predType in ('lepCR', 'fullCR')):
+        raise ValueError('Prediction "%s" not available in "%s"' %(predType, region))
 
     if MCSet == 'pow':
         qqZZ = qqZZ_pow
