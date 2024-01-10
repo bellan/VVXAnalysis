@@ -161,6 +161,13 @@ void VVGammaAnalyzer::initEvent(){
     leptons_->insert(leptons_->cend(), electrons->begin(), electrons->end());
     leptons_->insert(leptons_->cend(),     muons->begin(),     muons->end());
 
+    if(leptons_->size() > 2){
+      throw std::runtime_error(Form("%lu leptons in 2L region %s", leptons_->size(), regionType(region_).c_str()));
+    }
+
+    if(!(Z && Z->pt() > 0.001) && leptons_->size() == 2)
+      *Z = Boson<Lepton>(leptons_->at(0), leptons_->at(1));
+
     // Correct method for when we'll have ntuples with ZCand filled correctly
     // const Boson<Lepton>& bos = *Z;
     // std::bitset<2> fsrIndex = std::bitset<2>(bos.daughtersWithFSR());
