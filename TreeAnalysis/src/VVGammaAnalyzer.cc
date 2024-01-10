@@ -30,8 +30,6 @@ using namespace physmath;
 // #define DEBUG
 
 #define BIN_GENCATEGORY 10,-0.5,9.5
-#define BINS_CUTFLOW 9,-0.5,8.5
-//{"All", "ZZ || ZW", "2l2j || 2l1J", "#gamma kin", "#gamma good", "Analyzed", "#gamma medium"}
 #define BINS_PHCUTFLOW 7,-0.5,6.5
 #define BINS_PHCUTNM1 6,-0.5,5.5
 #define BINS_KINPHID 5,-0.5,4.5
@@ -40,6 +38,7 @@ namespace {
   // Anonymous namespace that holds constants specific to this analyzer
   constexpr float CUT_MLL_MIN = 81.;
   constexpr float CUT_PTG_MIN = 20.;
+  const std::vector<std::string> BINS_CUTFLOW {"All", "ZZ || ZW", "2l2j || 2l1J", "#gamma kin", "#gamma veryLoose", "#gamma loose", "WZ paperSel", "Analyzed", "#gamma medium"};
 }
 
 std::pair<TLorentzVector, TLorentzVector> solveNuPz(const Boson<Lepton>& W, int& error);
@@ -408,8 +407,8 @@ Int_t VVGammaAnalyzer::cut() {
      theHistograms->fill("AAA_genCategory_u", "gen category unweighted", BIN_GENCATEGORY, 9);
   }
 
-  theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, 0, theWeight);
-  theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, 0, 1);
+  theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, "All", theWeight);
+  theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, "All", 1);
 
   bool haveZVlep = false;
   bool have2l2j = false;
@@ -463,23 +462,23 @@ Int_t VVGammaAnalyzer::cut() {
   // ----- Cut1: require at least a ZZ or a WZ candidate
   haveZVlep = (ZZ && ZZ->pt() > 0.001) || (ZW && ZW->pt() > 0.001);
   if(haveZVlep){
-    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, 1, theWeight);
-    theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, 1, 1);
+    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, "ZZ || ZW", theWeight);
+    theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, "ZZ || ZW", 1);
   }
 
   have2l2j = (muons->size()+electrons->size()==2) && (jets->size()==2 || jetsAK8->size()>=1);
   if(have2l2j){
-    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, 2, theWeight);
-    theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, 2, 1);
+    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, "2l2j || 2l1J", theWeight);
+    theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, "2l2j || 2l1J", 1);
   }
   
   if(kinPhotons_["central"]->size() >= 1){
-    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, 3, theWeight);
-    theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, 3, 1);
+    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, "#gamma kin", theWeight);
+    theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, "#gamma kin", 1);
   }
   if(loosePhotons_["central"]->size() >= 1){
-    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, 4, theWeight);
-    theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, 4, 1);
+    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, "#gamma veryLoose", theWeight);
+    theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, "#gamma veryLoose", 1);
   }
   // ----- Cut2: Require at least 1 loose photon with pt > 20 GeV
   // haveGoodPhoton = std::any_of(goodPhotons_->begin(), goodPhotons->end(), 
@@ -487,8 +486,8 @@ Int_t VVGammaAnalyzer::cut() {
   // 			       );
   haveGoodPhoton = goodPhotons_["central"]->size() >= 1;
   if(haveGoodPhoton){
-    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, 5, theWeight);
-    theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, 5, 1);
+    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, "#gamma loose", theWeight);
+    theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, "#gamma loose", 1);
   }
   
   if(is3Lregion(region_)){
@@ -518,8 +517,8 @@ Int_t VVGammaAnalyzer::cut() {
     if(!b_WZpaperSel)
       return -1;
     else{
-      theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, 6, theWeight);
-      theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, 6, 1);
+      theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, "WZ paperSel", theWeight);
+      theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, "WZ paperSel", 1);
     }
   }
   
@@ -537,15 +536,15 @@ Int_t VVGammaAnalyzer::cut() {
 
 void VVGammaAnalyzer::analyze(){
   analyzedNInReg_[region_]++; analyzedWInReg_[region_] += theWeight;
-  theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, 7, theWeight);
-  theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, 7, 1);
+  theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, "Analyzed", theWeight);
+  theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, "Analyzed", 1);
   
   if( std::any_of(goodPhotons_["central"]->cbegin(),
 		  goodPhotons_["central"]->cend(), 
 		  [](const Photon& ph){return ph.cutBasedIDMedium();}) )
   {
-    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, 8, theWeight);
-    theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, 8, 1);
+    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, "#gamma medium", theWeight);
+    theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, "#gamma medium", 1);
   }
   
   bool four_lep  = is4Lregion(region_);  // && ZZ && ZZ->pt() > 1.;
@@ -939,22 +938,6 @@ void VVGammaAnalyzer::endNameHistos(){
     axis->SetBinLabel(8, "Trig plateau");
     axis->SetBinLabel(9, "mVV > 100");
     axis->SetBinLabel(10, "0|1 & 4 & 5 & 6 & 7");
-  }
-  
-  TH1* AAA_cuts   = theHistograms->get("AAA_cuts"  );
-  TH1* AAA_cuts_u = theHistograms->get("AAA_cuts_u");
-  for(TH1* h : {AAA_cuts, AAA_cuts_u}){
-    if(!h) continue;
-    TAxis* axis = h->GetXaxis();
-    axis->SetBinLabel(1, "All");
-    axis->SetBinLabel(2, "ZZ || ZW");
-    axis->SetBinLabel(3, "2l2j || 2l1J");
-    axis->SetBinLabel(4, "#gamma kin");
-    axis->SetBinLabel(5, "#gamma VeryLoose");
-    axis->SetBinLabel(6, "#gamma Loose (Good)");
-    axis->SetBinLabel(7, "WZ_paperSel");
-    axis->SetBinLabel(8, "Analyzed");
-    axis->SetBinLabel(9, "#gamma Medium");
   }
   
   TH1* trig_Cutflow = theHistograms->get("trig_Cutflow");
