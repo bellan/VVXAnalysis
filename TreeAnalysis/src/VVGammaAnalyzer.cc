@@ -38,7 +38,6 @@ namespace {
   // Anonymous namespace that holds constants specific to this analyzer
   constexpr float CUT_MLL_MIN = 81.;
   constexpr float CUT_PTG_MIN = 20.;
-  const std::vector<std::string> BINS_CUTFLOW {"All", "ZZ || ZW", "2l2j || 2l1J", "#gamma kin", "#gamma veryLoose", "#gamma loose", "WZ paperSel", "Analyzed", "#gamma medium"};
 }
 
 std::pair<TLorentzVector, TLorentzVector> solveNuPz(const Boson<Lepton>& W, int& error);
@@ -414,12 +413,8 @@ Int_t VVGammaAnalyzer::cut() {
      theHistograms->fill("AAA_genCategory_u", "gen category unweighted", BIN_GENCATEGORY, 9);
   }
 
-  theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, "All", theWeight);
-  theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, "All", 1);
-
-  bool haveZVlep = false;
-  bool have2l2j = false;
-  bool haveGoodPhoton = false;
+  theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {"All"}, "All", theWeight);
+  theHistograms->fill("AAA_cuts_u", "cuts unweighted", {"All"}, "All", 1);
   
   if(theSampleInfo.isMC()){
     genEventSetup();
@@ -466,39 +461,29 @@ Int_t VVGammaAnalyzer::cut() {
   
   
   // ----- BASELINE SELECTION -----
-  // ----- Cut1: require at least a ZZ or a WZ candidate
-  haveZVlep = (ZZ && ZZ->pt() > 0.001) || (ZW && ZW->pt() > 0.001);
-  if(haveZVlep){
-    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, "ZZ || ZW", theWeight);
-    theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, "ZZ || ZW", 1);
+
+  // -----  4L   -----
+  if     (is4Lregion(region_)){
+    // Cut 4L.ZZ: require a ZZ candidate
+    bool haveZZlep = (ZZ && ZZ->pt() > 0.001);
+    if(haveZZlep){
+      theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "ZZ", theWeight);
+      theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "ZZ", 1);
+    }
+    else return -1;
   }
 
-  have2l2j = (muons->size()+electrons->size()==2) && (jets->size()==2 || jetsAK8->size()>=1);
-  if(have2l2j){
-    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, "2l2j || 2l1J", theWeight);
-    theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, "2l2j || 2l1J", 1);
-  }
-  
-  if(kinPhotons_["central"]->size() >= 1){
-    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, "#gamma kin", theWeight);
-    theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, "#gamma kin", 1);
-  }
-  if(loosePhotons_["central"]->size() >= 1){
-    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, "#gamma veryLoose", theWeight);
-    theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, "#gamma veryLoose", 1);
-  }
-  // ----- Cut2: Require at least 1 loose photon with pt > 20 GeV
-  // haveGoodPhoton = std::any_of(goodPhotons_->begin(), goodPhotons->end(), 
-  // 			       [](const std::pair<const char*, std::unique_ptr<vector<Photon>>>& p){ return p.second->size() >= 1; } 
-  // 			       );
-  haveGoodPhoton = goodPhotons_["central"]->size() >= 1;
-  if(haveGoodPhoton){
-    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, "#gamma loose", theWeight);
-    theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, "#gamma loose", 1);
-  }
-  
-  if(is3Lregion(region_)){
-    // replicate the selection from CMS-SMP-20-014
+  // -----  3L   -----
+  else if(is3Lregion(region_)){
+    // Cut 3L.WZ: require a WZ candidate
+    bool haveWZlep = (ZW && ZW->pt() > 0.001);
+    if(haveWZlep){
+      theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "WZ", theWeight);
+      theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "WZ", 1);
+    }
+    else return -1;
+
+    // Cut 3L.paperSel: replicate the selection from CMS-SMP-20-014
     theHistograms->fill("WZ_cutflow", "Cutflow for WZ", 7,-0.5,6.5, 0, theWeight);
     const Lepton& lZ1 = ZW->first ().daughter(0);
     const Lepton& lZ2 = ZW->first ().daughter(1);
@@ -521,37 +506,88 @@ Int_t VVGammaAnalyzer::cut() {
     if(b_lepton_pt && b_Z_mass && b_MET && b_lll_mass && b_bveto)
       theHistograms->fill("WZ_cutflow", "Cutflow for WZ", 7,-0.5,6.5, 6, theWeight);
     
-    if(!b_WZpaperSel)
-      return -1;
-    else{
-      theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, "WZ paperSel", theWeight);
-      theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, "WZ paperSel", 1);
+    if(b_WZpaperSel){
+      theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "paperSel", theWeight);
+      theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "paperSel", 1);
     }
+    else return -1;
   }
-  
-  
-  if(!haveZVlep) 
-    return -1;
-  return 1;  //TEMP
-  
-  if(!haveGoodPhoton)
-    return -1;
-  else
-    return 1;
+
+  // -----  2L   -----
+  else if(is2Lregion(region_)){
+    // Cut 2L.Zlep: require a Z lep candidate
+    bool haveZlep = (Z && Z->pt() > 0.001);
+    if(haveZlep){
+      theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "Z lep", theWeight);
+      theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "Z lep", 1);
+    }
+    else return -1;
+
+    // Cut 2L.Jets: require two AK4 or an AK8
+    bool haveJets = (jets->size() >= 2 || jetsAK8->size() >= 1);
+    if(haveJets){
+      theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "2l2j || 2l1J", theWeight);
+      theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "2l2j || 2l1J", 1);
+    }
+    else return -1;
+  }
+
+  // ----- CRLFR -----
+  else if(region_ == CRLFR){
+    // Cut CRLFR.ZL: require a ZL candidate
+    bool haveZL = (ZL && ZL->first.pt()+ZL->second.pt() > 0.001);
+    if(haveZL){
+      theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "ZL", theWeight);
+      theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "ZL", 1);
+    }
+    else return -1;
+  }
+
+  return 1;
 }
 
 
 void VVGammaAnalyzer::analyze(){
   analyzedNInReg_[region_]++; analyzedWInReg_[region_] += theWeight;
-  theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, "Analyzed", theWeight);
-  theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, "Analyzed", 1);
-  
+  theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "Analyzed", theWeight);
+  theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "Analyzed", 1);
+
+  // Disabled cuts
+  // disabled.gamma_kin: Require at least 1 kin photon with pt > 20 GeV
+  if(kinPhotons_["central"]->size() >= 1){
+    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "#gamma kin", theWeight);
+    theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "#gamma kin", 1);
+  }
+  // else{
+  //   theHistograms->get("AAA_cuts"  )->GetXaxis()->FindBin("#gamma kin");
+  //   theHistograms->get("AAA_cuts_u")->GetXaxis()->FindBin("#gamma kin");
+  // }
+  // disabled.gamma_veryloose: Require at least 1 veryLoose photon with pt > 20 GeV
+  if(loosePhotons_["central"]->size() >= 1){
+    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "#gamma veryLoose", theWeight);
+    theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "#gamma veryLoose", 1);
+  }
+  // else{
+  //   theHistograms->get("AAA_cuts"  )->GetXaxis()->FindBin("#gamma veryLoose");
+  //   theHistograms->get("AAA_cuts_u")->GetXaxis()->FindBin("#gamma veryLoose");
+  // }
+  // disabled.gamma_loose: Require at least 1 loose photon with pt > 20 GeV
+  bool haveGoodPhoton = goodPhotons_["central"]->size() >= 1;
+  if(haveGoodPhoton){
+    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "#gamma loose", theWeight);
+    theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "#gamma loose", 1);
+  }
+  // else{
+  //   theHistograms->get("AAA_cuts"  )->GetXaxis()->FindBin("#gamma loose");
+  //   theHistograms->get("AAA_cuts_u")->GetXaxis()->FindBin("#gamma loose");
+  // }
+
   if( std::any_of(goodPhotons_["central"]->cbegin(),
 		  goodPhotons_["central"]->cend(), 
 		  [](const Photon& ph){return ph.cutBasedIDMedium();}) )
   {
-    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , BINS_CUTFLOW, "#gamma medium", theWeight);
-    theHistograms->fill("AAA_cuts_u", "cuts unweighted", BINS_CUTFLOW, "#gamma medium", 1);
+    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "#gamma medium", theWeight);
+    theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "#gamma medium", 1);
   }
   
   bool four_lep  = is4Lregion(region_);  // && ZZ && ZZ->pt() > 1.;
