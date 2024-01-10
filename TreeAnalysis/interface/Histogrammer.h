@@ -105,13 +105,13 @@ class Histogrammer{
  
  // Alphanumeric labels
  template<typename H>
- TH1* book(const std::string& name, const std::string& title, const std::vector<const char*>& xlabels){
+ TH1* book(const std::string& name, const std::string& title, const std::vector<std::string>& xlabels){
    TH1map::iterator f = thePlots.find(name);
    if(f != thePlots.end()) return f->second;
    else{
-     auto h = new H(name.c_str(), title.c_str(), xlabels.size(),0,1);
+     auto h = new H(name.c_str(), title.c_str(), xlabels.size(),0,xlabels.size());
      for(size_t i = 0; i < xlabels.size(); ++i)
-       h->GetXaxis()->SetBinLabel(i+1, xlabels.at(i));
+       h->GetXaxis()->SetBinLabel(i+1, xlabels.at(i).c_str());
      thePlots[name] = h;
      return thePlots[name];
    }
@@ -142,8 +142,8 @@ class Histogrammer{
  }
 
  template<typename H=TH1F>
- void fill(const std::string& name, const std::string& title, const std::vector<const char*>& xlabels, const char* value, double weight=1){
-   book<H>(name, title, xlabels)->Fill(value, weight);
+ void fill(const std::string& name, const std::string& title, const std::vector<std::string>& xlabels, std::string value, double weight=1){
+   book<H>(name, title, xlabels)->Fill(value.c_str(), weight);
  }
  // -----------------------------------------------------------------------
 
