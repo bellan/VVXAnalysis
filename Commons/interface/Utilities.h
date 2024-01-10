@@ -97,6 +97,25 @@ typename C::const_iterator closestDeltaR_p(const T& p, const C& container){  // 
 			  });
 }
 
+template <class C1, class C2>
+std::pair<typename C1::const_iterator, typename C2::const_iterator> closestPairDeltaR(const C1& c1, const C2& c2){
+  // Find the pair of closest objects in two containers
+  typename C1::const_iterator best1 = c1.cend();
+  typename C2::const_iterator best2 = c2.cend();
+  float minDR = 100;
+
+  for(auto it1 = c1.cbegin(); it1 != c1.cend(); ++it1){
+    auto it2 = closestDeltaR(*it1, c2);
+    float dR = physmath::deltaR(*it1, *it2);
+    if(dR < minDR){
+      best1 = it1;
+      best2 = it2;
+      minDR = dR;
+    }
+  }
+
+  return std::make_pair(best1, best2);
+}
 
 template <class F, class T>
 std::vector<std::pair<const F*, const T*>> matchDeltaR(const std::vector<F>& vFrom, const std::vector<T>& vTo, const double& tol = 0.2){
