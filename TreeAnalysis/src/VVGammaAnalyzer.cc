@@ -461,6 +461,8 @@ Int_t VVGammaAnalyzer::cut() {
   
   
   // ----- BASELINE SELECTION -----
+  vector<Photon>& phVect_CUT_mllimprov = *kinPhotons_["central"];  // Photon vector used for the "Improves mll" CUT
+  bool mll_improves = false;
 
   // -----  4L   -----
   if     (is4Lregion(region_)){
@@ -471,6 +473,13 @@ Int_t VVGammaAnalyzer::cut() {
       theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "ZZ", 1);
     }
     else return -1;
+
+    // Cut 4L.mll_noimprov: Require that neither of the Z masses improves with the addition of the momentum of a photon
+    if(phVect_CUT_mllimprov.size() > 0){
+      double Zll_mass(0.), ZllG_mass(0.);
+      std::tie(Zll_mass, ZllG_mass) = getZllAndZllgMasses(phVect_CUT_mllimprov);
+      mll_improves = (Zll_mass > 0) && ( fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS) );
+    }
   }
 
   // -----  3L   -----
@@ -511,6 +520,17 @@ Int_t VVGammaAnalyzer::cut() {
       theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "paperSel", 1);
     }
     else return -1;
+
+    // Cut 3L.mll_noimprov: Require that the Z mass does not improve with the addition of the momentum of a photon
+    if(phVect_CUT_mllimprov.size() > 0){
+      auto closestPhoLep = closestPairDeltaR(phVect_CUT_mllimprov, *leptons_);
+      auto best_lep_index = std::distance(leptons_->cbegin(), closestPhoLep.second);
+      if(best_lep_index <= 2){  // The lepton belongs to the Z
+	double Zll_mass  = ZW->first().mass();
+	double ZllG_mass = (ZW->first().p4() + closestPhoLep.first->p4()).M();
+	mll_improves = fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS);
+      }
+    }
   }
 
   // -----  2L   -----
@@ -530,6 +550,17 @@ Int_t VVGammaAnalyzer::cut() {
       theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "2l2j || 2l1J", 1);
     }
     else return -1;
+
+    // Cut 2L.mll_noimprov: Require that the Z mass does not improve with the addition of the momentum of a photon
+    if(phVect_CUT_mllimprov.size() > 0){
+      const Lepton& l0 = Z->daughter(0);
+      const Lepton& l1 = Z->daughter(1);
+      auto ph0 = closestDeltaR(l0, phVect_CUT_mllimprov);
+      auto ph1 = closestDeltaR(l1, phVect_CUT_mllimprov);
+      auto thePh = deltaR(l0, *ph0) < deltaR(l1, *ph1) ? ph0 : ph1;
+      double Zll_mass = Z->mass();
+      double ZllG_mass = (Z->p4() + thePh->p4()).M();
+    }
   }
 
   // ----- CRLFR -----
@@ -541,7 +572,26 @@ Int_t VVGammaAnalyzer::cut() {
       theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "ZL", 1);
     }
     else return -1;
+
+    // Cut CRLFR.mll_noimprov: Require that the Z mass does not improve with the addition of the momentum of a photon
+    if(phVect_CUT_mllimprov.size() > 0){
+      auto closestPhoLep = closestPairDeltaR(phVect_CUT_mllimprov, *leptons_);
+      auto best_lep_index = std::distance(leptons_->cbegin(), closestPhoLep.second);
+      if(best_lep_index <= 2){  // The lepton belongs to the Z
+	double Zll_mass = ZL->first.mass();
+	double ZllG_mass = (ZL->first.p4() + closestPhoLep.first->p4()).M();
+	mll_improves = fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS);
+      }
+    }
   }
+
+  // ----- Common cuts -----
+  // common.mll_noimprov: Remove events where the Z mass improves with the addition of the photon momentum
+  if(!mll_improves){
+    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "mll no improv", theWeight);
+    theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "mll no improv", 1);
+  }
+  else return -1;
 
   return 1;
 }
