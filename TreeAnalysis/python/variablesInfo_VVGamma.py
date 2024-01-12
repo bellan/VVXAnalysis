@@ -274,10 +274,10 @@ def getVarInfo_VVGamma(region):
     for e in ['EB', 'EE']:
         VarInfo_VVGamma.update({
             'kinPh_sieie_' +e: {'title':'#sigma_{i#etai#eta}', 'rebin':1, 'unblind':True, 'logy':False},
-            'kinPh_HoverE_'+e: {'title':'HoverE'             , 'rebin':3, 'unblind':True, 'logy':False},
-            'kinPh_chIso_' +e: {'title':'chIso'              , 'rebin':1, 'unblind':True, 'logy':False},# 'logx':True},
-            'kinPh_neIso_' +e: {'title':'neIso'              , 'rebin':3, 'unblind':True, 'logy':False},
-            'kinPh_phIso_' +e: {'title':'phIso'              , 'rebin':3, 'unblind':True, 'logy':False}
+            'kinPh_HoverE_'+e: {'title':'H/E'                , 'rebin':3, 'unblind':True, 'logy':False},
+            'kinPh_chIso_' +e: {'title':'I_{ch}'             , 'rebin':1, 'unblind':True, 'logy':False},# 'logx':True},
+            'kinPh_neIso_' +e: {'title':'I_{n}'              , 'rebin':3, 'unblind':True, 'logy':False},
+            'kinPh_phIso_' +e: {'title':'I_{#gamma}'         , 'rebin':3, 'unblind':True, 'logy':False}
         })
     # for name in ['kin', 'loose', 'medium', 'tight']:
     #     VarInfo_VVGamma.update({
