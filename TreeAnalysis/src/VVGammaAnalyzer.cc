@@ -478,7 +478,7 @@ Int_t VVGammaAnalyzer::cut() {
     if(phVect_CUT_mllimprov.size() > 0){
       double Zll_mass(0.), ZllG_mass(0.);
       std::tie(Zll_mass, ZllG_mass) = getZllAndZllgMasses(phVect_CUT_mllimprov);
-      mll_improves = (Zll_mass > 0) && ( fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS) );
+      mll_improves = (Zll_mass > 0) && (Zll_mass < CUT_MLL_MIN) && ( fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS) );
     }
   }
 
@@ -528,7 +528,7 @@ Int_t VVGammaAnalyzer::cut() {
       if(best_lep_index <= 2){  // The lepton belongs to the Z
 	double Zll_mass  = ZW->first().mass();
 	double ZllG_mass = (ZW->first().p4() + closestPhoLep.first->p4()).M();
-	mll_improves = fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS);
+	mll_improves = (Zll_mass < CUT_MLL_MIN) && fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS);
       }
     }
   }
@@ -580,7 +580,7 @@ Int_t VVGammaAnalyzer::cut() {
       if(best_lep_index <= 2){  // The lepton belongs to the Z
 	double Zll_mass = ZL->first.mass();
 	double ZllG_mass = (ZL->first.p4() + closestPhoLep.first->p4()).M();
-	mll_improves = fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS);
+	mll_improves = (Zll_mass < CUT_MLL_MIN) && fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS);
       }
     }
   }
