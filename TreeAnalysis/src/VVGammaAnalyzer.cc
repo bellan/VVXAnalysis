@@ -38,9 +38,12 @@ namespace {
   // Anonymous namespace that holds constants specific to this analyzer
   constexpr float CUT_MLL_MIN = 81.;
   constexpr float CUT_PTG_MIN = 20.;
+  constexpr bool APPLY_FSR_CUT       = true;
+  constexpr bool APPLY_PIXELSEED_CUT = false;
 }
 
 std::pair<TLorentzVector, TLorentzVector> solveNuPz(const Boson<Lepton>& W, int& error);
+bool inPhotonEtaAcceptance(double eta);
 
 void VVGammaAnalyzer::begin(){
   cout<<'\n';
@@ -195,12 +198,12 @@ void VVGammaAnalyzer::initEvent(){
   for(auto ph : *photons){
     //Pixel seed and electron veto
     if(!ph.passElectronVeto()) continue;
+    if(APPLY_PIXELSEED_CUT && ph.hasPixelSeed()) continue;
 
     //Kinematic selection
     // if(ph.pt() < 20) continue;
     float ph_aeta = fabs(ph.eta());
-    if(ph_aeta > 2.4) continue;
-    if(ph_aeta > 1.4442 && ph_aeta < 1.566) continue;
+    if(!inPhotonEtaAcceptance(ph_aeta)) continue;
 
     // Check ID
     bool isPassVL    = ph.cutBasedID(Photon::IdWp::VeryLoose);
@@ -436,7 +439,7 @@ Int_t VVGammaAnalyzer::cut() {
   for(const Particle& p : *genPhotons_){
     double aeta = fabs(p.eta());
     bool isPrompt = p.genStatusFlags().test(phys::isPrompt);
-    bool passKin  = p.pt() > CUT_PTG_MIN && aeta < 2.4 && (aeta < 1.4442 || aeta > 1.566);
+    bool passKin  = p.pt() > CUT_PTG_MIN && inPhotonEtaAcceptance(aeta);
     bool passDRl  = physmath::deltaR(p, *std::min_element(genChLeptons_->begin(), genChLeptons_->end(), DeltaRComparator(p))) > 0.5;
     if(passKin            ) genPhotonsKin      .push_back(p);
     if(passKin && isPrompt) genPhotonsKinPrompt.push_back(p);
@@ -591,7 +594,7 @@ Int_t VVGammaAnalyzer::cut() {
     theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "mll no improv", theWeight);
     theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "mll no improv", 1);
   }
-  else return -1;
+  else if(APPLY_FSR_CUT) return -1;
 
   return 1;
 }
@@ -3156,6 +3159,12 @@ bool VVGammaAnalyzer::passVeryLoose(const Photon& ph){
   return ph.cutBasedID(wp, Photon::IDcut::HoverE) && ph.cutBasedID(wp, Photon::IDcut::phIso) && ph.cutBasedID(wp, Photon::IDcut::neIso);
 }
 
+bool inPhotonEtaAcceptance(double eta){
+  double aeta = fabs(eta);
+  if(aeta > 2.4 || (aeta > 1.4442 && aeta < 1.566))
+    return false;
+  return true;
+}
 
 
 const vector<double> VVGammaAnalyzer::pt_bins(
