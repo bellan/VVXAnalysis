@@ -38,7 +38,7 @@ namespace {
   // Anonymous namespace that holds constants specific to this analyzer
   constexpr float CUT_MLL_MIN = 81.;
   constexpr float CUT_PTG_MIN = 20.;
-  constexpr bool APPLY_FSR_CUT       = true;
+  constexpr bool APPLY_FSR_CUT       = false;
   constexpr bool APPLY_PIXELSEED_CUT = false;
 }
 
