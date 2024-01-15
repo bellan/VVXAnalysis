@@ -6,7 +6,7 @@
 # example command:                                                                                                                                   #
 #   for region in SR3P ; do ./python/makeNicePlots.py -S -A VVGammaAnalyzer -t all -m pow -p fullMC -o last/EXT_fullMC -y 2016 -r $region ; done     #
 #                                                                                                                                                    #
-# Authors: A. Mecca, G. Pinnan (?)                                                                                                                   #
+# Authors: A. Mecca, G. L. Pinna Angioni (?)                                                                                                         #
 ######################################################################################################################################################
 
 import sys
