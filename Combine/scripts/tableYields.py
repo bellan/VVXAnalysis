@@ -184,7 +184,11 @@ def get_yield(card, unblind=False, **kwargs):
                     logging.debug('opened %s', filepath)
             h = tf_handles[filepath].Get(rootpath)
             error = c_double(0.)
-            integral = h.IntegralAndError(0,-1, error)
+            if(h):
+                integral = h.IntegralAndError(0,-1, error)
+            else:
+                logging.warning('Could not get "%s" from %s', rootpath, filepath)
+                integral = 0
 
             out.setdefault(proc_name, {}).setdefault(bin_name, EventYield()) 
             out[proc_name][bin_name] += EventYield(integral, error.value)
