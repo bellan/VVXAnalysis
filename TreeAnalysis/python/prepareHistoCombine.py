@@ -10,7 +10,7 @@ from __future__ import print_function
 import os, sys
 import ROOT
 from plotUtils import TFileContext, makedirs_ok
-from plotUtils23 import retrieve_bin_edges
+from plotUtils23 import retrieve_bin_edges, InputDir
 from subprocess import call
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
@@ -102,7 +102,7 @@ def main():
     makedirs_ok(path_out)
     
     for region in args.regions:
-        path_in  = os.path.join(args.inputdir , args.year, args.analyzer+'_'+region)
+        path_in  = InputDir(basedir=args.inputdir, year=args.year, region=region, analyzer=args.analyzer).path()
         if(not os.path.isdir(path_in)):
             logging.warning('Skipping non-existent dir: '+path_in)
             continue
@@ -192,6 +192,8 @@ def main():
                         if(syst == 'central'):  # Save bin edges in case we need it
                             xbins = retrieve_bin_edges(h.GetXaxis())
                             xbins_dict.setdefault(variable, xbins)
+                        h.SetDirectory(0)
+                        del h
                     else:
                         not_retrieved.append({'file':file_in.GetName(), 'variable':variable})
                         if(sample == 'data_obs'):  # data_obs must not be missing
@@ -200,6 +202,7 @@ def main():
                             h = ROOT.TH1F(out_name %(sample), '', len(xbins) - 1, xbins)
                             h.Write()
 
+        logging.debug('Closing files')
         del samples_region
         for _, handler in files_in.items():
             handler.Close()
