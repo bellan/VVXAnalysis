@@ -1794,12 +1794,12 @@ void VVGammaAnalyzer::jetHistos(){
     const Jet& rec = * pair.second;
     theHistograms->fill("AK8_rec_gen_pt"  , "AK8 reconstructed, gen p_{t};p_{t} [GeV/c]"             , 40,100,500, gen.pt(), theWeight);
     theHistograms->fill("AK8_rec_gen_pt_u", "AK8 reconstructed, gen p_{t} (unweighted);p_{t} [GeV/c]", 40,100,500, gen.pt());
-    theHistograms->fill("AK8_resolution_dR"        ,"AK8: #DeltaR(reco,gen)"                   ,40,  0.,0.2,physmath::deltaR(gen, rec)    );
-    theHistograms->fill("AK8_resolution_pt"        ,"AK8: pt - genpt;[GeV/c]"                  ,41,-41.,41.,rec.pt()           -gen.pt()  );
-    theHistograms->fill("AK8_resolution_corrPruned","AK8: corrPrunedMass - genMass;[GeV/c^{2}]",41,-41.,41.,rec.corrPrunedMass()-gen.mass());
-    theHistograms->fill("AK8_resolution_pruned"    ,"AK8: prunedMass - genMass;[GeV/c^{2}]"    ,41,-41.,41.,rec.prunedMass()   -gen.mass());
-    theHistograms->fill("AK8_resolution_softDrop"  ,"AK8: softDropMass - genMass;[GeV/c^{2}]"  ,41,-41.,41.,rec.softDropMass() -gen.mass());
-    theHistograms->fill("AK8_resolution_mass"      ,"AK8: mass - genMass;[GeV/c^{2}]"          ,41,-41.,41.,rec.mass()         -gen.mass());
+    theHistograms->fill("AK8_resolution_dR"        ,"AK8: #DeltaR(reco,gen);#DeltaR"                 , 40,  0.,0.2,physmath::deltaR(gen, rec)    );
+    theHistograms->fill("AK8_resolution_pt"        ,"AK8;p_{T}^{REC}-p_{T}^{GEN} [GeV/c]"            , 80,-40.,40.,rec.pt()           -gen.pt()  );
+    theHistograms->fill("AK8_resolution_corrPruned","AK8: corrPrunedMass;m_{REC}-m_{GEN} [GeV/c^{2}]", 80,-40.,40.,rec.corrPrunedMass()-gen.mass());
+    theHistograms->fill("AK8_resolution_pruned"    ,"AK8: prunedMass;m_{REC}-m_{GEN} [GeV/c^{2}]"    , 80,-40.,40.,rec.prunedMass()   -gen.mass());
+    theHistograms->fill("AK8_resolution_softDrop"  ,"AK8: softDropMass;m_{REC}-m_{GEN} [GeV/c^{2}]"  , 80,-40.,40.,rec.softDropMass() -gen.mass());
+    theHistograms->fill("AK8_resolution_mass"      ,"AK8: mass;m_{REC}-m_{GEN} [GeV/c^{2}]"          , 80,-40.,40.,rec.mass()         -gen.mass());
   }
   
   // Jets AK4
@@ -1823,9 +1823,9 @@ void VVGammaAnalyzer::jetHistos(){
     const Jet& rec = * pair.second;
     theHistograms->fill("AK4_rec_gen_pt"  , "AK4 reconstructed, gen p_{t};p_{t} [GeV/c]"             , 47,30,500, gen.pt(), theWeight);
     theHistograms->fill("AK4_rec_gen_pt_u", "AK4 reconstructed, gen p_{t} (unweighted);p_{t} [GeV/c]", 47,30,500, gen.pt());
-    theHistograms->fill("AK4_resolution_dR"        ,"AK4: #DeltaR(reco,gen)"                   ,40,  0.,0.2,physmath::deltaR(gen, rec)    );
-    theHistograms->fill("AK4_resolution_pt"        ,"AK4: pt - genpt;[GeV/c]"                  ,41,-20.5,20.5,rec.pt()           -gen.pt()  );
-    theHistograms->fill("AK4_resolution_mass"      ,"AK4: mass - genMass;[GeV/c^{2}]"          ,41,-20.5,20.5,rec.mass()         -gen.mass());
+    theHistograms->fill("AK4_resolution_dR"        ,"AK4: #DeltaR(reco,gen);#DeltaR"                 , 40,0.,0.2, physmath::deltaR(gen, rec)   );
+    theHistograms->fill("AK4_resolution_pt"        ,"AK4;p_{T}^{REC}-p_{T}^{GEN} [GeV/c]"            , 60,-30,30, rec.pt()          -gen.pt()  );
+    theHistograms->fill("AK4_resolution_mass"      ,"AK4;m_{REC}-m_{GEN} [GeV/c^{2}]"                , 60,-30,30, rec.mass()        -gen.mass());
   }
 }
 
