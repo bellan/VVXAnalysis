@@ -42,7 +42,10 @@ __builtin_config__ = {
         'gmN'  : ['phFakeRate'],
         'correlated'  : ['L1Prefiring', 'PDFVar', 'QCDscale', 'alphas', 'phEffSF', 'phEffMVASF', 'phEScale', 'phESigma', 'muoEffSF', 'eleEffSF', 'puWeight'],
         'uncorrelated': ['electronVeto', 'phFakeRate', 'muoFakeRateSF', 'eleFakeRateSF'],
-        'skip-if-signal': ['PDFVar', 'QCDscale', 'alphas']
+        'skip-if-signal': ['PDFVar', 'QCDscale', 'alphas'],
+        'theory': ['QCDscale', 'alphas', 'PDFVar'],
+        'datadriven': ['phFakeRate', 'muoFakeRateSF', 'eleFakeRateSF'],
+        '_end':[]
     }
 }
 
@@ -62,6 +65,8 @@ shapes * * {path} $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
 ------------
 
 {systematics}
+
+{groups}
 '''
 
 
@@ -355,6 +360,21 @@ def main():
         print(df_syst)
         print()
 
+    ### Groups of nusiances ###
+    groups = {}
+    for syst_fullname in df_syst.index:
+        is_lumi   = 'lumi' in syst_fullname
+        is_theory = any(syst in syst_fullname for syst in config['systematics']['theory'])
+        is_datadr = any(syst in syst_fullname for syst in config['systematics']['datadriven'])
+        logging.debug('syst_fullname: %s, is_theory: %d, is_datadr: %d, is_lumi: %d', syst_fullname, is_theory, is_datadr, is_lumi)
+        if  (is_lumi):
+            groups.setdefault('lumi'  , []).append(syst_fullname)
+        elif(is_theory):
+            groups.setdefault('theory', []).append(syst_fullname)
+        elif(is_datadr):
+            groups.setdefault('datadr', []).append(syst_fullname)
+    groups_s = '\n'.join( ['%s group = %s'%(k, ' '.join(v)) for k,v in groups.items()] )
+
 
     ### Open template ###
     if(args.template is not None):
@@ -371,7 +391,8 @@ def main():
         path=path_to_histograms,
         bins=df_bin.to_string(header=False),
         processes=df_rate.to_string(header=False),
-        systematics='#'+df_syst.to_string()
+        systematics='#'+df_syst.to_string(),
+        groups=groups_s
     )
 
     ### Write card ###
