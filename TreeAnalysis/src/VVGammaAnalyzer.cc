@@ -466,6 +466,7 @@ Int_t VVGammaAnalyzer::cut() {
   // ----- BASELINE SELECTION -----
   vector<Photon>& phVect_CUT_mllimprov = *kinPhotons_["central"];  // Photon vector used for the "Improves mll" CUT
   bool mll_improves = false;
+  bool mll_min      = false;
 
   // -----  4L   -----
   if     (is4Lregion(region_)){
@@ -483,6 +484,8 @@ Int_t VVGammaAnalyzer::cut() {
       std::tie(Zll_mass, ZllG_mass) = getZllAndZllgMasses(phVect_CUT_mllimprov);
       mll_improves = (Zll_mass > 0) && (Zll_mass < CUT_MLL_MIN) && ( fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS) );
     }
+
+    mll_min = ZZ->first().mass() > CUT_MLL_MIN && ZZ->second().mass() > CUT_MLL_MIN;
   }
 
   // -----  3L   -----
@@ -534,6 +537,8 @@ Int_t VVGammaAnalyzer::cut() {
 	mll_improves = (Zll_mass < CUT_MLL_MIN) && fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS);
       }
     }
+
+    mll_min = ZW->first().mass() > CUT_MLL_MIN;
   }
 
   // -----  2L   -----
@@ -564,6 +569,8 @@ Int_t VVGammaAnalyzer::cut() {
       double Zll_mass = Z->mass();
       double ZllG_mass = (Z->p4() + thePh->p4()).M();
     }
+
+    mll_min = Z->mass() > CUT_MLL_MIN;
   }
 
   // ----- CRLFR -----
@@ -586,13 +593,16 @@ Int_t VVGammaAnalyzer::cut() {
 	mll_improves = (Zll_mass < CUT_MLL_MIN) && fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS);
       }
     }
+
+    mll_min = ZL->first.mass() > CUT_MLL_MIN;
   }
 
   // ----- Common cuts -----
   // common.mll_noimprov: Remove events where the Z mass improves with the addition of the photon momentum
-  if(!mll_improves){
-    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "mll no improv", theWeight);
-    theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "mll no improv", 1);
+  bool passFSRcut = mll_min; // !mll_improves
+  if(passFSRcut){
+    theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "FSR cut", theWeight);
+    theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "FSR cut", 1);
   }
   else if(APPLY_FSR_CUT) return -1;
 
