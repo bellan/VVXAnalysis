@@ -195,8 +195,8 @@ def main():
     parser.add_argument('-y', '--year'  , default='2018', choices=lumi_dict.keys())
     parser.add_argument('-c', '--config', type=json.loads, help='String convertible to dictionary used to override the config', default={})
     parser.add_argument(      '--unblind', action='store_true')
-    parser.add_argument(      '--path'     , default='/afs/cern.ch/user/a/amecca/public/histogramsForCombine', help='Path to the histograms (default: %(default)s)')
-    parser.add_argument(      '--localpath', default='histogramsForCombine'                                  , help='Path to the histograms for local checks (default: %(default)s)')
+    parser.add_argument(      '--path' , default=None                                    , help='Path to the histograms (default: %(default)s)')
+    parser.add_argument('-i', '--input', default='histogramsForCombine', dest='localpath', help='Path to the histograms for local checks (default: %(default)s)')
     parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
 
     args = parser.parse_args()
@@ -205,6 +205,9 @@ def main():
 
     logging.info('writing card for %(year)s, %(region)s', vars(args))
 
+    if(args.path is None):
+        # This is a temporary hack until I understand why combineCards.py mishandles relative paths
+        args.path = os.path.join('/afs/cern.ch/work/a/amecca/Analysis/Combine/CMSSW_11_3_4/src/VVXAnalysis/Combine/test', args.localpath)
 
     config = copy.deepcopy(__builtin_config__)
 
@@ -396,9 +399,11 @@ def main():
     )
 
     ### Write card ###
-    cardname = os.path.join('combine', '{}_{}.txt'.format(args.year,# args.region,
+    cardname = os.path.join('combine/cards',
+                            '{}_{}.txt'.format(args.year,# args.region,
                                                              args.config_file.split('/')[-1].split('.')[0] if args.config_file is not None else 'default'
                                                              ))
+    os.makedirs(os.path.dirname(cardname), exist_ok=True)  # make directories for card if they do not exist
     with open(cardname, 'w') as fout:
         if(missing_systematics): fout.write('### WARNING systematics missing for one or more samples ###\n\n')
         fout.write(template)
