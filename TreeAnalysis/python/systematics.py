@@ -211,6 +211,7 @@ def doSystOnFile(path, syst_regex=None, region=None, **kwargs):  # <str>, <re.Pa
         systematics = set([n.split('_')[2] for n in names])
         if(syst_regex is not None):
             systematics = {s for s in systematics if syst_regex.search(s)}
+            logging.debug('Filtered syst with %s: %s', syst_regex.pattern, systematics)
 
         logging.debug('path = %s', path)
         logging.debug('\tvariables = %s', variables)
