@@ -1,0 +1,25 @@
+{
+    "signals": [
+	"ZZGTo4LG",
+	"WZGTo3LNuG"
+    ],
+    "regions": {
+	"SR4P": {
+            "processes": {
+		"ZZGTo4LG": -1,
+		"ZZTo4l": -1,
+		"ggTo4e_Contin_MCFM701": -1,
+		"ggTo2e2mu_Contin_MCFM701": -1,
+		"ggTo4mu_Contin_MCFM701": -1,
+		"ZZZ": -1,
+		"WZZ": -1,
+		"WWZ": -1,
+		"fake_leptons": -1
+	    },
+            "observable": {
+		"name":"mZZGwp80",
+		"observation":-1
+	    }
+	}
+    }
+}
