@@ -2829,7 +2829,7 @@ void VVGammaAnalyzer::SYSplots_inclusive(const char* syst, double weight){
 void VVGammaAnalyzer::SYSplots_photon(const char* syst, double weight, const Photon& ph, const char* ph_selection){
   const char* phGenStatus;
   if(theSampleInfo.isMC())
-      phGenStatus = isPhotonPrompt(ph) ? "prompt" : "nonpro" ;
+    phGenStatus = sigdefHelper.pass_photon() ? "prompt" : "nonpro" ;  // it is actually the event status (pass/fail the signal definition)
 
   theHistograms->fill(  Form("SYS_%sMVA_%s"   , ph_selection             , syst), Form("MVA %s %s"   , ph_selection             , syst), 40,-1,1   , ph.MVAvalue(),weight);
   theHistograms->fill(  Form("SYS_%spt_%s"    , ph_selection             , syst), Form("pt %s %s"    , ph_selection             , syst), ph_pt_bins, ph.pt()      ,weight);
@@ -2926,7 +2926,7 @@ void VVGammaAnalyzer::SYSplots_phMVA(const char* syst, double weight, const Phot
   theHistograms->fill(  Form("SYS_MVAcut_%s"                , syst), Form("MVAcut %s"               ,syst), {"none","wp90","wp80"}, MVACut_s.c_str(), weight*effSF);
   if(theSampleInfo.isMC()){
     const char* phGenStatus;
-    phGenStatus = isPhotonPrompt(phMVA) ? "prompt" : "nonpro" ;
+    phGenStatus = sigdefHelper.pass_photon() ? "prompt" : "nonpro" ;  // it is actually the event status (pass/fail the signal definition)
     theHistograms->fill(Form("SYS_MVAcut-%s_%s", phGenStatus, syst), Form("MVAcut %s %s",phGenStatus,syst), {"none","wp90","wp80"}, MVACut_s.c_str(), weight*effSF);
   }
 }
