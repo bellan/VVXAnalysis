@@ -1,0 +1,25 @@
+{
+    "signals": [
+	"WZGTo3LNuG"
+    ],
+    "regions": {
+	"SR3P": {
+            "processes": {
+		"ZZGTo4LG-prompt"      : -1,
+		"WZGTo3LNuG"           : -1,
+		"fake_photons"         : -1,
+		"ZZTo4l-prompt"        : -1,
+		"ggTo4e_Contin_MCFM701-prompt": -1,
+		"ggTo2e2mu_Contin_MCFM701-prompt": -1,
+		"ggTo4mu_Contin_MCFM701-prompt": -1,
+		"WZTo3LNu-prompt"      : -1,
+		"ZGToLLG-prompt"       : -1,
+		"TTZJets-prompt"       : -1
+	    },
+            "observable": {
+		"name":"mWZGloose",
+		"observation":-1
+	    }
+	}
+    }
+}

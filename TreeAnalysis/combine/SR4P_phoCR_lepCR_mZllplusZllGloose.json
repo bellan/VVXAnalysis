@@ -1,0 +1,30 @@
+{
+    "signals": [
+	"ZZGTo4LG-prompt",
+	"WZGTo3LNuG-prompt"
+    ],
+    "regions": {
+	"SR4P": {
+            "processes": {
+		"ZZGTo4LG-prompt": -1,
+		"ZZTo4l-prompt": -1,
+		"ggTo4e_Contin_MCFM701-prompt": -1,
+		"ggTo2e2mu_Contin_MCFM701-prompt": -1,
+		"ggTo4mu_Contin_MCFM701-prompt": -1,
+		"ZZZ-prompt": -1,
+		"WZZ-prompt": -1,
+		"WWZ-prompt": -1,
+		"TTZJets-prompt": -1,
+		"fake_photons": -1
+	    },
+            "observable": {
+		"name":"mZllplusZllGloose",
+		"observation":-1
+	    }
+	}
+    },
+    "systematics": {
+	"shape": ["QCDscale"],
+	"gmN"  : ["phFakeRate"]
+    }
+}
