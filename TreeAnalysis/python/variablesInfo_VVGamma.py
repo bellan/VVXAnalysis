@@ -236,7 +236,7 @@ def getVarInfo_VVGamma(region):
         'furthestFailPh'  : {},
         'furthestLoosePh' : {'unblind':False}
         ,
-        'SYS_MVAcut_central'  : {'title':'MVA cut passed'                  , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_MVAcut-%s_central'  , 'unblind':False, 'logy':True},
+        'SYS_MVAcut_central'  : {'title':'MVA cut passed'                  , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_MVAcut-%s_central'  , 'unblind':False, 'logy':True, 'ymin': 1},
         'SYS_wp90pt_central'  : {'title':'p_{T} #gamma_{wp90}'             , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_wp90pt-%s_central'  , 'unblind':False},
         'SYS_wp80pt_central'  : {'title':'p_{T} #gamma_{wp80}'             , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_wp80pt-%s_central'  , 'unblind':False},
         'SYS_loosept_central' : {'title':'p_{T} #gamma_{Loose}'            , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_loosept-%s_central' , 'unblind':False},

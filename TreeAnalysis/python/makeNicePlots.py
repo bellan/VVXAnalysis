@@ -436,6 +436,7 @@ for Var in variables:
         text.Draw("same")
     
     Title=Var+"_"+mcSet #+"_"+region
+    if(not DoData): Title+='_blind'
     
     ROOT.gStyle.SetOptStat(0);   
     ROOT.gStyle.SetOptTitle(0)
