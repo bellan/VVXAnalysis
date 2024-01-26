@@ -59,10 +59,10 @@ def getVarInfo_VVGamma(region):
             'ZZG_mass_failPh'     : {'title':'m_{4\ell\gamma}\:,\ \gamma\:loose\,\land\:!tight', 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':True },
             'ZZG_mass_loosePh'    : {'title':'m_{4\ell\gamma}\:,\ \gamma\:tight'               , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':False, 'fake_photons': 'ZZG_mass_reweightPh'}
             ,
-            'SYS_mZZGwp90_central': {'title':'m_{4\ell\gamma}\:,\ \gamma\:wp90', 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_mZZGwp90-%s_central', 'unblind':False},
-            'SYS_mZZGwp80_central': {'title':'m_{4\ell\gamma}\:,\ \gamma\:wp80', 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_mZZGwp80-%s_central', 'unblind':False},
-            'SYS_mZZGloose_central':{'title':'m_{4\ell\gamma}\:,\ \gamma\:tight', 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_mZZGloose-%s_central', 'fake_photons': 'SYS_mZZGfailReweight_central','unblind':False},
-            'SYS_mZllplusZllGloose_central':{'title':'m_{\ell\ell\gamma}+m_{\ell\ell}\:,\ \gamma\:tight', 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_mZllplusZllGloose-%s_central', 'fake_photons': 'SYS_mZllplusZllGfailReweight_central', 'unblind':False}
+            'SYS_mZZGwp90_central': {'title':'m_{4l#gamma}, #gamma wp90', 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_mZZGwp90-%s_central', 'unblind':False},
+            'SYS_mZZGwp80_central': {'title':'m_{4l#gamma}, #gamma wp80', 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_mZZGwp80-%s_central', 'unblind':False},
+            'SYS_mZZGloose_central':{'title':'m_{4l#gamma}, #gamma Loose', 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_mZZGloose-%s_central', 'fake_photons': 'SYS_mZZGfailReweight_central','unblind':False},
+            'SYS_mZllplusZllGloose_central':{'title':'m_{ll#gamma}+m_{ll}, #gamma Loose', 'split_prompt_ph':region=='SR4P', 'split_prompt_ph_pattern': 'SYS_mZllplusZllGloose-%s_central', 'fake_photons': 'SYS_mZllplusZllGfailReweight_central', 'unblind':False}
         })
 
         VarInfo_VVGamma.update({
@@ -136,9 +136,9 @@ def getVarInfo_VVGamma(region):
             'ZWG_massT_failPh'     : {'title':'mT_{3\ell\\nu\gamma}\:,\ \gamma\:loose\,\land\:!tight', 'rebin':1, 'unblind':True },
             'ZWG_massT_loosePh'    : {'title':'mT_{3\ell\\nu\gamma}\:,\ \gamma\:tight'               , 'rebin':1, 'unblind':False, 'fake_photons': 'ZWG_massT_reweightPh'}
             ,
-            'SYS_mWZGwp90_central': {'title':'m_{4\ell\gamma}\:,\ \gamma\:wp90' , 'split_prompt_ph':region=='SR3P', 'split_prompt_ph_pattern': 'SYS_mWZGwp90-%s_central', 'unblind':False},
-            'SYS_mWZGwp80_central': {'title':'m_{4\ell\gamma}\:,\ \gamma\:wp80' , 'split_prompt_ph':region=='SR3P', 'split_prompt_ph_pattern': 'SYS_mWZGwp80-%s_central', 'unblind':False},
-            'SYS_mWZGloose_central':{'title':'m_{4\ell\gamma}\:,\ \gamma\:tight', 'split_prompt_ph':region=='SR3P', 'split_prompt_ph_pattern': 'SYS_mWZGloose-%s_central', 'fake_photons': 'SYS_mWZGfailReweight_central','unblind':False},
+            'SYS_mWZGwp90_central': {'title':'m_{T}^{3l v #gamma}, #gamma wp90' , 'split_prompt_ph':region=='SR3P', 'split_prompt_ph_pattern': 'SYS_mWZGwp90-%s_central', 'unblind':False},
+            'SYS_mWZGwp80_central': {'title':'m_{T}^{3l v #gamma}, #gamma wp80' , 'split_prompt_ph':region=='SR3P', 'split_prompt_ph_pattern': 'SYS_mWZGwp80-%s_central', 'unblind':False},
+            'SYS_mWZGloose_central':{'title':'m_{T}^{3l v #gamma}, #gamma Loose', 'split_prompt_ph':region=='SR3P', 'split_prompt_ph_pattern': 'SYS_mWZGloose-%s_central', 'fake_photons': 'SYS_mWZGfailReweight_central','unblind':False},
         })
         # for name, title in [('e', 'e'), ('m','\mu')]:
         #     VarInfo_VVGamma.update({
@@ -239,6 +239,7 @@ def getVarInfo_VVGamma(region):
         'SYS_MVAcut_central'  : {'title':'MVA cut passed'                  , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_MVAcut-%s_central'  , 'unblind':False, 'logy':True},
         'SYS_wp90pt_central'  : {'title':'p_{T} #gamma_{wp90}'             , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_wp90pt-%s_central'  , 'unblind':False},
         'SYS_wp80pt_central'  : {'title':'p_{T} #gamma_{wp80}'             , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_wp80pt-%s_central'  , 'unblind':False},
+        'SYS_loosept_central' : {'title':'p_{T} #gamma_{Loose}'            , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_loosept-%s_central' , 'unblind':False},
     })
 
     for status in ('kinVetoL', 'fail', 'fail3', 'fail4a', 'fail4b', 'loose', 'fsrMatched', 'FSRkin', 'FSRloose'):
