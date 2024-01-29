@@ -145,7 +145,24 @@ def print_yield(data, unblind=False, float_format='%.4g', **kwargs):
     # Convert to string using the format supplied by command line args
     formatters = [lambda x:x.to_string(fmt=float_format)]*len(df.columns)
 
-    print(df.to_latex(formatters=formatters).replace('pm', r'$\pm$'))
+    out_string = df.to_latex(formatters=formatters)\
+                   .replace('pm', r'$\pm$')\
+                   .replace('ZZGTo4LG  ', r'$\PZ\PZ\PGg\to4\Pl\PGg$      ')\
+                   .replace('WZGTo3LNuG', r'$\PW\PZ\PGg\to3\Pl\PGn\PGg$  ')\
+                   .replace('WZTo3LNu  ', r'$\PW\PZ\to3\Pl\PGn$          ')\
+                   .replace('ZZTo4l    ', r'$\Pq\Pq\to\PZ\PZ\to4\Pl$     ')\
+                   .replace('ggTo4mu   ', r'$\Pg\Pg\to\PZ\PZ\to4\PGm$    ')\
+                   .replace('ggTo2e2mu ', r'$\Pg\Pg\to\PZ\PZ\to2\Pe2\PGm$')\
+                   .replace('ggTo4e    ', r'$\Pg\Pg\to\PZ\PZ\to4\Pe$     ')\
+                   .replace('ZZZ       ', r'$\PZ\PZ\PZ$                  ')\
+                   .replace('WZZ       ', r'$\PW\PZ\PZ$                  ')\
+                   .replace('WWZ       ', r'$\PW\PW\PZ$                  ')\
+                   .replace('TTZJets   ', r'$\PQt\PAQt\PZ$+jets          ')\
+                   .replace('ZGToLLG   ', r'$\PZ\PGg\to\Pl\Pl$           ')\
+                   .replace('fake\_leptons', 'Fake leptons               ')\
+                   .replace('fake\_photons', 'Fake photons               ')\
+
+    print(out_string)
 
 
 def get_yield(card, unblind=False, **kwargs):
