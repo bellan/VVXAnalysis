@@ -270,15 +270,19 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
     
     for sample in samples:
         h = None
-        splitPromptPh = sample.get('split_prompt_ph') and plotInfo.get('split_prompt_ph')
+        do_prompt_ph    = not sample.get('skip_prompt_ph'   , False)
+        do_nonprompt_ph = not sample.get('skip_nonprompt_ph', False)
+        splitPromptPh = (sample.get('split_prompt_ph') or not do_prompt_ph or not do_nonprompt_ph) and plotInfo.get('split_prompt_ph')
 
         if(splitPromptPh):
             split_pattern = plotInfo.get('split_prompt_ph_pattern', plot+'_%s')
 
-            if(True): #For alignment
+            if(do_prompt_ph):
                 h_prompt, (integralPrompt, _) = getPlotFromSample(inputdir, sample, split_pattern % ('prompt'), verbosity, forcePositive, note='prompt')
+            else:
+                h_prompt, integralPrompt = None, 0
 
-            if(not useFakePhotonsFromData):
+            if(do_nonprompt_ph and not useFakePhotonsFromData):
                 h_nonpro, (integralNonpro, _) = getPlotFromSample(inputdir, sample, split_pattern % ('nonpro'), verbosity, forcePositive, note='nonpro')
             else:
                 h_nonpro, integralNonpro = None, 0
@@ -295,7 +299,8 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
                 h.SetMarkerStyle(21)
 
             if(h_nonpro):
-                h_nonpro.SetFillStyle(3002)
+                if(do_prompt_ph):  # Change color only if both prompt and nonprompt are present
+                    h_nonpro.SetFillStyle(3002)
                 leg.AddEntry(h_nonpro, sample["name"]+' nonprompt', "f")
                 stack.Add(h_nonpro)
             if(h_prompt):
