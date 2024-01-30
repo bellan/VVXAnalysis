@@ -1428,28 +1428,34 @@ void VVGammaAnalyzer::genEventSetup(){
 
 
 void VVGammaAnalyzer::genEventHistos(){
-  theHistograms->fill("GEN_ZlepCandidates", "# genZlepCandidates_", 4,-0.5,3.5, genZlepCandidates_->size());
-  theHistograms->fill("GEN_WlepCandidates", "# genWlepCandidates_", 4,-0.5,3.5, genWlepCandidates_->size());
-  theHistograms->fill("GEN_ZhadCandidates", "# genZhadCandidates_", 4,-0.5,3.5, genZhadCandidates_->size());
-  theHistograms->fill("GEN_WhadCandidates", "# genWhadCandidates_", 4,-0.5,3.5, genWhadCandidates_->size());
+  theHistograms->fill("GEN_ZlepCandidates", "# genZlepCandidates_", 4,-0.5,3.5, genZlepCandidates_->size(), theWeight);
+  theHistograms->fill("GEN_WlepCandidates", "# genWlepCandidates_", 4,-0.5,3.5, genWlepCandidates_->size(), theWeight);
+  theHistograms->fill("GEN_ZhadCandidates", "# genZhadCandidates_", 4,-0.5,3.5, genZhadCandidates_->size(), theWeight);
+  theHistograms->fill("GEN_WhadCandidates", "# genWhadCandidates_", 4,-0.5,3.5, genWhadCandidates_->size(), theWeight);
   
-  theHistograms->fill("GEN_quarks"   , "# genQuarks"   , 10,-0.5,9.5, genQuarks_   ->size());
-  theHistograms->fill("GEN_chLeptons", "# genChLeptons", 10,-0.5,9.5, genChLeptons_->size());
-  theHistograms->fill("GEN_neutrinos", "# genNeutrinos", 10,-0.5,9.5, genNeutrinos_->size());
-  theHistograms->fill("GEN_photons"  , "# genPhotons"  , 10,-0.5,9.5, genPhotons_  ->size());
-  theHistograms->fill("GEN_photonsPrompt", "# genPhotonsPrompt", 10,-0.5,9.5, genPhotonsPrompt_->size());
+  theHistograms->fill("GEN_quarks"   , "# genQuarks"   , 10,-0.5,9.5, genQuarks_   ->size(), theWeight);
+  theHistograms->fill("GEN_chLeptons", "# genChLeptons", 10,-0.5,9.5, genChLeptons_->size(), theWeight);
+  theHistograms->fill("GEN_neutrinos", "# genNeutrinos", 10,-0.5,9.5, genNeutrinos_->size(), theWeight);
+  theHistograms->fill("GEN_photons"  , "# genPhotons"  , 10,-0.5,9.5, genPhotons_  ->size(), theWeight);
+  theHistograms->fill("GEN_photonsPrompt", "# genPhotonsPrompt", 10,-0.5,9.5, genPhotonsPrompt_->size(), theWeight);
   
   for(auto v : *genZlepCandidates_)
-    theHistograms->fill("GEN_genZlepCandidates_mass", "mass genZlepCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass());
+    theHistograms->fill("GEN_genZlepCandidates_mass", "mass genZlepCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass(), theWeight);
   for(auto v : *genWlepCandidates_)
-    theHistograms->fill("GEN_genWlepCandidates_mass", "mass genWlepCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass());
-  for(auto v : *genZhadCandidates_)
-    theHistograms->fill("GEN_genZhadCandidates_mass", "mass genZhadCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass());
-  for(auto v : *genWhadCandidates_)
-    theHistograms->fill("GEN_genWhadCandidates_mass", "mass genWhadCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass());
-  
-  theHistograms->fill("GEN_n_jets"   , "Number of genJets;# genJets"   , 6,-0.5,5.5, genJets->size()   );
-  theHistograms->fill("GEN_n_jetsAK8", "Number of genJetsAK8;# genJets", 6,-0.5,5.5, genJetsAK8->size());
+    theHistograms->fill("GEN_genWlepCandidates_mass", "mass genWlepCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass(), theWeight);
+  for(auto v : *genZhadCandidates_){
+    theHistograms->fill("GEN_genZhadCandidates_mass", "mass genZhadCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass(), theWeight);
+    theHistograms->fill("GEN_genZhadCandidates_pt"  , "pt   genZhadCandidates;[GeV/c]    ", 60., 0.,300., v.pt()  , theWeight);
+    theHistograms->fill("GEN_genZhadCandidates_dRqq", "dRqq genZhadCandidates;#DeltaR(q,q)",60., 0.,  6., deltaR(v.daughter(0), v.daughter(1)), theWeight);
+  }
+  for(auto v : *genWhadCandidates_){
+    theHistograms->fill("GEN_genWhadCandidates_mass", "mass genWhadCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass(), theWeight);
+    theHistograms->fill("GEN_genWhadCandidates_pt"  , "pt   genWhadCandidates;[GeV/c]    ", 60.,0. ,300., v.pt()  , theWeight);
+    theHistograms->fill("GEN_genWhadCandidates_dRqq", "dRqq genWhadCandidates;#DeltaR(q,q)",60., 0.,  6., deltaR(v.daughter(0), v.daughter(1)), theWeight);
+  }
+
+  theHistograms->fill("GEN_n_jets"   , "Number of genJets;# genJets"   , 6,-0.5,5.5, genJets->size()   , theWeight);
+  theHistograms->fill("GEN_n_jetsAK8", "Number of genJetsAK8;# genJets", 6,-0.5,5.5, genJetsAK8->size(), theWeight);
   
   for(const Particle& p : *genPhotons_){
     theHistograms->fill("GEN_photons_genStatusFlags", "#gamma_{GEN} pass flag", 16, -0.5, 15.5, 15, theWeight);
