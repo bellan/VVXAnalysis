@@ -1632,6 +1632,15 @@ void VVGammaAnalyzer::photonHistos(){
 	theHistograms->fill("sublead_kinVetoL_pt", "Subleading Kin-L #gamma;p_{T} [GeV/c]", ph_pt_bins, kinPhotons_["central"]->at(1).pt());
     }
   }
+  if(bestMVAPh_){
+    if(bestMVAPh_->passMVA(Photon::MVAwp::wp90)){
+      fillPhotonPlots(*bestMVAPh_, "lead_wp90", "Leading wp90");
+      if(bestMVAPh_->passMVA(Photon::MVAwp::wp80))
+	fillPhotonPlots(*bestMVAPh_, "lead_wp80", "Leading wp80");
+      else
+	fillPhotonPlots(*bestMVAPh_, "lead_90not80", "Leading 90not80");
+    }
+  }
 
   // SCEta effect on VeryLoose wp
   auto n_SCEta = std::count_if(loosePhotons_["central"]->begin(), loosePhotons_["central"]->end(),
