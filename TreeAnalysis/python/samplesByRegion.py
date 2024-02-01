@@ -3,16 +3,16 @@ import ROOT
 
 ##### Define type of samples ##### FIXME: make a class?
 
-qqZZ_pow = [{'files':['ZZTo4l'        ] , 'color':ROOT.kBlue-4  , 'name':'qq #rightarrow ZZ', 'split_prompt_ph':True, 'kfactor': 1.325/1.256}]  # 1.1  #(1.256/1.325)
-qqZZ_mad = [{'files':['ZZTo4lamcatnlo'] , 'color':ROOT.kBlue-4  , 'name':'qq #rightarrow ZZ', 'split_prompt_ph':True, 'kfactor': 1.}]
+qqZZ_pow = [{'files':['ZZTo4l'        ] , 'color':ROOT.kBlue-4  , 'name':'qq #rightarrow ZZ', 'split_prompt_ph':True, 'skip_prompt_ph':True, 'kfactor': 1.325/1.256}]  # 1.1  #(1.256/1.325)
+qqZZ_mad = [{'files':['ZZTo4lamcatnlo'] , 'color':ROOT.kBlue-4  , 'name':'qq #rightarrow ZZ', 'split_prompt_ph':True, 'skip_prompt_ph':True, 'kfactor': 1.}]
 
 ggZZ     = [{'files': ['ggTo2e2mu_Contin_MCFM701', 'ggTo4e_Contin_MCFM701', 'ggTo4mu_Contin_MCFM701'],
-            'color':ROOT.kAzure-4 , 'name':'gg #rightarrow ZZ'   , 'split_prompt_ph':True, 'kfactor': 1.7}]
+            'color':ROOT.kAzure-4 , 'name':'gg #rightarrow ZZ'   , 'split_prompt_ph':True, 'skip_prompt_ph':True, 'kfactor': 1.7}]
 
 vbsZZ    = [{'files':['ZZ4lJJ'        ] , 'color':ROOT.kCyan-6  , 'name':'VBS'}]
 HZZ      = [{'files':['HZZ'           ] , 'color':ROOT.kCyan-7  , 'name':'higgs'}]
 
-WZ       = [{'files':['WZTo3LNu'      ] , 'color':ROOT.kOrange  , 'name':'WZ'}]
+WZ       = [{'files':['WZTo3LNu'      ] , 'color':ROOT.kOrange  , 'name':'WZ', 'skip_prompt_ph':True}]
 WW       = [{'files':['WWTo2L2Nu'     ] , 'color':ROOT.kYellow-4, 'name':'WW'}]
 
 # tt   with >= 4 leptons
@@ -29,7 +29,7 @@ ZZTo2L2Nu= [{'files':['ZZTo2L2Nu'     ] , 'color':ROOT.kCyan    , 'name':'ZZ #ri
 ZZTo2Q2L = [{'files':['ZZTo2Q2L'      ] , 'color':ROOT.kGray    , 'name':'ZZ #rightarrow 2l 2q' }]
 
 W        = [{'files':['WJetsToLNu'    ] , 'color':ROOT.kGreen-1 , 'name':'W+jets' }]
-DY       = [{'files':['DYJetsToLL_M50'] , 'color':ROOT.kGreen-9 , 'name':'DY'     }]
+DY       = [{'files':['DYJetsToLL_M50'] , 'color':ROOT.kGreen-9 , 'name':'DY'     , 'skip_prompt_ph':True}]
 ZG       = [{'files':['ZGToLLG'       ] , 'color':ROOT.kGreen+2 , 'name':'Z#gamma'}]
 WG       = [{'files':['WGToLNuG'      ] , 'color':ROOT.kGray    , 'name':'W#gamma'}]
 
@@ -78,16 +78,16 @@ def getSamplesByRegion(region, MCSet, predType):
         elif predType in ('lepCR', 'fromCR'):
             tot += tt_X_4l + triboson + qqZZ + ggZZ
         elif predType == 'phoCR':
-            tot += qqZZ + ggZZ # only the prompt part
+            tot += tt_X_4l + triboson
 
     elif is3Lregion(region):
         tot += tt_X_3l + triboson + ggZZ + qqZZ
         if   predType == 'fullMC':
-            tot += ZZTo2Q2L + ZZTo2L2Nu + WZ + WW + ZG + DY
+            tot += ZZGTo2L2jG + WZGTo2L2jG + ZZTo2Q2L + ZZTo2L2Nu + WZ + WW + ZG + DY
         elif predType in ('lepCR', 'fromCR'):
             tot += ZG
         elif predType == 'phoCR':
-            pass
+            tot += ZZGTo2L2jG + WZGTo2L2jG
 
     elif is2Lregion(region):
         tot += ZZGTo2L2jG + WZGTo2L2jG + tt_X_2l + qqZZ + ggZZ + ZZTo2Q2L + ZZTo2L2Nu + WZ + WW + ZG
@@ -100,7 +100,7 @@ def getSamplesByRegion(region, MCSet, predType):
 
     elif region == 'CRLFR':
         if   predType == 'fullMC':
-            tot += tt_X_2l + qqZZ + ZZTo2Q2L + WZ + ZG + DY
+            tot = tt_X_2l + ZZTo2Q2L + WZ + ZG + DY
         else:
             raise ValueError('Method "%s" not available for CRLFR'%(predType))
     else:
