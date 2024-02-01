@@ -9,16 +9,17 @@ nevents=-1
 regions="SR4P;CR3P1F;CR2P2F;SR3P;CR110;CR101;CR011;CR100;CR010;CR001;CR000;SR2P;CRLFR"
 options="--external-cross-section"  # --internal-cross-section --nofr
 
-
-if [ ! -d logdir ] ; then
-    # echo "logdir created"
-    mkdir logdir
-fi
-
-while getopts "y:r:" option ; do
+while getopts "y:r:-:" option ; do
     case "$option" in
 	y) year=$OPTARG ;;
 	r) regions=$OPTARG ;;
+	-) if [ -n $OPTARG ] && [ $OPTARG = "nofr" ] ; then
+	     options="$options --nofr"
+	   else
+	     echo "Unknown option \"--$OPTARG\"" 1>&2
+	     exit 1
+	   fi
+	   ;;
     esac
 done
 
