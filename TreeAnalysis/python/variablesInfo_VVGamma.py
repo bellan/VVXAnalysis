@@ -242,7 +242,7 @@ def getVarInfo_VVGamma(region):
         'SYS_loosept_central' : {'title':'p_{T} #gamma_{Loose}'            , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_loosept-%s_central' , 'unblind':False},
     })
 
-    for status in ('kinVetoL', 'fail', 'fail3', 'fail4a', 'fail4b', 'loose', 'fsrMatched', 'FSRkin', 'FSRloose'):
+    for status in ('kinVetoL', 'fail', 'fail3', 'fail4a', 'fail4b', 'loose', 'fsrMatched', 'FSRkin', 'FSRloose', 'wp90', 'wp80', '90not80'):
         variables = [('pt', 'p_{T}'), ('aeta', '|#eta|'), ('dRl', '#DeltaR(l, #gamma)'), ('MVA', 'MVA'), ('chIso', 'chIso'), ('sieie', '#sigma_{i#etai#eta}')
                      , ('pt_fine', 'p_{T}'), ('aeta_fine', '|#eta|')
                      ]
@@ -257,7 +257,7 @@ def getVarInfo_VVGamma(region):
             d = {'title': '%s #gamma_{%s}^{leading}' %(vartitle, status),
                  'unblind': unblind,
                  'logy': varname in ('MVA',),
-                 'split_prompt_ph': region == 'SR4P',
+                 'split_prompt_ph': is_SR,
                  'rebin': rebin }
             if status == 'loose':
                 d.update({
