@@ -41,7 +41,7 @@ __builtin_config__ = {
         'shape': [],
         'gmN'  : ['phFakeRate'],
         'correlated'  : ['L1Prefiring', 'PDFVar', 'QCDscale', 'alphas', 'phEffSF', 'phEffMVASF', 'phEScale', 'phESigma', 'muoEffSF', 'eleEffSF', 'puWeight'],
-        'uncorrelated': ['electronVeto', 'phFakeRate', 'muoFakeRateSF', 'eleFakeRateSF'],
+        'uncorrelated': ['electronVeto', 'phFakeRate', 'muoFakeRateSF', 'eleFakeRateSF', 'fake_leptons_norm', 'fake_photons_norm'],
         'skip-if-signal': ['PDFVar', 'QCDscale', 'alphas'],
         'theory': ['QCDscale', 'alphas', 'PDFVar'],
         'datadriven': ['phFakeRate', 'muoFakeRateSF', 'eleFakeRateSF'],
@@ -312,6 +312,12 @@ def main():
                 if(syst in config['systematics']['skip-if-signal']):
                     val['dn'] = val['up'] = 0
                     logging.debug('Zeroed systematic "%s" for sample "%s"', syst, sample)
+
+    # Set normalization uncertainty (e.g. fake_leptons and fake_photons)
+    for sample, val in config['systematics'].get('norm_uncertainty', {}).items():
+        if sample in data_syst:
+            logging.info('setting norm uncertainty on %s (%s)', sample, val)
+            data_syst[sample][sample+'_norm'] = val
 
     df_syst = fillDataFrame(data_syst, formatter=format_lnN).fillna(0)
     type_column = []

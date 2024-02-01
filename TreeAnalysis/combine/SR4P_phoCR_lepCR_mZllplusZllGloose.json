@@ -24,6 +24,7 @@
 	}
     },
     "systematics": {
+	"norm_uncertainty": {"fake_photons": {"up":0.40, "dn":-0.40}},
 	"shape": ["QCDscale"],
 	"gmN"  : ["phFakeRate"]
     }
