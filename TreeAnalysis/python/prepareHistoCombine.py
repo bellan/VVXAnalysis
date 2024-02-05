@@ -126,12 +126,13 @@ def main():
         try:
             fFakePh = ROOT.TFile(fake_photons_fname)
         except OSError as e:
-            logging.warning('While opening %s, caught %s', fake_photons_fname, e)
+            logging.info('While opening %s, caught %s', fake_photons_fname, e)
         else:
             files_in['fake_photons'] = fFakePh
 
         # Write fake_photons
         if((not 'fake_photons' in files_in) or args.remake_fake_photons):
+            logging.info('Recreating fake_photons: %s', fake_photons_fname)
             with TFileContext(fake_photons_fname, 'RECREATE') as fFakePh:
                 variables_data = get_TH1keys_from_file(files_in['data_obs'])
                 write_fake_photons(fFakePh, data_obs=files_in['data_obs'], variables=variables_data)
