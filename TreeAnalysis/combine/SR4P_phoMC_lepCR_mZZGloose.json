@@ -7,7 +7,7 @@
 	"SR4P": {
             "processes": {
 		"ZZGTo4LG": -1,
-		"ZZTo4l": -1,
+		"ZZTo4l-nonpro": -1,
 		"ggTo4e_Contin_MCFM701": -1,
 		"ggTo2e2mu_Contin_MCFM701": -1,
 		"ggTo4mu_Contin_MCFM701": -1,
@@ -22,7 +22,7 @@
 		"observation":-1
 	    }
 	}
-    }
+    },
     "systematics": {
 	"norm_uncertainty": {"fake_leptons": {"up":0.34, "dn":-0.34}}
     }
