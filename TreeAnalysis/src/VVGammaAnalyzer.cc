@@ -2371,7 +2371,7 @@ void VVGammaAnalyzer::photonFRClosure(const char* method, const Photon& thePh, b
   }
   else if(is3Lregion(region_)){
     varName = "mWZG";
-    varValue = ( ZW->p4() + thePh.p4() ).M();
+    varValue = ( ZW->p4() + thePh.p4() ).Mt();
   }
   else if(is2Lregion(region_)){
     varName = "mZG";
@@ -2854,10 +2854,10 @@ void VVGammaAnalyzer::SYSplots_photon(const char* syst, double weight, const Pho
   }
 
   else if(is3Lregion(region_)){
-    double mWZG = (ZW->p4() + ph.p4()).M();
-    theHistograms->fill(  Form("SYS_mWZG%s_%s"   , ph_selection             , syst), Form("m_{WZ#gamma %s} %s", ph_selection, syst), mVVG_bins, mWZG, weight);
+    double mtWZG = (ZW->p4() + ph.p4()).Mt();
+    theHistograms->fill(  Form("SYS_mWZG%s_%s"   , ph_selection             , syst), Form("m_{T}^{WZ#gamma %s}; %s", ph_selection, syst), mVVG_bins, mtWZG, weight);
     if(theSampleInfo.isMC())
-      theHistograms->fill(Form("SYS_mWZG%s-%s_%s", ph_selection, phGenStatus, syst), Form("m_{WZ#gamma %s} %s", ph_selection, syst), mVVG_bins, mWZG, weight);
+      theHistograms->fill(Form("SYS_mWZG%s-%s_%s", ph_selection, phGenStatus, syst), Form("m_{T}^{WZ#gamma %s}; %s", ph_selection, syst), mVVG_bins, mtWZG, weight);
   }
 
   else if(region_ == CRLFR){
