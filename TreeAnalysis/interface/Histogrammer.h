@@ -45,6 +45,15 @@ class Histogrammer{
     else thePlots[newname] = dynamic_cast<TH1*>(get(name)->Clone(newname.c_str()));
   }
 
+  int erase(const std::string& name){
+    TH1map::iterator f = thePlots.find(name);
+    if(f != thePlots.end()){
+      thePlots.erase(f);
+      return 0;
+    }
+    else return 1;
+  }
+
 
 
   // Methods for 1D histograms

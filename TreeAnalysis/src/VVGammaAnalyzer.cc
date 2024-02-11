@@ -659,7 +659,19 @@ void VVGammaAnalyzer::analyze(){
     theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "#gamma medium", 1);
     if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef", "", {}, "#gamma medium", theWeight);
   }
-  
+
+  if(bestMVAPh_ && bestMVAPh_->passMVA(Photon::MVAwp::wp90)){
+    theHistograms->fill("AAA_cuts_extra"  , "cuts weighted"  , {"#gamma wp90"}, "#gamma wp90", theWeight);
+    theHistograms->fill("AAA_cuts_u_extra", "cuts unweighted", {"#gamma wp90"}, "#gamma wp90", 1);
+    if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef_extra", "", {"#gamma wp90"}, "#gamma wp90", theWeight);
+  }
+
+  if(bestMVAPh_ && bestMVAPh_->passMVA(Photon::MVAwp::wp80)){
+    theHistograms->fill("AAA_cuts_extra"  , "cuts weighted"  , {}, "#gamma wp80", theWeight);
+    theHistograms->fill("AAA_cuts_u_extra", "cuts unweighted", {}, "#gamma wp80", 1);
+    if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef_extra", "", {}, "#gamma wp80", theWeight);
+  }
+
   bool four_lep  = is4Lregion(region_);  // && ZZ && ZZ->pt() > 1.;
   bool three_lep = is3Lregion(region_);  // && ZW && ZW->pt() > 1.;
   bool two_lep   = is2Lregion(region_);
@@ -1027,6 +1039,24 @@ void VVGammaAnalyzer::end(TFile& fout){
   
   // Label names
   endNameHistos();
+
+  for(const char* name_main : {"AAA_cuts", "AAA_cuts_u", "AAA_cuts_sigdef"}){
+    const char* name_extra = Form("%s_extra", name_main);
+    TH1* h_main  = theHistograms->get(name_main );
+    TH1* h_extra = theHistograms->get(name_extra);
+    if(h_main && h_extra){
+      for(int bx = 1; bx <= h_extra->GetNbinsX(); ++bx){
+	auto val = h_extra->GetBinContent(bx);
+	auto err = h_extra->GetBinError  (bx);
+	const char* new_label = h_extra->GetXaxis()->GetBinLabel(bx);
+	int bnew = h_main->GetXaxis()->FindBin(new_label);
+	h_main->SetBinContent(bnew, val);
+	h_main->SetBinError  (bnew, err);
+      }
+      if(theHistograms->erase(name_extra))
+	cout << "Error: problem deleting "<< name_extra << '\n';
+    }
+  }
 }
 
 
