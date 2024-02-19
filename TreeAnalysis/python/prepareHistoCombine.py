@@ -198,10 +198,12 @@ def main():
                     else:
                         not_retrieved.append({'file':file_in.GetName(), 'variable':variable})
                         if(sample == 'data_obs'):  # data_obs must not be missing
-                            logging.error('data_obs is missing "%s" - replacing with empty histogram', variable)
+                            logging.error('data_obs (%s) is missing "%s" - replacing with empty histogram', file_in.GetName(), variable)
                             xbins = xbins_dict[variable]
                             h = ROOT.TH1F(out_name %(sample), '', len(xbins) - 1, xbins)
                             h.Write()
+                            h.SetDirectory(0)
+                            del h
 
         logging.debug('Closing files')
         del samples_region
