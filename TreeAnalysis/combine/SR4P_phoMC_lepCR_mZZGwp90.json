@@ -24,6 +24,12 @@
 	}
     },
     "systematics": {
-	"norm_uncertainty": {"fake_leptons": {"up":0.34, "dn":-0.34}}
+	"norm_uncertainty": {
+	    "ZZTo4l-nonpro"           : {"up":0.30, "dn":-0.30},
+	    "ggTo4e_Contin_MCFM701"   : {"up":0.30, "dn":-0.30},
+	    "ggTo2e2mu_Contin_MCFM701": {"up":0.30, "dn":-0.30},
+	    "ggTo4mu_Contin_MCFM701"  : {"up":0.30, "dn":-0.30},
+	    "fake_leptons": {"up":0.34, "dn":-0.34}
+	}
     }
 }
