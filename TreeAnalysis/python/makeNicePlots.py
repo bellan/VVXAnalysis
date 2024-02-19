@@ -319,7 +319,11 @@ for Var in variables:
         histodata = ROOT.TH1F(hMC.GetStack().Last())
         histodata.SetName("histodata")
         histodata.Reset()
-    
+
+    YMin = info.get('ymin', False)
+    if(YMin):
+        hMC.SetMinimum(YMin)
+
     hMC.Draw("hist")
     
     if('AAA_cuts' in Var):
@@ -331,7 +335,7 @@ for Var in variables:
         YMaxData = ROOT.TMath.MaxElement(graphData.GetN(), graphData.GetEYhigh()) + ROOT.TMath.MaxElement(graphData.GetN(), graphData.GetY()) if DoData else 0.
         YMaxMC = hMCErr.GetBinContent(hMCErr.GetMaximumBin()) + hMCErr.GetBinError(hMCErr.GetMaximumBin())
         YMax = max(YMaxMC, YMaxData)
-        YMax *= 1.37
+        YMax *= info.get('scale_ymax', 1.37)
         
         if info.get('logy', False):
             YMax *= 10
@@ -340,14 +344,10 @@ for Var in variables:
 
     if info.get('logy', False):
         pad1.SetLogy()
-        hMC.GetHistogram().GetYaxis().SetMoreLogLabels()
         if(YMax < 100000):
-            hMC.GetHistogram().GetYaxis().SetNoExponent()
+            hMC.GetHistogram().GetYaxis().SetMoreLogLabels()
 
     hMC.SetMaximum(YMax)
-    YMin = info.get('ymin', False)
-    if(YMin):
-        hMC.SetMinimum(YMin)
     
     hMC.GetHistogram().GetYaxis().SetTitle("Events")
     hMC.GetHistogram().GetYaxis().SetTitleOffset(1.4)
@@ -422,6 +422,7 @@ for Var in variables:
     histodata.GetYaxis().SetTitleSize(0.12)
     histodata.GetYaxis().SetLabelSize(0.08)
     histodata.GetXaxis().SetTitleSize(0.08)
+    histodata.GetXaxis().SetTitleOffset(1.3)
     if(histodata.GetXaxis().IsAlphanumeric()):
         histodata.GetXaxis().SetLabelSize(0.08 + 0.005 * max(0, 12-histodata.GetXaxis().GetNbins()) )
     else:
