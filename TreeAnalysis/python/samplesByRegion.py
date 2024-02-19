@@ -30,13 +30,13 @@ ZZTo2Q2L = [{'files':['ZZTo2Q2L'      ] , 'color':ROOT.kGray    , 'name':'ZZ #ri
 
 W        = [{'files':['WJetsToLNu'    ] , 'color':ROOT.kGreen-1 , 'name':'W+jets' }]
 DY       = [{'files':['DYJetsToLL_M50'] , 'color':ROOT.kGreen-9 , 'name':'DY'     , 'skip_prompt_ph':True}]
-ZG       = [{'files':['ZGToLLG'       ] , 'color':ROOT.kGreen+2 , 'name':'Z#gamma'}]
+ZG       = [{'files':['ZGToLLG'       ] , 'color':ROOT.kGreen+2 , 'name':'Z#gamma', 'skip_nonprompt_ph':True}]
 WG       = [{'files':['WGToLNuG'      ] , 'color':ROOT.kGray    , 'name':'W#gamma'}]
 
 triboson = [{'files':['WWW','WWZ','WZZ','ZZZ'], 'color':ROOT.kYellow, 'name':'VVV'}]
 
-WZG      = [{'files':['WZGTo3LNuG'    ] , 'color':ROOT.kMagenta , 'name':'WZ#gamma'}]
-ZZG      = [{'files':['ZZGTo4LG'      ] , 'color':ROOT.kRed     , 'name':'ZZ#gamma', 'split_prompt_ph':True}]
+WZG      = [{'files':['WZGTo3LNuG'    ] , 'color':ROOT.kMagenta , 'name':'3l #nu #gamma'}] #'name':'WZ#gamma'
+ZZG      = [{'files':['ZZGTo4LG'      ] , 'color':ROOT.kRed     , 'name':'4l #gamma'}] #'name':'ZZ#gamma', 'split_prompt_ph':True
 ZZGTo2L2jG=[{'files':['ZZGTo2L2jG'    ] , 'color':ROOT.kRed+3   , 'name':'ZZ#gamma #rightarrow 2l 2j'}]
 WZGTo2L2jG=[{'files':['WZGTo2L2jG'    ] , 'color':ROOT.kRed-5   , 'name':'WZ#gamma #rightarrow 2l 2j'}]
 
