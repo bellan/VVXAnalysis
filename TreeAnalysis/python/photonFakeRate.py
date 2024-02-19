@@ -461,7 +461,7 @@ def fakeRateLtoT_regex(sample_data, sample_prompt, method, variable, regex, year
     ignore = c_double(0)
     nP = hPASS .IntegralAndError(0, -1, 0, -1, ignore)
     nT = hTOTAL.IntegralAndError(0, -1, 0, -1, ignore)
-    logging.info('\tPASS: {:6.0f} - TOTAL: {:6.0f} - <FR>: {:.2f}'.format(nP, nT, nP/nT))
+    logging.info('\tPASS: {:6.0f} - TOTAL: {:6.0f} - <FR>: {:.3f}'.format(nP, nT, nP/nT))
 
     ## Fake rate = PASS/TOTAL ##
     if(rebin_eta):
@@ -485,6 +485,10 @@ def fakeRateLtoT_regex(sample_data, sample_prompt, method, variable, regex, year
     x_name, y_name = variable.split('-')
     hFR.GetXaxis().SetTitle(varname_to_title(x_name))
     hFR.GetYaxis().SetTitle(varname_to_title(y_name))
+    hFR.GetXaxis().SetTitleOffset(1.2)
+    hFR.GetZaxis().SetTitle("FR #gamma")
+    hFR.GetZaxis().SetTitleSize(1.15*hFR.GetZaxis().GetTitleSize())
+    hFR.GetZaxis().SetLabelSize(0.90*hFR.GetZaxis().GetLabelSize())
     plotFR_LtoT(hFR, outname, title, **kwargs)
     return hFR
 
@@ -554,7 +558,7 @@ def getPassFailLtoT(sample_main, sample_subtr, analyzer, year, region, method, v
 
 
 def varname_to_title(name):
-    if  (name == 'pt'  ): return 'p_{T} [GeV/c]'
+    if  (name == 'pt'  ): return 'p_{T} [GeV]'
     elif(name == 'aeta'): return '|#eta|'
     elif(name == 'dRl' ): return '#DeltaR(l, #gamma)'
     elif(name == 'dRj' ): return '#DeltaR(j, #gamma)'
@@ -587,7 +591,7 @@ def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=20
     ignore = c_double(0)
     nP = hPASS .IntegralAndError(0, -1, 0, -1, ignore)
     nT = hTOTAL.IntegralAndError(0, -1, 0, -1, ignore)
-    logging.info('\tPASS: {:6.0f} - TOTAL: {:6.0f} - <FR>: {:.2f}'.format(nP, nT, nP/nT))
+    logging.info('\tPASS: {:6.0f} - TOTAL: {:6.0f} - <FR>: {:.3f}'.format(nP, nT, nP/nT))
 
     ## Fake rate = PASS/TOTAL ##
     if(rebin_eta):
@@ -611,6 +615,10 @@ def fakeRateLtoT(sample_data, sample_prompt, analyzer='VVGammaAnalyzer', year=20
     x_name, y_name = variable.split('-')
     hFR.GetXaxis().SetTitle(varname_to_title(x_name))
     hFR.GetYaxis().SetTitle(varname_to_title(y_name))
+    hFR.GetXaxis().SetTitleOffset(1.2)
+    hFR.GetZaxis().SetTitle("FR #gamma")
+    hFR.GetZaxis().SetTitleSize(1.15*hFR.GetZaxis().GetTitleSize())
+    hFR.GetZaxis().SetLabelSize(0.90*hFR.GetZaxis().GetLabelSize())
     plotFR_LtoT(hFR, outname, title, **kwargs)
 
     return hFR
@@ -621,6 +629,7 @@ def plotFR_LtoT(hFR, outname, title, logx=False, logy=False, do_title=True, rang
     picname  = path.join(_outdir_plot, outname)
 
     cFR = ROOT.TCanvas( 'cFR_{}'.format(outname), title, 1200, 900 )
+    cFR.SetRightMargin(cFR.GetRightMargin()*1.4)
     cFR.cd()
 
     min_draw , max_draw  = range_FR_z
@@ -974,7 +983,7 @@ if __name__ == "__main__":
 
     possible_methods = {"VLtoL", "KtoVL", "KtoVLexcl", "90to80", "ABCD", "dRj_EB", "dRj_EE"}
 
-    possible_eras = ["2016preVFP", "2016postVFP", "2017", "2018"]
+    possible_eras = ["2016preVFP", "2016postVFP", "2017", "2018", 'Run2']
 
     from argparse import ArgumentParser
     parser = ArgumentParser()
