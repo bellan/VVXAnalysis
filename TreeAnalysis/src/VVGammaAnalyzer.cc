@@ -995,6 +995,22 @@ void VVGammaAnalyzer::analyze(){
     theHistograms->fill("Z_l0_pt_" +channelReco_, "p_{t,lZ0};GeV/c" , 20,0.,400. , ZL->first.daughter(0).pt()          , theWeight);
     theHistograms->fill("Z_l1_pt_" +channelReco_, "p_{t,lZ1};GeV/c" , 20,0.,400. , ZL->first.daughter(1).pt()          , theWeight);
     theHistograms->fill("L_pt_"    +channelReco_, "p_{t,l3};GeV/c"  , 20,0.,400. , ZL->second.pt()                     , theWeight);
+
+    if(theSampleInfo.isMC()){
+      bool isPrompt = sigdefHelper.pass_photon();
+      std::string strPrompt = isPrompt ? "_prompt" : "_nonpro";
+      theHistograms->fill("ZL_mass"               +strPrompt, ";m_{3l} [GeV/c^{2}]" , 25,0.,500. , (ZL->first.p4()+ZL->second.p4()).M(), theWeight);
+      theHistograms->fill("Z_mass"                +strPrompt, ";m_{Z} [GeV/c^{2}]"  , 35,55.,125., ZL->first.mass()                    , theWeight);
+      theHistograms->fill("Z_l0_pt"               +strPrompt, ";p_{T}^{lZ0} [GeV/c]", 20,0.,400. , ZL->first.daughter(0).pt()          , theWeight);
+      theHistograms->fill("Z_l1_pt"               +strPrompt, ";p_{T}^{lZ1} [GeV/c]", 20,0.,400. , ZL->first.daughter(1).pt()          , theWeight);
+      theHistograms->fill("L_pt"                  +strPrompt, ";p_{T}^{l3} [GeV/c]" , 20,0.,400. , ZL->second.pt()                     , theWeight);
+
+      theHistograms->fill("ZL_mass_" +channelReco_+strPrompt, ";m_{3l} [GeV/c^{2}]" , 25,0.,500. , (ZL->first.p4()+ZL->second.p4()).M(), theWeight);
+      theHistograms->fill("Z_mass_"  +channelReco_+strPrompt, ";m_{Z} [GeV/c^{2}]"  , 35,55.,125., ZL->first.mass()                    , theWeight);
+      theHistograms->fill("Z_l0_pt_" +channelReco_+strPrompt, ";p_{T}^{lZ0} [GeV/c]", 20,0.,400. , ZL->first.daughter(0).pt()          , theWeight);
+      theHistograms->fill("Z_l1_pt_" +channelReco_+strPrompt, ";p_{T}^{lZ1} [GeV/c]", 20,0.,400. , ZL->first.daughter(1).pt()          , theWeight);
+      theHistograms->fill("L_pt_"    +channelReco_+strPrompt, ";p_{T}^{l3} [GeV/c]" , 20,0.,400. , ZL->second.pt()                     , theWeight);
+    }
   }
   
   /*
@@ -1760,23 +1776,44 @@ void VVGammaAnalyzer::fillPhotonPlots(const Photon& ph, const char* name, const 
 
 
 void VVGammaAnalyzer::photonHistos(){
-  theHistograms->fill("fsrPhotons_N", "# #gamma_{FSR};;Events", 5, -0.5, 4.5, fsrPhotons_->size(), theWeight);
+  std::string strPrompt = "";
+  if(theSampleInfo.isMC())
+    strPrompt = sigdefHelper.pass_photon() ? "_prompt" : "_nonpro";
+
+  theHistograms->fill(  "fsrPhotons_N"          , "# #gamma_{FSR};;Events", 5, -0.5, 4.5, fsrPhotons_->size(), theWeight);
+  if(theSampleInfo.isMC())
+    theHistograms->fill("fsrPhotons_N"+strPrompt, "# #gamma_{FSR};;Events", 5, -0.5, 4.5, fsrPhotons_->size(), theWeight);
+
   if(fsrPhotons_->size() >= 1){
     const Particle& ph = fsrPhotons_->at(0);
     auto closestLep = closestDeltaR(ph, *leptons_);
     float dRl = closestLep != leptons_->cend() ? deltaR(ph, *closestLep) : 10;
-    theHistograms->fill("lead_fsrPhotons_pt"  , ";p_{T};Events"              , 40, 0., 200       , ph.pt()       , theWeight);
-    theHistograms->fill("lead_fsrPhotons_eta", ";#eta;Events"                , 40, 0., 4.       , fabs(ph.eta()), theWeight);
-    theHistograms->fill("lead_fsrPhotons_dRl" , ";#DeltaR(#gamma, l);Events" , 40, 0., 1.        , dRl           , theWeight);
-    theHistograms->fill("lead_fsrPhotons_dRl_fine",";#DeltaR(#gamma, l);Events",100, 0., 1.      , dRl           , theWeight);
+    float pt = ph.pt();
+
+    theHistograms->fill(  "lead_fsrPhotons_pt"             , ";p_{T} [GeV];Events"       , 60, 0., 180, pt < 180 ? pt : 179, theWeight);
+    theHistograms->fill(  "lead_fsrPhotons_aeta"           , ";|#eta|;Events"            , 60, 0., 2.4, fabs(ph.eta())     , theWeight);
+    theHistograms->fill(  "lead_fsrPhotons_dRl"            , ";#DeltaR(#gamma, l);Events", 60, 0., 0.6, dRl < 1  ? dRl: .99, theWeight);
+
+    if(theSampleInfo.isMC()){
+      theHistograms->fill("lead_fsrPhotons_pt"  + strPrompt, ";p_{T} [GeV];Events"       , 60, 0., 180, pt < 180 ? pt : 179, theWeight);
+      theHistograms->fill("lead_fsrPhotons_aeta"+ strPrompt, ";|#eta|;Events"            , 60, 0., 2.4, fabs(ph.eta())     , theWeight);
+      theHistograms->fill("lead_fsrPhotons_dRl" + strPrompt, ";#DeltaR(#gamma, l);Events", 60, 0., 0.6, dRl < 1  ? dRl: .99, theWeight);
+    }
   }
   if(fsrPhotons_->size() >= 2){
     const Particle& ph = fsrPhotons_->at(1);
     auto closestLep = closestDeltaR(ph, *leptons_);
     float dRl = closestLep != leptons_->cend() ? deltaR(ph, *closestLep) : 10;
-    theHistograms->fill("sublead_fsrPhotons_pt"  , ";p_{T};Events"              , 40, 0., 200       , ph.pt()       , theWeight);
-    theHistograms->fill("sublead_fsrPhotons_eta", ";#eta;Events"                , 40, 0., 4.       , fabs(ph.eta()), theWeight);
-    theHistograms->fill("sublead_fsrPhotons_dRl" , ";#DeltaR(#gamma, l);Events" , 40, 0., 1.        , dRl           , theWeight);
+    float pt = ph.pt();
+
+    theHistograms->fill(  "sublead_fsrPhotons_pt"            , ";p_{T};Events"              , 60, 0., 180, pt < 180 ? pt : 179., theWeight);
+    theHistograms->fill(  "sublead_fsrPhotons_aeta"          , ";#eta;Events"               , 60, 0., 2.4, fabs(ph.eta())      , theWeight);
+    theHistograms->fill(  "sublead_fsrPhotons_dRl"           , ";#DeltaR(#gamma, l);Events" , 60, 0., 0.6, dRl < 1  ? dRl: .99 , theWeight);
+    if(theSampleInfo.isMC()){
+      theHistograms->fill("sublead_fsrPhotons_pt"  +strPrompt, ";p_{T};Events"              , 60, 0., 180, pt < 180 ? pt : 179., theWeight);
+      theHistograms->fill("sublead_fsrPhotons_aeta"+strPrompt, ";#eta;Events"               , 60, 0., 2.4, fabs(ph.eta())      , theWeight);
+      theHistograms->fill("sublead_fsrPhotons_dRl" +strPrompt, ";#DeltaR(#gamma, l);Events" , 60, 0., 0.6, dRl < 1  ? dRl: .99 , theWeight);
+    }
   }
 
   // No photons passing kinematic cuts
@@ -1798,9 +1835,14 @@ void VVGammaAnalyzer::photonHistos(){
   }
   
   // pt and eta distribution of photons
-  theHistograms->fill("kinPhotons_N"  , "Kin photons;N #gamma;Events", 5,-0.5,4.5, kinPhotons_["central"]->size(), theWeight);
-  theHistograms->fill("veryLoosePhotons_N", "VeryLoose photons;N #gamma;Events", 5,-0.5,4.5, loosePhotons_["central"]->size(), theWeight);
-  theHistograms->fill("loosePhotons_N"    , "Loose photons;N #gamma;Events"    , 5,-0.5,4.5,  goodPhotons_["central"]->size(), theWeight);
+  theHistograms->fill(  "kinPhotons_N"                , "Kin photons;N #gamma;Events"      , 5,-0.5,4.5,   kinPhotons_["central"]->size(), theWeight);
+  theHistograms->fill(  "veryLoosePhotons_N"          , "VeryLoose photons;N #gamma;Events", 5,-0.5,4.5, loosePhotons_["central"]->size(), theWeight);
+  theHistograms->fill(  "loosePhotons_N"              , "Loose photons;N #gamma;Events"    , 5,-0.5,4.5,  goodPhotons_["central"]->size(), theWeight);
+  if(theSampleInfo.isMC()){
+    theHistograms->fill("kinPhotons_N"      +strPrompt, "Kin photons;N #gamma;Events"      , 5,-0.5,4.5,   kinPhotons_["central"]->size(), theWeight);
+    theHistograms->fill("veryLoosePhotons_N"+strPrompt, "VeryLoose photons;N #gamma;Events", 5,-0.5,4.5, loosePhotons_["central"]->size(), theWeight);
+    theHistograms->fill("loosePhotons_N"    +strPrompt, "Loose photons;N #gamma;Events"    , 5,-0.5,4.5,  goodPhotons_["central"]->size(), theWeight);
+  }
 
   if  ( goodPhotons_["central"]->size() > 0){
     fillPhotonPlots(goodPhotons_["central"]->at(0), "lead_loose", "Leading Loose");
@@ -1876,11 +1918,19 @@ void VVGammaAnalyzer::photonHistos(){
     			  sieie_bins,
     			  chIso_bins,
     			  ph.sigmaIetaIeta(), ph.chargedIsolation(), theWeight);
-      theHistograms->fill("kinPh_sieie_EB" , "kinPhotons in Barrel;#sigma_{i#etai#eta}", sieie_bins, ph.sigmaIetaIeta()         , theWeight);
-      theHistograms->fill("kinPh_chIso_EB" , "kinPhotons in Barrel;chIso"              , 60,0.,60., ph.chargedIsolation()      , theWeight);
-      theHistograms->fill("kinPh_HoverE_EB", "kinPhotons in Barrel;HoverE"             , 60,0.,.15, ph.HoverE()                , theWeight);
-      theHistograms->fill("kinPh_neIso_EB" , "kinPhotons in Barrel;neIso"              , 60,0.,60., ph.neutralHadronIsolation(), theWeight);
-      theHistograms->fill("kinPh_phIso_EB" , "kinPhotons in Barrel;phIso"              , 60,0.,60., ph.photonIsolation()       , theWeight);
+
+      theHistograms->fill(  "kinPh_sieie_EB"           , "kinPhotons in Barrel;#sigma_{i#etai#eta}", sieie_bins, ph.sigmaIetaIeta()        , theWeight);
+      theHistograms->fill(  "kinPh_chIso_EB"           , "kinPhotons in Barrel;chIso"              , 60,0.,60., ph.chargedIsolation()      , theWeight);
+      theHistograms->fill(  "kinPh_HoverE_EB"          , "kinPhotons in Barrel;HoverE"             , 60,0.,.15, ph.HoverE()                , theWeight);
+      theHistograms->fill(  "kinPh_neIso_EB"           , "kinPhotons in Barrel;neIso"              , 60,0.,60., ph.neutralHadronIsolation(), theWeight);
+      theHistograms->fill(  "kinPh_phIso_EB"           , "kinPhotons in Barrel;phIso"              , 60,0.,60., ph.photonIsolation()       , theWeight);
+      if(theSampleInfo.isMC()){
+	theHistograms->fill("kinPh_sieie_EB" +strPrompt, "kinPhotons in Barrel;#sigma_{i#etai#eta}", sieie_bins, ph.sigmaIetaIeta()        , theWeight);
+	theHistograms->fill("kinPh_chIso_EB" +strPrompt, "kinPhotons in Barrel;chIso"              , 60,0.,60., ph.chargedIsolation()      , theWeight);
+	theHistograms->fill("kinPh_HoverE_EB"+strPrompt, "kinPhotons in Barrel;HoverE"             , 60,0.,.15, ph.HoverE()                , theWeight);
+	theHistograms->fill("kinPh_neIso_EB" +strPrompt, "kinPhotons in Barrel;neIso"              , 60,0.,60., ph.neutralHadronIsolation(), theWeight);
+	theHistograms->fill("kinPh_phIso_EB" +strPrompt, "kinPhotons in Barrel;phIso"              , 60,0.,60., ph.photonIsolation()       , theWeight);
+      }
     }
     else{
       vector<double> sieie_bins(28);
@@ -1890,18 +1940,34 @@ void VVGammaAnalyzer::photonHistos(){
 			  sieie_bins,
 			  chIso_bins,
 			  ph.sigmaIetaIeta(), ph.chargedIsolation(), theWeight);
-      theHistograms->fill("kinPh_sieie_EE" , "kinPhotons in Endcap;#sigma_{i#etai#eta}", sieie_bins, ph.sigmaIetaIeta()         , theWeight);
-      theHistograms->fill("kinPh_chIso_EE" , "kinPhotons in Endcap;chIso"              , 60,0.,60., ph.chargedIsolation()      , theWeight);
-      theHistograms->fill("kinPh_HoverE_EE", "kinPhotons in Endcap;HoverE"             , 60,0.,.15, ph.HoverE()                , theWeight);
-      theHistograms->fill("kinPh_neIso_EE" , "kinPhotons in Endcap;neIso"              , 60,0.,60., ph.neutralHadronIsolation(), theWeight);
-      theHistograms->fill("kinPh_phIso_EE" , "kinPhotons in Endcap;phIso"              , 60,0.,60., ph.photonIsolation()       , theWeight);
+
+      theHistograms->fill(  "kinPh_sieie_EE"           , "kinPhotons in Endcap;#sigma_{i#etai#eta}", sieie_bins, ph.sigmaIetaIeta()        , theWeight);
+      theHistograms->fill(  "kinPh_chIso_EE"           , "kinPhotons in Endcap;chIso"              , 60,0.,60., ph.chargedIsolation()      , theWeight);
+      theHistograms->fill(  "kinPh_HoverE_EE"          , "kinPhotons in Endcap;HoverE"             , 60,0.,.15, ph.HoverE()                , theWeight);
+      theHistograms->fill(  "kinPh_neIso_EE"           , "kinPhotons in Endcap;neIso"              , 60,0.,60., ph.neutralHadronIsolation(), theWeight);
+      theHistograms->fill(  "kinPh_phIso_EE"           , "kinPhotons in Endcap;phIso"              , 60,0.,60., ph.photonIsolation()       , theWeight);
+
+      if(theSampleInfo.isMC()){
+	theHistograms->fill("kinPh_sieie_EE" +strPrompt, "kinPhotons in Endcap;#sigma_{i#etai#eta}", sieie_bins, ph.sigmaIetaIeta()        , theWeight);
+	theHistograms->fill("kinPh_chIso_EE" +strPrompt, "kinPhotons in Endcap;chIso"              , 60,0.,60., ph.chargedIsolation()      , theWeight);
+	theHistograms->fill("kinPh_HoverE_EE"+strPrompt, "kinPhotons in Endcap;HoverE"             , 60,0.,.15, ph.HoverE()                , theWeight);
+	theHistograms->fill("kinPh_neIso_EE" +strPrompt, "kinPhotons in Endcap;neIso"              , 60,0.,60., ph.neutralHadronIsolation(), theWeight);
+	theHistograms->fill("kinPh_phIso_EE" +strPrompt, "kinPhotons in Endcap;phIso"              , 60,0.,60., ph.photonIsolation()       , theWeight);
+      }
     }
-    
-    theHistograms->fill("kinPhotons_ID", "Cut Based ID", BINS_KINPHID, 0, theWeight);
-    if(passVeryLoose(ph))     theHistograms->fill("kinPhotons_ID", "Cut Based ID", BINS_KINPHID, 1, theWeight);
-    if(ph.cutBasedIDLoose())  theHistograms->fill("kinPhotons_ID", "Cut Based ID", BINS_KINPHID, 2, theWeight);
-    if(ph.cutBasedIDMedium()) theHistograms->fill("kinPhotons_ID", "Cut Based ID", BINS_KINPHID, 3, theWeight);
-    if(ph.cutBasedIDTight())  theHistograms->fill("kinPhotons_ID", "Cut Based ID", BINS_KINPHID, 4, theWeight);
+
+    theHistograms->fill(  "kinPhotons_ID"          , "Cut Based ID", BINS_KINPHID, 0, theWeight);
+    if(passVeryLoose(ph))     theHistograms->fill(  "kinPhotons_ID"          , "Cut Based ID", BINS_KINPHID, 1, theWeight);
+    if(ph.cutBasedIDLoose())  theHistograms->fill(  "kinPhotons_ID"          , "Cut Based ID", BINS_KINPHID, 2, theWeight);
+    if(ph.cutBasedIDMedium()) theHistograms->fill(  "kinPhotons_ID"          , "Cut Based ID", BINS_KINPHID, 3, theWeight);
+    if(ph.cutBasedIDTight())  theHistograms->fill(  "kinPhotons_ID"          , "Cut Based ID", BINS_KINPHID, 4, theWeight);
+    if(theSampleInfo.isMC()){
+      theHistograms->fill("kinPhotons_ID"+strPrompt, "Cut Based ID", BINS_KINPHID, 0, theWeight);
+      if(passVeryLoose(ph))     theHistograms->fill("kinPhotons_ID"+strPrompt, "Cut Based ID", BINS_KINPHID, 1, theWeight);
+      if(ph.cutBasedIDLoose())  theHistograms->fill("kinPhotons_ID"+strPrompt, "Cut Based ID", BINS_KINPHID, 2, theWeight);
+      if(ph.cutBasedIDMedium()) theHistograms->fill("kinPhotons_ID"+strPrompt, "Cut Based ID", BINS_KINPHID, 3, theWeight);
+      if(ph.cutBasedIDTight())  theHistograms->fill("kinPhotons_ID"+strPrompt, "Cut Based ID", BINS_KINPHID, 4, theWeight);
+    }
   }
   
   // Systematics
@@ -2840,15 +2906,29 @@ std::pair<double, double> VVGammaAnalyzer::getZllAndZllgMasses(const std::vector
 
 
 void VVGammaAnalyzer::SYSplots_inclusive(const char* syst, double weight){
-  if(is4Lregion(region_))
+  const char* strPrompt = "";
+  if(theSampleInfo.isMC())
+    strPrompt = sigdefHelper.pass_photon() ? "prompt" : "nonpro" ;
+
+  if(is4Lregion(region_)){
     theHistograms->fill(  Form("SYS_mZZ_%s" , syst), Form("m_{ZZ} %s"      , syst), mVV_bins , ZZ->mass()               , weight);
-  else if(is3Lregion(region_))
+    if(theSampleInfo.isMC())
+      theHistograms->fill(Form("SYS_mZZ_%s_%s", syst, strPrompt), Form("m_{ZZ} %s", syst), mVV_bins , ZZ->mass()        , weight);
+  }
+  else if(is3Lregion(region_)){
     theHistograms->fill(  Form("SYS_mWZ_%s" , syst), Form("m_{WZ} %s"      , syst), mVV_bins , ZW->mass()               , weight);
+    if(theSampleInfo.isMC())
+      theHistograms->fill(Form("SYS_mWZ_%s_%s", syst, strPrompt), Form("m_{WZ} %s", syst), mVV_bins , ZW->mass()        , weight);
+  }
   else if(region_ == CRLFR){
     Boson<Lepton>& theZ = ZL->first;
     Lepton&        theL = ZL->second;
     theHistograms->fill(  Form("SYS_mZ_%s"  , syst), Form("m_{Z} %s"       , syst), mZ_bins  , theZ.mass()               , weight);
     theHistograms->fill(  Form("SYS_mZL_%s" , syst), Form("m_{ZL} %s"      , syst), mZG_bins , (theZ.p4()+theL.p4()).M() , weight);
+    if(theSampleInfo.isMC()){
+      theHistograms->fill(Form("SYS_mZ_%s_%s"  , syst, strPrompt), Form("m_{Z} %s" , syst), mZ_bins , theZ.mass()              , weight);
+      theHistograms->fill(Form("SYS_mZL_%s_%s" , syst, strPrompt), Form("m_{ZL} %s", syst), mZG_bins, (theZ.p4()+theL.p4()).M(), weight);
+    }
   }
 }
 
