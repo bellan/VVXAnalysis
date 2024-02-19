@@ -191,7 +191,7 @@ def main():
     parser.add_argument('-v', '--verbose'  , dest='verbosity', action='count', default=1, help='Increase verbosity')
     parser.add_argument(      '--verbosity', type=int, help='Set verbosity')
     parser.add_argument('-q', '--quiet'    , dest='verbosity', action='store_const', const=0, help='Set verbose to minimum')
-    parser.add_argument('-r', '--region', default='SR4P')
+    parser.add_argument('-r', '--region', default=None)
     parser.add_argument('-y', '--year'  , default='2018', choices=lumi_dict.keys())
     parser.add_argument('-c', '--config', type=json.loads, help='String convertible to dictionary used to override the config', default={})
     parser.add_argument(      '--unblind', action='store_true')
@@ -231,6 +231,13 @@ def main():
         print('### Configuration ###')
         print(json.dumps(config, indent=2))
         print()
+
+    if args.region is None:
+        if(len(config['regions']) == 1):
+            args.region = list(config['regions'].keys())[0]
+            logging.info('Using region %s from the config file', args.region)
+        else:
+            raise RuntimeError('No region specified in arguments. The config defines: %s' %(config['regions'].keys()) )
 
     # Path
     path_to_histograms = os.path.join(args.path, str(args.year), args.region+'.root')
@@ -318,6 +325,13 @@ def main():
         if sample in data_syst:
             logging.info('setting norm uncertainty on %s (%s)', sample, val)
             data_syst[sample][sample+'_norm'] = val
+            if  (sample == 'fake_leptons'):
+                logging.info('Using norm uncertainty instead of lepton fake rate uncertainty')
+                data_syst[sample]['eleFakeRateSF'] = {'up':1, 'dn':1}
+                data_syst[sample]['muoFakeRateSF'] = {'up':1, 'dn':1}
+            elif(sample == 'fake_photons'):
+                logging.info('Using norm uncertainty instead of photon fake rate uncertainty')
+                data_syst[sample]['phFakeRate'] = {'up':1, 'dn':1}
 
     df_syst = fillDataFrame(data_syst, formatter=format_lnN).fillna(0)
     type_column = []
@@ -346,6 +360,9 @@ def main():
         # Uses implicitly: config, year
         if  (syst in config['systematics'][  'correlated']): suffix = ''
         elif(syst in config['systematics']['uncorrelated']): suffix = '_'+args.year
+        elif(syst.endswith('_norm')):
+            logging.info('Treating %s as correlated among years', syst)
+            suffix = ''
         else: raise RuntimeError('Systematic "%s": unspecified if correlated' %(syst))
         return 'CMS_{}{}'.format(syst, suffix)
 
