@@ -38,9 +38,15 @@ def getYrange(*graphs, **kwargs):  # <TGraphAsymmErrors>
 def plotSystematics(hCentral, hUp, hDn, var='[var]', syst='[syst]', sample='[sample]', region='[region]', **kwargs):  # <TH1>, <TH1>, <TH1>, <dict> (modified), <str>, <str>, <str>, <str>
     formatInfo = dict(var=var, syst=syst, sample=sample, region=region)
 
-    assert hCentral, "ERROR: hCentral is null for"+str(formatInfo)
-    assert hUp, "ERROR: hUp is null for"+str(formatInfo)
-    assert hDn, "ERROR: hDn is null for"+str(formatInfo)
+    if(not hCentral):
+        logging.warning("hCentral is null for %s", str(formatInfo))
+        return {}
+    if(not hUp     ):
+        logging.warning("hUp is null for %s", str(formatInfo))
+        return {}
+    if(not hDn     ):
+        logging.warning("hDn is null for %s", str(formatInfo))
+        return {}
 
     var_split = var.split('-')
     if(len(var_split) > 1):  # prompt/nonpro
@@ -283,6 +289,12 @@ def main():
         file_list.update(('fake_leptons', 'fake_photons'))
     # Delegate the appropriate list of MC
     for method in ('fullMC', 'lepCR', 'phoCR'):
+        try:
+            samples = getSamplesByRegion(args.region, 'pow', method)
+        except ValueError:
+            logging.warning('Skipping the additional samples for the "%s" prediction', method)
+            continue
+
         for sample in getSamplesByRegion(args.region, 'pow', method):
             file_list.update(sample['files'])
     logging.info('file list: %s', file_list)
