@@ -7,6 +7,7 @@
 ############################################
 
 import sys
+import os
 if sys.version_info.major <= 2:
     from collections import Mapping
 else:
@@ -29,6 +30,15 @@ def deep_update(orig, new):
         else:
             orig[k] = v
     return orig
+
+
+def get_VVXAnalysis(default=None):
+    if('CMSSW_BASE' in os.environ):
+        return os.path.join(os.environ['CMSSW_BASE'], 'src', 'VVXAnalysis')
+    elif('VVXAnalysis' in os.getcwd()):
+        return os.path.join(os.getcwd().split('VVXAnalysis')[0], 'VVXAnalysis')
+    else:
+        return default
 
 
 def _test_deep_update():
