@@ -8,7 +8,7 @@ import sys, os, commands, math, subprocess
 from optparse import OptionParser
 from readSampleInfo import *
 from Colours import *
-from utils23 import lumi_dict
+from utils23 import lumi_dict, get_VVXAnalysis
 
 
 ############################################################################
@@ -439,14 +439,12 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
 ### Actual steering of the code ###
 ###################################
 
+csv_dir = os.path.join(get_VVXAnalysis(default='..'), 'Producers', 'python')
 runStatus = 0
 if year == 1618:
     for year in years:
         if options.csvfile is None:
-            if isData:
-                csvfile = "../Producers/python/samples_"+str(year)+"UL_Data.csv"
-            else:
-                csvfile = "../Producers/python/samples_"+str(year)+"UL_MC.csv"
+            csvfile = os.path.join( csv_dir, "samples_{year}UL_{dataMC}.csv".format(year=year, dataMC=('Data' if isData else 'MC')) )
                 
         print "CSV file: ", Blue(csvfile)
 
@@ -457,10 +455,7 @@ if year == 1618:
 
 elif year in years:
     if options.csvfile is None:
-        if isData:
-            csvfile = "../Producers/python/samples_"+str(year)+"UL_Data.csv"
-        else:
-            csvfile = "../Producers/python/samples_"+str(year)+"UL_MC.csv"
+        csvfile = os.path.join( csv_dir, "samples_{year}UL_{dataMC}.csv".format(year=year, dataMC=('Data' if isData else 'MC')) )
         
     print "CSV file: ", Blue(csvfile)
 
