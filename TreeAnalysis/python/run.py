@@ -8,7 +8,7 @@ import sys, os, commands, math, subprocess
 from optparse import OptionParser
 from readSampleInfo import *
 from Colours import *
-from utils23 import lumi_dict
+from utils23 import lumi_dict, get_VVXAnalysis
 
 
 ############################################################################
@@ -177,19 +177,22 @@ print "\n\n"
 
 executable = "eventAnalyzer" 
 
+vvx_dir = get_VVXAnalysis()
+treeanalysis_dir = os.path.join(vvx_dir, 'TreeAnalysis')
+treeanalysis_bin_dir = os.path.join(treeanalysis_dir, 'bin')
 
-failure, output = commands.getstatusoutput('ls ./bin/ | grep -v .cpp | grep -v .xml | grep -v .md')
+output = subprocess.check_output('ls {} | grep -v .cpp | grep -v .xml | grep -v .md'.format(treeanalysis_bin_dir), shell=True) # py3: encoding='utf-8'
 availableExecutable = output.split()
 if executable in availableExecutable: 
-    executable = 'bin/'+executable
+    executable = os.path.join(treeanalysis_bin_dir, executable)
 else:
     print Important("ERROR! Unknown executable."),"Availble executables are:",availableExecutable
     sys.exit(1)
 
-registry = './src/AnalysisFactory.cc'
-checkIfAnalysisIsRegistered = 'grep -r {0:s} {1:s} | grep create | wc -l'.format(analysis, registry)
-failure, output = commands.getstatusoutput(checkIfAnalysisIsRegistered)
-if (not int(output) ==1):
+registry = os.path.join(treeanalysis_dir, 'src', 'AnalysisFactory.cc')
+checkIfAnalysisIsRegistered = 'grep -r {0:s} {1:s} | grep -q create'.format(analysis, registry)
+retcode = subprocess.call(checkIfAnalysisIsRegistered, shell=True)
+if (not retcode == 0):
     print Important("ERROR! The analysis {0:s} is not registered in {1:2}.".format(analysis,registry))
     howToRegister = Yellow('Register("{0:s}", &{0:s}::create);'.format(analysis))
     print "If you have not mispelled the name of your analysis, then please register it adding {0:s} in the constructor of {1:s} and recompile the code.".format(howToRegister, registry)
@@ -252,7 +255,7 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
     for region in regions:
         odir = outputdir_format %region
         outputdirs[region] = odir
-        os.popen('mkdir -p "%s"' %odir)
+        subprocess.check_call(['mkdir', '-p', odir])  # Use os.makedirs(odir, exist_ok=True) after switching to py3
 
 
     datasets = getSamplesBy('process',typeofsample,csvfile)
@@ -294,7 +297,7 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
         # outputdir_format is something like "results/2016/VVXAnalyzer_%s". EventAnalyzer will use Form() to replace %s with the various regions to obtain the filenames
         keywords = locals()
         keywords.update({'regions':';'.join(regions)})
-        command = "./{executable} {analysis} '{regions}' {inputdir}/{basefile}.root {outputdir_format}/{basefile}.root {year} {luminosity:.0f} {externalXsec:.5f} {maxNumEvents:d} {doSF:b} {unblind:b} {nofr:b} {forcePosWeight:b}".format(**keywords)
+        command = "{executable} {analysis} '{regions}' {inputdir}/{basefile}.root {outputdir_format}/{basefile}.root {year} {luminosity:.0f} {externalXsec:.5f} {maxNumEvents:d} {doSF:b} {unblind:b} {nofr:b} {forcePosWeight:b}".format(**keywords)
         print "Command going to be executed (run::command):", Violet(command)
         output = subprocess.check_call(command,shell=True)
         print "\n", output
@@ -355,7 +358,7 @@ def mergeCRs(analysis, year, inputLocs, antype):
 
         
     outdir = '{0:s}/{1:s}/{2:s}_{3:s}'.format(options.outputdir, str(year), analysis, antype)
-    if not os.path.exists(outdir): os.popen('mkdir {0:s}'.format(outdir))
+    if not os.path.exists(outdir): os.mkdir(outdir)
     if isData:
         outputRedBkg = '{0:s}/reducible_background.root'.format(outdir)
     else:
@@ -434,20 +437,34 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
     return 0
 
 ###------------------------------------------------------------------------------------###        
+
+def get_csvfile(year, isData):
+    if(isData):
+        dataMC = 'Data'
+        if year.startswith('2016'):
+            yearcsv = year[:4]
+        else:
+            yearcsv = year
+    else:
+        dataMC = 'MC'
+        yearcsv = year
+
+    csvfile = os.path.join( csv_dir, "samples_{yearcsv}UL_{dataMC}.csv".format(yearcsv=yearcsv, dataMC=dataMC) )
+    return csvfile
+
+###------------------------------------------------------------------------------------###
                 
 ###################################
 ### Actual steering of the code ###
 ###################################
 
+csv_dir = os.path.join(vvx_dir, 'Producers', 'python')
 runStatus = 0
 if year == 1618:
     for year in years:
         if options.csvfile is None:
-            if isData:
-                csvfile = "../Producers/python/samples_"+str(year)+"UL_Data.csv"
-            else:
-                csvfile = "../Producers/python/samples_"+str(year)+"UL_MC.csv"
-                
+            csvfile = get_csvfile(year, isData)
+
         print "CSV file: ", Blue(csvfile)
 
         knownProcesses = typeOfSamples(csvfile)
@@ -457,11 +474,8 @@ if year == 1618:
 
 elif year in years:
     if options.csvfile is None:
-        if isData:
-            csvfile = "../Producers/python/samples_"+str(year)+"UL_Data.csv"
-        else:
-            csvfile = "../Producers/python/samples_"+str(year)+"UL_MC.csv"
-        
+        csvfile = get_csvfile(year, isData)
+
     print "CSV file: ", Blue(csvfile)
 
     knownProcesses = typeOfSamples(csvfile)
