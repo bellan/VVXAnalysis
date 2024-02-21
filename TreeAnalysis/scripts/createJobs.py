@@ -58,7 +58,7 @@ ln -s $SUBMIT_DIR/../Producers/python/{csvname} ./
 # Check if the sample is on eos
 localsample=$SUBMIT_DIR/{sample_dir}/{year}/{sample}.root
 abssample=$(realpath $localsample)
-if [ $runninglocally = false ] && echo $abssample | grep -q ^/eos ; then
+if ! $runninglocally && echo $abssample | grep -q ^/eos ; then
     export EOS_MGM_URL={EOS_MGM_URL}
     eos cp $abssample samples/{year}/
 else
@@ -93,9 +93,9 @@ exit $runStatus
 '''
 
 
-def condorSubScript( mainDir, jobFlavour='espresso' ):
+def get_condorsub_script( mainDir, jobFlavour='espresso' ):
     '''prepare the Condor submission script'''
-    return script.format(home=os.path.expanduser("~"), uid=os.getuid(), mainDir=mainDir, jobFlavour=jobFlavour)
+    return condorsub_template.format(home=os.path.expanduser("~"), uid=os.getuid(), mainDir=mainDir, jobFlavour=jobFlavour)
 
 
 def get_batch_script(sample, year, **kwargs):
@@ -128,47 +128,44 @@ def main():
     logging.info('args: %s', args)
     logging.info('unknown (will be passed to run.py: %s', unknown_args)
 
-    samples = os.listdir(os.path.join(args.sample_dir, args.year))
-    for sample in ('ZZGTo4LG',):  #samples
-        runpy_args = ' '.join(['-y', args.year, *unknown_args, '--', args.analyzer, sample])
-        batchScript = get_batch_script(**vars(args), sample=sample, runpy_args=runpy_args)
-        logging.debug('batchScript:\n%s', batchScript)
-
-    return 0
-
-    os.makedirs(args.output_dir, exist_ok=True)
-
-    jobDirectory = os.path.join(args.output_dir, args.dataset)
+    jobDirectory = args.output_dir
     try:
         os.mkdir(jobDirectory)
     except FileExistsError as e:
         if(args.force):
             print('INFO: removing existing jobs in', jobDirectory)
-            check_call(['rm', '-r', jobDirectory+'/*'])
+            check_call(['rm', '-r', jobDirectory])
+            os.mkdir(jobDirectory)
         else:
-            print('ERROR: Job folder exists. If you want to recreate it run agin with --force')
+            logging.error('Job folder "%s" exists. If you want to remove and recreate its contents it run agin with --force', jobDirectory)
             raise e
 
     # Create condor.sub
     absJobDirectory = check_output(['realpath', jobDirectory], encoding='utf-8').strip('\n')
     with open(os.path.join(jobDirectory, 'condor.sub'), 'w') as condorsub:
-        condorsub.write(condorSubScript( absJobDirectory, jobFlavour=args.flavour ))
+        condorsub.write(get_condorsub_script( absJobDirectory, jobFlavour=args.flavour ))
 
-    for i, fileName in enumerate(files):
+    samples = os.listdir(os.path.join(args.sample_dir, args.year))
+    created_jobs = 0
+    for sample in ('ZZGTo4LG',):  #samples
         #Create job dir
-        chunkDir = os.path.join(jobDirectory, 'Chunk_{:d}'.format(i))
-        os.mkdir( chunkDir )
+        sample_dir = os.path.join(jobDirectory, sample)
+        os.mkdir( sample_dir )
 
         # Create script and make it executable
-        scriptPath = os.path.join(chunkDir, 'batchScript.sh')
+        runpy_args = ' '.join(['-y', args.year, *unknown_args, '--', args.analyzer, sample])
+        batchScript = get_batch_script(**vars(args), sample=sample, runpy_args=runpy_args)
+        scriptPath = os.path.join(sample_dir, 'batchScript.sh')
         with open(scriptPath, 'w') as script:
             script.write(batchScript)
         os.chmod(scriptPath, os.stat(scriptPath).st_mode | stat.S_IEXEC)
 
         # Create logdir
-        os.makedirs(os.path.join(chunkDir, 'log'), exist_ok=True)
+        os.makedirs(os.path.join(sample_dir, 'log'), exist_ok=True)
 
-    print("INFO: created {:d} jobs in {:s}".format(i+1, absJobDirectory))
+        created_jobs += 1
+
+    logging.info("created {:d} jobs in {:s}".format(created_jobs, absJobDirectory))
 
 
 if __name__ == '__main__':
