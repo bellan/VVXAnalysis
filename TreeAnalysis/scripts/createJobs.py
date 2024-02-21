@@ -42,7 +42,8 @@ else
   SUBMIT_DIR=$1
 fi
 
-cd $SUBMIT_DIR
+treeanalysis_dir=$CMSSW_BASE/src/VVXAnalysis/TreeAnalysis
+cd $treeanalysis_dir
 make
 
 cd $_CONDOR_SCRATCH_DIR
@@ -51,29 +52,32 @@ cd $_CONDOR_SCRATCH_DIR
 mkdir samples
 mkdir samples/{year}
 mkdir bin
-ln -s $SUBMIT_DIR/bin/eventAnalyzer bin/
-ln -s $SUBMIT_DIR/libTreeAnalysis.so ./
-ln -s $SUBMIT_DIR/../Producers/python/{csvname} ./
+ln -s ${{treeanalysis_dir}}/bin/eventAnalyzer bin/
+ln -s ${{treeanalysis_dir}}/libTreeAnalysis.so ./
+ln -s ${{treeanalysis_dir}}/../Producers/python/{csvname} ./
 
 # Check if the sample is on eos
-localsample=$SUBMIT_DIR/{sample_dir}/{year}/{sample}.root
-abssample=$(realpath $localsample)
-if ! $runninglocally && echo $abssample | grep -q ^/eos ; then
+# On LXPLUS /eos/user/[initial] is a symlink to /eos/home-[initial],
+# but on EOS the path is actually /eos/user/[initial]
+
+samplelocal=${{treeanalysis_dir}}/{sample_dir}/{year}/{sample}.root
+sampleabs=$(realpath $samplelocal | sed "s:^/eos/home-:/eos/user/:")
+
+if ! $runninglocally && echo $sampleabs | grep -q ^/eos ; then
     export EOS_MGM_URL={EOS_MGM_URL}
-    eos cp $abssample samples/{year}/
+    eos cp -n $sampleabs samples/{year}/
 else
-    ln -s $abssample samples/{year}/
+    ln -s $sampleabs samples/{year}/
 fi
 
 echo 'Running at:' $(date)
 echo path: $(pwd)
 
-./python/run.py -c {csvname} {runpy_args} > log.txt
+${{treeanalysis_dir}}/python/run.py {runpy_args} 1>run.out 2>run.err
 runStatus=$?
 
 echo -n $runStatus > exitStatus.txt
 echo 'Done at: ' $(date) with exit status: $runStatus
-gzip log.txt
 
 echo "Files on node:"
 ls -la
@@ -85,8 +89,10 @@ echo '...done at' $(date)
 
 #note cping back is handled automatically by condor
 if $runninglocally; then
-  cp *.root *.txt *.gz $SUBMIT_DIR
-  [ -e *.log ] && cp *log $SUBMIT_DIR
+  cp -r results *.out *.err exitStatus.txt $SUBMIT_DIR
+  # [ -e *.log ] && cp *log $SUBMIT_DIR
+  cd $SUBMIT_DIR
+  # rm -r $_CONDOR_SCRATCH_DIR
 fi
 
 exit $runStatus
@@ -108,7 +114,7 @@ def parse_args():
     parser = ArgumentParser(
         description = 'Create folders with scripts and configs to submit to HTCondor'
     )
-    parser.add_argument('-A', '--analyzer'  , default='VVXAanlyzer')
+    parser.add_argument('-A', '--analyzer'  , default='VVXAnalyzer')
     parser.add_argument('-y', '--year'      , default='2018')
     parser.add_argument('-d', '--sample-dir', default='samples')
     parser.add_argument('-j', '--flavour'   , choices=['espresso', 'microcentury', 'longlunch', 'workday', 'tomorrow', 'testmatch', 'nextweek'], default='longlunch') # TODO estimate runtime based on sample size
