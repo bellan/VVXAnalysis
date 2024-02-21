@@ -177,16 +177,19 @@ print "\n\n"
 
 executable = "eventAnalyzer" 
 
+vvx_dir = get_VVXAnalysis(default='..')
+treeanalysis_dir = os.path.join(vvx_dir, 'TreeAnalysis')
+treeanalysis_bin_dir = os.path.join(treeanalysis_dir, 'bin')
 
-failure, output = commands.getstatusoutput('ls ./bin/ | grep -v .cpp | grep -v .xml | grep -v .md')
+failure, output = commands.getstatusoutput('ls {} | grep -v .cpp | grep -v .xml | grep -v .md'.format(treeanalysis_bin_dir))
 availableExecutable = output.split()
 if executable in availableExecutable: 
-    executable = 'bin/'+executable
+    executable = os.path.join(treeanalysis_bin_dir, executable)
 else:
     print Important("ERROR! Unknown executable."),"Availble executables are:",availableExecutable
     sys.exit(1)
 
-registry = './src/AnalysisFactory.cc'
+registry = os.path.join(treeanalysis_dir, 'src', 'AnalysisFactory.cc')
 checkIfAnalysisIsRegistered = 'grep -r {0:s} {1:s} | grep create | wc -l'.format(analysis, registry)
 failure, output = commands.getstatusoutput(checkIfAnalysisIsRegistered)
 if (not int(output) ==1):
@@ -294,7 +297,7 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
         # outputdir_format is something like "results/2016/VVXAnalyzer_%s". EventAnalyzer will use Form() to replace %s with the various regions to obtain the filenames
         keywords = locals()
         keywords.update({'regions':';'.join(regions)})
-        command = "./{executable} {analysis} '{regions}' {inputdir}/{basefile}.root {outputdir_format}/{basefile}.root {year} {luminosity:.0f} {externalXsec:.5f} {maxNumEvents:d} {doSF:b} {unblind:b} {nofr:b} {forcePosWeight:b}".format(**keywords)
+        command = "{executable} {analysis} '{regions}' {inputdir}/{basefile}.root {outputdir_format}/{basefile}.root {year} {luminosity:.0f} {externalXsec:.5f} {maxNumEvents:d} {doSF:b} {unblind:b} {nofr:b} {forcePosWeight:b}".format(**keywords)
         print "Command going to be executed (run::command):", Violet(command)
         output = subprocess.check_call(command,shell=True)
         print "\n", output
@@ -439,7 +442,7 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
 ### Actual steering of the code ###
 ###################################
 
-csv_dir = os.path.join(get_VVXAnalysis(default='..'), 'Producers', 'python')
+csv_dir = os.path.join(vvx_dir, 'Producers', 'python')
 runStatus = 0
 if year == 1618:
     for year in years:
