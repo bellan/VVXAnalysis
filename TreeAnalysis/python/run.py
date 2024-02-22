@@ -1,15 +1,20 @@
-#! /usr/bin/env python2.7
+#!/usr/bin/env python
 
 ##################################
 ## R. Bellan (UNITO) - Feb 2014 ##
 ##################################
 
-import sys, os, commands, math, subprocess
+from __future__ import print_function
+import sys, os, math, subprocess
 from optparse import OptionParser
 from readSampleInfo import *
 from Colours import *
 from utils23 import lumi_dict
 
+if(sys.version_info.major >= 3):
+    popen_extra_args = {'encoding': 'utf-8'}
+else:
+    popen_extra_args = {}
 
 ############################################################################
 ############################## User's inputs ###############################
@@ -110,13 +115,13 @@ forcePosWeight = options.forcePosWeight
 #samples = list(set(typeofsample.strip(';,').split( (';' if ';' in typeofsample else ',') )))
 
 if doSF:
-    print "Option temporarily disabled!"
+    print("Option temporarily disabled!")
     sys.exit(1)
 maxNumEvents = options.maxNumEvents
 
 year         = options.year
 if year not in years:
-    print "Unknown year", year
+    print("Unknown year", year)
     sys.exit(1)
 
 luminosity   = options.luminosity
@@ -125,8 +130,8 @@ regions = list(set(regions.strip(';,').split( (';' if ';' in regions else ',') )
     
 for region in regions:  
     if region not in allowed_regions and not region == 'all':
-        print region, "is an unknown region. Run {0:s} -h for more details.".format(sys.argv[0])
-        print "Multiple regions must be separated by a ';'"
+        print(region, "is an unknown region. Run {0:s} -h for more details.".format(sys.argv[0]))
+        print("Multiple regions must be separated by a ';'")
         sys.exit(1)
 
 if len(regions) == 1:
@@ -151,8 +156,8 @@ else:
         regions = [ r for r in regions if not r.startswith(('SR2P_', 'CR2P_')) ]
         
 if(len(regions) != len(tmp)):
-    print "WARN: some regions have been dropped to avoid overlap:", [r for r in tmp if r not in regions]
-    print "Remaining regions:", regions
+    print("WARN: some regions have been dropped to avoid overlap:", [r for r in tmp if r not in regions])
+    print("Remaining regions:", regions)
 
 isData = False
 if typeofsample.startswith( ('DoubleMu', 'DoubleEle', 'EGamma', 'MuEG', 'Single', 'MuonEG', 'DoubleEG', str(year), 'test', 'data') ):  # giving a tuple of prefixes returns true if at least one matches
@@ -163,9 +168,9 @@ csvfile = options.csvfile
 
 ###########################################################################
 ###########################################################################
-print "\n\n"
-print "\t\t\t",White('*** UNITO Framework ***')
-print "\n\n"
+print("\n\n")
+print("\t\t\t",White('*** UNITO Framework ***'))
+print("\n\n")
 ###########################################################################
 ###########################################################################
 
@@ -178,21 +183,21 @@ print "\n\n"
 executable = "eventAnalyzer" 
 
 
-failure, output = commands.getstatusoutput('ls ./bin/ | grep -v .cpp | grep -v .xml | grep -v .md')
+output = subprocess.check_output('ls ./bin/ | grep -v .cpp | grep -v .xml | grep -v .md', shell=True, **popen_extra_args).rstrip('\n')
 availableExecutable = output.split()
 if executable in availableExecutable: 
     executable = 'bin/'+executable
 else:
-    print Important("ERROR! Unknown executable."),"Availble executables are:",availableExecutable
+    print(Important("ERROR! Unknown executable."),"Availble executables are:",availableExecutable)
     sys.exit(1)
 
 registry = './src/AnalysisFactory.cc'
 checkIfAnalysisIsRegistered = 'grep -r {0:s} {1:s} | grep create | wc -l'.format(analysis, registry)
-failure, output = commands.getstatusoutput(checkIfAnalysisIsRegistered)
+output = subprocess.check_output(checkIfAnalysisIsRegistered, shell=True, **popen_extra_args).rstrip('\n')
 if (not int(output) ==1):
-    print Important("ERROR! The analysis {0:s} is not registered in {1:2}.".format(analysis,registry))
+    print(Important("ERROR! The analysis {0:s} is not registered in {1:2}.".format(analysis,registry)))
     howToRegister = Yellow('Register("{0:s}", &{0:s}::create);'.format(analysis))
-    print "If you have not mispelled the name of your analysis, then please register it adding {0:s} in the constructor of {1:s} and recompile the code.".format(howToRegister, registry)
+    print("If you have not mispelled the name of your analysis, then please register it adding {0:s} in the constructor of {1:s} and recompile the code.".format(howToRegister, registry))
     sys.exit(1)
     
 
@@ -202,20 +207,20 @@ if (not int(output) ==1):
 ############################ Print the configuration #######################
 ############################################################################
 
-print Blue("----------------------------------------------------------------------")
-print Red("Configuration:")
-print "Executable: {0:s} and analysis: {1:s}".format(Blue(executable), Blue(analysis)) 
+print(Blue("----------------------------------------------------------------------"))
+print(Red("Configuration:"))
+print("Executable: {0:s} and analysis: {1:s}".format(Blue(executable), Blue(analysis)))
 if isData:
-    print "Running on", Blue("data")
+    print("Running on", Blue("data"))
 else:
-    print "Running on", Blue("MC")
-print "Sample/type of samples:", Blue(typeofsample)
-print "Get (again) cross sections from csv file: ", Blue(options.getExternalCrossSectionFromFile)
-print "Use internal cross section from sample: ", Blue(options.useInternalCrossSection), '[TODO]'
-print "Region type: ", Blue(regions)
-print "Use internal scale factor: ",Blue(doSF)
+    print("Running on", Blue("MC"))
+print("Sample/type of samples:", Blue(typeofsample))
+print("Get (again) cross sections from csv file: ", Blue(options.getExternalCrossSectionFromFile))
+print("Use internal cross section from sample: ", Blue(options.useInternalCrossSection), '[TODO]')
+print("Region type: ", Blue(regions))
+print("Use internal scale factor: ",Blue(doSF))
 
-print region
+print(region)
 
 ############################################################################
 
@@ -233,16 +238,16 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
     if isData is False:
         unblind = True
         
-    print "Year: ", Blue(year)
-    print "Integrated luminosity: ", Blue(luminosity)
+    print("Year: ", Blue(year))
+    print("Integrated luminosity: ", Blue(luminosity))
     if isData: 
         if unblind:
-            print "Running mode:", Evidence("unblinded!")
+            print("Running mode:", Evidence("unblinded!"))
         else:
-            print "Running mode:", Blue("blinded")
+            print("Running mode:", Blue("blinded"))
 
-    print Blue("----------------------------------------------------------------------")
-    print "\n"
+    print(Blue("----------------------------------------------------------------------"))
+    print("\n")
 
     
     inputdir = options.directory+'/'+str(year)
@@ -281,23 +286,22 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
         externalXsec = -1
         if not isData and options.getExternalCrossSectionFromFile:
             externalXsec = crossSection(period, csvfile)
-            print "For {0:s} {1:s} {2:.6f}".format(period, Warn("Using external cross section:"), externalXsec)
+            print("For {0:s} {1:s} {2:.6f}".format(period, Warn("Using external cross section:"), externalXsec))
         elif not isData and options.useInternalCrossSection:
             externalXsec = -10  # This is a hack: values < -2 are used to signal internal cross section
-            print "For {0:s} {1:s}".format(period, Warn("Using internal cross section"))
+            print("For {0:s} {1:s}".format(period, Warn("Using internal cross section")))
 
         if not os.path.exists('{0:s}/{1}.root'.format(inputdir,basefile)):
-            print Warn("The ROOT file for the sample {0:s} does not exist in {1:s}".format(basefile,inputdir))
+            print(Warn("The ROOT file for the sample {0:s} does not exist in {1:s}".format(basefile,inputdir)))
             return 
-        print Red('\n------------------------------ {0:s} -------------------------------\n'.format(basefile))
+        print(Red('\n------------------------------ {0:s} -------------------------------\n'.format(basefile)))
           
         # outputdir_format is something like "results/2016/VVXAnalyzer_%s". EventAnalyzer will use Form() to replace %s with the various regions to obtain the filenames
         keywords = locals()
         keywords.update({'regions':';'.join(regions)})
         command = "./{executable} {analysis} '{regions}' {inputdir}/{basefile}.root {outputdir_format}/{basefile}.root {year} {luminosity:.0f} {externalXsec:.5f} {maxNumEvents:d} {doSF:b} {unblind:b} {nofr:b} {forcePosWeight:b}".format(**keywords)
-        print "Command going to be executed (run::command):", Violet(command)
-        output = subprocess.check_call(command,shell=True)
-        print "\n", output
+        print("Command going to be executed (run::command):", Violet(command))
+        subprocess.check_call(command, shell=True)
 
         for r,outputdir in outputdirs.items():
             filepath = '{0:s}/{1:s}.root'.format(outputdir,basefile)
@@ -305,20 +309,20 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
                 hadd_cmds[r] += ' {0:s}'.format(filepath)
                 
 
-    print Red('----------------------------------------------------------------------\n')
+    print(Red('----------------------------------------------------------------------\n'))
     for region,outputdir in outputdirs.items():
         if len(datasets) > 1:
             if os.path.exists('{0:s}/{1:s}.root'.format(outputdir,typeofsample)):
                 os.popen('rm {0:s}/{1:s}.root'.format(outputdir,typeofsample))
-            print "Command going to be executed (run::hadd):", Violet(hadd_cmds[region])
-            output = subprocess.check_call(hadd_cmds[region],shell=True)
+            print("Command going to be executed (run::hadd):", Violet(hadd_cmds[region]))
+            subprocess.check_call(hadd_cmds[region], shell=True)
         elif len(datasets) == 1 and not datasets[0] == typeofsample:
             if os.path.exists('{0:s}/{1:s}.root {0:s}/{2:s}.root'.format(outputdir,datasets[0],typeofsample)):
-                print "One sample in the dataset, just copying it."
+                print("One sample in the dataset, just copying it.")
                 os.popen('cp {0:s}/{1:s}.root {0:s}/{2:s}.root'.format(outputdir,datasets[0],typeofsample))
 
     output = {reg:'{0:s}/{1:s}.root'.format(odir,typeofsample) for reg,odir in outputdirs.items()}
-    print "The output is in", Green([v for k,v in output.items()])
+    print("The output is in", Green([v for k,v in output.items()]))
     return output
 
 ###------------------------------------------------------------------------------------###
@@ -326,19 +330,19 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
 def mergeDataSamples(outputLocationsDict):
 
     if(len(outputLocationsDict) == 0):
-        print Red("Error") + ": outputLocations is empty!"
+        print(Red("Error") + ": outputLocations is empty!")
         exit(1)
         
     for region,outputLocations in outputLocationsDict.items():
-        failure, basename = commands.getstatusoutput('basename {0:s}'.format(outputLocations[0]))
+        basename = subprocess.check_output(['basename', outputLocations[0]], **popen_extra_args).rstrip('\n')
         outputdir = outputLocations[0].replace(basename,'').rstrip('/')
         hadd = 'hadd -k -v 0 {0:s}/data.root {1:s}'.format(outputdir, ' '.join(outputLocations))
         
         if os.path.exists('{0:s}/data.root'.format(outputdir)):
             os.popen('rm {0:s}/data.root'.format(outputdir))
             
-        print "Command going to be executed (mergeDataSamples::hadd):", Violet(hadd)
-        output = subprocess.check_call(hadd,shell=True)
+        print("Command going to be executed (mergeDataSamples::hadd):", Violet(hadd))
+        subprocess.check_call(hadd, shell=True, **popen_extra_args)
 
 ###------------------------------------------------------------------------------------###
         
@@ -368,8 +372,8 @@ def mergeCRs(analysis, year, inputLocs, antype):
     if os.path.exists('{0:s}'.format(outputRedBkg)):
         os.popen('rm {0:s}'.format(outputRedBkg))
         
-    print "Command going to be executed (runOverCRs::hadd):", Violet(hadd)
-    output = subprocess.check_call(hadd,shell=True)
+    print("Command going to be executed (runOverCRs::hadd):", Violet(hadd))
+    subprocess.check_call(hadd, shell=True)
     
     if isData:
         subprocess.check_call('ln -sf reducible_background.root {0:s}/data.root'.format(outdir),shell=True)
@@ -386,7 +390,7 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
                 if region == 'all':                
                     outputLocs = run(executable, analysis, sample, _all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight) # runs over all samples in all regions
                     if(outputLocs is None):
-                        print "No output produced"
+                        print("No output produced")
                         return 1
                     for r,loc in outputLocs.items():
                         outputLocations.setdefault(r, []).append(loc)
@@ -394,7 +398,7 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
                 else:
                     outputLocs = run(executable, analysis, sample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)      # runs over all samples in specific regions
                     if(outputLocs is None):
-                        print "No output produced"
+                        print("No output produced")
                         return 1
                     for r,loc in outputLocs.items():
                         outputLocations.setdefault(r, []).append(loc)
@@ -413,7 +417,7 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
         if region == 'all':
             outputLocs = run(executable, analysis, typeofsample, _all_regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)   # runs over a specific sample in all signal/control regions
             if(outputLocs is None):
-                print "No output produced"
+                print("No output produced")
                 return 1
             for r,loc in outputLocs.items():
                 outputLocations.setdefault(r, []).append(loc)
@@ -424,7 +428,7 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
         else:
             outputLocs = run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, doSF, unblind, nofr, forcePosWeight)        # runs over a specific sample in specific regions
             if(outputLocs is None):
-                print "No output produced"
+                print("No output produced")
                 return 1
             for r,loc in outputLocs.items():
                 outputLocations.setdefault(r, []).append(loc)
@@ -448,7 +452,7 @@ if year == 1618:
             else:
                 csvfile = "../Producers/python/samples_"+str(year)+"UL_MC.csv"
                 
-        print "CSV file: ", Blue(csvfile)
+        print("CSV file: ", Blue(csvfile))
 
         knownProcesses = typeOfSamples(csvfile)
         # knownProcesses.append('test')
@@ -462,7 +466,7 @@ elif year in years:
         else:
             csvfile = "../Producers/python/samples_"+str(year)+"UL_MC.csv"
         
-    print "CSV file: ", Blue(csvfile)
+    print("CSV file: ", Blue(csvfile))
 
     knownProcesses = typeOfSamples(csvfile)
     # knownProcesses.append('test')
@@ -470,7 +474,7 @@ elif year in years:
     runStatus = runOverSamples(executable, analysis, typeofsample, regions, year, luminosity, maxNumEvents, knownProcesses, doSF, unblind, nofr, forcePosWeight)
 
 else:
-    print "Unknown year", year
+    print("Unknown year", year)
     sys.exit(1)    
        
-print "\nJob status: ", OK("DONE") if runStatus == 0 else Red("FAILED"),"\n"
+print("\nJob status: ", OK("DONE") if runStatus == 0 else Red("FAILED"),"\n")
