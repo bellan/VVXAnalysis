@@ -16,6 +16,8 @@ output                  = log/$(ClusterId).$(ProcId).out
 error                   = log/$(ClusterId).$(ProcId).err
 log                     = log/$(ClusterId).$(ProcId).log
 Initialdir              = $(directory)
+environment             = "CMSSW_BASE={CMSSW_BASE}"
+MY.WantOS               = "el7"
 request_memory          = 4000M
 #Possible values: https://batchdocs.web.cern.ch/local/submit.html
 +JobFlavour             = "{jobFlavour}"
@@ -42,17 +44,14 @@ else
   SUBMIT_DIR=$1
 fi
 
-treeanalysis_dir=$CMSSW_BASE/src/VVXAnalysis/TreeAnalysis
-cd $treeanalysis_dir
-make
-
 cd $_CONDOR_SCRATCH_DIR
 
 # Create the sub-directories expected by run.py and symlink files known to be on AFS
+treeanalysis_dir={CMSSW_BASE}/src/VVXAnalysis/TreeAnalysis
 mkdir samples
 mkdir samples/{year}
-mkdir bin
-ln -s ${{treeanalysis_dir}}/bin/eventAnalyzer bin/
+# mkdir bin
+# ln -s ${{treeanalysis_dir}}/bin/eventAnalyzer bin/
 ln -s ${{treeanalysis_dir}}/libTreeAnalysis.so ./
 ln -s ${{treeanalysis_dir}}/../Producers/python/{csvname} ./
 
@@ -72,6 +71,7 @@ fi
 
 echo 'Running at:' $(date)
 echo path: $(pwd)
+echo os: $(uname -a)
 
 ${{treeanalysis_dir}}/python/run.py {runpy_args} 1>run.out 2>run.err
 runStatus=$?
@@ -101,13 +101,13 @@ exit $runStatus
 
 def get_condorsub_script( mainDir, jobFlavour='espresso' ):
     '''prepare the Condor submission script'''
-    return condorsub_template.format(home=os.path.expanduser("~"), uid=os.getuid(), mainDir=mainDir, jobFlavour=jobFlavour)
+    return condorsub_template.format(home=os.path.expanduser("~"), uid=os.getuid(), mainDir=mainDir, jobFlavour=jobFlavour, **os.environ)
 
 
 def get_batch_script(sample, year, **kwargs):
     isData = sample.startswith( ('DoubleMu', 'DoubleEle', 'EGamma', 'MuEG', 'Single', 'MuonEG', 'DoubleEG', year, 'data') ) # copy-pasted from run.py
     csvname = 'samples_{year}UL_{dataMC}.csv'.format(year=year, dataMC=('Data' if isData else 'MC'))
-    return script_template.format(sample=sample, year=year, csvname=csvname, **kwargs, EOS_MGM_URL=os.environ.get('EOS_MGM_URL', 'root://eosuser.cern.ch'))
+    return script_template.format(sample=sample, year=year, csvname=csvname, **kwargs, EOS_MGM_URL=os.environ.get('EOS_MGM_URL', 'root://eosuser.cern.ch'), CMSSW_BASE=os.environ['CMSSW_BASE'])
 
 
 def parse_args():
@@ -117,7 +117,7 @@ def parse_args():
     parser.add_argument('-A', '--analyzer'  , default='VVXAnalyzer')
     parser.add_argument('-y', '--year'      , default='2018')
     parser.add_argument('-d', '--sample-dir', default='samples')
-    parser.add_argument('-j', '--flavour'   , choices=['espresso', 'microcentury', 'longlunch', 'workday', 'tomorrow', 'testmatch', 'nextweek'], default='longlunch') # TODO estimate runtime based on sample size
+    parser.add_argument('-j', '--flavour'   , choices=['espresso', 'microcentury', 'longlunch', 'workday', 'tomorrow', 'testmatch', 'nextweek'], default='espresso') # TODO estimate runtime based on sample size
     parser.add_argument(      '--force'     , action='store_true', help='Delete any existing job folders')
     parser.add_argument('-o', '--output-dir', default='production', help='Base directory for the jobs')  # maybe use $(git rev-parse --short HEAD)
     parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
@@ -127,12 +127,13 @@ def parse_args():
 
 
 def main():
+    print('TODO: use universe=el-7 in condor.sub')
     args, unknown_args = parse_args()
     loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
     logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
 
     logging.info('args: %s', args)
-    logging.info('unknown (will be passed to run.py: %s', unknown_args)
+    logging.info('unknown options (will be passed to run.py): %s', unknown_args)
 
     jobDirectory = args.output_dir
     try:
@@ -155,7 +156,7 @@ def main():
     created_jobs = 0
     for sample in ('ZZGTo4LG',):  #samples
         #Create job dir
-        sample_dir = os.path.join(jobDirectory, sample)
+        sample_dir = os.path.join(jobDirectory, 'Chunk_'+sample)  # "Chunk" is used so that production management scripts will also work here
         os.mkdir( sample_dir )
 
         # Create script and make it executable
