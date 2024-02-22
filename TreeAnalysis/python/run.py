@@ -177,7 +177,7 @@ print "\n\n"
 
 executable = "eventAnalyzer" 
 
-vvx_dir = get_VVXAnalysis(default='..')
+vvx_dir = get_VVXAnalysis()
 treeanalysis_dir = os.path.join(vvx_dir, 'TreeAnalysis')
 treeanalysis_bin_dir = os.path.join(treeanalysis_dir, 'bin')
 
