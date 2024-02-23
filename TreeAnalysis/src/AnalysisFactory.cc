@@ -15,10 +15,8 @@
 #include "VVXAnalysis/TreeAnalysis/interface/ZVAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/FakeRateAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/WZZAnalyzer.h"
-#include "VVXAnalysis/TreeAnalysis/interface/VZZAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/VZZaQGCAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/VVXnocutsAnalyzer.h"
-#include "VVXAnalysis/TreeAnalysis/interface/DBGenerator.h"
 #include "VVXAnalysis/TreeAnalysis/interface/ZZjjAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/VVGammaAnalyzer.h"
 #include "VVXAnalysis/TreeAnalysis/interface/VZGammaAnalyzer.h"
@@ -41,10 +39,8 @@ AnalysisFactory::AnalysisFactory(){
   Register("FakeRateAnalyzer" , &RegistrableAnalysis<FakeRateAnalyzer>::create  );
   Register("ZVAnalyzer"       , &RegistrableAnalysis<ZVAnalyzer>::create        );
   Register("WWosAnalyzer"     , &RegistrableAnalysis<WWosAnalyzer>::create      );
-  Register("VZZAnalyzer"      , &RegistrableAnalysis<VZZAnalyzer>::create       );
   Register("VZZaQGCAnalyzer"  , &RegistrableAnalysis<VZZaQGCAnalyzer>::create   );
   Register("VVXnocutsAnalyzer", &RegistrableAnalysis<VVXnocutsAnalyzer>::create );
-  Register("DBGenerator"      , &RegistrableAnalysis<DBGenerator>::create       );
   Register("ZZjjAnalyzer"     , &RegistrableAnalysis<ZZjjAnalyzer>::create      );
   Register("VVGammaAnalyzer"  , &RegistrableAnalysis<VVGammaAnalyzer>::create      );
   Register("VZGammaAnalyzer"  , &RegistrableAnalysis<VZGammaAnalyzer>::create      );
