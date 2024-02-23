@@ -37,6 +37,6 @@ if __name__ == '__main__':
         analyzer = 'VVGamma'
         region   = 'SR4P'
     
-    print "TEST: analyzer =", analyzer, ", region =", region
+    print("TEST: analyzer =", analyzer, ", region =", region)
     VarInfo = getVariablesInfo(analyzer, region)
-    print dumps(VarInfo, indent=2)
+    print(dumps(VarInfo, indent=2))
