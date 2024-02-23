@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python
 
 ######################################################################################################################################################
 # Data/MC comparison with nice style                                                                                                                 #
@@ -9,6 +9,7 @@
 # Authors: A. Mecca, G. L. Pinna Angioni (?)                                                                                                         #
 ######################################################################################################################################################
 
+from __future__ import print_function
 import sys
 import os
 import math
@@ -206,17 +207,17 @@ if Type == 'all':
 else:
     variables = [ var for var in VarInfo.keys() if re.search(Type, var) ]  # Allow for regexp to be specified from command line
     if len(variables) == 0:
-        print 'WARN: no variables matching regex "{}" for {} in {}'.format(Type, Analysis, region)
+        print('WARN: no variables matching regex "{}" for {} in {}'.format(Type, Analysis, region))
         exit(0)
 
 if options.Skip is not None:
     variables = [ var for var in variables if not re.search(options.Skip, var) ]
     if len(variables) == 0:
-        print 'WARN: using regex "{}" all variables are skipped'
+        print('WARN: using regex "{}" all variables are skipped')
         exit(0)
 
 if(options.verbosity >= 2):
-    print 'INFO: variables =', variables
+    print('INFO: variables =', variables)
 variables.sort()
 
 c1 = TCanvas( 'c1', mcSet , 900, 1200 )
@@ -244,7 +245,7 @@ for Var in variables:
                 raise e
 
     if(not hMC.GetStack()):
-        print Evidence('ERROR'), 'skipping', Var, 'because: no MC'
+        print(Evidence('ERROR'), 'skipping', Var, 'because: no MC')
         continue
 
     if(DoData):
@@ -260,7 +261,7 @@ for Var in variables:
                 raise e
 
         if(not (graphData and histodata)):
-            print Evidence('ERROR'), 'skipping', Var, 'because: no data'
+            print(Evidence('ERROR'), 'skipping', Var, 'because: no data')
             continue
         for i in range(graphData.GetN()):
             graphData.SetPointEXhigh(i,0.)
@@ -273,10 +274,10 @@ for Var in variables:
     has_underflow = underflow_fraction > 0.1 # Underflow is > 10% of total
     if(has_overflow ):
         if(options.verbosity >= 1):
-            print Warn('WARN'), 'overflow (%.1f %%)'  %(100*overflow_fraction )
+            print(Warn('WARN'), 'overflow (%.1f %%)'  %(100*overflow_fraction ))
     if(has_underflow):
         if(options.verbosity >= 1):
-            print Warn('WARN'), 'underflow (%.1f %%)' %(100*underflow_fraction)
+            print(Warn('WARN'), 'underflow (%.1f %%)' %(100*underflow_fraction))
 
     hMCErr = deepcopy(hMC.GetStack().Last())
     

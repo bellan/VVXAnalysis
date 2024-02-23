@@ -1,12 +1,12 @@
 #! /usr/bin/env python
 
+from __future__ import print_function
 import ROOT, copy, sys, os
 from copy import deepcopy
 from errno import EEXIST
 import math
-from readSampleInfo import *
 from collections import OrderedDict
-from Colours import *
+import Colours
 import ctypes
 from plotUtils23 import TFileContext, addIfExisting, PlotNotFoundError, InputDir, InputFile
 import samplesByRegion # getSamplesByRegion, data_obs, ZZG, WZG, ...
@@ -141,7 +141,7 @@ def getPlotFromSample(inputdir, sample, plot, verbosity, forcePositive, note=Non
             fname_year = fname if not multiyear else fname+' '+year
             if(not os.path.exists(rootfilename)):
                 if(verbosity >= 2):
-                    print _nameFormat.format(fname_year), "No file" + ("" if(verbosity < 3) else " (%s)"%(rootfilename))
+                    print(_nameFormat.format(fname_year), "No file" + ("" if(verbosity < 3) else " (%s)"%(rootfilename)))
                 continue
 
             with TFileContext(rootfilename) as fhandle:
@@ -149,7 +149,7 @@ def getPlotFromSample(inputdir, sample, plot, verbosity, forcePositive, note=Non
 
                 if(not h_current):
                     if(verbosity >= 2):
-                        print _nameFormat.format(fname_year), "No histo" + ("" if(verbosity < 3) else " (%s)"%(plot)) + " in file" + ("" if(verbosity < 4) else " (%s)"%(rootfilename))
+                        print(_nameFormat.format(fname_year), "No histo" + ("" if(verbosity < 3) else " (%s)"%(plot)) + " in file" + ("" if(verbosity < 4) else " (%s)"%(rootfilename)))
                     continue
 
                 if isReversed:
@@ -165,7 +165,7 @@ def getPlotFromSample(inputdir, sample, plot, verbosity, forcePositive, note=Non
         if(verbosity >= 2 and h is not None):
             if(note is not None): fname_print = fname + ' ' + note
             else:                 fname_print = fname
-            print (_nameFormat+" {: 10.2f} +- {: 10.2f}").format(fname_print, integralFile, errorFile)
+            print((_nameFormat+" {: 10.2f} +- {: 10.2f}").format(fname_print, integralFile, errorFile))
         totalIntegral += integralFile
         totalError    += errorFile
 
@@ -190,17 +190,17 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
     elif region == 'CR110': controlRegions = ['CR000', 'CR010', 'CR100']
     else:
         if(predType in ['fromCR', 'fakeMC']):
-            print 'WARN: no rule for fake-lepton bkg for region "{}"'.format(region)  # "You should know what you are doing"
+            print('WARN: no rule for fake-lepton bkg for region "{}"'.format(region))
 
     useFakeLeptonsFromData = predType in ('fromCR', 'lepCR', 'fullCR')
     useFakePhotonsFromData = predType in ('fullCR', 'phoCR') and plotInfo.get('fake_photons') is not None
     
     if(verbosity == 1):
-        print Red("\n############## "+    plot     +" ##############")
+        print(Colours.Red("\n############## "+    plot     +" ##############"))
     elif(verbosity >= 2):
-        print Red("\n###############"+'#'*len(plot)+"###############"
+        print(Colours.Red("\n###############"+'#'*len(plot)+"###############"
                   "\n############## "+    plot     +" ##############"
-                  "\n###############"+'#'*len(plot)+"###############")
+                  "\n###############"+'#'*len(plot)+"###############"))
 
     leg = ROOT.TLegend(0.5,0.52,0.79,0.87)
     leg.SetBorderSize(0)
@@ -214,7 +214,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
 
     if useFakeLeptonsFromData:
         if(verbosity >= 1):
-            print Green("\nNon-prompt leptons background")
+            print(Colours.Green("\nNon-prompt leptons background"))
         hfakes = []
         for CR in controlRegions:
             newdir = copy.deepcopy(inputdir)
@@ -230,7 +230,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
 
     elif predType == 'fakeMC':  # Hack: use MCs in CRs as if they were data
         if(verbosity >= 1):
-            print Green('\nNon-prompt leptons from MC in control regions')
+            print(Colours.Green('\nNon-prompt leptons from MC in control regions'))
         hfake = None
         newdir = copy.deepcopy(inputdir)
         for controlRegion in controlRegions:
@@ -253,7 +253,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
 
     if useFakePhotonsFromData:
         if(verbosity >= 1):
-            print Green("\nNon-prompt photons background")
+            print(Colours.Green("\nNon-prompt photons background"))
         fakeName = plotInfo['fake_photons']
         hfakePho, (integral, _) = getPlotFromSample(inputdir, samplesByRegion.data_obs, fakeName, verbosity, forcePositive)
         if(not hfakePho):
@@ -266,7 +266,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
     totalMC = 0
     
     if(verbosity >= 1):
-        print Red("\n######### Contribution to {0:s}  #########\n".format(region))
+        print(Colours.Red("\n######### Contribution to {0:s}  #########\n".format(region)))
     
     for sample in samples:
         h = None
@@ -327,8 +327,8 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
             stack.Add(h)
     
     if(verbosity >= 1):
-        print "\n Total MC .......................... {0:.2f}".format(totalMC)
-        print "____________________________________ "       
+        print("\n Total MC .......................... {0:.2f}".format(totalMC))
+        print("____________________________________ ")
     return stack, leg
 
 
@@ -337,11 +337,11 @@ def GetClosureStack(region, inputDir, plotInfo, forcePositive=False, verbosity=1
     plot  = plotInfo['name']
 
     if  (verbosity >= 1):
-        print Red("\n############## "+    plot     +" ##############")
+        print(Colours.Red("\n############## "+    plot     +" ##############"))
     elif(verbosity >= 2):
-        print Red("\n###############"+'#'*len(plot)+"###############"
+        print(Colours.Red("\n###############"+'#'*len(plot)+"###############"
                   "\n############## "+    plot     +" ##############"
-                  "\n###############"+'#'*len(plot)+"###############")
+                  "\n###############"+'#'*len(plot)+"###############"))
     leg = ROOT.TLegend(0.6,0.52,0.79,0.87)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.025)
@@ -372,9 +372,9 @@ def GetClosureStack(region, inputDir, plotInfo, forcePositive=False, verbosity=1
         hFakeData.SetDirectory(0)  # Prevent ROOT from deleting stuff under my nose
         if(isReversed): hFakeData.Scale(-1)
     if  (verbosity >= 2):
-        print Red("\n######### Nonprompt photon background for {0:s}  #########\n".format(region))
+        print(Colours.Red("\n######### Nonprompt photon background for {0:s}  #########\n".format(region)))
         integral = hFakeData.IntegralAndError(0,-1,ErrStat)  # Get overflow events too
-        print "{0:16.16} {1:.3f} +- {2: .3f}".format('data', integral, ErrStat.value)
+        print("{0:16.16} {1:.3f} +- {2: .3f}".format('data', integral, ErrStat.value))
 
     for sample_prompt in samples_prompt:
         with TFileContext(os.path.join(inputDir, sample_prompt['files'][0]+'.root'), 'READ') as tf:
@@ -388,7 +388,7 @@ def GetClosureStack(region, inputDir, plotInfo, forcePositive=False, verbosity=1
                 pass
         if  (verbosity >= 2):
             integral = hFakePrompt.IntegralAndError(0,-1,ErrStat)  # Get overflow events too
-            print "{0:16.16} {1:.3f} +- {2: .3f}".format(sample_prompt['files'][0], integral, ErrStat.value)
+            print("{0:16.16} {1:.3f} +- {2: .3f}".format(sample_prompt['files'][0], integral, ErrStat.value))
 
         hFakeData.Add(hFakePrompt, -1)  # subtract prompt contribution from "fail" region; it is already weighted by the FR
         sample_prompt.update({'hist': hPrompt})
@@ -396,20 +396,20 @@ def GetClosureStack(region, inputDir, plotInfo, forcePositive=False, verbosity=1
     samples = samples_prompt + [{'name':'fake-photons', 'color':ROOT.kGray, 'title':'nonprompt #gamma', 'hist':hFakeData}]
 
     if  (verbosity >= 1):
-        print Red("\n######### Contribution to {0:s}  #########\n".format(region))
+        print(Colours.Red("\n######### Contribution to {0:s}  #########\n".format(region)))
 
     for sample in samples:
         h = sample['hist']
         if not h:
             if  (verbosity >= 2):
-                print "{0:16.16s}".format(sample['name']), "No entries or is a zombie"
+                print("{0:16.16s}".format(sample['name']), "No entries or is a zombie")
             continue
         
         #h.Scale(sample.get("kfactor", 1.))
 
         integral = h.IntegralAndError(0,-1,ErrStat)  # Get overflow events too
         if  (verbosity >= 2):
-            print "{0:16.16} {1:.3f} +- {2: .3f}".format(sample['name'], integral, ErrStat.value)
+            print("{0:16.16} {1:.3f} +- {2: .3f}".format(sample['name'], integral, ErrStat.value))
         totalMC += integral
 
         h.Rebin(plotInfo.get('rebin', 1))
@@ -421,11 +421,9 @@ def GetClosureStack(region, inputDir, plotInfo, forcePositive=False, verbosity=1
         stack.Add(h)
         leg.AddEntry(h, sample['title'], "f")
 
-    # print '>>> legend', [(p.GetLabel(), p.GetObject().GetEntries()) for p in leg.GetListOfPrimitives()]
-    # print '>>> stack ', [(p.GetName(), p.GetTitle(), p.GetEntries()) for p in stack.GetHists()]
     if  (verbosity >= 1):
-        print "\n Total background .......................... {0:.2f}".format(totalMC)
-        print "____________________________________ "       
+        print("\n Total background .......................... {0:.2f}".format(totalMC))
+        print("____________________________________ ")
     return stack, leg
 
 
@@ -435,7 +433,7 @@ def GetDataPlot(inputdir, plotInfo, forcePositive=False, verbosity=1):
     plot = plotInfo['name']
 
     if  (verbosity >= 1):
-        print Red("\n###################    DATA    ###################\n")
+        print(Colours.Red("\n###################    DATA    ###################\n"))
     sample = samplesByRegion.data_obs
     hdata = None
     
@@ -450,11 +448,11 @@ def GetDataPlot(inputdir, plotInfo, forcePositive=False, verbosity=1):
         
         if not h:
             if  (verbosity >= 1):
-                print fname, 'has no entries or is a zombie'
+                print(fname, 'has no entries or is a zombie')
             continue
         
         if  (verbosity >= 1):
-            print fname, "in", inputdir.region, "..........................",h.Integral(0,-1)
+            print(fname, "in", inputdir.region, "..........................",h.Integral(0,-1))
         if hdata is None:
             hdata = copy.deepcopy(h)
         else:
@@ -470,8 +468,8 @@ def GetDataPlot(inputdir, plotInfo, forcePositive=False, verbosity=1):
     hdata.Rebin(plotInfo.get('rebin', 1))
 
     if  (verbosity >= 1):
-        print "Total data in {0:s} region .......................... {1:.2f}".format(inputdir.region, hdata.Integral(0,-1))
-        print "_________________________ "   
+        print("Total data in {0:s} region .......................... {1:.2f}".format(inputdir.region, hdata.Integral(0,-1)))
+        print("_________________________ ")
     DataGraph=SetError(hdata, inputdir.region, False)
     DataGraph.SetMarkerStyle(20)
     DataGraph.SetMarkerSize(.9)
@@ -480,9 +478,9 @@ def GetDataPlot(inputdir, plotInfo, forcePositive=False, verbosity=1):
 ###############################################################
 
 def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
-    print Red("\n#########################################\n############## Monte Carlo ##############\n#########################################\n")
+    print(Colours.Red("\n#########################################\n############## Monte Carlo ##############\n#########################################\n"))
    
-    print Red("\n######### Contribution to Signal #########\n")    
+    print(Colours.Red("\n######### Contribution to Signal #########\n"))
     leg = ROOT.TLegend(0.51,0.56,0.85,0.81)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.025)
@@ -508,11 +506,11 @@ def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
     hsum = [{"state":hsum2e2mu,"color":ROOT.kAzure-4,"name":'2e2m'},{"state":hsum4e,"color":ROOT.kAzure-5,"name":'4e'},{"state":hsum4mu,"color":ROOT.kAzure-6,"name":'4m'},{"state":hsum4l,"color":ROOT.kAzure-6,"name":'4l'}]
 
     for h in hsum:
-        print Blue("### "+h["name"]+" ###")
+        print(Colours.Blue("### "+h["name"]+" ###"))
         NoSamples = "For "+h["name"]+" there are no events in "
         isFirst=1
         ErrStat=ctypes.c_double(0.)
-        print "ZZTo"+h["name"]+Var
+        print("ZZTo"+h["name"]+Var)
         for s in typeofsamples:
             hsamp = files[s["sample"]].Get("ZZTo"+h["name"]+Var)  
             if hsamp==None:
@@ -521,21 +519,21 @@ def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
             if isFirst:
                 h["state"]=copy.deepcopy(hsamp)            
                 isFirst=0
-                print "{0} {1} {2:.3f} +- {3: .3f}".format(s["sample"],(40-len(s["sample"]))*" ",hsamp.IntegralAndError(1,-1,ErrStat),ErrStat.value)
+                print("{0} {1} {2:.3f} +- {3: .3f}".format(s["sample"],(40-len(s["sample"]))*" ",hsamp.IntegralAndError(1,-1,ErrStat),ErrStat.value))
                 continue 
 
-            print "{0} {1} {2:.3f} +- {3: .3f}".format(s["sample"],(40-len(s["sample"]))*" ",hsamp.IntegralAndError(1,-1,ErrStat),ErrStat.value)
+            print("{0} {1} {2:.3f} +- {3: .3f}".format(s["sample"],(40-len(s["sample"]))*" ",hsamp.IntegralAndError(1,-1,ErrStat),ErrStat.value))
             h["state"].Add(hsamp)        
-        print "\n",NoSamples,"\n\n" 
+        print("\n",NoSamples,"\n\n")
         
-    print Blue("### Signal ###")  
+    print(Colours.Blue("### Signal ###"))
     for h in hsum:
-        print ("Total contribution "+h["name"]+" {0} {1:.3f} +- {2: .3f} \n").format((32-len(h["name"]))*" ",h["state"].IntegralAndError(1,-1,ErrStat),ErrStat.value)
+        print(("Total contribution "+h["name"]+" {0} {1:.3f} +- {2: .3f} \n").format((32-len(h["name"]))*" ",h["state"].IntegralAndError(1,-1,ErrStat),ErrStat.value))
 
     stack = ROOT.THStack("stack",plot+"_stack")   
 
 
-    print Red("\n######### Contribution to Irreducible Background#########\n")    
+    print(Colours.Red("\n######### Contribution to Irreducible Background#########\n"))
     bsum2e2mu = ROOT.TH1F()
     bsum4e    = ROOT.TH1F()
     bsum4mu   = ROOT.TH1F()
@@ -544,28 +542,28 @@ def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
     bsum = [{"state":bsum2e2mu,"color":ROOT.kAzure-4,"name":'2e2m'},{"state":bsum4e,"color":ROOT.kAzure-5,"name":'4e'},{"state":bsum4mu,"color":ROOT.kAzure-6,"name":'4m'},{"state":bsum4l,"color":ROOT.kAzure-6,"name":'4l'}]
     
     for hbkg in bsum:
-        print Blue("### "+hbkg["name"]+" ###")
+        print(Colours.Blue("### "+hbkg["name"]+" ###"))
         NoSamples = "For "+hbkg["name"]+" there are no events in "
         isFirst=1
         for b in bkgsamples:
             hb = filesbkg[b["sample"]].Get("ZZTo"+hbkg["name"]+Var)  
             if hb==None:
-                print "For sample ", b["sample"], "has no entries or is a zombie"       
+                print("For sample ", b["sample"], "has no entries or is a zombie")
                 NoSamples+=b["sample"]+" "
                 continue
             if isFirst:
                 hbkg["state"]=copy.deepcopy(hb)            
-                print "{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat)
+                print("{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat))
                 isFirst=0
                 continue 
             
             ErrStat=ctypes.c_double(0.)
-            print "{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat.value)
+            print("{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat.value))
             hbkg["state"].Add(hb)        
-            print NoSamples,"\n\n" 
+            print(NoSamples,"\n\n")
             
             for hbkg in bsum:
-                print ("Total contribution "+hbkg["name"]+" {0} {1:.3f} +- {2: .3f} \n").format((32-len(hbkg["name"]))*" ",hbkg["state"].IntegralAndError(1,-1,ErrStat),ErrStat.value)
+                print(("Total contribution "+hbkg["name"]+" {0} {1:.3f} +- {2: .3f} \n").format((32-len(hbkg["name"]))*" ",hbkg["state"].IntegralAndError(1,-1,ErrStat),ErrStat.value))
                 
                 if rebin != 1:  hbkg["state"].Rebin(rebin)
         
@@ -576,22 +574,22 @@ def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
     bsum[3]["state"].SetFillColor(b["color"])           
   
     if Addfake:
-        print Red("\n######### Contribution to Reducible Background#########\n")    
+        print(Colours.Red("\n######### Contribution to Reducible Background#########\n"))
         for i in ["2e2m","4e","4m","4l"]:
-            print Blue("### "+i+" ###")
+            print(Colours.Blue("### "+i+" ###"))
             hfake = GetFakeRate(inputdir.replace("SR4P/",""), {'name':"ZZTo"+i+Var, 'rebin':rebin}, "data")
             if i=="4l":
                 stack.Add(hfake)
                 leg.AddEntry(hfake,"Reducible background","f")
     
 
-    print Red("\n######### Signal samples for every final state #########\n")
+    print(Colours.Red("\n######### Signal samples for every final state #########\n"))
 
     LastColor = ROOT.kBlack
     for i in hsum:
         if i["name"]=="4l": continue
         if i["state"]==None:
-            print i["state"]," has no entries" 
+            print(i["state"]," has no entries")
             continue
   
         i["state"].SetLineColor(i["color"])
@@ -642,11 +640,11 @@ def GetFakeRate(inputdir, plotInfo, method, MCSet='mad', verbosity=1):
         Err2    = ctypes.c_double(0.)
         Integr2 = hFakeRate.IntegralAndError(0,-1,Err2)
         if(Integr2 * integral < 0):
-            print "WARN: data-driven background changed sign after prompt MC subtraction!"
-            print "      samples used:", [sample["name"] for sample in samples]
-        print "data-promptMC ({:6.6s})\t {:.3f} +- {: .3f}".format(region, Integr2 , Err2.value)
+            print("WARN: data-driven background changed sign after prompt MC subtraction!")
+            print("      samples used:", [sample["name"] for sample in samples])
+        print("data-promptMC ({:6.6s})\t {:.3f} +- {: .3f}".format(region, Integr2 , Err2.value))
     else:
-        print "data ({:6.6s}) \t {:.3f} +- {: .3f}".format(region, integral, error)
+        print("data ({:6.6s}) \t {:.3f} +- {: .3f}".format(region, integral, error))
     return hFakeRate
 
 ########################################################
@@ -671,7 +669,7 @@ def GetSignalDefPlot(inputdir,category):
     for s in typeofsamples:
         hs = files[s["sample"]].Get("PassDef")
         if hs==None:
-            print "For sample ", s["sample"],"PassDef has no entries"
+            print("For sample ", s["sample"],"PassDef has no entries")
             continue
         if isFirst:
             hSig = copy.deepcopy(hs)
@@ -679,13 +677,13 @@ def GetSignalDefPlot(inputdir,category):
             continue
         
         hSig.Add(hs)
-    print "Total events passing signal defition ", hSig.Integral()
+    print("Total events passing signal defition ", hSig.Integral())
 
     isFirst =1
     for s in typeofsamples:
         hn = files[s["sample"]].Get("NoPassDef")
         if hn==None:
-            print "For sample ", s["sample"],"NoPassDef has no entries"
+            print("For sample ", s["sample"],"NoPassDef has no entries")
             continue
         if isFirst:
             hNoSig = copy.deepcopy(hn)
@@ -693,7 +691,7 @@ def GetSignalDefPlot(inputdir,category):
             continue
         
         hNoSig.Add(hn)
-    print "Total events not passing signal defition ", hNoSig.Integral()
+    print("Total events not passing signal defition ", hNoSig.Integral())
        
     hSig.SetFillColor(ROOT.kAzure-4)
     hSig.SetLineColor(ROOT.kAzure-4)
