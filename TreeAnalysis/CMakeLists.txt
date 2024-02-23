@@ -12,10 +12,6 @@ list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 #---Locate the ROOT package and defines a number of variables (e.g. ROOT_INCLUDE_DIRS)
 find_package(ROOT REQUIRED COMPONENTS MathCore RIO Hist Tree Net)
 
-#---locate Python lib (used to embed python scripts in C)
-find_package(PythonLibs REQUIRED)
-include_directories(${PYTHON_INCLUDE_DIRS})
-
 #---Define useful ROOT functions and macros (e.g. ROOT_GENERATE_DICTIONARY)
 include(${ROOT_USE_FILE})
 
@@ -52,6 +48,8 @@ set(EventAnalyzer_SRCS ${EventDF_DICTIONARY} ${SRC}/SampleInfo.cc ${SRC}/EventAn
 
 set(Analyzers_SRCS)
 file(GLOB Analyzers_SRCS ${SRC}/*.cc)
+list(REMOVE_ITEM Analyzers_SRCS ${SRC}/VZZAnalyzer.cc)
+list(REMOVE_ITEM Analyzers_SRCS ${SRC}/DBGenerator.cc)
 set(VVXAnalyzer_SRCS ${EventAnalyzer_SRCS} ${Analyzers_SRCS})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN})
