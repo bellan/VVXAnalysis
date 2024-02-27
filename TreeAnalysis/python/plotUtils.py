@@ -29,10 +29,9 @@ def getPlot_impl(filename, var):
             print('WARN: plot "{}" not present in file "{}"'.format(var, filename))
     return retrieved
 
-def getPlot(plot, sample, region, inputdir='results', year='2016', analyzer='VVGammaAnalyzer'):
-    theInputDir  = InputDir(inputdir, year=year, region=region, analyzer=analyzer)
-    theInputFile = InputFile(theInputDir, '{:s}.root'.format(sample))
-    if year == 'Run2':
+def getPlot_inputdir(plot, sample, inputdir):
+    theInputFile = InputFile(inputdir, '{:s}.root'.format(sample))
+    if inputdir.year == 'Run2':
         plots = []
         for y in ['2016preVFP', '2016postVFP', '2017', '2018']:
             filename = theInputFile.path(year=y)
@@ -42,6 +41,10 @@ def getPlot(plot, sample, region, inputdir='results', year='2016', analyzer='VVG
     else:
         filename = theInputFile.path()
         return getPlot_impl(filename, plot)
+
+def getPlot(plot, sample, region, inputdir='results', year='2016', analyzer='VVGammaAnalyzer'):
+    theInputDir  = InputDir(inputdir, year=year, region=region, analyzer=analyzer)
+    getPlot_inputdir(plot, sample, theInputDir)
 
 # Emulate os.makekdirs(..., exists_ok=True) for python2
 def makedirs_ok(*args):
