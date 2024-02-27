@@ -13,6 +13,7 @@ if sys.version_info.major <= 2:
     from collections import Mapping
 else:
     from collections.abc import Mapping
+from argparse import ArgumentParser
 
 # Contains luminosity [pb^-1], error (as a lnN width suitable for Combine datacards)
 lumi_dict = {
@@ -93,6 +94,27 @@ def _test_byteify():
     source = {u'a': [1,2,3], 'b': {u'b1': 2, u'b2': u'2'}, u'c': {u'c1': {u'c11': u'12', u'c12': [u'1', u'2']}}}
     target = { 'a': [1,2,3], 'b': { 'b1': 2,  'b2':  '2'},  'c': { 'c1': { 'c11':  '12',  'c12': [ '1',  '2']}}}
     assert byteify(source) == target, 'byteify failed to convert a dictionary as expected'
+
+
+def common_parser(**kwargs):
+    parser = ArgumentParser(**kwargs)
+    parser.add_argument('-y', '--year'    , default='2018'       , choices=list(lumi_dict.keys()), help='Default: %(default)s')
+    parser.add_argument('-i', '--inputdir', default='results'    , help='Base directory containing analyzer results (default: %(default)s)')
+    parser.add_argument('-r', '--region'  , default='SR4P'       , help='Default: %(default)s')
+    parser.add_argument('-A', '--analyzer', default='VVXAnalyzer', help='Name of the analyzer, used to compose the path of the input files (default: %(default)s)')
+    parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
+    return parser
+
+
+def config_logging(loglevel):
+    import logging
+    if(isinstance(loglevel, int)):
+       level = loglevel
+    elif(loglevel.isdigit()):
+       level = int(loglevel)
+    else:
+       level = loglevel.upper()
+    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=level)
 
 
 def main():
