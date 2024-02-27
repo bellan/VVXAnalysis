@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 ######################################################################################################################################################
 # Produce tables with info about the number of events in histograms                                                                                  #
@@ -13,14 +13,17 @@ from copy import deepcopy
 from math import log10, floor
 import pandas as pd
 import ROOT
-from plotUtils import TFileContext, getSamplesByRegion, getPlot
+from plotUtils import TFileContext, getPlot_inputdir
+from plotUtils23 import InputDir
+from samplesByRegion import getSamplesByRegion
+from utils23 import common_parser, config_logging
+import logging
 
-
-def getPlots_added(var, samples, region, inputdir='results', year='2016', analyzer='VVGammaAnalyzer'):
+def getPlots_added(var, samples, inputdir):
     # Do getPlot() on multiple files and Add() the results
     result = None
     for sample in samples:
-        h = getPlot(var, sample, region, inputdir, year, analyzer)
+        h = getPlot_inputdir(var, sample, inputdir)
         if(h is not None):
             if(result is None):
                 result = h
@@ -37,32 +40,32 @@ def _my_formatter(df, column):
     return string.format
 
 
-def table1Plot(var, region, efficiencyType='cutflow'):
-    samplesFullMC = getSamplesByRegion(region, 'pow', 'fullMC')
-    samplesFromCR = getSamplesByRegion(region, 'pow', 'fromCR')
+def table1Plot(var, inputdir, efficiencyType='cutflow'):
+    samplesFullMC = getSamplesByRegion(inputdir.region, 'pow', 'fullMC')
+    samplesFromCR = getSamplesByRegion(inputdir.region, 'pow', 'fromCR')
     backgrsFullMC = [ b for b in samplesFullMC if set(b['files']).isdisjoint(set(['WZGTo3LNuG', 'ZZGTo4LG', 'WWW'])) ]
     backgrsFromCR = [ b for b in samplesFromCR if set(b['files']).isdisjoint(set(['WZGTo3LNuG', 'ZZGTo4LG', 'WWW'])) ]
     
-    hData   = getPlot(var, 'data', region)
+    hData   = getPlot_inputdir(var, 'data', inputdir)
     if region in ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L']:
         signal_sample = 'ZZGTo4LG'
     elif region in ['SR3P', 'CR110'  , 'CR101'  , 'CR011'  , 'CR100'  , 'CR001'  , 'CR010', 'CR000', 'SR3P_1L', 'SR3P_1P', 'CR3P_1F', 'CRLFR', 'CR3L']:
         signal_sample = 'WZGTo3LNuG'
     elif region in ['SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F']:
-        print('ERROR: sample for 2L not available yet')
+        logging.error('sample for 2L not available yet')
         return
     else:
-        print('ERROR: don\'t know what is the signal for region', region)
+        logging.error("don't know what is the signal for region %s", inputdir.region)
         return
     
-    hSignal = getPlot(var, signal_sample, region)
+    hSignal = getPlot_(var, signal_sample, inputdir)
     if(hSignal is None):
-        print('ERROR: no signal plot: var={}, sample={}, region={}'.format(var, signal_sample, region))
+        logging.error('no signal plot: var={}, sample={}, region={}'.format(var, signal_sample, inputdir.region))
         return
     
     hBackMC = None
     for bkg in backgrsFullMC:
-        h = getPlots_added(var, bkg['files'], region)
+        h = getPlots_added(var, bkg['files'], inputdir)
         if(h):
             if(hBackMC is None):
                 hBackMC = h
@@ -72,7 +75,7 @@ def table1Plot(var, region, efficiencyType='cutflow'):
 
     hBackCR = None
     for bkg in backgrsFromCR:
-        h = getPlots_added(var, bkg['files'], region)
+        h = getPlots_added(var, bkg['files'], inputdir)
         if(h):
             if(hBackCR is None):
                 hBackCR = h
@@ -88,10 +91,10 @@ def table1Plot(var, region, efficiencyType='cutflow'):
         labelBackMC = hBackMC.GetXaxis().GetBinLabel(b)
         labelBackCR = hBackCR.GetXaxis().GetBinLabel(b)
         if(labelBackMC != labelSignal):
-            print('WARN: label fo bin {:d} differs from signal and fullMC background'.format(b))
+            logging.warning('label fo bin {:d} differs from signal and fullMC background'.format(b))
             continue
         if(labelBackCR != labelSignal):
-            print('WARN: label fo bin {:d} differs from signal and MC+CR background'.format(b))
+            logging.warning('label fo bin {:d} differs from signal and MC+CR background'.format(b))
             continue
     
         if efficiencyType == 'cutflow':
@@ -143,7 +146,7 @@ def table1Plot(var, region, efficiencyType='cutflow'):
         print('-'*84)
 
 
-def tableRegions(var, integration_range=[1,-1]):
+def tableRegions(var, inputdir, integration_range=[1,-1]):
     infoTable = {}
     for region in ['SR3P', 'CR110', 'CR101', 'CR011', 'CR100', 'CR010', 'CR001', 'CR000']:
         samplesFullMC = getSamplesByRegion(region, 'pow', 'fullMC')
@@ -151,17 +154,17 @@ def tableRegions(var, integration_range=[1,-1]):
         backgrsFullMC = [ b for b in samplesFullMC if set(b['files']).isdisjoint(set(['WZGTo3LNuG', 'ZZGTo4LG', 'WWW'])) ]
         backgrsFromCR = [ b for b in samplesFromCR if set(b['files']).isdisjoint(set(['WZGTo3LNuG', 'ZZGTo4LG', 'WWW'])) ]
         
-        nSignal = getPlot(var, 'WZGTo3LNuG', region).Integral(*integration_range)
-        nData   = getPlot(var, 'data'      , region).Integral(*integration_range)
-        histsMC = [getPlots_added(var, b['files'] , region) for b in backgrsFullMC]
-        histsCR = [getPlots_added(var, b['files'] , region) for b in backgrsFromCR]
+        nSignal = getPlot_inputdir(var, 'WZGTo3LNuG', inputdir).Integral(*integration_range)
+        nData   = getPlot_inputdir(var, 'data'      , inputdir).Integral(*integration_range)
+        histsMC = [getPlots_added(var, b['files'], inputdir) for b in backgrsFullMC]
+        histsCR = [getPlots_added(var, b['files'], inputdir) for b in backgrsFromCR]
         nBackMC = sum(h.Integral(*integration_range) for h in histsMC if h is not None)
         nBackCR = sum(h.Integral(*integration_range) for h in histsCR if h is not None)
         
         infoTable[region] = {'signal': nSignal, 'data':nData, 'back fullMC': nBackMC, 'back CR+MC': nBackCR}
 
     title = '{} (range: {})'.format(var, integration_range.__repr__())
-    nPadding = (45 - len(title) - 2)/2
+    nPadding = (45 - len(title) - 2) // 2
     print('-'*nPadding, title, '-'*nPadding)
     df = pd.DataFrame.from_dict(infoTable)
     with pd.option_context('display.float_format', '{:+3.1e}'.format):
@@ -171,10 +174,25 @@ def tableRegions(var, integration_range=[1,-1]):
     #     print(' | '.join( ['{:9.9s}'] + ['{: >+9.3g}']*3 ).format(region, row['signal'], row['backMC'], row['backCR']))
     print('-'*45)
 
+
+def parse_args():
+    parser = common_parser()
+    args = parser.parse_args()
+    config_logging(args.loglevel)
+    return args
+
+
+def main():
+    args = parse_args()
+    inputdir = InputDir(basedir=args.inputdir, year=args.year, region=args.region, analyzer=args.analyzer)
+
+    tableRegions('AAA_cuts', inputdir, integration_range=[1,1])
+    if(args.region == 'SR3P'):
+        table1Plot('AAA_cuts'  , inputdir)
+        table1Plot('lll_mass'  , inputdir, efficiencyType='cut_low')
+        # table1Plot('AAA_cuts'  , inputdir)
+        # table1Plot('AAA_cuts'  , inputdir)
+        # table1Plot('WZ_cutflow', inputdir)
+
 if __name__ == '__main__':
-    tableRegions('AAA_cuts', integration_range=[1,1])
-    table1Plot('AAA_cuts'  , 'SR3P')
-    table1Plot('lll_mass'  , 'SR3P', efficiencyType='cut_low')
-    # table1Plot('AAA_cuts'  , 'SR3P')
-    # table1Plot('AAA_cuts'  , 'CR110')
-    # table1Plot('WZ_cutflow', 'CR110')
+    exit(main())
