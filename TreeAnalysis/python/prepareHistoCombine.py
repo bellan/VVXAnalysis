@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 #############################################################################################
 # Get histograms from an analyzer's results (file: sample, inside has histograms: variable) #
