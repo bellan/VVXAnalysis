@@ -11,6 +11,7 @@ if sys.version_info.major <= 2:
     from collections import Mapping
 else:
     from collections.abc import Mapping
+from argparse import ArgumentParser
 
 # Contains luminosity [pb^-1], error (as a lnN width suitable for Combine datacards)
 lumi_dict = {
@@ -41,6 +42,27 @@ def _test_deep_update():
     d4 = {'A': [4,5]}
     target = {'A': [4,5]}
     assert deep_update(d3, d4) == target, 'deep_update failed to replace a list'
+
+
+def common_parser(**kwargs):
+    parser = ArgumentParser(**kwargs)
+    parser.add_argument('-y', '--year'    , default='2018'       , choices=list(lumi_dict.keys()), help='Default: %(default)s')
+    parser.add_argument('-i', '--inputdir', default='results'    , help='Base directory containing analyzer results (default: %(default)s)')
+    parser.add_argument('-r', '--region'  , default='SR4P'       , help='Default: %(default)s')
+    parser.add_argument('-A', '--analyzer', default='VVXAnalyzer', help='Name of the analyzer, used to compose the path of the input files (default: %(default)s)')
+    parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
+    return parser
+
+
+def config_logging(loglevel):
+    import logging
+    if(isinstance(loglevel, int)):
+       level = loglevel
+    elif(loglevel.isdigit()):
+       level = int(loglevel)
+    else:
+       level = loglevel.upper()
+    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=level)
 
 
 def main():
