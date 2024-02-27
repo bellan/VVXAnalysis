@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 import os
 from argparse import ArgumentParser
@@ -183,7 +183,7 @@ def search_variable(var_list, re_include, re_skip, analysis='unknown', region='u
     else:
         variables = [ var for var in var_list if re_include.search(var) ]  # Allow for regexp to be specified from command line
         if len(variables) == 0:
-            print 'WARN: no variables matching regex "{}" for {} in {}'.format(re_include.pattern, analysis, region)
+            logging.warning('no variables matching regex "{}" for {} in {}'.format(re_include.pattern, analysis, region))
 
     if len(variables) > 0 and re_skip is not None:
         variables = [ var for var in variables if not re_skip.search(var) ]
