@@ -333,6 +333,12 @@ def main():
                 logging.info('Using norm uncertainty instead of photon fake rate uncertainty')
                 data_syst[sample]['phFakeRate'] = {'up':1, 'dn':1}
 
+    # Set normalization for groups of samples
+    for group_name, group_info in config['systematics'].get('norm_group_uncertainty', {}).items():
+        logging.info('setting group norm uncertainty on %s (%s)', group_name, group_info['value'])
+        for sample in group_info['samples']:
+            data_syst[sample][group_name+'_norm'] = group_info['value']
+
     df_syst = fillDataFrame(data_syst, formatter=format_lnN).fillna(0)
     type_column = []
     for syst in df_syst.index:
