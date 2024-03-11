@@ -27,7 +27,6 @@ while getopts "hur:" opt; do
 	    unblind=1
 	    ;;
 	r)
-	    [ "$OPTARG" -eq "$OPTARG" ] || exit 2
 	    mu=$OPTARG
 	    ;;
 	n)
