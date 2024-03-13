@@ -547,8 +547,8 @@ def getPassFailLtoT(sample_main, sample_subtr, analyzer, year, region, method, v
         hmain_FAIL.Add(hsubtr_FAIL, -1)
 
     if(logging.getLogger().isEnabledFor(logging.DEBUG)):
-        plotFR_LtoT( hmain_PASS, outname %('PASS', 'result'), f'debug PASS {method} (after subtraction)', range_FR_z=[hmain_PASS.GetMinimum(), hmain_PASS.GetMaximum()])
-        plotFR_LtoT( hmain_FAIL, outname %('FAIL', 'result'), f'debug FAIL {method} (after subtraction)', range_FR_z=[hmain_FAIL.GetMinimum(), hmain_FAIL.GetMaximum()])
+        plotFR_LtoT( hmain_PASS, outname %('PASS', 'result'), 'debug PASS {} (after subtraction)'.format(method), range_FR_z=[hmain_PASS.GetMinimum(), hmain_PASS.GetMaximum()])
+        plotFR_LtoT( hmain_FAIL, outname %('FAIL', 'result'), 'debug FAIL {} (after subtraction)'.format(method), range_FR_z=[hmain_FAIL.GetMinimum(), hmain_FAIL.GetMaximum()])
 
     if(fixNegBins):
         for h in [hmain_PASS, hmain_FAIL]:
