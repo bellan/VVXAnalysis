@@ -311,63 +311,13 @@ def fakeRateABCD_noSubtract(sample, inputdir, logx=False, logy=False, fixNegBins
     return hFR, hES, hKF
 
 
-def getPassFailLtoT_noSubtract_regex(sample, inputdir, method, variable, regex, fixNegBins=False):
+def getPassFailLtoT_regex(sample_main, sample_subtr, inputdir, method, variable, regex, fixNegBins=False):
     regex_compiled = re.compile(regex)
     path_in = inputdir.path()
     year    = inputdir.year
     region  = inputdir.region
-    channels = findChannelsInFile(path.join(path_in, sample['file']+'.root'), method, variable)
-
-    logging.debug('\tchannels = %s', channels)
-    logging.debug('\tregex    = %s', regex_compiled.pattern)
-    selected = [ c  for c in channels if regex_compiled.search(c) ]
-    logging.debug('\tselected = %s', selected)
-    assert len(selected) > 0, "No matches for regex:{regex}, method:{method}, variable:{variable} in {fname}".format(regex=regex, method=method, variable=variable, fname=path.join(path_in, sample['file']+'.root'))
-
-    if(method.startswith('LtoT')):
-        raise NotImplementedError('Use VLtoL')
-
-    listPASS = []
-    listFAIL = []
-    for channel in selected:
-        if(sample['name'] == 'data'):
-            hPASS, hFAIL = get_plots(inputdir, sample['file'], [ 'PhFR_%s_%s_%s_data_%s'      % (method, variable, channel, s) for s in ['PASS', 'FAIL'] ] , verbose=1)
-
-            listPASS.append(hPASS)
-            listFAIL.append(hFAIL)
-
-            # hTOTAL=copy.deepcopy(hPASS)
-            # hTOTAL.Add(hFAIL)
-            # ignore = c_double(0)
-            # nP = hPASS .IntegralAndError(0, -1, 0, -1, ignore)
-            # nT = hTOTAL.IntegralAndError(0, -1, 0, -1, ignore)
-            # print('\tPASS: {:6.0f} - TOTAL: {:6.0f} - <FR>: {:.2f}'.format(nP, nT, nP/nT))
-            del hPASS, hFAIL
-        else:
-            hPASSp, hFAILp = get_plots(inputdir, sample['file'], [ 'PhFR_%s_%s_%s_prompt_%s'    % (method, variable, channel, s) for s in ['PASS', 'FAIL'] ] , verbose=1)
-            hPASSn, hFAILn = get_plots(inputdir, sample['file'], [ 'PhFR_%s_%s_%s_nonprompt_%s' % (method, variable, channel, s) for s in ['PASS', 'FAIL'] ] , verbose=1)
-
-            listPASS.append( addIfExisting(hPASSp, hPASSn) )
-            listFAIL.append( addIfExisting(hFAILp, hFAILn) )
-
-    hPASS = addIfExisting(*listPASS)
-    hFAIL = addIfExisting(*listFAIL)
-
-    assert hPASS and hFAIL
-
-    if(sample.get('fixNegBins') and fixNegBins):
-        fix_neg_bins(hPASS)
-        fix_neg_bins(hFAIL)
-
-    return hPASS, hFAIL
-
-
-def getPassFailLtoT_regex(sample_data, sample_prompt, inputdir, method, variable, regex, fixNegBins=False):
-    regex_compiled = re.compile(regex)
-    path_in = inputdir.path()
-    year    = inputdir.year
-    region  = inputdir.region
-    channels = findChannelsInFile(path.join(path_in, sample_data['file']+'.root'), method, variable)
+    path_channels = inputdir.path() if inputdir.year != 'Run2' else inputdir.path(year='2018')
+    channels = findChannelsInFile(path.join(path_channels, sample_main['file']+'.root'), method, variable)
 
     # print('\tDEBUG: regex    =', regex_compiled.pattern)
     selected = [ c  for c in channels if regex_compiled.search(c) ]
@@ -381,33 +331,48 @@ def getPassFailLtoT_regex(sample_data, sample_prompt, inputdir, method, variable
     listPromptPASS = []
     listPromptFAIL = []
     for channel in selected:
-        hdata_PASS  , hdata_FAIL   = get_plots(inputdir, sample_data['file']  , [ 'PhFR_%s_%s_%s_data_%s'   % (method, variable, channel, s) for s in ['PASS', 'FAIL'] ] , verbose=1)
-        hprompt_PASS, hprompt_FAIL = get_plots(inputdir, sample_prompt['file'], [ 'PhFR_%s_%s_%s_prompt_%s' % (method, variable, channel, s) for s in ['PASS', 'FAIL'] ] , verbose=1)
+        if(sample_main['name'] == 'data'):
+            hmain_PASS, hmain_FAIL   = get_plots(inputdir, sample_main['file'] , [ 'PhFR_%s_%s_%s_data_%s'    % (method, variable, channel, s) for s in ['PASS', 'FAIL'] ])
+            if(not hmain_PASS): raise RuntimeError('Could not get the PASS histogram for data')
+            if(not hmain_FAIL): raise RuntimeError('Could not get the FAIL histogram for data')
+        else:
+            hmain_PASSp, hmain_FAILp = get_plots(inputdir, sample_main['file'], [ 'PhFR_%s_%s_%s_prompt_%s'   % (method, variable, channel, s) for s in ['PASS', 'FAIL'] ])
+            hmain_PASSn, hmain_FAILn = get_plots(inputdir, sample_main['file'], [ 'PhFR_%s_%s_%s_nonprompt_%s'% (method, variable, channel, s) for s in ['PASS', 'FAIL'] ])
 
-        listDataPASS  .append(hdata_PASS)
-        listDataFAIL  .append(hdata_FAIL)
-        listPromptPASS.append(hprompt_PASS)
-        listPromptFAIL.append(hprompt_FAIL)
+            hmain_PASS = addIfExisting(hmain_PASSp, hmain_PASSn)
+            hmain_FAIL = addIfExisting(hmain_FAILp, hmain_FAILn)
+            if(not hmain_PASS): raise RuntimeError('Could not get the PASS main (data) histogram')
+            if(not hmain_FAIL): raise RuntimeError('Could not get the FAIL main (data) histogram')
+        listDataPASS  .append(hmain_PASS)
+        listDataFAIL  .append(hmain_FAIL)
+
+        if(sample_subtr is not None):
+            hsubtr_PASS, hsubtr_FAIL = get_plots(inputdir, sample_subtr['file'], [ 'PhFR_%s_%s_%s_prompt_%s'  % (method, variable, channel, s) for s in ['PASS', 'FAIL'] ])
+            if(not (hsubtr_PASS and hsubtr_FAIL)): raise RuntimeError('Could not get the 2 prompt MC histograms!')
+            listPromptPASS.append(hsubtr_PASS)
+            listPromptFAIL.append(hsubtr_FAIL)
 
     hDataPASS   = addIfExisting(*listDataPASS)
     hDataFAIL   = addIfExisting(*listDataFAIL)
     hPromptPASS = addIfExisting(*listPromptPASS)
     hPromptFAIL = addIfExisting(*listPromptFAIL)
 
-    assert hDataPASS   and hDataFAIL  , 'Could not get the 2 data sums of histograms'
-    assert hPromptPASS and hPromptFAIL, 'Could not get the 2 MC sums of histograms'
+    if    (not (hDataPASS   and hDataFAIL  )): raise RuntimeError('Could not get the 2 data sums of histograms')
+    if(sample_subtr is not None):
+        if(not (hPromptPASS and hPromptFAIL)): raise RuntimeError('Could not get the 2 MC sums of histograms')
 
-    if(sample_data.get('fixNegBins') and fixNegBins):
+    if(sample_main.get('fixNegBins') and fixNegBins):
         fix_neg_bins(hDataPASS)
         fix_neg_bins(hDataFAIL)
-    if(sample_prompt.get('fixNegBins') and fixNegBins):
+    if(sample_subtr is not None and sample_subtr.get('fixNegBins') and fixNegBins):
         fix_neg_bins(hPromptPASS)
         fix_neg_bins(hPromptFAIL)
 
     hPASS = hDataPASS
-    hPASS.Add(hPromptPASS, -1)
     hFAIL = hDataFAIL
-    hFAIL.Add(hPromptFAIL, -1)
+    if(sample_subtr is not None):
+           hPASS.Add(hPromptPASS, -1)
+           hFAIL.Add(hPromptFAIL, -1)
 
     return hPASS, hFAIL
 
@@ -422,15 +387,13 @@ def fakeRateLtoT_regex(sample_data, sample_prompt, inputdir, method, variable, r
         logging.info('Fake Rate %s: sample   = %s', method, sample_data)
         samplename  = sample_data['name']
         sampletitle = sample_data['title']
-
-        hPASS, hFAIL = getPassFailLtoT_noSubtract_regex(sample_data, inputdir, method=method, variable=variable, regex=regex, fixNegBins=fixNegBins)
     else:
         logging.info('Fake Rate %s_%s: data     = %s', method, pattern_printable, sample_data  )
         logging.info('Fake Rate %s_%s: promptMC = %s', method, pattern_printable, sample_prompt)
         samplename  = sample_data['name']  +  '-'  + sample_prompt['name']
         sampletitle = sample_data['title'] + ' - ' + sample_prompt['title']
 
-        hPASS, hFAIL = getPassFailLtoT_regex(sample_data, sample_prompt, inputdir, method=method, variable=variable, regex=regex, fixNegBins=fixNegBins)
+    hPASS, hFAIL = getPassFailLtoT_regex(sample_data, sample_prompt, inputdir, method=method, variable=variable, regex=regex, fixNegBins=fixNegBins)
 
     outname = 'FR_{method}_{variable}_{regex}_{samplename}{region}_{year}'.format(method=method, variable=variable, samplename=samplename, region='' if region=='CRLFR' else '_'+region, year=year, regex=pattern_printable)
     title = 'Photon Fake Rate: {method} {regex} (from {sampletitle} in {region})'.format(method=method, sampletitle=sampletitle, regex=pattern_printable, region=region)
