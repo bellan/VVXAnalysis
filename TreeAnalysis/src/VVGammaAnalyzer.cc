@@ -28,6 +28,7 @@ using namespace phys;
 using namespace physmath;
 
 // #define DEBUG
+// #define USE_MLLIMPROVES
 
 #define BIN_GENCATEGORY 10,-0.5,9.5
 #define BINS_PHCUTFLOW 7,-0.5,6.5
@@ -469,9 +470,12 @@ Int_t VVGammaAnalyzer::cut() {
 
 
   // ----- BASELINE SELECTION -----
+#ifdef USE_MLLIMPROVES
   vector<Photon>& phVect_CUT_mllimprov = *kinPhotons_["central"];  // Photon vector used for the "Improves mll" CUT
   bool mll_improves = false;
+#else
   bool mll_min      = false;
+#endif
 
   // -----  4L   -----
   if     (is4Lregion(region_)){
@@ -484,6 +488,7 @@ Int_t VVGammaAnalyzer::cut() {
     }
     else return -1;
 
+#ifdef USE_MLLIMPROVES
     // Cut 4L.mll_noimprov: Require that neither of the Z masses improves with the addition of the momentum of a photon
     if(phVect_CUT_mllimprov.size() > 0){
       double Zll_mass(0.), ZllG_mass(0.);
@@ -491,7 +496,9 @@ Int_t VVGammaAnalyzer::cut() {
       mll_improves = (Zll_mass > 0) && (Zll_mass < CUT_MLL_MIN) && ( fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS) );
     }
 
+#else
     mll_min = ZZ->first().mass() > CUT_MLL_MIN && ZZ->second().mass() > CUT_MLL_MIN;
+#endif
   }
 
   // -----  3L   -----
@@ -535,6 +542,7 @@ Int_t VVGammaAnalyzer::cut() {
     }
     else return -1;
 
+#ifdef USE_MLLIMPROVES
     // Cut 3L.mll_noimprov: Require that the Z mass does not improve with the addition of the momentum of a photon
     if(phVect_CUT_mllimprov.size() > 0){
       auto closestPhoLep = closestPairDeltaR(phVect_CUT_mllimprov, *leptons_);
@@ -546,7 +554,9 @@ Int_t VVGammaAnalyzer::cut() {
       }
     }
 
+#else
     mll_min = ZW->first().mass() > CUT_MLL_MIN;
+#endif
   }
 
   // -----  2L   -----
@@ -570,6 +580,7 @@ Int_t VVGammaAnalyzer::cut() {
     else return -1;
 
     // Cut 2L.mll_noimprov: Require that the Z mass does not improve with the addition of the momentum of a photon
+#ifdef USE_MLLIMPROVES
     if(phVect_CUT_mllimprov.size() > 0){
       const Lepton& l0 = Z->daughter(0);
       const Lepton& l1 = Z->daughter(1);
@@ -580,7 +591,9 @@ Int_t VVGammaAnalyzer::cut() {
       double ZllG_mass = (Z->p4() + thePh->p4()).M();
     }
 
+#else
     mll_min = Z->mass() > CUT_MLL_MIN;
+#endif
   }
 
   // ----- CRLFR -----
@@ -594,6 +607,7 @@ Int_t VVGammaAnalyzer::cut() {
     }
     else return -1;
 
+#ifdef USE_MLLIMPROVES
     // Cut CRLFR.mll_noimprov: Require that the Z mass does not improve with the addition of the momentum of a photon
     if(phVect_CUT_mllimprov.size() > 0){
       auto closestPhoLep = closestPairDeltaR(phVect_CUT_mllimprov, *leptons_);
@@ -605,12 +619,18 @@ Int_t VVGammaAnalyzer::cut() {
       }
     }
 
+#else
     mll_min = ZL->first.mass() > CUT_MLL_MIN;
+#endif
   }
 
   // ----- Common cuts -----
   // common.mll_noimprov: Remove events where the Z mass improves with the addition of the photon momentum
-  bool passFSRcut = mll_min; // !mll_improves
+#ifdef USE_MLLIMPROVES
+  bool passFSRcut = !mll_improves;
+#else
+  bool passFSRcut = mll_min;
+#endif
   if(passFSRcut){
     theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "FSR cut", theWeight);
     theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "FSR cut", 1);
@@ -1231,9 +1251,10 @@ bool VVGammaAnalyzer::SignalDefinitionHelper::pass() const{
     // TODO
     return photon_;
   }
-  else
+  else{
     std::cerr << "SignalDefinitionHelper::pass(): Unknown region: " << regionType(analyzer_->region_);
     return false;
+  }
 }
 
 void VVGammaAnalyzer::SignalDefinitionHelper::eval(/*const VVGammaAnalyzer* analyzer*/){
@@ -1630,8 +1651,6 @@ void VVGammaAnalyzer::genEventSetup(){
 		
     genWZ_ = DiBoson<Particle, Particle>(Z0, W0);
   }
-
-  bool hasGenPhoton = genPhotonsPrompt_->size() > 0;
 
   std::sort(genQuarks_       ->begin(), genQuarks_       ->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
   std::sort(genChLeptons_    ->begin(), genChLeptons_    ->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
@@ -2385,15 +2404,15 @@ void VVGammaAnalyzer::photonFakeRate_LtoT(const char* method, const Photon& theP
   std::vector<Lepton>::const_iterator closestLep = closestDeltaR(thePh, *leptons_);
   float dR_l = physmath::deltaR(*closestLep, thePh);
 
-  char lepFlavour = '?';
-  unsigned int aLepID = abs(closestLep->id());
-  if     (aLepID == 11) lepFlavour = 'e';
-  else if(aLepID == 13) lepFlavour = 'm';
+  // char lepFlavour = '?';
+  // unsigned int aLepID = abs(closestLep->id());
+  // if     (aLepID == 11) lepFlavour = 'e';
+  // else if(aLepID == 13) lepFlavour = 'm';
 
-  char lepStatus = closestLep->passFullSel() ? 'P' : 'F';
+  // char lepStatus = closestLep->passFullSel() ? 'P' : 'F';
 
-  char all_str[4]; sprintf(all_str, "all");
-  char all_char = 'a';
+  // char all_str[4]; sprintf(all_str, "all");
+  // char all_char = 'a';
   static vector<double> edges_dR {0., 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00};
   if(dR_l > edges_dR.back()) dR_l = edges_dR.back() - 0.001;
 
@@ -2934,7 +2953,7 @@ void VVGammaAnalyzer::SYSplots_inclusive(const char* syst, double weight){
 
 
 void VVGammaAnalyzer::SYSplots_photon(const char* syst, double weight, const Photon& ph, const char* ph_selection){
-  const char* phGenStatus;
+  const char* phGenStatus = "";
   if(theSampleInfo.isMC())
     phGenStatus = sigdefHelper.pass_photon() ? "prompt" : "nonpro" ;  // it is actually the event status (pass/fail the signal definition)
 
