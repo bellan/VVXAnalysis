@@ -143,10 +143,10 @@ bool VZGAnalyzer::RECOsignalCostraint()
                      selectedRECOjets.push_back(jet);
               }
        }
-       for (int i = 0; i < selectedRECOjets.size(); i++)
+       for (size_t i = 0; i < selectedRECOjets.size(); i++)
        {
               phys::Jet jetA = selectedRECOjets[i];
-              for (int j = i + 1; j < selectedRECOjets.size(); j++)
+              for (size_t j = i + 1; j < selectedRECOjets.size(); j++)
               {
                      phys::Jet jetB = selectedRECOjets[j];
                      float mjj = (jetA.p4() + jetB.p4()).M();
@@ -1075,10 +1075,10 @@ void VZGAnalyzer::genAnalyze()
 
     std::vector<phys::Boson<phys::Jet>> JetPairs;
 
-    for (int i = 0; i < selectedRECOjets.size(); i++)
+    for (size_t i = 0; i < selectedRECOjets.size(); i++)
     {
 
-      for (int j = i + 1; j < selectedRECOjets.size(); j++)
+      for (size_t j = i + 1; j < selectedRECOjets.size(); j++)
       {
         JetPairs.push_back(phys::Boson<phys::Jet>(selectedRECOjets.at(i), selectedRECOjets.at(j)));
       }
@@ -1140,7 +1140,6 @@ void VZGAnalyzer::genAnalyze()
     theHistograms->fill("mjj_den" , " mjj_den; GeV/c^{2}" , 10, 50, 120, DiJet.mass(), theWeight);
     theHistograms->fill("Pt_den" , " Pt_den; GeV/c" , 10, 0, 300, DiJet.pt(), theWeight);
     std::cout<<""<<std::endl;
-    int k=0;
 
 
     //----------------------------------------MATCHED Jets total mass----------------------------------//
