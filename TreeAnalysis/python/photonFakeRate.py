@@ -17,7 +17,7 @@ from array import array
 import itertools
 import re
 import logging
-from plotUtils23 import TFileContext, addIfExisting, rebin2D, InputDir
+from plotUtils23 import TFileContext, addIfExisting, rebin2D, InputDir, addIfExisting, get_plots
 import Colours
 
 if(sys.version_info.major == 2):
@@ -31,23 +31,6 @@ else:
 _path_base = None  # Module-wide variable
 _outdir_data = "data"
 _outdir_plot = path.join("Plot","PhFR")
-
-def getPlots(inputdir, sample, plots, verbose=0):
-    fname = path.join(inputdir, sample+".root")
-    retrieved = []
-    with TFileContext(fname) as rFile:
-        for plot in plots:
-            h = rFile.Get(plot)
-            if(not h):
-                if(verbose > 0): print(Colours.Warn('WARN')+': Could not get "%s" from "%s"' % (plot, fname))
-                retrieved.append(None)
-            else:
-                retrieved.append( copy.deepcopy(h) )
-                if(verbose > 1):
-                    ignore = c_double(0)
-                    n = h.IntegralAndError(0, -1, 0, -1, ignore)
-                    print('\t\t{:s} - entries: {:6.0f}'.format(plot, n))
-    return retrieved
 
 
 def joinIfNotNone(strings, connection='_'):
@@ -160,7 +143,7 @@ def fakeRateABCD(sample_data, sample_prompt, inputdir, logx=False, logy=False, f
     
     ##### First: only data ####
     
-    hdata_A, hdata_B, hdata_C, hdata_D = getPlots(path_in, sample_data  ["file"], [ "PhFR_%s" % (c) for c in 'ABCD' ] )
+    hdata_A, hdata_B, hdata_C, hdata_D = get_plots(inputdir, sample_data  ["file"], [ "PhFR_%s" % (c) for c in 'ABCD' ] )
     assert (hdata_A and hdata_B and hdata_C and hdata_D), "Could't get all 4 data histograms!"
 
     if(sample_data.get("fixNegBins", False)):
@@ -171,7 +154,7 @@ def fakeRateABCD(sample_data, sample_prompt, inputdir, logx=False, logy=False, f
     if(sample_prompt is None):
         return
 
-    hprompt_A, hprompt_B, hprompt_C, hprompt_D = getPlots(path_in, sample_prompt["file"], [ "PhFR_%s_prompt" % (c) for c in 'ABCD' ] )
+    hprompt_A, hprompt_B, hprompt_C, hprompt_D = get_plots(inputdir, sample_prompt["file"], [ "PhFR_%s_prompt" % (c) for c in 'ABCD' ] )
     assert (hprompt_A and hprompt_B and hprompt_C and hprompt_D), "Could't get all 4 promptMC histograms!"
 
     if(sample_prompt.get("fixNegBins", False)):
@@ -258,8 +241,8 @@ def fakeRateABCD_noSubtract(sample, inputdir, logx=False, logy=False, fixNegBins
     outfname = "{outdir:s}/ABCD_FR_{samplename:s}_{year}.root".format(outdir=_outdir_data, samplename=sample["name"], year=year)
     logging.info('Output (without MC subtraction) in: "{:s}"'.format(outfname))
     
-    hAp, hBp, hCp, hDp = getPlots(path_in, sample["file"], [ "PhFR_%s_nonprompt" % (c) for c in 'ABCD' ] )
-    hAn, hBn, hCn, hDn = getPlots(path_in, sample["file"], [ "PhFR_%s_prompt"    % (c) for c in 'ABCD' ] )
+    hAp, hBp, hCp, hDp = get_plots(inputdir, sample["file"], [ "PhFR_%s_nonprompt" % (c) for c in 'ABCD' ] )
+    hAn, hBn, hCn, hDn = get_plots(inputdir, sample["file"], [ "PhFR_%s_prompt"    % (c) for c in 'ABCD' ] )
     hA = addIfExisting(hAp, hAn)
     hB = addIfExisting(hAp, hBn)
     hC = addIfExisting(hAp, hCn)
@@ -348,7 +331,7 @@ def getPassFailLtoT_noSubtract_regex(sample, inputdir, method, variable, regex, 
     listFAIL = []
     for channel in selected:
         if(sample['name'] == 'data'):
-            hPASS, hFAIL = getPlots(path_in, sample['file'], [ 'PhFR_%s_%s_%s_data_%s'      % (method, variable, channel, s) for s in ['PASS', 'FAIL'] ] , verbose=1)
+            hPASS, hFAIL = get_plots(inputdir, sample['file'], [ 'PhFR_%s_%s_%s_data_%s'      % (method, variable, channel, s) for s in ['PASS', 'FAIL'] ] , verbose=1)
 
             listPASS.append(hPASS)
             listFAIL.append(hFAIL)
@@ -361,8 +344,8 @@ def getPassFailLtoT_noSubtract_regex(sample, inputdir, method, variable, regex, 
             # print('\tPASS: {:6.0f} - TOTAL: {:6.0f} - <FR>: {:.2f}'.format(nP, nT, nP/nT))
             del hPASS, hFAIL
         else:
-            hPASSp, hFAILp = getPlots(path_in, sample['file'], [ 'PhFR_%s_%s_%s_prompt_%s'    % (method, variable, channel, s) for s in ['PASS', 'FAIL'] ] , verbose=1)
-            hPASSn, hFAILn = getPlots(path_in, sample['file'], [ 'PhFR_%s_%s_%s_nonprompt_%s' % (method, variable, channel, s) for s in ['PASS', 'FAIL'] ] , verbose=1)
+            hPASSp, hFAILp = get_plots(inputdir, sample['file'], [ 'PhFR_%s_%s_%s_prompt_%s'    % (method, variable, channel, s) for s in ['PASS', 'FAIL'] ] , verbose=1)
+            hPASSn, hFAILn = get_plots(inputdir, sample['file'], [ 'PhFR_%s_%s_%s_nonprompt_%s' % (method, variable, channel, s) for s in ['PASS', 'FAIL'] ] , verbose=1)
 
             listPASS.append( addIfExisting(hPASSp, hPASSn) )
             listFAIL.append( addIfExisting(hFAILp, hFAILn) )
@@ -398,8 +381,8 @@ def getPassFailLtoT_regex(sample_data, sample_prompt, inputdir, method, variable
     listPromptPASS = []
     listPromptFAIL = []
     for channel in selected:
-        hdata_PASS  , hdata_FAIL   = getPlots(path_in, sample_data['file']  , [ 'PhFR_%s_%s_%s_data_%s'   % (method, variable, channel, s) for s in ['PASS', 'FAIL'] ] , verbose=1)
-        hprompt_PASS, hprompt_FAIL = getPlots(path_in, sample_prompt['file'], [ 'PhFR_%s_%s_%s_prompt_%s' % (method, variable, channel, s) for s in ['PASS', 'FAIL'] ] , verbose=1)
+        hdata_PASS  , hdata_FAIL   = get_plots(inputdir, sample_data['file']  , [ 'PhFR_%s_%s_%s_data_%s'   % (method, variable, channel, s) for s in ['PASS', 'FAIL'] ] , verbose=1)
+        hprompt_PASS, hprompt_FAIL = get_plots(inputdir, sample_prompt['file'], [ 'PhFR_%s_%s_%s_prompt_%s' % (method, variable, channel, s) for s in ['PASS', 'FAIL'] ] , verbose=1)
 
         listDataPASS  .append(hdata_PASS)
         listDataFAIL  .append(hdata_FAIL)
@@ -499,12 +482,12 @@ def getPassFailLtoT(sample_main, sample_subtr, inputdir, method, variable, fixNe
     year   = inputdir.year
 
     if(sample_main['name'] == 'data'):
-        hmain_PASS, hmain_FAIL   = getPlots(path_in, sample_main['file'] , [ 'PhFR_%s_%s_data_%s'    % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
+        hmain_PASS, hmain_FAIL   = get_plots(inputdir, sample_main['file'] , [ 'PhFR_%s_%s_data_%s'    % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
         assert hmain_PASS, 'Could not get the PASS histogram for data'
         assert hmain_FAIL, 'Could not get the FAIL histogram for data'
     else:
-        hmain_PASSp, hmain_FAILp = getPlots(path_in, sample_main['file'], [ 'PhFR_%s_%s_prompt_%s'    % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
-        hmain_PASSn, hmain_FAILn = getPlots(path_in, sample_main['file'], [ 'PhFR_%s_%s_nonprompt_%s' % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
+        hmain_PASSp, hmain_FAILp = get_plots(inputdir, sample_main['file'], [ 'PhFR_%s_%s_prompt_%s'    % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
+        hmain_PASSn, hmain_FAILn = get_plots(inputdir, sample_main['file'], [ 'PhFR_%s_%s_nonprompt_%s' % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
 
         hmain_PASS = addIfExisting(hmain_PASSp, hmain_PASSn)
         hmain_FAIL = addIfExisting(hmain_FAILp, hmain_FAILn)
@@ -514,7 +497,7 @@ def getPassFailLtoT(sample_main, sample_subtr, inputdir, method, variable, fixNe
     assert (hmain_PASS   and hmain_FAIL  ), "Could't get the 2 main (data) histograms!"
 
     if(sample_subtr is not None):
-        hsubtr_PASS, hsubtr_FAIL = getPlots(path_in, sample_subtr['file'], [ 'PhFR_%s_%s_prompt_%s' % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
+        hsubtr_PASS, hsubtr_FAIL = get_plots(inputdir, sample_subtr['file'], [ 'PhFR_%s_%s_prompt_%s' % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
         assert (hsubtr_PASS and hsubtr_FAIL), "Could't get the 2 prompt MC histograms!"
 
     if(variable.startswith('pt-dRl')):

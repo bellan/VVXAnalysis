@@ -1,6 +1,9 @@
 from array import array
 from math import sqrt
 import os
+import copy
+import logging
+import ctypes
 import numpy as np
 import ROOT
 
@@ -148,3 +151,37 @@ def retrieve_bin_edges(axis):
         # fixed bin size
         edges = array('d', np.linspace(axis.GetXmin(), axis.GetXmax(), axis.GetNbins()+1))
     return edges
+
+
+def get_plots_singleyear(inputdir, sample, plots):
+    fname = InputFile(inputdir, sample+".root").path()
+    retrieved = []
+    with TFileContext(fname) as rFile:
+        for plot in plots:
+            h = rFile.Get(plot)
+            if(not h):
+                logging.warning('Could not get "%s" from "%s"' % (plot, fname))
+                retrieved.append(None)
+            else:
+                h.SetDirectory(0)
+                retrieved.append(h)
+                if(logging.getLogger().isEnabledFor(logging.DEBUG)):
+                    error  = ctypes.c_double(0)
+                    integr = h.IntegralAndError(0, -1, 0, -1, error)
+                    logging.debug('{:s} - integral: {:7.1f} +- {:5.1f}'.format(plot, integr, error.value))
+    return retrieved
+
+
+def get_plots(inputdir, sample, plots):
+    if inputdir.year == 'Run2':
+        inputdir_copy = copy.deepcopy(inputdir)  # Avoid overwriting the original
+        plot_matrix = []  # dimension 0 = year, dimension 1 = requested plot names
+        for year in ('2016preVFP', '2016postVFP', '2017', '2018'):
+            inputdir_copy.year = year
+            plot_matrix.append( get_plots_singleyear(inputdir_copy, sample, plots) )
+
+        # Sum along dimension 0
+        plot_list = [addIfExisting(*l) for l in zip(*plot_matrix)]
+        return plot_list
+    else:
+        return get_plots_singleyear(inputdir, sample, plots)
