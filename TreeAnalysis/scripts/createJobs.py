@@ -17,9 +17,8 @@ error                   = log/$(ClusterId).$(ProcId).err
 log                     = log/$(ClusterId).$(ProcId).log
 Initialdir              = $(directory)
 environment             = "CMSSW_BASE={CMSSW_BASE}"
-MY.WantOS               = "el7"
+{requirements}
 request_memory          = 4000M
-#Possible values: https://batchdocs.web.cern.ch/local/submit.html
 +JobFlavour             = "{jobFlavour}"
 
 x509userproxy           = {home}/x509up_u{uid}
@@ -52,8 +51,8 @@ mkdir samples
 mkdir samples/{year}
 # mkdir bin
 # ln -s ${{treeanalysis_dir}}/bin/eventAnalyzer bin/
-ln -s ${{treeanalysis_dir}}/libTreeAnalysis.so ./
-ln -s ${{treeanalysis_dir}}/../Producers/python/{csvname} ./
+# ln -s ${{treeanalysis_dir}}/libTreeAnalysis.so ./
+# ln -s ${{treeanalysis_dir}}/../Producers/python/{csvname} ./
 
 # Check if the sample is on eos
 # On LXPLUS /eos/user/[initial] is a symlink to /eos/home-[initial],
@@ -71,10 +70,15 @@ fi
 
 echo 'Running at:' $(date)
 echo path: $(pwd)
-echo os: $(uname -a)
+echo "OS            :" $(uname -a)
+echo "libstdc++.so.6:" $(ls -lh /lib64/libstdc++.so.6)
+echo "libstdc++ version"
+strings /lib64/libstdc++.so.6 | grep LIBCXX
+echo "libstdc++ ABI info"
+strings /lib64/libstdc++.so.6 | grep CXXABI
 
-${{treeanalysis_dir}}/python/run.py {runpy_args} 1>run.out 2>run.err
-runStatus=$?
+runStatus=0
+${{treeanalysis_dir}}/python/run.py {runpy_args} 1>run.out 2>run.err || runStatus=$?
 
 echo -n $runStatus > exitStatus.txt
 echo 'Done at: ' $(date) with exit status: $runStatus
@@ -83,7 +87,9 @@ echo "Files on node:"
 ls -la
 
 #delete submission scripts, so that they are not copied back (which fails sometimes)
-# rm -f batchScript.sh
+rm batchScript.sh || true
+# unlink libTreeAnalysis.so || true
+# unlink {csvname} || true
 
 echo '...done at' $(date)
 
@@ -101,7 +107,22 @@ exit $runStatus
 
 def get_condorsub_script( mainDir, jobFlavour='espresso' ):
     '''prepare the Condor submission script'''
-    return condorsub_template.format(home=os.path.expanduser("~"), uid=os.getuid(), mainDir=mainDir, jobFlavour=jobFlavour, **os.environ)
+
+    # Use the same Red Hat release as the submission machine
+    # This code is specific to rhel and will need updating if the OS changes (or if another version comes out)
+    with open('/etc/redhat-release') as f:
+        release = f.read().rstrp('\n')
+    logging.info('OS release on this machine: %s', release)
+    if "release 7" in release:
+        req = "requirements = (OpSysAndVer =?= \"CentOS7\")"
+    elif "release 8" in release: #use a Singularity container
+        req = "MY.WantOS = \"el8\""
+    elif "release 9" in release:
+        req = "requirements = (OpSysAndVer =?= \"AlmaLinux9\")"
+    else:
+        raise RuntimeError('Unknown Red Hat release')
+
+    return condorsub_template.format(home=os.path.expanduser("~"), uid=os.getuid(), mainDir=mainDir, jobFlavour=jobFlavour, requirements=req, CMSSW_BASE=os.environ['CMSSW_BASE'])
 
 
 def get_batch_script(sample, year, **kwargs):
@@ -112,14 +133,16 @@ def get_batch_script(sample, year, **kwargs):
 
 def parse_args():
     parser = ArgumentParser(
-        description = 'Create folders with scripts and configs to submit to HTCondor'
+        description = 'Create job folders to submit the EventAnalyzer step to HTCondor'
     )
-    parser.add_argument('-A', '--analyzer'  , default='VVXAnalyzer')
-    parser.add_argument('-y', '--year'      , default='2018')
-    parser.add_argument('-d', '--sample-dir', default='samples')
-    parser.add_argument('-j', '--flavour'   , choices=['espresso', 'microcentury', 'longlunch', 'workday', 'tomorrow', 'testmatch', 'nextweek'], default='espresso') # TODO estimate runtime based on sample size
-    parser.add_argument(      '--force'     , action='store_true', help='Delete any existing job folders')
-    parser.add_argument('-o', '--output-dir', default='production', help='Base directory for the jobs')  # maybe use $(git rev-parse --short HEAD)
+    parser.add_argument('-A', '--analyzer'  , default='VVXAnalyzer', help='Default: %(default)s')
+    parser.add_argument('-y', '--year'      , default='2018'       , help='Default: %(default)s')
+    parser.add_argument('-d', '--sample-dir', default='samples'    , help='Sample location, similar to run.py (default: %(default)s)')
+    parser.add_argument('-j', '--flavour'   , choices=['espresso', 'microcentury', 'longlunch', 'workday', 'tomorrow', 'testmatch', 'nextweek']
+                        , default='espresso'
+                        , help='Default: %(default)s. For the description see https://batchdocs.web.cern.ch/local/submit.html')
+    parser.add_argument(      '--force'     , action='store_true'  , help='Delete any existing job folders')
+    parser.add_argument('-o', '--output-dir', default='production' , help='Base directory for the jobs (default: %(default)s)')  # maybe use $(git rev-parse --short HEAD)
     parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
 
     args, unknown = parser.parse_known_args()
@@ -128,6 +151,7 @@ def parse_args():
 
 def main():
     print('TODO: use universe=el-7 in condor.sub')
+    print('TODO: jobflavour for each sample; estimate runtime based on sample size')
     args, unknown_args = parse_args()
     loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
     logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
