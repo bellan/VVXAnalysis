@@ -56,6 +56,36 @@ def fix_neg_bins(h):
             h.SetBinContent(b, 0.)
 
 
+def _get_rebinned(varname, bins_orig):
+    logging.debug('original bins: %d', len(bins_orig)-1)
+    if  (varname == 'aeta'):
+        return array('d', (bins_orig[0], bins_orig[2], bins_orig[3], bins_orig[5]))
+    elif(varname == 'dRj'):
+        return array('d', (0, 0.1, 0.2, 0.4, 0.8, 1.))
+    elif(varname == 'pt'):
+        return array('d', ( x for i,x in enumerate(bins_orig) if i != len(bins_orig)-2 ))
+    else:
+        raise NotImplementedError('No rebinning defined for variable "%s"' %(varname))
+
+
+def _do_rebin(variable, *args, **kwargs): # rebin_eta=False, rebin_dRj=False, rebin_pt=False
+    if(len(args) == 0):
+        logging.warning('no histogram to rebin')
+    hists = list(args)  # convert tuple to list so that the elements are mutable
+
+    x_name, y_name = variable.split('-')
+    x_bins, y_bins = None, None
+    if( ('rebin_'+x_name) in kwargs):
+        x_bins = _get_rebinned(x_name, array('d', hists[0].GetXaxis().GetXbins()))
+    if( ('rebin_'+y_name) in kwargs):
+        y_bins = _get_rebinned(y_name, array('d', hists[0].GetYaxis().GetXbins()))
+
+    for i,h in enumerate(hists):
+        hists[i] = rebin2D(h, x_bins=x_bins, y_bins=y_bins)
+
+    return hists
+
+
 # def _show_overflow_axis(ax, u_label=None, o_label=None):
 #     ax.SetRange(0, ax.GetNbins() + 1)
 #     if(u_label is None): u_label = '0'
@@ -377,7 +407,7 @@ def getPassFailLtoT_regex(sample_main, sample_subtr, inputdir, method, variable,
     return hPASS, hFAIL
 
 
-def fakeRateLtoT_regex(sample_data, sample_prompt, inputdir, method, variable, regex, pattern_printable=None, fixNegBins=False, rebin_eta=False, rebin_pt=False, rebin_dRj=False, **kwargs):
+def fakeRateLtoT_regex(sample_data, sample_prompt, inputdir, method, variable, regex, pattern_printable=None, fixNegBins=False, **kwargs):
     year   = inputdir.year
     region = inputdir.region
     if(pattern_printable is None):
@@ -407,20 +437,7 @@ def fakeRateLtoT_regex(sample_data, sample_prompt, inputdir, method, variable, r
     logging.info('\tPASS: {:6.0f} - TOTAL: {:6.0f} - <FR>: {:.3f}'.format(nP, nT, nP/nT))
 
     ## Fake rate = PASS/TOTAL ##
-    if(rebin_eta):
-        y_bins_orig = array('d', hPASS.GetYaxis().GetXbins())
-        y_bins      = array('d', (y_bins_orig[0], y_bins_orig[2], y_bins_orig[3], y_bins_orig[5]))
-        hPASS       = rebin2D(hPASS , y_bins=y_bins)
-        hTOTAL      = rebin2D(hTOTAL, y_bins=y_bins)
-    elif(rebin_dRj):
-        y_bins      = array('d', (0, 0.1, 0.2, 0.3, 0.4, 0.8, 1.))
-        hPASS       = rebin2D(hPASS , y_bins=y_bins)
-        hTOTAL      = rebin2D(hTOTAL, y_bins=y_bins)
-    if(rebin_pt):
-        x_bins_orig = array('d', hPASS.GetXaxis().GetXbins())
-        x_bins      = array('d', ( x for i,x in enumerate(x_bins_orig) if i != len(x_bins_orig)-2 ))
-        hPASS       = rebin2D(hPASS , x_bins=x_bins)
-        hTOTAL      = rebin2D(hTOTAL, x_bins=x_bins)
+    hPASS, hTOTAL = _do_rebin(variable, hPASS, hTOTAL, **{k:v for k,v in kwargs.items() if k.startswith('rebin')})
 
     hFR = hPASS
     hFR.Divide(hTOTAL)
@@ -511,7 +528,7 @@ def varname_to_title(name):
     else:
         raise KeyError(name)
 
-def fakeRateLtoT(sample_data, sample_prompt, inputdir, method='LtoT', variable='pt-aeta', fixNegBins=False, rebin_eta=False, rebin_pt=False, rebin_dRj=False, **kwargs):
+def fakeRateLtoT(sample_data, sample_prompt, inputdir, method='LtoT', variable='pt-aeta', fixNegBins=False, **kwargs):
     year   = inputdir.year
     region = inputdir.region
     if(sample_prompt is None):
@@ -541,20 +558,7 @@ def fakeRateLtoT(sample_data, sample_prompt, inputdir, method='LtoT', variable='
     logging.info('\tPASS: {:6.0f} - TOTAL: {:6.0f} - <FR>: {:.3f}'.format(nP, nT, nP/nT))
 
     ## Fake rate = PASS/TOTAL ##
-    if(rebin_eta):
-        y_bins_orig = array('d', hPASS.GetYaxis().GetXbins())
-        y_bins      = array('d', (y_bins_orig[0], y_bins_orig[2], y_bins_orig[3], y_bins_orig[5]))
-        hPASS       = rebin2D(hPASS , y_bins=y_bins)
-        hTOTAL      = rebin2D(hTOTAL, y_bins=y_bins)
-    elif(rebin_dRj):
-        y_bins      = array('d', (0, 0.1, 0.2, 0.3, 0.4, 0.8, 1.))
-        hPASS       = rebin2D(hPASS , y_bins=y_bins)
-        hTOTAL      = rebin2D(hTOTAL, y_bins=y_bins)
-    if(rebin_pt):
-        x_bins_orig = array('d', hPASS.GetXaxis().GetXbins())
-        x_bins      = array('d', ( x for i,x in enumerate(x_bins_orig) if i != len(x_bins_orig)-2 ))
-        hPASS       = rebin2D(hPASS , x_bins=x_bins)
-        hTOTAL      = rebin2D(hTOTAL, x_bins=x_bins)
+    hPASS, hTOTAL = _do_rebin(variable, hPASS, hTOTAL, **{k:v for k,v in kwargs.items() if k.startswith('rebin')})
 
     hFR = hPASS
     hFR.Divide(hTOTAL)
@@ -927,7 +931,7 @@ if __name__ == "__main__":
         sample.setdefault("name" , key)
         sample.setdefault("title", sample["name"])
 
-    possible_methods = {"VLtoL", "KtoVL", "KtoVLexcl", "90to80", "ABCD", "dRj_EB", "dRj_EE"}
+    possible_methods = {"VLtoL", "VLtoL_EB", "VLtoL_EE", "KtoVL", "KtoVLexcl", "90to80", "ABCD"}
 
     possible_eras = ["2016preVFP", "2016postVFP", "2017", "2018", 'Run2']
 
@@ -952,7 +956,7 @@ if __name__ == "__main__":
     parser.add_argument(      "--logy"   , dest='logy', action="store_true" , default=False)
     parser.add_argument(      "--range-FR-z"   , type=float, nargs=2, default=[0., 1.], help='Manually set the z range for FR plots    (default: %(default)s)')
     parser.add_argument(      "--range-ratio-z", type=float, nargs=2, default=[0., 2.], help='Manually set the z range for ratio plots (default: %(default)s)')
-    parser.add_argument(      "--rebin-eta", action='store_true', help='Rebin the y axis (eta) so that it has only 3 bins: EB, gap, EE')
+    parser.add_argument(      "--rebin-aeta",action='store_true', help='Rebin the y axis (aeta) so that it has only 3 bins: EB, gap, EE')
     parser.add_argument(      "--rebin-pt" , action='store_true', help='Rebin the x axis (pt) so that it has only 3 bins: [20-35], [35,50], [50,120]')
     parser.add_argument(      "--rebin-dRj", action='store_true', help='Rebin the y axis (dRj)')
     parser.add_argument(      "--fix-negative"   , dest='fixNegBins', action='store_true' , help='Set bins with negative content to zero (default: %(default)s)')
