@@ -39,12 +39,11 @@ __builtin_config__ = {
     # General configuration
     'systematics':{
         'shape': [],
-        'gmN'  : ['phFakeRate'],
         'correlated'  : ['L1Prefiring', 'PDFVar', 'QCDscale', 'alphas', 'phEffSF', 'phEffMVASF', 'phEScale', 'phESigma', 'muoEffSF', 'eleEffSF', 'puWeight'],
-        'uncorrelated': ['electronVeto', 'phFakeRate', 'muoFakeRateSF', 'eleFakeRateSF', 'fake_leptons_norm', 'fake_photons_norm'],
+        'uncorrelated': ['electronVeto', 'phFakeRate', 'muoFakeRateSF', 'eleFakeRateSF', 'fake_leptons_norm', 'fake_photons_norm', 'phARstat'],
         'skip-if-signal': ['PDFVar', 'QCDscale', 'alphas'],
         'theory': ['QCDscale', 'alphas', 'PDFVar'],
-        'datadriven': ['phFakeRate', 'muoFakeRateSF', 'eleFakeRateSF'],
+        'datadriven': ['phFakeRate', 'phARstat', 'muoFakeRateSF', 'eleFakeRateSF'],
         '_end':[]
     }
 }
@@ -72,9 +71,9 @@ shapes * * {path} $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
 
 # Utility functions
 def getSystType(syst, config):
-    if  (any(re.search(expr, syst) for expr in config['systematics'].get('shape', []))):
+    if  (syst in config['systematics'].get('shape', [])):
         return 'shape'
-    elif(any(re.search(expr, syst) for expr in config['systematics'].get('gmN'  , []))):
+    elif(syst in config['systematics'].get('gmN'  , [])):
         return 'gmN'
     else:
         return 'lnN'
@@ -150,6 +149,7 @@ def check_exisiting_histograms(fname, observable, processes):
     return existing_processes
 
 def get_gmN_params(syst, data_syst):
+    logging.debug('syst: %s', syst)
     n_affected = 0
     sample_affected = None
     N = 0
@@ -170,6 +170,23 @@ def get_gmN_params(syst, data_syst):
         logging.warning('No sample is affected by "%s", but the specified type is "gmN"' %(syst))
 
     return sample_affected, N, alpha
+
+def get_gmN_params_local(fname, observable, process):
+    '''
+    Retrieve the gmN parameters N and alpha from the local rootfile (which has an histogramsForCombine layout)
+    Parameters:
+    :param fname: path to file with histograms
+    :param observable: name TDirectory in the file
+    :param process: name of the process within the TDirectory
+    '''
+    with TFileContext(fname) as tf:
+        h = tf.Get(observable).Get(process)
+        if(not h): raise KeyError('observable "%s", process "%s" in file "%s"' %(observable, process, fname))
+        N      = h.GetEntries()
+        integr = h.Integral(1, h.GetNbinsX())
+        alpha  = integr/N
+        logging.debug('process: %s - N: %d - integr: %g - alpha: %g', process, N, integr, alpha)
+    return N, alpha
 
 def get_shape_affected(syst, data_syst):
     samples_affected = []
@@ -339,11 +356,13 @@ def main():
     df_syst = fillDataFrame(data_syst, formatter=format_lnN).fillna(0)
     type_column = []
     for syst in df_syst.index:
+        # Drop systematics that do not affect any sample
         if(all(df_syst[column].loc[syst] == '-' for column in df_syst.columns)):
             logging.info('dropping systematic "%s"', syst)
             df_syst.drop(syst, inplace=True)
             continue
 
+        # Decide systematic type and append it to column
         syst_type = getSystType(syst, config)
         if(syst_type == 'gmN'):
             sample_affected, N, alpha = get_gmN_params(syst, data_syst)
@@ -358,6 +377,18 @@ def main():
             type_column.append('shape')
         else:
             type_column.append(syst_type)
+
+    # Additional systematics
+    for syst, process in config['systematics'].get('ADD_gmN', {}).items():
+        logging.debug('additional syst: %s -> %s', syst, process)
+        N, alpha = get_gmN_params_local(path_to_histograms_local, observables[0][0], process)
+        if(N > 0):
+            new_row = [ alpha if p == process else '-' for p in df_syst.columns ]
+            df_syst.loc[syst] = new_row
+            type_column.append('gmN %d' %(N))
+        else:
+            logging.error('N=%d for gmN syst %s', N, syst)
+            return 1
 
     def rename_syst(syst):
         # Uses implicitly: config, year
