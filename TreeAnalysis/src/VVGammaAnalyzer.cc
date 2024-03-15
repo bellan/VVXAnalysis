@@ -69,7 +69,7 @@ void VVGammaAnalyzer::begin(){
 
   // FR extended
   hPhotonFR_VLtoL_dataZG_ = getHistfromFile(Form("data/FR_VLtoL_pt-aeta_data-ZGToLLG_%s.root", year_str.c_str()), "PhFR", " VLtoL (data-ZG)");
-  hPhotonFR_KtoVLexcl_    = getHistfromFile(Form("data/FR_KtoVLexcl_pt-aeta_data_%s.root"    , year_str.c_str()), "PhFR", " KtoVLexcl"      );
+  hPhotonFR_KtoVLexcl_    = getHistfromFile(Form("data/FR_KtoVLexcl_pt-aeta_data-ZGToLLG_%s.root", year_str.c_str()), "PhFR", " KtoVLexcl (data-ZG)");
 
   // FR SF
   hPhotonFRSF_VLtoL_      = getHistfromFile(Form("data/ratio_VLtoL_pt-aeta_data_over_ZZ_%s.root", year_str.c_str()), "PhFRSF");
