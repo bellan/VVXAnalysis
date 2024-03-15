@@ -41,6 +41,7 @@ namespace {
   constexpr float CUT_PTG_MIN = 20.;
   constexpr bool APPLY_FSR_CUT       = false;
   constexpr bool APPLY_PIXELSEED_CUT = false;
+  constexpr bool PHFR_SPLIT          = true;
 }
 
 std::pair<TLorentzVector, TLorentzVector> solveNuPz(const Boson<Lepton>& W, int& error);
@@ -53,9 +54,15 @@ void VVGammaAnalyzer::begin(){
   for(char i=0; i<25; ++i) cout<<'-';
   cout<<'\n';
 
-  std::string year_str(std::to_string(year));
-  if(year == 2016)
-    year_str += subEra_;
+  std::string year_str;
+  if(PHFR_SPLIT){
+    year_str = std::to_string(year);
+    if(year == 2016)
+      year_str += subEra_;
+  }
+  else{
+    year_str = "Run2";
+  }
   
   // Photon FR
   hPhotonFR_VLtoL_data_   = getHistfromFile(Form("data/FR_VLtoL_pt-aeta_data_%s.root"        , year_str.c_str()), "PhFR", " VLtoL (data)"   );
@@ -3260,7 +3267,7 @@ void VVGammaAnalyzer::systematicsStudy(){
       double func = getPhotonFRUnc_VLtoL(*ph);
       double f_ce = getPhotonFR_VLtoL(*ph);
       double f_up = f_ce + func;
-      double f_dn = f_ce - func;
+      double f_dn = std::max(f_ce - func, 0.);
       double sf_ce = f_ce/(1 - f_ce);
       double sf_up = f_up/(1 - f_up);
       double sf_dn = f_dn/(1 - f_dn);
