@@ -329,9 +329,6 @@ def main():
                 logging.info('Using norm uncertainty instead of lepton fake rate uncertainty')
                 data_syst[sample]['eleFakeRateSF'] = {'up':1, 'dn':1}
                 data_syst[sample]['muoFakeRateSF'] = {'up':1, 'dn':1}
-            elif(sample == 'fake_photons'):
-                logging.info('Using norm uncertainty instead of photon fake rate uncertainty')
-                data_syst[sample]['phFakeRate'] = {'up':1, 'dn':1}
 
     # Set normalization for groups of samples
     for group_name, group_info in config['systematics'].get('norm_group_uncertainty', {}).items():
