@@ -135,11 +135,12 @@ def linesAndTicks(h, logx=False, logy=False):
     
     return lines, ticks
 
-def beautify(canvas, hist, logx=False, logy=False, logz=False):
+def beautify(canvas, hist, logx=False, logy=False, logz=False, text_size=1., **kwargs):
     canvas.cd()
     # hist.GetXaxis().SetNdivisions(0)
     # hist.GetXaxis().SetRange(0, hist.GetXaxis().GetNbins()+1)
 
+    hist.SetMarkerSize(text_size)  # For some reason ROOT developers decided that painted text's size should have the same multiplier as the marker size
     hist.Draw("colz texte")
 
     if(logx):
@@ -599,14 +600,14 @@ def plotFR_LtoT(hFR, outname, title, logx=False, logy=False, do_title=True, rang
         hFR.Write(hFR.GetName(), ROOT.TObject.kOverwrite)
     logging.info('Output (with prompt MC subtraction) in: "{:s}"'.format(outfname))
 
-    to_preserve_FR = beautify(cFR, hFR, logx, logy)
+    to_preserve_FR = beautify(cFR, hFR, logx, logy, **kwargs)
 
     for ext in ['png', 'pdf']:
         cFR.SaveAs( picname+'.'+ext )
     del cFR, to_preserve_FR
 
 
-def plotRatio(h1, h2, name="ratio", title="ratio", do_title=True):
+def plotRatio(h1, h2, name="ratio", title="ratio", do_title=True, **kwargs):
     assert h1, "h1 missing"
     assert h2, "h2 missing"
 
@@ -623,7 +624,7 @@ def plotRatio(h1, h2, name="ratio", title="ratio", do_title=True):
     c.cd()
     
     ratio.Draw("colz texte")
-    to_preserve = beautify(c, ratio, True, False)
+    to_preserve = beautify(c, ratio, True, False, **kwargs)
     # ratio.GetYaxis().SetRange(1, ratio.GetXaxis().GetNbins())
     c.SaveAs('{:s}/{:s}.png'.format(_outdir_plot, name))
     with TFileContext(path.join(_outdir_data, name+'.root'), 'RECREATE') as tf:
@@ -635,7 +636,7 @@ def plotRatio(h1, h2, name="ratio", title="ratio", do_title=True):
     return ratio
 
 
-def plotProfiled(h2, name=None, title='profile', direction='X', do_title=True, **kwargs):
+def plotProfiled(h2, name=None, title='profile', direction='X', do_title=True, marker_size=1., **kwargs):
     if(not h2.Class().InheritsFrom("TH2")):
         print(Important('ERROR')+': "{:s}" does not inherit from TH2'.format(h2.GetName()))
         return
@@ -724,6 +725,7 @@ def plotProfiled(h2, name=None, title='profile', direction='X', do_title=True, *
         h.SetLineColor(  _style[i]["color"] )
         h.SetMarkerColor(_style[i]["color"] )
         h.SetMarkerStyle(_style[i]["marker"])
+        h.SetMarkerSize(marker_size)
     
     h1s[0].GetYaxis().SetRangeUser(max(0, zmin - (zmax-zmin)/10), zmax + (zmax-zmin)/10)
     h1s[0].Draw("P0 E1")
@@ -755,7 +757,7 @@ def findChannelsInFile(fname, method, variable):
     return matches
 
 
-def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_FR_z=[0.,1.], do_title=True, **kwargs):
+def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_FR_z=[0.,1.], do_title=True, marker_size=1., **kwargs):
     hRef = thelist[0][1]
     x_axis_ref = hRef.GetXaxis()
     y_axis_ref = hRef.GetYaxis()
@@ -838,6 +840,7 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
         g.SetMarkerStyle(_style[i]['marker'])
         g.SetMarkerColor(_style[i]['color' ])
         g.SetLineColor  (_style[i]['color' ])
+        g.SetMarkerSize (marker_size)
         legend_all.AddEntry(g, leg_title)
 
         for p in range(g.GetN()):
@@ -961,6 +964,8 @@ if __name__ == "__main__":
     parser.add_argument(      "--rebin-dRj", action='store_true', help='Rebin the y axis (dRj)')
     parser.add_argument(      "--fix-negative"   , dest='fixNegBins', action='store_true' , help='Set bins with negative content to zero (default: %(default)s)')
     parser.add_argument(      "--no-fix-negative", dest='fixNegBins', action='store_false', help='Set bins with negative content to zero')
+    parser.add_argument(      "--text-size"  , type=float, default=1.25, metavar='SIZE', help="Scale the size of the text in TH2 (default: %(default)s)")
+    parser.add_argument(      "--marker-size", type=float, default=1.50, metavar='SIZE', help="Scale the maker size in 1D plots (e.g. profiled and time evolution) (default: %(default)s)")
     # Output control
     parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
 
