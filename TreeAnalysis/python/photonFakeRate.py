@@ -28,7 +28,6 @@ else:
         makedirs(*args, exist_ok=True)
 
 
-_path_base = None  # Module-wide variable
 _outdir_data = "data"
 _outdir_plot = path.join("Plot","PhFR")
 
@@ -919,8 +918,8 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
         canvas.SaveAs('{:s}/time/{:s}_binEvol.{ext:s}'.format(_outdir_plot, outname, ext=ext))
 
 
-if __name__ == "__main__":
-    ROOT.gStyle.SetPaintTextFormat(".2f")
+def main():
+    ROOT.gStyle.SetPaintTextFormat(".3f")
 
     sampleList = {
         "data"     : {"file": 'data'},
@@ -976,7 +975,8 @@ if __name__ == "__main__":
 
     # Set paths for output
     args.inputdir = args.inputdir.rstrip('/')
-    _path_base = args.inputdir
+    global _outdir_data
+    global _outdir_plot
     if(args.outputdir is not None):
         _outdir_data = path.join(_outdir_data, args.outputdir)
         _outdir_plot = path.join(_outdir_plot, args.outputdir)
@@ -1176,3 +1176,6 @@ if __name__ == "__main__":
             # plotRatio(hFR_LtoT_data, hFR_LtoT_gg, name="ratio_{}_{}_data-ZG_over_gg_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(gg) with "+joinIfNotNone([method, args.final_state], " "))
             print()
 
+
+if __name__ == '__main__':
+    exit(main())
