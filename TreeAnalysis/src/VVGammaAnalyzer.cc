@@ -28,7 +28,6 @@ using namespace phys;
 using namespace physmath;
 
 // #define DEBUG
-// #define USE_MLLIMPROVES
 
 #define BIN_GENCATEGORY 10,-0.5,9.5
 #define BINS_PHCUTFLOW 7,-0.5,6.5
@@ -37,8 +36,11 @@ using namespace physmath;
 
 namespace {
   // Anonymous namespace that holds constants specific to this analyzer
+  enum class FSRcutType { MLL_MIN, MLL_IMPROVES, MLLG_MIN };
+  constexpr FSRcutType FSR_CUT_TYPE = FSRcutType::MLL_MIN;
   constexpr float CUT_MLL_MIN = 81.;
   constexpr float CUT_PTG_MIN = 20.;
+  constexpr float CUT_MLLG_MIN=100.;
   constexpr bool APPLY_FSR_CUT       = false;
   constexpr bool APPLY_PIXELSEED_CUT = false;
   constexpr bool PHFR_SPLIT          = true;
@@ -477,12 +479,8 @@ Int_t VVGammaAnalyzer::cut() {
 
 
   // ----- BASELINE SELECTION -----
-#ifdef USE_MLLIMPROVES
   vector<Photon>& phVect_CUT_mllimprov = *kinPhotons_["central"];  // Photon vector used for the "Improves mll" CUT
-  bool mll_improves = false;
-#else
-  bool mll_min      = false;
-#endif
+  bool passFSRcut = false;
 
   // -----  4L   -----
   if     (is4Lregion(region_)){
@@ -495,17 +493,24 @@ Int_t VVGammaAnalyzer::cut() {
     }
     else return -1;
 
-#ifdef USE_MLLIMPROVES
-    // Cut 4L.mll_noimprov: Require that neither of the Z masses improves with the addition of the momentum of a photon
-    if(phVect_CUT_mllimprov.size() > 0){
-      double Zll_mass(0.), ZllG_mass(0.);
-      std::tie(Zll_mass, ZllG_mass) = getZllAndZllgMasses(phVect_CUT_mllimprov);
-      mll_improves = (Zll_mass > 0) && (Zll_mass < CUT_MLL_MIN) && ( fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS) );
+    // Cut 4L.FSR
+    if(FSR_CUT_TYPE == FSRcutType::MLL_MIN){
+      // Cut 4L.FSR.mll_min: Require that m_{ll} is greater than threshold
+      passFSRcut = ZZ->first().mass() > CUT_MLL_MIN && ZZ->second().mass() > CUT_MLL_MIN;
     }
+    else{
+      if(phVect_CUT_mllimprov.size() > 0){
+	double Zll_mass(0.), ZllG_mass(0.);
+	std::tie(Zll_mass, ZllG_mass) = getZllAndZllgMasses(phVect_CUT_mllimprov);
 
-#else
-    mll_min = ZZ->first().mass() > CUT_MLL_MIN && ZZ->second().mass() > CUT_MLL_MIN;
-#endif
+	if     (FSR_CUT_TYPE == FSRcutType::MLLG_MIN)
+	  // Cut 4L.FSR.mllg_min: Require that m_{llg} is greater than threshold
+	  passFSRcut = ZllG_mass > CUT_MLLG_MIN;
+	else if(FSR_CUT_TYPE == FSRcutType::MLL_IMPROVES)
+	  // Cut 4L.FSR.mll_noimprov: Require that neither of the Z masses improves with the addition of the momentum of a photon
+	  passFSRcut = (Zll_mass > 0) && (Zll_mass < CUT_MLL_MIN) && ( fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS) );
+      }
+    }
   }
 
   // -----  3L   -----
@@ -549,21 +554,26 @@ Int_t VVGammaAnalyzer::cut() {
     }
     else return -1;
 
-#ifdef USE_MLLIMPROVES
-    // Cut 3L.mll_noimprov: Require that the Z mass does not improve with the addition of the momentum of a photon
-    if(phVect_CUT_mllimprov.size() > 0){
+    // Cut 3L.FSR
+    if(FSR_CUT_TYPE == FSRcutType::MLL_MIN){
+      // Cut 3L.FSR.mll_min: Require that m_{ll} is greater than threshold
+      passFSRcut = ZW->first().mass() > CUT_MLL_MIN;
+    }
+    else{
       auto closestPhoLep = closestPairDeltaR(phVect_CUT_mllimprov, *leptons_);
       auto best_lep_index = std::distance(leptons_->cbegin(), closestPhoLep.second);
       if(best_lep_index <= 2){  // The lepton belongs to the Z
 	double Zll_mass  = ZW->first().mass();
 	double ZllG_mass = (ZW->first().p4() + closestPhoLep.first->p4()).M();
-	mll_improves = (Zll_mass < CUT_MLL_MIN) && fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS);
+
+	if     (FSR_CUT_TYPE == FSRcutType::MLLG_MIN)
+	  // Cut 3L.FSR.mllg_min: Require that m_{llg} is greater than threshold
+	  passFSRcut = ZllG_mass > CUT_MLLG_MIN;
+	else if(FSR_CUT_TYPE == FSRcutType::MLL_IMPROVES)
+	  // Cut 3L.FSR.mll_noimprov: Require that neither of the Z masses improves with the addition of the momentum of a photon
+	  passFSRcut = (Zll_mass < CUT_MLL_MIN) && fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS);
       }
     }
-
-#else
-    mll_min = ZW->first().mass() > CUT_MLL_MIN;
-#endif
   }
 
   // -----  2L   -----
@@ -586,21 +596,29 @@ Int_t VVGammaAnalyzer::cut() {
     }
     else return -1;
 
-    // Cut 2L.mll_noimprov: Require that the Z mass does not improve with the addition of the momentum of a photon
-#ifdef USE_MLLIMPROVES
-    if(phVect_CUT_mllimprov.size() > 0){
-      const Lepton& l0 = Z->daughter(0);
-      const Lepton& l1 = Z->daughter(1);
-      auto ph0 = closestDeltaR(l0, phVect_CUT_mllimprov);
-      auto ph1 = closestDeltaR(l1, phVect_CUT_mllimprov);
-      auto thePh = deltaR(l0, *ph0) < deltaR(l1, *ph1) ? ph0 : ph1;
-      double Zll_mass = Z->mass();
-      double ZllG_mass = (Z->p4() + thePh->p4()).M();
+    // Cut 2L.FSR
+    if(FSR_CUT_TYPE == FSRcutType::MLL_MIN){
+      // Cut 2L.FSR.mll_min: Require that m_{ll} is greater than threshold
+      passFSRcut = Z->mass() > CUT_MLL_MIN;
     }
+    else{
+      if(phVect_CUT_mllimprov.size() > 0){
+	const Lepton& l0 = Z->daughter(0);
+	const Lepton& l1 = Z->daughter(1);
+	auto ph0 = closestDeltaR(l0, phVect_CUT_mllimprov);
+	auto ph1 = closestDeltaR(l1, phVect_CUT_mllimprov);
+	auto thePh = deltaR(l0, *ph0) < deltaR(l1, *ph1) ? ph0 : ph1;
+	double Zll_mass = Z->mass();
+	double ZllG_mass = (Z->p4() + thePh->p4()).M();
 
-#else
-    mll_min = Z->mass() > CUT_MLL_MIN;
-#endif
+	if     (FSR_CUT_TYPE == FSRcutType::MLLG_MIN)
+	  // Cut 2L.FSR.mllg_min: Require that m_{llg} is greater than threshold
+	  passFSRcut = ZllG_mass > CUT_MLLG_MIN;
+	else if(FSR_CUT_TYPE == FSRcutType::MLL_IMPROVES)
+	  // Cut 2L.FSR.mll_noimprov: Require that neither of the Z masses improves with the addition of the momentum of a photon
+	  passFSRcut = (Zll_mass < CUT_MLL_MIN) && fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS);
+      }
+    }
   }
 
   // ----- CRLFR -----
@@ -614,30 +632,33 @@ Int_t VVGammaAnalyzer::cut() {
     }
     else return -1;
 
-#ifdef USE_MLLIMPROVES
-    // Cut CRLFR.mll_noimprov: Require that the Z mass does not improve with the addition of the momentum of a photon
-    if(phVect_CUT_mllimprov.size() > 0){
-      auto closestPhoLep = closestPairDeltaR(phVect_CUT_mllimprov, *leptons_);
-      auto best_lep_index = std::distance(leptons_->cbegin(), closestPhoLep.second);
-      if(best_lep_index <= 2){  // The lepton belongs to the Z
+    // Cut CRLFR.FSR
+    if(FSR_CUT_TYPE == FSRcutType::MLL_MIN){
+      // Cut CRLFR.FSR.mll_min: Require that m_{ll} is greater than threshold
+      passFSRcut = ZL->first.mass() > CUT_MLL_MIN;
+    }
+    else{
+      if(phVect_CUT_mllimprov.size() > 0){
+	const Lepton& l0 = ZL->first.daughter(0);
+	const Lepton& l1 = ZL->first.daughter(1);
+	auto ph0 = closestDeltaR(l0, phVect_CUT_mllimprov);
+	auto ph1 = closestDeltaR(l1, phVect_CUT_mllimprov);
+	auto thePh = deltaR(l0, *ph0) < deltaR(l1, *ph1) ? ph0 : ph1;
 	double Zll_mass = ZL->first.mass();
-	double ZllG_mass = (ZL->first.p4() + closestPhoLep.first->p4()).M();
-	mll_improves = (Zll_mass < CUT_MLL_MIN) && fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS);
+	double ZllG_mass = (ZL->first.p4() + thePh->p4()).M();
+
+	if     (FSR_CUT_TYPE == FSRcutType::MLLG_MIN)
+	  // Cut CRLFR.FSR.mllg_min: Require that m_{llg} is greater than threshold
+	  passFSRcut = ZllG_mass > CUT_MLLG_MIN;
+	else if(FSR_CUT_TYPE == FSRcutType::MLL_IMPROVES)
+	  // Cut CRLFR.FSR.mll_noimprov: Require that neither of the Z masses improves with the addition of the momentum of a photon
+	  passFSRcut = (Zll_mass < CUT_MLL_MIN) && fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS);
       }
     }
-
-#else
-    mll_min = ZL->first.mass() > CUT_MLL_MIN;
-#endif
   }
 
   // ----- Common cuts -----
-  // common.mll_noimprov: Remove events where the Z mass improves with the addition of the photon momentum
-#ifdef USE_MLLIMPROVES
-  bool passFSRcut = !mll_improves;
-#else
-  bool passFSRcut = mll_min;
-#endif
+  // Cut: common.FSR
   if(passFSRcut){
     theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "FSR cut", theWeight);
     theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "FSR cut", 1);
