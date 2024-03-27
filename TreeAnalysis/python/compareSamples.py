@@ -28,7 +28,7 @@ def parse_args():
     parser.add_argument('-t', '--variables'     , default=None, dest='var_include', type=re.compile, help='Only plot names that match this regex will be used. Defaults to everything')
     parser.add_argument('-s', '--skip'          , default=None, dest='var_skip'   , type=re.compile, help='Plots names that match this regex will be skipped')
     parser.add_argument(      '--force-positive', dest='forcePositive', action='store_true' , help='Default: %(default)s')
-    parser.add_argument(      '--split'         , dest='split_prompt' , action='store_true' , help='Split prompt/nonprompt (default: %(default)s)')
+    parser.add_argument(      '--no-split'      , dest='split_prompt' , action='store_false', help='Never split prompt/nonprompt')
     parser.add_argument(      '--no-title'      , dest='do_title'     , action='store_false', help='Do not paint the title on the canvas (default: False)')
     parser.add_argument(      '--ext'           , default=['png'], dest='extensions', nargs='+', help='Format(s) for output images (default: %(default)s)')
     parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
@@ -224,9 +224,7 @@ def main():
         for variable in variables:
             varInfo[variable] = {}  # Assign default config
 
-    if(args.split_prompt):
-        for _, info in varInfo.items(): info['split_prompt_ph'] = True
-    else:
+    if(args.split_prompt == False):
         for _, info in varInfo.items(): info['split_prompt_ph'] = False
 
     logging.info('variables: %s', variables)
