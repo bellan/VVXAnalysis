@@ -167,7 +167,11 @@ def get_plots_singleyear(inputdir, sample, plots):
                 retrieved.append(h)
                 if(logging.getLogger().isEnabledFor(logging.DEBUG)):
                     error  = ctypes.c_double(0)
-                    integr = h.IntegralAndError(0, -1, 0, -1, error)
+                    ndim = h.GetDimension()
+                    if  (ndim == 1): integr = h.IntegralAndError(0, -1, error)
+                    elif(ndim == 2): integr = h.IntegralAndError(0, -1, 0, -1, error)
+                    elif(ndim == 3): integr = h.IntegralAndError(0, -1, 0, -1, 0, -1, error)
+                    else:            integr = float('inf')  # py2 portability
                     logging.debug('{:s} - integral: {:7.1f} +- {:5.1f}'.format(plot, integr, error.value))
     return retrieved
 
