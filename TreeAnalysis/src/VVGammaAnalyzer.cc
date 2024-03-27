@@ -432,6 +432,9 @@ Int_t VVGammaAnalyzer::cut() {
   if(theSampleInfo.isMC()){
     genEventSetup();
     genEventHistos();
+    // ----- SIGNAL DEFINITION -----
+    sigdefHelper.eval();
+      if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef","", {"All"}, "All", theWeight);
   }
   initEvent();
   
@@ -471,11 +474,6 @@ Int_t VVGammaAnalyzer::cut() {
   efficiency(*goodPhotons_["central"],  genPhotonsKinDRl   , "goodPhotons", "genKinDRl"   , 0.2);
 
   efficiency(*jets, *genJets, "AK4", "genJets", 0.4);
-
-
-  // ----- SIGNAL DEFINITION -----
-  if(theSampleInfo.isMC()) sigdefHelper.eval();
-  if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef","", {"All"}, "All", theWeight);
 
 
   // ----- BASELINE SELECTION -----
