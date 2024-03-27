@@ -11,6 +11,7 @@ from plotUtils23 import TFileContext, InputDir
 # from plotUtils import GetPredictionsPlot
 from variablesInfo import getVariablesInfo
 from utils23 import lumi_dict
+import CMS_lumi, tdrstyle
 
 def parse_args():
     regions = ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L',    
@@ -35,53 +36,6 @@ def parse_args():
     return parser.parse_args()
 
 
-# def getPlotFromSample(inputdir, sample, plot, forcePositive, note=None):
-#     _nameFormat = "{:24.24s}"
-#     errStat = ctypes.c_double(0.)
-#     totalIntegral = totalError = 0
-#     h = None
-
-#     if(inputdir.year == 'Run2'): years = ('2016preVFP', '2016postVFP', '2017', '2018')
-#     else:                        years = (inputdir.year,)
-#     multiyear = len(years) > 1
-#     isReversed = forcePositive and inputdir.region in ['CR2P2F','CR100','CR010','CR001']
-
-#     for fname in sample['files']:
-#         integralFile = errorFile = 0.
-#         for year in years:
-#             rootfilename = os.path.join(newdir(year=year).path(), fname+".root")
-#             fname_year = fname if not multiyear else fname+' '+year
-#             if(not os.path.exists(rootfilename)):
-#                 logging.info( (_nameFormat+' No file (%s)').format(fname_year, rootfilename) )
-#                 continue
-
-#             with TFileContext(rootfilename) as fhandle:
-#                 h_current = fhandle.Get(plot)
-
-#                 if(not h_current):
-#                     logging.info( (_nameFormat+' No histo (%s) in file (%s)').format(fname_year, plot, rootfilename) )
-#                     continue
-
-#                 if isReversed:
-#                     h_current.Scale(-1)
-
-#                 integral = h_current.IntegralAndError(0, -1, errStat)  # Get overflow events too
-#                 integralFile += integral
-#                 errorFile = math.sqrt(errorFile**2 + errStat.value**2)
-
-#                 if(h is None): h = copy.deepcopy(h_current)
-#                 else         : h.Add(h_current)
-
-#         if(h is not None):
-#             if(note is not None): fname_print = fname + ' ' + note
-#             else:                 fname_print = fname
-#             logging.info( (_nameFormat+" {: 10.2f} +- {: 10.2f}").format(fname_print, integralFile, errorFile) )
-#         totalIntegral += integralFile
-#         totalError    += errorFile
-
-#     return h, (totalIntegral, totalError)
-
-
 def cutStudy(var, plotInfo, inputdir, do_title=True, extensions=['png'], **kwargs):
     canvas = ROOT.TCanvas(var+'_canvas', var, 1600, 1200)
 
@@ -89,7 +43,7 @@ def cutStudy(var, plotInfo, inputdir, do_title=True, extensions=['png'], **kwarg
     pad1 = ROOT.TPad('hist', '', 0., 0.28, 1.0, 1.0)
     pad1.SetTopMargin   (0.10)
     pad1.SetRightMargin (0.04)
-    pad1.SetLeftMargin  (0.08)
+    pad1.SetLeftMargin  (0.12)
     pad1.SetBottomMargin(0.02)
     pad1.Draw()
     
@@ -97,13 +51,12 @@ def cutStudy(var, plotInfo, inputdir, do_title=True, extensions=['png'], **kwarg
     pad2 = ROOT.TPad('ratio', 'S/B ratio', 0., 0.0,  1., 0.28)
     pad2.SetTopMargin   (0.02)
     pad2.SetRightMargin (0.04)
-    pad2.SetLeftMargin  (0.08)
+    pad2.SetLeftMargin  (0.12)
     pad2.SetBottomMargin(0.3);
     pad2.Draw()
 
     pad1.cd()
 
-    # plotInfo.update({'name':var})
     splitPromptPh = plotInfo.get('split_prompt_ph')
     if(splitPromptPh):
         split_pattern = plotInfo.get('split_prompt_ph_pattern', var+'_%s')
@@ -191,6 +144,8 @@ def cutStudy(var, plotInfo, inputdir, do_title=True, extensions=['png'], **kwarg
     for stack in bkgstacks[1:]:
         hbkg.Add(stack.GetStack().Last())
 
+    CMS_lumi.CMS_lumi(pad1, iPeriod=0, iPosX=0)
+
     pad2.cd()
     ratio = ROOT.TGraphAsymmErrors()
     ratio.Divide(hsig, hbkg, 'pois')
@@ -245,6 +200,12 @@ def main():
     logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
 
     ROOT.gROOT.SetBatch(True)
+    tdrstyle.setTDRStyle()
+    CMS_lumi.writeExtraText = True
+    CMS_lumi.extraText = " Private work"
+    CMS_lumi.lumi_sqrtS = "{0:.1f} fb^{{-1}} (13 TeV)\n".format( lumi_dict[args.year]['value']/1000. )
+    CMS_lumi.relPosX = 0.12
+
     inputdir = InputDir(basedir=args.inputdir, year=args.year, region=args.region, analyzer=args.analysis)
 
     varInfo = getVariablesInfo(args.analysis, args.region)
@@ -265,6 +226,8 @@ def main():
 
     if(args.split_prompt):
         for _, info in varInfo.items(): info['split_prompt_ph'] = True
+    else:
+        for _, info in varInfo.items(): info['split_prompt_ph'] = False
 
     logging.info('variables: %s', variables)
 
