@@ -239,6 +239,7 @@ private:
   void SYSplots(          const char* syst, double weight, const phys::Photon* phCut, const phys::Photon* phMVA);
   void debug3Lregion();
   void photonGenStudy();
+  void ZllVsZllGstudy(const std::vector<phys::Photon>&, const char*);
 
   // void printCSVheader(std::ofstream&);
   // void printCSV(std::ofstream&);

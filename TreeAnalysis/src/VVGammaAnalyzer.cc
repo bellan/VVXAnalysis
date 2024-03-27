@@ -820,7 +820,7 @@ void VVGammaAnalyzer::analyze(){
     theHistograms->fill(Form("Z1_mass_%s", jets_str), "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
 
     if(theSampleInfo.isMC()){
-	bool signaldef = genPhotonsPrompt_->size() > 0;  // Test if the event passes the GEN signal definition
+	bool signaldef = sigdefHelper.pass_photon();  // Test if the event passes the GEN signal definition
 	const char* sigdef_str = signaldef ? "prompt" : "nonpro";
 
 	theHistograms->fill(Form("Z0_mass_%s"             , sigdef_str), "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
@@ -833,27 +833,9 @@ void VVGammaAnalyzer::analyze(){
 	theHistograms->fill(Form("Z1_mass_%s_%s", jets_str, sigdef_str), "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
     }
 
-    double Zll_mass(0.), ZllG_mass(0.);
-    std::tie(Zll_mass, ZllG_mass) = getZllAndZllgMasses(*kinPhotons_["central"]);
+    ZllVsZllGstudy(*kinPhotons_["central"] , "kin"  );
+    ZllVsZllGstudy(*goodPhotons_["central"], "loose");
 
-    if(Zll_mass > 0){
-      bool improves = ( fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS) ); // The addition of the photon momentum improved the mass
-      const char* improv_str = improves ? "improves" : "noimprov";
-      theHistograms->fill(Form("Zll_mass_%s" , improv_str), ";m_{ll} [GeV/c^{2}]"      , 30,60,120, Zll_mass , theWeight);
-      theHistograms->fill(Form("ZllG_mass_%s", improv_str), ";m_{ll#gamma} [GeV/c^{2}]", 30,60,210, ZllG_mass, theWeight);
-      if(theSampleInfo.isMC()){
-	bool signaldef = genPhotonsPrompt_->size() > 0;  // Test if the event passes the GEN signal definition
-	const char* sigdef_str = signaldef ? "prompt" : "nonpro";
-	theHistograms->fill(Form("Zll_mass_%s_%s" , improv_str, sigdef_str), ";m_{ll} [GeV/c^{2}]"      , 30,60,120, Zll_mass , theWeight);
-	theHistograms->fill(Form("ZllG_mass_%s_%s", improv_str, sigdef_str), ";m_{ll#gamma} [GeV/c^{2}]", 30,60,210, ZllG_mass, theWeight);
-      }
-
-      theHistograms->fill("ZllG_mass_vs_Zll_mass", ";m_{ll#gamma};m_{ll}", 60,60,150., 30,60.,120., ZllG_mass, Zll_mass, theWeight);
-      theHistograms->fill("Zll_mass" , ";m_{ll}"      , 30,60.,120., Zll_mass, theWeight);
-      theHistograms->fill("ZllG_mass", ";m_{ll#gamma}", 40,60.,160., ZllG_mass, theWeight);
-      theHistograms->fill("Zll_mass_plus_ZllG_mass", ";m_{ll}+m_{ll#gamma}", 40,120.,320., Zll_mass+ZllG_mass, theWeight);
-    }
-    
     plotsVVGstatus("ZZ", "ZZ", ZZ->p4(), "mass");
   }
 
@@ -3404,6 +3386,30 @@ void VVGammaAnalyzer::photonGenStudy(){
     // # of Jets
     theHistograms->fill(Form(hname, "nJets"), Form("%s;nJets;Events"                 , wp), 5,0,5, jets->size(), theWeight);
   } // end loop on mapWPtoPhotons
+}
+
+
+void VVGammaAnalyzer::ZllVsZllGstudy(const std::vector<phys::Photon>& phvect, const char* label){
+  double Zll_mass(0.), ZllG_mass(0.);
+  std::tie(Zll_mass, ZllG_mass) = getZllAndZllgMasses(phvect);
+  if(Zll_mass <= 0)
+    return;
+
+  bool improves = ( fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS) ); // The addition of the photon momentum improved the mass
+  const char* improv_str = improves ? "improves" : "noimprov";
+  theHistograms->fill(Form("Zll_mass_%s_%s" , label, improv_str), ";m_{ll} [GeV/c^{2}]"      , 30,60,120, Zll_mass , theWeight);
+  theHistograms->fill(Form("ZllG_mass_%s_%s", label, improv_str), ";m_{ll#gamma} [GeV/c^{2}]", 30,60,210, ZllG_mass, theWeight);
+  if(theSampleInfo.isMC()){
+    bool signaldef = sigdefHelper.pass_photon();  // Test if the event passes the GEN signal definition
+    const char* sigdef_str = signaldef ? "prompt" : "nonpro";
+    theHistograms->fill(Form("Zll_mass_%s_%s_%s" , label, improv_str, sigdef_str), ";m_{ll} [GeV/c^{2}]"      , 30,60,120, Zll_mass , theWeight);
+    theHistograms->fill(Form("ZllG_mass_%s_%s_%s", label, improv_str, sigdef_str), ";m_{ll#gamma} [GeV/c^{2}]", 30,60,210, ZllG_mass, theWeight);
+  }
+
+  theHistograms->fill(Form("ZllG_mass_vs_Zll_mass_%s"  , label), ";m_{ll#gamma};m_{ll}", 60,60,150., 30,60.,120., ZllG_mass, Zll_mass, theWeight);
+  theHistograms->fill(Form("Zll_mass_%s"               , label), ";m_{ll}"             , 30,60.,120. , Zll_mass, theWeight);
+  theHistograms->fill(Form("ZllG_mass_%s"              , label), ";m_{ll#gamma}"       , 40,60.,160. , ZllG_mass, theWeight);
+  theHistograms->fill(Form("Zll_mass_plus_ZllG_mass_%s", label), ";m_{ll}+m_{ll#gamma}", 40,120.,320., Zll_mass+ZllG_mass, theWeight);
 }
 
 
