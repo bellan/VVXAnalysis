@@ -7,7 +7,7 @@ import logging
 import re
 import ROOT
 
-from plotUtils23 import TFileContext, InputDir
+from plotUtils23 import TFileContext, InputDir, InputFile, get_plots
 # from plotUtils import GetPredictionsPlot
 from variablesInfo import getVariablesInfo
 from utils23 import lumi_dict
@@ -43,7 +43,7 @@ def cutStudy(var, plotInfo, inputdir, do_title=True, extensions=['png'], **kwarg
     pad1 = ROOT.TPad('hist', '', 0., 0.28, 1.0, 1.0)
     pad1.SetTopMargin   (0.10)
     pad1.SetRightMargin (0.04)
-    pad1.SetLeftMargin  (0.12)
+    pad1.SetLeftMargin  (0.13)
     pad1.SetBottomMargin(0.02)
     pad1.Draw()
     
@@ -51,7 +51,7 @@ def cutStudy(var, plotInfo, inputdir, do_title=True, extensions=['png'], **kwarg
     pad2 = ROOT.TPad('ratio', 'S/B ratio', 0., 0.0,  1., 0.28)
     pad2.SetTopMargin   (0.02)
     pad2.SetRightMargin (0.04)
-    pad2.SetLeftMargin  (0.12)
+    pad2.SetLeftMargin  (0.13)
     pad2.SetBottomMargin(0.3);
     pad2.Draw()
 
@@ -70,8 +70,8 @@ def cutStudy(var, plotInfo, inputdir, do_title=True, extensions=['png'], **kwarg
     sigstack  = None
     bkgstacks = []
     legend_x0 = 0.95
-    legend_y0 = 0.9
-    legend = ROOT.TLegend(legend_x0 - 0.15,
+    legend_y0 = 0.89
+    legend = ROOT.TLegend(legend_x0 - 0.20,
                           legend_y0 - 0.06*len(hardcoded_config['groups'])*(2 if splitPromptPh else 1)
                           , legend_x0, legend_y0)
     for group, gdata in hardcoded_config['groups'].items():
@@ -81,36 +81,28 @@ def cutStudy(var, plotInfo, inputdir, do_title=True, extensions=['png'], **kwarg
 
         hist_counter = 0
         for fname in gdata['files']:
-            rootfilename = os.path.join(inputdir.path(), fname+".root")
-            if(not os.path.exists(rootfilename)):
-                logging.warning('File not found: %s', rootfilename)
-                continue
+            hists = get_plots(inputdir, fname, to_get)
+            for hname, hist in zip(to_get, hists):
+                if(not hist):
+                    continue
+                if(hist.GetDimension() > 1):
+                    logging.error('histograms with dimension %d > 1 are not supported', hist.GetDimension())
+                    return 1
 
-            with TFileContext(rootfilename) as tf:
-                for hname in to_get:
-                    hist = tf.Get(hname)
-                    if(not hist):
-                        logging.warning('Hist not found: %s (from %s)', hname, rootfilename)
-                        continue
-                    hist.SetDirectory(0)
+                hist_counter += 1
+                hist.SetLineColor(gdata['color'])
+                hist.SetLineStyle(hist_counter)
+                hist.SetLineWidth(2)
+                if(splitPromptPh and 'fill_style_prompt' in gdata and 'fill_style_nonpro' in gdata):
+                    hist.SetFillColor(gdata['color'])
+                    hist.SetFillStyle(gdata['fill_style_prompt'] if 'prompt' in hist.GetName() else gdata['fill_style_nonpro'])
+                elif('fill_style' in gdata):
+                    hist.SetFillColor(gdata['color'])
+                    hist.SetFillStyle(gdata['fill_style'])
 
-                    integral = hist.IntegralAndError(0, -1, error)  # Get overflow events too
-                    logging.info('%-24s % .3g +- %.3g', fname, integral, error.value)
-
-                    hist_counter += 1
-                    hist.SetLineColor(gdata['color'])
-                    hist.SetLineStyle(hist_counter)
-                    hist.SetLineWidth(2)
-                    if(splitPromptPh and 'fill_style_prompt' in gdata and 'fill_style_nonpro' in gdata):
-                        hist.SetFillColor(gdata['color'])
-                        hist.SetFillStyle(gdata['fill_style_prompt'] if 'prompt' in hist.GetName() else gdata['fill_style_nonpro'])
-                    elif('fill_style' in gdata):
-                        hist.SetFillColor(gdata['color'])
-                        hist.SetFillStyle(gdata['fill_style'])
-
-                    groupstack.Add(hist)
-                    legend.AddEntry(hist, fname if not splitPromptPh else fname+' '+('nonpro' if 'nonpro' in hname else 'prompt'), "L")
-                    del hist
+                groupstack.Add(hist)
+                legend.AddEntry(hist, fname if not splitPromptPh else fname+' '+('nonpro' if 'nonpro' in hname else 'prompt'), "L")
+                del hist
 
         if(sigstack is None): sigstack = groupstack
         else: bkgstacks.append(groupstack)
@@ -150,6 +142,7 @@ def cutStudy(var, plotInfo, inputdir, do_title=True, extensions=['png'], **kwarg
     ratio = ROOT.TGraphAsymmErrors()
     ratio.Divide(hsig, hbkg, 'pois')
     ymax_ratio = max(y+ey for y,ey in zip(ratio.GetY(), ratio.GetEYhigh()))
+    ymax_ratio = min(ymax_ratio, 4)
     # ymin_ratio = min(y-ey for y,ey in zip(ratio.GetY(), ratio.GetEYlow()))
     
     frame = hsig.Clone('frame_ratio')
@@ -164,10 +157,18 @@ def cutStudy(var, plotInfo, inputdir, do_title=True, extensions=['png'], **kwarg
     
     ROOT.gStyle.SetOptStat(0)
     
+    line_1 = ROOT.TLine(hsig.GetXaxis().GetBinLowEdge(hsig.GetXaxis().GetFirst()), 1, hsig.GetXaxis().GetXmax(), 1) 
+    line_1.SetLineWidth(2)
+    line_1.SetLineStyle(7)
+    line_1.Draw('SAME')
+
     ratio.Draw('PE')
 
     for ext in extensions:
         canvas.SaveAs('%s.%s' %(var, ext))
+
+    return 0
+
 
 hardcoded_config = {
     'groups': {
@@ -214,13 +215,14 @@ def main():
     if(len(variables) == 0):
         # Try reading the TKeys from the signal file
         fname = hardcoded_config['groups']['ZZG']['files'][0]
-        rootfilename = os.path.join(inputdir.path(), fname+".root")
-        logging.info('Search in getVariablesInfo unsuccesful. Trying with the TKeys in the file "%s"', rootfilename)
+        rootfile = InputFile(inputdir, fname+'.root')
+        if(rootfile.inputDir.year == 'Run2'): rootfile.inputDir.year = '2018'
+        logging.info('Search in getVariablesInfo unsuccesful. Trying with the TKeys in the file "%s"', rootfile)
 
-        with TFileContext(rootfilename) as tf:
+        with TFileContext(rootfile.path()) as tf:
             keys = [k.GetName() for k in tf.GetListOfKeys()]
         variables = search_variable(keys, args.var_include, args.var_skip, analysis=args.analysis, region=args.region)
-        
+
         for variable in variables:
             varInfo[variable] = {}  # Assign default config
 
@@ -231,8 +233,11 @@ def main():
 
     argsdict = {k:v for k,v in vars(args).items() if not k in ('inputdir', 'year', 'region', 'analysis', 'loglevel', 'var_include', 'var_skip')}
 
+    status = 0
     for variable in variables:
-        cutStudy(variable, plotInfo=varInfo[variable], inputdir=inputdir, **argsdict)
+        status += cutStudy(variable, plotInfo=varInfo[variable], inputdir=inputdir, **argsdict)
+    return status
+
 
 if __name__ == '__main__':
     exit(main())
