@@ -51,7 +51,7 @@ namespace phys {
         Particle(pin, q, id)
 	  {};
     
-    virtual ~Photon(){};
+    virtual ~Photon();
     
     // Getters
     bool cutBasedIDTight()  const { return cutBasedIDTight_ ; }
