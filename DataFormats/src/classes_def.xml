@@ -1,4 +1,5 @@
 <lcgdict>
   <class name="phys::Particle"/>
   <class name="phys::Lepton"/>
+  <class name="phys::Photon"/>
 </lcgdict>
