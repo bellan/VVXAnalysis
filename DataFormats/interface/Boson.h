@@ -60,7 +60,7 @@ namespace phys {
     }
     
     /// Destructor
-    virtual ~Boson(){};
+    virtual ~Boson();
     
     void setDaughter(int i, const P& d){
       if(i == 0) daughter0_ = d;
