@@ -49,7 +49,7 @@ namespace phys {
       {}
     
     /// Destructor
-    virtual ~Lepton(){};
+    virtual ~Lepton();
     
     // Operations
     Double_t dxy()                 const {return dxy_;}            
