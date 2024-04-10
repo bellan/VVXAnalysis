@@ -51,7 +51,7 @@ namespace phys {
     Particle(const LorentzVector& l, float q = 0, int i = 0, std::bitset<15> flags = 0) : Particle(convert(l), q, i, flags) {}
     
     /// Destructor
-    virtual ~Particle(){};
+    virtual ~Particle();
     
     // Operations
     TLorentzVector p4() const {return p4_;}
