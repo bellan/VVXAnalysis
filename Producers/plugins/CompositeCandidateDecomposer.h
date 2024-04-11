@@ -1,7 +1,7 @@
 #ifndef VVXAnalysis_Producers_plugins_CompositeCandidateDecomposer_h
 #define VVXAnalysis_Producers_plugins_CompositeCandidateDecomposer_h
 
-#include "FWCore/Framework/interface/EDProducer.h"
+#include "FWCore/Framework/interface/stream/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/InputTag.h"
@@ -16,7 +16,7 @@
 
 namespace pat{
   template<class PATObjType>
-    class  CompositeCandidateDecomposer: public edm::EDProducer {
+  class  CompositeCandidateDecomposer: public edm::stream::EDProducer<> {
   public:
     explicit CompositeCandidateDecomposer(const edm::ParameterSet & iConfig);
   virtual ~CompositeCandidateDecomposer() { }

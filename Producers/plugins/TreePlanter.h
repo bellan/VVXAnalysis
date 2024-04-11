@@ -9,7 +9,7 @@
  *  \author R. Bellan - UNITO <riccardo.bellan@cern.ch>
  */
 
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -48,7 +48,7 @@
 class TTree;
 namespace pat{class Jet;}
 
-class TreePlanter: public edm::EDAnalyzer {
+class TreePlanter: public edm::one::EDAnalyzer<edm::one::SharedResources, edm::one::WatchRuns, edm::one::WatchLuminosityBlocks> {
   
  public:
   
@@ -60,8 +60,10 @@ class TreePlanter: public edm::EDAnalyzer {
   
   // Operations
   virtual void beginJob();
+  virtual void beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup);
   virtual void endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup);
   virtual void analyze(const edm::Event& event, const edm::EventSetup& setup);
+  virtual void beginRun(const edm::Run& run, const edm::EventSetup& setup);
   virtual void endRun(const edm::Run& run, const edm::EventSetup& setup);
   virtual void endJob();
   void initTree();

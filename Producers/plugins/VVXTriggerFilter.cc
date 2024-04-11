@@ -9,7 +9,7 @@
 
 #include <FWCore/Framework/interface/Frameworkfwd.h>
 #include "FWCore/Framework/interface/ConsumesCollector.h"
-#include <FWCore/Framework/interface/EDFilter.h>
+#include <FWCore/Framework/interface/stream/EDFilter.h>
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
 #include <DataFormats/PatCandidates/interface/CompositeCandidate.h>
@@ -19,7 +19,7 @@
 #include "VVXAnalysis/DataFormats/interface/RegionTypes.h"
 
 
-class VVXTriggerFilter : public edm::EDFilter {
+class VVXTriggerFilter : public edm::stream::EDFilter<> {
 public:
   /// Constructor
   explicit VVXTriggerFilter(const edm::ParameterSet& config) 

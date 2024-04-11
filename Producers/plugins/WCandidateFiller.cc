@@ -8,7 +8,7 @@
  */
 
 #include <FWCore/Framework/interface/Frameworkfwd.h>
-#include <FWCore/Framework/interface/EDProducer.h>
+#include <FWCore/Framework/interface/stream/EDProducer.h>
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
 #include <FWCore/Framework/interface/ESHandle.h>
@@ -23,11 +23,12 @@
 #include <ZZAnalysis/AnalysisStep/interface/CutSet.h>
 #include <ZZAnalysis/AnalysisStep/interface/LeptonIsoHelper.h>
 #include <ZZAnalysis/AnalysisStep/interface/DaughterDataHelpers.h>
+#include <VVXAnalysis/Commons/interface/Constants.h>
 
 #include <string>
 #include <Math/VectorUtil.h>
 
-class WCandidateFiller : public edm::EDProducer {
+class WCandidateFiller : public edm::stream::EDProducer<> {
  public:
   /// Constructor
   explicit WCandidateFiller(const edm::ParameterSet&);
@@ -64,10 +65,6 @@ WCandidateFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.getByToken(srcToken_, jjCands);
 
 
-  //--- Fill user info
-
-  const float WmassValue = 80.385;
-
   float closestWjjMassDiff = 99999.;
   //int bestWjjIdx = -1;
 
@@ -77,7 +74,7 @@ WCandidateFiller::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     pat::CompositeCandidate myCand(c); 
     
     //--- Find "best Z" (closest to mZ) among those passing the "bestZAmong" selection (2011 PRL logic)
-    float diffWmass = fabs(WmassValue - myCand.mass());
+    float diffWmass = fabs(phys::WMASS - myCand.mass());
     if (diffWmass < closestWjjMassDiff) { // Best among any ll in the collection
       //bestWjjIdx = i;
       closestWjjMassDiff = diffWmass;

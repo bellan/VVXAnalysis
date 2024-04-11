@@ -8,25 +8,23 @@
  */
 
 #include <FWCore/Framework/interface/Frameworkfwd.h>
-#include <FWCore/Framework/interface/EDFilter.h>
+#include <FWCore/Framework/interface/stream/EDFilter.h>
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
 #include <DataFormats/PatCandidates/interface/CompositeCandidate.h>
 #include "CommonTools/Utils/interface/StringCutObjectSelector.h"
 #include <ZZAnalysis/AnalysisStep/interface/bitops.h>
 
-class ZLFilter : public edm::EDFilter {
+class ZLFilter : public edm::stream::EDFilter<> {
 public:
   /// Constructor
   explicit ZLFilter(const edm::ParameterSet& config) 
     : theZLLToken(consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZLL")))
     , theZLToken(consumes<edm::View<pat::CompositeCandidate> >(config.getParameter<edm::InputTag>("ZL")))
+    , theGenCategoryToken(consumes<int>(config.getUntrackedParameter<edm::InputTag>("GenCategory" , edm::InputTag("genCategory"))))
     , selectionZL_(config.getParameter<std::string>("ZLSelection"))
     , isMC_ (config.getUntrackedParameter<bool>("isMC",false))
   {
-
-    theGenCategoryToken = consumes<int> (config.getUntrackedParameter<edm::InputTag>("GenCategory" , edm::InputTag("genCategory")));
-
   }
   
   /// Destructor

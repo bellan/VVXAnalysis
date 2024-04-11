@@ -6,10 +6,11 @@
 
 
 #include <FWCore/Framework/interface/Frameworkfwd.h>
-#include <FWCore/Framework/interface/EDFilter.h>
+#include <FWCore/Framework/interface/stream/EDFilter.h>
 #include <FWCore/Framework/interface/ESHandle.h>
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
+#include "FWCore/Utilities/interface/EDGetToken.h"
 #include <FWCore/ServiceRegistry/interface/Service.h>
 #include <CommonTools/UtilAlgos/interface/TFileService.h>
 #include <DataFormats/HepMCCandidate/interface/GenParticle.h>
@@ -26,7 +27,7 @@ using namespace std;
 using namespace edm;
 
 
-class GenFilterCategory: public edm::EDFilter {
+class GenFilterCategory: public edm::stream::EDFilter<> {
 
 public:
   
@@ -34,7 +35,8 @@ public:
   GenFilterCategory(const ParameterSet& pset)
     : sel_             (pset.getParameter<int>("Category"))
     , signalDefinition_(pset.getParameter<int>("SignalDefinition"))
-    , genLabel_        (pset.getParameter<edm::InputTag>("src")) {
+    , genToken_        (consumes<reco::CandidateCollection>(pset.getParameter<edm::InputTag>("src")))
+  {
     produces<int>();
     produces<std::vector<reco::GenParticle> >();
 
@@ -53,7 +55,7 @@ public:
 private:
   int sel_;
   int signalDefinition_;
-  edm::InputTag genLabel_;
+  edm::EDGetTokenT<reco::CandidateCollection> genToken_;
   TH1F* category;
 
 };
@@ -67,7 +69,7 @@ bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
   
   // Get the collection of gen particles
   edm::Handle<edm::View<reco::Candidate> > genParticles;
-  event.getByLabel(genLabel_, genParticles);
+  event.getByToken(genToken_, genParticles);
  
   //------------------ loop over genparticles ---------------------------------------------------------
   for (View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) {

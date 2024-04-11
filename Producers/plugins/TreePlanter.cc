@@ -139,6 +139,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , eventsInEtaAcceptance_(0)
   , eventsInEtaPtAcceptance_(0){
   
+  usesResource("TFileService");  // The specific resource used, since this module has the SharedResources ability
   edm::Service<TFileService> fs;
   theTree = fs->make<TTree>("ElderTree","ElderTree");
   
@@ -206,6 +207,11 @@ void TreePlanter::beginJob(){
   theTree->Branch("genJets"       , &genJets_);
   theTree->Branch("genJetsAK8"    , &genJetsAK8_);
 }
+
+
+// If the module has the ability WatchLuminosityBlocks, then it must implement both beginLuminosityBlock() and endLuminosityBlock()
+void TreePlanter::beginLuminosityBlock(const edm::LuminosityBlock& lumi, const edm::EventSetup& setup){}
+
 
 void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
 {
@@ -300,6 +306,10 @@ void TreePlanter::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::Even
   if(found) eventsInRegions_[phys::SR_HZZ] += counter->value;
 
 }
+
+
+// If the module has the ability WatchRuns, then it must implement both beginRun() and endRun()
+void TreePlanter::beginRun(const edm::Run& run, const edm::EventSetup& setup){}
 
 
 void TreePlanter::endRun(const edm::Run& run, const edm::EventSetup& setup){

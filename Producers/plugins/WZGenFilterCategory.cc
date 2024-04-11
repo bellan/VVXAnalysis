@@ -5,7 +5,7 @@
  */
 
 #include <FWCore/Framework/interface/Frameworkfwd.h>
-#include <FWCore/Framework/interface/EDFilter.h>
+#include <FWCore/Framework/interface/stream/EDFilter.h>
 #include <FWCore/Framework/interface/ESHandle.h>
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
@@ -32,7 +32,7 @@
 using namespace std;
 using namespace edm;
 
-class WZGenFilterCategory: public edm::EDFilter {
+class WZGenFilterCategory: public edm::stream::EDFilter<> {
 
 public:
   

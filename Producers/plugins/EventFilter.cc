@@ -8,7 +8,7 @@
 
 
 #include <FWCore/Framework/interface/Frameworkfwd.h>
-#include <FWCore/Framework/interface/EDFilter.h>
+#include <FWCore/Framework/interface/stream/EDFilter.h>
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
 #include "FWCore/Utilities/interface/EDGetToken.h"
@@ -33,7 +33,7 @@ using namespace std;
 using namespace edm;
 
 
-class EventFilter: public edm::EDFilter {
+class EventFilter: public edm::stream::EDFilter<> {
 
 public:
   

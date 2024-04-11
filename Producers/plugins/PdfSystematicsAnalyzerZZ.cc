@@ -1,5 +1,5 @@
 ////////// Header section /////////////////////////////////////////////
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -15,7 +15,7 @@
 #define foreach BOOST_FOREACH
 
 
-class PdfSystematicsAnalyzerZZ: public edm::EDAnalyzer {
+class PdfSystematicsAnalyzerZZ: public edm::one::EDAnalyzer<edm::one::SharedResources> {
 public:
   
   PdfSystematicsAnalyzerZZ(const edm::ParameterSet& pset);
@@ -52,11 +52,10 @@ private:
   // std::vector<double> weighted2SelectedEvents2e2mu_;
   // std::vector<double> weightedEvents2e2mu_;
 
-  edm::InputTag theGenCategoryLabel; 
+  edm::EDGetTokenT<int> theGenCategoryToken_;
 
  //int finstate_;
-  TH2F * h_PdfSet1,  * h_PdfSet2, * h_PdfSet3;
-  TH2F * h_Pdf2e2muSet1,  * h_Pdf2e2muSet2, * h_Pdf2e2muSet3;
+  // TH2F * h_PdfSet1,  * h_PdfSet2, * h_PdfSet3;
   std::map<int,std::map<int,TH2 *> > _hPlots;
   // int FinStat;
 };
@@ -115,10 +114,11 @@ PdfSystematicsAnalyzerZZ::PdfSystematicsAnalyzerZZ(const edm::ParameterSet& pset
   filterNames_(pset.getParameter<std::vector<std::string> > ("FilterNames")),
   pdfWeightTags_(pset.getUntrackedParameter<std::vector<edm::InputTag> > ("PdfWeightTags")) { 
 
-  theGenCategoryLabel = pset.getUntrackedParameter<edm::InputTag>("GenCategory" , edm::InputTag("genCategory"));
+  theGenCategoryToken_ = consumes<int>( pset.getUntrackedParameter<edm::InputTag>("GenCategory" , edm::InputTag("genCategory")) );
 
   theNumberOfEvents_=0;  
 
+  usesResource("TFileService");
   edm::Service<TFileService> fs;
   PdfSystematicsAnalyzerZZ::book(fs.operator->());
 
@@ -354,7 +354,7 @@ void PdfSystematicsAnalyzerZZ::analyze(const edm::Event & ev, const edm::EventSe
 
   //Check final state  
   edm::Handle<int> genCategory;
-  ev.getByLabel(theGenCategoryLabel, genCategory);
+  ev.getByToken(theGenCategoryToken_, genCategory);
   genCategory_ = *genCategory;
   //if(genCategory_ == 0) return; // fixme!!
   // std::cout<<"genCategory "<<genCategory_<<std::endl;

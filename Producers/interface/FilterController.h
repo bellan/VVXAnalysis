@@ -76,7 +76,7 @@ class FilterController {
   std::string MCFilter;
   edm::EventID cachedEvtId;
   edm::Handle<edm::TriggerResults> triggerResults;
-  const edm::TriggerNames* triggerNames;
+  edm::TriggerNames triggerNames;
 
   edm::EDGetTokenT<edm::TriggerResults> triggerToken_;
   void eventInit(const edm::Event & event);
