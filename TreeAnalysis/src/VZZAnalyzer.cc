@@ -589,7 +589,7 @@ void VZZAnalyzer::jetRecoEfficiency(){
 void VZZAnalyzer::endNameHistos(){
 	TH1* massAlgorithms = theHistograms->get("Resolution AK8: winner");
 	if(massAlgorithms)
-		for(unsigned int i = 0; i < 6; ++i)
+		for(unsigned int i = 0; i < 5; ++i)
 			massAlgorithms->GetXaxis()->SetBinLabel(i+1, massAlgsNames_[i]);
 	
 	TH1* sigType = theHistograms->get("Signal Type");
@@ -711,8 +711,8 @@ void VZZAnalyzer::AK8recover(){
 		if(dR < 0.2){
 			++N8recover_;
 			theHistograms->fill("Extra AK8: genVB pt","Extra AK8: genVB pt", 40,0.,400, genVB.pt(), theWeight);
-			float dM = closestAK8->corrPrunedMass() - genVB.mass();
-			theHistograms->fill("Extra AK8: #DeltaMcorrPruned","Extra AK8: #DeltaMcorrPruned", 26,-40.,25., dM, theWeight);
+			float dM = closestAK8->mass() - genVB.mass();
+			theHistograms->fill("Extra AK8: #DeltaM","Extra AK8: #DeltaM", 26,-40.,25., dM, theWeight);
 			if(ZZ)
 				theHistograms->fill("Extra AK8: ZZ pt","Extra AK8: ZZ pt", 40,0.,400, ZZ->pt(), theWeight);
 		}
@@ -725,8 +725,8 @@ void VZZAnalyzer::AK8recover(){
 			theHistograms->fill("Extra AK8_{pTau<.35}: #DeltaR", "Extra AK8_{pTau<.35}: #DeltaR", 40,0.,0.8, dRpt, theWeight);
 		if(dRpt < 0.2){
 			theHistograms->fill("Extra AK8_{pTau<.35}: genVB pt", "Extra AK8_{pTau<.35}: genVB pt", 40,0.,400, genVB.pt(), theWeight);
-			float dM = closestAK8pTau35->corrPrunedMass() - genVB.mass();
-			theHistograms->fill("Extra AK8_{pTau<.35}: #DeltaMcorrPruned", "Extra AK8_{pTau<.35}: #DeltaMcorrPruned", 26,-40.,25., dM, theWeight);
+			float dM = closestAK8pTau35->mass() - genVB.mass();
+			theHistograms->fill("Extra AK8_{pTau<.35}: #DeltaM", "Extra AK8_{pTau<.35}: #DeltaM", 26,-40.,25., dM, theWeight);
 			if(ZZ)
 				theHistograms->fill("Extra AK8_{pTau<.35}: ZZ pt", "Extra AK8_{pTau<.35}: ZZ pt", 40,0.,400, ZZ->pt(), theWeight);
 		}
@@ -892,21 +892,20 @@ void VZZAnalyzer::AK8MassAlgorithms(){
 			//We have a match! This AK8 should have the same mass of the gen one
 			float mass           = jetsAK8_puppiTauCut.front().mass();
 			float secvtxMass     = jetsAK8_puppiTauCut.front().secvtxMass();
-			float corrPrunedMass = jetsAK8_puppiTauCut.front().corrPrunedMass();
 			float prunedMass     = jetsAK8_puppiTauCut.front().prunedMass();
 			float softDropMass   = jetsAK8_puppiTauCut.front().softDropMass();
 			float puppiMass      = jetsAK8_puppiTauCut.front().puppiMass();
-			float massesVal[6] = {mass, secvtxMass, corrPrunedMass, prunedMass, softDropMass, puppiMass};
-			float absDiffs[6];
-			for(unsigned int i = 0; i<6; ++i){
+			std::vector<float> massesVal = {mass, secvtxMass, prunedMass, softDropMass, puppiMass};
+			std::vector<float> absDiffs(massesVal.size());
+			for(unsigned int i = 0; i < massesVal.size(); ++i){
 				char* name = Form("Resolution AK8: #DeltaM with %s", massAlgsNames_[i]);
 				char* title = Form("%s;#DeltaM [GeV/c^{2}]", name);
 				theHistograms->fill(name, title, 40,-50.,50., massesVal[i] - genj.mass(), theWeight);
 				absDiffs[i] = fabs( massesVal[i] - genj.mass() );
 			}
 			//find the minimum difference
-			int minpos = std::min_element(absDiffs, absDiffs + 6) - absDiffs; //pointer arithmetic
-			theHistograms->fill("Resolution AK8: winner", "Resolution AK8: winner;Algorithm", 6,-0.5,5.5, minpos, theWeight);
+			int minpos = std::distance(absDiffs.begin(), std::min_element(absDiffs.begin(), absDiffs.end())); //pointer arithmetic
+			theHistograms->fill("Resolution AK8: winner", "Resolution AK8: winner;Algorithm", 5,-0.5,4.5, minpos, theWeight);
 		}
 	}
 }
@@ -1251,13 +1250,11 @@ pair<const Boson<Particle>*, Boson<Jet>*> VZZAnalyzer::reconstructionAK4(){
 void VZZAnalyzer::AKrace(pair<const Boson<Particle>*, Boson<Jet>*> match4, pair<const Particle*, Jet*> match8){
 	float dM4 = match4.second->mass() - match4.first->mass();
 	float dM8 = match8.second->mass() - match8.first->mass(); //maybe use another mass alg.
-	float dM8corrPruned = match8.second->corrPrunedMass() - match8.first->mass();
 	float genDM = match4.first->mass() - match8.first->mass();
-	float recDM = match4.second->mass() - match8.second->corrPrunedMass();
+	float recDM = match4.second->mass() - match8.second->mass();
 	
 	theHistograms->fill("AKrace: mass res. 4", "AKrace: mass res. 4", 25,-25.,25.,dM4,theWeight);
 	theHistograms->fill("AKrace: mass res. 8", "AKrace: mass res. 8", 25,-25.,25.,dM8,theWeight);
-	theHistograms->fill("AKrace: corrPrunedMass res. 8", "AKrace: corrPrunedMass res. 8", 25,-25.,25., dM8corrPruned, theWeight);
 	theHistograms->fill("AKrace: gen(mass(4) -mass(8))", "AKrace: gen(mass(4) -mass(8))", 25,-25.,25., genDM, theWeight);
 	theHistograms->fill("AKrace: rec(mass(4) -mass(8))", "AKrace: rec(mass(4) -mass(8))", 25,-25.,25., recDM, theWeight);
 	
@@ -1521,8 +1518,8 @@ void VZZAnalyzer::bestZMassJetMVA(){
 		}
 		if(found_8r){
 			theHistograms->fill("bestZ AK8_{rec} mass", "bestZ AK8_{rec} mass", 30,0.,150, it_8r->mass(), theWeight);
-			theHistograms->fill<TH2F>("BestZ AK8_{rec} mass vs ZZ pt", "BestZ AK8_{rec} mass vs ZZ pt", PT_2D_SIZE, MASS_2D_SIZE, ZZ->pt(), it_8r->corrPrunedMass(), theWeight);
-			theHistograms->fill<TH2F>("BestZ AK8_{rec} mass vs ZZ mass", "BestZ AK8_{rec} mass vs ZZ mass", PT_2D_SIZE, MASS_2D_SIZE, ZZ->mass(), it_8r->corrPrunedMass(), theWeight);
+			theHistograms->fill<TH2F>("BestZ AK8_{rec} mass vs ZZ pt", "BestZ AK8_{rec} mass vs ZZ pt", PT_2D_SIZE, MASS_2D_SIZE, ZZ->pt(), it_8r->mass(), theWeight);
+			theHistograms->fill<TH2F>("BestZ AK8_{rec} mass vs ZZ mass", "BestZ AK8_{rec} mass vs ZZ mass", PT_2D_SIZE, MASS_2D_SIZE, ZZ->mass(), it_8r->mass(), theWeight);
 			
 			theHistograms->fill("Best Z (8_{rec}) tau21", "Best Z (8_{rec}) tau21", 20,0.,1., it_8r->tau2(), theWeight);
 		}
@@ -1551,7 +1548,7 @@ void VZZAnalyzer::bestZMassJetMVA(){
 	if(found_4r || found_8r){
 		float type = 0.;  // -1 --> AK4 pair,   1 --> AK8
 		if(found_4r && found_8r)
-			type = (fabs(it_8r->corrPrunedMass() - phys:: ZMASS) < fabs(it_4r->mass() - phys:: ZMASS) ?1.:-1.);
+			type = (fabs(it_8r->mass() - phys:: ZMASS) < fabs(it_4r->mass() - phys:: ZMASS) ?1.:-1.);
 		else if(found_8r)
 			type = 1.;
 		else if(found_4r)
@@ -1618,7 +1615,7 @@ void VZZAnalyzer::minPtJetMVA(){
 		auto it = jetsAK8->begin();
 		bool found = false;
 		while(it != jetsAK8->end()){
-			if(physmath::deltaR(*it, *ZZ) > 2. && it->corrPrunedMass() > 50.){
+			if(physmath::deltaR(*it, *ZZ) > 2. && it->mass() > 50.){
 				found = true;
 				break;
 			}
@@ -1626,7 +1623,7 @@ void VZZAnalyzer::minPtJetMVA(){
 		}
 		if(found){
 			theHistograms->fill("#DeltaR(ZZ, minPt AK8_{rec})", "#DeltaR(ZZ, minPt AK8_{rec})", 35,0.,7., physmath::deltaR(*it, *ZZ), 1.);
-			theHistograms->fill<TH2F>("Min PtTot AK8_{rec} mass vs ZZ pt", "Min PtTot AK8_{rec} mass vs ZZ pt", PT_2D_SIZE, MASS_2D_SIZE, ZZ->pt(), it->corrPrunedMass(), 1.);
+			theHistograms->fill<TH2F>("Min PtTot AK8_{rec} mass vs ZZ pt", "Min PtTot AK8_{rec} mass vs ZZ pt", PT_2D_SIZE, MASS_2D_SIZE, ZZ->pt(), it->mass(), 1.);
 		}
 	}
 	//------------------	REC AK4	------------------
@@ -1679,10 +1676,10 @@ void VZZAnalyzer::furthestJetMVA(){
 	// AK8
 	Jet* furthestAK8 = furthestSing(jetsAK8, *ZZ, 2., make_pair(50.,130.));
 	if(furthestAK8 != nullptr){
-		if(furthestAK8->corrPrunedMass() < 50.)
-			cout<<"  Outside "<<furthestAK8->corrPrunedMass()<<'\n';
-		theHistograms->fill<TH2F>("Furthest AK8_{rec} mass vs ZZ pt", "Furthest AK8_{rec} mass vs ZZ pt", PT_2D_SIZE, MASS_2D_SIZE, ZZ->pt(), furthestAK8->corrPrunedMass(), 1.);
-		theHistograms->fill<TH2F>("Furthest AK8_{rec} mass vs ZZ P",  "Furthest AK8_{rec} mass vs ZZ P",  P_2D_SIZE,  MASS_2D_SIZE, ZZ->p(),  furthestAK8->corrPrunedMass(), 1.);
+		if(furthestAK8->mass() < 50.)
+			cout<<"  Outside "<<furthestAK8->mass()<<'\n';
+		theHistograms->fill<TH2F>("Furthest AK8_{rec} mass vs ZZ pt", "Furthest AK8_{rec} mass vs ZZ pt", PT_2D_SIZE, MASS_2D_SIZE, ZZ->pt(), furthestAK8->mass(), 1.);
+		theHistograms->fill<TH2F>("Furthest AK8_{rec} mass vs ZZ P",  "Furthest AK8_{rec} mass vs ZZ P",  P_2D_SIZE,  MASS_2D_SIZE, ZZ->p(),  furthestAK8->mass(), 1.);
 		theHistograms->fill("Max #DeltaR(ZZ, AK8_{rec})", "Max #DeltaR(ZZ, AK8_{rec})", 30,2.,8., physmath::deltaR(*furthestAK8, *ZZ), 1.);
 		delete furthestAK8;
 	}
@@ -1727,7 +1724,7 @@ void VZZAnalyzer::closestJetAnalisys(){
 		const Jet* closestAK8 = closestSing(jetsAK8, hadVB);
 		if(closestAK8){
 			float dR = physmath::deltaR(*closestAK8, hadVB);
-			float dM = closestAK8->corrPrunedMass() - hadVB.mass(); //Jet -->corrPrunedmass()
+			float dM = closestAK8->mass() - hadVB.mass(); //Jet -->corrPrunedmass()
 			theHistograms->fill("#DeltaM_{corr-prun} (AK8_{rec}, V)", "#DeltaM_{corr-prun} (AK8_{rec}, V)", 40,-20,20, dM, 1.);
 			theHistograms->fill("#DeltaR (AK8_{rec}, V)", "#DeltaR (AK8_{rec}, V)", 40,0.,0.4, dR,1.);
 		}
@@ -1743,7 +1740,7 @@ void VZZAnalyzer::closestJetAnalisys(){
 		
 		//4: How often AK8 are better? Are there some variables that discriminate?
 		if(closestAK4s != nullptr && closestAK8 != nullptr){
-			float dM8 = closestAK8->corrPrunedMass() - hadVB.mass();
+			float dM8 = closestAK8->mass() - hadVB.mass();
 			float dM4 = closestAK4s->mass() - hadVB.mass();
 			if(fabs(dM8) < fabs(dM4)){
 				++win8_;
@@ -1864,32 +1861,6 @@ void VZZAnalyzer::ptCutMVA(){
 			const char* name = Form("AK8 gen Mass: pt > %d", (int)(cut));
 			theHistograms->fill(name, Form("%s;mass [GeV/c^{2}]", name), 30,0.,120., genMass, theWeight);
 		}
-		/*
-		// RECONSTRUCTED
-		//if(jetsAK8->size() == 0)
-			//return; //Give up: can't analyze mass functions for AK8s if there are none
-		stable_sort(jetsAK8->begin(), jetsAK8->end(), phys::DeltaRComparator(genVB));
-		//DeltaRComparator is defined in Commons/interface/Utils.h
-		if(physmath::deltaR(jetsAK8->front(), genVB) < 0.5){
-			//We have a match! This AK8 should have the mass of a VB (80-90 GeV)
-			//Compute the mass once and for all
-			float mass           = jetsAK8->front().mass();
-			float secvtxMass     = jetsAK8->front().secvtxMass();
-			float corrPrunedMass = jetsAK8->front().corrPrunedMass();
-			float prunedMass     = jetsAK8->front().prunedMass();
-			float softDropMass   = jetsAK8->front().softDropMass();
-			float puppiMass      = jetsAK8->front().puppiMass();
-			float massesVal[6] = {mass, secvtxMass, corrPrunedMass, prunedMass, softDropMass, puppiMass}; //[1] = {corrPrunedMass};
-			
-			foreach(const float& cut, vector_cuts){
-				if(jetsAK8->front().pt() < cut)
-					break; //If it doesn't pass this pt selection, it won't pass the others
-				for(int i = 0; i < 6 ; ++i){  // massesVal's size
-					const char* name = Form("%s: pt > %d", massAlgsNames_[i], (int)(cut));
-					theHistograms->fill(name, Form("%s;mass [GeV/c^{2}]", name), 30,0.,120., massesVal[i], theWeight);
-				}
-			}
-		}*/
 	}
 }
 
@@ -2222,7 +2193,7 @@ vector<double>* VZZAnalyzer::getAK8features(const Jet& j){
 	buffer->push_back(j.pt());
 	buffer->push_back(j.chosenAlgoMass());  //softDropMass_
 	buffer->push_back(physmath::minDM(j.chosenAlgoMass()));
-	buffer->push_back(j.corrPrunedMass());
+	buffer->push_back(j.mass());
 	buffer->push_back(j.prunedMass());      // 5
 	
 	//float tau21 = j.tau2()/j.tau1();  // This should be high

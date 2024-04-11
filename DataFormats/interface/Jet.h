@@ -72,7 +72,6 @@ namespace phys {
       , tau1_(-999)
       , tau2_(-999)
       , tau3_(-999)
-      , corrPrunedMass_(-999)
       , prunedMass_(-999)
       , softDropMass_(-999)
       , puppiTau1_(-999)
@@ -156,7 +155,6 @@ namespace phys {
     double tau1()           const {return tau1_;}
     double tau2()           const {return tau2_;}
     double tau3()           const {return tau3_;}
-    double corrPrunedMass() const {return corrPrunedMass_;}
     double prunedMass()     const {return prunedMass_;}
     double softDropMass()   const {return softDropMass_;}
     double puppiTau1()      const {return puppiTau1_;}
@@ -230,7 +228,6 @@ namespace phys {
     float tau1_;
     float tau2_;
     float tau3_;
-    float corrPrunedMass_;
     float prunedMass_;
     float softDropMass_;
     float puppiTau1_;
@@ -239,7 +236,7 @@ namespace phys {
     float puppiMass_;
 
 
-    ClassDef(Jet, 2)
+    ClassDef(Jet, 3)
   };
 }
 
