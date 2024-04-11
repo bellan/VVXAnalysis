@@ -212,15 +212,6 @@ process.goodJetsAK8 = cms.EDFilter("PFJetIDSelectionFunctorFilter",
                                    filter = cms.bool(False) )
 
 
-process.correctedJetsAK8 = cms.EDProducer("CorrJetsProducer",
-                                          year    = cms.int32  (LEPTON_SETUP),
-                                          jets    = cms.InputTag( "goodJetsAK8" ), # FIXME check with Roberto, it was cleanJetsFat/AK8
-                                          vertex  = cms.InputTag( "goodPrimaryVertices" ), 
-                                          rho     = cms.InputTag( "fixedGridRhoFastjetAll"   ),
-                                          payload = cms.string  ( "AK8PFPuppi" ),
-                                          isData  = cms.bool    (  not IsMC )) # FIXME check with Roberto
-
-
 from PhysicsTools.PatAlgos.tools.helpers import getPatAlgosToolsTask
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 from RecoBTag.ONNXRuntime.pfDeepBoostedJet_cff import _pfDeepBoostedJetTagsAll, _pfDeepBoostedJetTagsProbs, _pfDeepBoostedJetTagsMetaDiscrs, _pfMassDecorrelatedDeepBoostedJetTagsProbs, _pfMassDecorrelatedDeepBoostedJetTagsMetaDiscrs
@@ -228,7 +219,7 @@ from RecoBTag.ONNXRuntime.pfParticleNet_cff import _pfParticleNetJetTagsAll
 
 updateJetCollection(
     process,
-    jetSource = cms.InputTag('correctedJetsAK8'),
+    jetSource = cms.InputTag('goodJetsAK8'),
     pvSource = cms.InputTag('offlineSlimmedPrimaryVertices'),
     svSource = cms.InputTag('slimmedSecondaryVertices'),
     rParam = 0.8,
@@ -243,7 +234,7 @@ process.outpathPAT = cms.EndPath(patAlgosToolsTask)
 
 
 #process.fatJets = cms.Sequence(process.patJetCorrFactorsReapplyJECAK8 + process.patJetsReapplyJECAK8 + process.goodJetsAK8 + process.correctedJetsAK8 + process.disambiguatedJetsAK8)
-process.fatJets = cms.Path(process.patJetCorrFactorsReapplyJECAK8 + process.patJetsReapplyJECAK8 + process.goodJetsAK8 + process.correctedJetsAK8)
+process.fatJets = cms.Path(process.patJetCorrFactorsReapplyJECAK8 + process.patJetsReapplyJECAK8 + process.goodJetsAK8)
 ### ---------------------------------------------------------------------
 
 ## targetting ZZ->4l
@@ -329,7 +320,7 @@ process.disambiguatedJetsAK8 = cms.EDProducer("JetsWithLeptonsRemover",
                                               ElectronPreselection = cms.string(""),
                                               MatchingType         = cms.string("byDeltaR"), 
                                               DeltaRCut = cms.untracked.double(0.8),
-                                              Jets      = cms.InputTag("correctedJetsAK8:corrJets"), # need to create AK8 dressed jets???
+                                              Jets      = cms.InputTag("goodJetsAK8"), # need to create AK8 dressed jets???
                                               Muons     = cms.InputTag("muonsToBeRemovedFromJets"),
                                               Electrons = cms.InputTag("electronsToBeRemovedFromJets"),
                                               Diboson   = cms.InputTag(""),
