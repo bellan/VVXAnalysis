@@ -28,7 +28,7 @@ using std::vector;
 class VZZAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZZAnalyzer>{
 	public:
 		enum VCandType {None, W, Z}; //VCandidate is closest to Wmass or Zmass?
-		const char* massAlgsNames_[6] = {"mass", "secvtxMass", "corrPrunedMass", "prunedMass", "softDropMass", "puppiMass"};
+		const char* massAlgsNames_[5] = {"mass", "secvtxMass", "prunedMass", "softDropMass", "puppiMass"};
 		
 		VZZAnalyzer(const AnalysisConfiguration& configuration) 
 				: EventAnalyzer(*(new Selector<VZZAnalyzer>(*this)), configuration){
