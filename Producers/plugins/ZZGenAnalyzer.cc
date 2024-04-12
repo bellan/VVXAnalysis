@@ -5,7 +5,7 @@
  */
 
 #include <FWCore/Framework/interface/Frameworkfwd.h>
-#include <FWCore/Framework/interface/EDAnalyzer.h>
+#include <FWCore/Framework/interface/one/EDAnalyzer.h>
 #include <FWCore/Framework/interface/ESHandle.h>
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
@@ -38,11 +38,15 @@ using namespace reco;
 
 
 
-class ZZGenAnalyzer: public edm::EDAnalyzer {
+class ZZGenAnalyzer: public edm::one::EDAnalyzer<edm::one::SharedResources> {
 
 public:
   ZZGenAnalyzer(const ParameterSet& pset)
-    : topologyLabel_(pset.getParameter<edm::InputTag>("Topology")) {}
+    : topologyToken_(consumes<int>(pset.getParameter<edm::InputTag>("Topology")))
+    , genParticlesToken_(consumes<edm::View<reco::Candidate>>(edm::InputTag("genParticlesPruned")))
+  {
+    usesResource("TFileService");
+  }
 					 
   void analyze(const edm::Event & event, const edm::EventSetup& eventSetup);
   
@@ -50,8 +54,8 @@ public:
   virtual void endJob(){}
 
 private:
-  edm::InputTag topologyLabel_;
-
+  edm::EDGetTokenT<int> topologyToken_;
+  edm::EDGetTokenT<edm::View<reco::Candidate>> genParticlesToken_;
 
   TH1I* toptest;
 };
@@ -78,10 +82,10 @@ void ZZGenAnalyzer::analyze(const Event & event, const EventSetup& eventSetup) {
 
  
   edm::Handle<int> topology;
-  event.getByLabel(topologyLabel_, topology);
+  event.getByToken(topologyToken_, topology);
   
   edm::Handle<edm::View<reco::Candidate> > genParticles;
-  event.getByLabel("genParticlesPruned", genParticles);  
+  event.getByToken(genParticlesToken_, genParticles);  
   
   //------------------ loop over genparticles ---------------------------------------------------------
   for (View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p) {
