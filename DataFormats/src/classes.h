@@ -7,6 +7,7 @@
 #include <VVXAnalysis/DataFormats/interface/DiBoson.h>
 #include <VVXAnalysis/DataFormats/interface/RegionsCounter.h>
 #include <VVXAnalysis/DataFormats/interface/GenEventWeights.h>
+#include <VVXAnalysis/DataFormats/interface/MELA.h>
 
 phys::Boson<phys::Particle> dummyBosonParticle;
 phys::Boson<phys::Lepton>   dummyBosonLepton;
