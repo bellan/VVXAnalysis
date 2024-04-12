@@ -44,7 +44,7 @@ FilterController::eventInit(const edm::Event & event) {
   // Initialize trigger results table
   if (event.id()==cachedEvtId) return;
   if (event.getByToken(triggerToken_, triggerResults)) {
-    triggerNames = &(event.triggerNames(*triggerResults));
+    triggerNames = event.triggerNames(*triggerResults);
   } else {
     cout << "ERROR: failed to get TriggerResults" << endl;
   }
@@ -170,8 +170,8 @@ FilterController::passFilter(const edm::Event & event, const string& filterPath)
   eventInit(event);
 
 
-  unsigned i = triggerNames->triggerIndex(filterPath);
-  if (i== triggerNames->size()){
+  unsigned i = triggerNames.triggerIndex(filterPath);
+  if (i== triggerNames.size()){
     cout << "ERROR: FilterController::isTriggerBit: path does not exist! " << filterPath << endl;
     return false;
     //abort();
