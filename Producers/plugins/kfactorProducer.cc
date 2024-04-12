@@ -36,7 +36,7 @@
 #include <CommonTools/UtilAlgos/interface/TFileService.h>
 #include <SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h>
 #include "ZZAnalysis/AnalysisStep/interface/EwkCorrections.h"
-#include "ZZAnalysis/AnalysisStep/src/kFactors.C"
+#include "ZZAnalysis/AnalysisStep/interface/kFactors.h"
 
 //
 // class declaration
@@ -149,9 +149,10 @@ kfactorProducer::produce(edm::Event& event, const edm::EventSetup& iSetup)
 		  bool sameflavor=(genVBParticles->at(0).daughter(0)->pdgId()*genVBParticles->at(0).daughter(1)->pdgId() == genVBParticles->at(3).daughter(0)->pdgId()*genVBParticles->at(3).daughter(1)->pdgId());
 		  
 		  // last argument is the order. Check it.
-		  KFactorQCDqqZZ_dPhi = kfactor_qqZZ_qcd_dPhi( fabs(genVBParticles->at(0).phi() - genVBParticles->at(3).phi()), (sameflavor)?1:2);  
-		  KFactorQCDqqZZ_M    = kfactor_qqZZ_qcd_M   ( m4l, (sameflavor)?1:2 ,2) / kfactor_qqZZ_qcd_M   ( m4l, (sameflavor)?1:2 ,1); ;
-		  KFactorQCDqqZZ_Pt   = kfactor_qqZZ_qcd_Pt  ( pt4l, (sameflavor)?1:2 );
+		  int finalState = sameflavor ? 1 : 2;
+		  KFactorQCDqqZZ_dPhi = KFactors::kfactor_qqZZ_qcd_dPhi( fabs(genVBParticles->at(0).phi() - genVBParticles->at(3).phi()), finalState);
+		  KFactorQCDqqZZ_M    = KFactors::kfactor_qqZZ_qcd_M   ( m4l , finalState, 2) / KFactors::kfactor_qqZZ_qcd_M( m4l, finalState, 1);
+		  KFactorQCDqqZZ_Pt   = KFactors::kfactor_qqZZ_qcd_Pt  ( pt4l, finalState);
     }
     else{  // genVBParticles contains e.g. WZ
       edm::LogWarning("kfactorProducer")<<"Warning: The GenParticles used for kfactor have not PDG ID 23 23 but "<<genVBParticles->at(0).pdgId()<<" "<<genVBParticles->at(3).pdgId()<<std::endl;
