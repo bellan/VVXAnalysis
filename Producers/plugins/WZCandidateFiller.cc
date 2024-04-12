@@ -8,9 +8,10 @@
  */
 
 #include <FWCore/Framework/interface/Frameworkfwd.h>
-#include <FWCore/Framework/interface/EDProducer.h>
+#include <FWCore/Framework/interface/stream/EDProducer.h>
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include <DataFormats/PatCandidates/interface/CompositeCandidate.h>
 #include "CommonTools/Utils/interface/StringCutObjectSelector.h"
 
@@ -26,7 +27,7 @@
 #define foreach BOOST_FOREACH
 
 
-class WZCandidateFiller : public edm::EDProducer {
+class WZCandidateFiller : public edm::stream::EDProducer<> {
 
 public:
   /// Constructor
