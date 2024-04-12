@@ -5,14 +5,13 @@
  */
 
 #include <FWCore/Framework/interface/Frameworkfwd.h>
-#include <FWCore/Framework/interface/EDFilter.h>
+#include <FWCore/Framework/interface/stream/EDFilter.h>
 #include <FWCore/Framework/interface/ESHandle.h>
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
 #include <FWCore/ServiceRegistry/interface/Service.h>
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/Utilities/interface/EDGetToken.h"
-#include <CommonTools/UtilAlgos/interface/TFileService.h>
 #include <DataFormats/HepMCCandidate/interface/GenParticle.h>
 #include <DataFormats/HepMCCandidate/interface/GenParticleFwd.h>
 #include "DataFormats/JetReco/interface/GenJet.h"
@@ -34,10 +33,9 @@
 using namespace std;
 using namespace edm;
 
-class VVXGenFilterCategory: public edm::EDFilter {
+class VVXGenFilterCategory: public edm::stream::EDFilter<> {
 
 public:
-  
   
   VVXGenFilterCategory(const ParameterSet& pset)
     : sel_             (pset.getParameter<int>("Topology"))
