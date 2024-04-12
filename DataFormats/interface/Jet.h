@@ -83,7 +83,7 @@ namespace phys {
     {}           
     
     /// Destructor
-    virtual ~Jet(){};
+    virtual ~Jet();
     
     // Operations
 
