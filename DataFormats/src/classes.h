@@ -5,6 +5,7 @@
 #include <VVXAnalysis/DataFormats/interface/Electron.h>
 #include <VVXAnalysis/DataFormats/interface/Boson.h>
 #include <VVXAnalysis/DataFormats/interface/DiBoson.h>
+#include <VVXAnalysis/DataFormats/interface/RegionsCounter.h>
 
 phys::Boson<phys::Particle> dummyBosonParticle;
 phys::Boson<phys::Lepton>   dummyBosonLepton;
