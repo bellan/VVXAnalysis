@@ -7,4 +7,5 @@
   <class pattern="phys::Boson<phys::*>"/>
   <class pattern="phys::DiBoson<phys::*,phys::*>"/>
   <class name="phys::RegionsCounter"/>
+  <class name="phys::GenEventWeights"/>
 </lcgdict>
