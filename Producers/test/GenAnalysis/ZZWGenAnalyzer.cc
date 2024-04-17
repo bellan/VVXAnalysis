@@ -5,7 +5,7 @@
  */
 
 #include <FWCore/Framework/interface/Frameworkfwd.h>
-#include <FWCore/Framework/interface/EDAnalyzer.h>
+#include <FWCore/Framework/interface/one/EDAnalyzer.h>
 #include <FWCore/Framework/interface/ESHandle.h>
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
@@ -42,14 +42,15 @@ using namespace reco;
 
 
 
-class ZZWGenAnalyzer: public edm::EDAnalyzer {
+class ZZWGenAnalyzer: public edm::one::EDAnalyzer<edm::one::SharedResources> {
 
 public:
   ZZWGenAnalyzer(const ParameterSet& pset)
     : signalDefinition_(pset.getUntrackedParameter<int>("SignalDefinition",3))
-    , categoryLabel_(pset.getParameter<edm::InputTag>("Category")) {}
-					 
- 
+    , categoryToken_(consumes<int>( pset.getParameter<edm::InputTag>("Category")) )
+  {
+    usesResource("TFileService");  // The specific resource used, since this module has the SharedResources ability
+  }
 
   void analyze(const edm::Event & event, const edm::EventSetup& eventSetup);
   
@@ -58,7 +59,7 @@ public:
 
 private:
   int signalDefinition_;
-  edm::InputTag categoryLabel_;
+  edm::EDGetTokenT<int> categoryToken_;
 
   H6f*  hAll;
   Hbos* hBosons;
@@ -131,7 +132,7 @@ void ZZWGenAnalyzer::analyze(const Event & event, const EventSetup& eventSetup) 
 
  
   edm::Handle<int> category;
-  event.getByLabel(categoryLabel_, category);
+  event.getByToken(categoryToken_, category);
   
   edm::Handle<edm::View<reco::Candidate> > genParticles;
   event.getByLabel("genParticles", genParticles);  
