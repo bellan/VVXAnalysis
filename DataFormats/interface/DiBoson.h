@@ -41,6 +41,8 @@ namespace phys {
 	fakeRateSF_    = -1;
 	fakeRateSFUnc_ = -1;
       }
+
+    virtual ~DiBoson();
     
     template<typename T1, typename T2>
       DiBoson<T1,T2> clone() const {
