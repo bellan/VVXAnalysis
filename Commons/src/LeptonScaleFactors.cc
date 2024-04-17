@@ -3,7 +3,7 @@
 #include <TFile.h>
 #include <iostream>
 
-LeptonScaleFactors::LeptonScaleFactors(int year, bool preVFP) : lepSFHelper_(preVFP), year_(year){
+LeptonScaleFactors::LeptonScaleFactors(int year, std::string data_tag) : lepSFHelper_(data_tag), year_(year){
   const char* filename = Form("$CMSSW_BASE/src/VVXAnalysis/Commons/data/leptonFakeRates_%d.root", year);
 
   TFile fFR(filename);
