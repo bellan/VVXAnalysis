@@ -4,7 +4,9 @@
 <use name="VVXAnalysis/DataFormats"/>
 <use name="ZZAnalysis/AnalysisStep"/>
 <use name="CommonLHETools/LHEHandler"/>
-<use name="JHUGenMELA/MELA"/>
+<lib name="JHUGenMELAMELA"/>
+<lib name="MelaAnalyticsEventContainer"/>
 <export>
+<flags CPPFLAGS="-I$(CMSSW_BASE)/src/JHUGenMELA/MELA/interface/"/>
 <lib name="1"/>
 </export>
