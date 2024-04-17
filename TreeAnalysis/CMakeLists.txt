@@ -2,7 +2,7 @@
 ## R. Bellan (UNITO) - Feb 2014 ##
 ##################################
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.4)
 
 project(VVXAnalysis) 
 
