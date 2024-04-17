@@ -113,7 +113,7 @@ void VVXAnalyzer::analyze(){
 		
     //Electrons and muons matching
     bool match = false;
-    for(const Lepton lep : leptons){
+    for(const Lepton& lep : leptons){
       if(physmath::deltaR(ph,lep) < 0.3){
 	match = true;
 	break;

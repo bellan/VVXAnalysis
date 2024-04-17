@@ -1501,7 +1501,7 @@ void VVGammaAnalyzer::hadronicObjectsReconstruction(){
 void VVGammaAnalyzer::makeChannelReco(){
   // sets channelReco_ for each event
   unsigned int nEl(0), nMu(0);  
-  for(const Lepton l : *leptons_){
+  for(const Lepton& l : *leptons_){
     switch( abs(l.id()) ){
     case 11:
       nEl++;

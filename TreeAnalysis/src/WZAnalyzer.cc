@@ -551,7 +551,7 @@ void WZAnalyzer::BuildingWZ(){
 
   // W and Z must be on shell
   Ptot = neutrino[0].p4();
-  for(const Particle lep: lepton){
+  for(const Particle& lep: lepton){
     Ptot += lep.p4();
   }
   
