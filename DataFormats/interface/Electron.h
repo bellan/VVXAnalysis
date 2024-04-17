@@ -46,7 +46,7 @@ namespace phys {
 
 
     /// Destructor
-    virtual ~Electron(){};
+    virtual ~Electron();
     
     // Operations
     Double_t energy()     const {return energy_;}	 
