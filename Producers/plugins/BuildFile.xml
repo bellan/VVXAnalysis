@@ -16,6 +16,8 @@
   <use name="clhep"/>
   <use name="boost"/>
   <use name="root"/>
+  <lib name="JHUGenMELAMELA"/>
+  <lib name="MelaAnalyticsEventContainer"/>
   <flags EDM_PLUGIN="1"/>
 </library>
 

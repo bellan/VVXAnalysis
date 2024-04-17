@@ -2,9 +2,12 @@
 <use name="root"/>
 <use name="VVXAnalysis/DataFormats"/>
 <use name="VVXAnalysis/Commons"/>
+<lib name="JHUGenMELAMELA"/>
+<lib name="MelaAnalyticsEventContainer"/>
 
 <include_path path="/usr/include/python2.7"/>
 
 <export>
+   <flags CPPFLAGS="-I$(CMSSW_BASE)/src/JHUGenMELA/MELA/interface/"/>
    <lib name="1"/>
 </export>
