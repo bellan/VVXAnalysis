@@ -3,6 +3,7 @@
   <class name="phys::Lepton"/>
   <class name="phys::Photon"/>
   <class name="phys::Jet"/>
+  <class name="phys::Electron"/>
   <class pattern="phys::Boson<phys::*>"/>
   <class pattern="phys::DiBoson<phys::*,phys::*>"/>
 </lcgdict>
