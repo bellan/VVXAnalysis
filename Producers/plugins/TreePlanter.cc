@@ -58,7 +58,7 @@ TreePlanter::TreePlanter(const edm::ParameterSet &config)
   , dataTag_         (config.getParameter<std::string>("dataTag"))
   , preVFP_          (dataTag_ == "ULAPV")
   , leptonScaleFactors_(setup_,
-			preVFP_)
+			dataTag_)
   , photonScaleFactors_(setup_,
 			preVFP_)
   , signalDefinition_(config.getParameter<int>("signalDefinition"   ))

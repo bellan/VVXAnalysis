@@ -19,7 +19,7 @@
 
 class LeptonScaleFactors{
  public:
-  LeptonScaleFactors(int year, bool preVFP);
+  LeptonScaleFactors(int year, std::string data_tag);
 
   std::pair<double, double> efficiencyScaleFactor(const double& lepPt, const double& lepEta, int lepId, bool isInCracks = false) const{ 
     
