@@ -68,8 +68,3 @@ target_link_libraries(treeFilter TreeAnalysis)
 
 add_executable(genEventAnalyzer ${BIN}/genEventAnalyzer.cpp ${SRC}/GenEventAnalyzer.cc ${EventAnalyzer_SRCS})
 target_link_libraries(genEventAnalyzer TreeAnalysis)
-
-
-
-
-
