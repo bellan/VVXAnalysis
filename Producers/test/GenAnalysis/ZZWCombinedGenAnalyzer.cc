@@ -5,7 +5,7 @@
  */
 
 #include <FWCore/Framework/interface/Frameworkfwd.h>
-#include <FWCore/Framework/interface/EDAnalyzer.h>
+#include <FWCore/Framework/interface/one/EDAnalyzer.h>
 #include <FWCore/Framework/interface/ESHandle.h>
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
@@ -37,9 +37,12 @@ using namespace reco;
 
 
 
-class ZZWCombinedGenAnalyzer: public edm::EDAnalyzer {
+class ZZWCombinedGenAnalyzer: public edm::one::EDAnalyzer<edm::one::SharedResources> {
 public:
-  ZZWCombinedGenAnalyzer(const ParameterSet& pset) {
+  ZZWCombinedGenAnalyzer(const ParameterSet& pset)
+    : genParticlesToken_(consumes<edm::View<reco::Candidate> >(edm::InputTag("genParticles")))
+  {
+    usesResource("TFileService");
 
     cout << "Type a number \n1: MC history \n2: Real signal, MadGraph pairing \n3:Real signal, real pairing" << endl;
     cin >> num;
@@ -71,6 +74,8 @@ public:
   //------------------------------------  
   
 private:
+  edm::EDGetTokenT<edm::View<reco::Candidate>> genParticlesToken_;
+
   H6f* hAll6f;
   H6f* hZZW6f;
   H6f* hBackgr;
@@ -144,7 +149,7 @@ void ZZWCombinedGenAnalyzer::analyze(const Event & event, const EventSetup& even
   
   // Get the collection of gen particles
   edm::Handle<edm::View<reco::Candidate> > genParticles;
-  event.getByLabel("genParticles", genParticles);
+  event.getByToken(genParticlesToken_, genParticles);
 
  
   //------------------ loop over genparticles ---------------------------------------------------------
