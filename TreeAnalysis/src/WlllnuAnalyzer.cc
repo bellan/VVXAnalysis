@@ -278,13 +278,14 @@ void WlllnuAnalyzer::genEventSetup(){
 
 void WlllnuAnalyzer::reconstructionLepCompatibility(std::vector<phys::Particle>* genLep, std::vector<phys::Lepton>* recLep, string histName, string histTitle){
   
-  for(int i=0;i<genLep->size();i++){
-    	double deltaRMax = 0.; int posJ = 0;
+  for(size_t i=0; i<genLep->size(); ++i){
+    double deltaRMax = 0.;
+    size_t posJ = 0;
     	bool usedLep[recLep->size()] = {};
-    	for(int j=0;j<recLep->size();j++){
+    	for(size_t j=0; j<recLep->size(); ++j){
           usedLep[j] = false;
     	}
-    	for(int j=0;j<recLep->size();j++){
+    	for(size_t j=0; j<recLep->size(); ++j){
       	  if(usedLep[j]==false){
             if( deltaR(genLep->at(i),recLep->at(j)) < 0.1 ){ 
 	      if(deltaRMax==0.){
