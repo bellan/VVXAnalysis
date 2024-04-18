@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+from __future__ import print_function
 import CrossInfo
 from   CrossInfo import*
 import collections
@@ -12,10 +13,10 @@ class Latex:
         self.sampleStatus = ""
 
     def printStatus(self):
-        print self.Type,self.other
-        print self.Dic
-        print  "sampleTypeStatus", self.sampleTypeStatus
-        print  "sampleStatus",     self.sampleStatus
+        print(self.Type,self.other)
+        print(self.Dic)
+        print("sampleTypeStatus", self.sampleTypeStatus)
+        print("sampleStatus",     self.sampleStatus)
 
     def addElement(self,sampleType,sample,channel,obj,value):
         if sampleType not in self.Dic:
@@ -81,21 +82,21 @@ class Latex:
     
         Line = "\\hline"
         Line = ""
-        print "\\begin{tabular}{llll}"
+        print("\\begin{tabular}{llll}")
         
-        print "\\hline "+Text[0]+" & "+ Text[1] + " & " + Text[2] + " & " + Text[3] + " \\\\ \\hline"
+        print("\\hline "+Text[0]+" & "+ Text[1] + " & " + Text[2] + " & " + Text[3] + " \\\\ \\hline")
         for i, (key, value) in enumerate(self.Dic["Signal"].items()):
-            print Line, key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"],"\\\\"
+            print(Line, key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"],"\\\\")
         for i, (key, value) in enumerate(self.Dic["Irr"].items()):
-            print Line, key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"],"\\\\"
+            print(Line, key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"],"\\\\")
         for i, (key, value) in enumerate(self.Dic["red"].items()):
-            print Line, key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"],"\\\\"
+            print(Line, key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"],"\\\\")
         for i, (key, value) in enumerate(self.Dic["red"].items()):
-            print "\\hline", key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"],"\\\\"
+            print("\\hline", key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"],"\\\\")
         for i, (key, value) in enumerate(self.Dic["data"].items()):
-            print "\\hline", key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"]," \\\\ \\hline"
+            print("\\hline", key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"]," \\\\ \\hline")
 
-        print "\\end{tabular} \n"
+        print("\\end{tabular} \n")
 
 
     def printPerBinCode(self):
@@ -107,36 +108,36 @@ class Latex:
         #    self.addBin(1,"4e","yield",2.2)                                                                                                                                                                                                   
         Line = ""
 
-        print "\\begin{tabular}{"+(len( self.Dic["Data"]["Data"] ))*"lll"+"ll}"
-        print "\\hline   ",
+        print("\\begin{tabular}{"+(len( self.Dic["Data"]["Data"] ))*"lll"+"ll}")
+        print("\\hline   ", end=' ')
         
-        for bin in range(0,len( self.Dic["Signal"] )+1): print " & \\multicolumn{3}{c}{$\geq $", bin , " jet}",
-        print "\\\\ \\hline "
-        print" sample ",
-        for bin in range(0,len( self.Dic["Signal"] )+1): print " & $2e2\mu$ & $4\mu$ & $4e$ ",
-        print "\\\\ \\hline "
+        for bin in range(0,len( self.Dic["Signal"] )+1): print(" & \\multicolumn{3}{c}{$\geq $", bin , " jet}", end=' ')
+        print("\\\\ \\hline ")
+        print(" sample ", end=' ')
+        for bin in range(0,len( self.Dic["Signal"] )+1): print(" & $2e2\mu$ & $4\mu$ & $4e$ ", end=' ')
+        print("\\\\ \\hline ")
         for Type in ("Signal","Background","Total","Data"):
-            if Type == "Data" or Type =="Total":  print " \\hline "   
+            if Type == "Data" or Type =="Total":  print(" \\hline ")   
             for i, (key, value) in enumerate(self.Dic[Type].items()):
-                print Line, key ," & ",
+                print(Line, key ," & ", end=' ')
                 for bin in range(1,len(value)+1):
                     if Type != "Data" and Type != "Total":
                         self.addBin(bin,"2e2m","yield",value[bin]['2e2m']["yield"])
                         self.addBin(bin,"4m","yield",value[bin]['4m']["yield"])
                         self.addBin(bin,"4e","yield",value[bin]['4e']["yield"])
             
-                    print  "{0:.2f} & {1:.2f} & {2:.2f} &".format( value[bin]['2e2m']["yield"],value[bin]['4m']["yield"],value[bin]['4e']["yield"]),
-                print"\\\\"
-        print " \\hline "
-        print "\\end{tabular} \n"
+                    print("{0:.2f} & {1:.2f} & {2:.2f} &".format( value[bin]['2e2m']["yield"],value[bin]['4m']["yield"],value[bin]['4e']["yield"]), end=' ')
+                print("\\\\")
+        print(" \\hline ")
+        print("\\end{tabular} \n")
 
 
 
     def printSystRanges(self):
 
-        print "\\begin{tabular}{lc}"
-        print "Systematic source &   \\\\ "
-        print "\\hline   "
+        print("\\begin{tabular}{lc}")
+        print("Systematic source &   \\\\ ")
+        print("\\hline   ")
         for i, (key, value) in enumerate(self.Dic["Syst"].items()):
             List1 = []
         
@@ -147,19 +148,19 @@ class Latex:
  #               List1.append(value[bin]["4l"][-1])
             #print "{0} {1:.2f} - {2:.2f}".format(key,min(List1),max(List1))
         
-            if min(List1) == max(List1):  print "{0} & {1:.1f} \\% {2} \\\\ ".format(key,100*min(List1),100*max(List1),(39-len(key))*" ")
-            else:                         print "{0} &  {1:.1f} - {2:.1f} \\% {3}\\\\".format(key,100*min(List1),100*max(List1),(39-len(key))*" ")
+            if min(List1) == max(List1):  print("{0} & {1:.1f} \\% {2} \\\\ ".format(key,100*min(List1),100*max(List1),(39-len(key))*" "))
+            else:                         print("{0} &  {1:.1f} - {2:.1f} \\% {3}\\\\".format(key,100*min(List1),100*max(List1),(39-len(key))*" "))
         for glob in GlobSystList:
-            print "{0} & {1:.1f} \\% {2}\\\\ ".format(glob["name"],glob["value"]*100,(40-len(glob["name"]))*" ")
+            print("{0} & {1:.1f} \\% {2}\\\\ ".format(glob["name"],glob["value"]*100,(40-len(glob["name"]))*" "))
 #        for i, (key, value) in enumerate(GlobSystList):
-        print "\\hline   "
-        print "\\end{tabular} \n"
+        print("\\hline   ")
+        print("\\end{tabular} \n")
 
     def printSystRanges_2(self):
 
-        print "\\begin{tabular}{lc}"
-        print "Systematic source &   \\\\ "
-        print "\\hline   "
+        print("\\begin{tabular}{lc}")
+        print("Systematic source &   \\\\ ")
+        print("\\hline   ")
         for i, (key, value) in enumerate(self.Dic["Syst"].items()):
             List1 = []
         
@@ -169,13 +170,13 @@ class Latex:
                 List1.append(value[bin]["4l"][-1])
             #print "{0} {1:.2f} - {2:.2f}".format(key,min(List1),max(List1))
         
-            if min(List1) == max(List1):  print "{0} & {1:.1f} \\%  \\\\ ".format(key,100*min(List1),100*max(List1))
-            else:                         print "{0} &  {1:.1f} - {2:.1f} \\% \\\\".format(key,100*min(List1),100*max(List1))
+            if min(List1) == max(List1):  print("{0} & {1:.1f} \\%  \\\\ ".format(key,100*min(List1),100*max(List1)))
+            else:                         print("{0} &  {1:.1f} - {2:.1f} \\% \\\\".format(key,100*min(List1),100*max(List1)))
         for glob in GlobSystList:
-            print "{0} & {1:.1f} \\% \\\\ ".format(glob["name"],glob["value"]*100)
+            print("{0} & {1:.1f} \\% \\\\ ".format(glob["name"],glob["value"]*100))
 #        for i, (key, value) in enumerate(GlobSystList):
-        print "\\hline   "
-        print "\\end{tabular} \n"
+        print("\\hline   ")
+        print("\\end{tabular} \n")
         
 
 
@@ -185,26 +186,26 @@ class Latex:
 def YieldLatex(Text,SigDic,RedDic,IrrDic,TotDic,DataDic):                                                                                                                                                                                              
     Line = "\\hline"
     Line = ""
-    print "\\begin{tabular}{llll}"
+    print("\\begin{tabular}{llll}")
 
-    print "\\hline "+Text[0]+" & "+ Text[1] + " & " + Text[2] + " & " + Text[3] + " \\\\ \\hline"   
+    print("\\hline "+Text[0]+" & "+ Text[1] + " & " + Text[2] + " & " + Text[3] + " \\\\ \\hline")   
     for i, (key, value) in enumerate(SigDic.items()):
-        print Line, key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"],"\\\\"
+        print(Line, key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"],"\\\\")
     for i, (key, value) in enumerate(RedDic.items()):
-        print Line, key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"],"\\\\"
+        print(Line, key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"],"\\\\")
     for i, (key, value) in enumerate(IrrDic.items()):
-        print Line, key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"],"\\\\"
+        print(Line, key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"],"\\\\")
     for i, (key, value) in enumerate(TotDic.items()):
-        print "\\hline", key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"],"\\\\"
+        print("\\hline", key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"],"\\\\")
     for i, (key, value) in enumerate(DataDic.items()):
-        print "\\hline", key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"]," \\\\ \\hline"
-    print "\\end{tabular} \n"
+        print("\\hline", key ," & ", value['2e2m']["yield"] ," & ",value['4m']["yield"], "&",value['4e']["yield"]," \\\\ \\hline")
+    print("\\end{tabular} \n")
 
 def SystLatex(Text,SystDicUp,SystDicDown,isTot):                                                                                                                                                                                            
     SystDic = SystDicUp
 
-    for (keymed, valuemed),(keyup, valueup),(keydown, valuedown) in  zip(SystDic.items(),SystDicUp.items(),SystDicDown.items()):
-        for (k1,valmed),(k2,valup),(k3,valdown) in zip(valuemed.items(),valueup.items(),valuedown.items()):
+    for (keymed, valuemed),(keyup, valueup),(keydown, valuedown) in  zip(list(SystDic.items()),list(SystDicUp.items()),list(SystDicDown.items())):
+        for (k1,valmed),(k2,valup),(k3,valdown) in zip(list(valuemed.items()),list(valueup.items()),list(valuedown.items())):
             if   valup["yield"] == "-" and valdown["yield"] == "-":   continue
             elif valup["yield"] == "-":  valmed["yield"] = valdown["yield"]
             elif valdown["yield"] == "-":  valmed["yield"] = valup["yield"]
@@ -215,31 +216,31 @@ def SystLatex(Text,SystDicUp,SystDicDown,isTot):
 
     Line = "\\hline"
     Line = ""
-    print "\\begin{tabular}{llll}"
-    print "\\hline "+Text[0]+" & "+ Text[1] + " & " + Text[2] + " & " + Text[3] + " \\\\ \\hline"   
+    print("\\begin{tabular}{llll}")
+    print("\\hline "+Text[0]+" & "+ Text[1] + " & " + Text[2] + " & " + Text[3] + " \\\\ \\hline")   
     for i, (key, value) in enumerate(SystDic.items()):
-        print Line, key ," & ", value['2e2m']["yield"] ," \\%  &",value['4m']["yield"], " \\% &",value['4e']["yield"]," \\% \\\\ \\hline"
-    print "\\end{tabular} \n"
+        print(Line, key ," & ", value['2e2m']["yield"] ," \\%  &",value['4m']["yield"], " \\% &",value['4e']["yield"]," \\% \\\\ \\hline")
+    print("\\end{tabular} \n")
 
 
 def CrossLatex(Text,CrossDic,Type):
-    print "\\begin{tabular}{ccccc}"
-    print "\\hline "+Text[0]+" & "+ Text[1]  + " & "+ Text[2] + " & "+ Text[3]+ " & "+Text[4]+ " \\\\ \\hline"   
+    print("\\begin{tabular}{ccccc}")
+    print("\\hline "+Text[0]+" & "+ Text[1]  + " & "+ Text[2] + " & "+ Text[3]+ " & "+Text[4]+ " \\\\ \\hline")   
     for i, (key, value) in enumerate(CrossDic.items()):
         if "Inc" in Type: i ="$\ge"+str(i)+"$"
         elif i==3: i="$\ge3$"
-        print i," & ",value["cross"]," & $\pm$",value["stat"]," & $^{+",value["up"],"}_{-",value["down"],"}$ & $\pm$",value["lumi"],"  \\\\"
-    print " \\hline \n \\end{tabular} \n"
+        print(i," & ",value["cross"]," & $\pm$",value["stat"]," & $^{+",value["up"],"}_{-",value["down"],"}$ & $\pm$",value["lumi"],"  \\\\")
+    print(" \\hline \n \\end{tabular} \n")
 
 
-    print "\\begin{tabular}{ccc}"
-    print "\\hline Number of jets ($|\eta^{\mathrm{jet}}| < 4.7$) & Fiducial cross section [fb] & Theoretical cross section [fb] \\\\ \\hline"
+    print("\\begin{tabular}{ccc}")
+    print("\\hline Number of jets ($|\eta^{\mathrm{jet}}| < 4.7$) & Fiducial cross section [fb] & Theoretical cross section [fb] \\\\ \\hline")
     for i, (key, value) in enumerate(CrossDic.items()):
         if "Inc" in Type: i ="$\ge"+str(i)+"$"
         elif i==3: i="$\ge3$"
         if float(value["lumi"])<0.1:
-            print i,"&",value["cross"],"$\pm",value["stat"],"~\mathrm{(stat)}^{+",value["up"],"}_{-",value["down"],"}~\mathrm{(syst)}$ & $",value["theor"],"^{+",value["theorUp"],"}_{-",value["theorDn"],"}$\\\\"
+            print(i,"&",value["cross"],"$\pm",value["stat"],"~\mathrm{(stat)}^{+",value["up"],"}_{-",value["down"],"}~\mathrm{(syst)}$ & $",value["theor"],"^{+",value["theorUp"],"}_{-",value["theorDn"],"}$\\\\")
 
         else:
-            print i,"&",value["cross"],"$\pm",value["stat"],"~\mathrm{(stat)}^{+",value["up"],"}_{-",value["down"],"}~\mathrm{(syst)} \pm",value["lumi"],"\mathrm{(lumi)}$ & $",value["theor"],"^{+",value["theorUp"],"}_{-",value["theorDn"],"}$\\\\"
-    print "\\hline \n\\end{tabular}"
+            print(i,"&",value["cross"],"$\pm",value["stat"],"~\mathrm{(stat)}^{+",value["up"],"}_{-",value["down"],"}~\mathrm{(syst)} \pm",value["lumi"],"\mathrm{(lumi)}$ & $",value["theor"],"^{+",value["theorUp"],"}_{-",value["theorDn"],"}$\\\\")
+    print("\\hline \n\\end{tabular}")

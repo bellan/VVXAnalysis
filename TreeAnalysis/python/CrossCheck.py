@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from __future__ import print_function
 import sys
 from optparse import OptionParser
 from operator import itemgetter
@@ -152,53 +153,53 @@ def CheckList(lines1,lines2,Type):
 
 
     if Type=="":
-        print "File 1 eeee",len(EEEE_1),"eemm",len(EEMM_1),"mmmm",len(MMMM_1)
-        print "File 2 eeee",len(EEEE_2),"eemm",len(EEMM_2),"mmmm",len(MMMM_2)
-        print "event in file 1 not in file2"
+        print("File 1 eeee",len(EEEE_1),"eemm",len(EEMM_1),"mmmm",len(MMMM_1))
+        print("File 2 eeee",len(EEEE_2),"eemm",len(EEMM_2),"mmmm",len(MMMM_2))
+        print("event in file 1 not in file2")
 
         for fin, fin_str in zip((EEEE12_diff,EEMM12_diff,MMMM12_diff),("eeee:","eemm:","mmmm:")):
-            print fin_str
+            print(fin_str)
             if Type=="": 
                 for i in fin:
                     for j in i: 
-                        print j,
+                        print(j, end=' ')
             else: 
                 for i in fin: 
                     for l,j in enumerate(i):
-                        if l==Index: print Red(j),
-                        else: print j,
+                        if l==Index: print(Red(j), end=' ')
+                        else: print(j, end=' ')
 
         
-        print "event in file 2 not in file 1"
+        print("event in file 2 not in file 1")
         for fin, fin_str in zip((EEEE21_diff,EEMM21_diff,MMMM21_diff),("eeee:","eemm:","mmmm:")):
-            print fin_str
+            print(fin_str)
             if Type=="":
                 for i in fin:
                     for j in i:
-                        print j,
+                        print(j, end=' ')
             else:
                 for i in fin:
                     for l,j in enumerate(i):
-                        if l==Index: print Red(j),
-                        else: print j,
+                        if l==Index: print(Red(j), end=' ')
+                        else: print(j, end=' ')
 
     else:
 
         for fin_1, fin_2, fin_str in zip((EEEE12_diff,EEMM12_diff,MMMM12_diff),(EEEE21_diff,EEMM21_diff,MMMM21_diff),("eeee:","eemm:","mmmm:")):
-            print fin_str
+            print(fin_str)
 
 
             for i,j in zip(fin_1,fin_2):
-                print "file1",
+                print("file1", end=' ')
                 for l,m in enumerate(i):
-                    if l==Index: print Red(m),
-                    else: print m,
-                print "file2",
+                    if l==Index: print(Red(m), end=' ')
+                    else: print(m, end=' ')
+                print("file2", end=' ')
                 for l,m in enumerate(j):
-                    if l==Index: print Red(m),
-                    else: print m,
-                print "\n"
-        print "N different events eeee",len(EEEE12_diff),"eemm",len(EEMM12_diff),"mmmm",len(MMMM12_diff)
+                    if l==Index: print(Red(m), end=' ')
+                    else: print(m, end=' ')
+                print("\n")
+        print("N different events eeee",len(EEEE12_diff),"eemm",len(EEMM12_diff),"mmmm",len(MMMM12_diff))
 
 
 
@@ -219,57 +220,57 @@ def CheckListZL(lines1,lines2,Type):
 
 
     if Type=="":
-        print "File 1 eee",len(EEE_1),"eem",len(EEM_1),"mmm",len(MMM_1),"mme",len(MME_1)
-        print "File 2 eee",len(EEE_2),"eem",len(EEM_2),"mmm",len(MMM_2),"mme",len(MME_2)
+        print("File 1 eee",len(EEE_1),"eem",len(EEM_1),"mmm",len(MMM_1),"mme",len(MME_1))
+        print("File 2 eee",len(EEE_2),"eem",len(EEM_2),"mmm",len(MMM_2),"mme",len(MME_2))
 
-        print "event in file 1 not in file2"
+        print("event in file 1 not in file2")
 
         for fin, fin_str in zip((EEE12_diff,EEM12_diff,MMM12_diff,MME12_diff),("eee:","eem:","mmm:","mme:")):
-            print fin_str
+            print(fin_str)
             if Type=="": 
                 for i in fin:
                     for j in i: 
-                        print j,
+                        print(j, end=' ')
             else: 
                 for i in fin: 
                     for l,j in enumerate(i):
-                        if l==Index: print Red(j),
-                        else: print j,
+                        if l==Index: print(Red(j), end=' ')
+                        else: print(j, end=' ')
 
         
-        print "event in file 2 not in file 1"
+        print("event in file 2 not in file 1")
         for fin, fin_str in zip((EEE21_diff,EEM21_diff,MMM21_diff,MME21_diff),("eee:","eem:","mmm:","mme:")):
-            print fin_str
+            print(fin_str)
             if Type=="": 
                 for i in fin:
                     for j in i: 
-                        print j,
+                        print(j, end=' ')
             else: 
                 for i in fin: 
                     for l,j in enumerate(i):
-                        if l==Index: print Red(j),
-                        else: print j,
+                        if l==Index: print(Red(j), end=' ')
+                        else: print(j, end=' ')
 
 
     else:
 
         for fin_1, fin_2, fin_str in zip((EEE12_diff,EEM12_diff,MMM12_diff,MME12_diff),(EEE21_diff,EEM21_diff,MMM21_diff,MME21_diff),("eee:","eem:","mmm:","mme:")):
-            print fin_str
+            print(fin_str)
 
 
             for i,j in zip(fin_1,fin_2):
-                print "file1",
+                print("file1", end=' ')
                 for l,m in enumerate(i):
                     if l==Index:
-                        if Index == len(i)-1:  print Red(m),
-                        else:  print Red(m),
-                    else: print m,
-                print "file2",
+                        if Index == len(i)-1:  print(Red(m), end=' ')
+                        else:  print(Red(m), end=' ')
+                    else: print(m, end=' ')
+                print("file2", end=' ')
                 for l,m in enumerate(j):
-                    if l==Index: print Red(m),
-                    else: print m,
-                print "\n"
-        print "N different events eee",len(EEE12_diff),"eem",len(EEM12_diff),"mmm",len(MMM12_diff),"mme",len(MME12_diff)
+                    if l==Index: print(Red(m), end=' ')
+                    else: print(m, end=' ')
+                print("\n")
+        print("N different events eee",len(EEE12_diff),"eem",len(EEM12_diff),"mmm",len(MMM12_diff),"mme",len(MME12_diff))
 
 
 filename1 = sys.argv[1]
@@ -283,12 +284,12 @@ try:
     try:
         lines1 = f.readlines()
         lines2 = g.readlines()
-        print "file 1",len(lines1),"events  file2",len(lines2)
-        print "Difference in events:" 
+        print("file 1",len(lines1),"events  file2",len(lines2))
+        print("Difference in events:") 
         if doZL:  CheckListZL(lines1,lines2,"")
         else:     CheckList(lines1,lines2,"")
         if Type!="":
-            print "Difference in events for ",Type 
+            print("Difference in events for ",Type) 
             if doZL:  CheckListZL(lines1,lines2,Type)
             else:     CheckList(lines1,lines2,Type)
         f.close()

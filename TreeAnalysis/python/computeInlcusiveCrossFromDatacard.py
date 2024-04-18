@@ -1,9 +1,10 @@
-g#! /usr/bin/env python
+#! /usr/bin/env python
 
 ##################################
 ## G. Pinna (UNITO) - Jun 2015 ##
 ##################################
 
+from __future__ import print_function
 import ROOT,copy
 from ROOT import gSystem, TCanvas, TH1,  TPad, gStyle, TLegend,TGraphAsymmErrors,Math,TArrayD,TTree
 import collections 
@@ -52,9 +53,9 @@ skipFit  =True
 if not skipFit:
 
     for fin in finstate:
-        print "combine -M MaxLikelihoodFit --forceRecreateNLL datacard_"+fin+".txt -n " +fin+"\n\n"
+        print("combine -M MaxLikelihoodFit --forceRecreateNLL datacard_"+fin+".txt -n " +fin+"\n\n")
         os.system("combine -M MaxLikelihoodFit --forceRecreateNLL datacard_"+fin+".txt -n " +fin)
-        print "combine -M MaxLikelihoodFit --forceRecreateNLL datacard_"+fin+".txt -n -S 0 " +fin+"_stat\n\n"
+        print("combine -M MaxLikelihoodFit --forceRecreateNLL datacard_"+fin+".txt -n -S 0 " +fin+"_stat\n\n")
         os.system("combine -M MaxLikelihoodFit --forceRecreateNLL datacard_"+fin+".txt -S 0 -n " +fin+"_stat")
 
 
@@ -80,29 +81,29 @@ for fin in finstate:
 for gb in GlobSystList:
     if gb["name"]=="Lumi": LumiUnc = gb["value"]
 
-print "Signal strength\n\n\n"
+print("Signal strength\n\n\n")
 
-print "\\begin{tabular}{cc}"
-print "\\hline Process &  Signal strength \\\\"                                                       
-print "\\hline"
+print("\\begin{tabular}{cc}")
+print("\\hline Process &  Signal strength \\\\")                                                       
+print("\\hline")
 
 for l in (list4m,list4e,list2e2m,list4l):
-    if l["fs"]=="4l": print "\\hline"
-    print "pp~$\\rightarrow Z Z \\rightarrow {0}$ & $ {1:.3f} {2} - {3:.3f} {4} {5} +{6:.3f} {4}{7} {2} -{8:.3f} {4}{5} +{9:.3f} {4}{10} \\pm {11:.3f} {12} $\\\\".format(l["name"],l["mu"],"_{",l["stdown"],"}","^{", l["stup"],"~\mathrm{(stat.)}", math.sqrt(math.pow(l["down"],2) - math.pow(l["stdown"],2)),math.sqrt(math.pow(l["up"],2) - math.pow(l["stup"],2)),"~\mathrm{(syst.)}",LumiUnc,"~\mathrm{(lumi.)}")
+    if l["fs"]=="4l": print("\\hline")
+    print("pp~$\\rightarrow Z Z \\rightarrow {0}$ & $ {1:.3f} {2} - {3:.3f} {4} {5} +{6:.3f} {4}{7} {2} -{8:.3f} {4}{5} +{9:.3f} {4}{10} \\pm {11:.3f} {12} $\\\\".format(l["name"],l["mu"],"_{",l["stdown"],"}","^{", l["stup"],"~\mathrm{(stat.)}", math.sqrt(math.pow(l["down"],2) - math.pow(l["stdown"],2)),math.sqrt(math.pow(l["up"],2) - math.pow(l["stup"],2)),"~\mathrm{(syst.)}",LumiUnc,"~\mathrm{(lumi.)}"))
 
-print " \\hline \n \\end{tabular} \n\n"
+print(" \\hline \n \\end{tabular} \n\n")
 
 
-print "\\begin{tabular}{lc}"
-print "\\hline Process & Fiducial cross section [fb] \\\\ "
-print "\\hline"
+print("\\begin{tabular}{lc}")
+print("\\hline Process & Fiducial cross section [fb] \\\\ ")
+print("\\hline")
 for l in (list4m,list4e,list2e2m,list4l):
-    if l["fs"]=="4l": print "\\hline"
-    print "pp~$\\rightarrow Z Z \\rightarrow {0}$ & $ {1:.1f} {2} - {3:.1f} {4} {5} +{6:.1f} {4}{7} {2} -{8:.1f} {4}{5} +{9:.1f} {4}{10} \\pm {11:.1f} {12} $\\\\".format(l["name"],l["mu"]*xs_tight[l["fs"]],"_{",l["stdown"]*xs_tight[l["fs"]],"}","^{", l["stup"]*xs_tight[l["fs"]],"~\mathrm{(stat.)}", math.sqrt(math.pow(l["down"],2) - math.pow(l["stdown"],2))*xs_tight[l["fs"]],math.sqrt(math.pow(l["up"],2) - math.pow(l["stup"],2))*xs_tight[l["fs"]],"~\mathrm{(syst.)}",LumiUnc*xs_tight[l["fs"]] ,"~\mathrm{(lumi.)}")
+    if l["fs"]=="4l": print("\\hline")
+    print("pp~$\\rightarrow Z Z \\rightarrow {0}$ & $ {1:.1f} {2} - {3:.1f} {4} {5} +{6:.1f} {4}{7} {2} -{8:.1f} {4}{5} +{9:.1f} {4}{10} \\pm {11:.1f} {12} $\\\\".format(l["name"],l["mu"]*xs_tight[l["fs"]],"_{",l["stdown"]*xs_tight[l["fs"]],"}","^{", l["stup"]*xs_tight[l["fs"]],"~\mathrm{(stat.)}", math.sqrt(math.pow(l["down"],2) - math.pow(l["stdown"],2))*xs_tight[l["fs"]],math.sqrt(math.pow(l["up"],2) - math.pow(l["stup"],2))*xs_tight[l["fs"]],"~\mathrm{(syst.)}",LumiUnc*xs_tight[l["fs"]] ,"~\mathrm{(lumi.)}"))
 
 #    print "pp~$\\rightarrow Z Z \\rightarrow {0}$ & $ {1:.3f} {2} - {3:.3f} {4} {5} +{6:.3f} {4}{7} {2} -{8:.3f} {4}{5} +{9:.3f} {4}{10} \\pm {11:.1f} {12} $\\\\".format(l["name"],l["mu"]*xs_tight[l["fs"]],"_{",l["stdown"]*xs_tight[l["fs"]],"}","^{", l["stup"]*xs_tight[l["fs"]],"~\mathrm{(stat.)}", math.sqrt(math.pow(l["down"],2) - math.pow(l["stdown"],2))*xs_tight[l["fs"]],math.sqrt(math.pow(l["up"],2) - math.pow(l["stup"],2))*xs_tight[l["fs"]],"~\mathrm{(syst.)}",LumiUnc*xs_tight[l["fs"]] ,"~\mathrm{(lumi.)}")
 
-print " \\hline \n \\end{tabular} \n"
+print(" \\hline \n \\end{tabular} \n")
 
 
 BR_4m   = BRmu*BRmu
@@ -121,7 +122,7 @@ AccDn         = AccFileDn.Get("TotAcc4l_Acc").GetVal()
 
 
 
-print "Acc",Acc,"Acc Up",AccUp,"Acc Dn",AccDn,"BR",BR
+print("Acc",Acc,"Acc Up",AccUp,"Acc Dn",AccDn,"BR",BR)
 
 
 
@@ -137,11 +138,11 @@ SystThUp =   (list4l["mu"]/AccUp -list4l["mu"]/Acc)*((xs_tight[list4l["fs"]])/(1
 
 
 
-print SystUp,SystDn, SystThUp,SystThDn
+print(SystUp,SystDn, SystThUp,SystThDn)
 
 #print "\sigma_{pp~$\\rightarrow Z Z \\rightarrow {0}} {1:.1f} {2} {3:.1f} {4} {5} +{6:.1f} {4}{7} {2} -{8:.1f} {4}{5} +{9:.1f} {4}{10} \\pm {11:.1f} {12} $".format(list4l["name"],list4l["mu"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"_{",list4l["stdown"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"}","^{", list4l["stup"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"~\mathrm{(stat.)}", math.sqrt(math.pow(list4l["down"],2) - math.pow(list4l["stdown"],2))*xs_tight[list4l["fs"]]/(1000*BR*Acc),math.sqrt(math.pow(list4l["up"],2) - math.pow(list4l["stup"],2))*xs_tight[list4l["fs"]]/(1000*BR*Acc),"~\mathrm{(syst.)}",0.062*xs_tight[list4l["fs"]]/(1000*BR*Acc) ,"~\mathrm{(lumi.)}")
 
-print "$\sigma {2} pp~\\rightarrow Z Z {4} {1:.1f} {2} {3:.1f} {4} {5} +{6:.1f} {4}{7} {2} {8:.1f} {4}{5} +{9:.1f} {4}{10} \\pm {11:.1f} {12} $".format("4l",list4l["mu"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"_{-",list4l["stdown"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"}","^{", list4l["stup"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"~\mathrm{(stat.)}",SystDn, SystUp,"~\mathrm{(syst.)}",LumiUnc*xs_tight[list4l["fs"]]/(1000*BR*Acc) ,"~\mathrm{(lumi.)}")
+print("$\sigma {2} pp~\\rightarrow Z Z {4} {1:.1f} {2} {3:.1f} {4} {5} +{6:.1f} {4}{7} {2} {8:.1f} {4}{5} +{9:.1f} {4}{10} \\pm {11:.1f} {12} $".format("4l",list4l["mu"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"_{-",list4l["stdown"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"}","^{", list4l["stup"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"~\mathrm{(stat.)}",SystDn, SystUp,"~\mathrm{(syst.)}",LumiUnc*xs_tight[list4l["fs"]]/(1000*BR*Acc) ,"~\mathrm{(lumi.)}"))
 
 
 #print "$\sigma {2} pp~\\rightarrow Z Z {4} {1:.3f} {2} {3:.3f} {4} {5} +{6:.3f} {4}{7} {2} {8:.3f} {4}{5} +{9:.3f} {4}{10} \\pm {11:.1f} {12} $".format("4l",list4l["mu"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"_{-",list4l["stdown"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"}","^{", list4l["stup"]*xs_tight[list4l["fs"]]/(1000*BR*Acc),"~\mathrm{(stat.)}",SystDn, SystUp,"~\mathrm{(syst.)}",LumiUnc*xs_tight[list4l["fs"]]/(1000*BR*Acc) ,"~\mathrm{(lumi.)}")

@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+from __future__ import print_function
 import ROOT,copy
 import CrossInfo
 import math
@@ -81,7 +82,7 @@ def LL(hData,hDataUp,hDataDown,hMC,Type,FinState,UncType,DataOverMC):
             errlo =r.getErrorLo()
             errhi = r.getErrorHi()
         else: 
-            print "Likelihood maximization failed"
+            print("Likelihood maximization failed")
             
         nll = LL.createNLL(data)
         frame = r.frame()
@@ -89,7 +90,7 @@ def LL(hData,hDataUp,hDataDown,hMC,Type,FinState,UncType,DataOverMC):
         #pll.plotOn(frame)#,RooFit::LineColor(ROOT::kRed))
         #frame.Draw()
  
-        print j, r.getVal(), r0
+        print(j, r.getVal(), r0)
         #hRatio.SetBinContent(j,r0)
  
         rval = r.getVal()
@@ -98,7 +99,7 @@ def LL(hData,hDataUp,hDataDown,hMC,Type,FinState,UncType,DataOverMC):
         #else: break
         #print "sd",sd,"smc",smc,"mc",mc  
         stderr = r0*math.sqrt(((sd/d)*(sd/d)+(smc/mc)*(smc/mc)))#to compare with
-        print "profile likelihood ratio results",j, errhi, errlo, stderr, stderr+errlo
+        print("profile likelihood ratio results",j, errhi, errlo, stderr, stderr+errlo)
       
         #hRatio_Errup.SetBinContent(j,math.fabs(stderr - errhi))
         #hRatio_Errdown.SetBinContent(j,math.fabs(stderr+errlo))

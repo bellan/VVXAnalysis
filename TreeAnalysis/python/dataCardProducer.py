@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+from __future__ import print_function
 import CrossInfo
 from CrossInfo import*
 import collections
@@ -38,16 +39,16 @@ def produceDataCard(SigDic,RedDic,IrrDic,DataDic,SystDicUp,SystDicDown):
 
     #signal channel
     for i, (key, value) in enumerate(SigDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             out_file.write(k+(space-len(k))*" ")
     #irreducible channel
     for i, (key, value) in enumerate(IrrDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             out_file.write(k+(space-len(k))*" ")
 
     #reducible channel
     for i, (key, value) in enumerate(RedDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             out_file.write(k+(space-len(k))*" ")
 
     out_file.write("\nprocess ")
@@ -55,17 +56,17 @@ def produceDataCard(SigDic,RedDic,IrrDic,DataDic,SystDicUp,SystDicDown):
     #signal process
 
     for i, (key, value) in enumerate(SigDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             out_file.write(key+(space-len(key))*" ")
 
     #irreducible bkg process
     for i, (key, value) in enumerate(IrrDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             out_file.write(key+(space-len(key))*" ")
 
     #reducible bkg process
     for i, (key, value) in enumerate(RedDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             out_file.write("red"+(space-len('red'))*" ")
 
     out_file.write("\nprocess ")
@@ -74,7 +75,7 @@ def produceDataCard(SigDic,RedDic,IrrDic,DataDic,SystDicUp,SystDicDown):
         out_file.write((str(-len(SigDic)+i+1)+(" "*(space-2)))*3)
 
     for i,val in enumerate(IrrDic):
-        print i
+        print(i)
         out_file.write((str(1+i)+(" "*(space-1)))*3)
 
     for i,val in enumerate(RedDic):
@@ -84,17 +85,17 @@ def produceDataCard(SigDic,RedDic,IrrDic,DataDic,SystDicUp,SystDicDown):
 
     #signal rate
     for i, (key, value) in enumerate(SigDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             out_file.write(str(val["yield"])+((space-len(val["yield"]))*" "))
 
     #irreducible bkg rate
     for i, (key, value) in enumerate(IrrDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             out_file.write(str(val["yield"])+((space-len(val["yield"]))*" "))
 
     #reducible bkg rate
     for i, (key, value) in enumerate(RedDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             out_file.write(str(val["yield"])+((space-len(val["yield"]))*" "))
 
 
@@ -104,52 +105,52 @@ def produceDataCard(SigDic,RedDic,IrrDic,DataDic,SystDicUp,SystDicDown):
     #irreducible bkg syst
 
     for i, (key, value) in enumerate(SigDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             out_file.write("-"+(" "*(space-1)))
 
     for i, (key, value) in enumerate(IrrDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             Unc= float(val["Err"])/float(val["yield"])+1
             out_file.write(str(Unc)+" ")
 
     for i, (key, value) in enumerate(RedDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             out_file.write("- ")
     out_file.write("\nredbkg_unc lnN ")
 
     #reducible bkg syst
 
     for i, (key, value) in enumerate(SigDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             out_file.write("- ")
 
     for i, (key, value) in enumerate(IrrDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             out_file.write("- ")
 
     for i, (key, value) in enumerate(RedDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             Unc= float(val["Err"])/float(val["yield"])+1
             out_file.write(str(Unc)+" ")
 
     out_file.write("\n")
 
-    print SystDicUp
+    print(SystDicUp)
 
     #scale factor
     out_file.write("\nscalefactor lnN ")
-    print SystDicUp["Scale Factor"]
+    print(SystDicUp["Scale Factor"])
     for i, (key, value) in enumerate(SigDic.items()):   
-        for (k,val) in value.items():
-            print type(SystDicUp["Scale Factor"][k]["yield"])
+        for k, val in value.items():
+            print(type(SystDicUp["Scale Factor"][k]["yield"]))
             out_file.write(str(float(SystDicUp["Scale Factor"][k]["yield"])/100. +1)+((space-len(k))*" "))
 
     for i, (key, value) in enumerate(IrrDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             out_file.write("- ")
 
     for i, (key, value) in enumerate(RedDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             out_file.write("- ")
 
     out_file.write("\n")
@@ -159,15 +160,15 @@ def produceDataCard(SigDic,RedDic,IrrDic,DataDic,SystDicUp,SystDicDown):
     out_file.write("\nmcchoice lnN ")
 
     for i, (key, value) in enumerate(SigDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             out_file.write(str(float(SystDicDown["Monte Carlo choice"][k]["yield"])/100. +1)+((space-len(k))*" "))
 
     for i, (key, value) in enumerate(IrrDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             out_file.write("- ")
 
     for i, (key, value) in enumerate(RedDic.items()):   
-        for (k,val) in value.items():
+        for k, val in value.items():
             out_file.write("- ")
 
     out_file.write("\n")

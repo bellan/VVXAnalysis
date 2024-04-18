@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+from __future__ import print_function
 import ROOT, copy
 from ROOT import TH1F
 from optparse import OptionParser
@@ -64,11 +65,11 @@ def GetGrEff(hpass, htotal):
 
 
 def write(particle,region,outname,fout):
-    print "\n",particle,region
+    print("\n",particle,region)
     f = ROOT.TFile("results/FakeRateAnalyzer_MC/data.root")
     hn = f.Get("FakeRate_num_"+particle+"_"+region+"_pt")
     hd = f.Get("FakeRate_denom_"+particle+"_"+region+"_pt")
-    print "FakeRate_num_"+particle+"_"+region+"_pt"
+    print("FakeRate_num_"+particle+"_"+region+"_pt")
    
     fWZ = ROOT.TFile("results/FakeRateAnalyzer_MC/WZ.root")
     hnWZ = fWZ.Get("FakeRate_num_"+particle+"_"+region+"_pt")
@@ -86,7 +87,7 @@ def write(particle,region,outname,fout):
     
     Nbin= hn.GetNbinsX()
 
-    print "\nData before WZ subtraction\n"
+    print("\nData before WZ subtraction\n")
     #for bin in range(1,Nbin+1):
         # print "bin",bin
         # print "pass",hn.GetBinContent(bin)
@@ -105,13 +106,13 @@ def write(particle,region,outname,fout):
     hn.Add(hnWZ,-1)
     hd.Add(hdWZ,-1)
 
-    print hn.Integral(0,-1),hd.Integral(0,-1)
+    print(hn.Integral(0,-1),hd.Integral(0,-1))
 
-    print "\ndata after WZ subtraction\n"
+    print("\ndata after WZ subtraction\n")
     for bin in range(1,Nbin+1):
-        print "bin",bin
-        print "pass",hn.GetBinContent(bin)
-        print "total",hd.GetBinContent(bin)
+        print("bin",bin)
+        print("pass",hn.GetBinContent(bin))
+        print("total",hd.GetBinContent(bin))
 
 
     hFake_NoWZ = copy.deepcopy(hn)
@@ -160,7 +161,7 @@ def write2D(particle,outname,fout):
     hn.Write("NoWZ_"+outname+"_num")
     hd.Write("NoWZ_"+outname+"_den")
  
-    print "\ndata after WZ subtraction\n"
+    print("\ndata after WZ subtraction\n")
   
 
     hFake_NoWZ = copy.deepcopy(hn)
@@ -180,7 +181,7 @@ def write2D(particle,outname,fout):
 
 
 def write_MC(particle,region,outname,fout):
-    print "\n",particle,region
+    print("\n",particle,region)
 
     mclist = [{"sample":'TTZToLL',"color":ROOT.kRed-2,"name":'tt'},{"sample":'DYJetsToLL_M50',"color":ROOT.kGreen-5,"name":'DY'}]
 
@@ -188,7 +189,7 @@ def write_MC(particle,region,outname,fout):
     stack_d = ROOT.THStack("stack_den","Stack_"+"FakeRate_denom_"+particle+"_"+region+"_pt")   
     
     for sample in mclist:
-        print sample["sample"]
+        print(sample["sample"])
         fMC = ROOT.TFile("results/FakeRateAnalyzer_MC/"+sample["sample"]+".root")
         h_mc_n = fMC.Get("FakeRate_num_"+particle+"_"+region+"_pt")
         h_mc_d = fMC.Get("FakeRate_denom_"+particle+"_"+region+"_pt")

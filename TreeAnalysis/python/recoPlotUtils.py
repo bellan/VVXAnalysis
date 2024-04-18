@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+from __future__ import print_function
 import ROOT, copy, sys
 from ROOT import gSystem, TCanvas, TH1,  TPad, gStyle, TLegend, THStack, TGraphAsymmErrors,Math
 from readSampleInfo import *
@@ -61,9 +62,9 @@ def GetTypeofsamples(category,Set):
 
 ####### Extract MC plot #########
 def GetMCPlot(inputdir, category, plot,Addfake,MCSet,rebin):
-    print Red("\n#########################################\n############## Monte Carlo ##############\n#########################################\n")
-    print "Category",category
-    print "plot",plot
+    print(Red("\n#########################################\n############## Monte Carlo ##############\n#########################################\n"))
+    print("Category",category)
+    print("plot",plot)
     leg = TLegend(0.6,0.52,0.79,0.87)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.025)
@@ -77,28 +78,28 @@ def GetMCPlot(inputdir, category, plot,Addfake,MCSet,rebin):
     ErrStat = ctypes.c_double(0.) #ROOT.Double(0.)
 
     if category != "RedBkg" and category != "IrrBkg":
-        print Red("\n######### Contribution to Irreducible Background#########\n")    
+        print(Red("\n######### Contribution to Irreducible Background#########\n"))    
         
         for b in bkgsamples:
             filesbkg[b["sample"]] = ROOT.TFile(inputdir+b["sample"]+".root")
             Var     = plot.replace("ZZTo4l","")
             bsum    = ROOT.TH1F()    
-            print Blue("### "+plot+" ###")
+            print(Blue("### "+plot+" ###"))
             NoSamples = "For "+plot+" there are no events in "
             isFirst=1
         for b in bkgsamples:
             hb = filesbkg[b["sample"]].Get(plot)  
             if hb==None:
-                print "For sample ", b["sample"], "has no enetries or is a zombie"       
+                print("For sample ", b["sample"], "has no enetries or is a zombie")       
                 NoSamples+=b["sample"]+" "
                 continue
             if isFirst:
                 bsum=copy.deepcopy(hb)            
-                print "{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat.value)
+                print("{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat.value))
                 isFirst=0
                 continue 
             
-            print "{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat.value)
+            print("{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat.value))
             bsum.Add(hb)        
                 
         if rebin != 1:  bsum.Rebin(rebin)
@@ -112,7 +113,7 @@ def GetMCPlot(inputdir, category, plot,Addfake,MCSet,rebin):
             
 
     if Addfake:
-        print Red("\n######### Contribution to Reducible Background#########\n")    
+        print(Red("\n######### Contribution to Reducible Background#########\n"))    
         hfake = GetFakeRate(inputdir.replace("SR4P/",""),plot,"data",rebin) 
         stack.Add(hfake)
         leg.AddEntry(hfake,"Reducible background","f")
@@ -129,16 +130,16 @@ def GetMCPlot(inputdir, category, plot,Addfake,MCSet,rebin):
 
         totalMC = 0
 
-    print Red("\n######### Contribution to signal  #########\n")
+    print(Red("\n######### Contribution to signal  #########\n"))
 
     for sample in typeofsamples:
 
         h = files[sample["sample"]].Get(plot)
         if not h:
-            print sample["sample"],"has no enetries or is a zombie"
+            print(sample["sample"],"has no enetries or is a zombie")
             continue
 
-        print "{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(sample["sample"],(40-len(sample["sample"]))*" ",h.IntegralAndError(0,-1,ErrStat),ErrStat.value)
+        print("{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(sample["sample"],(40-len(sample["sample"]))*" ",h.IntegralAndError(0,-1,ErrStat),ErrStat.value))
 
         totalMC += h.Integral()
 
@@ -158,16 +159,16 @@ def GetMCPlot(inputdir, category, plot,Addfake,MCSet,rebin):
             leg.AddEntry(h,sample["name"],"f")
         LastColor=sample["color"]
 
-    print "\n Total MC .......................... {0:.2f}".format(totalMC)
-    print "____________________________________ "       
+    print("\n Total MC .......................... {0:.2f}".format(totalMC))
+    print("____________________________________ ")       
     return (copy.deepcopy(stack),copy.deepcopy(leg))
 
 
 #################################################
 
 def GetDataPlot(inputdir, plot, Region,rebin):
-    print "\n",""
-    print Red("\n############################################\n################### DATA ###################\n############################################\n")
+    print("\n","")
+    print(Red("\n############################################\n################### DATA ###################\n############################################\n"))
     files = {}
     typeofsamples = GetTypeofsamples("data","pow")
     hdata=ROOT.TH1F()
@@ -179,17 +180,17 @@ def GetDataPlot(inputdir, plot, Region,rebin):
     for sample in typeofsamples:
         h = files[sample["sample"]].Get(plot)
         if not h:
-            print sample['sample'],'has no entries or is a zombie'
+            print(sample['sample'],'has no entries or is a zombie')
             continue
 
-        print sample["sample"], "..........................",h.Integral(0,-1)       
+        print(sample["sample"], "..........................",h.Integral(0,-1))       
         if isFirst:
             hdata=copy.deepcopy(h)
             isFirst=0
             continue
         hdata.Add(h)   
     if 1+inputdir.find("CR2P2F"): 
-        print "Dir",inputdir,inputdir.find("CR2P2F")                
+        print("Dir",inputdir,inputdir.find("CR2P2F"))                
         hdata.Add(hdata,-2)     
     #hdata = fdata.Get(plot)
     hdata.SetMarkerColor(ROOT.kBlack)
@@ -199,8 +200,8 @@ def GetDataPlot(inputdir, plot, Region,rebin):
 
     if rebin!=1: hdata.Rebin(rebin) 
 
-    print "Total data ..........................",hdata.Integral(0,-1)
-    print "_________________________ "   
+    print("Total data ..........................",hdata.Integral(0,-1))
+    print("_________________________ ")   
     DataGraph=SetError(hdata,Region,False)
     DataGraph.SetMarkerStyle(20)
     DataGraph.SetMarkerSize(.9)
@@ -209,9 +210,9 @@ def GetDataPlot(inputdir, plot, Region,rebin):
 ###############################################################
 
 def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
-    print Red("\n#########################################\n############## Monte Carlo ##############\n#########################################\n")
+    print(Red("\n#########################################\n############## Monte Carlo ##############\n#########################################\n"))
    
-    print Red("\n######### Contribution to Signal #########\n")    
+    print(Red("\n######### Contribution to Signal #########\n"))    
     leg = TLegend(0.51,0.56,0.85,0.81)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.025)
@@ -237,11 +238,11 @@ def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
     hsum = [{"state":hsum2e2mu,"color":ROOT.kAzure-4,"name":'2e2m'},{"state":hsum4e,"color":ROOT.kAzure-5,"name":'4e'},{"state":hsum4mu,"color":ROOT.kAzure-6,"name":'4m'},{"state":hsum4l,"color":ROOT.kAzure-6,"name":'4l'}]
 
     for h in hsum:
-        print Blue("### "+h["name"]+" ###")
+        print(Blue("### "+h["name"]+" ###"))
         NoSamples = "For "+h["name"]+" there are no events in "
         isFirst=1
         ErrStat=ctypes.c_double(0.)
-        print "ZZTo"+h["name"]+Var
+        print("ZZTo"+h["name"]+Var)
         for s in typeofsamples:
             hsamp = files[s["sample"]].Get("ZZTo"+h["name"]+Var)  
             if hsamp==None:
@@ -250,21 +251,21 @@ def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
             if isFirst:
                 h["state"]=copy.deepcopy(hsamp)            
                 isFirst=0
-                print "{0} {1} {2:.3f} +- {3: .3f}".format(s["sample"],(40-len(s["sample"]))*" ",hsamp.IntegralAndError(1,-1,ErrStat),ErrStat.value)
+                print("{0} {1} {2:.3f} +- {3: .3f}".format(s["sample"],(40-len(s["sample"]))*" ",hsamp.IntegralAndError(1,-1,ErrStat),ErrStat.value))
                 continue 
 
-            print "{0} {1} {2:.3f} +- {3: .3f}".format(s["sample"],(40-len(s["sample"]))*" ",hsamp.IntegralAndError(1,-1,ErrStat),ErrStat.value)
+            print("{0} {1} {2:.3f} +- {3: .3f}".format(s["sample"],(40-len(s["sample"]))*" ",hsamp.IntegralAndError(1,-1,ErrStat),ErrStat.value))
             h["state"].Add(hsamp)        
-        print "\n",NoSamples,"\n\n" 
+        print("\n",NoSamples,"\n\n") 
         
-    print Blue("### Signal ###")  
+    print(Blue("### Signal ###"))  
     for h in hsum:
-        print ("Total contribution "+h["name"]+" {0} {1:.3f} +- {2: .3f} \n").format((32-len(h["name"]))*" ",h["state"].IntegralAndError(1,-1,ErrStat),ErrStat.value)
+        print(("Total contribution "+h["name"]+" {0} {1:.3f} +- {2: .3f} \n").format((32-len(h["name"]))*" ",h["state"].IntegralAndError(1,-1,ErrStat),ErrStat.value))
 
     stack = ROOT.THStack("stack",plot+"_stack")   
 
 
-    print Red("\n######### Contribution to Irreducible Background#########\n")    
+    print(Red("\n######### Contribution to Irreducible Background#########\n"))    
     bsum2e2mu = ROOT.TH1F()
     bsum4e    = ROOT.TH1F()
     bsum4mu   = ROOT.TH1F()
@@ -273,28 +274,28 @@ def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
     bsum = [{"state":bsum2e2mu,"color":ROOT.kAzure-4,"name":'2e2m'},{"state":bsum4e,"color":ROOT.kAzure-5,"name":'4e'},{"state":bsum4mu,"color":ROOT.kAzure-6,"name":'4m'},{"state":bsum4l,"color":ROOT.kAzure-6,"name":'4l'}]
     
     for hbkg in bsum:
-        print Blue("### "+hbkg["name"]+" ###")
+        print(Blue("### "+hbkg["name"]+" ###"))
         NoSamples = "For "+hbkg["name"]+" there are no events in "
         isFirst=1
         for b in bkgsamples:
             hb = filesbkg[b["sample"]].Get("ZZTo"+hbkg["name"]+Var)  
             if hb==None:
-                print "For sample ", b["sample"], "has no enetries or is a zombie"       
+                print("For sample ", b["sample"], "has no enetries or is a zombie")       
                 NoSamples+=b["sample"]+" "
                 continue
             if isFirst:
                 hbkg["state"]=copy.deepcopy(hb)            
-                print "{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat)
+                print("{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat))
                 isFirst=0
                 continue 
             
             ErrStat=ctypes.c_double(0.)
-            print "{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat.value)
+            print("{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat.value))
             hbkg["state"].Add(hb)        
-            print NoSamples,"\n\n" 
+            print(NoSamples,"\n\n") 
             
             for hbkg in bsum:
-                print ("Total contribution "+hbkg["name"]+" {0} {1:.3f} +- {2: .3f} \n").format((32-len(hbkg["name"]))*" ",hbkg["state"].IntegralAndError(1,-1,ErrStat),ErrStat.value)
+                print(("Total contribution "+hbkg["name"]+" {0} {1:.3f} +- {2: .3f} \n").format((32-len(hbkg["name"]))*" ",hbkg["state"].IntegralAndError(1,-1,ErrStat),ErrStat.value))
                 
                 if rebin != 1:  hbkg["state"].Rebin(rebin)
         
@@ -305,22 +306,22 @@ def GetMCPlot_fstate(inputdir, category, plot,Addfake,MCSet,rebin):
     bsum[3]["state"].SetFillColor(b["color"])           
   
     if Addfake:
-        print Red("\n######### Contribution to Reducible Background#########\n")    
+        print(Red("\n######### Contribution to Reducible Background#########\n"))    
         for i in ["2e2m","4e","4m","4l"]:
-            print Blue("### "+i+" ###")
+            print(Blue("### "+i+" ###"))
             hfake = GetFakeRate(inputdir.replace("SR4P/",""),"ZZTo"+i+Var,"data",rebin) 
             if i=="4l":
                 stack.Add(hfake)
                 leg.AddEntry(hfake,"Reducible background","f")
     
 
-    print Red("\n######### Signal samples for every final state #########\n")
+    print(Red("\n######### Signal samples for every final state #########\n"))
 
     LastColor = ROOT.kBlack
     for i in hsum:
         if i["name"]=="4l": continue
         if i["state"]==None:
-            print i["state"]," has no enetries" 
+            print(i["state"]," has no enetries") 
             continue
   
         i["state"].SetLineColor(i["color"])
@@ -346,7 +347,7 @@ def GetFakeRate(inputdir,plot, method,rebin):
 
 
     if method=="MC":
-        print " Non MC method yet"
+        print(" Non MC method yet")
         #fileFake = ROOT.TFile(inputdir+"data.root")
         return 0.
     else:
@@ -368,7 +369,7 @@ def GetFakeRate(inputdir,plot, method,rebin):
     #    print "\n","Total integral",FinState,"contribution ----------> ",Integr," +- ",Err,"\n"
 #    print "{0} contribution {1} {2:.3f} +- {3: .3f} \n".format(b["sample"],(40-len(b["sample"]))*" ",hb.IntegralAndError(1,-1,ErrStat),ErrStat)
 
-    print "Total contribution {0} {1:.3f} +- {2: .3f} \n".format(38*" ",hFakeRate.IntegralAndError(1,-1,ErrStat),ErrStat.value)
+    print("Total contribution {0} {1:.3f} +- {2: .3f} \n".format(38*" ",hFakeRate.IntegralAndError(1,-1,ErrStat),ErrStat.value))
 
     return  copy.deepcopy(hFakeRate) 
 
@@ -394,7 +395,7 @@ def GetSignalDefPlot(inputdir,category):
     for s in typeofsamples:
         hs = files[s["sample"]].Get("PassDef")
         if hs==None:
-            print "For sample ", s["sample"],"PassDef has no entries"
+            print("For sample ", s["sample"],"PassDef has no entries")
             continue
         if isFirst:
             hSig = copy.deepcopy(hs)
@@ -402,13 +403,13 @@ def GetSignalDefPlot(inputdir,category):
             continue
         
         hSig.Add(hs)
-    print "Total events passing signal defition ", hSig.Integral()
+    print("Total events passing signal defition ", hSig.Integral())
 
     isFirst =1
     for s in typeofsamples:
         hn = files[s["sample"]].Get("NoPassDef")
         if hn==None:
-            print "For sample ", s["sample"],"NoPassDef has no entries"
+            print("For sample ", s["sample"],"NoPassDef has no entries")
             continue
         if isFirst:
             hNoSig = copy.deepcopy(hn)
@@ -416,7 +417,7 @@ def GetSignalDefPlot(inputdir,category):
             continue
         
         hNoSig.Add(hn)
-    print "Total events not passing signal defition ", hNoSig.Integral()
+    print("Total events not passing signal defition ", hNoSig.Integral())
        
     hSig.SetFillColor(ROOT.kAzure-4)
     hSig.SetLineColor(ROOT.kAzure-4)

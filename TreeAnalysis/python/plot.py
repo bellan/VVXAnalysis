@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+from __future__ import print_function
 import ROOT, copy, sys
 
 from ROOT import TH1F
@@ -43,7 +44,7 @@ def getMCPlot(inputdir, category, plot):
         h2d = files[sample].Get(plot)
         h = h2d.ProjectionY("_signal",2,-1).Clone()
         if not h: continue
-        print sample, ", total number of events: ", h.Integral()
+        print(sample, ", total number of events: ", h.Integral())
         totalMC += h.Integral()
         h.SetLineColor(typeofsamples[sample])
         h.SetFillColor(typeofsamples[sample])
@@ -51,7 +52,7 @@ def getMCPlot(inputdir, category, plot):
         h.SetMarkerColor(typeofsamples[sample])
         stack.Add(h)
 
-    print "Total MC = {0:.2f}".format(totalMC)
+    print("Total MC = {0:.2f}".format(totalMC))
     return copy.deepcopy(stack)
 
 ######
@@ -62,7 +63,7 @@ def getDataPlot(inputdir, plot):
     hdata.SetMarkerColor(ROOT.kBlack)
     hdata.SetLineColor(ROOT.kBlack)
     hdata.SetMarkerStyle(21)
-    print "Total data = {0:0.1f}".format(hdata.Integral())
+    print("Total data = {0:0.1f}".format(hdata.Integral()))
     return copy.deepcopy(hdata)
 
 
@@ -107,4 +108,4 @@ if __name__ == '__main__':
 
     
     c1.SaveAs(plot+"_stack.png")
-    input()
+    eval(input())

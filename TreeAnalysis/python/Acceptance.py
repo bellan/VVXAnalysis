@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+from __future__ import print_function
 from optparse import OptionParser
 import ROOT,copy
 ROOT.PyConfig.IgnoreCommandLineOptions = True
@@ -125,8 +126,8 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
         elif  SistErr == "-1":    FileOut = FileOut_m1 
 
 
-    if    Set=="Pow": print "\nPowheg Monte Carlo set"
-    elif  Set=="Mad": print "\nMadgraph Monte Carlo set"  
+    if    Set=="Pow": print("\nPowheg Monte Carlo set")
+    elif  Set=="Mad": print("\nMadgraph Monte Carlo set")  
  
 
     c1 = TCanvas( 'c1', 'c1', 200, 10, 900, 700 )
@@ -150,12 +151,12 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
 
     FinStateAcc ={"2e2m":Acc1,"4m":Acc2,"4e":Acc3}
     for Fin in ("2e2m","4m","4e"):
-        print Red("\n#### FINAL STATE {0:s} Scale factor sist {1} ####\n".format(Fin,SistErr))
+        print(Red("\n#### FINAL STATE {0:s} Scale factor sist {1} ####\n".format(Fin,SistErr)))
 
         hMergReco = ROOT.TH1F()
         hMergGen  = ROOT.TH1F()
         
-        print Blue("Sample                                         Acceptance \n")
+        print(Blue("Sample                                         Acceptance \n"))
         isFirst=True            
         for sample in SignalSamples:
             fileIn = ROOT.TFile(inputdir+sample["sample"]+".root")
@@ -208,15 +209,15 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
             hGen  = copy.deepcopy(hGen_)          
             hReco = copy.deepcopy(hRec_)
             if hGen==None: 
-                print "in sample",sample["sample"],"ZZTo"+Fin+"_"+SampleType+"Gen_01"+"   Not found"
+                print("in sample",sample["sample"],"ZZTo"+Fin+"_"+SampleType+"Gen_01"+"   Not found")
                 continue
             if hReco==None:
-                print sample["sample"],"No events in reco sample but events in gen sample"
+                print(sample["sample"],"No events in reco sample but events in gen sample")
                 continue
   
             n = len(sample["sample"])
             spacestring = (45-n)*" "
-            print "{0} {1} {2:.4f}".format(sample["sample"],spacestring,hReco.Integral(1,-1)/hGen.Integral(1,-1))
+            print("{0} {1} {2:.4f}".format(sample["sample"],spacestring,hReco.Integral(1,-1)/hGen.Integral(1,-1)))
             #print "{0} {1} {2:.4f}, reco {3}, total {4}".format(sample["sample"],spacestring,hReco.Integral(1,-1)/hGen.Integral(1,-1),hReco.Integral(1,-1),hGen.Integral(1,-1))
             
             if isFirst:
@@ -240,7 +241,7 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
 
         FinStateAcc[Fin]=Acc
         
-        print Blue("Total Acceptance {0} {1:.2f} \n".format(29*" ",Acc))
+        print(Blue("Total Acceptance {0} {1:.2f} \n".format(29*" ",Acc)))
         hMergReco.Divide(hMergGen)
         FileOut.cd()
         if SampleType=="Mass": 
@@ -351,12 +352,12 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
 
     FileOut.cd
     Acc4l = Tot4lReco/Tot4l
-    print "Acc 4l",SistErr,Acc4l
+    print("Acc 4l",SistErr,Acc4l)
     TotAcc = TParameter(float)("TotAcc4l_"+Fr,Acc4l)
     TotAcc.Write("",TotAcc.kOverwrite)
     c1.SaveAs("./Plot/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+".png") 
     if SavePlot:
-        print PersonalFolder+Dir+"/"+Type+"/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".png" 
+        print(PersonalFolder+Dir+"/"+Type+"/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".png") 
         c1.SaveAs(PersonalFolder+Dir+"/"+Type+"/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".png") 
         c1.SaveAs(PersonalFolder+Dir+"/"+Type+"/Acceptance/DiffAcceptance_"+SampleType+"_"+Set+Analysis+"_"+Fr+"_"+SistErr+".pdf") 
     return FinStateAcc
@@ -366,54 +367,54 @@ def SetAcceptance(inputdir,SampleType, SavePlot,SistErr,Fr):
 #MinuAcc   = SetAcceptance("results/ZZMCAnalyzer_MC/",Type,SavePlot,"-1") # Correlated Errors
 
 
-print Yellow("Total")
+print(Yellow("Total"))
 PlusSqAcc   = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"+Sq","Tot")            
 MinusSqAcc  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"-Sq","Tot")
 CentralAcc  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"0","Tot")
 
-print Yellow("\n Fiducial")
+print(Yellow("\n Fiducial"))
 PlusSqAcc_fr   = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"+Sq","Eff_Tight")
 MinusSqAcc_fr  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"-Sq","Eff_Tight")
 CentralAcc_fr  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"0","Eff_Tight")
 
-print Yellow("\n Fiducial and fake")
+print(Yellow("\n Fiducial and fake"))
 PlusSqAcc_frAndFake   = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"+Sq","EffAndFake_Tight")
 MinusSqAcc_frAndFake  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"-Sq","EffAndFake_Tight")
 CentralAcc_frAndFake  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"0","EffAndFake_Tight")
 
-print Yellow("\n Acceptance Tr->Fr")
+print(Yellow("\n Acceptance Tr->Fr"))
 CentralAcc_Acc  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"0","Acc")
 CentralAcc_Acc_up  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"1","Acc")
 CentralAcc_Acc_dn  = SetAcceptance("results/ZZMCAnalyzer_MC"+Analysis+"/",Type,SavePlot,"-1","Acc")
 
-print Red(("Final total results for MC set {0} \n").format(Set))
-print Red("Total Region \nAcceptance x efficency")
+print(Red(("Final total results for MC set {0} \n").format(Set)))
+print(Red("Total Region \nAcceptance x efficency"))
 for fin in ("2e2m","4m","4e"):
-    print "{0} {1} {2:.3f} + {3:.3f} %  - {4:.3f} % ".format(fin, (6-len(fin))*" ", CentralAcc[fin],(-1+PlusSqAcc[fin]/CentralAcc[fin])*100,(1-MinusSqAcc[fin]/CentralAcc[fin])*100)
+    print("{0} {1} {2:.3f} + {3:.3f} %  - {4:.3f} % ".format(fin, (6-len(fin))*" ", CentralAcc[fin],(-1+PlusSqAcc[fin]/CentralAcc[fin])*100,(1-MinusSqAcc[fin]/CentralAcc[fin])*100))
     # print "Correlated errors {0} + {1:.5f} % - {2:.5f} %".format(10*" ",(-1+PlusAcc[fin]/CentralAcc[fin])*100,(1-MinusAcc[fin]/CentralAcc[fin])*100)
 
-print Red("Fiducial Region \nEfficency ")
+print(Red("Fiducial Region \nEfficency "))
 for fin in ("2e2m","4m","4e"):
-    print "{0} {1} {2:.4f} + {3:.3f}  - {4:.3f}".format(fin, (6-len(fin))*" ", CentralAcc_fr[fin],(PlusSqAcc_fr[fin]-CentralAcc_fr[fin]),(-MinusSqAcc_fr[fin]+CentralAcc_fr[fin]))
+    print("{0} {1} {2:.4f} + {3:.3f}  - {4:.3f}".format(fin, (6-len(fin))*" ", CentralAcc_fr[fin],(PlusSqAcc_fr[fin]-CentralAcc_fr[fin]),(-MinusSqAcc_fr[fin]+CentralAcc_fr[fin])))
 
-print Red("Fiducial Region \nEfficency and fake correction ")
+print(Red("Fiducial Region \nEfficency and fake correction "))
 for fin in ("2e2m","4m","4e"):
-   print "{0} {1} {2:.4f} + {3:.3f}  - {4:.3f}".format(fin, (6-len(fin))*" ", CentralAcc_frAndFake[fin],(PlusSqAcc_frAndFake[fin]-CentralAcc_frAndFake[fin]),(-MinusSqAcc_frAndFake[fin]+CentralAcc_frAndFake[fin]))
+   print("{0} {1} {2:.4f} + {3:.3f}  - {4:.3f}".format(fin, (6-len(fin))*" ", CentralAcc_frAndFake[fin],(PlusSqAcc_frAndFake[fin]-CentralAcc_frAndFake[fin]),(-MinusSqAcc_frAndFake[fin]+CentralAcc_frAndFake[fin])))
 
 
-print Red("From Tight to Total \nAcceptance ")
+print(Red("From Tight to Total \nAcceptance "))
 for fin in ("2e2m","4m","4e"):
-    print "{0} {1} {2:.4f}".format(fin, (6-len(fin))*" ", CentralAcc_Acc[fin])
+    print("{0} {1} {2:.4f}".format(fin, (6-len(fin))*" ", CentralAcc_Acc[fin]))
 
-print ""
+print("")
 
 
-print Red("Fiducial Region \nEfficency ")
-print" \\begin{tabular}{ccc}"
-print"  \\hline"
-print "Final state & Efficiency  & acceptance \\\\"
-print"  \\hline"
+print(Red("Fiducial Region \nEfficency "))
+print(" \\begin{tabular}{ccc}")
+print("  \\hline")
+print("Final state & Efficiency  & acceptance \\\\")
+print("  \\hline")
 for fin in ("2e2m","4m","4e"):
-    print "${0} $ & {1} {2:.1f} + {3:.1f}  - {4:.1f} \\% & {5:.1f} + {6:.1f} - {7:.1f} \\% \\\\".format(fin, (6-len(fin))*" ", 100*CentralAcc_fr[fin],100*(PlusSqAcc_fr[fin]-CentralAcc_fr[fin]),100*(-MinusSqAcc_fr[fin]+CentralAcc_fr[fin]), 100*CentralAcc_Acc[fin],  100*(CentralAcc_Acc_dn[fin]-CentralAcc_Acc[fin]), 100*(CentralAcc_Acc[fin]-CentralAcc_Acc_up[fin] ))
-print"  \\hline"
-print"\\end{tabular} "
+    print("${0} $ & {1} {2:.1f} + {3:.1f}  - {4:.1f} \\% & {5:.1f} + {6:.1f} - {7:.1f} \\% \\\\".format(fin, (6-len(fin))*" ", 100*CentralAcc_fr[fin],100*(PlusSqAcc_fr[fin]-CentralAcc_fr[fin]),100*(-MinusSqAcc_fr[fin]+CentralAcc_fr[fin]), 100*CentralAcc_Acc[fin],  100*(CentralAcc_Acc_dn[fin]-CentralAcc_Acc[fin]), 100*(CentralAcc_Acc[fin]-CentralAcc_Acc_up[fin] )))
+print("  \\hline")
+print("\\end{tabular} ")

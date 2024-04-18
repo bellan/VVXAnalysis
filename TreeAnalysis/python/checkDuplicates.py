@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
+from __future__ import print_function
 import ROOT
-import sys, os, commands, math, re, string
 
 #inputdir = 'samples/CR2P2F_HZZ/'
 inputdir = 'samples/'
@@ -21,7 +21,7 @@ entries = tree.GetEntries()
 
 events = {}
 
-for jentry in xrange(entries):
+for jentry in range(entries):
     # get the next tree in the chain and verify
     ientry = tree.LoadTree(jentry)
     if ientry < 0: break
@@ -31,5 +31,5 @@ for jentry in xrange(entries):
     # use the values directly from the tree
     # print tree.run, tree.event
     if tree.event in events: 
-        print events[tree.event], tree.run, tree.event
+        print(events[tree.event], tree.run, tree.event)
     events[tree.event] = tree.run

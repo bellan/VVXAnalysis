@@ -4,6 +4,7 @@
 ## G. Pinna (UNITO) - Jun 2015 ###
 ##################################
 
+from __future__ import print_function
 from optparse import OptionParser
 import ROOT,copy
 ROOT.PyConfig.IgnoreCommandLineOptions = True
@@ -148,9 +149,9 @@ if SavePlot:
 
 
 if DoInclusive:
-    print Red("\n\n##############################################################\n################# ZZ4l Inclusive Cross Section ###############\n##############################################################\n")
+    print(Red("\n\n##############################################################\n################# ZZ4l Inclusive Cross Section ###############\n##############################################################\n"))
 else:  
-    print Red("\n\n#################################################################################\n############## ZZ4l Differential Cross Section as function of {0} ##############\n#################################################################################\n".format(Type))
+    print(Red("\n\n#################################################################################\n############## ZZ4l Differential Cross Section as function of {0} ##############\n#################################################################################\n".format(Type)))
 
 #set the tdr style
 tdrstyle.setTDRStyle()
@@ -209,11 +210,11 @@ if Type=="nJets" or Type=="nIncJets":
     WriteJetsNorm(hDataList,Type,DoFiducial) #Write partial xsec for variable with jet>0    
     CrossDic = collections.OrderedDict()
 
-    print "Cross Section per jet multiplicity"
+    print("Cross Section per jet multiplicity")
     for h,hup,hdown,hmc,hmcup,hmcdown in zip(hDataList,hDataListUp,hDataListDown,hMCList,hMCListUp,hMCListDown):
-        print Red(h["name"])
+        print(Red(h["name"]))
         for bin in range(1,h["state"].GetNbinsX()+1):
-            print "{0} jets:  {1:.2f} +- {2:.2f}(stat) + {3:.2f} - {4:.2f} (syst)\n".format(bin,h["state"].GetBinContent(bin),h["state"].GetBinError(bin),hup["state"].GetBinContent(bin)-h["state"].GetBinContent(bin),h["state"].GetBinContent(bin)-hdown["state"].GetBinContent(bin))
+            print("{0} jets:  {1:.2f} +- {2:.2f}(stat) + {3:.2f} - {4:.2f} (syst)\n".format(bin,h["state"].GetBinContent(bin),h["state"].GetBinError(bin),hup["state"].GetBinContent(bin)-h["state"].GetBinContent(bin),h["state"].GetBinContent(bin)-hdown["state"].GetBinContent(bin)))
             if h["name"]=="4l" and printLatex:
                 CrossDic[bin]={}  
                 CrossDic[bin]["cross"]="{0:.3f}".format(h["state"].GetBinContent(bin))
@@ -234,7 +235,7 @@ for i in range(0,4):
     if not DoFiducial and hDataList[i]["name"]=="4l":
         grSyst = getUncGraph(hDataList[i]["state"],hDataListUp[i]["state"],hDataListDown[i]["state"],MCSetIn,hDataList[i]["name"],True,"syst",Type)
     else:
-        print "Hei ",MCSetIn,hDataList[i]["name"]
+        print("Hei ",MCSetIn,hDataList[i]["name"])
         grSyst = getUncGraph(hDataList[i]["state"],hDataListUp[i]["state"],hDataListDown[i]["state"],MCSetIn,hDataList[i]["name"],True,"statsyst",Type)
 
     grMCSyst    = getUncGraph(hMCList[i]["state"],hMCListUp[i]["state"],hMCListDown[i]["state"],MCSetIn,hMCList[i]["name"],False,"syst",Type)    
@@ -283,7 +284,7 @@ for i in range(0,4):
     #systematic uncertainty
     (hRatio_ss,hRatio_up_ss,hRatio_down_ss) = LL(hDataList[i]["state"],hDataListUp[i]["state"],hDataListDown[i]["state"],hMCList[i]["state"],Type,hDataList[i]["name"],"statsyst",True) 
 
-    print "ratio ss up",hRatio_up_ss.GetBinContent(2) 
+    print("ratio ss up",hRatio_up_ss.GetBinContent(2)) 
     grSyst_ratio = getUncGraph(hRatio_ss,hRatio_up_ss,hRatio_down_ss,MCSetIn,hDataList[i]["name"],True,"syst",Type)
     grSyst_ratio.SetFillStyle(DataFillStyle)
     grSyst_ratio.SetFillColorAlpha(DataFillColor,DataAlpha-corrMad)
@@ -553,10 +554,10 @@ for i in range(0,4):
 
     hDataList[i]["state"].Draw("sameE1")
 
-    print "DataHei",hDataList[i]["name"]
-    for bi in range(1, hDataList[i]["state"].GetNbinsX()+1): print hDataList[i]["state"].GetBinContent(bi),hDataList[i]["state"].GetBinError(bi)
+    print("DataHei",hDataList[i]["name"])
+    for bi in range(1, hDataList[i]["state"].GetNbinsX()+1): print(hDataList[i]["state"].GetBinContent(bi),hDataList[i]["state"].GetBinError(bi))
 
-    print "#### Statistic test ###\n\nOnly Statistic uncertainty"
+    print("#### Statistic test ###\n\nOnly Statistic uncertainty")
     hDataList[i]["state"].Chi2Test(hMCList[i]["state"],"WW P")
 
 
@@ -564,10 +565,10 @@ for i in range(0,4):
     hMCforChi2    = GetHistoForChi2(hMCList[i]["state"],grMCSyst)
     hMCforChi2_op = GetHistoForChi2(hMCList_op[i]["state"],grMCSyst_op)
 
-    print "\nAll uncertainties\n"
+    print("\nAll uncertainties\n")
 
     hDataForChi2.Chi2Test(hMCforChi2,"WW P")
-    print "\nKolomogorov  ",hDataList[i]["state"].KolmogorovTest(hMCforChi2)
+    print("\nKolomogorov  ",hDataList[i]["state"].KolmogorovTest(hMCforChi2))
     PValue    =hDataForChi2.Chi2Test(hMCforChi2,"WW")
     PValue_op =hDataForChi2.Chi2Test(hMCforChi2_op,"WW")
 
@@ -603,7 +604,7 @@ for i in range(0,4):
         hRatio.SetMaximum(MaxRatioList_8TeV[Type][DoFiducial][True])
         hRatio.SetMinimum(MaxRatioList_8TeV[Type][DoFiducial][False])
     else:
-        print "Min",MaxRatioList[Type][DoFiducial][False]
+        print("Min",MaxRatioList[Type][DoFiducial][False])
         hRatio.SetMaximum(MaxRatioList[Type][DoNormalized][True])
         hRatio.SetMinimum(MaxRatioList[Type][DoNormalized][False])
 
@@ -715,9 +716,9 @@ for i in range(0,4):
             c1.SaveAs(PersonalFolder+Dir+"/"+Type+"/CrossSection/diffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+Kind+".pdf")      
             c1.SaveAs(PersonalFolder+Dir+"/"+Type+"/CrossSection/diffCrossSecZZTo"+hMCList[i]["name"]+Type+PlotType+"_"+MCSetStr+Kind+".root")       
 
-    print "Pvalue ",PValue
+    print("Pvalue ",PValue)
      
 if printLatex and (Type=="nJets" or Type=="nIncJets"): 
-    print "\nJet multuplicity cross section tabular:\n"
+    print("\nJet multuplicity cross section tabular:\n")
     Text =("Number of jets ($|\eta_{j}| < 4.7$)","Total cross-section [fb]","stat","syst","lumi")
     CrossLatex(Text,CrossDic,Type)

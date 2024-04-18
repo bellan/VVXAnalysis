@@ -5,8 +5,8 @@
 ## R. Bellan (UNITO) - Feb 2014 ##
 ##################################
 
-
-import sys, os, commands, math, csv
+from __future__ import print_function
+import sys, os, math, csv
 
 from samples_cfi import samplesVVX as samples
 
@@ -55,17 +55,17 @@ for i in range(0,len(samples)-1):
                 lineforcsv = [sample,"",round(xsec,10),"","","",samples[i][2],samples[i][1],samples[i][3],samples[i][4],samples[i][5]]
                 csvwriter.writerow(lineforcsv)
                 if xsec < 0:
-                    print "Warning!",sample,"found in xsection file, but without a valid cross section."
+                    print("Warning!",sample,"found in xsection file, but without a valid cross section.")
 
     if foundsampleinfile == 0:
-        print "{0:s} not found!".format(sample)
+        print("{0:s} not found!".format(sample))
         lineforpy = samples[i] + (-1,)
         fileoutpy.write('{0:s},\n'.format(lineforpy))
         lineforcsv = [sample, "",-1,"","","",samples[i][2],samples[i][1],samples[i][3],samples[i][4],samples[i][5]]
         csvwriter.writerow(lineforcsv)
 
     if foundsampleinfile >1:
-        print "More than one instance for {0:s} has been found!".format(sample)
+        print("More than one instance for {0:s} has been found!".format(sample))
 
 fileoutpy.write(']')                  
 

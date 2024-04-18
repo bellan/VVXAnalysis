@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+from __future__ import print_function
 from optparse import OptionParser
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
@@ -169,7 +170,7 @@ else:
     else:
         (hMC,leg)=GetMCPlot("results/"+InputDir+region+"/",category,"ZZTo"+FinState+"_"+Var,Addfake,mcSet,InfoType[Type][2])    
     (hData,histodata)=GetDataPlot("results/"+InputDir+region+"/","ZZTo"+FinState+"_"+Var,region,InfoType[Type][2])
-    print "int",histodata.Integral()
+    print("int",histodata.Integral())
     
 YMaxMC = YMax=hMC.GetMaximum()
 

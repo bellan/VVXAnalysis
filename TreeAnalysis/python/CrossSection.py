@@ -4,6 +4,7 @@
 ## G. Pinna (UNITO) - Jun 2015 ###
 ##################################
 
+from __future__ import print_function
 import ROOT,copy
 from ROOT import gSystem, TCanvas, TH1,  TPad, gStyle, TLegend,TGraphAsymmErrors,Math,TArrayD
 import CrossInfo
@@ -33,7 +34,7 @@ def addGlobSyst2(hSum,hSumUp,hSumDown,doFiducial):
     sigmaTrig = {"4e":[],"4m":[],"2e2m":[],"4l":[]}
     for h,hUp,hDown in zip(hSum,hSumUp,hSumDown):                                                     
         Nbins = h["state"].GetNbinsX()
-        print h["name"]
+        print(h["name"])
         for i in range(1,Nbins+1):
             valUp = (hUp["state"].GetBinContent(i)-h["state"].GetBinContent(i))**2
             valDown = (h["state"].GetBinContent(i)-hDown["state"].GetBinContent(i))**2
@@ -44,7 +45,7 @@ def addGlobSyst2(hSum,hSumUp,hSumDown,doFiducial):
                     valUp+= 0.
                     valDown+= 0.
                 else:
-                    print syst["name"],h["state"].GetBinContent(i)*syst["value"]
+                    print(syst["name"],h["state"].GetBinContent(i)*syst["value"])
                     valUp+=(h["state"].GetBinContent(i)*syst["value"])**2
                     valDown+=(h["state"].GetBinContent(i)*syst["value"])**2
                     if syst["name"]=="Trig": sigmaTrig[h["name"]].append(h["state"].GetBinContent(i)*syst["value"])
@@ -80,7 +81,7 @@ def addGlobSyst(hCent,hUp,hDown,FinState,doFiducial):
                  valUp+= 0.
                  valDown+= 0.
              else:
-                 print syst["name"],hCent.GetBinContent(i)*syst["value"]
+                 print(syst["name"],hCent.GetBinContent(i)*syst["value"])
                  valUp+=(hCent.GetBinContent(i)*syst["value"])**2
                  valDown+=(hCent.GetBinContent(i)*syst["value"])**2
                  
@@ -136,7 +137,7 @@ def getUncGraph(HCent,HUp,HDown,MCSet,FinState,Data,Err,Type):
         grErr.SetPointEYlow(i-1,totUnc_down)
 
         if "nJets del"in Type and Data and Err=="ratio":
-            print "set 0"
+            print("set 0")
             grErr.SetPointEXhigh(i-1,0.) 
             grErr.SetPointEXlow(i-1,0.)
        
@@ -156,7 +157,7 @@ def getCrossPlot_MC(MCSet,Type,analysis,doNormalize,DoFiducial):
     
     if Type == "Total": Type = "Mass"
 
-    print Red("######################### Monte Carlo #######################\n")
+    print(Red("######################### Monte Carlo #######################\n"))
 
     list2e2mu = []
     list4mu   = []
@@ -231,7 +232,7 @@ def getCrossPlot_MC(MCSet,Type,analysis,doNormalize,DoFiducial):
             hdn["samples"].append(h_sdn)
 
         if h==None:
-            print "ERROR no data for",h["name"]
+            print("ERROR no data for",h["name"])
             break
 
     if not DoFiducial:
@@ -249,7 +250,7 @@ def getCrossPlot_MC(MCSet,Type,analysis,doNormalize,DoFiducial):
         hSumDn.append(hTOTElemDn)
 
     for h,hup,hdn in zip(hSum,hSumUp,hSumDn):
-        print Red(h["name"])
+        print(Red(h["name"]))
         if h["name"]!="4l":
             for (h_s,h_sup,h_sdn) in zip(h["samples"],hup["samples"],hdn["samples"]):
                 setCrossSectionMC(h_s,h_sup,h_sdn,h["name"],Type,doNormalize,MCSet,DoFiducial)
@@ -264,8 +265,8 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,doNormalize,d
     Fr = ""
     if doFiducial: Fr="_fr"
     
-    if UseMCReco:  print Red("########################### MC RECO ########################\n")
-    else: print Red("############################ DATA  #########################\n".format(Sign))
+    if UseMCReco:  print(Red("########################### MC RECO ########################\n"))
+    else: print(Red("############################ DATA  #########################\n".format(Sign)))
     
     hsum2e2mu = ROOT.TH1F()
     hsum4e    = ROOT.TH1F()
@@ -333,12 +334,12 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,doNormalize,d
     addGlobSyst2(hSum,hSumUp,hSumDown,doFiducial)
     for h,hup,hdown in zip(hSum,hSumUp,hSumDown):
 
-        print "{0} Tot Cross     {1} {2:.2f} \n".format(h["name"],(15-len(h["name"]))*" ", h["state"].Integral(0,-1))     
-        print "{0} Tot Cross up  {1} {2:.2f} \n".format(hup["name"],(15-len(hup["name"]))*" ", hup["state"].Integral(0,-1))     
-        print "{0} Tot Cross down{1} {2:.2f} \n".format(hdown["name"],(15-len(hdown["name"]))*" ", hdown["state"].Integral(0,-1))     
+        print("{0} Tot Cross     {1} {2:.2f} \n".format(h["name"],(15-len(h["name"]))*" ", h["state"].Integral(0,-1)))     
+        print("{0} Tot Cross up  {1} {2:.2f} \n".format(hup["name"],(15-len(hup["name"]))*" ", hup["state"].Integral(0,-1)))     
+        print("{0} Tot Cross down{1} {2:.2f} \n".format(hdown["name"],(15-len(hdown["name"]))*" ", hdown["state"].Integral(0,-1)))     
 
         if h["state"]==None:
-            print h["state"]," has no enetries"
+            print(h["state"]," has no enetries")
 
             #      NormUp   =   hup["state"].Integral(1,-1)/h["state"].Integral(1,-1) 
             #      NormDown = hdown["state"].Integral(1,-1)/h["state"].Integral(1,-1) 
@@ -370,7 +371,7 @@ def getCrossPlot_Data(MCSet,UseUnfold,Type,analysis,Sign,UseMCReco,doNormalize,d
             hup["state"].Scale((norm)/h["state"].Integral(0,-1),"width")
             hdown["state"].Scale((norm)/h["state"].Integral(0,-1),"width")
             h["state"].Scale(norm/h["state"].Integral(0,-1),"width")
-            print "NORM",norm
+            print("NORM",norm)
 
 
     return hSum,hSumUp,hSumDown
@@ -405,13 +406,13 @@ def setCrossSectionMC(h1,h1up,h1dn,FinState,Type,doNormalize,MCSet,doFiducial):
     name = (h1.GetName()).replace("_"+FinState,"")
     if "Gen" in name: name = "Total"
     if doFiducial:
-        print "{0} {1} {2:.2f} + {3:.2f} -{4:.2f} [fb]\n".format(name,((25-len(name))*" "),1000*(h1.Integral(0,-1))/(Lumi),1000*((h1up.Integral(0,-1) - h1.Integral(0,-1))/(Lumi)),1000*((h1.Integral(0,-1) - h1dn.Integral(0,-1) )/(Lumi)))
+        print("{0} {1} {2:.2f} + {3:.2f} -{4:.2f} [fb]\n".format(name,((25-len(name))*" "),1000*(h1.Integral(0,-1))/(Lumi),1000*((h1up.Integral(0,-1) - h1.Integral(0,-1))/(Lumi)),1000*((h1.Integral(0,-1) - h1dn.Integral(0,-1) )/(Lumi))))
         if FinState=="4l" and Type=="Total":
             AccFile = ROOT.TFile("./Acceptance/Acceptance_"+MCSet+"_"+Type+".root")
             Acc = AccFile.Get("TotAcc2e2m_Acc").GetVal()
-            print "Cross section Wide region",(h1.Integral(0,-1))/(Lumi*Acc*(BRele*BRele+2*BRele*BRmu+BRmu*BRmu)),"[pb]"              
+            print("Cross section Wide region",(h1.Integral(0,-1))/(Lumi*Acc*(BRele*BRele+2*BRele*BRmu+BRmu*BRmu)),"[pb]")              
     else:
-        print "{0} {1} {2:.2f} [pb]\n".format(name,((25-len(name))*" "),(h1.Integral(1,-1))/(Lumi*BR)) # Check total cross section witho
+        print("{0} {1} {2:.2f} [pb]\n".format(name,((25-len(name))*" "),(h1.Integral(1,-1))/(Lumi*BR))) # Check total cross section witho
     
     Integral = h1.Integral() 
 
@@ -451,7 +452,7 @@ def combineCross(HList,HListUp,HListDown):
     Nbins= HList[1]["state"].GetNbinsX()
 
     for i in range(1,Nbins+1):
-        Hlist  = zip(HList, HListUp,HListDown)
+        Hlist  = list(zip(HList, HListUp,HListDown))
         #Sort List by entries magnitude, from higher to lower to skip 0 entries bins
         SortedHlist = sorted(Hlist,key=lambda value: value[0]["state"].GetBinContent(i),reverse = True)        
 
@@ -469,7 +470,7 @@ def combineCross(HList,HListUp,HListDown):
         for elem in SortedHlist:
 
             Entries = elem[0]["state"].GetBinContent(i)
-            print  elem[0]["name"],elem[0]["state"].GetBinContent(i)
+            print(elem[0]["name"],elem[0]["state"].GetBinContent(i))
             if Entries == 0.:   break   # Because of sorting also others final state will be 0 so use break and no continue
 
             errStatSq     = (elem[0]["state"].GetBinError(i)/Entries)**2
@@ -499,7 +500,7 @@ def combineCross(HList,HListUp,HListDown):
         ErrSystUp   = math.sqrt(1./WeightSystUp)
         if WeightSystDown ==0:  
             ErrSystDown = 0 
-            print "ErrSystDown for bin",i,"is 0. Check it"
+            print("ErrSystDown for bin",i,"is 0. Check it")
         else: ErrSystDown = math.sqrt(1./WeightSystDown)
         
         HCrossUp.SetBinContent(i,Cross+ErrSystUp*Cross)
@@ -523,7 +524,7 @@ def combineCrossCorr(HList,HListUp,HListDown):
     Nbins= HList[1]["state"].GetNbinsX()
 
     for i in range(1,Nbins+1):
-        Hlist  = zip(HList, HListUp,HListDown)
+        Hlist  = list(zip(HList, HListUp,HListDown))
         #Sort List by entries magnitude, from higher to lower to skip 0 entries bins
         SortedHlist = sorted(Hlist,key=lambda value: value[0]["state"].GetBinContent(i),reverse = True)        
 
@@ -556,10 +557,10 @@ def combineCrossCorr(HList,HListUp,HListDown):
             errSyst[elem[0]["name"]]     = ((elem[1]["state"].GetBinContent(i)-elem[2]["state"].GetBinContent(i) )/(2.)) #Use the average of systematic up and do\
 
         Cross,ErrTot,ErrStat = ToyMCAverage(Entries["2e2m"],errStat["2e2m"],errSyst["2e2m"],Entries["4m"],errStat["4m"],errSyst["4m"],Entries["4e"],errStat["4e"],errSyst["4e"],i)
-        print "2e2m",Entries["2e2m"], errStat["2e2m"], errStat["2e2m"]/Entries["2e2m"],errSyst["2e2m"]/Entries["2e2m"]
-        print "4m"  ,Entries["4m"],   errStat["4m"],   errStat["4m"]/Entries["4m"],    errSyst["4m"]/Entries["4m"]
-        print "4e",  Entries["4e"],   errStat["4e"],   errStat["4e"]/Entries["4e"],    errSyst["4e"]/Entries["4e"]
-        print Cross,ErrTot
+        print("2e2m",Entries["2e2m"], errStat["2e2m"], errStat["2e2m"]/Entries["2e2m"],errSyst["2e2m"]/Entries["2e2m"])
+        print("4m"  ,Entries["4m"],   errStat["4m"],   errStat["4m"]/Entries["4m"],    errSyst["4m"]/Entries["4m"])
+        print("4e",  Entries["4e"],   errStat["4e"],   errStat["4e"]/Entries["4e"],    errSyst["4e"]/Entries["4e"])
+        print(Cross,ErrTot)
         
         HCrossUp.SetBinContent(i,Cross+ErrTot)
         HCrossDown.SetBinContent(i,Cross-ErrTot)
@@ -654,7 +655,7 @@ def combineCrossFiducial(HList,HListUp,HListDown):
 
     for i in range(1,Nbins+1):
 
-        Hlist  = zip(HList, HListUp,HListDown)
+        Hlist  = list(zip(HList, HListUp,HListDown))
         #Sort List by entries magnitude, from higher to lower  to skip 0 entries bins
         SortedHlist = sorted(Hlist,key=lambda value: value[0]["state"].GetBinContent(i),reverse = True)        
 
@@ -729,7 +730,7 @@ def getHisto(Sign,MCSet,analysis,Type,doFiducial,UseMCReco):
             h["state"] = copy.deepcopy(h1)
             ErrStat=ROOT.Double(0.)
         else:
-            print Red("\n WRONG TYPE: Mass or Jets only\n") 
+            print(Red("\n WRONG TYPE: Mass or Jets only\n")) 
       
     return hSum
 
@@ -768,14 +769,14 @@ def TotalCross(MCSet,Type,analysis,doFiducial,UseMCReco):
         MidSyst =  (abs(CrossDic[i["name"]][2]) + abs(CrossDic[i["name"]][3]))/2.
         CrossDic[i["name"]][4] = math.sqrt(CrossDic[i["name"]][1]**2+MidSyst**2) 
 
-    print Red("\n##################### RESULTS FOR INCLUSIVE CROSS SECTION ####################\n") 
+    print(Red("\n##################### RESULTS FOR INCLUSIVE CROSS SECTION ####################\n")) 
 
     if doFiducial: list4l = combineInclusiveCrossFiducial(CrossDic)
     else:          list4l = combineInclusiveCross(CrossDic)
     dic4l = {"4l":list4l}  
     CrossDic.update(dic4l)
  
-    for fin,value in CrossDic.iteritems():
+    for fin,value in CrossDic.items():
         value[2]=value[2]**2
         value[3]=value[3]**2 
 #        value[4]=value[4]**2 
@@ -792,15 +793,15 @@ def TotalCross(MCSet,Type,analysis,doFiducial,UseMCReco):
         value[2]= math.sqrt(value[2])
         value[3]= math.sqrt(value[3])
 
-        print Blue("{0}".format(fin))
+        print(Blue("{0}".format(fin)))
         if doFiducial:
-            print  " {0:.2f} +- {1:.2f} (stat) + {2:.2f} (syst) - {3:.2f} (syst) +- {4:.2f} (Total) [fb]\n".format(value[0]*1000,value[1]*1000,value[2]*1000,value[3]*1000,value[4]*1000)
+            print(" {0:.2f} +- {1:.2f} (stat) + {2:.2f} (syst) - {3:.2f} (syst) +- {4:.2f} (Total) [fb]\n".format(value[0]*1000,value[1]*1000,value[2]*1000,value[3]*1000,value[4]*1000))
             if fin=="4l":
                 AccFile = ROOT.TFile("./Acceptance/Acceptance_"+MCSet+"_Mass.root")
                 Acc = (AccFile.Get("TotAcc2e2m_Acc").GetVal()+AccFile.Get("TotAcc4e_Acc").GetVal()+AccFile.Get("TotAcc4m_Acc").GetVal())/3. 
-                print "Cross Section in wide Region",value[0]/(Acc*(BRele*BRele+2*BRele*BRmu+BRmu*BRmu)),"\nAcceptance",Acc,"\n" 
+                print("Cross Section in wide Region",value[0]/(Acc*(BRele*BRele+2*BRele*BRmu+BRmu*BRmu)),"\nAcceptance",Acc,"\n") 
 
-        else: print " {0:.2f} +- {1:.2f} (stat) + {2:.2f} (syst) - {3:.2f} (syst) +- {4:.2f} (Total) [pb] \n".format(value[0],value[1],value[2],value[3],value[4])
+        else: print(" {0:.2f} +- {1:.2f} (stat) + {2:.2f} (syst) - {3:.2f} (syst) +- {4:.2f} (Total) [pb] \n".format(value[0],value[1],value[2],value[3],value[4]))
 
 
 def combineInclusiveCross(Dic):

@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+from __future__ import print_function
 import ROOT
 import CrossInfo
 from CrossInfo import* 
@@ -49,7 +50,7 @@ def LikeCross(wspace):
     BR_4e   = BRele*BRele    
     BR      = BR_4m+BR_2e2m+BR_4e
     
-    print "BR sum",BR," BRmean ",(BR_4m + BR_4e + BR_2e2m)/3.," BR_4m ",BR_4m," BR_2e2m ",BR_2e2m," BR_4e ",BR_4e
+    print("BR sum",BR," BRmean ",(BR_4m + BR_4e + BR_2e2m)/3.," BR_4m ",BR_4m," BR_2e2m ",BR_2e2m," BR_4e ",BR_4e)
     
     # wspace.var("BR_4m").setVal(BR_4m)
     # wspace.var("BR_2e2m").setVal(BR_2e2m)
@@ -69,20 +70,20 @@ def LikeCross(wspace):
     
     
   # make data set with the namber of observed events
-    print "---Make data Set---"       
+    print("---Make data Set---")       
     data = ROOT.RooDataSet("data","", ROOT.RooArgSet(wspace.var("nobs_4m"),wspace.var("nobs_2e2m"),wspace.var("nobs_4e")));
      
     data.add(ROOT.RooArgSet(wspace.var("nobs_4m") ))
     data.add(ROOT.RooArgSet(wspace.var("nobs_2e2m") ))
     data.add(ROOT.RooArgSet(wspace.var("nobs_4e") ))
 
-    print "---Make Frame---"       
+    print("---Make Frame---")       
 #    frame = wspace.var("mu").frame(0.95,1.1);
     frame = wspace.var("mu").frame(1.1,1.25);
     
-    print "---Make nll---"       
+    print("---Make nll---")       
     nll = wspace.pdf("model").createNLL(data)
-    print "Initial NLL value",nll.getVal()
+    print("Initial NLL value",nll.getVal())
     nll.plotOn(frame,ROOT.RooFit.ShiftToZero()); #the ShiftToZero option puts the minimum at 0 on the y-axis
 
     #nllcopy = copy.deepcopy(nll)
@@ -92,8 +93,8 @@ def LikeCross(wspace):
     mini = ROOT.RooMinuit(nll);
     mini.minos(wspace.set("poi"));
 
-    print "NLL value",nll.getVal()       
-    print "---Create profile---"   
+    print("NLL value",nll.getVal())       
+    print("---Create profile---")   
 
     pll = nll.createProfile(wspace.set("poi"))
     pll.plotOn(frame,ROOT.RooFit.LineColor(ROOT.kRed))
@@ -113,11 +114,11 @@ def LikeCross(wspace):
     TotThCross = xs_tight["4l"] #xs_2e2m +xs_4m + xs_4e
 #    Acc = xs_4e/xs_OS_4e #FIXME 
     Acc = xs_tight["4e"]/xs_OS_4e #FIXME 
-    print "Acc",Acc
+    print("Acc",Acc)
     #print "mu",mu,"cross",mu*TotThCross,"+",(mu+mu_hi)*TotThCross,"-",(mu+mu_lo)*TotThCross
 
-    print "mu",mu,"cross",mu*TotThCross,"+",(mu_hi)*TotThCross,(mu_lo)*TotThCross
-    print "Total Cross ",(mu*TotThCross)/(Acc*BR)
+    print("mu",mu,"cross",mu*TotThCross,"+",(mu_hi)*TotThCross,(mu_lo)*TotThCross)
+    print("Total Cross ",(mu*TotThCross)/(Acc*BR))
 
     return mu*TotThCross
 

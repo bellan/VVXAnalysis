@@ -3,6 +3,7 @@
 ## G. Pinna (UNITO) - Jun 2015 ##
 ##################################
 
+from __future__ import print_function
 from optparse import OptionParser
 import ROOT,copy
 from ROOT import gSystem, TCanvas, TH1,  TPad, gStyle, TLegend,TGraphAsymmErrors,Math,TArrayD
@@ -72,23 +73,23 @@ if doVBS:
 else:
     fileMCSig = ROOT.TFile(inputdir_MC+"sig_pow.root") 
 
-print "MC fiducial cross section"
+print("MC fiducial cross section")
 xsTot = 0;
 for fn in ('2e2m','4m','4e'):
 
     h    = copy.deepcopy(fileMCSig.Get("ZZTo"+fn+"_MassGen_01_fr"))
     if h == None: sys.exit("ZZTo"+fn+"_MassGen_01_fr Does not exist in file "+fileMCSig.GetName())
-    print Red(fn)
+    print(Red(fn))
 #    if doAll:  xs=(1000*(h.Integral(0,-1)+hbkg.Integral(0,-1)))/Lumi
     xs=(1000*(h.Integral(0,-1)))/Lumi
-    print "{0:.3f} fb".format(xs)
+    print("{0:.3f} fb".format(xs))
     xsTot+=xs 
 
-print Red('4l')
-print "{0:.3f} fb\n".format(xsTot)
+print(Red('4l'))
+print("{0:.3f} fb\n".format(xsTot))
 
-if doVBS: print "have you merged the reco file?\n if not type:\n hadd -f results/ZZRecoAnalyzer_SR/VBSbkg.root results/ZZRecoAnalyzer_SR/ZZTo4l.root results/ZZRecoAnalyzer_SR/gg_4l.root results/ZZRecoAnalyzer_SR/Irr.root"
-else:  print "have you merged the reco file?\n if not type:\n hadd -f results/ZZRecoAnalyzer_SR/sig_pow.root results/ZZRecoAnalyzer_SR/ZZTo4l.root results/ZZRecoAnalyzer_SR/gg_4l.root results/ZZRecoAnalyzer_SR/qq_4l2j.root "
+if doVBS: print("have you merged the reco file?\n if not type:\n hadd -f results/ZZRecoAnalyzer_SR/VBSbkg.root results/ZZRecoAnalyzer_SR/ZZTo4l.root results/ZZRecoAnalyzer_SR/gg_4l.root results/ZZRecoAnalyzer_SR/Irr.root")
+else:  print("have you merged the reco file?\n if not type:\n hadd -f results/ZZRecoAnalyzer_SR/sig_pow.root results/ZZRecoAnalyzer_SR/ZZTo4l.root results/ZZRecoAnalyzer_SR/gg_4l.root results/ZZRecoAnalyzer_SR/qq_4l2j.root ")
 
 '''
 
@@ -188,7 +189,7 @@ for i, (key, value) in enumerate(DataDic.items()):
 
     h = copy.deepcopy(fileData.Get("ZZTo"+key+"_Mass_01"))
     if h==None:
-        print "No events for",key,"in data"
+        print("No events for",key,"in data")
         value["yield"]=0
     else:
         value["yield"]=h.Integral(0,-1)
@@ -288,20 +289,20 @@ out_file.write("\n------------\n")
 for T in SystType:
     out_file.write("\n"+T+" lnN ")
     for key, value in SigDic.items():   
-        if value["variation"].has_key(T): out_file.write("{0:.3f} ".format((value["variation"][T]+value["yield"])/value["yield"]))
+        if T in value["variation"]: out_file.write("{0:.3f} ".format((value["variation"][T]+value["yield"])/value["yield"]))
         else:   out_file.write("   -   ")
 
     for key, value in irrBkgDic.items():   
-        if value["variation"].has_key(T): out_file.write("{0:.3f} ".format((value["variation"][T]+value["yield"])/value["yield"]))
+        if T in value["variation"]: out_file.write("{0:.3f} ".format((value["variation"][T]+value["yield"])/value["yield"]))
         else:   out_file.write("   -   ")
 
     for key, value in redBkgDic.items():   
-        if value["variation"].has_key(T):  out_file.write("{0:.3f} ".format((value["variation"][T]+value["yield"])/value["yield"]))
+        if T in value["variation"]:  out_file.write("{0:.3f} ".format((value["variation"][T]+value["yield"])/value["yield"]))
         else:   out_file.write("   -   ")
 
     if doRight:
         for key, value in ZZBkgDic.items():   
-            if value["variation"].has_key(T):  out_file.write("{0:.3f} ".format((value["variation"][T]+value["yield"])/value["yield"]))
+            if T in value["variation"]:  out_file.write("{0:.3f} ".format((value["variation"][T]+value["yield"])/value["yield"]))
             else:   out_file.write("   -   ")
 
 GlobSystList.pop()
@@ -353,10 +354,10 @@ if doRight:
         out_file.write("  -  ")
 
 
-print "Tot expected {0:.3f} Tot observed {1:.3f} \n".format(TotExp,TotObs)
+print("Tot expected {0:.3f} Tot observed {1:.3f} \n".format(TotExp,TotObs))
 
 if doCopy:
     #shutil.copy2(outputName+".txt", "/afs/cern.ch/user/g/gpinnaan/Work/VVX/ZZ/CMSSW_7_4_15_patch1/src/HiggsAnalysis/CombinedLimit/test/") #it doesn't work
-    print "cp "+outputName+"_"+finState+".txt ~/Work/VVX/ZZ/CMSSW_7_4_15_patch1/src/HiggsAnalysis/CombinedLimit/test/"
-    print "cd  ~/Work/VVX/ZZ/CMSSW_7_4_15_patch1/src/HiggsAnalysis/CombinedLimit/test/ \ncombine -M MaxLikelihoodFit --forceRecreateNLL",outputName+"_"+finState+".txt" 
+    print("cp "+outputName+"_"+finState+".txt ~/Work/VVX/ZZ/CMSSW_7_4_15_patch1/src/HiggsAnalysis/CombinedLimit/test/")
+    print("cd  ~/Work/VVX/ZZ/CMSSW_7_4_15_patch1/src/HiggsAnalysis/CombinedLimit/test/ \ncombine -M MaxLikelihoodFit --forceRecreateNLL",outputName+"_"+finState+".txt") 
 

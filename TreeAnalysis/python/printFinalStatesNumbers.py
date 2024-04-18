@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+from __future__ import print_function
 import ROOT, copy, sys
 
 from ROOT import TH1F
@@ -26,18 +27,18 @@ for dataset in datasets:
                 #print dataset+run, finalstate, h.Integral()
 
 for finalstate in finalstates:        
-    print "\nFinal state:", finalstate
+    print("\nFinal state:", finalstate)
     counter = 0
     for line in tableline:
         if line[2] == finalstate:
-            print "{0:s}{1:s}\t{2:.5f}".format(line[0],line[1],line[3])
+            print("{0:s}{1:s}\t{2:.5f}".format(line[0],line[1],line[3]))
             counter += line[3]
-    print "TOTAL \t\t{0:.5f}\n".format(counter)
+    print("TOTAL \t\t{0:.5f}\n".format(counter))
 
-print "STOP here, uncomment to run over MC too"
+print("STOP here, uncomment to run over MC too")
 sys.exit(0)
 
-print "MC"
+print("MC")
 
 datasets = [#'ZZTo4eJJ_SMHContinInterf_H125.6','ZZTo2e2muJJ_SMHContinInterf_H125.6','ZZTo4muJJ_SMHContinInterf_H125.6',
             #'ggTo4e_SMHContinInterf-MCFM67_H125.6','ggTo4mu_SMHContinInterf-MCFM67_H125.6','ggTo2e2mu_SMHContinInterf-MCFM67_H125.6',
@@ -63,13 +64,13 @@ for dataset in datasets:
 
 
 for finalstate in finalstates:        
-    print "\nFinal state:", finalstate
+    print("\nFinal state:", finalstate)
     counter = 0
     counterw = 0.
     for line in tableline:
         if line[1] == finalstate:
-            print "{0:s}\t{1:.0f}\t{2:.3f}".format(line[0],line[2],line[3])
+            print("{0:s}\t{1:.0f}\t{2:.3f}".format(line[0],line[2],line[3]))
             counter  += line[2]
             counterw += line[3]
-    print "TOTAL \t\t{0:.0f}\t{1:.3f}\n".format(counter,counterw)
+    print("TOTAL \t\t{0:.0f}\t{1:.3f}\n".format(counter,counterw))
 

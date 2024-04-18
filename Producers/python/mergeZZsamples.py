@@ -1,19 +1,20 @@
 #! /usr/bin/env python
 
-import sys, os, commands
+from __future__ import print_function
+import sys, os, subprocess
 
-print "Merging ZZ samples"
+print("Merging ZZ samples")
 
 outputdir = sys.argv[1]
 inputdir  = outputdir+'ZZunmerged'
 
-print inputdir
+print(inputdir)
 
-failure, output = commands.getstatusoutput('ls {0:s}/*.root | grep -v ext'.format(inputdir))
+failure, output = subprocess.getstatusoutput('ls {0:s}/*.root | grep -v ext'.format(inputdir))
 
 samples = output.split()
 for sample in samples:
-    failure, name = commands.getstatusoutput('basename {0:s} .root'.format(sample))
-    command =  'hadd {0:s}/{1:s}.root {2:s}/{1:s}.root {2:s}/{1:s}_ext.root'.format(outputdir, name, inputdir)
-    print command
-    failure, output = commands.getstatusoutput(command)
+    name = subprocess.check_output(['basename', str(sample), '.root'])
+    command = 'hadd {0:s}/{1:s}.root {2:s}/{1:s}.root {2:s}/{1:s}_ext.root'.format(outputdir, name, inputdir)
+    print(command)
+    output = subprocess.check_call(command, shell=True)
