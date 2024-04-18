@@ -4,6 +4,7 @@
 ## G. Pinna (UNITO) - Jun 2015 ##
 ##################################
 
+from __future__ import print_function
 import ROOT,copy
 from ROOT import gSystem, TCanvas, TH1,  TPad, gStyle, TLegend,TGraphAsymmErrors,Math,TArrayD
 import collections 
@@ -85,11 +86,11 @@ hsum4e    = ROOT.TH1F()
 hsum4mu   = ROOT.TH1F()
 
 hSum = [{"hist":hsum2e2mu,"name":'2e2m'},{"hist":hsum4e,"name":'4e'},{"hist":hsum4mu,"name":'4m'}]
-print Red("\nData\n")
+print(Red("\nData\n"))
 for h in hSum:
     h1 = DataFile.Get("ZZTo"+h["name"]+"_Mass_01")
     h["hist"] = copy.deepcopy(h1)
-    print "{0} contribution {1}> {2:.2f}\n".format(h["name"],(33-len(h["name"]))*"-",h1.Integral(0,-1))
+    print("{0} contribution {1}> {2:.2f}\n".format(h["name"],(33-len(h["name"]))*"-",h1.Integral(0,-1)))
 
 hIrredBkg2e2mu= ROOT.TH1F() 
 hIrredBkg4mu = ROOT.TH1F() 
@@ -102,28 +103,28 @@ filesbkg ={}
 for b in BkgSamples:
     filesbkg[b["sample"]] = ROOT.TFile(inputdir+b["sample"]+".root") 
 
-print Red("Irreducible Background\n")
+print(Red("Irreducible Background\n"))
 
 for h in hIrredSum:
     isFirst=1
     for b in BkgSamples:
         h1 = filesbkg[b["sample"]].Get("ZZTo"+h["name"]+"_Mass_01")
         if h1==None:
-            print "For sample ", b["sample"], "h"+h["name"],"has no enetries or is a zombie"      
+            print("For sample ", b["sample"], "h"+h["name"],"has no enetries or is a zombie")      
             continueb
         if isFirst:
             h["hist"]=copy.deepcopy(h1) 
             isFirst=0
             continue
-        print "{0} contribution {1}> {2:.2f}\n".format(h["name"],(33-len(h["name"]))*"-",h["hist"].Integral(0,-1))
+        print("{0} contribution {1}> {2:.2f}\n".format(h["name"],(33-len(h["name"]))*"-",h["hist"].Integral(0,-1)))
         h["hist"].Add(h1)     
 
-print Red("Reducible Background\n")
+print(Red("Reducible Background\n"))
 
 
 fileFake = ROOT.TFile(inputdir_CR+"data.root")
 
-print Blue("Central value\n" )
+print(Blue("Central value\n" ))
 hRed2e2mu = copy.deepcopy(fileFake.Get("ZZTo2e2m_Mass_01"))
 hRed4e    = copy.deepcopy(fileFake.Get("ZZTo4e_Mass_01"))
 hRed4mu   = copy.deepcopy(fileFake.Get("ZZTo4m_Mass_01"))
@@ -132,7 +133,7 @@ hRedSum = [{"hist":hRed2e2mu,"name":'2e2m'},{"hist":hRed4e,"name":'4e'},{"hist":
 
 for h in hRedSum:
     Err=ROOT.Double(0.)
-    print "{0} contribution {1}> {2:.2f} +- {3:.2f}\n".format(h["name"],(33-len(h["name"]))*"-",h["hist"].IntegralAndError(0,-1,Err),Err)
+    print("{0} contribution {1}> {2:.2f} +- {3:.2f}\n".format(h["name"],(33-len(h["name"]))*"-",h["hist"].IntegralAndError(0,-1,Err),Err))
 
 AccFile     = ROOT.TFile("./Acceptance/Acceptance_"+Set+"_Mass.root")
 AccFile_Hi  = ROOT.TFile("./Acceptance/AcceptanceSFactorSqPlus_"+Set+"_Mass.root")
@@ -145,17 +146,17 @@ for hData,hRed,hIrr in zip(hSum,hRedSum,hIrredSum):
     hData["hist"].Rebin(8)
     hRed["hist"].Rebin(8)
 
-    print "\nnobs_" +hData["name"],hData["hist"].Integral(0,-1)
+    print("\nnobs_" +hData["name"],hData["hist"].Integral(0,-1))
     wspace.factory("nobs_"+hData["name"]+"["+str(hData["hist"].Integral(0,-1))+",0,300]")
 
     Err=ROOT.Double(0.)
-    print "red_" +hData["name"],hRed["hist"].IntegralAndError(0,-1,Err),"+-",Err
+    print("red_" +hData["name"],hRed["hist"].IntegralAndError(0,-1,Err),"+-",Err)
     wspace.factory("bkg_"+ hData["name"]+"["+str(hRed["hist"].Integral(0,-1))+"]")
     wspace.factory("bkg0_"+ hData["name"]+"["+str(hRed["hist"].Integral(0,-1))+",0,50]")
     wspace.factory("sigmaBkg_"+hData["name"]+"["+str(Err)+"]") 
  
 
-    print "Irr_" +hData["name"],hIrr["hist"].IntegralAndError(0,-1,Err),"+-",Err
+    print("Irr_" +hData["name"],hIrr["hist"].IntegralAndError(0,-1,Err),"+-",Err)
     wspace.factory("irrBkg_"+ hData["name"]+"["+str(hIrr["hist"].Integral(0,-1))+"]")
     wspace.factory("irrBkg0_"+ hData["name"]+"["+str(hIrr["hist"].Integral(0,-1))+",0,50]")
     wspace.factory("sigmaIrrBkg_"+hData["name"]+"["+str(Err)+"]") 
@@ -165,7 +166,7 @@ for hData,hRed,hIrr in zip(hSum,hRedSum,hIrredSum):
     Acc_Hi  = AccFile_Hi.Get("TotAcc"+hData["name"]+"_fr").GetVal()
     Acc_Low = AccFile_Low.Get("TotAcc"+hData["name"]+"_fr").GetVal()
 
-    print "Acc",Acc,"Sigma Acc",Acc_Hi-Acc
+    print("Acc",Acc,"Sigma Acc",Acc_Hi-Acc)
     wspace.factory("eff_"+hData["name"]+"["+str(Acc)+"]")
     wspace.factory("eff0_"+hData["name"]+"["+str(Acc)+",0,1.]")
     wspace.factory("sigmaEff_"+hData["name"]+"["+str(Acc_Hi-Acc)+"]")

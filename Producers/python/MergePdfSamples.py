@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+from __future__ import print_function
 import ROOT
 
 from ROOT import gSystem
@@ -23,12 +24,12 @@ FileOut=ROOT.TFile("Tot.root","recreate")
 FileOut.mkdir("pdfSystematics")
 FileOut.Close()
 for pdf in PDFs:
-    print 'PDF',pdf,'\n'
+    print('PDF',pdf,'\n')
     for fin in FinStates:
         hTot = ROOT.TH2F("htot","TOT",55, 0., 55.,8,1.,9.)
-        print "final state",fin,"\n"
+        print("final state",fin,"\n")
         for s in samples:
-            print 'opening',sys.argv[1]+s+".root"
+            print('opening',sys.argv[1]+s+".root")
             file =  ROOT.TFile(sys.argv[1]+s+".root")
 
             name="pdfSystematics/hPdf"+fin+"Set"+pdf
@@ -39,12 +40,12 @@ for pdf in PDFs:
                 s+="_H125.6"
             Cross=crossSection(s,'../python/samples_8TeV.csv') 
             wh=Cross/Nev
-            print "cross",Cross,"N ev",Nev,"Weight",wh,'\n'
+            print("cross",Cross,"N ev",Nev,"Weight",wh,'\n')
             hTot.Add(h1,wh)
             file.Close()
         FileOut=ROOT.TFile("Tot.root","update")
         FileOut.cd("pdfSystematics")
-        print hTot.GetEntries()
+        print(hTot.GetEntries())
         hTot.Write()
         hTot.Delete()
         FileOut.Close()    

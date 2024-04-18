@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+from __future__ import print_function
 import ROOT
 
 from ROOT import gSystem
@@ -83,7 +84,7 @@ def GetPdfResult(fileIn,i):
     
     for j in range(0,npars):
         wa = 0.
-	if Wh1[j]>0 : wa = WhSel1[j]/Wh1[j]/acc_central-1.
+        if Wh1[j]>0 : wa = WhSel1[j]/Wh1[j]/acc_central-1.
         wb = 0.
         if WhSel2[j]>0 : wb =  WhSel2[j]/Wh2[j]/acc_central-1.
         if nnpdfFlag :
@@ -139,18 +140,18 @@ Acc1 = GetPdfResult(file,1)
 Acc2 = GetPdfResult(file,2)
 Acc3 = GetPdfResult(file,3)
 
-print " opening ",sys.argv[1]
+print(" opening ",sys.argv[1])
 prec = math.pow(10,-1+abs(int(math.log10(abs(Acc1[5]/1.645)*Acc1[5]))))
 
-print "\n","######################################## \n","######### PDF Systematic Errors ######## \n","######################################## \n \n"
-print "######### Pdf ",Acc1[0],"######### \n Original Events  = ",Acc1[2]," \n Selected Events  = ",Acc1[3] ,"\n Acceptance      = ",Prec(prec,Acc1[4])," + ", Prec(prec,Acc1[5]/1.645*Acc1[4])," - ", Prec(prec,Acc1[6]/1.645*Acc1[4]),"  \n"
-print "######### Pdf ",Acc2[0],"######### \n Original Events  = ",Acc2[2]," \n Selected Events  = ",Acc2[3] ,"\n Acceptance      = ", Prec(prec,Acc2[4])," + ", Prec(prec,Acc2[5]*Acc2[4])," - ", Prec(prec,Acc2[6]*Acc2[4]),"  \n"
-print "######### Pdf ",Acc3[0],"######### \n Original Events  = ",Acc3[2]," \n Selected Events  = ",Acc2[3] ,"\n Acceptance      = ", Prec(prec,Acc3[4])," + ", Prec(prec,Acc3[5]*Acc3[4])," - ", Prec(prec,Acc3[6]*Acc3[4]),"  \n"
+print("\n","######################################## \n","######### PDF Systematic Errors ######## \n","######################################## \n \n")
+print("######### Pdf ",Acc1[0],"######### \n Original Events  = ",Acc1[2]," \n Selected Events  = ",Acc1[3] ,"\n Acceptance      = ",Prec(prec,Acc1[4])," + ", Prec(prec,Acc1[5]/1.645*Acc1[4])," - ", Prec(prec,Acc1[6]/1.645*Acc1[4]),"  \n")
+print("######### Pdf ",Acc2[0],"######### \n Original Events  = ",Acc2[2]," \n Selected Events  = ",Acc2[3] ,"\n Acceptance      = ", Prec(prec,Acc2[4])," + ", Prec(prec,Acc2[5]*Acc2[4])," - ", Prec(prec,Acc2[6]*Acc2[4]),"  \n")
+print("######### Pdf ",Acc3[0],"######### \n Original Events  = ",Acc3[2]," \n Selected Events  = ",Acc2[3] ,"\n Acceptance      = ", Prec(prec,Acc3[4])," + ", Prec(prec,Acc3[5]*Acc3[4])," - ", Prec(prec,Acc3[6]*Acc3[4]),"  \n")
 
 CentralValue = 0.5*( evaluateMax(Acc1[4]*(1 + Acc1[5]/1.645) ,Acc2[4]*( 1 + Acc2[5]) , Acc3[4]*(1+Acc3[5]) ) + evaluateMin(Acc1[4]*(1 - Acc1[5]/1.645),Acc2[4]*(1 - Acc2[5]) , Acc3[4]*( 1- Acc3[5])))
 
 Err = 0.5*( evaluateMax(Acc1[4]*(1 + Acc1[5]/1.645) ,Acc2[4]*( 1 + Acc2[5]) , Acc3[4]*(1+Acc3[5]) ) - evaluateMin(Acc1[4]*(1 - Acc1[5]/1.645),Acc2[4]*(1 - Acc2[5]) , Acc3[4]*( 1- Acc3[5])))
 
-print "Envelope Value = ", Prec(prec,CentralValue)," +/- ", Prec(prec,Err),"\n "
+print("Envelope Value = ", Prec(prec,CentralValue)," +/- ", Prec(prec,Err),"\n ")
 
     

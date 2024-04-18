@@ -2,6 +2,7 @@
 
 # Adapted from /CMGTools/Production/scripts/crisBatch.py
 
+from __future__ import print_function
 import sys
 import imp
 import copy
@@ -41,7 +42,7 @@ def split(comps):
         else:
             numJobs=1
             splitComps.append( comp )
-        print comp.name, ": files=", len(comp.files), ' chunkSize=', chunkSize, "jobs=", numJobs
+        print(comp.name, ": files=", len(comp.files), ' chunkSize=', chunkSize, "jobs=", numJobs)
     return splitComps
 
 
@@ -152,12 +153,12 @@ class MyBatchManager( BatchManager ):
        
        calls PrepareJobUser, which should be overloaded by the user.
        '''
-       print 'PrepareJob : %s' % value 
+       print('PrepareJob : %s' % value) 
        dname = dirname
        if dname  is None:
            dname = 'Job_{value}'.format( value=value )
        jobDir = '/'.join( [self.outputDir_, dname])
-       print '\t',jobDir 
+       print('\t',jobDir) 
        self.mkdir( jobDir )
        self.listOfJobs_.append( jobDir )
        if not self.secondaryInputDir_ == None: self.inputPDFDir_ = '/'.join( [self.secondaryInputDir_, dname])
@@ -203,7 +204,7 @@ class MyBatchManager( BatchManager ):
            tunes = tune.split(",")
            if ("DoubleMu" in tunes) or ("DoubleEle" in tunes) or ("MuEG" in tunes):
                if len(tunes)!=1 : # Do not allow other options for data
-                   raise ValueError, "invalid tune", tune
+                   raise ValueError("invalid tune").with_traceback(tune)
                IsMC = False
                PD = tune
                
@@ -217,11 +218,11 @@ class MyBatchManager( BatchManager ):
        XSEC = xsec
        SKIM_REQUIRED = splitComponents[value].doskim
        
-       print SAMPLENAME, "parameters:", tune, IsMC, PD, MCFILTER, SUPERMELA_MASS, XSEC
+       print(SAMPLENAME, "parameters:", tune, IsMC, PD, MCFILTER, SUPERMELA_MASS, XSEC)
 
        # Read CFG file so that it is customized with the above globals
        namespace = {'IsMC':IsMC, 'PD':PD, 'MCFILTER':MCFILTER, 'SUPERMELA_MASS':SUPERMELA_MASS, 'SAMPLENAME':SAMPLENAME, 'XSEC':XSEC, 'SKIM_REQUIRED':SKIM_REQUIRED}
-       execfile(cfgFileName,namespace)
+       exec(compile(open(cfgFileName, "rb").read(), cfgFileName, 'exec'),namespace)
 #       handle = open(cfgFileName, 'r')
 #       cfo = imp.load_source("pycfg", cfgFileName, handle)
 #       process=cfo.process
@@ -272,7 +273,7 @@ class MyBatchManager( BatchManager ):
            elif setup==2012 :
                cfgFile.write( open('json_2012.py').read() )
            else :
-                raise ValueError, "invalid setup", setup
+                raise ValueError("invalid setup").with_traceback(setup)
         
        if "DYJets_B" in tune :
            cfgFile.write( 'process.HF = cms.Path(process.heavyflavorfilter)\n\n' )
@@ -304,7 +305,7 @@ class Component(object):
 
     def __init__(self, name, user, dataset, pattern, splitFactor, tune, xsec, setup, pdfstep, doskim ):
         self.name = name
-        print "checking "+self.name
+        print("checking "+self.name)
         self.source = datasetToSource( user, dataset, pattern) # , True for readCache (?)
         self.files = self.source.fileNames # , True for readCache (?)
         self.splitFactor = int(splitFactor)
@@ -313,7 +314,7 @@ class Component(object):
         self.setup = setup
         self.pdfstep = int(pdfstep)
         if self.pdfstep <0 or self.pdfstep>2:
-            print "Unknown PDF step", pdfstep
+            print("Unknown PDF step", pdfstep)
             sys.exit(1)
         self.doskim = bool(doskim)
         
@@ -341,7 +342,7 @@ if __name__ == '__main__':
     from ZZAnalysis.AnalysisStep.readSampleInfo import *
     components = []
     sampleDB = readSampleDB('../python/samples_8TeV.csv')
-    for sample, settings in sampleDB.iteritems():
+    for sample, settings in sampleDB.items():
         if settings['execute']:
             pdfstep = batchManager.options_.PDFstep
             if pdfstep == 0 or ((not pdfstep == 0) and settings['pdf']):
@@ -352,7 +353,7 @@ if __name__ == '__main__':
 
     splitComponents = split( components )
 
-    listOfValues = range(0, len(splitComponents))
+    listOfValues = list(range(0, len(splitComponents)))
     listOfNames = [comp.name for comp in splitComponents]
 
     batchManager.PrepareJobs( listOfValues, listOfNames )
