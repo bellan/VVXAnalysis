@@ -180,7 +180,7 @@ else:
         
 #print hData.GetN(),ROOT.TMath.MaxElement(hData.GetN(),hData.GetEYhigh()),ROOT.TMath.MaxElement(hData.GetN(),hData.GetY()),hData.GetEYhigh(),YMaxData,YMaxMC,YMaxData>YMaxMC,DoData
 
-if category is not "Sig":
+if category != "Sig":
     hMCErr =  copy.deepcopy(hMC.GetStack().Last())
     YMaxMC = hMCErr.GetBinContent(hMCErr.GetMaximumBin())+hMCErr.GetBinError(hMCErr.GetMaximumBin())
 
@@ -234,7 +234,7 @@ else:
     hMC.GetHistogram().GetXaxis().SetTitleOffset(1)
     hMC.GetHistogram().GetYaxis().SetTitle("Events")
 
-if category is not "Sig":
+if category != "Sig":
     hMCErr.SetFillStyle(3005)
     hMCErr.SetMarkerStyle(1)
     hMCErr.SetFillColor(ROOT.kBlack)
