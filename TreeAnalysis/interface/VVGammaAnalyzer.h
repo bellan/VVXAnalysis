@@ -303,7 +303,7 @@ private:
   static char phABCD_study(const phys::Photon&, const double& barrel_thr, const double& endcap_thr);
  	
   template<class T, class V>
-  bool haveCommonDaughter(const phys::Boson<T>& a, const phys::Boson<V>& b, const float tol=0.001){
+  static bool haveCommonDaughter(const phys::Boson<T>& a, const phys::Boson<V>& b, const float tol=0.001){
     return (
 	    (a.daughter(0).p4() - b.daughter(0).p4()).P() < tol ||
 	    (a.daughter(0).p4() - b.daughter(1).p4()).P() < tol ||
@@ -312,7 +312,7 @@ private:
   }
 	
   template<class T1, class T2, class V1, class V2>
-  bool haveCommonDaughter(const phys::DiBoson<T1, T2>& a, const phys::DiBoson<V1, V2>& b, const float tol=0.001){
+  static bool haveCommonDaughter(const phys::DiBoson<T1, T2>& a, const phys::DiBoson<V1, V2>& b, const float tol=0.001){
     return (
 	    haveCommonDaughter(a.daughter(0), b.daughter(0), tol) ||
 	    haveCommonDaughter(a.daughter(0), b.daughter(1), tol) ||
