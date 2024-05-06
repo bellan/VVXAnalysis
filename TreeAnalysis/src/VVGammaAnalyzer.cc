@@ -40,6 +40,9 @@ namespace {
   constexpr FSRcutType FSR_CUT_TYPE = FSRcutType::MLL_MIN;
   constexpr float CUT_MLL_MIN = 81.;
   constexpr float CUT_PTG_MIN = 20.;
+  constexpr float CUT_G_AETA_MAX     = 2.4;
+  constexpr float CUT_G_AETA_GAP_MIN = 1.4442;
+  constexpr float CUT_G_AETA_GAP_MAX = 1.566;
   constexpr float CUT_MLLG_MIN=100.;
   constexpr bool APPLY_FSR_CUT       = false;
   constexpr bool APPLY_PIXELSEED_CUT = false;
@@ -1305,7 +1308,7 @@ bool VVGammaAnalyzer::SignalDefinitionHelper::eval_photon(){
   return std::any_of(analyzer_->genPhotonsPrompt_->begin(), analyzer_->genPhotonsPrompt_->end(),
 		     [](const Particle& ph){
 		       float aeta = fabs(ph.eta());
-		       return ph.pt() > 20 && aeta < 2.4;
+		       return ph.pt() > 20 && aeta < CUT_G_AETA_MAX;
 		     });
 }
 
@@ -1818,12 +1821,12 @@ void VVGammaAnalyzer::photonHistos(){
     float pt = ph.pt();
 
     theHistograms->fill(  "lead_fsrPhotons_pt"             , ";p_{T} [GeV];Events"       , 60, 0., 180, pt < 180 ? pt : 179, theWeight);
-    theHistograms->fill(  "lead_fsrPhotons_aeta"           , ";|#eta|;Events"            , 60, 0., 2.4, fabs(ph.eta())     , theWeight);
+    theHistograms->fill(  "lead_fsrPhotons_aeta"           , ";|#eta|;Events"            , 60, 0., CUT_G_AETA_MAX, fabs(ph.eta()), theWeight);
     theHistograms->fill(  "lead_fsrPhotons_dRl"            , ";#DeltaR(#gamma, l);Events", 60, 0., 0.6, dRl < 1  ? dRl: .99, theWeight);
 
     if(theSampleInfo.isMC()){
       theHistograms->fill("lead_fsrPhotons_pt"  + strPrompt, ";p_{T} [GeV];Events"       , 60, 0., 180, pt < 180 ? pt : 179, theWeight);
-      theHistograms->fill("lead_fsrPhotons_aeta"+ strPrompt, ";|#eta|;Events"            , 60, 0., 2.4, fabs(ph.eta())     , theWeight);
+      theHistograms->fill("lead_fsrPhotons_aeta"+ strPrompt, ";|#eta|;Events"            , 60, 0., CUT_G_AETA_MAX, fabs(ph.eta()), theWeight);
       theHistograms->fill("lead_fsrPhotons_dRl" + strPrompt, ";#DeltaR(#gamma, l);Events", 60, 0., 0.6, dRl < 1  ? dRl: .99, theWeight);
     }
   }
@@ -1834,11 +1837,11 @@ void VVGammaAnalyzer::photonHistos(){
     float pt = ph.pt();
 
     theHistograms->fill(  "sublead_fsrPhotons_pt"            , ";p_{T};Events"              , 60, 0., 180, pt < 180 ? pt : 179., theWeight);
-    theHistograms->fill(  "sublead_fsrPhotons_aeta"          , ";#eta;Events"               , 60, 0., 2.4, fabs(ph.eta())      , theWeight);
+    theHistograms->fill(  "sublead_fsrPhotons_aeta"          , ";#eta;Events"               , 60, 0., CUT_G_AETA_MAX, fabs(ph.eta()), theWeight);
     theHistograms->fill(  "sublead_fsrPhotons_dRl"           , ";#DeltaR(#gamma, l);Events" , 60, 0., 0.6, dRl < 1  ? dRl: .99 , theWeight);
     if(theSampleInfo.isMC()){
       theHistograms->fill("sublead_fsrPhotons_pt"  +strPrompt, ";p_{T};Events"              , 60, 0., 180, pt < 180 ? pt : 179., theWeight);
-      theHistograms->fill("sublead_fsrPhotons_aeta"+strPrompt, ";#eta;Events"               , 60, 0., 2.4, fabs(ph.eta())      , theWeight);
+      theHistograms->fill("sublead_fsrPhotons_aeta"+strPrompt, ";#eta;Events"               , 60, 0., CUT_G_AETA_MAX, fabs(ph.eta()), theWeight);
       theHistograms->fill("sublead_fsrPhotons_dRl" +strPrompt, ";#DeltaR(#gamma, l);Events" , 60, 0., 0.6, dRl < 1  ? dRl: .99 , theWeight);
     }
   }
@@ -2795,16 +2798,16 @@ void VVGammaAnalyzer::orphanPhotonStudy(){
   auto closestLep = closestDeltaR(*bestKinPh_, *leptons_);
   float dRlep = deltaR(*closestLep, *bestKinPh_);
   theHistograms->fill("orphanKin_unmatched_pt"   , "bestKinPh unmatched;p_{T}^#gamma;Events"       , 40,20.,180., bestKinPh_->pt() , theWeight);
-  theHistograms->fill("orphanKin_unmatched_eta"  , "bestKinPh unmatched;#eta^#gamma;Events"        , 40,-2.4,2.4, bestKinPh_->eta(), theWeight);
+  theHistograms->fill("orphanKin_unmatched_eta"  , "bestKinPh unmatched;#eta^#gamma;Events"        , 40,-CUT_G_AETA_MAX,CUT_G_AETA_MAX, bestKinPh_->eta(), theWeight);
   theHistograms->fill("orphanKin_unmatched_dRlep", "bestKinPh unmatched;#DeltaR(#gamma, l);Events" , 40,0.,1.   , dRlep            , theWeight);
   if(isPassVL){
       theHistograms->fill("orphanVL_unmatched_pt"   , "bestVLPh unmatched;p_{T}^#gamma;Events"       , 40,20.,180., bestKinPh_->pt() , theWeight);
-      theHistograms->fill("orphanVL_unmatched_eta"  , "bestVLPh unmatched;#eta^#gamma;Events"        , 40,-2.4,2.4, bestKinPh_->eta(), theWeight);
+      theHistograms->fill("orphanVL_unmatched_eta"  , "bestVLPh unmatched;#eta^#gamma;Events"        , 40,-CUT_G_AETA_MAX,CUT_G_AETA_MAX, bestKinPh_->eta(), theWeight);
       theHistograms->fill("orphanVL_unmatched_dRlep", "bestVLPh unmatched;#DeltaR(#gamma, l);Events" , 40,0.,1.   , dRlep            , theWeight);
   }
   if(isPassLoose){
       theHistograms->fill("orphanLoose_unmatched_pt"   , "bestLoosePh unmatched;p_{T}^#gamma;Events"       , 40,20.,180., bestKinPh_->pt() , theWeight);
-      theHistograms->fill("orphanLoose_unmatched_eta"  , "bestLoosePh unmatched;#eta^#gamma;Events"        , 40,-2.4,2.4, bestKinPh_->eta(), theWeight);
+      theHistograms->fill("orphanLoose_unmatched_eta"  , "bestLoosePh unmatched;#eta^#gamma;Events"        , 40,-CUT_G_AETA_MAX,CUT_G_AETA_MAX, bestKinPh_->eta(), theWeight);
       theHistograms->fill("orphanLoose_unmatched_dRlep", "bestLoosePh unmatched;#DeltaR(#gamma, l);Events" , 40,0.,1.   , dRlep            , theWeight);
   }
 }
@@ -3510,7 +3513,7 @@ bool VVGammaAnalyzer::passVeryLoose(const Photon& ph){
 
 bool inPhotonEtaAcceptance(double eta){
   double aeta = fabs(eta);
-  if(aeta > 2.4 || (aeta > 1.4442 && aeta < 1.566))
+  if(aeta > CUT_G_AETA_MAX || (aeta > CUT_G_AETA_GAP_MIN && aeta < CUT_G_AETA_GAP_MAX))
     return false;
   return true;
 }
@@ -3525,17 +3528,17 @@ const vector<double> VVGammaAnalyzer::pt_bins_LFR(
 					      );
 
 const vector<double> VVGammaAnalyzer::eta_bins(
-  {-2.4, -2., -1.566, -1.4442, -0.8, 0., 0.8, 1.4442, 1.566, 2., 2.4}
+  {-CUT_G_AETA_MAX, -2., -CUT_G_AETA_GAP_MAX, -CUT_G_AETA_GAP_MIN, -0.8, 0., 0.8, CUT_G_AETA_GAP_MIN, CUT_G_AETA_GAP_MAX, 2., CUT_G_AETA_MAX}
   //{-2.4, -2.1, -1.8, -1.566, -1.4442, -1.2, -0.9, -0.6, -0.3, 0., 0.3, 0.6, 0.9, 1.2, 1.4442, 1.566, 1.8, 2.1, 2.4}
 					       );
 
 const vector<double> VVGammaAnalyzer::aeta_bins(
-  {0., 0.8, 1.4442, 1.566, 2., 2.4}
+  {0., 0.8, CUT_G_AETA_GAP_MIN, CUT_G_AETA_GAP_MAX, 2., CUT_G_AETA_MAX}
   //{0., 0.3, 0.6, 0.9, 1.2, 1.4442, 1.566, 1.8, 2.1, 2.4}
 						);
 
 const vector<double> VVGammaAnalyzer::ph_aeta_bins(
-						   {0., 0.8, 1.4442, 1.566, 2, 2.5}
+						   {0., 0.8, CUT_G_AETA_GAP_MIN, CUT_G_AETA_GAP_MAX, 2, CUT_G_AETA_MAX}
 						   // {0., 0.435, 0.783, 1.13, 1.4442, 1.566, 1.8, 2.1, 2.5}
 						   );
 
