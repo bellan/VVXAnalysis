@@ -1340,13 +1340,13 @@ bool VVGammaAnalyzer::SignalDefinitionHelper::eval_WZ3L(){
 
   // TODO analyzer->genChLeptons_->size() == 3
   bool topology = analyzer_->topology.test(TopologyBit::WZto3LNu);
-  bool lZ0_pt   = analyzer_->genWZ_.first() .daughter(0).pt() > 20;
-  bool lZ1_pt   = analyzer_->genWZ_.first() .daughter(1).pt() > 10;
-  bool lW_pt    = analyzer_->genWZ_.second().daughter(0).pt() > 20;
+  bool lZ0_pt   = analyzer_->genZW_.first() .daughter(0).pt() > 20;
+  bool lZ1_pt   = analyzer_->genZW_.first() .daughter(1).pt() > 10;
+  bool lW_pt    = analyzer_->genZW_.second().daughter(0).pt() > 20;
   bool fiducial = analyzer_->topology.test(TopologyBit::Fiducial);
 
-  bool Zdef = analyzer_->GenZtoLLDefinition (analyzer_->genWZ_.first ());
-  bool Wdef = analyzer_->GenWtoLNuDefinition(analyzer_->genWZ_.second());
+  bool Zdef = analyzer_->GenZtoLLDefinition (analyzer_->genZW_.first ());
+  bool Wdef = analyzer_->GenWtoLNuDefinition(analyzer_->genZW_.second());
 
   WZ3L_ = topology && lZ0_pt && lZ1_pt && lW_pt && Zdef && fiducial;
 
@@ -1557,7 +1557,7 @@ void VVGammaAnalyzer::genEventSetup(){
   genWhadCandidates_->clear();
 	
   genZZ_ = DiBoson<Particle, Particle>();
-  genWZ_ = DiBoson<Particle, Particle>();
+  genZW_ = DiBoson<Particle, Particle>();
 	
   // Sort gen particles
   for(auto p : *genParticles){
@@ -1582,7 +1582,7 @@ void VVGammaAnalyzer::genEventSetup(){
       for(auto v : *genNeutrinos_){
 	if( abs(l.id() + v.id()) == 1 ){
 	  Boson<Particle> Wcand(l,v);
-	  if(GenVtoQQDefinition(Wcand))
+	  if(GenWtoLNuDefinition(Wcand))
 	    genWlepCandidates_->push_back(Wcand);
 	}
       }
@@ -1634,30 +1634,30 @@ void VVGammaAnalyzer::genEventSetup(){
   if(genChLeptons_->size() >= 4 && genZlepCandidates_->size() >= 2){
     std::sort(genZlepCandidates_->begin(), genZlepCandidates_->end(), MassComparator(phys::ZMASS));
     Boson<Particle>& Z0 = genZlepCandidates_->front();
-		
+
     // Vector containing the rest of the Zll candidates
     vector<Boson<Particle>> Zll(genZlepCandidates_->begin()+1, genZlepCandidates_->end());
     std::sort(Zll.begin(), Zll.end(), ScalarSumPtComparator());
-    Boson<Particle>* pZ1 = nullptr;
-    for(size_t i = 0; i < Zll.size(); ++i){
-      if(! haveCommonDaughter(Z0, Zll.at(i))){
-	pZ1 = &(Zll.at(i));
-	break;
-      }
+    auto it_Z1 = std::find_if(genZlepCandidates_->begin(), genZlepCandidates_->end(),
+			      [&Z0](auto Z){ return !haveCommonDaughter(Z0, Z); }
+			      );
+    if(it_Z1 != genZlepCandidates_->end()){
+      genZZ_ = DiBoson<Particle, Particle>(Z0, *it_Z1);
     }
-    if(pZ1)
-      genZZ_ = DiBoson<Particle, Particle>(Z0, *pZ1);
   }
-	
+
   // genZW --> 3l nu
   if(genChLeptons_->size() >= 3 && genZlepCandidates_->size() >= 1 && genWlepCandidates_->size() >= 1){	
     std::sort(genZlepCandidates_->begin(), genZlepCandidates_->end(), MassComparator(phys::ZMASS));
     Boson<Particle>& Z0 = genZlepCandidates_->front();
-		
+
     std::sort(genWlepCandidates_->begin(), genWlepCandidates_->end(), MassComparator(phys::WMASS));
-    Boson<Particle>& W0 = genWlepCandidates_->front();
-		
-    genWZ_ = DiBoson<Particle, Particle>(Z0, W0);
+    auto it_W = std::find_if(genWlepCandidates_->begin(), genWlepCandidates_->end(),
+			     [&Z0](auto W){ return !haveCommonDaughter(Z0, W); }
+			     );
+    if(it_W != genWlepCandidates_->end()){
+      genZW_ = DiBoson<Particle, Particle>(Z0, *it_W);
+    }
   }
 
   std::sort(genQuarks_       ->begin(), genQuarks_       ->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });

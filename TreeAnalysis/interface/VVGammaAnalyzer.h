@@ -176,7 +176,7 @@ private:
   std::vector<phys::Boson<phys::Particle>>* genWhadCandidates_;
   // Gen objects
   phys::DiBoson<phys::Particle, phys::Particle> genZZ_;
-  phys::DiBoson<phys::Particle, phys::Particle> genWZ_;
+  phys::DiBoson<phys::Particle, phys::Particle> genZW_;
   // V --> j (j)
   phys::Boson<phys::Jet> candVTojj_;
   phys::Jet              candVToJ_ ;
