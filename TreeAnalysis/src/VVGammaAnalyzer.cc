@@ -1404,19 +1404,27 @@ bool VVGammaAnalyzer::SignalDefinitionHelper::eval_ZV2L2j(){
   Zll_ = analyzer_->topology.test(TopologyBit::ZtoLL);//(analyzer_->genZlepCandidates_->size() == 1) && analyzer->GenZtoLLDefinition(analyzer_->genZlepCandidates_->at(0));
 
   // V --> qq
-  bool Zhad = analyzer_->genZhadCandidates_->size() >= 1;
-  bool Whad = analyzer_->genWhadCandidates_->size() >= 1;
+  bool Zhad = analyzer_->genVBHelper_.ZtoQ().size() >= 1;
+  bool Whad = analyzer_->genVBHelper_.WtoQ().size() >= 1;
   // TODO: fix quark pt and aeta requirements
   bool qq_accept = false;
-  if(Zhad)
-    qq_accept = std::any_of(analyzer_->genZhadCandidates_->begin(), analyzer_->genZhadCandidates_->end(),
-				 [this](const Boson<Particle>& VB){ return analyzer_->GenVtoQQDefinition(VB); }
-				 );
+  if(Zhad){
+    for(const auto& VB : analyzer_->genVBHelper_.ZtoQ()){
+      if(analyzer_->GenVtoQQDefinition(VB)){
+	qq_accept = true;
+	break;
+      }
+    }
+  }
 
-  if(Whad && !qq_accept)
-    qq_accept = std::any_of(analyzer_->genWhadCandidates_->begin(), analyzer_->genWhadCandidates_->end(),
-				 [this](const Boson<Particle>& VB){ return analyzer_->GenVtoQQDefinition(VB); }
-				 );
+  if(Whad && !qq_accept){
+    for(const auto& VB : analyzer_->genVBHelper_.WtoQ()){
+      if(analyzer_->GenVtoQQDefinition(VB)){
+	qq_accept = true;
+	break;
+      }
+    }
+  }
 
   Vhad_ = (Zhad || Whad) && qq_accept;
   ZV2L2j_ = Zll_ && Vhad_;
@@ -1583,11 +1591,9 @@ void VVGammaAnalyzer::genEventSetup(){
   genNeutrinos_->clear();
   genPhotons_->clear();
   genPhotonsPrompt_->clear();
-	
-  genZlepCandidates_->clear();
-  genWlepCandidates_->clear();
-  genZhadCandidates_->clear();
-  genWhadCandidates_->clear();
+
+  genZtoLepWithTau_->clear();
+  genWtoLepWithTau_->clear();
 	
   genZZ_ = DiBoson<Particle, Particle>();
   genZW_ = DiBoson<Particle, Particle>();
@@ -1597,10 +1603,10 @@ void VVGammaAnalyzer::genEventSetup(){
     unsigned int aPID = abs(p.id());
     if(aPID < 9)
       genQuarks_->push_back(p);
-    else if(aPID == 11 || aPID == 13){
+    else if(aPID == 11 || aPID == 13 || aPID == 15){
       genChLeptons_->push_back(p);
     }
-    else if(aPID == 12 || aPID == 14)
+    else if(aPID == 12 || aPID == 14 || aPID == 16)
       genNeutrinos_->push_back(p);
     else if(p.id() == 22){
       genPhotons_->push_back(p);
@@ -1608,21 +1614,34 @@ void VVGammaAnalyzer::genEventSetup(){
 	genPhotonsPrompt_->push_back(p);
     }
   }
-	
+  genChLeptons_->insert(genChLeptons_->end(), genTaus->begin(), genTaus->end());
+
   // Gen W --> l nu
+  std::vector<phys::Boson<phys::Particle> > genWtoLep_all; // Not disambiguated
   if(genNeutrinos_->size() > 0 && genChLeptons_->size() > 0){
     for(auto l : *genChLeptons_){
       for(auto v : *genNeutrinos_){
 	if( abs(l.id() + v.id()) == 1 ){
 	  Boson<Particle> Wcand(l,v);
 	  if(GenWtoLNuDefinition(Wcand))
-	    genWlepCandidates_->push_back(Wcand);
+	    genWtoLep_all.push_back(Wcand);
 	}
       }
     }
   }
-  
+
+  // Sort by mass and disambiguate so that there are no W candidates with common leptons
+  std::sort(genWtoLep_all.begin(), genWtoLep_all.end(), MassComparator(phys::WMASS));
+  for(auto& Wnew : genWtoLep_all)
+    if(!std::any_of(genWtoLepWithTau_->begin(), genWtoLepWithTau_->end(),
+		    [&Wnew](const auto& W){ return haveCommonDaughter(Wnew, W); }
+		    )
+       )
+      genWtoLepWithTau_->push_back(Wnew);
+
+
   // Gen Z --> l lbar
+  std::vector<phys::Boson<phys::Particle> > genZtoLep_all; // Not disambiguated
   if(genChLeptons_->size() >= 2){
     for(size_t i = 0 ; i < genChLeptons_->size(); ++i){
       Particle& l1 = genChLeptons_->at(i);
@@ -1632,66 +1651,63 @@ void VVGammaAnalyzer::genEventSetup(){
 	if( l1.id() + l2.id() == 0 ){
 	  Boson<Particle> Zcand(l1,l2);
 	  if(ZBosonDefinition(Zcand))
-	    genZlepCandidates_->push_back(Zcand);
+	    genZtoLep_all.push_back(Zcand);
 	}
       }
     }
   }
-  
-  if(genQuarks_->size() >= 2){
-    for(size_t i = 0  ; i < genQuarks_->size(); ++i){
-      Particle& q1 = genQuarks_->at(i);
-      if(q1.id() > 5) continue;
-      for(size_t j = i+1; j < genQuarks_->size(); ++j){
-	Particle& q2 = genQuarks_->at(j);
-	if(q2.id() > 5) continue;
 
-	// Gen W --> q q'bar
-	if( (q1.id() * q2.id() < 0) && ( abs(q1.id()+q2.id()) % 2 ==1 ) ){
-	  Boson<Particle> Wcand(q1,q2);
-	  if(GenVtoQQDefinition(Wcand))
-	    genWhadCandidates_->push_back(Wcand);
-	}
+  // Sort by mass and disambiguate so that there are no Z candidates with common leptons
+  std::sort(genZtoLep_all.begin(), genZtoLep_all.end(), MassComparator(phys::ZMASS));
+  for(auto& Znew : genZtoLep_all)
+    if(!std::any_of(genZtoLepWithTau_->begin(), genZtoLepWithTau_->end(),
+		    [&Znew](const auto& Z){ return haveCommonDaughter(Znew, Z); }
+		    )
+       )
+      genZtoLepWithTau_->push_back(Znew);
 
-	// Gen Z --> q qbar
-	if( q1.id() + q2.id() == 0 ){
-	  Boson<Particle> Zcand(q1,q2);
-	  if(ZBosonDefinition(Zcand))
-	    genZhadCandidates_->push_back(Zcand);
-	}
-      }
-    }
-  }
-  
+  const auto& genZlepVec = genVBHelper_.ZtoChLep();// *genZtoLepWithTau_;
+  const auto& genWlepVec = genVBHelper_.WtoLep();  // *genWtoLepWithTau_;
+
   // genZZ --> 4l
-  if(genChLeptons_->size() >= 4 && genZlepCandidates_->size() >= 2){
-    std::sort(genZlepCandidates_->begin(), genZlepCandidates_->end(), MassComparator(phys::ZMASS));
-    Boson<Particle>& Z0 = genZlepCandidates_->front();
+  if(genChLeptons_->size() >= 4 && genZlepVec.size() >= 2){
+    const Boson<Particle>& Z0 = genZlepVec.front();
 
-    // Vector containing the rest of the Zll candidates
-    vector<Boson<Particle>> Zll(genZlepCandidates_->begin()+1, genZlepCandidates_->end());
-    std::sort(Zll.begin(), Zll.end(), ScalarSumPtComparator());
-    auto it_Z1 = std::find_if(genZlepCandidates_->begin(), genZlepCandidates_->end(),
+    auto it_Z1 = std::find_if(genZlepVec.begin()+1, genZlepVec.end(),
 			      [&Z0](auto Z){ return !haveCommonDaughter(Z0, Z); }
 			      );
-    if(it_Z1 != genZlepCandidates_->end()){
+    if(it_Z1 != genZlepVec.end()){
       genZZ_ = DiBoson<Particle, Particle>(Z0, *it_Z1);
     }
   }
 
   // genZW --> 3l nu
-  if(genChLeptons_->size() >= 3 && genZlepCandidates_->size() >= 1 && genWlepCandidates_->size() >= 1){	
-    std::sort(genZlepCandidates_->begin(), genZlepCandidates_->end(), MassComparator(phys::ZMASS));
-    Boson<Particle>& Z0 = genZlepCandidates_->front();
+  if(genChLeptons_->size() >= 3 && genZlepVec.size() >= 1 && genWlepVec.size() >= 1){
+    const Boson<Particle>& Z0 = genZlepVec.front();
 
-    std::sort(genWlepCandidates_->begin(), genWlepCandidates_->end(), MassComparator(phys::WMASS));
-    auto it_W = std::find_if(genWlepCandidates_->begin(), genWlepCandidates_->end(),
+    auto it_W = std::find_if(genWlepVec.begin(), genWlepVec.end(),
 			     [&Z0](auto W){ return !haveCommonDaughter(Z0, W); }
 			     );
-    if(it_W != genWlepCandidates_->end()){
+    if(it_W != genWlepVec.end()){
       genZW_ = DiBoson<Particle, Particle>(Z0, *it_W);
     }
   }
+
+  bool has_tau = std::any_of(genChLeptons_->begin(), genChLeptons_->end(), [](auto p){ return abs(p.id()) == 15; });
+  bool has_ZV_rec = false;
+  if     (is4Lregion(region_)) has_ZV_rec = ZZ && ZZ->mass() > 1.;
+  else if(is3Lregion(region_)) has_ZV_rec = ZW && ZW->mass() > 1.;
+  else                         has_ZV_rec = Z  && Z ->mass() > 1.;
+  bool has_ZW_gen = genZW_.mass() > 1.;
+  bool has_tau_ZW_gen = has_ZW_gen && abs(genZW_.second().daughter(0).id()) == 15;
+
+  fillCutFlow("DEBUG_WToTauToemu", ";;Events", {
+      {"REC ZZ/ZW"       , has_ZV_rec    },
+      {"GEN #tau"        , has_tau       },
+      {"GEN ZW"          , has_ZW_gen    },
+      {"#tau in ZW_{GEN}", has_tau_ZW_gen},
+      {"pass sigdef"     , sigdefHelper.pass()}
+    }, theWeight);
 
   std::sort(genQuarks_       ->begin(), genQuarks_       ->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
   std::sort(genChLeptons_    ->begin(), genChLeptons_    ->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
@@ -1702,10 +1718,10 @@ void VVGammaAnalyzer::genEventSetup(){
 
 
 void VVGammaAnalyzer::genEventHistos(){
-  theHistograms->fill("GEN_ZlepCandidates", "# genZlepCandidates_", 4,-0.5,3.5, genZlepCandidates_->size(), theWeight);
-  theHistograms->fill("GEN_WlepCandidates", "# genWlepCandidates_", 4,-0.5,3.5, genWlepCandidates_->size(), theWeight);
-  theHistograms->fill("GEN_ZhadCandidates", "# genZhadCandidates_", 4,-0.5,3.5, genZhadCandidates_->size(), theWeight);
-  theHistograms->fill("GEN_WhadCandidates", "# genWhadCandidates_", 4,-0.5,3.5, genWhadCandidates_->size(), theWeight);
+  theHistograms->fill("GEN_ZlepCandidates", "# genZlepCandidates_", 4,-0.5,3.5, genVBHelper_.ZtoChLep().size(), theWeight);
+  theHistograms->fill("GEN_WlepCandidates", "# genWlepCandidates_", 4,-0.5,3.5, genVBHelper_.WtoLep()  .size(), theWeight);
+  theHistograms->fill("GEN_ZhadCandidates", "# genZhadCandidates_", 4,-0.5,3.5, genVBHelper_.ZtoQ()    .size(), theWeight);
+  theHistograms->fill("GEN_WhadCandidates", "# genWhadCandidates_", 4,-0.5,3.5, genVBHelper_.WtoQ()    .size(), theWeight);
   
   theHistograms->fill("GEN_quarks"   , "# genQuarks"   , 10,-0.5,9.5, genQuarks_   ->size(), theWeight);
   theHistograms->fill("GEN_chLeptons", "# genChLeptons", 10,-0.5,9.5, genChLeptons_->size(), theWeight);
@@ -1713,16 +1729,16 @@ void VVGammaAnalyzer::genEventHistos(){
   theHistograms->fill("GEN_photons"  , "# genPhotons"  , 10,-0.5,9.5, genPhotons_  ->size(), theWeight);
   theHistograms->fill("GEN_photonsPrompt", "# genPhotonsPrompt", 10,-0.5,9.5, genPhotonsPrompt_->size(), theWeight);
   
-  for(auto v : *genZlepCandidates_)
+  for(auto v : genVBHelper_.ZtoChLep())
     theHistograms->fill("GEN_genZlepCandidates_mass", "mass genZlepCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass(), theWeight);
-  for(auto v : *genWlepCandidates_)
+  for(auto v : genVBHelper_.WtoLep())
     theHistograms->fill("GEN_genWlepCandidates_mass", "mass genWlepCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass(), theWeight);
-  for(auto v : *genZhadCandidates_){
+  for(auto v : genVBHelper_.ZtoQ()){
     theHistograms->fill("GEN_genZhadCandidates_mass", "mass genZhadCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass(), theWeight);
     theHistograms->fill("GEN_genZhadCandidates_pt"  , "pt   genZhadCandidates;[GeV/c]    ", 60., 0.,300., v.pt()  , theWeight);
     theHistograms->fill("GEN_genZhadCandidates_dRqq", "dRqq genZhadCandidates;#DeltaR(q,q)",60., 0.,  6., deltaR(v.daughter(0), v.daughter(1)), theWeight);
   }
-  for(auto v : *genWhadCandidates_){
+  for(auto v : genVBHelper_.WtoQ()){
     theHistograms->fill("GEN_genWhadCandidates_mass", "mass genWhadCandidates;[GeV/c^{2}]", 35.,50.,120., v.mass(), theWeight);
     theHistograms->fill("GEN_genWhadCandidates_pt"  , "pt   genWhadCandidates;[GeV/c]    ", 60.,0. ,300., v.pt()  , theWeight);
     theHistograms->fill("GEN_genWhadCandidates_dRqq", "dRqq genWhadCandidates;#DeltaR(q,q)",60., 0.,  6., deltaR(v.daughter(0), v.daughter(1)), theWeight);
