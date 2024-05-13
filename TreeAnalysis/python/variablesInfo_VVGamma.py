@@ -148,6 +148,24 @@ def getVarInfo_VVGamma(region):
         #         'l3_%s_Iso_MET'%(name): {'title': '3^{rd} %s combRelIsoFSRCorr'%(title)}
         #     })
 
+        VarInfo_VVGamma.update({
+            'mTZWG_compare': {
+                'special':True,
+                'unblind':True,
+                'title':'m_{T,3l#gamma} #gamma_{Loose} [GeV]',
+                'ratio_title': 'data-driven/MC',
+                'rebin': 2,
+                'ratio_ymax': 5,
+                'data': {
+                    'plot' :'ZWG_massT_reweightPh',
+                    'legend': 'data-driven'
+                },
+                'stack':{
+                    'plot' :'ZWG_massT_loosePh_nonpro'
+                }
+            }
+        })
+
     # 2L region
     elif region in ['SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F']:
         channels = (('2e','2e'), ('2m', '2\mu'))
