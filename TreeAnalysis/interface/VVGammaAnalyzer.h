@@ -77,11 +77,9 @@ public:
     genNeutrinos_ = new std::vector<phys::Particle>;
     genPhotons_   = new std::vector<phys::Particle>;
     genPhotonsPrompt_.reset(new std::vector<phys::Particle>);
-    
-    genZlepCandidates_ = new std::vector<phys::Boson<phys::Particle>>;
-    genWlepCandidates_ = new std::vector<phys::Boson<phys::Particle>>;
-    genZhadCandidates_ = new std::vector<phys::Boson<phys::Particle>>;
-    genWhadCandidates_ = new std::vector<phys::Boson<phys::Particle>>;
+
+    genZtoLepWithTau_.reset(new std::vector<phys::Boson<phys::Particle> >);
+    genWtoLepWithTau_.reset(new std::vector<phys::Boson<phys::Particle> >);
   }
 
   virtual ~VVGammaAnalyzer(){
@@ -90,11 +88,6 @@ public:
     delete genChLeptons_;
     delete genNeutrinos_;
     delete genPhotons_;
-    
-    delete genZlepCandidates_;
-    delete genWlepCandidates_;
-    delete genZhadCandidates_;
-    delete genWhadCandidates_;
   }
 	
   virtual void begin();
@@ -170,10 +163,8 @@ private:
   std::vector<phys::Particle>* genPhotons_;
   std::unique_ptr<std::vector<phys::Particle>> genPhotonsPrompt_;
   // Vectors of gen Bosons
-  std::vector<phys::Boson<phys::Particle>>* genZlepCandidates_;
-  std::vector<phys::Boson<phys::Particle>>* genWlepCandidates_;
-  std::vector<phys::Boson<phys::Particle>>* genZhadCandidates_;
-  std::vector<phys::Boson<phys::Particle>>* genWhadCandidates_;
+  std::unique_ptr<std::vector<phys::Boson<phys::Particle> > > genZtoLepWithTau_;
+  std::unique_ptr<std::vector<phys::Boson<phys::Particle> > > genWtoLepWithTau_;
   // Gen objects
   phys::DiBoson<phys::Particle, phys::Particle> genZZ_;
   phys::DiBoson<phys::Particle, phys::Particle> genZW_;
