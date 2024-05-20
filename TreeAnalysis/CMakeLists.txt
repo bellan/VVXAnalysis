@@ -38,11 +38,13 @@ set(BOOST /opt/local/include/)
 
 set(CMAKE_INCLUDE_PATH ${BASE} ${TreeAnalysis_interface} ${BOOST}) 
 set(EventDF_HEADERS ${BASE}/VVXAnalysis/DataFormats/interface/*.h)
+set(EventDF_SOURCES ${DataFormats_src}/Particle.cc ${DataFormats_src}/Lepton.cc ${DataFormats_src}/Jet.cc ${DataFormats_src}/Photon.cc ${DataFormats_src}/Electron.cc ${DataFormats_src}/Boson.cc ${DataFormats_src}/DiBoson.cc ${DataFormats_src}/RegionTypes.cc ${DataFormats_src}/loader.C)
 set(EventDF_LINKDEF ${DataFormats_src}/STDToolsLinkDef.h)
 
 include_directories(${CMAKE_INCLUDE_PATH} ${DataFormats_interface} ${BASE})
 
-ROOT_GENERATE_DICTIONARY(G__TreeAnalysis "${EventDF_HEADERS}" LINKDEF "${EventDF_LINKDEF}")
+set(EventDF_DICTIONARY G__TreeAnalysis)
+ROOT_GENERATE_DICTIONARY(${EventDF_DICTIONARY} ${EventDF_HEADERS} LINKDEF "${EventDF_LINKDEF}")
 
 
 set(EventAnalyzer_SRCS ${EventDF_DICTIONARY} ${SRC}/SampleInfo.cc ${SRC}/EventAnalyzer.cc ${Commons_src}/SignalDefinitions.cc ${DataFormats_src}/RegionTypes.cc ${Commons_src}/StringTools.cc ${Commons_src}/GenVBHelper.cc)
@@ -54,7 +56,7 @@ set(VVXAnalyzer_SRCS ${EventAnalyzer_SRCS} ${Analyzers_SRCS})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN})
 
-add_library(TreeAnalysis SHARED G__TreeAnalysis.cxx)
+add_library(TreeAnalysis SHARED ${EventDF_SOURCES} G__TreeAnalysis.cxx)
 target_link_libraries(TreeAnalysis ${ROOT_LIBRARIES})
 add_executable(eventAnalyzer ${BIN}/eventAnalyzer.cpp ${SRC}/AnalysisFactory.cc ${VVXAnalyzer_SRCS})
 target_link_libraries(eventAnalyzer TreeAnalysis)
