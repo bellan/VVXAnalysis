@@ -31,11 +31,24 @@
 #pragma link C++ class  phys::Boson<phys::Electron>+;
 #pragma link C++ class  phys::Boson<phys::Jet>+;
 #pragma link C++ class  phys::Boson<phys::Photon>+;
+
 #pragma link C++ class  phys::DiBoson<phys::Particle, phys::Particle >+;
-#pragma link C++ class  phys::DiBoson<phys::Lepton  , phys::Lepton >+;
-#pragma link C++ class  phys::DiBoson<phys::Electron, phys::Lepton >+;
+#pragma link C++ class  phys::DiBoson<phys::Lepton  , phys::Lepton   >+;
 #pragma link C++ class  phys::DiBoson<phys::Lepton  , phys::Electron >+;
+#pragma link C++ class  phys::DiBoson<phys::Lepton  , phys::Jet      >+;
+#pragma link C++ class  phys::DiBoson<phys::Lepton  , phys::Photon   >+;
+#pragma link C++ class  phys::DiBoson<phys::Electron, phys::Lepton   >+;
 #pragma link C++ class  phys::DiBoson<phys::Electron, phys::Electron >+;
+#pragma link C++ class  phys::DiBoson<phys::Electron, phys::Jet      >+;
+#pragma link C++ class  phys::DiBoson<phys::Electron, phys::Photon   >+;
+#pragma link C++ class  phys::DiBoson<phys::Jet     , phys::Lepton   >+;
+#pragma link C++ class  phys::DiBoson<phys::Jet     , phys::Electron >+;
+#pragma link C++ class  phys::DiBoson<phys::Jet     , phys::Jet      >+;
+#pragma link C++ class  phys::DiBoson<phys::Jet     , phys::Photon   >+;
+#pragma link C++ class  phys::DiBoson<phys::Photon  , phys::Lepton   >+;
+#pragma link C++ class  phys::DiBoson<phys::Photon  , phys::Electron >+;
+#pragma link C++ class  phys::DiBoson<phys::Photon  , phys::Photon   >+;
+#pragma link C++ class  phys::DiBoson<phys::Photon  , phys::Jet      >+;
 
 #pragma link C++ class  std::vector<phys::Particle>;
 #pragma link C++ class  std::vector<phys::Lepton>;
