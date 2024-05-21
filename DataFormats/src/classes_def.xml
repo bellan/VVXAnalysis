@@ -64,6 +64,8 @@
   <class name="std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> >"/>
 
   <class name="phys::RegionsCounter"/>
+  <class name="std::map<phys::RegionTypes,int>"/>
   <class name="phys::GenEventWeights"/>
   <class name="phys::MELA"/>
+  <class pattern="std::bitset<*>"/>
 </lcgdict>
