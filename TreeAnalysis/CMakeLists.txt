@@ -38,7 +38,7 @@ set(EventDF_SOURCES ${DataFormats_src}/Particle.cc ${DataFormats_src}/Lepton.cc 
 
 include_directories(${CMAKE_INCLUDE_PATH} ${DataFormats_interface} ${BASE})
 
-set(EventDF_DICTIONARY G__TreeAnalysis)
+set(EventDF_DICTIONARY VVXAnalysisDataFormats)
 REFLEX_GENERATE_DICTIONARY(${EventDF_DICTIONARY} ${DataFormats_src}/classes.h SELECTION ${DataFormats_src}/classes_def.xml)
 set_property(TARGET ${EventDF_DICTIONARY}-dictgen APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${EventDF_DICTIONARY}_rdict.pcm)
 
@@ -54,7 +54,7 @@ set(VVXAnalyzer_SRCS ${EventAnalyzer_SRCS} ${Analyzers_SRCS})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN})
 
-add_library(TreeAnalysis SHARED ${EventDF_SOURCES} G__TreeAnalysis.cxx)
+add_library(TreeAnalysis SHARED ${EventDF_SOURCES} ${EventDF_DICTIONARY}.cxx)
 target_link_libraries(TreeAnalysis ${ROOT_LIBRARIES})
 add_executable(eventAnalyzer ${BIN}/eventAnalyzer.cpp ${SRC}/AnalysisFactory.cc ${VVXAnalyzer_SRCS})
 target_link_libraries(eventAnalyzer TreeAnalysis)
