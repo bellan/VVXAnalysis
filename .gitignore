@@ -22,7 +22,7 @@ Plot/
 # Ignore specific files
 CMakeCache.txt
 Makefile
-G__TreeAnalysis.cxx
+VVXAnalysisDataFormats.cxx
 
 # Reinclude some data files
 !Commons/data/*root
