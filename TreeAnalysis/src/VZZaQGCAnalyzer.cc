@@ -39,7 +39,7 @@ void VZZaQGCAnalyzer::analyze(){
 
   //to reweight aGCs histograms
   
-  double weight;
+  double weight=0.;
   
   //assignment and properties of generated bosons
   
