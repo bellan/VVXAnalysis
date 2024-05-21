@@ -5,8 +5,64 @@
   <class name="phys::Jet"/>
   <class pattern="phys::Jet::*"/>
   <class name="phys::Electron"/>
-  <class pattern="phys::Boson<phys::*>"/>
-  <class pattern="phys::DiBoson<phys::*,phys::*>"/>
+
+  <class name="std::vector<phys::Particle>"/>
+  <class name="std::vector<phys::Lepton>"/>
+  <class name="std::vector<phys::Jet>"/>
+  <class name="std::vector<phys::Electron>"/>
+  <class name="std::vector<phys::Photon>"/>
+
+  <class name="phys::Boson<phys::Particle>"/>
+  <class name="phys::Boson<phys::Lepton  >"/>
+  <class name="phys::Boson<phys::Electron>"/>
+  <class name="phys::Boson<phys::Jet     >"/>
+  <class name="phys::Boson<phys::Photon  >"/>
+
+  <class name="std::vector<phys::Boson<phys::Particle> >"/>
+  <class name="std::vector<phys::Boson<phys::Lepton  > >"/>
+  <class name="std::vector<phys::Boson<phys::Electron> >"/>
+  <class name="std::vector<phys::Boson<phys::Jet     > >"/>
+  <class name="std::vector<phys::Boson<phys::Photon  > >"/>
+
+  <class name="phys::DiBoson<phys::Particle, phys::Particle>"/>
+  <class name="phys::DiBoson<phys::Lepton  , phys::Lepton  >"/>
+  <class name="phys::DiBoson<phys::Lepton  , phys::Electron>"/>
+  <class name="phys::DiBoson<phys::Lepton  , phys::Jet     >"/>
+  <class name="phys::DiBoson<phys::Lepton  , phys::Photon  >"/>
+  <class name="phys::DiBoson<phys::Electron, phys::Lepton  >"/>
+  <class name="phys::DiBoson<phys::Electron, phys::Electron>"/>
+  <class name="phys::DiBoson<phys::Electron, phys::Jet     >"/>
+  <class name="phys::DiBoson<phys::Electron, phys::Photon  >"/>
+  <class name="phys::DiBoson<phys::Jet     , phys::Lepton  >"/>
+  <class name="phys::DiBoson<phys::Jet     , phys::Electron>"/>
+  <class name="phys::DiBoson<phys::Jet     , phys::Jet     >"/>
+  <class name="phys::DiBoson<phys::Jet     , phys::Photon  >"/>
+  <class name="phys::DiBoson<phys::Photon  , phys::Lepton  >"/>
+  <class name="phys::DiBoson<phys::Photon  , phys::Electron>"/>
+  <class name="phys::DiBoson<phys::Photon  , phys::Photon  >"/>
+  <class name="phys::DiBoson<phys::Photon  , phys::Jet     >"/>
+
+  <class name="std::vector<phys::DiBoson<phys::Particle, phys::Particle > >"/>
+  <class name="std::vector<phys::DiBoson<phys::Lepton  , phys::Lepton   > >"/>
+  <class name="std::vector<phys::DiBoson<phys::Lepton  , phys::Electron > >"/>
+  <class name="std::vector<phys::DiBoson<phys::Lepton  , phys::Jet      > >"/>
+  <class name="std::vector<phys::DiBoson<phys::Lepton  , phys::Photon   > >"/>
+  <class name="std::vector<phys::DiBoson<phys::Electron, phys::Lepton   > >"/>
+  <class name="std::vector<phys::DiBoson<phys::Electron, phys::Electron > >"/>
+  <class name="std::vector<phys::DiBoson<phys::Electron, phys::Jet      > >"/>
+  <class name="std::vector<phys::DiBoson<phys::Electron, phys::Photon   > >"/>
+  <class name="std::vector<phys::DiBoson<phys::Jet     , phys::Lepton   > >"/>
+  <class name="std::vector<phys::DiBoson<phys::Jet     , phys::Electron > >"/>
+  <class name="std::vector<phys::DiBoson<phys::Jet     , phys::Jet      > >"/>
+  <class name="std::vector<phys::DiBoson<phys::Jet     , phys::Photon   > >"/>
+  <class name="std::vector<phys::DiBoson<phys::Photon  , phys::Lepton   > >"/>
+  <class name="std::vector<phys::DiBoson<phys::Photon  , phys::Electron > >"/>
+  <class name="std::vector<phys::DiBoson<phys::Photon  , phys::Photon   > >"/>
+  <class name="std::vector<phys::DiBoson<phys::Photon  , phys::Jet      > >"/>
+
+  <class name="std::pair<phys::Boson<phys::Lepton>, phys::Lepton>"/>
+  <class name="std::vector<std::pair<phys::Boson<phys::Lepton>, phys::Lepton> >"/>
+
   <class name="phys::RegionsCounter"/>
   <class name="phys::GenEventWeights"/>
   <class name="phys::MELA"/>
