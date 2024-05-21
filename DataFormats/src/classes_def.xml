@@ -2,4 +2,6 @@
   <class name="phys::Particle"/>
   <class name="phys::Lepton"/>
   <class name="phys::Photon"/>
+  <class pattern="phys::Boson<phys::*>"/>
+  <class pattern="phys::DiBoson<phys::*,phys::*>"/>
 </lcgdict>
