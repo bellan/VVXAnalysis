@@ -35,15 +35,15 @@ set(BOOST /opt/local/include/)
 set(CMAKE_INCLUDE_PATH ${BASE} ${TreeAnalysis_interface} ${BOOST}) 
 set(EventDF_HEADERS ${BASE}/VVXAnalysis/DataFormats/interface/*.h)
 set(EventDF_SOURCES ${DataFormats_src}/Particle.cc ${DataFormats_src}/Lepton.cc ${DataFormats_src}/Jet.cc ${DataFormats_src}/Photon.cc ${DataFormats_src}/Electron.cc ${DataFormats_src}/Boson.cc ${DataFormats_src}/DiBoson.cc ${DataFormats_src}/RegionTypes.cc ${DataFormats_src}/loader.C)
-set(EventDF_LINKDEF ${DataFormats_src}/STDToolsLinkDef.h)
 
 include_directories(${CMAKE_INCLUDE_PATH} ${DataFormats_interface} ${BASE})
 
 set(EventDF_DICTIONARY G__TreeAnalysis)
-ROOT_GENERATE_DICTIONARY(${EventDF_DICTIONARY} ${EventDF_HEADERS} LINKDEF "${EventDF_LINKDEF}")
+REFLEX_GENERATE_DICTIONARY(${EventDF_DICTIONARY} ${DataFormats_src}/classes.h SELECTION ${DataFormats_src}/classes_def.xml)
+set_property(TARGET ${EventDF_DICTIONARY}-dictgen APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${EventDF_DICTIONARY}_rdict.pcm)
 
 
-set(EventAnalyzer_SRCS ${EventDF_DICTIONARY} ${SRC}/SampleInfo.cc ${SRC}/EventAnalyzer.cc ${Commons_src}/SignalDefinitions.cc ${DataFormats_src}/RegionTypes.cc ${Commons_src}/StringTools.cc ${Commons_src}/GenVBHelper.cc)
+set(EventAnalyzer_SRCS ${SRC}/SampleInfo.cc ${SRC}/EventAnalyzer.cc ${Commons_src}/SignalDefinitions.cc ${DataFormats_src}/RegionTypes.cc ${Commons_src}/StringTools.cc ${Commons_src}/GenVBHelper.cc)
 
 
 set(Analyzers_SRCS)
