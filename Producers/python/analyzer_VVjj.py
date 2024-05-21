@@ -45,7 +45,7 @@ PyFilePath = os.environ['CMSSW_BASE'] + "/src/ZZAnalysis/AnalysisStep/test/"
 ### Import ZZAnalysis
 ### ----------------------------------------------------------------------
 
-execfile(PyFilePath + "MasterPy/ZZ4lAnalysis.py")      
+exec(open(os.path.join(PyFilePath, "MasterPy/ZZ4lAnalysis.py")).read())
 
 ### ----------------------------------------------------------------------
 ### Replace parameters
