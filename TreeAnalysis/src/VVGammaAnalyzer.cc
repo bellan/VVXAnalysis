@@ -31,7 +31,6 @@ using namespace physmath;
 
 #define BIN_GENCATEGORY 10,-0.5,9.5
 #define BINS_PHCUTFLOW 7,-0.5,6.5
-#define BINS_PHCUTNM1 6,-0.5,5.5
 #define BINS_KINPHID 5,-0.5,4.5
 
 namespace {
@@ -1151,17 +1150,6 @@ void VVGammaAnalyzer::endNameHistos(){
     axis->SetBinLabel(7, "IsoPh");
   }
   
-  TH1* kinPhotons_Nm1  = theHistograms->get("kinPhotons_Nm1" );
-  if(kinPhotons_Nm1){
-    TAxis* axis = kinPhotons_Nm1->GetXaxis();
-    axis->SetBinLabel(1, ">= 4");
-    axis->SetBinLabel(2, "#sigma_{i#etai#eta}");
-    axis->SetBinLabel(3, "HoverE");
-    axis->SetBinLabel(4, "IsoCH");
-    axis->SetBinLabel(5, "IsoNE");
-    axis->SetBinLabel(6, "IsoPh");
-  }
-  
   TH1* kinPhotons_ID = theHistograms->get("kinPhotons_ID");
   if(kinPhotons_ID){
     TAxis* axis = kinPhotons_ID->GetXaxis();
@@ -2051,18 +2039,13 @@ void VVGammaAnalyzer::photonHistos(){
       theHistograms->fill("kinPhotons_cuts", "Single cut efficiency;;Events", BINS_PHCUTFLOW, 6, theWeight);
     
     // N-1 efficiency of the cuts
-    if(nCutsPass >= 4)
-      theHistograms->fill("kinPhotons_Nm1", "N-1 cut efficiency;;Events", BINS_PHCUTNM1, 0, theWeight);
-    if(           b_HoverE && b_chIso && b_neIso && b_phIso)
-      theHistograms->fill("kinPhotons_Nm1", "N-1 cut efficiency;;Events", BINS_PHCUTNM1, 1, theWeight);
-    if(b_sieie             && b_chIso && b_neIso && b_phIso)
-      theHistograms->fill("kinPhotons_Nm1", "N-1 cut efficiency;;Events", BINS_PHCUTNM1, 2, theWeight);
-    if(b_sieie && b_HoverE            && b_neIso && b_phIso)
-      theHistograms->fill("kinPhotons_Nm1", "N-1 cut efficiency;;Events", BINS_PHCUTNM1, 3, theWeight);
-    if(b_sieie && b_HoverE && b_chIso            && b_phIso)
-      theHistograms->fill("kinPhotons_Nm1", "N-1 cut efficiency;;Events", BINS_PHCUTNM1, 4, theWeight);
-    if(b_sieie && b_HoverE && b_chIso && b_neIso           )
-      theHistograms->fill("kinPhotons_Nm1", "N-1 cut efficiency;;Events", BINS_PHCUTNM1, 5, theWeight);
+    fillCutsNm1("kinPhotons_Nm1", "N-1 cut efficiency;;Events", {
+      {"sieie" , b_sieie },
+      {"HoverE", b_HoverE},
+      {"chIso" , b_chIso },
+      {"neIso" , b_neIso },
+      {"phIso" , b_phIso }
+      }, theWeight);
     
     theHistograms->fill(  "kinPhoton_MVA"                    , "Kin #gamma MVA"                    , 40,-1.,1., bestKinPh_->MVAvalue(), theWeight);
     theHistograms->fill(  "kinPhoton_MVA_"      +channelReco_, "Kin #gamma MVA in "   +channelReco_, 40,-1.,1., bestKinPh_->MVAvalue(), theWeight);
@@ -3433,6 +3416,47 @@ void VVGammaAnalyzer::ZllVsZllGstudy(const std::vector<phys::Photon>& phvect, co
   theHistograms->fill(Form("Zll_mass_%s"               , label), ";m_{ll}"             , 30,60.,120. , Zll_mass, theWeight);
   theHistograms->fill(Form("ZllG_mass_%s"              , label), ";m_{ll#gamma}"       , 40,60.,160. , ZllG_mass, theWeight);
   theHistograms->fill(Form("Zll_mass_plus_ZllG_mass_%s", label), ";m_{ll}+m_{ll#gamma}", 40,120.,320., Zll_mass+ZllG_mass, theWeight);
+}
+
+
+void VVGammaAnalyzer::fillCutsNm1(const std::string& name, const std::string& title, const std::vector<std::pair<std::string, bool>>& cuts, const double& weight = 1){
+  std::vector<std::string> cut_names;
+  cut_names.reserve(cuts.size()+2);
+  // cut_names.push_back("all debug");
+  cut_names.push_back("Nm1");
+  for(auto& name_val : cuts) cut_names.push_back(name_val.first);
+
+  unsigned int ncuts = std::count_if(cuts.begin(), cuts.end(), [](auto& p){ return p.second; });
+  // theHistograms->fill(name, title, cut_names, "all debug", weight);
+
+  if(ncuts < cuts.size() - 1)
+    return;
+
+  theHistograms->fill(name, title, cut_names, "Nm1", weight);
+  bool passAll = (ncuts == cuts.size());
+  for(auto& name_val : cuts){
+    if(passAll || !name_val.second)
+      theHistograms->fill(name, title, cut_names, name_val.first, weight);
+  }
+
+  // if(passAll)
+  //   theHistograms->fill(name, title, cut_names, "N", weight);
+}
+
+
+void VVGammaAnalyzer::fillCutFlow(const std::string& name, const std::string& title, const std::vector<std::pair<std::string, bool>>& cuts, const double& weight){
+  std::vector<std::string> cut_names;
+  cut_names.reserve(cuts.size()+1);
+  cut_names.push_back("All");
+  for(auto& name_val : cuts) cut_names.push_back(name_val.first);
+
+  theHistograms->fill(name, title, cut_names, "All", weight);
+  for(auto& name_val : cuts){
+    if(name_val.second)
+      theHistograms->fill(name, title, cut_names, name_val.first, weight);
+    else
+      break;
+  }
 }
 
 
