@@ -678,22 +678,24 @@ void VVGammaAnalyzer::analyze(){
 
   // Disabled cuts
   // disabled.gamma_kin: Require at least 1 kin photon with pt > 20 GeV
-  if(kinPhotons_["central"]->size() >= 1){
+  bool haveKinPhoton = kinPhotons_["central"]->size() >= 1;
+  if(haveKinPhoton){
     theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "#gamma kin", theWeight);
     theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "#gamma kin", 1);
     if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef", "", {}, "#gamma kin", theWeight);
   }
 
   // disabled.gamma_veryloose: Require at least 1 veryLoose photon with pt > 20 GeV
-  if(loosePhotons_["central"]->size() >= 1){
+  bool haveVeryLoosePhoton = loosePhotons_["central"]->size() >= 1;
+  if(haveVeryLoosePhoton){
     theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "#gamma veryLoose", theWeight);
     theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "#gamma veryLoose", 1);
     if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef", "", {}, "#gamma VeryLoose", theWeight);
   }
 
   // disabled.gamma_loose: Require at least 1 loose photon with pt > 20 GeV
-  bool haveGoodPhoton = goodPhotons_["central"]->size() >= 1;
-  if(haveGoodPhoton){
+  bool haveLoosePhoton = goodPhotons_["central"]->size() >= 1;
+  if(haveLoosePhoton){
     theHistograms->fill("AAA_cuts"  , "cuts weighted"  , {}, "#gamma loose", theWeight);
     theHistograms->fill("AAA_cuts_u", "cuts unweighted", {}, "#gamma loose", 1);
     if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef", "", {}, "#gamma loose", theWeight);
@@ -708,17 +710,34 @@ void VVGammaAnalyzer::analyze(){
     if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef", "", {}, "#gamma medium", theWeight);
   }
 
-  if(bestMVAPh_ && bestMVAPh_->passMVA(Photon::MVAwp::wp90)){
+  bool havewp90Photon = bestMVAPh_ && bestMVAPh_->passMVA(Photon::MVAwp::wp90);
+  if(havewp90Photon){
     theHistograms->fill("AAA_cuts_extra"  , "cuts weighted"  , {"#gamma wp90"}, "#gamma wp90", theWeight);
     theHistograms->fill("AAA_cuts_u_extra", "cuts unweighted", {"#gamma wp90"}, "#gamma wp90", 1);
     if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef_extra", "", {"#gamma wp90"}, "#gamma wp90", theWeight);
   }
 
-  if(bestMVAPh_ && bestMVAPh_->passMVA(Photon::MVAwp::wp80)){
+  bool havewp80Photon = bestMVAPh_ && bestMVAPh_->passMVA(Photon::MVAwp::wp80);
+  if(havewp80Photon){
     theHistograms->fill("AAA_cuts_extra"  , "cuts weighted"  , {}, "#gamma wp80", theWeight);
     theHistograms->fill("AAA_cuts_u_extra", "cuts unweighted", {}, "#gamma wp80", 1);
     if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef_extra", "", {}, "#gamma wp80", theWeight);
   }
+
+  fillCutFlow("AAA_cuts_genreco_cutID", ";cut;Events", {
+      {"#gamma_{GEN}"      , sigdefHelper.pass_photon()},
+      {"full sig def"      , sigdefHelper.pass()},
+      {"#gamma_{REC} kin"  , haveKinPhoton},
+      {"#gamma_{REC} VL"   , haveVeryLoosePhoton},
+      {"#gamma_{REC} Loose", haveLoosePhoton}
+    }, theWeight);
+  fillCutFlow("AAA_cuts_genreco_MVAID", ";cut;Events", {
+      {"#gamma_{GEN}"      , sigdefHelper.pass_photon()},
+      {"full sig def"      , sigdefHelper.pass()},
+      {"#gamma_{REC} kin"  , haveKinPhoton},
+      {"#gamma_{REC} wp90" , havewp90Photon},
+      {"#gamma_{REC} wp80" , havewp80Photon}
+    }, theWeight);
 
   bool four_lep  = is4Lregion(region_);  // && ZZ && ZZ->pt() > 1.;
   bool three_lep = is3Lregion(region_);  // && ZW && ZW->pt() > 1.;
