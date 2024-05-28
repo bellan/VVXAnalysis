@@ -436,7 +436,7 @@ Int_t VVGammaAnalyzer::cut() {
     genEventHistos();
     // ----- SIGNAL DEFINITION -----
     sigdefHelper.eval();
-      if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef","", {"All"}, "All", theWeight);
+      if(sigdefHelper.pass()) theHistograms->fill("AAA_cuts_sigdef",";;Events", {"All"}, "All", theWeight);
   }
   initEvent();
   
@@ -1323,6 +1323,26 @@ bool VVGammaAnalyzer::SignalDefinitionHelper::eval_ZZ4L(){
   if(Z0def)    analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "Z0def"   , theWeight);
   if(Z1def)    analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "Z1def"   , theWeight);
   if(ZZ4L_)    analyzer_->theHistograms->fill("DEBUG_sigdef", "", {}, "passVV"  , theWeight);
+
+  analyzer_->fillCutsNm1("DEBUG_sigdef_ZZ_Nm1"    , "N-1 (ZZ);cut excluded;Events"       , {
+      {"topology"      , topology},
+      {"l0_pt && l1_pt", l0_pt && l1_pt},
+      {"fiducial"      , fiducial},
+      {"Z0def && Z1def", Z0def && Z1def}
+    }, theWeight);
+  analyzer_->fillCutsNm1("DEBUG_sigdef_Nm1"       , "N-1 (ZZ+#gamma);cut excluded;Events", {
+      {"ZZ", ZZ4L_}, {"photon"  , photon_ }
+    }, theWeight);
+  analyzer_->fillCutFlow("DEBUG_sigdef_cutflow"   , "GEN cutflow (ZZ+#gamma);;Events", {
+      {"topology", topology},
+      {"l0_pt"   , l0_pt   },
+      {"l1_pt"   , l1_pt   },
+      {"fiducial", fiducial},
+      {"Z0def"   , Z0def   },
+      {"Z1def"   , Z1def   },
+      {"photon"  , photon_ }
+    }, theWeight);
+
 
   return ZZ4L_;
 }
