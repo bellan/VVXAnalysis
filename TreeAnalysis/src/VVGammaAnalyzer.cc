@@ -1285,6 +1285,9 @@ void VVGammaAnalyzer::SignalDefinitionHelper::eval(/*const VVGammaAnalyzer* anal
 	}
   }
 
+  // Photon
+  photon_ = eval_photon();
+
   bool regional = false;
   if     (is4Lregion(region_)) // 4L signal definition
     regional = eval_ZZ4L();
@@ -1295,8 +1298,6 @@ void VVGammaAnalyzer::SignalDefinitionHelper::eval(/*const VVGammaAnalyzer* anal
   else if(region_ == CRLFR)    // CRLFR
     regional = true; // Nothing so far
 
-  // Photon
-  photon_ = eval_photon();
   if(photon_) theHistograms->fill("DEBUG_sigdef", "Signal definition", {}, "photon", theWeight);
 
   if(photon_ && regional)
