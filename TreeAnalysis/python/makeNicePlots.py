@@ -98,8 +98,12 @@ parser.add_argument("-i", "--inputDir",
 parser.add_argument('--skip-missing', action='store_true',
                     help='Don\'t crash if a plot is missing; instead continue with the others')
 
-parser.add_argument('--draw-region-label', action='store_true',
-                    help='Draw a textbox with the name of the region in the plot')
+parser.add_argument('--region-label', action='store_true', dest='region_label',
+                    default=True,
+                    help='Draw a textbox with the name of the region in the plot (default: %(default)s)')
+
+parser.add_argument('--no-region-label', action='store_false', dest='region_label',
+                    help='Set "%(dest)s" to false')
 
 parser.add_argument('--force-positive'   , action='store_true' , dest='forcePositive', help='Do `Scale(-1)` in regions with negative fake lepton transfer factor (default = %(default)s)')
 parser.add_argument('--no-force-positive', action='store_false', dest='forcePositive')
@@ -191,7 +195,7 @@ else:
     lumi = lumi_dict[year]['value']
 lumi = round(lumi/1000.,1)
 CMS_lumi.writeExtraText = True
-CMS_lumi.extraText = "Private work"
+CMS_lumi.extraText = "Preliminary"
 CMS_lumi.lumi_sqrtS = "{0} fb^{{-1}} (13 TeV)\n".format(lumi)
 
 iPos = 0
@@ -378,7 +382,7 @@ for Var in variables:
     leg.SetX2(x2+shift)
     leg.Draw("same")
 
-    if(options.draw_region_label):
+    if(options.region_label):
         region_text = ROOT.TText()
         region_text.SetNDC()
         region_text.SetText(pad1.GetLeftMargin()+0.05, 1-pad1.GetTopMargin()-0.075, region)
