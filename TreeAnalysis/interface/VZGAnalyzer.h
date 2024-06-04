@@ -72,7 +72,7 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
 
   virtual void genAnalyze();
   
-  virtual void PhotonvsJet();
+  virtual void QuarksToJets();
   
   //virtual void AlternativegenAnalyze();
   
@@ -80,15 +80,17 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
   
   virtual void genPhotonsAnalyzer();
   
-  //virtual Int_t GENsignalCostraint();
+  //virtual Int_t GENsignalConstraint();
     
-  virtual bool RECOsignalCostraint();
+  virtual bool RECOsignalConstraint();
+
+  virtual bool   IN_GENsignalDef();
   
-  virtual bool   LeptonicSignalCostraint();
+  virtual bool   LeptonicSignalConstraint();
   
-  virtual bool   HadronicSignalCostraint();
+  virtual bool   HadronicSignalConstraint();
   
-  virtual bool   PhotonSignalCostraint();
+  virtual bool   PhotonSignalConstraint();
 
   virtual Bool_t cut(Int_t, phys::Boson<phys::Jet>,std::vector<phys::Photon>);
 
