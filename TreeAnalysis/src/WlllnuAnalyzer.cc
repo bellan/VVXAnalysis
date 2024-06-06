@@ -35,7 +35,7 @@ Int_t WlllnuAnalyzer::cut() {
 
 void WlllnuAnalyzer::analyze(){
 
-  cout << "-------------------------------------------------------------------"<<endl;
+  cout << "------------------------------------------------------------------------"<<endl;
   cout << "Run: " << run << " event: " << event << endl;
   
   foreach(const phys::Particle &gen, *genParticles)
