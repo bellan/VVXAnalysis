@@ -23,6 +23,7 @@ using namespace phys;
 double etacut=4.7;
 
 double ptcut=30;
+double LumiSF=7.035;
 
 bool KinematicsOK(phys::Particle p, float pt,float eta)
 {
@@ -158,7 +159,9 @@ bool VZGAnalyzer::RECOsignalCostraint()
               }
        }
 
-      std::cout << "DiJets size: " << DiJets.size() << std::endl;
+bool VZGAnalyzer::baselineRequirements()
+{
+  //----------------------------------------Building jj pairs ----------------------------------------//
 
        std::vector<phys::Photon> selectedphotons;
 
@@ -191,26 +194,147 @@ bool VZGAnalyzer::RECOsignalCostraint()
 
 Bool_t VZGAnalyzer::cut(Int_t n, phys::Boson<phys::Jet> recoV, std::vector<phys::Photon> selectedphotons)
 { // returns false if the event has to be cut
-
+  bool baseline = (jets->size() > 1
+	&& recoV.mass() > 50 && recoV.mass() < 120
+	&& KinematicsOK(recoV.daughter(0), ptcut,etacut)
+	&& KinematicsOK(recoV.daughter(1), ptcut,etacut)
+	&& Z->mass() > 60 && Z->mass() < 120
+	&& KinematicsOK(Z->daughter(0), 5.,etacut)
+	&& KinematicsOK(Z->daughter(1), 5.,etacut)
+        && selectedPhotons.size()>0);
+  /*
   switch (n)
   {
-
-  case 1:
-    if ((jets->size() > 1 && recoV.mass() > 50 && recoV.mass() < 120  && KinematicsOK(recoV.daughter(0), ptcut,etacut) && KinematicsOK(recoV.daughter(1), ptcut,etacut) ) && (Z->mass() > 50 && Z->mass() < 120  && KinematicsOK(Z->daughter(0), 5.,etacut) && KinematicsOK(Z->daughter(1), 5.,etacut) )&& selectedphotons.size()>0)
+  case 1://baseline
+    if (baseline)
       return true;
     break;
 
-  // case 2:
-  //   if (recoV.mass() > 65)
-  //     return true;
+  case 2://baseline+>2jets
+    if (jets->size() > 2 && baseline)
+      return true;
+    break;
 
-  //   break;
+  case 3://baseline+>3jets
+    if (jets->size() > 3  && baseline)
+      return true;
+    break;
 
-  // case 3:
-  //   if (recoV.mass() < 105)
-  //     return true;
+  case 4://baseline+dRjj<2.4
+    if (baseline&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4)
+      return true;
+    break;
 
-  //   break;
+  case 5://baseline+ptj>40
+    if (baseline
+	&& KinematicsOK(recoV.daughter(0), 40,etacut)
+	&& KinematicsOK(recoV.daughter(1), 40,etacut))
+      return true;
+    break;
+  case 6://baseline+ptj>40 & dRjj 2.4
+    if (baseline
+	&& KinematicsOK(recoV.daughter(0), 40,etacut)
+	&& KinematicsOK(recoV.daughter(1), 40,etacut)
+	&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4)
+      return true;
+    break;
+  case 7://baseline+mjj=mV+-15
+    if (baseline
+	&& recoV.mass() > 65
+	&& recoV.mass() < 115)
+      return true;
+    break;
+  case 8://baseline+mjj=mV+-15+ptj>40 & dRjj 2.4
+    if (baseline
+	&& KinematicsOK(recoV.daughter(0), 40,etacut)
+	&& KinematicsOK(recoV.daughter(1), 40,etacut)
+	&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4
+	&& recoV.mass() > 65 && recoV.mass() < 115)
+    return true;
+    break;
+  case 9://baseline+mll=mZ+-10
+    if (baseline && Z->mass() > 70 && Z->mass() < 110)
+      return true;
+    break;
+  case 10://baseline+mjj=mV+-15+ptj>40 & dRjj 2.4 & mll=mZ+-10 
+    if (baseline
+	&& KinematicsOK(recoV.daughter(0), 40,etacut)
+	&& KinematicsOK(recoV.daughter(1), 40,etacut)
+	&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4
+	&& recoV.mass() > 65 && recoV.mass() < 115
+	&& Z->mass() > 70 && Z->mass() < 110)
+      return true;
+    break;
+  case 11://baseline+mjj=mV+-15+ptj>40 & dRjj 2.4 & > 2jets
+    if (baseline
+	&& jets->size() > 2
+	&& KinematicsOK(recoV.daughter(0), 40,etacut)
+	&& KinematicsOK(recoV.daughter(1), 40,etacut)
+	&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4
+	&& recoV.mass() > 65 && recoV.mass() < 115)
+      return true;
+    break;
+
+  default:
+    return true;
+  }
+  */
+  switch (n)
+  {
+  case 1://baseline
+    if (baseline)
+      return true;
+    break;
+
+  case 2://baseline+dRjj<2.4
+    if (baseline&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4)
+      return true;
+    break;
+
+  case 3://baseline+ptj>40 & dRjj 2.4
+    if (baseline
+	&& KinematicsOK(recoV.daughter(0), 40,etacut)
+	&& KinematicsOK(recoV.daughter(1), 40,etacut)
+	&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4)
+      return true;
+    break;
+
+  case 4://baseline+mjj=mV+-15+ptj>40 & dRjj 2.4
+    if (baseline
+	&& KinematicsOK(recoV.daughter(0), 40,etacut)
+	&& KinematicsOK(recoV.daughter(1), 40,etacut)
+	&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4
+	&& recoV.mass() > 65 && recoV.mass() < 115)
+    return true;
+    break;
+
+  case 5://baseline+mjj=mV+-15+ptj>40 & dRjj 2.4 & mll=mZ+-10 
+    if (baseline
+	&& KinematicsOK(recoV.daughter(0), 40,etacut)
+	&& KinematicsOK(recoV.daughter(1), 40,etacut)
+	&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4
+	&& recoV.mass() > 65 && recoV.mass() < 115
+	&& Z->mass() > 70 && Z->mass() < 110)
+      return true;
+    break;
+  case 6://baseline+mjj=mV+-15+ptj>40 & dRjj 2.4 & > 2jets
+    if (baseline
+	&& jets->size() > 2
+	&& KinematicsOK(recoV.daughter(0), 40,etacut)
+	&& KinematicsOK(recoV.daughter(1), 40,etacut)
+	&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4
+	&& recoV.mass() > 65 && recoV.mass() < 115)
+      return true;
+    break;
+  case 7://baseline+mjj=mV+-15+ptj>40 & dRjj 2.4 & > 2jets
+    if (baseline
+	&& jets->size() > 3
+	&& KinematicsOK(recoV.daughter(0), 40,etacut)
+	&& KinematicsOK(recoV.daughter(1), 40,etacut)
+	&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4
+	&& recoV.mass() > 65 && recoV.mass() < 115)
+      return true;
+    break;
 
   default:
     return true;
@@ -221,17 +345,16 @@ Bool_t VZGAnalyzer::cut(Int_t n, phys::Boson<phys::Jet> recoV, std::vector<phys:
 void VZGAnalyzer::analyze()
 { // It's the only member function running each event.
 
-  cout << "----------------------------------------------------------------" << endl;
-  cout << "Run: " << run << " event: " << event << endl;
-
-  if (LeptonicSignalCostraint()  && HadronicSignalCostraint() && PhotonSignalCostraint() )
-  {
-    theHistograms->fill("Signal_fraction_QLG", "Signal_fraction_QLG", 2, 0, 2, 1., theWeight);
-  }
-  else
-  {
-    theHistograms->fill("Signal_fraction_QLG", "Signal_fraction_QLG", 2, 0, 2, 0., theWeight);
-  }
+  if(verbose==true)
+    {
+      cout << "----------------------------------------------------------------" << endl;
+      cout << "Run: " << run << " event: " << event << endl;
+    }
+  
+  theHistograms->fill("Signal_fraction_QLG", "Signal_fraction_QLG", 2, 0, 2, IN_GENsignalDef() , theWeight*LumiSF);
+  theHistograms->fill("Signal_fraction_Q", "Signal_fraction_Q", 2, 0, 2, HadronicSignalConstraint(), theWeight*LumiSF);
+  theHistograms->fill("Signal_fraction_L", "Signal_fraction_L", 2, 0, 2, LeptonicSignalConstraint(), theWeight*LumiSF);
+  theHistograms->fill("Signal_fraction_L", "Signal_fraction_L", 2, 0, 2, PhotonSignalConstraint(), theWeight*LumiSF);
 
   if (HadronicSignalCostraint() )
   {
@@ -242,73 +365,46 @@ void VZGAnalyzer::analyze()
     theHistograms->fill("Signal_fraction_Q", "Signal_fraction_Q", 2, 0, 2, 0., theWeight);
   }
 
-  if (LeptonicSignalCostraint() )
-  {
-    theHistograms->fill("Signal_fraction_L", "Signal_fraction_L", 2, 0, 2, 1., theWeight);
-  }
-  else
-  {
-    theHistograms->fill("Signal_fraction_L", "Signal_fraction_L", 2, 0, 2, 0., theWeight);
-  }
+  theHistograms->fill("LepSel_ALL_Zexists_ptl1OK_ptl2OK_ptlOK_mllOK", "LepSel_ALL_Zexists_ptl1OK_ptl2OK_ptlOK_mllOK", 6, 0, 6, 0., theWeight*LumiSF);
 
-  if (PhotonSignalCostraint() )
-  {
-    theHistograms->fill("Signal_fraction_G", "Signal_fraction_G", 2, 0, 2, 1., theWeight);
-  }
-  else
-  {
-    theHistograms->fill("Signal_fraction_G", "Signal_fraction_G", 2, 0, 2, 0., theWeight);
+  if (genVBHelper_.ZtoChLep().size()==1){
+    theHistograms->fill("LepSel_ALL_Zexists_ptl1OK_ptl2OK_ptlOK_mllOK", "LepSel_ALL_Zexists_ptl1OK_ptl2OK_ptlOK_mllOK", 6, 0, 6, 1., theWeight*LumiSF);
+    if (KinematicsOK(genVBHelper_.ZtoChLep()[0].daughter(0), 5.,2.5))
+      theHistograms->fill("LepSel_ALL_Zexists_ptl1OK_ptl2OK_ptlOK_mllOK", "LepSel_ALL_Zexists_ptl1OK_ptl2OK_ptlOK_mllOK", 6, 0, 6, 2., theWeight*LumiSF);
+    if (KinematicsOK(genVBHelper_.ZtoChLep()[0].daughter(1), 5.,2.5))
+      theHistograms->fill("LepSel_ALL_Zexists_ptl1OK_ptl2OK_ptlOK_mllOK", "LepSel_ALL_Zexists_ptl1OK_ptl2OK_ptlOK_mllOK", 6, 0, 6, 3., theWeight*LumiSF);
+    if (KinematicsOK(genVBHelper_.ZtoChLep()[0].daughter(0), 5.,2.5) && KinematicsOK(genVBHelper_.ZtoChLep()[0].daughter(1), 5.,2.5))
+      {
+	theHistograms->fill("LepSel_ALL_Zexists_ptl1OK_ptl2OK_ptlOK_mllOK", "LepSel_ALL_Zexists_ptl1OK_ptl2OK_ptlOK_mllOK", 6, 0, 6, 4., theWeight*LumiSF);
+	if (genVBHelper_.ZtoChLep()[0].mass()>60 && genVBHelper_.ZtoChLep()[0].mass()<120)
+	  theHistograms->fill("LepSel_ALL_Zexists_ptl1OK_ptl2OK_ptlOK_mllOK", "LepSel_ALL_Zexists_ptl1OK_ptl2OK_ptlOK_mllOK", 6, 0, 6, 5., theWeight*LumiSF);
+      }
   }
   //___________________________________________________________________________________
 
-  bool GENsignal= (HadronicSignalCostraint() && LeptonicSignalCostraint());
-  bool RECOsignal=RECOsignalCostraint();
-  if (RECOsignal)
-  {
-    theHistograms->fill("Signal_fraction_RECO", "Signal_fraction_RECO", 2, 0, 2, 1., theWeight);
-  }
-  else
-  {
-    theHistograms->fill("Signal_fraction_RECO", "Signal_fraction_RECO", 2, 0, 2, 0., theWeight);
-  }
+
+  
+  bool GENsignal=(HadronicSignalConstraint() && LeptonicSignalConstraint() && PhotonSignalConstraint());
+  bool IN_RECObaseline=baselineRequirements();
+
+  theHistograms->fill("Signal_fraction_RECO", "Signal_fraction_RECO", 2, 0, 2, IN_RECObaseline, theWeight*LumiSF);
+
   //_____________________________________________________________________________________________//
 
-  if (GENsignal && RECOsignal)
-  {
-    theHistograms->fill("GENRECO_11", "GENRECO_11", 2, 0, 2, 1., theWeight);
-  }
+  if (GENsignal && IN_RECObaseline)
+    theHistograms->fill("GENRECO_trueBkg_sigLoss_fakeSig_trueSig", "GENRECO_trueBkg_sigLoss_fakeSig_trueSig", 4, 0, 4, 3., theWeight*LumiSF);
+  else if (!GENsignal && IN_RECObaseline)
+    theHistograms->fill("GENRECO_trueBkg_sigLoss_fakeSig_trueSig", "GENRECO_trueBkg_sigLoss_fakeSig_trueSig", 4, 0, 4, 2., theWeight*LumiSF);
+  else if (GENsignal && !IN_RECObaseline)
+    theHistograms->fill("GENRECO_trueBkg_sigLoss_fakeSig_trueSig", "GENRECO_trueBkg_sigLoss_fakeSig_trueSig", 4, 0, 4, 1., theWeight*LumiSF);
   else
-  {
-    theHistograms->fill("GENRECO_11", "GENRECO_11", 2, 0, 2, 0., theWeight);
-  }
-
-  if (!GENsignal && RECOsignal)
-  {
-    theHistograms->fill("GENRECO_01", "GENRECO_01", 2, 0, 2, 1., theWeight);
-  }
-  else
-  {
-    theHistograms->fill("GENRECO_01", "GENRECO_01", 2, 0, 2, 0., theWeight);
-  }
-
-  if (GENsignal && !RECOsignal)
-  {
-    theHistograms->fill("GENRECO_10", "GENRECO_10", 2, 0, 2, 1., theWeight);
-  }
-  else
-  {
-    theHistograms->fill("GENRECO_10", "GENRECO_10", 2, 0, 2, 0., theWeight);
-  }
-
-  if (!GENsignal && !RECOsignal)
-  {
-    theHistograms->fill("GENRECO_00", "GENRECO_00", 2, 0, 2, 1., theWeight);
-  }
-  else
-  {
-    theHistograms->fill("GENRECO_00", "GENRECO_00", 2, 0, 2, 0., theWeight);
-  }
-
+    theHistograms->fill("GENRECO_trueBkg_sigLoss_fakeSig_trueSig", "GENRECO_trueBkg_sigLoss_fakeSig_trueSig", 4, 0, 4, 0., theWeight*LumiSF);
+  //_____________________________________________________________________________________________//
+  
+  theHistograms->fill("GENRECO_11", "GENRECO_11", 2, 0, 2, GENsignal && IN_RECObaseline, theWeight*LumiSF);
+  theHistograms->fill("GENRECO_01", "GENRECO_01", 2, 0, 2, !GENsignal && IN_RECObaseline, theWeight*LumiSF);
+  theHistograms->fill("GENRECO_10", "GENRECO_10", 2, 0, 2, GENsignal && !IN_RECObaseline, theWeight*LumiSF);
+  theHistograms->fill("GENRECO_00", "GENRECO_00", 2, 0, 2, !GENsignal && !IN_RECObaseline, theWeight*LumiSF);
 
 //___________________________________________________________________________________
   // genVBAnalyzer();
@@ -336,7 +432,7 @@ void VZGAnalyzer::analyze()
   //   mostEnergeticPhoton = selectedphotons[0];
   // }
 
-  // theHistograms->fill("pt_mostenergeticphoton", "pt_mostenergeticphoton", 30, 0, 300, mostEnergeticPhoton.pt(), (theWeight));
+  // theHistograms->fill("pt_mostenergeticphoton", "pt_mostenergeticphoton", 30, 0, 300, mostEnergeticPhoton.pt(), (theWeight*LumiSF));
   // std::vector<std::pair<phys::Photon, phys::Jet>> nearestRECOjetstoPhoton;
 
   // if (selectedRECOjets.size() > 0)
@@ -347,9 +443,9 @@ void VZGAnalyzer::analyze()
   // }
   // for (auto pair : nearestRECOjetstoPhoton)
   // {
-  //   ResolutionPlots(pair.first, pair.second, "Photon_vs_jet_", theWeight);
-  //   theHistograms->fill("DeltaR_mostEnergeticPhoton_vs_BestMatchedRECOJet", "DeltaR_mostEnergeticPhoton_vs_BestMatchedRECOJet; #DeltaR", 50, 0, 5, abs(physmath::deltaR(pair.first, pair.second)), theWeight);
-  //   theHistograms->fill("DeltaR_vs_Deltapt", "DeltaR_vs_Deltapt;#Delta pt [GeV/c] ; #DeltaR", 20, -100, 100, 20, 0, 2, pair.first.pt()-pair.second.pt(),abs(physmath::deltaR(pair.first, pair.second)), theWeight);
+  //   ResolutionPlots(pair.first, pair.second, "Photon_vs_jet_", theWeight*LumiSF);
+  //   theHistograms->fill("DeltaR_mostEnergeticPhoton_vs_BestMatchedRECOJet", "DeltaR_mostEnergeticPhoton_vs_BestMatchedRECOJet; #DeltaR", 50, 0, 5, abs(physmath::deltaR(pair.first, pair.second)), theWeight*LumiSF);
+  //   theHistograms->fill("DeltaR_vs_Deltapt", "DeltaR_vs_Deltapt;#Delta pt [GeV/c] ; #DeltaR", 20, -100, 100, 20, 0, 2, pair.first.pt()-pair.second.pt(),abs(physmath::deltaR(pair.first, pair.second)), theWeight*LumiSF);
   // }
 
 
@@ -357,10 +453,12 @@ void VZGAnalyzer::analyze()
   foreach (const phys::Jet &jet, *jets)
   {
     if (KinematicsOK(jet, ptcut, etacut)) // KinematicsOK(jet)
-    {
-      selectedRECOjets.push_back(jet);
-    }
-  }
+      kinRECOjets.push_back(jet);
+
+  
+  theHistograms->fill("#kinRECOjets", "#kinRECOjets", 8, 0, 8, kinRECOjets.size(), theWeight*LumiSF);
+  theHistograms->fill("AtLeast_2kinRecoJets", "AtLeast_2kinRecoJets", 2, 0, 2, kinRECOjets.size()>1, theWeight*LumiSF);
+
 
   phys::Photon mostEnergeticPhoton;
    if (selectedphotons.size() > 0)
@@ -369,7 +467,7 @@ void VZGAnalyzer::analyze()
     mostEnergeticPhoton = selectedphotons[0];
   }
 
-  theHistograms->fill("pt_mostenergeticphoton", "pt_mostenergeticphoton", 30, 0, 300, mostEnergeticPhoton.pt(), (theWeight));
+  theHistograms->fill("pt_mostenergeticphoton", "pt_mostenergeticphoton", 30, 0, 300, mostEnergeticPhoton.pt(), (theWeight*LumiSF));
   std::vector<std::pair<phys::Photon, phys::Jet>> nearestRECOjetstoPhoton;
 
   if (selectedRECOjets.size() > 0)
@@ -380,9 +478,9 @@ void VZGAnalyzer::analyze()
   }
   for (auto pair : nearestRECOjetstoPhoton)
   {
-    //ResolutionPlots(pair.first, pair.second, "Photon_vs_jet_", theWeight);
-    theHistograms->fill("DeltaR_mostEnergeticPhoton_vs_BestMatchedRECOJet", "DeltaR_mostEnergeticPhoton_vs_BestMatchedRECOJet; #DeltaR", 50, 0, 5, abs(physmath::deltaR(pair.first, pair.second)), theWeight);
-    theHistograms->fill("DeltaR_vs_Deltapt", "DeltaR_vs_Deltapt;#Delta pt [GeV/c] ; #DeltaR", 20, -100, 100, 20, 0, 2, pair.first.pt()-pair.second.pt(),abs(physmath::deltaR(pair.first, pair.second)), theWeight);
+    //ResolutionPlots(pair.first, pair.second, "Photon_vs_jet_", theWeight*LumiSF);
+    theHistograms->fill("DeltaR_mostEnergeticPhoton_vs_BestMatchedRECOJet", "DeltaR_mostEnergeticPhoton_vs_BestMatchedRECOJet; #DeltaR", 50, 0, 5, abs(physmath::deltaR(pair.first, pair.second)), theWeight*LumiSF);
+    theHistograms->fill("DeltaR_vs_Deltapt", "DeltaR_vs_Deltapt;#Delta pt [GeV/c] ; #DeltaR", 20, -100, 100, 20, 0, 2, pair.first.pt()-pair.second.pt(),abs(physmath::deltaR(pair.first, pair.second)), theWeight*LumiSF);
   }
 
 
@@ -407,7 +505,7 @@ void VZGAnalyzer::analyze()
 
 
 
-    theHistograms->fill("Signal_V_vs_Z_pt", "Signal_V_vs_Z_pt;V p_{t} [GeV/c]; #Z p_{t} [GeV/c]", 30, 0, 300, 30, 0, 300, recoV.pt(), Z->pt(), theWeight);
+    theHistograms->fill("Signal_V_vs_Z_pt", "Signal_V_vs_Z_pt;V p_{t} [GeV/c]; #Z p_{t} [GeV/c]", 30, 0, 300, 30, 0, 300, recoV.pt(), Z->pt(), theWeight*LumiSF);
     printHistos(0, "sign", recoV, selectedphotons);
   } // not signalCostraint anymore
 
@@ -537,30 +635,32 @@ void VZGAnalyzer::CompatibilityTest(phys::Boson<phys::Jet> bestCandidate, phys::
 void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::Jet> recoV, std::vector<phys::Photon> selectedphotons)
 {
 
-  std::vector<std::string> cuts = {"0", "1"};//, "2", "3"};
+  std::vector<std::string> cuts = {"0", "1", "2", "3", "4", "5", "6", "7"};//, "8", "9", "10", "11"};
 
   if (i < cuts.size() && cut(i, recoV,selectedphotons))
   {
 
-    theHistograms->fill("recoVMass_" + histoType + cuts.at(i), "mass of recoV", 10, 0, 200, recoV.mass(), (theWeight));
-    //theHistograms->fill("recoVTot_" + histoType + cuts.at(i), "mass of recoV", 1, 50, 120, recoV.mass(), (theWeight));
+    theHistograms->fill("#AAA_cut_flow_" + histoType, "Cut flow", 12, 0, 12, i, (theWeight*LumiSF));
 
-    theHistograms->fill("recoVDaughter0Pt_" + histoType + cuts.at(i), "pt of recoVDaughter0", 50, 0, 600, recoV.daughter(0).pt(), (theWeight));
-    theHistograms->fill("recoVDaughter1Pt_" + histoType + cuts.at(i), "pt of recoVDaughter1", 50, 0, 600, recoV.daughter(1).pt(), (theWeight));
-    //PlotJets(recoV.daughter(0),recoV.daughter(1), "", theWeight, histoType + cuts.at(i));
+    theHistograms->fill("recoVMass_" + histoType + cuts.at(i), "mass of recoV", 10, 0, 200, recoV.mass(), (theWeight*LumiSF));
+    //theHistograms->fill("recoVTot_" + histoType + cuts.at(i), "mass of recoV", 1, 50, 120, recoV.mass(), (theWeight*LumiSF));
 
-    theHistograms->fill("recoZMass_" + histoType + cuts.at(i), "mass of recoZ", 10, 0, 200, Z->mass(), (theWeight));
+    theHistograms->fill("recoVDaughter0Pt_" + histoType + cuts.at(i), "pt of recoVDaughter0", 50, 0, 600, recoV.daughter(0).pt(), (theWeight*LumiSF));
+    theHistograms->fill("recoVDaughter1Pt_" + histoType + cuts.at(i), "pt of recoVDaughter1", 50, 0, 600, recoV.daughter(1).pt(), (theWeight*LumiSF));
+    //PlotJets(recoV.daughter(0),recoV.daughter(1), "", theWeight*LumiSF, histoType + cuts.at(i));
 
-    theHistograms->fill("recoVPt_" + histoType + cuts.at(i), "pt of recoV", 50, 0, 300, recoV.pt(), (theWeight));
-    theHistograms->fill("recoVEta_" + histoType + cuts.at(i), "eta of recoV", 30, 0, 3.5, fabs(recoV.eta()), (theWeight));
-    theHistograms->fill("recoVPhi_" + histoType + cuts.at(i), "phi of recoV", 30, -3.2, 3.2, recoV.phi(), (theWeight));
-    theHistograms->fill("recoVEnergy_" + histoType + cuts.at(i), "energy of  recoV", 60, 0, 2400, fabs(recoV.e()), (theWeight));
-    theHistograms->fill("recoVDaughtersDeltaPhi_" + histoType + cuts.at(i), "dPhi of recoVDaughters", 30, 0, 3.2, fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())), (theWeight));
+    theHistograms->fill("recoZMass_" + histoType + cuts.at(i), "mass of recoZ", 10, 0, 200, Z->mass(), (theWeight*LumiSF));
 
-    theHistograms->fill("recoZPt_" + histoType + cuts.at(i), "pt of recoZ", 50, 0, 600, Z->pt(), (theWeight));
-    theHistograms->fill("recoZEta_" + histoType + cuts.at(i), "eta of recoZ", 70, 0, 3.5, fabs(Z->eta()), (theWeight));
-    theHistograms->fill("recoZEnergy_" + histoType + cuts.at(i), "energy of  recoZ", 120, 0, 400, fabs(Z->e()), (theWeight));
-    theHistograms->fill("recoZDeltaPhi_" + histoType + cuts.at(i), "dPhi of recoZ", 30, 0, 3.2, fabs(physmath::deltaPhi(Z->daughter(0).phi(), Z->daughter(0).phi())), (theWeight));
+    theHistograms->fill("recoVPt_" + histoType + cuts.at(i), "pt of recoV", 50, 0, 300, recoV.pt(), (theWeight*LumiSF));
+    theHistograms->fill("recoVEta_" + histoType + cuts.at(i), "eta of recoV", 30, 0, 3.5, fabs(recoV.eta()), (theWeight*LumiSF));
+    theHistograms->fill("recoVPhi_" + histoType + cuts.at(i), "phi of recoV", 30, -3.2, 3.2, recoV.phi(), (theWeight*LumiSF));
+    theHistograms->fill("recoVEnergy_" + histoType + cuts.at(i), "energy of  recoV", 60, 0, 2400, fabs(recoV.e()), (theWeight*LumiSF));
+    theHistograms->fill("recoVDaughtersDeltaPhi_" + histoType + cuts.at(i), "dPhi of recoVDaughters", 30, 0, 3.2, fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())), (theWeight*LumiSF));
+
+    theHistograms->fill("recoZPt_" + histoType + cuts.at(i), "pt of recoZ", 50, 0, 600, Z->pt(), (theWeight*LumiSF));
+    theHistograms->fill("recoZEta_" + histoType + cuts.at(i), "eta of recoZ", 70, 0, 3.5, fabs(Z->eta()), (theWeight*LumiSF));
+    theHistograms->fill("recoZEnergy_" + histoType + cuts.at(i), "energy of  recoZ", 120, 0, 400, fabs(Z->e()), (theWeight*LumiSF));
+    theHistograms->fill("recoZDeltaPhi_" + histoType + cuts.at(i), "dPhi of recoZ", 30, 0, 3.2, fabs(physmath::deltaPhi(Z->daughter(0).phi(), Z->daughter(0).phi())), (theWeight*LumiSF));
 
 
 
@@ -582,7 +682,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
   //   mostEnergeticPhoton = selectedphotons[0];
   // }
 
-  // theHistograms->fill("pt_mostenergeticphoton"+histoType + cuts.at(i), "pt_mostenergeticphoton"+histoType + cuts.at(i), 30, 0, 300, mostEnergeticPhoton.pt(), (theWeight));
+  // theHistograms->fill("pt_mostenergeticphoton"+histoType + cuts.at(i), "pt_mostenergeticphoton"+histoType + cuts.at(i), 30, 0, 300, mostEnergeticPhoton.pt(), (theWeight*LumiSF));
   // std::vector<std::pair<phys::Photon, phys::Jet>> nearestRECOjetstoPhoton;
 
   // if (selectedRECOjets.size() > 0)
@@ -593,9 +693,9 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
   // }
   // for (auto pair : nearestRECOjetstoPhoton)
   // {
-  //   ResolutionPlots(pair.first, pair.second, "Photon_vs_jet_", theWeight,"_"+ histoType + cuts.at(i));
-  //   theHistograms->fill("DeltaR_mostEnergeticPhoton_vs_BestMatchedRECOJet_"+histoType + cuts.at(i), "DeltaR_mostEnergeticPhoton_vs_BestMatchedRECOJet"+histoType + cuts.at(i)+"; #DeltaR", 50, 0, 5, abs(physmath::deltaR(pair.first, pair.second)), theWeight);
-  //   theHistograms->fill("DeltaR_vs_Deltapt_"+histoType + cuts.at(i), "DeltaR_vs_Deltapt"+histoType + cuts.at(i)+";#Delta pt [GeV/c] ; #DeltaR", 20, -100, 100, 20, 0, 2, pair.first.pt()-pair.second.pt(),abs(physmath::deltaR(pair.first, pair.second)), theWeight);
+  //   ResolutionPlots(pair.first, pair.second, "Photon_vs_jet_", theWeight*LumiSF,"_"+ histoType + cuts.at(i));
+  //   theHistograms->fill("DeltaR_mostEnergeticPhoton_vs_BestMatchedRECOJet_"+histoType + cuts.at(i), "DeltaR_mostEnergeticPhoton_vs_BestMatchedRECOJet"+histoType + cuts.at(i)+"; #DeltaR", 50, 0, 5, abs(physmath::deltaR(pair.first, pair.second)), theWeight*LumiSF);
+  //   theHistograms->fill("DeltaR_vs_Deltapt_"+histoType + cuts.at(i), "DeltaR_vs_Deltapt"+histoType + cuts.at(i)+";#Delta pt [GeV/c] ; #DeltaR", 20, -100, 100, 20, 0, 2, pair.first.pt()-pair.second.pt(),abs(physmath::deltaR(pair.first, pair.second)), theWeight*LumiSF);
   // }
   
 
@@ -773,20 +873,20 @@ void VZGAnalyzer::genAnalyze()
   std::vector<phys::Particle> genQuarksfromV;
   for (auto VB : genV)
   {
-    theHistograms->fill("quarkfromV charge", "quarkfromV charge", 7, -7. / 6., 7. / 6., VB.daughter(0).charge(), theWeight);
-    theHistograms->fill("quarkfromV charge", "quarkfromV charge", 7, -7. / 6., 7. / 6., VB.daughter(1).charge(), theWeight);
+    theHistograms->fill("quarkfromV charge", "quarkfromV charge", 7, -7. / 6., 7. / 6., VB.daughter(0).charge(), theWeight*LumiSF);
+    theHistograms->fill("quarkfromV charge", "quarkfromV charge", 7, -7. / 6., 7. / 6., VB.daughter(1).charge(), theWeight*LumiSF);
 
-    theHistograms->fill("quarkfromV pt", "quarkfromV pt", 50, 0, 600, VB.daughter(0).pt(), theWeight);
-    theHistograms->fill("quarkfromV pt", "quarkfromV pt", 50, 0, 600, VB.daughter(1).pt(), theWeight);
+    theHistograms->fill("quarkfromV pt", "quarkfromV pt", 50, 0, 600, VB.daughter(0).pt(), theWeight*LumiSF);
+    theHistograms->fill("quarkfromV pt", "quarkfromV pt", 50, 0, 600, VB.daughter(1).pt(), theWeight*LumiSF);
 
     genQuarksfromV.push_back(VB.daughter(0));
     genQuarksfromV.push_back(VB.daughter(1));
   }
-  theHistograms->fill("0size_GENQuarksfromV_beforecuts", "0size_GENQuarksfromV_beforecuts", 10, -0.5, 9.5, genQuarksfromV.size(), theWeight);
+  theHistograms->fill("0size_GENQuarksfromV_beforecuts", "0size_GENQuarksfromV_beforecuts", 10, -0.5, 9.5, genQuarksfromV.size(), theWeight*LumiSF);
   genQuarksfromV.erase(std::remove_if(genQuarksfromV.begin(), genQuarksfromV.end(), [](phys::Particle p)
                                       { return !KinematicsOK(p, ptcut, etacut); }),
                        genQuarksfromV.end());
-  theHistograms->fill("0size_GENQuarksfromV_aftercuts", "0size_GENQuarksfromV_aftercuts", 10, -0.5, 9.5, genQuarksfromV.size(), theWeight);
+  theHistograms->fill("0size_GENQuarksfromV_aftercuts", "0size_GENQuarksfromV_aftercuts", 10, -0.5, 9.5, genQuarksfromV.size(), theWeight*LumiSF);
  
   //----------------------------------------Kinematic Cuts on VB(qq)----------------------------------------//
   std::vector<phys::Boson<phys::Particle>> DiQuarks=genV;
@@ -821,7 +921,7 @@ void VZGAnalyzer::genAnalyze()
   {
     phys::Particle nearestjet;
     bool makesjet = false;
-    theHistograms->fill("Pt_quark_den", " Pt_quark_den; GeV/c", 10, ptcut, 300, quark.pt(), theWeight);
+    theHistograms->fill("Pt_quark_den", " Pt_quark_den; GeV/c", 10, ptcut, 300, quark.pt(), theWeight*LumiSF);
 
     if (selectedGENjets.size() > 0)
     {
@@ -836,22 +936,22 @@ void VZGAnalyzer::genAnalyze()
     }
     if (makesjet && selectedGENjets.size() > 0)
     {
-      theHistograms->fill("#QUARK=>GEN", "#QUARK=>GEN", 2, 0, 2, 1., theWeight);
-      theHistograms->fill("Pt_quark_num", " Pt_quark_num; GeV/c", 10, ptcut, 300, quark.pt(), theWeight);
+      theHistograms->fill("#QUARK=>GEN", "#QUARK=>GEN", 2, 0, 2, 1., theWeight*LumiSF);
+      theHistograms->fill("Pt_quark_num", " Pt_quark_num; GeV/c", 10, ptcut, 300, quark.pt(), theWeight*LumiSF);
     }
     else
     {
-      theHistograms->fill("#QUARK=>GEN", "#QUARK=>GEN", 2, 0, 2, 0., theWeight);
+      theHistograms->fill("#QUARK=>GEN", "#QUARK=>GEN", 2, 0, 2, 0., theWeight*LumiSF);
     }
   }
   for (auto pair : nearestjetstoquark)
   {
-    ResolutionPlots(pair.first,pair.second,"Hadronization_",theWeight,"");
-    theHistograms->fill("DeltaR_quark_vs_BestMatchedGENJet", "DeltaR_quark_vs_BestMatchedGENJet; #DeltaR", 20, 0, 0.5, abs(physmath::deltaR(pair.first, pair.second)), theWeight);
-    theHistograms->fill("DeltaR_quark_jet_vs_pt", "DeltaR vs pt;pt [GeV/c] ; #DeltaR", 10, ptcut, 300, 20, 0, 0.2, pair.first.pt(),abs(physmath::deltaR(pair.first, pair.second)), theWeight);
+    ResolutionPlots(pair.first,pair.second,"Hadronization_",theWeight*LumiSF,"");
+    theHistograms->fill("DeltaR_quark_vs_BestMatchedGENJet", "DeltaR_quark_vs_BestMatchedGENJet; #DeltaR", 20, 0, 0.5, abs(physmath::deltaR(pair.first, pair.second)), theWeight*LumiSF);
+    theHistograms->fill("DeltaR_quark_jet_vs_pt", "DeltaR vs pt;pt [GeV/c] ; #DeltaR", 10, ptcut, 300, 20, 0, 0.2, pair.first.pt(),abs(physmath::deltaR(pair.first, pair.second)), theWeight*LumiSF);
 
   }
-  theHistograms->fill("1size_GENjetsfromquarks", "size_GENjetsfromquarks", 10, -0.5, 9.5, jetsfromquarks.size(), theWeight);
+  theHistograms->fill("1size_GENjetsfromquarks", "size_GENjetsfromquarks", 10, -0.5, 9.5, jetsfromquarks.size(), theWeight*LumiSF);
 
   //----------------------------------------Matching efficiency ______ SINGLE GENJET/SINGLE RECOJET--------------//
   std::vector<phys::Particle> RECOjetsfromGENjets;
@@ -861,7 +961,7 @@ void VZGAnalyzer::genAnalyze()
   {
     phys::Particle nearestRECOjet;
     bool isreconstructed = false;
-    theHistograms->fill("Pt_genJet_den", " Pt_genJet_den; GeV/c", 10, ptcut, 300, genJet.pt(), theWeight);
+    theHistograms->fill("Pt_genJet_den", " Pt_genJet_den; GeV/c", 10, ptcut, 300, genJet.pt(), theWeight*LumiSF);
 
     if (selectedRECOjets.size() > 0)
     {
@@ -876,22 +976,22 @@ void VZGAnalyzer::genAnalyze()
     }
     if (isreconstructed && selectedRECOjets.size() > 0)
     {
-      theHistograms->fill("#GEN=>RECO", "#GEN=>RECO", 2, 0, 2, 1., theWeight);
-      theHistograms->fill("Pt_genJet_num", " Pt_genJet_num; GeV/c", 10, ptcut, 300, genJet.pt(), theWeight);
+      theHistograms->fill("#GEN=>RECO", "#GEN=>RECO", 2, 0, 2, 1., theWeight*LumiSF);
+      theHistograms->fill("Pt_genJet_num", " Pt_genJet_num; GeV/c", 10, ptcut, 300, genJet.pt(), theWeight*LumiSF);
 
     }
     else
     {
-      theHistograms->fill("#GEN=>RECO", "#GEN=>RECO", 2, 0, 2, 0., theWeight);
+      theHistograms->fill("#GEN=>RECO", "#GEN=>RECO", 2, 0, 2, 0., theWeight*LumiSF);
     }
   }
   for (auto pair : nearestRECOjetstoGENjets)
   {
-    ResolutionPlots(pair.first,pair.second,"SingleJetsReconstruction_",theWeight,"");
-    theHistograms->fill("DeltaR_GENjet_vs_BestMatchedRECOJet", "DeltaR_GENjet_vs_BestMatchedRECOJet; #DeltaR", 20, 0, 0.5, abs(physmath::deltaR(pair.first, pair.second)), theWeight);
-    theHistograms->fill("DeltaR_jets_vs_pt", "DeltaR jets vs pt;pt [GeV/c] ; #DeltaR", 10, ptcut, 300, 20, 0, 0.2, pair.first.pt(),abs(physmath::deltaR(pair.first, pair.second)), theWeight);
+    ResolutionPlots(pair.first,pair.second,"SingleJetsReconstruction_",theWeight*LumiSF,"");
+    theHistograms->fill("DeltaR_GENjet_vs_BestMatchedRECOJet", "DeltaR_GENjet_vs_BestMatchedRECOJet; #DeltaR", 20, 0, 0.5, abs(physmath::deltaR(pair.first, pair.second)), theWeight*LumiSF);
+    theHistograms->fill("DeltaR_jets_vs_pt", "DeltaR jets vs pt;pt [GeV/c] ; #DeltaR", 10, ptcut, 300, 20, 0, 0.2, pair.first.pt(),abs(physmath::deltaR(pair.first, pair.second)), theWeight*LumiSF);
   }
-  theHistograms->fill("2size_GENjetsRECONSTRUCTED", "2size_GENjetsRECONSTRUCTED", 10, -0.5, 9.5, RECOjetsfromGENjets.size(), theWeight);
+  theHistograms->fill("2size_GENjetsRECONSTRUCTED", "2size_GENjetsRECONSTRUCTED", 10, -0.5, 9.5, RECOjetsfromGENjets.size(), theWeight*LumiSF);
 
   //----------------------------------------Matching efficiency ______ QUARKS PAIR------------------------//
 
@@ -945,35 +1045,35 @@ void VZGAnalyzer::genAnalyze()
       std::cout << "reconstructing a boson from dijets matched to diquark" << std::endl;
       DiJetsGEN.push_back(phys::Boson<phys::Particle>(jetmatchedtoFIRSTquark, jetmatchedtoSECONDquark));
       DijetsmatchedtoDiquark.push_back({Diquark, phys::Boson<phys::Particle>(jetmatchedtoFIRSTquark, jetmatchedtoSECONDquark)});
-      theHistograms->fill("#Bothmatched", "#Bothmatched", 2, 0, 2, 1., theWeight);
+      theHistograms->fill("#Bothmatched", "#Bothmatched", 2, 0, 2, 1., theWeight*LumiSF);
     }
     if (!bothmatch)
     {
-      theHistograms->fill("#Bothmatched", "#Bothmatched", 2, 0, 2, 0., theWeight);
+      theHistograms->fill("#Bothmatched", "#Bothmatched", 2, 0, 2, 0., theWeight*LumiSF);
     }
 
     if (atleastonematches)
     {
-      theHistograms->fill("#AtLeastONEmatches", "#AtLeastONEmatches", 2, 0, 2, 1., theWeight);
+      theHistograms->fill("#AtLeastONEmatches", "#AtLeastONEmatches", 2, 0, 2, 1., theWeight*LumiSF);
     }
     if (!atleastonematches)
     {
-      theHistograms->fill("#AtLeastONEmatches", "#AtLeastONEmatches", 2, 0, 2, 0., theWeight);
+      theHistograms->fill("#AtLeastONEmatches", "#AtLeastONEmatches", 2, 0, 2, 0., theWeight*LumiSF);
     }
     if (atleastonematches && bothmatch)
     {
-      theHistograms->fill("#Bothmatched|AtLeastONEmatches", "#Bothmatched|AtLeastONEmatches", 2, 0, 2, 1., theWeight);
+      theHistograms->fill("#Bothmatched|AtLeastONEmatches", "#Bothmatched|AtLeastONEmatches", 2, 0, 2, 1., theWeight*LumiSF);
     }
     if (atleastonematches && !bothmatch)
     {
-      theHistograms->fill("#Bothmatched|AtLeastONEmatches", "#Bothmatched|AtLeastONEmatches", 2, 0, 2, 0., theWeight);
+      theHistograms->fill("#Bothmatched|AtLeastONEmatches", "#Bothmatched|AtLeastONEmatches", 2, 0, 2, 0., theWeight*LumiSF);
     }
   }
-  theHistograms->fill("1.1size_GEN_DiJets", "1size_GEN_DiJets", 10, -0.5, 9.5, DiJetsGEN.size(), theWeight);
+  theHistograms->fill("1.1size_GEN_DiJets", "1size_GEN_DiJets", 10, -0.5, 9.5, DiJetsGEN.size(), theWeight*LumiSF);
   for (auto DiJet : DiJetsGEN)
   {
     float mjj = (DiJet.daughter(0).p4() + DiJet.daughter(1).p4()).M();
-    theHistograms->fill("mjj_GEN", "mjj_GEN", 10, 50, 120, mjj, theWeight);
+    theHistograms->fill("mjj_GEN", "mjj_GEN", 10, 50, 120, mjj, theWeight*LumiSF);
   }
 
   //----------------------------------------Matching efficiency ______ RECO to GEN  PAIR------------------------//
@@ -1030,35 +1130,35 @@ void VZGAnalyzer::genAnalyze()
       DiJetsGENreconstructed.push_back(DiJet);
       // DiRECOjetsmatchedtoDiGENjets.push_back({DiJet,phys::Boson<phys::Particle>(jetmatchedtoFIRSTgen, jetmatchedtoSECONDgen)});
 
-      theHistograms->fill("#RECOGEN_Bothmatched", "#RECOGEN_Bothmatched", 2, 0, 2, 1., theWeight);
+      theHistograms->fill("#RECOGEN_Bothmatched", "#RECOGEN_Bothmatched", 2, 0, 2, 1., theWeight*LumiSF);
     }
     if (!bothmatch)
     {
-      theHistograms->fill("#RECOGEN_Bothmatched", "#RECOGEN_Bothmatched", 2, 0, 2, 0., theWeight);
+      theHistograms->fill("#RECOGEN_Bothmatched", "#RECOGEN_Bothmatched", 2, 0, 2, 0., theWeight*LumiSF);
     }
 
     if (atleastonematches)
     {
-      theHistograms->fill("#RECOGEN_AtLeastONEmatches", "#RECOGEN_AtLeastONEmatches", 2, 0, 2, 1., theWeight);
+      theHistograms->fill("#RECOGEN_AtLeastONEmatches", "#RECOGEN_AtLeastONEmatches", 2, 0, 2, 1., theWeight*LumiSF);
     }
     if (!atleastonematches)
     {
-      theHistograms->fill("#RECOGEN_AtLeastONEmatches", "#RECOGEN_AtLeastONEmatches", 2, 0, 2, 0., theWeight);
+      theHistograms->fill("#RECOGEN_AtLeastONEmatches", "#RECOGEN_AtLeastONEmatches", 2, 0, 2, 0., theWeight*LumiSF);
     }
     if (atleastonematches && bothmatch)
     {
-      theHistograms->fill("#RECOGEN_Bothmatched|AtLeastONEmatches", "#RECOGEN_Bothmatched|AtLeastONEmatches", 2, 0, 2, 1., theWeight);
+      theHistograms->fill("#RECOGEN_Bothmatched|AtLeastONEmatches", "#RECOGEN_Bothmatched|AtLeastONEmatches", 2, 0, 2, 1., theWeight*LumiSF);
     }
     if (atleastonematches && !bothmatch)
     {
-      theHistograms->fill("#RECOGEN_Bothmatched|AtLeastONEmatches", "#RECOGEN_Bothmatched|AtLeastONEmatches", 2, 0, 2, 0., theWeight);
+      theHistograms->fill("#RECOGEN_Bothmatched|AtLeastONEmatches", "#RECOGEN_Bothmatched|AtLeastONEmatches", 2, 0, 2, 0., theWeight*LumiSF);
     }
   }
-  // theHistograms->fill("2size_RECO_DiJets", "1size_RECO_DiJets", 10, -0.5, 9.5, DiJetsRECO.size(), theWeight);
+  // theHistograms->fill("2size_RECO_DiJets", "1size_RECO_DiJets", 10, -0.5, 9.5, DiJetsRECO.size(), theWeight*LumiSF);
   //  for (auto DiJet:DiJetsRECO)
   //  {
   //      float mjj = (DiJet.daughter(0).p4() + DiJet.daughter(1).p4()).M();
-  //      theHistograms->fill("mjj_RECO", "mjj_RECO", 10, 50, 120, mjj, theWeight);
+  //      theHistograms->fill("mjj_RECO", "mjj_RECO", 10, 50, 120, mjj, theWeight*LumiSF);
   //  }
 
   //----------------------------------------Matching efficiency ______ ALGORITHM------------------------//
@@ -1084,7 +1184,7 @@ void VZGAnalyzer::genAnalyze()
       }
     }
 
-    theHistograms->fill("2size_Jetspairs_RECO", "size_Jetsparis_RECO", 10, -0.5, 9.5, JetPairs.size(), theWeight);
+    theHistograms->fill("2size_Jetspairs_RECO", "size_Jetsparis_RECO", 10, -0.5, 9.5, JetPairs.size(), theWeight*LumiSF);
     std::cout << "#reco jets pairs : " << JetPairs.size() << std::endl;
 
     if (JetPairs.size() > 0)
@@ -1126,19 +1226,19 @@ void VZGAnalyzer::genAnalyze()
 
       for (auto Candidate : Candidates)
       {
-        theHistograms->fill("mjj_" + Candidate.first + "_Candidate", "mjj_" + Candidate.first + "_Candidate", 10, 50, 120, Candidate.second.mass(), theWeight);
+        theHistograms->fill("mjj_" + Candidate.first + "_Candidate", "mjj_" + Candidate.first + "_Candidate", 10, 50, 120, Candidate.second.mass(), theWeight*LumiSF);
       }
     }
   
-  theHistograms->fill("2size_RECO_JetPairs", "2size_RECO_JetPairs", 10, -0.5, 9.5, JetPairs.size(), theWeight);
+  theHistograms->fill("2size_RECO_JetPairs", "2size_RECO_JetPairs", 10, -0.5, 9.5, JetPairs.size(), theWeight*LumiSF);
 
 
   std::cout << "#true gen jets pairs reconstructed: " << DiJetsGENreconstructed.size() << std::endl;
 
   for (auto DiJet : DiJetsGENreconstructed)
   {
-    theHistograms->fill("mjj_den" , " mjj_den; GeV/c^{2}" , 10, 50, 120, DiJet.mass(), theWeight);
-    theHistograms->fill("Pt_den" , " Pt_den; GeV/c" , 10, 0, 300, DiJet.pt(), theWeight);
+    theHistograms->fill("mjj_den" , " mjj_den; GeV/c^{2}" , 10, 50, 120, DiJet.mass(), theWeight*LumiSF);
+    theHistograms->fill("Pt_den" , " Pt_den; GeV/c" , 10, 0, 300, DiJet.pt(), theWeight*LumiSF);
     std::cout<<""<<std::endl;
 
 
@@ -1165,21 +1265,21 @@ void VZGAnalyzer::genAnalyze()
         if (truepair)
         {
           std::cout << "the algorithm selected a reco pair matched to a gen pair" << std::endl;
-          theHistograms->fill("#Algorithm_" + Candidate.first, "#Algorithm_" + Candidate.first, 2, 0, 2, 1., theWeight);
-          theHistograms->fill("PASSED mjj_" + Candidate.first + "_Candidate", " PASSED mjj_" + Candidate.first + "_Candidate", 10, 50, 120, DiJet.mass(), theWeight);
-          theHistograms->fill("mjj_" + Candidate.first + "_num", " mjj_" + Candidate.first + "_num; GeV/c^{2}", 10, 50, 120, DiJet.mass(), theWeight);
-          theHistograms->fill("Pt_" + Candidate.first + "_num", " Pt_" + Candidate.first + "_num; GeV/c", 10, 0, 300, DiJet.pt(), theWeight);
+          theHistograms->fill("#Algorithm_" + Candidate.first, "#Algorithm_" + Candidate.first, 2, 0, 2, 1., theWeight*LumiSF);
+          theHistograms->fill("PASSED mjj_" + Candidate.first + "_Candidate", " PASSED mjj_" + Candidate.first + "_Candidate", 10, 50, 120, DiJet.mass(), theWeight*LumiSF);
+          theHistograms->fill("mjj_" + Candidate.first + "_num", " mjj_" + Candidate.first + "_num; GeV/c^{2}", 10, 50, 120, DiJet.mass(), theWeight*LumiSF);
+          theHistograms->fill("Pt_" + Candidate.first + "_num", " Pt_" + Candidate.first + "_num; GeV/c", 10, 0, 300, DiJet.pt(), theWeight*LumiSF);
 
         }
         else
         {
-          theHistograms->fill("FAILED mjj_" + Candidate.first + "_Candidate", " FAILED mjj_" + Candidate.first + "_Candidate", 10, 50, 120, DiJet.mass(), theWeight);
+          theHistograms->fill("FAILED mjj_" + Candidate.first + "_Candidate", " FAILED mjj_" + Candidate.first + "_Candidate", 10, 50, 120, DiJet.mass(), theWeight*LumiSF);
           std::cout << "the algorithm selected a reco pair NOT matched to a gen pair" << std::endl;
-          theHistograms->fill("#Algorithm_" + Candidate.first, "#Algorithm_" + Candidate.first, 2, 0, 2, 0., theWeight);
+          theHistograms->fill("#Algorithm_" + Candidate.first, "#Algorithm_" + Candidate.first, 2, 0, 2, 0., theWeight*LumiSF);
         }
         if (truepair && Candidate.first=="mWZ")
         {
-          ResolutionPlots(DiJet,Candidate.second,"VectorBosonReconstruction_",theWeight,"");
+          ResolutionPlots(DiJet,Candidate.second,"VectorBosonReconstruction_",theWeight*LumiSF,"");
         }
     }
   }
@@ -1240,15 +1340,15 @@ void VZGAnalyzer::ResolutionPlots(const phys::Particle &gen, const phys::Particl
 
 void VZGAnalyzer::PhotonvsJet()
 {
-    std::vector<phys::Particle> genQuarks;
-       foreach (const Particle &p, *genParticles)
-       {
-              if  (abs(p.id()) < 10) // Is it a quark? 
-              {
-                     theHistograms->fill("quark charge", "quark charge", 7, -7. / 6., 7. / 6., p.charge(), theWeight);
-                     theHistograms->fill("quark pt", "quark pt", 50, 0, 600, p.pt(), theWeight);
-                     genQuarks.push_back(Particle(p));
-                     
+  std::vector<phys::Particle> genQuarks;
+  foreach (const Particle &p, *genParticles)
+    {
+      if  (abs(p.id()) < 10) // Is it a quark? 
+	{
+	  theHistograms->fill("quark charge", "quark charge", 7, -7. / 6., 7. / 6., p.charge(), theWeight*LumiSF);
+	  theHistograms->fill("quark pt", "quark pt", 50, 0, 600, p.pt(), theWeight*LumiSF);
+	  genQuarks.push_back(Particle(p));
+		     
 
               }
        }
@@ -1256,31 +1356,38 @@ void VZGAnalyzer::PhotonvsJet()
   // std::vector<phys::Particle> genQuarksfromV;
   // for (auto VB : genV)
   // {
-  //   theHistograms->fill("quarkfromV charge", "quarkfromV charge", 7, -7. / 6., 7. / 6., VB.daughter(0).charge(), theWeight);
-  //   theHistograms->fill("quarkfromV charge", "quarkfromV charge", 7, -7. / 6., 7. / 6., VB.daughter(1).charge(), theWeight);
+  //   theHistograms->fill("quarkfromV charge", "quarkfromV charge", 7, -7. / 6., 7. / 6., VB.daughter(0).charge(), theWeight*LumiSF);
+  //   theHistograms->fill("quarkfromV charge", "quarkfromV charge", 7, -7. / 6., 7. / 6., VB.daughter(1).charge(), theWeight*LumiSF);
 
-  //   theHistograms->fill("quarkfromV pt", "quarkfromV pt", 50, 0, 600, VB.daughter(0).pt(), theWeight);
-  //   theHistograms->fill("quarkfromV pt", "quarkfromV pt", 50, 0, 600, VB.daughter(1).pt(), theWeight);
+  //   theHistograms->fill("quarkfromV pt", "quarkfromV pt", 50, 0, 600, VB.daughter(0).pt(), theWeight*LumiSF);
+  //   theHistograms->fill("quarkfromV pt", "quarkfromV pt", 50, 0, 600, VB.daughter(1).pt(), theWeight*LumiSF);
 
   //   genQuarksfromV.push_back(VB.daughter(0));
   //   genQuarksfromV.push_back(VB.daughter(1));
   // }
-  // theHistograms->fill("0size_GENQuarksfromV_beforecuts", "0size_GENQuarksfromV_beforecuts", 10, -0.5, 9.5, genQuarksfromV.size(), theWeight);
+  // theHistograms->fill("0size_GENQuarksfromV_beforecuts", "0size_GENQuarksfromV_beforecuts", 10, -0.5, 9.5, genQuarksfromV.size(), theWeight*LumiSF);
   // genQuarksfromV.erase(std::remove_if(genQuarksfromV.begin(), genQuarksfromV.end(), [](phys::Particle p)
   //                                     { return !KinematicsOK(p, ptcut, etacut); }),
   //                      genQuarksfromV.end());
-  // theHistograms->fill("0size_GENQuarksfromV_aftercuts", "0size_GENQuarksfromV_aftercuts", 10, -0.5, 9.5, genQuarksfromV.size(), theWeight);
+  // theHistograms->fill("0size_GENQuarksfromV_aftercuts", "0size_GENQuarksfromV_aftercuts", 10, -0.5, 9.5, genQuarksfromV.size(), theWeight*LumiSF);
  
 
  //----------------------------------------Kinematic Cuts GEN Jets AK4 & RECO Jets AK4----------------------------------------//
   std::vector<phys::Particle> selectedGENjets;
+
+  theHistograms->fill("#genJets_overall", "#genJets_overall", 8, 0, 8, genJets->size(), theWeight*LumiSF);
+
   foreach (const phys::Particle &jet, *genJets)
   {
     if (true) // KinematicsOK(jet,ptcut,etacut)
     {
       selectedGENjets.push_back(jet);
     }
-  }
+  theHistograms->fill("#genJets_selected", "#genJets_selected", 8, 0, 8, selectedGENjets.size(), theWeight*LumiSF);
+  theHistograms->fill("AtLeast_2GenJets", "AtLeast_2GenJets", 2, 0, 2, selectedGENjets.size()>1, theWeight*LumiSF);
+
+  theHistograms->fill("#recoJets_overall", "#recoJets_overall", 8, 0, 8, jets->size(), theWeight*LumiSF);
+
   std::vector<phys::Jet> selectedRECOjets;
   foreach (const phys::Jet &jet, *jets)
   {
@@ -1289,6 +1396,9 @@ void VZGAnalyzer::PhotonvsJet()
       selectedRECOjets.push_back(jet);
     }
   }
+  theHistograms->fill("#recoJets_selected", "#recoJets_selected", 8, 0, 8, selectedRECOjets.size(), theWeight*LumiSF);
+  theHistograms->fill("AtLeast_2RecoJets", "AtLeast_2RecoJets", 2, 0, 2, selectedRECOjets.size()>1, theWeight*LumiSF);
+
 
   //----------------------------------------Matching efficiency ______ SINGLE QUARK/SINGLE GENJET--------------//
   std::vector<phys::Particle> jetsfromquarks;
@@ -1296,9 +1406,10 @@ void VZGAnalyzer::PhotonvsJet()
 
   for (auto quark : genQuarks)
   {
-    phys::Particle nearestjet;
-    bool makesjet = false;
-    theHistograms->fill("Pt_quark_den", " Pt_quark_den; GeV/c", 10, 0, 300, quark.pt(), theWeight);
+    phys::Particle nearestGENjet;
+    bool makesGENjet = false;
+
+    theHistograms->fill("Pt_quark_den", " Pt_quark_den; GeV/c", 10, 0, 300, quark.pt(), theWeight*LumiSF);
 
     if (selectedGENjets.size() > 0)
     {
@@ -1307,28 +1418,41 @@ void VZGAnalyzer::PhotonvsJet()
       nearestjetstoquark.push_back({quark, nearestjet});
       if (abs(physmath::deltaR(quark, nearestjet)) < 0.4)
       {
-        jetsfromquarks.push_back(nearestjet);
-        makesjet = true;
+        GENjetsfromquarks.push_back(nearestGENjet);
+        makesGENjet = true;
+	if (quarkMatchingCounter == 0) firstGENjetMatched = nearestGENjet;
+        else	theHistograms->fill("overlappedQuarks", "overlappedQuarks", 2, 0, 2, quarkMatchingCounter == 1 && abs(physmath::deltaR(firstGENjetMatched, nearestGENjet))<0.4, theWeight*LumiSF);
+	quarkMatchingCounter++;
       }
+      else       theHistograms->fill("dR_unmatchedQuarks_closestGENjet", "dR_unmatchedQuarks_closestGENjet", 50, 0, 5, abs(physmath::deltaR(quark, nearestGENjet)), theWeight*LumiSF);
+
+
     }
     if (makesjet && selectedGENjets.size() > 0)
     {
-      theHistograms->fill("#QUARK=>GEN", "#QUARK=>GEN", 2, 0, 2, 1., theWeight);
-      theHistograms->fill("Pt_quark_num", " Pt_quark_num; GeV/c", 10, 0, 300, quark.pt(), theWeight);
+      theHistograms->fill("#QUARK=>GEN", "#QUARK=>GEN", 2, 0, 2, 1., theWeight*LumiSF);
+      theHistograms->fill("Pt_quark_num", " Pt_quark_num; GeV/c", 10, 0, 300, quark.pt(), theWeight*LumiSF);
     }
     else
     {
-      theHistograms->fill("#QUARK=>GEN", "#QUARK=>GEN", 2, 0, 2, 0., theWeight);
+      theHistograms->fill("#QUARK=>GEN", "#QUARK=>GEN", 2, 0, 2, 0., theWeight*LumiSF);
     }
   }
-  for (auto pair : nearestjetstoquark)
+
+  if(quarkMatchingCounter==2) twoQuarksMatched =1;
+  else   theHistograms->fill("#events with 1 quark matching", "#events with 1 quark matching", 2, 0, 2, quarkMatchingCounter, theWeight*LumiSF);
+  theHistograms->fill("#events with 2 quarks matching", "#events with 2 quarks matching", 2, 0, 2, twoQuarksMatched, theWeight*LumiSF);
+  theHistograms->fill("#quarks matching", "#quarks matching", 3, 0, 3, quarkMatchingCounter, theWeight*LumiSF);
+      
+  
+  for (auto pair : nearestGENjetstoquark)
   {
-    ResolutionPlots(pair.first,pair.second,"Hadronization_",theWeight,"");
-    theHistograms->fill("DeltaR_quark_vs_BestMatchedGENJet", "DeltaR_quark_vs_BestMatchedGENJet; #DeltaR", 20, 0, 0.5, abs(physmath::deltaR(pair.first, pair.second)), theWeight);
-    theHistograms->fill("DeltaR_quark_jet_vs_pt", "DeltaR vs pt;pt [GeV/c] ; #DeltaR", 10, 0, 300, 20, 0, 0.2, pair.first.pt(),abs(physmath::deltaR(pair.first, pair.second)), theWeight);
+    ResolutionPlots(pair.first,pair.second,"Hadronization_",theWeight*LumiSF,"");
+    theHistograms->fill("DeltaR_quark_vs_BestMatchedGENJet", "DeltaR_quark_vs_BestMatchedGENJet; #DeltaR", 20, 0, 0.5, abs(physmath::deltaR(pair.first, pair.second)), theWeight*LumiSF);
+    theHistograms->fill("DeltaR_quark_GENjet_vs_pt", "DeltaR vs pt;pt [GeV/c] ; #DeltaR", 10, 0, 300, 20, 0, 0.2, pair.first.pt(),abs(physmath::deltaR(pair.first, pair.second)), theWeight*LumiSF);
 
   }
-  theHistograms->fill("1size_GENjetsfromquarks", "size_GENjetsfromquarks", 10, -0.5, 9.5, jetsfromquarks.size(), theWeight);
+  theHistograms->fill("1size_GENjetsfromquarks", "size_GENjetsfromquarks", 10, -0.5, 9.5, GENjetsfromquarks.size(), theWeight*LumiSF);
 
 
   //----------------------------------------Matching efficiency ______ SINGLE GENJET/SINGLE RECOJET--------------//
@@ -1339,35 +1463,34 @@ void VZGAnalyzer::PhotonvsJet()
   {
     phys::Particle nearestRECOjet;
     bool isreconstructed = false;
-    theHistograms->fill("Pt_genJet_den", " Pt_genJet_den; GeV/c", 10, 0, 300, genJet.pt(), theWeight);
+    theHistograms->fill("Pt_genJet_den", " Pt_genJet_den; GeV/c", 10, 0, 300, genJet.pt(), theWeight*LumiSF);
 
     if (selectedRECOjets.size() > 0)
     {
       std::stable_sort(selectedRECOjets.begin(), selectedRECOjets.end(), phys::DeltaRComparator(genJet));
       nearestRECOjet = selectedRECOjets.at(0);
       nearestRECOjetstoGENjets.push_back({genJet, nearestRECOjet});
+      theHistograms->fill("dR_GENclosestRECOjet", "dR_GENclosestRECOjet", 500, 0, 5, abs(physmath::deltaR(genJet, nearestRECOjet)), theWeight*LumiSF);
       if (abs(physmath::deltaR(genJet, nearestRECOjet)) < 0.4)
       {
         RECOjetsfromGENjets.push_back(nearestRECOjet);
         isreconstructed = true;
       }
-    }
-    if (isreconstructed && selectedRECOjets.size() > 0)
-    {
-      theHistograms->fill("#GEN=>RECO", "#GEN=>RECO", 2, 0, 2, 1., theWeight);
-      theHistograms->fill("Pt_genJet_num", " Pt_genJet_num; GeV/c", 10, 0, 300, genJet.pt(), theWeight);
+      else       theHistograms->fill("dR_unmatchedGENclosestRECOjet", "dR_unmatchedGENclosestRECOjet", 50, 0, 5, abs(physmath::deltaR(genJet, nearestRECOjet)), theWeight*LumiSF);
 
     }
-    else
-    {
-      theHistograms->fill("#GEN=>RECO", "#GEN=>RECO", 2, 0, 2, 0., theWeight);
-    }
+    if (isreconstructed && selectedRECOjets.size() > 0)       theHistograms->fill("Pt_genJet_num", " Pt_genJet_num; GeV/c", 10, 0, 300, genJet.pt(), theWeight*LumiSF);
+    theHistograms->fill("#GEN=>RECO", "#GEN=>RECO", 2, 0, 2, isreconstructed && selectedRECOjets.size() > 0, theWeight*LumiSF);
   }
+  theHistograms->fill("2GENJetsToRECO", "2GENJetsToRECO", 2, 0, 2, GENtoRECOjetsCounter==2, theWeight*LumiSF);
+  theHistograms->fill("AtLeast1GENJetToRECO", "AtLeast1GENJetToRECO", 2, 0, 2, GENtoRECOjetsCounter>0, theWeight*LumiSF);
+
+  
   for (auto pair : nearestRECOjetstoGENjets)
   {
-    ResolutionPlots(pair.first,pair.second,"SingleJetsReconstruction_",theWeight,"");
-    theHistograms->fill("DeltaR_GENjet_vs_BestMatchedRECOJet", "DeltaR_GENjet_vs_BestMatchedRECOJet; #DeltaR", 20, 0, 0.5, abs(physmath::deltaR(pair.first, pair.second)), theWeight);
-    theHistograms->fill("DeltaR_jets_vs_pt", "DeltaR jets vs pt;pt [GeV/c] ; #DeltaR", 10, 0, 300, 20, 0, 0.2, pair.first.pt(),abs(physmath::deltaR(pair.first, pair.second)), theWeight);
+    ResolutionPlots(pair.first,pair.second,"SingleJetsReconstruction_",theWeight*LumiSF,"");
+    theHistograms->fill("DeltaR_GENjet_vs_BestMatchedRECOJet", "DeltaR_GENjet_vs_BestMatchedRECOJet; #DeltaR", 20, 0, 0.5, abs(physmath::deltaR(pair.first, pair.second)), theWeight*LumiSF);
+    theHistograms->fill("DeltaR_jets_vs_pt", "DeltaR jets vs pt;pt [GeV/c] ; #DeltaR", 10, 0, 300, 20, 0, 0.2, pair.first.pt(),abs(physmath::deltaR(pair.first, pair.second)), theWeight*LumiSF);
   }
-  theHistograms->fill("2size_GENjetsRECONSTRUCTED", "2size_GENjetsRECONSTRUCTED", 10, -0.5, 9.5, RECOjetsfromGENjets.size(), theWeight);
+  theHistograms->fill("2size_GENjetsRECONSTRUCTED", "2size_GENjetsRECONSTRUCTED", 10, -0.5, 9.5, RECOjetsfromGENjets.size(), theWeight*LumiSF);
 }

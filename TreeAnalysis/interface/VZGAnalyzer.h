@@ -82,7 +82,9 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
   
   //virtual Int_t GENsignalCostraint();
     
-  virtual bool RECOsignalCostraint();
+  virtual bool baselineRequirements();
+
+  virtual bool   IN_GENsignalDef();
   
   virtual bool   LeptonicSignalCostraint();
   
