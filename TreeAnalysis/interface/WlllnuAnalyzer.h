@@ -40,8 +40,6 @@ public:
   
  
 private:
-  Int_t nevents;
-  Int_t mass80Counter;
   
   friend class Selector<WlllnuAnalyzer>;
   template< class PAR >
