@@ -879,6 +879,9 @@ void VVGammaAnalyzer::analyze(){
     ZllVsZllGstudy(*kinPhotons_["central"] , "kin"  );
     ZllVsZllGstudy(*goodPhotons_["central"], "loose");
 
+    ZllVsZllGstudyGEN(*genPhotons_      , "all"   );
+    ZllVsZllGstudyGEN(*genPhotonsPrompt_, "prompt");
+
     plotsVVGstatus("ZZ", "ZZ", ZZ->p4(), "mass");
   }
 
@@ -3399,26 +3402,135 @@ void VVGammaAnalyzer::photonGenStudy(){
 
 
 void VVGammaAnalyzer::ZllVsZllGstudy(const std::vector<phys::Photon>& phvect, const char* label){
-  double Zll_mass(0.), ZllG_mass(0.);
-  std::tie(Zll_mass, ZllG_mass) = getZllAndZllgMasses(phvect);
-  if(Zll_mass <= 0)
+  if(phvect.size() == 0 || ZZ->pt() < 1.)
     return;
 
-  bool improves = ( fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS) ); // The addition of the photon momentum improved the mass
-  const char* improv_str = improves ? "improves" : "noimprov";
-  theHistograms->fill(Form("Zll_mass_%s_%s" , label, improv_str), ";m_{ll} [GeV/c^{2}]"      , 30,60,120, Zll_mass , theWeight);
-  theHistograms->fill(Form("ZllG_mass_%s_%s", label, improv_str), ";m_{ll#gamma} [GeV/c^{2}]", 30,60,210, ZllG_mass, theWeight);
-  if(theSampleInfo.isMC()){
-    bool signaldef = sigdefHelper.pass_photon();  // Test if the event passes the GEN signal definition
-    const char* sigdef_str = signaldef ? "prompt" : "nonpro";
-    theHistograms->fill(Form("Zll_mass_%s_%s_%s" , label, improv_str, sigdef_str), ";m_{ll} [GeV/c^{2}]"      , 30,60,120, Zll_mass , theWeight);
-    theHistograms->fill(Form("ZllG_mass_%s_%s_%s", label, improv_str, sigdef_str), ";m_{ll#gamma} [GeV/c^{2}]", 30,60,210, ZllG_mass, theWeight);
+  const auto& ph = *std::max_element(phvect.begin(), phvect.end(), [](const auto& a, const auto& b){ return a.pt() < b.pt(); });
+
+  double Z1G_mass = (ZZ->first ().p4() + ph.p4()).M();
+  double Z2G_mass = (ZZ->second().p4() + ph.p4()).M();
+  double Z1_mass  = ZZ->first ().mass();
+  double Z2_mass  = ZZ->second().mass();
+
+  double maxZllG_mass = std::max(Z1G_mass, Z2G_mass);
+  double minZllG_mass = std::min(Z1G_mass, Z2G_mass);
+  double maxZll_mass  = std::max(Z1_mass , Z2_mass );
+  double minZll_mass  = std::min(Z1_mass , Z2_mass );
+
+  double lowZll_mass = 0; // Mass of the Z which has the smaller ZG mass
+  if(Z1G_mass < Z2G_mass){
+    lowZll_mass = Z1_mass;
+  }
+  else{
+    lowZll_mass = Z2_mass;
   }
 
-  theHistograms->fill(Form("ZllG_mass_vs_Zll_mass_%s"  , label), ";m_{ll#gamma};m_{ll}", 60,60,150., 30,60.,120., ZllG_mass, Zll_mass, theWeight);
-  theHistograms->fill(Form("Zll_mass_%s"               , label), ";m_{ll}"             , 30,60.,120. , Zll_mass, theWeight);
-  theHistograms->fill(Form("ZllG_mass_%s"              , label), ";m_{ll#gamma}"       , 40,60.,160. , ZllG_mass, theWeight);
-  theHistograms->fill(Form("Zll_mass_plus_ZllG_mass_%s", label), ";m_{ll}+m_{ll#gamma}", 40,120.,320., Zll_mass+ZllG_mass, theWeight);
+  theHistograms->fill(Form("REC_maxZllG_mass_vs_minZllG_mass_%s" , label), ";REC max m_{ll#gamma};min m_{ll#gamma}" , 60,60,360., 30,60.,180., maxZllG_mass, minZllG_mass, theWeight);
+  theHistograms->fill(Form("REC_maxZll_mass_%s"                  , label), ";REC max m_{ll}"                   , 60,60.,120., maxZll_mass , theWeight);
+  theHistograms->fill(Form("REC_minZll_mass_%s"                  , label), ";REC min m_{ll}"                   , 60,60.,120., minZll_mass , theWeight);
+  theHistograms->fill(Form("REC_maxZllG_mass_%s"                 , label), ";REC max m_{ll#gamma}"             , 60,60.,180., maxZllG_mass, theWeight);
+  theHistograms->fill(Form("REC_minZllG_mass_%s"                 , label), ";REC min m_{ll#gamma}"             , 60,60.,180., minZllG_mass, theWeight);
+  theHistograms->fill(Form("REC_lowZll_mass_%s"                  , label), ";REC low m_{ll}"                   , 60,60.,120., lowZll_mass , theWeight);
+  theHistograms->fill(Form("REC_maxZllG_mass_minus_maxZll_mass_%s",label), ";REC max m_{ll#gamma}-max m_{ll}"  , 60, 0.,120., maxZllG_mass-maxZll_mass, theWeight);
+  theHistograms->fill(Form("REC_maxZllG_mass_minus_minZll_mass_%s",label), ";REC max m_{ll#gamma}-min m_{ll}"  , 60, 0.,120., maxZllG_mass-minZll_mass, theWeight);
+  theHistograms->fill(Form("REC_minZllG_mass_minus_maxZll_mass_%s",label), ";REC min m_{ll#gamma}-max m_{ll}"  , 60, 0.,120., minZllG_mass-maxZll_mass, theWeight);
+  theHistograms->fill(Form("REC_minZllG_mass_minus_minZll_mass_%s",label), ";REC min m_{ll#gamma}-min m_{ll}"  , 60, 0.,120., minZllG_mass-minZll_mass, theWeight);
+  theHistograms->fill(Form("REC_minZllG_mass_minus_lowZll_mass_%s",label), ";REC min m_{ll#gamma}-low m_{ll}"  , 60, 0.,120., minZllG_mass-lowZll_mass, theWeight);
+  theHistograms->fill(Form("REC_minZll_mass_plus_minZllG_mass_%s", label), ";REC min m_{ll} + min m_{ll#gamma}", 60,120,300., minZll_mass+minZllG_mass, theWeight);
+}
+  // double Zll_mass(0.), ZllG_mass(0.);
+  // std::tie(Zll_mass, ZllG_mass) = getZllAndZllgMasses(phvect);
+  // if(Zll_mass <= 0)
+  //   return;
+
+  // bool improves = ( fabs(ZllG_mass - phys::ZMASS) < fabs(Zll_mass - phys::ZMASS) ); // The addition of the photon momentum improved the mass
+  // const char* improv_str = improves ? "improves" : "noimprov";
+  // theHistograms->fill(Form("Zll_mass_%s_%s" , label, improv_str), ";m_{ll} [GeV/c^{2}]"      , 30,60,120, Zll_mass , theWeight);
+  // theHistograms->fill(Form("ZllG_mass_%s_%s", label, improv_str), ";m_{ll#gamma} [GeV/c^{2}]", 30,60,210, ZllG_mass, theWeight);
+  // if(theSampleInfo.isMC()){
+  //   bool signaldef = sigdefHelper.pass_photon();  // Test if the event passes the GEN signal definition
+  //   const char* sigdef_str = signaldef ? "prompt" : "nonpro";
+  //   theHistograms->fill(Form("Zll_mass_%s_%s_%s" , label, improv_str, sigdef_str), ";m_{ll} [GeV/c^{2}]"      , 30,60,120, Zll_mass , theWeight);
+  //   theHistograms->fill(Form("ZllG_mass_%s_%s_%s", label, improv_str, sigdef_str), ";m_{ll#gamma} [GeV/c^{2}]", 30,60,210, ZllG_mass, theWeight);
+  // }
+
+  // theHistograms->fill(Form("ZllG_mass_vs_Zll_mass_%s"  , label), ";m_{ll#gamma};m_{ll}", 60,60,150., 30,60.,120., ZllG_mass, Zll_mass, theWeight);
+  // theHistograms->fill(Form("Zll_mass_%s"               , label), ";m_{ll}"             , 30,60.,120. , Zll_mass, theWeight);
+  // theHistograms->fill(Form("ZllG_mass_%s"              , label), ";m_{ll#gamma}"       , 40,60.,160. , ZllG_mass, theWeight);
+  // theHistograms->fill(Form("Zll_mass_plus_ZllG_mass_%s", label), ";m_{ll}+m_{ll#gamma}", 40,120.,320., Zll_mass+ZllG_mass, theWeight);
+
+
+void VVGammaAnalyzer::ZllVsZllGstudyGEN(const std::vector<phys::Particle>& phvect, const char* label){
+  if(phvect.size() == 0 || genZZ_.pt() < 1.)
+    return;
+
+  const Particle& ph = *std::max_element(phvect.begin(), phvect.end(), [](const auto& a, const auto& b){ return a.pt() < b.pt(); });
+  // if(! std::all_of(phvect.begin(), phvect.end(), [&ph](const auto& o){ return ph.pt() >= o.pt(); }))
+  //   throw std::logic_error("Wrong pt sorting of photons in ZllVsZllGstudyGEN");
+
+  double Z1G_mass = (genZZ_.first ().p4() + ph.p4()).M();
+  double Z2G_mass = (genZZ_.second().p4() + ph.p4()).M();
+  double Z1_mass  = genZZ_.first ().mass();
+  double Z2_mass  = genZZ_.second().mass();
+
+  double maxZllG_mass = std::max(Z1G_mass, Z2G_mass);
+  double minZllG_mass = std::min(Z1G_mass, Z2G_mass);
+  double maxZll_mass  = std::max(Z1_mass , Z2_mass );
+  double minZll_mass  = std::min(Z1_mass , Z2_mass );
+
+  double lowZll_mass = 0; // Mass of the Z which has the smaller ZG mass
+  if(Z1G_mass < Z2G_mass){
+    lowZll_mass = Z1_mass;
+  }
+  else{
+    lowZll_mass = Z2_mass;
+  }
+
+  std::string s_mId;
+  unsigned int amId = abs(ph.motherId());
+  if     (amId < 9)
+    s_mId = "quark";
+  else if(amId == 11 || amId == 13 || amId == 15)
+    s_mId = "lepton";
+  else if(amId == 22)
+    s_mId = "photon";
+  else if(amId == 23)
+    s_mId = "Z0";
+  else if(amId == 24)
+    s_mId = "W";
+  else if(amId == 25)
+    s_mId = "H0";
+  else if(amId == 111)
+    s_mId = "pi0";
+  else if(amId == 2212)
+    s_mId = "proton";
+  else if(111 < amId && amId < 999)
+    s_mId = "meson";
+  else if(1000 < amId && amId < 9999)
+    s_mId = "baryon";
+  else if(amId == 99)
+    s_mId = "99";
+  else
+    s_mId = "other";
+
+  theHistograms->fill(Form("GEN_ph_motherId_%s", label), ";motherId;Events", {"quark", "lepton", "photon", "Z0", "W", "H0", "pi0", "proton", "meson", "baryon", "99", "other"}, s_mId, theWeight);
+  theHistograms->fill(Form("GEN_minZllG_mass_%s-mId%s", label, s_mId.c_str()), ";motherId;Events", 60,60,180, minZllG_mass, theWeight);
+  theHistograms->fill(Form("GEN_maxZllG_mass_%s-mId%s", label, s_mId.c_str()), ";motherId;Events", 60,60,180, maxZllG_mass, theWeight);
+
+  // theHistograms->fill(Form("GEN_minZllG_mass_vs_minZll_mass_%s"  , label), ";min m_{ll#gamma};min m_{ll}" , 60,60,150., 30,60.,120., minZllG_mass, minZll_mass, theWeight);
+  // theHistograms->fill(Form("GEN_maxZllG_mass_vs_maxZll_mass_%s"  , label), ";max m_{ll#gamma};max m_{ll}" , 60,60,150., 30,60.,120., maxZllG_mass, maxZll_mass, theWeight);
+  theHistograms->fill(Form("GEN_maxZllG_mass_vs_minZllG_mass_%s" , label), ";GEN max m_{ll#gamma};min m_{ll#gamma}" , 60,60,360., 30,60.,180., maxZllG_mass, minZllG_mass, theWeight);
+  theHistograms->fill(Form("GEN_maxZll_mass_%s"                  , label), ";GEN max m_{ll}"                   , 60,60.,120., maxZll_mass , theWeight);
+  theHistograms->fill(Form("GEN_minZll_mass_%s"                  , label), ";GEN min m_{ll}"                   , 60,60.,120., minZll_mass , theWeight);
+  theHistograms->fill(Form("GEN_maxZllG_mass_%s"                 , label), ";GEN max m_{ll#gamma}"             , 60,60.,180., maxZllG_mass, theWeight);
+  theHistograms->fill(Form("GEN_minZllG_mass_%s"                 , label), ";GEN min m_{ll#gamma}"             , 60,60.,180., minZllG_mass, theWeight);
+  theHistograms->fill(Form("GEN_lowZll_mass_%s"                  , label), ";GEN low m_{ll}"                   , 60,60.,120., lowZll_mass , theWeight);
+  theHistograms->fill(Form("GEN_maxZllG_mass_minus_maxZll_mass_%s",label), ";GEN max m_{ll#gamma}-max m_{ll}"  , 60, 0., 60., maxZllG_mass-maxZll_mass, theWeight);
+  theHistograms->fill(Form("GEN_maxZllG_mass_minus_minZll_mass_%s",label), ";GEN max m_{ll#gamma}-min m_{ll}"  , 60, 0., 60., maxZllG_mass-minZll_mass, theWeight);
+  theHistograms->fill(Form("GEN_minZllG_mass_minus_maxZll_mass_%s",label), ";GEN min m_{ll#gamma}-max m_{ll}"  , 60, 0., 60., minZllG_mass-maxZll_mass, theWeight);
+  theHistograms->fill(Form("GEN_minZllG_mass_minus_minZll_mass_%s",label), ";GEN min m_{ll#gamma}-min m_{ll}"  , 60, 0., 60., minZllG_mass-minZll_mass, theWeight);
+  theHistograms->fill(Form("GEN_minZllG_mass_minus_lowZll_mass_%s",label), ";GEN min m_{ll#gamma}-low m_{ll}"  , 60, 0.,120., minZllG_mass-lowZll_mass, theWeight);
+  theHistograms->fill(Form("GEN_minZll_mass_plus_minZllG_mass_%s", label), ";GEN min m_{ll} + min m_{ll#gamma}", 60,120,300., minZll_mass+minZllG_mass, theWeight);
 }
 
 
