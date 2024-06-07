@@ -55,7 +55,7 @@ ggTo2e2mu_Contin_MCFM701,ggZZ,0.00158549,,,/GluGluToContinToZZTo2e2mu_TuneCP5_13
 
 
 # qq->WZ,,,,,,,,,,,
-WZTo3LNu,WZ,5.213,,,/WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM,dbs,,4,GENXSEC=5.213;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2017,RecoProbabilities.py,
+WZTo3LNu,WZ,5.213,,,/WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v2/MINIAODSIM,dbs,,4,GENXSEC=5.213;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2017;SKIM_REQUIRED=False,RecoProbabilities.py,
 
 
 # qq->WW,,,,,,,,,,,

@@ -46,7 +46,7 @@ ggTo2e2mu_Contin_MCFM701,ggZZ,0.00319142,,,/GluGluToContinToZZTo2e2mu_TuneCP5_13
 
 
 ###,qq->WZ,,,,,,,,,,
-WZTo3LNu,WZ,5.213,,,/WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM,dbs,,4,GENXSEC=5.213;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016;DATA_TAG=ULAPV,RecoProbabilities.py,
+WZTo3LNu,WZ,5.213,,,/WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIISummer20UL16MiniAODAPVv2-106X_mcRun2_asymptotic_preVFP_v11-v1/MINIAODSIM,dbs,,4,GENXSEC=5.213;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2016;DATA_TAG=ULAPV;SKIM_REQUIRED=False,RecoProbabilities.py,
 
 
 ###,qq->WW,,,,,,,,,,
