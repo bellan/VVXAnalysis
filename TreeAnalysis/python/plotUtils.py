@@ -8,7 +8,7 @@ from readSampleInfo import *
 from collections import OrderedDict
 from Colours import *
 import ctypes
-from plotUtils23 import TFileContext, addIfExisting, PlotNotFoundError, InputDir, InputFile
+from plotUtils23 import TFileContext, addIfExisting, PlotNotFoundError, InputDir, InputFile, set_overflow_range
 import samplesByRegion # getSamplesByRegion, data_obs, ZZG, WZG, ...
 
 ##############################################
@@ -177,6 +177,8 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
     region = inputdir.region
     plot = plotInfo['name']
     rebin = plotInfo.get('rebin', 1)
+    overflow  = plotInfo.get('draw_overflow' , False)
+    underflow = plotInfo.get('draw_underflow', False)
 
     controlRegions = []
     if region == 'SR4P':
@@ -225,6 +227,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
             raise PlotNotFoundError('Fake lepton plot not found for ' + plotInfo['name'])
 
         hfake.SetLineColor(ROOT.kBlack)
+        set_overflow_range(hfake, underflow=underflow, overflow=overflow)
         stack.Add(hfake)
         leg.AddEntry(hfake,"Non-prompt leptons","f")
 
@@ -260,6 +263,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
             raise PlotNotFoundError('Missing non-prompt photon plot {} (in {})'.format(fakeName, inputdir.path()))
         hfakePho.SetLineColor(ROOT.kBlack)
         hfakePho.SetFillColor(ROOT.kGreen-8)
+        set_overflow_range(hfakePho, underflow=underflow, overflow=overflow)
         stack.Add(hfakePho)
         leg.AddEntry(hfakePho, "Non-prompt photons", "f")
     
@@ -293,6 +297,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
                     continue
                 h.Scale(sample.get("kfactor", 1.))
                 if rebin!=1: h.Rebin(rebin)
+                set_overflow_range(h, underflow=underflow, overflow=overflow)
 
                 h.SetLineColor(ROOT.kBlack)
                 h.SetFillColor(sample["color"])
@@ -316,6 +321,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
 
             h.Scale(sample.get("kfactor", 1.))
             if rebin!=1: h.Rebin(rebin)
+            set_overflow_range(h, underflow=underflow, overflow=overflow)
 
             h.SetLineColor(ROOT.kBlack)
             leg.AddEntry(h,sample["name"],"f")
@@ -433,6 +439,8 @@ def GetClosureStack(region, inputDir, plotInfo, forcePositive=False, verbosity=1
 
 def GetDataPlot(inputdir, plotInfo, forcePositive=False, verbosity=1):
     plot = plotInfo['name']
+    overflow  = plotInfo.get('draw_overflow' , False)
+    underflow = plotInfo.get('draw_underflow', False)
 
     if  (verbosity >= 1):
         print Red("\n###################    DATA    ###################\n")
@@ -468,6 +476,7 @@ def GetDataPlot(inputdir, plotInfo, forcePositive=False, verbosity=1):
     hdata.SetMarkerSize(.8)
 
     hdata.Rebin(plotInfo.get('rebin', 1))
+    set_overflow_range(hdata, underflow=underflow, overflow=overflow)
 
     if  (verbosity >= 1):
         print "Total data in {0:s} region .......................... {1:.2f}".format(inputdir.region, hdata.Integral(0,-1))
@@ -714,8 +723,28 @@ def GetSignalDefPlot(inputdir,category):
 def SetError(Histo,Region,Set0Error):
     q=(1-0.6827)/2.
     Graph=ROOT.TGraphAsymmErrors(Histo)
-    Nbins= Histo.GetNbinsX()
-    for i in range(1,Nbins):
+
+    # Add manually under-/overflow points if needed
+    if(Histo.GetXaxis().GetLast() > Histo.GetXaxis().GetNbins()):
+        n = Graph.GetN()
+        xaxis = Histo.GetXaxis()
+        x = xaxis.GetBinCenter (xaxis.GetLast())
+        y = Histo.GetBinContent(xaxis.GetLast())
+        ey = math.sqrt(y)
+        Graph.AddPoint(x, y)
+        Graph.SetPointEYhigh(n, ey)
+        Graph.SetPointEYlow (n, ey)
+    if(Histo.GetXaxis().GetFirst() < 1):
+        n = Graph.GetN()
+        xaxis = Histo.GetXaxis()
+        x = xaxis.GetBinCenter (0)
+        y = Histo.GetBinContent(0)
+        ey = math.sqrt(y)
+        Graph.AddPoint(x, y)
+        Graph.SetPointEYhigh(n, ey)
+        Graph.SetPointEYlow (n, ey)
+
+    for i in range(Histo.GetXaxis().GetFirst(), Histo.GetXaxis().GetLast()+1):
        # if Region=="CR3P1F" or Region=="CR2P2F":
         if False:
             N=Histo.GetBinContent(i)

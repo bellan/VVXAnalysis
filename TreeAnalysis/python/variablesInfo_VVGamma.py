@@ -287,6 +287,8 @@ def getVarInfo_VVGamma(region):
                 })
             if('aeta' in varname):
                 d.update({'scale_ymax': 1.8})
+            if varname in ('dRl',):
+                d.update({'draw_overflow': True})
             VarInfo_VVGamma.update({n: d})
 
     for chName, chTitle in channels:

@@ -189,3 +189,9 @@ def get_plots(inputdir, sample, plots):
         return plot_list
     else:
         return get_plots_singleyear(inputdir, sample, plots)
+
+
+def set_overflow_range(h, underflow=False, overflow=True):
+    bx_min = (0 if underflow else 1)
+    bx_max = (1 if overflow  else 0) + h.GetXaxis().GetNbins()
+    h.GetXaxis().SetRange(bx_min, bx_max)

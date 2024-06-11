@@ -282,8 +282,6 @@ for Var in variables:
         if(options.verbosity >= 1):
             print Warn('WARN'), 'underflow (%.1f %%)' %(100*underflow_fraction)
 
-    hMCErr = deepcopy(hMC.GetStack().Last())
-    
     c1.cd()
     pad1 = ROOT.TPad ('hist', '', 0., 0.28, 1.0, 1.0)
     pad1.SetTopMargin    (0.10)
@@ -305,12 +303,45 @@ for Var in variables:
         pad2.SetLogx()
     
     pad1.cd()
-    
+
+    YMin = info.get('ymin', False)
+    if(YMin):
+        hMC.SetMinimum(YMin)
+
+    # Draw the THStack
+    hMC.Draw("hist")
+
+    # The THStack axis cannot be modified before it has been drawn
+    draw_overflow  = info.get('draw_overflow' , False)
+    draw_underflow = info.get('draw_underflow', False)
+    xaxis  = hMC.GetXaxis()
+    bx_min = (0 if draw_underflow else 1)
+    bx_max = (1 if draw_overflow  else 0) + xaxis.GetNbins()
+    x_min  = xaxis.GetBinLowEdge(bx_min)
+    x_max  = xaxis.GetBinLowEdge(bx_max+1)
+    hMC.GetXaxis().SetRange(bx_min, bx_max)
+    if(DoData):
+        histodata.GetXaxis().SetRange(bx_min, bx_max)
+    # Draw again to update
+    hMC.Draw("hist")
+
     # Create TGraphAsymmErrors from histodata and set x errors to 0
     # This is to avoid interference with gStyle.SetErrorX(0.5) which is needed to draw MC error rectangles
     tgaData = ROOT.TGraphAsymmErrors()
     if DoData:
-        tgaData.Divide(histodata, hMC.GetStack().Last(), 'pois')
+        # Create new data and MC histograms with possibly the under-/overflow bins
+        # This is the only way to include them in the TGraph resulting from Divide()
+        tmpdata = ROOT.TH1F(histodata.GetName()+'_tmpdata', histodata.GetTitle(), bx_max-bx_min+1, x_min, x_max)
+        for b in range(1, tmpdata.GetNbinsX()+1):
+            tmpdata.SetBinContent(b, histodata.GetBinContent(b))
+            tmpdata.SetBinError  (b, histodata.GetBinError  (b))
+        tmpMC   = ROOT.TH1F(histodata.GetName()+'_tmpMC'  , hStackSum.GetTitle(), bx_max-bx_min+1, x_min, x_max)
+        for b in range(1, tmpMC  .GetNbinsX()+1):
+            tmpMC  .SetBinContent(b, hStackSum.GetBinContent(b))
+            tmpMC  .SetBinError  (b, hStackSum.GetBinError  (b))
+
+        tgaData.Divide(tmpdata, tmpMC, 'pois')
+        del tmpdata, tmpMC
         for i in range(tgaData.GetN()):
             # Set x errors to 0 to avoid drawing error bars
             tgaData.SetPointEXhigh(i,0.)
@@ -324,12 +355,9 @@ for Var in variables:
         histodata.SetName("histodata")
         histodata.Reset()
 
-    YMin = info.get('ymin', False)
-    if(YMin):
-        hMC.SetMinimum(YMin)
+    # Error band in the upper canvas
+    hMCErr = deepcopy(hMC.GetStack().Last())
 
-    hMC.Draw("hist")
-    
     if('AAA_cuts' in Var):
         hMC.GetXaxis().SetTickLength(0.)
     
@@ -393,8 +421,8 @@ for Var in variables:
     
     
     pad2.cd()
-        
-    Line = ROOT.TLine(hMC.GetXaxis().GetBinLowEdge(hMC.GetXaxis().GetFirst()), 1, hMC.GetXaxis().GetXmax(), 1) 
+
+    Line = ROOT.TLine(x_min, 1, x_max, 1)
     Line.SetLineWidth(2)
     Line.SetLineStyle(7)
     
