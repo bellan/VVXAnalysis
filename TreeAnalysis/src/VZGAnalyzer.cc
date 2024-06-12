@@ -1,3 +1,4 @@
+
 #include "VVXAnalysis/TreeAnalysis/interface/VZGAnalyzer.h"
 #include "VVXAnalysis/Commons/interface/SignalDefinitions.h"
 #include "VVXAnalysis/Commons/interface/Utilities.h"
@@ -178,7 +179,51 @@ bool VZGAnalyzer::baselineRequirements()
        }
        std::cout<< "Number of selected RECO photons = "<<selectedphotons.size()<<std::endl;
 
-       bool goodZ= (Z->mass() > 60 && Z->mass() < 120 && KinematicsOK(Z->daughter(0), 5, 2.5) && KinematicsOK(Z->daughter(1), 5, 2.5)); // KinematicsOK(jet)
+      for (size_t j = i + 1; j < selectedRECOjets.size(); j++)
+	{
+	  phys::Jet jetB = selectedRECOjets[j];
+	  float mjj = (jetA.p4() + jetB.p4()).M();
+
+	  if (verbose == true) std::cout << "mjj= " << mjj << std::endl;
+
+	  if (mjj > 50 && mjj < 120) 
+	    DiJets.push_back(phys::Boson<phys::Jet>(jetA, jetB));
+                     
+	}
+    }
+
+  if(verbose == true) std::cout << "DiJets size: " << DiJets.size() << std::endl;
+  //-------------------------------------Requirements on Photons----------------------------------------//
+
+  std::vector<phys::Photon> selectedphotons;
+  std::vector<phys::Photon> selectedKinPhotons;
+  std::vector<phys::Photon> selectedVLPhotons;
+  std::vector<phys::Photon> selectedLoosePhotons;
+
+  for (auto p : *photons)
+    {
+      if (p.id() == 22 && KinematicsOK(p, 20, 2.4) && !p.hasPixelSeed() && p.passElectronVeto())
+	{
+	  selectedKinPhotons.push_back(p);
+	  if(p.cutBasedID(Photon::IdWp::VeryLoose))
+	    {
+	      selectedVLPhotons.push_back(p);
+	      if (p.cutBasedIDLoose())
+		{
+		  selectedLoosePhotons.push_back(p);
+		  selectedphotons.push_back(p);
+		}
+	    }
+	}
+    }
+    theHistograms->fill("Atleast1KinPhoton", "Atleast1KinPhoton", 2, 0, 2, selectedKinPhotons.size() >0 , theWeight*LumiSF);
+    theHistograms->fill("Atleast1VLPhoton", "AtleastVLPhoton", 2, 0, 2, selectedVLPhotons.size() >0 , theWeight*LumiSF);
+    theHistograms->fill("Atleast1LoosePhoton", "Atleast1LoosePhoton", 2, 0, 2, selectedLoosePhotons.size() >0 , theWeight*LumiSF);
+
+    
+  if(verbose == true) std::cout<< "Number of selected RECO photons = "<<selectedphotons.size()<<std::endl;
+
+  bool goodZ= (Z->mass() > 60 && Z->mass() < 120 && KinematicsOK(Z->daughter(0), 5, 2.5) && KinematicsOK(Z->daughter(1), 5, 2.5)); // KinematicsOK(jet)
 
        
        if (DiJets.size() > 0 && selectedphotons.size() >0 && goodZ )
