@@ -82,12 +82,11 @@ void GenVBHelper::analyze(const std::vector<phys::Particle>& genParticles, const
   // Taus are not stable particles therefore are inside a separate collection!
 
   // Reset Data Member Containers
-  ZtoChLep_.clear()    ; ZtoChLep_.shrink_to_fit();
-  ZtoNeutrinos_.clear(); ZtoNeutrinos_.shrink_to_fit();
-  ZtoQ_.clear()        ; ZtoQ_.shrink_to_fit();
-  WtoQ_.clear()        ; WtoQ_.shrink_to_fit();
-  WtoLep_.clear()      ; WtoLep_.shrink_to_fit();
-  
+  ZtoChLep_.clear()    ;
+  ZtoNeutrinos_.clear();
+  ZtoQ_.clear()        ;
+  WtoQ_.clear()        ;
+  WtoLep_.clear()      ;
   
   // Prepare the containers
   std::vector<phys::Particle> quarks, antiquarks;
@@ -96,7 +95,8 @@ void GenVBHelper::analyze(const std::vector<phys::Particle>& genParticles, const
 
   // Take Z from the event topology (there should not be W bosons...)
   foreach(const phys::Boson<phys::Particle> &vb, genVBParticles)
-    if(vb.decayType() == 1 && vb.id()  == 23) ZtoChLep_.push_back(vb);
+    if(vb.decayType() == 1 && ZDaughtersIdCondition()(vb.daughter(0), vb.daughter(1)) && ZMassWindow()(vb))
+      ZtoChLep_.push_back(vb);
   
   // categorize basic particles
   foreach(const phys::Particle gp, genParticles){   
