@@ -517,7 +517,7 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
       auto genStatusFlags1 = ( dynamic_cast<const reco::GenParticle*>(p->daughter(1)) )->statusFlags().flags_;
       phys::Particle d0(p->daughter(0)->p4(), phys::Particle::computeCharge(pdgId0), pdgId0, genStatusFlags0);
       phys::Particle d1(p->daughter(1)->p4(), phys::Particle::computeCharge(pdgId1), pdgId1, genStatusFlags1);
-      genVBParticles_.push_back(phys::Boson<phys::Particle>(std::move(d0), std::move(d1)));
+      genVBParticles_.push_back(phys::Boson<phys::Particle>(std::move(d0), std::move(d1), p->pdgId()));
     }
   }
 
