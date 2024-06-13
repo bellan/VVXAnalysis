@@ -34,9 +34,12 @@ set(TreeAnalysis_interface interface)
 set(BIN bin)
 set(SRC src)
 
-set(BOOST /opt/local/include/)
+#---In the singularity container cmake is unable to find the BOOST libraries, so we give it an hint through BOOST_ROOT - amecca
+set(BOOST_ROOT /cvmfs/cms.cern.ch/$ENV{SCRAM_ARCH}/external/boost/1.67.0-pafccj)
+find_package(Boost REQUIRED)
+# message("-- Found Boost include dirs: ${Boost_INCLUDE_DIRS}")
 
-set(CMAKE_INCLUDE_PATH ${BASE} ${TreeAnalysis_interface} ${BOOST}) 
+set(CMAKE_INCLUDE_PATH ${BASE} ${TreeAnalysis_interface} ${Boost_INCLUDE_DIRS})
 set(EventDF_HEADERS ${BASE}/VVXAnalysis/DataFormats/interface/*.h)
 set(EventDF_LINKDEF ${DataFormats_src}/STDToolsLinkDef.h)
 
