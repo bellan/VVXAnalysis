@@ -24,7 +24,7 @@ using namespace phys;
 double etacut=4.7;
 
 double ptcut=30;
-double LumiSF=7.035;
+double LumiSF=1.;//7.035;
 
 
 double cosOmega(TLorentzVector a, TLorentzVector b){
@@ -337,9 +337,9 @@ bool VZGAnalyzer::baselineRequirements()
 	    }
 	}
     }
-    theHistograms->fill("Atleast1KinPhoton", "Atleast1KinPhoton", 2, 0, 2, selectedKinPhotons.size() >0 , theWeight*LumiSF);
-    theHistograms->fill("Atleast1VLPhoton", "AtleastVLPhoton", 2, 0, 2, selectedVLPhotons.size() >0 , theWeight*LumiSF);
-    theHistograms->fill("Atleast1LoosePhoton", "Atleast1LoosePhoton", 2, 0, 2, selectedLoosePhotons.size() >0 , theWeight*LumiSF);
+  theHistograms->fill("Atleast1KinPhoton", "Atleast1KinPhoton", 2, 0, 2, selectedKinPhotons.size() >0 , theWeight*LumiSF);
+  theHistograms->fill("Atleast1VLPhoton", "AtleastVLPhoton", 2, 0, 2, selectedVLPhotons.size() >0 , theWeight*LumiSF);
+  theHistograms->fill("Atleast1LoosePhoton", "Atleast1LoosePhoton", 2, 0, 2, selectedLoosePhotons.size() >0 , theWeight*LumiSF);
 
     
   if(verbose == true) std::cout<< "Number of selected RECO photons = "<<selectedphotons.size()<<std::endl;
@@ -360,6 +360,38 @@ bool VZGAnalyzer::baselineRequirements()
 
 Bool_t VZGAnalyzer::cut(Int_t n, phys::Boson<phys::Jet> recoV, std::vector<phys::Photon> selectedphotons)
 { // returns false if the event has to be cut
+
+    phys::Photon mostEnergeticPhoton;
+    if (selectedPhotons.size() > 0)
+      {
+	std::stable_sort(selectedPhotons.begin(), selectedPhotons.end(), phys::EComparator());
+	mostEnergeticPhoton = selectedPhotons[0];
+      }
+
+
+    std::pair<phys::Photon, phys::Jet> nearestRECOjetstoPhoton;
+
+    if(abs(physmath::deltaR(recoV.daughter(0), mostEnergeticPhoton))<abs(physmath::deltaR(recoV.daughter(1), mostEnergeticPhoton)) )
+      nearestRECOjetstoPhoton={mostEnergeticPhoton, recoV.daughter(0)};
+    else if (abs(physmath::deltaR(recoV.daughter(0), mostEnergeticPhoton))>abs(physmath::deltaR(recoV.daughter(1), mostEnergeticPhoton)) )
+      nearestRECOjetstoPhoton={mostEnergeticPhoton, recoV.daughter(1)};
+  
+  std::vector<TLorentzVector> jjG;
+  
+  std::vector<TLorentzVector> lljjG;
+
+  if(selectedPhotons.size()>0)
+    {
+      jjG.push_back(recoV.daughter(0).p4());
+      jjG.push_back(recoV.daughter(1).p4());
+      jjG.push_back(selectedPhotons.at(0).p4());
+
+      lljjG.push_back(Z->daughter(0).p4());
+      lljjG.push_back(Z->daughter(1).p4());
+      lljjG.push_back(jjG.at(0));
+      lljjG.push_back(jjG.at(1));
+      lljjG.push_back(jjG.at(2));
+    }
   bool baseline = (jets->size() > 1
 	&& recoV.mass() > 50 && recoV.mass() < 120
 	&& KinematicsOK(recoV.daughter(0), ptcut,etacut)
@@ -368,7 +400,7 @@ Bool_t VZGAnalyzer::cut(Int_t n, phys::Boson<phys::Jet> recoV, std::vector<phys:
 	&& KinematicsOK(Z->daughter(0), 5.,etacut)
 	&& KinematicsOK(Z->daughter(1), 5.,etacut)
         && selectedPhotons.size()>0);
-  /*
+
   switch (n)
   {
   case 1://baseline
@@ -376,113 +408,63 @@ Bool_t VZGAnalyzer::cut(Int_t n, phys::Boson<phys::Jet> recoV, std::vector<phys:
       return true;
     break;
 
-  case 2://baseline+>2jets
-    if (jets->size() > 2 && baseline)
-      return true;
-    break;
-
-  case 3://baseline+>3jets
-    if (jets->size() > 3  && baseline)
-      return true;
-    break;
-
-  case 4://baseline+dRjj<2.4
-    if (baseline&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4)
-      return true;
-    break;
-
-  case 5://baseline+ptj>40
+  case 2://baseline+mjj=mV+-15
     if (baseline
-	&& KinematicsOK(recoV.daughter(0), 40,etacut)
-	&& KinematicsOK(recoV.daughter(1), 40,etacut))
-      return true;
-    break;
-  case 6://baseline+ptj>40 & dRjj 2.4
-    if (baseline
-	&& KinematicsOK(recoV.daughter(0), 40,etacut)
-	&& KinematicsOK(recoV.daughter(1), 40,etacut)
-	&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4)
-      return true;
-    break;
-  case 7://baseline+mjj=mV+-15
-    if (baseline
-	&& recoV.mass() > 65
-	&& recoV.mass() < 115)
-      return true;
-    break;
-  case 8://baseline+mjj=mV+-15+ptj>40 & dRjj 2.4
-    if (baseline
-	&& KinematicsOK(recoV.daughter(0), 40,etacut)
-	&& KinematicsOK(recoV.daughter(1), 40,etacut)
-	&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4
 	&& recoV.mass() > 65 && recoV.mass() < 115)
-    return true;
-    break;
-  case 9://baseline+mll=mZ+-10
-    if (baseline && Z->mass() > 70 && Z->mass() < 110)
       return true;
     break;
-  case 10://baseline+mjj=mV+-15+ptj>40 & dRjj 2.4 & mll=mZ+-10 
+
+  case 3://baseline+mjj=mV+-15 & dRjj 2.4
     if (baseline
-	&& KinematicsOK(recoV.daughter(0), 40,etacut)
-	&& KinematicsOK(recoV.daughter(1), 40,etacut)
-	&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4
-	&& recoV.mass() > 65 && recoV.mass() < 115
-	&& Z->mass() > 70 && Z->mass() < 110)
-      return true;
-    break;
-  case 11://baseline+mjj=mV+-15+ptj>40 & dRjj 2.4 & > 2jets
-    if (baseline
-	&& jets->size() > 2
-	&& KinematicsOK(recoV.daughter(0), 40,etacut)
-	&& KinematicsOK(recoV.daughter(1), 40,etacut)
 	&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4
 	&& recoV.mass() > 65 && recoV.mass() < 115)
       return true;
     break;
 
-  default:
-    return true;
-  }
-  */
-  switch (n)
-  {
-  case 1://baseline
-    if (baseline)
-      return true;
-    break;
-
-  case 2://baseline+dRjj<2.4
-    if (baseline&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4)
-      return true;
-    break;
-
-  case 3://baseline+ptj>40 & dRjj 2.4
+  case 4://baseline+mjj=mV+-15 & dRjj 2.4 & 2D deltas 
     if (baseline
-	&& KinematicsOK(recoV.daughter(0), 40,etacut)
-	&& KinematicsOK(recoV.daughter(1), 40,etacut)
-	&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4)
-      return true;
-    break;
-
-  case 4://baseline+mjj=mV+-15+ptj>40 & dRjj 2.4
-    if (baseline
-	&& KinematicsOK(recoV.daughter(0), 40,etacut)
-	&& KinematicsOK(recoV.daughter(1), 40,etacut)
+	//&& abs(physmath::deltaR(nearestRECOjetstoPhoton.first, nearestRECOjetstoPhoton.second))> 0.6 + (nearestRECOjetstoPhoton.first.pt()-nearestRECOjetstoPhoton.second.pt())/100
+	&& abs(physmath::deltaR(nearestRECOjetstoPhoton.first, nearestRECOjetstoPhoton.second))> 0.1
 	&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4
 	&& recoV.mass() > 65 && recoV.mass() < 115)
-    return true;
+      return true;
     break;
 
-  case 5://baseline+mjj=mV+-15+ptj>40 & dRjj 2.4 & mll=mZ+-10 
+  case 5://baseline+mjj=mV+-15 & dRjj 2.4 & FWM T0 
+    if (baseline
+	&& abs(physmath::deltaR(nearestRECOjetstoPhoton.first, nearestRECOjetstoPhoton.second))> 0.1
+	//	&& 1.6 < SumFWM(0, 't', lljjG) < 2
+	&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4
+	&& KinematicsOK(recoV.daughter(0), 40, etacut)
+	&& recoV.mass() > 65 && recoV.mass() < 115)
+      return true;
+    break;
+
+
+  case 6://baseline+mjj=mV+-15+ptj0>40 & dRjj 2.4 
+    if (baseline
+	&& KinematicsOK(recoV.daughter(0), 40,etacut)
+	//&& KinematicsOK(recoV.daughter(1), 40,etacut)
+	&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4
+	&& recoV.mass() > 70 && recoV.mass() < 105)
+      return true;
+    break;
+    
+
+  case 7://baseline+mjj=mV+-20+ptj0>40 & dRjj 2.4
     if (baseline
 	&& KinematicsOK(recoV.daughter(0), 40,etacut)
 	&& KinematicsOK(recoV.daughter(1), 40,etacut)
 	&& abs(physmath::deltaR(recoV.daughter(0),recoV.daughter(1)))<2.4
-	&& recoV.mass() > 65 && recoV.mass() < 115
-	&& Z->mass() > 70 && Z->mass() < 110)
+	&& recoV.mass() > 70 && recoV.mass() < 105
+	&& abs(physmath::deltaR(nearestRECOjetstoPhoton.first, nearestRECOjetstoPhoton.second))> 1.67 + (nearestRECOjetstoPhoton.first.pt()-nearestRECOjetstoPhoton.second.pt())*3.67/15
+	&& abs(physmath::deltaR(nearestRECOjetstoPhoton.first, nearestRECOjetstoPhoton.second))> 1.85 - (nearestRECOjetstoPhoton.first.pt()-nearestRECOjetstoPhoton.second.pt())*0.65/20)
+      
       return true;
     break;
+
+    
+    /*    
   case 6://baseline+mjj=mV+-15+ptj>40 & dRjj 2.4 & > 2jets
     if (baseline
 	&& jets->size() > 2
@@ -501,7 +483,7 @@ Bool_t VZGAnalyzer::cut(Int_t n, phys::Boson<phys::Jet> recoV, std::vector<phys:
 	&& recoV.mass() > 65 && recoV.mass() < 115)
       return true;
     break;
-
+    */
   default:
     return true;
   }
@@ -824,7 +806,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
       nearestRECOjetstoPhoton={mostEnergeticPhoton, recoV.daughter(1)};
 
     theHistograms->fill("DR_gammaClosestJet_"+histoType + cuts.at(i), "DR_gammaClosestJet_"+histoType + cuts.at(i)+"; #DeltaR", 50, 0, 5, abs(physmath::deltaR(nearestRECOjetstoPhoton.first, nearestRECOjetstoPhoton.second)), theWeight*LumiSF);
-    theHistograms->fill("DeltaR_vs_Deltapt_gammaJet"+histoType + cuts.at(i), "DeltaR_vs_Deltapt_gammaJet"+histoType + cuts.at(i)+";#Delta pt [GeV/c] ; #DeltaR", 20, -100, 100, 20, 0, 2, nearestRECOjetstoPhoton.first.pt()-nearestRECOjetstoPhoton.second.pt(),abs(physmath::deltaR(nearestRECOjetstoPhoton.first, nearestRECOjetstoPhoton.second)), theWeight*LumiSF);
+    theHistograms->fill("DeltaR_vs_Deltapt_gammaJet"+histoType + cuts.at(i), "DeltaR_vs_Deltapt_gammaJet"+histoType + cuts.at(i)+";#Delta pt [GeV/c] ; #DeltaR", 20, -100, 100, 50, 0, 5, nearestRECOjetstoPhoton.first.pt()-nearestRECOjetstoPhoton.second.pt(),abs(physmath::deltaR(nearestRECOjetstoPhoton.first, nearestRECOjetstoPhoton.second)), theWeight*LumiSF);
 
     
     if(selectedphotons.size()>0)
