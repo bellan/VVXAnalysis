@@ -118,7 +118,7 @@ public:
 
 
   template< class PAR >
-  bool WBosonDefinition(phys::Boson<PAR> cand) {
+  bool WBosonDefinition(phys::Boson<PAR> cand) const {
     bool gooddaughters = (fabs(cand.daughter(0).eta()) < 2.5 && cand.daughter(0).pt() > 30 &&
 			  cand.daughter(0).passPUID() && cand.daughter(0).passLooseJetID() &&
 			  fabs(cand.daughter(1).eta()) < 2.5 && cand.daughter(1).pt() > 30 &&
@@ -127,19 +127,19 @@ public:
     return (goodmass && gooddaughters);
   }
 
-  bool GenWtoLNuDefinition(phys::Boson<phys::Particle> cand) const {
+  static bool GenWtoLNuDefinition(const phys::Boson<phys::Particle>& cand) {
     bool gooddaughters = (fabs(cand.daughter(0).eta()) < 2.5 && cand.daughter(0).pt() > 20);
     return gooddaughters;
   }
 
-  bool GenZtoLLDefinition(phys::Boson<phys::Particle> cand) const {
+  static bool GenZtoLLDefinition(const phys::Boson<phys::Particle>& cand) {
     bool gooddaughters = (fabs(cand.daughter(0).eta()) < 2.5 && cand.daughter(0).pt() > 5 &&
 			  fabs(cand.daughter(1).eta()) < 2.5 && cand.daughter(1).pt() > 5);
     bool goodmass = 60 < cand.p4().M() && cand.p4().M() < 120;
     return goodmass && gooddaughters;
   }
 
-  bool GenVtoQQDefinition(phys::Boson<phys::Particle> cand) const {
+  static bool GenVtoQQDefinition(const phys::Boson<phys::Particle>& cand) {
     bool gooddaughters = (fabs(cand.daughter(0).eta()) < 4.7 && cand.daughter(0).pt() > 30 &&
 			  fabs(cand.daughter(1).eta()) < 4.7 && cand.daughter(1).pt() > 30);
     bool goodmass = 60 < cand.p4().M() && cand.p4().M() < 120;
