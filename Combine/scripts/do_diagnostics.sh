@@ -9,12 +9,20 @@ EOF
 
 print_error(){ printf "%s failed (%d).\n" "$1" $? ; exit 2 ; }
 
+unblind=0
+mu=1
 OPTIND=1
-while getopts "hn:" opt; do
+while getopts "hur:" opt; do
     case $opt in
 	h)
 	    show_help
 	    exit 0
+	    ;;
+	u)
+	    unblind=1
+	    ;;
+	r)
+	    mu=$OPTARG
 	    ;;
 	*)
 	    show_help >&2
@@ -32,9 +40,14 @@ cardname="${1##*/}"
 cardname="${cardname%.txt}"
 combine_testdir=${CMSSW_BASE?}/src/HiggsAnalysis/CombinedLimit/test
 
+fit_options="--robustFit=1"
+if [ $unblind -eq 0 ] ; then
+    fit_options="$fit_options --expectSignal=$mu -t -1"
+fi
+
 mkdir -p $cardname && cd $cardname || exit 1
 
-combine -M FitDiagnostics --robustFit=1 --saveNormalizations --saveWithUncertainties "$card" || print_error "FitDiagnostics"
+combine -M FitDiagnostics ${fit_options} --saveNormalizations --saveWithUncertainties "$card" || print_error "FitDiagnostics"
 
 python ${combine_testdir}/diffNuisances.py --all fitDiagnosticsTest.root -f latex > diffNuisances_$cardname.tex || print_error "diffNuisances"
 python ${combine_testdir}/mlfitNormsToText.py -u fitDiagnosticsTest.root > fitNorms_$cardname.txt || print_error "mlfitNormsToText"
