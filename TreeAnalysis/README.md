@@ -17,7 +17,8 @@ The following diagram illustrates the interconnection between scripts via their 
 graph TD;
     samples["Samples (data+MC)"]
     analyzer([Analyzer+run.py])
-    results[results folder]
+    results[results data/MC]
+    fakephotons[results fake_photons]
     makeNicePlots([makeNicePlots.py])
     dataMC[data/MC plots]
     systematics([sytematics.py])
@@ -32,20 +33,49 @@ graph TD;
 
     samples-->analyzer
     analyzer-->results
-    results-->makeNicePlots
     makeNicePlots-->dataMC
-    results-->systematics
-    results-->photonFakeRate
+    resultsSG-->systematics
     systematics-->sysJSON
     sysJSON-->produceDataCard
     results-->prepareHisoCombine
+    results-->makeNicePlots
+    results-->photonFakeRate
     prepareHisoCombine-->histsCombine
+    prepareHisoCombine-->fakephotons
     histsCombine-..->produceDataCard
     produceDataCard-->datacards
     photonFakeRate-->phFRhist
     phFRhist-.->analyzer
     histsCombine-->combine
     datacards-->combine
+
+    subgraph resultsSG["results folder"];
+        results
+        fakephotons
+    end
+    style resultsSG fill:#fff,stroke:#000
+
+    subgraph nicePlotsSG[" "];
+        makeNicePlots
+        dataMC
+    end
+
+    subgraph phFRSG[" "];
+        photonFakeRate
+        phFRhist
+    end
+
+    subgraph inputSG[" "];
+        samples
+        analyzer
+    end
+    style inputSG fill:#fff,stroke-width:0pt
+
+    subgraph prepareSG[" "];
+        prepareHisoCombine
+        histsCombine
+    end
+    style prepareSG fill:#fff,stroke-width:0pt
 ```
 Legend:
 - nodes with rectangular edges indicate files that are used as input/output by the scripts;
