@@ -48,9 +48,6 @@ wait
 for region in $(echo $regions | tr ';' ' ') ; do
     (
 	cd results/$year/${analyzer}_${region} || exit
-	hadd $haddOpt ggTo4l.root ggTo4e_Contin_MCFM701.root ggTo2e2mu_Contin_MCFM701.root ggTo4mu_Contin_MCFM701.root
-	hadd $haddOpt triboson.root ZZZ.root WZZ.root WWZ.root
-	hadd $haddOpt ttXY.root TTWW.root TTZZ.root
 	[ -f DYJetsToLL_M50_part1.root ] && hadd $haddOpt DYJetsToLL_M50.root DYJetsToLL_M50_part1.root DYJetsToLL_M50_part2.root
 	[ -f ZZTo4l_part1.root ]         && hadd $haddOpt ZZTo4l.root ZZTo4l_part1.root ZZTo4l_part2.root
     )
