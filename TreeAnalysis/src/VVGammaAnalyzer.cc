@@ -749,7 +749,6 @@ void VVGammaAnalyzer::analyze(){
   
   if(two_lep){
     hadronicObjectsReconstruction();
-    studyJetsChoice();
   }
 
   if(three_lep)
@@ -2546,61 +2545,6 @@ void VVGammaAnalyzer::photonFRClosure(const char* method, const Photon& thePh, b
   }
 }
 
-
-void VVGammaAnalyzer::studyJetsChoice(){
-  // Study how to choose the correct jet AK8 in case it exists. The problem of rejecting 
-  // events in which it does not exist is part of the event selection
-  if( !theSampleInfo.isMC() )
-    return;
-  // Boson<Particle>* qq = nullptr;
-  // if     (genZhadCandidates_->size() > 0)
-  //   qq = &(genZhadCandidates_->at(0));
-  // else if(genWhadCandidates_->size() > 0)
-  //   qq = &(genWhadCandidates_->at(0));
-  // else
-  //   return;
-  
-  // int statusAK8;
-  // int statusAK4 = studyAK4Choice(fAK4_, *qq, 0.4);
-  // if(statusAK4 != 0)
-  //   // statusAK8 = studyAK8Choice(fAK8_, *qq, 0.4);
-  //   studyAK8Choice(fAK8_, *qq, 0.4);
-  
-}
-
-
-int VVGammaAnalyzer::studyAK4Choice(std::ofstream& fout, const phys::Boson<phys::Particle>& diquark, const double& tolerance){
-  vector<Particle> vQuarks({*diquark.daughterPtr(0), *diquark.daughterPtr(1)});
-  efficiency(*jets, vQuarks, "AK4"   , "quarks", tolerance);
-  efficiency(*genJets, vQuarks, "genAK4", "quarks", tolerance);
-
-  if(jets->size() <= 2)
-    return 1;  // Not enough jets
-  
-  // vector<std::pair<const Particle*, const Jet*>> vGenRec = matchDeltaR(vQuarks, *jets, tolerance);
-  
-  return 0;
-}
-
-
-int VVGammaAnalyzer::studyAK8Choice(std::ofstream& fout, const phys::Boson<phys::Particle>& diquark, const double& tolerance){
-  vector<Jet>::const_iterator rec = std::min_element(jetsAK8->cbegin(), jetsAK8->cend(), DeltaRComparator(diquark));
-  if(rec == jets->cend() || deltaR(*rec, diquark) > tolerance)
-    return 1;  // either jetsAK8->size() == 0 or dR > tol
-
-  // for(vector<Jet>::const_iterator rec_it = jetsAK8->cbegin(); jetsAK8 != jetsAK8.cend(); ++rec_it){
-  //   fout << (rec_it == recAK8)           << ','
-  // 	 << theWeight                    << ','
-  // 	 << rec_it->mass()               << ','
-  // 	 << rec_it->particleNet().WvsQCD << ','
-  // 	 << rec_it->particleNet().ZvsQCD << ','
-  // 	 << rec_it->particleNet().TvsQCD << ','
-  // 	 << rec_it->deepAK8_MD().WvsQCD  << ','
-  // 	 << rec_it->deepAK8_MD().ZvsQCD  << ','
-  // 	 << rec_it->deepAK8_MD().TvsQCD  << '\n';
-  
-  return 0;
-}
 
 void VVGammaAnalyzer::studyFSRregion(const vector<Photon>& fsrMatched){
   /*
