@@ -197,9 +197,6 @@ private:
 
   std::string channelReco_;
 
-  std::ofstream fAK4_;
-  std::ofstream fAK8_;
-
   // Objects reconstruction for each event
   void makeChannelReco();  // sets channelReco_
   void genEventSetup();
@@ -222,9 +219,6 @@ private:
   void photonFakeRate_ABCD();
   void photonFakeRate_LtoT(const char* method, const phys::Photon& thePh, bool isPass, double effSF);
   void photonFRClosure(const char* method, const phys::Photon& thePh, bool isPass, double f_FR);
-  void studyJetsChoice();
-  int studyAK4Choice(std::ofstream& fout, const phys::Boson<phys::Particle>& diquark, const double& tolerance);
-  int studyAK8Choice(std::ofstream& fout, const phys::Boson<phys::Particle>& diquark, const double& tolerance);
   void studyFSRregion(const std::vector<phys::Photon>&);
   template<class PAR>
   void efficiency(const std::vector<PAR>& vRec, const std::vector<phys::Particle>& vGen, const char* recLabel, const char* genLabel, double tolerance=0.4);
