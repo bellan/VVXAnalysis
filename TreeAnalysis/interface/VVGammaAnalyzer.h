@@ -188,6 +188,8 @@ private:
 
   std::string channelReco_;
 
+  bool passFSRcut_;
+
   // Objects reconstruction for each event
   void makeChannelReco();  // sets channelReco_
   void genEventSetup();
@@ -216,12 +218,12 @@ private:
   void photonIsolation(const std::vector<phys::Photon>&, const char*);
   void photonIsolation_bestKin();
   void orphanPhotonStudy();  // study reco photons that are not matched to gen
-  void systematicsStudy();
-  void SYSplots_inclusive(const char* syst, double weight);
-  void SYSplots_photon(   const char* syst, double weight, const phys::Photon& ph, const char* ph_selection);
-  void SYSplots_phCut(    const char* syst, double weight, const phys::Photon& phCut);
-  void SYSplots_phMVA(    const char* syst, double weight, const phys::Photon& phMVA);
-  void SYSplots(          const char* syst, double weight, const phys::Photon* phCut, const phys::Photon* phMVA);
+  void systematicsStudy(  const char* sys_label);
+  void SYSplots_inclusive(const char* sys_label, const char* syst, double weight);
+  void SYSplots_photon(   const char* sys_label, const char* syst, double weight, const phys::Photon& ph, const char* ph_selection);
+  void SYSplots_phCut(    const char* sys_label, const char* syst, double weight, const phys::Photon& phCut);
+  void SYSplots_phMVA(    const char* sys_label, const char* syst, double weight, const phys::Photon& phMVA);
+  void SYSplots(          const char* sys_label, const char* syst, double weight, const phys::Photon* phCut, const phys::Photon* phMVA);
   void debug3Lregion();
   void photonGenStudy();
   void ZllVsZllGstudy(const std::vector<phys::Photon>&, const char*);
