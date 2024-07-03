@@ -114,12 +114,7 @@ def main():
 
         # Add data
         if(args.unblind):
-            try:
-                data_obs = ROOT.TFile(os.path.join(path_in, 'data.root'))
-            except OSError as e:
-                logging.error('While opening %s, caught %s\nIt will be skipped and data_obs will NOT appear in the output', data_obs.GetName(), e)
-            else:
-                files_in['data_obs'] = data_obs
+            files_in['data_obs'] = ROOT.TFile(os.path.join(path_in, 'data.root'))
 
         # Try to open fake_photons
         fake_photons_fname = os.path.join(path_in, 'fake_photons.root')
