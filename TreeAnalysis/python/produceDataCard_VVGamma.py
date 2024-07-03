@@ -381,7 +381,12 @@ def main():
     # Additional systematics
     for syst, process in config['systematics'].get('ADD_gmN', {}).items():
         logging.debug('additional syst: %s -> %s', syst, process)
-        N, alpha = get_gmN_params_local(path_to_histograms_local, observables[0][0], process)
+        try:
+            N, alpha = get_gmN_params_local(path_to_histograms_local, observables[0][0], process)
+        except KeyError as e:
+            logging.error("%s --> skipping this gmN in datacard", e)
+            continue
+
         if(N > 0):
             new_row = [ alpha if p == process else '-' for p in df_syst.columns ]
             df_syst.loc[syst] = new_row
