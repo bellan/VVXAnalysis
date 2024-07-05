@@ -21,7 +21,7 @@ using namespace std;
 
 void CutEfficiency(){
 
-  TString path =  "~/VVXAnalysis/TreeAnalysis/results/2017/WZZAnalyzer_SR2P/";
+  TString path =  "~/VVXAnalysis/TreeAnalysis/results/2016preVFP/VZGAnalyzer_SR2P/";
   
   vector<TString> sampleNames = {"DYJetsToLL_M50", "TTTo2L2Nu","WZGTo2L2jG","ZZGTo2L2jG"};
   vector<TString> regionNames = {"sign","bckg"};
