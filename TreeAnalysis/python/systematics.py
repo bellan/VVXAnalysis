@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from __future__ import print_function
-from os import path, environ, getcwd
+from os import path
 import ROOT
 import sys
 import re
@@ -256,12 +256,7 @@ def main():
     syst_values = {}
     results_folder = InputDir(args.inputdir, year=args.year, region=args.region, analyzer=args.analyzer)
 
-    if(environ.get('CMSSW_BASE', False)):
-        basepath = path.join(environ['CMSSW_BASE'], 'src', 'VVXAnalysis', 'TreeAnalysis')
-    elif('VVXAnalysis' in getcwd()):
-        basepath = path.join(getcwd().split('VVXAnalysis')[0], 'VVXAnalysis', 'TreeAnalysis')
-    else:
-        basepath = '.'
+    basepath = path.join(get_VVXAnalysis(default='../'), 'TreeAnalysis')
     
     datapath = path.join(basepath, 'data')
     if(not path.isdir(datapath)):

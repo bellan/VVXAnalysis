@@ -58,6 +58,9 @@ void VVGammaAnalyzer::begin(){
   for(char i=0; i<25; ++i) cout<<'-';
   cout<<'\n';
 
+  const char* CMSSW_BASE = getenv("CMSSW_BASE");
+  std::string VVXAnalysis_dir = CMSSW_BASE == nullptr ? ".." : Form("%s/src/VVXAnalysis", CMSSW_BASE);
+
   std::string year_str;
   if(PHFR_SPLIT){
     year_str = std::to_string(year);
@@ -79,13 +82,13 @@ void VVGammaAnalyzer::begin(){
   hPhotonFRSF_VLtoL_      = getHistfromFile(Form("data/ratio_VLtoL_pt-aeta_data_over_ZZ_%s.root", year_str.c_str()), "PhFRSF");
 
   // Photon efficiency SF for cut-based ID (temporary)
-  std::string pathPhotonEffSF(Form("../Commons/data/egammaEffi.txt_EGM2D_Pho_Loose_UL%d%s.root", year%100, (subEra_.size() > 0 ? ('_'+subEra_).c_str() : "")));
+  std::string pathPhotonEffSF(Form("%s/Commons/data/egammaEffi.txt_EGM2D_Pho_Loose_UL%d%s.root", VVXAnalysis_dir.c_str(), year%100, (subEra_.size() > 0 ? ('_'+subEra_).c_str() : "")));
   hPhotonEffSF_           = getHistfromFile(pathPhotonEffSF.c_str(), "EGamma_SF2D");
   hPhotonEffSF_maxPt_     = hPhotonEffSF_->GetYaxis()->GetBinUpEdge(hPhotonEffSF_->GetNbinsY());
 
   // Photon MVA SF
-  mapPhotonMVASF_[Photon::MVAwp::wp80] = getHistfromFile(Form("../Commons/data/%d_PhotonsMVAwp80.root", year), "EGamma_SF2D");
-  mapPhotonMVASF_[Photon::MVAwp::wp90] = getHistfromFile(Form("../Commons/data/%d_PhotonsMVAwp90.root", year), "EGamma_SF2D");
+  mapPhotonMVASF_[Photon::MVAwp::wp80] = getHistfromFile(Form("%s/Commons/data/%d_PhotonsMVAwp80.root", VVXAnalysis_dir.c_str(), year), "EGamma_SF2D");
+  mapPhotonMVASF_[Photon::MVAwp::wp90] = getHistfromFile(Form("%s/Commons/data/%d_PhotonsMVAwp90.root", VVXAnalysis_dir.c_str(), year), "EGamma_SF2D");
   for(auto& it: mapPhotonMVASF_)  // std::pair<const Photon::MVAwp, std::unique_ptr<TH2F>>
     mapPhotonMVASF_maxPt_[it.first] = it.second->GetYaxis()->GetBinUpEdge(it.second->GetNbinsY());
 
