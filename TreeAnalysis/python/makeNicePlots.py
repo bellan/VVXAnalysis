@@ -193,10 +193,10 @@ if LumiProj != "":
     lumi = LumiProj
 else:
     lumi = lumi_dict[year]['value']
-lumi = round(lumi/1000.,1)
+lumi = lumi/1000.
 CMS_lumi.writeExtraText = True
 CMS_lumi.extraText = "Preliminary"
-CMS_lumi.lumi_sqrtS = "{0} fb^{{-1}} (13 TeV)\n".format(lumi)
+CMS_lumi.lumi_sqrtS = "{0:.3g} fb^{{-1}} (13 TeV)\n".format(lumi)
 
 iPos = 0
 if( iPos==0 ): CMS_lumi.relPosX = 0.12
