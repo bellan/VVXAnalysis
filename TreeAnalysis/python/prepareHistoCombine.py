@@ -131,20 +131,15 @@ def main():
 
         # Try to open fake_photons
         fake_photons_fname = os.path.join(path_in, 'fake_photons.root')
-        try:
-            fFakePh = ROOT.TFile(fake_photons_fname)
-        except OSError as e:
-            logging.info('While opening %s, caught %s', fake_photons_fname, e)
-        else:
-            files_in['fake_photons'] = fFakePh
 
         # Write fake_photons
-        if((not 'fake_photons' in files_in) or args.remake_fake_photons):
+        if(args.remake_fake_photons or (not os.path.exists(fake_photons_fname))):
             logging.info('Recreating fake_photons: %s', fake_photons_fname)
             with TFileContext(fake_photons_fname, 'RECREATE') as fFakePh:
                 variables_data = get_TH1keys_from_file(files_in['data_obs'])
                 write_fake_photons(fFakePh, data_obs=files_in['data_obs'], variables=variables_data)
-            files_in['fake_photons'] = ROOT.TFile(fake_photons_fname)
+
+        files_in['fake_photons'] = ROOT.TFile(fake_photons_fname)
 
         # If the program was run just to remake fake_photons, exit now
         if(args.remake_fake_photons):
