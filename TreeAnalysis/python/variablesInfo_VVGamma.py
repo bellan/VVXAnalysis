@@ -43,6 +43,10 @@ def getVarInfo_VVGamma(region):
             VarInfo_VVGamma.update({
                 "ZZ_mass_"+name : {'title':"m_{%s} [GeV]"     %(title), 'rebin':1, 'unblind':True},
                 "ZZ_pt_"  +name : {'title':"p_{T}^{%s} [GeV]" %(title), 'rebin':1, 'unblind':True},
+                "Z0_l0_pt_"+name: {'title':"%s - p_{T}^{Z0, l0} [GeV]" %(title), 'rebin':1, 'unblind':True},
+                "Z0_l1_pt_"+name: {'title':"%s - p_{T}^{Z0, l1} [GeV]" %(title), 'rebin':1, 'unblind':True},
+                "Z1_l0_pt_"+name: {'title':"%s - p_{T}^{Z1, l0} [GeV]" %(title), 'rebin':1, 'unblind':True},
+                "Z1_l1_pt_"+name: {'title':"%s - p_{T}^{Z1, l1} [GeV]" %(title), 'rebin':1, 'unblind':True},
             })
         VarInfo_VVGamma.update({
             'ZZ_mass_noPh'        : {'title':'m_{4l}, no #gamma [GeV]', 'rebin':1, 'unblind':True },
