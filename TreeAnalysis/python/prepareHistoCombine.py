@@ -14,6 +14,7 @@ from plotUtils23 import retrieve_bin_edges, InputDir
 from subprocess import call
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
+from samplesByRegion import getSamplesByRegion
 from utils23 import lumi_dict
 import re
 
@@ -86,6 +87,7 @@ def main():
     parser.add_argument(      '--remake-fake-photons', action='store_true', help='Force to recreate the fake_photons.root file from data.root')
     parser.add_argument('-v', '--verbose'  , dest='verbosity', action='count', default=1, help='Increase the verbosity level')
     parser.add_argument('-q', '--quiet'    , dest='verbosity', action='store_const', const=0)
+    parser.add_argument(      '--mcset'    , default='pow', choices=['mad', 'pow'], help='Monte Carlo Set, pow for Powheg, mad for amcatnlo (default: %(default)s)')
     parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
     args = parser.parse_args()
     args.unblind = not args.blind
@@ -108,7 +110,18 @@ def main():
             continue
 
         samples_region = set([ d.rstrip('.root') for d in os.listdir(path_in) if not skipsample(d) ])
-        logging.info('INFO: region=%s samples: %s', region, samples_region)
+        samples_info_region = {}
+        for predType in ('fullMC', 'lepCR', 'phoCR'):
+            try:
+                temp = {sample['name']: sample for sample in getSamplesByRegion(region, args.mcset, predType)}
+                samples_info_region.update(temp)
+            except ValueError:
+                logging.info('Skipping prediction type "%s" in region "%s" because %s')
+        logging.debug('samples_region_info: %s', samples_info_region)
+
+        files_info_region = { fname: {'kfactor': sample_data.get('kfactor', 1.)} for sample, sample_data in samples_info_region.items() for fname in sample_data['files'] }
+        logging.info('region=%s samples: %s', region, samples_region)
+        logging.debug('files_info_region: %s', files_info_region)
 
         files_in = {}  # mapping: sample <str> --> file <ROOT.TFile>
 
@@ -149,6 +162,9 @@ def main():
         logging.info('in %s there are %d variables', region, len(variables_region))
         logging.debug('in {} the variables are: {}'.format(region, variables_region))
 
+        ordered_files_in = [[k, v] for k,v in files_in.items() if k != 'data_obs']
+        ordered_files_in.append(['data_obs', files_in['data_obs']])
+
         # Sometimes the yield in data.root may be 0. In this case we must insert an empty histogram with the appropriate xaxis
         xbins_dict = dict()
 
@@ -175,14 +191,14 @@ def main():
                     subdir = fout.mkdir(var_name)
                 subdir.cd()  # cd into this TDirectory
 
-                ordered_files_in = [[k, v] for k,v in files_in.items() if k != 'data_obs']
-                ordered_files_in.append(['data_obs', files_in['data_obs']])
                 for sample, file_in in ordered_files_in:
                     if(sample == 'data_obs' and skipIfData):
                         continue
                     h = file_in.Get(variable)
                     if(h):
                         h.SetName(out_name %(sample))
+                        kfactor = files_info_region.get(sample, {}).get('kfactor', 1.)
+                        h.Scale(kfactor)
                         h.Write()
                         ok_retrieved.append( {'file':file_in.GetName(), 'variable':variable})
                         if(syst == 'central'):  # Save bin edges in case we need it
