@@ -839,6 +839,10 @@ void VVGammaAnalyzer::analyze(){
     theHistograms->fill("Z0_l1_pt"              , "p_{t,l01};GeV/c" , 20,0.,400. , ZZ->first().daughter(1).pt() , theWeight);
     theHistograms->fill("Z1_l0_pt"              , "p_{t,l10};GeV/c" , 20,0.,400. , ZZ->second().daughter(0).pt(), theWeight);
     theHistograms->fill("Z1_l1_pt"              , "p_{t,l11};GeV/c" , 20,0.,400. , ZZ->second().daughter(1).pt(), theWeight);
+    theHistograms->fill("Z0_l0_eta"             , "#eta^{l00};#eta^{l00}", 60,-2.5,2.5, ZZ->first() .daughter(0).eta(), theWeight);
+    theHistograms->fill("Z0_l1_eta"             , "#eta^{l01};#eta^{l01}", 60,-2.5,2.5, ZZ->first() .daughter(1).eta(), theWeight);
+    theHistograms->fill("Z1_l0_eta"             , "#eta^{l10};#eta^{l10}", 60,-2.5,2.5, ZZ->second().daughter(0).eta(), theWeight);
+    theHistograms->fill("Z1_l1_eta"             , "#eta^{l11};#eta^{l11}", 60,-2.5,2.5, ZZ->second().daughter(1).eta(), theWeight);
     theHistograms->fill("Z0_vs_Z1_mass"         , "m_{Z0} [GeV/c^{2}];m_{Z1} [GeV/c^{2}]", 30,60.,90., 30,60.,90., ZZ->first().mass(), ZZ->second().mass(), theWeight);
 
     theHistograms->fill("ZZ_mass_" +channelReco_, "m_{4l};GeV/c^{2}", mVV_bins   , ZZ->mass()                   , theWeight);
@@ -849,7 +853,10 @@ void VVGammaAnalyzer::analyze(){
     theHistograms->fill("Z0_l1_pt_"+channelReco_, "p_{t,l01};GeV/c" , 20,0.,400. , ZZ->first().daughter(1).pt() , theWeight);
     theHistograms->fill("Z1_l0_pt_"+channelReco_, "p_{t,l10};GeV/c" , 20,0.,400. , ZZ->second().daughter(0).pt(), theWeight);
     theHistograms->fill("Z1_l1_pt_"+channelReco_, "p_{t,l11};GeV/c" , 20,0.,400. , ZZ->second().daughter(1).pt(), theWeight);
-
+    theHistograms->fill("Z0_l0_eta"+channelReco_, "#eta^{l00};#eta^{l00}", 60,-2.5,2.5, ZZ->first() .daughter(0).eta(), theWeight);
+    theHistograms->fill("Z0_l1_eta"+channelReco_, "#eta^{l01};#eta^{l01}", 60,-2.5,2.5, ZZ->first() .daughter(1).eta(), theWeight);
+    theHistograms->fill("Z1_l0_eta"+channelReco_, "#eta^{l10};#eta^{l10}", 60,-2.5,2.5, ZZ->second().daughter(0).eta(), theWeight);
+    theHistograms->fill("Z1_l1_eta"+channelReco_, "#eta^{l11};#eta^{l11}", 60,-2.5,2.5, ZZ->second().daughter(1).eta(), theWeight);
     const char* ph_cutID = "noph";
     if     (goodPhotons_["central"]->size() > 0) ph_cutID = "loose";
     else if( kinPhotons_["central"]->size() > 0) ph_cutID = "kinVetoL";

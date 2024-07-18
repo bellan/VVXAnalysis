@@ -29,6 +29,10 @@ def getVarInfo_VVGamma(region):
             'Z0_l1_pt': {'title':'p_{T}^{Z0, l1} [GeV]'},
             'Z1_l0_pt': {'title':'p_{T}^{Z1, l0} [GeV]'},
             'Z1_l1_pt': {'title':'p_{T}^{Z1, l1} [GeV]'},
+            'Z0_l0_eta':{'title':'#eta^{Z0, l0}'       },
+            'Z0_l1_eta':{'title':'#eta^{Z0, l1}'       },
+            'Z1_l0_eta':{'title':'#eta^{Z1, l0}'       },
+            'Z1_l1_eta':{'title':'#eta^{Z1, l1}'       },
             'Z0_dRll' : {},
             'Z1_dRll' : {},
             'PhFRClosure_VLtoL_pt-aeta_data_PASS_mZZG'  : {'title':'m_{ZZ#gamma} [GeV]', 'unblind':False, 'rebin':rebin_mZZG}, #, 'fake_photons':'PhFRClosure_VLtoL_pt-aeta_data_reweighted_mZZG'},
@@ -47,6 +51,10 @@ def getVarInfo_VVGamma(region):
                 "Z0_l1_pt_"+name: {'title':"%s - p_{T}^{Z0, l1} [GeV]" %(title), 'rebin':1, 'unblind':True},
                 "Z1_l0_pt_"+name: {'title':"%s - p_{T}^{Z1, l0} [GeV]" %(title), 'rebin':1, 'unblind':True},
                 "Z1_l1_pt_"+name: {'title':"%s - p_{T}^{Z1, l1} [GeV]" %(title), 'rebin':1, 'unblind':True},
+                "Z0_l0_eta_"+name:{'title':'#eta^{Z0, l0}', 'rebin':3},
+                "Z0_l1_eta_"+name:{'title':'#eta^{Z0, l1}', 'rebin':3},
+                "Z1_l0_eta_"+name:{'title':'#eta^{Z1, l0}', 'rebin':3},
+                "Z1_l1_eta_"+name:{'title':'#eta^{Z1, l1}', 'rebin':3},
             })
         VarInfo_VVGamma.update({
             'ZZ_mass_noPh'        : {'title':'m_{4l}, no #gamma [GeV]', 'rebin':1, 'unblind':True },
