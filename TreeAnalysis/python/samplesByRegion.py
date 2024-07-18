@@ -64,7 +64,8 @@ def getSamplesByRegion(region, MCSet, predType):
         qqZZ = qqZZ_pow
     elif MCSet == 'mad':
         qqZZ = qqZZ_mad
-    else: sys.exit("Wrong Set, choose pow or mad")
+    else:
+        raise ValueError('Wrong MC set "%s", choose pow or mad' %(MCSet))
 
     tot = WZG + ZZG
 
