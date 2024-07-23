@@ -13,7 +13,8 @@ from argparse import ArgumentParser
 from samplesByRegion import getSamplesByRegion
 from tableSystematics import fillDataFrame
 from plotUtils23 import TFileContext
-from utils23 import lumi_dict
+from plotUtils import makedirs_ok
+from utils23 import lumi_dict, byteify
 import logging
 
 ### Hardcoded configuration ###
@@ -231,7 +232,7 @@ def main():
     # Update from config file
     try:
         with open(args.config_file) as f:
-            fconfig = json.load(f)
+            fconfig = json.load(f, object_hook=byteify)
     except json.decoder.JSONDecodeError as e:
         print('ERROR: Caught', type(e), 'while reading', args.config_file)
         print(e)
@@ -465,7 +466,7 @@ def main():
                             '{}_{}.txt'.format(args.year,# args.region,
                                                              args.config_file.split('/')[-1].split('.')[0] if args.config_file is not None else 'default'
                                                              ))
-    os.makedirs(os.path.dirname(cardname), exist_ok=True)  # make directories for card if they do not exist
+    makedirs_ok(os.path.dirname(cardname))  # make directories for card if they do not exist
     with open(cardname, 'w') as fout:
         if(missing_systematics): fout.write('### WARNING systematics missing for one or more samples ###\n\n')
         fout.write(template)
