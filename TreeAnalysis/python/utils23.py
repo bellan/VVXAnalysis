@@ -41,6 +41,30 @@ def get_VVXAnalysis(default=None):
         return default
 
 
+def byteify(data, ignore_dicts = False):
+    if isinstance(data, str):
+        return data
+
+    # If this is a list of values, return list of byteified values
+    if isinstance(data, list):
+        return [ byteify(item, ignore_dicts=True) for item in data ]
+    # If this is a dictionary, return dictionary of byteified keys and values
+    # but only if we haven't already byteified it
+    if isinstance(data, dict) and not ignore_dicts:
+        return {
+            byteify(key, ignore_dicts=True): byteify(value, ignore_dicts=True)
+            for key, value in data.items() # changed to .items() for Python 2.7/3
+        }
+
+    # Python 3 compatible duck-typing
+    # If this is a Unicode string, return its string representation
+    if str(type(data)) == "<type 'unicode'>":
+        return data.encode('utf-8')
+
+    # If it's anything else, return it in its original form
+    return data
+
+
 def _test_deep_update():
     d1 = {'A': {'a1': 1}, 'B': {'b1': 1}}
     d2 = {'A': {'a2': 2}, 'B': {'b1': 3, 'b2': 2}}
@@ -53,11 +77,18 @@ def _test_deep_update():
     assert deep_update(d3, d4) == target, 'deep_update failed to replace a list'
 
 
+def _test_byteify():
+    source = {u'a': [1,2,3], 'b': {u'b1': 2, u'b2': u'2'}, u'c': {u'c1': {u'c11': u'12', u'c12': [u'1', u'2']}}}
+    target = { 'a': [1,2,3], 'b': { 'b1': 2,  'b2':  '2'},  'c': { 'c1': { 'c11':  '12',  'c12': [ '1',  '2']}}}
+    assert byteify(source) == target, 'byteify failed to convert a dictionary as expected'
+
+
 def main():
     '''
     Run the tests
     '''
     _test_deep_update()
+    _test_byteify()
 
     return 0
 
