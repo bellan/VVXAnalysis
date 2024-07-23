@@ -6,7 +6,7 @@ import logging
 import ROOT
 from utils23 import lumi_dict
 from plotUtils23 import TFileContext, InputDir, InputFile
-
+from plotUtils import makedirs_ok
 
 def main(args):
     # "CREATE" fails if the target file exists
@@ -37,7 +37,7 @@ def main(args):
             filelist = os.listdir(input_dir.path())
             logging.debug('analyzer: %s, year: %-11s, region: %-6s, files: %d', input_dir.analyzer, input_dir.year, input_dir.region, len(filelist))
 
-            os.makedirs(output_dir.path(), exist_ok=True)
+            makedirs_ok(output_dir.path())
             for fname in filelist:
                 f_in  = InputFile(input_dir , fname)
                 f_out = InputFile(output_dir, fname)
