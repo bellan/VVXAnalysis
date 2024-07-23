@@ -13,7 +13,7 @@ from argparse import ArgumentParser
 from samplesByRegion import getSamplesByRegion
 from tableSystematics import fillDataFrame
 from plotUtils23 import TFileContext
-from utils23 import lumi_dict
+from utils23 import lumi_dict, byteify
 import logging
 
 ### Hardcoded configuration ###
@@ -231,7 +231,7 @@ def main():
     # Update from config file
     try:
         with open(args.config_file) as f:
-            fconfig = json.load(f)
+            fconfig = json.load(f, object_hook=byteify)
     except json.decoder.JSONDecodeError as e:
         print('ERROR: Caught', type(e), 'while reading', args.config_file)
         print(e)
