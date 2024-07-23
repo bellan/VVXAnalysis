@@ -11,7 +11,7 @@ from math import log10, ceil
 from json import load, dump
 from plotUtils import makedirs_ok
 from plotUtils23 import TFileContext, InputDir
-from utils23 import deep_update
+from utils23 import deep_update, get_VVXAnalysis
 from samplesByRegion import getSamplesByRegion
 from argparse import ArgumentParser
 import logging
