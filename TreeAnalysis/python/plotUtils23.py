@@ -1,11 +1,20 @@
 from array import array
 from math import sqrt
+import sys
 import os
 import copy
 import logging
 import ctypes
 import numpy as np
 import ROOT
+
+if(sys.version_info.major < 3):
+    import errno
+    class FileNotFoundError(OSError):
+        pass
+        # def __init__(self, message):
+        #     self.message = message
+        #     self.errno = errno.ENOENT
 
 class TFileContext(object):
     def __init__(self, *args):
