@@ -8,6 +8,7 @@
 
 import sys
 import os
+from errno import EEXIST
 if sys.version_info.major <= 2:
     from collections import Mapping
 else:
@@ -39,6 +40,17 @@ def get_VVXAnalysis(default=None):
         return os.path.join(os.getcwd().split('VVXAnalysis')[0], 'VVXAnalysis')
     else:
         return default
+
+
+# Emulate os.makekdirs(..., exists_ok=True) for python2
+if(sys.version_info.major < 3):
+    def makedirs_ok(*args, **kwargs):
+        try: os.makedirs(*args, **kwargs)
+        except OSError as e:
+            if(e.errno != EEXIST): raise e  # Catch only "File esists"
+else:
+    def makedirs_ok(*args, **kwargs):
+        os.makedirs(*args, exist_ok=True, **kwargs)
 
 
 def byteify(data, ignore_dicts = False):

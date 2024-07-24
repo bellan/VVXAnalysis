@@ -2,7 +2,6 @@
 
 import ROOT, copy, sys, os
 from copy import deepcopy
-from errno import EEXIST
 import math
 from readSampleInfo import *
 from collections import OrderedDict
@@ -42,12 +41,6 @@ def getPlot(plot, sample, region, inputdir='results', year='2016', analyzer='VVG
     else:
         filename = theInputFile.path()
         return getPlot_impl(filename, plot)
-
-# Emulate os.makekdirs(..., exists_ok=True) for python2
-def makedirs_ok(*args):
-    try: os.makedirs(*args)
-    except OSError as e:
-        if(e.errno != EEXIST): raise e  # Catch only "File esists"
 
 def iterate_bins(h, **kwargs):
     loX = 0 if kwargs.get("underX") else 1

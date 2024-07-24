@@ -19,13 +19,7 @@ import re
 import logging
 from plotUtils23 import TFileContext, addIfExisting, rebin2D, InputDir, addIfExisting, get_plots
 import Colours
-
-if(sys.version_info.major == 2):
-    from plotUtils import makedirs_ok
-else:
-    from os import makedirs
-    def makedirs_ok(*args):
-        makedirs(*args, exist_ok=True)
+from utils23 import makedirs_ok
 
 
 _outdir_data = "data"
