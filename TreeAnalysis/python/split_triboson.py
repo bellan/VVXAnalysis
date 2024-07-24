@@ -6,7 +6,7 @@ import logging
 import ROOT
 from utils23 import lumi_dict
 from plotUtils23 import TFileContext, InputDir, InputFile
-from plotUtils import makedirs_ok
+from utils23 import makedirs_ok
 
 def main(args):
     # "CREATE" fails if the target file exists

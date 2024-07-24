@@ -9,7 +9,8 @@
 from __future__ import print_function
 import os, sys
 import ROOT
-from plotUtils import TFileContext, makedirs_ok
+from plotUtils import TFileContext
+from utils23 import makedirs_ok
 from plotUtils23 import retrieve_bin_edges, InputDir
 from subprocess import call
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
