@@ -13,7 +13,7 @@ from argparse import ArgumentParser
 from samplesByRegion import getSamplesByRegion
 from tableSystematics import fillDataFrame
 from plotUtils23 import TFileContext
-from plotUtils import makedirs_ok
+from utils23 import makedirs_ok
 from utils23 import lumi_dict, byteify
 import logging
 
