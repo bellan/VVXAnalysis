@@ -757,6 +757,7 @@ void VVGammaAnalyzer::analyze(){
   photonGenStudy();
   photonIsolation_bestKin();
   photonFakeRate_ABCD();
+  baseHistos_analyze();
 
   // Photon fake rate loose to tight with various working points and closure tests
   if(bestKinPh_){
@@ -1051,12 +1052,14 @@ void VVGammaAnalyzer::analyze(){
     theHistograms->fill("Z_l0_pt"               , "p_{t,lZ0};GeV/c" , 20,0.,400. , ZL->first.daughter(0).pt()          , theWeight);
     theHistograms->fill("Z_l1_pt"               , "p_{t,lZ1};GeV/c" , 20,0.,400. , ZL->first.daughter(1).pt()          , theWeight);
     theHistograms->fill("L_pt"                  , "p_{t,l3};GeV/c"  , 20,0.,400. , ZL->second.pt()                     , theWeight);
+    theHistograms->fill("MET_fine"              , ";#slash{E}_{T} [GeV]", 60,0,60, met->pt()                           , theWeight);
 
     theHistograms->fill("ZL_mass_" +channelReco_, "m_{3l};GeV/c^{2}", 25,0.,500. , (ZL->first.p4()+ZL->second.p4()).M(), theWeight);
     theHistograms->fill("Z_mass_"  +channelReco_, "m_{Z};GeV/c^{2}" , 35,55.,125., ZL->first.mass()                    , theWeight);
     theHistograms->fill("Z_l0_pt_" +channelReco_, "p_{t,lZ0};GeV/c" , 20,0.,400. , ZL->first.daughter(0).pt()          , theWeight);
     theHistograms->fill("Z_l1_pt_" +channelReco_, "p_{t,lZ1};GeV/c" , 20,0.,400. , ZL->first.daughter(1).pt()          , theWeight);
     theHistograms->fill("L_pt_"    +channelReco_, "p_{t,l3};GeV/c"  , 20,0.,400. , ZL->second.pt()                     , theWeight);
+    theHistograms->fill("MET_fine" +channelReco_, ";#slash{E}_{T} [GeV]", 60,0,60, met->pt()                           , theWeight);
 
     if(theSampleInfo.isMC()){
       bool isPrompt = sigdefHelper.pass_photon();
@@ -1066,12 +1069,14 @@ void VVGammaAnalyzer::analyze(){
       theHistograms->fill("Z_l0_pt"               +strPrompt, ";p_{T}^{lZ0} [GeV/c]", 20,0.,400. , ZL->first.daughter(0).pt()          , theWeight);
       theHistograms->fill("Z_l1_pt"               +strPrompt, ";p_{T}^{lZ1} [GeV/c]", 20,0.,400. , ZL->first.daughter(1).pt()          , theWeight);
       theHistograms->fill("L_pt"                  +strPrompt, ";p_{T}^{l3} [GeV/c]" , 20,0.,400. , ZL->second.pt()                     , theWeight);
+      theHistograms->fill("MET_fine"              +strPrompt, ";#slash{E}_{T} [GeV]", 60,0.,60.  , met->pt()                           , theWeight);
 
       theHistograms->fill("ZL_mass_" +channelReco_+strPrompt, ";m_{3l} [GeV/c^{2}]" , 25,0.,500. , (ZL->first.p4()+ZL->second.p4()).M(), theWeight);
       theHistograms->fill("Z_mass_"  +channelReco_+strPrompt, ";m_{Z} [GeV/c^{2}]"  , 35,55.,125., ZL->first.mass()                    , theWeight);
       theHistograms->fill("Z_l0_pt_" +channelReco_+strPrompt, ";p_{T}^{lZ0} [GeV/c]", 20,0.,400. , ZL->first.daughter(0).pt()          , theWeight);
       theHistograms->fill("Z_l1_pt_" +channelReco_+strPrompt, ";p_{T}^{lZ1} [GeV/c]", 20,0.,400. , ZL->first.daughter(1).pt()          , theWeight);
       theHistograms->fill("L_pt_"    +channelReco_+strPrompt, ";p_{T}^{l3} [GeV/c]" , 20,0.,400. , ZL->second.pt()                     , theWeight);
+      theHistograms->fill("MET_fine" +channelReco_+strPrompt, ";#slash{E}_{T} [GeV]", 60,0.,60.  , met->pt()                           , theWeight);
     }
   }
   
@@ -1783,12 +1788,42 @@ void VVGammaAnalyzer::baseHistos_cut(){
   auto lead_ele = std::max_element(electrons->begin(), electrons->end(), [](const Lepton& a, const Lepton& b){ return a.pt() < b.pt(); } );
   auto lead_muo = std::max_element(muons->begin()    , muons->end()    , [](const Lepton& a, const Lepton& b){ return a.pt() < b.pt(); } );
   if(lead_ele != electrons->end())
-    theHistograms->fill("lead_ele_pt", "Leading electron p_{t}:p_{t} [GeV/c]", 50, 0., 250., lead_ele->pt(), theWeight);
+    theHistograms->fill("nocut_lead_ele_pt", "Leading electron p_{t}:p_{t} [GeV/c]", 60, 0., 300., lead_ele->pt(), theWeight);
   if(lead_muo != muons->end())
-    theHistograms->fill("lead_muo_pt", "Leading muon p_{t}:p_{t} [GeV/c]"   , 50, 0., 250., lead_muo->pt(), theWeight);
+    theHistograms->fill("nocut_lead_muo_pt", "Leading muon p_{t}:p_{t} [GeV/c]"    , 60, 0., 300., lead_muo->pt(), theWeight);
   
   // MET
-  theHistograms->fill("MET", "MET;#slash{E}_{T} [GeV/c]", 50, 0., 250., met->pt(), theWeight);
+  theHistograms->fill("nocut_MET", "MET;#slash{E}_{T} [GeV/c]", 60, 0., 300., met->pt(), theWeight);
+}
+
+
+void VVGammaAnalyzer::baseHistos_analyze(){
+  std::string strPrompt = "";
+  if(theSampleInfo.isMC())
+    strPrompt = sigdefHelper.pass_photon() ? "_prompt" : "_nonpro";
+
+  auto lead_lep = std::max_element(leptons_->begin(), leptons_->end(), [](const Lepton& a, const Lepton& b){ return a.pt() < b.pt(); } );
+  float met_pt = met->pt();
+  float lead_lep_pt  = lead_lep->pt();
+  float lead_lep_eta = lead_lep->eta();
+
+  theHistograms->fill(  "MET"                                      , ";#slash{E}_{T} [GeV]" , 60,0.,300. , met_pt             , theWeight);
+  theHistograms->fill(  "lead_lep_pt"                              , ";lead l p_{T} [GeV/c]", 60,0.,300. , lead_lep_pt        , theWeight);
+  theHistograms->fill(  "lead_lep_eta"                             , ";lead l #eta"         , 50,-2.5,2.5, lead_lep_eta       , theWeight);
+
+  theHistograms->fill(  "MET"               +channelReco_          , ";#slash{E}_{T} [GeV]" , 60,0.,300. , met_pt             , theWeight);
+  theHistograms->fill(  "lead_lep_pt"       +channelReco_          , ";lead l p_{T} [GeV/c]", 60,0.,300. , lead_lep_pt        , theWeight);
+  theHistograms->fill(  "lead_lep_eta"      +channelReco_          , ";lead l #eta"         , 50,-2.5,2.5, lead_lep_eta       , theWeight);
+
+  if(theSampleInfo.isMC()){
+    theHistograms->fill("MET"                            +strPrompt, ";#slash{E}_{T} [GeV]" , 60,0.,300. , met_pt             , theWeight);
+    theHistograms->fill("lead_lep_pt"                    +strPrompt, ";lead l p_{T} [GeV/c]", 60,0.,300. , lead_lep_pt        , theWeight);
+    theHistograms->fill("lead_lep_eta"                   +strPrompt, ";lead l #eta"         , 50,-2.5,2.5, lead_lep_eta       , theWeight);
+
+    theHistograms->fill("MET"               +channelReco_+strPrompt, ";#slash{E}_{T} [GeV]" , 60,0.,300. , met_pt             , theWeight);
+    theHistograms->fill("lead_lep_pt"       +channelReco_+strPrompt, ";lead l p_{T} [GeV/c]", 60,0.,300. , lead_lep_pt        , theWeight);
+    theHistograms->fill("lead_lep_eta"      +channelReco_+strPrompt, ";lead l #eta"         , 50,-2.5,2.5, lead_lep_eta       , theWeight);
+  }
 }
 
 

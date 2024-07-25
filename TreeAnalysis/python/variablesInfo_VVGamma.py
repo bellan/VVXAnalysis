@@ -227,7 +227,8 @@ def getVarInfo_VVGamma(region):
             'Z_l0_pt' :{'title': 'p_{T}^{lZ0} [GeV]' , 'split_prompt_ph':True},
             'Z_l1_pt' :{'title': 'p_{T}^{lZ1} [GeV]' , 'split_prompt_ph':True},
             'Z_dRll'  :{'split_prompt_ph':True},
-            'L_pt'    :{'title': 'p_{T}^{l3} [GeV]'  , 'split_prompt_ph':True}
+            'L_pt'    :{'title': 'p_{T}^{l3} [GeV]'  , 'split_prompt_ph':True},
+            'MET_fine':{'title': 'MET [GeV]'         , 'split_prompt_ph':True},
         })
 
     # Photon stuff
@@ -344,6 +345,9 @@ def getVarInfo_VVGamma(region):
     })
 
     VarInfo_VVGamma.update({
+        'MET'         : {'title': 'MET [GeV]'},
+        'lead_lep_pt' : {},
+        'lead_lep_eta': {},
         'GEN_chLeptons' : {'title':'# GEN charged leptons' ,'unblind':False, 'logy':True, 'ymin':1}
     })
 
