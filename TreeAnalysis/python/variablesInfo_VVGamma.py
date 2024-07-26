@@ -43,6 +43,21 @@ def getVarInfo_VVGamma(region):
             'PhFRClosure_KtoVLexcl_pt-aeta_FAIL_mZZG'   : {'title':'m_{ZZ#gamma} [GeV]', 'unblind':True , 'rebin':rebin_mZZG}
         })
 
+        for phstatus in ('noph', 'kinVetoL', 'loose'):
+            VarInfo_VVGamma.update({
+                'Z0_mass_'  +phstatus: {'title':'m_{Z0} [GeV]'        , 'split_prompt_ph': True},
+                'Z1_mass_'  +phstatus: {'title':'m_{Z1} [GeV]'        , 'split_prompt_ph': True},
+                'ZZ_pt_'    +phstatus: {'title':'p_{T}^{Z1} [GeV]'    , 'split_prompt_ph': True},
+                'Z0_l0_pt_' +phstatus: {'title':'p_{T}^{Z0, l0} [GeV]', 'split_prompt_ph': True},
+                'Z0_l1_pt_' +phstatus: {'title':'p_{T}^{Z0, l1} [GeV]', 'split_prompt_ph': True},
+                'Z1_l0_pt_' +phstatus: {'title':'p_{T}^{Z1, l0} [GeV]', 'split_prompt_ph': True},
+                'Z1_l1_pt_' +phstatus: {'title':'p_{T}^{Z1, l1} [GeV]', 'split_prompt_ph': True},
+                'Z0_l0_eta_'+phstatus: {'title':'#eta^{Z0, l0}'       , 'split_prompt_ph': True},
+                'Z0_l1_eta_'+phstatus: {'title':'#eta^{Z0, l1}'       , 'split_prompt_ph': True},
+                'Z1_l0_eta_'+phstatus: {'title':'#eta^{Z1, l0}'       , 'split_prompt_ph': True},
+                'Z1_l1_eta_'+phstatus: {'title':'#eta^{Z1, l1}'       , 'split_prompt_ph': True},
+            })
+
         for name, title in channels:
             VarInfo_VVGamma.update({
                 "ZZ_mass_"+name : {'title':"m_{%s} [GeV]"     %(title), 'rebin':1, 'unblind':True},

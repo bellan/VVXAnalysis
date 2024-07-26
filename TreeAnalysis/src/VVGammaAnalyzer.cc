@@ -849,15 +849,15 @@ void VVGammaAnalyzer::analyze(){
     theHistograms->fill("ZZ_mass_" +channelReco_, "m_{4l};GeV/c^{2}", mVV_bins   , ZZ->mass()                   , theWeight);
     theHistograms->fill("Z0_mass"  +channelReco_, "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
     theHistograms->fill("Z1_mass_" +channelReco_, "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
-    theHistograms->fill("ZZ_pt_"   +channelReco_, "p_{t,ZZ};GeV/c"  , 20,0.,400. , ZZ->pt()                     , theWeight);
-    theHistograms->fill("Z0_l0_pt_"+channelReco_, "p_{t,l00};GeV/c" , 20,0.,400. , ZZ->first().daughter(0).pt() , theWeight);
-    theHistograms->fill("Z0_l1_pt_"+channelReco_, "p_{t,l01};GeV/c" , 20,0.,400. , ZZ->first().daughter(1).pt() , theWeight);
-    theHistograms->fill("Z1_l0_pt_"+channelReco_, "p_{t,l10};GeV/c" , 20,0.,400. , ZZ->second().daughter(0).pt(), theWeight);
-    theHistograms->fill("Z1_l1_pt_"+channelReco_, "p_{t,l11};GeV/c" , 20,0.,400. , ZZ->second().daughter(1).pt(), theWeight);
-    theHistograms->fill("Z0_l0_eta"+channelReco_, "#eta^{l00};#eta^{l00}", 60,-2.5,2.5, ZZ->first() .daughter(0).eta(), theWeight);
-    theHistograms->fill("Z0_l1_eta"+channelReco_, "#eta^{l01};#eta^{l01}", 60,-2.5,2.5, ZZ->first() .daughter(1).eta(), theWeight);
-    theHistograms->fill("Z1_l0_eta"+channelReco_, "#eta^{l10};#eta^{l10}", 60,-2.5,2.5, ZZ->second().daughter(0).eta(), theWeight);
-    theHistograms->fill("Z1_l1_eta"+channelReco_, "#eta^{l11};#eta^{l11}", 60,-2.5,2.5, ZZ->second().daughter(1).eta(), theWeight);
+    theHistograms->fill("ZZ_pt_"    +channelReco_, ";p_{t,ZZ};GeV/c"   , 60,0.,300. , ZZ->pt()                      , theWeight);
+    theHistograms->fill("Z0_l0_pt_" +channelReco_, ";p_{t,l00} [GeV/c]", 60,0.,300. , ZZ->first() .daughter(0).pt() , theWeight);
+    theHistograms->fill("Z0_l1_pt_" +channelReco_, ";p_{t,l01} [GeV/c]", 60,0.,300. , ZZ->first() .daughter(1).pt() , theWeight);
+    theHistograms->fill("Z1_l0_pt_" +channelReco_, ";p_{t,l10} [GeV/c]", 60,0.,300. , ZZ->second().daughter(0).pt() , theWeight);
+    theHistograms->fill("Z1_l1_pt_" +channelReco_, ";p_{t,l11} [GeV/c]", 60,0.,300. , ZZ->second().daughter(1).pt() , theWeight);
+    theHistograms->fill("Z0_l0_eta_"+channelReco_, ";#eta^{l00}"       , 50,-2.5,2.5, ZZ->first() .daughter(0).eta(), theWeight);
+    theHistograms->fill("Z0_l1_eta_"+channelReco_, ";#eta^{l01}"       , 50,-2.5,2.5, ZZ->first() .daughter(1).eta(), theWeight);
+    theHistograms->fill("Z1_l0_eta_"+channelReco_, ";#eta^{l10}"       , 50,-2.5,2.5, ZZ->second().daughter(0).eta(), theWeight);
+    theHistograms->fill("Z1_l1_eta_"+channelReco_, ";#eta^{l11}"       , 50,-2.5,2.5, ZZ->second().daughter(1).eta(), theWeight);
     const char* ph_cutID = "noph";
     if     (goodPhotons_["central"]->size() > 0) ph_cutID = "loose";
     else if( kinPhotons_["central"]->size() > 0) ph_cutID = "kinVetoL";
@@ -866,6 +866,14 @@ void VVGammaAnalyzer::analyze(){
 
     theHistograms->fill(Form("Z0_mass_%s", ph_cutID), "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
     theHistograms->fill(Form("Z1_mass_%s", ph_cutID), "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
+    theHistograms->fill(Form("Z0_l0_pt_%s" , ph_cutID), ";p_{t,l00} [GeV/c]", 60,0.,300. , ZZ->first() .daughter(0).pt() , theWeight);
+    theHistograms->fill(Form("Z0_l1_pt_%s" , ph_cutID), ";p_{t,l01} [GeV/c]", 60,0.,300. , ZZ->first() .daughter(1).pt() , theWeight);
+    theHistograms->fill(Form("Z1_l0_pt_%s" , ph_cutID), ";p_{t,l10} [GeV/c]", 60,0.,300. , ZZ->second().daughter(0).pt() , theWeight);
+    theHistograms->fill(Form("Z1_l1_pt_%s" , ph_cutID), ";p_{t,l11} [GeV/c]", 60,0.,300. , ZZ->second().daughter(1).pt() , theWeight);
+    theHistograms->fill(Form("Z0_l0_eta_%s", ph_cutID), ";#eta^{l00}"       , 50,-2.5,2.5, ZZ->first() .daughter(0).eta(), theWeight);
+    theHistograms->fill(Form("Z0_l1_eta_%s", ph_cutID), ";#eta^{l01}"       , 50,-2.5,2.5, ZZ->first() .daughter(1).eta(), theWeight);
+    theHistograms->fill(Form("Z1_l0_eta_%s", ph_cutID), ";#eta^{l10}"       , 50,-2.5,2.5, ZZ->second().daughter(0).eta(), theWeight);
+    theHistograms->fill(Form("Z1_l1_eta_%s", ph_cutID), ";#eta^{l11}"       , 50,-2.5,2.5, ZZ->second().daughter(1).eta(), theWeight);
 
     theHistograms->fill(Form("Z0_mass_%s", jets_str), "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
     theHistograms->fill(Form("Z1_mass_%s", jets_str), "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
@@ -879,6 +887,14 @@ void VVGammaAnalyzer::analyze(){
 
 	theHistograms->fill(Form("Z0_mass_%s_%s", ph_cutID, sigdef_str), "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
 	theHistograms->fill(Form("Z1_mass_%s_%s", ph_cutID, sigdef_str), "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
+	theHistograms->fill(Form("Z0_l0_pt_%s_%s" , ph_cutID, sigdef_str), ";p_{t,l00} [GeV/c]", 60,0.,300. , ZZ->first() .daughter(0).pt() , theWeight);
+	theHistograms->fill(Form("Z0_l1_pt_%s_%s" , ph_cutID, sigdef_str), ";p_{t,l01} [GeV/c]", 60,0.,300. , ZZ->first() .daughter(1).pt() , theWeight);
+	theHistograms->fill(Form("Z1_l0_pt_%s_%s" , ph_cutID, sigdef_str), ";p_{t,l10} [GeV/c]", 60,0.,300. , ZZ->second().daughter(0).pt() , theWeight);
+	theHistograms->fill(Form("Z1_l1_pt_%s_%s" , ph_cutID, sigdef_str), ";p_{t,l11} [GeV/c]", 60,0.,300. , ZZ->second().daughter(1).pt() , theWeight);
+	theHistograms->fill(Form("Z0_l0_eta_%s_%s", ph_cutID, sigdef_str), ";#eta^{l00}"       , 50,-2.5,2.5, ZZ->first() .daughter(0).eta(), theWeight);
+	theHistograms->fill(Form("Z0_l1_eta_%s_%s", ph_cutID, sigdef_str), ";#eta^{l01}"       , 50,-2.5,2.5, ZZ->first() .daughter(1).eta(), theWeight);
+	theHistograms->fill(Form("Z1_l0_eta_%s_%s", ph_cutID, sigdef_str), ";#eta^{l10}"       , 50,-2.5,2.5, ZZ->second().daughter(0).eta(), theWeight);
+	theHistograms->fill(Form("Z1_l1_eta_%s_%s", ph_cutID, sigdef_str), ";#eta^{l11}"       , 50,-2.5,2.5, ZZ->second().daughter(1).eta(), theWeight);
 
 	theHistograms->fill(Form("Z0_mass_%s_%s", jets_str, sigdef_str), "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
 	theHistograms->fill(Form("Z1_mass_%s_%s", jets_str, sigdef_str), "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
