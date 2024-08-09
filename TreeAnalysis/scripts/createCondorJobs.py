@@ -97,7 +97,7 @@ def get_os_requirements():
     # This code is specific to rhel and will need updating if the OS changes (or if another version comes out)
     with open('/etc/redhat-release') as f:
         release = f.read().rstrip('\n')
-    logging.info('OS release on this machine: %s', release)
+    logging.debug('OS release on this machine: %s', release)
     if "release 7" in release:
         req = 'MY.SingularityImage     = "/cvmfs/unpacked.cern.ch/gitlab-registry.cern.ch/cms-cat/cmssw-lxplus/cmssw-el7-lxplus:latest/"'
         # req = "requirements = (OpSysAndVer =?= \"CentOS7\")"
@@ -107,7 +107,7 @@ def get_os_requirements():
         req = "requirements            = (OpSysAndVer =?= \"AlmaLinux9\")"
     else:
         raise RuntimeError('Unknown Red Hat release "%s"' %(release))
-    logging.info('therefore this job has: %s', req)
+    logging.debug('therefore this job has: %s', req)
     return req
 
 
