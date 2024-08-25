@@ -26,15 +26,18 @@ using std::endl;
 using namespace phys;
 using namespace physmath;
 
-std::vector<phys::Particle>* genElectrons_;
-//std::vector<phys::Particle>* genElectronsHist;
-//std::vector<phys::Particle>* electronsHist;
-std::vector<phys::Particle>* genMuons_;
-//std::vector<phys::Particle>* genMuonsHist;
-//std::vector<phys::Particle>* muonsHist;
+int start;
 
-double ptEffNum;
-double ptEffDen;
+std::vector<phys::Particle>* genElectrons_;
+std::vector<phys::Particle>* genElectronsHist_;
+std::vector<phys::Particle>* electronsHist_;
+
+std::vector<phys::Particle>* genMuons_;
+//std::vector<phys::Particle>* muonsHist_;
+
+double ptEffNum; double ptEffDen;
+double deltaRMax;
+int posI; int posJ;
 int numWrongCharge;
 
 void WlllnuAnalyzer::begin(){
@@ -67,7 +70,7 @@ void WlllnuAnalyzer::analyze(){
   }*/
   
   // -- Gen electrons & electrons pt match -- //
-  for(int i=0;i<genElectrons_->size();i++){
+  /*for(int i=0;i<genElectrons_->size();i++){
     ptEffDen += 1;
     for(int j=0;j<electrons->size();j++){
       if(physmath::deltaR(genElectrons_->at(i),electrons->at(j)) < 0.1 ){ 
@@ -75,25 +78,41 @@ void WlllnuAnalyzer::analyze(){
 	theHistograms->fill("gen_rec_el_pt"      , "Gen electrons & electrons pt match;pt"  , 50 , 0., 300., genElectrons_->at(i).pt(), theWeight);
       }
     }
-  }
-  /*
-  for(int i=0;i<std::min(genElectrons_->size(),electrons->size());i++){
+  }*/
+  
+  for(int i=0;i<genElectrons_->size();i++){
+    deltaRMax = 0.;
     ptEffDen += 1;
-    if(physmath::deltaR(genElectrons_->at(i),electrons->at(i)) < 0.1 ){ 
+    for(int j=0;j<electrons->size();j++){
+      if( deltaR(genElectrons_->at(i),electrons->at(j)) < 0.1 ){ 
+	if(deltaRMax==0.){
+	  deltaRMax = deltaR(genElectrons_->at(i),electrons->at(j));
+	  posJ = j;
+	}
+        else if(deltaR(genElectrons_->at(i),electrons->at(j))<deltaRMax){
+	  deltaRMax = deltaR(genElectrons_->at(i),electrons->at(j));
+	  posJ = j;
+	}
+      }
+    }
+    if(deltaRMax != 0){ 
       ptEffNum += 1;
+      genElectronsHist_->push_back(genElectrons_->at(i));
+      electronsHist_->push_back(electrons->at(posJ));
       theHistograms->fill("gen_rec_el_pt"      , "Gen electrons & electrons pt match;pt"  , 50 , 0., 300., genElectrons_->at(i).pt(), theWeight);
     }
   }
-  */
+  start += 1;
+  
   double ptEff = ptEffNum/ptEffDen;
   // cout << "-----------------------------------------------------------------" << endl;
   // cout << "genElectrons_ vs electrons: pt Efficiency = " << ptEff << endl;
   
-
+  /*
   // -- Gen electrons & electrons charge match -- //  
-  if(genElectrons_->size()>0 && electrons->size()>0){
-    for(int i=0;i<genElectrons_->size();i++){
-      if(abs( genElectrons_->at(i).charge() ) != abs( electrons->at(0).charge() )){
+  if(genElectronsHist_->size()>0 && electronsHist_->size()>0){
+    for(int i=0;i<genElectronsHist_->size();i++){
+      if( genElectrons_->at(i).charge() != electrons->at(i).charge() ){
 	numWrongCharge += 1;
       }
     }
@@ -101,23 +120,25 @@ void WlllnuAnalyzer::analyze(){
   // cout << "--------------------------------------------------------------------" << endl;
   // cout << "Number of wrong charge = " << numWrongCharge << endl;
 }
-
+  */
 
 void WlllnuAnalyzer::end(TFile &){
 }
 
 
 void WlllnuAnalyzer::genEventSetup(){
-  // genQuarks_->clear();
+  
+  //genQuarks_->clear();
   genChLeptons_->clear();
 
   genElectrons_ = new std::vector<phys::Particle>;
+  electronsHist_ = new std::vector<phys::Particle>;
   genMuons_ = new std::vector<phys::Particle>;
   
-  // genNeutrinos_->clear();
+  //genNeutrinos_->clear();
   genPhotons_->clear();
   genPhotonsPrompt_->clear();
-	
+  
  
   /*
   // -- Sort gen particles -- //
@@ -180,22 +201,12 @@ void WlllnuAnalyzer::genEventSetup(){
   std::sort(genPhotons_      ->begin(), genPhotons_      ->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
   std::sort(genPhotonsPrompt_->begin(), genPhotonsPrompt_->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
 
+  if(start==0){
+    genElectronsHist_ = new std::vector<phys::Particle>;
+    electronsHist_ = new std::vector<phys::Particle>;
+  }
+  //start +=1;
 
-  /*
-  // -- genElectron & electrons hinstogram vector -- //
-  for(int i=0;i<genElectrons_->size();i++){
-    //cout << "Checkpoint 1" << endl;
-    genElectronsHist->push_back(genElectrons_->at(i));
-    std::sort(genElectronsHist->begin(), genElectronsHist->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
-  }
-  for(int i=0;i<electrons->size();i++){
-    //cout << "Checkpoint 2" << endl;
-    electronsHist->push_back(electrons->at(i));
-    std::sort(electronsHist->begin(), electronsHist->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
-  }
-  cout << "-----------------------------------------------------------------------------" << endl;
-  cout << "Gen Electron Hist size = " << genElectronsHist->size() << ", Electron Hist size = " << electronsHist->size() << endl;
-  */
 
 }
 
