@@ -317,6 +317,16 @@ for Var in variables:
     xaxis  = hMC.GetXaxis()
     bx_min = (0 if draw_underflow else 1)
     bx_max = (1 if draw_overflow  else 0) + xaxis.GetNbins()
+
+    xmin_info = info.get('xmin')
+    xmax_info = info.get('xmax')
+    if(xmin_info is not None):
+        if(draw_underflow): print Warn('WARN'), 'xmin overrides draw_underflow'
+        bx_min = hMC.GetXaxis().FindFixBin(xmin_info + abs(xmin_info)*1e-6) # in case the requested xmin is a bin edge, get the right bin
+    if(xmax_info is not None):
+        if(draw_overflow ): print Warn('WARN'), 'xmax overrides draw_overflow'
+        bx_max = hMC.GetXaxis().FindFixBin(xmax_info - abs(xmax_info)*1e-6) # in case the requested xmax is a bin edge, get the left bin
+
     x_min  = xaxis.GetBinLowEdge(bx_min)
     x_max  = xaxis.GetBinLowEdge(bx_max+1)
     hMC.GetXaxis().SetRange(bx_min, bx_max)
