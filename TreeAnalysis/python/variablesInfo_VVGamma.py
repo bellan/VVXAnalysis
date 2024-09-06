@@ -360,7 +360,7 @@ def getVarInfo_VVGamma(region):
     })
 
     VarInfo_VVGamma.update({
-        'MET'         : {'title': 'MET [GeV]'},
+        'MET'         : {'title': 'MET [GeV]', 'xmax': 120.},
         'lead_lep_pt' : {},
         'lead_lep_eta': {},
         'GEN_chLeptons' : {'title':'# GEN charged leptons' ,'unblind':False, 'logy':True, 'ymin':1}
