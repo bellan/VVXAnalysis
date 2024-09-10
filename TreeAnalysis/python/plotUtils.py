@@ -714,42 +714,10 @@ def GetSignalDefPlot(inputdir,category):
 #######################################################
 
 def SetError(Histo,Region,Set0Error):
-    q=(1-0.6827)/2.
-    Graph=ROOT.TGraphAsymmErrors(Histo)
-
-    # Add manually under-/overflow points if needed
-    if(Histo.GetXaxis().GetLast() > Histo.GetXaxis().GetNbins()):
-        n = Graph.GetN()
-        xaxis = Histo.GetXaxis()
-        x = xaxis.GetBinCenter (xaxis.GetLast())
-        y = Histo.GetBinContent(xaxis.GetLast())
-        ey = math.sqrt(y)
-        Graph.AddPoint(x, y)
-        Graph.SetPointEYhigh(n, ey)
-        Graph.SetPointEYlow (n, ey)
-    if(Histo.GetXaxis().GetFirst() < 1):
-        n = Graph.GetN()
-        xaxis = Histo.GetXaxis()
-        x = xaxis.GetBinCenter (0)
-        y = Histo.GetBinContent(0)
-        ey = math.sqrt(y)
-        Graph.AddPoint(x, y)
-        Graph.SetPointEYhigh(n, ey)
-        Graph.SetPointEYlow (n, ey)
-
-    for i in range(Histo.GetXaxis().GetFirst(), Histo.GetXaxis().GetLast()+1):
-       # if Region=="CR3P1F" or Region=="CR2P2F":
-        if False:
-            N=Histo.GetBinContent(i)
-            if N==0 : 
-                statMin=0
-                if Set0Error: statPlus = ROOT.Math.chisquared_quantile_c(q,2*(N+1))/2.-N
-                else: statPlus = 0
-            else: 
-                statMin = (N-ROOT.Math.chisquared_quantile_c(1-q,2*N)/2.)
-                statPlus = ROOT.Math.chisquared_quantile_c(q,2*(N+1))/2.-N
-                Graph.SetPointError(i-1,0,0,statMin,statPlus)
-    return Graph
+    # See also https://twiki.cern.ch/twiki/bin/viewauth/CMS/PoissonErrorBars
+    h_copy = Histo.Clone(Histo.GetName()+'_copy')
+    h_copy.SetBinErrorOption(ROOT.TH1.kPoisson)
+    return ROOT.TGraphAsymmErrors(h_copy)
 
 
 def setCMSStyle(self, canvas, author='N. Woods', textRight=True, dataType='Preliminary Simulation', energy=13, intLumi=19710.):
