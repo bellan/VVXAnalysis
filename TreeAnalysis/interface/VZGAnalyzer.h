@@ -92,15 +92,16 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
   
   virtual bool   PhotonSignalCostraint();
 
-  virtual Bool_t cut(Int_t, phys::Boson<phys::Jet>,std::vector<phys::Photon>);
+  virtual Bool_t cut(Int_t, phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int);
 
-  virtual void Reconstruct(phys::Boson<phys::Jet>*);
+  //  virtual void Reconstruct(phys::Boson<phys::Jet>*,phys::Jet*,bool*,bool*);
+  int Reconstruct(phys::Boson<phys::Jet>*,phys::Jet*,bool*,bool*,phys::Photon*);
   
-    virtual void PhotonSelection(std::vector<phys::Photon> *);
+  virtual void PhotonSelection(std::vector<phys::Photon> *);
 
   virtual void CompatibilityTest(phys::Boson<phys::Jet>, phys::Boson<phys::Particle>, std::string, std::string);
 
-  virtual void printHistos(uint, std::string, phys::Boson<phys::Jet>,std::vector<phys::Photon>);
+  virtual void printHistos(uint, std::string, phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int);
 
  private:
   std::vector<phys::Lepton>* leptons_;
