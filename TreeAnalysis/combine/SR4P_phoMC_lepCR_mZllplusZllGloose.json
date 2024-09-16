@@ -23,6 +23,6 @@
 	}
     },
     "systematics": {
-	"norm_uncertainty": {"fake_leptons": {"up":0.34, "dn":-0.34}}
+	"norm_uncertainty": {"fake_leptons": {"up":0.40, "dn":-0.40}}
     }
 }
