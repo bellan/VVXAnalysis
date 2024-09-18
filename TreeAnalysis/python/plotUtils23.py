@@ -201,3 +201,7 @@ def set_overflow_range(h, underflow=False, overflow=True):
     bx_min = (0 if underflow else 1)
     bx_max = (1 if overflow  else 0) + h.GetXaxis().GetNbins()
     h.GetXaxis().SetRange(bx_min, bx_max)
+
+
+colors6  = [ ROOT.TColor.GetColor(hexc) for hexc in ('#5790fc', '#f89c20', '#e42536', '#964a8b', '#9c9ca1', '#7a21dd') ]
+colors10 = [ ROOT.TColor.GetColor(hexc) for hexc in ('#3f90da', '#ffa90e', '#bd1f01', '#94a4a2', '#832db6', '#a96b59', '#e76300', '#b9ac70', '#717581', '#92dadd')]
