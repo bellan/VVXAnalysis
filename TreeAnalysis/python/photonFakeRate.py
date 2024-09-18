@@ -18,11 +18,12 @@ import itertools
 import re
 import logging
 from plotUtils23 import TFileContext, addIfExisting, rebin2D, InputDir, addIfExisting, get_plots
+from plotUtils23 import colors6, colors10
 import Colours
 from utils23 import makedirs_ok
 
 
-_outdir_data = "data"
+_outdir_data = path.join("data","PhFR")
 _outdir_plot = path.join("Plot","PhFR")
 
 
@@ -760,9 +761,9 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
     y_labels = {}
 
     for bx in range(1, x_axis_ref.GetNbins()+1):
-        x_labels[bx] = "{}<{:s}<{}".format(x_axis_ref.GetBinLowEdge(bx), x_axis_title, x_axis_ref.GetBinUpEdge(bx))
+        x_labels[bx] = "{:.0f}<{:s}<{:.0f}".format(x_axis_ref.GetBinLowEdge(bx), x_axis_title, x_axis_ref.GetBinUpEdge(bx))
     for by in range(1, y_axis_ref.GetNbins()+1):
-        y_labels[by] = "{}<{:s}<{}".format(y_axis_ref.GetBinLowEdge(by), y_axis_title, y_axis_ref.GetBinUpEdge(by))
+        y_labels[by] = "{:.5g}<{:s}<{:.5g}".format(y_axis_ref.GetBinLowEdge(by), y_axis_title, y_axis_ref.GetBinUpEdge(by))
 
     makedirs_ok('{:s}/time'.format(_outdir_plot))
 
@@ -810,9 +811,9 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
     _style = [
         {'color':ROOT.kRed     , 'marker':ROOT.kFullTriangleUp},
         {'color':ROOT.kBlue    , 'marker':ROOT.kFullTriangleDown},
-        {'color':ROOT.kGreen   , 'marker':ROOT.kFullSquare},
+        {'color':ROOT.kGreen   , 'marker':ROOT.kFullDiamond},
         {'color':ROOT.kOrange  , 'marker':ROOT.kFullCircle},
-        {'color':ROOT.kCyan    , 'marker':ROOT.kFullStar},
+        {'color':ROOT.kCyan    , 'marker':ROOT.kFullSquare},
         {'color':ROOT.kMagenta , 'marker':ROOT.kFullTriangleUp},
         {'color':ROOT.kSpring  , 'marker':ROOT.kFullCross},
         {'color':ROOT.kViolet-6, 'marker':ROOT.kFullCrossX},
@@ -826,7 +827,7 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
         hTime.GetPainter().PaintTitle()
     n_hists = len(gTime_list)
     b_width = 1
-    margin  = 0.3
+    margin  = 0.2
     step    = (1 - 2*margin)/n_hists
     legend_all = ROOT.TLegend(0.55, 0.89 - 0.03*n_hists, 0.89, 0.89)
     for i, [g, leg_title] in enumerate(gTime_list):
@@ -895,8 +896,9 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
     legend_all = ROOT.TLegend(0.60, 0.89 - 0.04*n_hists, 0.89, 0.89)
     for i, [g, leg_title] in enumerate(gBinEvol_list):
         g.SetMarkerStyle(_style[i]['marker'])
-        g.SetMarkerColor(_style[i]['color' ])
-        g.SetLineColor  (_style[i]['color' ])
+        g.SetMarkerColor(colors6[i])
+        g.SetLineColor  (colors6[i])
+        g.SetMarkerSize (marker_size)
         legend_all.AddEntry(g, leg_title)
 
         for p in range(g.GetN()):
