@@ -14,7 +14,6 @@
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
-
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign;
 using namespace colour;
@@ -26,22 +25,26 @@ using std::endl;
 using namespace phys;
 using namespace physmath;
 
-int start;
-
 std::vector<phys::Particle>* genElectrons_;
 std::vector<phys::Particle>* genElectronsHist_;
 std::vector<phys::Particle>* electronsHist_;
-
 std::vector<phys::Particle>* genMuons_;
-//std::vector<phys::Particle>* muonsHist_;
+std::vector<phys::Particle>* genMuonsHist_;
+std::vector<phys::Particle>* muonsHist_;
+std::vector<phys::Particle>* genNeutrinosHist_;
+std::vector<phys::Particle>* metHist_;
 
-double ptEffNum; double ptEffDen;
 double deltaRMax;
+double deltaPhiMax;
 int posI; int posJ;
-int numWrongCharge;
+int start;
+TString histName; TString histTitle;
 
 void WlllnuAnalyzer::begin(){
-  
+  /*genElectronsHist_ = new std::vector<phys::Particle>;
+  electronsHist_ = new std::vector<phys::Particle>; 
+  genMuonsHist_ = new std::vector<phys::Particle>;
+  muonsHist_ = new std::vector<phys::Particle>;*/
 }
 
 Int_t WlllnuAnalyzer::cut() {
@@ -63,6 +66,11 @@ void WlllnuAnalyzer::analyze(){
   foreach(const phys::Particle &genEl, *genElectrons_){
     theHistograms->fill("GEN_el_pt"      , "Gen Electron pt;pt"  , 50 , 0, 300.,  genEl.pt(), theWeight);
   }
+
+  // -- Gen muons pt -- //
+  foreach(const phys::Particle &genMu, *genMuons_){
+    theHistograms->fill("GEN_mu_pt"      , "Gen Muon pt;pt"  , 50 , 0, 300.,  genMu.pt(), theWeight);
+  }
   
   // -- Gen photon pt -- //
   /*if(genPhotons_->size() > 0){
@@ -70,59 +78,201 @@ void WlllnuAnalyzer::analyze(){
   }*/
   
   // -- Gen electrons & electrons pt match -- //
-  /*for(int i=0;i<genElectrons_->size();i++){
-    ptEffDen += 1;
-    for(int j=0;j<electrons->size();j++){
-      if(physmath::deltaR(genElectrons_->at(i),electrons->at(j)) < 0.1 ){ 
-	ptEffNum += 1;
-	theHistograms->fill("gen_rec_el_pt"      , "Gen electrons & electrons pt match;pt"  , 50 , 0., 300., genElectrons_->at(i).pt(), theWeight);
-      }
-    }
-  }*/
-  
   for(int i=0;i<genElectrons_->size();i++){
     deltaRMax = 0.;
-    ptEffDen += 1;
+    bool usedElectrons_[electrons->size()] = {};
     for(int j=0;j<electrons->size();j++){
-      if( deltaR(genElectrons_->at(i),electrons->at(j)) < 0.1 ){ 
-	if(deltaRMax==0.){
-	  deltaRMax = deltaR(genElectrons_->at(i),electrons->at(j));
-	  posJ = j;
-	}
-        else if(deltaR(genElectrons_->at(i),electrons->at(j))<deltaRMax){
-	  deltaRMax = deltaR(genElectrons_->at(i),electrons->at(j));
-	  posJ = j;
-	}
+      usedElectrons_[j] = false;
+    }
+    
+    for(int j=0;j<electrons->size();j++){
+      if(usedElectrons_[j]==false){
+        if( deltaR(genElectrons_->at(i),electrons->at(j)) < 0.1 ){ 
+	  if(deltaRMax==0.){
+	    deltaRMax = deltaR(genElectrons_->at(i),electrons->at(j));
+	    posJ = j;
+	  }
+          else if(deltaR(genElectrons_->at(i),electrons->at(j))<deltaRMax){
+	    deltaRMax = deltaR(genElectrons_->at(i),electrons->at(j));
+	    posJ = j;
+	  }
+        }
       }
     }
     if(deltaRMax != 0){ 
-      ptEffNum += 1;
       genElectronsHist_->push_back(genElectrons_->at(i));
       electronsHist_->push_back(electrons->at(posJ));
-      theHistograms->fill("gen_rec_el_pt"      , "Gen electrons & electrons pt match;pt"  , 50 , 0., 300., genElectrons_->at(i).pt(), theWeight);
+      usedElectrons_[posJ] = true;
+      theHistograms->fill("GEN_REC_el_pt"      , "Gen electrons & electrons pt match;pt"  , 50 , 0., 300., genElectrons_->at(i).pt(), theWeight);
+      
     }
   }
-  start += 1;
+  // -- Gen muons & muons pt match -- //
+  for(int i=0;i<genMuons_->size();i++){
+    deltaRMax = 0.;
+    bool usedMuons_[muons->size()] = {};
+    for(int j=0;j<muons->size();j++){
+      usedMuons_[j] = false;
+    }
+    
+    for(int j=0;j<muons->size();j++){
+      if(usedMuons_[j]==false){
+        if( deltaR(genMuons_->at(i),muons->at(j)) < 0.1 ){ 
+	  if(deltaRMax==0.){
+	    deltaRMax = deltaR(genMuons_->at(i),muons->at(j));
+	    posJ = j;
+	  }
+          else if(deltaR(genMuons_->at(i),muons->at(j))<deltaRMax){
+	    deltaRMax = deltaR(genMuons_->at(i),muons->at(j));
+	    posJ = j;
+	  }
+        }
+      }
+    }
+    if(deltaRMax != 0){ 
+      genMuonsHist_->push_back(genMuons_->at(i));
+      muonsHist_->push_back(muons->at(posJ));
+      usedMuons_[posJ] = true;
+      theHistograms->fill("GEN_REC_mu_pt"      , "Gen muons & muons pt match;pt"  , 50 , 0., 300., genMuons_->at(i).pt(), theWeight);
+      /*if( genMuons_->at(i).eta() < 1.4 ){                         // Barrel region
+	theHistograms->fill("GEN_REC_mu_pt_barrel_region"      , "Gen muons & muons pt match (BARREL REGION);pt"  , 50 , 0., 300., genMuons_->at(i).pt(), theWeight);
+      }
+      else if( 1.4 < genMuons_->at(i).eta() < 1.6 ){              // Endcap region         
+	theHistograms->fill("GEN_REC_mu_pt_endcap_region"      , "Gen muons & muons pt match (ENDCAP REGION);pt"  , 50 , 0., 300., genMuons_->at(i).pt(), theWeight);
+      }
+      else{                                                             // Other regions external to endcap region
+	theHistograms->fill("GEN_REC_mu_pt_other_regions"      , "Gen muons & muons pt match (OTHER REGIONS EXTERNAL TO ENDCAP);pt"  , 50 , 0., 300., genMuons_->at(i).pt(), theWeight);
+      }*/
+    }
+  }
+
   
-  double ptEff = ptEffNum/ptEffDen;
-  // cout << "-----------------------------------------------------------------" << endl;
-  // cout << "genElectrons_ vs electrons: pt Efficiency = " << ptEff << endl;
-  
-  /*
-  // -- Gen electrons & electrons charge match -- //  
-  if(genElectronsHist_->size()>0 && electronsHist_->size()>0){
-    for(int i=0;i<genElectronsHist_->size();i++){
-      if( genElectrons_->at(i).charge() != electrons->at(i).charge() ){
-	numWrongCharge += 1;
+  // -- Gen neutrinos & MET pt match -- //
+  deltaPhiMax = 0.;
+  for(int i=0;i<genNeutrinos_->size();i++){
+    if( deltaPhi(genNeutrinos_->at(i).phi(),met->phi()) < 0.1 ){ 
+      if(deltaPhiMax==0.){
+	deltaPhiMax = deltaPhi(genNeutrinos_->at(i).phi(),met->phi());
+	posI = i;
+      }
+      else if(deltaPhi(genNeutrinos_->at(i).phi(),met->phi())<deltaPhiMax){
+	deltaPhiMax = deltaPhi(genNeutrinos_->at(i).phi(),met->phi());
+	posI = i;
       }
     }
   }
-  // cout << "--------------------------------------------------------------------" << endl;
-  // cout << "Number of wrong charge = " << numWrongCharge << endl;
+  if(deltaPhiMax != 0){ 
+    //genNeutrinosHist_->push_back(genNeutrinos_->at(posI));
+    //metHist_->push_back(met);
+    theHistograms->fill("GEN_REC_neutrinos_pt"      , "Gen neutrinos & MET pt match;pt"  , 50 , 0., 300., genNeutrinos_->at(posI).pt(), theWeight);
+  }
+  
+
+  
+  // -- W boson possible configurations -- //
+  if(genChLeptons_->size()==3){
+    if(genElectrons_->size()==2 && genMuons_->size()==1){
+      //histName = "GEN_W_decay_ch_leptons_pt_mode1";  // 2 elettroni, 1 muone
+      //histTitle = "Gen Charged Leptons pt (2 electrons & 1 muon)";
+      foreach(const phys::Particle &genCh, *genChLeptons_){
+	theHistograms->fill("GEN_W_decay_ch_leptons_pt_mode1", "Gen Charged Leptons pt (2 electrons & 1 muon)" , 50 , 0, 300.,  genCh.pt(), theWeight);
+      }
+    }
+    else if(genMuons_->size()==2 && genElectrons_->size()==1){
+      //histName = "GEN_W_decay_ch_leptons_pt_mode2";  // 2 muoni, 1 elettrone
+      //histTitle = "Gen Charged Leptons pt (2 muons & 1 electrons)";
+      foreach(const phys::Particle &genCh, *genChLeptons_){
+	theHistograms->fill("GEN_W_decay_ch_leptons_pt_mode2", "Gen Charged Leptons pt (2 muons & 1 electron)" , 50 , 0, 300.,  genCh.pt(), theWeight);
+      }
+    }
+    else if(genElectrons_->size()==3){
+      //histName = "GEN_W_decay_ch_leptons_pt_mode3";  // 3 elettroni
+      //histTitle = "Gen Charged Leptons pt (3 electrons)";
+      foreach(const phys::Particle &genCh, *genChLeptons_){
+        theHistograms->fill("GEN_W_decay_ch_leptons_pt_mode3", "Gen Charged Leptons pt (3 electrons)" , 50 , 0, 300.,  genCh.pt(), theWeight);
+      }
+    }
+    else if(genMuons_->size()==3){
+      //histName = "GEN_W_decay_ch_leptons_pt_mode4";  // 3 muoni
+      //histTitle = "Gen Charged Leptons pt (3 muons)";
+      foreach(const phys::Particle &genCh, *genChLeptons_){
+        theHistograms->fill("GEN_W_decay_ch_leptons_pt_mode4", "Gen Charged Leptons pt (3 muons)" , 50 , 0, 300.,  genCh.pt(), theWeight);
+      }
+    }
+    //foreach(const phys::Particle &genCh, *genChLeptons_){
+    //  theHistograms->fill(histName, histTitle , 50 , 0, 300.,  genCh.pt(), theWeight);
+    //}
+  }
+  
+  
+
+
+
+
+  
+
+
+  
+
+  start += 1;
 }
-  */
+  
 
 void WlllnuAnalyzer::end(TFile &){
+  
+  // -- Gen Electrons Efficiency -- //
+  TH1* histoGenElPt = theHistograms->get("GEN_el_pt");
+  TH1* histoGenElMatchPt = theHistograms->get("GEN_REC_el_pt");
+  TH1* histoGenElEff = (TH1*)histoGenElPt->Clone("histoGenElEff");
+  histoGenElEff->Divide(histoGenElPt);
+  TCanvas *c1 = new TCanvas("c1","GEN_REC_el_pt",200,10,600,400);
+  c1->SetFillColor(0);
+  c1->cd();
+  histoGenElEff->Draw();
+  // -- Gen Muons Efficiency -- //
+  TH1* histoGenMuPt = theHistograms->get("GEN_mu_pt");
+  TH1* histoGenMuMatchPt = theHistograms->get("GEN_REC_mu_pt");
+  TH1* histoGenMuEff = (TH1*)histoGenMuPt->Clone("histoGenMuEff");
+  histoGenMuEff->Divide(histoGenMuPt);
+  TCanvas *c2 = new TCanvas("c2","GEN_REC_mu_pt",200,10,600,400);
+  c2->SetFillColor(0);
+  c2->cd();
+  histoGenMuEff->Draw();
+  
+  // -- genElectrons pt Resolution -- // 
+  for(int i=0;i<genElectronsHist_->size();i++){
+    if( genElectronsHist_->at(i).eta() < 1.4 ){                         // Barrel region
+      theHistograms->fill("GEN_el_pt_resolution_barrel_region" , "GEN electron pt resolution (BARREL REGION)"  , 30 , -10, 10, genElectronsHist_->at(i).pt() - electronsHist_->at(i).pt(), theWeight);
+    }
+    else if( 1.4 < genElectronsHist_->at(i).eta() < 3.0 ){              // Endcap region         
+      theHistograms->fill("GEN_el_pt_resolution_endcap_region" , "GEN electron pt resolution (ENDCAP REGION)"  , 30 , -10, 10, genElectronsHist_->at(i).pt() - electronsHist_->at(i).pt(), theWeight);
+    }
+    else if( 3.0 < genElectronsHist_->at(i).eta() < 5.0 ){              // Other regions external to endcap region
+      theHistograms->fill("GEN_el_pt_resolution_forward_region" , "GEN electron pt resolution (FORWARD REGION)"  , 30 , -10, 10, genElectronsHist_->at(i).pt() - electronsHist_->at(i).pt(), theWeight);
+    }
+  }
+  // -- genMuons pt Resolution -- //
+  for(int i=0;i<genMuonsHist_->size();i++){
+    if( genMuonsHist_->at(i).eta() < 1.4 ){                         // Barrel region
+      theHistograms->fill("GEN_mu_pt_resolution_barrel_region"      , "GEN muon pt resolution (BARREL REGION)"  , 30 , -10, 10, genMuonsHist_->at(i).pt() - muonsHist_->at(i).pt(), theWeight);
+    }
+    else if( 1.4 < genMuonsHist_->at(i).eta() < 3.0 ){              // Endcap region         
+      theHistograms->fill("GEN_mu_pt_resolution_endcap_region"      , "GEN muon pt resolution (ENDCAP REGION)"  , 30 , -10, 10, genMuonsHist_->at(i).pt() - muonsHist_->at(i).pt(), theWeight);
+    }
+    else if( 3.0 < genMuonsHist_->at(i).eta() < 5.0 ){              // Other regions external to endcap region
+      theHistograms->fill("GEN_mu_pt_resolution_forward_region"      , "GEN muon pt resolution (FORWARD REGION)"  , 30 , -10, 10, genMuonsHist_->at(i).pt() - muonsHist_->at(i).pt(), theWeight);
+    }
+  }
+  
+
+
+
+
+
+
+
+
+  
 }
 
 
@@ -130,15 +280,20 @@ void WlllnuAnalyzer::genEventSetup(){
   
   //genQuarks_->clear();
   genChLeptons_->clear();
-
   genElectrons_ = new std::vector<phys::Particle>;
-  electronsHist_ = new std::vector<phys::Particle>;
   genMuons_ = new std::vector<phys::Particle>;
-  
-  //genNeutrinos_->clear();
+  genNeutrinos_->clear();
   genPhotons_->clear();
   genPhotonsPrompt_->clear();
-  
+
+  if(start==0){
+    genElectronsHist_ = new std::vector<phys::Particle>;
+    electronsHist_ = new std::vector<phys::Particle>;
+    genMuonsHist_ = new std::vector<phys::Particle>;
+    muonsHist_ = new std::vector<phys::Particle>;
+    genNeutrinosHist_ = new std::vector<phys::Particle>;
+    metHist_ = new std::vector<phys::Particle>;
+  }
  
   /*
   // -- Sort gen particles -- //
@@ -162,51 +317,41 @@ void WlllnuAnalyzer::genEventSetup(){
   }
   */
 
-  // -- Sort genChLeptons -- //
+  // -- Sort genChLeptons, genNeutrinos & genPhotons -- //
   for(auto p : *genParticles){
     unsigned int aPID = abs(p.id());
     if(aPID == 11 || aPID == 13){
       genChLeptons_->push_back(p);
-      // cout << "------------------------------------------------------------------------"<<endl;
-      // cout << "Charged Lepton pt: " << p.pt() << endl;
       if(aPID == 11){
 	genElectrons_->push_back(p);
-	// cout << "------------------------------------------------------------------------"<<endl;
-        // cout << "Electron pt: " << p.pt() << endl;
       }
       else{
 	genMuons_->push_back(p);
-	// cout << "------------------------------------------------------------------------"<<endl;
-        // cout << "Muon pt: " << p.pt() << endl;
       }
+    }
+    else if(aPID == 12 || aPID == 14){
+      genNeutrinos_->push_back(p);
     }
     else if(aPID == 22){
       genPhotons_->push_back(p);
       if(p.genStatusFlags().test(phys::isPrompt)){
 	genPhotonsPrompt_->push_back(p);
-        // cout << "------------------------------------------------------------------------"<<endl;
-        // cout << "Photon pt: " << p.pt() << endl;
       }
     }
   }
-
   
   // std::sort(genQuarks_       ->begin(), genQuarks_       ->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
   std::sort(genChLeptons_    ->begin(), genChLeptons_    ->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
-
   std::sort(genElectrons_    ->begin(), genElectrons_    ->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
   std::sort(genMuons_    ->begin(), genMuons_    ->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
-
-  // std::sort(genNeutrinos_    ->begin(), genNeutrinos_    ->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
+  std::sort(genNeutrinos_    ->begin(), genNeutrinos_    ->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
   std::sort(genPhotons_      ->begin(), genPhotons_      ->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
   std::sort(genPhotonsPrompt_->begin(), genPhotonsPrompt_->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
 
-  if(start==0){
-    genElectronsHist_ = new std::vector<phys::Particle>;
-    electronsHist_ = new std::vector<phys::Particle>;
-  }
-  //start +=1;
 
 
+
+
+  
 }
 
