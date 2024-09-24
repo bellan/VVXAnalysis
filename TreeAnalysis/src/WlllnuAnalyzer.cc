@@ -41,12 +41,12 @@ int start;
 //TString histName; TString histTitle;
 
 void WlllnuAnalyzer::begin(){
-  /*genElectronsHist_ = new std::vector<phys::Particle>;
+  genElectronsHist_ = new std::vector<phys::Particle>;
   electronsHist_ = new std::vector<phys::Particle>;
   genMuonsHist_ = new std::vector<phys::Particle>;
   muonsHist_ = new std::vector<phys::Particle>;
   genNeutrinosHist_ = new std::vector<phys::Particle>;
-  metHist_ = new std::vector<phys::Particle>;*/
+  metHist_ = new std::vector<phys::Particle>;
 }
 
 Int_t WlllnuAnalyzer::cut() {
@@ -168,39 +168,21 @@ void WlllnuAnalyzer::analyze(){
     theHistograms->fill("GEN_REC_neutrinos_pt"      , "Gen neutrinos & MET pt match;pt"  , 50 , 0., 300., genNeutrinos_->at(posI).pt(), theWeight);
   }
   
-  // -- W boson possible configurations -- //
+  // -- W boson 3 leptons decay possible configurations -- //
   if(genChLeptons_->size()==3){
     if(genElectrons_->size()==2 && genMuons_->size()==1){
-      //histName = "GEN_W_decay_ch_leptons_pt_mode1";  // 2 elettroni, 1 muone
-      //histTitle = "Gen Charged Leptons pt (2 electrons & 1 muon)";
-      foreach(const phys::Particle &genCh, *genChLeptons_){
-	theHistograms->fill("GEN_W_decay_ch_leptons_pt_mode1", "Gen Charged Leptons pt (2 electrons & 1 muon)" , 50 , 0, 300.,  genCh.pt(), theWeight);
-      }
+      
     }
     else if(genMuons_->size()==2 && genElectrons_->size()==1){
-      //histName = "GEN_W_decay_ch_leptons_pt_mode2";  // 2 muoni, 1 elettrone
-      //histTitle = "Gen Charged Leptons pt (2 muons & 1 electrons)";
-      foreach(const phys::Particle &genCh, *genChLeptons_){
-	theHistograms->fill("GEN_W_decay_ch_leptons_pt_mode2", "Gen Charged Leptons pt (2 muons & 1 electron)" , 50 , 0, 300.,  genCh.pt(), theWeight);
-      }
+      
     }
     else if(genElectrons_->size()==3){
-      //histName = "GEN_W_decay_ch_leptons_pt_mode3";  // 3 elettroni
-      //histTitle = "Gen Charged Leptons pt (3 electrons)";
-      foreach(const phys::Particle &genCh, *genChLeptons_){
-        theHistograms->fill("GEN_W_decay_ch_leptons_pt_mode3", "Gen Charged Leptons pt (3 electrons)" , 50 , 0, 300.,  genCh.pt(), theWeight);
-      }
+      
     }
     else if(genMuons_->size()==3){
-      //histName = "GEN_W_decay_ch_leptons_pt_mode4";  // 3 muoni
-      //histTitle = "Gen Charged Leptons pt (3 muons)";
-      foreach(const phys::Particle &genCh, *genChLeptons_){
-        theHistograms->fill("GEN_W_decay_ch_leptons_pt_mode4", "Gen Charged Leptons pt (3 muons)" , 50 , 0, 300.,  genCh.pt(), theWeight);
-      }
+      
     }
-    //foreach(const phys::Particle &genCh, *genChLeptons_){
-    //  theHistograms->fill(histName, histTitle , 50 , 0, 300.,  genCh.pt(), theWeight);
-    //}
+    
   }
   
   
@@ -260,16 +242,6 @@ void WlllnuAnalyzer::genEventSetup(){
   genNeutrinos_->clear();
   genPhotons_->clear();
   genPhotonsPrompt_->clear();
-
-  
-  if(start==0){
-    genElectronsHist_ = new std::vector<phys::Particle>;
-    electronsHist_ = new std::vector<phys::Particle>;
-    genMuonsHist_ = new std::vector<phys::Particle>;
-    muonsHist_ = new std::vector<phys::Particle>;
-    genNeutrinosHist_ = new std::vector<phys::Particle>;
-    metHist_ = new std::vector<phys::Particle>;
-  }
  
   /*
   // -- Sort gen particles -- //
