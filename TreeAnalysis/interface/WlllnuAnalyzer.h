@@ -26,6 +26,17 @@ public:
    : EventAnalyzer(*(new Selector<WlllnuAnalyzer>(*this)), 
 		   configuration){
     //theHistograms.profile(genCategory);
+    // Memory allocation
+    genQuarks_       .reset(new std::vector<phys::Particle>);
+    genChLeptons_    .reset(new std::vector<phys::Particle>);
+    genNeutrinos_    .reset(new std::vector<phys::Particle>);
+    genPhotons_      .reset(new std::vector<phys::Particle>);
+    genPhotonsPrompt_.reset(new std::vector<phys::Particle>);
+
+    genZlepCandidates_.reset(new std::vector<phys::Boson<phys::Particle>>);
+    genWlepCandidates_.reset(new std::vector<phys::Boson<phys::Particle>>);
+    genZhadCandidates_.reset(new std::vector<phys::Boson<phys::Particle>>);
+    genWhadCandidates_.reset(new std::vector<phys::Boson<phys::Particle>>);
   }
 
   virtual ~WlllnuAnalyzer(){}
@@ -38,7 +49,49 @@ public:
   virtual Int_t cut();
   typedef std::pair<bool,int> boolInt;
   
- 
+  void genEventSetup();
+
+  template<class T, class V>
+  static bool haveCommonDaughter(const phys::Boson<T>& a, const phys::Boson<V>& b, const float tol=0.001){
+    return (
+	    (a.daughter(0).p4() - b.daughter(0).p4()).P() < tol ||
+	    (a.daughter(0).p4() - b.daughter(1).p4()).P() < tol ||
+	    (a.daughter(1).p4() - b.daughter(0).p4()).P() < tol ||
+	    (a.daughter(1).p4() - b.daughter(1).p4()).P() < tol   );
+  }
+	
+  template<class T1, class T2, class V1, class V2>
+  static bool haveCommonDaughter(const phys::DiBoson<T1, T2>& a, const phys::DiBoson<V1, V2>& b, const float tol=0.001){
+    return (
+	    haveCommonDaughter(a.daughter(0), b.daughter(0), tol) ||
+	    haveCommonDaughter(a.daughter(0), b.daughter(1), tol) ||
+	    haveCommonDaughter(a.daughter(1), b.daughter(0), tol) ||
+	    haveCommonDaughter(a.daughter(1), b.daughter(1), tol)   );
+  }
+
+  bool GenWtoLNuDefinition(phys::Boson<phys::Particle> cand) const {
+    bool gooddaughters = (fabs(cand.daughter(0).eta()) < 2.5 && cand.daughter(0).pt() > 20);
+    return gooddaughters;
+  }
+
+  bool GenZtoLLDefinition(phys::Boson<phys::Particle> cand) const {
+    bool gooddaughters = (fabs(cand.daughter(0).eta()) < 2.5 && cand.daughter(0).pt() > 5 &&
+			  fabs(cand.daughter(1).eta()) < 2.5 && cand.daughter(1).pt() > 5);
+    bool goodmass = 60 < cand.p4().M() && cand.p4().M() < 120;
+    return goodmass && gooddaughters;
+  }
+
+  bool GenVtoQQDefinition(phys::Boson<phys::Particle> cand) const {
+    bool gooddaughters = (fabs(cand.daughter(0).eta()) < 4.7 && cand.daughter(0).pt() > 30 &&
+			  fabs(cand.daughter(1).eta()) < 4.7 && cand.daughter(1).pt() > 30);
+    bool goodmass = 60 < cand.p4().M() && cand.p4().M() < 120;
+    return goodmass && gooddaughters;
+  }
+
+  bool isPhotonPrompt(const phys::Photon& ph, double tolerance=0.2) const {
+    return genPhotonsPrompt_->size() > 0 && physmath::deltaR( *closestDeltaR(ph, *genPhotonsPrompt_), ph ) < tolerance;
+  }
+
 private:
   
   friend class Selector<WlllnuAnalyzer>;
@@ -64,6 +117,21 @@ private:
     return false;
     
   }
+
+  // Vectors of gen particles
+  std::unique_ptr<std::vector<phys::Particle>> genQuarks_;
+  std::unique_ptr<std::vector<phys::Particle>> genChLeptons_;
+  std::unique_ptr<std::vector<phys::Particle>> genNeutrinos_;
+  std::unique_ptr<std::vector<phys::Particle>> genPhotons_;
+  std::unique_ptr<std::vector<phys::Particle>> genPhotonsPrompt_;
+  // Vectors of gen Bosons
+  std::unique_ptr<std::vector<phys::Boson<phys::Particle> > > genZlepCandidates_;
+  std::unique_ptr<std::vector<phys::Boson<phys::Particle> > > genWlepCandidates_;
+  std::unique_ptr<std::vector<phys::Boson<phys::Particle> > > genZhadCandidates_;
+  std::unique_ptr<std::vector<phys::Boson<phys::Particle> > > genWhadCandidates_;
+  // Gen objects
+  phys::DiBoson<phys::Particle, phys::Particle> genZZ_;
+  phys::DiBoson<phys::Particle, phys::Particle> genZW_;
   
 };
 #endif
