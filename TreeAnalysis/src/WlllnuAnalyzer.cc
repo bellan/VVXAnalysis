@@ -59,7 +59,12 @@ void WlllnuAnalyzer::analyze(){
   foreach(const phys::Particle &gen, *genParticles){
     theHistograms->fill("gen_ID"      , "gen ID"  , 30 , 0, 30, gen.id(), theWeight);
   }
-    
+  
+  // -- Gen neutrino pt -- //
+  foreach(const phys::Particle &genNu, *genNeutrinos_){
+    theHistograms->fill("GEN_nu_pt", "Gen Neutrino pt;pt", 75 , 0, 300.,  genNu.pt(), theWeight);
+  }
+  
   /*
   // -- Gen neutrinos & MET pt match -- //
   deltaPhiMax = 0.;
@@ -93,14 +98,15 @@ void WlllnuAnalyzer::analyze(){
       double elPairInvMass = pow(el1.p4().Energy() + el2.p4().Energy(),2) - pow(el1.p4().Px() + el2.p4().Px(),2) - pow(el1.p4().Py() + el2.p4().Py(),2) - pow(el1.p4().Pz() + el2.p4().Pz(),2);
       theHistograms->fill("GEN_el_pair_invariant_mass", "Gen Electron pair e+e- invariant mass", 75, 0, 300., elPairInvMass, theWeight);
       
-      // -- Invariant mass of the 4 leptons l l l nu -- // 
+      // -- Invariant mass of the 4 leptons e+ e- mu nu -- // 
       phys::Particle mu = genMuons_->at(0);
       phys::Particle nu = genNeutrinos_->at(0);
       double fourLepInvMass = pow(el1.p4().Energy() + el2.p4().Energy() + mu.p4().Energy() + nu.p4().Energy(),2) - pow(el1.p4().Px() + el2.p4().Px() + mu.p4().Px() + nu.p4().Px(),2) - pow(el1.p4().Py() + el2.p4().Py() + mu.p4().Py() + nu.p4().Py(),2) - pow(el1.p4().Pz() + el2.p4().Pz() + mu.p4().Pz() + nu.p4().Pz(),2);
       theHistograms->fill("GEN_four_leptons_invariant_mass_mode1", "Gen Leptons e+e-mu nu invariant mass", 75, 0, 300., fourLepInvMass, theWeight);
       
-      
-      
+      // -- Transverse mass of the 3 charged leptons e+ e- mu -- //
+      double transverseMass = mT(el1,el2,mu);
+      theHistograms->fill("GEN_charged_leptons_transverse_mass_mode1", "Gen Charged Leptons e+e-mu transverse mass", 75, 0, 300., transverseMass, theWeight);
       
       
       
@@ -113,11 +119,17 @@ void WlllnuAnalyzer::analyze(){
       double muPairInvMass = pow(mu1.p4().Energy() + mu2.p4().Energy(),2) - pow(mu1.p4().Px() + mu2.p4().Px(),2) - pow(mu1.p4().Py() + mu2.p4().Py(),2) - pow(mu1.p4().Pz() + mu2.p4().Pz(),2);
       theHistograms->fill("GEN_mu_pair_invariant_mass", "Gen Muon pair mu+mu- invariant mass", 75, 0, 300., muPairInvMass, theWeight);
       
-      // -- Invariant mass of the 4 leptons l l l nu -- // 
+      // -- Invariant mass of the 4 leptons mu+ mu- e nu -- // 
       phys::Particle el = genElectrons_->at(0);
       phys::Particle nu = genNeutrinos_->at(0);
       double fourLepInvMass = pow(mu1.p4().Energy() + mu2.p4().Energy() + el.p4().Energy() + nu.p4().Energy(),2) - pow(mu1.p4().Px() + mu2.p4().Px() + el.p4().Px() + nu.p4().Px(),2) - pow(mu1.p4().Py() + mu2.p4().Py() + el.p4().Py() + nu.p4().Py(),2) - pow(mu1.p4().Pz() + mu2.p4().Pz() + el.p4().Pz() + nu.p4().Pz(),2);
       theHistograms->fill("GEN_four_leptons_invariant_mass_mode2", "Gen Leptons mu+mu-e nu invariant mass", 75, 0, 300., fourLepInvMass, theWeight);      
+      
+      // -- Transverse mass of the 3 charged leptons mu+ mu- e -- //
+      double transverseMass = mT(mu1,mu2,el);
+      theHistograms->fill("GEN_charged_leptons_transverse_mass_mode2", "Gen Charged Leptons mu+mu-e transverse mass", 75, 0, 300., transverseMass, theWeight);
+      
+      
       
       
       
