@@ -90,12 +90,15 @@ void WlllnuAnalyzer::analyze(){
       // -- Invariant mass of the e+e- pair -- //
       phys::Particle el1 = genElectrons_->at(0);
       phys::Particle el2 = genElectrons_->at(1);
-      //double elPairPt = el1.pt() + el2.pt();
-      
-      
       double elPairInvMass = pow(el1.p4().Energy() + el2.p4().Energy(),2) - pow(el1.p4().Px() + el2.p4().Px(),2) - pow(el1.p4().Py() + el2.p4().Py(),2) - pow(el1.p4().Pz() + el2.p4().Pz(),2);
-      
       theHistograms->fill("GEN_el_pair_invariant_mass", "Gen Electron pair e+e- invariant mass", 75, 0, 300., elPairInvMass, theWeight);
+      
+      // -- Invariant mass of the 4 leptons l l l nu -- // 
+      phys::Particle mu = genMuons_->at(0);
+      phys::Particle nu = genNeutrinos_->at(0);
+      double fourLepInvMass = pow(el1.p4().Energy() + el2.p4().Energy() + mu.p4().Energy() + nu.p4().Energy(),2) - pow(el1.p4().Px() + el2.p4().Px() + mu.p4().Px() + nu.p4().Px(),2) - pow(el1.p4().Py() + el2.p4().Py() + mu.p4().Py() + nu.p4().Py(),2) - pow(el1.p4().Pz() + el2.p4().Pz() + mu.p4().Pz() + nu.p4().Pz(),2);
+      theHistograms->fill("GEN_four_leptons_invariant_mass_mode1", "Gen Leptons e+e-mu nu invariant mass", 75, 0, 300., fourLepInvMass, theWeight);
+      
       
       
       
@@ -104,10 +107,17 @@ void WlllnuAnalyzer::analyze(){
     }
     
     else if(genMuons_->size()==2 && genElectrons_->size()==1){
+      // -- Invariant mass of the mu+mu- pair -- //
+      phys::Particle mu1 = genMuons_->at(0);
+      phys::Particle mu2 = genMuons_->at(1);
+      double muPairInvMass = pow(mu1.p4().Energy() + mu2.p4().Energy(),2) - pow(mu1.p4().Px() + mu2.p4().Px(),2) - pow(mu1.p4().Py() + mu2.p4().Py(),2) - pow(mu1.p4().Pz() + mu2.p4().Pz(),2);
+      theHistograms->fill("GEN_mu_pair_invariant_mass", "Gen Muon pair mu+mu- invariant mass", 75, 0, 300., muPairInvMass, theWeight);
       
-      
-      
-      
+      // -- Invariant mass of the 4 leptons l l l nu -- // 
+      phys::Particle el = genElectrons_->at(0);
+      phys::Particle nu = genNeutrinos_->at(0);
+      double fourLepInvMass = pow(mu1.p4().Energy() + mu2.p4().Energy() + el.p4().Energy() + nu.p4().Energy(),2) - pow(mu1.p4().Px() + mu2.p4().Px() + el.p4().Px() + nu.p4().Px(),2) - pow(mu1.p4().Py() + mu2.p4().Py() + el.p4().Py() + nu.p4().Py(),2) - pow(mu1.p4().Pz() + mu2.p4().Pz() + el.p4().Pz() + nu.p4().Pz(),2);
+      theHistograms->fill("GEN_four_leptons_invariant_mass_mode2", "Gen Leptons mu+mu-e nu invariant mass", 75, 0, 300., fourLepInvMass, theWeight);      
       
       
       
