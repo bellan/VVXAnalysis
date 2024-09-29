@@ -34,9 +34,9 @@ std::vector<phys::Particle>* muonsHist_;
 std::vector<phys::Particle>* genNeutrinosHist_;
 std::vector<phys::Particle>* metHist_;
 
-double deltaRMax;
+//double deltaRMax;
 double deltaPhiMax;
-int posI; int posJ;
+int posI; //int posJ;
 //TString histName; TString histTitle;
 
 void WlllnuAnalyzer::begin(){
@@ -92,11 +92,19 @@ void WlllnuAnalyzer::analyze(){
   if(genChLeptons_->size()==3){
   
     if(genElectrons_->size()==2 && genMuons_->size()==1){
+      // -- Gen leptons pt -- //
+      foreach(const phys::Particle &genEl, *genElectrons_){
+        theHistograms->fill("GEN_el_pt_mode1", "Gen Electron pt (e+e- mu);pt"  , 75 , 0, 300.,  genEl.pt(), theWeight);
+      }
+      foreach(const phys::Particle &genMu, *genMuons_){
+        theHistograms->fill("GEN_mu_pt_mode1", "Gen Muons pt (e+e- mu);pt"  , 75 , 0, 300.,  genMu.pt(), theWeight);
+      }
+    
       // -- Invariant mass of the e+e- pair -- //
       phys::Particle el1 = genElectrons_->at(0);
       phys::Particle el2 = genElectrons_->at(1);
       double elPairInvMass = pow(el1.p4().Energy() + el2.p4().Energy(),2) - pow(el1.p4().Px() + el2.p4().Px(),2) - pow(el1.p4().Py() + el2.p4().Py(),2) - pow(el1.p4().Pz() + el2.p4().Pz(),2);
-      theHistograms->fill("GEN_el_pair_invariant_mass", "Gen Electron pair e+e- invariant mass", 75, 0, 300., elPairInvMass, theWeight);
+      theHistograms->fill("GEN_el_pair_invariant_mass_mode1", "Gen Electron pair e+e- invariant mass", 75, 0, 300., elPairInvMass, theWeight);
       
       // -- Invariant mass of the 4 leptons e+ e- mu nu -- // 
       phys::Particle mu = genMuons_->at(0);
@@ -108,11 +116,29 @@ void WlllnuAnalyzer::analyze(){
       double transverseMass = mT(el1,el2,mu);
       theHistograms->fill("GEN_charged_leptons_transverse_mass_mode1", "Gen Charged Leptons e+e-mu transverse mass", 75, 0, 300., transverseMass, theWeight);
       
+      // -- Reconstructed leptons efficiency e+ e- mu -- //
+      if(electrons->size()==2 && muons->size()==1){
+        // -- Gen Leptons & Rec Leptons pt match -- //
+        reconstructionLepCompatibility(genElectrons_, electrons, "REC_el_compatibility_mode1", "Reconstructed electron pair e+e- compatibility");
+        reconstructionLepCompatibility(genMuons_, muons, "REC_mu_compatibility_mode1", "Reconstructed muon mu compatibility");
+        
+        
+        
+      }
+      
       
       
     }
     
     else if(genMuons_->size()==2 && genElectrons_->size()==1){
+      // -- Gen leptons pt -- //
+      foreach(const phys::Particle &genEl, *genElectrons_){
+        theHistograms->fill("GEN_el_pt_mode2", "Gen Electron pt (mu+mu- e);pt"  , 75 , 0, 300.,  genEl.pt(), theWeight);
+      }
+      foreach(const phys::Particle &genMu, *genMuons_){
+        theHistograms->fill("GEN_mu_pt_mode2", "Gen Muons pt (mu+mu- e);pt"  , 75 , 0, 300.,  genMu.pt(), theWeight);
+      }
+      
       // -- Invariant mass of the mu+mu- pair -- //
       phys::Particle mu1 = genMuons_->at(0);
       phys::Particle mu2 = genMuons_->at(1);
@@ -129,6 +155,13 @@ void WlllnuAnalyzer::analyze(){
       double transverseMass = mT(mu1,mu2,el);
       theHistograms->fill("GEN_charged_leptons_transverse_mass_mode2", "Gen Charged Leptons mu+mu-e transverse mass", 75, 0, 300., transverseMass, theWeight);
       
+      // -- Reconstructed leptons efficiency mu+ mu- e -- //
+      if(muons->size()==2 && electrons->size()==1){
+        // -- Gen Leptons & Rec Leptons pt match -- //
+        reconstructionLepCompatibility(genElectrons_, electrons, "REC_el_compatibility_mode2", "Reconstructed electron e compatibility");
+        reconstructionLepCompatibility(genMuons_, muons, "REC_mu_compatibility_mode2", "Reconstructed muon pair mu+mu- compatibility");
+      } 
+      
       
       
       
@@ -141,36 +174,7 @@ void WlllnuAnalyzer::analyze(){
       foreach(const phys::Particle &genEl, *genElectrons_){
         theHistograms->fill("GEN_el_pt"      , "Gen Electron pt;pt"  , 50 , 0, 300.,  genEl.pt(), theWeight);
       }
-      // -- Gen electrons & electrons pt match -- //
-      for(int i=0;i<genElectrons_->size();i++){
-    	deltaRMax = 0.;
-    	bool usedElectrons_[electrons->size()] = {};
-    	for(int j=0;j<electrons->size();j++){
-          usedElectrons_[j] = false;
-    	}
-    
-    	for(int j=0;j<electrons->size();j++){
-      	  if(usedElectrons_[j]==false){
-            if( deltaR(genElectrons_->at(i),electrons->at(j)) < 0.1 ){ 
-	      if(deltaRMax==0.){
-	        deltaRMax = deltaR(genElectrons_->at(i),electrons->at(j));
-	        posJ = j;
-	      }
-              else if(deltaR(genElectrons_->at(i),electrons->at(j))<deltaRMax){
-	        deltaRMax = deltaR(genElectrons_->at(i),electrons->at(j));
-	        posJ = j;
-	      }
-            }
-          }
-        }
-        if(deltaRMax != 0){ 
-          genElectronsHist_->push_back(genElectrons_->at(i));
-          electronsHist_->push_back(electrons->at(posJ));
-          usedElectrons_[posJ] = true;
-          theHistograms->fill("GEN_REC_el_pt"      , "Gen electrons & electrons pt match;pt"  , 50 , 0., 300., genElectrons_->at(i).pt(), theWeight);
-        }
-      }      
-      */
+    */
       
       
       
@@ -182,44 +186,6 @@ void WlllnuAnalyzer::analyze(){
       // -- Gen muons pt -- //
       foreach(const phys::Particle &genMu, *genMuons_){
         theHistograms->fill("GEN_mu_pt"      , "Gen Muon pt;pt"  , 50 , 0, 300.,  genMu.pt(), theWeight);
-      }
-      // -- Gen muons & muons pt match -- //
-      for(int i=0;i<genMuons_->size();i++){
-        deltaRMax = 0.;
-        bool usedMuons_[muons->size()] = {};
-        for(int j=0;j<muons->size();j++){
-          usedMuons_[j] = false;
-        }
-    
-        for(int j=0;j<muons->size();j++){
-          if(usedMuons_[j]==false){
-            if( deltaR(genMuons_->at(i),muons->at(j)) < 0.1 ){ 
-	      if(deltaRMax==0.){
-	        deltaRMax = deltaR(genMuons_->at(i),muons->at(j));
-	        posJ = j;
-	      }
-              else if(deltaR(genMuons_->at(i),muons->at(j))<deltaRMax){
-	        deltaRMax = deltaR(genMuons_->at(i),muons->at(j));
-	        posJ = j;
-	      }
-            }
-          }
-        }
-        if(deltaRMax != 0){ 
-          genMuonsHist_->push_back(genMuons_->at(i));
-          muonsHist_->push_back(muons->at(posJ));
-          usedMuons_[posJ] = true;
-          theHistograms->fill("GEN_REC_mu_pt"      , "Gen muons & muons pt match;pt"  , 50 , 0., 300., genMuons_->at(i).pt(), theWeight);
-          //if( genMuons_->at(i).eta() < 1.4 ){                         // Barrel region
-	    //theHistograms->fill("GEN_REC_mu_pt_barrel_region"      , "Gen muons & muons pt match (BARREL REGION);pt"  , 50 , 0., 300., genMuons_->at(i).pt(), theWeight);
-          //}
-          //else if( 1.4 < genMuons_->at(i).eta() < 1.6 ){              // Endcap region         
-	    //theHistograms->fill("GEN_REC_mu_pt_endcap_region"      , "Gen muons & muons pt match (ENDCAP REGION);pt"  , 50 , 0., 300., genMuons_->at(i).pt(), theWeight);
-          //}
-          //else{                                                             // Other regions external to endcap region
-	    //theHistograms->fill("GEN_REC_mu_pt_other_regions"      , "Gen muons & muons pt match (OTHER REGIONS EXTERNAL TO ENDCAP);pt"  , 50 , 0., 300., genMuons_->at(i).pt(), theWeight);
-          //}
-        }
       }
       */
       
@@ -307,10 +273,35 @@ void WlllnuAnalyzer::genEventSetup(){
   std::sort(genMuons_    ->begin(), genMuons_    ->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
   std::sort(genNeutrinos_    ->begin(), genNeutrinos_    ->end(), [](const Particle& a, const Particle& b){ return a.pt() < b.pt(); });
   
+}
 
 
-
-
-
+void WlllnuAnalyzer::reconstructionLepCompatibility(std::vector<phys::Particle>* genLep, std::vector<phys::Lepton>* recLep, string histName, string histTitle){
+  
+  for(int i=0;i<genLep->size();i++){
+    	double deltaRMax = 0.; int posJ = 0;
+    	bool usedLep[recLep->size()] = {};
+    	for(int j=0;j<recLep->size();j++){
+          usedLep[j] = false;
+    	}
+    	for(int j=0;j<recLep->size();j++){
+      	  if(usedLep[j]==false){
+            if( deltaR(genLep->at(i),recLep->at(j)) < 0.1 ){ 
+	      if(deltaRMax==0.){
+	        deltaRMax = deltaR(genLep->at(i),recLep->at(j));
+	        posJ = j;
+	      }
+              else if(deltaR(genLep->at(i),recLep->at(j))<deltaRMax){
+	        deltaRMax = deltaR(genLep->at(i),recLep->at(j));
+	        posJ = j;
+	      }
+            }
+          }
+        }
+        if(deltaRMax != 0){ 
+          usedLep[posJ] = true;
+          theHistograms->fill(histName, histTitle, 75, 0., 300., genLep->at(i).pt(), theWeight);
+        }
+  }
   
 }
