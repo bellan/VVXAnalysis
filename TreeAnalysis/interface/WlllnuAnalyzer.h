@@ -16,6 +16,8 @@
 #include "VVXAnalysis/DataFormats/interface/Boson.h"
 #include "VVXAnalysis/DataFormats/interface/Particle.h"
 
+using std::string;
+
 class WlllnuAnalyzer: public EventAnalyzer, RegistrableAnalysis<WlllnuAnalyzer>{
 
 public:
@@ -50,6 +52,7 @@ public:
   typedef std::pair<bool,int> boolInt;
   
   void genEventSetup();
+  void reconstructionLepCompatibility(std::vector<phys::Particle>*, std::vector<phys::Lepton>*, string, string);
 
   template<class T, class V>
   static bool haveCommonDaughter(const phys::Boson<T>& a, const phys::Boson<V>& b, const float tol=0.001){
