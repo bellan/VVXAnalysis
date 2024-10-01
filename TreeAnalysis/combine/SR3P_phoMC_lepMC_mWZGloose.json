@@ -7,12 +7,12 @@
             "processes": {
 		"ZZGTo4LG"      : -1,
 		"WZGTo3LNuG"    : -1,
-		"ZZTo4l-nonpro" : -1,
+		"ZZTo4l"        : -1,
 		"ggTo4e_Contin_MCFM701": -1,
 		"ggTo2e2mu_Contin_MCFM701": -1,
 		"ggTo4mu_Contin_MCFM701": -1,
-		"WZTo3LNu-nonpro"      : -1,
-		"ZGToLLG-prompt"       : -1,
+		"WZTo3LNu"      : -1,
+		"ZGToLLG"       : -1,
 		"DYJetsToLL_M50-nonpro": -1,
 		"TTZJets"       : -1
 	    },
