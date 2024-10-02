@@ -51,6 +51,7 @@ EventAnalyzer::EventAnalyzer(SelectorBase& aSelector,
 		  configuration.getParameter<bool>("applyFRSF"),
 		  configuration.getParameter<bool>("forcePosWeight")
 		  )
+  , doFeats_ (false)
   , theWeight(1.)
   , theCutCounter(0.)
   , theInputWeightedEvents(0.)
@@ -201,7 +202,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
     return 0;
   
   theHistograms = &(mapRegionHisto_[region_]);
-  
+  //  theFeatTree = &(mapRegionTree_[region_]);
 
   if(muons)       stable_sort(muons->begin(),       muons->end(),       phys::PtComparator());
   if(electrons)   stable_sort(electrons->begin(),   electrons->end(),   phys::PtComparator());
@@ -323,6 +324,19 @@ Long64_t EventAnalyzer::LoadTree(Long64_t entry){
 }
 
 
+void EventAnalyzer::InitOut(FeatList &list, TTree *tree){
+  if (!tree) return;
+  theFeatTree = tree;
+
+  tree->Branch("features",  &list, "feat_A/D:feat_B/D");
+
+  /*
+  tree->Branch("featA",  &list.feat_A, "feat_A/D:feat_B");
+  tree->Branch("featB",  &list.feat_B, "feat_A:feat_B:D");
+  */
+
+}
+
 
 void EventAnalyzer::loop(const std::string outputfile){
 
@@ -331,8 +345,17 @@ void EventAnalyzer::loop(const std::string outputfile){
 
   Long64_t nentries = maxNumEvents_ > 0 ? maxNumEvents_ : theTree->GetEntries();  
 
-  begin();
+  begin();//CT: add here theFeatTree implementation
 
+  std::string outFeatFile_formatted( Form(outputfile.c_str(), "SR2P_features") );
+  TString outFeatFileName=TString(outFeatFile_formatted);
+
+  TFile outFeatFile(outFeatFileName, "RECREATE");
+  TTree *myFeatTree = new TTree("featureTree","TTree with 2 features");
+  
+  FeatList myFeatList;
+  InitOut(myFeatList, myFeatTree);
+  
   for (Long64_t jentry=0; jentry<nentries; ++jentry) {
     Long64_t ientry = LoadTree(jentry);
     if (ientry < 0) break;
@@ -341,7 +364,16 @@ void EventAnalyzer::loop(const std::string outputfile){
     theCutCounter += theWeight;
     if(doBasicPlots_) fillBasicPlots();
     analyze();
+    fillFeatTree(myFeatList);
+    myFeatTree->Fill();
   }
+
+  outFeatFile.cd();
+  //end(outFeatFile);
+  outFeatFile.Write();
+    
+  outFeatFile.Close();
+
   
   for(std::pair<phys::RegionTypes, Histogrammer> regHist : mapRegionHisto_){
     std::string regionName = phys::regionType(regHist.first);
@@ -357,7 +389,9 @@ void EventAnalyzer::loop(const std::string outputfile){
     
     fout.Close();
   }
+
   
+
   finish();
   
   std::string regionsString;
