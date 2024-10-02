@@ -16,6 +16,8 @@
 #include <algorithm>
 #include <map>
 #include <bitset>
+//#include "TTree.h"
+
 
 #include "AnalysisConfiguration.h"
 
@@ -29,6 +31,9 @@
 #include "VVXAnalysis/DataFormats/interface/GenEventWeights.h"
 
 #include "VVXAnalysis/TreeAnalysis/interface/Histogrammer.h"
+//#include "VVXAnalysis/TreeAnalysis/interface/FeatSelector.h"
+//CT: helper for feature tree filling
+
 #include "VVXAnalysis/TreeAnalysis/interface/SampleInfo.h"
 
 #include "VVXAnalysis/DataFormats/interface/RegionTypes.h"
@@ -43,6 +48,11 @@ class TFile;
 class TTree;
 class TBranch;
 class TH1;
+class TString;
+struct FeatList{
+  double feat_A, feat_B;
+};
+
 
 class SelectorBase {
 public:
@@ -95,6 +105,7 @@ public:
   virtual void  begin() {}
   virtual Int_t cut();
   virtual void  analyze() = 0;
+  virtual void  fillFeatTree(FeatList&) {};
   virtual void  end(TFile &) {};  
   virtual void  finish() {};
   virtual void  addOptions(){};
@@ -114,6 +125,8 @@ public:
   void fillLeptonPlots           (const std::string &type, const phys::Lepton   &lepton);
   void fillJetPlots              (const std::string &type, const phys::Jet      &jet);
 
+  void InitOut(FeatList&, TTree*);
+    
  private:
   TTree *theTree;
   //LeptonScaleFactors leptonScaleFactors_;
@@ -123,6 +136,7 @@ public:
   bool doBasicPlots_;
   bool doSF;
 
+  
  protected:
 
   // Region
@@ -133,6 +147,14 @@ public:
   Histogrammer* theHistograms;  // Points to the Histogrammer for the current region
   std::map<phys::RegionTypes, Histogrammer> mapRegionHisto_;  // Maps every region to a corresponding Histogrammer
 
+  //CT: Feature Tree helper class
+  TTree* theFeatTree;  // Points to the FeatSelector for the current region
+  //  std::map<phys::RegionTypes, TTree> mapRegionTree_;  // Maps every region to a corresponding FeatSelector
+  //  std::map<TString, Double_t>* featList_;//AKA typedef featMap featMap_
+  //  std::map<phys::RegionTypes, std::map<TString, Double_t>*> mapRegionFeatList_;
+  bool doFeats_;
+
+  
   // MC helper class
   SampleInfo theSampleInfo;
 
