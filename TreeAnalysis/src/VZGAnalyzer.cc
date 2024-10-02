@@ -747,6 +747,17 @@ void VZGAnalyzer::analyze()
 
 }
 
+void VZGAnalyzer::fillFeatTree(FeatList &list)
+{
+  if(!IN_GENsignalDef()) return;
+
+  double mll=Z->mass();
+  double ptl1=Z->daughter(0).pt();
+
+  list.feat_A = ptl1;
+  list.feat_B = mll;
+}
+
 
 void VZGAnalyzer::genPhotonsAnalyzer()
 {}
