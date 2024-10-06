@@ -21,8 +21,7 @@ using std::endl;
 using namespace phys;
 using namespace physmath;
 
-std::vector<phys::Particle>* genElectrons_;
-std::vector<phys::Particle>* genMuons_;
+
 
  
 
@@ -55,28 +54,6 @@ void WlllnuAnalyzer::analyze(){
   }
   
   
-  /*
-  // -- Gen neutrinos & MET pt match -- //
-  deltaPhiMax = 0.;
-  for(int i=0;i<genNeutrinos_->size();i++){
-    if( deltaPhi(genNeutrinos_->at(i).phi(),met->phi()) < 0.1 ){ 
-      if(deltaPhiMax==0.){
-	deltaPhiMax = deltaPhi(genNeutrinos_->at(i).phi(),met->phi());
-	posI = i;
-      }
-      else if(deltaPhi(genNeutrinos_->at(i).phi(),met->phi())<deltaPhiMax){
-	deltaPhiMax = deltaPhi(genNeutrinos_->at(i).phi(),met->phi());
-	posI = i;
-      }
-    }
-  }
-  if(deltaPhiMax != 0){ 
-    //genNeutrinosHist_->push_back(genNeutrinos_->at(posI));
-    //metHist_->push_back(met);
-    theHistograms->fill("GEN_REC_neutrinos_pt"      , "Gen neutrinos & MET pt match;pt"  , 50 , 0., 150., genNeutrinos_->at(posI).pt(), theWeight);
-  }
-  */
-  
   
   // -- W boson 3 leptons decay possible configurations -- //
   if(genChLeptons_->size()==3){
@@ -95,38 +72,54 @@ void WlllnuAnalyzer::analyze(){
         theHistograms->fill("GEN_mu_pt_mode1", "Gen Muons pt (e+e- mu);pt"  , 75 , 0, 150.,  genMu.pt(), theWeight);
       }
     
-      // -- Invariant mass of the e+e- pair -- //
+      // -- Invariant mass of the gen e+e- pair -- //
       double genElPairInvMass = (genEl1.p4() + genEl2.p4()).M();
-      //double genElPairInvMass = sqrt( pow(el1.p4().Energy() + el2.p4().Energy(),2) - pow(el1.p4().Px() + el2.p4().Px(),2) - pow(el1.p4().Py() + el2.p4().Py(),2) - pow(el1.p4().Pz() + el2.p4().Pz(),2) );
       theHistograms->fill("GEN_el_pair_invariant_mass_mode1", "Gen Electron pair e+e- invariant mass (mode 1)", 75, 0, 150., genElPairInvMass, theWeight);
       
       // -- Invariant mass of the 4 gen leptons e+ e- mu nu -- // 
       double genFourLepInvMass = (genEl1.p4() + genEl2.p4() + genMu.p4() + genNu.p4()).M();
-      //double genFourLepInvMass = sqrt( pow(el1.p4().Energy() + el2.p4().Energy() + mu.p4().Energy() + nu.p4().Energy(),2) - pow(el1.p4().Px() + el2.p4().Px() + mu.p4().Px() + nu.p4().Px(),2) - pow(el1.p4().Py() + el2.p4().Py() + mu.p4().Py() + nu.p4().Py(),2) - pow(el1.p4().Pz() + el2.p4().Pz() + mu.p4().Pz() + nu.p4().Pz(),2) );
       theHistograms->fill("GEN_four_leptons_invariant_mass_mode1", "Gen Leptons e+e-mu nu invariant mass (mode 1)", 150, 0, 300., genFourLepInvMass, theWeight);
       
       // -- Transverse mass of the 4 gen leptons e+ e- mu nu -- //
       double genFourLepTransverseMass = (genEl1.p4() + genEl2.p4() + genMu.p4() + genNu.p4()).Mt();;
-      theHistograms->fill("GEN_four_leptons_transverse_mass_mode1", "Gen Four Leptons e+e-mu nu transverse mass (mode 1)", 150, 0., 300., genFourLepTransverseMass, theWeight);
+      theHistograms->fill("GEN_four_leptons_transverse_mass_mode1", "Gen Four Leptons e+e-mu nu transverse mass (mode 1)", 100, 0., 500., genFourLepTransverseMass, theWeight);
       
       // -- Invariant mass of the gen electron pair e+e- vs Invariant mass of the 4 gen leptons e+e-mu nu -- //
-      theHistograms->fill("GEN_el_pair_four_lep_inv_mass_mode1", "Gen Electron pair vs GEN Four Leptons invariant mass (mode 1)", 60, 0., 300., 60, 0., 300., genFourLepInvMass, genElPairInvMass, theWeight);
+      theHistograms->fill("GEN_el_pair_four_lep_inv_mass_mode1", "Gen Electron pair vs GEN Four Leptons invariant mass (mode 1);4l mass;e+e- mass", 100, 0., 500., 60, 0., 300., genFourLepInvMass, genElPairInvMass, theWeight);
       
       // -- Gen Neutrino pt vs Invariant mass of the 4 gen leptons e+e-mu nu -- //
-      theHistograms->fill("GEN_nu_pt_four_lep_inv_mass_mode1", "Gen Neutrino pt vs GEN Four Leptons invariant mass (mode 1)", 150, 0., 300., 150, 0., 300., genFourLepInvMass, genNu.pt(), theWeight);
+      theHistograms->fill("GEN_nu_pt_four_lep_inv_mass_mode1", "Gen Neutrino pt vs GEN Four Leptons invariant mass (mode 1);4l mass;nu pt", 100, 0., 500., 60, 0., 300., genFourLepInvMass, genNu.pt(), theWeight);
       
       // -- Gen Muon pt vs Invariant mass of the 4 gen leptons e+e-mu nu -- //
-      theHistograms->fill("GEN_mu_pt_four_lep_inv_mass_mode1", "Gen Muon pt vs GEN Four Leptons invariant mass (mode 1)", 250, 0., 500., 150, 0., 300., genFourLepInvMass, genMu.pt(), theWeight);
+      theHistograms->fill("GEN_mu_pt_four_lep_inv_mass_mode1", "Gen Muon pt vs GEN Four Leptons invariant mass (mode 1);4l mass;mu pt", 100, 0., 500., 60, 0., 300., genFourLepInvMass, genMu.pt(), theWeight);
       
       // -- Transverse mass of the gen lepton pair mu nu vs Invariant mass of the 4 gen leptons e+e-mu nu -- //
       double genLepPairTransverseMass = (genMu.p4() + genNu.p4()).Mt();
       theHistograms->fill("GEN_lep_pair_transv_mass_mode1", "Gen Lepton pair mu nu transverse mass (mode 1)", 75, 0., 150., genLepPairTransverseMass, theWeight);
-      theHistograms->fill("GEN_lep_pair_transv_mass_four_lep_inv_mass_mode1", "Gen Lepton pair mu nu transverse mass vs Four Leptons invariant mass (mode 1)", 250, 0., 500., 75, 0., 150., genFourLepInvMass, genLepPairTransverseMass, theWeight);
+      theHistograms->fill("GEN_lep_pair_transv_mass_four_lep_inv_mass_mode1", "Gen Lepton pair mu nu transverse mass vs Four Leptons invariant mass (mode 1);4l mass;mu nu mass", 250, 0., 500., 30, 0., 150., genFourLepInvMass, genLepPairTransverseMass, theWeight);
       
       // -- Transverse vs Invariant mass of the 4 gen leptons e+e-mu nu -- // 
       theHistograms->fill("GEN_four_lep_transv_mass_four_lep_inv_mass_mode1", "Gen Four Lepton transverse vs invariant mass (mode 1); Inv mass; Transv mass", 100, 0., 500., 100, 0., 500., genFourLepInvMass, genFourLepTransverseMass, theWeight);
       
-      // -- RECONSTRUCTED LEPTONS EFFICIENCY e+ e- mu -- //
+      
+      
+      // ------------------------------ GEN LEVEL SIGNAL DEFINITION ----------------------------- //
+      if(isGen_mode1(genFourLepInvMass, genElPairInvMass, genLepPairTransverseMass, genMu.pt(), genNu.pt()) == true){
+        genSignal_mode1++;
+      }
+      
+      
+      
+        
+        
+        
+        
+        
+      
+      
+      
+      
+      // -- RECONSTRUCTED LEPTONS EFFICIENCY e+ e- mu nu -- //
       if(electrons->size()==2 && muons->size()==1){
         phys::Particle recEl1 = electrons->at(0);
         phys::Particle recEl2 = electrons->at(1);
@@ -147,20 +140,51 @@ void WlllnuAnalyzer::analyze(){
         
         // -- Gen Muon & Rec Muon charge compatibility -- //
         if(genMuons_->at(0).id() == muons->at(0).id()){
-          foreach(const phys::Particle &genMu, *genMuons_){
-            theHistograms->fill("REC_mu_charge_compatibility_mode1", "Reconstructed muon mu charge compatibility", 75, 0., 150., genMu.pt(), theWeight);
-          }
+        foreach(const phys::Particle &genMu, *genMuons_){
+        theHistograms->fill("REC_mu_charge_compatibility_mode1", "Reconstructed muon mu charge compatibility", 75, 0., 150., genMu.pt(), theWeight);
         }
+        
         
         // -- Transverse mass of the 4 REC leptons e+e-mu nu -- //
         double recFourLepTransverseMass = (recEl1.p4() + recEl2.p4() + recMu.p4() + recNu.p4()).Mt();
         theHistograms->fill("REC_four_lep_transv_mass_mode1", "Rec Four Leptons e+e-mu nu transverse mass (mode 1)", 250, 0., 500., recFourLepTransverseMass, theWeight);
         
         // -- Transverse mass of the 4 REC leptons e+e-mu nu vs Transverse mass of the 4 GEN leptons e+e-mu nu -- //
-        theHistograms->fill("REC_four_lep_transv_mass_GEN_four_lep_transv_mass_mode1", "Rec Four Leptons transverse mass vs Gen Four Leptons transverse mass e+e-mu nu (mode 1)", 250, 0., 500., 250, 0., 500., genFourLepTransverseMass, recFourLepTransverseMass, theWeight);
+        theHistograms->fill("REC_four_lep_transv_mass_GEN_four_lep_transv_mass_mode1", "Rec Four Leptons transverse mass vs Gen Four Leptons transverse mass e+e-mu nu (mode 1); Gen 4l;Rec 4l", 100, 0., 500., 100, 0., 500., genFourLepTransverseMass, recFourLepTransverseMass, theWeight);
         
         // -- Transverse mass of the 4 REC leptons e+e-mu nu vs Invariant mass of the 4 GEN leptons e+e-mu nu -- //
-        theHistograms->fill("REC_four_lep_transv_mass_GEN_four_lep_inv_mass_mode1", "Rec Four Leptons transverse mass vs Gen Four Leptons invariant mass e+e-mu nu (mode 1)", 250, 0., 500., 250, 0., 500., genFourLepInvMass, recFourLepTransverseMass, theWeight);
+        theHistograms->fill("REC_four_lep_transv_mass_GEN_four_lep_inv_mass_mode1", "Rec Four Leptons transverse mass vs Gen Four Leptons invariant mass e+e-mu nu (mode 1);Gen 4l;Rec 4l", 100, 0., 500., 100, 0., 500., genFourLepInvMass, recFourLepTransverseMass, theWeight);
+        
+        // -- Invariant mass of the rec electron pair e+e- vs Transverse mass of the 4 rec leptons e+e-mu nu -- //
+        double recElPairInvMass = (recEl1.p4() + recEl2.p4()).M();
+        theHistograms->fill("REC_el_pair_invariant_mass_mode1", "Rec Electron pair e+e- invariant mass (mode 1)", 75, 0, 150., recElPairInvMass, theWeight);
+        theHistograms->fill("REC_el_pair_inv_mass_REC_four_lep_transv_mass_mode1", "Rec Electron pair invariant mass vs Rec Four Leptons transverse mass (mode 1);4l mass;e+e- mass", 100, 0., 500., 60, 0., 300., recFourLepTransverseMass, recElPairInvMass, theWeight);
+        
+        // -- Transverse mass of the rec lepton pair mu nu vs Invariant mass of the 4 rec leptons e+e-mu nu -- //
+        double recLepPairTransverseMass = (recMu.p4() + recNu.p4()).Mt();
+        theHistograms->fill("REC_lep_pair_transv_mass_mode1", "Rec Lepton pair mu nu transverse mass (mode 1)", 75, 0., 150., recLepPairTransverseMass, theWeight);
+        theHistograms->fill("REC_lep_pair_transv_mass_REC_four_lep_transv_mass_mode1", "Rec Lepton pair mu nu transverse mass vs Rec Four Leptons transverse mass (mode 1);4l mass;mu nu mass", 100, 0., 500., 60, 0., 300., recFourLepTransverseMass, recLepPairTransverseMass, theWeight);
+        
+        
+        
+        
+        // -- REC nu (met) pt vs Transverse mass of the 4 REC leptons e+e-mu nu -- //
+        theHistograms->fill("REC_nu_pt_REC_four_lep_transv_mass_mode1", "Rec nu (met) pt vs Rec Four Leptons transverse mass e+e-mu nu (mode 1);4l mass;nu pt", 100, 0., 500., 60, 0., 300., recFourLepTransverseMass, recNu.pt(), theWeight);
+        
+        // -- REC mu pt vs Transverse mass of the 4 REC leptons e+e-mu nu -- //
+        theHistograms->fill("REC_mu_pt_REC_four_lep_transv_mass_mode1", "Rec mu pt vs Rec Four Leptons transverse mass e+e-mu nu (mode 1); 4l mass;mu pt", 100, 0., 500., 30, 0., 150., recFourLepTransverseMass, recMu.pt(), theWeight);
+        
+        
+        // ------------------------------ REC LEVEL SIGNAL DEFINITION ----------------------------- //
+        if(isGen_mode1(genFourLepInvMass, genElPairInvMass, genLepPairTransverseMass, genMu.pt(), genNu.pt()) == true && isRec_mode1(recFourLepTransverseMass, recElPairInvMass, recLepPairTransverseMass, recMu.pt(), recNu.pt()) == true){
+          genRecSignal_mode1++;
+        }
+        else if(isGen_mode1(genFourLepInvMass, genElPairInvMass, genLepPairTransverseMass, genMu.pt(), genNu.pt()) == false && isRec_mode1(recFourLepTransverseMass, recElPairInvMass, recLepPairTransverseMass, recMu.pt(), recNu.pt()) == true){
+          notGenRecSignal_mode1++;
+        }
+        
+        
+        }
         
         
         
@@ -198,37 +222,47 @@ void WlllnuAnalyzer::analyze(){
       
       // -- Invariant mass of the mu+mu- pair -- //
       double genMuPairInvMass = (genMu1.p4() + genMu2.p4()).M();
-      //double genMuPairInvMass = sqrt( pow(mu1.p4().Energy() + mu2.p4().Energy(),2) - pow(mu1.p4().Px() + mu2.p4().Px(),2) - pow(mu1.p4().Py() + mu2.p4().Py(),2) - pow(mu1.p4().Pz() + mu2.p4().Pz(),2) );
       theHistograms->fill("GEN_mu_pair_invariant_mass_mode2", "Gen Muon pair mu+mu- invariant mass (mode 2)", 75, 0, 150., genMuPairInvMass, theWeight);
       
       // -- Invariant mass of the 4 leptons mu+ mu- e nu -- // 
       double genFourLepInvMass = (genMu1.p4() + genMu2.p4() + genEl.p4() + genNu.p4()).M();
-      //double genFourLepInvMass = sqrt( pow(mu1.p4().Energy() + mu2.p4().Energy() + el.p4().Energy() + nu.p4().Energy(),2) - pow(mu1.p4().Px() + mu2.p4().Px() + el.p4().Px() + nu.p4().Px(),2) - pow(mu1.p4().Py() + mu2.p4().Py() + el.p4().Py() + nu.p4().Py(),2) - pow(mu1.p4().Pz() + mu2.p4().Pz() + el.p4().Pz() + nu.p4().Pz(),2) );
       theHistograms->fill("GEN_four_leptons_invariant_mass_mode2", "Gen Leptons mu+mu-e nu invariant mass (mode 2)", 150, 0, 300., genFourLepInvMass, theWeight);      
-      
       
       // -- Transverse mass of the 4 leptons mu+ mu- e nu -- //
       double genFourLepTransverseMass = (genMu1.p4() + genMu2.p4() + genEl.p4() + genNu.p4()).Mt();;
       theHistograms->fill("GEN_four_leptons_transverse_mass_mode2", "Gen Four Leptons mu+mu-e nu transverse mass (mode 2)", 150, 0., 300., genFourLepTransverseMass, theWeight);
       
       // -- Invariant mass of the muon pair mu+mu- vs Invariant mass of the 4 leptons mu+mu-e nu -- //
-      theHistograms->fill("GEN_mu_pair_four_lep_inv_mass_mode2", "Gen Muon pair vs Four Leptons invariant mass (mode 2)", 150, 0., 300., 150, 0., 300., genFourLepInvMass, genMuPairInvMass, theWeight);
+      theHistograms->fill("GEN_mu_pair_four_lep_inv_mass_mode2", "Gen Muon pair vs Four Leptons invariant mass (mode 2);4l mass;mu+mu- mass", 100, 0., 500., 60, 0., 300., genFourLepInvMass, genMuPairInvMass, theWeight);
       
       // -- Gen Neutrino pt vs Invariant mass of the 4 leptons mu+mu-e nu -- //
-      theHistograms->fill("GEN_nu_pt_four_lep_inv_mass_mode2", "Gen Neutrino pt vs Four Leptons invariant mass (mode 2)", 150, 0., 300., 150, 0., 300., genFourLepInvMass, genNu.pt(), theWeight);
+      theHistograms->fill("GEN_nu_pt_four_lep_inv_mass_mode2", "Gen Neutrino pt vs Four Leptons invariant mass (mode 2);4l mass;nu pt", 100, 0., 500., 60, 0., 300., genFourLepInvMass, genNu.pt(), theWeight);
       
       // -- Gen Electron pt vs Invariant mass of the 4 leptons mu+mu-e nu -- //
-      theHistograms->fill("GEN_el_pt_four_lep_inv_mass_mode2", "Gen Electron pt vs Four Leptons invariant mass (mode 2)", 250, 0., 500., 150, 0., 300., genFourLepInvMass, genEl.pt(), theWeight);
+      theHistograms->fill("GEN_el_pt_four_lep_inv_mass_mode2", "Gen Electron pt vs Four Leptons invariant mass (mode 2);4l mass;nu pt", 100, 0., 500., 60, 0., 300., genFourLepInvMass, genEl.pt(), theWeight);
       
       // -- Transverse mass of the Gen Lepton pair el nu vs Invariant mass of the 4 Gen Leptons mu+mu-el nu -- //
       double genLepPairTransverseMass = (genEl.p4() + genNu.p4()).Mt();
-      theHistograms->fill("GEN_lep_pair_transv_mass_four_lep_inv_mass_mode2", "Gen Lepton pair el nu transverse mass vs Four Leptons invariant mass (mode 2)", 250, 0., 500., 75, 0., 150., genFourLepInvMass, genLepPairTransverseMass, theWeight);
+      theHistograms->fill("GEN_lep_pair_transv_mass_mode2", "Gen Lepton pair e nu transverse mass (mode 2)", 75, 0., 150., genLepPairTransverseMass, theWeight);
+      theHistograms->fill("GEN_lep_pair_transv_mass_four_lep_inv_mass_mode2", "Gen Lepton pair e nu transverse mass vs Four Leptons invariant mass (mode 2);4l mass;e nu mass", 100, 0., 500., 75, 0., 150., genFourLepInvMass, genLepPairTransverseMass, theWeight);
       
       // -- Transverse vs Invariant mass of the 4 gen leptons mu+mu-e nu -- // 
       theHistograms->fill("GEN_four_lep_transv_mass_four_lep_inv_mass_mode2", "Gen Four Lepton transverse vs invariant mass (mode 2); Inv mass; Transv mass", 100, 0., 500., 100, 0., 500., genFourLepInvMass, genFourLepTransverseMass, theWeight);
       
+      // ------------------------------ GEN LEVEL SIGNAL DEFINITION ----------------------------- //
+      if(isGen_mode2(genFourLepInvMass, genMuPairInvMass, genLepPairTransverseMass, genEl.pt(), genNu.pt()) == true){
+        genSignal_mode2++;
+      }
       
-      // -- RECONSTRUCTED LEPTONS mu+ mu- e -- //
+      
+      
+      
+      
+      
+      
+      
+      
+      // -- RECONSTRUCTED LEPTONS mu+ mu- e nu -- //
       if(muons->size()==2 && electrons->size()==1){
         phys::Particle recMu1 = muons->at(0);
         phys::Particle recMu2 = muons->at(1);
@@ -249,33 +283,51 @@ void WlllnuAnalyzer::analyze(){
         
         // -- Gen Electron & Rec Electron charge compatibility -- //
         if(genElectrons_->at(0).id() == electrons->at(0).id()){
-          foreach(const phys::Particle &genEl, *genElectrons_){
-            theHistograms->fill("REC_el_charge_compatibility_mode2", "Reconstructed electron e charge compatibility", 75, 0., 150., genEl.pt(), theWeight);
-          }
+        foreach(const phys::Particle &genEl, *genElectrons_){
+        theHistograms->fill("REC_el_charge_compatibility_mode2", "Reconstructed electron e charge compatibility", 75, 0., 150., genEl.pt(), theWeight);
         }
+        
         
         // -- Transverse mass of the 4 REC leptons mu+mu-e nu -- //
         double recFourLepTransverseMass = (recMu1.p4() + recMu2.p4() + recEl.p4() + recNu.p4()).Mt();
         theHistograms->fill("REC_four_lep_transv_mass_mode2", "Rec Four Leptons mu+mu-e nu transverse mass (mode 2)", 250, 0., 500., recFourLepTransverseMass, theWeight);
         
         // -- Transverse mass of the 4 REC leptons mu+mu-e nu vs Transverse mass of the 4 GEN leptons mu+mu-e nu -- //
-        theHistograms->fill("REC_four_lep_transv_mass_GEN_four_lep_transv_mass_mode2", "Rec Four Leptons transverse mass vs Gen Four Leptons transverse mass mu+mu-e nu (mode 2)", 250, 0., 500., 250, 0., 500., genFourLepTransverseMass, recFourLepTransverseMass, theWeight);
+        theHistograms->fill("REC_four_lep_transv_mass_GEN_four_lep_transv_mass_mode2", "Rec Four Leptons transverse mass vs Gen Four Leptons transverse mass mu+mu-e nu (mode 2);Gen 4l;Rec 4l", 100, 0., 500., 100, 0., 500., genFourLepTransverseMass, recFourLepTransverseMass, theWeight);
         
         // -- Transverse mass of the 4 REC leptons e+e-mu nu vs Invariant mass of the 4 GEN leptons mu+mu-e nu -- //
-        theHistograms->fill("REC_four_lep_transv_mass_GEN_four_lep_inv_mass_mode2", "Rec Four Leptons transverse mass vs Gen Four Leptons invariant mass mu+mu-e nu (mode 2)", 250, 0., 500., 250, 0., 500., genFourLepInvMass, recFourLepTransverseMass, theWeight);
+        theHistograms->fill("REC_four_lep_transv_mass_GEN_four_lep_inv_mass_mode2", "Rec Four Leptons transverse mass vs Gen Four Leptons invariant mass mu+mu-e nu (mode 2);Gen 4l;Rec 4l", 100, 0., 500., 100, 0., 500., genFourLepInvMass, recFourLepTransverseMass, theWeight);
         
-        // -- REC nu (met) pt vs Invariant mass of the 4 GEN leptons mu+mu-e nu -- //
-        theHistograms->fill("REC_nu_pt_GEN_four_lep_inv_mass_mode2", "Rec nu (met) pt vs Gen Four Leptons invariant mass mu+mu-e nu (mode 2)", 150, 0., 300., 250, 0., 500., recNu.pt(), genFourLepInvMass, theWeight);
+        // -- Invariant mass of the rec muon pair mu+mu- vs Transverse mass of the 4 rec leptons mu+mu-e nu -- //
+        double recMuPairInvMass = (recMu1.p4() + recMu2.p4()).M();
+        theHistograms->fill("REC_mu_pair_invariant_mass_mode2", "Rec Muon pair mu+mu- invariant mass (mode 2)", 75, 0, 150., recMuPairInvMass, theWeight);
+        theHistograms->fill("REC_mu_pair_inv_mass_REC_four_lep_transv_mass_mode2", "Rec Muon pair invariant mass vs Rec Four Leptons transverse mass (mode 2);4l mass;mu+mu- mass", 100, 0., 500., 60, 0., 300., recFourLepTransverseMass, recMuPairInvMass, theWeight);
         
-        // -- REC nu (met) pt vs Transverse mass of the 4 GEN leptons mu+mu-e nu -- //
-        theHistograms->fill("REC_nu_pt_GEN_four_lep_transv_mass_mode2", "Rec nu (met) pt vs Gen Four Leptons transverse mass mu+mu-e nu (mode 2)", 150, 0., 300., 250, 0., 500., recNu.pt(), genFourLepTransverseMass, theWeight);
+        // -- Transverse mass of the rec lepton pair e nu vs Transverse mass of the 4 rec leptons mu+mu-e nu -- //
+        double recLepPairTransverseMass = (recEl.p4() + recNu.p4()).Mt();
+        theHistograms->fill("REC_lep_pair_transv_mass_mode2", "Rec Lepton pair e nu transverse mass (mode 2)", 75, 0., 150., recLepPairTransverseMass, theWeight);
+        theHistograms->fill("REC_lep_pair_transv_mass_REC_four_lep_transv_mass_mode2", "Rec Lepton pair e nu transverse mass vs Rec Four Leptons transverse mass (mode 2);4l mass;e nu mass", 100, 0., 500., 60, 0., 300., recFourLepTransverseMass, recLepPairTransverseMass, theWeight);
+        
+        
         
         // -- REC nu (met) pt vs Transverse mass of the 4 REC leptons mu+mu-e nu -- //
-        theHistograms->fill("REC_nu_pt_REC_four_lep_transv_mass_mode2", "Rec nu (met) pt vs Rec Four Leptons transverse mass mu+mu-e nu (mode 2)", 150, 0., 300., 250, 0., 500., recNu.pt(), recFourLepTransverseMass, theWeight);
+        theHistograms->fill("REC_nu_pt_REC_four_lep_transv_mass_mode2", "Rec nu (met) pt vs Rec Four Leptons transverse mass mu+mu-e nu (mode 2);4l mass;nu pt", 100, 0., 500., 60, 0., 300., recFourLepTransverseMass, recNu.pt(), theWeight);
+        
+        // -- REC el pt vs Transverse mass of the 4 REC leptons mu+mu-e nu -- //
+        theHistograms->fill("REC_el_pt_REC_four_lep_transv_mass_mode2", "Rec el pt vs Rec Four Leptons transverse mass mu+mu-e nu (mode 2);4l mass;e pt", 100, 0., 500., 60, 0., 300., recFourLepTransverseMass, recEl.pt(), theWeight);
         
         
         
+        // ------------------------------ REC LEVEL SIGNAL DEFINITION ----------------------------- //
+        if(isGen_mode2(genFourLepInvMass, genMuPairInvMass, genLepPairTransverseMass, genEl.pt(), genNu.pt()) == true && isRec_mode2(recFourLepTransverseMass, recMuPairInvMass, recLepPairTransverseMass, recEl.pt(), recNu.pt()) == true){
+          genRecSignal_mode2++;
+        }
+        else if(isGen_mode2(genFourLepInvMass, genMuPairInvMass, genLepPairTransverseMass, genEl.pt(), genNu.pt()) == false && isRec_mode2(recFourLepTransverseMass, recMuPairInvMass, recLepPairTransverseMass, recEl.pt(), recNu.pt()) == true){
+          notGenRecSignal_mode2++;
+        }
         
+        
+        }
       
       } 
       
@@ -302,7 +354,7 @@ void WlllnuAnalyzer::analyze(){
     /*
       // -- Gen electron pt -- //
       foreach(const phys::Particle &genEl, *genElectrons_){
-        theHistograms->fill("GEN_el_pt"      , "Gen Electron pt;pt"  , 50 , 0, 300.,  genEl.pt(), theWeight);
+        theHistograms->fill("GEN_el_pt_mode3"      , "Gen Electron pt;pt"  , 50 , 0, 300.,  genEl.pt(), theWeight);
       }
     */
       
@@ -315,7 +367,7 @@ void WlllnuAnalyzer::analyze(){
       /*
       // -- Gen muons pt -- //
       foreach(const phys::Particle &genMu, *genMuons_){
-        theHistograms->fill("GEN_mu_pt"      , "Gen Muon pt;pt"  , 50 , 0, 300.,  genMu.pt(), theWeight);
+        theHistograms->fill("GEN_mu_pt_mode4"      , "Gen Muon pt;pt"  , 50 , 0, 300.,  genMu.pt(), theWeight);
       }
       */
       
@@ -402,6 +454,72 @@ void WlllnuAnalyzer::reconstructionLepCompatibility(std::vector<phys::Particle>*
     
   
 }
+
+
+bool WlllnuAnalyzer::isGen_mode1(double var1, double var2, double var3, double var4, double var5){
+  if(var1>170. &&                         // genFourLepInvMass
+     80.<var2<100. &&                     // genElPairInvMass
+     80.<var3<90. &&                      // genLepPairTransverseMass
+     20.<var4<50. &&                      // genMu.pt()
+     20.<var5<50. )                       // genNu.pt()
+  {
+    return true;
+  }
+  else{
+    return false;
+  }
+  
+}
+
+
+bool WlllnuAnalyzer::isRec_mode1(double var1, double var2, double var3, double var4, double var5){
+  if( var1>150. &&                             // recFourLepTransverseMass
+          80.<var2<100. &&                     // recElPairInvMass
+          70.<var3<150. &&                     // recLepPairTransverseMass
+          20.<var4<50. &&                      // recMu.pt()
+          20.<var5<70. )                       // recNu.pt()
+  {
+    return true;
+  }
+  else{
+    return false;
+  }
+  
+}
+
+
+bool WlllnuAnalyzer::isGen_mode2(double var1, double var2, double var3, double var4, double var5){
+  if(var1>170. &&                         // genFourLepInvMass
+     80.<var2<100. &&                     // genMuPairInvMass
+     80.<var3<90. &&                      // genLepPairTransverseMass
+     20.<var4<50. &&                      // genEl.pt()
+     20.<var5<50. )                       // genNu.pt()
+  {
+    return true;
+  }
+  else{
+    return false;
+  }
+  
+}
+
+
+bool WlllnuAnalyzer::isRec_mode2(double var1, double var2, double var3, double var4, double var5){
+  if( var1>150. &&                             // recFourLepTransverseMass
+          80.<var2<100. &&                     // recMuPairInvMass
+          70.<var3<130. &&                     // recLepPairTransverseMass
+          20.<var4<50. &&                      // recEl.pt()
+          20.<var5<70. )                       // recNu.pt()
+  {
+    return true;
+  }
+  else{
+    return false;
+  }
+  
+}
+
+
 
 /*
 void histogramFill(std::vector<phys::Particle>* genLep, string histName, string histTitle, int nBin, double start, double end, string var, double weight){  
