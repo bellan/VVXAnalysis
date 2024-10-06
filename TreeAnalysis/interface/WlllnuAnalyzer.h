@@ -53,6 +53,7 @@ public:
   
   void genEventSetup();
   void reconstructionLepCompatibility(std::vector<phys::Particle>*, std::vector<phys::Lepton>*, string, string);
+  //void histogramFill(std::vector<phys::Particle>*, string, string, int, double, double, string, double);
 
   template<class T, class V>
   static bool haveCommonDaughter(const phys::Boson<T>& a, const phys::Boson<V>& b, const float tol=0.001){
@@ -121,12 +122,25 @@ private:
     
   }
 
+  // Efficiency parameters
+  bool isGen_mode1(double, double, double, double, double);
+  bool isRec_mode1(double, double, double, double, double);
+  double genRecSignal_mode1 = 0; double genSignal_mode1 = 0; double sigEps_mode1;
+  double notGenRecSignal_mode1 = 0; double notGenSignal_mode1; double bkgEps_mode1;
+  
+  bool isGen_mode2(double, double, double, double, double);
+  bool isRec_mode2(double, double, double, double, double);
+  double genRecSignal_mode2 = 0; double genSignal_mode2 = 0; double sigEps_mode2;
+  double notGenRecSignal_mode2 = 0; double notGenSignal_mode2; double bkgEps_mode2;
+
   // Vectors of gen particles
   std::unique_ptr<std::vector<phys::Particle>> genQuarks_;
   std::unique_ptr<std::vector<phys::Particle>> genChLeptons_;
   std::unique_ptr<std::vector<phys::Particle>> genNeutrinos_;
   std::unique_ptr<std::vector<phys::Particle>> genPhotons_;
   std::unique_ptr<std::vector<phys::Particle>> genPhotonsPrompt_;
+  std::vector<phys::Particle>* genElectrons_;
+  std::vector<phys::Particle>* genMuons_;
   // Vectors of gen Bosons
   std::unique_ptr<std::vector<phys::Boson<phys::Particle> > > genZlepCandidates_;
   std::unique_ptr<std::vector<phys::Boson<phys::Particle> > > genWlepCandidates_;
