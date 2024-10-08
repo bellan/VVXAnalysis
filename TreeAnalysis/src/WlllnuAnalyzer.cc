@@ -105,7 +105,10 @@ void WlllnuAnalyzer::analyze(){
       
       // ------------------------------ GEN LEVEL SIGNAL DEFINITION ----------------------------- //
       if(isGen_mode1(genFourLepInvMass, genElPairInvMass, genLepPairTransverseMass, genMu.pt(), genNu.pt()) == true){
-        genSignal_mode1++;
+        theHistograms->fill("GEN_signal_mode1", "Gen signal (mode 1)", 3, 0., 3., 1, theWeight);
+      }
+      else{
+        theHistograms->fill("not_GEN_signal_mode1", "NOT Gen signal (mode 1)", 3, 0., 3., 1, theWeight);
       }
       
       
@@ -177,10 +180,12 @@ void WlllnuAnalyzer::analyze(){
         
         // ------------------------------ REC LEVEL SIGNAL DEFINITION ----------------------------- //
         if(isGen_mode1(genFourLepInvMass, genElPairInvMass, genLepPairTransverseMass, genMu.pt(), genNu.pt()) == true && isRec_mode1(recFourLepTransverseMass, recElPairInvMass, recLepPairTransverseMass, recMu.pt(), recNu.pt()) == true){
-          genRecSignal_mode1++;
+          //genRecSignal_mode1++;
+          theHistograms->fill("GEN_REC_signal_mode1", "Signal Efficiency (mode 1)", 3, 0., 3., 1, theWeight);
         }
         else if(isGen_mode1(genFourLepInvMass, genElPairInvMass, genLepPairTransverseMass, genMu.pt(), genNu.pt()) == false && isRec_mode1(recFourLepTransverseMass, recElPairInvMass, recLepPairTransverseMass, recMu.pt(), recNu.pt()) == true){
-          notGenRecSignal_mode1++;
+          //notGenRecSignal_mode1++;
+          theHistograms->fill("not_GEN_REC_signal_mode1", "Background Efficiency (mode 1)", 3, 0., 3., 1, theWeight);
         }
         
         
@@ -251,9 +256,11 @@ void WlllnuAnalyzer::analyze(){
       
       // ------------------------------ GEN LEVEL SIGNAL DEFINITION ----------------------------- //
       if(isGen_mode2(genFourLepInvMass, genMuPairInvMass, genLepPairTransverseMass, genEl.pt(), genNu.pt()) == true){
-        genSignal_mode2++;
+        theHistograms->fill("GEN_signal_mode2", "Gen signal (mode 2)", 3, 0., 3., 1, theWeight);
       }
-      
+      else{
+        theHistograms->fill("not_GEN_signal_mode2", "NOT Gen signal (mode 2)", 3, 0., 3., 1, theWeight);
+      }
       
       
       
@@ -320,10 +327,10 @@ void WlllnuAnalyzer::analyze(){
         
         // ------------------------------ REC LEVEL SIGNAL DEFINITION ----------------------------- //
         if(isGen_mode2(genFourLepInvMass, genMuPairInvMass, genLepPairTransverseMass, genEl.pt(), genNu.pt()) == true && isRec_mode2(recFourLepTransverseMass, recMuPairInvMass, recLepPairTransverseMass, recEl.pt(), recNu.pt()) == true){
-          genRecSignal_mode2++;
+          theHistograms->fill("GEN_REC_signal_mode2", "Signal Efficiency (mode 2)", 3, 0., 3., 1, theWeight);
         }
         else if(isGen_mode2(genFourLepInvMass, genMuPairInvMass, genLepPairTransverseMass, genEl.pt(), genNu.pt()) == false && isRec_mode2(recFourLepTransverseMass, recMuPairInvMass, recLepPairTransverseMass, recEl.pt(), recNu.pt()) == true){
-          notGenRecSignal_mode2++;
+          theHistograms->fill("not_GEN_REC_signal_mode2", "Background Efficiency (mode 2)", 3, 0., 3., 1, theWeight);
         }
         
         
@@ -473,11 +480,11 @@ bool WlllnuAnalyzer::isGen_mode1(double var1, double var2, double var3, double v
 
 
 bool WlllnuAnalyzer::isRec_mode1(double var1, double var2, double var3, double var4, double var5){
-  if( var1>150. &&                             // recFourLepTransverseMass
-          80.<var2<100. &&                     // recElPairInvMass
-          70.<var3<150. &&                     // recLepPairTransverseMass
-          20.<var4<50. &&                      // recMu.pt()
-          20.<var5<70. )                       // recNu.pt()
+  if( var1>150. &&                         // recFourLepTransverseMass
+      80.<var2<100. &&                     // recElPairInvMass
+      70.<var3<150. &&                     // recLepPairTransverseMass
+      20.<var4<50. &&                      // recMu.pt()
+      20.<var5<70. )                       // recNu.pt()
   {
     return true;
   }
@@ -505,11 +512,11 @@ bool WlllnuAnalyzer::isGen_mode2(double var1, double var2, double var3, double v
 
 
 bool WlllnuAnalyzer::isRec_mode2(double var1, double var2, double var3, double var4, double var5){
-  if( var1>150. &&                             // recFourLepTransverseMass
-          80.<var2<100. &&                     // recMuPairInvMass
-          70.<var3<130. &&                     // recLepPairTransverseMass
-          20.<var4<50. &&                      // recEl.pt()
-          20.<var5<70. )                       // recNu.pt()
+  if( var1>150. &&                         // recFourLepTransverseMass
+      80.<var2<100. &&                     // recMuPairInvMass
+      70.<var3<130. &&                     // recLepPairTransverseMass
+      20.<var4<50. &&                      // recEl.pt()
+      20.<var5<70. )                       // recNu.pt()
   {
     return true;
   }
