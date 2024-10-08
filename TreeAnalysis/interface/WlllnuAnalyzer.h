@@ -125,14 +125,9 @@ private:
   // Efficiency parameters
   bool isGen_mode1(double, double, double, double, double);
   bool isRec_mode1(double, double, double, double, double);
-  double genRecSignal_mode1 = 0; double genSignal_mode1 = 0; double sigEps_mode1;
-  double notGenRecSignal_mode1 = 0; double notGenSignal_mode1; double bkgEps_mode1;
-  
   bool isGen_mode2(double, double, double, double, double);
   bool isRec_mode2(double, double, double, double, double);
-  double genRecSignal_mode2 = 0; double genSignal_mode2 = 0; double sigEps_mode2;
-  double notGenRecSignal_mode2 = 0; double notGenSignal_mode2; double bkgEps_mode2;
-
+ 
   // Vectors of gen particles
   std::unique_ptr<std::vector<phys::Particle>> genQuarks_;
   std::unique_ptr<std::vector<phys::Particle>> genChLeptons_;
