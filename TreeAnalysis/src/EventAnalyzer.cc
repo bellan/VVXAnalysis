@@ -328,12 +328,45 @@ void EventAnalyzer::InitOut(FeatList &list, TTree *tree){
   if (!tree) return;
   theFeatTree = tree;
 
-  tree->Branch("features",  &list, "feat_A/D:feat_B/D");
+  //tree->Branch("features",  &list, "f_mll/D:f_ptl1/D");
 
-  /*
-  tree->Branch("featA",  &list.feat_A, "feat_A/D:feat_B");
-  tree->Branch("featB",  &list.feat_B, "feat_A:feat_B:D");
-  */
+  tree->Branch("weight",  &list.f_weight,  "weight/D");
+  tree->Branch("mll",  &list.f_mll,  "mll/D");
+  tree->Branch("ptl1",  &list.f_ptl1, "ptl1/D");
+  tree->Branch("ptl2",  &list.f_ptl2, "ptl2/D");
+  tree->Branch("ptJ0",  &list.f_ptJ0, "ptJ0/D");
+  tree->Branch("ptJ1",  &list.f_ptJ1, "ptJ1/D");
+  tree->Branch("ptGamma",  &list.f_ptGamma, "ptGamma/D");
+
+  tree->Branch("etaJ0",  &list.f_etaJ0, "etaJ0/D");
+  tree->Branch("etaJ1",  &list.f_etaJ1, "etaJ1/D");
+  tree->Branch("etaL0",  &list.f_etaL0, "etaL0/D");
+  tree->Branch("etaL1",  &list.f_etaL1, "etaL1/D");
+
+  
+  tree->Branch("dPhiL0G",  &list.f_dPhiL0G, "dPhiL0G/D");
+  tree->Branch("dPhiL1G",  &list.f_dPhiL1G, "dPhiL1G/D");
+  tree->Branch("dPhiLL",  &list.f_dPhiLL, "dPhiLL/D");
+  //  tree->Branch("deltaR_LGamma",  &list.f_deltaR_LGamma, "deltaR_LGamma/D");
+  tree->Branch("recoVMass",  &list.f_recoVMass, "recoVMass/D");
+
+  tree->Branch("dPhiJ0G",  &list.f_dPhiJ0G, "dPhiJ0G/D");
+  tree->Branch("dPhiJ1G",  &list.f_dPhiJ1G, "dPhiJ1G/D");
+  tree->Branch("dPhiJJ",  &list.f_dPhiJJ, "dPhiJJ/D");
+
+  tree->Branch("dPhiL0J0",  &list.f_dPhiL0J0, "dPhiL0J0/D");
+  tree->Branch("dPhiL0J1",  &list.f_dPhiL0J1, "dPhiL0J1/D");
+  tree->Branch("dPhiL1J0",  &list.f_dPhiL1J0, "dPhiL1J0/D");
+  tree->Branch("dPhiL1J1",  &list.f_dPhiL1J1, "dPhiL1J1/D");
+
+  tree->Branch("FWMT0",  &list.f_FWMT0, "FWMT0/D");
+  tree->Branch("FWMT1",  &list.f_FWMT1, "FWMT1/D");
+  tree->Branch("FWMT2",  &list.f_FWMT2, "FWMT2/D");
+  tree->Branch("FWMT3",  &list.f_FWMT3, "FWMT3/D");
+  tree->Branch("FWMT4",  &list.f_FWMT4, "FWMT4/D");
+  //  tree->Branch("FWMT5",  &list.f_FWMT5, "FWMT5/D");
+  //  tree->Branch("FWMT6",  &list.f_FWMT6, "FWMT6/D");
+ 
 
 }
 
@@ -351,7 +384,7 @@ void EventAnalyzer::loop(const std::string outputfile){
   TString outFeatFileName=TString(outFeatFile_formatted);
 
   TFile outFeatFile(outFeatFileName, "RECREATE");
-  TTree *myFeatTree = new TTree("featureTree","TTree with 2 features");
+  TTree *myFeatTree = new TTree("featureTree","TTree with features");
   
   FeatList myFeatList;
   InitOut(myFeatList, myFeatTree);

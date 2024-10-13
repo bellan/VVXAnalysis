@@ -19,8 +19,9 @@ using std::endl;
 
 using namespace phys;
 
+bool IsARunForMVAFeat=true;
 bool verbose = false;
-bool signalSample = true;
+bool signalSample = false;
 bool fiducial_run =true;
 double etacut=4.7;
 double ptcut=30;
@@ -608,7 +609,7 @@ Bool_t VZGAnalyzer::cut(Int_t n, phys::Boson<phys::Jet> recoV, phys::Jet recoFJ,
 
 void VZGAnalyzer::analyze()
 { // It's the only member function running each event.
-
+  if(IsARunForMVAFeat) return;
   if(verbose==true)
     {
       cout << "----------------------------------------------------------------" << endl;
@@ -749,13 +750,151 @@ void VZGAnalyzer::analyze()
 
 void VZGAnalyzer::fillFeatTree(FeatList &list)
 {
+  if(!IsARunForMVAFeat)  return;
   if(!IN_GENsignalDef()) return;
+  //std::cout<<"0: entering fillFeatTree "<<std::endl;
 
+
+  int VBTopo = 0;
+  phys::Boson<phys::Jet> recoV;
+  phys::Jet recoFJ;
+  bool haveGoodRECODiJetCand=false;
+  bool haveGoodRECOFJCand=false;
+
+  
+  std::vector<phys::Photon> selectedphotons;
+  PhotonSelection(&selectedphotons);
+
+  //std::cout<<"1: passing photon selection "<<std::endl;
+
+  if(selectedphotons.size()<1) return;
+
+  
+  phys::Photon mostEnergeticPhoton;
+
+  std::stable_sort(selectedphotons.begin(), selectedphotons.end(), phys::EComparator());
+  mostEnergeticPhoton = selectedphotons[0];
+
+  
+  VBTopo=Reconstruct(&recoV,&recoFJ,&haveGoodRECODiJetCand,&haveGoodRECOFJCand,&mostEnergeticPhoton);
+
+  if(VBTopo!=1) return; 
+  //  std::cout<<"2: VBTopo "<<VBTopo<<std::endl;
+  
+  if (!cut(1, recoV, recoFJ, selectedphotons, VBTopo)) return;
+
+  //  std::cout<<"3: passing cuts "<<std::endl;
+
+  TLorentzVector llPh = Z->daughter(0).p4()+Z->daughter(1).p4()+selectedphotons.at(0).p4();
+  TLorentzVector l0Ph = Z->daughter(0).p4()+selectedphotons.at(0).p4();
+  TLorentzVector l1Ph = Z->daughter(1).p4()+selectedphotons.at(0).p4();
+
+  double mllPh=llPh.M();
+  double m2llPh=llPh.M2();
+  double m2l0Ph=l0Ph.M2();
+  double m2l1Ph=l1Ph.M2();
   double mll=Z->mass();
-  double ptl1=Z->daughter(0).pt();
 
-  list.feat_A = ptl1;
-  list.feat_B = mll;
+  //  std::cout<<"4: first vars filled "<<std::endl;
+
+  
+  double dPhiL0G, dPhiL1G, dPhiLL, recoVMass, ptl0, ptl1, FWMT0, ptGamma, ptJ0, ptJ1, etaJ0, etaJ1, etaL0, etaL1, FWMT1, FWMT2, FWMT3, FWMT4, FWMT5, FWMT6, dPhiJ0G, dPhiJ1G, dPhiJJ, dPhiL0J0, dPhiL1J1, dPhiL0J1, dPhiL1J0;  
+
+  dPhiLL=fabs(physmath::deltaPhi(Z->daughter(0).phi(), Z->daughter(1).phi()));
+  dPhiL0G=fabs(physmath::deltaPhi(Z->daughter(0).phi(), selectedphotons.at(0).phi() ));
+  dPhiL1G=fabs(physmath::deltaPhi(Z->daughter(1).phi(), selectedphotons.at(0).phi()));
+
+  dPhiJJ=fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi()));
+  dPhiJ0G=fabs(physmath::deltaPhi(recoV.daughter(0).phi(), selectedphotons.at(0).phi() ));
+  dPhiJ1G=fabs(physmath::deltaPhi(recoV.daughter(1).phi(), selectedphotons.at(0).phi()));
+
+  dPhiL0J0=fabs(physmath::deltaPhi(Z->daughter(0).phi(), recoV.daughter(0).phi() ));
+  dPhiL1J0=fabs(physmath::deltaPhi(Z->daughter(1).phi(), recoV.daughter(0).phi() ));
+  dPhiL0J1=fabs(physmath::deltaPhi(Z->daughter(0).phi(), recoV.daughter(1).phi() ));
+  dPhiL1J1=fabs(physmath::deltaPhi(Z->daughter(1).phi(), recoV.daughter(1).phi() ));
+
+
+  std::vector<TLorentzVector> lljjG;
+  lljjG.push_back(mostEnergeticPhoton.p4());
+  lljjG.push_back(Z->daughter(0).p4());
+  lljjG.push_back(Z->daughter(1).p4());
+  if (VBTopo==1){
+    lljjG.push_back(recoV.daughter(0).p4());
+    lljjG.push_back(recoV.daughter(1).p4());
+    recoVMass=recoV.mass();
+  }
+  else if (VBTopo==-1){
+    lljjG.push_back(recoFJ.p4());
+    recoVMass=recoFJ.mass();
+  }
+  std::vector<TLorentzVector> llG;
+  llG.push_back(Z->daughter(0).p4());
+  llG.push_back(Z->daughter(1).p4());
+  llG.push_back(selectedphotons.at(0).p4());
+
+
+    
+  std::pair<phys::Photon, phys::Lepton> nearestChLeptToPhoton;
+
+  if(fabs(physmath::deltaR(Z->daughter(0), mostEnergeticPhoton))<fabs(physmath::deltaR(Z->daughter(1), mostEnergeticPhoton)) )
+    nearestChLeptToPhoton={mostEnergeticPhoton, Z->daughter(0)};
+  else if (fabs(physmath::deltaR(Z->daughter(0), mostEnergeticPhoton))>fabs(physmath::deltaR(Z->daughter(1), mostEnergeticPhoton)) )
+    nearestChLeptToPhoton={mostEnergeticPhoton, Z->daughter(1)};
+
+  //  deltaR_LGamma=fabs(physmath::deltaR(Z->daughter(0), selectedphotons.at(0)));
+
+  //std::cout<<"dRLPH "<<deltaR_LGamma<<std::endl;
+
+  //  if (deltaR_LGamma>10) deltaR_LGamma=11;
+
+  
+  FWMT0 =SumFWM(0, 't', lljjG);
+  FWMT1 =SumFWM(1, 't', lljjG);
+  FWMT2 =SumFWM(2, 't', lljjG);
+  FWMT3 =SumFWM(3, 't', lljjG);
+  FWMT4 =SumFWM(4, 't', lljjG);
+  FWMT5 =SumFWM(5, 't', lljjG);
+  FWMT6 =SumFWM(6, 't', lljjG);
+    
+  list.f_weight = theWeight;
+  list.f_mll  = Z->mass();
+  list.f_ptl1 = Z->daughter(0).pt();
+  list.f_ptl2 = Z->daughter(1).pt();
+
+  list.f_ptGamma = selectedphotons.at(0).pt();
+  list.f_ptJ0 = recoV.daughter(0).pt();
+  list.f_ptJ1 = recoV.daughter(1).pt();
+
+  list.f_etaJ0 = recoV.daughter(0).eta();
+  list.f_etaJ1 = recoV.daughter(1).eta();
+  list.f_etaL0 = Z->daughter(0).eta();
+  list.f_etaL1 = Z->daughter(1).eta();
+
+  list.f_dPhiL0G = dPhiL0G;
+  list.f_dPhiL1G = dPhiL1G;
+  list.f_dPhiLL = dPhiLL;
+
+  list.f_dPhiJ0G = dPhiJ0G;
+  list.f_dPhiJ1G = dPhiJ1G;
+  list.f_dPhiJJ = dPhiJJ;
+
+  list.f_dPhiL0J0 = dPhiL0J0;
+  list.f_dPhiL0J1 = dPhiL0J1;
+  list.f_dPhiL1J0 = dPhiL1J0;
+  list.f_dPhiL1J1 = dPhiL1J1;
+
+  //  list.f_deltaR_LGamma = deltaR_LGamma;
+  list.f_recoVMass=recoVMass;
+
+  list.f_FWMT0=FWMT0;
+  list.f_FWMT1=FWMT1;
+  list.f_FWMT2=FWMT2;
+  list.f_FWMT3=FWMT3;
+  list.f_FWMT4=FWMT4;
+  //  list.f_FWMT5=FWMT5;
+  //  list.f_FWMT6=FWMT6;
+
+  //  std::cout<<"5: full list filled "<<std::endl;
 }
 
 
@@ -894,10 +1033,11 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
   if(!(*haveGoodRECOFJCand || *haveGoodRECODiJetCand) ){
     hadrTopo=0;
   }else{
-    if(peakDist_mDJCand<peakDist_mFJCand) hadrTopo=1;  //if(*haveGoodRECODiJetCand) hadrTopo=1;
-    else hadrTopo=-1;
+    if(*haveGoodRECODiJetCand) hadrTopo=1;//    if(peakDist_mDJCand<peakDist_mFJCand) hadrTopo=1;
+    else hadrTopo=0;//    else hadrTopo=-1;
   }
   //_________________________________
+  /*
   if(*haveGoodRECODiJetCand){
     theHistograms->fill(" HAD RECO 2J cand mass", " HAD RECO 2J cand mass ; mjj Cand. [GeV]", 28, 50, 120, V_JJCandidate->mass());
     theHistograms->fill(" HAD RECO 2J/FJ cand mass", " HAD RECO 2J/FJ cand mass ; mVB Cand. [GeV]", 28, 50, 120, V_JJCandidate->mass());
@@ -912,7 +1052,7 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
     theHistograms->fill(" HAD RECO 2J vs FJ", " HAD RECO HAD RECO 2J vs FJ ; m2J Cand. [GeV]; mFJ Cand. [GeV]", 28, 50, 120, 28, 50, 120, V_JJCandidate->mass(), V_FJCandidate->mass());
 
   //_________________________________
-
+  */
   
   //  if(haveGoodRECODiJetCand || haveGoodRECOFJCand) std::cout<<"jets reconstruction worked"<<std::endl;
   // return (haveGoodRECOFJCand || haveGoodRECODiJetCand);
@@ -933,6 +1073,8 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
     *V_JJCandidate = DiJets.at(0);
   }
   */
+  if(IsARunForMVAFeat) hadrTopo=*haveGoodRECODiJetCand;
+  
   return hadrTopo;
 }
 
@@ -949,7 +1091,7 @@ void VZGAnalyzer::PhotonSelection(std::vector<phys::Photon> *phot)
         phot->push_back(p);
     }
   }
-  if (verbose==true) std::cout << "Number of selected RECO photons = " << phot->size() << std::endl;
+  //std::cout << "Number of selected RECO photons = " << phot->size() << std::endl;
 }
 
 
