@@ -51,10 +51,10 @@ void plotDrawer() {
   
   // -- Invariant mass of the 4 leptons e+ e- mu nu -- //
   TH1F* histoFourLepInvariantMass = (TH1F *)myFile->Get("GEN_four_leptons_invariant_mass_mode1");
-  //TCanvas *c4 = new TCanvas("c4","GEN_four_leptons_invariant_mass_mode1",200,10,600,400);
-  //c4->SetFillColor(0);
-  //c4->cd();
-  //histoFourLepInvariantMass->Draw();
+  TCanvas *c4 = new TCanvas("c4","GEN_four_leptons_invariant_mass_mode1",200,10,600,400);
+  c4->SetFillColor(0);
+  c4->cd();
+  histoFourLepInvariantMass->Draw();
   
   // -- Transverse mass of the 3 charged leptons e+ e- mu -- //
   TH1F* histoChLepTransverseMass = (TH1F *)myFile->Get("GEN_charged_leptons_transverse_mass_mode1");
@@ -98,6 +98,16 @@ void plotDrawer() {
   //c10->SetFillColor(0);
   //c10->cd();
   //histoRecMuChargeCompatibility->Draw();
+  
+  // -- Correlation Factor GEN invariant mass GEN transverse mass -- //
+  TH2F* histoGenFourLepTransverseInvariantMass_mode1 = (TH2F *)myFile->Get("GEN_four_lep_transv_mass_four_lep_inv_mass_mode1");
+  cout << " " << endl;
+  cout << "Correlation factor between GEN invariant & transverse mass (mode 1) = " << histoGenFourLepTransverseInvariantMass_mode1->GetCorrelationFactor() << endl;
+  
+  // -- Correlation Factor GEN invariant mass REC transverse mass -- //
+  TH2F* histoRecGenFourLepTransverseMass_mode1 = (TH2F *)myFile->Get("REC_four_lep_transv_mass_GEN_four_lep_transv_mass_mode1");
+  cout << "Correlation factor between REC & GEN transverse mass (mode 1) = " << histoRecGenFourLepTransverseMass_mode1->GetCorrelationFactor() << endl;
+  cout << " " << endl;
   
   /*
   // -------------- EFFICIENCY --------------- //
@@ -143,6 +153,7 @@ void plotDrawer() {
   histoRecGenMuChargeEff->Draw();
   */
   
+  
   // -------------- Signal effiency and background efficiency --------------- //
   TH1F* signalEffNum_mode1 = (TH1F *)myFile->Get("GEN_REC_signal_mode1");
   TH1F* signalEffDen_mode1 = (TH1F *)myFile->Get("GEN_signal_mode1");
@@ -157,22 +168,37 @@ void plotDrawer() {
   TH1F* backgroundEffDen_mode1 = (TH1F *)myFile->Get("not_GEN_signal_mode1");
   TH1F* backgroundEff_mode1 = (TH1F*)backgroundEffNum_mode1->Clone("backgroundEff_mode1");
   TCanvas *c17 = new TCanvas("c17","Background_efficiency_mode1",200,10,600,400);
+  backgroundEff_mode1->Divide(backgroundEffDen_mode1);
   c17->SetFillColor(0);
   c17->cd();
   backgroundEff_mode1->Draw();
   
-  /*
-  double signalEffNum_mode1 = (TDouble *)myFile->Get("genRecSignal_mode1");
-  double signalEffDen_mode1 = (TDouble *)myFile->Get("genSignal_mode1");
-  double signalEff_mode1 = signalEffNum_mode1/signalEffDen_mode1;
- 
-  double backgroundEffNum_mode1 = (double)myFile->Get("notGenRecSignal_mode1");
-  double backgroundEffDen_mode1 = (double)myFile->Get("notGenSignal_mode1");
-  double backgroundEff_mode1 = backgroundEffNum_mode1/backgroundEffDen_mode1;
   
-  cout << "Signal Efficiency (mode 1) = " << signalEff_mode1 <<  endl;
-  cout << "Background Efficiency (mode 1) = " << backgroundEff_mode1 << endl;
-  */
+  // -- Decay type events distribution -- //
+  double Wtype_mode1 = histoFourLepInvariantMass->Integral(histoFourLepInvariantMass->FindBin(75),histoFourLepInvariantMass->FindBin(85));
+  double Ztype_mode1 = histoFourLepInvariantMass->Integral(histoFourLepInvariantMass->FindBin(88),histoFourLepInvariantMass->FindBin(130));
+  double WZtype_mode1 = histoFourLepInvariantMass->Integral(histoFourLepInvariantMass->FindBin(170),histoFourLepInvariantMass->FindBin(280));
+  
+  cout << "#events_Wtype (mode 1) = " << Wtype_mode1 << ";   #events_Ztype (mode 1) = " << Ztype_mode1 << ";   #events_WZtype (mode 1) = " << WZtype_mode1 << endl;
+  cout << "(#events_Ztype)/(#events_Wtype) (mode 1) = " << Ztype_mode1/Wtype_mode1 << ";   (#events_WZtype)/(#events_Wtype) (mode 1) = " << WZtype_mode1/Wtype_mode1 << endl;
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   
   // ----------------------------------------------------------------------------------------------------------------------------------------------------- //
@@ -200,10 +226,10 @@ void plotDrawer() {
   
   // -- Invariant mass of the 4 leptons mu+ mu- e nu -- //
   TH1F* histoFourLepInvariantMass_A = (TH1F *)myFile->Get("GEN_four_leptons_invariant_mass_mode2");
-  //TCanvas *cA4 = new TCanvas("cA4","GEN_four_leptons_invariant_mass_mode2",200,10,600,400);
-  //cA4->SetFillColor(0);
-  //cA4->cd();
-  //histoFourLepInvariantMass_A->Draw();
+  TCanvas *cA4 = new TCanvas("cA4","GEN_four_leptons_invariant_mass_mode2",200,10,600,400);
+  cA4->SetFillColor(0);
+  cA4->cd();
+  histoFourLepInvariantMass_A->Draw();
   
   // -- Transverse mass of the 3 charged leptons mu+ mu- e -- //
   TH1F* histoChLepTransverseMass_A = (TH1F *)myFile->Get("GEN_charged_leptons_transverse_mass_mode2");
@@ -246,6 +272,17 @@ void plotDrawer() {
   //cA10->SetFillColor(0);
   //cA10->cd();
   //histoRecElChargeCompatibility_A->Draw();
+  
+  // -- Correlation Factor GEN invariant mass GEN transverse mass -- //
+  TH2F* histoGenFourLepTransverseInvariantMass_mode2 = (TH2F *)myFile->Get("GEN_four_lep_transv_mass_four_lep_inv_mass_mode2");
+  cout << " " << endl;
+  cout << "Correlation factor between GEN invariant & transverse mass (mode 2) = " << histoGenFourLepTransverseInvariantMass_mode2->GetCorrelationFactor() << endl;
+  
+  // -- Correlation Factor GEN invariant mass REC transverse mass -- //
+  TH2F* histoRecGenFourLepTransverseMass_mode2 = (TH2F *)myFile->Get("REC_four_lep_transv_mass_GEN_four_lep_transv_mass_mode2");
+  cout << "Correlation factor between REC & GEN transverse mass (mode 2) = " << histoRecGenFourLepTransverseMass_mode2->GetCorrelationFactor() << endl;
+  cout << " " << endl;
+  
   /*
   // -------------- EFFICIENCY --------------- //
   
@@ -290,6 +327,7 @@ void plotDrawer() {
   histoRecGenElChargeEff_A->Draw();
   */
   
+  
   // -------------- Signal efficiency and background efficiency --------------- //
   TH1F* signalEffNum_mode2 = (TH1F *)myFile->Get("GEN_REC_signal_mode2");
   TH1F* signalEffDen_mode2 = (TH1F *)myFile->Get("GEN_signal_mode2");
@@ -303,24 +341,23 @@ void plotDrawer() {
   TH1F* backgroundEffNum_mode2 = (TH1F *)myFile->Get("not_GEN_REC_signal_mode2");
   TH1F* backgroundEffDen_mode2 = (TH1F *)myFile->Get("not_GEN_signal_mode2");
   TH1F* backgroundEff_mode2 = (TH1F*)backgroundEffNum_mode2->Clone("backgroundEff_mode2");
+  backgroundEff_mode2->Divide(backgroundEffDen_mode2);
   TCanvas *cA17 = new TCanvas("cA17","Background_efficiency_mode2",200,10,600,400);
   cA17->SetFillColor(0);
   cA17->cd();
   backgroundEff_mode2->Draw();
   
   
+  // -- Decay type events distribution -- //
+  double Wtype_mode2 = histoFourLepInvariantMass_A->Integral(histoFourLepInvariantMass_A->FindBin(75),histoFourLepInvariantMass_A->FindBin(85));                
+  double Ztype_mode2 = histoFourLepInvariantMass_A->Integral(histoFourLepInvariantMass_A->FindBin(88),histoFourLepInvariantMass_A->FindBin(140));               
+  double WZtype_mode2 = histoFourLepInvariantMass_A->Integral(histoFourLepInvariantMass_A->FindBin(170),histoFourLepInvariantMass_A->FindBin(280));             
   
-  /*
-  double signalEffNum_mode2 = (double)myFile->Get("genRecSignal_mode2");
-  double signalEffDen_mode2 = (double)myFile->Get("genSignal_mode2");
-  double signalEff_mode2 = signalEffNum_mode2/signalEffDen_mode2;
+  cout << "#events_Wtype (mode 2) = " << Wtype_mode2 << ";   #events_Ztype (mode 2) = " << Ztype_mode2 << ";   #events_WZtype (mode 2) = " << WZtype_mode2 << endl;
+  cout << "(#events_Ztype)/(#events_Wtype) (mode 2) = " << Ztype_mode2/Wtype_mode2 << ";   (#events_WZtype)/(#events_Wtype) (mode 2) = " << WZtype_mode2/Wtype_mode2 << endl;
   
-  double backgroundEffNum_mode2 = (double)myFile->Get("notGenRecSignal_mode2");
-  double backgroundEffDen_mode2 = (double)myFile->Get("notGenSignal_mode2");
-  double backgroundEff_mode2 = backgroundEffNum_mode2/backgroundEffDen_mode2;
-    
-  cout << "Signal Efficiency (mode 2) = " << signalEff_mode2 <<  endl;
-  cout << "Background Efficiency (mode 2) = " << backgroundEff_mode2 << endl;
-  */
+  
+  
+  
   
 }
