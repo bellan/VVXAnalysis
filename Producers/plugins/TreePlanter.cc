@@ -371,7 +371,7 @@ void TreePlanter::initTree(){
   genEventWeights_ = phys::GenEventWeights();
   MELA_ = phys::MELA();
 
-  met_    = phys::Particle();
+  met_    = phys::RecoParticle();
   nvtx_   = -1;
   
   muons_     = std::vector<phys::Lepton>();
@@ -385,10 +385,10 @@ void TreePlanter::initTree(){
   ZL_        = std::pair<phys::Boson<phys::Lepton>, phys::Lepton>();
   ZW_        = phys::DiBoson<phys::Lepton  , phys::Lepton>();
 
-  genParticles_ = std::vector<phys::Particle>();
-  genTaus_ = std::vector<phys::Particle>();
+  genParticles_ = std::vector<phys::GenParticle>();
+  genTaus_ = std::vector<phys::GenParticle>();
   // genPhotons_ = std::vector<phys::Particle>();
-  genVBParticles_ = std::vector<phys::Boson<phys::Particle> >();
+  genVBParticles_ = std::vector<phys::Boson<phys::GenParticle> >();
   genJets_ = std::vector<phys::Particle>();
   genJetsAK8_ = std::vector<phys::Particle>();
 }
@@ -413,7 +413,7 @@ bool TreePlanter::fillEventInfo(const edm::Event& event){
   lumiBlock_ = event.luminosityBlock();
 
   edm::Handle<pat::METCollection> met;      event.getByToken(theMETToken    , met);
-  met_ = phys::Particle(phys::Particle::convert(met->front().p4()));
+  met_ = phys::RecoParticle(phys::Particle::convert(met->front().p4()));
 
 
   edm::Handle<std::vector<reco::Vertex> > vertices; event.getByToken(theVertexToken, vertices);
@@ -493,7 +493,7 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
   // load only gen leptons and gen photon status 1, from hard process
   for (edm::View<reco::Candidate>::const_iterator p = genParticles->begin(); p != genParticles->end(); ++p){
     const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(&(*p));
-    phys::Particle out(gp->p4(), phys::Particle::computeCharge(gp->pdgId()), gp->pdgId(), gp->statusFlags().flags_);
+    phys::GenParticle out(gp->p4(), phys::Particle::computeCharge(gp->pdgId()), gp->pdgId(), gp->statusFlags().flags_);
     if(gp->numberOfMothers() == 1)
       out.motherId_ = gp->mother(0)->pdgId();
     genParticles_.push_back(std::move(out));
@@ -506,7 +506,7 @@ bool TreePlanter::fillGenInfo(const edm::Event& event){
 
   for (edm::View<reco::Candidate>::const_iterator p = genTaus->begin(); p != genTaus->end(); ++p){
     const reco::GenParticle* gp = dynamic_cast<const reco::GenParticle*>(&(*p));
-    genTaus_.push_back(phys::Particle(gp->p4(), phys::Particle::computeCharge(gp->pdgId()), gp->pdgId(), gp->statusFlags().flags_));
+    genTaus_.push_back(phys::GenParticle(gp->p4(), phys::Particle::computeCharge(gp->pdgId()), gp->pdgId(), gp->statusFlags().flags_));
   }
   
   for(edm::View<reco::Candidate>::const_iterator p = genVBs->begin(); p != genVBs->end(); ++p){
@@ -718,6 +718,10 @@ phys::Lepton TreePlanter::fillLepton(const LEP& lepton) const{
   output.efficiencySF_    = effSF.first;
   output.efficiencySFUnc_ = effSF.second;
   output.setFakeRateSF(leptonScaleFactors_.fakeRateScaleFactor(output));
+  output.scale_total_up_ = lepton.userFloat("scale_total_up");
+  output.scale_total_dn_ = lepton.userFloat("scale_total_dn");
+  output.sigma_total_up_ = lepton.userFloat("sigma_total_up");
+  output.sigma_total_dn_ = lepton.userFloat("sigma_total_dn");
 
   return output;
 }
@@ -731,6 +735,7 @@ phys::Lepton TreePlanter::fill(const pat::Electron &electron) const{
   lep.missingHits_        = electron.gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS);
   lep.passConversionVeto_ = electron.passConversionVeto();
   lep.mvaValue_           = electron.userFloat("ElectronMVAEstimatorRun2Fall17IsoV2Values");
+
   
   if(electron.userInt("cutBasedElectronID-Fall17-94X-V2-loose" ) == 1023) lep.pogID_.set(static_cast<UInt_t>(phys::Lepton::IdWp::Loose ));
   if(electron.userInt("cutBasedElectronID-Fall17-94X-V2-medium") == 1023) lep.pogID_.set(static_cast<UInt_t>(phys::Lepton::IdWp::Medium));
@@ -945,69 +950,19 @@ phys::Photon TreePlanter::fill(const pat::Photon &photon) const {
 	output.hasPixelSeed_     = photon.hasPixelSeed();
 
 	output.seedEnergy_ = photon.seedEnergy();
-	// output.eMax_    = photon.eMax();
-	// output.e2nd_    = photon.e2nd();
-	// output.e3x3_    = photon.e3x3();
-	// output.eTop_    = photon.eTop();
-	// output.eBottom_ = photon.eBottom();
-	// output.eLeft_   = photon.eLeft();
-	// output.eRight_  = photon.eRight();
-	// output.see_ = photon.see();
-	// output.spp_ = photon.spp();
-	// output.sep_ = photon.sep();
-	// output.maxDR_          = photon.maxDR();
-	// output.maxDRDPhi_      = photon.maxDRDPhi();
-	// output.maxDRDEta_      = photon.maxDRDEta();
-	// output.maxDRRawEnergy_ = photon.maxDRRawEnergy();
-	// output.subClusRawE1_ = photon.subClusRawE1();
-	// output.subClusRawE2_ = photon.subClusRawE2();
-	// output.subClusRawE3_ = photon.subClusRawE3();
-	// output.subClusDPhi1_ = photon.subClusDPhi1();
-	// output.subClusDPhi2_ = photon.subClusDPhi2();
-	// output.subClusDPhi3_ = photon.subClusDPhi3();
-	// output.subClusDEta1_ = photon.subClusDEta1();
-	// output.subClusDEta2_ = photon.subClusDEta2();
-	// output.subClusDEta3_ = photon.subClusDEta3();
-	// output.cryEta_ = photon.cryEta();
-	// output.cryPhi_ = photon.cryPhi();
-	// output.iEta_   = photon.iEta();
-	// output.iPhi_   = photon.iPhi();
 	output.scEta_ = photon.superCluster()->eta();
 	
 	// Isolations
 	output.puppiChargedHadronIso_ = photon.puppiChargedHadronIso();
 	output.puppiNeutralHadronIso_ = photon.puppiNeutralHadronIso();
 	output.puppiPhotonIso_        = photon.puppiPhotonIso();
-		
+
 	// Energy corrections
-	output.ecalEnergyPreCorr_ = photon.hasUserFloat("ecalEnergyPreCorr") ? photon.userFloat("ecalEnergyPreCorr") : -999.;
-	output.ecalEnergyErrPreCorr_ = photon.hasUserFloat("ecalEnergyErrPreCorr") ? photon.userFloat("ecalEnergyErrPreCorr") : -999.;
-	output.ecalEnergyPostCorr_ = photon.hasUserFloat("ecalEnergyPostCorr") ? photon.userFloat("ecalEnergyPostCorr") : -999.;
-	output.ecalEnergyErrPostCorr_ = photon.hasUserFloat("ecalEnergyErrPostCorr") ? photon.userFloat("ecalEnergyErrPostCorr") : -999.;
-	// output.ecalTrkEnergyPreCorr_ = photon.hasUserFloat("ecalTrkEnergyPreCorr") ? photon.userFloat("ecalTrkEnergyPreCorr") : -999.;
-	// output.ecalTrkEnergyErrPreCorr_ = photon.hasUserFloat("ecalTrkEnergyErrPreCorr") ? photon.userFloat("ecalTrkEnergyErrPreCorr") : -999.;
-	// output.ecalTrkEnergyPostCorr_ = photon.hasUserFloat("ecalTrkEnergyPostCorr") ? photon.userFloat("ecalTrkEnergyPostCorr") : -999.;
-	// output.ecalTrkEnergyErrPostCorr_ = photon.hasUserFloat("ecalTrkEnergyErrPostCorr") ? photon.userFloat("ecalTrkEnergyErrPostCorr") : -999.;
-	output.energyScaleValue_    = photon.hasUserFloat("energyScaleValue")    ? photon.userFloat("energyScaleValue")    : -999.;
-	output.energySigmaValue_    = photon.hasUserFloat("energySigmaValue")    ? photon.userFloat("energySigmaValue")    : -999.;
-	output.energySmearNrSigma_  = photon.hasUserFloat("energySmearNrSigma")  ? photon.userFloat("energySmearNrSigma")  : -999.;
-	output.energyScaleUp_       = photon.hasUserFloat("energyScaleUp")       ? photon.userFloat("energyScaleUp")       : -999.;
-	output.energyScaleDown_     = photon.hasUserFloat("energyScaleDown")     ? photon.userFloat("energyScaleDown")     : -999.;
-	output.energyScaleStatUp_   = photon.hasUserFloat("energyScaleStatUp")   ? photon.userFloat("energyScaleStatUp")   : -999.;
-	output.energyScaleStatDown_ = photon.hasUserFloat("energyScaleStatDown") ? photon.userFloat("energyScaleStatDown") : -999.;
-	output.energyScaleSystUp_   = photon.hasUserFloat("energyScaleSystUp")   ? photon.userFloat("energyScaleSystUp")   : -999.;
-	output.energyScaleSystDown_ = photon.hasUserFloat("energyScaleSystDown") ? photon.userFloat("energyScaleSystDown") : -999.;
-	output.energyScaleGainUp_   = photon.hasUserFloat("energyScaleGainUp")   ? photon.userFloat("energyScaleGainUp")   : -999.;
-	output.energyScaleGainDown_ = photon.hasUserFloat("energyScaleGainDown") ? photon.userFloat("energyScaleGainDown") : -999.;
-	output.energyScaleEtUp_     = photon.hasUserFloat("energyScaleEtUp")     ? photon.userFloat("energyScaleEtUp")     : -999.;
-	output.energyScaleEtDown_   = photon.hasUserFloat("energyScaleEtDown")   ? photon.userFloat("energyScaleEtDown")   : -999.;
-	output.energySigmaUp_       = photon.hasUserFloat("energySigmaUp")       ? photon.userFloat("energySigmaUp")       : -999.;
-	output.energySigmaDown_     = photon.hasUserFloat("energySigmaDown")     ? photon.userFloat("energySigmaDown")     : -999.;
-	output.energySigmaPhiUp_    = photon.hasUserFloat("energySigmaPhiUp")    ? photon.userFloat("energySigmaPhiUp")    : -999.;
-	output.energySigmaPhiDown_  = photon.hasUserFloat("energySigmaPhiDown")  ? photon.userFloat("energySigmaPhiDown")  : -999.;
-	output.energySigmaRhoUp_    = photon.hasUserFloat("energySigmaRhoUp")    ? photon.userFloat("energySigmaRhoUp")    : -999.;
-	output.energySigmaRhoDown_  = photon.hasUserFloat("energySigmaRhoDown")  ? photon.userFloat("energySigmaRhoDown")  : -999.;
-	
+	output.scale_total_up_ = photon.hasUserFloat("energyScaleUp")   ? photon.userFloat("energyScaleUp")   : -999.;
+	output.scale_total_dn_ = photon.hasUserFloat("energyScaleDown") ? photon.userFloat("energyScaleDown") : -999.;
+	output.sigma_total_up_ = photon.hasUserFloat("energySigmaUp")   ? photon.userFloat("energySigmaUp")   : -999.;
+	output.sigma_total_dn_ = photon.hasUserFloat("energySigmaDown") ? photon.userFloat("energySigmaDown") : -999.;
+
 	// Efficiency SF
 	std::pair<double, double> effSF = photonScaleFactors_.efficiencyScaleFactor(output);
 	output.efficiencySF_    = effSF.first;

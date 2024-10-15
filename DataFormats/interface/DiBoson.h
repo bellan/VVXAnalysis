@@ -36,10 +36,6 @@ namespace phys {
 	for(unsigned int i = 0; i < 2; ++i){
 	  id_ += abs(daughter0_.daughter(i).id()) + abs(daughter1_.daughter(i).id()) + daughter0_.daughter(i).id() + daughter1_.daughter(i).id();
 	}
-	efficiencySF_  = -1;
-	efficiencySFUnc_  = -1;
-	fakeRateSF_    = -1;
-	fakeRateSFUnc_ = -1;
       }
     
     template<typename T1, typename T2>

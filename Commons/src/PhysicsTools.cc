@@ -1,6 +1,6 @@
 #include "VVXAnalysis/Commons/interface/PhysTools.h"
 
-phys::Particle phys::convert(const reco::Candidate &rc,std::bitset<15> flags){
+phys::GenParticle phys::convert(const reco::Candidate &rc,std::bitset<15> flags){
   
   phys::Particle p(rc.p4(),phys::Particle::computeCharge(rc.pdgId()),rc.pdgId(),flags);
 
@@ -9,9 +9,9 @@ phys::Particle phys::convert(const reco::Candidate &rc,std::bitset<15> flags){
   return p;
 }
 
- phys::Particle phys::convert(const reco::Candidate &rc){
+ phys::GenParticle phys::convert(const reco::Candidate &rc){
   
-   std::bitset<15> flags (-99);
+   std::bitset<15> flags(0);
    return phys::convert(rc,flags);
   }
 

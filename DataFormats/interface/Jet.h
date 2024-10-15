@@ -9,13 +9,13 @@
  *  \author R. Bellan - UNITO <riccardo.bellan@cern.ch>
  */
 
-#include "Particle.h"
+#include "RecoParticle.h"
 
 class TreePlanter;
 
 namespace phys {
 
-  class Jet: public Particle {
+  class Jet: public RecoParticle {
     // Friends
     friend class ::TreePlanter;
     
@@ -43,7 +43,7 @@ namespace phys {
     
     /// Constructor
     Jet(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), float q =0, int pid = 0)
-      : Particle(p, q, pid)
+      : RecoParticle(p, q, pid)
       , chargedMultiplicity_(-1)
       , neutralMultiplicity_(-1)
       , neutralHadronEnergyFraction_(-9999.)

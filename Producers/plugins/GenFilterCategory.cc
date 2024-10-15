@@ -42,7 +42,7 @@ public:
  
 
   bool filter(edm::Event & event, const edm::EventSetup& eventSetup);
-  void loadGenBoson(const phys::Boson<phys::Particle> &vb, const reco::GenParticleRefProd &genRefs, std::unique_ptr<reco::GenParticleCollection> &outputGenColl);
+  void loadGenBoson(const phys::Boson<phys::GenParticle> &vb, const reco::GenParticleRefProd &genRefs, std::unique_ptr<reco::GenParticleCollection> &outputGenColl);
   
   virtual void beginJob();
   virtual void endJob(){}
@@ -62,8 +62,8 @@ void GenFilterCategory::beginJob() {}
 
 bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) { 
 
-  std::vector<phys::Particle> theGenZ, theGenW;
-  std::vector<phys::Particle> theGenl, theGenj;
+  std::vector<phys::GenParticle> theGenZ, theGenW;
+  std::vector<phys::GenParticle> theGenl, theGenj;
   
   // Get the collection of gen particles
   edm::Handle<edm::View<reco::Candidate> > genParticles;
@@ -130,7 +130,7 @@ bool GenFilterCategory::filter(Event & event, const EventSetup& eventSetup) {
 }
 
 
-void GenFilterCategory::loadGenBoson(const phys::Boson<phys::Particle> &vb, const reco::GenParticleRefProd &genRefs, std::unique_ptr<reco::GenParticleCollection> &outputGenColl){
+void GenFilterCategory::loadGenBoson(const phys::Boson<phys::GenParticle> &vb, const reco::GenParticleRefProd &genRefs, std::unique_ptr<reco::GenParticleCollection> &outputGenColl){
 
    size_t initialSize = outputGenColl->size();
 

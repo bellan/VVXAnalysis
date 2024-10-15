@@ -39,11 +39,6 @@ namespace phys {
       : p4_(mom)
       , charge_(q)
       , id_(id)
-      , motherId_(-99)
-      , efficiencySF_(1.)
-      , efficiencySFUnc_(0.)
-      , fakeRateSF_(1.)
-      , genStatusFlags_(flags)
     {
       if (abs(id_)==13) id_= copysign(id, (-1)*q) ;
     }
@@ -86,42 +81,18 @@ namespace phys {
     
     void setId(int pid) {id_ = pid; charge_ = computeCharge(pid);}
     
-    void setMotherId(int pid) {motherId_ = pid;}
-    
     void setP4(const TLorentzVector& pi){p4_=pi;}
     
-    int motherId() const {return motherId_;}
-    
-    bool isValid() const {return id_ != 0 && p() > 0;}
-
-    void setEfficenySFUnc(float effSfUnc ) {efficiencySFUnc_ = effSfUnc;}
-    
-    virtual Double_t efficiencySF()  const {return efficiencySF_;}
-    virtual Double_t efficiencySFUnc()  const {return efficiencySFUnc_;}
-    virtual Double_t fakeRateSF()    const {return fakeRateSF_;}
-    virtual Double_t fakeRateSFUnc() const {return fakeRateSFUnc_;} 
-    virtual Double_t fakeRateSFVar() const {return fakeRateSFUnc()*fakeRateSFUnc();}
-    Bool_t   passFullSel() const {return true;}
-    
-    // Gen info, in case they are meaningfull
-    std::bitset<15> genStatusFlags() const { return genStatusFlags_; }
-    void setGenStatusBit(GenStatusBit bit, int val = 1) {genStatusFlags_.set(bit, val);}
-
+    virtual bool isValid() const {return id_ != 0 && p() > 0;}
 
   protected:
     TLorentzVector p4_;
     Float_t charge_;
     Int_t id_;    
-    Int_t motherId_;
-    Double_t efficiencySF_;
-    Double_t efficiencySFUnc_;
-    Double_t fakeRateSF_;
-    Double_t fakeRateSFUnc_;
-    std::bitset<15> genStatusFlags_;
     
   public:
 
-    bool operator==(const Particle& p1) const{
+    virtual bool operator==(const Particle& p1) const{
       return  (*this).id() == p1.id()         &&
       (*this).p4().Px() - p1.p4().Px() < 0.01 &&
       (*this).p4().Py() - p1.p4().Py() < 0.01 &&
@@ -130,11 +101,9 @@ namespace phys {
     }
 
 
-    bool operator!=(Particle p1) const{
+    virtual bool operator!=(const Particle& p1) const{
       return !((*this) == p1);
     }
-
-
 
     friend std::ostream&  operator<<(std::ostream& os, const Particle& obj){
       
@@ -143,28 +112,8 @@ namespace phys {
       return os;
     }
 
-    void printStatusBits() const {
-      std::cout << "isPrompt\t"  << genStatusFlags().test(phys::GenStatusBit::isPrompt) << std::endl
-		<< "isDecayedLeptonHadron\t" << genStatusFlags().test(phys::GenStatusBit::isDecayedLeptonHadron)<< std::endl
-		<< "isTauDecayProduct\t" << genStatusFlags().test(phys::GenStatusBit::isTauDecayProduct)<< std::endl
-		<< "isPromptTauDecayProduct\t" << genStatusFlags().test(phys::GenStatusBit::isPromptTauDecayProduct)<< std::endl
-		<< "isDirectTauDecayProduct\t" << genStatusFlags().test(phys::GenStatusBit::isDirectTauDecayProduct)<< std::endl
-		<< "isDirectPromptTauDecayProduct\t" << genStatusFlags().test(phys::GenStatusBit::isDirectPromptTauDecayProduct)<< std::endl
-		<< "isDirectHadronDecayProduct\t" << genStatusFlags().test(phys::GenStatusBit::isDirectHadronDecayProduct)<< std::endl
-		<< "isHardProcess\t" << genStatusFlags().test(phys::GenStatusBit::isHardProcess)<< std::endl
-		<< "fromHardProcess\t" << genStatusFlags().test(phys::GenStatusBit::fromHardProcess)<< std::endl
-		<< "isHardProcessTauDecayProduct\t" << genStatusFlags().test(phys::GenStatusBit::isHardProcessTauDecayProduct)<< std::endl
-		<< "isDirectHardProcessTauDecayProduct\t" << genStatusFlags().test(phys::GenStatusBit::isDirectHardProcessTauDecayProduct)<< std::endl
-		<< "fromHardProcessBeforeFSR\t" << genStatusFlags().test(phys::GenStatusBit::fromHardProcessBeforeFSR)<< std::endl
-		<< "isFirstCopy\t" << genStatusFlags().test(phys::GenStatusBit::isFirstCopy)<< std::endl
-		<< "isLastCopy\t" << genStatusFlags().test(phys::GenStatusBit::isLastCopy)<< std::endl
-		<< "isLastCopyBeforeFSR\t" << genStatusFlags().test(phys::GenStatusBit::isLastCopyBeforeFSR)<< std::endl;
-    }
-
-
-    
   private:
-    ClassDef(Particle, 1) //     
+    ClassDef(Particle, 2)
       };
   
 }

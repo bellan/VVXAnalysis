@@ -177,10 +177,6 @@ namespace phys {
 
     void init(){
 
-      efficiencySF_  = -1;
-      fakeRateSF_    = -1;
-      fakeRateSFUnc_ = -1;
-      
       charge_ = daughter0_.charge() + daughter1_.charge();
 
       if(indexFSR_ >=0)  {

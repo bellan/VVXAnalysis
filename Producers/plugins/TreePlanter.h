@@ -25,6 +25,7 @@
 
 #include "CommonTools/Utils/interface/StringCutObjectSelector.h"
 
+#include "VVXAnalysis/DataFormats/interface/GenParticle.h"
 #include "VVXAnalysis/DataFormats/interface/Lepton.h"
 #include "VVXAnalysis/DataFormats/interface/Jet.h"
 #include "VVXAnalysis/DataFormats/interface/Photon.h"

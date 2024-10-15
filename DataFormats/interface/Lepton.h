@@ -9,14 +9,13 @@
  *  \author R. Bellan - UNITO <riccardo.bellan@cern.ch>
  */
 
-#include "Particle.h"
-#include "Jet.h"
+#include "RecoParticle.h"
 
 class TreePlanter;
 
 namespace phys {
 
-  class Lepton: public Particle {
+  class Lepton: public RecoParticle {
 
     friend class ::TreePlanter;
 
@@ -26,7 +25,7 @@ namespace phys {
     
     /// Constructor
     Lepton(const TLorentzVector& pin = TLorentzVector(0.,0.,0.,0.), float q =0, int pid = 0)
-      : Particle(pin,q, pid)
+      : RecoParticle(pin,q, pid)
       , dxy_(-9999.)               
       , dz_(-9999.)                
       , sip_(-9999.)
@@ -87,8 +86,8 @@ namespace phys {
       fakeRateSFUnc_ =  sf.second;
     }
     
-    Double_t fakeRateSF()        const {return passFullSel() ? 1. : fakeRateSF_;}
-    Double_t fakeRateSFUnc()     const {return passFullSel() ? 0. : fakeRateSFUnc_;}
+    Float_t fakeRateSF()        const {return passFullSel() ? 1. : fakeRateSF_;}
+    Float_t fakeRateSFUnc()     const {return passFullSel() ? 0. : fakeRateSFUnc_;}
     
     Double_t Em1_Pm1()           const {return (1/EoverP_-1)/p4_.P();}
 
@@ -121,7 +120,7 @@ namespace phys {
     std::bitset<4> pogID_;
     std::bitset<6> isoPF_; // Only for muons
 
-    ClassDef(Lepton, 2) //
+    ClassDef(Lepton, 3) //
   };
 }
 
