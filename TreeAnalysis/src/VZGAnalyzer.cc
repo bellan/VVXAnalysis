@@ -820,13 +820,16 @@ void VZGAnalyzer::analyze()
 
 }
 
-void VZGAnalyzer::fillFeatTree(FeatList &list)
+void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
 {
+  passingPresel = false;
   if(!IsARunForMVAFeat)  return;
   if(!IN_GENsignalDef()) return;
   //std::cout<<"0: entering fillFeatTree "<<std::endl;
 
 
+  int nbOfCutsPassed=0;
+  
   int VBTopo = 0;
   phys::Boson<phys::Jet> recoV;
   phys::Jet recoFJ;
@@ -838,9 +841,11 @@ void VZGAnalyzer::fillFeatTree(FeatList &list)
   PhotonSelection(&selectedphotons);
 
   //std::cout<<"1: passing photon selection "<<std::endl;
-
-  if(selectedphotons.size()<1) return;
-
+  //  std::cout<<"---------------------------------------------------------"<<std::endl;//
+  if(selectedphotons.size()<1) {
+    list.f_nbOfCutsPassed = 0;  
+    return;
+  }
   
   phys::Photon mostEnergeticPhoton;
 
@@ -850,10 +855,14 @@ void VZGAnalyzer::fillFeatTree(FeatList &list)
   
   VBTopo=Reconstruct(&recoV,&recoFJ,&haveGoodRECODiJetCand,&haveGoodRECOFJCand,&mostEnergeticPhoton);
 
+  //while(cut(nbOfCutsPassed, recoV, recoFJ, selectedphotons, VBTopo))    nbOfCutsPassed++;
+  
+  //  list.f_nbOfCutsPassed = nbOfCutsPassed;  
+
   if(VBTopo!=1) return; 
   //  std::cout<<"2: VBTopo "<<VBTopo<<std::endl;
-  
-  if (!cut(1, recoV, recoFJ, selectedphotons, VBTopo)) return;
+
+  if (!cut(2, recoV, recoFJ, selectedphotons, VBTopo)) return;
 
   //  std::cout<<"3: passing cuts "<<std::endl;
 
@@ -927,46 +936,90 @@ void VZGAnalyzer::fillFeatTree(FeatList &list)
   FWMT4 =SumFWM(4, 't', lljjG);
   FWMT5 =SumFWM(5, 't', lljjG);
   FWMT6 =SumFWM(6, 't', lljjG);
-    
+  //  std::cout<<"----------------------------------------"<<std::endl;    
   list.f_weight = theWeight;
+  //  std::cout<<"weight: "<<theWeight<<std::endl;//  theHistograms->fill("the Weight", "the Weight", 50, -5, 5, theWeight, 1);
+
   list.f_mll  = Z->mass();
+  //  std::cout<<"ZCandMass: "<<Z->mass()<<std::endl;//    theHistograms->fill("ZCand mass", "ZCand mass", 30, 60, 120, Z->mass(), 1);
+
   list.f_ptl1 = Z->daughter(0).pt();
+  //  std::cout<<"ptl1: "<<Z->daughter(0).pt()<<std::endl;//      theHistograms->fill("ptl1", "ptl1", 50,  20, 120, Z->daughter(0).pt(), 1);
+
   list.f_ptl2 = Z->daughter(1).pt();
+  //  std::cout<<"ptl2: "<<Z->daughter(1).pt()<<std::endl;//  theHistograms->fill("ptl2", "ptl2", 50,  20, 120, Z->daughter(1).pt(), 1);
 
   list.f_ptGamma = selectedphotons.at(0).pt();
+  //  std::cout<<"ptGamma: "<<selectedphotons.at(0).pt()<<std::endl;//  theHistograms->fill("ptGamma", "ptGamma", 50,  20, 120, selectedphotons.at(0).pt(), 1);
+  
   list.f_ptJ0 = recoV.daughter(0).pt();
+  //  std::cout<<"ptJ0: "<<recoV.daughter(0).pt()<<std::endl;//  theHistograms->fill("ptJ0", "ptJ0", 50,  30, 130, recoV.daughter(0).pt(), 1);
+
   list.f_ptJ1 = recoV.daughter(1).pt();
+  //  std::cout<<"ptJ1: "<<recoV.daughter(1).pt()<<std::endl;//  theHistograms->fill("ptJ1", "ptJ1", 50,  30, 130, recoV.daughter(1).pt(), 1);
 
   list.f_etaJ0 = recoV.daughter(0).eta();
   list.f_etaJ1 = recoV.daughter(1).eta();
   list.f_etaL0 = Z->daughter(0).eta();
   list.f_etaL1 = Z->daughter(1).eta();
-
+  
+  /*
+  std::cout<<"etaJ0: "<<recoV.daughter(0).eta()<<std::endl;//  theHistograms->fill("etaJ0", "etaJ0", 50,  -4, 4, recoV.daughter(0).eta(), 1);
+  std::cout<<"etaJ1: "<<recoV.daughter(1).eta()<<std::endl;//  theHistograms->fill("etaJ1", "etaJ1", 50,  -4, 4, recoV.daughter(1).eta(), 1);
+  std::cout<<"etaL0: "<<Z->daughter(0).eta()<<std::endl;//  theHistograms->fill("etaL0", "etaL0", 25,  -2.5, 2.5, Z->daughter(0).eta(), 1);
+  std::cout<<"etaL1: "<<Z->daughter(1).eta()<<std::endl;//  theHistograms->fill("etaL1", "etaL1", 25,  -2.5, 2.5, Z->daughter(1).eta(), 1);
+  */
+  
   list.f_dPhiL0G = dPhiL0G;
   list.f_dPhiL1G = dPhiL1G;
   list.f_dPhiLL = dPhiLL;
-
+  /*
+  theHistograms->fill("dPhiL0G", "dPhiL0G", 150,  0, 3, dPhiL0G, 1);
+  theHistograms->fill("dPhiL1G", "dPhiL1G", 150,  0, 3, dPhiL1G, 1);
+  theHistograms->fill("dPhiLL", "dPhiLL", 150,  0, 3, dPhiLL, 1);
+  */
+  
   list.f_dPhiJ0G = dPhiJ0G;
   list.f_dPhiJ1G = dPhiJ1G;
   list.f_dPhiJJ = dPhiJJ;
-
+  /*
+  theHistograms->fill("dPhiJ0G", "dPhiJ0G", 150,  0, 3, dPhiL0G, 1);
+  theHistograms->fill("dPhiJ1G", "dPhiJ1G", 150,  0, 3, dPhiL1G, 1);
+  theHistograms->fill("dPhiJJ", "dPhiJJ", 150,  0, 3, dPhiLL, 1);
+  */
   list.f_dPhiL0J0 = dPhiL0J0;
   list.f_dPhiL0J1 = dPhiL0J1;
   list.f_dPhiL1J0 = dPhiL1J0;
   list.f_dPhiL1J1 = dPhiL1J1;
-
+  /*
+  theHistograms->fill("dPhiL0J0", "dPhiL0J0", 150,  0, 3, dPhiL0J0, 1);
+  theHistograms->fill("dPhiL0J1", "dPhiL0J1", 150,  0, 3, dPhiL0J1, 1);
+  theHistograms->fill("dPhiL1J0", "dPhiL1J0", 150,  0, 3, dPhiL1J0, 1);
+  theHistograms->fill("dPhiL1J1", "dPhiL1J1", 150,  0, 3, dPhiL1J1, 1);
+  */
   //  list.f_deltaR_LGamma = deltaR_LGamma;
   list.f_recoVMass=recoVMass;
+  theHistograms->fill("recoVMass", "recoVMass", 35, 50, 120, recoVMass, 1);
 
   list.f_FWMT0=FWMT0;
   list.f_FWMT1=FWMT1;
   list.f_FWMT2=FWMT2;
   list.f_FWMT3=FWMT3;
   list.f_FWMT4=FWMT4;
+  /*
+  theHistograms->fill("FWMT0", "FWMT0", 25, 0, 5, FWMT0, 1);
+  theHistograms->fill("FWMT1", "FWMT1", 25, 0, 5, FWMT1, 1);
+  theHistograms->fill("FWMT2", "FWMT2", 50, 0, 1, FWMT2, 1);
+  theHistograms->fill("FWMT3", "FWMT3", 25, 0, 5, FWMT3, 1);
+  theHistograms->fill("FWMT4", "FWMT4", 50, 0, 0.25, FWMT4, 1);
+  */
   //  list.f_FWMT5=FWMT5;
   //  list.f_FWMT6=FWMT6;
 
   //  std::cout<<"5: full list filled "<<std::endl;
+  //featureTree.Fill();
+  list.f_nbOfCutsPassed = nbOfCutsPassed;  
+  passingPresel=true;
 }
 
 

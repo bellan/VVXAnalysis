@@ -364,6 +364,7 @@ void EventAnalyzer::InitOut(FeatList &list, TTree *tree){
   tree->Branch("FWMT2",  &list.f_FWMT2, "FWMT2/D");
   tree->Branch("FWMT3",  &list.f_FWMT3, "FWMT3/D");
   tree->Branch("FWMT4",  &list.f_FWMT4, "FWMT4/D");
+  tree->Branch("nbOfCutsPassed",  &list.f_nbOfCutsPassed, "nbOfCutsPassed/I");
   //  tree->Branch("FWMT5",  &list.f_FWMT5, "FWMT5/D");
   //  tree->Branch("FWMT6",  &list.f_FWMT6, "FWMT6/D");
  
@@ -387,6 +388,7 @@ void EventAnalyzer::loop(const std::string outputfile){
   TTree *myFeatTree = new TTree("featureTree","TTree with features");
   
   FeatList myFeatList;
+  bool isPreselected = false;
   InitOut(myFeatList, myFeatTree);
   
   for (Long64_t jentry=0; jentry<nentries; ++jentry) {
@@ -397,8 +399,9 @@ void EventAnalyzer::loop(const std::string outputfile){
     theCutCounter += theWeight;
     if(doBasicPlots_) fillBasicPlots();
     analyze();
-    fillFeatTree(myFeatList);
-    myFeatTree->Fill();
+    fillFeatTree(myFeatList, isPreselected);
+    //    if(isPreselected) std::cout<<isPreselected<<endl;
+    if(isPreselected) myFeatTree->Fill();
   }
 
   outFeatFile.cd();
