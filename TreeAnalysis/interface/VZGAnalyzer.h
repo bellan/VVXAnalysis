@@ -15,6 +15,7 @@
 #include "VVXAnalysis/Commons/interface/Constants.h"
 
 #include <TString.h>
+#include <TTree.h>
 
 class VZGAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZGAnalyzer>{
 
@@ -71,7 +72,7 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
 
   virtual void analyze();
 
-  virtual void  fillFeatTree(FeatList&);
+  virtual void  fillFeatTree(FeatList&, bool&);
 
   virtual void genAnalyze();
   
