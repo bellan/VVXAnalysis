@@ -51,6 +51,7 @@ class TH1;
 class TString;
 struct FeatList{
   double f_weight, f_mll, f_ptGamma, f_ptl1, f_ptl2, f_ptJ0, f_ptJ1, f_etaL0, f_etaL1, f_etaJ0, f_etaJ1, f_dPhiL0G, f_dPhiL1G, f_dPhiLL, f_dPhiJ0G, f_dPhiJ1G, f_dPhiJJ, f_dPhiL0J0, f_dPhiL1J0, f_dPhiL0J1, f_dPhiL1J1, f_recoVMass, f_FWMT0, f_FWMT1, f_FWMT2, f_FWMT3, f_FWMT4;//, f_FWMT5, f_FWMT6;
+  int f_nbOfCutsPassed;
 };
 
 
@@ -105,7 +106,7 @@ public:
   virtual void  begin() {}
   virtual Int_t cut();
   virtual void  analyze() = 0;
-  virtual void  fillFeatTree(FeatList&) {};
+  virtual void  fillFeatTree(FeatList&, bool&) {};
   virtual void  end(TFile &) {};  
   virtual void  finish() {};
   virtual void  addOptions(){};
