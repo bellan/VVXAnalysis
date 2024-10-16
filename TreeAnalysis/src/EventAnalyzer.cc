@@ -398,7 +398,8 @@ void EventAnalyzer::loop(const std::string outputfile){
     if (cut() < 0) continue;
     theCutCounter += theWeight;
     if(doBasicPlots_) fillBasicPlots();
-    analyze();
+    //    analyze();
+    if(!doFeats_) analyze();
     fillFeatTree(myFeatList, isPreselected);
     //    if(isPreselected) std::cout<<isPreselected<<endl;
     if(isPreselected) myFeatTree->Fill();
