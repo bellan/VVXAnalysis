@@ -790,7 +790,7 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   if(VBTopo!=1) return; 
   //  std::cout<<"2: VBTopo "<<VBTopo<<std::endl;
 
-  if (!cut(2, recoV, recoFJ, selectedphotons, VBTopo)) return;
+  if (!cut(0, recoV, recoFJ, selectedphotons, VBTopo)) return;
 
   //  std::cout<<"3: passing cuts "<<std::endl;
 
