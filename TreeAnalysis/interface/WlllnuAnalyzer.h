@@ -31,6 +31,8 @@ public:
     // Memory allocation
     genQuarks_       .reset(new std::vector<phys::Particle>);
     genChLeptons_    .reset(new std::vector<phys::Particle>);
+    //genElectrons_    .reset(new std::vector<phys::Particle>);
+    //genMuons_        .reset(new std::vector<phys::Particle>);
     genNeutrinos_    .reset(new std::vector<phys::Particle>);
     genPhotons_      .reset(new std::vector<phys::Particle>);
     genPhotonsPrompt_.reset(new std::vector<phys::Particle>);
@@ -53,7 +55,6 @@ public:
   
   void genEventSetup();
   void reconstructionLepCompatibility(std::vector<phys::Particle>*, std::vector<phys::Lepton>*, string, string);
-  //void histogramFill(std::vector<phys::Particle>*, string, string, int, double, double, string, double);
 
   template<class T, class V>
   static bool haveCommonDaughter(const phys::Boson<T>& a, const phys::Boson<V>& b, const float tol=0.001){
@@ -122,11 +123,14 @@ private:
     
   }
 
+  // Check three leptons of same flavour charge
+  bool checkLeptonsCharge(phys::Particle, phys::Particle, phys::Particle);
+	
   // Efficiency parameters
-  bool isGen_mode1(double, double, double, double, double);
-  bool isRec_mode1(double, double, double, double, double);
-  bool isGen_mode2(double, double, double, double, double);
-  bool isRec_mode2(double, double, double, double, double);
+  bool isGen_mode1(double);
+  bool isRec_mode1(double, double/*, double*/);
+  bool isGen_mode2(double);
+  bool isRec_mode2(double, double/*, double*/);
  
   // Vectors of gen particles
   std::unique_ptr<std::vector<phys::Particle>> genQuarks_;
