@@ -159,11 +159,12 @@ void plotDrawer() {
   TH1F* signalEffDen_mode1 = (TH1F *)myFile->Get("GEN_signal_mode1");
   TH1F* signalEff_mode1 = (TH1F*)signalEffNum_mode1->Clone("signalEff_mode1");
   signalEff_mode1->Divide(signalEffDen_mode1);
-  TCanvas *c16 = new TCanvas("c16","Signal_efficiency_mode1",200,10,600,400);
-  c16->SetFillColor(0);
-  c16->cd();
-  signalEff_mode1->Draw();
-  
+  cout << "Signal recostruction efficiency (mode 1) = " << signalEff_mode1->GetBinContent(2) << endl;
+  //TCanvas *c16 = new TCanvas("c16","Signal_efficiency_mode1",200,10,600,400);
+  //c16->SetFillColor(0);
+  //c16->cd();
+  //signalEff_mode1->Draw();
+  /*
   TH1F* backgroundEffNum_mode1 = (TH1F *)myFile->Get("not_GEN_REC_signal_mode1");
   TH1F* backgroundEffDen_mode1 = (TH1F *)myFile->Get("not_GEN_signal_mode1");
   TH1F* backgroundEff_mode1 = (TH1F*)backgroundEffNum_mode1->Clone("backgroundEff_mode1");
@@ -172,8 +173,22 @@ void plotDrawer() {
   c17->SetFillColor(0);
   c17->cd();
   backgroundEff_mode1->Draw();
+  */
+  
+  // ------------------ 3l events efficiency ----------------- //
+  TH1F* threeLepEvEffNum_mode1 = (TH1F*)myFile->Get("GEN_REC_3l_events_mode1");
+  TH1F* threeLepEvEffDen_mode1 = (TH1F*)myFile->Get("GEN_signal_mode1");
+  TH1F* threeLepEvEff_mode1 = (TH1F*)threeLepEvEffNum_mode1->Clone("GEN_REC_3l_events_mode1");
+  threeLepEvEff_mode1->Divide(threeLepEvEffDen_mode1);
+  cout << "Three leptons events recostruction efficiency (mode 1) = " << threeLepEvEff_mode1->GetBinContent(2) << endl;
+  //TCanvas *c18 = new TCanvas("c18","Three_leptons_events_reconstruction_efficiency_mode1",200,10,600,400);
+  //c18->SetFillColor(0);
+  //c18->cd();
+  //threeLepEvEff_mode1->Draw();
   
   
+  
+  /*
   // -- Decay type events distribution -- //
   double Wtype_mode1 = histoFourLepInvariantMass->Integral(histoFourLepInvariantMass->FindBin(75),histoFourLepInvariantMass->FindBin(85));
   double Ztype_mode1 = histoFourLepInvariantMass->Integral(histoFourLepInvariantMass->FindBin(88),histoFourLepInvariantMass->FindBin(130));
@@ -181,7 +196,7 @@ void plotDrawer() {
   
   cout << "#events_Wtype (mode 1) = " << Wtype_mode1 << ";   #events_Ztype (mode 1) = " << Ztype_mode1 << ";   #events_WZtype (mode 1) = " << WZtype_mode1 << endl;
   cout << "(#events_Ztype)/(#events_Wtype) (mode 1) = " << Ztype_mode1/Wtype_mode1 << ";   (#events_WZtype)/(#events_Wtype) (mode 1) = " << WZtype_mode1/Wtype_mode1 << endl;
-  
+  */
   
   
   
@@ -333,11 +348,13 @@ void plotDrawer() {
   TH1F* signalEffDen_mode2 = (TH1F *)myFile->Get("GEN_signal_mode2");
   TH1F* signalEff_mode2 = (TH1F*)signalEffNum_mode2->Clone("signalEff_mode2");
   signalEff_mode2->Divide(signalEffDen_mode2);
-  TCanvas *cA16 = new TCanvas("cA16","Signal_efficiency_mode2",200,10,600,400);
-  cA16->SetFillColor(0);
-  cA16->cd();
-  signalEff_mode2->Draw();
+  cout << "Signal recostruction efficiency (mode 2) = " << signalEff_mode2->GetBinContent(2) << endl;
+  //TCanvas *cA16 = new TCanvas("cA16","Signal_efficiency_mode2",200,10,600,400);
+  //cA16->SetFillColor(0);
+  //cA16->cd();
+  //signalEff_mode2->Draw();
   
+  /*
   TH1F* backgroundEffNum_mode2 = (TH1F *)myFile->Get("not_GEN_REC_signal_mode2");
   TH1F* backgroundEffDen_mode2 = (TH1F *)myFile->Get("not_GEN_signal_mode2");
   TH1F* backgroundEff_mode2 = (TH1F*)backgroundEffNum_mode2->Clone("backgroundEff_mode2");
@@ -346,8 +363,21 @@ void plotDrawer() {
   cA17->SetFillColor(0);
   cA17->cd();
   backgroundEff_mode2->Draw();
+  */
+  
+  // ------------------ 3l events efficiency ----------------- //
+  TH1F* threeLepEvEffNum_mode2 = (TH1F*)myFile->Get("GEN_REC_3l_events_mode2");
+  TH1F* threeLepEvEffDen_mode2 = (TH1F*)myFile->Get("GEN_signal_mode2");
+  TH1F* threeLepEvEff_mode2 = (TH1F*)threeLepEvEffNum_mode2->Clone("GEN_REC_3l_events_mode2");
+  threeLepEvEff_mode2->Divide(threeLepEvEffDen_mode2);
+  cout << "Three leptons events recostruction efficiency (mode 2) = " << threeLepEvEff_mode2->GetBinContent(2) << endl;
+  //TCanvas *cA18 = new TCanvas("cA18","Three_leptons_events_reconstruction_efficiency_mode2",200,10,600,400);
+  //cA18->SetFillColor(0);
+  //cA18->cd();
+  //threeLepEvEff_mode2->Draw();
   
   
+  /*
   // -- Decay type events distribution -- //
   double Wtype_mode2 = histoFourLepInvariantMass_A->Integral(histoFourLepInvariantMass_A->FindBin(75),histoFourLepInvariantMass_A->FindBin(85));                
   double Ztype_mode2 = histoFourLepInvariantMass_A->Integral(histoFourLepInvariantMass_A->FindBin(88),histoFourLepInvariantMass_A->FindBin(140));               
@@ -355,7 +385,7 @@ void plotDrawer() {
   
   cout << "#events_Wtype (mode 2) = " << Wtype_mode2 << ";   #events_Ztype (mode 2) = " << Ztype_mode2 << ";   #events_WZtype (mode 2) = " << WZtype_mode2 << endl;
   cout << "(#events_Ztype)/(#events_Wtype) (mode 2) = " << Ztype_mode2/Wtype_mode2 << ";   (#events_WZtype)/(#events_Wtype) (mode 2) = " << WZtype_mode2/Wtype_mode2 << endl;
-  
+  */
   
   
   
