@@ -122,16 +122,35 @@ private:
     return false;
     
   }
+  
+  // Sample variables
+  double genElPairInvMass;
+  double genMuPairInvMass;
+  double genFourLepInvMass;
+  double genFourLepTransverseMass;
+  double genLepPairTransverseMass;
+  
+  phys::Particle genMu1;
+  phys::Particle genMu2;
+  phys::Particle genEl;
+  phys::Particle genNu_2;
+  
+  // Check W to 3 leptons decay configuration
+  int eventMode(std::vector<phys::Particle>*, std::vector<phys::Particle>*, std::vector<phys::Lepton>*, std::vector<phys::Lepton>*);
+
+  // Check if there are Gen or/and Rec events
+  bool genEvents;
+  bool recEvents;
 
   // Check three leptons of same flavour charge
   bool checkLeptonsCharge(phys::Particle, phys::Particle, phys::Particle);
 	
   // Efficiency parameters
   bool isGen_mode1(double);
-  bool isRec_mode1(double, double/*, double*/);
+  bool isRec_mode1(double/*, double, double*/);
   bool isGen_mode2(double);
-  bool isRec_mode2(double, double/*, double*/);
- 
+  bool isRec_mode2(double/*, double, double*/);
+  
   // Vectors of gen particles
   std::unique_ptr<std::vector<phys::Particle>> genQuarks_;
   std::unique_ptr<std::vector<phys::Particle>> genChLeptons_;
