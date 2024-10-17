@@ -29,11 +29,11 @@
 	    "fake_leptons"  : {"up":0.40, "dn":-0.40}
 	},
 	"norm_group_uncertainty": {
-	    "ggTo4l": {
+	    "SMP24014_ggTo4l": {
 		"value"  : {"up":0.30, "dn":-0.30},
 		"samples": ["ggTo4e_Contin_MCFM701", "ggTo2e2mu_Contin_MCFM701", "ggTo4mu_Contin_MCFM701"]
 	    }
 	},
-        "shape": ["phEffMVASF", "PDFVar", "puWeight"]
+        "shape": ["CMS_eff_g_IDMVA", "pdf"]
     }
 }

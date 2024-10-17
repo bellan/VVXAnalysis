@@ -36,14 +36,17 @@ __builtin_config__ = {
         }
     },
 
+    # Data-driven backgrounds that may be used are to be treated specially
+    'data-driven': ['fake_leptons', 'fake_photons'],
+
     # General configuration
     'systematics':{
         'shape': [],
-        'correlated'  : ['L1Prefiring', 'PDFVar', 'QCDscale', 'alphas', 'phEffSF', 'phEffMVASF', 'phEScale', 'phESigma', 'muoEffSF', 'eleEffSF', 'puWeight', 'phFakeRate'],
-        'uncorrelated': ['electronVeto', 'muoFakeRateSF', 'eleFakeRateSF', 'fake_leptons_norm', 'fake_photons_norm', 'phARstat'],
-        'skip-if-signal': ['PDFVar', 'QCDscale', 'alphas'],
-        'theory': ['QCDscale', 'alphas', 'PDFVar'],
-        'datadriven': ['phFakeRate', 'phARstat', 'muoFakeRateSF', 'eleFakeRateSF'],
+        'correlated'  : ['CMS_l1_prefiring', 'pdf', 'QCDscale', 'alphas', 'CMS_eff_g', 'CMS_eff_g_IDMVA', 'CMS_scale_g', 'CMS_res_g', 'CMS_eff_m', 'CMS_eff_e', 'CMS_fake_g'],
+        'uncorrelated': ['CMS_electronVeto', 'CMS_fake_m', 'CMS_fake_e', 'CMS_SMP24014_fake_leptons_norm', 'CMS_SMP24014_fake_photons_norm', 'CMS_SMP24014_fake_g_ARstat', 'CMS_pileup'],
+        'skip-if-signal': ['pdf', 'QCDscale', 'alphas'],
+        'theory': ['QCDscale', 'alphas', 'pdf'],
+        'datadriven': ['CMS_fake_g', 'CMS_SMP24014_fake_g_ARstat', 'CMS_fake_m', 'CMS_fake_e'],
         '_end':[]
     }
 }
@@ -127,7 +130,6 @@ def check_exisiting_histograms(fname, observable, processes):
     '''
     logging.debug('fname     : %s', fname     )
     logging.debug('observable: %s', observable)
-    logging.debug('processes : %s', processes )
     existing_processes = {}
     with TFileContext(fname) as tf:
         obs_folder = tf.Get(observable)
@@ -146,6 +148,7 @@ def check_exisiting_histograms(fname, observable, processes):
                     logging.warning('dropping %s, since it has norm %.3g for observable "%s" in %s', process, integral, observable, fname)
                 else:
                     existing_processes[process] = integral
+    logging.debug('existing_p: %s', existing_processes )
     return existing_processes
 
 def get_gmN_params(syst, data_syst):
@@ -311,29 +314,35 @@ def main(args):
             for syst, val in data_syst[sample].items():
                 if(syst in config['systematics']['skip-if-signal']):
                     val['dn'] = val['up'] = 0
-                    logging.debug('Zeroed systematic "%s" for sample "%s"', syst, sample)
+                    logging.debug('Zeroed systematic "%s" for signal "%s"', syst, sample)
+
+        # Remove common systematics on data-driven backgrounds
+        if(sample in config['data-driven']):
+            for syst, val in data_syst[sample].items():
+                val['dn'] = val['up'] = 0
+                logging.debug('Zeroed systematic "%s" for signal "%s"', syst, sample)
 
     # Set normalization uncertainty (e.g. fake_leptons and fake_photons)
     for sample, val in config['systematics'].get('norm_uncertainty', {}).items():
         if sample in data_syst:
             logging.info('setting norm uncertainty on %s (%s)', sample, val)
-            data_syst[sample][sample+'_norm'] = val
+            data_syst[sample]['CMS_SMP24014_'+sample+'_norm'] = val
             if  (sample == 'fake_leptons'):
                 logging.info('Using norm uncertainty instead of lepton fake rate uncertainty')
-                data_syst[sample]['eleFakeRateSF'] = {'up':1, 'dn':1}
-                data_syst[sample]['muoFakeRateSF'] = {'up':1, 'dn':1}
+                data_syst[sample]['CMS_fake_e'] = {'up':1, 'dn':1}
+                data_syst[sample]['CMS_fake_m'] = {'up':1, 'dn':1}
 
     # Set normalization for groups of samples
     for group_name, group_info in config['systematics'].get('norm_group_uncertainty', {}).items():
         logging.info('setting group norm uncertainty on %s (%s)', group_name, group_info['value'])
         for sample in group_info['samples']:
-            data_syst[sample][group_name+'_norm'] = group_info['value']
+            data_syst[sample]['CMS_'+group_name+'_norm'] = group_info['value']
 
     df_syst = fillDataFrame(data_syst, formatter=format_lnN).fillna(0)
     type_column = []
     for syst in df_syst.index:
         # Drop systematics that do not affect any sample
-        if(all(df_syst[column].loc[syst] == '-' for column in df_syst.columns)):
+        if(all(df_syst[column].loc[syst] in ('-', 0, '0') for column in df_syst.columns)):
             logging.info('dropping systematic "%s"', syst)
             df_syst.drop(syst, inplace=True)
             continue
@@ -379,20 +388,22 @@ def main(args):
             logging.info('Treating %s as correlated among years', syst)
             suffix = ''
         else: raise RuntimeError('Systematic "%s": unspecified if correlated' %(syst))
-        return 'CMS_{}{}'.format(syst, suffix)
+        return '{}{}'.format(syst, suffix)
 
     df_syst = df_syst.rename(rename_syst)
 
-    lumi_uncorrelated = lumi_dict[args.year]['error_uncorrelated']
-    lumi_correlated   = lumi_dict[args.year]['error_correlated']
-    lumi_1718         = lumi_dict[args.year]['error_1718']
+    year = args.year
+    if args.year in ('2016preVFP', '2016postVFP'): year = '2016'
+    lumi_uncorrelated = lumi_dict[year]['error_uncorrelated']
+    lumi_correlated   = lumi_dict[year]['error_correlated']
+    lumi_1718         = lumi_dict[year]['error_1718']
 
-    df_syst.loc['CMS_lumi_13TeV_%s'%(args.year)] = pd.Series({ sample: lumi_uncorrelated for sample in df_syst.columns })
+    df_syst.loc['lumi_%s'%(year)]        = pd.Series({ sample: (lumi_uncorrelated if sample not in config['data-driven'] else 0) for sample in df_syst.columns })
     type_column.append('lnN')
-    df_syst.loc['CMS_lumi_13TeV_correlated']     = pd.Series({ sample: lumi_correlated   for sample in df_syst.columns })
+    df_syst.loc['lumi_13TeV_correlated'] = pd.Series({ sample: (lumi_correlated   if sample not in config['data-driven'] else 0) for sample in df_syst.columns })
     type_column.append('lnN')
     if(args.year in ('2017', '2018')):
-        df_syst.loc['CMS_lumi_13TeV_1718']       = pd.Series({ sample: lumi_1718         for sample in df_syst.columns })
+        df_syst.loc['lumi_13TeV_1718']   = pd.Series({ sample: (lumi_1718         if sample not in config['data-driven'] else 0) for sample in df_syst.columns })
         type_column.append('lnN')
 
     df_syst.insert(0, 'type', type_column, False)
