@@ -180,7 +180,7 @@ def main():
                 else:
                     skipIfData = True
                     direction = split[3]
-                    out_name = '{sample}{prompt}_CMS_{syst}{direction}'.format(sample='%s', prompt=prompt, syst=syst, direction=direction)
+                    out_name = '{sample}{prompt}_{syst}{direction}'.format(sample='%s', prompt=prompt, syst=syst.replace('-','_'), direction=direction)
 
                 subdir = fout.Get(var_name)  # e.g. mZZ, mZZG
                 if(not subdir):

@@ -39,11 +39,11 @@ __builtin_config__ = {
     # General configuration
     'systematics':{
         'shape': [],
-        'correlated'  : ['L1Prefiring', 'PDFVar', 'QCDscale', 'alphas', 'phEffSF', 'phEffMVASF', 'phEScale', 'phESigma', 'muoEffSF', 'eleEffSF', 'puWeight', 'phFakeRate'],
-        'uncorrelated': ['electronVeto', 'muoFakeRateSF', 'eleFakeRateSF', 'fake_leptons_norm', 'fake_photons_norm', 'phARstat'],
-        'skip-if-signal': ['PDFVar', 'QCDscale', 'alphas'],
-        'theory': ['QCDscale', 'alphas', 'PDFVar'],
-        'datadriven': ['phFakeRate', 'phARstat', 'muoFakeRateSF', 'eleFakeRateSF'],
+        'correlated'  : ['l1_prefiring', 'pdf', 'QCD_scale', 'alphas', 'eff_g', 'eff_g_IDMVA', 'scale_g', 'res_g', 'eff_m', 'eff_e', 'pileup', 'fake_g'],
+        'uncorrelated': ['electronVeto', 'fake_m', 'fake_e', 'fake_leptons_norm', 'fake_photons_norm', 'fake_g_ARstat'],
+        'skip-if-signal': ['pdf', 'QCD_scale', 'alphas'],
+        'theory': ['QCD_scale', 'alphas', 'pdf'],
+        'datadriven': ['fake_g', 'fake_g_ARstat', 'fake_m', 'fake_e'],
         '_end':[]
     }
 }
