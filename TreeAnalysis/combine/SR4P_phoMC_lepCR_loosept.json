@@ -34,6 +34,6 @@
 		"samples": ["ggTo4e_Contin_MCFM701", "ggTo2e2mu_Contin_MCFM701", "ggTo4mu_Contin_MCFM701"]
 	    }
 	},
-	"shape": ["PDFVar"]
+	"shape": ["pdf"]
     }
 }

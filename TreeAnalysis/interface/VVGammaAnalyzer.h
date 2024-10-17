@@ -150,7 +150,7 @@ private:
   std::unique_ptr<std::vector<phys::Jet>> jets_noph_;
 	
   // Systematics: photons {EScale, ESigma} x {Up, Down} + {central}
-  const std::vector<const char*> photonSystKeys_ = {"central", "EScale_Up", "EScale_Down", "ESigma_Up", "ESigma_Down"};
+  const std::vector<const char*> photonSystKeys_ = {"central", "scale_Up", "scale_Down", "res_Up", "res_Down"};
   std::unordered_map<std::string, std::unique_ptr<std::vector<phys::Photon>>> kinPhotons_;    // Only kinematic selection
   std::unordered_map<std::string, std::unique_ptr<std::vector<phys::Photon>>> loosePhotons_;  // Loose ID: currently 3/5 cuts of ID
   std::unordered_map<std::string, std::unique_ptr<std::vector<phys::Photon>>> goodPhotons_;   // Tight ID: currently Loose WP of POG cut-based ID
