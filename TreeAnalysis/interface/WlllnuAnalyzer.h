@@ -135,21 +135,34 @@ private:
   phys::Particle genEl;
   phys::Particle genNu_2;
   
+  // Check minimum invariant mass of the possible l+l- pair -- //
+  std::vector<phys::Boson<phys::Particle> > possibleLepPair(std::vector<phys::Particle>*);
+  phys::Boson<phys::Particle> minInvMassChLepPair(std::vector<phys::Boson<phys::Particle> >);
+  phys::Boson<phys::Particle> maxInvMassChLepPair(std::vector<phys::Boson<phys::Particle> >);
   // Check W to 3 leptons decay configuration
   int eventMode(std::vector<phys::Particle>*, std::vector<phys::Particle>*, std::vector<phys::Lepton>*, std::vector<phys::Lepton>*);
-
   // Check if there are Gen or/and Rec events
   bool genEvents;
   bool recEvents;
-
   // Check three leptons of same flavour charge
   bool checkLeptonsCharge(phys::Particle, phys::Particle, phys::Particle);
 	
   // Efficiency parameters
   bool isGen_mode1(double);
-  bool isRec_mode1(double/*, double, double*/);
+  bool isRec_mode1(double);
+  bool isRec_mode11(double);
+  bool isRec_mode111(double);
+  bool isRec_mode1111(double);
+  
   bool isGen_mode2(double);
-  bool isRec_mode2(double/*, double, double*/);
+  bool isRec_mode2(double);
+  bool isRec_mode22(double);
+  bool isRec_mode222(double);
+  bool isRec_mode2222(double);
+  
+  bool isGen_mode3(double);
+  
+  bool isGen_mode4(double);
   
   // Vectors of gen particles
   std::unique_ptr<std::vector<phys::Particle>> genQuarks_;
@@ -167,6 +180,9 @@ private:
   // Gen objects
   phys::DiBoson<phys::Particle, phys::Particle> genZZ_;
   phys::DiBoson<phys::Particle, phys::Particle> genZW_;
+  
+  // Vector of leptons
+  std::vector<phys::Lepton>* leptons;
   
 };
 #endif

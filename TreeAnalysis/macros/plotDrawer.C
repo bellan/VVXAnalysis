@@ -22,7 +22,7 @@ using namespace std;
 //using namespace boost::assign;
 //using namespace colour;
 
-void draw_eff(TFile* myFile, std::string num, std::string den, std::string name){
+double draw_eff(TFile* myFile, std::string num, std::string den, std::string name){
   TH1F* hNum = (TH1F *)myFile->Get(num.c_str());
   TH1F* hDen = (TH1F *)myFile->Get(den.c_str());
   TH1F* hEff = (TH1F *)hNum->Clone((name+"_eff").c_str());
@@ -32,6 +32,7 @@ void draw_eff(TFile* myFile, std::string num, std::string den, std::string name)
   c->SetFillColor(0);
   c->cd();
   hEff->Draw();
+  return hEff->GetBinContent(2);
 }
 
 
@@ -176,6 +177,16 @@ void plotDrawer() {
   histoRecGenMuChargeEff->Draw();
   */
   
+  // ------------------ 3l reco events efficiency ----------------- //
+  // TH1F* threeLepEvEffNum_mode1 = (TH1F*)myFile->Get("GEN_REC_3l_events_mode1");
+  // TH1F* threeLepEvEffDen_mode1 = (TH1F*)myFile->Get("GEN_signal_mode1");
+  // TH1F* threeLepEvEff_mode1 = (TH1F*)threeLepEvEffNum_mode1->Clone("GEN_REC_3l_events_mode1");
+  // threeLepEvEff_mode1->Divide(threeLepEvEffDen_mode1);
+  // cout << "Three leptons events recostruction efficiency (mode 1) = " << threeLepEvEff_mode1->GetBinContent(2) << endl;
+  // TCanvas *c18 = new TCanvas("c18","Three_leptons_events_reconstruction_efficiency_mode1",200,10,600,400);
+  // c18->SetFillColor(0);
+  // c18->cd();
+  // threeLepEvEff_mode1->Draw();
   
   // -------------- Signal effiency and background efficiency --------------- //
   // TH1F* signalEffNum_mode1 = (TH1F *)myFile->Get("GEN_REC_signal_mode1");
@@ -184,34 +195,32 @@ void plotDrawer() {
   // TH1F* signalEff_mode1 = (TH1F*)signalEffNum_mode1->Clone("signalEff_mode1");
   // signalEff_mode1->Divide(signalEffDen_mode1);
   // cout << "Signal recostruction efficiency (mode 1) = " << signalEff_mode1->GetBinContent(2) << endl;
-  // //TCanvas *c16 = new TCanvas("c16","Signal_efficiency_mode1",200,10,600,400);
-  // //c16->SetFillColor(0);
-  // //c16->cd();
-  // //signalEff_mode1->Draw();
-  draw_eff(myFile, "GEN_REC_signal_mode1", "GEN_signal_mode1", "signal_mode1");
-  draw_eff(myFile, "GEN_REC_signal_mode1", "not_GEN_REC_signal_mode1", "sensitivity_mode1");
-  
-  TH1F* backgroundEffNum_mode1 = (TH1F *)myFile->Get("not_GEN_REC_signal_mode1");
-  TH1F* backgroundEffDen_mode1 = (TH1F *)myFile->Get("not_GEN_signal_mode1");
-  TH1F* backgroundEff_mode1 = (TH1F*)backgroundEffNum_mode1->Clone("backgroundEff_mode1");
-  backgroundEff_mode1->Divide(backgroundEffDen_mode1);
-  cout << "Background recostruction efficiency (mode 1) = " << backgroundEff_mode1->GetBinContent(2) << endl;
-  TCanvas *c17 = new TCanvas("c17","Background_efficiency_mode1",200,10,600,400);
-  c17->SetFillColor(0);
-  c17->cd();
-  backgroundEff_mode1->Draw();
+  // TCanvas *c16 = new TCanvas("c16","Signal_efficiency_mode1",200,10,600,400);
+  // c16->SetFillColor(0);
+  // c16->cd();
+  // signalEff_mode1->Draw();
   
   
-  // ------------------ 3l events efficiency ----------------- //
-  TH1F* threeLepEvEffNum_mode1 = (TH1F*)myFile->Get("GEN_REC_3l_events_mode1");
-  TH1F* threeLepEvEffDen_mode1 = (TH1F*)myFile->Get("GEN_signal_mode1");
-  TH1F* threeLepEvEff_mode1 = (TH1F*)threeLepEvEffNum_mode1->Clone("GEN_REC_3l_events_mode1");
-  threeLepEvEff_mode1->Divide(threeLepEvEffDen_mode1);
-  cout << "Three leptons events recostruction efficiency (mode 1) = " << threeLepEvEff_mode1->GetBinContent(2) << endl;
-  //TCanvas *c18 = new TCanvas("c18","Three_leptons_events_reconstruction_efficiency_mode1",200,10,600,400);
-  //c18->SetFillColor(0);
-  //c18->cd();
-  //threeLepEvEff_mode1->Draw();
+  // TH1F* backgroundEffNum_mode1 = (TH1F *)myFile->Get("not_GEN_REC_signal_mode1");
+  // TH1F* backgroundEffDen_mode1 = (TH1F *)myFile->Get("not_GEN_signal_mode1");
+  // TH1F* backgroundEff_mode1 = (TH1F*)backgroundEffNum_mode1->Clone("backgroundEff_mode1");
+  // backgroundEff_mode1->Divide(backgroundEffDen_mode1);
+  // cout << "Background recostruction efficiency (mode 1) = " << backgroundEff_mode1->GetBinContent(2) << endl;
+  // TCanvas *c17 = new TCanvas("c17","Background_efficiency_mode1",200,10,600,400);
+  // c17->SetFillColor(0);
+  // c17->cd();
+  // backgroundEff_mode1->Draw();
+  
+  
+  
+  
+  draw_eff(myFile, "GEN_REC_signal_mode1", "GEN_signal_mode1", "GEN_REC_signal_mode1");
+  draw_eff(myFile, "GEN_not_REC_signal_mode1", "GEN_signal_mode1", "GEN_not_REC_signal_mode1");
+  draw_eff(myFile, "not_GEN_REC_signal_mode1", "not_GEN_signal_mode1", "not_GEN_REC_background_mode1");
+  s_over_sqrtb(myFile, "GEN_REC_signal_mode1", "not_GEN_REC_signal_mode1", "sensitivity_mode1");
+  
+  
+  
   
   
   
@@ -242,7 +251,7 @@ void plotDrawer() {
   
   
   
-  /*
+  
   // ----------------------------------------------------------------------------------------------------------------------------------------------------- //
   // ------- W DECAY MODE 2: mu+ mu- e nu -------- //
   
@@ -317,14 +326,14 @@ void plotDrawer() {
   
   // -- Correlation Factor GEN invariant mass GEN transverse mass -- //
   TH2F* histoGenFourLepTransverseInvariantMass_mode2 = (TH2F *)myFile->Get("GEN_four_lep_transv_mass_four_lep_inv_mass_mode2");
-  cout << " " << endl;
   cout << "Correlation factor between GEN invariant & transverse mass (mode 2) = " << histoGenFourLepTransverseInvariantMass_mode2->GetCorrelationFactor() << endl;
+  cout << " " << endl;
   
   // -- Correlation Factor GEN invariant mass REC transverse mass -- //
-  TH2F* histoRecGenFourLepTransverseMass_mode2 = (TH2F *)myFile->Get("REC_four_lep_transv_mass_GEN_four_lep_transv_mass_mode2");
-  cout << "Correlation factor between REC & GEN transverse mass (mode 2) = " << histoRecGenFourLepTransverseMass_mode2->GetCorrelationFactor() << endl;
-  cout << " " << endl;
-  */
+  // TH2F* histoRecGenFourLepTransverseMass_mode2 = (TH2F *)myFile->Get("REC_four_lep_transv_mass_GEN_four_lep_transv_mass_mode2");
+  // cout << "Correlation factor between REC & GEN transverse mass (mode 2) = " << histoRecGenFourLepTransverseMass_mode2->GetCorrelationFactor() << endl;
+  // cout << " " << endl;
+  
   
   /*
   // -------------- EFFICIENCY --------------- //
@@ -370,41 +379,50 @@ void plotDrawer() {
   histoRecGenElChargeEff_A->Draw();
   */
   
-  /*
+  // ------------------ 3l reco events efficiency ----------------- //
+  // TH1F* threeLepEvEffNum_mode2 = (TH1F*)myFile->Get("GEN_REC_3l_events_mode2");
+  // TH1F* threeLepEvEffDen_mode2 = (TH1F*)myFile->Get("GEN_signal_mode2");
+  // TH1F* threeLepEvEff_mode2 = (TH1F*)threeLepEvEffNum_mode2->Clone("GEN_REC_3l_events_mode2");
+  // threeLepEvEff_mode2->Divide(threeLepEvEffDen_mode2);
+  // cout << "Three leptons events recostruction efficiency (mode 2) = " << threeLepEvEff_mode2->GetBinContent(2) << endl;
+  // TCanvas *cA18 = new TCanvas("cA18","Three_leptons_events_reconstruction_efficiency_mode2",200,10,600,400);
+  // cA18->SetFillColor(0);
+  // cA18->cd();
+  // threeLepEvEff_mode2->Draw();
+  
   // -------------- Signal efficiency and background efficiency --------------- //
-  TH1F* signalEffNum_mode2 = (TH1F *)myFile->Get("GEN_REC_signal_mode2");
-  TH1F* signalEffDen_mode2 = (TH1F *)myFile->Get("GEN_signal_mode2");
-  TH1F* signalEff_mode2 = (TH1F*)signalEffNum_mode2->Clone("signalEff_mode2");
-  signalEff_mode2->Divide(signalEffDen_mode2);
-  cout << "Signal recostruction efficiency (mode 2) = " << signalEff_mode2->GetBinContent(2) << endl;
-  //TCanvas *cA16 = new TCanvas("cA16","Signal_efficiency_mode2",200,10,600,400);
-  //cA16->SetFillColor(0);
-  //cA16->cd();
-  //signalEff_mode2->Draw();
+  // TH1F* signalEffNum_mode2 = (TH1F *)myFile->Get("GEN_REC_signal_mode2");
+  // TH1F* signalEffDen_mode2 = (TH1F *)myFile->Get("GEN_signal_mode2");
+  // TH1F* signalEff_mode2 = (TH1F*)signalEffNum_mode2->Clone("signalEff_mode2");
+  // signalEff_mode2->Divide(signalEffDen_mode2);
+  // cout << "Signal recostruction efficiency (mode 2) = " << signalEff_mode2->GetBinContent(2) << endl;
+  // TCanvas *cA16 = new TCanvas("cA16","Signal_efficiency_mode2",200,10,600,400);
+  // cA16->SetFillColor(0);
+  // cA16->cd();
+  // signalEff_mode2->Draw();
   
   
-  TH1F* backgroundEffNum_mode2 = (TH1F *)myFile->Get("not_GEN_REC_signal_mode2");
-  TH1F* backgroundEffDen_mode2 = (TH1F *)myFile->Get("not_GEN_signal_mode2");
-  TH1F* backgroundEff_mode2 = (TH1F*)backgroundEffNum_mode2->Clone("backgroundEff_mode2");
-  backgroundEff_mode2->Divide(backgroundEffDen_mode2);
-  cout << "Background recostruction efficiency (mode 2) = " << backgroundEff_mode2->GetBinContent(2) << endl;
-  //TCanvas *cA17 = new TCanvas("cA17","Background_efficiency_mode2",200,10,600,400);
-  //cA17->SetFillColor(0);
-  //cA17->cd();
-  //backgroundEff_mode2->Draw();
+  // TH1F* backgroundEffNum_mode2 = (TH1F *)myFile->Get("not_GEN_REC_signal_mode2");
+  // TH1F* backgroundEffDen_mode2 = (TH1F *)myFile->Get("not_GEN_signal_mode2");
+  // TH1F* backgroundEff_mode2 = (TH1F*)backgroundEffNum_mode2->Clone("backgroundEff_mode2");
+  // backgroundEff_mode2->Divide(backgroundEffDen_mode2);
+  //  cout << "Background recostruction efficiency (mode 2) = " << backgroundEff_mode2->GetBinContent(2) << endl;
+  // TCanvas *cA17 = new TCanvas("cA17","Background_efficiency_mode2",200,10,600,400);
+  // cA17->SetFillColor(0);
+  // cA17->cd();
+  // backgroundEff_mode2->Draw();
   
   
-  // ------------------ 3l events efficiency ----------------- //
-  TH1F* threeLepEvEffNum_mode2 = (TH1F*)myFile->Get("GEN_REC_3l_events_mode2");
-  TH1F* threeLepEvEffDen_mode2 = (TH1F*)myFile->Get("GEN_signal_mode2");
-  TH1F* threeLepEvEff_mode2 = (TH1F*)threeLepEvEffNum_mode2->Clone("GEN_REC_3l_events_mode2");
-  threeLepEvEff_mode2->Divide(threeLepEvEffDen_mode2);
-  cout << "Three leptons events recostruction efficiency (mode 2) = " << threeLepEvEff_mode2->GetBinContent(2) << endl;
-  //TCanvas *cA18 = new TCanvas("cA18","Three_leptons_events_reconstruction_efficiency_mode2",200,10,600,400);
-  //cA18->SetFillColor(0);
-  //cA18->cd();
-  //threeLepEvEff_mode2->Draw();
-  */
+  
+  
+  draw_eff(myFile, "GEN_REC_signal_mode2", "GEN_signal_mode2", "GEN_REC_signal_mode2");
+  draw_eff(myFile, "GEN_not_REC_signal_mode2", "GEN_signal_mode2", "GEN_not_REC_signal_mode2");
+  draw_eff(myFile, "not_GEN_REC_signal_mode2", "not_GEN_signal_mode2", "not_GEN_REC_background_mode2");
+  s_over_sqrtb(myFile, "GEN_REC_signal_mode2", "not_GEN_REC_signal_mode2", "sensitivity_mode2");
+  
+  
+  
+  
   
   /*
   // -- Decay type events distribution -- //
