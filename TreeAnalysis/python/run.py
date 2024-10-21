@@ -290,8 +290,8 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
             print "For {0:s} {1:s}".format(period, Warn("Using internal cross section"))
 
         if not os.path.exists('{0:s}/{1}.root'.format(inputdir,basefile)):
-            print Warn("The ROOT file for the sample {0:s} does not exist in {1:s}".format(basefile,inputdir))
-            return 
+            raise ValueError("The ROOT file for the sample {0:s} does not exist in {1:s}".format(basefile,inputdir))
+
         print Red('\n------------------------------ {0:s} -------------------------------\n'.format(basefile))
           
         # outputdir_format is something like "results/2016/VVXAnalyzer_%s". EventAnalyzer will use Form() to replace %s with the various regions to obtain the filenames
