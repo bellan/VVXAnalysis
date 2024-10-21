@@ -279,38 +279,38 @@ void VVGammaAnalyzer::initEvent(){
     if(p4_EScale_Up.Pt() > CUT_PTG_MIN){
       Photon copy(ph);
       copy.setP4(p4_EScale_Up);
-      kinPhotons_["scale_Up"]->push_back(copy);
+      kinPhotons_["scale-g_Up"]->push_back(copy);
       if(isPassVL)
-        loosePhotons_["scale_Up"]->push_back(copy);
+        loosePhotons_["scale-g_Up"]->push_back(copy);
       if(isPassLoose)
-        goodPhotons_["scale_Up"]->push_back(std::move(copy));
+        goodPhotons_["scale-g_Up"]->push_back(std::move(copy));
     }
     if(p4_EScale_Dn.Pt() > CUT_PTG_MIN){
       Photon copy(ph);
       copy.setP4(p4_EScale_Dn);
-      kinPhotons_["scale_Down"]->push_back(copy);
+      kinPhotons_["scale-g_Down"]->push_back(copy);
       if(isPassVL)
-        loosePhotons_["scale_Down"]->push_back(copy);
+        loosePhotons_["scale-g_Down"]->push_back(copy);
       if(isPassLoose)
-        goodPhotons_["scale_Down"]->push_back(std::move(copy));
+        goodPhotons_["scale-g_Down"]->push_back(std::move(copy));
     }
     if(p4_ESigma_Up.Pt() > CUT_PTG_MIN){
       Photon copy(ph);
       copy.setP4(p4_ESigma_Up);
-      kinPhotons_["res_Up"]->push_back(copy);
+      kinPhotons_["res-g_Up"]->push_back(copy);
       if(isPassVL)
-        loosePhotons_["res_Up"]->push_back(copy);
+        loosePhotons_["res-g_Up"]->push_back(copy);
       if(isPassLoose)
-        goodPhotons_["res_Up"]->push_back(std::move(copy));
+        goodPhotons_["res-g_Up"]->push_back(std::move(copy));
     }
     if(p4_ESigma_Dn.Pt() > CUT_PTG_MIN){
       Photon copy(ph);
       copy.setP4(p4_ESigma_Dn);
-      kinPhotons_["res_Down"]->push_back(copy);
+      kinPhotons_["res-g_Down"]->push_back(copy);
       if(isPassVL)
-        loosePhotons_["res_Down"]->push_back(copy);
+        loosePhotons_["res-g_Down"]->push_back(copy);
       if(isPassLoose)
-        goodPhotons_["res_Down"]->push_back(std::move(copy));
+        goodPhotons_["res-g_Down"]->push_back(std::move(copy));
     }
     if(ph.pt() > CUT_PTG_MIN){
       kinPhotons_["central"]->push_back(ph);
@@ -3146,7 +3146,7 @@ void VVGammaAnalyzer::systematicsStudy(const char* sys_label){
   for(const char* syst : photonSystKeys_){
     if(strcmp(syst, "central") == 0) continue;
 
-    std::string syst_name = Form("CMS-g-%s", syst);
+    std::string syst_name = Form("CMS-%s", syst);
 
     SYSplots_inclusive( sys_label, syst_name.c_str(), base_w);
 

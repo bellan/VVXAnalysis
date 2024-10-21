@@ -25,6 +25,6 @@
     "systematics": {
 	"norm_uncertainty": {"fake_photons": {"up":0.50, "dn":-0.50}},
 	"shape": ["QCD_scale"],
-	"ADD_gmN": {"fake_g_ARstat": "fake_photons"}
+	"ADD_gmN": {"CMS_fake_g_ARstat": "fake_photons"}
     }
 }

@@ -39,11 +39,11 @@ __builtin_config__ = {
     # General configuration
     'systematics':{
         'shape': [],
-        'correlated'  : ['l1_prefiring', 'pdf', 'QCD_scale', 'alphas', 'eff_g', 'eff_g_IDMVA', 'scale_g', 'res_g', 'eff_m', 'eff_e', 'pileup', 'fake_g'],
-        'uncorrelated': ['electronVeto', 'fake_m', 'fake_e', 'fake_leptons_norm', 'fake_photons_norm', 'fake_g_ARstat'],
+        'correlated'  : ['CMS_l1_prefiring', 'pdf', 'QCD_scale', 'alphas', 'CMS_eff_g', 'CMS_eff_g_IDMVA', 'CMS_scale_g', 'CMS_res_g', 'CMS_eff_m', 'CMS_eff_e', 'CMS_pileup', 'CMS_fake_g'],
+        'uncorrelated': ['CMS_electronVeto', 'CMS_fake_m', 'CMS_fake_e', 'CMS_fake_leptons_norm', 'CMS_fake_photons_norm', 'CMS_fake_g_ARstat'],
         'skip-if-signal': ['pdf', 'QCD_scale', 'alphas'],
         'theory': ['QCD_scale', 'alphas', 'pdf'],
-        'datadriven': ['fake_g', 'fake_g_ARstat', 'fake_m', 'fake_e'],
+        'datadriven': ['CMS_fake_g', 'CMS_fake_g_ARstat', 'CMS_fake_m', 'CMS_fake_e'],
         '_end':[]
     }
 }
@@ -351,8 +351,8 @@ def main():
             data_syst[sample][sample+'_norm'] = val
             if  (sample == 'fake_leptons'):
                 logging.info('Using norm uncertainty instead of lepton fake rate uncertainty')
-                data_syst[sample]['eleFakeRateSF'] = {'up':1, 'dn':1}
-                data_syst[sample]['muoFakeRateSF'] = {'up':1, 'dn':1}
+                data_syst[sample]['CMS_fake_e'] = {'up':1, 'dn':1}
+                data_syst[sample]['CMS_fake_m'] = {'up':1, 'dn':1}
 
     # Set normalization for groups of samples
     for group_name, group_info in config['systematics'].get('norm_group_uncertainty', {}).items():
