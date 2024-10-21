@@ -45,6 +45,7 @@ void WlllnuAnalyzer::analyze(){
   
   // -- W boson to 3 leptons decay four possible configurations -- //
   int event_mode = eventMode(genElectrons_, genMuons_, electrons, muons);
+  
   bool gen_cut_m3lnu = false;
   
   bool rec_cut_3l = false;
@@ -52,6 +53,10 @@ void WlllnuAnalyzer::analyze(){
   bool rec_cut_llmI = false;
   bool rec_cut_lpt = false;
   bool rec_cut_pt3l = false;
+  
+  bool rec_cut_llmI_min = false;
+  bool rec_cut_llmI_max = false;
+  
 
   if(event_mode == 1){         // MODE 1 e+ e- mu nu
     
@@ -62,24 +67,12 @@ void WlllnuAnalyzer::analyze(){
         && -2.5<genElectrons_->at(0).eta() && genElectrons_->at(0).eta()<2.5
         && -2.5<genElectrons_->at(1).eta() && genElectrons_->at(1).eta()<2.5 
         && -2.5<genMuons_->at(0).eta() && genMuons_->at(0).eta()<2.5 ){  
-      //cout << "Provaaaaaaa1" << endl;
+
       genEvents = true;  
       const phys::Particle& genEl1 = genElectrons_->at(0);
       const phys::Particle& genEl2 = genElectrons_->at(1);
       const phys::Particle& genMu = genMuons_->at(0);
       const phys::Particle& genNu = genNeutrinos_->at(0);
-
-      // -- Gen leptons pt -- //
-      foreach(const phys::Particle &genEl, *genElectrons_){
-        theHistograms->fill("GEN_el_pt_mode1", "Gen Electron pt (e+e- mu);pt"  , 75 , 0, 150.,  genEl.pt(), theWeight);
-      }
-      foreach(const phys::Particle &genMu, *genMuons_){
-        theHistograms->fill("GEN_mu_pt_mode1", "Gen Muons pt (e+e- mu);pt"  , 75 , 0, 150.,  genMu.pt(), theWeight);
-      }
-    
-      // -- Invariant mass of the gen e+e- pair -- //
-      double genElPairInvMass = (genEl1.p4() + genEl2.p4()).M();
-      theHistograms->fill("GEN_el_pair_invariant_mass_mode1", "Gen Electron pair e+e- invariant mass (mode 1)", 75, 0, 150., genElPairInvMass, theWeight);
       
       // -- Invariant mass of the 4 gen leptons e+ e- mu nu -- // 
       double genFourLepInvMass = (genEl1.p4() + genEl2.p4() + genMu.p4() + genNu.p4()).M();
@@ -88,20 +81,6 @@ void WlllnuAnalyzer::analyze(){
       // -- Transverse mass of the 4 gen leptons e+ e- mu nu -- //
       double genFourLepTransverseMass = (genEl1.p4() + genEl2.p4() + genMu.p4() + genNu.p4()).Mt();;
       theHistograms->fill("GEN_four_leptons_transverse_mass_mode1", "Gen Four Leptons e+e-mu nu transverse mass (mode 1)", 100, 0., 500., genFourLepTransverseMass, theWeight);
-      
-      // -- Invariant mass of the gen electron pair e+e- vs Invariant mass of the 4 gen leptons e+e-mu nu -- //
-      theHistograms->fill("GEN_el_pair_four_lep_inv_mass_mode1", "Gen Electron pair vs GEN Four Leptons invariant mass (mode 1);4l mass;e+e- mass", 100, 0., 500., 60, 0., 300., genFourLepInvMass, genElPairInvMass, theWeight);
-      
-      // -- Gen Neutrino pt vs Invariant mass of the 4 gen leptons e+e-mu nu -- //
-      theHistograms->fill("GEN_nu_pt_four_lep_inv_mass_mode1", "Gen Neutrino pt vs GEN Four Leptons invariant mass (mode 1);4l mass;nu pt", 100, 0., 500., 60, 0., 300., genFourLepInvMass, genNu.pt(), theWeight);
-      
-      // -- Gen Muon pt vs Invariant mass of the 4 gen leptons e+e-mu nu -- //
-      theHistograms->fill("GEN_mu_pt_four_lep_inv_mass_mode1", "Gen Muon pt vs GEN Four Leptons invariant mass (mode 1);4l mass;mu pt", 100, 0., 500., 60, 0., 300., genFourLepInvMass, genMu.pt(), theWeight);
-      
-      // -- Transverse mass of the gen lepton pair mu nu vs Invariant mass of the 4 gen leptons e+e-mu nu -- //
-      double genLepPairTransverseMass = (genMu.p4() + genNu.p4()).Mt();
-      theHistograms->fill("GEN_lep_pair_transv_mass_mode1", "Gen Lepton pair mu nu transverse mass (mode 1)", 75, 0., 150., genLepPairTransverseMass, theWeight);
-      theHistograms->fill("GEN_lep_pair_transv_mass_four_lep_inv_mass_mode1", "Gen Lepton pair mu nu transverse mass vs Four Leptons invariant mass (mode 1);4l mass;mu nu mass", 250, 0., 500., 30, 0., 150., genFourLepInvMass, genLepPairTransverseMass, theWeight);
       
       // -- Transverse vs Invariant mass of the 4 gen leptons e+e-mu nu -- // 
       theHistograms->fill("GEN_four_lep_transv_mass_four_lep_inv_mass_mode1", "Gen Four Lepton transverse vs invariant mass (mode 1); Inv mass; Transv mass", 100, 0., 500., 100, 0., 500., genFourLepInvMass, genFourLepTransverseMass, theWeight);
@@ -120,8 +99,7 @@ void WlllnuAnalyzer::analyze(){
       phys::Particle recEl1 = electrons->at(0);
       phys::Particle recEl2 = electrons->at(1);
       phys::Particle recMu = muons->at(0);
-      phys::Particle recNu = *met;
-      //cout << "Prova1" << endl; 
+      phys::Particle recNu = *met; 
               
       // -- 3l e+e-mu events recostruction efficiency -- //
       theHistograms->fill("GEN_REC_3l_events_mode1", "3l events recostruction efficiency (mode 1)", 3, 0., 3., 1, theWeight);
@@ -164,7 +142,7 @@ void WlllnuAnalyzer::analyze(){
       theHistograms->fill("REC_mu_pt_REC_ch_lep_pt_sum_mode1", "Rec mu pt vs Rec Charged Lepton e+e-mu pt sum (mode 1);e+e-mu pt;mu pt", 100, 0., 500., 60, 0., 300., recEl1.pt()+recEl2.pt()+recMu.pt(), recMu.pt(), theWeight);  
       
       // ------------------------------ REC LEVEL SIGNAL REGION DEFINITION ----------------------------- //
-      //rec_cut_3l = true;
+      rec_cut_3l = true;
       rec_cut_mT = isRec_mode1(recFourLepTransverseMass);
       rec_cut_llmI = isRec_mode11(recElPairInvMass);
       rec_cut_lpt = isRec_mode111(recMu.pt());
@@ -185,24 +163,12 @@ void WlllnuAnalyzer::analyze(){
         && -2.5<genMuons_->at(0).eta() && genMuons_->at(0).eta()<2.5
         && -2.5<genMuons_->at(1).eta() && genMuons_->at(1).eta()<2.5 
         && -2.5<genElectrons_->at(0).eta() && genElectrons_->at(0).eta()<2.5 ){
-      //cout << "Provaaaaaaa2" << endl;
+
       genEvents = true;    
       const phys::Particle& genMu1 = genMuons_->at(0);
       const phys::Particle& genMu2 = genMuons_->at(1);
       const phys::Particle& genEl = genElectrons_->at(0);
       const phys::Particle& genNu = genNeutrinos_->at(0);
-      
-      // -- Gen leptons pt -- //
-      foreach(const phys::Particle &genEl, *genElectrons_){
-        theHistograms->fill("GEN_el_pt_mode2", "Gen Electron pt (mu+mu- e);pt"  , 75 , 0, 150.,  genEl.pt(), theWeight);
-      }
-      foreach(const phys::Particle &genMu, *genMuons_){
-        theHistograms->fill("GEN_mu_pt_mode2", "Gen Muons pt (mu+mu- e);pt"  , 75 , 0, 150.,  genMu.pt(), theWeight);
-      }
-      
-      // -- Invariant mass of the mu+mu- pair -- //
-      double genMuPairInvMass = (genMu1.p4() + genMu2.p4()).M();
-      theHistograms->fill("GEN_mu_pair_invariant_mass_mode2", "Gen Muon pair mu+mu- invariant mass (mode 2)", 75, 0, 150., genMuPairInvMass, theWeight);
       
       // -- Invariant mass of the 4 leptons mu+ mu- e nu -- // 
       double genFourLepInvMass = (genMu1.p4() + genMu2.p4() + genEl.p4() + genNu.p4()).M();
@@ -211,20 +177,6 @@ void WlllnuAnalyzer::analyze(){
       // -- Transverse mass of the 4 leptons mu+ mu- e nu -- //
       double genFourLepTransverseMass = (genMu1.p4() + genMu2.p4() + genEl.p4() + genNu.p4()).Mt();;
       theHistograms->fill("GEN_four_leptons_transverse_mass_mode2", "Gen Four Leptons mu+mu-e nu transverse mass (mode 2)", 150, 0., 300., genFourLepTransverseMass, theWeight);
-      
-      // -- Invariant mass of the muon pair mu+mu- vs Invariant mass of the 4 leptons mu+mu-e nu -- //
-      theHistograms->fill("GEN_mu_pair_four_lep_inv_mass_mode2", "Gen Muon pair vs Four Leptons invariant mass (mode 2);4l mass;mu+mu- mass", 100, 0., 500., 60, 0., 300., genFourLepInvMass, genMuPairInvMass, theWeight);
-      
-      // -- Gen Neutrino pt vs Invariant mass of the 4 leptons mu+mu-e nu -- //
-      theHistograms->fill("GEN_nu_pt_four_lep_inv_mass_mode2", "Gen Neutrino pt vs Four Leptons invariant mass (mode 2);4l mass;nu pt", 100, 0., 500., 60, 0., 300., genFourLepInvMass, genNu.pt(), theWeight);
-      
-      // -- Gen Electron pt vs Invariant mass of the 4 leptons mu+mu-e nu -- //
-      theHistograms->fill("GEN_el_pt_four_lep_inv_mass_mode2", "Gen Electron pt vs Four Leptons invariant mass (mode 2);4l mass;nu pt", 100, 0., 500., 60, 0., 300., genFourLepInvMass, genEl.pt(), theWeight);
-      
-      // -- Transverse mass of the Gen Lepton pair el nu vs Invariant mass of the 4 Gen Leptons mu+mu-el nu -- //
-      double genLepPairTransverseMass = (genEl.p4() + genNu.p4()).Mt();
-      theHistograms->fill("GEN_lep_pair_transv_mass_mode2", "Gen Lepton pair e nu transverse mass (mode 2)", 75, 0., 150., genLepPairTransverseMass, theWeight);
-      theHistograms->fill("GEN_lep_pair_transv_mass_four_lep_inv_mass_mode2", "Gen Lepton pair e nu transverse mass vs Four Leptons invariant mass (mode 2);4l mass;e nu mass", 100, 0., 500., 75, 0., 150., genFourLepInvMass, genLepPairTransverseMass, theWeight);
       
       // -- Transverse vs Invariant mass of the 4 gen leptons mu+mu-e nu -- // 
       theHistograms->fill("GEN_four_lep_transv_mass_four_lep_inv_mass_mode2", "Gen Four Lepton transverse vs invariant mass (mode 2); Inv mass; Transv mass", 100, 0., 500., 100, 0., 500., genFourLepInvMass, genFourLepTransverseMass, theWeight);
@@ -239,15 +191,11 @@ void WlllnuAnalyzer::analyze(){
 
     // ---------- RECONSTRUCTED LEPTONS mu+ mu- e nu -------------- //
     if(muons->size()==2 && electrons->size()==1 
-       && (muons->at(0).id() + muons->at(1).id())==0 /*&& genElectrons_->at(0).id()==electrons->at(0).id()*/
-       /*&& 60.<(muons->at(0).p4()+muons->at(1).p4()+electrons->at(0).p4()+met->p4()).Mt() && (muons->at(0).p4()+muons->at(1).p4()+electrons->at(0).p4()+met->p4()).Mt()<120.*/
-       /*&& 4.<(muons->at(0).p4() + muons->at(1).p4()).M() && (muons->at(0).p4() + muons->at(1).p4()).M()<12.*/
-       /*&& jets->size()==0*/){
+       && (muons->at(0).id() + muons->at(1).id())==0 ){
       phys::Particle recMu1 = muons->at(0);
       phys::Particle recMu2 = muons->at(1);
       phys::Particle recEl = electrons->at(0);
       phys::Particle recNu = *met;
-      //cout << "Prova2" << endl;
         
       //// -- 3l mu+mu-e events recostruction efficiency -- //
       //theHistograms->fill("GEN_REC_3l_events_mode2", "3l events recostruction efficiency (mode 2)", 3, 0., 3., 1, theWeight);
@@ -291,7 +239,7 @@ void WlllnuAnalyzer::analyze(){
         
         
       // ------------------------------ REC LEVEL SIGNAL DEFINITION ----------------------------- //
-      //rec_cut_3l = true;
+      rec_cut_3l = true;
       rec_cut_mT = isRec_mode2(recFourLepTransverseMass);
       rec_cut_llmI = isRec_mode22(recMuPairInvMass);
       rec_cut_lpt = isRec_mode222(recEl.pt());
@@ -330,26 +278,21 @@ void WlllnuAnalyzer::analyze(){
       
       
       // -- Min & Max Invariant mass of the 2 possible e+e- pair -- //
-      std::vector<Boson<Particle> > genChElPairs = possibleLepPair(genElectrons_);
+      std::vector<Boson<Particle> > genChElPairs = possibleGenLepPair(genElectrons_);
+      Boson<Particle> genZ0Min_ = minInvMassGenChLepPair(genChElPairs);
+      Boson<Particle> genZ0Max_ = maxInvMassGenChLepPair(genChElPairs);
+      
       if(gen_cut_m3lnu){
-        Boson<Particle> genZ0Min_ = minInvMassChLepPair(genChElPairs);
         theHistograms->fill("GEN_signal_min_el_pair_inv_mass_mode3", "GEN signal minimum electron pair inv mass", 150, 0., 300., genZ0Min_.p4().M(), theWeight);
-      }
-      else{
-        Boson<Particle> genZ0Min_ = minInvMassChLepPair(genChElPairs);
-        theHistograms->fill("GEN_not_signal_min_el_pair_inv_mass_mode3", "GEN not signal minimum electron pair inv mass", 150, 0., 300., genZ0Min_.p4().M(), theWeight);  
-      }
-      
-      if(gen_cut_m3lnu){
-        Boson<Particle> genZ0Max_ = maxInvMassChLepPair(genChElPairs);
         theHistograms->fill("GEN_signal_max_el_pair_inv_mass_mode3", "GEN signal maximum electron pair inv mass", 150, 0., 300., genZ0Max_.p4().M(), theWeight);
+        theHistograms->fill("GEN_signal_max_min_mu_pair_inv_mass_mode3", "GEN signal max-min electron pair inv mass;MIN e+e- inv mass;MAX mu+mu- inv mass", 150, 0., 300., 150, 0., 300., genZ0Min_.p4().M(), genZ0Max_.p4().M(), theWeight);
       }
       else{
-        Boson<Particle> genZ0Max_ = maxInvMassChLepPair(genChElPairs);
-        theHistograms->fill("GEN_not_signal_max_el_pair_inv_mass_mode3", "GEN not signal maximum electron pair inv mass", 150, 0., 300., genZ0Max_.p4().M(), theWeight);  
+        theHistograms->fill("GEN_not_signal_min_el_pair_inv_mass_mode3", "GEN not signal minimum electron pair inv mass", 150, 0., 300., genZ0Min_.p4().M(), theWeight);
+        theHistograms->fill("GEN_not_signal_max_el_pair_inv_mass_mode3", "GEN not signal maximum electron pair inv mass", 150, 0., 300., genZ0Max_.p4().M(), theWeight);
+        theHistograms->fill("GEN_not_signal_max_min_el_pair_inv_mass_mode3", "Not GEN signal max-min electron pair inv mass;MIN mu+mu- inv mass;MAX mu+mu- inv mass", 150, 0., 300., 150, 0., 300., genZ0Min_.p4().M(), genZ0Max_.p4().M(), theWeight);
       }
-      
-      
+
       
     }
     else{
@@ -357,20 +300,40 @@ void WlllnuAnalyzer::analyze(){
     }
     
     
-    /*
+    
     // ------------------- RECOSTRUCTED LEPTONS e+ e- e nu ----------------- //
-    if(electrons->size()==3 && muons->size()==0 
-       && checkLeptonsCharge(electrons->at(0), electrons->at(1), electrons->at(2))==true){
-    		
-    		
-    		
-    
-    		
-    		
+    if( electrons->size()==3 && muons->size()==0 
+        && checkLeptonsCharge(electrons->at(0), electrons->at(1), electrons->at(2))==true ){
+      
+      // -- Transverse mass of the 4 rec leptons e+e-e nu -- //
+      double recFourLepTransverseMass = (electrons->at(0).p4() + electrons->at(1).p4() + electrons->at(2).p4() + met->p4()).Mt();
+      theHistograms->fill("REC_four_lep_transv_mass_mode3", "Rec Four Leptons e+e-e nu transverse mass (mode 3)", 250, 0., 500., recFourLepTransverseMass, theWeight);
+      
+      
+      // -- Min & Max Invariant mass of the 2 possible e+e- pair -- //
+      //rec_cut_mT = isRec_mode3(recFourLepTransverseMass);
+      std::vector<Boson<Lepton> > recChElPairs = possibleRecLepPair(electrons);
+      Boson<Lepton> recZ0Min_ = minInvMassRecChLepPair(recChElPairs);
+      Boson<Lepton> recZ0Max_ = maxInvMassRecChLepPair(recChElPairs);
+      
+      if(gen_cut_m3lnu){
+        theHistograms->fill("GEN_signal_REC_min_el_pair_inv_mass_mode3", "GEN signal RECO minimum electron pair inv mass", 150, 0., 300., recZ0Min_.p4().M(), theWeight);
+        theHistograms->fill("GEN_signal_REC_max_el_pair_inv_mass_mode3", "GEN signal RECO maximum electron pair inv mass", 150, 0., 300., recZ0Max_.p4().M(), theWeight);
+        theHistograms->fill("GEN_signal_REC_max_min_el_pair_inv_mass_mode3", "GEN signal RECO max-min electron pair inv mass;MIN e+e- inv mass;MAX e+e- inv mass", 150, 0., 300., 150, 0., 300., recZ0Min_.p4().M(), recZ0Max_.p4().M(), theWeight);
+      }
+      else{
+        theHistograms->fill("GEN_not_signal_REC_min_el_pair_inv_mass_mode3", "Not GEN signal RECO minimum electron pair inv mass", 150, 0., 300., recZ0Min_.p4().M(), theWeight);
+        theHistograms->fill("GEN_not_signal_REC_max_el_pair_inv_mass_mode3", "Not GEN signal RECO maximum electron pair inv mass", 150, 0., 300., recZ0Max_.p4().M(), theWeight);
+        theHistograms->fill("GEN_not_signal_REC_max_min_el_pair_inv_mass_mode3", "Not GEN signal RECO max-min electron pair inv mass;MIN e+e- inv mass;MAX e+e- inv mass", 150, 0., 300., 150, 0., 300., recZ0Min_.p4().M(), recZ0Max_.p4().M(), theWeight); 
+      }
+      
+      // -- REC LEVEL SIGNAL REGION DEFINITION -- //
+      rec_cut_3l = true;
+      rec_cut_llmI_min = isRec_mode33(recZ0Min_.p4().M());
+      rec_cut_llmI_max = isRec_mode333(recZ0Max_.p4().M());
+      	
     } 
-     */ 
-  
-    
+      
     
   }
   
@@ -379,7 +342,7 @@ void WlllnuAnalyzer::analyze(){
   
   else if(eventMode(genElectrons_, genMuons_, electrons, muons)==4){      // MODE 4 mu+mu-mu nu
     
-    // ---------- GENERATED LEPTONS e+e-e nu ---------- //
+    // ---------- GENERATED LEPTONS mu+mu-mu nu ---------- //
     if( genMuons_->size()==3 && genElectrons_->size()==0
         && checkLeptonsCharge(genMuons_->at(0), genMuons_->at(1), genMuons_->at(2))==true
         && genMuons_->at(0).pt()>10 && genMuons_->at(1).pt()>10 && genMuons_->at(2).pt()>10
@@ -401,23 +364,19 @@ void WlllnuAnalyzer::analyze(){
       
       
       // -- Min & Max Invariant mass of the 2 possible mu+mu- pair -- //
-      std::vector<Boson<Particle> > genChMuPairs = possibleLepPair(genMuons_);
-      if(gen_cut_m3lnu){
-        Boson<Particle> genZ0Min_ = minInvMassChLepPair(genChMuPairs);
-        theHistograms->fill("GEN_signal_min_mu_pair_inv_mass_mode4", "GEN signal minimum muon pair inv mass", 150, 0., 300., genZ0Min_.p4().M(), theWeight);
-      }
-      else{
-        Boson<Particle> genZ0Min_ = minInvMassChLepPair(genChMuPairs);
-        theHistograms->fill("GEN_not_signal_min_mu_pair_inv_mass_mode4", "GEN not signal minimum muon pair inv mass", 150, 0., 300., genZ0Min_.p4().M(), theWeight);  
-      }
+      std::vector<Boson<Particle> > genChMuPairs = possibleGenLepPair(genMuons_);
+      Boson<Particle> genZ0Min_ = minInvMassGenChLepPair(genChMuPairs);
+      Boson<Particle> genZ0Max_ = maxInvMassGenChLepPair(genChMuPairs);
       
       if(gen_cut_m3lnu){
-        Boson<Particle> genZ0Max_ = maxInvMassChLepPair(genChMuPairs);
+        theHistograms->fill("GEN_signal_min_mu_pair_inv_mass_mode4", "GEN signal minimum muon pair inv mass", 150, 0., 300., genZ0Min_.p4().M(), theWeight);
         theHistograms->fill("GEN_signal_max_mu_pair_inv_mass_mode4", "GEN signal maximum muon pair inv mass", 150, 0., 300., genZ0Max_.p4().M(), theWeight);
+        theHistograms->fill("GEN_signal_max_min_mu_pair_inv_mass_mode4", "GEN signal max-min muon pair inv mass;MIN mu+mu- inv mass;MAX mu+mu- inv mass", 150, 0., 300., 150, 0., 300., genZ0Min_.p4().M(), genZ0Max_.p4().M(), theWeight);
       }
       else{
-        Boson<Particle> genZ0Max_ = maxInvMassChLepPair(genChMuPairs);
-        theHistograms->fill("GEN_not_signal_max_mu_pair_inv_mass_mode4", "GEN not signal maximum muon pair inv mass", 150, 0., 300., genZ0Max_.p4().M(), theWeight);  
+        theHistograms->fill("GEN_not_signal_min_mu_pair_inv_mass_mode4", "Not GEN signal minimum muon pair inv mass", 150, 0., 300., genZ0Min_.p4().M(), theWeight);
+        theHistograms->fill("GEN_not_signal_max_mu_pair_inv_mass_mode4", "Not GEN signal maximum muon pair inv mass", 150, 0., 300., genZ0Max_.p4().M(), theWeight);
+        theHistograms->fill("GEN_not_signal_max_min_mu_pair_inv_mass_mode4", "Not GEN signal max-min muon pair inv mass;MIN mu+mu- inv mass;MAX mu+mu- inv mass", 150, 0., 300., 150, 0., 300., genZ0Min_.p4().M(), genZ0Max_.p4().M(), theWeight);  
       }
       
     }
@@ -425,21 +384,41 @@ void WlllnuAnalyzer::analyze(){
       genEvents = false;
     }  
                    
-    
-    
-    
-    
-    
-    
-    
-    
-    /*  
+
     // ------------------- RECOSTRUCTED LEPTONS mu+ mu- mu nu ----------------- //
-    if(muons->size()==3 && electrons->size()==0 
-       && checkLeptonsCharge(muons->at(0), muons->at(1), muons->at(2))==true){
-    		
+    if( muons->size()==3 && electrons->size()==0 
+        && checkLeptonsCharge(muons->at(0), muons->at(1), muons->at(2))==true ){
+      
+      // -- Transverse mass of the 4 rec leptons mu+mu-mu nu -- //
+      double recFourLepTransverseMass = (muons->at(0).p4() + muons->at(1).p4() + muons->at(2).p4() + met->p4()).Mt();
+      theHistograms->fill("REC_four_lep_transv_mass_mode4", "Rec Four Leptons mu+mu-mu nu transverse mass (mode 4)", 250, 0., 500., recFourLepTransverseMass, theWeight);
+    
+      
+      // -- Min & Max Invariant mass of the 2 possible e+e- pair -- //
+      //rec_cut_mT = isRec_mode4(recFourLepTransverseMass);
+      std::vector<Boson<Lepton> > recChMuPairs = possibleRecLepPair(muons);
+      Boson<Lepton> recZ0Min_ = minInvMassRecChLepPair(recChMuPairs);
+      Boson<Lepton> recZ0Max_ = maxInvMassRecChLepPair(recChMuPairs);
+      
+      if(gen_cut_m3lnu){
+        theHistograms->fill("GEN_signal_REC_min_mu_pair_inv_mass_mode4", "GEN signal RECO minimum muon pair inv mass", 150, 0., 300., recZ0Min_.p4().M(), theWeight);
+        theHistograms->fill("GEN_signal_REC_max_mu_pair_inv_mass_mode4", "GEN signal RECO maximum muon pair inv mass", 150, 0., 300., recZ0Max_.p4().M(), theWeight);
+        theHistograms->fill("GEN_signal_REC_max_min_mu_pair_inv_mass_mode4", "GEN signal RECO max-min muon pair inv mass;MIN mu+mu- inv mass;MAX mu+mu- inv mass", 150, 0., 300., 150, 0., 300., recZ0Min_.p4().M(), recZ0Max_.p4().M(), theWeight);
+      }
+      else{
+        theHistograms->fill("GEN_not_signal_REC_min_mu_pair_inv_mass_mode4", "Not GEN signal RECO minimum muon pair inv mass", 150, 0., 300., recZ0Min_.p4().M(), theWeight);
+        theHistograms->fill("GEN_not_signal_REC_max_mu_pair_inv_mass_mode4", "Not GEN signal RECO maximum muon pair inv mass", 150, 0., 300., recZ0Max_.p4().M(), theWeight);
+        theHistograms->fill("GEN_not_signal_REC_max_min_mu_pair_inv_mass_mode4", "Not GEN signal RECO max-min muon pair inv mass;MIN mu+mu- inv mass;MAX mu+mu- inv mass", 150, 0., 300., 150, 0., 300., recZ0Min_.p4().M(), recZ0Max_.p4().M(), theWeight);
+      }
+      
+      // -- REC LEVEL SIGNAL REGION DEFINITION -- //
+      rec_cut_3l = true;
+      rec_cut_llmI_min = isRec_mode44(recZ0Min_.p4().M());
+      rec_cut_llmI_max = isRec_mode444(recZ0Max_.p4().M());
+      
+    
     }
-    */
+    
       
     
     
@@ -452,10 +431,13 @@ void WlllnuAnalyzer::analyze(){
     
   if(event_mode != 0){  
     bool gen_cut = genEvents && gen_cut_m3lnu;
-    bool rec_cut = rec_cut_mT && rec_cut_llmI && rec_cut_lpt && rec_cut_pt3l; //rec_cut_3l
+    bool rec_cut = (rec_cut_llmI && rec_cut_lpt && rec_cut_pt3l && rec_cut_mT) || (rec_cut_3l/*rec_cut_llmI_min && rec_cut_llmI_max*/); // (rec_cut_3l &&)  
     
     if(gen_cut){      
       theHistograms->fill(Form("GEN_signal_mode%d", event_mode), Form("Gen signal (mode %d)", event_mode), 3, 0., 3., 1, theWeight);
+      if(rec_cut_3l){      
+        theHistograms->fill(Form("REC_3l_events_signal_mode%d", event_mode), Form("Rec 3l events signal (mode %d)", event_mode), 3, 0., 3., 1, theWeight);
+      }
       if(rec_cut){
 	// -- Signal Efficiency -- //       
 	theHistograms->fill(Form("GEN_REC_signal_mode%d", event_mode), Form("Rec Signal Efficiency (mode %d)", event_mode), 3, 0., 3., 1, theWeight);
@@ -464,9 +446,6 @@ void WlllnuAnalyzer::analyze(){
         // -- Gen Signal but Not Rec Events -- //
         theHistograms->fill(Form("Leptons_num_GEN_not_REC_signal_mode%d", event_mode), Form("Leptons number in Gen Not Rec Signal events (mode %d)", event_mode), 21, -0.5, 20.5, leptons->size(), theWeight);
         theHistograms->fill(Form("GEN_not_REC_signal_mode%d", event_mode), Form("Gen Not Rec Signal events (mode %d)", event_mode), 3, 0., 3., 1, theWeight);
-        /*for(int i;i<leptons->size();i++){
-        
-        }*/
       }
     
       
@@ -483,17 +462,17 @@ void WlllnuAnalyzer::analyze(){
             if((electrons->at(0).id()+electrons->at(1).id())==0){
               // Bin 3 (mode 1)
               theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 3, theWeight);
-              if( isRec_mode1( ( electrons->at(0).p4()+electrons->at(1).p4()+muons->at(0).p4()+met->p4() ).Mt() ) ){
-                // Bin 4 (mode 1) mT
+              if(isRec_mode11( ( electrons->at(0).p4()+electrons->at(1).p4() ).M() )){
+                // Bin 4 (mode 1) mll
                 theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 4, theWeight);
-                if(isRec_mode11( ( electrons->at(0).p4()+electrons->at(1).p4() ).M() )){
-                  // Bin 5 (mode 1) mll
+                if(isRec_mode111( muons->at(0).pt() )){
+                  // Bin 5 (mode1) lpt
                   theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 5, theWeight);
-                  if(isRec_mode111( muons->at(0).pt() )){
-                    // Bin 6 (mode1) lpt
+                  if(isRec_mode1111( electrons->at(0).pt()+electrons->at(1).pt()+muons->at(0).pt() )){
+                    // Bin 6 (mode 1) 3lpt
                     theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 6, theWeight);
-                    if(isRec_mode1111( electrons->at(0).pt()+electrons->at(1).pt()+muons->at(0).pt() )){
-                      // Bin 7 (mode 1) 3lpt
+                    if( isRec_mode1( ( electrons->at(0).p4()+electrons->at(1).p4()+muons->at(0).p4()+met->p4() ).Mt() ) ){
+                      // Bin 7 (mode 1) mT
                       theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 7, theWeight);
                     }
                   }
@@ -509,20 +488,56 @@ void WlllnuAnalyzer::analyze(){
             if((muons->at(0).id()+muons->at(1).id())==0){
               // Bin 3 (mode 2) //
               theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 3, theWeight);
-              if( isRec_mode1( ( muons->at(0).p4()+muons->at(1).p4()+electrons->at(0).p4()+met->p4() ).Mt() ) ){
-                // Bin 4 (mode 2) mT
+              if(isRec_mode11( ( muons->at(0).p4()+muons->at(1).p4() ).M() )){
+                // Bin 4 (mode 2) mll
                 theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 4, theWeight);
-                if(isRec_mode11( ( muons->at(0).p4()+muons->at(1).p4() ).M() )){
-                  // Bin 5 (mode 2) mll
+                if(isRec_mode111( electrons->at(0).pt() )){
+                  // Bin 5 (mode2) lpt
                   theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 5, theWeight);
-                  if(isRec_mode111( electrons->at(0).pt() )){
-                    // Bin 6 (mode2) lpt
+                  if(isRec_mode1111( muons->at(0).pt()+muons->at(1).pt()+electrons->at(0).pt() )){
+                    // Bin 6 (mode 2) 3lpt
                     theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 6, theWeight);
-                    if(isRec_mode1111( muons->at(0).pt()+muons->at(1).pt()+electrons->at(0).pt() )){
-                      // Bin 7 (mode 2) 3lpt
+                    if( isRec_mode1( ( muons->at(0).p4()+muons->at(1).p4()+electrons->at(0).p4()+met->p4() ).Mt() ) ){
+                      // Bin 7 (mode 2) mT
                       theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 7, theWeight);
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+        else if(event_mode==3){
+          if(electrons->size()==3){
+            // Bin 2 (mode 3) //
+            theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 2, theWeight);
+            if( checkLeptonsCharge(electrons->at(0), electrons->at(1), electrons->at(2)) ){
+              // Bin 3 (mode 3) //
+              theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 3, theWeight);
+              if( isRec_mode33( minInvMassRecChLepPair(possibleRecLepPair(electrons)).p4().M() ) ){    //   rec_cut_llmI_min
+                // Bin 4 (mode 3) mll_min
+                theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 4, theWeight);
+                if( isRec_mode333( maxInvMassRecChLepPair(possibleRecLepPair(electrons)).p4().M() ) ){    //   rec_cut_llmI_max
+                  // Bin 5 (mode 3) mll_max
+                  theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 5, theWeight);
+                }
+              }
+            }
+          }
+        }
+        else if(event_mode==4){
+          if(muons->size()==3){
+            // Bin 2 (mode 4) //
+            theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 2, theWeight);
+            if( checkLeptonsCharge(muons->at(0), muons->at(1), muons->at(2)) ){
+              // Bin 3 (mode 4) //
+              theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 3, theWeight);
+              if( isRec_mode44( minInvMassRecChLepPair(possibleRecLepPair(muons)).p4().M() ) ){    //    rec_cut_llmI_min
+                // Bin 4 (mode 4) mll_min
+                theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 4, theWeight);
+                if( isRec_mode444(  maxInvMassRecChLepPair(possibleRecLepPair(muons)).p4().M()) ){    //   rec_cut_llmI_max
+                  // Bin 5 (mode 4) mll_max
+                  theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 5, theWeight);
                 }
               }
             }
@@ -532,10 +547,12 @@ void WlllnuAnalyzer::analyze(){
       // ------------------------------------------------- //
       
     }
-    
-    
+
     else{
       theHistograms->fill(Form("not_GEN_signal_mode%d", event_mode), Form("Background Efficiency (mode %d)", event_mode), 3, 0., 3., 1, theWeight);
+      if(rec_cut_3l){      
+        theHistograms->fill(Form("REC_3l_events_not_signal_mode%d", event_mode), Form("Rec 3l events background (mode %d)", event_mode), 3, 0., 3., 1, theWeight);
+      }
       if(rec_cut){
 	// -- Background Efficiency -- //            
 	theHistograms->fill(Form("not_GEN_REC_signal_mode%d", event_mode), Form("Background Efficiency (mode %d)", event_mode), 3, 0., 3., 1, theWeight);
@@ -543,14 +560,14 @@ void WlllnuAnalyzer::analyze(){
     }
     
     
+    if(rec_cut_3l){      
+      theHistograms->fill(Form("REC_3l_events_signal_mode%d", event_mode), Form("Rec 3l events (mode %d)", event_mode), 3, 0., 3., 1, theWeight);
+    } 
     
       
-  }  
-    
-    
-    
-    
+  }
   
+ 
 
 }
   
@@ -658,9 +675,8 @@ int WlllnuAnalyzer::eventMode(std::vector<phys::Particle>* genEl_, std::vector<p
 bool WlllnuAnalyzer::isGen_mode1(double var1){
   return 70.<var1 && var1<90;
 }
-
-bool WlllnuAnalyzer::isRec_mode1(double var1){   // double var2, double var3, double var4
-  return 60.<var1 && var1<120.;                  // && 4.<var2 && var2<12. && 10.<var3 && var3<30. && 30<var4 && var4<70
+bool WlllnuAnalyzer::isRec_mode1(double var1){   
+  return 60.<var1 && var1<120.;                  
 }
 bool WlllnuAnalyzer::isRec_mode11(double var2){
   return 4.<var2 && var2<12.;  
@@ -676,9 +692,8 @@ bool WlllnuAnalyzer::isRec_mode1111(double var4){
 bool WlllnuAnalyzer::isGen_mode2(double var1){
   return 70.<var1 && var1<90.;
 }
-
-bool WlllnuAnalyzer::isRec_mode2(double var1){   // double var2, double var3, double var4
-  return 60.<var1 && var1<120.;                  // && 4.<var2 && var2<12. && 10.<var3 && var3<30. && 30.<var4 && var4<70.
+bool WlllnuAnalyzer::isRec_mode2(double var1){   
+  return 60.<var1 && var1<120.;                  
 }
 bool WlllnuAnalyzer::isRec_mode22(double var2){   
   return 4.<var2 && var2<12.;
@@ -694,20 +709,35 @@ bool WlllnuAnalyzer::isRec_mode2222(double var4){
 bool WlllnuAnalyzer::isGen_mode3(double var1){
   return 70.<var1 && var1<90;
 }
-
+bool WlllnuAnalyzer::isRec_mode3(double var1){   
+  return 60.<var1 && var1<120.;                  
+}
+bool WlllnuAnalyzer::isRec_mode33(double var2){
+  return var2<60.;
+}
+bool WlllnuAnalyzer::isRec_mode333(double var3){
+  return var3<70.;
+}
 
 
 bool WlllnuAnalyzer::isGen_mode4(double var1){
   return 70.<var1 && var1<90;
+}
+bool WlllnuAnalyzer::isRec_mode4(double var1){   
+  return 60.<var1 && var1<120.;                  
+}
+bool WlllnuAnalyzer::isRec_mode44(double var2){
+  return var2<60.;
+}
+bool WlllnuAnalyzer::isRec_mode444(double var3){
+  return var3<70.;
 }
 
 
 
 
 
-
-
-std::vector<Boson<Particle> > WlllnuAnalyzer::possibleLepPair(std::vector<phys::Particle>* genChLeptons){
+std::vector<Boson<Particle> > WlllnuAnalyzer::possibleGenLepPair(std::vector<phys::Particle>* genChLeptons){
   std::vector<Boson<Particle> > genZlepCandidates;
   for(int i=0;i<genChLeptons->size();i++){
     Particle& l1 = genChLeptons->at(i);
@@ -723,25 +753,52 @@ std::vector<Boson<Particle> > WlllnuAnalyzer::possibleLepPair(std::vector<phys::
   return genZlepCandidates;
 }  
   
-Boson<Particle> WlllnuAnalyzer::minInvMassChLepPair(std::vector<Boson<Particle> > genChLepPairs){
+Boson<Particle> WlllnuAnalyzer::minInvMassGenChLepPair(std::vector<Boson<Particle> > genChLepPairs){
   Boson<Particle>& Z0 = genChLepPairs.front();
   return Z0;
 }
 
-Boson<Particle> WlllnuAnalyzer::maxInvMassChLepPair(std::vector<Boson<Particle> > genChLepPairs){
+Boson<Particle> WlllnuAnalyzer::maxInvMassGenChLepPair(std::vector<Boson<Particle> > genChLepPairs){
   Boson<Particle>& Z0 = genChLepPairs.back();
   return Z0;
 }
 
 
-bool WlllnuAnalyzer::checkLeptonsCharge(Particle lep1, Particle lep2, Particle lep3){
-	if(abs(lep1.charge()+lep2.charge()+lep3.charge())==1){
-		return true;
-	}
-	else{
-		return false;
-	}
 
+std::vector<Boson<Lepton> > WlllnuAnalyzer::possibleRecLepPair(std::vector<phys::Lepton>* recChLeptons){
+  std::vector<Boson<Lepton> > recZlepCandidates;
+  for(int i=0;i<recChLeptons->size();i++){
+    Lepton& l1 = recChLeptons->at(i);
+    for(int j=i+1;j<recChLeptons->size();j++){
+      Lepton& l2 = recChLeptons->at(j);
+      if((l1.id()+l2.id())==0){
+        Boson<Lepton> Zcand(l1,l2);
+        recZlepCandidates.push_back(Zcand);
+      }
+    }
+  }
+  std::sort(recZlepCandidates.begin(), recZlepCandidates.end(), [](const Boson<Lepton>& a, const Boson<Lepton>& b){ return (a.daughter(0).p4()+a.daughter(1).p4()).M() < (b.daughter(0).p4()+b.daughter(1).p4()).M(); });
+  return recZlepCandidates;
+}  
+  
+Boson<Lepton> WlllnuAnalyzer::minInvMassRecChLepPair(std::vector<Boson<Lepton> > recChLepPairs){
+  Boson<Lepton>& Z0 = recChLepPairs.front();
+  return Z0;
+}
+
+Boson<Lepton> WlllnuAnalyzer::maxInvMassRecChLepPair(std::vector<Boson<Lepton> > recChLepPairs){
+  Boson<Lepton>& Z0 = recChLepPairs.back();
+  return Z0;
+}
+
+
+bool WlllnuAnalyzer::checkLeptonsCharge(Particle lep1, Particle lep2, Particle lep3){
+  if(abs(lep1.charge()+lep2.charge()+lep3.charge())==1){
+    return true;
+  }
+  else{
+    return false;
+  }
 }
 
 

@@ -50,6 +50,61 @@ double s_over_sqrtb(TFile* myFile, std::string sig, std::string bkg, std::string
 void plotDrawer() {
   TFile* myFile = TFile::Open("results/2018/WlllnuAnalyzer_MC/WZTo3LNu.root");
   
+  // -- Signal efficiency, Background efficiency & Sensitivity -- //
+  
+  // ------- W DECAY MODE 1: e+ e- mu nu -------- //
+  draw_eff(myFile, "GEN_REC_signal_mode1", "GEN_signal_mode1", "GEN_REC_signal_mode1");
+  draw_eff(myFile, "GEN_not_REC_signal_mode1", "GEN_signal_mode1", "GEN_not_REC_signal_mode1");
+  draw_eff(myFile, "not_GEN_REC_signal_mode1", "not_GEN_signal_mode1", "not_GEN_REC_background_mode1");
+  s_over_sqrtb(myFile, "GEN_REC_signal_mode1", "not_GEN_REC_signal_mode1", "sensitivity_mode1");
+  cout << "" << endl; 
+  
+  // ------- W DECAY MODE 2: mu+ mu- e nu -------- //
+  draw_eff(myFile, "GEN_REC_signal_mode2", "GEN_signal_mode2", "GEN_REC_signal_mode2");
+  draw_eff(myFile, "GEN_not_REC_signal_mode2", "GEN_signal_mode2", "GEN_not_REC_signal_mode2");
+  draw_eff(myFile, "not_GEN_REC_signal_mode2", "not_GEN_signal_mode2", "not_GEN_REC_background_mode2");
+  s_over_sqrtb(myFile, "GEN_REC_signal_mode2", "not_GEN_REC_signal_mode2", "sensitivity_mode2");
+  cout << "" << endl;
+  
+  // ------- W DECAY MODE 3: e+ e- e nu -------- //
+  draw_eff(myFile, "GEN_REC_signal_mode3", "GEN_signal_mode3", "GEN_REC_signal_mode3");
+  draw_eff(myFile, "GEN_not_REC_signal_mode3", "GEN_signal_mode3", "GEN_not_REC_signal_mode3");
+  draw_eff(myFile, "not_GEN_REC_signal_mode3", "not_GEN_signal_mode3", "not_GEN_REC_background_mode3");
+  s_over_sqrtb(myFile, "GEN_REC_signal_mode3", "not_GEN_REC_signal_mode3", "sensitivity_mode3");
+  cout << "" << endl;
+
+  // ------- W DECAY MODE 4: mu+ mu- mu nu -------- //
+  draw_eff(myFile, "GEN_REC_signal_mode4", "GEN_signal_mode4", "GEN_REC_signal_mode4");
+  draw_eff(myFile, "GEN_not_REC_signal_mode4", "GEN_signal_mode4", "GEN_not_REC_signal_mode4");
+  draw_eff(myFile, "not_GEN_REC_signal_mode4", "not_GEN_signal_mode4", "not_GEN_REC_background_mode4");
+  s_over_sqrtb(myFile, "GEN_REC_signal_mode4", "not_GEN_REC_signal_mode4", "sensitivity_mode4");
+  cout << "" << endl;  
+  
+  
+  // -- Signal efficiency, Background efficiency & Sensitivity calculated on 3 Reco leptons events -- //
+  
+  // ------- W DECAY MODE 1: e+ e- mu nu -------- //
+  draw_eff(myFile, "GEN_REC_signal_mode1", "", "GEN_REC_signal_mode1");
+  draw_eff(myFile, "not_GEN_REC_signal_mode1", "", "not_GEN_REC_background_mode1");
+  cout << "" << endl; 
+  
+  // ------- W DECAY MODE 2: mu+ mu- e nu -------- //
+  draw_eff(myFile, "GEN_REC_signal_mode2", "", "GEN_REC_signal_mode2");
+  draw_eff(myFile, "not_GEN_REC_signal_mode2", "", "not_GEN_REC_background_mode2");
+  cout << "" << endl;
+  
+  // ------- W DECAY MODE 3: e+ e- e nu -------- //
+  draw_eff(myFile, "GEN_REC_signal_mode3", "GEN_signal_mode3", "GEN_REC_signal_mode3");
+  draw_eff(myFile, "not_GEN_REC_signal_mode3", "not_GEN_signal_mode4", "not_GEN_REC_background_mode3");
+  cout << "" << endl;
+
+  // ------- W DECAY MODE 4: mu+ mu- mu nu -------- //
+  draw_eff(myFile, "GEN_REC_signal_mode4", "GEN_signal_mode4", "GEN_REC_signal_mode4");
+  draw_eff(myFile, "not_GEN_REC_signal_mode4", "not_GEN_signal_mode4", "not_GEN_REC_background_mode4");
+  cout << "" << endl;
+  
+  
+  /*
   // ----------------------------------------------------------------------------------------------------------------------------------------------------- //
   // ------- W DECAY MODE 1: e+ e- mu nu -------- //
   
@@ -133,49 +188,49 @@ void plotDrawer() {
   cout << "Correlation factor between REC & GEN transverse mass (mode 1) = " << histoRecGenFourLepTransverseMass_mode1->GetCorrelationFactor() << endl;
   cout << " " << endl;
   
-  /*
+  
   // -------------- EFFICIENCY --------------- //
   
   // -- Rec & Gen Electron Efficiency -- //
-  TH1F* histoRecGenElEff = (TH1F *)histoRecElCompatibility->Clone("histoRecGenElEff");
-  histoRecGenElEff->Divide(histoGenElPt);
-  TCanvas *c11 = new TCanvas("c11","REC_el_efficiency_mode1",200,10,600,400);
-  c11->SetFillColor(0);
-  c11->cd();
-  histoRecGenElEff->Draw();
+  //TH1F* histoRecGenElEff = (TH1F *)histoRecElCompatibility->Clone("histoRecGenElEff");
+  //histoRecGenElEff->Divide(histoGenElPt);
+  //TCanvas *c11 = new TCanvas("c11","REC_el_efficiency_mode1",200,10,600,400);
+  //c11->SetFillColor(0);
+  //c11->cd();
+  //histoRecGenElEff->Draw();
   
   // -- Rec & Gen Muon Efficiency -- //
-  TH1F* histoRecGenMuEff = (TH1F*)histoRecMuCompatibility->Clone("histoRecGenMuEff");
-  histoRecGenMuEff->Divide(histoGenMuPt);
-  TCanvas *c12 = new TCanvas("c12","REC_mu_efficiency_mode1",200,10,600,400);
-  c12->SetFillColor(0);
-  c12->cd();
-  histoRecGenMuEff->Draw();
+  //TH1F* histoRecGenMuEff = (TH1F*)histoRecMuCompatibility->Clone("histoRecGenMuEff");
+  //histoRecGenMuEff->Divide(histoGenMuPt);
+  //TCanvas *c12 = new TCanvas("c12","REC_mu_efficiency_mode1",200,10,600,400);
+  //c12->SetFillColor(0);
+  //c12->cd();
+  //histoRecGenMuEff->Draw();
   
   // -- Rec & Gen Electron pt Efficiency -- //
-  TH1F* histoRecGenElPtEff = (TH1F*)histoRecElPtCompatibility->Clone("histoRecGenElPtEff");
-  histoRecGenElPtEff->Divide(histoGenElPt);
-  TCanvas *c13 = new TCanvas("c13","REC_el_pt_efficiency_mode1",200,10,600,400);
-  c13->SetFillColor(0);
-  c13->cd();
-  histoRecGenElPtEff->Draw();
+  //TH1F* histoRecGenElPtEff = (TH1F*)histoRecElPtCompatibility->Clone("histoRecGenElPtEff");
+  //histoRecGenElPtEff->Divide(histoGenElPt);
+  //TCanvas *c13 = new TCanvas("c13","REC_el_pt_efficiency_mode1",200,10,600,400);
+  //c13->SetFillColor(0);
+  //c13->cd();
+  //histoRecGenElPtEff->Draw();
   
   // -- Rec & Gen Muon pt Efficiency -- //
-  TH1F* histoRecGenMuPtEff = (TH1F*)histoRecMuPtCompatibility->Clone("histoRecGenMuPtEff");
-  histoRecGenMuPtEff->Divide(histoGenMuPt);
-  TCanvas *c14 = new TCanvas("c14","REC_mu_pt_efficiency_mode1",200,10,600,400);
-  c14->SetFillColor(0);
-  c14->cd();
-  histoRecGenMuPtEff->Draw();
+  //TH1F* histoRecGenMuPtEff = (TH1F*)histoRecMuPtCompatibility->Clone("histoRecGenMuPtEff");
+  //histoRecGenMuPtEff->Divide(histoGenMuPt);
+  //TCanvas *c14 = new TCanvas("c14","REC_mu_pt_efficiency_mode1",200,10,600,400);
+  //c14->SetFillColor(0);
+  //c14->cd();
+  //histoRecGenMuPtEff->Draw();
   
   // -- Rec & Gen Muon charge Efficiency -- //
-  TH1F* histoRecGenMuChargeEff = (TH1F*)histoRecMuChargeCompatibility->Clone("histoRecGenMuChargeEff");
-  histoRecGenMuChargeEff->Divide(histoGenMuPt);
-  TCanvas *c15 = new TCanvas("c15","REC_mu_charge_efficiency_mode1",200,10,600,400);
-  c15->SetFillColor(0);
-  c15->cd();
-  histoRecGenMuChargeEff->Draw();
-  */
+  ///TH1F* histoRecGenMuChargeEff = (TH1F*)histoRecMuChargeCompatibility->Clone("histoRecGenMuChargeEff");
+  //histoRecGenMuChargeEff->Divide(histoGenMuPt);
+  //TCanvas *c15 = new TCanvas("c15","REC_mu_charge_efficiency_mode1",200,10,600,400);
+  //c15->SetFillColor(0);
+  //c15->cd();
+  //histoRecGenMuChargeEff->Draw();
+  
   
   // ------------------ 3l reco events efficiency ----------------- //
   // TH1F* threeLepEvEffNum_mode1 = (TH1F*)myFile->Get("GEN_REC_3l_events_mode1");
@@ -214,25 +269,22 @@ void plotDrawer() {
   
   
   
-  draw_eff(myFile, "GEN_REC_signal_mode1", "GEN_signal_mode1", "GEN_REC_signal_mode1");
-  draw_eff(myFile, "GEN_not_REC_signal_mode1", "GEN_signal_mode1", "GEN_not_REC_signal_mode1");
-  draw_eff(myFile, "not_GEN_REC_signal_mode1", "not_GEN_signal_mode1", "not_GEN_REC_background_mode1");
-  s_over_sqrtb(myFile, "GEN_REC_signal_mode1", "not_GEN_REC_signal_mode1", "sensitivity_mode1");
   
   
   
   
   
   
-  /*
+  
+  
   // -- Decay type events distribution -- //
-  double Wtype_mode1 = histoFourLepInvariantMass->Integral(histoFourLepInvariantMass->FindBin(75),histoFourLepInvariantMass->FindBin(85));
-  double Ztype_mode1 = histoFourLepInvariantMass->Integral(histoFourLepInvariantMass->FindBin(88),histoFourLepInvariantMass->FindBin(130));
-  double WZtype_mode1 = histoFourLepInvariantMass->Integral(histoFourLepInvariantMass->FindBin(170),histoFourLepInvariantMass->FindBin(280));
+  //double Wtype_mode1 = histoFourLepInvariantMass->Integral(histoFourLepInvariantMass->FindBin(75),histoFourLepInvariantMass->FindBin(85));
+  //double Ztype_mode1 = histoFourLepInvariantMass->Integral(histoFourLepInvariantMass->FindBin(88),histoFourLepInvariantMass->FindBin(130));
+  //double WZtype_mode1 = histoFourLepInvariantMass->Integral(histoFourLepInvariantMass->FindBin(170),histoFourLepInvariantMass->FindBin(280));
   
-  cout << "#events_Wtype (mode 1) = " << Wtype_mode1 << ";   #events_Ztype (mode 1) = " << Ztype_mode1 << ";   #events_WZtype (mode 1) = " << WZtype_mode1 << endl;
-  cout << "(#events_Ztype)/(#events_Wtype) (mode 1) = " << Ztype_mode1/Wtype_mode1 << ";   (#events_WZtype)/(#events_Wtype) (mode 1) = " << WZtype_mode1/Wtype_mode1 << endl;
-  */
+  //cout << "#events_Wtype (mode 1) = " << Wtype_mode1 << ";   #events_Ztype (mode 1) = " << Ztype_mode1 << ";   #events_WZtype (mode 1) = " << WZtype_mode1 << endl;
+  //cout << "(#events_Ztype)/(#events_Wtype) (mode 1) = " << Ztype_mode1/Wtype_mode1 << ";   (#events_WZtype)/(#events_Wtype) (mode 1) = " << WZtype_mode1/Wtype_mode1 << endl;
+  
   
   
   
@@ -335,49 +387,49 @@ void plotDrawer() {
   // cout << " " << endl;
   
   
-  /*
+  
   // -------------- EFFICIENCY --------------- //
   
   // -- Rec & Gen Electron Efficiency -- //
-  TH1F* histoRecGenElEff_A = (TH1F *)histoRecElCompatibility_A->Clone("histoRecGenElEff_A");
-  histoRecGenElEff_A->Divide(histoGenElPt_A);
-  TCanvas *cA11 = new TCanvas("cA11","REC_el_efficiency_mode2",200,10,600,400);
-  cA11->SetFillColor(0);
-  cA11->cd();
-  histoRecGenElEff_A->Draw();
+  //TH1F* histoRecGenElEff_A = (TH1F *)histoRecElCompatibility_A->Clone("histoRecGenElEff_A");
+  //histoRecGenElEff_A->Divide(histoGenElPt_A);
+  //TCanvas *cA11 = new TCanvas("cA11","REC_el_efficiency_mode2",200,10,600,400);
+  //cA11->SetFillColor(0);
+  //cA11->cd();
+  //histoRecGenElEff_A->Draw();
   
   // -- Rec & Gen Muon Efficiency -- //
-  TH1F* histoRecGenMuEff_A = (TH1F*)histoRecMuCompatibility_A->Clone("histoRecGenMuEff_A");
-  histoRecGenMuEff_A->Divide(histoGenMuPt_A);
-  TCanvas *cA12 = new TCanvas("cA12","REC_mu_efficiency_mode2",200,10,600,400);
-  cA12->SetFillColor(0);
-  cA12->cd();
-  histoRecGenMuEff_A->Draw();
+  //TH1F* histoRecGenMuEff_A = (TH1F*)histoRecMuCompatibility_A->Clone("histoRecGenMuEff_A");
+  //histoRecGenMuEff_A->Divide(histoGenMuPt_A);
+  //TCanvas *cA12 = new TCanvas("cA12","REC_mu_efficiency_mode2",200,10,600,400);
+  //cA12->SetFillColor(0);
+  //cA12->cd();
+  //histoRecGenMuEff_A->Draw();
   
   // -- Rec & Gen Electron pt Efficiency -- //
-  TH1F* histoRecGenElPtEff_A = (TH1F*)histoRecElPtCompatibility_A->Clone("histoRecGenElPtEff_A");
-  histoRecGenElPtEff_A->Divide(histoGenElPt_A);
-  TCanvas *cA13 = new TCanvas("cA13","REC_el_pt_efficiency_mode2",200,10,600,400);
-  cA13->SetFillColor(0);
-  cA13->cd();
-  histoRecGenElPtEff_A->Draw();
+  //TH1F* histoRecGenElPtEff_A = (TH1F*)histoRecElPtCompatibility_A->Clone("histoRecGenElPtEff_A");
+  //histoRecGenElPtEff_A->Divide(histoGenElPt_A);
+  //TCanvas *cA13 = new TCanvas("cA13","REC_el_pt_efficiency_mode2",200,10,600,400);
+  //cA13->SetFillColor(0);
+  //cA13->cd();
+  //histoRecGenElPtEff_A->Draw();
   
   // -- Rec & Gen Muon pt Efficiency -- //
-  TH1F* histoRecGenMuPtEff_A = (TH1F*)histoRecMuPtCompatibility_A->Clone("histoRecGenMuPtEff_A");
-  histoRecGenMuPtEff_A->Divide(histoGenMuPt_A);
-  TCanvas *cA14 = new TCanvas("cA14","REC_mu_pt_efficiency_mode2",200,10,600,400);
-  cA14->SetFillColor(0);
-  cA14->cd();
-  histoRecGenMuPtEff_A->Draw();
+  //TH1F* histoRecGenMuPtEff_A = (TH1F*)histoRecMuPtCompatibility_A->Clone("histoRecGenMuPtEff_A");
+  //histoRecGenMuPtEff_A->Divide(histoGenMuPt_A);
+  //TCanvas *cA14 = new TCanvas("cA14","REC_mu_pt_efficiency_mode2",200,10,600,400);
+  //cA14->SetFillColor(0);
+  //cA14->cd();
+  //histoRecGenMuPtEff_A->Draw();
   
   // -- Rec & Gen Muon charge Efficiency -- //
-  TH1F* histoRecGenElChargeEff_A = (TH1F*)histoRecElChargeCompatibility_A->Clone("histoRecGenElChargeEff_A");
-  histoRecGenElChargeEff_A->Divide(histoGenElPt_A);
-  TCanvas *cA15 = new TCanvas("cA15","REC_el_charge_efficiency_mode2",200,10,600,400);
-  cA15->SetFillColor(0);
-  cA15->cd();
-  histoRecGenElChargeEff_A->Draw();
-  */
+  //TH1F* histoRecGenElChargeEff_A = (TH1F*)histoRecElChargeCompatibility_A->Clone("histoRecGenElChargeEff_A");
+  //histoRecGenElChargeEff_A->Divide(histoGenElPt_A);
+  //TCanvas *cA15 = new TCanvas("cA15","REC_el_charge_efficiency_mode2",200,10,600,400);
+  //cA15->SetFillColor(0);
+  //cA15->cd();
+  //histoRecGenElChargeEff_A->Draw();
+  
   
   // ------------------ 3l reco events efficiency ----------------- //
   // TH1F* threeLepEvEffNum_mode2 = (TH1F*)myFile->Get("GEN_REC_3l_events_mode2");
@@ -415,23 +467,20 @@ void plotDrawer() {
   
   
   
-  draw_eff(myFile, "GEN_REC_signal_mode2", "GEN_signal_mode2", "GEN_REC_signal_mode2");
-  draw_eff(myFile, "GEN_not_REC_signal_mode2", "GEN_signal_mode2", "GEN_not_REC_signal_mode2");
-  draw_eff(myFile, "not_GEN_REC_signal_mode2", "not_GEN_signal_mode2", "not_GEN_REC_background_mode2");
-  s_over_sqrtb(myFile, "GEN_REC_signal_mode2", "not_GEN_REC_signal_mode2", "sensitivity_mode2");
   
   
   
   
   
-  /*
+  
+  
   // -- Decay type events distribution -- //
-  double Wtype_mode2 = histoFourLepInvariantMass_A->Integral(histoFourLepInvariantMass_A->FindBin(75),histoFourLepInvariantMass_A->FindBin(85));                
-  double Ztype_mode2 = histoFourLepInvariantMass_A->Integral(histoFourLepInvariantMass_A->FindBin(88),histoFourLepInvariantMass_A->FindBin(140));               
-  double WZtype_mode2 = histoFourLepInvariantMass_A->Integral(histoFourLepInvariantMass_A->FindBin(170),histoFourLepInvariantMass_A->FindBin(280));             
+  //double Wtype_mode2 = histoFourLepInvariantMass_A->Integral(histoFourLepInvariantMass_A->FindBin(75),histoFourLepInvariantMass_A->FindBin(85));                
+  //double Ztype_mode2 = histoFourLepInvariantMass_A->Integral(histoFourLepInvariantMass_A->FindBin(88),histoFourLepInvariantMass_A->FindBin(140));               
+  //double WZtype_mode2 = histoFourLepInvariantMass_A->Integral(histoFourLepInvariantMass_A->FindBin(170),histoFourLepInvariantMass_A->FindBin(280));             
   
-  cout << "#events_Wtype (mode 2) = " << Wtype_mode2 << ";   #events_Ztype (mode 2) = " << Ztype_mode2 << ";   #events_WZtype (mode 2) = " << WZtype_mode2 << endl;
-  cout << "(#events_Ztype)/(#events_Wtype) (mode 2) = " << Ztype_mode2/Wtype_mode2 << ";   (#events_WZtype)/(#events_Wtype) (mode 2) = " << WZtype_mode2/Wtype_mode2 << endl;
+  //cout << "#events_Wtype (mode 2) = " << Wtype_mode2 << ";   #events_Ztype (mode 2) = " << Ztype_mode2 << ";   #events_WZtype (mode 2) = " << WZtype_mode2 << endl;
+  //cout << "(#events_Ztype)/(#events_Wtype) (mode 2) = " << Ztype_mode2/Wtype_mode2 << ";   (#events_WZtype)/(#events_Wtype) (mode 2) = " << WZtype_mode2/Wtype_mode2 << endl;
   */
   
   

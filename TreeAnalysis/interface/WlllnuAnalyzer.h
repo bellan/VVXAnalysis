@@ -136,9 +136,13 @@ private:
   phys::Particle genNu_2;
   
   // Check minimum invariant mass of the possible l+l- pair -- //
-  std::vector<phys::Boson<phys::Particle> > possibleLepPair(std::vector<phys::Particle>*);
-  phys::Boson<phys::Particle> minInvMassChLepPair(std::vector<phys::Boson<phys::Particle> >);
-  phys::Boson<phys::Particle> maxInvMassChLepPair(std::vector<phys::Boson<phys::Particle> >);
+  std::vector<phys::Boson<phys::Particle> > possibleGenLepPair(std::vector<phys::Particle>*);
+  phys::Boson<phys::Particle> minInvMassGenChLepPair(std::vector<phys::Boson<phys::Particle> >);
+  phys::Boson<phys::Particle> maxInvMassGenChLepPair(std::vector<phys::Boson<phys::Particle> >);
+  
+  std::vector<phys::Boson<phys::Lepton> > possibleRecLepPair(std::vector<phys::Lepton>*);
+  phys::Boson<phys::Lepton> minInvMassRecChLepPair(std::vector<phys::Boson<phys::Lepton> >);
+  phys::Boson<phys::Lepton> maxInvMassRecChLepPair(std::vector<phys::Boson<phys::Lepton> >);
   // Check W to 3 leptons decay configuration
   int eventMode(std::vector<phys::Particle>*, std::vector<phys::Particle>*, std::vector<phys::Lepton>*, std::vector<phys::Lepton>*);
   // Check if there are Gen or/and Rec events
@@ -161,8 +165,14 @@ private:
   bool isRec_mode2222(double);
   
   bool isGen_mode3(double);
+  bool isRec_mode3(double);
+  bool isRec_mode33(double);
+  bool isRec_mode333(double);
   
   bool isGen_mode4(double);
+  bool isRec_mode4(double);
+  bool isRec_mode44(double);
+  bool isRec_mode444(double);
   
   // Vectors of gen particles
   std::unique_ptr<std::vector<phys::Particle>> genQuarks_;
