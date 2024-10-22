@@ -35,7 +35,6 @@ double draw_eff(TFile* myFile, std::string num, std::string den, std::string nam
   return hEff->GetBinContent(2);
 }
 
-
 double s_over_sqrtb(TFile* myFile, std::string sig, std::string bkg, std::string name){
   TH1F* hSig = (TH1F *)myFile->Get(sig.c_str());
   TH1F* hBkg = (TH1F *)myFile->Get(bkg.c_str());
@@ -45,6 +44,36 @@ double s_over_sqrtb(TFile* myFile, std::string sig, std::string bkg, std::string
   cout << name << " sensitivity  = " << SoverSqrtB << endl;
   return SoverSqrtB;
 }
+
+void s_over_sqrtb_cut(TFile* myFile, std::string sig, std::string bkg, std::string name){
+  
+  TH1F* hSig = (TH1F *)myFile->Get(sig.c_str());
+  TH1F* hBkg = (TH1F *)myFile->Get(bkg.c_str());
+  vector<double> x; vector<double> y;
+  
+  for(int cut=6; cut<71; cut++){
+    double nSig = hSig->Integral(hSig->FindBin(4),hSig->FindBin(cut));
+    double nBkg = hBkg->Integral(hBkg->FindBin(4),hBkg->FindBin(cut));
+    double sigma = nSig/sqrt(nBkg);
+    cout << "Cut Massa invariante = " << cut << " GeV;  Eventi segnale = " << nSig << ";   Eventi Background = " << nBkg << endl;
+    x.push_back(cut);
+    y.push_back(sigma);
+  }
+  
+  TCanvas *c = new TCanvas(("c_"+name).c_str(), (name).c_str(), 200,10,1200,800);
+  c->SetFillColor(0);
+  c->cd();
+  TGraph *sensitivityCut = new TGraph(x.size(), x.data(), y.data());
+  sensitivityCut->SetTitle((name).c_str());
+  sensitivityCut->GetXaxis()->SetTitle("mI(e^{+}e^{-}) cut");
+  sensitivityCut->GetYaxis()->SetTitle("sensitivity");
+  sensitivityCut->Draw();
+  //c->SaveAs(("c_"+name+".jpg").c_str());
+  
+}
+
+
+
 
 
 void plotDrawer() {
@@ -78,30 +107,49 @@ void plotDrawer() {
   draw_eff(myFile, "GEN_not_REC_signal_mode4", "GEN_signal_mode4", "GEN_not_REC_signal_mode4");
   draw_eff(myFile, "not_GEN_REC_signal_mode4", "not_GEN_signal_mode4", "not_GEN_REC_background_mode4");
   s_over_sqrtb(myFile, "GEN_REC_signal_mode4", "not_GEN_REC_signal_mode4", "sensitivity_mode4");
-  cout << "" << endl;  
+  cout << "" << endl;
   
-  
+  /*
   // -- Signal efficiency, Background efficiency & Sensitivity calculated on 3 Reco leptons events -- //
   
   // ------- W DECAY MODE 1: e+ e- mu nu -------- //
-  draw_eff(myFile, "GEN_REC_signal_mode1", "", "GEN_REC_signal_mode1");
-  draw_eff(myFile, "not_GEN_REC_signal_mode1", "", "not_GEN_REC_background_mode1");
+  draw_eff(myFile, "GEN_REC_signal_mode1", "REC_3l_events_signal_mode1", "REC_signal_mode1");
+  draw_eff(myFile, "not_GEN_REC_signal_mode1", "REC_3l_events_not_signal_mode1", "REC_background_mode1");
   cout << "" << endl; 
   
   // ------- W DECAY MODE 2: mu+ mu- e nu -------- //
-  draw_eff(myFile, "GEN_REC_signal_mode2", "", "GEN_REC_signal_mode2");
-  draw_eff(myFile, "not_GEN_REC_signal_mode2", "", "not_GEN_REC_background_mode2");
+  draw_eff(myFile, "GEN_REC_signal_mode2", "REC_3l_events_signal_mode2", "REC_signal_mode2");
+  draw_eff(myFile, "not_GEN_REC_signal_mode2", "REC_3l_events_not_signal_mode2", "REC_background_mode2");
   cout << "" << endl;
   
   // ------- W DECAY MODE 3: e+ e- e nu -------- //
-  draw_eff(myFile, "GEN_REC_signal_mode3", "GEN_signal_mode3", "GEN_REC_signal_mode3");
-  draw_eff(myFile, "not_GEN_REC_signal_mode3", "not_GEN_signal_mode4", "not_GEN_REC_background_mode3");
+  draw_eff(myFile, "GEN_REC_signal_mode3", "REC_3l_events_signal_mode3", "REC_signal_mode3");
+  draw_eff(myFile, "not_GEN_REC_signal_mode3", "REC_3l_events_not_signal_mode3", "REC_background_mode3");
   cout << "" << endl;
 
   // ------- W DECAY MODE 4: mu+ mu- mu nu -------- //
-  draw_eff(myFile, "GEN_REC_signal_mode4", "GEN_signal_mode4", "GEN_REC_signal_mode4");
-  draw_eff(myFile, "not_GEN_REC_signal_mode4", "not_GEN_signal_mode4", "not_GEN_REC_background_mode4");
+  draw_eff(myFile, "GEN_REC_signal_mode4", "REC_3l_events_signal_mode4", "REC_signal_mode4");
+  draw_eff(myFile, "not_GEN_REC_signal_mode4", "REC_3l_events_not_signal_mode4", "REC_background_mode4");
   cout << "" << endl;
+  */
+  
+  
+  
+  // ------- Sensitivity function of the lepton pair invariant mass cut -------- //
+  
+  // ------- W DECAY MODE 1: e+ e- mu nu -------- //
+  s_over_sqrtb_cut(myFile, "signal_lep_pair_inv_mass_mode1", "background_lep_pair_inv_mass_mode1", "sensitivity_mIcut_mode1");
+  cout << "" << endl;
+  
+  // ------- W DECAY MODE 2: mu+ mu- e nu -------- //
+  s_over_sqrtb_cut(myFile, "signal_lep_pair_inv_mass_mode2", "background_lep_pair_inv_mass_mode2", "sensitivity_mIcut_mode2");
+  cout << "" << endl;
+  
+  
+  
+  
+  
+  
   
   
   /*

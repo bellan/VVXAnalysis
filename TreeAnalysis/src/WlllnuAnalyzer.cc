@@ -142,11 +142,11 @@ void WlllnuAnalyzer::analyze(){
       theHistograms->fill("REC_mu_pt_REC_ch_lep_pt_sum_mode1", "Rec mu pt vs Rec Charged Lepton e+e-mu pt sum (mode 1);e+e-mu pt;mu pt", 100, 0., 500., 60, 0., 300., recEl1.pt()+recEl2.pt()+recMu.pt(), recMu.pt(), theWeight);  
       
       // ------------------------------ REC LEVEL SIGNAL REGION DEFINITION ----------------------------- //
-      rec_cut_3l = true;
-      rec_cut_mT = isRec_mode1(recFourLepTransverseMass);
+      // rec_cut_3l = true;
+      // rec_cut_mT = isRec_mode1(recFourLepTransverseMass);
       rec_cut_llmI = isRec_mode11(recElPairInvMass);
-      rec_cut_lpt = isRec_mode111(recMu.pt());
-      rec_cut_pt3l = isRec_mode1111(recEl1.pt()+recEl2.pt()+recMu.pt());
+      // rec_cut_lpt = isRec_mode111(recMu.pt());
+      // rec_cut_pt3l = isRec_mode1111(recEl1.pt()+recEl2.pt()+recMu.pt());
       
     }
       
@@ -239,11 +239,11 @@ void WlllnuAnalyzer::analyze(){
         
         
       // ------------------------------ REC LEVEL SIGNAL DEFINITION ----------------------------- //
-      rec_cut_3l = true;
-      rec_cut_mT = isRec_mode2(recFourLepTransverseMass);
+      // rec_cut_3l = true;
+      // rec_cut_mT = isRec_mode2(recFourLepTransverseMass);
       rec_cut_llmI = isRec_mode22(recMuPairInvMass);
-      rec_cut_lpt = isRec_mode222(recEl.pt());
-      rec_cut_pt3l = isRec_mode2222(recMu1.pt()+recMu2.pt()+recEl.pt());
+      // rec_cut_lpt = isRec_mode222(recEl.pt());
+      // rec_cut_pt3l = isRec_mode2222(recMu1.pt()+recMu2.pt()+recEl.pt());
       
     }
         
@@ -311,7 +311,6 @@ void WlllnuAnalyzer::analyze(){
       
       
       // -- Min & Max Invariant mass of the 2 possible e+e- pair -- //
-      //rec_cut_mT = isRec_mode3(recFourLepTransverseMass);
       std::vector<Boson<Lepton> > recChElPairs = possibleRecLepPair(electrons);
       Boson<Lepton> recZ0Min_ = minInvMassRecChLepPair(recChElPairs);
       Boson<Lepton> recZ0Max_ = maxInvMassRecChLepPair(recChElPairs);
@@ -328,7 +327,7 @@ void WlllnuAnalyzer::analyze(){
       }
       
       // -- REC LEVEL SIGNAL REGION DEFINITION -- //
-      rec_cut_3l = true;
+      // rec_cut_3l = true;
       rec_cut_llmI_min = isRec_mode33(recZ0Min_.p4().M());
       rec_cut_llmI_max = isRec_mode333(recZ0Max_.p4().M());
       	
@@ -412,7 +411,7 @@ void WlllnuAnalyzer::analyze(){
       }
       
       // -- REC LEVEL SIGNAL REGION DEFINITION -- //
-      rec_cut_3l = true;
+      // rec_cut_3l = true;
       rec_cut_llmI_min = isRec_mode44(recZ0Min_.p4().M());
       rec_cut_llmI_max = isRec_mode444(recZ0Max_.p4().M());
       
@@ -427,20 +426,22 @@ void WlllnuAnalyzer::analyze(){
   
   
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ //  
-    
-    
+  
   if(event_mode != 0){  
     bool gen_cut = genEvents && gen_cut_m3lnu;
-    bool rec_cut = (rec_cut_llmI && rec_cut_lpt && rec_cut_pt3l && rec_cut_mT) || (rec_cut_3l/*rec_cut_llmI_min && rec_cut_llmI_max*/); // (rec_cut_3l &&)  
+    bool rec_cut = (rec_cut_llmI) || (rec_cut_llmI_min && rec_cut_llmI_max); // (rec_cut_3l && rec_cut_lpt && rec_cut_pt3l && rec_cut_mT) || (rec_cut_3l)
     
     if(gen_cut){      
       theHistograms->fill(Form("GEN_signal_mode%d", event_mode), Form("Gen signal (mode %d)", event_mode), 3, 0., 3., 1, theWeight);
-      if(rec_cut_3l){      
-        theHistograms->fill(Form("REC_3l_events_signal_mode%d", event_mode), Form("Rec 3l events signal (mode %d)", event_mode), 3, 0., 3., 1, theWeight);
-      }
       if(rec_cut){
 	// -- Signal Efficiency -- //       
 	theHistograms->fill(Form("GEN_REC_signal_mode%d", event_mode), Form("Rec Signal Efficiency (mode %d)", event_mode), 3, 0., 3., 1, theWeight);
+	if(event_mode == 1){
+	  theHistograms->fill("signal_lep_pair_inv_mass_mode1", "Rec Cut signal mI(e^{+}e^{-}) (mode 1)", 75, 0., 150., (electrons->at(0).p4()+electrons->at(1).p4()).M(), theWeight);
+        }
+        else if(event_mode == 2){
+          theHistograms->fill("signal_lep_pair_inv_mass_mode2", "Rec Cut signal mI(#mu^{+}#mu^{-}) (mode 2)", 75, 0., 150., (muons->at(0).p4()+muons->at(1).p4()).M(), theWeight);
+        }
       }
       else{
         // -- Gen Signal but Not Rec Events -- //
@@ -448,13 +449,14 @@ void WlllnuAnalyzer::analyze(){
         theHistograms->fill(Form("GEN_not_REC_signal_mode%d", event_mode), Form("Gen Not Rec Signal events (mode %d)", event_mode), 3, 0., 3., 1, theWeight);
       }
     
-      
+      /*
       // -------------------- CUTFLOW --------------------- //
       // Bin 0 //
       theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 0, theWeight);
       if(leptons->size()==3){
         // Bin 1 //
         theHistograms->fill(Form("GEN_signal_CUTFLOW_mode%d", event_mode), Form("Gen signal CUTFLOW (mode %d)", event_mode), 10, -0.5, 9.5, 1, theWeight);
+        
         if(event_mode==1){
           if(electrons->size()==2 && muons->size()==1){
             // Bin 2 (mode 1) //
@@ -481,6 +483,7 @@ void WlllnuAnalyzer::analyze(){
             }
           }
         }
+        
         else if(event_mode==2){
           if(electrons->size()==1 && muons->size()==2){
             // Bin 2 (mode 2) //
@@ -507,6 +510,7 @@ void WlllnuAnalyzer::analyze(){
             }
           }
         }
+        
         else if(event_mode==3){
           if(electrons->size()==3){
             // Bin 2 (mode 3) //
@@ -525,6 +529,7 @@ void WlllnuAnalyzer::analyze(){
             }
           }
         }
+        
         else if(event_mode==4){
           if(muons->size()==3){
             // Bin 2 (mode 4) //
@@ -543,27 +548,25 @@ void WlllnuAnalyzer::analyze(){
             }
           }
         }
+        
       }
       // ------------------------------------------------- //
-      
+      */
     }
 
     else{
       theHistograms->fill(Form("not_GEN_signal_mode%d", event_mode), Form("Background Efficiency (mode %d)", event_mode), 3, 0., 3., 1, theWeight);
-      if(rec_cut_3l){      
-        theHistograms->fill(Form("REC_3l_events_not_signal_mode%d", event_mode), Form("Rec 3l events background (mode %d)", event_mode), 3, 0., 3., 1, theWeight);
-      }
       if(rec_cut){
 	// -- Background Efficiency -- //            
 	theHistograms->fill(Form("not_GEN_REC_signal_mode%d", event_mode), Form("Background Efficiency (mode %d)", event_mode), 3, 0., 3., 1, theWeight);
+	if(event_mode == 1){
+	  theHistograms->fill("background_lep_pair_inv_mass_mode1", "Rec Cut background mI(e^{+}e^{-}) (mode 1)", 75, 0., 150., (electrons->at(0).p4()+electrons->at(1).p4()).M(), theWeight);
+        }
+        else if(event_mode == 2){
+          theHistograms->fill("background_lep_pair_inv_mass_mode2", "Rec Cut background mI(#mu^{+}#mu^{-}) (mode 2)", 75, 0., 150., (muons->at(0).p4()+muons->at(1).p4()).M(), theWeight);
+        }
       }  
-    }
-    
-    
-    if(rec_cut_3l){      
-      theHistograms->fill(Form("REC_3l_events_signal_mode%d", event_mode), Form("Rec 3l events (mode %d)", event_mode), 3, 0., 3., 1, theWeight);
     } 
-    
       
   }
   
@@ -679,7 +682,7 @@ bool WlllnuAnalyzer::isRec_mode1(double var1){
   return 60.<var1 && var1<120.;                  
 }
 bool WlllnuAnalyzer::isRec_mode11(double var2){
-  return 4.<var2 && var2<12.;  
+  return 4.<var2 && var2<30.;  
 }
 bool WlllnuAnalyzer::isRec_mode111(double var3){
   return 10.<var3 && var3<30.;  
@@ -696,7 +699,7 @@ bool WlllnuAnalyzer::isRec_mode2(double var1){
   return 60.<var1 && var1<120.;                  
 }
 bool WlllnuAnalyzer::isRec_mode22(double var2){   
-  return 4.<var2 && var2<12.;
+  return 4.<var2 && var2<30.;
 }
 bool WlllnuAnalyzer::isRec_mode222(double var3){
   return 10.<var3 && var3<30.;  
