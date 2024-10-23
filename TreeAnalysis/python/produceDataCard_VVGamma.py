@@ -13,7 +13,7 @@ from argparse import ArgumentParser
 from samplesByRegion import getSamplesByRegion
 from tableSystematics import fillDataFrame
 from plotUtils23 import TFileContext
-from utils23 import lumi_dict, byteify
+from utils23 import lumi_dict, byteify, makedirs_ok
 import logging
 
 ### Hardcoded configuration ###
@@ -128,11 +128,11 @@ def check_exisiting_histograms(fname, observable, processes):
     logging.debug('fname     : %s', fname     )
     logging.debug('observable: %s', observable)
     logging.debug('processes : %s', processes )
-    existing_processes = []
+    existing_processes = {}
     with TFileContext(fname) as tf:
         obs_folder = tf.Get(observable)
         if(not obs_folder):
-            raise KeyError('Observable "%s" missing from file "%s"' %(observable, fpath))
+            raise KeyError('Observable "%s" missing from file "%s"' %(observable, fname))
         # logging.debug('obs_folder: %s', obs_folder)
         keys = obs_folder.GetListOfKeys()
         # logging.debug('keys: %s', '\n\t'+'\n\t'.join(sorted([k.GetName() for k in keys if not 'CMS' in k.GetName()])))
@@ -145,7 +145,7 @@ def check_exisiting_histograms(fname, observable, processes):
                 if(integral <= 0):
                     logging.warning('dropping %s, since it has norm %.3g for observable "%s" in %s', process, integral, observable, fname)
                 else:
-                    existing_processes.append(process)
+                    existing_processes[process] = integral
     return existing_processes
 
 def get_gmN_params(syst, data_syst):
@@ -275,7 +275,14 @@ def main():
 
     # Test that all the processes have at least one event - otherwise Combine will crash later
     existing_processes = check_exisiting_histograms(path_to_histograms_local, observables[0][0], region_config['processes'])
-    region_config['processes'] = {k:v for k,v in region_config['processes'].items() if k in existing_processes}
+    region_config_processes = {}
+    for proc_name, proc_yield_config in region_config['processes'].items():
+        if proc_name not in existing_processes:
+            continue
+        # Yield: prefer what is specified in the config, resort to the integral in the (local) rootfile
+        y = existing_processes[proc_name] if proc_yield_config < 0 else proc_yield_config
+        region_config_processes[proc_name] = y
+    region_config['processes'] = region_config_processes
 
     ### Observable section ###
     signals     = [proc for proc in region_config['processes'] if proc in config['signals']    ]
@@ -465,7 +472,7 @@ def main():
                             '{}_{}.txt'.format(args.year,# args.region,
                                                              args.config_file.split('/')[-1].split('.')[0] if args.config_file is not None else 'default'
                                                              ))
-    os.makedirs(os.path.dirname(cardname), exist_ok=True)  # make directories for card if they do not exist
+    makedirs_ok(os.path.dirname(cardname))  # make directories for card if they do not exist
     with open(cardname, 'w') as fout:
         if(missing_systematics): fout.write('### WARNING systematics missing for one or more samples ###\n\n')
         fout.write(template)
