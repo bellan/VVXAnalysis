@@ -127,7 +127,6 @@ def check_exisiting_histograms(fname, observable, processes):
     '''
     logging.debug('fname     : %s', fname     )
     logging.debug('observable: %s', observable)
-    logging.debug('processes : %s', processes )
     existing_processes = {}
     with TFileContext(fname) as tf:
         obs_folder = tf.Get(observable)
@@ -146,6 +145,7 @@ def check_exisiting_histograms(fname, observable, processes):
                     logging.warning('dropping %s, since it has norm %.3g for observable "%s" in %s', process, integral, observable, fname)
                 else:
                     existing_processes[process] = integral
+    logging.debug('existing_p: %s', existing_processes )
     return existing_processes
 
 def get_gmN_params(syst, data_syst):
@@ -348,7 +348,7 @@ def main():
     for sample, val in config['systematics'].get('norm_uncertainty', {}).items():
         if sample in data_syst:
             logging.info('setting norm uncertainty on %s (%s)', sample, val)
-            data_syst[sample][sample+'_norm'] = val
+            data_syst[sample]['CMS_'+sample+'_norm'] = val
             if  (sample == 'fake_leptons'):
                 logging.info('Using norm uncertainty instead of lepton fake rate uncertainty')
                 data_syst[sample]['CMS_fake_e'] = {'up':1, 'dn':1}
@@ -358,7 +358,7 @@ def main():
     for group_name, group_info in config['systematics'].get('norm_group_uncertainty', {}).items():
         logging.info('setting group norm uncertainty on %s (%s)', group_name, group_info['value'])
         for sample in group_info['samples']:
-            data_syst[sample][group_name+'_norm'] = group_info['value']
+            data_syst[sample]['CMS_'+group_name+'_norm'] = group_info['value']
 
     df_syst = fillDataFrame(data_syst, formatter=format_lnN).fillna(0)
     type_column = []
@@ -410,7 +410,7 @@ def main():
             logging.info('Treating %s as correlated among years', syst)
             suffix = ''
         else: raise RuntimeError('Systematic "%s": unspecified if correlated' %(syst))
-        return 'CMS_{}{}'.format(syst, suffix)
+        return '{}{}'.format(syst, suffix)
 
     df_syst = df_syst.rename(rename_syst)
 
