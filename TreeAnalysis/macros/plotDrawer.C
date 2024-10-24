@@ -22,6 +22,9 @@ using namespace std;
 //using namespace boost::assign;
 //using namespace colour;
 
+gStyle->SetOptStat(0);
+
+
 double draw_eff(TFile* myFile, std::string num, std::string den, std::string name){
   TH1F* hNum = (TH1F *)myFile->Get(num.c_str());
   TH1F* hDen = (TH1F *)myFile->Get(den.c_str());
@@ -55,18 +58,18 @@ void s_over_sqrtb_cut(TFile* myFile, std::string sig, std::string bkg, std::stri
     double nSig = hSig->Integral(hSig->FindBin(4),hSig->FindBin(cut));
     double nBkg = hBkg->Integral(hBkg->FindBin(4),hBkg->FindBin(cut));
     double sigma = nSig/sqrt(nBkg);
-    cout << "Cut Massa invariante = " << cut << " GeV;  Eventi segnale = " << nSig << ";   Eventi Background = " << nBkg << endl;
+    //cout << "Cut Massa invariante = " << cut << " GeV;  Eventi segnale = " << nSig << ";   Eventi Background = " << nBkg << endl;
     x.push_back(cut);
     y.push_back(sigma);
   }
   
-  TCanvas *c = new TCanvas(("c_"+name).c_str(), (name).c_str(), 200,10,1200,800);
+  TCanvas *c = new TCanvas(("c_"+name).c_str(), (name).c_str(), 200,10,600,400);
   c->SetFillColor(0);
   c->cd();
   TGraph *sensitivityCut = new TGraph(x.size(), x.data(), y.data());
-  sensitivityCut->SetTitle((name).c_str());
-  sensitivityCut->GetXaxis()->SetTitle("mI(e^{+}e^{-}) cut");
-  sensitivityCut->GetYaxis()->SetTitle("sensitivity");
+  sensitivityCut->SetTitle("signal Reco events");
+  sensitivityCut->GetXaxis()->SetTitle("m(e^{+}e^{-})");
+  sensitivityCut->GetYaxis()->SetTitle("Z");
   sensitivityCut->Draw();
   //c->SaveAs(("c_"+name+".jpg").c_str());
   
@@ -136,7 +139,6 @@ void plotDrawer() {
   
   
   // ------- Sensitivity function of the lepton pair invariant mass cut -------- //
-  
   // ------- W DECAY MODE 1: e+ e- mu nu -------- //
   s_over_sqrtb_cut(myFile, "signal_lep_pair_inv_mass_mode1", "background_lep_pair_inv_mass_mode1", "sensitivity_mIcut_mode1");
   cout << "" << endl;
@@ -146,9 +148,102 @@ void plotDrawer() {
   cout << "" << endl;
   
   
+  // ------------------------------- GENERAL PLOTS ----------------------- //
+  // -- Slide 3 & 6 -- //
+  // -- Invariant mass of the 4 leptons e+ e- mu nu -- //
+  TH1F* histoFourLepInvariantMass = (TH1F *)myFile->Get("GEN_four_leptons_invariant_mass_mode1");
+  TCanvas *c3 = new TCanvas("c3","GEN_four_leptons_invariant_mass_mode1",200,10,600,400);
+  c3->SetFillColor(0);
+  c3->cd();
+  histoFourLepInvariantMass->Draw("hist");
   
+  // -- Slide 7 -- //
+  // -- GEN invariant mass GEN transverse mass -- //
+  TH2F* genFourLepTransverseInvariantMass = (TH2F *)myFile->Get("GEN_four_lep_transv_mass_four_lep_inv_mass_mode1");
+  TCanvas *c7 = new TCanvas("c7","GEN_four_leptons_invariant_transverse_mass_mode1",200,10,600,400);
+  c7->SetFillColor(0);
+  c7->cd();
+  c7->SetLogz();
+  //genFourLepTransverseInvariantMass->SetLogz();
+  genFourLepTransverseInvariantMass->Draw("colz");
+  // -- Correlation Factor GEN invariant mass GEN transverse mass -- //
+  cout << " " << endl;
+  cout << "Correlation factor between GEN invariant & transverse mass (mode 1) = " << genFourLepTransverseInvariantMass->GetCorrelationFactor() << endl;
   
+  // -- Slide 8 -- //
+  // -- REC transverse mass (mode 1) -- //
+  TH1F* recFourLepTransverseMass_1 = (TH1F *)myFile->Get("REC_four_lep_transv_mass_mode1");
+  TCanvas *c8_1 = new TCanvas("c8_1","REC_four_lep_transv_mass_mode1",200,10,600,400);
+  c8_1->SetFillColor(0);
+  c8_1->cd();
+  recFourLepTransverseMass_1->Draw("hist");
+  // -- REC transverse mass (mode 2) -- //
+  TH1F* recFourLepTransverseMass_2 = (TH1F *)myFile->Get("REC_four_lep_transv_mass_mode2");
+  TCanvas *c8_2 = new TCanvas("c8_2","REC_four_lep_transv_mass_mode2",200,10,600,400);
+  c8_2->SetFillColor(0);
+  c8_2->cd();
+  recFourLepTransverseMass_2->Draw("hist");
   
+  /*
+  // -- Slide 9 -- //
+  // -- GEN invariant mass vs GEN el pair inv mass -- //  
+  TH1F* genFourLepElPairInvMass_1 = (TH1F *)myFile->Get("GEN_four_lep_el_pair_inv_mass_mode1");
+  TCanvas *c9_1 = new TCanvas("c9_1","GEN_four_lep_el_pair_inv_mass_mode1",200,10,600,400);
+  c9_1->SetFillColor(0);
+  c9_1->cd();
+  c9_1->SetLogz();
+  genFourLepElPairInvMass_1->Draw("colz");
+  // -- GEN el pair inv mass -- //
+  TH1F* genElPairInvMass_2 = (TH1F *)myFile->Get("GEN_el_pair_invariant_mass_mode1");
+  TCanvas *c9_2 = new TCanvas("c9_2","GEN_el_pair_invariant_mass_mode1",200,10,600,400);
+  c9_2->SetFillColor(0);
+  c9_2->cd();
+  genElPairInvMass_2->Draw("hist");
+  */
+  
+  // -- Slide 10 -- //
+  // -- REC transverse mass vs REC el pair inv mass -- //
+  TH1F* recFourLepTransvElPairInvMass_1 = (TH1F *)myFile->Get("REC_el_pair_inv_mass_REC_four_lep_transv_mass_mode1");
+  TCanvas *c10_1 = new TCanvas("c10_1","REC_el_pair_inv_mass_REC_four_lep_transv_mass_mode1",200,10,600,400);
+  c10_1->SetFillColor(0);
+  c10_1->cd();
+  c10_1->SetLogz();
+  //recFourLepTransvElPairInvMass_1->SetLogz();
+  recFourLepTransvElPairInvMass_1->Draw("colz");
+  // -- REC el pair inv mass -- //
+  TH1F* recElPairInvMass_2 = (TH1F *)myFile->Get("REC_el_pair_invariant_mass_mode1");
+  TCanvas *c10_2 = new TCanvas("c10_2","REC_el_pair_inv_mass_REC_four_lep_transv_mass_mode1",200,10,600,400);
+  c10_2->SetFillColor(0);
+  c10_2->cd();
+  recElPairInvMass_2->Draw("hist");
+  
+  // -- Slide 12 -- //
+  // -- signal REC el pair min inv mass -- //
+  TH1F* recSigElPairMinInvMass_1 = (TH1F *)myFile->Get("GEN_signal_REC_min_el_pair_inv_mass_mode3");
+  TCanvas *c12_1 = new TCanvas("c12_1","GEN_signal_REC_min_el_pair_inv_mass_mode3",200,10,600,400);
+  c12_1->SetFillColor(0);
+  c12_1->cd();
+  recSigElPairMinInvMass_1->Draw("hist");
+  // -- signal REC el pair min inv mass -- //
+  TH1F* recSigElPairMaxInvMass_2 = (TH1F *)myFile->Get("GEN_signal_REC_max_el_pair_inv_mass_mode3");
+  TCanvas *c12_2 = new TCanvas("c12_2","GEN_signal_REC_max_el_pair_inv_mass_mode3",200,10,600,400);
+  c12_2->SetFillColor(0);
+  c12_2->cd();
+  recSigElPairMaxInvMass_2->Draw("hist");
+  
+  // -- Slide 13 -- //
+  // -- background REC el pair min inv mass -- //
+  TH1F* recBkgElPairMinInvMass_1 = (TH1F *)myFile->Get("GEN_not_signal_REC_min_el_pair_inv_mass_mode3");
+  TCanvas *c13_1 = new TCanvas("c13_1","GEN_not_signal_REC_min_el_pair_inv_mass_mode3",200,10,600,400);
+  c13_1->SetFillColor(0);
+  c13_1->cd();
+  recBkgElPairMinInvMass_1->Draw("hist");
+  // -- background REC el pair min inv mass -- //
+  TH1F* recBkgElPairMaxInvMass_2 = (TH1F *)myFile->Get("GEN_not_signal_REC_max_el_pair_inv_mass_mode3");
+  TCanvas *c13_2 = new TCanvas("c13_2","GEN_not_signal_REC_max_el_pair_inv_mass_mode3",200,10,600,400);
+  c13_2->SetFillColor(0);
+  c13_2->cd();
+  recBkgElPairMaxInvMass_2->Draw("hist");
   
   
   

@@ -53,6 +53,7 @@ void WlllnuAnalyzer::analyze(){
   bool rec_cut_llmI = false;
   bool rec_cut_lpt = false;
   bool rec_cut_pt3l = false;
+  bool rec_cut_ue_mI = false;
   
   bool rec_cut_llmI_min = false;
   bool rec_cut_llmI_max = false;
@@ -76,14 +77,19 @@ void WlllnuAnalyzer::analyze(){
       
       // -- Invariant mass of the 4 gen leptons e+ e- mu nu -- // 
       double genFourLepInvMass = (genEl1.p4() + genEl2.p4() + genMu.p4() + genNu.p4()).M();
-      theHistograms->fill("GEN_four_leptons_invariant_mass_mode1", "Gen Leptons e+e-mu nu invariant mass (mode 1)", 150, 0, 300., genFourLepInvMass, theWeight);
+      theHistograms->fill("GEN_four_leptons_invariant_mass_mode1", "Gen events;m(3l#nu) [GeV];# events", 150, 0, 300., genFourLepInvMass, theWeight);
       
       // -- Transverse mass of the 4 gen leptons e+ e- mu nu -- //
       double genFourLepTransverseMass = (genEl1.p4() + genEl2.p4() + genMu.p4() + genNu.p4()).Mt();;
-      theHistograms->fill("GEN_four_leptons_transverse_mass_mode1", "Gen Four Leptons e+e-mu nu transverse mass (mode 1)", 100, 0., 500., genFourLepTransverseMass, theWeight);
+      theHistograms->fill("GEN_four_leptons_transverse_mass_mode1", "Gen events;m_{T}(3l#nu) [GeV];# events", 100, 0., 500., genFourLepTransverseMass, theWeight);
       
       // -- Transverse vs Invariant mass of the 4 gen leptons e+e-mu nu -- // 
-      theHistograms->fill("GEN_four_lep_transv_mass_four_lep_inv_mass_mode1", "Gen Four Lepton transverse vs invariant mass (mode 1); Inv mass; Transv mass", 100, 0., 500., 100, 0., 500., genFourLepInvMass, genFourLepTransverseMass, theWeight);
+      theHistograms->fill("GEN_four_lep_transv_mass_four_lep_inv_mass_mode1", "Gen events;m(3l#nu) [GeV];m_{T}(3l#nu) [GeV]", 100, 0., 500., 100, 0., 500., genFourLepInvMass, genFourLepTransverseMass, theWeight);
+      
+      // -- Invariant mass of the e+e- pair vs Transverse mass of 3lnu -- //
+      double genElPairInvMass = (genEl1.p4() + genEl2.p4()).M();
+      theHistograms->fill("GEN_el_pair_invariant_mass_mode1", "Gen events;m(e^{+}e^{-}) [GeV];# events", 150, 0, 300., genElPairInvMass, theWeight);
+      theHistograms->fill("GEN_four_lep_el_pair_inv_mass_mode1", "Gen events;m(e^{+}e^{-}) [GeV];m(3l#nu) [GeV]", 100, 0., 500., 100, 0., 500., genElPairInvMass, genFourLepInvMass, theWeight);
 
       // -- GEN LEVEL SIGNAL DEFINITION -- //
       gen_cut_m3lnu = isGen_mode1(genFourLepInvMass);
@@ -107,7 +113,7 @@ void WlllnuAnalyzer::analyze(){
 
       // -- Transverse mass of the 4 REC leptons e+e-mu nu -- //
       double recFourLepTransverseMass = (recEl1.p4() + recEl2.p4() + recMu.p4() + recNu.p4()).Mt();
-      theHistograms->fill("REC_four_lep_transv_mass_mode1", "Rec Four Leptons e+e-mu nu transverse mass (mode 1)", 250, 0., 500., recFourLepTransverseMass, theWeight);
+      theHistograms->fill("REC_four_lep_transv_mass_mode1", "Reco events;m_{T} [GeV];# events", 250, 0., 500., recFourLepTransverseMass, theWeight);
       
       // -- Transverse mass of the 4 REC leptons e+e-mu nu vs Transverse mass of the 4 GEN leptons e+e-mu nu -- //
       theHistograms->fill("REC_four_lep_transv_mass_GEN_four_lep_transv_mass_mode1", "Rec Four Leptons transverse mass vs Gen Four Leptons transverse mass e+e-mu nu (mode 1); Gen 4l;Rec 4l", 100, 0., 500., 100, 0., 500., genFourLepTransverseMass, recFourLepTransverseMass, theWeight);
@@ -117,8 +123,8 @@ void WlllnuAnalyzer::analyze(){
       
       // -- Invariant mass of the rec electron pair e+e- vs Transverse mass of the 4 rec leptons e+e-mu nu -- //
       double recElPairInvMass = (recEl1.p4() + recEl2.p4()).M();
-      theHistograms->fill("REC_el_pair_invariant_mass_mode1", "Rec Electron pair e+e- invariant mass (mode 1)", 75, 0, 150., recElPairInvMass, theWeight);
-      theHistograms->fill("REC_el_pair_inv_mass_REC_four_lep_transv_mass_mode1", "Rec Electron pair invariant mass vs Rec Four Leptons transverse mass (mode 1);4l mass;e+e- mass", 100, 0., 500., 60, 0., 300., recFourLepTransverseMass, recElPairInvMass, theWeight);
+      theHistograms->fill("REC_el_pair_invariant_mass_mode1", "Reco events;m(e^{+}e^{-}) [GeV];# events", 75, 0, 150., recElPairInvMass, theWeight);
+      theHistograms->fill("REC_el_pair_inv_mass_REC_four_lep_transv_mass_mode1", "Reco events;m(e^{+}e^{-}) [GeV];m_{T} [GeV]", 60, 0., 300., 100, 0., 500., recElPairInvMass, recFourLepTransverseMass, theWeight);
       
       // -- Transverse mass of the rec lepton pair mu nu vs Invariant mass of the 4 rec leptons e+e-mu nu -- //
       double recLepPairTransverseMass = (recMu.p4() + recNu.p4()).Mt();
@@ -147,6 +153,7 @@ void WlllnuAnalyzer::analyze(){
       rec_cut_llmI = isRec_mode11(recElPairInvMass);
       // rec_cut_lpt = isRec_mode111(recMu.pt());
       // rec_cut_pt3l = isRec_mode1111(recEl1.pt()+recEl2.pt()+recMu.pt());
+      rec_cut_ue_mI = (recEl1.p4()+recMu.p4()).M() && (recEl2.p4()+recMu.p4()).M();
       
     }
       
@@ -203,7 +210,7 @@ void WlllnuAnalyzer::analyze(){
                 
       // -- Transverse mass of the 4 REC leptons mu+mu-e nu -- //
       double recFourLepTransverseMass = (recMu1.p4() + recMu2.p4() + recEl.p4() + recNu.p4()).Mt();
-      theHistograms->fill("REC_four_lep_transv_mass_mode2", "Rec Four Leptons mu+mu-e nu transverse mass (mode 2)", 250, 0., 500., recFourLepTransverseMass, theWeight);
+      theHistograms->fill("REC_four_lep_transv_mass_mode2", "Reco events;m_{T} [GeV];# events", 250, 0., 500., recFourLepTransverseMass, theWeight);
         
       // -- Transverse mass of the 4 REC leptons mu+mu-e nu vs Transverse mass of the 4 GEN leptons mu+mu-e nu -- //
       theHistograms->fill("REC_four_lep_transv_mass_GEN_four_lep_transv_mass_mode2", "Rec Four Leptons transverse mass vs Gen Four Leptons transverse mass mu+mu-e nu (mode 2);Gen 3lnu;Rec 3lnu", 100, 0., 500., 100, 0., 500., genFourLepTransverseMass, recFourLepTransverseMass, theWeight);
@@ -244,6 +251,7 @@ void WlllnuAnalyzer::analyze(){
       rec_cut_llmI = isRec_mode22(recMuPairInvMass);
       // rec_cut_lpt = isRec_mode222(recEl.pt());
       // rec_cut_pt3l = isRec_mode2222(recMu1.pt()+recMu2.pt()+recEl.pt());
+      rec_cut_ue_mI = (recMu1.p4()+recEl.p4()).M() && (recMu2.p4()+recEl.p4()).M();
       
     }
         
@@ -316,13 +324,13 @@ void WlllnuAnalyzer::analyze(){
       Boson<Lepton> recZ0Max_ = maxInvMassRecChLepPair(recChElPairs);
       
       if(gen_cut_m3lnu){
-        theHistograms->fill("GEN_signal_REC_min_el_pair_inv_mass_mode3", "GEN signal RECO minimum electron pair inv mass", 150, 0., 300., recZ0Min_.p4().M(), theWeight);
-        theHistograms->fill("GEN_signal_REC_max_el_pair_inv_mass_mode3", "GEN signal RECO maximum electron pair inv mass", 150, 0., 300., recZ0Max_.p4().M(), theWeight);
+        theHistograms->fill("GEN_signal_REC_min_el_pair_inv_mass_mode3", "Signal Reco events;m_{min}(e^{+}e^{-});# events", 150, 0., 300., recZ0Min_.p4().M(), theWeight);
+        theHistograms->fill("GEN_signal_REC_max_el_pair_inv_mass_mode3", "Signal Reco events;m_{max}(e^{+}e^{-});# events", 150, 0., 300., recZ0Max_.p4().M(), theWeight);
         theHistograms->fill("GEN_signal_REC_max_min_el_pair_inv_mass_mode3", "GEN signal RECO max-min electron pair inv mass;MIN e+e- inv mass;MAX e+e- inv mass", 150, 0., 300., 150, 0., 300., recZ0Min_.p4().M(), recZ0Max_.p4().M(), theWeight);
       }
       else{
-        theHistograms->fill("GEN_not_signal_REC_min_el_pair_inv_mass_mode3", "Not GEN signal RECO minimum electron pair inv mass", 150, 0., 300., recZ0Min_.p4().M(), theWeight);
-        theHistograms->fill("GEN_not_signal_REC_max_el_pair_inv_mass_mode3", "Not GEN signal RECO maximum electron pair inv mass", 150, 0., 300., recZ0Max_.p4().M(), theWeight);
+        theHistograms->fill("GEN_not_signal_REC_min_el_pair_inv_mass_mode3", "Background Reco events;m_{min}(e^{+}e^{-});# events", 150, 0., 300., recZ0Min_.p4().M(), theWeight);
+        theHistograms->fill("GEN_not_signal_REC_max_el_pair_inv_mass_mode3", "Background Reco events;m_{max}(e^{+}e^{-});# events", 150, 0., 300., recZ0Max_.p4().M(), theWeight);
         theHistograms->fill("GEN_not_signal_REC_max_min_el_pair_inv_mass_mode3", "Not GEN signal RECO max-min electron pair inv mass;MIN e+e- inv mass;MAX e+e- inv mass", 150, 0., 300., 150, 0., 300., recZ0Min_.p4().M(), recZ0Max_.p4().M(), theWeight); 
       }
       
@@ -429,7 +437,7 @@ void WlllnuAnalyzer::analyze(){
   
   if(event_mode != 0){  
     bool gen_cut = genEvents && gen_cut_m3lnu;
-    bool rec_cut = (rec_cut_llmI) || (rec_cut_llmI_min && rec_cut_llmI_max); // (rec_cut_3l && rec_cut_lpt && rec_cut_pt3l && rec_cut_mT) || (rec_cut_3l)
+    bool rec_cut = (rec_cut_llmI && rec_cut_ue_mI) || (rec_cut_llmI_min && rec_cut_llmI_max); // (rec_cut_3l && rec_cut_lpt && rec_cut_pt3l && rec_cut_mT) || (rec_cut_3l)
     
     if(gen_cut){      
       theHistograms->fill(Form("GEN_signal_mode%d", event_mode), Form("Gen signal (mode %d)", event_mode), 3, 0., 3., 1, theWeight);
@@ -437,9 +445,11 @@ void WlllnuAnalyzer::analyze(){
 	// -- Signal Efficiency -- //       
 	theHistograms->fill(Form("GEN_REC_signal_mode%d", event_mode), Form("Rec Signal Efficiency (mode %d)", event_mode), 3, 0., 3., 1, theWeight);
 	if(event_mode == 1){
-	  theHistograms->fill("signal_lep_pair_inv_mass_mode1", "Rec Cut signal mI(e^{+}e^{-}) (mode 1)", 75, 0., 150., (electrons->at(0).p4()+electrons->at(1).p4()).M(), theWeight);
+	  theHistograms->fill("GEN_REC_signal_four_lep_transv_mass_mode1", "Rec Cut signal m_{T}(3lMET) (mode 1)", 150, 0., 300., (electrons->at(0).p4()+electrons->at(1).p4()+muons->at(0).p4()+met->p4()).M(), theWeight);
+	  theHistograms->fill("signal_lep_pair_inv_mass_mode1", "Rec Cut signal m_{I}(e^{+}e^{-}) (mode 1)", 75, 0., 150., (electrons->at(0).p4()+electrons->at(1).p4()).M(), theWeight);
         }
         else if(event_mode == 2){
+          theHistograms->fill("GEN_REC_signal_four_lep_transv_mass_mode2", "Rec Cut signal m_{T}(3lMET) (mode 2)", 150, 0., 300., (muons->at(0).p4()+muons->at(1).p4()+electrons->at(0).p4()+met->p4()).M(), theWeight);
           theHistograms->fill("signal_lep_pair_inv_mass_mode2", "Rec Cut signal mI(#mu^{+}#mu^{-}) (mode 2)", 75, 0., 150., (muons->at(0).p4()+muons->at(1).p4()).M(), theWeight);
         }
       }
@@ -560,14 +570,31 @@ void WlllnuAnalyzer::analyze(){
 	// -- Background Efficiency -- //            
 	theHistograms->fill(Form("not_GEN_REC_signal_mode%d", event_mode), Form("Background Efficiency (mode %d)", event_mode), 3, 0., 3., 1, theWeight);
 	if(event_mode == 1){
+	  theHistograms->fill("GEN_REC_background_four_lep_transv_mass_mode1", "Rec Cut background m_{T}(3lMET) (mode 1)", 150, 0., 300., (electrons->at(0).p4()+electrons->at(1).p4()+muons->at(0).p4()+met->p4()).M(), theWeight);
 	  theHistograms->fill("background_lep_pair_inv_mass_mode1", "Rec Cut background mI(e^{+}e^{-}) (mode 1)", 75, 0., 150., (electrons->at(0).p4()+electrons->at(1).p4()).M(), theWeight);
         }
         else if(event_mode == 2){
+          theHistograms->fill("GEN_REC_background_four_lep_transv_mass_mode2", "Rec Cut background m_{T}(3lMET) (mode 2)", 150, 0., 300., (muons->at(0).p4()+muons->at(1).p4()+electrons->at(0).p4()+met->p4()).M(), theWeight);
           theHistograms->fill("background_lep_pair_inv_mass_mode2", "Rec Cut background mI(#mu^{+}#mu^{-}) (mode 2)", 75, 0., 150., (muons->at(0).p4()+muons->at(1).p4()).M(), theWeight);
         }
       }  
     } 
-      
+    
+    // -- Rec Cut Events histograms -- //
+    if(rec_cut){
+      if(event_mode==1){
+        theHistograms->fill("REC_cut_four_lep_transv_mass_mode1", "Rec Cut events m_{T}(3lMET) (mode 1)", 150, 0., 300., (electrons->at(0).p4()+electrons->at(1).p4()+muons->at(0).p4()+met->p4()).M(), theWeight);
+      }
+      else if(event_mode==2){
+        theHistograms->fill("REC_cut_four_lep_transv_mass_mode2", "Rec Cut events m_{T}(3lMET) (mode 2)", 150, 0., 300., (muons->at(0).p4()+muons->at(1).p4()+electrons->at(0).p4()+met->p4()).M(), theWeight);
+      }
+    }
+    
+    
+    
+    
+    
+    
   }
   
  
