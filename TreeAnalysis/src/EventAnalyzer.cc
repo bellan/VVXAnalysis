@@ -286,7 +286,10 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
     theWeight = theSampleInfo.weight(*Z);
   
   else{
-    if(region_ != phys::MC){
+    if(region_ == phys::MC){
+      theWeight = theSampleInfo.weight();
+    }
+    else{
       std::cout<<"Do not know what weight to set. Aborting... "  << endl;
       std::abort();
     }
