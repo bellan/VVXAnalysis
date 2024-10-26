@@ -22,7 +22,7 @@ using namespace phys;
 bool IsARunForMVAFeat=true;
 bool verbose = false;
 bool signalSample = false;
-bool fiducial_run =true;
+bool fiducial_run =false;
 double etacut=4.7;
 double ptcut=30;
 double LumiSF=3.32;//7.035;//--> 2016post||3.32-->2017||2.29-->2018||8.16--> 2016post||7.035--> 2016pre
@@ -771,7 +771,7 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   //std::cout<<"1: passing photon selection "<<std::endl;
   //  std::cout<<"---------------------------------------------------------"<<std::endl;//
   if(selectedphotons.size()<1) {
-    list.f_nbOfCutsPassed = 0;  
+    //    list.f_nbOfCutsPassed = 0;  
     return;
   }
   
@@ -807,7 +807,10 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   //  std::cout<<"4: first vars filled "<<std::endl;
 
   
-  double dPhiL0G, dPhiL1G, dPhiLL, recoVMass, ptl0, ptl1, FWMT0, ptGamma, ptJ0, ptJ1, etaJ0, etaJ1, etaL0, etaL1, FWMT1, FWMT2, FWMT3, FWMT4, FWMT5, FWMT6, dPhiJ0G, dPhiJ1G, dPhiJJ, dPhiL0J0, dPhiL1J1, dPhiL0J1, dPhiL1J0;  
+  double dPhiL0G, dPhiL1G, dPhiLL, recoVMass, ptl0, ptl1, FWMT0, ptGamma, ptJ0, ptJ1, etaJ0, etaJ1, etaL0, etaL1, FWMT1, FWMT2, FWMT3, FWMT4, FWMT5, FWMT6, dPhiJ0G, dPhiJ1G, dPhiJJ, dPhiL0J0, dPhiL1J1, dPhiL0J1, dPhiL1J0, deltaR_L0Gamma, deltaR_L1Gamma, deltaR_LL, deltaR_JJ, deltaR_J0Gamma, deltaR_J1Gamma, dRLG;
+  int nbOfGoodJets=0;
+  int nbOfAllJets=0;
+  int phIDpassed=0;
 
   dPhiLL=fabs(physmath::deltaPhi(Z->daughter(0).phi(), Z->daughter(1).phi()));
   dPhiL0G=fabs(physmath::deltaPhi(Z->daughter(0).phi(), selectedphotons.at(0).phi() ));
@@ -841,7 +844,6 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   llG.push_back(Z->daughter(1).p4());
   llG.push_back(selectedphotons.at(0).p4());
 
-
     
   std::pair<phys::Photon, phys::Lepton> nearestChLeptToPhoton;
 
@@ -850,8 +852,24 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   else if (fabs(physmath::deltaR(Z->daughter(0), mostEnergeticPhoton))>fabs(physmath::deltaR(Z->daughter(1), mostEnergeticPhoton)) )
     nearestChLeptToPhoton={mostEnergeticPhoton, Z->daughter(1)};
 
-  //  deltaR_LGamma=fabs(physmath::deltaR(Z->daughter(0), selectedphotons.at(0)));
 
+  deltaR_L0Gamma=fabs(physmath::deltaR(Z->daughter(0), selectedphotons.at(0)));
+  deltaR_L1Gamma=fabs(physmath::deltaR(Z->daughter(1), selectedphotons.at(0)));
+  if(deltaR_L0Gamma<deltaR_L1Gamma) dRLG=deltaR_L0Gamma;
+  else dRLG=deltaR_L1Gamma;
+  deltaR_LL=fabs(physmath::deltaR(Z->daughter(0), Z->daughter(1) ) );
+  deltaR_JJ=fabs(physmath::deltaR(recoV.daughter(0), recoV.daughter(1) ) );
+  deltaR_J0Gamma=fabs(physmath::deltaR(recoV.daughter(0), selectedphotons.at(0)));
+  deltaR_J1Gamma=fabs(physmath::deltaR(recoV.daughter(1), selectedphotons.at(0)));
+  
+  foreach (const phys::Jet &jet, *jets)
+    {
+    
+      if (KinematicsOK(jet,ptcut,etacut) && fabs(physmath::deltaR(jet,selectedphotons[0]))> dR_jetRatio_cut) // KinematicsOK(jet)	
+	nbOfGoodJets++;
+    }
+  
+  nbOfAllJets=jets->size();
   //std::cout<<"dRLPH "<<deltaR_LGamma<<std::endl;
 
   //  if (deltaR_LGamma>10) deltaR_LGamma=11;
@@ -864,8 +882,21 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   FWMT4 =SumFWM(4, 't', lljjG);
   FWMT5 =SumFWM(5, 't', lljjG);
   FWMT6 =SumFWM(6, 't', lljjG);
+
+
+  foreach (auto p , *photons){
+    if (p.id() == 22 && KinematicsOK(p, 20, 2.4) && !p.hasPixelSeed() && p.passElectronVeto()){
+      if ( p.cutBasedIDMedium() && phIDpassed<1) phIDpassed=1;
+      if ( p.cutBasedIDTight()  && phIDpassed<2) phIDpassed=2; 
+    }
+  }
+
+  
+  //p.cutBasedIDLoose()
+
   //  std::cout<<"----------------------------------------"<<std::endl;    
   list.f_weight = theWeight;
+  
   //  std::cout<<"weight: "<<theWeight<<std::endl;//  theHistograms->fill("the Weight", "the Weight", 50, -5, 5, theWeight, 1);
 
   list.f_mll  = Z->mass();
@@ -925,15 +956,23 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   theHistograms->fill("dPhiL1J0", "dPhiL1J0", 150,  0, 3, dPhiL1J0, 1);
   theHistograms->fill("dPhiL1J1", "dPhiL1J1", 150,  0, 3, dPhiL1J1, 1);
   */
-  //  list.f_deltaR_LGamma = deltaR_LGamma;
+  list.f_deltaR_L0Gamma = deltaR_L0Gamma;
+  list.f_deltaR_L1Gamma = deltaR_L1Gamma;
+  list.f_deltaR_LL = deltaR_LL;
+  list.f_deltaR_J0Gamma = deltaR_J0Gamma;
+  list.f_deltaR_J1Gamma = deltaR_J1Gamma;
+  list.f_deltaR_JJ = deltaR_JJ;
+  list.f_mllPh = mllPh;
   list.f_recoVMass=recoVMass;
-  theHistograms->fill("recoVMass", "recoVMass", 35, 50, 120, recoVMass, 1);
+  //  theHistograms->fill("recoVMass", "recoVMass", 35, 50, 120, recoVMass, 1);
 
   list.f_FWMT0=FWMT0;
   list.f_FWMT1=FWMT1;
   list.f_FWMT2=FWMT2;
   list.f_FWMT3=FWMT3;
   list.f_FWMT4=FWMT4;
+  list.f_FWMT5=FWMT5;
+  list.f_FWMT6=FWMT6;
   /*
   theHistograms->fill("FWMT0", "FWMT0", 25, 0, 5, FWMT0, 1);
   theHistograms->fill("FWMT1", "FWMT1", 25, 0, 5, FWMT1, 1);
@@ -941,12 +980,50 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   theHistograms->fill("FWMT3", "FWMT3", 25, 0, 5, FWMT3, 1);
   theHistograms->fill("FWMT4", "FWMT4", 50, 0, 0.25, FWMT4, 1);
   */
-  //  list.f_FWMT5=FWMT5;
-  //  list.f_FWMT6=FWMT6;
 
   //  std::cout<<"5: full list filled "<<std::endl;
   //featureTree.Fill();
-  list.f_nbOfCutsPassed = nbOfCutsPassed;  
+  //  list.f_nbOfCutsPassed = nbOfCutsPassed;
+  list.f_nbOfGoodJets = nbOfGoodJets;
+  list.f_nbOfAllJets = nbOfAllJets;
+
+  list.f_phIDpassed = phIDpassed;//int
+  list.f_dRLG = dRLG;  
+  list.f_J0DeepProb_b=recoV.daughter(0).deepFlavour().probb;
+  list.f_J1DeepProb_b=recoV.daughter(1).deepFlavour().probb;
+  list.f_J0DeepProb_c=recoV.daughter(0).deepFlavour().probc;
+  list.f_J1DeepProb_c=recoV.daughter(1).deepFlavour().probc;
+  list.f_J0DeepProb_g=recoV.daughter(0).deepFlavour().probg;
+  list.f_J1DeepProb_g=recoV.daughter(1).deepFlavour().probg;
+  list.f_J0DeepProb_lepb=recoV.daughter(0).deepFlavour().problepb;
+  list.f_J1DeepProb_lepb=recoV.daughter(1).deepFlavour().problepb;
+  list.f_J0DeepProb_uds=recoV.daughter(0).deepFlavour().probuds;
+  list.f_J1DeepProb_uds=recoV.daughter(1).deepFlavour().probuds;
+  list.f_J0ChMult =recoV.daughter(0).chargedMultiplicity() ;//int
+  list.f_J1ChMult =recoV.daughter(1).chargedMultiplicity() ;//int
+  list.f_J0NeuMult=recoV.daughter(0).neutralMultiplicity() ;//int
+  list.f_J1NeuMult=recoV.daughter(1).neutralMultiplicity() ;//int
+  list.f_J0ChEmFrac =recoV.daughter(0).chargedEmEnergyFraction() ;//float
+  list.f_J1ChEmFrac =recoV.daughter(1).chargedEmEnergyFraction() ;//float
+  list.f_J0NeuEmFrac=recoV.daughter(0).neutralEmEnergyFraction() ;//float
+  list.f_J1NeuEmFrac=recoV.daughter(1).neutralEmEnergyFraction() ;//float
+  list.f_J0MuFrac=recoV.daughter(0).muonEnergyFraction() ;//float
+  list.f_J1MuFrac=recoV.daughter(1).muonEnergyFraction() ;//float
+  list.f_J0EleFrac=recoV.daughter(0).electronEnergyFraction() ;//float
+  list.f_J1EleFrac=recoV.daughter(1).electronEnergyFraction() ;//float
+  list.f_J0PhFrac=recoV.daughter(0).photonEnergyFraction() ;//float
+  list.f_J1PhFrac=recoV.daughter(1).photonEnergyFraction() ;//float
+  list.f_J0Girth=recoV.daughter(0).girth() ;
+  list.f_J1Girth=recoV.daughter(1).girth() ;
+  list.f_J0GirthCh=recoV.daughter(0).girth_charged() ;
+  list.f_J1GirthCh=recoV.daughter(1).girth_charged() ;
+  list.f_J0Area=recoV.daughter(0).jetArea()        ;
+  list.f_J1Area=recoV.daughter(1).jetArea()        ;
+  list.f_J0Loose=recoV.daughter(0).passLooseJetID()        ;//bool
+  list.f_J1Loose=recoV.daughter(1).passLooseJetID()        ;//bool
+  list.f_J0QGL=recoV.daughter(0).qgLikelihood()   ;
+  list.f_J1QGL=recoV.daughter(1).qgLikelihood()   ;
+
   passingPresel=true;
 }
 
@@ -1139,6 +1216,7 @@ void VZGAnalyzer::PhotonSelection(std::vector<phys::Photon> *phot)
     // if (ph.hasPixelSeed() || !ph.passElectronVeto())
     //        continue;
 
+    //    if (p.id() == 22 && KinematicsOK(p, 20, 2.4) && !p.hasPixelSeed() && p.passElectronVeto() && p.cutBasedID(Photon::IdWp::VeryLoose) )
     if (p.id() == 22 && KinematicsOK(p, 20, 2.4) && !p.hasPixelSeed() && p.passElectronVeto() && p.cutBasedIDLoose())
     {
         phot->push_back(p);

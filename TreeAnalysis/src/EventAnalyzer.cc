@@ -347,7 +347,7 @@ void EventAnalyzer::InitOut(FeatList &list, TTree *tree){
   tree->Branch("dPhiL0G",  &list.f_dPhiL0G, "dPhiL0G/D");
   tree->Branch("dPhiL1G",  &list.f_dPhiL1G, "dPhiL1G/D");
   tree->Branch("dPhiLL",  &list.f_dPhiLL, "dPhiLL/D");
-  //  tree->Branch("deltaR_LGamma",  &list.f_deltaR_LGamma, "deltaR_LGamma/D");
+
   tree->Branch("recoVMass",  &list.f_recoVMass, "recoVMass/D");
 
   tree->Branch("dPhiJ0G",  &list.f_dPhiJ0G, "dPhiJ0G/D");
@@ -364,9 +364,60 @@ void EventAnalyzer::InitOut(FeatList &list, TTree *tree){
   tree->Branch("FWMT2",  &list.f_FWMT2, "FWMT2/D");
   tree->Branch("FWMT3",  &list.f_FWMT3, "FWMT3/D");
   tree->Branch("FWMT4",  &list.f_FWMT4, "FWMT4/D");
-  tree->Branch("nbOfCutsPassed",  &list.f_nbOfCutsPassed, "nbOfCutsPassed/I");
-  //  tree->Branch("FWMT5",  &list.f_FWMT5, "FWMT5/D");
-  //  tree->Branch("FWMT6",  &list.f_FWMT6, "FWMT6/D");
+  tree->Branch("mllPh",  &list.f_mllPh, "mllPh/D");
+
+  tree->Branch("deltaR_L0Gamma",  &list.f_deltaR_L0Gamma, "deltaR_L0Gamma/D");
+  tree->Branch("deltaR_L1Gamma",  &list.f_deltaR_L1Gamma, "deltaR_L1Gamma/D");
+  tree->Branch("deltaR_J0Gamma",  &list.f_deltaR_J0Gamma, "deltaR_J0Gamma/D");
+  tree->Branch("deltaR_J1Gamma",  &list.f_deltaR_J1Gamma, "deltaR_J1Gamma/D");
+  tree->Branch("deltaR_LL",  &list.f_deltaR_LL, "deltaR_LL/D");
+  tree->Branch("deltaR_JJ",  &list.f_deltaR_JJ, "deltaR_JJ/D");
+
+  tree->Branch("nbOfAllJets",  &list.f_nbOfAllJets, "nbOfAllJets/I");
+  tree->Branch("nbOfGoodJets",  &list.f_nbOfGoodJets, "nbOfGoodJets/I");
+  tree->Branch("FWMT5",  &list.f_FWMT5, "FWMT5/D");
+  tree->Branch("FWMT6",  &list.f_FWMT6, "FWMT6/D");
+
+  tree->Branch("phIDpassed",  &list.f_phIDpassed, "phIDpassed/I");
+  tree->Branch("dRLG",  &list.f_dRLG, "dRLG/D");
+  tree->Branch("J0DeepProb_b",  &list.f_J0DeepProb_b, "J0DeepProb_b/D");
+  tree->Branch("J1DeepProb_b",  &list.f_J1DeepProb_b, "J1DeepProb_b/D");
+  tree->Branch("J0DeepProb_c",  &list.f_J0DeepProb_c, "J0DeepProb_c/D");
+  tree->Branch("J1DeepProb_c",  &list.f_J1DeepProb_c, "J1DeepProb_c/D");
+  tree->Branch("J0DeepProb_g",  &list.f_J0DeepProb_g, "J0DeepProb_g/D");
+  tree->Branch("J1DeepProb_g",  &list.f_J1DeepProb_g, "J1DeepProb_g/D");
+  tree->Branch("J0DeepProb_lepb",  &list.f_J0DeepProb_lepb, "J0DeepProb_lepb/D");
+  tree->Branch("J1DeepProb_lepb",  &list.f_J1DeepProb_lepb, "J1DeepProb_lepb/D");
+  tree->Branch("J0DeepProb_uds",  &list.f_J0DeepProb_uds, "J0DeepProb_uds/D");
+  tree->Branch("J1DeepProb_uds",  &list.f_J1DeepProb_uds, "J1DeepProb_uds/D");
+
+  tree->Branch("J0ChMult",  &list.f_J0ChMult, "J0ChMult/I");
+  tree->Branch("J1ChMult",  &list.f_J1ChMult, "J1ChMult/I");
+  tree->Branch("J0NeuMult",  &list.f_J0NeuMult, "J0NeuMult/I");
+  tree->Branch("J1NeuMult",  &list.f_J1NeuMult, "J1NeuMult/I");
+
+  tree->Branch("J0ChEmFrac",  &list.f_J0ChEmFrac, "J0ChEmFrac/F");
+  tree->Branch("J1ChEmFrac",  &list.f_J1ChEmFrac, "J1ChEmFrac/F");
+  tree->Branch("J0NeuEmFrac",  &list.f_J0NeuEmFrac, "J0NeuEmFrac/F");
+  tree->Branch("J1NeuEmFrac",  &list.f_J1NeuEmFrac, "J1NeuEmFrac/F");
+
+  tree->Branch("J0MuFrac",  &list.f_J0MuFrac, "J0MuFrac/F");
+  tree->Branch("J1MuFrac",  &list.f_J1MuFrac, "J1MuFrac/F");
+  tree->Branch("J0EleFrac",  &list.f_J0EleFrac, "J0EleFrac/F");
+  tree->Branch("J1EleFrac",  &list.f_J1EleFrac, "J1EleFrac/F");
+  tree->Branch("J0PhFrac",  &list.f_J0PhFrac, "J0PhFrac/F");
+  tree->Branch("J1PhFrac",  &list.f_J1PhFrac, "J1PhFrac/F");
+
+  tree->Branch("J0Girth",  &list.f_J0Girth, "J0Girth/D");
+  tree->Branch("J1Girth",  &list.f_J1Girth, "J1Girth/D");
+  tree->Branch("J0GirthCh",  &list.f_J0GirthCh, "J0GirthCh/D");
+  tree->Branch("J1GirthCh",  &list.f_J1GirthCh, "J1GirthCh/D");
+  tree->Branch("J0Area",  &list.f_J0Area, "J0Area/D");
+  tree->Branch("J1Area",  &list.f_J1Area, "J1Area/D");
+  tree->Branch("J0Loose",  &list.f_J0Loose, "J0Loose/B");
+  tree->Branch("J1Loose",  &list.f_J1Loose, "J1Loose/B");
+  tree->Branch("J0QGL",  &list.f_J0QGL, "J0QGL/D");
+  tree->Branch("J1QGL",  &list.f_J1QGL, "J1QGL/D");
  
 
 }
