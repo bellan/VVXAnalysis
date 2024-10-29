@@ -80,11 +80,11 @@ def getVarInfo_VVGamma(region):
             'ZZ_mass_failPh'      : {'title':'m_{4l}, #gamma_{VL and !Loose} [GeV]'            , 'rebin':1, 'split_prompt_ph':True, 'unblind':True },
             'ZZ_mass_loosePh'     : {'title':'m_{4l}, #gamma_{Loose} [GeV]'                    , 'rebin':1, 'split_prompt_ph':True, 'unblind':False}, # Tight = cutBasedIDLoose()
 
-            'ZZG_mass_kinPh'      : {'title':'m_{4l#gamma}, #gamma_{kin [GeV]'                 , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':False},
-            'ZZG_mass_kinVetoL'   : {'title':'m_{4l#gamma}, #gamma_{kin and !Loose [GeV]'      , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':True },
-            'ZZG_mass_veryLoosePh': {'title':'m_{4l#gamma}, #gamma_{VeryLoose [GeV]'           , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':False},
-            'ZZG_mass_failPh'     : {'title':'m_{4l#gamma}, #gamma_{VL and !Loose [GeV]'       , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':True },
-            'ZZG_mass_loosePh'    : {'title':'m_{4l#gamma}, #gamma_{Loose [GeV]'               , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':False, 'fake_photons': 'ZZG_mass_reweightPh'}
+            'ZZG_mass_kinPh'      : {'title':'m_{4l#gamma}, #gamma_{kin} [GeV]'                , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':False},
+            'ZZG_mass_kinVetoL'   : {'title':'m_{4l#gamma}, #gamma_{kin and !Loose} [GeV]'     , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':True },
+            'ZZG_mass_veryLoosePh': {'title':'m_{4l#gamma}, #gamma_{VeryLoose} [GeV]'          , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':False},
+            'ZZG_mass_failPh'     : {'title':'m_{4l#gamma}, #gamma_{VL and !Loose} [GeV]'      , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':True },
+            'ZZG_mass_loosePh'    : {'title':'m_{4l#gamma}, #gamma_{Loose} [GeV]'              , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':False, 'fake_photons': 'ZZG_mass_reweightPh'}
             ,
             'SYS_mZZGwp90_central': {'title':'m_{4l#gamma}, #gamma_{wp90} [GeV]' , 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZZGwp90-%s_central', 'unblind':False},
             'SYS_mZZGwp80_central': {'title':'m_{4l#gamma}, #gamma_{wp80} [GeV]' , 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZZGwp80-%s_central', 'unblind':False},
