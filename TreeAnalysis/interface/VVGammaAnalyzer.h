@@ -250,6 +250,7 @@ private:
 
   void fillCutsNm1(const std::string& name, const std::string& title, const std::vector<std::pair<std::string, bool>>& cuts, const double& weight);
   void fillCutFlow(const std::string& name, const std::string& title, const std::vector<std::pair<std::string, bool>>& cuts, const double& weight);
+  void fillCuts   (const std::string& name, const std::string& title, const std::vector<std::pair<std::string, bool>>& cuts, const double& weight);
 
   double getPhotonFR_VLtoL       (const phys::Photon& ph) const;
   double getPhotonFRUnc_VLtoL    (const phys::Photon& ph) const;
@@ -312,6 +313,7 @@ private:
 
   std::pair<double, double> getZllAndZllgMasses(const phys::Photon&);
   std::pair<double, double> getZllAndZllgMasses(const std::vector<phys::Photon>&);
+  std::pair<double, double> getZllAndZllgMasses_minimum(const std::vector<phys::Photon>&);
 		
   static const std::vector<double> pt_bins;
   static const std::vector<double> pt_bins_LFR;

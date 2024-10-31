@@ -503,7 +503,7 @@ Int_t VVGammaAnalyzer::cut() {
     else{
       if(phVect_CUT.size() > 0){
 	double Zll_mass(0.), ZllG_mass(0.);
-	std::tie(Zll_mass, ZllG_mass) = getZllAndZllgMasses(phVect_CUT);
+	std::tie(Zll_mass, ZllG_mass) = getZllAndZllgMasses_minimum(phVect_CUT);
 
 	if     (FSR_CUT_TYPE == FSRcutType::MLLG_MIN)
 	  // Cut 4L.FSR.mllg_min: Require that m_{llg} is greater than threshold
@@ -2977,6 +2977,29 @@ std::pair<double, double> VVGammaAnalyzer::getZllAndZllgMasses(const std::vector
   }
   else
     return std::make_pair(-2., -2.);
+}
+
+
+std::pair<double, double> VVGammaAnalyzer::getZllAndZllgMasses_minimum(const std::vector<phys::Photon>& phVect){
+  /*
+    Return the minimum m_ZG and the m_Z of the corresponding boson
+   */
+  if(phVect.size() == 0)
+    return std::make_pair(-1., -1.);
+
+  const Boson<Lepton> *pZmin = nullptr;
+  double min_llG_mass(0.);
+
+  for(auto ph : phVect){
+    for(auto pZ: {ZZ->firstPtr(), ZZ->secondPtr()}){
+      double llG_mass = (pZ->p4()+ph.p4()).M();
+      if(min_llG_mass < 0.1 || llG_mass < min_llG_mass){
+	min_llG_mass = llG_mass;
+	pZmin = pZ;
+      }
+    }
+  }
+  return std::make_pair(pZmin->mass(), min_llG_mass);
 }
 
 
