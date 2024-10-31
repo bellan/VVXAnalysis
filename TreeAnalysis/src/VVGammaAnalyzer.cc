@@ -481,7 +481,7 @@ Int_t VVGammaAnalyzer::cut() {
 
 
   // ----- BASELINE SELECTION -----
-  vector<Photon>& phVect_CUT_mllimprov = *kinPhotons_["central"];  // Photon vector used for the "Improves mll" CUT
+  vector<Photon>& phVect_CUT = *kinPhotons_["central"];  // Photon vector used for the cuts
   bool passFSRcut = false;
 
   // -----  4L   -----
@@ -498,12 +498,12 @@ Int_t VVGammaAnalyzer::cut() {
     // Cut 4L.FSR
     if(FSR_CUT_TYPE == FSRcutType::MLL_MIN){
       // Cut 4L.FSR.mll_min: Require that m_{ll} is greater than threshold
-      passFSRcut = ZZ->first().mass() > CUT_MLL_MIN && ZZ->second().mass() > CUT_MLL_MIN;
+      passFSRcut = std::min(ZZ->first().mass(), ZZ->second().mass()) > CUT_MLL_MIN;
     }
     else{
-      if(phVect_CUT_mllimprov.size() > 0){
+      if(phVect_CUT.size() > 0){
 	double Zll_mass(0.), ZllG_mass(0.);
-	std::tie(Zll_mass, ZllG_mass) = getZllAndZllgMasses(phVect_CUT_mllimprov);
+	std::tie(Zll_mass, ZllG_mass) = getZllAndZllgMasses(phVect_CUT);
 
 	if     (FSR_CUT_TYPE == FSRcutType::MLLG_MIN)
 	  // Cut 4L.FSR.mllg_min: Require that m_{llg} is greater than threshold
@@ -562,7 +562,7 @@ Int_t VVGammaAnalyzer::cut() {
       passFSRcut = ZW->first().mass() > CUT_MLL_MIN;
     }
     else{
-      auto closestPhoLep = closestPairDeltaR(phVect_CUT_mllimprov, *leptons_);
+      auto closestPhoLep = closestPairDeltaR(phVect_CUT, *leptons_);
       auto best_lep_index = std::distance(leptons_->cbegin(), closestPhoLep.second);
       if(best_lep_index <= 2){  // The lepton belongs to the Z
 	double Zll_mass  = ZW->first().mass();
@@ -604,11 +604,11 @@ Int_t VVGammaAnalyzer::cut() {
       passFSRcut = Z->mass() > CUT_MLL_MIN;
     }
     else{
-      if(phVect_CUT_mllimprov.size() > 0){
+      if(phVect_CUT.size() > 0){
 	const Lepton& l0 = Z->daughter(0);
 	const Lepton& l1 = Z->daughter(1);
-	auto ph0 = closestDeltaR(l0, phVect_CUT_mllimprov);
-	auto ph1 = closestDeltaR(l1, phVect_CUT_mllimprov);
+	auto ph0 = closestDeltaR(l0, phVect_CUT);
+	auto ph1 = closestDeltaR(l1, phVect_CUT);
 	auto thePh = deltaR(l0, *ph0) < deltaR(l1, *ph1) ? ph0 : ph1;
 	double Zll_mass = Z->mass();
 	double ZllG_mass = (Z->p4() + thePh->p4()).M();
@@ -640,11 +640,11 @@ Int_t VVGammaAnalyzer::cut() {
       passFSRcut = ZL->first.mass() > CUT_MLL_MIN;
     }
     else{
-      if(phVect_CUT_mllimprov.size() > 0){
+      if(phVect_CUT.size() > 0){
 	const Lepton& l0 = ZL->first.daughter(0);
 	const Lepton& l1 = ZL->first.daughter(1);
-	auto ph0 = closestDeltaR(l0, phVect_CUT_mllimprov);
-	auto ph1 = closestDeltaR(l1, phVect_CUT_mllimprov);
+	auto ph0 = closestDeltaR(l0, phVect_CUT);
+	auto ph1 = closestDeltaR(l1, phVect_CUT);
 	auto thePh = deltaR(l0, *ph0) < deltaR(l1, *ph1) ? ph0 : ph1;
 	double Zll_mass = ZL->first.mass();
 	double ZllG_mass = (ZL->first.p4() + thePh->p4()).M();
