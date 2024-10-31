@@ -36,7 +36,7 @@ using namespace physmath;
 namespace {
   // Anonymous namespace that holds constants specific to this analyzer
   enum class FSRcutType { MLL_MIN, MLL_IMPROVES, MLLG_MIN };
-  constexpr FSRcutType FSR_CUT_TYPE = FSRcutType::MLL_MIN;
+  constexpr FSRcutType FSR_CUT_TYPE = FSRcutType::MLLG_MIN;
   constexpr float CUT_MLL_MIN = 81.;
   constexpr float CUT_PTG_MIN = 20.;
   constexpr float CUT_G_AETA_MAX     = 2.4;
