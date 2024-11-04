@@ -201,25 +201,7 @@ def get_shape_affected(syst, data_syst):
     logging.debug('syst: %-12s - affected(%d): %s', syst, len(samples_affected), samples_affected)
     return samples_affected
 
-def main():
-    parser = ArgumentParser()
-    parser.add_argument('config_file', help='Configuration file')
-    parser.add_argument('-t', '--template', help='Template for the datacard')
-    parser.add_argument('-v', '--verbose'  , dest='verbosity', action='count', default=1, help='Increase verbosity')
-    parser.add_argument(      '--verbosity', type=int, help='Set verbosity')
-    parser.add_argument('-q', '--quiet'    , dest='verbosity', action='store_const', const=0, help='Set verbose to minimum')
-    parser.add_argument('-r', '--region', default=None)
-    parser.add_argument('-y', '--year'  , default='2018', choices=lumi_dict.keys())
-    parser.add_argument('-c', '--config', type=json.loads, help='String convertible to dictionary used to override the config', default={})
-    parser.add_argument(      '--unblind', action='store_true')
-    parser.add_argument(      '--path' , default=None                                    , help='Path to the histograms (default: %(default)s)')
-    parser.add_argument('-i', '--input', default='histogramsForCombine', dest='localpath', help='Path to the histograms for local checks (default: %(default)s)')
-    parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
-
-    args = parser.parse_args()
-    loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
-    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
-
+def main(args):
     logging.info('writing card for %(year)s, %(region)s', vars(args))
 
     if(args.path is None):
@@ -482,5 +464,26 @@ def main():
         return 2
     return 0
 
+def parse_args():
+    parser = ArgumentParser()
+    parser.add_argument('config_file', help='Configuration file')
+    parser.add_argument('-t', '--template', help='Template for the datacard')
+    parser.add_argument('-v', '--verbose'  , dest='verbosity', action='count', default=1, help='Increase verbosity')
+    parser.add_argument(      '--verbosity', type=int, help='Set verbosity')
+    parser.add_argument('-q', '--quiet'    , dest='verbosity', action='store_const', const=0, help='Set verbose to minimum')
+    parser.add_argument('-r', '--region', default=None)
+    parser.add_argument('-y', '--year'  , default='2018', choices=lumi_dict.keys())
+    parser.add_argument('-c', '--config', type=json.loads, help='String convertible to dictionary used to override the config', default={})
+    parser.add_argument(      '--unblind', action='store_true')
+    parser.add_argument(      '--path' , default=None                                    , help='Path to the histograms (default: %(default)s)')
+    parser.add_argument('-i', '--input', default='histogramsForCombine', dest='localpath', help='Path to the histograms for local checks (default: %(default)s)')
+    parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
+
+    return parser.parse_args()
+
 if __name__ == '__main__':
-    exit(main())
+    args = parse_args()
+    loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
+    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
+
+    exit(main(args))

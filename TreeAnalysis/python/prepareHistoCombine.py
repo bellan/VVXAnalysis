@@ -68,33 +68,7 @@ def get_TH1keys_from_file(tfhandle):
              for key in tfhandle.GetListOfKeys()
              if ROOT.TClass(key.GetClassName()).InheritsFrom("TH1") and isVarSystematic(key.GetName()) ]
 
-def main():
-    # The configuration
-    regions = ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L',
-               'SR3P', 'CR110'  , 'CR101'  , 'CR011'  , 'CR100'  , 'CR001'  , 'CR010', 'CR000', 'SR3P_1L', 'SR3P_1P', 'CR3P_1F', 'CRLFR', 'CR3L',
-               'SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F'
-               # 'SR_HZZ', 'CR2P2F_HZZ', 'CR3P1F_HZZ', 'CR_HZZ', 'MC_HZZ',
-               # 'MC'
-    ]
-
-    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-y', '--year'     , default='2018', choices=lumi_dict.keys())
-    parser.add_argument(      '--blind'    , action='store_true', help='Do not write data_obs in output files')
-    parser.add_argument('-i', '--inputdir' , default='results', help='Top level directory where the results of analyzers are stored')
-    parser.add_argument('-o', '--outputdir', default='histogramsForCombine', help='Output location')
-    parser.add_argument('-A', '--analyzer' , default='VVGammaAnalyzer', help='Name of the analyzer, used to compose the path of the input files')
-    parser.add_argument('-r', '--regions'  , default=['SR4P'], nargs='+', choices=regions, metavar='REGION', help=' ')
-    parser.add_argument(      '--remake-fake-photons', action='store_true', help='Force to recreate the fake_photons.root file from data.root')
-    parser.add_argument('-v', '--verbose'  , dest='verbosity', action='count', default=1, help='Increase the verbosity level')
-    parser.add_argument('-q', '--quiet'    , dest='verbosity', action='store_const', const=0)
-    parser.add_argument(      '--mcset'    , default='pow', choices=['mad', 'pow'], help='Monte Carlo Set, pow for Powheg, mad for amcatnlo (default: %(default)s)')
-    parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
-    args = parser.parse_args()
-    args.unblind = not args.blind
-
-    loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
-    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
-
+def main(args):
     # Setup
     ok_retrieved  = []
     not_retrieved = []
@@ -248,5 +222,36 @@ def main():
     logging.info('Retrieved and wrote {:d} histograms. {:d} were missing. Total: {:d}'.format(len(ok_retrieved), len(not_retrieved), len(ok_retrieved)+len(not_retrieved)))
     return 0
 
+
+def parse_args():
+    available_regions = ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L',
+               'SR3P', 'CR110'  , 'CR101'  , 'CR011'  , 'CR100'  , 'CR001'  , 'CR010', 'CR000', 'SR3P_1L', 'SR3P_1P', 'CR3P_1F', 'CRLFR', 'CR3L',
+               'SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F'
+               # 'SR_HZZ', 'CR2P2F_HZZ', 'CR3P1F_HZZ', 'CR_HZZ', 'MC_HZZ',
+               # 'MC'
+    ]
+
+    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-y', '--year'     , default='2018', choices=lumi_dict.keys())
+    parser.add_argument(      '--blind'    , action='store_true', help='Do not write data_obs in output files')
+    parser.add_argument('-i', '--inputdir' , default='results', help='Top level directory where the results of analyzers are stored')
+    parser.add_argument('-o', '--outputdir', default='histogramsForCombine', help='Output location')
+    parser.add_argument('-A', '--analyzer' , default='VVGammaAnalyzer', help='Name of the analyzer, used to compose the path of the input files')
+    parser.add_argument('-r', '--regions'  , default=['SR4P'], nargs='+', choices=available_regions, metavar='REGION', help=' ')
+    parser.add_argument(      '--remake-fake-photons', action='store_true', help='Force to recreate the fake_photons.root file from data.root')
+    parser.add_argument('-v', '--verbose'  , dest='verbosity', action='count', default=1, help='Increase the verbosity level')
+    parser.add_argument('-q', '--quiet'    , dest='verbosity', action='store_const', const=0)
+    parser.add_argument(      '--mcset'    , default='pow', choices=['mad', 'pow'], help='Monte Carlo Set, pow for Powheg, mad for amcatnlo (default: %(default)s)')
+    parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
+    args = parser.parse_args()
+    args.unblind = not args.blind
+
+    return args
+
+
 if __name__ == '__main__':
-    exit(main())
+    args = parse_args()
+    loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
+    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
+
+    exit(main(args))
