@@ -208,20 +208,7 @@ def main(args):
         # This is a temporary hack until I understand why combineCards.py mishandles relative paths
         args.path = os.path.join('/afs/cern.ch/work/a/amecca/Analysis/Combine/CMSSW_11_3_4/src/VVXAnalysis/Combine/test', args.localpath)
 
-    config = copy.deepcopy(__builtin_config__)
-
-    # Update from config file
-    try:
-        with open(args.config_file) as f:
-            fconfig = json.load(f, object_hook=byteify)
-    except json.decoder.JSONDecodeError as e:
-        print('ERROR: Caught', type(e), 'while reading', args.config_file)
-        print(e)
-        return 1
-    config.update(fconfig)
-    # Update 'systematics' with more granularity
-    config['systematics'] = copy.deepcopy(__builtin_config__['systematics'])
-    config['systematics'].update(fconfig.get('systematics', {}))
+    config = get_strategy_config(args.config_file)
 
     # Update from command line
     config.update(args.config)
@@ -480,6 +467,24 @@ def parse_args():
     parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
 
     return parser.parse_args()
+
+def get_strategy_config(config_file):
+    '''
+    Read a config file (JSON) and use it to update the builtin default configuration
+    '''
+    config = copy.deepcopy(__builtin_config__)
+
+    # Update from config file
+    with open(config_file) as f:
+        fconfig = json.load(f, object_hook=byteify)
+    config.update(fconfig)
+
+    # Update 'systematics' with more granularity
+    config['systematics'] = copy.deepcopy(__builtin_config__['systematics'])
+    config['systematics'].update(fconfig.get('systematics', {}))
+
+    return config
+
 
 if __name__ == '__main__':
     args = parse_args()
