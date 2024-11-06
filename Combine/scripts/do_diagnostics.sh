@@ -47,7 +47,7 @@ fi
 
 mkdir -p $cardname && cd $cardname || exit 1
 
-combine -M FitDiagnostics ${fit_options} --saveNormalizations --saveWithUncertainties "$card" || print_error "FitDiagnostics"
+combine -M FitDiagnostics ${fit_options} --saveNormalizations --saveWithUncertainties --plots "$card" || print_error "FitDiagnostics"
 
 python ${combine_testdir}/diffNuisances.py --all fitDiagnosticsTest.root -f latex > diffNuisances_$cardname.tex || print_error "diffNuisances"
 python ${combine_testdir}/mlfitNormsToText.py -u fitDiagnosticsTest.root > fitNorms_$cardname.txt || print_error "mlfitNormsToText"
@@ -57,3 +57,7 @@ cut -c 42- fitNorms_$cardname.txt \
     -e 's/ +& *$/ \\\\/g' \
     -e 's:\+/-:\\pm:g' \
 > fitNorms_$cardname.tex || print_error "fitNorms post-processing"
+
+# Make a nice pdf with the correlation matrix
+plotCorrMatrix.py fitDiagnosticsTest.root          && { mv covariance_fit_s.png covariance_fit_s_$cardname.png; mv covariance_fit_s.pdf covariance_fit_s_$cardname.pdf; }
+plotCorrMatrix.py --b-only fitDiagnosticsTest.root && { mv covariance_fit_b.png covariance_fit_b_$cardname.png; mv covariance_fit_b.pdf covariance_fit_b_$cardname.pdf; }
