@@ -112,12 +112,6 @@ def print_yield(data, unblind=False, float_format='%.4g', **kwargs):
     #         if bin_name not in bin_names:
     #             bin_names.append(bin_name)
 
-    # Compute total yield
-    # total = {bin_name: [0, 0] for bin_name in bin_names}
-    # for proc_name, proc_data in data.items():
-    #     for bin_name, proc_bin_data in proc_data.items():
-    #         total[bin_name] += proc_bin_data
-
     # Remove data_obs
     series_data = data.pop('data_obs', None)
 
@@ -128,6 +122,22 @@ def print_yield(data, unblind=False, float_format='%.4g', **kwargs):
 
     # Transpose: rows = samples, columns = years
     df = df.transpose()
+
+    # Sort
+    def sort_func(row):
+        '''sort by sample (signal first), then by yield'''
+        index = row['index']
+        if(index == 'ZZGTo4LG'  ): k0 = 2
+        if(index == 'WZGTo3LNuG'): k0 = 1
+        else:                      k0 = 0
+
+        k1 = (row['y2016preVFP']+row['y2016postVFP']+row['y2017']+row['y2018']).val
+        return (k0, k1)
+
+    df['index'] = df.index
+    df['sort_key'] = df.apply(sort_func, axis=1)
+    df.sort_values('sort_key', ascending=False, inplace=True)
+    df.drop(columns=['sort_key', 'index'], inplace=True)
 
     # Total yield of MC for each year
     df.loc['Total'] = df.sum()
@@ -145,22 +155,37 @@ def print_yield(data, unblind=False, float_format='%.4g', **kwargs):
     # Convert to string using the format supplied by command line args
     formatters = [lambda x:x.to_string(fmt=float_format)]*len(df.columns)
 
-    out_string = df.to_latex(formatters=formatters)\
-                   .replace('pm', r'$\pm$')\
-                   .replace('ZZGTo4LG  ', r'$\PZ\PZ\PGg\to4\Pl\PGg$      ')\
-                   .replace('WZGTo3LNuG', r'$\PW\PZ\PGg\to3\Pl\PGn\PGg$  ')\
-                   .replace('WZTo3LNu  ', r'$\PW\PZ\to3\Pl\PGn$          ')\
-                   .replace('ZZTo4l    ', r'$\Pq\Pq\to\PZ\PZ\to4\Pl$     ')\
-                   .replace('ggTo4mu   ', r'$\Pg\Pg\to\PZ\PZ\to4\PGm$    ')\
-                   .replace('ggTo2e2mu ', r'$\Pg\Pg\to\PZ\PZ\to2\Pe2\PGm$')\
-                   .replace('ggTo4e    ', r'$\Pg\Pg\to\PZ\PZ\to4\Pe$     ')\
-                   .replace('ZZZ       ', r'$\PZ\PZ\PZ$                  ')\
-                   .replace('WZZ       ', r'$\PW\PZ\PZ$                  ')\
-                   .replace('WWZ       ', r'$\PW\PW\PZ$                  ')\
-                   .replace('TTZJets   ', r'$\PQt\PAQt\PZ$+jets          ')\
-                   .replace('ZGToLLG   ', r'$\PZ\PGg\to\Pl\Pl$           ')\
-                   .replace('fake\_leptons', 'Fake leptons               ')\
-                   .replace('fake\_photons', 'Fake photons               ')\
+    # Re-index using latex expressions instead of sample names
+    def sample_to_latex(sample):
+        if  (sample == 'ZZGTo4LG'       ): return r'$\PZ\PZ\PGg\to4\Pl\PGg'
+        elif(sample == 'WZGTo3LNuG'     ): return r'$\PW\PZ\PGg\to3\Pl\PGn\PGg$'
+        elif(sample == 'WZTo3LNu'       ): return r'$\PW\PZ\to3\Pl\PGn$'
+        elif(sample == 'ZZTo4l-nonpro'  ): return r'$\qqZZnonpro$'
+        elif(sample == 'ggTo4mu'        ): return r'$\Pg\Pg\to\PZ\PZ\to4\PGm$'
+        elif(sample == 'ggTo2e2mu'      ): return r'$\Pg\Pg\to\PZ\PZ\to2\Pe2\PGm$'
+        elif(sample == 'ggTo4e'         ): return r'$\Pg\Pg\to\PZ\PZ\to4\Pe$'
+        elif(sample == 'ZZZ'            ): return r'$\PZ\PZ\PZ$'
+        elif(sample == 'WZZ'            ): return r'$\PW\PZ\PZ$'
+        elif(sample == 'WWZ'            ): return r'$\PW\PW\PZ$'
+        elif(sample == 'TTZJets'        ): return r'$\PQt\PAQt\PZ$+jets'
+        elif(sample == 'ZGToLLG'        ): return r'$\PZ\PGg\to\Pl\Pl$'
+        elif(sample == 'TZq'            ): return r'$\PQt\PZ\PQq$'
+        elif(sample == 'tW'             ): return r'$\PQt\PW$'
+        elif(sample == 'DYJetsToLL\_M50'): return r'$\DYnonpro$'
+        elif(sample == 'fake\_leptons'  ): return r'Fake leptons'
+        elif(sample == 'fake\_photons'  ): return r'Fake photons'
+        else: return sample
+
+    df.insert(loc=0, column='process',value=df.index)
+    formatters = [sample_to_latex] + formatters
+    logging.debug('reindexed to latex')
+
+    out_string = df.to_latex(formatters=formatters
+                             , escape=False
+                             , index=False)\
+                   .replace('pm', r'\pm')\
+                   .replace(r'\begin{tabular}{llllll}', r'\begin{tabular}{l >{$}r<{$} >{$}r<{$} >{$}r<{$} >{$}r<{$} >{$}r<{$}}')\
+                   .replace('y20', ' 20')
 
     print(out_string)
 
