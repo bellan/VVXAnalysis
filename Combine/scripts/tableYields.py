@@ -38,7 +38,7 @@ class EventYield:
         return '(' + str(self.val) + '+-' + str(self.err) + ')'
 
     def to_string(self, fmt='%.4g'):
-        return (fmt+' pm '+fmt) %(self.val, self.err)
+        return (fmt+' \\pm '+fmt) %(self.val, self.err)
 
     def __iter__(self):
         return (i for i in (self.val, self.err))
@@ -157,37 +157,53 @@ def print_yield(data, unblind=False, float_format='%.4g', **kwargs):
 
     # Re-index using latex expressions instead of sample names
     def sample_to_latex(sample):
-        if  (sample == 'ZZGTo4LG'       ): return r'$\PZ\PZ\PGg\to4\Pl\PGg'
-        elif(sample == 'WZGTo3LNuG'     ): return r'$\PW\PZ\PGg\to3\Pl\PGn\PGg$'
-        elif(sample == 'WZTo3LNu'       ): return r'$\PW\PZ\to3\Pl\PGn$'
-        elif(sample == 'ZZTo4l-nonpro'  ): return r'$\qqZZnonpro$'
-        elif(sample == 'ggTo4mu'        ): return r'$\Pg\Pg\to\PZ\PZ\to4\PGm$'
-        elif(sample == 'ggTo2e2mu'      ): return r'$\Pg\Pg\to\PZ\PZ\to2\Pe2\PGm$'
-        elif(sample == 'ggTo4e'         ): return r'$\Pg\Pg\to\PZ\PZ\to4\Pe$'
-        elif(sample == 'ZZZ'            ): return r'$\PZ\PZ\PZ$'
-        elif(sample == 'WZZ'            ): return r'$\PW\PZ\PZ$'
-        elif(sample == 'WWZ'            ): return r'$\PW\PW\PZ$'
-        elif(sample == 'TTZJets'        ): return r'$\PQt\PAQt\PZ$+jets'
-        elif(sample == 'ZGToLLG'        ): return r'$\PZ\PGg\to\Pl\Pl$'
-        elif(sample == 'TZq'            ): return r'$\PQt\PZ\PQq$'
-        elif(sample == 'tW'             ): return r'$\PQt\PW$'
-        elif(sample == 'DYJetsToLL\_M50'): return r'$\DYnonpro$'
-        elif(sample == 'fake\_leptons'  ): return r'Fake leptons'
-        elif(sample == 'fake\_photons'  ): return r'Fake photons'
-        else: return sample
+        if('-' in sample):
+            base, extra = sample.split('-')
+        else:
+            base = sample
+            extra = None
+        if  ('ZZGTo4LG'       in base): base = r'$\PZ\PZ\PGg\to4\Pl\PGg$'
+        elif('WZGTo3LNuG'     in base): base = r'$\PW\PZ\PGg\to3\Pl\PGn\PGg$'
+        elif('WZTo3LNu'       in base): base = r'$\PW\PZ\to3\Pl\PGn$'
+        elif('ZZTo4l-nonpro'== sample): base = r'\qqZZnonpro'
+        elif('ggTo4mu'        in base): base = r'\ggtomm'
+        elif('ggTo2e2mu'      in base): base = r'\ggtoem'
+        elif('ggTo4e'         in base): base = r'\ggtoee'
+        elif('ZZZ'            in base): base = r'$\PZ\PZ\PZ$'
+        elif('WZZ'            in base): base = r'$\PW\PZ\PZ$'
+        elif('WWZ'            in base): base = r'$\PW\PW\PZ$'
+        elif('TTZJets'        in base): base = r'$\PQt\PAQt\PZ$+jets'
+        elif('ZGToLLG'        in base): base = r'$\PZ\PGg\to\Pl\Pl$'
+        elif('TZq'            in base): base = r'$\PQt\PZ\PQq$'
+        elif('tW'             in base): base = r'$\PQt\PW$'
+        elif('DYJetsToLL_M50' in base): base = r'\DYnonpro'
+        elif('fake_leptons'   in base): base = r'Nonprompt leptons'
+        elif('fake_photons'   in base): base = r'Nonprompt photons'
 
+        if extra is None:
+            return base
+        else:
+            return '-'.join([base, extra])
+
+    # Add a column with the same content as the index (sample names)
     df.insert(loc=0, column='process',value=df.index)
+    # Column formatters
     formatters = [sample_to_latex] + formatters
-    logging.debug('reindexed to latex')
-
-    out_string = df.to_latex(formatters=formatters
+    df_string  = df.to_latex(formatters=formatters
                              , escape=False
-                             , index=False)\
-                   .replace('pm', r'\pm')\
-                   .replace(r'\begin{tabular}{llllll}', r'\begin{tabular}{l >{$}r<{$} >{$}r<{$} >{$}r<{$} >{$}r<{$} >{$}r<{$}}')\
-                   .replace('y20', ' 20')
+                             , column_format='l >{$}r<{$} >{$}r<{$} >{$}r<{$} >{$}r<{$} >{$}r<{$}'
+                             , header=['{}', *[r'\yhcell{%s}'%(y) for y in ('2016preVFP', '2016postVFP', '2017', '2018', r'\Run2')]]
+                             , index=False)
 
-    print(out_string)
+    # Add a small space before the Total row
+    out_split = []
+    for line in df_string.split('\n'):
+        if(line.strip().startswith('Total')):
+            out_split.append(r'\noalign{\vspace{.3ex}}\hline\noalign{\vspace{.3ex}}')
+        out_split.append(line)
+    out_string = '\n'.join(out_split)
+
+    print(out_string, end='')
 
 
 def get_yield(card, unblind=False, **kwargs):
