@@ -15,7 +15,7 @@ from subprocess import call
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
 from samplesByRegion import getSamplesByRegion
-from produceDataCard_VVGamma import get_shape_uncorrelated, get_strategy_config, getSystType
+from produceDataCard_VVGamma import get_shape_uncorrelated, get_shape_groups, get_sample_group, get_strategy_config, getSystType
 from utils23 import lumi_dict
 import re
 
@@ -102,6 +102,8 @@ def main(args):
         logging.debug('reading %d configs: %s', len(config_files), config_files)
         systs_shape_uncorr = get_shape_uncorrelated_many(get_strategy_config(config_file) for config_file in config_files)
         logging.info('Systematics with shape and uncorrelated: %s', systs_shape_uncorr)
+        systs_shape_groups = get_shape_groups_many(get_strategy_config(config_file) for config_file in config_files)
+        logging.info('Systematics with shape, correlated in group of samples: %s', systs_shape_groups)
 
         files_info_region = { fname: {'kfactor': sample_data.get('kfactor', 1.)} for sample, sample_data in samples_info_region.items() for fname in sample_data['files'] }
         logging.info('region=%s samples: %s', region, samples_region)
@@ -139,7 +141,6 @@ def main(args):
         variables_region = sorted(variables_set)
 
         logging.info('in %s there are %d variables', region, len(variables_region))
-        logging.debug('in {} the variables are: {}'.format(region, variables_region))
 
         ordered_files_in = [[k, v] for k,v in files_in.items() if k != 'data_obs']
         ordered_files_in.append(['data_obs', files_in['data_obs']])
@@ -157,13 +158,14 @@ def main(args):
                 syst = split[2]
                 if(var_name.endswith('failReweight')):
                     continue
+                skipIfData = True
+                needSampleGroup = False
                 if(syst == 'central'):
                     skipIfData = False if len(var_split) == 1 else True
                     out_name = '{sample}{prompt}'.format(sample='%s', prompt=prompt)
                 elif(syst.replace('-','_') in systs_shape_uncorr):
                     # Hack: special treatment for systematics that have a shape impact and are uncorrelated across years
                     logging.debug('Special treatment for systematic "%s"', syst)
-                    skipIfData = True
                     direction = split[3]
                     out_name = '{sample}{prompt}_{syst}_{year}{direction}'.format(sample='%s', prompt=prompt, syst=syst.replace('-','_'), direction=direction, year=args.year)
                 elif(syst.replace('-','_') in systs_shape_groups):
@@ -174,7 +176,6 @@ def main(args):
                     direction = split[3]
                     out_name_t='{sample}{prompt}_{syst}_{{group}}{direction}'.format(sample='%s', prompt=prompt, syst=syst.replace('-','_'), direction=direction)
                 else:
-                    skipIfData = True
                     direction = split[3]
                     out_name = '{sample}{prompt}_{syst}{direction}'.format(sample='%s', prompt=prompt, syst=syst.replace('-','_'), direction=direction)
 
@@ -188,6 +189,10 @@ def main(args):
                         continue
                     h = file_in.Get(variable)
                     if(h):
+                        if(needSampleGroup):
+                            group_name = get_sample_group(sample, syst)
+                            out_name = out_name_t.format(group=group_name)
+                            logging.debug('sample: %s - group: %s - out_name: %s', sample, group_name, out_name)
                         h.SetName(out_name %(sample))
                         kfactor = files_info_region.get(sample, {}).get('kfactor', 1.)
                         h.Scale(kfactor)
@@ -275,6 +280,11 @@ def parse_args():
 def get_shape_uncorrelated_many(configs):
     # Just a wrapper around the union of the sets of shape_uncorr systematics in several configs
     return set.union(*(get_shape_uncorrelated(c) for c in configs))
+
+
+def get_shape_groups_many(configs):
+    # Just a wrapper around the union of the sets of shape_uncorr systematics in several configs
+    return set.union(*(get_shape_groups(c) for c in configs))
 
 
 if __name__ == '__main__':

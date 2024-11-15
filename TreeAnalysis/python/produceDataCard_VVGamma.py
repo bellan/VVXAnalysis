@@ -47,7 +47,7 @@ __builtin_config__ = {
         'skip-if-signal': ['pdf', 'QCDscale', 'alphas'],
         'theory': ['QCDscale', 'alphas', 'pdf'],
         'datadriven': ['CMS_fake_g', 'CMS_SMP24014_fake_g_ARstat', 'CMS_fake_m', 'CMS_fake_e'],
-        'split-by-sample-group': ['QCDscale'], # Note: when split, the name changes in the datacard, so this cannot be a shape, otherwise the histogram name must change as well
+        'split-by-sample-group': ['QCDscale', 'pdf'], # Note: when split, the name changes in the datacard, so this cannot be a shape, otherwise the histogram name must change as well
         '_end':[]
     }
 }
@@ -205,6 +205,49 @@ def get_shape_affected(syst, data_syst):
     logging.debug('syst: %-12s - affected(%d): %s', syst, len(samples_affected), samples_affected)
     return samples_affected
 
+def get_sample_group(sample, syst):
+    '''
+    Return the name of a group of processes for a given sample name and systematic
+    (e.g. ZZTo4l -> VV for QCDscale, but ZZTo4l -> qq for pdf)
+    '''
+    if  (syst == 'QCDscale'):
+        return get_sample_group_QCDscale(sample)
+    elif(syst == 'pdf'):
+        return get_sample_group_pdf(sample)
+    else:
+        raise KeyError('Don\'t know how to assign a group to systematic "%s"' %(syst))
+
+def get_sample_group_pdf(sample):
+    # NOTE: ggTo* samples have NO PDF uncertainty stored in the ntuples! So pdf_gg ALWAYS gets cancelled
+    if  (sample.startswith(('ggTo4e', 'ggTo2e2m', 'ggTo4m'))):
+        return 'gg'
+    else:
+        return 'qqbar'
+
+def get_sample_group_QCDscale(sample):
+    if  (sample.startswith(('ZZGTo4LG','WZGTo3LNuG','ZZGTo2L2jG','WZGTo2L2jG'))):
+        return 'VVgamma'
+    elif(sample.startswith(('ZZZ', 'WZZ', 'WWZ', 'WWW'))):
+        return 'VVV'
+    elif(sample.startswith(('ZZTo','WZTo','WWTo'))):
+        return 'VV'
+    elif(sample.startswith(('ggTo4e', 'ggTo2e2m', 'ggTo4m'))):
+        return 'ggVV'
+    elif(sample.startswith(('TTW', 'TTZ'))):
+        return 'ttV'
+    elif(sample.startswith(('TTTo',))):
+        return 'ttbar'
+    elif(sample.startswith(('TZq','tW'))):
+        return 'tV'
+    elif(sample.startswith(('ZGToLLG',))):
+        return 'Vgamma'
+    elif(sample.startswith('DY')):
+        return 'V'
+    elif(sample.startswith('fake')):
+        return None
+    else:
+        raise KeyError('Sample "%s" has no group' %(sample))
+
 def main(args):
     logging.info('writing card for %(year)s, %(region)s', vars(args))
 
@@ -356,13 +399,13 @@ def main(args):
         else: RuntimeError('Systematic "%s": unspecified if correlated' %(syst))
 
         for sample, sample_data in data_syst.items():
-            sample_group = get_sample_group(sample)
+            sample_group = get_sample_group(sample, syst)
             if(sample_group is None):
                 logging.info('Skipping split-by-group for sample "%s" which has no group', sample)
                 sample_data.pop(syst)
                 continue
-            logging.debug('syst: %s, sample: %s -> group: %s', syst, sample, sample_group)
             new_syst = syst+'_'+sample_group
+            logging.debug('syst: %s, sample: %s -> new syst: %s', syst, sample, new_syst)
             # Remove the old generic entry (e.g. 'QCDscale') and replace it (e.g. with 'QCDscale_VV')
             sample_data[new_syst] = sample_data.pop(syst)
             # Specify the same correlation in the config
