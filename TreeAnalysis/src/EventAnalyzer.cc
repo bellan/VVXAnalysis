@@ -418,7 +418,14 @@ void EventAnalyzer::InitOut(FeatList &list, TTree *tree){
   tree->Branch("J1Loose",  &list.f_J1Loose, "J1Loose/B");
   tree->Branch("J0QGL",  &list.f_J0QGL, "J0QGL/D");
   tree->Branch("J1QGL",  &list.f_J1QGL, "J1QGL/D");
- 
+
+  tree->Branch("etaG",  &list.f_etaG, "etaG/D");
+  tree->Branch("ptll",  &list.f_ptll, "ptll/D");
+  tree->Branch("ptjj",  &list.f_ptjj, "ptjj/D");
+
+  tree->Branch("mlljjPh",  &list.f_mlljjPh, "mlljjPh/D");
+  tree->Branch("mlljj",  &list.f_mlljj, "mlljj/D");
+  tree->Branch("mjjG",  &list.f_mjjG, "mjjG/D");
 
 }
 
