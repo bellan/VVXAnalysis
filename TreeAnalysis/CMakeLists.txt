@@ -62,6 +62,7 @@ target_link_libraries(TreeAnalysis ${ROOT_LIBRARIES})
 add_executable(eventAnalyzer ${BIN}/eventAnalyzer.cpp ${SRC}/AnalysisFactory.cc ${VVXAnalyzer_SRCS})
 target_link_libraries(eventAnalyzer TreeAnalysis)
 target_link_libraries(eventAnalyzer ${PYTHON_LIBRARIES})
+target_link_libraries(eventAnalyzer ${ROOT_LIBRARIES} ROOT::TMVA)
 
 add_executable(treeFilter ${BIN}/treeFilter.cpp ${EventDF_DICTIONARY})
 target_link_libraries(treeFilter TreeAnalysis)
