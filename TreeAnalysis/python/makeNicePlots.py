@@ -98,12 +98,15 @@ parser.add_argument("-i", "--inputDir",
 parser.add_argument('--skip-missing', action='store_true',
                     help='Don\'t crash if a plot is missing; instead continue with the others')
 
-parser.add_argument('--region-label', action='store_true', dest='region_label',
+parser.add_argument('--draw-label', action='store_true', dest='draw_label',
                     default=True,
                     help='Draw a textbox with the name of the region in the plot (default: %(default)s)')
 
-parser.add_argument('--no-region-label', action='store_false', dest='region_label',
+parser.add_argument('--no-draw-label', action='store_false', dest='draw_label',
                     help='Set "%(dest)s" to false')
+
+parser.add_argument('--region-label', default=None,
+                    help='Specify manually the region label to be drawn. If it contains a "%%s", the region name will be subsituted')
 
 parser.add_argument('--force-positive'   , action='store_true' , dest='forcePositive', help='Do `Scale(-1)` in regions with negative fake lepton transfer factor (default = %(default)s)')
 parser.add_argument('--no-force-positive', action='store_false', dest='forcePositive')
@@ -420,10 +423,17 @@ for Var in variables:
     leg.SetX2(x2+shift)
     leg.Draw("same")
 
-    if(options.region_label):
+    if(options.draw_label):
         region_text = ROOT.TText()
         region_text.SetNDC()
-        region_text.SetText(pad1.GetLeftMargin()+0.05, 1-pad1.GetTopMargin()-0.075, region)
+        if options.region_label is not None:
+            try:
+                text = options.region_label %(region)
+            except TypeError:
+                text = options.region_label
+        else:
+            text = region
+        region_text.SetText(pad1.GetLeftMargin()+0.05, 1-pad1.GetTopMargin()-0.075, text)
         region_text.SetTextSize(.05)
         region_text.Draw('same')
 
