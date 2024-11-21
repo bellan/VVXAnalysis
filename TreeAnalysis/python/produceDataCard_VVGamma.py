@@ -43,7 +43,8 @@ __builtin_config__ = {
     'systematics':{
         'shape': [],
         'correlated'  : ['CMS_l1_prefiring', 'pdf', 'QCDscale', 'alphas', 'CMS_eff_g', 'CMS_eff_g_IDMVA', 'CMS_scale_g', 'CMS_res_g', 'CMS_eff_m', 'CMS_eff_e', 'CMS_fake_g'],
-        'uncorrelated': ['CMS_electronVeto', 'CMS_fake_m', 'CMS_fake_e', 'CMS_SMP24014_fake_leptons_norm', 'CMS_SMP24014_fake_photons_norm', 'CMS_SMP24014_fake_g_ARstat', 'CMS_pileup'],
+        'uncorrelated': ['CMS_electronVeto', 'CMS_fake_m', 'CMS_fake_e', 'CMS_SMP24014_fake_leptons_norm', 'CMS_SMP24014_fake_photons_norm', 'CMS_SMP24014_fake_g_ARstat'],
+        'correl_year' : ['CMS_pileup'], # Systematics that are uncorrelated between years, but correlated between 2016 pre/post
         'skip-if-signal': ['pdf', 'QCDscale', 'alphas'],
         'theory': ['QCDscale', 'alphas', 'pdf'],
         'datadriven': ['CMS_fake_g', 'CMS_SMP24014_fake_g_ARstat', 'CMS_fake_m', 'CMS_fake_e'],
@@ -396,6 +397,7 @@ def main(args):
     for syst in config['systematics']['split-by-sample-group']:
         if  (syst in config['systematics'][  'correlated']): correlation = 'correlated'
         elif(syst in config['systematics']['uncorrelated']): correlation = 'uncorrelated'
+        elif(syst in config['systematics']['correl_year' ]): correlation = 'correl_year'
         else: RuntimeError('Systematic "%s": unspecified if correlated' %(syst))
 
         for sample, sample_data in data_syst.items():
@@ -457,6 +459,7 @@ def main(args):
         # Uses implicitly: config, year
         if  (syst in config['systematics'][  'correlated']): suffix = ''
         elif(syst in config['systematics']['uncorrelated']): suffix = '_'+args.year
+        elif(syst in config['systematics']['correl_year' ]): suffix = '_'+re.match(r'(\d+)', args.year).group(1)
         elif(syst.endswith('_norm')):
             logging.info('Treating %s as correlated among years', syst)
             suffix = ''
