@@ -7,24 +7,24 @@
 ##############################################
 
 from __future__ import print_function
-import sys
-from os import path, environ
+from os import path
 import copy
 import ROOT
 from math import log10
 from ctypes import c_int, c_double
 from array import array
-import itertools
 import re
 import logging
 from plotUtils23 import TFileContext, addIfExisting, rebin2D, InputDir, addIfExisting, get_plots
 from plotUtils23 import colors6, colors10
-import Colours
 from utils23 import makedirs_ok
+from argparse import ArgumentParser
 
 
 _outdir_data = path.join("data","PhFR")
 _outdir_plot = path.join("Plot","PhFR")
+possible_methods = {"VLtoL", "VLtoL_EB", "VLtoL_EE", "KtoVL", "KtoVLexcl", "90to80", "ABCD"}
+possible_eras = ["2016preVFP", "2016postVFP", "2017", "2018", 'Run2']
 
 
 def joinIfNotNone(strings, connection='_'):
@@ -925,7 +925,7 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
         canvas.SaveAs('{:s}/time/{:s}_binEvol.{ext:s}'.format(_outdir_plot, outname, ext=ext))
 
 
-def main():
+def main(args):
     ROOT.gStyle.SetPaintTextFormat(".3f")
 
     sampleList = {
@@ -940,46 +940,6 @@ def main():
         sample.setdefault("name" , key)
         sample.setdefault("title", sample["name"])
 
-    possible_methods = {"VLtoL", "VLtoL_EB", "VLtoL_EE", "KtoVL", "KtoVLexcl", "90to80", "ABCD"}
-
-    possible_eras = ["2016preVFP", "2016postVFP", "2017", "2018", 'Run2']
-
-    from argparse import ArgumentParser
-    parser = ArgumentParser()
-    parser.add_argument("-y", "--year"   , default="2018", choices=possible_eras, help='Default: %(default)s')
-    parser.add_argument("-m", "--method" , choices=possible_methods, default="VLtoL", help='Default: %(default)s')
-    parser.add_argument("-t", "--variable", default = "pt-aeta", help='Default: %(default)s')
-    parser.add_argument("-s", "--final-state", default=None, help='Default: %(default)s')
-    parser.add_argument("-A", "--analyzer", default="VVGammaAnalyzer", help="Default: %(default)s")
-    parser.add_argument("-i", "--inputdir", default="results", help='Top directory containing input (default: %(default)s)')
-    parser.add_argument("-o", "--outputdir", default=None, help='Subdirectory name for output. If None will use the name of the input dir')
-    parser.add_argument(      "--channels", action='store_true', help='Divide by channel (e.g. 2e1m, lepton fails, etc.)')
-    parser.add_argument(      "--no-mc"  , dest="do_mc"  , action="store_false", help="Skip MC plots" )
-    parser.add_argument(      "--no-data", dest="do_data", action="store_false", help="Skip data plots")
-    parser.add_argument(      "--time-evolution", action="store_true", help="Draw the time evolution of PhFR")
-    # Graphic options
-    parser.add_argument(      "--no-title",dest="do_title",action="store_false", help="Do not paint the title on the canvas (default: False)")
-    parser.add_argument(      "--linearx", dest='logx', action="store_false", default=True )
-    parser.add_argument(      "--logx"   , dest='logx', action="store_true" , default=True )
-    parser.add_argument(      "--lineary", dest='logy', action="store_false", default=False)
-    parser.add_argument(      "--logy"   , dest='logy', action="store_true" , default=False)
-    parser.add_argument(      "--range-FR-z"   , type=float, nargs=2, default=[0., 1.], help='Manually set the z range for FR plots    (default: %(default)s)')
-    parser.add_argument(      "--range-ratio-z", type=float, nargs=2, default=[0., 2.], help='Manually set the z range for ratio plots (default: %(default)s)')
-    parser.add_argument(      "--rebin-aeta",action='store_true', help='Rebin the y axis (aeta) so that it has only 3 bins: EB, gap, EE')
-    parser.add_argument(      "--rebin-pt" , action='store_true', help='Rebin the x axis (pt) so that it has only 3 bins: [20-35], [35,50], [50,120]')
-    parser.add_argument(      "--rebin-dRj", action='store_true', help='Rebin the y axis (dRj)')
-    parser.add_argument(      "--fix-negative"   , dest='fixNegBins', action='store_true' , help='Set bins with negative content to zero (default: %(default)s)')
-    parser.add_argument(      "--no-fix-negative", dest='fixNegBins', action='store_false', help='Set bins with negative content to zero')
-    parser.add_argument(      "--text-size"  , type=float, default=1.25, metavar='SIZE', help="Scale the size of the text in TH2 (default: %(default)s)")
-    parser.add_argument(      "--marker-size", type=float, default=1.50, metavar='SIZE', help="Scale the maker size in 1D plots (e.g. profiled and time evolution) (default: %(default)s)")
-    # Output control
-    parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
-
-    args = parser.parse_args()
-    loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
-    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
-
-
     # Set paths for output
     args.inputdir = args.inputdir.rstrip('/')
     global _outdir_data
@@ -987,9 +947,10 @@ def main():
     if(args.outputdir is not None):
         _outdir_data = path.join(_outdir_data, args.outputdir)
         _outdir_plot = path.join(_outdir_plot, args.outputdir)
-    elif(args.inputdir != parser.get_default('inputdir')):
-        _outdir_data = path.join(_outdir_data, args.inputdir.split('results_')[-1])
-        _outdir_plot = path.join(_outdir_plot, args.inputdir.split('results_')[-1])
+    else:
+        resultsname = path.basename(args.inputdir).split('results_')[-1]
+        _outdir_data = path.join(_outdir_data, resultsname)
+        _outdir_plot = path.join(_outdir_plot, resultsname)
 
     results_dir = InputDir(basedir=args.inputdir, year=args.year, analyzer=args.analyzer, region='CRLFR')
 
@@ -1162,5 +1123,43 @@ def main():
             print()
 
 
+def parse_args():
+    parser = ArgumentParser()
+    parser.add_argument("-y", "--year"   , default="2018", choices=possible_eras, help='Default: %(default)s')
+    parser.add_argument("-m", "--method" , choices=possible_methods, default="VLtoL", help='Default: %(default)s')
+    parser.add_argument("-t", "--variable", default = "pt-aeta", help='Default: %(default)s')
+    parser.add_argument("-s", "--final-state", default=None, help='Default: %(default)s')
+    parser.add_argument("-A", "--analyzer", default="VVGammaAnalyzer", help="Default: %(default)s")
+    parser.add_argument("-i", "--inputdir", default="results", help='Top directory containing input (default: %(default)s)')
+    parser.add_argument("-o", "--outputdir", default=None, help='Subdirectory name for output. If None will use the name of the input dir')
+    parser.add_argument(      "--channels", action='store_true', help='Divide by channel (e.g. 2e1m, lepton fails, etc.)')
+    parser.add_argument(      "--no-mc"  , dest="do_mc"  , action="store_false", help="Skip MC plots" )
+    parser.add_argument(      "--no-data", dest="do_data", action="store_false", help="Skip data plots")
+    parser.add_argument(      "--time-evolution", action="store_true", help="Draw the time evolution of PhFR")
+    # Graphic options
+    parser.add_argument(      "--no-title",dest="do_title",action="store_false", help="Do not paint the title on the canvas (default: False)")
+    parser.add_argument(      "--linearx", dest='logx', action="store_false", default=True )
+    parser.add_argument(      "--logx"   , dest='logx', action="store_true" , default=True )
+    parser.add_argument(      "--lineary", dest='logy', action="store_false", default=False)
+    parser.add_argument(      "--logy"   , dest='logy', action="store_true" , default=False)
+    parser.add_argument(      "--range-FR-z"   , type=float, nargs=2, default=[0., 1.], help='Manually set the z range for FR plots    (default: %(default)s)')
+    parser.add_argument(      "--range-ratio-z", type=float, nargs=2, default=[0., 2.], help='Manually set the z range for ratio plots (default: %(default)s)')
+    parser.add_argument(      "--rebin-aeta",action='store_true', help='Rebin the y axis (aeta) so that it has only 3 bins: EB, gap, EE')
+    parser.add_argument(      "--rebin-pt" , action='store_true', help='Rebin the x axis (pt) so that it has only 3 bins: [20-35], [35,50], [50,120]')
+    parser.add_argument(      "--rebin-dRj", action='store_true', help='Rebin the y axis (dRj)')
+    parser.add_argument(      "--fix-negative"   , dest='fixNegBins', action='store_true' , help='Set bins with negative content to zero (default: %(default)s)')
+    parser.add_argument(      "--no-fix-negative", dest='fixNegBins', action='store_false', help='Set bins with negative content to zero')
+    parser.add_argument(      "--text-size"  , type=float, default=1.25, metavar='SIZE', help="Scale the size of the text in TH2 (default: %(default)s)")
+    parser.add_argument(      "--marker-size", type=float, default=1.50, metavar='SIZE', help="Scale the maker size in 1D plots (e.g. profiled and time evolution) (default: %(default)s)")
+    # Output control
+    parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
+
+    return parser.parse_args()
+
+
 if __name__ == '__main__':
-    exit(main())
+    args = parse_args()
+    loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
+    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
+
+    exit(main(args))
