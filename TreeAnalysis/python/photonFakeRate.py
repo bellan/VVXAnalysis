@@ -17,8 +17,9 @@ import re
 import logging
 from plotUtils23 import TFileContext, addIfExisting, rebin2D, InputDir, addIfExisting, get_plots
 from plotUtils23 import colors6, colors10
-from utils23 import makedirs_ok
+from utils23 import makedirs_ok, lumi_dict
 from argparse import ArgumentParser
+import cmsstyle
 
 
 _outdir_data = path.join("data","PhFR")
@@ -131,11 +132,31 @@ def linesAndTicks(h, logx=False, logy=False):
 
 def beautify(canvas, hist, logx=False, logy=False, logz=False, text_size=1., **kwargs):
     canvas.cd()
+
+    # Creating a cmsCanvas calls setCMSStyle(), which sets a *new* TStyle. So we must reconfigure everything
+    ROOT.gStyle.SetPalette(ROOT.kBird)
+    ROOT.gStyle.SetPaintTextFormat(".3f")
+
+    # hist.GetXaxis().SetLabelOffset(0.008) # default 0.012
+    hist.GetXaxis().SetLabelSize(0.045)   # default 0.05
+    hist.GetXaxis().SetTitleOffset(1.15)  # default 1.25
+    hist.GetXaxis().SetTitleSize(0.05)    # default 0.06
+
+    hist.GetYaxis().SetLabelSize(0.038)   # default 0.05
+    hist.GetYaxis().SetTitleOffset(1.)    # default 1.25
+    hist.GetYaxis().SetTitleSize(0.05)    # default 0.06
+
+    canvas.SetRightMargin(0.160)          # default 0.1125
+    hist.GetZaxis().SetLabelSize(0.040)   # default 0.05
+    hist.GetZaxis().SetTitleOffset(1.)    # default 1.25
+    hist.GetZaxis().SetTitleSize(0.05)    # default 0.06
+
     # hist.GetXaxis().SetNdivisions(0)
     # hist.GetXaxis().SetRange(0, hist.GetXaxis().GetNbins()+1)
 
     hist.SetMarkerSize(text_size)  # For some reason ROOT developers decided that painted text's size should have the same multiplier as the marker size
     hist.Draw("colz texte")
+    cmsstyle.CMS_lumi(canvas, iPosX=0)
 
     if(logx):
         canvas.SetLogx()
@@ -441,10 +462,7 @@ def fakeRateLtoT_regex(sample_data, samples_prompt, inputdir, method, variable, 
     x_name, y_name = variable.split('-')
     hFR.GetXaxis().SetTitle(varname_to_title(x_name))
     hFR.GetYaxis().SetTitle(varname_to_title(y_name))
-    hFR.GetXaxis().SetTitleOffset(1.2)
     hFR.GetZaxis().SetTitle("FR #gamma")
-    hFR.GetZaxis().SetTitleSize(1.15*hFR.GetZaxis().GetTitleSize())
-    hFR.GetZaxis().SetLabelSize(0.90*hFR.GetZaxis().GetLabelSize())
     plotFR_LtoT(hFR, outname, title, **kwargs)
     return hFR
 
@@ -572,10 +590,7 @@ def fakeRateLtoT(sample_data, samples_prompt, inputdir, method='LtoT', variable=
     x_name, y_name = variable.split('-')
     hFR.GetXaxis().SetTitle(varname_to_title(x_name))
     hFR.GetYaxis().SetTitle(varname_to_title(y_name))
-    hFR.GetXaxis().SetTitleOffset(1.2)
     hFR.GetZaxis().SetTitle("FR #gamma")
-    hFR.GetZaxis().SetTitleSize(1.15*hFR.GetZaxis().GetTitleSize())
-    hFR.GetZaxis().SetLabelSize(0.90*hFR.GetZaxis().GetLabelSize())
     plotFR_LtoT(hFR, outname, title, **kwargs)
 
     return hFR
@@ -584,10 +599,6 @@ def fakeRateLtoT(sample_data, samples_prompt, inputdir, method='LtoT', variable=
 def plotFR_LtoT(hFR, outname, title, logx=False, logy=False, do_title=True, range_FR_z=[0.,1.], **kwargs):
     outfname = path.join(_outdir_data, outname+'.root')
     picname  = path.join(_outdir_plot, outname)
-
-    cFR = ROOT.TCanvas( 'cFR_{}'.format(outname), title, 1200, 900 )
-    cFR.SetRightMargin(cFR.GetRightMargin()*1.4)
-    cFR.cd()
 
     min_draw , max_draw  = range_FR_z
     min_value = hFR.GetBinContent(hFR.GetMinimumBin())
@@ -605,6 +616,16 @@ def plotFR_LtoT(hFR, outname, title, logx=False, logy=False, do_title=True, rang
         hFR.Write(hFR.GetName(), ROOT.TObject.kOverwrite)
     logging.info('Output (with prompt MC subtraction) in: "{:s}"'.format(outfname))
 
+    cFR = cmsstyle.cmsCanvas('cFR_{}'.format(outname)
+                             , x_min = hFR.GetXaxis().GetBinLowEdge(1)
+                             , x_max = hFR.GetXaxis().GetBinLowEdge(hFR.GetXaxis().GetNbins())
+                             , y_min = hFR.GetYaxis().GetBinLowEdge(1)
+                             , y_max = hFR.GetYaxis().GetBinLowEdge(hFR.GetYaxis().GetNbins())
+                             , nameXaxis = hFR.GetXaxis().GetTitle()
+                             , nameYaxis = hFR.GetYaxis().GetTitle()
+                             , with_z_axis = True
+                             , square = False
+                             )
     to_preserve_FR = beautify(cFR, hFR, logx, logy, **kwargs)
 
     for ext in ['png', 'pdf']:
@@ -625,8 +646,16 @@ def plotRatio(h1, h2, name="ratio", title="ratio", do_title=True, **kwargs):
     ratio.SetMinimum(0.)
     ratio.SetContour(21)  # Set to an odd number so that 1 is in the middle of a bin in the color gradient
     
-    c = ROOT.TCanvas("cratio_{:s}".format(name), "ratio", 1200, 900)
-    c.cd()
+    c = cmsstyle.cmsCanvas("cratio_{:s}".format(name)
+                           , x_min = h1.GetXaxis().GetBinLowEdge(1)
+                           , x_max = h1.GetXaxis().GetBinLowEdge(h1.GetXaxis().GetNbins())
+                           , y_min = h1.GetYaxis().GetBinLowEdge(1)
+                           , y_max = h1.GetYaxis().GetBinLowEdge(h1.GetYaxis().GetNbins())
+                           , nameXaxis = h1.GetXaxis().GetTitle()
+                           , nameYaxis = h1.GetYaxis().GetTitle()
+                           , with_z_axis = False
+                           , square = False
+                           )
     
     ratio.Draw("colz texte")
     to_preserve = beautify(c, ratio, True, False, **kwargs)
@@ -649,17 +678,15 @@ def plotProfiled(h2, name=None, title='profile', direction='X', do_title=True, m
         name = h2.GetName()
 
     _style = [
-        {"color":ROOT.kRed     , "marker":ROOT.kFullCircle},
-        {"color":ROOT.kBlue    , "marker":ROOT.kFullTriangleUp},
-        {"color":ROOT.kGreen   , "marker":ROOT.kFullTriangleDown},
-        {"color":ROOT.kBlack   , "marker":ROOT.kFullSquare},
-        {"color":ROOT.kMagenta , "marker":ROOT.kFullCrossX},
-        {"color":ROOT.kCyan    , "marker":ROOT.kFullStar},
-        {"color":ROOT.kYellow+3, "marker":ROOT.kFullCross}
+        {"color":colors10[0], "marker":ROOT.kFullCircle},
+        {"color":colors10[1], "marker":ROOT.kFullTriangleUp},
+        {"color":colors10[2], "marker":ROOT.kFullTriangleDown},
+        {"color":colors10[3], "marker":ROOT.kFullSquare},
+        {"color":colors10[4], "marker":ROOT.kFullCrossX},
+        {"color":colors10[5], "marker":ROOT.kFullStar},
+        {"color":colors10[6], "marker":ROOT.kFullCross}
     ]
 
-    cprof = ROOT.TCanvas("c_"+name, h2.GetName(), 1200, 900)
-    cprof.cd()
     if  (direction=='Y'):
         axis_2D_proj = h2.GetYaxis()
         axis_2D_draw = h2.GetXaxis()
@@ -693,10 +720,9 @@ def plotProfiled(h2, name=None, title='profile', direction='X', do_title=True, m
     for i in range(1, axis_2D_draw.GetNbins()+2):
         draw_edges.append(axis_2D_draw.GetBinLowEdge(i))
     draw_edges.append(axis_2D_draw.GetBinUpEdge(axis_2D_draw.GetNbins()+1))
-    # print('edges:',draw_edges)
 
     zmax, zmin = 0, 0
-    legend = ROOT.TLegend(.7,.7,.9,.9)
+    legend = cmsstyle.cmsLeg(.7,.7,.9,.9, textSize=0.03)
     
     for j in range(1, axis_2D_proj.GetNbins()+1):
         h1 = ROOT.TH1D("{:s}_bin{:d}".format(h2.GetName(), j), title if do_title else '', nbins_draw+1, draw_edges)#, axis_2D_draw.GetNbins(), axis_2D_draw.GetXbins().GetArray())
@@ -717,7 +743,7 @@ def plotProfiled(h2, name=None, title='profile', direction='X', do_title=True, m
         varTitle = axis_2D_proj.GetTitle()
         match = re.search('[^[]+', varTitle)
         if(match): varTitle = match.group().strip()
-        legendTitle = "{}<{:s}<{}".format(axis_2D_proj.GetBinLowEdge(j), varTitle, axis_2D_proj.GetBinUpEdge(j))
+        legendTitle = "{:.5g}<{:s}<{:.5g}".format(axis_2D_proj.GetBinLowEdge(j), varTitle, axis_2D_proj.GetBinUpEdge(j))
 
         if(allzeroes):
             del h1
@@ -731,10 +757,20 @@ def plotProfiled(h2, name=None, title='profile', direction='X', do_title=True, m
         h.SetMarkerColor(_style[i]["color"] )
         h.SetMarkerStyle(_style[i]["marker"])
         h.SetMarkerSize(marker_size)
-    
-    h1s[0].GetYaxis().SetRangeUser(max(0, zmin - (zmax-zmin)/10), zmax + (zmax-zmin)/10)
-    h1s[0].Draw("P0 E1")
-    for h1 in h1s[1:]:
+
+    cprof = cmsstyle.cmsCanvas('c_' + name if name is not None else ''
+                               , x_min = draw_edges[0]
+                               , x_max = draw_edges[-2]
+                               , y_min = max(0, zmin - 0.1*(zmax-zmin))
+                               , y_max = zmax + 0.35*(zmax-zmin)
+                               , nameXaxis = axis_2D_draw.GetTitle()
+                               , nameYaxis = 'FR #gamma'
+                               , with_z_axis = False
+                               )
+    cmsstyle.CMS_lumi(cprof)
+    customize_cmsCanvas_square(cprof)
+
+    for h1 in h1s:
         h1.Draw("P0 E1 same")
     
     legend.Draw("SAME")
@@ -778,8 +814,19 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
 
     makedirs_ok('{:s}/time'.format(_outdir_plot))
 
-    canvas = ROOT.TCanvas('canvas_time', 'Time Evolution', 1200, 900)
+    is_square_canv = False
+    canvas = cmsstyle.cmsCanvas('canvas_time'
+                                , x_min = hRef.GetXaxis().GetBinLowEdge(1)
+                                , x_max = hRef.GetXaxis().GetBinLowEdge(hRef.GetXaxis().GetNbins())
+                                , y_min = hRef.GetYaxis().GetBinLowEdge(1)
+                                , y_max = hRef.GetYaxis().GetBinLowEdge(hRef.GetYaxis().GetNbins())
+                                , nameXaxis = hRef.GetXaxis().GetTitle()
+                                , nameYaxis = hRef.GetYaxis().GetTitle()
+                                , with_z_axis = False
+                                , square = is_square_canv
+                                )
     canvas.cd()
+
     gTime_list = []
     for by in range(1, y_axis_ref.GetNbins()+1):
         for bx in range(1, x_axis_ref.GetNbins()+1):
@@ -802,7 +849,7 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
                 continue
 
             leg_entry_title = '{}, {}'.format(x_labels[bx], y_labels[by])
-            legend_single = ROOT.TLegend(.5,.825,.89,.89)
+            legend_single = cmsstyle.cmsLeg(.5,.825,.89,.89)
             legend_single.AddEntry(hTime, leg_entry_title)
             hTime.SetMinimum(range_FR_z[0])
             hTime.SetMaximum(range_FR_z[1])
@@ -832,7 +879,13 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
         {'color':ROOT.kGray+1  , 'marker':ROOT.kFullFourTrianglesX}
         ]
 
+    hTime.GetYaxis().SetLabelSize(0.038)  # default 0.05
+    hTime.GetYaxis().SetTitle('FR #gamma')
+    hTime.GetYaxis().SetTitleOffset(1.2)  # default 1.25
+    hTime.GetYaxis().SetTitleSize(0.052)  # default 0.06
+
     hTime.Draw('AXIS')
+    cmsstyle.CMS_lumi(canvas)
     if(do_title):
         hTime.SetTitle(title)
         hTime.GetPainter().PaintTitle()
@@ -840,7 +893,7 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
     b_width = 1
     margin  = 0.2
     step    = (1 - 2*margin)/n_hists
-    legend_all = ROOT.TLegend(0.55, 0.89 - 0.03*n_hists, 0.89, 0.89)
+    legend_all = cmsstyle.cmsLeg(0.42 if is_square_canv else 0.68, 0.9 - 0.035*n_hists, 0.75, 0.9, textSize=0.03)
     for i, [g, leg_title] in enumerate(gTime_list):
         g.SetMarkerStyle(_style[i]['marker'])
         g.SetMarkerColor(_style[i]['color' ])
@@ -860,8 +913,8 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
         canvas.SaveAs('{:s}/time/{:s}_time.{ext:s}'.format(_outdir_plot, outname, ext=ext))
 
     # Bin evolution across years
-    canvas.SetBottomMargin(0.12)
-    print('\n\n')
+    canvas.SetBottomMargin(0.1)
+
     gBinEvol_list = []
     for time_label, hFR in thelist:
         theTitle = title  +' {}'.format(time_label)
@@ -898,13 +951,25 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
         logging.debug('gBinEvol.GetN(): %d', gBinEvol.GetN())
         gBinEvol_list.append([gBinEvol, time_label])
 
+    # Text size and style adjustments
+    canvas.SetRightMargin(0.14 if is_square_canv else 0.1) # default: 0.04 (square), 0.0225 (rectangle)
+    hBinEvol.GetXaxis().SetLabelOffset(0.008) # default 0.012
+    hBinEvol.GetXaxis().SetLabelSize(0.028)   # default 0.05
+    hBinEvol.GetYaxis().SetLabelSize(0.038)   # default 0.05
+    hBinEvol.GetYaxis().SetTitle('FR #gamma')
+    hBinEvol.GetYaxis().SetTitleOffset(1.2 if is_square_canv else 0.95) # default 1.25
+    hBinEvol.GetYaxis().SetTitleSize(0.052)   # default 0.06
+    # hBinEvol.GetXaxis().SetDrawOption("L") # BROKEN Left adjust labels
+
     hBinEvol.Draw('AXIS') # Use the axis of the last histogram to draw the frame
+    cmsstyle.CMS_lumi(canvas)
+
     if(do_title):
         hBinEvol.SetTitle(title)
         hBinEvol.GetPainter().PaintTitle()
     n_hists = len(gBinEvol_list)
     step    = (1 - 2*margin)/n_hists
-    legend_all = ROOT.TLegend(0.60, 0.89 - 0.04*n_hists, 0.89, 0.89)
+    legend_all = cmsstyle.cmsLeg(0.54 if is_square_canv else 0.64, 0.89 - 0.04*n_hists, 0.89, 0.89)
     for i, [g, leg_title] in enumerate(gBinEvol_list):
         g.SetMarkerStyle(_style[i]['marker'])
         g.SetMarkerColor(colors6[i])
@@ -926,8 +991,6 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
 
 
 def main(args):
-    ROOT.gStyle.SetPaintTextFormat(".3f")
-
     sampleList = {
         "data"     : {"file": 'data'},
         "ZGToLLG"  : {"file": 'ZGToLLG', "title": "Z#gamma_{MC}", "fixNegBins": True},
@@ -955,8 +1018,11 @@ def main(args):
     results_dir = InputDir(basedir=args.inputdir, year=args.year, analyzer=args.analyzer, region='CRLFR')
 
     # Set up ROOT options and create dirs
-    ROOT.gStyle.SetOptStat(0)
     ROOT.gROOT.SetBatch(True)
+    cmsstyle.setCMSStyle()
+    cmsstyle.writeExtraText = True
+    cmsstyle.SetExtraText("Preliminary")
+    cmsstyle.SetEnergy(13, unit="TeV")
 
     makedirs_ok(_outdir_data)
     makedirs_ok(_outdir_plot)
@@ -987,6 +1053,7 @@ def main(args):
     argsdict = {k:v for k,v in vars(args).items() if not k in ('inputdir', 'year', 'analyzer', 'region')}
 
     if(args.time_evolution):
+        cmsstyle.SetLumi('%.3g' %(lumi_dict['Run2']['value']/1000), unit="fb")
         print("########## TIME EVOL. method:", args.method, " variable:", args.variable, " final_state:", args.final_state, "##########")
         hFR_data_l   = []
         hFR_dataZG_l = []
@@ -1019,6 +1086,7 @@ def main(args):
         time_evolution(hFR_dataZGDY_l, outname='FR_{method}_{variable}_data-ZGToLLG-DrellYan'.format(method=args.method, variable=args.variable), title='FR vs time (data-Z#gamma-DY)', **argsdict)
         return 0
 
+    cmsstyle.SetLumi('%.3g' %(lumi_dict[args.year]['value']/1000), unit="fb")
     if(args.channels):
         print("########## CHANNELS   method:", args.method, " variable:", args.variable, " final_state:", args.final_state, "##########")
         if(args.do_data):
@@ -1155,6 +1223,25 @@ def parse_args():
     parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
 
     return parser.parse_args()
+
+
+def customize_cmsCanvas_square(canv):
+    '''
+    Changes to axes label and title's size and offset for a "square" cmsCanvas
+    '''
+    canv.SetRightMargin(0.04)          # default 0.03
+    # cmsCanvas() does not return the pointer to the histogram used to DrawFrame(), so we rely on
+    # the ROOT convention of storing it as "hframe" in the list of objects associated to the TPad
+    hframe = canv.FindObject("hframe")
+    # hframe.GetXaxis().SetLabelOffset(0.008) # default 0.012
+    hframe.GetXaxis().SetLabelSize(0.038)  # default 0.05
+    hframe.GetXaxis().SetTitleOffset(1.1)  # default 1.25
+    hframe.GetXaxis().SetTitleSize(0.05)  # default 0.06
+
+    hframe.GetYaxis().SetLabelSize(0.038)  # default 0.05
+    hframe.GetYaxis().SetTitleOffset(1.3)  # default 1.25
+    hframe.GetYaxis().SetTitleSize(0.05)  # default 0.06
+    cmsstyle.UpdatePad(canv)
 
 
 if __name__ == '__main__':
