@@ -88,6 +88,21 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
     
   virtual bool baselineRequirements();
 
+
+  virtual double VZGMVAScoreBuilder(phys::Boson<phys::Jet>, phys::Jet , std::vector<phys::Photon> , int );
+
+  virtual bool  inSR(phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int, double);
+  virtual bool  inCRZOFF( phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int, double);
+  virtual bool  inCRZSide( phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int, double);
+  virtual bool  inCRFSRTight( phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int, double);
+  virtual bool  inCRZON_FSRTight( phys::Boson<phys::Jet>, phys::Jet, std::vector<phys::Photon>, int, double);
+  virtual bool  inCRZOFF_FSRTight( phys::Boson<phys::Jet>, phys::Jet, std::vector<phys::Photon>, int, double);
+  virtual bool  inCRZOFF_DIB( phys::Boson<phys::Jet>, phys::Jet, std::vector<phys::Photon>, int, double);
+  virtual bool  inCR2P_1VL( phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int, double);
+  virtual bool  inCR2P_1L( phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int, double);
+  virtual bool  inCRVSide( phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int, double);
+
+  
   virtual bool   IN_GENsignalDef();
   
   virtual bool   LeptonicSignalConstraint();
@@ -99,13 +114,14 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
   virtual Bool_t cut(Int_t, phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int,double&);
 
   //  virtual void Reconstruct(phys::Boson<phys::Jet>*,phys::Jet*,bool*,bool*);
-  int Reconstruct(phys::Boson<phys::Jet>*,phys::Jet*,bool*,bool*,phys::Photon*);
+  int Reconstruct(phys::Boson<phys::Jet>*,phys::Jet*,bool*,bool*,phys::Photon*, bool);
   
   virtual void PhotonSelection(std::vector<phys::Photon> *);
+  virtual void PhotonVLSelection(std::vector<phys::Photon> *);
 
   virtual void CompatibilityTest(phys::Boson<phys::Jet>, phys::Boson<phys::Particle>, std::string, std::string);
 
-  virtual void printHistos(uint, std::string, phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int);
+  virtual void printHistos(uint, std::string, phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int, std::string, bool);
 
  private:
   std::vector<phys::Lepton>* leptons_;
