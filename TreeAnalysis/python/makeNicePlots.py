@@ -23,11 +23,14 @@ from CrossInfo import*
 from ROOT import TH1F,TCanvas, TLegend
 from plotUtils23 import PlotNotFoundError, InputDir
 from plotUtils23  import GetPredictionsPlot, GetDataPlot, GetClosureStack
+from plotUtils23 import graph_and_ratio
 from utils23 import lumi_dict
 from variablesInfo import getVariablesInfo
-import CMS_lumi, tdrstyle
+import cmsstyle
 import PersonalInfo
 from Colours import Evidence, Warn
+
+from array import array
 
 regions = ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L',    
            'SR3P', 'CR110'  , 'CR101'  , 'CR011'  , 'CR100'  , 'CR001'  , 'CR010', 'CR000', 'SR3P_1L', 'SR3P_1P', 'CR3P_1F', 'CRLFR', 'CR3L',
@@ -187,7 +190,7 @@ except OSError as e:
     os.makedirs(OutputDir)  # mkdir() = mkdir  ;  makedirs() = mkdir -p
 
 
-tdrstyle.setTDRStyle()
+cmsstyle.setCMSStyle()
 ROOT.gStyle.SetErrorX(0.5)
 ROOT.gROOT.SetBatch(True)
 
@@ -197,14 +200,9 @@ if LumiProj != "":
 else:
     lumi = lumi_dict[year]['value']
 lumi = lumi/1000.
-CMS_lumi.writeExtraText = True
-CMS_lumi.extraText = "Preliminary"
-CMS_lumi.lumi_sqrtS = "{0:.3g} fb^{{-1}} (13 TeV)\n".format(lumi)
-
-iPos = 0
-if( iPos==0 ): CMS_lumi.relPosX = 0.12
-iPeriod = 0
-
+cmsstyle.SetExtraText('Preliminary')
+cmsstyle.SetEnergy(13, unit='TeV')
+cmsstyle.SetLumi('{:.3g}'.format(lumi))
 
 VarInfo = getVariablesInfo(Analysis, region)
 
@@ -226,13 +224,12 @@ if(options.verbosity >= 2):
     print 'INFO: variables =', variables
 variables.sort()
 
-c1 = TCanvas( 'c1', mcSet , 900, 1200 )
 
 missing_plots = []
 for Var in variables:
     info = VarInfo[Var]
     info.update({'name':Var})
-    c1.Clear()
+
     DoData = optDoData and (info.get('unblind', True) or options.unblind or region[:2] != 'SR')
     
     # "Temporary" hack for closure test of photon fake rate
@@ -258,7 +255,7 @@ for Var in variables:
         if info.get('special'):
             info['name'] = info['data']['plot']
         try:
-            (graphData, histodata) = GetDataPlot(inputDir, info, forcePositive=options.forcePositive, verbosity=options.verbosity)
+            histodata = GetDataPlot(inputDir, info, forcePositive=options.forcePositive, verbosity=options.verbosity)
         except PlotNotFoundError as e:
             if(options.skip_missing):
                 missing_plots.append(e)
@@ -266,14 +263,17 @@ for Var in variables:
             else:
                 raise e
 
-        if(not (graphData and histodata)):
+        if(not histodata):
             print Evidence('ERROR'), 'skipping', Var, 'because: no data'
             continue
-        for i in range(graphData.GetN()):
-            graphData.SetPointEXhigh(i,0.)
-            graphData.SetPointEXlow (i,0.)
 
     hStackSum = hMC.GetStack().Last()
+    if(not DoData):
+        histodata = ROOT.TH1F(hMC.GetStack().Last())
+        histodata.SetName("histodata")
+        histodata.Reset()
+
+    # Check for underflow or overflow
     overflow_fraction  = hStackSum.GetBinContent(hStackSum.GetNbinsX()+1) / hStackSum.Integral(0, -1)
     underflow_fraction = hStackSum.GetBinContent(0                      ) / hStackSum.Integral(0, -1)
     has_overflow  = overflow_fraction  > 0.1 # Overflow  is > 10% of total
@@ -285,120 +285,112 @@ for Var in variables:
         if(options.verbosity >= 1):
             print Warn('WARN'), 'underflow (%.1f %%)' %(100*underflow_fraction)
 
-    c1.cd()
-    pad1 = ROOT.TPad ('hist', '', 0., 0.28, 1.0, 1.0)
-    pad1.SetTopMargin    (0.10)
-    pad1.SetRightMargin  (0.04)
-    pad1.SetLeftMargin   (0.18)
-    pad1.SetBottomMargin (0.025)
-    pad1.Draw()
-    
-    c1.cd()
-    
-    pad2 = ROOT.TPad ('rat', 'Data/MC ratio', 0., 0.0,  1., 0.28)#0.15
-    pad2.SetTopMargin (0.01)
-    pad2.SetRightMargin (0.04)
-    pad2.SetLeftMargin (0.18)
-    pad2.SetBottomMargin(0.3);
-    pad2.Draw()
-    if info.get('logx', False):
-        pad1.SetLogx()
-        pad2.SetLogx()
-    
-    pad1.cd()
-
-    YMin = info.get('ymin', False)
-    if(YMin):
-        hMC.SetMinimum(YMin)
-
-    # Draw the THStack
-    hMC.Draw("hist")
-
-    # The THStack axis cannot be modified before it has been drawn
+    # X range
     draw_overflow  = info.get('draw_overflow' , False)
     draw_underflow = info.get('draw_underflow', False)
-    xaxis  = hMC.GetXaxis()
+    xaxis  = hStackSum.GetXaxis()
     bx_min = (0 if draw_underflow else 1)
     bx_max = (1 if draw_overflow  else 0) + xaxis.GetNbins()
 
     xmin_info = info.get('xmin')
     xmax_info = info.get('xmax')
     if(xmin_info is not None):
-        if(draw_underflow): print Warn('WARN'), 'xmin overrides draw_underflow'
         bx_min = xaxis.FindFixBin(xmin_info + abs(xmin_info)*1e-6) # in case the requested xmin is a bin edge, get the right bin
+        if('draw_underflow' in info and not draw_underflow):
+            print(Warn('WARN') + ' xmin overrides draw_underflow')
+        draw_underflow = (bx_min == 0)
     if(xmax_info is not None):
-        if(draw_overflow ): print Warn('WARN'), 'xmax overrides draw_overflow'
         bx_max = xaxis.FindFixBin(xmax_info - abs(xmax_info)*1e-6) # in case the requested xmax is a bin edge, get the left bin
+        if('draw_overflow'  in info and not draw_overflow ):
+            print(Warn('WARN') + ' xmax overrides draw_overflow')
+        draw_overflow  = (bx_max == xaxis.GetNbins()+1)
 
     x_min  = xaxis.GetBinLowEdge(bx_min)
     x_max  = xaxis.GetBinLowEdge(bx_max+1)
+
+    # Fill an array of bin edges. This is needed to handle custom binnings
+    xedges = array('d', (xaxis.GetNbins())*[0.])
+    xaxis.GetLowEdge(xedges)
+    xedges.append(xaxis.GetBinLowEdge(xaxis.GetNbins()+1)) # add right edge of last bin
+    if(draw_underflow): xedges.insert(0, xaxis.GetBinLowEdge(0))
+    if(draw_overflow ): xedges.append(   xaxis.GetBinLowEdge(xaxis.GetNbins()+2))
+    # Filter the bin edges it so that only those within the requested limits remain
+    xedges = array('d', [e for e in xedges if e >= x_min and e <= x_max])# xedges[bx_min-1:bx_max+1]
+
+    # TGraphs to draw in the upper plot (data) and in the ratio plot
+    graphData, tgaData = graph_and_ratio(histodata, hStackSum, xedges=xedges, bx_min=bx_min, bx_max=bx_max, unblind=DoData)
+
+    # Y range - upper plot
+    y_max = info.get('ymax', False)
+    if(not y_max):
+        y_max_data = ROOT.TMath.MaxElement(graphData.GetN(), graphData.GetEYhigh()) + ROOT.TMath.MaxElement(graphData.GetN(), graphData.GetY()) if DoData else 0.
+        y_max_MC = hStackSum.GetBinContent(hStackSum.GetMaximumBin()) + hStackSum.GetBinError(hStackSum.GetMaximumBin())
+        y_max = max(y_max_MC, y_max_data)
+        y_max *= info.get('scale_ymax', 1.37)
+
+        if info.get('logy', False):
+            y_max *= 10
+    y_min = info.get('ymin', 0 if not info.get('logy') else hMC.GetMinimum())
+
+    # Ratio range
+    if(DoData):
+        y_max_r = max( (tgaData.GetPointY(i) for i in range(tgaData.GetN())) )  # + tgaData.GetErrorYhigh(i)
+        y_min_r = min( (tgaData.GetPointY(i) for i in range(tgaData.GetN())) )  # - tgaData.GetErrorYlow (i)
+    else:
+        y_max_r = 1.
+        y_min_r = 1.
+    deltaY = (y_max_r - y_min_r)
+    y_max_r = info.get('ratio_ymax', max(min(y_max_r + deltaY*0.1, 10), 1.5))
+    y_min_r = info.get('ratio_ymin', min(max(y_min_r - deltaY*0.1, 0 ), 0.5))
+
+    # Make the canvas
+    canvas = cmsstyle.cmsDiCanvas(
+        'canvas',
+        x_min=x_min,
+        x_max=x_max,
+        y_min=y_min,
+        y_max=y_max,
+        r_min=y_min_r,
+        r_max=y_max_r,
+        nameXaxis=info.get('title', ''),
+        nameYaxis='Events',
+        nameRatio='data/MC',
+        square=True,
+        iPos=0,
+        extraSpace=0.02,
+    )
+    # as of cmsstyle 0.4.2, this resets the TStyle, so any change to e.g. the axis title offset must be done after this call
+    pad1 = canvas.GetPad(1)
+    pad2 = canvas.GetPad(2)
+    hFrameUp = pad1.FindObject("hframe")
+    hFrameDn = pad2.FindObject("hframe")
+
+    # Log scale
+    if info.get('logy', False):
+        pad1.SetLogy()
+        if(math.log10(y_max/y_min) < 4):
+            hFrameUp.GetYaxis().SetMoreLogLabels()
+        hFrameUp.GetYaxis().SetLabelOffset(0.010)
+        if(y_max < 10000):
+            hFrameUp.GetYaxis().SetNoExponent()
+            cmsstyle.UpdatePad(pad1)
+
+    if info.get('logx', False):
+        pad1.SetLogx()
+        pad2.SetLogx()
+
+    # Draw the THStack
+    pad1.cd()
+    hMC.Draw("hist same")
+
+    # The THStack axis cannot be modified before it has been drawn
     hMC.GetXaxis().SetRange(bx_min, bx_max)
     if(DoData):
         histodata.GetXaxis().SetRange(bx_min, bx_max)
-    # Draw again to update
-    hMC.Draw("hist")
-
-    # Create TGraphAsymmErrors from histodata and set x errors to 0
-    # This is to avoid interference with gStyle.SetErrorX(0.5) which is needed to draw MC error rectangles
-    tgaData = ROOT.TGraphAsymmErrors()
-    if DoData:
-        # Create new data and MC histograms with possibly the under-/overflow bins
-        # This is the only way to include them in the TGraph resulting from Divide()
-        tmpdata = ROOT.TH1F(histodata.GetName()+'_tmpdata', histodata.GetTitle(), bx_max-bx_min+1, x_min, x_max)
-        for b in range(1, tmpdata.GetNbinsX()+1):
-            tmpdata.SetBinContent(b, histodata.GetBinContent(b))
-            tmpdata.SetBinError  (b, histodata.GetBinError  (b))
-        tmpMC   = ROOT.TH1F(histodata.GetName()+'_tmpMC'  , hStackSum.GetTitle(), bx_max-bx_min+1, x_min, x_max)
-        for b in range(1, tmpMC  .GetNbinsX()+1):
-            tmpMC  .SetBinContent(b, hStackSum.GetBinContent(b))
-            tmpMC  .SetBinError  (b, hStackSum.GetBinError  (b))
-
-        tgaData.Divide(tmpdata, tmpMC, 'pois')
-        del tmpdata, tmpMC
-        for i in range(tgaData.GetN()):
-            # Set x errors to 0 to avoid drawing error bars
-            tgaData.SetPointEXhigh(i,0.)
-            tgaData.SetPointEXlow (i,0.)
-            # Do not draw error in empty bins
-            if(abs(tgaData.GetPointY(i)) < 1e-6):
-                tgaData.SetPointEYhigh(i, 0.)
-                tgaData.SetPointEYlow (i, 0.)
-    else:
-        histodata = ROOT.TH1F(hMC.GetStack().Last())
-        histodata.SetName("histodata")
-        histodata.Reset()
 
     # Error band in the upper canvas
-    hMCErr = deepcopy(hMC.GetStack().Last())
+    hMCErr = deepcopy(hStackSum)
 
-    if('AAA_cuts' in Var):
-        hMC.GetXaxis().SetTickLength(0.)
-    
-    # Maximum and minimum of upper plot
-    YMax = info.get('ymax', False)
-    if(not YMax):
-        YMaxData = ROOT.TMath.MaxElement(graphData.GetN(), graphData.GetEYhigh()) + ROOT.TMath.MaxElement(graphData.GetN(), graphData.GetY()) if DoData else 0.
-        YMaxMC = hMCErr.GetBinContent(hMCErr.GetMaximumBin()) + hMCErr.GetBinError(hMCErr.GetMaximumBin())
-        YMax = max(YMaxMC, YMaxData)
-        YMax *= info.get('scale_ymax', 1.37)
-        
-        if info.get('logy', False):
-            YMax *= 10
-        if('AAA_cuts' in Var):
-            YMax *= 1.3
-
-    if info.get('logy', False):
-        pad1.SetLogy()
-        if(YMax < 100000):
-            hMC.GetHistogram().GetYaxis().SetMoreLogLabels()
-
-    hMC.SetMaximum(YMax)
-    
-    hMC.GetHistogram().GetYaxis().SetTitle("Events")
-    hMC.GetHistogram().GetYaxis().SetTitleOffset(1.4)
-    hMC.GetHistogram().GetYaxis().SetMaxDigits(4)
-    hMC.GetHistogram().GetXaxis().SetLabelSize(0)
-    
     hMCErr.SetFillStyle(3005)
     hMCErr.SetMarkerStyle(1)
     hMCErr.SetFillColor(ROOT.kBlack)
@@ -406,8 +398,6 @@ for Var in variables:
     leg.AddEntry(hMCErr, "Pred. unc.", "f")
     
     if DoData:
-        graphData.SetMarkerStyle(20)
-        graphData.SetMarkerSize(.9)
         if(info.get('text')):
             texec = ROOT.TExec("texec", 'drawtext("{}");'.format(graphData.GetName()))
             graphData.GetListOfFunctions().Add(texec)
@@ -437,21 +427,13 @@ for Var in variables:
         region_text.SetTextSize(.05)
         region_text.Draw('same')
 
-    CMS_lumi.CMS_lumi(c1, iPeriod, iPos)
-    
-    
+    # Ratio plot
     pad2.cd()
 
     Line = ROOT.TLine(x_min, 1, x_max, 1)
     Line.SetLineWidth(2)
     Line.SetLineStyle(7)
     
-    # yMax_r = histodata.GetBinContent( histodata.GetMaximumBin()) + histodata.GetBinError(histodata.GetMaximumBin() )
-    # yMin_r = histodata.GetBinContent( histodata.GetMinimumBin()) - histodata.GetBinError(histodata.GetMinimumBin() )
-    # deltaY = (yMax_r - yMin_r)
-    yMax_r = info.get('ratio_ymax', 2.) # max(min(yMax_r + deltaY*0.1, 2), 1.1)
-    yMin_r = info.get('ratio_ymin', 0.) # min(max(yMin_r - deltaY*0.1, 0), 0.9)
-
     # hArea = deepcopy(hMC.GetStack().Last())  # in ratio plot, the gray area representing MC error
     # for bin in range(1, hArea.GetNbinsX()+1):
     #     r = hArea.GetBinContent(bin)
@@ -466,31 +448,32 @@ for Var in variables:
     # #hArea.GetXaxis().SetMoreLogLabels()
     # hArea.SetFillColor(ROOT.kGray)
     # hArea.Draw("E3")
-    
-    if(info.get('title')):
-        histodata.GetXaxis().SetTitle(info['title'])
-    histodata.GetYaxis().SetTitle(info.get('ratio_title', 'data/MC'))
-    histodata.GetYaxis().SetTitleOffset(0.5)
-    histodata.GetYaxis().SetTitleSize(0.12)
-    histodata.GetYaxis().SetLabelSize(0.08)
-    histodata.GetXaxis().SetTitleSize(0.08)
-    histodata.GetXaxis().SetTitleOffset(1.3)
-    if(histodata.GetXaxis().IsAlphanumeric()):
-        histodata.GetXaxis().SetLabelSize(0.08 + 0.005 * max(0, 12-histodata.GetXaxis().GetNbins()) )
-    else:
-        histodata.GetXaxis().SetLabelSize(0.08)
 
-    if (histodata.GetXaxis().GetXmin() > 0.001 and histodata.GetXaxis().GetXmax() < 1000):
-        histodata.GetXaxis().SetNoExponent()
-    histodata.SetMarkerStyle(20)
-    
-    histodata.GetYaxis().SetRangeUser(yMin_r, yMax_r)
-    histodata.Draw("axis")
-    
+    # Fixes to X axis (ratio pad)
+    model_axis = histodata.GetXaxis()
+    draw_axis  = hFrameDn.GetXaxis()
+    draw_axis.SetLabelSize(0.1  ) # cmsstyle defaults to 0.1171875
+    draw_axis.SetTitleSize(0.12 ) # cmsstyle defaults to 0.140625
+    draw_axis.SetTitleOffset(1.05)# cmsstyle defaults to 0.9
+
+    # No exponent on x axis if the range is small enough
+    if (draw_axis.GetXmin() > 0.001 and draw_axis.GetXmax() < 1000):
+        draw_axis.SetNoExponent()
+
+    # Deal with alphanumeric labels by resetting and redrawing the xaxis
+    if(model_axis.IsAlphanumeric()):
+        draw_axis.SetAlphanumeric()
+        draw_axis.Set(model_axis.GetNbins(), model_axis.GetXmin(), model_axis.GetXmax())
+        for b in range(1, model_axis.GetNbins()+1):
+            draw_axis.SetBinLabel(b, model_axis.GetBinLabel(b))
+        cmsstyle.GetcmsCanvasHist(pad2).Draw()
+        canvas.RedrawAxis()
+        cmsstyle.UpdatePad(canvas)
+        pad2.cd()
+
     Line.Draw()
     tgaData.Draw("PE0 same")
-    
-    
+
     if(not DoData):
         xm, xM = hMC.GetXaxis().GetXmin(), hMC.GetXaxis().GetXmax()
         xstart = (xm + xM)/2 - (xM - xm)/8
@@ -501,16 +484,10 @@ for Var in variables:
     Title=Var+"_"+mcSet #+"_"+region
     if(not DoData): Title+='_blind'
     
-    ROOT.gStyle.SetOptStat(0);   
-    ROOT.gStyle.SetOptTitle(0)
-    c1.Update()
-    
-    c1.SetTitle(Title)
+    canvas.SetTitle(Title)
 
-    # c1.SaveAs(os.path.join(OutputDir, Title+".root"))
-    c1.SaveAs(os.path.join(OutputDir, Title+".png"))
-    # c1.SaveAs(os.path.join(OutputDir, Title+".eps"))
-    c1.SaveAs(os.path.join(OutputDir, Title+".pdf"))
+    for ext in ('png', 'pdf'): #, 'root', 'eps'
+        canvas.SaveAs(os.path.join(OutputDir, Title+'.'+ext))
 
     del histodata, tgaData
 

@@ -577,13 +577,24 @@ def GetClosureStack(region, inputDir, plotInfo, forcePositive=False, verbosity=1
 
 
 def SetError(Histo,Region,Set0Error):
+    '''Creates a TGraphAsymmErrors from a TH1, with the appropriate error bars'''
     # See also https://twiki.cern.ch/twiki/bin/viewauth/CMS/PoissonErrorBars
     h_copy = Histo.Clone(Histo.GetName()+'_copy')
     h_copy.SetBinErrorOption(ROOT.TH1.kPoisson)
-    return ROOT.TGraphAsymmErrors(h_copy)
+    tga = ROOT.TGraphAsymmErrors(h_copy)
+    for i in range(tga.GetN()):
+        tga.SetPointEXhigh(i,0.)
+        tga.SetPointEXlow (i,0.)
+
+    return tga
 
 
 def GetDataPlot(inputdir, plotInfo, forcePositive=False, verbosity=1):
+    '''
+    Retrieve the data histogram (plotInfo) from the results in inputdir.
+    Returns a TGraphAsymmErrors (to be drawn with the MC stack) and the
+    original TH1 (to be used e.g. to calculate a data/MC ratio).
+    '''
     plot = plotInfo['name']
     overflow  = plotInfo.get('draw_overflow' , False)
     underflow = plotInfo.get('draw_underflow', False)
@@ -627,7 +638,39 @@ def GetDataPlot(inputdir, plotInfo, forcePositive=False, verbosity=1):
     if  (verbosity >= 1):
         print("Total data in {0:s} region .......................... {1:.2f}".format(inputdir.region, hdata.Integral(0,-1)))
         print("_________________________")
-    DataGraph=SetError(hdata, inputdir.region, False)
-    DataGraph.SetMarkerStyle(20)
-    DataGraph.SetMarkerSize(.9)
-    return DataGraph, hdata
+
+    return hdata
+
+
+def graph_and_ratio(histodata, hStackSum, xedges, bx_min, bx_max, unblind=True):
+    '''
+    Returns two TGraphAsymmErrors: one the upper pad, and the ratio of histodata and the MC sum
+    '''
+    tgaData = ROOT.TGraphAsymmErrors()
+    tgaData.SetName('ratio')
+    if(not unblind):
+        return ROOT.TGraphAsymmErrors(histodata), tgaData
+
+    # Create new data and MC histograms with possibly the under-/overflow bins
+    # This is the only way to include them in the TGraph resulting from Divide()
+    tmpdata = ROOT.TH1F(histodata.GetName()+'_tmpdata', histodata.GetTitle(), len(xedges)-1, xedges)
+    tmpMC   = ROOT.TH1F(histodata.GetName()+'_tmpMC'  , hStackSum.GetTitle(), len(xedges)-1, xedges)
+    b_new = 0  # bin index in the new histograms
+    for b_old in range(bx_min, bx_max+1):
+        b_new += 1
+        tmpdata.SetBinContent(b_new, histodata.GetBinContent(b_old))
+        tmpdata.SetBinError  (b_new, histodata.GetBinError  (b_old))
+        tmpMC  .SetBinContent(b_new, hStackSum.GetBinContent(b_old))
+        tmpMC  .SetBinError  (b_new, hStackSum.GetBinError  (b_old))
+
+    graphData = SetError(tmpdata, '', False)
+    tgaData.Divide(tmpdata, tmpMC, 'pois')
+
+    del tmpdata, tmpMC
+    for i in range(tgaData.GetN()):
+        # Set x errors to 0 to avoid drawing error bars
+        # This is to avoid interference with gStyle.SetErrorX(0.5) which is needed to draw MC error rectangles
+        tgaData.SetPointEXhigh(i,0.)
+        tgaData.SetPointEXlow (i,0.)
+
+    return graphData, tgaData
