@@ -163,7 +163,7 @@ def getVarInfo_VVGamma(region):
             'ZWG_massT_failPh'     : {'title':'mT_{3lv#gamma}, #gamma_{VL and !Loose} [GeV]', 'rebin':1, 'unblind':True },
             'ZWG_massT_loosePh'    : {'title':'mT_{3lv#gamma}, #gamma_{Loose} [GeV]'        , 'rebin':1, 'unblind':False, 'fake_photons': 'ZWG_massT_reweightPh'}
             ,
-            'SYS_mWZGwp90_central': {'title':'m_{T}^{3l v #gamma}, #gamma wp90 [GeV]' , 'split_prompt_ph':region=='SR3P', 'split_prompt_ph_pattern': 'SYS_mWZGwp90-%s_central', 'unblind':False},
+            'SYS_mWZGwp90_central': {'title':'m_{T}^{3l v #gamma}, #gamma wp90 [GeV]' , 'split_prompt_ph':region=='SR3P', 'split_prompt_ph_pattern': 'SYS_mWZGwp90-%s_central', 'unblind':False, 'logx':False},
             'SYS_mWZGwp80_central': {'title':'m_{T}^{3l v #gamma}, #gamma wp80 [GeV]' , 'split_prompt_ph':region=='SR3P', 'split_prompt_ph_pattern': 'SYS_mWZGwp80-%s_central', 'unblind':False},
             'SYS_mWZGloose_central':{'title':'m_{T}^{3l v #gamma}, #gamma cut-based [GeV]', 'split_prompt_ph':region=='SR3P', 'split_prompt_ph_pattern': 'SYS_mWZGloose-%s_central', 'fake_photons': 'SYS_mWZGfailReweight_central','unblind':False},
         })
