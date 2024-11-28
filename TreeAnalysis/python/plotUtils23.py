@@ -8,6 +8,7 @@ import ctypes
 import numpy as np
 from Colours import Red, Green
 import ROOT
+import cmsstyle
 
 import samplesByRegion
 
@@ -694,3 +695,73 @@ def integral_and_error(h, binx1=0, binx2=-1, option=""):
     err = ctypes.c_double(0.)
     integral = h.IntegralAndError(binx1, binx2, err, option)
     return integral, err.value
+
+
+def cmsDiCanvas_fromTH1(name, h, r, y_scale=1, range_include_err=False, **kwargs):
+    cmsargs = dict()
+    x_min, x_max = getTAxisLimits(h.GetXaxis())
+    cmsargs['x_min'] = kwargs.get('x_min', x_min)
+    cmsargs['x_max'] = kwargs.get('x_max', x_max)
+
+    cmsargs['y_min'] = kwargs.get('y_min', h.GetMinimum())
+    cmsargs['y_max'] = kwargs.get('y_max', h.GetMaximum()*y_scale)
+
+    if(not ('r_min' in kwargs and 'r_max' in kwargs)):
+        for argname in ('y_scale', 'min_lo', 'max_lo', 'min_hi', 'max_hi'):
+            # massage arg names for clamp_expnd_r()
+            if(argname+'_r' in kwargs): kwargs[argname] = kwargs.pop(argname+'_r')
+        r_min, r_max = get_range_tga(r, include_err=range_include_err)
+        r_min, r_max = clamp_expnd_r(r_min, r_max, **kwargs)
+    r_min = kwargs.get('r_min', r_min)
+    r_max = kwargs.get('r_max', r_max)
+
+    cmsargs['nameXaxis'] = kwargs.get('nameXaxis', h.GetXaxis().GetTitle())
+    cmsargs['nameYaxis'] = kwargs.get('nameYaxis', h.GetYaxis().GetTitle())
+    cmsargs['nameRatio'] = kwargs.get('nameRatio', r.GetYaxis().GetTitle())
+    if('iPos' in kwargs): cmsargs['iPos'] = kwargs['iPos']
+
+    c = cmsstyle.cmsDiCanvas('canvas_%s' %(name), r_min=r_min, r_max=r_max, **cmsargs)
+
+    return c
+
+
+def getTAxisLimits(axis):
+    return \
+        axis.GetBinLowEdge(1), \
+        axis.GetBinLowEdge(axis.GetNbins()+1)
+
+
+def get_range_tga(g, include_err=False):
+    '''
+    Get the y range needed to draw a TGraphAsymmErrors
+    '''
+    name = g.GetName()
+
+    if(include_err):
+        np = g.GetN()
+        y_max = max( (g.GetPointY(i)+g.GetErrorYhigh(i) for i in range(np)) )
+        y_min = min( (g.GetPointY(i)-g.GetErrorYlow (i) for i in range(np)) )
+    else:
+        buf = array('d', g.GetY())
+        y_max = max( buf )
+        y_min = min( buf )
+    logging.debug('%s range (raw): [%.3g, %.3g]', name, y_min, y_max)
+
+    return y_min, y_max
+
+
+def clamp_expnd_r(lo, hi, y_scale=0.1, min_lo=0., max_lo=0.9, min_hi=1.1, max_hi=100, name='[range]', **kwargs):
+    '''
+    Massage the range [lo, hi]: enlarge it by (hi-lo)*y_scale, 
+    and clamp both (lo|hi) between [min_(lo|hi), max_(lo|hi)]
+    '''
+
+    def clamp(v, min_y, max_y):
+        return min(max(v, min_y), max_y)
+
+    delta = hi - lo
+    lo = clamp(lo - y_scale * delta, min_lo, max_lo)
+    hi = clamp(hi + y_scale * delta, min_hi, max_hi)
+    logging.debug('%s range (fix): [%.3g, %.3g]', name, lo, hi)
+
+    return lo, hi

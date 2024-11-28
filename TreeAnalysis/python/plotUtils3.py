@@ -81,3 +81,32 @@ def computeRange(pad):
     pad.GetRangeAxis(xmin, ymin, xmax, ymax)
 
     return xmin.value, ymin.value, xmax.value, ymax.value
+
+
+def cmsCanvas_fromTH1(name, h, **kwargs):
+    c = cmsstyle.cmsCanvas(name
+                           , x_min = h.GetXaxis().GetBinLowEdge(1)
+                           , x_max = h.GetXaxis().GetBinLowEdge(h.GetXaxis().GetNbins())
+                           , y_min = h.GetYaxis().GetBinLowEdge(1)
+                           , y_max = h.GetYaxis().GetBinLowEdge(h.GetYaxis().GetNbins())
+                           , nameXaxis = h.GetXaxis().GetTitle()
+                           , nameYaxis = h.GetYaxis().GetTitle()
+                           , **kwargs
+                           )
+    return c
+
+
+def cmsDiCanvas_fromTH1(name, h, r, y_scale=1, **kwargs):
+    c = cmsstyle.cmsDiCanvas('canvas_%s' %(varinfo.name)
+                             , x_min = h.GetXaxis().GetBinLowEdge(1)
+                             , x_max = h.GetXaxis().GetBinLowEdge(h.GetXaxis().GetNbins())
+                             , y_min = h.GetYaxis().GetBinLowEdge(1)
+                             , y_max = h.GetYaxis().GetBinLowEdge(h.GetYaxis().GetNbins())
+                             , r_min = r.GetMinimum()
+                             , r_max = r.GetMaximum()
+                             , nameXaxis = h.GetXaxis().GetTitle()
+                             , nameYaxis = h.GetYaxis().GetTitle()
+                             , nameRatio = 'ratio'
+                             , **kwargs
+                             )
+    return c
