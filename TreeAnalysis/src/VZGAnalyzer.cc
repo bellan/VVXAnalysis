@@ -42,6 +42,10 @@ double CRZONMassCut  = 85;
 double CRZinfMassCut = 80;
 double CRZsupMassCut = 100;
 
+double Sigmoid(double x, double x0, double A){
+  return 1./(1. + TMath::Exp(-A*(x-x0) ) );
+}
+
 double cosOmega(TLorentzVector a, TLorentzVector b){
   return a.CosTheta()*b.CosTheta()+TMath::Sin(a.Theta())*TMath::Sin(b.Theta())*TMath::Cos(a.Phi()-b.Phi());
 }
@@ -1027,7 +1031,7 @@ void VZGAnalyzer::analyze()
 
     mostEnergeticPhoton_2P1VL = selectedVLPhotons[0];
   
-    VBTopo_2P1VL=Reconstruct(&recoV_2P1VL,&recoFJ_2P1VL,&haveGoodRECODiJetCand_2P1VL,&haveGoodRECOFJCand_2P1VL,&mostEnergeticPhoton_2P1VL, false);
+    VBTopo_2P1VL=ReconstructAlt(&recoV_2P1VL,&recoFJ_2P1VL,&haveGoodRECODiJetCand_2P1VL,&haveGoodRECOFJCand_2P1VL,&mostEnergeticPhoton_2P1VL, false);
 
     if(inCR2P_1VL( recoV_2P1VL, recoFJ_2P1VL, selectedVLPhotons, VBTopo_2P1VL, VZGMVAScore) ){
       region = "CR2P_1VL";
@@ -1057,7 +1061,7 @@ void VZGAnalyzer::analyze()
   //  std::stable_sort(selectedphotons.begin(), selectedphotons.end(), phys::EComparator());
   mostEnergeticPhoton = selectedphotons[0];
   
-  VBTopo=Reconstruct(&recoV,&recoFJ,&haveGoodRECODiJetCand,&haveGoodRECOFJCand,&mostEnergeticPhoton, true);
+  VBTopo=ReconstructAlt(&recoV,&recoFJ,&haveGoodRECODiJetCand,&haveGoodRECOFJCand,&mostEnergeticPhoton, true);
 
   region="";
   isCR=false;
@@ -1147,7 +1151,7 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   mostEnergeticPhoton = selectedphotons[0];
 
   
-  VBTopo=Reconstruct(&recoV,&recoFJ,&haveGoodRECODiJetCand,&haveGoodRECOFJCand,&mostEnergeticPhoton, false);
+  VBTopo=ReconstructAlt(&recoV,&recoFJ,&haveGoodRECODiJetCand,&haveGoodRECOFJCand,&mostEnergeticPhoton, false);
 
   //while(cut(nbOfCutsPassed, recoV, recoFJ, selectedphotons, VBTopo))    nbOfCutsPassed++;
   
@@ -1604,6 +1608,102 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
   }
   */
   //if(IsARunForMVAFeat)
+  hadrTopo=*haveGoodRECODiJetCand;//temporary unique topology
+  
+  return hadrTopo;
+}
+
+double VZGAnalyzer::VHadScore(phys::Boson<phys::Jet> DJCand){
+  double dMMax=40.0;
+  double dM=dMMax;
+  dM=fabs(DJCand.mass()-phys::ZMASS);
+  if(fabs(DJCand.mass()-phys::WMASS)<dM)    dM=fabs(DJCand.mass()-phys::WMASS);
+  double dInvM=1.-(dM/dMMax);
+
+  double QGLV= TMath::Sqrt(DJCand.daughter(0).qgLikelihood()*DJCand.daughter(1).qgLikelihood());
+
+  double wgtQGLV=Sigmoid(dM/dMMax,0.5,1.);
+  
+  return wgtQGLV*QGLV+(1.-wgtQGLV)*dInvM;
+    
+}
+
+int VZGAnalyzer::ReconstructAlt(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V_FJCandidate, bool *haveGoodRECODiJetCand, bool *haveGoodRECOFJCand, phys::Photon *gamma, bool doControlPlots)
+{
+  int hadrTopo = 0;
+  double peakDist_mFJCand=40.;
+  double peakDist_mDJCand=40.;
+  
+  /*
+  bool haveGoodRECOFJCand=false;
+  bool haveGoodRECODiJetCand=false;
+  */
+  std::vector<phys::Jet> FJCand;
+
+  foreach (const phys::Jet &fatJet, *jetsAK8)
+    {
+      if (KinematicsOK(fatJet,ptcut,etacut) && fabs(physmath::deltaR(fatJet,*gamma))> dR_FJRatio_cut) // KinematicsOK(jet)
+	FJCand.push_back(fatJet);
+    }
+
+  if (FJCand.size() > 0){
+    std::stable_sort(FJCand.begin(), FJCand.end(), phys::Mass2Comparator(phys::ZMASS, phys::WMASS));
+    *haveGoodRECOFJCand = (FJCand[0].mass()>50  &&   FJCand[0].mass()<120);
+  }
+  if(*haveGoodRECOFJCand){
+    *V_FJCandidate = FJCand.at(0);
+    peakDist_mFJCand=fabs(V_FJCandidate->mass()-phys::ZMASS);
+    if(fabs(V_FJCandidate->mass()-phys::WMASS)<peakDist_mFJCand)    peakDist_mFJCand=fabs(V_FJCandidate->mass()-phys::WMASS);
+  }
+
+  
+  std::vector<phys::Jet> selectedJets;
+  std::vector<phys::Boson<phys::Jet>> DiJetsCand;
+
+  foreach (const phys::Jet &jet, *jets)
+  {
+    if (KinematicsOK(jet,ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut) // KinematicsOK(jet)
+      selectedJets.push_back(jet);
+  }
+
+  if (selectedJets.size() > 1){
+    for (uint i = 0; i < selectedJets.size() - 1; i++) // Warning: size can be 0
+      for (uint j = i+1; j < selectedJets.size(); j++)
+        DiJetsCand.push_back(phys::Boson<phys::Jet>(selectedJets.at(i), selectedJets.at(j)));
+  }
+
+  if (DiJetsCand.size() > 0){
+    std::stable_sort(DiJetsCand.begin(), DiJetsCand.end(), phys::Mass2Comparator(phys::ZMASS, phys::WMASS));
+  //*V_JJCandidate = DiJetsCand.at(0);
+    *haveGoodRECODiJetCand=(DiJetsCand[0].mass()>50  &&   DiJetsCand[0].mass()<120);
+  }
+  
+  if(*haveGoodRECODiJetCand){
+    *V_JJCandidate = DiJetsCand.at(0);
+    if(DiJetsCand.size()>1){
+      double BestVHadScore=0;
+      double tempVHadScore;
+      int bestCandIndex =0;
+      for(int j = 0; j<DiJetsCand.size(); j++){
+	tempVHadScore=VHadScore(DiJetsCand[j]);
+	if(tempVHadScore > BestVHadScore){
+	  BestVHadScore=tempVHadScore;
+	  bestCandIndex=j;
+	}
+      }
+      *V_JJCandidate = DiJetsCand.at(bestCandIndex);
+    }
+  }
+
+  *haveGoodRECODiJetCand=(V_JJCandidate->mass()>50  &&   V_JJCandidate->mass()<120);
+
+  if(!(*haveGoodRECOFJCand || *haveGoodRECODiJetCand) ){
+    hadrTopo=0;
+  }else{//changed to consider the only 2j topology
+    if(*haveGoodRECODiJetCand) hadrTopo=1;//    if(peakDist_mDJCand<peakDist_mFJCand) hadrTopo=1;
+    else hadrTopo=0;//    else hadrTopo=-1;
+  }
+
   hadrTopo=*haveGoodRECODiJetCand;//temporary unique topology
   
   return hadrTopo;

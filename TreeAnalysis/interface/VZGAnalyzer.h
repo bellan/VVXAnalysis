@@ -115,6 +115,8 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
 
   //  virtual void Reconstruct(phys::Boson<phys::Jet>*,phys::Jet*,bool*,bool*);
   int Reconstruct(phys::Boson<phys::Jet>*,phys::Jet*,bool*,bool*,phys::Photon*, bool);
+  int ReconstructAlt(phys::Boson<phys::Jet>*,phys::Jet*,bool*,bool*,phys::Photon*, bool);
+  double VHadScore(phys::Boson<phys::Jet>);
   
   virtual void PhotonSelection(std::vector<phys::Photon> *);
   virtual void PhotonVLSelection(std::vector<phys::Photon> *);
