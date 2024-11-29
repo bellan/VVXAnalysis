@@ -40,6 +40,11 @@ ZZG      = [{'files':['ZZGTo4LG'      ] , 'color':ROOT.kRed     , 'name':'4l #ga
 ZZGTo2L2jG=[{'files':['ZZGTo2L2jG'    ] , 'color':ROOT.kRed+3   , 'name':'ZZ#gamma #rightarrow 2l 2j'}]
 WZGTo2L2jG=[{'files':['WZGTo2L2jG'    ] , 'color':ROOT.kRed-5   , 'name':'WZ#gamma #rightarrow 2l 2j'}]
 
+# t(t) + VVV with >= X leptons
+rare_4l = [{'files':tt_X_4l[0]['files']+triboson[0]['files']+WZG[0]['files'], 'color':ROOT.kOrange  , 'name':'rare backgrounds'}]
+rare_3l = [{'files':tt_X_3l[0]['files']+triboson[0]['files']+WZG[0]['files'], 'color':ROOT.kViolet-7, 'name':'rare backgrounds'}]
+rare_2l = [{'files':tt_X_2l[0]['files']+triboson[0]['files']                , 'color':ROOT.kViolet-7, 'name':'rare backgrounds'}]
+
 data_obs =  {'files':['data'          ] , 'color':ROOT.kBlack   , 'name':'Data'}
 
 
@@ -67,21 +72,22 @@ def getSamplesByRegion(region, MCSet, predType):
     else:
         raise ValueError('Wrong MC set "%s", choose pow or mad' %(MCSet))
 
-    tot = WZG + ZZG
+    tot = []+ZZG
 
     if   region in ['SR4P', 'SR4P_1L', 'SR4P_1F', 'CR3P1F', 'CR2P2F']:
         if   predType == 'fullMC':
             if region in ('SR4P', 'SR4P_1L', 'SR4P_1F'):
-                tot += tt_X_3l
+                tot += rare_3l
             else:
-                tot += tt_X_2l
-            tot += triboson + qqZZ + ggZZ + WZ + DY + ZG
+                tot += rare_2l
+            tot += qqZZ + ggZZ + WZ + DY + ZG
         elif predType in ('lepCR', 'fromCR'):
-            tot += tt_X_4l + triboson + qqZZ + ggZZ
+            tot += rare_4l + qqZZ + ggZZ
         elif predType == 'phoCR':
-            tot += tt_X_4l + triboson
+            tot += rare_4l
 
     elif is3Lregion(region):
+        tot += WZG
         tot += tt_X_3l + triboson + ggZZ + qqZZ
         if   predType == 'fullMC':
             tot += ZZGTo2L2jG + WZGTo2L2jG + ZZTo2Q2L + ZZTo2L2Nu + WZ + WW + ZG + DY
@@ -91,6 +97,7 @@ def getSamplesByRegion(region, MCSet, predType):
             tot += ZZGTo2L2jG + WZGTo2L2jG
 
     elif is2Lregion(region):
+        tot += WZG
         tot += ZZGTo2L2jG + WZGTo2L2jG + tt_X_2l + qqZZ + ggZZ + ZZTo2Q2L + ZZTo2L2Nu + WZ + WW + ZG
         if   predType == 'fullMC':
             tot += DY + WG
