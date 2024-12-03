@@ -287,7 +287,7 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
   double VZGMVAScore=-2.;
   if(!cut(2, recoV, recoFJ, selectedphotons, VBTopo, VZGMVAScore)) return -2.;
 
-  std::vector<std::string> orders = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"};
+  std::vector<std::string> orders = {"0", "1", "2", "3", "4", "5", "6"};
 
   TLorentzVector jjPh = recoV.daughter(0).p4()+recoV.daughter(1).p4()+selectedphotons.at(0).p4();
   double mjjPh=jjPh.M();
@@ -800,10 +800,10 @@ Bool_t VZGAnalyzer::cut(Int_t n, phys::Boson<phys::Jet> recoV, phys::Jet recoFJ,
 	&& mllGamma>140)//	&& mllGamma>150)
       return true;
     break;
+    
   case 11://b veto
     if (baseline
 	&& ! std::any_of(jets->begin(), jets->end(), [](const Jet& j){ auto dF = j.deepFlavour(); return dF.probb + dF.probbb + dF.problepb > 0.2770; })    // Note: this is the medium WP for Legacy samples (102X)                 
-	//&& SumFWM(0, 't', lljjG) >2.10 //CT
 	&& mllGamma>140)
       return true;
     break;
@@ -833,7 +833,7 @@ Bool_t VZGAnalyzer::cut(Int_t n, phys::Boson<phys::Jet> recoV, phys::Jet recoFJ,
     return true;
   }
   return false;
-
+}
     /*
   case 11://pt V > 90
     if (baseline
@@ -962,16 +962,11 @@ Bool_t VZGAnalyzer::cut(Int_t n, phys::Boson<phys::Jet> recoV, phys::Jet recoFJ,
     if (!mllGamma>150)    return false;
   case 1://baseline (with dRjG) 
     if (!baseline)    return false;
-
-  default:
-    return true;
-
-  }
   */  
 
 
 
-}
+
 
 void VZGAnalyzer::analyze()
 { // It's the only member function running each event.
@@ -980,30 +975,31 @@ void VZGAnalyzer::analyze()
 
   double VZGMVAScore = -2.;
   std::string region = "";
-
-  if(verbose==true)    {
-      cout << "----------------------------------------------------------------" << endl;
-      cout << "Run: " << run << " event: " << event << endl;
-
   
-      if(theSampleInfo.isMC()){
-	cout << "----------------------------------------------------------------" << endl;
-	cout << "MC sample" << endl;
-      }else{
-	cout << "----------------------------------------------------------------" << endl;
-	cout << "DATA sample" << endl;
-      }
+  if(verbose==true)    {
 
-      if(theSampleInfo.isMC() && (theSampleInfo.fileName().find("WZG")!=std::string::npos || theSampleInfo.fileName().find("ZZG")!=std::string::npos ) ){
-	cout << "----------------------------------------------------------------" << endl;
-	cout << "signal sample" << endl;
-      }else{
-	cout << "----------------------------------------------------------------" << endl;
-	cout << "non-sig sample" << endl;
-      }
+    cout << "----------------------------------------------------------------" << endl;
+    cout << "Run: " << run << " event: " << event << endl;
+  
+    if(theSampleInfo.isMC()){
+      cout << "----------------------------------------------------------------" << endl;
+      cout << "MC sample" << endl;
+    }else{
+      cout << "----------------------------------------------------------------" << endl;
+      cout << "DATA sample" << endl;
+    }
+
+    if(theSampleInfo.isMC() && (theSampleInfo.fileName().find("WZG")!=std::string::npos || theSampleInfo.fileName().find("ZZG")!=std::string::npos ) ){
+      cout << "----------------------------------------------------------------" << endl;
+      cout << "signal sample" << endl;
+    }else{
+      cout << "----------------------------------------------------------------" << endl;
+      cout << "non-sig sample" << endl;
+    }
   }
   //  genAnalyze();
 
+  
   int VBTopo = 0;
   phys::Boson<phys::Jet> recoV;
   phys::Jet recoFJ;
@@ -1181,9 +1177,10 @@ void VZGAnalyzer::analyze()
 
 void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
 {
+  
   bool isSignalSample = theSampleInfo.isMC() && (theSampleInfo.fileName().find("WZG")!=std::string::npos || theSampleInfo.fileName().find("ZZG")!=std::string::npos);
   bool isDYSample = theSampleInfo.isMC() && (theSampleInfo.fileName().find("DY")!=std::string::npos);
-
+  
   passingPresel = false;
   //if(!IsARunForMVAFeat)  return;
   if(isSignalSample && !IN_GENsignalDef()) return;
@@ -1197,13 +1194,9 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   phys::Jet recoFJ;
   bool haveGoodRECODiJetCand=false;
   bool haveGoodRECOFJCand=false;
-
-  
   std::vector<phys::Photon> selectedphotons;
   PhotonVLSelection(&selectedphotons);
 
-  //std::cout<<"1: passing photon selection "<<std::endl;
-  //  std::cout<<"---------------------------------------------------------"<<std::endl;//
   if(selectedphotons.size()<1) {
     //    list.f_nbOfCutsPassed = 0;  
     return;
@@ -1959,7 +1952,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
   
   if (i <= cutsToApply && cut(i, recoV, recoFJ, selectedphotons, VBTopo, VZGMVAScore))
   {
-
+    if(verbose==true) std::cout<<"cut "<<i<<" filling AAA plot "<<histoType<<endl;
     theHistograms->fill("#AAA_cut_flow_" + histoType, "Cut flow", cutsToApply, 0, cutsToApply, i, (theWeight*LumiSF));
     theHistograms->fill("#AAA_unw_cut_flow_" + histoType, "Unw. events cut flow", cutsToApply, 0, cutsToApply, i, 1.);      
 
@@ -2197,7 +2190,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
       theHistograms->fill("#_gamma_Tight_" + histoType, "#_gamma_Tight_", 12, 0, 12, TightPhotonsCounter, (theWeight*LumiSF));
     }
     if(VBTopo==1){
-      for(int l = 0; l<cutsToApply; l++)
+      for(int l = 0; l<orders.size(); l++)
 	{
 	  theHistograms->fill("FWM_T"+orders.at(l)+"_jets_"+histoType+cuts.at(i), "FWM_T"+orders.at(l)+"_jets_"+histoType+cuts.at(i)+"; H_"+orders.at(l)+"^T jets + gamma", 40, -1, 3,
 			      SumFWM(l, 't', jjG), theWeight*LumiSF);
