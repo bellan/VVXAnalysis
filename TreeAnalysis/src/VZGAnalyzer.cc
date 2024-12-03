@@ -977,22 +977,27 @@ void VZGAnalyzer::analyze()
 
   //_____________________________________________________________________
   //CT: TEMP block for ZFSR subtractioN from DY
+  bool promptPhExists = false;
   bool isFSR=false;
-  std::vector<phys::Particle> selectedGENphotons;
+  std::vector<phys::Particle> selectedGENphotons, selectedPROMPTphotons;
   for (auto p : *genParticles)
-    if (p.id() == 22 && KinematicsOK(p, 20, 2.4) && p.genStatusFlags().test(phys::isPrompt) &&  p.genStatusFlags().test(phys::fromHardProcess))
+    if (p.id() == 22 && KinematicsOK(p, 20, 2.4)){// && p.genStatusFlags().test(phys::isPrompt) &&  p.genStatusFlags().test(phys::fromHardProcess))
       selectedGENphotons.push_back(p);
+      if (p.genStatusFlags().test(phys::isPrompt)) selectedPROMPTphotons.push_back(p);
+    }
   if (selectedGENphotons.size()>=1){
-      TLorentzVector  GEN_llPh ;
-      double mGEN_llPh;
-      double mGenZ;
-      if(genVBHelper_.ZtoChLep().size()>=1){
-	  GEN_llPh = genVBHelper_.ZtoChLep()[0].p4()+selectedGENphotons.at(0).p4();
-	  mGEN_llPh=GEN_llPh.M();
-	  mGenZ=genVBHelper_.ZtoChLep()[0].mass();
+    std::stable_sort(selectedGENphotons.begin(), selectedGENphotons.end(), phys::EComparator());
+    promptPhExists=selectedPROMPTphotons.size()>=1;
+    TLorentzVector  GEN_llPh ;
+    double mGEN_llPh;
+    double mGenZ;
+    if(genVBHelper_.ZtoChLep().size()>=1){
+      GEN_llPh = genVBHelper_.ZtoChLep()[0].p4()+selectedGENphotons.at(0).p4();
+      mGEN_llPh=GEN_llPh.M();
+      mGenZ=genVBHelper_.ZtoChLep()[0].mass();
 
-	  isFSR=mGEN_llPh<315-2.5*mGenZ;
-      }
+      isFSR=mGEN_llPh<315-2.5*mGenZ;
+    }
   }
   //______________END OF TEMP BLOCK_______________________________________
 
@@ -1011,9 +1016,11 @@ void VZGAnalyzer::analyze()
       printHistos(0, "bckg", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
     }
     printHistos(0, "all", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);   
-    //    if(!isFSR) printHistos(0, "dib", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
-    //    else printHistos(0, "fsr", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);   
-
+    if(!isFSR) printHistos(0, "dib", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+    else printHistos(0, "fsr", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);   
+    if(!promptPhExists) printHistos(0, "nonPrompt", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+    else printHistos(0, "prompt", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+    
     //    std::cout<<"No Loose Photons "<<selectedphotons.size()<<std::endl;
 
     isCR = true;
@@ -1044,8 +1051,10 @@ void VZGAnalyzer::analyze()
 
       printHistos(4, "all", recoV_2P1VL, recoFJ_2P1VL, selectedVLPhotons, VBTopo_2P1VL, region, isCR);   
 
-      //      if(!isFSR) printHistos(4, "dib", recoV, recoFJ, selectedVLPhotons, VBTopo_2P1VL, region, isCR);
-      //      else printHistos(4, "fsr", recoV, recoFJ, selectedVLPhotons, VBTopo_2P1VL, region, isCR);      
+      if(!isFSR) printHistos(4, "dib", recoV, recoFJ, selectedVLPhotons, VBTopo_2P1VL, region, isCR);
+      else printHistos(4, "fsr", recoV, recoFJ, selectedVLPhotons, VBTopo_2P1VL, region, isCR);      
+      if(!promptPhExists) printHistos(4, "nonPrompt", recoV_2P1VL, recoFJ_2P1VL, selectedVLPhotons, VBTopo_2P1VL, region, isCR);
+      else printHistos(4, "prompt", recoV_2P1VL, recoFJ_2P1VL, selectedVLPhotons, VBTopo_2P1VL, region, isCR);
     }
     return;
   }
@@ -1069,8 +1078,10 @@ void VZGAnalyzer::analyze()
   if (IN_GENsignalDef())    printHistos(0, "sign", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
   else    printHistos(0, "bckg", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
   printHistos(0, "all", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);   
-  //  if(!isFSR) printHistos(0, "dib", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
-  //  else printHistos(0, "fsr", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);     
+  if(!isFSR) printHistos(0, "dib", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+  else printHistos(0, "fsr", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);     
+  if(!promptPhExists) printHistos(0, "nonPrompt", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+  else printHistos(0, "prompt", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
 
   //_______CRZOFF_fullSideBand_______//
   isCR=true;
@@ -1079,8 +1090,10 @@ void VZGAnalyzer::analyze()
     if (IN_GENsignalDef())	printHistos(4, "sign", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);   
     else	printHistos(4, "bckg", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
     printHistos(4, "all", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);   
-    //    if(!isFSR) printHistos(4, "dib", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
-    //    else printHistos(4, "fsr", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);   
+    if(!isFSR) printHistos(4, "dib", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+    else printHistos(4, "fsr", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);   
+    if(!promptPhExists) printHistos(4, "nonPrompt", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+    else printHistos(4, "prompt", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
   }
 
   //_______CRFSRT_fullLowBand_______//
@@ -1089,8 +1102,11 @@ void VZGAnalyzer::analyze()
     if (IN_GENsignalDef())	printHistos(4, "sign", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);   
     else	printHistos(4, "bckg", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
     printHistos(4, "all", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);   
-    //    if(!isFSR) printHistos(4, "dib", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
-    //    else printHistos(4, "fsr", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);   
+    if(!isFSR) printHistos(4, "dib", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+    else printHistos(4, "fsr", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+    if(!promptPhExists) printHistos(4, "nonPrompt", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+    else printHistos(4, "prompt", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+
   }
 
   //_______ABCD_categorization_______//
@@ -1102,7 +1118,11 @@ void VZGAnalyzer::analyze()
   if (IN_GENsignalDef())	printHistos(4, "sign", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);   
   else	printHistos(4, "bckg", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
   printHistos(4, "all", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);   
-    
+  if(!isFSR) printHistos(4, "dib", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+  else printHistos(4, "fsr", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+  if(!promptPhExists) printHistos(4, "nonPrompt", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+  else printHistos(4, "prompt", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+
   
   //_______CRFSRT_categorization_ZON/OFF_______//
   /*
@@ -1934,7 +1954,10 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
       theHistograms->fill("j1_p(c)"+histoType + cuts.at(i), "j1_p(c)"+histoType + cuts.at(i)+"; sublead. jet DeepFlavour p(c)", 20, 0, 1, recoV.daughter(1).deepFlavour().probc, theWeight*LumiSF);
       theHistograms->fill("jj_p(c)Sum"+histoType + cuts.at(i), "jj_p(c)Sum"+histoType + cuts.at(i)+"; DiJet DeepFlavour p(c)", 20, 0, 1,  0.5*(recoV.daughter(0).deepFlavour().probc + recoV.daughter(1).deepFlavour().probc), theWeight*LumiSF);
       */
+      theHistograms->fill("j0_p(bX)"+histoType + cuts.at(i), "j0_p(bX)"+histoType + cuts.at(i)+"; lead. jet DeepFlavour p(bX)", 20, 0, 1, recoV.daughter(0).deepFlavour().probb + recoV.daughter(0).deepFlavour().probbb + recoV.daughter(0).deepFlavour().problepb, theWeight*LumiSF);
+      theHistograms->fill("j1_p(bX)"+histoType + cuts.at(i), "j1_p(bX)"+histoType + cuts.at(i)+"; sublead. jet DeepFlavour p(bX)", 20, 0, 1, recoV.daughter(1).deepFlavour().probb + recoV.daughter(1).deepFlavour().probbb + recoV.daughter(1).deepFlavour().problepb, theWeight*LumiSF);
 
+      
       theHistograms->fill("j0_p(g)"+histoType + cuts.at(i), "j0_p(g)"+histoType + cuts.at(i)+"; lead. jet DeepFlavour p(g)", 20, 0, 1, recoV.daughter(0).deepFlavour().probg, theWeight*LumiSF);
       theHistograms->fill("j1_p(g)"+histoType + cuts.at(i), "j1_p(g)"+histoType + cuts.at(i)+"; sublead. jet DeepFlavour p(g)", 20, 0, 1, recoV.daughter(1).deepFlavour().probg, theWeight*LumiSF);
       theHistograms->fill("jj_p(g)Sum"+histoType + cuts.at(i), "jj_p(g)Sum"+histoType + cuts.at(i)+"; DiJet DeepFlavour p(g)", 20, 0, 1,  0.5*(recoV.daughter(0).deepFlavour().probg + recoV.daughter(1).deepFlavour().probg), theWeight*LumiSF);
@@ -2082,6 +2105,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     theHistograms->fill("mllG_"+histoType + cuts.at(i), 45, 0, 450, mllPh, theWeight*LumiSF);
     theHistograms->fill("mll_vs_mllG_"+histoType + cuts.at(i), "mll_vs_mllG_"+histoType + cuts.at(i)+"; mll [GeV] ; mll#gamma [GeV]", 30, 60, 120, 80, 50, 450, mll, mllPh, theWeight*LumiSF);
     theHistograms->fill("mllG_vs_DRlGs_"+histoType + cuts.at(i), "mllG_vs_DRlGs_"+histoType + cuts.at(i)+"; mll#gamma [GeV] ; #DeltaRl#gamma", 60, 150, 450, 50, 0, 5, mllPh, fabs(physmath::deltaR(nearestChLeptToPhoton.first, nearestChLeptToPhoton.second)), theWeight*LumiSF);
+    theHistograms->fill("MET_"+histoType + cuts.at(i), 40, 0, 200, met->pt(), theWeight*LumiSF);
 
 
 
