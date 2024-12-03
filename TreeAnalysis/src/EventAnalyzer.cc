@@ -343,6 +343,7 @@ void EventAnalyzer::InitOut(FeatList &list, TTree *tree){
   tree->Branch("etaL0",  &list.f_etaL0, "etaL0/D");
   tree->Branch("etaL1",  &list.f_etaL1, "etaL1/D");
 
+  tree->Branch("dPhiZG",  &list.f_dPhiZG, "dPhiZG/D");
   
   tree->Branch("dPhiL0G",  &list.f_dPhiL0G, "dPhiL0G/D");
   tree->Branch("dPhiL1G",  &list.f_dPhiL1G, "dPhiL1G/D");
@@ -378,6 +379,7 @@ void EventAnalyzer::InitOut(FeatList &list, TTree *tree){
   tree->Branch("FWMT5",  &list.f_FWMT5, "FWMT5/D");
   tree->Branch("FWMT6",  &list.f_FWMT6, "FWMT6/D");
 
+  tree->Branch("PhMVAId",  &list.f_PhMVAId, "PhMVAId/D");
   tree->Branch("phIDpassed",  &list.f_phIDpassed, "phIDpassed/I");
   tree->Branch("dRLG",  &list.f_dRLG, "dRLG/D");
   tree->Branch("J0DeepProb_b",  &list.f_J0DeepProb_b, "J0DeepProb_b/D");
