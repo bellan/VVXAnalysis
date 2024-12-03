@@ -23,10 +23,8 @@ using std::cout;
 using std::endl;
 
 using namespace phys;
-
 bool IsARunForMVAFeat=true;
 bool verbose = false;
-bool signalSample = false;
 bool fiducial_run =true;
 double etacut=4.7;
 double ptcut=30;
@@ -35,7 +33,7 @@ double LumiSF=1.0;//7.035--> 2016post||3.32-->2017||2.29-->2018||8.16--> 2016pos
 //double LumiSF=7.42;
 double dR_jetRatio_cut = 0.4;
 double dR_FJRatio_cut = 0.8;
-int cutsToApply=11;
+int cutsToApply=16;
 
 double CRZOFFMassCut = 80;
 double CRZONMassCut  = 85;
@@ -799,9 +797,44 @@ Bool_t VZGAnalyzer::cut(Int_t n, phys::Boson<phys::Jet> recoV, phys::Jet recoFJ,
   case 10://dRlG>0.5
     if (baseline
 	&& fabs(physmath::deltaR(nearestLepToPhoton.first, nearestLepToPhoton.second))> 0.5
-	&& mllGamma>150)
+	&& mllGamma>140)//	&& mllGamma>150)
       return true;
     break;
+  case 11://b veto
+    if (baseline
+	&& ! std::any_of(jets->begin(), jets->end(), [](const Jet& j){ auto dF = j.deepFlavour(); return dF.probb + dF.probbb + dF.problepb > 0.2770; })    // Note: this is the medium WP for Legacy samples (102X)                 
+	//&& SumFWM(0, 't', lljjG) >2.10 //CT
+	&& mllGamma>140)
+      return true;
+    break;
+  case 12://MET<90
+    if (baseline
+	&& ! std::any_of(jets->begin(), jets->end(), [](const Jet& j){ auto dF = j.deepFlavour(); return dF.probb + dF.probbb + dF.problepb > 0.2770; })    // Note: this is the medium WP for Legacy samples (102X)
+	&& met->pt()<90
+	&& mllGamma>140)
+      return true;
+    break;
+  case 13://MET<60
+    if (baseline
+	&& ! std::any_of(jets->begin(), jets->end(), [](const Jet& j){ auto dF = j.deepFlavour(); return dF.probb + dF.probbb + dF.problepb > 0.2770; })    // Note: this is the medium WP for Legacy samples (102X)
+	&& met->pt()<60
+	&& mllGamma>140)
+      return true;
+    break;
+  case 14://MET<50
+    if (baseline
+	&& ! std::any_of(jets->begin(), jets->end(), [](const Jet& j){ auto dF = j.deepFlavour(); return dF.probb + dF.probbb + dF.problepb > 0.2770; })    // Note: this is the medium WP for Legacy samples (102X)
+	&& met->pt()<50
+	&& mllGamma>140)
+      return true;
+    break;
+	
+  default:
+    return true;
+  }
+  return false;
+
+    /*
   case 11://pt V > 90
     if (baseline
 	&& selectedPhotons.at(0).cutBasedIDTight()
@@ -821,7 +854,7 @@ Bool_t VZGAnalyzer::cut(Int_t n, phys::Boson<phys::Jet> recoV, phys::Jet recoFJ,
     return true;
   }
   return false;
-    /*
+    *//*
   case 9://ptj0 > 70
     if (baseline
 	&& (VBTopo==-1 || (KinematicsOK(recoV.daughter(0), 70, etacut) && KinematicsOK(recoV.daughter(1), 40, etacut)))
@@ -960,6 +993,14 @@ void VZGAnalyzer::analyze()
 	cout << "----------------------------------------------------------------" << endl;
 	cout << "DATA sample" << endl;
       }
+
+      if(theSampleInfo.isMC() && (theSampleInfo.fileName().find("WZG")!=std::string::npos || theSampleInfo.fileName().find("ZZG")!=std::string::npos ) ){
+	cout << "----------------------------------------------------------------" << endl;
+	cout << "signal sample" << endl;
+      }else{
+	cout << "----------------------------------------------------------------" << endl;
+	cout << "non-sig sample" << endl;
+      }
   }
   //  genAnalyze();
 
@@ -1038,7 +1079,7 @@ void VZGAnalyzer::analyze()
 
     mostEnergeticPhoton_2P1VL = selectedVLPhotons[0];
   
-    VBTopo_2P1VL=ReconstructAlt(&recoV_2P1VL,&recoFJ_2P1VL,&haveGoodRECODiJetCand_2P1VL,&haveGoodRECOFJCand_2P1VL,&mostEnergeticPhoton_2P1VL, false);
+    VBTopo_2P1VL=Reconstruct(&recoV_2P1VL,&recoFJ_2P1VL,&haveGoodRECODiJetCand_2P1VL,&haveGoodRECOFJCand_2P1VL,&mostEnergeticPhoton_2P1VL, false);
 
     if(inCR2P_1VL( recoV_2P1VL, recoFJ_2P1VL, selectedVLPhotons, VBTopo_2P1VL, VZGMVAScore) ){
       region = "CR2P_1VL";
@@ -1070,7 +1111,7 @@ void VZGAnalyzer::analyze()
   //  std::stable_sort(selectedphotons.begin(), selectedphotons.end(), phys::EComparator());
   mostEnergeticPhoton = selectedphotons[0];
   
-  VBTopo=ReconstructAlt(&recoV,&recoFJ,&haveGoodRECODiJetCand,&haveGoodRECOFJCand,&mostEnergeticPhoton, true);
+  VBTopo=Reconstruct(&recoV,&recoFJ,&haveGoodRECODiJetCand,&haveGoodRECOFJCand,&mostEnergeticPhoton, true);
 
   region="";
   isCR=false;
@@ -1140,9 +1181,12 @@ void VZGAnalyzer::analyze()
 
 void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
 {
+  bool isSignalSample = theSampleInfo.isMC() && (theSampleInfo.fileName().find("WZG")!=std::string::npos || theSampleInfo.fileName().find("ZZG")!=std::string::npos);
+  bool isDYSample = theSampleInfo.isMC() && (theSampleInfo.fileName().find("DY")!=std::string::npos);
+
   passingPresel = false;
   //if(!IsARunForMVAFeat)  return;
-  //if(!IN_GENsignalDef()) return;
+  if(isSignalSample && !IN_GENsignalDef()) return;
   //std::cout<<"0: entering fillFeatTree "<<std::endl;
 
 
@@ -1170,8 +1214,9 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   //  std::stable_sort(selectedphotons.begin(), selectedphotons.end(), phys::EComparator());
   mostEnergeticPhoton = selectedphotons[0];
 
+  if(isDYSample && mostEnergeticPhoton.genStatusFlags().test(phys::isPrompt)) return;
   
-  VBTopo=ReconstructAlt(&recoV,&recoFJ,&haveGoodRECODiJetCand,&haveGoodRECOFJCand,&mostEnergeticPhoton, false);
+  VBTopo=Reconstruct(&recoV,&recoFJ,&haveGoodRECODiJetCand,&haveGoodRECOFJCand,&mostEnergeticPhoton, false);
 
   //while(cut(nbOfCutsPassed, recoV, recoFJ, selectedphotons, VBTopo))    nbOfCutsPassed++;
   
@@ -1201,7 +1246,7 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   //  std::cout<<"4: first vars filled "<<std::endl;
 
   
-  double dPhiL0G, dPhiL1G, dPhiLL, recoVMass, ptl0, ptl1, FWMT0, ptGamma, ptJ0, ptJ1, etaJ0, etaJ1, etaL0, etaL1, FWMT1, FWMT2, FWMT3, FWMT4, FWMT5, FWMT6, dPhiJ0G, dPhiJ1G, dPhiJJ, dPhiL0J0, dPhiL1J1, dPhiL0J1, dPhiL1J0, deltaR_L0Gamma, deltaR_L1Gamma, deltaR_LL, deltaR_JJ, deltaR_J0Gamma, deltaR_J1Gamma, dRLG,       etaG, mjjG, mlljj, mlljjG, ptll, ptjj;
+  double dPhiZG, dPhiL0G, dPhiL1G, dPhiLL, recoVMass, ptl0, ptl1, FWMT0, ptGamma, ptJ0, ptJ1, etaJ0, etaJ1, etaL0, etaL1, FWMT1, FWMT2, FWMT3, FWMT4, FWMT5, FWMT6, dPhiJ0G, dPhiJ1G, dPhiJJ, dPhiL0J0, dPhiL1J1, dPhiL0J1, dPhiL1J0, deltaR_L0Gamma, deltaR_L1Gamma, deltaR_LL, deltaR_JJ, deltaR_J0Gamma, deltaR_J1Gamma, dRLG,       etaG, mjjG, mlljj, mlljjG, ptll, ptjj;
   int nbOfGoodJets=0;
   int nbOfAllJets=0;
   int phIDpassed=0;
@@ -1219,6 +1264,7 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   dPhiL0J1=fabs(physmath::deltaPhi(Z->daughter(0).phi(), recoV.daughter(1).phi() ));
   dPhiL1J1=fabs(physmath::deltaPhi(Z->daughter(1).phi(), recoV.daughter(1).phi() ));
 
+  dPhiZG = fabs(physmath::deltaPhi(Z->phi(),selectedphotons.at(0).phi()) );
   
   std::vector<TLorentzVector> lljjG;
   lljjG.push_back(mostEnergeticPhoton.p4());
@@ -1330,6 +1376,7 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   std::cout<<"etaL1: "<<Z->daughter(1).eta()<<std::endl;//  theHistograms->fill("etaL1", "etaL1", 25,  -2.5, 2.5, Z->daughter(1).eta(), 1);
   */
   
+  list.f_dPhiZG = dPhiZG;
   list.f_dPhiL0G = dPhiL0G;
   list.f_dPhiL1G = dPhiL1G;
   list.f_dPhiLL = dPhiLL;
@@ -1388,6 +1435,8 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   list.f_nbOfGoodJets = nbOfGoodJets;
   list.f_nbOfAllJets = nbOfAllJets;
 
+  list.f_PhMVAId=selectedphotons.at(0).MVAvalue();
+
   list.f_phIDpassed = phIDpassed;//int
   list.f_dRLG = dRLG;  
   list.f_J0DeepProb_b=recoV.daughter(0).deepFlavour().probb;
@@ -1424,7 +1473,7 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   list.f_J1Loose=recoV.daughter(1).passLooseJetID()        ;//bool
   list.f_J0QGL=recoV.daughter(0).qgLikelihood()   ;
   list.f_J1QGL=recoV.daughter(1).qgLikelihood()   ;
-
+  
   passingPresel=true;
 }
 
@@ -1540,7 +1589,7 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
 
   foreach (const phys::Jet &jet, *jets)
   {
-    if (KinematicsOK(jet,ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut) // KinematicsOK(jet)
+    if (KinematicsOK(jet,ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID()) // KinematicsOK(jet)
       selectedJets.push_back(jet);
   }
 
@@ -1822,7 +1871,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
   if (VBTopo ==0) return;
   //  std::cout<<"passing cut 1 in printHistos"<<endl;  
   
-  std::vector<std::string> cuts = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"};
+  std::vector<std::string> cuts = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"};
   std::vector<std::string> orders = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"};
 
   std::string hadTopo="no_jets";
@@ -2172,6 +2221,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     theHistograms->fill("VZGMVAScore'shortRange_"+histoType + cuts.at(i), "VZGMVAScore_"+histoType + cuts.at(i) +"; MVA Score", 22, -0.2, 1.0,  VZGMVAScore, theWeight*LumiSF);
 
     theHistograms->fill("ptGamma_"+histoType + cuts.at(i), "ptGamma_"+histoType + cuts.at(i)+";#gamma pt [GeV]", 50, 0, 200, ptGamma, theWeight*LumiSF);
+    theHistograms->fill("dPhiZG_"+histoType + cuts.at(i), "dPhiZG_"+histoType + cuts.at(i)+";#delta#Phi Z-#gamma", 32, 0, 3.2, fabs(physmath::deltaPhi(Z->phi(),selectedphotons.at(0).phi()) ), theWeight*LumiSF);
 
     theHistograms->fill("mllG_vs_ptGamma_"+histoType + cuts.at(i), "mllG_vs_ptGamma_"+histoType + cuts.at(i)+";mll#gamma [GeV] ; #gamma pt [GeV]", 50, 80, 330, 50, 0, 200, mllG, ptGamma, theWeight*LumiSF);
     theHistograms->fill("mllG_vs_dRL0Gamma_"+histoType + cuts.at(i), "mllG_vs_dRL0Gamma_"+histoType + cuts.at(i)+";mll#gamma [GeV] ; #DeltaR l0 - #gamma", 50, 80, 330, 8, 0, 2.0, mllG, deltaR_L0Gamma, theWeight*LumiSF);
