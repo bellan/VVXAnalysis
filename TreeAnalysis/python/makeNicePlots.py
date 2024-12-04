@@ -21,8 +21,8 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 import CrossInfo
 from CrossInfo import* 
 from ROOT import TH1F,TCanvas, TLegend
-import plotUtils  # GetPredictionsPlot, GetDataPlot
 from plotUtils23 import PlotNotFoundError, InputDir
+from plotUtils23  import GetPredictionsPlot, GetDataPlot, GetClosureStack
 from utils23 import lumi_dict
 from variablesInfo import getVariablesInfo
 import CMS_lumi, tdrstyle
@@ -234,12 +234,12 @@ for Var in variables:
     
     # "Temporary" hack for closure test of photon fake rate
     if False: #'PhFRClosure' in Var and 'PASS' in Var:
-        hMC, leg = plotUtils.GetClosureStack(region, inputDir.get_path(), info, forcePositive=options.forcePositive, verbosity=options.verbosity)
+        hMC, leg = GetClosureStack(region, inputDir.get_path(), info, forcePositive=options.forcePositive, verbosity=options.verbosity)
     else:
         if info.get('special'):
             info['name'] = info['stack']['plot']
         try:
-            (hMC, leg) = plotUtils.GetPredictionsPlot(inputDir, info, predType, mcSet, forcePositive=options.forcePositive, verbosity=options.verbosity)
+            (hMC, leg) = GetPredictionsPlot(inputDir, info, predType, mcSet, forcePositive=options.forcePositive, verbosity=options.verbosity)
         except PlotNotFoundError as e:
             if(options.skip_missing):
                 missing_plots.append(e)
@@ -255,7 +255,7 @@ for Var in variables:
         if info.get('special'):
             info['name'] = info['data']['plot']
         try:
-            (graphData, histodata) = plotUtils.GetDataPlot(inputDir, info, forcePositive=options.forcePositive, verbosity=options.verbosity)
+            (graphData, histodata) = GetDataPlot(inputDir, info, forcePositive=options.forcePositive, verbosity=options.verbosity)
         except PlotNotFoundError as e:
             if(options.skip_missing):
                 missing_plots.append(e)
