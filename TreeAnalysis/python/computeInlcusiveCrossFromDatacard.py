@@ -1,4 +1,4 @@
-g#! /usr/bin/env python
+#!/usr/bin/env python2
 
 ##################################
 ## G. Pinna (UNITO) - Jun 2015 ##

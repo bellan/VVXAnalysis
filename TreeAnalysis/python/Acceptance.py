@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python2
 from optparse import OptionParser
 import ROOT,copy
 ROOT.PyConfig.IgnoreCommandLineOptions = True

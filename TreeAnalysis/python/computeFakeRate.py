@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python2
 import ROOT, copy
 from ROOT import TH1F
 from optparse import OptionParser
