@@ -22,3 +22,6 @@ git clone -b ${branch_VVX} git@github.com:bellan/VVXAnalysis.git || git clone -b
 cd VVXAnalysis/TreeAnalysis
 cmake CMakeLists.txt
 make -j
+
+# Ensure that cmsstyle is installed
+python3 -c "import cmsstyle" || python3 -m pip install --user cmsstyle

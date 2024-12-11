@@ -11,7 +11,7 @@ set -u
 
 CMSSW_VERSION=10_6_26
 branch_ZZ=Run2UL_22
-branch_VVX=${1:-Run2UltraLegacy}
+branch_VVX=Run2UltraLegacy
 checkoutscript=checkout_10X.csh
 
 # Create the CMSSW area
@@ -42,3 +42,6 @@ scram b -j
 
 # Ensure that a generic python exists; if not, make it a symlink to the python3 used by this CMSSW release
 command -v python >/dev/null || ln -s $(which python3) ${CMSSW_BASE}/bin/${SCRAM_ARCH}/python
+
+# Ensure that cmsstyle is installed
+python3 -c "import cmsstyle" || python3 -m pip install --user cmsstyle
