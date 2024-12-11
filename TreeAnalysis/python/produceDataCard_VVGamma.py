@@ -47,6 +47,7 @@ __builtin_config__ = {
         'skip-if-signal': ['pdf', 'QCDscale', 'alphas'],
         'theory': ['QCDscale', 'alphas', 'pdf'],
         'datadriven': ['CMS_fake_g', 'CMS_SMP24014_fake_g_ARstat', 'CMS_fake_m', 'CMS_fake_e'],
+        'split-by-sample-group': ['QCDscale'], # Note: when split, the name changes in the datacard, so this cannot be a shape, otherwise the histogram name must change as well
         '_end':[]
     }
 }
@@ -298,6 +299,16 @@ def main(args):
     ### Process systematics ###
     # MEMO: setdefault(region, {}).setdefault(var, {}).setdefault(sample, {})[syst] = {'up':upVar, 'dn':dnVar}
 
+    # Hack: shape systematics that are uncorrelated across years
+    systs_shape_uncorr = get_shape_uncorrelated(config)
+    for syst in systs_shape_uncorr:
+        for obs_name, obs_systs in systematics[args.region].items():
+            for sample_name, sample_systs in obs_systs.items():
+                # rename the systematic so that it matches the name of the shape histogram
+                sample_systs[syst+'_'+args.year] = sample_systs.pop(syst)
+
+        config['systematics']['correlated'].append(syst+'_'+args.year)
+
     # Order the systematics so that the samples have the same order of the observable section
     missing_systematics = False
     data_syst = {}
@@ -337,6 +348,25 @@ def main(args):
         logging.info('setting group norm uncertainty on %s (%s)', group_name, group_info['value'])
         for sample in group_info['samples']:
             data_syst[sample]['CMS_'+group_name+'_norm'] = group_info['value']
+
+    # Some systematics (e.g. QCDscale) must be split by sample class
+    for syst in config['systematics']['split-by-sample-group']:
+        if  (syst in config['systematics'][  'correlated']): correlation = 'correlated'
+        elif(syst in config['systematics']['uncorrelated']): correlation = 'uncorrelated'
+        else: RuntimeError('Systematic "%s": unspecified if correlated' %(syst))
+
+        for sample, sample_data in data_syst.items():
+            sample_group = get_sample_group(sample)
+            if(sample_group is None):
+                logging.info('Skipping split-by-group for sample "%s" which has no group', sample)
+                sample_data.pop(syst)
+                continue
+            logging.debug('syst: %s, sample: %s -> group: %s', syst, sample, sample_group)
+            new_syst = syst+'_'+sample_group
+            # Remove the old generic entry (e.g. 'QCDscale') and replace it (e.g. with 'QCDscale_VV')
+            sample_data[new_syst] = sample_data.pop(syst)
+            # Specify the same correlation in the config
+            config['systematics'][correlation].append(new_syst)
 
     df_syst = fillDataFrame(data_syst, formatter=format_lnN).fillna(0)
     type_column = []
@@ -495,6 +525,25 @@ def get_strategy_config(config_file):
     config['systematics'].update(fconfig.get('systematics', {}))
 
     return config
+
+
+def get_shape_uncorrelated(config):
+    # Some systematics are:
+    # - uncorrelated: they must be separated by year -> "<SYS>_201*";
+    # - shape: there must two histograms in the rootfile with the exact name name + "Up/Down".
+    # However, the EventAnalyzer should not itself decide if a systematic is or not uncorrelated,
+    # so the year suffix should not be decided there. Rather, we modify the histograms' names when preparing them for Combine.
+    return {syst for syst in config['systematics']['uncorrelated'] if getSystType(syst, config) == 'shape'}
+
+
+def get_shape_groups(config):
+    # Some systematics are:
+    # - shape: there must two histograms in the rootfile with the exact name name + "Up/Down".
+    # - correlated within a group of samples: e.g. QCDscale_VV for ZZ and WZ
+    # - correlated between years
+    # However, the EventAnalyzer should not itself decide if a systematic is or not uncorrelated,
+    # so the year suffix should not be decided there. Rather, we modify the histograms' names when preparing them for Combine.
+    return {syst for syst in config['systematics']['split-by-sample-group'] if getSystType(syst, config) == 'shape'}
 
 
 if __name__ == '__main__':

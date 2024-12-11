@@ -15,8 +15,12 @@ from subprocess import call
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
 from samplesByRegion import getSamplesByRegion
+from produceDataCard_VVGamma import get_shape_uncorrelated, get_strategy_config, getSystType
 from utils23 import lumi_dict
 import re
+
+
+CONFIGS_PATH = 'combine'
 
 
 # Utility functions
@@ -93,6 +97,12 @@ def main(args):
                 logging.info('Skipping prediction type "%s" in region "%s" because: %s', predType, region, e)
         logging.debug('samples_region_info: %s', samples_info_region)
 
+        # Get systematics that have shape and are uncorrelated in any of the strategies
+        config_files = [os.path.join(CONFIGS_PATH, fname) for fname in os.listdir(CONFIGS_PATH) if os.path.splitext(fname)[1] in ('.json', '.jsn')]
+        logging.debug('reading %d configs: %s', len(config_files), config_files)
+        systs_shape_uncorr = get_shape_uncorrelated_many(get_strategy_config(config_file) for config_file in config_files)
+        logging.info('Systematics with shape and uncorrelated: %s', systs_shape_uncorr)
+
         files_info_region = { fname: {'kfactor': sample_data.get('kfactor', 1.)} for sample, sample_data in samples_info_region.items() for fname in sample_data['files'] }
         logging.info('region=%s samples: %s', region, samples_region)
         logging.debug('files_info_region: %s', files_info_region)
@@ -150,6 +160,19 @@ def main(args):
                 if(syst == 'central'):
                     skipIfData = False if len(var_split) == 1 else True
                     out_name = '{sample}{prompt}'.format(sample='%s', prompt=prompt)
+                elif(syst.replace('-','_') in systs_shape_uncorr):
+                    # Hack: special treatment for systematics that have a shape impact and are uncorrelated across years
+                    logging.debug('Special treatment for systematic "%s"', syst)
+                    skipIfData = True
+                    direction = split[3]
+                    out_name = '{sample}{prompt}_{syst}_{year}{direction}'.format(sample='%s', prompt=prompt, syst=syst.replace('-','_'), direction=direction, year=args.year)
+                elif(syst.replace('-','_') in systs_shape_groups):
+                    # Hack: special treatment for systematics that have a shape impact and are correlated among groups of samples, but uncorrelated across years
+                    # Mostly QCDscale and maybe other theoretical uncertainties
+                    logging.debug('Special systematic "%s" - shape, group, year-uncorrelated', syst)
+                    needSampleGroup = True
+                    direction = split[3]
+                    out_name_t='{sample}{prompt}_{syst}_{{group}}{direction}'.format(sample='%s', prompt=prompt, syst=syst.replace('-','_'), direction=direction)
                 else:
                     skipIfData = True
                     direction = split[3]
@@ -247,6 +270,11 @@ def parse_args():
     args.unblind = not args.blind
 
     return args
+
+
+def get_shape_uncorrelated_many(configs):
+    # Just a wrapper around the union of the sets of shape_uncorr systematics in several configs
+    return set.union(*(get_shape_uncorrelated(c) for c in configs))
 
 
 if __name__ == '__main__':
