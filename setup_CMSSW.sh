@@ -9,10 +9,10 @@
 set -e
 set -u
 
-CMSSW_VERSION=10_6_26
-branch_ZZ=Run2UL_22
-branch_VVX=Run2UltraLegacy
-checkoutscript=checkout_10X.csh
+CMSSW_VERSION=13_0_16
+branch_ZZ=Run3
+branch_VVX=el8-py3
+checkoutscript=checkout_13X.csh
 
 # Create the CMSSW area
 cmsrel CMSSW_${CMSSW_VERSION}
@@ -36,6 +36,7 @@ patch CommonLHETools/LHEHandler/src/LHEHandler.cc <<EOF
 914d913
 <         throw cms::Exception("LHEWeights") << "Don't know what to do with alternate weight id = " << wgtid << " (weightstype == " << weightstype << ")";
 EOF
+(eval $(MelaAnalytics/setup.sh env); cd CommonLHETools; scram b -j)
 
 # Compile with SCRAM
 scram b -j
