@@ -235,6 +235,7 @@ private:
   void debug3Lregion();
   void photonGenStudy();
   void ZllVsZllGstudy(const std::vector<phys::Photon>&, const char*);
+  void debugSingleMu();
 
   // void printCSVheader(std::ofstream&);
   // void printCSV(std::ofstream&);

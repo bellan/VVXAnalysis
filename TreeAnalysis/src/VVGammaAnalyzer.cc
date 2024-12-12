@@ -427,6 +427,7 @@ Int_t VVGammaAnalyzer::cut() {
     // theHistograms->fill("cherry_ZZ_goodLept", "Events in {UL#backslashLegacy}: # good leptons"           , 5,-0.5,4.5, ZZ->numberOfGoodGrandDaughters(), theWeight);
     // theHistograms->fill("cherry_ZZ_badLept" , "Events in {UL#backslashLegacy}: # bad leptons"            , 5,-0.5,4.5, ZZ->numberOfBadGrandDaughters() , theWeight);
   // }
+  debugSingleMu();
   
   std::bitset<32> genCategory_bits(genCategory);
   theHistograms->fill("AAA_genCategory"  , "gen category weighted"  , BIN_GENCATEGORY, 0, theWeight);
@@ -3546,6 +3547,53 @@ void VVGammaAnalyzer::ZllVsZllGstudy(const std::vector<phys::Photon>& phvect, co
   theHistograms->fill(Form("Zll_mass_%s"               , label), ";m_{ll}"             , 30,60.,120. , Zll_mass, theWeight);
   theHistograms->fill(Form("ZllG_mass_%s"              , label), ";m_{ll#gamma}"       , 40,60.,160. , ZllG_mass, theWeight);
   theHistograms->fill(Form("Zll_mass_plus_ZllG_mass_%s", label), ";m_{ll}+m_{ll#gamma}", 40,120.,320., Zll_mass+ZllG_mass, theWeight);
+}
+
+
+void VVGammaAnalyzer::debugSingleMu(){
+  std::bitset<16> triggerBits(triggerWord);
+  // bool passOneTrigger = triggerBits.test(0);  // triggerWord << 0 & 0x1
+  bool passDiMu       = triggerBits.test(1);  // triggerWord << 1 & 0x1
+  bool passDiEle      = triggerBits.test(2);  // triggerWord << 2 & 0x1
+  bool passMuEle      = triggerBits.test(3);  // triggerWord << 3 & 0x1
+  bool passTriEle     = triggerBits.test(4);  // triggerWord << 4 & 0x1
+  bool passTriMu      = triggerBits.test(5);  // triggerWord << 5 & 0x1
+  bool passSingleEle  = triggerBits.test(6);  // triggerWord << 6 & 0x1
+  bool passSingleMu   = triggerBits.test(7);  // triggerWord << 7 & 0x1
+
+  bool onlySingleMu = passSingleMu && !(passDiMu || passDiEle || passMuEle || passTriEle || passTriMu || passSingleEle);
+  std::vector<Lepton> muonsZZ;
+  std::copy_if(leptons_->begin(), leptons_->end(), std::back_inserter(muonsZZ), [](const Lepton& l){
+      return abs(l.id()) == 13;
+    });
+
+  std::sort(muonsZZ.begin(), muonsZZ.end(), [](const Lepton& a, const Lepton& b){ return a.pt() > b.pt(); });
+
+  bool hasMu0  = muonsZZ.size() > 0;
+  bool hasMu20 = hasMu0 && muonsZZ.at(0).pt() > 20;
+  bool hasMu24 = hasMu0 && muonsZZ.at(0).pt() > 24;
+  bool hasMu27 = hasMu0 && muonsZZ.at(0).pt() > 27;
+  double mupt = (muonsZZ.size() > 0 ? muonsZZ.at(0).pt() : 0.);
+  if(onlySingleMu){
+    theHistograms->fill("DEBUG_SingleMu_mupt", "Events triggered only by SingleMu;p_{T}^{#mu} [GeV];Events", 60,0,60., mupt, theWeight);
+    if(goodPhotons_["central"]->size() > 0)
+      theHistograms->fill("DEBUG_SingleMu_loose_mupt", "Events triggered only by SingleMu;p_{T}^{#mu} [GeV];Events", 60,0,60., mupt, theWeight);
+  }
+
+  fillCutFlow("DEBUG_SingleMu_cuts", ";cut;Events", {
+      {"IsoMu27 only", onlySingleMu},
+      {"has #mu"         , hasMu0 },
+      {"p_{T}^{#mu} > 20", hasMu20},
+      {"p_{T}^{#mu} > 24", hasMu24},
+      {"p_{T}^{#mu} > 27", hasMu27}
+    }, theWeight);
+  fillCutFlow("DEBUG_SingleMu_cutsrev", ";cut;Events", {
+      {"IsoMu27 only", onlySingleMu},
+      {"p_{T}^{#mu} < 27", !hasMu27},
+      {"p_{T}^{#mu} < 24", !hasMu24},
+      {"p_{T}^{#mu} < 20", !hasMu20},
+      {"no #mu"          , !hasMu0 }
+    }, theWeight);
 }
 
 
