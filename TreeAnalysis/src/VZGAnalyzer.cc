@@ -23,7 +23,7 @@ using std::cout;
 using std::endl;
 
 using namespace phys;
-bool IsARunForMVAFeat=true;
+bool IsARunForMVAFeat=false;
 bool verbose = false;
 bool fiducial_run =true;
 double etacut=4.7;
@@ -284,6 +284,7 @@ bool VZGAnalyzer::IN_GENsignalDef_excludingFSR()
 
 double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet recoFJ, std::vector<phys::Photon> selectedphotons, int VBTopo)
 {
+  //  std::cout<<">>MVAScore builder called"<<endl;
   double VZGMVAScore=-2.;
   if(!cut(2, recoV, recoFJ, selectedphotons, VBTopo, VZGMVAScore)) return -2.;
 
@@ -372,7 +373,11 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
   float ZepCorr_G = fabs(selectedphotons.at(0).eta() -  meanEtaJ );
   float ptGamma=selectedphotons.at(0).pt();
   float mllG=  llPh.M();
- 
+
+  float PhMVAId=selectedphotons.at(0).MVAvalue();
+  float dPhiZG=fabs(physmath::deltaPhi(Z->phi(),selectedphotons.at(0).phi()) );
+  float ptjj=  recoV.pt();
+
 
   float J0MuFrac=recoV.daughter(0).muonEnergyFraction() ;//float
   float J1MuFrac=recoV.daughter(1).muonEnergyFraction() ;//float
@@ -382,7 +387,7 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
   float J1PhFrac=recoV.daughter(1).photonEnergyFraction() ;//float
 
   TMVA::Reader *reader = new TMVA::Reader("Color:Silent");
-
+  /*
   reader->AddVariable("ptJ1", &ptJ1);
   reader->AddVariable("ptGamma",&ptGamma);
   reader->AddVariable("mllPh",&mllG);
@@ -402,7 +407,23 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
   reader->AddVariable("sqrt((ptJ0+ptJ1*cos(dPhiJJ))*(ptJ0+ptJ1*cos(dPhiJJ))+(ptJ1*sin(dPhiJJ))*(ptJ1*sin(dPhiJJ)))",&vectSumJpt);
   reader->AddVariable("fabs(etaJ0-etaJ1)",&dEtaJJ);
   reader->AddVariable("fabs((etaG -(etaL0 + etaL1)/2))",&ZepCorr_G);
-    
+  */
+  reader->AddVariable("ptJ1", &ptJ1);
+  reader->AddVariable("ptjj", &ptjj);
+  reader->AddVariable("ptGamma",&ptGamma);
+  reader->AddVariable("mllPh",&mllG);
+  reader->AddVariable("deltaR_J0Gamma",&deltaR_J0Gamma);
+  reader->AddVariable("deltaR_J1Gamma",&deltaR_J1Gamma);
+  reader->AddVariable("dPhiZG",&dPhiZG);
+  reader->AddVariable("recoVMass",&recoVMass);
+  reader->AddVariable("dRLG",&dRLG);
+  reader->AddVariable("PhMVAId",  &PhMVAId);
+  reader->AddVariable("J0Girth",  &J0Girth);
+  reader->AddVariable("J1Girth",  &J1Girth);
+  reader->AddVariable("J1DeepProb_g",  &J1PG);
+  reader->AddVariable("J0DeepProb_uds",  &J0Puds);
+
+  
   /*
     std::string weightMVAfile = "/eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/TMVAClassification__BDT_Xgrad_d3_N030.weights.xml";
     std::ifstream MVAfile(weightMVAfile.c_str());
@@ -411,10 +432,10 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
     }
     MVAfile.close();
   */
-  reader->BookMVA("BDT", "/eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/TMVAClassification__BDT_Xgrad_d3_N030.weights.xml");
+  reader->BookMVA("BDT", "/eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/VL_full_BDT_Xgrad_d3_N030.weights.xml");
   VZGMVAScore = reader->EvaluateMVA("BDT");
   reader->~Reader();
-
+  //  std::cout<<">>>>MVAScore builder returning "<<VZGMVAScore<<endl;
   return VZGMVAScore;
 }
 
@@ -801,23 +822,21 @@ Bool_t VZGAnalyzer::cut(Int_t n, phys::Boson<phys::Jet> recoV, phys::Jet recoFJ,
       return true;
     break;
     
-  case 11://b veto
+  case 11://MET<90
     if (baseline
-	&& ! std::any_of(jets->begin(), jets->end(), [](const Jet& j){ auto dF = j.deepFlavour(); return dF.probb + dF.probbb + dF.problepb > 0.2770; })    // Note: this is the medium WP for Legacy samples (102X)                 
-	&& mllGamma>140)
-      return true;
-    break;
-  case 12://MET<90
-    if (baseline
-	&& ! std::any_of(jets->begin(), jets->end(), [](const Jet& j){ auto dF = j.deepFlavour(); return dF.probb + dF.probbb + dF.problepb > 0.2770; })    // Note: this is the medium WP for Legacy samples (102X)
 	&& met->pt()<90
 	&& mllGamma>140)
       return true;
     break;
-  case 13://MET<60
+  case 12://MET<60
     if (baseline
-	&& ! std::any_of(jets->begin(), jets->end(), [](const Jet& j){ auto dF = j.deepFlavour(); return dF.probb + dF.probbb + dF.problepb > 0.2770; })    // Note: this is the medium WP for Legacy samples (102X)
 	&& met->pt()<60
+	&& mllGamma>140)
+      return true;
+    break;
+  case 13://MET<50
+    if (baseline
+	&& met->pt()<50
 	&& mllGamma>140)
       return true;
     break;
@@ -975,7 +994,7 @@ void VZGAnalyzer::analyze()
 
   double VZGMVAScore = -2.;
   std::string region = "";
-  
+
   if(verbose==true)    {
 
     cout << "----------------------------------------------------------------" << endl;
@@ -1052,19 +1071,23 @@ void VZGAnalyzer::analyze()
     }else{
       printHistos(0, "bckg", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
     }
-    printHistos(0, "all", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);   
-    if(!isFSR) printHistos(0, "dib", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
-    else printHistos(0, "fsr", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);   
-    if(!promptPhExists) printHistos(0, "nonPrompt", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
-    else printHistos(0, "prompt", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
-    
+    printHistos(0, "all", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+    if(!isFSR){
+      printHistos(0, "dib", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+    }else{
+      printHistos(0, "fsr", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+    }
+    if(!promptPhExists) {
+      printHistos(0, "nonPrompt", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+    }else{
+      printHistos(0, "prompt", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+    }
     //    std::cout<<"No Loose Photons "<<selectedphotons.size()<<std::endl;
 
     isCR = true;
     if(selectedVLPhotons.size()<1){
 
-      //      std::cout<<"No Loose Photons, but no VL Photons "<<selectedVLPhotons.size()<<std::endl;
-
+      //      std::cout<<"No Loose Photons, but no VL Photons either"<<selectedVLPhotons.size()<<std::endl;
       return;//NOTE: it does exist at least 1 VL photon but there are no Loose Photons at all 
     }
 
@@ -1082,16 +1105,24 @@ void VZGAnalyzer::analyze()
 	  //    if(inCR2P_1L( recoV_2P1VL, recoFJ_2P1VL, selectedVLPhotons, VBTopo_2P1VL, VZGMVAScore) ){
 	  //      region = "CR2P_1L";
 
+      //      std::cout<<"region: "<<region<<endl;
 
-      if (IN_GENsignalDef())	printHistos(4, "sign", recoV_2P1VL, recoFJ_2P1VL, selectedVLPhotons, VBTopo_2P1VL, region, isCR);   
-      else	printHistos(4, "bckg", recoV_2P1VL, recoFJ_2P1VL, selectedVLPhotons, VBTopo_2P1VL, region, isCR);
-
+      if (IN_GENsignalDef()){
+	printHistos(4, "sign", recoV_2P1VL, recoFJ_2P1VL, selectedVLPhotons, VBTopo_2P1VL, region, isCR);   
+      }else{
+	printHistos(4, "bckg", recoV_2P1VL, recoFJ_2P1VL, selectedVLPhotons, VBTopo_2P1VL, region, isCR);
+      }
       printHistos(4, "all", recoV_2P1VL, recoFJ_2P1VL, selectedVLPhotons, VBTopo_2P1VL, region, isCR);   
-
-      if(!isFSR) printHistos(4, "dib", recoV, recoFJ, selectedVLPhotons, VBTopo_2P1VL, region, isCR);
-      else printHistos(4, "fsr", recoV, recoFJ, selectedVLPhotons, VBTopo_2P1VL, region, isCR);      
-      if(!promptPhExists) printHistos(4, "nonPrompt", recoV_2P1VL, recoFJ_2P1VL, selectedVLPhotons, VBTopo_2P1VL, region, isCR);
-      else printHistos(4, "prompt", recoV_2P1VL, recoFJ_2P1VL, selectedVLPhotons, VBTopo_2P1VL, region, isCR);
+      if(!isFSR){
+	printHistos(4, "dib", recoV, recoFJ, selectedVLPhotons, VBTopo_2P1VL, region, isCR);
+      }else{
+	printHistos(4, "fsr", recoV, recoFJ, selectedVLPhotons, VBTopo_2P1VL, region, isCR);      
+      }
+      if(!promptPhExists){
+	printHistos(4, "nonPrompt", recoV_2P1VL, recoFJ_2P1VL, selectedVLPhotons, VBTopo_2P1VL, region, isCR);
+      }else{
+	printHistos(4, "prompt", recoV_2P1VL, recoFJ_2P1VL, selectedVLPhotons, VBTopo_2P1VL, region, isCR);
+      }
     }
     return;
   }
@@ -1239,7 +1270,7 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   //  std::cout<<"4: first vars filled "<<std::endl;
 
   
-  double dPhiZG, dPhiL0G, dPhiL1G, dPhiLL, recoVMass, ptl0, ptl1, FWMT0, ptGamma, ptJ0, ptJ1, etaJ0, etaJ1, etaL0, etaL1, FWMT1, FWMT2, FWMT3, FWMT4, FWMT5, FWMT6, dPhiJ0G, dPhiJ1G, dPhiJJ, dPhiL0J0, dPhiL1J1, dPhiL0J1, dPhiL1J0, deltaR_L0Gamma, deltaR_L1Gamma, deltaR_LL, deltaR_JJ, deltaR_J0Gamma, deltaR_J1Gamma, dRLG,       etaG, mjjG, mlljj, mlljjG, ptll, ptjj;
+  double dPhiZG, dPhiL0G, dPhiL1G, dPhiLL, recoVMass, ptl0, ptl1, FWMT0, ptGamma, ptJ0, ptJ1, etaJ0, etaJ1, etaL0, etaL1, FWMT1, FWMT2, FWMT3, FWMT4, FWMT5, FWMT6, dPhiJ0G, dPhiJ1G, dPhiJJ, dPhiL0J0, dPhiL1J1, dPhiL0J1, dPhiL1J0, deltaR_L0Gamma, deltaR_L1Gamma, deltaR_LL, deltaR_JJ, deltaR_J0Gamma, deltaR_J1Gamma, dRLG,       etaG, mjjG, mlljj, mlljjG, ptll, ptjj, HT;
   int nbOfGoodJets=0;
   int nbOfAllJets=0;
   int phIDpassed=0;
@@ -1466,7 +1497,8 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   list.f_J1Loose=recoV.daughter(1).passLooseJetID()        ;//bool
   list.f_J0QGL=recoV.daughter(0).qgLikelihood()   ;
   list.f_J1QGL=recoV.daughter(1).qgLikelihood()   ;
-  
+
+  list.f_HT=lljjPh.Pt();
   passingPresel=true;
 }
 
@@ -1582,7 +1614,7 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
 
   foreach (const phys::Jet &jet, *jets)
   {
-    if (KinematicsOK(jet,ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID()) // KinematicsOK(jet)
+    if (KinematicsOK(jet,ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID())// && jet.deepFlavour().probb + jet.deepFlavour().probbb + jet.deepFlavour().problepb < 0.2770)
       selectedJets.push_back(jet);
   }
 
@@ -2207,7 +2239,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     //    theHistograms->fill("VZGMVAScore", "VZGMVAScore", 31, -2.1, 1.0,  VZGMVAScore, theWeight*LumiSF);
 
     
-    theHistograms->fill("PhotonMVAID_"+histoType + cuts.at(i), "PhotonMVAID_"+histoType + cuts.at(i) +"; Photon MVA ID", 40, 0., 1.,  selectedphotons.at(0).MVAvalue(), theWeight*LumiSF);
+    theHistograms->fill("PhotonMVAID_"+histoType + cuts.at(i), "PhotonMVAID_"+histoType + cuts.at(i) +"; Photon MVA ID", 80, -1., 1.,  selectedphotons.at(0).MVAvalue(), theWeight*LumiSF);
 
     
     theHistograms->fill("VZGMVAScore_"+histoType + cuts.at(i), "VZGMVAScore_"+histoType + cuts.at(i) +"; MVA Score", 80, -1.0, 1.0,  VZGMVAScore, theWeight*LumiSF);
