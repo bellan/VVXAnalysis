@@ -429,6 +429,8 @@ void EventAnalyzer::InitOut(FeatList &list, TTree *tree){
   tree->Branch("mlljj",  &list.f_mlljj, "mlljj/D");
   tree->Branch("mjjG",  &list.f_mjjG, "mjjG/D");
 
+  tree->Branch("HT",  &list.f_HT, "HT/D");
+    
 }
 
 
@@ -449,7 +451,7 @@ void EventAnalyzer::loop(const std::string outputfile){
   
   FeatList myFeatList;
   bool isPreselected = false;
-  InitOut(myFeatList, myFeatTree);
+  if(doFeats_) InitOut(myFeatList, myFeatTree);
   
   for (Long64_t jentry=0; jentry<nentries; ++jentry) {
     Long64_t ientry = LoadTree(jentry);
@@ -458,18 +460,27 @@ void EventAnalyzer::loop(const std::string outputfile){
     if (cut() < 0) continue;
     theCutCounter += theWeight;
     if(doBasicPlots_) fillBasicPlots();
+    //    std::cout<<"---------------------------------------------------------------"<<endl;
+    //    std::cout<<"entering analyze()"<<endl;
     analyze();
+    //    std::cout<<"exiting analyze()"<<endl;
     if(doFeats_) fillFeatTree(myFeatList, isPreselected);
-    //    if(isPreselected) std::cout<<isPreselected<<endl;
+    //if(isPreselected) std::cout<<isPreselected<<endl;
     if(isPreselected) myFeatTree->Fill();
   }
+  if(doFeats_){
+    std::cout<<"moving to outFeatFile"<<endl;
+    outFeatFile.cd();
+    std::cout<<"writing on outFeatFile"<<endl;
+    //end(outFeatFile);
+    outFeatFile.Write();
+    std::cout<<"outFeatFile written"<<endl;
 
-  outFeatFile.cd();
-  //end(outFeatFile);
-  outFeatFile.Write();
+    
+  }
     
   outFeatFile.Close();
-
+  std::cout<<"outFeatFile closed"<<endl;
   
   for(std::pair<phys::RegionTypes, Histogrammer> regHist : mapRegionHisto_){
     std::string regionName = phys::regionType(regHist.first);

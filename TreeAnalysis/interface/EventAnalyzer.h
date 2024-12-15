@@ -51,7 +51,7 @@ class TH1;
 class TString;
 struct FeatList{
   double f_weight, f_mll, f_ptGamma, f_ptl1, f_ptl2, f_ptJ0, f_ptJ1, f_etaL0, f_etaL1, f_etaJ0, f_etaJ1, f_dPhiL0G, f_dPhiL1G, f_dPhiLL, f_dPhiJ0G, f_dPhiJ1G, f_dPhiJJ, f_dPhiL0J0, f_dPhiL1J0, f_dPhiL0J1, f_dPhiL1J1, f_recoVMass, f_deltaR_L0Gamma, f_deltaR_L1Gamma, f_deltaR_J0Gamma, f_deltaR_J1Gamma, f_deltaR_LL, f_deltaR_JJ, f_FWMT0, f_FWMT1, f_FWMT2, f_FWMT3, f_FWMT4, f_mllPh, f_FWMT5, f_FWMT6,
-    f_dRLG,   f_J0DeepProb_b,   f_J1DeepProb_b,  f_J0DeepProb_c, f_J1DeepProb_c, f_J0DeepProb_g, f_J1DeepProb_g, f_J0DeepProb_lepb, f_J1DeepProb_lepb, f_J0DeepProb_uds, f_J1DeepProb_uds,f_J0Girth, f_J1Girth, f_J0GirthCh, f_J1GirthCh, f_J0Area, f_J1Area, f_J0QGL, f_J1QGL     ,   f_etaG, f_ptll, f_ptjj, f_mlljjPh, f_mjjG, f_mlljj, f_PhMVAId, f_dPhiZG   ;
+    f_dRLG,   f_J0DeepProb_b,   f_J1DeepProb_b,  f_J0DeepProb_c, f_J1DeepProb_c, f_J0DeepProb_g, f_J1DeepProb_g, f_J0DeepProb_lepb, f_J1DeepProb_lepb, f_J0DeepProb_uds, f_J1DeepProb_uds,f_J0Girth, f_J1Girth, f_J0GirthCh, f_J1GirthCh, f_J0Area, f_J1Area, f_J0QGL, f_J1QGL     ,   f_etaG, f_ptll, f_ptjj, f_mlljjPh, f_mjjG, f_mlljj, f_PhMVAId, f_dPhiZG, f_HT   ;
   int f_nbOfGoodJets, f_nbOfAllJets, f_phIDpassed,
     f_J0ChMult, f_J1ChMult, f_J0NeuMult, f_J1NeuMult;
   float f_J0ChEmFrac, f_J1ChEmFrac, f_J0NeuEmFrac, f_J1NeuEmFrac, f_J0MuFrac, f_J1MuFrac, f_J0EleFrac, f_J1EleFrac, f_J0PhFrac, f_J1PhFrac ;//float                                                       
