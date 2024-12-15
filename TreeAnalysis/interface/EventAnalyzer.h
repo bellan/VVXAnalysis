@@ -154,14 +154,12 @@ public:
 
   //CT: Feature Tree helper class
   TTree* theFeatTree;  // Points to the FeatSelector for the current region
-  //  std::map<phys::RegionTypes, TTree> mapRegionTree_;  // Maps every region to a corresponding FeatSelector
-  //  std::map<TString, Double_t>* featList_;//AKA typedef featMap featMap_
-  //  std::map<phys::RegionTypes, std::map<TString, Double_t>*> mapRegionFeatList_;
-  bool doFeats_;
 
   
   // MC helper class
   SampleInfo theSampleInfo;
+
+  bool doFeats_;  // true if the analyzer is supposed to fill a feature tree to train a BDT
 
   double theWeight;
   double theSampleWeight;
