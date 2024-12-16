@@ -863,6 +863,19 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   // JES
   output.jecUnc_    = jet.hasUserFloat("jec_unc") ? jet.userFloat("jec_unc") : -999;
 
+  output.jesUnc_.Total          = jet.hasUserFloat("jes_unc_split_Total"         ) ? jet.userFloat("jes_unc_split_Total"         ) : -999;
+  output.jesUnc_.Abs            = jet.hasUserFloat("jes_unc_split_Abs"           ) ? jet.userFloat("jes_unc_split_Abs"           ) : -999;
+  output.jesUnc_.Abs_year       = jet.hasUserFloat("jes_unc_split_Abs_year"      ) ? jet.userFloat("jes_unc_split_Abs_year"      ) : -999;
+  output.jesUnc_.BBEC1          = jet.hasUserFloat("jes_unc_split_BBEC1"         ) ? jet.userFloat("jes_unc_split_BBEC1"         ) : -999;
+  output.jesUnc_.BBEC1_year     = jet.hasUserFloat("jes_unc_split_BBEC1_year"    ) ? jet.userFloat("jes_unc_split_BBEC1_year"    ) : -999;
+  output.jesUnc_.EC2            = jet.hasUserFloat("jes_unc_split_EC2"           ) ? jet.userFloat("jes_unc_split_EC2"           ) : -999;
+  output.jesUnc_.EC2_year       = jet.hasUserFloat("jes_unc_split_EC2_year"      ) ? jet.userFloat("jes_unc_split_EC2_year"      ) : -999;
+  output.jesUnc_.FlavQCD        = jet.hasUserFloat("jes_unc_split_FlavQCD"       ) ? jet.userFloat("jes_unc_split_FlavQCD"       ) : -999;
+  output.jesUnc_.HF             = jet.hasUserFloat("jes_unc_split_HF"            ) ? jet.userFloat("jes_unc_split_HF"            ) : -999;
+  output.jesUnc_.HF_year        = jet.hasUserFloat("jes_unc_split_HF_year"       ) ? jet.userFloat("jes_unc_split_HF_year"       ) : -999;
+  output.jesUnc_.RelBal         = jet.hasUserFloat("jes_unc_split_RelBal"        ) ? jet.userFloat("jes_unc_split_RelBal"        ) : -999;
+  output.jesUnc_.RelSample_year = jet.hasUserFloat("jes_unc_split_RelSample_year") ? jet.userFloat("jes_unc_split_RelSample_year") : -999;
+
   // JER
   if(isMC_){                                                                                                         
     output.pt_nojer_    = jet.hasUserFloat("pt_nojer") ? jet.userFloat("pt_nojer") : -999;

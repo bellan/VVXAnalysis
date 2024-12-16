@@ -40,7 +40,24 @@ namespace phys {
       float probbb   = -2.;
       float probuds  = -2.;
     };
-    
+
+    struct JesUncSources {
+      // Jet energy uncertainties on the pt split by source
+      // To be applied as pt(<var>) = pt * (1 +- <var>)
+      Float_t Total;
+      Float_t Abs;
+      Float_t Abs_year;
+      Float_t BBEC1;
+      Float_t BBEC1_year;
+      Float_t EC2;
+      Float_t EC2_year;
+      Float_t FlavQCD;
+      Float_t HF;
+      Float_t HF_year;
+      Float_t RelBal;
+      Float_t RelSample_year;
+    };
+
     /// Constructor
     Jet(const TLorentzVector& p = TLorentzVector(0.,0.,0.,0.), float q =0, int pid = 0)
       : Particle(p, q, pid)
@@ -123,6 +140,7 @@ namespace phys {
     Double_t rawFactor()     const {return rawFactor_;}
     
     // Uncertainty on four vector energy scale
+    const JesUncSources& jesUnc() const { return jesUnc_; }
     Double_t jecUncertainty() const {return  jecUnc_;}
 
     // Pile-up full-id
@@ -211,6 +229,7 @@ namespace phys {
     
     // Uncertainty on four vector energy scale
     float jecUnc_;
+    JesUncSources jesUnc_;
 
     // return the matched MC parton flavour
     Int_t mcPartonFlavour_;
@@ -239,7 +258,7 @@ namespace phys {
     float puppiMass_;
 
 
-    ClassDef(Jet, 2)
+    ClassDef(Jet, 3)
   };
 }
 
