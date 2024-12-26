@@ -30,21 +30,21 @@ using namespace std;
 
 void VZGammaRecoEfficiencyAnalysis(TString requestedSample) {
   
-  TString path = "/eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/results/2017/VZGAnalyzer_MC/";
+  TString path = "/eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/results/2016preVFP/VZGAnalyzer_SR2P/";
 
   vector<TString> samples = {"WZGTo2L2jG", "ZZGTo2L2jG"};
   vector<TString> parNames = {"W","Z"};
-  vector<TString> typeNames = {"Pt"};
-  vector<TString> algNames = {"m6W4Z", "m7W3Z", "m8W2Z", "m9W1Z"};//{"mW", "mZ", "mWZ", "m8W2Z"};
+  vector<TString> typeNames = {"Pt"}; 
+  vector<TString> algNames = {"mjjBased", "mixSmth01", "mixSmth05", "mixSmth10", "mixSmth20", "mixSmth100", "qglBased"};//{"mW", "mZ", "mWZ", "m8W2Z"};
 
   map<TString, TString> algConv;
-  algConv[TString("mW")] = TString("V cand w/mass closest to m_{W}");
-  algConv[TString("mZ")] = TString("V cand w/mass closest to m_{Z}");
-  algConv[TString("mWZ")] = TString("V cand w/mass closest to the closest m_{V}");
-  algConv[TString("m8W2Z")] = TString("V cand w/mass closer 0.8*m_{W}+0.2*m_{Z}");
-  algConv[TString("m6W4Z")] = TString("V cand w/mass closer 0.6*m_{W}+0.4*m_{Z}");
-  algConv[TString("m7W3Z")] = TString("V cand w/mass closer 0.7*m_{W}+0.3*m_{Z}");
-  algConv[TString("m9W1Z")] = TString("V cand w/mass closer 0.9*m_{W}+0.1*m_{Z}");
+  algConv[TString("mjjBased")]   = TString("DiJet mass based");
+  algConv[TString("qglBased")]   = TString("DiJet QGL based");
+  algConv[TString("mixSmth01")]  = TString("Weight transition par. = 1/10");
+  algConv[TString("mixSmth05")]  = TString("Weight transition par. = 1/2");
+  algConv[TString("mixSmth10")]  = TString("Weight transition par. = 1");
+  algConv[TString("mixSmth20")]  = TString("Weight transition par. = 2");
+  algConv[TString("mixSmth100")] = TString("Weight transition par. = 10");
 
 
   TString sampleName, name;
@@ -66,41 +66,46 @@ void VZGammaRecoEfficiencyAnalysis(TString requestedSample) {
   cout<<"Opening \""<<sampleName<<".root\"\n";
   TFile* result = TFile::Open(path + sampleName + ".root");
 
-  TCanvas *cDrawing = new TCanvas(name + "ReconstructionEfficiency_vs_" + typeNames.at(0), name + "ReconstructionEfficiency_vs_" + typeNames.at(0), 10, 0, 1280, 1024);
+  TCanvas *cDrawing = new TCanvas(name + "ReconstructionEfficiency_vs_" + typeNames.at(0), name + "ReconstructionEfficiency_vs_" + typeNames.at(0), 0, 0, 800, 800);
 
-  TLegend* legend = new TLegend(0.65, 0.75, 0.9, 0.9);
+  TLegend* legend = new TLegend(0.15, 0.15, 0.45, 0.45);
   legend->SetBorderSize(1);
 
   int nGraphs = 0;
 
   // Array di colori per i grafici dei rapporti
-  Color_t colors[] = {kRed, kBlue, kGreen, kOrange, kMagenta};
+  Color_t colors[] = {kRed, kOrange+2, kOrange-3, kAzure, kSpring, kBlue, kViolet  };
+  Int_t markerStyles[] = {20,22,23,24,26,27,21  };
 
   foreach(TString& alg, algNames) {
     foreach(TString& type, typeNames) {
       TH1F* hNum = (TH1F*)result->Get(type+"_"+alg+"_num");
+      //      hNum->Rebin(2);
       if(hNum == nullptr) {
         cout<<"Could not open gen"<<type<<"_"<<alg<<"_num""\"\n";
         continue;
       }
 
       TH1F* hDen = (TH1F*)result->Get(type+"_den");
+      //      hDen->Rebin(2);
       if(hDen == nullptr) {
         cout<<"Could not open gen"<<name<<type<<"_"<<sampleName<<"_"<<alg<<"_den""\"\n";
         continue;
       }
 
-      TGraphAsymmErrors* hEff = new TGraphAsymmErrors(hNum, hDen, "cp");
-      hEff->SetTitle("VB Reconstruction Efficiency");
-      hEff->GetYaxis()->SetRangeUser(0.4, 1.01);
+      TGraphAsymmErrors* hEff = new TGraphAsymmErrors(hNum, hDen, "n");
+      hEff->SetTitle(name+" Reconstruction Efficiency");
+      hEff->GetYaxis()->SetRangeUser(0., 1.01);
 
-      hEff->SetLineColor(colors[nGraphs]); // Imposta il colore del grafico del rapporto
+      hEff->SetLineColor(colors[nGraphs]);
+      hEff->SetMarkerStyle(markerStyles[nGraphs]);
+      hEff->SetMarkerColor(colors[nGraphs]);
 
       hEff->Draw(nGraphs == 0 ? "AP" : "P SAME");
 
-      hEff->GetXaxis()->SetTitle("p_{T}^{VCand} (GeV/c)");
+      hEff->GetXaxis()->SetTitle("p_{T} V had. Cand.");
       hEff->GetXaxis()->SetTitleSize(0.035);
-      hEff->GetYaxis()->SetTitle("VB Reconstruction Efficiency");
+      hEff->GetYaxis()->SetTitle(name+" Reconstruction Efficiency");
       hEff->GetYaxis()->SetTitleSize(0.035);
 
       TString legendEntry = algConv[alg];
