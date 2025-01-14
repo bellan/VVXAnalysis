@@ -82,7 +82,6 @@ namespace phys {
       , secvtxMass_(-9999.)
       , qgLikelihood_ (-99.)
       , rawFactor_(-9999.)
-      , jecUnc_(-9999.)
       , mcPartonFlavour_(-1)
       , passLooseId_(false)
       , fullPuId_(-1)
@@ -141,7 +140,7 @@ namespace phys {
     
     // Uncertainty on four vector energy scale
     const JesUncSources& jesUnc() const { return jesUnc_; }
-    Double_t jecUncertainty() const {return  jecUnc_;}
+    Double_t jecUncertainty() const { return jesUnc().Total; }
 
     // Pile-up full-id
     Bool_t fullPuId(int level = 1) const {
@@ -228,7 +227,6 @@ namespace phys {
     float rawFactor_;
     
     // Uncertainty on four vector energy scale
-    float jecUnc_;
     JesUncSources jesUnc_;
 
     // return the matched MC parton flavour

@@ -860,9 +860,8 @@ phys::Jet TreePlanter::fill(const pat::Jet &jet) const{
   
   // JEC
   output.rawFactor_ = jet.jecFactor(0);
-  // JES
-  output.jecUnc_    = jet.hasUserFloat("jec_unc") ? jet.userFloat("jec_unc") : -999;
 
+  // JEC uncertainties
   output.jesUnc_.Total          = jet.hasUserFloat("jes_unc_split_Total"         ) ? jet.userFloat("jes_unc_split_Total"         ) : -999;
   output.jesUnc_.Abs            = jet.hasUserFloat("jes_unc_split_Abs"           ) ? jet.userFloat("jes_unc_split_Abs"           ) : -999;
   output.jesUnc_.Abs_year       = jet.hasUserFloat("jes_unc_split_Abs_year"      ) ? jet.userFloat("jes_unc_split_Abs_year"      ) : -999;
