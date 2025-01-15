@@ -396,6 +396,28 @@ for Var in variables:
         pad1.SetLogx()
         pad2.SetLogx()
 
+    # Changes to upper y axis
+    y_axis = hFrameUp.GetYaxis()
+    if  (y_max > 1000):
+        # Either 5 digits or scientific notation
+        title_offset = 1.3
+        title_size   = 0.010
+        label_size   = 0.045
+    # elif(y_max > 100):
+    #     # 4 digits
+    #     title_offset = 1.2
+    #     title_size   = 0.12
+    #     label_size   = 0.05
+    else:
+        title_offset = y_axis.GetTitleOffset()
+        title_size   = y_axis.GetTitleSize()
+        label_size   = y_axis.GetLabelSize()
+
+    # hFrameUp.GetYaxis().SetLabelSize  (title_offset) # cmsstyle defaults to 0.0575
+    # hFrameUp.GetYaxis().SetTitleSize  (title_size  ) # cmsstyle defaults to 0.069
+    # hFrameUp.GetYaxis().SetTitleOffset(label_size  ) # cmsstyle defaults to 0.977
+    cmsstyle.UpdatePad(pad1)
+
     # Draw the THStack
     pad1.cd()
     hMC.Draw("hist same")
