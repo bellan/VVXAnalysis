@@ -1060,36 +1060,14 @@ void VVGammaAnalyzer::analyze(){
   }
 
   else if(LFR_lep){
-    theHistograms->fill("ZL_mass"               , "m_{3l};GeV/c^{2}", 25,0.,500. , (ZL->first.p4()+ZL->second.p4()).M(), theWeight);
-    theHistograms->fill("Z_mass"                , "m_{Z};GeV/c^{2}" , 35,55.,125., ZL->first.mass()                    , theWeight);
-    theHistograms->fill("Z_l0_pt"               , "p_{t,lZ0};GeV/c" , 20,0.,400. , ZL->first.daughter(0).pt()          , theWeight);
-    theHistograms->fill("Z_l1_pt"               , "p_{t,lZ1};GeV/c" , 20,0.,400. , ZL->first.daughter(1).pt()          , theWeight);
-    theHistograms->fill("L_pt"                  , "p_{t,l3};GeV/c"  , 20,0.,400. , ZL->second.pt()                     , theWeight);
-    theHistograms->fill("MET_fine"              , ";#slash{E}_{T} [GeV]", 60,0,60, met->pt()                           , theWeight);
-
-    theHistograms->fill("ZL_mass_" +channelReco_, "m_{3l};GeV/c^{2}", 25,0.,500. , (ZL->first.p4()+ZL->second.p4()).M(), theWeight);
-    theHistograms->fill("Z_mass_"  +channelReco_, "m_{Z};GeV/c^{2}" , 35,55.,125., ZL->first.mass()                    , theWeight);
-    theHistograms->fill("Z_l0_pt_" +channelReco_, "p_{t,lZ0};GeV/c" , 20,0.,400. , ZL->first.daughter(0).pt()          , theWeight);
-    theHistograms->fill("Z_l1_pt_" +channelReco_, "p_{t,lZ1};GeV/c" , 20,0.,400. , ZL->first.daughter(1).pt()          , theWeight);
-    theHistograms->fill("L_pt_"    +channelReco_, "p_{t,l3};GeV/c"  , 20,0.,400. , ZL->second.pt()                     , theWeight);
-    theHistograms->fill("MET_fine" +channelReco_, ";#slash{E}_{T} [GeV]", 60,0,60, met->pt()                           , theWeight);
+    baseHistos_analyze_CRLFR("");
+    baseHistos_analyze_CRLFR("_" + channelReco_);
 
     if(theSampleInfo.isMC()){
       bool isPrompt = sigdefHelper.pass_photon();
-      std::string strPrompt = isPrompt ? "_prompt" : "_nonpro";
-      theHistograms->fill("ZL_mass"               +strPrompt, ";m_{3l} [GeV/c^{2}]" , 25,0.,500. , (ZL->first.p4()+ZL->second.p4()).M(), theWeight);
-      theHistograms->fill("Z_mass"                +strPrompt, ";m_{Z} [GeV/c^{2}]"  , 35,55.,125., ZL->first.mass()                    , theWeight);
-      theHistograms->fill("Z_l0_pt"               +strPrompt, ";p_{T}^{lZ0} [GeV/c]", 20,0.,400. , ZL->first.daughter(0).pt()          , theWeight);
-      theHistograms->fill("Z_l1_pt"               +strPrompt, ";p_{T}^{lZ1} [GeV/c]", 20,0.,400. , ZL->first.daughter(1).pt()          , theWeight);
-      theHistograms->fill("L_pt"                  +strPrompt, ";p_{T}^{l3} [GeV/c]" , 20,0.,400. , ZL->second.pt()                     , theWeight);
-      theHistograms->fill("MET_fine"              +strPrompt, ";#slash{E}_{T} [GeV]", 60,0.,60.  , met->pt()                           , theWeight);
-
-      theHistograms->fill("ZL_mass_" +channelReco_+strPrompt, ";m_{3l} [GeV/c^{2}]" , 25,0.,500. , (ZL->first.p4()+ZL->second.p4()).M(), theWeight);
-      theHistograms->fill("Z_mass_"  +channelReco_+strPrompt, ";m_{Z} [GeV/c^{2}]"  , 35,55.,125., ZL->first.mass()                    , theWeight);
-      theHistograms->fill("Z_l0_pt_" +channelReco_+strPrompt, ";p_{T}^{lZ0} [GeV/c]", 20,0.,400. , ZL->first.daughter(0).pt()          , theWeight);
-      theHistograms->fill("Z_l1_pt_" +channelReco_+strPrompt, ";p_{T}^{lZ1} [GeV/c]", 20,0.,400. , ZL->first.daughter(1).pt()          , theWeight);
-      theHistograms->fill("L_pt_"    +channelReco_+strPrompt, ";p_{T}^{l3} [GeV/c]" , 20,0.,400. , ZL->second.pt()                     , theWeight);
-      theHistograms->fill("MET_fine" +channelReco_+strPrompt, ";#slash{E}_{T} [GeV]", 60,0.,60.  , met->pt()                           , theWeight);
+      std::string strPrompt = isPrompt ? "prompt" : "nonpro";
+      baseHistos_analyze_CRLFR("_"                   +strPrompt);
+      baseHistos_analyze_CRLFR("_" + channelReco_+"_"+strPrompt);
     }
   }
   
@@ -1837,6 +1815,16 @@ void VVGammaAnalyzer::baseHistos_analyze(){
     theHistograms->fill("lead_lep_pt"       +channelReco_+strPrompt, ";lead l p_{T} [GeV/c]", 60,0.,300. , lead_lep_pt        , theWeight);
     theHistograms->fill("lead_lep_eta"      +channelReco_+strPrompt, ";lead l #eta"         , 50,-2.5,2.5, lead_lep_eta       , theWeight);
   }
+}
+
+
+void VVGammaAnalyzer::baseHistos_analyze_CRLFR(const std::string& label){
+  theHistograms->fill("ZL_mass"  + label, "m_{3l};GeV/c^{2}"    , 25, 0,500, (ZL->first.p4()+ZL->second.p4()).M(), theWeight);
+  theHistograms->fill("Z_mass"   + label, "m_{Z};GeV/c^{2}"     , 35,55,125, ZL->first.mass()                    , theWeight);
+  theHistograms->fill("Z_l0_pt"  + label, "p_{t,lZ0};GeV/c"     , 20, 0,400, ZL->first.daughter(0).pt()          , theWeight);
+  theHistograms->fill("Z_l1_pt"  + label, "p_{t,lZ1};GeV/c"     , 20, 0,400, ZL->first.daughter(1).pt()          , theWeight);
+  theHistograms->fill("L_pt"     + label, "p_{t,l3};GeV/c"      , 20, 0,400, ZL->second.pt()                     , theWeight);
+  theHistograms->fill("MET_fine" + label, ";#slash{E}_{T} [GeV]", 60, 0, 60, met->pt()                           , theWeight);
 }
 
 
