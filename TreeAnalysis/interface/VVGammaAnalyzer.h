@@ -204,6 +204,7 @@ private:
   void genEventHistos();
   void baseHistos_cut();
   void baseHistos_analyze();
+  void baseHistos_analyze_4L(const std::string&);
   void baseHistos_analyze_CRLFR(const std::string&);
   void fillPhotonPlots(const phys::Photon& ph, const char* name, const char* title);
   void photonHistos();
@@ -213,6 +214,7 @@ private:
   // Sub analyses
   void plotsVVGstatus(const char* name, const char* title, const TLorentzVector& p4_VV, const char* mType="mass");
   void plots_PhStatus(const std::string&, void (VVGammaAnalyzer::*)(const std::string&, const phys::Photon*));
+  void fillPlots_PhStatus_4L(const std::string&, const phys::Photon*);
   void fillPlots_PhStatus_CRLFR(const std::string&, const phys::Photon*);
   void leptonFakeRate();
   void photonFakeRate_ABCD();

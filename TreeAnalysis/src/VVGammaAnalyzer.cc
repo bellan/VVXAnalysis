@@ -831,86 +831,27 @@ void VVGammaAnalyzer::analyze(){
   
   // Basic histograms on leptonic side
   if     (four_lep){
-    // const Boson<Lepton>& Z0 = ZZ->first();
-    // const Boson<Lepton>& Z1 = ZZ->second();
-    // cout << "region: " << regionType(region_) << '\n';
-    // cout << ">>> [eleEffSFUnc]      ZZ: " << ZZ->eleEffSFUnc() << "   Z0: " << Z0.eleEffSFUnc() << "   Z1: " << Z1.eleEffSFUnc() << '\n';
-    // cout << ">>> [muEffSFUnc]       ZZ: " << ZZ->muEffSFUnc()  << "   Z0: " << Z0.muEffSFUnc()  << "   Z1: " << Z1.muEffSFUnc()  << '\n';
-    // cout << "\tZ0_l0: "<<Z0.daughter(0).efficiencySFUnc()<<"   Z0_l1: "<<Z0.daughter(1).efficiencySFUnc()<<"   Z1_l0: "<<Z1.daughter(0).efficiencySFUnc()<<"   Z1_l1: "<<Z1.daughter(1).efficiencySFUnc() << '\n';
-    // cout << "--------------------------------------------------------------------------------\n";
-    // cout << ">>> [fakeRateSF]       ZZ: " << ZZ->fakeRateSF()       << "   Z0: "<<Z0.fakeRateSF()        << "   Z1: " << Z1.fakeRateSF() << '\n';
-    // cout << "\tZ0_l0: "<<Z0.daughter(0).fakeRateSF()   <<"   Z0_l1: "<<Z0.daughter(1).fakeRateSF()   <<"   Z1_l0: "<<Z1.daughter(0).fakeRateSF()   <<"   Z1_l1: "<<Z1.daughter(1).fakeRateSF()    << '\n';
-    // cout << "\tZ0_l0: "<<Z0.daughter(0).fakeRateSFUnc()<<"   Z0_l1: "<<Z0.daughter(1).fakeRateSFUnc()<<"   Z1_l0: "<<Z1.daughter(0).fakeRateSFUnc()<<"   Z1_l1: "<<Z1.daughter(1).fakeRateSFUnc() << '\n';
-    // cout << ">>> [eleFakeRateSFUnc] ZZ: " << ZZ->eleFakeRateSFUnc() << "   Z1: "<<Z1.eleFakeRateSFUnc() << '\n';
-    // cout << ">>> [muFakeRateSFUnc]  ZZ: " << ZZ->muoFakeRateSFUnc() << "   Z1: "<<Z1.muFakeRateSFUnc()  << '\n';
-    // cout << "################################################################################\n";
-    
-    theHistograms->fill("ZZ_mass"               , "m_{4l};GeV/c^{2}", mVV_bins   , ZZ->mass()                   , theWeight);
-    theHistograms->fill("Z0_mass"               , "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
-    theHistograms->fill("Z1_mass"               , "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
-    theHistograms->fill("ZZ_pt"                 , "p_{t,ZZ};GeV/c"  , 60,0.,300. , ZZ->pt()                     , theWeight);
-    theHistograms->fill("Z0_l0_pt"              , "p_{t,l00};GeV/c" , 60,0.,300. , ZZ->first().daughter(0).pt() , theWeight);
-    theHistograms->fill("Z0_l1_pt"              , "p_{t,l01};GeV/c" , 60,0.,300. , ZZ->first().daughter(1).pt() , theWeight);
-    theHistograms->fill("Z1_l0_pt"              , "p_{t,l10};GeV/c" , 60,0.,300. , ZZ->second().daughter(0).pt(), theWeight);
-    theHistograms->fill("Z1_l1_pt"              , "p_{t,l11};GeV/c" , 60,0.,300. , ZZ->second().daughter(1).pt(), theWeight);
-    theHistograms->fill("Z0_l0_eta"             , "#eta^{l00};#eta^{l00}", 50,-2.5,2.5, ZZ->first() .daughter(0).eta(), theWeight);
-    theHistograms->fill("Z0_l1_eta"             , "#eta^{l01};#eta^{l01}", 50,-2.5,2.5, ZZ->first() .daughter(1).eta(), theWeight);
-    theHistograms->fill("Z1_l0_eta"             , "#eta^{l10};#eta^{l10}", 50,-2.5,2.5, ZZ->second().daughter(0).eta(), theWeight);
-    theHistograms->fill("Z1_l1_eta"             , "#eta^{l11};#eta^{l11}", 50,-2.5,2.5, ZZ->second().daughter(1).eta(), theWeight);
-    theHistograms->fill("Z0_vs_Z1_mass"         , "m_{Z0} [GeV/c^{2}];m_{Z1} [GeV/c^{2}]", 30,60.,90., 30,60.,90., ZZ->first().mass(), ZZ->second().mass(), theWeight);
-
-    theHistograms->fill("ZZ_mass_" +channelReco_, "m_{4l};GeV/c^{2}", mVV_bins   , ZZ->mass()                   , theWeight);
-    theHistograms->fill("Z0_mass_" +channelReco_, "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
-    theHistograms->fill("Z1_mass_" +channelReco_, "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
-    theHistograms->fill("ZZ_pt_"    +channelReco_, ";p_{t,ZZ};GeV/c"   , 60,0.,300. , ZZ->pt()                      , theWeight);
-    theHistograms->fill("Z0_l0_pt_" +channelReco_, ";p_{t,l00} [GeV/c]", 60,0.,300. , ZZ->first() .daughter(0).pt() , theWeight);
-    theHistograms->fill("Z0_l1_pt_" +channelReco_, ";p_{t,l01} [GeV/c]", 60,0.,300. , ZZ->first() .daughter(1).pt() , theWeight);
-    theHistograms->fill("Z1_l0_pt_" +channelReco_, ";p_{t,l10} [GeV/c]", 60,0.,300. , ZZ->second().daughter(0).pt() , theWeight);
-    theHistograms->fill("Z1_l1_pt_" +channelReco_, ";p_{t,l11} [GeV/c]", 60,0.,300. , ZZ->second().daughter(1).pt() , theWeight);
-    theHistograms->fill("Z0_l0_eta_"+channelReco_, ";#eta^{l00}"       , 50,-2.5,2.5, ZZ->first() .daughter(0).eta(), theWeight);
-    theHistograms->fill("Z0_l1_eta_"+channelReco_, ";#eta^{l01}"       , 50,-2.5,2.5, ZZ->first() .daughter(1).eta(), theWeight);
-    theHistograms->fill("Z1_l0_eta_"+channelReco_, ";#eta^{l10}"       , 50,-2.5,2.5, ZZ->second().daughter(0).eta(), theWeight);
-    theHistograms->fill("Z1_l1_eta_"+channelReco_, ";#eta^{l11}"       , 50,-2.5,2.5, ZZ->second().daughter(1).eta(), theWeight);
     const char* ph_cutID = "noph";
     if     (goodPhotons_["central"]->size() > 0) ph_cutID = "loose";
     else if( kinPhotons_["central"]->size() > 0) ph_cutID = "kinVetoL";
 
     const char* jets_str = (jets_noph_->size() > 0 ? "gt1j" : "0j");
 
-    theHistograms->fill(Form("Z0_mass_%s", ph_cutID), "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
-    theHistograms->fill(Form("Z1_mass_%s", ph_cutID), "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
-    theHistograms->fill(Form("Z0_l0_pt_%s" , ph_cutID), ";p_{t,l00} [GeV/c]", 60,0.,300. , ZZ->first() .daughter(0).pt() , theWeight);
-    theHistograms->fill(Form("Z0_l1_pt_%s" , ph_cutID), ";p_{t,l01} [GeV/c]", 60,0.,300. , ZZ->first() .daughter(1).pt() , theWeight);
-    theHistograms->fill(Form("Z1_l0_pt_%s" , ph_cutID), ";p_{t,l10} [GeV/c]", 60,0.,300. , ZZ->second().daughter(0).pt() , theWeight);
-    theHistograms->fill(Form("Z1_l1_pt_%s" , ph_cutID), ";p_{t,l11} [GeV/c]", 60,0.,300. , ZZ->second().daughter(1).pt() , theWeight);
-    theHistograms->fill(Form("Z0_l0_eta_%s", ph_cutID), ";#eta^{l00}"       , 50,-2.5,2.5, ZZ->first() .daughter(0).eta(), theWeight);
-    theHistograms->fill(Form("Z0_l1_eta_%s", ph_cutID), ";#eta^{l01}"       , 50,-2.5,2.5, ZZ->first() .daughter(1).eta(), theWeight);
-    theHistograms->fill(Form("Z1_l0_eta_%s", ph_cutID), ";#eta^{l10}"       , 50,-2.5,2.5, ZZ->second().daughter(0).eta(), theWeight);
-    theHistograms->fill(Form("Z1_l1_eta_%s", ph_cutID), ";#eta^{l11}"       , 50,-2.5,2.5, ZZ->second().daughter(1).eta(), theWeight);
-
-    theHistograms->fill(Form("Z0_mass_%s", jets_str), "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
-    theHistograms->fill(Form("Z1_mass_%s", jets_str), "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
+    baseHistos_analyze_4L("");
+    baseHistos_analyze_4L("_"+channelReco_);
+    baseHistos_analyze_4L(Form("_%s", ph_cutID));
+    baseHistos_analyze_4L(Form("_%s", jets_str));
+    plots_PhStatus(""              , &VVGammaAnalyzer::fillPlots_PhStatus_4L);
+    plots_PhStatus("_"+channelReco_, &VVGammaAnalyzer::fillPlots_PhStatus_4L);
 
     if(theSampleInfo.isMC()){
-	bool signaldef = sigdefHelper.pass_photon();  // Test if the event passes the GEN signal definition
-	const char* sigdef_str = signaldef ? "prompt" : "nonpro";
-
-	theHistograms->fill(Form("Z0_mass_%s"             , sigdef_str), "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
-	theHistograms->fill(Form("Z1_mass_%s"             , sigdef_str), "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
-
-	theHistograms->fill(Form("Z0_mass_%s_%s", ph_cutID, sigdef_str), "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
-	theHistograms->fill(Form("Z1_mass_%s_%s", ph_cutID, sigdef_str), "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
-	theHistograms->fill(Form("Z0_l0_pt_%s_%s" , ph_cutID, sigdef_str), ";p_{t,l00} [GeV/c]", 60,0.,300. , ZZ->first() .daughter(0).pt() , theWeight);
-	theHistograms->fill(Form("Z0_l1_pt_%s_%s" , ph_cutID, sigdef_str), ";p_{t,l01} [GeV/c]", 60,0.,300. , ZZ->first() .daughter(1).pt() , theWeight);
-	theHistograms->fill(Form("Z1_l0_pt_%s_%s" , ph_cutID, sigdef_str), ";p_{t,l10} [GeV/c]", 60,0.,300. , ZZ->second().daughter(0).pt() , theWeight);
-	theHistograms->fill(Form("Z1_l1_pt_%s_%s" , ph_cutID, sigdef_str), ";p_{t,l11} [GeV/c]", 60,0.,300. , ZZ->second().daughter(1).pt() , theWeight);
-	theHistograms->fill(Form("Z0_l0_eta_%s_%s", ph_cutID, sigdef_str), ";#eta^{l00}"       , 50,-2.5,2.5, ZZ->first() .daughter(0).eta(), theWeight);
-	theHistograms->fill(Form("Z0_l1_eta_%s_%s", ph_cutID, sigdef_str), ";#eta^{l01}"       , 50,-2.5,2.5, ZZ->first() .daughter(1).eta(), theWeight);
-	theHistograms->fill(Form("Z1_l0_eta_%s_%s", ph_cutID, sigdef_str), ";#eta^{l10}"       , 50,-2.5,2.5, ZZ->second().daughter(0).eta(), theWeight);
-	theHistograms->fill(Form("Z1_l1_eta_%s_%s", ph_cutID, sigdef_str), ";#eta^{l11}"       , 50,-2.5,2.5, ZZ->second().daughter(1).eta(), theWeight);
-
-	theHistograms->fill(Form("Z0_mass_%s_%s", jets_str, sigdef_str), "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
-	theHistograms->fill(Form("Z1_mass_%s_%s", jets_str, sigdef_str), "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
+      bool signaldef = sigdefHelper.pass_photon();  // Test if the event passes the GEN signal definition
+      const char* sigdef_str = signaldef ? "prompt" : "nonpro";
+      baseHistos_analyze_4L(Form("_%s"             , sigdef_str));
+      baseHistos_analyze_4L(Form("_%s_%s", ph_cutID, sigdef_str));
+      baseHistos_analyze_4L(Form("_%s_%s", jets_str, sigdef_str));
+      plots_PhStatus(Form("_%s"                         , sigdef_str), &VVGammaAnalyzer::fillPlots_PhStatus_4L);
+      plots_PhStatus(Form("_%s_%s", channelReco_.c_str(), sigdef_str), &VVGammaAnalyzer::fillPlots_PhStatus_4L);
     }
 
     ZllVsZllGstudy(*kinPhotons_["central"] , "kin"  );
@@ -1075,12 +1016,16 @@ void VVGammaAnalyzer::analyze(){
   else if(LFR_lep){
     baseHistos_analyze_CRLFR("");
     baseHistos_analyze_CRLFR("_" + channelReco_);
+    plots_PhStatus(""              , &VVGammaAnalyzer::fillPlots_PhStatus_CRLFR);
+    plots_PhStatus("_"+channelReco_, &VVGammaAnalyzer::fillPlots_PhStatus_CRLFR);
 
     if(theSampleInfo.isMC()){
       bool isPrompt = sigdefHelper.pass_photon();
       std::string strPrompt = isPrompt ? "prompt" : "nonpro";
       baseHistos_analyze_CRLFR("_"                   +strPrompt);
       baseHistos_analyze_CRLFR("_" + channelReco_+"_"+strPrompt);
+      plots_PhStatus("_"                 +strPrompt, &VVGammaAnalyzer::fillPlots_PhStatus_CRLFR);
+      plots_PhStatus("_"+channelReco_+"_"+strPrompt, &VVGammaAnalyzer::fillPlots_PhStatus_CRLFR);
     }
   }
   
@@ -1831,6 +1776,23 @@ void VVGammaAnalyzer::baseHistos_analyze(){
 }
 
 
+void VVGammaAnalyzer::baseHistos_analyze_4L(const std::string& label){
+  theHistograms->fill("ZZ_mass"      +label, "m_{4l};GeV/c^{2}", mVV_bins   , ZZ->mass()                   , theWeight);
+  theHistograms->fill("Z0_mass"      +label, "m_{Z0};GeV/c^{2}", 35,55.,125., ZZ->first().mass()           , theWeight);
+  theHistograms->fill("Z1_mass"      +label, "m_{Z1};GeV/c^{2}", 35,55.,125., ZZ->second().mass()          , theWeight);
+  theHistograms->fill("ZZ_pt"        +label, "p_{t,ZZ};GeV/c"  , 60,0.,300. , ZZ->pt()                     , theWeight);
+  theHistograms->fill("Z0_l0_pt"     +label, "p_{t,l00};GeV/c" , 60,0.,300. , ZZ->first().daughter(0).pt() , theWeight);
+  theHistograms->fill("Z0_l1_pt"     +label, "p_{t,l01};GeV/c" , 60,0.,300. , ZZ->first().daughter(1).pt() , theWeight);
+  theHistograms->fill("Z1_l0_pt"     +label, "p_{t,l10};GeV/c" , 60,0.,300. , ZZ->second().daughter(0).pt(), theWeight);
+  theHistograms->fill("Z1_l1_pt"     +label, "p_{t,l11};GeV/c" , 60,0.,300. , ZZ->second().daughter(1).pt(), theWeight);
+  theHistograms->fill("Z0_l0_eta"    +label, "#eta^{l00};#eta^{l00}", 50,-2.5,2.5, ZZ->first() .daughter(0).eta(), theWeight);
+  theHistograms->fill("Z0_l1_eta"    +label, "#eta^{l01};#eta^{l01}", 50,-2.5,2.5, ZZ->first() .daughter(1).eta(), theWeight);
+  theHistograms->fill("Z1_l0_eta"    +label, "#eta^{l10};#eta^{l10}", 50,-2.5,2.5, ZZ->second().daughter(0).eta(), theWeight);
+  theHistograms->fill("Z1_l1_eta"    +label, "#eta^{l11};#eta^{l11}", 50,-2.5,2.5, ZZ->second().daughter(1).eta(), theWeight);
+  theHistograms->fill("Z0_vs_Z1_mass"+label, "m_{Z0} [GeV/c^{2}];m_{Z1} [GeV/c^{2}]", 30,60.,90., 30,60.,90., ZZ->first().mass(), ZZ->second().mass(), theWeight);
+}
+
+
 void VVGammaAnalyzer::baseHistos_analyze_CRLFR(const std::string& label){
   theHistograms->fill("ZL_mass"  + label, "m_{3l};GeV/c^{2}"    , 25, 0,500, (ZL->first.p4()+ZL->second.p4()).M(), theWeight);
   theHistograms->fill("Z_mass"   + label, "m_{Z};GeV/c^{2}"     , 35,55,125, ZL->first.mass()                    , theWeight);
@@ -2384,6 +2346,43 @@ void VVGammaAnalyzer::plotsVVGstatus(const char* name, const char* title, const 
       const char* genStatus = sigdefHelper.pass_photon() ? "prompt" : "nonpro" ;
       theHistograms->fill(Form("%s_%s_failPh_%s" , name, mType, genStatus), Form("%s %s with Fail #gamma" , title, mType), binsVV , mValue(p4      ), theWeight);
       theHistograms->fill(Form("%sG_%s_failPh_%s", name, mType, genStatus), Form("%sG %s with Fail #gamma", title, mType), binsVVG, mValue(p4+ph_p4), theWeight);
+    }
+  }
+}
+
+
+void VVGammaAnalyzer::fillPlots_PhStatus_4L(const std::string& label, const phys::Photon* ph){
+  theHistograms->fill("lepch_" + label, ";lepton flavour;", {"4e", "2e2m", "4m"}, channelReco_, theWeight);
+}
+
+void VVGammaAnalyzer::fillPlots_PhStatus_CRLFR(const std::string& label, const Photon* ph){
+  // Helper that actually fills the plots
+  theHistograms->fill("LG_mass_" + label, ";m_{l#gamma} [GeV]", 60,30,150, (ZL->second.p4()+ph->p4()).M(), theWeight);
+}
+
+void VVGammaAnalyzer::plots_PhStatus(const std::string& label, void (VVGammaAnalyzer::*fillPlots)(const std::string&, const Photon*)){
+  // Generic helper that calls (*fillPlots) for different cases of the photon status.
+  // The second argument is a pointer to member function. The C++ syntax for these is terrible.
+  if(bestKinPh_){
+    bool isPassVL    = bestKinPh_->cutBasedID(Photon::IdWp::VeryLoose);
+    bool isPassLoose = bestKinPh_->cutBasedIDLoose();
+    bool isPasswp90  = bestMVAPh_->passMVA(Photon::MVAwp::wp90);
+    bool isPasswp80  = bestMVAPh_->passMVA(Photon::MVAwp::wp80);
+
+    (this->*fillPlots)("kin"+label, bestKinPh_);
+    if(isPassVL){
+      (this->*fillPlots)("veryLoose"+label, bestKinPh_);
+      if(isPassLoose)
+	(this->*fillPlots)("loose"+label, bestKinPh_);
+      else
+	(this->*fillPlots)("fail"+label, bestKinPh_);
+    }
+    if(isPasswp90){
+      (this->*fillPlots)("wp90"+label, bestMVAPh_);
+      if(isPasswp80)
+	(this->*fillPlots)("wp80"+label, bestMVAPh_);
+      else
+	(this->*fillPlots)("90not80"+label, bestMVAPh_);
     }
   }
 }
