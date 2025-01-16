@@ -127,8 +127,8 @@ def print_yield(data, unblind=False, float_format='%.4g', **kwargs):
     def sort_func(row):
         '''sort by sample (signal first), then by yield'''
         index = row['index']
-        if(index == 'ZZGTo4LG'  ): k0 = 2
-        if(index == 'WZGTo3LNuG'): k0 = 1
+        if('ZZGTo4LG'   in index): k0 = 2
+        if('WZGTo3LNuG' in index): k0 = 1
         else:                      k0 = 0
 
         k1 = (row['y2016preVFP']+row['y2016postVFP']+row['y2017']+row['y2018']).val
@@ -165,7 +165,7 @@ def print_yield(data, unblind=False, float_format='%.4g', **kwargs):
         if  ('ZZGTo4LG'       in base): base = r'$\PZ\PZ\PGg\to4\Pl\PGg$'
         elif('WZGTo3LNuG'     in base): base = r'$\PW\PZ\PGg\to3\Pl\PGn\PGg$'
         elif('WZTo3LNu'       in base): base = r'$\PW\PZ\to3\Pl\PGn$'
-        elif('ZZTo4l-nonpro'== sample): base = r'\qqZZnonpro'
+        elif('ZZTo4l-nonpro'== sample): return r'\qqZZnonpro'
         elif('ggTo4mu'        in base): base = r'\ggtomm'
         elif('ggTo2e2mu'      in base): base = r'\ggtoem'
         elif('ggTo4e'         in base): base = r'\ggtoee'
@@ -182,6 +182,12 @@ def print_yield(data, unblind=False, float_format='%.4g', **kwargs):
 
         if extra is None:
             return base
+        elif('ZZGTo4LG' in sample):
+            if(extra == 'nonpro'):
+                # Out-of-Acceptance
+                return base+' ooa'
+            else:
+                return base
         else:
             return '-'.join([base, extra])
 
@@ -303,6 +309,10 @@ def main():
 
     tot_yield = sum_yields(*yields)
 
+    # Fix y201... -> 201...
+    for proc_name, proc_data in tot_yield.items():
+        for year in tuple(proc_data.keys()):
+            proc_data[year.lstrip('y')] = proc_data.pop(year)
     # logging.debug('tot_yield: %s', tot_yield)
 
     tot_yield = rename_samples(tot_yield)
