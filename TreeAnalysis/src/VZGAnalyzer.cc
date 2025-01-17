@@ -2307,6 +2307,8 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
       theHistograms->fill("j1_p(uds)"+histoType + cuts.at(i), "j1_p(uds)"+histoType + cuts.at(i)+"; sublead. jet DeepFlavour p(uds)", 20, 0, 1, recoV.daughter(1).deepFlavour().probuds, theWeight*LumiSF);
       theHistograms->fill("jj_p(uds)Sum"+histoType + cuts.at(i), "jj_p(uds)Sum"+histoType + cuts.at(i)+"; DiJet DeepFlavour p(uds)", 20, 0, 1,  0.5*(recoV.daughter(0).deepFlavour().probuds + recoV.daughter(1).deepFlavour().probuds), theWeight*LumiSF);
 
+      theHistograms->fill("j0_Girth"+histoType + cuts.at(i), "j0_Girth"+histoType + cuts.at(i)+"; lead. jet Girth", 20, 0, 0.4, recoV.daughter(0).girth(), theWeight*LumiSF);
+      theHistograms->fill("j1_Girth"+histoType + cuts.at(i), "j1_Girth"+histoType + cuts.at(i)+"; sublead. jet Girth", 20, 0, 0.4, recoV.daughter(1).girth(), theWeight*LumiSF);
 
 
 
