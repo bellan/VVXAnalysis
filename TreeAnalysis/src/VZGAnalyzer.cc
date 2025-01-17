@@ -25,6 +25,7 @@ using std::endl;
 using namespace phys;
 bool IsARunForMVAFeat=false;
 bool verbose = false;
+bool fullPlotList = false;
 bool fiducial_run =true;
 double etacut=4.7;
 double ptcut=30;
@@ -133,19 +134,6 @@ double WeightsFWM(char wi, TLorentzVector a, TLorentzVector b){
   return num/den;
 }
 
-/*
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- 
-double FWM(int l, char wi, TLorentzVector* objects){
-  double H=0; 
-  int N =objects->size();
-  for(int i=0; i<N; i++)
-    for(int j=0; j<N; j++)
-      H+=WeightsFWM(wi,objects[i],objects[j])*Legendre(l, cosOmega(objects[i],objects[j]));
-  //return H;
-  return H/2.;
-  
-}
-*/
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- 
 double FWM(int l, char wi, TLorentzVector a, TLorentzVector b){
@@ -173,7 +161,6 @@ bool KinematicsOK(phys::Particle p, float pt,float eta)
 
 bool VZGAnalyzer::LeptonicSignalConstraint()
 {
-  //int LeptonicZdecays=genVBHelper_.ZtoChLep().size();//+genVBHelper_.ZtoNeutrinos().size();
   if (genVBHelper_.ZtoChLep().size()==1
       && KinematicsOK(genVBHelper_.ZtoChLep()[0].daughter(0), 5.,2.5)
       && KinematicsOK(genVBHelper_.ZtoChLep()[0].daughter(1), 5.,2.5)
@@ -221,9 +208,6 @@ bool VZGAnalyzer::HadronicSignalConstraint()
   //*V_JJCandidate = DiJetsCand.at(0);
     haveGoodDiJetCand=(DiJetsCand[0].mass()>50  &&   DiJetsCand[0].mass()<120);
   }
-  //if(haveGoodFJCand) std::cout<<"FJ selection accomplished: FJ MASS = "<<FJCand[0].mass()<<std::endl;
-  //if(haveGoodDiJetCand) std::cout<<"2AK4 selection accomplished: 2J MASS = "<<DiJetsCand[0].mass()<<std::endl;
-  //if(haveGoodFJCand || haveGoodDiJetCand) std::cout<<"hadronic selection accomplished"<<std::endl;
   return (haveGoodFJCand || haveGoodDiJetCand);
 
 }
@@ -272,7 +256,6 @@ bool VZGAnalyzer::IN_GENsignalDef()
 
 double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet recoFJ, std::vector<phys::Photon> selectedphotons, int VBTopo)
 {
-  //  std::cout<<">>MVAScore builder called"<<endl;
   double VZGMVAScore=-2.;
   if(!cut(2, recoV, recoFJ, selectedphotons, VBTopo, VZGMVAScore)) return -2.;
 
@@ -305,11 +288,9 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
 
 
   phys::Photon mostEnergeticPhoton;
-  //    if (selectedphotons.size() > 0)
-  //  {
+
   std::stable_sort(selectedphotons.begin(), selectedphotons.end(), phys::EComparator());
   mostEnergeticPhoton = selectedphotons[0];
-  //  }
 
 
   std::pair<phys::Photon, phys::Jet> nearestRECOjetstoPhoton;
@@ -338,8 +319,6 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
     nearestChLeptToPhoton={mostEnergeticPhoton, Z->daughter(1)};
 
 
-  //  double VZGMVAScore=-2.;
-
   int int_nbOfGoodJets=  0;
 
   foreach (const phys::Jet &jet, *jets)    
@@ -356,6 +335,7 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
       
   float ptJ1=recoV.daughter(1).pt();
   float recoVMass = recoV.mass();
+  float FWMT0 = SumFWM(0, 't', lljjG);
   float FWMT1 = SumFWM(1, 't', lljjG);
   float FWMT2 = SumFWM(2, 't', lljjG);
   float FWMT4 = SumFWM(4, 't', lljjG);
@@ -411,21 +391,24 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
   reader->AddVariable("fabs(etaJ0-etaJ1)",&dEtaJJ);
   reader->AddVariable("fabs((etaG -(etaL0 + etaL1)/2))",&ZepCorr_G);
   */
-  //reader->AddVariable("mll", &mll);
+  
+  reader->AddVariable("mll", &mll);
   
   reader->AddVariable("ptJ1", &ptJ1);
   reader->AddVariable("ptjj", &ptjj);
   reader->AddVariable("ptGamma",&ptGamma);
   reader->AddVariable("mllPh",&mllG);
 
-  //reader->AddVariable("mlljjPh", &mlljjPh);
+  reader->AddVariable("mlljjPh", &mlljjPh);
 
   reader->AddVariable("deltaR_J0Gamma",&deltaR_J0Gamma);
   reader->AddVariable("deltaR_J1Gamma",&deltaR_J1Gamma);
   reader->AddVariable("dPhiZG",&dPhiZG);
   reader->AddVariable("recoVMass",&recoVMass);
 
-  //reader->AddVariable("nbOfGoodJets",&nbOfGoodJets);
+  reader->AddVariable("FWMT0",&FWMT0);
+
+  reader->AddVariable("nbOfGoodJets",&nbOfGoodJets);
   
   reader->AddVariable("dRLG",&dRLG);
   reader->AddVariable("PhMVAId",  &PhMVAId);
@@ -434,7 +417,7 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
   reader->AddVariable("J1DeepProb_g",  &J1PG);
   reader->AddVariable("J0DeepProb_uds",  &J0Puds);
 
-  //reader->AddVariable("HT",&HT);
+  reader->AddVariable("HT",&HT);
 
   
   /*
@@ -445,9 +428,13 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
     }
     MVAfile.close();
   */
-  //reader->BookMVA("BDT", "bdtModels/VLTuned_noNegWgt_BDT_Xgrad_d3_N030.weights.xml"); //tested from 2024 Dec 29th
-  reader->BookMVA("BDT", "bdtModels/VL_noNeg_BDT_Xgrad_d3_N030.weights.xml"); //tested on 2024 Dec 14-25th
+  
+  
+  //reader->BookMVA("BDT", "bdtModels/VL_noNeg_BDT_Xgrad_d3_N030.weights.xml"); //tested on 2024 Dec 14-25th
   //reader->BookMVA("BDT", "/eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/bdtModels/VL_full_BDT_Xgrad_d3_N030.weights.xml"); //tested on 2024 Dec 15-16th
+  reader->BookMVA("BDT", "bdtModels/VLTuned_noNegWgt_BDT_Xgrad_d3_N030.weights.xml"); //tested from 2024 Dec 29th
+  //reader->BookMVA("BDT", "bdtModels/kinTuned_noNegWgt_BDT_Xgrad_d3_N030.weights.xml"); 
+  
   VZGMVAScore = reader->EvaluateMVA("BDT");
   reader->~Reader();
   //  std::cout<<">>>>MVAScore builder returning "<<VZGMVAScore<<endl;
@@ -483,11 +470,9 @@ bool VZGAnalyzer::inSR(phys::Boson<phys::Jet> recoV, phys::Jet recoFJ, std::vect
 
 
   phys::Photon mostEnergeticPhoton;
-  //    if (selectedphotons.size() > 0)
-  //  {
+
   std::stable_sort(selectedphotons.begin(), selectedphotons.end(), phys::EComparator());
   mostEnergeticPhoton = selectedphotons[0];
-  //  }
 
 
   std::pair<phys::Photon, phys::Jet> nearestRECOjetstoPhoton;
@@ -928,11 +913,13 @@ void VZGAnalyzer::analyze()
       printHistos(0, "bckg", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
     }
     printHistos(0, "all", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
+    /*
     if(!isFSR){
       printHistos(0, "dib", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
     }else{
       printHistos(0, "fsr", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
     }
+    */
     if(!promptPhExists) {
       printHistos(0, "nonPrompt", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
     }else{
@@ -2308,21 +2295,6 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
       theHistograms->fill("recoVDaughter1Pt_" + histoType + cuts.at(i), "pt of recoVDaughter1", 50, 0, 600, recoV.daughter(1).pt(), (theWeight*LumiSF));
       theHistograms->fill("ZepCorr_" + histoType + cuts.at(i), "ZepCorr_", 50, 0, 5,       ZepCorr_G, (theWeight*LumiSF));
 
-      /*
-      theHistograms->fill("j0_PN_ZvsQCD"+histoType + cuts.at(i), "j0_PN_ZvsQCD"+histoType + cuts.at(i)+"; lead. jet ParticleNet ZvsQCD", 20, 0, 1, recoV.daughter(0).particleNet().ZvsQCD, theWeight*LumiSF);
-      theHistograms->fill("j1_PN_ZvsQCD"+histoType + cuts.at(i), "j1_PN_ZvsQCD"+histoType + cuts.at(i)+"; sublead. jet ParticleNet ZvsQCD", 20, 0, 1, recoV.daughter(1).particleNet().ZvsQCD, theWeight*LumiSF);
-      theHistograms->fill("jj_PN_ZvsQCDSum"+histoType + cuts.at(i), "jj_PN_ZvsQCDSum"+histoType + cuts.at(i)+"; DiJet ParticleNet ZvsQCD", 20, 0, 1,  0.5*(recoV.daughter(0).particleNet().ZvsQCD + recoV.daughter(1).particleNet().ZvsQCD), theWeight*LumiSF);
-      */
-      //____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
-      /*
-      theHistograms->fill("j0_p(b)"+histoType + cuts.at(i), "j0_p(b)"+histoType + cuts.at(i)+"; lead. jet DeepFlavour p(b)", 20, 0, 1, recoV.daughter(0).deepFlavour().probb, theWeight*LumiSF);
-      theHistograms->fill("j1_p(b)"+histoType + cuts.at(i), "j1_p(b)"+histoType + cuts.at(i)+"; sublead. jet DeepFlavour p(b)", 20, 0, 1, recoV.daughter(1).deepFlavour().probb, theWeight*LumiSF);
-      theHistograms->fill("jj_p(b)Sum"+histoType + cuts.at(i), "jj_p(b)Sum"+histoType + cuts.at(i)+"; DiJet DeepFlavour p(b)", 20, 0, 1,  0.5*(recoV.daughter(0).deepFlavour().probb + recoV.daughter(1).deepFlavour().probb), theWeight*LumiSF);
-
-      theHistograms->fill("j0_p(c)"+histoType + cuts.at(i), "j0_p(c)"+histoType + cuts.at(i)+"; lead. jet DeepFlavour p(c)", 20, 0, 1, recoV.daughter(0).deepFlavour().probc, theWeight*LumiSF);
-      theHistograms->fill("j1_p(c)"+histoType + cuts.at(i), "j1_p(c)"+histoType + cuts.at(i)+"; sublead. jet DeepFlavour p(c)", 20, 0, 1, recoV.daughter(1).deepFlavour().probc, theWeight*LumiSF);
-      theHistograms->fill("jj_p(c)Sum"+histoType + cuts.at(i), "jj_p(c)Sum"+histoType + cuts.at(i)+"; DiJet DeepFlavour p(c)", 20, 0, 1,  0.5*(recoV.daughter(0).deepFlavour().probc + recoV.daughter(1).deepFlavour().probc), theWeight*LumiSF);
-      */
       theHistograms->fill("j0_p(bX)"+histoType + cuts.at(i), "j0_p(bX)"+histoType + cuts.at(i)+"; lead. jet DeepFlavour p(bX)", 20, 0, 1, recoV.daughter(0).deepFlavour().probb + recoV.daughter(0).deepFlavour().probbb + recoV.daughter(0).deepFlavour().problepb, theWeight*LumiSF);
       theHistograms->fill("j1_p(bX)"+histoType + cuts.at(i), "j1_p(bX)"+histoType + cuts.at(i)+"; sublead. jet DeepFlavour p(bX)", 20, 0, 1, recoV.daughter(1).deepFlavour().probb + recoV.daughter(1).deepFlavour().probbb + recoV.daughter(1).deepFlavour().problepb, theWeight*LumiSF);
 
@@ -2330,43 +2302,19 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
       theHistograms->fill("j0_p(g)"+histoType + cuts.at(i), "j0_p(g)"+histoType + cuts.at(i)+"; lead. jet DeepFlavour p(g)", 20, 0, 1, recoV.daughter(0).deepFlavour().probg, theWeight*LumiSF);
       theHistograms->fill("j1_p(g)"+histoType + cuts.at(i), "j1_p(g)"+histoType + cuts.at(i)+"; sublead. jet DeepFlavour p(g)", 20, 0, 1, recoV.daughter(1).deepFlavour().probg, theWeight*LumiSF);
       theHistograms->fill("jj_p(g)Sum"+histoType + cuts.at(i), "jj_p(g)Sum"+histoType + cuts.at(i)+"; DiJet DeepFlavour p(g)", 20, 0, 1,  0.5*(recoV.daughter(0).deepFlavour().probg + recoV.daughter(1).deepFlavour().probg), theWeight*LumiSF);
-      /*
-      theHistograms->fill("j0_p(lepb)"+histoType + cuts.at(i), "j0_p(lepb)"+histoType + cuts.at(i)+"; lead. jet DeepFlavour p(lepb)", 20, 0, 1, recoV.daughter(0).deepFlavour().problepb, theWeight*LumiSF);
-      theHistograms->fill("j1_p(lepb)"+histoType + cuts.at(i), "j1_p(lepb)"+histoType + cuts.at(i)+"; sublead. jet DeepFlavour p(lepb)", 20, 0, 1, recoV.daughter(1).deepFlavour().problepb, theWeight*LumiSF);
-      theHistograms->fill("jj_p(lepb)Sum"+histoType + cuts.at(i), "jj_p(lepb)Sum"+histoType + cuts.at(i)+"; DiJet DeepFlavour p(lepb)", 20, 0, 1,  0.5*(recoV.daughter(0).deepFlavour().problepb + recoV.daughter(1).deepFlavour().problepb), theWeight*LumiSF);
 
-      theHistograms->fill("j0_p(bb)"+histoType + cuts.at(i), "j0_p(bb)"+histoType + cuts.at(i)+"; lead. jet DeepFlavour p(bb)", 20, 0, 1, recoV.daughter(0).deepFlavour().probbb, theWeight*LumiSF);
-      theHistograms->fill("j1_p(bb)"+histoType + cuts.at(i), "j1_p(bb)"+histoType + cuts.at(i)+"; sublead. jet DeepFlavour p(bb)", 20, 0, 1, recoV.daughter(1).deepFlavour().probbb, theWeight*LumiSF);
-      theHistograms->fill("jj_p(bb)Sum"+histoType + cuts.at(i), "jj_p(bb)Sum"+histoType + cuts.at(i)+"; DiJet DeepFlavour p(bb)", 20, 0, 1,  0.5*(recoV.daughter(0).deepFlavour().probbb + recoV.daughter(1).deepFlavour().probbb), theWeight*LumiSF);
-      */
       theHistograms->fill("j0_p(uds)"+histoType + cuts.at(i), "j0_p(uds)"+histoType + cuts.at(i)+"; lead. jet DeepFlavour p(uds)", 20, 0, 1, recoV.daughter(0).deepFlavour().probuds, theWeight*LumiSF);
       theHistograms->fill("j1_p(uds)"+histoType + cuts.at(i), "j1_p(uds)"+histoType + cuts.at(i)+"; sublead. jet DeepFlavour p(uds)", 20, 0, 1, recoV.daughter(1).deepFlavour().probuds, theWeight*LumiSF);
       theHistograms->fill("jj_p(uds)Sum"+histoType + cuts.at(i), "jj_p(uds)Sum"+histoType + cuts.at(i)+"; DiJet DeepFlavour p(uds)", 20, 0, 1,  0.5*(recoV.daughter(0).deepFlavour().probuds + recoV.daughter(1).deepFlavour().probuds), theWeight*LumiSF);
 
 
-      /*
-      theHistograms->fill("j0_p(udsg)"+histoType + cuts.at(i), "j0_p(udsg)"+histoType + cuts.at(i)+"; lead. jet DeepFlavour p(udsg)", 20, 0, 1, recoV.daughter(0).deepFlavour().probuds + recoV.daughter(0).deepFlavour().probg, theWeight*LumiSF);
-      theHistograms->fill("j1_p(udsg)"+histoType + cuts.at(i), "j1_p(udsg)"+histoType + cuts.at(i)+"; sublead. jet DeepFlavour p(udsg)", 20, 0, 1, recoV.daughter(1).deepFlavour().probuds + recoV.daughter(1).deepFlavour().probg, theWeight*LumiSF);
-      theHistograms->fill("jj_p(udsg)Sum"+histoType + cuts.at(i), "jj_p(udsg)Sum"+histoType + cuts.at(i)+"; DiJet DeepFlavour p(udsg)", 20, 0, 1,  0.5*( (recoV.daughter(0).deepFlavour().probuds + recoV.daughter(1).deepFlavour().probuds) + (recoV.daughter(0).deepFlavour().probg + recoV.daughter(1).deepFlavour().probg) ), theWeight*LumiSF);
-
-      theHistograms->fill("j0_p(uds)_vs_p(g)"+histoType + cuts.at(i), "j0_p(uds)_p(g)"+histoType + cuts.at(i)+"; lead. jet DeepFlavour p(uds); lead. jet DeepFlavour p(g)" ,  5, 0, 1, 5, 0, 1, recoV.daughter(0).deepFlavour().probuds, recoV.daughter(0).deepFlavour().probg, theWeight*LumiSF);
-      theHistograms->fill("j1_p(uds)_vs_p(g)"+histoType + cuts.at(i), "j1_p(uds)_p(g)"+histoType + cuts.at(i)+"; sublead. jet DeepFlavour p(uds); sublead. jet DeepFlavour p(g)" ,  5, 0, 1, 5, 0, 1, recoV.daughter(1).deepFlavour().probuds, recoV.daughter(1).deepFlavour().probg, theWeight*LumiSF);
-      */
 
 
       
     }else if(VBTopo==-1){      
-      //      theHistograms->fill("V_vs_Z_pt_" + histoType + cuts.at(i), "V_vs_Z_pt_" + histoType + cuts.at(i) +";V p_{t} [GeV/c]; #Z p_{t} [GeV/c]", 30, 0, 300, 30, 0, 300, recoFJ.pt(), Z->pt(), theWeight*LumiSF);
       theHistograms->fill("recoVMass_" + histoType + cuts.at(i), "mass of recoV", 40, 0, 200, recoFJ.mass(), (theWeight*LumiSF));
-      //      std::cout<<recoFJ.deepFlavour().probb<<endl;
-      //      printHistos(1, "sign", recoV, recoFJ, selectedphotons, VBTopo);
-      //      theHistograms->fill("FJ_probb"+histoType + cuts.at(i), "FJ_probb"+histoType + cuts.at(i)+"; fat jet DeepFlavour", 16, -0.1, 0.3, recoFJ.deepFlavour().probb, theWeight*LumiSF);
-
-
       theHistograms->fill("recoVPt_" + histoType + cuts.at(i), "pt of recoV", 30, 0, 300, recoV.pt(), (theWeight*LumiSF));
-      //theHistograms->fill("recoVEta_" + histoType + cuts.at(i), "eta of recoV", 30, 0, 3.5, fabs(recoV.eta()), (theWeight*LumiSF));
-      //theHistograms->fill("recoVPhi_" + histoType + cuts.at(i), "phi of recoV", 30, -3.2, 3.2, recoV.phi(), (theWeight*LumiSF));
-      //theHistograms->fill("recoVEnergy_" + histoType + cuts.at(i), "energy of  recoV", 60, 0, 2400, fabs(recoV.e()), (theWeight*LumiSF));
+
       theHistograms->fill("recoVDaughtersDeltaPhi_" + histoType + cuts.at(i), "dPhi of recoVDaughters", 20, 0, 3.2, fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())), (theWeight*LumiSF));
 
     }
@@ -2375,11 +2323,6 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     theHistograms->fill("recoZDaughter1Pt_" + histoType + cuts.at(i), "pt of recoZDaughter1", 50, 0, 600, Z->daughter(1).pt(), (theWeight*LumiSF));
     
 
-
-    /*
-    theHistograms->fill("VZMass_" + histoType + cuts.at(i), "mass of reco VZ system", 40, 0, 400, lljj.mass(), (theWeight*LumiSF));
-    theHistograms->fill("VZ_Pt_" + histoType + cuts.at(i), "pt of reco VZ system", 50, 0, 500, lljj.Pt(), (theWeight*LumiSF));
-    */
     std::vector<phys::Jet> kinRECOjets;
     std::vector<phys::Jet> kinRECOfatJets;
     foreach (const phys::Jet &jet, *jets)
@@ -2387,7 +2330,6 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
 	if (KinematicsOK(jet,ptcut,etacut))
 	  kinRECOjets.push_back(jet);
       }
-    //    theHistograms->fill("#recoJetsAK4_kinAcc_" + histoType + cuts.at(i), "#recoJetsAK4_kinematically_OK", 8, 0, 8, kinRECOjets.size(), theWeight*LumiSF);
     foreach (const phys::Jet &FJ, *jetsAK8)
       {
 	if (KinematicsOK(FJ,ptcut,etacut))
@@ -2411,7 +2353,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     theHistograms->fill("recoZMass_" + histoType + cuts.at(i), "mass of recoZ", 40, 0, 200, Z->mass(), (theWeight*LumiSF));
 
     theHistograms->fill("recoZPt_" + histoType + cuts.at(i), "pt of recoZ", 50, 0, 600, Z->pt(), (theWeight*LumiSF));
-    theHistograms->fill("recoZEta_" + histoType + cuts.at(i), "eta of recoZ", 35, 0, 3.5, fabs(Z->eta()), (theWeight*LumiSF));
+    if(fullPlotList)    theHistograms->fill("recoZEta_" + histoType + cuts.at(i), "eta of recoZ", 35, 0, 3.5, fabs(Z->eta()), (theWeight*LumiSF));
     //theHistograms->fill("recoZEnergy_" + histoType + cuts.at(i), "energy of  recoZ", 120, 0, 400, fabs(Z->e()), (theWeight*LumiSF));
     theHistograms->fill("recoZDeltaPhi_" + histoType + cuts.at(i), "dPhi of recoZ", 30, 0, 3.2, fabs(physmath::deltaPhi(Z->daughter(0).phi(), Z->daughter(1).phi())), (theWeight*LumiSF));
 
@@ -2437,7 +2379,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
 
 
       theHistograms->fill("DR_gammaClosestJet_"+histoType + cuts.at(i), "DR_gammaClosestJet_"+histoType + cuts.at(i)+"; #DeltaR", 50, 0, 5, fabs(physmath::deltaR(nearestRECOjetstoPhoton.first, nearestRECOjetstoPhoton.second)), theWeight*LumiSF);
-      theHistograms->fill("DeltaR_vs_Deltapt_gammaJet"+histoType + cuts.at(i), "DeltaR_vs_Deltapt_gammaJet"+histoType + cuts.at(i)+";#Delta pt [GeV/c] ; #DeltaR", 20, -100, 100, 50, 0, 5, nearestRECOjetstoPhoton.first.pt()-nearestRECOjetstoPhoton.second.pt(),fabs(physmath::deltaR(nearestRECOjetstoPhoton.first, nearestRECOjetstoPhoton.second)), theWeight*LumiSF);
+      if(fullPlotList) theHistograms->fill("DeltaR_vs_Deltapt_gammaJet"+histoType + cuts.at(i), "DeltaR_vs_Deltapt_gammaJet"+histoType + cuts.at(i)+";#Delta pt [GeV/c] ; #DeltaR", 20, -100, 100, 50, 0, 5, nearestRECOjetstoPhoton.first.pt()-nearestRECOjetstoPhoton.second.pt(),fabs(physmath::deltaR(nearestRECOjetstoPhoton.first, nearestRECOjetstoPhoton.second)), theWeight*LumiSF);
 
     }
       
@@ -2451,15 +2393,16 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     if(VBTopo==1)
       {
 	theHistograms->fill("mjjG_"+histoType + cuts.at(i), 30, 50, 350, mjjPh, theWeight*LumiSF);
-	theHistograms->fill("mjj_vs_mjjG_"+histoType + cuts.at(i), "mjj_vs_mjjG_"+histoType + cuts.at(i)+"; mjj [GeV] ; mjj#gamma [GeV]", 35, 50, 120, 30, 50, 350, mjj, mjjPh, theWeight*LumiSF);
-	theHistograms->fill("mll_vs_mjj_"+histoType + cuts.at(i), "mll_vs_mjj_"+histoType + cuts.at(i)+"; mll [GeV] ; mjj [GeV]", 30, 60, 120, 35, 50, 120, mll, mjj, theWeight*LumiSF);
-	theHistograms->fill("mllG_vs_mjjG_"+histoType + cuts.at(i), "mllG_vs_mjjG_"+histoType + cuts.at(i)+"; mll#gamma [GeV] ; mjj#gamma [GeV]", 80, 50, 450, 30, 50, 350, mllPh, mjjPh, theWeight*LumiSF);
-	theHistograms->fill("mllG_vs_mjj_"+histoType + cuts.at(i), "mllG_vs_mjj_"+histoType + cuts.at(i)+"; mll#gamma [GeV] ; mjj [GeV]", 80, 50, 450, 35, 50, 120, mllPh, mjj, theWeight*LumiSF);
-	theHistograms->fill("mll_vs_mjjG_"+histoType + cuts.at(i), "mll_vs_mjjG_"+histoType + cuts.at(i)+"; mll [GeV] ; mjj#gamma [GeV]", 30, 60, 120, 30, 50, 350, mllPh, mjjPh, theWeight*LumiSF);
+	if(fullPlotList){
+	  theHistograms->fill("mjj_vs_mjjG_"+histoType + cuts.at(i), "mjj_vs_mjjG_"+histoType + cuts.at(i)+"; mjj [GeV] ; mjj#gamma [GeV]", 35, 50, 120, 30, 50, 350, mjj, mjjPh, theWeight*LumiSF);
+	  theHistograms->fill("mll_vs_mjj_"+histoType + cuts.at(i), "mll_vs_mjj_"+histoType + cuts.at(i)+"; mll [GeV] ; mjj [GeV]", 30, 60, 120, 35, 50, 120, mll, mjj, theWeight*LumiSF);
+	  theHistograms->fill("mllG_vs_mjjG_"+histoType + cuts.at(i), "mllG_vs_mjjG_"+histoType + cuts.at(i)+"; mll#gamma [GeV] ; mjj#gamma [GeV]", 80, 50, 450, 30, 50, 350, mllPh, mjjPh, theWeight*LumiSF);
+	  theHistograms->fill("mllG_vs_mjj_"+histoType + cuts.at(i), "mllG_vs_mjj_"+histoType + cuts.at(i)+"; mll#gamma [GeV] ; mjj [GeV]", 80, 50, 450, 35, 50, 120, mllPh, mjj, theWeight*LumiSF);
+	  theHistograms->fill("mll_vs_mjjG_"+histoType + cuts.at(i), "mll_vs_mjjG_"+histoType + cuts.at(i)+"; mll [GeV] ; mjj#gamma [GeV]", 30, 60, 120, 30, 50, 350, mllPh, mjjPh, theWeight*LumiSF);
 
 
-	theHistograms->fill("DRlGs_vs_DRjG_"+histoType + cuts.at(i), "DRlGs_vs_DRjG_"+histoType + cuts.at(i)+"; #DeltaRj#gamma [GeV] ; #DeltaRl#gamma", 50, 0, 5, 50, 0, 5, fabs(physmath::deltaR(nearestRECOjetstoPhoton.first, nearestRECOjetstoPhoton.second)),fabs(physmath::deltaR(nearestChLeptToPhoton.first, nearestChLeptToPhoton.second)), theWeight*LumiSF);
-
+	  theHistograms->fill("DRlGs_vs_DRjG_"+histoType + cuts.at(i), "DRlGs_vs_DRjG_"+histoType + cuts.at(i)+"; #DeltaRj#gamma [GeV] ; #DeltaRl#gamma", 50, 0, 5, 50, 0, 5, fabs(physmath::deltaR(nearestRECOjetstoPhoton.first, nearestRECOjetstoPhoton.second)),fabs(physmath::deltaR(nearestChLeptToPhoton.first, nearestChLeptToPhoton.second)), theWeight*LumiSF);
+	}
 	theHistograms->fill("DALITZ_PLOT_VZG_"+histoType + cuts.at(i), "DALITZ_PLOT_VZG_"+histoType + cuts.at(i)+"; m^2 ll#gamma [GeV] ; m^2  jj#gamma [GeV]", 50, 0, 100000, 50, 0, 100000, m2llPh, m2jjPh, theWeight*LumiSF);
 
 	theHistograms->fill("DALITZ_PLOT_llG_"+histoType + cuts.at(i), "DALITZ_PLOT_llG_"+histoType + cuts.at(i)+"; m^2 l0#gamma [GeV] ; m^2  l1#gamma [GeV]", 50, 0, 50000, 50, 0, 50000, m2l0Ph, m2l1Ph, theWeight*LumiSF);
@@ -2472,8 +2415,10 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
       }    
 
     theHistograms->fill("mllG_"+histoType + cuts.at(i), 45, 0, 450, mllPh, theWeight*LumiSF);
+    
     theHistograms->fill("mll_vs_mllG_"+histoType + cuts.at(i), "mll_vs_mllG_"+histoType + cuts.at(i)+"; mll [GeV] ; mll#gamma [GeV]", 30, 60, 120, 80, 50, 450, mll, mllPh, theWeight*LumiSF);
     theHistograms->fill("mllG_vs_DRlGs_"+histoType + cuts.at(i), "mllG_vs_DRlGs_"+histoType + cuts.at(i)+"; mll#gamma [GeV] ; #DeltaRl#gamma", 60, 150, 450, 50, 0, 5, mllPh, fabs(physmath::deltaR(nearestChLeptToPhoton.first, nearestChLeptToPhoton.second)), theWeight*LumiSF);
+    
     theHistograms->fill("MET_"+histoType + cuts.at(i), 40, 0, 200, met->pt(), theWeight*LumiSF);
 
 
@@ -2517,7 +2462,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
       theHistograms->fill("#_gamma_Tight_" + histoType, "#_gamma_Tight_", 12, 0, 12, TightPhotonsCounter, (theWeight*LumiSF));
     }
     if(VBTopo==1){
-      for(int l = 0; l<orders.size(); l++)
+      for(int l = 0; l<3; l++)
 	{
 	  theHistograms->fill("FWM_T"+orders.at(l)+"_jets_"+histoType+cuts.at(i), "FWM_T"+orders.at(l)+"_jets_"+histoType+cuts.at(i)+"; H_"+orders.at(l)+"^T jets + gamma", 40, -1, 3,
 			      SumFWM(l, 't', jjG), theWeight*LumiSF);
@@ -2542,7 +2487,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
 
     theHistograms->fill("ptGamma_"+histoType + cuts.at(i), "ptGamma_"+histoType + cuts.at(i)+";#gamma pt [GeV]", 50, 0, 200, ptGamma, theWeight*LumiSF);
     theHistograms->fill("dPhiZG_"+histoType + cuts.at(i), "dPhiZG_"+histoType + cuts.at(i)+";#delta#Phi Z-#gamma", 32, 0, 3.2, fabs(physmath::deltaPhi(Z->phi(),selectedphotons.at(0).phi()) ), theWeight*LumiSF);
-
+    
     theHistograms->fill("mllG_vs_ptGamma_"+histoType + cuts.at(i), "mllG_vs_ptGamma_"+histoType + cuts.at(i)+";mll#gamma [GeV] ; #gamma pt [GeV]", 50, 80, 330, 50, 0, 200, mllG, ptGamma, theWeight*LumiSF);
     theHistograms->fill("mllG_vs_dRL0Gamma_"+histoType + cuts.at(i), "mllG_vs_dRL0Gamma_"+histoType + cuts.at(i)+";mll#gamma [GeV] ; #DeltaR l0 - #gamma", 50, 80, 330, 8, 0, 2.0, mllG, deltaR_L0Gamma, theWeight*LumiSF);
     theHistograms->fill("mllG_vs_dRL1Gamma_"+histoType + cuts.at(i), "mllG_vs_dRL1Gamma_"+histoType + cuts.at(i)+";mll#gamma [GeV] ; #DeltaR l1 - #gamma", 50, 80, 330, 8, 0, 2.0, mllG, deltaR_L1Gamma, theWeight*LumiSF);
