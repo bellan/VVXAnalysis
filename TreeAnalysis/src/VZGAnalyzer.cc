@@ -833,6 +833,10 @@ void VZGAnalyzer::analyze()
   //if(IsARunForMVAFeat) return;
   //bool isBkg=false;
 
+  bool isSigSample = theSampleInfo.isMC() && (theSampleInfo.fileName().find("WZG")!=std::string::npos || theSampleInfo.fileName().find("ZZG")!=std::string::npos);
+  bool isDYSample = theSampleInfo.isMC() && theSampleInfo.fileName().find("DY")!=std::string::npos;
+  bool isZGSample = theSampleInfo.isMC() && !isSigSample && (theSampleInfo.fileName().find("ZG")!=std::string::npos);
+
   double VZGMVAScore = -2.;
   std::string region = "";
 
@@ -909,7 +913,7 @@ void VZGAnalyzer::analyze()
   if(selectedphotons.size()<1){
     if (IN_GENsignalDef()){
       printHistos(0, "sign", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);   
-    }else{
+    }else if(!IN_GENsignalDef() ){
       printHistos(0, "bckg", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
     }
     printHistos(0, "all", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
@@ -926,7 +930,6 @@ void VZGAnalyzer::analyze()
       printHistos(0, "prompt", recoV, recoFJ, selectedphotons, VBTopo, region, isCR);
     }
     //    std::cout<<"No Loose Photons "<<selectedphotons.size()<<std::endl;
-
     isCR = true;
     if(selectedVLPhotons.size()<1){
 
@@ -952,7 +955,7 @@ void VZGAnalyzer::analyze()
 
       if (IN_GENsignalDef()){
 	printHistos(4, "sign", recoV_2P1VL, recoFJ_2P1VL, selectedVLPhotons, VBTopo_2P1VL, region, isCR);   
-      }else{
+      }else if (!IN_GENsignalDef()){
 	printHistos(4, "bckg", recoV_2P1VL, recoFJ_2P1VL, selectedVLPhotons, VBTopo_2P1VL, region, isCR);
       }
       printHistos(4, "all", recoV_2P1VL, recoFJ_2P1VL, selectedVLPhotons, VBTopo_2P1VL, region, isCR);   
@@ -1438,12 +1441,13 @@ void VZGAnalyzer::analyze()
 void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
 {
   
-  bool isSignalSample = theSampleInfo.isMC() && (theSampleInfo.fileName().find("WZG")!=std::string::npos || theSampleInfo.fileName().find("ZZG")!=std::string::npos);
+  bool isSigSample = theSampleInfo.isMC() && (theSampleInfo.fileName().find("WZG")!=std::string::npos || theSampleInfo.fileName().find("ZZG")!=std::string::npos);
   bool isDYSample = theSampleInfo.isMC() && (theSampleInfo.fileName().find("DY")!=std::string::npos);
+  bool isZGSample = theSampleInfo.isMC() && !isSigSample && (theSampleInfo.fileName().find("ZG")!=std::string::npos);
   
   passingPresel = false;
   //if(!IsARunForMVAFeat)  return;
-  if( (isSignalSample && !IN_GENsignalDef() ) || !theSampleInfo.isMC()) return;
+  if( (isSigSample && !IN_GENsignalDef() ) || !theSampleInfo.isMC()) return;
   //std::cout<<"0: entering fillFeatTree "<<std::endl;
 
 
@@ -2149,6 +2153,10 @@ void VZGAnalyzer::CompatibilityTest(phys::Boson<phys::Jet> bestCandidate, phys::
 
 void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::Jet> recoV, phys::Jet recoFJ, std::vector<phys::Photon> selectedphotons, int VBTopo,  std::string region, bool isCR)
 {
+  bool isSigSample = theSampleInfo.isMC() && (theSampleInfo.fileName().find("WZG")!=std::string::npos || theSampleInfo.fileName().find("ZZG")!=std::string::npos);
+  bool isDYSample = theSampleInfo.isMC() && (theSampleInfo.fileName().find("DY")!=std::string::npos);
+  bool isZGSample = theSampleInfo.isMC() && !isSigSample && (theSampleInfo.fileName().find("ZG")!=std::string::npos);
+
   if(!isCR && !theSampleInfo.isMC()) return; //SR BLINDING
   if(isCR){
     if(i>4) return; //to avoid producing CR plots for cut higher than 
@@ -2263,6 +2271,55 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
   float HT =  lljjPh.Pt();
   
   double VZGMVAScore= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo);
+  //_____BLOCK_FOR_SYS_HISTOS_____//
+  bool isForSys = (theSampleInfo.isMC()
+		       && (
+			   (isDYSample && histoType=="nonPrompt")
+			   ||
+			   (isZGSample && histoType=="prompt")
+			   ||
+			   (isSigSample && histoType=="sign")
+			   ||
+			   (!isSigSample && !isZGSample && !isDYSample && histoType=="all")
+			   )
+		   );
+  if (i==2 && !isCR && isForSys && cut(2, recoV, recoFJ, selectedphotons, VBTopo, VZGMVAScore)){
+
+    // QCD scale
+    // envelope: consider the six variations: {Do, Central, Up} x {Dn, Central, Up} - (central, central) - (Dn, Dn) - (Up, Up) and use the max and min
+    float QCDscale_Up(1.), QCDscale_Dn(1.);
+    std::vector<float> envelope {
+      theSampleInfo.QCDscale_muR0p5F1(),
+      theSampleInfo.QCDscale_muR0p5F2(),
+      theSampleInfo.QCDscale_muR1F0p5(),
+      theSampleInfo.QCDscale_muR1F2(),
+      theSampleInfo.QCDscale_muR2F0p5(),
+      theSampleInfo.QCDscale_muR2F1()
+    };
+    QCDscale_Up = *max_element(envelope.begin(), envelope.end());
+    QCDscale_Dn = *min_element(envelope.begin(), envelope.end());
+
+    theHistograms->fill("SYS_BDTScore_central", "SYS_BDTScore_central" , 10, -1.0, 1.0,  VZGMVAScore, theWeight*LumiSF);
+
+    theHistograms->fill("SYS_BDTScore_alphas_Up", "SYS_BDTScore_alphas_Up" , 10, -1.0, 1.0,  VZGMVAScore, theSampleInfo.alphas_MZ_Up()*theWeight*LumiSF);
+    theHistograms->fill("SYS_BDTScore_alphas_Down", "SYS_BDTScore_alphas_Down" , 10, -1.0, 1.0,  VZGMVAScore, theSampleInfo.alphas_MZ_Down()*theWeight*LumiSF);
+
+    theHistograms->fill("SYS_BDTScore_PDFVar_Up", "SYS_BDTScore_PDFVar_Up" , 10, -1.0, 1.0,  VZGMVAScore, theSampleInfo.PDFVar_Up()*theWeight*LumiSF);
+    theHistograms->fill("SYS_BDTScore_PDFVar_Down", "SYS_BDTScore_PDFVar_Down" , 10, -1.0, 1.0,  VZGMVAScore, theSampleInfo.PDFVar_Down()*theWeight*LumiSF);
+
+    theHistograms->fill("SYS_BDTScore_QCDscale_Up", "SYS_BDTScore_QCDscale_Up" , 10, -1.0, 1.0,  VZGMVAScore, QCDscale_Up*theWeight*LumiSF);
+    theHistograms->fill("SYS_BDTScore_QCDscale_Down", "SYS_BDTScore_QCDscale_Down" , 10, -1.0, 1.0,  VZGMVAScore, QCDscale_Dn*theWeight*LumiSF);
+
+    theHistograms->fill("SYS_BDTScore_L1Prefiring_Up", "SYS_BDTScore_L1Prefiring_Up" , 10, -1.0, 1.0,  VZGMVAScore, (theSampleInfo.L1PrefiringWeightUp()/theSampleInfo.L1PrefiringWeight())*theWeight*LumiSF);
+    theHistograms->fill("SYS_BDTScore_L1Prefiring_Down", "SYS_BDTScore_L1Prefiring_Down" , 10, -1.0, 1.0,  VZGMVAScore, (theSampleInfo.L1PrefiringWeightDn()/theSampleInfo.L1PrefiringWeight())*theWeight*LumiSF);
+
+    theHistograms->fill("SYS_BDTScore_puWeight_Up", "SYS_BDTScore_puWeight_Up" , 10, -1.0, 1.0,  VZGMVAScore, (theSampleInfo.puWeightUncUp()/theSampleInfo.puWeight())*theWeight*LumiSF);
+    theHistograms->fill("SYS_BDTScore_puWeight_Down", "SYS_BDTScore_puWeight_Down" , 10, -1.0, 1.0,  VZGMVAScore, (theSampleInfo.puWeightUncDn()/theSampleInfo.puWeight())*theWeight*LumiSF);
+
+
+  }
+  //______________________________//
+
   
   if (i <= cutsToApply && cut(i, recoV, recoFJ, selectedphotons, VBTopo, VZGMVAScore))
   {
