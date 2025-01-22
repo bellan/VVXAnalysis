@@ -7,24 +7,25 @@
 ##############################################
 
 from __future__ import print_function
-import sys
-from os import path, environ
+from os import path
 import copy
 import ROOT
 from math import log10
 from ctypes import c_int, c_double
 from array import array
-import itertools
 import re
 import logging
 from plotUtils23 import TFileContext, addIfExisting, rebin2D, InputDir, addIfExisting, get_plots
 from plotUtils23 import colors6, colors10
-import Colours
-from utils23 import makedirs_ok
+from utils23 import makedirs_ok, lumi_dict
+from argparse import ArgumentParser
+import cmsstyle
 
 
 _outdir_data = path.join("data","PhFR")
 _outdir_plot = path.join("Plot","PhFR")
+possible_methods = {"VLtoL", "VLtoL_EB", "VLtoL_EE", "KtoVL", "KtoVLexcl", "90to80", "ABCD"}
+possible_eras = ["2016preVFP", "2016postVFP", "2017", "2018", 'Run2']
 
 
 def joinIfNotNone(strings, connection='_'):
@@ -131,11 +132,31 @@ def linesAndTicks(h, logx=False, logy=False):
 
 def beautify(canvas, hist, logx=False, logy=False, logz=False, text_size=1., **kwargs):
     canvas.cd()
+
+    # Creating a cmsCanvas calls setCMSStyle(), which sets a *new* TStyle. So we must reconfigure everything
+    ROOT.gStyle.SetPalette(ROOT.kBird)
+    ROOT.gStyle.SetPaintTextFormat(".3f")
+
+    # hist.GetXaxis().SetLabelOffset(0.008) # default 0.012
+    hist.GetXaxis().SetLabelSize(0.045)   # default 0.05
+    hist.GetXaxis().SetTitleOffset(1.15)  # default 1.25
+    hist.GetXaxis().SetTitleSize(0.05)    # default 0.06
+
+    hist.GetYaxis().SetLabelSize(0.038)   # default 0.05
+    hist.GetYaxis().SetTitleOffset(1.)    # default 1.25
+    hist.GetYaxis().SetTitleSize(0.05)    # default 0.06
+
+    canvas.SetRightMargin(0.160)          # default 0.1125
+    hist.GetZaxis().SetLabelSize(0.040)   # default 0.05
+    hist.GetZaxis().SetTitleOffset(1.)    # default 1.25
+    hist.GetZaxis().SetTitleSize(0.05)    # default 0.06
+
     # hist.GetXaxis().SetNdivisions(0)
     # hist.GetXaxis().SetRange(0, hist.GetXaxis().GetNbins()+1)
 
     hist.SetMarkerSize(text_size)  # For some reason ROOT developers decided that painted text's size should have the same multiplier as the marker size
     hist.Draw("colz texte")
+    cmsstyle.CMS_lumi(canvas, iPosX=0)
 
     if(logx):
         canvas.SetLogx()
@@ -336,13 +357,14 @@ def fakeRateABCD_noSubtract(sample, inputdir, logx=False, logy=False, fixNegBins
     return hFR, hES, hKF
 
 
-def getPassFailLtoT_regex(sample_main, sample_subtr, inputdir, method, variable, regex, fixNegBins=False):
+def getPassFailLtoT_regex(sample_main, samples_subtr, inputdir, method, variable, regex, fixNegBins=False):
     regex_compiled = re.compile(regex)
     path_in = inputdir.path()
     year    = inputdir.year
     region  = inputdir.region
     path_channels = inputdir.path() if inputdir.year != 'Run2' else inputdir.path(year='2018')
     channels = findChannelsInFile(path.join(path_channels, sample_main['file']+'.root'), method, variable)
+    do_subtr = len(samples_subtr) > 0
 
     # print('\tDEBUG: regex    =', regex_compiled.pattern)
     selected = [ c  for c in channels if regex_compiled.search(c) ]
@@ -371,9 +393,9 @@ def getPassFailLtoT_regex(sample_main, sample_subtr, inputdir, method, variable,
         listDataPASS  .append(hmain_PASS)
         listDataFAIL  .append(hmain_FAIL)
 
-        if(sample_subtr is not None):
+        for sample_subtr in samples_subtr:
             hsubtr_PASS, hsubtr_FAIL = get_plots(inputdir, sample_subtr['file'], [ 'PhFR_%s_%s_%s_prompt_%s'  % (method, variable, channel, s) for s in ['PASS', 'FAIL'] ])
-            if(not (hsubtr_PASS and hsubtr_FAIL)): raise RuntimeError('Could not get the 2 prompt MC histograms!')
+            if(not (hsubtr_PASS and hsubtr_FAIL)): raise RuntimeError('Could not get the 2 prompt MC histograms for %s!' %(sample_subtr['file']))
             listPromptPASS.append(hsubtr_PASS)
             listPromptFAIL.append(hsubtr_FAIL)
 
@@ -383,42 +405,42 @@ def getPassFailLtoT_regex(sample_main, sample_subtr, inputdir, method, variable,
     hPromptFAIL = addIfExisting(*listPromptFAIL)
 
     if    (not (hDataPASS   and hDataFAIL  )): raise RuntimeError('Could not get the 2 data sums of histograms')
-    if(sample_subtr is not None):
+    if(do_subtr):
         if(not (hPromptPASS and hPromptFAIL)): raise RuntimeError('Could not get the 2 MC sums of histograms')
 
     if(sample_main.get('fixNegBins') and fixNegBins):
         fix_neg_bins(hDataPASS)
         fix_neg_bins(hDataFAIL)
-    if(sample_subtr is not None and sample_subtr.get('fixNegBins') and fixNegBins):
+    if(do_subtr and all(s.get('fixNegBins') for s in samples_subtr) and fixNegBins):
         fix_neg_bins(hPromptPASS)
         fix_neg_bins(hPromptFAIL)
 
     hPASS = hDataPASS
     hFAIL = hDataFAIL
-    if(sample_subtr is not None):
+    if(do_subtr):
            hPASS.Add(hPromptPASS, -1)
            hFAIL.Add(hPromptFAIL, -1)
 
     return hPASS, hFAIL
 
 
-def fakeRateLtoT_regex(sample_data, sample_prompt, inputdir, method, variable, regex, pattern_printable=None, fixNegBins=False, **kwargs):
+def fakeRateLtoT_regex(sample_data, samples_prompt, inputdir, method, variable, regex, pattern_printable=None, fixNegBins=False, **kwargs):
     year   = inputdir.year
     region = inputdir.region
     if(pattern_printable is None):
         pattern_printable = regex.replace('\\','').replace('"','').replace("'","")
 
-    if(sample_prompt is None):
+    if(len(samples_prompt) == 0):
         logging.info('Fake Rate %s: sample   = %s', method, sample_data)
         samplename  = sample_data['name']
         sampletitle = sample_data['title']
     else:
         logging.info('Fake Rate %s_%s: data     = %s', method, pattern_printable, sample_data  )
-        logging.info('Fake Rate %s_%s: promptMC = %s', method, pattern_printable, sample_prompt)
-        samplename  = sample_data['name']  +  '-'  + sample_prompt['name']
-        sampletitle = sample_data['title'] + ' - ' + sample_prompt['title']
+        logging.info('Fake Rate %s_%s: promptMC = %s', method, pattern_printable, samples_prompt)
+        samplename  = sample_data['name']  +  '-'  +  '-'  .join(s['name']  for s in samples_prompt)
+        sampletitle = sample_data['title'] + ' - ' + ' - ' .join(s['title'] for s in samples_prompt)
 
-    hPASS, hFAIL = getPassFailLtoT_regex(sample_data, sample_prompt, inputdir, method=method, variable=variable, regex=regex, fixNegBins=fixNegBins)
+    hPASS, hFAIL = getPassFailLtoT_regex(sample_data, samples_prompt, inputdir, method=method, variable=variable, regex=regex, fixNegBins=fixNegBins)
 
     outname = 'FR_{method}_{variable}_{regex}_{samplename}{region}_{year}'.format(method=method, variable=variable, samplename=samplename, region='' if region=='CRLFR' else '_'+region, year=year, regex=pattern_printable)
     title = 'Photon Fake Rate: {method} {regex} (from {sampletitle} in {region})'.format(method=method, sampletitle=sampletitle, regex=pattern_printable, region=region)
@@ -440,21 +462,19 @@ def fakeRateLtoT_regex(sample_data, sample_prompt, inputdir, method, variable, r
     x_name, y_name = variable.split('-')
     hFR.GetXaxis().SetTitle(varname_to_title(x_name))
     hFR.GetYaxis().SetTitle(varname_to_title(y_name))
-    hFR.GetXaxis().SetTitleOffset(1.2)
     hFR.GetZaxis().SetTitle("FR #gamma")
-    hFR.GetZaxis().SetTitleSize(1.15*hFR.GetZaxis().GetTitleSize())
-    hFR.GetZaxis().SetLabelSize(0.90*hFR.GetZaxis().GetLabelSize())
     plotFR_LtoT(hFR, outname, title, **kwargs)
     return hFR
 
 
-def getPassFailLtoT(sample_main, sample_subtr, inputdir, method, variable, fixNegBins):
+def getPassFailLtoT(sample_main, samples_subtr, inputdir, method, variable, fixNegBins):
     if(method.startswith('LtoT')):
         raise NotImplementedException('LtoT is deprecated. Use VLtoL')
 
     path_in = inputdir.path()
     region = inputdir.region
     year   = inputdir.year
+    do_subtr = len(samples_subtr) > 0
 
     if(sample_main['name'] == 'data'):
         hmain_PASS, hmain_FAIL   = get_plots(inputdir, sample_main['file'] , [ 'PhFR_%s_%s_data_%s'    % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
@@ -471,13 +491,20 @@ def getPassFailLtoT(sample_main, sample_subtr, inputdir, method, variable, fixNe
 
     assert (hmain_PASS   and hmain_FAIL  ), "Could't get the 2 main (data) histograms!"
 
-    if(sample_subtr is not None):
-        hsubtr_PASS, hsubtr_FAIL = get_plots(inputdir, sample_subtr['file'], [ 'PhFR_%s_%s_prompt_%s' % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
-        assert (hsubtr_PASS and hsubtr_FAIL), "Could't get the 2 prompt MC histograms!"
+    list_subtr_PASS = []
+    list_subtr_FAIL = []
+    for sample_subtr in samples_subtr:
+        hPASS, hFAIL = get_plots(inputdir, sample_subtr['file'], [ 'PhFR_%s_%s_prompt_%s' % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
+        if(not (hPASS and hFAIL)):
+            raise RuntimeError("Could not get the 2 prompt MC histograms for %s!" %(sample_subtr['file']))
+        list_subtr_PASS.append(hPASS)
+        list_subtr_FAIL.append(hFAIL)
+    hsubtr_PASS = addIfExisting(*list_subtr_PASS)
+    hsubtr_FAIL = addIfExisting(*list_subtr_FAIL)
 
     if(variable.startswith('pt-dRl')):
         to_rebin = [hmain_PASS, hmain_FAIL]
-        if(sample_subtr is not None):
+        if(do_subtr):
             to_rebin += [hsubtr_PASS, hsubtr_FAIL]
         for h in to_rebin:
             h.RebinY(5) #4
@@ -495,11 +522,13 @@ def getPassFailLtoT(sample_main, sample_subtr, inputdir, method, variable, fixNe
 
         plotFR_LtoT(     hmain_PASS, outname %('PASS', sample_main ['name']), title %('PASS', sample_main ['title']), range_FR_z=[0., hmain_PASS.GetMaximum()])
         plotFR_LtoT(     hmain_FAIL, outname %('FAIL', sample_main ['name']), title %('FAIL', sample_main ['title']), range_FR_z=[0., hmain_FAIL.GetMaximum()])
-        if(sample_subtr is not None):
-            plotFR_LtoT(hsubtr_PASS, outname %('PASS', sample_subtr['name']), title %('PASS', sample_subtr['title']), range_FR_z=[0., max(hsubtr_PASS.GetMaximum(), hmain_PASS.GetMaximum())])
-            plotFR_LtoT(hsubtr_FAIL, outname %('FAIL', sample_subtr['name']), title %('FAIL', sample_subtr['title']), range_FR_z=[0., max(hsubtr_FAIL.GetMaximum(), hmain_FAIL.GetMaximum())])
+        if(do_subtr):
+            subtr_name  =  '-' .join(s['name']  for s in samples_subtr)
+            subtr_title = ' - '.join(s['title'] for s in samples_subtr)
+            plotFR_LtoT(hsubtr_PASS, outname %('PASS', subtr_name), title %('PASS', subtr_title), range_FR_z=[0., max(hsubtr_PASS.GetMaximum(), hmain_PASS.GetMaximum())])
+            plotFR_LtoT(hsubtr_FAIL, outname %('FAIL', subtr_name), title %('FAIL', subtr_title), range_FR_z=[0., max(hsubtr_FAIL.GetMaximum(), hmain_FAIL.GetMaximum())])
 
-    if(sample_subtr is not None):
+    if(len(samples_subtr) > 0):
         hmain_PASS.Add(hsubtr_PASS, -1)
         hmain_FAIL.Add(hsubtr_FAIL, -1)
 
@@ -523,20 +552,20 @@ def varname_to_title(name):
     else:
         raise KeyError(name)
 
-def fakeRateLtoT(sample_data, sample_prompt, inputdir, method='LtoT', variable='pt-aeta', fixNegBins=False, **kwargs):
+def fakeRateLtoT(sample_data, samples_prompt, inputdir, method='LtoT', variable='pt-aeta', fixNegBins=False, **kwargs):
     year   = inputdir.year
     region = inputdir.region
-    if(sample_prompt is None):
+    if(len(samples_prompt) == 0):
         logging.info('Fake Rate %s: sample   = %s', method, sample_data)
         samplename  = sample_data['name']
         sampletitle = sample_data['title']
     else:
         logging.info('Fake Rate %s: data     = %s', method, sample_data  )
-        logging.info('Fake Rate %s: promptMC = %s', method, sample_prompt)
-        samplename  = sample_data['name']  +  '-'  + sample_prompt['name']
-        sampletitle = sample_data['title'] + ' - ' + sample_prompt['title']
+        logging.info('Fake Rate %s: promptMC = %s', method, samples_prompt)
+        samplename  = sample_data['name']  +  '-'  +  '-'  .join(s['name']  for s in samples_prompt)
+        sampletitle = sample_data['title'] + ' - ' + ' - ' .join(s['title'] for s in samples_prompt)
 
-    hPASS, hFAIL = getPassFailLtoT(sample_data, sample_prompt, inputdir, method=method, variable=variable, fixNegBins=fixNegBins)
+    hPASS, hFAIL = getPassFailLtoT(sample_data, samples_prompt, inputdir, method=method, variable=variable, fixNegBins=fixNegBins)
 
     outname = 'FR_{method}_{variable}_{samplename}{region}_{year}'.format(method=method, variable=variable, samplename=samplename, region='' if region=='CRLFR' else '_'+region, year=year)
     if(method.startswith('LtoT')):
@@ -561,10 +590,7 @@ def fakeRateLtoT(sample_data, sample_prompt, inputdir, method='LtoT', variable='
     x_name, y_name = variable.split('-')
     hFR.GetXaxis().SetTitle(varname_to_title(x_name))
     hFR.GetYaxis().SetTitle(varname_to_title(y_name))
-    hFR.GetXaxis().SetTitleOffset(1.2)
     hFR.GetZaxis().SetTitle("FR #gamma")
-    hFR.GetZaxis().SetTitleSize(1.15*hFR.GetZaxis().GetTitleSize())
-    hFR.GetZaxis().SetLabelSize(0.90*hFR.GetZaxis().GetLabelSize())
     plotFR_LtoT(hFR, outname, title, **kwargs)
 
     return hFR
@@ -573,10 +599,6 @@ def fakeRateLtoT(sample_data, sample_prompt, inputdir, method='LtoT', variable='
 def plotFR_LtoT(hFR, outname, title, logx=False, logy=False, do_title=True, range_FR_z=[0.,1.], **kwargs):
     outfname = path.join(_outdir_data, outname+'.root')
     picname  = path.join(_outdir_plot, outname)
-
-    cFR = ROOT.TCanvas( 'cFR_{}'.format(outname), title, 1200, 900 )
-    cFR.SetRightMargin(cFR.GetRightMargin()*1.4)
-    cFR.cd()
 
     min_draw , max_draw  = range_FR_z
     min_value = hFR.GetBinContent(hFR.GetMinimumBin())
@@ -594,6 +616,16 @@ def plotFR_LtoT(hFR, outname, title, logx=False, logy=False, do_title=True, rang
         hFR.Write(hFR.GetName(), ROOT.TObject.kOverwrite)
     logging.info('Output (with prompt MC subtraction) in: "{:s}"'.format(outfname))
 
+    cFR = cmsstyle.cmsCanvas('cFR_{}'.format(outname)
+                             , x_min = hFR.GetXaxis().GetBinLowEdge(1)
+                             , x_max = hFR.GetXaxis().GetBinLowEdge(hFR.GetXaxis().GetNbins())
+                             , y_min = hFR.GetYaxis().GetBinLowEdge(1)
+                             , y_max = hFR.GetYaxis().GetBinLowEdge(hFR.GetYaxis().GetNbins())
+                             , nameXaxis = hFR.GetXaxis().GetTitle()
+                             , nameYaxis = hFR.GetYaxis().GetTitle()
+                             , with_z_axis = True
+                             , square = False
+                             )
     to_preserve_FR = beautify(cFR, hFR, logx, logy, **kwargs)
 
     for ext in ['png', 'pdf']:
@@ -614,8 +646,16 @@ def plotRatio(h1, h2, name="ratio", title="ratio", do_title=True, **kwargs):
     ratio.SetMinimum(0.)
     ratio.SetContour(21)  # Set to an odd number so that 1 is in the middle of a bin in the color gradient
     
-    c = ROOT.TCanvas("cratio_{:s}".format(name), "ratio", 1200, 900)
-    c.cd()
+    c = cmsstyle.cmsCanvas("cratio_{:s}".format(name)
+                           , x_min = h1.GetXaxis().GetBinLowEdge(1)
+                           , x_max = h1.GetXaxis().GetBinLowEdge(h1.GetXaxis().GetNbins())
+                           , y_min = h1.GetYaxis().GetBinLowEdge(1)
+                           , y_max = h1.GetYaxis().GetBinLowEdge(h1.GetYaxis().GetNbins())
+                           , nameXaxis = h1.GetXaxis().GetTitle()
+                           , nameYaxis = h1.GetYaxis().GetTitle()
+                           , with_z_axis = False
+                           , square = False
+                           )
     
     ratio.Draw("colz texte")
     to_preserve = beautify(c, ratio, True, False, **kwargs)
@@ -638,17 +678,15 @@ def plotProfiled(h2, name=None, title='profile', direction='X', do_title=True, m
         name = h2.GetName()
 
     _style = [
-        {"color":ROOT.kRed     , "marker":ROOT.kFullCircle},
-        {"color":ROOT.kBlue    , "marker":ROOT.kFullTriangleUp},
-        {"color":ROOT.kGreen   , "marker":ROOT.kFullTriangleDown},
-        {"color":ROOT.kBlack   , "marker":ROOT.kFullSquare},
-        {"color":ROOT.kMagenta , "marker":ROOT.kFullCrossX},
-        {"color":ROOT.kCyan    , "marker":ROOT.kFullStar},
-        {"color":ROOT.kYellow+3, "marker":ROOT.kFullCross}
+        {"color":colors10[0], "marker":ROOT.kFullCircle},
+        {"color":colors10[1], "marker":ROOT.kFullTriangleUp},
+        {"color":colors10[2], "marker":ROOT.kFullTriangleDown},
+        {"color":colors10[3], "marker":ROOT.kFullSquare},
+        {"color":colors10[4], "marker":ROOT.kFullCrossX},
+        {"color":colors10[5], "marker":ROOT.kFullStar},
+        {"color":colors10[6], "marker":ROOT.kFullCross}
     ]
 
-    cprof = ROOT.TCanvas("c_"+name, h2.GetName(), 1200, 900)
-    cprof.cd()
     if  (direction=='Y'):
         axis_2D_proj = h2.GetYaxis()
         axis_2D_draw = h2.GetXaxis()
@@ -682,10 +720,9 @@ def plotProfiled(h2, name=None, title='profile', direction='X', do_title=True, m
     for i in range(1, axis_2D_draw.GetNbins()+2):
         draw_edges.append(axis_2D_draw.GetBinLowEdge(i))
     draw_edges.append(axis_2D_draw.GetBinUpEdge(axis_2D_draw.GetNbins()+1))
-    # print('edges:',draw_edges)
 
     zmax, zmin = 0, 0
-    legend = ROOT.TLegend(.7,.7,.9,.9)
+    legend = cmsstyle.cmsLeg(.7,.7,.9,.9, textSize=0.03)
     
     for j in range(1, axis_2D_proj.GetNbins()+1):
         h1 = ROOT.TH1D("{:s}_bin{:d}".format(h2.GetName(), j), title if do_title else '', nbins_draw+1, draw_edges)#, axis_2D_draw.GetNbins(), axis_2D_draw.GetXbins().GetArray())
@@ -706,7 +743,7 @@ def plotProfiled(h2, name=None, title='profile', direction='X', do_title=True, m
         varTitle = axis_2D_proj.GetTitle()
         match = re.search('[^[]+', varTitle)
         if(match): varTitle = match.group().strip()
-        legendTitle = "{}<{:s}<{}".format(axis_2D_proj.GetBinLowEdge(j), varTitle, axis_2D_proj.GetBinUpEdge(j))
+        legendTitle = "{:.5g}<{:s}<{:.5g}".format(axis_2D_proj.GetBinLowEdge(j), varTitle, axis_2D_proj.GetBinUpEdge(j))
 
         if(allzeroes):
             del h1
@@ -720,10 +757,20 @@ def plotProfiled(h2, name=None, title='profile', direction='X', do_title=True, m
         h.SetMarkerColor(_style[i]["color"] )
         h.SetMarkerStyle(_style[i]["marker"])
         h.SetMarkerSize(marker_size)
-    
-    h1s[0].GetYaxis().SetRangeUser(max(0, zmin - (zmax-zmin)/10), zmax + (zmax-zmin)/10)
-    h1s[0].Draw("P0 E1")
-    for h1 in h1s[1:]:
+
+    cprof = cmsstyle.cmsCanvas('c_' + name if name is not None else ''
+                               , x_min = draw_edges[0]
+                               , x_max = draw_edges[-2]
+                               , y_min = max(0, zmin - 0.1*(zmax-zmin))
+                               , y_max = zmax + 0.35*(zmax-zmin)
+                               , nameXaxis = axis_2D_draw.GetTitle()
+                               , nameYaxis = 'FR #gamma'
+                               , with_z_axis = False
+                               )
+    cmsstyle.CMS_lumi(cprof)
+    customize_cmsCanvas_square(cprof)
+
+    for h1 in h1s:
         h1.Draw("P0 E1 same")
     
     legend.Draw("SAME")
@@ -767,8 +814,19 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
 
     makedirs_ok('{:s}/time'.format(_outdir_plot))
 
-    canvas = ROOT.TCanvas('canvas_time', 'Time Evolution', 1200, 900)
+    is_square_canv = False
+    canvas = cmsstyle.cmsCanvas('canvas_time'
+                                , x_min = hRef.GetXaxis().GetBinLowEdge(1)
+                                , x_max = hRef.GetXaxis().GetBinLowEdge(hRef.GetXaxis().GetNbins())
+                                , y_min = hRef.GetYaxis().GetBinLowEdge(1)
+                                , y_max = hRef.GetYaxis().GetBinLowEdge(hRef.GetYaxis().GetNbins())
+                                , nameXaxis = hRef.GetXaxis().GetTitle()
+                                , nameYaxis = hRef.GetYaxis().GetTitle()
+                                , with_z_axis = False
+                                , square = is_square_canv
+                                )
     canvas.cd()
+
     gTime_list = []
     for by in range(1, y_axis_ref.GetNbins()+1):
         for bx in range(1, x_axis_ref.GetNbins()+1):
@@ -791,7 +849,7 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
                 continue
 
             leg_entry_title = '{}, {}'.format(x_labels[bx], y_labels[by])
-            legend_single = ROOT.TLegend(.5,.825,.89,.89)
+            legend_single = cmsstyle.cmsLeg(.5,.825,.89,.89)
             legend_single.AddEntry(hTime, leg_entry_title)
             hTime.SetMinimum(range_FR_z[0])
             hTime.SetMaximum(range_FR_z[1])
@@ -821,7 +879,13 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
         {'color':ROOT.kGray+1  , 'marker':ROOT.kFullFourTrianglesX}
         ]
 
+    hTime.GetYaxis().SetLabelSize(0.038)  # default 0.05
+    hTime.GetYaxis().SetTitle('FR #gamma')
+    hTime.GetYaxis().SetTitleOffset(1.2)  # default 1.25
+    hTime.GetYaxis().SetTitleSize(0.052)  # default 0.06
+
     hTime.Draw('AXIS')
+    cmsstyle.CMS_lumi(canvas)
     if(do_title):
         hTime.SetTitle(title)
         hTime.GetPainter().PaintTitle()
@@ -829,7 +893,7 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
     b_width = 1
     margin  = 0.2
     step    = (1 - 2*margin)/n_hists
-    legend_all = ROOT.TLegend(0.55, 0.89 - 0.03*n_hists, 0.89, 0.89)
+    legend_all = cmsstyle.cmsLeg(0.42 if is_square_canv else 0.68, 0.9 - 0.035*n_hists, 0.75, 0.9, textSize=0.03)
     for i, [g, leg_title] in enumerate(gTime_list):
         g.SetMarkerStyle(_style[i]['marker'])
         g.SetMarkerColor(_style[i]['color' ])
@@ -849,8 +913,8 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
         canvas.SaveAs('{:s}/time/{:s}_time.{ext:s}'.format(_outdir_plot, outname, ext=ext))
 
     # Bin evolution across years
-    canvas.SetBottomMargin(0.12)
-    print('\n\n')
+    canvas.SetBottomMargin(0.1)
+
     gBinEvol_list = []
     for time_label, hFR in thelist:
         theTitle = title  +' {}'.format(time_label)
@@ -887,13 +951,25 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
         logging.debug('gBinEvol.GetN(): %d', gBinEvol.GetN())
         gBinEvol_list.append([gBinEvol, time_label])
 
+    # Text size and style adjustments
+    canvas.SetRightMargin(0.14 if is_square_canv else 0.1) # default: 0.04 (square), 0.0225 (rectangle)
+    hBinEvol.GetXaxis().SetLabelOffset(0.008) # default 0.012
+    hBinEvol.GetXaxis().SetLabelSize(0.028)   # default 0.05
+    hBinEvol.GetYaxis().SetLabelSize(0.038)   # default 0.05
+    hBinEvol.GetYaxis().SetTitle('FR #gamma')
+    hBinEvol.GetYaxis().SetTitleOffset(1.2 if is_square_canv else 0.95) # default 1.25
+    hBinEvol.GetYaxis().SetTitleSize(0.052)   # default 0.06
+    # hBinEvol.GetXaxis().SetDrawOption("L") # BROKEN Left adjust labels
+
     hBinEvol.Draw('AXIS') # Use the axis of the last histogram to draw the frame
+    cmsstyle.CMS_lumi(canvas)
+
     if(do_title):
         hBinEvol.SetTitle(title)
         hBinEvol.GetPainter().PaintTitle()
     n_hists = len(gBinEvol_list)
     step    = (1 - 2*margin)/n_hists
-    legend_all = ROOT.TLegend(0.60, 0.89 - 0.04*n_hists, 0.89, 0.89)
+    legend_all = cmsstyle.cmsLeg(0.54 if is_square_canv else 0.64, 0.89 - 0.04*n_hists, 0.89, 0.89)
     for i, [g, leg_title] in enumerate(gBinEvol_list):
         g.SetMarkerStyle(_style[i]['marker'])
         g.SetMarkerColor(colors6[i])
@@ -914,13 +990,11 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
         canvas.SaveAs('{:s}/time/{:s}_binEvol.{ext:s}'.format(_outdir_plot, outname, ext=ext))
 
 
-def main():
-    ROOT.gStyle.SetPaintTextFormat(".3f")
-
+def main(args):
     sampleList = {
         "data"     : {"file": 'data'},
         "ZGToLLG"  : {"file": 'ZGToLLG', "title": "Z#gamma_{MC}", "fixNegBins": True},
-        "Drell-Yan": {"file": 'DYJetsToLL_M50', "fixNegBins": True},
+        "DrellYan" : {"file": 'DYJetsToLL_M50', "fixNegBins": True},
         "ZZTo4l"   : {"file": 'ZZTo4l', "fixNegBins": True},
         "ggTo4l"   : {"file": 'ggTo4l', "fixNegBins": True},
         "WZ"       : {"file": "WZTo3LNu", "fixNegBins":True}
@@ -929,11 +1003,195 @@ def main():
         sample.setdefault("name" , key)
         sample.setdefault("title", sample["name"])
 
-    possible_methods = {"VLtoL", "VLtoL_EB", "VLtoL_EE", "KtoVL", "KtoVLexcl", "90to80", "ABCD"}
+    # Set paths for output
+    args.inputdir = args.inputdir.rstrip('/')
+    global _outdir_data
+    global _outdir_plot
+    if(args.outputdir is not None):
+        _outdir_data = path.join(_outdir_data, args.outputdir)
+        _outdir_plot = path.join(_outdir_plot, args.outputdir)
+    else:
+        resultsname = path.basename(args.inputdir).split('results_')[-1]
+        _outdir_data = path.join(_outdir_data, resultsname)
+        _outdir_plot = path.join(_outdir_plot, resultsname)
 
-    possible_eras = ["2016preVFP", "2016postVFP", "2017", "2018", 'Run2']
+    results_dir = InputDir(basedir=args.inputdir, year=args.year, analyzer=args.analyzer, region='CRLFR')
 
-    from argparse import ArgumentParser
+    # Set up ROOT options and create dirs
+    ROOT.gROOT.SetBatch(True)
+    cmsstyle.setCMSStyle()
+    cmsstyle.writeExtraText = True
+    cmsstyle.SetExtraText("Preliminary")
+    cmsstyle.SetEnergy(13, unit="TeV")
+
+    makedirs_ok(_outdir_data)
+    makedirs_ok(_outdir_plot)
+    makedirs_ok(path.join(_outdir_data, 'debug'))
+    makedirs_ok(path.join(_outdir_plot, 'debug'))
+
+    # ROOT.gStyle.SetPalette(ROOT.kBird)
+
+    # Start FR plots
+    if(args.method == "ABCD"):
+        if(args.do_data):
+            print('##### ABCD data #####')
+            hFR_ABCD_data, hES_data, hKF_data= fakeRateABCD(sampleList["data"], sampleList["ZGToLLG"], results_dir, logx=True, fixNegBins=False)
+            print()
+        if(args.do_mc):
+            print('##### ABCD MC #####')
+            hFR_ABCD_MC  , hES_MC  , hKF_MC  = fakeRateABCD_noSubtract(sampleList["DrellYan"]        , results_dir, logx=True, fixNegBins=True)
+            print()
+        if(args.do_data and args.do_mc):
+            print('##### ABCD ratio #####')
+            plotRatio(hFR_ABCD_data, hFR_ABCD_MC, name="ABCD_ratio_data-ZG_over_DY_{}".format(args.year), title="Ratio FR(data-Z#gamma)/FR(DY)")
+            print()
+        exit(0)
+
+
+    method   = args.method
+    varState = joinIfNotNone([args.variable, args.final_state])
+    argsdict = {k:v for k,v in vars(args).items() if not k in ('inputdir', 'year', 'analyzer', 'region')}
+
+    if(args.time_evolution):
+        cmsstyle.SetLumi('%.3g' %(lumi_dict['Run2']['value']/1000), unit="fb")
+        print("########## TIME EVOL. method:", args.method, " variable:", args.variable, " final_state:", args.final_state, "##########")
+        hFR_data_l   = []
+        hFR_dataZG_l = []
+        hFR_dataZGDY_l = []
+        for year in possible_eras:
+            results_dir.year = year
+            try:
+                hFR = fakeRateLtoT(sampleList["data"], []                     , results_dir, **dict(argsdict, variable=varState))
+            except OSError as e:
+                logging.warning('skipping year beacause: %s', e)
+            else:
+                hFR_data_l.append([year, hFR])
+
+            try:
+                hFR = fakeRateLtoT(sampleList["data"], [sampleList['ZGToLLG']], results_dir, **dict(argsdict, variable=varState))
+            except OSError as e:
+                logging.warning('skipping year beacause: %s', e)
+            else:
+                hFR_dataZG_l.append([year, hFR])
+
+            try:
+                hFR = fakeRateLtoT(sampleList["data"], [sampleList['ZGToLLG'], sampleList['DrellYan']], results_dir, **dict(argsdict, variable=varState))
+            except OSError as e:
+                logging.warning('skipping year beacause: %s', e)
+            else:
+                hFR_dataZGDY_l.append([year, hFR])
+
+        time_evolution(hFR_data_l  , outname='FR_{method}_{variable}_data'        .format(method=args.method, variable=args.variable), title='FR vs time (data)'        , **argsdict)
+        time_evolution(hFR_dataZG_l, outname='FR_{method}_{variable}_data-ZGToLLG'.format(method=args.method, variable=args.variable), title='FR vs time (data-Z#gamma)', **argsdict)
+        time_evolution(hFR_dataZGDY_l, outname='FR_{method}_{variable}_data-ZGToLLG-DrellYan'.format(method=args.method, variable=args.variable), title='FR vs time (data-Z#gamma-DY)', **argsdict)
+        return 0
+
+    cmsstyle.SetLumi('%.3g' %(lumi_dict[args.year]['value']/1000), unit="fb")
+    if(args.channels):
+        print("########## CHANNELS   method:", args.method, " variable:", args.variable, " final_state:", args.final_state, "##########")
+        if(args.do_data):
+            print("### data ###")
+            hd_e  = fakeRateLtoT_regex(sampleList['data'], [], results_dir, regex='2[me]\+e[PF]-[YN]', pattern_printable='2x+e', **dict(argsdict))
+            hd_m  = fakeRateLtoT_regex(sampleList['data'], [], results_dir, regex='2[me]\+m[PF]-[YN]', pattern_printable='2x+m', **dict(argsdict))
+            hd_P  = fakeRateLtoT_regex(sampleList['data'], [], results_dir, regex='2[me]\+[em]P-[YN]', pattern_printable='2x+P', **dict(argsdict))
+            hd_F  = fakeRateLtoT_regex(sampleList['data'], [], results_dir, regex='2[me]\+[em]F-[YN]', pattern_printable='2x+F', **dict(argsdict))
+
+            hd_eP = fakeRateLtoT_regex(sampleList['data'], [], results_dir, regex='2[me]\+eP-[YN]'   , pattern_printable='2x+eP', **dict(argsdict, fixNegBins=True))
+            hd_eF = fakeRateLtoT_regex(sampleList['data'], [], results_dir, regex='2[me]\+eF-[YN]'   , pattern_printable='2x+eF', **dict(argsdict, fixNegBins=True))
+            hd_mP = fakeRateLtoT_regex(sampleList['data'], [], results_dir, regex='2[me]\+mP-[YN]'   , pattern_printable='2x+mP', **dict(argsdict, fixNegBins=True))
+            hd_mF = fakeRateLtoT_regex(sampleList['data'], [], results_dir, regex='2[me]\+mF-[YN]'   , pattern_printable='2x+mF', **dict(argsdict, fixNegBins=True))
+
+            hd_2e = fakeRateLtoT_regex(sampleList['data'], [], results_dir, regex='2e\+[em][PF]-[YN]', pattern_printable='2e+x' , **dict(argsdict, fixNegBins=True))
+            hd_2m = fakeRateLtoT_regex(sampleList['data'], [], results_dir, regex='2m\+[em][PF]-[YN]', pattern_printable='2m+x' , **dict(argsdict, fixNegBins=True))
+
+            plotRatio(hd_e ,hd_m , name="ratio_{}_{}_data_e_over_m_{}".format(  method,args.variable,args.year),title="Ratio FR(2x+e)/FR(2x+m) in data"  )
+            plotRatio(hd_F ,hd_P , name="ratio_{}_{}_data_F_over_P_{}".format(  method,args.variable,args.year),title="Ratio FR(2x+F)/FR(2x+P) in data"  )
+            plotRatio(hd_eF,hd_eP, name="ratio_{}_{}_data_eF_over_eP_{}".format(method,args.variable,args.year),title="Ratio FR(2x+eF)/FR(2x+eP) in data")
+            plotRatio(hd_mF,hd_mP, name="ratio_{}_{}_data_mF_over_mP_{}".format(method,args.variable,args.year),title="Ratio FR(2x+mF)/FR(2x+mP) in data")
+            plotRatio(hd_2e,hd_2m, name="ratio_{}_{}_data_2e_over_2m_{}".format(method,args.variable,args.year),title="Ratio FR(2e+x)/FR(2m+x) in data"  )
+            print()
+
+        if(args.do_mc):
+            print("###  MC  ###")
+            he  = fakeRateLtoT_regex(sampleList['ZZTo4l'], [], results_dir, regex='2[me]\+e[PF]', pattern_printable='2x+e' , **dict(argsdict, fixNegBins=True))
+            hm  = fakeRateLtoT_regex(sampleList['ZZTo4l'], [], results_dir, regex='2[me]\+m[PF]', pattern_printable='2x+m' , **dict(argsdict, fixNegBins=True))
+            hP  = fakeRateLtoT_regex(sampleList['ZZTo4l'], [], results_dir, regex='2[me]\+[em]P', pattern_printable='2x+P' , **dict(argsdict, fixNegBins=True))
+            hF  = fakeRateLtoT_regex(sampleList['ZZTo4l'], [], results_dir, regex='2[me]\+[em]F', pattern_printable='2x+F' , **dict(argsdict, fixNegBins=True))
+            heP = fakeRateLtoT_regex(sampleList['ZZTo4l'], [], results_dir, regex='2[me]\+eP'   , pattern_printable='2x+eP', **dict(argsdict, fixNegBins=True))
+            heF = fakeRateLtoT_regex(sampleList['ZZTo4l'], [], results_dir, regex='2[me]\+eF'   , pattern_printable='2x+eF', **dict(argsdict, fixNegBins=True))
+            hmP = fakeRateLtoT_regex(sampleList['ZZTo4l'], [], results_dir, regex='2[me]\+mP'   , pattern_printable='2x+mP', **dict(argsdict, fixNegBins=True))
+            hmF = fakeRateLtoT_regex(sampleList['ZZTo4l'], [], results_dir, regex='2[me]\+mF'   , pattern_printable='2x+mF', **dict(argsdict, fixNegBins=True))
+            h2e = fakeRateLtoT_regex(sampleList['ZZTo4l'], [], results_dir, regex='2e\+[em][PF]', pattern_printable='2e+x' , **dict(argsdict, fixNegBins=True))
+            h2m = fakeRateLtoT_regex(sampleList['ZZTo4l'], [], results_dir, regex='2m\+[em][PF]', pattern_printable='2m+x' , **dict(argsdict, fixNegBins=True))
+
+            plotRatio(h2e, h2m, name="ratio_{}_ZZ_2e_over_2m_{}".format(method, args.year), title="Ratio FR(2e+x)/FR(2m+x) in ZZTo4l")
+            plotRatio(he , hm , name="ratio_{}_ZZ_e_over_m_{}"  .format(method, args.year), title="Ratio FR(2x+e)/FR(2x+m) in ZZTo4l")
+            plotRatio(hF , hP , name="ratio_{}_ZZ_F_over_P_{}"  .format(method, args.year), title="Ratio FR(2x+F)/FR(2x+P) in ZZTo4l")
+            plotRatio(heF, heP, name="ratio_{}_ZZ_eF_over_eP_{}".format(method, args.year), title="Ratio FR(2x+eF)/FR(2x+eP) in ZZTo4l")
+            plotRatio(hmF, hmP, name="ratio_{}_ZZ_mF_over_mP_{}".format(method, args.year), title="Ratio FR(2x+mF)/FR(2x+mP) in ZZTo4l")
+            print()
+
+        if(args.do_data and args.do_mc):
+            print("### both ###")
+
+            hdZG_e  = fakeRateLtoT_regex(sampleList['data'], [sampleList["ZGToLLG"]], results_dir, regex='2[me]\+e[PF]', pattern_printable='2x+e' , **dict(argsdict))
+            hdZG_m  = fakeRateLtoT_regex(sampleList['data'], [sampleList["ZGToLLG"]], results_dir, regex='2[me]\+m[PF]', pattern_printable='2x+m' , **dict(argsdict))
+            hdZG_P  = fakeRateLtoT_regex(sampleList['data'], [sampleList["ZGToLLG"]], results_dir, regex='2[me]\+[em]P', pattern_printable='2x+P' , **dict(argsdict))
+            hdZG_F  = fakeRateLtoT_regex(sampleList['data'], [sampleList["ZGToLLG"]], results_dir, regex='2[me]\+[em]F', pattern_printable='2x+F' , **dict(argsdict))
+
+            hdZG_eP = fakeRateLtoT_regex(sampleList['data'], [sampleList["ZGToLLG"]], results_dir, regex='2[me]\+eP'   , pattern_printable='2x+eP', **dict(argsdict, fixNegBins=True))
+            hdZG_eF = fakeRateLtoT_regex(sampleList['data'], [sampleList["ZGToLLG"]], results_dir, regex='2[me]\+eF'   , pattern_printable='2x+eF', **dict(argsdict, fixNegBins=True))
+            hdZG_mP = fakeRateLtoT_regex(sampleList['data'], [sampleList["ZGToLLG"]], results_dir, regex='2[me]\+mP'   , pattern_printable='2x+mP', **dict(argsdict, fixNegBins=True))
+            hdZG_mF = fakeRateLtoT_regex(sampleList['data'], [sampleList["ZGToLLG"]], results_dir, regex='2[me]\+mF'   , pattern_printable='2x+mF', **dict(argsdict, fixNegBins=True))
+
+            hdZG_2e = fakeRateLtoT_regex(sampleList['data'], [sampleList["ZGToLLG"]], results_dir, regex='2e\+[em][PF]', pattern_printable='2e+x' , **dict(argsdict, fixNegBins=True))
+            hdZG_2m = fakeRateLtoT_regex(sampleList['data'], [sampleList["ZGToLLG"]], results_dir, regex='2m\+[em][PF]', pattern_printable='2m+x' , **dict(argsdict, fixNegBins=True))
+
+            plotRatio(hdZG_e ,hdZG_m , name="ratio_{}_{}_data-ZG_e_over_m_{}".format(  method,args.variable,args.year),title="Ratio FR(2x+e)/FR(2x+m) in data-Z#gamma"  )
+            plotRatio(hdZG_F ,hdZG_P , name="ratio_{}_{}_data-ZG_F_over_P_{}".format(  method,args.variable,args.year),title="Ratio FR(2x+F)/FR(2x+P) in data-Z#gamma"  )
+            plotRatio(hdZG_eF,hdZG_eP, name="ratio_{}_{}_data-ZG_eF_over_eP_{}".format(method,args.variable,args.year),title="Ratio FR(2x+eF)/FR(2x+eP) in data-Z#gamma")
+            plotRatio(hdZG_mF,hdZG_mP, name="ratio_{}_{}_data-ZG_mF_over_mP_{}".format(method,args.variable,args.year),title="Ratio FR(2x+mF)/FR(2x+mP) in data-Z#gamma")
+            plotRatio(hdZG_2e,hdZG_2m, name="ratio_{}_{}_data-ZG_2e_over_2m_{}".format(method,args.variable,args.year),title="Ratio FR(2e+x)/FR(2m+x) in data-Z#gamma"  )
+            print()
+
+    else:  # args.channels is false
+        print("########## INCLUSIVE   method:", args.method, " variable:", args.variable, " final_state:", args.final_state, "##########")
+        if(args.do_data):
+            hFR_data    = fakeRateLtoT(sampleList["data"], []                     , results_dir, **dict(argsdict, variable=varState))
+            plotProfiled(hFR_data   , name='FR_profiledX_{}_{}_data_{}'        .format(method, varState, args.year), title='FR(#gamma) vs #eta' , direction='X', **argsdict)
+            plotProfiled(hFR_data   , name='FR_profiledY_{}_{}_data_{}'        .format(method, varState, args.year), title='FR(#gamma) vs p_{T}', direction='Y', **argsdict)
+            print()
+
+        if(args.do_mc):
+            # hFR_DY   = fakeRateLtoT(sampleList["Drell-Yan"]       , None, results_dir, **dict(argsdict, variable=varState, fixNegBins=True))
+            hFR_ZG   = fakeRateLtoT(sampleList["ZGToLLG"], []                     , results_dir, **dict(argsdict, variable=varState, fixNegBins=True))
+            hFR_ZZ   = fakeRateLtoT(sampleList["ZZTo4l"] , []                     , results_dir, **dict(argsdict, variable=varState, fixNegBins=True))
+            hFR_ZZ_4P= fakeRateLtoT(sampleList["ZZTo4l"] , []                     , results_dir, **dict(argsdict, variable=varState, fixNegBins=True, region='SR4P'))
+            # hFR_gg   = fakeRateLtoT(sampleList["ggTo4l"]          , None, results_dir, **dict(argsdict, variable=varState, fixNegBins=True))
+
+            plotRatio(hFR_ZZ_4P, hFR_ZZ, name="ratio_{}_{}_ZZ4P_over_ZZCRLFR_{}".format(method, varState, args.year), title="Ratio FR(ZZ_{4P})/FR(ZZ_{CRLFR}) with "+joinIfNotNone([method, args.final_state], " "))
+            print()
+        if(args.do_data and args.do_mc):
+            hFR_data_ZG = fakeRateLtoT(sampleList["data"], [sampleList["ZGToLLG"]], results_dir, **dict(argsdict, variable=varState))
+            plotProfiled(hFR_data_ZG, name='FR_profiledX_{}_{}_data-ZGToLLG_{}'.format(method, varState, args.year), title='FR(#gamma) vs #eta' , direction='X', **argsdict)
+            plotProfiled(hFR_data_ZG, name='FR_profiledY_{}_{}_data-ZGToLLG_{}'.format(method, varState, args.year), title='FR(#gamma) vs p_{T}', direction='Y', **argsdict)
+
+            hFR_data_ZG_DY = fakeRateLtoT(sampleList["data"], [sampleList["ZGToLLG"], sampleList["DrellYan"]], results_dir, **dict(argsdict, variable=varState))
+            plotProfiled(hFR_data_ZG_DY, name='FR_profiledX_{}_{}_data-ZGToLLG-DrellYan_{}'.format(method, varState, args.year), title='FR(#gamma) vs #eta' , direction='X', **argsdict)
+            plotProfiled(hFR_data_ZG_DY, name='FR_profiledY_{}_{}_data-ZGToLLG-DrellYan_{}'.format(method, varState, args.year), title='FR(#gamma) vs p_{T}', direction='Y', **argsdict)
+
+            # plotRatio(hFR_data   , hFR_DY, name="ratio_{}_{}_data_over_DY_{}"   .format(method, varState, args.year), title="Ratio FR(data)/FR(DY) with "        +joinIfNotNone([method, args.final_state], " "))
+            plotRatio(hFR_data   , hFR_ZZ, name="ratio_{}_{}_data_over_ZZ_{}"   .format(method, varState, args.year), title="Ratio FR(data)/FR(ZZ) with "        +joinIfNotNone([method, args.final_state], " "))
+            plotRatio(hFR_data   , hFR_ZZ_4P, name="ratio_{}_{}_data_over_ZZ4P_{}".format(method, varState, args.year), title="Ratio FR(data)/FR(ZZ_{SR4P}) with "+joinIfNotNone([method, args.final_state], " "))
+            # plotRatio(hFR_data_ZG, hFR_DY, name="ratio_{}_{}_data-ZG_over_DY_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(DY) with "+joinIfNotNone([method, args.final_state], " "))
+            plotRatio(hFR_data_ZG, hFR_ZZ, name="ratio_{}_{}_data-ZG_over_ZZ_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(ZZ) with "+joinIfNotNone([method, args.final_state], " "))
+            plotRatio(hFR_data_ZG, hFR_ZZ_4P, name="ratio_{}_{}_data-ZG_over_ZZ4P_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(ZZ_{SR4P}) with "+joinIfNotNone([method, args.final_state], " "))
+            # plotRatio(hFR_LtoT_data, hFR_LtoT_ZZ_4P, name="ratio_{}_{}_data-ZG_over_ZZ_4P_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)_{CRLFR}/FR(ZZ_{4P}) with "+joinIfNotNone([method, args.final_state], " "))
+            # plotRatio(hFR_LtoT_data, hFR_LtoT_gg, name="ratio_{}_{}_data-ZG_over_gg_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(gg) with "+joinIfNotNone([method, args.final_state], " "))
+            print()
+
+
+def parse_args():
     parser = ArgumentParser()
     parser.add_argument("-y", "--year"   , default="2018", choices=possible_eras, help='Default: %(default)s')
     parser.add_argument("-m", "--method" , choices=possible_methods, default="VLtoL", help='Default: %(default)s')
@@ -964,214 +1222,31 @@ def main():
     # Output control
     parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
 
-    args = parser.parse_args()
-    loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
-    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
+    return parser.parse_args()
 
 
-    # Set paths for output
-    args.inputdir = args.inputdir.rstrip('/')
-    global _outdir_data
-    global _outdir_plot
-    if(args.outputdir is not None):
-        _outdir_data = path.join(_outdir_data, args.outputdir)
-        _outdir_plot = path.join(_outdir_plot, args.outputdir)
-    elif(args.inputdir != parser.get_default('inputdir')):
-        _outdir_data = path.join(_outdir_data, args.inputdir.split('results_')[-1])
-        _outdir_plot = path.join(_outdir_plot, args.inputdir.split('results_')[-1])
+def customize_cmsCanvas_square(canv):
+    '''
+    Changes to axes label and title's size and offset for a "square" cmsCanvas
+    '''
+    canv.SetRightMargin(0.04)          # default 0.03
+    # cmsCanvas() does not return the pointer to the histogram used to DrawFrame(), so we rely on
+    # the ROOT convention of storing it as "hframe" in the list of objects associated to the TPad
+    hframe = canv.FindObject("hframe")
+    # hframe.GetXaxis().SetLabelOffset(0.008) # default 0.012
+    hframe.GetXaxis().SetLabelSize(0.038)  # default 0.05
+    hframe.GetXaxis().SetTitleOffset(1.1)  # default 1.25
+    hframe.GetXaxis().SetTitleSize(0.05)  # default 0.06
 
-    results_dir = InputDir(basedir=args.inputdir, year=args.year, analyzer=args.analyzer, region='CRLFR')
-
-    # Set up ROOT options and create dirs
-    ROOT.gStyle.SetOptStat(0)
-    ROOT.gROOT.SetBatch(True)
-
-    makedirs_ok(_outdir_data)
-    makedirs_ok(_outdir_plot)
-    makedirs_ok(path.join(_outdir_data, 'debug'))
-    makedirs_ok(path.join(_outdir_plot, 'debug'))
-
-    # ROOT.gStyle.SetPalette(ROOT.kBird)
-
-    # Start FR plots
-    if(args.method == "ABCD"):
-        if(args.do_data):
-            print('##### ABCD data #####')
-            hFR_ABCD_data, hES_data, hKF_data= fakeRateABCD(sampleList["data"], sampleList["ZGToLLG"], results_dir, logx=True, fixNegBins=False)
-            print()
-        if(args.do_mc):
-            print('##### ABCD MC #####')
-            hFR_ABCD_MC  , hES_MC  , hKF_MC  = fakeRateABCD_noSubtract(sampleList["Drell-Yan"]       , results_dir, logx=True, fixNegBins=True)
-            print()
-        if(args.do_data and args.do_mc):
-            print('##### ABCD ratio #####')
-            plotRatio(hFR_ABCD_data, hFR_ABCD_MC, name="ABCD_ratio_data-ZG_over_DY_{}".format(args.year), title="Ratio FR(data-Z#gamma)/FR(DY)")
-            print()
-        exit(0)
-
-
-    method   = args.method
-    varState = joinIfNotNone([args.variable, args.final_state])
-    argsdict = {k:v for k,v in vars(args).items() if not k in ('inputdir', 'year', 'analyzer', 'region')}
-
-    if(args.time_evolution):
-        print("########## TIME EVOL. method:", args.method, " variable:", args.variable, " final_state:", args.final_state, "##########")
-        hFR_data_l   = []
-        hFR_dataZG_l = []
-        for year in possible_eras:
-            results_dir.year = year
-            try:
-                hFR = fakeRateLtoT(sampleList["data"], None                 , results_dir, **dict(argsdict, variable=varState))
-            except OSError as e:
-                logging.warning('skipping year beacause: %s', e)
-            else:
-                hFR_data_l.append([year, hFR])
-
-            try:
-                hFR = fakeRateLtoT(sampleList["data"], sampleList['ZGToLLG'], results_dir, **dict(argsdict, variable=varState))
-            except OSError as e:
-                logging.warning('skipping year beacause: %s', e)
-            else:
-                hFR_dataZG_l.append([year, hFR])
-
-        time_evolution(hFR_data_l  , outname='FR_{method}_{variable}_data'        .format(method=args.method, variable=args.variable), title='FR vs time (data)'        , **argsdict)
-        time_evolution(hFR_dataZG_l, outname='FR_{method}_{variable}_data-ZGToLLG'.format(method=args.method, variable=args.variable), title='FR vs time (data-Z#gamma)', **argsdict)
-        exit(0)
-
-    if(args.channels):
-        print("########## CHANNELS   method:", args.method, " variable:", args.variable, " final_state:", args.final_state, "##########")
-        if(args.variable.startswith('pt-dRl')):
-            if(args.do_data):
-                hd_e  = fakeRateLtoT(sampleList['data'], None, results_dir, **dict(argsdict, variable='pt-dRl_a-e-all-a'))
-                hd_m  = fakeRateLtoT(sampleList['data'], None, results_dir, **dict(argsdict, variable='pt-dRl_a-m-all-a'))
-                hd_P  = fakeRateLtoT(sampleList['data'], None, results_dir, **dict(argsdict, variable='pt-dRl_P-a-all-a'))
-                hd_F  = fakeRateLtoT(sampleList['data'], None, results_dir, **dict(argsdict, variable='pt-dRl_F-a-all-a'))
-
-                hd_eP = fakeRateLtoT(sampleList['data'], None, results_dir, **dict(argsdict, variable='pt-dRl_P-e-all-a', fixNegBins=True))
-                hd_eF = fakeRateLtoT(sampleList['data'], None, results_dir, **dict(argsdict, variable='pt-dRl_F-m-all-a', fixNegBins=True))
-                hd_mP = fakeRateLtoT(sampleList['data'], None, results_dir, **dict(argsdict, variable='pt-dRl_P-m-all-a', fixNegBins=True))
-                hd_mF = fakeRateLtoT(sampleList['data'], None, results_dir, **dict(argsdict, variable='pt-dRl_F-m-all-a', fixNegBins=True))
-
-                plotRatio(hd_e ,hd_m , name="ratio_{}_{}_data_e_over_m_{}".format(  method, args.variable, args.year), title="Ratio FR(l=e)/FR(l=m) in data"  )
-                plotRatio(hd_F ,hd_P , name="ratio_{}_{}_data_F_over_P_{}".format(  method, args.variable, args.year), title="Ratio FR(l=F)/FR(l=P) in data"  )
-                plotRatio(hd_eF,hd_eP, name="ratio_{}_{}_data_eF_over_eP_{}".format(method, args.variable, args.year), title="Ratio FR(l=eF)/FR(l=eP) in data")
-                plotRatio(hd_mF,hd_mP, name="ratio_{}_{}_data_mF_over_mP_{}".format(method, args.variable, args.year), title="Ratio FR(l=mF)/FR(l=mP) in data")
-                print()
-
-            if(args.do_data and args.do_mc):
-                hdZG_e  = fakeRateLtoT(sampleList['data'], sampleList['ZGToLLG'], results_dir, **dict(argsdict, variable='pt-dRl_a-e-all-a'))
-                hdZG_m  = fakeRateLtoT(sampleList['data'], sampleList['ZGToLLG'], results_dir, **dict(argsdict, variable='pt-dRl_a-m-all-a'))
-                hdZG_P  = fakeRateLtoT(sampleList['data'], sampleList['ZGToLLG'], results_dir, **dict(argsdict, variable='pt-dRl_P-a-all-a'))
-                hdZG_F  = fakeRateLtoT(sampleList['data'], sampleList['ZGToLLG'], results_dir, **dict(argsdict, variable='pt-dRl_F-a-all-a'))
-
-                hdZG_eP = fakeRateLtoT(sampleList['data'], sampleList['ZGToLLG'], results_dir, **dict(argsdict, variable='pt-dRl_P-e-all-a', fixNegBins=True))
-                hdZG_eF = fakeRateLtoT(sampleList['data'], sampleList['ZGToLLG'], results_dir, **dict(argsdict, variable='pt-dRl_F-m-all-a', fixNegBins=True))
-                hdZG_mP = fakeRateLtoT(sampleList['data'], sampleList['ZGToLLG'], results_dir, **dict(argsdict, variable='pt-dRl_P-m-all-a', fixNegBins=True))
-                hdZG_mF = fakeRateLtoT(sampleList['data'], sampleList['ZGToLLG'], results_dir, **dict(argsdict, variable='pt-dRl_F-m-all-a', fixNegBins=True))
-
-                plotRatio(hdZG_e ,hdZG_m , name="ratio_{}_{}_data-ZG_e_over_m_{}".format(  method,args.variable,args.year), title="Ratio FR(l=e)/FR(l=m) in data-Z#gamma"  )
-                plotRatio(hdZG_F ,hdZG_P , name="ratio_{}_{}_data-ZG_F_over_P_{}".format(  method,args.variable,args.year), title="Ratio FR(l=F)/FR(l=P) in data-Z#gamma"  )
-                plotRatio(hdZG_eF,hdZG_eP, name="ratio_{}_{}_data-ZG_eF_over_eP_{}".format(method,args.variable,args.year), title="Ratio FR(l=eF)/FR(l=eP) in data-Z#gamma")
-                plotRatio(hdZG_mF,hdZG_mP, name="ratio_{}_{}_data-ZG_mF_over_mP_{}".format(method,args.variable,args.year), title="Ratio FR(l=mF)/FR(l=mP) in data-Z#gamma")
-                print()
-
-        elif(args.variable.startswith('pt-aeta')):
-            if(args.do_data):
-                print("### data ###")
-                hd_e  = fakeRateLtoT_regex(sampleList['data'], None, results_dir, regex='2[me]\+e[PF]-[YN]', pattern_printable='2x+e', **dict(argsdict))
-                hd_m  = fakeRateLtoT_regex(sampleList['data'], None, results_dir, regex='2[me]\+m[PF]-[YN]', pattern_printable='2x+m', **dict(argsdict))
-                hd_P  = fakeRateLtoT_regex(sampleList['data'], None, results_dir, regex='2[me]\+[em]P-[YN]', pattern_printable='2x+P', **dict(argsdict))
-                hd_F  = fakeRateLtoT_regex(sampleList['data'], None, results_dir, regex='2[me]\+[em]F-[YN]', pattern_printable='2x+F', **dict(argsdict))
-
-                hd_eP = fakeRateLtoT_regex(sampleList['data'], None, results_dir, regex='2[me]\+eP-[YN]'   , pattern_printable='2x+eP', **dict(argsdict, fixNegBins=True))
-                hd_eF = fakeRateLtoT_regex(sampleList['data'], None, results_dir, regex='2[me]\+eF-[YN]'   , pattern_printable='2x+eF', **dict(argsdict, fixNegBins=True))
-                hd_mP = fakeRateLtoT_regex(sampleList['data'], None, results_dir, regex='2[me]\+mP-[YN]'   , pattern_printable='2x+mP', **dict(argsdict, fixNegBins=True))
-                hd_mF = fakeRateLtoT_regex(sampleList['data'], None, results_dir, regex='2[me]\+mF-[YN]'   , pattern_printable='2x+mF', **dict(argsdict, fixNegBins=True))
-
-                hd_2e = fakeRateLtoT_regex(sampleList['data'], None, results_dir, regex='2e\+[em][PF]-[YN]', pattern_printable='2e+x' , **dict(argsdict, fixNegBins=True))
-                hd_2m = fakeRateLtoT_regex(sampleList['data'], None, results_dir, regex='2m\+[em][PF]-[YN]', pattern_printable='2m+x' , **dict(argsdict, fixNegBins=True))
-
-                plotRatio(hd_e ,hd_m , name="ratio_{}_{}_data_e_over_m_{}".format(  method,args.variable,args.year),title="Ratio FR(2x+e)/FR(2x+m) in data"  )
-                plotRatio(hd_F ,hd_P , name="ratio_{}_{}_data_F_over_P_{}".format(  method,args.variable,args.year),title="Ratio FR(2x+F)/FR(2x+P) in data"  )
-                plotRatio(hd_eF,hd_eP, name="ratio_{}_{}_data_eF_over_eP_{}".format(method,args.variable,args.year),title="Ratio FR(2x+eF)/FR(2x+eP) in data")
-                plotRatio(hd_mF,hd_mP, name="ratio_{}_{}_data_mF_over_mP_{}".format(method,args.variable,args.year),title="Ratio FR(2x+mF)/FR(2x+mP) in data")
-                plotRatio(hd_2e,hd_2m, name="ratio_{}_{}_data_2e_over_2m_{}".format(method,args.variable,args.year),title="Ratio FR(2e+x)/FR(2m+x) in data"  )
-                print()
-
-            if(args.do_mc):
-                print("###  MC  ###")
-                he  = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, results_dir, regex='2[me]\+e[PF]', pattern_printable='2x+e' , **dict(argsdict, fixNegBins=True))
-                hm  = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, results_dir, regex='2[me]\+m[PF]', pattern_printable='2x+m' , **dict(argsdict, fixNegBins=True))
-                hP  = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, results_dir, regex='2[me]\+[em]P', pattern_printable='2x+P' , **dict(argsdict, fixNegBins=True))
-                hF  = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, results_dir, regex='2[me]\+[em]F', pattern_printable='2x+F' , **dict(argsdict, fixNegBins=True))
-                heP = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, results_dir, regex='2[me]\+eP'   , pattern_printable='2x+eP', **dict(argsdict, fixNegBins=True))
-                heF = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, results_dir, regex='2[me]\+eF'   , pattern_printable='2x+eF', **dict(argsdict, fixNegBins=True))
-                hmP = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, results_dir, regex='2[me]\+mP'   , pattern_printable='2x+mP', **dict(argsdict, fixNegBins=True))
-                hmF = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, results_dir, regex='2[me]\+mF'   , pattern_printable='2x+mF', **dict(argsdict, fixNegBins=True))
-                h2e = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, results_dir, regex='2e\+[em][PF]', pattern_printable='2e+x' , **dict(argsdict, fixNegBins=True))
-                h2m = fakeRateLtoT_regex(sampleList['ZZTo4l'], None, results_dir, regex='2m\+[em][PF]', pattern_printable='2m+x' , **dict(argsdict, fixNegBins=True))
-
-                plotRatio(h2e, h2m, name="ratio_{}_ZZ_2e_over_2m_{}".format(method, args.year), title="Ratio FR(2e+x)/FR(2m+x) in ZZTo4l")
-                plotRatio(he , hm , name="ratio_{}_ZZ_e_over_m_{}".format(  method, args.year), title="Ratio FR(2x+e)/FR(2x+m) in ZZTo4l")
-                plotRatio(hF , hP , name="ratio_{}_ZZ_F_over_P_{}".format(  method, args.year), title="Ratio FR(2x+F)/FR(2x+P) in ZZTo4l")
-                plotRatio(heF, heP, name="ratio_{}_ZZ_eF_over_eP_{}".format(method, args.year), title="Ratio FR(2x+eF)/FR(2x+eP) in ZZTo4l")
-                plotRatio(hmF, hmP, name="ratio_{}_ZZ_mF_over_mP_{}".format(method, args.year), title="Ratio FR(2x+mF)/FR(2x+mP) in ZZTo4l")
-                print()
-            
-            if(args.do_data and args.do_mc):
-                print("### both ###")
-                hdZG_e  = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], results_dir, regex='2[me]\+e[PF]', pattern_printable='2x+e' , **dict(argsdict))
-                hdZG_m  = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], results_dir, regex='2[me]\+m[PF]', pattern_printable='2x+m' , **dict(argsdict))
-                hdZG_P  = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], results_dir, regex='2[me]\+[em]P', pattern_printable='2x+P' , **dict(argsdict))
-                hdZG_F  = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], results_dir, regex='2[me]\+[em]F', pattern_printable='2x+F' , **dict(argsdict))
-
-                hdZG_eP = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], results_dir, regex='2[me]\+eP'   , pattern_printable='2x+eP', **dict(argsdict, fixNegBins=True))
-                hdZG_eF = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], results_dir, regex='2[me]\+eF'   , pattern_printable='2x+eF', **dict(argsdict, fixNegBins=True))
-                hdZG_mP = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], results_dir, regex='2[me]\+mP'   , pattern_printable='2x+mP', **dict(argsdict, fixNegBins=True))
-                hdZG_mF = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], results_dir, regex='2[me]\+mF'   , pattern_printable='2x+mF', **dict(argsdict, fixNegBins=True))
-
-                hdZG_2e = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], results_dir, regex='2e\+[em][PF]', pattern_printable='2e+x' , **dict(argsdict, fixNegBins=True))
-                hdZG_2m = fakeRateLtoT_regex(sampleList['data'], sampleList["ZGToLLG"], results_dir, regex='2m\+[em][PF]', pattern_printable='2m+x' , **dict(argsdict, fixNegBins=True))
-
-                plotRatio(hdZG_e ,hdZG_m , name="ratio_{}_{}_data-ZG_e_over_m_{}".format(  method,args.variable,args.year),title="Ratio FR(2x+e)/FR(2x+m) in data-Z#gamma"  )
-                plotRatio(hdZG_F ,hdZG_P , name="ratio_{}_{}_data-ZG_F_over_P_{}".format(  method,args.variable,args.year),title="Ratio FR(2x+F)/FR(2x+P) in data-Z#gamma"  )
-                plotRatio(hdZG_eF,hdZG_eP, name="ratio_{}_{}_data-ZG_eF_over_eP_{}".format(method,args.variable,args.year),title="Ratio FR(2x+eF)/FR(2x+eP) in data-Z#gamma")
-                plotRatio(hdZG_mF,hdZG_mP, name="ratio_{}_{}_data-ZG_mF_over_mP_{}".format(method,args.variable,args.year),title="Ratio FR(2x+mF)/FR(2x+mP) in data-Z#gamma")
-                plotRatio(hdZG_2e,hdZG_2m, name="ratio_{}_{}_data-ZG_2e_over_2m_{}".format(method,args.variable,args.year),title="Ratio FR(2e+x)/FR(2m+x) in data-Z#gamma"  )
-                print()
-
-    else:  # args.channels is false
-        print("########## INCLUSIVE   method:", args.method, " variable:", args.variable, " final_state:", args.final_state, "##########")
-        if(args.do_data):
-            hFR_data    = fakeRateLtoT(sampleList["data"], None                 , results_dir, **dict(argsdict, variable=varState))
-            plotProfiled(hFR_data   , name='FR_profiledX_{}_{}_data_{}'        .format(method, varState, args.year), title='FR(#gamma) vs #eta' , direction='X', **argsdict)
-            plotProfiled(hFR_data   , name='FR_profiledY_{}_{}_data_{}'        .format(method, varState, args.year), title='FR(#gamma) vs p_{T}', direction='Y', **argsdict)
-            print()
-
-        if(args.do_mc):
-            # hFR_DY   = fakeRateLtoT(sampleList["Drell-Yan"]       , None, results_dir, **dict(argsdict, variable=varState, fixNegBins=True))
-            hFR_ZG   = fakeRateLtoT(sampleList["ZGToLLG"]         , None, results_dir, **dict(argsdict, variable=varState, fixNegBins=True))
-            hFR_ZZ   = fakeRateLtoT(sampleList["ZZTo4l"]          , None, results_dir, **dict(argsdict, variable=varState, fixNegBins=True))
-            hFR_ZZ_4P= fakeRateLtoT(sampleList["ZZTo4l"]          , None, results_dir, **dict(argsdict, variable=varState, fixNegBins=True, region='SR4P'))
-            # hFR_gg   = fakeRateLtoT(sampleList["ggTo4l"]          , None, results_dir, **dict(argsdict, variable=varState, fixNegBins=True))
-
-            plotRatio(hFR_ZZ_4P, hFR_ZZ, name="ratio_{}_{}_ZZ4P_over_ZZCRLFR_{}".format(method, varState, args.year), title="Ratio FR(ZZ_{4P})/FR(ZZ_{CRLFR}) with "+joinIfNotNone([method, args.final_state], " "))
-            print()
-        if(args.do_data and args.do_mc):
-            hFR_data_ZG = fakeRateLtoT(sampleList["data"], sampleList["ZGToLLG"], results_dir, **dict(argsdict, variable=varState))
-            plotProfiled(hFR_data_ZG, name='FR_profiledX_{}_{}_data-ZGToLLG_{}'.format(method, varState, args.year), title='FR(#gamma) vs #eta' , direction='X', **argsdict)
-            plotProfiled(hFR_data_ZG, name='FR_profiledY_{}_{}_data-ZGToLLG_{}'.format(method, varState, args.year), title='FR(#gamma) vs p_{T}', direction='Y', **argsdict)
-
-            # plotRatio(hFR_data   , hFR_DY, name="ratio_{}_{}_data_over_DY_{}"   .format(method, varState, args.year), title="Ratio FR(data)/FR(DY) with "        +joinIfNotNone([method, args.final_state], " "))
-            plotRatio(hFR_data   , hFR_ZZ, name="ratio_{}_{}_data_over_ZZ_{}"   .format(method, varState, args.year), title="Ratio FR(data)/FR(ZZ) with "        +joinIfNotNone([method, args.final_state], " "))
-            plotRatio(hFR_data   , hFR_ZZ_4P, name="ratio_{}_{}_data_over_ZZ4P_{}".format(method, varState, args.year), title="Ratio FR(data)/FR(ZZ_{SR4P}) with "+joinIfNotNone([method, args.final_state], " "))
-            # plotRatio(hFR_data_ZG, hFR_DY, name="ratio_{}_{}_data-ZG_over_DY_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(DY) with "+joinIfNotNone([method, args.final_state], " "))
-            plotRatio(hFR_data_ZG, hFR_ZZ, name="ratio_{}_{}_data-ZG_over_ZZ_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(ZZ) with "+joinIfNotNone([method, args.final_state], " "))
-            plotRatio(hFR_data_ZG, hFR_ZZ_4P, name="ratio_{}_{}_data-ZG_over_ZZ4P_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(ZZ_{SR4P}) with "+joinIfNotNone([method, args.final_state], " "))
-            # plotRatio(hFR_LtoT_data, hFR_LtoT_ZZ_4P, name="ratio_{}_{}_data-ZG_over_ZZ_4P_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)_{CRLFR}/FR(ZZ_{4P}) with "+joinIfNotNone([method, args.final_state], " "))
-            # plotRatio(hFR_LtoT_data, hFR_LtoT_gg, name="ratio_{}_{}_data-ZG_over_gg_{}".format(method, varState, args.year), title="Ratio FR(data-Z#gamma)/FR(gg) with "+joinIfNotNone([method, args.final_state], " "))
-            print()
+    hframe.GetYaxis().SetLabelSize(0.038)  # default 0.05
+    hframe.GetYaxis().SetTitleOffset(1.3)  # default 1.25
+    hframe.GetYaxis().SetTitleSize(0.05)  # default 0.06
+    cmsstyle.UpdatePad(canv)
 
 
 if __name__ == '__main__':
-    exit(main())
+    args = parse_args()
+    loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
+    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
+
+    exit(main(args))

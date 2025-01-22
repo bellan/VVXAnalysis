@@ -69,8 +69,9 @@ def plotSystematics(hCentral, hUp, hDn, var='[var]', syst='[syst]', sample='[sam
     # logging.debug('\t{var}_{syst}'.format(**formatInfo), ' Up: {:.1f} %  Dn: {:.1f} %'.format(100*upVar, 100*dnVar))
 
     ################################### Definition of the schema for the dict ####################################
+    syst_outname = syst.replace('-','_')
     syst_values = {}
-    syst_values.setdefault(region, {}).setdefault(var, {}).setdefault(sample, {})[syst] = {'up':upVar, 'dn':dnVar, 'integr': hCentral.Integral(1, hCentral.GetNbinsX()), 'N': hCentral.GetEntries()}
+    syst_values.setdefault(region, {}).setdefault(var, {}).setdefault(sample, {})[syst_outname] = {'up':upVar, 'dn':dnVar, 'integr': hCentral.Integral(1, hCentral.GetNbinsX()), 'N': hCentral.GetEntries()}
     ##############################################################################################################
 
     
@@ -214,7 +215,7 @@ def doSystOnFile(path, syst_regex=None, region=None, **kwargs):  # <str>, <re.Pa
                 names.add(name)
     
         variables   = set([n.split('_')[1] for n in names])
-        systematics = set([n.split('_')[2] for n in names])
+        systematics = set([n.split('_')[2] for n in names]) - {'central'}
         if(syst_regex is not None):
             systematics = {s for s in systematics if syst_regex.search(s)}
             logging.debug('Filtered syst with %s: %s', syst_regex.pattern, systematics)
@@ -229,11 +230,11 @@ def doSystOnFile(path, syst_regex=None, region=None, **kwargs):  # <str>, <re.Pa
 
         for var in variables:
             syst_empty = set()
-            for syst in systematics - {'central'}:
+            for syst in systematics: #- {'central'}
                 new_syst = doSystematics(tf, var, syst, sample=sample, region=region, **kwargs)
                 if(len(new_syst) == 0): syst_empty.add(syst)
                 deep_update(syst_values, new_syst)
-            if(len(systematics - syst_empty - {'central'}) == 0):
+            if(len(systematics - syst_empty) == 0): # - {'central'}
                 logging.error('All the systematics for variable "%s" are empty!!!\n', var)
     return syst_values
 

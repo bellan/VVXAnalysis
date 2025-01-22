@@ -206,6 +206,18 @@ def set_overflow_range(h, underflow=False, overflow=True):
     h.GetXaxis().SetRange(bx_min, bx_max)
 
 
+def deduce_region_label(plotname, region):
+    split = plotname.split('_')
+    if  (any(part.startswith('loose', 'failReweight') for part in split)):
+        return region+'_1P'
+    elif(any(part.startswith('fail') for part in split)):
+        return region+'_1F'
+    elif(any(part.startswith('veryLoose') for part in split)):
+        return region+'_1L'
+    else:
+        return region
+
+
 colors6  = [ ROOT.TColor.GetColor(hexc) for hexc in ('#5790fc', '#f89c20', '#e42536', '#964a8b', '#9c9ca1', '#7a21dd') ]
 colors10 = [ ROOT.TColor.GetColor(hexc) for hexc in ('#3f90da', '#ffa90e', '#bd1f01', '#94a4a2', '#832db6', '#a96b59', '#e76300', '#b9ac70', '#717581', '#92dadd')]
 
@@ -253,7 +265,7 @@ def getPlotFromSample(inputdir, sample, plot, verbosity, forcePositive, note=Non
         if(verbosity >= 2 and h is not None):
             if(note is not None): fname_print = fname + ' ' + note
             else:                 fname_print = fname
-            print (_nameFormat+" {: 10.2f} +- {: 10.2f}").format(fname_print, integralFile, errorFile)
+            print ((_nameFormat+" {: 10.2f} +- {: 10.2f}").format(fname_print, integralFile, errorFile))
         totalIntegral += integralFile
         totalError    += errorFile
 

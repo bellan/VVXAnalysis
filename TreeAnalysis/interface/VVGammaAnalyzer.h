@@ -150,7 +150,7 @@ private:
   std::unique_ptr<std::vector<phys::Jet>> jets_noph_;
 	
   // Systematics: photons {EScale, ESigma} x {Up, Down} + {central}
-  const std::vector<const char*> photonSystKeys_ = {"central", "EScale_Up", "EScale_Down", "ESigma_Up", "ESigma_Down"};
+  const std::vector<const char*> photonSystKeys_ = {"central", "scale-g_Up", "scale-g_Down", "res-g_Up", "res-g_Down"};
   std::unordered_map<std::string, std::unique_ptr<std::vector<phys::Photon>>> kinPhotons_;    // Only kinematic selection
   std::unordered_map<std::string, std::unique_ptr<std::vector<phys::Photon>>> loosePhotons_;  // Loose ID: currently 3/5 cuts of ID
   std::unordered_map<std::string, std::unique_ptr<std::vector<phys::Photon>>> goodPhotons_;   // Tight ID: currently Loose WP of POG cut-based ID
@@ -250,6 +250,7 @@ private:
 
   void fillCutsNm1(const std::string& name, const std::string& title, const std::vector<std::pair<std::string, bool>>& cuts, const double& weight);
   void fillCutFlow(const std::string& name, const std::string& title, const std::vector<std::pair<std::string, bool>>& cuts, const double& weight);
+  void fillCuts   (const std::string& name, const std::string& title, const std::vector<std::pair<std::string, bool>>& cuts, const double& weight);
 
   double getPhotonFR_VLtoL       (const phys::Photon& ph) const;
   double getPhotonFRUnc_VLtoL    (const phys::Photon& ph) const;
@@ -312,6 +313,7 @@ private:
 
   std::pair<double, double> getZllAndZllgMasses(const phys::Photon&);
   std::pair<double, double> getZllAndZllgMasses(const std::vector<phys::Photon>&);
+  std::pair<double, double> getZllAndZllgMasses_minimum(const std::vector<phys::Photon>&);
 		
   static const std::vector<double> pt_bins;
   static const std::vector<double> pt_bins_LFR;

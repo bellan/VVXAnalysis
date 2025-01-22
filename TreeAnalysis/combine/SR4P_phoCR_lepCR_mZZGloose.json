@@ -1,12 +1,13 @@
 {
     "signals": [
-	"ZZGTo4LG",
-	"WZGTo3LNuG"
+	"ZZGTo4LG-prompt",
+	"WZGTo3LNuG-prompt"
     ],
     "regions": {
 	"SR4P": {
             "processes": {
-		"ZZGTo4LG": -1,
+		"ZZGTo4LG-prompt": -1,
+		"ZZGTo4LG-nonpro": -1,
 		"ggTo4e_Contin_MCFM701-prompt": -1,
 		"ggTo2e2mu_Contin_MCFM701-prompt": -1,
 		"ggTo4mu_Contin_MCFM701-prompt": -1,
@@ -24,7 +25,6 @@
     },
     "systematics": {
 	"norm_uncertainty": {"fake_photons": {"up":0.50, "dn":-0.50}},
-	"shape": ["QCDscale"],
-        "ADD_gmN"     : {"phARstat": "fake_photons"}
+        "ADD_gmN": {"CMS_SMP24014_fake_g_ARstat": "fake_photons"}
     }
 }

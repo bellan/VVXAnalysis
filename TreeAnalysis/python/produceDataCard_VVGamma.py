@@ -36,14 +36,19 @@ __builtin_config__ = {
         }
     },
 
+    # Data-driven backgrounds that may be used are to be treated specially
+    'data-driven': ['fake_leptons', 'fake_photons'],
+
     # General configuration
     'systematics':{
         'shape': [],
-        'correlated'  : ['L1Prefiring', 'PDFVar', 'QCDscale', 'alphas', 'phEffSF', 'phEffMVASF', 'phEScale', 'phESigma', 'muoEffSF', 'eleEffSF', 'puWeight', 'phFakeRate'],
-        'uncorrelated': ['electronVeto', 'muoFakeRateSF', 'eleFakeRateSF', 'fake_leptons_norm', 'fake_photons_norm', 'phARstat'],
-        'skip-if-signal': ['PDFVar', 'QCDscale', 'alphas'],
-        'theory': ['QCDscale', 'alphas', 'PDFVar'],
-        'datadriven': ['phFakeRate', 'phARstat', 'muoFakeRateSF', 'eleFakeRateSF'],
+        'correlated'  : ['CMS_l1_prefiring', 'pdf', 'QCDscale', 'alphas', 'CMS_eff_g', 'CMS_eff_g_IDMVA', 'CMS_scale_g', 'CMS_res_g', 'CMS_eff_m', 'CMS_eff_e', 'CMS_fake_g'],
+        'uncorrelated': ['CMS_electronVeto', 'CMS_fake_m', 'CMS_fake_e', 'CMS_SMP24014_fake_leptons_norm', 'CMS_SMP24014_fake_photons_norm', 'CMS_SMP24014_fake_g_ARstat'],
+        'correl_year' : ['CMS_pileup'], # Systematics that are uncorrelated between years, but correlated between 2016 pre/post
+        'skip-if-signal': ['pdf', 'QCDscale', 'alphas'],
+        'theory': ['QCDscale', 'alphas', 'pdf'],
+        'datadriven': ['CMS_fake_g', 'CMS_SMP24014_fake_g_ARstat', 'CMS_fake_m', 'CMS_fake_e'],
+        'split-by-sample-group': ['QCDscale', 'pdf'], # Note: when split, the name changes in the datacard, so this cannot be a shape, otherwise the histogram name must change as well
         '_end':[]
     }
 }
@@ -127,7 +132,6 @@ def check_exisiting_histograms(fname, observable, processes):
     '''
     logging.debug('fname     : %s', fname     )
     logging.debug('observable: %s', observable)
-    logging.debug('processes : %s', processes )
     existing_processes = {}
     with TFileContext(fname) as tf:
         obs_folder = tf.Get(observable)
@@ -146,6 +150,7 @@ def check_exisiting_histograms(fname, observable, processes):
                     logging.warning('dropping %s, since it has norm %.3g for observable "%s" in %s', process, integral, observable, fname)
                 else:
                     existing_processes[process] = integral
+    logging.debug('existing_p: %s', existing_processes )
     return existing_processes
 
 def get_gmN_params(syst, data_syst):
@@ -201,45 +206,57 @@ def get_shape_affected(syst, data_syst):
     logging.debug('syst: %-12s - affected(%d): %s', syst, len(samples_affected), samples_affected)
     return samples_affected
 
-def main():
-    parser = ArgumentParser()
-    parser.add_argument('config_file', help='Configuration file')
-    parser.add_argument('-t', '--template', help='Template for the datacard')
-    parser.add_argument('-v', '--verbose'  , dest='verbosity', action='count', default=1, help='Increase verbosity')
-    parser.add_argument(      '--verbosity', type=int, help='Set verbosity')
-    parser.add_argument('-q', '--quiet'    , dest='verbosity', action='store_const', const=0, help='Set verbose to minimum')
-    parser.add_argument('-r', '--region', default=None)
-    parser.add_argument('-y', '--year'  , default='2018', choices=lumi_dict.keys())
-    parser.add_argument('-c', '--config', type=json.loads, help='String convertible to dictionary used to override the config', default={})
-    parser.add_argument(      '--unblind', action='store_true')
-    parser.add_argument(      '--path' , default=None                                    , help='Path to the histograms (default: %(default)s)')
-    parser.add_argument('-i', '--input', default='histogramsForCombine', dest='localpath', help='Path to the histograms for local checks (default: %(default)s)')
-    parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
+def get_sample_group(sample, syst):
+    '''
+    Return the name of a group of processes for a given sample name and systematic
+    (e.g. ZZTo4l -> VV for QCDscale, but ZZTo4l -> qq for pdf)
+    '''
+    if  (syst == 'QCDscale'):
+        return get_sample_group_QCDscale(sample)
+    elif(syst == 'pdf'):
+        return get_sample_group_pdf(sample)
+    else:
+        raise KeyError('Don\'t know how to assign a group to systematic "%s"' %(syst))
 
-    args = parser.parse_args()
-    loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
-    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
+def get_sample_group_pdf(sample):
+    # NOTE: ggTo* samples have NO PDF uncertainty stored in the ntuples! So pdf_gg ALWAYS gets cancelled
+    if  (sample.startswith(('ggTo4e', 'ggTo2e2m', 'ggTo4m'))):
+        return 'gg'
+    else:
+        return 'qqbar'
 
+def get_sample_group_QCDscale(sample):
+    if  (sample.startswith(('ZZGTo4LG','WZGTo3LNuG','ZZGTo2L2jG','WZGTo2L2jG'))):
+        return 'VVgamma'
+    elif(sample.startswith(('ZZZ', 'WZZ', 'WWZ', 'WWW'))):
+        return 'VVV'
+    elif(sample.startswith(('ZZTo','WZTo','WWTo'))):
+        return 'VV'
+    elif(sample.startswith(('ggTo4e', 'ggTo2e2m', 'ggTo4m'))):
+        return 'ggVV'
+    elif(sample.startswith(('TTW', 'TTZ'))):
+        return 'ttV'
+    elif(sample.startswith(('TTTo',))):
+        return 'ttbar'
+    elif(sample.startswith(('TZq','tW'))):
+        return 'tV'
+    elif(sample.startswith(('ZGToLLG',))):
+        return 'Vgamma'
+    elif(sample.startswith('DY')):
+        return 'V'
+    elif(sample.startswith('fake')):
+        return None
+    else:
+        raise KeyError('Sample "%s" has no group' %(sample))
+
+def main(args):
     logging.info('writing card for %(year)s, %(region)s', vars(args))
 
     if(args.path is None):
         # This is a temporary hack until I understand why combineCards.py mishandles relative paths
         args.path = os.path.join('/afs/cern.ch/work/a/amecca/Analysis/Combine/CMSSW_11_3_4/src/VVXAnalysis/Combine/test', args.localpath)
 
-    config = copy.deepcopy(__builtin_config__)
-
-    # Update from config file
-    try:
-        with open(args.config_file) as f:
-            fconfig = json.load(f, object_hook=byteify)
-    except json.decoder.JSONDecodeError as e:
-        print('ERROR: Caught', type(e), 'while reading', args.config_file)
-        print(e)
-        return 1
-    config.update(fconfig)
-    # Update 'systematics' with more granularity
-    config['systematics'] = copy.deepcopy(__builtin_config__['systematics'])
-    config['systematics'].update(fconfig.get('systematics', {}))
+    config = get_strategy_config(args.config_file)
 
     # Update from command line
     config.update(args.config)
@@ -326,6 +343,16 @@ def main():
     ### Process systematics ###
     # MEMO: setdefault(region, {}).setdefault(var, {}).setdefault(sample, {})[syst] = {'up':upVar, 'dn':dnVar}
 
+    # Hack: shape systematics that are uncorrelated across years
+    systs_shape_uncorr = get_shape_uncorrelated(config)
+    for syst in systs_shape_uncorr:
+        for obs_name, obs_systs in systematics[args.region].items():
+            for sample_name, sample_systs in obs_systs.items():
+                # rename the systematic so that it matches the name of the shape histogram
+                sample_systs[syst+'_'+args.year] = sample_systs.pop(syst)
+
+        config['systematics']['correlated'].append(syst+'_'+args.year)
+
     # Order the systematics so that the samples have the same order of the observable section
     missing_systematics = False
     data_syst = {}
@@ -342,29 +369,55 @@ def main():
             for syst, val in data_syst[sample].items():
                 if(syst in config['systematics']['skip-if-signal']):
                     val['dn'] = val['up'] = 0
-                    logging.debug('Zeroed systematic "%s" for sample "%s"', syst, sample)
+                    logging.debug('Zeroed systematic "%s" for signal "%s"', syst, sample)
+
+        # Remove common systematics on data-driven backgrounds
+        if(sample in config['data-driven']):
+            for syst, val in data_syst[sample].items():
+                val['dn'] = val['up'] = 0
+                logging.debug('Zeroed systematic "%s" for signal "%s"', syst, sample)
 
     # Set normalization uncertainty (e.g. fake_leptons and fake_photons)
     for sample, val in config['systematics'].get('norm_uncertainty', {}).items():
         if sample in data_syst:
             logging.info('setting norm uncertainty on %s (%s)', sample, val)
-            data_syst[sample][sample+'_norm'] = val
+            data_syst[sample]['CMS_SMP24014_'+sample+'_norm'] = val
             if  (sample == 'fake_leptons'):
                 logging.info('Using norm uncertainty instead of lepton fake rate uncertainty')
-                data_syst[sample]['eleFakeRateSF'] = {'up':1, 'dn':1}
-                data_syst[sample]['muoFakeRateSF'] = {'up':1, 'dn':1}
+                data_syst[sample]['CMS_fake_e'] = {'up':1, 'dn':1}
+                data_syst[sample]['CMS_fake_m'] = {'up':1, 'dn':1}
 
     # Set normalization for groups of samples
     for group_name, group_info in config['systematics'].get('norm_group_uncertainty', {}).items():
         logging.info('setting group norm uncertainty on %s (%s)', group_name, group_info['value'])
         for sample in group_info['samples']:
-            data_syst[sample][group_name+'_norm'] = group_info['value']
+            data_syst[sample]['CMS_'+group_name+'_norm'] = group_info['value']
+
+    # Some systematics (e.g. QCDscale) must be split by sample class
+    for syst in config['systematics']['split-by-sample-group']:
+        if  (syst in config['systematics'][  'correlated']): correlation = 'correlated'
+        elif(syst in config['systematics']['uncorrelated']): correlation = 'uncorrelated'
+        elif(syst in config['systematics']['correl_year' ]): correlation = 'correl_year'
+        else: RuntimeError('Systematic "%s": unspecified if correlated' %(syst))
+
+        for sample, sample_data in data_syst.items():
+            sample_group = get_sample_group(sample, syst)
+            if(sample_group is None):
+                logging.info('Skipping split-by-group for sample "%s" which has no group', sample)
+                sample_data.pop(syst)
+                continue
+            new_syst = syst+'_'+sample_group
+            logging.debug('syst: %s, sample: %s -> new syst: %s', syst, sample, new_syst)
+            # Remove the old generic entry (e.g. 'QCDscale') and replace it (e.g. with 'QCDscale_VV')
+            sample_data[new_syst] = sample_data.pop(syst)
+            # Specify the same correlation in the config
+            config['systematics'][correlation].append(new_syst)
 
     df_syst = fillDataFrame(data_syst, formatter=format_lnN).fillna(0)
     type_column = []
     for syst in df_syst.index:
         # Drop systematics that do not affect any sample
-        if(all(df_syst[column].loc[syst] == '-' for column in df_syst.columns)):
+        if(all(df_syst[column].loc[syst] in ('-', 0, '0') for column in df_syst.columns)):
             logging.info('dropping systematic "%s"', syst)
             df_syst.drop(syst, inplace=True)
             continue
@@ -406,24 +459,27 @@ def main():
         # Uses implicitly: config, year
         if  (syst in config['systematics'][  'correlated']): suffix = ''
         elif(syst in config['systematics']['uncorrelated']): suffix = '_'+args.year
+        elif(syst in config['systematics']['correl_year' ]): suffix = '_'+re.match(r'(\d+)', args.year).group(1)
         elif(syst.endswith('_norm')):
             logging.info('Treating %s as correlated among years', syst)
             suffix = ''
         else: raise RuntimeError('Systematic "%s": unspecified if correlated' %(syst))
-        return 'CMS_{}{}'.format(syst, suffix)
+        return '{}{}'.format(syst, suffix)
 
     df_syst = df_syst.rename(rename_syst)
 
-    lumi_uncorrelated = lumi_dict[args.year]['error_uncorrelated']
-    lumi_correlated   = lumi_dict[args.year]['error_correlated']
-    lumi_1718         = lumi_dict[args.year]['error_1718']
+    year = args.year
+    if args.year in ('2016preVFP', '2016postVFP'): year = '2016'
+    lumi_uncorrelated = lumi_dict[year]['error_uncorrelated']
+    lumi_correlated   = lumi_dict[year]['error_correlated']
+    lumi_1718         = lumi_dict[year]['error_1718']
 
-    df_syst.loc['CMS_lumi_13TeV_%s'%(args.year)] = pd.Series({ sample: lumi_uncorrelated for sample in df_syst.columns })
+    df_syst.loc['lumi_%s'%(year)]        = pd.Series({ sample: (lumi_uncorrelated if sample not in config['data-driven'] else 0) for sample in df_syst.columns })
     type_column.append('lnN')
-    df_syst.loc['CMS_lumi_13TeV_correlated']     = pd.Series({ sample: lumi_correlated   for sample in df_syst.columns })
+    df_syst.loc['lumi_13TeV_correlated'] = pd.Series({ sample: (lumi_correlated   if sample not in config['data-driven'] else 0) for sample in df_syst.columns })
     type_column.append('lnN')
     if(args.year in ('2017', '2018')):
-        df_syst.loc['CMS_lumi_13TeV_1718']       = pd.Series({ sample: lumi_1718         for sample in df_syst.columns })
+        df_syst.loc['lumi_13TeV_1718']   = pd.Series({ sample: (lumi_1718         if sample not in config['data-driven'] else 0) for sample in df_syst.columns })
         type_column.append('lnN')
 
     df_syst.insert(0, 'type', type_column, False)
@@ -482,5 +538,63 @@ def main():
         return 2
     return 0
 
+def parse_args():
+    parser = ArgumentParser()
+    parser.add_argument('config_file', help='Configuration file')
+    parser.add_argument('-t', '--template', help='Template for the datacard')
+    parser.add_argument('-v', '--verbose'  , dest='verbosity', action='count', default=1, help='Increase verbosity')
+    parser.add_argument(      '--verbosity', type=int, help='Set verbosity')
+    parser.add_argument('-q', '--quiet'    , dest='verbosity', action='store_const', const=0, help='Set verbose to minimum')
+    parser.add_argument('-r', '--region', default=None)
+    parser.add_argument('-y', '--year'  , default='2018', choices=lumi_dict.keys())
+    parser.add_argument('-c', '--config', type=json.loads, help='String convertible to dictionary used to override the config', default={})
+    parser.add_argument(      '--unblind', action='store_true')
+    parser.add_argument(      '--path' , default=None                                    , help='Path to the histograms (default: %(default)s)')
+    parser.add_argument('-i', '--input', default='histogramsForCombine', dest='localpath', help='Path to the histograms for local checks (default: %(default)s)')
+    parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
+
+    return parser.parse_args()
+
+def get_strategy_config(config_file):
+    '''
+    Read a config file (JSON) and use it to update the builtin default configuration
+    '''
+    config = copy.deepcopy(__builtin_config__)
+
+    # Update from config file
+    with open(config_file) as f:
+        fconfig = json.load(f, object_hook=byteify)
+    config.update(fconfig)
+
+    # Update 'systematics' with more granularity
+    config['systematics'] = copy.deepcopy(__builtin_config__['systematics'])
+    config['systematics'].update(fconfig.get('systematics', {}))
+
+    return config
+
+
+def get_shape_uncorrelated(config):
+    # Some systematics are:
+    # - uncorrelated: they must be separated by year -> "<SYS>_201*";
+    # - shape: there must two histograms in the rootfile with the exact name name + "Up/Down".
+    # However, the EventAnalyzer should not itself decide if a systematic is or not uncorrelated,
+    # so the year suffix should not be decided there. Rather, we modify the histograms' names when preparing them for Combine.
+    return {syst for syst in config['systematics']['uncorrelated'] if getSystType(syst, config) == 'shape'}
+
+
+def get_shape_groups(config):
+    # Some systematics are:
+    # - shape: there must two histograms in the rootfile with the exact name name + "Up/Down".
+    # - correlated within a group of samples: e.g. QCDscale_VV for ZZ and WZ
+    # - correlated between years
+    # However, the EventAnalyzer should not itself decide if a systematic is or not uncorrelated,
+    # so the year suffix should not be decided there. Rather, we modify the histograms' names when preparing them for Combine.
+    return {syst for syst in config['systematics']['split-by-sample-group'] if getSystType(syst, config) == 'shape'}
+
+
 if __name__ == '__main__':
-    exit(main())
+    args = parse_args()
+    loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
+    logging.basicConfig(format='%(levelname)s:%(module)s:%(funcName)s: %(message)s', level=loglevel)
+
+    exit(main(args))

@@ -1,12 +1,13 @@
 {
     "signals": [
-	"ZZGTo4LG",
-	"WZGTo3LNuG"
+	"ZZGTo4LG-prompt",
+	"WZGTo3LNuG-prompt"
     ],
     "regions": {
 	"SR4P": {
             "processes": {
-		"ZZGTo4LG": -1,
+		"ZZGTo4LG-prompt": -1,
+		"ZZGTo4LG-nonpro": -1,
 		"ZZTo4l-nonpro": -1,
 		"ggTo4e_Contin_MCFM701": -1,
 		"ggTo2e2mu_Contin_MCFM701": -1,
@@ -29,11 +30,11 @@
 	    "fake_leptons": {"up":0.40, "dn":-0.40}
 	},
 	"norm_group_uncertainty": {
-	    "ggTo4l": {
+	    "SMP24014_ggTo4l": {
 		"value"  : {"up":0.30, "dn":-0.30},
 		"samples": ["ggTo4e_Contin_MCFM701", "ggTo2e2mu_Contin_MCFM701", "ggTo4mu_Contin_MCFM701"]
 	    }
 	},
-	"shape": ["PDFVar"]
+	"shape": ["pdf"]
     }
 }
