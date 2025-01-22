@@ -75,7 +75,7 @@ def main():
 
     parser = ArgumentParser()
     parser.add_argument('-y', '--year', default=2016)
-    parser.add_argument('-r', '--region'   , choices=['SR4P','CR3P1F','CR2P2F','SR3P'], default='SR4P')
+    parser.add_argument('-r', '--region'   , default='SR4P')
     parser.add_argument('-i', '--inputfile', help='JSON file with systematics. Overrides year')
     parser.add_argument('-p', '--variable' , dest='variable', default='mZZGloose')
     parser.add_argument('-s', '--samples'  , nargs='+', help='Manually specify which samples to list')
