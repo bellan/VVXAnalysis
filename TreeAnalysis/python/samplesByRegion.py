@@ -108,7 +108,7 @@ def getSamplesByRegion(region, MCSet, predType):
 
     elif region == 'CRLFR':
         if   predType == 'fullMC':
-            tot = tt_X_2l + ZZTo2Q2L + WZ + ZG + DY
+            tot = DY + ZG + WZ + tt_X_2l + ZZTo2Q2L + qqZZ + ggZZ
         else:
             raise ValueError('Method "%s" not available for CRLFR'%(predType))
     else:

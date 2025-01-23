@@ -246,6 +246,16 @@ def getVarInfo_VVGamma(region):
             'MET_fine':{'title': 'MET [GeV]'         , 'split_prompt_ph':True},
         })
 
+        for phName, phTitle in (('veryloose', 'loose'), ('loose', 'cut-based'), ('fail', 'fail')):
+            VarInfo_VVGamma.update({
+                'LG_mass_%s'%(phName): {'title':'m_{l#gamma} [GeV]', 'split_prompt_ph':True, 'rebin':2, 'logy':True, 'ymin':0.5},
+            })
+            for chName, chTitle in channels:
+                l_flav = chTitle.split('+')[1]
+                VarInfo_VVGamma.update({
+                    'LG_mass_%s_%s'%(phName, chName): {'title':'m_{%s#gamma} [GeV]'%(l_flav), 'split_prompt_ph':True, 'rebin':2, 'logy':True, 'ymin':0.5},
+                })
+
     # Photon stuff
     VarInfo_VVGamma.update({
         'kinPhotons_cuts'      : {'title':'cut'      , 'unblind':True , 'logy':True},
