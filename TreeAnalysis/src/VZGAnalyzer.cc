@@ -2076,11 +2076,11 @@ void VZGAnalyzer::PhotonSelection(std::vector<phys::Photon> *phot)
     //if (p.id() == 22 && KinematicsOK(p, 20, 2.4) && !p.hasPixelSeed() && p.passElectronVeto() && p.cutBasedIDLoose())        phot->push_back(p);//THIS IS C(S)R2P_1Loose
     //if (p.id() == 22 && KinematicsOK(p, 20, 2.4) && !p.hasPixelSeed() && p.passElectronVeto() && p.cutBasedIDMedium())        phot->push_back(p);//THIS IS SR2P_1Medium
     if (p.id() == 22 && KinematicsOK(p, 20, 2.4) && !p.hasPixelSeed() && p.passElectronVeto() && p.passMVA(Photon::MVAwp::wp90)){
-      gamma.push_back(p); //THIS IS C(S)R2P_1MVAM
+      phot->push_back(p); //THIS IS C(S)R2P_1MVAM
       //      std::cout<<"a kin passing wp90 with MVA ID = "<<p.MVAvalue()<<endl;
     }
   }
-
+  /*
   if(gamma.size()<1) return;
 
   tightestGamma = *std::max_element(gamma.begin(), gamma.end(),
@@ -2089,8 +2089,8 @@ void VZGAnalyzer::PhotonSelection(std::vector<phys::Photon> *phot)
 				    });
   //  std::cout<<"PHOTON SELECTED, MVA ID = "<<tightestGamma.MVAvalue()<<endl;
   phot->push_back(tightestGamma);
-
-  //  if(phot->size()>0)    std::stable_sort(phot->begin(), phot->end(), phys::EComparator());
+  */
+  if(phot->size()>0)    std::stable_sort(phot->begin(), phot->end(), phys::EComparator());
   
   //std::cout << "Number of selected RECO photons = " << phot->size() << std::endl;
 }
