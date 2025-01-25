@@ -361,6 +361,12 @@ def getVarInfo_VVGamma(region):
     #         'minL_DR_'     +name: {'title':'min_{l}(#DeltaR(#gamma_{%s}, l)'               %(name), 'rebin':1, 'unblind':True},
     #     })
 
+    # Debug SingleMu
+    VarInfo_VVGamma.update({
+        'DEBUG_SingleMu_mupt'      : {},
+        'DEBUG_SingleMu_loose_mupt': {}
+    })
+
     # Jet stuff
     VarInfo_VVGamma.update({
         'AK4_N'         : {'title':'# AK4'   , 'rebin':1, 'unblind':True, 'logy':True, 'text':True},
