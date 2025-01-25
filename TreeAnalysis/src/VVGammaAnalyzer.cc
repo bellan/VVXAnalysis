@@ -763,7 +763,7 @@ void VVGammaAnalyzer::analyze(){
   if(bestKinPh_){
     bool isPassVL    = bestKinPh_->cutBasedID(Photon::IdWp::VeryLoose);
     bool isPassLoose = bestKinPh_->cutBasedIDLoose();
-    double cutEffSF = isPassLoose ? getPhotonEffSF(*bestKinPh_) : 1.;
+    double cutEffSF = (theSampleInfo.isMC() && isPassLoose) ? getPhotonEffSF(*bestKinPh_) : 1.;
 
     if(isPassVL){
       photonFakeRate_LtoT("VLtoL", *bestKinPh_, isPassLoose, cutEffSF);
