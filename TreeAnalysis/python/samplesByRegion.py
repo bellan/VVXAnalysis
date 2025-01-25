@@ -58,6 +58,10 @@ def isLepCR(region):
     return region in ('CR3P1F', 'CR2P2F', 'CR000', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110')
 
 def getSamplesByRegion(region, MCSet, predType, special=False, **kwargs):
+    # return [{'files':['2P2F']        , 'color':ROOT.TColor.GetColor('#5790fc'), 'name':'from 2P2F', 'kfactor':-1}]
+    # return [{'files':['3P1F']        , 'color':ROOT.TColor.GetColor('#f89c20'), 'name':'from 3P1F'}]
+    # return [{'files':['fake_leptons'], 'color':ROOT.TColor.GetColor('#9c9ca1'), 'name':'Non-prompt leptons'}]
+
     availablePredTypes = ['fromCR', 'lepCR', 'phoCR', 'fullCR', 'fullMC', 'fakeMC']  # Notes: fromCR is a legacy equivalent of lepCR; fullCR = lepCR + phoCR
     if predType not in availablePredTypes:
         raise ValueError("Wrong prediction type ("+predType+"), available: "+str(availablePredTypes))

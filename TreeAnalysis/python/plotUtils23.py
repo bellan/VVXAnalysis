@@ -283,8 +283,9 @@ def GetFakeRate(inputdir, plotInfo, method, MCSet='mad', verbosity=1):
 
     hFakeRate.Rebin(plotInfo.get('rebin', 1))
 
-    hFakeRate.SetFillColor(ROOT.kGray)
-    hFakeRate.SetLineColor(ROOT.kGray)
+    fake_leptons_color = ROOT.TColor.GetColor('#9c9ca1')
+    hFakeRate.SetFillColor(fake_leptons_color)
+    hFakeRate.SetLineColor(fake_leptons_color)
     hFakeRate.SetMarkerStyle(21)
     hFakeRate.SetMarkerSize(.5)
     
