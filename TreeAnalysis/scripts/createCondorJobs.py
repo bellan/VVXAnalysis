@@ -10,7 +10,7 @@ from subprocess import check_call, check_output #, CalledProcessError
 from argparse import ArgumentParser
 
 
-thresholds = [(1.2e9, 'espresso'), (5e9, 'microcentury'), (10e9, 'longlunch'), (50e9, 'workday')]  # 50GB is the max file size on EOS
+thresholds = [(0.8e9, 'espresso'), (3e9, 'microcentury'), (8e9, 'longlunch'), (50e9, 'workday')]  # 50GB is the max file size on EOS
 
 condorsub_template = '''\
 executable              = $(directory)/batchScript.sh
