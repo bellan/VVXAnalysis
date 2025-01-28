@@ -31,7 +31,7 @@ __builtin_config__ = {
     # General configuration
     'systematics':{
         'shape': [],
-        'correlated'  : ['puWeight','L1Prefiring', 'PDFVar', 'QCDscale', 'alphas'],
+        'correlated'  : ['puWeight','L1Prefiring', 'PDFVar', 'QCDscale', 'alphas', 'JER'],
         'uncorrelated': [],
         'skip-if-signal': ['PDFVar', 'QCDscale', 'alphas'],
         'theory': ['QCDscale', 'alphas', 'PDFVar'],

@@ -9,7 +9,7 @@ DY       = [{'files':['DYJetsToLL_M50'] , 'color':ROOT.kGreen-9 , 'name':'DY'   
 ZG       = [{'files':['ZGToLLG'       ] , 'color':ROOT.kGreen+2 , 'name':'Z#gamma', 'skip_nonprompt_ph':True}]
 
 VZG      =[{'files':['VZG'    ] , 'color':ROOT.kRed   , 'name':'VZ#gamma'}]
-data_obs =[{'files':['2018_data'          ] , 'color':ROOT.kBlack   , 'name':'Data'}]
+data_obs =[{'files':['data_obs'          ] , 'color':ROOT.kBlack   , 'name':'Data'}]
 
 
 def is3Lregion(region):

@@ -34,7 +34,7 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
 		    configuration){
     //theHistograms.profile(genCategory);
     // Memory allocation
-    doFeats_      = false;//CT new flag for handling the features 
+    doFeats_      = true;//CT new flag for handling the features 
     leptons_      = new std::vector<phys::Lepton>;
     genQuarks_    = new std::vector<phys::Particle>;
     genChLeptons_ = new std::vector<phys::Particle>;
@@ -89,7 +89,7 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
   virtual bool baselineRequirements();
 
 
-  virtual double VZGMVAScoreBuilder(phys::Boson<phys::Jet>, phys::Jet , std::vector<phys::Photon> , int );
+  virtual double VZGMVAScoreBuilder(phys::Boson<phys::Jet>, phys::Jet , std::vector<phys::Photon> , int, int );
 
   virtual bool  inSR(phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int, double);
   virtual bool  inCRZOFF( phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int, double);
