@@ -3057,12 +3057,12 @@ void VVGammaAnalyzer::SYSplots_inclusive(const char *sys_label, const char* syst
   if(is4Lregion(region_)){
     theHistograms->fill(  Form("SYS%s_mZZ_%s"   , sys_label, syst           ), Form("m_{ZZ} %s", syst), mVV_bins , ZZ->mass()               , weight);
     if(theSampleInfo.isMC())
-      theHistograms->fill(Form("SYS%s_mZZ_%s_%s", sys_label, syst, strPrompt), Form("m_{ZZ} %s", syst), mVV_bins , ZZ->mass()               , weight);
+      theHistograms->fill(Form("SYS%s_mZZ-%s_%s", strPrompt, sys_label, syst), Form("m_{ZZ} %s", syst), mVV_bins , ZZ->mass()               , weight);
   }
   else if(is3Lregion(region_)){
     theHistograms->fill(  Form("SYS%s_mWZ_%s"   , sys_label, syst           ), Form("m_{WZ} %s", syst), mVV_bins , ZW->mass()               , weight);
     if(theSampleInfo.isMC())
-      theHistograms->fill(Form("SYS%s_mWZ_%s_%s", sys_label, syst, strPrompt), Form("m_{WZ} %s", syst), mVV_bins , ZW->mass()               , weight);
+      theHistograms->fill(Form("SYS%s_mWZ-%s_%s", strPrompt, sys_label, syst), Form("m_{WZ} %s", syst), mVV_bins , ZW->mass()               , weight);
   }
   else if(region_ == CRLFR){
     Boson<Lepton>& theZ = ZL->first;
@@ -3070,8 +3070,8 @@ void VVGammaAnalyzer::SYSplots_inclusive(const char *sys_label, const char* syst
     theHistograms->fill(  Form("SYS%s_mZ_%s"    , sys_label, syst           ), Form("m_{Z} %s" , syst), mZ_bins  , theZ.mass()              , weight);
     theHistograms->fill(  Form("SYS%s_mZL_%s"   , sys_label, syst           ), Form("m_{ZL} %s", syst), mZG_bins , (theZ.p4()+theL.p4()).M(), weight);
     if(theSampleInfo.isMC()){
-      theHistograms->fill(Form("SYS%s_mZ_%s_%s" , sys_label, syst, strPrompt), Form("m_{Z} %s" , syst), mZ_bins  , theZ.mass()              , weight);
-      theHistograms->fill(Form("SYS%s_mZL_%s_%s", sys_label, syst, strPrompt), Form("m_{ZL} %s", syst), mZG_bins , (theZ.p4()+theL.p4()).M(), weight);
+      theHistograms->fill(Form("SYS%s_mZ-%s_%s" , strPrompt, sys_label, syst), Form("m_{Z} %s" , syst), mZ_bins  , theZ.mass()              , weight);
+      theHistograms->fill(Form("SYS%s_mZL-%s_%s", strPrompt, sys_label, syst), Form("m_{ZL} %s", syst), mZG_bins , (theZ.p4()+theL.p4()).M(), weight);
     }
   }
 }
@@ -3082,15 +3082,22 @@ void VVGammaAnalyzer::SYSplots_photon(const char* sys_label, const char* syst, d
   if(theSampleInfo.isMC())
     phGenStatus = sigdefHelper.pass_photon() ? "prompt" : "nonpro" ;  // it is actually the event status (pass/fail the signal definition)
 
-  theHistograms->fill(  Form("SYS%s_%sMVA_%s"   , sys_label, ph_selection             , syst), Form("MVA %s %s"   , ph_selection             , syst), 40,-1,1   , ph.MVAvalue(),weight);
   theHistograms->fill(  Form("SYS%s_%spt_%s"    , sys_label, ph_selection             , syst), Form("pt %s %s"    , ph_selection             , syst), ph_pt_bins, ph.pt()      ,weight);
   if(theSampleInfo.isMC()){
-    theHistograms->fill(Form("SYS%s_%sMVA-%s_%s", sys_label, ph_selection, phGenStatus, syst), Form("MVA %s %s %s", ph_selection, phGenStatus, syst), 40,-1,1   , ph.MVAvalue(),weight);
     theHistograms->fill(Form("SYS%s_%spt-%s_%s" , sys_label, ph_selection, phGenStatus, syst), Form("pt %s %s %s" , ph_selection, phGenStatus, syst), ph_pt_bins, ph.pt()      ,weight);
+  }
+
+  // We only care about the distrbution of MVA for the kin photon selection
+  if(strcmp(ph_selection, "kin") == 0){
+    theHistograms->fill(  Form("SYS%s_%sMVA_%s"   , sys_label, ph_selection             , syst), Form("MVA %s %s"   , ph_selection             , syst), 40,-1,1   , ph.MVAvalue(),weight);
+    if(theSampleInfo.isMC()){
+      theHistograms->fill(Form("SYS%s_%sMVA-%s_%s", sys_label, ph_selection, phGenStatus, syst), Form("MVA %s %s %s", ph_selection, phGenStatus, syst), 40,-1,1   , ph.MVAvalue(),weight);
+    }
   }
 
   // We do not care about the distrbution of mV(V)G with these photon selections
   if(strcmp(ph_selection, "kin") == 0 ||
+     strcmp(ph_selection, "90not80") == 0 ||
      strcmp(ph_selection, "veryLoose") == 0)
     return;
 
@@ -3099,12 +3106,6 @@ void VVGammaAnalyzer::SYSplots_photon(const char* sys_label, const char* syst, d
     theHistograms->fill(  Form("SYS%s_mZZG%s_%s"   , sys_label, ph_selection             , syst), Form("m_{ZZ#gamma %s} %s", ph_selection, syst), mVVG_bins, mZZG, weight);
     if(theSampleInfo.isMC())
       theHistograms->fill(Form("SYS%s_mZZG%s-%s_%s", sys_label, ph_selection, phGenStatus, syst), Form("m_{ZZ#gamma %s} %s", ph_selection, syst), mVVG_bins, mZZG, weight);
-
-    double Zll_mass(0.), ZllG_mass(0.);
-    std::tie(Zll_mass, ZllG_mass) = getZllAndZllgMasses(ph);
-    theHistograms->fill(  Form("SYS%s_mZllplusZllG%s_%s"   , sys_label, ph_selection             , syst), Form("m_{ZZ} + m_{ZZ#gamma %s} %s", ph_selection, syst), 10,120.,320., Zll_mass+ZllG_mass, weight);
-    if(theSampleInfo.isMC())
-      theHistograms->fill(Form("SYS%s_mZllplusZllG%s-%s_%s", sys_label, ph_selection, phGenStatus, syst), Form("m_{ZZ} + m_{ZZ#gamma %s} %s", ph_selection, syst), 10,120.,320., Zll_mass+ZllG_mass, weight);
   }
 
   else if(is3Lregion(region_)){
@@ -3115,6 +3116,8 @@ void VVGammaAnalyzer::SYSplots_photon(const char* sys_label, const char* syst, d
   }
 
   else if(region_ == CRLFR){
+    return; // Don't care about CRLFR
+
     Boson<Lepton>& theZ = ZL->first;
     Lepton&        theL = ZL->second;
     double mZG  = (theZ.p4()             + ph.p4()).M();
