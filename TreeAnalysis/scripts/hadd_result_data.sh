@@ -5,9 +5,12 @@ set -u
 set -o pipefail
 
 show_help(){ cat <<EOF
-Usage: ${0##*/} DIR"
+Usage: ${0##*/} [-h] [-d] DIR"
     hadd data result files of an EventAnalyzer in DIR to produce a data.root
     for each region (in each year), and fake_leptons.root in SR4P and SR3P.
+
+    -h   Show help and exit
+    -d   Dry-run, show the commands that would be executed and exit
 EOF
 }
 
@@ -51,7 +54,7 @@ for yeardir in $(find "$1" -maxdepth 1 -mindepth 1 -type d -name "20*" | sed s:^
 
     # Hadd data streams to create data.root in each region of each year
     for dir in $dirs; do
-        data_samples=$(find $dir -name "*.root" | grep -P '((Single|Double)(Ele|Mu|EG)|EGamma|Mu(on)?EG)' | sort)
+        data_samples=$(find $dir -name "*.root" | grep -P '((Single|Double)(Ele|Mu|EG)|EGamma|Mu(on)?EG)[^/]*.root' | sort)
         $HADD $haddOpt $dir/data.root ${data_samples}
     done
     echo
