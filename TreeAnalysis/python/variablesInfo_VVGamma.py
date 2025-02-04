@@ -23,17 +23,17 @@ def getVarInfo_VVGamma(region):
         VarInfo_VVGamma.update({
             'AAA_cuts_genreco_cutID' : {},
             'ZZ_mass' : {'title':'m_{4l} [GeV]'        },
-            'Z0_mass' : {'title':'m_{Z0} [GeV]'        },
+            'Z0_mass' : {'title':'m_{Z0} [GeV]'        , 'xmin':60,'xmax':119},
             'Z1_mass' : {'title':'m_{Z1} [GeV]'        },
             'ZZ_pt'   : {'title':'p_{T}^{Z1} [GeV]'    },
-            'Z0_l0_pt': {'title':'p_{T}^{Z0, l0} [GeV]', 'xmax': 300.},
-            'Z0_l1_pt': {'title':'p_{T}^{Z0, l1} [GeV]', 'xmax': 300.},
-            'Z1_l0_pt': {'title':'p_{T}^{Z1, l0} [GeV]', 'xmax': 300.},
-            'Z1_l1_pt': {'title':'p_{T}^{Z1, l1} [GeV]', 'xmax': 300.},
-            'Z0_l0_eta':{'title':'#eta^{Z0, l0}'       , 'rebin':3, 'scale_ymax': 1.75},
-            'Z0_l1_eta':{'title':'#eta^{Z0, l1}'       , 'rebin':3, 'scale_ymax': 1.75},
-            'Z1_l0_eta':{'title':'#eta^{Z1, l0}'       , 'rebin':3, 'scale_ymax': 1.75},
-            'Z1_l1_eta':{'title':'#eta^{Z1, l1}'       , 'rebin':3, 'scale_ymax': 1.75},
+            'Z0_l0_pt': {'title':'p_{T}^{Z0, l0} [GeV]', 'xmax':300},
+            'Z0_l1_pt': {'title':'p_{T}^{Z0, l1} [GeV]', 'xmax':180},
+            'Z1_l0_pt': {'title':'p_{T}^{Z1, l0} [GeV]', 'xmax':300},
+            'Z1_l1_pt': {'title':'p_{T}^{Z1, l1} [GeV]', 'xmax':180},
+            'Z0_l0_eta':{'title':'#eta^{Z0, l0}'       , 'rebin':5, 'scale_ymax': 1.75},
+            'Z0_l1_eta':{'title':'#eta^{Z0, l1}'       , 'rebin':5, 'scale_ymax': 1.75},
+            'Z1_l0_eta':{'title':'#eta^{Z1, l0}'       , 'rebin':5, 'scale_ymax': 1.75},
+            'Z1_l1_eta':{'title':'#eta^{Z1, l1}'       , 'rebin':5, 'scale_ymax': 1.75},
             'Z0_dRll' : {},
             'Z1_dRll' : {},
             'PhFRClosure_VLtoL_pt-aeta_data_PASS_mZZG'  : {'title':'m_{ZZ#gamma} [GeV]', 'unblind':False, 'rebin':rebin_mZZG}, #, 'fake_photons':'PhFRClosure_VLtoL_pt-aeta_data_reweighted_mZZG'},
@@ -81,16 +81,16 @@ def getVarInfo_VVGamma(region):
             'ZZ_mass_failPh'      : {'title':'m_{4l}, #gamma_{VL and !Loose} [GeV]'            , 'rebin':1, 'split_prompt_ph':True, 'unblind':True },
             'ZZ_mass_loosePh'     : {'title':'m_{4l}, #gamma_{Loose} [GeV]'                    , 'rebin':1, 'split_prompt_ph':True, 'unblind':False}, # Tight = cutBasedIDLoose()
 
-            'ZZG_mass_kinPh'      : {'title':'m_{4l#gamma}, #gamma_{kin} [GeV]'                , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':False},
-            'ZZG_mass_kinVetoL'   : {'title':'m_{4l#gamma}, #gamma_{kin and !Loose} [GeV]'     , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':True },
-            'ZZG_mass_veryLoosePh': {'title':'m_{4l#gamma}, #gamma_{VeryLoose} [GeV]'          , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':False},
-            'ZZG_mass_failPh'     : {'title':'m_{4l#gamma}, #gamma_{VL and !Loose} [GeV]'      , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':True },
-            'ZZG_mass_loosePh'    : {'title':'m_{4l#gamma}, #gamma_{Loose} [GeV]'              , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':False, 'fake_photons': 'ZZG_mass_reweightPh'}
+            'ZZG_mass_kinPh'      : {'title':'m_{4l#gamma}, #gamma_{kin} [GeV]'                , 'rebin':1, 'xmin':100, 'split_prompt_ph':region=='SR4P', 'unblind':False},
+            'ZZG_mass_kinVetoL'   : {'title':'m_{4l#gamma}, #gamma_{kin and !Loose} [GeV]'     , 'rebin':1, 'xmin':100, 'split_prompt_ph':region=='SR4P', 'unblind':True },
+            'ZZG_mass_veryLoosePh': {'title':'m_{4l#gamma}, #gamma_{VeryLoose} [GeV]'          , 'rebin':1, 'xmin':100, 'split_prompt_ph':region=='SR4P', 'unblind':False},
+            'ZZG_mass_failPh'     : {'title':'m_{4l#gamma}, #gamma_{VL and !Loose} [GeV]'      , 'rebin':1, 'xmin':100, 'split_prompt_ph':region=='SR4P', 'unblind':True },
+            'ZZG_mass_loosePh'    : {'title':'m_{4l#gamma}, #gamma_{Loose} [GeV]'              , 'rebin':1, 'xmin':100, 'split_prompt_ph':region=='SR4P', 'unblind':False, 'fake_photons': 'ZZG_mass_reweightPh'}
             ,
-            'SYS_mZZGwp90_central': {'title':'m_{4l#gamma}, #gamma_{MVA loose} [GeV]', 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZZGwp90-%s_central', 'unblind':False},
-            'SYS_mZZGwp80_central': {'title':'m_{4l#gamma}, #gamma_{MVA tight} [GeV]', 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZZGwp80-%s_central', 'unblind':False},
-            'SYS_mZZGloose_central':{'title':'m_{4l#gamma}, #gamma_{cut-based} [GeV]', 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZZGloose-%s_central','fake_photons': 'SYS_mZZGfailReweight_central','unblind':False},
-            'SYS_mZllplusZllGloose_central':{'title':'m_{ll#gamma}+m_{ll}, #gamma_{cut-based} [GeV]', 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZllplusZllGloose-%s_central', 'fake_photons': 'SYS_mZllplusZllGfailReweight_central', 'unblind':False}
+            'SYS_mZZGwp90_central': {'title':'m_{4l#gamma}, #gamma_{MVA loose} [GeV]', 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZZGwp90-%s_central', 'xmin':100, 'unblind':False},
+            'SYS_mZZGwp80_central': {'title':'m_{4l#gamma}, #gamma_{MVA tight} [GeV]', 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZZGwp80-%s_central', 'xmin':100, 'unblind':False},
+            'SYS_mZZGloose_central':{'title':'m_{4l#gamma}, #gamma_{cut-based} [GeV]', 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZZGloose-%s_central','xmin':100, 'fake_photons': 'SYS_mZZGfailReweight_central','unblind':False, 'rebin':rebin_mZZG, 'draw_overflow':True},
+            'SYS_mZllplusZllGloose_central':{'title':'m_{ll#gamma}+m_{ll}, #gamma_{cut-based} [GeV]', 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZllplusZllGloose-%s_central', 'xmin':100, 'fake_photons': 'SYS_mZllplusZllGfailReweight_central', 'unblind':False}
         })
 
         VarInfo_VVGamma.update({
@@ -276,9 +276,9 @@ def getVarInfo_VVGamma(region):
         # 'noKinPh_rec_genPh_pt' : {'title': '#gamma_{GEN} p_{T}' },
         # 'noKinPh_rec_genPh_eta': {'title': '#gamma_{GEN} #eta'  }
         ,
-        'lead_fsrPhotons_pt'    : {'title':'p_{T}^{#gamma} [GeV]', 'rebin':5, 'split_prompt_ph':True},
-        'lead_fsrPhotons_aeta'  : {'title':'|#eta^{#gamma}|'     , 'rebin':5, 'split_prompt_ph':True},
-        'lead_fsrPhotons_dRl'   : {'title':'#DeltaR(#gamma, l)'  , 'rebin':5, 'split_prompt_ph':True},
+        'lead_fsrPhotons_pt'    : {'title':'p_{T}^{#gamma} [GeV]', 'rebin':1, 'split_prompt_ph':True, 'xmax':120, 'rebin':4},
+        'lead_fsrPhotons_aeta'  : {'title':'|#eta^{#gamma}|'     , 'rebin':1, 'split_prompt_ph':True},
+        'lead_fsrPhotons_dRl'   : {'title':'#DeltaR(#gamma, l)'  , 'rebin':1, 'split_prompt_ph':True},
         'sublead_fsrPhotons_pt' : {'split_prompt_ph':True},
         'sublead_fsrPhotons_dRl': {'split_prompt_ph':True},
         'sublead_fsrPhotons_aeta':{'split_prompt_ph':True}
@@ -349,7 +349,7 @@ def getVarInfo_VVGamma(region):
     #         'sigmaiEtaiEta_'+name+'Photons': ['#sigma_{i#etai#eta}', 1, True]
     #     })
     VarInfo_VVGamma.update({
-        'kinPh_central_N'       : {'title':'Number of #gamma_{kin}'    , 'split_prompt_ph':False, 'unblind':True , 'logy':True, 'text':False},
+        'kinPh_central_N'       : {'title':'Number of #gamma_{kin}'    , 'split_prompt_ph':False, 'unblind':True , 'logy':True, 'text':False, 'ymin':1},
         'veryLoosePh_central_N' : {'title':'Number of #gamma_{loose}'  , 'split_prompt_ph':True, 'unblind':False, 'logy':True, 'text':True},
         'loosePh_central_N'     : {'title':'Number of #gamma_{tight}'  , 'split_prompt_ph':True, 'unblind':False, 'logy':True, 'text':True},
         'kinPh_eScale_N'  : {'title':'Number of #gamma passing selection', 'rebin':1, 'unblind':True, 'text':True},
