@@ -772,6 +772,7 @@ void VVGammaAnalyzer::analyze(){
 
     if(isPassVL){
       photonFakeRate_LtoT("VLtoL", *bestKinPh_, isPassLoose, cutEffSF);
+      photonFakeRate_LtoT_SYS("VLtoL",  *bestKinPh_, isPassLoose, cutEffSF);
 
       double f_VLtoL_data = getPhotonFR_VLtoL_data(*bestKinPh_);
       photonFRClosure("VLtoL_pt-aeta_data"  , *bestKinPh_, isPassLoose, f_VLtoL_data  );
@@ -795,7 +796,7 @@ void VVGammaAnalyzer::analyze(){
     double mvaEffSF = 1.;
 
     if(pass90){
-      mvaEffSF = pass80 ? getPhotonEffSF_MVA(*bestMVAPh_, Photon::MVAwp::wp80) : getPhotonEffSF_MVA(*bestMVAPh_, Photon::MVAwp::wp90);
+      mvaEffSF = theSampleInfo.isMC() ? (pass80 ? getPhotonEffSF_MVA(*bestMVAPh_, Photon::MVAwp::wp80) : getPhotonEffSF_MVA(*bestMVAPh_, Photon::MVAwp::wp90)) : 1.;
       photonFakeRate_LtoT("90to80", *bestMVAPh_, pass80, mvaEffSF);
 
       // double f_90to80_data = getPhotonFR_90to80_data(thePh);
@@ -2477,7 +2478,50 @@ void VVGammaAnalyzer::photonFakeRate_ABCD(){
 }
 
 
+void VVGammaAnalyzer::photonFakeRate_LtoT_SYS(const char* method, const Photon& thePh, bool isPass, double effSF){
+  // Apply systematics for ZGamma
+
+  // Do not fill systematics for data
+  if(! theSampleInfo.isMC())
+    return;
+
+  double base_w = theWeight*effSF;
+
+  // puWeightUnc
+  photonFakeRate_LtoT_impl("-CMS-pileup-Up"        , method, thePh, isPass, base_w * theSampleInfo.puWeightUncUp() / theSampleInfo.puWeight());
+  photonFakeRate_LtoT_impl("-CMS-pileup-Down"      , method, thePh, isPass, base_w * theSampleInfo.puWeightUncDn() / theSampleInfo.puWeight());
+
+  // L1PrefiringWeight
+  photonFakeRate_LtoT_impl("-CMS-l1-prefiring-Up"  , method, thePh, isPass, base_w * theSampleInfo.L1PrefiringWeightUp() / theSampleInfo.L1PrefiringWeight());
+  photonFakeRate_LtoT_impl("-CMS-l1-prefiring-Down", method, thePh, isPass, base_w * theSampleInfo.L1PrefiringWeightDn() / theSampleInfo.L1PrefiringWeight());
+
+  // QCD scale
+  std::pair<float, float> QCDscale_UpDn = QCDscale_updn(theSampleInfo);
+  photonFakeRate_LtoT_impl("-QCDscale-Up"          , method, thePh, isPass, base_w * QCDscale_UpDn.first );
+  photonFakeRate_LtoT_impl("-QCDscale-Down"        , method, thePh, isPass, base_w * QCDscale_UpDn.second);
+
+  // pdf scale
+  photonFakeRate_LtoT_impl("-pdf-Up"               , method, thePh, isPass, base_w * theSampleInfo.PDFVar_Up()  );
+  photonFakeRate_LtoT_impl("-pdf-Down"             , method, thePh, isPass, base_w * theSampleInfo.PDFVar_Down());
+
+  // alphas MZ
+  photonFakeRate_LtoT_impl("-alphas-Up"            , method, thePh, isPass, base_w * theSampleInfo.alphas_MZ_Up()  );
+  photonFakeRate_LtoT_impl("-alphas-Down"          , method, thePh, isPass, base_w * theSampleInfo.alphas_MZ_Down());
+
+  // Cut-based efficiency SF
+  bool isCutBased = strcmp(method, "VLtoL") == 0;
+  double phEff_dw = isCutBased && isPass ? getPhotonEffSFUnc(thePh)/effSF : 0.;
+  photonFakeRate_LtoT_impl("-CMS-eff-g-Up"         , method, thePh, isPass, base_w * (1 + phEff_dw));
+  photonFakeRate_LtoT_impl("-CMS-eff-g-Down"       , method, thePh, isPass, base_w * (1 - phEff_dw));
+}
+
+
 void VVGammaAnalyzer::photonFakeRate_LtoT(const char* method, const Photon& thePh, bool isPass, double effSF){
+  photonFakeRate_LtoT_impl("", method, thePh, isPass, theWeight*effSF);
+}
+
+
+void VVGammaAnalyzer::photonFakeRate_LtoT_impl(const char* syst, const char* method, const Photon& thePh, bool isPass, double weight){
   double theAeta = fabs(thePh.eta());
   double thePt   = thePh.pt();
   if(thePt > ph_pt_bins.back())
@@ -2527,25 +2571,27 @@ void VVGammaAnalyzer::photonFakeRate_LtoT(const char* method, const Photon& theP
     dR_j = physmath::deltaR(*closestDeltaR(thePh, *jets_noph_), thePh);
 
   // Fill photon FR plots
-  const char* name_aeta_inclusive = Form("PhFR_%s_pt-aeta_%s_%s"   , method,          strPrompt, strPass);
-  theHistograms->fill(name_aeta_inclusive, "Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#eta;Events"             , ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight*effSF);
-  const char* name_aeta_channel   = Form("PhFR_%s_pt-aeta_%s_%s_%s", method, channel, strPrompt, strPass);
-  theHistograms->fill(name_aeta_channel  , "Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#eta;Events"             , ph_pt_bins, ph_aeta_bins, thePt, theAeta, theWeight*effSF);
+  std::string title_base = Form("Photon fake rate %s", method);
+  std::string name_aeta_inclusive = Form("PhFR%s_%s_pt-aeta_%s_%s"       , syst, method,          strPrompt, strPass);
+  std::string name_aeta_channel   = Form("PhFR%s_%s_pt-aeta_%s_%s_%s"    , syst, method, channel, strPrompt, strPass);
+  std::string name_dRl_inclusive  = Form("PhFR%s_%s_pt-dRl_%s_%s"        , syst, method,          strPrompt, strPass);
+  std::string name_dRl_channel    = Form("PhFR%s_%s_pt-dRl_%s_%s_%s"     , syst, method, channel, strPrompt, strPass);
+  std::string name_njets_inclusive= Form("PhFR%s_%s_%s_pt-njets_%s_%s"   , syst, method, phEtaRegion,          strPrompt, strPass);
+  std::string name_njets_channel  = Form("PhFR%s_%s_%s_pt-njets_%s_%s_%s", syst, method, phEtaRegion, channel, strPrompt, strPass);
+  std::string name_dRj_inclusive  = Form("PhFR%s_%s_%s_pt-dRj_%s_%s"     , syst, method, phEtaRegion,          strPrompt, strPass);
+  std::string name_dRj_channel    = Form("PhFR%s_%s_%s_pt-dRj_%s_%s_%s"  , syst, method, phEtaRegion, channel, strPrompt, strPass);
 
-  const char* name_dRl_inclusive  = Form("PhFR_%s_pt-dRl_%s_%s"   , method,          strPrompt, strPass);
-  theHistograms->fill(name_dRl_inclusive ,"Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#DeltaR(#gamma, l);Events", ph_pt_bins, edges_dR    , thePt, dR_l   , theWeight*effSF);
-  const char* name_dRl_channel    = Form("PhFR_%s_pt-dRl_%s_%s_%s", method, channel, strPrompt, strPass);
-  theHistograms->fill(name_dRl_channel   ,"Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#DeltaR(#gamma, l);Events", ph_pt_bins, edges_dR    , thePt, dR_l   , theWeight*effSF);
+  theHistograms->fill(name_aeta_inclusive , title_base+";p_{T} [GeV/c];#eta;Events"              , ph_pt_bins, ph_aeta_bins, thePt, theAeta, weight);
+  theHistograms->fill(name_aeta_channel   , title_base+";p_{T} [GeV/c];#eta;Events"              , ph_pt_bins, ph_aeta_bins, thePt, theAeta, weight);
 
-  const char* name_njets_inclusive= Form("PhFR_%s_%s_pt-njets_%s_%s"   , method, phEtaRegion,          strPrompt, strPass);
-  theHistograms->fill(name_njets_inclusive,"Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];# jets);Events"          , ph_pt_bins, edges_njets , thePt, njets  , theWeight*effSF);
-  const char* name_njets_channel  = Form("PhFR_%s_%s_pt-njets_%s_%s_%s", method, phEtaRegion, channel, strPrompt, strPass);
-  theHistograms->fill(name_njets_channel ,"Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];# jets);Events"           , ph_pt_bins, edges_njets , thePt, njets  , theWeight*effSF);
+  theHistograms->fill(name_dRl_inclusive  , title_base+";p_{T} [GeV/c];#DeltaR(#gamma, l);Events", ph_pt_bins, edges_dR    , thePt, dR_l   , weight);
+  theHistograms->fill(name_dRl_channel    , title_base+";p_{T} [GeV/c];#DeltaR(#gamma, l);Events", ph_pt_bins, edges_dR    , thePt, dR_l   , weight);
 
-  const char* name_dRj_inclusive  = Form("PhFR_%s_%s_pt-dRj_%s_%s"   , method, phEtaRegion,          strPrompt, strPass);
-  theHistograms->fill(name_dRj_inclusive ,"Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#DeltaR(#gamma, j);Events", ph_pt_bins, edges_dR    , thePt, dR_j   , theWeight*effSF);
-  const char* name_dRj_channel    = Form("PhFR_%s_%s_pt-dRj_%s_%s_%s", method, phEtaRegion, channel, strPrompt, strPass);
-  theHistograms->fill(name_dRj_channel   ,"Photon fake rate VeryLoose to Loose;p_{T} [GeV/c];#DeltaR(#gamma, j);Events", ph_pt_bins, edges_dR    , thePt, dR_j   , theWeight*effSF);
+  theHistograms->fill(name_njets_inclusive, title_base+";p_{T} [GeV/c];# jets);Events"           , ph_pt_bins, edges_njets , thePt, njets  , weight);
+  theHistograms->fill(name_njets_channel  , title_base+";p_{T} [GeV/c];# jets);Events"           , ph_pt_bins, edges_njets , thePt, njets  , weight);
+
+  theHistograms->fill(name_dRj_inclusive  , title_base+";p_{T} [GeV/c];#DeltaR(#gamma, j);Events", ph_pt_bins, edges_dR    , thePt, dR_j   , weight);
+  theHistograms->fill(name_dRj_channel    , title_base+";p_{T} [GeV/c];#DeltaR(#gamma, j);Events", ph_pt_bins, edges_dR    , thePt, dR_j   , weight);
 
   // for(char lepSt : {all_char, lepStatus}){
   //   for(char lepFl : {all_char, lepFlavour}){

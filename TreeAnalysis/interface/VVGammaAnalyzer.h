@@ -214,6 +214,8 @@ private:
   void leptonFakeRate();
   void photonFakeRate_ABCD();
   void photonFakeRate_LtoT(const char* method, const phys::Photon& thePh, bool isPass, double effSF);
+  void photonFakeRate_LtoT_SYS(const char* method, const phys::Photon& thePh, bool isPass, double effSF);
+  void photonFakeRate_LtoT_impl(const char* syst, const char* method, const phys::Photon& thePh, bool isPass, double weight);
   void photonFRClosure(const char* method, const phys::Photon& thePh, bool isPass, double f_FR);
   void studyFSRregion(const std::vector<phys::Photon>&);
   template<class PAR>
