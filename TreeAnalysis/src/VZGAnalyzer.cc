@@ -36,7 +36,7 @@ double dR_jetRatio_cut = 0.4;
 double dR_FJRatio_cut = 0.8;
 int cutsToApply=16;
 
-TString BDTmodelPath = "bdtModels/VL_noNeg_BDT_Xgrad_d3_N030.weights.xml";
+TString BDTmodelPath = "bdtModels/VLRetunedAlt_noNegWgt_BDT_Xgrad_d3_N030.weights.xml";//"bdtModels/VLRetuned_noNegWgt_BDT_Xgrad_d3_N030.weights.xml";//"bdtModels/VL_noNeg_BDT_Xgrad_d3_N030.weights.xml";
   //reader->BookMVA("BDT", "bdtModels/VL_noNeg_BDT_Xgrad_d3_N030.weights.xml"); //tested on 2024 Dec 14-25th
   //reader->BookMVA("BDT", "/eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/bdtModels/VL_full_BDT_Xgrad_d3_N030.weights.xml"); //tested on 2024 Dec 15-16th
   //reader->BookMVA("BDT", "bdtModels/VLTuned_noNegWgt_BDT_Xgrad_d3_N030.weights.xml"); //tested from 2024 Dec 29th
@@ -409,6 +409,7 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
   float mlljjPh=  lljjPh.M();
   float HT=  lljjPh.Pt();
       
+  float ptJ0=recoV.daughter(0).pt();
   float ptJ1=recoV.daughter(1).pt();
   float recoVMass = recoV.mass();
   float FWMT0 = SumFWM(0, 't', lljjG);
@@ -433,6 +434,7 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
   float ptGamma=selectedphotons.at(0).pt();
   float mllG=  llPh.M();
 
+  float dRJG=(deltaR_J0Gamma<deltaR_J1Gamma)? deltaR_J0Gamma : deltaR_J1Gamma;
   float PhMVAId=selectedphotons.at(0).MVAvalue();
   float dPhiZG=fabs(physmath::deltaPhi(Z->phi(),selectedphotons.at(0).phi()) );
   float ptjj=  recoV.pt();
@@ -446,10 +448,12 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
   float J1PhFrac=recoV.daughter(1).photonEnergyFraction() ;//float
 
   if(isForSysUpDn>0){
+    ptJ0=ptj0Scaled_JERup;
     ptJ1=ptj1Scaled_JERup;
     ptjj=ptjjScaled_JERup;
     recoVMass = mjjScaled_JERup;
   }else if(isForSysUpDn<0){
+    ptJ0=ptj0Scaled_JERdn;
     ptJ1=ptj1Scaled_JERdn;
     ptjj=ptjjScaled_JERdn;
     recoVMass = mjjScaled_JERdn;
@@ -478,7 +482,9 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
   reader->AddVariable("fabs((etaG -(etaL0 + etaL1)/2))",&ZepCorr_G);
   */
   
-  //reader->AddVariable("mll", &mll);
+  //  reader->AddVariable("mll", &mll);
+  //  reader->AddVariable("ptJ0", &ptJ0);
+  
   reader->AddVariable("ptJ1", &ptJ1);
   reader->AddVariable("ptjj", &ptjj);
   reader->AddVariable("ptGamma",&ptGamma);
@@ -502,7 +508,8 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
   reader->AddVariable("J1DeepProb_g",  &J1PG);
   reader->AddVariable("J0DeepProb_uds",  &J0Puds);
 
-  //reader->AddVariable("HT",&HT);
+  reader->AddVariable("HT",&HT);
+  //  reader->AddVariable("dRJG",&dRJG);
 
   
   /*
@@ -514,9 +521,7 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
     MVAfile.close();
   */
   
-  
   reader->BookMVA("BDT", BDTmodelPath);
-  
   VZGMVAScore = reader->EvaluateMVA("BDT");
   reader->~Reader();
   //  std::cout<<">>>>MVAScore builder returning "<<VZGMVAScore<<endl;
@@ -1979,6 +1984,16 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
       theHistograms->fill("DJCand"+std::to_string(j)+"_jj_QGL_vs_massDist", "DJCand"+std::to_string(j)+"_jj_QGL_vs_massDist; DJCand"+std::to_string(j)+" jj QGL; massDist", 20, 0, 1, 25, 0, 50, TMath::Sqrt(DiJetsCand[j].daughter(0).qgLikelihood()*DiJetsCand[j].daughter(1).qgLikelihood()), VMassDist_mDJCand, theWeight*LumiSF);
     }
   }
+
+  if(*haveGoodRECOFJCand && !*haveGoodRECODiJetCand && doControlPlots){
+    theHistograms->fill("FJCand_mass", "FJCand_mass; FJCand_mass", 35, 50, 120, V_FJCandidate->mass(), theWeight*LumiSF);
+    theHistograms->fill("FJCand_PNScore_WvsQCD", "FJCand_PNScore_WvsQCD", 20, 0, 1, V_FJCandidate->particleNet().WvsQCD, theWeight*LumiSF);
+    theHistograms->fill("FJCand_PNScore_ZvsQCD", "FJCand_PNScore_ZvsQCD", 20, 0, 1, V_FJCandidate->particleNet().ZvsQCD, theWeight*LumiSF);
+    theHistograms->fill("FJCand_PNScore_VvsQCD", "FJCand_PNScore_VvsQCD", 20, 0, 1, (fabs(V_FJCandidate->mass()-phys::WMASS)<fabs(V_FJCandidate->mass()-phys::ZMASS) )? V_FJCandidate->particleNet().WvsQCD : V_FJCandidate->particleNet().ZvsQCD, theWeight*LumiSF);
+
+    //    std::cout<<"FJCand_mass ="<< V_FJCandidate->mass() <<endl<<"    PNW="<<V_FJCandidate->particleNet().WvsQCD<<endl<<"    PNZ="<<V_FJCandidate->particleNet().ZvsQCD<<endl<<"    PNV="<<((fabs(V_FJCandidate->mass()-phys::WMASS)<fabs(V_FJCandidate->mass()-phys::ZMASS) )? V_FJCandidate->particleNet().WvsQCD : V_FJCandidate->particleNet().ZvsQCD )<<"   "<<endl;    
+
+  }
   //_________________________________
   /*
   if(*haveGoodRECODiJetCand){
@@ -2351,10 +2366,11 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
   float mllG=  llPh.M();
 
   float HT =  lljjPh.Pt();
-  
+
   double VZGMVAScore= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 0);
   double VZGMVAScore_JERup= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 1);
   double VZGMVAScore_JERdn= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo,-1);
+
   //_____BLOCK_FOR_SYS_HISTOS_____//
 
   bool isForSys = (theSampleInfo.isMC()
@@ -2384,25 +2400,25 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     QCDscale_Up = *max_element(envelope.begin(), envelope.end());
     QCDscale_Dn = *min_element(envelope.begin(), envelope.end());
 
-    theHistograms->fill("SYS_BDTScore_central", "SYS_BDTScore_central" , 10, -1.0, 1.0,  VZGMVAScore, theWeight*LumiSF);
+    theHistograms->fill("SYS_BDTScore_central", "SYS_BDTScore_central" , 40, -1.0, 1.0,  VZGMVAScore, theWeight*LumiSF);
 
-    theHistograms->fill("SYS_BDTScore_alphas_Up"  , "SYS_BDTScore_alphas_Up"   , 10, -1.0, 1.0,  VZGMVAScore, theSampleInfo.alphas_MZ_Up()*theWeight*LumiSF);
-    theHistograms->fill("SYS_BDTScore_alphas_Down", "SYS_BDTScore_alphas_Down" , 10, -1.0, 1.0,  VZGMVAScore, theSampleInfo.alphas_MZ_Down()*theWeight*LumiSF);
+    theHistograms->fill("SYS_BDTScore_alphas_Up"  , "SYS_BDTScore_alphas_Up"   , 40, -1.0, 1.0,  VZGMVAScore, theSampleInfo.alphas_MZ_Up()*theWeight*LumiSF);
+    theHistograms->fill("SYS_BDTScore_alphas_Down", "SYS_BDTScore_alphas_Down" , 40, -1.0, 1.0,  VZGMVAScore, theSampleInfo.alphas_MZ_Down()*theWeight*LumiSF);
 
-    theHistograms->fill("SYS_BDTScore_PDFVar_Up"  , "SYS_BDTScore_PDFVar_Up"   , 10, -1.0, 1.0,  VZGMVAScore, theSampleInfo.PDFVar_Up()*theWeight*LumiSF);
-    theHistograms->fill("SYS_BDTScore_PDFVar_Down", "SYS_BDTScore_PDFVar_Down" , 10, -1.0, 1.0,  VZGMVAScore, theSampleInfo.PDFVar_Down()*theWeight*LumiSF);
+    theHistograms->fill("SYS_BDTScore_PDFVar_Up"  , "SYS_BDTScore_PDFVar_Up"   , 40, -1.0, 1.0,  VZGMVAScore, theSampleInfo.PDFVar_Up()*theWeight*LumiSF);
+    theHistograms->fill("SYS_BDTScore_PDFVar_Down", "SYS_BDTScore_PDFVar_Down" , 40, -1.0, 1.0,  VZGMVAScore, theSampleInfo.PDFVar_Down()*theWeight*LumiSF);
 
-    theHistograms->fill("SYS_BDTScore_QCDscale_Up"  , "SYS_BDTScore_QCDscale_Up"   , 10, -1.0, 1.0,  VZGMVAScore, QCDscale_Up*theWeight*LumiSF);
-    theHistograms->fill("SYS_BDTScore_QCDscale_Down", "SYS_BDTScore_QCDscale_Down" , 10, -1.0, 1.0,  VZGMVAScore, QCDscale_Dn*theWeight*LumiSF);
+    theHistograms->fill("SYS_BDTScore_QCDscale_Up"  , "SYS_BDTScore_QCDscale_Up"   , 40, -1.0, 1.0,  VZGMVAScore, QCDscale_Up*theWeight*LumiSF);
+    theHistograms->fill("SYS_BDTScore_QCDscale_Down", "SYS_BDTScore_QCDscale_Down" , 40, -1.0, 1.0,  VZGMVAScore, QCDscale_Dn*theWeight*LumiSF);
 
-    theHistograms->fill("SYS_BDTScore_L1Prefiring_Up"  , "SYS_BDTScore_L1Prefiring_Up"   , 10, -1.0, 1.0,  VZGMVAScore, (theSampleInfo.L1PrefiringWeightUp()/theSampleInfo.L1PrefiringWeight())*theWeight*LumiSF);
-    theHistograms->fill("SYS_BDTScore_L1Prefiring_Down", "SYS_BDTScore_L1Prefiring_Down" , 10, -1.0, 1.0,  VZGMVAScore, (theSampleInfo.L1PrefiringWeightDn()/theSampleInfo.L1PrefiringWeight())*theWeight*LumiSF);
+    theHistograms->fill("SYS_BDTScore_L1Prefiring_Up"  , "SYS_BDTScore_L1Prefiring_Up"   , 40, -1.0, 1.0,  VZGMVAScore, (theSampleInfo.L1PrefiringWeightUp()/theSampleInfo.L1PrefiringWeight())*theWeight*LumiSF);
+    theHistograms->fill("SYS_BDTScore_L1Prefiring_Down", "SYS_BDTScore_L1Prefiring_Down" , 40, -1.0, 1.0,  VZGMVAScore, (theSampleInfo.L1PrefiringWeightDn()/theSampleInfo.L1PrefiringWeight())*theWeight*LumiSF);
 
-    theHistograms->fill("SYS_BDTScore_puWeight_Up"  , "SYS_BDTScore_puWeight_Up"   , 10, -1.0, 1.0,  VZGMVAScore, (theSampleInfo.puWeightUncUp()/theSampleInfo.puWeight())*theWeight*LumiSF);
-    theHistograms->fill("SYS_BDTScore_puWeight_Down", "SYS_BDTScore_puWeight_Down" , 10, -1.0, 1.0,  VZGMVAScore, (theSampleInfo.puWeightUncDn()/theSampleInfo.puWeight())*theWeight*LumiSF);
+    theHistograms->fill("SYS_BDTScore_puWeight_Up"  , "SYS_BDTScore_puWeight_Up"   , 40, -1.0, 1.0,  VZGMVAScore, (theSampleInfo.puWeightUncUp()/theSampleInfo.puWeight())*theWeight*LumiSF);
+    theHistograms->fill("SYS_BDTScore_puWeight_Down", "SYS_BDTScore_puWeight_Down" , 40, -1.0, 1.0,  VZGMVAScore, (theSampleInfo.puWeightUncDn()/theSampleInfo.puWeight())*theWeight*LumiSF);
 
-    if(VZGMVAScore_JERup <= 1. && VZGMVAScore_JERup >= -1.) theHistograms->fill("SYS_BDTScore_JER_Up"  , "SYS_BDTScore_JER_Up"   , 10, -1.0, 1.0,  VZGMVAScore_JERup, theWeight*LumiSF);
-    if(VZGMVAScore_JERdn <= 1. && VZGMVAScore_JERdn >= -1.) theHistograms->fill("SYS_BDTScore_JER_Down", "SYS_BDTScore_JER_Down" , 10, -1.0, 1.0,  VZGMVAScore_JERdn, theWeight*LumiSF);
+    if(VZGMVAScore_JERup <= 1. && VZGMVAScore_JERup >= -1.) theHistograms->fill("SYS_BDTScore_JER_Up"  , "SYS_BDTScore_JER_Up"   , 40, -1.0, 1.0,  VZGMVAScore_JERup, theWeight*LumiSF);
+    if(VZGMVAScore_JERdn <= 1. && VZGMVAScore_JERdn >= -1.) theHistograms->fill("SYS_BDTScore_JER_Down", "SYS_BDTScore_JER_Down" , 40, -1.0, 1.0,  VZGMVAScore_JERdn, theWeight*LumiSF);
 
   }
   //______________________________//

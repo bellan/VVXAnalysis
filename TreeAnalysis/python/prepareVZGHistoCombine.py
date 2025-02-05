@@ -40,8 +40,8 @@ def isVarSystematic(variable):
 # example: 2016/SR4P.root      -> mZZ/ZZTo4l
 
 # Output systematics
-# schema: <year>/<region>.root -> <variable>/<sample>_CMS_<syst>(Up|Down)
-# example: 2016/SR4P.root      -> mZZ/ZZTo4l_CMS_QCDScale-muRUp
+# schema: <year>/<region>.root -> <variable>/<sample>_<syst>(Up|Down)
+# example: 2016/SR4P.root      -> mZZ/ZZTo4l_QCDScale-muRUp
 
 def write_fake_photons(fFakePh, data_obs, variables): # <TFile>, <TFile>, <iterable> of <str>
     logging.info('recreating fake_photons file: %s', fFakePh.GetName())
@@ -174,7 +174,7 @@ def main():
                 else:
                     skipIfData = True
                     direction = split[3]
-                    out_name = '{sample}{prompt}_CMS_{syst}{direction}'.format(sample='%s', prompt=prompt, syst=syst, direction=direction)
+                    out_name = '{sample}{prompt}_{syst}{direction}'.format(sample='%s', prompt=prompt, syst=syst, direction=direction)
 
                 subdir = fout.Get(var_name)  # e.g. mZZ, mZZG
                 if(not subdir):
