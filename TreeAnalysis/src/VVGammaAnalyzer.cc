@@ -47,8 +47,13 @@ namespace {
   constexpr bool PHFR_SPLIT          = true;
 }
 
+// Forward declarations of utility functions used only in the implementation
 std::pair<TLorentzVector, TLorentzVector> solveNuPz(const Boson<Lepton>& W, int& error);
 bool inPhotonEtaAcceptance(double eta);
+std::pair<float, float> QCDscale_updn(const SampleInfo& theSampleInfo);
+double getPhotonFR   (const phys::Photon&, const TH2F*, double maxPt=120.);
+double getPhotonFRUnc(const phys::Photon&, const TH2F*, double maxPt=120.);
+
 
 void VVGammaAnalyzer::begin(){
   cout<<'\n';
@@ -3192,20 +3197,8 @@ void VVGammaAnalyzer::systematicsStudy(const char* sys_label){
   SYSplots(sys_label, "CMS-l1-prefiring_Down", base_w * ( isMC ? theSampleInfo.L1PrefiringWeightDn() / theSampleInfo.L1PrefiringWeight() : 1.), ph, bestMVAPh_);
 
   // QCD scale
-  // envelope: consider the six variations: {Do, Central, Up} x {Dn, Central, Up} - (central, central) - (Dn, Dn) - (Up, Up) and use the max and min
   float QCDscale_Up(1.), QCDscale_Dn(1.);
-  if(isMC){
-    std::vector<float> envelope {
-      theSampleInfo.QCDscale_muR0p5F1(),
-      theSampleInfo.QCDscale_muR0p5F2(),
-      theSampleInfo.QCDscale_muR1F0p5(),
-      theSampleInfo.QCDscale_muR1F2(),
-      theSampleInfo.QCDscale_muR2F0p5(),
-      theSampleInfo.QCDscale_muR2F1()
-    };
-    QCDscale_Up = *max_element(envelope.begin(), envelope.end());
-    QCDscale_Dn = *min_element(envelope.begin(), envelope.end());
-  }
+  std::tie(QCDscale_Up, QCDscale_Dn) = QCDscale_updn(theSampleInfo);
   SYSplots(sys_label, "QCDscale_Up"  , base_w * QCDscale_Up, ph, bestMVAPh_);
   SYSplots(sys_label, "QCDscale_Down", base_w * QCDscale_Dn, ph, bestMVAPh_);
 
@@ -3534,74 +3527,65 @@ void VVGammaAnalyzer::fillCutFlow(const std::string& name, const std::string& ti
 
 // Utilities
 double VVGammaAnalyzer::getPhotonFR_VLtoL   (const phys::Photon& ph) const{
-  const TH2F* h = hPhotonFR_VLtoL_data_.get();  // TODO: move it to dataZG
-  return h->GetBinContent(h->FindFixBin(
-					ph.pt() < 120 ? ph.pt() : 119.9,
-					abs(ph.eta())
-					));
+  const TH2F* h = hPhotonFR_VLtoL_dataZG_.get();
+  return getPhotonFR(ph, h, 120.);
 }
 
 double VVGammaAnalyzer::getPhotonFRUnc_VLtoL(const phys::Photon& ph) const{
-  const TH2F* h = hPhotonFR_VLtoL_data_.get();  // TODO: move it to dataZG
-  return h->GetBinError(h->FindFixBin(
-				      ph.pt() < 120 ? ph.pt() : 119.9,
-				      abs(ph.eta())
-				      ));
+  const TH2F* h = hPhotonFR_VLtoL_dataZG_.get();
+  return getPhotonFRUnc(ph, h, 120.);
 }
 
 
 double VVGammaAnalyzer::getPhotonFR_VLtoL_data(const phys::Photon& ph) const{
   const TH2F* h = hPhotonFR_VLtoL_data_.get();  // TODO: move it to dataZG
-  return h->GetBinContent(h->FindFixBin(
-					ph.pt() < 120 ? ph.pt() : 119.9,
-					abs(ph.eta())
-					));
+  return getPhotonFR(ph, h, 120.);
 }
 
 
 double VVGammaAnalyzer::getPhotonFR_VLtoL_dataZG(const phys::Photon& ph) const{
   const TH2F* h = hPhotonFR_VLtoL_dataZG_.get();
-  return h->GetBinContent(h->FindFixBin(
-					ph.pt() < 120 ? ph.pt() : 119.9,
-					abs(ph.eta())
-					));
+  return getPhotonFR(ph, h, 120.);
 }
 
 double VVGammaAnalyzer::getPhotonFR_KtoVLexcl(const phys::Photon& ph) const{
   const TH2F* h = hPhotonFR_KtoVLexcl_.get();
-  return h->GetBinContent(h->FindFixBin(
-					ph.pt() < 120 ? ph.pt() : 119.9,
-					abs(ph.eta())
-					));
+  return getPhotonFR(ph, h, 120.);
 }
 
 double VVGammaAnalyzer::getPhotonFRSF_VLtoL(const phys::Photon& ph) const{
   const TH2F* h = hPhotonFRSF_VLtoL_.get();
-  return h->GetBinContent(h->FindFixBin(
-					ph.pt() < 120 ? ph.pt() : 119.9,
-					abs(ph.eta())
-					));
+  return getPhotonFRUnc(ph, h, 120.);
 }
 
 double VVGammaAnalyzer::getPhotonEffSF_MVA(const phys::Photon& ph, Photon::MVAwp wp) const{
   const TH2F* hSF = mapPhotonMVASF_.at(wp).get();
   float maxPt = mapPhotonMVASF_maxPt_.at(wp);
-  Int_t bin = hSF->FindFixBin(
-			      ph.eta(),
-			      ph.pt() < maxPt ? ph.pt() : maxPt-0.1
-			      );
-  return hSF->GetBinContent(bin);
+  return getPhotonFR(ph, hSF, maxPt);
 }
 
 double VVGammaAnalyzer::getPhotonEffSFUnc_MVA(const phys::Photon& ph, Photon::MVAwp wp) const{
   const TH2F* hSF = mapPhotonMVASF_.at(wp).get();
   float maxPt = mapPhotonMVASF_maxPt_.at(wp);
-  Int_t bin = hSF->FindFixBin(
-			      ph.eta(),
-			      ph.pt() < maxPt ? ph.pt() : maxPt-0.1
-			      );
-  return hSF->GetBinError(bin);
+  return getPhotonFRUnc(ph, hSF, maxPt);
 }
+
+double getPhotonFR   (const phys::Photon& ph, const TH2F* h, double maxPt){
+  Int_t bin = h->FindFixBin(
+			    ph.pt() < maxPt ? ph.pt() : maxPt-0.1,
+			    abs(ph.eta())
+			    );
+  return h->GetBinContent(bin);
+}
+
+double getPhotonFRUnc(const phys::Photon& ph, const TH2F* h, double maxPt){
+  Int_t bin = h->FindFixBin(
+			    ph.pt() < maxPt ? ph.pt() : maxPt-0.1,
+			    abs(ph.eta())
+			    );
+  return h->GetBinError(bin);
+}
+
 
 bool VVGammaAnalyzer::passVeryLoose(const Photon& ph){
   Photon::IdWp wp = Photon::IdWp::Loose;
@@ -3613,6 +3597,24 @@ bool inPhotonEtaAcceptance(double eta){
   if(aeta > CUT_G_AETA_MAX || (aeta > CUT_G_AETA_GAP_MIN && aeta < CUT_G_AETA_GAP_MAX))
     return false;
   return true;
+}
+
+std::pair<float, float> QCDscale_updn(const SampleInfo& theSampleInfo){
+  // envelope: consider the six variations: {Do, Central, Up} x {Dn, Central, Up} - (central, central) - (Dn, Dn) - (Up, Up) and use the max and min
+  float QCDscale_Up(1.), QCDscale_Dn(1.);
+  if(theSampleInfo.isMC()){
+    std::vector<float> envelope {
+      theSampleInfo.QCDscale_muR0p5F1(),
+      theSampleInfo.QCDscale_muR0p5F2(),
+      theSampleInfo.QCDscale_muR1F0p5(),
+      theSampleInfo.QCDscale_muR1F2(),
+      theSampleInfo.QCDscale_muR2F0p5(),
+      theSampleInfo.QCDscale_muR2F1()
+    };
+    QCDscale_Up = *max_element(envelope.begin(), envelope.end());
+    QCDscale_Dn = *min_element(envelope.begin(), envelope.end());
+  }
+  return std::make_pair(QCDscale_Up, QCDscale_Dn);
 }
 
 
