@@ -268,7 +268,7 @@ bool VZGAnalyzer::IN_GENsignalDef()
   return false;
 }
 
-double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet recoFJ, std::vector<phys::Photon> selectedphotons, int VBTopo, int isForSysUpDn)
+double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet recoFJ, std::vector<phys::Photon> selectedphotons, int VBTopo, int isForSysUpDn, int isJERorJEC)
 {
   double VZGMVAScore=-2.;
   if(!cut(2, recoV, recoFJ, selectedphotons, VBTopo, VZGMVAScore)) return -2.;
@@ -292,62 +292,67 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
   double m2jjPh=jjPh.M2();
   std::vector<TLorentzVector> lljj;
 
-  double mjjScaled_JERup, ptjjScaled_JERup;
-  double ptj0Scaled_JERup=recoV.daughter(0).ptJerUp();
-  double ptj1Scaled_JERup=recoV.daughter(1).ptJerUp();
-  double mjjScaled_JERdn, ptjjScaled_JERdn;
-  double ptj0Scaled_JERdn=recoV.daughter(0).ptJerDn();
-  double ptj1Scaled_JERdn=recoV.daughter(1).ptJerDn();
-
+  double mjjScaled_JUncUp, ptjjScaled_JUncUp, ptj0Scaled_JUncUp, ptj1Scaled_JUncUp, mjjScaled_JUncDn, ptjjScaled_JUncDn, ptj0Scaled_JUncDn, ptj1Scaled_JUncDn;
+  if(isJERorJEC>0){
+    ptj0Scaled_JUncUp=recoV.daughter(0).ptJerUp();
+    ptj1Scaled_JUncUp=recoV.daughter(1).ptJerUp();
+    ptj0Scaled_JUncDn=recoV.daughter(0).ptJerDn();
+    ptj1Scaled_JUncDn=recoV.daughter(1).ptJerDn();
+  }else if(isJERorJEC<0){
+    ptj0Scaled_JUncUp=recoV.daughter(0).pt()*(1.+recoV.daughter(0).jesUnc().Total);
+    ptj1Scaled_JUncUp=recoV.daughter(1).pt()*(1.+recoV.daughter(1).jesUnc().Total);
+    ptj0Scaled_JUncDn=recoV.daughter(0).pt()*(1.-recoV.daughter(0).jesUnc().Total);
+    ptj1Scaled_JUncDn=recoV.daughter(1).pt()*(1.-recoV.daughter(1).jesUnc().Total);
+  }
   if(isForSysUpDn<0){
-    if(ptj0Scaled_JERdn < ptj1Scaled_JERdn) std::swap (ptj0Scaled_JERdn,ptj1Scaled_JERdn);
-    if(ptj1Scaled_JERdn < 30) return -2.;
+    if(ptj0Scaled_JUncDn < ptj1Scaled_JUncDn) std::swap (ptj0Scaled_JUncDn,ptj1Scaled_JUncDn);
+    if(ptj1Scaled_JUncDn < 30) return -2.;
   }else if(isForSysUpDn>0){
-    if(ptj0Scaled_JERup < ptj1Scaled_JERup) std::swap (ptj0Scaled_JERup,ptj1Scaled_JERup);
-    if(ptj1Scaled_JERup < 30) return -2.;
+    if(ptj0Scaled_JUncUp < ptj1Scaled_JUncUp) std::swap (ptj0Scaled_JUncUp,ptj1Scaled_JUncUp);
+    if(ptj1Scaled_JUncUp < 30) return -2.;
   }
 
   
 
   if(isForSysUpDn>0){
-    TLorentzVector JER_PJ0_scaling_Up = recoV.daughter(0).p4();
-    TLorentzVector JER_PJ1_scaling_Up = recoV.daughter(1).p4();
-    ScaleP4(JER_PJ0_scaling_Up, recoV.daughter(0).ptJerUp(), recoV.daughter(0).pt());
-    ScaleP4(JER_PJ1_scaling_Up, recoV.daughter(1).ptJerUp(), recoV.daughter(1).pt());
-    mjjScaled_JERup=(JER_PJ0_scaling_Up+JER_PJ1_scaling_Up).M();
-    if(mjjScaled_JERup < 50 || mjjScaled_JERup > 120) return -2.;
+    TLorentzVector JUnc_PJ0_scaling_Up = recoV.daughter(0).p4();
+    TLorentzVector JUnc_PJ1_scaling_Up = recoV.daughter(1).p4();
+    ScaleP4(JUnc_PJ0_scaling_Up, ptj0Scaled_JUncUp, recoV.daughter(0).pt());
+    ScaleP4(JUnc_PJ1_scaling_Up, ptj1Scaled_JUncUp, recoV.daughter(1).pt());
+    mjjScaled_JUncUp=(JUnc_PJ0_scaling_Up+JUnc_PJ1_scaling_Up).M();
+    if(mjjScaled_JUncUp < 50 || mjjScaled_JUncUp > 120) return -2.;
 
-    ptjjScaled_JERup=(JER_PJ0_scaling_Up+JER_PJ1_scaling_Up).Pt();
+    ptjjScaled_JUncUp=(JUnc_PJ0_scaling_Up+JUnc_PJ1_scaling_Up).Pt();
 
-    lljjPh = Z->daughter(0).p4()+Z->daughter(1).p4()+selectedphotons.at(0).p4()+JER_PJ0_scaling_Up+JER_PJ1_scaling_Up;
-    jjPh = JER_PJ0_scaling_Up+JER_PJ1_scaling_Up+selectedphotons.at(0).p4();
+    lljjPh = Z->daughter(0).p4()+Z->daughter(1).p4()+selectedphotons.at(0).p4()+JUnc_PJ0_scaling_Up+JUnc_PJ1_scaling_Up;
+    jjPh = JUnc_PJ0_scaling_Up+JUnc_PJ1_scaling_Up+selectedphotons.at(0).p4();
     mjjPh=jjPh.M();
     m2jjPh=jjPh.M2();
 
     lljj.push_back(Z->daughter(0).p4());
     lljj.push_back(Z->daughter(1).p4());
-    lljj.push_back(JER_PJ0_scaling_Up);
-    lljj.push_back(JER_PJ1_scaling_Up);
+    lljj.push_back(JUnc_PJ0_scaling_Up);
+    lljj.push_back(JUnc_PJ1_scaling_Up);
     
   }else if(isForSysUpDn<0){
-    TLorentzVector JER_PJ0_scaling_Dn = recoV.daughter(0).p4();
-    TLorentzVector JER_PJ1_scaling_Dn = recoV.daughter(1).p4();
-    ScaleP4(JER_PJ0_scaling_Dn, recoV.daughter(0).ptJerDn(), recoV.daughter(0).pt());
-    ScaleP4(JER_PJ1_scaling_Dn, recoV.daughter(1).ptJerDn(), recoV.daughter(1).pt());
-    mjjScaled_JERdn=(JER_PJ0_scaling_Dn+JER_PJ1_scaling_Dn).M();
-    if(mjjScaled_JERdn < 50 || mjjScaled_JERdn > 120) return -2.;
+    TLorentzVector JUnc_PJ0_scaling_Dn = recoV.daughter(0).p4();
+    TLorentzVector JUnc_PJ1_scaling_Dn = recoV.daughter(1).p4();
+    ScaleP4(JUnc_PJ0_scaling_Dn, ptj0Scaled_JUncDn, recoV.daughter(0).pt());
+    ScaleP4(JUnc_PJ1_scaling_Dn, ptj1Scaled_JUncDn, recoV.daughter(1).pt());
+    mjjScaled_JUncDn=(JUnc_PJ0_scaling_Dn+JUnc_PJ1_scaling_Dn).M();
+    if(mjjScaled_JUncDn < 50 || mjjScaled_JUncDn > 120) return -2.;
     
-    ptjjScaled_JERdn=(JER_PJ0_scaling_Dn+JER_PJ1_scaling_Dn).Pt();
+    ptjjScaled_JUncDn=(JUnc_PJ0_scaling_Dn+JUnc_PJ1_scaling_Dn).Pt();
     
-    lljjPh = Z->daughter(0).p4()+Z->daughter(1).p4()+selectedphotons.at(0).p4()+JER_PJ0_scaling_Dn+JER_PJ1_scaling_Dn;
-    jjPh = JER_PJ0_scaling_Dn+JER_PJ1_scaling_Dn+selectedphotons.at(0).p4();
+    lljjPh = Z->daughter(0).p4()+Z->daughter(1).p4()+selectedphotons.at(0).p4()+JUnc_PJ0_scaling_Dn+JUnc_PJ1_scaling_Dn;
+    jjPh = JUnc_PJ0_scaling_Dn+JUnc_PJ1_scaling_Dn+selectedphotons.at(0).p4();
     mjjPh=jjPh.M();
     m2jjPh=jjPh.M2();
 
     lljj.push_back(Z->daughter(0).p4());
     lljj.push_back(Z->daughter(1).p4());
-    lljj.push_back(JER_PJ0_scaling_Dn);
-    lljj.push_back(JER_PJ1_scaling_Dn);
+    lljj.push_back(JUnc_PJ0_scaling_Dn);
+    lljj.push_back(JUnc_PJ1_scaling_Dn);
 
 
   }else if(isForSysUpDn==0){
@@ -448,15 +453,15 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
   float J1PhFrac=recoV.daughter(1).photonEnergyFraction() ;//float
 
   if(isForSysUpDn>0){
-    ptJ0=ptj0Scaled_JERup;
-    ptJ1=ptj1Scaled_JERup;
-    ptjj=ptjjScaled_JERup;
-    recoVMass = mjjScaled_JERup;
+    ptJ0=ptj0Scaled_JUncUp;
+    ptJ1=ptj1Scaled_JUncUp;
+    ptjj=ptjjScaled_JUncUp;
+    recoVMass = mjjScaled_JUncUp;
   }else if(isForSysUpDn<0){
-    ptJ0=ptj0Scaled_JERdn;
-    ptJ1=ptj1Scaled_JERdn;
-    ptjj=ptjjScaled_JERdn;
-    recoVMass = mjjScaled_JERdn;
+    ptJ0=ptj0Scaled_JUncDn;
+    ptJ1=ptj1Scaled_JUncDn;
+    ptjj=ptjjScaled_JUncDn;
+    recoVMass = mjjScaled_JUncDn;
   }
   
   TMVA::Reader *reader = new TMVA::Reader("Color:Silent");
@@ -591,7 +596,7 @@ bool VZGAnalyzer::inSR(phys::Boson<phys::Jet> recoV, phys::Jet recoFJ, std::vect
   
   VZGMVAScore= -2.;
 
-  VZGMVAScore=VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 0);
+  VZGMVAScore=VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 0, 0);
   
   return cut(7, recoV, recoFJ, selectedphotons, VBTopo, VZGMVAScore);
 
@@ -2367,9 +2372,11 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
 
   float HT =  lljjPh.Pt();
 
-  double VZGMVAScore= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 0);
-  double VZGMVAScore_JERup= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 1);
-  double VZGMVAScore_JERdn= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo,-1);
+  double VZGMVAScore= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 0, 0);
+  double VZGMVAScore_JERup= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 1, 1);
+  double VZGMVAScore_JERdn= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo,-1, 1);
+  double VZGMVAScore_JECup= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 1,-1);
+  double VZGMVAScore_JECdn= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo,-1,-1);
 
   //_____BLOCK_FOR_SYS_HISTOS_____//
 
@@ -2419,6 +2426,8 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
 
     if(VZGMVAScore_JERup <= 1. && VZGMVAScore_JERup >= -1.) theHistograms->fill("SYS_BDTScore_JER_Up"  , "SYS_BDTScore_JER_Up"   , 40, -1.0, 1.0,  VZGMVAScore_JERup, theWeight*LumiSF);
     if(VZGMVAScore_JERdn <= 1. && VZGMVAScore_JERdn >= -1.) theHistograms->fill("SYS_BDTScore_JER_Down", "SYS_BDTScore_JER_Down" , 40, -1.0, 1.0,  VZGMVAScore_JERdn, theWeight*LumiSF);
+    if(VZGMVAScore_JECup <= 1. && VZGMVAScore_JERup >= -1.) theHistograms->fill("SYS_BDTScore_JEC_Up"  , "SYS_BDTScore_JEC_Up"   , 40, -1.0, 1.0,  VZGMVAScore_JECup, theWeight*LumiSF);
+    if(VZGMVAScore_JECdn <= 1. && VZGMVAScore_JERdn >= -1.) theHistograms->fill("SYS_BDTScore_JEC_Down", "SYS_BDTScore_JEC_Down" , 40, -1.0, 1.0,  VZGMVAScore_JECdn, theWeight*LumiSF);
 
   }
   //______________________________//
