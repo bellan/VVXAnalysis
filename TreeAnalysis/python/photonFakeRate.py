@@ -480,6 +480,9 @@ def getPassFailLtoT(sample_main, samples_subtr, inputdir, method, variable, fixN
         hmain_PASS, hmain_FAIL   = get_plots(inputdir, sample_main['file'] , [ 'PhFR_%s_%s_data_%s'    % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
         assert hmain_PASS, 'Could not get the PASS histogram for data'
         assert hmain_FAIL, 'Could not get the FAIL histogram for data'
+    elif('split' in sample_main.keys()):
+        split = sample_main['split']
+        hmain_PASS, hmain_FAIL   = get_plots(inputdir, sample_main['file'], [ 'PhFR_%s_%s_%s_%s' % (method, variable, split, s) for s in ['PASS', 'FAIL'] ] )
     else:
         hmain_PASSp, hmain_FAILp = get_plots(inputdir, sample_main['file'], [ 'PhFR_%s_%s_prompt_%s'    % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
         hmain_PASSn, hmain_FAILn = get_plots(inputdir, sample_main['file'], [ 'PhFR_%s_%s_nonprompt_%s' % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
@@ -999,6 +1002,7 @@ def main(args):
         "ZGToLLG"  : {"file": 'ZGToLLG', "title": "Z#gamma_{MC}", "fixNegBins": True},
         "DrellYan" : {"file": 'DYJetsToLL_M50', "fixNegBins": True},
         "ZZTo4l"   : {"file": 'ZZTo4l', "fixNegBins": True},
+        "ZZTo4l-nonpro": {"file": 'ZZTo4l', 'split':'nonprompt', "fixNegBins": True},
         "ggTo4l"   : {"file": 'ggTo4l', "fixNegBins": True},
         "WZ"       : {"file": "WZTo3LNu", "fixNegBins":True}
     }
@@ -1174,11 +1178,11 @@ def main(args):
         if(args.do_mc):
             # hFR_DY   = fakeRateLtoT(sampleList["Drell-Yan"]       , None, results_dir, **dict(argsdict, variable=varState, fixNegBins=True))
             hFR_ZG   = fakeRateLtoT(sampleList["ZGToLLG"], []                     , results_dir, **dict(argsdict, variable=varState, fixNegBins=True))
-            hFR_ZZ   = fakeRateLtoT(sampleList["ZZTo4l"] , []                     , results_dir, **dict(argsdict, variable=varState, fixNegBins=True))
-            hFR_ZZ_4P= fakeRateLtoT(sampleList["ZZTo4l"] , []                     , results_dir, **dict(argsdict, variable=varState, fixNegBins=True, region='SR4P'))
+            hFR_ZZnonpro    = fakeRateLtoT(sampleList["ZZTo4l-nonpro"],[], results_dir, **dict(argsdict, variable=varState, fixNegBins=True))
+            hFR_ZZnonpro_4P = fakeRateLtoT(sampleList["ZZTo4l-nonpro"],[], res_dir_4P , **dict(argsdict, variable=varState, fixNegBins=True))
             # hFR_gg   = fakeRateLtoT(sampleList["ggTo4l"]          , None, results_dir, **dict(argsdict, variable=varState, fixNegBins=True))
 
-            plotRatio(hFR_ZZ_4P, hFR_ZZ, name=fmt_ratio_name.format("ZZ4P", "ZZCRLFR"), title=fmt_ratio_title.format("FR(ZZ_{4P})","FR(ZZ_{CRLFR})"), range_z=args.range_ratio_z)
+            plotRatio(hFR_ZZnonpro_4P, hFR_ZZnonpro, name=fmt_ratio_name.format("ZZ4P", "ZZCRLFR"), title=fmt_ratio_title.format("FR(ZZ_{4P})","FR(ZZ_{CRLFR})"), **argsdict)
             print()
         if(args.do_data and args.do_mc):
             hFR_data_ZG = fakeRateLtoT(sampleList["data"], [sampleList["ZGToLLG"]], results_dir, **dict(argsdict, variable=varState))
@@ -1186,17 +1190,19 @@ def main(args):
             plotProfiled(hFR_data_ZG, name=fmt_profile_name.format('Y','data-ZGToLLG'), title='FR(#gamma) vs p_{T}', direction='Y', **argsdict)
 
             hFR_data_ZG_DY = fakeRateLtoT(sampleList["data"], [sampleList["ZGToLLG"], sampleList["DrellYan"]], results_dir, **dict(argsdict, variable=varState))
+
             plotProfiled(hFR_data_ZG_DY, name=fmt_profile_name.format('X','data-ZGToLLG-DrellYan'), title='FR(#gamma) vs #eta' , direction='X', **argsdict)
             plotProfiled(hFR_data_ZG_DY, name=fmt_profile_name.format('Y','data-ZGToLLG-DrellYan'), title='FR(#gamma) vs p_{T}', direction='Y', **argsdict)
+            # plotRatio(hFR_data   , hFR_DY, name=fmt_ratio_name.format("data","DY"), title=fmt_ratio_title.format("FR(data)","FR(DY)"), range_z=args.range_ratio_z, **argsdict)
 
-            # plotRatio(hFR_data   , hFR_DY, name=fmt_ratio_name.format("data","DY"), title=fmt_ratio_title.format("FR(data)","FR(DY)"), range_z=args.range_ratio_z)
-            plotRatio(hFR_data   , hFR_ZZ   , name=fmt_ratio_name.format("data"   ,"ZZ"  ), title=fmt_ratio_title.format("FR(data)","FR(ZZ)"), range_z=args.range_ratio_z)
-            plotRatio(hFR_data   , hFR_ZZ_4P, name=fmt_ratio_name.format("data"   ,"ZZ4P"), title=fmt_ratio_title.format("Ratio FR(data)","FR(ZZ_{SR4P}"), range_z=args.range_ratio_z)
-            # plotRatio(hFR_data_ZG, hFR_DY, name=fmt_ratio_name.format("data-ZG","DY"), title=fmt_ratio_title.format("FR(data-Z#gamma)","FR(DY)", range_z=args.range_ratio_z)
-            plotRatio(hFR_data_ZG, hFR_ZZ   , name=fmt_ratio_name.format("data-ZG","ZZ"  ) , title=fmt_ratio_title.format("FR(data-Z#gamma)","FR(ZZ)"), range_z=args.range_ratio_z)
-            plotRatio(hFR_data_ZG, hFR_ZZ_4P, name=fmt_ratio_name.format("data-ZG","ZZ4P") , title=fmt_ratio_title.format("FR(data-Z#gamma)","FR(ZZ_{SR4P})"), range_z=args.range_ratio_z)
-            # plotRatio(hFR_LtoT_data, hFR_LtoT_ZZ_4P, name=fmt_ratio_name.format("data-ZG","ZZ4P"), title=fmt_ratio_title.format("FR(data-Z#gamma)_{CRLFR}","FR(ZZ_{4P})"), range_z=args.range_ratio_z)
-            # plotRatio(hFR_LtoT_data, hFR_LtoT_gg, name=fmt_ratio_name.format("data-ZG","gg"  )   , title=fmt_ratio_title.format("FR(data-Z#gamma)","FR(gg)"), range_z=args.range_ratio_z)
+            plotRatio(hFR_data   , hFR_ZZnonpro   , name=fmt_ratio_name.format("data"   ,"ZZ"  ), title=fmt_ratio_title.format("FR(data)","FR(ZZ)"), **argsdict)
+            plotRatio(hFR_data   , hFR_ZZnonpro_4P, name=fmt_ratio_name.format("data"   ,"ZZ4P"), title=fmt_ratio_title.format("Ratio FR(data)","FR(ZZ_{SR4P}"), **argsdict)
+            # plotRatio(hFR_data_ZG, hFR_DY, name=fmt_ratio_name.format("data-ZG","DY"), title=fmt_ratio_title.format("FR(data-Z#gamma)","FR(DY)", **argsdict)
+            plotRatio(hFR_data_ZG, hFR_ZZnonpro   , name=fmt_ratio_name.format("data-ZG","ZZ"  ) , title=fmt_ratio_title.format("FR(data-Z#gamma)","FR(ZZ)"), **argsdict)
+            plotRatio(hFR_data_ZG, hFR_ZZnonpro_4P, name=fmt_ratio_name.format("data-ZG","ZZ4P") , title=fmt_ratio_title.format("FR(data-Z#gamma)","FR(ZZ_{SR4P})"), **argsdict)
+            # plotRatio(hFR_LtoT_data, hFR_LtoT_ZZ_4P, name=fmt_ratio_name.format("data-ZG","ZZ4P"), title=fmt_ratio_title.format("FR(data-Z#gamma)_{CRLFR}","FR(ZZ_{4P})"), **argsdict)
+            # plotRatio(hFR_LtoT_data, hFR_LtoT_gg, name=fmt_ratio_name.format("data-ZG","gg"  )   , title=fmt_ratio_title.format("FR(data-Z#gamma)","FR(gg)"), **argsdict)
+
             print()
 
 
