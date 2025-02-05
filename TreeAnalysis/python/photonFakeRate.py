@@ -467,7 +467,7 @@ def fakeRateLtoT_regex(sample_data, samples_prompt, inputdir, method, variable, 
     return hFR
 
 
-def getPassFailLtoT(sample_main, samples_subtr, inputdir, method, variable, fixNegBins):
+def getPassFailLtoT(sample_main, samples_subtr, inputdir, method, variable, fixNegBins, syst=None, **kwargs):
     if(method.startswith('LtoT')):
         raise NotImplementedException('LtoT is deprecated. Use VLtoL')
 
@@ -475,17 +475,21 @@ def getPassFailLtoT(sample_main, samples_subtr, inputdir, method, variable, fixN
     region = inputdir.region
     year   = inputdir.year
     do_subtr = len(samples_subtr) > 0
+    phfr = 'PhFR' if syst is None else 'PhFR-'+syst
+    base_name = '_'.join([method, variable])
 
     if(sample_main['name'] == 'data'):
-        hmain_PASS, hmain_FAIL   = get_plots(inputdir, sample_main['file'] , [ 'PhFR_%s_%s_data_%s'    % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
+        in_name = '_'.join(['PhFR', base_name, 'data', '%s'])
+        hmain_PASS, hmain_FAIL   = get_plots(inputdir, sample_main['file'], [ in_name %(s) for s in ['PASS', 'FAIL'] ] )
         assert hmain_PASS, 'Could not get the PASS histogram for data'
         assert hmain_FAIL, 'Could not get the FAIL histogram for data'
     elif('split' in sample_main.keys()):
-        split = sample_main['split']
-        hmain_PASS, hmain_FAIL   = get_plots(inputdir, sample_main['file'], [ 'PhFR_%s_%s_%s_%s' % (method, variable, split, s) for s in ['PASS', 'FAIL'] ] )
+        in_name = '_'.join([phfr, base_name, sample_main['split'], '%s'])
+        hmain_PASS, hmain_FAIL   = get_plots(inputdir, sample_main['file'], [ in_name %(s) for s in ['PASS', 'FAIL'] ] )
     else:
-        hmain_PASSp, hmain_FAILp = get_plots(inputdir, sample_main['file'], [ 'PhFR_%s_%s_prompt_%s'    % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
-        hmain_PASSn, hmain_FAILn = get_plots(inputdir, sample_main['file'], [ 'PhFR_%s_%s_nonprompt_%s' % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
+        in_name = '_'.join([phfr, base_name, '%s', '%s'])
+        hmain_PASSp, hmain_FAILp = get_plots(inputdir, sample_main['file'], [ in_name %('prompt'   , s) for s in ['PASS', 'FAIL'] ] )
+        hmain_PASSn, hmain_FAILn = get_plots(inputdir, sample_main['file'], [ in_name %('nonprompt', s) for s in ['PASS', 'FAIL'] ] )
 
         hmain_PASS = addIfExisting(hmain_PASSp, hmain_PASSn)
         hmain_FAIL = addIfExisting(hmain_FAILp, hmain_FAILn)
@@ -497,7 +501,8 @@ def getPassFailLtoT(sample_main, samples_subtr, inputdir, method, variable, fixN
     list_subtr_PASS = []
     list_subtr_FAIL = []
     for sample_subtr in samples_subtr:
-        hPASS, hFAIL = get_plots(inputdir, sample_subtr['file'], [ 'PhFR_%s_%s_prompt_%s' % (method, variable, s) for s in ['PASS', 'FAIL'] ] )
+        in_name = '_'.join([phfr, base_name, '%s', '%s'])
+        hPASS, hFAIL = get_plots(inputdir, sample_subtr['file'], [ in_name % ('prompt', s) for s in ['PASS', 'FAIL'] ] )
         if(not (hPASS and hFAIL)):
             raise RuntimeError("Could not get the 2 prompt MC histograms for %s!" %(sample_subtr['file']))
         list_subtr_PASS.append(hPASS)
@@ -555,7 +560,7 @@ def varname_to_title(name):
     else:
         raise KeyError(name)
 
-def fakeRateLtoT(sample_data, samples_prompt, inputdir, method='LtoT', variable='pt-aeta', fixNegBins=False, **kwargs):
+def fakeRateLtoT(sample_data, samples_prompt, inputdir, method='LtoT', variable='pt-aeta', syst=None, **kwargs):
     year   = inputdir.year
     region = inputdir.region
     if(len(samples_prompt) == 0):
@@ -568,7 +573,13 @@ def fakeRateLtoT(sample_data, samples_prompt, inputdir, method='LtoT', variable=
         samplename  = sample_data['name']  +  '-'  +  '-'  .join(s['name']  for s in samples_prompt)
         sampletitle = sample_data['title'] + ' - ' + ' - ' .join(s['title'] for s in samples_prompt)
 
-    hPASS, hFAIL = getPassFailLtoT(sample_data, samples_prompt, inputdir, method=method, variable=variable, fixNegBins=fixNegBins)
+    if(syst is not None):
+        split = syst.split('-')
+        syst_name_in  = syst
+        syst_name_out = '-'.join(split[:-1])+'_'+split[-1]
+    else:
+        syst_name_in = syst_name_out = None
+    hPASS, hFAIL = getPassFailLtoT(sample_data, samples_prompt, inputdir, method=method, variable=variable, syst=syst_name_in, **kwargs)
 
     outname = 'FR_{method}_{variable}_{samplename}{region}_{year}'.format(method=method, variable=variable, samplename=samplename, region='' if region=='CRLFR' else '_'+region, year=year)
     if(method.startswith('LtoT')):
@@ -590,6 +601,8 @@ def fakeRateLtoT(sample_data, samples_prompt, inputdir, method='LtoT', variable=
     hFR = hPASS
     hFR.Divide(hTOTAL)
 
+    hFR.SetName('PhFR'+('' if syst is None else '_'+syst_name_out))
+
     x_name, y_name = variable.split('-')
     hFR.GetXaxis().SetTitle(varname_to_title(x_name))
     hFR.GetYaxis().SetTitle(varname_to_title(y_name))
@@ -610,7 +623,6 @@ def plotFR_LtoT(hFR, outname, title, logx=False, logy=False, do_title=True, rang
     if(max_value > max_draw): logging.warning('MAX value (%f) greater than Z draw limit (%f) for %s', max_value, max_draw, outname)
 
     hFR.SetTitle(title if do_title else '')
-    hFR.SetName( 'PhFR' )
     hFR.SetMinimum(min_draw)
     hFR.SetMaximum(max_draw)
     
@@ -1185,6 +1197,8 @@ def main(args):
             plotRatio(hFR_ZZnonpro_4P, hFR_ZZnonpro, name=fmt_ratio_name.format("ZZ4P", "ZZCRLFR"), title=fmt_ratio_title.format("FR(ZZ_{4P})","FR(ZZ_{CRLFR})"), **argsdict)
             print()
         if(args.do_data and args.do_mc):
+            SYS_fakeRateLtoT(sampleList["data"], [sampleList["ZGToLLG"]], results_dir, **dict(argsdict, variable=varState))
+
             hFR_data_ZG = fakeRateLtoT(sampleList["data"], [sampleList["ZGToLLG"]], results_dir, **dict(argsdict, variable=varState))
             plotProfiled(hFR_data_ZG, name=fmt_profile_name.format('X','data-ZGToLLG'), title='FR(#gamma) vs #eta' , direction='X', **argsdict)
             plotProfiled(hFR_data_ZG, name=fmt_profile_name.format('Y','data-ZGToLLG'), title='FR(#gamma) vs p_{T}', direction='Y', **argsdict)
@@ -1257,6 +1271,13 @@ def customize_cmsCanvas_square(canv):
     hframe.GetYaxis().SetTitleOffset(1.3)  # default 1.25
     hframe.GetYaxis().SetTitleSize(0.05)  # default 0.06
     cmsstyle.UpdatePad(canv)
+
+
+def SYS_fakeRateLtoT(sample_main, samples_prompt, inputdir, **kwargs):
+    for syst in ("CMS-pileup", "CMS-l1-prefiring", "QCDscale", "pdf", "alphas", "CMS-eff-g"):
+        for updn in ('Up', 'Down'):
+            systname = syst+'-'+updn
+            hFR = fakeRateLtoT(sample_main, samples_prompt, inputdir, syst=systname, **kwargs)
 
 
 if __name__ == '__main__':
