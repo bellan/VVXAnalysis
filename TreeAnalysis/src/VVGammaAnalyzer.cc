@@ -77,10 +77,17 @@ void VVGammaAnalyzer::begin(){
   
   // Photon FR
   hPhotonFR_VLtoL_data_   = getHistfromFile(Form("data/FR_VLtoL_pt-aeta_data_%s.root"        , year_str.c_str()), "PhFR", " VLtoL (data)"   );
-
-  // FR extended
   hPhotonFR_VLtoL_dataZG_ = getHistfromFile(Form("data/FR_VLtoL_pt-aeta_data-ZGToLLG_%s.root", year_str.c_str()), "PhFR", " VLtoL (data-ZG)");
   hPhotonFR_KtoVLexcl_    = getHistfromFile(Form("data/FR_KtoVLexcl_pt-aeta_data-ZGToLLG_%s.root", year_str.c_str()), "PhFR", " KtoVLexcl (data-ZG)");
+
+  // Photon FR systematics
+  std::string fname_chosen = Form("data/FR_VLtoL_pt-aeta_data-ZGToLLG_%s.root", year_str.c_str());
+  for(const char* const& syst : {"CMS-pileup", "CMS-l1-prefiring", "QCDscale", "pdf", "alphas", "CMS-eff-g"}){
+    for(const char* const& direction : {"Up", "Down"}){
+      std::string vname = Form("%s_%s", syst, direction);
+      SYS_PhFR_VLtoL_dataZG_[vname] = getHistfromFile(fname_chosen.c_str(), Form("PhFR_%s", vname.c_str()));
+    }
+  }
 
   // FR SF
   hPhotonFRSF_VLtoL_      = getHistfromFile(Form("data/ratio_VLtoL_pt-aeta_data_over_ZZ_%s.root", year_str.c_str()), "PhFRSF");
@@ -3132,7 +3139,16 @@ void VVGammaAnalyzer::SYSplots_phCut(const char* sys_label, const char* syst, do
     else{
       SYSplots_photon(sys_label, syst, weight, phCut, "fail");
 
-      double f_VLtoL = getPhotonFR_VLtoL(phCut);
+      double f_VLtoL = 0.;
+      // Is this systematic affecting also the PhFR? Then use the corrisponding variation of the FR
+      auto it_syst_PhFRhist = SYS_PhFR_VLtoL_dataZG_.find(syst);
+      if(it_syst_PhFRhist != SYS_PhFR_VLtoL_dataZG_.end())
+        f_VLtoL = getPhotonFR(phCut, it_syst_PhFRhist->second.get());
+      else
+        f_VLtoL = getPhotonFR(phCut,
+			      hPhotonFR_VLtoL_dataZG_.get()
+			      );
+
       double w_VLtoL = f_VLtoL / (1 - f_VLtoL);
       SYSplots_photon(sys_label, syst, weight * w_VLtoL, phCut, "failReweight");
     }

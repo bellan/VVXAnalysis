@@ -183,6 +183,9 @@ private:
   std::unique_ptr<TH2F> hPhotonEffSF_;
   double hPhotonEffSF_maxPt_;
 
+  // Systematic variations on photon fake rate
+  std::unordered_map<std::string, std::unique_ptr<TH2F>> SYS_PhFR_VLtoL_dataZG_;
+
   std::map<phys::Photon::MVAwp, std::unique_ptr<TH2F>> mapPhotonMVASF_;
   std::map<phys::Photon::MVAwp, float                > mapPhotonMVASF_maxPt_;
 
