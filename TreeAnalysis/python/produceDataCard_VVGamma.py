@@ -416,6 +416,16 @@ def main(args):
             # Specify the same correlation in the config
             config['systematics'][correlation].append(new_syst)
 
+    # Set manually the uncertainty on certain systematics for some samples
+    for syst, syst_manual in config['systematics'].get('set_manual', {}).items():
+        for sample, values in syst_manual.items():
+            if(data_syst.get(sample)):
+                logging.debug('overriding "%s" for "%s" to %s', syst, sample, values)
+                data_syst[sample][syst] = values
+            else:
+                logging.debug('cannot override "%s" for "%s", since the sample has no yield in this bin (or it was removed)', syst, sample)
+
+    # Fill the dataframe using the dictionary
     df_syst = fillDataFrame(data_syst, formatter=format_lnN).fillna(0)
     type_column = []
     for syst in df_syst.index:

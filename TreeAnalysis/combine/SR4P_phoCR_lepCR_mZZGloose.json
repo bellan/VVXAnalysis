@@ -22,6 +22,7 @@
     },
     "systematics": {
 	"norm_uncertainty": {"fake_photons": {"up":0.50, "dn":-0.50}},
-        "ADD_gmN": {"CMS_SMP24014_fake_g_ARstat": "fake_photons"}
+        "ADD_gmN": {"CMS_SMP24014_fake_g_ARstat": "fake_photons"},
+        "comment":{"set_manual": {"CMS_fake_g": {"fake_photons": {"up":0.2, "dn":-0.2}}}}
     }
 }
