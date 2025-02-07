@@ -374,8 +374,11 @@ def main(args):
         # Remove common systematics on data-driven backgrounds
         if(sample in config['data-driven']):
             for syst, val in data_syst[sample].items():
-                val['dn'] = val['up'] = 0
-                logging.debug('Zeroed systematic "%s" for signal "%s"', syst, sample)
+                # Only some systematics have to be removed (e.g. efficiencies)
+                # In particulare we want to keep uncertainties on fake rates
+                if('_eff_' in syst):
+                    val['dn'] = val['up'] = 0
+                    logging.debug('Zeroed systematic "%s" for data-driven "%s"', syst, sample)
 
     # Set normalization uncertainty (e.g. fake_leptons and fake_photons)
     for sample, val in config['systematics'].get('norm_uncertainty', {}).items():
