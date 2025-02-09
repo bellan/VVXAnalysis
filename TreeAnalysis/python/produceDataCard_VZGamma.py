@@ -32,8 +32,8 @@ __builtin_config__ = {
 
     # General configuration
     'systematics':{
-        'shape': ['JER'],
-        'correlated'  : ['L1Prefiring', 'PDFVar', 'QCDscale', 'alphas', 'JER'],
+        'shape': ['JER','JEC'],
+        'correlated'  : ['L1Prefiring', 'PDFVar', 'QCDscale', 'alphas', 'JER','JEC'],
         'uncorrelated': [],
         'correl_year' : ['puWeight'], # Systematics that are uncorrelated between years, but correlated between 2016 pre/post
         'skip-if-signal': ['PDFVar', 'QCDscale', 'alphas'],

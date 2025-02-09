@@ -2459,9 +2459,13 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
       
       //      theHistograms->fill("V_vs_Z_pt_" + histoType + cuts.at(i), "V_vs_Z_pt_" + histoType + cuts.at(i) +";V p_{t} [GeV/c]; #Z p_{t} [GeV/c]", 30, 0, 300, 30, 0, 300, recoV.pt(), Z->pt(), theWeight*LumiSF);
       //      printHistos(1, "sign", recoV, recoFJ, selectedphotons, VBTopo);
-      theHistograms->fill("recoVMass_" + histoType + cuts.at(i), "mass of recoV", 40, 0, 200, recoV.mass(), (theWeight*LumiSF));
-      theHistograms->fill("recoVDaughter0Pt_" + histoType + cuts.at(i), "pt of recoVDaughter0", 50, 0, 600, recoV.daughter(0).pt(), (theWeight*LumiSF));
-      theHistograms->fill("recoVDaughter1Pt_" + histoType + cuts.at(i), "pt of recoVDaughter1", 50, 0, 600, recoV.daughter(1).pt(), (theWeight*LumiSF));
+      theHistograms->fill("recoVMass_" + histoType + cuts.at(i), "mass of recoV", 40, 40, 120, recoV.mass(), (theWeight*LumiSF));
+      if(isCR && region.find("CR2P_1VL")!=std::string::npos) theHistograms->fill("recoVDaughter0Pt_" + histoType + cuts.at(i), "pt of recoVDaughter0", {0,50,100,150,200,250,300,400,500}, recoV.daughter(0).pt(), (theWeight*LumiSF));
+      else if(isCR && region.find("CRZOFF_FSRT")!=std::string::npos) theHistograms->fill("recoVDaughter0Pt_" + histoType + cuts.at(i), "pt of recoVDaughter0", {0,50,100,150,250}, recoV.daughter(0).pt(), (theWeight*LumiSF));
+      else theHistograms->fill("recoVDaughter0Pt_" + histoType + cuts.at(i), "pt of recoVDaughter0", 50, 0, 500, recoV.daughter(0).pt(), (theWeight*LumiSF));
+
+      theHistograms->fill("recoVDaughter1Pt_" + histoType + cuts.at(i), "pt of recoVDaughter1", 50, 0, 250, recoV.daughter(1).pt(), (theWeight*LumiSF));
+
       theHistograms->fill("ZepCorr_" + histoType + cuts.at(i), "ZepCorr_", 50, 0, 5,       ZepCorr_G, (theWeight*LumiSF));
 
       theHistograms->fill("j0_p(bX)"+histoType + cuts.at(i), "j0_p(bX)"+histoType + cuts.at(i)+"; lead. jet DeepFlavour p(bX)", 20, 0, 1, recoV.daughter(0).deepFlavour().probb + recoV.daughter(0).deepFlavour().probbb + recoV.daughter(0).deepFlavour().problepb, theWeight*LumiSF);
@@ -2472,7 +2476,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
       theHistograms->fill("j1_p(g)"+histoType + cuts.at(i), "j1_p(g)"+histoType + cuts.at(i)+"; sublead. jet DeepFlavour p(g)", 20, 0, 1, recoV.daughter(1).deepFlavour().probg, theWeight*LumiSF);
       theHistograms->fill("jj_p(g)Sum"+histoType + cuts.at(i), "jj_p(g)Sum"+histoType + cuts.at(i)+"; DiJet DeepFlavour p(g)", 20, 0, 1,  0.5*(recoV.daughter(0).deepFlavour().probg + recoV.daughter(1).deepFlavour().probg), theWeight*LumiSF);
 
-      theHistograms->fill("j0_p(uds)"+histoType + cuts.at(i), "j0_p(uds)"+histoType + cuts.at(i)+"; lead. jet DeepFlavour p(uds)", 20, 0, 1, recoV.daughter(0).deepFlavour().probuds, theWeight*LumiSF);
+      theHistograms->fill("j0_p(uds)"+histoType + cuts.at(i), "j0_p(uds)"+histoType + cuts.at(i)+"; lead. jet DeepFlavour p(uds)", {0,0.1,0.2,0.4,0.7,1.}, recoV.daughter(0).deepFlavour().probuds, theWeight*LumiSF);
       theHistograms->fill("j1_p(uds)"+histoType + cuts.at(i), "j1_p(uds)"+histoType + cuts.at(i)+"; sublead. jet DeepFlavour p(uds)", 20, 0, 1, recoV.daughter(1).deepFlavour().probuds, theWeight*LumiSF);
       theHistograms->fill("jj_p(uds)Sum"+histoType + cuts.at(i), "jj_p(uds)Sum"+histoType + cuts.at(i)+"; DiJet DeepFlavour p(uds)", 20, 0, 1,  0.5*(recoV.daughter(0).deepFlavour().probuds + recoV.daughter(1).deepFlavour().probuds), theWeight*LumiSF);
 
@@ -2585,7 +2589,8 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
 
       }    
 
-    theHistograms->fill("mllG_"+histoType + cuts.at(i), 45, 0, 450, mllPh, theWeight*LumiSF);
+    if(isCR && region.find("CRZOFF")!=std::string::npos) theHistograms->fill("mllG_"+histoType + cuts.at(i), {60,100,140,220}, mllPh, theWeight*LumiSF);
+    else theHistograms->fill("mllG_"+histoType + cuts.at(i), 16,60,220, mllPh, theWeight*LumiSF);
     
     theHistograms->fill("mll_vs_mllG_"+histoType + cuts.at(i), "mll_vs_mllG_"+histoType + cuts.at(i)+"; mll [GeV] ; mll#gamma [GeV]", 30, 60, 120, 80, 50, 450, mll, mllPh, theWeight*LumiSF);
     theHistograms->fill("mllG_vs_DRlGs_"+histoType + cuts.at(i), "mllG_vs_DRlGs_"+histoType + cuts.at(i)+"; mll#gamma [GeV] ; #DeltaRl#gamma", 60, 150, 450, 50, 0, 5, mllPh, fabs(physmath::deltaR(nearestChLeptToPhoton.first, nearestChLeptToPhoton.second)), theWeight*LumiSF);
@@ -2656,8 +2661,13 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     theHistograms->fill("VZGMVAScore_"+histoType + cuts.at(i), "VZGMVAScore_"+histoType + cuts.at(i) +"; MVA Score", 80, -1.0, 1.0,  VZGMVAScore, theWeight*LumiSF);
     theHistograms->fill("VZGMVAScore'shortRange_"+histoType + cuts.at(i), "VZGMVAScore_"+histoType + cuts.at(i) +"; MVA Score", 22, -0.2, 1.0,  VZGMVAScore, theWeight*LumiSF);
 
-    theHistograms->fill("ptGamma_"+histoType + cuts.at(i), "ptGamma_"+histoType + cuts.at(i)+";#gamma pt [GeV]", 50, 0, 200, ptGamma, theWeight*LumiSF);
-    theHistograms->fill("dPhiZG_"+histoType + cuts.at(i), "dPhiZG_"+histoType + cuts.at(i)+";#delta#Phi Z-#gamma", 32, 0, 3.2, fabs(physmath::deltaPhi(Z->phi(),selectedphotons.at(0).phi()) ), theWeight*LumiSF);
+    if(isCR && region.find("CRFSRT")!=std::string::npos)     theHistograms->fill("ptGamma_"+histoType + cuts.at(i), "ptGamma_"+histoType + cuts.at(i)+";#gamma pt [GeV]", {20,35,50,65,80,100,140}, ptGamma, theWeight*LumiSF);
+    else     theHistograms->fill("ptGamma_"+histoType + cuts.at(i), "ptGamma_"+histoType + cuts.at(i)+";#gamma pt [GeV]", 50, 0, 200, ptGamma, theWeight*LumiSF);
+
+    if(isCR && region.find("CRFSRT")!=std::string::npos)     theHistograms->fill("dPhiZG_"+histoType + cuts.at(i), "dPhiZG_"+histoType + cuts.at(i)+";#delta#Phi Z-#gamma", {0,0.4,0.8,1.2,1.6,2.2,3.2}, fabs(physmath::deltaPhi(Z->phi(),selectedphotons.at(0).phi()) ), theWeight*LumiSF);
+    else if(isCR && region.find("CRZOFF_DIB")!=std::string::npos)     theHistograms->fill("dPhiZG_"+histoType + cuts.at(i), "dPhiZG_"+histoType + cuts.at(i)+";#delta#Phi Z-#gamma", {0,0.8,1.4,2,2.4,2.8,3.2}, fabs(physmath::deltaPhi(Z->phi(),selectedphotons.at(0).phi()) ), theWeight*LumiSF);
+    else     theHistograms->fill("dPhiZG_"+histoType + cuts.at(i), "dPhiZG_"+histoType + cuts.at(i)+";#delta#Phi Z-#gamma", 32, 0, 3.2, fabs(physmath::deltaPhi(Z->phi(),selectedphotons.at(0).phi()) ), theWeight*LumiSF);
+
     
     theHistograms->fill("mllG_vs_ptGamma_"+histoType + cuts.at(i), "mllG_vs_ptGamma_"+histoType + cuts.at(i)+";mll#gamma [GeV] ; #gamma pt [GeV]", 50, 80, 330, 50, 0, 200, mllG, ptGamma, theWeight*LumiSF);
     theHistograms->fill("mllG_vs_dRL0Gamma_"+histoType + cuts.at(i), "mllG_vs_dRL0Gamma_"+histoType + cuts.at(i)+";mll#gamma [GeV] ; #DeltaR l0 - #gamma", 50, 80, 330, 8, 0, 2.0, mllG, deltaR_L0Gamma, theWeight*LumiSF);
