@@ -147,6 +147,7 @@ def parse_args():
     parser.add_argument('-y', '--year'      , default='2018'       , help='Default: %(default)s')
     parser.add_argument('-d', '--samples-dir', default='samples'    , help='Sample location, similar to run.py (default: %(default)s)')
     parser.add_argument('-r', '--regions'   , default='SR4P,CR3P1F,CR2P2F,SR3P,CR110,CR101,CR011,CR100,CR010,CR001,CR000,SR2P,CRLFR', help='Passed verbatim to run.py. Default: %(default)s')
+    parser.add_argument(      '--samples'   , nargs='+', default=None, help='Create jobs only for these samples. Default is to use all of them.')
     parser.add_argument(      '--force'     , action='store_true'  , help='Delete any existing job folders')
     parser.add_argument('-o', '--output-dir', default='production' , help='Base directory for the jobs (default: %(default)s)')  # maybe use $(git rev-parse --short HEAD)
     parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
@@ -166,6 +167,7 @@ def main(args, unknown_args):
 
     created_jobs = 0
     mk_jobs_args = dict(analyzer=args.analyzer, samples_dir=args.samples_dir, regions=args.regions, output_dir=output_dir,
+                        samples=args.samples,
                         os_requirements=os_requirements, do_force=args.force)
     if(args.year == 'Run2'):
         for year in ('2016preVFP', '2016postVFP', '2017', '2018'):
@@ -176,8 +178,11 @@ def main(args, unknown_args):
     logging.info("created {:d} jobs in {:s}".format(created_jobs, output_dir))
 
 
-def mk_jobs(analyzer, year, samples_dir, regions, output_dir, os_requirements='', do_force=False):
+def mk_jobs(analyzer, year, samples_dir, regions, output_dir, os_requirements='', do_force=False, samples=None):
     samples = [s.rstrip('.root') for s in os.listdir(os.path.join(samples_dir, year)) if s.endswith('.root')]
+    if(args.samples is not None):
+        samples = [s for s in samples if s in args.samples]
+
     created_jobs = 0
     for sample in samples: #('ZZGTo4LG',): #
         regex_part_match = re.search('_part(\d+)(of\d)?$', sample)
