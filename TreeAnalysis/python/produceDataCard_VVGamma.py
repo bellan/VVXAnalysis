@@ -240,7 +240,7 @@ def get_sample_group_QCDscale(sample):
         return 'ttbar'
     elif(sample.startswith(('TZq','tW'))):
         return 'tV'
-    elif(sample.startswith(('ZGToLLG',))):
+    elif(sample.startswith(('ZGToLLG', 'fake_photons'))):
         return 'Vgamma'
     elif(sample.startswith('DY')):
         return 'V'
