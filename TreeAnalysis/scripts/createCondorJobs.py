@@ -164,7 +164,20 @@ def main(args, unknown_args):
     output_dir = args.output_dir
     os.makedirs(output_dir, exist_ok=True)
 
-    samples = [s.rstrip('.root') for s in os.listdir(os.path.join(args.samples_dir, args.year)) if s.endswith('.root')]
+    created_jobs = 0
+    mk_jobs_args = dict(analyzer=args.analyzer, samples_dir=args.samples_dir, regions=args.regions, output_dir=output_dir,
+                        os_requirements=os_requirements, do_force=args.force)
+    if(args.year == 'Run2'):
+        for year in ('2016preVFP', '2016postVFP', '2017', '2018'):
+            created_jobs += mk_jobs(year=year, **mk_jobs_args)
+    else:
+        created_jobs = mk_jobs(year=args.year, **mk_jobs_args)
+
+    logging.info("created {:d} jobs in {:s}".format(created_jobs, output_dir))
+
+
+def mk_jobs(analyzer, year, samples_dir, regions, output_dir, os_requirements='', do_force=False):
+    samples = [s.rstrip('.root') for s in os.listdir(os.path.join(samples_dir, year)) if s.endswith('.root')]
     created_jobs = 0
     for sample in samples: #('ZZGTo4LG',): #
         regex_part_match = re.search('_part(\d+)(of\d)?$', sample)
@@ -177,14 +190,14 @@ def main(args, unknown_args):
             sample_base = sample
             job_name    = sample
 
-        sample_dir = os.path.join(output_dir, args.year, sample_base)
+        sample_dir = os.path.join(output_dir, year, sample_base)
         job_dir    = os.path.join(sample_dir, job_name)
 
         # Create sample dir, if necessary
         os.makedirs(sample_dir, exist_ok=True)
 
         # Create the dir for this specific job (=chunk)
-        if(args.force):
+        if(do_force):
             if(os.path.exists(job_dir)):
                 check_call(['rm', '-r', job_dir])
         os.mkdir(job_dir)
@@ -194,14 +207,14 @@ def main(args, unknown_args):
         if(not os.path.exists(condorsub_path)):
             # For multipart files there is a common condor sub, created for the first part
             abs_job_dir = check_output(['realpath', sample_dir], encoding='utf-8').strip('\n')
-            flavour = get_job_flavour(os.path.join(args.samples_dir, args.year, sample+'.root'))
+            flavour = get_job_flavour(os.path.join(samples_dir, year, sample+'.root'))
             condorsub_script = get_condorsub_script(abs_job_dir, jobFlavour=flavour, requirements=os_requirements)
             with open(condorsub_path, 'w') as condorsub:
                 condorsub.write(condorsub_script)
 
         # Create script and make it executable
-        runpy_args = ' '.join([args.analyzer, sample])
-        runpy_extra_args = ' '.join(['-y', args.year, '-r', args.regions, *unknown_args])
+        runpy_args = ' '.join([analyzer, sample])
+        runpy_extra_args = ' '.join(['-y', year, '-r', regions, *unknown_args])
         batchScript = get_batch_script(**vars(args), sample=sample, runpy_args=runpy_args, runpy_extra_args=runpy_extra_args)
         scriptPath = os.path.join(job_dir, 'batchScript.sh')
         with open(scriptPath, 'w') as script:
@@ -212,8 +225,7 @@ def main(args, unknown_args):
         os.mkdir(os.path.join(job_dir, 'log'))#, exist_ok=True)
 
         created_jobs += 1
-
-    logging.info("created {:d} jobs in {:s}".format(created_jobs, output_dir))
+    return created_jobs
 
 
 def get_job_flavour(sample):
