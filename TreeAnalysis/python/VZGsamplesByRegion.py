@@ -16,7 +16,7 @@ def is3Lregion(region):
     return region in ('SR3P', 'SR3P_1L', 'SR3P_1F', 'CR000', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110')
 
 def is2Lregion(region):
-    return region in ('SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F')
+    return region in ('SR2P', 'SR2PFJ', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F')
 
 def isLepCR(region):
     return region in ('CR3P1F', 'CR2P2F', 'CR000', 'CR001', 'CR010', 'CR011', 'CR100', 'CR101', 'CR110')

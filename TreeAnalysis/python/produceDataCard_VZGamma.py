@@ -25,6 +25,10 @@ __builtin_config__ = {
         'SR2P': {
             'processes': {'VZG': -1, 'TTTo2L2Nu':-1, 'DYJetsToLL_M50':-1, 'ZGToLLG':-1},
             'observable': {'name':'BDTScore', 'observation':-1}  # Combine's name for "observable"
+        },
+        'SR2PFJ': {
+            'processes': {'VZG': -1, 'TTTo2L2Nu':-1, 'DYJetsToLL_M50':-1, 'ZGToLLG':-1},
+            'observable': {'name':'ParticleNet', 'observation':-1}  # Combine's name for "observable"
         }
     },
     # Data-driven backgrounds that may be used are to be treated specially

@@ -27,6 +27,7 @@ bool IsARunForMVAFeat=false;
 bool verbose = false;
 bool fullPlotList = false;
 bool fiducial_run =true;
+bool runningSR2PFJ=true;
 double etacut=4.7;
 double ptcut=30;
 double LumiSF=1.0;//7.035--> 2016post||3.32-->2017||2.29-->2018||8.16--> 2016post||7.035--> 2016pre
@@ -822,8 +823,9 @@ Bool_t VZGAnalyzer::cut(Int_t n, phys::Boson<phys::Jet> recoV, phys::Jet recoFJ,
 
   bool JGsolved = fabs(physmath::deltaR(recoV.daughter(0), mostEnergeticPhoton))>0.4 && fabs(physmath::deltaR(recoV.daughter(1), mostEnergeticPhoton) )>0.4;
   bool LGsolved = fabs(physmath::deltaR(Z->daughter(0), mostEnergeticPhoton))>0.4 && fabs(physmath::deltaR(Z->daughter(1), mostEnergeticPhoton) )>0.4;
+  //if(VBTopo==-1)  JGsolved = physmath::deltaR(recoFJ, mostEnergeticPhoton)>0.8;
 											     
-  bool baseline = (objectsExist   && ZMassWindow   && areGoodZCand && LGsolved && JGsolved);
+  bool baseline = (objectsExist && VBTopo==1  && ZMassWindow   && areGoodZCand && LGsolved && JGsolved);
   bool MVAScoreWP0 = VZGMVAScore > 0.;
   bool MVAScoreWP7 = VZGMVAScore > 0.7;
   bool MVAScoreWP8 = VZGMVAScore > 0.8;
@@ -1455,6 +1457,7 @@ void VZGAnalyzer::analyze()
   mostEnergeticPhoton = selectedphotons[0];
   
   VBTopo=Reconstruct(&recoV,&recoFJ,&haveGoodRECODiJetCand,&haveGoodRECOFJCand,&mostEnergeticPhoton, true);
+  //if(VBTopo==-1) cout<<"FJTopo!"<<endl;
 
   region="";
   isCR=false;
@@ -1963,9 +1966,9 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
 
   if(!(*haveGoodRECOFJCand || *haveGoodRECODiJetCand) ){
     hadrTopo=0;
-  }else{//changed to consider the only 2j topology
+  }else{//changed to prioritize the DJ topology
     if(*haveGoodRECODiJetCand) hadrTopo=1;//    if(peakDist_mDJCand<peakDist_mFJCand) hadrTopo=1;
-    else hadrTopo=0;//    else hadrTopo=-1;
+    else hadrTopo=-1;
   }
 
   if(*haveGoodRECODiJetCand && doControlPlots){
@@ -2037,7 +2040,9 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
   }
   */
   //if(IsARunForMVAFeat)
-  hadrTopo=*haveGoodRECODiJetCand;//temporary unique topology
+  //hadrTopo=*haveGoodRECODiJetCand;//temporary unique topology
+
+  //if(hadrTopo== -1) cout<<"FJ topo!!!"<<endl;
   
   return hadrTopo;
 }
@@ -2255,23 +2260,18 @@ void VZGAnalyzer::CompatibilityTest(phys::Boson<phys::Jet> bestCandidate, phys::
 
 void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::Jet> recoV, phys::Jet recoFJ, std::vector<phys::Photon> selectedphotons, int VBTopo,  std::string region, bool isCR)
 {
+  //  if(VBTopo==-1) cout<<"FJTopo! --> entering printHistos"<<endl;
   bool isSigSample = theSampleInfo.isMC() && (theSampleInfo.fileName().find("WZG")!=std::string::npos || theSampleInfo.fileName().find("ZZG")!=std::string::npos);
   bool isDYSample = theSampleInfo.isMC() && (theSampleInfo.fileName().find("DY")!=std::string::npos);
   bool isZGSample = theSampleInfo.isMC() && !isSigSample && (theSampleInfo.fileName().find("ZG")!=std::string::npos);
 
-  if(!isCR && !theSampleInfo.isMC()) return; //SR BLINDING
-  if(isCR){
-    if(i>4) return; //to avoid producing CR plots for cut higher than 
-    i=4;
-    histoType = histoType+"_"+region;
-  }
-  //  std::cout<<"entering printHistos"<<endl;
   if(i==0){
     theHistograms->fill("#AAA_cut_flow_" + histoType, "Cut flow", cutsToApply, 0, cutsToApply, i, (theWeight*LumiSF));
     theHistograms->fill("#AAA_unw_cut_flow_" + histoType, "Unw. events cut flow", cutsToApply, 0, cutsToApply, i, 1.);      
     theHistograms->fill("photonID_" + histoType +"_noReq", "photonID", 4, 0, 4, 0, (theWeight*LumiSF));
     theHistograms->fill("photonID_" + histoType +"_DJtopo", "photonID", 4, 0, 4, 0, (theWeight*LumiSF));
   }
+  
   if(selectedphotons.size()<1) return;
   //  std::cout<<"passing cut 0 in printHistos"<<endl;
   
@@ -2284,6 +2284,76 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
   }
   if (VBTopo ==0) return;
   //  std::cout<<"passing cut 1 in printHistos"<<endl;  
+  
+  if(!isCR && !theSampleInfo.isMC()) return; //SR BLINDING
+  if(isCR){
+    if(i>4) return; //to avoid producing CR plots for cut higher than 
+    i=4;
+    histoType = histoType+"_"+region;
+  }
+
+  
+  bool isForSys = (theSampleInfo.isMC()
+		       && (
+			   (isDYSample && histoType=="nonPrompt")
+			   ||
+			   (isZGSample && histoType=="prompt")
+			   ||
+			   (isSigSample && histoType=="sign")
+			   ||
+			   (!isSigSample && !isZGSample && !isDYSample && histoType=="all")
+			   )
+		   );
+  
+  //_____________________________________________________________BLOCK_FOR_SYS_SR2PFJ__________________________________________________//
+  //cout << "Starting block for SYS in SR2PFJ" << endl;
+
+  double mimicVZGMVAScore=-2.;
+  if(runningSR2PFJ){
+    if(VBTopo==-1){
+      if (i <= cutsToApply && cut(i, recoV, recoFJ, selectedphotons, VBTopo, mimicVZGMVAScore)){
+	//cout<<"FJTopo! --> passing cut "<<i<<"-th "<<endl;
+	//if(verbose==true) std::cout<<"cut "<<i<<" filling AAA plot "<<histoType<<endl;
+	theHistograms->fill("#AAA_cut_flow_" + histoType, "Cut flow", cutsToApply, 0, cutsToApply, i, (theWeight*LumiSF));
+	theHistograms->fill("#AAA_unw_cut_flow_" + histoType, "Unw. events cut flow", cutsToApply, 0, cutsToApply, i, 1.);      
+	if (i==2 && !isCR && isForSys && cut(2, recoV, recoFJ, selectedphotons, VBTopo, mimicVZGMVAScore)){
+	  //	  cout << "passing cut 2 in SR2PFJ" << endl;
+	  double PNScore=(recoFJ.particleNet().WvsQCD + recoFJ.particleNet().ZvsQCD)/2.;
+	  // QCD scale
+	  // envelope: consider the six variations: {Do, Central, Up} x {Dn, Central, Up} - (central, central) - (Dn, Dn) - (Up, Up) and use the max and min
+	  float QCDscale_Up(1.), QCDscale_Dn(1.);
+	  std::vector<float> envelope {
+	    theSampleInfo.QCDscale_muR0p5F1(),
+	    theSampleInfo.QCDscale_muR0p5F2(),
+	    theSampleInfo.QCDscale_muR1F0p5(),
+	    theSampleInfo.QCDscale_muR1F2(),
+	    theSampleInfo.QCDscale_muR2F0p5(),
+	    theSampleInfo.QCDscale_muR2F1()
+	  };
+	  QCDscale_Up = *max_element(envelope.begin(), envelope.end());
+	  QCDscale_Dn = *min_element(envelope.begin(), envelope.end());
+
+	  theHistograms->fill("SYS_ParticleNet_central", "SYS_ParticleNet_central" , 10, 0, 1.0,  PNScore, theWeight*LumiSF);
+
+	  theHistograms->fill("SYS_ParticleNet_alphas_Up"  , "SYS_ParticleNet_alphas_Up"   , 10, 0, 1.0,  PNScore, theSampleInfo.alphas_MZ_Up()*theWeight*LumiSF);
+	  theHistograms->fill("SYS_ParticleNet_alphas_Down", "SYS_ParticleNet_alphas_Down" , 10, 0, 1.0,  PNScore, theSampleInfo.alphas_MZ_Down()*theWeight*LumiSF);
+
+	  theHistograms->fill("SYS_ParticleNet_PDFVar_Up"  , "SYS_ParticleNet_PDFVar_Up"   , 10, 0, 1.0,  PNScore, theSampleInfo.PDFVar_Up()*theWeight*LumiSF);
+	  theHistograms->fill("SYS_ParticleNet_PDFVar_Down", "SYS_ParticleNet_PDFVar_Down" , 10, 0, 1.0,  PNScore, theSampleInfo.PDFVar_Down()*theWeight*LumiSF);
+
+	  theHistograms->fill("SYS_ParticleNet_QCDscale_Up"  , "SYS_ParticleNet_QCDscale_Up"   , 10, 0, 1.0,  PNScore, QCDscale_Up*theWeight*LumiSF);
+	  theHistograms->fill("SYS_ParticleNet_QCDscale_Down", "SYS_ParticleNet_QCDscale_Down" , 10, 0, 1.0,  PNScore, QCDscale_Dn*theWeight*LumiSF);
+
+	  theHistograms->fill("SYS_ParticleNet_L1Prefiring_Up"  , "SYS_ParticleNet_L1Prefiring_Up"   , 10, 0, 1.0,  PNScore, (theSampleInfo.L1PrefiringWeightUp()/theSampleInfo.L1PrefiringWeight())*theWeight*LumiSF);
+	  theHistograms->fill("SYS_ParticleNet_L1Prefiring_Down", "SYS_ParticleNet_L1Prefiring_Down" , 10, 0, 1.0,  PNScore, (theSampleInfo.L1PrefiringWeightDn()/theSampleInfo.L1PrefiringWeight())*theWeight*LumiSF);
+
+	}
+	printHistos(++i, histoType, recoV, recoFJ, selectedphotons,VBTopo, region, isCR); 
+      }
+    }
+    return;  
+  }
+  //__________________________________________________________END OF BLOCK SR2PFJ__________________________________________________//
   
   std::vector<std::string> cuts = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"};
   std::vector<std::string> orders = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"};
@@ -2379,7 +2449,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
   double VZGMVAScore_JECdn= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo,-1,-1);
 
   //_____BLOCK_FOR_SYS_HISTOS_____//
-
+  /* //moved up
   bool isForSys = (theSampleInfo.isMC()
 		       && (
 			   (isDYSample && histoType=="nonPrompt")
@@ -2391,6 +2461,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
 			   (!isSigSample && !isZGSample && !isDYSample && histoType=="all")
 			   )
 		   );
+  */
   if (i==2 && !isCR && isForSys && cut(2, recoV, recoFJ, selectedphotons, VBTopo, VZGMVAScore)){
 
     // QCD scale
