@@ -64,8 +64,12 @@ echo 'Running at:' $(date)
 echo path: $(pwd)
 echo "OS            :" $(uname -a)
 
+# Copy the input sample here
+mkdir -p samples/{year}
+rsync "$treeanalysis_dir"/{samplesdir}/{year}/{sample}.root samples/{year}
+
 runStatus=0
-$treeanalysis_dir/python/run.py -e -d "$treeanalysis_dir"/{samplesdir} {runpy_extra_args} -- {runpy_args} &>run.log || runStatus=$?
+$treeanalysis_dir/python/run.py -e {runpy_extra_args} -- {runpy_args} &>run.log || runStatus=$?
 
 echo -n $runStatus > exitStatus.txt
 echo 'run.py done at: %s, with exit status: %d' "$(date)" $runStatus
