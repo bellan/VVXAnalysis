@@ -6,8 +6,11 @@ set -o pipefail
 
 show_help(){ cat <<EOF
 Usage: ${0##*/} SOURCE [DEST]
-    Gather the results and logs of Condor analysis jobs
-    and copies them to DEST (default: .)
+
+Gather the results and logs of Condor analysis jobs
+and copies them to DEST (default: .)
+
+  -h   Show help and exit
 EOF
 }
 
@@ -28,10 +31,12 @@ shift "$((OPTIND-1))"
 
 [ $# -ge 1 ] || { show_help 1>&2 ; exit 1 ; }
 source="$1"
-dest="${2:-.}"
+defaultdest="${source/production_/results_}"
+[ "$defaultdest" = "$source" ] && defaultdest=$(printf "%s/results_%s" "$(dirname $source)" "$(basename $source)")
+dest="${2:-$defaultdest}"
 
-echo "INFO: copying result rootfiles..."
-find "$source" -mindepth 4 -maxdepth 5 -type d -name results | sed s:$:/: | xargs -I {} rsync -a --info=progress2 {} "$dest"
+echo "INFO: moving result rootfiles..."
+find "$source" -mindepth 4 -maxdepth 5 -type d -name results | sed s:$:/: | xargs -I {} rsync -a --info=progress2 --remove-source-files {} "$dest"
 
 echo "INFO: copying logs..."
 destlogdir="$dest"/logdir
