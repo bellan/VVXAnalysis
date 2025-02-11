@@ -407,6 +407,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
         leg.AddEntry(hfakePho, "Non-prompt photons", "f")
     
     totalMC = 0
+    totalMCerr = 0
     
     if(verbosity >= 1):
         print(Red("\n######### Contribution to {0:s}  #########\n".format(region)))
@@ -421,15 +422,16 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
             split_pattern = plotInfo.get('split_prompt_ph_pattern', plot+'_%s')
 
             if(do_prompt_ph):
-                h_prompt, (integralPrompt, _) = getPlotFromSample(inputdir, sample, split_pattern % ('prompt'), verbosity, forcePositive, note='prompt')
+                h_prompt, (integralPrompt, errorPrompt) = getPlotFromSample(inputdir, sample, split_pattern % ('prompt'), verbosity, forcePositive, note='prompt')
             else:
-                h_prompt, integralPrompt = None, 0
+                h_prompt, integralPrompt, errorPrompt = None, 0, 0
 
             if(do_nonprompt_ph and not useFakePhotonsFromData):
-                h_nonpro, (integralNonpro, _) = getPlotFromSample(inputdir, sample, split_pattern % ('nonpro'), verbosity, forcePositive, note='nonpro')
+                h_nonpro, (integralNonpro, errorNonpro) = getPlotFromSample(inputdir, sample, split_pattern % ('nonpro'), verbosity, forcePositive, note='nonpro')
             else:
-                h_nonpro, integralNonpro = None, 0
+                h_nonpro, integralNonpro, errorNonpro = None, 0, 0
             totalMC += integralPrompt + integralNonpro
+            totalMCerr = sqrt(totalMCerr**2 + errorPrompt**2 + errorNonpro**2)
 
             for h in [h_prompt, h_nonpro]:
                 if(h is None):
@@ -452,8 +454,9 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
                 stack.Add(h_prompt)
 
         else:
-            h, (integral, _) = getPlotFromSample(inputdir, sample, plot, verbosity, forcePositive)
+            h, (integral, error) = getPlotFromSample(inputdir, sample, plot, verbosity, forcePositive)
             totalMC += integral
+            totalMCerr = sqrt(totalMCerr**2 + error**2)
 
             if(h is None):
                 continue
@@ -470,9 +473,9 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
             h.SetMarkerColor(sample["color"])
 
             stack.Add(h)
-    
+
     if(verbosity >= 1):
-        print("\n Total MC .......................... {0:.2f}".format(totalMC))
+        print("\n Total MC .......................... {0:.2f} +- {1:.2f}".format(totalMC, totalMCerr))
         print("____________________________________")
     return stack, leg
 
