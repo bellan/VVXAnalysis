@@ -639,7 +639,8 @@ def GetDataPlot(inputdir, plotInfo, forcePositive=False, verbosity=1):
     set_overflow_range(hdata, underflow=underflow, overflow=overflow)
 
     if  (verbosity >= 1):
-        print("Total data in {0:s} region .......................... {1:.2f}".format(inputdir.region, hdata.Integral(0,-1)))
+        c_err = ctypes.c_double(0)
+        print("Total data in {0:s} region .......................... {1:.2f} +- {2:.2f}".format(inputdir.region, hdata.IntegralAndError(0,-1, c_err), c_err.value))
         print("_________________________")
 
     return hdata
