@@ -348,7 +348,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
     leg.SetTextSize(0.025)
     leg.SetFillStyle(0)
 
-    samples = samplesByRegion.getSamplesByRegion(region, MCSet, predType)
+    samples = samplesByRegion.getSamplesByRegion(region, MCSet, predType, special=plotInfo.get('special', False))
 
     stack = ROOT.THStack("stack",plot+"_stack")
     ErrStat = ctypes.c_double(0.)
@@ -360,7 +360,15 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
         for CR in controlRegions:
             newdir = copy.deepcopy(inputdir)
             newdir.region = CR
-            hfakes.append( GetFakeRate(newdir, plotInfo, "data", MCSet, verbosity=verbosity) )
+
+            # A "temporary" hack to get the correct fake_leptons plot for SYS_mZZGloose(-nonpro)_central
+            # for the special "compare" plot (data-driven vs MC predictions in SR4P_1P)
+            # In the MC the plot is SYS_mZZGloose-nonpro_central, in fake_leptons it's SYS_mZZGloose_central
+            info_copy = copy.deepcopy(plotInfo)
+            if(plotInfo.get('special')):
+               info_copy['name'] = plotInfo['name'].replace('-nonpro', '')
+
+            hfakes.append( GetFakeRate(newdir, info_copy, "data", MCSet, verbosity=verbosity) )
         hfake = addIfExisting(*hfakes)
         if(hfake is None):
             raise PlotNotFoundError('Fake lepton plot not found for ' + plotInfo['name'])

@@ -101,11 +101,11 @@ def getVarInfo_VVGamma(region):
                 'ratio_title': 'data-driven/MC',
                 'rebin': 2,
                 'data': {
-                    'plot' :'ZZG_mass_reweightPh',
+                    'plot' : 'SYS_mZZGfailReweight_central',
                     'legend': 'data-driven'
                 },
                 'stack':{
-                    'plot' :'ZZG_mass_loosePh_nonpro'
+                    'plot' : 'SYS_mZZGloose-nonpro_central'
                 }
             }
         })

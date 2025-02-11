@@ -319,6 +319,12 @@ for Var in variables:
 
     # TGraphs to draw in the upper plot (data) and in the ratio plot
     graphData, tgaData = graph_and_ratio(histodata, hStackSum, xedges=xedges, bx_min=bx_min, bx_max=bx_max, unblind=DoData)
+    if(info.get('special')):
+        # Avoid the large error bars that are associated with poisson errors
+        graphData = ROOT.TGraphAsymmErrors(histodata)
+        for i in range(graphData.GetN()):
+            graphData.SetPointEXhigh(i,0.)
+            graphData.SetPointEXlow (i,0.)
 
     # Y range - upper plot
     y_max = info.get('ymax', False)
