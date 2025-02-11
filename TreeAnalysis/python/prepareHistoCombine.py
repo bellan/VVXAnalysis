@@ -3,7 +3,7 @@
 #############################################################################################
 # Get histograms from an analyzer's results (file: sample, inside has histograms: variable) #
 # and write it in a form usable by Combine (file: variable, inside histograms: sample       #
-# Wuthor A. Mecca                                                                           #
+# Author: A. Mecca                                                                          #
 #############################################################################################
 
 from __future__ import print_function
@@ -37,7 +37,7 @@ def skipsample(filename):
     return False
 
 def isVarSystematic(variable):
-    return variable[:3] == 'SYS'
+    return variable[:4] == 'SYS_'
 
 # Output nominal
 # schema: <year>/<region>.root -> <variable>/<sample>
@@ -220,7 +220,7 @@ def main(args):
 
     if(args.verbosity >= 1):
         files_prob = { e['file'] for e in not_retrieved }  # set()
-        max_len = max([len(f) for f in files_prob])
+        max_len = max([len(f) for f in files_prob]) if len(files_prob) > 0 else 0
         format_str = 'From file {:%d.%ds} could not retrieve {:d}/{:d} plots' % (max_len, max_len)
         for file_prob in sorted(files_prob):
             problems = [e['variable'] for e in not_retrieved if e['file'] == file_prob]
