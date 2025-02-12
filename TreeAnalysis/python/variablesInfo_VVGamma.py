@@ -292,10 +292,10 @@ def getVarInfo_VVGamma(region):
         'furthestFailPh'  : {},
         'furthestLoosePh' : {'unblind':False}
         ,
-        'SYS_MVAcut_central'  : {'title':'MVA cut passed'                  , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_MVAcut-%s_central'  , 'unblind':False, 'logy':True, 'ymin': 1},
-        'SYS_wp90pt_central'  : {'title':'p_{T} #gamma_{MVA loose} [GeV]'       , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_wp90pt-%s_central'  , 'unblind':False},
-        'SYS_wp80pt_central'  : {'title':'p_{T} #gamma_{MVA tight} [GeV]'       , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_wp80pt-%s_central'  , 'unblind':False},
-        'SYS_loosept_central' : {'title':'p_{T} #gamma_{cut-based} [GeV]'      , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_loosept-%s_central' , 'unblind':False},
+        'SYS_MVAcut_central'  : {'title':'MVA cut passed'                , 'split_prompt_ph':is_SR, 'split_prompt_ph_pattern': 'SYS_MVAcut-%s_central' , 'unblind':False, 'logy':True, 'ymin': 1},
+        'SYS_wp90pt_central'  : {'title':'p_{T} #gamma_{MVA loose} [GeV]', 'split_prompt_ph':is_SR, 'split_prompt_ph_pattern': 'SYS_wp90pt-%s_central' , 'unblind':False},
+        'SYS_wp80pt_central'  : {'title':'p_{T} #gamma_{MVA tight} [GeV]', 'split_prompt_ph':is_SR, 'split_prompt_ph_pattern': 'SYS_wp80pt-%s_central' , 'unblind':False},
+        'SYS_loosept_central' : {'title':'p_{T} #gamma_{cut-based} [GeV]', 'split_prompt_ph':is_SR, 'split_prompt_ph_pattern': 'SYS_loosept-%s_central', 'fake_photons': 'SYS_failReweightpt_central', 'unblind':False},
     })
 
     for status in ('kinVetoL', 'fail', 'fail3', 'fail4a', 'fail4b', 'loose', 'fsrMatched', 'FSRkin', 'FSRloose', 'wp90', 'wp80', '90not80'):
