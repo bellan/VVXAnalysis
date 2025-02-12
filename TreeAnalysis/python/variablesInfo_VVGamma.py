@@ -321,7 +321,7 @@ def getVarInfo_VVGamma(region):
                  'rebin': rebin }
             if status == 'loose':
                 d.update({
-                    'fake_photons': 'lead_fail_{var}_reweight_data'.format(var=varname)
+                    'fake_photons': 'lead_fail_{var}_reweight_dataZG'.format(var=varname)
                 })
             if('aeta' in varname):
                 d.update({'scale_ymax': 1.8, 'xmax':2.4})
