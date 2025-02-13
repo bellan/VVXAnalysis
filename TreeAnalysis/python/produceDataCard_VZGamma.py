@@ -37,13 +37,13 @@ __builtin_config__ = {
     # General configuration
     'systematics':{
         'shape': ['JER','JEC'],
-        'correlated'  : ['L1Prefiring', 'PDFVar', 'QCDscale', 'alphas', 'JER','JEC'],
+        'correlated'  : ['L1Prefiring', 'PDFVar', 'QCDscale', 'alphas','puWeight', 'JER','JEC'],
         'uncorrelated': [],
-        'correl_year' : ['puWeight'], # Systematics that are uncorrelated between years, but correlated between 2016 pre/post
+        'correl_year' : [], # Systematics that are uncorrelated between years, but correlated between 2016 pre/post
         'skip-if-signal': ['PDFVar', 'QCDscale', 'alphas'],
         'theory': ['QCDscale', 'alphas', 'PDFVar'],
         'data-driven': [],
-        'split-by-sample-group': ['QCDscale', 'PDFVar'], # Note: when split, the name changes in the datacard, so this cannot be a shape, otherwise the histogram name must change as well
+        'split-by-sample-group': [], # Note: when split, the name changes in the datacard, so this cannot be a shape, otherwise the histogram name must change as well
         '_end':[]
     }
 }
@@ -459,7 +459,7 @@ def main(args):
             logging.info('Treating %s as correlated among years', syst)
             suffix = ''
         else: raise RuntimeError('Systematic "%s": unspecified if correlated' %(syst))
-        return '{}{}'.format(syst, suffix)
+        return 'CMS_{}{}'.format(syst, suffix)
 
     df_syst = df_syst.rename(rename_syst)
 
@@ -469,12 +469,12 @@ def main(args):
     lumi_correlated   = lumi_dict[year]['error_correlated']
     lumi_1718         = lumi_dict[year]['error_1718']
 
-    df_syst.loc['lumi_%s'%(year)]        = pd.Series({ sample: (lumi_uncorrelated if sample not in config['data-driven'] else 0) for sample in df_syst.columns })
+    df_syst.loc['CMS_lumi_%s'%(year)]        = pd.Series({ sample: (lumi_uncorrelated if sample not in config['data-driven'] else 0) for sample in df_syst.columns })
     type_column.append('lnN')
-    df_syst.loc['lumi_13TeV_correlated'] = pd.Series({ sample: (lumi_correlated   if sample not in config['data-driven'] else 0) for sample in df_syst.columns })
+    df_syst.loc['CMS_lumi_13TeV_correlated'] = pd.Series({ sample: (lumi_correlated   if sample not in config['data-driven'] else 0) for sample in df_syst.columns })
     type_column.append('lnN')
     if(args.year in ('2017', '2018')):
-        df_syst.loc['lumi_13TeV_1718']   = pd.Series({ sample: (lumi_1718         if sample not in config['data-driven'] else 0) for sample in df_syst.columns })
+        df_syst.loc['CMS_lumi_13TeV_1718']   = pd.Series({ sample: (lumi_1718         if sample not in config['data-driven'] else 0) for sample in df_syst.columns })
         type_column.append('lnN')
 
     df_syst.insert(0, 'type', type_column, False)
