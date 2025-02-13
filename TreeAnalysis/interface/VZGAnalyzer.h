@@ -114,7 +114,7 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
   virtual Bool_t cut(Int_t, phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int,double&);
 
   //  virtual void Reconstruct(phys::Boson<phys::Jet>*,phys::Jet*,bool*,bool*);
-  int Reconstruct(phys::Boson<phys::Jet>*,phys::Jet*,bool*,bool*,phys::Photon*, bool);
+  int Reconstruct(phys::Boson<phys::Jet>*,phys::Jet*,bool*,bool*,phys::Photon*, bool, int, int);
   int ReconstructAlt(phys::Boson<phys::Jet>*,phys::Jet*,bool*,bool*,phys::Photon*, bool, double, double);
   double VHadScore(phys::Boson<phys::Jet>, int , double , double );
   
