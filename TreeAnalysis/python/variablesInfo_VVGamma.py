@@ -21,7 +21,8 @@ def getVarInfo_VVGamma(region):
         elif(region == 'CR3P1F'):
             rebin_mZZG = 2
         VarInfo_VVGamma.update({
-            'ZZ_mass' : {'title':'m_{4\ell} [GeV]'     },
+            'AAA_cuts_genreco_cutID' : {},
+            'ZZ_mass' : {'title':'m_{4l} [GeV]'        },
             'Z0_mass' : {'title':'m_{Z0} [GeV]'        },
             'Z1_mass' : {'title':'m_{Z1} [GeV]'        },
             'ZZ_pt'   : {'title':'p_{T}^{Z1} [GeV]'    },
@@ -86,20 +87,19 @@ def getVarInfo_VVGamma(region):
             'ZZG_mass_failPh'     : {'title':'m_{4l#gamma}, #gamma_{VL and !Loose} [GeV]'      , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':True },
             'ZZG_mass_loosePh'    : {'title':'m_{4l#gamma}, #gamma_{Loose} [GeV]'              , 'rebin':1, 'split_prompt_ph':region=='SR4P', 'unblind':False, 'fake_photons': 'ZZG_mass_reweightPh'}
             ,
-            'SYS_mZZGwp90_central': {'title':'m_{4l#gamma}, #gamma_{wp90} [GeV]' , 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZZGwp90-%s_central', 'unblind':False},
-            'SYS_mZZGwp80_central': {'title':'m_{4l#gamma}, #gamma_{wp80} [GeV]' , 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZZGwp80-%s_central', 'unblind':False},
-            'SYS_mZZGloose_central':{'title':'m_{4l#gamma}, #gamma_{Loose} [GeV]', 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZZGloose-%s_central', 'fake_photons': 'SYS_mZZGfailReweight_central','unblind':False},
-            'SYS_mZllplusZllGloose_central':{'title':'m_{ll#gamma}+m_{ll}, #gamma_{Loose} [GeV]', 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZllplusZllGloose-%s_central', 'fake_photons': 'SYS_mZllplusZllGfailReweight_central', 'unblind':False}
+            'SYS_mZZGwp90_central': {'title':'m_{4l#gamma}, #gamma_{MVA loose} [GeV]', 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZZGwp90-%s_central', 'unblind':False},
+            'SYS_mZZGwp80_central': {'title':'m_{4l#gamma}, #gamma_{MVA tight} [GeV]', 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZZGwp80-%s_central', 'unblind':False},
+            'SYS_mZZGloose_central':{'title':'m_{4l#gamma}, #gamma_{cut-based} [GeV]', 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZZGloose-%s_central','fake_photons': 'SYS_mZZGfailReweight_central','unblind':False},
+            'SYS_mZllplusZllGloose_central':{'title':'m_{ll#gamma}+m_{ll}, #gamma_{cut-based} [GeV]', 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZllplusZllGloose-%s_central', 'fake_photons': 'SYS_mZllplusZllGfailReweight_central', 'unblind':False}
         })
 
         VarInfo_VVGamma.update({
             'mZZG_compare': {
                 'special':True,
                 'unblind':True,
-                'title':'m_{4l#gamma} #gamma_{Loose} [GeV]',
+                'title':'m_{4l#gamma} #gamma_{cut-based} [GeV]',
                 'ratio_title': 'data-driven/MC',
                 'rebin': 2,
-                'ratio_ymax': 5,
                 'data': {
                     'plot' :'ZZG_mass_reweightPh',
                     'legend': 'data-driven'
@@ -165,7 +165,7 @@ def getVarInfo_VVGamma(region):
             ,
             'SYS_mWZGwp90_central': {'title':'m_{T}^{3l v #gamma}, #gamma wp90 [GeV]' , 'split_prompt_ph':region=='SR3P', 'split_prompt_ph_pattern': 'SYS_mWZGwp90-%s_central', 'unblind':False},
             'SYS_mWZGwp80_central': {'title':'m_{T}^{3l v #gamma}, #gamma wp80 [GeV]' , 'split_prompt_ph':region=='SR3P', 'split_prompt_ph_pattern': 'SYS_mWZGwp80-%s_central', 'unblind':False},
-            'SYS_mWZGloose_central':{'title':'m_{T}^{3l v #gamma}, #gamma Loose [GeV]', 'split_prompt_ph':region=='SR3P', 'split_prompt_ph_pattern': 'SYS_mWZGloose-%s_central', 'fake_photons': 'SYS_mWZGfailReweight_central','unblind':False},
+            'SYS_mWZGloose_central':{'title':'m_{T}^{3l v #gamma}, #gamma cut-based [GeV]', 'split_prompt_ph':region=='SR3P', 'split_prompt_ph_pattern': 'SYS_mWZGloose-%s_central', 'fake_photons': 'SYS_mWZGfailReweight_central','unblind':False},
         })
         # for name, title in [('e', 'e'), ('m','\mu')]:
         #     VarInfo_VVGamma.update({
@@ -235,7 +235,7 @@ def getVarInfo_VVGamma(region):
                     })
 
     elif(region == 'CRLFR'):
-        channels = (('2e+e','2e+e'), ('2e+m', '2e+\mu'), ('2m+e', '2\mu+e'), ('2m+m', '2\mu+\mu'))
+        channels = (('2e+e','2e+e'), ('2e+m', '2e+#mu'), ('2m+e', '2#mu+e'), ('2m+m', '2#mu+#mu'))
         VarInfo_VVGamma.update({
             'ZL_mass' :{'title': 'm_{3l} [GeV]', 'split_prompt_ph':True},
             'Z_mass'  :{'title': 'm_{Z} [GeV]' , 'split_prompt_ph':True},
@@ -245,6 +245,16 @@ def getVarInfo_VVGamma(region):
             'L_pt'    :{'title': 'p_{T}^{l3} [GeV]'  , 'split_prompt_ph':True},
             'MET_fine':{'title': 'MET [GeV]'         , 'split_prompt_ph':True},
         })
+
+        for phName, phTitle in (('veryloose', 'loose'), ('loose', 'cut-based'), ('fail', 'fail')):
+            VarInfo_VVGamma.update({
+                'LG_mass_%s'%(phName): {'title':'m_{l#gamma} [GeV]', 'split_prompt_ph':True, 'rebin':2, 'logy':True, 'ymin':0.5},
+            })
+            for chName, chTitle in channels:
+                l_flav = chTitle.split('+')[1]
+                VarInfo_VVGamma.update({
+                    'LG_mass_%s_%s'%(phName, chName): {'title':'m_{%s#gamma} [GeV]'%(l_flav), 'split_prompt_ph':True, 'rebin':2, 'logy':True, 'ymin':0.5},
+                })
 
     # Photon stuff
     VarInfo_VVGamma.update({
@@ -282,10 +292,10 @@ def getVarInfo_VVGamma(region):
         'furthestFailPh'  : {},
         'furthestLoosePh' : {'unblind':False}
         ,
-        'SYS_MVAcut_central'  : {'title':'MVA cut passed'                  , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_MVAcut-%s_central'  , 'unblind':False, 'logy':True, 'ymin': 1},
-        'SYS_wp90pt_central'  : {'title':'p_{T} #gamma_{wp90} [GeV]'       , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_wp90pt-%s_central'  , 'unblind':False},
-        'SYS_wp80pt_central'  : {'title':'p_{T} #gamma_{wp80} [GeV]'       , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_wp80pt-%s_central'  , 'unblind':False},
-        'SYS_loosept_central' : {'title':'p_{T} #gamma_{Loose} [GeV]'      , 'split_prompt_ph':is_SR          , 'split_prompt_ph_pattern': 'SYS_loosept-%s_central' , 'unblind':False},
+        'SYS_MVAcut_central'  : {'title':'MVA cut passed'                , 'split_prompt_ph':is_SR, 'split_prompt_ph_pattern': 'SYS_MVAcut-%s_central' , 'unblind':False, 'logy':True, 'ymin': 1},
+        'SYS_wp90pt_central'  : {'title':'p_{T} #gamma_{MVA loose} [GeV]', 'split_prompt_ph':is_SR, 'split_prompt_ph_pattern': 'SYS_wp90pt-%s_central' , 'unblind':False},
+        'SYS_wp80pt_central'  : {'title':'p_{T} #gamma_{MVA tight} [GeV]', 'split_prompt_ph':is_SR, 'split_prompt_ph_pattern': 'SYS_wp80pt-%s_central' , 'unblind':False},
+        'SYS_loosept_central' : {'title':'p_{T} #gamma_{cut-based} [GeV]', 'split_prompt_ph':is_SR, 'split_prompt_ph_pattern': 'SYS_loosept-%s_central', 'fake_photons': 'SYS_failReweightpt_central', 'unblind':False},
     })
 
     for status in ('kinVetoL', 'fail', 'fail3', 'fail4a', 'fail4b', 'loose', 'fsrMatched', 'FSRkin', 'FSRloose', 'wp90', 'wp80', '90not80'):
@@ -301,7 +311,7 @@ def getVarInfo_VVGamma(region):
                 rebin = 1
 
             n = 'lead_{}_{}'.format(status, varname)
-            title = '%s #gamma_{%s}^{leading}' %(vartitle, status)
+            title = '%s #gamma_{%s}^{leading}' %(vartitle, status if status != 'loose' else 'cut-based')
             if(udm is not None and len(udm) > 0):
                 title += ' [%s]'%(udm)
             d = {'title': title,
@@ -311,10 +321,10 @@ def getVarInfo_VVGamma(region):
                  'rebin': rebin }
             if status == 'loose':
                 d.update({
-                    'fake_photons': 'lead_fail_{var}_reweight_data'.format(var=varname)
+                    'fake_photons': 'lead_fail_{var}_reweight_dataZG'.format(var=varname)
                 })
             if('aeta' in varname):
-                d.update({'scale_ymax': 1.8})
+                d.update({'scale_ymax': 1.8, 'xmax':2.4})
             if varname in ('dRl','chIso'):
                 d.update({'draw_overflow': True})
             VarInfo_VVGamma.update({n: d})
@@ -360,7 +370,7 @@ def getVarInfo_VVGamma(region):
     })
 
     VarInfo_VVGamma.update({
-        'MET'         : {'title': 'MET [GeV]'},
+        'MET'         : {'title': 'MET [GeV]', 'xmax': 120.},
         'lead_lep_pt' : {},
         'lead_lep_eta': {},
         'GEN_chLeptons' : {'title':'# GEN charged leptons' ,'unblind':False, 'logy':True, 'ymin':1}

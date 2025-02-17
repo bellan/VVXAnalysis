@@ -407,6 +407,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
         leg.AddEntry(hfakePho, "Non-prompt photons", "f")
     
     totalMC = 0
+    totalMCerr = 0
     
     if(verbosity >= 1):
         print(Red("\n######### Contribution to {0:s}  #########\n".format(region)))
@@ -421,15 +422,16 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
             split_pattern = plotInfo.get('split_prompt_ph_pattern', plot+'_%s')
 
             if(do_prompt_ph):
-                h_prompt, (integralPrompt, _) = getPlotFromSample(inputdir, sample, split_pattern % ('prompt'), verbosity, forcePositive, note='prompt')
+                h_prompt, (integralPrompt, errorPrompt) = getPlotFromSample(inputdir, sample, split_pattern % ('prompt'), verbosity, forcePositive, note='prompt')
             else:
-                h_prompt, integralPrompt = None, 0
+                h_prompt, integralPrompt, errorPrompt = None, 0, 0
 
             if(do_nonprompt_ph and not useFakePhotonsFromData):
-                h_nonpro, (integralNonpro, _) = getPlotFromSample(inputdir, sample, split_pattern % ('nonpro'), verbosity, forcePositive, note='nonpro')
+                h_nonpro, (integralNonpro, errorNonpro) = getPlotFromSample(inputdir, sample, split_pattern % ('nonpro'), verbosity, forcePositive, note='nonpro')
             else:
-                h_nonpro, integralNonpro = None, 0
+                h_nonpro, integralNonpro, errorNonpro = None, 0, 0
             totalMC += integralPrompt + integralNonpro
+            totalMCerr = sqrt(totalMCerr**2 + errorPrompt**2 + errorNonpro**2)
 
             for h in [h_prompt, h_nonpro]:
                 if(h is None):
@@ -452,8 +454,9 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
                 stack.Add(h_prompt)
 
         else:
-            h, (integral, _) = getPlotFromSample(inputdir, sample, plot, verbosity, forcePositive)
+            h, (integral, error) = getPlotFromSample(inputdir, sample, plot, verbosity, forcePositive)
             totalMC += integral
+            totalMCerr = sqrt(totalMCerr**2 + error**2)
 
             if(h is None):
                 continue
@@ -470,9 +473,9 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
             h.SetMarkerColor(sample["color"])
 
             stack.Add(h)
-    
+
     if(verbosity >= 1):
-        print("\n Total MC .......................... {0:.2f}".format(totalMC))
+        print("\n Total MC .......................... {0:.2f} +- {1:.2f}".format(totalMC, totalMCerr))
         print("____________________________________")
     return stack, leg
 
@@ -577,13 +580,24 @@ def GetClosureStack(region, inputDir, plotInfo, forcePositive=False, verbosity=1
 
 
 def SetError(Histo,Region,Set0Error):
+    '''Creates a TGraphAsymmErrors from a TH1, with the appropriate error bars'''
     # See also https://twiki.cern.ch/twiki/bin/viewauth/CMS/PoissonErrorBars
     h_copy = Histo.Clone(Histo.GetName()+'_copy')
     h_copy.SetBinErrorOption(ROOT.TH1.kPoisson)
-    return ROOT.TGraphAsymmErrors(h_copy)
+    tga = ROOT.TGraphAsymmErrors(h_copy)
+    for i in range(tga.GetN()):
+        tga.SetPointEXhigh(i,0.)
+        tga.SetPointEXlow (i,0.)
+
+    return tga
 
 
 def GetDataPlot(inputdir, plotInfo, forcePositive=False, verbosity=1):
+    '''
+    Retrieve the data histogram (plotInfo) from the results in inputdir.
+    Returns a TGraphAsymmErrors (to be drawn with the MC stack) and the
+    original TH1 (to be used e.g. to calculate a data/MC ratio).
+    '''
     plot = plotInfo['name']
     overflow  = plotInfo.get('draw_overflow' , False)
     underflow = plotInfo.get('draw_underflow', False)
@@ -625,9 +639,42 @@ def GetDataPlot(inputdir, plotInfo, forcePositive=False, verbosity=1):
     set_overflow_range(hdata, underflow=underflow, overflow=overflow)
 
     if  (verbosity >= 1):
-        print("Total data in {0:s} region .......................... {1:.2f}".format(inputdir.region, hdata.Integral(0,-1)))
+        c_err = ctypes.c_double(0)
+        print("Total data in {0:s} region .......................... {1:.2f} +- {2:.2f}".format(inputdir.region, hdata.IntegralAndError(0,-1, c_err), c_err.value))
         print("_________________________")
-    DataGraph=SetError(hdata, inputdir.region, False)
-    DataGraph.SetMarkerStyle(20)
-    DataGraph.SetMarkerSize(.9)
-    return DataGraph, hdata
+
+    return hdata
+
+
+def graph_and_ratio(histodata, hStackSum, xedges, bx_min, bx_max, unblind=True):
+    '''
+    Returns two TGraphAsymmErrors: one the upper pad, and the ratio of histodata and the MC sum
+    '''
+    tgaData = ROOT.TGraphAsymmErrors()
+    tgaData.SetName('ratio')
+    if(not unblind):
+        return ROOT.TGraphAsymmErrors(histodata), tgaData
+
+    # Create new data and MC histograms with possibly the under-/overflow bins
+    # This is the only way to include them in the TGraph resulting from Divide()
+    tmpdata = ROOT.TH1F(histodata.GetName()+'_tmpdata', histodata.GetTitle(), len(xedges)-1, xedges)
+    tmpMC   = ROOT.TH1F(histodata.GetName()+'_tmpMC'  , hStackSum.GetTitle(), len(xedges)-1, xedges)
+    b_new = 0  # bin index in the new histograms
+    for b_old in range(bx_min, bx_max+1):
+        b_new += 1
+        tmpdata.SetBinContent(b_new, histodata.GetBinContent(b_old))
+        tmpdata.SetBinError  (b_new, histodata.GetBinError  (b_old))
+        tmpMC  .SetBinContent(b_new, hStackSum.GetBinContent(b_old))
+        tmpMC  .SetBinError  (b_new, hStackSum.GetBinError  (b_old))
+
+    graphData = SetError(tmpdata, '', False)
+    tgaData.Divide(tmpdata, tmpMC, 'pois')
+
+    del tmpdata, tmpMC
+    for i in range(tgaData.GetN()):
+        # Set x errors to 0 to avoid drawing error bars
+        # This is to avoid interference with gStyle.SetErrorX(0.5) which is needed to draw MC error rectangles
+        tgaData.SetPointEXhigh(i,0.)
+        tgaData.SetPointEXlow (i,0.)
+
+    return graphData, tgaData
