@@ -48,6 +48,9 @@ __builtin_config__ = {
     }
 }
 
+# Threshold on the difference between the upand down variation
+# necessary to consider a lnN asymmetric instead of symmetric
+LNN_ASYMM_THR = 0.05
 
 
 __builtin_template__ = '''\
@@ -97,11 +100,11 @@ def format_lnN(value):
         asymmetry = abs(up+dn)/2  # In case of symmetric effect up and dn have opposite sign
         if  (symmetric == 0):
             return '-'
-        elif( up*dn > 0 or asymmetry > 0.01 ):
+        elif( up*dn > 0 or asymmetry > LNN_ASYMM_THR ):
             return '{:f}/{:f}'.format(1+dn, 1+up)
         else:
             return '{:f}'.format(1 + symmetric)
-
+        
 
 def getBinName(region, observable):
     return observable  # region+'_'+observable
