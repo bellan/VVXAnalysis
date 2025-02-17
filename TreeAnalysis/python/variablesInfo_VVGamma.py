@@ -100,7 +100,6 @@ def getVarInfo_VVGamma(region):
                 'title':'m_{4l#gamma} #gamma_{cut-based} [GeV]',
                 'ratio_title': 'data-driven/MC',
                 'rebin': 2,
-                'ratio_ymax': 5,
                 'data': {
                     'plot' :'ZZG_mass_reweightPh',
                     'legend': 'data-driven'
