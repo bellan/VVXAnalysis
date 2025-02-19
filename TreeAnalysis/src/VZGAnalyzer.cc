@@ -48,6 +48,48 @@ double CRZONMassCut  = 85;
 double CRZinfMassCut = 80;
 double CRZsupMassCut = 100;
 
+struct VZGAnalyzer::MVAvars{
+  // Contains also unused variables
+  // The ones actually used must be passed in AddVariables() to the TMVA::Reader
+  float deltaR_L0Gamma;
+  float deltaR_L1Gamma;
+  float FWMT1;
+  float FWMT2;
+  float FWMT4;
+  float vectSumJpt; // sqrt((ptJ0+ptJ1*cos(dPhiJJ))*(ptJ0+ptJ1*cos(dPhiJJ))+(ptJ1*sin(dPhiJJ))*(ptJ1*sin(dPhiJJ)))
+  float dEtaJJ;     // fabs(etaJ0-etaJ1)",&);
+  float ZepCorr_G;  // fabs((etaG -(etaL0 + etaL1)/2))
+
+  float mll;
+  float ptJ0;
+
+  float ptJ1;
+  float ptjj;
+  float ptGamma;
+  float mllG;
+
+  float mlljjPh;
+
+  float deltaR_J0Gamma;
+  float deltaR_J1Gamma;
+  float dPhiZG;
+  float recoVMass;
+
+  float FWMT0;
+
+  float nbOfGoodJets;
+
+  float dRLG;
+  float PhMVAId;
+  float J0Girth;
+  float J1Girth;
+  float J1PG;
+  float J0Puds;
+
+  float HT;
+  float dRJG;
+} g_MVAvars;
+
 void ScaleP4(TLorentzVector& p4, double ptScaled, double ptCentral){
   double px=p4.Px()*ptScaled/ptCentral;
   double py=p4.Py()*ptScaled/ptCentral;
@@ -231,6 +273,43 @@ bool VZGAnalyzer::HadronicSignalConstraint()
   }
   return (haveGoodFJCand || haveGoodDiJetCand);
 
+}
+
+void init_TMVA_Reader(TMVA::Reader& reader, VZGAnalyzer::MVAvars& MVAvars){
+  /*
+    std::string weightMVAfile = "/eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/TMVAClassification__BDT_Xgrad_d3_N030.weights.xml";
+    std::ifstream MVAfile(weightMVAfile.c_str());
+    if (!MVAfile.good()) {
+    throw std::runtime_error("Errore: MVAfile XML non trovato o non accessibile: " + weightMVAfile);
+    }
+    MVAfile.close();
+  */
+
+  reader.AddVariable("ptJ1"          , &MVAvars.ptJ1);
+  reader.AddVariable("ptjj"          , &MVAvars.ptjj);
+  reader.AddVariable("ptGamma"       , &MVAvars.ptGamma);
+  reader.AddVariable("mllPh"         , &MVAvars.mllG);
+
+  reader.AddVariable("deltaR_J0Gamma", &MVAvars.deltaR_J0Gamma);
+  reader.AddVariable("deltaR_J1Gamma", &MVAvars.deltaR_J1Gamma);
+  reader.AddVariable("dPhiZG"        , &MVAvars.dPhiZG);
+  reader.AddVariable("recoVMass"     , &MVAvars.recoVMass);
+
+  reader.AddVariable("dRLG"          , &MVAvars.dRLG);
+  reader.AddVariable("PhMVAId"       , &MVAvars.PhMVAId);
+  reader.AddVariable("J0Girth"       , &MVAvars.J0Girth);
+  reader.AddVariable("J1Girth"       , &MVAvars.J1Girth);
+  reader.AddVariable("J1DeepProb_g"  , &MVAvars.J1PG);
+  reader.AddVariable("J0DeepProb_uds", &MVAvars.J0Puds);
+
+  reader.AddVariable("HT"            , &MVAvars.HT);
+
+  reader.BookMVA("BDT", BDTmodelPath);
+}
+
+void VZGAnalyzer::begin(){
+  reader_.reset( new TMVA::Reader("Color:Silent") );
+  init_TMVA_Reader(*reader_, g_MVAvars);
 }
 
 bool VZGAnalyzer::PhotonSignalConstraint()
@@ -420,40 +499,39 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
   //  nbOfAllJets=jets->size();
 
   
-  float mll=  Z->mass();
-  float mlljjPh=  lljjPh.M();
-  float HT=  lljjPh.Pt();
+  g_MVAvars.mll=  Z->mass();
+  g_MVAvars.mlljjPh=  lljjPh.M();
+  g_MVAvars.HT=  lljjPh.Pt();
       
-  float ptJ0=recoV.daughter(0).pt();
-  float ptJ1=recoV.daughter(1).pt();
-  float recoVMass = recoV.mass();
-  float FWMT0 = SumFWM(0, 't', lljjG);
-  float FWMT1 = SumFWM(1, 't', lljjG);
-  float FWMT2 = SumFWM(2, 't', lljjG);
-  float FWMT4 = SumFWM(4, 't', lljjG);
-  float dRLG = fabs(physmath::deltaR(nearestChLeptToPhoton.first, nearestChLeptToPhoton.second));
-  float J0Girth=recoV.daughter(0).girth();
-  float J1Girth=recoV.daughter(1).girth();
-  float J1PG = recoV.daughter(1).deepFlavour().probg;
-  float J0Puds = recoV.daughter(0).deepFlavour().probuds;
+  g_MVAvars.ptJ0=recoV.daughter(0).pt();
+  g_MVAvars.ptJ1=recoV.daughter(1).pt();
+  g_MVAvars.recoVMass = recoV.mass();
+  g_MVAvars.FWMT0 = SumFWM(0, 't', lljjG);
+  g_MVAvars.FWMT1 = SumFWM(1, 't', lljjG);
+  g_MVAvars.FWMT2 = SumFWM(2, 't', lljjG);
+  g_MVAvars.FWMT4 = SumFWM(4, 't', lljjG);
+  g_MVAvars.dRLG = physmath::deltaR(nearestChLeptToPhoton.first, nearestChLeptToPhoton.second);
+  g_MVAvars.J0Girth=recoV.daughter(0).girth();
+  g_MVAvars.J1Girth=recoV.daughter(1).girth();
+  g_MVAvars.J1PG = recoV.daughter(1).deepFlavour().probg;
+  g_MVAvars.J0Puds = recoV.daughter(0).deepFlavour().probuds;
   float px_sum = recoV.daughter(0).p4().Px() + recoV.daughter(1).p4().Px();
   float py_sum = recoV.daughter(0).p4().Py() + recoV.daughter(1).p4().Py();
-  float vectSumJpt = TMath::Sqrt(px_sum * px_sum + py_sum * py_sum);
-  float deltaR_L0Gamma=fabs(physmath::deltaR(Z->daughter(0), selectedphotons.at(0)));
-  float deltaR_L1Gamma=fabs(physmath::deltaR(Z->daughter(1), selectedphotons.at(0)));
-  float deltaR_J0Gamma=fabs(physmath::deltaR(recoV.daughter(0), selectedphotons.at(0)));
-  float deltaR_J1Gamma=fabs(physmath::deltaR(recoV.daughter(1), selectedphotons.at(0)));
-  float dEtaJJ = fabs(recoV.daughter(0).eta() - recoV.daughter(1).eta());
+  g_MVAvars.vectSumJpt = TMath::Sqrt(px_sum * px_sum + py_sum * py_sum);
+  g_MVAvars.deltaR_L0Gamma = physmath::deltaR(Z->daughter(0), selectedphotons.at(0));
+  g_MVAvars.deltaR_L1Gamma = physmath::deltaR(Z->daughter(1), selectedphotons.at(0));
+  g_MVAvars.deltaR_J0Gamma = physmath::deltaR(recoV.daughter(0), selectedphotons.at(0));
+  g_MVAvars.deltaR_J1Gamma = physmath::deltaR(recoV.daughter(1), selectedphotons.at(0));
+  g_MVAvars.dEtaJJ = fabs(recoV.daughter(0).eta() - recoV.daughter(1).eta());
   float meanEtaJ = (recoV.daughter(0).eta() + recoV.daughter(1).eta())/2.;
-  float ZepCorr_G = fabs(selectedphotons.at(0).eta() -  meanEtaJ );
-  float ptGamma=selectedphotons.at(0).pt();
-  float mllG=  llPh.M();
+  g_MVAvars.ZepCorr_G = fabs(selectedphotons.at(0).eta() -  meanEtaJ );
+  g_MVAvars.ptGamma=selectedphotons.at(0).pt();
+  g_MVAvars.mllG = llPh.M();
 
-  float dRJG=(deltaR_J0Gamma<deltaR_J1Gamma)? deltaR_J0Gamma : deltaR_J1Gamma;
-  float PhMVAId=selectedphotons.at(0).MVAvalue();
-  float dPhiZG=fabs(physmath::deltaPhi(Z->phi(),selectedphotons.at(0).phi()) );
-  float ptjj=  recoV.pt();
-
+  g_MVAvars.dRJG = std::min(g_MVAvars.deltaR_J0Gamma, g_MVAvars.deltaR_J1Gamma);
+  g_MVAvars.PhMVAId = selectedphotons.at(0).MVAvalue();
+  g_MVAvars.dPhiZG = fabs(physmath::deltaPhi(Z->phi(),selectedphotons.at(0).phi()) );
+  g_MVAvars.ptjj =  recoV.pt();
 
   float J0MuFrac=recoV.daughter(0).muonEnergyFraction() ;//float
   float J1MuFrac=recoV.daughter(1).muonEnergyFraction() ;//float
@@ -463,82 +541,19 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
   float J1PhFrac=recoV.daughter(1).photonEnergyFraction() ;//float
 
   if(isForSysUpDn>0){
-    ptJ0=ptj0Scaled_JUncUp;
-    ptJ1=ptj1Scaled_JUncUp;
-    ptjj=ptjjScaled_JUncUp;
-    recoVMass = mjjScaled_JUncUp;
+    g_MVAvars.ptJ0 = ptj0Scaled_JUncUp;
+    g_MVAvars.ptJ1 = ptj1Scaled_JUncUp;
+    g_MVAvars.ptjj = ptjjScaled_JUncUp;
+    g_MVAvars.recoVMass = mjjScaled_JUncUp;
   }else if(isForSysUpDn<0){
-    ptJ0=ptj0Scaled_JUncDn;
-    ptJ1=ptj1Scaled_JUncDn;
-    ptjj=ptjjScaled_JUncDn;
-    recoVMass = mjjScaled_JUncDn;
+    g_MVAvars.ptJ0 = ptj0Scaled_JUncDn;
+    g_MVAvars.ptJ1 = ptj1Scaled_JUncDn;
+    g_MVAvars.ptjj = ptjjScaled_JUncDn;
+    g_MVAvars.recoVMass = mjjScaled_JUncDn;
   }
   
-  TMVA::Reader *reader = new TMVA::Reader("Color:Silent");
-  /*
-  reader->AddVariable("ptJ1", &ptJ1);
-  reader->AddVariable("ptGamma",&ptGamma);
-  reader->AddVariable("mllPh",&mllG);
-  reader->AddVariable("deltaR_L0Gamma",&deltaR_L0Gamma);
-  reader->AddVariable("deltaR_L1Gamma",&deltaR_L1Gamma);
-  reader->AddVariable("deltaR_J0Gamma",&deltaR_J0Gamma);
-  reader->AddVariable("deltaR_J1Gamma",&deltaR_J1Gamma);
-  reader->AddVariable("recoVMass",&recoVMass);
-  reader->AddVariable("FWMT1",&FWMT1);
-  reader->AddVariable("FWMT2",&FWMT2);
-  reader->AddVariable("FWMT4",&FWMT4);
-  reader->AddVariable("dRLG",&dRLG);
-  reader->AddVariable("J0Girth",  &J0Girth);
-  reader->AddVariable("J1Girth",  &J1Girth);
-  reader->AddVariable("J1DeepProb_g",  &J1PG);
-  reader->AddVariable("J0DeepProb_uds",  &J0Puds);
-  reader->AddVariable("sqrt((ptJ0+ptJ1*cos(dPhiJJ))*(ptJ0+ptJ1*cos(dPhiJJ))+(ptJ1*sin(dPhiJJ))*(ptJ1*sin(dPhiJJ)))",&vectSumJpt);
-  reader->AddVariable("fabs(etaJ0-etaJ1)",&dEtaJJ);
-  reader->AddVariable("fabs((etaG -(etaL0 + etaL1)/2))",&ZepCorr_G);
-  */
-  
-  //  reader->AddVariable("mll", &mll);
-  //  reader->AddVariable("ptJ0", &ptJ0);
-  
-  reader->AddVariable("ptJ1", &ptJ1);
-  reader->AddVariable("ptjj", &ptjj);
-  reader->AddVariable("ptGamma",&ptGamma);
-  reader->AddVariable("mllPh",&mllG);
+  VZGMVAScore = reader_->EvaluateMVA("BDT");
 
-  //reader->AddVariable("mlljjPh", &mlljjPh);
-
-  reader->AddVariable("deltaR_J0Gamma",&deltaR_J0Gamma);
-  reader->AddVariable("deltaR_J1Gamma",&deltaR_J1Gamma);
-  reader->AddVariable("dPhiZG",&dPhiZG);
-  reader->AddVariable("recoVMass",&recoVMass);
-
-  //reader->AddVariable("FWMT0",&FWMT0);
-
-  //reader->AddVariable("nbOfGoodJets",&nbOfGoodJets);
-  
-  reader->AddVariable("dRLG",&dRLG);
-  reader->AddVariable("PhMVAId",  &PhMVAId);
-  reader->AddVariable("J0Girth",  &J0Girth);
-  reader->AddVariable("J1Girth",  &J1Girth);
-  reader->AddVariable("J1DeepProb_g",  &J1PG);
-  reader->AddVariable("J0DeepProb_uds",  &J0Puds);
-
-  reader->AddVariable("HT",&HT);
-  //  reader->AddVariable("dRJG",&dRJG);
-
-  
-  /*
-    std::string weightMVAfile = "/eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/TMVAClassification__BDT_Xgrad_d3_N030.weights.xml";
-    std::ifstream MVAfile(weightMVAfile.c_str());
-    if (!MVAfile.good()) {
-    throw std::runtime_error("Errore: MVAfile XML non trovato o non accessibile: " + weightMVAfile);
-    }
-    MVAfile.close();
-  */
-  
-  reader->BookMVA("BDT", BDTmodelPath);
-  VZGMVAScore = reader->EvaluateMVA("BDT");
-  reader->~Reader();
   //  std::cout<<">>>>MVAScore builder returning "<<VZGMVAScore<<endl;
   return VZGMVAScore;
 }

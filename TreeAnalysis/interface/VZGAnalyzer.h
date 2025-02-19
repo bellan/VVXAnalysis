@@ -16,6 +16,7 @@
 
 #include <TString.h>
 #include <TTree.h>
+#include <TMVA/Reader.h>
 
 class VZGAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZGAnalyzer>{
 
@@ -60,7 +61,8 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
     delete genZhadCandidates_;
     delete genWhadCandidates_;
   }
-  //virtual ~VZGAnalyzer(){}
+
+  struct MVAvars; // Forward declaration; the definition is in the .cc file
   
   void PlotJet(const phys::Particle &, std::string , const float , std::string );
   
@@ -69,6 +71,8 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
   void ResolutionPlots(const phys::Particle &, const phys::Particle &, std::string , const float , std::string );
 
   void genEventSetup();
+
+  virtual void begin() override;
 
   virtual void analyze();
 
@@ -126,6 +130,8 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
   virtual void printHistos(uint, std::string, phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int, std::string, bool);
 
  private:
+  std::unique_ptr<TMVA::Reader> reader_;
+
   std::vector<phys::Lepton>* leptons_;
 	
   // Systematics: photons {EScale, ESigma} x {Up, Down} + {central}
