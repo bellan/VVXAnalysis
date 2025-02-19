@@ -101,6 +101,9 @@ parser.add_argument("-i", "--inputDir",
 parser.add_argument('--skip-missing', action='store_true',
                     help='Don\'t crash if a plot is missing; instead continue with the others')
 
+parser.add_argument('--allow-empty-data', action='store_true',
+                    help='If the data histogram is empty, create and use an empty one instead')
+
 parser.add_argument('--draw-label', action='store_true', dest='draw_label',
                     default=True,
                     help='Draw a textbox with the name of the region in the plot (default: %(default)s)')
@@ -260,6 +263,14 @@ for Var in variables:
             if(options.skip_missing):
                 missing_plots.append(e)
                 continue
+            elif(options.allow_empty_data):
+                print(Warn('ERROR')+': missing data histogram for "%s"' %(info['name']))
+                missing_plots.append(e)
+                # Copy the MC histogram and set all bins to 0
+                histodata = hMC.GetStack().First().Clone()
+                for b in range(0, histodata.GetNbinsX()+2):
+                    histodata.SetBinContent(b, 0)
+                    histodata.SetBinError  (b, 0)
             else:
                 raise e
 
@@ -339,7 +350,7 @@ for Var in variables:
     y_min = info.get('ymin', 0 if not info.get('logy') else hMC.GetMinimum())
 
     # Ratio range
-    if(DoData):
+    if(DoData and tgaData.GetN() > 0):
         y_max_r = max( (tgaData.GetPointY(i) for i in range(tgaData.GetN())) )  # + tgaData.GetErrorYhigh(i)
         y_min_r = min( (tgaData.GetPointY(i) for i in range(tgaData.GetN())) )  # - tgaData.GetErrorYlow (i)
     else:
