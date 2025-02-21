@@ -316,10 +316,10 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
   }
   if(isForSysUpDn<0){
     if(ptj0Scaled_JUncDn < ptj1Scaled_JUncDn) std::swap (ptj0Scaled_JUncDn,ptj1Scaled_JUncDn);
-    if(ptj1Scaled_JUncDn < 30) return -2.;
+    //if(ptj1Scaled_JUncDn < 30) return -2.;
   }else if(isForSysUpDn>0){
     if(ptj0Scaled_JUncUp < ptj1Scaled_JUncUp) std::swap (ptj0Scaled_JUncUp,ptj1Scaled_JUncUp);
-    if(ptj1Scaled_JUncUp < 30) return -2.;
+    //if(ptj1Scaled_JUncUp < 30) return -2.;
   }
 
   
@@ -330,7 +330,7 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
     ScaleP4(JUnc_PJ0_scaling_Up, ptj0Scaled_JUncUp, recoV.daughter(0).pt());
     ScaleP4(JUnc_PJ1_scaling_Up, ptj1Scaled_JUncUp, recoV.daughter(1).pt());
     mjjScaled_JUncUp=(JUnc_PJ0_scaling_Up+JUnc_PJ1_scaling_Up).M();
-    if(mjjScaled_JUncUp < 50 || mjjScaled_JUncUp > 120) return -2.;
+    //if(mjjScaled_JUncUp < 50 || mjjScaled_JUncUp > 120) return -2.;
 
     ptjjScaled_JUncUp=(JUnc_PJ0_scaling_Up+JUnc_PJ1_scaling_Up).Pt();
 
@@ -350,7 +350,7 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
     ScaleP4(JUnc_PJ0_scaling_Dn, ptj0Scaled_JUncDn, recoV.daughter(0).pt());
     ScaleP4(JUnc_PJ1_scaling_Dn, ptj1Scaled_JUncDn, recoV.daughter(1).pt());
     mjjScaled_JUncDn=(JUnc_PJ0_scaling_Dn+JUnc_PJ1_scaling_Dn).M();
-    if(mjjScaled_JUncDn < 50 || mjjScaled_JUncDn > 120) return -2.;
+    //if(mjjScaled_JUncDn < 50 || mjjScaled_JUncDn > 120) return -2.;
     
     ptjjScaled_JUncDn=(JUnc_PJ0_scaling_Dn+JUnc_PJ1_scaling_Dn).Pt();
     
@@ -1949,6 +1949,7 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
   std::vector<phys::Boson<phys::Jet>> DiJetsCand;
 
   foreach (const phys::Jet &jet, *jets){
+    /*
     if(isForSysUpDn==0){
       if (KinematicsOK(jet,ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID()){// && jet.deepFlavour().probb + jet.deepFlavour().probbb + jet.deepFlavour().problepb < 0.2770)
 	selectedJets.push_back(jet);
@@ -1961,6 +1962,9 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
       }else if(isJERorJEC<0 && KinematicsOKafterSys(jet,jet.pt()*(1.+isForSysUpDn*(jet.jesUnc().Total)),ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID()){
 	selectedJets.push_back(jet);
       }
+    */
+    if (KinematicsOK(jet,ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID()) 	selectedJets.push_back(jet);
+      
   }  
   if (selectedJets.size() > 1){
     for (uint i = 0; i < selectedJets.size() - 1; i++) // Warning: size can be 0
