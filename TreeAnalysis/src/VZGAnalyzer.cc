@@ -308,6 +308,7 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
     ptj1Scaled_JUncUp=recoV.daughter(1).ptJerUp();
     ptj0Scaled_JUncDn=recoV.daughter(0).ptJerDn();
     ptj1Scaled_JUncDn=recoV.daughter(1).ptJerDn();
+
   }else if(isJERorJEC<0){
     ptj0Scaled_JUncUp=recoV.daughter(0).pt()*(1.+recoV.daughter(0).jesUnc().Total);
     ptj1Scaled_JUncUp=recoV.daughter(1).pt()*(1.+recoV.daughter(1).jesUnc().Total);
@@ -376,8 +377,36 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
     lljj.push_back(recoV.daughter(0).p4());
     lljj.push_back(recoV.daughter(1).p4());
   }
+  //_____________________________________________BLOCK_TO_CROSS-CHECK_JETScaling___________________________________________//
+  if(isJERorJEC>0 && isForSysUpDn>0){       //JER UP
+    theHistograms->fill("AUX_ptj0_JERup", "AUX_ptj0_JERup" , 40, 0,  400, ptj0Scaled_JUncUp, theWeight*LumiSF);
+    theHistograms->fill("AUX_ptj1_JERup", "AUX_ptj1_JERup" , 40, 0,  400, ptj1Scaled_JUncUp, theWeight*LumiSF);
+    theHistograms->fill("AUX_ptjj_JERup", "AUX_ptjj_JERup" , 40, 0,  400, ptjjScaled_JUncUp, theWeight*LumiSF);
+    theHistograms->fill("AUX_mjj_JERup" , "AUX_mjj_JERup"  , 24, 30, 150, mjjScaled_JUncUp, theWeight*LumiSF);
+  }else if(isJERorJEC>0 && isForSysUpDn<0){ //JER DN
+    theHistograms->fill("AUX_ptj0_JERdn", "AUX_ptj0_JERdn" , 40, 0,  400, ptj0Scaled_JUncDn, theWeight*LumiSF);
+    theHistograms->fill("AUX_ptj1_JERdn", "AUX_ptj1_JERdn" , 40, 0,  400, ptj1Scaled_JUncDn, theWeight*LumiSF);
+    theHistograms->fill("AUX_ptjj_JERdn", "AUX_ptjj_JERdn" , 40, 0,  400, ptjjScaled_JUncDn, theWeight*LumiSF);
+    theHistograms->fill("AUX_mjj_JERdn" , "AUX_mjj_JERdn"  , 24, 30, 150, mjjScaled_JUncDn, theWeight*LumiSF);
+  }else if(isJERorJEC<0 && isForSysUpDn>0){ //JEC UP
+    theHistograms->fill("AUX_ptj0_JECup", "AUX_ptj0_JECup" , 40, 0,  400, ptj0Scaled_JUncUp, theWeight*LumiSF);
+    theHistograms->fill("AUX_ptj1_JECup", "AUX_ptj1_JECup" , 40, 0,  400, ptj1Scaled_JUncUp, theWeight*LumiSF);
+    theHistograms->fill("AUX_ptjj_JECup", "AUX_ptjj_JECup" , 40, 0,  400, ptjjScaled_JUncUp, theWeight*LumiSF);
+    theHistograms->fill("AUX_mjj_JECup" , "AUX_mjj_JECup"  , 24, 30, 150, mjjScaled_JUncUp, theWeight*LumiSF);
+  }else if(isJERorJEC<0 && isForSysUpDn<0){ //JEC DN
+    theHistograms->fill("AUX_ptj0_JECdn", "AUX_ptj0_JECdn" , 40, 0,  400, ptj0Scaled_JUncDn, theWeight*LumiSF);
+    theHistograms->fill("AUX_ptj1_JECdn", "AUX_ptj1_JECdn" , 40, 0,  400, ptj1Scaled_JUncDn, theWeight*LumiSF);
+    theHistograms->fill("AUX_ptjj_JECdn", "AUX_ptjj_JECdn" , 40, 0,  400, ptjjScaled_JUncDn, theWeight*LumiSF);
+    theHistograms->fill("AUX_mjj_JECdn" , "AUX_mjj_JECdn"  , 24, 30, 150, mjjScaled_JUncDn, theWeight*LumiSF);
+  }else if(isJERorJEC==0 && isForSysUpDn==0){//central
+    theHistograms->fill("AUX_ptj0_central", "AUX_ptj0_central" , 40, 0,  400, recoV.daughter(0).pt(), theWeight*LumiSF);
+    theHistograms->fill("AUX_ptj1_central", "AUX_ptj1_central" , 40, 0,  400, recoV.daughter(1).pt(), theWeight*LumiSF);
+    theHistograms->fill("AUX_ptjj_central", "AUX_ptjj_central" , 40, 0,  400, recoV.pt(), theWeight*LumiSF);
+    theHistograms->fill("AUX_mjj_central" , "AUX_mjj_central"  , 24, 30, 150, mjj, theWeight*LumiSF);
+  }
+  //______________________________________________________________________________________________________________________//
 
-
+  
   phys::Photon mostEnergeticPhoton;
 
   std::stable_sort(selectedphotons.begin(), selectedphotons.end(), phys::EComparator());
@@ -2258,19 +2287,32 @@ void VZGAnalyzer::PhotonSelection(std::vector<phys::Photon> *phot)
   std::vector<phys::Photon> gamma;
   phys::Photon tightestGamma;
   //  double tightestGammaMVAvalue = -1.1;
+  std::vector<phys::Particle> fsrRecovered;
 
+  std::bitset<2> fsrIndex = std::bitset<2>(Z->daughtersWithFSR());
+  if(fsrIndex.test(0))    fsrRecovered.push_back(Z->fsrPhoton(0));
+  if(fsrIndex.test(1))    fsrRecovered.push_back(Z->fsrPhoton(1));
+    
   for (auto p : *photons){
-    // Pixel seed and electron veto
-    // if (ph.hasPixelSeed() || !ph.passElectronVeto())
-    //        continue;
-    //if (p.id() == 22 && KinematicsOK(p, 20, 2.4) && !p.hasPixelSeed() && p.passElectronVeto() && p.cutBasedID(Photon::IdWp::VeryLoose) )
-    //if (p.id() == 22 && KinematicsOK(p, 20, 2.4) && !p.hasPixelSeed() && p.passElectronVeto() && p.cutBasedIDLoose())        phot->push_back(p);//THIS IS C(S)R2P_1Loose
-    //if (p.id() == 22 && KinematicsOK(p, 20, 2.4) && !p.hasPixelSeed() && p.passElectronVeto() && p.cutBasedIDMedium())        phot->push_back(p);//THIS IS SR2P_1Medium
-    if (p.id() == 22 && KinematicsOK(p, 20, 2.4) && !p.hasPixelSeed() && p.passElectronVeto() && p.passMVA(Photon::MVAwp::wp90)){
-      phot->push_back(p); //THIS IS C(S)R2P_1MVAM
-      //      std::cout<<"a kin passing wp90 with MVA ID = "<<p.MVAvalue()<<endl;
+    bool isFsrPh=false;
+    if (p.id() == 22 && KinematicsOK(p, 20, 2.4) && !p.hasPixelSeed() && p.passElectronVeto() && p.passMVA(Photon::MVAwp::wp90)){//photon would pass signal selection
+      if(fsrRecovered.size()<1) phot->push_back(p);
+      else{
+	for(auto fsr : fsrRecovered){
+	  if( fabs(physmath::deltaR(fsr, p)) < 0.001 ) {
+	    isFsrPh=true;
+	    break;
+	  }
+	}
+	if(isFsrPh) continue;
+	else{
+	  phot->push_back(p);
+	}
+      }
     }
   }
+
+	
   /*
   if(gamma.size()<1) return;
 
@@ -2291,9 +2333,26 @@ void VZGAnalyzer::PhotonVLSelection(std::vector<phys::Photon> *phot, int cutBase
   //  std::cout<<"entering PhotonVLSelection"<<endl;
   std::vector<phys::Photon> kinGamma, VLGamma, looseGamma, mediumGamma, tightGamma;
   int idCutsPassed=0;//Nothing = 0 //Kin!VL = 1 //VL!Loose = 2//Loose!Medium = 3//Medium!Tight = 4//Tight = 5
+
+  std::vector<phys::Particle> fsrRecovered;
+
+  std::bitset<2> fsrIndex = std::bitset<2>(Z->daughtersWithFSR());
+
+  if(fsrIndex.test(0))    fsrRecovered.push_back(Z->fsrPhoton(0));
+  if(fsrIndex.test(1))    fsrRecovered.push_back(Z->fsrPhoton(1));
+  
   foreach (auto p , *photons){
-    //    std::cout<<"entering loop over ph"<<endl;  
+    bool isFsrPh=false;
     if (p.id() == 22 && KinematicsOK(p, 20, 2.4) && !p.hasPixelSeed() && p.passElectronVeto()){
+      if(fsrRecovered.size()>0){
+	for(auto fsr : fsrRecovered){
+	  if( fabs(physmath::deltaR(fsr, p)) < 0.001 ) {
+	    isFsrPh=true;
+	    break;
+	  }
+	}
+	if(isFsrPh) continue;
+      }
       kinGamma.push_back(p);
       if (p.cutBasedID(Photon::IdWp::VeryLoose)) {
 	VLGamma.push_back(p);
@@ -2309,6 +2368,10 @@ void VZGAnalyzer::PhotonVLSelection(std::vector<phys::Photon> *phot, int cutBase
       }
     }
   }
+
+    for (auto p : *photons){
+  }
+
   if(tightGamma.size()>0){
     std::stable_sort(tightGamma.begin(), tightGamma.end(), phys::EComparator());
     phot->push_back(tightGamma.at(0));
