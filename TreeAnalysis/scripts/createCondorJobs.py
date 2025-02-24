@@ -185,15 +185,8 @@ def mk_jobs(analyzer, year, samples_dir, regions, output_dir, os_requirements=''
 
     created_jobs = 0
     for sample in samples: #('ZZGTo4LG',): #
-        regex_part_match = re.search('_part(\d+)(of\d)?$', sample)
-        if regex_part_match:
-            part_number = int(regex_part_match.group(1))
-            # "Chunk" is used so that production management scripts (e.g. haddChunks.py) will also work here
-            sample_base = sample.split('_part')[0]
-            job_name    = '%s_Chunk%d' %(sample_base, part_number)
-        else:
-            sample_base = sample
-            job_name    = sample
+        sample_base = sample
+        job_name    = sample
 
         sample_dir = os.path.join(output_dir, year, sample_base)
         job_dir    = os.path.join(sample_dir, job_name)
