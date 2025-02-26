@@ -49,11 +49,13 @@ double CRZinfMassCut = 80;
 double CRZsupMassCut = 100;
 
 void ScaleP4(TLorentzVector& p4, double ptScaled, double ptCentral){
+  p4.Pz()*ptScaled/ptCentral;
   double px=p4.Px()*ptScaled/ptCentral;
   double py=p4.Py()*ptScaled/ptCentral;
   double pz=p4.Pz()*ptScaled/ptCentral;
-  double p0=TMath::Sqrt(px*px+py*py+pz*pz+p4.M2());
+  double p0=p4.E() *ptScaled/ptCentral;//TMath::Sqrt(px*px+py*py+pz*pz+p4.M2());
   p4.SetPxPyPzE(px, py, pz, p0);
+  
 }
 
 double Sigmoid(double x, double x0, double A){
@@ -275,10 +277,10 @@ bool VZGAnalyzer::IN_GENsignalDef()
   return false;
 }
 
-double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet recoFJ, std::vector<phys::Photon> selectedphotons, int VBTopo, int isForSysUpDn, int isJERorJEC)
+double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet recoFJ, std::vector<phys::Photon> selectedphotons, int VBTopo, int isForSysUpDn, int isJERorJES)
 {
   double VZGMVAScore=-2.;
-  if(!cut(2, recoV, recoFJ, selectedphotons, VBTopo, VZGMVAScore)){
+  if(!cut(1, recoV, recoFJ, selectedphotons, VBTopo, VZGMVAScore)){
     std::cout<<"BDT building failed"<<endl;
     return -2.;
   }
@@ -303,13 +305,13 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
   std::vector<TLorentzVector> lljj;
 
   double mjjScaled_JUncUp, ptjjScaled_JUncUp, ptj0Scaled_JUncUp, ptj1Scaled_JUncUp, mjjScaled_JUncDn, ptjjScaled_JUncDn, ptj0Scaled_JUncDn, ptj1Scaled_JUncDn;
-  if(isJERorJEC>0){
+  if(isJERorJES>0){
     ptj0Scaled_JUncUp=recoV.daughter(0).ptJerUp();
     ptj1Scaled_JUncUp=recoV.daughter(1).ptJerUp();
     ptj0Scaled_JUncDn=recoV.daughter(0).ptJerDn();
     ptj1Scaled_JUncDn=recoV.daughter(1).ptJerDn();
 
-  }else if(isJERorJEC<0){
+  }else if(isJERorJES<0){
     ptj0Scaled_JUncUp=recoV.daughter(0).pt()*(1.+recoV.daughter(0).jesUnc().Total);
     ptj1Scaled_JUncUp=recoV.daughter(1).pt()*(1.+recoV.daughter(1).jesUnc().Total);
     ptj0Scaled_JUncDn=recoV.daughter(0).pt()*(1.-recoV.daughter(0).jesUnc().Total);
@@ -317,10 +319,10 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
   }
   if(isForSysUpDn<0){
     if(ptj0Scaled_JUncDn < ptj1Scaled_JUncDn) std::swap (ptj0Scaled_JUncDn,ptj1Scaled_JUncDn);
-    //if(ptj1Scaled_JUncDn < 30) return -2.;
+    if(ptj1Scaled_JUncDn < 30) return -2.;
   }else if(isForSysUpDn>0){
     if(ptj0Scaled_JUncUp < ptj1Scaled_JUncUp) std::swap (ptj0Scaled_JUncUp,ptj1Scaled_JUncUp);
-    //if(ptj1Scaled_JUncUp < 30) return -2.;
+    if(ptj1Scaled_JUncUp < 30) return -2.;
   }
 
   
@@ -331,7 +333,7 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
     ScaleP4(JUnc_PJ0_scaling_Up, ptj0Scaled_JUncUp, recoV.daughter(0).pt());
     ScaleP4(JUnc_PJ1_scaling_Up, ptj1Scaled_JUncUp, recoV.daughter(1).pt());
     mjjScaled_JUncUp=(JUnc_PJ0_scaling_Up+JUnc_PJ1_scaling_Up).M();
-    //if(mjjScaled_JUncUp < 50 || mjjScaled_JUncUp > 120) return -2.;
+    if(mjjScaled_JUncUp < 50 || mjjScaled_JUncUp > 120) return -2.;
 
     ptjjScaled_JUncUp=(JUnc_PJ0_scaling_Up+JUnc_PJ1_scaling_Up).Pt();
 
@@ -351,7 +353,7 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
     ScaleP4(JUnc_PJ0_scaling_Dn, ptj0Scaled_JUncDn, recoV.daughter(0).pt());
     ScaleP4(JUnc_PJ1_scaling_Dn, ptj1Scaled_JUncDn, recoV.daughter(1).pt());
     mjjScaled_JUncDn=(JUnc_PJ0_scaling_Dn+JUnc_PJ1_scaling_Dn).M();
-    //if(mjjScaled_JUncDn < 50 || mjjScaled_JUncDn > 120) return -2.;
+    if(mjjScaled_JUncDn < 50 || mjjScaled_JUncDn > 120) return -2.;
     
     ptjjScaled_JUncDn=(JUnc_PJ0_scaling_Dn+JUnc_PJ1_scaling_Dn).Pt();
     
@@ -378,27 +380,27 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
     lljj.push_back(recoV.daughter(1).p4());
   }
   //_____________________________________________BLOCK_TO_CROSS-CHECK_JETScaling___________________________________________//
-  if(isJERorJEC>0 && isForSysUpDn>0){       //JER UP
+  if(isJERorJES>0 && isForSysUpDn>0){       //JER UP
     theHistograms->fill("AUX_ptj0_JERup", "AUX_ptj0_JERup" , 40, 0,  400, ptj0Scaled_JUncUp, theWeight*LumiSF);
     theHistograms->fill("AUX_ptj1_JERup", "AUX_ptj1_JERup" , 40, 0,  400, ptj1Scaled_JUncUp, theWeight*LumiSF);
     theHistograms->fill("AUX_ptjj_JERup", "AUX_ptjj_JERup" , 40, 0,  400, ptjjScaled_JUncUp, theWeight*LumiSF);
     theHistograms->fill("AUX_mjj_JERup" , "AUX_mjj_JERup"  , 24, 30, 150, mjjScaled_JUncUp, theWeight*LumiSF);
-  }else if(isJERorJEC>0 && isForSysUpDn<0){ //JER DN
+  }else if(isJERorJES>0 && isForSysUpDn<0){ //JER DN
     theHistograms->fill("AUX_ptj0_JERdn", "AUX_ptj0_JERdn" , 40, 0,  400, ptj0Scaled_JUncDn, theWeight*LumiSF);
     theHistograms->fill("AUX_ptj1_JERdn", "AUX_ptj1_JERdn" , 40, 0,  400, ptj1Scaled_JUncDn, theWeight*LumiSF);
     theHistograms->fill("AUX_ptjj_JERdn", "AUX_ptjj_JERdn" , 40, 0,  400, ptjjScaled_JUncDn, theWeight*LumiSF);
     theHistograms->fill("AUX_mjj_JERdn" , "AUX_mjj_JERdn"  , 24, 30, 150, mjjScaled_JUncDn, theWeight*LumiSF);
-  }else if(isJERorJEC<0 && isForSysUpDn>0){ //JEC UP
-    theHistograms->fill("AUX_ptj0_JECup", "AUX_ptj0_JECup" , 40, 0,  400, ptj0Scaled_JUncUp, theWeight*LumiSF);
-    theHistograms->fill("AUX_ptj1_JECup", "AUX_ptj1_JECup" , 40, 0,  400, ptj1Scaled_JUncUp, theWeight*LumiSF);
-    theHistograms->fill("AUX_ptjj_JECup", "AUX_ptjj_JECup" , 40, 0,  400, ptjjScaled_JUncUp, theWeight*LumiSF);
-    theHistograms->fill("AUX_mjj_JECup" , "AUX_mjj_JECup"  , 24, 30, 150, mjjScaled_JUncUp, theWeight*LumiSF);
-  }else if(isJERorJEC<0 && isForSysUpDn<0){ //JEC DN
-    theHistograms->fill("AUX_ptj0_JECdn", "AUX_ptj0_JECdn" , 40, 0,  400, ptj0Scaled_JUncDn, theWeight*LumiSF);
-    theHistograms->fill("AUX_ptj1_JECdn", "AUX_ptj1_JECdn" , 40, 0,  400, ptj1Scaled_JUncDn, theWeight*LumiSF);
-    theHistograms->fill("AUX_ptjj_JECdn", "AUX_ptjj_JECdn" , 40, 0,  400, ptjjScaled_JUncDn, theWeight*LumiSF);
-    theHistograms->fill("AUX_mjj_JECdn" , "AUX_mjj_JECdn"  , 24, 30, 150, mjjScaled_JUncDn, theWeight*LumiSF);
-  }else if(isJERorJEC==0 && isForSysUpDn==0){//central
+  }else if(isJERorJES<0 && isForSysUpDn>0){ //JES UP
+    theHistograms->fill("AUX_ptj0_JESup", "AUX_ptj0_JESup" , 40, 0,  400, ptj0Scaled_JUncUp, theWeight*LumiSF);
+    theHistograms->fill("AUX_ptj1_JESup", "AUX_ptj1_JESup" , 40, 0,  400, ptj1Scaled_JUncUp, theWeight*LumiSF);
+    theHistograms->fill("AUX_ptjj_JESup", "AUX_ptjj_JESup" , 40, 0,  400, ptjjScaled_JUncUp, theWeight*LumiSF);
+    theHistograms->fill("AUX_mjj_JESup" , "AUX_mjj_JESup"  , 24, 30, 150, mjjScaled_JUncUp, theWeight*LumiSF);
+  }else if(isJERorJES<0 && isForSysUpDn<0){ //JES DN
+    theHistograms->fill("AUX_ptj0_JESdn", "AUX_ptj0_JESdn" , 40, 0,  400, ptj0Scaled_JUncDn, theWeight*LumiSF);
+    theHistograms->fill("AUX_ptj1_JESdn", "AUX_ptj1_JESdn" , 40, 0,  400, ptj1Scaled_JUncDn, theWeight*LumiSF);
+    theHistograms->fill("AUX_ptjj_JESdn", "AUX_ptjj_JESdn" , 40, 0,  400, ptjjScaled_JUncDn, theWeight*LumiSF);
+    theHistograms->fill("AUX_mjj_JESdn" , "AUX_mjj_JESdn"  , 24, 30, 150, mjjScaled_JUncDn, theWeight*LumiSF);
+  }else if(isJERorJES==0 && isForSysUpDn==0){//central
     theHistograms->fill("AUX_ptj0_central", "AUX_ptj0_central" , 40, 0,  400, recoV.daughter(0).pt(), theWeight*LumiSF);
     theHistograms->fill("AUX_ptj1_central", "AUX_ptj1_central" , 40, 0,  400, recoV.daughter(1).pt(), theWeight*LumiSF);
     theHistograms->fill("AUX_ptjj_central", "AUX_ptjj_central" , 40, 0,  400, recoV.pt(), theWeight*LumiSF);
@@ -682,7 +684,7 @@ bool VZGAnalyzer::inCR2P_1VL(  phys::Boson<phys::Jet> recoV, phys::Jet recoFJ, s
     //    if(!looseGammaExists && p.id() == 22 && KinematicsOK(p, 20, 2.4) && !p.hasPixelSeed() && p.passElectronVeto() && p.cutBasedID(Photon::IdWp::VeryLoose)){
     if(!looseGammaExists && p.id() == 22 && KinematicsOK(p, 20, 2.4) && !p.hasPixelSeed() && p.passElectronVeto()){// && p.cutBasedID(Photon::IdWp::VeryLoose)){
       VLGammaExists=true;
-      looseGammaExists = p.passMVA(Photon::MVAwp::wp90);//p.cutBasedIDLoose();
+      looseGammaExists = p.passMVA(Photon::MVAwp::wp80);//p.cutBasedIDLoose();
     }
   }
    
@@ -1946,15 +1948,15 @@ void VZGAnalyzer::genVBAnalyzer()
 }
 
 
-int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V_FJCandidate, bool *haveGoodRECODiJetCand, bool *haveGoodRECOFJCand, phys::Photon *gamma, bool doControlPlots, int isForSysUpDn, int isJERorJEC)
+int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V_FJCandidate, bool *haveGoodRECODiJetCand, bool *haveGoodRECOFJCand, phys::Photon *gamma, bool doControlPlots, int isForSysUpDn, int isJERorJES)
 {
   int hadrTopo = 0;
-  double peakDist_mFJCand=40.;
-  double peakDist_mDJCand=40.;
-  /*
-  bool haveGoodRECOFJCand=false;
-  bool haveGoodRECODiJetCand=false;
-  */
+  double peakDist_mFJCand=400.;
+  double peakDist_mDJCand=400.;
+  
+  *haveGoodRECOFJCand=false;
+  *haveGoodRECODiJetCand=false;
+  
   std::vector<phys::Jet> FJCand;
 
   foreach (const phys::Jet &fatJet, *jetsAK8)
@@ -1978,23 +1980,27 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
   std::vector<phys::Boson<phys::Jet>> DiJetsCand;
 
   foreach (const phys::Jet &jet, *jets){
-    /*
+    
     if(isForSysUpDn==0){
-      if (KinematicsOK(jet,ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID()){// && jet.deepFlavour().probb + jet.deepFlavour().probbb + jet.deepFlavour().problepb < 0.2770)
+      if (KinematicsOK(jet,ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID()){
 	selectedJets.push_back(jet);
       }
-    }else
-      if(isJERorJEC>0 && isForSysUpDn>0 && KinematicsOKafterSys(jet,jet.ptJerUp(),ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID()){
-	selectedJets.push_back(jet);
-      }else if(isJERorJEC>0 && isForSysUpDn<0 && KinematicsOKafterSys(jet,jet.ptJerDn(),ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID()){
-	selectedJets.push_back(jet);
-      }else if(isJERorJEC<0 && KinematicsOKafterSys(jet,jet.pt()*(1.+isForSysUpDn*(jet.jesUnc().Total)),ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID()){
-	selectedJets.push_back(jet);
-      }
-    */
-    if (KinematicsOK(jet,ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID()) 	selectedJets.push_back(jet);
+    }else if(isJERorJES>0 && isForSysUpDn>0 && KinematicsOKafterSys(jet,jet.ptJerUp(),ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID()){
+      selectedJets.push_back(jet);
+    }else if(isJERorJES>0 && isForSysUpDn<0 && KinematicsOKafterSys(jet,jet.ptJerDn(),ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID()){
+      selectedJets.push_back(jet);
+    }else if(isJERorJES<0 && KinematicsOKafterSys(jet,jet.pt()*(1.+isForSysUpDn*(jet.jesUnc().Total)),ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID()){
+      selectedJets.push_back(jet);
+    }
+    
+    //if (KinematicsOK(jet,ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID()) 	selectedJets.push_back(jet);
       
-  }  
+  }
+
+  bool isGoodEventDiscarded = false;
+  bool wasGoodEvent = false;
+  bool isBadEventRecovered  = false;
+  
   if (selectedJets.size() > 1){
     for (uint i = 0; i < selectedJets.size() - 1; i++) // Warning: size can be 0
       for (uint j = i+1; j < selectedJets.size(); j++)
@@ -2003,20 +2009,21 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
   //std::cout<<"-->DJ Cand size =" <<DiJetsCand.size()<<endl;
   int updatedBestCandIndex = 0;
   if (DiJetsCand.size() > 0){
-    //std::cout<<"entering, case: "<<isForSysUpDn<<"  "<<isJERorJEC<<endl;
+    std::stable_sort(DiJetsCand.begin(), DiJetsCand.end(), phys::Mass2Comparator(phys::ZMASS, phys::WMASS));
+
+    wasGoodEvent=(DiJetsCand[0].mass()>50  &&   DiJetsCand[0].mass()<120);
+
     if(isForSysUpDn==0){
-      std::stable_sort(DiJetsCand.begin(), DiJetsCand.end(), phys::Mass2Comparator(phys::ZMASS, phys::WMASS));
-      //*V_JJCandidate = DiJetsCand.at(0);
       *haveGoodRECODiJetCand=(DiJetsCand[0].mass()>50  &&   DiJetsCand[0].mass()<120);
-    }else{
+    }else{//if(isForSysUpDn!=0){
       double currentPeakDist_mDJCand=999.;
       /*
-      double currentPeakDist_mDJCand=fabs(DiJetsCand[0].mass()-phys::ZMASS);
-      if(fabs(DiJetCand[0].mass()-phys::WMASS)<currentPeakDist_mDJCand)    currentPeakDist_mDJCand=fabs(DiJetCand[0].mass()-phys::WMASS);
+	double currentPeakDist_mDJCand=fabs(DiJetsCand[0].mass()-phys::ZMASS);
+	if(fabs(DiJetCand[0].mass()-phys::WMASS)<currentPeakDist_mDJCand)    currentPeakDist_mDJCand=fabs(DiJetCand[0].mass()-phys::WMASS);
       */
-      double ptj0Scaled_JUncUp, ptj0Scaled_JUncDn, ptj0Scaled_JEC, ptj1Scaled_JEC, ptj1Scaled_JUncUp, ptj1Scaled_JUncDn, mjjScaled_JUncUp, mjjScaled_JUncDn, mjjScaled_JEC;
+      double ptj0Scaled_JUncUp, ptj0Scaled_JUncDn, ptj0Scaled_JES, ptj1Scaled_JES, ptj1Scaled_JUncUp, ptj1Scaled_JUncDn, mjjScaled_JUncUp, mjjScaled_JUncDn, mjjScaled_JES;
       for(int i=0; i<DiJetsCand.size();i++){
-	if(isJERorJEC>0){//JER
+	if(isJERorJES>0){//JER
 	  ptj0Scaled_JUncUp=DiJetsCand[i].daughter(0).ptJerUp();
 	  ptj0Scaled_JUncDn=DiJetsCand[i].daughter(0).ptJerDn();
 	  ptj1Scaled_JUncUp=DiJetsCand[i].daughter(1).ptJerUp();
@@ -2032,8 +2039,11 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
 	    if(fabs(mjjScaled_JUncUp-phys::WMASS)<candPeakDist_mDJCand)    candPeakDist_mDJCand=fabs(mjjScaled_JUncUp-phys::WMASS);
 	    if(candPeakDist_mDJCand<currentPeakDist_mDJCand){
 	      currentPeakDist_mDJCand=candPeakDist_mDJCand;
-	      *haveGoodRECODiJetCand=(mjjScaled_JUncUp>50  && mjjScaled_JUncUp<120);
+	      *haveGoodRECODiJetCand=(mjjScaled_JUncUp>50  && mjjScaled_JUncUp<120); //remove this line to avoid threshold effects
 	      updatedBestCandIndex=i;
+	      
+	      if(!isBadEventRecovered && !wasGoodEvent && i!=0 && mjjScaled_JUncUp>50  && mjjScaled_JUncUp<120) isBadEventRecovered=true;
+		
 	    }
 	  }else if(isForSysUpDn<0){
 	    TLorentzVector JUnc_PJ0_scaling_Dn = DiJetsCand[i].daughter(0).p4();
@@ -2045,30 +2055,40 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
 	    if(fabs(mjjScaled_JUncDn-phys::WMASS)<candPeakDist_mDJCand)    candPeakDist_mDJCand=fabs(mjjScaled_JUncDn-phys::WMASS);
 	    if(candPeakDist_mDJCand<currentPeakDist_mDJCand){
 	      currentPeakDist_mDJCand=candPeakDist_mDJCand;
-	      *haveGoodRECODiJetCand=(mjjScaled_JUncDn>50  && mjjScaled_JUncDn<120);
+	      *haveGoodRECODiJetCand=(mjjScaled_JUncDn>50  && mjjScaled_JUncDn<120); //remove this line to avoid threshold effects
 	      updatedBestCandIndex=i;
 	    }
 	  }
-	}else if(isJERorJEC<0){//JEC
-	  ptj0Scaled_JEC=DiJetsCand[i].daughter(0).pt()*(1.+isForSysUpDn*(DiJetsCand[i].daughter(0).jesUnc().Total));
-	  ptj1Scaled_JEC=DiJetsCand[i].daughter(1).pt()*(1.+isForSysUpDn*(DiJetsCand[i].daughter(1).jesUnc().Total));
-	  TLorentzVector JEC_PJ0_scaling = DiJetsCand[i].daughter(0).p4();
-	  TLorentzVector JEC_PJ1_scaling = DiJetsCand[i].daughter(1).p4();
-	  ScaleP4(JEC_PJ0_scaling, ptj0Scaled_JEC, DiJetsCand[i].daughter(0).pt());
-	  ScaleP4(JEC_PJ1_scaling, ptj1Scaled_JEC, DiJetsCand[i].daughter(1).pt());
-	  mjjScaled_JEC=(JEC_PJ0_scaling+JEC_PJ1_scaling).M();
+	}else if(isJERorJES<0){//JES
+	  ptj0Scaled_JES=DiJetsCand[i].daughter(0).pt()*(1.+isForSysUpDn*(DiJetsCand[i].daughter(0).jesUnc().Total));
+	  ptj1Scaled_JES=DiJetsCand[i].daughter(1).pt()*(1.+isForSysUpDn*(DiJetsCand[i].daughter(1).jesUnc().Total));
+	  TLorentzVector JES_PJ0_scaling = DiJetsCand[i].daughter(0).p4();
+	  TLorentzVector JES_PJ1_scaling = DiJetsCand[i].daughter(1).p4();
+	  ScaleP4(JES_PJ0_scaling, ptj0Scaled_JES, DiJetsCand[i].daughter(0).pt());
+	  ScaleP4(JES_PJ1_scaling, ptj1Scaled_JES, DiJetsCand[i].daughter(1).pt());
+	  mjjScaled_JES=(JES_PJ0_scaling+JES_PJ1_scaling).M();
 	  double candPeakDist_mDJCand=fabs(DiJetsCand[i].mass()-phys::ZMASS);
-	  if(fabs(mjjScaled_JEC-phys::WMASS)<candPeakDist_mDJCand)    candPeakDist_mDJCand=fabs(mjjScaled_JEC-phys::WMASS);
+	  if(fabs(mjjScaled_JES-phys::WMASS)<candPeakDist_mDJCand)    candPeakDist_mDJCand=fabs(mjjScaled_JES-phys::WMASS);
 	  if(candPeakDist_mDJCand<currentPeakDist_mDJCand){
 	    currentPeakDist_mDJCand=candPeakDist_mDJCand;
-	    *haveGoodRECODiJetCand=(mjjScaled_JEC>50  && mjjScaled_JEC<120);
+	    *haveGoodRECODiJetCand=(mjjScaled_JES>50  && mjjScaled_JES<120); //remove this line to avoid threshold effects
 	    updatedBestCandIndex=i;
 	  }
-	}
+	}//closing JES case
       }//closing loop over DiJetCand
-    }
+    }//closing if not for Sys 
+  }//closing if at least one DiJetCand
+
+  if(wasGoodEvent && !*haveGoodRECODiJetCand) isGoodEventDiscarded=true;
+  //__________________________BLOCK_CONTROL_________________________________//
+  if(isForSysUpDn>0 && isJERorJES>0){
+
+    if(wasGoodEvent && *haveGoodRECODiJetCand) theHistograms->fill("AUX_JERup_CONTROL_PLOT", "AUX_JERup_CONTROL_PLOT", 3, -1.5, 1.5,     0, theWeight*LumiSF);
+    if(isBadEventRecovered)                    theHistograms->fill("AUX_JERup_CONTROL_PLOT", "AUX_JERup_CONTROL_PLOT", 3, -1.5, 1.5,     1, theWeight*LumiSF);
+    if(isGoodEventDiscarded)                   theHistograms->fill("AUX_JERup_CONTROL_PLOT", "AUX_JERup_CONTROL_PLOT", 3, -1.5, 1.5,    -1, theWeight*LumiSF);
   }
-  //std::cout<<"haveGoodDJCand "<<*haveGoodRECODiJetCand<<"    candidate nb. "<<updatedBestCandIndex<<endl;  
+  //__________________________END_OF_BLOCK__________________________________//
+
   if(*haveGoodRECODiJetCand){
     *V_JJCandidate = DiJetsCand.at(updatedBestCandIndex);
     peakDist_mDJCand=fabs(V_JJCandidate->mass()-phys::ZMASS);
@@ -2081,7 +2101,7 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
     hadrTopo=0;
   }else{//changed to prioritize the DJ topology
     if(*haveGoodRECODiJetCand) hadrTopo=1;//    if(peakDist_mDJCand<peakDist_mFJCand) hadrTopo=1;
-    else hadrTopo=-1;
+    else hadrTopo=0;// hadrTopo=-1; // to be modified to consider FJ topo
   }
 
   if(*haveGoodRECODiJetCand && doControlPlots){
@@ -2295,7 +2315,7 @@ void VZGAnalyzer::PhotonSelection(std::vector<phys::Photon> *phot)
     
   for (auto p : *photons){
     bool isFsrPh=false;
-    if (p.id() == 22 && KinematicsOK(p, 20, 2.4) && !p.hasPixelSeed() && p.passElectronVeto() && p.passMVA(Photon::MVAwp::wp90)){//photon would pass signal selection
+    if (p.id() == 22 && KinematicsOK(p, 20, 2.4) && !p.hasPixelSeed() && p.passElectronVeto() && p.passMVA(Photon::MVAwp::wp80)){//photon would pass signal selection
       if(fsrRecovered.size()<1) phot->push_back(p);
       else{
 	for(auto fsr : fsrRecovered){
@@ -2421,6 +2441,9 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
   
   if(selectedphotons.size()<1) return;
   //  std::cout<<"passing cut 0 in printHistos"<<endl;
+  double mimicVZGMVAScore = -2.;
+  double VZGMVAScore      = -2.;   
+
   
   if(i==1){
     theHistograms->fill("#AAA_cut_flow_" + histoType, "Cut flow", cutsToApply, 0, cutsToApply, i, (theWeight*LumiSF));
@@ -2428,16 +2451,19 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     if(selectedphotons.at(0).cutBasedIDLoose())          theHistograms->fill("photonID_" + histoType +"_noReq", "photonID", 4, 0, 4, 1, (theWeight*LumiSF));
     if(selectedphotons.at(0).cutBasedIDMedium())     theHistograms->fill("photonID_" + histoType +"_noReq", "photonID", 4, 0, 4, 2, (theWeight*LumiSF));
     if(selectedphotons.at(0).cutBasedIDTight())     theHistograms->fill("photonID_" + histoType+"_noReq", "photonID", 4, 0, 4, 3, (theWeight*LumiSF));
+
+    foreach (const phys::Jet &jet, *jets){
+      if (KinematicsOK(jet,0.,4.7) && jet.passLooseJetID())
+	theHistograms->fill("AUX_Jets_pt_presel" ,"AUX_Jets_pt_presel", 40, 0, 200, jet.pt(), theWeight*LumiSF);
+    }
   }
-  if (VBTopo ==0) return;
-  //  std::cout<<"passing cut 1 in printHistos"<<endl;  
-  
+
   if(!isCR && !theSampleInfo.isMC()) return; //SR BLINDING
   if(isCR){
     if(i>4) return; //to avoid producing CR plots for cut higher than 
     i=4;
     histoType = histoType+"_"+region;
-  }
+  }//Note: this is not active for the sys plots, bc the isCR bool is passed false as an argument when calling printHistos for the SR. Needs to be re-thought for the unblinding step  
 
   
   bool isForSys = (theSampleInfo.isMC()
@@ -2451,11 +2477,85 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
 			   (!isSigSample && !isZGSample && !isDYSample && histoType=="all")
 			   )
 		   );
-  
+
+  //_________________________________________________BLOCK_FOR_SYS_HISTOS________________________________________//
+
+  if (i==1 && !isCR && isForSys && cut(1, recoV, recoFJ, selectedphotons, VBTopo, mimicVZGMVAScore)){
+
+    double VZGMVAScore_JERup= -2.;
+    double VZGMVAScore_JERdn= -2.;
+    double VZGMVAScore_JESup= -2.;
+    double VZGMVAScore_JESdn= -2.;
+
+    int VBTopo_JERup = 0;
+    int VBTopo_JERdn = 0;
+    int VBTopo_JESup = 0;
+    int VBTopo_JESdn = 0;
+    
+    phys::Boson<phys::Jet> recoV_JERup, recoV_JERdn, recoV_JESup, recoV_JESdn;
+    bool haveGoodRECODiJetCand_JERup=false;
+    bool haveGoodRECODiJetCand_JERdn=false;
+    bool haveGoodRECODiJetCand_JESup=false;
+    bool haveGoodRECODiJetCand_JESdn=false;
+    bool haveGoodRECOFJCand_null    =false;
+
+    VBTopo_JERup=Reconstruct(&recoV_JERup,&recoFJ,&haveGoodRECODiJetCand_JERup,&haveGoodRECOFJCand_null,&selectedphotons.at(0), false,  1,  1);
+    VBTopo_JERdn=Reconstruct(&recoV_JERdn,&recoFJ,&haveGoodRECODiJetCand_JERdn,&haveGoodRECOFJCand_null,&selectedphotons.at(0), false, -1,  1);
+    VBTopo_JESup=Reconstruct(&recoV_JESup,&recoFJ,&haveGoodRECODiJetCand_JESup,&haveGoodRECOFJCand_null,&selectedphotons.at(0), false,  1, -1);
+    VBTopo_JESdn=Reconstruct(&recoV_JESdn,&recoFJ,&haveGoodRECODiJetCand_JESdn,&haveGoodRECOFJCand_null,&selectedphotons.at(0), false, -1, -1);
+
+    if(VBTopo==1)       VZGMVAScore      = VZGMVAScoreBuilder(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0);
+    if(VBTopo_JERup==1) VZGMVAScore_JERup= VZGMVAScoreBuilder(recoV_JERup, recoFJ,  selectedphotons, VBTopo_JERup, 1, 1);
+    if(VBTopo_JERdn==1) VZGMVAScore_JERdn= VZGMVAScoreBuilder(recoV_JERdn, recoFJ,  selectedphotons, VBTopo_JERdn,-1, 1);
+    if(VBTopo_JESup==1) VZGMVAScore_JESup= VZGMVAScoreBuilder(recoV_JESup, recoFJ,  selectedphotons, VBTopo_JESup, 1,-1);
+    if(VBTopo_JESdn==1) VZGMVAScore_JESdn= VZGMVAScoreBuilder(recoV_JESdn, recoFJ,  selectedphotons, VBTopo_JESdn,-1,-1);
+
+    const std::vector<double> binEdges = {-1, -0.72, -0.47, -0.26, -0.08,  0.08,  0.22,  0.34,  0.44,  0.53,  0.61,  0.68,  0.74,   0.79,  0.83,  0.87,  0.905,  0.935, 0.96,  0.98,  1};//{-1,-0.7,-0.4,-0.2,0,0.2,0.3,0.4,0.5,0.6,0.65,0.7,0.75,0.8,0.82,0.84,0.86,0.88,0.9,0.92,0.94,0.96,0.98,1};
+    // QCD scale
+    // envelope: consider the six variations: {Do, Central, Up} x {Dn, Central, Up} - (central, central) - (Dn, Dn) - (Up, Up) and use the max and min
+    float QCDscale_Up(1.), QCDscale_Dn(1.);
+    std::vector<float> envelope {
+      theSampleInfo.QCDscale_muR0p5F1(),
+      theSampleInfo.QCDscale_muR0p5F2(),
+      theSampleInfo.QCDscale_muR1F0p5(),
+      theSampleInfo.QCDscale_muR1F2(),
+      theSampleInfo.QCDscale_muR2F0p5(),
+      theSampleInfo.QCDscale_muR2F1()
+    };
+    QCDscale_Up = *max_element(envelope.begin(), envelope.end());
+    QCDscale_Dn = *min_element(envelope.begin(), envelope.end());
+
+    if(VZGMVAScore <= 1. && VZGMVAScore >= -1.){
+      theHistograms->fill("SYS_BDTScore_central", "SYS_BDTScore_central" , binEdges,  VZGMVAScore, theWeight*LumiSF);
+
+      theHistograms->fill("SYS_BDTScore_alphas_Up"  , "SYS_BDTScore_alphas_Up"   , binEdges,  VZGMVAScore, theSampleInfo.alphas_MZ_Up()*theWeight*LumiSF);
+      theHistograms->fill("SYS_BDTScore_alphas_Down", "SYS_BDTScore_alphas_Down" , binEdges,  VZGMVAScore, (2.-theSampleInfo.alphas_MZ_Down())*theWeight*LumiSF);
+
+      theHistograms->fill("SYS_BDTScore_PDFVar_Up"  , "SYS_BDTScore_PDFVar_Up"   , binEdges,  VZGMVAScore, theSampleInfo.PDFVar_Up()*theWeight*LumiSF);
+      theHistograms->fill("SYS_BDTScore_PDFVar_Down", "SYS_BDTScore_PDFVar_Down" , binEdges,  VZGMVAScore, theSampleInfo.PDFVar_Down()*theWeight*LumiSF);
+
+      theHistograms->fill("SYS_BDTScore_QCDscale_Up"  , "SYS_BDTScore_QCDscale_Up"   , binEdges,  VZGMVAScore, QCDscale_Up*theWeight*LumiSF);
+      theHistograms->fill("SYS_BDTScore_QCDscale_Down", "SYS_BDTScore_QCDscale_Down" , binEdges,  VZGMVAScore, QCDscale_Dn*theWeight*LumiSF);
+
+      theHistograms->fill("SYS_BDTScore_L1Prefiring_Up"  , "SYS_BDTScore_L1Prefiring_Up"   , binEdges,  VZGMVAScore, (theSampleInfo.L1PrefiringWeightUp()/theSampleInfo.L1PrefiringWeight())*theWeight*LumiSF);
+      theHistograms->fill("SYS_BDTScore_L1Prefiring_Down", "SYS_BDTScore_L1Prefiring_Down" , binEdges,  VZGMVAScore, (theSampleInfo.L1PrefiringWeightDn()/theSampleInfo.L1PrefiringWeight())*theWeight*LumiSF);
+
+      theHistograms->fill("SYS_BDTScore_puWeight_Up"  , "SYS_BDTScore_puWeight_Up"   , binEdges,  VZGMVAScore, (theSampleInfo.puWeightUncUp()/theSampleInfo.puWeight())*theWeight*LumiSF);
+      theHistograms->fill("SYS_BDTScore_puWeight_Down", "SYS_BDTScore_puWeight_Down" , binEdges,  VZGMVAScore, (theSampleInfo.puWeightUncDn()/theSampleInfo.puWeight())*theWeight*LumiSF);
+    }
+    if(VZGMVAScore_JERup <= 1. && VZGMVAScore_JERup >= -1.) theHistograms->fill("SYS_BDTScore_JER_Up"  , "SYS_BDTScore_JER_Up"   , binEdges,  VZGMVAScore_JERup, theWeight*LumiSF);
+    if(VZGMVAScore_JERdn <= 1. && VZGMVAScore_JERdn >= -1.) theHistograms->fill("SYS_BDTScore_JER_Down", "SYS_BDTScore_JER_Down" , binEdges,  VZGMVAScore_JERdn, theWeight*LumiSF);
+    if(VZGMVAScore_JESup <= 1. && VZGMVAScore_JESup >= -1.) theHistograms->fill("SYS_BDTScore_JES_Up"  , "SYS_BDTScore_JES_Up"   , binEdges,  VZGMVAScore_JESup, theWeight*LumiSF);
+    if(VZGMVAScore_JESdn <= 1. && VZGMVAScore_JESdn >= -1.) theHistograms->fill("SYS_BDTScore_JES_Down", "SYS_BDTScore_JES_Down" , binEdges,  VZGMVAScore_JESdn, theWeight*LumiSF);
+  }
+  //_____________________________________________END_OF_BLOCK_FOR_SYS_HISTOS_____________________________________//
+
+  //if (VBTopo ==0) return; //WRONG
+    //  std::cout<<"passing cut 1 in printHistos"<<endl;  
+
   //_____________________________________________________________BLOCK_FOR_SYS_SR2PFJ__________________________________________________//
   //cout << "Starting block for SYS in SR2PFJ" << endl;
 
-  double mimicVZGMVAScore=-2.;
   if(runningSR2PFJ){
     if(VBTopo==-1){
       if (i <= cutsToApply && cut(i, recoV, recoFJ, selectedphotons, VBTopo, mimicVZGMVAScore)){
@@ -2592,8 +2692,8 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
   double VZGMVAScore= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 0, 0);
   double VZGMVAScore_JERup= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 1, 1);
   double VZGMVAScore_JERdn= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo,-1, 1);
-  double VZGMVAScore_JECup= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 1,-1);
-  double VZGMVAScore_JECdn= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo,-1,-1);
+  double VZGMVAScore_JESup= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 1,-1);
+  double VZGMVAScore_JESdn= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo,-1,-1);
   */
   //_____BLOCK_FOR_SYS_HISTOS_____//
   /* //moved up
@@ -2609,36 +2709,37 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
 			   )
 		   );
   */
+  /* //moved up
   if (i==1 && !isCR && isForSys && cut(1, recoV, recoFJ, selectedphotons, VBTopo, mimicVZGMVAScore)){
 
     double VZGMVAScore= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 0, 0);
     double VZGMVAScore_JERup= -2.;
     double VZGMVAScore_JERdn= -2.;
-    double VZGMVAScore_JECup= -2.;
-    double VZGMVAScore_JECdn= -2.;
+    double VZGMVAScore_JESup= -2.;
+    double VZGMVAScore_JESdn= -2.;
 
     int VBTopo_JERup = 0;
     int VBTopo_JERdn = 0;
-    int VBTopo_JECup = 0;
-    int VBTopo_JECdn = 0;
+    int VBTopo_JESup = 0;
+    int VBTopo_JESdn = 0;
     
-    phys::Boson<phys::Jet> recoV_JERup, recoV_JERdn, recoV_JECup, recoV_JECdn;
+    phys::Boson<phys::Jet> recoV_JERup, recoV_JERdn, recoV_JESup, recoV_JESdn;
     bool haveGoodRECODiJetCand_JERup=false;
     bool haveGoodRECODiJetCand_JERdn=false;
-    bool haveGoodRECODiJetCand_JECup=false;
-    bool haveGoodRECODiJetCand_JECdn=false;
+    bool haveGoodRECODiJetCand_JESup=false;
+    bool haveGoodRECODiJetCand_JESdn=false;
     bool haveGoodRECOFJCand_null    =false;
 
     VBTopo_JERup=Reconstruct(&recoV_JERup,&recoFJ,&haveGoodRECODiJetCand_JERup,&haveGoodRECOFJCand_null,&selectedphotons.at(0), false,  1,  1);
     VBTopo_JERdn=Reconstruct(&recoV_JERdn,&recoFJ,&haveGoodRECODiJetCand_JERdn,&haveGoodRECOFJCand_null,&selectedphotons.at(0), false, -1,  1);
-    VBTopo_JECup=Reconstruct(&recoV_JECup,&recoFJ,&haveGoodRECODiJetCand_JECup,&haveGoodRECOFJCand_null,&selectedphotons.at(0), false,  1, -1);
-    VBTopo_JECdn=Reconstruct(&recoV_JECdn,&recoFJ,&haveGoodRECODiJetCand_JECdn,&haveGoodRECOFJCand_null,&selectedphotons.at(0), false, -1, -1);
+    VBTopo_JESup=Reconstruct(&recoV_JESup,&recoFJ,&haveGoodRECODiJetCand_JESup,&haveGoodRECOFJCand_null,&selectedphotons.at(0), false,  1, -1);
+    VBTopo_JESdn=Reconstruct(&recoV_JESdn,&recoFJ,&haveGoodRECODiJetCand_JESdn,&haveGoodRECOFJCand_null,&selectedphotons.at(0), false, -1, -1);
 
     
     if(VBTopo_JERup==1) VZGMVAScore_JERup= VZGMVAScoreBuilder(recoV_JERup, recoFJ,  selectedphotons, VBTopo_JERup, 1, 1);
     if(VBTopo_JERdn==1) VZGMVAScore_JERdn= VZGMVAScoreBuilder(recoV_JERdn, recoFJ,  selectedphotons, VBTopo_JERdn,-1, 1);
-    if(VBTopo_JECup==1) VZGMVAScore_JECup= VZGMVAScoreBuilder(recoV_JECup, recoFJ,  selectedphotons, VBTopo_JECup, 1,-1);
-    if(VBTopo_JECdn==1) VZGMVAScore_JECdn= VZGMVAScoreBuilder(recoV_JECdn, recoFJ,  selectedphotons, VBTopo_JECdn,-1,-1);
+    if(VBTopo_JESup==1) VZGMVAScore_JESup= VZGMVAScoreBuilder(recoV_JESup, recoFJ,  selectedphotons, VBTopo_JESup, 1,-1);
+    if(VBTopo_JESdn==1) VZGMVAScore_JESdn= VZGMVAScoreBuilder(recoV_JESdn, recoFJ,  selectedphotons, VBTopo_JESdn,-1,-1);
 
     const std::vector<double> binEdges = {-1, -0.72, -0.47, -0.26, -0.08,  0.08,  0.22,  0.34,  0.44,  0.53,  0.61,  0.68,  0.74,   0.79,  0.83,  0.87,  0.905,  0.935, 0.96,  0.98,  1};//{-1,-0.7,-0.4,-0.2,0,0.2,0.3,0.4,0.5,0.6,0.65,0.7,0.75,0.8,0.82,0.84,0.86,0.88,0.9,0.92,0.94,0.96,0.98,1};
     // QCD scale
@@ -2674,12 +2775,19 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
 
     if(VZGMVAScore_JERup <= 1. && VZGMVAScore_JERup >= -1.) theHistograms->fill("SYS_BDTScore_JER_Up"  , "SYS_BDTScore_JER_Up"   , binEdges,  VZGMVAScore_JERup, theWeight*LumiSF);
     if(VZGMVAScore_JERdn <= 1. && VZGMVAScore_JERdn >= -1.) theHistograms->fill("SYS_BDTScore_JER_Down", "SYS_BDTScore_JER_Down" , binEdges,  VZGMVAScore_JERdn, theWeight*LumiSF);
-    if(VZGMVAScore_JECup <= 1. && VZGMVAScore_JERup >= -1.) theHistograms->fill("SYS_BDTScore_JEC_Up"  , "SYS_BDTScore_JEC_Up"   , binEdges,  VZGMVAScore_JECup, theWeight*LumiSF);
-    if(VZGMVAScore_JECdn <= 1. && VZGMVAScore_JERdn >= -1.) theHistograms->fill("SYS_BDTScore_JEC_Down", "SYS_BDTScore_JEC_Down" , binEdges,  VZGMVAScore_JECdn, theWeight*LumiSF);
+    if(VZGMVAScore_JESup <= 1. && VZGMVAScore_JESup >= -1.) theHistograms->fill("SYS_BDTScore_JES_Up"  , "SYS_BDTScore_JES_Up"   , binEdges,  VZGMVAScore_JESup, theWeight*LumiSF);
+    if(VZGMVAScore_JESdn <= 1. && VZGMVAScore_JESdn >= -1.) theHistograms->fill("SYS_BDTScore_JES_Down", "SYS_BDTScore_JES_Down" , binEdges,  VZGMVAScore_JESdn, theWeight*LumiSF);
+  }
+  */
 
     //____BLOCK_CORR_PLOTS__________________________//
-    theHistograms->fill("CORR BDT vs mll", "CORR BDT vs mll;   BDT Score ; mll [GeV] ", 40, -1, 1, 30, 60, 120, VZGMVAScore, mll, theWeight*LumiSF);
-    theHistograms->fill("CORR BDT vs mjj", "CORR BDT vs mjj;   BDT Score ; mjj [GeV] ", 40, -1, 1, 35, 50, 120, VZGMVAScore, mjj, theWeight*LumiSF);
+  if (i==1 && !isCR && isForSys && cut(1, recoV, recoFJ, selectedphotons, VBTopo, mimicVZGMVAScore)){
+
+    theHistograms->fill("CORR BDT vs ptJ0", "CORR BDT vs ptJ0;   BDT Score ; ptJ0 [GeV] ", 40, -1, 1,  40, 0,  400, VZGMVAScore, recoV.daughter(0).pt(), theWeight*LumiSF);
+    theHistograms->fill("CORR BDT vs ptJ1", "CORR BDT vs ptJ1;   BDT Score ; ptJ1 [GeV] ", 40, -1, 1,  40, 0,  400, VZGMVAScore, recoV.daughter(1).pt(), theWeight*LumiSF);
+    theHistograms->fill("CORR BDT vs ptJJ", "CORR BDT vs ptJJ;   BDT Score ; ptJJ [GeV] ", 40, -1, 1,  40, 0,  400, VZGMVAScore, recoV.pt(), theWeight*LumiSF);
+    theHistograms->fill("CORR BDT vs mll" , "CORR BDT vs mll;   BDT Score ; mll [GeV] "  , 40, -1, 1, 30, 60, 120, VZGMVAScore, mll, theWeight*LumiSF);
+    theHistograms->fill("CORR BDT vs mjj" , "CORR BDT vs mjj;   BDT Score ; mjj [GeV] "  , 40, -1, 1, 35, 50, 120, VZGMVAScore, mjj, theWeight*LumiSF);
     theHistograms->fill("CORR BDT vs mllG", "CORR BDT vs mllG; BDT Score ; mll#gamma [GeV] " , 40, -1, 1, 32, 60, 220, VZGMVAScore, mllPh, theWeight*LumiSF);
     theHistograms->fill("CORR BDT vs mjjG", "CORR BDT vs mjjG; BDT Score ; mjj#gamma [GeV] " , 40, -1, 1, 34, 50, 220, VZGMVAScore, mjjPh, theWeight*LumiSF);
     theHistograms->fill("CORR BDT vs dRLG", "CORR BDT vs dRLG; BDT Score ; #Delta R l-#gamma", 40, -1, 1, 20, 0 , 5  , VZGMVAScore, deltaR_L0Gamma<deltaR_L1Gamma ? deltaR_L0Gamma : deltaR_L1Gamma, theWeight*LumiSF);
@@ -2687,7 +2795,6 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
   }
   //______________________________//
 
-  
   if (i <= cutsToApply && cut(i, recoV, recoFJ, selectedphotons, VBTopo, mimicVZGMVAScore))
   {
     if(verbose==true) std::cout<<"cut "<<i<<" filling AAA plot "<<histoType<<endl;
@@ -2742,10 +2849,8 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
 
       
     }else if(VBTopo==-1){      
-      theHistograms->fill("recoVMass_" + histoType + cuts.at(i), "mass of recoV", 40, 0, 200, recoFJ.mass(), (theWeight*LumiSF));
-      theHistograms->fill("recoVPt_" + histoType + cuts.at(i), "pt of recoV", 30, 0, 300, recoV.pt(), (theWeight*LumiSF));
-
-      theHistograms->fill("recoVDaughtersDeltaPhi_" + histoType + cuts.at(i), "dPhi of recoVDaughters", 20, 0, 3.2, fabs(physmath::deltaPhi(recoV.daughter(0).phi(), recoV.daughter(1).phi())), (theWeight*LumiSF));
+      theHistograms->fill("recoFJMass_" + histoType + cuts.at(i), "mass of recoFJ", 40, 0, 200, recoFJ.mass(), (theWeight*LumiSF));
+      theHistograms->fill("recoFJPt_" + histoType + cuts.at(i), "pt of recoFJ", 30, 0, 300, recoFJ.pt(), (theWeight*LumiSF));
 
     }
 
