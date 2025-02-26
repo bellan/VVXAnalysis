@@ -8,9 +8,12 @@
 
 from __future__ import print_function
 import os, sys
+from math import sqrt
+from ctypes import c_double
 import ROOT
 from utils23 import makedirs_ok
 from plotUtils23 import retrieve_bin_edges, InputDir, TFileContext
+from plotUtils23 import integral_and_error, addIfExisting
 from subprocess import call
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
@@ -47,7 +50,14 @@ def isVarSystematic(variable):
 # schema: <year>/<region>.root -> <variable>/<sample>_CMS_<syst>(Up|Down)
 # example: 2016/SR4P.root      -> mZZ/ZZTo4l_CMS_QCDScale-muRUp
 
-def write_fake_photons(fFakePh, data_obs, variables): # <TFile>, <TFile>, <iterable> of <str>
+def write_fake_photons(fFakePh, data_obs, variables, year, f_nonpro_list=[]):
+    '''
+    - <TFile> fFakePh
+    - <TFile> data_obs
+    - <iterable> of <str> variables
+    - <str> year
+    - <iterable> of <TFile> f_nonpro_list: used to get the nonprompt MC template for the alternative shape
+    '''
     logging.info('recreating fake_photons file: %s', fFakePh.GetName())
     fFakePh.cd()
     for variable in variables:
@@ -65,7 +75,75 @@ def write_fake_photons(fFakePh, data_obs, variables): # <TFile>, <TFile>, <itera
                 h.Write()
             else:
                 logging.warning('No failReweight histogram in data for variable %s --> could not retrieve %s', var_name, reweight)
+
+            # Shape uncertainty on fake_photons
+            # This needs to be done once per variable. We choose the central systematic to ensure that's the case
+            if(h and split[2] == 'central'):
+                ###  From nonprompt MC in SR4P_1P ###
+                h_name_MC = '_'.join([split[0], split[1]+'-nonpro', 'central'])
+                h_up_list = []
+                for f_nonpro in f_nonpro_list:
+                    h_up_list.append(f_nonpro.Get(h_name_MC))
+                h_up = addIfExisting(*h_up_list)
+                if(not h_up):
+                    raise RuntimeError('Missing MC-nonnpro shape in SR4P_1P for %s', var_name)
+                h_up.SetName(split[0] +'_'+ split[1] + '_' + 'CMS-SMP24014-fake-g-shape_Up') # 'CMS-SMP24014-fake-g-shape-%s_Up' %(year))
+                logging.debug('variable: %s - h_up: %s', variable, h_up)
+                h_dn = get_shape_down(h, h_up)
+
+                v_ce, e_ce = integral_and_error(h   , 0, -1)
+                v_dn, e_dn = integral_and_error(h_dn, 0, -1)
+                v_up, e_up = integral_and_error(h_up, 0, -1)
+                logging.debug('SHAPE HACK SR4P_1P - ce: %.3g+-%.3g - up: %.3g+-%.3g - dn: %.3g+-%.3g', v_ce, e_ce, v_up, e_up, v_dn, e_dn)
+
+                # Normalize the up and dn histograms to the central; we only want the shape
+                h_up.Scale(v_ce/v_up)
+                h_dn.Scale(v_ce/v_dn)
+
+                h_up.Write()
+                h_dn.Write()
+
+                ### From nonprompt MC in CR4P_1F ###
+                hCR_name_data = '_'.join([split[0], split[1].replace('loose', 'fail')          , 'central'])
+                hCR_name_MC   = '_'.join([split[0], split[1].replace('loose', 'fail')+'-nonpro', 'central'])
+                hCR_ce = data_obs.Get(hCR_name_data)
+                assert hCR_ce
+                hCR_up_list = []
+                for f in f_nonpro_list: hCR_up_list.append(f.Get(hCR_name_MC))
+                hCR_up = addIfExisting(*hCR_up_list)
+                hCR_up.SetName(split[0] +'_'+ split[1] + '_' + 'CMS-SMP24014-fake-g-shapeCR_Up')
+                logging.debug('variable: %s - h_up: %s', variable, h_up)
+                hCR_dn = get_shape_down(hCR_ce, hCR_up)
+
+                vCR_ce, eCR_ce = integral_and_error(hCR_ce, 0, -1)
+                vCR_dn, eCR_dn = integral_and_error(hCR_dn, 0, -1)
+                vCR_up, eCR_up = integral_and_error(hCR_up, 0, -1)
+                logging.debug('SHAPE HACK CR4P_1F - ce: %.3g+-%.3g - up: %.3g+-%.3g - dn: %.3g+-%.3g', vCR_ce, eCR_ce, vCR_up, eCR_up, vCR_dn, eCR_dn)
+
+                # Normalize the up and down **TO THE INTEGRAL IN SR4P_1P**
+                hCR_up.Scale(v_ce/vCR_up)
+                hCR_dn.Scale(v_ce/vCR_dn)
+
+                hCR_up.Write()
+                hCR_dn.Write()
+
     logging.info('Wrote fake photons file to %s', fFakePh.GetName())
+
+def get_shape_down(h_ce, h_up):
+    h_dn_name = h_up.GetName().replace('_Up', '_Down')
+    logging.debug('h_dn_name: %s', h_dn_name)
+    h_dn = h_up.Clone(h_dn_name)
+    for b in range(0, h_ce.GetNbinsX()+2):
+        v_ce = h_ce.GetBinContent(b)
+        v_up = h_up.GetBinContent(b)
+        e_ce = h_ce.GetBinError(b)
+        e_up = 0 #h_up.GetBinError(b)
+        v_dn = max(0, 2*v_ce - v_up) # v_ce - (v_up-v_ce) = 2*v_ce - v_up
+        e_dn = 0 #min(v_dn, e_up)  # the error is the same as that on the up bin, but capped so that it never goes below 0  # sqrt(2*e_ce**2 + e_up**2)
+        # logging.debug('%2d: ce: %.3g+-%.3g - up: %.3g+-%.3g - dn: %.3g+-%.3g', b, v_ce, e_ce, v_up, e_up, v_dn, e_dn)
+        h_dn.SetBinContent(b, v_dn)
+        h_dn.SetBinError(b, e_dn)
+    return h_dn
 
 def get_TH1keys_from_file(tfhandle):
     return [ key.GetName()
@@ -121,9 +199,17 @@ def main(args):
         # Write fake_photons
         if(args.remake_fake_photons or (not os.path.exists(fake_photons_fname))):
             logging.info('Recreating fake_photons: %s', fake_photons_fname)
-            with TFileContext(fake_photons_fname, 'RECREATE') as fFakePh:
+            ZZTo4l_fname   = os.path.join(path_in, 'ZZTo4l.root')
+            ggTo4e_fname   = os.path.join(path_in, 'ggTo4e_Contin_MCFM701.root')
+            ggTo2e2m_fname = os.path.join(path_in, 'ggTo2e2mu_Contin_MCFM701.root')
+            ggTo4m_fname   = os.path.join(path_in, 'ggTo4mu_Contin_MCFM701.root')
+            with TFileContext(fake_photons_fname, 'RECREATE') as fFakePh, \
+                 TFileContext(ggTo4e_fname  , 'READ') as fgg4e,   \
+                 TFileContext(ggTo2e2m_fname, 'READ') as fgg2e2m, \
+                 TFileContext(ggTo4m_fname  , 'READ') as fgg4m,   \
+                 TFileContext(ZZTo4l_fname  , 'READ') as fZZ4l:
                 variables_data = get_TH1keys_from_file(files_in['data_obs'])
-                write_fake_photons(fFakePh, data_obs=files_in['data_obs'], variables=variables_data)
+                write_fake_photons(fFakePh, data_obs=files_in['data_obs'], variables=variables_data, year=args.year, f_nonpro_list=[fZZ4l, fgg4e, fgg2e2m, fgg4m])
 
         files_in['fake_photons'] = ROOT.TFile(fake_photons_fname)
 

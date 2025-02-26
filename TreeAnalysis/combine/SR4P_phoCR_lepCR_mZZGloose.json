@@ -21,8 +21,16 @@
 	}
     },
     "systematics": {
+	"shape": ["CMS_SMP24014_fake_g_shape"],
 	"norm_uncertainty": {"fake_photons": {"up":0.50, "dn":-0.50}},
         "ADD_gmN": {"CMS_SMP24014_fake_g_ARstat": "fake_photons"},
+	"set_manual": {
+	    "CMS_SMP24014_fake_g_shape": {
+		"comment": "The values are irrelevant, since this will be a shape",
+		"fake_photons": {"up": 0.5, "dn": -0.5},
+		"correl_type": "correlated"
+	    }
+	},
         "comment":{"set_manual": {"CMS_fake_g": {"fake_photons": {"up":0.2, "dn":-0.2}}}}
     }
 }

@@ -678,3 +678,12 @@ def graph_and_ratio(histodata, hStackSum, xedges, bx_min, bx_max, unblind=True):
         tgaData.SetPointEXlow (i,0.)
 
     return graphData, tgaData
+
+
+def integral_and_error(h, binx1=0, binx2=-1, option=""):
+    '''
+    Wrapper around TH1::IntegralAndError to avoid dealing with a raw double*
+    '''
+    err = ctypes.c_double(0.)
+    integral = h.IntegralAndError(binx1, binx2, err, option)
+    return integral, err.value

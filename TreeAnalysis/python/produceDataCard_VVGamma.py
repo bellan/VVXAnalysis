@@ -202,7 +202,7 @@ def get_gmN_params_local(fname, observable, process):
 def get_shape_affected(syst, data_syst):
     samples_affected = []
     for sample, sample_data in data_syst.items():
-        syst_data = sample_data[syst]
+        syst_data = sample_data.get(syst, {'up':0, 'dn':0})
         if(syst_data['up'] - syst_data['dn'] != 0.):
             samples_affected.append(sample)
 
@@ -424,6 +424,10 @@ def main(args):
 
     # Set manually the uncertainty on certain systematics for some samples
     for syst, syst_manual in config['systematics'].get('set_manual', {}).items():
+        if(not syst in config['systematics']['correlated']+config['systematics']['uncorrelated']+config['systematics']['correl_year']):
+            correl_type = syst_manual["correl_type"]
+            config['systematics'][correl_type].append(syst)
+            logging.debug('assigned correlation type "%s" to systematic "%s"', correl_type, syst)
         for sample, values in syst_manual.items():
             if(data_syst.get(sample)):
                 logging.debug('overriding "%s" for "%s" to %s', syst, sample, values)
