@@ -5,7 +5,7 @@ Usage: ${0##*/} [-u] CARD"
 Convert CARD to workspace and assess the impact of the nuisance
 parameters with fits
 
-    -u      unblind
+    -u      unblind (once for pulls, twice for pulls and signal strength)
     -r VAL  set the expected limit to VAL; ignored if -u is set
     -n VAL  set the number of points in the scan (default: 50)
 EOF
@@ -24,7 +24,7 @@ while getopts "hur:" opt; do
 	    exit 0
 	    ;;
 	u)
-	    unblind=1
+	    unblind=$(($unblind+1))
 	    ;;
 	r)
 	    mu=$OPTARG
@@ -49,10 +49,15 @@ echo $card
 cardname=${1##*/}
 cardname=${cardname%.txt}
 original_dir=$(pwd -P)
-fit_options="-m 125 --robustFit 1"
+fit_options="-m 125 --robustFit 1 --cminApproxPreFitTolerance 0.01"
+plot_options=""
 if [ $unblind -eq 0 ] ; then
     fit_options="$fit_options --expectSignal=$mu -t -1"
+    plot_options="$plot_options --blind"
     outname="impacts_expected_$cardname"
+elif [ $unblind -eq 1 ] ; then
+    plot_options="$plot_options --blind"
+    outname="impacts_unblind_$cardname"
 else
     outname="impacts_observed_$cardname"
 fi
@@ -60,19 +65,19 @@ fi
 mkdir -p $cardname && cd $cardname || { echo "Unable to make dir $cardname" 1>&2 ; exit 2 ; }
 
 echo "### text2workspace ###"
-text2workspace.py ${card} -o workspace.root || print_error "text2workspace"
+text2workspace.py -v 0 -o workspace.root ${card} || print_error "text2workspace"
 
 echo "### Performing initial fit ###"
 combineTool.py -M Impacts -d workspace.root $fit_options --doInitialFit || print_error "Initial fit"
 
 echo "### Performing robust fit ###"
-combineTool.py -M Impacts -d workspace.root $fit_options --doFits || print_error "Robust fit"
+combineTool.py -M Impacts -d workspace.root $fit_options --doFits --stepSize 0.05 --setCrossingTolerance 0.00005 --robustHesse 1 || print_error "Robust fit"
 
 echo "### Extracting impacts ###"
 combineTool.py -M Impacts -d workspace.root -m 125 -o impacts.json || print_error "Impacts extraction"
 
 echo "### Plotting impacts ###"
-plotImpacts.py -i impacts.json -o ${outname} || print_error "Plotting impacts"
+plotImpacts.py -i impacts.json -o ${outname} $plot_options || print_error "Plotting impacts"
 
 echo "### Convert to png ###"
 convert -density 300 ${outname}.pdf -trim ${outname}.png || print_error "Conversion to PNG"
