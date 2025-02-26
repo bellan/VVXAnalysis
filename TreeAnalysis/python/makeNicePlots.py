@@ -374,7 +374,7 @@ for Var in variables:
     # Log scale
     if info.get('logy', False):
         pad1.SetLogy()
-        if(math.log10(y_max/y_min) < 4):
+        if(y_min > 0 and math.log10(y_max/y_min) < 4):
             hFrameUp.GetYaxis().SetMoreLogLabels()
         hFrameUp.GetYaxis().SetLabelOffset(0.010)
         if(y_max < 10000):
