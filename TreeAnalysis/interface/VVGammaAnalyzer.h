@@ -270,18 +270,8 @@ private:
   double getPhotonEffSF_MVA(const phys::Photon&, phys::Photon::MVAwp) const;
   double getPhotonEffSFUnc_MVA(const phys::Photon&, phys::Photon::MVAwp) const;
 
-  int photonEffSF_getBin(const phys::Photon& ph) const{
-    double pt = ph.pt() < hPhotonEffSF_maxPt_ ? ph.pt() : hPhotonEffSF_maxPt_ - 0.1;
-    return hPhotonEffSF_->FindFixBin(ph.eta(), pt);
-  }
-
-  inline float getPhotonEffSF(   const phys::Photon& ph) const{
-    return hPhotonEffSF_->GetBinContent(photonEffSF_getBin(ph));  // ph->efficiencySF();     // Note: to be restored when using new ntuples
-  }
-
-  inline float getPhotonEffSFUnc(const phys::Photon& ph) const{
-    return hPhotonEffSF_->GetBinError(  photonEffSF_getBin(ph));  // ph->efficiencySF();     // Note: to be restored when using new ntuples
-  }
+  inline float getPhotonEffSF(   const phys::Photon& ph) const;
+  inline float getPhotonEffSFUnc(const phys::Photon& ph) const;
 
   static bool is4Lregion(const phys::RegionTypes reg){
     return (reg == phys::SR4P || reg == phys::CR3P1F || reg == phys::CR2P2F ||

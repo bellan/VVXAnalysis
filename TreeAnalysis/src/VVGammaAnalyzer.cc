@@ -3591,6 +3591,18 @@ void VVGammaAnalyzer::fillCutFlow(const std::string& name, const std::string& ti
 
 
 // Utilities
+Int_t getBin_photonEffSF(const phys::Photon& ph, const TH2F* h, double maxPt){
+  double pt = ph.pt() < maxPt ? ph.pt() : maxPt - 0.1;
+  Int_t bin = h->FindFixBin(ph.eta(), pt      );
+  return bin;
+}
+
+Int_t getBin_photonFR   (const phys::Photon& ph, const TH2F* h, double maxPt){
+  double pt = ph.pt() < maxPt ? ph.pt() : maxPt - 0.1;
+  Int_t bin = h->FindFixBin(pt      , fabs(ph.eta()));
+  return bin;
+}
+
 double VVGammaAnalyzer::getPhotonFR_VLtoL   (const phys::Photon& ph) const{
   const TH2F* h = hPhotonFR_VLtoL_dataZG_.get();
   return getPhotonFR(ph, h, 120.);
@@ -3618,39 +3630,39 @@ double VVGammaAnalyzer::getPhotonFR_KtoVLexcl(const phys::Photon& ph) const{
   return getPhotonFR(ph, h, 120.);
 }
 
-double VVGammaAnalyzer::getPhotonFRSF_VLtoL(const phys::Photon& ph) const{
-  const TH2F* h = hPhotonFRSF_VLtoL_.get();
-  return getPhotonFRUnc(ph, h, 120.);
-}
-
 double VVGammaAnalyzer::getPhotonEffSF_MVA(const phys::Photon& ph, Photon::MVAwp wp) const{
   const TH2F* hSF = mapPhotonMVASF_.at(wp).get();
   float maxPt = mapPhotonMVASF_maxPt_.at(wp);
-  return getPhotonFR(ph, hSF, maxPt);
+  Int_t bin = getBin_photonEffSF(ph, hSF, maxPt);
+  double sf = hSF->GetBinContent(bin);
+  return sf;
 }
 
 double VVGammaAnalyzer::getPhotonEffSFUnc_MVA(const phys::Photon& ph, Photon::MVAwp wp) const{
   const TH2F* hSF = mapPhotonMVASF_.at(wp).get();
   float maxPt = mapPhotonMVASF_maxPt_.at(wp);
-  return getPhotonFRUnc(ph, hSF, maxPt);
+  Int_t bin = getBin_photonEffSF(ph, hSF, maxPt);
+  return hSF->GetBinError(bin);
 }
 
 double getPhotonFR   (const phys::Photon& ph, const TH2F* h, double maxPt){
-  Int_t bin = h->FindFixBin(
-			    ph.pt() < maxPt ? ph.pt() : maxPt-0.1,
-			    abs(ph.eta())
-			    );
-  return h->GetBinContent(bin);
+  Int_t bin = getBin_photonFR(ph, h, maxPt);
+  double fr = h->GetBinContent(bin);
+  return fr;
 }
 
 double getPhotonFRUnc(const phys::Photon& ph, const TH2F* h, double maxPt){
-  Int_t bin = h->FindFixBin(
-			    ph.pt() < maxPt ? ph.pt() : maxPt-0.1,
-			    abs(ph.eta())
-			    );
+  Int_t bin = getBin_photonFR(ph, h, maxPt);
   return h->GetBinError(bin);
 }
 
+inline float VVGammaAnalyzer::getPhotonEffSF(   const phys::Photon& ph) const{ // assuming cut-based Loose ID
+  return hPhotonEffSF_->GetBinContent(getBin_photonEffSF(ph, hPhotonEffSF_.get(), hPhotonEffSF_maxPt_));
+}
+
+inline float VVGammaAnalyzer::getPhotonEffSFUnc(const phys::Photon& ph) const{ // assuming cut-based Loose ID
+  return hPhotonEffSF_->GetBinError(  getBin_photonEffSF(ph, hPhotonEffSF_.get(), hPhotonEffSF_maxPt_));
+}
 
 bool VVGammaAnalyzer::passVeryLoose(const Photon& ph){
   Photon::IdWp wp = Photon::IdWp::Loose;
