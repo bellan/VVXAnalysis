@@ -431,6 +431,15 @@ def main(args):
             else:
                 logging.debug('cannot override "%s" for "%s", since the sample has no yield in this bin (or it was removed)', syst, sample)
 
+    # Fix for alpha_s
+    # alpha_s appears to be have both variations >1 for some samples and both <1 for others
+    for sample, sample_data in data_syst.items():
+        alphas = sample_data['alphas']  # This is a reference
+        up, dn = alphas['up'], alphas['dn']
+        if(up * dn > 0):
+            alphas['dn'] *= -1 # Modify the original data_systs dict
+            logging.warning('changed the direction of alphas_Down for %s/%s -> up/dn = %.3f/%.3f', region_config['observable']['name'], sample, up, alphas['dn'])
+
     # Fill the dataframe using the dictionary
     df_syst = fillDataFrame(data_syst, formatter=format_lnN).fillna(0)
     type_column = []
