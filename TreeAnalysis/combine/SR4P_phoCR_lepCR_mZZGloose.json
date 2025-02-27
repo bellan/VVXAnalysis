@@ -21,11 +21,11 @@
 	}
     },
     "systematics": {
-	"shape": ["CMS_SMP24014_fake_g_shape"],
+	"shape": ["CMS_SMP24014_fake_g_shapeCR"],
 	"norm_uncertainty": {"fake_photons": {"up":0.50, "dn":-0.50}},
         "ADD_gmN": {"CMS_SMP24014_fake_g_ARstat": "fake_photons"},
 	"set_manual": {
-	    "CMS_SMP24014_fake_g_shape": {
+	    "CMS_SMP24014_fake_g_shapeCR": {
 		"comment": "The values are irrelevant, since this will be a shape",
 		"fake_photons": {"up": 0.5, "dn": -0.5},
 		"correl_type": "correlated"
