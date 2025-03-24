@@ -77,6 +77,7 @@ echo "### Extracting impacts ###"
 combineTool.py -M Impacts -d workspace.root -m 125 -o impacts.json || print_error "Impacts extraction"
 
 echo "### Plotting impacts ###"
+fix_postfit_pull.py impacts.json
 plotImpacts.py -i impacts.json -o ${outname} $plot_options || print_error "Plotting impacts"
 
 echo "### Convert to png ###"
