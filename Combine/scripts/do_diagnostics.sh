@@ -47,7 +47,7 @@ fi
 
 mkdir -p $cardname && cd $cardname || exit 1
 
-combine -M FitDiagnostics ${fit_options} --saveNormalizations --saveWithUncertainties --plots "$card" || print_error "FitDiagnostics"
+combine -M FitDiagnostics ${fit_options} --saveNormalizations --saveShapes --saveWithUncertainties --plots "$card" || print_error "FitDiagnostics"
 
 python ${combine_testdir}/diffNuisances.py --all fitDiagnosticsTest.root -f latex > diffNuisances_$cardname.tex || print_error "diffNuisances"
 python ${combine_testdir}/mlfitNormsToText.py -u fitDiagnosticsTest.root > fitNorms_$cardname.txt || print_error "mlfitNormsToText"
