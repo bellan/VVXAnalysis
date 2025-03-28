@@ -449,7 +449,7 @@ def main(args):
     type_column = []
     for syst in df_syst.index:
         # Drop systematics that do not affect any sample
-        if(all(df_syst[column].loc[syst] in ('-', 0, '0') for column in df_syst.columns)):
+        if(all(df_syst.loc[syst, column] in ('-', 0, '0') for column in df_syst.columns)):
             logging.info('dropping systematic "%s"', syst)
             df_syst.drop(syst, inplace=True)
             continue
@@ -459,13 +459,13 @@ def main(args):
         if(syst_type == 'gmN'):
             sample_affected, N, alpha = get_gmN_params(syst, data_syst)
             if(N > 0):
-                df_syst[sample_affected].loc[syst] = alpha
+                df_syst.loc[syst, sample_affected] = alpha
                 type_column.append('gmN %d' %(N))
             else:
                 type_column.append('lnN')
         elif(syst_type == 'shape'):
             for sample in get_shape_affected(syst, data_syst):
-                df_syst[sample].loc[syst] = 1
+                df_syst.loc[syst, sample] = 1 # signature: df.loc[row_indexer, column]
             type_column.append('shape')
         else:
             type_column.append(syst_type)
