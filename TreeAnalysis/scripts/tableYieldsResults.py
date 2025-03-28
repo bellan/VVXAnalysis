@@ -154,7 +154,7 @@ def get_yields(resultsdir, samples, histogram, analyzer='VVGammaAnalyzer', regio
                     error = double_e.value
             else:
                 logging.warning('Could not get "%s" from %s', hist_name, os.path.join(inputdir.path(), sample_name+'.root'))
-                integral = 0
+                integral = error = 0
             integral *= kfactor
             error    *= kfactor
             ey = EventYield(integral, error)
