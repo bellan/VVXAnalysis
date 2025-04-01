@@ -242,6 +242,8 @@ def main(args):
                 var_name = var_split[0]
                 prompt = '-'+var_split[1] if len(var_split) > 1 else ''
                 syst = split[2]
+                syst_fixname = syst.replace('-','_')
+                direction = split[3] if len(split) > 3 else None
                 if(var_name.endswith('failReweight')):
                     continue
                 skipIfData = True
@@ -249,21 +251,18 @@ def main(args):
                 if(syst == 'central'):
                     skipIfData = False if len(var_split) == 1 else True
                     out_name = '{sample}{prompt}'.format(sample='%s', prompt=prompt)
-                elif(syst.replace('-','_') in systs_shape_uncorr):
+                elif(syst_fixname in systs_shape_uncorr):
                     # Hack: special treatment for systematics that have a shape impact and are uncorrelated across years
                     logging.debug('Special treatment for systematic "%s"', syst)
-                    direction = split[3]
-                    out_name = '{sample}{prompt}_{syst}_{year}{direction}'.format(sample='%s', prompt=prompt, syst=syst.replace('-','_'), direction=direction, year=args.year)
-                elif(syst.replace('-','_') in systs_shape_groups):
+                    out_name = '{sample}{prompt}_{syst}_{year}{direction}'.format(sample='%s', prompt=prompt, syst=syst_fixname, direction=direction, year=args.year)
+                elif(syst_fixname in systs_shape_groups):
                     # Hack: special treatment for systematics that have a shape impact and are correlated among groups of samples, but uncorrelated across years
                     # Mostly QCDscale and maybe other theoretical uncertainties
                     logging.debug('Special systematic "%s" - shape, group, year-uncorrelated', syst)
                     needSampleGroup = True
-                    direction = split[3]
-                    out_name_t='{sample}{prompt}_{syst}_{{group}}{direction}'.format(sample='%s', prompt=prompt, syst=syst.replace('-','_'), direction=direction)
+                    out_name_t='{sample}{prompt}_{syst}_{{group}}{direction}'.format(sample='%s', prompt=prompt, syst=syst_fixname, direction=direction)
                 else:
-                    direction = split[3]
-                    out_name = '{sample}{prompt}_{syst}{direction}'.format(sample='%s', prompt=prompt, syst=syst.replace('-','_'), direction=direction)
+                    out_name = '{sample}{prompt}_{syst}{direction}'.format(sample='%s', prompt=prompt, syst=syst_fixname, direction=direction)
 
                 subdir = fout.Get(var_name)  # e.g. mZZ, mZZG
                 if(not subdir):
