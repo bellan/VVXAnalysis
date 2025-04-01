@@ -614,6 +614,11 @@ def get_shape_uncorrelated(config):
     return {syst for syst in config['systematics']['uncorrelated'] if getSystType(syst, config) == 'shape'}
 
 
+def get_shape_correlyear(config):
+    # Mainly for CMS_pileup
+    return {syst for syst in config['systematics']['correl_year'] if getSystType(syst, config) == 'shape'}
+
+
 def get_shape_groups(config):
     # Some systematics are:
     # - shape: there must two histograms in the rootfile with the exact name name + "Up/Down".

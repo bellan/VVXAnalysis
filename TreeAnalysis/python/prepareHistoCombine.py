@@ -18,7 +18,7 @@ from subprocess import call
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
 from samplesByRegion import getSamplesByRegion
-from produceDataCard_VVGamma import get_shape_uncorrelated, get_shape_groups, get_sample_group, get_strategy_config, getSystType
+from produceDataCard_VVGamma import get_shape_uncorrelated, get_shape_correlyear, get_shape_groups, get_sample_group, get_strategy_config, getSystType
 from utils23 import lumi_dict
 import re
 
@@ -177,10 +177,13 @@ def main(args):
 
         # Get systematics that have shape and are uncorrelated in any of the strategies
         config_files = [os.path.join(CONFIGS_PATH, fname) for fname in os.listdir(CONFIGS_PATH) if os.path.splitext(fname)[1] in ('.json', '.jsn')]
+        config_dicts = [get_strategy_config(config_file) for config_file in config_files]
         logging.debug('reading %d configs: %s', len(config_files), config_files)
-        systs_shape_uncorr = get_shape_uncorrelated_many(get_strategy_config(config_file) for config_file in config_files)
+        systs_shape_uncorr = get_shape_uncorrelated_many(config_dicts)
         logging.info('Systematics with shape and uncorrelated: %s', systs_shape_uncorr)
-        systs_shape_groups = get_shape_groups_many(get_strategy_config(config_file) for config_file in config_files)
+        systs_shape_correlyear = get_shape_correlyear_many(config_dicts)
+        logging.info('Systematics with shape and correlated between 2016 pre/post: %s', systs_shape_correlyear)
+        systs_shape_groups = get_shape_groups_many(config_dicts)
         logging.info('Systematics with shape, correlated in group of samples: %s', systs_shape_groups)
 
         files_info_region = { fname: {'kfactor': sample_data.get('kfactor', 1.)} for sample, sample_data in samples_info_region.items() for fname in sample_data['files'] }
@@ -255,6 +258,12 @@ def main(args):
                     # Hack: special treatment for systematics that have a shape impact and are uncorrelated across years
                     logging.debug('Special treatment for systematic "%s"', syst)
                     out_name = '{sample}{prompt}_{syst}_{year}{direction}'.format(sample='%s', prompt=prompt, syst=syst_fixname, direction=direction, year=args.year)
+                elif(syst_fixname in systs_shape_correlyear):
+                    # Hack: systematic has a shape and is uncorrelated across period, but correlated within a year
+                    # eg. 2016 instead of 2016preVFP/2016postVFP
+                    logging.debug('Special treatment for systematic "%s" (correlated within a year)', syst)
+                    year_int = re.match(r'(\d+)', args.year).group(1)
+                    out_name = '{sample}{prompt}_{syst}_{year}{direction}'.format(sample='%s', prompt=prompt, syst=syst_fixname, direction=direction, year=year_int)
                 elif(syst_fixname in systs_shape_groups):
                     # Hack: special treatment for systematics that have a shape impact and are correlated among groups of samples, but uncorrelated across years
                     # Mostly QCDscale and maybe other theoretical uncertainties
@@ -366,6 +375,8 @@ def get_shape_uncorrelated_many(configs):
     # Just a wrapper around the union of the sets of shape_uncorr systematics in several configs
     return set.union(*(get_shape_uncorrelated(c) for c in configs))
 
+def get_shape_correlyear_many(configs):
+    return set.union(*(get_shape_correlyear(c) for c in configs))
 
 def get_shape_groups_many(configs):
     # Just a wrapper around the union of the sets of shape_uncorr systematics in several configs
