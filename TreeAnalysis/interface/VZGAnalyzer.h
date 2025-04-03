@@ -61,7 +61,12 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
     delete genWhadCandidates_;
   }
   //virtual ~VZGAnalyzer(){}
-  
+
+  void begin();
+  double getPhotonEffSF_MVA(   const phys::Photon&, phys::Photon::MVAwp) const;
+  double getPhotonEffSFUnc_MVA(const phys::Photon&, phys::Photon::MVAwp) const;
+  static std::unique_ptr<TH2F> getHistfromFile(const char* fname, const char* hname="PhFR", const char* info="");
+
   void PlotJet(const phys::Particle &, std::string , const float , std::string );
   
   void PlotJets(const phys::Particle &, const phys::Particle &, std::string , const float , std::string );
@@ -157,6 +162,12 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
   std::unique_ptr<TH2F> hPhotonFR_KtoVLexcl_;
   std::unique_ptr<TH2F> hPhotonFRSF_LtoT_;
   std::string channelReco_;
+
+  std::unique_ptr<TH2F> hPhotonEffSF_;
+  double hPhotonEffSF_maxPt_;
+
+  std::map<phys::Photon::MVAwp, std::unique_ptr<TH2F>> mapPhotonMVASF_;
+  std::map<phys::Photon::MVAwp, float                > mapPhotonMVASF_maxPt_;
 
 
 

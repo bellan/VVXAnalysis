@@ -216,7 +216,7 @@ Int_t EventAnalyzer::GetEntry(Long64_t entry){
   jets->clear(); centralJets->clear(); 
   if(pjets){
     foreach(const phys::Jet &jet, *pjets)
-      if(jet.pt() > 30){
+      if(jet.pt() > 0){//CT: momentaneously released to allow double-direction threshold effects
 	if(fabs(jet.eta()) < 4.7) jets->push_back(jet);
 	if(fabs(jet.eta()) < 2.4) centralJets->push_back(jet);
       }
