@@ -53,6 +53,7 @@ bool inPhotonEtaAcceptance(double eta);
 std::pair<float, float> QCDscale_updn(const SampleInfo& theSampleInfo);
 double getPhotonFR   (const phys::Photon&, const TH2F*, double maxPt=120.);
 double getPhotonFRUnc(const phys::Photon&, const TH2F*, double maxPt=120.);
+double getZllgMass_GEN(const std::vector<phys::Particle>&, const DiBoson<Particle, Particle>&);
 
 
 void VVGammaAnalyzer::begin(){
@@ -61,6 +62,9 @@ void VVGammaAnalyzer::begin(){
   cout<<" Start of VVGammaAnalyzer ";
   for(char i=0; i<25; ++i) cout<<'-';
   cout<<'\n';
+
+  isSignalSample_ = theSampleInfo.fileName().find("ZZGTo4LG") != std::string::npos;
+  cout << "Is this the signal sample? " << isSignalSample_ << '\n';
 
   const char* CMSSW_BASE = getenv("CMSSW_BASE");
   std::string VVXAnalysis_dir = CMSSW_BASE == nullptr ? ".." : Form("%s/src/VVXAnalysis", CMSSW_BASE);
@@ -825,9 +829,36 @@ void VVGammaAnalyzer::analyze(){
   }
 
   orphanPhotonStudy();
-  systematicsStudy("");
+
+  // Signal definition
+  const char* sigdef_inclusive = "";
+  const char* sigdef_triboson = "";
+  if(theSampleInfo.isMC()){
+    double ZllG_mass = getZllgMass_GEN(*genPhotonsPrompt_, genZZ_);
+    bool pass_ph = sigdefHelper.pass_photon();
+    bool pass_triboson = ZllG_mass > 100;
+
+    // Inclusive signal definition
+    if(pass_ph)
+      sigdef_inclusive = "prompt";
+    else
+      sigdef_inclusive = "nonpro";
+
+    // Triboson signal definition (only for the signal)
+    if(isSignalSample_){
+      if(pass_ph && pass_triboson)
+	sigdef_triboson = "prompt";
+      else
+	sigdef_triboson = "nonpro";
+    }
+    else
+      sigdef_triboson = sigdef_inclusive;
+  }
+
+  // Core of the analysis: make the "SYS[-triboson]_*" plots
+  systematicsStudy("", sigdef_inclusive);
   if(passFSRcut_)
-    systematicsStudy("-triboson");
+    systematicsStudy("-triboson", sigdef_triboson);
   
   // Basic histograms on leptonic side
   if     (four_lep){
@@ -3048,7 +3079,39 @@ std::pair<double, double> VVGammaAnalyzer::getZllAndZllgMasses_minimum(const std
 }
 
 
-void VVGammaAnalyzer::SYSplots_inclusive(const char *sys_label, const char* syst, double weight){
+double getZllgMass_GEN(const std::vector<phys::Particle>& phVect_orig, const DiBoson<Particle, Particle>& theZZ){
+  /*
+    There may be GEN FSR photons that are marked as prompt.
+    We want to know wether there is at least one GEN photon that has
+    mllG = min(mZ1G, mZ2G) > 100 GeV.
+    We compute the highest mllG of all the photons and return this value.
+   */
+  std::vector<Particle> phVect;
+  phVect.reserve(phVect_orig.size());
+  std::copy_if(phVect_orig.begin(), phVect_orig.end(), std::back_inserter(phVect),
+		     [](const Particle& ph){
+		       float aeta = fabs(ph.eta());
+		       return ph.pt() > 20 && aeta < CUT_G_AETA_MAX;
+		     });
+  if(phVect.size() == 0)
+    return -1.;
+
+  double max_llG_mass(0.);
+  const Boson<Particle>& Z1 = theZZ.first();
+  const Boson<Particle>& Z2 = theZZ.second();
+
+  for(auto ph : phVect){
+    double m1 = (Z1.p4()+ph.p4()).M();
+    double m2 = (Z2.p4()+ph.p4()).M();
+    double llG_mass = std::min(m1, m2);
+    max_llG_mass = std::max(max_llG_mass, llG_mass);
+  }
+
+  return max_llG_mass;
+}
+
+
+void VVGammaAnalyzer::SYSplots_inclusive(const char *sys_label, const char* sigdef, const char* syst, double weight){
   const char* strPrompt = "";
   if(theSampleInfo.isMC())
     strPrompt = sigdefHelper.pass_photon() ? "prompt" : "nonpro" ;
@@ -3076,21 +3139,17 @@ void VVGammaAnalyzer::SYSplots_inclusive(const char *sys_label, const char* syst
 }
 
 
-void VVGammaAnalyzer::SYSplots_photon(const char* sys_label, const char* syst, double weight, const Photon& ph, const char* ph_selection){
-  const char* phGenStatus = "";
-  if(theSampleInfo.isMC())
-    phGenStatus = sigdefHelper.pass_photon() ? "prompt" : "nonpro" ;  // it is actually the event status (pass/fail the signal definition)
-
+void VVGammaAnalyzer::SYSplots_photon(const char* sys_label, const char* sigdef, const char* syst, double weight, const Photon& ph, const char* ph_selection){
   theHistograms->fill(  Form("SYS%s_%spt_%s"    , sys_label, ph_selection             , syst), Form("pt %s %s"    , ph_selection             , syst), ph_pt_bins, ph.pt()      ,weight);
   if(theSampleInfo.isMC()){
-    theHistograms->fill(Form("SYS%s_%spt-%s_%s" , sys_label, ph_selection, phGenStatus, syst), Form("pt %s %s %s" , ph_selection, phGenStatus, syst), ph_pt_bins, ph.pt()      ,weight);
+    theHistograms->fill(Form("SYS%s_%spt-%s_%s" , sys_label, ph_selection, sigdef, syst), Form("pt %s %s %s" , ph_selection, sigdef, syst), ph_pt_bins, ph.pt()      ,weight);
   }
 
   // We only care about the distrbution of MVA for the kin photon selection
   if(strcmp(ph_selection, "kin") == 0){
     theHistograms->fill(  Form("SYS%s_%sMVA_%s"   , sys_label, ph_selection             , syst), Form("MVA %s %s"   , ph_selection             , syst), 40,-1,1   , ph.MVAvalue(),weight);
     if(theSampleInfo.isMC()){
-      theHistograms->fill(Form("SYS%s_%sMVA-%s_%s", sys_label, ph_selection, phGenStatus, syst), Form("MVA %s %s %s", ph_selection, phGenStatus, syst), 40,-1,1   , ph.MVAvalue(),weight);
+      theHistograms->fill(Form("SYS%s_%sMVA-%s_%s", sys_label, ph_selection, sigdef, syst), Form("MVA %s %s %s", ph_selection, sigdef, syst), 40,-1,1   , ph.MVAvalue(),weight);
     }
   }
 
@@ -3104,14 +3163,14 @@ void VVGammaAnalyzer::SYSplots_photon(const char* sys_label, const char* syst, d
     double mZZG = (ZZ->p4() + ph.p4()).M();
     theHistograms->fill(  Form("SYS%s_mZZG%s_%s"   , sys_label, ph_selection             , syst), Form("m_{ZZ#gamma %s} %s", ph_selection, syst), mVVG_bins, mZZG, weight);
     if(theSampleInfo.isMC())
-      theHistograms->fill(Form("SYS%s_mZZG%s-%s_%s", sys_label, ph_selection, phGenStatus, syst), Form("m_{ZZ#gamma %s} %s", ph_selection, syst), mVVG_bins, mZZG, weight);
+      theHistograms->fill(Form("SYS%s_mZZG%s-%s_%s", sys_label, ph_selection, sigdef, syst), Form("m_{ZZ#gamma %s} %s", ph_selection, syst), mVVG_bins, mZZG, weight);
   }
 
   else if(is3Lregion(region_)){
     double mtWZG = (ZW->p4() + ph.p4()).Mt();
     theHistograms->fill(  Form("SYS%s_mWZG%s_%s"   , sys_label, ph_selection             , syst), Form("m_{T}^{WZ#gamma %s}; %s", ph_selection, syst), mVVG_bins, mtWZG, weight);
     if(theSampleInfo.isMC())
-      theHistograms->fill(Form("SYS%s_mWZG%s-%s_%s", sys_label, ph_selection, phGenStatus, syst), Form("m_{T}^{WZ#gamma %s}; %s", ph_selection, syst), mVVG_bins, mtWZG, weight);
+      theHistograms->fill(Form("SYS%s_mWZG%s-%s_%s", sys_label, ph_selection, sigdef, syst), Form("m_{T}^{WZ#gamma %s}; %s", ph_selection, syst), mVVG_bins, mtWZG, weight);
   }
 
   else if(region_ == CRLFR){
@@ -3124,22 +3183,22 @@ void VVGammaAnalyzer::SYSplots_photon(const char* sys_label, const char* syst, d
     theHistograms->fill(Form("SYS%s_mZG%s_%s" , sys_label, ph_selection, syst), Form("m_{Z#gamma %s} %s" , ph_selection, syst), mZG_bins, mZG , weight);
     theHistograms->fill(Form("SYS%s_mZLG%s_%s", sys_label, ph_selection, syst), Form("m_{ZL#gamma %s} %s", ph_selection, syst), mZG_bins, mZLG, weight);
     if(theSampleInfo.isMC()){
-      theHistograms->fill(Form("SYS%s_mZG%s-%s_%s" , sys_label, ph_selection, phGenStatus, syst), Form("m_{Z#gamma %s} %s %s" , ph_selection, phGenStatus, syst), mZG_bins, mZG , weight);
-      theHistograms->fill(Form("SYS%s_mZLG%s-%s_%s", sys_label, ph_selection, phGenStatus, syst), Form("m_{ZL#gamma %s} %s %s", ph_selection, phGenStatus, syst), mZG_bins, mZLG, weight);
+      theHistograms->fill(Form("SYS%s_mZG%s-%s_%s" , sys_label, ph_selection, sigdef, syst), Form("m_{Z#gamma %s} %s %s" , ph_selection, sigdef, syst), mZG_bins, mZG , weight);
+      theHistograms->fill(Form("SYS%s_mZLG%s-%s_%s", sys_label, ph_selection, sigdef, syst), Form("m_{ZL#gamma %s} %s %s", ph_selection, sigdef, syst), mZG_bins, mZLG, weight);
     }
   }
 }
 
 
-void VVGammaAnalyzer::SYSplots_phCut(const char* sys_label, const char* syst, double weight, const Photon& phCut){
-  SYSplots_photon(sys_label, syst, weight, phCut, "kin");
+void VVGammaAnalyzer::SYSplots_phCut(const char* sys_label, const char* sigdef, const char* syst, double weight, const Photon& phCut){
+  SYSplots_photon(sys_label, sigdef, syst, weight, phCut, "kin");
 
   if(phCut.cutBasedID(Photon::IdWp::VeryLoose)){
-    SYSplots_photon(sys_label, syst, weight, phCut, "veryLoose");
+    SYSplots_photon(sys_label, sigdef, syst, weight, phCut, "veryLoose");
     if(phCut.cutBasedIDLoose())
-      SYSplots_photon(sys_label, syst, weight, phCut, "loose");
+      SYSplots_photon(sys_label, sigdef, syst, weight, phCut, "loose");
     else{
-      SYSplots_photon(sys_label, syst, weight, phCut, "fail");
+      SYSplots_photon(sys_label, sigdef, syst, weight, phCut, "fail");
 
       double f_VLtoL = 0.;
       // Is this systematic affecting also the PhFR? Then use the corrisponding variation of the FR
@@ -3152,13 +3211,13 @@ void VVGammaAnalyzer::SYSplots_phCut(const char* sys_label, const char* syst, do
 			      );
 
       double w_VLtoL = f_VLtoL / (1 - f_VLtoL);
-      SYSplots_photon(sys_label, syst, weight * w_VLtoL, phCut, "failReweight");
+      SYSplots_photon(sys_label, sigdef, syst, weight * w_VLtoL, phCut, "failReweight");
     }
   }
 }
 
 
-void VVGammaAnalyzer::SYSplots_phMVA(const char* sys_label, const char* syst, double weight, const Photon& phMVA){
+void VVGammaAnalyzer::SYSplots_phMVA(const char* sys_label, const char* sigdef, const char* syst, double weight, const Photon& phMVA){
   // Note: unlinke the plots for phCut, there's no category for kin photons to avoid duplication
 
   double effSF = 1.;
@@ -3169,17 +3228,17 @@ void VVGammaAnalyzer::SYSplots_phMVA(const char* sys_label, const char* syst, do
     if(theSampleInfo.isMC())
       effSF = getPhotonEffSF_MVA(phMVA, Photon::MVAwp::wp90);
 
-    SYSplots_photon(sys_label, syst, weight * effSF, phMVA, "wp90");
+    SYSplots_photon(sys_label, sigdef, syst, weight * effSF, phMVA, "wp90");
 
     if  (phMVA.passMVA(Photon::MVAwp::wp80)){
       MVACut_s = "wp80";
       if(theSampleInfo.isMC())
         effSF = getPhotonEffSF_MVA(phMVA, Photon::MVAwp::wp80);
 
-      SYSplots_photon(sys_label, syst, weight * effSF, phMVA, "wp80");
+      SYSplots_photon(sys_label, sigdef, syst, weight * effSF, phMVA, "wp80");
     }
     else{
-      SYSplots_photon(sys_label, syst, weight * effSF, phMVA, "90not80");
+      SYSplots_photon(sys_label, sigdef, syst, weight * effSF, phMVA, "90not80");
 
       // Here the reweight when we will have the fake rate transfer factors
     }
@@ -3187,25 +3246,23 @@ void VVGammaAnalyzer::SYSplots_phMVA(const char* sys_label, const char* syst, do
 
   theHistograms->fill(  Form("SYS%s_MVAcut_%s"   , sys_label             , syst), Form("MVAcut %s"                , syst), {"none","wp90","wp80"}, MVACut_s.c_str(), weight*effSF);
   if(theSampleInfo.isMC()){
-    const char* phGenStatus;
-    phGenStatus = sigdefHelper.pass_photon() ? "prompt" : "nonpro" ;  // it is actually the event status (pass/fail the signal definition)
-    theHistograms->fill(Form("SYS%s_MVAcut-%s_%s", sys_label, phGenStatus, syst), Form("MVAcut %s %s", phGenStatus, syst), {"none","wp90","wp80"}, MVACut_s.c_str(), weight*effSF);
+    theHistograms->fill(Form("SYS%s_MVAcut-%s_%s", sys_label, sigdef, syst), Form("MVAcut %s %s", sigdef, syst), {"none","wp90","wp80"}, MVACut_s.c_str(), weight*effSF);
   }
 }
 
 
-void VVGammaAnalyzer::SYSplots(const char* sys_label, const char* syst, double weight, const Photon* phCut, const Photon* phMVA){
-  SYSplots_inclusive(sys_label, syst, weight);
+void VVGammaAnalyzer::SYSplots(const char* sys_label, const char* sigdef, const char* syst, double weight, const Photon* phCut, const Photon* phMVA){
+  SYSplots_inclusive(sys_label, sigdef, syst, weight);
 
   if(phCut)
-    SYSplots_phCut(sys_label, syst, weight, *phCut);
+    SYSplots_phCut(sys_label, sigdef, syst, weight, *phCut);
 
   if(phMVA)
-    SYSplots_phMVA(sys_label, syst, weight, *phMVA);
+    SYSplots_phMVA(sys_label, sigdef, syst, weight, *phMVA);
 }
 
 
-void VVGammaAnalyzer::systematicsStudy(const char* sys_label){
+void VVGammaAnalyzer::systematicsStudy(const char* sys_label, const char* sigdef){
   double base_w = theWeight;
 
   const Photon* ph = nullptr;
@@ -3217,7 +3274,7 @@ void VVGammaAnalyzer::systematicsStudy(const char* sys_label){
     ph = & (kinPhotons_["central"]->front());
 
   // central
-  SYSplots(sys_label, "central", base_w, ph, bestMVAPh_);
+  SYSplots(sys_label, sigdef, "central", base_w, ph, bestMVAPh_);
 
   // Photons energy scale and resolution
   for(const char* syst : photonSystKeys_){
@@ -3225,22 +3282,22 @@ void VVGammaAnalyzer::systematicsStudy(const char* sys_label){
 
     std::string syst_name = Form("CMS-%s", syst);
 
-    SYSplots_inclusive( sys_label, syst_name.c_str(), base_w);
+    SYSplots_inclusive( sys_label, sigdef, syst_name.c_str(), base_w);
 
     if(kinPhotons_[syst]->size() > 0)
-      SYSplots_photon(  sys_label, syst_name.c_str(), base_w, kinPhotons_[syst]->front()  , "kin");
+      SYSplots_photon(  sys_label, sigdef, syst_name.c_str(), base_w, kinPhotons_[syst]->front()  , "kin");
 
     if(loosePhotons_[syst]->size() > 0){
-      SYSplots_photon(  sys_label, syst_name.c_str(), base_w, loosePhotons_[syst]->front(), "veryLoose");
+      SYSplots_photon(  sys_label, sigdef, syst_name.c_str(), base_w, loosePhotons_[syst]->front(), "veryLoose");
 
       if(goodPhotons_[syst]->size() > 0)
-	SYSplots_photon(sys_label, syst_name.c_str(), base_w, goodPhotons_[syst]->front() , "loose");
+	SYSplots_photon(sys_label, sigdef, syst_name.c_str(), base_w, goodPhotons_[syst]->front() , "loose");
       else{
 	const Photon& failPh = loosePhotons_[syst]->front();
-	SYSplots_photon(sys_label, syst_name.c_str(), base_w          , failPh, "fail"        );
+	SYSplots_photon(sys_label, sigdef, syst_name.c_str(), base_w          , failPh, "fail"        );
 	double f_VLtoL = getPhotonFR_VLtoL(failPh);
 	double w_VLtoL = f_VLtoL / (1 - f_VLtoL);
-	SYSplots_photon(sys_label, syst_name.c_str(), base_w * w_VLtoL, failPh, "failReweight");
+	SYSplots_photon(sys_label, sigdef, syst_name.c_str(), base_w * w_VLtoL, failPh, "failReweight");
       }
     }
 
@@ -3248,31 +3305,31 @@ void VVGammaAnalyzer::systematicsStudy(const char* sys_label){
 					[](const Photon& a, const Photon& b){ return a.MVAvalue() < b.MVAvalue(); }
 					);
     if(bestMVA_syst != kinPhotons_[syst]->end())
-      SYSplots_phMVA(sys_label, syst_name.c_str(), base_w, *bestMVA_syst);
+      SYSplots_phMVA(sys_label, sigdef, syst_name.c_str(), base_w, *bestMVA_syst);
   }
 
   bool isMC = theSampleInfo.isMC();
   // puWeightUnc
-  SYSplots(sys_label, "CMS-pileup_Up"  , base_w * ( isMC ? theSampleInfo.puWeightUncUp() / theSampleInfo.puWeight() : 1.), ph, bestMVAPh_);
-  SYSplots(sys_label, "CMS-pileup_Down", base_w * ( isMC ? theSampleInfo.puWeightUncDn() / theSampleInfo.puWeight() : 1.), ph, bestMVAPh_);
+  SYSplots(sys_label, sigdef, "CMS-pileup_Up"  , base_w * ( isMC ? theSampleInfo.puWeightUncUp() / theSampleInfo.puWeight() : 1.), ph, bestMVAPh_);
+  SYSplots(sys_label, sigdef, "CMS-pileup_Down", base_w * ( isMC ? theSampleInfo.puWeightUncDn() / theSampleInfo.puWeight() : 1.), ph, bestMVAPh_);
 
   // L1PrefiringWeight
-  SYSplots(sys_label, "CMS-l1-prefiring_Up"  , base_w * ( isMC ? theSampleInfo.L1PrefiringWeightUp() / theSampleInfo.L1PrefiringWeight() : 1.), ph, bestMVAPh_);
-  SYSplots(sys_label, "CMS-l1-prefiring_Down", base_w * ( isMC ? theSampleInfo.L1PrefiringWeightDn() / theSampleInfo.L1PrefiringWeight() : 1.), ph, bestMVAPh_);
+  SYSplots(sys_label, sigdef, "CMS-l1-prefiring_Up"  , base_w * ( isMC ? theSampleInfo.L1PrefiringWeightUp() / theSampleInfo.L1PrefiringWeight() : 1.), ph, bestMVAPh_);
+  SYSplots(sys_label, sigdef, "CMS-l1-prefiring_Down", base_w * ( isMC ? theSampleInfo.L1PrefiringWeightDn() / theSampleInfo.L1PrefiringWeight() : 1.), ph, bestMVAPh_);
 
   // QCD scale
   float QCDscale_Up(1.), QCDscale_Dn(1.);
   std::tie(QCDscale_Up, QCDscale_Dn) = QCDscale_updn(theSampleInfo);
-  SYSplots(sys_label, "QCDscale_Up"  , base_w * QCDscale_Up, ph, bestMVAPh_);
-  SYSplots(sys_label, "QCDscale_Down", base_w * QCDscale_Dn, ph, bestMVAPh_);
+  SYSplots(sys_label, sigdef, "QCDscale_Up"  , base_w * QCDscale_Up, ph, bestMVAPh_);
+  SYSplots(sys_label, sigdef, "QCDscale_Down", base_w * QCDscale_Dn, ph, bestMVAPh_);
 
   // PDF var
-  SYSplots(sys_label, "pdf_Up"  , base_w * ( isMC ? theSampleInfo.PDFVar_Up()   : 1.), ph, bestMVAPh_);
-  SYSplots(sys_label, "pdf_Down", base_w * ( isMC ? theSampleInfo.PDFVar_Down() : 1.), ph, bestMVAPh_);
+  SYSplots(sys_label, sigdef, "pdf_Up"  , base_w * ( isMC ? theSampleInfo.PDFVar_Up()   : 1.), ph, bestMVAPh_);
+  SYSplots(sys_label, sigdef, "pdf_Down", base_w * ( isMC ? theSampleInfo.PDFVar_Down() : 1.), ph, bestMVAPh_);
 
   // alphas MZ
-  SYSplots(sys_label, "alphas_Up"  , base_w * ( isMC ? theSampleInfo.alphas_MZ_Up()   : 1.), ph, bestMVAPh_);
-  SYSplots(sys_label, "alphas_Down", base_w * ( isMC ? theSampleInfo.alphas_MZ_Down() : 1.), ph, bestMVAPh_);
+  SYSplots(sys_label, sigdef, "alphas_Up"  , base_w * ( isMC ? theSampleInfo.alphas_MZ_Up()   : 1.), ph, bestMVAPh_);
+  SYSplots(sys_label, sigdef, "alphas_Down", base_w * ( isMC ? theSampleInfo.alphas_MZ_Down() : 1.), ph, bestMVAPh_);
 
 
   double eleEff_w=0., muoEff_w=0., eleFake_w=0., muoFake_w=0.;
@@ -3296,42 +3353,42 @@ void VVGammaAnalyzer::systematicsStudy(const char* sys_label){
   }
   
   // lepton efficiency SF
-  SYSplots(sys_label, "CMS-eff-e_Up"  , base_w * (1 + eleEff_w), ph, bestMVAPh_);
-  SYSplots(sys_label, "CMS-eff-e_Down", base_w * (1 - eleEff_w), ph, bestMVAPh_);
-  SYSplots(sys_label, "CMS-eff-m_Up"  , base_w * (1 + muoEff_w), ph, bestMVAPh_);
-  SYSplots(sys_label, "CMS-eff-m_Down", base_w * (1 - muoEff_w), ph, bestMVAPh_);
+  SYSplots(sys_label, sigdef, "CMS-eff-e_Up"  , base_w * (1 + eleEff_w), ph, bestMVAPh_);
+  SYSplots(sys_label, sigdef, "CMS-eff-e_Down", base_w * (1 - eleEff_w), ph, bestMVAPh_);
+  SYSplots(sys_label, sigdef, "CMS-eff-m_Up"  , base_w * (1 + muoEff_w), ph, bestMVAPh_);
+  SYSplots(sys_label, sigdef, "CMS-eff-m_Down", base_w * (1 - muoEff_w), ph, bestMVAPh_);
 
   // lepton fake rate SF
-  SYSplots(sys_label, "CMS-fake-e_Up"  , base_w * (1 + eleFake_w), ph, bestMVAPh_);
-  SYSplots(sys_label, "CMS-fake-e_Down", base_w * (1 - eleFake_w), ph, bestMVAPh_);
-  SYSplots(sys_label, "CMS-fake-m_Up"  , base_w * (1 + muoFake_w), ph, bestMVAPh_);
-  SYSplots(sys_label, "CMS-fake-m_Down", base_w * (1 - muoFake_w), ph, bestMVAPh_);
+  SYSplots(sys_label, sigdef, "CMS-fake-e_Up"  , base_w * (1 + eleFake_w), ph, bestMVAPh_);
+  SYSplots(sys_label, sigdef, "CMS-fake-e_Down", base_w * (1 - eleFake_w), ph, bestMVAPh_);
+  SYSplots(sys_label, sigdef, "CMS-fake-m_Up"  , base_w * (1 + muoFake_w), ph, bestMVAPh_);
+  SYSplots(sys_label, sigdef, "CMS-fake-m_Down", base_w * (1 - muoFake_w), ph, bestMVAPh_);
 
   // Photon cut-based ID efficiency
-  SYSplots_inclusive(sys_label, "CMS-eff-g_Up"  , base_w);
-  SYSplots_inclusive(sys_label, "CMS-eff-g_Down", base_w);
+  SYSplots_inclusive(sys_label, sigdef, "CMS-eff-g_Up"  , base_w);
+  SYSplots_inclusive(sys_label, sigdef, "CMS-eff-g_Down", base_w);
 
   if(ph){
     double phEff_dw = 0.;
     if(ph->cutBasedID(Photon::IdWp::Loose) && getPhotonEffSF(*ph) != 0)
       phEff_dw = getPhotonEffSFUnc(*ph)/getPhotonEffSF(*ph);
 
-    SYSplots_phCut(sys_label, "CMS-eff-g_Up"  , base_w * (1 + phEff_dw), *ph);
-    SYSplots_phCut(sys_label, "CMS-eff-g_Down", base_w * (1 - phEff_dw), *ph);
+    SYSplots_phCut(sys_label, sigdef, "CMS-eff-g_Up"  , base_w * (1 + phEff_dw), *ph);
+    SYSplots_phCut(sys_label, sigdef, "CMS-eff-g_Down", base_w * (1 - phEff_dw), *ph);
   }
   if(bestMVAPh_){  // Should be true if the previous ph != nullptr is true
-    SYSplots_phMVA(sys_label, "CMS-eff-g_Up"  , base_w, *bestMVAPh_);
-    SYSplots_phMVA(sys_label, "CMS-eff-g_Down", base_w, *bestMVAPh_);
+    SYSplots_phMVA(sys_label, sigdef, "CMS-eff-g_Up"  , base_w, *bestMVAPh_);
+    SYSplots_phMVA(sys_label, sigdef, "CMS-eff-g_Down", base_w, *bestMVAPh_);
   }
 
   // Photon MVA ID efficiency
   // - inclusive
-  SYSplots_inclusive(sys_label, "CMS-eff-g-IDMVA_Up"  , base_w);
-  SYSplots_inclusive(sys_label, "CMS-eff-g-IDMVA_Down", base_w);
+  SYSplots_inclusive(sys_label, sigdef, "CMS-eff-g-IDMVA_Up"  , base_w);
+  SYSplots_inclusive(sys_label, sigdef, "CMS-eff-g-IDMVA_Down", base_w);
   // - cut based IDs
   if(ph){
-    SYSplots_phCut(sys_label, "CMS-eff-g-IDMVA_Up"  , base_w, *ph);
-    SYSplots_phCut(sys_label, "CMS-eff-g-IDMVA_Down", base_w, *ph);
+    SYSplots_phCut(sys_label, sigdef, "CMS-eff-g-IDMVA_Up"  , base_w, *ph);
+    SYSplots_phCut(sys_label, sigdef, "CMS-eff-g-IDMVA_Down", base_w, *ph);
   }
   // - MVA based ID --> fill plots "manually"
   if(bestMVAPh_){
@@ -3347,36 +3404,34 @@ void VVGammaAnalyzer::systematicsStudy(const char* sys_label){
       MVAcut_s = "wp90";
       getPhotonEffSFUnc_MVA(*bestMVAPh_, Photon::MVAwp::wp90);
       double effdw90 = effdw = getPhotonEffSFUnc(*ph)/effSF_wp90;
-      SYSplots_photon(sys_label, "CMS-eff-g-IDMVA_Up"  , base_w * effSF_wp90 * (1 + effdw90), *bestMVAPh_, "wp90");
-      SYSplots_photon(sys_label, "CMS-eff-g-IDMVA_Down", base_w * effSF_wp90 * (1 - effdw90), *bestMVAPh_, "wp90");
+      SYSplots_photon(sys_label, sigdef, "CMS-eff-g-IDMVA_Up"  , base_w * effSF_wp90 * (1 + effdw90), *bestMVAPh_, "wp90");
+      SYSplots_photon(sys_label, sigdef, "CMS-eff-g-IDMVA_Down", base_w * effSF_wp90 * (1 - effdw90), *bestMVAPh_, "wp90");
 
       if(pass80 && effSF_wp80 != 0){
 	effSF = effSF_wp80;
 	MVAcut_s = "wp80";
 	getPhotonEffSFUnc_MVA(*bestMVAPh_, Photon::MVAwp::wp80);
 	double effdw80 = effdw = getPhotonEffSFUnc(*ph)/effSF_wp80;
-	SYSplots_photon(sys_label, "CMS-eff-g-IDMVA_Up"  , base_w * effSF_wp80 * (1 + effdw80), *bestMVAPh_, "wp80");
-	SYSplots_photon(sys_label, "CMS-eff-g-IDMVA_Down", base_w * effSF_wp80 * (1 - effdw80), *bestMVAPh_, "wp80");
+	SYSplots_photon(sys_label, sigdef, "CMS-eff-g-IDMVA_Up"  , base_w * effSF_wp80 * (1 + effdw80), *bestMVAPh_, "wp80");
+	SYSplots_photon(sys_label, sigdef, "CMS-eff-g-IDMVA_Down", base_w * effSF_wp80 * (1 - effdw80), *bestMVAPh_, "wp80");
       }
       else{
-	SYSplots_photon(sys_label, "CMS-eff-g-IDMVA_Up"  , base_w * effSF_wp90 * (1 + effdw90), *bestMVAPh_, "90not80");
-	SYSplots_photon(sys_label, "CMS-eff-g-IDMVA_Down", base_w * effSF_wp90 * (1 - effdw90), *bestMVAPh_, "90not80");
+	SYSplots_photon(sys_label, sigdef, "CMS-eff-g-IDMVA_Up"  , base_w * effSF_wp90 * (1 + effdw90), *bestMVAPh_, "90not80");
+	SYSplots_photon(sys_label, sigdef, "CMS-eff-g-IDMVA_Down", base_w * effSF_wp90 * (1 - effdw90), *bestMVAPh_, "90not80");
       }
     }
 
     theHistograms->fill(Form("SYS%s_MVAcut_CMS-eff-g-IDMVA_Up"  , sys_label), "MVAcut CMS_eff_g_IDMVA_Up"  , {"none", "wp90", "wp80"}, MVAcut_s.c_str(), base_w * effSF * (1 + effdw));
     theHistograms->fill(Form("SYS%s_MVAcut_CMS-eff-g-IDMVA_Down", sys_label), "MVAcut CMS_eff_g_IDMVA_Down", {"none", "wp90", "wp80"}, MVAcut_s.c_str(), base_w * effSF * (1 - effdw));
     if(theSampleInfo.isMC()){
-      const char* phGenStatus;
-      phGenStatus = sigdefHelper.pass_photon() ? "prompt" : "nonpro" ;
-      theHistograms->fill(Form("SYS%s_MVAcut-%s_CMS-eff-g-IDMVA_Up"  , sys_label, phGenStatus), Form("MVAcut %s CMS_eff_g_IDMVA_Up"  , phGenStatus), {"none","wp90","wp80"}, MVAcut_s.c_str(), base_w * effSF * (1 + effdw));
-      theHistograms->fill(Form("SYS%s_MVAcut-%s_CMS-eff-g-IDMVA_Down", sys_label, phGenStatus), Form("MVAcut %s CMS_eff_g_IDMVA_Down", phGenStatus), {"none","wp90","wp80"}, MVAcut_s.c_str(), base_w * effSF * (1 - effdw));
+      theHistograms->fill(Form("SYS%s_MVAcut-%s_CMS-eff-g-IDMVA_Up"  , sys_label, sigdef), Form("MVAcut %s CMS_eff_g_IDMVA_Up"  , sigdef), {"none","wp90","wp80"}, MVAcut_s.c_str(), base_w * effSF * (1 + effdw));
+      theHistograms->fill(Form("SYS%s_MVAcut-%s_CMS-eff-g-IDMVA_Down", sys_label, sigdef), Form("MVAcut %s CMS_eff_g_IDMVA_Down", sigdef), {"none","wp90","wp80"}, MVAcut_s.c_str(), base_w * effSF * (1 - effdw));
     }
   }
 
   // Photon FR uncertaintiy  WARN: for this to have a meaning, the photon FR SF should be applied
-  SYSplots_inclusive(sys_label, "CMS-fake-g_Up"  , base_w);
-  SYSplots_inclusive(sys_label, "CMS-fake-g_Down", base_w);
+  SYSplots_inclusive(sys_label, sigdef, "CMS-fake-g_Up"  , base_w);
+  SYSplots_inclusive(sys_label, sigdef, "CMS-fake-g_Down", base_w);
   if(ph){
     double w_up = 1.;
     double w_dn = 1.;
@@ -3391,12 +3446,12 @@ void VVGammaAnalyzer::systematicsStudy(const char* sys_label){
       w_up = sf_up/sf_ce;
       w_dn = sf_dn/sf_ce;
     }
-    SYSplots_phCut(sys_label, "CMS-fake-g_Up"  , base_w * w_up, *ph);
-    SYSplots_phCut(sys_label, "CMS-fake-g_Down", base_w * w_dn, *ph);
+    SYSplots_phCut(sys_label, sigdef, "CMS-fake-g_Up"  , base_w * w_up, *ph);
+    SYSplots_phCut(sys_label, sigdef, "CMS-fake-g_Down", base_w * w_dn, *ph);
   }
   if(bestMVAPh_){
-    SYSplots_phMVA(sys_label, "CMS-fake-g_Up"  , base_w, *bestMVAPh_);
-    SYSplots_phMVA(sys_label, "CMS-fake-g_Down", base_w, *bestMVAPh_);
+    SYSplots_phMVA(sys_label, sigdef, "CMS-fake-g_Up"  , base_w, *bestMVAPh_);
+    SYSplots_phMVA(sys_label, sigdef, "CMS-fake-g_Down", base_w, *bestMVAPh_);
   }
 }
 
