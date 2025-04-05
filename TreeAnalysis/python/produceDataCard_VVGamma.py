@@ -49,6 +49,7 @@ __builtin_config__ = {
         'theory': ['QCDscale', 'alphas', 'pdf'],
         'datadriven': ['CMS_fake_g', 'CMS_SMP24014_fake_g_ARstat', 'CMS_fake_m', 'CMS_fake_e'],
         'split-by-sample-group': ['QCDscale', 'pdf'], # Note: when split, the name changes in the datacard, so this cannot be a shape, otherwise the histogram name must change as well
+        'autoMCStats_threshold': 5,
         '_end':[]
     }
 }
@@ -520,6 +521,11 @@ def main(args):
         print(df_syst)
         print()
 
+
+    ### Syst extra ###
+    syst_extra_s = '* autoMCStats %d'%(config['systematics']['autoMCStats_threshold'])
+
+
     ### Groups of nusiances ###
     groups = {}
     for syst_fullname in df_syst.index:
@@ -551,7 +557,7 @@ def main(args):
         path=path_to_histograms,
         bins=df_bin.to_string(header=False),
         processes=df_rate.to_string(header=False),
-        systematics='#'+df_syst.to_string(),
+        systematics='#'+df_syst.to_string()+'\n\n'+syst_extra_s,
         groups=groups_s
     )
 
