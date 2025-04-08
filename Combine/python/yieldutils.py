@@ -155,6 +155,7 @@ def sample_to_latex(sample):
     elif('ggTo4mu'        in base): base = r'\ggtomm'
     elif('ggTo2e2mu'      in base): base = r'\ggtoem'
     elif('ggTo4e'         in base): base = r'\ggtoee'
+    elif('ggTo4l'         in base): base = r'\ggtoll'
     elif('ZZZ'            in base): base = r'$\PZ\PZ\PZ$'
     elif('WZZ'            in base): base = r'$\PW\PZ\PZ$'
     elif('WWZ'            in base): base = r'$\PW\PW\PZ$'
