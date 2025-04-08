@@ -205,7 +205,7 @@ def doSystematics(tf, var, syst, **kwargs):  # <TFile>, <str>, <str>, <dict> (is
     return new_syst
 
 
-def doSystOnFile(path, syst_regex=None, region=None, **kwargs):  # <str>, <re.Pattern>
+def doSystOnFile(path, syst_regex=None, region=None, var_regex=None, **kwargs):  # <str>, <re.Pattern>
     syst_values = {}
     with TFileContext(path, 'READ') as tf:
         names = set()
@@ -215,6 +215,9 @@ def doSystOnFile(path, syst_regex=None, region=None, **kwargs):  # <str>, <re.Pa
                 names.add(name)
     
         variables   = set([n.split('_')[1] for n in names])
+        if(var_regex  is not None):
+            logging.debug('Variables filtered with %s. Original list: %s', var_regex.pattern, variables)
+            variables   = {s for s in variables   if  var_regex.search(s)}
         systematics = set([n.split('_')[2] for n in names]) - {'central'}
         if(syst_regex is not None):
             systematics = {s for s in systematics if syst_regex.search(s)}
@@ -247,7 +250,8 @@ def main():
     parser.add_argument('-o', '--output', help='Manually specify output file. Defaults to data/systematics_{year}.json')
     parser.add_argument('-r', '--region', default='SR4P', help='Default: %(default)s')
     parser.add_argument('-A', '--analyzer' , default='VVGammaAnalyzer', help='Name of the analyzer, used to compose the path of the input files')
-    parser.add_argument('-S', '--syst-regex', default='.+', type=re.compile, help='Filter systematics with a regular expression')
+    parser.add_argument('-S', '--syst-regex', default=None, type=re.compile, help='Filter systematics with a regular expression')
+    parser.add_argument('-t', '--var-regex' , default='.+', type=re.compile, help='Filter variables with a regular expression')
     parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='INFO')
     args = parser.parse_args()
 
