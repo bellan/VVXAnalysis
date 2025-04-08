@@ -785,7 +785,7 @@ def plotProfiled(h2, name=None, title='profile', direction='X', do_title=True, m
                                , nameYaxis = 'FR #gamma'
                                , with_z_axis = False
                                )
-    cmsstyle.CMS_lumi(cprof)
+    cmsstyle.CMS_lumi(cprof, iPosX=0)
     customize_cmsCanvas_square(cprof)
 
     for h1 in h1s:
@@ -903,7 +903,7 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
     hTime.GetYaxis().SetTitleSize(0.052)  # default 0.06
 
     hTime.Draw('AXIS')
-    cmsstyle.CMS_lumi(canvas)
+    cmsstyle.CMS_lumi(canvas, iPosX=0)
     if(do_title):
         hTime.SetTitle(title)
         hTime.GetPainter().PaintTitle()
@@ -980,7 +980,7 @@ def time_evolution(thelist, outname='FR_time_evol', title='FR time evol', range_
     # hBinEvol.GetXaxis().SetDrawOption("L") # BROKEN Left adjust labels
 
     hBinEvol.Draw('AXIS') # Use the axis of the last histogram to draw the frame
-    cmsstyle.CMS_lumi(canvas)
+    cmsstyle.CMS_lumi(canvas, iPosX=0)
 
     if(do_title):
         hBinEvol.SetTitle(title)
@@ -1247,7 +1247,7 @@ def parse_args():
     parser.add_argument(      "--fix-negative"   , dest='fixNegBins', action='store_true' , help='Set bins with negative content to zero (default: %(default)s)')
     parser.add_argument(      "--no-fix-negative", dest='fixNegBins', action='store_false', help='Set bins with negative content to zero')
     parser.add_argument(      "--text-size"  , type=float, default=1.50, metavar='SIZE', help="Scale the size of the text in TH2 (default: %(default)s)")
-    parser.add_argument(      "--marker-size", type=float, default=1.50, metavar='SIZE', help="Scale the maker size in 1D plots (e.g. profiled and time evolution) (default: %(default)s)")
+    parser.add_argument(      "--marker-size", type=float, default=1.25, metavar='SIZE', help="Scale the maker size in 1D plots (e.g. profiled and time evolution) (default: %(default)s)")
     # Output control
     parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
 
