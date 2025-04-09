@@ -77,8 +77,8 @@ def print_yield(data, unblind=False, float_format='%.4g', add_col_run2=False, ad
     def sort_func(row):
         '''sort by sample (signal first), then by yield'''
         index = row['index']
-        if('ZZGTo4LG'   in index): k0 = 2
-        if('WZGTo3LNuG' in index): k0 = 1
+        if('ZZGTo4LG'   in index and not 'nonpro' in index): k0 = 2
+        # elif('WZGTo3LNuG' in index): k0 = 1
         else:                      k0 = 0
 
         k1 = (row['2016preVFP']+row['2016postVFP']+row['2017']+row['2018']).val
