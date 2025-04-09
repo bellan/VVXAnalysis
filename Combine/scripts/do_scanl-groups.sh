@@ -8,6 +8,7 @@ sequentially freezing the parameter groups.
     -u      unblind
     -r VAL  set the expected limit to VAL; ignored if -u is set
     -n VAL  set the number of points in the scan (default: 50)
+    -x m,M  set the scan range [m, M]
 EOF
 }
 
@@ -15,11 +16,10 @@ print_error(){ printf "%s failed (%d).\n" "$1" $? ; exit 2 ; }
 
 unblind=0
 mu=1
-minr=0
-maxr=2
+range=0,3
 npoints=50
 OPTIND=1
-while getopts "hur:" opt; do
+while getopts "hur:x:" opt; do
     case $opt in
 	h)
 	    show_help
@@ -29,8 +29,10 @@ while getopts "hur:" opt; do
 	    unblind=1
 	    ;;
 	r)
-	    [ "$OPTARG" -eq "$OPTARG" ] || exit 2
 	    mu=$OPTARG
+	    ;;
+	x)
+	    range=$OPTARG
 	    ;;
 	n)
 	    [ "$OPTARG" -eq "$OPTARG" ] || exit 2  # Ensure that OPTARG is a number
@@ -53,7 +55,7 @@ cardname="${cardname%.txt}"
 
 mkdir -p $cardname && cd $cardname || exit 1
 
-fit_options="--saveWorkspace --algo grid --setParameterRanges r=$minr,$maxr --robustFit=1 --points=$npoints"
+fit_options="--saveWorkspace --algo grid --setParameterRanges r=$range --robustFit=1 --points=$npoints"
 if [ $unblind -eq 0 ] ; then
     fit_options="$fit_options --expectSignal=$mu -t -1"
     outname="scan_expected_$cardname"
