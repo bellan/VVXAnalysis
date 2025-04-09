@@ -376,7 +376,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
         hfake.SetLineColor(ROOT.kBlack)
         set_overflow_range(hfake, underflow=underflow, overflow=overflow)
         stack.Add(hfake)
-        leg.AddEntry(hfake,"Non-prompt leptons","f")
+        leg.AddEntry(hfake,"Non-prompt l","f")
 
     elif predType == 'fakeMC':  # Hack: use MCs in CRs as if they were data
         if(verbosity >= 1):
@@ -412,7 +412,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
         hfakePho.SetFillColor(ROOT.kGreen-8)
         set_overflow_range(hfakePho, underflow=underflow, overflow=overflow)
         stack.Add(hfakePho)
-        leg.AddEntry(hfakePho, "Non-prompt photons", "f")
+        leg.AddEntry(hfakePho, "Non-prompt #gamma", "f")
     
     totalMC = 0
     totalMCerr = 0
@@ -455,7 +455,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
             if(h_nonpro):
                 if(do_prompt_ph):  # Change color only if both prompt and nonprompt are present
                     h_nonpro.SetFillStyle(3002)
-                leg.AddEntry(h_nonpro, sample["name"]+' nonprompt', "f")
+                leg.AddEntry(h_nonpro, sample["name"]+' non-prompt', "f")
                 stack.Add(h_nonpro)
             if(h_prompt):
                 leg.AddEntry(h_prompt, sample["name"]+' prompt', "f")
@@ -553,7 +553,7 @@ def GetClosureStack(region, inputDir, plotInfo, forcePositive=False, verbosity=1
         hFakeData.Add(hFakePrompt, -1)  # subtract prompt contribution from "fail" region; it is already weighted by the FR
         sample_prompt.update({'hist': hPrompt})
 
-    samples = samples_prompt + [{'name':'fake-photons', 'color':ROOT.kGray, 'title':'nonprompt #gamma', 'hist':hFakeData}]
+    samples = samples_prompt + [{'name':'fake-photons', 'color':ROOT.kGray, 'title':'non-prompt #gamma', 'hist':hFakeData}]
 
     if  (verbosity >= 1):
         print(Red("\n######### Contribution to {0:s}  #########".format(region)))
