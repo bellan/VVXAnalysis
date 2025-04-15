@@ -343,9 +343,8 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
                   "\n############## "+    plot     +" ##############"
                   "\n###############"+'#'*len(plot)+"###############"))
 
-    leg = ROOT.TLegend(0.5,0.52,0.79,0.87)
+    leg = ROOT.TLegend(0.32,0.5,0.8,0.88)
     leg.SetBorderSize(0)
-    leg.SetTextSize(0.025)
     leg.SetFillStyle(0)
 
     samples = samplesByRegion.getSamplesByRegion(region, MCSet, predType, special=plotInfo.get('special', False))

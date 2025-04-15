@@ -357,7 +357,7 @@ for Var in variables:
         y_max_r = 1.
         y_min_r = 1.
     deltaY = (y_max_r - y_min_r)
-    y_max_r = info.get('ratio_ymax', max(min(y_max_r + deltaY*0.1, 10), 1.5))
+    y_max_r = info.get('ratio_ymax', max(min(y_max_r + deltaY*0.1, 15), 1.5))
     y_min_r = info.get('ratio_ymin', min(max(y_min_r - deltaY*0.1, 0 ), 0.5))
 
     # Make the canvas
@@ -371,7 +371,7 @@ for Var in variables:
         r_max=y_max_r,
         nameXaxis=info.get('title', ''),
         nameYaxis='Events',
-        nameRatio='data/MC',
+        nameRatio='Data/Pred.',
         square=True,
         iPos=0,
         extraSpace=0.02,
@@ -440,7 +440,7 @@ for Var in variables:
                 text = options.region_label
         else:
             text = region
-        region_text.SetText(pad1.GetLeftMargin()+0.05, 1-pad1.GetTopMargin()-0.075, text)
+        region_text.SetText(pad1.GetLeftMargin()+0.05, 1-pad1.GetTopMargin()-0.1, text)
         region_text.SetTextSize(.05)
         region_text.Draw('same')
 
