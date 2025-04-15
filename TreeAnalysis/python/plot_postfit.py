@@ -1,0 +1,356 @@
+#!/usr/bin/env python
+from argparse import ArgumentParser
+import logging
+import os
+from math import sqrt
+from copy import deepcopy
+import ROOT
+import cmsstyle
+from array import array
+
+from utils23 import config_logging, lumi_dict
+from plotUtils23 import TFileContext, addIfExisting, cmsDiCanvas_fromTH1, getTAxisLimits
+from PersonalInfo import personalFolder
+
+def main(args):
+    logging.debug('args = %s', args)
+    ROOT.gROOT.SetBatch(True)
+    ROOT.gStyle.SetOptStat(0)
+
+    with TFileContext(args.workspace) as tf:
+        h_years_map = get_hists(tf, shapes=args.shapes)
+    logging.debug('retrieved keys = %s', h_years_map.keys())
+
+    # Deduce if it is the result of a triboson card by the folder name
+    if(args.isTriboson is None):
+        args.isTriboson = os.path.split(args.workspace)[0].endswith('_triboson')
+        logging.debug('Setting triboson label: %s', args.isTriboson)
+
+    outname = os.path.join(args.out,
+                           os.path.splitext(os.path.basename(args.workspace))[0]\
+                           .replace('fitDiagnostics_','')
+                           +'_'+args.shapes
+                           )
+
+    if(args.year == 'Run2'):
+        h_map = sum_hists(h_years_map)
+    else:
+        h_map = h_years_map[args.year]
+        test = tga2hist(h_map['data'])
+
+    h_map = fix_binning(h_map, array('d', range(0, 1100, 100)))
+    hdata = h_map.pop('data')
+    hdata.GetXaxis().SetTitle('m_{4l#gamma} [GeV]')
+    h_map_grouped = group_hists(h_map, isTriboson=args.isTriboson)
+
+    info_list = sort_h_map(h_map_grouped)
+    logging.debug('Plotting these MCs = %s', ['%s ("%s")' %(i['name'], i['title']) for i in info_list])
+
+    # Customize style
+    cmsstyle.setCMSStyle()
+    cmsstyle.SetLumi(138)
+    ROOT.gStyle.SetLabelSize(0.045, "X")
+
+    err = plot(hdata, info_list, outname=outname, **vars(args))
+
+    return err
+
+
+def parse_args():
+    parser = ArgumentParser()
+    parser.add_argument('workspace', metavar='rootfile', help='FitDiagnostics output (ROOT file)')
+    parser.add_argument('-y', '--year', dest='year',
+                        default='Run2',
+                        help= 'valid inputs are 2016preVFP, 2016postVFP, 2017, 2018, Run2')
+    parser.add_argument(      '--triboson', action='store_true', dest='isTriboson', default=None,
+                              help='Set the legend entry for ZZG (default:%(default)s)')
+    parser.add_argument(      '--no-triboson', action='store_false', dest='isTriboson')
+    parser.add_argument(      '--draw-label', action='store_true', default=True, help='Draw the region label (default: %(default)s)')
+    parser.add_argument(      '--no-draw-label', action='store_false', dest='draw_label')
+    parser.add_argument(      '--yscale', type=float, default=1.8,
+                              help='Factor that scales y_max in the upper plot (default: %(default)s)')
+    parser.add_argument(      '--shapes', choices=['prefit', 'fit_b', 'fit_s'], default='fit_s',
+                              help='Name of the folder in the FitDiagnostics file that contains the histograms (default: %(default)s)')
+    parser.add_argument('-o', '--out', default=personalFolder, help='Output directory for plots (default:%(default)s)')
+    parser.add_argument(      '--ext', default=['png'], nargs='+', help='Format(s) for the images produced (default: %(default)s)')
+    parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
+
+    return parser.parse_args()
+
+
+def plot(hdata, info_list, isTriboson=False, outname='postfit', ext=['png'], yscale=1.8, **kwargs):
+    for b in range(0, hdata.GetNbinsX()+2):
+        logging.debug('>>> %d: %f', b, hdata.GetBinContent(b))
+
+    stack = mk_stack(info_list)
+
+    ratio = ROOT.TGraphAsymmErrors()
+    ratio.SetName('ratio')
+    logging.debug('data: %s', hdata)
+    logging.debug('MC  : %s', stack.GetStack().Last())
+    ratio.Divide(hdata, stack.GetStack().Last(), 'pois')
+
+    # Create the canvas
+    canvas = cmsDiCanvas_fromTH1(args.shapes, hdata, ratio, y_scale=yscale, min_hi_r=2., nameYaxis='Events', nameRatio='Data/Pred.', iPos=0)
+    canvas.cd()
+
+    # The legend needs to be created after the canvas, otherwise it won't be drawn
+    legend = mk_legend(info_list)
+
+    ### Upper pad ###
+    canvas.cd(1)
+
+    # Region label
+    if(args.draw_label):
+        region_text = ROOT.TText()
+        region_text.SetNDC()
+        text = 'SR4P_1P' + (' triboson' if args.isTriboson else '')
+        pad = ROOT.gPad
+        region_text.SetText(pad.GetLeftMargin()+0.05, 1-pad.GetTopMargin()-0.1, text)
+        region_text.SetTextSize(.05)
+        region_text.Draw('same')
+
+    # Error band in the upper canvas
+    hMCErr = deepcopy(stack.GetStack().Last())
+
+    hMCErr.SetFillStyle(3005)
+    hMCErr.SetMarkerStyle(1)
+    hMCErr.SetFillColor(ROOT.kBlack)
+    legend.AddEntry(hMCErr, "Stat. only", "f")
+
+    # Style data
+    hdata.SetLineColor(ROOT.kBlack)
+    hdata.SetMarkerStyle(20)
+    hdata.SetMarkerSize(.8)
+    hdata.SetBinErrorOption(ROOT.TH1.kPoisson)
+    legend.AddEntry(hdata, 'data', 'lpe')
+
+    # Draw
+    stack.Draw('SAMEHIST')
+    hMCErr.Draw("SAMEE2")
+    hdata.Draw('SAMEPE0X0')
+
+    ### Lower pad ###
+    canvas.cd(2)
+
+    # Line y=1 in the ratio plot
+    x_min, x_max = getTAxisLimits(hdata.GetXaxis())
+    logging.debug('x_min=%.3g, x_max=%.3g', x_min, x_max)
+    ref_line = ROOT.TLine(x_min, 1, x_max, 1)
+    cmsstyle.cmsDrawLine(ref_line, lcolor=ROOT.kBlack, lstyle=ROOT.kDotted)
+
+    # Ratio
+    ratio.SetLineColor(ROOT.kBlack)
+    ratio.SetMarkerStyle(20)
+    ratio.SetMarkerSize(.8)
+
+    # Draw
+    ratio.Draw('PE')
+
+    for e in ext:
+        if e == 'root': continue
+        canvas.SaveAs('.'.join([outname, e]))
+
+    return 0
+
+
+def get_hists(tf, shapes='fit_s'):
+    '''
+    Retrieve histograms (and a TGraphAsymmErrors for data) from the output of
+    Combine's FitDiagnostics
+
+    Return schema: {year: {process: <TH1F>, "data": TGraphAsymmErrors}}
+    '''
+    # In each year there are:
+    # - "data": <TGraphAsymmErrors>
+    # - several MC: <TH1F>
+    # - total(_signal|_background): <TH1F>
+    # - total_covar: <TH2F>
+
+    h_map = dict()
+
+    shapes_dir = tf.Get('shapes_'+shapes)
+    for k_year in shapes_dir.GetListOfKeys():
+        # Each bin corresponds to a year
+        year = k_year.GetName().lstrip('y')
+        logging.debug('year = %s', year)
+        assert k_year.IsFolder(), 'k_year is of type %s' %(k_year.GetClassName())
+
+        for k in k_year.ReadObj().GetListOfKeys():
+            # logging.debug('    k = %s (%s)', k.GetName(), k.GetClassName())
+            name = k.GetName()
+            if(name.startswith('total')):
+               # logging.debug('        skipped')
+               continue
+
+            obj = k.ReadObj()
+            if(isinstance(obj, ROOT.TH1)): obj.SetDirectory(0) # disable ROOT's broken garbage collector
+
+            # Schema: sample_name -> year -> hist
+            h_map.setdefault(year, {})[name] = obj
+
+    return h_map
+
+
+def fix_binning(h_map_in, bin_edges):
+    nb = len(bin_edges) - 1
+    buf = array('d', bin_edges)
+    h_map_out = dict()
+
+    for name, h_old in h_map_in.items():
+        # Check that the supplied bin edges are ok
+        assert h_old.GetNbinsX() == nb, 'Wrong number of bins: %d (expected %d)' %(h_old.GetNbinsX(), nb)
+
+        h_new = ROOT.TH1F(h_old.GetName(), h_old.GetTitle(), len(buf)-1, buf)
+        for bx in range(nb+1):
+            h_new.SetBinContent(bx, h_old.GetBinContent(bx))
+            h_new.SetBinError  (bx, h_old.GetBinError  (bx))
+
+        h_map_out[name] = h_new
+
+    return h_map_out
+
+
+def sum_hists(in_map):
+    '''
+    Get the total yield for each group of processes for the whole Run2.
+    The sum of the TGraphAsymmErrors for "data" is summed in a TH1F as well.
+
+    Return schema: {sample_group: <TH1F>}
+    '''
+    out_map = dict()
+    data_x = None
+    data_y = None # manual sum of TGraphs
+
+    for _, processes in in_map.items():
+        for proc, hist in processes.items():
+            if(proc == 'data'):
+                buf = array('d', hist.GetY())
+                if(data_y is None):
+                    data_y = buf
+                else:
+                    for i in range(len(data_y)):
+                        data_y[i] += buf[i]
+                continue
+
+            if(proc in out_map):
+                out_map[proc].Add(hist)
+            else:
+                out_map[proc] = hist
+                if(data_x is None):
+                    nb = hist.GetNbinsX()
+                    data_x = array('d', [0.]*nb)
+                    hist.GetXaxis().GetLowEdge(data_x)
+                    data_x.append(hist.GetBinLowEdge(nb+1))
+
+    # Handle data specially
+    logging.debug('data_x = %s', data_x)
+    logging.debug('data_y = %s', data_y)
+
+    data = ROOT.TH1F('data', '', len(data_x)-1, data_x)
+    for b in range(len(data_x)-1):
+        data.SetBinContent(b+1, data_y[b])
+        # data.SetBinError  (b+1, sqrt(data_y[b]))
+
+    # data = ROOT.TGraphAsymmErrors(len(data_y), data_x, data_y)
+    # data.SetName('data')
+    data.SetBinErrorOption(ROOT.TH1.kPoisson)
+    out_map['data'] = data
+
+    return out_map
+
+
+def mk_stack(info_list):
+    stack = ROOT.THStack("stack", "stack")
+
+    for info in info_list:
+        logging.debug('info: %s', info)
+        title= info['title']
+        hist = info['h']
+        hist.SetFillColor(info['color'])
+        hist.SetLineColor(ROOT.kBlack)
+        logging.debug('%s -> %s', hist, title)
+        stack.Add(hist)
+
+    return stack
+
+
+def mk_legend(info_list):
+    ymax = .92
+    ymin = ymax - 0.05*(len(info_list)+2)  # +2: MC stat, data
+    # logging.debug('nhist = %d+2 - y = [%.2f, %.2f]', len(info_list), ymin, ymax)
+    legend = cmsstyle.cmsLeg(.55, ymin, .90, ymax, textSize=.03)
+    for info in info_list:
+        title= info['title']
+        hist = info['h']
+        logging.debug('%s -> %s', hist, title)
+        legend.AddEntry(hist, title, 'f')
+
+    return legend
+
+
+def sort_h_map(h_map):
+    info_list = []
+    for proc, data in h_map.items():
+        data['name'] = proc
+        info_list.append(data)
+    info_list.sort(key=lambda x: x.get('key', 99), reverse=True)
+
+    return info_list
+
+
+def group_hists(h_map_ungrouped, isTriboson=False):
+    '''
+    Sums hist of the same group and assigns titles for the legend
+    and assign them a color
+    '''
+    h_map = {}
+    for sample, hist in h_map_ungrouped.items():
+        if('-' in sample):
+            base, extra = sample.split('-')
+            nonpro = (extra == 'nonpro')
+            extra_t = ' non-prompt' if nonpro else ''
+            extra_k = 1 if nonpro else 0
+        else:
+            base = sample
+            extra = ''
+            extra_t = ''
+            extra_k = 0
+
+        if  (base == 'ZZGTo4LG'):
+            title = 'ZZ#gamma' if isTriboson else '4l #gamma'
+            # if(extra == 'nonpro'): title += ' OSD'
+            h_map.setdefault(base, dict(
+                title=title, color=ROOT.kRed, key=extra_k, hlist=[]
+            ))['hlist'].append(hist)
+        elif(base == 'ZZTo4l'):
+            h_map[sample] = dict(h=hist, title='qq #rightarrow ZZ'+extra_t, color=ROOT.kBlue-4, key=4+extra_k)
+        elif(base.startswith('ggTo')):
+            h_map.setdefault('ggTo4l'+extra, dict(
+                             title='gg #rightarrow ZZ'+extra_t, color=ROOT.kAzure-4, key=6+extra_k, hlist=[]
+                             ))['hlist'].append(hist)
+        elif(base == 'fake_photons'):
+            h_map[sample] = dict(h=hist, title='Non-prompt #gamma', color=ROOT.kGreen-8, key=8)
+        elif(base == 'fake_leptons'):
+            h_map[sample] = dict(h=hist, title='Non-prompt l', color=ROOT.kGray, key=9)
+        else:
+            h_map.setdefault('rare_bkg', dict(
+                             title='Rare backgrounds', color=ROOT.kOrange, key=2, hlist=[]
+                             ))['hlist'].append(hist)
+
+    for _, data in h_map.items():
+        if('hlist' in data):
+            logging.debug('grouping "%s"', _)
+            data['h'] = addIfExisting(*data.pop('hlist'))
+    return h_map
+
+
+def tga2hist(tga):
+    raise NotImplementedError()
+
+
+if __name__ == '__main__':
+    args = parse_args()
+    config_logging(args.loglevel)
+
+    exit(main(args))
