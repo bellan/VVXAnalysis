@@ -8,17 +8,24 @@ import logging
 
 # Hierarchy: region | variable | sample | syst
 
-def formatVariation(value):
+def formatUpDn(value, fmt='%+2.2f'):
     if   all(abs(v) < 1e-4 for v in [value['up'], value['dn']]):
         return '-'
     else:
-        return '{:+2.2f}/{:+2.2f}'.format(value['up']*100, value['dn']*100)  # For slides or AN
+        return (fmt+'/'+fmt) %(value['up']*100, value['dn']*100)  # For slides or AN
 
 
-def fillDataFrame(raw_data, formatter=formatVariation):
+def formatAverage(value, fmt):
+    if   all(abs(v) < 1e-4 for v in [value['up'], value['dn']]):
+        return '-'
+    else:
+        return fmt %( 50*(abs(value['up'])+abs(value['dn'])) )
+
+
+def fillDataFrame(raw_data, formatter=formatUpDn, fmt='%+2.2f'):
     # "Unpack" the inner dictionary {'up':x.xx, 'dn':x.xx} into a string
     data = { sample:
-             { syst: formatter(value) for syst, value in d.items() }
+             { syst: formatter(value, fmt=fmt) for syst, value in d.items() }
              for sample, d in raw_data.items() }
     
     # Use pandas for pretty formatting
@@ -85,6 +92,8 @@ def main():
     parser.add_argument(      '--only-phstatus', dest='phstatus', action='store_const', const='only', help='Use only prompt-nonpro samples when available')
     parser.add_argument(      '--phstatus', choices=['skip', 'only', 'default'])
     parser.add_argument(      '--style'        , choices=('plain', 'latex'), default='plain')
+    parser.add_argument(      '--format'  , default='%2.2f')
+    parser.add_argument(      '--formatter', choices=['updn', 'average'], default='updn')
     parser.add_argument(      '--log'          , dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
     args = parser.parse_args()
     loglevel = args.loglevel.upper() if not args.loglevel.isdigit() else int(args.loglevel)
@@ -103,7 +112,10 @@ def main():
         logging.error('region "{}" not found'.format(args.region))
         return
 
-    df = fillDataFrame(systematics[args.region][args.variable])
+    if  (args.formatter == 'updn'   ): formatter = formatUpDn
+    elif(args.formatter == 'average'): formatter = formatAverage
+    else: raise NotImplementedError('Unknown formatter %s' %(args.formatter))
+    df = fillDataFrame(systematics[args.region][args.variable], formatter=formatter, fmt=args.format)
 
     tableRegion(df, **vars(args))
 

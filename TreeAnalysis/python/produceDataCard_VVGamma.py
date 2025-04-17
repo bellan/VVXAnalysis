@@ -90,7 +90,7 @@ def getSystType(syst, config):
     else:
         return 'lnN'
 
-def format_lnN(value):
+def format_lnN(value, fmt='%f'):
     # up = 1 - yield_up/yield --> k_up = 1 + up
     up = value['up']
     dn = value['dn']
@@ -108,9 +108,9 @@ def format_lnN(value):
         if  (symmetric == 0):
             return '-'
         elif( up*dn > 0 or asymmetry > LNN_ASYMM_THR ):
-            return '{:f}/{:f}'.format(1+dn, 1+up)
+            return (fmt+'/'+fmt) %(1+dn, 1+up)
         else:
-            return '{:f}'.format(1 + symmetric)
+            return fmt %(1 + symmetric)
 
 
 def getBinName(region, observable):
@@ -446,7 +446,7 @@ def main(args):
             logging.warning('changed the direction of alphas_Down for %s/%s -> up/dn = %.3f/%.3f', region_config['observable']['name'], sample, up, alphas['dn'])
 
     # Fill the dataframe using the dictionary
-    df_syst = fillDataFrame(data_syst, formatter=format_lnN).fillna(0)
+    df_syst = fillDataFrame(data_syst, formatter=format_lnN, fmt='%f').fillna(0)
     type_column = []
     for syst in df_syst.index:
         # Drop systematics that do not affect any sample
