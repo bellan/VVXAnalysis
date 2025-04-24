@@ -89,7 +89,7 @@ def getVarInfo_VVGamma(region):
             ,
             'SYS_mZZGwp90_central': {'title':'m_{4l#gamma}, #gamma_{MVA loose} [GeV]', 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZZGwp90-%s_central', 'xmin':100, 'unblind':False},
             'SYS_mZZGwp80_central': {'title':'m_{4l#gamma}, #gamma_{MVA tight} [GeV]', 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZZGwp80-%s_central', 'xmin':100, 'unblind':False},
-            'SYS_mZZGloose_central':{'title':'m_{4l#gamma}, #gamma_{cut-based} [GeV]', 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZZGloose-%s_central','xmin':100, 'fake_photons': 'SYS_mZZGfailReweight_central','unblind':False, 'rebin':rebin_mZZG, 'draw_overflow':True},
+            'SYS_mZZGloose_central':{'title':'m_{4l#gamma}, #gamma_{cut-based} [GeV]', 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZZGloose-%s_central','xmin':100, 'fake_photons': 'SYS_mZZGfailReweight_central', 'unblind':False},
             'SYS_mZllplusZllGloose_central':{'title':'m_{ll#gamma}+m_{ll}, #gamma_{cut-based} [GeV]', 'split_prompt_ph':True, 'split_prompt_ph_pattern': 'SYS_mZllplusZllGloose-%s_central', 'xmin':100, 'fake_photons': 'SYS_mZllplusZllGfailReweight_central', 'unblind':False}
         })
 
@@ -324,7 +324,7 @@ def getVarInfo_VVGamma(region):
                     'fake_photons': 'lead_fail_{var}_reweight_dataZG'.format(var=varname)
                 })
             if('aeta' in varname):
-                d.update({'scale_ymax': 1.8, 'xmax':2.4})
+                d.update({'scale_ymax': 2., 'xmax':2.4})
             if varname in ('dRl','chIso'):
                 d.update({'draw_overflow': True})
             VarInfo_VVGamma.update({n: d})
