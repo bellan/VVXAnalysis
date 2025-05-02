@@ -49,4 +49,4 @@ done
 echo "INFO: done"
 
 # Compress log dir
-tar -c -z --remove-files -f "$destlogdir".tar.gz "$destlogdir"
+tar -c -z --remove-files -f "$destlogdir".tar.gz -C "$dest" logdir
