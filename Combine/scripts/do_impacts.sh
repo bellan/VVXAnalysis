@@ -74,11 +74,11 @@ echo "### Performing robust fit ###"
 combineTool.py -M Impacts -d workspace.root $fit_options --doFits --stepSize 0.05 --setCrossingTolerance 0.00005 --robustHesse 1 || print_error "Robust fit"
 
 echo "### Extracting impacts ###"
-combineTool.py -M Impacts -d workspace.root -m 125 -o impacts.json || print_error "Impacts extraction"
+combineTool.py -M Impacts -d workspace.root -m 125 -o $outname.json || print_error "Impacts extraction"
 
 echo "### Plotting impacts ###"
-fix_postfit_pull.py impacts.json
-plotImpacts.py -i impacts.json -o ${outname} $plot_options || print_error "Plotting impacts"
+fix_postfit_pull.py $outname.json
+plotImpacts.py -i $outname.json -o ${outname} $plot_options || print_error "Plotting impacts"
 
 echo "### Convert to png ###"
 convert -density 300 ${outname}.pdf -trim ${outname}.png || print_error "Conversion to PNG"
