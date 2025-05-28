@@ -88,7 +88,7 @@ plot1DScan.py $(printf $rootpattern total) --main-label "Total Uncert." --others
     $(printf $rootpattern freeze_lumi):"freeze lumi":3 \
     $(printf $rootpattern freeze_lumi_theory):"freeze lumi+theory":7 \
     $(printf $rootpattern freeze_all):"stat only":2 \
-    --output $outname --y-max 10 --y-cut 40 --breakdown "lumi,theory,rest,stat" \
+    --output $outname --y-max 10 --y-cut 40 --breakdown "lumi,theory,exp,stat" \
     || print_error "Plotting"
 
 # mv breakdown.png "$outname.png"
