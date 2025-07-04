@@ -1,5 +1,8 @@
 #!/bin/sh
 
+set -e
+set -u
+
 show_help(){ cat <<EOF
 Usage: ${0##*/} [-u] CARD"
 Convert CARD to workspace and assess the impact of the nuisance
@@ -49,8 +52,12 @@ echo $card
 cardname=${1##*/}
 cardname=${cardname%.txt}
 original_dir=$(pwd -P)
-fit_options="-m 125 --robustFit 1 --cminApproxPreFitTolerance 0.01"
+
+T2Woptions="-m 125 --for-fits --no-wrappers --optimize-simpdf-constraints=cms --X-pack-asympows --use-histsum -v 0 -o workspace.root"
+fit_options="-M Impacts -d workspace.root -m 125 -v 0 --rMin -1 --rMax 3 --robustFit 1"
 plot_options=""
+exclude="--exclude rgx{^prop_bin}"
+
 if [ $unblind -eq 0 ] ; then
     fit_options="$fit_options --expectSignal=$mu -t -1"
     plot_options="$plot_options --blind"
@@ -62,22 +69,27 @@ else
     outname="impacts_observed_$cardname"
 fi
 
+initial_options="$fit_options"
+robust_options="$fit_options $exclude"
+extract_options="$fit_options $exclude"
+
+
 mkdir -p $cardname && cd $cardname || { echo "Unable to make dir $cardname" 1>&2 ; exit 2 ; }
 
 echo "### text2workspace ###"
-text2workspace.py -v 0 -o workspace.root ${card} || print_error "text2workspace"
+text2workspace.py $T2Woptions ${card} || print_error "text2workspace"
 
 echo "### Performing initial fit ###"
-combineTool.py -M Impacts -d workspace.root $fit_options --doInitialFit || print_error "Initial fit"
+combineTool.py $initial_options --doInitialFit || print_error "Initial fit"
 
 echo "### Performing robust fit ###"
-combineTool.py -M Impacts -d workspace.root $fit_options --doFits --stepSize 0.05 --setCrossingTolerance 0.00005 --robustHesse 1 || print_error "Robust fit"
+combineTool.py $robust_options --doFits || print_error "Robust fit"
 
 echo "### Extracting impacts ###"
-combineTool.py -M Impacts -d workspace.root -m 125 -o $outname.json || print_error "Impacts extraction"
+combineTool.py $extract_options -o $outname.json || print_error "Impacts extraction"
 
 echo "### Plotting impacts ###"
-fix_postfit_pull.py $outname.json
+fix_postfit_pull.py --log info $outname.json
 plotImpacts.py -i $outname.json -o ${outname} $plot_options || print_error "Plotting impacts"
 
 echo "### Convert to png ###"
