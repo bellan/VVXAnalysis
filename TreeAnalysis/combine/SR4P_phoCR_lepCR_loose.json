@@ -1,0 +1,29 @@
+{
+    "signals": [
+	"ZZGTo4LG-prompt",
+	"WZGTo3LNuG-prompt"
+    ],
+    "regions": {
+	"SR4P": {
+            "processes": {
+		"ZZGTo4LG-prompt": -1,
+		"ZZGTo4LG-nonpro": -1,
+		"WZGTo3LNuG": -1,
+		"ZZZ-prompt": -1,
+		"WZZ-prompt": -1,
+		"WWZ-prompt": -1,
+		"TTZJets-prompt": -1,
+		"fake_photons": -1
+	    },
+            "observable": {
+		"name":"loose",
+		"observation":-1
+	    }
+	}
+    },
+    "systematics": {
+	"shape": [],
+	"norm_uncertainty": {"fake_photons": {"up":0.50, "dn":-0.50}},
+	"comment": "Counting experiment"
+    }
+}

@@ -1,0 +1,41 @@
+{
+    "signals": [
+	"ZZGTo4LG-prompt",
+	"WZGTo3LNuG-prompt"
+    ],
+    "regions": {
+	"SR4P": {
+            "processes": {
+		"ZZGTo4LG-prompt": -1,
+		"ZZGTo4LG-nonpro": -1,
+		"WZGTo3LNuG": -1,
+		"ZZTo4l-nonpro": -1,
+		"ggTo4e_Contin_MCFM701": -1,
+		"ggTo2e2mu_Contin_MCFM701": -1,
+		"ggTo4mu_Contin_MCFM701": -1,
+		"ZZZ": -1,
+		"WZZ": -1,
+		"WWZ": -1,
+		"TTZJets": -1,
+		"fake_leptons": -1
+	    },
+            "observable": {
+		"name":"wp80",
+		"observation":-1
+	    }
+	}
+    },
+    "systematics": {
+	"norm_uncertainty": {
+	    "ZZTo4l-nonpro": {"up":0.30, "dn":-0.30},
+	    "fake_leptons" : {"up":0.40, "dn":-0.40}
+	}
+	,
+	"norm_group_uncertainty": {
+	    "SMP24014_ggTo4l": {
+		"value"  : {"up":0.30, "dn":-0.30},
+		"samples": ["ggTo4e_Contin_MCFM701", "ggTo2e2mu_Contin_MCFM701", "ggTo4mu_Contin_MCFM701"]
+	    }
+	}
+    }
+}
