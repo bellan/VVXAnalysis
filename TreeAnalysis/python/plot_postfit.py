@@ -7,10 +7,19 @@ from copy import deepcopy
 import ROOT
 import cmsstyle
 from array import array
+from subprocess import run
+from ctypes import c_double
 
 from utils23 import config_logging, lumi_dict
 from plotUtils23 import TFileContext, addIfExisting, cmsDiCanvas_fromTH1, getTAxisLimits
 from PersonalInfo import personalFolder
+
+
+_varinfo = {
+    'mZZG': {'bins': array('d', range(0, 1100, 100)), 'xtitle': 'm_{4l#gamma} [GeV]'},
+    'pt'  : {'bins': array('d', [20., 25., 35., 50., 80., 120.]), 'xtitle': 'p_{T}^{#gamma} [GeV]'},
+}
+
 
 def main(args):
     logging.debug('args = %s', args)
@@ -28,19 +37,30 @@ def main(args):
 
     outname = os.path.join(args.out,
                            os.path.splitext(os.path.basename(args.workspace))[0]\
-                           .replace('fitDiagnostics_','')
+                           .replace('fitDiagnostics_','')\
+                           .replace('Run2_', args.year+'_')
                            +'_'+args.shapes
                            )
 
     if(args.year == 'Run2'):
-        h_map = sum_hists(h_years_map)
+        if(args.cut_n_count):
+            h_map = join_hists_year(h_years_map)
+        else:
+            h_map = sum_hists(h_years_map)
     else:
         h_map = h_years_map[args.year]
-        test = tga2hist(h_map['data'])
+        h_map['data'] = tga2hist(h_map['data'])
 
-    h_map = fix_binning(h_map, array('d', range(0, 1100, 100)))
+    # Set x bin edges, since Combine discards this information when creating the workspace
+    varinfo = _varinfo['mZZG']
+    if('_ptloose' in args.workspace or '_ptwp' in args.workspace):
+        varinfo = _varinfo['pt']
+
+    if(not args.cut_n_count):
+        h_map = fix_binning(h_map, varinfo['bins'])
+
     hdata = h_map.pop('data')
-    hdata.GetXaxis().SetTitle('m_{4l#gamma} [GeV]')
+    hdata.GetXaxis().SetTitle(varinfo['xtitle'])
     h_map_grouped = group_hists(h_map, isTriboson=args.isTriboson)
 
     info_list = sort_h_map(h_map_grouped)
@@ -57,7 +77,7 @@ def main(args):
 
 
 def parse_args():
-    parser = ArgumentParser()
+    parser = ArgumentParser(epilog='For the PAS, --yscale was: 1.8 (inclusive), 2.3 (triboson)')
     parser.add_argument('workspace', metavar='rootfile', help='FitDiagnostics output (ROOT file)')
     parser.add_argument('-y', '--year', dest='year',
                         default='Run2',
@@ -71,6 +91,8 @@ def parse_args():
                               help='Factor that scales y_max in the upper plot (default: %(default)s)')
     parser.add_argument(      '--shapes', choices=['prefit', 'fit_b', 'fit_s'], default='fit_s',
                               help='Name of the folder in the FitDiagnostics file that contains the histograms (default: %(default)s)')
+    parser.add_argument(      '--cut-n-count', action='store_true',
+                              help='In case there is only one bin per year')
     parser.add_argument('-o', '--out', default=personalFolder, help='Output directory for plots (default:%(default)s)')
     parser.add_argument(      '--ext', default=['png'], nargs='+', help='Format(s) for the images produced (default: %(default)s)')
     parser.add_argument('--log', dest='loglevel', metavar='LEVEL', default='WARNING', help='Level for the python logging module. Can be either a mnemonic string like DEBUG, INFO or WARNING or an integer (lower means more verbose).')
@@ -91,7 +113,18 @@ def plot(hdata, info_list, isTriboson=False, outname='postfit', ext=['png'], ysc
     ratio.Divide(hdata, stack.GetStack().Last(), 'pois')
 
     # Create the canvas
-    canvas = cmsDiCanvas_fromTH1(args.shapes, hdata, ratio, y_scale=yscale, min_hi_r=2., nameYaxis='Events', nameRatio='Data/Pred.', iPos=0)
+    canvas = cmsDiCanvas_fromTH1(args.shapes, hdata, ratio, y_min=0, y_scale=yscale, min_hi_r=2., max_lo_r=0., nameYaxis='Events', nameRatio='Data/Pred.', iPos=0)
+    if(hdata.GetXaxis().IsAlphanumeric()):
+        logging.info('alphanumeric axis')
+        canv_hist = cmsstyle.GetcmsCanvasHist(canvas.cd(2))
+        xaxis_canv = canv_hist.GetXaxis()
+        xaxis_canv.SetAlphanumeric()
+        xaxis_d = hdata.GetXaxis()
+        xaxis_canv.Set(xaxis_d.GetNbins(), xaxis_d.GetXmin(), xaxis_d.GetXmax())
+        for b in range(1, xaxis_d.GetNbins()+1):
+            xaxis_canv.SetBinLabel(b, xaxis_d.GetBinLabel(b))
+        canvas.RedrawAxis()
+        cmsstyle.UpdatePad(canvas)
     canvas.cd()
 
     # The legend needs to be created after the canvas, otherwise it won't be drawn
@@ -149,7 +182,13 @@ def plot(hdata, info_list, isTriboson=False, outname='postfit', ext=['png'], ysc
 
     for e in ext:
         if e == 'root': continue
-        canvas.SaveAs('.'.join([outname, e]))
+        outfname = '.'.join([outname, e])
+        canvas.SaveAs(outfname)
+        if('workspace' in kwargs):
+            campaign = os.path.split( os.path.dirname(kwargs['workspace']) )[-1]
+            cmd = ['exiftool', '-overwrite_original', '-Keywords=%s'%(campaign), outfname]
+            logging.info('running: %s', ' '.join(cmd))
+            run(cmd) # subprocess; willingly ignore errors
 
     return 0
 
@@ -193,6 +232,10 @@ def get_hists(tf, shapes='fit_s'):
 
 
 def fix_binning(h_map_in, bin_edges):
+    '''
+    Create a new dictionary of TH1F, with the x axis set as per `bin_edges`,
+    for each histogram that is in the first argument.
+    '''
     nb = len(bin_edges) - 1
     buf = array('d', bin_edges)
     h_map_out = dict()
@@ -256,6 +299,45 @@ def sum_hists(in_map):
     # data.SetName('data')
     data.SetBinErrorOption(ROOT.TH1.kPoisson)
     out_map['data'] = data
+
+    return out_map
+
+
+def join_hists_year(in_map):
+    '''
+    Get the yield for each group of processes for each year and put them in
+    a single histogram. The TGraphAsymmErrors for "data" is converted to a TH1F as well.
+
+    Return schema: {sample: <TH1F>}
+    '''
+    out_map = dict()
+    years_sorted = sorted(in_map.keys(),
+                          key=lambda y: (
+                              int(y[:4]), # if only Python's atoi() behaved like C
+                              1 if 'post' in y else -1 if 'pre' in y else 0
+                          ))
+
+    for year, processes in in_map.items():
+        for proc, hist in processes.items():
+            if(not proc in out_map):
+                hnew = ROOT.TH1F(hist.GetName(), hist.GetTitle(), len(years_sorted),0,len(years_sorted))
+                for b,y in enumerate(years_sorted):
+                    hnew.GetXaxis().SetBinLabel(b+1, y)
+                out_map[proc] = hnew
+
+            if(proc == 'data'):
+                tot = sum( array('d', hist.GetY()) )
+                b = hnew.GetXaxis().FindFixBin(year)
+                out_map[proc].SetBinContent(b, tot)
+            else:
+                err = c_double()
+                tot = hist.IntegralAndError(0, -1, err)
+                hnew = out_map[proc]
+                b = hnew.GetXaxis().FindFixBin(year)
+                hnew.SetBinContent(b, tot)
+                hnew.SetBinError  (b, err)
+
+    out_map['data'].SetBinErrorOption(ROOT.TH1.kPoisson)
 
     return out_map
 
@@ -346,7 +428,16 @@ def group_hists(h_map_ungrouped, isTriboson=False):
 
 
 def tga2hist(tga):
-    raise NotImplementedError()
+    data_y = array('d', tga.GetY())
+    # Combine discards x bin information, xaxis goes from 0 to n in n steps.
+    # This is fixed in fix_binning()
+
+    n = len(data_y)
+    h = ROOT.TH1F(tga.GetName(), '', n, 0, n)
+    for b in range(n):
+        h.SetBinContent(b+1, data_y[b])
+
+    return h
 
 
 if __name__ == '__main__':
