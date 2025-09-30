@@ -55,7 +55,7 @@ cardname="${cardname%.txt}"
 
 mkdir -p $cardname && cd $cardname || exit 1
 
-fit_options="--saveWorkspace --algo grid --setParameterRanges r=$range --robustFit=1 --points=$npoints"
+fit_options="-M MultiDimFit --saveWorkspace --algo grid --setParameterRanges r=$range --robustFit=1 --points=$npoints"
 if [ $unblind -eq 0 ] ; then
     fit_options="$fit_options --expectSignal=$mu -t -1"
     outname="scan_expected_$cardname"
@@ -67,21 +67,22 @@ echo "### text2workspace ###"
 text2workspace.py "$card" -o workspace.root || print_error "text2workspace"
 
 echo "### Performing initial fit ###"
-combine workspace.root -M MultiDimFit $fit_options -n .postfit || print_error "Initial fit"
+combine workspace.root $fit_options -n .postfit || print_error "Initial fit"
 rootpattern=higgsCombine.%s.MultiDimFit.mH120.root
 rootpostfit=$(printf $rootpattern postfit)
+fit_options="$fit_options --snapshotName MultiDimFit"
 
 echo "### Fitting total ###"
-combine $rootpostfit -M MultiDimFit --snapshotName MultiDimFit $fit_options -n .total || print_error "Fit total"
+combine $rootpostfit $fit_options -n .total || print_error "Fit total"
 
 echo "### Fitting freeze_lumi ###"
-combine $rootpostfit -M MultiDimFit --snapshotName MultiDimFit $fit_options -n .freeze_lumi --freezeNuisanceGroups lumi || print_error "Fit freeze_lumi"
+combine $rootpostfit $fit_options -n .freeze_lumi --freezeNuisanceGroups lumi || print_error "Fit freeze_lumi"
 
 echo "### Fitting freeze_lumi_theory ###"
-combine $rootpostfit -M MultiDimFit --snapshotName MultiDimFit $fit_options -n .freeze_lumi_theory --freezeNuisanceGroups lumi,theory || print_error "Fit freeze_lumi_theory"
+combine $rootpostfit $fit_options -n .freeze_lumi_theory --freezeNuisanceGroups lumi,theory || print_error "Fit freeze_lumi_theory"
 
 echo "### Fitting freeze_all ###"
-combine $rootpostfit -M MultiDimFit --snapshotName MultiDimFit $fit_options -n .freeze_all --freezeParameters allConstrainedNuisances || print_error "Fit freeze_all"
+combine $rootpostfit $fit_options -n .freeze_all --freezeParameters allConstrainedNuisances || print_error "Fit freeze_all"
 
 echo "### Plotting ###"
 plot1DScan.py $(printf $rootpattern total) --main-label "Total Uncert." --others \
