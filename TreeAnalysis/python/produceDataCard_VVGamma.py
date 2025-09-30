@@ -614,7 +614,7 @@ def get_strategy_config(config_file):
 def get_shape_uncorrelated(config):
     # Some systematics are:
     # - uncorrelated: they must be separated by year -> "<SYS>_201*";
-    # - shape: there must two histograms in the rootfile with the exact name name + "Up/Down".
+    # - shape: there must be two histograms in the rootfile with the exact same name + "Up/Down".
     # However, the EventAnalyzer should not itself decide if a systematic is or not uncorrelated,
     # so the year suffix should not be decided there. Rather, we modify the histograms' names when preparing them for Combine.
     return {syst for syst in config['systematics']['uncorrelated'] if getSystType(syst, config) == 'shape'}
@@ -627,7 +627,7 @@ def get_shape_correlyear(config):
 
 def get_shape_groups(config):
     # Some systematics are:
-    # - shape: there must two histograms in the rootfile with the exact name name + "Up/Down".
+    # - shape: there must be two histograms in the rootfile with the exact same name + "Up/Down".
     # - correlated within a group of samples: e.g. QCDscale_VV for ZZ and WZ
     # - correlated between years
     # However, the EventAnalyzer should not itself decide if a systematic is or not uncorrelated,
