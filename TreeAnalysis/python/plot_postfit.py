@@ -67,6 +67,7 @@ def main(args):
     logging.debug('Plotting these MCs = %s', ['%s ("%s")' %(i['name'], i['title']) for i in info_list])
 
     # Customize style
+    cmsstyle.SetExtraText("")
     cmsstyle.setCMSStyle()
     cmsstyle.SetLumi(138)
     ROOT.gStyle.SetLabelSize(0.045, "X")

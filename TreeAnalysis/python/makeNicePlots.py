@@ -203,7 +203,7 @@ if LumiProj != "":
 else:
     lumi = lumi_dict[year]['value']
 lumi = lumi/1000.
-cmsstyle.SetExtraText('Preliminary')
+cmsstyle.SetExtraText('')
 cmsstyle.SetEnergy(13, unit='TeV')
 cmsstyle.SetLumi('{:.3g}'.format(lumi))
 
