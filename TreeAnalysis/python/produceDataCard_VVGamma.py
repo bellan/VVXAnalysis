@@ -251,6 +251,8 @@ def get_sample_group_QCDscale(sample):
         return 'Vgamma'
     elif(sample.startswith('DY')):
         return 'V'
+    elif(sample.startswith('ZH')):
+        return 'VH'
     elif(sample.startswith('fake')):
         return None
     else:
