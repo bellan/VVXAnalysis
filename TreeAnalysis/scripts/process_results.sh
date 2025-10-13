@@ -37,65 +37,48 @@ shift "$((OPTIND-1))"
 
 [ $# -eq 1 ] || { show_help >&2 ; exit 1 ; }
 res_dir_full="${1%/}"
-if $dryrun ; then
-    hadd_result_data="echo scripts/hadd_result_data.sh"
-    hadd_result_parts="echo scripts/hadd_result_parts.sh"
-    split_triboson="echo python/split_triboson.py"
-    prepareHistoCombine="echo python/prepareHistoCombine.py"
-    systematics="echo python/systematics.py"
-    produceDataCard_VVGamma="echo python/produceDataCard_VVGamma.py"
-    MV="echo mv"
-    CP="echo cp"
-    MKDIR="echo mkdir"
-else
-    hadd_result_data=scripts/hadd_result_data.sh
-    hadd_result_parts=scripts/hadd_result_parts.sh
-    split_triboson=python/split_triboson.py
-    prepareHistoCombine=python/prepareHistoCombine.py
-    systematics=python/systematics.py
-    produceDataCard_VVGamma=python/produceDataCard_VVGamma.py
-    MV=mv
-    CP=cp
-    MKDIR=mkdir
-fi
-loglevel=error
+$dryrun && EXEC=echo || EXEC=""
 
+loglevel=error
 Run2years="2016preVFP 2016postVFP 2017 2018"
 
 printf "### Hadd result data ###\n"
-$hadd_result_data "$res_dir_full"
+$EXEC scripts/hadd_result_data.sh "$res_dir_full"
 
 printf "### Hadd result parts ###\n"
-$hadd_result_parts "$res_dir_full"
+$EXEC scripts/hadd_result_parts.sh "$res_dir_full"
 
 printf "### Split triboson ###\n"
-$split_triboson --log info -i "$res_dir_full"
+$EXEC python/split_triboson.py --log info -i "$res_dir_full"
 
 for res_dir in "$res_dir_full" "${res_dir_full}"_triboson ; do
     res_name="${res_dir#results_}"
     for year in $Run2years ; do
 	printf "\n### fake_photons.root %s year=%s ###\n" "$res_name" $year
-	$prepareHistoCombine --remake-fake-photons --log $loglevel -r SR4P -y $year -i "${res_dir}"
+	$EXEC python/prepareHistoCombine.py --remake-fake-photons --log $loglevel -r SR4P -y $year -i "${res_dir}"
 
 	printf "\n### Systematics JSON %s year=%s ###\n" "$res_name" $year
-        $systematics -A VVGammaAnalyzer --log $loglevel -r SR4P -y $year -i "${res_dir}"
+        $EXEC python/systematics.py -A VVGammaAnalyzer --log $loglevel -r SR4P -y $year -i "${res_dir}"
 
         printf "\n### Prepare Histo Combine %s year=%s ###\n" "$res_name" $year
-	$prepareHistoCombine --log $loglevel -r SR4P -y $year -i "${res_dir}" -o histogramsForCombine_"${res_name}"
+	$EXEC python/prepareHistoCombine.py --log $loglevel -r SR4P -y $year -i "${res_dir}" -o histogramsForCombine_"${res_name}"
 
 	printf "\n### Make datacards %s year=%s ###\n" "$res_name" $year
 	# for strategy in $(cat combine/strategiesSR4P) ; do
 	for strategy in combine/*.json ; do
-	    $produceDataCard_VVGamma -r SR4P --log $loglevel -y $year -i histogramsForCombine_"${res_name}" $strategy # combine/SR4P_$strategy.json
+	    $EXEC python/produceDataCard_VVGamma.py -r SR4P --log $loglevel -y $year -i histogramsForCombine_"${res_name}" $strategy
 	done
     done
     carddir=combine/cards_"${res_name}"
-    [ -e "$carddir" ] && { echo "INFO: moving existing $carddir" ; $MV -v --no-clobber "$carddir" "${carddir}-old" ; }
-    $MV --no-clobber combine/cards "$carddir"
+    [ -e "$carddir" ] && {
+	echo "INFO: moving existing $carddir"
+	$EXEC mv -v --no-clobber "$carddir" "${carddir}-old"
+    }
+    $EXEC mv --no-clobber combine/cards "$carddir"
 
     # Keep copies of systematics JSONs
     json_dir="data/systematics/${res_name}"
-    $MKDIR -p "$json_dir"
-    $CP --no-clobber data/systematics_*.json "$json_dir/"
+    $EXEC mkdir -p "$json_dir"
+    $EXEC cp --no-clobber data/systematics_*.json "$json_dir/"
     printf "\n### Done %s ###\n" "$res_name"
 done
