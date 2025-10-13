@@ -23,6 +23,7 @@ WZZ     , VZZ, 0.05565,,,/WZZ_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL17Mi
 WWZ     , VZZ, 0.1651,,,/WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v1/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2017,RecoProbabilities.py,
 # WWZ_ext1, VZZ, 0.1651,,,/WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8/?????????/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2017,RecoProbabilities.py,
 WWW, VVV, 0.2086,,,/WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v1/MINIAODSIM,dbs,,1,GENXSEC=1;GENBR=1;PROCESS_CR=True;LEPTON_SETUP=2017,RecoProbabilities.py,
+ZHtoZZG,VG,0.0005561,,,/ZH_HToZG_ZToAll_ZToLL_M-125_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17MiniAODv2-106X_mc2017_realistic_v9-v3/MINIAODSIM,dbs,,1,GENXSEC=0.07074;GENBR=1;PROCESS_CR=True;ADDZTREE=True;LEPTON_SETUP=2017,RecoProbabilities.py,H->Zgamma
 
 
 ###,VBS,,,,,,,,,,
