@@ -3112,19 +3112,15 @@ double getZllgMass_GEN(const std::vector<phys::Particle>& phVect_orig, const DiB
 
 
 void VVGammaAnalyzer::SYSplots_inclusive(const char *sys_label, const char* sigdef, const char* syst, double weight){
-  const char* strPrompt = "";
-  if(theSampleInfo.isMC())
-    strPrompt = sigdefHelper.pass_photon() ? "prompt" : "nonpro" ;
-
   if(is4Lregion(region_)){
     theHistograms->fill(  Form("SYS%s_mZZ_%s"   , sys_label, syst           ), Form("m_{ZZ} %s", syst), mVV_bins , ZZ->mass()               , weight);
     if(theSampleInfo.isMC())
-      theHistograms->fill(Form("SYS%s_mZZ-%s_%s", strPrompt, sys_label, syst), Form("m_{ZZ} %s", syst), mVV_bins , ZZ->mass()               , weight);
+      theHistograms->fill(Form("SYS%s_mZZ-%s_%s", sys_label, sigdef, syst   ), Form("m_{ZZ} %s", syst), mVV_bins , ZZ->mass()               , weight);
   }
   else if(is3Lregion(region_)){
     theHistograms->fill(  Form("SYS%s_mWZ_%s"   , sys_label, syst           ), Form("m_{WZ} %s", syst), mVV_bins , ZW->mass()               , weight);
     if(theSampleInfo.isMC())
-      theHistograms->fill(Form("SYS%s_mWZ-%s_%s", strPrompt, sys_label, syst), Form("m_{WZ} %s", syst), mVV_bins , ZW->mass()               , weight);
+      theHistograms->fill(Form("SYS%s_mWZ-%s_%s", sys_label, sigdef, syst   ), Form("m_{WZ} %s", syst), mVV_bins , ZW->mass()               , weight);
   }
   else if(region_ == CRLFR){
     Boson<Lepton>& theZ = ZL->first;
@@ -3132,8 +3128,8 @@ void VVGammaAnalyzer::SYSplots_inclusive(const char *sys_label, const char* sigd
     theHistograms->fill(  Form("SYS%s_mZ_%s"    , sys_label, syst           ), Form("m_{Z} %s" , syst), mZ_bins  , theZ.mass()              , weight);
     theHistograms->fill(  Form("SYS%s_mZL_%s"   , sys_label, syst           ), Form("m_{ZL} %s", syst), mZG_bins , (theZ.p4()+theL.p4()).M(), weight);
     if(theSampleInfo.isMC()){
-      theHistograms->fill(Form("SYS%s_mZ-%s_%s" , strPrompt, sys_label, syst), Form("m_{Z} %s" , syst), mZ_bins  , theZ.mass()              , weight);
-      theHistograms->fill(Form("SYS%s_mZL-%s_%s", strPrompt, sys_label, syst), Form("m_{ZL} %s", syst), mZG_bins , (theZ.p4()+theL.p4()).M(), weight);
+      theHistograms->fill(Form("SYS%s_mZ-%s_%s" , sys_label, sigdef, syst   ), Form("m_{Z} %s" , syst), mZ_bins  , theZ.mass()              , weight);
+      theHistograms->fill(Form("SYS%s_mZL-%s_%s", sys_label, sigdef, syst   ), Form("m_{ZL} %s", syst), mZG_bins , (theZ.p4()+theL.p4()).M(), weight);
     }
   }
 }
@@ -3252,6 +3248,12 @@ void VVGammaAnalyzer::SYSplots_phMVA(const char* sys_label, const char* sigdef, 
 
 
 void VVGammaAnalyzer::SYSplots(const char* sys_label, const char* sigdef, const char* syst, double weight, const Photon* phCut, const Photon* phMVA){
+  /*
+    sys_label = {"", "-triboson"}
+    sigdef    = {"prompt", "nonpro"}
+    syst      = {"CMS-eff-e_Up", ...}
+    phCut/phMVA -> best photon passing the ID, if any; otherwise NULL
+  */
   SYSplots_inclusive(sys_label, sigdef, syst, weight);
 
   if(phCut)
