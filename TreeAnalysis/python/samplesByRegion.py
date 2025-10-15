@@ -39,6 +39,7 @@ WZG      = [{'files':['WZGTo3LNuG'    ] , 'color':ROOT.kMagenta , 'name':'3l #nu
 ZZG      = [{'files':['ZZGTo4LG'      ] , 'color':ROOT.kRed     , 'name':'4l #gamma'}] #'name':'ZZ#gamma', 'split_prompt_ph':True
 ZZGTo2L2jG=[{'files':['ZZGTo2L2jG'    ] , 'color':ROOT.kRed+3   , 'name':'ZZ#gamma #rightarrow 2l 2j'}]
 WZGTo2L2jG=[{'files':['WZGTo2L2jG'    ] , 'color':ROOT.kRed-5   , 'name':'WZ#gamma #rightarrow 2l 2j'}]
+ZHtoZZG  = [{'files':['ZHtoZZG'       ] , 'color':ROOT.kSpring  , 'name':'ZH, H->Z#gamma'}]
 
 # t(t) + VVV with >= X leptons
 rare_4l = [{'files':tt_X_4l[0]['files']+triboson[0]['files']+WZG[0]['files'], 'color':ROOT.kOrange  , 'name':'rare backgrounds'}]
@@ -77,6 +78,7 @@ def getSamplesByRegion(region, MCSet, predType, special=False, **kwargs):
         tot = []
 
     if   region in ['SR4P', 'SR4P_1L', 'SR4P_1F', 'CR3P1F', 'CR2P2F']:
+        tot += ZHtoZZG
         if   predType == 'fullMC':
             if region in ('SR4P', 'SR4P_1L', 'SR4P_1F'):
                 tot += rare_3l
