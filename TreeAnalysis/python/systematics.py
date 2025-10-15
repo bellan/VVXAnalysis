@@ -207,13 +207,15 @@ def doSystematics(tf, var, syst, **kwargs):  # <TFile>, <str>, <str>, <dict> (is
 
 def doSystOnFile(path, syst_regex=None, region=None, var_regex=None, **kwargs):  # <str>, <re.Pattern>
     syst_values = {}
+
+    logging.debug('path = %s', path)
     with TFileContext(path, 'READ') as tf:
         names = set()
         for key in tf.GetListOfKeys():
             name = key.GetName()
             if(name[:3] == 'SYS'):
                 names.add(name)
-    
+
         variables   = set([n.split('_')[1] for n in names])
         if(var_regex  is not None):
             logging.debug('Variables filtered with %s. Original list: %s', var_regex.pattern, variables)
@@ -223,7 +225,6 @@ def doSystOnFile(path, syst_regex=None, region=None, var_regex=None, **kwargs): 
             systematics = {s for s in systematics if syst_regex.search(s)}
             logging.debug('Filtered syst with %s: %s', syst_regex.pattern, systematics)
 
-        logging.debug('path = %s', path)
         logging.debug('\tvariables = %s', variables)
         logging.debug('\tsystematics = %s', systematics)
 
