@@ -63,7 +63,8 @@ void VVGammaAnalyzer::begin(){
   for(char i=0; i<25; ++i) cout<<'-';
   cout<<'\n';
 
-  isSignalSample_ = theSampleInfo.fileName().find("ZZGTo4LG") != std::string::npos;
+  isSignalSample_ = theSampleInfo.fileName().find("ZZGTo4LG") != std::string::npos
+    || theSampleInfo.fileName().find("ZHtoZZG") != std::string::npos;
   cout << "Is this the signal sample? " << isSignalSample_ << '\n';
 
   const char* CMSSW_BASE = getenv("CMSSW_BASE");
