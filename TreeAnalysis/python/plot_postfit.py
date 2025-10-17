@@ -400,7 +400,7 @@ def group_hists(h_map_ungrouped, isTriboson=False):
             extra_t = ''
             extra_k = 0
 
-        if  (base == 'ZZGTo4LG'):
+        if  (base == 'ZZGTo4LG' or base == 'signal'):
             title = 'ZZ#gamma' if isTriboson else '4l #gamma'
             # if(extra == 'nonpro'): title += ' OSD'
             h_map.setdefault(base, dict(

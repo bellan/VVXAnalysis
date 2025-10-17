@@ -42,12 +42,12 @@ def _my_formatter(df, column):
 def table1Plot(var, inputdir, efficiencyType='cutflow'):
     samplesFullMC = getSamplesByRegion(inputdir.region, 'pow', 'fullMC')
     samplesFromCR = getSamplesByRegion(inputdir.region, 'pow', 'fromCR')
-    backgrsFullMC = [ b for b in samplesFullMC if set(b['files']).isdisjoint(set(['WZGTo3LNuG', 'ZZGTo4LG', 'WWW'])) ]
-    backgrsFromCR = [ b for b in samplesFromCR if set(b['files']).isdisjoint(set(['WZGTo3LNuG', 'ZZGTo4LG', 'WWW'])) ]
+    backgrsFullMC = [ b for b in samplesFullMC if set(b['files']).isdisjoint(set(['WZGTo3LNuG', 'ZZGTo4LG', 'WWW', 'signal'])) ]
+    backgrsFromCR = [ b for b in samplesFromCR if set(b['files']).isdisjoint(set(['WZGTo3LNuG', 'ZZGTo4LG', 'WWW', 'signal'])) ]
     
     hData   = getPlot_inputdir(var, 'data', inputdir)
     if region in ['SR4P', 'CR3P1F' , 'CR2P2F' , 'SR4P_1L', 'SR4P_1P', 'CR4P_1F', 'CR4L']:
-        signal_sample = 'ZZGTo4LG'
+        signal_sample = 'signal'
     elif region in ['SR3P', 'CR110'  , 'CR101'  , 'CR011'  , 'CR100'  , 'CR001'  , 'CR010', 'CR000', 'SR3P_1L', 'SR3P_1P', 'CR3P_1F', 'CRLFR', 'CR3L']:
         signal_sample = 'WZGTo3LNuG'
     elif region in ['SR2P', 'SR2P_1L', 'SR2P_1P', 'CR2P_1F']:

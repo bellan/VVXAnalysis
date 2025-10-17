@@ -19,7 +19,7 @@ import logging
 ### Hardcoded configuration ###
 __builtin_config__ = {
     # Define which samples are signals and which are background
-    'signals': ['ZZGTo4LG', 'WZGTo3LNuG'],
+    'signals': ['ZZGTo4LG', 'WZGTo3LNuG', 'signal'],
     # Define the observable and the samples in each region
     'regions': {
         'SR4P': {
@@ -233,7 +233,7 @@ def get_sample_group_pdf(sample):
         return 'qqbar'
 
 def get_sample_group_QCDscale(sample):
-    if  (sample.startswith(('ZZGTo4LG','WZGTo3LNuG','ZZGTo2L2jG','WZGTo2L2jG'))):
+    if  (sample.startswith(('ZZGTo4LG','WZGTo3LNuG','ZZGTo2L2jG','WZGTo2L2jG', 'signal'))):
         return 'VVgamma'
     elif(sample.startswith(('ZZZ', 'WZZ', 'WWZ', 'WWW'))):
         return 'VVV'

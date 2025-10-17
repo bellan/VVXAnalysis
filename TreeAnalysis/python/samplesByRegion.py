@@ -1,5 +1,6 @@
 import sys
 import ROOT
+from copy import deepcopy
 
 ##### Define type of samples ##### FIXME: make a class?
 
@@ -40,6 +41,8 @@ ZZG      = [{'files':['ZZGTo4LG'      ] , 'color':ROOT.kRed     , 'name':'4l #ga
 ZZGTo2L2jG=[{'files':['ZZGTo2L2jG'    ] , 'color':ROOT.kRed+3   , 'name':'ZZ#gamma #rightarrow 2l 2j'}]
 WZGTo2L2jG=[{'files':['WZGTo2L2jG'    ] , 'color':ROOT.kRed-5   , 'name':'WZ#gamma #rightarrow 2l 2j'}]
 ZHtoZZG  = [{'files':['ZHtoZZG'       ] , 'color':ROOT.kSpring  , 'name':'ZH, H->Z#gamma'}]
+ZZGandZH = deepcopy(ZZG)
+ZZGandZH[0]['files'] = ['signal']
 
 # t(t) + VVV with >= X leptons
 rare_4l = [{'files':tt_X_4l[0]['files']+triboson[0]['files']+WZG[0]['files'], 'color':ROOT.kOrange  , 'name':'rare backgrounds'}]
@@ -73,12 +76,12 @@ def getSamplesByRegion(region, MCSet, predType, special=False, **kwargs):
     else:
         raise ValueError('Wrong MC set "%s", choose pow or mad' %(MCSet))
 
-    tot = []+ZZG
+    tot = []
     if(special):
         tot = []
 
     if   region in ['SR4P', 'SR4P_1L', 'SR4P_1F', 'CR3P1F', 'CR2P2F']:
-        tot += ZHtoZZG
+        tot += ZZGandZH
         if   predType == 'fullMC':
             if region in ('SR4P', 'SR4P_1L', 'SR4P_1F'):
                 tot += rare_3l
@@ -91,6 +94,7 @@ def getSamplesByRegion(region, MCSet, predType, special=False, **kwargs):
             tot += rare_4l
 
     elif is3Lregion(region):
+        tot += ZZG
         tot += WZG
         tot += tt_X_3l + triboson + ggZZ + qqZZ
         if   predType == 'fullMC':
@@ -101,6 +105,7 @@ def getSamplesByRegion(region, MCSet, predType, special=False, **kwargs):
             tot += ZZGTo2L2jG + WZGTo2L2jG
 
     elif is2Lregion(region):
+        tot += ZZG
         tot += WZG
         tot += ZZGTo2L2jG + WZGTo2L2jG + tt_X_2l + qqZZ + ggZZ + ZZTo2Q2L + ZZTo2L2Nu + WZ + WW + ZG
         if   predType == 'fullMC':

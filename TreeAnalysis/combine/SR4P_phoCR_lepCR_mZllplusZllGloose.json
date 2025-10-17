@@ -1,12 +1,12 @@
 {
     "signals": [
-	"ZZGTo4LG",
+	"signal",
 	"WZGTo3LNuG"
     ],
     "regions": {
 	"SR4P": {
             "processes": {
-		"ZZGTo4LG": -1,
+		"signal": -1,
 		"ggTo4e_Contin_MCFM701-prompt": -1,
 		"ggTo2e2mu_Contin_MCFM701-prompt": -1,
 		"ggTo4mu_Contin_MCFM701-prompt": -1,
