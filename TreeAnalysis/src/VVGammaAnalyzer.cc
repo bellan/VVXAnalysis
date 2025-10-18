@@ -3736,10 +3736,10 @@ std::pair<float, float> QCDscale_updn(const SampleInfo& theSampleInfo){
   if(theSampleInfo.isMC()){
     std::vector<float> envelope {
       theSampleInfo.QCDscale_muR0p5F1(),
-      theSampleInfo.QCDscale_muR0p5F2(),
+      theSampleInfo.QCDscale_muR0p5F0p5(),
       theSampleInfo.QCDscale_muR1F0p5(),
       theSampleInfo.QCDscale_muR1F2(),
-      theSampleInfo.QCDscale_muR2F0p5(),
+      theSampleInfo.QCDscale_muR2F2(),
       theSampleInfo.QCDscale_muR2F1()
     };
     QCDscale_Up = *max_element(envelope.begin(), envelope.end());
