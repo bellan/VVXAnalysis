@@ -23,7 +23,7 @@ from CrossInfo import*
 from ROOT import TH1F,TCanvas, TLegend
 from plotUtils23 import PlotNotFoundError, InputDir
 from plotUtils23  import GetPredictionsPlot, GetDataPlot, GetClosureStack
-from plotUtils23 import graph_and_ratio
+from plotUtils23 import graph_and_ratio, get_range_tga, clamp_expnd_r
 from utils23 import lumi_dict
 from variablesInfo import getVariablesInfo
 import cmsstyle
@@ -351,14 +351,16 @@ for Var in variables:
 
     # Ratio range
     if(DoData and tgaData.GetN() > 0):
-        y_max_r = max( (tgaData.GetPointY(i) for i in range(tgaData.GetN())) )  # + tgaData.GetErrorYhigh(i)
-        y_min_r = min( (tgaData.GetPointY(i) for i in range(tgaData.GetN())) )  # - tgaData.GetErrorYlow (i)
+        y_min_r, y_max_r = get_range_tga(tgaData, include_err=True)
     else:
         y_max_r = 1.
         y_min_r = 1.
     deltaY = (y_max_r - y_min_r)
-    y_max_r = info.get('ratio_ymax', max(min(y_max_r + deltaY*0.1, 15), 1.5))
-    y_min_r = info.get('ratio_ymin', min(max(y_min_r - deltaY*0.1, 0 ), 0.5))
+    y_min_r, y_max_r = clamp_expnd_r(y_min_r, y_max_r,
+                                     min_lo=0. , max_lo=0.5,
+                                     min_hi=1.5, max_hi=15.)
+    y_max_r = info.get('ratio_ymax', y_max_r)
+    y_min_r = info.get('ratio_ymin', y_min_r)
 
     # Make the canvas
     canvas = cmsstyle.cmsDiCanvas(

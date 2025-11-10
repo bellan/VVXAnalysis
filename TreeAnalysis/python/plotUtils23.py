@@ -706,7 +706,10 @@ def cmsDiCanvas_fromTH1(name, h, r, y_scale=1, range_include_err=False, **kwargs
         for argname in ('y_scale', 'min_lo', 'max_lo', 'min_hi', 'max_hi'):
             # massage arg names for clamp_expnd_r()
             if(argname+'_r' in kwargs): kwargs[argname] = kwargs.pop(argname+'_r')
-        r_min, r_max = get_range_tga(r, include_err=range_include_err)
+        if(r.GetN() > 0):
+            r_min, r_max = get_range_tga(r, include_err=range_include_err)
+        else:
+            r_min, r_max = 0, 8
         r_min, r_max = clamp_expnd_r(r_min, r_max, **kwargs)
     r_min = kwargs.get('r_min', r_min)
     r_max = kwargs.get('r_max', r_max)
@@ -735,8 +738,8 @@ def get_range_tga(g, include_err=False):
 
     if(include_err):
         np = g.GetN()
-        y_max = max( (g.GetPointY(i)+g.GetErrorYhigh(i) for i in range(np)) )
-        y_min = min( (g.GetPointY(i)-g.GetErrorYlow (i) for i in range(np)) )
+        y_max = max( p for p in (g.GetPointY(i)+g.GetErrorYhigh(i) for i in range(np)) )
+        y_min = min( p for p in (g.GetPointY(i)-g.GetErrorYlow (i) for i in range(np)) )
     else:
         buf = array('d', g.GetY())
         y_max = max( buf )

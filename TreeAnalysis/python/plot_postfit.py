@@ -124,7 +124,9 @@ def plot(hdata, info_list, isTriboson=False, outname='postfit', ext=['png'], ysc
     ratio.Divide(hdata, stack.GetStack().Last(), 'pois')
 
     # Create the canvas
-    canvas = cmsDiCanvas_fromTH1(args.shapes, hdata, ratio, y_min=0, y_scale=yscale, min_hi_r=2., max_lo_r=0., nameYaxis='Events', nameRatio='Data/Pred.', iPos=0)
+    canvas = cmsDiCanvas_fromTH1(args.shapes, hdata, ratio,
+                                 y_min=0, y_scale=yscale, min_hi_r=2., max_lo_r=0., range_include_err=True,
+                                 nameYaxis='Events', nameRatio='Data/Pred.', iPos=0)
     if(hdata.GetXaxis().IsAlphanumeric()):
         logging.info('alphanumeric axis')
         canv_hist = cmsstyle.GetcmsCanvasHist(canvas.cd(2))
