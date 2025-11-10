@@ -589,9 +589,6 @@ def SetError(Histo,Region,Set0Error):
     h_copy = Histo.Clone(Histo.GetName()+'_copy')
     h_copy.SetBinErrorOption(ROOT.TH1.kPoisson)
     tga = ROOT.TGraphAsymmErrors(h_copy)
-    for i in range(tga.GetN()):
-        tga.SetPointEXhigh(i,0.)
-        tga.SetPointEXlow (i,0.)
 
     return tga
 
@@ -675,11 +672,6 @@ def graph_and_ratio(histodata, hStackSum, xedges, bx_min, bx_max, unblind=True):
     tgaData.Divide(tmpdata, tmpMC, 'pois')
 
     del tmpdata, tmpMC
-    for i in range(tgaData.GetN()):
-        # Set x errors to 0 to avoid drawing error bars
-        # This is to avoid interference with gStyle.SetErrorX(0.5) which is needed to draw MC error rectangles
-        tgaData.SetPointEXhigh(i,0.)
-        tgaData.SetPointEXlow (i,0.)
 
     return graphData, tgaData
 

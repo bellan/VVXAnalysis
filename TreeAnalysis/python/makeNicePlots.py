@@ -194,7 +194,6 @@ except OSError as e:
 
 
 cmsstyle.setCMSStyle()
-ROOT.gStyle.SetErrorX(0.5)
 ROOT.gROOT.SetBatch(True)
 
 if LumiProj != "":
@@ -333,9 +332,6 @@ for Var in variables:
     if(info.get('special')):
         # Avoid the large error bars that are associated with poisson errors
         graphData = ROOT.TGraphAsymmErrors(histodata)
-        for i in range(graphData.GetN()):
-            graphData.SetPointEXhigh(i,0.)
-            graphData.SetPointEXlow (i,0.)
 
     # Y range - upper plot
     y_max = info.get('ymax', False)
