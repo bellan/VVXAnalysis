@@ -5,11 +5,11 @@ from cmsstyle import p10 as palette
 
 ##### Define type of samples ##### FIXME: make a class?
 
-qqZZ_pow = [{'files':['ZZTo4l'        ] , 'color':ROOT.kBlue-4  , 'name':'qq #rightarrow ZZ', 'split_prompt_ph':True, 'skip_prompt_ph':True, 'kfactor': 1.325/1.256}]  # 1.1  #(1.256/1.325)
+qqZZ_pow = [{'files':['ZZTo4l'        ] , 'color':palette.kBlue , 'name':'qq #rightarrow ZZ', 'split_prompt_ph':True, 'skip_prompt_ph':True, 'kfactor': 1.325/1.256}]  # 1.1  #(1.256/1.325)
 qqZZ_mad = [{'files':['ZZTo4lamcatnlo'] , 'color':qqZZ_pow[0]['color'], 'name':'qq #rightarrow ZZ', 'split_prompt_ph':True, 'skip_prompt_ph':True, 'kfactor': 1.}]
 
 ggZZ     = [{'files': ['ggTo2e2mu_Contin_MCFM701', 'ggTo4e_Contin_MCFM701', 'ggTo4mu_Contin_MCFM701'],
-            'color':ROOT.kAzure-4 , 'name':'gg #rightarrow ZZ'   , 'split_prompt_ph':True, 'skip_prompt_ph':True, 'kfactor': 1.7}]
+            'color':palette.kCyan , 'name':'gg #rightarrow ZZ'   , 'split_prompt_ph':True, 'skip_prompt_ph':True, 'kfactor': 1.7}]
 
 vbsZZ    = [{'files':['ZZ4lJJ'        ] , 'color':ROOT.kCyan-6  , 'name':'VBS'}]
 HZZ      = [{'files':['HZZ'           ] , 'color':ROOT.kCyan-7  , 'name':'higgs'}]
@@ -38,18 +38,18 @@ WG       = [{'files':['WGToLNuG'      ] , 'color':ROOT.kGray    , 'name':'W#gamm
 triboson = [{'files':['WWW','WWZ','WZZ','ZZZ'], 'color':ROOT.kYellow, 'name':'VVV'}]
 
 WZG      = [{'files':['WZGTo3LNuG'    ] , 'color':ROOT.kMagenta , 'name':'3l #nu #gamma'}] #'name':'WZ#gamma'
-ZZG      = [{'files':['ZZGTo4LG'      ] , 'color':ROOT.kRed     , 'name':'4l #gamma'}] #'name':'ZZ#gamma', 'split_prompt_ph':True
+ZZG      = [{'files':['ZZGTo4LG'      ] , 'color':palette.kOrange,'name':'4l #gamma'}] #'name':'ZZ#gamma', 'split_prompt_ph':True
 ZZGTo2L2jG=[{'files':['ZZGTo2L2jG'    ] , 'color':ROOT.kRed+3   , 'name':'ZZ#gamma #rightarrow 2l 2j'}]
 WZGTo2L2jG=[{'files':['WZGTo2L2jG'    ] , 'color':ROOT.kRed-5   , 'name':'WZ#gamma #rightarrow 2l 2j'}]
 ZHtoZZG  = [{'files':['ZHtoZZG'       ] , 'color':ROOT.kSpring  , 'name':'ZH, H->Z#gamma'}]
 ZZGandZH = deepcopy(ZZG)
 ZZGandZH[0]['files'] = ['signal']
 
-fake_leptons = {'color': ROOT.kGray}
-fake_photons = {'color': ROOT.kGreen}
+fake_leptons = {'color': palette.kGray}
+fake_photons = {'color': palette.kGreen}
 
 # t(t) + VVV with >= X leptons
-rare_4l = [{'files':tt_X_4l[0]['files']+triboson[0]['files']+WZG[0]['files'], 'color':ROOT.kOrange  , 'name':'rare backgrounds'}]
+rare_4l = [{'files':tt_X_4l[0]['files']+triboson[0]['files']+WZG[0]['files'], 'color':palette.kViolet, 'name':'rare backgrounds'}]
 rare_3l = [{'files':tt_X_3l[0]['files']+triboson[0]['files']+WZG[0]['files'], 'color':ROOT.kViolet-7, 'name':'rare backgrounds'}]
 rare_2l = [{'files':tt_X_2l[0]['files']+triboson[0]['files']                , 'color':ROOT.kViolet-7, 'name':'rare backgrounds'}]
 
@@ -91,9 +91,9 @@ def getSamplesByRegion(region, MCSet, predType, special=False, **kwargs):
                 tot += rare_3l
             else:
                 tot += rare_2l
-            tot += qqZZ + ggZZ + WZ + DY + ZG
+            tot += ggZZ + qqZZ + WZ + DY + ZG
         elif predType in ('lepCR', 'fromCR'):
-            tot += rare_4l + qqZZ + ggZZ
+            tot += rare_4l + ggZZ + qqZZ
         elif predType == 'phoCR':
             tot += rare_4l
 
@@ -111,7 +111,7 @@ def getSamplesByRegion(region, MCSet, predType, special=False, **kwargs):
     elif is2Lregion(region):
         tot += ZZG
         tot += WZG
-        tot += ZZGTo2L2jG + WZGTo2L2jG + tt_X_2l + qqZZ + ggZZ + ZZTo2Q2L + ZZTo2L2Nu + WZ + WW + ZG
+        tot += ZZGTo2L2jG + WZGTo2L2jG + tt_X_2l + ggZZ + qqZZ + ZZTo2Q2L + ZZTo2L2Nu + WZ + WW + ZG
         if   predType == 'fullMC':
             tot += DY + WG
         elif predType in ('lepCR', 'fromCR'):
@@ -121,7 +121,7 @@ def getSamplesByRegion(region, MCSet, predType, special=False, **kwargs):
 
     elif region == 'CRLFR':
         if   predType == 'fullMC':
-            tot = DY + ZG + WZ + tt_X_2l + ZZTo2Q2L + qqZZ + ggZZ
+            tot = DY + ZG + WZ + tt_X_2l + ZZTo2Q2L + ggZZ + qqZZ
         else:
             raise ValueError('Method "%s" not available for CRLFR'%(predType))
     else:

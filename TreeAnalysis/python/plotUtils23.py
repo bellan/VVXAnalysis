@@ -219,10 +219,6 @@ def deduce_region_label(plotname, region):
         return region
 
 
-colors6  = [ ROOT.TColor.GetColor(hexc) for hexc in ('#5790fc', '#f89c20', '#e42536', '#964a8b', '#9c9ca1', '#7a21dd') ]
-colors10 = [ ROOT.TColor.GetColor(hexc) for hexc in ('#3f90da', '#ffa90e', '#bd1f01', '#94a4a2', '#832db6', '#a96b59', '#e76300', '#b9ac70', '#717581', '#92dadd')]
-
-
 # Stuff ported from plotUtils (py2-only) and made py3-ready
 def getPlotFromSample(inputdir, sample, plot, verbosity, forcePositive, note=None):
     _nameFormat = "{:24.24s}"
