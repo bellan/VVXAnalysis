@@ -283,7 +283,7 @@ def GetFakeRate(inputdir, plotInfo, method, MCSet='mad', verbosity=1):
 
     hFakeRate.Rebin(plotInfo.get('rebin', 1))
 
-    hFakeRate.SetFillColor(ROOT.kGray)
+    hFakeRate.SetFillColor(samplesByRegion.fake_leptons['color'])
     hFakeRate.SetLineColor(ROOT.kGray)
     hFakeRate.SetMarkerStyle(21)
     hFakeRate.SetMarkerSize(.5)
@@ -409,7 +409,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
         if(not hfakePho):
             raise PlotNotFoundError('Missing non-prompt photon plot {} (in {})'.format(fakeName, inputdir.path()))
         hfakePho.SetLineColor(ROOT.kBlack)
-        hfakePho.SetFillColor(ROOT.kGreen-8)
+        hfakePho.SetFillColor(samplesByRegion.fake_photons['color'])
         set_overflow_range(hfakePho, underflow=underflow, overflow=overflow)
         stack.Add(hfakePho)
         leg.AddEntry(hfakePho, "Non-prompt #gamma", "f")

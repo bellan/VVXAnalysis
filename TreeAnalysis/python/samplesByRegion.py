@@ -1,11 +1,12 @@
 import sys
 import ROOT
 from copy import deepcopy
+from cmsstyle import p10 as palette
 
 ##### Define type of samples ##### FIXME: make a class?
 
 qqZZ_pow = [{'files':['ZZTo4l'        ] , 'color':ROOT.kBlue-4  , 'name':'qq #rightarrow ZZ', 'split_prompt_ph':True, 'skip_prompt_ph':True, 'kfactor': 1.325/1.256}]  # 1.1  #(1.256/1.325)
-qqZZ_mad = [{'files':['ZZTo4lamcatnlo'] , 'color':ROOT.kBlue-4  , 'name':'qq #rightarrow ZZ', 'split_prompt_ph':True, 'skip_prompt_ph':True, 'kfactor': 1.}]
+qqZZ_mad = [{'files':['ZZTo4lamcatnlo'] , 'color':qqZZ_pow[0]['color'], 'name':'qq #rightarrow ZZ', 'split_prompt_ph':True, 'skip_prompt_ph':True, 'kfactor': 1.}]
 
 ggZZ     = [{'files': ['ggTo2e2mu_Contin_MCFM701', 'ggTo4e_Contin_MCFM701', 'ggTo4mu_Contin_MCFM701'],
             'color':ROOT.kAzure-4 , 'name':'gg #rightarrow ZZ'   , 'split_prompt_ph':True, 'skip_prompt_ph':True, 'kfactor': 1.7}]
@@ -43,6 +44,9 @@ WZGTo2L2jG=[{'files':['WZGTo2L2jG'    ] , 'color':ROOT.kRed-5   , 'name':'WZ#gam
 ZHtoZZG  = [{'files':['ZHtoZZG'       ] , 'color':ROOT.kSpring  , 'name':'ZH, H->Z#gamma'}]
 ZZGandZH = deepcopy(ZZG)
 ZZGandZH[0]['files'] = ['signal']
+
+fake_leptons = {'color': ROOT.kGray}
+fake_photons = {'color': ROOT.kGreen}
 
 # t(t) + VVV with >= X leptons
 rare_4l = [{'files':tt_X_4l[0]['files']+triboson[0]['files']+WZG[0]['files'], 'color':ROOT.kOrange  , 'name':'rare backgrounds'}]

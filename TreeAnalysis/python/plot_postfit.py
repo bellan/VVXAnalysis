@@ -13,11 +13,21 @@ from ctypes import c_double
 from utils23 import config_logging, lumi_dict
 from plotUtils23 import TFileContext, addIfExisting, cmsDiCanvas_fromTH1, getTAxisLimits
 from PersonalInfo import personalFolder
+import samplesByRegion
 
 
 _varinfo = {
     'mZZG': {'bins': array('d', range(0, 1100, 100)), 'xtitle': 'm_{4l#gamma} [GeV]'},
     'pt'  : {'bins': array('d', [20., 25., 35., 50., 80., 120.]), 'xtitle': 'p_{T}^{#gamma} [GeV]'},
+}
+
+_samplesinfo = {
+    'signal'      :{'color': samplesByRegion.ZZG[0]['color']},
+    'qqZZ'        :{'color': samplesByRegion.qqZZ_pow[0]['color']},
+    'ggZZ'        :{'color': samplesByRegion.ggZZ[0]['color']},
+    'fake_photons':{'color': samplesByRegion.fake_photons['color']},
+    'fake_leptons':{'color': samplesByRegion.fake_leptons['color']},
+    'rare_bkg'    :{'color': samplesByRegion.rare_4l[0]['color']}
 }
 
 
@@ -404,21 +414,21 @@ def group_hists(h_map_ungrouped, isTriboson=False):
             title = 'ZZ#gamma' if isTriboson else '4l #gamma'
             # if(extra == 'nonpro'): title += ' OSD'
             h_map.setdefault(base, dict(
-                title=title, color=ROOT.kRed, key=extra_k, hlist=[]
+                title=title, color=_samplesinfo['signal']['color'], key=extra_k, hlist=[]
             ))['hlist'].append(hist)
         elif(base == 'ZZTo4l'):
-            h_map[sample] = dict(h=hist, title='qq #rightarrow ZZ'+extra_t, color=ROOT.kBlue-4, key=4+extra_k)
+            h_map[sample] = dict(h=hist, title='qq #rightarrow ZZ'+extra_t, color=_samplesinfo['qqZZ']['color'], key=4+extra_k)
         elif(base.startswith('ggTo')):
             h_map.setdefault('ggTo4l'+extra, dict(
-                             title='gg #rightarrow ZZ'+extra_t, color=ROOT.kAzure-4, key=6+extra_k, hlist=[]
+                             title='gg #rightarrow ZZ'+extra_t, color=_samplesinfo['ggZZ']['color'], key=6+extra_k, hlist=[]
                              ))['hlist'].append(hist)
         elif(base == 'fake_photons'):
-            h_map[sample] = dict(h=hist, title='Non-prompt #gamma', color=ROOT.kGreen-8, key=8)
+            h_map[sample] = dict(h=hist, title='Non-prompt #gamma', color=_samplesinfo['fake_photons']['color'], key=8)
         elif(base == 'fake_leptons'):
-            h_map[sample] = dict(h=hist, title='Non-prompt l', color=ROOT.kGray, key=9)
+            h_map[sample] = dict(h=hist, title='Non-prompt l', color=_samplesinfo['fake_leptons']['color'], key=9)
         else:
             h_map.setdefault('rare_bkg', dict(
-                             title='Rare backgrounds', color=ROOT.kOrange, key=2, hlist=[]
+                             title='Rare backgrounds', color=_samplesinfo['rare_bkg']['color'], key=2, hlist=[]
                              ))['hlist'].append(hist)
 
     for _, data in h_map.items():
