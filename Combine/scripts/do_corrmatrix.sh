@@ -2,8 +2,7 @@
 
 show_help(){ cat <<EOF 
 Usage: ${0##*/} [-u] CARD"
-Run FitDiagnostics on CARD and extract some results. Currently diffNuisances.py
-and mlfitNormsToText.py
+Run FitDiagnostics on CARD and plot correlation matrix
 EOF
 }
 
@@ -38,7 +37,7 @@ shift "$((OPTIND-1))"
 card="$(realpath $1)"
 cardname="${1##*/}"
 cardname="${cardname%.txt}"
-combine_testdir=${CMSSW_BASE?}/src/HiggsAnalysis/CombinedLimit/test
+nameNoAutoMC="${cardname}_noAutoMC"
 
 fit_options="--robustFit=1 --saveNormalizations --saveShapes --saveWithUncertainties --plots"
 if [ $unblind -eq 0 ] ; then
@@ -47,9 +46,13 @@ fi
 
 mkdir -p $cardname && cd $cardname || exit 1
 
-combine -M FitDiagnostics ${fit_options} "$card" || print_error "FitDiagnostics"
+# remove autoMC stats so they do not make the plot unreadable
+sed -r '/^[^ ]+ autoMCStats( [0-9]+)+$/d' $card > "${nameNoAutoMC}.txt"
 
-python ${combine_testdir}/diffNuisances.py --all fitDiagnosticsTest.root -f latex > diffNuisances_$cardname.tex || print_error "diffNuisances"
-python ${combine_testdir}/mlfitNormsToText.py -u fitDiagnosticsTest.root > fitNorms_$cardname.txt || print_error "mlfitNormsToText"
+combine -M FitDiagnostics ${fit_options} "${nameNoAutoMC}.txt" || print_error "FitDiagnostics"
 
-mv -v fitDiagnosticsTest.root fitDiagnostics_$cardname.root
+# Make a nice pdf with the correlation matrix
+plotCorrMatrix.py fitDiagnosticsTest.root          && { mv covariance_fit_s.png covariance_fit_s_$cardname.png; mv covariance_fit_s.pdf covariance_fit_s_$cardname.pdf; }
+plotCorrMatrix.py --b-only fitDiagnosticsTest.root && { mv covariance_fit_b.png covariance_fit_b_$cardname.png; mv covariance_fit_b.pdf covariance_fit_b_$cardname.pdf; }
+
+mv -v fitDiagnosticsTest.root fitDiagnostics_"$nameNoAutoMC".root
