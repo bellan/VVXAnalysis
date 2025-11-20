@@ -318,6 +318,8 @@ def getVarInfo_VVGamma(region):
                  'unblind': unblind,
                  'logy': varname in ('MVA',),
                  'split_prompt_ph': True,
+                 'ratio_ymax': 3.8,
+                 'ratio_ymin': 0,
                  'rebin': rebin }
             if status == 'loose':
                 d.update({
