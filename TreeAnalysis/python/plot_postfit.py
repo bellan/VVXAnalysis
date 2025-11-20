@@ -30,6 +30,8 @@ _samplesinfo = {
     'rare_bkg'    :{'color': samplesByRegion.rare_4l[0]['color']}
 }
 
+_SHAPE_LABELS = {'fit_s': 'Post-fit', 'fit_b': 'Bkg. only fit', 'prefit': 'Pre-fit'}
+
 
 def main(args):
     logging.debug('args = %s', args)
@@ -96,13 +98,14 @@ def parse_args():
     parser.add_argument(      '--triboson', action='store_true', dest='isTriboson', default=None,
                               help='Set the legend entry for ZZG (default:%(default)s)')
     parser.add_argument(      '--no-triboson', action='store_false', dest='isTriboson')
-    parser.add_argument(      '--draw-label', action='store_true', default=True, help='Draw the region label (default: %(default)s)')
-    parser.add_argument(      '--no-draw-label', action='store_false', dest='draw_label')
+    parser.add_argument(      '--region-label', action='store_true', default=False, help='Draw the region label (default: %(default)s)')
+    parser.add_argument(      '--no-region-label', action='store_false', dest='region_label')
+    parser.add_argument(      '--postfit-label', action='store_true', help='Add '+'/'.join([v for k,v in _SHAPE_LABELS.items()])+' to the region label')
     parser.add_argument(      '--yscale', type=float, default=1.8,
                               help='Factor that scales y_max in the upper plot (default: %(default)s)')
     parser.add_argument(      '--y_max', type=float, default=None, help='Set y_max in the upper plot (default: %(default)s)')
     parser.add_argument(      '--r_max', type=float, default=None, help='Set r_max in the lower plot (default: %(default)s)')
-    parser.add_argument(      '--shapes', choices=['prefit', 'fit_b', 'fit_s'], default='fit_s',
+    parser.add_argument(      '--shapes', choices=_SHAPE_LABELS.keys(), default='fit_s',
                               help='Name of the folder in the FitDiagnostics file that contains the histograms (default: %(default)s)')
     parser.add_argument(      '--cut-n-count', action='store_true',
                               help='In case there is only one bin per year')
@@ -151,14 +154,25 @@ def plot(hdata, info_list, isTriboson=False, outname='postfit', ext=['png'], ysc
     ### Upper pad ###
     canvas.cd(1)
 
-    # Region label
-    if(args.draw_label):
-        region_text = ROOT.TText()
-        region_text.SetNDC()
-        text = 'SR4P_1P' + (' triboson' if args.isTriboson else '')
+    # Region and postfit label
+    if(args.region_label or args.postfit_label):
         pad = ROOT.gPad
-        region_text.SetText(pad.GetLeftMargin()+0.05, 1-pad.GetTopMargin()-0.1, text)
+        y_top = 1 - pad.GetTopMargin() - 0.025
+        y_bot = y_top - 0.05 - 0.06*(int(args.region_label) + int(args.postfit_label))
+
+        region_text = ROOT.TPaveText(
+            pad.GetLeftMargin()+0.05, y_top,
+            0.5, y_bot, "NB NDC")
+        region_text.SetTextAlign(ROOT.ETextAlign.kHAlignLeft + ROOT.ETextAlign.kVAlignTop)
         region_text.SetTextSize(.05)
+        region_text.SetFillColor(ROOT.kWhite)
+
+        if(args.region_label):
+            region_text.AddText( 'Triboson ZZ#gamma' if isTriboson else 'Inclusive pp #rightarrow 4l#gamma' )
+
+        if(args.postfit_label):
+            region_text.AddText( _SHAPE_LABELS[kwargs['shapes']])
+
         region_text.Draw('same')
 
     # Error band in the upper canvas
