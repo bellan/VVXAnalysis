@@ -100,6 +100,8 @@ def parse_args():
     parser.add_argument(      '--no-draw-label', action='store_false', dest='draw_label')
     parser.add_argument(      '--yscale', type=float, default=1.8,
                               help='Factor that scales y_max in the upper plot (default: %(default)s)')
+    parser.add_argument(      '--y_max', type=float, default=None, help='Set y_max in the upper plot (default: %(default)s)')
+    parser.add_argument(      '--r_max', type=float, default=None, help='Set r_max in the lower plot (default: %(default)s)')
     parser.add_argument(      '--shapes', choices=['prefit', 'fit_b', 'fit_s'], default='fit_s',
                               help='Name of the folder in the FitDiagnostics file that contains the histograms (default: %(default)s)')
     parser.add_argument(      '--cut-n-count', action='store_true',
@@ -124,9 +126,12 @@ def plot(hdata, info_list, isTriboson=False, outname='postfit', ext=['png'], ysc
     ratio.Divide(hdata, stack.GetStack().Last(), 'pois')
 
     # Create the canvas
+    dicanvas_kwargs = dict(y_min=0, y_scale=yscale, min_hi_r=2., max_lo_r=0., range_include_err=True,
+                           nameYaxis='Events', nameRatio='Data/Pred.', iPos=0)
+    if(args.y_max is not None): dicanvas_kwargs['y_max'] = args.y_max
+    if(args.r_max is not None): dicanvas_kwargs['r_max'] = args.r_max
     canvas = cmsDiCanvas_fromTH1(args.shapes, hdata, ratio,
-                                 y_min=0, y_scale=yscale, min_hi_r=2., max_lo_r=0., range_include_err=True,
-                                 nameYaxis='Events', nameRatio='Data/Pred.', iPos=0)
+                                 **dicanvas_kwargs)
     if(hdata.GetXaxis().IsAlphanumeric()):
         logging.info('alphanumeric axis')
         canv_hist = cmsstyle.GetcmsCanvasHist(canvas.cd(2))
