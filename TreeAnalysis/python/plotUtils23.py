@@ -756,3 +756,8 @@ def clamp_expnd_r(lo, hi, y_scale=0.1, min_lo=0., max_lo=0.9, min_hi=1.1, max_hi
     logging.debug('%s range (fix): [%.3g, %.3g]', name, lo, hi)
 
     return lo, hi
+
+
+def debugTGA(g):
+    for i in range(g.GetN()):
+        print('%5.3g [%.3g, %.3g]' %(g.GetPointX(i), g.GetErrorXlow(i), g.GetErrorXhigh(i)))
