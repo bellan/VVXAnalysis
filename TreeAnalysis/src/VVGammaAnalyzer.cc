@@ -45,6 +45,7 @@ namespace {
   constexpr float CUT_MLLG_MIN=100.;
   constexpr bool APPLY_PIXELSEED_CUT = false;
   constexpr bool PHFR_SPLIT          = true;
+  constexpr double DELTA_D = 1e-3; // delta to subtract to values to avoid overflow
 }
 
 // Forward declarations of utility functions used only in the implementation
@@ -54,6 +55,7 @@ std::pair<float, float> QCDscale_updn(const SampleInfo& theSampleInfo);
 double getPhotonFR   (const phys::Photon&, const TH2F*, double maxPt=120.);
 double getPhotonFRUnc(const phys::Photon&, const TH2F*, double maxPt=120.);
 double getZllgMass_GEN(const std::vector<phys::Particle>&, const DiBoson<Particle, Particle>&);
+double clamp(double val, const std::vector<double>& bins);
 
 
 void VVGammaAnalyzer::begin(){
@@ -3114,30 +3116,36 @@ double getZllgMass_GEN(const std::vector<phys::Particle>& phVect_orig, const DiB
 
 void VVGammaAnalyzer::SYSplots_inclusive(const char *sys_label, const char* sigdef, const char* syst, double weight){
   if(is4Lregion(region_)){
-    theHistograms->fill(  Form("SYS%s_mZZ_%s"   , sys_label, syst           ), Form("m_{ZZ} %s", syst), mVV_bins , ZZ->mass()               , weight);
+    double mZZ = clamp(ZZ->mass(), mVV_bins);
+    theHistograms->fill(  Form("SYS%s_mZZ_%s"   , sys_label, syst           ), Form("m_{ZZ} %s", syst), mVV_bins , mZZ, weight);
     if(theSampleInfo.isMC())
-      theHistograms->fill(Form("SYS%s_mZZ-%s_%s", sys_label, sigdef, syst   ), Form("m_{ZZ} %s", syst), mVV_bins , ZZ->mass()               , weight);
+      theHistograms->fill(Form("SYS%s_mZZ-%s_%s", sys_label, sigdef, syst   ), Form("m_{ZZ} %s", syst), mVV_bins , mZZ, weight);
   }
   else if(is3Lregion(region_)){
-    theHistograms->fill(  Form("SYS%s_mWZ_%s"   , sys_label, syst           ), Form("m_{WZ} %s", syst), mVV_bins , ZW->mass()               , weight);
+    double mWZ = clamp(ZW->mass(), mVV_bins);
+    theHistograms->fill(  Form("SYS%s_mWZ_%s"   , sys_label, syst           ), Form("m_{WZ} %s", syst), mVV_bins , mWZ, weight);
     if(theSampleInfo.isMC())
-      theHistograms->fill(Form("SYS%s_mWZ-%s_%s", sys_label, sigdef, syst   ), Form("m_{WZ} %s", syst), mVV_bins , ZW->mass()               , weight);
+      theHistograms->fill(Form("SYS%s_mWZ-%s_%s", sys_label, sigdef, syst   ), Form("m_{WZ} %s", syst), mVV_bins , mWZ, weight);
   }
   else if(region_ == CRLFR){
     Boson<Lepton>& theZ = ZL->first;
     Lepton&        theL = ZL->second;
-    theHistograms->fill(  Form("SYS%s_mZ_%s"    , sys_label, syst           ), Form("m_{Z} %s" , syst), mZ_bins  , theZ.mass()              , weight);
-    theHistograms->fill(  Form("SYS%s_mZL_%s"   , sys_label, syst           ), Form("m_{ZL} %s", syst), mZG_bins , (theZ.p4()+theL.p4()).M(), weight);
+    double mZ  = clamp(theZ.mass(), mZ_bins);
+    double mZL = clamp((theZ.p4()+theL.p4()).M(), mZG_bins);
+    theHistograms->fill(  Form("SYS%s_mZ_%s"    , sys_label, syst           ), Form("m_{Z} %s" , syst), mZ_bins  , mZ , weight);
+    theHistograms->fill(  Form("SYS%s_mZL_%s"   , sys_label, syst           ), Form("m_{ZL} %s", syst), mZG_bins , mZL, weight);
     if(theSampleInfo.isMC()){
-      theHistograms->fill(Form("SYS%s_mZ-%s_%s" , sys_label, sigdef, syst   ), Form("m_{Z} %s" , syst), mZ_bins  , theZ.mass()              , weight);
-      theHistograms->fill(Form("SYS%s_mZL-%s_%s", sys_label, sigdef, syst   ), Form("m_{ZL} %s", syst), mZG_bins , (theZ.p4()+theL.p4()).M(), weight);
+      theHistograms->fill(Form("SYS%s_mZ-%s_%s" , sys_label, sigdef, syst   ), Form("m_{Z} %s" , syst), mZ_bins  , mZ , weight);
+      theHistograms->fill(Form("SYS%s_mZL-%s_%s", sys_label, sigdef, syst   ), Form("m_{ZL} %s", syst), mZG_bins , mZL, weight);
     }
   }
 }
 
 
 void VVGammaAnalyzer::SYSplots_photon(const char* sys_label, const char* sigdef, const char* syst, double weight, const Photon& ph, const char* ph_selection){
-  theHistograms->fill(  Form("SYS%s_%spt_%s"    , sys_label, ph_selection             , syst), Form("pt %s %s"    , ph_selection             , syst), ph_pt_bins, ph.pt()      ,weight);
+  double ph_pt = clamp(ph.pt(), ph_pt_bins);
+
+  theHistograms->fill(  Form("SYS%s_%spt_%s"    , sys_label, ph_selection             , syst), Form("pt %s %s"    , ph_selection             , syst), ph_pt_bins, ph_pt      ,weight);
   if(theSampleInfo.isMC()){
     theHistograms->fill(Form("SYS%s_%spt-%s_%s" , sys_label, ph_selection, sigdef, syst), Form("pt %s %s %s" , ph_selection, sigdef, syst), ph_pt_bins, ph.pt()      ,weight);
   }
@@ -3158,6 +3166,8 @@ void VVGammaAnalyzer::SYSplots_photon(const char* sys_label, const char* sigdef,
 
   if(is4Lregion(region_)){
     double mZZG = (ZZ->p4() + ph.p4()).M();
+    mZZG = clamp(mZZG, mVVG_bins);
+
     theHistograms->fill(  Form("SYS%s_mZZG%s_%s"   , sys_label, ph_selection             , syst), Form("m_{ZZ#gamma %s} %s", ph_selection, syst), mVVG_bins, mZZG, weight);
     if(theSampleInfo.isMC())
       theHistograms->fill(Form("SYS%s_mZZG%s-%s_%s", sys_label, ph_selection, sigdef, syst), Form("m_{ZZ#gamma %s} %s", ph_selection, syst), mVVG_bins, mZZG, weight);
@@ -3165,6 +3175,8 @@ void VVGammaAnalyzer::SYSplots_photon(const char* sys_label, const char* sigdef,
 
   else if(is3Lregion(region_)){
     double mtWZG = (ZW->p4() + ph.p4()).Mt();
+    mtWZG = clamp(mtWZG, mVVG_bins);
+
     theHistograms->fill(  Form("SYS%s_mWZG%s_%s"   , sys_label, ph_selection             , syst), Form("m_{T}^{WZ#gamma %s}; %s", ph_selection, syst), mVVG_bins, mtWZG, weight);
     if(theSampleInfo.isMC())
       theHistograms->fill(Form("SYS%s_mWZG%s-%s_%s", sys_label, ph_selection, sigdef, syst), Form("m_{T}^{WZ#gamma %s}; %s", ph_selection, syst), mVVG_bins, mtWZG, weight);
@@ -3177,6 +3189,9 @@ void VVGammaAnalyzer::SYSplots_photon(const char* sys_label, const char* sigdef,
     Lepton&        theL = ZL->second;
     double mZG  = (theZ.p4()             + ph.p4()).M();
     double mZLG = (theZ.p4() + theL.p4() + ph.p4()).M();
+    mZG  = clamp(mZG , mZG_bins);
+    mZLG = clamp(mZLG, mZG_bins);
+
     theHistograms->fill(Form("SYS%s_mZG%s_%s" , sys_label, ph_selection, syst), Form("m_{Z#gamma %s} %s" , ph_selection, syst), mZG_bins, mZG , weight);
     theHistograms->fill(Form("SYS%s_mZLG%s_%s", sys_label, ph_selection, syst), Form("m_{ZL#gamma %s} %s", ph_selection, syst), mZG_bins, mZLG, weight);
     if(theSampleInfo.isMC()){
@@ -3749,6 +3764,15 @@ std::pair<float, float> QCDscale_updn(const SampleInfo& theSampleInfo){
     QCDscale_Dn = *min_element(envelope.begin(), envelope.end());
   }
   return std::make_pair(QCDscale_Up, QCDscale_Dn);
+}
+
+
+double clamp(double val, const std::vector<double>& bins){
+  const double bmax = bins.back();
+  const double bmin = bins.front();
+  if     (val > bmax) val = bmax - DELTA_D;
+  else if(val < bmin) val = bmin + DELTA_D;
+  return val;
 }
 
 
