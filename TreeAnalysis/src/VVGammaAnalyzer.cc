@@ -3814,11 +3814,11 @@ const vector<double> VVGammaAnalyzer::ph_ptExtended_bins {
 
 
 const vector<double> VVGammaAnalyzer::mVV_bins(
-					       {0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000}
+					       {0, 100, 200, 300, 400, 500, 600, 1000}
 					       );
 
 const vector<double> VVGammaAnalyzer::mVVG_bins(
-						{0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000}
+						{0, 100, 200, 300, 400, 500, 600, 1000}
 						//{150, 250, 350, 450, 850}
 						);
 const vector<double> VVGammaAnalyzer::mZ_bins(
