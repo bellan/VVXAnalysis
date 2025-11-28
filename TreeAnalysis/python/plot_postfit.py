@@ -83,6 +83,8 @@ def main(args):
     cmsstyle.setCMSStyle()
     cmsstyle.SetLumi(138)
     ROOT.gStyle.SetLabelSize(0.045, "X")
+    ROOT.gStyle.SetHatchesLineWidth(2)
+    ROOT.gStyle.SetHatchesSpacing(1)
 
     err = plot(hdata, info_list, outname=outname, **vars(args))
 
@@ -178,7 +180,7 @@ def plot(hdata, info_list, isTriboson=False, outname='postfit', ext=['png'], ysc
     # Error band in the upper canvas
     hMCErr = deepcopy(stack.GetStack().Last())
 
-    hMCErr.SetFillStyle(3005)
+    hMCErr.SetFillStyle(3345)
     hMCErr.SetMarkerStyle(1)
     hMCErr.SetFillColor(ROOT.kBlack)
     legend.AddEntry(hMCErr, "Stat. only", "f")
