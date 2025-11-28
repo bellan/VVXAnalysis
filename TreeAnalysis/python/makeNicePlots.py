@@ -206,6 +206,10 @@ cmsstyle.SetExtraText('')
 cmsstyle.SetEnergy(13, unit='TeV')
 cmsstyle.SetLumi('{:.3g}'.format(lumi))
 
+# Change the thickness of the MC stat error band
+ROOT.gStyle.SetHatchesLineWidth(2)
+ROOT.gStyle.SetHatchesSpacing(1)
+
 VarInfo = getVariablesInfo(Analysis, region)
 
 if Type == 'all':
@@ -406,7 +410,7 @@ for Var in variables:
     # Error band in the upper canvas
     hMCErr = deepcopy(hStackSum)
 
-    hMCErr.SetFillStyle(3005)
+    hMCErr.SetFillStyle(3345)
     hMCErr.SetMarkerStyle(1)
     hMCErr.SetFillColor(ROOT.kBlack)
     hMCErr.Draw("sameE2")
