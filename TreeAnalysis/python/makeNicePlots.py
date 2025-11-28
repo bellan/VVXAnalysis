@@ -332,7 +332,8 @@ for Var in variables:
     xedges = array('d', [e for e in xedges if e >= x_min and e <= x_max])# xedges[bx_min-1:bx_max+1]
 
     # TGraphs to draw in the upper plot (data) and in the ratio plot
-    graphData, tgaData = graph_and_ratio(histodata, hStackSum, xedges=xedges, bx_min=bx_min, bx_max=bx_max, unblind=DoData)
+    graphData, tgaData = graph_and_ratio(histodata, hStackSum, xedges=xedges, bx_min=bx_min, bx_max=bx_max,
+                                         unblind=DoData, remove_zeros=True)
     if(info.get('special')):
         # Avoid the large error bars that are associated with poisson errors
         graphData = ROOT.TGraphAsymmErrors(histodata)

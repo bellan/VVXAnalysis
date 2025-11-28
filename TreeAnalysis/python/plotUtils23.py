@@ -647,7 +647,7 @@ def GetDataPlot(inputdir, plotInfo, forcePositive=False, verbosity=1):
     return hdata
 
 
-def graph_and_ratio(histodata, hStackSum, xedges, bx_min, bx_max, unblind=True):
+def graph_and_ratio(histodata, hStackSum, xedges, bx_min, bx_max, unblind=True, remove_zeros=False):
     '''
     Returns two TGraphAsymmErrors: one the upper pad, and the ratio of histodata and the MC sum
     '''
@@ -669,11 +669,26 @@ def graph_and_ratio(histodata, hStackSum, xedges, bx_min, bx_max, unblind=True):
         tmpMC  .SetBinError  (b_new, hStackSum.GetBinError  (b_old))
 
     graphData = SetError(tmpdata, '', False)
+
+    # Remove points where data = 0
+    if(remove_zeros):
+        remove_zeros_tg(graphData)
+
     tgaData.Divide(tmpdata, tmpMC, 'pois')
 
     del tmpdata, tmpMC
 
     return graphData, tgaData
+
+def remove_zeros_tg(tg):
+    to_remove = []
+    for i in range(tg.GetN()):
+        y = tg.GetPointY(i)
+        if(y <= 1e-6):
+            to_remove.append(i)
+    for i in reversed(to_remove):
+        # loop backwards to avoid changing the point indices while deleting
+        tg.RemovePoint(i)
 
 
 def integral_and_error(h, binx1=0, binx2=-1, option=""):
