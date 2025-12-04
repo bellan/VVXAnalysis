@@ -11,7 +11,7 @@ from subprocess import run
 from ctypes import c_double
 
 from utils23 import config_logging, lumi_dict
-from plotUtils23 import TFileContext, addIfExisting, cmsDiCanvas_fromTH1, getTAxisLimits
+from plotUtils23 import TFileContext, addIfExisting, cmsDiCanvas_fromTH1, getTAxisLimits, remove_zeros_tg
 from PersonalInfo import personalFolder
 import samplesByRegion
 
@@ -129,6 +129,7 @@ def plot(hdata, info_list, isTriboson=False, outname='postfit', ext=['png'], ysc
     logging.debug('data: %s', hdata)
     logging.debug('MC  : %s', stack.GetStack().Last())
     ratio.Divide(hdata, stack.GetStack().Last(), 'pois')
+    remove_zeros_tg(ratio)
 
     # Create the canvas
     dicanvas_kwargs = dict(y_min=0, y_scale=yscale, min_hi_r=2., max_lo_r=0., range_include_err=True,
@@ -190,12 +191,14 @@ def plot(hdata, info_list, isTriboson=False, outname='postfit', ext=['png'], ysc
     hdata.SetMarkerStyle(20)
     hdata.SetMarkerSize(.8)
     hdata.SetBinErrorOption(ROOT.TH1.kPoisson)
-    legend.AddEntry(hdata, 'data', 'lpe')
+    gdata = ROOT.TGraphAsymmErrors(hdata)
+    remove_zeros_tg(gdata)
+    legend.AddEntry(gdata, 'data', 'lpe')
 
     # Draw
     stack.Draw('SAMEHIST')
     hMCErr.Draw("SAMEE2")
-    hdata.Draw('SAMEPE0X0')
+    gdata.Draw('SAMEP')
 
     ### Lower pad ###
     canvas.cd(2)
