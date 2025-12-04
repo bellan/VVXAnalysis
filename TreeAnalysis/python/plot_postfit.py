@@ -17,7 +17,10 @@ import samplesByRegion
 
 
 _varinfo = {
-    'mZZG': {'bins': array('d', range(0, 1100, 100)), 'xtitle': 'm_{4l#gamma} [GeV]'},
+    'mZZG': {'xtitle': 'm_{4l#gamma} [GeV]', 'bins': {
+        7 : array('d', [0., 100., 200., 300., 400., 500., 600., 1000.]),
+        10: array('d', range(0, 1100, 100))}
+    },
     'pt'  : {'bins': array('d', [20., 25., 35., 50., 80., 120.]), 'xtitle': 'p_{T}^{#gamma} [GeV]'},
 }
 
@@ -69,7 +72,14 @@ def main(args):
         varinfo = _varinfo['pt']
 
     if(not args.cut_n_count):
-        h_map = fix_binning(h_map, varinfo['bins'])
+        bins = varinfo['bins']
+        if(isinstance(bins, dict)):
+            # For mZZG we had to change binning.
+            # this keeps the script working with both versions
+            nbins = h_map['data'].GetNbinsX()
+            bins = bins[nbins]
+
+        h_map = fix_binning(h_map, bins)
 
     hdata = h_map.pop('data')
     hdata.GetXaxis().SetTitle(varinfo['xtitle'])
