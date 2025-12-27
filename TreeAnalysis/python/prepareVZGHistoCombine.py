@@ -70,7 +70,7 @@ def get_TH1keys_from_file(tfhandle):
 
 def main():
     # The configuration
-    regions = ['SR2P', 'SR2PFJ'
+    regions = ['SR2P', 'SR2PFJ', 'CRDY'
                # 'SR_HZZ', 'CR2P2F_HZZ', 'CR3P1F_HZZ', 'CR_HZZ', 'MC_HZZ',
                # 'MC'
     ]

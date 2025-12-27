@@ -23,7 +23,11 @@ __builtin_config__ = {
     # Define the observable and the samples in each region
     'regions': {
         'SR2P': {
-            'processes': {'VZG': -1, 'TTTo2L2Nu':-1, 'DYJetsToLL_M50':-1, 'ZGToLLG':-1},
+            'processes': {'VZG': -1, 'TTTo2L2Nu':-1, 'DYJetsToLL_M50':-1, 'ZGToLLG':-1, 'FSR':-1},
+            'observable': {'name':'BDTScore', 'observation':-1}  # Combine's name for "observable"
+        },
+        'CRDY': {
+            'processes': {'VZG': -1, 'TTTo2L2Nu':-1, 'DYJetsToLL_M50':-1, 'ZGToLLG':-1, 'FSR':-1},
             'observable': {'name':'BDTScore', 'observation':-1}  # Combine's name for "observable"
         },
         'SR2PFJ': {
@@ -36,8 +40,8 @@ __builtin_config__ = {
 
     # General configuration
     'systematics':{
-        'shape': ['JER','JEC'],
-        'correlated'  : ['L1Prefiring', 'PDFVar', 'QCDscale', 'alphas','puWeight', 'JER','JEC'],
+        'shape': [],
+        'correlated'  : ['L1Prefiring', 'PDFVar', 'QCDscale', 'alphas','puWeight', 'JER','JES', 'effPhIDMVA','CR2P1F', 'DYpromptPhSub'],# 
         'uncorrelated': [],
         'correl_year' : [], # Systematics that are uncorrelated between years, but correlated between 2016 pre/post
         'skip-if-signal': ['PDFVar', 'QCDscale', 'alphas'],
