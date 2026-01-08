@@ -31,6 +31,7 @@
 		"correl_type": "correlated"
 	    }
 	},
+	"datadriven": ["CMS_fake_g", "CMS_SMP24014_fake_g_shapeCR"],
         "comment":{"set_manual": {"CMS_fake_g": {"fake_photons": {"up":0.2, "dn":-0.2}}}}
     }
 }
