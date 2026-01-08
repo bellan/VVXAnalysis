@@ -6,7 +6,7 @@ set -u
 show_help(){
 cat <<EOF
 Usage: ${0##*/} [-d] DEST_DIR SOURCE_DIR
-    Create symlinks in DEST_DIR to the results in SRC_DIR
+    hadd ZZGTo4LG and ZHtoZZG into signal in every subdirectory
 
     -d      Dry-run: print commands that would be executed
 EOF
@@ -30,7 +30,7 @@ shift "$((OPTIND-1))"
 top="$1"
 $dryrun && EXEC="echo" || EXEC=""
 
-for d in $(find "$top" -mindepth 2 -maxdepth 2 -type d -name "VVGammaAnalyzer_*") ; do
+for d in $(find "$top"/ -mindepth 2 -maxdepth 2 -type d -name "VVGammaAnalyzer_*") ; do
     [ -e $d/signal.root ] && continue
 
     $EXEC hadd $d/signal.root $d/ZZGTo4LG.root $d/ZHtoZZG.root || break
