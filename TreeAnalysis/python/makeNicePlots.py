@@ -21,7 +21,7 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 import CrossInfo
 from CrossInfo import* 
 from ROOT import TH1F,TCanvas, TLegend
-from plotUtils23 import PlotNotFoundError, InputDir
+from plotUtils23 import PlotNotFoundError, InputDir, TFileContext
 from plotUtils23  import GetPredictionsPlot, GetDataPlot, GetClosureStack
 from plotUtils23 import graph_and_ratio, get_range_tga, clamp_expnd_r
 from utils23 import lumi_dict
@@ -508,6 +508,12 @@ for Var in variables:
 
     for ext in ('png', 'pdf'): #, 'root', 'eps'
         canvas.SaveAs(os.path.join(OutputDir, Title+'.'+ext))
+
+    with TFileContext(os.path.join(OutputDir, Title+'.root'), 'recreate') as f:
+        f.cd()
+        leg.Write("legend")
+        hMC.Write("MC")
+        graphData.Write("data")
 
     del histodata, tgaData
 
