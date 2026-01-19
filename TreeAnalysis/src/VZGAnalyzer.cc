@@ -30,10 +30,10 @@ int ANALYSIS_CUTs_WP = 2;
 int BDT_CUT= 0.8;
 double ALPHAS_CAP=1.;
 bool verboseControlBlinding= false;
-const std::vector<double> expBinEdges = {-1, -0.72, -0.47, -0.26, -0.08,  0.08,  0.22,  0.34,  0.44,  0.53,  0.61,  0.68,  0.74,   0.79,  0.83,  0.87,  0.905,  0.935, 0.96,  0.98,  1};//TIGHT
-//const std::vector<double> binEdges =  {-1, -0.72, -0.47, -0.26, -0.08,  0.08,  0.22,  0.34,  0.46,  0.57,  0.68,  0.79,  0.87,  0.935, 1};//MEDIUM
-// WORKING! // const std::vector<double> binEdges =  {-1, -0.92, -0.84, -0.76, -0.68, -0.6, -0.52, -0.44, -0.36, -0.28, -0.2, -0.12, -0.04, 0.04, 0.12, 0.2, 0.28, 0.36, 0.44, 0.52, 0.6, 0.68, 0.76, 0.84, 0.92, 1};//EQUAL
-const std::vector<double> binEdges =  {-1.00,-0.85,-0.70,-0.56,-0.43,-0.31,-0.19,-0.07,0.04,0.14,0.24,0.33,0.42,0.51,0.59,0.67,0.74,0.81,0.88,0.94,1.00};
+
+const std::vector<double> binEdges =  {-1.00,-0.85,-0.70,-0.56,-0.43,-0.31,-0.19,-0.07,0.04,0.14,0.24,0.33,0.42,0.51,0.59,0.67,0.74,0.81,0.88,0.94,1.00}; //CT: used for PhD thesis 
+//const std::vector<double> binEdges =  {-1.00, 0.00,0.12,0.23,0.33,0.42,0.52,0.63,0.75,0.875,1.00}; //CT: less aggressive binning: rebin1
+//const std::vector<double> binEdges =  {-1.00, -0.4, -0.1, 0.12,0.23,0.33,0.42,0.52,0.63,0.75,0.875,1.00}; //CT: less aggressive binning: rebin2
 
 const std::vector<double> rewgtBinEdges =  {0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,220,240,260,280,300,330,360,400,480,650};
 
@@ -2216,7 +2216,10 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
     if(fabs(V_FJCandidate->mass()-phys::WMASS)<peakDist_mFJCand)    peakDist_mFJCand=fabs(V_FJCandidate->mass()-phys::WMASS);
   }
 
-  
+  bool isGoodEventDiscarded = false;
+  bool wasGoodEvent = false;
+  bool isBadEventRecovered  = false;
+
   std::vector<phys::Jet> selectedJets;
   std::vector<phys::Boson<phys::Jet>> DiJetsCand;
 
@@ -2236,12 +2239,9 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
     
     //if (KinematicsOK(jet,ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID()) 	selectedJets.push_back(jet);
       
-  }
+  }//end of loop over jets
 
-  bool isGoodEventDiscarded = false;
-  bool wasGoodEvent = false;
-  bool isBadEventRecovered  = false;
-  
+
   if (selectedJets.size() > 1){
     for (uint i = 0; i < selectedJets.size() - 1; i++) // Warning: size can be 0
       for (uint j = i+1; j < selectedJets.size(); j++)
@@ -2252,7 +2252,7 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
   if (DiJetsCand.size() > 0){
     std::stable_sort(DiJetsCand.begin(), DiJetsCand.end(), phys::Mass2Comparator(phys::ZMASS, phys::WMASS));
 
-    wasGoodEvent=(DiJetsCand[0].mass()>50  &&   DiJetsCand[0].mass()<120);
+    wasGoodEvent=(DiJetsCand[0].mass()>50  &&   DiJetsCand[0].mass()<120);//CT: WARNING there can be nominal mjj acc, nominal ptj1 not acc, and ptj1_JerUp acc
 
     if(isForSysUpDn==0){
       *haveGoodRECODiJetCand=(DiJetsCand[0].mass()>50  &&   DiJetsCand[0].mass()<120);
@@ -2276,7 +2276,7 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
 	    ScaleP4(JUnc_PJ0_scaling_Up, ptj0Scaled_JUncUp, DiJetsCand[i].daughter(0).pt());
 	    ScaleP4(JUnc_PJ1_scaling_Up, ptj1Scaled_JUncUp, DiJetsCand[i].daughter(1).pt());
 	    mjjScaled_JUncUp=(JUnc_PJ0_scaling_Up+JUnc_PJ1_scaling_Up).M();
-	    double candPeakDist_mDJCand=fabs(DiJetsCand[i].mass()-phys::ZMASS);
+	    double candPeakDist_mDJCand=fabs(mjjScaled_JUncUp-phys::ZMASS); //CT: fixed
 	    if(fabs(mjjScaled_JUncUp-phys::WMASS)<candPeakDist_mDJCand)    candPeakDist_mDJCand=fabs(mjjScaled_JUncUp-phys::WMASS);
 	    if(candPeakDist_mDJCand<currentPeakDist_mDJCand){
 	      currentPeakDist_mDJCand=candPeakDist_mDJCand;
@@ -2292,7 +2292,7 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
 	    ScaleP4(JUnc_PJ0_scaling_Dn, ptj0Scaled_JUncDn, DiJetsCand[i].daughter(0).pt());
 	    ScaleP4(JUnc_PJ1_scaling_Dn, ptj1Scaled_JUncDn, DiJetsCand[i].daughter(1).pt());
 	    mjjScaled_JUncDn=(JUnc_PJ0_scaling_Dn+JUnc_PJ1_scaling_Dn).M();
-	    double candPeakDist_mDJCand=fabs(DiJetsCand[i].mass()-phys::ZMASS);
+	    double candPeakDist_mDJCand=fabs(mjjScaled_JUncDn-phys::ZMASS);//CT: fixed
 	    if(fabs(mjjScaled_JUncDn-phys::WMASS)<candPeakDist_mDJCand)    candPeakDist_mDJCand=fabs(mjjScaled_JUncDn-phys::WMASS);
 	    if(candPeakDist_mDJCand<currentPeakDist_mDJCand){
 	      currentPeakDist_mDJCand=candPeakDist_mDJCand;
@@ -2308,7 +2308,7 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
 	  ScaleP4(JES_PJ0_scaling, ptj0Scaled_JES, DiJetsCand[i].daughter(0).pt());
 	  ScaleP4(JES_PJ1_scaling, ptj1Scaled_JES, DiJetsCand[i].daughter(1).pt());
 	  mjjScaled_JES=(JES_PJ0_scaling+JES_PJ1_scaling).M();
-	  double candPeakDist_mDJCand=fabs(DiJetsCand[i].mass()-phys::ZMASS);
+	  double candPeakDist_mDJCand=fabs(mjjScaled_JES-phys::ZMASS);//CT fix
 	  if(fabs(mjjScaled_JES-phys::WMASS)<candPeakDist_mDJCand)    candPeakDist_mDJCand=fabs(mjjScaled_JES-phys::WMASS);
 	  if(candPeakDist_mDJCand<currentPeakDist_mDJCand){
 	    currentPeakDist_mDJCand=candPeakDist_mDJCand;
@@ -2321,14 +2321,14 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
   }//closing if at least one DiJetCand
 
   if(wasGoodEvent && !*haveGoodRECODiJetCand) isGoodEventDiscarded=true;
-  //__________________________BLOCK_CONTROL_________________________________//
+  /*__________________________BLOCK_CONTROL_________________________________//
   if(isForSysUpDn>0 && isJERorJES>0){
 
     if(wasGoodEvent && *haveGoodRECODiJetCand) theHistograms->fill("AUX_JERup_CONTROL_PLOT", "AUX_JERup_CONTROL_PLOT", 3, -1.5, 1.5,     0, theWeight*LumiSF);
     if(isBadEventRecovered)                    theHistograms->fill("AUX_JERup_CONTROL_PLOT", "AUX_JERup_CONTROL_PLOT", 3, -1.5, 1.5,     1, theWeight*LumiSF);
     if(isGoodEventDiscarded)                   theHistograms->fill("AUX_JERup_CONTROL_PLOT", "AUX_JERup_CONTROL_PLOT", 3, -1.5, 1.5,    -1, theWeight*LumiSF);
   }
-  //__________________________END_OF_BLOCK__________________________________//
+  //__________________________END_OF_BLOCK__________________________________*/
 
   if(*haveGoodRECODiJetCand){
     *V_JJCandidate = DiJetsCand.at(updatedBestCandIndex);
@@ -2800,6 +2800,24 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     if(VBTopo_JESup==1) VZGMVAScore_JESup= VZGMVAScoreBuilder(recoV_JESup, recoFJ,  selectedphotons, VBTopo_JESup, 1,-1);
     if(VBTopo_JESdn==1) VZGMVAScore_JESdn= VZGMVAScoreBuilder(recoV_JESdn, recoFJ,  selectedphotons, VBTopo_JESdn,-1,-1);
 
+    if(VBTopo==1)                              theHistograms->fill("AUX_JERup_CONTROL_PLOT", "AUX_JERup_CONTROL_PLOT", 3, -1.5, 1.5,     0, theWeight*LumiSF);
+    if(VBTopo==0 && VBTopo_JERup==1)           theHistograms->fill("AUX_JERup_CONTROL_PLOT", "AUX_JERup_CONTROL_PLOT", 3, -1.5, 1.5,     1, theWeight*LumiSF);
+    if(VBTopo==1 && VBTopo_JERup==0)           theHistograms->fill("AUX_JERup_CONTROL_PLOT", "AUX_JERup_CONTROL_PLOT", 3, -1.5, 1.5,    -1, theWeight*LumiSF);
+
+    if(VBTopo==1)                              theHistograms->fill("AUX_JERdn_CONTROL_PLOT", "AUX_JERdn_CONTROL_PLOT", 3, -1.5, 1.5,     0, theWeight*LumiSF);
+    if(VBTopo==0 && VBTopo_JERdn==1)           theHistograms->fill("AUX_JERdn_CONTROL_PLOT", "AUX_JERdn_CONTROL_PLOT", 3, -1.5, 1.5,     1, theWeight*LumiSF);
+    if(VBTopo==1 && VBTopo_JERdn==0)           theHistograms->fill("AUX_JERdn_CONTROL_PLOT", "AUX_JERdn_CONTROL_PLOT", 3, -1.5, 1.5,    -1, theWeight*LumiSF);
+
+    if(VZGMVAScore_JERup <= 1. && VZGMVAScore_JERup >= binEdges.at(0) && (VZGMVAScore > 1. || VZGMVAScore < binEdges.at(0)) )
+      theHistograms->fill("AUX2_JERup_CONTROL_PLOT", "AUX_JERup_CONTROL_PLOT", 3, -1.5, 1.5,     1, theWeight*LumiSF);
+
+    if(VZGMVAScore <= 1. && VZGMVAScore >= binEdges.at(0))
+      theHistograms->fill("AUX2_JERup_CONTROL_PLOT", "AUX_JERup_CONTROL_PLOT", 3, -1.5, 1.5,     0, theWeight*LumiSF);
+    
+    if( (VZGMVAScore_JERup > 1. || VZGMVAScore_JERup < binEdges.at(0) ) && VZGMVAScore <= 1. && VZGMVAScore >= binEdges.at(0) )
+      theHistograms->fill("AUX2_JERup_CONTROL_PLOT", "AUX_JERup_CONTROL_PLOT", 3, -1.5, 1.5,    -1, theWeight*LumiSF);
+
+    
     // QCD scale
     // envelope: consider the six variations: {Do, Central, Up} x {Dn, Central, Up} - (central, central) - (Dn, Dn) - (Up, Up) and use the max and min
     float QCDscale_Up(1.), QCDscale_Dn(1.);
@@ -2930,13 +2948,13 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
 	theHistograms->fill("SYS_BDTScore_CR2P1F_Down", "SYS_BDTScore_CR2P1F_Down" , binEdges,  VZGMVAScore, theWeight*(TF-TF_uncAbs)*PhEffSF*LumiSF);
       }
       */ //CT: momentaneously de-activating with the as long as DY reweighting is de-activated itself
-    
-      if(VZGMVAScore_JERup <= 1. && VZGMVAScore_JERup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_jer_Up"  , "SYS_BDTScore_jer_Up"   , binEdges,  VZGMVAScore_JERup, theWeight*rewgt*PhEffSF*LumiSF);
-      if(VZGMVAScore_JERdn <= 1. && VZGMVAScore_JERdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_jer_Down", "SYS_BDTScore_jer_Down" , binEdges,  VZGMVAScore_JERdn, theWeight*rewgt*PhEffSF*LumiSF);
-      if(VZGMVAScore_JESup <= 1. && VZGMVAScore_JESup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_jesTotal_Up"  , "SYS_BDTScore_jesTotal_Up"   , binEdges,  VZGMVAScore_JESup, theWeight*rewgt*PhEffSF*LumiSF);
-      if(VZGMVAScore_JESdn <= 1. && VZGMVAScore_JESdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_jesTotal_Down", "SYS_BDTScore_jesTotal_Down" , binEdges,  VZGMVAScore_JESdn, theWeight*rewgt*PhEffSF*LumiSF);
-
     }
+    if(VZGMVAScore_JERup <= 1. && VZGMVAScore_JERup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_jer_Up"  , "SYS_BDTScore_jer_Up"   , binEdges,  VZGMVAScore_JERup, theWeight*rewgt*PhEffSF*LumiSF);
+    if(VZGMVAScore_JERdn <= 1. && VZGMVAScore_JERdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_jer_Down", "SYS_BDTScore_jer_Down" , binEdges,  VZGMVAScore_JERdn, theWeight*rewgt*PhEffSF*LumiSF);
+    if(VZGMVAScore_JESup <= 1. && VZGMVAScore_JESup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_jesTotal_Up"  , "SYS_BDTScore_jesTotal_Up"   , binEdges,  VZGMVAScore_JESup, theWeight*rewgt*PhEffSF*LumiSF);
+    if(VZGMVAScore_JESdn <= 1. && VZGMVAScore_JESdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_jesTotal_Down", "SYS_BDTScore_jesTotal_Down" , binEdges,  VZGMVAScore_JESdn, theWeight*rewgt*PhEffSF*LumiSF);
+
+    
   }
   //_____________________________________________END_OF_BLOCK_FOR_SYS_HISTOS_____________________________________//
   
