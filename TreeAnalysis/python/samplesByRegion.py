@@ -49,9 +49,9 @@ fake_leptons = {'color': palette.kGray}
 fake_photons = {'color': palette.kGreen}
 
 # t(t) + VVV with >= X leptons
-rare_4l = [{'files':tt_X_4l[0]['files']+triboson[0]['files']+WZG[0]['files'], 'color':palette.kViolet, 'name':'rare backgrounds'}]
-rare_3l = [{'files':tt_X_3l[0]['files']+triboson[0]['files']+WZG[0]['files'], 'color':ROOT.kViolet-7, 'name':'rare backgrounds'}]
-rare_2l = [{'files':tt_X_2l[0]['files']+triboson[0]['files']                , 'color':ROOT.kViolet-7, 'name':'rare backgrounds'}]
+rare_4l = [{'files':tt_X_4l[0]['files']+triboson[0]['files']+WZG[0]['files'], 'color':palette.kViolet, 'name':'Rare backgrounds'}]
+rare_3l = [{'files':tt_X_3l[0]['files']+triboson[0]['files']+WZG[0]['files'], 'color':ROOT.kViolet-7, 'name':'Rare backgrounds'}]
+rare_2l = [{'files':tt_X_2l[0]['files']+triboson[0]['files']                , 'color':ROOT.kViolet-7, 'name':'Rare backgrounds'}]
 
 data_obs =  {'files':['data'          ] , 'color':ROOT.kBlack   , 'name':'Data'}
 
