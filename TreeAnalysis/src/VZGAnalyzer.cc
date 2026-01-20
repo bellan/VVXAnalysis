@@ -2889,13 +2889,21 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
 
       theHistograms->fill("SYS_BDTScore_L1Prefiring_Up"  , "SYS_BDTScore_L1Prefiring_Up"   , binEdges,  VZGMVAScore, (theSampleInfo.L1PrefiringWeightUp()/theSampleInfo.L1PrefiringWeight())*theWeight*rewgt*PhEffSF*LumiSF);
       theHistograms->fill("SYS_BDTScore_L1Prefiring_Down", "SYS_BDTScore_L1Prefiring_Down" , binEdges,  VZGMVAScore, (theSampleInfo.L1PrefiringWeightDn()/theSampleInfo.L1PrefiringWeight())*theWeight*rewgt*PhEffSF*LumiSF);
-      /*
-      double relPhEffSFUnc=(PhEffSF!=0) ? PhEffSFUnc/PhEffSF : 0.;
 
+
+      
+      double relPhEffSFUnc=(PhEffSF!=0) ? PhEffSFUnc/PhEffSF : 0.;
       theHistograms->fill("SYS_BDTScore_effPhIDMVA_Up"  , "SYS_BDTScore_effPhIDMVA_Up"   , binEdges,  VZGMVAScore, theWeight*rewgt*(PhEffSF+PhEffSFUnc)*LumiSF);
       theHistograms->fill("SYS_BDTScore_effPhIDMVA_Down", "SYS_BDTScore_effPhIDMVA_Down" , binEdges,  VZGMVAScore, theWeight*rewgt*(PhEffSF-PhEffSFUnc)*LumiSF);
-      *///CT BACK HERE
-      
+
+      double eleEff_w=0., muoEff_w=0.;
+      eleEff_w  = Z->eleEffSFUnc()/Z->efficiencySF();
+      muoEff_w  = Z->muoEffSFUnc()/Z->efficiencySF();
+      theHistograms->fill("SYS_BDTScore_electronEff_Up"  , "SYS_BDTScore_electronEff_Up"   , binEdges,  VZGMVAScore, theWeight*rewgt*(1 + eleEff_w)*LumiSF);
+      theHistograms->fill("SYS_BDTScore_electronEff_Down", "SYS_BDTScore_electronEff_Down" , binEdges,  VZGMVAScore, theWeight*rewgt*(1 - eleEff_w)*LumiSF);
+      theHistograms->fill("SYS_BDTScore_muonEff_Up"  , "SYS_BDTScore_muonEff_Up"   , binEdges,  VZGMVAScore, theWeight*rewgt*(1 + muoEff_w)*LumiSF);
+      theHistograms->fill("SYS_BDTScore_muonEff_Down", "SYS_BDTScore_muonEff_Down" , binEdges,  VZGMVAScore, theWeight*rewgt*(1 - muoEff_w)*LumiSF);
+
       theHistograms->fill("SYS_BDTScore_puWeight_Up"  , "SYS_BDTScore_puWeight_Up"   , binEdges,  VZGMVAScore, (theSampleInfo.puWeightUncUp()/theSampleInfo.puWeight())*theWeight*rewgt*PhEffSF*LumiSF);
       theHistograms->fill("SYS_BDTScore_puWeight_Down", "SYS_BDTScore_puWeight_Down" , binEdges,  VZGMVAScore, (theSampleInfo.puWeightUncDn()/theSampleInfo.puWeight())*theWeight*rewgt*PhEffSF*LumiSF);
       /*
