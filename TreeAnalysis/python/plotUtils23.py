@@ -11,6 +11,7 @@ import ROOT
 import cmsstyle
 
 import samplesByRegion
+from utils23 import NONPROMPT_CAP
 
 if(sys.version_info.major < 3):
     import errno
@@ -372,7 +373,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
         hfake.SetLineColor(ROOT.kBlack)
         set_overflow_range(hfake, underflow=underflow, overflow=overflow)
         stack.Add(hfake)
-        leg.AddEntry(hfake,"Non-prompt l","f")
+        leg.AddEntry(hfake, NONPROMPT_CAP+" l", "f")
 
     elif predType == 'fakeMC':  # Hack: use MCs in CRs as if they were data
         if(verbosity >= 1):
@@ -395,7 +396,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
                 hfake.Add(hfakeTmp.GetStack().Last())
         hfake.SetLineColor(ROOT.kBlack)
         stack.Add(hfake)
-        leg.AddEntry(hfake,"Non-prompt lept (MC)","f")
+        leg.AddEntry(hfake, NONPROMPT_CAP+" l (MC)", "f")
 
     if useFakePhotonsFromData:
         if(verbosity >= 1):
@@ -408,8 +409,8 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
         hfakePho.SetFillColor(samplesByRegion.fake_photons['color'])
         set_overflow_range(hfakePho, underflow=underflow, overflow=overflow)
         stack.Add(hfakePho)
-        leg.AddEntry(hfakePho, "Non-prompt #gamma", "f")
-    
+        leg.AddEntry(hfakePho, NONPROMPT_CAP+" #gamma", "f")
+
     totalMC = 0
     totalMCerr = 0
     

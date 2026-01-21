@@ -10,7 +10,7 @@ from array import array
 from subprocess import run
 from ctypes import c_double
 
-from utils23 import config_logging, lumi_dict
+from utils23 import config_logging, lumi_dict, NONPROMPT_LOW, NONPROMPT_CAP
 from plotUtils23 import TFileContext, addIfExisting, cmsDiCanvas_fromTH1, getTAxisLimits, remove_zeros_tg
 from PersonalInfo import personalFolder
 import samplesByRegion
@@ -34,7 +34,6 @@ _samplesinfo = {
 }
 
 _SHAPE_LABELS = {'fit_s': 'Post-fit', 'fit_b': 'Bkg. only fit', 'prefit': 'Pre-fit'}
-
 
 def main(args):
     logging.debug('args = %s', args)
@@ -438,7 +437,7 @@ def group_hists(h_map_ungrouped, isTriboson=False):
         if('-' in sample):
             base, extra = sample.split('-')
             nonpro = (extra == 'nonpro')
-            extra_t = ' non-prompt' if nonpro else ''
+            extra_t = ' '+NONPROMPT_LOW if nonpro else ''
             extra_k = 1 if nonpro else 0
         else:
             base = sample
@@ -447,7 +446,7 @@ def group_hists(h_map_ungrouped, isTriboson=False):
             extra_k = 0
 
         if  (base == 'ZZGTo4LG' or base == 'signal'):
-            title = 'ZZ#gamma' if isTriboson else '4l #gamma'
+            title = 'ZZ#gamma' if isTriboson else '4l#gamma'
             # if(extra == 'nonpro'): title += ' OSD'
             h_map.setdefault(base, dict(
                 title=title, color=_samplesinfo['signal']['color'], key=extra_k, hlist=[]
@@ -459,9 +458,9 @@ def group_hists(h_map_ungrouped, isTriboson=False):
                              title='gg #rightarrow ZZ'+extra_t, color=_samplesinfo['ggZZ']['color'], key=6+extra_k, hlist=[]
                              ))['hlist'].append(hist)
         elif(base == 'fake_photons'):
-            h_map[sample] = dict(h=hist, title='Non-prompt #gamma', color=_samplesinfo['fake_photons']['color'], key=8)
+            h_map[sample] = dict(h=hist, title=NONPROMPT_CAP+' #gamma', color=_samplesinfo['fake_photons']['color'], key=8)
         elif(base == 'fake_leptons'):
-            h_map[sample] = dict(h=hist, title='Non-prompt l', color=_samplesinfo['fake_leptons']['color'], key=9)
+            h_map[sample] = dict(h=hist, title=NONPROMPT_CAP+' l', color=_samplesinfo['fake_leptons']['color'], key=9)
         else:
             h_map.setdefault('rare_bkg', dict(
                              title='Rare backgrounds', color=_samplesinfo['rare_bkg']['color'], key=2, hlist=[]

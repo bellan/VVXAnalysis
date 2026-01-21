@@ -25,6 +25,10 @@ lumi_dict = {
     'Run2':        {'value':137620, 'error_uncorrelated': 1.0092,'error_correlated':1.013, 'error_1718': 1.0027}
 }
 
+NONPROMPT_LOW = 'nonprompt' # 'non-prompt' # American/British spelling
+NONPROMPT_CAP = NONPROMPT_LOW.capitalize()
+
+
 def deep_update(orig, new):
     for k, v in new.items():
         if isinstance(v, Mapping):
