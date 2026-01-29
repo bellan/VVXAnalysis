@@ -413,7 +413,7 @@ for Var in variables:
 
     hMCErr.SetFillStyle(3345)
     hMCErr.SetMarkerStyle(1)
-    hMCErr.SetFillColor(ROOT.kBlack)
+    hMCErr.SetFillColor(ROOT.kGray+3)
     hMCErr.Draw("sameE2")
     leg.AddEntry(hMCErr, "Stat. only", "f")
     
@@ -453,21 +453,9 @@ for Var in variables:
     Line = ROOT.TLine(x_min, 1, x_max, 1)
     Line.SetLineWidth(2)
     Line.SetLineStyle(7)
-    
-    # hArea = deepcopy(hMC.GetStack().Last())  # in ratio plot, the gray area representing MC error
-    # for bin in range(1, hArea.GetNbinsX()+1):
-    #     r = hArea.GetBinContent(bin)
-    #     if(r == 0):
-    #         hArea.SetBinContent(bin, 1)
-    #         hArea.SetBinError  (bin, 0)
-    #     else:
-    #         hArea.SetBinContent(bin, hArea.GetBinContent(bin)/r)
-    #         hArea.SetBinError  (bin, hArea.GetBinContent(bin)/r)
-    # if (hArea.GetXaxis().GetXmin() > 0.001 and hArea.GetXaxis().GetXmax() < 1000):
-    #     hArea.GetXaxis().SetNoExponent()
-    # #hArea.GetXaxis().SetMoreLogLabels()
-    # hArea.SetFillColor(ROOT.kGray)
-    # hArea.Draw("E3")
+
+    pred_ratio = deepcopy(hStackSum)  # in ratio plot, the gray area representing MC error
+    pred_ratio.Divide(hStackSum)
 
     # Fixes to X axis (ratio pad)
     model_axis = histodata.GetXaxis()
@@ -492,6 +480,7 @@ for Var in variables:
         pad2.cd()
 
     Line.Draw()
+    cmsstyle.cmsObjectDraw(pred_ratio, 'E2', FillStyle=3345, LineWidth=0, FillColor=ROOT.kGray+3, MarkerSize=0)
     tgaData.Draw("PE0 same")
 
     if(not DoData):

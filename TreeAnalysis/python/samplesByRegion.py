@@ -38,9 +38,9 @@ WG       = [{'files':['WGToLNuG'      ] , 'color':ROOT.kGray    , 'name':'W#gamm
 triboson = [{'files':['WWW','WWZ','WZZ','ZZZ'], 'color':ROOT.kYellow, 'name':'VVV'}]
 
 WZG      = [{'files':['WZGTo3LNuG'    ] , 'color':ROOT.kMagenta , 'name':'3l#nu#gamma'}] #'name':'WZ#gamma'
-ZZG      = [{'files':['ZZGTo4LG'      ] , 'color':palette.kOrange,'name':'4l#gamma'}] #'name':'ZZ#gamma', 'split_prompt_ph':True
-ZZGTo2L2jG=[{'files':['ZZGTo2L2jG'    ] , 'color':ROOT.kRed+3   , 'name':'ZZ#gamma #rightarrow 2l 2j'}]
-WZGTo2L2jG=[{'files':['WZGTo2L2jG'    ] , 'color':ROOT.kRed-5   , 'name':'WZ#gamma #rightarrow 2l 2j'}]
+ZZG      = [{'files':['ZZGTo4LG'      ] , 'color':palette.kOrange,'name':'4#kern[0.1]{l}#kern[0.2]{#gamma}'}] #'name':'ZZ#gamma', 'split_prompt_ph':True
+ZZGTo2L2jG=[{'files':['ZZGTo2L2jG'    ] , 'color':ROOT.kRed+3   , 'name':'ZZ#kern[0.1]{#gamma} #rightarrow 2l#kern[0.1]{2}j'}]
+WZGTo2L2jG=[{'files':['WZGTo2L2jG'    ] , 'color':ROOT.kRed-5   , 'name':'WZ#kern[0.1]{#gamma} #rightarrow 2l#kern[0.1]{2}j'}]
 ZHtoZZG  = [{'files':['ZHtoZZG'       ] , 'color':ROOT.kSpring  , 'name':'ZH, H->Z#gamma'}]
 ZZGandZH = deepcopy(ZZG)
 ZZGandZH[0]['files'] = ['signal']

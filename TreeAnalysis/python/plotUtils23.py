@@ -11,7 +11,7 @@ import ROOT
 import cmsstyle
 
 import samplesByRegion
-from utils23 import NONPROMPT_CAP
+from utils23 import NONPROMPT_LOW, NONPROMPT_CAP
 
 if(sys.version_info.major < 3):
     import errno
@@ -409,7 +409,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
         hfakePho.SetFillColor(samplesByRegion.fake_photons['color'])
         set_overflow_range(hfakePho, underflow=underflow, overflow=overflow)
         stack.Add(hfakePho)
-        leg.AddEntry(hfakePho, NONPROMPT_CAP+" #gamma", "f")
+        leg.AddEntry(hfakePho, NONPROMPT_CAP+" l #vee #gamma", "f")
 
     totalMC = 0
     totalMCerr = 0
@@ -452,7 +452,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
             if(h_nonpro):
                 if(do_prompt_ph):  # Change color only if both prompt and nonprompt are present
                     h_nonpro.SetFillStyle(3002)
-                leg.AddEntry(h_nonpro, sample["name"]+' non-prompt', "f")
+                leg.AddEntry(h_nonpro, sample["name"]+' '+NONPROMPT_LOW, "f")
                 stack.Add(h_nonpro)
             if(h_prompt):
                 leg.AddEntry(h_prompt, sample["name"]+' prompt', "f")

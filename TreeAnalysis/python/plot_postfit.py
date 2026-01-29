@@ -26,14 +26,20 @@ _varinfo = {
 
 _samplesinfo = {
     'signal'      :{'color': samplesByRegion.ZZG[0]['color']},
-    'qqZZ'        :{'color': samplesByRegion.qqZZ_pow[0]['color']},
-    'ggZZ'        :{'color': samplesByRegion.ggZZ[0]['color']},
-    'fake_photons':{'color': samplesByRegion.fake_photons['color']},
-    'fake_leptons':{'color': samplesByRegion.fake_leptons['color']},
-    'rare_bkg'    :{'color': samplesByRegion.rare_4l[0]['color']}
+    'qqZZ'        :{'color': samplesByRegion.qqZZ_pow[0]['color'], 'title': 'qq #rightarrow ZZ'},
+    'ggZZ'        :{'color': samplesByRegion.ggZZ[0]['color'], 'title': 'gg #rightarrow ZZ'},
+    'fake_photons':{'color': samplesByRegion.fake_photons['color'], 'title': NONPROMPT_CAP+' l #vee #gamma'},
+    'fake_leptons':{'color': samplesByRegion.fake_leptons['color'], 'title': NONPROMPT_CAP+' l'},
+    'rare_bkg'    :{'color': samplesByRegion.rare_4l[0]['color'], 'title': 'Rare backgrounds'}
+}
+
+_style = {
+    'hMCErr': dict(FillStyle=3345, LineWidth=0, FillColor=ROOT.kGray+3, MarkerSize=0)
 }
 
 _SHAPE_LABELS = {'fit_s': 'Post-fit', 'fit_b': 'Bkg. only fit', 'prefit': 'Pre-fit'}
+
+_4LGAMMA = '4#kern[0.1]{l}#kern[0.2]{#gamma}' # ROOT fonts are bad
 
 def main(args):
     logging.debug('args = %s', args)
@@ -180,7 +186,7 @@ def plot(hdata, info_list, isTriboson=False, outname='postfit', ext=['png'], ysc
         region_text.SetFillColor(ROOT.kWhite)
 
         if(args.region_label):
-            region_text.AddText( 'Triboson ZZ#gamma' if isTriboson else 'Inclusive pp #rightarrow 4l#gamma' )
+            region_text.AddText( 'Triboson ZZ#gamma' if isTriboson else 'Inclusive pp #rightarrow '+_4LGAMMA )
 
         if(args.postfit_label):
             region_text.AddText( _SHAPE_LABELS[kwargs['shapes']])
@@ -189,10 +195,6 @@ def plot(hdata, info_list, isTriboson=False, outname='postfit', ext=['png'], ysc
 
     # Error band in the upper canvas
     hMCErr = deepcopy(stack.GetStack().Last())
-
-    hMCErr.SetFillStyle(3345)
-    hMCErr.SetMarkerStyle(1)
-    hMCErr.SetFillColor(ROOT.kBlack)
     legend.AddEntry(hMCErr, "Stat. only", "f")
 
     # Style data
@@ -206,7 +208,7 @@ def plot(hdata, info_list, isTriboson=False, outname='postfit', ext=['png'], ysc
 
     # Draw
     stack.Draw('SAMEHIST')
-    hMCErr.Draw("SAMEE2")
+    cmsstyle.cmsObjectDraw(hMCErr, 'E2', **_style['hMCErr'])
     gdata.Draw('SAMEP')
 
     ### Lower pad ###
@@ -218,12 +220,17 @@ def plot(hdata, info_list, isTriboson=False, outname='postfit', ext=['png'], ysc
     ref_line = ROOT.TLine(x_min, 1, x_max, 1)
     cmsstyle.cmsDrawLine(ref_line, lcolor=ROOT.kBlack, lstyle=ROOT.kDotted)
 
+    # Gray area representing MC error
+    pred_ratio = stack.GetStack().Last().Clone('pred_ratio')
+    pred_ratio.Divide(stack.GetStack().Last())
+
     # Ratio
     ratio.SetLineColor(ROOT.kBlack)
     ratio.SetMarkerStyle(20)
     ratio.SetMarkerSize(.8)
 
     # Draw
+    cmsstyle.cmsObjectDraw(pred_ratio, 'E2', FillStyle=3345, LineWidth=0, FillColor=ROOT.kGray+3, MarkerSize=0)
     ratio.Draw('PE')
 
     for e in ext:
@@ -446,24 +453,28 @@ def group_hists(h_map_ungrouped, isTriboson=False):
             extra_k = 0
 
         if  (base == 'ZZGTo4LG' or base == 'signal'):
-            title = 'ZZ#gamma' if isTriboson else '4l#gamma'
+            title = 'ZZ#kern[0.2]{#gamma}' if isTriboson else _4LGAMMA
             # if(extra == 'nonpro'): title += ' OSD'
             h_map.setdefault(base, dict(
-                title=title, color=_samplesinfo['signal']['color'], key=extra_k, hlist=[]
+                title=title, **_samplesinfo['signal'], key=extra_k, hlist=[]
             ))['hlist'].append(hist)
         elif(base == 'ZZTo4l'):
-            h_map[sample] = dict(h=hist, title='qq #rightarrow ZZ'+extra_t, color=_samplesinfo['qqZZ']['color'], key=4+extra_k)
+            this_info = deepcopy(_samplesinfo['qqZZ'])
+            this_info['title'] += extra_t
+            h_map[sample] = dict(h=hist, **this_info, key=4+extra_k)
         elif(base.startswith('ggTo')):
+            this_info = deepcopy(_samplesinfo['ggZZ'])
+            this_info['title'] += extra_t
             h_map.setdefault('ggTo4l'+extra, dict(
-                             title='gg #rightarrow ZZ'+extra_t, color=_samplesinfo['ggZZ']['color'], key=6+extra_k, hlist=[]
+                             **this_info, key=6+extra_k, hlist=[]
                              ))['hlist'].append(hist)
         elif(base == 'fake_photons'):
-            h_map[sample] = dict(h=hist, title=NONPROMPT_CAP+' #gamma', color=_samplesinfo['fake_photons']['color'], key=8)
+            h_map[sample] = dict(h=hist, **_samplesinfo['fake_photons'], key=8)
         elif(base == 'fake_leptons'):
-            h_map[sample] = dict(h=hist, title=NONPROMPT_CAP+' l', color=_samplesinfo['fake_leptons']['color'], key=9)
+            h_map[sample] = dict(h=hist, **_samplesinfo['fake_leptons'], key=9)
         else:
             h_map.setdefault('rare_bkg', dict(
-                             title='Rare backgrounds', color=_samplesinfo['rare_bkg']['color'], key=2, hlist=[]
+                             **_samplesinfo['rare_bkg'], key=2, hlist=[]
                              ))['hlist'].append(hist)
 
     for _, data in h_map.items():
