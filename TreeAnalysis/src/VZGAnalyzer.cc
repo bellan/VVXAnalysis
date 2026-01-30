@@ -31,9 +31,13 @@ int BDT_CUT= 0.8;
 double ALPHAS_CAP=1.;
 bool verboseControlBlinding= false;
 
-const std::vector<double> binEdges =  {-1.00,-0.85,-0.70,-0.56,-0.43,-0.31,-0.19,-0.07,0.04,0.14,0.24,0.33,0.42,0.51,0.59,0.67,0.74,0.81,0.88,0.94,1.00}; //CT: used for PhD thesis 
+//const std::vector<double> binEdges =  {-1.00,-0.85,-0.70,-0.56,-0.43,-0.31,-0.19,-0.07,0.04,0.14,0.24,0.33,0.42,0.51,0.59,0.67,0.74,0.81,0.88,0.94,1.00}; //CT: used for PhD thesis
+const std::vector<double>   binEdges =  {-1.00,-0.90,-0.75,-0.55,      -0.30,           0.,            0.30,         0.55,       0.75,      0.90,    1.00}; //CT: distributed: rebin4
+
+//const std::vector<double> binEdges =  {-0.31,-0.19,-0.07,0.04,0.14,0.24,0.33,0.42,0.51,0.59,0.67,0.74,0.81,0.88,0.94,1.00}; //CT: for testing constrained unc 
 //const std::vector<double> binEdges =  {-1.00, 0.00,0.12,0.23,0.33,0.42,0.52,0.63,0.75,0.875,1.00}; //CT: less aggressive binning: rebin1
 //const std::vector<double> binEdges =  {-1.00, -0.4, -0.1, 0.12,0.23,0.33,0.42,0.52,0.63,0.75,0.875,1.00}; //CT: less aggressive binning: rebin2
+//const std::vector<double> binEdges =    {-1.00,-0.85,-0.70, -0.50,       -0.25,         0.,         0.25,     0.45,     0.60,    0.74,      0.90,    1.00}; //CT: distributed: rebin3
 
 const std::vector<double> rewgtBinEdges =  {0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,220,240,260,280,300,330,360,400,480,650};
 
@@ -3079,12 +3083,14 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
   TLorentzVector jjPh = recoV.daughter(0).p4()+recoV.daughter(1).p4()+selectedphotons.at(0).p4();
   double mjjPh=jjPh.M();
   double m2jjPh=jjPh.M2();
-
+  
   TLorentzVector llPh = Z->daughter(0).p4()+Z->daughter(1).p4()+selectedphotons.at(0).p4();
   TLorentzVector lljjPh = Z->daughter(0).p4()+Z->daughter(1).p4()+recoV.daughter(0).p4()+recoV.daughter(1).p4()+selectedphotons.at(0).p4();
   TLorentzVector l0Ph = Z->daughter(0).p4()+selectedphotons.at(0).p4();
   TLorentzVector l1Ph = Z->daughter(1).p4()+selectedphotons.at(0).p4();
 
+  TLorentzVector ZV = Z->daughter(0).p4()+Z->daughter(1).p4()+recoV.daughter(0).p4()+recoV.daughter(1).p4();
+  
   double mllPh=llPh.M();
   double m2llPh=llPh.M2();
   double m2l0Ph=l0Ph.M2();
@@ -3146,6 +3152,15 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
 
   float HT =  lljjPh.Pt();
 
+  float VZpT =  ZV.Pt();
+  float ZGpT =  llPh.Pt();
+  float VGpT =  jjPh.Pt();
+
+  float VZGpTscalSum =  Z->pt()+ptGamma+recoV.pt();
+  float ZGpTscalSum  =  Z->pt()+ptGamma;
+  float VGpTscalSum  =  recoV.pt()+ptGamma;
+  float VZpTscalSum  =  Z->pt()+recoV.pt();
+  
   /*
   double VZGMVAScore      = VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 0, 0);//invert the comment here to REACTIVATE it for running CRs only
   if(i==2)  VZGMVAScore = VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 0, 0);/*
@@ -3511,9 +3526,32 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     theHistograms->fill("dRL0Gamma_vs_dRL1Gamma_"+histoType + cuts.at(i), "dRL0Gamma_vs_dRL1Gamma_"+histoType + cuts.at(i)+"; #DeltaR l0 - #gamma; #DeltaR l1 - #gamma", 8, 0, 2.0, 8, 0, 2.0, deltaR_L0Gamma, deltaR_L1Gamma, theWeight*rewgt*PhEffSF*LumiSF);
     theHistograms->fill("dRJ0Gamma_vs_dRJ1Gamma_"+histoType + cuts.at(i), "dRJ0Gamma_vs_dRJ1Gamma_"+histoType + cuts.at(i)+"; #DeltaR J0 - #gamma; #DeltaR J1 - #gamma", 8, 0, 2.0, 8, 0, 2.0, deltaR_J0Gamma, deltaR_J1Gamma, theWeight*rewgt*PhEffSF*LumiSF);
 
-    theHistograms->fill("H_T "+histoType + cuts.at(i), "H_T "+histoType + cuts.at(i)+"; H_T [GeV]", 60, 0, 600, HT, theWeight*rewgt*PhEffSF*LumiSF);
-    theHistograms->fill("H_T"+histoType + cuts.at(i), "H_T"+histoType + cuts.at(i)+"; H_T [GeV]", {0,30,60,90,130,170,220}, HT, theWeight*rewgt*PhEffSF*LumiSF);
-			  
+    //    theHistograms->fill("H_T"+histoType + cuts.at(i), "H_T "+histoType + cuts.at(i)+"; H_T [GeV]", 60, 0, 600, HT, theWeight*rewgt*PhEffSF*LumiSF);
+    theHistograms->fill("pre-Rwgt_VZGpT"+histoType + cuts.at(i), "pre-Rwgt_VZGpT"+ histoType + cuts.at(i)+"; VZ#gamma cand. p_{T} [GeV]", {0,30,60,90,130,170,220,300}, HT,   theWeight*PhEffSF*LumiSF);
+    theHistograms->fill("VZGpT"+         histoType + cuts.at(i), "VZGpT"+          histoType + cuts.at(i)+"; VZ#gamma cand. p_{T} [GeV]", {0,30,60,90,130,170,220,300}, HT,   theWeight*rewgt*PhEffSF*LumiSF);
+
+    theHistograms->fill("pre-Rwgt_VZpT"+histoType + cuts.at(i), "pre-Rwgt_VZpT"+   histoType + cuts.at(i)+"; VZ cand. p_{T} [GeV]",       {0,30,60,90,130,170,220,300}, VZpT, theWeight*PhEffSF*LumiSF);
+    theHistograms->fill("VZpT"+         histoType + cuts.at(i), "VZpT"+            histoType + cuts.at(i)+"; VZ cand. p_{T} [GeV]",       {0,30,60,90,130,170,220,300}, VZpT, theWeight*rewgt*PhEffSF*LumiSF);
+
+    theHistograms->fill("pre-Rwgt_ZGpT"+histoType + cuts.at(i), "pre-Rwgt_ZGpT"+   histoType + cuts.at(i)+"; Z#gamma cand. p_{T} [GeV]",  {0,30,60,90,130,170,220,300}, ZGpT, theWeight*PhEffSF*LumiSF);
+    theHistograms->fill("ZGpT"+         histoType + cuts.at(i), "ZGpT"+            histoType + cuts.at(i)+"; Z#gamma cand. p_{T} [GeV]",  {0,30,60,90,130,170,220,300}, ZGpT, theWeight*rewgt*PhEffSF*LumiSF);
+
+    theHistograms->fill("pre-Rwgt_VGpT"+histoType + cuts.at(i), "pre-Rwgt_VGpT"+   histoType + cuts.at(i)+"; V#gamma cand. p_{T} [GeV]",  {0,30,60,90,130,170,220,300}, VGpT, theWeight*PhEffSF*LumiSF);
+    theHistograms->fill("VGpT"+         histoType + cuts.at(i), "VGpT"+            histoType + cuts.at(i)+"; V#gamma cand. p_{T} [GeV]",  {0,30,60,90,130,170,220,300}, VGpT, theWeight*rewgt*PhEffSF*LumiSF);
+
+    theHistograms->fill("pre-Rwgt_VZGpTscalSum"+histoType + cuts.at(i), "pre-Rwgt_VZGpTscalSum"+ histoType + cuts.at(i)+"; p_{T}^{V}+p_{T}^{Z}+p_{T}^{#gamma} [GeV]", {0,30,60,90,130,170,220,300}, VZGpTscalSum, theWeight*PhEffSF*LumiSF);
+    theHistograms->fill("VZGpTscalSum"+         histoType + cuts.at(i), "VZGpTscalSum"+          histoType + cuts.at(i)+"; p_{T}^{V}+p_{T}^{Z}+p_{T}^{#gamma} [GeV]", {0,30,60,90,130,170,220,300}, VZGpTscalSum, theWeight*rewgt*PhEffSF*LumiSF);
+
+    theHistograms->fill("pre-Rwgt_VZpTscalSum"+histoType + cuts.at(i), "pre-Rwgt_VZpTscalSum"+   histoType + cuts.at(i)+"; p_{T}^{V}+p_{T}^{Z} [GeV]",       {0,30,60,90,130,170,220,300}, VZpTscalSum, theWeight*PhEffSF*LumiSF);
+    theHistograms->fill("VZpTscalSum"+         histoType + cuts.at(i), "VZpTscalSum"+            histoType + cuts.at(i)+"; p_{T}^{V}+p_{T}^{Z} [GeV]",       {0,30,60,90,130,170,220,300}, VZpTscalSum, theWeight*rewgt*PhEffSF*LumiSF);
+
+    theHistograms->fill("pre-Rwgt_ZGpTscalSum"+histoType + cuts.at(i), "pre-Rwgt_ZGpTscalSum"+   histoType + cuts.at(i)+"; p_{T}^{Z}+p_{T}^{#gamma} [GeV]",  {0,30,60,90,130,170,220,300}, ZGpTscalSum, theWeight*PhEffSF*LumiSF);
+    theHistograms->fill("ZGpTscalSum"+         histoType + cuts.at(i), "ZGpTscalSum"+            histoType + cuts.at(i)+"; p_{T}^{Z}+p_{T}^{#gamma} [GeV]",  {0,30,60,90,130,170,220,300}, ZGpTscalSum, theWeight*rewgt*PhEffSF*LumiSF);
+
+    theHistograms->fill("pre-Rwgt_VGpTscalSum"+histoType + cuts.at(i), "pre-Rwgt_VGpTscalSum"+   histoType + cuts.at(i)+"; p_{T}^{V}+p_{T}^{#gamma} [GeV]",  {0,30,60,90,130,170,220,300}, VGpTscalSum, theWeight*PhEffSF*LumiSF);
+    theHistograms->fill("VGpTscalSum"+         histoType + cuts.at(i), "VGpTscalSum"+            histoType + cuts.at(i)+"; p_{T}^{V}+p_{T}^{#gamma} [GeV]",  {0,30,60,90,130,170,220,300}, VGpTscalSum, theWeight*rewgt*PhEffSF*LumiSF);
+
+    
     //p.cutBasedIDLoose()    
     printHistos(++i, histoType, recoV, recoFJ, selectedphotons,VBTopo, region, isCR); 
   }
