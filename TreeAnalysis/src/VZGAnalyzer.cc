@@ -31,8 +31,8 @@ int BDT_CUT= 0.8;
 double ALPHAS_CAP=1.;
 bool verboseControlBlinding= false;
 
-//const std::vector<double> binEdges =  {-1.00,-0.85,-0.70,-0.56,-0.43,-0.31,-0.19,-0.07,0.04,0.14,0.24,0.33,0.42,0.51,0.59,0.67,0.74,0.81,0.88,0.94,1.00}; //CT: used for PhD thesis
-const std::vector<double>   binEdges =  {-1.00,-0.90,-0.75,-0.55,      -0.30,           0.,            0.30,         0.55,       0.75,      0.90,    1.00}; //CT: distributed: rebin4
+const std::vector<double> binEdges =  {-1.00,-0.85,-0.70,-0.56,-0.43,-0.31,-0.19,-0.07,0.04,0.14,0.24,0.33,0.42,0.51,0.59,0.67,0.74,0.81,0.88,0.94,1.00}; //CT: used for PhD thesis
+//const std::vector<double>   binEdges =  {-1.00,-0.90,-0.75,-0.55,      -0.30,           0.,            0.30,         0.55,       0.75,      0.90,    1.00}; //CT: distributed: rebin4
 
 //const std::vector<double> binEdges =  {-0.31,-0.19,-0.07,0.04,0.14,0.24,0.33,0.42,0.51,0.59,0.67,0.74,0.81,0.88,0.94,1.00}; //CT: for testing constrained unc 
 //const std::vector<double> binEdges =  {-1.00, 0.00,0.12,0.23,0.33,0.42,0.52,0.63,0.75,0.875,1.00}; //CT: less aggressive binning: rebin1
@@ -98,6 +98,10 @@ double CRZOFFMassCut = 80;
 double CRZONMassCut  = 85;
 double CRZinfMassCut = 80;
 double CRZsupMassCut = 100;
+
+static TMVA::Reader* reader = nullptr;
+
+static float feat_dRLG, feat_recoVMass, feat_mllG, feat_J1PG, feat_PhMVAId, feat_J1Girth, feat_ptJ1, feat_J0Puds, feat_ptjj, feat_HT, feat_J0Girth, feat_deltaR_J0Gamma, feat_deltaR_J1Gamma, feat_ptGamma, feat_dPhiZG;
 
 void ScaleP4(TLorentzVector& p4, double ptScaled, double ptCentral){
   p4.Pz()*ptScaled/ptCentral;
@@ -233,6 +237,27 @@ bool KinematicsOKafterSys(phys::Particle p, float ptVaried, float ptThr,float et
 }
 
 void VZGAnalyzer::begin(){
+
+  reader = new TMVA::Reader("Color:Silent");
+
+  reader->AddVariable("ptJ1", &feat_ptJ1);
+  reader->AddVariable("ptjj", &feat_ptjj);
+  reader->AddVariable("ptGamma",&feat_ptGamma);
+  reader->AddVariable("mllPh",&feat_mllG);
+  reader->AddVariable("deltaR_J0Gamma",&feat_deltaR_J0Gamma);
+  reader->AddVariable("deltaR_J1Gamma",&feat_deltaR_J1Gamma);
+  reader->AddVariable("dPhiZG",&feat_dPhiZG);
+  reader->AddVariable("recoVMass",&feat_recoVMass);
+  reader->AddVariable("dRLG",&feat_dRLG);
+  reader->AddVariable("PhMVAId",  &feat_PhMVAId);
+  reader->AddVariable("J0Girth",  &feat_J0Girth);
+  reader->AddVariable("J1Girth",  &feat_J1Girth);
+  reader->AddVariable("J1DeepProb_g",  &feat_J1PG);
+  reader->AddVariable("J0DeepProb_uds",  &feat_J0Puds);
+  reader->AddVariable("HT",&feat_HT);
+
+  reader->BookMVA("BDT", BDTmodelPath);
+  
   /*
   cout<<'\n';
   for(char i=0; i<25; ++i) cout<<'-';
@@ -434,7 +459,7 @@ bool VZGAnalyzer::IN_GENsignalDef()
   return false;
 }
 
-double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet recoFJ, std::vector<phys::Photon> selectedphotons, int VBTopo, int isForSysUpDn, int isJERorJES)
+double VZGAnalyzer::VZGMVAScoreEval(phys::Boson<phys::Jet> recoV, phys::Jet recoFJ, std::vector<phys::Photon> selectedphotons, int VBTopo, int isForSysUpDn, int isJERorJES)
 {
   double VZGMVAScore=-2.;
   if(!cut(1, recoV, recoFJ, selectedphotons, VBTopo, VZGMVAScore)){
@@ -536,6 +561,7 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
     lljj.push_back(recoV.daughter(0).p4());
     lljj.push_back(recoV.daughter(1).p4());
   }
+  /*
   //_____________________________________________BLOCK_TO_CROSS-CHECK_JETScaling___________________________________________//
   if(isJERorJES>0 && isForSysUpDn>0){       //JER UP
     theHistograms->fill("AUX_ptj0_JERup", "AUX_ptj0_JERup" , 40, 0,  400, ptj0Scaled_JUncUp, theWeight*LumiSF);
@@ -564,7 +590,7 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
     theHistograms->fill("AUX_mjj_central" , "AUX_mjj_central"  , 24, 30, 150, mjj, theWeight*LumiSF);
   }
   //______________________________________________________________________________________________________________________//
-
+*/
   
   phys::Photon mostEnergeticPhoton;
 
@@ -573,23 +599,6 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
 
 
   std::pair<phys::Photon, phys::Jet> nearestRECOjetstoPhoton;
-
-  std::vector<TLorentzVector> jjG;
-  jjG.push_back(recoV.daughter(0).p4());
-  jjG.push_back(recoV.daughter(1).p4());
-  jjG.push_back(selectedphotons.at(0).p4());
-
-  std::vector<TLorentzVector> lljjG;
-  lljjG.push_back(Z->daughter(0).p4());
-  lljjG.push_back(Z->daughter(1).p4());
-  lljjG.push_back(jjG.at(0));
-  lljjG.push_back(jjG.at(1));
-  lljjG.push_back(jjG.at(2));
-
-  std::vector<TLorentzVector> llG;
-  llG.push_back(Z->daughter(0).p4());
-  llG.push_back(Z->daughter(1).p4());
-  llG.push_back(selectedphotons.at(0).p4());
   std::pair<phys::Photon, phys::Lepton> nearestChLeptToPhoton;
 
   if(fabs(physmath::deltaR(Z->daughter(0), mostEnergeticPhoton))<fabs(physmath::deltaR(Z->daughter(1), mostEnergeticPhoton)) )
@@ -597,136 +606,36 @@ double VZGAnalyzer::VZGMVAScoreBuilder(phys::Boson<phys::Jet> recoV, phys::Jet r
   else if (fabs(physmath::deltaR(Z->daughter(0), mostEnergeticPhoton))>fabs(physmath::deltaR(Z->daughter(1), mostEnergeticPhoton)) )
     nearestChLeptToPhoton={mostEnergeticPhoton, Z->daughter(1)};
 
-
-  int int_nbOfGoodJets=  0;
-
-  foreach (const phys::Jet &jet, *jets)    
-      if (KinematicsOK(jet,ptcut,etacut) && fabs(physmath::deltaR(jet,selectedphotons[0]))> dR_jetRatio_cut) // KinematicsOK(jet)	
-	int_nbOfGoodJets++;
-
-  float nbOfGoodJets = int_nbOfGoodJets;
-  //  nbOfAllJets=jets->size();
-
-  
-  float mll=  Z->mass();
-  float mlljjPh=  lljjPh.M();
-  float HT=  lljjPh.Pt();
-      
-  float ptJ0=recoV.daughter(0).pt();
-  float ptJ1=recoV.daughter(1).pt();
-  float recoVMass = recoV.mass();
-  float FWMT0 = SumFWM(0, 't', lljjG);
-  float FWMT1 = SumFWM(1, 't', lljjG);
-  float FWMT2 = SumFWM(2, 't', lljjG);
-  float FWMT4 = SumFWM(4, 't', lljjG);
-  float dRLG = fabs(physmath::deltaR(nearestChLeptToPhoton.first, nearestChLeptToPhoton.second));
-  float J0Girth=recoV.daughter(0).girth();
-  float J1Girth=recoV.daughter(1).girth();
-  float J1PG = recoV.daughter(1).deepFlavour().probg;
-  float J0Puds = recoV.daughter(0).deepFlavour().probuds;
-  float px_sum = recoV.daughter(0).p4().Px() + recoV.daughter(1).p4().Px();
-  float py_sum = recoV.daughter(0).p4().Py() + recoV.daughter(1).p4().Py();
-  float vectSumJpt = TMath::Sqrt(px_sum * px_sum + py_sum * py_sum);
-  float deltaR_L0Gamma=fabs(physmath::deltaR(Z->daughter(0), selectedphotons.at(0)));
-  float deltaR_L1Gamma=fabs(physmath::deltaR(Z->daughter(1), selectedphotons.at(0)));
-  float deltaR_J0Gamma=fabs(physmath::deltaR(recoV.daughter(0), selectedphotons.at(0)));
-  float deltaR_J1Gamma=fabs(physmath::deltaR(recoV.daughter(1), selectedphotons.at(0)));
-  float dEtaJJ = fabs(recoV.daughter(0).eta() - recoV.daughter(1).eta());
-  float meanEtaJ = (recoV.daughter(0).eta() + recoV.daughter(1).eta())/2.;
-  float ZepCorr_G = fabs(selectedphotons.at(0).eta() -  meanEtaJ );
-  float ptGamma=selectedphotons.at(0).pt();
-  float mllG=  llPh.M();
-
-  float dRJG=(deltaR_J0Gamma<deltaR_J1Gamma)? deltaR_J0Gamma : deltaR_J1Gamma;
-  float PhMVAId=selectedphotons.at(0).MVAvalue();
-  float dPhiZG=fabs(physmath::deltaPhi(Z->phi(),selectedphotons.at(0).phi()) );
-  float ptjj=  recoV.pt();
-
-
-  float J0MuFrac=recoV.daughter(0).muonEnergyFraction() ;//float
-  float J1MuFrac=recoV.daughter(1).muonEnergyFraction() ;//float
-  float J0EleFrac=recoV.daughter(0).electronEnergyFraction() ;//float
-  float J1EleFrac=recoV.daughter(1).electronEnergyFraction() ;//float
-  float J0PhFrac=recoV.daughter(0).photonEnergyFraction() ;//float
-  float J1PhFrac=recoV.daughter(1).photonEnergyFraction() ;//float
+  feat_dRLG = fabs(physmath::deltaR(nearestChLeptToPhoton.first, nearestChLeptToPhoton.second));
+  feat_recoVMass = recoV.mass();
+  feat_mllG=  llPh.M();
+  feat_J1PG = recoV.daughter(1).deepFlavour().probg;
+  feat_PhMVAId=selectedphotons.at(0).MVAvalue();
+  feat_J1Girth=recoV.daughter(1).girth();
+  feat_ptJ1 =  recoV.daughter(1).pt();
+  feat_J0Puds = recoV.daughter(0).deepFlavour().probuds;
+  feat_ptjj=  recoV.pt();
+  feat_HT   =  lljjPh.Pt();    
+  feat_J0Girth=recoV.daughter(0).girth();
+  feat_deltaR_J0Gamma=fabs(physmath::deltaR(recoV.daughter(0), selectedphotons.at(0)));
+  feat_deltaR_J1Gamma=fabs(physmath::deltaR(recoV.daughter(1), selectedphotons.at(0)));
+  feat_ptGamma=selectedphotons.at(0).pt();
+  feat_dPhiZG=fabs(physmath::deltaPhi(Z->phi(),selectedphotons.at(0).phi()) );
 
   if(isForSysUpDn>0){
-    ptJ0=ptj0Scaled_JUncUp;
-    ptJ1=ptj1Scaled_JUncUp;
-    ptjj=ptjjScaled_JUncUp;
-    recoVMass = mjjScaled_JUncUp;
+    //    feat_ptJ0=ptj0Scaled_JUncUp;
+    feat_ptJ1=ptj1Scaled_JUncUp;
+    feat_ptjj=ptjjScaled_JUncUp;
+    feat_recoVMass = mjjScaled_JUncUp;
   }else if(isForSysUpDn<0){
-    ptJ0=ptj0Scaled_JUncDn;
-    ptJ1=ptj1Scaled_JUncDn;
-    ptjj=ptjjScaled_JUncDn;
-    recoVMass = mjjScaled_JUncDn;
+    //    feat_ptJ0=ptj0Scaled_JUncDn;
+    feat_ptJ1=ptj1Scaled_JUncDn;
+    feat_ptjj=ptjjScaled_JUncDn;
+    feat_recoVMass = mjjScaled_JUncDn;
   }
-  
-  TMVA::Reader *reader = new TMVA::Reader("Color:Silent");
-  /*
-  reader->AddVariable("ptJ1", &ptJ1);
-  reader->AddVariable("ptGamma",&ptGamma);
-  reader->AddVariable("mllPh",&mllG);
-  reader->AddVariable("deltaR_L0Gamma",&deltaR_L0Gamma);
-  reader->AddVariable("deltaR_L1Gamma",&deltaR_L1Gamma);
-  reader->AddVariable("deltaR_J0Gamma",&deltaR_J0Gamma);
-  reader->AddVariable("deltaR_J1Gamma",&deltaR_J1Gamma);
-  reader->AddVariable("recoVMass",&recoVMass);
-  reader->AddVariable("FWMT1",&FWMT1);
-  reader->AddVariable("FWMT2",&FWMT2);
-  reader->AddVariable("FWMT4",&FWMT4);
-  reader->AddVariable("dRLG",&dRLG);
-  reader->AddVariable("J0Girth",  &J0Girth);
-  reader->AddVariable("J1Girth",  &J1Girth);
-  reader->AddVariable("J1DeepProb_g",  &J1PG);
-  reader->AddVariable("J0DeepProb_uds",  &J0Puds);
-  reader->AddVariable("sqrt((ptJ0+ptJ1*cos(dPhiJJ))*(ptJ0+ptJ1*cos(dPhiJJ))+(ptJ1*sin(dPhiJJ))*(ptJ1*sin(dPhiJJ)))",&vectSumJpt);
-  reader->AddVariable("fabs(etaJ0-etaJ1)",&dEtaJJ);
-  reader->AddVariable("fabs((etaG -(etaL0 + etaL1)/2))",&ZepCorr_G);
-  */
-  
-  //  reader->AddVariable("mll", &mll);
-  //  reader->AddVariable("ptJ0", &ptJ0);
-  
-  reader->AddVariable("ptJ1", &ptJ1);
-  reader->AddVariable("ptjj", &ptjj);
-  reader->AddVariable("ptGamma",&ptGamma);
-  reader->AddVariable("mllPh",&mllG);
 
-  //reader->AddVariable("mlljjPh", &mlljjPh);
-
-  reader->AddVariable("deltaR_J0Gamma",&deltaR_J0Gamma);
-  reader->AddVariable("deltaR_J1Gamma",&deltaR_J1Gamma);
-  reader->AddVariable("dPhiZG",&dPhiZG);
-  reader->AddVariable("recoVMass",&recoVMass);
-
-  //reader->AddVariable("FWMT0",&FWMT0);
-
-  //reader->AddVariable("nbOfGoodJets",&nbOfGoodJets);
-  
-  reader->AddVariable("dRLG",&dRLG);
-  reader->AddVariable("PhMVAId",  &PhMVAId);
-  reader->AddVariable("J0Girth",  &J0Girth);
-  reader->AddVariable("J1Girth",  &J1Girth);
-  reader->AddVariable("J1DeepProb_g",  &J1PG);
-  reader->AddVariable("J0DeepProb_uds",  &J0Puds);
-
-  reader->AddVariable("HT",&HT);
-  //  reader->AddVariable("dRJG",&dRJG);
-
-  
-  /*
-    std::string weightMVAfile = "/eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/TMVAClassification__BDT_Xgrad_d3_N030.weights.xml";
-    std::ifstream MVAfile(weightMVAfile.c_str());
-    if (!MVAfile.good()) {
-    throw std::runtime_error("Errore: MVAfile XML non trovato o non accessibile: " + weightMVAfile);
-    }
-    MVAfile.close();
-  */
-  
-  reader->BookMVA("BDT", BDTmodelPath);
   VZGMVAScore = reader->EvaluateMVA("BDT");
-  reader->~Reader();
+  //reader->~Reader();
   //  std::cout<<">>>>MVAScore builder returning "<<VZGMVAScore<<endl;
   return VZGMVAScore;
 }
@@ -794,7 +703,7 @@ bool VZGAnalyzer::inSR(phys::Boson<phys::Jet> recoV, phys::Jet recoFJ, std::vect
   
   VZGMVAScore= -2.;
 
-  VZGMVAScore=VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 0, 0);
+  VZGMVAScore=VZGMVAScoreEval(recoV, recoFJ,  selectedphotons, VBTopo, 0, 0);
   
   return cut(7, recoV, recoFJ, selectedphotons, VBTopo, VZGMVAScore);
 
@@ -2334,7 +2243,7 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
     if(*haveGoodRECODiJetCand) hadrTopo=1;//    if(peakDist_mDJCand<peakDist_mFJCand) hadrTopo=1;
     else hadrTopo=0;// hadrTopo=-1; // to be modified to consider FJ topo
   }
-
+  /*
   if(*haveGoodRECODiJetCand && doControlPlots){
     double VMassDist_mDJCand=50;
     int DJMax=DiJetsCand.size();
@@ -2366,6 +2275,7 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
     //    std::cout<<"FJCand_mass ="<< V_FJCandidate->mass() <<endl<<"    PNW="<<V_FJCandidate->particleNet().WvsQCD<<endl<<"    PNZ="<<V_FJCandidate->particleNet().ZvsQCD<<endl<<"    PNV="<<((fabs(V_FJCandidate->mass()-phys::WMASS)<fabs(V_FJCandidate->mass()-phys::ZMASS) )? V_FJCandidate->particleNet().WvsQCD : V_FJCandidate->particleNet().ZvsQCD )<<"   "<<endl;    
 
   }
+  */
   //_________________________________
   /*
   if(*haveGoodRECODiJetCand){
@@ -2709,7 +2619,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
   }//Note: this is not active for the sys plots, bc the isCR bool is passed false as an argument when calling printHistos for the SR. Needs to be re-thought for the unblinding step  
   /*
   if(i==1 && cut(1, recoV, recoFJ, selectedphotons, VBTopo, mimicVZGMVAScore) && VBTopo==1){// && LGsolved){
-    VZGMVAScore      = VZGMVAScoreBuilder(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0);
+    VZGMVAScore      = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0);
   }
   */
   bool isForSys = (theSampleInfo.isMC()
@@ -2747,7 +2657,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
       std::  cout << "Run: " << run << " event: " << event << endl;
       std::cout<<"unblinding VZGMVAScore for data"<<endl;
     }
-    VZGMVAScore      = VZGMVAScoreBuilder(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0);
+    VZGMVAScore      = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0);
     if(VZGMVAScore <= 1. && VZGMVAScore >= binEdges.at(0) ){
       theHistograms->fill("SYS_BDTScore_central", "SYS_BDTScore_central" , binEdges,  VZGMVAScore, theWeight*PhEffSF*LumiSF);
     }
@@ -2784,11 +2694,11 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     VBTopo_JESup=Reconstruct(&recoV_JESup,&recoFJ,&haveGoodRECODiJetCand_JESup,&haveGoodRECOFJCand_null,&selectedphotons.at(0), false,  1, -1);
     VBTopo_JESdn=Reconstruct(&recoV_JESdn,&recoFJ,&haveGoodRECODiJetCand_JESdn,&haveGoodRECOFJCand_null,&selectedphotons.at(0), false, -1, -1);
 
-    if(VBTopo==1)       VZGMVAScore      = VZGMVAScoreBuilder(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0);
-    if(VBTopo_JERup==1) VZGMVAScore_JERup= VZGMVAScoreBuilder(recoV_JERup, recoFJ,  selectedphotons, VBTopo_JERup, 1, 1);
-    if(VBTopo_JERdn==1) VZGMVAScore_JERdn= VZGMVAScoreBuilder(recoV_JERdn, recoFJ,  selectedphotons, VBTopo_JERdn,-1, 1);
-    if(VBTopo_JESup==1) VZGMVAScore_JESup= VZGMVAScoreBuilder(recoV_JESup, recoFJ,  selectedphotons, VBTopo_JESup, 1,-1);
-    if(VBTopo_JESdn==1) VZGMVAScore_JESdn= VZGMVAScoreBuilder(recoV_JESdn, recoFJ,  selectedphotons, VBTopo_JESdn,-1,-1);
+    if(VBTopo==1)       VZGMVAScore      = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0);
+    if(VBTopo_JERup==1) VZGMVAScore_JERup= VZGMVAScoreEval(recoV_JERup, recoFJ,  selectedphotons, VBTopo_JERup, 1, 1);
+    if(VBTopo_JERdn==1) VZGMVAScore_JERdn= VZGMVAScoreEval(recoV_JERdn, recoFJ,  selectedphotons, VBTopo_JERdn,-1, 1);
+    if(VBTopo_JESup==1) VZGMVAScore_JESup= VZGMVAScoreEval(recoV_JESup, recoFJ,  selectedphotons, VBTopo_JESup, 1,-1);
+    if(VBTopo_JESdn==1) VZGMVAScore_JESdn= VZGMVAScoreEval(recoV_JESdn, recoFJ,  selectedphotons, VBTopo_JESdn,-1,-1);
 
     if(VBTopo==1)                              theHistograms->fill("AUX_JERup_CONTROL_PLOT", "AUX_JERup_CONTROL_PLOT", 3, -1.5, 1.5,     0, theWeight*LumiSF);
     if(VBTopo==0 && VBTopo_JERup==1)           theHistograms->fill("AUX_JERup_CONTROL_PLOT", "AUX_JERup_CONTROL_PLOT", 3, -1.5, 1.5,     1, theWeight*LumiSF);
@@ -2928,7 +2838,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
   
   //_________________________________________________BLOCK_FOR_SYS_CRZX_HISTOS________________________________________//
   if(i==1  && isCR && region==REGION_FOR_FIT && isRunForCR  && (UNBLIND && !theSampleInfo.isMC() && histoType=="all_"+REGION_FOR_FIT)  && cut(1, recoV, recoFJ, selectedphotons, VBTopo, mimicVZGMVAScore) && VBTopo==1){// && LGsolved){
-    VZGMVAScore      = VZGMVAScoreBuilder(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0);
+    VZGMVAScore      = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0);
     if(VZGMVAScore <= 1. && VZGMVAScore >= binEdges.at(0) ){
       //      std::cout<<"FILLING DATA PLOTS FOR CRDY"<<endl;
       theHistograms->fill("SYS_BDTScore_central", "SYS_BDTScore_central" , binEdges,  VZGMVAScore, theWeight*PhEffSF*LumiSF);
@@ -2971,11 +2881,11 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     VBTopo_JESup=Reconstruct(&recoV_JESup,&recoFJ,&haveGoodRECODiJetCand_JESup,&haveGoodRECOFJCand_null,&selectedphotons.at(0), false,  1, -1);
     VBTopo_JESdn=Reconstruct(&recoV_JESdn,&recoFJ,&haveGoodRECODiJetCand_JESdn,&haveGoodRECOFJCand_null,&selectedphotons.at(0), false, -1, -1);
 
-    if(VBTopo==1)       VZGMVAScore      = VZGMVAScoreBuilder(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0);
-    if(VBTopo_JERup==1) VZGMVAScore_JERup= VZGMVAScoreBuilder(recoV_JERup, recoFJ,  selectedphotons, VBTopo_JERup, 1, 1);
-    if(VBTopo_JERdn==1) VZGMVAScore_JERdn= VZGMVAScoreBuilder(recoV_JERdn, recoFJ,  selectedphotons, VBTopo_JERdn,-1, 1);
-    if(VBTopo_JESup==1) VZGMVAScore_JESup= VZGMVAScoreBuilder(recoV_JESup, recoFJ,  selectedphotons, VBTopo_JESup, 1,-1);
-    if(VBTopo_JESdn==1) VZGMVAScore_JESdn= VZGMVAScoreBuilder(recoV_JESdn, recoFJ,  selectedphotons, VBTopo_JESdn,-1,-1);
+    if(VBTopo==1)       VZGMVAScore      = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0);
+    if(VBTopo_JERup==1) VZGMVAScore_JERup= VZGMVAScoreEval(recoV_JERup, recoFJ,  selectedphotons, VBTopo_JERup, 1, 1);
+    if(VBTopo_JERdn==1) VZGMVAScore_JERdn= VZGMVAScoreEval(recoV_JERdn, recoFJ,  selectedphotons, VBTopo_JERdn,-1, 1);
+    if(VBTopo_JESup==1) VZGMVAScore_JESup= VZGMVAScoreEval(recoV_JESup, recoFJ,  selectedphotons, VBTopo_JESup, 1,-1);
+    if(VBTopo_JESdn==1) VZGMVAScore_JESdn= VZGMVAScoreEval(recoV_JESdn, recoFJ,  selectedphotons, VBTopo_JESdn,-1,-1);
 
     // QCD scale
     // envelope: consider the six variations: {Do, Central, Up} x {Dn, Central, Up} - (central, central) - (Dn, Dn) - (Up, Up) and use the max and min
@@ -3162,12 +3072,12 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
   float VZpTscalSum  =  Z->pt()+recoV.pt();
   
   /*
-  double VZGMVAScore      = VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 0, 0);//invert the comment here to REACTIVATE it for running CRs only
-  if(i==2)  VZGMVAScore = VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 0, 0);/*
-  double VZGMVAScore_JERup= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 1, 1);
-  double VZGMVAScore_JERdn= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo,-1, 1);
-  double VZGMVAScore_JESup= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo, 1,-1);
-  double VZGMVAScore_JESdn= VZGMVAScoreBuilder(recoV, recoFJ,  selectedphotons, VBTopo,-1,-1);
+  double VZGMVAScore      = VZGMVAScoreEval(recoV, recoFJ,  selectedphotons, VBTopo, 0, 0);//invert the comment here to REACTIVATE it for running CRs only
+  if(i==2)  VZGMVAScore = VZGMVAScoreEval(recoV, recoFJ,  selectedphotons, VBTopo, 0, 0);/*
+  double VZGMVAScore_JERup= VZGMVAScoreEval(recoV, recoFJ,  selectedphotons, VBTopo, 1, 1);
+  double VZGMVAScore_JERdn= VZGMVAScoreEval(recoV, recoFJ,  selectedphotons, VBTopo,-1, 1);
+  double VZGMVAScore_JESup= VZGMVAScoreEval(recoV, recoFJ,  selectedphotons, VBTopo, 1,-1);
+  double VZGMVAScore_JESdn= VZGMVAScoreEval(recoV, recoFJ,  selectedphotons, VBTopo,-1,-1);
   */
   
   /*____BLOCK_CORR_PLOTS__________________________//

@@ -94,7 +94,7 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
   virtual bool baselineRequirements();
 
 
-  virtual double VZGMVAScoreBuilder(phys::Boson<phys::Jet>, phys::Jet , std::vector<phys::Photon> , int, int, int );
+  virtual double VZGMVAScoreEval(phys::Boson<phys::Jet>, phys::Jet , std::vector<phys::Photon> , int, int, int );
 
   virtual bool  inSR(phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int, double);
   virtual bool  inCRZOFF( phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int, double);
