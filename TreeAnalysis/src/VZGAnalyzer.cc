@@ -459,15 +459,13 @@ bool VZGAnalyzer::IN_GENsignalDef()
   return false;
 }
 
-double VZGAnalyzer::VZGMVAScoreEval(phys::Boson<phys::Jet> recoV, phys::Jet recoFJ, std::vector<phys::Photon> selectedphotons, int VBTopo, int isForSysUpDn, int isJERorJES)
+double VZGAnalyzer::VZGMVAScoreEval(phys::Boson<phys::Jet> recoV, phys::Jet recoFJ, std::vector<phys::Photon> selectedphotons, int VBTopo, int isForSysUpDn, int isJERorJES, bool isForDFsys, int DFsysDirection)
 {
   double VZGMVAScore=-2.;
   if(!cut(1, recoV, recoFJ, selectedphotons, VBTopo, VZGMVAScore)){
     std::cout<<"BDT building failed"<<endl;
     return -2.;
   }
-
-  std::vector<std::string> orders = {"0", "1", "2", "3", "4", "5", "6"};
 
   TLorentzVector llPh = Z->daughter(0).p4()+Z->daughter(1).p4()+selectedphotons.at(0).p4();
   TLorentzVector l0Ph = Z->daughter(0).p4()+selectedphotons.at(0).p4();
@@ -606,14 +604,17 @@ double VZGAnalyzer::VZGMVAScoreEval(phys::Boson<phys::Jet> recoV, phys::Jet reco
   else if (fabs(physmath::deltaR(Z->daughter(0), mostEnergeticPhoton))>fabs(physmath::deltaR(Z->daughter(1), mostEnergeticPhoton)) )
     nearestChLeptToPhoton={mostEnergeticPhoton, Z->daughter(1)};
 
+  double DFqJ0 = recoV.daughter(0).deepFlavour().probuds;
+  double DFgJ1 = recoV.daughter(1).deepFlavour().probg;
+   
   feat_dRLG = fabs(physmath::deltaR(nearestChLeptToPhoton.first, nearestChLeptToPhoton.second));
   feat_recoVMass = recoV.mass();
   feat_mllG=  llPh.M();
-  feat_J1PG = recoV.daughter(1).deepFlavour().probg;
+  feat_J1PG = DFgJ1;
   feat_PhMVAId=selectedphotons.at(0).MVAvalue();
   feat_J1Girth=recoV.daughter(1).girth();
   feat_ptJ1 =  recoV.daughter(1).pt();
-  feat_J0Puds = recoV.daughter(0).deepFlavour().probuds;
+  feat_J0Puds = DFqJ0;
   feat_ptjj=  recoV.pt();
   feat_HT   =  lljjPh.Pt();    
   feat_J0Girth=recoV.daughter(0).girth();
@@ -635,9 +636,36 @@ double VZGAnalyzer::VZGMVAScoreEval(phys::Boson<phys::Jet> recoV, phys::Jet reco
   }
 
   VZGMVAScore = reader->EvaluateMVA("BDT");
-  //reader->~Reader();
-  //  std::cout<<">>>>MVAScore builder returning "<<VZGMVAScore<<endl;
-  return VZGMVAScore;
+  if(!isForDFsys)  return VZGMVAScore;
+
+  double DFqJ0Up = TMath::Min(1.0, feat_J0Puds * 1.1);
+  double DFqJ0Dn = TMath::Max(0.0, feat_J0Puds * 0.9);
+  double DFgJ1Up = TMath::Min(1.0, feat_J1PG   * 1.1);
+  double DFgJ1Dn = TMath::Max(0.0, feat_J1PG   * 0.9);
+
+  feat_J0Puds    = DFqJ0Up;
+  double BDT_DFqJ0Up   = reader->EvaluateMVA("BDT");
+  feat_J0Puds    = DFqJ0Dn;
+  double BDT_DFqJ0Dn   = reader->EvaluateMVA("BDT");
+  feat_J0Puds    = DFqJ0;
+
+  feat_J1PG      = DFgJ1Up;
+  double BDT_DFgJ1Up   = reader->EvaluateMVA("BDT");
+  feat_J1PG      = DFgJ1Dn;
+  double BDT_DFgJ1Dn   = reader->EvaluateMVA("BDT");
+  feat_J1PG      = DFgJ1;
+
+  double BDT_DFvaried=-2.;
+  
+  if(isForDFsys && isJERorJES==0){//DF sys case
+    if(DFsysDirection>0){
+      BDT_DFvaried = std::max({BDT_DFqJ0Up, BDT_DFqJ0Dn, BDT_DFgJ1Up, BDT_DFgJ1Dn});  //up variation
+    }else if(DFsysDirection<0){
+      BDT_DFvaried = std::min({BDT_DFqJ0Up, BDT_DFqJ0Dn, BDT_DFgJ1Up, BDT_DFgJ1Dn});  //dn variation
+    }
+  }
+  if(BDT_DFvaried>-1.)
+    return BDT_DFvaried;
 }
 
 bool VZGAnalyzer::inSR(phys::Boson<phys::Jet> recoV, phys::Jet recoFJ, std::vector<phys::Photon> selectedphotons, int VBTopo, double VZGMVAScore)
@@ -703,7 +731,7 @@ bool VZGAnalyzer::inSR(phys::Boson<phys::Jet> recoV, phys::Jet recoFJ, std::vect
   
   VZGMVAScore= -2.;
 
-  VZGMVAScore=VZGMVAScoreEval(recoV, recoFJ,  selectedphotons, VBTopo, 0, 0);
+  VZGMVAScore=VZGMVAScoreEval(recoV, recoFJ,  selectedphotons, VBTopo, 0, 0, false, 0);
   
   return cut(7, recoV, recoFJ, selectedphotons, VBTopo, VZGMVAScore);
 
@@ -2619,7 +2647,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
   }//Note: this is not active for the sys plots, bc the isCR bool is passed false as an argument when calling printHistos for the SR. Needs to be re-thought for the unblinding step  
   /*
   if(i==1 && cut(1, recoV, recoFJ, selectedphotons, VBTopo, mimicVZGMVAScore) && VBTopo==1){// && LGsolved){
-    VZGMVAScore      = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0);
+    VZGMVAScore      = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0, false, 0);
   }
   */
   bool isForSys = (theSampleInfo.isMC()
@@ -2657,7 +2685,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
       std::  cout << "Run: " << run << " event: " << event << endl;
       std::cout<<"unblinding VZGMVAScore for data"<<endl;
     }
-    VZGMVAScore      = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0);
+    VZGMVAScore      = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0, false, 0);
     if(VZGMVAScore <= 1. && VZGMVAScore >= binEdges.at(0) ){
       theHistograms->fill("SYS_BDTScore_central", "SYS_BDTScore_central" , binEdges,  VZGMVAScore, theWeight*PhEffSF*LumiSF);
     }
@@ -2672,11 +2700,6 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
 
     //    if(theSampleInfo.fileName().find("ZH")!=std::string::npos) LumiSF=2.6*LumiSF; //CT: PRELIMINARILY APPLIED TO HAVE A VERY RAW ESTIMATE OF THE TOTAL VH IMPACT
     
-    double VZGMVAScore_JERup= -2.;
-    double VZGMVAScore_JERdn= -2.;
-    double VZGMVAScore_JESup= -2.;
-    double VZGMVAScore_JESdn= -2.;
-
     int VBTopo_JERup = 0;
     int VBTopo_JERdn = 0;
     int VBTopo_JESup = 0;
@@ -2694,12 +2717,23 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     VBTopo_JESup=Reconstruct(&recoV_JESup,&recoFJ,&haveGoodRECODiJetCand_JESup,&haveGoodRECOFJCand_null,&selectedphotons.at(0), false,  1, -1);
     VBTopo_JESdn=Reconstruct(&recoV_JESdn,&recoFJ,&haveGoodRECODiJetCand_JESdn,&haveGoodRECOFJCand_null,&selectedphotons.at(0), false, -1, -1);
 
-    if(VBTopo==1)       VZGMVAScore      = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0);
-    if(VBTopo_JERup==1) VZGMVAScore_JERup= VZGMVAScoreEval(recoV_JERup, recoFJ,  selectedphotons, VBTopo_JERup, 1, 1);
-    if(VBTopo_JERdn==1) VZGMVAScore_JERdn= VZGMVAScoreEval(recoV_JERdn, recoFJ,  selectedphotons, VBTopo_JERdn,-1, 1);
-    if(VBTopo_JESup==1) VZGMVAScore_JESup= VZGMVAScoreEval(recoV_JESup, recoFJ,  selectedphotons, VBTopo_JESup, 1,-1);
-    if(VBTopo_JESdn==1) VZGMVAScore_JESdn= VZGMVAScoreEval(recoV_JESdn, recoFJ,  selectedphotons, VBTopo_JESdn,-1,-1);
-
+    double VZGMVAScore_JERup= -2.;
+    double VZGMVAScore_JERdn= -2.;
+    double VZGMVAScore_JESup= -2.;
+    double VZGMVAScore_JESdn= -2.;
+    double VZGMVAScore_DFSup= -2.;
+    double VZGMVAScore_DFSdn= -2.;
+    
+    if(VBTopo==1){
+      VZGMVAScore       = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0, false, 0);
+      VZGMVAScore_DFSup = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0, true, +1);
+      VZGMVAScore_DFSdn = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0, true, -1);
+    }
+    if(VBTopo_JERup==1) VZGMVAScore_JERup= VZGMVAScoreEval(recoV_JERup, recoFJ,  selectedphotons, VBTopo_JERup, 1, 1, false, 0);
+    if(VBTopo_JERdn==1) VZGMVAScore_JERdn= VZGMVAScoreEval(recoV_JERdn, recoFJ,  selectedphotons, VBTopo_JERdn,-1, 1, false, 0);
+    if(VBTopo_JESup==1) VZGMVAScore_JESup= VZGMVAScoreEval(recoV_JESup, recoFJ,  selectedphotons, VBTopo_JESup, 1,-1, false, 0);
+    if(VBTopo_JESdn==1) VZGMVAScore_JESdn= VZGMVAScoreEval(recoV_JESdn, recoFJ,  selectedphotons, VBTopo_JESdn,-1,-1, false, 0);
+    /*
     if(VBTopo==1)                              theHistograms->fill("AUX_JERup_CONTROL_PLOT", "AUX_JERup_CONTROL_PLOT", 3, -1.5, 1.5,     0, theWeight*LumiSF);
     if(VBTopo==0 && VBTopo_JERup==1)           theHistograms->fill("AUX_JERup_CONTROL_PLOT", "AUX_JERup_CONTROL_PLOT", 3, -1.5, 1.5,     1, theWeight*LumiSF);
     if(VBTopo==1 && VBTopo_JERup==0)           theHistograms->fill("AUX_JERup_CONTROL_PLOT", "AUX_JERup_CONTROL_PLOT", 3, -1.5, 1.5,    -1, theWeight*LumiSF);
@@ -2716,7 +2750,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     
     if( (VZGMVAScore_JERup > 1. || VZGMVAScore_JERup < binEdges.at(0) ) && VZGMVAScore <= 1. && VZGMVAScore >= binEdges.at(0) )
       theHistograms->fill("AUX2_JERup_CONTROL_PLOT", "AUX_JERup_CONTROL_PLOT", 3, -1.5, 1.5,    -1, theWeight*LumiSF);
-
+    */
     
     // QCD scale
     // envelope: consider the six variations: {Do, Central, Up} x {Dn, Central, Up} - (central, central) - (Dn, Dn) - (Up, Up) and use the max and min
@@ -2827,10 +2861,13 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
       }
       */ //CT: momentaneously de-activating with the as long as DY reweighting is de-activated itself
     }
-    if(VZGMVAScore_JERup <= 1. && VZGMVAScore_JERup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_jer_Up"  , "SYS_BDTScore_jer_Up"   , binEdges,  VZGMVAScore_JERup, theWeight*rewgt*PhEffSF*LumiSF);
-    if(VZGMVAScore_JERdn <= 1. && VZGMVAScore_JERdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_jer_Down", "SYS_BDTScore_jer_Down" , binEdges,  VZGMVAScore_JERdn, theWeight*rewgt*PhEffSF*LumiSF);
-    if(VZGMVAScore_JESup <= 1. && VZGMVAScore_JESup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_jesTotal_Up"  , "SYS_BDTScore_jesTotal_Up"   , binEdges,  VZGMVAScore_JESup, theWeight*rewgt*PhEffSF*LumiSF);
-    if(VZGMVAScore_JESdn <= 1. && VZGMVAScore_JESdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_jesTotal_Down", "SYS_BDTScore_jesTotal_Down" , binEdges,  VZGMVAScore_JESdn, theWeight*rewgt*PhEffSF*LumiSF);
+    if(VZGMVAScore_JERup <= 1. && VZGMVAScore_JERup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JER_Up"  , "SYS_BDTScore_JER_Up"   , binEdges,  VZGMVAScore_JERup, theWeight*rewgt*PhEffSF*LumiSF);
+    if(VZGMVAScore_JERdn <= 1. && VZGMVAScore_JERdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JER_Down", "SYS_BDTScore_JER_Down" , binEdges,  VZGMVAScore_JERdn, theWeight*rewgt*PhEffSF*LumiSF);
+    if(VZGMVAScore_JESup <= 1. && VZGMVAScore_JESup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JES_Up"  , "SYS_BDTScore_JES_Up"   , binEdges,  VZGMVAScore_JESup, theWeight*rewgt*PhEffSF*LumiSF);
+    if(VZGMVAScore_JESdn <= 1. && VZGMVAScore_JESdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JES_Down", "SYS_BDTScore_JES_Down" , binEdges,  VZGMVAScore_JESdn, theWeight*rewgt*PhEffSF*LumiSF);
+
+    if(VZGMVAScore_DFSup <= 1. && VZGMVAScore_DFSup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_DeepFlavorQGModeling_Up"  , "SYS_BDTScore_DeepFlavorQGModeling_Up"   , binEdges,  VZGMVAScore_DFSup, theWeight*rewgt*PhEffSF*LumiSF);
+    if(VZGMVAScore_DFSdn <= 1. && VZGMVAScore_DFSdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_DeepFlavorQGModeling_Down", "SYS_BDTScore_DeepFlavorQGModeling_Down" , binEdges,  VZGMVAScore_DFSdn, theWeight*rewgt*PhEffSF*LumiSF);
 
     
   }
@@ -2838,7 +2875,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
   
   //_________________________________________________BLOCK_FOR_SYS_CRZX_HISTOS________________________________________//
   if(i==1  && isCR && region==REGION_FOR_FIT && isRunForCR  && (UNBLIND && !theSampleInfo.isMC() && histoType=="all_"+REGION_FOR_FIT)  && cut(1, recoV, recoFJ, selectedphotons, VBTopo, mimicVZGMVAScore) && VBTopo==1){// && LGsolved){
-    VZGMVAScore      = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0);
+    VZGMVAScore      = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0, false, 0);
     if(VZGMVAScore <= 1. && VZGMVAScore >= binEdges.at(0) ){
       //      std::cout<<"FILLING DATA PLOTS FOR CRDY"<<endl;
       theHistograms->fill("SYS_BDTScore_central", "SYS_BDTScore_central" , binEdges,  VZGMVAScore, theWeight*PhEffSF*LumiSF);
@@ -2859,11 +2896,6 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
   if(i==1 && isCR && region==REGION_FOR_FIT && isRunForCR  && isForSys && cut(1, recoV, recoFJ, selectedphotons, VBTopo, mimicVZGMVAScore)){// && LGsolved){
     //std::  cout << "SYS_CRDY entering plotter" << endl;
 
-    double VZGMVAScore_JERup= -2.;
-    double VZGMVAScore_JERdn= -2.;
-    double VZGMVAScore_JESup= -2.;
-    double VZGMVAScore_JESdn= -2.;
-
     int VBTopo_JERup = 0;
     int VBTopo_JERdn = 0;
     int VBTopo_JESup = 0;
@@ -2881,11 +2913,22 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     VBTopo_JESup=Reconstruct(&recoV_JESup,&recoFJ,&haveGoodRECODiJetCand_JESup,&haveGoodRECOFJCand_null,&selectedphotons.at(0), false,  1, -1);
     VBTopo_JESdn=Reconstruct(&recoV_JESdn,&recoFJ,&haveGoodRECODiJetCand_JESdn,&haveGoodRECOFJCand_null,&selectedphotons.at(0), false, -1, -1);
 
-    if(VBTopo==1)       VZGMVAScore      = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0);
-    if(VBTopo_JERup==1) VZGMVAScore_JERup= VZGMVAScoreEval(recoV_JERup, recoFJ,  selectedphotons, VBTopo_JERup, 1, 1);
-    if(VBTopo_JERdn==1) VZGMVAScore_JERdn= VZGMVAScoreEval(recoV_JERdn, recoFJ,  selectedphotons, VBTopo_JERdn,-1, 1);
-    if(VBTopo_JESup==1) VZGMVAScore_JESup= VZGMVAScoreEval(recoV_JESup, recoFJ,  selectedphotons, VBTopo_JESup, 1,-1);
-    if(VBTopo_JESdn==1) VZGMVAScore_JESdn= VZGMVAScoreEval(recoV_JESdn, recoFJ,  selectedphotons, VBTopo_JESdn,-1,-1);
+    double VZGMVAScore_JERup= -2.;
+    double VZGMVAScore_JERdn= -2.;
+    double VZGMVAScore_JESup= -2.;
+    double VZGMVAScore_JESdn= -2.;
+    double VZGMVAScore_DFSup= -2.;
+    double VZGMVAScore_DFSdn= -2.;
+    
+    if(VBTopo==1){
+      VZGMVAScore       = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0, false, 0);
+      VZGMVAScore_DFSup = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0, true, +1);
+      VZGMVAScore_DFSdn = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0, true, -1);
+    }
+    if(VBTopo_JERup==1) VZGMVAScore_JERup= VZGMVAScoreEval(recoV_JERup, recoFJ,  selectedphotons, VBTopo_JERup, 1, 1, false, 0);
+    if(VBTopo_JERdn==1) VZGMVAScore_JERdn= VZGMVAScoreEval(recoV_JERdn, recoFJ,  selectedphotons, VBTopo_JERdn,-1, 1, false, 0);
+    if(VBTopo_JESup==1) VZGMVAScore_JESup= VZGMVAScoreEval(recoV_JESup, recoFJ,  selectedphotons, VBTopo_JESup, 1,-1, false, 0);
+    if(VBTopo_JESdn==1) VZGMVAScore_JESdn= VZGMVAScoreEval(recoV_JESdn, recoFJ,  selectedphotons, VBTopo_JESdn,-1,-1, false, 0);
 
     // QCD scale
     // envelope: consider the six variations: {Do, Central, Up} x {Dn, Central, Up} - (central, central) - (Dn, Dn) - (Up, Up) and use the max and min
@@ -2920,10 +2963,13 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
       theHistograms->fill("SYS_BDTScore_puWeight_Up"  , "SYS_BDTScore_puWeight_Up"   , binEdges,  VZGMVAScore, (theSampleInfo.puWeightUncUp()/theSampleInfo.puWeight())*theWeight*rewgt*PhEffSF*LumiSF);
       theHistograms->fill("SYS_BDTScore_puWeight_Down", "SYS_BDTScore_puWeight_Down" , binEdges,  VZGMVAScore, (theSampleInfo.puWeightUncDn()/theSampleInfo.puWeight())*theWeight*rewgt*PhEffSF*LumiSF);
     
-      if(VZGMVAScore_JERup <= 1. && VZGMVAScore_JERup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_jer_Up"  , "SYS_BDTScore_jer_Up"   , binEdges,  VZGMVAScore_JERup, theWeight*rewgt*PhEffSF*LumiSF);
-      if(VZGMVAScore_JERdn <= 1. && VZGMVAScore_JERdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_jer_Down", "SYS_BDTScore_jer_Down" , binEdges,  VZGMVAScore_JERdn, theWeight*rewgt*PhEffSF*LumiSF);
-      if(VZGMVAScore_JESup <= 1. && VZGMVAScore_JESup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_jesTotal_Up"  , "SYS_BDTScore_jesTotal_Up"   , binEdges,  VZGMVAScore_JESup, theWeight*rewgt*PhEffSF*LumiSF);
-      if(VZGMVAScore_JESdn <= 1. && VZGMVAScore_JESdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_jesTotal_Down", "SYS_BDTScore_jesTotal_Down" , binEdges,  VZGMVAScore_JESdn, theWeight*rewgt*PhEffSF*LumiSF);
+      if(VZGMVAScore_JERup <= 1. && VZGMVAScore_JERup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JER_Up"  , "SYS_BDTScore_JER_Up"   , binEdges,  VZGMVAScore_JERup, theWeight*rewgt*PhEffSF*LumiSF);
+      if(VZGMVAScore_JERdn <= 1. && VZGMVAScore_JERdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JER_Down", "SYS_BDTScore_JER_Down" , binEdges,  VZGMVAScore_JERdn, theWeight*rewgt*PhEffSF*LumiSF);
+      if(VZGMVAScore_JESup <= 1. && VZGMVAScore_JESup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JES_Up"  , "SYS_BDTScore_JES_Up"   , binEdges,  VZGMVAScore_JESup, theWeight*rewgt*PhEffSF*LumiSF);
+      if(VZGMVAScore_JESdn <= 1. && VZGMVAScore_JESdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JES_Down", "SYS_BDTScore_JES_Down" , binEdges,  VZGMVAScore_JESdn, theWeight*rewgt*PhEffSF*LumiSF);
+
+      if(VZGMVAScore_DFSup <= 1. && VZGMVAScore_DFSup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_DeepFlavorQGModeling_Down", "SYS_BDTScore_DeepFlavorQGModeling_Down" , binEdges,  VZGMVAScore_DFSdn, theWeight*rewgt*PhEffSF*LumiSF);
+      if(VZGMVAScore_DFSdn <= 1. && VZGMVAScore_DFSdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_DeepFlavorQGModeling_Down", "SYS_BDTScore_DeepFlavorQGModeling_Down" , binEdges,  VZGMVAScore_DFSdn, theWeight*rewgt*PhEffSF*LumiSF);
 
     }
   }
