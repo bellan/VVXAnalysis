@@ -57,19 +57,26 @@ set(VVXAnalyzer_SRCS ${EventAnalyzer_SRCS} ${Analyzers_SRCS})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN})
 
+#---correctionlib for deepFlavor score corrections (CT 2026 Feb 22)
+set(CORR_INC $ENV{HOME}/.local/correctionlib/include)
+set(CORR_LIB $ENV{HOME}/.local/correctionlib/lib)
+include_directories(${CORR_INC})
+link_directories(${CORR_LIB})
+
 add_library(TreeAnalysis SHARED G__TreeAnalysis.cxx)
 target_link_libraries(TreeAnalysis ${ROOT_LIBRARIES})
 add_executable(eventAnalyzer ${BIN}/eventAnalyzer.cpp ${SRC}/AnalysisFactory.cc ${VVXAnalyzer_SRCS})
 target_link_libraries(eventAnalyzer TreeAnalysis)
 target_link_libraries(eventAnalyzer ${PYTHON_LIBRARIES})
 target_link_libraries(eventAnalyzer ${ROOT_LIBRARIES} ROOT::TMVA)
+target_link_libraries(eventAnalyzer correctionlib)  # <-- link correctionlib
 
 add_executable(treeFilter ${BIN}/treeFilter.cpp ${EventDF_DICTIONARY})
 target_link_libraries(treeFilter TreeAnalysis)
 
 add_executable(genEventAnalyzer ${BIN}/genEventAnalyzer.cpp ${SRC}/GenEventAnalyzer.cc ${EventAnalyzer_SRCS})
 target_link_libraries(genEventAnalyzer TreeAnalysis)
-
+target_link_libraries(genEventAnalyzer correctionlib)  # <-- link correctionlib
 
 
 
