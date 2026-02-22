@@ -30,6 +30,7 @@ int ANALYSIS_CUTs_WP = 2;
 int BDT_CUT= 0.8;
 double ALPHAS_CAP=1.;
 bool verboseControlBlinding= false;
+double DFQG_RelVar=0.05;
 
 const std::vector<double> binEdges =  {-1.00,-0.85,-0.70,-0.56,-0.43,-0.31,-0.19,-0.07,0.04,0.14,0.24,0.33,0.42,0.51,0.59,0.67,0.74,0.81,0.88,0.94,1.00}; //CT: used for PhD thesis
 //const std::vector<double>   binEdges =  {-1.00,-0.90,-0.75,-0.55,      -0.30,           0.,            0.30,         0.55,       0.75,      0.90,    1.00}; //CT: distributed: rebin4
@@ -237,7 +238,7 @@ bool KinematicsOKafterSys(phys::Particle p, float ptVaried, float ptThr,float et
 }
 
 void VZGAnalyzer::begin(){
-
+  
   reader = new TMVA::Reader("Color:Silent");
 
   reader->AddVariable("ptJ1", &feat_ptJ1);
@@ -638,11 +639,11 @@ double VZGAnalyzer::VZGMVAScoreEval(phys::Boson<phys::Jet> recoV, phys::Jet reco
   VZGMVAScore = reader->EvaluateMVA("BDT");
   if(!isForDFsys)  return VZGMVAScore;
 
-  double DFqJ0Up = TMath::Min(1.0, feat_J0Puds * 1.1);
-  double DFqJ0Dn = TMath::Max(0.0, feat_J0Puds * 0.9);
-  double DFgJ1Up = TMath::Min(1.0, feat_J1PG   * 1.1);
-  double DFgJ1Dn = TMath::Max(0.0, feat_J1PG   * 0.9);
-
+  double DFqJ0Up = TMath::Min(1.0, feat_J0Puds * 1. + DFQG_RelVar);
+  double DFqJ0Dn = TMath::Max(0.0, feat_J0Puds * 1. - DFQG_RelVar);
+  double DFgJ1Up = TMath::Min(1.0, feat_J1PG   * 1. + DFQG_RelVar);
+  double DFgJ1Dn = TMath::Max(0.0, feat_J1PG   * 1. - DFQG_RelVar);
+  /*
   feat_J0Puds    = DFqJ0Up;
   double BDT_DFqJ0Up   = reader->EvaluateMVA("BDT");
   feat_J0Puds    = DFqJ0Dn;
@@ -654,14 +655,25 @@ double VZGAnalyzer::VZGMVAScoreEval(phys::Boson<phys::Jet> recoV, phys::Jet reco
   feat_J1PG      = DFgJ1Dn;
   double BDT_DFgJ1Dn   = reader->EvaluateMVA("BDT");
   feat_J1PG      = DFgJ1;
+  */
+
+  feat_J0Puds    = DFqJ0Up;
+  feat_J1PG      = DFgJ1Up;
+  double BDT_DF_qJ0up_gJ1up   = reader->EvaluateMVA("BDT");
+  feat_J1PG      = DFgJ1Dn;
+  double BDT_DF_qJ0up_gJ1dn   = reader->EvaluateMVA("BDT");
+  feat_J0Puds    = DFqJ0Dn;
+  double BDT_DF_qJ0dn_gJ1dn   = reader->EvaluateMVA("BDT");
+  feat_J1PG      = DFgJ1Up;
+  double BDT_DF_qJ0dn_gJ1up   = reader->EvaluateMVA("BDT");
 
   double BDT_DFvaried=-2.;
   
   if(isForDFsys && isJERorJES==0){//DF sys case
     if(DFsysDirection>0){
-      BDT_DFvaried = std::max({BDT_DFqJ0Up, BDT_DFqJ0Dn, BDT_DFgJ1Up, BDT_DFgJ1Dn});  //up variation
+      BDT_DFvaried = std::max({BDT_DF_qJ0up_gJ1up, BDT_DF_qJ0up_gJ1dn, BDT_DF_qJ0dn_gJ1up, BDT_DF_qJ0dn_gJ1dn});  //up variation
     }else if(DFsysDirection<0){
-      BDT_DFvaried = std::min({BDT_DFqJ0Up, BDT_DFqJ0Dn, BDT_DFgJ1Up, BDT_DFgJ1Dn});  //dn variation
+      BDT_DFvaried = std::min({BDT_DF_qJ0up_gJ1up, BDT_DF_qJ0up_gJ1dn, BDT_DF_qJ0dn_gJ1up, BDT_DF_qJ0dn_gJ1dn});  //dn variation
     }
   }
   if(BDT_DFvaried>-1.)
@@ -1118,7 +1130,7 @@ void VZGAnalyzer::analyze()
   //----BLOCK ASSIGNING DY REWGT PER YEAR------------//
   std::string year_str = std::to_string(year);
   rewgt=1.;
-  if(theSampleInfo.isMC() && isDYSample && genVBHelper_.ZtoChLep().size()>0){
+  if(theSampleInfo.isMC() && isDYSample && genVBHelper_.ZtoChLep().size()>0){    
     for(int i = 0; i<DYrewgtBinEdges.size()-1 && rewgt==1.; i++){
       if( genVBHelper_.ZtoChLep()[0].pt() > DYrewgtBinEdges[i] && genVBHelper_.ZtoChLep()[0].pt() < DYrewgtBinEdges[i+1]){
 	if(year==2016){
