@@ -8,6 +8,8 @@
 #include <TFile.h>
 #include <TMVA/Reader.h>
 
+#include "correction.h"
+
 #include <fstream>
 #include <stdexcept>
 
@@ -103,6 +105,36 @@ double CRZsupMassCut = 100;
 static TMVA::Reader* reader = nullptr;
 
 static float feat_dRLG, feat_recoVMass, feat_mllG, feat_J1PG, feat_PhMVAId, feat_J1Girth, feat_ptJ1, feat_J0Puds, feat_ptjj, feat_HT, feat_J0Girth, feat_deltaR_J0Gamma, feat_deltaR_J1Gamma, feat_ptGamma, feat_dPhiZG;
+
+std::shared_ptr<correction::CorrectionSet> cset;
+
+void loadQGCorrections(const std::string &jsonFile) {
+  cset = correction::CorrectionSet::from_file(jsonFile);
+  std::cout << "Loaded QvG SFs from: " << jsonFile << std::endl;
+}
+
+struct QGScaleFactor {
+  double central;
+  double up;
+  double down;
+};
+
+// wp = "L", "M" o "T"
+QGScaleFactor getQGSF(bool isMC, double qvg_score, double eta, double pt, int absFlav, const std::string &wp) {
+  QGScaleFactor sf{1.0, 1.0, 1.0};  // default
+
+  if(isMC){
+    try {
+      auto corr = cset->at("deepJet_shape");  // standard name in the json
+      sf.central = corr->evaluate({"central", wp, qvg_score, absFlav, eta, pt});
+      sf.up      = corr->evaluate({"up",      wp, qvg_score, absFlav, eta, pt});
+      sf.down    = corr->evaluate({"down",    wp, qvg_score, absFlav, eta, pt});
+    } catch (std::exception &e) {
+      std::cerr << "Error evaluating QG SF: " << e.what() << std::endl;
+    }
+  }
+  return sf;
+}
 
 void ScaleP4(TLorentzVector& p4, double ptScaled, double ptCentral){
   p4.Pz()*ptScaled/ptCentral;
@@ -258,6 +290,10 @@ void VZGAnalyzer::begin(){
   reader->AddVariable("HT",&feat_HT);
 
   reader->BookMVA("BDT", BDTmodelPath);
+
+  //  std::shared_ptr<correction::CorrectionSet> DFcorrSet;
+
+
   
   /*
   cout<<'\n';
@@ -315,6 +351,14 @@ void VZGAnalyzer::begin(){
   for(auto& it: mapPhotonMVASF_)  // std::pair<const Photon::MVAwp, std::unique_ptr<TH2F>>
     mapPhotonMVASF_maxPt_[it.first] = it.second->GetYaxis()->GetBinUpEdge(it.second->GetNbinsY());
 
+
+  //---block loading QvG DF correction set---//
+  std::string QvGcorrJsonPath="qvgJsons/"+year_str+"ULqgtagging.json" ;
+  //  QvGcorrJsonPath+=year_str ;
+  //  QvGcorrJsonPath+="ULqgtagging.json" ;
+  
+  if(theSampleInfo.isMC()) loadQGCorrections(QvGcorrJsonPath);
+  
   return;
 }
 
@@ -607,7 +651,7 @@ double VZGAnalyzer::VZGMVAScoreEval(phys::Boson<phys::Jet> recoV, phys::Jet reco
 
   double DFqJ0 = recoV.daughter(0).deepFlavour().probuds;
   double DFgJ1 = recoV.daughter(1).deepFlavour().probg;
-   
+  
   feat_dRLG = fabs(physmath::deltaR(nearestChLeptToPhoton.first, nearestChLeptToPhoton.second));
   feat_recoVMass = recoV.mass();
   feat_mllG=  llPh.M();
@@ -637,25 +681,14 @@ double VZGAnalyzer::VZGMVAScoreEval(phys::Boson<phys::Jet> recoV, phys::Jet reco
   }
 
   VZGMVAScore = reader->EvaluateMVA("BDT");
-  if(!isForDFsys)  return VZGMVAScore;
+
+  return VZGMVAScore;/*  if(!isForDFsys)  return VZGMVAScore;  
+  //old version of unc on DFscore
 
   double DFqJ0Up = TMath::Min(1.0, feat_J0Puds * 1. + DFQG_RelVar);
   double DFqJ0Dn = TMath::Max(0.0, feat_J0Puds * 1. - DFQG_RelVar);
   double DFgJ1Up = TMath::Min(1.0, feat_J1PG   * 1. + DFQG_RelVar);
   double DFgJ1Dn = TMath::Max(0.0, feat_J1PG   * 1. - DFQG_RelVar);
-  /*
-  feat_J0Puds    = DFqJ0Up;
-  double BDT_DFqJ0Up   = reader->EvaluateMVA("BDT");
-  feat_J0Puds    = DFqJ0Dn;
-  double BDT_DFqJ0Dn   = reader->EvaluateMVA("BDT");
-  feat_J0Puds    = DFqJ0;
-
-  feat_J1PG      = DFgJ1Up;
-  double BDT_DFgJ1Up   = reader->EvaluateMVA("BDT");
-  feat_J1PG      = DFgJ1Dn;
-  double BDT_DFgJ1Dn   = reader->EvaluateMVA("BDT");
-  feat_J1PG      = DFgJ1;
-  */
 
   feat_J0Puds    = DFqJ0Up;
   feat_J1PG      = DFgJ1Up;
@@ -678,6 +711,7 @@ double VZGAnalyzer::VZGMVAScoreEval(phys::Boson<phys::Jet> recoV, phys::Jet reco
   }
   if(BDT_DFvaried>-1.)
     return BDT_DFvaried;
+  */
 }
 
 bool VZGAnalyzer::inSR(phys::Boson<phys::Jet> recoV, phys::Jet recoFJ, std::vector<phys::Photon> selectedphotons, int VBTopo, double VZGMVAScore)
@@ -1409,7 +1443,7 @@ void VZGAnalyzer::analyze()
     theHistograms->fill("DeltaR_jets_vs_pt", "DeltaR jets vs pt;pt [GeV/c] ; #DeltaR", 10, ptcut, 300, 20, 0, 0.2, pair.first.pt(),fabs(physmath::deltaR(pair.first, pair.second)), theWeight*LumiSF);
   }
   //theHistograms->fill("2size_GENjetsRECONSTRUCTED", "2size_GENjetsRECONSTRUCTED", 10, -0.5, 9.5, RECOjetsfromGENjets.size(), theWeight*LumiSF);
-
+  
   //----------------------------------------Matching efficiency ______ QUARKS PAIR------------------------//
 
   std::vector<std::pair<phys::Particle, phys::Particle>> DijetsmatchedtoDiquark;
@@ -1538,6 +1572,7 @@ void VZGAnalyzer::analyze()
 
   
   //________________________________________________________________________________________________________
+  
   // NEW BLOCK FOR VHad reconstruction test
   
 
@@ -2778,19 +2813,52 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     QCDscale_Up = *max_element(envelope.begin(), envelope.end());
     QCDscale_Dn = *min_element(envelope.begin(), envelope.end());
 
+    //---miniblock for qvg sf attempt---//
+    double J0qvg= recoV.daughter(0).deepFlavour().probuds/(recoV.daughter(0).deepFlavour().probuds + recoV.daughter(0).deepFlavour().probg);
+    double J1qvg= recoV.daughter(1).deepFlavour().probuds/(recoV.daughter(1).deepFlavour().probuds + recoV.daughter(1).deepFlavour().probg);
+    int absFlavor=0;
+
+    double DFqJ0 = recoV.daughter(0).deepFlavour().probuds;
+    double DFgJ1 = recoV.daughter(1).deepFlavour().probg;
+
+    theHistograms->fill("J0qvg raw - btv", "J0qvg raw - btv" , 40, -1, 1,  DFqJ0 - J0qvg, theWeight*rewgt*PhEffSF*LumiSF);
+
+    
+    if(isSigSample) absFlavor=1;
+    else if(isDYSample) absFlavor=21;
+    else if(isZGSample) absFlavor=0;
+    else absFlavor=5;
+    
+    QGScaleFactor J0qvgSF = getQGSF(theSampleInfo.isMC(), J0qvg, recoV.daughter(0).eta(), recoV.daughter(0).pt(), absFlavor, "M");
+    QGScaleFactor J1qvgSF = getQGSF(theSampleInfo.isMC(), J1qvg, recoV.daughter(1).eta(), recoV.daughter(1).pt(), absFlavor, "M");
+    
+    double qgTagSF    = J0qvgSF.central*J1qvgSF.central;
+    double qgTagSF_up = J0qvgSF.up     *J1qvgSF.up     ;
+    double qgTagSF_dn = J0qvgSF.down   *J1qvgSF.down   ;    
+    
+    std::cout<<"Abs flavor ="        <<absFlavor <<endl;
+    std::cout<<"Tot qvg SF central ="<<qgTagSF   <<endl;
+    std::cout<<"Tot qvg SF up ="     <<qgTagSF_up<<endl;
+    std::cout<<"Tot qvg SF down ="   <<qgTagSF_dn<<endl;
+
+    std::cout<<"-------------------------------------"<<endl;
+      
+    //---end of block for qvg sf attempt---//
+
+    
     if(VZGMVAScore <= 1. && VZGMVAScore >= binEdges.at(0)){
-      theHistograms->fill("SYS_BDTScore_central", "SYS_BDTScore_central" , binEdges,  VZGMVAScore, theWeight*rewgt*PhEffSF*LumiSF);
+      theHistograms->fill("SYS_BDTScore_central", "SYS_BDTScore_central" , binEdges,  VZGMVAScore, theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
 
       if(isSigSample){//CT: cap applied
 	theHistograms->fill("SYS_BDTScore_alphas_Up"  , "SYS_BDTScore_alphas_Up"   , binEdges,  VZGMVAScore,
-			         theWeight*rewgt*PhEffSF*LumiSF*(
+			         theWeight*rewgt*qgTagSF*PhEffSF*LumiSF*(
                  		          fabs( theSampleInfo.alphas_MZ_Up()  -1.)  < ALPHAS_CAP ?
 									           theSampleInfo.alphas_MZ_Up() :
 							                           ( 1.+ALPHAS_CAP*fabs(theSampleInfo.alphas_MZ_Up())  /theSampleInfo.alphas_MZ_Up())
 			         )
 			    );
 	theHistograms->fill("SYS_BDTScore_alphas_Down", "SYS_BDTScore_alphas_Down" , binEdges,  VZGMVAScore,
-			          theWeight*rewgt*PhEffSF*LumiSF*(
+			          theWeight*rewgt*qgTagSF*PhEffSF*LumiSF*(
 					  fabs( theSampleInfo.alphas_MZ_Down()-1.)  < ALPHAS_CAP ?
 										   2-theSampleInfo.alphas_MZ_Down()  :
 					                                           2-( 1.+ALPHAS_CAP*fabs(theSampleInfo.alphas_MZ_Down())/theSampleInfo.alphas_MZ_Down())
@@ -2798,35 +2866,35 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
 			    );
 
       }else{//CT: original implementation
-	theHistograms->fill("SYS_BDTScore_alphas_Up"  , "SYS_BDTScore_alphas_Up"   , binEdges,  VZGMVAScore, theSampleInfo.alphas_MZ_Up()*theWeight*rewgt*PhEffSF*LumiSF);
+	theHistograms->fill("SYS_BDTScore_alphas_Up"  , "SYS_BDTScore_alphas_Up"   , binEdges,  VZGMVAScore, theSampleInfo.alphas_MZ_Up()*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
 	//	if(isSigSample || isZGSample || isDYSample) //CT: original implementation
 	if(isZGSample || isDYSample)
-	  theHistograms->fill("SYS_BDTScore_alphas_Down", "SYS_BDTScore_alphas_Down" , binEdges,  VZGMVAScore, (2.-theSampleInfo.alphas_MZ_Down())*theWeight*rewgt*PhEffSF*LumiSF);
+	  theHistograms->fill("SYS_BDTScore_alphas_Down", "SYS_BDTScore_alphas_Down" , binEdges,  VZGMVAScore, (2.-theSampleInfo.alphas_MZ_Down())*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
 	else
-	  theHistograms->fill("SYS_BDTScore_alphas_Down", "SYS_BDTScore_alphas_Down" , binEdges,  VZGMVAScore, theSampleInfo.alphas_MZ_Down()*theWeight*rewgt*PhEffSF*LumiSF);
+	  theHistograms->fill("SYS_BDTScore_alphas_Down", "SYS_BDTScore_alphas_Down" , binEdges,  VZGMVAScore, theSampleInfo.alphas_MZ_Down()*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
       }
       /*
-      if( (fabs( theSampleInfo.alphas_MZ_Up()   -1.)> 1.5 ||  fabs(theSampleInfo.alphas_MZ_Down()   -1.)> 1.5) && fabs(theWeight*rewgt*PhEffSF)>0.01 ){
+      if( (fabs( theSampleInfo.alphas_MZ_Up()   -1.)> 1.5 ||  fabs(theSampleInfo.alphas_MZ_Down()   -1.)> 1.5) && fabs(theWeight*rewgt*qgTagSF*PhEffSF)>0.01 ){
 	std::  cout << "----------------------------------------"<<endl<<"Event nb. "<< event << endl;
 	std::  cout << "----------------------------------------"<<endl;
-	std::cout<<"event weight: "<<theWeight*rewgt*PhEffSF<<endl;
+	std::cout<<"event weight: "<<theWeight*rewgt*qgTagSF*PhEffSF<<endl;
 	std::cout<<"aS up       : "<<theSampleInfo.alphas_MZ_Up()<<endl;
 	std::cout<<"2 - aS down : "<<2.-theSampleInfo.alphas_MZ_Down()<<endl;
 	//	std::cout<<"aS up       : "<<theSampleInfo.alphas_MZ_Up()<<endl;
 	std::cout<<"1/aS down   : "<<1/theSampleInfo.alphas_MZ_Down()<<endl;
       }
-      */
-      theHistograms->fill("AlphaS up variation (nominal weights)"  , "AlphaS up variation (nominal weights)"   , 22, -1.2, 3.2, fabs( theSampleInfo.alphas_MZ_Up()  -1.)  < 2. ? theSampleInfo.alphas_MZ_Up()      : 1.+2.1*fabs(theSampleInfo.alphas_MZ_Up())  /theSampleInfo.alphas_MZ_Up()  , theWeight*rewgt*PhEffSF*LumiSF);
-      theHistograms->fill("AlphaS 2-dn variation (nominal weights)", "AlphaS 2-dn variation (nominal weights)" , 22, -1.2, 3.2, fabs( theSampleInfo.alphas_MZ_Down()-1.)  < 2. ? 2.-theSampleInfo.alphas_MZ_Down()  : 1.-2.1*fabs(theSampleInfo.alphas_MZ_Down())/theSampleInfo.alphas_MZ_Down(),theWeight*rewgt*PhEffSF*LumiSF);
+      *//*
+      theHistograms->fill("AlphaS up variation (nominal weights)"  , "AlphaS up variation (nominal weights)"   , 22, -1.2, 3.2, fabs( theSampleInfo.alphas_MZ_Up()  -1.)  < 2. ? theSampleInfo.alphas_MZ_Up()      : 1.+2.1*fabs(theSampleInfo.alphas_MZ_Up())  /theSampleInfo.alphas_MZ_Up()  , theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+      theHistograms->fill("AlphaS 2-dn variation (nominal weights)", "AlphaS 2-dn variation (nominal weights)" , 22, -1.2, 3.2, fabs( theSampleInfo.alphas_MZ_Down()-1.)  < 2. ? 2.-theSampleInfo.alphas_MZ_Down()  : 1.-2.1*fabs(theSampleInfo.alphas_MZ_Down())/theSampleInfo.alphas_MZ_Down(),theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
 
-      theHistograms->fill("AlphaS up variation (variation applied)"  , "AlphaS up variation (variation applied)"   , 22, -1.2, 3.2, fabs( theSampleInfo.alphas_MZ_Up()  -1.)  < 2. ? theSampleInfo.alphas_MZ_Up()     : 1.+2.1*fabs(theSampleInfo.alphas_MZ_Up())  /theSampleInfo.alphas_MZ_Up()   , theSampleInfo.alphas_MZ_Up()*theWeight*rewgt*PhEffSF*LumiSF);
-      theHistograms->fill("AlphaS 2-dn variation (variation applied)", "AlphaS 2-dn variation (variation applied)" , 22, -1.2, 3.2, fabs( theSampleInfo.alphas_MZ_Down()-1.)  < 2. ? 2.-theSampleInfo.alphas_MZ_Down() : 1.-2.1*fabs(theSampleInfo.alphas_MZ_Down())/theSampleInfo.alphas_MZ_Down(), (2.-theSampleInfo.alphas_MZ_Down())*theWeight*rewgt*PhEffSF*LumiSF);
+      theHistograms->fill("AlphaS up variation (variation applied)"  , "AlphaS up variation (variation applied)"   , 22, -1.2, 3.2, fabs( theSampleInfo.alphas_MZ_Up()  -1.)  < 2. ? theSampleInfo.alphas_MZ_Up()     : 1.+2.1*fabs(theSampleInfo.alphas_MZ_Up())  /theSampleInfo.alphas_MZ_Up()   , theSampleInfo.alphas_MZ_Up()*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+      theHistograms->fill("AlphaS 2-dn variation (variation applied)", "AlphaS 2-dn variation (variation applied)" , 22, -1.2, 3.2, fabs( theSampleInfo.alphas_MZ_Down()-1.)  < 2. ? 2.-theSampleInfo.alphas_MZ_Down() : 1.-2.1*fabs(theSampleInfo.alphas_MZ_Down())/theSampleInfo.alphas_MZ_Down(), (2.-theSampleInfo.alphas_MZ_Down())*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
 
       theHistograms->fill("AlphaS up variation (w/cap, after variation)"  , "AlphaS up variation (w/cap, after variation)"   , 10.*ALPHAS_CAP+2., 1.-ALPHAS_CAP-0.2, 1.+ALPHAS_CAP+0.2,
 			  fabs( theSampleInfo.alphas_MZ_Up()  -1.)  < ALPHAS_CAP ?
 			                                                           theSampleInfo.alphas_MZ_Up()  :
 			                                                           1.+(ALPHAS_CAP+.1)*fabs(theSampleInfo.alphas_MZ_Up())  /theSampleInfo.alphas_MZ_Up()  ,
-			  theWeight*rewgt*PhEffSF*LumiSF*( fabs( theSampleInfo.alphas_MZ_Up()  -1.)  < ALPHAS_CAP ?
+			  theWeight*rewgt*qgTagSF*PhEffSF*LumiSF*( fabs( theSampleInfo.alphas_MZ_Up()  -1.)  < ALPHAS_CAP ?
 										   theSampleInfo.alphas_MZ_Up() :
 							                           ( 1.+(ALPHAS_CAP-.0001)*fabs(theSampleInfo.alphas_MZ_Up())  /theSampleInfo.alphas_MZ_Up())
 							   )
@@ -2835,37 +2903,39 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
                           fabs( theSampleInfo.alphas_MZ_Down()-1.)  < ALPHAS_CAP ?
 			                                                           2-theSampleInfo.alphas_MZ_Down()  :
 			                                                           1.-(ALPHAS_CAP+.1)*fabs(theSampleInfo.alphas_MZ_Down())/theSampleInfo.alphas_MZ_Down()  ,
-			  theWeight*rewgt*PhEffSF*LumiSF*( fabs( theSampleInfo.alphas_MZ_Down()-1.)  < ALPHAS_CAP ?
+			  theWeight*rewgt*qgTagSF*PhEffSF*LumiSF*( fabs( theSampleInfo.alphas_MZ_Down()-1.)  < ALPHAS_CAP ?
 										   2-theSampleInfo.alphas_MZ_Down()  :
 							                           2-( 1.+(ALPHAS_CAP-.0001)*fabs(theSampleInfo.alphas_MZ_Down())/theSampleInfo.alphas_MZ_Down())
 							   )
 			  );
-     
-      theHistograms->fill("SYS_BDTScore_PDFVar_Up"  , "SYS_BDTScore_PDFVar_Up"   , binEdges,  VZGMVAScore, theSampleInfo.PDFVar_Up()*theWeight*rewgt*PhEffSF*LumiSF);
-      theHistograms->fill("SYS_BDTScore_PDFVar_Down", "SYS_BDTScore_PDFVar_Down" , binEdges,  VZGMVAScore, theSampleInfo.PDFVar_Down()*theWeight*rewgt*PhEffSF*LumiSF);
+      */
+      theHistograms->fill("SYS_BDTScore_PDFVar_Up"  , "SYS_BDTScore_PDFVar_Up"   , binEdges,  VZGMVAScore, theSampleInfo.PDFVar_Up()*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+      theHistograms->fill("SYS_BDTScore_PDFVar_Down", "SYS_BDTScore_PDFVar_Down" , binEdges,  VZGMVAScore, theSampleInfo.PDFVar_Down()*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
 
-      theHistograms->fill("SYS_BDTScore_QCDscale_Up"  , "SYS_BDTScore_QCDscale_Up"   , binEdges,  VZGMVAScore, QCDscale_Up*theWeight*rewgt*PhEffSF*LumiSF);
-      theHistograms->fill("SYS_BDTScore_QCDscale_Down", "SYS_BDTScore_QCDscale_Down" , binEdges,  VZGMVAScore, QCDscale_Dn*theWeight*rewgt*PhEffSF*LumiSF);
+      theHistograms->fill("SYS_BDTScore_QCDscale_Up"  , "SYS_BDTScore_QCDscale_Up"   , binEdges,  VZGMVAScore, QCDscale_Up*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+      theHistograms->fill("SYS_BDTScore_QCDscale_Down", "SYS_BDTScore_QCDscale_Down" , binEdges,  VZGMVAScore, QCDscale_Dn*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
 
-      theHistograms->fill("SYS_BDTScore_L1Prefiring_Up"  , "SYS_BDTScore_L1Prefiring_Up"   , binEdges,  VZGMVAScore, (theSampleInfo.L1PrefiringWeightUp()/theSampleInfo.L1PrefiringWeight())*theWeight*rewgt*PhEffSF*LumiSF);
-      theHistograms->fill("SYS_BDTScore_L1Prefiring_Down", "SYS_BDTScore_L1Prefiring_Down" , binEdges,  VZGMVAScore, (theSampleInfo.L1PrefiringWeightDn()/theSampleInfo.L1PrefiringWeight())*theWeight*rewgt*PhEffSF*LumiSF);
-
+      theHistograms->fill("SYS_BDTScore_DeepFlavorQGModeling_Up"  , "SYS_BDTScore_DeepFlavorQGModeling_Up"   , binEdges,  VZGMVAScore, theWeight*rewgt*qgTagSF_up*PhEffSF*LumiSF);
+      theHistograms->fill("SYS_BDTScore_DeepFlavorQGModeling_Down", "SYS_BDTScore_DeepFlavorQGModeling_Down" , binEdges,  VZGMVAScore, theWeight*rewgt*qgTagSF_dn*PhEffSF*LumiSF);
 
       
+      theHistograms->fill("SYS_BDTScore_L1Prefiring_Up"  , "SYS_BDTScore_L1Prefiring_Up"   , binEdges,  VZGMVAScore, (theSampleInfo.L1PrefiringWeightUp()/theSampleInfo.L1PrefiringWeight())*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+      theHistograms->fill("SYS_BDTScore_L1Prefiring_Down", "SYS_BDTScore_L1Prefiring_Down" , binEdges,  VZGMVAScore, (theSampleInfo.L1PrefiringWeightDn()/theSampleInfo.L1PrefiringWeight())*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+
       double relPhEffSFUnc=(PhEffSF!=0) ? PhEffSFUnc/PhEffSF : 0.;
-      theHistograms->fill("SYS_BDTScore_effPhIDMVA_Up"  , "SYS_BDTScore_effPhIDMVA_Up"   , binEdges,  VZGMVAScore, theWeight*rewgt*(PhEffSF+PhEffSFUnc)*LumiSF);
-      theHistograms->fill("SYS_BDTScore_effPhIDMVA_Down", "SYS_BDTScore_effPhIDMVA_Down" , binEdges,  VZGMVAScore, theWeight*rewgt*(PhEffSF-PhEffSFUnc)*LumiSF);
+      theHistograms->fill("SYS_BDTScore_effPhIDMVA_Up"  , "SYS_BDTScore_effPhIDMVA_Up"   , binEdges,  VZGMVAScore, theWeight*rewgt*qgTagSF*(PhEffSF+PhEffSFUnc)*LumiSF);
+      theHistograms->fill("SYS_BDTScore_effPhIDMVA_Down", "SYS_BDTScore_effPhIDMVA_Down" , binEdges,  VZGMVAScore, theWeight*rewgt*qgTagSF*(PhEffSF-PhEffSFUnc)*LumiSF);
 
       double eleEff_w=0., muoEff_w=0.;
       eleEff_w  = Z->eleEffSFUnc()/Z->efficiencySF();
       muoEff_w  = Z->muoEffSFUnc()/Z->efficiencySF();
-      theHistograms->fill("SYS_BDTScore_electronEff_Up"  , "SYS_BDTScore_electronEff_Up"   , binEdges,  VZGMVAScore, theWeight*rewgt*(1 + eleEff_w)*LumiSF);
-      theHistograms->fill("SYS_BDTScore_electronEff_Down", "SYS_BDTScore_electronEff_Down" , binEdges,  VZGMVAScore, theWeight*rewgt*(1 - eleEff_w)*LumiSF);
-      theHistograms->fill("SYS_BDTScore_muonEff_Up"  , "SYS_BDTScore_muonEff_Up"   , binEdges,  VZGMVAScore, theWeight*rewgt*(1 + muoEff_w)*LumiSF);
-      theHistograms->fill("SYS_BDTScore_muonEff_Down", "SYS_BDTScore_muonEff_Down" , binEdges,  VZGMVAScore, theWeight*rewgt*(1 - muoEff_w)*LumiSF);
+      theHistograms->fill("SYS_BDTScore_electronEff_Up"  , "SYS_BDTScore_electronEff_Up"   , binEdges,  VZGMVAScore, theWeight*rewgt*qgTagSF*(1 + eleEff_w)*LumiSF);
+      theHistograms->fill("SYS_BDTScore_electronEff_Down", "SYS_BDTScore_electronEff_Down" , binEdges,  VZGMVAScore, theWeight*rewgt*qgTagSF*(1 - eleEff_w)*LumiSF);
+      theHistograms->fill("SYS_BDTScore_muonEff_Up"  , "SYS_BDTScore_muonEff_Up"   , binEdges,  VZGMVAScore, theWeight*rewgt*qgTagSF*(1 + muoEff_w)*LumiSF);
+      theHistograms->fill("SYS_BDTScore_muonEff_Down", "SYS_BDTScore_muonEff_Down" , binEdges,  VZGMVAScore, theWeight*rewgt*qgTagSF*(1 - muoEff_w)*LumiSF);
 
-      theHistograms->fill("SYS_BDTScore_puWeight_Up"  , "SYS_BDTScore_puWeight_Up"   , binEdges,  VZGMVAScore, (theSampleInfo.puWeightUncUp()/theSampleInfo.puWeight())*theWeight*rewgt*PhEffSF*LumiSF);
-      theHistograms->fill("SYS_BDTScore_puWeight_Down", "SYS_BDTScore_puWeight_Down" , binEdges,  VZGMVAScore, (theSampleInfo.puWeightUncDn()/theSampleInfo.puWeight())*theWeight*rewgt*PhEffSF*LumiSF);
+      theHistograms->fill("SYS_BDTScore_puWeight_Up"  , "SYS_BDTScore_puWeight_Up"   , binEdges,  VZGMVAScore, (theSampleInfo.puWeightUncUp()/theSampleInfo.puWeight())*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+      theHistograms->fill("SYS_BDTScore_puWeight_Down", "SYS_BDTScore_puWeight_Down" , binEdges,  VZGMVAScore, (theSampleInfo.puWeightUncDn()/theSampleInfo.puWeight())*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
       /*
       if(isDYSample){
 	theHistograms->fill("SYS_BDTScore_CR2P1F_Up"  , "SYS_BDTScore_CR2P1F_Up"   , binEdges,  VZGMVAScore, theWeight*(TF+TF_uncAbs)*PhEffSF*LumiSF);
@@ -2873,18 +2943,14 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
       }
       */ //CT: momentaneously de-activating with the as long as DY reweighting is de-activated itself
     }
-    if(VZGMVAScore_JERup <= 1. && VZGMVAScore_JERup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JER_Up"  , "SYS_BDTScore_JER_Up"   , binEdges,  VZGMVAScore_JERup, theWeight*rewgt*PhEffSF*LumiSF);
-    if(VZGMVAScore_JERdn <= 1. && VZGMVAScore_JERdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JER_Down", "SYS_BDTScore_JER_Down" , binEdges,  VZGMVAScore_JERdn, theWeight*rewgt*PhEffSF*LumiSF);
-    if(VZGMVAScore_JESup <= 1. && VZGMVAScore_JESup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JES_Up"  , "SYS_BDTScore_JES_Up"   , binEdges,  VZGMVAScore_JESup, theWeight*rewgt*PhEffSF*LumiSF);
-    if(VZGMVAScore_JESdn <= 1. && VZGMVAScore_JESdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JES_Down", "SYS_BDTScore_JES_Down" , binEdges,  VZGMVAScore_JESdn, theWeight*rewgt*PhEffSF*LumiSF);
-
-    if(VZGMVAScore_DFSup <= 1. && VZGMVAScore_DFSup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_DeepFlavorQGModeling_Up"  , "SYS_BDTScore_DeepFlavorQGModeling_Up"   , binEdges,  VZGMVAScore_DFSup, theWeight*rewgt*PhEffSF*LumiSF);
-    if(VZGMVAScore_DFSdn <= 1. && VZGMVAScore_DFSdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_DeepFlavorQGModeling_Down", "SYS_BDTScore_DeepFlavorQGModeling_Down" , binEdges,  VZGMVAScore_DFSdn, theWeight*rewgt*PhEffSF*LumiSF);
-
+    if(VZGMVAScore_JERup <= 1. && VZGMVAScore_JERup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JER_Up"  , "SYS_BDTScore_JER_Up"   , binEdges,  VZGMVAScore_JERup, theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+    if(VZGMVAScore_JERdn <= 1. && VZGMVAScore_JERdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JER_Down", "SYS_BDTScore_JER_Down" , binEdges,  VZGMVAScore_JERdn, theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+    if(VZGMVAScore_JESup <= 1. && VZGMVAScore_JESup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JES_Up"  , "SYS_BDTScore_JES_Up"   , binEdges,  VZGMVAScore_JESup, theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+    if(VZGMVAScore_JESdn <= 1. && VZGMVAScore_JESdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JES_Down", "SYS_BDTScore_JES_Down" , binEdges,  VZGMVAScore_JESdn, theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
     
   }
   //_____________________________________________END_OF_BLOCK_FOR_SYS_HISTOS_____________________________________//
-  
+  /*
   //_________________________________________________BLOCK_FOR_SYS_CRZX_HISTOS________________________________________//
   if(i==1  && isCR && region==REGION_FOR_FIT && isRunForCR  && (UNBLIND && !theSampleInfo.isMC() && histoType=="all_"+REGION_FOR_FIT)  && cut(1, recoV, recoFJ, selectedphotons, VBTopo, mimicVZGMVAScore) && VBTopo==1){// && LGsolved){
     VZGMVAScore      = VZGMVAScoreEval(recoV,       recoFJ,  selectedphotons, VBTopo,       0, 0, false, 0);
@@ -2904,7 +2970,7 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     else std::  cout << "FAILING cut(1, recoV, recoFJ, selectedphotons, VBTopo, mimicVZGMVAScore) " << endl;
     if(isForSys) std::cout<<"Passing isForSys"<<endl;
   }
-  */
+  *//*
   if(i==1 && isCR && region==REGION_FOR_FIT && isRunForCR  && isForSys && cut(1, recoV, recoFJ, selectedphotons, VBTopo, mimicVZGMVAScore)){// && LGsolved){
     //std::  cout << "SYS_CRDY entering plotter" << endl;
 
@@ -2957,36 +3023,36 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     QCDscale_Dn = *min_element(envelope.begin(), envelope.end());
 
     if(VZGMVAScore <= 1. && VZGMVAScore >= binEdges.at(0)){
-      theHistograms->fill("SYS_BDTScore_central", "SYS_BDTScore_central" , binEdges,  VZGMVAScore, theWeight*rewgt*PhEffSF*LumiSF);
+      theHistograms->fill("SYS_BDTScore_central", "SYS_BDTScore_central" , binEdges,  VZGMVAScore, theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
 
-      theHistograms->fill("SYS_BDTScore_alphas_Up"  , "SYS_BDTScore_alphas_Up"   , binEdges,  VZGMVAScore, theSampleInfo.alphas_MZ_Up()*theWeight*rewgt*PhEffSF*LumiSF);
-      if(isSigSample || isZGSample || isDYSample)      theHistograms->fill("SYS_BDTScore_alphas_Down", "SYS_BDTScore_alphas_Down" , binEdges,  VZGMVAScore, (2.-theSampleInfo.alphas_MZ_Down())*theWeight*rewgt*PhEffSF*LumiSF);
-      else       theHistograms->fill("SYS_BDTScore_alphas_Down", "SYS_BDTScore_alphas_Down" , binEdges,  VZGMVAScore, theSampleInfo.alphas_MZ_Down()*theWeight*rewgt*PhEffSF*LumiSF);
+      theHistograms->fill("SYS_BDTScore_alphas_Up"  , "SYS_BDTScore_alphas_Up"   , binEdges,  VZGMVAScore, theSampleInfo.alphas_MZ_Up()*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+      if(isSigSample || isZGSample || isDYSample)      theHistograms->fill("SYS_BDTScore_alphas_Down", "SYS_BDTScore_alphas_Down" , binEdges,  VZGMVAScore, (2.-theSampleInfo.alphas_MZ_Down())*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+      else       theHistograms->fill("SYS_BDTScore_alphas_Down", "SYS_BDTScore_alphas_Down" , binEdges,  VZGMVAScore, theSampleInfo.alphas_MZ_Down()*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
       
-      theHistograms->fill("SYS_BDTScore_PDFVar_Up"  , "SYS_BDTScore_PDFVar_Up"   , binEdges,  VZGMVAScore, theSampleInfo.PDFVar_Up()*theWeight*rewgt*PhEffSF*LumiSF);
-      theHistograms->fill("SYS_BDTScore_PDFVar_Down", "SYS_BDTScore_PDFVar_Down" , binEdges,  VZGMVAScore, theSampleInfo.PDFVar_Down()*theWeight*rewgt*PhEffSF*LumiSF);
+      theHistograms->fill("SYS_BDTScore_PDFVar_Up"  , "SYS_BDTScore_PDFVar_Up"   , binEdges,  VZGMVAScore, theSampleInfo.PDFVar_Up()*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+      theHistograms->fill("SYS_BDTScore_PDFVar_Down", "SYS_BDTScore_PDFVar_Down" , binEdges,  VZGMVAScore, theSampleInfo.PDFVar_Down()*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
 
-      theHistograms->fill("SYS_BDTScore_QCDscale_Up"  , "SYS_BDTScore_QCDscale_Up"   , binEdges,  VZGMVAScore, QCDscale_Up*theWeight*rewgt*PhEffSF*LumiSF);
-      theHistograms->fill("SYS_BDTScore_QCDscale_Down", "SYS_BDTScore_QCDscale_Down" , binEdges,  VZGMVAScore, QCDscale_Dn*theWeight*rewgt*PhEffSF*LumiSF);
+      theHistograms->fill("SYS_BDTScore_QCDscale_Up"  , "SYS_BDTScore_QCDscale_Up"   , binEdges,  VZGMVAScore, QCDscale_Up*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+      theHistograms->fill("SYS_BDTScore_QCDscale_Down", "SYS_BDTScore_QCDscale_Down" , binEdges,  VZGMVAScore, QCDscale_Dn*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
 
-      theHistograms->fill("SYS_BDTScore_L1Prefiring_Up"  , "SYS_BDTScore_L1Prefiring_Up"   , binEdges,  VZGMVAScore, (theSampleInfo.L1PrefiringWeightUp()/theSampleInfo.L1PrefiringWeight())*theWeight*rewgt*PhEffSF*LumiSF);
-      theHistograms->fill("SYS_BDTScore_L1Prefiring_Down", "SYS_BDTScore_L1Prefiring_Down" , binEdges,  VZGMVAScore, (theSampleInfo.L1PrefiringWeightDn()/theSampleInfo.L1PrefiringWeight())*theWeight*rewgt*PhEffSF*LumiSF);
+      theHistograms->fill("SYS_BDTScore_L1Prefiring_Up"  , "SYS_BDTScore_L1Prefiring_Up"   , binEdges,  VZGMVAScore, (theSampleInfo.L1PrefiringWeightUp()/theSampleInfo.L1PrefiringWeight())*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+      theHistograms->fill("SYS_BDTScore_L1Prefiring_Down", "SYS_BDTScore_L1Prefiring_Down" , binEdges,  VZGMVAScore, (theSampleInfo.L1PrefiringWeightDn()/theSampleInfo.L1PrefiringWeight())*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
       
-      theHistograms->fill("SYS_BDTScore_puWeight_Up"  , "SYS_BDTScore_puWeight_Up"   , binEdges,  VZGMVAScore, (theSampleInfo.puWeightUncUp()/theSampleInfo.puWeight())*theWeight*rewgt*PhEffSF*LumiSF);
-      theHistograms->fill("SYS_BDTScore_puWeight_Down", "SYS_BDTScore_puWeight_Down" , binEdges,  VZGMVAScore, (theSampleInfo.puWeightUncDn()/theSampleInfo.puWeight())*theWeight*rewgt*PhEffSF*LumiSF);
+      theHistograms->fill("SYS_BDTScore_puWeight_Up"  , "SYS_BDTScore_puWeight_Up"   , binEdges,  VZGMVAScore, (theSampleInfo.puWeightUncUp()/theSampleInfo.puWeight())*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+      theHistograms->fill("SYS_BDTScore_puWeight_Down", "SYS_BDTScore_puWeight_Down" , binEdges,  VZGMVAScore, (theSampleInfo.puWeightUncDn()/theSampleInfo.puWeight())*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
     
-      if(VZGMVAScore_JERup <= 1. && VZGMVAScore_JERup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JER_Up"  , "SYS_BDTScore_JER_Up"   , binEdges,  VZGMVAScore_JERup, theWeight*rewgt*PhEffSF*LumiSF);
-      if(VZGMVAScore_JERdn <= 1. && VZGMVAScore_JERdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JER_Down", "SYS_BDTScore_JER_Down" , binEdges,  VZGMVAScore_JERdn, theWeight*rewgt*PhEffSF*LumiSF);
-      if(VZGMVAScore_JESup <= 1. && VZGMVAScore_JESup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JES_Up"  , "SYS_BDTScore_JES_Up"   , binEdges,  VZGMVAScore_JESup, theWeight*rewgt*PhEffSF*LumiSF);
-      if(VZGMVAScore_JESdn <= 1. && VZGMVAScore_JESdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JES_Down", "SYS_BDTScore_JES_Down" , binEdges,  VZGMVAScore_JESdn, theWeight*rewgt*PhEffSF*LumiSF);
+      if(VZGMVAScore_JERup <= 1. && VZGMVAScore_JERup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JER_Up"  , "SYS_BDTScore_JER_Up"   , binEdges,  VZGMVAScore_JERup, theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+      if(VZGMVAScore_JERdn <= 1. && VZGMVAScore_JERdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JER_Down", "SYS_BDTScore_JER_Down" , binEdges,  VZGMVAScore_JERdn, theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+      if(VZGMVAScore_JESup <= 1. && VZGMVAScore_JESup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JES_Up"  , "SYS_BDTScore_JES_Up"   , binEdges,  VZGMVAScore_JESup, theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+      if(VZGMVAScore_JESdn <= 1. && VZGMVAScore_JESdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_JES_Down", "SYS_BDTScore_JES_Down" , binEdges,  VZGMVAScore_JESdn, theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
 
-      if(VZGMVAScore_DFSup <= 1. && VZGMVAScore_DFSup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_DeepFlavorQGModeling_Down", "SYS_BDTScore_DeepFlavorQGModeling_Down" , binEdges,  VZGMVAScore_DFSdn, theWeight*rewgt*PhEffSF*LumiSF);
-      if(VZGMVAScore_DFSdn <= 1. && VZGMVAScore_DFSdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_DeepFlavorQGModeling_Down", "SYS_BDTScore_DeepFlavorQGModeling_Down" , binEdges,  VZGMVAScore_DFSdn, theWeight*rewgt*PhEffSF*LumiSF);
+      if(VZGMVAScore_DFSup <= 1. && VZGMVAScore_DFSup >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_DeepFlavorQGModeling_Down", "SYS_BDTScore_DeepFlavorQGModeling_Down" , binEdges,  VZGMVAScore_DFSdn, theWeight*rewgt*qgTagSF_up*PhEffSF*LumiSF);
+      if(VZGMVAScore_DFSdn <= 1. && VZGMVAScore_DFSdn >= binEdges.at(0)) theHistograms->fill("SYS_BDTScore_DeepFlavorQGModeling_Down", "SYS_BDTScore_DeepFlavorQGModeling_Down" , binEdges,  VZGMVAScore_DFSdn, theWeight*rewgt*qgTagSF_dn*PhEffSF*LumiSF);
 
     }
   }
   //_____________________________________________END_OF_BLOCK_FOR_SYS_CRZX_HISTOS_____________________________________//
-  
+  */
   //if (VBTopo ==0) return; //WRONG
     //  std::cout<<"passing cut 1 in printHistos"<<endl;  
 
