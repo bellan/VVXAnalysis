@@ -2835,14 +2835,14 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     double qgTagSF    = J0qvgSF.central*J1qvgSF.central;
     double qgTagSF_up = J0qvgSF.up     *J1qvgSF.up     ;
     double qgTagSF_dn = J0qvgSF.down   *J1qvgSF.down   ;    
-    
+    /*
     std::cout<<"Abs flavor ="        <<absFlavor <<endl;
     std::cout<<"Tot qvg SF central ="<<qgTagSF   <<endl;
     std::cout<<"Tot qvg SF up ="     <<qgTagSF_up<<endl;
     std::cout<<"Tot qvg SF down ="   <<qgTagSF_dn<<endl;
 
     std::cout<<"-------------------------------------"<<endl;
-      
+    */
     //---end of block for qvg sf attempt---//
 
     
