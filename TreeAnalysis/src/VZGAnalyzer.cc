@@ -91,11 +91,8 @@ double dR_jetRatio_cut = 0.4;
 double dR_FJRatio_cut = 0.8;
 int cutsToApply=4;
 
-TString BDTmodelPath = "bdtModels/VLRetunedAlt_noNegWgt_BDT_Xgrad_d3_N030.weights.xml";//"bdtModels/VLRetuned_noNegWgt_BDT_Xgrad_d3_N030.weights.xml";//"bdtModels/VL_noNeg_BDT_Xgrad_d3_N030.weights.xml";
-  //reader->BookMVA("BDT", "bdtModels/VL_noNeg_BDT_Xgrad_d3_N030.weights.xml"); //tested on 2024 Dec 14-25th
-  //reader->BookMVA("BDT", "/eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/bdtModels/VL_full_BDT_Xgrad_d3_N030.weights.xml"); //tested on 2024 Dec 15-16th
-  //reader->BookMVA("BDT", "bdtModels/VLTuned_noNegWgt_BDT_Xgrad_d3_N030.weights.xml"); //tested from 2024 Dec 29th
-  //reader->BookMVA("BDT", "bdtModels/kinTuned_noNegWgt_BDT_Xgrad_d3_N030.weights.xml"); 
+TString BDTmodelPath = "bdtModels/postQvG_VLRetunedAlt__BDT_Xgrad_d3_N030.weights.xml";
+//TString BDTmodelPath = "bdtModels/VLRetunedAlt_noNegWgt_BDT_Xgrad_d3_N030.weights.xml"; //used for PhDthesis
 
 double CRZOFFMassCut = 80;
 double CRZONMassCut  = 85;
@@ -104,7 +101,7 @@ double CRZsupMassCut = 100;
 
 static TMVA::Reader* reader = nullptr;
 
-static float feat_dRLG, feat_recoVMass, feat_mllG, feat_J1PG, feat_PhMVAId, feat_J1Girth, feat_ptJ1, feat_J0Puds, feat_ptjj, feat_HT, feat_J0Girth, feat_deltaR_J0Gamma, feat_deltaR_J1Gamma, feat_ptGamma, feat_dPhiZG;
+static float feat_dRLG, feat_recoVMass, feat_mllG, feat_PhMVAId, feat_J1Girth, feat_ptJ1, feat_ptjj, feat_HT, feat_J0Girth, feat_deltaR_J0Gamma, feat_deltaR_J1Gamma, feat_ptGamma, feat_dPhiZG, feat_j0_btagDeepFlavQG, feat_j1_btagDeepFlavQG;//, feat_J0Puds, feat_J1PG;
 
 std::shared_ptr<correction::CorrectionSet> cset;
 
@@ -285,10 +282,14 @@ void VZGAnalyzer::begin(){
   reader->AddVariable("PhMVAId",  &feat_PhMVAId);
   reader->AddVariable("J0Girth",  &feat_J0Girth);
   reader->AddVariable("J1Girth",  &feat_J1Girth);
-  reader->AddVariable("J1DeepProb_g",  &feat_J1PG);
-  reader->AddVariable("J0DeepProb_uds",  &feat_J0Puds);
+  //  reader->AddVariable("J1DeepProb_g",  &feat_J1PG);
+  //  reader->AddVariable("J0DeepProb_uds",  &feat_J0Puds);
   reader->AddVariable("HT",&feat_HT);
 
+  //redefined features
+  reader->AddVariable("J0DeepProb_uds/(J0DeepProb_uds + J0DeepProb_g)",  &feat_j0_btagDeepFlavQG);
+  reader->AddVariable("J1DeepProb_uds/(J1DeepProb_uds + J1DeepProb_g)",  &feat_j1_btagDeepFlavQG);
+  
   reader->BookMVA("BDT", BDTmodelPath);
 
   //  std::shared_ptr<correction::CorrectionSet> DFcorrSet;
@@ -648,18 +649,20 @@ double VZGAnalyzer::VZGMVAScoreEval(phys::Boson<phys::Jet> recoV, phys::Jet reco
     nearestChLeptToPhoton={mostEnergeticPhoton, Z->daughter(0)};
   else if (fabs(physmath::deltaR(Z->daughter(0), mostEnergeticPhoton))>fabs(physmath::deltaR(Z->daughter(1), mostEnergeticPhoton)) )
     nearestChLeptToPhoton={mostEnergeticPhoton, Z->daughter(1)};
-
-  double DFqJ0 = recoV.daughter(0).deepFlavour().probuds;
-  double DFgJ1 = recoV.daughter(1).deepFlavour().probg;
+  
+  double rawDFqJ0 = recoV.daughter(0).deepFlavour().probuds;
+  double rawDFqJ1 = recoV.daughter(1).deepFlavour().probuds;
+  double rawDFgJ0 = recoV.daughter(0).deepFlavour().probg;
+  double rawDFgJ1 = recoV.daughter(1).deepFlavour().probg; 
   
   feat_dRLG = fabs(physmath::deltaR(nearestChLeptToPhoton.first, nearestChLeptToPhoton.second));
   feat_recoVMass = recoV.mass();
   feat_mllG=  llPh.M();
-  feat_J1PG = DFgJ1;
+  //feat_J1PG = DFgJ1;
   feat_PhMVAId=selectedphotons.at(0).MVAvalue();
   feat_J1Girth=recoV.daughter(1).girth();
   feat_ptJ1 =  recoV.daughter(1).pt();
-  feat_J0Puds = DFqJ0;
+  //feat_J0Puds = DFqJ0;
   feat_ptjj=  recoV.pt();
   feat_HT   =  lljjPh.Pt();    
   feat_J0Girth=recoV.daughter(0).girth();
@@ -668,6 +671,10 @@ double VZGAnalyzer::VZGMVAScoreEval(phys::Boson<phys::Jet> recoV, phys::Jet reco
   feat_ptGamma=selectedphotons.at(0).pt();
   feat_dPhiZG=fabs(physmath::deltaPhi(Z->phi(),selectedphotons.at(0).phi()) );
 
+  //refedined features
+  feat_j0_btagDeepFlavQG = rawDFqJ0 / ( rawDFqJ0 + rawDFgJ0 );
+  feat_j1_btagDeepFlavQG = rawDFqJ1 / ( rawDFqJ1 + rawDFgJ1 );
+  
   if(isForSysUpDn>0){
     //    feat_ptJ0=ptj0Scaled_JUncUp;
     feat_ptJ1=ptj1Scaled_JUncUp;
