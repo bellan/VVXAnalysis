@@ -1814,7 +1814,6 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   if( (isSigSample && !IN_GENsignalDef() ) || !theSampleInfo.isMC()) return;
   //std::cout<<"0: entering fillFeatTree "<<std::endl;
 
-
   int nbOfCutsPassed=0;
   
   int VBTopo = 0;
@@ -1849,6 +1848,58 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   if (!cut(2, recoV, recoFJ, selectedphotons, VBTopo, temporaryMVAScore)) return;
 
   //  std::cout<<"3: passing cuts "<<std::endl;
+
+    //---Block for ZX rwgt---//
+  std::string year_str = std::to_string(year);
+  double ZXrwgt=1.;
+  if(theSampleInfo.isMC() && isDYSample && genVBHelper_.ZtoChLep().size()>0){    
+    for(int i = 0; i<DYrewgtBinEdges.size()-1 && ZXrwgt==1.; i++){
+      if( genVBHelper_.ZtoChLep()[0].pt() > DYrewgtBinEdges[i] && genVBHelper_.ZtoChLep()[0].pt() < DYrewgtBinEdges[i+1]){
+	if(year==2016){
+	  if(year_str.find("preVFP")!=std::string::npos)      ZXrwgt=DYreweights_2016preVFP[i];
+	  else ZXrwgt=DYreweights_2016postVFP[i];
+	}
+	if(year==2017) ZXrwgt=DYreweights_2017[i];
+	if(year==2018) ZXrwgt=DYreweights_2018[i];
+      }
+    }
+  }
+
+  if(theSampleInfo.isMC() && isZGSample && genVBHelper_.ZtoChLep().size()>0){
+    for(int i = 0; i<ZGrewgtBinEdges.size()-1 && ZXrwgt==1.; i++){
+      if( genVBHelper_.ZtoChLep()[0].pt() > ZGrewgtBinEdges[i] && genVBHelper_.ZtoChLep()[0].pt() < ZGrewgtBinEdges[i+1]){
+	if(year==2016){
+	  if(year_str.find("preVFP")!=std::string::npos)      ZXrwgt=ZGreweights_2016preVFP[i];
+	  else ZXrwgt=ZGreweights_2016postVFP[i];
+	}
+	if(year==2017) ZXrwgt=ZGreweights_2017[i];
+	if(year==2018) ZXrwgt=ZGreweights_2018[i];
+      }
+    }
+  }
+  //---end of ZX rwgt---//
+
+  
+  //---miniblock for qvg sf attempt---//
+  double J0qvg= recoV.daughter(0).deepFlavour().probuds/(recoV.daughter(0).deepFlavour().probuds + recoV.daughter(0).deepFlavour().probg);
+  double J1qvg= recoV.daughter(1).deepFlavour().probuds/(recoV.daughter(1).deepFlavour().probuds + recoV.daughter(1).deepFlavour().probg);
+  int absFlavor=0;
+      
+  if(isSigSample) absFlavor=1;
+  else if(isDYSample) absFlavor=21;
+  else if(isZGSample) absFlavor=0;
+  else absFlavor=5;
+      
+  QGScaleFactor J0qvgSF = getQGSF(theSampleInfo.isMC(), J0qvg, recoV.daughter(0).eta(), recoV.daughter(0).pt(), absFlavor, "M");
+  QGScaleFactor J1qvgSF = getQGSF(theSampleInfo.isMC(), J1qvg, recoV.daughter(1).eta(), recoV.daughter(1).pt(), absFlavor, "M");
+  /*  
+  double J0qgTagSF    = J0qvgSF.central;
+  double J1qgTagSF    = J1qvgSF.central;
+  //  double qgTagSF_up = J0qvgSF.up     *J1qvgSF.up     ;
+  //  double qgTagSF_dn = J0qvgSF.down   *J1qvgSF.down   ;    
+  */
+  //---end of block for qvg sf attempt---//
+
 
   TLorentzVector llPh = Z->daughter(0).p4()+Z->daughter(1).p4()+selectedphotons.at(0).p4();
   TLorentzVector l0Ph = Z->daughter(0).p4()+selectedphotons.at(0).p4();
@@ -1957,6 +2008,9 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
 
   //  std::cout<<"----------------------------------------"<<std::endl;    
   list.f_weight = theWeight;
+  list.f_J0qvgSF = J0qvgSF.central;
+  list.f_J1qvgSF = J1qvgSF.central;
+  list.f_ZXrw = ZXrwgt;
   
   //  std::cout<<"weight: "<<theWeight<<std::endl;//  theHistograms->fill("the Weight", "the Weight", 50, -5, 5, theWeight, 1);
 
