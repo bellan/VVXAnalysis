@@ -12,8 +12,9 @@ from math import sqrt
 from ctypes import c_double
 import ROOT
 from utils23 import makedirs_ok
-from plotUtils23 import retrieve_bin_edges, InputDir, TFileContext
-from plotUtils23 import integral_and_error, addIfExisting
+from plotUtils23 import retrieve_bin_edges, InputDir, TFileContext, \
+    integral_and_error, addIfExisting, fix_low_bins
+from collections import defaultdict
 from subprocess import call
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
@@ -24,6 +25,7 @@ import re
 
 
 CONFIGS_PATH = 'combine'
+MIN_BIN_CONTENT = 1e-7
 
 
 # Utility functions
@@ -50,7 +52,7 @@ def isVarSystematic(variable):
 # schema: <year>/<region>.root -> <variable>/<sample>_CMS_<syst>(Up|Down)
 # example: 2016/SR4P.root      -> mZZ/ZZTo4l_CMS_QCDScale-muRUp
 
-def write_fake_photons(fFakePh, data_obs, variables, year, f_nonpro_list=[]):
+def write_fake_photons(fFakePh, data_obs, variables, year, f_nonpro_list=[], fixed_bins={}):
     '''
     - <TFile> fFakePh
     - <TFile> data_obs
@@ -72,6 +74,7 @@ def write_fake_photons(fFakePh, data_obs, variables, year, f_nonpro_list=[]):
             h = data_obs.Get(reweight)
             if(h):
                 h.SetName(variable)
+                fixed_bins[var_name+'/'+h.GetName()] += fix_low_bins(h, v=MIN_BIN_CONTENT)
                 h.Write()
             else:
                 logging.warning('No failReweight histogram in data for variable %s --> could not retrieve %s', var_name, reweight)
@@ -99,6 +102,8 @@ def write_fake_photons(fFakePh, data_obs, variables, year, f_nonpro_list=[]):
                 # Normalize the up and dn histograms to the central; we only want the shape
                 h_up.Scale(v_ce/v_up)
                 h_dn.Scale(v_ce/v_dn)
+                fixed_bins[var_name+'/'+h_up.GetName()] += fix_low_bins(h_up, v=MIN_BIN_CONTENT)
+                fixed_bins[var_name+'/'+h_dn.GetName()] += fix_low_bins(h_dn, v=MIN_BIN_CONTENT)
 
                 h_up.Write()
                 h_dn.Write()
@@ -123,6 +128,8 @@ def write_fake_photons(fFakePh, data_obs, variables, year, f_nonpro_list=[]):
                 # Normalize the up and down **TO THE INTEGRAL IN SR4P_1P**
                 hCR_up.Scale(v_ce/vCR_up)
                 hCR_dn.Scale(v_ce/vCR_dn)
+                fixed_bins[var_name+'/'+hCR_up.GetName()] += fix_low_bins(hCR_up, v=MIN_BIN_CONTENT)
+                fixed_bins[var_name+'/'+hCR_dn.GetName()] += fix_low_bins(hCR_dn, v=MIN_BIN_CONTENT)
 
                 hCR_up.Write()
                 hCR_dn.Write()
@@ -154,6 +161,7 @@ def main(args):
     # Setup
     ok_retrieved  = []
     not_retrieved = []
+    fixed_bins = defaultdict(lambda : 0.)
 
     # Start
     path_out = os.path.join(args.outputdir, args.year)
@@ -212,7 +220,10 @@ def main(args):
                  TFileContext(ggTo4m_fname  , 'READ') as fgg4m,   \
                  TFileContext(ZZTo4l_fname  , 'READ') as fZZ4l:
                 variables_data = get_TH1keys_from_file(files_in['data_obs'])
-                write_fake_photons(fFakePh, data_obs=files_in['data_obs'], variables=variables_data, year=args.year, f_nonpro_list=[fZZ4l, fgg4e, fgg2e2m, fgg4m])
+                write_fake_photons(fFakePh, data_obs=files_in['data_obs'],
+                                   variables=variables_data, year=args.year,
+                                   f_nonpro_list=[fZZ4l, fgg4e, fgg2e2m, fgg4m],
+                                   fixed_bins=fixed_bins)
 
         files_in['fake_photons'] = ROOT.TFile(fake_photons_fname)
 
@@ -290,6 +301,8 @@ def main(args):
                         h.SetName(out_name %(sample))
                         kfactor = files_info_region.get(sample, {}).get('kfactor', 1.)
                         h.Scale(kfactor)
+                        fixed_bins[var_name+'/'+h.GetName()] += fix_low_bins(h, v=MIN_BIN_CONTENT)
+
                         h.Write()
                         ok_retrieved.append( {'file':file_in.GetName(), 'variable':variable})
                         if(syst == 'central'):  # Save bin edges in case we need it
@@ -340,6 +353,13 @@ def main(args):
             if(len(problems)/2 < 10):
                 msg += ': '+' '.join({f.split('/')[-1] for f in problems})
             logging.warning(msg)
+
+    if(args.verbosity >= 1):
+        logging.warning('Fixed %d bins in %d histograms (full info in fixed_bins.json)', sum(v for k,v in fixed_bins.items()), len(fixed_bins))
+        fixed_bins_sorted = {k:fixed_bins[k] for k in sorted(fixed_bins.keys())}
+        import json
+        with open('fixed_bins.json', 'w') as f:
+            json.dump(fixed_bins_sorted, f, indent=2)
 
     logging.info('Retrieved and wrote {:d} histograms. {:d} were missing. Total: {:d}'.format(len(ok_retrieved), len(not_retrieved), len(ok_retrieved)+len(not_retrieved)))
     return 0
