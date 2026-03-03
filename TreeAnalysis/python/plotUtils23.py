@@ -777,3 +777,21 @@ def clamp_expnd_r(lo, hi, y_scale=0.1, min_lo=0., max_lo=0.9, min_hi=1.1, max_hi
 def debugTGA(g):
     for i in range(g.GetN()):
         print('%5.3g [%.3g, %.3g]' %(g.GetPointX(i), g.GetErrorXlow(i), g.GetErrorXhigh(i)))
+
+
+def fix_neg_bins(h):
+    return fix_low_bins(h, 0, name)
+
+def fix_low_bins(h, v=1e-7):
+    'Set bins <= 0 to some value'
+    if(h.GetDimension() > 1):
+        raise NotImplementedError('Cannot handle %s' %(type(h)))
+
+    fixed_bins = 0
+    for b in range(1, h.GetXaxis().GetNbins()+1):
+        c = h.GetBinContent(b)
+        if(c < v):
+            logging.debug('%s bin %d (%.3g) set to %.3g', h.GetName(), b, c, v)
+            h.SetBinContent(b, v)
+            fixed_bins += 1
+    return fixed_bins
