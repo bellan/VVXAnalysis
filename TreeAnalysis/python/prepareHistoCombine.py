@@ -22,10 +22,14 @@ from samplesByRegion import getSamplesByRegion
 from produceDataCard_VVGamma import get_shape_uncorrelated, get_shape_correlyear, get_shape_groups, get_sample_group, get_strategy_config, getSystType
 from utils23 import lumi_dict
 import re
+from array import array
 
 
 CONFIGS_PATH = 'combine'
 MIN_BIN_CONTENT = 1e-7
+BINS = {
+    'mZZG': array('d', [100,200,300,400,500,600,1000])
+}
 
 
 # Utility functions
@@ -262,6 +266,12 @@ def main(args):
                     continue
                 skipIfData = True
                 needSampleGroup = False
+
+                rebin_bins = None
+                if(var_name.startswith('mZZGloose')):
+                    logging.debug('rebinning variable %s', variable)
+                    rebin_bins = BINS['mZZG']
+
                 if(syst == 'central'):
                     skipIfData = False if len(var_split) == 1 else True
                     out_name = '{sample}{prompt}'.format(sample='%s', prompt=prompt)
@@ -301,6 +311,12 @@ def main(args):
                         h.SetName(out_name %(sample))
                         kfactor = files_info_region.get(sample, {}).get('kfactor', 1.)
                         h.Scale(kfactor)
+
+                        # rebin the shape (before we save the xbins for the cases data_obs is empty)
+                        if(rebin_bins is not None):
+                            _name = h.GetName()
+                            h.SetName(_name+'_orig')
+                            h = h.Rebin(len(rebin_bins)-1, _name, rebin_bins)
                         fixed_bins[var_name+'/'+h.GetName()] += fix_low_bins(h, v=MIN_BIN_CONTENT)
 
                         h.Write()
