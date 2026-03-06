@@ -103,11 +103,13 @@ def format_lnN(value, fmt='%f'):
         logging.warning('very large syst: %s', value)
         return '-'
     else:
+        if(up*dn > 0):
+            dn = -dn # fix for cases where weights are applied in the opposite direction
         symmetric = abs(up-dn)/2
         asymmetry = abs(up+dn)/2  # In case of symmetric effect up and dn have opposite sign
         if  (symmetric == 0):
             return '-'
-        elif( up*dn > 0 or asymmetry > LNN_ASYMM_THR ):
+        elif( asymmetry > LNN_ASYMM_THR ):
             return (fmt+'/'+fmt) %(1+dn, 1+up)
         else:
             return fmt %(1 + symmetric)
@@ -396,8 +398,8 @@ def main(args):
             data_syst[sample]['CMS_SMP24014_'+sample+'_norm'] = val
             if  (sample == 'fake_leptons'):
                 logging.info('Using norm uncertainty instead of lepton fake rate uncertainty')
-                data_syst[sample]['CMS_fake_e'] = {'up':1, 'dn':1}
-                data_syst[sample]['CMS_fake_m'] = {'up':1, 'dn':1}
+                data_syst[sample]['CMS_fake_e'] = {'up':0, 'dn':0}
+                data_syst[sample]['CMS_fake_m'] = {'up':0, 'dn':0}
 
     # Set normalization for groups of samples
     for group_name, group_info in config['systematics'].get('norm_group_uncertainty', {}).items():
