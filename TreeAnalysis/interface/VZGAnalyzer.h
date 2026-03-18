@@ -17,6 +17,14 @@
 #include <TString.h>
 #include <TTree.h>
 
+enum class SystType { Nominal, JER, JES };
+
+struct Systematic {
+    SystType type;
+    int direction;
+    std::string source;
+};
+
 class VZGAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZGAnalyzer>{
 
 public:
@@ -94,7 +102,7 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
   virtual bool baselineRequirements();
 
 
-  virtual double VZGMVAScoreEval(phys::Boson<phys::Jet>, phys::Jet , std::vector<phys::Photon> , int, int, int, bool, int);
+  virtual double VZGMVAScoreEval(phys::Boson<phys::Jet>, phys::Jet , std::vector<phys::Photon> , int,Systematic, bool, int);
 
   virtual bool  inSR(phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int, double);
   virtual bool  inCRZOFF( phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int, double);
@@ -119,7 +127,7 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
   virtual Bool_t cut(Int_t, phys::Boson<phys::Jet>,phys::Jet,std::vector<phys::Photon>,int,double&);
 
   //  virtual void Reconstruct(phys::Boson<phys::Jet>*,phys::Jet*,bool*,bool*);
-  int Reconstruct(phys::Boson<phys::Jet>*,phys::Jet*,bool*,bool*,phys::Photon*, bool, int, int);
+  int Reconstruct(phys::Boson<phys::Jet>*,phys::Jet*,bool*,bool*,phys::Photon*, bool, Systematic);
   int ReconstructAlt(phys::Boson<phys::Jet>*,phys::Jet*,bool*,bool*,phys::Photon*, bool, double, double);
   double VHadScore(phys::Boson<phys::Jet>, int , double , double );
   
