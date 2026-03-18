@@ -93,7 +93,7 @@ double dR_jetRatio_cut = 0.4;
 double dR_FJRatio_cut = 0.8;
 int cutsToApply=4;
 
-TString BDTmodelPath = "bdtModels/postQvG_VLRetunedAlt__BDT_Xgrad_d3_N800.weights.xml";
+TString BDTmodelPath = "bdtModels/postQvG_VLRetunedAlt__BDT_Xgrad_d3_N100.weights.xml";
 //TString BDTmodelPath = "bdtModels/VLRetunedAlt_noNegWgt_BDT_Xgrad_d3_N030.weights.xml"; //used for PhDthesis
 
 double CRZOFFMassCut = 80;
