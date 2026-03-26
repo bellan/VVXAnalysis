@@ -140,7 +140,7 @@ QGScaleFactor getQGSF(bool isMC, double qvg_score, double eta, double pt, int ab
 }
 
 static std::vector<Systematic> jetSysts;
-Systematic noJERCsys = {SystType::Nominal, 0, ""};
+Systematic noJERCsys = {SystType::Nominal, 0, "", ""};
 
 std::string systName(Systematic syst){
   if(syst.type==SystType::Nominal || syst.direction==0){
@@ -150,26 +150,28 @@ std::string systName(Systematic syst){
   std::string jercString = (syst.type==SystType::JES) ? "jes"       : "jer" ;
   std::string srcString  = (syst.type==SystType::JES) ? syst.source : ""    ;
   std::string dirString  = (syst.direction>0)         ? "Up"        : "Down";
-
-  return jercString+srcString+"_"+dirString;
+  
+  return jercString+srcString+syst.yearSys+"_"+dirString;
   
 }
 
 using JesFunc = std::function<double(const Jet&)>;
 
 std::map<std::string, JesFunc> jesUncMap = {
-    {"Abs",        [](const Jet& j){ return j.jesUnc().Abs           ; }},
-    {"BBEC1",      [](const Jet& j){ return j.jesUnc().BBEC1         ; }},
-    {"EC2",        [](const Jet& j){ return j.jesUnc().EC2           ; }},
-    {"FlavQCD",    [](const Jet& j){ return j.jesUnc().FlavQCD       ; }},
-    {"HF",         [](const Jet& j){ return j.jesUnc().HF            ; }},
-    {"RelBal",     [](const Jet& j){ return j.jesUnc().RelBal        ; }},
-    {"RelSample",  [](const Jet& j){ return j.jesUnc().RelSample_year; }}
-};
+    {"Abs",             [](const Jet& j){ return j.jesUnc().Abs           ; }},
+    {"BBEC1",           [](const Jet& j){ return j.jesUnc().BBEC1         ; }},
+    {"EC2",             [](const Jet& j){ return j.jesUnc().EC2           ; }},
+    {"FlavQCD",         [](const Jet& j){ return j.jesUnc().FlavQCD       ; }},
+    {"HF",              [](const Jet& j){ return j.jesUnc().HF            ; }},
+    {"RelBal",          [](const Jet& j){ return j.jesUnc().RelBal        ; }},
 
-double getJESUncertainty(const Jet& jet, const std::string& source) {
-    return jesUncMap.at(source)(jet);
-}
+    {"AbsYear",         [](const Jet& j){ return j.jesUnc().Abs_year      ; }},
+    {"BBEC1Year",       [](const Jet& j){ return j.jesUnc().BBEC1_year    ; }},
+    {"EC2Year",         [](const Jet& j){ return j.jesUnc().EC2_year      ; }},
+    {"HFYear",          [](const Jet& j){ return j.jesUnc().HF_year       ; }},
+    {"RelSampleYear",   [](const Jet& j){ return j.jesUnc().RelSample_year; }}
+
+};
 
 void ScaleP4(TLorentzVector& p4, double ptScaled, double ptCentral){
   p4.Pz()*ptScaled/ptCentral;
@@ -400,20 +402,36 @@ void VZGAnalyzer::begin(){
 
   
   if (jetSysts.empty()) {
-    jetSysts.push_back({SystType::Nominal, 0, ""});
-    jetSysts.push_back({SystType::JER, +1, ""});
-    jetSysts.push_back({SystType::JER, -1, ""});
+    jetSysts.push_back({SystType::Nominal, 0, "",""});
+    jetSysts.push_back({SystType::JER, +1, "",""});
+    jetSysts.push_back({SystType::JER, -1, "",""});
 
-    std::vector<std::string> jesSources = {"Abs", "BBEC1", "EC2", "FlavQCD", "HF", "RelBal", "RelSample"};
+    std::vector<std::string> jesSourcesRun2   = {"Abs", "BBEC1", "EC2", "FlavQCD", "HF", "RelBal"};
 
-    for (const auto& jesSrc : jesSources) {
-      jetSysts.push_back({SystType::JES, +1, jesSrc});
-      jetSysts.push_back({SystType::JES, -1, jesSrc});
+    for (const auto& jesSrc : jesSourcesRun2) {
+      jetSysts.push_back({SystType::JES, +1, jesSrc, ""});
+      jetSysts.push_back({SystType::JES, -1, jesSrc, ""});
+    }
+
+    std::vector<std::string> jesSourcesByYear = {"AbsYear", "BBEC1Year", "EC2Year", "HFYear", "RelSampleYear"};
+
+    std::vector<std::string> yearStrings = {"2016", "2017", "2018"};
+    
+    for (const auto& jesSrcPerYear : jesSourcesByYear) {
+      for (const auto& ys : yearStrings) {
+	jetSysts.push_back({SystType::JES, +1, jesSrcPerYear, ys});
+	jetSysts.push_back({SystType::JES, -1, jesSrcPerYear, ys});
+      }
+
     }
   }
   
-  
   return;
+}
+
+double VZGAnalyzer::getJESUncertainty(const Jet& jet, const std::string& source, const std::string& yearUnc) {
+  if (yearUnc!="" && yearUnc!=std::to_string(year) )    return 0.;
+  return jesUncMap.at(source)(jet);
 }
 
 double VZGAnalyzer::getPhotonEffSF_MVA(const phys::Photon& ph, Photon::MVAwp wp) const{
@@ -590,10 +608,10 @@ double VZGAnalyzer::VZGMVAScoreEval(phys::Boson<phys::Jet> recoV, phys::Jet reco
     ptj0Scaled_JUncDn=recoV.daughter(0).ptJerDn();
     ptj1Scaled_JUncDn=recoV.daughter(1).ptJerDn();
   }else if(jetSystApplied.type == SystType::JES){
-    ptj0Scaled_JUncUp=recoV.daughter(0).pt()*(1.+getJESUncertainty(recoV.daughter(0), jetSystApplied.source) ); //recoV.daughter(0).jesUnc().Total );
-    ptj1Scaled_JUncUp=recoV.daughter(1).pt()*(1.+getJESUncertainty(recoV.daughter(1), jetSystApplied.source) ); //recoV.daughter(1).jesUnc().Total );
-    ptj0Scaled_JUncDn=recoV.daughter(0).pt()*(1.-getJESUncertainty(recoV.daughter(0), jetSystApplied.source) ); //recoV.daughter(0).jesUnc().Total );
-    ptj1Scaled_JUncDn=recoV.daughter(1).pt()*(1.-getJESUncertainty(recoV.daughter(1), jetSystApplied.source) ); //recoV.daughter(1).jesUnc().Total );
+    ptj0Scaled_JUncUp=recoV.daughter(0).pt()*(1.+getJESUncertainty(recoV.daughter(0), jetSystApplied.source, jetSystApplied.yearSys) ); //recoV.daughter(0).jesUnc().Total );
+    ptj1Scaled_JUncUp=recoV.daughter(1).pt()*(1.+getJESUncertainty(recoV.daughter(1), jetSystApplied.source, jetSystApplied.yearSys) ); //recoV.daughter(1).jesUnc().Total );
+    ptj0Scaled_JUncDn=recoV.daughter(0).pt()*(1.-getJESUncertainty(recoV.daughter(0), jetSystApplied.source, jetSystApplied.yearSys) ); //recoV.daughter(0).jesUnc().Total );
+    ptj1Scaled_JUncDn=recoV.daughter(1).pt()*(1.-getJESUncertainty(recoV.daughter(1), jetSystApplied.source, jetSystApplied.yearSys) ); //recoV.daughter(1).jesUnc().Total );
   }
   if(jetSystApplied.direction<0){
     if(ptj0Scaled_JUncDn < ptj1Scaled_JUncDn) std::swap (ptj0Scaled_JUncDn,ptj1Scaled_JUncDn);
@@ -2334,7 +2352,7 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
       selectedJets.push_back(jet);
     }else if(jetSystApplied.type==SystType::JER && jetSystApplied.direction<0 && KinematicsOKafterSys(jet,jet.ptJerDn(),ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID()){
       selectedJets.push_back(jet);
-    }else if(jetSystApplied.type==SystType::JES && KinematicsOKafterSys(jet,jet.pt()*(1.+jetSystApplied.direction*getJESUncertainty(jet, jetSystApplied.source) ),ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID()){
+    }else if(jetSystApplied.type==SystType::JES && KinematicsOKafterSys(jet,jet.pt()*(1.+jetSystApplied.direction*getJESUncertainty(jet, jetSystApplied.source, jetSystApplied.yearSys) ),ptcut,etacut) && fabs(physmath::deltaR(jet,*gamma))> dR_jetRatio_cut && jet.passLooseJetID()){
       selectedJets.push_back(jet);
     }
     
@@ -2397,8 +2415,8 @@ int VZGAnalyzer::Reconstruct(phys::Boson<phys::Jet> *V_JJCandidate, phys::Jet *V
 	    }
 	  }
 	}else if(jetSystApplied.type==SystType::JES){
-	  ptj0Scaled_JES=DiJetsCand[i].daughter(0).pt()*(1.+jetSystApplied.direction*getJESUncertainty(DiJetsCand[i].daughter(0), jetSystApplied.source) );// (DiJetsCand[i].daughter(0).jesUnc().Total));    
-	  ptj1Scaled_JES=DiJetsCand[i].daughter(1).pt()*(1.+jetSystApplied.direction*getJESUncertainty(DiJetsCand[i].daughter(1), jetSystApplied.source) );// (DiJetsCand[i].daughter(1).jesUnc().Total));
+	  ptj0Scaled_JES=DiJetsCand[i].daughter(0).pt()*(1.+jetSystApplied.direction*getJESUncertainty(DiJetsCand[i].daughter(0), jetSystApplied.source, jetSystApplied.yearSys) );// (DiJetsCand[i].daughter(0).jesUnc().Total));    
+	  ptj1Scaled_JES=DiJetsCand[i].daughter(1).pt()*(1.+jetSystApplied.direction*getJESUncertainty(DiJetsCand[i].daughter(1), jetSystApplied.source, jetSystApplied.yearSys) );// (DiJetsCand[i].daughter(1).jesUnc().Total));
 	  TLorentzVector JES_PJ0_scaling = DiJetsCand[i].daughter(0).p4();
 	  TLorentzVector JES_PJ1_scaling = DiJetsCand[i].daughter(1).p4();
 	  ScaleP4(JES_PJ0_scaling, ptj0Scaled_JES, DiJetsCand[i].daughter(0).pt());

@@ -23,6 +23,7 @@ struct Systematic {
     SystType type;
     int direction;
     std::string source;
+    std::string yearSys;
 };
 
 class VZGAnalyzer: public EventAnalyzer, RegistrableAnalysis<VZGAnalyzer>{
@@ -71,6 +72,7 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
   //virtual ~VZGAnalyzer(){}
 
   void begin();
+  double getJESUncertainty(const phys::Jet&, const std::string&, const std::string&);
   double getPhotonEffSF_MVA(   const phys::Photon&, phys::Photon::MVAwp) const;
   double getPhotonEffSFUnc_MVA(const phys::Photon&, phys::Photon::MVAwp) const;
   static std::unique_ptr<TH2F> getHistfromFile(const char* fname, const char* hname="PhFR", const char* info="");
