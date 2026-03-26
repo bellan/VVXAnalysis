@@ -2736,9 +2736,6 @@ void VZGAnalyzer::PhotonVLSelection(std::vector<phys::Photon> *phot, int cutBase
     }
   }
 
-    for (auto p : *photons){
-  }
-
   if(tightGamma.size()>0){
     std::stable_sort(tightGamma.begin(), tightGamma.end(), phys::EComparator());
     phot->push_back(tightGamma.at(0));
