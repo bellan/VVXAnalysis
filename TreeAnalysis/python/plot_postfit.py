@@ -18,6 +18,7 @@ import samplesByRegion
 
 _varinfo = {
     'mZZG': {'xtitle': 'm_{4l#gamma} [GeV]', 'bins': {
+        6 : array('d', [100., 200., 300., 400., 500., 600., 1000.]),
         7 : array('d', [0., 100., 200., 300., 400., 500., 600., 1000.]),
         10: array('d', range(0, 1100, 100))}
     },
