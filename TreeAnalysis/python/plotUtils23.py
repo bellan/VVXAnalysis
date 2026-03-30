@@ -341,10 +341,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
                   "\n############## "+    plot     +" ##############"
                   "\n###############"+'#'*len(plot)+"###############"))
 
-    leg = ROOT.TLegend(0.32,0.5,0.8,0.88)
-    leg.SetBorderSize(0)
-    leg.SetFillStyle(0)
-
+    leg_info = []
     samples = samplesByRegion.getSamplesByRegion(region, MCSet, predType, special=plotInfo.get('special', False))
 
     stack = ROOT.THStack("stack",plot+"_stack")
@@ -373,7 +370,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
         hfake.SetLineColor(ROOT.kBlack)
         set_overflow_range(hfake, underflow=underflow, overflow=overflow)
         stack.Add(hfake)
-        leg.AddEntry(hfake, NONPROMPT_CAP+" l", "f")
+        leg_info.append([hfake, NONPROMPT_CAP+" l", "f"])
 
     elif predType == 'fakeMC':  # Hack: use MCs in CRs as if they were data
         if(verbosity >= 1):
@@ -396,7 +393,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
                 hfake.Add(hfakeTmp.GetStack().Last())
         hfake.SetLineColor(ROOT.kBlack)
         stack.Add(hfake)
-        leg.AddEntry(hfake, NONPROMPT_CAP+" l (MC)", "f")
+        leg_info.append([hfake, NONPROMPT_CAP+" l (MC)", "f"])
 
     if useFakePhotonsFromData:
         if(verbosity >= 1):
@@ -409,7 +406,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
         hfakePho.SetFillColor(samplesByRegion.fake_photons['color'])
         set_overflow_range(hfakePho, underflow=underflow, overflow=overflow)
         stack.Add(hfakePho)
-        leg.AddEntry(hfakePho, NONPROMPT_CAP+" l #vee #gamma", "f")
+        leg_info.append([hfakePho, NONPROMPT_CAP+" l #vee #gamma", "f"])
 
     totalMC = 0
     totalMCerr = 0
@@ -452,10 +449,10 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
             if(h_nonpro):
                 if(do_prompt_ph):  # Change color only if both prompt and nonprompt are present
                     h_nonpro.SetFillStyle(3002)
-                leg.AddEntry(h_nonpro, sample["name"]+' '+NONPROMPT_LOW, "f")
+                leg_info.append([h_nonpro, sample["name"]+' '+NONPROMPT_LOW, "f"])
                 stack.Add(h_nonpro)
             if(h_prompt):
-                leg.AddEntry(h_prompt, sample["name"]+' prompt', "f")
+                leg_info.append([h_prompt, sample["name"]+' prompt', "f"])
                 stack.Add(h_prompt)
 
         else:
@@ -471,7 +468,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
             set_overflow_range(h, underflow=underflow, overflow=overflow)
 
             h.SetLineColor(ROOT.kBlack)
-            leg.AddEntry(h,sample["name"],"f")
+            leg_info.append([h,sample["name"],"f"])
 
             h.SetFillColor(sample["color"])
             h.SetMarkerStyle(21)
@@ -482,7 +479,7 @@ def GetPredictionsPlot(inputdir, plotInfo, predType, MCSet, forcePositive=False,
     if(verbosity >= 1):
         print("\n Total MC .......................... {0:.2f} +- {1:.2f}".format(totalMC, totalMCerr))
         print("____________________________________")
-    return stack, leg
+    return stack, leg_info
 
 
 def GetClosureStack(region, inputDir, plotInfo, forcePositive=False, verbosity=1):
@@ -498,11 +495,7 @@ def GetClosureStack(region, inputDir, plotInfo, forcePositive=False, verbosity=1
         print(Red("\n###############"+'#'*len(plot)+"###############"
                   "\n############## "+    plot     +" ##############"
                   "\n###############"+'#'*len(plot)+"###############"))
-    leg = ROOT.TLegend(0.6,0.52,0.79,0.87, "", "brNDC")
-    leg.SetTextSize(0.03)
-    leg.SetBorderSize(0)
-    leg.SetFillStyle(0)
-    leg.SetFillColor(0)
+    leg_info = [] #ROOT.TLegend(0.6,0.52,0.79,0.87, "", "brNDC")
 
     stack = ROOT.THStack("stack",plot+"_stack")
     
@@ -576,12 +569,12 @@ def GetClosureStack(region, inputDir, plotInfo, forcePositive=False, verbosity=1
         h.SetMarkerColor(sample["color"])
         h.SetMarkerStyle(21)
         stack.Add(h)
-        leg.AddEntry(h, sample['title'], "f")
+        leg_info.append([h, sample['title'], "f"])
 
     if  (verbosity >= 1):
         print("\n Total background .......................... {0:.2f}".format(totalMC))
         print("____________________________________")
-    return stack, leg
+    return stack, leg_info
 
 
 def SetError(Histo,Region,Set0Error):
@@ -795,3 +788,16 @@ def fix_low_bins(h, v=1e-7):
             h.SetBinContent(b, v)
             fixed_bins += 1
     return fixed_bins
+
+
+DRAW_STYLE = {
+    'data'       : dict(opt='PZ', LineColor=ROOT.kBlack, MarkerStyle=20 , LineWidth=2, MarkerSize=1.1),
+    'ratio'      : dict(opt='PZ', LineColor=ROOT.kBlack, MarkerStyle=20 , LineWidth=2, MarkerSize=1.1),
+    'hMCErr'     : dict(opt='E2', FillStyle=3345, FillColor=ROOT.kGray+3, LineWidth=0, MarkerSize=0  ),
+    'pred_ratio' : dict(opt='E2', FillStyle=3345, FillColor=ROOT.kGray+3, LineWidth=0, MarkerSize=0  ),
+    'ref_ratio_l': dict(lcolor=ROOT.kBlack, lstyle=ROOT.kDotted),
+    'labels': {
+        'data': 'Data',
+        'hMCErr': 'Stat. only',
+    }
+}

@@ -11,7 +11,8 @@ from subprocess import run
 from ctypes import c_double
 
 from utils23 import config_logging, lumi_dict, NONPROMPT_LOW, NONPROMPT_CAP
-from plotUtils23 import TFileContext, addIfExisting, cmsDiCanvas_fromTH1, getTAxisLimits, remove_zeros_tg
+from plotUtils23 import TFileContext, addIfExisting, cmsDiCanvas_fromTH1, getTAxisLimits, remove_zeros_tg \
+    , DRAW_STYLE
 from PersonalInfo import personalFolder
 import samplesByRegion
 
@@ -32,10 +33,6 @@ _samplesinfo = {
     'fake_photons':{'color': samplesByRegion.fake_photons['color'], 'title': NONPROMPT_CAP+' l #vee #gamma'},
     'fake_leptons':{'color': samplesByRegion.fake_leptons['color'], 'title': NONPROMPT_CAP+' l'},
     'rare_bkg'    :{'color': samplesByRegion.rare_4l[0]['color'], 'title': 'Rare backgrounds'}
-}
-
-_style = {
-    'hMCErr': dict(FillStyle=3345, LineWidth=0, FillColor=ROOT.kGray+3, MarkerSize=0)
 }
 
 _SHAPE_LABELS = {'fit_s': 'Post-fit', 'fit_b': 'Bkg. only fit', 'prefit': 'Pre-fit'}
@@ -167,9 +164,6 @@ def plot(hdata, info_list, isTriboson=False, outname='postfit', ext=['png'], ysc
         cmsstyle.UpdatePad(canvas)
     canvas.cd()
 
-    # The legend needs to be created after the canvas, otherwise it won't be drawn
-    legend = mk_legend(info_list)
-
     ### Upper pad ###
     canvas.cd(1)
 
@@ -196,21 +190,22 @@ def plot(hdata, info_list, isTriboson=False, outname='postfit', ext=['png'], ysc
 
     # Error band in the upper canvas
     hMCErr = deepcopy(stack.GetStack().Last())
-    legend.AddEntry(hMCErr, "Stat. only", "f")
 
     # Style data
     hdata.SetLineColor(ROOT.kBlack)
     hdata.SetMarkerStyle(20)
-    hdata.SetMarkerSize(.8)
+    hdata.SetMarkerSize(1)
     hdata.SetBinErrorOption(ROOT.TH1.kPoisson)
     gdata = ROOT.TGraphAsymmErrors(hdata)
     remove_zeros_tg(gdata)
-    legend.AddEntry(gdata, 'data', 'lpe')
+
+    # The legend needs to be created after the canvas, otherwise it won't be drawn
+    legend = mk_legend(info_list, gdata, hMCErr)
 
     # Draw
     stack.Draw('SAMEHIST')
-    cmsstyle.cmsObjectDraw(hMCErr, 'E2', **_style['hMCErr'])
-    gdata.Draw('SAMEP')
+    cmsstyle.cmsObjectDraw(hMCErr, **DRAW_STYLE['hMCErr'])
+    cmsstyle.cmsObjectDraw(gdata , **DRAW_STYLE['data'])
 
     ### Lower pad ###
     canvas.cd(2)
@@ -219,20 +214,15 @@ def plot(hdata, info_list, isTriboson=False, outname='postfit', ext=['png'], ysc
     x_min, x_max = getTAxisLimits(hdata.GetXaxis())
     logging.debug('x_min=%.3g, x_max=%.3g', x_min, x_max)
     ref_line = ROOT.TLine(x_min, 1, x_max, 1)
-    cmsstyle.cmsDrawLine(ref_line, lcolor=ROOT.kBlack, lstyle=ROOT.kDotted)
+    cmsstyle.cmsDrawLine(ref_line, **DRAW_STYLE['ref_ratio_l'])
 
     # Gray area representing MC error
     pred_ratio = stack.GetStack().Last().Clone('pred_ratio')
     pred_ratio.Divide(stack.GetStack().Last())
 
-    # Ratio
-    ratio.SetLineColor(ROOT.kBlack)
-    ratio.SetMarkerStyle(20)
-    ratio.SetMarkerSize(.8)
-
     # Draw
-    cmsstyle.cmsObjectDraw(pred_ratio, 'E2', FillStyle=3345, LineWidth=0, FillColor=ROOT.kGray+3, MarkerSize=0)
-    ratio.Draw('PE')
+    cmsstyle.cmsObjectDraw(pred_ratio, **DRAW_STYLE['pred_ratio'])
+    cmsstyle.cmsObjectDraw(ratio     , **DRAW_STYLE['ratio'])
 
     for e in ext:
         if e == 'root': continue
@@ -411,11 +401,15 @@ def mk_stack(info_list):
     return stack
 
 
-def mk_legend(info_list):
-    ymax = .92
-    ymin = ymax - 0.05*(len(info_list)+2)  # +2: MC stat, data
+def mk_legend(info_list, gdata, hMCerr):
+    ymax = .88
+    ymin = ymax - 0.074*(len(info_list)+2)  # +2: MC stat, data
     # logging.debug('nhist = %d+2 - y = [%.2f, %.2f]', len(info_list), ymin, ymax)
-    legend = cmsstyle.cmsLeg(.55, ymin, .90, ymax, textSize=.03)
+    legend = cmsstyle.cmsLeg(.55, ymin, .90, ymax, textSize=.04)
+
+    legend.AddEntry(gdata, DRAW_STYLE['labels']['data'], 'lpe')
+    legend.AddEntry(hMCerr, DRAW_STYLE['labels']['hMCErr'], "f")
+
     for info in info_list:
         title= info['title']
         hist = info['h']

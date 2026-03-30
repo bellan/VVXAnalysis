@@ -23,7 +23,8 @@ from CrossInfo import*
 from ROOT import TH1F,TCanvas, TLegend
 from plotUtils23 import PlotNotFoundError, InputDir, TFileContext
 from plotUtils23  import GetPredictionsPlot, GetDataPlot, GetClosureStack
-from plotUtils23 import graph_and_ratio, get_range_tga, clamp_expnd_r
+from plotUtils23 import graph_and_ratio, get_range_tga, clamp_expnd_r \
+    , DRAW_STYLE
 from utils23 import lumi_dict
 from variablesInfo import getVariablesInfo
 import cmsstyle
@@ -240,12 +241,12 @@ for Var in variables:
     
     # "Temporary" hack for closure test of photon fake rate
     if False: #'PhFRClosure' in Var and 'PASS' in Var:
-        hMC, leg = GetClosureStack(region, inputDir.get_path(), info, forcePositive=options.forcePositive, verbosity=options.verbosity)
+        hMC, leg_info = GetClosureStack(region, inputDir.get_path(), info, forcePositive=options.forcePositive, verbosity=options.verbosity)
     else:
         if info.get('special'):
             info['name'] = info['stack']['plot']
         try:
-            (hMC, leg) = GetPredictionsPlot(inputDir, info, predType, mcSet, forcePositive=options.forcePositive, verbosity=options.verbosity)
+            hMC, leg_info = GetPredictionsPlot(inputDir, info, predType, mcSet, forcePositive=options.forcePositive, verbosity=options.verbosity)
         except PlotNotFoundError as e:
             if(options.skip_missing):
                 missing_plots.append(e)
@@ -410,28 +411,25 @@ for Var in variables:
 
     # Error band in the upper canvas
     hMCErr = deepcopy(hStackSum)
+    cmsstyle.cmsObjectDraw(hMCErr, **DRAW_STYLE['hMCErr'])
+    leg_info = [[hMCErr, DRAW_STYLE['labels']['hMCErr'], "f"]] + leg_info
 
-    hMCErr.SetFillStyle(3345)
-    hMCErr.SetMarkerStyle(1)
-    hMCErr.SetFillColor(ROOT.kGray+3)
-    hMCErr.Draw("sameE2")
-    leg.AddEntry(hMCErr, "Stat. only", "f")
-    
     if DoData:
         if(info.get('text')):
             texec = ROOT.TExec("texec", 'drawtext("{}");'.format(graphData.GetName()))
             graphData.GetListOfFunctions().Add(texec)
-            graphData.Draw("samep text")
+            graphData.Draw("samepz text")
         else:
-            graphData.Draw("samep")
-        leg.AddEntry(graphData, info.get('data', dict()).get('legend', 'Data'), "lpe")
+            graphData.Draw("samepz")
+            cmsstyle.cmsObjectDraw(graphData, **DRAW_STYLE['data'])
+        leg_info = [[graphData, info.get('data', dict()).get('legend', DRAW_STYLE['labels']['data']), "lpe"]] + leg_info
 
-    x1 = leg.GetX1()
-    x2 = leg.GetX2()
-    shift = 0.78 - (x1+x2)/2
-    leg.SetX1(x1+shift)
-    leg.SetX2(x2+shift)
-    leg.Draw("same")
+    # Legend
+    leg_ymax = .88
+    leg_ymin = leg_ymax - 0.074*(len(leg_info))
+    leg = cmsstyle.cmsLeg(.55, leg_ymin, .90, leg_ymax, textSize=.04)
+    for e_info in leg_info:
+        leg.AddEntry(*e_info)
 
     if(options.draw_label):
         region_text = ROOT.TText()
@@ -451,8 +449,6 @@ for Var in variables:
     pad2.cd()
 
     Line = ROOT.TLine(x_min, 1, x_max, 1)
-    Line.SetLineWidth(2)
-    Line.SetLineStyle(7)
 
     pred_ratio = deepcopy(hStackSum)  # in ratio plot, the gray area representing MC error
     pred_ratio.Divide(hStackSum)
@@ -479,9 +475,9 @@ for Var in variables:
         cmsstyle.UpdatePad(canvas)
         pad2.cd()
 
-    Line.Draw()
-    cmsstyle.cmsObjectDraw(pred_ratio, 'E2', FillStyle=3345, LineWidth=0, FillColor=ROOT.kGray+3, MarkerSize=0)
-    tgaData.Draw("PE0 same")
+    cmsstyle.cmsDrawLine(Line, **DRAW_STYLE['ref_ratio_l'])
+    cmsstyle.cmsObjectDraw(pred_ratio, **DRAW_STYLE['pred_ratio'])
+    cmsstyle.cmsObjectDraw(tgaData   , **DRAW_STYLE['ratio'])
 
     if(not DoData):
         xm, xM = hMC.GetXaxis().GetXmin(), hMC.GetXaxis().GetXmax()
