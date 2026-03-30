@@ -268,7 +268,7 @@ def main(args):
                 needSampleGroup = False
 
                 rebin_bins = None
-                if(var_name.startswith('mZZGloose')):
+                if(var_name.startswith('mZZG')):
                     logging.debug('rebinning variable %s', variable)
                     rebin_bins = BINS['mZZG']
 
