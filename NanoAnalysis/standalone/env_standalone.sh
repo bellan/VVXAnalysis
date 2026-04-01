@@ -17,34 +17,28 @@ init(){
     fi
     cd ${FULLPATH/%env_standalone.sh/}/..
     echo $PWD
-    cd ${CWD}/../$SUBSYSTEM/$PACKAGE
+    cd ${CWD}/$SUBSYSTEM/$PACKAGE
     echo $PWD
 
-    if [ -f standalone/env_standalone.sh ]; then
-	if [ ! -d build ]; then
-	    if [ x${3} = 'xbuild' ]; then
-		mkdir -p build/lib/python/$SUBSYSTEM
-		ln -s ../../../../python build/lib/python/$SUBSYSTEM/$PACKAGE
-		echo "Build directory created, please source again standalone/env_standalone.sh without the build argument."
-	    else
-		echo "Build directory is not yet present, please source again standalone/env_standalone.sh with the build argument."
-	    fi
+    
+    if [ ! -d build ]; then
+	if [ x${3} = 'xbuild' ]; then
+	    mkdir -p build/lib/python/$SUBSYSTEM
+	    ln -s ../../../../python build/lib/python/$SUBSYSTEM/$PACKAGE
+	    echo "Build directory created, please source again standalone/env_standalone.sh without the build argument."
 	else
-	    if [ x${3} = 'xbuild' ]; then
-		echo "Build directory is already present, please source again standalone/env_standalone.sh without the build argument."
-	    else
-		find build/lib/python python -type d -execdir touch '{}/__init__.py' \;
-		export NANOAODTOOLS_BASE=${PWD}
-		export PYTHONPATH=${NANOAODTOOLS_BASE}/build/lib/python:${PYTHONPATH}
-		echo "NanoAODTools: Standalone environment set."
-	    fi
+	    echo "Build directory is not yet present, please source again standalone/env_standalone.sh with the build argument."
 	fi
-	cd $CWD
     else
-	echo "Error in moving to the NanoAODTools directory to setup the standalone environment"
-	cd $CWD
+	if [ x${3} = 'xbuild' ]; then
+	    echo "Build directory is already present, please source again standalone/env_standalone.sh without the build argument."
+	else
+	    find build/lib/python python -type d -execdir touch '{}/__init__.py' \;
+	    export NANOAODTOOLS_BASE=${PWD}
+	    export PYTHONPATH=${NANOAODTOOLS_BASE}/build/lib/python:${PYTHONPATH}
+	    echo $1/$2 ": Standalone environment set."
+	fi
     fi
+    cd $CWD
 }
 
-init ZZAnalysis NanoAnalysis $1
-init PhysicsTools NanoAODTools $1
