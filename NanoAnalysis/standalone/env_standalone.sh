@@ -7,8 +7,6 @@ init(){
     SUBSYSTEM=$1
     PACKAGE=$2
 
-
-    
     CWD=$PWD
     if [ ${BASH_SOURCE[0]:0:1} == "/" ]; then
 	FULLPATH=${BASH_SOURCE[0]}
