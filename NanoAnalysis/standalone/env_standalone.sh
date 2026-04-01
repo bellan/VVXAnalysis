@@ -19,7 +19,6 @@ init(){
     echo $PWD
     cd ${CWD}/$SUBSYSTEM/$PACKAGE
     echo $PWD
-
     
     if [ ! -d build ]; then
 	if [ x${3} = 'xbuild' ]; then
