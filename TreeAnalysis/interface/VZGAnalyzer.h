@@ -43,7 +43,7 @@ VZGAnalyzer(const AnalysisConfiguration& configuration)
 		    configuration){
     //theHistograms.profile(genCategory);
     // Memory allocation
-    doFeats_      = false;//CT new flag for handling the features 
+    doFeats_      = true;//CT new flag for handling the features 
     leptons_      = new std::vector<phys::Lepton>;
     genQuarks_    = new std::vector<phys::Particle>;
     genChLeptons_ = new std::vector<phys::Particle>;

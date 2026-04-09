@@ -331,6 +331,10 @@ void EventAnalyzer::InitOut(FeatList &list, TTree *tree){
   //tree->Branch("features",  &list, "f_mll/D:f_ptl1/D");
 
   tree->Branch("weight",  &list.f_weight,  "weight/D");
+  tree->Branch("posWeight",  &list.f_posWeight,  "posWeight/D");
+  tree->Branch("weightIfCR2P1F",  &list.f_weightIfCR2P1F,  "weightIfCR2P1F/D");
+  tree->Branch("posWeightIfCR2P1F",  &list.f_posWeightIfCR2P1F,  "posWeightIfCR2P1F/D");
+  tree->Branch("isData",  &list.f_isData,  "isData/B");
   tree->Branch("J0qvgSF",  &list.f_J0qvgSF,  "J0qvgSF/D");
   tree->Branch("J1qvgSF",  &list.f_J1qvgSF,  "J1qvgSF/D");
   tree->Branch("ZXrw",  &list.f_ZXrw,  "ZXrw/D");

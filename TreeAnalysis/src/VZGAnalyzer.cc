@@ -97,7 +97,8 @@ double dR_jetRatio_cut = 0.4;
 double dR_FJRatio_cut = 0.8;
 int cutsToApply=4;
 
-TString BDTmodelPath = "bdtModels/postQvG_VLRetunedAlt__BDT_Xgrad_d3_N100.weights.xml";
+TString BDTmodelPath = "bdtModels/postBkgEnriching_kin__BDT_Xgrad_d3_N100.weights.xml";   //vanilla model after retraining SR2P_1k w/bkg enriched in CR2P_1k 
+//TString BDTmodelPath = "bdtModels/postQvG_VLRetunedAlt__BDT_Xgrad_d3_N100.weights.xml"; //after QvG SFs
 //TString BDTmodelPath = "bdtModels/VLRetunedAlt_noNegWgt_BDT_Xgrad_d3_N030.weights.xml"; //used for PhDthesis
 
 double CRZOFFMassCut = 80;
@@ -1888,7 +1889,8 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   
   passingPresel = false;
   //if(!IsARunForMVAFeat)  return;
-  if( (isSigSample && !IN_GENsignalDef() ) || !theSampleInfo.isMC()) return;
+  //  if( (isSigSample && !IN_GENsignalDef() ) || !theSampleInfo.isMC()) return;
+  if( isSigSample && !IN_GENsignalDef() ) return;//|| !theSampleInfo.isMC()) return;
   //std::cout<<"0: entering fillFeatTree "<<std::endl;
 
   int nbOfCutsPassed=0;
@@ -2076,15 +2078,26 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
 
   if ( selectedphotons[0].id() == 22 && KinematicsOK(selectedphotons[0], 20, 2.4) && !selectedphotons[0].hasPixelSeed() && selectedphotons[0].passElectronVeto()) phIDpassed=1;
   if ( selectedphotons[0].cutBasedID(Photon::IdWp::VeryLoose ) ) phIDpassed=2;
+  if ( selectedphotons[0].passMVA(Photon::MVAwp::wp90        ) )  phIDpassed=3; 
+  /*
   if ( selectedphotons[0].cutBasedIDLoose()  ) phIDpassed=3;
   if ( selectedphotons[0].cutBasedIDMedium() ) phIDpassed=4;
   if ( selectedphotons[0].cutBasedIDTight()  ) phIDpassed=5; 
-       
+  */   
   
   //p.cutBasedIDLoose()
 
+  if(!theSampleInfo.isMC() && phIDpassed==3) return;
+  
+  list.f_isData = !theSampleInfo.isMC();
+  
   //  std::cout<<"----------------------------------------"<<std::endl;    
   list.f_weight = theWeight;
+
+  list.f_posWeight         = theWeight > 0.    ? theWeight : 0.;
+  list.f_weightIfCR2P1F    = phIDpassed == 2   ? theWeight : 0.;
+  list.f_posWeightIfCR2P1F = (theWeight > 0. && phIDpassed == 2) ? theWeight : 0.;
+
   list.f_J0qvgSF = J0qvgSF.central;
   list.f_J1qvgSF = J1qvgSF.central;
   list.f_ZXrw = ZXrwgt;
