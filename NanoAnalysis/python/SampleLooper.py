@@ -53,6 +53,7 @@ class SampleLooper:
             while iEntry<nEntries and event.GetEntry(iEntry):
                 iEntry+=1
                 if iEntry%printEntries == 0 : print("Processing", iEntry)
+                eventAnalyzer.init()
                 eventAnalyzer.analyze()
 
             eventAnalyzer.end(self.outFile)

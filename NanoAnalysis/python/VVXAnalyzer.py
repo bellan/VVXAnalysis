@@ -17,10 +17,11 @@ class VVXAnalyzer(EventAnalyzer):
         # processed with TRIGPASSTHROUGH=True)
         if(bestCandIdx != -1 and self.event.HLT_passZZ4l): 
             weight = 1.
-            ZZs = Collection(self.event, 'ZZCand')
-            theZZ = ZZs[bestCandIdx]        
-            if self.isMC : weight = (self.event.overallEventWeight*theZZ.dataMCWeight/self.genEventSumw)
-            m4l=theZZ.mass
-            #self.h_ZZMass10.Fill(m4l,weight)
-            self.histogrammer.fill1D("ZZMass_10GeV_"+self.sampleName,"ZZMass_10GeV_"+self.sampleName,93,70.,1000.,m4l,weight)
+            ZZs = Collection(self.event, 'ZZCand') ## move it in EventAnalyzer::init(event) ??
+            theZZ = ZZs[bestCandIdx]
+            if self.isMC: self.weight = (self.event.overallEventWeight*theZZ.dataMCWeight/self.genEventSumw)
+            
+            m4l = theZZ.mass
+            
+            self.histogrammer.fill1D("ZZMass_10GeV_"+self.sampleName, "ZZMass_10GeV_"+self.sampleName, 93, 70., 1000., m4l, self.weight)
 

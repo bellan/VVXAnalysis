@@ -10,8 +10,6 @@ class EventAnalyzer:
         self.event = event
         self.sampleName = sampleName
         self.isMC = isMC
-
-
         
         self.event.SetBranchStatus("*", 0)
         self.event.SetBranchStatus("run", 1)
@@ -28,11 +26,14 @@ class EventAnalyzer:
         else:
             self.genEventSumw = 1.
         
-
+        self.weight = 1.
+            
         self.histogrammer = Histogrammer()
 
-
-
+    ## Init per event quantities
+    def init(self):
+        pass
+        
     def end(self, outFile):
          self.histogrammer.write(outFile)
 
