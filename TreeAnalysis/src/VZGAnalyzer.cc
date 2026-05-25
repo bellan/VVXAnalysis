@@ -39,6 +39,8 @@ bool verboseControlBlinding= false;
 double DFQG_RelVar=0.05;
     
 const std::vector<double> binEdges =  {-1.00,-0.85,-0.70,-0.56,-0.43,-0.31,-0.19,-0.07,0.04,0.14,0.24,0.33,0.42,0.51,0.59,0.67,0.74,0.81,0.88,0.94,1.00}; //CT: used for PhD thesis
+//const std::vector<double> binEdges =  {-1.00,-0.85,-0.70,-0.56,-0.43,-0.31,-0.19,-0.07,0.05,0.16,0.27,0.38,0.49,0.6,0.7,0.8,0.9,1.00}; //CT: rebin5
+
 //const std::vector<double>   binEdges =  {-1.00,-0.90,-0.75,-0.55,      -0.30,           0.,            0.30,         0.55,       0.75,      0.90,    1.00}; //CT: distributed: rebin4
 
 //const std::vector<double> binEdges =  {-0.31,-0.19,-0.07,0.04,0.14,0.24,0.33,0.42,0.51,0.59,0.67,0.74,0.81,0.88,0.94,1.00}; //CT: for testing constrained unc 
@@ -53,16 +55,24 @@ const std::vector<double> rewgtBinEdges =  {0,10,20,30,40,50,60,70,80,90,100,110
 const std::vector<double> DYrewgtBinEdges =  {0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,195,210,235,250,270,290,320,350,380,420,490,650};
 
 const std::vector<double> ZGrewgtBinEdges =  {0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,400};
-
+/*
 const std::vector<double> DYreweights_2016preVFP  = { 2.00917, 1.79445, 1.36992, 1.46493, 1.2469, 1.19764, 1.37287, 1.35927, 1.34544, 1.34675, 1.35912, 1.31268, 1.15761, 1.21491, 1.5606, 1.46089, 1.47166, 1.16549, 1.27846, 1.76397, 1.52727, 1.32305, 1.17898, 2.16624, 1.58863, 0.870507, 1.29542, 1.62954, 1.17145, 3.00147 };
 const std::vector<double> DYreweights_2016postVFP = { 1.30377, 1.47856, 1.35739, 1.31193, 1.27247, 1.44967, 1.60628, 1.56198, 1.17672, 1.53046, 1.45697, 1.3789, 1.17725, 1.1753, 1.4612, 1.44108, 1.51864, 1.43546, 1.16643, 1.25587, 1.3805, 1.34821, 0.988318, 1.54942, 1.09622, 1.22009, 2.53514, 2.17051, 1.56687, 0.799289  };
 const std::vector<double> DYreweights_2017 = { 1.08715, 1.18149, 1.2471, 1.19377, 1.19708, 1.18842, 1.14534, 1.11701, 1.21096, 1.28702, 1.50582, 1.56286, 1.25695, 1.11851, 1.06644, 1.11402, 1.25952, 1.19327, 1.41701, 1.15879, 1.37471, 1.09833, 1.13833, 1.47355, 1.15392, 1.12907, 1.08345, 0.84334, 1.06811, 2.64004 };
 const std::vector<double> DYreweights_2018 = { 1.01513, 1.27004, 1.18847, 1.15435, 1.11292, 1.20551, 1.10328, 1.10396, 1.19841, 1.14451, 1.08021, 1.17151, 1.1553, 1.20533, 1.288, 1.09464, 1.14136, 1.07776, 1.12247, 1.35225, 1.05515, 1.2525, 1.22472, 0.92048, 1.27397, 1.28208, 1.44384, 0.931377, 0.97728, 2.09973 };
+*/
+const std::vector<double> DYreweights_Run2 = { 1.1425, 1.30874, 1.24618, 1.21632, 1.17348, 1.22305, 1.19032, 1.17641, 1.21754, 1.24948, 1.27542, 1.32013, 1.19056, 1.17448, 1.25021, 1.17724, 1.25261, 1.16321, 1.23544, 1.30837, 1.23083, 1.21792, 1.16034, 1.2197, 1.24126, 1.15815, 1.37485, 1.03262, 1.09324, 1.92615 };
 
+const std::vector<double> DYrewErr_Run2 = { 0.0567861, 0.0530675, 0.0418608, 0.0360185, 0.0328456, 0.0352394, 0.0350258, 0.0355526, 0.0401509, 0.0448921, 0.0492029, 0.0569995, 0.0509339, 0.0533836, 0.0636173, 0.0629042, 0.0753955, 0.0719311, 0.0706459, 0.0917001, 0.0726525, 0.109921, 0.0968275, 0.125411, 0.119484, 0.131386, 0.216469, 0.143534, 0.156537, 0.559408 };
+/*
 const std::vector<double> ZGreweights_2016preVFP  = { 1.30531, 1.11282, 0.977, 0.970804, 1.21571, 1.48782, 1.27616, 1.27632, 1.30883, 1.31963, 2.02662, 1.3168, 1.32528, 1.2418, 0.830399, 0.783573, -0.0931671, 2.80097, 1.23566};
 const std::vector<double> ZGreweights_2016postVFP = { 0.917345, 1.15899, 0.977712, 1.19733, 1.1256, 1.38638, 1.18733, 1.46917, 1.50516, 1.59668, 0.906755, 1.33604, 1.75536, 0.284094, 1.2815, 0.32339, 1.83554, 2.23789, 1.05929  };
 const std::vector<double> ZGreweights_2017 = { 0.852612, 0.938297, 0.954081, 1.00565, 0.932689, 1.03828, 1.13545, 0.8911, 1.49594, 1.193, 0.846078, 1.29195, 1.04021, 1.10745, 0.965414, 0.890614, 0.894638, -1.3284, 1.89145 };
 const std::vector<double> ZGreweights_2018 = { 0.62344, 0.865009, 0.9259, 0.913941, 0.986357, 1.31534, 1.26514, 1.10043, 1.52301, 1.34909, 1.17461, 1.37038, 1.21519, 1.0367, 0.995551, 1.22477, 1.35664, 1.24588, 0.950638 };
+*/
+const std::vector<double> ZGreweights_Run2 = { 0.823679, 0.954957, 0.947289, 0.982136, 1.01551, 1.25815, 1.21801, 1.10996, 1.48301, 1.32895, 1.14251, 1.33304, 1.2409, 0.993592, 1.00056, 0.969438, 1.09989, 0.927254, 1.24255 };
+
+const std::vector<double> ZGrewErr_Run2 = { 0.088428, 0.0615822, 0.0524166, 0.0583568, 0.0667823, 0.0797848, 0.0841933, 0.0975099, 0.126066, 0.138374, 0.139703, 0.177405, 0.178318, 0.172954, 0.217512, 0.262971, 0.289531, 0.464014, 0.188374 };
 
 
 bool IsARunForMVAFeat=false;
@@ -80,6 +90,7 @@ double PhEffSF=1.;
 double PhEffSFUnc=0.;
 
 double rewgt=1.;
+double rewErr=0.;
 double TF=1.;
 double TF_uncAbs = 0.18;
 double TF_16preVFP  = 1.391;
@@ -97,7 +108,8 @@ double dR_jetRatio_cut = 0.4;
 double dR_FJRatio_cut = 0.8;
 int cutsToApply=4;
 
-TString BDTmodelPath = "bdtModels/postBkgEnriching_kin__BDT_Xgrad_d3_N100.weights.xml";   //vanilla model after retraining SR2P_1k w/bkg enriched in CR2P_1k 
+TString BDTmodelPath = "bdtModels/ZZGasOnlySig_VLRetunedAlt__BDT_Xgrad_d3_N050.weights.xml"; // ZZG semilep single sig, WZG semilep as bkg
+//TString BDTmodelPath = "bdtModels/postBkgEnriching_kin__BDT_Xgrad_d3_N100.weights.xml";   //vanilla model after retraining SR2P_1k w/bkg enriched in CR2P_1k 
 //TString BDTmodelPath = "bdtModels/postQvG_VLRetunedAlt__BDT_Xgrad_d3_N100.weights.xml"; //after QvG SFs
 //TString BDTmodelPath = "bdtModels/VLRetunedAlt_noNegWgt_BDT_Xgrad_d3_N030.weights.xml"; //used for PhDthesis
 
@@ -1242,15 +1254,20 @@ void VZGAnalyzer::analyze()
   //----BLOCK ASSIGNING DY REWGT PER YEAR------------//
   std::string year_str = std::to_string(year);
   rewgt=1.;
+  rewErr=0.;
   if(theSampleInfo.isMC() && isDYSample && genVBHelper_.ZtoChLep().size()>0){    
     for(int i = 0; i<DYrewgtBinEdges.size()-1 && rewgt==1.; i++){
       if( genVBHelper_.ZtoChLep()[0].pt() > DYrewgtBinEdges[i] && genVBHelper_.ZtoChLep()[0].pt() < DYrewgtBinEdges[i+1]){
+	/*
 	if(year==2016){
 	  if(year_str.find("preVFP")!=std::string::npos)      rewgt=DYreweights_2016preVFP[i];
 	  else rewgt=DYreweights_2016postVFP[i];
 	}
 	if(year==2017) rewgt=DYreweights_2017[i];
 	if(year==2018) rewgt=DYreweights_2018[i];
+	*/
+	rewgt=DYreweights_Run2[i];
+	rewErr=DYrewErr_Run2[i];
       }
     }
   }
@@ -1270,12 +1287,16 @@ void VZGAnalyzer::analyze()
   if(theSampleInfo.isMC() && isZGSample && genVBHelper_.ZtoChLep().size()>0){
     for(int i = 0; i<ZGrewgtBinEdges.size()-1 && rewgt==1.; i++){
       if( genVBHelper_.ZtoChLep()[0].pt() > ZGrewgtBinEdges[i] && genVBHelper_.ZtoChLep()[0].pt() < ZGrewgtBinEdges[i+1]){
+	/*
 	if(year==2016){
 	  if(year_str.find("preVFP")!=std::string::npos)      rewgt=ZGreweights_2016preVFP[i];
 	  else rewgt=ZGreweights_2016postVFP[i];
 	}
 	if(year==2017) rewgt=ZGreweights_2017[i];
 	if(year==2018) rewgt=ZGreweights_2018[i];
+	*/
+	rewgt=ZGreweights_Run2[i];
+	rewErr=ZGrewErr_Run2[i];
       }
     }
   }
@@ -1934,12 +1955,15 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   if(theSampleInfo.isMC() && isDYSample && genVBHelper_.ZtoChLep().size()>0){    
     for(int i = 0; i<DYrewgtBinEdges.size()-1 && ZXrwgt==1.; i++){
       if( genVBHelper_.ZtoChLep()[0].pt() > DYrewgtBinEdges[i] && genVBHelper_.ZtoChLep()[0].pt() < DYrewgtBinEdges[i+1]){
+	/*
 	if(year==2016){
 	  if(year_str.find("preVFP")!=std::string::npos)      ZXrwgt=DYreweights_2016preVFP[i];
 	  else ZXrwgt=DYreweights_2016postVFP[i];
 	}
 	if(year==2017) ZXrwgt=DYreweights_2017[i];
 	if(year==2018) ZXrwgt=DYreweights_2018[i];
+	*/
+	ZXrwgt=DYreweights_Run2[i];
       }
     }
   }
@@ -1947,12 +1971,15 @@ void VZGAnalyzer::fillFeatTree(FeatList &list, bool &passingPresel )
   if(theSampleInfo.isMC() && isZGSample && genVBHelper_.ZtoChLep().size()>0){
     for(int i = 0; i<ZGrewgtBinEdges.size()-1 && ZXrwgt==1.; i++){
       if( genVBHelper_.ZtoChLep()[0].pt() > ZGrewgtBinEdges[i] && genVBHelper_.ZtoChLep()[0].pt() < ZGrewgtBinEdges[i+1]){
+	/*
 	if(year==2016){
 	  if(year_str.find("preVFP")!=std::string::npos)      ZXrwgt=ZGreweights_2016preVFP[i];
 	  else ZXrwgt=ZGreweights_2016postVFP[i];
 	}
 	if(year==2017) ZXrwgt=ZGreweights_2017[i];
 	if(year==2018) ZXrwgt=ZGreweights_2018[i];
+	*/
+	ZXrwgt=ZGreweights_Run2[i];
       }
     }
   }
@@ -2947,6 +2974,8 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     
     if(VZGMVAScore <= 1. && VZGMVAScore >= binEdges.at(0)){
       theHistograms->fill("SYS_BDTScore_central", "SYS_BDTScore_central" , binEdges,  VZGMVAScore, theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
+      theHistograms->fill("AUX_BDTScore_centralUnw", "AUX_BDTScore_centralUnw" , binEdges,  VZGMVAScore, 1.);
+      theHistograms->fill("AUX_weights" , 50,-5,5,  theWeight*rewgt*qgTagSF*PhEffSF, 1.);
 
       if(isSigSample){//CT: cap applied
 	theHistograms->fill("SYS_BDTScore_alphas_Up"  , "SYS_BDTScore_alphas_Up"   , binEdges,  VZGMVAScore,
@@ -3035,12 +3064,9 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
 
       theHistograms->fill("SYS_BDTScore_puWeight_Up"  , "SYS_BDTScore_puWeight_Up"   , binEdges,  VZGMVAScore, (theSampleInfo.puWeightUncUp()/theSampleInfo.puWeight())*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
       theHistograms->fill("SYS_BDTScore_puWeight_Down", "SYS_BDTScore_puWeight_Down" , binEdges,  VZGMVAScore, (theSampleInfo.puWeightUncDn()/theSampleInfo.puWeight())*theWeight*rewgt*qgTagSF*PhEffSF*LumiSF);
-      /*
-      if(isDYSample){
-	theHistograms->fill("SYS_BDTScore_CR2P1F_Up"  , "SYS_BDTScore_CR2P1F_Up"   , binEdges,  VZGMVAScore, theWeight*(TF+TF_uncAbs)*PhEffSF*LumiSF);
-	theHistograms->fill("SYS_BDTScore_CR2P1F_Down", "SYS_BDTScore_CR2P1F_Down" , binEdges,  VZGMVAScore, theWeight*(TF-TF_uncAbs)*PhEffSF*LumiSF);
-      }
-      */ //CT: momentaneously de-activating with the as long as DY reweighting is de-activated itself
+      
+      theHistograms->fill("SYS_BDTScore_ZXreweighting_Up"  , "SYS_BDTScore_ZXreweighting_Up"   , binEdges,  VZGMVAScore, theWeight*qgTagSF*(rewgt+rewErr)*LumiSF);
+      theHistograms->fill("SYS_BDTScore_ZXreweighting_Down", "SYS_BDTScore_ZXreweighting_Down" , binEdges,  VZGMVAScore, theWeight*qgTagSF*(rewgt-rewErr)*LumiSF);
 
       //________subBlock_for_altVar_________//
       if(VZGMVAScore >= BDT_CUT && VZGMVAScore <= 1.){
