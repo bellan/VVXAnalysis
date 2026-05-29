@@ -4,7 +4,7 @@ You need to download three subsystems. There is a script that does it for you. F
 
 ```
 wget https://raw.githubusercontent.com/bellan/VVXAnalysis/refs/heads/Run3NanoAOD/NanoAnalysis/standalone/standalone.sh
-bash standalone.sh -d <MyProject>
+bash standalone.sh <MyProject>
 ```
 If you exit the shell, or you start a fresh one, you need to set the env variable. Go inside you Project, then:
 ```
