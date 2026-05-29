@@ -5,6 +5,23 @@ from VVXAnalysis.NanoAnalysis.Histogrammer import Histogrammer
 
 
 class EventAnalyzer:
+
+    registry = {}
+
+    def __init_subclass__(cls, analysis_name=None, **kwargs):
+        super().__init_subclass__(**kwargs)
+
+        if analysis_name is not None:
+
+            if analysis_name in cls.registry:
+                raise ValueError(
+                    f"Duplicate analysis name: {analysis_name}"
+                )
+
+            cls.registry[analysis_name] = cls
+
+
+    
     def __init__(self, event, sampleName, isMC=True, genEventSumw=1.):
 
         self.event = event

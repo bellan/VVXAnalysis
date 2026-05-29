@@ -4,7 +4,7 @@ from ZZAnalysis.NanoAnalysis.tools import getLeptons, get_genEventSumw
 from VVXAnalysis.NanoAnalysis.EventAnalyzer import EventAnalyzer
 from VVXAnalysis.NanoAnalysis.Histogrammer import Histogrammer
 
-class VVXAnalyzer(EventAnalyzer):
+class VVXAnalyzer(EventAnalyzer, analysis_name="VVXAnalyzer"):
 
     def __init__(self,event, sampleName, isMC=True, genEventSumw=1.):
         super().__init__(event, sampleName, isMC, genEventSumw)

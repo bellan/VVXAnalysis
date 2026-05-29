@@ -1,14 +1,17 @@
-#!/bin/env python3
-
 from __future__ import print_function
+import pkgutil
+import importlib
+from  VVXAnalysis.NanoAnalysis import analyses
+
+
 import math
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection
 from ZZAnalysis.NanoAnalysis.tools import getLeptons, get_genEventSumw
 
-from VVXAnalysis.NanoAnalysis.Histogrammer import Histogrammer
-from VVXAnalysis.NanoAnalysis.VVXAnalyzer import VVXAnalyzer as Analyzer 
+from VVXAnalysis.NanoAnalysis.EventAnalyzer import EventAnalyzer
+
 
 pathMC = "/eos/cms/store/group/phys_higgs/cmshzz4l/cjlst/RunIII_byZ1Z2/240820/2022EE/"
 pathDATA = "/eos/cms/store/group/phys_higgs/cmshzz4l/cjlst/RunIII_byZ1Z2/240820/2022EE/"
@@ -27,6 +30,18 @@ class SampleLooper:
         self.isMC = (self.dataType == 'MC')
         
         self.outFile = ROOT.TFile.Open("VVX_"+ dataType +".root","recreate")
+
+        self.load_analyses()
+
+    def load_analyses(self):           
+        for _, module_name, _ in pkgutil.iter_modules(
+                analyses.__path__
+        ):           
+            importlib.import_module(
+                f"analyses.{module_name}"
+            )
+
+
         
         
     def loop(self):
@@ -47,7 +62,7 @@ class SampleLooper:
             printEntries=max(5000,nEntries/10)
 
             ######### Analyse the events in a sample! #############
-            eventAnalyzer = Analyzer(event, sampleName, self.isMC, genEventSumw)
+            eventAnalyzer = EventAnalyzer.registry["VVXAnalyzer"](event, sampleName, self.isMC, genEventSumw) #FIXME
             eventAnalyzer.begin()
             
             while iEntry<nEntries and event.GetEntry(iEntry):
@@ -65,11 +80,3 @@ class SampleLooper:
 
 
          
-if __name__ == "__main__" :
-
-    ## To be fixed
-    dataType = 'MC'
-    
-    sampleLooper = SampleLooper(dataType)
-    sampleLooper.loop()
-    sampleLooper.end()
