@@ -1,3 +1,9 @@
+
+'''Specific configurations'''
+setConf("PROCESS_CR"   ,True)
+setConf("PROCESS_ZL"   , True)
+setConf("FILTER_EVENTS","Z")
+
 from ZZAnalysis.NanoAnalysis.nanoZZ4lAnalysis import *
 
 print("Overriding ZZ4lAnalysis PostProcessor")

@@ -291,7 +291,7 @@ setConf("customizations", customizeProcessForLocal, append=True)
 
 #####################################################################
 ### This import should be done AFTER all configuration (setConf calls)
-from ZZAnalysis.NanoAnalysis.nanoZZ4lAnalysis import *
+#from ZZAnalysis.NanoAnalysis.nanoZZ4lAnalysis import *
 ######################################################################
 
 from VVXAnalysis.NanoAnalysis.nanoVVXAnalysis import *
