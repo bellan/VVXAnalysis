@@ -6,7 +6,7 @@ print("Overriding ZZ4lAnalysis PostProcessor")
 item = 'drop Photon*'
 if item in branchsel_in: branchsel_in.remove(item)
 
-branchsel_out.extend('keep Photon*')
+branchsel_out.append('keep Photon*')
 
 p = PostProcessor(".", fileNames,
                   prefetch=True, longTermCache=False,
