@@ -1,3 +1,4 @@
+from ZZAnalysis.NanoAnalysis.tools import setConf
 
 '''Specific configurations'''
 setConf("PROCESS_CR"   ,True)
