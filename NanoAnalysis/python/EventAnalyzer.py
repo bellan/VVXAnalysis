@@ -44,6 +44,7 @@ class EventAnalyzer:
         self.event = event
         #Turn off all branches
         self.event.SetBranchStatus("*", 0)
+        
         #Read only the one that are usefull
         self.event.SetBranchStatus("run", 1)
         self.event.SetBranchStatus("luminosityBlock", 1)
