@@ -1,0 +1,40 @@
+{
+    "DB": [
+	{"origin" : "MC",
+	 "year": 2022,
+	  "samples": [
+	      {"process": "VBS",
+	       "name": "ZZTo4l_2Jets_EW", 
+	       "eos_path": "",
+	       "version" : "June2026",
+	       "color": 5,
+	       "style": 0}
+	  ]
+	},
+	
+	{"origin" : "MC",
+	 "year": 2023,
+	 "samples": [
+	     {"process": "VBS",
+	      "name": "ZZTo4l_2Jets_EW", 
+	      "eos_path": "",
+	      "version" : "June2026",
+	      "color": 5,
+	      "style": 0}
+	 ]
+	},
+	
+	{"origin" : "data",
+	 "year": 2022,
+	 "samples": [
+	     {"process": "doubleMu",
+	      "name": "DoubleMu2022H", 
+	      "eos_path": "",
+	      "version" : "June2026",
+	      "color": 5,
+	      "style": 0}
+	 ]
+	}
+    ]
+  
+}

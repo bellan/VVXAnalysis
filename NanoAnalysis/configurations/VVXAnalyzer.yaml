@@ -1,0 +1,20 @@
+samples:
+  years: [2022, 2023]
+  origin: [MC]
+  mode: name          # oppure: process, all
+  by_name:
+    - ZZTo4l_2Jets_EW
+    - DoubleMu2022H
+  by_process:
+    - VBS
+
+analysis:
+  analyzer: VVXAnalyzer
+  regions : [4P]
+
+
+
+# Spazio per parametri specifici dell'analisi
+#analysis_params:
+#  mass_window: [70, 110]
+#  btag_wp: medium

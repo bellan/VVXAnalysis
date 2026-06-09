@@ -6,8 +6,9 @@ from VVXAnalysis.NanoAnalysis.Histogrammer import Histogrammer
 
 class VVXAnalyzer(EventAnalyzer, analysis_name="VVXAnalyzer"):
 
-    def __init__(self,event, sampleName, isMC=True, genEventSumw=1.):
-        super().__init__(event, sampleName, isMC, genEventSumw)
+    def __init__(self):
+        super().__init__()
+
 
     def analyze(self):
         bestCandIdx = self.event.bestCandIdx
@@ -19,9 +20,9 @@ class VVXAnalyzer(EventAnalyzer, analysis_name="VVXAnalyzer"):
             weight = 1.
             ZZs = Collection(self.event, 'ZZCand') ## move it in EventAnalyzer::init(event) ??
             theZZ = ZZs[bestCandIdx]
-            if self.isMC: self.weight = (self.event.overallEventWeight*theZZ.dataMCWeight/self.genEventSumw)
+            if self.analyzeMC: self.weight = (self.event.overallEventWeight*theZZ.dataMCWeight/self.genEventSumw)
             
             m4l = theZZ.mass
             
-            self.histogrammer.fill1D("ZZMass_10GeV_"+self.sampleName, "ZZMass_10GeV_"+self.sampleName, 93, 70., 1000., m4l, self.weight)
+            self.histogrammer.fill1D("ZZMass_10GeV", "ZZMass_10GeV", 93, 70., 1000., m4l, self.weight)
 

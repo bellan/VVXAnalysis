@@ -3,7 +3,7 @@ import pkgutil
 import importlib
 from  VVXAnalysis.NanoAnalysis import analyses
 
-
+import json
 import math
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
@@ -11,10 +11,8 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collect
 from ZZAnalysis.NanoAnalysis.tools import getLeptons, get_genEventSumw
 
 from VVXAnalysis.NanoAnalysis.EventAnalyzer import EventAnalyzer
-
-
-pathMC = "/eos/cms/store/group/phys_higgs/cmshzz4l/cjlst/RunIII_byZ1Z2/240820/2022EE/"
-pathDATA = "/eos/cms/store/group/phys_higgs/cmshzz4l/cjlst/RunIII_byZ1Z2/240820/2022EE/"
+from VVXAnalysis.NanoAnalysis.Sample import Sample
+from VVXAnalysis.NanoAnalysis.SampleLoader import SampleLoader
 
 
 maxEntriesPerSample = None # Use only up to this number of events in each MC sample, for quick tests; use None for no scaling
@@ -22,16 +20,13 @@ maxEntriesPerSample = None # Use only up to this number of events in each MC sam
 
 class SampleLooper:
     
-    def __init__(self,dataType='MC'):
-        self.samples = [
-            dict(name = "VBS",filename = "/home/bellan/Workspace/NanoAOD/ZZTo4l_2Jets_EW.root")
-        ]
-        self.dataType = dataType
-        self.isMC = (self.dataType == 'MC')
+    def __init__(self,cfg, samples):
+        self.analyzer = cfg.analyzer
+        self.regions  = cfg.regions
+        self.samples  = samples
         
-        self.outFile = ROOT.TFile.Open("VVX_"+ dataType +".root","recreate")
-
         self.load_analyses()
+        
 
     def load_analyses(self):           
         for _, module_name, _ in pkgutil.iter_modules(
@@ -41,37 +36,45 @@ class SampleLooper:
                 f"analyses.{module_name}"
             )
 
+            
 
+
+
+        
         
         
     def loop(self):
 
         ## Loop over the samples
         for sample in self.samples:
-            sampleName = sample["name"]
-            filename   = sample["filename"]
-            inputFile = ROOT.TFile.Open(filename)
-            
-            event = inputFile["Events"]
-            genEventSumw = 1.
-            if self.isMC:
-                genEventSumw = get_genEventSumw(inputFile, maxEntriesPerSample)
-          
-            nEntries = event.GetEntries()
+            #FIXME: add check that file exists
+            print(sample.path())
+            inputFile = ROOT.TFile.Open(sample.path())
+
+            '''
+            Set the Gen Event Sum Weight, needed to properly normalize the sample weight
+            for data it is always 1, for MC we need to extract it from the counters.
+            We then need to pass this information to the Analyzer
+            '''
+            genEventSumw = get_genEventSumw(inputFile, maxEntriesPerSample) if sample.isMC() else 1.
+           
+            events = inputFile["Events"]
+            nEntries = events.GetEntries()
             iEntry=0
             printEntries=max(5000,nEntries/10)
 
             ######### Analyse the events in a sample! #############
-            eventAnalyzer = EventAnalyzer.registry["VVXAnalyzer"](event, sampleName, self.isMC, genEventSumw) #FIXME
+            eventAnalyzer = EventAnalyzer.registry[self.analyzer]()#(base_configuration)
+            eventAnalyzer.init(events, genEventSumw, sample.isMC())
             eventAnalyzer.begin()
             
-            while iEntry<nEntries and event.GetEntry(iEntry):
+            while iEntry<nEntries and events.GetEntry(iEntry):
                 iEntry+=1
                 if iEntry%printEntries == 0 : print("Processing", iEntry)
-                eventAnalyzer.init()
+                eventAnalyzer.getCollections()
                 eventAnalyzer.analyze()
 
-            eventAnalyzer.end(self.outFile)
+            eventAnalyzer.end(sample)
             #######################################################
 
             
