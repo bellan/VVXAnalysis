@@ -24,10 +24,6 @@ class VVXEventTaggerAndFilter(Module):
         return s.applySelection(collection)
 
     
-    def endJob(self):
-        print("", flush=True)
-
-
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
 
@@ -46,12 +42,13 @@ class VVXEventTaggerAndFilter(Module):
 
         regionWord = 0
         for region in self.regions:
-
+           
             if self.check(leptons, region.get("leptons")) and self.check(photons,region.get("photons")) and self.check(jets, region.get("jets")):
                 name = region.get("name")
                 if name in Regions.__members__:
                     regionWord |= Regions[name].value
-        
+
+            print(f"region name{region.get('name')} -->{regionWord}")
         self.out.fillBranch("regionWord", regionWord)
 
         return not regionWord == 0 
