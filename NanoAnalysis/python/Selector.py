@@ -18,7 +18,7 @@ class Selector():
         use_abs = opt == '||'
         if use_abs:
             value = abs(value)
-        return Analyzer.OPS[op](value, threshold)
+        return Selector.OPS[op](value, threshold)
 
     def _passes_cuts(self, p, cuts):
         return all(
