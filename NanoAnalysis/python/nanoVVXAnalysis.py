@@ -1,4 +1,4 @@
-from ZZAnalysis.NanoAnalysis.tools import setConf
+from ZZAnalysis.NanoAnalysis.tools import setConf, getConf, insertBefore, insertAfter
 
 '''Specific configurations'''
 setConf("PROCESS_CR"   ,True)
@@ -12,8 +12,35 @@ print("Overriding ZZ4lAnalysis PostProcessor")
 
 item = 'drop Photon*'
 if item in branchsel_in: branchsel_in.remove(item)
-
 branchsel_out.append('keep Photon*')
+
+
+
+from from VVXAnalysis.NanoAnalysis.VVXEventTaggerAndFilter import VVXEventTaggerAndFilter as VVXTagger
+
+VVX_Regions = [
+    {'name'   : 'R4P',        
+     'leptons'  : {
+         'selection': [
+             {
+                 'name': 'hard',
+                 'cuts': {'px': ('>', 20, '||')},
+                 'min_particles': 1,
+                 'max_particles': float('inf')
+             },
+             {
+                 'name': 'soft',
+                 'cuts': {'pt': ('>', 10)},
+                 'min_particles': 2,
+                 'max_particles': float('inf')
+             },
+          ]
+     }
+     }
+]
+    
+insertAfter(reco_sequence, 'jetFiller', VVXTagger(VVX_Regions))
+
 
 p = PostProcessor(".", fileNames,
                   prefetch=True, longTermCache=False,
