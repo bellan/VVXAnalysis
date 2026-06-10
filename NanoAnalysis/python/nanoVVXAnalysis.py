@@ -23,15 +23,15 @@ VVX_Regions = [
      'leptons'  : {
          'selection': [
              {
-                 'name': 'hard',
-                 'cuts': {'px': ('>', 20, '||')},
-                 'min_particles': 1,
+                 'name': 'pt10',
+                 'cuts': {'pt': ('>', 10)},
+                 'min_particles': 2,
                  'max_particles': float('inf')
              },
              {
-                 'name': 'soft',
-                 'cuts': {'pt': ('>', 10)},
-                 'min_particles': 2,
+                 'name': 'pt20',
+                 'cuts': {'pt': ('>', 20)},
+                 'min_particles': 1,
                  'max_particles': float('inf')
              },
           ]

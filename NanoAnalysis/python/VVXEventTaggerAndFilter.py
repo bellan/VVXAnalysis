@@ -45,7 +45,7 @@ class VVXEventTaggerAndFilter(Module):
         jets      = Collection(event, "Jet") # FIXME: for the time being, AK4 only
 
         regionWord = 0
-        for region in regions:
+        for region in self.regions:
 
             if self.check(leptons, region.get("leptons")) and self.check(photons,region.get("photons")) and self.check(jets, region.get("jets")):
                 name = region.get("name")
