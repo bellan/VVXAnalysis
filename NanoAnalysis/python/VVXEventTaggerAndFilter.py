@@ -42,7 +42,7 @@ class VVXEventTaggerAndFilter(Module):
         #muons     = Collection(event, "Muon")
         photons   = Collection(event, "Photon")
         leptons   = Collection(event, "Lepton")
-        jets      = Collection(event, "Jets") # FIXME: for the time being, AK4 only
+        jets      = Collection(event, "Jet") # FIXME: for the time being, AK4 only
 
         regionWord = 0
         for region in regions:
