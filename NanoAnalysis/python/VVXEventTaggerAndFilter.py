@@ -50,7 +50,7 @@ class VVXEventTaggerAndFilter(Module):
             if self.check(leptons, region.get("leptons")) and self.check(photons,region.get("photons")) and self.check(jets, region.get("jets")):
                 name = region.get("name")
                 if name in Regions.__members__:
-                    regionWord |= regions[name].value
+                    regionWord |= Regions[name].value
         
         self.out.fillBranch("regionWord", regionWord)
 
