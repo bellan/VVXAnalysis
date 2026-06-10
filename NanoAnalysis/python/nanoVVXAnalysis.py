@@ -16,7 +16,7 @@ branchsel_out.append('keep Photon*')
 
 
 
-from from VVXAnalysis.NanoAnalysis.VVXEventTaggerAndFilter import VVXEventTaggerAndFilter as VVXTagger
+from VVXAnalysis.NanoAnalysis.VVXEventTaggerAndFilter import VVXEventTaggerAndFilter as VVXTagger
 
 VVX_Regions = [
     {'name'   : 'R4P',        
@@ -39,7 +39,7 @@ VVX_Regions = [
      }
 ]
     
-insertAfter(reco_sequence, 'jetFiller', VVXTagger(VVX_Regions))
+insertAfter(ZZSequence, 'jetFiller', VVXTagger(VVX_Regions))
 
 
 p = PostProcessor(".", fileNames,

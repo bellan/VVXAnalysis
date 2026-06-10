@@ -53,3 +53,5 @@ class VVXEventTaggerAndFilter(Module):
                     regionWord |= regions[name].value
         
         self.out.fillBranch("regionWord", regionWord)
+
+        return not regionWord == 0 
