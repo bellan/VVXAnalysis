@@ -13,7 +13,7 @@ print("Overriding ZZ4lAnalysis PostProcessor")
 item = 'drop Photon*'
 if item in branchsel_in: branchsel_in.remove(item)
 branchsel_out.append('keep Photon*')
-
+branchsel_out.append('keep regionWord*')
 
 
 from VVXAnalysis.NanoAnalysis.VVXEventTaggerAndFilter import VVXEventTaggerAndFilter as VVXTagger
