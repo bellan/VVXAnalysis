@@ -2,19 +2,15 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection
 
 from VVXAnalysis.NanoAnalysis.Selector import Selector
-from VVXAnalysis.NanoAnalysis.Regions import Regions
+from VVXAnalysis.NanoAnalysis.Regions import Flags
 
 
 class FSEventTaggerAndFilter(Module):
 
-    def __init__(self, regions):
+    def __init__(self, flags):
 
-        self.regions = regions
+        self.flags = flags
         
-        
-        #self.leptonFullId     = (lambda l : l.ZZFullSel)
-        #self.leptonRelaxedId  = (lambda l : l.ZZRelaxedId)
-
     def check(self, collection, selection):
 
         if selection == None:
@@ -41,12 +37,12 @@ class FSEventTaggerAndFilter(Module):
         jets      = Collection(event, "Jet") # FIXME: for the time being, AK4 only
 
         regionWord = 0
-        for region in self.regions:
+        for flag in self.flags:
            
-            if self.check(leptons, region.get("leptons")) and self.check(photons,region.get("photons")) and self.check(jets, region.get("jets")):
-                name = region.get("name")
-                if name in Regions.__members__:
-                    regionWord |= Regions[name].value
+            if self.check(leptons, flag.get("leptons")) and self.check(photons,flag.get("photons")) and self.check(jets, flag.get("jets")):
+                name = flag.get("name")
+                if name in Flags.__members__:
+                    regionWord |= Flags[name].value
 
         
         self.out.fillBranch("regionWord", regionWord)

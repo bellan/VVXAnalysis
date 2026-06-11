@@ -2,7 +2,7 @@ from enum import IntFlag
 import copy
 
 # IntFlag is an enum that supports bitwise operations like OR e AND
-class Regions(IntFlag):
+class Flags(IntFlag):
     L4P    = 1 << 0
     L3P1F  = 1 << 1
     L2P2F  = 1 << 2
