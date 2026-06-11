@@ -108,7 +108,7 @@ flagDefinitions = [
      'leptons'  : {'selection': [pt10, pt20, L2P]}
      },
     ########################################################
-    {'name' : 'J2P'
+    {'name' : 'J2P',
      'jets'    : {'selection': [J2P]}
      },
 ]
