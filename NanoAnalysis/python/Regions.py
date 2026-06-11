@@ -57,12 +57,12 @@ L1P = {'name': 'TightLeptons',
 L1L = {'name': 'LooseLeptons',
        'cuts': {'ZZRelaxedId' : ('==', True)},
        'min_particles': 1,
-       'max_particles': 1},
+       'max_particles': 1}
 
 L1F = {'name': 'FailLeptons',
        'cuts': {'ZZFullSel' : ('==', False)},
        'min_particles': 1,
-       'max_particles': 1},
+       'max_particles': 1}
 
 L4P = {**L1P, 'name': 'L4P', 'min_particles': 4, 'max_particles': 4}
 L3P = {**L1P, 'name': 'L3P', 'min_particles': 3, 'max_particles': 3}
