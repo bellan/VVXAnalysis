@@ -8,7 +8,7 @@ from VVXAnalysis.NanoAnalysis.Regions import Regions
 class VVXEventTaggerAndFilter(Module):
 
     def __init__(self, regions):
-
+        self.regions = regions
     
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
