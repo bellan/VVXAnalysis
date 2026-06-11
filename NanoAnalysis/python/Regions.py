@@ -41,12 +41,12 @@ pt20 = {'name': 'pt20',
 P1P =  {'name': 'TightPhotons',
         'cuts': {'mvaID' : ('>', 0)}, #FIXME!!!
         'min_particles': 1,
-        'max_particles': float(inf)}
+        'max_particles': float('inf')}
 
 J2P = {'name': 'J2P',
          'cuts': {'pt' : ('>', 20), 'eta' : ('<', 4.7, '||')},
          'min_particles': 2,
-         'max_particles': float(inf)}
+         'max_particles': float('inf')}
 
 
 L1P = {'name': 'TightLeptons',
