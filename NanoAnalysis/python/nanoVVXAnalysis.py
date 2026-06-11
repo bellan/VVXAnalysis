@@ -16,30 +16,13 @@ branchsel_out.append('keep Photon*')
 branchsel_out.append('keep regionWord*')
 
 
+from VVXAnalysis.NanoAnalysis.FSEventTaggerAndFilter import FSEventTaggerAndFilter as FSTagger
+
 from VVXAnalysis.NanoAnalysis.VVXEventTaggerAndFilter import VVXEventTaggerAndFilter as VVXTagger
 
-VVX_Regions = [
-    {'name'   : 'R4P',        
-     'leptons'  : {
-         'selection': [
-             {
-                 'name': 'pt10',
-                 'cuts': {'pt': ('>', 10)},
-                 'min_particles': 2,
-                 'max_particles': float('inf')
-             },
-             {
-                 'name': 'pt20',
-                 'cuts': {'pt': ('>', 20)},
-                 'min_particles': 1,
-                 'max_particles': float('inf')
-             },
-          ]
-     }
-     }
-]
+from VVXAnalysis.NanoAnalysis.Regions import regionDefinitions
     
-insertAfter(ZZSequence, 'jetFiller', VVXTagger(VVX_Regions))
+insertAfter(ZZSequence, 'jetFiller', FSTagger(regionDefinitions))
 
 
 p = PostProcessor(".", fileNames,

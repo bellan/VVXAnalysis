@@ -5,9 +5,23 @@ from VVXAnalysis.NanoAnalysis.Selector import Selector
 from VVXAnalysis.NanoAnalysis.Regions import Regions
 
 
-class VVXEventTaggerAndFilter(Module):
+class FSEventTaggerAndFilter(Module):
 
     def __init__(self, regions):
+
+        self.regions = regions
+        
+        
+        #self.leptonFullId     = (lambda l : l.ZZFullSel)
+        #self.leptonRelaxedId  = (lambda l : l.ZZRelaxedId)
+
+    def check(self, collection, selection):
+
+        if selection == None:
+            return True # because there is not requirement on this collection
+        
+        s = Selector(selection)
+        return s.applySelection(collection)
 
     
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
@@ -23,6 +37,8 @@ class VVXEventTaggerAndFilter(Module):
         #electrons = Collection(event, "Electron")
         #muons     = Collection(event, "Muon")
         photons   = Collection(event, "Photon")
+        leptons   = Collection(event, "Lepton")
+        jets      = Collection(event, "Jet") # FIXME: for the time being, AK4 only
 
         regionWord = 0
         for region in self.regions:
