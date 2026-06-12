@@ -30,7 +30,7 @@ flagsSelection = [
     Flags.L2P_J2
 ]
     
-insertAfter(ZZSequence, 'jetFiller', FSTagger(flagDefinitions, flagSelection))
+insertAfter(ZZSequence, 'jetFiller', FSTagger(flagDefinitions, flagsSelection))
 
 
 p = PostProcessor(".", fileNames,
