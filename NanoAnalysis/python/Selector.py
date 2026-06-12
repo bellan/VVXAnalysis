@@ -14,29 +14,33 @@ class Selector():
         self.selection = config.get('selection', [])
 
     def _apply_cut(self, p, attr, op, threshold, opt=''):
-        value = getattr(p, attr)
-        use_abs = opt == '||'
-        if use_abs:
-            value = abs(value)
-        return Selector.OPS[op](value, threshold)
+        return Selector._apply_cut_static(p, attr, op, threshold, opt)
 
-    def _passes_cuts(self, p, cuts):
+    @staticmethod
+    def passes_cuts(p, cuts):
         return all(
-            self._apply_cut(p, attr, *cut_def)
+            Selector._apply_cut_static(p, attr, *cut_def)
             for attr, cut_def in cuts.items()
         )
 
+    @staticmethod
+    def _apply_cut_static(p, attr, op, threshold, opt=''):
+        value = getattr(p, attr)
+        if opt == '||':
+            value = abs(value)
+        return Selector.OPS[op](value, threshold)
+
     def applySelection(self, particles):
-        # one counter for each category
+        # One counter for each category
         counts = {cat['name']: 0 for cat in self.selection}
 
-        # To reduce complexity, just one run over particles
+        # Single pass over particles
         for p in particles:
             for cat in self.selection:
-                if self._passes_cuts(p, cat['cuts']):
+                if self.passes_cuts(p, cat['cuts']):
                     counts[cat['name']] += 1
 
-        # Now check if the collection passes the selection
+        # Check if the collection passes the selection
         event_ok = True
         for cat in self.selection:
             name  = cat['name']
@@ -48,4 +52,3 @@ class Selector():
             event_ok = event_ok and cat_ok
 
         return event_ok
-
