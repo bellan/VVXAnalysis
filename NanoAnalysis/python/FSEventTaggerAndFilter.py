@@ -117,7 +117,7 @@ class FSEventTaggerAndFilter(Module):
 
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
-        self.out.branch("regionWord", "I",
+        self.out.branch("regionWord", "L",
                         title="Word that contains the regions that passed the selection")
 
     def analyze(self, event):
@@ -137,7 +137,7 @@ class FSEventTaggerAndFilter(Module):
 
         region_word = self._build_region_word(counts_by_coll)
 
-        self.out.fillBranch("regionWord", region_word)
+        self.out.fillBranch("regionWord", int(region_word))
 
         for region in self.regions:
             if region_word & region == region:

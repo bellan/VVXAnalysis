@@ -23,9 +23,14 @@ from VVXAnalysis.NanoAnalysis.FSEventTaggerAndFilter import FSEventTaggerAndFilt
 from VVXAnalysis.NanoAnalysis.Regions import flagDefinitions
 from VVXAnalysis.NanoAnalysis.Regions import Flags
 
-selectedRegions = [Flags.R4P, Flags.R4P_1L]
+flagsSelection = [
+    Flags.L4P, Flags.L3P1F, Flags.L2P2F,
+    Flags.L3P, Flags.L2P1F, Flags.L1P2F, Flags.L3F,
+    Flags.L2P1L,
+    Flags.L2P_J2
+]
     
-insertAfter(ZZSequence, 'jetFiller', FSTagger(flagDefinitions, selectedRegions))
+insertAfter(ZZSequence, 'jetFiller', FSTagger(flagDefinitions, flagSelection))
 
 
 p = PostProcessor(".", fileNames,
