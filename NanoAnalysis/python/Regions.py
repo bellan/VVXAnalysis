@@ -169,6 +169,7 @@ flagDefinitions = [
      'photons'  : {'selection': [pt20, P1P]}
      },
 
+'''
     ########################################################
     {'name'   : 'P1F',        
      'photons'  : {'selection': [pt20, P1L, P1F]}
@@ -178,7 +179,7 @@ flagDefinitions = [
     {'name'   : 'P1L',        
      'photons'  : {'selection': [pt20, P1P]}
      },
-    
+'''    
     ########################################################
     {'name' : 'J2P',
      'jets'    : {'selection': [J2P]}
