@@ -47,7 +47,8 @@ class FSEventTaggerAndFilter(Module):
         self.out.fillBranch("regionWord", regionWord)
 
         for region in self.regions:
-            if region in regionWord: return True
+            #if region in regionWord: return True # works from python 3.11 onwards...
+            if regionWord & region == region: return True
 
         return False
         #return not regionWord == 0 
