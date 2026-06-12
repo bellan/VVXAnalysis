@@ -44,7 +44,10 @@ class FSEventTaggerAndFilter(Module):
                 if name in Flags.__members__:
                     regionWord |= Flags[name]
 
-        
         self.out.fillBranch("regionWord", regionWord)
 
-        return not regionWord == 0 
+        for region in self.regions:
+            if region in regionWord: return True
+
+        return False
+        #return not regionWord == 0 
