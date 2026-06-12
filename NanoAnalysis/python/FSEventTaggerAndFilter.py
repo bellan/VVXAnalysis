@@ -9,8 +9,8 @@ class FSEventTaggerAndFilter(Module):
 
     def __init__(self, flags, regions):
 
-        self.flags = flags
-        self.flags = regions
+        self.flags   = flags
+        self.regions = regions
         
     def check(self, collection, selection):
 
