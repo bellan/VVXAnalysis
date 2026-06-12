@@ -39,11 +39,11 @@ class Flags(IntFlag):
 
 
     ## Composite flags ##
-    L4P_L1P  = L4P | P1P
-    L4P_J2   = L4P | J2
-    L3P_P1P  = L3P | P1P
-    L2P_J2   = L2P | J2
-    L2P_P1P  = R2P | P1P
+    L4P_L1P    = L4P    | P1P
+    L4P_J2     = L4P    | J2
+    L3P_P1P    = L3P    | P1P
+    L2P_J2     = L2P    | J2
+    L2P_J2_P1P = L2P_J2 | P1P
 
     
 pt10 = {'name': 'pt10',
