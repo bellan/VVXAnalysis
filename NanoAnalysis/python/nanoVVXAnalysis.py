@@ -18,7 +18,7 @@ branchsel_out.append('keep regionWord*')
 
 from VVXAnalysis.NanoAnalysis.FSEventTaggerAndFilter import FSEventTaggerAndFilter as FSTagger
 
-from VVXAnalysis.NanoAnalysis.VVXEventTaggerAndFilter import VVXEventTaggerAndFilter as VVXTagger
+#from VVXAnalysis.NanoAnalysis.VVXEventTaggerAndFilter import VVXEventTaggerAndFilter as VVXTagger
 
 from VVXAnalysis.NanoAnalysis.Regions import flagDefinitions
 
