@@ -22,7 +22,7 @@ from VVXAnalysis.NanoAnalysis.FSEventTaggerAndFilter import FSEventTaggerAndFilt
 
 from VVXAnalysis.NanoAnalysis.Regions import flagDefinitions
 
-from VVXAnalysis.NanoAnalysis.Regions import selectedRegions
+selectedRegions = [Flags.R4P, Flags.R4P_1L]
     
 insertAfter(ZZSequence, 'jetFiller', FSTagger(flagDefinitions, selectedRegions))
 
