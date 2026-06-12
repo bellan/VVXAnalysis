@@ -39,7 +39,6 @@ class FSEventTaggerAndFilter(Module):
 
         regionWord = 0
         for flag in self.flags:
-            print(flag)
             if self.check(leptons, flag.get("leptons")) and self.check(photons,flag.get("photons")) and self.check(jets, flag.get("jets")):
                 name = flag.get("name")
                 if name in Flags.__members__:
