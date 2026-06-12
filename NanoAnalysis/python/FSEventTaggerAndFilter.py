@@ -7,9 +7,10 @@ from VVXAnalysis.NanoAnalysis.Regions import Flags
 
 class FSEventTaggerAndFilter(Module):
 
-    def __init__(self, flags):
+    def __init__(self, flags, regions):
 
         self.flags = flags
+        self.flags = regions
         
     def check(self, collection, selection):
 
@@ -42,7 +43,7 @@ class FSEventTaggerAndFilter(Module):
             if self.check(leptons, flag.get("leptons")) and self.check(photons,flag.get("photons")) and self.check(jets, flag.get("jets")):
                 name = flag.get("name")
                 if name in Flags.__members__:
-                    regionWord |= Flags[name].value
+                    regionWord |= Flags[name]
 
         
         self.out.fillBranch("regionWord", regionWord)

@@ -1,33 +1,45 @@
 from enum import IntFlag
-import copy
+
 
 # IntFlag is an enum that supports bitwise operations like OR e AND
 class Flags(IntFlag):
-    L4P    = 1 << 0
-    L3P1F  = 1 << 1
-    L2P2F  = 1 << 2
-    L1P3F  = 1 << 3
-    L4F    = 1 << 4
-    L4L    = 1 << 5
-    
-    L3P    = 1 << 6
-    L2P1F  = 1 << 7
-    L1P2F  = 1 << 8
+    ## Pure flags ##
+    P1P    = 1 << 2
+    P1F    = 1 << 1
+    P1L    = 1 << 0
+
+    J2P    = 1 << 3
+
+    L2P    = 1 << 7
+    L1P1F  = 1 << 6
+    L2F    = 1 << 5
+    L2L    = 1 << 4
+
+    L3P    = 1 << 12
+    L2P1F  = 1 << 11
+    L1P2F  = 1 << 10
     L3F    = 1 << 9
-    L3L    = 1 << 10
+    L3L    = 1 << 8
     
-    L2P    = 1 << 11
-    L1P1F  = 1 << 12
-    L2F    = 1 << 13
-    L2L    = 1 << 14
-
-    P1P    = 1 << 15
-    P1F    = 1 << 16
-    P1L    = 1 << 17
-
-    J2P     = 1 << 18
+    L4P    = 1 << 18
+    L3P1F  = 1 << 17
+    L2P2F  = 1 << 16
+    L1P3F  = 1 << 15
+    L4F    = 1 << 14
+    L4L    = 1 << 13
 
 
+    ## Regions ##
+    R4P     = L4P
+    R4P_1L  = L4P | P1P
+
+
+
+selectedRegions = [Flags.R4P, Flags.R4P_1L]
+
+
+
+    
 pt10 = {'name': 'pt10',
         'cuts': {'pt': ('>', 10)},
         'min_particles': 2,
