@@ -108,9 +108,9 @@ double dR_jetRatio_cut = 0.4;
 double dR_FJRatio_cut = 0.8;
 int cutsToApply=4;
 
-TString BDTmodelPath = "bdtModels/ZZGasOnlySig_VLRetunedAlt__BDT_Xgrad_d3_N050.weights.xml"; // ZZG semilep single sig, WZG semilep as bkg
+//TString BDTmodelPath = "bdtModels/ZZGasOnlySig_VLRetunedAlt__BDT_Xgrad_d3_N050.weights.xml"; // ZZG semilep single sig, WZG semilep as bkg
 //TString BDTmodelPath = "bdtModels/postBkgEnriching_kin__BDT_Xgrad_d3_N100.weights.xml";   //vanilla model after retraining SR2P_1k w/bkg enriched in CR2P_1k 
-//TString BDTmodelPath = "bdtModels/postQvG_VLRetunedAlt__BDT_Xgrad_d3_N100.weights.xml"; //after QvG SFs
+TString BDTmodelPath = "bdtModels/postQvG_VLRetunedAlt__BDT_Xgrad_d3_N100.weights.xml"; //after QvG SFs
 //TString BDTmodelPath = "bdtModels/VLRetunedAlt_noNegWgt_BDT_Xgrad_d3_N030.weights.xml"; //used for PhDthesis
 
 double CRZOFFMassCut = 80;
@@ -2929,12 +2929,21 @@ void VZGAnalyzer::printHistos(uint i, std::string histoType, phys::Boson<phys::J
     // envelope: consider the six variations: {Do, Central, Up} x {Dn, Central, Up} - (central, central) - (Dn, Dn) - (Up, Up) and use the max and min
     float QCDscale_Up(1.), QCDscale_Dn(1.);
     std::vector<float> envelope {
+      /*
       theSampleInfo.QCDscale_muR0p5F1(),
       theSampleInfo.QCDscale_muR0p5F2(),
       theSampleInfo.QCDscale_muR1F0p5(),
       theSampleInfo.QCDscale_muR1F2(),
       theSampleInfo.QCDscale_muR2F0p5(),
       theSampleInfo.QCDscale_muR2F1()
+      */
+      //note: central case corresponts to muR=1, F=1, and we are taking the envelope of any combined variations of each par w/i [0.5, 2]
+      theSampleInfo.QCDscale_muR0p5F0p5(),
+      theSampleInfo.QCDscale_muR0p5F1(),
+      theSampleInfo.QCDscale_muR1F0p5(),
+      theSampleInfo.QCDscale_muR1F2(),
+      theSampleInfo.QCDscale_muR2F1(),
+      theSampleInfo.QCDscale_muR2F2()
     };
     QCDscale_Up = *max_element(envelope.begin(), envelope.end());
     QCDscale_Dn = *min_element(envelope.begin(), envelope.end());
