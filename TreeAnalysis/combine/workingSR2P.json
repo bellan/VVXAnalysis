@@ -1,0 +1,21 @@
+{
+    "signals": ["VZG"],
+    "regions": {
+        "SR2P": {
+            "processes": {"VZG": -1, "DYJetsToLL_M50":-1, "ZGToLLG":-1, "TTTo2L2Nu":-1, "FSR":-1},
+            "observable": {"name":"BDTScore", "observation":-1}
+
+	}
+    },
+    "systematics":{
+        "shape": ["jer","jesTotal"],
+        "correlated"  : ["L1Prefiring", "PDFVar", "QCDscale", "alphas","puWeight","jer","jesTotal","effPhIDMVA","CR2P1F"],
+        "uncorrelated": [],
+        "correl_year": [],
+        "skip-if-signal": [],
+        "theory": ["QCDscale", "PDFVar","alphas"],
+        "datadriven": [],
+        "split-by-sample-group": [], 
+        "_end":[]
+    }
+}

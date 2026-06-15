@@ -1,0 +1,73 @@
+imax 1 number of channels
+jmax 3 number of backgrounds
+kmax * number of nuisance parameters
+------------
+
+shapes * * /eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/histogramsForCombine_results_postRwgtFullRun2_d3N100/Run2/SR2P.root $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
+------------
+
+bin          BDTScore
+observation        -1
+------------
+
+bin      BDTScore   BDTScore  BDTScore        BDTScore
+process       VZG  TTTo2L2Nu   ZGToLLG  DYJetsToLL_M50
+process         0          1         2               3
+rate      155.677    1324.02   12318.8         23316.8
+------------
+
+#                          type                VZG          TTTo2L2Nu            ZGToLLG     DYJetsToLL_M50
+CMS_DeepFlavorQGModeling   lnN           1.106186                  -                  -           1.056826
+CMS_L1Prefiring            lnN           1.005222           1.003651           1.003962           1.002294
+CMS_PDFVar                 lnN                  -           1.019950           1.062304           1.061014
+CMS_QCDscale               lnN                  -           1.206877           1.218042           1.249472
+CMS_ZGreweighting          lnN                  -                  -           1.095813                  -
+CMS_DYreweighting          lnN                  -                  -                  -           1.037990
+CMS_alphas                 lnN           1.037473           1.015975           1.011509           1.003523
+CMS_eff_g                  lnN           1.046814           1.044472           1.053443           1.036072
+CMS_eff_e                  lnN           1.029685	    1.033746           1.030081  	  1.035494
+CMS_eff_m                  lnN      	 1.020290  	    1.020861           1.021956  	  1.018392
+#CMS_effPhIDMVA             lnN           1.047113           1.044472           1.053926           1.036156
+#CMS_electronEff            lnN  1.005060/1.029778  1.003870/1.033746  1.007603/1.029823  1.000747/1.035782
+CMS_jer                    lnN  0.999194/0.997888           1.008483           1.047452           1.076089
+CMS_jesAbs                 lnN           1.009637           1.013500           1.037018           1.049600
+CMS_jesAbsYear2016         lnN           1.000155           1.000580           1.002839           1.001380
+CMS_jesAbsYear2017         lnN           1.000848           1.001907           1.007701           1.012099
+CMS_jesAbsYear2018         lnN           1.002813           1.003122           1.007719           1.011509
+CMS_jesBBEC1               lnN           1.002592           1.005254           1.009396           1.009616
+CMS_jesBBEC1Year2016       lnN           1.000319           1.000292           1.000970  1.000779/1.000578
+CMS_jesBBEC1Year2017       lnN           1.000504           1.000393           1.001934           1.003104
+CMS_jesBBEC1Year2018       lnN           1.001150           1.000914           1.002337           1.004312
+CMS_jesEC2                 lnN           1.000835           1.001852           1.006910           1.008337
+CMS_jesEC2Year2016         lnN           1.000148  1.000088/1.000371           1.001402           1.000607
+CMS_jesEC2Year2017         lnN           1.001175           1.002357           1.008435           1.013125
+CMS_jesEC2Year2018         lnN           1.001631           1.001037           1.004299           1.006488
+CMS_jesFlavQCD             lnN           1.012731           1.015227           1.038242           1.044415
+CMS_jesHF                  lnN           1.000282           1.001458           1.006859           1.013449
+CMS_jesHFYear2016          lnN  1.000281/1.000063           1.000090           1.000401  1.000018/1.000187
+CMS_jesHFYear2017          lnN           1.000209           1.000264           1.000700           1.001924
+CMS_jesHFYear2018          lnN                  -           1.000161           1.001247           1.002811
+CMS_jesRelBal              lnN           1.002970           1.003281           1.010186           1.015155
+#CMS_jesRelSampleYear2016   lnN           1.001239           1.001662           1.002566           1.003717
+#CMS_jesRelSampleYear2017   lnN  0.999865/0.998798           1.002367           1.009249           1.015985
+#CMS_jesRelSampleYear2018   lnN           1.006978           1.006078           1.017882           1.025047
+CMS_jesRelSample_DY_2016   lnN                  -                  -                  -           1.004540
+CMS_jesRelSample_DY_2017   lnN                  -                  -                  -           1.015526
+CMS_jesRelSample_DY_2018   lnN                  -                  -                  -           1.023860
+CMS_jesRelSample_ZG_2016   lnN                  -                  -           1.002807                  -
+CMS_jesRelSample_ZG_2017   lnN                  -                  -           1.008845                  -
+CMS_jesRelSample_ZG_2018   lnN                  -                  -           1.008845                  -
+CMS_jesRelSample_tt_2016   lnN                  -           1.001662                  -                  -
+CMS_jesRelSample_tt_2017   lnN                  -           1.002367                  -                  -
+CMS_jesRelSample_tt_2018   lnN                  -           1.006078                  -                  -
+CMS_jesRelSample_VZG_2016  lnN           1.001239                  -                  -                  -
+CMS_jesRelSample_VZG_2017  lnN           1.002302                  -                  -                  -
+CMS_jesRelSample_VZG_2018  lnN           1.006978                  -                  -                  -
+#CMS_muonEff                lnN  1.014505/1.020333  1.016755/1.020861  1.015719/1.021706  1.017853/1.018676
+CMS_puWeight               lnN           1.022347           1.009215           1.015070  0.983695/0.999285
+CMS_lumi_Run2              lnN             1.0092             1.0092             1.0092             1.0092
+CMS_lumi_13TeV_correlated  lnN              1.013              1.013              1.013              1.013
+
+theory group = CMS_PDFVar CMS_QCDscale CMS_alphas
+lumi group = CMS_lumi_Run2 CMS_lumi_13TeV_correlated
+BDTScore autoMCStats 0 0 1 

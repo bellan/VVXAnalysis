@@ -1,0 +1,28 @@
+Combination of y2016preVFP=../combine/cards/2016preVFP_SR2P.txt  y2016postVFP=../combine/cards/2016postVFP_SR2P.txt
+imax 2 number of bins
+jmax 3 number of processes minus 1
+kmax 10 number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes *             y2016postVFP  /eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/histogramsForCombine_resultsMultiStrategy/2016postVFP/SR2P.root BDTScore/$PROCESS BDTScore/$PROCESS_$SYSTEMATIC
+shapes *             y2016preVFP   /eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/histogramsForCombine_resultsMultiStrategy/2016preVFP/SR2P.root BDTScore/$PROCESS BDTScore/$PROCESS_$SYSTEMATIC
+----------------------------------------------------------------------------------------------------------------------------------
+bin          y2016preVFP   y2016postVFP
+observation  -1            -1          
+----------------------------------------------------------------------------------------------------------------------------------
+bin                                          y2016preVFP     y2016preVFP     y2016preVFP     y2016preVFP     y2016postVFP    y2016postVFP    y2016postVFP    y2016postVFP  
+process                                      VZG             TTTo2L2Nu       ZGToLLG         DYJetsToLL_M50  VZG             TTTo2L2Nu       ZGToLLG         DYJetsToLL_M50
+process                                      0               1               2               3               0               1               2               3             
+rate                                         21.728          141.32          1418.16         1204.61         18.1833         134.381         1265.62         1656.05       
+----------------------------------------------------------------------------------------------------------------------------------
+CMS_CR2P1F              lnN                  -               -               -               1.129403        -               -               -               1.129403      
+CMS_JER                 shape                1.0             1.0             1.0             1.0             1.0             1.0             1.0             1.0           
+CMS_JES                 shape                1.0             1.0             1.0             1.0             1.0             1.0             1.0             1.0           
+CMS_L1Prefiring         lnN                  1.007911        1.006587        1.006926        1.003847        1.010065        1.007962        1.007739        1.007722      
+CMS_PDFVar              lnN                  1.089068        1.022241        1.061534        1.05923         1.085116        1.021244        1.062069        1.060564      
+CMS_QCDscale            lnN                  1.150087        1.206129        1.220752        1.24985         1.157849        1.206598        1.22427         1.260045      
+CMS_alphas              shape                1.0             1.0             1.0             1.0             1.0             1.0             1.0             1.0           
+CMS_lumi_13TeV_correlated   lnN              1.006           1.006           1.006           1.006           1.006           1.006           1.006           1.006         
+CMS_lumi_2016           lnN                  1.01            1.01            1.01            1.01            1.01            1.01            1.01            1.01          
+CMS_puWeight            shape                1.0             1.0             1.0             1.0             1.0             1.0             1.0             1.0           
+theory group = CMS_alphas CMS_PDFVar CMS_QCDscale
+lumi group = CMS_lumi_2016 CMS_lumi_13TeV_correlated

@@ -1,0 +1,37 @@
+imax 1 number of channels
+jmax 3 number of backgrounds
+kmax * number of nuisance parameters
+------------
+
+shapes * * /eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/histogramsForCombine_results_fixedJEC_ASCap1/Run2/SR2P.root $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
+------------
+
+bin          BDTScore
+observation        -1
+------------
+
+bin      BDTScore   BDTScore  BDTScore        BDTScore
+process       VZG  TTTo2L2Nu   ZGToLLG  DYJetsToLL_M50
+process         0          1         2               3
+rate      155.262    1324.02   12274.4         18998.9
+------------
+
+#                           type                VZG TTTo2L2Nu   ZGToLLG     DYJetsToLL_M50
+CMS_ZGreweighting            lnN                  -         -       1.3                 -
+CMS_DYreweighting            lnN                  -         -         -                1.3
+CMS_L1Prefiring              lnN           1.005255  1.003650  1.004013           1.002315
+CMS_PDFVar                   lnN           1.089999  1.019950  1.062316           1.059584
+CMS_QCDscale                 lnN           1.157877  1.206878  1.218187           1.250452
+CMS_alphas                 shape                  1         1         1                  1
+CMS_puWeight                 lnN           1.022490  1.009215  1.015418  0.983511/0.999809
+CMS_jer_norm                 lnN  0.998717/0.997492  1.008483  1.046940           1.066235
+CMS_jesTotal_norm            lnN           1.025740  1.030804  1.088687           1.110741
+CMS_jer                    shape                  1         1         1                  1
+CMS_jesTotal               shape                  1         1         1                  1
+CMS_lumi_Run2                lnN              1.013     1.013     1.013              1.013
+#CMS_alphas_norm              lnN                 -  1.015975  1.013452  0.998880/0.995577
+#CMS_lumi_13TeV_correlated    lnN             1.013     1.013     1.013              1.013
+
+theory group = CMS_PDFVar CMS_QCDscale CMS_alphas
+lumi group = CMS_lumi_Run2 
+BDTScore autoMCStats 0 0 1 

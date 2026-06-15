@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Controlla se il path e' stato passato come argomento
+if [ -z "$1" ]; then
+    echo "Usage: $0 <path_to_myRes>"
+    exit 1
+fi
+
+#myRes=$1
+myResFullRun2=$1
+region="SR2P"
+
+# Esegue i comandi hadd
+
+hadd $myResFullRun2/Run2/VZGAnalyzer_$region/WZG.root results/2016preVFP/VZGAnalyzer_SR2P/WZGTo2L2jG.root results/2016postVFP/VZGAnalyzer_SR2P/WZGTo2L2jG.root results/2017/VZGAnalyzer_SR2P/WZGTo2L2jG.root results/2018/VZGAnalyzer_SR2P/WZGTo2L2jG.root 
+
+hadd $myResFullRun2/Run2/VZGAnalyzer_$region/ZZG.root results/2016preVFP/VZGAnalyzer_SR2P/ZZGTo2L2jG.root results/2016postVFP/VZGAnalyzer_SR2P/ZZGTo2L2jG.root results/2017/VZGAnalyzer_SR2P/ZZGTo2L2jG.root results/2018/VZGAnalyzer_SR2P/ZZGTo2L2jG.root 
+
+exit 0

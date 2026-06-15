@@ -1,0 +1,30 @@
+imax 1 number of channels
+jmax 3 number of backgrounds
+kmax 8 number of nuisance parameters
+------------
+
+shapes * * /eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/histogramsForCombine_resultsForSR2PFJ/2016preVFP/SR2PFJ.root $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
+------------
+
+bin          ParticleNet
+observation           -1
+------------
+
+bin      ParticleNet  ParticleNet  ParticleNet     ParticleNet
+process          VZG    TTTo2L2Nu      ZGToLLG  DYJetsToLL_M50
+process            0            1            2               3
+rate         1.43681      15.8665      273.385         82.0142
+------------
+
+#                      type       VZG          TTTo2L2Nu            ZGToLLG     DYJetsToLL_M50
+L1Prefiring            lnN  1.009166           1.007062           1.007597           1.012422
+PDFVar_qqbar           lnN         -           1.024153           1.089077           1.079721
+QCDscale_V             lnN         0                  0                  0  0.794556/1.253885
+QCDscale_Vgamma        lnN         0                  0  0.847392/1.179739                  0
+QCDscale_ttbar         lnN         0  0.809252/1.242967                  0                  0
+alphas                 lnN         -           1.017961  1.048085/1.034382  1.048801/1.041222
+lumi_2016              lnN      1.01               1.01               1.01               1.01
+lumi_13TeV_correlated  lnN     1.006              1.006              1.006              1.006
+
+theory group = PDFVar_qqbar QCDscale_V QCDscale_Vgamma QCDscale_ttbar alphas
+lumi group = lumi_2016 lumi_13TeV_correlated

@@ -1,0 +1,38 @@
+imax 1 number of channels
+jmax 3 number of backgrounds
+kmax * number of nuisance parameters
+------------
+
+shapes * * /eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/histogramsForCombine_results_postRetrain_d3N800_BTVqvgCorr/Run2/SR2P.root $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
+------------
+
+bin          BDTScore
+observation        -1
+------------
+
+bin      BDTScore   BDTScore  BDTScore        BDTScore
+process       VZG  TTTo2L2Nu   ZGToLLG  DYJetsToLL_M50
+process         0          1         2               3
+rate      155.677    1324.02   12274.4         23072.2
+------------
+
+#                            type                VZG          TTTo2L2Nu            ZGToLLG     DYJetsToLL_M50
+CMS_SMP-26-006_ZGrewgt       lnN                  -                  -	              1.3                  -
+CMS_SMP-26-006_DYrewgt       lnN                  -                  -                  -                1.3
+CMS_DeepFlavorQGModeling     lnN           1.106186                  -                  -           1.057273
+CMS_JER                    shape                  1                  1                  1                  1
+CMS_JES                    shape                  1                  1                  1                  1
+CMS_L1Prefiring              lnN           1.005222           1.003651           1.004013           1.002385
+CMS_PDFVar                   lnN                  -           1.019950           1.062316           1.060971
+CMS_QCDscale                 lnN                  -           1.206877           1.218186           1.250275
+CMS_alphas                   lnN           1.037473           1.015975           1.013452           1.003018
+#CMS_alphas                 shape                  1                  1                  1                  1
+CMS_eff_g                    lnN           1.046814           1.044472           1.053443           1.036072
+CMS_eff_e                    lnN  	   1.029685  	      1.033746           1.030081  	    1.035494
+CMS_eff_m                    lnN      	   1.020290  	      1.020861           1.021956  	    1.018392
+CMS_puWeight                 lnN           1.022347           1.009215           1.015418  0.983494/0.999126
+CMS_lumi_Run2                lnN             1.0092             1.0092             1.0092             1.0092
+CMS_lumi_13TeV_correlated    lnN              1.013              1.013              1.013              1.013
+
+theory group = CMS_PDFVar CMS_QCDscale CMS_alphas
+lumi group = CMS_lumi_Run2 CMS_lumi_13TeV_correlated

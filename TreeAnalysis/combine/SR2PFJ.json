@@ -1,0 +1,21 @@
+{
+    "signals": ["VZG"],
+    "regions": {
+        "SR2PFJ": {
+            "processes": {"VZG": -1, "DYJetsToLL_M50":-1, "ZGToLLG":-1, "TTTo2L2Nu":-1},
+            "observable": {"name":"ParticleNet", "observation":-1}
+
+	}
+    },
+    "systematics":{
+        "shape": [],
+        "correlated"  : ["L1Prefiring", "PDFVar", "QCDscale", "alphas"],
+        "uncorrelated": [],
+        "correl_year": ["puWeight"],
+        "skip-if-signal": ["QCDscale", "alphas", "PDFVar"],
+        "theory": ["QCDscale", "alphas", "PDFVar"],
+        "datadriven": [],
+        "split-by-sample-group": ["QCDscale", "PDFVar"], 
+        "_end":[]
+    }
+}

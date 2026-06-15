@@ -8,7 +8,9 @@ TTTo2L2Nu= [{'files':['TTTo2L2Nu'     ] , 'color':ROOT.kViolet-7, 'name':'t#bar{
 DY       = [{'files':['DYJetsToLL_M50'] , 'color':ROOT.kGreen-9 , 'name':'DY'     , 'skip_prompt_ph':True}]
 ZG       = [{'files':['ZGToLLG'       ] , 'color':ROOT.kGreen+2 , 'name':'Z#gamma', 'skip_nonprompt_ph':True}]
 
-VZG      =[{'files':['VZG'    ] , 'color':ROOT.kRed   , 'name':'VZ#gamma'}]
+#VZG      =[{'files':['VZG'    ] , 'color':ROOT.kRed   , 'name':'VZ#gamma'}]
+WZG      =[{'files':['WZG'    ] , 'color':ROOT.kRed   , 'name':'WZ#gamma'}]
+ZZG      =[{'files':['ZZG'    ] , 'color':ROOT.kRed   , 'name':'ZZ#gamma'}]
 FSR      =[{'files':['FSR'    ] , 'color':ROOT.kRed-3   , 'name':'VZ+FSR'}]
 data_obs =[{'files':['data_obs'          ] , 'color':ROOT.kBlack   , 'name':'Data'}]
 
@@ -24,7 +26,8 @@ def isLepCR(region):
 
 def getVZGSamplesByRegion(region, MCSet, predType):
     if is2Lregion(region):
-        tot = VZG + TTTo2L2Nu + DY + ZG
+        tot = WZG + ZZG + TTTo2L2Nu + DY + ZG
+#        tot = VZG + TTTo2L2Nu + DY + ZG
     else:
         raise ValueError('Don\'t know how to categorise region "%s"' %(region))
 

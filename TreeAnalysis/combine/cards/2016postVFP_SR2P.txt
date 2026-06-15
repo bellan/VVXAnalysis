@@ -1,0 +1,34 @@
+imax 1 number of channels
+jmax 3 number of backgrounds
+kmax 12 number of nuisance parameters
+------------
+
+shapes * * /eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/histogramsForCombine_results_perYear_withLepUnc/2016postVFP/SR2P.root $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
+------------
+
+bin          BDTScore
+observation        -1
+------------
+
+bin      BDTScore   BDTScore  BDTScore        BDTScore
+process       VZG  TTTo2L2Nu   ZGToLLG  DYJetsToLL_M50
+process         0          1         2               3
+rate      18.1833    134.381   1520.12         1650.35
+------------
+
+#                          type                VZG          TTTo2L2Nu            ZGToLLG     DYJetsToLL_M50
+CMS_L1Prefiring            lnN           1.010065           1.007962           1.007743           1.007579
+CMS_PDFVar                 lnN           1.085116           1.021244           1.061963           1.061197
+CMS_QCDscale               lnN           1.157849           1.206598           1.222788           1.262961
+CMS_alphas                 lnN           1.026048           1.016260           1.016898           1.028733
+CMS_effPhIDMVA             lnN           1.026006           1.027845           1.030740           1.023078
+CMS_electronEff            lnN  1.002530/1.028252  1.001182/1.033030  1.007230/1.031321           1.018133
+CMS_jer_2016postVFP        lnN  1.000675/1.000028           1.005458           1.018915           1.026265
+CMS_jesTotal_2016postVFP   lnN           1.017308           1.023405           1.064550           1.064685
+CMS_muonEff                lnN  1.011335/1.019448  1.014031/1.020181  1.015175/1.023377  1.013574/1.014829
+CMS_puWeight               lnN           1.021990           1.009058           1.022956  0.955141/0.985494
+CMS_lumi_2016              lnN               1.01               1.01               1.01               1.01
+CMS_lumi_13TeV_correlated  lnN              1.006              1.006              1.006              1.006
+
+theory group = CMS_PDFVar CMS_QCDscale CMS_alphas
+lumi group = CMS_lumi_2016 CMS_lumi_13TeV_correlated

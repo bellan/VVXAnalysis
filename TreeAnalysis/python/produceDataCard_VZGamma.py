@@ -41,11 +41,11 @@ __builtin_config__ = {
     # General configuration
     'systematics':{
         'shape': [],
-        'correlated'  : ['L1Prefiring', 'PDFVar', 'QCDscale', 'alphas','puWeight', 'JER','JES', 'effPhIDMVA','CR2P1F', 'DYpromptPhSub'],# 
+        'correlated'  : ['L1Prefiring', 'PDFVar', 'QCDscale','puWeight', 'effPhIDMVA', 'electronEff', 'muonEff', 'alphas','jer','jesAbs', 'jesBBEC1', 'jesEC2', 'jesFlavQCD', 'jesHF', 'jesRelBal', 'jesRelSample', 'jesAbsYear2016', 'jesAbsYear2017', 'jesAbsYear2018', 'jesBBEC1', 'jesBBEC1Year2016', 'jesBBEC1Year2017', 'jesBBEC1Year2018', 'jesEC2', 'jesEC2Year2016', 'jesEC2Year2017', 'jesEC2Year2018', 'jesFlavQCD', 'jesHF', 'jesHFYear2016', 'jesHFYear2017', 'jesHFYear2018', 'jesRelBal', 'jesRelSampleYear2016', 'jesRelSampleYear2017', 'jesRelSampleYear2018', 'DeepFlavorQGModeling','ZXreweighting'],#,'CR2P1F', 'DYpromptPhSub'],# 
         'uncorrelated': [],
-        'correl_year' : [], # Systematics that are uncorrelated between years, but correlated between 2016 pre/post
-        'skip-if-signal': ['PDFVar', 'QCDscale', 'alphas'],
-        'theory': ['QCDscale', 'alphas', 'PDFVar'],
+        'correl_year' : [],#['jer','jesAbs', 'jesBBEC1', 'jesEC2', 'jesFlavQCD', 'jesHF', 'jesRelBal', 'jesRelSample'], # Systematics that are uncorrelated between years, but correlated between 2016 pre/post
+        'skip-if-signal': ['QCDscale', 'PDFVar'],
+        'theory': ['QCDscale', 'PDFVar', 'alphas'],
         'data-driven': [],
         'split-by-sample-group': [], # Note: when split, the name changes in the datacard, so this cannot be a shape, otherwise the histogram name must change as well
         '_end':[]

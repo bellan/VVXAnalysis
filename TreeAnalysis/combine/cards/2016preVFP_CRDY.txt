@@ -1,0 +1,33 @@
+imax 1 number of channels
+jmax 3 number of backgrounds
+kmax 9 number of nuisance parameters
+------------
+
+shapes * * /eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/histogramsForCombine_resultsTestSimultaneousFit/2016preVFP/CRDY.root $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
+------------
+
+bin          BDTScore
+observation        -1
+------------
+
+bin      BDTScore   BDTScore  BDTScore        BDTScore
+process       VZG  TTTo2L2Nu   ZGToLLG  DYJetsToLL_M50
+process         0          1         2               3
+rate      6.09371    1497.89   331.086         12056.1
+------------
+
+#                            type       VZG TTTo2L2Nu   ZGToLLG DYJetsToLL_M50
+CMS_JER                    shape         1         1         1              1
+CMS_JES                    shape         1         1         1              1
+CMS_L1Prefiring              lnN  1.008310  1.007326  1.007071       1.008101
+CMS_PDFVar                   lnN  1.092207  1.021986  1.065220       1.065845
+CMS_QCDscale                 lnN  1.179711  1.212601  1.212471       1.237221
+CMS_alphas                   lnN  1.092266  1.016642  1.005427       1.025309
+CMS_puWeight                 lnN  1.029100  1.027135  1.018211       1.028726
+CMS_lumi_2016                lnN      1.01      1.01      1.01           1.01
+CMS_lumi_13TeV_correlated    lnN     1.006     1.006     1.006          1.006
+
+theory group = CMS_PDFVar CMS_QCDscale CMS_alphas
+lumi group = CMS_lumi_2016 CMS_lumi_13TeV_correlated
+
+mu_DY rateParam BDTScore DYJetsToLL_M50  1 [0.5,2]

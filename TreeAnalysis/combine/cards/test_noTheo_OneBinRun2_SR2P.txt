@@ -1,0 +1,30 @@
+imax 1 number of channels
+jmax 3 number of backgrounds
+kmax 8 number of nuisance parameters
+------------
+
+shapes * * /eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/histogramsForCombine_resultsFullRun2/2018/SR2P.root $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
+------------
+
+bin          BDTScore
+observation        -1
+------------
+
+bin      BDTScore   BDTScore  BDTScore        BDTScore
+process       VZG  TTTo2L2Nu   ZGToLLG  DYJetsToLL_M50
+process         0          1         2               3
+rate      155.262    1324.01   11119.6         19495.9
+------------
+
+#                            type       VZG TTTo2L2Nu   ZGToLLG DYJetsToLL_M50
+CMS_CR2P_1F_DYnorm           lnN         0         0         0           1.05
+CMS_JER                    shape         1         1         1              1
+CMS_JES                    shape         1         1         1              1
+CMS_PDFVar                   lnN         -  1.019950  1.062105       1.059555
+CMS_QCDscale                 lnN         -  1.206877  1.219915       1.249876
+CMS_alphas                 shape         1         1         1              1
+CMS_puWeight               shape         1         1         1              1
+CMS_lumi_13TeV_correlated    lnN      1.03      1.03      1.03           1.03
+
+theory group = CMS_PDFVar CMS_QCDscale CMS_alphas CMS_CR2P_1F_DYnorm
+lumi group = CMS_lumi_13TeV_correlated 

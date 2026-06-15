@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Controlla se il path e' stato passato come argomento
+if [ -z "$1" ]; then
+    echo "Usage: $0 <path_to_myRes>"
+    exit 1
+fi
+
+myRes=$1
+myResRun2=$2
+region="SR2P_features"
+
+# Esegue i comandi hadd
+hadd $myRes/2016preVFP_features/VZGAnalyzer_$region/DYJetsToLL_M50.root results/2016preVFP/VZGAnalyzer_SR2P_features/DYJetsToLL_M50_part1of3.root results/2016preVFP/VZGAnalyzer_SR2P_features/DYJetsToLL_M50_part2of3.root results/2016preVFP/VZGAnalyzer_SR2P_features/DYJetsToLL_M50_part3of3.root
+hadd $myRes/2016postVFP_features/VZGAnalyzer_$region/DYJetsToLL_M50.root results/2016postVFP/VZGAnalyzer_SR2P_features/DYJetsToLL_M50_part1of2.root results/2016postVFP/VZGAnalyzer_SR2P_features/DYJetsToLL_M50_part2of2.root
+hadd $myRes/2017_features/VZGAnalyzer_$region/DYJetsToLL_M50.root results/2017/VZGAnalyzer_SR2P_features/DYJetsToLL_M50_part1of6.root results/2017/VZGAnalyzer_SR2P_features/DYJetsToLL_M50_part2of6.root results/2017/VZGAnalyzer_SR2P_features/DYJetsToLL_M50_part3of6.root results/2017/VZGAnalyzer_SR2P_features/DYJetsToLL_M50_part4of6.root results/2017/VZGAnalyzer_SR2P_features/DYJetsToLL_M50_part5of6.root results/2017/VZGAnalyzer_SR2P_features/DYJetsToLL_M50_part6of6.root
+hadd $myRes/2018_features/VZGAnalyzer_$region/DYJetsToLL_M50.root results/2018/VZGAnalyzer_SR2P_features/DYJetsToLL_M50_part1of6.root results/2018/VZGAnalyzer_SR2P_features/DYJetsToLL_M50_part2of6.root results/2018/VZGAnalyzer_SR2P_features/DYJetsToLL_M50_part3of6.root results/2018/VZGAnalyzer_SR2P_features/DYJetsToLL_M50_part4of6.root results/2018/VZGAnalyzer_SR2P_features/DYJetsToLL_M50_part5of6.root results/2018/VZGAnalyzer_SR2P_features/DYJetsToLL_M50_part6of6.root
+
+# Esegue i comandi rsync
+rsync results/2018/VZGAnalyzer_SR2P_features/ZGToLLG.root $myRes/2018_features/VZGAnalyzer_$region/
+rsync results/2017/VZGAnalyzer_SR2P_features/ZGToLLG.root $myRes/2017_features/VZGAnalyzer_$region/
+rsync results/2016preVFP/VZGAnalyzer_SR2P_features/ZGToLLG.root $myRes/2016preVFP_features/VZGAnalyzer_$region/
+rsync results/2016postVFP/VZGAnalyzer_SR2P_features/ZGToLLG.root $myRes/2016postVFP_features/VZGAnalyzer_$region/
+
+rsync results/2016preVFP/VZGAnalyzer_SR2P_features/TTTo2L2Nu.root $myRes/2016preVFP_features/VZGAnalyzer_$region/
+rsync results/2016postVFP/VZGAnalyzer_SR2P_features/TTTo2L2Nu.root $myRes/2016postVFP_features/VZGAnalyzer_$region/
+hadd $myRes/2018_features/VZGAnalyzer_$region/TTTo2L2Nu.root results/2018/VZGAnalyzer_SR2P_features/TTTo2L2Nu_part1of4.root results/2018/VZGAnalyzer_SR2P_features/TTTo2L2Nu_part2of4.root results/2018/VZGAnalyzer_SR2P_features/TTTo2L2Nu_part3of4.root results/2018/VZGAnalyzer_SR2P_features/TTTo2L2Nu_part4of4.root
+hadd $myRes/2017_features/VZGAnalyzer_$region/TTTo2L2Nu.root results/2017/VZGAnalyzer_SR2P_features/TTTo2L2Nu_part1of2.root results/2017/VZGAnalyzer_SR2P_features/TTTo2L2Nu_part2of2.root
+
+hadd $myRes/2016preVFP_features/VZGAnalyzer_$region/VZG.root results/2016preVFP/VZGAnalyzer_SR2P_features/WZGTo2L2jG.root results/2016preVFP/VZGAnalyzer_SR2P_features/ZZGTo2L2jG.root
+hadd $myRes/2016postVFP_features/VZGAnalyzer_$region/VZG.root results/2016postVFP/VZGAnalyzer_SR2P_features/WZGTo2L2jG.root results/2016postVFP/VZGAnalyzer_SR2P_features/ZZGTo2L2jG.root
+hadd $myRes/2017_features/VZGAnalyzer_$region/VZG.root results/2017/VZGAnalyzer_SR2P_features/WZGTo2L2jG.root results/2017/VZGAnalyzer_SR2P_features/ZZGTo2L2jG.root
+hadd $myRes/2018_features/VZGAnalyzer_$region/VZG.root results/2018/VZGAnalyzer_SR2P_features/WZGTo2L2jG.root results/2018/VZGAnalyzer_SR2P_features/ZZGTo2L2jG.root
+
+hadd $myRes/2016preVFP_features/VZGAnalyzer_$region/DY_ZG_TT.root  $myRes/2016preVFP_features/VZGAnalyzer_$region/DYJetsToLL_M50.root $myRes/2016preVFP_features/VZGAnalyzer_$region/ZGToLLG.root  $myRes/2016preVFP_features/VZGAnalyzer_$region/TTTo2L2Nu.root
+hadd $myRes/2016postVFP_features/VZGAnalyzer_$region/DY_ZG_TT.root  $myRes/2016postVFP_features/VZGAnalyzer_$region/DYJetsToLL_M50.root $myRes/2016postVFP_features/VZGAnalyzer_$region/ZGToLLG.root  $myRes/2016postVFP_features/VZGAnalyzer_$region/TTTo2L2Nu.root
+hadd $myRes/2017_features/VZGAnalyzer_$region/DY_ZG_TT.root  $myRes/2017_features/VZGAnalyzer_$region/DYJetsToLL_M50.root $myRes/2017_features/VZGAnalyzer_$region/ZGToLLG.root  $myRes/2017_features/VZGAnalyzer_$region/TTTo2L2Nu.root
+hadd $myRes/2018_features/VZGAnalyzer_$region/DY_ZG_TT.root  $myRes/2018_features/VZGAnalyzer_$region/DYJetsToLL_M50.root $myRes/2018_features/VZGAnalyzer_$region/ZGToLLG.root  $myRes/2018_features/VZGAnalyzer_$region/TTTo2L2Nu.root
+
+
+hadd $myResRun2/Run2_features/VZGAnalyzer_$region/VZG.root $myRes/2018_features/VZGAnalyzer_$region/VZG.root $myRes/2017_features/VZGAnalyzer_$region/VZG.root  $myRes/2016postVFP_features/VZGAnalyzer_$region/VZG.root $myRes/2016preVFP_features/VZGAnalyzer_$region/VZG.root 
+hadd $myResRun2/Run2_features/VZGAnalyzer_$region/DY_ZG_TT.root $myRes/2018_features/VZGAnalyzer_$region/DY_ZG_TT.root $myRes/2017_features/VZGAnalyzer_$region/DY_ZG_TT.root  $myRes/2016postVFP_features/VZGAnalyzer_$region/DY_ZG_TT.root $myRes/2016preVFP_features/VZGAnalyzer_$region/DY_ZG_TT.root 
+
+exit 0

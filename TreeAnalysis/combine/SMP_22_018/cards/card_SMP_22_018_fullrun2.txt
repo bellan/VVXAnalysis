@@ -1,0 +1,94 @@
+Combination of WZGy2016=../combine/SMP_22_018/cards/card_SR_2016_fullrun2.txt  WZGy2017=../combine/SMP_22_018/cards/card_SR_2017_fullrun2.txt  WZGy2018=../combine/SMP_22_018/cards/card_SR_2018_fullrun2.txt
+imax 3 number of bins
+jmax 6 number of processes minus 1
+kmax 59 number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes *         WZGy2016  ../combine/SMP_22_018/cards/../histos//WZG_2016.root WZG_WZG_mlla_$PROCESS_None WZG_WZG_mlla_$PROCESS_$SYSTEMATIC
+shapes data_obs  WZGy2016  ../combine/SMP_22_018/cards/../histos//WZG_2016.root WZG_WZG_mlla_data_None
+shapes *         WZGy2017  ../combine/SMP_22_018/cards/../histos/WZG_2017.root WZG_WZG_mlla_$PROCESS_None WZG_WZG_mlla_$PROCESS_$SYSTEMATIC
+shapes data_obs  WZGy2017  ../combine/SMP_22_018/cards/../histos/WZG_2017.root WZG_WZG_mlla_data_None
+shapes *         WZGy2018  ../combine/SMP_22_018/cards/../histos//WZG_2018.root WZG_WZG_mlla_$PROCESS_None WZG_WZG_mlla_$PROCESS_$SYSTEMATIC
+shapes data_obs  WZGy2018  ../combine/SMP_22_018/cards/../histos//WZG_2018.root WZG_WZG_mlla_data_None
+----------------------------------------------------------------------------------------------------------------------------------
+bin          WZGy2016  WZGy2017  WZGy2018
+observation  -1        -1        -1      
+----------------------------------------------------------------------------------------------------------------------------------
+bin                                          WZGy2016  WZGy2016  WZGy2016  WZGy2016  WZGy2016  WZGy2016  WZGy2016  WZGy2017  WZGy2017  WZGy2017  WZGy2017  WZGy2017  WZGy2017  WZGy2017  WZGy2018  WZGy2018  WZGy2018  WZGy2018  WZGy2018  WZGy2018  WZGy2018
+process                                      WZG       FakeLep   FakePho   Top       VV        VVV       VG        WZG       FakeLep   FakePho   Top       VV        VVV       VG        WZG       FakeLep   FakePho   Top       VV        VVV       VG      
+process                                      0         1         2         3         4         5         6         0         1         2         3         4         5         6         0         1         2         3         4         5         6       
+rate                                         10.523    2.839     4.067     0.773     2.806     0.488     0.105     12.46     5.918     6.648     0.817     4.046     0.466     0.204     18.326    6.976     8.598     1.4       5.703     0.688     1.401   
+----------------------------------------------------------------------------------------------------------------------------------
+Electron_ID_Weight      shape                1.0       -         -         1.0       1.0       1.0       1.0       1.0       -         -         1.0       1.0       1.0       1.0       1.0       -         -         1.0       1.0       1.0       1.0     
+Electron_RECO_Weight    shape                1.0       -         -         1.0       1.0       1.0       1.0       1.0       -         -         1.0       1.0       1.0       1.0       1.0       -         -         1.0       1.0       1.0       1.0     
+FakeLep_ele             shape                -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -       
+FakeLep_fakerate_16     shape                -         1.0       -         -         -         -         -         -         -         -         -         -         -         -         -         -         -         -         -         -         -       
+FakeLep_fakerate_17     shape                -         -         -         -         -         -         -         -         1.0       -         -         -         -         -         -         -         -         -         -         -         -       
+FakeLep_fakerate_18     shape                -         -         -         -         -         -         -         -         -         -         -         -         -         -         -         1.0       -         -         -         -         -       
+FakeLep_mu              shape                -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -       
+FakePho_closure         shape                -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -       
+FakePho_iso             shape                -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -       
+FakePho_mc              shape                -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -       
+FakePho_stat_16         shape                -         -         1.0       -         -         -         -         -         -         -         -         -         -         -         -         -         -         -         -         -         -       
+FakePho_stat_17         shape                -         -         -         -         -         -         -         -         -         1.0       -         -         -         -         -         -         -         -         -         -         -       
+FakePho_stat_18         shape                -         -         -         -         -         -         -         -         -         -         -         -         -         -         -         -         1.0       -         -         -         -       
+HLT_method_sys          lnN                  1.01      -         -         1.01      1.01      1.01      1.01      1.01      -         -         1.01      1.01      1.01      1.01      1.01      -         -         1.01      1.01      1.01      1.01    
+HLT_stat_16             lnN                  1.003     -         -         1.003     1.003     1.003     1.003     -         -         -         -         -         -         -         -         -         -         -         -         -         -       
+HLT_stat_17             lnN                  -         -         -         -         -         -         -         1.003     -         -         1.003     1.003     1.003     1.003     -         -         -         -         -         -         -       
+HLT_stat_18             lnN                  -         -         -         -         -         -         -         -         -         -         -         -         -         -         1.002     -         -         1.002     1.002     1.002     1.002   
+Muon_ID_Weight          shape                1.0       -         -         1.0       1.0       1.0       1.0       1.0       -         -         1.0       1.0       1.0       1.0       1.0       -         -         1.0       1.0       1.0       1.0     
+Top_PSWeight_Fsr        shape                -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -       
+Top_PSWeight_Isr        shape                -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -       
+Top_pdf                 shape                -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -       
+Top_scale               shape                -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -       
+VG_PSWeight_Fsr         shape                -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0     
+VG_PSWeight_Isr         shape                -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0     
+VG_pdf                  shape                -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0     
+VG_scale                shape                -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0     
+VVV_PSWeight_Fsr        shape                -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -       
+VVV_PSWeight_Isr        shape                -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -       
+VVV_pdf                 shape                -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -       
+VVV_scale               shape                -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -       
+VV_PSWeight_Fsr         shape                -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -       
+VV_PSWeight_Isr         shape                -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -       
+VV_pdf                  shape                -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -       
+VV_scale                shape                -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -       
+WZG_PSWeight_Fsr        shape                1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -       
+WZG_PSWeight_Isr        shape                1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -       
+WZG_pdf                 shape                1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -       
+WZG_scale               shape                1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -         1.0       -         -         -         -         -         -       
+btagWeight_bc_corr      shape                1.0       -         -         1.0       1.0       1.0       1.0       1.0       -         -         1.0       1.0       1.0       1.0       1.0       -         -         1.0       1.0       1.0       1.0     
+btagWeight_bc_uncorr_16   shape              1.0       -         -         1.0       1.0       1.0       1.0       -         -         -         -         -         -         -         -         -         -         -         -         -         -       
+btagWeight_bc_uncorr_17   shape              -         -         -         -         -         -         -         1.0       -         -         1.0       1.0       1.0       1.0       -         -         -         -         -         -         -       
+btagWeight_bc_uncorr_18   shape              -         -         -         -         -         -         -         -         -         -         -         -         -         -         1.0       -         -         1.0       1.0       1.0       1.0     
+btagWeight_l_corr       shape                1.0       -         -         1.0       1.0       1.0       1.0       1.0       -         -         1.0       1.0       1.0       1.0       1.0       -         -         1.0       1.0       1.0       1.0     
+btagWeight_l_uncorr_16   shape               1.0       -         -         1.0       1.0       1.0       1.0       -         -         -         -         -         -         -         -         -         -         -         -         -         -       
+btagWeight_l_uncorr_17   shape               -         -         -         -         -         -         -         1.0       -         -         1.0       1.0       1.0       1.0       -         -         -         -         -         -         -       
+btagWeight_l_uncorr_18   shape               -         -         -         -         -         -         -         -         -         -         -         -         -         -         1.0       -         -         1.0       1.0       1.0       1.0     
+jer_16                  shape                1.0       -         -         1.0       1.0       1.0       1.0       -         -         -         -         -         -         -         -         -         -         -         -         -         -       
+jer_17                  shape                -         -         -         -         -         -         -         1.0       -         -         1.0       1.0       1.0       1.0       -         -         -         -         -         -         -       
+jer_18                  shape                -         -         -         -         -         -         -         -         -         -         -         -         -         -         1.0       -         -         1.0       1.0       1.0       1.0     
+jesTotal_16             shape                1.0       -         -         1.0       1.0       1.0       1.0       -         -         -         -         -         -         -         -         -         -         -         -         -         -       
+jesTotal_17             shape                -         -         -         -         -         -         -         1.0       -         -         1.0       1.0       1.0       1.0       -         -         -         -         -         -         -       
+jesTotal_18             shape                -         -         -         -         -         -         -         -         -         -         -         -         -         -         1.0       -         -         1.0       1.0       1.0       1.0     
+l1pref                  shape                1.0       -         -         1.0       1.0       1.0       1.0       1.0       -         -         1.0       1.0       1.0       1.0       -         -         -         -         -         -         -       
+lumi_16                 lnN                  1.01      -         -         1.01      1.01      1.01      1.01      -         -         -         -         -         -         -         -         -         -         -         -         -         -       
+lumi_17                 lnN                  -         -         -         -         -         -         -         1.02      -         -         1.02      1.02      1.02      1.02      -         -         -         -         -         -         -       
+lumi_1718               lnN                  -         -         -         -         -         -         -         1.006     -         -         1.006     1.006     1.006     1.006     1.002     -         -         1.002     1.002     1.002     1.002   
+lumi_18                 lnN                  -         -         -         -         -         -         -         -         -         -         -         -         -         -         1.015     -         -         1.015     1.015     1.015     1.015   
+lumi_fullrun2           lnN                  1.006     -         -         1.006     1.006     1.006     1.006     1.009     -         -         1.009     1.009     1.009     1.009     1.02      -         -         1.02      1.02      1.02      1.02    
+puWeight                shape                1.0       -         -         1.0       1.0       1.0       1.0       1.0       -         -         1.0       1.0       1.0       1.0       1.0       -         -         1.0       1.0       1.0       1.0     
+VV_Norm       rateParam WZGy2016 VV 1.0 [0,2]
+VV_Norm       rateParam WZGy2017 VV 1.0 [0,2]
+VV_Norm       rateParam WZGy2018 VV 1.0 [0,2]
+muon group = Muon_ID_Weight
+egamma group = Electron_ID_Weight Electron_RECO_Weight
+HLT group = HLT_stat_17 HLT_stat_18 HLT_method_sys HLT_stat_16
+theory group = VVV_PSWeight_Fsr VVV_pdf VV_PSWeight_Fsr WZG_PSWeight_Isr WZG_PSWeight_Fsr VVV_PSWeight_Isr VG_scale VV_pdf WZG_pdf VG_pdf WZG_scale VV_PSWeight_Isr VG_PSWeight_Fsr VG_PSWeight_Isr VV_scale VVV_scale
+btag group = btagWeight_l_uncorr_16 btagWeight_l_uncorr_17 btagWeight_l_uncorr_18 btagWeight_bc_uncorr_18 btagWeight_bc_uncorr_16 btagWeight_bc_corr btagWeight_l_corr btagWeight_bc_uncorr_17
+JESR group = jesTotal_16 jer_17 jesTotal_18 jer_18 jesTotal_17 jer_16
+fake group = FakePho_stat_18 FakePho_closure FakeLep_mu FakePho_stat_16 FakeLep_fakerate_18 FakePho_stat_17 FakePho_mc FakeLep_ele FakePho_iso
+lumi group = lumi_fullrun2 lumi_18 lumi_17 lumi_16 lumi_1718
+pileup group = puWeight
+WZGy2016 autoMCStats 10 1 1
+WZGy2017 autoMCStats 10 1 1
+WZGy2018 autoMCStats 10 1 1

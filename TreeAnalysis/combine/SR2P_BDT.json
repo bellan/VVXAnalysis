@@ -8,12 +8,12 @@
 	}
     },
     "systematics":{
-        "shape": ["alphas","puWeight","JER","JES"],
-        "correlated"  : ["L1Prefiring", "PDFVar", "QCDscale", "alphas","puWeight","JER","JES","effPhIDMVA","CR2P1F","DYpromptPhSub"],
+        "shape": ["alphas","CMS_pileup","CMS_jer","CMS_jesTotal"],
+        "correlated"  : ["CMS_l1_prefiring", "pdf", "QCDscale", "alphas","CMS_pileup","CMS_jer","CMS_jesTotal","CMS_eff_g_IDMVA","CMS_CR2P1F","CMS_DYpromptPhSub"],
         "uncorrelated": [],
         "correl_year": [],
         "skip-if-signal": [],
-        "theory": ["QCDscale", "PDFVar","alphas"],
+        "theory": ["QCDscale", "pdf","alphas"],
         "datadriven": [],
         "split-by-sample-group": [], 
         "_end":[]

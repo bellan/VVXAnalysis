@@ -1,0 +1,35 @@
+imax 1 number of channels
+jmax 3 number of backgrounds
+kmax 13 number of nuisance parameters
+------------
+
+shapes * * /eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/histogramsForCombine_resultsDYfixed/2016postVFP/SR2P.root $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
+------------
+
+bin          BDTScore
+observation        -1
+------------
+
+bin      BDTScore   BDTScore  BDTScore        BDTScore
+process       VZG  TTTo2L2Nu   ZGToLLG  DYJetsToLL_M50
+process         0          1         2               3
+rate      18.1833    134.381   1265.62         1190.55
+------------
+
+#                            type       VZG TTTo2L2Nu   ZGToLLG DYJetsToLL_M50
+CMS_CR2P1F                   lnN         0         0         0       1.014378
+CMS_JER                    shape         1         1         1              1
+CMS_JES                    shape         1         1         1              1
+CMS_L1Prefiring              lnN  1.010065  1.007962  1.007739       1.007722
+CMS_PDFVar                   lnN         -  1.021244  1.062069       1.060564
+CMS_QCDscale_V               lnN         0         0         0       1.260045
+CMS_QCDscale_Vgamma          lnN         0         0  1.224270              0
+CMS_QCDscale_ttbar           lnN         0  1.206598         0              0
+CMS_alphas                 shape         -         1         1              1
+CMS_effPhIDMVA               lnN  1.025988  1.027845  1.030760       1.023219
+CMS_puWeight               shape         1         1         1              1
+CMS_lumi_2016                lnN      1.01      1.01      1.01           1.01
+CMS_lumi_13TeV_correlated    lnN     1.006     1.006     1.006          1.006
+
+theory group = CMS_PDFVar CMS_QCDscale_V CMS_QCDscale_Vgamma CMS_QCDscale_ttbar CMS_alphas
+lumi group = CMS_lumi_2016 CMS_lumi_13TeV_correlated

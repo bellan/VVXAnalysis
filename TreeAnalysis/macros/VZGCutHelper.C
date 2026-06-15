@@ -9,16 +9,24 @@
 double minRangeSens = 1.8;
 double maxRangeSens = 2.0;
 
-const std::vector<TString> varNames = { "recoVMass", "FWM_T0_fullSyst", "DR_gammaClosestJet", "FWM_T2_fullSyst", "recoVDaughter0Pt", "recoVDaughter1Pt", "recoVDaughtersDeltaPhi", "recoVPt", "recoZDeltaPhi", "recoZEta", "recoZMass", "recoZPt"};//, "System_Pt"};//, "relativePT_G_vs_V","VBH0s","VBH0z","VBH0t","jjH0s","jjH0z","jjH0t"};
+const std::vector<TString> varNames = {"mllG_"};// { "recoVMass", "FWM_T0_fullSyst", "DR_gammaClosestJet", "FWM_T2_fullSyst", "recoVDaughter0Pt", "recoVDaughter1Pt", "recoVDaughtersDeltaPhi", "recoVPt", "recoZDeltaPhi", "recoZEta", "recoZMass", "recoZPt"};//, "System_Pt"};//, "relativePT_G_vs_V","VBH0s","VBH0z","VBH0t","jjH0s","jjH0z","jjH0t"};
 
 void VZGCutHelper()
 {
   // Apri i file root contenenti gli istogrammi di segnale e background
-  TString path_to_rootOutput= "../results/2016preVFP/VZGAnalyzer_SR2P/";
-  TFile *WZGFile = new TFile(path_to_rootOutput+"WZGTo2L2jG.root", "READ");
-  TFile *ZZGFile = new TFile(path_to_rootOutput+"ZZGTo2L2jG.root", "READ");
-  TFile *backgroundFile = new TFile(path_to_rootOutput+"DYJetsToLL_M50.root", "READ");
-  
+   TString path_to_rootOutput= "../resultsForAppendixPlotsFullRun2/Run2/VZGAnalyzer_SR2P/";
+  //  TFile *WZGFile = new TFile(path_to_rootOutput+"WZGTo2L2jG.root", "READ");
+  //TFile *ZZGFile = new TFile(path_to_rootOutput+"ZZGTo2L2jG.root", "READ");
+  TFile *VZGFile = new TFile(path_to_rootOutput+"VZG.root", "READ");
+  TFile *DYFile = new TFile(path_to_rootOutput+"DYJetsToLL_M50.root", "READ");
+  TFile *ZGFile = new TFile(path_to_rootOutput+"ZGToLLG.root", "READ");
+  /*  TFile *ttXFile = new TFile(path_to_rootOutput+"ttX.root", "READ");
+  TFile *TZqFile = new TFile(path_to_rootOutput+"TZq.root", "READ");
+  TFile *WXFile = new TFile(path_to_rootOutput+"WX.root", "READ");
+  TFile *qqZZFile = new TFile(path_to_rootOutput+"qqZZ.root", "READ");
+  */
+  TFile *TTTo2L2NuFile = new TFile(path_to_rootOutput+"TTTo2L2Nu.root", "READ");
+ 
   for (int cutNb = 7; cutNb < 8; cutNb++){
     for (int iVars=0; iVars<varNames.size(); ++iVars){
       TString varName=varNames[iVars];

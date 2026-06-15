@@ -150,6 +150,12 @@ def plotSystematics(hCentral, hUp, hDn, var='[var]', syst='[syst]', sample='[sam
                 xc = hCentral.GetBinCenter(i)
                 nu = hUp.GetBinContent(i)
                 nd = hDn.GetBinContent(i)
+                if(nc <= 0): 
+                    nc = 0.0001
+                if(nu <= 0): 
+                    nu = 0.0001
+                if(nd <= 0): 
+                    nd = 0.0001
                 if(nc != 0):
                     logging.debug('>>> bin:{:d} ({:.0f}), central:{:+.3f}, up:{:+.3f} ({:+.3f}), dn:{:+.3f} ({:+.3f})'.format(i, xc, nc, nu, nu/nc, nd, nd/nc))
                 else:

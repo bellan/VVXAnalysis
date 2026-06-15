@@ -1,0 +1,33 @@
+Combination of SR2016preVFP=../combine/cards/2016preVFP_SR2P.txt  CRDY2016preVFP=../combine/cards/2016preVFP_CRDY.txt
+imax 2 number of bins
+jmax 3 number of processes minus 1
+kmax * number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes *               CRDY2016preVFP  /eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/histogramsForCombine_resultsTestSimultaneousFit/2016preVFP/CRDY.root BDTScore/$PROCESS BDTScore/$PROCESS_$SYSTEMATIC
+shapes *               SR2016preVFP    /eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/histogramsForCombine_resultsTestSimultaneousFit/2016preVFP/SR2P.root BDTScore/$PROCESS BDTScore/$PROCESS_$SYSTEMATIC
+----------------------------------------------------------------------------------------------------------------------------------
+bin          SR2016preVFP       CRDY2016preVFP   
+observation  -1                 17900               
+----------------------------------------------------------------------------------------------------------------------------------
+bin                                          SR2016preVFP       SR2016preVFP       SR2016preVFP       SR2016preVFP       CRDY2016preVFP     CRDY2016preVFP     CRDY2016preVFP     CRDY2016preVFP   
+process                                      VZG                TTTo2L2Nu          ZGToLLG            DYJetsToLL_M50     VZG                TTTo2L2Nu          ZGToLLG            DYJetsToLL_M50   
+process                                      0                  1                  2                  3                  0                  1                  2                  3                
+rate                                         21.7279            141.32             1698.92            866                6.09371            1497.89            331.086            12056.1          
+----------------------------------------------------------------------------------------------------------------------------------
+#CMS_CR2P1F              lnN                  -                  -                  -                  0.591907/0.851769  -                  -                  -                  -                
+CMS_JER                 shape                1.0                1.0                1.0                1.0                1.0                1.0                1.0                1.0              
+CMS_JES                 shape                1.0                1.0                1.0                1.0                1.0                1.0                1.0                1.0              
+CMS_L1Prefiring         lnN                  1.007911           1.006587           1.006947           1.003847           1.00831            1.007326           1.007071           1.008101         
+CMS_PDFVar              lnN                  1.089068           1.022241           1.0612             1.05923            1.092207           1.021986           1.06522            1.065845         
+CMS_QCDscale            lnN                  1.150087           1.206129           1.219517           1.24985            1.179711           1.212601           1.212471           1.237221         
+CMS_alphas              lnN                  0.487607/1.737058  1.015102           1.008294           1.007153           1.092266           1.016642           1.005427           1.025309         
+CMS_lumi_13TeV_correlated   lnN              1.006              1.006              1.006              1.006              1.006              1.006              1.006              1.006            
+CMS_lumi_2016           lnN                  1.01               1.01               1.01               1.01               1.01               1.01               1.01               1.01             
+CMS_puWeight            lnN                  1.030079           1.023803           1.026187           1.016707           1.0291             1.027135           1.018211           1.028726         
+
+# scale factor DY extracted from CRDY and applied to SR (shared parameter)
+rateParam      SR2016preVFP	    DYJetsToLL_M50   mu_DY 	1	[0.01,10]
+rateParam      CRDY2016preVFP       DYJetsToLL_M50   mu_DY 	1 	[0.01,10]
+
+theory group = CMS_PDFVar CMS_alphas CMS_QCDscale
+lumi group = CMS_lumi_2016 CMS_lumi_13TeV_correlated

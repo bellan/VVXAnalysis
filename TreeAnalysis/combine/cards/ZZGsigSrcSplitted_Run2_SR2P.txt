@@ -1,0 +1,56 @@
+imax 1 number of channels
+jmax 4 number of backgrounds
+kmax * number of nuisance parameters
+------------
+
+shapes * * /eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/histogramsForCombine_results_sigSrcSplit_d3N100/Run2/SR2P.root $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
+------------
+
+bin          BDTScore
+observation        -1
+------------
+
+bin      BDTScore  BDTScore        BDTScore  BDTScore   BDTScore
+process       ZZG       WZG  DYJetsToLL_M50   ZGToLLG  TTTo2L2Nu
+process        -1         0               1         2          3
+rate      55.5267   100.151         23316.8   12318.8    1324.02
+------------
+
+#                          type                ZZG                WZG     DYJetsToLL_M50            ZGToLLG          TTTo2L2Nu
+CMS_DeepFlavorQGModeling   lnN           1.104498           1.107122           1.056826                  -                  -
+CMS_L1Prefiring            lnN           1.004863           1.005421           1.002294           1.003962           1.003651
+CMS_PDFVar                 lnN                  -                  -           1.061014           1.062304           1.019950
+CMS_QCDscale               lnN                  -                  -           1.249472           1.218042           1.206877
+CMS_ZXreweighting          lnN                  -                  -           1.037990           1.095813                  -
+CMS_alphas                 lnN                  -                  -           1.003523           1.011509           1.015975
+CMS_eff_g		   lnN           1.043465           1.049136           1.036156           1.053926           1.044472
+CMS_eff_e		   lnN  	 1.006258    	    1.030215  	       1.035782  	  1.029823  	     1.033746
+CMS_eff_m                  lnN  	 1.020552  	    1.020212  	       1.018676  	  1.021706  	     1.020861
+CMS_jer                    lnN  	 1.004442 	    1.001579           1.076089           1.047452           1.008483
+CMS_jesAbs                 lnN           1.008835           1.010082           1.049600           1.037018           1.013500
+CMS_jesAbsYear2016         lnN           1.000646  	    1.00302            1.001380           1.002839           1.000580
+CMS_jesAbsYear2017         lnN           1.001298           1.000598           1.012099           1.007701           1.001907
+CMS_jesAbsYear2018         lnN  	 1.002402           1.003877           1.011509           1.007719           1.003122
+CMS_jesBBEC1               lnN           1.002801           1.002476           1.009616           1.009396           1.005254
+CMS_jesBBEC1Year2016       lnN  	 1.000553  	    1.000817  	       1.000779           1.000970           1.000292
+CMS_jesBBEC1Year2017       lnN           1.000785           1.000348           1.003104           1.001934           1.000393
+CMS_jesBBEC1Year2018       lnN           1.000766           1.001363           1.004312           1.002337           1.000914
+CMS_jesEC2                 lnN           1.001018           1.000734           1.008337           1.006910           1.001852
+CMS_jesEC2Year2016         lnN  	 1.000358  	    1.000513           1.000607           1.001402  	     1.000371
+CMS_jesEC2Year2017         lnN           1.001278           1.001118           1.013125           1.008435           1.002357
+CMS_jesEC2Year2018         lnN           1.001166           1.001889           1.006488           1.004299           1.001037
+CMS_jesFlavQCD             lnN           1.010220           1.014123           1.044415           1.038242           1.015227
+CMS_jesHF                  lnN  	 1.000699           1.000333           1.013449           1.006859           1.001458
+CMS_jesHFYear2016          lnN                  -  	    1.000417  	       1.000187           1.000401           1.000090
+CMS_jesHFYear2017          lnN           1.000291           1.000164           1.001924           1.000700           1.000264
+CMS_jesHFYear2018          lnN           1.000187                  -           1.002811           1.001247           1.000161
+CMS_jesRelBal              lnN           1.002059           1.003475           1.015155           1.010186           1.003281
+CMS_jesRelSampleYear2016   lnN           1.001549           1.001068           1.003717           1.002566           1.001662
+CMS_jesRelSampleYear2017   lnN           1.001006  	    1.000921           1.015985           1.009249           1.002367
+CMS_jesRelSampleYear2018   lnN           1.005226           1.007949           1.025047           1.017882           1.006078
+CMS_puWeight               lnN           1.024673           1.021057  	       1.016405           1.015070           1.009215
+CMS_lumi_Run2              lnN             1.0092             1.0092             1.0092             1.0092             1.0092
+CMS_lumi_13TeV_correlated  lnN              1.013              1.013              1.013              1.013              1.013
+
+theory group = CMS_PDFVar CMS_QCDscale CMS_alphas
+lumi group = CMS_lumi_Run2 CMS_lumi_13TeV_correlated

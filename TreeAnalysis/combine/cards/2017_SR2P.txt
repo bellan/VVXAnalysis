@@ -1,0 +1,35 @@
+imax 1 number of channels
+jmax 3 number of backgrounds
+kmax 13 number of nuisance parameters
+------------
+
+shapes * * /eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/histogramsForCombine_results_perYear_withLepUnc/2017/SR2P.root $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
+------------
+
+bin          BDTScore
+observation        -1
+------------
+
+bin      BDTScore   BDTScore  BDTScore        BDTScore
+process       VZG  TTTo2L2Nu   ZGToLLG  DYJetsToLL_M50
+process         0          1         2               3
+rate      46.1031    436.892   3702.91         7512.03
+------------
+
+#                          type                VZG          TTTo2L2Nu            ZGToLLG     DYJetsToLL_M50
+CMS_L1Prefiring            lnN           1.008730           1.005771           1.005721           1.003455
+CMS_PDFVar                 lnN           1.091068           1.017255           1.062255           1.056712
+CMS_QCDscale               lnN           1.156690           1.206508           1.217260           1.259446
+CMS_alphas                 lnN           1.046033           1.015912           1.016170           1.011062
+CMS_effPhIDMVA             lnN           1.049175           1.048616           1.060043           1.038251
+CMS_electronEff            lnN           1.011539           1.013930           1.010290           1.016636
+CMS_jer_2017               lnN           1.002378           1.009205           1.059961           1.079247
+CMS_jesTotal_2017          lnN           1.025119           1.034709           1.114999           1.127167
+CMS_muonEff                lnN  1.006863/1.015097  1.005288/1.010496  1.000935/1.009353  1.010568/1.011554
+CMS_puWeight               lnN           1.020083           1.009112           1.015495           1.012499
+CMS_lumi_2017              lnN               1.02               1.02               1.02               1.02
+CMS_lumi_13TeV_correlated  lnN              1.009              1.009              1.009              1.009
+CMS_lumi_13TeV_1718        lnN              1.006              1.006              1.006              1.006
+
+theory group = CMS_PDFVar CMS_QCDscale CMS_alphas
+lumi group = CMS_lumi_2017 CMS_lumi_13TeV_correlated CMS_lumi_13TeV_1718

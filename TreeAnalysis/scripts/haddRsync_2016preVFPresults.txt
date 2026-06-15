@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Controlla se il path e' stato passato come argomento
+if [ -z "$1" ]; then
+    echo "Usage: $0 <path_to_myRes>"
+    exit 1
+fi
+
+myRes=$1
+region="SR2P"
+
+# Esegue i comandi hadd
+hadd $myRes/2016preVFP/VZGAnalyzer_$region/data_obs.root results/2016/VZGAnalyzer_SR2P/2016Bver2.root results/2016/VZGAnalyzer_SR2P/2016Chipm.root results/2016/VZGAnalyzer_SR2P/2016Dhipm.root results/2016/VZGAnalyzer_SR2P/2016Ehipm.root results/2016/VZGAnalyzer_SR2P/2016Fhipm.root
+
+hadd $myRes/2016preVFP/VZGAnalyzer_$region/DYJetsToLL_M50.root results/2016preVFP/VZGAnalyzer_SR2P/DYJetsToLL_M50_part1of3.root results/2016preVFP/VZGAnalyzer_SR2P/DYJetsToLL_M50_part2of3.root results/2016preVFP/VZGAnalyzer_SR2P/DYJetsToLL_M50_part3of3.root
+
+# Esegue i comandi rsync
+rsync results/2016preVFP/VZGAnalyzer_SR2P/ZGToLLG.root $myRes/2016preVFP/VZGAnalyzer_$region/
+
+rsync results/2016preVFP/VZGAnalyzer_SR2P/TTTo2L2Nu.root $myRes/2016preVFP/VZGAnalyzer_$region/
+
+hadd $myRes/2016preVFP/VZGAnalyzer_$region/VZG.root results/2016preVFP/VZGAnalyzer_SR2P/WZGTo2L2jG.root results/2016preVFP/VZGAnalyzer_SR2P/ZZGTo2L2jG.root
+
+exit 0

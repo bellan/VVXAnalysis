@@ -1,0 +1,21 @@
+{
+    "signals": ["WZG","ZZG"],
+    "regions": {
+        "SR2P": {
+            "processes": {"WZG": -1, "ZZG": -1, "DYJetsToLL_M50":-1, "ZGToLLG":-1, "TTTo2L2Nu":-1, "FSR":-1},
+            "observable": {"name":"BDTScore", "observation":-1}
+
+	}
+    },
+    "systematics":{
+        "shape": [],
+        "correlated"  : ["L1Prefiring", "PDFVar", "QCDscale","puWeight","effPhIDMVA","electronEff","muonEff","jer","jesAbs", "jesBBEC1", "jesEC2", "jesFlavQCD", "jesHF", "jesRelBal", "jesRelSample", "jesAbsYear2016", "jesAbsYear2017", "jesAbsYear2018", "jesBBEC1", "jesBBEC1Year2016", "jesBBEC1Year2017", "jesBBEC1Year2018", "jesEC2", "jesEC2Year2016", "jesEC2Year2017", "jesEC2Year2018", "jesFlavQCD", "jesHF", "jesHFYear2016", "jesHFYear2017", "jesHFYear2018", "jesRelBal", "jesRelSampleYear2016", "jesRelSampleYear2017", "jesRelSampleYear2018","DeepFlavorQGModeling", "alphas","ZXreweighting"],
+        "uncorrelated": [],
+        "correl_year": [],
+        "skip-if-signal": ["QCDscale", "PDFVar"],
+        "theory": ["QCDscale", "PDFVar","alphas"],
+        "datadriven": [],
+        "split-by-sample-group": [], 
+        "_end":[]
+    }
+}

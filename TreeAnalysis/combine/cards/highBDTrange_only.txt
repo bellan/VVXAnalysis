@@ -1,0 +1,37 @@
+imax 1 number of channels
+jmax 3 number of backgrounds
+kmax * number of nuisance parameters
+------------
+
+shapes * * /eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/histogramsForCombine_results_highBDTonly/Run2/SR2P.root $CHANNEL/$PROCESS $CHANNEL/$PROCESS_$SYSTEMATIC
+------------
+
+bin          BDTScore
+observation        -1
+------------
+
+bin      BDTScore   BDTScore  BDTScore        BDTScore
+process       VZG  TTTo2L2Nu   ZGToLLG  DYJetsToLL_M50
+process         0          1         2               3
+rate      151.374    650.462   6335.12          2114.5
+------------
+
+#                          type                VZG          TTTo2L2Nu            ZGToLLG     DYJetsToLL_M50
+CMS_ZGreweighting          lnN                  -	           -                1.1                  -
+CMS_DYreweighting          lnN                  -                  -		      -		       1.1
+CMS_L1Prefiring            lnN           1.005275           1.004616           1.004480           1.004446
+CMS_PDFVar                 lnN                  -           1.019310           1.065334           1.063321
+CMS_QCDscale               lnN                  -           1.205750           1.215286           1.250937
+CMS_alphas               shape                  1	           1	       	      1                  1
+CMS_eff_g		   lnN           1.046422           1.050310           1.049463           1.062406
+CMS_eff_e		   lnN           1.004949           1.005906           1.007445           1.007134
+CMS_eff_m                  lnN  	 1.020193  	    1.021743  	       1.021039  	  1.020852
+CMS_jer               	 shape                  1	           1	       	      1                  1
+CMS_jesTotal		 shape                  1	           1	       	      1                  1
+CMS_puWeight               lnN           1.023683           1.021227           1.018284  0.977884/0.994328
+CMS_lumi_Run2              lnN             1.0092             1.0092             1.0092             1.0092
+CMS_lumi_13TeV_correlated  lnN              1.013              1.013              1.013              1.013
+
+theory group = CMS_PDFVar CMS_QCDscale CMS_alphas
+lumi group = CMS_lumi_Run2 CMS_lumi_13TeV_correlated
+#BDTScore autoMCStats 0 0 1 

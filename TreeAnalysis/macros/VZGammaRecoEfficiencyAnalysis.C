@@ -28,9 +28,9 @@
 
 using namespace std;
 
-void VZGammaRecoEfficiencyAnalysis(TString requestedSample) {
+void VZGammaRecoEfficiencyAnalysis(TString requestedSample="ZZGTo2L2jG") {
   
-  TString path = "/eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/results/2016preVFP/VZGAnalyzer_SR2P/";
+  TString path = "/eos/home-c/ctarrico/Frameworks/CMSSW_10_6_26/src/VVXAnalysis/TreeAnalysis/results/2018/VZGAnalyzer_SR2P/";
 
   vector<TString> samples = {"WZGTo2L2jG", "ZZGTo2L2jG"};
   vector<TString> parNames = {"W","Z"};
@@ -103,7 +103,7 @@ void VZGammaRecoEfficiencyAnalysis(TString requestedSample) {
 
       hEff->Draw(nGraphs == 0 ? "AP" : "P SAME");
 
-      hEff->GetXaxis()->SetTitle("p_{T} V had. Cand.");
+      hEff->GetXaxis()->SetTitle("p_{T} V had. Cand. [GeV]");
       hEff->GetXaxis()->SetTitleSize(0.035);
       hEff->GetYaxis()->SetTitle(name+" Reconstruction Efficiency");
       hEff->GetYaxis()->SetTitleSize(0.035);
@@ -127,17 +127,17 @@ void VZGammaRecoEfficiencyAnalysis(TString requestedSample) {
   paveTLeft->SetBorderSize(0);
   paveTLeft->SetTextAlign(11);
   paveTLeft->SetTextFont(62);
-  paveTLeft->SetTextSize(0.02);
-  paveTLeft->AddText("CMS Preliminary");
+  paveTLeft->SetTextSize(0.03);
+  paveTLeft->AddText("CMS #bf{Private Work}");
 
-  TPaveText *paveTRight = new TPaveText(0.80, 0.87, 0.9, 0.95, "NDCNDC");
+  TPaveText *paveTRight = new TPaveText(0.65, 0.87, 0.9, 0.95, "NDCNDC");
   paveTRight->SetFillColor(0);
   paveTRight->SetFillStyle(0);
   paveTRight->SetBorderSize(0);
   paveTRight->SetTextAlign(11);
   paveTRight->SetTextFont(62);
-  paveTRight->SetTextSize(0.02);
-  paveTRight->AddText("Simulation");
+  paveTRight->SetTextSize(0.03);
+  paveTRight->AddText("#bf{Simulation (13 TeV)}");
 
   cDrawing->cd();
   paveTLeft->Draw();
@@ -149,6 +149,8 @@ void VZGammaRecoEfficiencyAnalysis(TString requestedSample) {
 
   TString fname = "Refinement_" + name + "RecoEff_" + typeNames.at(0) + ".png";
   cDrawing->SaveAs("efficiencyPlots/" + fname);
+  TString pdfname = "Refinement_" + name + "RecoEff_" + typeNames.at(0) + ".pdf";
+  cDrawing->SaveAs("efficiencyPlots/" + pdfname);
 
   result->Close("R");
 }
