@@ -28,7 +28,8 @@ flagsSelection = [
     # Flags.L3P, Flags.L2P1F, Flags.L1P2F, Flags.L3F,
     # Flags.L2P1L,
     # Flags.L2P_J2
-    Flags.L4P_P1P
+    # Flags.L4P_P1P
+    Flags.L4P_P1mvaL
 ]
     
 insertAfter(ZZSequence, 'jetFiller', FSTagger(flagDefinitions, flagsSelection))

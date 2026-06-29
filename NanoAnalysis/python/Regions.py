@@ -4,14 +4,25 @@ from enum import IntFlag
 # IntFlag is an enum that supports bitwise operations like OR e AND
 class Flags(IntFlag):
     ######## Pure flags ########
-
+    
     #### Photons bits 0-7 ####
-    P1P    = 1 << 2
-    P1F    = 1 << 1
-    P1L    = 1 << 0
+    P1K       = 1 << 0 # at least one photon kinem. acc. (kin photon) 
+
+    #### Photons cutBased ID wp bits 1-4 ####
+    P1cutVL   = 1 << 1 # at least one kin photon passes SMP-24-014 cutBased ID veryLoose wp  
+    P1cutL    = 1 << 2 # at least one kin photon passes EGM cutBased ID Loose wp
+    P1cutM    = 1 << 3 # at least one kin photon passes EGM cutBased ID Medium wp
+    P1cutT    = 1 << 4 # at least one kin photon passes EGM cutBased ID Tight wp 
+
+    #### Photons MVA ID wp bits 5-6 ####
+    P1mvaL    = 1 << 5 # at least one kin photon passes EGM MVA ID Loose wp (wp90)
+    P1mvaT    = 1 << 6 # at least one kin photon passes EGM MVA ID Tight wp (wp80)
 
     #### Jets bits 8-15 ####
-    J2    = 1 << 8
+    J2        = 1 << 8   # 2 or more jets in kinem. acc. pass the JME ID Loose wp
+    J3        = 1 << 9   # 3 or more jets in kinem. acc. pass the JME ID Loose wp
+    J4        = 1 << 10  # 4 or more jets in kinem. acc. pass the JME ID Loose wp
+    J5        = 1 << 11  # 5 or more jets in kinem. acc. pass the JME ID Loose wp
 
     #### Leptons bits 16-39 ####
 
@@ -39,13 +50,48 @@ class Flags(IntFlag):
 
 
     ## Composite flags ##
-    L4P_P1P    = L4P    | P1P
-    L4P_J2     = L4P    | J2
-    L3P_P1P    = L3P    | P1P
-    L2P_J2     = L2P    | J2
-    L2P_J2_P1P = L2P_J2 | P1P
 
+    ## Flags for gamma categorization ##
+    P1cutVLfailL       = P1cutVL  & ~(P1cutL )
+    P1mvaKfailL        = P1K      & ~(P1mvaL )
+
+    ## Flags for nJet categorization ##
+    J2cat            = J2       & ~(J3)
+    J3cat            = J3       & ~(J4)
+    J4cat            = J4       & ~(J5)
+     
+    ## Flags for CRL4P_P1F ##
+    L4P_P1cutVLfailL       = L4P    & P1cutVLfailL
+
+    ## Flags for SRL4P_P1P ##    
+    L4P_P1cutL          = L4P    & P1cutL
+    L4P_P1mvaL          = L4P    & P1mvaL
+
+    ## Flags for CRL3P_P1F ##
+    L3P_P1cutVLfailL       = L3P    & P1cutVLfailL
+    L3P_P1mvaKfailL        = L3P    & P1mvaKfailL
+
+    ## Flags for SRL3P_P1P ##    
+    L3P_P1cutL          = L3P    & P1cutL
+    L3P_P1mvaL          = L3P    & P1mvaL
+
+    ## Flags for CRL2P_P1F ##
+    L2P_P1cutVLfailL       = L2P    & P1cutVLfailL
+    L2P_P1mvaKfailL        = L2P    & P1mvaKfailL
     
+    ## Flags for SRL2P_P1P ##    
+    L2P_P1cutL          = L2P    & P1cutL
+    L2P_P1mvaL          = L2P    & P1mvaL
+
+    ## Flags for SRL2P_J2+ ##    
+    L2P_J2              = L2P    & J2
+
+    ## Flags for SRL2P_P1P_J2+ ##    
+    L2P_P1cutL_J2          = L2P    & P1cutL & J2
+    L2P_P1mvaL_J2          = L2P    & P1mvaL & J2
+
+
+
 pt10 = {'name': 'pt10',
         'cuts': {'pt': ('>', 10)},
         'min_particles': 2,
@@ -56,16 +102,65 @@ pt20 = {'name': 'pt20',
         'min_particles': 1,
         'max_particles': float('inf')}
 
-P1P =  {'name': 'TightPhotons',
-        'cuts': {'mvaID' : ('>', 0)}, #FIXME!!!
+eta2p4 =  {'name': 'inECALacc', 
+           'cuts': {'eta' : ('<', 2.4, '||')},
+           'min_particles': 1,
+           'max_particles': float('inf')}
+
+eta4p7 =  {'name': 'inECALacc', 
+           'cuts': {'eta' : ('<', 4.7, '||')},
+           'min_particles': 1,
+           'max_particles': float('inf')}
+
+
+"""
+inECALacc =  {'name': 'inECALacc', 
+        'cuts': {'eta' : ('<', 2.4, '||')},
         'min_particles': 1,
         'max_particles': float('inf')}
 
-J2 = {'name': 'J2',
-         'cuts': {'pt' : ('>', 20), 'eta' : ('<', 4.7, '||')},
-         'min_particles': 2,
-         'max_particles': float('inf')}
 
+# probably to moved if needed here and notprob in to photonFiller (to be created)
+# TRANSITION_BARREL_ENDCAP = 1.479
+# region not covered : [1.4442,1.566]
+inEB =  {'name': 'inEB', 
+        'cuts': {'eta' : ('<', 1.4442, '||')},
+        'min_particles': 1,
+        'max_particles': float('inf')}
+
+inEE =  {'name': 'inEE',
+        'cuts': {'eta' : [('>', 1.566, '||'), ('<', 2.4, '||')]},
+        'min_particles': 1,
+        'max_particles': float('inf')}
+"""
+
+P1K =  {'name': 'KinPhotons',
+        'cuts': {'pt' : ('>', 20), 'eta' : ('<', 2.4, '||')},
+        'min_particles': 1,
+        'max_particles': float('inf')}
+
+P1mvaL = {**P1K, 'name': 'MvaIdLoosePhotons', 'mvaID_WP90' : ('==', True)}
+"""
+P1cutVL =  {'name': 'CutIdVeryLoosePhotons',
+           'cuts': {'pt' : ('>', 20), 'eta' : ('<', 2.4, '||'), 'cutBased' : ('>=', 1)},
+           'min_particles': 1,
+           'max_particles': float('inf')}
+"""
+P1cutL = {**P1K, 'name': 'CutIdLoosePhotons',  'cutBased' : ('>=', 1)}
+P1cutM = {**P1K, 'name': 'CutIdMediumPhotons', 'cutBased' : ('>=', 2)}
+P1cutT = {**P1K, 'name': 'CutIdTightPhotons',  'cutBased' : ('>=', 3)}
+
+J2 = {'name': 'J2',
+      'cuts': {'pt' : ('>', 20), 'eta' : ('<', 4.7, '||'), 'jetId' : ('>=', 2)},
+      'min_particles': 2,
+      'max_particles': float('inf')}
+
+J3    = {**J2, 'name': 'J3', 'min_particles': 3}
+J4    = {**J2, 'name': 'J4', 'min_particles': 4}
+J5    = {**J2, 'name': 'J5', 'min_particles': 5}
+J2cat = {**J2, 'name': 'J2cat', 'max_particles': 2}
+J3cat = {**J3, 'name': 'J3cat', 'max_particles': 3}
+J4cat = {**J4, 'name': 'J4cat', 'max_particles': 4}
 
 L1P = {'name': 'TightLeptons',
        'cuts': {'ZZFullSel' : ('==', True)},
@@ -178,25 +273,19 @@ flagDefinitions = [
      },
     
     ########################################################
-    {'name'   : 'P1P',        
-     'photons'  : {'selection': [pt20, P1P]}
+    {'name'   : 'P1cutL',        
+     'photons'  : {'selection': [pt20, eta2p4, P1cutL]}
+     },
+    
+    ########################################################
+    {'name'   : 'P1mvaL',        
+     'photons'  : {'selection': [pt20, eta2p4, P1mvaL]}
      },
 
    
-    
-    ########################################################
-    # {'name'   : 'P1F',        
-    #  'photons'  : {'selection': [pt20, P1L, P1F]}
-    #  },
-
-    # ########################################################
-    # {'name'   : 'P1L',        
-    #  'photons'  : {'selection': [pt20, P1P]}
-    #  },
-    
-    ########################################################
+    ########################################################    
     {'name' : 'J2',
-     'jets'    : {'selection': [J2]}
+     'jets'    : {'selection': [eta4p7, J2]}
      },
 
     
