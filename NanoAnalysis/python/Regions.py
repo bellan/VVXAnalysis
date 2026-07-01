@@ -102,53 +102,48 @@ pt20 = {'name': 'pt20',
         'min_particles': 1,
         'max_particles': float('inf')}
 
-eta2p4 =  {'name': 'eta2p4', 
-           'cuts': {'eta' : ('<', 2.4, '||')},
-           'min_particles': 1,
-           'max_particles': float('inf')}
-
 eta4p7 =  {'name': 'eta4p7', 
            'cuts': {'eta' : ('<', 4.7, '||')},
            'min_particles': 1,
            'max_particles': float('inf')}
 
 
-"""
-inECALacc =  {'name': 'inECALacc', 
-        'cuts': {'eta' : ('<', 2.4, '||')},
-        'min_particles': 1,
-        'max_particles': float('inf')}
-
-
-# probably to moved if needed here and notprob in to photonFiller (to be created)
 # TRANSITION_BARREL_ENDCAP = 1.479
 # region not covered : [1.4442,1.566]
-inEB =  {'name': 'inEB', 
-        'cuts': {'eta' : ('<', 1.4442, '||')},
-        'min_particles': 1,
-        'max_particles': float('inf')}
 
-inEE =  {'name': 'inEE',
-        'cuts': {'eta' : [('>', 1.566, '||'), ('<', 2.4, '||')]},
-        'min_particles': 1,
-        'max_particles': float('inf')}
-"""
+EBmaxEta =  {'name': 'inEB', 
+             'cuts': {'eta' : ('<', 1.4442, '||')},
+             'min_particles': 1,
+             'max_particles': float('inf')}
+
+EEminEta =  {'name': 'inEE',
+             'cuts': {'eta' : ('>', 1.566, '||')},
+             'min_particles': 1,
+             'max_particles': float('inf')}
+
+EEmaxEta =  {'name': 'EEmaxEta', 
+             'cuts': {'eta' : ('<', 2.5, '||')},
+             'min_particles': 1,
+             'max_particles': float('inf')}
+
 
 P1K =  {'name': 'KinPhotons',
-        'cuts': {'pt' : ('>', 20), 'eta' : ('<', 2.4, '||')},
+        'cuts': {'pt' : ('>', 20), 'eta' : ('<', 2.5, '||')},
         'min_particles': 1,
         'max_particles': float('inf')}
 
 P1mvaL = {**P1K, 'name': 'MvaIdLoosePhotons', 'mvaID_WP90' : ('==', True)}
+
 """
 P1cutVL =  {'name': 'CutIdVeryLoosePhotons',
-           'cuts': {'pt' : ('>', 20), 'eta' : ('<', 2.4, '||'), 'cutBased' : ('>=', 1)},
+           'cuts': {'pt' : ('>', 20), 'eta' : ('<', 2.5, '||'), 'hoe' : ('>', 20)},
            'min_particles': 1,
            'max_particles': float('inf')}
 """
-P1cutL = {**P1K, 'name': 'CutIdLoosePhotons',  'cutBased' : ('>=', 1)}
-P1cutM = {**P1K, 'name': 'CutIdMediumPhotons', 'cutBased' : ('>=', 2)}
-P1cutT = {**P1K, 'name': 'CutIdTightPhotons',  'cutBased' : ('>=', 3)}
+P1cutVL = {**P1K, 'name': 'CutIdVeryLoosePhotons'} # FIXME! Currently left as P1K
+P1cutL  = {**P1K, 'name': 'CutIdLoosePhotons',  'cutBased' : ('>=', 1)}
+P1cutM  = {**P1K, 'name': 'CutIdMediumPhotons', 'cutBased' : ('>=', 2)}
+P1cutT  = {**P1K, 'name': 'CutIdTightPhotons',  'cutBased' : ('>=', 3)}
 
 J2 = {'name': 'J2',
       'cuts': {'pt' : ('>', 20), 'eta' : ('<', 4.7, '||'), 'jetId' : ('>=', 2)},
@@ -274,18 +269,17 @@ flagDefinitions = [
     
     ########################################################
     {'name'   : 'P1cutL',        
-     'photons'  : {'selection': [pt20, eta2p4, P1cutL]}
+     'photons'  : {'selection': [pt20, EEmaxEta, P1cutL]}
      },
     
     ########################################################
     {'name'   : 'P1mvaL',        
-     'photons'  : {'selection': [pt20, eta2p4, P1mvaL]}
+     'photons'  : {'selection': [pt20, EEmaxEta, P1mvaL]}
      },
-
    
     ########################################################    
     {'name' : 'J2',
-     'jets'    : {'selection': [eta4p7, J2]}
+     'jets'    : {'selection': [pt20, eta4p7, J2]}
      },
 
     
