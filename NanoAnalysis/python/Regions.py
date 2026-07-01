@@ -102,12 +102,12 @@ pt20 = {'name': 'pt20',
         'min_particles': 1,
         'max_particles': float('inf')}
 
-eta2p4 =  {'name': 'inECALacc', 
+eta2p4 =  {'name': 'eta2p4', 
            'cuts': {'eta' : ('<', 2.4, '||')},
            'min_particles': 1,
            'max_particles': float('inf')}
 
-eta4p7 =  {'name': 'inECALacc', 
+eta4p7 =  {'name': 'eta4p7', 
            'cuts': {'eta' : ('<', 4.7, '||')},
            'min_particles': 1,
            'max_particles': float('inf')}
