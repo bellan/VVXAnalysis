@@ -39,7 +39,7 @@ flagsSelection = [
 def customizeFSTagger_(p):
     insertAfter(p.modules, 'jetFiller', FSTagger(flagDefinitions, flagsSelection))
 
-setConf("customizations",customizeProcessForLocal_,append=True)
+setConf("customizations",customizeFSTagger_,append=True)
     
 # p = PostProcessor(".", fileNames,
 #                   prefetch=True, longTermCache=False,
