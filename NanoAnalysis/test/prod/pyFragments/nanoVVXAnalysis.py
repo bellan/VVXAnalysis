@@ -16,11 +16,15 @@ print("Overriding ZZ4lAnalysis PostProcessor")
 #branchsel_out.append('keep Photon*')
 #branchsel_out.append('keep regionWord*')
 
-branchsel_in =['keep Photon*']
-branchsel_out=['keep Photon*','keep regionWord*']
+more_branchsel_in =['keep Photon*']
+more_branchsel_out=['keep Photon*','keep regionWord*']
 
-setConf("branchsel_in" , branchsel_in , append=True) 
-setConf("branchsel_out", branchsel_out, append=True) 
+setConf("branchsel_in"  , 'keep Photon*' , append=True)
+setConf("branchsel_out" , 'keep Photon*' , append=True)
+setConf("branchsel_out" , 'keep regionWord*' , append=True) 
+
+#setConf("branchsel_in" , more_branchsel_in , append=True) 
+#setConf("branchsel_out", more_branchsel_out, append=True) 
 
 from VVXAnalysis.NanoAnalysis.FSEventTaggerAndFilter import FSEventTaggerAndFilter as FSTagger
 #from VVXAnalysis.NanoAnalysis.VVXEventTaggerAndFilter import VVXEventTaggerAndFilter as VVXTagger
