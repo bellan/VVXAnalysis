@@ -32,12 +32,16 @@ from VVXAnalysis.NanoAnalysis.Regions import flagDefinitions
 from VVXAnalysis.NanoAnalysis.Regions import Flags
 
 flagsSelection = [
+    Flags.L2P_J2,
+    Flags.L3L,
+    Flags.L4L
+  
     # Flags.L4P, Flags.L3P1F, Flags.L2P2F,
     # Flags.L3P, Flags.L2P1F, Flags.L1P2F, Flags.L3F,
     # Flags.L2P1L,
-    # Flags.L2P_J2
+
     # Flags.L4P_P1P
-    Flags.L4P_P1mvaL
+    #Flags.L4P_P1mvaL
 ]
 
 def customizeFSTagger_(p):
