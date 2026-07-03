@@ -294,7 +294,7 @@ setConf("customizations", customizeProcessForLocal, append=True)
 #from ZZAnalysis.NanoAnalysis.nanoZZ4lAnalysis import *
 ######################################################################
 
-from VVXAnalysis.NanoAnalysis.nanoVVXAnalysis import *
+from VVXAnalysis.NanoAnalysis.test.prod.pyFragments.nanoVVXAnalysis import *
 
 ### Run the postprocessor
 p.run()
