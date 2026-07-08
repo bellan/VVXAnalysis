@@ -11,10 +11,7 @@ class VVXAnalyzer(EventAnalyzer, analysis_name="VVXAnalyzer"):
         super().__init__(regions)
 
     def analyze(self):
-
         #print(Regions.check(self.regionWord,Regions.L4P))
-
-        
         bestCandIdx = self.event.bestCandIdx
     
         # Check that the event contains a selected candidate, and that

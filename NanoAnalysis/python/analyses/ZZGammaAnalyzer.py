@@ -2,12 +2,13 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collect
 from ZZAnalysis.NanoAnalysis.tools import getLeptons, get_genEventSumw
 
 from VVXAnalysis.NanoAnalysis.EventAnalyzer import EventAnalyzer
-from VVXAnalysis.NanoAnalysis.Histogrammer import Histogrammer
+from VVXAnalysis.NanoAnalysis.Histogrammer import *
+from VVXAnalysis.NanoAnalysis.Regions import Flags as Regions
 
 class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
-    def __init__(self,configuration):
-        super().__init__(configuration)
+    def __init__(self, regions):
+        super().__init__(regions)
 
     def analyze(self):
         bestCandIdx = self.event.bestCandIdx
@@ -22,6 +23,6 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             if self.analyzeMC: self.weight = (self.event.overallEventWeight*theZZ.dataMCWeight/self.genEventSumw)
             
             m4l = theZZ.mass
-            
-            self.histogrammer.fill1D("ZZMass_10GeV", "ZZMass_10GeV", 93, 70., 1000., m4l, self.weight)
+
+            self.hEvent.fill1D("ZZMass_10GeV", "ZZMass_10GeV", 93, 70., 1000., m4l, self.weight)
 
