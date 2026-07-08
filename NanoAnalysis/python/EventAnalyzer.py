@@ -1,7 +1,9 @@
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection
 from ZZAnalysis.NanoAnalysis.tools import getLeptons, get_genEventSumw
 
-from VVXAnalysis.NanoAnalysis.Histogrammer import Histogrammer
+from VVXAnalysis.NanoAnalysis.Histogrammer import *
+
+from VVXAnalysis.NanoAnalysis.Regions import Flags as Regions
 
 import ROOT
 
@@ -13,7 +15,7 @@ class EventAnalyzer:
 
     def __init_subclass__(cls, analysis_name=None, **kwargs):
         super().__init_subclass__(**kwargs)
-      
+
         if analysis_name is not None:
 
             if analysis_name in cls.registry:
@@ -25,15 +27,14 @@ class EventAnalyzer:
 
 
     
-    def __init__(self):#, base_configuration):
+    def __init__(self, regions):#, base_configuration):
 
-        #FIXME, need to pass regions to create a map of histogrammers
+        #self.regions = regions
+        self.histogrammers = Histogrammers(regions)
+
         self.genEventSumw = 1.
         self.weight = 1.
 
-        
-        self.histogrammer = Histogrammer()
-        
         
     ## Init per event quantities
     def init(self,event,genEventSumw,isMC=False):
@@ -50,9 +51,12 @@ class EventAnalyzer:
         self.event.SetBranchStatus("luminosityBlock", 1)
         self.event.SetBranchStatus("*Muon*", 1)
         self.event.SetBranchStatus("*Electron*", 1)
+        self.event.SetBranchStatus("*Photon*", 1)
+        self.event.SetBranchStatus("*Jet*", 1)
         self.event.SetBranchStatus("*ZZCand*", 1)
         self.event.SetBranchStatus("bestCandIdx", 1)
         self.event.SetBranchStatus("HLT_passZZ4l", 1)
+        self.event.SetBranchStatus("regionWord", 1)
         
         if self.analyzeMC:
             self.event.SetBranchStatus("overallEventWeight",1)
@@ -60,8 +64,9 @@ class EventAnalyzer:
 
     def getCollections(self):
         self.ZZs = Collection(self.event, 'ZZCand') 
+        self.regionWord = self.event.regionWord
+        self.hEvent = self.histogrammers.checkRegions(self.regionWord)
         
-
         
     def end(self, sample):
         
@@ -70,14 +75,18 @@ class EventAnalyzer:
         #     outputdirs[region] = odir
         #     subprocess.check_call(['mkdir', '-p', odir])  # Use os.makedirs(odir, exist_ok=True) after switching to py3
         
-        odir = f"results/{sample.year}" 
-        subprocess.check_call(['mkdir', '-p', odir])  # Use os.makedirs(odir, exist_ok=True) after switching to py3
+ #       odir = f"results/{sample.year}" 
+ #       subprocess.check_call(['mkdir', '-p', odir])  # Use os.makedirs(odir, exist_ok=True) after switching to py3
         
-        outFile = ROOT.TFile.Open(
-            f"{odir}/{self.analysis_name}.root",
-            "recreate")
+ #       outFile = ROOT.TFile.Open(
+#            f"{odir}/{self.analysis_name}.root",
+#            "recreate")
         
-        self.histogrammer.write(outFile)
+        self.histogrammers.write(
+            base_odir = f"results/{sample.year}",
+            analysis_name = self.analysis_name,
+            sample_name   = sample.name
+        )
 
     def begin(self):
         pass

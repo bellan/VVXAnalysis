@@ -10,7 +10,7 @@ samples:
     - VBS
 
 analysis:
-  analyzer: VVXAnalyzer
+  analyzer: ZZGammaAnalyzer
   regions : [L4P]
 
 

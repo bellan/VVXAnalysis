@@ -1,5 +1,7 @@
 #!/bin/env python3
 
+from optparse import OptionParser
+
 from VVXAnalysis.NanoAnalysis.SampleLooper import SampleLooper
 
 from VVXAnalysis.NanoAnalysis.AnalysisConfig import AnalysisConfig
@@ -12,9 +14,14 @@ from VVXAnalysis.NanoAnalysis.SampleLoader import SampleLoader
 
 if __name__ == "__main__" :
 
+    parser = OptionParser(usage="usage: %prog <analysis> <sample> [options]")
 
+    (options, args) = parser.parse_args()
+    
+    analysis       = args[0]
+    
     ## Read the configuration in Pydantic mode
-    with open('configurations/VVXAnalyzer.yaml') as f:
+    with open(f'configurations/{analysis}.yaml') as f:
         cfg = AnalysisConfig(**yaml.safe_load(f))
 
     sampleLoader = SampleLoader(cfg.samples) # --> check against data/samples_DB.json
@@ -27,14 +34,9 @@ if __name__ == "__main__" :
     cfg: {cfg}
     Analyzer: {cfg.analysis.analyzer}
     Chosen selection for samples: {cfg.samples}
-    Actual sample selection:  {samples}
+    Actual samples selection:  {samples}
     """)
     
-    for s in samples:
-        print(s.isMC())
-
-    print(2)
     sampleLooper = SampleLooper(cfg.analysis, samples)
     sampleLooper.loop()
     #sampleLooper.end()
-    print(3)

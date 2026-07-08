@@ -21,10 +21,11 @@ maxEntriesPerSample = None # Use only up to this number of events in each MC sam
 class SampleLooper:
     
     def __init__(self,cfg, samples):
+
         self.analyzer = cfg.analyzer
         self.regions  = cfg.regions
         self.samples  = samples
-        
+
         self.load_analyses()
         
 
@@ -35,12 +36,6 @@ class SampleLooper:
             importlib.import_module(
                 f"analyses.{module_name}"
             )
-
-            
-
-
-
-        
         
         
     def loop(self):
@@ -50,6 +45,7 @@ class SampleLooper:
             #FIXME: add check that file exists
             print(sample.path())
             inputFile = ROOT.TFile.Open(sample.path())
+
 
             '''
             Set the Gen Event Sum Weight, needed to properly normalize the sample weight
@@ -64,7 +60,7 @@ class SampleLooper:
             printEntries=max(5000,nEntries/10)
 
             ######### Analyse the events in a sample! #############
-            eventAnalyzer = EventAnalyzer.registry[self.analyzer]()#(base_configuration)
+            eventAnalyzer = EventAnalyzer.registry[self.analyzer](self.regions)#(base_configuration)
             eventAnalyzer.init(events, genEventSumw, sample.isMC())
             eventAnalyzer.begin()
             

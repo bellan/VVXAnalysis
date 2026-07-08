@@ -90,7 +90,9 @@ class Flags(IntFlag):
     L2P_P1cutL_J2          = L2P    & P1cutL & J2
     L2P_P1mvaL_J2          = L2P    & P1mvaL & J2
 
-
+    @staticmethod
+    def check(regionWord, region):
+        return regionWord & region == region
 
 pt10 = {'name': 'pt10',
         'cuts': {'pt': ('>', 10)},
@@ -282,5 +284,5 @@ flagDefinitions = [
      'jets'    : {'selection': [pt20, eta4p7, J2]}
      },
 
-    
 ]
+

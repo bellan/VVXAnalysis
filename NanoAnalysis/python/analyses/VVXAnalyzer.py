@@ -2,15 +2,19 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collect
 from ZZAnalysis.NanoAnalysis.tools import getLeptons, get_genEventSumw
 
 from VVXAnalysis.NanoAnalysis.EventAnalyzer import EventAnalyzer
-from VVXAnalysis.NanoAnalysis.Histogrammer import Histogrammer
+from VVXAnalysis.NanoAnalysis.Histogrammer import *
+from VVXAnalysis.NanoAnalysis.Regions import Flags as Regions
 
 class VVXAnalyzer(EventAnalyzer, analysis_name="VVXAnalyzer"):
 
-    def __init__(self):
-        super().__init__()
-
+    def __init__(self, regions):
+        super().__init__(regions)
 
     def analyze(self):
+
+        #print(Regions.check(self.regionWord,Regions.L4P))
+
+        
         bestCandIdx = self.event.bestCandIdx
     
         # Check that the event contains a selected candidate, and that
@@ -23,6 +27,6 @@ class VVXAnalyzer(EventAnalyzer, analysis_name="VVXAnalyzer"):
             if self.analyzeMC: self.weight = (self.event.overallEventWeight*theZZ.dataMCWeight/self.genEventSumw)
             
             m4l = theZZ.mass
-            
-            self.histogrammer.fill1D("ZZMass_10GeV", "ZZMass_10GeV", 93, 70., 1000., m4l, self.weight)
+
+            self.hEvent.fill1D("ZZMass_10GeV", "ZZMass_10GeV", 93, 70., 1000., m4l, self.weight)
 
