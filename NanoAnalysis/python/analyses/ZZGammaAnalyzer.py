@@ -18,11 +18,22 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         # processed with TRIGPASSTHROUGH=True)
         if(bestCandIdx != -1 and self.event.HLT_passZZ4l): 
             weight = 1.
+            
+            #to understand how ZZ Collection works 
             ZZs = Collection(self.event, 'ZZCand') ## move it in EventAnalyzer::init(event) ??
             theZZ = ZZs[bestCandIdx]
             if self.analyzeMC: self.weight = (self.event.overallEventWeight*theZZ.dataMCWeight/self.genEventSumw)
             
-            m4l = theZZ.mass
+            mZZ = theZZ.mass
+            self.hEvent.fill1D("ZZMass_10GeV", "ZZMass_10GeV", 93, 70., 1000., mZZ, self.weight)
 
-            self.hEvent.fill1D("ZZMass_10GeV", "ZZMass_10GeV", 93, 70., 1000., m4l, self.weight)
+            mZZPreFSR = theZZ.massPreFSR
+            self.hEvent.fill1D("ZZMassPreFSR_10GeV", "ZZMassPreFSR_10GeV", 93, 70., 1000., mZZPreFSR, self.weight)
+
+            
+            #GenZZ = Collection(self.event, 'GenZZ')
+            #mGenZZ = GenZZ.mass
+            #self.hevent.fill1D("GenZZMass_10GeV", "GenZZMass_10GeV", 93, 70., 1000., mGenZZ, self.weight)
+
+            
 
