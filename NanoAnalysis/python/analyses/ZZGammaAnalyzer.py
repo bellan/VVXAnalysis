@@ -21,40 +21,21 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         if(bestCandIdx != -1 and self.event.HLT_passZZ4l): 
             weight = 1.
             
-            # ZZmass pre and post FSR 
-            ZZs = Collection(self.event, 'ZZCand') ## move it in EventAnalyzer::init(event) ??
-            theZZ = ZZs[bestCandIdx]
-            if self.analyzeMC: self.weight = (self.event.overallEventWeight*theZZ.dataMCWeight/self.genEventSumw)
-            
-            mZZ = theZZ.mass
-            self.hEvent.fill1D("ZZMass_10GeV", "ZZMass_10GeV", 93, 70., 1000., mZZ, self.weight)
+            # Collections
 
-            mZZPreFSR = theZZ.massPreFSR
-            self.hEvent.fill1D("ZZMassPreFSR_10GeV", "ZZMassPreFSR_10GeV", 93, 70., 1000., mZZPreFSR, self.weight)
-            
-            #GenZZ = Collection(self.event, 'GenZZ')
-            #mGenZZ = GenZZ.mass
-            #self.hevent.fill1D("GenZZMass_10GeV", "GenZZMass_10GeV", 93, 70., 1000., mGenZZ, self.weight)
-
-            #definizione di segnale
+            #GenZZs = Collection(self.event, 'GenZZ')
             GenParts = Collection(self.event, 'GenPart')
             GenLeptons = [p for p in GenParts if abs(p.pdgId) == 11 or abs(p.pdgId == 13)]
             GenPhotons = [p for p in GenParts if abs(p.pdgId) == 22]
 
-            def ZZGammaSignalDefinition():
-                if not self.analyzeMC: return False
-                
-                # ZZ requirements
-                if len(theZZ) != 1 or len(GenLeptons) != 4: return False
-                if sum(l.pt > 5 for l in GenLeptons) < 4: return False
-                if sum(l.pt > 10 for l in GenLeptons) < 2: return False
-                if sum(l.pt > 20 for l in GenLeptons) < 1: return False
-                if any(abs(l.eta) > 2.5 for l in GenLeptons): return False
-                
-                # photon requirements
-                if len(GenPhotons) < 1: return False
-                if sum(p.pt > 20 for p in GenPhotons) < 1: return False
-                if sum(abs(p.eta) <=2.4 and not 1.444 < abs(p.eta) < 1.566 for p in GenPhotons) < 1: return False
-                
+            ZZs = Collection(self.event, 'ZZCand') ## move it in EventAnalyzer::init(event) ??
+            theZZ = ZZs[bestCandIdx]
+            Leptons = Collection(self.event, 'Lepton')
+            Photons = Collection(self.event, 'Photon')
+            FsrPhotons = Collection(self.event, 'FsrPhoton')
 
-         
+            if self.analyzeMC: self.weight = (self.event.overallEventWeight*theZZ.dataMCWeight/self.genEventSumw)
+
+            
+            
+           
