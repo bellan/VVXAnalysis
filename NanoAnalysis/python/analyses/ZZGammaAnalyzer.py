@@ -23,7 +23,6 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             
             # Collections
 
-            #GenZZs = Collection(self.event, 'GenZZ')
             GenParts = Collection(self.event, 'GenPart')
             GenLeptons = [p for p in GenParts if abs(p.pdgId) == 11 or abs(p.pdgId == 13)]
             GenPhotons = [p for p in GenParts if abs(p.pdgId) == 22]
@@ -36,6 +35,14 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
             if self.analyzeMC: self.weight = (self.event.overallEventWeight*theZZ.dataMCWeight/self.genEventSumw)
 
+            # ZZMass pre and post Fsr            
             
-            
-           
+            ZZMass = theZZ.mass
+            self.hEvent.fill1D("ZZMass_10GeV", "ZZMass_10GeV", 93, 20., 1000., ZZMass, self.weight)
+
+            ZZMassPreFSR = theZZ.massPreFSR
+            self.hEvent.fill1D("ZZMassPreFSR_10GeV", "ZZMassPreFSR_10GeV", 93, 20., 1000., ZZMassPreFSR, self.weight)
+
+            GenZZMass = self.event.GenZZ_mass
+            self.hEvent.fill1D("GenZZMass_10GeV", "GenZZMass_10GeV", 93, 20., 1000., ZZMassPreFSR, self.weight)
+         
