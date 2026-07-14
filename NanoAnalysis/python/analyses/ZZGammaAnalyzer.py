@@ -47,12 +47,12 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             GenZZMass = self.event.GenZZ_mass
             self.hEvent.fill1D("GenZZMass_10GeV", "GenZZMass_10GeV", 93, 20., 1000., GenZZMass, self.weight)
           
-            # GenZZ: se guardo dentro ZZRo4l.root GenZZ ha indici, ma se li richiamo così vengono tutti 0
+            # GenZZ: se guardo dentro ZZRo4l.root GenZZ ha indici, ma se li richiamo così vengono tutti 0; stesso problema per massa
             
             idx1 = self.event.GenZZ_Z1l1Idx
             self.hEvent.fill1D("GenZZidx1_10GeV", "GenZZIdx1_10GeV", 93, -100., 100., idx1, self.weight)
           
-            # definizione di segnale
+            # signal definition
 
             def ZZGammaSignalDefinition():
                 if not self.analyzeMC: return False
@@ -68,3 +68,27 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
                 if len(GenPhotons) < 1: return False
                 if sum(p.pt > 20 for p in GenPhotons) < 1: return False
                 if any(abs(p.eta) > 2.4 or 1.444 < abs(p.eta) < 1.566 for p in GenPhotons): return False
+
+            # plots
+
+            def GetGenZZMass():
+                m = self.event.GenZZ_mass
+                self.hEvent.fill1D("GenZZMass_10GeV", "GenZZMass_10GeV", 93, 20., 1000., m, self.weight)
+                return m
+
+            def GetllGammaMassMin(ph):
+                mllGamma1 = (GenParts[self.event.GenZZ_Z1l1Idx].p4 + GenParts[self.event.GenZZ_Z1l2Idx].p4 + GenParts[ph.genFsrIdx].p4).mass
+                mll1 = (GenParts[self.event.GenZZ_Z1l1Idx].p4 + GenParts[self.event.GenZZ_Z1l2Idx].p4).mass
+                mllGamma2 = (GenParts[self.event.GenZZ_Z2l1Idx].p4 + GenParts[self.event.GenZZ_Z2l2Idx].p4 + GenParts[ph.genFsrIdx].p4).mass
+                mll2 = (GenParts[self.event.GenZZ_Z2l1Idx].p4 + GenParts[self.event.GenZZ_Z2l2Idx].p4).mass
+                mllGammaMin = min(mllGamma1, mllGamma2)
+                self.hEvent.fill1D("llGammaMassMin_10GeV", "llGammaMassMin_10GeV", 93, 20., 1000., mllGammaMin, self.weight)
+                if mllGammaMin == mllGamma1: mllMin = mll1
+                else: mllMin = mll2
+                self.hEvent.fill2D("llGammaMassMin2D_10GeV", "llGammaMassMin2D_10GeV", 93, 20., 1000., 93, 20., 1000., mllGammaMin, mllMin, self.weight)
+                return mllGammaMin
+
+            #GenZZMass = GetGenZZMass()  !! len(GenPart) = 0
+           
+            #for ph in FsrPhotons:  !! len(GenPart) = 0
+             #   mllGammaMin = GetllGammaMassMin(ph)
