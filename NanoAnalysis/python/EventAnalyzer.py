@@ -57,6 +57,8 @@ class EventAnalyzer:
         self.event.SetBranchStatus("bestCandIdx", 1)
         self.event.SetBranchStatus("HLT_passZZ4l", 1)
         self.event.SetBranchStatus("regionWord", 1)
+        self.event.SetBranchStatus("*GenPart*", 1)
+        self.event.SetBranchStatus("*GenZZ*", 1)
         
         if self.analyzeMC:
             self.event.SetBranchStatus("overallEventWeight",1)
