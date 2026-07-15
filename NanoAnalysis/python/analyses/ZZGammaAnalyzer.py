@@ -36,22 +36,6 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
             if self.analyzeMC: self.weight = (self.event.overallEventWeight*theZZ.dataMCWeight/self.genEventSumw)
 
-            # ZZMass pre and post FSR            
-            
-            ZZMass = theZZ.mass
-            self.hEvent.fill1D("ZZMass_10GeV", "ZZMass_10GeV", 93, 20., 1000., ZZMass, self.weight)
-
-            ZZMassPreFsr = theZZ.massPreFSR
-            self.hEvent.fill1D("ZZMassPreFSR_10GeV", "ZZMassPreFSR_10GeV", 93, 20., 1000., ZZMassPreFsr, self.weight)
-
-            GenZZMass = self.event.GenZZ_mass
-            self.hEvent.fill1D("GenZZMass_10GeV", "GenZZMass_10GeV", 93, 20., 1000., GenZZMass, self.weight)
-          
-            # GenZZ: se guardo dentro ZZRo4l.root GenZZ ha indici, ma se li richiamo così vengono tutti 0; stesso problema per massa
-            
-            idx1 = self.event.GenZZ_Z1l1Idx
-            self.hEvent.fill1D("GenZZidx1_10GeV", "GenZZIdx1_10GeV", 93, -100., 100., idx1, self.weight)
-          
             # plots
 
             def GetGenZZMass():
@@ -71,14 +55,22 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
                 self.hEvent.fill2D("llGammaMassMin2D_10GeV", "llGammaMassMin2D_10GeV", 93, 20., 1000., 93, 20., 1000., mllGammaMin, mllMin, self.weight)
                 return mllGammaMin
 
-            #GenZZMass = GetGenZZMass()  !! len(GenPart) = 0
+            # ZZMass pre and post FSR            
+            
+            ZZMass = theZZ.mass
+            self.hEvent.fill1D("ZZMass_10GeV", "ZZMass_10GeV", 93, 20., 1000., ZZMass, self.weight)
+
+            ZZMassPreFsr = theZZ.massPreFSR
+            self.hEvent.fill1D("ZZMassPreFSR_10GeV", "ZZMassPreFSR_10GeV", 93, 20., 1000., ZZMassPreFsr, self.weight)
+
+            GenZZMass = GetGenZZMass()  
            
             #for ph in FsrPhotons:  !! len(GenPart) = 0
              #   mllGammaMin = GetllGammaMassMin(ph)
 
             # signal definition
 
-            def SignalDefinition():
+            def SignalDefinition(RequireResonantZ2 = None, RequireThreeBosonregion = None):
                 if not self.analyzeMC: return False
 
                 # leptons kinematic requirements
@@ -91,25 +83,34 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
                 # photons kinematic requirments
                 if len(GenPhotons) < 1: return False
-                if sum(p.pt > 20 for p in GenPhotons) < 1: return False
-                if any(abs(p.eta) > 2.4 or 1.444 < abs(p.eta) < 1.566 for p in GenPhotons): return False
+                if not any(p.pt > 20 and abs(p.eta) < 2.4 and not 1.444 < abs(p.eta) < 1.566 for p in GenPhotons): return False  
+
+                # Z1 mass
+                Z1Mass = (GenParts[self.event.GenZZ_Z1l1Idx].p4() + GenParts[self.event.GenZZ_Z1l2Idx].p4()).M()
+                self.hEvent.fill1D("Z1Mass_10GeV", "Z1Mass_10GeV", 93, 20., 1000., Z1Mass, self.weight)
+                if not 60 < Z1Mass < 120: return False
+
+                if RequireResonantZ2 is not None:
+                    if ResonantZ2() != RequireResonantZ2:
+                        return False
                 
+                if RequireThreeBosonregion is not None:
+                    if ThreeBosonRegion() != RequireThreeBosonregion:
+                        return False
+
                 return True
 
             def ResonantZ2():
-                Z1Mass = (GenParts[GenZZ_Z1l1Idx].p4 + GenParts[GenZZ_Z1l2Idx].p4).mass
-                Z2Mass = (GenParts[GenZZ_Z2l1Idx].p4 + GenParts[GenZZ_Z2l2Idx].p4).mass
-                self.hEvent.fill1D("Z1Mass_10GeV", "Z1Mass_10GeV", 93, 20., 1000., Z1Mass, self.weight)
+                Z2Mass = (GenParts[self.event.GenZZ_Z2l1Idx].p4() + GenParts[self.event.GenZZ_Z2l2Idx].p4()).M()
                 self.hEvent.fill1D("Z2Mass_10GeV", "Z2Mass_10GeV", 93, 20., 1000., Z2Mass, self.weight)
-                if 60 < Z1Mass < 120 and 60 < Z2Mass < 120: return True
-                if 60 < Z1Mass < 120 and 20 < Z2Mass < 120: return False
-                return None
-
-            
+                if 60 < Z2Mass < 120: return True
+                return False
                 
-            
-                
-                
+            def ThreeBosonRegion():
+                return True
                 
 
-            
+            ZZGamma = SignalDefinition(True, True)
+            Fsr = SignalDefinition(True, False)
+            Higgs = SignalDefinition(False, True) # da controllare quale processo è
+            quarto = SignalDefinition(False, False) # da controllare quale processo è
