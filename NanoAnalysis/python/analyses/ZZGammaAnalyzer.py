@@ -52,23 +52,6 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             idx1 = self.event.GenZZ_Z1l1Idx
             self.hEvent.fill1D("GenZZidx1_10GeV", "GenZZIdx1_10GeV", 93, -100., 100., idx1, self.weight)
           
-            # signal definition
-
-            def ZZGammaSignalDefinition():
-                if not self.analyzeMC: return False
-
-                # leptons kinematic requirements
-                if len(GenLeptons) != 4: return False
-                if sum(l.pt > 5 for l in GenLeptons) < 4: return False
-                if sum(l.pt > 10 for l in GenLeptons) < 2: return False
-                if sum(l.pt > 20 for l in GenLeptons) < 1: return False
-                if any(abs(l.eta) > 2.5 for l in GenLeptons): return False
-
-                # photons kinematic requirments
-                if len(GenPhotons) < 1: return False
-                if sum(p.pt > 20 for p in GenPhotons) < 1: return False
-                if any(abs(p.eta) > 2.4 or 1.444 < abs(p.eta) < 1.566 for p in GenPhotons): return False
-
             # plots
 
             def GetGenZZMass():
@@ -92,3 +75,41 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
            
             #for ph in FsrPhotons:  !! len(GenPart) = 0
              #   mllGammaMin = GetllGammaMassMin(ph)
+
+            # signal definition
+
+            def SignalDefinition():
+                if not self.analyzeMC: return False
+
+                # leptons kinematic requirements
+                if len(GenLeptons) != 4: return False
+                if (sum(l.pdgId == 11 for l in GenLeptons) != sum(l.pdgId == -11 for l in GenLeptons) or sum(l.pdgId == 13 for l in GenLeptons) != sum(l.pdgId == -13 for l in GenLeptons)): return False
+                if sum(l.pt > 5 for l in GenLeptons) < 4: return False
+                if sum(l.pt > 10 for l in GenLeptons) < 2: return False
+                if sum(l.pt > 20 for l in GenLeptons) < 1: return False
+                if any(abs(l.eta) > 2.5 for l in GenLeptons): return False
+
+                # photons kinematic requirments
+                if len(GenPhotons) < 1: return False
+                if sum(p.pt > 20 for p in GenPhotons) < 1: return False
+                if any(abs(p.eta) > 2.4 or 1.444 < abs(p.eta) < 1.566 for p in GenPhotons): return False
+                
+                return True
+
+            def ResonantZ2():
+                Z1Mass = (GenParts[GenZZ_Z1l1Idx].p4 + GenParts[GenZZ_Z1l2Idx].p4).mass
+                Z2Mass = (GenParts[GenZZ_Z2l1Idx].p4 + GenParts[GenZZ_Z2l2Idx].p4).mass
+                self.hEvent.fill1D("Z1Mass_10GeV", "Z1Mass_10GeV", 93, 20., 1000., Z1Mass, self.weight)
+                self.hEvent.fill1D("Z2Mass_10GeV", "Z2Mass_10GeV", 93, 20., 1000., Z2Mass, self.weight)
+                if 60 < Z1Mass < 120 and 60 < Z2Mass < 120: return True
+                if 60 < Z1Mass < 120 and 20 < Z2Mass < 120: return False
+                return None
+
+            
+                
+            
+                
+                
+                
+
+            
