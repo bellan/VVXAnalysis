@@ -35,6 +35,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             if self.analyzeMC: self.weight = (self.event.overallEventWeight*theZZ.dataMCWeight/self.genEventSumw)
 
             # associate genlepton and lepton to fsr photon 
+            # associate fsrphoton to lepton
 
             def GetFsrAssociatedGenLepton(ph):
                 if not self.analyzeMC: return None
@@ -53,9 +54,33 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
                     if dr < dR:
                         dR = dr
                         AssociatedLepton = l
-                return AssociatedLepton    
+                return AssociatedLepton
+                
+            def GetAssociatedFsr(l):   # potrei in realtà associare a un certo    
+                dR = 0.5               # leptone un fotone fsr che è più vicino
+                AssociatedFsr = None   # ad un altro leptone (infatti mi viene valore
+                for ph in FsrPhotons:  # di ZZMass+fsr leggermente superiore a quello
+                    dr = l.DeltaR(ph)  # calcolato nel framework)
+                    if dr < dR:
+                        dR = dr
+                        AssociatedFsr = ph
+                return AssociatedFsr
 
             # plots
+
+            def GetGenZ1Mass():
+                m = (GenParts[self.event.GenZZ_Z1l1Idx].p4() + GenParts[self.event.GenZZ_Z1l2Idx].p4()).M()
+                self.hEvent.fill1D("GenZ1Mass_10GeV", "GenZ1Mass_10GeV", 93, 60., 120., m, self.weight)
+                return m
+            
+            GenZ1MassTest = GetGenZ1Mass()
+
+            def GetGenZ2Mass():
+                m = (GenParts[self.event.GenZZ_Z2l1Idx].p4() + GenParts[self.event.GenZZ_Z2l2Idx].p4()).M()
+                self.hEvent.fill1D("GenZ2Mass_10GeV", "GenZ2Mass_10GeV", 93, 12., 120., m, self.weight)
+                return m
+     
+            GenZ2MassTest = GetGenZ2Mass()
 
             def GetGenZZMass():
                 m = self.event.GenZZ_mass
@@ -68,12 +93,15 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
                 mllGamma2 = (GenParts[self.event.GenZZ_Z2l1Idx].p4() + GenParts[self.event.GenZZ_Z2l2Idx].p4() + ph.p4()).M()
                 mll2 = (GenParts[self.event.GenZZ_Z2l1Idx].p4() + GenParts[self.event.GenZZ_Z2l2Idx].p4()).M()
                 mllGammaMin = min(mllGamma1, mllGamma2)
-                self.hEvent.fill1D("llGammaMassMin_10GeV", "llGammaMassMin_10GeV", 93, 20., 300., mllGammaMin, self.weight)
+                self.hEvent.fill1D("llGammaMassMin_10GeV", "llGammaMassMin_10GeV", 93, 60., 120., mllGammaMin, self.weight)
                 if mllGammaMin == mllGamma1: mllMin = mll1
                 else: mllMin = mll2
-                self.hEvent.fill2D("llGammaMassMin2D_10GeV", "llGammaMassMin2D_10GeV", 93, 20., 500., 93, 20., 500., mllGammaMin, mllMin, self.weight)
+                self.hEvent.fill2D("llGammaMassMin2D_10GeV", "llGammaMassMin2D_10GeV", 93, 60., 120., 93, 20., 200., mllGammaMin, mllMin, self.weight)
                 return mllGammaMin
             
+            for ph in GenPhotons:
+                llGammaMassMinTest = GetllGammaMassMin(ph)
+
             # ZZMass pre and post FSR          
             
             ZZMass = theZZ.mass
@@ -87,7 +115,24 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             GenZZ4lMass = (GenParts[self.event.GenZZ_Z1l1Idx].p4() + GenParts[self.event.GenZZ_Z1l2Idx].p4() + GenParts[self.event.GenZZ_Z2l1Idx].p4() + GenParts[self.event.GenZZ_Z2l2Idx].p4()).M()
             self.hEvent.fill1D("GenZZ4lMass_10GeV", "GenZZ4lMass_10GeV", 93, 20., 1000., GenZZ4lMass, self.weight)
 
-            # signal definition
+            theZZFourLpts = [Leptons[theZZ.Z1l1Idx], Leptons[theZZ.Z1l2Idx], Leptons[theZZ.Z2l1Idx], Leptons[theZZ.Z2l2Idx]]
+            ZZp4 = theZZ.p4()
+            #used = set()
+            for l in theZZFourLpts:
+                fsr = GetAssociatedFsr(l)
+                if fsr is not None: # and id(fsr) not in used:
+                    ZZp4 += fsr.p4()
+                    #used.add(id(fsr))
+            FourLptsAssociatedFsrMass = ZZp4.M()
+            self.hEvent.fill1D("FourLptsAssociatedFsrMass_10GeV", "FourLptsAssociatedFsrMass_10GeV", 93, 20., 1000., FourLptsAssociatedFsrMass, self.weight)
+
+            ZZp4all = theZZ.p4()
+            for ph in FsrPhotons:
+                ZZp4all += ph.p4()
+            FourLptsAssociatedFsrAllMass = ZZp4all.M()
+            self.hEvent.fill1D("FourLptsAssociatedFsrAllMass_10GeV", "FourLptsAssociatedFsrAllMass_10GeV", 93, 20., 1000., FourLptsAssociatedFsrAllMass, self.weight)
+            
+            # signal definitionfill1D("FourLeptonsFsrMass_10GeV
 
             def SignalDefinition(RequireResonantZ2 = None, RequireThreeBosonregion = None):
                 if not self.analyzeMC: return False
@@ -105,9 +150,8 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
                 if not any(p.pt > 20 and abs(p.eta) < 2.4 and not 1.444 < abs(p.eta) < 1.566 for p in GenPhotons): return False
 
                 # Z1 mass
-                Z1Mass = (GenParts[self.event.GenZZ_Z1l1Idx].p4() + GenParts[self.event.GenZZ_Z1l2Idx].p4()).M()
+                Z1Mass = GetGenZ1Mass()
                 if not 60 < Z1Mass < 120: return False
-                self.hEvent.fill1D("Z1Mass_10GeV", "Z1Mass_10GeV", 93, 60., 120., Z1Mass, self.weight)
                 
                 if RequireResonantZ2 is not None:
                     if ResonantZ2() != RequireResonantZ2:
@@ -120,8 +164,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
                 return True
 
             def ResonantZ2():
-                Z2Mass = (GenParts[self.event.GenZZ_Z2l1Idx].p4() + GenParts[self.event.GenZZ_Z2l2Idx].p4()).M()
-                self.hEvent.fill1D("Z2Mass_10GeV", "Z2Mass_10GeV", 93, 20., 120., Z2Mass, self.weight)
+                Z2Mass = GetGenZ2Mass()
                 if 60 < Z2Mass < 120: return True
                 if 20 < Z2Mass < 120: return False
                 return None
@@ -136,7 +179,6 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
                     for ph in GenPhotons
                 )
                     
-                
             ZZGamma = SignalDefinition(True, True)
             Fsr = SignalDefinition(True, False)
             Higgs = SignalDefinition(False, True) # da controllare quale processo è
