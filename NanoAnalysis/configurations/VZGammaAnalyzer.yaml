@@ -1,0 +1,22 @@
+samples:
+  years: [2022, 2023, 2024]
+  origin: [MC]
+  mode: name          # oppure: process, all
+  by_name:
+    - WZto3LNu
+    #- ZZTo4l
+    #- ZZTo4l_2Jets_EW
+    #- DoubleMu2022H
+  by_process:
+    - VBS
+
+analysis:
+  analyzer: VZGammaAnalyzer
+  regions : [L2P]
+
+
+
+# Spazio per parametri specifici dell'analisi
+#analysis_params:
+#  mass_window: [70, 110]
+#  btag_wp: medium
