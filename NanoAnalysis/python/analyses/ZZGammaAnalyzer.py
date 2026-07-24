@@ -6,6 +6,9 @@ from VVXAnalysis.NanoAnalysis.EventAnalyzer import EventAnalyzer
 from VVXAnalysis.NanoAnalysis.Histogrammer import *
 from VVXAnalysis.NanoAnalysis.Regions import Flags as Regions
 
+import ROOT
+from ROOT import TDatabasePDG
+
 class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
     def __init__(self, regions):
@@ -23,8 +26,8 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             # Collections
 
             GenParts = Collection(self.event, 'GenPart')
-            GenLeptons = [p for p in GenParts if abs(p.pdgId) == 11 or abs(p.pdgId == 13)]
-            GenPhotons = [p for p in GenParts if abs(p.pdgId) == 22]
+            GenLeptons = [p for p in GenParts if abs(p.pdgId) == 11 or abs(p.pdgId) == 13]
+            GenPhotons = [p for p in GenParts if p.pdgId == 22]
 
             ZZs = Collection(self.event, 'ZZCand') ## move it in EventAnalyzer::init(event) ??
             theZZ = ZZs[bestCandIdx]
@@ -34,152 +37,179 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
             if self.analyzeMC: self.weight = (self.event.overallEventWeight*theZZ.dataMCWeight/self.genEventSumw)
 
-            # associate genlepton and lepton to fsr photon 
-            # associate fsrphoton to lepton
+            # associate leptons + fsrphotons
 
-            def GetFsrAssociatedGenLepton(ph):
-                if not self.analyzeMC: return None
-                if ph.genFsrIdx != -1:
-                    GenFsrPhoton = GenParts[ph.genFsrIdx]
-                    GenFsrLpt = GenParts[GenFsrPhoton.genPartIdxMother]
-                    if abs(GenFsrLpt.pdgId) == 11 or abs(GenFsrLpt.pdgId) == 13:
-                        return GenFsrLpt
+            def AssociateLeptonFsr(Leps, Phs):
+                Associations = []
+                for ph in Phs:
+                    AssociatedLepton = None
+                    dR = 0.5
+                    for l in Leps:
+                        dr = ph.DeltaR(l)
+                        if dr < dR:
+                            dR = dr
+                            AssociatedLepton = l
+                    if AssociatedLepton is not None:
+                        Associations.append((AssociatedLepton, ph))
+                return Associations
+
+            def GetFsrsFromLepton(Lep, Associations):
+                FsrPhotons = []
+                for l, ph in Associations:
+                    if Lep == l:
+                        FsrPhotons.append(ph)
+                return FsrPhotons
+
+            def GetLeptonFromFsr(Photon, Associations):
+                for l, ph in Associations:
+                    if Photon == ph:
+                        return l
                 return None
 
-            def GetFsrAssociatedLepton(ph):
-                dR = 0.5
-                AssociatedLepton = None
-                for l in Leptons:
-                    dr = ph.DeltaR(l)
-                    if dr < dR:
-                        dR = dr
-                        AssociatedLepton = l
-                return AssociatedLepton
+            # ZZGen
+
+            class GnZ:
+                def __init__(self, leptons, fsr=None):
+                    self.leptons = leptons
+                    self.fsr = fsr
+
+                    self.p4PreFsr = leptons[0].p4() + leptons[1].p4()
+                    self.massPreFsr = self.p4PreFsr.M()
+
+                    self.p4 = leptons[0].p4() + leptons[1].p4()
+                    if fsr is not None:
+                        for photons in fsr:
+                            for ph in photons:
+                                self.p4 += ph.p4()
+                    self.mass = self.p4.M()
+                    self.pt = self.p4.Pt()
+                    self.eta = self.p4.Eta()
+                    self.phi = self.p4.Phi()
                 
-            def GetAssociatedFsr(l):   # potrei in realtà associare a un certo    
-                dR = 0.5               # leptone un fotone fsr che è più vicino
-                AssociatedFsr = None   # ad un altro leptone (infatti mi viene valore
-                for ph in FsrPhotons:  # di ZZMass+fsr leggermente superiore a quello
-                    dr = l.DeltaR(ph)  # calcolato nel framework)
-                    if dr < dR:
-                        dR = dr
-                        AssociatedFsr = ph
-                return AssociatedFsr
+            class GnZZ:
+                def __init__(self, Z1, Z2):
+                    self.Z1 = Z1
+                    self.Z2 = Z2
 
-            # plots
+                    self.p4PreFsr = Z1.p4PreFsr +Z2.p4PreFsr
+                    self.massPreFsr = self.p4PreFsr.M()
+                    self.p4 = Z1.p4 +Z2.p4
+                    self.mass = self.p4.M()
+                    self.pt = self.p4.Pt()
+                    self.eta = self.p4.Eta()
+                    self.phi = self.p4.Phi()
+                    
+            def GetGnZZ(GenLeps, GenFsrs):
+                if len(GenLeps) != 4: return None
+                if (sum(l.pdgId == 11 for l in GenLeps) != sum(l.pdgId == -11 for l in GenLeps) or sum(l.pdgId == 13 for l in GenLeps) != sum(l.pdgId == -13 for l in GenLeps)): return None
+                if sum(l.pt > 5 for l in GenLeps) < 4: return None
+                if sum(l.pt > 10 for l in GenLeps) < 2: return None
+                if sum(l.pt > 20 for l in GenLeps) < 1: return None
+                if any(abs(l.eta) > 2.5 for l in GenLeps): return None
 
-            def GetGenZ1Mass():
-                m = (GenParts[self.event.GenZZ_Z1l1Idx].p4() + GenParts[self.event.GenZZ_Z1l2Idx].p4()).M()
-                self.hEvent.fill1D("GenZ1Mass_10GeV", "GenZ1Mass_10GeV", 93, 60., 120., m, self.weight)
-                return m
-            
-            GenZ1MassTest = GetGenZ1Mass()
+                ZMassPDG = TDatabasePDG.Instance().GetParticle(23).Mass()
+                Z1MassPreFsr = float("inf")
+                Z1Leps = None
+                for i, l1 in enumerate(GenLeps):
+                    for j in range(i+1, len(GenLeps)):
+                        l2 = GenLeps[j]
+                        if l1.pdgId != -l2.pdgId: continue
+                        LepsMass = (l1.p4() + l2.p4()).M()
+                        if abs(LepsMass - ZMassPDG) < abs(Z1MassPreFsr - ZMassPDG):
+                            Z1MassPreFsr = LepsMass
+                            Z1Leps = [l1, l2]
+                if Z1Leps is None: return None
+                
+                Z2Leps = [l for l in GenLeps if l not in Z1Leps]
+                
+                AssociationsLptFsr = AssociateLeptonFsr(GenLeps, GenFsrs)
+                Z1Fsrs = [GetFsrsFromLepton(Z1Leps[0], AssociationsLptFsr), GetFsrsFromLepton(Z1Leps[1], AssociationsLptFsr)]
+                Z2Fsrs = [GetFsrsFromLepton(Z2Leps[0], AssociationsLptFsr), GetFsrsFromLepton(Z2Leps[1], AssociationsLptFsr)]
+                         
+                GnZ1 = GnZ(Z1Leps, Z1Fsrs)
+                GnZ2 = GnZ(Z2Leps, Z2Fsrs)
 
-            def GetGenZ2Mass():
-                m = (GenParts[self.event.GenZZ_Z2l1Idx].p4() + GenParts[self.event.GenZZ_Z2l2Idx].p4()).M()
-                self.hEvent.fill1D("GenZ2Mass_10GeV", "GenZ2Mass_10GeV", 93, 12., 120., m, self.weight)
-                return m
-     
-            GenZ2MassTest = GetGenZ2Mass()
+                return GnZZ(GnZ1, GnZ2)
 
-            def GetGenZZMass():
-                m = self.event.GenZZ_mass
-                self.hEvent.fill1D("GenZZMass_10GeV", "GenZZMass_10GeV", 93, 20., 1000., m, self.weight)
-                return m
+            GnZZcand = GetGnZZ(GenLeptons, GenPhotons)
 
-            def GetllGammaMassMin(ph):
-                mllGamma1 = (GenParts[self.event.GenZZ_Z1l1Idx].p4() + GenParts[self.event.GenZZ_Z1l2Idx].p4() + ph.p4()).M()
-                mll1 = (GenParts[self.event.GenZZ_Z1l1Idx].p4() + GenParts[self.event.GenZZ_Z1l2Idx].p4()).M()
-                mllGamma2 = (GenParts[self.event.GenZZ_Z2l1Idx].p4() + GenParts[self.event.GenZZ_Z2l2Idx].p4() + ph.p4()).M()
-                mll2 = (GenParts[self.event.GenZZ_Z2l1Idx].p4() + GenParts[self.event.GenZZ_Z2l2Idx].p4()).M()
+            # llGamma
+
+            def GetllGammaMassMin(ph, GnZ1, GnZ2):
+                mllGamma1 = (GnZ1.leptons[0].p4() + GnZ1.leptons[1].p4() + ph.p4()).M()
+                mll1 = (GnZ1.leptons[0].p4() + GnZ1.leptons[1].p4()).M()
+                mllGamma2 = (GnZ2.leptons[0].p4() + GnZ2.leptons[1].p4() + ph.p4()).M()
+                mll2 = (GnZ2.leptons[0].p4() + GnZ2.leptons[1].p4()).M()
                 mllGammaMin = min(mllGamma1, mllGamma2)
-                self.hEvent.fill1D("llGammaMassMin_10GeV", "llGammaMassMin_10GeV", 93, 60., 120., mllGammaMin, self.weight)
+                self.hEvent.fill1D("llGammaMassMin", "llGammaMassMin", 93, 60., 120., mllGammaMin, self.weight)
                 if mllGammaMin == mllGamma1: mllMin = mll1
                 else: mllMin = mll2
-                self.hEvent.fill2D("llGammaMassMin2D_10GeV", "llGammaMassMin2D_10GeV", 93, 60., 120., 93, 20., 200., mllGammaMin, mllMin, self.weight)
+                self.hEvent.fill2D("llGammaMassMin2D", "llGammaMassMin2D", 93, 60., 120., 93, 20., 200., mllGammaMin, mllMin, self.weight)
                 return mllGammaMin
             
-            for ph in GenPhotons:
-                llGammaMassMinTest = GetllGammaMassMin(ph)
+            # signal definition
 
-            # ZZMass pre and post FSR          
-            
-            ZZMass = theZZ.mass
-            self.hEvent.fill1D("ZZMass_10GeV", "ZZMass_10GeV", 93, 20., 1000., ZZMass, self.weight)
-
-            ZZMassPreFsr = theZZ.massPreFSR
-            self.hEvent.fill1D("ZZMassPreFSR_10GeV", "ZZMassPreFSR_10GeV", 93, 20., 1000., ZZMassPreFsr, self.weight)
-
-            GenZZMass = GetGenZZMass()
-
-            GenZZ4lMass = (GenParts[self.event.GenZZ_Z1l1Idx].p4() + GenParts[self.event.GenZZ_Z1l2Idx].p4() + GenParts[self.event.GenZZ_Z2l1Idx].p4() + GenParts[self.event.GenZZ_Z2l2Idx].p4()).M()
-            self.hEvent.fill1D("GenZZ4lMass_10GeV", "GenZZ4lMass_10GeV", 93, 20., 1000., GenZZ4lMass, self.weight)
-
-            theZZFourLpts = [Leptons[theZZ.Z1l1Idx], Leptons[theZZ.Z1l2Idx], Leptons[theZZ.Z2l1Idx], Leptons[theZZ.Z2l2Idx]]
-            ZZp4 = theZZ.p4()
-            #used = set()
-            for l in theZZFourLpts:
-                fsr = GetAssociatedFsr(l)
-                if fsr is not None: # and id(fsr) not in used:
-                    ZZp4 += fsr.p4()
-                    #used.add(id(fsr))
-            FourLptsAssociatedFsrMass = ZZp4.M()
-            self.hEvent.fill1D("FourLptsAssociatedFsrMass_10GeV", "FourLptsAssociatedFsrMass_10GeV", 93, 20., 1000., FourLptsAssociatedFsrMass, self.weight)
-
-            ZZp4all = theZZ.p4()
-            for ph in FsrPhotons:
-                ZZp4all += ph.p4()
-            FourLptsAssociatedFsrAllMass = ZZp4all.M()
-            self.hEvent.fill1D("FourLptsAssociatedFsrAllMass_10GeV", "FourLptsAssociatedFsrAllMass_10GeV", 93, 20., 1000., FourLptsAssociatedFsrAllMass, self.weight)
-            
-            # signal definitionfill1D("FourLeptonsFsrMass_10GeV
+            def GetBestGamma(GoodPhotons):
+                BestGamma = max(GoodPhotons, key=lambda ph: ph.pt, default=None)
+                if BestGamma is None: return None
+                BestGammapt = BestGamma.pt
+                self.hEvent.fill1D("BestGammapt", "BestGammapt", 93, 20., 1000., BestGammapt, self.weight)
+                Gamma2 = max((ph for ph in GoodPhotons if ph != BestGamma), key=lambda ph: ph.pt, default=None)
+                if Gamma2 is not None:
+                    Gamma2pt = Gamma2.pt
+                    self.hEvent.fill1D("Gamma2pt", "Gamma2pt", 93, 20., 1000., Gamma2pt, self.weight)
+                return BestGamma
+                
+            def ResonantZ2(GnZ2):
+                if 60 < GnZ2.mass < 120: return True
+                return False
+                
+            def ThreeBosonRegion(Gamma, GnZ1, GnZ2):
+                if any(Gamma.DeltaR(l) < 0.5 for l in GnZ1.leptons + GnZ2.leptons): return False
+                if GetllGammaMassMin(Gamma, GnZ1, GnZ2) < 100: return False
+                return True
 
             def SignalDefinition(RequireResonantZ2 = None, RequireThreeBosonregion = None):
                 if not self.analyzeMC: return False
 
-                # leptons kinematic requirements
-                if len(GenLeptons) != 4: return False
-                if (sum(l.pdgId == 11 for l in GenLeptons) != sum(l.pdgId == -11 for l in GenLeptons) or sum(l.pdgId == 13 for l in GenLeptons) != sum(l.pdgId == -13 for l in GenLeptons)): return False
-                if sum(l.pt > 5 for l in GenLeptons) < 4: return False
-                if sum(l.pt > 10 for l in GenLeptons) < 2: return False
-                if sum(l.pt > 20 for l in GenLeptons) < 1: return False
-                if any(abs(l.eta) > 2.5 for l in GenLeptons): return False
+                if GnZZcand is None: return False
+                GnZ1 = GnZZcand.Z1
+                GnZ2 = GnZZcand.Z2
 
-                # photons kinematic requirments
+                if not 60 < GnZ1.mass < 120: return False
+                if not 12 < GnZ2.mass < 120: return False
+
                 if len(GenPhotons) < 1: return False
-                if not any(p.pt > 20 and abs(p.eta) < 2.4 and not 1.444 < abs(p.eta) < 1.566 for p in GenPhotons): return False
+                GoodPhotons = [p for p in GenPhotons if p.pt > 20 and abs(p.eta) < 2.4 and not 1.444 < abs(p.eta) < 1.566]
+                if len(GoodPhotons) == 0: return False
 
-                # Z1 mass
-                Z1Mass = GetGenZ1Mass()
-                if not 60 < Z1Mass < 120: return False
-                
+                Gamma = GetBestGamma(GoodPhotons)
+
                 if RequireResonantZ2 is not None:
-                    if ResonantZ2() != RequireResonantZ2:
+                    if ResonantZ2(GnZ2) != RequireResonantZ2:
                         return False
                 
                 if RequireThreeBosonregion is not None:
-                    if ThreeBosonRegion() != RequireThreeBosonregion:
+                    if ThreeBosonRegion(Gamma, GnZ1, GnZ2) != RequireThreeBosonregion:
                         return False
 
                 return True
 
-            def ResonantZ2():
-                Z2Mass = GetGenZ2Mass()
-                if 60 < Z2Mass < 120: return True
-                if 20 < Z2Mass < 120: return False
-                return None
-                
-            def ThreeBosonRegion():
-                return any(
-                    GetllGammaMassMin(ph) > 100 and
-                    ph.DeltaR(GenParts[self.event.GenZZ_Z1l1Idx]) > 0.5 and
-                    ph.DeltaR(GenParts[self.event.GenZZ_Z1l2Idx]) > 0.5 and
-                    ph.DeltaR(GenParts[self.event.GenZZ_Z2l1Idx]) > 0.5 and
-                    ph.DeltaR(GenParts[self.event.GenZZ_Z2l2Idx]) > 0.5
-                    for ph in GenPhotons
-                )
-                    
             ZZGamma = SignalDefinition(True, True)
-            Fsr = SignalDefinition(True, False)
-            Higgs = SignalDefinition(False, True) # da controllare quale processo è
-            quarto = SignalDefinition(False, False) # da controllare quale processo è
+            ZZFsr = SignalDefinition(True, False)
+            HiggsGamma = SignalDefinition(False, True)
+            HiggsFsr = SignalDefinition(False, False)
+
+            # ZZMass pre and post FSR          
+            if GnZZcand is not None:
+                ZZMass = theZZ.mass
+                self.hEvent.fill1D("ZZMass_10GeV", "ZZMass_10GeV", 93, 20., 1000., ZZMass, self.weight)
+    
+                ZZMassPreFsr = theZZ.massPreFSR
+                self.hEvent.fill1D("ZZMassPreFSR_10GeV", "ZZMassPreFSR_10GeV", 93, 20., 1000., ZZMassPreFsr, self.weight)
+
+                GnZZMass = GnZZcand.mass    
+                self.hEvent.fill1D("GnZZMass", "GnZZMass", 93, 20., 1000., GnZZMass, self.weight)
+
+                GnZZMassPreFsr = GnZZcand.massPreFsr
+                self.hEvent.fill1D("GnZZMassPreFSR", "GnZZMassPreFSR", 93, 20., 1000., GnZZMassPreFsr, self.weight)
