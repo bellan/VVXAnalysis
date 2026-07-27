@@ -133,7 +133,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
             GnZZcand = GetGnZZ(GenLeptons, GenPhotons)
 
-            # llGamma
+            #signal definition
 
             def GetllGammaMassMin(ph, GnZ1, GnZ2):
                 mllGamma1 = (GnZ1.leptons[0].p4() + GnZ1.leptons[1].p4() + ph.p4()).M()
@@ -146,8 +146,6 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
                 else: mllMin = mll2
                 self.hEvent.fill2D("llGammaMassMin2D", "llGammaMassMin2D", 93, 60., 120., 93, 20., 200., mllGammaMin, mllMin, self.weight)
                 return mllGammaMin
-            
-            # signal definition
 
             def GetBestGamma(GoodPhotons):
                 BestGamma = max(GoodPhotons, key=lambda ph: ph.pt, default=None)
@@ -181,8 +179,9 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
                 if len(GenPhotons) < 1: return False
                 GoodPhotons = [p for p in GenPhotons if p.pt > 20 and abs(p.eta) < 2.4 and not 1.444 < abs(p.eta) < 1.566]
+                self.hEvent.fill1D("nGoodPhotons", "nGoodPhotons", 10, 0, 10, len(GoodPhotons), self.weight)
                 if len(GoodPhotons) == 0: return False
-
+                
                 Gamma = GetBestGamma(GoodPhotons)
 
                 if RequireResonantZ2 is not None:
