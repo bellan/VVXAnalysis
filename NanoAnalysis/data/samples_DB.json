@@ -38,6 +38,12 @@
 	      "eos_path": "",
 	      "version" : "July2026",
 	      "color": 5,
+	      "style": 0},
+		  {"process": "VBS",
+	      "name": "ZZGamma", 
+	      "eos_path": "",
+	      "version" : "July2026",
+	      "color": 5,
 	      "style": 0}
 
 	     

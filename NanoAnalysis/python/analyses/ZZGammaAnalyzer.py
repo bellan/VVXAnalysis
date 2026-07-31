@@ -28,7 +28,6 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             GenParts = Collection(self.event, 'GenPart')
             GenLeptons = [p for p in GenParts if abs(p.pdgId) == 11 or abs(p.pdgId) == 13]
             GenPhotons = [p for p in GenParts if p.pdgId == 22]
-
             ZZs = Collection(self.event, 'ZZCand') ## move it in EventAnalyzer::init(event) ??
             theZZ = ZZs[bestCandIdx]
             Leptons = Collection(self.event, 'Lepton')
@@ -38,6 +37,18 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             if self.analyzeMC: self.weight = (self.event.overallEventWeight*theZZ.dataMCWeight/self.genEventSumw)
 
             # associate leptons + fsrphotons
+
+            def GetllGammaMassMin(ph, GnZ1, GnZ2):
+                mllGamma1 = (GnZ1.leptons[0].p4() + GnZ1.leptons[1].p4() + ph.p4()).M()
+                mll1 = (GnZ1.leptons[0].p4() + GnZ1.leptons[1].p4()).M()
+                mllGamma2 = (GnZ2.leptons[0].p4() + GnZ2.leptons[1].p4() + ph.p4()).M()
+                mll2 = (GnZ2.leptons[0].p4() + GnZ2.leptons[1].p4()).M()
+                mllGammaMin = min(mllGamma1, mllGamma2)
+                self.hEvent.fill1D("llGammaMassMin", "llGammaMassMin", 93, 60., 120., mllGammaMin, self.weight)
+                if mllGammaMin == mllGamma1: mllMin = mll1
+                else: mllMin = mll2
+                self.hEvent.fill2D("llGammaMassMin2D", "llGammaMassMin2D", 93, 60., 120., 93, 20., 200., mllGammaMin, mllMin, self.weight)
+                return mllGammaMin
 
             def AssociateLeptonFsr(Leps, Phs):
                 Associations = []
@@ -135,18 +146,6 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
             #signal definition
 
-            def GetllGammaMassMin(ph, GnZ1, GnZ2):
-                mllGamma1 = (GnZ1.leptons[0].p4() + GnZ1.leptons[1].p4() + ph.p4()).M()
-                mll1 = (GnZ1.leptons[0].p4() + GnZ1.leptons[1].p4()).M()
-                mllGamma2 = (GnZ2.leptons[0].p4() + GnZ2.leptons[1].p4() + ph.p4()).M()
-                mll2 = (GnZ2.leptons[0].p4() + GnZ2.leptons[1].p4()).M()
-                mllGammaMin = min(mllGamma1, mllGamma2)
-                self.hEvent.fill1D("llGammaMassMin", "llGammaMassMin", 93, 60., 120., mllGammaMin, self.weight)
-                if mllGammaMin == mllGamma1: mllMin = mll1
-                else: mllMin = mll2
-                self.hEvent.fill2D("llGammaMassMin2D", "llGammaMassMin2D", 93, 60., 120., 93, 20., 200., mllGammaMin, mllMin, self.weight)
-                return mllGammaMin
-
             def GetBestGamma(GoodPhotons):
                 BestGamma = max(GoodPhotons, key=lambda ph: ph.pt, default=None)
                 if BestGamma is None: return None
@@ -162,12 +161,12 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
                 if 60 < GnZ2.mass < 120: return True
                 return False
                 
-            def ThreeBosonRegion(Gamma, GnZ1, GnZ2):
+            def TriBosonRegion(Gamma, GnZ1, GnZ2):
                 if any(Gamma.DeltaR(l) < 0.5 for l in GnZ1.leptons + GnZ2.leptons): return False
                 if GetllGammaMassMin(Gamma, GnZ1, GnZ2) < 100: return False
                 return True
 
-            def SignalDefinition(RequireResonantZ2 = None, RequireThreeBosonregion = None):
+            def SignalDefinition(RequireResonantZ2 = None, RequireTriBosonregion = None):
                 if not self.analyzeMC: return False
 
                 if GnZZcand is None: return False
@@ -188,27 +187,27 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
                     if ResonantZ2(GnZ2) != RequireResonantZ2:
                         return False
                 
-                if RequireThreeBosonregion is not None:
-                    if ThreeBosonRegion(Gamma, GnZ1, GnZ2) != RequireThreeBosonregion:
+                if RequireTriBosonregion is not None:
+                    if TriBosonRegion(Gamma, GnZ1, GnZ2) != RequireTriBosonregion:
                         return False
 
                 return True
 
-            ZZGamma = SignalDefinition(True, True)
+            #ZZGamma = SignalDefinition(True, True)
             ZZFsr = SignalDefinition(True, False)
-            HiggsGamma = SignalDefinition(False, True)
-            HiggsFsr = SignalDefinition(False, False)
+            #HiggsGamma = SignalDefinition(False, True)
+            #HiggsFsr = SignalDefinition(False, False)
 
             # ZZMass pre and post FSR          
             if GnZZcand is not None:
                 ZZMass = theZZ.mass
-                self.hEvent.fill1D("ZZMass_10GeV", "ZZMass_10GeV", 93, 20., 1000., ZZMass, self.weight)
+                self.hEvent.fill1D("ZZMass_10GeV", "ZZMass_10GeV", 93, 60., 500., ZZMass, self.weight)
     
                 ZZMassPreFsr = theZZ.massPreFSR
-                self.hEvent.fill1D("ZZMassPreFSR_10GeV", "ZZMassPreFSR_10GeV", 93, 20., 1000., ZZMassPreFsr, self.weight)
+                self.hEvent.fill1D("ZZMassPreFSR_10GeV", "ZZMassPreFSR_10GeV", 93, 60., 500., ZZMassPreFsr, self.weight)
 
                 GnZZMass = GnZZcand.mass    
-                self.hEvent.fill1D("GnZZMass", "GnZZMass", 93, 20., 1000., GnZZMass, self.weight)
+                self.hEvent.fill1D("GnZZMass", "GnZZMass", 93, 60., 500., GnZZMass, self.weight)
 
                 GnZZMassPreFsr = GnZZcand.massPreFsr
-                self.hEvent.fill1D("GnZZMassPreFSR", "GnZZMassPreFSR", 93, 20., 1000., GnZZMassPreFsr, self.weight)
+                self.hEvent.fill1D("GnZZMassPreFSR", "GnZZMassPreFSR", 93, 60., 500., GnZZMassPreFsr, self.weight)
