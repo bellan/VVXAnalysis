@@ -1,29 +1,233 @@
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection
-from ZZAnalysis.NanoAnalysis.tools import getLeptons, get_genEventSumw
+from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Object
 
 from VVXAnalysis.NanoAnalysis.EventAnalyzer import EventAnalyzer
 from VVXAnalysis.NanoAnalysis.Histogrammer import *
 from VVXAnalysis.NanoAnalysis.Regions import Flags as Regions
 
-class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
+import ROOT
+from ROOT import TDatabasePDG   
 
+
+class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
+     
     def __init__(self, regions):
         super().__init__(regions)
 
-    def analyze(self):
-        #print(Regions.check(self.regionWord,Regions.L4P))
-        bestCandIdx = self.event.bestCandIdx
+    def analyze(self):   
+        cutFlowStage = 0.
+        if self.event.HLT_passZZ4l :
+            weight = 1.   #da implementare.....  
     
-        # Check that the event contains a selected candidate, and that
-        # passes the required triggers (which is necessary for samples
-        # processed with TRIGPASSTHROUGH=True)
-        if(bestCandIdx != -1 and self.event.HLT_passZZ4l): 
-            weight = 1.
-            ZZs = Collection(self.event, 'ZZCand') ## move it in EventAnalyzer::init(event) ??
-            theZZ = ZZs[bestCandIdx]
-            if self.analyzeMC: self.weight = (self.event.overallEventWeight*theZZ.dataMCWeight/self.genEventSumw)
+            GenParts = Collection(self.event, 'GenPart')
+            GenChargedLeptons = [p for p in GenParts if abs(p.pdgId) in (11,13)]
+            GenPhotons = [p for p in GenParts if p.pdgId == 22]
+            GenNeutrinos = [p for p in GenParts if abs(p.pdgId) in (12,14)]
+
+                  
+            #SIGNAL DEFINITION
+            def isSignal() : 
+                # KINEMATIC CUT ON GENERATED PARTICLES
+                if self.pass_ChLepKinCut(GenChargedLeptons) is None : return False, 1.
+                else : GenBestLeptons = self.pass_ChLepKinCut(GenChargedLeptons)  
+                                           
+                genPhoton = self.pass_PhKinCut(GenPhotons, GenChargedLeptons)
+                if genPhoton is None : return False, 2.
+               
+                # W and Z RECONSTRUCTION
+                theW, theZ = self.WZRecon(GenBestLeptons, GenNeutrinos, True, False)
+                if theW is None or theZ is None : return False, 3.
+                else : 
+                    self.hEvent.fill1D("ZMass_91Gev", "ZMass_91Gev", 180, 60., 120., theZ.mass, self.weight)
+                    self.hEvent.fill1D("WMass_80Gev", "WMass_80Gev", 160, 50., 110., theW.mass, self.weight)
+                    #self.hEvent.fill1D("WPt", "WPt", 90, 0., 180., theW.pt, self.weight)
+       
+                notpassedZ, invMassLLGamma = self.isPhotonFSR(theZ.leptons, genPhoton, 110)
+                self.hEvent.fill1D("llGamma_invMass", "llGamma_invMass", 100, 40., 250., invMassLLGamma, self.weight)
+                if notpassedZ : return False, 4.
+
+                # only cause the neutrino is gen
+                notpassedW, invMassLNuGamma = self.isPhotonFSR(theW.leptons, genPhoton, 100)
+                self.hEvent.fill1D("lNuGamma_invMass", "lNuGamma_invMass", 100, 40., 250., invMassLNuGamma, self.weight)
+                if notpassedW : return False, 5.
+                  
+                return True, -1.
+
             
-            m4l = theZZ.mass
+            verdict, cutFlowStage = isSignal()           
+        
+        self.hEvent.fill1D("CutFlowStage", "CutFlowStage",7, -1.5, 5.5, cutFlowStage, self.weight)
+        
+    
+          
+        
+    #----------------------------------
+    # Functions for KINEMATIC CUT 
+    #----------------------------------
+    # if the cut is passed (and also the trigger 20-10-5) it returns the three charged leptons with the biggest pt
+    def pass_ChLepKinCut(self, ChLeptons) :
+        GoodChLeptons = [p for p in ChLeptons if p.pt > 5 and abs(p.eta) < 2.5]
+        if len(GoodChLeptons) > 2 : 
+            l1 = max(GoodChLeptons, key=lambda p: p.pt, default=None)
+            if l1.pt > 20 :
+                l2 = max((p for p in GoodChLeptons if p != l1), key=lambda p: p.pt, default=None)
+                if l2.pt  > 10 :
+                    l3 = max((p for p in GoodChLeptons if p not in (l1, l2)), key=lambda p: p.pt, default=None)
+                    return [l1,l2,l3]
+                    
+        return None
 
-            self.hEvent.fill1D("ZZMass_10GeV", "ZZMass_10GeV", 93, 70., 1000., m4l, self.weight)
+    
+    # for kinematic cut on photons: returns the photons that passed the cuts with the biggest pt
+    def pass_PhKinCut(self, Photons, ChLeptons) :
+        GoodPhotons = [p for p in Photons if p.pt > 20 and abs(p.eta) < 2.4 and not 1.444 < abs(p.eta) < 1.566]    
+        BestPhotons = [gp for gp in GoodPhotons if all(gp.DeltaR(l) > 0.5 for l in ChLeptons)] 
+        
+        #come scelgo poi il fotone migliore? Per ora prendo quello con pt maggiore (dovrebbe venire dal coupling)
+        if len(BestPhotons) > 0 :
+            return max(BestPhotons, key=lambda p: p.pt, default=None)
+        else : return None
 
+
+        
+  
+    #--------------------------------------
+    # Functions for WZ RECOSTRUCTION
+    #--------------------------------------
+    # given a collection of leptons (charged and neutrino), this function reconstructs the W or the Z by the pdgId given
+    def BosonRecon(self, Leptons, partPdgId,  massThreshold, chooseNeutrinoByPt) :
+        CandMass = {}
+        MassPdg = TDatabasePDG.Instance().GetParticle(partPdgId).Mass()
+
+        GoodLeptons = Leptons
+        if chooseNeutrinoByPt and partPdgId == 24  :
+            GoodLeptons = self.getLeptonList(Leptons)
+               
+        for i in range(len(GoodLeptons)):
+            for j in range(i + 1, len(GoodLeptons)):
+                if (partPdgId == 24 and abs(GoodLeptons[i].pdgId+ GoodLeptons[j].pdgId) == 1) :   
+                    CandMass[(i,j)] = self.getInvMass(GoodLeptons[i], GoodLeptons[j])  
+                elif (partPdgId == 23 and GoodLeptons[i].pdgId+ GoodLeptons[j].pdgId == 0) :
+                     CandMass[(i,j)] = self.getInvMass(GoodLeptons[i], GoodLeptons[j])  
+                else : CandMass[(i,j)] = None
+                    
+        bestCouple = self.getCloserCand(MassPdg, CandMass)
+        if(bestCouple != None and massThreshold[0] < CandMass[bestCouple] < massThreshold[1]) :  
+            if(partPdgId == 24) : boson = GenW([GoodLeptons[bestCouple[0]], GoodLeptons[bestCouple[1]]])
+            elif(partPdgId == 23) : boson = GenZ([GoodLeptons[bestCouple[0]], GoodLeptons[bestCouple[1]]])
+            return boson, bestCouple
+
+        return None, None
+
+
+    # return a W and a Z boson. It reconstruct them in order to minimize the difference with the theoretical mass
+    def WZRecon(self, ChLeptons, Neutrinos, useResidues, chooseNeutrinoByPt) :
+        if any(l.pdgId < 0 for l in ChLeptons) and any(l.pdgId > 0 for l in ChLeptons)  :  
+            Z1, coupleZ1 = self.BosonRecon(ChLeptons, 23, (60,120), False)
+            W1, coupleW1 = None, None
+            if coupleZ1 != None :
+                RemainingChLeptons1 = [p for i, p in enumerate(ChLeptons) if i not in coupleZ1]
+                Leptons1 = RemainingChLeptons1 + Neutrinos
+                W1, coupleW1 = self.BosonRecon(Leptons1, 24, (50,110), chooseNeutrinoByPt)
+            
+            ret = (W1, Z1)
+            if useResidues : 
+                Leptons2 = ChLeptons + Neutrinos
+                W2, coupleW2 = self.BosonRecon(Leptons2, 24, (50,110), chooseNeutrinoByPt)
+                if coupleW2 != None : 
+                    RemainingChLeptons2 = [p for i, p in enumerate(ChLeptons) if i not in coupleW2]
+                    Z2, coupleZ2 = self.BosonRecon(RemainingChLeptons2, 23, (60,120), False)
+
+                    WRecIsBest = self.getLowerRes(W1,Z1,W2,Z2)
+                    if WRecIsBest :  ret = (W2, Z2)
+                        
+            return ret
+                
+        return None, None
+
+
+    # return True if the selected photon is a FSR by looking at the invariant mass
+    def isPhotonFSR(self, Leptons, photon, massLimit) :
+        res = None
+        if len(Leptons) == 2 :
+            res = True
+            llGamma_mass = self.getInvMass(Leptons[0], Leptons[1], photon)
+            if llGamma_mass > massLimit : res = False
+        return res, llGamma_mass
+
+        
+            
+    
+    #--------------------------
+    # UTILITY FUNCTIONS
+    #--------------------------
+    # Return True if the residue between the gen boson masses and the theoretically one is lower for the second pair
+    def getLowerRes(self, Wboson1, Zboson1, Wboson2, Zboson2) :
+        WMassPdg = TDatabasePDG.Instance().GetParticle(24).Mass()
+        ZMassPdg = TDatabasePDG.Instance().GetParticle(23).Mass()
+        
+        res = lambda b, mass: abs(b.mass - mass) if b is not None else float('inf')
+        res1 = res(Wboson1, WMassPdg) + res(Zboson1, ZMassPdg)
+        res2 = res(Wboson2, WMassPdg) + res(Zboson2, ZMassPdg)
+        if res1 > res2 : return True
+        else : return False
+        
+    
+    # finds the candidate with similar invariant mass to "partMass" 
+    def getCloserCand(self, partMass, candMass) :
+        best = None
+        minDiff = 999. 
+        for couple, mass in candMass.items() :
+            if(mass != None) :  
+                invM_diff = abs(partMass - mass) 
+                if (invM_diff < minDiff) :
+                    minDiff = invM_diff
+                    best = couple
+        return best
+
+    
+    # given a variable number of "daughter particles" it calculates the invariant mass
+    def getInvMass(self, *particle) :
+        ptot = ROOT.TLorentzVector()
+        for part in particle :
+            ptot += part.p4()
+                
+        return ptot.M()
+
+
+    # extrapolate from a list of leptons the charged ones plus the neutrino with the biggest pt 
+    def getLeptonList(self, Leptons) :
+        ChLeptons = [p for p in Leptons if abs(p.pdgId) in (11, 13)]       
+        chosenNeutrino = max((p for p in Leptons if abs(p.pdgId) in (12, 14)),key=lambda p: p.pt,default=None,)
+
+        GoodLeptons = ChLeptons.copy()
+        if chosenNeutrino is not None:
+            GoodLeptons.append(chosenNeutrino)
+        return GoodLeptons
+
+
+
+#---------------------------
+# other CLASSES
+#---------------------------
+#per il momento non tengo conto della FINAL STATE RADIATION (fotoni emessi da leptoni) 
+class GenZ:   
+    def __init__(self, Leptons):
+        self.leptons = Leptons
+
+        self.p4 = Leptons[0].p4() + Leptons[1].p4()
+        self.mass = self.p4.M()
+        self.pt = self.p4.Pt()
+        self.eta = self.p4.Eta()
+        self.phi = self.p4.Phi()  
+
+
+class GenW:
+    def __init__(self, Leptons):
+        self.leptons = Leptons
+
+        self.p4 = Leptons[0].p4() + Leptons[1].p4()
+        self.mass = self.p4.M()
+        self.pt = self.p4.Pt()
+        self.eta = self.p4.Eta()
+        self.phi = self.p4.Phi() 

@@ -3,7 +3,8 @@ samples:
   origin: [MC]
   mode: name          # oppure: process, all
   by_name:
-    - WZto3LNu
+    - WZGamma
+    #- WZto3LNu
     #- ZZTo4l
     #- ZZTo4l_2Jets_EW
     #- DoubleMu2022H
