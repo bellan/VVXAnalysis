@@ -6,7 +6,10 @@ identifier,process,crossSection=-1,BR=1,execute=True,dataset,prefix,pattern,spli
 ###,,,,,,,,,,,for ZH the BR column includes also the gen filter efficiency: values for mH=124-126 = 0.15093 0.15069; 0.15012; 0.15058; 0.15045
 ###,,,,,,,,,,,for ttH the BR column includes also the gen filter efficiency: values for mH=124-126 = 0.1643 0.1540 0.1543 0.1545 0.1537
 
-ZZTo4l                          ,,1.39,,,/ZZto4L_TuneCP5_13p6TeV_powheg-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,dbs,root://cms-xrd-global.cern.ch/,2,PROCESS_CR=True;PROCESS_ZL=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;NANOVERSION=15;LEPTON_SETUP=2024,,
+#ZZTo4l                          ,,1.39,,,/ZZto4L_TuneCP5_13p6TeV_powheg-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,dbs,root://cms-xrd-global.cern.ch/,2,PROCESS_CR=True;PROCESS_ZL=True;APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True;NANOVERSION=15;LEPTON_SETUP=2024,,
 
-WZto3LNu                        ,,5.27,,,/WZto3LNu_TuneCP5_13p6TeV_powheg-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,dbs,root://cms-xrd-global.cern.ch/,2,PROCESS_CR=True;PROCESS_ZL=True;FILTER_EVENTS=Z;NANOVERSION=15;LEPTON_SETUP=2024,,
+#WZto3LNu                        ,,5.27,,,/WZto3LNu_TuneCP5_13p6TeV_powheg-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,dbs,root://cms-xrd-global.cern.ch/,2,PROCESS_CR=True;PROCESS_ZL=True;FILTER_EVENTS=Z;NANOVERSION=15;LEPTON_SETUP=2024,,
 
+WZGamma                             ,,0.1838,,,/WZG_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,dbs,root://cms-xrd-global.cern.ch/,2,PROCESS_CR=True;PROCESS_ZL=True;FILTER_EVENTS=Z;NANOVERSION=15;LEPTON_SETUP=2024,,
+
+ZZGamma                             ,,0.04592,,,/ZZG-4FS_TuneCP5_13p6TeV_amcatnlo-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,dbs,root://cms-xrd-global.cern.ch/,2,PROCESS_CR=True;PROCESS_ZL=True;FILTER_EVENTS=Z;NANOVERSION=15;LEPTON_SETUP=2024,,
