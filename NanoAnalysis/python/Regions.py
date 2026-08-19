@@ -50,47 +50,50 @@ class Flags(IntFlag):
 
 
     ## Composite flags ##
+    # NB: they are *masks*, therefore to compose them we should use "|" instead of "&"
 
     ## Flags for gamma categorization ##
-    P1cutVLfailL       = P1cutVL  & ~(P1cutL )
-    P1mvaKfailL        = P1K      & ~(P1mvaL )
+    P1cutVLfailL       = P1cutVL  | ~(P1cutL )
+    P1mvaKfailL        = P1K      | ~(P1mvaL )
 
     ## Flags for nJet categorization ##
-    J2cat            = J2       & ~(J3)
-    J3cat            = J3       & ~(J4)
-    J4cat            = J4       & ~(J5)
+    J2cat              = J2       | ~(J3)
+    J3cat              = J3       | ~(J4)
+    J4cat              = J4       | ~(J5)
      
     ## Flags for CRL4P_P1F ##
-    L4P_P1cutVLfailL       = L4P    & P1cutVLfailL
+    L4P_P1cutVLfailL   = L4P      | P1cutVLfailL
 
     ## Flags for SRL4P_P1P ##    
-    L4P_P1cutL          = L4P    & P1cutL
-    L4P_P1mvaL          = L4P    & P1mvaL
+    L4P_P1cutL         = L4P      | P1cutL
+    L4P_P1mvaL         = L4P      | P1mvaL
 
     ## Flags for CRL3P_P1F ##
-    L3P_P1cutVLfailL       = L3P    & P1cutVLfailL
-    L3P_P1mvaKfailL        = L3P    & P1mvaKfailL
+    L3P_P1cutVLfailL   = L3P      | P1cutVLfailL
+    L3P_P1mvaKfailL    = L3P      | P1mvaKfailL
 
     ## Flags for SRL3P_P1P ##    
-    L3P_P1cutL          = L3P    & P1cutL
-    L3P_P1mvaL          = L3P    & P1mvaL
+    L3P_P1cutL         = L3P      | P1cutL
+    L3P_P1mvaL         = L3P      | P1mvaL
 
     ## Flags for CRL2P_P1F ##
-    L2P_P1cutVLfailL       = L2P    & P1cutVLfailL
-    L2P_P1mvaKfailL        = L2P    & P1mvaKfailL
+    L2P_P1cutVLfailL   = L2P      | P1cutVLfailL
+    L2P_P1mvaKfailL    = L2P      | P1mvaKfailL
     
     ## Flags for SRL2P_P1P ##    
-    L2P_P1cutL          = L2P    & P1cutL
-    L2P_P1mvaL          = L2P    & P1mvaL
+    L2P_P1cutL         = L2P      | P1cutL
+    L2P_P1mvaL         = L2P      | P1mvaL
 
     ## Flags for SRL2P_J2+ ##    
-    L2P_J2              = L2P    & J2
+    L2P_J2             = L2P      | J2
 
     ## Flags for SRL2P_P1P_J2+ ##    
-    L2P_P1cutL_J2          = L2P    & P1cutL & J2
-    L2P_P1mvaL_J2          = L2P    & P1mvaL & J2
+    L2P_P1cutL_J2      = L2P      | P1cutL | J2
+    L2P_P1mvaL_J2      = L2P      | P1mvaL | J2
 
-
+    @staticmethod
+    def check(regionWord, region):
+        return regionWord & region == region
 
 pt10 = {'name': 'pt10',
         'cuts': {'pt': ('>', 10)},
@@ -282,5 +285,5 @@ flagDefinitions = [
      'jets'    : {'selection': [pt20, eta4p7, J2]}
      },
 
-    
 ]
+

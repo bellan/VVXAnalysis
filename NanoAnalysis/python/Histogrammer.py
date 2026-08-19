@@ -2,9 +2,11 @@
 # Class to bookeep histrograms
 ###
 
+from VVXAnalysis.NanoAnalysis.Regions import Flags as Regions
+
 import ROOT
 import array
-
+import os
 
 class Histogrammer:
     def __init__(self):
@@ -181,3 +183,32 @@ class Histogrammer:
         fout.cd()
         for h in self.plots.values():
             h.Write()
+
+
+class Histogrammers:
+    def __init__(self, regions):
+        self.histogrammers = {Regions[region]: Histogrammer() for region in regions}
+        
+    def checkRegions(self, region_word):
+        active = [h for region, h in self.histogrammers.items()
+                  if region_word & region == region]
+        return _ActiveHistogrammers(active)
+
+    def write(self, base_odir, analysis_name, sample_name):
+        for region, h in self.histogrammers.items():
+            odir = f"{base_odir}/{analysis_name}_{region.name}"
+            os.makedirs(odir, exist_ok=True)
+            outFile = ROOT.TFile.Open(f"{odir}/{sample_name}.root", "recreate")
+            h.write(outFile)
+            outFile.Close()
+
+
+class _ActiveHistogrammers:
+    def __init__(self, active):
+        self._active = active
+
+    def __getattr__(self, method_name):
+        def dispatch(*args, **kwargs):
+            for h in self._active:
+                getattr(h, method_name)(*args, **kwargs)
+        return dispatch

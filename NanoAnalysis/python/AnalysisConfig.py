@@ -1,6 +1,9 @@
 from pydantic import BaseModel, validator
 from typing import Literal, List, Optional
 
+from VVXAnalysis.NanoAnalysis.Regions import Flags
+FlagName = Literal[tuple(Flags.__members__.keys())]
+
 class SampleSelection(BaseModel):
     years: List[int]
     origin: List[Literal['MC', 'data']]
@@ -16,7 +19,9 @@ class SampleSelection(BaseModel):
 
 class AnalysisParameters(BaseModel):
     analyzer: str
-    regions : List[Literal['4P', '3P', '2P']]
+    regions: List[FlagName]
+
+    
     
     
 class AnalysisConfig(BaseModel):
