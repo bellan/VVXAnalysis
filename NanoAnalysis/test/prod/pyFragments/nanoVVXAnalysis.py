@@ -12,20 +12,16 @@ print("Overriding ZZ4lAnalysis PostProcessor")
 
 
 
-#item = 'drop Photon*'
-#if item in branchsel_in: branchsel_in.remove(item)
-#branchsel_out.append('keep Photon*')
-#branchsel_out.append('keep regionWord*')
 
-more_branchsel_in =['keep Photon*']
-more_branchsel_out=['keep Photon*','keep regionWord*']
+more_branchsel_in =['keep Photon*','keep MET*']
+more_branchsel_out=['keep Photon*','keep MET*','keep regionWord*']
 
-setConf("branchsel_in_ext"  , 'keep Photon*' , append=True)
-setConf("branchsel_out_ext" , 'keep Photon*' , append=True)
-setConf("branchsel_out_ext" , 'keep regionWord*' , append=True) 
+#setConf("branchsel_in_ext"  , 'keep Photon*' , append=True)
+#setConf("branchsel_out_ext" , 'keep Photon*' , append=True)
+#setConf("branchsel_out_ext" , 'keep regionWord*' , append=True) 
 
-#setConf("branchsel_in_ext" , more_branchsel_in ) 
-#setConf("branchsel_out_ext", more_branchsel_out) 
+setConf("branchsel_in_ext" , more_branchsel_in ) 
+setConf("branchsel_out_ext", more_branchsel_out) 
 
 from VVXAnalysis.NanoAnalysis.FSEventTaggerAndFilter import FSEventTaggerAndFilter as FSTagger
 #from VVXAnalysis.NanoAnalysis.VVXEventTaggerAndFilter import VVXEventTaggerAndFilter as VVXTagger
