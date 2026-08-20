@@ -48,7 +48,17 @@ class Flags(IntFlag):
     L4F    = 1 << 33
     L4L    = 1 << 32
 
+    ## Requests on composite collections ##
+    Z2VTMass    = 1  << 47  # 80 < m < 100 GeV
+    Z1VTMass    = 1  << 46  # 80 < m < 100 GeV
+    Z2TMass     = 1  << 45  # 60 < m < 120 GeV
+    Z1TMass     = 1  << 44  # 60 < m < 120 GeV
+    Z2Mass      = 1  << 43  # 40 < m < 120 GeV
+    Z1Mass      = 1  << 42  # 40 < m < 120 GeV
+    Z2LMass     = 1  << 41  # 12 < m < 120 GeV
+    Z1LMass     = 1  << 40  # 12 < m < 120 GeV
 
+    
     ## Composite flags ##
     # NB: they are *masks*, therefore to compose them we should use "|" instead of "&"
 
@@ -84,12 +94,13 @@ class Flags(IntFlag):
     L2P_P1cutL         = L2P      | P1cutL
     L2P_P1mvaL         = L2P      | P1mvaL
 
-    ## Flags for SRL2P_J2+ ##    
-    L2P_J2             = L2P      | J2
+    ## Flags for SRL2P_J2+ ##
+    L2P_J2             = L2P      | J2     
+    L2P_Z1TMass_J2     = L2P      | Z1TMass | J2     
 
     ## Flags for SRL2P_P1P_J2+ ##    
-    L2P_P1cutL_J2      = L2P      | P1cutL | J2
-    L2P_P1mvaL_J2      = L2P      | P1mvaL | J2
+    L2P_P1cutL_J2      = L2P      | P1cutL  | J2
+    L2P_P1mvaL_J2      = L2P      | P1mvaL  | J2
 
     @staticmethod
     def check(regionWord, region):
@@ -109,6 +120,12 @@ eta4p7 =  {'name': 'eta4p7',
            'cuts': {'eta' : ('<', 4.7, '||')},
            'min_particles': 1,
            'max_particles': float('inf')}
+
+Z1TMass = {'name': 'Z1TMass', 
+           'cuts': {'mass' : ('>',60), 'mass' : ('<',120)},
+           'min_particles': 1,
+           'max_particles': float('inf')}
+
 
 
 # TRANSITION_BARREL_ENDCAP = 1.479
@@ -195,7 +212,7 @@ L23P = {**L1P, 'name': 'L23P', 'min_particles': 2, 'max_particles': 3}
 flagDefinitions = [
     ########################################################
     {'name'   : 'L4P',        
-     'leptons'  : {'selection': [pt10, pt20, L4P]}
+     'leptons'  : {'selection': [pt10, pt20, L4L, L4P]}
      },
     ########################################################
 
@@ -222,7 +239,7 @@ flagDefinitions = [
 
     ########################################################
     {'name'   : 'L3P',        
-     'leptons'  : {'selection': [pt10, pt20, L3P]}
+     'leptons'  : {'selection': [pt10, pt20, L3L, L3P]}
      },
 
     ########################################################
@@ -252,7 +269,7 @@ flagDefinitions = [
 
     ########################################################
     {'name'   : 'L2P',        
-     'leptons'  : {'selection': [pt10, pt20, L2P]}
+     'leptons'  : {'selection': [pt10, pt20, L2L, L2P]}
      },
 
     ########################################################
@@ -285,5 +302,9 @@ flagDefinitions = [
      'jets'    : {'selection': [pt20, eta4p7, J2]}
      },
 
+    ########################################################    
+    {'name' : 'Z1TMass',
+     'ZCands'    : {'selection': [Z1TMass]}
+     },
 ]
 
