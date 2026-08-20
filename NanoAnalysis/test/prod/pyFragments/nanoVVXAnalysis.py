@@ -4,6 +4,7 @@ from ZZAnalysis.NanoAnalysis.tools import setConf, getConf, insertBefore, insert
 setConf("PROCESS_CR"   ,True)
 setConf("PROCESS_ZL"   , True)
 setConf("FILTER_EVENTS","Z")
+setConf("JES_SPLITTING", False)
 
 #from ZZAnalysis.NanoAnalysis.nanoZZ4lAnalysis import *
 
@@ -32,9 +33,9 @@ from VVXAnalysis.NanoAnalysis.Regions import flagDefinitions
 from VVXAnalysis.NanoAnalysis.Regions import Flags
 
 flagsSelection = [
-    Flags.L2P_J2,
-    Flags.L3L,
-    Flags.L4L
+     Flags.L2P_Z1TMass_J2,
+     Flags.L3L,
+     Flags.L4L
   
     # Flags.L4P, Flags.L3P1F, Flags.L2P2F,
     # Flags.L3P, Flags.L2P1F, Flags.L1P2F, Flags.L3F,
