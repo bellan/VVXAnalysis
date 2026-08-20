@@ -13,8 +13,8 @@ print("Overriding ZZ4lAnalysis PostProcessor")
 
 
 
-more_branchsel_in =['keep Photon*','keep MET*']
-more_branchsel_out=['keep Photon*','keep MET*','keep regionWord*']
+more_branchsel_in =['keep Photon*','keep *MET*']
+more_branchsel_out=['keep Photon*','keep PFMET*', 'keep PuppiMET*', 'keep MET*', 'keep regionWord*']
 
 #setConf("branchsel_in_ext"  , 'keep Photon*' , append=True)
 #setConf("branchsel_out_ext" , 'keep Photon*' , append=True)
