@@ -54,7 +54,7 @@ class SampleLooper:
             '''
             genEventSumw = get_genEventSumw(inputFile, maxEntriesPerSample) if sample.isMC() else 1.
            
-            events = inputFile["Events"]
+            events = inputFile.Get("Events")
             nEntries = events.GetEntries()
             iEntry=0
             printEntries=max(5000,nEntries/10)

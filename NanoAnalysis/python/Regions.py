@@ -166,7 +166,7 @@ P1cutM  = {**P1K, 'name': 'CutIdMediumPhotons', 'cutBased' : ('>=', 2)}
 P1cutT  = {**P1K, 'name': 'CutIdTightPhotons',  'cutBased' : ('>=', 3)}
 
 J2 = {'name': 'J2',
-      'cuts': {'pt' : ('>', 20), 'eta' : ('<', 4.7, '||'), 'jetId' : ('>=', 2)},
+      'cuts': {'pt' : ('>', 20), 'eta' : ('<', 4.7, '||'), 'jetId' : ('>=', 2), 'ZZMask' : ('==', False)},
       'min_particles': 2,
       'max_particles': float('inf')}
 
