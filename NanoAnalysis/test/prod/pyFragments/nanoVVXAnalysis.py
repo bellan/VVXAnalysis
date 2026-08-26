@@ -15,7 +15,7 @@ print("Overriding ZZ4lAnalysis PostProcessor")
 
 more_branchsel_in =['keep Photon*','keep *MET*']
 more_branchsel_out=['keep Photon*','keep PFMET*', 'keep PuppiMET*', 'keep MET*', 'keep regionWord*',
-                    'drop Jet_nSVs', 'drop Jet_sv*', 'drop Jet_hfa*', 'drop Jet_PNet*', 'drop Jet_UParTAK4*', 'drop Jet_rawFactor']
+                    'drop Jet_nSVs', 'drop Jet_sv*', 'drop Jet_hfa*', 'drop Jet_PNet*', 'drop Jet_UParTAK4*', 'drop Jet_rawFactor', 'drop HTXS*']
 
 
 
