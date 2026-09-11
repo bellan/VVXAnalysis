@@ -36,9 +36,10 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
             Muons = Collection(self.event, 'Muon')
             ChargedLeptons = list(Electrons) + list(Muons)
             Photons = Collection(self.event, 'Photon')
-            ZCands = Collection(self.event, 'ZCand')
-            MET_pt = self.event.PFMET_pt 
+            ZCands = Collection(self.event, 'ZCand')           
             bestZIdx = self.event.bestZIdx 
+            PFMET = Object(self.event, "PFMET")    
+            PuppiMET = Object(self.event, "PuppiMET")
 
             
             #---------------------      
@@ -62,21 +63,21 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
                     error_WRec = 0
                     error_WZRec = 0
                     
-                    bCouple_ZRec, fail_ZRec = self.WZRecon(GenBestLeptons, GenNeutrinos, False , False)
+                    bCouple_ZRec, fail_ZRec = self.WZRecon(GenBestLeptons, GenNeutrinos, False , False, True)
                     theW_ZRec, theZ_ZRec = bCouple_ZRec   
                     if fail_ZRec == 1 : outcome_ZRec = 2   # fail
                     elif not self.pairIsTruthBoson(theZ_ZRec.leptons, 23) or not self.pairIsTruthBoson(theW_ZRec.leptons,                        24): outcome_ZRec = 1   # error
                     else: outcome_ZRec = 0   # success
                     self.hEvent.fill1D("MethodZ_Outcome", "MethodZ_Outcome", 3, -0.5, 2.5, outcome_ZRec, self.weight)
                     
-                    bCouple_WRec, fail_WRec = self.WZRecon(GenBestLeptons, GenNeutrinos, False , True)
+                    bCouple_WRec, fail_WRec = self.WZRecon(GenBestLeptons, GenNeutrinos, False , True, True)
                     theW_WRec, theZ_WRec = bCouple_WRec
                     if fail_WRec == 1 : outcome_WRec = 2   # fail
                     elif not self.pairIsTruthBoson(theZ_WRec.leptons, 23) or not self.pairIsTruthBoson(theW_WRec.leptons,                        24): outcome_WRec = 1   # error
                     else: outcome_WRec = 0   # success
                     self.hEvent.fill1D("MethodW_Outcome", "MethodW_Outcome", 3, -0.5, 2.5, outcome_WRec, self.weight)
 
-                    bCouple_WZRec, fail_WZRec = self.WZRecon(GenBestLeptons, GenNeutrinos, True, False)
+                    bCouple_WZRec, fail_WZRec = self.WZRecon(GenBestLeptons, GenNeutrinos, True, False, True)
                     theW_WZRec, theZ_WZRec = bCouple_WZRec
                     if fail_WZRec == 1 : outcome_WZRec = 2   # fail
                     elif not self.pairIsTruthBoson(theZ_WZRec.leptons, 23) or not self.pairIsTruthBoson(theW_WZRec.leptons,                        24): outcome_WZRec = 1   # error
@@ -85,7 +86,7 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
 
                 
                 # W and Z RECONSTRUCTION (with the winner method)
-                bCouple, fail = self.WZRecon(GenBestLeptons, GenNeutrinos, True , False)
+                bCouple, fail = self.WZRecon(GenBestLeptons, GenNeutrinos, True , False, False)
                 theW, theZ = bCouple
                 if theW is None or theZ is None : return False, 3.
                 else : 
@@ -93,14 +94,21 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
                     self.hEvent.fill1D("WGenMass_80Gev", "WGenMass_80Gev", 160, 50., 110., theW.mass, self.weight)
                   
                             
-                # to decomment after receiving the right sample
-                '''notpassedZ, invMassLLGamma = self.isPhotonFSR(theZ.leptons, genPhoton, 100)
-                self.hEvent.fill1D("llGammaGen_invMass", "llGammaGen_invMass", 100, 40., 250., invMassLLGamma, self.weight)
+                notpassedZ, invMassLLGamma = self.isPhotonFSR(theZ.leptons, genPhoton, 100)
+                #self.hEvent.fill1D("llGammaGen_invMass", "llGammaGen_invMass", 100, 40., 250., invMassLLGamma, self.weight)
                 # only cause the neutrino is gen
                 notpassedW, invMassLNuGamma = self.isPhotonFSR(theW.leptons, genPhoton, 90)
-                self.hEvent.fill1D("lNuGammaGen_invMass", "lNuGammaGen_invMass", 100, 40., 250., invMassLNuGamma, self.weight)
-                self.hEvent.fill1D("MinllGammaGen_invMass", "MinlluGammaGen_invMass", 100, 40., 250., min(invMassLLGamma, invMassLNuGamma), self.weight)
-                if notpassedW or notpassedZ : return False, 4. '''
+                #self.hEvent.fill1D("lNuGammaGen_invMass", "lNuGammaGen_invMass", 100, 40., 250., invMassLNuGamma, self.weight)
+                self.hEvent.fill1D("MinLLGammaGen_invMass", "MinLLGammaGen_invMass", 100, 40., 250., min(invMassLLGamma, invMassLNuGamma), self.weight)
+                if notpassedW or notpassedZ : 
+                    #printout evento
+                    '''print(f"\n>>> DEBUG EVENT: Event={self.event}")
+                    for i, p in enumerate(Collection(self.event, "GenPart")):
+                        if (abs(p.pdgId) in (11, 12, 13, 14, 15, 16, 22, 23, 24)) :
+                            print(f"Idx: {i:2d} | PDG: {p.pdgId:4d} | Status: {p.status:2d} | "
+                                  f"pT: {p.pt:6.1f} | eta: {p.eta:5.2f} | MotherIdx: {p.genPartIdxMother:2d} | "
+                                  f"Flags: {p.statusFlags:015b}")'''
+                    return False, 4.
 
                 #control on neutrinos number
                 self.hEvent.fill1D("nGenNeutrino_postCuts", "nGenNeutrino_postCuts",7, -1.5, 5.5, len(GenNeutrinos), self.weight)
@@ -119,29 +127,38 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
                                            
                 bestPhoton = self.pass_PhKinCut(Photons, ChargedLeptons)
                 if bestPhoton is None : return False, 2.
-                else : self.hEvent.fill1D("Gamma_pt", "Gamma_pt", 122, -0.0, 121., bestPhoton.pt, self.weight)
 
                 # CUT on MISSING ENERGY
-                self.hEvent.fill1D("MET_pt", "MET_pt", 121, -0.5, 120.5, MET_pt, self.weight)
-                if MET_pt <= 30: return False, 3.
+                self.hEvent.fill1D("PFMET_pt", "PFMET_pt", 121, -0.5, 120.5, PFMET.pt, self.weight)
+                self.hEvent.fill1D("PuppiMET_pt", "PuppiMET_pt", 121, -0.5, 120.5, PuppiMET.pt, self.weight)
+                if PFMET.pt <= 30 or PuppiMET.pt <= 30 : return False, 3.
 
-                # Z RECONSTRUCTION 
+                # Z RECONSTRUCTION AND COMPARE
+                ZRec, recCouple = self.BosonRecon(BestLeptons, 23, (60,120), False)
+                if recCouple != None :
+                    self.hEvent.fill1D("ZRecMass_91Gev_SR", "ZRecMass_91Gev_SR", 180, 60., 120., ZRec.mass, self.weight)
+                
                 theZ = ZCands[bestZIdx]
                 if 60. < theZ.mass < 120. : 
                     self.hEvent.fill1D("ZCandMass_91Gev_SR", "ZCandMass_91Gev_SR", 180, 60., 120., theZ.mass, self.weight)
                     lep1, lep2 = ChargedLeptons[theZ.l1Idx], ChargedLeptons[theZ.l2Idx]
                     lepW = next((l for l in BestLeptons if l not in (lep1, lep2)), None)
-                    self.hEvent.fill1D("Wlep_pt", "Wlep_pt", 120, 0., 120., lepW.pt, self.weight)
                 else : return False, 4.
                     
 
-                notpassedZ, invMassLLGamma = self.isPhotonFSR([lep1,lep2], bestPhoton, 110)
+                notpassedZ, invMassLLGamma = self.isPhotonFSR([lep1,lep2], bestPhoton, 100)
                 self.hEvent.fill1D("llGamma_invMass", "llGamma_invMass", 100, 40., 250., invMassLLGamma, self.weight)
                 if notpassedZ : return False, 5.
-                    
+
+
+                W_mt_pf = self.computeMt(lepW.pt, lepW.phi, PFMET.pt, PFMET.phi)
+                self.hEvent.fill1D("W_Mt_PF", "W_Mt_PF", 71, -1.5, 140.5, W_mt_pf, self.weight)
+                W_mt_puppi = self.computeMt(lepW.pt, lepW.phi, PuppiMET.pt, PuppiMET.phi)
+                self.hEvent.fill1D("W_Mt_Puppi", "W_Mt_Puppi", 71, -1.5, 140.5, W_mt_puppi, self.weight)
 
                 return True, -1.
-                     
+
+            
 
             if self.analyzeMC : isSig, cutFlowStage = isSignal()   
             
@@ -183,26 +200,28 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
     # Functions for WZ RECOSTRUCTION
     #--------------------------------------
     # given a collection of leptons (charged and neutrino), this function reconstructs the W or the Z by the pdgId given
-    def BosonRecon(self, GoodLeptons, partPdgId,  massThreshold) :
+    def BosonRecon(self, GoodLeptons, partPdgId,  massThreshold, isForComparison) :
         CandMass = {}
         MassPdg = TDatabasePDG.Instance().GetParticle(partPdgId).Mass()
-        
-        for i in range(len(GoodLeptons)):
-            for j in range(i + 1, len(GoodLeptons)):
-                isW = (self.getFamily(GoodLeptons[i].pdgId) == self.getFamily(GoodLeptons[j].pdgId)                                                  and self.getFamily(GoodLeptons[i].pdgId) != 0
-                        and abs(GoodLeptons[i].pdgId + GoodLeptons[j].pdgId) == 1)
-                if (partPdgId == 24 and isW) :   
-                    CandMass[(i,j)] = self.getInvMass(GoodLeptons[i], GoodLeptons[j])  
-                elif (partPdgId == 23 and GoodLeptons[i].pdgId + GoodLeptons[j].pdgId == 0) :
-                    CandMass[(i,j)] = self.getInvMass(GoodLeptons[i], GoodLeptons[j])  
-                else : CandMass[(i,j)] = None
 
-        '''#just for algorithm comparison, based only on charge conditions
-        for i in range(len(GoodLeptons)):
-            for j in range(i + 1, len(GoodLeptons)):
-                if self.isChargeCompatible(GoodLeptons[i].pdgId, GoodLeptons[j].pdgId, partPdgId) : 
-                    CandMass[(i,j)] = self.getInvMass(GoodLeptons[i], GoodLeptons[j])
-                else : CandMass[(i,j)] = None'''
+        if not isForComparison : 
+            for i in range(len(GoodLeptons)):
+                for j in range(i + 1, len(GoodLeptons)):
+                    isW = (self.getFamily(GoodLeptons[i].pdgId) == self.getFamily(GoodLeptons[j].pdgId)                                                  and self.getFamily(GoodLeptons[i].pdgId) != 0
+                            and abs(GoodLeptons[i].pdgId + GoodLeptons[j].pdgId) == 1)
+                    if (partPdgId == 24 and isW) :   
+                        CandMass[(i,j)] = self.getInvMass(GoodLeptons[i], GoodLeptons[j])  
+                    elif (partPdgId == 23 and GoodLeptons[i].pdgId + GoodLeptons[j].pdgId == 0) :
+                        CandMass[(i,j)] = self.getInvMass(GoodLeptons[i], GoodLeptons[j])  
+                    else : CandMass[(i,j)] = None
+
+        #just for algorithm comparison, based only on charge conditions
+        if isForComparison : 
+            for i in range(len(GoodLeptons)):
+                for j in range(i + 1, len(GoodLeptons)):
+                    if self.isChargeCompatible(GoodLeptons[i].pdgId, GoodLeptons[j].pdgId, partPdgId) : 
+                        CandMass[(i,j)] = self.getInvMass(GoodLeptons[i], GoodLeptons[j])
+                    else : CandMass[(i,j)] = None
                            
         bestCouple = self.getCloserCand(MassPdg, CandMass)
         if(bestCouple != None and massThreshold[0] < CandMass[bestCouple] < massThreshold[1]) :  
@@ -217,27 +236,27 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
     # useResidues = True, recbyW = False for the residues method
     # useResidues = False, recbyW = True for the W-first method
     # useResidues = False, recbyW = False for the Z-first method
-    def WZRecon(self, ChLeptons, Neutrinos, useResidues, recbyW) :
+    def WZRecon(self, ChLeptons, Neutrinos, useResidues, recbyW, isForComparison) :
         if not any(l.pdgId < 0 for l in ChLeptons) or not any(l.pdgId > 0 for l in ChLeptons): return None, None
          
         # for Z FIRST and RESIDUES METHOD
-        Z1, coupleZ1 = (None, None) if recbyW else self.BosonRecon(ChLeptons, 23, (60,120))
+        Z1, coupleZ1 = (None, None) if recbyW else self.BosonRecon(ChLeptons, 23, (60,120), isForComparison)
         W1, coupleW1 = None, None
         if coupleZ1 is not None :
             RemainingChLeptons1 = [p for i, p in enumerate(ChLeptons) if i not in coupleZ1]
             Leptons1 = RemainingChLeptons1 + Neutrinos
-            W1, coupleW1 = self.BosonRecon(Leptons1, 24, (50,110))
+            W1, coupleW1 = self.BosonRecon(Leptons1, 24, (50,110), isForComparison)
         
         bosonCouple = (W1, Z1) if (coupleW1 is not None and coupleZ1 is not None) else (None, None)
 
         # for W FIRST and RESIDUES METHOD
         if useResidues or recbyW : 
             Leptons2 = ChLeptons + Neutrinos
-            W2, coupleW2 = self.BosonRecon(Leptons2, 24, (50,110))
+            W2, coupleW2 = self.BosonRecon(Leptons2, 24, (50,110),isForComparison)
             Z2, coupleZ2 = None, None
             if coupleW2 is not None : 
                 RemainingChLeptons2 = [p for i, p in enumerate(ChLeptons) if i not in coupleW2]
-                Z2, coupleZ2 = self.BosonRecon(RemainingChLeptons2, 23, (60,120))
+                Z2, coupleZ2 = self.BosonRecon(RemainingChLeptons2, 23, (60,120), isForComparison)
                 
             couple2Valid = coupleW2 is not None and coupleZ2 is not None
             couple1Valid = bosonCouple[0] is not None and bosonCouple[1] is not None
@@ -346,9 +365,13 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
             return isWCouple
         return None
 
-
+    
+    # computes the transverse mass of the W boson
+    def computeMt(self, lep_pt, lep_phi, met_pt, met_phi):
+        return math.sqrt(2.0 * lep_pt * met_pt * (1.0 - math.cos(lep_phi - met_phi)))
         
 
+    
 #---------------------------
 # other CLASSES
 #---------------------------
@@ -374,7 +397,7 @@ class GenW:
         self.phi = self.p4.Phi() 
 
 
-#useful for a first check on particles
+#useful for a first check on gen particles
 class GenStatusFlag(IntFlag) :
     IS_PROMPT = 1 << 0
     FROM_HARD_PROCESS = 1 << 8 
