@@ -6,6 +6,8 @@ from VVXAnalysis.NanoAnalysis.EventAnalyzer import EventAnalyzer
 from VVXAnalysis.NanoAnalysis.Histogrammer import *
 from VVXAnalysis.NanoAnalysis.Regions import Flags as Regions
 
+from enum import IntFlag
+
 import ROOT
 from ROOT import TDatabasePDG
 
@@ -22,11 +24,17 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             
             # Collections
 
+            class GenStatusFlag(IntFlag):
+                IS_PROMPT = 1 << 0
+                FROM_HARD_PROCESS = 1 << 8
+
+                SEL = IS_PROMPT | FROM_HARD_PROCESS
+                #PH_SEL = IS_PROMPT
+
             GenParts = Collection(self.event, 'GenPart')
-            GenLeptons = [p for p in GenParts if abs(p.pdgId) == 11 or abs(p.pdgId) == 13 and p.status == 1]
-            GenPhotons = [p for p in GenParts if p.pdgId == 22 and p.status == 1]
-            self.hEvent.fill1D("nGenLeptons", "nGenLeptons", 93, 0., 10., len(GenLeptons), self.weight)
-                        
+            GenLeptons = [p for p in GenParts if (abs(p.pdgId) == 11 or abs(p.pdgId) == 13) and p.status == 1 and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
+            GenPhotons = [p for p in GenParts if p.pdgId == 22 and p.status == 1 and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
+                       
             ZZs = Collection(self.event, 'ZZCand')
             theZZ = ZZs[bestCandIdx]
             Leptons = Collection(self.event, 'Lepton')
@@ -34,7 +42,8 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             FsrPhotons = Collection(self.event, 'FsrPhoton')
 
             if self.analyzeMC: self.weight = (self.event.overallEventWeight*theZZ.dataMCWeight/self.genEventSumw)
-
+            self.hEvent.fill1D("nGenLeptons", "nGenLeptons", 93, 0., 10., len(GenLeptons), self.weight)
+              
             # Signal Definition
 
             class GenZ:
@@ -122,7 +131,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
                 GoodGenPhotons = [ph for ph in GenPhotons if ph.pt > 20 and abs(ph.eta) < 2.4 and not 1.444 < abs(ph.eta) < 1.566]
                 self.hEvent.fill1D("nGoodGenPhotons", "nGoodGenPhotons",5,-0.5, 4.5, len(GoodGenPhotons), self.weight)
                 if len(GoodGenPhotons) == 0: return False
-                GenGammaCands = [ph for ph in GoodGenPhotons if (ph.DeltaR(l) > 0.5 for l in GenLeptons) and (GetZGammaMassMin(ph, GenZZ.Z1, GenZZ.Z2) > 100)]
+                GenGammaCands = [ph for ph in GoodGenPhotons if all(ph.DeltaR(l) > 0.5 for l in GenLeptons) and GetZGammaMassMin(ph, GenZZ.Z1, GenZZ.Z2) > 100]
                 self.hEvent.fill1D("nGenGammaCands", "nGenGammaCands",5,-0.5, 4.5, len(GenGammaCands), self.weight)
                 if len(GenGammaCands) < 1: return False
                 GenGamma = GetBestGamma(GenGammaCands)
