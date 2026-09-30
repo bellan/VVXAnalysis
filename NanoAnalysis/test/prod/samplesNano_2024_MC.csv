@@ -60,10 +60,13 @@ WWZ               ,,0.1851,,,/WWZ-4F_TuneCP5_13p6TeV_amcatnlo-pythia8/RunIII2024
 ###,,,,,,,,,,,POTENTIAL SIGNAL SAMPLES
 
 
-WZZ           ,,0.0621,,,/WZZ-5F_TuneCP5_13p6TeV_amcatnlo-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM  ,dbs,root://cms-xrd-global.cern.ch/,2,IsSIGNAL=True,,
-ZZZ           ,,0.0159,,,/ZZZ-5F_TuneCP5_13p6TeV_amcatnlo-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM  ,dbs,root://cms-xrd-global.cern.ch/,2,IsSIGNAL=True,,
+WZZ           ,,0.0621,,, /WZZ-5F_TuneCP5_13p6TeV_amcatnlo-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM      ,dbs,root://cms-xrd-global.cern.ch/,2,IsSIGNAL=True,,
+ZZZ           ,,0.0159,,, /ZZZ-5F_TuneCP5_13p6TeV_amcatnlo-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM      ,dbs,root://cms-xrd-global.cern.ch/,2,IsSIGNAL=True,,
 
-WZGamma       ,,0.1838,,,/WZG_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM ,dbs,root://cms-xrd-global.cern.ch/,2,IsSIGNAL=True,,
+WZGamma       ,,0.1838,,, /WZG_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM     ,dbs,root://cms-xrd-global.cern.ch/,2,IsSIGNAL=True,,
+
+WZGtoLNuZG    ,,0.08425,,,/WZGtoLNuZG_TuneCP5_13p6TeV_amcatnlo-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM ,dbs,root://cms-xrd-global.cern.ch/,2,IsSIGNAL=True,,
+
 ZZGamma       ,,0.04592,,,/ZZG-4FS_TuneCP5_13p6TeV_amcatnlo-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,dbs,root://cms-xrd-global.cern.ch/,2,IsSIGNAL=True,,
 
 WplusH125     ,,0.8889,0.0002745,,/WplusH-Hto2Zto4L_Par-M-125_TuneCP5_13p6TeV_powhegMINLO-jhugen-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM ,dbs,root://cms-xrd-global.cern.ch/,2,IsSIGNAL=True,,
