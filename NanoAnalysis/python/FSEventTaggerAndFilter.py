@@ -7,7 +7,7 @@ from VVXAnalysis.NanoAnalysis.Regions import Flags
 
 class FSEventTaggerAndFilter(Module):
 
-    COLLECTIONS = ('leptons', 'photons', 'jets')
+    COLLECTIONS = ('leptons', 'photons', 'jets', 'ZCands')
 
     def __init__(self, flags, regions):
         self.regions = regions
@@ -127,6 +127,7 @@ class FSEventTaggerAndFilter(Module):
             'leptons': Collection(event, "Lepton"),
             'photons': Collection(event, "Photon"),
             'jets'   : Collection(event, "Jet"),    # FIXME: AK4 only for now
+            'ZCands' : Collection(event, "ZCand"),
         }
 
         # One particle loop per collection over the unique cut signatures
