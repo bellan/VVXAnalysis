@@ -43,6 +43,7 @@ class SampleLooper:
         ## Loop over the samples
         for sample in self.samples:
             #FIXME: add check that file exists
+            print("analyzing", sample.explainYourself())
             print(sample.path())
             inputFile = ROOT.TFile.Open(sample.path())
 
@@ -54,20 +55,20 @@ class SampleLooper:
             '''
             genEventSumw = get_genEventSumw(inputFile, maxEntriesPerSample) if sample.isMC() else 1.
            
-            events = inputFile["Events"]
+            events = inputFile.Get("Events")
             nEntries = events.GetEntries()
             iEntry=0
             printEntries=max(5000,nEntries/10)
 
             ######### Analyse the events in a sample! #############
             eventAnalyzer = EventAnalyzer.registry[self.analyzer](self.regions)#(base_configuration)
-            eventAnalyzer.init(events, genEventSumw, sample.isMC())
+            eventAnalyzer.init(events, genEventSumw, sample.luminosity, sample.isMC())
             eventAnalyzer.begin()
             
             while iEntry<nEntries and events.GetEntry(iEntry):
                 iEntry+=1
                 if iEntry%printEntries == 0 : print("Processing", iEntry)
-                eventAnalyzer.getCollections()
+                eventAnalyzer.eventSetup()
                 eventAnalyzer.analyze()
 
             eventAnalyzer.end(sample)

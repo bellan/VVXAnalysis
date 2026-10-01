@@ -260,8 +260,8 @@ elif SampleToRun.startswith("MELA_VBS"):
 def customizeProcessForLocal(p) :
     p.prefetch=True # Prefetch remote files
     p.longTermCache=True # keep prefetched files (useful for rerunning tests several times)
-    if len(p.inputFiles) == 1 :
-        p.haddFileName = None # Skip final hadd
+    #if len(p.inputFiles) == 1 :
+    #    p.haddFileName = None # Skip final hadd
 
     p.json = json # replace JSON
         

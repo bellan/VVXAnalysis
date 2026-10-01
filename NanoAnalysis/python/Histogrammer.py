@@ -191,7 +191,7 @@ class Histogrammers:
         
     def checkRegions(self, region_word):
         active = [h for region, h in self.histogrammers.items()
-                  if region_word & region == region]
+                  if Regions.check(region_word, region)]
         return _ActiveHistogrammers(active)
 
     def write(self, base_odir, analysis_name, sample_name):

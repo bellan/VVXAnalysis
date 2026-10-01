@@ -6,6 +6,7 @@ from VVXAnalysis.NanoAnalysis.Histogrammer import *
 from VVXAnalysis.NanoAnalysis.Regions import Flags as Regions
 
 import ROOT
+import math
 
 import subprocess
 
@@ -37,10 +38,13 @@ class EventAnalyzer:
 
         
     ## Init per event quantities
-    def init(self,event,genEventSumw,isMC=False):
+    def init(self,event,genEventSumw,luminosity = -1., isMC=False):
 
         self.genEventSumw = genEventSumw
         self.analyzeMC    = isMC
+        self.luminosity = luminosity
+        self.weight = 1.   ## weight will contain ALL corrections, including dataMC weights and FR weights
+        self.dataMCWeight = 1.
         
         self.event = event
         #Turn off all branches
@@ -64,10 +68,32 @@ class EventAnalyzer:
             self.event.SetBranchStatus("overallEventWeight",1)
 
 
-    def getCollections(self):
-        self.ZZs = Collection(self.event, 'ZZCand') 
+    def eventSetup(self):
+
+            
+        self.ZZs        = Collection(self.event, 'ZZCand')
+        self.electrons  = Collection(self.event, 'Electron')
+        self.muons      = Collection(self.event, 'Muon')
+        self.leptons    = list(self.electrons) + list(self.muons)
+        
         self.regionWord = self.event.regionWord
         self.hEvent = self.histogrammers.checkRegions(self.regionWord)
+
+
+        if self.analyzeMC:
+            # lumi is expressed in 1/fb, while xsections are in pb
+            self.weight = 10e3*self.luminosity*self.event.overallEventWeight/self.genEventSumw
+            # compute the dataMC correction. Store it in a separate weight, for checks
+            self.dataMCWeight *= math.prod(lep.dataMC for lep in self.leptons if lep.ZZFullSel)
+            self.weight *= self.dataMCWeight
+            
+        ## Analyze the type of event and prepare the composite particles consquently
+        if Regions.check(self.regionWord, Regions.L4P):
+            if(self.event.bestCandIdx != -1 and self.event.HLT_passZZ4l):
+                self.ZZ = self.ZZs[self.event.bestCandIdx]
+
+        
+        
         
         
     def end(self, sample):
