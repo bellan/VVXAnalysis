@@ -84,6 +84,7 @@ class EventAnalyzer:
             # lumi is expressed in 1/fb, while xsections are in pb
             self.weight = 10e3*self.luminosity*self.event.overallEventWeight/self.genEventSumw
             # compute the dataMC correction. Store it in a separate weight, for checks
+            self.dataMCWeight = 1.
             self.dataMCWeight *= math.prod(lep.dataMC for lep in self.leptons if lep.ZZFullSel)
             self.weight *= self.dataMCWeight
             
@@ -91,6 +92,8 @@ class EventAnalyzer:
         if Regions.check(self.regionWord, Regions.L4P):
             if(self.event.bestCandIdx != -1 and self.event.HLT_passZZ4l):
                 self.ZZ = self.ZZs[self.event.bestCandIdx]
+                
+                #self.regionWord |= Regions.ZTL2P_ZTL2P
 
         
         
