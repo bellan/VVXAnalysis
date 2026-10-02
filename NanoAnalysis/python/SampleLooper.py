@@ -17,6 +17,8 @@ from VVXAnalysis.NanoAnalysis.SampleLoader import SampleLoader
 import os, sys, traceback
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
+import subprocess
+
 import ctypes
 _libc = ctypes.CDLL(None)
     
@@ -154,7 +156,7 @@ class SampleLooper:
     def submitCondor(self, runScript, args, flavour="longlunch", logDir="logs", dryRun=False):
         os.makedirs(logDir, exist_ok=True)
         cwd = os.getcwd()
-        names = [sample.name for s in self.samples]
+        names = [sample.name for sample in self.samples]
 
         # Wrapper: ricrea l'ambiente CMSSW sul nodo ed esegue run.py per un sample
         wrapper = os.path.join(cwd, "condor_wrapper.sh")

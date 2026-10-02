@@ -9,6 +9,7 @@ from VVXAnalysis.NanoAnalysis.Colours import *
 
 import yaml
 import json
+import os,sys
 
 from VVXAnalysis.NanoAnalysis.SampleLoader import SampleLoader
 
@@ -75,8 +76,8 @@ if __name__ == "__main__" :
     if options.condor:
         ## To be fixed
         sampleLooper.submitCondor(runScript=os.path.abspath(sys.argv[0]),
-                                  args=[options.analysis],
+                                  args=[analysis],
                                   flavour=options.flavour,
-                                  dryRun=options.dry_run)
+                                  dryRun=options.dryRun)
     else:
         sampleLooper.loop(options.nJobs)
