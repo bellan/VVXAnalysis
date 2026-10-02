@@ -20,7 +20,24 @@ if __name__ == "__main__" :
                       type='int',
                       default=None,
                       help=f"Set number of jobs. Default is None, that means it will use all CPU in the systems")
+
+    parser.add_option("-c", "--condor", dest="condor",
+                  action="store_true",
+                  default=False,
+                  help="submit the jobs through Condor")
+
+    parser.add_option("-s", "--sample",
+                      dest="selectedSample",
+                      action="append", default=None,
+                      help="Analyze just this sample (can be ripeted and used by Condor jobs")
     
+    parser.add_option("-f","--flavour", dest="flavour",
+                      default="longlunch",
+                      help="JobFlavour Condor")
+
+    parser.add_option("--dry-run", dest="dryRun",
+                      action="store_true",
+                      help="write Condor files without submitting them")
 
     (options, args) = parser.parse_args()
     analysis       = args[0]
@@ -29,8 +46,16 @@ if __name__ == "__main__" :
     with open(f'configurations/{analysis}.yaml') as f:
         cfg = AnalysisConfig(**yaml.safe_load(f))
 
+            
     sampleLoader = SampleLoader(cfg.samples) # --> check against data/samples_DB.json
-    samples = sampleLoader.load()
+    samples = sampleLoader.load(not options.condor)
+
+    for s in samples:
+        print(s)
+    
+    if options.selectedSample:
+        samples = [s for s in samples if s.name in options.selectedSample]
+
     
     ## Banner ##
     print(f"""
@@ -43,5 +68,15 @@ if __name__ == "__main__" :
     """)
     
     sampleLooper = SampleLooper(cfg.analysis, samples)
-    sampleLooper.loop(options.nJobs)
-    #sampleLooper.end()
+    #sampleLooper.loop(options.nJobs)
+    ##sampleLooper.end()
+
+
+    if options.condor:
+        ## To be fixed
+        sampleLooper.submitCondor(runScript=os.path.abspath(sys.argv[0]),
+                                  args=[options.analysis],
+                                  flavour=options.flavour,
+                                  dryRun=options.dry_run)
+    else:
+        sampleLooper.loop(options.nJobs)

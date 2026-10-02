@@ -39,7 +39,7 @@ class SampleLoader:
                 f"The samples do not exist in the DB (please check '{match_key}'): {sorted(missing)}"
             )
 
-    def load(self) -> List[Sample]:
+    def load(self, local=True) -> List[Sample]:
         years   = self.selected_samples.years
         origins = self.selected_samples.origin
         mode    = self.selected_samples.mode
@@ -70,6 +70,6 @@ class SampleLoader:
                 db_block = DBSampleBlock(**s)
                 if match_key is not None and getattr(db_block, match_key) not in requested:
                     continue
-                samples.append(Sample(db_block, block['origin'], block['year']))
+                samples.append(Sample(db_block, block['origin'], block['year'],local))
 
         return samples
