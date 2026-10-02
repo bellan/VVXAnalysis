@@ -31,7 +31,6 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", LabelsTagliSignalRegion, LabelsTagliSignalRegion[0], self.weight)
 
         if(bestCandIdx != -1 and self.event.HLT_passZZ4l): 
-            weight = 1.
             
             # =========================
             # COLLECTIONS AND WEIGHTS
@@ -44,10 +43,8 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             GenPhotons = [p for p in GenParts if p.pdgId == 22
                                                  and p.status == 1
                                                  and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
-            self.hEvent.fill1D("nGenLeptonsPostStatusFlags", "nGenLeptonsPostStatusFlags", 11, -0.5, 10.5, len(GenLeptons), self.weight)
-            self.hEvent.fill1D("nGenPhotonsPostStatusFlags", "nGenPhotonsPostStatusFlags", 6, -0.5, 5.5, len(GenPhotons), self.weight)
-            for ph in GenPhotons:
-                self.hEvent.fill1D("GenPhotonsPt", "GenPhotonsPt", 100, 0., 200., ph.pt, self.weight)
+            # self.hEvent.fill1D("nGenLeptonsPostStatusFlags", "nGenLeptonsPostStatusFlags", 11, -0.5, 10.5, len(GenLeptons), self.weight)
+            # self.hEvent.fill1D("nGenPhotonsPostStatusFlags", "nGenPhotonsPostStatusFlags", 6, -0.5, 5.5, len(GenPhotons), self.weight)
                        
             ZZs = Collection(self.event, 'ZZCand')
             theZZ = ZZs[bestCandIdx]
@@ -63,7 +60,6 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             for ph in FsrPhotons:
                 self.hEvent.fill1D("FsrPhotonsPt", "FsrPhotonsPt", 100, 0, 200, ph.pt, self.weight)    
             
-            #if self.analyzeMC: self.weight = (self.event.overallEventWeight*theZZ.dataMCWeight/self.genEventSumw)
             self.hEvent.fill1D_label("EventiPerTaglio", "EventiPerTaglio", LabelsTagliSignalDefinition, LabelsTagliSignalDefinition[1], self.weight)
             self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", LabelsTagliSignalRegion, LabelsTagliSignalRegion[1], self.weight)
 
@@ -95,7 +91,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
                 gamma_p4 = TLorentzVector()
                 gamma_p4.SetPtEtaPhiM(GenGamma.pt, GenGamma.eta, GenGamma.phi, GenGamma.mass)
                 thetaZZGamma = GenZZ.p4.Vect().Angle(gamma_p4.Vect())
-                self.hEvent.fill2D("BestGammaPt-AngoloZZGamma", "BestGammaPt-AngoloZZGamma", 50, 0., ROOT.TMath.Pi(), 5, 55., 105., thetaZZGamma , GenGamma.pt, self.weight)
+                self.hEvent.fill2D("BestGammaPt-AngoloZZGamma", "BestGammaPt-AngoloZZGamma", 50, 0., ROOT.TMath.Pi(), 5, 60., 100., thetaZZGamma , GenGamma.pt, self.weight)
                 self.hEvent.fill1D_label("EventiPerTaglio", "EventiPerTaglio", LabelsTagliSignalDefinition, LabelsTagliSignalDefinition[5], self.weight)
         
                 return True
@@ -174,8 +170,8 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         if GenZZ is None: return False
         if not 60 < GenZZ.Z1.mass < 120: return False
         if not 60 < GenZZ.Z2.mass < 120: return False
-        self.hEvent.fill1D("GenZ1Mass", "GenZ1Mass", 100, 90, 92.4, GenZZ.Z1.mass, self.weight)
-        self.hEvent.fill1D("GenZ2Mass", "GenZ2Mass", 75, 90, 92.4, GenZZ.Z2.mass, self.weight)
+        self.hEvent.fill1D("GenZ1Mass", "GenZ1Mass", 100, 90., 92.4, GenZZ.Z1.mass, self.weight)
+        self.hEvent.fill1D("GenZ2Mass", "GenZ2Mass", 75, 90., 92.4, GenZZ.Z2.mass, self.weight)
         return True
 
     
