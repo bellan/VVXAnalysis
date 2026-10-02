@@ -58,6 +58,14 @@ class Flags(IntFlag):
     Z2LMass     = 1  << 41  # 12 < m < 120 GeV
     Z1LMass     = 1  << 40  # 12 < m < 120 GeV
 
+    ## Composite particle Flags ##
+    ZTL2P_ZTL2P    = 1 << 53  # 2 good Z bosons, it is the old good SR4P
+    ZTL2P_ZTL1P1F  = 1 << 52  # 1 good Z and a Z made with a loose and a tight lepton, the old good CR3P1F 
+    ZTL2P_ZTL2F    = 1 << 51  # 1 good Z and a Z made with 2 loose leptons, the old good CR2P2F 
+    ZTL2P          = 1 << 50  # 1 good Z
+
+    
+
     
     ## Composite flags ##
     # NB: they are *masks*, therefore to compose them we should use "|" instead of "&"

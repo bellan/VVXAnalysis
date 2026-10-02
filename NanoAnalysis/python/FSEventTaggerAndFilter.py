@@ -80,7 +80,7 @@ class FSEventTaggerAndFilter(Module):
     def _count_unique(self, particles, counter_defs):
         """Single pass over particles: one counter per unique cut signature.
         Returns a list of integers aligned with counter_defs."""
-        counts = [0] * len(counter_defs)
+        counts = [0] * len(counter_defs) ## list of 0s as much as counter_def lenght
 
         for p in particles:
             for i, cuts in enumerate(counter_defs):
