@@ -17,6 +17,9 @@ from VVXAnalysis.NanoAnalysis.SampleLoader import SampleLoader
 import os, sys, traceback
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
+import ctypes
+_libc = ctypes.CDLL(None)
+    
 maxEntriesPerSample = 100 # Use only up to this number of events in each MC sample, for quick tests; use None for no scaling
 
 
@@ -74,31 +77,38 @@ class SampleLooper:
         #######################################################
 
 
-
-
-    def _runSampleLogged(analysis, sample, logDir):
-        """Eseguita nel worker: manda stdout/stderr (Python e C++) su un log dedicato."""
-        os.makedirs(logDir, exist_ok=True)
-        logPath = os.path.join(logDir, f"{sample}.log")
-
+    def _flushAll(self):
         sys.stdout.flush(); sys.stderr.flush()
+        _libc.fflush(None)          #flush all stdio C (ROOT included) buffers
+
+
+    def _runSampleLogged(self, sample):
+        """stdout/stderr (Python e C++) in a dedicate log."""
+        logDir = f"log/{sample.year}/{self.analyzer}"
+        
+        os.makedirs(logDir, exist_ok=True)
+        logPath = os.path.join(logDir, f"{sample.name}.log")
+
+        self._flushAll()
         saved = os.dup(1), os.dup(2)
         try:
             with open(logPath, "w", buffering=1) as log:
                 os.dup2(log.fileno(), 1)
                 os.dup2(log.fileno(), 2)
                 try:
-                    analysis.analyzeSample(sample)
+                    self.analyzeSample(sample)
                 except Exception:
-                    traceback.print_exc()   # il traceback completo finisce nel log
+                    traceback.print_exc()   # traceback in the log
                     raise
                 finally:
-                    sys.stdout.flush(); sys.stderr.flush()
+                    self._flushAll()
         finally:
             os.dup2(saved[0], 1); os.dup2(saved[1], 2)
             os.close(saved[0]); os.close(saved[1])
         return logPath
 
+
+    
     def loop(self, nWorkers=None):  
         # ## Loop over the samples
         # for sample in self.samples:
@@ -118,17 +128,19 @@ class SampleLooper:
                 self.analyzeSample(sample)
             return
 
-        failed = []
+        total, nDone, failed = len(self.samples), 0, []        
         with ProcessPoolExecutor(max_workers=nWorkers) as executor:
-            futures = {executor.submit(self.analyzeSample, sample): sample
+            futures = {executor.submit(self._runSampleLogged, sample): sample
                        for sample in self.samples}
             for future in as_completed(futures):
                 sample = futures[future]
+                nDone +=1
                 try:
                     future.result()
                     print(f"[done]   {sample}")
                 except Exception as e:
-                    print(f"[FAILED] {sample}: {e}")
+                    logDir = f"log/{sample.year}/{self.analyzer}"
+                    print(f"[{nDone}/{total}] FAILED  {sample}: {e}  -> {logDir}/{sample.name}.log")
                     failed.append(sample)
 
         if failed:

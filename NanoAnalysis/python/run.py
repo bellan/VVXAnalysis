@@ -14,10 +14,15 @@ from VVXAnalysis.NanoAnalysis.SampleLoader import SampleLoader
 
 if __name__ == "__main__" :
 
-    parser = OptionParser(usage="usage: %prog <analysis> <sample> [options]")
+    parser = OptionParser(usage="usage: %prog <analysis> [options]")
+   
+    parser.add_option("-j", "--jobs", dest="nJobs",
+                      type='int',
+                      default=None,
+                      help=f"Set number of jobs. Default is None, that means it will use all CPU in the systems")
+    
 
     (options, args) = parser.parse_args()
-    
     analysis       = args[0]
     
     ## Read the configuration in Pydantic mode
@@ -38,5 +43,5 @@ if __name__ == "__main__" :
     """)
     
     sampleLooper = SampleLooper(cfg.analysis, samples)
-    sampleLooper.loop()
+    sampleLooper.loop(options.nJobs)
     #sampleLooper.end()
