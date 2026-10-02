@@ -27,6 +27,13 @@ if __name__ == "__main__" :
                   default=False,
                   help="submit the jobs through Condor")
 
+    parser.add_option("-e", "--eos", dest="eos",
+                      action="store_true",
+                      default=False,
+                      help="use the location of the samples written in the DB")
+
+
+    
     parser.add_option("-s", "--sample",
                       dest="selectedSample",
                       action="append", default=None,
@@ -49,7 +56,7 @@ if __name__ == "__main__" :
 
             
     sampleLoader = SampleLoader(cfg.samples) # --> check against data/samples_DB.json
-    samples = sampleLoader.load(not options.condor)
+    samples = sampleLoader.load(not options.eos)
 
     for s in samples:
         print(s)
@@ -75,8 +82,12 @@ if __name__ == "__main__" :
 
     if options.condor:
         ## To be fixed
+        args = [analysis]
+        #if options.eos:
+        args.append("-e")
+        
         sampleLooper.submitCondor(runScript=os.path.abspath(sys.argv[0]),
-                                  args=[analysis],
+                                  args=args,
                                   flavour=options.flavour,
                                   dryRun=options.dryRun)
     else:

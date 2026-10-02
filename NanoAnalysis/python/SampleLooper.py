@@ -186,7 +186,7 @@ class SampleLooper:
             """)
                 
         if dryRun:
-            print("Scritti condor_wrapper.sh, samples.txt, analysis.sub (dry run)")
+            print("condor_wrapper.sh, samples.txt, analysis.sub (dry run) created")
             return
         subprocess.run(["condor_submit", "analysis.sub"], check=True)
          
