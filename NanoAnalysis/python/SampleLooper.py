@@ -22,7 +22,7 @@ import subprocess
 import ctypes
 _libc = ctypes.CDLL(None)
     
-maxEntriesPerSample = 100 # Use only up to this number of events in each MC sample, for quick tests; use None for no scaling
+maxEntriesPerSample = None # Use only up to this number of events in each MC sample, for quick tests; use None for no scaling
 
 
 class SampleLooper:
