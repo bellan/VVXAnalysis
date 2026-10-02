@@ -26,9 +26,13 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
             Leptons=Collection(self.event,'Lepton')
             Zs=Collection(self.event, 'ZCand')
             
+            
             if self.analyzeMC: self.weight = (self.event.overallEventWeight/self.genEventSumw)      #da rivedere
+            self.hEvent.fill1D("nGenLeptons", "nGenLeptons", 93, 0., 10., len(GenLeptons), self.weight)
+            self.hEvent.fill1D("nGenPhotons", "nGenPhotons", 93, 0., 10., len(GenPhotons), self.weight)
+            self.hEvent.fill1D("nGenJets", "nGenJets", 93, 0., 10., len(GenJets), self.weight)
             BestGamma=max(self.photonCut(GenPhotons,GenLeptons,GenJets),key=lambda ph: ph.pt, default=None)   
-            if BestGamma!=None and len(BestGamma)==1:
+            if BestGamma!=None:
                    self.hEvent.fill1D("BestGammaPt", "BestGammaPt", 50, 20., 220., BestGamma.pt, self.weight)
                 
             
@@ -43,7 +47,7 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
     
     def photonCut(self,Photons,Leptons,Jets):
             firstCutPhotons=[p for p in Photons if abs(p.eta)<2.4 and p.pt>20 ]
-            secondCutPhotons=[p for p in firstCutPhotons if all(firstCutPhotons.DeltaR(l)>0.5 for l in Leptons) and all(firstCutPhotons.DeltaR(j)>0.5 for j in Jets)]    
+            secondCutPhotons=[p for p in firstCutPhotons if all(p.DeltaR(l)>0.5 for l in Leptons) and all(p.DeltaR(j)>0.5 for j in Jets)]    
             return secondCutPhotons              
 
     def leptonCut(self,Leptons):
@@ -53,7 +57,9 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
         leptons=[p for p in Leptons if p.pt>20]
         lepton1=[p for p in leptons if all(leptons.DeltaR(l)>0.5 for l in leptons)]
         lepton2=[p for p in lepton1 if all(lepton1.DeltaR(l)>0.5 for l in lepton1)]
-               
+    #def invMassCut(self,Leptons,Photons):
+           
+                      
                   
 class GenStatusFlag(IntFlag):
                 IS_PROMPT = 1 << 0
@@ -61,4 +67,3 @@ class GenStatusFlag(IntFlag):
 
                 SEL = IS_PROMPT | FROM_HARD_PROCESS
                 #PH_SEL = IS_PROMPT
-
