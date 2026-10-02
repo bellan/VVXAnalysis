@@ -22,8 +22,9 @@ class VVXAnalyzer(EventAnalyzer, analysis_name="VVXAnalyzer"):
             #ZZs = Collection(self.event, 'ZZCand') ## move it in EventAnalyzer::init(event) ??
 #            theZZ = 
             #if self.analyzeMC: self.weight = (self.event.overallEventWeight*theZZ.dataMCWeight/self.genEventSumw)
-        if Regions.check(self.regionWord, Regions.L4P):
+        if Regions.check(self.regionWord, Regions.ZTL2P_ZTL2P):
             m4l = self.ZZ.mass
             
             self.hEvent.fill1D("ZZMass_10GeV", "ZZMass_10GeV", 93, 70., 1000., m4l, self.weight)
 
+        #print(Regions.check(self.regionWord, Regions.L2P_P1cutT))
