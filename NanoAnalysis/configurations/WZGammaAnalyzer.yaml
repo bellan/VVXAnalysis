@@ -4,6 +4,7 @@ samples:
   mode: name          # oppure: process, all
   by_name:
     - WZGamma
+    - WZGtoLNuZG
     #- WZto3LNu
     #- ZZTo4l
     #- ZZTo4l_2Jets_EW
@@ -13,7 +14,7 @@ samples:
 
 analysis:
   analyzer: WZGammaAnalyzer
-  regions : [L3P]
+  regions : [L3P_P1cutL]
 
 
 
