@@ -27,40 +27,40 @@
 	{"origin" : "MC",
 	 "year": 2024,
 	 "samples": [
-	     {"process": "VBS",
+	     {"process": "ZZ",
 	      "name": "ZZTo4l", 
-	      "eos_path": "",
+	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
 	      "version" : "July2026",
 	      "color": 5,
 	      "style": 0},
-	     {"process": "VBS",
+
+	     {"process": "WZ",
 	      "name": "WZto3LNu", 
-	      "eos_path": "",
+	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
 	      "version" : "July2026",
 	      "color": 5,
 	      "style": 0},
-		  {"process": "VBS",
+	     
+	     {"process": "Triboson",
 	      "name": "ZZGamma", 
-	      "eos_path": "",
+	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
 	      "version" : "July2026",
 	      "color": 5,
 	      "style": 0},
-          {"process": "VBS",
+	     
+             {"process": "Triboson",
 	      "name": "WZGamma", 
-	      "eos_path": "",
+	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
 	      "version" : "July2026",
 	      "color": 5,
-	   "style": 0},
-          {"process": "ZZ",
+	      "style": 0},
+	     
+             {"process": "ZZ",
 	      "name": "ggTo4tau_Contin_MCFM701", 
-	      "eos_path": "",
+	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
 	      "version" : "July2026",
 	      "color": 5,
 	      "style": 0}
-
-	     
-
-	     
 	 ]
 	},
 	

@@ -1,5 +1,5 @@
 class Sample:
-    def  __init__(self, dbblock, origin, year):
+    def  __init__(self, dbblock, origin, year, local=True):
 
         # fixme check on origin
         
@@ -8,6 +8,10 @@ class Sample:
         self.name    = dbblock.name
         self.process = dbblock.process
         self.setLuminosity()
+        if local:
+            self._path = f"samples/{self.year}"
+        else:
+            self._path = f"{dbblock.eos_path}"
         #fixme: to be expandend
         
 
@@ -22,7 +26,7 @@ class Sample:
 
     
     def path(self):
-        return f"samples/{self.year}/{self.name}.root"
+        return f"{self._path}/{self.name}.root"
 
 
     def setLuminosity(self):

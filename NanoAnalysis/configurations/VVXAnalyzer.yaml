@@ -4,6 +4,7 @@ samples:
   mode: name          # oppure: process, all
   by_name:
     - ZZTo4l
+    - ZZGamma
     - WZto3LNu
     - ggTo4tau_Contin_MCFM701
     #- ZZTo4l_2Jets_EW

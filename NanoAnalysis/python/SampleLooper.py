@@ -17,10 +17,12 @@ from VVXAnalysis.NanoAnalysis.SampleLoader import SampleLoader
 import os, sys, traceback
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
+import subprocess
+
 import ctypes
 _libc = ctypes.CDLL(None)
     
-maxEntriesPerSample = 100 # Use only up to this number of events in each MC sample, for quick tests; use None for no scaling
+maxEntriesPerSample = None # Use only up to this number of events in each MC sample, for quick tests; use None for no scaling
 
 
 class SampleLooper:
@@ -145,16 +147,46 @@ class SampleLooper:
 
         if failed:
             raise RuntimeError(f"Analysis failed for {len(failed)} sample(s): {failed}")
-
-
-
-
-
-
-            
+         
             
     def end(self):
         self.outFile.Close()
 
 
+    def submitCondor(self, runScript, args, flavour="longlunch", logDir="logs", dryRun=False):
+        os.makedirs(logDir, exist_ok=True)
+        cwd = os.getcwd()
+        names = [sample.name for sample in self.samples]
+
+        # Wrapper: ricrea l'ambiente CMSSW sul nodo ed esegue run.py per un sample
+        wrapper = os.path.join(cwd, "condor_wrapper.sh")
+        with open(wrapper, "w") as f:
+            f.write(f"""#!/bin/bash
+            set -e
+            source /cvmfs/cms.cern.ch/cmsset_default.sh
+            cd {os.environ['CMSSW_BASE']}/src
+            eval `scramv1 runtime -sh`
+            cd {cwd}
+            python3 {runScript} {' '.join(args)} --sample "$1"
+            """)
+            os.chmod(wrapper, 0o755)
+            
+        with open("samples.txt", "w") as f:
+            f.write("\n".join(names) + "\n")
+                
+        with open("analysis.sub", "w") as f:
+            f.write(f"""executable            = {wrapper}
+            arguments             = $(sample)
+            output                = {logDir}/$(sample).out
+            error                 = {logDir}/$(sample).err
+            log                   = {logDir}/condor.log
+            should_transfer_files = NO
+            +JobFlavour           = "{flavour}"
+            queue sample from samples.txt
+            """)
+                
+        if dryRun:
+            print("condor_wrapper.sh, samples.txt, analysis.sub (dry run) created")
+            return
+        subprocess.run(["condor_submit", "analysis.sub"], check=True)
          
