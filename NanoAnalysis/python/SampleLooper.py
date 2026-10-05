@@ -86,11 +86,11 @@ class SampleLooper:
 
     def _runSampleLogged(self, sample):
         """stdout/stderr (Python e C++) in a dedicate log."""
-        logDir = f"log/{sample.year}/{self.analyzer}"
+        logDir = f"logs/{self.analyzer}/{sample.year}/"
         
         os.makedirs(logDir, exist_ok=True)
         logPath = os.path.join(logDir, f"{sample.name}.log")
-
+        print(f"log is in {logPath}")
         self._flushAll()
         saved = os.dup(1), os.dup(2)
         try:
@@ -141,7 +141,7 @@ class SampleLooper:
                     future.result()
                     print(f"[done]   {sample}")
                 except Exception as e:
-                    logDir = f"log/{sample.year}/{self.analyzer}"
+                    logDir = f"logs/{sample.year}/{self.analyzer}"
                     print(f"[{nDone}/{total}] FAILED  {sample}: {e}  -> {logDir}/{sample.name}.log")
                     failed.append(sample)
 
@@ -153,40 +153,48 @@ class SampleLooper:
         self.outFile.Close()
 
 
-    def submitCondor(self, runScript, args, flavour="longlunch", logDir="logs", dryRun=False):
-        os.makedirs(logDir, exist_ok=True)
+    def submitCondor(self, runScript, args, flavour="longlunch", dryRun=False):
+        logDir=f"logs/{args[0]}"
+        for year in sorted({s.year for s in self.samples}):
+            os.makedirs(os.path.join(logDir, str(year)), exist_ok=True)
+
         cwd = os.getcwd()
-        names = [sample.name for sample in self.samples]
 
         # Wrapper: ricrea l'ambiente CMSSW sul nodo ed esegue run.py per un sample
         wrapper = os.path.join(cwd, "condor_wrapper.sh")
         with open(wrapper, "w") as f:
             f.write(f"""#!/bin/bash
-            set -e
-            source /cvmfs/cms.cern.ch/cmsset_default.sh
-            cd {os.environ['CMSSW_BASE']}/src
-            eval `scramv1 runtime -sh`
-            cd {cwd}
-            python3 {runScript} {' '.join(args)} --sample "$1"
-            """)
+set -e
+source /cvmfs/cms.cern.ch/cmsset_default.sh
+cd {os.environ['CMSSW_BASE']}/src
+eval `scramv1 runtime -sh`
+cd {cwd}
+python3 {runScript} {' '.join(args)} --sample "$1" "$2"
+""")
             os.chmod(wrapper, 0o755)
             
         with open("samples.txt", "w") as f:
-            f.write("\n".join(names) + "\n")
+            for s in self.samples:
+                f.write(f"{s.year} {s.name}\n")
+
+            
                 
         with open("analysis.sub", "w") as f:
             f.write(f"""executable            = {wrapper}
-            arguments             = $(sample)
-            output                = {logDir}/$(sample).out
-            error                 = {logDir}/$(sample).err
-            log                   = {logDir}/condor.log
-            should_transfer_files = NO
-            +JobFlavour           = "{flavour}"
-            queue sample from samples.txt
-            """)
+arguments             = $(sampleYear) $(sampleName)
+output                = {logDir}/$(sampleYear)/$(sampleName).out
+error                 = {logDir}/$(sampleYear)/$(sampleName).err
+log                   = {logDir}/condor.log
+should_transfer_files = NO
++JobFlavour           = "{flavour}"
+queue sampleYear, sampleName from samples.txt
+""")
                 
         if dryRun:
             print("condor_wrapper.sh, samples.txt, analysis.sub (dry run) created")
             return
         subprocess.run(["condor_submit", "analysis.sub"], check=True)
          
+
+
+        

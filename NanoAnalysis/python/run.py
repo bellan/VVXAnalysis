@@ -32,11 +32,8 @@ if __name__ == "__main__" :
                       default=False,
                       help="use the location of the samples written in the DB")
 
-
-    
-    parser.add_option("-s", "--sample",
-                      dest="selectedSample",
-                      action="append", default=None,
+    parser.add_option("-s", "--sample", dest="selectedSample", nargs=2,
+                      metavar=("YEAR", "NAME"), default=None, action="append",
                       help="Analyze just this sample (can be ripeted and used by Condor jobs")
     
     parser.add_option("-f","--flavour", dest="flavour",
@@ -62,9 +59,19 @@ if __name__ == "__main__" :
         print(s)
     
     if options.selectedSample:
-        samples = [s for s in samples if s.name in options.selectedSample]
+        wanted = {(int(y), n) for y, n in options.selectedSample}
+        samples = [s for s in samples if (s.year, s.name) in wanted]
 
-    
+        found = {(s.year, s.name) for s in samples}
+        missing = wanted - found
+
+        if missing:
+            if not found:
+                raise SystemExit(f"None of the sample in the list is present in the YAML selection: {sorted(missing)}")
+            else:
+                print(f"Some of the samples in the list are not resent in the YAML selection: {sorted(missing)}. Processing only the one that are aslo in the YALM.")
+        
+                      
     ## Banner ##
     print(f"""
 
@@ -83,9 +90,9 @@ if __name__ == "__main__" :
     if options.condor:
         ## To be fixed
         args = [analysis]
+        ## With condor, run on eos samples by default
         #if options.eos:
         args.append("-e")
-        
         sampleLooper.submitCondor(runScript=os.path.abspath(sys.argv[0]),
                                   args=args,
                                   flavour=options.flavour,
