@@ -34,10 +34,17 @@ if __name__ == "__main__" :
 
 
     
-    parser.add_option("-s", "--sample",
-                      dest="selectedSample",
-                      action="append", default=None,
+    # parser.add_option("-s", "--sample",
+    #                   dest="selectedSample",
+    #                   action="append", default=None,
+
+
+
+    parser.add_option("-s", "--sample", dest="selectedSample", nargs=2,
+                      metavar=("YEAR", "NAME"), default=None,
                       help="Analyze just this sample (can be ripeted and used by Condor jobs")
+
+    
     
     parser.add_option("-f","--flavour", dest="flavour",
                       default="longlunch",
@@ -64,7 +71,14 @@ if __name__ == "__main__" :
     if options.selectedSample:
         samples = [s for s in samples if s.name in options.selectedSample]
 
-    
+    if options.selectedSample:
+        year, name = int(options.selectedSample[0]), options.selectedSample[1]
+        samples = [s for s in samples if s.year == year and s.name == name]
+        if not samples:
+            raise SystemExit(f"Sample with year={year}, name={name} not found in YAML configuration")
+
+
+                      
     ## Banner ##
     print(f"""
 
@@ -83,9 +97,9 @@ if __name__ == "__main__" :
     if options.condor:
         ## To be fixed
         args = [analysis]
+        ## With condor, run on eos samples by default
         #if options.eos:
         args.append("-e")
-        
         sampleLooper.submitCondor(runScript=os.path.abspath(sys.argv[0]),
                                   args=args,
                                   flavour=options.flavour,
