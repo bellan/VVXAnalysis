@@ -62,7 +62,7 @@ class SampleLooper:
         events = inputFile.Get("Events")
         nEntries = events.GetEntries()
         iEntry=0
-        printEntries=max(5000,nEntries/10)
+        printEntries=max(5000,nEntries//10)
         
         ######### Analyse the events in a sample! #############
         eventAnalyzer = EventAnalyzer.registry[self.analyzer](self.regions)#(base_configuration)
@@ -164,31 +164,31 @@ class SampleLooper:
         wrapper = os.path.join(cwd, "condor_wrapper.sh")
         with open(wrapper, "w") as f:
             f.write(f"""#!/bin/bash
-            set -e
-            source /cvmfs/cms.cern.ch/cmsset_default.sh
-            cd {os.environ['CMSSW_BASE']}/src
-            eval `scramv1 runtime -sh`
-            cd {cwd}
-            python3 {runScript} {' '.join(args)} --sample "$1" "$2"
-            """)
+set -e
+source /cvmfs/cms.cern.ch/cmsset_default.sh
+cd {os.environ['CMSSW_BASE']}/src
+eval `scramv1 runtime -sh`
+cd {cwd}
+python3 {runScript} {' '.join(args)} --sample "$1" "$2"
+""")
             os.chmod(wrapper, 0o755)
             
         with open("samples.txt", "w") as f:
             for s in self.samples:
-                f.write(f"{s.year},{s.name}\n")
+                f.write(f"{s.year} {s.name}\n")
 
             
                 
         with open("analysis.sub", "w") as f:
             f.write(f"""executable            = {wrapper}
-            arguments             = $(sample)
-            output                = {logDir}/$(year)/$(sample).out
-            error                 = {logDir}/$(year)/$(sample).err
-            log                   = {logDir}/condor.log
-            should_transfer_files = NO
-            +JobFlavour           = "{flavour}"
-            queue sample from samples.txt
-            """)
+arguments             = $(sampleYear) $(sampleName)
+output                = {logDir}/$(sampleYear)/$(sampleName).out
+error                 = {logDir}/$(sampleYear)/$(sampleName).err
+log                   = {logDir}/condor.log
+should_transfer_files = NO
++JobFlavour           = "{flavour}"
+queue sampleYear, sampleName from samples.txt
+""")
                 
         if dryRun:
             print("condor_wrapper.sh, samples.txt, analysis.sub (dry run) created")

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 from optparse import OptionParser
 import ROOT,copy
@@ -14,7 +14,7 @@ from CrossInfo import*
 
 
 for var in VarList:
-    print var
+    print(var)
     FileOut = ROOT.TFile("macros/UnfoldingMacros/"+var+"_test/DataToUnfoldFake.root","recreate") 
     FileIn = ROOT.TFile("macros/UnfoldingMacros/"+var+"_test/DataToUnfold.root") 
     for i in ["2e2m","4e","4m"]:

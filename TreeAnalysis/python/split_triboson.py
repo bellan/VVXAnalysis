@@ -50,7 +50,7 @@ def main(args):
 
 def parse_args():
     parser = ArgumentParser(description='Create a new set of result files (e.g. histograms from an analyzer) from a set of existing results. The histograms which begin with "SYS-<keyword>" are copied and renamed by removing the substring "-<keyword>"')
-    parser.add_argument('-y', '--years'    , default=['2016preVFP', '2016postVFP', '2017', '2018'], nargs='+', choices=[k for k in lumi_dict.keys() if k.startswith('2')])
+    parser.add_argument('-y', '--years'    , default=['2016preVFP', '2016postVFP', '2017', '2018'], nargs='+', choices=[k for k in list(lumi_dict.keys()) if k.startswith('2')])
     parser.add_argument('-i', '--inputdir' , default='results', help='Input, top level directory with the results of an analyzer')
     parser.add_argument('-o', '--outputdir', default=None     , help='Output location. Default is just to append "_<keyword>" to the inputdir')
     parser.add_argument('-A', '--analyzer' , default='VVGammaAnalyzer', help='Name of the analyzer, used to compose the path of the input files (default: %(default)s)')

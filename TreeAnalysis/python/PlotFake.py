@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 import ROOT, copy
 import recoPlotUtils
 import sys
@@ -24,7 +24,7 @@ def plot(plot,obs):
 
     LastColor=""
     for sample in mclist:
-        print sample["sample"]
+        print(sample["sample"])
         fMC = ROOT.TFile("results/FakeRateAnalyzer_MC/"+sample["sample"]+".root")
         h_mc_or = fMC.Get(plot)
         h_mc = copy.deepcopy(h_mc_or)
@@ -182,7 +182,7 @@ for particle in particles:
  #   plot("MTNoHF_"+p,"m_{T} GeV")    
 
     for region in regions:
-        print particle,region
+        print(particle,region)
         r = ''
         if region   == 'barrel': r = 'B'
         if region   == 'endcap': r = 'E'

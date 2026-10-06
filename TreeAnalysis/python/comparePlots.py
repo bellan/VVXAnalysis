@@ -23,7 +23,7 @@ def parse_args():
     
     parser.add_argument('-i', '--inputdir'      , default='results', help='Base input directory, where the results of the analyzers are')
     parser.add_argument('-r', '--region'        , default='SR4P', help='Default: %(default)s')
-    parser.add_argument('-y', '--year'          , default='2018', choices=lumi_dict.keys(), help='Default: %(default)s')
+    parser.add_argument('-y', '--year'          , default='2018', choices=list(lumi_dict.keys()), help='Default: %(default)s')
     parser.add_argument('-A', '--analysis'      , default='VVGammaAnalyzer', dest='analysis', help='Default: %(default)s')
     parser.add_argument('-t', '--variables'     , default=None, dest='var_include', type=re.compile, help='Only plot names that match this regex will be used. Defaults to everything')
     parser.add_argument('-s', '--skip'          , default=None, dest='var_skip'   , type=re.compile, help='Plots names that match this regex will be skipped')
@@ -77,7 +77,7 @@ def cutStudy(var, plotInfo, inputdir, do_title=True, do_norm=True, extensions=['
                           , legend_x0, legend_y0)
 
     nbinsx = None
-    for group, gdata in hardcoded_config['groups'].items():
+    for group, gdata in list(hardcoded_config['groups'].items()):
         logging.debug('Starting group: %s', group)
         groupstack = ROOT.THStack(group+'_stack', var if do_title else '')
         # legend.AddEntry(groupstack, group, "LPF")
@@ -221,7 +221,7 @@ def main():
     inputdir = InputDir(basedir=args.inputdir, year=args.year, region=args.region, analyzer=args.analysis)
 
     varInfo = getVariablesInfo(args.analysis, args.region)
-    variables = search_variable(varInfo.keys(), args.var_include, args.var_skip, analysis=args.analysis, region=args.region)
+    variables = search_variable(list(varInfo.keys()), args.var_include, args.var_skip, analysis=args.analysis, region=args.region)
 
     if(len(variables) == 0):
         # Try reading the TKeys from the signal file
@@ -238,11 +238,11 @@ def main():
             varInfo[variable] = {}  # Assign default config
 
     if(args.split_prompt == False):
-        for _, info in varInfo.items(): info['split_prompt_ph'] = False
+        for _, info in list(varInfo.items()): info['split_prompt_ph'] = False
 
     logging.info('variables: %s', variables)
 
-    argsdict = {k:v for k,v in vars(args).items() if not k in ('inputdir', 'year', 'region', 'analysis', 'loglevel', 'var_include', 'var_skip')}
+    argsdict = {k:v for k,v in list(vars(args).items()) if not k in ('inputdir', 'year', 'region', 'analysis', 'loglevel', 'var_include', 'var_skip')}
 
     status = 0
     for variable in variables:

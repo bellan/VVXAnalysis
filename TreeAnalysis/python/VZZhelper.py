@@ -12,12 +12,12 @@ from pickle import Unpickler
 from warnings import filterwarnings
 
 def test():
-	print('exists("src")', exists("src"))
+	print(('exists("src")', exists("src")))
 
 
 def load_object(path):
 	if(not exists(path)):
-		print('Error: path "%s" does not exist.' % (path))
+		print(('Error: path "%s" does not exist.' % (path)))
 		return None
 	with open(path, "rb") as file:
 		unpickler = Unpickler(file)
@@ -39,13 +39,13 @@ def pyfloat_from_prediction(pred):
 	return float(pred[0, 1])
 
 def test_ADA(ADA):
-	print("is ADA instance of AdaBoostClassifier?", isinstance(ADA, AdaBoostClassifier))
+	print(("is ADA instance of AdaBoostClassifier?", isinstance(ADA, AdaBoostClassifier)))
 
 def test_list(list):
-	print("list:", list)
+	print(("list:", list))
 	
 def print_type(obj):
-	print(type(obj))
+	print((type(obj)))
 	
 def print_obj(obj):
 	print(obj)
@@ -55,5 +55,5 @@ if(__name__ == "__main__"):
 	test(ll)
 	X = [0.1, -3.5, 12.6, 32., 0.5]
 	pred = predict( ll, [X] )
-	print("prediction = 0: %.1f  1: %.1f" % tuple(pred[0]) )
+	print(("prediction = 0: %.1f  1: %.1f" % tuple(pred[0]) ))
 

@@ -6,7 +6,7 @@
 # 
 ##############################################
 
-from __future__ import print_function
+
 from os import path
 import copy
 import ROOT
@@ -454,7 +454,7 @@ def fakeRateLtoT_regex(sample_data, samples_prompt, inputdir, method, variable, 
     logging.info('\tPASS: {:6.0f} - TOTAL: {:6.0f} - <FR>: {:.3f}'.format(nP, nT, nP/nT))
 
     ## Fake rate = PASS/TOTAL ##
-    hPASS, hTOTAL = _do_rebin(variable, hPASS, hTOTAL, **{k:v for k,v in kwargs.items() if k.startswith('rebin')})
+    hPASS, hTOTAL = _do_rebin(variable, hPASS, hTOTAL, **{k:v for k,v in list(kwargs.items()) if k.startswith('rebin')})
 
     hFR = hPASS
     hFR.Divide(hTOTAL)
@@ -483,7 +483,7 @@ def getPassFailLtoT(sample_main, samples_subtr, inputdir, method, variable, fixN
         hmain_PASS, hmain_FAIL   = get_plots(inputdir, sample_main['file'], [ in_name %(s) for s in ['PASS', 'FAIL'] ] )
         assert hmain_PASS, 'Could not get the PASS histogram for data'
         assert hmain_FAIL, 'Could not get the FAIL histogram for data'
-    elif('split' in sample_main.keys()):
+    elif('split' in list(sample_main.keys())):
         in_name = '_'.join([phfr, base_name, sample_main['split'], '%s'])
         hmain_PASS, hmain_FAIL   = get_plots(inputdir, sample_main['file'], [ in_name %(s) for s in ['PASS', 'FAIL'] ] )
     else:
@@ -596,7 +596,7 @@ def fakeRateLtoT(sample_data, samples_prompt, inputdir, method='LtoT', variable=
     logging.info('\tPASS: {:6.0f} - TOTAL: {:6.0f} - <FR>: {:.3f}'.format(nP, nT, nP/nT))
 
     ## Fake rate = PASS/TOTAL ##
-    hPASS, hTOTAL = _do_rebin(variable, hPASS, hTOTAL, **{k:v for k,v in kwargs.items() if k.startswith('rebin')})
+    hPASS, hTOTAL = _do_rebin(variable, hPASS, hTOTAL, **{k:v for k,v in list(kwargs.items()) if k.startswith('rebin')})
 
     hFR = hPASS
     hFR.Divide(hTOTAL)
@@ -1018,7 +1018,7 @@ def main(args):
         "ggTo4l"   : {"file": 'ggTo4l', "fixNegBins": True},
         "WZ"       : {"file": "WZTo3LNu", "fixNegBins":True}
     }
-    for key, sample in sampleList.items():
+    for key, sample in list(sampleList.items()):
         sample.setdefault("name" , key)
         sample.setdefault("title", sample["name"])
 
@@ -1071,7 +1071,7 @@ def main(args):
 
     method   = args.method
     varState = joinIfNotNone([args.variable, args.final_state])
-    argsdict = {k:v for k,v in vars(args).items() if not k in ('inputdir', 'year', 'analyzer', 'region')}
+    argsdict = {k:v for k,v in list(vars(args).items()) if not k in ('inputdir', 'year', 'analyzer', 'region')}
 
     if(args.time_evolution):
         cmsstyle.SetLumi('%.3g' %(lumi_dict['Run2']['value']/1000), unit="fb")

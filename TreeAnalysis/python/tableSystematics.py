@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
+
 import json
 import re
 import pandas as pd
@@ -25,8 +25,8 @@ def formatAverage(value, fmt):
 def fillDataFrame(raw_data, formatter=formatUpDn, fmt='%+2.2f'):
     # "Unpack" the inner dictionary {'up':x.xx, 'dn':x.xx} into a string
     data = { sample:
-             { syst: formatter(value, fmt=fmt) for syst, value in d.items() }
-             for sample, d in raw_data.items() }
+             { syst: formatter(value, fmt=fmt) for syst, value in list(d.items()) }
+             for sample, d in list(raw_data.items()) }
     
     # Use pandas for pretty formatting
     return pd.DataFrame.from_dict(data) #, orient='index')
@@ -108,7 +108,7 @@ def main():
         systematics = json.load(fin)
 
     logging.info('Region: %6s, variable: %s', args.region, args.variable)
-    if(not args.region in systematics.keys()):
+    if(not args.region in list(systematics.keys())):
         logging.error('region "{}" not found'.format(args.region))
         return
 

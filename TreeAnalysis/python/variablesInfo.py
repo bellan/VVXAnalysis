@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 #####################################################################################################
 # Single entry point to get a list of plots produced by the analysis, which can be used for data/MC #
@@ -37,6 +37,6 @@ if __name__ == '__main__':
         analyzer = 'VVGamma'
         region   = 'SR4P'
     
-    print "TEST: analyzer =", analyzer, ", region =", region
+    print(("TEST: analyzer =", analyzer, ", region =", region))
     VarInfo = getVariablesInfo(analyzer, region)
-    print dumps(VarInfo, indent=2)
+    print((dumps(VarInfo, indent=2)))

@@ -3,7 +3,12 @@
 #include <TFile.h>
 #include <iostream>
 
-LeptonScaleFactors::LeptonScaleFactors(int year, bool preVFP) : lepSFHelper_(preVFP), year_(year){
+LeptonScaleFactors::LeptonScaleFactors(int year, bool preVFP) : lepSFHelper_(year,""), year_(year){
+
+  // to be fixed to work with year > 2018
+  if(preVFP)
+    lepSFHelper_ = LeptonSFHelper(year, "ULAPV");
+  
   const char* filename = Form("$CMSSW_BASE/src/VVXAnalysis/Commons/data/leptonFakeRates_%d.root", year);
 
   TFile fFR(filename);
@@ -22,7 +27,7 @@ LeptonScaleFactors::LeptonScaleFactors(int year, bool preVFP) : lepSFHelper_(pre
 
 std::pair<double, double> LeptonScaleFactors::efficiencyScaleFactor(const phys::Lepton& lep) const{
   float eta = abs(lep.id())==11 ? lep.scEta() : lep.eta();
-  return lep.passFullSel() ? efficiencyScaleFactor(lep.pt(), eta, lep.id(), lep.isInCracks()) : std::make_pair(1.,0.); 
+  return lep.passFullSel() ? efficiencyScaleFactor(lep.pt(), eta, lep.phi(), lep.id(), lep.isInCracks()) : std::make_pair(1.,0.); 
 }
 
 

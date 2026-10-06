@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
+
 import os
 import sys
 import json
@@ -166,7 +166,7 @@ def get_gmN_params(syst, data_syst):
     sample_affected = None
     N = 0
     alpha = 0
-    for sample, sample_data in data_syst.items():
+    for sample, sample_data in list(data_syst.items()):
         syst_data = sample_data[syst]
         if(syst_data['up'] - syst_data['dn'] > 0):
             n_affected += 1
@@ -202,7 +202,7 @@ def get_gmN_params_local(fname, observable, process):
 
 def get_shape_affected(syst, data_syst):
     samples_affected = []
-    for sample, sample_data in data_syst.items():
+    for sample, sample_data in list(data_syst.items()):
         syst_data = sample_data.get(syst, {'up':0, 'dn':0})
         if(syst_data['up'] - syst_data['dn'] != 0.):
             samples_affected.append(sample)
@@ -278,7 +278,7 @@ def main(args):
             args.region = list(config['regions'].keys())[0]
             logging.info('Using region %s from the config file', args.region)
         else:
-            raise RuntimeError('No region specified in arguments. The config defines: %s' %(config['regions'].keys()) )
+            raise RuntimeError('No region specified in arguments. The config defines: %s' %(list(config['regions'].keys())) )
 
     # Path
     path_to_histograms = os.path.join(args.path, str(args.year), args.region+'.root')
@@ -300,7 +300,7 @@ def main(args):
     # Test that all the processes have at least one event - otherwise Combine will crash later
     existing_processes = check_exisiting_histograms(path_to_histograms_local, observables[0][0], region_config['processes'])
     region_config_processes = {}
-    for proc_name, proc_yield_config in region_config['processes'].items():
+    for proc_name, proc_yield_config in list(region_config['processes'].items()):
         if proc_name not in existing_processes:
             continue
         # Yield: prefer what is specified in the config, resort to the integral in the (local) rootfile
@@ -323,7 +323,7 @@ def main(args):
     logging.info('samples_to_idx: %s', samples_to_idx)
 
     df_rate = pd.DataFrame(
-        [[getBinName(args.region, region_config['observable']['name']), k, samples_to_idx[k], v] for k,v in region_config['processes'].items()],
+        [[getBinName(args.region, region_config['observable']['name']), k, samples_to_idx[k], v] for k,v in list(region_config['processes'].items())],
         columns=['bin', 'process', 'process_number', 'rate']
     ).transpose()
     df_rate.sort_values('process_number', axis=1, inplace=True)
@@ -353,8 +353,8 @@ def main(args):
     # Hack: shape systematics that are uncorrelated across years
     systs_shape_uncorr = get_shape_uncorrelated(config)
     for syst in systs_shape_uncorr:
-        for obs_name, obs_systs in systematics[args.region].items():
-            for sample_name, sample_systs in obs_systs.items():
+        for obs_name, obs_systs in list(systematics[args.region].items()):
+            for sample_name, sample_systs in list(obs_systs.items()):
                 # rename the systematic so that it matches the name of the shape histogram
                 sample_systs[syst+'_'+args.year] = sample_systs.pop(syst)
 
@@ -373,14 +373,14 @@ def main(args):
 
         # Zero theoretical uncertainty on signal cross section, since we are measuring it
         if(sample in config['signals']):
-            for syst, val in data_syst[sample].items():
+            for syst, val in list(data_syst[sample].items()):
                 if(syst in config['systematics']['skip-if-signal']):
                     val['dn'] = val['up'] = 0
                     logging.debug('Zeroed systematic "%s" for signal "%s"', syst, sample)
 
         # Remove common systematics on data-driven backgrounds
         if(sample in config['data-driven']):
-            for syst, val in data_syst[sample].items():
+            for syst, val in list(data_syst[sample].items()):
                 # Only some systematics have to be removed (e.g. efficiencies)
                 # In particulare we want to keep uncertainties on fake rates
                 if('_eff_' in syst):
@@ -388,7 +388,7 @@ def main(args):
                     logging.debug('Zeroed systematic "%s" for data-driven "%s"', syst, sample)
 
     # Set normalization uncertainty (e.g. fake_leptons and fake_photons)
-    for sample, val in config['systematics'].get('norm_uncertainty', {}).items():
+    for sample, val in list(config['systematics'].get('norm_uncertainty', {}).items()):
         if sample in data_syst:
             logging.info('setting norm uncertainty on %s (%s)', sample, val)
             data_syst[sample]['CMS_SMP24014_'+sample+'_norm'] = val
@@ -398,7 +398,7 @@ def main(args):
                 data_syst[sample]['CMS_fake_m'] = {'up':1, 'dn':1}
 
     # Set normalization for groups of samples
-    for group_name, group_info in config['systematics'].get('norm_group_uncertainty', {}).items():
+    for group_name, group_info in list(config['systematics'].get('norm_group_uncertainty', {}).items()):
         logging.info('setting group norm uncertainty on %s (%s)', group_name, group_info['value'])
         for sample in group_info['samples']:
             data_syst[sample]['CMS_'+group_name+'_norm'] = group_info['value']
@@ -410,7 +410,7 @@ def main(args):
         elif(syst in config['systematics']['correl_year' ]): correlation = 'correl_year'
         else: RuntimeError('Systematic "%s": unspecified if correlated' %(syst))
 
-        for sample, sample_data in data_syst.items():
+        for sample, sample_data in list(data_syst.items()):
             sample_group = get_sample_group(sample, syst)
             if(sample_group is None):
                 logging.info('Skipping split-by-group for sample "%s" which has no group', sample)
@@ -424,12 +424,12 @@ def main(args):
             config['systematics'][correlation].append(new_syst)
 
     # Set manually the uncertainty on certain systematics for some samples
-    for syst, syst_manual in config['systematics'].get('set_manual', {}).items():
+    for syst, syst_manual in list(config['systematics'].get('set_manual', {}).items()):
         if(not syst in config['systematics']['correlated']+config['systematics']['uncorrelated']+config['systematics']['correl_year']):
             correl_type = syst_manual["correl_type"]
             config['systematics'][correl_type].append(syst)
             logging.debug('assigned correlation type "%s" to systematic "%s"', correl_type, syst)
-        for sample, values in syst_manual.items():
+        for sample, values in list(syst_manual.items()):
             if(data_syst.get(sample)):
                 logging.debug('overriding "%s" for "%s" to %s', syst, sample, values)
                 data_syst[sample][syst] = values
@@ -438,7 +438,7 @@ def main(args):
 
     # Fix for alpha_s
     # alpha_s appears to be have both variations >1 for some samples and both <1 for others
-    for sample, sample_data in data_syst.items():
+    for sample, sample_data in list(data_syst.items()):
         alphas = sample_data['alphas']  # This is a reference
         up, dn = alphas['up'], alphas['dn']
         if(up * dn > 0):
@@ -472,7 +472,7 @@ def main(args):
             type_column.append(syst_type)
 
     # Additional systematics
-    for syst, process in config['systematics'].get('ADD_gmN', {}).items():
+    for syst, process in list(config['systematics'].get('ADD_gmN', {}).items()):
         logging.debug('additional syst: %s -> %s', syst, process)
         try:
             N, alpha = get_gmN_params_local(path_to_histograms_local, observables[0][0], process)
@@ -539,7 +539,7 @@ def main(args):
             groups.setdefault('theory', []).append(syst_fullname)
         elif(is_datadr):
             groups.setdefault('datadr', []).append(syst_fullname)
-    groups_s = '\n'.join( ['%s group = %s'%(k, ' '.join(v)) for k,v in groups.items()] )
+    groups_s = '\n'.join( ['%s group = %s'%(k, ' '.join(v)) for k,v in list(groups.items())] )
 
 
     ### Open template ###
@@ -584,7 +584,7 @@ def parse_args():
     parser.add_argument(      '--verbosity', type=int, help='Set verbosity')
     parser.add_argument('-q', '--quiet'    , dest='verbosity', action='store_const', const=0, help='Set verbose to minimum')
     parser.add_argument('-r', '--region', default=None)
-    parser.add_argument('-y', '--year'  , default='2018', choices=lumi_dict.keys())
+    parser.add_argument('-y', '--year'  , default='2018', choices=list(lumi_dict.keys()))
     parser.add_argument('-c', '--config', type=json.loads, help='String convertible to dictionary used to override the config', default={})
     parser.add_argument(      '--unblind', action='store_true')
     parser.add_argument(      '--path' , default=None                                    , help='Path to the histograms (default: %(default)s)')

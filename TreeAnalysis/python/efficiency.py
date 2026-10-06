@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from __future__ import print_function
+
 import sys, os
 from argparse import ArgumentParser
 import logging
@@ -85,7 +85,7 @@ def resolution2D(tfile, label, var, canvas):
 def main():
     parser = ArgumentParser()
     parser.add_argument('-i', '--inputdir', default='results', help='Top directory containing input (default: %(default)s)')
-    parser.add_argument('-y', '--year'    , default='2018', choices=lumi_dict.keys(), help='Default: %(default)s')
+    parser.add_argument('-y', '--year'    , default='2018', choices=list(lumi_dict.keys()), help='Default: %(default)s')
     parser.add_argument('-r', '--region'  , default='SR4P', help='Default: %(default)s')
     parser.add_argument('-A', '--analyzer', default='VVGammaAnalyzer', help='Default: %(default)s')
     parser.add_argument('-s', '--sample'  , default='ZZGTo4LG', help='Default: %(default)s')

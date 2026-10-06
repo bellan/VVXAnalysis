@@ -6,7 +6,7 @@
 # Author: A. Mecca                                                                          #
 #############################################################################################
 
-from __future__ import print_function
+
 import os, sys
 from math import sqrt
 from ctypes import c_double
@@ -186,7 +186,7 @@ def main(args):
         systs_shape_groups = get_shape_groups_many(config_dicts)
         logging.info('Systematics with shape, correlated in group of samples: %s', systs_shape_groups)
 
-        files_info_region = { fname: {'kfactor': sample_data.get('kfactor', 1.)} for sample, sample_data in samples_info_region.items() for fname in sample_data['files'] }
+        files_info_region = { fname: {'kfactor': sample_data.get('kfactor', 1.)} for sample, sample_data in list(samples_info_region.items()) for fname in sample_data['files'] }
         logging.info('region=%s samples: %s', region, samples_region)
         logging.debug('files_info_region: %s', files_info_region)
 
@@ -219,7 +219,7 @@ def main(args):
         # If the program was run just to remake fake_photons, exit now
         if(args.remake_fake_photons):
             logging.info('Remade fake_photons, now exiting')
-            for _, handle in files_in.items(): handle.Close()
+            for _, handle in list(files_in.items()): handle.Close()
             return 0
 
         # Open all the MC file handles and retrieve the full list of variables in this region
@@ -231,7 +231,7 @@ def main(args):
 
         logging.info('in %s there are %d variables', region, len(variables_region))
 
-        ordered_files_in = [[k, v] for k,v in files_in.items() if k != 'data_obs']
+        ordered_files_in = [[k, v] for k,v in list(files_in.items()) if k != 'data_obs']
         ordered_files_in.append(['data_obs', files_in['data_obs']])
 
         # Sometimes the yield in data.root may be 0. In this case we must insert an empty histogram with the appropriate xaxis
@@ -309,7 +309,7 @@ def main(args):
 
         logging.debug('Closing files')
         del samples_region
-        for _, handler in files_in.items():
+        for _, handler in list(files_in.items()):
             handler.Close()
 
     if(args.verbosity >= 1):
@@ -354,7 +354,7 @@ def parse_args():
     ]
 
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-y', '--year'     , default='2018', choices=lumi_dict.keys())
+    parser.add_argument('-y', '--year'     , default='2018', choices=list(lumi_dict.keys()))
     parser.add_argument(      '--blind'    , action='store_true', help='Do not write data_obs in output files')
     parser.add_argument('-i', '--inputdir' , default='results', help='Top level directory where the results of analyzers are stored')
     parser.add_argument('-o', '--outputdir', default='histogramsForCombine', help='Output location')
