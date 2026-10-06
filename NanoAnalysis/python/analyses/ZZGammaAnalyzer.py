@@ -24,10 +24,10 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         # GRAFICI CONTROLLO TAGLI
         # =========================
 
-        LabelsTagliSignalDefinition = ["EventiTotali", "Trigger+BestCand", "CinematicaLeptoni","MasseZ1Z2", "CinematicaFotoniAndNotFsr"]
+        LabelsTagliSignalDefinition = ["EventiTotali", "Trigger+BestCand", "CinematicaLeptoni","MasseZ1Z2", "CinematicaFotoni", "NotFsrPhotons"]
         self.hEvent.fill1D_label("EventiPerTaglio", "EventiPerTaglio", LabelsTagliSignalDefinition, LabelsTagliSignalDefinition[0], self.weight)
         
-        LabelsTagliSignalRegion = ["No tagli", "Trigger+BestCand", "esiste theZZ", "ZZMass", "Cinematica leptoni"]
+        LabelsTagliSignalRegion = ["No tagli", "Trigger+BestCand", "regione L4P", "Cinematica leptoni", "ZZMass", "regioneP1cutL", "CinematicaFotoni", "NotFsrPhotons"]
         self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", LabelsTagliSignalRegion, LabelsTagliSignalRegion[0], self.weight)
 
         if(bestCandIdx != -1 and self.event.HLT_passZZ4l): 
@@ -72,9 +72,12 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
                 if not self.ZZMassCuts(GenZZ): return False
                 self.hEvent.fill1D_label("EventiPerTaglio", "EventiPerTaglio", LabelsTagliSignalDefinition, LabelsTagliSignalDefinition[3], self.weight)
         
-                passed, GenGammaCands = self.PhotonsKinematicAndFsrCuts(GenPhotons, GenLeptons, GenZZ)
-                if not passed: return False
+                KinPassed, GoodPhotons = self.PhotonsKinematicCuts(GenPhotons)
+                if not KinPassed: return False
                 self.hEvent.fill1D_label("EventiPerTaglio", "EventiPerTaglio", LabelsTagliSignalDefinition, LabelsTagliSignalDefinition[4], self.weight)
+                FsrPassed, GenGammaCands = self.PhotonsFsrCuts(GoodPhotons, GenLeptons, GenZZ)
+                if not FsrPassed: return False
+                self.hEvent.fill1D_label("EventiPerTaglio", "EventiPerTaglio", LabelsTagliSignalDefinition, LabelsTagliSignalDefinition[5], self.weight)
                 GenGamma = self.GetBestGamma(GenGammaCands)
                 if GenGamma is None: return False
                 PtThetaGraph = self.GraphGammaPtThetaZZG(GenGamma, GenZZ)
@@ -88,25 +91,30 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             # SIGNAL REGION
             # =========================
 
-            # def MatchingControlZZ(theZZ)
-            
-            # def SignalRegion(Leptons, Photons):
-                # if theZZ is None: return False
-                # self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", LabelsTagliSignalRegion, LabelsTagliSignalRegion[2], self.weight)
-                # if not 60 < theZZ.Z1mass < 120: return False
-                # if not 60 < theZZ.Z2mass < 120: return False
-                # self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", LabelsTagliSignalRegion, LabelsTagliSignalRegion[3], self.weight)
+            def SignalRegion(theZZ, Photons):
                 
-                # ll2Mass = (Leptons[theZZ.Z2l1Idx].p4() + Leptons[theZZ.Z2l2Idx].p4()).M()
-                # self.hEvent.fill1D("ll2mass", "ll2mass", 100., -10, 120, ll2Mass, self.weight)
-                
-                # self.hEvent.fill1D("theZ1mass", "theZ1mass", 100., 60, 120, theZZ.Z1mass, self.weight)
-                # self.hEvent.fill1D("theZ2mass", "theZ2mass", 75., 60, 120, theZZ.Z2mass, self.weight)               
-                
-                # return True
+                if not Regions.check(self.regionWord, Regions.L4P): return False
+                self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", LabelsTagliSignalRegion, LabelsTagliSignalRegion[2], self.weight)
+                #if not self.LeptonsKinematicCuts(Leptons): return False
+                self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", LabelsTagliSignalRegion, LabelsTagliSignalRegion[3], self.weight)
+                if not self.ZZMassCuts(theZZ): return False
+                self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", LabelsTagliSignalRegion, LabelsTagliSignalRegion[4], self.weight)
 
-            # ZZGammaSignalRegion = SignalRegion(Leptons, Photons)
-    
+                if not Regions.check(self.regionWord, Regions.P1cutL): return False
+                self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", LabelsTagliSignalRegion, LabelsTagliSignalRegion[5], self.weight)
+                KinPassed, GoodPhotons = self.PhotonsKinematicCuts(Photons)
+                if not KinPassed: return False
+                self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", LabelsTagliSignalRegion, LabelsTagliSignalRegion[6], self.weight)
+                FsrPassed, RecoGammaCands = self.PhotonsFsrCuts(GoodPhotons, Leptons, theZZ)
+                if not FsrPassed: return False
+                self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", LabelsTagliSignalRegion, LabelsTagliSignalRegion[7], self.weight)
+                RecoGamma = self.GetBestGamma(RecoGammaCands)
+                if RecoGamma is None: return False
+
+                return True
+
+            #ZZGammaSignalRegion = SignalRegion(theZZ, Photons)
+            
 
     # =========================
     # USEFUL FUNCTIONS: ZZ
@@ -147,12 +155,20 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
         return GenZZCand
 
-    def ZZMassCuts(self, GenZZ):
-        if GenZZ is None: return False
-        if not 60 < GenZZ.Z1.mass < 120: return False
-        if not 60 < GenZZ.Z2.mass < 120: return False
-        self.hEvent.fill1D("GenZ1Mass", "GenZ1Mass", 100, 90., 92.4, GenZZ.Z1.mass, self.weight)
-        self.hEvent.fill1D("GenZ2Mass", "GenZ2Mass", 75, 90., 92.4, GenZZ.Z2.mass, self.weight)
+    def ZZMassCuts(self, ZZ):
+        if ZZ is None: return False
+        if hasattr(ZZ, "Z1"):
+            Z1Mass = ZZ.Z1.mass
+            Z2Mass = ZZ.Z2.mass
+            prefix = "Gen"
+        elif hasattr(ZZ, "Z1mass"):
+            Z1Mass = ZZ.Z1mass
+            Z2Mass = ZZ.Z2mass
+            prefix = "Reco"
+        if not 60 < Z1Mass < 120: return False
+        if not 60 < Z2Mass < 120: return False
+        self.hEvent.fill1D(f"{prefix}ZZ_Z1Mass", f"{prefix}ZZ_Z1Mass", 100, 60., 120., Z1Mass, self.weight)
+        self.hEvent.fill1D(f"{prefix}ZZ_Z2Mass", f"{prefix}ZZ_Z2Mass", 75, 60., 120., Z2Mass, self.weight)
         return True
 
     
@@ -160,30 +176,50 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
     # USEFUL FUNCTIONS: PHOTONS
     # =========================
 
-    def PhotonsKinematicAndFsrCuts(self, Photons, Leptons, ZZ):
+    def PhotonsKinematicCuts(self, Photons):
         if len(Photons) < 1: return False, None
         GoodPhotons = [ph for ph in Photons if ph.pt > 20
                                                and abs(ph.eta) < 2.4
                                                and not 1.444 < abs(ph.eta) < 1.566]
         if len(GoodPhotons) == 0: return False, None
+        return True, GoodPhotons
 
-        GammaCands = [ph for ph in GoodPhotons if all(ph.DeltaR(l) > 0.5 for l in Leptons)
-                                                  and self.GetZGammaMassMin(ph, ZZ.Z1, ZZ.Z2) > 100]
+# !!!!!!!!!!!!! DA IMPLEMENTARE !!!!!!!!!!!!!!!
+
+    def PhotonsFsrCuts(self, Photons, Leptons, ZZ):
+        if (hasattr(ZZ, "Z1") and hasattr(ZZ, "Z2")):
+            GammaCands = [ph for ph in Photons if all(ph.DeltaR(l) > 0.5 for l in Leptons)
+                                                  and self.GetllGammaMassMin(ph, ZZ) > 100]
+        elif (hasattr(ZZ, "Z1l1Idx") and hasattr(ZZ, "Z1l2Idx") and hasattr(ZZ, "Z2l1Idx") and hasattr(ZZ, "Z2l2Idx")):
+            ZZRecoLeptons = [Leptons[ZZ.Z1l1Idx], Leptons[ZZ.Z1l2Idx], Leptons[ZZ.Z2l1Idx], Leptons[ZZ.Z2l2Idx]]
+            GammaCands = [ph for ph in Photons if all(ph.DeltaR(l) for l in ZZRecoLeptons)
+                                                  and self.GetllGammaMassMin(ph, ZZ, Leptons) > 100]
+        else:
+            print("error")
+            return None, None
         if len(GammaCands) < 1: return False, None
-                
         return True, GammaCands
-                
-    def GetZGammaMassMin(self, ph, GenZ1, GenZ2):
-        Z1GammaMass = (GenZ1.p4 + ph.p4()).M()
-        Z1Mass = GenZ1.mass
-        Z2GammaMass = (GenZ2.p4 + ph.p4()).M()
-        Z2Mass = GenZ2.mass
-        ZGammaMassMin = min(Z1GammaMass, Z2GammaMass)
-        self.hEvent.fill1D("llGammaMassMin", "llGammaMassMin", 60, 60., 300., ZGammaMassMin, self.weight)
-        if ZGammaMassMin == Z1GammaMass: ZMassMin = Z1Mass
-        else: ZMassMin = Z2Mass
-        self.hEvent.fill2D("llGammaMassMin2D", "llGammaMassMin2D", 50, 89., 94.4, 93, 60., 300., ZMassMin, ZGammaMassMin, self.weight)
-        return ZGammaMassMin
+
+    def GetllGammaMassMin(self, ph, ZZ, Leptons = None):
+        if (hasattr(ZZ, "Z1") and hasattr(ZZ, "Z2")):
+            ll1GammaMass = (ZZ.Z1.p4 + ph.p4()).M()
+            ll1Mass = ZZ.Z1.mass
+            ll2GammaMass = (ZZ.Z2.p4 + ph.p4()).M()
+            ll2Mass = ZZ.Z2.mass
+        elif (hasattr(ZZ, "Z1l1Idx") and hasattr(ZZ, "Z1l2Idx") and hasattr(ZZ, "Z2l1Idx") and hasattr(ZZ, "Z2l2Idx")):
+            ll1GammaMass = (Leptons[ZZ.Z1l1Idx].p4() + Leptons[ZZ.Z1l2Idx].p4() + ph.p4()).M()
+            ll1Mass = (Leptons[ZZ.Z1l1Idx].p4() + Leptons[ZZ.Z1l2Idx].p4()).M()
+            ll2GammaMass = (Leptons[ZZ.Z2l1Idx].p4() + Leptons[ZZ.Z2l2Idx].p4() + ph.p4()).M()
+            ll2Mass = (Leptons[ZZ.Z2l1Idx].p4() + Leptons[ZZ.Z2l2Idx].p4()).M()
+        else:
+            print("error")
+            return None
+        llGammaMassMin = min(ll1GammaMass, ll2GammaMass)
+        self.hEvent.fill1D("llGammaMassMin", "llGammaMassMin", 60, 60., 300., llGammaMassMin, self.weight)
+        if llGammaMassMin == ll1GammaMass: llMassMin = ll1Mass
+        else: llMassMin = ll2Mass
+        self.hEvent.fill2D("llGammaMassMin2D", "llGammaMassMin2D", 50, 89., 94.4, 93, 60., 300., llMassMin, llGammaMassMin, self.weight)
+        return llGammaMassMin
 
     def GetBestGamma(self, GoodPhotons):
         BestGamma = max(GoodPhotons, key=lambda ph: ph.pt, default=None)
@@ -202,7 +238,6 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         thetaZZGamma = ZZ.p4.Vect().Angle(Gamma_p4.Vect())
         self.hEvent.fill2D("BestGammaPt-AngoloZZGamma", "BestGammaPt-AngoloZZGamma", 50, 0., ROOT.TMath.Pi(), 5, 60., 100., thetaZZGamma , Gamma.pt, self.weight)
         return None
-
 
 # =========================
 # USEFUL CLASSES
