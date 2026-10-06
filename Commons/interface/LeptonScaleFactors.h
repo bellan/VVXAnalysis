@@ -21,10 +21,10 @@ class LeptonScaleFactors{
  public:
   LeptonScaleFactors(int year, bool preVFP);
 
-  std::pair<double, double> efficiencyScaleFactor(const double& lepPt, const double& lepEta, int lepId, bool isInCracks = false) const{ 
+  std::pair<double, double> efficiencyScaleFactor(const double& lepPt, const double& lepEta, const double& lepPhi, int lepId, bool isInCracks = false) const{ 
     
     // eta is copied twice because of bad design of LeptonSFHelper class. The eta of the lepton is done beforehand and then it is treated differently in the lepSFHelper for electrons and muons.
-    return std::make_pair(lepSFHelper_.getSF(year_, lepId, lepPt, lepEta, lepEta, isInCracks),lepSFHelper_.getSFError(year_, lepId, lepPt, lepEta, lepEta, isInCracks));
+    return lepSFHelper_.getSF(lepId, lepPt, lepEta, lepEta, lepPhi, isInCracks);
   }
 
   std::pair<double, double> efficiencyScaleFactor(const phys::Lepton& lep) const;
