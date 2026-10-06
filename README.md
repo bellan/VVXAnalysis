@@ -1,4 +1,4 @@
-Packages for a multi boson final state analysis
+Packages for a multi boson final state analysis [OLD, please refer to the documentation in the NanoAOD package]
 -----------------------------------------------
 -----------------------------------------------
 
@@ -9,7 +9,7 @@ The philosophy is to run the H --> ZZ --> 4l work-flow up to the production of t
 
 The Multi Boson work-flow produces a ROOT tree file, filled with objects like muons, electrons, jets, vector bosons, described by relatively 
 simple data formats (step: tree production).
-The actual analysis is then performed on the TTrees contained in the ROOR files. For this step I implemented a C++ framework that puts the user in the condition of immediately start an analysis, even on a laptop, and provided the samples are stored locally, to work off-line (step: tree analysis).
+The actual analysis is then performed on the TTrees contained in the ROOT files. For this step I implemented a C++ framework that puts the user in the condition of immediately start an analysis, even on a laptop, and provided the samples are stored locally, to work off-line (step: tree analysis).
 
 The current structured of the repository is:
 - ```VVXAnalysis/DataFormats```  --> Data formats for the object written in the TTree, used in both step previously described.
