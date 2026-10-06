@@ -62,7 +62,7 @@ class SampleLooper:
         events = inputFile.Get("Events")
         nEntries = events.GetEntries()
         iEntry=0
-        printEntries=max(5000,nEntries/10)
+        printEntries=max(5000,nEntries//10)
         
         ######### Analyse the events in a sample! #############
         eventAnalyzer = EventAnalyzer.registry[self.analyzer](self.regions)#(base_configuration)
