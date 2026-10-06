@@ -186,7 +186,7 @@ if AK8_JEC_tag is not None:
                                        label  = cms.untracked.string('AK8PFPuppi')
                                    ))
 else:
-    print("UNKNOWN YEAR", SAMPLE_TYPE)
+    print(("UNKNOWN YEAR", SAMPLE_TYPE))
 
 
 
@@ -247,13 +247,13 @@ process.fatJets = cms.Path(process.patJetCorrFactorsReapplyJECAK8 + process.patJ
 ### ---------------------------------------------------------------------
 
 ## targetting ZZ->4l
-execfile(VVjj_search_path + "4_leptons_regions.py") 
+exec(compile(open(VVjj_search_path + "4_leptons_regions.py", "rb").read(), VVjj_search_path + "4_leptons_regions.py", 'exec')) 
 
 ## targetting WZ->3lnu
-execfile(VVjj_search_path + "3_leptons_regions.py")
+exec(compile(open(VVjj_search_path + "3_leptons_regions.py", "rb").read(), VVjj_search_path + "3_leptons_regions.py", 'exec'))
 
 ## VZ->2l2j
-execfile(VVjj_search_path + "2_leptons_regions.py")
+exec(compile(open(VVjj_search_path + "2_leptons_regions.py", "rb").read(), VVjj_search_path + "2_leptons_regions.py", 'exec'))
 
 ## WW->2l2nu
 #execfile(VVjj_search_path + "analyzer_WWjj.py")
