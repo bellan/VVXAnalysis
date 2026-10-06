@@ -50,12 +50,12 @@
 	     
              {"process": "Triboson",
 	      "name": "WZGamma", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024"
+	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
 	      "version" : "Ago2026",
 	      "color": 5,
 	      "style": 0},
-
-         {"process": "Triboson",
+	     
+             {"process": "Triboson",
 	      "name": "WZGtoLNuZG", 
 	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
 	      "version" : "Ago2026",
