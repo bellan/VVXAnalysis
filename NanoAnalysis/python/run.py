@@ -35,10 +35,13 @@ if __name__ == "__main__" :
     parser.add_option("-s", "--sample", dest="selectedSample", nargs=2,
                       metavar=("YEAR", "NAME"), default=None, action="append",
                       help="Analyze just this sample (can be ripeted and used by Condor jobs")
-    
-    parser.add_option("-f","--flavour", dest="flavour",
+
+    flavours = ["espresso", "microcentury", "longlunch", "workday", "tomorrow", "testmatch", "nextweek"]
+    parser.add_option("-f","--flavour", dest="flavour", type="choice",
+                      choices= flavours,
+                      metavar="{" + ",".join(flavours) + "}",
                       default="longlunch",
-                      help="JobFlavour Condor")
+                      help="JobFlavour Condor. Default is (%default)")
 
     parser.add_option("--dry-run", dest="dryRun",
                       action="store_true",
