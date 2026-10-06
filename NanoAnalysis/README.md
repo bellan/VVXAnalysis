@@ -86,12 +86,10 @@ The option -f <queue flavour> is to be used in combination with -c option only. 
 The default is "longlunch".
 
 
-
-
 Recipe for the tree analysis step on your own laptop
 ---------------------------------------------
 
-You need to download three subsystems. There is a script that does it for you. Follow the steps here below, instead of <MyProject> put the name of your project, for example thesis, or development, ..., it will be the work directory 
+You need to download three subsystems: ```ZZAnalysis```, ```PhysicsTools``` and ```VVXAnalysis```. There is a script that does it for you. Follow the steps here below, instead of <MyProject> put the name of your project, for example thesis, or development, ..., it will be your working directory: 
 
 ```
 wget https://raw.githubusercontent.com/bellan/VVXAnalysis/refs/heads/Run3NanoAOD/NanoAnalysis/standalone/standalone.sh
@@ -101,4 +99,4 @@ If you exit the shell, or you start a fresh one, you need to set the env variabl
 ```
 source ./VVXAnalysis/NanoAnalysis/standalone/init.sh
 ```
-
+The command to run the analysis works as on LXPLUS, with exception that Condor and eos options are not working (unless the user configured her/his setup accordingly). All the other options are meant to work.
