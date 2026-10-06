@@ -17,7 +17,7 @@ class TFileContext(object):
 def getPlots(inputdir, sample, plots, verbose=0):
     fname = path.join(inputdir, sample+".root")
     if(not path.exists(fname)):
-        print('WARN: file "{}" does not exist'.format(fname))
+        print(('WARN: file "{}" does not exist'.format(fname)))
         return [None for plot in plots]
 
     retrieved = []
@@ -25,20 +25,20 @@ def getPlots(inputdir, sample, plots, verbose=0):
         for plot in plots:
             h = rFile.Get(plot)
             if(not h):
-                if(verbose > 0): print('WARN: Could not get "%s" from "%s"' % (plot, fname))
+                if(verbose > 0): print(('WARN: Could not get "%s" from "%s"' % (plot, fname)))
                 retrieved.append(None)
             else:
                 retrieved.append( copy.deepcopy(h) )
                 if(verbose > 1):
                     ignore = c_double(0)
                     n = h.IntegralAndError(0, -1, 0, -1, ignore)
-                    print('\t\t{:s} - entries: {:6.0f}'.format(plot, n))
+                    print(('\t\t{:s} - entries: {:6.0f}'.format(plot, n)))
     return retrieved
 
 
 def getSlices(h2, name=None, direction='X'):
     if(not h2.Class().InheritsFrom("TH2")):
-        print('ERROR: "{:s}" does not inherit from TH2'.format(h2.GetName()))
+        print(('ERROR: "{:s}" does not inherit from TH2'.format(h2.GetName())))
         return
     if(name is None):
         name = h2.GetName()

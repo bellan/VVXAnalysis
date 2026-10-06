@@ -16,7 +16,7 @@ from PersonalInfo import personalFolder
 
 
 _varinfo = {
-    'mZZG': {'bins': array('d', range(0, 1100, 100)), 'xtitle': 'm_{4l#gamma} [GeV]'},
+    'mZZG': {'bins': array('d', list(range(0, 1100, 100))), 'xtitle': 'm_{4l#gamma} [GeV]'},
     'pt'  : {'bins': array('d', [20., 25., 35., 50., 80., 120.]), 'xtitle': 'p_{T}^{#gamma} [GeV]'},
 }
 
@@ -28,7 +28,7 @@ def main(args):
 
     with TFileContext(args.workspace) as tf:
         h_years_map = get_hists(tf, shapes=args.shapes)
-    logging.debug('retrieved keys = %s', h_years_map.keys())
+    logging.debug('retrieved keys = %s', list(h_years_map.keys()))
 
     # Deduce if it is the result of a triboson card by the folder name
     if(args.isTriboson is None):
@@ -241,7 +241,7 @@ def fix_binning(h_map_in, bin_edges):
     buf = array('d', bin_edges)
     h_map_out = dict()
 
-    for name, h_old in h_map_in.items():
+    for name, h_old in list(h_map_in.items()):
         # Check that the supplied bin edges are ok
         assert h_old.GetNbinsX() == nb, 'Wrong number of bins: %d (expected %d)' %(h_old.GetNbinsX(), nb)
 
@@ -266,8 +266,8 @@ def sum_hists(in_map):
     data_x = None
     data_y = None # manual sum of TGraphs
 
-    for _, processes in in_map.items():
-        for proc, hist in processes.items():
+    for _, processes in list(in_map.items()):
+        for proc, hist in list(processes.items()):
             if(proc == 'data'):
                 buf = array('d', hist.GetY())
                 if(data_y is None):
@@ -312,14 +312,14 @@ def join_hists_year(in_map):
     Return schema: {sample: <TH1F>}
     '''
     out_map = dict()
-    years_sorted = sorted(in_map.keys(),
+    years_sorted = sorted(list(in_map.keys()),
                           key=lambda y: (
                               int(y[:4]), # if only Python's atoi() behaved like C
                               1 if 'post' in y else -1 if 'pre' in y else 0
                           ))
 
-    for year, processes in in_map.items():
-        for proc, hist in processes.items():
+    for year, processes in list(in_map.items()):
+        for proc, hist in list(processes.items()):
             if(not proc in out_map):
                 hnew = ROOT.TH1F(hist.GetName(), hist.GetTitle(), len(years_sorted),0,len(years_sorted))
                 for b,y in enumerate(years_sorted):
@@ -374,7 +374,7 @@ def mk_legend(info_list):
 
 def sort_h_map(h_map):
     info_list = []
-    for proc, data in h_map.items():
+    for proc, data in list(h_map.items()):
         data['name'] = proc
         info_list.append(data)
     info_list.sort(key=lambda x: x.get('key', 99), reverse=True)
@@ -388,7 +388,7 @@ def group_hists(h_map_ungrouped, isTriboson=False):
     and assign them a color
     '''
     h_map = {}
-    for sample, hist in h_map_ungrouped.items():
+    for sample, hist in list(h_map_ungrouped.items()):
         if('-' in sample):
             base, extra = sample.split('-')
             nonpro = (extra == 'nonpro')
@@ -421,7 +421,7 @@ def group_hists(h_map_ungrouped, isTriboson=False):
                              title='Rare backgrounds', color=ROOT.kOrange, key=2, hlist=[]
                              ))['hlist'].append(hist)
 
-    for _, data in h_map.items():
+    for _, data in list(h_map.items()):
         if('hlist' in data):
             logging.debug('grouping "%s"', _)
             data['h'] = addIfExisting(*data.pop('hlist'))

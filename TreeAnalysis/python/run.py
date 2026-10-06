@@ -4,7 +4,7 @@
 ## R. Bellan (UNITO) - Feb 2014 ##
 ##################################
 
-from __future__ import print_function
+
 import sys, os, math, subprocess
 from optparse import OptionParser
 from readSampleInfo import *
@@ -279,7 +279,7 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
     
     # ----- Run over the run periods -----
     hadd_cmds = {}
-    for region, odir in outputdirs.items():
+    for region, odir in list(outputdirs.items()):
       hadd_cmds[region] = 'hadd -k -f {0:s}/{1:s}.root'.format(odir,typeofsample)
 
     for period in datasets:
@@ -304,14 +304,14 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
         print("Command going to be executed (run::command):", Violet(command))
         subprocess.check_call(command, shell=True)
 
-        for r,outputdir in outputdirs.items():
+        for r,outputdir in list(outputdirs.items()):
             filepath = '{0:s}/{1:s}.root'.format(outputdir,basefile)
             if os.path.exists(filepath):
                 hadd_cmds[r] += ' {0:s}'.format(filepath)
                 
 
     print(Red('----------------------------------------------------------------------\n'))
-    for region,outputdir in outputdirs.items():
+    for region,outputdir in list(outputdirs.items()):
         if len(datasets) > 1:
             if os.path.exists('{0:s}/{1:s}.root'.format(outputdir,typeofsample)):
                 os.popen('rm {0:s}/{1:s}.root'.format(outputdir,typeofsample))
@@ -322,8 +322,8 @@ def run(executable, analysis, typeofsample, regions, year, luminosity, maxNumEve
                 print("One sample in the dataset, just copying it.")
                 os.popen('cp {0:s}/{1:s}.root {0:s}/{2:s}.root'.format(outputdir,datasets[0],typeofsample))
 
-    output = {reg:'{0:s}/{1:s}.root'.format(odir,typeofsample) for reg,odir in outputdirs.items()}
-    print("The output is in", Green([v for k,v in output.items()]))
+    output = {reg:'{0:s}/{1:s}.root'.format(odir,typeofsample) for reg,odir in list(outputdirs.items())}
+    print("The output is in", Green([v for k,v in list(output.items())]))
     return output
 
 ###------------------------------------------------------------------------------------###
@@ -334,7 +334,7 @@ def mergeDataSamples(outputLocationsDict):
         print(Red("Error") + ": outputLocations is empty!")
         exit(1)
         
-    for region,outputLocations in outputLocationsDict.items():
+    for region,outputLocations in list(outputLocationsDict.items()):
         basename = subprocess.check_output(['basename', outputLocations[0]], **popen_extra_args).rstrip('\n')
         outputdir = outputLocations[0].replace(basename,'').rstrip('/')
         hadd = 'hadd -k -v 0 {0:s}/data.root {1:s}'.format(outputdir, ' '.join(outputLocations))
@@ -366,7 +366,7 @@ def mergeCRs(analysis, year, inputLocs, antype):
     else:
         outputRedBkg = '{0:s}/reducible_background_MC.root'.format(outdir)
     hadd = 'hadd -k -v 0 {0:s}'.format(outputRedBkg)
-    for key, values in inputLocations.items():
+    for key, values in list(inputLocations.items()):
         for value in values:
             hadd += ' {0:s}'.format(value)
     
@@ -393,7 +393,7 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
                     if(outputLocs is None):
                         print("No output produced")
                         return 1
-                    for r,loc in outputLocs.items():
+                    for r,loc in list(outputLocs.items()):
                         outputLocations.setdefault(r, []).append(loc)
 
                 else:
@@ -401,7 +401,7 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
                     if(outputLocs is None):
                         print("No output produced")
                         return 1
-                    for r,loc in outputLocs.items():
+                    for r,loc in list(outputLocs.items()):
                         outputLocations.setdefault(r, []).append(loc)
 
         if typeofsample == 'data':
@@ -420,7 +420,7 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
             if(outputLocs is None):
                 print("No output produced")
                 return 1
-            for r,loc in outputLocs.items():
+            for r,loc in list(outputLocs.items()):
                 outputLocations.setdefault(r, []).append(loc)
 
             mergeCRs(analysis, year, outputLocations, 'CR4L')
@@ -431,7 +431,7 @@ def runOverSamples(executable, analysis, typeofsample, regions, year, luminosity
             if(outputLocs is None):
                 print("No output produced")
                 return 1
-            for r,loc in outputLocs.items():
+            for r,loc in list(outputLocs.items()):
                 outputLocations.setdefault(r, []).append(loc)
 
             if region == 'CR4L' or region == 'CR_HZZ' or region == 'CR3L':

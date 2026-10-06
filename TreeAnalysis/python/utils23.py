@@ -26,7 +26,7 @@ lumi_dict = {
 }
 
 def deep_update(orig, new):
-    for k, v in new.items():
+    for k, v in list(new.items()):
         if isinstance(v, Mapping):
             orig[k] = deep_update(orig.get(k, {}), v)
         else:
@@ -66,7 +66,7 @@ def byteify(data, ignore_dicts = False):
     if isinstance(data, dict) and not ignore_dicts:
         return {
             byteify(key, ignore_dicts=True): byteify(value, ignore_dicts=True)
-            for key, value in data.items() # changed to .items() for Python 2.7/3
+            for key, value in list(data.items()) # changed to .items() for Python 2.7/3
         }
 
     # Python 3 compatible duck-typing
@@ -91,7 +91,7 @@ def _test_deep_update():
 
 
 def _test_byteify():
-    source = {u'a': [1,2,3], 'b': {u'b1': 2, u'b2': u'2'}, u'c': {u'c1': {u'c11': u'12', u'c12': [u'1', u'2']}}}
+    source = {'a': [1,2,3], 'b': {'b1': 2, 'b2': '2'}, 'c': {'c1': {'c11': '12', 'c12': ['1', '2']}}}
     target = { 'a': [1,2,3], 'b': { 'b1': 2,  'b2':  '2'},  'c': { 'c1': { 'c11':  '12',  'c12': [ '1',  '2']}}}
     assert byteify(source) == target, 'byteify failed to convert a dictionary as expected'
 

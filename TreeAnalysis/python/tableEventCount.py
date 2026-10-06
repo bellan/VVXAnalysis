@@ -7,7 +7,7 @@
 # Author: A. Mecca (alberto.mecca@cern.ch)                                                                                                           #
 ######################################################################################################################################################
 
-from __future__ import print_function
+
 from os import path
 from copy import deepcopy
 from math import log10, floor
@@ -122,11 +122,11 @@ def table1Plot(var, inputdir, efficiencyType='cutflow'):
                                 'S/fullMC': s_fullMC, 'S/(MC+CR)':s_backCR, 'eSignal': eSignal, 'data':nData})
     
     
-    for var, table in infoTable.items():
+    for var, table in list(infoTable.items()):
         title = '{} - {}'.format(var, region)
         nPadding = (84 - len(title) - 2)/2
         print('-'*nPadding, title, '-'*nPadding)
-        dictionary = { r['label']: {k:v for k,v in r.items() if k != 'label'} for r in table }
+        dictionary = { r['label']: {k:v for k,v in list(r.items()) if k != 'label'} for r in table }
         df = pd.DataFrame.from_dict(dictionary, orient='index')
         df = df[['signal', 'eSignal', 'data', 'back fullMC', 'back CR+MC', 'S/fullMC', 'S/(MC+CR)']]
         df = df.reindex([r['label'] for r in table])

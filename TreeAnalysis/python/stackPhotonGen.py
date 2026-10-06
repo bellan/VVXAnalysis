@@ -57,7 +57,7 @@ def main():
     logging.info('hname: %s', hname)
     with TFileContext(args.fname) as tf:
         if(args.do_list):
-            print('\n'.join(k.GetName() for k in tf.GetListOfKeys() if k.GetName().startswith('PhGenStudy')))
+            print(('\n'.join(k.GetName() for k in tf.GetListOfKeys() if k.GetName().startswith('PhGenStudy'))))
             return 0
         stackGenPhoton(tf, hname=hname)
     return 0

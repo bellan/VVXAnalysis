@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 ######################################################################################################################################################
 # Data/MC comparison with nice style                                                                                                                 #
@@ -210,21 +210,21 @@ cmsstyle.SetLumi('{:.3g}'.format(lumi))
 VarInfo = getVariablesInfo(Analysis, region)
 
 if Type == 'all':
-    variables = VarInfo.keys()
+    variables = list(VarInfo.keys())
 else:
-    variables = [ var for var in VarInfo.keys() if re.search(Type, var) ]  # Allow for regexp to be specified from command line
+    variables = [ var for var in list(VarInfo.keys()) if re.search(Type, var) ]  # Allow for regexp to be specified from command line
     if len(variables) == 0:
-        print 'WARN: no variables matching regex "{}" for {} in {}'.format(Type, Analysis, region)
+        print(('WARN: no variables matching regex "{}" for {} in {}'.format(Type, Analysis, region)))
         exit(0)
 
 if options.Skip is not None:
     variables = [ var for var in variables if not re.search(options.Skip, var) ]
     if len(variables) == 0:
-        print 'WARN: using regex "{}" all variables are skipped'
+        print('WARN: using regex "{}" all variables are skipped')
         exit(0)
 
 if(options.verbosity >= 2):
-    print 'INFO: variables =', variables
+    print(('INFO: variables =', variables))
 variables.sort()
 
 
@@ -251,7 +251,7 @@ for Var in variables:
                 raise e
 
     if(not hMC.GetStack()):
-        print Evidence('ERROR'), 'skipping', Var, 'because: no MC'
+        print((Evidence('ERROR'), 'skipping', Var, 'because: no MC'))
         continue
 
     if(DoData):
@@ -264,7 +264,7 @@ for Var in variables:
                 missing_plots.append(e)
                 continue
             elif(options.allow_empty_data):
-                print(Warn('ERROR')+': missing data histogram for "%s"' %(info['name']))
+                print((Warn('ERROR')+': missing data histogram for "%s"' %(info['name'])))
                 missing_plots.append(e)
                 # Copy the MC histogram and set all bins to 0
                 histodata = hMC.GetStack().First().Clone()
@@ -275,7 +275,7 @@ for Var in variables:
                 raise e
 
         if(not histodata):
-            print Evidence('ERROR'), 'skipping', Var, 'because: no data'
+            print((Evidence('ERROR'), 'skipping', Var, 'because: no data'))
             continue
 
     hStackSum = hMC.GetStack().Last()
@@ -291,10 +291,10 @@ for Var in variables:
     has_underflow = underflow_fraction > 0.1 # Underflow is > 10% of total
     if(has_overflow ):
         if(options.verbosity >= 1):
-            print Warn('WARN'), 'overflow (%.1f %%)'  %(100*overflow_fraction )
+            print((Warn('WARN'), 'overflow (%.1f %%)'  %(100*overflow_fraction )))
     if(has_underflow):
         if(options.verbosity >= 1):
-            print Warn('WARN'), 'underflow (%.1f %%)' %(100*underflow_fraction)
+            print((Warn('WARN'), 'underflow (%.1f %%)' %(100*underflow_fraction)))
 
     # X range
     draw_overflow  = info.get('draw_overflow' , False)
@@ -308,12 +308,12 @@ for Var in variables:
     if(xmin_info is not None):
         bx_min = xaxis.FindFixBin(xmin_info + abs(xmin_info)*1e-6) # in case the requested xmin is a bin edge, get the right bin
         if('draw_underflow' in info and not draw_underflow):
-            print(Warn('WARN') + ' xmin overrides draw_underflow')
+            print((Warn('WARN') + ' xmin overrides draw_underflow'))
         draw_underflow = (bx_min == 0)
     if(xmax_info is not None):
         bx_max = xaxis.FindFixBin(xmax_info - abs(xmax_info)*1e-6) # in case the requested xmax is a bin edge, get the left bin
         if('draw_overflow'  in info and not draw_overflow ):
-            print(Warn('WARN') + ' xmax overrides draw_overflow')
+            print((Warn('WARN') + ' xmax overrides draw_overflow'))
         draw_overflow  = (bx_max == xaxis.GetNbins()+1)
 
     x_min  = xaxis.GetBinLowEdge(bx_min)
