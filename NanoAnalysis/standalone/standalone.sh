@@ -14,7 +14,7 @@ git clone https://github.com/CJLST/ZZAnalysis.git ZZAnalysis
 (cd ZZAnalysis; git checkout Run3)
 echo "checkout of VVXAnalysis"
 git clone https://github.com/bellan/VVXAnalysis.git VVXAnalysis
-(cd VVXAnalysis; git checkout Run3NanoAOD)
+(cd VVXAnalysis; git checkout Run3-NF)
 echo "Configuring the environment"
 source VVXAnalysis/NanoAnalysis/standalone/env_standalone.sh
 init ZZAnalysis NanoAnalysis build
