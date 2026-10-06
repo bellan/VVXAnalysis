@@ -3,10 +3,10 @@
 	{"origin" : "MC",
 	 "year": 2022,
 	  "samples": [
-	      {"process": "VBS",
-	       "name": "ZZTo4l_2Jets_EW", 
+	      {"process": "FAKE",
+	       "name": "FAKE", 
 	       "eos_path": "",
-	       "version" : "June2026",
+	       "version" : "",
 	       "color": 5,
 	       "style": 0}
 	  ]
@@ -15,10 +15,10 @@
 	{"origin" : "MC",
 	 "year": 2023,
 	 "samples": [
-	     {"process": "VBS",
-	      "name": "ZZTo4l_2Jets_EW", 
+	     {"process": "FAKE",
+	      "name": "FAKE", 
 	      "eos_path": "",
-	      "version" : "June2026",
+	      "version" : "",
 	      "color": 5,
 	      "style": 0}
 	 ]
@@ -30,35 +30,35 @@
 	     {"process": "ZZ",
 	      "name": "ZZTo4l", 
 	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "July2026",
+	      "version" : "",
 	      "color": 5,
 	      "style": 0},
 
 	     {"process": "WZ",
 	      "name": "WZto3LNu", 
 	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "July2026",
+	      "version" : "",
 	      "color": 5,
 	      "style": 0},
 	     
 	     {"process": "Triboson",
 	      "name": "ZZGamma", 
 	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "July2026",
+	      "version" : "",
 	      "color": 5,
 	      "style": 0},
 	     
              {"process": "Triboson",
 	      "name": "WZGamma", 
 	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "July2026",
+	      "version" : "",
 	      "color": 5,
 	      "style": 0},
 	     
              {"process": "ZZ",
 	      "name": "ggTo4tau_Contin_MCFM701", 
 	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "July2026",
+	      "version" : "",
 	      "color": 5,
 	      "style": 0}
 	 ]
