@@ -32,6 +32,7 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         self.event.SetBranchStatus("*ZCand*", 1)
         self.event.SetBranchStatus("*PFMET*", 1)
         self.event.SetBranchStatus("*PuppiMET*", 1)
+        self.event.SetBranchStatus("*FsrPhoton*", 1)
         
         self.Electrons = Collection(self.event, 'Electron')
         self.Muons = Collection(self.event, 'Muon')
@@ -41,16 +42,14 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         self.bestZIdx = self.event.bestZIdx
         self.PFMET = Object(self.event, "PFMET")    
         self.PuppiMET = Object(self.event, "PuppiMET")
+        self.FSRPhotons = Collection(self.event, 'FsrPhoton')
 
 
     def analyze(self):  
-        #self.weight = 1
-
         self.loadCollections()
 
         self.cutFlowStage = 0.0
-        self.cutFlowStageSR = 0.0
-   
+        self.cutFlowStageSR = 0.0  
         isSig = False
         if self.analyzeMC :
             isSig = self.isSignal()  
@@ -82,8 +81,13 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         self.hEvent.fill1D_label("CutFlowStage_Gen", "CutFlowStage_Gen", cutLabels_sigDef, cutLabels_sigDef[int(round(self.cutFlowStage))], self.weight)
         self.hEvent.fill1D_label("CutFlowStage_Reco", "CutFlowStage_Reco", cutLabels_sigReg, cutLabels_sigReg[int(round(self.cutFlowStageSR))], self.weight)
 
-       
-       
+        entersSigReg = 0
+        if isInSR and self.cutFlowStageSR == 0.0 : entersSigReg = 1
+        sigRegTag_Labels = ["isNOT_inSigReg", "is_inSigReg"]
+        self.hEvent.fill1D_label("Signal_Region", "Signal_Region", sigRegTag_Labels, sigRegTag_Labels[entersSigReg], self.weight)
+        self.hEvent.fill1D("Signal_Region_calc", "Signal_Region_calc", 2, -0.5, 1.5, entersSigReg, self.weight)
+        
+    
        
 
     #---------------------      
@@ -95,49 +99,34 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         self.W_mt_Gen = None
         self.lGammaMET_mt_Gen = None
         self.hasGenFSR = False
+        self.GenBestLepton = None
            
         # KINEMATIC CUT ON GENERATED PARTICLES      
        
         self.hEvent.fill1D("nGenChargedLeptons", "nGenChargedLeptons",11, -0.5, 10.5, len(self.GenChargedLeptons), self.weight)
-        GenBestLeptons = self.pass_ChLepKinCut(self.GenChargedLeptons)  
-        if GenBestLeptons is None :
+        self.GenBestLeptons = self.pass_ChLepKinCut(self.GenChargedLeptons)  
+        if self.GenBestLeptons is None :
             self.cutFlowStage = 1.0
             return False
-        self.hEvent.fill1D("nGenChargedLeptons_postCuts", "nGenChargedLeptons_postCuts",11, -0.5, 10.5, len(GenBestLeptons), self.weight)
+        self.hEvent.fill1D("nGenChargedLeptons_postCuts", "nGenChargedLeptons_postCuts",11, -0.5, 10.5, len(self.GenBestLeptons), self.weight)
 
         self.hEvent.fill1D("nGenPhoton", "nGenPhoton",11, -0.5, 10.5, len(self.GenPhotons), self.weight)
         genPhoton = self.pass_PhKinCut(self.GenPhotons, self.GenChargedLeptons)
         if genPhoton is None :
             self.cutFlowStage = 2.0
             return False
+        self.hEvent.fill1D("Photon_pt_Gen", "Photon_pt_Gen", 50, 20., 200., genPhoton.pt, self.weight)
 
 
-        # COMPARISON OF WZ RECONSTRUCTION ALGORITHMS
-        if self.isEventEasy(GenBestLeptons) :        
-            bCouple_ZRec, fail_ZRec = self.WZRecon(GenBestLeptons, self.GenNeutrinos, False , False, True)
-            theW_ZRec, theZ_ZRec = bCouple_ZRec  
-            if fail_ZRec == 1 : outcome_ZRec = 2   # fail
-            elif not self.pairIsTruthBoson(theZ_ZRec.leptons, 23) or not self.pairIsTruthBoson(theW_ZRec.leptons,                        24): outcome_ZRec = 1   # error
-            else: outcome_ZRec = 0   # success
-            self.hEvent.fill1D("MethodZ_Outcome", "MethodZ_Outcome", 3, -0.5, 2.5, outcome_ZRec, self.weight)
-           
-            bCouple_WRec, fail_WRec = self.WZRecon(GenBestLeptons, self.GenNeutrinos, False , True, True)
-            theW_WRec, theZ_WRec = bCouple_WRec
-            if fail_WRec == 1 : outcome_WRec = 2   # fail
-            elif not self.pairIsTruthBoson(theZ_WRec.leptons, 23) or not self.pairIsTruthBoson(theW_WRec.leptons,                        24): outcome_WRec = 1   # error
-            else: outcome_WRec = 0   # success
-            self.hEvent.fill1D("MethodW_Outcome", "MethodW_Outcome", 3, -0.5, 2.5, outcome_WRec, self.weight)
-
-            bCouple_WZRec, fail_WZRec = self.WZRecon(GenBestLeptons, self.GenNeutrinos, True, False, True)
-            theW_WZRec, theZ_WZRec = bCouple_WZRec
-            if fail_WZRec == 1 : outcome_WZRec = 2   # fail
-            elif not self.pairIsTruthBoson(theZ_WZRec.leptons, 23) or not self.pairIsTruthBoson(theW_WZRec.leptons,                        24): outcome_WZRec = 1   # error
-            else: outcome_WZRec = 0   # success
-            self.hEvent.fill1D("MethodWZ_Outcome", "MethodWZ_Outcome", 3, -0.5, 2.5, outcome_WZRec, self.weight)
+        # COMPARISON OF WZ RECONSTRUCTION ALGORITHMS           
+        if self.isEventEasy(self.GenBestLeptons) :        
+            self.methodOutcome(False, False,"MethodZ_Outcome")  #Z-first
+            self.methodOutcome(False, True, "MethodW_Outcome")   #W-first
+            self.methodOutcome(True, False, "MethodWZ_Outcome")   #residues
 
        
-        # W and Z RECONSTRUCTION (with the winner method)
-        bCouple, fail = self.WZRecon(GenBestLeptons, self.GenNeutrinos, True , False, False)
+        # W and Z RECONSTRUCTION (with the Z-first method)
+        bCouple, fail = self.WZRecon(self.GenBestLeptons, self.GenNeutrinos, False , False, False)
         theW, theZ = bCouple
         if theW is None or theZ is None :
             self.cutFlowStage = 3.0
@@ -229,10 +218,16 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
             self.cutFlowStageSR = 5.0
             return False
            
-        # W RECONSTRUCTION
+        # W RECONSTRUCTION (looking at different kind of FSR now (ones inside 0.5 of DR))
         self.W_mt = self.computeMt(lepW.pt, lepW.phi, self.MET.pt, self.MET.phi)
-        #self.hEvent.fill1D("W_Mt", "W_Mt", 30, 0., 300., W_mt, self.weight)
-        theW = RecoW(lepW, self.W_mt)
+        self.hEvent.fill1D("W_Mt_NotDressed", "W_Mt_NotDressed", 30, 0., 300., self.W_mt, self.weight)
+
+        isPaired, fsrPhoton = self.isFsrPaired(lepW, theZ)
+        if  isPaired :
+            self.W_mt = self.computeMt(lepW.pt, lepW.phi, self.MET.pt, self.MET.phi, lepW.eta, fsrPhoton.pt, fsrPhoton.eta, fsrPhoton.phi)
+            theW = WReco(lepW, self.W_mt, fsrPhoton)
+            self.hEvent.fill1D("W_Mt_OnlyDressed", "W_Mt_OnlyDressed", 30, 0., 300., self.W_mt, self.weight)
+        else : theW = WReco(lepW, self.W_mt)
         self.recoCouple = (theZ, theW)
 
         # Transverse mass lGamma con MET
@@ -256,6 +251,7 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
     # if the cut is passed (and also the trigger 20-10-5) it returns the three charged leptons with the biggest pt
     def pass_ChLepKinCut(self, ChLeptons) :
         GoodChLeptons = [p for p in ChLeptons if p.pt > 5 and abs(p.eta) < 2.5]
+        ret = {}
         if len(GoodChLeptons) > 2 :
             l1 = max(GoodChLeptons, key=lambda p: p.pt, default=None)
             if l1.pt > 20 :
@@ -304,7 +300,7 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
                     else : CandMass[(i,j)] = None
                            
         bestCouple = self.getCloserCand(MassPdg, CandMass)
-        if(bestCouple != None and massThreshold[0] < CandMass[bestCouple] < massThreshold[1]) :  
+        if(bestCouple != None and massThreshold[0] < CandMass[bestCouple] < massThreshold[1] or (isForComparison and bestCouple is not None)) :  
             if(partPdgId == 24) : boson = GenW([GoodLeptons[bestCouple[0]], GoodLeptons[bestCouple[1]]])
             elif(partPdgId == 23) : boson = GenZ([GoodLeptons[bestCouple[0]], GoodLeptons[bestCouple[1]]])
             return boson, bestCouple
@@ -356,6 +352,16 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
             llGamma_mass = self.getInvMass(Leptons[0], Leptons[1], photon)
             if llGamma_mass > massLimit : res = False
         return res, llGamma_mass
+
+
+    # Method that studies the algoritm results in terms of "error" (looks at the lepton coupling)
+    def methodOutcome(self, useResidues, recbyW, histName) :
+        bCouple, fail = self.WZRecon(self.GenBestLeptons, self.GenNeutrinos, useResidues, recbyW, True)
+        theW, theZ = bCouple
+        if theW is not None and theZ is not None : 
+            if not self.pairIsTruthBoson(theZ.leptons, 23) or not self.pairIsTruthBoson(theW.leptons,                        24): outcome = 0   # error
+            else: outcome = 1   # success
+            self.hEvent.fill1D(histName, histName, 2, -0.5, 1.5, outcome, self.weight)
        
            
    
@@ -377,7 +383,7 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
     # finds the candidate with similar invariant mass to "partMass"
     def getCloserCand(self, partMass, candMass) :
         best = None
-        minDiff = 999.
+        minDiff = 9999.
         for couple, mass in candMass.items() :
             if(mass != None) :  
                 invM_diff = abs(partMass - mass)
@@ -496,6 +502,19 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         return idx_GenPart
 
 
+    # returns True and the FSRPhoton if the FSRPhoton selected as candidate matches the index with the W lepton
+    def isFsrPaired(self, lepW, theZ) :
+        FsrPhotonCands = [p for i,p in enumerate(self.FSRPhotons) if i not in (theZ.fsr1Idx, theZ.fsr2Idx)]
+        fsrPhotonCand = min(FsrPhotonCands, key=lambda p: p.dROverEt2, default=None)
+
+        idx = lepW._index
+        if fsrPhotonCand is None or (fsrPhotonCand.muonIdx == fsrPhotonCand.electronIdx == -1): return False, None      
+        elif (fsrPhotonCand.electronIdx != -1 and abs(lepW.pdgId) == 11) :  
+            if fsrPhotonCand.electronIdx == idx : return True, fsrPhotonCand
+        elif (fsrPhotonCand.muonIdx != -1 and abs(lepW.pdgId) == 13) : 
+            if fsrPhotonCand.muonIdx == idx : return True, fsrPhotonCand
+        return False, None  
+
    
 #---------------------------
 # other CLASSES
@@ -522,10 +541,11 @@ class GenW:
         self.phi = self.p4.Phi()
 
 
-class RecoW:
-    def __init__(self, Lepton, transvers_mass) :
+class WReco :
+    def __init__(self, Lepton, transvers_mass, Fsr = None) :
         self.lepton = Lepton
         self.transvMass = transvers_mass
+        self.fsrPhoton = Fsr
 
 
 
