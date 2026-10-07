@@ -53,6 +53,7 @@ class EventAnalyzer:
         #Read only the one that are usefull
         self.event.SetBranchStatus("run", 1)
         self.event.SetBranchStatus("luminosityBlock", 1)
+        self.event.SetBranchStatus("*Lepton*", 1)
         self.event.SetBranchStatus("*Muon*", 1)
         self.event.SetBranchStatus("*Electron*", 1)
         self.event.SetBranchStatus("*Photon*", 1)
