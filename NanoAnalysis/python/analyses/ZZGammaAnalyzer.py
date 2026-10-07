@@ -215,10 +215,10 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             print("error")
             return None
         llGammaMassMin = min(ll1GammaMass, ll2GammaMass)
-        self.hEvent.fill1D("llGammaMassMin", "llGammaMassMin", 60, 60., 300., llGammaMassMin, self.weight)
+        self.hEvent.fill1D("llGammaMassMin", "llGammaMassMin", 52, 40., 300., llGammaMassMin, self.weight)
         if llGammaMassMin == ll1GammaMass: llMassMin = ll1Mass
         else: llMassMin = ll2Mass
-        self.hEvent.fill2D("llGammaMassMin2D", "llGammaMassMin2D", 50, 89., 94.4, 93, 60., 300., llMassMin, llGammaMassMin, self.weight)
+        self.hEvent.fill2D("llGammaMassMin2D", "llMinMass(llGammaMinMass)", 104, 40., 300., 54, 88., 93.4, llGammaMassMin, llMassMin, self.weight)
         return llGammaMassMin
 
     def GetBestGamma(self, GoodPhotons):
