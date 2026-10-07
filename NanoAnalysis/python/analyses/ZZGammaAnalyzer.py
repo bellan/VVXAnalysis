@@ -20,12 +20,12 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
     def analyze(self):
         bestCandIdx = self.event.bestCandIdx
 
-        self.hEvent.fill1D_label("EventiPerTaglio", "EventiPerTaglio", self.LabelsTagliSignalDefinition, self.LabelsTagliSignalDefinition[0], self.weight)
+        self.hEvent.fill1D_label("EventiPerTaglioSignalDefinition", "EventiPerTaglioSignalDefinition", self.LabelsTagliSignalDefinition, self.LabelsTagliSignalDefinition[0], self.weight)
         self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", self.LabelsTagliSignalRegion, self.LabelsTagliSignalRegion[0], self.weight)
 
         if(bestCandIdx != -1 and self.event.HLT_passZZ4l): 
             
-            self.hEvent.fill1D_label("EventiPerTaglio", "EventiPerTaglio", self.LabelsTagliSignalDefinition, self.LabelsTagliSignalDefinition[1], self.weight)
+            self.hEvent.fill1D_label("EventiPerTaglioSignalDefinition", "EventiPerTaglioSignalDefinition", self.LabelsTagliSignalDefinition, self.LabelsTagliSignalDefinition[1], self.weight)
             self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", self.LabelsTagliSignalRegion, self.LabelsTagliSignalRegion[1], self.weight)
 
             self.LoadCollections()
@@ -34,6 +34,14 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             ZZGammaSignalDefinition = self.SignalDefinition(self.GenLeptons, self.GenPhotons)
             ZZGammaSignalRegion = self.SignalRegion(theZZ, self.Leptons, self.Photons)
 
+            if ZZGammaSignalDefinition:
+                ResultSD = 1
+                if ZZGammaSignalRegion:
+                    ResultSDSR = 1
+                else:
+                    ResultSDSR = 0
+                self.hEvent.fill1D("CfrSignalDefSignalRegion", "cfrSignalDefSignalRegion", 2, -0.5, 1.5, ResultSDSR, self.weight)
+                
 
     # =========================
     # SIGNAL DEF AND REGION
@@ -44,17 +52,17 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         if not self.analyzeMC: return False
 
         if not self.LeptonsKinematicCuts(GenLeptons): return False
-        self.hEvent.fill1D_label("EventiPerTaglio", "EventiPerTaglio", self.LabelsTagliSignalDefinition, self.LabelsTagliSignalDefinition[2], self.weight)
+        self.hEvent.fill1D_label("EventiPerTaglioSignalDefinition", "EventiPerTaglioSignalDefinition", self.LabelsTagliSignalDefinition, self.LabelsTagliSignalDefinition[2], self.weight)
         GenZZ = self.GetZZ(GenLeptons)
         if not self.ZZMassCuts(GenZZ): return False
-        self.hEvent.fill1D_label("EventiPerTaglio", "EventiPerTaglio", self.LabelsTagliSignalDefinition, self.LabelsTagliSignalDefinition[3], self.weight)
+        self.hEvent.fill1D_label("EventiPerTaglioSignalDefinition", "EventiPerTaglioSignalDefinition", self.LabelsTagliSignalDefinition, self.LabelsTagliSignalDefinition[3], self.weight)
         
         KinPassed, GoodPhotons = self.PhotonsKinematicCuts(GenPhotons)
         if not KinPassed: return False
-        self.hEvent.fill1D_label("EventiPerTaglio", "EventiPerTaglio", self.LabelsTagliSignalDefinition, self.LabelsTagliSignalDefinition[4], self.weight)
+        self.hEvent.fill1D_label("EventiPerTaglioSignalDefinition", "EventiPerTaglioSignalDefinition", self.LabelsTagliSignalDefinition, self.LabelsTagliSignalDefinition[4], self.weight)
         FsrPassed, GenGammaCands = self.PhotonsFsrCuts(GoodPhotons, GenLeptons, GenZZ)
         if not FsrPassed: return False
-        self.hEvent.fill1D_label("EventiPerTaglio", "EventiPerTaglio", self.LabelsTagliSignalDefinition, self.LabelsTagliSignalDefinition[5], self.weight)
+        self.hEvent.fill1D_label("EventiPerTaglioSignalDefinition", "EventiPerTaglioSignalDefinition", self.LabelsTagliSignalDefinition, self.LabelsTagliSignalDefinition[5], self.weight)
         GenGamma = self.GetBestGamma(GenGammaCands, "Gen")
         if GenGamma is None: return False
         PtThetaGraph = self.GraphGammaPtThetaZZG(GenGamma, GenZZ, "Gen")
