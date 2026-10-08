@@ -58,8 +58,8 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         isInSR = self.isInSignalRegion(2024)
         recoZ, recoW = self.recoCouple
 
-        if self.hasGenFSR and self.lGammaMET_mt != None :
-            self.hEvent.fill1D("lGammaMET_Mt_Cutted", "lGammaMET_Mt_Cutted", 30, 0., 300., self.lGammaMET_mt, self.weight)
+        #if self.hasGenFSR and self.lGammaMET_mt != None :
+            #self.hEvent.fill1D("lGammaMET_Mt_Cutted", "lGammaMET_Mt_Cutted", 30, 0., 300., self.lGammaMET_mt, self.weight)
 
         if isSig :
             eventType_Labels = ["isSignal", "isSig_and_inSigReg"]
@@ -70,7 +70,7 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
                
                 # GEN-RECO LEPTONS MATCHING
                 res = self.isRecoMatching(genZ.leptons, genW.leptons, (self.ChargedLeptons[recoZ.l1Idx], self.ChargedLeptons[recoZ.l2Idx]), recoW.lepton, 0.5)
-                self.hEvent.fill1D("GenAndReco_Matching", "GenAndReco_Matching", 2, -0.5, 1.5, int(res), self.weight)
+                #self.hEvent.fill1D("GenAndReco_Matching", "GenAndReco_Matching", 2, -0.5, 1.5, int(res), self.weight)
         
 
             self.hEvent.fill1D_label("Event_type", "Event_type", eventType_Labels, eventType_Labels[event_type], self.weight)
@@ -184,7 +184,7 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         if BestLeptons is None :
             self.cutFlowStageSR = 1.0
             return False
-   
+       
                                    
         bestPhoton = self.pass_PhKinCut(self.Photons, self.ChargedLeptons)
         if bestPhoton is None :
@@ -217,7 +217,10 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         if notpassedZ :
             self.cutFlowStageSR = 5.0
             return False
-           
+
+        self.hEvent.fill1D("LepW_pt", "LepW_pt", 30, 0., 300., lepW.pt, self.weight)
+        self.hEvent.fill1D("LepW_eta", "LepW_eta", 20, -5., 5., lepW.eta, self.weight)
+        
         # W RECONSTRUCTION (looking at different kind of FSR now (ones inside 0.5 of DR))
         self.W_mt = self.computeMt(lepW.pt, lepW.phi, self.MET.pt, self.MET.phi)
         self.hEvent.fill1D("W_Mt_NotDressed", "W_Mt_NotDressed", 30, 0., 300., self.W_mt, self.weight)
@@ -238,6 +241,7 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
 
         #plot post cuts
         self.hEvent.fill1D("Photon_pt_postCuts", "Photon_pt_postCuts", 30, 0., 300., bestPhoton.pt, self.weight)
+        self.hEvent.fill1D("Photon_eta_postCuts", "Photon_eta_postCuts",  20, -5., 5., bestPhoton.eta, self.weight)
         self.hEvent.fill1D("MET_pt_postCuts", "MET_pt_postCuts", 30, 0., 300., self.MET.pt, self.weight)
 
         return True
