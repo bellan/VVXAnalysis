@@ -18,29 +18,26 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         super().__init__(regions)
         
     def analyze(self):
+
+        self.LoadCollections()
+        
+        self.CutPlot("Definition", 0)
+        self.CutPlot("Region", 0)
+        
+        isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons)
+        
         bestCandIdx = self.event.bestCandIdx
-
-        self.hEvent.fill1D_label("EventiPerTaglioSignalDefinition", "EventiPerTaglioSignalDefinition", self.LabelsTagliSignalDefinition, self.LabelsTagliSignalDefinition[0], self.weight)
-        self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", self.LabelsTagliSignalRegion, self.LabelsTagliSignalRegion[0], self.weight)
-
         if(bestCandIdx != -1 and self.event.HLT_passZZ4l): 
-            
-            self.hEvent.fill1D_label("EventiPerTaglioSignalDefinition", "EventiPerTaglioSignalDefinition", self.LabelsTagliSignalDefinition, self.LabelsTagliSignalDefinition[1], self.weight)
-            self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", self.LabelsTagliSignalRegion, self.LabelsTagliSignalRegion[1], self.weight)
-
-            self.LoadCollections()
             theZZ = self.ZZs[bestCandIdx]
-                    
-            ZZGammaSignalDefinition = self.SignalDefinition(self.GenLeptons, self.GenPhotons)
-            ZZGammaSignalRegion = self.SignalRegion(theZZ, self.Leptons, self.Photons)
+            self.CutPlot("Region", 1)
+            isSR = self.SignalRegion(theZZ, self.Leptons, self.Photons)
 
-            if ZZGammaSignalDefinition:
-                ResultSD = 1
-                if ZZGammaSignalRegion:
-                    ResultSDSR = 1
-                else:
-                    ResultSDSR = 0
-                self.hEvent.fill1D("CfrSignalDefSignalRegion", "cfrSignalDefSignalRegion", 2, -0.5, 1.5, ResultSDSR, self.weight)
+        #if isSD:
+        #    if isSR:
+        #        ResultSDSR = 1
+        #    else:
+        #        ResultSDSR = 0
+        #    self.hEvent.fill1D("CfrSignalDefSignalRegion", "cfrSignalDefSignalRegion", 2, -0.5, 1.5, ResultSDSR, self.weight)
                 
 
     # =========================
@@ -51,53 +48,58 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
         if not self.analyzeMC: return False
 
-        if not self.LeptonsKinematicCuts(GenLeptons): return False
-        self.hEvent.fill1D_label("EventiPerTaglioSignalDefinition", "EventiPerTaglioSignalDefinition", self.LabelsTagliSignalDefinition, self.LabelsTagliSignalDefinition[2], self.weight)
+        if not self.LeptonsKinematicCuts(GenLeptons, "Definition"): return False
+        self.CutPlot("Definition", 1)
         GenZZ = self.GetZZ(GenLeptons)
         if not self.ZZMassCuts(GenZZ): return False
-        self.hEvent.fill1D_label("EventiPerTaglioSignalDefinition", "EventiPerTaglioSignalDefinition", self.LabelsTagliSignalDefinition, self.LabelsTagliSignalDefinition[3], self.weight)
+        self.CutPlot("Definition", 2)
         
         KinPassed, GoodPhotons = self.PhotonsKinematicCuts(GenPhotons)
         if not KinPassed: return False
-        self.hEvent.fill1D_label("EventiPerTaglioSignalDefinition", "EventiPerTaglioSignalDefinition", self.LabelsTagliSignalDefinition, self.LabelsTagliSignalDefinition[4], self.weight)
+        self.CutPlot("Definition", 3)
         FsrPassed, GenGammaCands = self.PhotonsFsrCuts(GoodPhotons, GenLeptons, GenZZ)
         if not FsrPassed: return False
-        self.hEvent.fill1D_label("EventiPerTaglioSignalDefinition", "EventiPerTaglioSignalDefinition", self.LabelsTagliSignalDefinition, self.LabelsTagliSignalDefinition[5], self.weight)
+        self.CutPlot("Definition", 4)
         GenGamma = self.GetBestGamma(GenGammaCands, "Gen")
         if GenGamma is None: return False
         PtThetaGraph = self.GraphGammaPtThetaZZG(GenGamma, GenZZ, "Gen")
-                
+
         return True
 
-    LabelsTagliSignalDefinition = ["EventiTotali", "passZZ4l+BestCand", "CinematicaLeptoni","MasseZ1Z2", "CinematicaFotoni", "NotFsrPhotons"]
-                          
-            
+    SDCuts = ["EventiTotali", "CinematicaLeptoni", "MasseZ1Z2", "CinematicaFotoni", "NotFsrPhotons"]
+
     def SignalRegion(self, theZZ, Leptons, Photons):
                 
         if not Regions.check(self.regionWord, Regions.L4P): return False
-        self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", self.LabelsTagliSignalRegion, self.LabelsTagliSignalRegion[2], self.weight)
-        if not self.LeptonsKinematicCuts(Leptons): return False
-        self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", self.LabelsTagliSignalRegion, self.LabelsTagliSignalRegion[3], self.weight)
+        self.CutPlot("Region", 2)
+        if not self.LeptonsKinematicCuts(Leptons, "Region"): return False
         if not self.ZZMassCuts(theZZ): return False
-        self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", self.LabelsTagliSignalRegion, self.LabelsTagliSignalRegion[4], self.weight)
-
+        self.CutPlot("Region", 8)
+        
         if not Regions.check(self.regionWord, Regions.P1cutL): return False
-        self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", self.LabelsTagliSignalRegion, self.LabelsTagliSignalRegion[5], self.weight)
+        self.CutPlot("Region", 9)
         KinPassed, GoodPhotons = self.PhotonsKinematicCuts(Photons)
         if not KinPassed: return False
-        self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", self.LabelsTagliSignalRegion, self.LabelsTagliSignalRegion[6], self.weight)
+        self.CutPlot("Region", 10)
         FsrPassed, RecoGammaCands = self.PhotonsFsrCuts(GoodPhotons, Leptons, theZZ)
         if not FsrPassed: return False
-        self.hEvent.fill1D_label("EventiPerTaglioSignalRegion", "EventiPerTaglioSignalRegion", self.LabelsTagliSignalRegion, self.LabelsTagliSignalRegion[7], self.weight)
+        self.CutPlot("Region", 11)
         RecoGamma = self.GetBestGamma(RecoGammaCands, "Reco")
         if RecoGamma is None: return False
         PtThetaGraph = self.GraphGammaPtThetaZZG(RecoGamma, theZZ, "Reco")
 
         return True
 
-    LabelsTagliSignalRegion = ["No tagli", "passZZ4l+BestCand", "regione L4P", "Cinematica leptoni", "ZZMass", "regioneP1cutL", "CinematicaFotoni", "NotFsrPhotons"]
+    SRCuts = ["EventiTotali", "passZZ4l+BestCand", "regione L4P", "4Leptoni", "pt5", "pt10", "pt20", "pteta", "Z1Z2Mass", "regioneP1cutL", "CinematicaFotoni", "NotFsrPhotons"]
 
-    
+    def CutPlot(self, Level, Cut):
+        if Level == "Definition":
+            Labels = self.SDCuts
+        elif Level == "Region":
+            Labels = self.SRCuts
+        self.hEvent.fill1D_label(f"EventiPerTaglio_Signal{Level}", f"EventiPerTaglio_Signal{Level}", Labels, Labels[Cut], self.weight)
+        
+
     # =========================
     # COLLECTIONS
     # =========================
@@ -120,14 +122,20 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
     # USEFUL FUNCTIONS: ZZ
     # =========================
 
-    def LeptonsKinematicCuts(self, Leptons):
-        if len(Leptons) != 4: return False
-        if (sum(l.pdgId == 11 for l in Leptons) != sum(l.pdgId == -11 for l in Leptons)
-            or sum(l.pdgId == 13 for l in Leptons) != sum(l.pdgId == -13 for l in Leptons)): return False
+    def LeptonsKinematicCuts(self, Leptons, Level):
+        #if len(Leptons) != 4: return False
+        #if Level == "Region": self.CutPlot("Region", 3)
+        if Level == "Definition":
+            if (sum(l.pdgId == 11 for l in Leptons) != sum(l.pdgId == -11 for l in Leptons)
+                or sum(l.pdgId == 13 for l in Leptons) != sum(l.pdgId == -13 for l in Leptons)): return False
         if sum(l.pt > 5 for l in Leptons) < 4: return False
+        if Level == "Region": self.CutPlot("Region", 4)
         if sum(l.pt > 10 for l in Leptons) < 2: return False
+        if Level == "Region": self.CutPlot("Region", 5)
         if sum(l.pt > 20 for l in Leptons) < 1: return False
+        if Level == "Region": self.CutPlot("Region", 6)
         if any(abs(l.eta) > 2.5 for l in Leptons): return False
+        if Level == "Region": self.CutPlot("Region", 7)
         return True
     
     def GetZZ(self, Leptons):
@@ -228,7 +236,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         Gamma2 = max((ph for ph in GammaCands if ph != BestGamma), key=lambda ph: ph.pt, default=None)
         if Gamma2 is not None:
             Gamma2Pt = Gamma2.pt
-            self.hEvent.fill1D(f"{prefix}Level_Gamma2Pt", f"{prefix}Level_Gamma2Pt", 50, 20., 120., Gamma2Pt, self.weight)
+            self.hEvent.fill1D(f"{prefix}Level_Gamma2Pt", f"{prefix}Level_Gamma2Pt", 20, 20., 220., Gamma2Pt, self.weight)
         return BestGamma
 
     def GraphGammaPtThetaZZG(self, Gamma, ZZ, prefix):
