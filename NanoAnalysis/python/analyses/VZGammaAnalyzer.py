@@ -15,7 +15,7 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
                     
         
     def analyze(self):
-        EtichetteTagliSignalDef=["Total Events","After Trigger","AfterPhotonKin","AfterLepKin","AfterJetKin","AfterLepInvMassandDeltaR"]
+        EtichetteTagliSignalDef=["Total Events","After GenStatusFlag","LeptonCut","AfterNJetCut", "AfterJetKin","AfterLepInvMassandDeltaR"]
         self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[0],self.weight)
         if(self.event.HLT_passZZ4l): 
 
@@ -46,18 +46,23 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
         #=================  
 
         def IsSignal():
-              kinCutph=self.photonKinCut(GenPhotons)
-              if len(kinCutph)==0: return False
+              #kinCutph=self.photonKinCut(GenPhotons)
+              #if len(kinCutph)==0: return False
+              #self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[2],self.weight)
+              ptEtaCutLeptons=self.leptonPtEtaCut(GenLeptons)
+              if self.leptonIsSignal(ptEtaCutLeptons)==False: return False
+              #Ricostruire Z a partire dai 2 leptoni
               self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[2],self.weight)
-              kinCutlep=self.leptonKinCut(GenLeptons)
-              if len(kinCutlep)==0: return False
-              self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[3],self.weight)
-              kinCutJets=self.JetkinCut(GenJets)
-              if len(kinCutJets)==0: return False
-              self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[4],self.weight)
-              if self.leptonIsSignal(kinCutlep)==False: return False
-              self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[5],self.weight)
-              
+              Zmass=(ptEtaCutLeptons[0].p4()+ptEtaCutLeptons[1].p4()).M()
+              self.hEvent.fill1D("ZMass","Zmass",100,30,150,Zmass,self.weight)
+               
+
+              #kinCutJets=self.JetkinCut(GenJets)
+              #if len(kinCutJets)==0: return False
+              #self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[4],self.weight)
+              #if self.leptonIsSignal(kinCutlep)==False: return False
+              #self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[5],self.weight)
+              return True
         
 
         res=IsSignal()  
@@ -80,17 +85,17 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
            secondCutPhotons=[p for p in Photons if all(p.DeltaR(l)>0.5 for l in Leptons) and all(p.DeltaR(j)>0.5 for j in Jets)]
            return secondCutPhotons                 
 
-    def leptonKinCut(self,Leptons):
-           firstCutLeptons=[p for p in Leptons if p.pt>5 and abs(p.eta)<2.5 and not 1.444<abs(p.eta)<1.566]
+    def leptonPtEtaCut(self,Leptons):
+           firstCutLeptons=[p for p in Leptons if p.pt>5 and abs(p.eta)<2.5]
            return firstCutLeptons           
 
     def leptonIsSignal(self,Leptons):
-           if len(Leptons)!=2: return False #mi servono 2 leptoni
-           #if (sum(l.pdgId == 11 for l in Leptons) != sum(l.pdgId == -11 for l in Leptons)
-           #or sum(l.pdgId == 13 for l in Leptons) != sum(l.pdgId == -13 for l in Leptons)): return False #di segno opposto
-           Z_inv_mass=(Leptons[0].p4()+Leptons[1].p4()).M()
-           if (50<Z_inv_mass<120 and Leptons[0].DeltaR(Leptons[1])>0.02): return True #taglio su massa inv e delta R
-           return True
+           if len(Leptons)!=2: return False
+           if (Leptons[0].pdgId==Leptons[1].pdgId): return False
+           if (Leptons[0].pt>20 or Leptons[1].pt>20): 
+                 Z_inv_mass=(Leptons[0].p4()+Leptons[1].p4()).M()
+                 if (50<Z_inv_mass<120 and Leptons[0].DeltaR(Leptons[1])>0.5): return True
+           return False
            
     def JetkinCut(self,Jets):
           cutJets=[j for j in Jets if abs(j.eta)<4.7 and j.pt>30]
