@@ -56,6 +56,8 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         GenGamma = self.GetBestGamma("Gen", GenGammaCands)
         PtThetaGraph = self.GraphGammaPtThetaZZG("Gen", GenGamma, GenZZ)
 
+        self.PlotsOI("Gen", GenZZ, GenGamma)
+
         return True
 
     SDCuts = ["EventiTotali", "CinematicaLeptoni", "MasseZ1Z2", "CinematicaFotoni", "TribosonRegion"]
@@ -67,12 +69,12 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         bestCandIdx = self.event.bestCandIdx
         if not (bestCandIdx != -1 and self.event.HLT_passZZ4l): return False
         self.CutPlot("Region", 1)
-        theZZ = self.ZZs[bestCandIdx]
-        LeptonsOI = [Leptons[theZZ.Z1l1Idx], Leptons[theZZ.Z1l2Idx], Leptons[theZZ.Z2l1Idx], Leptons[theZZ.Z2l2Idx]]    
+        RecoZZ = self.ZZs[bestCandIdx]
+        LeptonsOI = [Leptons[RecoZZ.Z1l1Idx], Leptons[RecoZZ.Z1l2Idx], Leptons[RecoZZ.Z2l1Idx], Leptons[RecoZZ.Z2l2Idx]]    
         if not Regions.check(self.regionWord, Regions.L4P): return False
         self.CutPlot("Region", 2)
         if not self.LeptonsKinematicCuts("Reco", LeptonsOI): return False
-        if not self.ZZMassCuts("Reco", theZZ): return False
+        if not self.ZZMassCuts("Reco", RecoZZ): return False
         self.CutPlot("Region", 9)
         
         if not Regions.check(self.regionWord, Regions.P1cutL): return False
@@ -80,12 +82,14 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         KinPass, GoodPhotons = self.PhotonsKinematicCuts(Photons)
         if not KinPass: return False
         self.CutPlot("Region", 11)
-        FsrPass, RecoGammaCands = self.PhotonsFsrCuts("Reco", GoodPhotons, LeptonsOI, theZZ) #!!!!!!!!!!!!!!! leptonsOI !!!!!!!!!!!!!!
+        FsrPass, RecoGammaCands = self.PhotonsFsrCuts("Reco", GoodPhotons, LeptonsOI, RecoZZ) #!!!!!!!!!!!!!!! leptonsOI !!!!!!!!!!!!!!
         if not FsrPass: return False
         self.CutPlot("Region", 12)
         RecoGamma = self.GetBestGamma("Reco", RecoGammaCands)
         if RecoGamma is None: return False
-        PtThetaGraph = self.GraphGammaPtThetaZZG("Reco", RecoGamma, theZZ)
+        PtThetaGraph = self.GraphGammaPtThetaZZG("Reco", RecoGamma, RecoZZ)
+
+        self.PlotsOI("Reco", RecoZZ, RecoGamma)
 
         return True
 
@@ -100,11 +104,11 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         if self.analyzeMC:
             self.GenParts = Collection(self.event, 'GenPart')
             self.GenLeptons = [p for p in self.GenParts if abs(p.pdgId) in (11, 13)
-                                                 and p.status == 1
-                                                 and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
+                                                           and p.status == 1
+                                                           and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
             self.GenPhotons = [p for p in self.GenParts if p.pdgId == 22
-                                                 and p.status == 1
-                                                 and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
+                                                           and p.status == 1
+                                                           and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
         self.ZZs = Collection(self.event, 'ZZCand')
         self.Leptons = Collection(self.event, 'Lepton')
         self.Photons = Collection(self.event, 'Photon')
@@ -120,13 +124,13 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         if (sum(l.pdgId == 11 for l in Leptons) != sum(l.pdgId == -11 for l in Leptons)
             or sum(l.pdgId == 13 for l in Leptons) != sum(l.pdgId == -13 for l in Leptons)): return False
         if Level == "Reco": self.CutPlot("Region", 4)
-        if sum(l.pt >= self.LepsCuts(Level, l)[0] for l in Leptons) < 4: return False
+        if sum(l.pt > self.LepsCuts(Level, l)[0] for l in Leptons) < 4: return False
         if Level == "Reco": self.CutPlot("Region", 5)
-        if sum(l.pt >= 10 for l in Leptons) < 2: return False
+        if sum(l.pt > 10 for l in Leptons) < 2: return False
         if Level == "Reco": self.CutPlot("Region", 6)
-        if sum(l.pt >= 20 for l in Leptons) < 1: return False
+        if sum(l.pt > 20 for l in Leptons) < 1: return False
         if Level == "Reco": self.CutPlot("Region", 7)
-        if any(abs(l.eta) > self.LepsCuts(Level, l)[1] for l in Leptons): return False
+        if any(abs(l.eta) >= self.LepsCuts(Level, l)[1] for l in Leptons): return False
         if Level == "Reco": self.CutPlot("Region", 8)
         
         return True
@@ -145,23 +149,37 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         return pt, eta
     
     def GetZZ(self, Leptons):
+        
         ZMassPDG = TDatabasePDG.Instance().GetParticle(23).Mass()
-        Z1Mass = float("inf")
-        Z1Leps = None
-        for i, l1 in enumerate(Leptons):
-            for j in range(i+1, len(Leptons)):
-                l2 = Leptons[j]
-                if l1.pdgId != -l2.pdgId: continue
-                LeptonsMass = (l1.p4() + l2.p4()).M()
-                if abs(LeptonsMass - ZMassPDG) < abs(Z1Mass - ZMassPDG):
-                    Z1Mass = LeptonsMass
-                    Z1Leptons = [l1, l2]
-        if Z1Leptons is None: return None
-        if (len(Z1Leptons) != 2
-            or Z1Leptons[0].pdgId != - Z1Leptons[1].pdgId): return None
-        Z2Leptons = [l for l in Leptons if l not in Z1Leptons]
-        if (len(Z2Leptons) != 2
-            or Z2Leptons[0].pdgId != - Z2Leptons[1].pdgId): return None
+        Electrons = [l for l in Leptons if abs(l.pdgId) == 11]
+        Muons = [l for l in Leptons if abs(l.pdgId) == 13]
+        
+        if len(Electrons) == len(Muons) == 2:
+            ZElMass = (Electrons[0].p4() + Electrons[1].p4()).M()
+            ZMuMass = (Muons[0].p4() + Muons[1].p4()).M()
+            if abs(ZElMass - ZMassPDG) < abs(ZMuMass - ZMassPDG):
+                Z1Mass, Z1Leptons = ZElMass, Electrons
+                Z2Mass, Z2Leptons = ZMuMass, Muons
+            else:
+                Z1Mass, Z1Leptons = ZMuMass, Muons
+                Z2Mass, Z2Leptons = ZElMass, Electrons
+
+        else:
+            Z1Mass = float("inf")
+            for i, l1 in enumerate(Leptons):
+                for j in range(i+1, len(Leptons)):
+                    l2 = Leptons[j]
+                    if l1.pdgId != -l2.pdgId: continue
+                    LeptonsMass = (l1.p4() + l2.p4()).M()
+                    if abs(LeptonsMass - ZMassPDG) < abs(Z1Mass - ZMassPDG):
+                        Z1Mass = LeptonsMass
+                        Z1Leptons = [l1, l2]
+            if Z1Leptons is None: return None
+            if (len(Z1Leptons) != 2
+                or Z1Leptons[0].pdgId != - Z1Leptons[1].pdgId): return None
+            Z2Leptons = [l for l in Leptons if l not in Z1Leptons]
+            if (len(Z2Leptons) != 2
+                or Z2Leptons[0].pdgId != - Z2Leptons[1].pdgId): return None
                 
         GenZ1Cand = ZClass(Z1Leptons)
         GenZ2Cand = ZClass(Z2Leptons)
@@ -171,16 +189,8 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
     def ZZMassCuts(self, Level, ZZ):
         if ZZ is None: return False
-        if Level == "Gen":
-            Z1Mass = ZZ.Z1.mass
-            Z2Mass = ZZ.Z2.mass
-        elif Level == "Reco":
-            Z1Mass = ZZ.Z1mass
-            Z2Mass = ZZ.Z2mass
-        if not 60 < Z1Mass < 120: return False
-        if not 60 < Z2Mass < 120: return False
-        self.hEvent.fill1D(f"{Level}Level_Z1Mass", f"{Level}Level_Z1Mass", 100, 60., 120., Z1Mass, self.weight)
-        self.hEvent.fill1D(f"{Level}Level_Z2Mass", f"{Level}Level_Z2Mass", 75, 60., 120., Z2Mass, self.weight)
+        if not 60 < ZZ.Z1mass < 120: return False
+        if not 60 < ZZ.Z2mass < 120: return False
         return True
 
     
@@ -198,11 +208,11 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
     def PhotonsFsrCuts(self, Level, Photons, Leptons, ZZ):
         GammaCands = [ph for ph in Photons if all(ph.DeltaR(l) > 0.5 for l in Leptons)
-                                                  and self.GetllGammaMassMin(Level, ph, ZZ, Leptons) > 100]
+                                                  and self.GetllGammaMassMin(Level, ph, Leptons, ZZ) > 100]
         if len(GammaCands) < 1: return False, None
         return True, GammaCands
 
-    def GetllGammaMassMin(self, Level, ph, ZZ, Leptons = None):
+    def GetllGammaMassMin(self, Level, ph, Leptons, ZZ):
         Z1Mass = ZZ.Z1mass
         Z2Mass = ZZ.Z2mass
         if Level == "Gen":
@@ -216,22 +226,21 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             Z1Mass = (Leptons[0].p4() + Leptons[1].p4()).M()
             Z2GammaMass = (Leptons[2].p4() + Leptons[3].p4() + self.GetP4(ph)).M()
             Z2Mass = (Leptons[2].p4() + Leptons[3].p4()).M()
-        ZGammaMassMin = min(Z1GammaMass, Z2GammaMass)
-        self.hEvent.fill1D(f"{Level}Level_ZGammaMinMass", f"{Level}Level_ZGammaMinMass", 52, 40., 300., ZGammaMassMin, self.weight)
-        if ZGammaMassMin == Z1GammaMass: ZMassMin = Z1Mass
-        else: ZMassMin = Z2Mass
-        self.hEvent.fill2D(f"{Level}Level_llGammaMassMin2D", f"{Level}Level_llMinMass(llGammaMinMass)", 104, 40., 300., 120, 60., 120., ZGammaMassMin, ZMassMin, self.weight)
-        return ZGammaMassMin
+
+        ZGammaMinMass = min(Z1GammaMass, Z2GammaMass)
+        ZMinMass = Z1Mass if ZGammaMinMass == Z1GammaMass else Z2Mass
+        self.hEvent.fill1D(f"{Level}Level_ZGammaMinMass", f"{Level}Level_ZGammaMinMass", 52, 40., 300., ZGammaMinMass, self.weight)
+        self.hEvent.fill2D(f"{Level}Level_ZGammaMinMass2D", f"{Level}Level_ZMinMass(ZGammaMinMass)", 104, 40., 300., 120, 60., 120., ZGammaMinMass, ZMinMass, self.weight)
+        return ZGammaMinMass
 
     def GetBestGamma(self, Level, GammaCands):
         BestGamma = max(GammaCands, key=lambda ph: ph.pt, default=None)
-        if BestGamma is None: return None
-        BestGammaPt = BestGamma.pt
-        self.hEvent.fill1D(f"{Level}Level_BestGammaPt", f"{Level}Level_BestGammaPt", 50, 20., 220., BestGammaPt, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_BestGammaPt", f"{Level}Level_BestGammaPt", 50, 20., 220., BestGamma.pt, self.weight)
+        
         Gamma2 = max((ph for ph in GammaCands if ph != BestGamma), key=lambda ph: ph.pt, default=None)
         if Gamma2 is not None:
-            Gamma2Pt = Gamma2.pt
-            self.hEvent.fill1D(f"{Level}Level_Gamma2Pt", f"{Level}Level_Gamma2Pt", 20, 20., 220., Gamma2Pt, self.weight)
+            self.hEvent.fill1D(f"{Level}Level_Gamma2Pt", f"{Level}Level_Gamma2Pt", 20, 20., 220., Gamma2.pt, self.weight)
+
         return BestGamma
 
     def GraphGammaPtThetaZZG(self, Level, Gamma, ZZ):
@@ -260,6 +269,13 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         elif Level == "Region":
             Labels = self.SRCuts
         self.hEvent.fill1D_label(f"EventiPerTaglio_Signal{Level}", f"EventiPerTaglio_Signal{Level}", Labels, Labels[Cut], self.weight)
+
+    def PlotsOI(self, Level, ZZ, Gamma):
+        self.hEvent.fill1D(f"{Level}Level_Z1Mass", f"{Level}Level_Z1Mass", 100, 60., 120., ZZ.Z1mass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_Z2Mass", f"{Level}Level_Z2Mass", 75, 60., 120., ZZ.Z2mass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_ZZMass", f"{Level}Level_ZZMass", 40, 120., 520., ZZ.mass, self.weight)
+        if Level == "Gen":
+            self.hEvent.fill1D(f"{Level}Level_ZZGammaMass", f"{Level}Level_ZZGammaMass", 50, 120., 620., (ZZ.p4 + Gamma.p4()).M(), self.weight)
         
 
 # =========================
