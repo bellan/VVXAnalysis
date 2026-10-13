@@ -44,7 +44,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         if not self.LeptonsKinematicCuts("Gen", GenLeptons): return False
         self.CutPlot("Definition", 1)
         GenZZ = self.GetZZ(GenLeptons)
-        if not self.ZZMassCuts("Gen", GenZZ): return False
+        if not self.ZZMassCuts(GenZZ): return False
         self.CutPlot("Definition", 2)
         
         KinPass, GoodPhotons = self.PhotonsKinematicCuts(GenPhotons)
@@ -74,17 +74,18 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         if not Regions.check(self.regionWord, Regions.L4P): return False
         self.CutPlot("Region", 2)
         if not self.LeptonsKinematicCuts("Reco", LeptonsOI): return False
-        if not self.ZZMassCuts("Reco", RecoZZ): return False
-        self.CutPlot("Region", 9)
+        self.CutPlot("Region", 3)
+        if not self.ZZMassCuts(RecoZZ): return False
+        self.CutPlot("Region", 4)
         
         if not Regions.check(self.regionWord, Regions.P1cutL): return False
-        self.CutPlot("Region", 10)
+        self.CutPlot("Region", 5)
         KinPass, GoodPhotons = self.PhotonsKinematicCuts(Photons)
         if not KinPass: return False
-        self.CutPlot("Region", 11)
+        self.CutPlot("Region", 6)
         FsrPass, RecoGammaCands = self.PhotonsFsrCuts("Reco", GoodPhotons, LeptonsOI, RecoZZ) #!!!!!!!!!!!!!!! leptonsOI !!!!!!!!!!!!!!
         if not FsrPass: return False
-        self.CutPlot("Region", 12)
+        self.CutPlot("Region", 7)
         RecoGamma = self.GetBestGamma("Reco", RecoGammaCands)
         if RecoGamma is None: return False
         PtThetaGraph = self.GraphGammaPtThetaZZG("Reco", RecoGamma, RecoZZ)
@@ -93,7 +94,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
         return True
 
-    SRCuts = ["EventiTotali", "passZZ4l+BestCand", "regione L4P", "4Leps", "pdgId", "pt5", "pt10", "pt20", "eta", "Z1Z2Mass", "regioneP1cutL", "CinematicaFotoni", "TribosonRegion"]
+    SRCuts = ["EventiTotali", "passZZ4l+BestCand", "regione L4P", "CinematicaLeptoni", "Z1Z2Mass", "regioneP1cutL", "CinematicaFotoni", "TribosonRegion"]
 
     
     # =========================
@@ -120,18 +121,12 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
     def LeptonsKinematicCuts(self, Level, Leptons):
         if len(Leptons) != 4: return False
-        if Level == "Reco": self.CutPlot("Region", 3)
         if (sum(l.pdgId == 11 for l in Leptons) != sum(l.pdgId == -11 for l in Leptons)
             or sum(l.pdgId == 13 for l in Leptons) != sum(l.pdgId == -13 for l in Leptons)): return False
-        if Level == "Reco": self.CutPlot("Region", 4)
         if sum(l.pt > self.LepsCuts(Level, l)[0] for l in Leptons) < 4: return False
-        if Level == "Reco": self.CutPlot("Region", 5)
         if sum(l.pt > 10 for l in Leptons) < 2: return False
-        if Level == "Reco": self.CutPlot("Region", 6)
         if sum(l.pt > 20 for l in Leptons) < 1: return False
-        if Level == "Reco": self.CutPlot("Region", 7)
         if any(abs(l.eta) >= self.LepsCuts(Level, l)[1] for l in Leptons): return False
-        if Level == "Reco": self.CutPlot("Region", 8)
         
         return True
 
@@ -166,6 +161,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
         else:
             Z1Mass = float("inf")
+            Z1Leptons = None
             for i, l1 in enumerate(Leptons):
                 for j in range(i+1, len(Leptons)):
                     l2 = Leptons[j]
@@ -187,7 +183,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
         return GenZZCand
 
-    def ZZMassCuts(self, Level, ZZ):
+    def ZZMassCuts(self, ZZ):
         if ZZ is None: return False
         if not 60 < ZZ.Z1mass < 120: return False
         if not 60 < ZZ.Z2mass < 120: return False
@@ -213,16 +209,16 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         return True, GammaCands
 
     def GetllGammaMassMin(self, Level, ph, Leptons, ZZ):
+
         Z1Mass = ZZ.Z1mass
         Z2Mass = ZZ.Z2mass
+        
         if Level == "Gen":
             Z1GammaMass = (ZZ.Z1.p4 + ph.p4()).M()
             Z2GammaMass = (ZZ.Z2.p4 + ph.p4()).M()
-        #elif Level == "Reco":
-        #    Z1GammaMass = (self.GetP4())
-
+        
         elif Level == "Reco":
-            Z1GammaMass = (Leptons[0].p4() + Leptons[1].p4() + self.GetP4(ph)).M()
+            Z1GammaMass = (Leptons[0].p4() + Leptons[1].p4() + self.GetP4(ph)).M()       # !!!!!!!!!!!!!!modificare reco prendendo p4 delle Z!!!!!!!!!!!!!!!!!!!
             Z1Mass = (Leptons[0].p4() + Leptons[1].p4()).M()
             Z2GammaMass = (Leptons[2].p4() + Leptons[3].p4() + self.GetP4(ph)).M()
             Z2Mass = (Leptons[2].p4() + Leptons[3].p4()).M()
