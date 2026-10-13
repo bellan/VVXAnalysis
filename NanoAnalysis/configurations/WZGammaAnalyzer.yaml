@@ -3,18 +3,25 @@ samples:
   origin: [MC]
   mode: name          # oppure: process, all
   by_name:
-    - WZGamma
-    - WZGtoLNuZG
-    #- WZto3LNu
-    #- ZZTo4l
-    #- ZZTo4l_2Jets_EW
-    #- DoubleMu2022H
+    #- WZGamma
+    #- WZGtoLNuZG
+    #background
+    - WZto3LNu
+    - ZZGamma
+    - ZZTo4l
+    - ggTo4e_Contin_MCFM701
+    - ggTo4mu_Contin_MCFM701
+    - ggTo2e2mu_Contin_MCFM701
+    - WWZ
+    - WZZ
+    - ZZZ
   by_process:
     - VBS
 
 analysis:
   analyzer: WZGammaAnalyzer
   regions : [L3P_P1cutL]
+  #regions : [L3P]
 
 
 
