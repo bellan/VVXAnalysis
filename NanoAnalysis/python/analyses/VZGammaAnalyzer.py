@@ -25,7 +25,7 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
 
             GenParts=Collection(self.event,'GenPart')
             GenPhotons=[p for p in GenParts if p.pdgId==22 and p.status==1 and (p.statusFlags & GenStatusFlag.SEL)==GenStatusFlag.SEL ]
-            GenLeptons=[p for p in GenParts if (abs(p.pdgId==11) or abs(p.pdgId==13)) and p.status == 1 and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
+            GenLeptons=[p for p in GenParts if (abs(p.pdgId)==11 or abs(p.pdgId)==13) and p.status == 1 and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
             GenJets=Collection(self.event,'GenJet')
 
             Photons=Collection(self.event,'Photon')
@@ -54,7 +54,7 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
               #Ricostruire Z a partire dai 2 leptoni
               self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[2],self.weight)
               Zmass=(ptEtaCutLeptons[0].p4()+ptEtaCutLeptons[1].p4()).M()
-              self.hEvent.fill1D("ZMass","Zmass",100,30,150,Zmass,self.weight)
+              self.hEvent.fill1D("ZMass","Zmass",12,30,150,Zmass,self.weight)
                
 
               #kinCutJets=self.JetkinCut(GenJets)
@@ -91,11 +91,11 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
 
     def leptonIsSignal(self,Leptons):
            if len(Leptons)!=2: return False
-           if (Leptons[0].pdgId==Leptons[1].pdgId): return False
+           if (Leptons[0].pdgId!=-Leptons[1].pdgId): return False
            if (Leptons[0].pt>20 or Leptons[1].pt>20): 
-                 Z_inv_mass=(Leptons[0].p4()+Leptons[1].p4()).M()
-                 if (50<Z_inv_mass<120 and Leptons[0].DeltaR(Leptons[1])>0.5): return True
-           return False
+            Z_inv_mass=(Leptons[0].p4()+Leptons[1].p4()).M()
+            if (50<Z_inv_mass<120 and Leptons[0].DeltaR(Leptons[1])>0.5): return True
+           
            
     def JetkinCut(self,Jets):
           cutJets=[j for j in Jets if abs(j.eta)<4.7 and j.pt>30]
