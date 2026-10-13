@@ -15,7 +15,7 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
                     
         
     def analyze(self):
-        EtichetteTagliSignalDef=["Total Events","After GenStatusFlag","LeptonCut","AfterNJetCut", "AfterJetKin","AfterLepInvMassandDeltaR"]
+        EtichetteTagliSignalDef=["Total Events","After GenStatusFlag","LeptonCut","AfterJetCuts", "AfterJetKin","AfterLepInvMassandDeltaR"]
         self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[0],self.weight)
         if(self.event.HLT_passZZ4l): 
 
@@ -46,22 +46,27 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
         #=================  
 
         def IsSignal():
-              #kinCutph=self.photonKinCut(GenPhotons)
-              #if len(kinCutph)==0: return False
-              #self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[2],self.weight)
+              
               ptEtaCutLeptons=self.leptonPtEtaCut(GenLeptons)
               if self.leptonIsSignal(ptEtaCutLeptons)==False: return False
+              #=====================================
               #Ricostruire Z a partire dai 2 leptoni
+              #=====================================
+
               self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[2],self.weight)
               Zmass=(ptEtaCutLeptons[0].p4()+ptEtaCutLeptons[1].p4()).M()
-              self.hEvent.fill1D("ZMass","Zmass",12,30,150,Zmass,self.weight)
-               
+              self.hEvent.fill1D("ZMass","Zmass",110,30,150,Zmass,self.weight)
 
-              #kinCutJets=self.JetkinCut(GenJets)
-              #if len(kinCutJets)==0: return False
-              #self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[4],self.weight)
-              #if self.leptonIsSignal(kinCutlep)==False: return False
-              #self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[5],self.weight)
+              #=======
+              # Adroni
+              # ====== 
+
+              ptEtaCutJets=self.jetPtEtaCut(GenJets)
+              if self.jetMassCut(ptEtaCutJets)==False: return False
+              self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[3],self.weight)
+
+
+              
               return True
         
 
@@ -95,12 +100,23 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
            if (Leptons[0].pt>20 or Leptons[1].pt>20): 
             Z_inv_mass=(Leptons[0].p4()+Leptons[1].p4()).M()
             if (50<Z_inv_mass<120 and Leptons[0].DeltaR(Leptons[1])>0.5): return True
-           
-           
-    def JetkinCut(self,Jets):
+                 
+    def jetPtEtaCut(self,Jets):
           cutJets=[j for j in Jets if abs(j.eta)<4.7 and j.pt>30]
           return cutJets
+    
+    def jetMassCut(self,Jets):
+          jetMassCutPassed=[]
+          if (len(Jets)<2): return False
+          for i, jet1 in enumerate(Jets):
+                for n in range(i+1,len(Jets)):
+                      jet2=Jets[n]
+                      jetMass=(jet1.p4()+jet2.p4()).M()
+                      if (50<jetMass<120): jetMassCutPassed.append(jet1)
+          if len(jetMassCutPassed)==0: return False  
+          return jetMassCutPassed
 
+        
 
 
 
@@ -115,3 +131,15 @@ class GenStatusFlag(IntFlag):
 
                 SEL = IS_PROMPT | FROM_HARD_PROCESS
                 #PH_SEL = IS_PROMPT
+           
+   
+
+
+
+
+
+           
+           
+                      
+                  
+
