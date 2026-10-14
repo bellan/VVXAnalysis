@@ -339,8 +339,8 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             ZZGammaInvMass = (ZZ.p4() + self.GetP4(Gamma)).M()
         self.hEvent.fill1D(f"{Level}Level_ZZGammaMass", f"{Level}Level_ZZGammaMass", 50, 120., 620., ZZGammaInvMass, self.weight)
 
-        self.hEvent.fill1D(f"{Level}Level_PhotonPt", f"{Level}Level_PhotonPt", 18, 0., 180., Gamma.pt, self.weight)
-        self.hEvent.fill1D(f"{Level}Level_PhotonEta", f"{Level}Level_PhotonEta", 12, 0., 2.4, Gamma.eta, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_GammaPt", f"{Level}Level_GammaPt", 18, 0., 180., Gamma.pt, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_GammaEta", f"{Level}Level_GammaEta", 12, 0., 2.4, Gamma.eta, self.weight)
                
     
 # =========================
