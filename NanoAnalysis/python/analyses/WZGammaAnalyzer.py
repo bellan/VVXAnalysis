@@ -49,7 +49,7 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
     def analyze(self):  
         self.loadCollections()
         self.SDCuts = ["Weighted_Events","Lep_KinCuts", "Ph_KinCuts", "WZ_MassLimits", "FSR_onWZ"]
-        self.SRCuts = ["Weighted_Events","Lep_KinCuts", "Ph_KinCuts", "MET_Cut","Z_MassLimits", "FSR_onZ", "FSR_onW"]
+        self.SRCuts = ["Weighted_Events","Lep_KinCuts", "Ph_ValidityChecks", "Ph_KinCuts", "MET_Cut","Z_MassLimits", "FSR_onZ", "FSR_onW"]
 
         self.isSig = False
         if self.analyzeMC :
@@ -166,24 +166,31 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         self.lGammaMET_mt = None
         self.MET = None
 
+        self.hEvent.fill1D("nPhoton_preCuts", "nPhoton_preCuts",11, -0.5, 10.5, len(self.Photons), self.weight)
         self.CutPlot("Region", 0)
         # KINEMATIC CUT ON PARTICLES
         BestLeptons = self.pass_ChLepKinCut(self.ChargedLeptons, "Region")
         if BestLeptons is None : return False
         self.CutPlot("Region", 1)
                                           
-        bestPhoton = self.pass_PhKinCut(self.Photons, self.ChargedLeptons)
-        if bestPhoton is None : return False
+        GoodPhotons = [p for p in self.Photons if p.cutBased > 0 and p.electronVeto] 
+        self.hEvent.fill1D("nGoodPhoton_preKinCuts", "nGoodPhoton_preKinCuts",11, -0.5, 10.5, len(GoodPhotons), self.weight)
+        if len(GoodPhotons) == 0 : return False 
         self.CutPlot("Region", 2)
+        
+        bestPhoton = self.pass_PhKinCut(GoodPhotons, self.ChargedLeptons)
+        if bestPhoton is None : return False
+        self.CutPlot("Region", 3)
         self.hEvent.fill1D("Photon_pt", "Photon_pt", 30, 0., 300., bestPhoton.pt, self.weight)
         self.hEvent.fill1D("Photon_eta", "Photon_eta", 18, -3., 3., bestPhoton.eta, self.weight)
+        
 
         # CUT on MISSING ENERGY
         puppyYears = [2024]
         self.MET = self.PuppiMET if year in puppyYears else self.PFMET
         self.hEvent.fill1D("MET_pt_beforeCuts", "MET_pt_beforeCuts", 30, 0., 300., self.MET.pt, self.weight)
         if self.MET.pt <= 30 : return False
-        self.CutPlot("Region", 3)
+        self.CutPlot("Region", 4)
 
         # Z RECONSTRUCTION
         theZ = self.ZCands[self.bestZIdx]
@@ -197,12 +204,12 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
             if theZ.fsr2Idx > -1 : lepZ2 = DressedLepton(lep2, self.FSRPhotons[theZ.fsr2Idx])
             else : lepZ2 = lep2
         else : return False
-        self.CutPlot("Region", 4)
+        self.CutPlot("Region", 5)
            
         notpassedZ, invMassLLGamma = self.isPhotonFSR([lepZ1,lepZ2], bestPhoton, 100)
         self.hEvent.fill1D("llGamma_invMass", "llGamma_invMass", 40, 40., 240., invMassLLGamma, self.weight)
         if notpassedZ : return False
-        self.CutPlot("Region", 5)
+        self.CutPlot("Region", 6)
 
         self.hEvent.fill1D("LepZ2_pt", "LepZ2_pt", 30, 0., 300., lepZ2.pt, self.weight)
         self.hEvent.fill1D("LepZ1_pt", "LepZ1_pt", 30, 0., 300., lepZ1.pt, self.weight)
@@ -230,7 +237,7 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         self.hEvent.fill1D("lGammaMET_Mt", "lGammaMET_Mt", 30, 0., 300., self.lGammaMET_mt, self.weight)
         #self.hEvent.fill2D("W_vs_lGamma_Mt", "W_vs_lGamma_Mt", 30, 0., 300., 12, 0., 120., self.lGammaMET_mt, self.W_mt, self.weight)
         if self.lGammaMET_mt < 90. : return False
-        self.CutPlot("Region", 6)
+        self.CutPlot("Region", 7)
 
          #other transverse masses
         lZ_list = [(lepW.pt, lepW.eta, lepW.phi), (lepZ1.pt, lepZ1.eta, lepZ1.phi), (lepZ2.pt, lepZ2.eta, lepZ2.phi)]
