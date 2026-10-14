@@ -95,7 +95,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
         return True
 
-    SRCuts = ["EventiTotali", "passZZ4l+BestCand", "regione L4P", "CinematicaLeptoni", "Z1Z2Mass", "PhotonCutL+ElectronVeto", "CinematicaFotoni", "IsolatedPhotons","TribosonRegion"]
+    SRCuts = ["EventiTotali", "passZZ4l+BestCand", "regione L4P", "CinematicaLeptoni", "Z1Z2Mass",  "P1CutL+ElectronVeto", "CinematicaFotoni", "IsolatedPhotons","TribosonRegion"]
 
     def isBgivenA(self, A, B, nomeA, nomeB):
 
