@@ -21,11 +21,11 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         
         self.LoadCollections()
         
-        #isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons)
+        isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons)
         isSR = self.SignalRegion(self.Leptons, self.Photons)
 
-        #self.isBgivenA(isSD, isSR, "SD", "SR")
-        #self.isBgivenA(isSR, isSD, "SR", "SD")
+        self.isBgivenA(isSD, isSR, "SD", "SR")
+        self.isBgivenA(isSR, isSD, "SR", "SD")
 
         
     # =========================
