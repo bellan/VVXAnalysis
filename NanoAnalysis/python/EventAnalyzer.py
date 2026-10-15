@@ -82,7 +82,7 @@ class EventAnalyzer:
 
         if self.analyzeMC:
             # lumi is expressed in 1/fb, while xsections are in pb
-            self.weight = 10e3*self.luminosity*self.event.overallEventWeight/self.genEventSumw
+            self.weight = 1e3*self.luminosity*self.event.overallEventWeight/self.genEventSumw
             # compute the dataMC correction. Store it in a separate weight, for checks
             self.dataMCWeight = 1.
             self.dataMCWeight *= math.prod(lep.dataMC for lep in self.leptons if lep.ZZFullSel)
