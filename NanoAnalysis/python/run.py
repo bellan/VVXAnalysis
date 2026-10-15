@@ -34,7 +34,7 @@ if __name__ == "__main__" :
 
     parser.add_option("-s", "--sample", dest="selectedSample", nargs=2,
                       metavar=("YEAR", "NAME"), default=None, action="append",
-                      help="Analyze just this sample (can be ripeted and used by Condor jobs")
+                      help="Analyze just this sample (can be repeated and used by Condor jobs")
 
     flavours = ["espresso", "microcentury", "longlunch", "workday", "tomorrow", "testmatch", "nextweek"]
     parser.add_option("-f","--flavour", dest="flavour", type="choice",
