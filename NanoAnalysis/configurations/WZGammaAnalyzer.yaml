@@ -5,16 +5,44 @@ samples:
   by_name:
     - WZGamma
     - WZGtoLNuZG
+    #backgrounds
+    - DYJetsTo2E
+    - DYJetsTo2Mu
+    - ggH125
+    - ggTo2e2mu_Contin_MCFM701
+    - ggTo2e2tau_Contin_MCFM701
+    - ggTo2mu2tau_Contin_MCFM701
+    - ggTo4e_Contin_MCFM701
+    - ggTo4mu_Contin_MCFM701
+    - ggTo4tau_Contin_MCFM701
+    - ttH125
+    - TTLL_MLL-4to50
+    - TTLL_MLL-50
+    - TTto2L2Nu
+    - TTWW
+    - VBFH125
+    - WminusH125
+    - WplusH125
+    - WWZ
+    - WZGamma
+    - WZGtoLNuZG
     #- WZto3LNu
-    #- ZZTo4l
-    #- ZZTo4l_2Jets_EW
-    #- DoubleMu2022H
+    - WZZ
+    - ZH125
+    - ZZGamma
+    - ZZTo4l_2Jets_EW_QCD
+    - ZZTo4l_2Jets_EW
+    - ZZTo4l_2Jets_QCD
+    - ZZTo4l
+    - ZZZ
+   
   by_process:
     - VBS
 
 analysis:
   analyzer: WZGammaAnalyzer
-  regions : [L3P_P1cutL]
+  #regions : [L3P_P1cutL]
+  regions : [L3P]
 
 
 

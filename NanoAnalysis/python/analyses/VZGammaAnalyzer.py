@@ -15,7 +15,7 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
                     
         
     def analyze(self):
-        EtichetteTagliSignalDef=["Total Events","After Trigger","AfterPhotonKin","AfterPhotonDelta","AfterLeptonKin"]
+        EtichetteTagliSignalDef=["Total Events","After GenStatusFlag","LeptonCut","AfterJetCuts", "AfterJetKin","AfterLepInvMassandDeltaR"]
         self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[0],self.weight)
         if(self.event.HLT_passZZ4l): 
 
@@ -25,7 +25,7 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
 
             GenParts=Collection(self.event,'GenPart')
             GenPhotons=[p for p in GenParts if p.pdgId==22 and p.status==1 and (p.statusFlags & GenStatusFlag.SEL)==GenStatusFlag.SEL ]
-            GenLeptons=[p for p in GenParts if (abs(p.pdgId==11) or abs(p.pdgId==13)) and p.status == 1 and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
+            GenLeptons=[p for p in GenParts if (abs(p.pdgId)==11 or abs(p.pdgId)==13) and p.status == 1 and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
             GenJets=Collection(self.event,'GenJet')
 
             Photons=Collection(self.event,'Photon')
@@ -46,13 +46,28 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
         #=================  
 
         def IsSignal():
-              kinCutph=self.photonKinCut(GenPhotons)
-              if len(kinCutph)==0: return False
+              
+              ptEtaCutLeptons=self.leptonPtEtaCut(GenLeptons)
+              if self.leptonIsSignal(ptEtaCutLeptons)==False: return False
+              #=====================================
+              #Ricostruire Z a partire dai 2 leptoni
+              #=====================================
+
               self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[2],self.weight)
-              kinCutlep=self.leptonKinCut(GenLeptons)
-              DeltaRCutph=self.photonDeltaRCut(kinCutph,kinCutlep,GenJets)
-              if len(DeltaRCutph)==0: return False
+              Zmass=(ptEtaCutLeptons[0].p4()+ptEtaCutLeptons[1].p4()).M()
+              self.hEvent.fill1D("ZMass","Zmass",110,30,150,Zmass,self.weight)
+
+              #=======
+              # Adroni
+              # ====== 
+
+              ptEtaCutJets=self.jetPtEtaCut(GenJets)
+              if self.jetMassCut(ptEtaCutJets)==False: return False
               self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[3],self.weight)
+
+
+              
+              return True
         
 
         res=IsSignal()  
@@ -63,25 +78,50 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
               
           
 
- 
+    #=====================
+    # SIGNAL DEF FUNCTIONS
+    #=====================
 
     def photonKinCut(self,Photons):
-            CutPhotons=[p for p in Photons if abs(p.eta)<2.4 and p.pt>20 ]   
+            CutPhotons=[p for p in Photons if abs(p.eta)<2.4 and p.pt>15 ]   
             return CutPhotons
 
     def photonDeltaRCut(self,Photons,Leptons,Jets):
            secondCutPhotons=[p for p in Photons if all(p.DeltaR(l)>0.5 for l in Leptons) and all(p.DeltaR(j)>0.5 for j in Jets)]
            return secondCutPhotons                 
 
-    def leptonKinCut(self,Leptons):
-           firstCutLeptons=[p for p in Leptons if p.pt>10 and abs(p.eta)<2.5]
+    def leptonPtEtaCut(self,Leptons):
+           firstCutLeptons=[p for p in Leptons if p.pt>5 and abs(p.eta)<2.5]
            return firstCutLeptons           
+
+    def leptonIsSignal(self,Leptons):
+           if len(Leptons)!=2: return False
+           if (Leptons[0].pdgId!=-Leptons[1].pdgId): return False
+           if (Leptons[0].pt>20 or Leptons[1].pt>20): 
+            Z_inv_mass=(Leptons[0].p4()+Leptons[1].p4()).M()
+            if (50<Z_inv_mass<120 and Leptons[0].DeltaR(Leptons[1])>0.5): return True
+                 
+    def jetPtEtaCut(self,Jets):
+          cutJets=[j for j in Jets if abs(j.eta)<4.7 and j.pt>30]
+          return cutJets
     
-    def ZLeptons(self,Leptons):
-        leptons=[p for p in Leptons if p.pt>20]
-        lepton1=[p for p in leptons if all(leptons.DeltaR(l)>0.5 for l in leptons)]
-        lepton2=[p for p in lepton1 if all(lepton1.DeltaR(l)>0.5 for l in lepton1)]
-    #def invMassCut(self,Leptons,Photons):
+    def jetMassCut(self,Jets):
+          jetMassCutPassed=[]
+          if (len(Jets)<2): return False
+          for i, jet1 in enumerate(Jets):
+                for n in range(i+1,len(Jets)):
+                      jet2=Jets[n]
+                      jetMass=(jet1.p4()+jet2.p4()).M()
+                      if (50<jetMass<120): jetMassCutPassed.append(jet1)
+          if len(jetMassCutPassed)==0: return False  
+          return jetMassCutPassed
+
+        
+
+
+
+
+           
            
                       
                   
@@ -91,3 +131,15 @@ class GenStatusFlag(IntFlag):
 
                 SEL = IS_PROMPT | FROM_HARD_PROCESS
                 #PH_SEL = IS_PROMPT
+           
+   
+
+
+
+
+
+           
+           
+                      
+                  
+
