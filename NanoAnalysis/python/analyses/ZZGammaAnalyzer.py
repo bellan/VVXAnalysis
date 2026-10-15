@@ -21,11 +21,11 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         
         self.LoadCollections()
         
-        isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons)
+        #isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons)
         isSR = self.SignalRegion(self.Leptons, self.Photons)
 
-        self.isBgivenA(isSD, isSR, "SD", "SR")
-        self.isBgivenA(isSR, isSD, "SR", "SD")
+        #self.isBgivenA(isSD, isSR, "SD", "SR")
+        #self.isBgivenA(isSR, isSD, "SR", "SD")
 
         
     # =========================
@@ -77,25 +77,27 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         if not self.ZZMassCuts(RecoZZ): return False
         self.CutPlot("Region", 4)
         
+        if not Regions.check(self.regionWord, Regions.P1cutL): return False
+        self.CutPlot("Region", 5)
         RegionPass, TruePhotons = self.GetTruePhotons(Photons)
         if not RegionPass: return False
-        self.CutPlot("Region", 5)
+        self.CutPlot("Region", 6)
         KinPass, GoodPhotons = self.PhotonsKinematicCuts(TruePhotons)
         if not KinPass: return False
-        self.CutPlot("Region", 6)
+        self.CutPlot("Region", 7)
         IsolatedPass, IsolatedPhotons = self.GetIsolatedPhotons(GoodPhotons, LeptonsOI)
         if not IsolatedPass: return False
-        self.CutPlot("Region", 7)
+        self.CutPlot("Region", 8)
         TribosonPass, RecoGamma = self.GetGamma("Reco", IsolatedPhotons, LeptonsOI, RecoZZ)
         if not TribosonPass: return False
-        self.CutPlot("Region", 8)
+        self.CutPlot("Region", 9)
         PtThetaGraph = self.GraphGammaPtThetaZZG("Reco", RecoGamma, RecoZZ)
 
         self.PlotsOI("Reco", RecoZZ, RecoGamma)
 
         return True
 
-    SRCuts = ["EventiTotali", "passZZ4l+BestCand", "regione L4P", "CinematicaLeptoni", "Z1Z2Mass",  "P1CutL+ElectronVeto", "CinematicaFotoni", "IsolatedPhotons","TribosonRegion"]
+    SRCuts = ["EventiTotali", "passZZ4l+BestCand", "regione L4P", "CinematicaLeptoni", "Z1Z2Mass", "RegionP1CutL", "P1CutL+ElectronVeto", "CinematicaFotoni", "IsolatedPhotons","TribosonRegion"]
 
     def isBgivenA(self, A, B, nomeA, nomeB):
 
