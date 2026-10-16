@@ -2,7 +2,7 @@ samples:
   years: [2022, 2023, 2024]
   origin: [MC]
   mode: name          # oppure: process, all
- by_name:
+  by_name:
     - WZGamma
     - WZGtoLNuZG
     #backgrounds
