@@ -48,8 +48,9 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
 
     def analyze(self):  
         self.loadCollections()
-        self.SDCuts = ["Weighted_Events","Lep_KinCuts", "Ph_KinCuts", "WZ_MassLimits", "FSR_onWZ"]
-        self.SRCuts = ["Weighted_Events","Lep_KinCuts", "Ph_ValidityChecks", "Ph_KinCuts", "MET_Cut","Z_MassLimits", "FSR_onZ", "FSR_onW"]
+        self.SDCuts = ["Weighted_Events","Lep_KinCuts","WZ_MassLimits","Ph_KinCuts", "Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
+        self.SRCuts=["Weighted_Events","HLT_passZZ4l","Lep_KinCuts","MET_Cut","Z_MassLimits","ZZFullSel","Ph_kinCuts",
+                     "Ph_electronVeto","Ph_cutBased>=1","Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
 
         self.isSig = False
         if self.analyzeMC :
@@ -70,132 +71,115 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
 
         '''if self.hasGenFSR and self.lGammaMET_mt != None :
             self.hEvent.fill1D("lGammaMET_Mt_Cutted", "lGammaMET_Mt_Cutted", 30, 0., 300., self.lGammaMET_mt, self.weight)'''
-
-    
+   
 
     #---------------------      
     #SIGNAL DEFINITION
     #---------------------
     def isSignal(self) :        
         self.genCouple = None, None
-        self.W_mt_Gen = None
-        self.lGammaMET_mt_Gen = None
         self.hasGenFSR = False
-        self.GenBestLepton = None
 
-        self.CutPlot("Definition", 0)
-        # KINEMATIC CUT ON GENERATED PARTICLES             
-        self.hEvent.fill1D("nGenChargedLeptons", "nGenChargedLeptons",11, -0.5, 10.5, len(self.GenChargedLeptons), self.weight)
-        self.GenBestLeptons = self.pass_ChLepKinCut(self.GenChargedLeptons, "Definition")  
-        if self.GenBestLeptons is None :
-            return False
+        self.CutPlot("Definition", 0)  
+        self.hEvent.fill1D("Gen_nChargedLeptons", "Gen_nChargedLeptons",11, -0.5, 10.5, len(self.GenChargedLeptons), self.weight)
+        GenBestLeptons = self.pass_ChLepKinCut(self.GenChargedLeptons, "Definition")  
+        if not GenBestLeptons : return False
         self.CutPlot("Definition", 1)
-        #self.hEvent.fill1D("nGenChargedLeptons_postCuts", "nGenChargedLeptons_postCuts",11, -0.5, 10.5, len(self.GenBestLeptons), self.weight)
-
-        self.hEvent.fill1D("nGenPhoton", "nGenPhoton",11, -0.5, 10.5, len(self.GenPhotons), self.weight)
-        genPhoton = self.pass_PhKinCut(self.GenPhotons, self.GenChargedLeptons)
-        if genPhoton is None :
-            return False
-        self.CutPlot("Definition", 2)
         
-        # COMPARISON OF WZ RECONSTRUCTION ALGORITHMS           
-        '''if self.isEventEasy(self.GenBestLeptons) :        
+        '''# COMPARISON OF WZ RECONSTRUCTION ALGORITHMS           
+        if self.isEventEasy(self.GenBestLeptons) :        
             self.methodOutcome(False, False,"MethodZ_Outcome")  #Z-first
             self.methodOutcome(False, True, "MethodW_Outcome")   #W-first
             self.methodOutcome(True, False, "MethodWZ_Outcome")   #residues'''
        
         # W and Z RECONSTRUCTION (with the Z-first method)
-        (theW, theZ), fail = self.WZRecon(self.GenBestLeptons, self.GenNeutrinos, False , False, False)
-        if theW is None or theZ is None :
-            return False
-        self.CutPlot("Definition", 3)
-           
-        self.hEvent.fill1D("ZGenMass_91Gev", "ZGenMass_91Gev", 180, 60., 120., theZ.mass, self.weight)
-        self.hEvent.fill1D("WGenMass_80Gev", "WGenMass_80Gev", 160, 50., 110., theW.mass, self.weight)
+        (theW, theZ), fail = self.WZRecon(GenBestLeptons, self.GenNeutrinos, False, False, False)
+        if theW is None or theZ is None : return False
+        self.CutPlot("Definition", 2)
         self.genCouple = (theW, theZ)
         lepW = next((l for l in theW.leptons if abs(l.pdgId) in (11,13)), None)
         nu  = next((n for n in theW.leptons if abs(n.pdgId) in  (12,14)), None)
 
-        #computation of different transverse mass for comparison with reco-level
-        '''if (nu.pt >= 30.0 ) :  #same condition as at reco-level
-            lepW_list = [(lepW.pt, lepW.eta, lepW.phi)]
-            self.W_mt_Gen = self.computeMt(lepW_list, nu.pt, nu.phi)
-            lGamma_list = [(lepW.pt, lepW.eta, lepW.phi), (genPhoton.pt, genPhoton.eta, genPhoton.phi)]
-            self.lGammaMET_mt_Gen = self.computeMt(lGamma_list, nu.pt, nu.phi)
-            self.hEvent.fill1D("Gen_W_Mt", "Gen_W_Mt", 30, 0., 300., self.W_mt_Gen, self.weight)
-            self.hEvent.fill1D("lGammaMET_Mt_Gen", "lGammaMET_Mt_Gen", 30, 0., 300., self.lGammaMET_mt_Gen, self.weight)
-            #2d plot
-            self.hEvent.fill2D("W_vs_lGamma_Mt_Gen", "W_vs_lGamma_Mt_Gen", 30, 0., 300., 12, 0., 120., self.lGammaMET_mt_Gen, self.W_mt_Gen, self.weight)
-            #other transverse masses
-            lZ_list = [(lepW.pt, lepW.eta, lepW.phi), (theZ.leptons[0].pt, theZ.leptons[0].eta, theZ.leptons[0].phi), (theZ.leptons[1].pt, theZ.leptons[1].eta, theZ.leptons[1].phi)]
-            lZMET_mt_Gen = self.computeMt(lZ_list, nu.pt, nu.phi)
-            self.hEvent.fill1D("Gen_lZMET_Mt", "Gen_lZMET_Mt", 50, 50., 550., lZMET_mt_Gen, self.weight)
-            lZGamma_list = [(lepW.pt, lepW.eta, lepW.phi), (theZ.leptons[0].pt, theZ.leptons[0].eta, theZ.leptons[0].phi), (theZ.leptons[1].pt, theZ.leptons[1].eta, theZ.leptons[1].phi) , (genPhoton.pt, genPhoton.eta, genPhoton.phi)]
-            lZGammaMET_mt_Gen = self.computeMt(lZGamma_list, nu.pt, nu.phi)
-            self.hEvent.fill1D("Gen_lZGammaMET_Mt", "Gen_lZGammaMET_Mt", 50, 100., 600., lZGammaMET_mt_Gen, self.weight)'''
-       
-        # invariant mass "llGamma" analysis          
-        notpassedZ, invMassLLGamma = self.isPhotonFSR(theZ.leptons, genPhoton, 100)
-        notpassedW, invMassLNuGamma = self.isPhotonFSR(theW.leptons, genPhoton, 90)    # only cause the neutrino is gen
-        #self.hEvent.fill1D("LNuGammaGen_invMass", "LNuGammaGen_invMass", 50, 40., 240., invMassLNuGamma, self.weight)               # 2d plot
-        invMassLL = theZ.mass  
-        invMassLNu = theW.mass  
-        self.hEvent.fill2D("llG_vs_ll_invMass", "llG_vs_ll_invMass", 100, 40., 240., 30, 60., 120., invMassLLGamma, invMassLL, self.weight)
-        self.hEvent.fill2D("lNuG_vs_lNu_invMass", "lNuG_vs_lNu_invMass", 100, 40., 240., 30, 50., 110., invMassLNuGamma, invMassLNu, self.weight)
-        '''if notpassedW and nu.pt >= 30.0 :
-            self.hEvent.fill1D("lGammaMET_Mt_CuttedGen", "lGammaMET_Mt_CuttedGen", 30, 0., 300., self.lGammaMET_mt_Gen, self.weight)
-            self.hasGenFSR = True'''
-        if notpassedW or notpassedZ :
-            return False
-        self.CutPlot("Definition", 4)
+        self.hEvent.fill1D("Gen_nPhoton", "Gen_nPhoton",11, -0.5, 10.5, len(self.GenPhotons), self.weight)
+        GoodGenPhoton = self.photonsCuts(self.GenPhotons, self.GenChargedLeptons, "Definition")
+        if not GoodGenPhoton : return False 
+
+        '''photon_maxPt = max(GoodGenPhoton, key=lambda p: p.pt, default=None)  # for graphic purposes only
+        Gen_invMassLLGamma_preCuts = self.getInvMass(theZ.leptons[0], theZ.leptons[1], photon_maxPt)'''
+        SurvivedGenPhotons = [gp for gp in GoodGenPhoton if self.photonIsNotFSR(theZ.leptons, gp, 100)]
+        if not SurvivedGenPhotons : return False
+        self.CutPlot("Definition", 5)  #FSR_onZ
+
+        '''photon_maxPt = max(SurvivedGenPhotons, key=lambda p: p.pt, default=None)  # for graphic purposes only
+        Gen_invMassLNuGamma_preCuts = self.getInvMass(theW.leptons[0], theW.leptons[1], photon_maxPt)'''
+        UltimateGenPhotons = [sp for sp in SurvivedGenPhotons if self.photonIsNotFSR(theW.leptons, sp, 90)]
+        if not UltimateGenPhotons : return False
+        else : genPhoton = max(UltimateGenPhotons, key=lambda p: p.pt, default=None)
+        self.CutPlot("Definition", 6)  #FSR_onW
+
+        invMassLLGamma_Gen = self.getInvMass(theZ.leptons[0], theZ.leptons[1], genPhoton)
+        invMassLNuGamma_Gen = self.getInvMass(theW.leptons[0], theW.leptons[1], genPhoton)
         
-        #control on neutrinos number
-        #self.hEvent.fill1D("nGenNeutrino_postCuts", "nGenNeutrino_postCuts",7, -1.5, 5.5, len(self.GenNeutrinos), self.weight)
+        '''#computation of different transverse mass for comparison with reco-level
+        if (nu.pt >= 30.0 ) :  #same condition as at reco-level
+            W_mt_Gen = self.computeMt([(lepW.pt, lepW.eta, lepW.phi)], nu.pt, nu.phi)
+            
+            lGamma_list = [(lepW.pt, lepW.eta, lepW.phi), (genPhoton.pt, genPhoton.eta, genPhoton.phi)]
+            lGammaMET_mt_Gen = self.computeMt(lGamma_list, nu.pt, nu.phi)
+            
+            lZ_list = [(lepW.pt, lepW.eta, lepW.phi), (theZ.leptons[0].pt, theZ.leptons[0].eta, theZ.leptons[0].phi),(theZ.leptons[1].pt, theZ.leptons[1].eta, theZ.leptons[1].phi)]
+            lZMET_mt_Gen = self.computeMt(lZ_list, nu.pt, nu.phi)
+            
+            lZGamma_list = [(lepW.pt, lepW.eta, lepW.phi), (theZ.leptons[0].pt, theZ.leptons[0].eta, theZ.leptons[0].phi),
+(theZ.leptons[1].pt, theZ.leptons[1].eta, theZ.leptons[1].phi) , (genPhoton.pt, genPhoton.eta, genPhoton.phi)]
+            lZGammaMET_mt_Gen = self.computeMt(lZGamma_list, nu.pt, nu.phi)
+
+            self.hEvent.fill1D("Gen_W_Mt", "Gen_W_Mt", 30, 0., 300., W_mt_Gen, self.weight)
+            self.hEvent.fill1D("Gen_lGammaMET_Mt", "Gen_lGammaMET_Mt", 30, 0., 300., lGammaMET_mt_Gen, self.weight)
+            self.hEvent.fill1D("Gen_lZGammaMET_Mt", "Gen_lZGammaMET_Mt", 50, 100., 600., lZGammaMET_mt_Gen, self.weight)'''
+                        
+        '''if not self.photonIsNotFSR(theW.leptons, sp, 90) and nu.pt >= 30.0 :
+            self.hEvent.fill1D("lGammaMET_Mt_CuttedGen", "lGammaMET_Mt_CuttedGen", 30, 0., 300., lGammaMET_mt_Gen, self.weight)
+            self.hasGenFSR = True'''
+        
+        '''# unuseful plot
+        self.hEvent.fill2D("llG_vs_ll_invMass", "llG_vs_ll_invMass", 100, 40., 240., 30, 60., 120., invMassLLGamma_preCuts,
+        theZ.mass, self.weight)
+        self.hEvent.fill2D("lNuG_vs_lNu_invMass", "lNuG_vs_lNu_invMass", 100, 40., 240., 30, 50., 110.,
+        invMassLNuGamma_preCuts, theW.mass, self.weight)
+        self.hEvent.fill2D("W_vs_lGamma_Mt_Gen", "W_vs_lGamma_Mt_Gen", 30, 0., 300., 12, 0., 120., lGammaMET_mt_Gen,
+        W_mt_Gen, self.weight)
+        self.hEvent.fill1D("Gen_invMassLLGamma", "Gen_invMassLLGamma", 30, 0., 300., invMassLLGamma_Gen, self.weight)
+        self.hEvent.fill1D("Gen_invMassLNuGamma", "Gen_invMassLNuGamma", 30, 0., 300., invMassLNuGamma_Gen, self.weight)'''
+                  
+        self.hEvent.fill1D("Gen_ZMass_91Gev", "ZGenMass_91Gev", 180, 60., 120., theZ.mass, self.weight)
+        self.hEvent.fill1D("Gen_WMass_80Gev", "WGenMass_80Gev", 160, 50., 110., theW.mass, self.weight)
 
         return True
-
                                  
    
     #-----------------------
     # SIGNAL REGION
     #-----------------------
     def isInSignalRegion(self, year) :
-        self.cutFlowStageSR = 0.0
-        self.recoCouple = (None, None)
-        self.W_mt = None
-        self.lGammaMET_mt = None
+        self.recoCouple = (None, None)      
         self.MET = None
 
-        self.hEvent.fill1D("nPhoton_preCuts", "nPhoton_preCuts",11, -0.5, 10.5, len(self.Photons), self.weight)
-        self.CutPlot("Region", 0)
-        # KINEMATIC CUT ON PARTICLES
+        self.CutPlot("Region", 0)  #Weighted Events
+        if not self.event.HLT_passZZ4l : return False
+        self.CutPlot("Region", 1)  #HLT_passZZ4l
+        
         BestLeptons = self.pass_ChLepKinCut(self.ChargedLeptons, "Region")
-        if BestLeptons is None : return False
-        self.CutPlot("Region", 1)
-                                          
-        GoodPhotons = [p for p in self.Photons if p.cutBased > 0 and p.electronVeto] 
-        self.hEvent.fill1D("nGoodPhoton_preKinCuts", "nGoodPhoton_preKinCuts",11, -0.5, 10.5, len(GoodPhotons), self.weight)
-        if len(GoodPhotons) == 0 : return False 
-        self.CutPlot("Region", 2)
-        
-        bestPhoton = self.pass_PhKinCut(GoodPhotons, self.ChargedLeptons)
-        if bestPhoton is None : return False
-        self.CutPlot("Region", 3)
-        self.hEvent.fill1D("Photon_pt", "Photon_pt", 30, 0., 300., bestPhoton.pt, self.weight)
-        self.hEvent.fill1D("Photon_eta", "Photon_eta", 18, -3., 3., bestPhoton.eta, self.weight)
-        
+        if not BestLeptons : return False
+        self.CutPlot("Region", 2)  #Lep_KinCuts
 
-        # CUT on MISSING ENERGY
         puppyYears = [2024]
         self.MET = self.PuppiMET if year in puppyYears else self.PFMET
-        self.hEvent.fill1D("MET_pt_beforeCuts", "MET_pt_beforeCuts", 30, 0., 300., self.MET.pt, self.weight)
-        if self.MET.pt <= 30 : return False
-        self.CutPlot("Region", 4)
-
-        # Z RECONSTRUCTION
+        if self.MET.pt < 30 : return False
+        self.CutPlot("Region", 3)  #MET_Ptcut
+                                          
         theZ = self.ZCands[self.bestZIdx]
         if 60. < theZ.mass < 120. :
-            self.hEvent.fill1D("ZCandMass_91Gev_SR", "ZCandMass_91Gev_SR", 180, 60., 120., theZ.mass, self.weight)
             lep1, lep2 = self.ChargedLeptons[theZ.l1Idx], self.ChargedLeptons[theZ.l2Idx]
             lepW_nd = next((l for l in BestLeptons if l not in (lep1, lep2)), None)
             #dressed leptons
@@ -204,88 +188,65 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
             if theZ.fsr2Idx > -1 : lepZ2 = DressedLepton(lep2, self.FSRPhotons[theZ.fsr2Idx])
             else : lepZ2 = lep2
         else : return False
-        self.CutPlot("Region", 5)
-           
-        notpassedZ, invMassLLGamma = self.isPhotonFSR([lepZ1,lepZ2], bestPhoton, 100)
-        self.hEvent.fill1D("llGamma_invMass", "llGamma_invMass", 40, 40., 240., invMassLLGamma, self.weight)
-        if notpassedZ : return False
-        self.CutPlot("Region", 6)
+        self.CutPlot("Region", 4)
 
-        self.hEvent.fill1D("LepZ2_pt", "LepZ2_pt", 30, 0., 300., lepZ2.pt, self.weight)
-        self.hEvent.fill1D("LepZ1_pt", "LepZ1_pt", 30, 0., 300., lepZ1.pt, self.weight)
-        
-        # W RECONSTRUCTION (looking at a different kind of FSR now : RECOVERY FSR, the ones inside 0.5 of DR)
-        lepW_list_nd = [(lepW_nd.pt, lepW_nd.eta, lepW_nd.phi)]
-        self.W_mt = self.computeMt(lepW_list_nd, self.MET.pt, self.MET.phi)
+        if not lepW_nd.ZZFullSel : return False
+        self.CutPlot("Region", 5)
+
+        W_mt = self.computeMt([(lepW_nd.pt, lepW_nd.eta, lepW_nd.phi)], self.MET.pt, self.MET.phi)
         if (lepW_nd.fsrPhotonIdx != -1 and lepW_nd.fsrPhotonIdx not in (theZ.fsr1Idx, theZ.fsr2Idx)) :
             fsrPhoton = self.FSRPhotons[lepW_nd.fsrPhotonIdx]   
             lepW = DressedLepton(lepW_nd, fsrPhoton)
-            lepW_list = [(lepW.pt, lepW.eta, lepW.phi)]
-            self.W_mt = self.computeMt(lepW_list, self.MET.pt, self.MET.phi)
-            theW = WReco(lepW, self.W_mt, fsrPhoton)
+            W_mt = self.computeMt([(lepW.pt, lepW.eta, lepW.phi)], self.MET.pt, self.MET.phi)
+            theW = WReco(lepW, W_mt, fsrPhoton)
         else : 
             lepW = lepW_nd
-            theW = WReco(lepW, self.W_mt)            
+            theW = WReco(lepW, W_mt)            
         self.recoCouple = (theZ, theW)
-        self.hEvent.fill1D("LepW_pt", "LepW_pt", 30, 0., 300., lepW_nd.pt, self.weight)
-        self.hEvent.fill1D("LepW_eta", "LepW_eta", 18, -3., 3., lepW_nd.eta, self.weight)
+        
+        BestPhotons = self.photonsCuts(self.Photons, self.ChargedLeptons, "Region")
+        if not BestPhotons : return False
 
-        # Transverse mass lGamma con MET
-        lGamma_list = [(lepW.pt, lepW.eta, lepW.phi), (bestPhoton.pt, bestPhoton.eta, bestPhoton.phi)]
-        self.lGammaMET_mt = self.computeMt(lGamma_list, self.MET.pt, self.MET.phi)
-        self.hEvent.fill1D("W_Mt", "W_Mt", 30, 0., 300., self.W_mt, self.weight)
-        self.hEvent.fill1D("lGammaMET_Mt", "lGammaMET_Mt", 30, 0., 300., self.lGammaMET_mt, self.weight)
-        #self.hEvent.fill2D("W_vs_lGamma_Mt", "W_vs_lGamma_Mt", 30, 0., 300., 12, 0., 120., self.lGammaMET_mt, self.W_mt, self.weight)
-        if self.lGammaMET_mt < 90. : return False
-        self.CutPlot("Region", 7)
+        photon_maxPt = max(BestPhotons, key=lambda p: p.pt, default=None)  # for graphic purposes only
+        invMassLLGamma_preCuts = self.getInvMass(lepZ1, lepZ2, photon_maxPt)
+        self.hEvent.fill1D("llGamma_invMass_preCuts", "llGamma_invMass_preCuts", 30, 0., 300., invMassLLGamma_preCuts, self.weight)
+        SurvivedPhotons = [bp for bp in BestPhotons if self.photonIsNotFSR([lepZ1,lepZ2], bp, 100)]
+        if not SurvivedPhotons : return False
+        self.CutPlot("Region", 10)  #FSR_onZ
 
-         #other transverse masses
+        photon_maxPt = max(BestPhotons, key=lambda p: p.pt, default=None)  # for graphic purposes only
+        lGamma_list_pC = [(lepW.pt, lepW.eta, lepW.phi), (photon_maxPt.pt, photon_maxPt.eta, photon_maxPt.phi)]
+        lGammaMET_mt_preCuts = self.computeMt(lGamma_list_pC, self.MET.pt, self.MET.phi)
+        self.hEvent.fill1D("lGammaMET_Mt_preCuts", "lGammaMET_Mt_preCuts", 15, 0., 300., lGammaMET_mt_preCuts, self.weight)
+        UltimatePhotons = [sp for sp in SurvivedPhotons if self.photonIsNotWFSR(lepW, sp, 90)]
+        if not UltimatePhotons : return False
+        else : thePhoton = max(UltimatePhotons, key=lambda p: p.pt, default=None)
+        self.CutPlot("Region", 11)  #FSR_onW
+
+        invMassLLGamma = self.getInvMass(lepZ1, lepZ2, thePhoton)
+        lGamma_list = [(lepW.pt, lepW.eta, lepW.phi), (thePhoton.pt, thePhoton.eta, thePhoton.phi)]
+        lGammaMET_mt = self.computeMt(lGamma_list, self.MET.pt, self.MET.phi)
+        
         lZ_list = [(lepW.pt, lepW.eta, lepW.phi), (lepZ1.pt, lepZ1.eta, lepZ1.phi), (lepZ2.pt, lepZ2.eta, lepZ2.phi)]
         lZMET_mt = self.computeMt(lZ_list, self.MET.pt, self.MET.phi)
-        self.hEvent.fill1D("lZMET_Mt", "lZMET_Mt", 50, 50., 550., lZMET_mt, self.weight)
-        lZGamma_list = [(lepW.pt, lepW.eta, lepW.phi), (lepZ1.pt, lepZ1.eta, lepZ1.phi), (lepZ2.pt, lepZ2.eta, lepZ2.phi), (bestPhoton.pt, bestPhoton.eta, bestPhoton.phi)]
+        lZGamma_list = [(lepW.pt, lepW.eta, lepW.phi), (lepZ1.pt, lepZ1.eta, lepZ1.phi), (lepZ2.pt, lepZ2.eta, lepZ2.phi), (thePhoton.pt, thePhoton.eta, thePhoton.phi)]
         lZGammaMET_mt = self.computeMt(lZGamma_list, self.MET.pt, self.MET.phi)
-        self.hEvent.fill1D("lZGammaMET_Mt", "lZGammaMET_Mt", 50, 100., 600., lZGammaMET_mt, self.weight)
-   
-
-        #plot post cuts
-        self.hEvent.fill1D("lGammaMET_Mt_postCuts", "lGammaMET_Mt_postCuts", 30, 70., 370., self.lGammaMET_mt, self.weight)
-        self.hEvent.fill1D("Photon_pt_postCuts", "Photon_pt_postCuts", 30, 0., 300., bestPhoton.pt, self.weight)
-        self.hEvent.fill1D("Photon_eta_postCuts", "Photon_eta_postCuts", 18, -3., 3., bestPhoton.eta, self.weight)
-        self.hEvent.fill1D("MET_pt_postCuts", "MET_pt_postCuts", 30, 0., 300., self.MET.pt, self.weight)
+                        
+        self.hEvent.fill1D("LepZ_1_pt", "LepZ_1_pt", 20, 0., 200., lepZ1.pt, self.weight)
+        self.hEvent.fill1D("LepZ_2_pt", "LepZ_2_pt", 20, 0., 200., lepZ2.pt, self.weight)
+        self.hEvent.fill1D("LepW_pt", "LepW_pt", 20, 0., 200., lepW.pt, self.weight)
+        self.hEvent.fill1D("LepW_eta", "LepW_eta", 12, -2.5, 2.5, lepW.eta, self.weight)
+        self.hEvent.fill1D("MET_pt", "MET_pt", 17, 30., 200., self.MET.pt, self.weight)
+        self.hEvent.fill1D("MET_phi", "MET_phi", 18, -3.2, 3.2, self.MET.phi, self.weight)
+        self.hEvent.fill1D("Photon_pt", "Photon_pt", 40, 0., 200., thePhoton.pt, self.weight)
+        self.hEvent.fill1D("Photon_eta", "Photon_eta", 12, -2.4, 2.4, thePhoton.eta, self.weight)
+        self.hEvent.fill1D("ZCandMass_91Gev", "ZCandMass_91Gev", 60, 60., 120., theZ.mass, self.weight)
+        self.hEvent.fill1D("W_Mt", "W_Mt", 10, 0., 200., W_mt, self.weight)
+        self.hEvent.fill1D("lGammaMET_Mt", "lGammaMET_Mt", 15, 0., 300., lGammaMET_mt, self.weight)
+        self.hEvent.fill1D("lZMET_Mt", "lZMET_Mt", 14, 0., 700., lZMET_mt, self.weight)
+        self.hEvent.fill1D("lZGammaMET_Mt", "lZGammaMET_Mt", 10, 0., 1000., lZGammaMET_mt, self.weight)
 
         return True
-
-       
-         
-       
-    #----------------------------------
-    # Functions for KINEMATIC CUT
-    #----------------------------------
-    # if the cut is passed (and also the trigger 20-10-5) it returns the three charged leptons with the biggest pt
-    def pass_ChLepKinCut(self, ChLeptons, level) :
-        if level == "Definition" : GoodChLeptons = [p for p in ChLeptons if p.pt > 5 and abs(p.eta) < 2.5]
-        elif level == "Region" : GoodChLeptons = [p for p in ChLeptons if (abs(p.pdgId) == 13 and p.pt > 5 or abs(p.pdgId) == 11 and p.pt > 7)  and  (abs(p.pdgId) == 13 and abs(p.eta) < 2.4 or abs(p.pdgId) == 11 and abs(p.eta) < 2.5)]
-        else : raise ValueError(f"Not valid option: '{option}'.")
-        ret = {}
-        if len(GoodChLeptons) > 2 :
-            l1 = max(GoodChLeptons, key=lambda p: p.pt, default=None)
-            if l1.pt > 20 :
-                l2 = max((p for p in GoodChLeptons if p != l1), key=lambda p: p.pt, default=None)
-                if l2.pt  > 10 :
-                    l3 = max((p for p in GoodChLeptons if p not in (l1, l2)), key=lambda p: p.pt, default=None)
-                    return [l1,l2,l3]                  
-        return None
-
-   
-    # for kinematic cut on photons: returns the photons that passed the cuts with the biggest pt
-    def pass_PhKinCut(self, Photons, ChLeptons) :
-        GoodPhotons = [p for p in Photons if p.pt > 20 and abs(p.eta) < 2.4 and not 1.444 < abs(p.eta) < 1.566]    
-        BestPhotons = [gp for gp in GoodPhotons if all(gp.DeltaR(l) > 0.5 for l in ChLeptons)]
-        if len(BestPhotons) > 0 :
-            return max(BestPhotons, key=lambda p: p.pt, default=None)
-        else : return None
-
    
  
     #--------------------------------------
@@ -359,17 +320,6 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         return bosonCouple, fail
 
 
-   
-    # return True if the selected photon is a FSR by looking at the invariant mass
-    def isPhotonFSR(self, Leptons, photon, massLimit) :
-        res = None
-        if len(Leptons) == 2 :
-            res = True
-            llGamma_mass = self.getInvMass(Leptons[0], Leptons[1], photon)
-            if llGamma_mass > massLimit : res = False
-        return res, llGamma_mass
-
-
     # Method that studies the algoritm results in terms of "error" (looks at the lepton coupling)
     def methodOutcome(self, useResidues, recbyW, histName) :
         bCouple, fail = self.WZRecon(self.GenBestLeptons, self.GenNeutrinos, useResidues, recbyW, True)
@@ -378,6 +328,64 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
             if not self.pairIsTruthBoson(theZ.leptons, 23) or not self.pairIsTruthBoson(theW.leptons,                        24): outcome = 0   # error
             else: outcome = 1   # success
             self.hEvent.fill1D(histName, histName, 2, -0.5, 1.5, outcome, self.weight)
+
+    
+    #----------------------------------
+    # Functions for CUTS
+    #----------------------------------
+    # if the cut is passed (and also the trigger 20-10-5) it returns the three charged leptons with the biggest pt
+    def pass_ChLepKinCut(self, ChLeptons, level) :
+        if level == "Definition" : GoodChLeptons = [p for p in ChLeptons if p.pt > 5 and abs(p.eta) < 2.5]
+        elif level == "Region" : GoodChLeptons = [p for p in ChLeptons if (abs(p.pdgId) == 13 and p.pt > 5 or abs(p.pdgId) == 11 and p.pt > 7)  and  (abs(p.pdgId) == 13 and abs(p.eta) < 2.4 or abs(p.pdgId) == 11 and abs(p.eta) < 2.5)]
+        else : raise ValueError(f"Not valid option: '{option}'.")
+        if len(GoodChLeptons) > 2 :
+            l1 = max(GoodChLeptons, key=lambda p: p.pt, default=None)
+            if l1.pt > 20 :
+                l2 = max((p for p in GoodChLeptons if p != l1), key=lambda p: p.pt, default=None)
+                if l2.pt  > 10 :
+                    l3 = max((p for p in GoodChLeptons if p not in (l1, l2)), key=lambda p: p.pt, default=None)
+                    return [l1,l2,l3]                  
+        return None
+
+   
+    # for kinematic cut on photons: returns the photons that passed all the cuts
+    def photonsCuts(self, Photons, ChLeptons, Level) :
+        GoodPhotons = [p for p in Photons if p.pt > 20 and abs(p.eta) < 2.4 and not 1.444 < abs(p.eta) < 1.566]
+        if Level == "Region" :
+            self.CutPlot(Level, 6)  #Ph_kinCuts
+            BestPhotons = [gp for gp in GoodPhotons if gp.electronVeto]
+            if not BestPhotons : return None
+            self.CutPlot(Level, 7)  #Ph_electronVeto
+            SelectedPhotons = [bp for bp in BestPhotons if bp.cutBased >= 1]
+            if not SelectedPhotons : return None
+            self.CutPlot(Level, 8)  #Ph_cutBased>=1
+            FinalistPhotons = [sp for sp in SelectedPhotons if all(sp.DeltaR(l) > 0.5 for l in ChLeptons)]
+            if not FinalistPhotons : return None
+            self.CutPlot(Level, 9)  #Ph_AngularSep
+            return FinalistPhotons
+        elif Level == "Definition" :
+            self.CutPlot(Level, 3)  #Ph_kinCuts
+            FinalistPhotons = [gp for gp in GoodPhotons if all(gp.DeltaR(l) > 0.5 for l in ChLeptons)]
+            if not FinalistPhotons : return None
+            self.CutPlot(Level, 4)  #Ph_AngularSep
+            return FinalistPhotons
+        else : raise ValueError(f"Not valid option: '{Level}'.")
+            
+
+    # return True if the selected photon is NOT a FSR attached to the Z (by looking at the invariant mass)
+    def photonIsNotFSR(self, Leptons, photon, massLimit) :
+        if len(Leptons) == 2 :
+            llGamma_invMass = self.getInvMass(Leptons[0], Leptons[1], photon)
+            if llGamma_invMass > massLimit : return True
+        return False
+        
+    #return True if the selected photon is NOT a FSR attached to the W (by looking at the invariant mass)
+    def photonIsNotWFSR(self, lepW, photon, massLimit) :
+        lGamma_list = [(lepW.pt, lepW.eta, lepW.phi), (photon.pt, photon.eta, photon.phi)]
+        lGammaMET_mt = self.computeMt(lGamma_list, self.MET.pt, self.MET.phi)
+        if lGammaMET_mt > massLimit : return True
+        return False
+
        
            
    
@@ -456,7 +464,7 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         return None
 
    
-    # it says if the two leptons have the correct pdgId characteristich to be "boson daughters"
+    # it says if the two leptons have the correct pdgId characteristic to be "boson daughters"
     def pairIsTruthBoson(self, Leptons, boson_pdgId):
         if len(Leptons) != 2 : return None
         if boson_pdgId == 23 :
@@ -467,21 +475,6 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
             return isWCouple
         return None
 
-   
-    '''# computes the transverse mass of the W boson and also in the case WGamma
-    def computeMt(self, lep_pt, lep_phi, met_pt, met_phi, lep_eta=None, pho_pt=None, pho_eta=None, pho_phi=None):
-        if pho_pt is None:
-            return math.sqrt(2.0 * lep_pt * met_pt * (1.0 - math.cos(lep_phi - met_phi)))
-   
-        lx, ly, lz = lep_pt * math.cos(lep_phi), lep_pt * math.sin(lep_phi), lep_pt * math.sinh(lep_eta)
-        gx, gy, gz = pho_pt * math.cos(pho_phi), pho_pt * math.sin(pho_phi), pho_pt * math.sinh(pho_eta)
-   
-        px, py = lx + gx, ly + gy
-        pt2 = px * px + py * py
-        m2 = max(0.0, (math.hypot(lx, ly, lz) + math.hypot(gx, gy, gz)) ** 2 - pt2 - (lz + gz) ** 2)   #E_tot^2 - p_t^2 - p_z^2
-        Et = math.sqrt(pt2 + m2)
-   
-        return math.sqrt(max(0.0, m2 + 2.0 * (Et * met_pt - (px * met_pt * math.cos(met_phi) + py * met_pt * math.sin(met_phi)))))'''
 
     # computes the transverse mass of any visible sistem of particles + MET
     # where visParticles is a list of tuple (pt, eta, phi)
@@ -543,16 +536,18 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
                 idx_GenPart = i
         return idx_GenPart
 
-
+    
+    #--------------------------
+    # Graphics functions
+    #--------------------------
     #function for producing cutFlowStage plot
     def CutPlot(self, Level, Cut):
         if Level == "Definition": Labels = self.SDCuts
         elif Level == "Region": Labels = self.SRCuts
-        else : raise ValueError(f"Not valid option: '{option}'.")
+        else : raise ValueError(f"Not valid option: '{Level}'.")
         self.hEvent.fill1D_label(f"EventsPerCuts_Signal{Level}", f"EventsPerCuts_Signal{Level}", Labels, Labels[Cut], self.weight)
 
-
-    # returns usdefull plot for computing percentages that characterize the sample : rec. efficency, background percentage in SR, events entering SR
+    # returns useful plot for computing percentages that characterise the sample : rec. efficiency, background percentage in SR, events entering SR
     def getPercentagePlot(self, option) :
         label = []
         if option == "ReconstructonEfficency" :
@@ -568,6 +563,22 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
                 if not self.isSig : self.hEvent.fill1D_label(option, option, label, label[2], self.weight)
         else : raise ValueError(f"Not valid option: '{option}'.")
 
+    
+    '''# useful for plotting some common hist between Gen and Reco Level
+    def commonPlots(self, Level, , Gamma):
+        self.hEvent.fill1D(f"{Level}Level_Z1Mass", f"{Level}Level_Z1Mass", 100, 60., 120., ZZ.Z1mass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_Z2Mass", f"{Level}Level_Z2Mass", 75, 60., 120., ZZ.Z2mass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_ZZMass", f"{Level}Level_ZZMass", 40, 120., 520., ZZ.mass, self.weight)
+
+        if Level == "Gen":
+            ZZGammaInvMass = (ZZ.p4 + Gamma.p4()).M()
+        elif Level == "Reco":
+            ZZGammaInvMass = (ZZ.p4() + self.GetP4(Gamma)).M()
+        self.hEvent.fill1D(f"{Level}Level_ZZGammaMass", f"{Level}Level_ZZGammaMass", 50, 120., 620., ZZGammaInvMass, self.weight)
+
+        self.hEvent.fill1D(f"{Level}Level_GammaPt", f"{Level}Level_GammaPt", 18, 0., 180., Gamma.pt, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_GammaEta", f"{Level}Level_GammaEta", 12, 0., 2.4, Gamma.eta, self.weight)'''
+               
    
 #---------------------------
 # other CLASSES
@@ -575,24 +586,20 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
 class GenZ:  
     def __init__(self, Leptons) :
         self.leptons = Leptons
-
         self.p4 = Leptons[0].p4() + Leptons[1].p4()
         self.mass = self.p4.M()
         self.pt = self.p4.Pt()
         self.eta = self.p4.Eta()
         self.phi = self.p4.Phi()  
 
-
 class GenW:
     def __init__(self, Leptons) :
         self.leptons = Leptons
-
         self.p4 = Leptons[0].p4() + Leptons[1].p4()
         self.mass = self.p4.M()
         self.pt = self.p4.Pt()
         self.eta = self.p4.Eta()
         self.phi = self.p4.Phi()
-
 
 class WReco :
     def __init__(self, Lepton, transvers_mass, Fsr = None, LeptonDressed = None) :
