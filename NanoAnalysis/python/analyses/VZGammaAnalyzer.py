@@ -121,8 +121,12 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
                 for n in range(i+1,len(Jets)):
                       jet2=Jets[n]
                       jetMass=(jet1.p4()+jet2.p4()).M()
-                      if (50<jetMass<120): jetMassCutPassed.append(jet1)
-          if len(jetMassCutPassed)==0: return False  
+                      if (50<jetMass<120): 
+                            jetMassCutPassed.append(jet1)
+                            jetMassCutPassed.append(jet2)
+                                  
+          if len(jetMassCutPassed)==0: return False
+          jetMassCutPassed=list(set(jetMassCutPassed))  
           return jetMassCutPassed
 
         
