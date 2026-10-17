@@ -93,7 +93,7 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
             self.methodOutcome(True, False, "MethodWZ_Outcome")   #residues'''
        
         # W and Z RECONSTRUCTION (with the Z-first method)
-        (theW, theZ), fail = self.WZRecon(GenBestLeptons, self.GenNeutrinos, False, False, False)
+        theW, theZ = self.WZRecon(GenBestLeptons, self.GenNeutrinos, False, False, False)
         if theW is None or theZ is None : return False
         self.CutPlot("Definition", 2)
         self.genCouple = (theW, theZ)
@@ -290,18 +290,17 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
     # useResidues = False, recbyW = True for the W-first method
     # useResidues = False, recbyW = False for the Z-first method
     def WZRecon(self, ChLeptons, Neutrinos, useResidues, recbyW, isForComparison) :
-        if not any(l.pdgId < 0 for l in ChLeptons) or not any(l.pdgId > 0 for l in ChLeptons): return None, None
-         
+        if not any(l.pdgId < 0 for l in ChLeptons) or not any(l.pdgId > 0 for l in ChLeptons): return None, None         
+        
         # for Z FIRST and RESIDUES METHOD
         Z1, coupleZ1 = (None, None) if recbyW else self.BosonRecon(ChLeptons, 23, (60,120), isForComparison)
         W1, coupleW1 = None, None
         if coupleZ1 is not None :
             RemainingChLeptons1 = [p for i, p in enumerate(ChLeptons) if i not in coupleZ1]
             Leptons1 = RemainingChLeptons1 + Neutrinos
-            W1, coupleW1 = self.BosonRecon(Leptons1, 24, (50,110), isForComparison)
-       
+            W1, coupleW1 = self.BosonRecon(Leptons1, 24, (50,110), isForComparison)     
         bosonCouple = (W1, Z1) if (coupleW1 is not None and coupleZ1 is not None) else (None, None)
-
+        
         # for W FIRST and RESIDUES METHOD
         if useResidues or recbyW :
             Leptons2 = ChLeptons + Neutrinos
@@ -310,14 +309,12 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
             if coupleW2 is not None :
                 RemainingChLeptons2 = [p for i, p in enumerate(ChLeptons) if i not in coupleW2]
                 Z2, coupleZ2 = self.BosonRecon(RemainingChLeptons2, 23, (60,120), isForComparison)
-               
             couple2Valid = coupleW2 is not None and coupleZ2 is not None
             couple1Valid = bosonCouple[0] is not None and bosonCouple[1] is not None
             if couple2Valid and (not couple1Valid or self.getLowerRes(W1, Z1, W2, Z2)):
                 bosonCouple = (W2, Z2)  
-   
-        fail = int(bosonCouple[0] is None or bosonCouple[1] is None)        
-        return bosonCouple, fail
+          
+        return bosonCouple
 
 
     # Method that studies the algoritm results in terms of "error" (looks at the lepton coupling)
