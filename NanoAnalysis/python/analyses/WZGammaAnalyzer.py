@@ -26,6 +26,8 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
                                 and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
             self.GenPhotons = [p for p in self.GenParts if p.pdgId == 22 and p.status == 1
                               and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
+            self.GenPhotons_nonPrompt = [p for p in self.GenParts if p.pdgId == 22 and p.status == 1
+                              and (p.statusFlags & (1<<0)) == 0]
             self.GenNeutrinos = [p for p in self.GenParts if abs(p.pdgId) in (12,14)  and p.status == 1
                             and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
 
@@ -51,18 +53,20 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         self.SDCuts = ["Weighted_Events","Lep_KinCuts","WZ_MassLimits","Ph_KinCuts", "Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
         self.SRCuts=["Weighted_Events","HLT_passZZ4l","Lep_KinCuts","MET_Cut","Z_MassLimits","ZZFullSel","Ph_kinCuts",
                      "Ph_electronVeto","Ph_cutBased>=1","Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
-
-        self.isSig = False
-        if self.analyzeMC :
-            self.isSig = self.isSignal()  
-            genW, genZ = self.genCouple
-               
-        self.isInSR = self.isInSignalRegion(2024)
-        recoZ, recoW = self.recoCouple                
-
-        # sample's statistic values
-        self.getPercentagePlot("Background_inSR")
-        self.getPercentagePlot("ReconstructonEfficency")
+        
+        if self.GenPhotons_nonPrompt :  
+            self.GenPhotons =  self.GenPhotons_nonPrompt
+            self.isSig = False
+            if self.analyzeMC :
+                self.isSig = self.isSignal()  
+                genW, genZ = self.genCouple
+                   
+            self.isInSR = self.isInSignalRegion(2024)
+            recoZ, recoW = self.recoCouple                
+    
+            # sample's statistic values
+            self.getPercentagePlot("Background_inSR")
+            self.getPercentagePlot("ReconstructonEfficency")
             
         '''if isSig and isInSR :             
             # GEN-RECO LEPTONS MATCHING
@@ -634,6 +638,5 @@ class GenStatusFlag(IntFlag) :
     FROM_HARD_PROCESS = 1 << 8
 
     SEL = IS_PROMPT | FROM_HARD_PROCESS        
-    #PH_SEL = IS_PROMPT   #removed from_hard_Process for taking also the FSR photon
 
     
