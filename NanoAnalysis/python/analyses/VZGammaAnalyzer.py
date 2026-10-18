@@ -15,7 +15,7 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
                     
         
     def analyze(self):
-        EtichetteTagliSignalDef=["Total Events","After GenStatusFlag","LeptonCut","AfterJetCuts", "AfterJetKin","AfterLepInvMassandDeltaR"]
+        EtichetteTagliSignalDef=["Total Events","After GenStatusFlag","LeptonCut","AfterJetCuts", "AfterPhotonPtEta","WIP"]
         self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[0],self.weight)
         if(self.event.HLT_passZZ4l): 
 
@@ -63,8 +63,17 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
 
               ptEtaCutJets=self.jetPtEtaCut(GenJets)
               if self.jetMassCut(ptEtaCutJets)==False: return False
+              finalCutJets=self.jetMassCut(ptEtaCutJets)
               self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[3],self.weight)
+              self.hEvent.fill1D("nJet per evento post cuts","nJet per evento post cuts",93,0.,10.,len(finalCutJets),self.weight)
 
+              #======
+              #Fotoni
+              #======
+
+              ptEtaCutPhoton=self.photonPtEtaCut(GenPhotons)
+              if len(ptEtaCutPhoton)==0: return False
+              self.hEvent.fill1D_label("Eventi per taglio","Eventi per taglio",EtichetteTagliSignalDef,EtichetteTagliSignalDef[4],self.weight)
 
               
               return True
@@ -82,7 +91,7 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
     # SIGNAL DEF FUNCTIONS
     #=====================
 
-    def photonKinCut(self,Photons):
+    def photonPtEtaCut(self,Photons):
             CutPhotons=[p for p in Photons if abs(p.eta)<2.4 and p.pt>15 ]   
             return CutPhotons
 
@@ -112,8 +121,12 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
                 for n in range(i+1,len(Jets)):
                       jet2=Jets[n]
                       jetMass=(jet1.p4()+jet2.p4()).M()
-                      if (50<jetMass<120): jetMassCutPassed.append(jet1)
-          if len(jetMassCutPassed)==0: return False  
+                      if (50<jetMass<120): 
+                            jetMassCutPassed.append(jet1)
+                            jetMassCutPassed.append(jet2)
+                                  
+          if len(jetMassCutPassed)==0: return False
+          jetMassCutPassed=list(set(jetMassCutPassed))  
           return jetMassCutPassed
 
         
