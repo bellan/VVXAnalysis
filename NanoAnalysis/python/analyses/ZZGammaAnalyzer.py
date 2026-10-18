@@ -254,6 +254,8 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
     def GetGamma(self, Level, Photons, Leptons, ZZ):
 
+        if len(Photons) < 1: return False, None
+
         BestPtGamma = self.GetBestGamma(Level, Photons, False)
         ZGammaMinMass, ZMinMass = self.GetZGammaMinMass(Level, BestPtGamma, Leptons, ZZ)
         self.hEvent.fill1D(f"{Level}Level_ZGammaMinMass", f"{Level}Level_ZGammaMinMass_PreCut", 60, 0., 300., ZGammaMinMass, self.weight)
@@ -265,13 +267,13 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             if ZGammaMinMass > 100:
                 GammaCands.append(ph)
             
+        if len(GammaCands) < 1: return False, None
+
         Gamma = self.GetBestGamma(Level, GammaCands, True)
         
         ZGammaMinMass, ZMinMass = self.GetZGammaMinMass(Level, Gamma, Leptons, ZZ)
         self.hEvent.fill1D(f"{Level}Level_ZGammaMinMass", f"{Level}Level_ZGammaMinMass_PostCut", 60, 0., 300., ZGammaMinMass, self.weight)
         self.hEvent.fill2D(f"{Level}Level_ZGammaMinMass2D", f"{Level}Level_ZMinMass(ZGammaMinMass)_PostCut", 60, 0., 300., 24, 0., 120., ZGammaMinMass, ZMinMass, self.weight)
-
-        if len(GammaCands) < 1: return False, None
 
         return True, Gamma
 
@@ -294,6 +296,8 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         return ZGammaMinMass, ZMinMass
 
     def GetBestGamma(self, Level, GammaCands, EseguiGamma2):
+
+        if len(GammaCands) < 1: return None
 
         if len(GammaCands) == 1:
             BestGamma = GammaCands[0]
@@ -346,16 +350,16 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
         self.hEvent.fill1D(f"{Level}Level_Z1Mass", f"{Level}Level_Z1Mass", 100, 60., 120., ZZ.Z1mass, self.weight)
         self.hEvent.fill1D(f"{Level}Level_Z2Mass", f"{Level}Level_Z2Mass", 75, 60., 120., ZZ.Z2mass, self.weight)
-        self.hEvent.fill1D(f"{Level}Level_ZZMass", f"{Level}Level_ZZMass", 40, 120., 520., ZZ.mass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_ZZMass", f"{Level}Level_ZZMass", 10, 0., 1000., ZZ.mass, self.weight)
 
         if Level == "Gen":
             ZZGammaInvMass = (ZZ.p4 + Gamma.p4()).M()
         elif Level == "Reco":
             ZZGammaInvMass = (ZZ.p4() + self.GetP4(Gamma)).M()
-        self.hEvent.fill1D(f"{Level}Level_ZZGammaMass", f"{Level}Level_ZZGammaMass", 50, 120., 620., ZZGammaInvMass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_ZZGammaMass", f"{Level}Level_ZZGammaMass", 10, 0., 1000., ZZGammaInvMass, self.weight)
 
-        self.hEvent.fill1D(f"{Level}Level_GammaPt", f"{Level}Level_GammaPt", 18, 0., 180., Gamma.pt, self.weight)
-        self.hEvent.fill1D(f"{Level}Level_GammaEta", f"{Level}Level_GammaEta", 12, 0., 2.4, Gamma.eta, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_GammaPt", f"{Level}Level_GammaPt", 12, 0., 180., Gamma.pt, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_abs(GammaEta)", f"{Level}Level_abs(GammaEta)", 12, 0., 2.4, abs(Gamma.eta), self.weight)
                
     
 # =========================
