@@ -22,7 +22,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         self.LoadCollections()
         
         isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons)
-        isSR = self.SignalRegion(self.Leptons, self.Photons)
+        isSR = self.SignalRegion(self.leptons, self.Photons)
 
         self.isBgivenA(isSD, isSR, "SD", "SR")
         self.isBgivenA(isSR, isSD, "SR", "SD")
@@ -59,33 +59,34 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
         return True
 
-    SDCuts = ["EventiTotali", "CinematicaLeptoni", "MasseZ1Z2", "CinematicaFotoni", "IsolatedPhotons", "TribosonRegion"]
+    SDCuts = ["TotalEvents", "LeptonsKinCuts", "Z1Z2Mass", "PhotonsKinCuts", "IsolatedPhotons", "TribosonRegion"]
 
     def SignalRegion(self, Leptons, Photons):
 
         self.CutPlot("Region", 0)
-        
-        bestCandIdx = self.event.bestCandIdx
-        if not (bestCandIdx != -1 and self.event.HLT_passZZ4l): return False
+
+        if not self.event.HLT_passZZ4l: return False
         self.CutPlot("Region", 1)
-        RecoZZ = self.ZZs[bestCandIdx]
-        LeptonsOI = [Leptons[RecoZZ.Z1l1Idx], Leptons[RecoZZ.Z1l2Idx], Leptons[RecoZZ.Z2l1Idx], Leptons[RecoZZ.Z2l2Idx]]    
-        if not Regions.check(self.regionWord, Regions.L4P): return False
+        bestCandIdx = self.event.bestCandIdx
+        if not (bestCandIdx != -1): return False
         self.CutPlot("Region", 2)
+        RecoZZ = self.ZZs[bestCandIdx]
+        LeptonsOI = [Leptons[RecoZZ.Z1l1Idx], Leptons[RecoZZ.Z1l2Idx], Leptons[RecoZZ.Z2l1Idx], Leptons[RecoZZ.Z2l2Idx]]
         if not self.LeptonsKinematicCuts("Reco", LeptonsOI): return False
         self.CutPlot("Region", 3)
         if not self.ZZMassCuts(RecoZZ): return False
         self.CutPlot("Region", 4)
         
-        if not Regions.check(self.regionWord, Regions.P1cutL): return False
+        ElectronVetoPass, TruePhotons = self.GetTruePhotons(Photons)
+        if not ElectronVetoPass: return False
         self.CutPlot("Region", 5)
-        RegionPass, TruePhotons = self.GetTruePhotons(Photons)
-        if not RegionPass: return False
-        self.CutPlot("Region", 6)
         KinPass, GoodPhotons = self.PhotonsKinematicCuts(TruePhotons)
         if not KinPass: return False
+        self.CutPlot("Region", 6)
+        IdPass, GoodIDPhotons = self.GetGoodIDPhotons(GoodPhotons)
+        if not IdPass: return False
         self.CutPlot("Region", 7)
-        IsolatedPass, IsolatedPhotons = self.GetIsolatedPhotons(GoodPhotons, LeptonsOI)
+        IsolatedPass, IsolatedPhotons = self.GetIsolatedPhotons(GoodIDPhotons, LeptonsOI)
         if not IsolatedPass: return False
         self.CutPlot("Region", 8)
         TribosonPass, RecoGamma = self.GetGamma("Reco", IsolatedPhotons, LeptonsOI, RecoZZ)
@@ -97,7 +98,8 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
         return True
 
-    SRCuts = ["EventiTotali", "passZZ4l+BestCand", "regione L4P", "CinematicaLeptoni", "Z1Z2Mass", "RegionP1CutL", "P1CutL+ElectronVeto", "CinematicaFotoni", "IsolatedPhotons","TribosonRegion"]
+    SRCuts = ["TotalEvents", "HLT_passZZ4l", "BestCand", "LeptonsKinCuts", "Z1Z2Mass", "ElectronVeto", "PhotonsKinCuts", "PhotonsID_P1CutL", 
+    "IsolatedPhotons", "TribosonRegion"]
 
     def isBgivenA(self, A, B, nomeA, nomeB):
 
@@ -218,14 +220,14 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
     def GetTruePhotons(self, Photons):
         
         if len(Photons) < 1: return False, None
-        TruePhotons = [ph for ph in Photons if (ph.cutBased >= 1
-                                                and ph.electronVeto)]
+        TruePhotons = [ph for ph in Photons if ph.electronVeto]
         if len(TruePhotons) < 1: return False, None        
 
         return True, TruePhotons
 
     def PhotonsKinematicCuts(self, Photons):
-
+        
+        if len(Photons) < 1: return False, None
         GoodPhotons = [ph for ph in Photons if ph.pt > 20
                                                and abs(ph.eta) < 2.4
                                                and not 1.444 < abs(ph.eta) < 1.566]
@@ -233,8 +235,17 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         
         return True, GoodPhotons
 
+    def GetGoodIDPhotons(self, Photons):
+
+        if len(Photons) < 1: return False, None
+        GoodIDPhotons = [ph for ph in Photons if ph.cutBased >= 1]
+        if len(GoodIDPhotons) < 1: return False, None
+
+        return True, GoodIDPhotons
+
     def GetIsolatedPhotons(self, Photons, Leptons):
         
+        if len(Photons) < 1: return False
         IsolatedPhotons = [ph for ph in Photons if all(ph.DeltaR(l) > 0.5 for l in Leptons)]
         if len(IsolatedPhotons) < 1: return False, None
         
@@ -243,20 +254,26 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
     def GetGamma(self, Level, Photons, Leptons, ZZ):
 
+        if len(Photons) < 1: return False, None
+
+        BestPtGamma = self.GetBestGamma(Level, Photons, False)
+        ZGammaMinMass, ZMinMass = self.GetZGammaMinMass(Level, BestPtGamma, Leptons, ZZ)
+        self.hEvent.fill1D(f"{Level}Level_ZGammaMinMass", f"{Level}Level_ZGammaMinMass_PreCut", 60, 0., 300., ZGammaMinMass, self.weight)
+        self.hEvent.fill2D(f"{Level}Level_ZGammaMinMass2D", f"{Level}Level_ZMinMass(ZGammaMinMass)_PreCut", 60, 0., 300., 24, 0., 120., ZGammaMinMass, ZMinMass, self.weight)
+        
         GammaCands = []
         for ph in Photons:
             ZGammaMinMass, ZMinMass = self.GetZGammaMinMass(Level, ph, Leptons, ZZ)
             if ZGammaMinMass > 100:
                 GammaCands.append(ph)
+            
         if len(GammaCands) < 1: return False, None
 
-        Gamma = self.GetBestGamma(Level, GammaCands)
-        if Gamma is None: return False, None
+        Gamma = self.GetBestGamma(Level, GammaCands, True)
         
-        if len(GammaCands) > 1:
-            ZGammaMinMass, ZMinMass = self.GetZGammaMinMass(Level, Gamma, Leptons, ZZ)
-        self.hEvent.fill1D(f"{Level}Level_ZGammaMinMass_PostCut", f"{Level}Level_ZGammaMinMass_PostCut", 52, 40., 300., ZGammaMinMass, self.weight)
-        self.hEvent.fill2D(f"{Level}Level_ZGammaMinMass2D_PostCut", f"{Level}Level_ZMinMass(ZGammaMinMass)_PostCut", 104, 40., 300., 120, 60., 120., ZGammaMinMass, ZMinMass, self.weight)
+        ZGammaMinMass, ZMinMass = self.GetZGammaMinMass(Level, Gamma, Leptons, ZZ)
+        self.hEvent.fill1D(f"{Level}Level_ZGammaMinMass", f"{Level}Level_ZGammaMinMass_PostCut", 60, 0., 300., ZGammaMinMass, self.weight)
+        self.hEvent.fill2D(f"{Level}Level_ZGammaMinMass2D", f"{Level}Level_ZMinMass(ZGammaMinMass)_PostCut", 60, 0., 300., 24, 0., 120., ZGammaMinMass, ZMinMass, self.weight)
 
         return True, Gamma
 
@@ -271,28 +288,28 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         
         elif Level == "Reco":
             Z1GammaMass = (Leptons[0].p4() + Leptons[1].p4() + self.GetP4(ph)).M()
-            Z1Mass = (Leptons[0].p4() + Leptons[1].p4()).M()
             Z2GammaMass = (Leptons[2].p4() + Leptons[3].p4() + self.GetP4(ph)).M()
-            Z2Mass = (Leptons[2].p4() + Leptons[3].p4()).M()
-
+            
         ZGammaMinMass = min(Z1GammaMass, Z2GammaMass)
         ZMinMass = Z1Mass if ZGammaMinMass == Z1GammaMass else Z2Mass
-        self.hEvent.fill1D(f"{Level}Level_ZGammaMinMass_PreCut", f"{Level}Level_ZGammaMinMass_PreCut", 52, 40., 300., ZGammaMinMass, self.weight)
-        self.hEvent.fill2D(f"{Level}Level_ZGammaMinMass2D_PreCut", f"{Level}Level_ZMinMass(ZGammaMinMass)_PreCut", 104, 40., 300., 120, 60., 120., ZGammaMinMass, ZMinMass, self.weight)
         
         return ZGammaMinMass, ZMinMass
 
-    def GetBestGamma(self, Level, GammaCands):
+    def GetBestGamma(self, Level, GammaCands, EseguiGamma2):
+
+        if len(GammaCands) < 1: return None
 
         if len(GammaCands) == 1:
             BestGamma = GammaCands[0]
 
         elif len(GammaCands) > 1:
             BestGamma = max(GammaCands, key=lambda ph: ph.pt)
-            Gamma2 = max((ph for ph in GammaCands if ph != BestGamma), key=lambda ph: ph.pt)
-            self.hEvent.fill1D(f"{Level}Level_Gamma2Pt", f"{Level}Level_Gamma2Pt", 20, 20., 220., Gamma2.pt, self.weight)
+            if EseguiGamma2:
+                Gamma2 = max((ph for ph in GammaCands if ph != BestGamma), key=lambda ph: ph.pt)
+                self.hEvent.fill1D(f"{Level}Level_Gamma2Pt", f"{Level}Level_Gamma2Pt", 20, 20., 220., Gamma2.pt, self.weight)
 
-        self.hEvent.fill1D(f"{Level}Level_BestGammaPt", f"{Level}Level_BestGammaPt", 50, 20., 220., BestGamma.pt, self.weight)
+        if EseguiGamma2:
+            self.hEvent.fill1D(f"{Level}Level_BestGammaPt", f"{Level}Level_BestGammaPt", 50, 20., 220., BestGamma.pt, self.weight)
             
         return BestGamma
 
@@ -333,16 +350,16 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
         self.hEvent.fill1D(f"{Level}Level_Z1Mass", f"{Level}Level_Z1Mass", 100, 60., 120., ZZ.Z1mass, self.weight)
         self.hEvent.fill1D(f"{Level}Level_Z2Mass", f"{Level}Level_Z2Mass", 75, 60., 120., ZZ.Z2mass, self.weight)
-        self.hEvent.fill1D(f"{Level}Level_ZZMass", f"{Level}Level_ZZMass", 40, 120., 520., ZZ.mass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_ZZMass", f"{Level}Level_ZZMass", 10, 0., 1000., ZZ.mass, self.weight)
 
         if Level == "Gen":
             ZZGammaInvMass = (ZZ.p4 + Gamma.p4()).M()
         elif Level == "Reco":
             ZZGammaInvMass = (ZZ.p4() + self.GetP4(Gamma)).M()
-        self.hEvent.fill1D(f"{Level}Level_ZZGammaMass", f"{Level}Level_ZZGammaMass", 50, 120., 620., ZZGammaInvMass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_ZZGammaMass", f"{Level}Level_ZZGammaMass", 10, 0., 1000., ZZGammaInvMass, self.weight)
 
-        self.hEvent.fill1D(f"{Level}Level_GammaPt", f"{Level}Level_GammaPt", 18, 0., 180., Gamma.pt, self.weight)
-        self.hEvent.fill1D(f"{Level}Level_GammaEta", f"{Level}Level_GammaEta", 12, 0., 2.4, Gamma.eta, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_GammaPt", f"{Level}Level_GammaPt", 12, 0., 180., Gamma.pt, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_abs(GammaEta)", f"{Level}Level_abs(GammaEta)", 12, 0., 2.4, abs(Gamma.eta), self.weight)
                
     
 # =========================
