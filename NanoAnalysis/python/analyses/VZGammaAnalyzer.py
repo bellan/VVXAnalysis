@@ -18,8 +18,8 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
                     
         
     def analyze(self):
-        EtichetteTagliSignalDef=["Total Events","After GenStatusFlag","LeptonCut","AfterPhotonPtEta", "AfterJetCuts"]
-        EtichetteTagliSignalReg=["Total Events","LeptonCut","AfterPhotonPtEta", "AfterJetCuts"]
+        EtichetteTagliSignalDef=["Total Events","After GenStatusFlag","After NQuarks","LeptonCut","AfterPhotonPtEta", "AfterJetCuts"]
+        EtichetteTagliSignalReg=["Total Events","Trigger","LeptonCut","After electronVeto","AfterPhotonPtEta", "JetIdLoose", "AfterKinAndMassJetCuts"]
         self.hEvent.fill1D_label("Eventi per taglio (SD)","Eventi per taglio (SD)",EtichetteTagliSignalDef,EtichetteTagliSignalDef[0],self.weight)
         self.hEvent.fill1D_label("Eventi per taglio (SR)","Eventi per taglio (SR)",EtichetteTagliSignalReg,EtichetteTagliSignalReg[0],self.weight)
 
@@ -32,7 +32,7 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
             GenPhotons=[p for p in GenParts if p.pdgId==22 and p.status==1 and (p.statusFlags & GenStatusFlag.SEL)==GenStatusFlag.SEL ]
             GenLeptons=[p for p in GenParts if (abs(p.pdgId)==11 or abs(p.pdgId)==13) and p.status == 1 and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
             GenJets=Collection(self.event,'GenJet')
-            #GenQuark=[p for p in GenParts if ((0<abs(p.pdgId)<7) and p.status==23 and (p.statusFlags & GenStatusFlag.QUARK_SEL) == GenStatusFlag.QUARK_SEL)]
+            GenQuark=[p for p in GenParts if ((0<abs(p.pdgId)<7) and p.status==23 and (p.statusFlags & GenStatusFlag.QUARK_SEL) == GenStatusFlag.QUARK_SEL)]
 
         Photons=Collection(self.event,'Photon')
         Leptons=Collection(self.event,'Lepton')
@@ -40,10 +40,19 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
         Jets=Collection(self.event, 'Jet')
         bestZIdx = self.event.bestZIdx    
             
-            
+        #========================
+        #N. particelle Signal Def
+        #========================
         self.hEvent.fill1D("nGenLeptonsPostStatusFlag", "nGenLeptonsPostStatusFlag", 93, 0., 10., len(GenLeptons), self.weight)
         self.hEvent.fill1D("nGenPhotonsPostStatusFlag", "nGenPhotonsPostStatusFlag", 93, 0., 10., len(GenPhotons), self.weight)
         self.hEvent.fill1D("nGenJetsPostStatusFlag", "nGenJetsPostStatusFlag", 93, 0., 10., len(GenJets), self.weight)
+
+        #========================
+        #N. particelle Signal Reg
+        #========================
+        self.hEvent.fill1D("nLeptons", "nLeptons", 93, 0., 10., len(Leptons), self.weight)
+        self.hEvent.fill1D("nPhotons", "nPhotons", 93, 0., 10., len(Photons), self.weight)
+        self.hEvent.fill1D("nJets", "nJets", 93, 0., 10., len(Jets), self.weight)
 
         
 
@@ -54,19 +63,22 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
         def isInSignalDef():
 
               bestjetpair=[]
-              self.hEvent.fill1D_label("Eventi per taglio (SD)","Eventi per taglio (SD)",EtichetteTagliSignalDef,EtichetteTagliSignalDef[1],self.weight)
               if not self.analyzeMC: return False,bestjetpair
               
+              self.hEvent.fill1D_label("Eventi per taglio (SD)","Eventi per taglio (SD)",EtichetteTagliSignalDef,EtichetteTagliSignalDef[1],self.weight)
 
-              #if len(GenQuark) != 2: return False,bestjetpair
+              if len(GenQuark) != 2: return False,bestjetpair
+
+              self.hEvent.fill1D_label("Eventi per taglio (SD)","Eventi per taglio (SD)",EtichetteTagliSignalDef,EtichetteTagliSignalDef[2],self.weight)
               
               ptEtaCutLeptons=self.leptonPtEtaCut(GenLeptons)
               if self.leptonIsSignal(ptEtaCutLeptons)==False: return False,bestjetpair
+
               #=====================================
               #Ricostruire Z a partire dai 2 leptoni
               #=====================================
       
-              self.hEvent.fill1D_label("Eventi per taglio (SD)","Eventi per taglio (SD)",EtichetteTagliSignalDef,EtichetteTagliSignalDef[2],self.weight)
+              self.hEvent.fill1D_label("Eventi per taglio (SD)","Eventi per taglio (SD)",EtichetteTagliSignalDef,EtichetteTagliSignalDef[3],self.weight)
               Zmass=(ptEtaCutLeptons[0].p4()+ptEtaCutLeptons[1].p4()).M()
               self.hEvent.fill1D("ZMass","Zmass",110,30,150,Zmass,self.weight)
 
@@ -77,7 +89,7 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
               
               ptEtaCutPhoton=self.photonPtEtaCut(GenPhotons)
               if len(ptEtaCutPhoton)==0: return False,bestjetpair
-              self.hEvent.fill1D_label("Eventi per taglio (SD)","Eventi per taglio (SD)",EtichetteTagliSignalDef,EtichetteTagliSignalDef[3],self.weight) 
+              self.hEvent.fill1D_label("Eventi per taglio (SD)","Eventi per taglio (SD)",EtichetteTagliSignalDef,EtichetteTagliSignalDef[4],self.weight) 
 
               #======
               #Adroni
@@ -102,7 +114,7 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
               #if (len(bestjetpair)!=2):  return False
               finalJetmass=(bestjetpair[0].p4()+bestjetpair[1].p4()).M()
               self.hEvent.fill1D("JetMassAfterSelection","JetmassAfterSelection",110,30,150,finalJetmass,self.weight)
-              self.hEvent.fill1D_label("Eventi per taglio (SD)","Eventi per taglio (SD)",EtichetteTagliSignalDef,EtichetteTagliSignalDef[4],self.weight)
+              self.hEvent.fill1D_label("Eventi per taglio (SD)","Eventi per taglio (SD)",EtichetteTagliSignalDef,EtichetteTagliSignalDef[5],self.weight)
               
               #ricostruzione mlljj
 
@@ -120,29 +132,36 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
         def isInSignalReg():
               bestPairSR=[]  
               if not self.event.HLT_passZZ4l : return False,bestPairSR
-
+              self.hEvent.fill1D_label("Eventi per taglio (SR)","Eventi per taglio (SR)",EtichetteTagliSignalReg,EtichetteTagliSignalReg[1],self.weight)
               #=========
               #Leptoni
               #=========
 
               ptEtaCutLeptonsSR=self.leptonPtEtaCut(Leptons)
               if self.leptonIsSignal(ptEtaCutLeptonsSR)==False: return False,bestPairSR
-              self.hEvent.fill1D_label("Eventi per taglio (SD)","Eventi per taglio (SD)",EtichetteTagliSignalDef,EtichetteTagliSignalDef[1],self.weight)
+              self.hEvent.fill1D_label("Eventi per taglio (SR)","Eventi per taglio (SR)",EtichetteTagliSignalReg,EtichetteTagliSignalReg[2],self.weight)
 
               #==========
               #Fotoni
               #==========
-
-              ptEtaCutPhotonSR=self.photonPtEtaCut(Photons)
+              
+              passedVeto,vetoPh=self.electronVeto(Photons)
+              if (passedVeto==False): return False,bestPairSR
+              self.hEvent.fill1D_label("Eventi per taglio (SR)","Eventi per taglio (SR)",EtichetteTagliSignalReg,EtichetteTagliSignalReg[3],self.weight)
+              ptEtaCutPhotonSR=self.photonPtEtaCut(vetoPh)
               if len(ptEtaCutPhotonSR)==0: return False,bestPairSR
 
-              self.hEvent.fill1D_label("Eventi per taglio (SD)","Eventi per taglio (SD)",EtichetteTagliSignalDef,EtichetteTagliSignalDef[2],self.weight)
+              self.hEvent.fill1D_label("Eventi per taglio (SR)","Eventi per taglio (SR)",EtichetteTagliSignalReg,EtichetteTagliSignalReg[4],self.weight)
 
               #=========
               #Adroni
               #=========
-
-              ptEtaCutJetsSR=self.jetPtEtaCut(Jets)
+ 
+              JetIdSuccess,JetsId=self.JetIdCut(Jets)
+              if (JetIdSuccess== False): return False,bestPairSR
+              self.hEvent.fill1D_label("Eventi per taglio (SR)","Eventi per taglio (SR)",EtichetteTagliSignalReg,EtichetteTagliSignalReg[5],self.weight)
+              
+              ptEtaCutJetsSR=self.jetPtEtaCut(JetsId)
               deltaRCutJetsSR=self.jetDeltaRCut(ptEtaCutJetsSR,ptEtaCutPhotonSR,ptEtaCutLeptonsSR)
 
               if (self.bestJetPair(deltaRCutJetsSR)==False): return False,bestPairSR
@@ -150,14 +169,16 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
               bestPairSR=self.bestJetPair(deltaRCutJetsSR)
               finalJetmassSR=(bestPairSR[0].p4()+bestPairSR[1].p4()).M()
               self.hEvent.fill1D("JetMassAfterSelection(SR)","JetmassAfterSelection(SR)",110,30,150,finalJetmassSR,self.weight)
-
+              self.hEvent.fill1D_label("Eventi per taglio (SR)","Eventi per taglio (SR)",EtichetteTagliSignalReg,EtichetteTagliSignalReg[6],self.weight)
+              
               return True,bestPairSR
 
         
         
 
         res,bestPairSR=isInSignalDef()
-        res1,bestjetpair=isInSignalReg()
+        if res==True:res1,bestjetpair=isInSignalReg()
+       
 
         #check ricostruzione
         if(res==True and res1==True):
@@ -182,7 +203,7 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
     #=====================
 
     def photonPtEtaCut(self,Photons):
-            CutPhotons=[p for p in Photons if abs(p.eta)<2.4 and p.pt>15 ]   
+            CutPhotons=[p for p in Photons if abs(p.eta)<2.4 and p.pt>5 ]   
             return CutPhotons
               
     def leptonPtEtaCut(self,Leptons):
@@ -240,11 +261,34 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
                       
 #=====================
 # SIGNAL DEF FUNCTIONS
-# ====================                
+# ====================
                 
+    def electronVeto(self, Photons):
+         if len(Photons)<1: return False, None
+         PhotonsVetoPass=[ph for ph in Photons if (ph.cutBased >= 1 and ph.electronVeto)]
+         if len(PhotonsVetoPass)<1: return False, None
+         return True, PhotonsVetoPass
+
+    def JetIdCut(self,Jets):
+         if len(Jets)<1: return False,None
+         JetsIdPass=[j for j in Jets if j.jetId>=2]
+         if (len(JetsIdPass)==0):return False,None
+         return True,JetsIdPass
+         
+
+          
+          
+                      
             
                 
-                               
+class GenStatusFlag(IntFlag):
+      IS_PROMPT = 1 << 0
+      FROM_HARD_PROCESS = 1 << 8
+      IS_FIRST_COPY = 1 << 12
+
+      SEL = IS_PROMPT | FROM_HARD_PROCESS
+      QUARK_SEL = IS_PROMPT | FROM_HARD_PROCESS | IS_FIRST_COPY
+      #PH_SEL = IS_PROMPT                               
 
 
     
@@ -255,14 +299,26 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
            
                       
                   
-class GenStatusFlag(IntFlag):
-                IS_PROMPT = 1 << 0
-                FROM_HARD_PROCESS = 1 << 8
-                IS_FIRST_COPY = 1 << 12
 
-                SEL = IS_PROMPT | FROM_HARD_PROCESS
-                QUARK_SEL = IS_PROMPT | FROM_HARD_PROCESS | IS_FIRST_COPY
-                #PH_SEL = IS_PROMPT
+
+ 
+#ORIDINE TAGLI
+#hlt trigger
+#parte leptonica:
+#tagli cinematici, 2 leptoni
+#ricostruire la Z, regione di massa 60-120
+#Selezione sui fotoni: pt,eta,(electronVeto),Id
+#Disambiguazione sui jet (rimuovo i jet sovrapposti con i fotoni che hanno un grande parte del pt del jet) (signal region)
+#separazione dei fotoni dagli altri oggetti
+#più di due jet con tagli cinematici, massa inv più vicina a W o Z
+#ricostr mllg
+#Introduzione
+#grafici cutflow in Sr e Sd
+#tagli e varibili (descrivere gli algoritmi come ho ricostruito i jet, pulizia con il pt)
+#significanza
+#disambiguazione in DeltaR
+#electronVeto, jetId, PhotonId anche gli eventi che non hanno una coppia di jet nella def di segnale vanno messi a denominatore
+#controllare tagli sul codice di Antonio
            
    
 
