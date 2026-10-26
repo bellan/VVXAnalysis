@@ -21,20 +21,18 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         
         self.LoadCollections()
         
-        #isSDTribosonPt = self.SignalDefinition(self.GenLeptons, self.GenPhotons, "TribosonPt")
-        #isSDPtTriboson = self.SignalDefinition(self.GenLeptons, self.GenPhotons, "PtTriboson")
-        isSRTribosonPt = self.SignalRegion(self.Leptons, self.Photons, "TribosonPt")
-        isSRPtTriboson = self.SignalRegion(self.Leptons, self.Photons, "PtTriboson")
-
-        #self.isBgivenA(isSD, isSR, "SD", "SR")
-        #self.isBgivenA(isSR, isSD, "SR", "SD")
+        isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons)
+        isSR = self.SignalRegion(self.Leptons, self.Photons)              # default is choosing the best gamma after cutting at 100GeV (TribosonRegion). Otherwise use "PtTriboson" as PhotonsOrder.
+        
+        self.isBgivenA(isSD, isSR, "SD", "SR")
+        self.isBgivenA(isSR, isSD, "SR", "SD")
 
         
     # =========================
     # SIGNAL DEF AND REGION
     # =========================
 
-    def SignalDefinition(self, GenLeptons, GenPhotons, PhotonsOrder):
+    def SignalDefinition(self, GenLeptons, GenPhotons, PhotonsOrder = None):
 
         if not self.analyzeMC: return False
         self.CutPlot("Definition", 0, PhotonsOrder)
@@ -53,7 +51,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         if not IsolatedPass: return False
         self.CutPlot("Definition", 4, PhotonsOrder)
 
-        if PhotonsOrder == "TribosonPt":
+        if PhotonsOrder == None:
             TribosonPass, GenGamma = self.GetGammaTribosonPt("Gen", IsolatedPhotons, GenLeptons, GenZZ)
             if not TribosonPass: return False
             self.CutPlot("Definition", 5, PhotonsOrder)
@@ -64,13 +62,13 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             self.CutPlot("Definition", 5, PhotonsOrder)
             
         #PtThetaGraph = self.GraphGammaPtThetaZZG("Gen", GenGamma, GenZZ)
-        #self.PlotsOI("Gen", GenZZ, GenGamma)
+        self.PlotsOI("Gen", GenZZ, GenGamma)
 
         return True
 
     SDCuts = ["TotalEvents", "LeptonsKinCuts", "Z1Z2Mass", "PhotonsKinCuts", "IsolatedPhotons", "TribosonRegion"]
 
-    def SignalRegion(self, Leptons, Photons, PhotonsOrder):
+    def SignalRegion(self, Leptons, Photons, PhotonsOrder = None):
 
         self.CutPlot("Region", 0, PhotonsOrder)
 
@@ -92,6 +90,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         KinPass, GoodPhotons = self.PhotonsKinematicCuts(TruePhotons)
         if not KinPass: return False
         self.CutPlot("Region", 6, PhotonsOrder)
+        
         IdPass, GoodIDPhotons = self.GetGoodIDPhotons(GoodPhotons)
         if not IdPass: return False
         self.CutPlot("Region", 7, PhotonsOrder)
@@ -99,19 +98,19 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         if not IsolatedPass: return False
         self.CutPlot("Region", 8, PhotonsOrder)
         
-        if PhotonsOrder == "TribosonPt":
-            self.hEvent.fill1D("nPhotonsPreTribosonregion", "nPhotonsPreTribosonregion", 11, -0.5, 10.5, len(Photons), self.weight)
+        if PhotonsOrder == None:
             TribosonPass, RecoGamma = self.GetGammaTribosonPt("Reco", IsolatedPhotons, LeptonsOI, RecoZZ)
             if not TribosonPass: return False
             self.CutPlot("Region", 9, PhotonsOrder)
             
         elif PhotonsOrder == "PtTriboson":
+            self.hEvent.fill1D("nPhotonsPreTribosonregion", "nPhotonsPreTribosonregion", 11, -0.5, 10.5, len(Photons), self.weight)
             TribosonPass, RecoGamma = self.GetGammaPtTriboson("Reco", IsolatedPhotons, LeptonsOI, RecoZZ)
             if not TribosonPass: return False
             self.CutPlot("Region", 9, PhotonsOrder)
         
         #PtThetaGraph = self.GraphGammaPtThetaZZG("Reco", RecoGamma, RecoZZ)
-        #self.PlotsOI("Reco", RecoZZ, RecoGamma)
+        self.PlotsOI("Reco", RecoZZ, RecoGamma)
 
         return True
 
@@ -259,15 +258,15 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             if ZGammaMinMass > 100:
                 GammaCands.append(ph)
             
-        self.hEvent.fill1D(f"{Level}Level_ZGammaMinMass_PreCut_TribosonPt", f"{Level}Level_ZGammaMinMass_PreCut_TribosonPt", 60, 0., 300., ZGammaMinMass_MAX, self.weight)
-        self.hEvent.fill2D(f"{Level}Level_ZGammaMinMass2D_PreCut_TribosonPt", f"{Level}Level_ZMinMass(ZGammaMinMass)_PreCut_TribosonPt", 60, 0., 300., 24, 0., 120., ZGammaMinMass_MAX, ZMinMass_MAX, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_ZGammaMinMass_PreCut", f"{Level}Level_ZGammaMinMass_PreCut", 60, 0., 300., ZGammaMinMass_MAX, self.weight)
+        self.hEvent.fill2D(f"{Level}Level_ZGammaMinMass2D_PreCut", f"{Level}Level_ZMinMass(ZGammaMinMass)_PreCut", 60, 0., 300., 24, 0., 120., ZGammaMinMass_MAX, ZMinMass_MAX, self.weight)
            
         if len(GammaCands) < 1: return False, None
 
-        Gamma = self.GetBestGamma(Level, GammaCands, "TribosonPt")
+        Gamma = self.GetBestGamma(Level, GammaCands, None)
         ZGammaMinMass, ZMinMass = self.GetZGammaMinMass(Level, Gamma, Leptons, ZZ)
-        self.hEvent.fill1D(f"{Level}Level_ZGammaMinMass_PostCut_TribosonPt", f"{Level}Level_ZGammaMinMass_PostCut_TribosonPt", 60, 0., 300., ZGammaMinMass, self.weight)
-        self.hEvent.fill2D(f"{Level}Level_ZGammaMinMass2D_PostCut_TribosonPt", f"{Level}Level_ZMinMass(ZGammaMinMass)_PostCut_TribosonPt", 60, 0., 300., 24, 0., 120., ZGammaMinMass, ZMinMass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_ZGammaMinMass_PostCut", f"{Level}Level_ZGammaMinMass_PostCut", 60, 0., 300., ZGammaMinMass, self.weight)
+        self.hEvent.fill2D(f"{Level}Level_ZGammaMinMass2D_PostCut", f"{Level}Level_ZMinMass(ZGammaMinMass)_PostCut", 60, 0., 300., 24, 0., 120., ZGammaMinMass, ZMinMass, self.weight)
 
         return True, Gamma
 
@@ -305,7 +304,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         
         return ZGammaMinMass, ZMinMass
 
-    def GetBestGamma(self, Level, GammaCands, PhotonsOrder):
+    def GetBestGamma(self, Level, GammaCands, PhotonsOrder = None):
 
         if len(GammaCands) < 1: return None
 
@@ -315,9 +314,15 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         elif len(GammaCands) > 1:
             BestGamma = max(GammaCands, key=lambda ph: ph.pt)
             Gamma2 = max((ph for ph in GammaCands if ph != BestGamma), key=lambda ph: ph.pt)
-            self.hEvent.fill1D(f"{Level}Level_Gamma2Pt_{PhotonsOrder}", f"{Level}Level_Gamma2Pt_{PhotonsOrder}", 20, 20., 220., Gamma2.pt, self.weight)
+            if PhotonsOrder is None:
+                self.hEvent.fill1D(f"{Level}Level_Gamma2Pt", f"{Level}Level_Gamma2Pt", 20, 20., 220., Gamma2.pt, self.weight)
+            else:
+                self.hEvent.fill1D(f"{Level}Level_Gamma2Pt_{PhotonsOrder}", f"{Level}Level_Gamma2Pt_{PhotonsOrder}", 20, 20., 220., Gamma2.pt, self.weight)
 
-        self.hEvent.fill1D(f"{Level}Level_BestGammaPt_{PhotonsOrder}", f"{Level}Level_BestGammaPt_{PhotonsOrder}", 50, 20., 220., BestGamma.pt, self.weight)
+        if PhotonsOrder is None:
+            self.hEvent.fill1D(f"{Level}Level_BestGammaPt", f"{Level}Level_BestGammaPt", 50, 20., 220., BestGamma.pt, self.weight)
+        else:
+            self.hEvent.fill1D(f"{Level}Level_BestGammaPt_{PhotonsOrder}", f"{Level}Level_BestGammaPt_{PhotonsOrder}", 50, 20., 220., BestGamma.pt, self.weight)
             
         return BestGamma
 
@@ -368,8 +373,11 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             Labels = self.SDCuts
         elif Level == "Region":
             Labels = self.SRCuts
-        self.hEvent.fill1D_label(f"Signal{Level}_CutFlow_{Order}", f"Signal{Level}_CutFlow_{Order}", Labels, Labels[Cut], self.weight)
-
+        if Order is None:
+            self.hEvent.fill1D_label(f"Signal{Level}_CutFlow", f"Signal{Level}_CutFlow", Labels, Labels[Cut], self.weight)
+        else:
+            self.hEvent.fill1D_label(f"Signal{Level}_CutFlow_{Order}", f"Signal{Level}_CutFlow_{Order}", Labels, Labels[Cut], self.weight)
+        
     def PlotsOI(self, Level, ZZ, Gamma):
 
         self.hEvent.fill1D(f"{Level}Level_Z1Mass", f"{Level}Level_Z1Mass", 100, 60., 120., ZZ.Z1mass, self.weight)
