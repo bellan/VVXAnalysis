@@ -19,7 +19,7 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
         
     def analyze(self):
         EtichetteTagliSignalDef=["Total Events","After GenStatusFlag","After NQuarks","LeptonCut","AfterPhotonPtEta", "AfterJetCuts"]
-        EtichetteTagliSignalReg=["Total Events","Trigger","LeptonCut","After electronVeto and WP90","AfterPhotonPtEta", "JetIdLoose", "AfterKinAndMassJetCuts"]
+        EtichetteTagliSignalReg=["Total Events","Trigger and L2P","LeptonCut","After electronVeto and WP90","AfterPhotonPtEta", "JetIdLoose", "AfterKinAndMassJetCuts"]
         self.hEvent.fill1D_label("Eventi per taglio (SD)","Eventi per taglio (SD)",EtichetteTagliSignalDef,EtichetteTagliSignalDef[0],self.weight)
         self.hEvent.fill1D_label("Eventi per taglio (SR)","Eventi per taglio (SR)",EtichetteTagliSignalReg,EtichetteTagliSignalReg[0],self.weight)
 
@@ -109,6 +109,7 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
                         self.hEvent.fill1D("JetMass","Jetmass",110,30,150,jetMass,self.weight)
               
                   '''
+              
               deltaRCutJets=self.jetDeltaRCut(ptEtaCutJets,ptEtaCutPhoton,ptEtaCutLeptons) 
               if (self.bestJetPair(deltaRCutJets)==False): return False, bestjetpair
               bestjetpair=self.bestJetPair(deltaRCutJets)
@@ -127,12 +128,13 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
               leadingPhoton=max(ptEtaCutPhoton, key=lambda ph:ph.pt)
               mlljjg=(ptEtaCutLeptons[0].p4()+ptEtaCutLeptons[1].p4()+bestjetpair[0].p4()+bestjetpair[1].p4()+leadingPhoton.p4()).M()
               self.hEvent.fill1D("mlljjg","mlljjg",110,120,850,mlljjg,self.weight)
-
+                  
               return True, bestjetpair
 
         def isInSignalReg():
               bestPairSR=[]  
               if not self.event.HLT_passZZ4l : return False,bestPairSR
+              if not Regions.check(self.regionWord, Regions.L2P): return False,bestPairSR
               self.hEvent.fill1D_label("Eventi per taglio (SR)","Eventi per taglio (SR)",EtichetteTagliSignalReg,EtichetteTagliSignalReg[1],self.weight)
               #=========
               #Leptoni
@@ -179,10 +181,11 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
         
 
         res,bestPairSR=isInSignalDef()
-        if res==True:res1,bestjetpair=isInSignalReg()
+        if res==True:res1,bestPairS=isInSignalReg()
        
 
         #check ricostruzione
+        '''
         if(res==True and res1==True):
               success=0
               if (bestPairSR[0].DeltaR(bestjetpair[0])<0.4):
@@ -190,7 +193,7 @@ class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
               if (bestPairSR[0].DeltaR(bestjetpair[1])<0.4):
                     if(bestPairSR[1].DeltaR(bestjetpair[0])<0.4): success=1
               self.hEvent.fill1D("RicostruzioneJet", "RicostruzioneJet",2 , -0.5, 1.5, success, self.weight)     
-
+      '''
 
         
             
