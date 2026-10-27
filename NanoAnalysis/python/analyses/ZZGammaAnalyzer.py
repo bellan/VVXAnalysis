@@ -21,11 +21,11 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         
         self.LoadCollections()
         
-        isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons)
+        #isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons)
         isSR = self.SignalRegion(self.Leptons, self.Photons)              # default is choosing the best gamma after cutting at 100GeV (TribosonRegion). Otherwise use "PtTriboson" as PhotonsOrder.
         
-        self.isBgivenA(isSD, isSR, "SD", "SR")
-        self.isBgivenA(isSR, isSD, "SR", "SD")
+        #self.isBgivenA(isSD, isSR, "SD", "SR")
+        #self.isBgivenA(isSR, isSD, "SR", "SD")
 
         
     # =========================
@@ -91,31 +91,27 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         if not KinPass: return False
         self.CutPlot("Region", 6, PhotonsOrder)
         
-        IdPass, GoodIDPhotons = self.GetGoodIDPhotons(GoodPhotons)
-        if not IdPass: return False
+        self.mvaIDPhotons(GoodPhotons, "PostPhotonKin")             # select the WP
+        #self.CutIDPhotons(GoodPhotons, "PostPhotonKin")
+        
+        IDPass, GoodIDPhotons = self.GetGoodIDPhotons(GoodPhotons)
+        if not IDPass: return False
         self.CutPlot("Region", 7, PhotonsOrder)
         IsolatedPass, IsolatedPhotons = self.GetIsolatedPhotons(GoodIDPhotons, LeptonsOI)
         if not IsolatedPass: return False
         self.CutPlot("Region", 8, PhotonsOrder)
-        
-        if PhotonsOrder == None:
-            TribosonPass, RecoGamma = self.GetGammaTribosonPt("Reco", IsolatedPhotons, LeptonsOI, RecoZZ)
-            if not TribosonPass: return False
-            self.CutPlot("Region", 9, PhotonsOrder)
-            
-        elif PhotonsOrder == "PtTriboson":
-            self.hEvent.fill1D("nPhotonsPreTribosonregion", "nPhotonsPreTribosonregion", 11, -0.5, 10.5, len(Photons), self.weight)
-            TribosonPass, RecoGamma = self.GetGammaPtTriboson("Reco", IsolatedPhotons, LeptonsOI, RecoZZ)
-            if not TribosonPass: return False
-            self.CutPlot("Region", 9, PhotonsOrder)
-        
-        #PtThetaGraph = self.GraphGammaPtThetaZZG("Reco", RecoGamma, RecoZZ)
+        TribosonPass, RecoGamma = self.TribosonRegion("Reco", IsolatedPhotons, LeptonsOI, RecoZZ, PhotonsOrder)
+        if not TribosonPass: return False
+        self.CutPlot("Region", 9, PhotonsOrder)
+
+        self.mvaIDPhotons([RecoGamma], "PostTribosonregion")             # select the WP
+        #self.CutIDPhotons([RecoGamma], "PostTribosonregion")
         self.PlotsOI("Reco", RecoZZ, RecoGamma)
 
         return True
 
-    SRCuts = ["TotalEvents", "HLT_passZZ4l", "BestCand", "LeptonsKinCuts", "Z1Z2Mass", "ElectronVeto", "PhotonsKinCuts", "PhotonsID_P1CutL", 
-    "IsolatedPhotons", "TribosonRegion"]
+    SRCuts = ["TotalEvents", "HLT_passZZ4l", "BestCand", "LeptonsKinCuts", "Z1Z2Mass", "ElectronVeto", "PhotonsKinCuts", "PhotonsID_mva90", "IsolatedPhotons", "TribosonRegion"]             # select the WP
+    #SRCuts = ["TotalEvents", "HLT_passZZ4l", "BestCand", "LeptonsKinCuts", "Z1Z2Mass", "ElectronVeto", "PhotonsKinCuts", "PhotonsID_CutL", "IsolatedPhotons", "TribosonRegion"]
 
     
     # =========================
@@ -226,10 +222,39 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
     def GetGoodIDPhotons(self, Photons):
 
         if len(Photons) < 1: return False, None
-        GoodIDPhotons = [ph for ph in Photons if ph.cutBased >= 1]
+        GoodIDPhotons = [ph for ph in Photons if ph.mvaID_WP90]             # select the WP
+        #GoodIDPhotons = [ph for ph in Photons if ph.cutBased >= 1]
         if len(GoodIDPhotons) < 1: return False, None
 
         return True, GoodIDPhotons
+    
+    def mvaIDPhotons(self, Photons, When):
+
+        mva90 = [ph for ph in Photons if ph.mvaID_WP90]
+        if len(mva90) < 1: return False, False
+        self.PhotonWPCutPlot(0, When)
+
+        mva80 = [ph for ph in Photons if ph.mvaID_WP80]
+        if len(mva80) < 1: return True, False
+        self.PhotonWPCutPlot(1, When)
+
+        return True, True
+
+    def CutIDPhotons(self, Photons, When):
+        
+        cutL = [ph for ph in Photons if ph.cutBased >= 1]
+        if len(cutL) < 1: return False, False, False
+        self.PhotonWPCutPlot(3, When)
+
+        cutM = [ph for ph in Photons if ph.cutBased >= 2]
+        if len(cutM) < 1: return True, False, False
+        self.PhotonWPCutPlot(4, When)
+
+        cutT = [ph for ph in Photons if ph.cutBased >= 3]
+        if len(cutT) < 1: return True, True, False
+        self.PhotonWPCutPlot(5, When)
+
+        return True, True, True
 
     def GetIsolatedPhotons(self, Photons, Leptons):
         
@@ -238,8 +263,18 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         if len(IsolatedPhotons) < 1: return False, None
         
         return True, IsolatedPhotons
-        
 
+    def TribosonRegion(self, Level, IsolatedPhotons, LeptonsOI, RecoZZ, PhotonsOrder):
+
+        if PhotonsOrder == None:
+            TribosonPass, RecoGamma = self.GetGammaTribosonPt("Reco", IsolatedPhotons, LeptonsOI, RecoZZ)
+            
+        elif PhotonsOrder == "PtTriboson":
+            self.hEvent.fill1D("nPhotonsPreTribosonregion", "nPhotonsPreTribosonregion", 11, -0.5, 10.5, len(Photons), self.weight)
+            TribosonPass, RecoGamma = self.GetGammaPtTriboson("Reco", IsolatedPhotons, LeptonsOI, RecoZZ)
+            
+        return TribosonPass, RecoGamma
+        
     def GetGammaTribosonPt(self, Level, Photons, Leptons, ZZ):
 
         if len(Photons) < 1: return False, None
@@ -356,7 +391,6 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         self.Leptons = Collection(self.event, 'Lepton')
         self.Photons = Collection(self.event, 'Photon')
             
-    
     def GetP4(self, p):
 
         p4 = TLorentzVector()
@@ -401,6 +435,10 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             else: result = 0
             self.hEvent.fill1D(f"is{nomeB}given{nomeA}", f"is{nomeB}given{nomeA}", 2, -0.5, 1.5, result, self.weight)
 
+    def PhotonWPCutPlot(self, Bin, When):
+        self.hEvent.fill1D_label(f"PhotonWP_{When}", f"PhotonWP_CutFlow_{When}", self.PhotonWPLabels, self.PhotonWPLabels[Bin], self.weight)
+
+    PhotonWPLabels = ["pass_mva90", "pass_mva80", "" , "pass_CutL", "pass_CutM", "pass_CutT"]
     
 # =========================
 # USEFUL CLASSES
