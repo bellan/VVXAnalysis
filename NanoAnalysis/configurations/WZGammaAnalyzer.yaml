@@ -3,17 +3,11 @@ samples:
   origin: [MC]
   mode: name          # oppure: process, all
   by_name:
-    - ggH125
-    - ggTo2e2mu_Contin_MCFM701
-    - ggTo2e2tau_Contin_MCFM701
-    - ggTo2mu2tau_Contin_MCFM701
-    - ggTo4e_Contin_MCFM701
-    - ggTo4mu_Contin_MCFM701
-    - ggTo4tau_Contin_MCFM701
-    - ZZTo4l_2Jets_EW_QCD
-    - ZZTo4l_2Jets_EW
-    - ZZTo4l_2Jets_QCD
-    - ZZTo4l
+    - DYJetsTo2E
+    - DYJetsTo2Mu
+    - WZto3LNu
+
+
    
   by_process:
     - VBS
