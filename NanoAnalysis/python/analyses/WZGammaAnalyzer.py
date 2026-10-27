@@ -26,8 +26,8 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
                                 and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
             self.GenPhotons = [p for p in self.GenParts if p.pdgId == 22 and p.status == 1
                               and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
-            self.GenPhotons_nonPrompt = [p for p in self.GenParts if p.pdgId == 22 and p.status == 1
-                              and (p.statusFlags & (1<<0)) == 0]
+            '''self.GenPhotons_nonPrompt = [p for p in self.GenParts if p.pdgId == 22 and p.status == 1
+                              and (p.statusFlags & (1<<0)) == 0]'''
             self.GenNeutrinos = [p for p in self.GenParts if abs(p.pdgId) in (12,14)  and p.status == 1
                             and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
 
@@ -54,19 +54,17 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         self.SRCuts=["Weighted_Events","HLT_passZZ4l","Lep_KinCuts","MET_Cut","Z_MassLimits","ZZFullSel","Ph_kinCuts",
                      "Ph_electronVeto","Ph_cutBased>=1","Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
 
-        if self.GenPhotons_nonPrompt :  
-            self.GenPhotons =  self.GenPhotons_nonPrompt
-            self.isSig = False
-            if self.analyzeMC :
-                self.isSig = self.isSignal()  
-                genW, genZ = self.genCouple
-                   
-            self.isInSR = self.isInSignalRegion(2024)
-            recoZ, recoW = self.recoCouple                
-    
-            # sample's statistic values
-            self.getPercentagePlot("Background_inSR")
-            self.getPercentagePlot("ReconstructonEfficency")
+        self.isSig = False
+        if self.analyzeMC :
+            self.isSig = self.isSignal()  
+            genW, genZ = self.genCouple
+           
+        self.isInSR = self.isInSignalRegion(2024)
+        recoZ, recoW = self.recoCouple                
+
+        # sample's statistic values
+        self.getPercentagePlot("Background_inSR")
+        self.getPercentagePlot("ReconstructonEfficency")
 
             
         '''if isSig and isInSR :             
@@ -360,7 +358,7 @@ Gen_invMassLLGamma_preCuts, theZ.mass, self.weight)
             BestPhotons = [gp for gp in GoodPhotons if gp.electronVeto]
             if not BestPhotons : return None
             self.CutPlot(Level, 7)  #Ph_electronVeto
-            SelectedPhotons = [bp for bp in BestPhotons if bp.cutBased >= 1]
+            SelectedPhotons = [bp for bp in BestPhotons if bp.cutBased >= 2]
             if not SelectedPhotons : return None
             self.CutPlot(Level, 8)  #Ph_cutBased>=1
             FinalistPhotons = [sp for sp in SelectedPhotons if all(sp.DeltaR(l) > 0.5 for l in ChLeptons)]
