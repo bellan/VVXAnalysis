@@ -26,8 +26,7 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
                                 and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
             self.GenPhotons = [p for p in self.GenParts if p.pdgId == 22 and p.status == 1
                               and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
-            self.GenPhotons_Prompt = [p for p in self.GenParts if p.pdgId == 22 and p.status == 1
-                              and (p.statusFlags & (1<<0)) != 0]
+            #self.GenPhotons_Prompt = [p for p in self.GenParts if p.pdgId == 22 and p.status == 1 and (p.statusFlags & (1<<0)) != 0]
             self.GenNeutrinos = [p for p in self.GenParts if abs(p.pdgId) in (12,14)  and p.status == 1
                             and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
 
@@ -59,13 +58,12 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
             self.isSig = self.isSignal()  
             genW, genZ = self.genCouple
 
-        if len(self.GenPhotons_Prompt) == 0 : 
-            self.isInSR = self.isInSignalRegion(2024)
-            recoZ, recoW = self.recoCouple                
-    
-            # sample's statistic values
-            self.getPercentagePlot("Background_inSR")
-            self.getPercentagePlot("ReconstructonEfficency")
+        self.isInSR = self.isInSignalRegion(2024)
+        recoZ, recoW = self.recoCouple                
+
+        # sample's statistic values
+        self.getPercentagePlot("Background_inSR")
+        self.getPercentagePlot("ReconstructonEfficency")
 
             
         '''if isSig and isInSR :             
