@@ -18,127 +18,126 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         super().__init__(regions)
         
     def analyze(self):
-
+        
         self.LoadCollections()
         
-        isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons)
-        isSR = self.SignalRegion(self.Leptons, self.Photons)
+        #isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons)
+        isSR = self.SignalRegion(self.Leptons, self.Photons)              # default is choosing the best gamma after cutting at 100GeV (TribosonRegion). Otherwise use "PtTriboson" as PhotonsOrder.
+        
+        #self.isBgivenA(isSD, isSR, "SD", "SR")
+        #self.isBgivenA(isSR, isSD, "SR", "SD")
 
-        #if isSD:
-        #    if isSR:
-        #        ResultSDSR = 1
-        #    else:
-        #        ResultSDSR = 0
-        #    self.hEvent.fill1D("CfrSignalDefSignalRegion", "cfrSignalDefSignalRegion", 2, -0.5, 1.5, ResultSDSR, self.weight)
-                
-
+        
     # =========================
     # SIGNAL DEF AND REGION
     # =========================
 
-    def SignalDefinition(self, GenLeptons, GenPhotons):
+    def SignalDefinition(self, GenLeptons, GenPhotons, PhotonsOrder = None):
 
         if not self.analyzeMC: return False
-        self.CutPlot("Definition", 0)
+        self.CutPlot("Definition", 0, PhotonsOrder)
 
         if not self.LeptonsKinematicCuts("Gen", GenLeptons): return False
-        self.CutPlot("Definition", 1)
+        self.CutPlot("Definition", 1, PhotonsOrder)
         GenZZ = self.GetZZ(GenLeptons)
-        if not self.ZZMassCuts("Gen", GenZZ): return False
-        self.CutPlot("Definition", 2)
+        if GenZZ is None: return False
+        if not self.ZZMassCuts(GenZZ): return False
+        self.CutPlot("Definition", 2, PhotonsOrder)
         
         KinPass, GoodPhotons = self.PhotonsKinematicCuts(GenPhotons)
         if not KinPass: return False
-        self.CutPlot("Definition", 3)
-        FsrPass, GenGammaCands = self.PhotonsFsrCuts("Gen", GoodPhotons, GenLeptons, GenZZ)
-        if not FsrPass: return False
-        self.CutPlot("Definition", 4)
-        GenGamma = self.GetBestGamma("Gen", GenGammaCands)
-        PtThetaGraph = self.GraphGammaPtThetaZZG("Gen", GenGamma, GenZZ)
+        self.CutPlot("Definition", 3, PhotonsOrder)
+        IsolatedPass, IsolatedPhotons = self.GetIsolatedPhotons(GoodPhotons, GenLeptons)
+        if not IsolatedPass: return False
+        self.CutPlot("Definition", 4, PhotonsOrder)
 
+        if PhotonsOrder == None:
+            TribosonPass, GenGamma = self.GetGammaTribosonPt("Gen", IsolatedPhotons, GenLeptons, GenZZ)
+            if not TribosonPass: return False
+            self.CutPlot("Definition", 5, PhotonsOrder)
+            
+        elif PhotonsOrder == "PtTriboson":
+            TribosonPass, GenGamma = self.GetGammaPtTriboson("Gen", IsolatedPhotons, GenLeptons, GenZZ)
+            if not TribosonPass: return False
+            self.CutPlot("Definition", 5, PhotonsOrder)
+            
+        #PtThetaGraph = self.GraphGammaPtThetaZZG("Gen", GenGamma, GenZZ)
         self.PlotsOI("Gen", GenZZ, GenGamma)
 
         return True
 
-    SDCuts = ["EventiTotali", "CinematicaLeptoni", "MasseZ1Z2", "CinematicaFotoni", "TribosonRegion"]
+    SDCuts = ["TotalEvents", "LeptonsKinCuts", "Z1Z2Mass", "PhotonsKinCuts", "IsolatedPhotons", "TribosonRegion"]
 
-    def SignalRegion(self, Leptons, Photons):
+    def SignalRegion(self, Leptons, Photons, PhotonsOrder = None):
 
-        self.CutPlot("Region", 0)
-        
+        self.CutPlot("Region", 0, PhotonsOrder)
+
+        if not self.event.HLT_passZZ4l: return False
+        self.CutPlot("Region", 1, PhotonsOrder)
         bestCandIdx = self.event.bestCandIdx
-        if not (bestCandIdx != -1 and self.event.HLT_passZZ4l): return False
-        self.CutPlot("Region", 1)
+        if not (bestCandIdx != -1): return False
+        self.CutPlot("Region", 2, PhotonsOrder)
         RecoZZ = self.ZZs[bestCandIdx]
-        LeptonsOI = [Leptons[RecoZZ.Z1l1Idx], Leptons[RecoZZ.Z1l2Idx], Leptons[RecoZZ.Z2l1Idx], Leptons[RecoZZ.Z2l2Idx]]    
-        if not Regions.check(self.regionWord, Regions.L4P): return False
-        self.CutPlot("Region", 2)
+        LeptonsOI = [Leptons[RecoZZ.Z1l1Idx], Leptons[RecoZZ.Z1l2Idx], Leptons[RecoZZ.Z2l1Idx], Leptons[RecoZZ.Z2l2Idx]]
         if not self.LeptonsKinematicCuts("Reco", LeptonsOI): return False
-        if not self.ZZMassCuts("Reco", RecoZZ): return False
-        self.CutPlot("Region", 9)
-        
-        if not Regions.check(self.regionWord, Regions.P1cutL): return False
-        self.CutPlot("Region", 10)
-        KinPass, GoodPhotons = self.PhotonsKinematicCuts(Photons)
-        if not KinPass: return False
-        self.CutPlot("Region", 11)
-        FsrPass, RecoGammaCands = self.PhotonsFsrCuts("Reco", GoodPhotons, LeptonsOI, RecoZZ) #!!!!!!!!!!!!!!! leptonsOI !!!!!!!!!!!!!!
-        if not FsrPass: return False
-        self.CutPlot("Region", 12)
-        RecoGamma = self.GetBestGamma("Reco", RecoGammaCands)
-        if RecoGamma is None: return False
-        PtThetaGraph = self.GraphGammaPtThetaZZG("Reco", RecoGamma, RecoZZ)
+        self.CutPlot("Region", 3, PhotonsOrder)
+        if not self.ZZMassCuts(RecoZZ): return False
+        self.CutPlot("Region", 4, PhotonsOrder)
 
+        ElectronVetoPass, TruePhotons = self.GetTruePhotons(Photons)
+        if not ElectronVetoPass: return False
+        self.CutPlot("Region", 5, PhotonsOrder)
+        KinPass, GoodPhotons = self.PhotonsKinematicCuts(TruePhotons)
+        if not KinPass: return False
+        self.CutPlot("Region", 6, PhotonsOrder)
+        
+        self.mvaIDPhotons(GoodPhotons, "PostPhotonKin")             # select the WP
+        #self.CutIDPhotons(GoodPhotons, "PostPhotonKin")
+        
+        IDPass, GoodIDPhotons = self.GetGoodIDPhotons(GoodPhotons)
+        if not IDPass: return False
+        self.CutPlot("Region", 7, PhotonsOrder)
+        IsolatedPass, IsolatedPhotons = self.GetIsolatedPhotons(GoodIDPhotons, LeptonsOI)
+        if not IsolatedPass: return False
+        self.CutPlot("Region", 8, PhotonsOrder)
+        TribosonPass, RecoGamma = self.TribosonRegion("Reco", IsolatedPhotons, LeptonsOI, RecoZZ, PhotonsOrder)
+        if not TribosonPass: return False
+        self.CutPlot("Region", 9, PhotonsOrder)
+
+        self.mvaIDPhotons([RecoGamma], "PostTribosonregion")             # select the WP
+        #self.CutIDPhotons([RecoGamma], "PostTribosonregion")
         self.PlotsOI("Reco", RecoZZ, RecoGamma)
 
         return True
 
-    SRCuts = ["EventiTotali", "passZZ4l+BestCand", "regione L4P", "4Leps", "pdgId", "pt5", "pt10", "pt20", "eta", "Z1Z2Mass", "regioneP1cutL", "CinematicaFotoni", "TribosonRegion"]
+    SRCuts = ["TotalEvents", "HLT_passZZ4l", "BestCand", "LeptonsKinCuts", "Z1Z2Mass", "ElectronVeto", "PhotonsKinCuts", "PhotonsID_mva90", "IsolatedPhotons", "TribosonRegion"]             # select the WP
+    #SRCuts = ["TotalEvents", "HLT_passZZ4l", "BestCand", "LeptonsKinCuts", "Z1Z2Mass", "ElectronVeto", "PhotonsKinCuts", "PhotonsID_CutL", "IsolatedPhotons", "TribosonRegion"]
 
     
-    # =========================
-    # COLLECTIONS
-    # =========================
-
-    def LoadCollections(self):
-        if self.analyzeMC:
-            self.GenParts = Collection(self.event, 'GenPart')
-            self.GenLeptons = [p for p in self.GenParts if abs(p.pdgId) in (11, 13)
-                                                           and p.status == 1
-                                                           and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
-            self.GenPhotons = [p for p in self.GenParts if p.pdgId == 22
-                                                           and p.status == 1
-                                                           and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
-        self.ZZs = Collection(self.event, 'ZZCand')
-        self.Leptons = Collection(self.event, 'Lepton')
-        self.Photons = Collection(self.event, 'Photon')
-            
-
     # =========================
     # USEFUL FUNCTIONS: ZZ
     # =========================
 
     def LeptonsKinematicCuts(self, Level, Leptons):
+
         if len(Leptons) != 4: return False
-        if Level == "Reco": self.CutPlot("Region", 3)
         if (sum(l.pdgId == 11 for l in Leptons) != sum(l.pdgId == -11 for l in Leptons)
             or sum(l.pdgId == 13 for l in Leptons) != sum(l.pdgId == -13 for l in Leptons)): return False
-        if Level == "Reco": self.CutPlot("Region", 4)
+
         if sum(l.pt > self.LepsCuts(Level, l)[0] for l in Leptons) < 4: return False
-        if Level == "Reco": self.CutPlot("Region", 5)
         if sum(l.pt > 10 for l in Leptons) < 2: return False
-        if Level == "Reco": self.CutPlot("Region", 6)
         if sum(l.pt > 20 for l in Leptons) < 1: return False
-        if Level == "Reco": self.CutPlot("Region", 7)
+
         if any(abs(l.eta) >= self.LepsCuts(Level, l)[1] for l in Leptons): return False
-        if Level == "Reco": self.CutPlot("Region", 8)
         
         return True
 
     def LepsCuts(self, Level, l):
+
         if Level == "Gen":
             pt = 5
             eta = 2.5
+        
         elif Level == "Reco":
             if abs(l.pdgId) == 11:
                 pt = 7
@@ -146,6 +145,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             elif abs(l.pdgId) == 13:
                 pt = 5
                 eta = 2.4
+        
         return pt, eta
     
     def GetZZ(self, Leptons):
@@ -163,9 +163,10 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             else:
                 Z1Mass, Z1Leptons = ZMuMass, Muons
                 Z2Mass, Z2Leptons = ZElMass, Electrons
-
+            
         else:
             Z1Mass = float("inf")
+            Z1Leptons = None
             for i, l1 in enumerate(Leptons):
                 for j in range(i+1, len(Leptons)):
                     l2 = Leptons[j]
@@ -174,23 +175,25 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
                     if abs(LeptonsMass - ZMassPDG) < abs(Z1Mass - ZMassPDG):
                         Z1Mass = LeptonsMass
                         Z1Leptons = [l1, l2]
-            if Z1Leptons is None: return None
-            if (len(Z1Leptons) != 2
-                or Z1Leptons[0].pdgId != - Z1Leptons[1].pdgId): return None
             Z2Leptons = [l for l in Leptons if l not in Z1Leptons]
-            if (len(Z2Leptons) != 2
-                or Z2Leptons[0].pdgId != - Z2Leptons[1].pdgId): return None
-                
+            
+        if (Z1Mass is None or Z1Leptons is None or Z2Leptons is None): return None
+        if (len(Z1Leptons) != 2 or Z1Leptons[0].pdgId != - Z1Leptons[1].pdgId): return None
+        if (len(Z2Leptons) != 2 or Z2Leptons[0].pdgId != - Z2Leptons[1].pdgId): return None
+                        
         GenZ1Cand = ZClass(Z1Leptons)
         GenZ2Cand = ZClass(Z2Leptons)
         GenZZCand = ZZClass(GenZ1Cand, GenZ2Cand)
 
         return GenZZCand
 
-    def ZZMassCuts(self, Level, ZZ):
+    def ZZMassCuts(self, ZZ):
+
         if ZZ is None: return False
+        
         if not 60 < ZZ.Z1mass < 120: return False
         if not 60 < ZZ.Z2mass < 120: return False
+        
         return True
 
     
@@ -198,86 +201,245 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
     # USEFUL FUNCTIONS: PHOTONS
     # =========================
 
+    def GetTruePhotons(self, Photons):
+        
+        if len(Photons) < 1: return False, None
+        TruePhotons = [ph for ph in Photons if ph.electronVeto]
+        if len(TruePhotons) < 1: return False, None        
+
+        return True, TruePhotons
+
     def PhotonsKinematicCuts(self, Photons):
+        
         if len(Photons) < 1: return False, None
         GoodPhotons = [ph for ph in Photons if ph.pt > 20
                                                and abs(ph.eta) < 2.4
                                                and not 1.444 < abs(ph.eta) < 1.566]
-        if len(GoodPhotons) == 0: return False, None
+        if len(GoodPhotons) < 1: return False, None
+        
         return True, GoodPhotons
 
-    def PhotonsFsrCuts(self, Level, Photons, Leptons, ZZ):
-        GammaCands = [ph for ph in Photons if all(ph.DeltaR(l) > 0.5 for l in Leptons)
-                                                  and self.GetllGammaMassMin(Level, ph, Leptons, ZZ) > 100]
-        if len(GammaCands) < 1: return False, None
-        return True, GammaCands
+    def GetGoodIDPhotons(self, Photons):
 
-    def GetllGammaMassMin(self, Level, ph, Leptons, ZZ):
+        if len(Photons) < 1: return False, None
+        GoodIDPhotons = [ph for ph in Photons if ph.mvaID_WP90]             # select the WP
+        #GoodIDPhotons = [ph for ph in Photons if ph.cutBased >= 1]
+        if len(GoodIDPhotons) < 1: return False, None
+
+        return True, GoodIDPhotons
+    
+    def mvaIDPhotons(self, Photons, When):
+
+        mva90 = [ph for ph in Photons if ph.mvaID_WP90]
+        if len(mva90) < 1: return False, False
+        self.PhotonWPCutPlot(0, When)
+
+        mva80 = [ph for ph in Photons if ph.mvaID_WP80]
+        if len(mva80) < 1: return True, False
+        self.PhotonWPCutPlot(1, When)
+
+        return True, True
+
+    def CutIDPhotons(self, Photons, When):
+        
+        cutL = [ph for ph in Photons if ph.cutBased >= 1]
+        if len(cutL) < 1: return False, False, False
+        self.PhotonWPCutPlot(3, When)
+
+        cutM = [ph for ph in Photons if ph.cutBased >= 2]
+        if len(cutM) < 1: return True, False, False
+        self.PhotonWPCutPlot(4, When)
+
+        cutT = [ph for ph in Photons if ph.cutBased >= 3]
+        if len(cutT) < 1: return True, True, False
+        self.PhotonWPCutPlot(5, When)
+
+        return True, True, True
+
+    def GetIsolatedPhotons(self, Photons, Leptons):
+        
+        if len(Photons) < 1: return False
+        IsolatedPhotons = [ph for ph in Photons if all(ph.DeltaR(l) > 0.5 for l in Leptons)]
+        if len(IsolatedPhotons) < 1: return False, None
+        
+        return True, IsolatedPhotons
+
+    def TribosonRegion(self, Level, IsolatedPhotons, LeptonsOI, RecoZZ, PhotonsOrder):
+
+        if PhotonsOrder == None:
+            TribosonPass, RecoGamma = self.GetGammaTribosonPt("Reco", IsolatedPhotons, LeptonsOI, RecoZZ)
+            
+        elif PhotonsOrder == "PtTriboson":
+            self.hEvent.fill1D("nPhotonsPreTribosonregion", "nPhotonsPreTribosonregion", 11, -0.5, 10.5, len(Photons), self.weight)
+            TribosonPass, RecoGamma = self.GetGammaPtTriboson("Reco", IsolatedPhotons, LeptonsOI, RecoZZ)
+            
+        return TribosonPass, RecoGamma
+        
+    def GetGammaTribosonPt(self, Level, Photons, Leptons, ZZ):
+
+        if len(Photons) < 1: return False, None
+
+        ZGammaMinMass_MAX = 0
+        ZMinMass_MAX = 0
+        GammaCands = []
+
+        for ph in Photons:
+            ZGammaMinMass, ZMinMass = self.GetZGammaMinMass(Level, ph, Leptons, ZZ)
+            
+            if ZGammaMinMass > ZGammaMinMass_MAX:
+                ZGammaMinMass_MAX = ZGammaMinMass
+                ZMinMass_MAX = ZMinMass
+
+            if ZGammaMinMass > 100:
+                GammaCands.append(ph)
+            
+        self.hEvent.fill1D(f"{Level}Level_ZGammaMinMass_PreCut", f"{Level}Level_ZGammaMinMass_PreCut", 60, 0., 300., ZGammaMinMass_MAX, self.weight)
+        self.hEvent.fill2D(f"{Level}Level_ZGammaMinMass2D_PreCut", f"{Level}Level_ZMinMass(ZGammaMinMass)_PreCut", 60, 0., 300., 24, 0., 120., ZGammaMinMass_MAX, ZMinMass_MAX, self.weight)
+           
+        if len(GammaCands) < 1: return False, None
+
+        Gamma = self.GetBestGamma(Level, GammaCands, None)
+        ZGammaMinMass, ZMinMass = self.GetZGammaMinMass(Level, Gamma, Leptons, ZZ)
+        self.hEvent.fill1D(f"{Level}Level_ZGammaMinMass_PostCut", f"{Level}Level_ZGammaMinMass_PostCut", 60, 0., 300., ZGammaMinMass, self.weight)
+        self.hEvent.fill2D(f"{Level}Level_ZGammaMinMass2D_PostCut", f"{Level}Level_ZMinMass(ZGammaMinMass)_PostCut", 60, 0., 300., 24, 0., 120., ZGammaMinMass, ZMinMass, self.weight)
+
+        return True, Gamma
+
+    def GetGammaPtTriboson(self, Level, Photons, Leptons, ZZ):
+        
+        if len(Photons) < 1: return False, None
+
+        BestGamma = self.GetBestGamma(Level, Photons, "PtTriboson")
+        ZGammaMinMass, ZMinMass = self.GetZGammaMinMass(Level, BestGamma, Leptons, ZZ)
+        self.hEvent.fill1D(f"{Level}Level_ZGammaMinMass_PreCut_PtTriboson", f"{Level}Level_ZGammaMinMass_PreCut_PtTriboson", 60, 0., 300., ZGammaMinMass, self.weight)
+        self.hEvent.fill2D(f"{Level}Level_ZGammaMinMass2D_PreCut_PtTriboson", f"{Level}Level_ZMinMass(ZGammaMinMass)_PreCut_PtTriboson", 60, 0., 300., 24, 0., 120., ZGammaMinMass, ZMinMass, self.weight)
+
+        if ZGammaMinMass > 100:
+            self.hEvent.fill1D(f"{Level}Level_ZGammaMinMass_PostCut_PtTriboson", f"{Level}Level_ZGammaMinMass_PostCut_PtTriboson", 60, 0., 300., ZGammaMinMass, self.weight)
+            self.hEvent.fill2D(f"{Level}Level_ZGammaMinMass2D_PostCut_PtTriboson", f"{Level}Level_ZMinMass(ZGammaMinMass)_PostCut_PtTriboson", 60, 0., 300., 24, 0., 120., ZGammaMinMass, ZMinMass, self.weight)
+            return True, BestGamma
+
+        return False, None
+
+    def GetZGammaMinMass(self, Level, ph, Leptons, ZZ):
+
         Z1Mass = ZZ.Z1mass
         Z2Mass = ZZ.Z2mass
+        
         if Level == "Gen":
             Z1GammaMass = (ZZ.Z1.p4 + ph.p4()).M()
             Z2GammaMass = (ZZ.Z2.p4 + ph.p4()).M()
-        #elif Level == "Reco":
-        #    Z1GammaMass = (self.GetP4())
-
+        
         elif Level == "Reco":
             Z1GammaMass = (Leptons[0].p4() + Leptons[1].p4() + self.GetP4(ph)).M()
-            Z1Mass = (Leptons[0].p4() + Leptons[1].p4()).M()
             Z2GammaMass = (Leptons[2].p4() + Leptons[3].p4() + self.GetP4(ph)).M()
-            Z2Mass = (Leptons[2].p4() + Leptons[3].p4()).M()
-
+            
         ZGammaMinMass = min(Z1GammaMass, Z2GammaMass)
         ZMinMass = Z1Mass if ZGammaMinMass == Z1GammaMass else Z2Mass
-        self.hEvent.fill1D(f"{Level}Level_ZGammaMinMass", f"{Level}Level_ZGammaMinMass", 52, 40., 300., ZGammaMinMass, self.weight)
-        self.hEvent.fill2D(f"{Level}Level_ZGammaMinMass2D", f"{Level}Level_ZMinMass(ZGammaMinMass)", 104, 40., 300., 120, 60., 120., ZGammaMinMass, ZMinMass, self.weight)
-        return ZGammaMinMass
-
-    def GetBestGamma(self, Level, GammaCands):
-        BestGamma = max(GammaCands, key=lambda ph: ph.pt, default=None)
-        self.hEvent.fill1D(f"{Level}Level_BestGammaPt", f"{Level}Level_BestGammaPt", 50, 20., 220., BestGamma.pt, self.weight)
         
-        Gamma2 = max((ph for ph in GammaCands if ph != BestGamma), key=lambda ph: ph.pt, default=None)
-        if Gamma2 is not None:
-            self.hEvent.fill1D(f"{Level}Level_Gamma2Pt", f"{Level}Level_Gamma2Pt", 20, 20., 220., Gamma2.pt, self.weight)
+        return ZGammaMinMass, ZMinMass
 
+    def GetBestGamma(self, Level, GammaCands, PhotonsOrder = None):
+
+        if len(GammaCands) < 1: return None
+
+        elif len(GammaCands) == 1:
+            BestGamma = GammaCands[0]
+
+        elif len(GammaCands) > 1:
+            BestGamma = max(GammaCands, key=lambda ph: ph.pt)
+            Gamma2 = max((ph for ph in GammaCands if ph != BestGamma), key=lambda ph: ph.pt)
+            if PhotonsOrder is None:
+                self.hEvent.fill1D(f"{Level}Level_Gamma2Pt", f"{Level}Level_Gamma2Pt", 20, 20., 220., Gamma2.pt, self.weight)
+            else:
+                self.hEvent.fill1D(f"{Level}Level_Gamma2Pt_{PhotonsOrder}", f"{Level}Level_Gamma2Pt_{PhotonsOrder}", 20, 20., 220., Gamma2.pt, self.weight)
+
+        if PhotonsOrder is None:
+            self.hEvent.fill1D(f"{Level}Level_BestGammaPt", f"{Level}Level_BestGammaPt", 50, 20., 220., BestGamma.pt, self.weight)
+        else:
+            self.hEvent.fill1D(f"{Level}Level_BestGammaPt_{PhotonsOrder}", f"{Level}Level_BestGammaPt_{PhotonsOrder}", 50, 20., 220., BestGamma.pt, self.weight)
+            
         return BestGamma
 
     def GraphGammaPtThetaZZG(self, Level, Gamma, ZZ):
+        
         if Level == "Gen":
-            thetaZZGamma = ZZ.p4.Vect().Angle(self.GetP4(Gamma).Vect())
+            thetaZZGamma = ZZ.p4.Vect().Angle(Gamma.p4().Vect())
         elif Level == "Reco":
             thetaZZGamma = ZZ.p4().Vect().Angle(self.GetP4(Gamma).Vect())
+        
         self.hEvent.fill2D(f"{Level}Level_BestGammaPt-AngoloZZGamma", f"{Level}Level_BestGammaPt-AngoloZZGamma", 50, 0., ROOT.TMath.Pi(), 5, 60., 100., thetaZZGamma , Gamma.pt, self.weight)
+        
         return None
 
     # =========================
     # AUXILIARY FUNCTIONS
     # =========================
-    
+
+    def LoadCollections(self):
+
+        if self.analyzeMC:
+            self.GenParts = Collection(self.event, 'GenPart')
+            self.GenLeptons = [p for p in self.GenParts if abs(p.pdgId) in (11, 13)
+                                                           and p.status == 1
+                                                           and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
+            self.GenPhotons = [p for p in self.GenParts if p.pdgId == 22
+                                                           and p.status == 1
+                                                           and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
+      
+        self.ZZs = Collection(self.event, 'ZZCand')
+        self.Leptons = Collection(self.event, 'Lepton')
+        self.Photons = Collection(self.event, 'Photon')
+            
     def GetP4(self, p):
+
         p4 = TLorentzVector()
         if hasattr(p, "mass"):
             p4.SetPtEtaPhiM(p.pt, p.eta, p.phi, p.mass)
         else:
             p4.SetPtEtaPhiM(p.pt, p.eta, p.phi, 0.)
+        
         return p4
 
-    def CutPlot(self, Level, Cut):
+    def CutPlot(self, Level, Cut, Order = None):
+
         if Level == "Definition":
             Labels = self.SDCuts
         elif Level == "Region":
             Labels = self.SRCuts
-        self.hEvent.fill1D_label(f"EventiPerTaglio_Signal{Level}", f"EventiPerTaglio_Signal{Level}", Labels, Labels[Cut], self.weight)
-
+        if Order is None:
+            self.hEvent.fill1D_label(f"Signal{Level}_CutFlow", f"Signal{Level}_CutFlow", Labels, Labels[Cut], self.weight)
+        else:
+            self.hEvent.fill1D_label(f"Signal{Level}_CutFlow_{Order}", f"Signal{Level}_CutFlow_{Order}", Labels, Labels[Cut], self.weight)
+        
     def PlotsOI(self, Level, ZZ, Gamma):
+
         self.hEvent.fill1D(f"{Level}Level_Z1Mass", f"{Level}Level_Z1Mass", 100, 60., 120., ZZ.Z1mass, self.weight)
         self.hEvent.fill1D(f"{Level}Level_Z2Mass", f"{Level}Level_Z2Mass", 75, 60., 120., ZZ.Z2mass, self.weight)
-        self.hEvent.fill1D(f"{Level}Level_ZZMass", f"{Level}Level_ZZMass", 40, 120., 520., ZZ.mass, self.weight)
-        if Level == "Gen":
-            self.hEvent.fill1D(f"{Level}Level_ZZGammaMass", f"{Level}Level_ZZGammaMass", 50, 120., 620., (ZZ.p4 + Gamma.p4()).M(), self.weight)
-        
+        self.hEvent.fill1D(f"{Level}Level_ZZMass", f"{Level}Level_ZZMass", 10, 0., 1000., ZZ.mass, self.weight)
 
+        if Level == "Gen":
+            ZZGammaInvMass = (ZZ.p4 + Gamma.p4()).M()
+        elif Level == "Reco":
+            ZZGammaInvMass = (ZZ.p4() + self.GetP4(Gamma)).M()
+        self.hEvent.fill1D(f"{Level}Level_ZZGammaMass", f"{Level}Level_ZZGammaMass", 10, 0., 1000., ZZGammaInvMass, self.weight)
+
+        self.hEvent.fill1D(f"{Level}Level_GammaPt", f"{Level}Level_GammaPt", 12, 0., 180., Gamma.pt, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_abs(GammaEta)", f"{Level}Level_abs(GammaEta)", 12, 0., 2.4, abs(Gamma.eta), self.weight)
+               
+    def isBgivenA(self, A, B, nomeA, nomeB):
+
+        if A:
+            if B:
+                result = 1
+            else: result = 0
+            self.hEvent.fill1D(f"is{nomeB}given{nomeA}", f"is{nomeB}given{nomeA}", 2, -0.5, 1.5, result, self.weight)
+
+    def PhotonWPCutPlot(self, Bin, When):
+        self.hEvent.fill1D_label(f"PhotonWP_{When}", f"PhotonWP_CutFlow_{When}", self.PhotonWPLabels, self.PhotonWPLabels[Bin], self.weight)
+
+    PhotonWPLabels = ["pass_mva90", "pass_mva80", "" , "pass_CutL", "pass_CutM", "pass_CutT"]
+    
 # =========================
 # USEFUL CLASSES
 # =========================
