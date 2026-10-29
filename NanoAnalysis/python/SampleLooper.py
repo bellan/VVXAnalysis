@@ -74,8 +74,9 @@ class SampleLooper:
             if iEntry%printEntries == 0 : print("Processing", iEntry)
             eventAnalyzer.eventSetup()
             eventAnalyzer.analyze()
-            
+        
         eventAnalyzer.end(sample)
+        eventAnalyzer.endOfAnalysis()
         #######################################################
 
 

@@ -95,7 +95,7 @@ class EventAnalyzer:
                 self.ZZ = self.ZZs[self.event.bestCandIdx]
                 
                 #self.regionWord |= Regions.ZTL2P_ZTL2P
-
+                
         
         
         
@@ -121,4 +121,7 @@ class EventAnalyzer:
         )
 
     def begin(self):
+        pass
+
+    def endOfAnalysis(self):
         pass
