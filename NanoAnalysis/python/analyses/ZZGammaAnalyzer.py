@@ -21,7 +21,8 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         
         self.LoadCollections()
         
-        #isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons)
+       # isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons)
+       # if not isSD:
         isSR = self.SignalRegion(self.Leptons, self.Photons)              # default is choosing the best gamma after cutting at 100GeV (TribosonRegion). Otherwise use "PtTriboson" as PhotonsOrder.
         
         #self.isBgivenA(isSD, isSR, "SD", "SR")
@@ -84,29 +85,31 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         if not self.ZZMassCuts(RecoZZ): return False
         self.CutPlot("Region", 4, PhotonsOrder)
 
-        ElectronVetoPass, TruePhotons = self.GetTruePhotons(Photons)
-        if not ElectronVetoPass: return False
-        self.CutPlot("Region", 5, PhotonsOrder)
-        KinPass, GoodPhotons = self.PhotonsKinematicCuts(TruePhotons)
-        if not KinPass: return False
-        self.CutPlot("Region", 6, PhotonsOrder)
-        
-        self.mvaIDPhotons(GoodPhotons, "PostPhotonKin")             # select the WP
-        #self.CutIDPhotons(GoodPhotons, "PostPhotonKin")
-        
-        IDPass, GoodIDPhotons = self.GetGoodIDPhotons(GoodPhotons)
-        if not IDPass: return False
-        self.CutPlot("Region", 7, PhotonsOrder)
-        IsolatedPass, IsolatedPhotons = self.GetIsolatedPhotons(GoodIDPhotons, LeptonsOI)
-        if not IsolatedPass: return False
-        self.CutPlot("Region", 8, PhotonsOrder)
-        TribosonPass, RecoGamma = self.TribosonRegion("Reco", IsolatedPhotons, LeptonsOI, RecoZZ, PhotonsOrder)
-        if not TribosonPass: return False
-        self.CutPlot("Region", 9, PhotonsOrder)
+        self.PlotsOIControlRegion("Reco", RecoZZ)
 
-        self.mvaIDPhotons([RecoGamma], "PostTribosonregion")             # select the WP
-        #self.CutIDPhotons([RecoGamma], "PostTribosonregion")
-        self.PlotsOI("Reco", RecoZZ, RecoGamma)
+       # ElectronVetoPass, TruePhotons = self.GetTruePhotons(Photons)
+       # if not ElectronVetoPass: return False
+       # self.CutPlot("Region", 5, PhotonsOrder)
+       # KinPass, GoodPhotons = self.PhotonsKinematicCuts(TruePhotons)
+       # if not KinPass: return False
+       # self.CutPlot("Region", 6, PhotonsOrder)
+        
+       # self.mvaIDPhotons(GoodPhotons, "PostPhotonKin")             # select the WP
+       # self.CutIDPhotons(GoodPhotons, "PostPhotonKin")
+        
+       # IDPass, GoodIDPhotons = self.GetGoodIDPhotons(GoodPhotons)
+       # if not IDPass: return False
+       # self.CutPlot("Region", 7, PhotonsOrder)
+       # IsolatedPass, IsolatedPhotons = self.GetIsolatedPhotons(GoodIDPhotons, LeptonsOI)
+       # if not IsolatedPass: return False
+       # self.CutPlot("Region", 8, PhotonsOrder)
+       # TribosonPass, RecoGamma = self.TribosonRegion("Reco", IsolatedPhotons, LeptonsOI, RecoZZ, PhotonsOrder)
+       # if not TribosonPass: return False
+       # self.CutPlot("Region", 9, PhotonsOrder)
+
+       # self.mvaIDPhotons([RecoGamma], "PostTribosonregion")             # select the WP
+       # self.CutIDPhotons([RecoGamma], "PostTribosonregion")
+       # self.PlotsOI("Reco", RecoZZ, RecoGamma)
 
         return True
 
@@ -414,8 +417,8 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         
     def PlotsOI(self, Level, ZZ, Gamma):
 
-        self.hEvent.fill1D(f"{Level}Level_Z1Mass", f"{Level}Level_Z1Mass", 100, 60., 120., ZZ.Z1mass, self.weight)
-        self.hEvent.fill1D(f"{Level}Level_Z2Mass", f"{Level}Level_Z2Mass", 75, 60., 120., ZZ.Z2mass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_Z1Mass", f"{Level}Level_Z1Mass", 60, 60., 120., ZZ.Z1mass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_Z2Mass", f"{Level}Level_Z2Mass", 60, 60., 120., ZZ.Z2mass, self.weight)
         self.hEvent.fill1D(f"{Level}Level_ZZMass", f"{Level}Level_ZZMass", 10, 0., 1000., ZZ.mass, self.weight)
 
         if Level == "Gen":
@@ -426,6 +429,12 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
         self.hEvent.fill1D(f"{Level}Level_GammaPt", f"{Level}Level_GammaPt", 12, 0., 180., Gamma.pt, self.weight)
         self.hEvent.fill1D(f"{Level}Level_abs(GammaEta)", f"{Level}Level_abs(GammaEta)", 12, 0., 2.4, abs(Gamma.eta), self.weight)
+
+    def PlotsOIControlRegion(self, Level, ZZ):
+        
+        self.hEvent.fill1D(f"{Level}Level_Z1Mass", f"{Level}Level_Z1Mass", 60, 60., 120., ZZ.Z1mass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_Z2Mass", f"{Level}Level_Z2Mass", 60, 60., 120., ZZ.Z2mass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_ZZMass", f"{Level}Level_ZZMass", 10, 0., 1000., ZZ.mass, self.weight)
                
     def isBgivenA(self, A, B, nomeA, nomeB):
 
