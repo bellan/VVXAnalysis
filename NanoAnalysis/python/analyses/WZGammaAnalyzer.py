@@ -49,9 +49,9 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
 
     def analyze(self):  
         self.loadCollections()
-        self.SDCuts = ["Weighted_Events","Lep_KinCuts","WZ_MassLimits","Ph_KinCuts", "Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
-        self.SRCuts=["Weighted_Events","HLT_passZZ4l","Lep_KinCuts","MET_Cut","Z_MassLimits","ZZFullSel","Ph_kinCuts",
-                     "Ph_electronVeto","Ph_cutBased>=1","Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
+        #self.SDCuts = ["Weighted_Events","Lep_KinCuts","WZ_MassLimits","Ph_KinCuts", "Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
+        #self.SRCuts=["Weighted_Events","HLT_passZZ4l","Lep_KinCuts","MET_Cut","Z_MassLimits","ZZFullSel","Ph_kinCuts",
+                     "Ph_electronVeto","Ph_mvaWP80","Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
 
         self.isSig = False
         if self.analyzeMC :
@@ -61,9 +61,9 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         self.isInSR = self.isInSignalRegion(2024)
         recoZ, recoW = self.recoCouple                
 
-        # sample's statistic values
+        '''# sample's statistic values
         self.getPercentagePlot("Background_inSR")
-        self.getPercentagePlot("ReconstructonEfficency")
+        self.getPercentagePlot("ReconstructonEfficency")'''
 
             
         '''if isSig and isInSR :             
@@ -205,7 +205,7 @@ Gen_invMassLLGamma_preCuts, theZ.mass, self.weight)
             theW = WReco(lepW, W_mt)            
         self.recoCouple = (theZ, theW)
         
-        BestPhotons = self.photonsCuts(self.Photons, self.ChargedLeptons, "Region")
+        '''BestPhotons = self.photonsCuts(self.Photons, self.ChargedLeptons, "Region")
         if not BestPhotons : return False
 
         photon_maxPt = max(BestPhotons, key=lambda p: p.pt, default=None)  # for graphic purposes only
@@ -234,7 +234,7 @@ Gen_invMassLLGamma_preCuts, theZ.mass, self.weight)
         lZ_list = [(lepW.pt, lepW.eta, lepW.phi), (lepZ1.pt, lepZ1.eta, lepZ1.phi), (lepZ2.pt, lepZ2.eta, lepZ2.phi)]
         lZMET_mt = self.computeMt(lZ_list, self.MET.pt, self.MET.phi)
         lZGamma_list = [(lepW.pt, lepW.eta, lepW.phi), (lepZ1.pt, lepZ1.eta, lepZ1.phi), (lepZ2.pt, lepZ2.eta, lepZ2.phi), (thePhoton.pt, thePhoton.eta, thePhoton.phi)]
-        lZGammaMET_mt = self.computeMt(lZGamma_list, self.MET.pt, self.MET.phi)
+        lZGammaMET_mt = self.computeMt(lZGamma_list, self.MET.pt, self.MET.phi)'''
                         
         self.hEvent.fill1D("LepZ_1_pt", "LepZ_1_pt", 20, 0., 200., lepZ1.pt, self.weight)
         self.hEvent.fill1D("LepZ_2_pt", "LepZ_2_pt", 20, 0., 200., lepZ2.pt, self.weight)
@@ -242,13 +242,13 @@ Gen_invMassLLGamma_preCuts, theZ.mass, self.weight)
         self.hEvent.fill1D("LepW_eta", "LepW_eta", 12, -2.5, 2.5, lepW.eta, self.weight)
         self.hEvent.fill1D("MET_pt", "MET_pt", 17, 30., 200., self.MET.pt, self.weight)
         self.hEvent.fill1D("MET_phi", "MET_phi", 18, -3.2, 3.2, self.MET.phi, self.weight)
-        self.hEvent.fill1D("Photon_pt", "Photon_pt", 40, 0., 200., thePhoton.pt, self.weight)
-        self.hEvent.fill1D("Photon_eta", "Photon_eta", 12, -2.4, 2.4, thePhoton.eta, self.weight)
+        #self.hEvent.fill1D("Photon_pt", "Photon_pt", 40, 0., 200., thePhoton.pt, self.weight)
+        #self.hEvent.fill1D("Photon_eta", "Photon_eta", 12, -2.4, 2.4, thePhoton.eta, self.weight)
         self.hEvent.fill1D("ZCandMass_91Gev", "ZCandMass_91Gev", 60, 60., 120., theZ.mass, self.weight)
         self.hEvent.fill1D("W_Mt", "W_Mt", 10, 0., 200., W_mt, self.weight)
-        self.hEvent.fill1D("lGammaMET_Mt", "lGammaMET_Mt", 15, 0., 300., lGammaMET_mt, self.weight)
-        self.hEvent.fill1D("lZMET_Mt", "lZMET_Mt", 14, 0., 700., lZMET_mt, self.weight)
-        self.hEvent.fill1D("lZGammaMET_Mt", "lZGammaMET_Mt", 10, 0., 1000., lZGammaMET_mt, self.weight)
+        #self.hEvent.fill1D("lGammaMET_Mt", "lGammaMET_Mt", 15, 0., 300., lGammaMET_mt, self.weight)
+        #self.hEvent.fill1D("lZMET_Mt", "lZMET_Mt", 14, 0., 700., lZMET_mt, self.weight)
+        #self.hEvent.fill1D("lZGammaMET_Mt", "lZGammaMET_Mt", 10, 0., 1000., lZGammaMET_mt, self.weight)
 
         return True
    
@@ -357,7 +357,7 @@ Gen_invMassLLGamma_preCuts, theZ.mass, self.weight)
             BestPhotons = [gp for gp in GoodPhotons if gp.electronVeto]
             if not BestPhotons : return None
             self.CutPlot(Level, 7)  #Ph_electronVeto
-            SelectedPhotons = [bp for bp in BestPhotons if bp.cutBased >= 2]
+            SelectedPhotons = [bp for bp in BestPhotons if bp.mvaID_WP80]
             if not SelectedPhotons : return None
             self.CutPlot(Level, 8)  #Ph_cutBased>=1
             FinalistPhotons = [sp for sp in SelectedPhotons if all(sp.DeltaR(l) > 0.5 for l in ChLeptons)]
