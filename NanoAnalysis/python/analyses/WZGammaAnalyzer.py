@@ -51,7 +51,7 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         self.loadCollections()
         #self.SDCuts = ["Weighted_Events","Lep_KinCuts","WZ_MassLimits","Ph_KinCuts", "Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
         #self.SRCuts=["Weighted_Events","HLT_passZZ4l","Lep_KinCuts","MET_Cut","Z_MassLimits","ZZFullSel","Ph_kinCuts",
-                     "Ph_electronVeto","Ph_mvaWP80","Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
+        #             "Ph_electronVeto","Ph_mvaWP80","Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
 
         self.isSig = False
         if self.analyzeMC :
