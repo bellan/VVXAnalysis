@@ -17,7 +17,7 @@ ttH125    ,,0.5700,0.0007689,,/TTH-Hto2Zto4L_Par-M-125_TuneCP5_13p6TeV_powheg-jh
 
 
 ###,,,,,,,,,,,qq->ZZ background  - xsec taken from powheg gridpack
-ZZTo4l    ,,1.39,,,/ZZto4L_TuneCP5_13p6TeV_powheg-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,,,2,APPLY_K_NNLOQCD_ZZQQB=True;APPLY_K_NLOEW_ZZQQB=True,,
+ZZTo4l    ,,1.39,,,/ZZto4L_TuneCP5_13p6TeV_powheg-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,,,2,APPLY_K_NNLOQCD_NLOEW_ZZQQB=True,,
 
 ###,,,,,,,,,,,gg->ZZ background - xsec taken from gridpack
 ggTo4e_Contin_MCFM701          ,,0.00305851,,,/GluGlu2Zto4E_TuneCP5_13p6TeV_mcfm-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM     ,,,2,APPLY_K_NNLOQCD_ZZGG=1,,
@@ -26,7 +26,6 @@ ggTo4tau_Contin_MCFM701        ,,0.00303575,,,/GluGlu2Zto4Tau_TuneCP5_13p6TeV_mc
 ggTo2e2mu_Contin_MCFM701       ,,0.00624157,,,/GluGlu2Zto2E2Mu_TuneCP5_13p6TeV_mcfm-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM  ,,,2,APPLY_K_NNLOQCD_ZZGG=1,,
 ggTo2e2tau_Contin_MCFM701      ,,0.00624157,,,/GluGlu2Zto2E2Tau_TuneCP5_13p6TeV_mcfm-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM ,,,2,APPLY_K_NNLOQCD_ZZGG=1,,
 ggTo2mu2tau_Contin_MCFM701     ,,0.00624157,,,/GluGlu2Zto2Mu2Tau_TuneCP5_13p6TeV_mcfm-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,,,2,APPLY_K_NNLOQCD_ZZGG=1,,
-
 
 ###,,,,,,,,,,,rare bkg targeting ttH categories
 TTWW                            ,,0.008203,,,/TTWW_TuneCP5_13p6TeV_madgraph-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,,,2,,,
