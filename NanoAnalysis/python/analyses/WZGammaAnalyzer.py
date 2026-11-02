@@ -53,13 +53,12 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         self.SRCuts=["Weighted_Events","HLT_passZZ4l","Lep_KinCuts","MET_Cut","Z_MassLimits","ZZFullSel","Ph_kinCuts","Ph_electronVeto","Ph_mvaWP80","Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
 
         self.isSig = False
-        if self.analyzeMC :
+        '''if self.analyzeMC :
             self.isSig = self.isSignal()  
-            genW, genZ = self.genCouple
+            genW, genZ = self.genCouple'''
 
-        if self.isSig : 
-            self.isInSR = self.isInSignalRegion(2024)
-            recoZ, recoW = self.recoCouple                
+        self.isInSR = self.isInSignalRegion(2024)
+        recoZ, recoW = self.recoCouple                
 
         '''# sample's statistic values
         self.getPercentagePlot("Background_inSR")
