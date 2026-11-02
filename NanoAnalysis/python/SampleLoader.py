@@ -5,7 +5,7 @@ import yaml
 from dataclasses import dataclass
 from typing import List, Optional
 
-from VVXAnalysis.NanoAnalysis.Sample import Sample, chunksKey
+from VVXAnalysis.NanoAnalysis.Sample import Sample
 
 @dataclass
 class DBSampleBlock:
@@ -17,7 +17,7 @@ class DBSampleBlock:
     color: int
     style: int
     # Optional, written by the framework (never by hand): total genEventSumw of a sample
-    # split in chunks, {"value": float, "chunks": "1,2,3,..."}
+    # split in chunks, {"value": float, "nChunks": int}
     genEventSumw: Optional[dict] = None
 
 
@@ -80,7 +80,7 @@ class SampleLoader:
 
         return samples
 
-    def store_sumw(self, sample, value, chunkIds):
+    def store_sumw(self, sample, value, nChunks):
         """Write the total genEventSumw of a chunked sample in the DB.
 
         Called only by the process that prepares the analysis (run.py locally, or the
@@ -88,7 +88,7 @@ class SampleLoader:
         and replaced atomically, so a concurrent run.py cannot lose or corrupt the update.
         NB: the first write reformats the whole file (indent with tabs).
         """
-        info = {"value": value, "chunks": chunksKey(chunkIds)}
+        info = {"value": value, "nChunks": nChunks}
 
         with open(self.db_path + ".lock", "w") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)

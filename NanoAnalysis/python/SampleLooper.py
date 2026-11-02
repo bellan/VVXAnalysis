@@ -99,7 +99,7 @@ class SampleLooper:
                 raise RuntimeError("A SampleLoader is needed to store genEventSumw in the DB")
             print(f"Computing the total genEventSumw of {s}")
             value, chunkIds = computeTotalSumw(s)
-            self.loader.store_sumw(s, value, chunkIds)
+            self.loader.store_sumw(s, value, len(chunkIds))
             print(f"  total genEventSumw = {value} ({len(chunkIds)} chunks), stored in the DB")
 
 

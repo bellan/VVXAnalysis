@@ -8,12 +8,6 @@ from typing import Optional
 CHUNK_FILE_NAME = "ZZ4lAnalysis.root"
 
 
-def chunksKey(ids):
-    """Compact fingerprint of a set of chunk numbers (it is what is stored in the DB
-    next to genEventSumw, to detect that chunks were added/removed afterwards)"""
-    return ",".join(str(n) for n in sorted(ids))
-
-
 @dataclass(eq=False)
 class Task:
     """Unit of work: a whole-file sample (chunk=None) or one chunk of a sample"""
@@ -57,6 +51,8 @@ class Sample:
             self._path = f"{dbblock.eos_path}"
         # Cached total genEventSumw (only for samples split in chunks), as stored in the DB
         self.sumwInfo = getattr(dbblock, "genEventSumw", None)
+        # Used only if both <name>.root and the directory <name>/ exist: 'file' or 'chunks'
+        self.preferredLayout = None
         #fixme: to be expandend
         
 
@@ -85,8 +81,11 @@ class Sample:
         hasFile = os.path.isfile(self.path())
         hasDir  = os.path.isdir(self.chunkDir())
         if hasFile and hasDir:
-            raise ValueError(f"{self}: both {self.path()} and the directory {self.chunkDir()} exist, "
-                             "remove one of them")
+            if self.preferredLayout is not None:
+                return self.preferredLayout
+            raise ValueError(f"{self}: both {self.path()} and the directory {self.chunkDir()} exist. "
+                             "Choose with --no-split (use the single file) or --split (use the chunks), "
+                             "or remove one of them")
         if hasFile:
             return "file"
         if hasDir:
@@ -135,11 +134,14 @@ class Sample:
         return self.isMC() and self.layout() == "chunks"
 
     def validSumw(self):
-        """Cached total genEventSumw, or None if missing or computed on a different set of chunks"""
+        """Cached total genEventSumw, or None if missing or computed with a different number of chunks"""
         info = self.sumwInfo
         if not info:
             return None
-        if info.get("chunks") != chunksKey(self.chunkIds()):
+        nChunks = info.get("nChunks")
+        if nChunks is None and "chunks" in info:      # old format: comma separated list of chunk numbers
+            nChunks = len(info["chunks"].split(","))
+        if nChunks != len(self.chunkFiles()):
             return None
         return info.get("value")
 

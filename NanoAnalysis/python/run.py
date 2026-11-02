@@ -41,6 +41,16 @@ if __name__ == "__main__" :
                       help="Process only this chunk of a sample split in chunks (can be repeated). "
                            "Requires exactly one -s YEAR NAME. Used by the Condor jobs and to re-run failed chunks")
 
+    parser.add_option("--split", dest="split",
+                      action="store_true",
+                      default=False,
+                      help="only if both <name>.root and the directory <name>/ exist: use the chunks")
+
+    parser.add_option("--no-split", dest="noSplit",
+                      action="store_true",
+                      default=False,
+                      help="only if both <name>.root and the directory <name>/ exist: use the single file")
+
     parser.add_option("--merge", dest="merge",
                       action="store_true",
                       default=False,
@@ -74,6 +84,8 @@ if __name__ == "__main__" :
 
     if options.chunks and (not options.selectedSample or len(options.selectedSample) != 1):
         parser.error("--chunk can be used only together with exactly one -s YEAR NAME")
+    if options.split and options.noSplit:
+        parser.error("--split and --no-split are mutually exclusive")
     
     ## Read the configuration in Pydantic mode
     with open(f'configurations/{analysis}.yaml') as f:
@@ -82,6 +94,11 @@ if __name__ == "__main__" :
             
     sampleLoader = SampleLoader(cfg.samples) # --> check against data/samples_DB.json
     samples = sampleLoader.load(not options.eos)
+
+    # Solves the ambiguity when both <name>.root and <name>/ exist (ignored otherwise)
+    if options.split or options.noSplit:
+        for s in samples:
+            s.preferredLayout = "chunks" if options.split else "file"
 
     for s in samples:
         print(s)
@@ -124,6 +141,11 @@ if __name__ == "__main__" :
         ## With condor, run on eos samples by default
         #if options.eos:
         args.append("-e")
+        # The jobs repeat the same choice, otherwise they would find the same ambiguity
+        if options.split:
+            args.append("--split")
+        if options.noSplit:
+            args.append("--no-split")
         sampleLooper.submitCondor(runScript=os.path.abspath(sys.argv[0]),
                                   args=args,
                                   flavour=options.flavour,
