@@ -36,6 +36,26 @@ if __name__ == "__main__" :
                       metavar=("YEAR", "NAME"), default=None, action="append",
                       help="Analyze just this sample (can be repeated and used by Condor jobs")
 
+    parser.add_option("--chunk", dest="chunks", type="int", action="append",
+                      metavar="N", default=None,
+                      help="Process only this chunk of a sample split in chunks (can be repeated). "
+                           "Requires exactly one -s YEAR NAME. Used by the Condor jobs and to re-run failed chunks")
+
+    parser.add_option("--merge", dest="merge",
+                      action="store_true",
+                      default=False,
+                      help="hadd the chunk outputs of the selected samples (after the jobs are finished)")
+
+    parser.add_option("--keep-chunks", dest="keepChunks",
+                      action="store_true",
+                      default=False,
+                      help="debug: do not remove the outputs of the single chunks after the merge")
+
+    parser.add_option("--update-sumw", dest="updateSumw",
+                      action="store_true",
+                      default=False,
+                      help="recompute the total genEventSumw of the chunked MC samples, store it in the DB and exit")
+
     flavours = ["espresso", "microcentury", "longlunch", "workday", "tomorrow", "testmatch", "nextweek"]
     parser.add_option("-f","--flavour", dest="flavour", type="choice",
                       choices= flavours,
@@ -48,7 +68,12 @@ if __name__ == "__main__" :
                       help="write Condor files without submitting them")
 
     (options, args) = parser.parse_args()
+    if not args:
+        parser.error("the analysis name is missing")
     analysis       = args[0]
+
+    if options.chunks and (not options.selectedSample or len(options.selectedSample) != 1):
+        parser.error("--chunk can be used only together with exactly one -s YEAR NAME")
     
     ## Read the configuration in Pydantic mode
     with open(f'configurations/{analysis}.yaml') as f:
@@ -85,12 +110,15 @@ if __name__ == "__main__" :
     Actual samples selection:  {samples}
     """)
     
-    sampleLooper = SampleLooper(cfg.analysis, samples)
-    #sampleLooper.loop(options.nJobs)
-    ##sampleLooper.end()
+    sampleLooper = SampleLooper(cfg.analysis, samples,
+                                loader=sampleLoader,
+                                keepChunks=options.keepChunks)
 
-
-    if options.condor:
+    if options.updateSumw:
+        sampleLooper.updateSumw()
+    elif options.merge:
+        sampleLooper.mergeAll()
+    elif options.condor:
         ## To be fixed
         args = [analysis]
         ## With condor, run on eos samples by default
@@ -99,6 +127,7 @@ if __name__ == "__main__" :
         sampleLooper.submitCondor(runScript=os.path.abspath(sys.argv[0]),
                                   args=args,
                                   flavour=options.flavour,
+                                  chunks=options.chunks,
                                   dryRun=options.dryRun)
     else:
-        sampleLooper.loop(options.nJobs)
+        sampleLooper.loop(options.nJobs, chunks=options.chunks)

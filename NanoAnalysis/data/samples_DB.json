@@ -1,578 +1,642 @@
 {
-    "DB": [
-	{"origin" : "MC",
-	 "year": 2022,
-	  "samples": [
-	      {"process": "FAKE",
-	       "name": "FAKE", 
-	       "eos_path": "",
-	       "version" : "",
-	       "color": 5,
-	       "style": 0}
-	  ]
-	},
-	
-	{"origin" : "MC",
-	 "year": 2023,
-	 "samples": [
-	     {"process": "FAKE",
-	      "name": "FAKE", 
-	      "eos_path": "",
-	      "version" : "",
-	      "color": 5,
-	      "style": 0}
-	 ]
-	},
-
-	{"origin" : "MC",
-	 "year": 2023,
-	 "samples": [
-	     {"process": "FAKE",
-	      "name": "FAKE", 
-	      "eos_path": "",
-	      "version" : "",
-	      "color": 5,
-	      "style": 0}
-	 ]
-	},
-
-	
-
-	{"origin" : "MC",
-	 "year": 2024,
-	 "samples": [
-	     
-	     {"process": "H",
-	      "name": "ggH125", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "H",
-	      "name": "VBFH125", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-	     
-	     {"process": "H",
-	      "name": "ttH125", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "ZZ",
-	      "name": "ZZTo4l", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
-	      "version" : "Nov2026",
-	      "color": 5,
-	      "style": 0},
-	     
-	     {"process": "ZZ",
-	      "name": "ggTo4e_Contin_MCFM701", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
-	      "version" : "Nov2026",
-	      "color": 5,
-	      "style": 0},
-	     
-	     {"process": "ZZ",
-	      "name": "ggTo4mu_Contin_MCFM701", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
-	      "version" : "Nov2026",
-	      "color": 5,
-	      "style": 0},
-
-             {"process": "ZZ",
-	      "name": "ggTo4tau_Contin_MCFM701", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
-	      "version" : "Nov2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "ZZ",
-	      "name": "ggTo2e2mu_Contin_MCFM701", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
-	      "version" : "Nov2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "ZZ",
-	      "name": "ggTo2e2tau_Contin_MCFM701", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
-	      "version" : "Nov2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "ZZ",
-	      "name": "ggTo2mu2tau_Contin_MCFM701", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
-	      "version" : "Nov2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "WW",
-	      "name": "TTWW", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "WZ",
-	      "name": "WZto3LNu", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "",
-	      "color": 5,
-	      "style": 0},
-	     
-	     {"process": "DY",
-	      "name": "DYJetsTo2E", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "DY",
-	      "name": "DYJetsTo2Mu", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-	     
-	     {"process": "tt",
-	      "name": "TTto2L2Nu", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "tt",
-	      "name": "TTLL_MLL-4to50", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "tt",
-	      "name": "TTLL_MLL-50", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-	     
-	     {"process": "VBS",
-	      "name": "ZZTo4l_2Jets_EW_QCD", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
-	      "version" : "Nov2026",
-	      "color": 5,
-	      "style": 0},
-
-
-	     {"process": "VBS",
-	      "name": "ZZTo4l_2Jets_EW", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
-	      "version" : "Nov2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "VBS",
-	      "name": "ZZTo4l_2Jets_QCD", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
-	      "version" : "Nov2026",
-	      "color": 5,
-	      "style": 0},
-	     
-	     {"process": "Triboson",
-	      "name": "WWZ", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-
-	     {"process": "Triboson",
-	      "name": "WZZ", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "Triboson",
-	      "name": "ZZZ", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "Triboson",
-	      "name": "WZGamma", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-	     
-             {"process": "Triboson",
-	      "name": "WZGtoLNuZG", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "Triboson",
-	      "name": "ZZGamma", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "VH",
-	      "name": "WplusH125", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-	     
-	     {"process": "VH",
-	      "name": "WminusH125", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "VH",
-	      "name": "ZH125", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0}
-	     
-	 ]
-	},
-	
-	
-	{"origin" : "data",
-	 "year": 2022,
-	 "samples": [
-	     {"process": "doubleMu",
-	      "name": "DoubleMu2022H", 
-	      "eos_path": "",
-	      "version" : "June2026",
-	      "color": 5,
-	      "style": 0}
-	 ]
-	},
-
-	{"origin" : "data",
-	 "year": 2023,
-	 "samples": [
-	     {"process": "doubleMu",
-	      "name": "DoubleMu2022H", 
-	      "eos_path": "",
-	      "version" : "June2026",
-	      "color": 5,
-	      "style": 0}
-	 ]
-	},
-	
-	{"origin" : "data",
-	 "year": 2024,
-	 "samples": [
-	     
-	     {"process": "EGamma",
-	      "name": "EGamma02024Cv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-	     
-	     {"process": "EGamma",
-	      "name": "EGamma02024Dv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "EGamma",
-	      "name": "EGamma02024Ev1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "EGamma",
-	      "name": "EGamma02024Fv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "EGamma",
-	      "name": "EGamma02024Gv2", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-	     
-	     {"process": "EGamma",
-	      "name": "EGamma02024Hv2", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-	     
-	     {"process": "EGamma",
-	      "name": "EGamma02024Iv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "EGamma",
-	      "name": "EGamma02024Iv2", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "EGamma",
-	      "name": "EGamma12024Cv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "EGamma",
-	      "name": "EGamma12024Dv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "EGamma",
-	      "name": "EGamma12024Ev1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "EGamma",
-	      "name": "EGamma12024Fv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "EGamma",
-	      "name": "EGamma12024Gv2", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "EGamma",
-	      "name": "EGamma12024Hv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "EGamma",
-	      "name": "EGamma12024Iv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-	     
-	     {"process": "EGamma",
-	      "name": "EGamma12024Iv2", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     
-
-
-
-	     {"process": "Muon",
-	      "name": "Muon02024Cv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-	     
-	     {"process": "Muon",
-	      "name": "Muon02024Dv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "Muon",
-	      "name": "Muon02024Ev1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "Muon",
-	      "name": "Muon02024Fv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "Muon",
-	      "name": "Muon02024Gv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-	     
-	     {"process": "Muon",
-	      "name": "Muon02024Hv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-	     
-	     {"process": "Muon",
-	      "name": "Muon02024Iv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "Muon",
-	      "name": "Muon02024Iv2", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "Muon",
-	      "name": "Muon12024Cv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "Muon",
-	      "name": "Muon12024Dv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "Muon",
-	      "name": "Muon12024Ev1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "Muon",
-	      "name": "Muon12024Fv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "Muon",
-	      "name": "Muon12024Gv2", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "Muon",
-	      "name": "Muon12024Hv2", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "Muon",
-	      "name": "Muon12024Iv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-	     
-	     {"process": "Muon",
-	      "name": "Muon12024Iv2", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-
-
-
-
-
-	     {"process": "MuonEG",
-	      "name": "MuonEG2024Cv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-	     
-	     {"process": "MuonEG",
-	      "name": "MuonEG2024Dv1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "MuonEG",
-	      "name": "MuonEG2024Ev1", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "MuonEG",
-	      "name": "MuonEG2024Fv2", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "MuonEG",
-	      "name": "MuonEG2024Gv3", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-	     
-	     {"process": "MuonEG",
-	      "name": "MuonEG2024Hv2", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-	     
-	     {"process": "MuonEG",
-	      "name": "MuonEG2024Iv2", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0},
-
-	     {"process": "MuonEG",
-	      "name": "MuonEG2024Iv2v2", 
-	      "eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
-	      "version" : "Ago2026",
-	      "color": 5,
-	      "style": 0}
-   
-	 ]
-	}
-
-	
-	
-    ]
-    
+	"DB": [
+		{
+			"origin": "MC",
+			"year": 2022,
+			"samples": [
+				{
+					"process": "FAKE",
+					"name": "FAKE",
+					"eos_path": "",
+					"version": "",
+					"color": 5,
+					"style": 0
+				}
+			]
+		},
+		{
+			"origin": "MC",
+			"year": 2023,
+			"samples": [
+				{
+					"process": "FAKE",
+					"name": "FAKE",
+					"eos_path": "",
+					"version": "",
+					"color": 5,
+					"style": 0
+				}
+			]
+		},
+		{
+			"origin": "MC",
+			"year": 2023,
+			"samples": [
+				{
+					"process": "FAKE",
+					"name": "FAKE",
+					"eos_path": "",
+					"version": "",
+					"color": 5,
+					"style": 0
+				}
+			]
+		},
+		{
+			"origin": "MC",
+			"year": 2024,
+			"samples": [
+				{
+					"process": "H",
+					"name": "ggH125",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "H",
+					"name": "VBFH125",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "H",
+					"name": "ttH125",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "ZZ",
+					"name": "ZZTo4l",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/CMSSW_14_1_6/src/VVXAnalysis/NanoAnalysis/test/prod/PROD_samplesNano_2024_MC_37e751cd/AAAOK/",
+					"version": "Nov2026",
+					"color": 5,
+					"style": 0,
+					"genEventSumw": {
+						"value": 329198063.93507,
+						"chunks": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136"
+					}
+				},
+				{
+					"process": "ZZ",
+					"name": "ggTo4e_Contin_MCFM701",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "ZZ",
+					"name": "ggTo4mu_Contin_MCFM701",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "ZZ",
+					"name": "ggTo4tau_Contin_MCFM701",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "ZZ",
+					"name": "ggTo2e2mu_Contin_MCFM701",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "ZZ",
+					"name": "ggTo2e2tau_Contin_MCFM701",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "ZZ",
+					"name": "ggTo2mu2tau_Contin_MCFM701",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "WW",
+					"name": "TTWW",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "WZ",
+					"name": "WZto3LNu",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
+					"version": "",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "DY",
+					"name": "DYJetsTo2E",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "DY",
+					"name": "DYJetsTo2Mu",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "tt",
+					"name": "TTto2L2Nu",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "tt",
+					"name": "TTLL_MLL-4to50",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "tt",
+					"name": "TTLL_MLL-50",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "VBS",
+					"name": "ZZTo4l_2Jets_EW_QCD",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "VBS",
+					"name": "ZZTo4l_2Jets_EW",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "VBS",
+					"name": "ZZTo4l_2Jets_QCD",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Triboson",
+					"name": "WWZ",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Triboson",
+					"name": "WZZ",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Triboson",
+					"name": "ZZZ",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Triboson",
+					"name": "WZGamma",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Triboson",
+					"name": "WZGtoLNuZG",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Triboson",
+					"name": "ZZGamma",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
+					"version": "",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "VH",
+					"name": "WplusH125",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "VH",
+					"name": "WminusH125",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "VH",
+					"name": "ZH125",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				}
+			]
+		},
+		{
+			"origin": "data",
+			"year": 2022,
+			"samples": [
+				{
+					"process": "doubleMu",
+					"name": "DoubleMu2022H",
+					"eos_path": "",
+					"version": "June2026",
+					"color": 5,
+					"style": 0
+				}
+			]
+		},
+		{
+			"origin": "data",
+			"year": 2023,
+			"samples": [
+				{
+					"process": "doubleMu",
+					"name": "DoubleMu2022H",
+					"eos_path": "",
+					"version": "June2026",
+					"color": 5,
+					"style": 0
+				}
+			]
+		},
+		{
+			"origin": "data",
+			"year": 2024,
+			"samples": [
+				{
+					"process": "EGamma",
+					"name": "EGamma02024Cv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "EGamma",
+					"name": "EGamma02024Dv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "EGamma",
+					"name": "EGamma02024Ev1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "EGamma",
+					"name": "EGamma02024Fv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "EGamma",
+					"name": "EGamma02024Gv2",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "EGamma",
+					"name": "EGamma02024Hv2",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "EGamma",
+					"name": "EGamma02024Iv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "EGamma",
+					"name": "EGamma02024Iv2",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "EGamma",
+					"name": "EGamma12024Cv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "EGamma",
+					"name": "EGamma12024Dv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "EGamma",
+					"name": "EGamma12024Ev1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "EGamma",
+					"name": "EGamma12024Fv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "EGamma",
+					"name": "EGamma12024Gv2",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "EGamma",
+					"name": "EGamma12024Hv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "EGamma",
+					"name": "EGamma12024Iv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "EGamma",
+					"name": "EGamma12024Iv2",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Muon",
+					"name": "Muon02024Cv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Muon",
+					"name": "Muon02024Dv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Muon",
+					"name": "Muon02024Ev1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Muon",
+					"name": "Muon02024Fv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Muon",
+					"name": "Muon02024Gv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Muon",
+					"name": "Muon02024Hv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Muon",
+					"name": "Muon02024Iv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Muon",
+					"name": "Muon02024Iv2",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Muon",
+					"name": "Muon12024Cv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Muon",
+					"name": "Muon12024Dv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Muon",
+					"name": "Muon12024Ev1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Muon",
+					"name": "Muon12024Fv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Muon",
+					"name": "Muon12024Gv2",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Muon",
+					"name": "Muon12024Hv2",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Muon",
+					"name": "Muon12024Iv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "Muon",
+					"name": "Muon12024Iv2",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "MuonEG",
+					"name": "MuonEG2024Cv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "MuonEG",
+					"name": "MuonEG2024Dv1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "MuonEG",
+					"name": "MuonEG2024Ev1",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "MuonEG",
+					"name": "MuonEG2024Fv2",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "MuonEG",
+					"name": "MuonEG2024Gv3",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "MuonEG",
+					"name": "MuonEG2024Hv2",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "MuonEG",
+					"name": "MuonEG2024Iv2",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				},
+				{
+					"process": "MuonEG",
+					"name": "MuonEG2024Iv2v2",
+					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024/",
+					"version": "Ago2026",
+					"color": 5,
+					"style": 0
+				}
+			]
+		}
+	]
 }
