@@ -49,17 +49,17 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
 
     def analyze(self):  
         self.loadCollections()
-        #self.SDCuts = ["Weighted_Events","Lep_KinCuts","WZ_MassLimits","Ph_KinCuts", "Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
-        #self.SRCuts=["Weighted_Events","HLT_passZZ4l","Lep_KinCuts","MET_Cut","Z_MassLimits","ZZFullSel","Ph_kinCuts",
-        #             "Ph_electronVeto","Ph_mvaWP80","Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
+        self.SDCuts = ["Weighted_Events","Lep_KinCuts","WZ_MassLimits","Ph_KinCuts", "Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
+        self.SRCuts=["Weighted_Events","HLT_passZZ4l","Lep_KinCuts","MET_Cut","Z_MassLimits","ZZFullSel","Ph_kinCuts","Ph_electronVeto","Ph_mvaWP80","Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
 
         self.isSig = False
         if self.analyzeMC :
             self.isSig = self.isSignal()  
             genW, genZ = self.genCouple
 
-        self.isInSR = self.isInSignalRegion(2024)
-        recoZ, recoW = self.recoCouple                
+        if self.isSig : 
+            self.isInSR = self.isInSignalRegion(2024)
+            recoZ, recoW = self.recoCouple                
 
         '''# sample's statistic values
         self.getPercentagePlot("Background_inSR")
@@ -101,9 +101,9 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         lepW = next((l for l in theW.leptons if abs(l.pdgId) in (11,13)), None)
         nu  = next((n for n in theW.leptons if abs(n.pdgId) in  (12,14)), None)
 
-        self.hEvent.fill1D("Gen_nPhoton", "Gen_nPhoton",11, -0.5, 10.5, len(self.GenPhotons), self.weight)
+        '''self.hEvent.fill1D("Gen_nPhoton", "Gen_nPhoton",11, -0.5, 10.5, len(self.GenPhotons), self.weight)
         GoodGenPhoton = self.photonsCuts(self.GenPhotons, self.GenChargedLeptons, "Definition")
-        if not GoodGenPhoton : return False 
+        if not GoodGenPhoton : return False '''
 
         '''# for graphic purposes only
         photon_maxPt = max(GoodGenPhoton, key=lambda p: p.pt, default=None) 
@@ -135,7 +135,7 @@ Gen_invMassLLGamma_preCuts, theZ.mass, self.weight)
             self.hEvent.fill1D("lGammaMET_Mt_CuttedGen", "lGammaMET_Mt_CuttedGen", 30, 0., 300., lGammaMET_mt_Gen, self.weight)
             self.hasGenFSR = True'''
         
-        SurvivedGenPhotons = [gp for gp in GoodGenPhoton if self.photonIsNotFSR(theZ.leptons, gp, 100)]
+        '''SurvivedGenPhotons = [gp for gp in GoodGenPhoton if self.photonIsNotFSR(theZ.leptons, gp, 100)]
         if not SurvivedGenPhotons : return False
         self.CutPlot("Definition", 5)  #FSR_onZ
 
@@ -145,7 +145,7 @@ Gen_invMassLLGamma_preCuts, theZ.mass, self.weight)
         self.CutPlot("Definition", 6)  #FSR_onW
 
         invMassLLGamma_Gen = self.getInvMass(theZ.leptons[0], theZ.leptons[1], genPhoton)
-        invMassLNuGamma_Gen = self.getInvMass(theW.leptons[0], theW.leptons[1], genPhoton)
+        invMassLNuGamma_Gen = self.getInvMass(theW.leptons[0], theW.leptons[1], genPhoton)'''
         
         
         '''self.hEvent.fill2D("W_vs_lGamma_Mt_Gen", "W_vs_lGamma_Mt_Gen", 30, 0., 300., 12, 0., 120., lGammaMET_mt_Gen,
@@ -236,16 +236,16 @@ Gen_invMassLLGamma_preCuts, theZ.mass, self.weight)
         lZGamma_list = [(lepW.pt, lepW.eta, lepW.phi), (lepZ1.pt, lepZ1.eta, lepZ1.phi), (lepZ2.pt, lepZ2.eta, lepZ2.phi), (thePhoton.pt, thePhoton.eta, thePhoton.phi)]
         lZGammaMET_mt = self.computeMt(lZGamma_list, self.MET.pt, self.MET.phi)'''
                         
-        self.hEvent.fill1D("LepZ_1_pt", "LepZ_1_pt", 20, 0., 200., lepZ1.pt, self.weight)
-        self.hEvent.fill1D("LepZ_2_pt", "LepZ_2_pt", 20, 0., 200., lepZ2.pt, self.weight)
-        self.hEvent.fill1D("LepW_pt", "LepW_pt", 20, 0., 200., lepW.pt, self.weight)
-        self.hEvent.fill1D("LepW_eta", "LepW_eta", 12, -2.5, 2.5, lepW.eta, self.weight)
-        self.hEvent.fill1D("MET_pt", "MET_pt", 17, 30., 200., self.MET.pt, self.weight)
-        self.hEvent.fill1D("MET_phi", "MET_phi", 18, -3.2, 3.2, self.MET.phi, self.weight)
+        self.hEvent.fill1D("LepZ_1_pt", "LepZ_1_pt", 10, 0., 300., lepZ1.pt, self.weight)
+        self.hEvent.fill1D("LepZ_2_pt", "LepZ_2_pt", 10, 0., 300., lepZ2.pt, self.weight)
+        self.hEvent.fill1D("LepW_pt", "LepW_pt", 10, 0., 300., lepW.pt, self.weight)
+        self.hEvent.fill1D("LepW_eta", "LepW_eta", 10, -2.5, 2.5, lepW.eta, self.weight)
+        self.hEvent.fill1D("MET_pt", "MET_pt", 10, 30., 330., self.MET.pt, self.weight)
+        self.hEvent.fill1D("MET_phi", "MET_phi", 10, -3.2, 3.2, self.MET.phi, self.weight)
         #self.hEvent.fill1D("Photon_pt", "Photon_pt", 40, 0., 200., thePhoton.pt, self.weight)
         #self.hEvent.fill1D("Photon_eta", "Photon_eta", 12, -2.4, 2.4, thePhoton.eta, self.weight)
-        self.hEvent.fill1D("ZCandMass_91Gev", "ZCandMass_91Gev", 60, 60., 120., theZ.mass, self.weight)
-        self.hEvent.fill1D("W_Mt", "W_Mt", 10, 0., 200., W_mt, self.weight)
+        self.hEvent.fill1D("ZCandMass_91Gev", "ZCandMass_91Gev", 10, 0., 1000., theZ.mass, self.weight)
+        self.hEvent.fill1D("W_Mt", "W_Mt", 10, 0., 1000., W_mt, self.weight)
         #self.hEvent.fill1D("lGammaMET_Mt", "lGammaMET_Mt", 15, 0., 300., lGammaMET_mt, self.weight)
         #self.hEvent.fill1D("lZMET_Mt", "lZMET_Mt", 14, 0., 700., lZMET_mt, self.weight)
         #self.hEvent.fill1D("lZGammaMET_Mt", "lZGammaMET_Mt", 10, 0., 1000., lZGammaMET_mt, self.weight)
