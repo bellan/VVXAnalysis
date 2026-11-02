@@ -84,7 +84,11 @@
 					"eos_path": "/eos/user/b/bellan/samples/RunIII/Nov2026/prod/2024",
 					"version": "Nov2026",
 					"color": 5,
-					"style": 0
+					"style": 0,
+					"genEventSumw": {
+						"value": 2100000.0,
+						"nChunks": 17
+					}
 				},
 				{
 					"process": "ZZ",
