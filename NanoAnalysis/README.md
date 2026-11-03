@@ -30,7 +30,7 @@ Recipe for the tree production step on LXPLUS [TO BE UPDATED]
  - Details about data-sets and their management are reported here: https://github.com/bellan/VVXAnalysis/DATASETSMANAGEMENT.md
 
 
-Recipe for the tree anlysis step on LXPLUS
+Recipe for the tree analysis step on LXPLUS
 ---------------------------------------------
 - prepare the area as described in "Recipe to setup a working LXPLUS area"
 - ```cd VVXAnalysis/NanoAnalysis```
@@ -47,6 +47,19 @@ Options:
   -s ('YEAR', 'NAME'), --sample=('YEAR', 'NAME')
                         Analyze just this sample (can be repeated and used by
                         Condor jobs
+  --chunk=N             Process only this chunk of a sample split in chunks
+                        (can be repeated). Requires exactly one -s YEAR NAME.
+                        Used by the Condor jobs and to re-run failed chunks
+  --split               only if both <name>.root and the directory <name>/
+                        exist: use the chunks
+  --no-split            only if both <name>.root and the directory <name>/
+                        exist: use the single file
+  --merge               hadd the chunk outputs of the selected samples (after
+                        the jobs are finished)
+  --keep-chunks         debug: do not remove the outputs of the single chunks
+                        after the merge
+  --update-sumw         recompute the total genEventSumw of the chunked MC
+                        samples, store it in the DB and exit
   -f {espresso,microcentury,longlunch,workday,tomorrow,testmatch,nextweek}, --flavour={espresso,microcentury,longlunch,workday,tomorrow,testmatch,nextweek}
                         JobFlavour Condor. Default is (longlunch)
   --dry-run             write Condor files without submitting them
