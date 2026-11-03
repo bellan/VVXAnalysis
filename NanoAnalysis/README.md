@@ -29,6 +29,86 @@ Recipe for the tree production step on LXPLUS [TO BE UPDATED]
   - as starting point one can use as template the ```VVXAnalysis/Producers/python/analyzer_VVjj.py``` file.
  - Details about data-sets and their management are reported here: https://github.com/bellan/VVXAnalysis/DATASETSMANAGEMENT.md
 
+### After the production: preparing the samples for the analysis (`manageProduction.py`)
+
+At the end of a production the production directory contains the chunks of **all** the samples that were produced:
+
+```
+PROD_samplesNano_2024_MC_.../
+    condorDB.json                  # bookkeeping: for each sample, files, chunkSize and jobs (= number of chunks)
+    EGamma12024Gv2_Chunk0/ZZ4lAnalysis.root
+    EGamma12024Gv2_Chunk1/ZZ4lAnalysis.root
+    ...
+    ZZTo4l_Chunk0/ZZ4lAnalysis.root
+    ...
+```
+
+The analysis (see "Recipe for the tree analysis step") expects, for each sample, **either** a single file `<sample>.root` **or** a directory `<sample>/` containing the chunk directories `<sample>_Chunk<N>/ZZ4lAnalysis.root`. Small samples are better merged in a single file: it avoids submitting many short jobs. Large samples are better processed chunk by chunk. `python/manageProduction.py` prepares both cases, checks that nothing is missing, and can move the result to its final location and update `data/samples_DB.json`. The typical sequence is
+
+```
+./python/manageProduction.py check   <production dir>                  # 1. is everything there?
+./python/manageProduction.py process <production dir> --threshold 20   # 2. merge the small samples, organize the large ones
+./python/manageProduction.py process <production dir> --threshold 20 \
+        --dest <final directory> --year 2024 --origin MC --dry-run    # 3. + transfer and DB update (check with --dry-run first)
+```
+
+**Commands**
+
+| Command | What it does |
+| - | - |
+| `check <dir>` | Only reports, for each sample, whether all the chunks are present. |
+| `organize <dir>` | For each complete sample creates the directory `<sample>/` and moves the chunk directories inside it. |
+| `process <dir> --threshold GB` | Like `organize`, but if the total size of the chunks of a sample is *smaller* than the threshold, the chunks are merged in `<sample>.root` instead. |
+| `transfer <dir> --dest ...` | Transfers (and updates the DB for) samples that were already prepared with `organize` or `process`. |
+
+Common options: `-s NAME` (only this sample, repeatable; default is all the samples listed in the bookkeeping), `--bookkeeping JSON` (default `<dir>/condorDB.json`), `--dry-run` (show what would be done and change nothing: use it).
+
+**The check of the chunks.** The bookkeeping says how many jobs, hence chunks, each sample must have (numbered from 0 to jobs-1). For every sample the script prints either
+
+```
+[OK]         ZZTo4l: all the 137 chunks are present
+```
+
+or
+
+```
+[INCOMPLETE] EGamma12024Gv2:
+    3 chunk(s) MISSING out of 148: 5, 17-18
+```
+
+Chunks whose directory has no (or an empty) `ZZ4lAnalysis.root`, chunks beyond the expected number, and chunks found both in the production directory and in `<sample>/` are reported too. **A sample that is not complete is never touched** (not moved, not merged, not transferred): when the missing chunks arrive, run the command again. The exit status is 1 if some sample was not processed. Chunks of samples that are not in the bookkeeping are ignored, with a warning.
+
+**The threshold** (`process --threshold GB`, default 10) is the total size of the chunk directories, in decimal GB (1 GB = 10^9 bytes). A sample below the threshold is merged; at or above it is organized in `<sample>/`. A sample already organized in `<sample>/` stays organized, whatever its size, so that `<sample>.root` and `<sample>/` never coexist.
+
+**The merge** follows the same recipe of `ZZAnalysis.AnalysisStep.hadd`: `haddnano.py` for NanoAOD files (a single chunk is just copied, other files use `hadd -ff`), so the CMSSW environment must be set (`cmsenv`). Only `ZZ4lAnalysis.root` is merged. The output is written in a temporary file and renamed to `<sample>.root` only if the merge succeeds; if ROOT is available, the number of events in `Events` of the merged file is compared with the sum over the chunks (`--no-verify` skips it). With `--clean` the chunk directories of the merged samples are moved to `<dir>/Chunks/` (otherwise they stay where they are).
+
+**Transfer and update of `samples_DB.json`.** With `--dest <directory>` the result (`<sample>.root` or `<sample>/`) is copied in that directory, typically on EOS, and the sample is registered in the DB:
+
+| Option | Meaning |
+| - | - |
+| `--dest DIR` | where to copy `<sample>.root` or `<sample>/`. The copy goes through a temporary name and is checked (files and sizes) before the final rename. |
+| `--year YEAR`, `--origin {MC,data}` | **needed** to find the record of the sample in the DB (the same name can exist in several years). |
+| `--samples-db JSON` | the DB to update. Default: `data/samples_DB.json` of the current CMSSW area. |
+| `--version TAG` | value of the `version` field of the record (left unchanged if not given). |
+| `--no-db-update` | transfer only. |
+| `--move` | remove the source after a verified copy (default: keep it). |
+| `--overwrite` | replace the sample if it is already in the destination (both `<sample>.root` and `<sample>/` count: they cannot coexist). |
+
+For each transferred sample, the record with that name, year and origin is updated: `eos_path` becomes the destination directory, `version` is set if given, and the field `genEventSumw`, if present, is **removed**, because it refers to the previous production (it is recomputed at the first analysis run). If the sample is not in the DB yet, a new record is added (and a new block, if that year and origin do not exist yet) with `process`, `color` and `style` **empty**: fill them by hand (`process` is needed to select the sample with `mode: process` in the yaml; with `mode: name` the sample can be used immediately). The DB is read before starting, so that problems show up before the long operations, and new samples are listed.
+
+Notes on the DB: it is written under a lock (`data/samples_DB.json.lock`, the same used by `run.py`) and atomically; the first write reformats the whole file (indentation with tabs), so expect a large diff once. Remember to commit the updated DB.
+
+**Troubleshooting**
+
+| Message / symptom | Cause and solution |
+| - | - |
+| `[INCOMPLETE] ... MISSING` | Jobs failed or are still running: resubmit them (see the production recipe above), then run the command again. |
+| `[CONFLICT] both <sample>.root and the directory <sample>/ exist` | Remove the one you do not want. |
+| `already in the destination ... (use --overwrite)` | The sample is already in `--dest`: use `--overwrite` if it is a new production of the same sample. |
+| `haddnano.py not found in the PATH` | Set the CMSSW environment (`cmsenv`). |
+| `Not in the bookkeeping: [...]` | The name given with `-s` is not in `condorDB.json` (typo?). |
+| `merged file has N events, the chunks have M` | The merge is not trustworthy and is discarded: check the chunks and the log of `haddnano.py`. |
+
 
 Recipe for the tree analysis step on LXPLUS
 ---------------------------------------------
