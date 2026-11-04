@@ -1,0 +1,31 @@
+samples:
+  years: [2022, 2023, 2024]
+  origin: [MC]
+  mode: name          # oppure: process, all
+  by_name:
+    - ZZGamma
+    - WZGamma
+    #- WZto3LNu
+    #- ZZTo4l
+    #- ZZTo4l_2Jets_EW
+    #- DoubleMu2022H
+  by_process:
+    - VBS
+
+analysis:
+  analyzer: VZGammaAnalyzerDemo
+  regions : [L2P]
+
+
+
+# Spazio per parametri specifici dell'analisi
+#analysis_params:
+#  mass_window: [70, 110]
+#  btag_wp: medium
+
+
+## Controllare che i kin photon & Id sul photon siano separati da tutto i lresto e poi disambiguare
+## fotoni: electron veto, kin, id, separazione da jet (controllare che energia fotone sia molto minore del getto) 
+## Jet: kin, disambiguazione con fotoni, 
+
+# Per runnare sui dati, fare run by process, non by name Processes: Muon, MuonEG, EGamma

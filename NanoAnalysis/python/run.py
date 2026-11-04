@@ -25,7 +25,7 @@ if __name__ == "__main__" :
     parser.add_option("-c", "--condor", dest="condor",
                   action="store_true",
                   default=False,
-                  help="submit the jobs through Condor")
+                  help="submit the jobs through Condor, -e option is automatically applied.")
 
     parser.add_option("-e", "--eos", dest="eos",
                       action="store_true",
@@ -86,6 +86,12 @@ if __name__ == "__main__" :
         parser.error("--chunk can be used only together with exactly one -s YEAR NAME")
     if options.split and options.noSplit:
         parser.error("--split and --no-split are mutually exclusive")
+
+    # The jobs always read the samples from EOS: the submission must look at the same files
+    # (to find the chunks, to compute genEventSumw), so -e is forced.
+    if options.condor:
+        print("Condor: the samples are taken from EOS (-e option automatically applied)")
+        options.eos = True
     
     ## Read the configuration in Pydantic mode
     with open(f'configurations/{analysis}.yaml') as f:
