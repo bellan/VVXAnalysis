@@ -17,8 +17,8 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
     def __init__(self, regions):
         super().__init__(regions)
         
-        self.PhotonsID = "cutL"                     # choose between "cutL" and "mva90"
-        self.PhotonsOrder = "CutThenBestPt"         # choose between "CutThenBestPt" and "BestPtThenCut"
+        self.PhotonsID = "mva90"                     # choose between "cutL", "cutM", "cutT", "mva90" and "mva80"
+        self.PhotonsOrder = "CutThenBestPt"          # choose between "CutThenBestPt" and "BestPtThenCut"
 
         self.SDCuts = ["TotalEvents", "LeptonsKinCuts", "Z1Z2Mass", "PhotonsKinCuts", "IsolatedPhotons", "TribosonRegion"]
         self.SRCuts = ["TotalEvents", "HLT_passZZ4l", "BestCand", "LeptonsKinCuts", "Z1Z2Mass", "ElectronVeto", "PhotonsKinCuts", f"PhotonsID_{self.PhotonsID}", "IsolatedPhotons", "TribosonRegion"]
@@ -27,9 +27,8 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         
         self.LoadCollections()
         
-        
-       # isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons, self.PhotonsOrder)
-       # if not isSD:
+        #isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons, self.PhotonsOrder)
+        #if isSD:
         isSR = self.SignalRegion(self.Leptons, self.Photons, self.PhotonsOrder, self.PhotonsID)
                                                                                         
        # self.isBgivenA(isSD, isSR, "SD", "SR")
@@ -83,6 +82,8 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         self.CutPlot("Region", 4, PhotonsOrder)
 
         self.PlotsOI_ControlRegionL4P("Reco", RecoZZ)
+
+        if not self.analyzeMC: return False
 
         ElectronVetoPass, TruePhotons = self.GetTruePhotons(Photons)
         if not ElectronVetoPass: return False
@@ -228,8 +229,14 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
         if PhotonsID == "mva90":
             GoodIDPhotons = [ph for ph in Photons if ph.mvaID_WP90]
+        elif PhotonsID == "mva80":
+            GoodIDPhotons = [ph for ph in Photons if ph.mvaID_WP80]
         elif PhotonsID == "cutL":
             GoodIDPhotons = [ph for ph in Photons if ph.cutBased >= 1]
+        elif PhotonsID == "cutM":
+            GoodIDPhotons = [ph for ph in Photons if ph.cutBased >= 2]
+        elif PhotonsID == "cutT":
+            GoodIDPhotons = [ph for ph in Photons if ph.cutBased >= 3]
         else:
             raise ValueError(f"Unknown PhotonsID: {PhotonsID}")
             
@@ -379,21 +386,22 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
     def PhotonWPCutPlot(self, Gamma, PhotonID):
 
         if PhotonID == "mva90":
-
             if not Gamma.mvaID_WP90: return
             self.hEvent.fill1D_label("PhotonWP", "PhotonWP_CutFlow", self.PhotonWPLabels, self.PhotonWPLabels[0], self.weight)
 
+        elif PhotonID == "mva80":
             if not Gamma.mvaID_WP80: return
             self.hEvent.fill1D_label("PhotonWP", "PhotonWP_CutFlow", self.PhotonWPLabels, self.PhotonWPLabels[1], self.weight)
         
         elif PhotonID == "cutL":
-
             if not Gamma.cutBased >= 1: return
             self.hEvent.fill1D_label("PhotonWP", "PhotonWP_CutFlow", self.PhotonWPLabels, self.PhotonWPLabels[3], self.weight)
-
+        
+        elif PhotonID == "cutM":
             if not Gamma.cutBased >= 2: return
             self.hEvent.fill1D_label("PhotonWP", "PhotonWP_CutFlow", self.PhotonWPLabels, self.PhotonWPLabels[4], self.weight)
-
+        
+        elif PhotonID == "cutT":
             if not Gamma.cutBased >= 3: return
             self.hEvent.fill1D_label("PhotonWP", "PhotonWP_CutFlow", self.PhotonWPLabels, self.PhotonWPLabels[5], self.weight)
 
@@ -451,26 +459,24 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
 
         self.PhotonWPCutPlot(Gamma, PhotonsID)
 
-        if PhotonsID == "mva90":
+        if PhotonsID == "mva90" or PhotonsID == "mva80":
             IDvar = Gamma.mvaID
             xmin = -1.1
             xmax = 1.1
             nbin = 22
-            ID = "mvaID"
 
-        elif PhotonsID == "cutL":
+        elif PhotonsID == "cutL" or PhotonsID == "cutM" or PhotonsID == "cutT":
             IDvar = Gamma.cutBased
             xmin = 0
             xmax = 4
             nbin = 4
-            ID = "cutBased"
 
-        self.hEvent.fill1D(f"Photon_{ID}_all", f"Photon_{ID}_all", nbin, xmin, xmax, IDvar, self.weight)
+        self.hEvent.fill1D(f"Photon_{PhotonsID}_all", f"Photon_{PhotonsID}_all", nbin, xmin, xmax, IDvar, self.weight)
 
         if Gamma.isScEtaEB:
-            self.hEvent.fill1D(f"Photon_{ID}_barrel", f"Photon_{ID}_barrel", nbin, xmin, xmax, IDvar, self.weight)
+            self.hEvent.fill1D(f"Photon_{PhotonsID}_barrel", f"Photon_{PhotonsID}_barrel", nbin, xmin, xmax, IDvar, self.weight)
         elif Gamma.isScEtaEE:
-            self.hEvent.fill1D(f"Photon_{ID}_endcap", f"Photon_{ID}_endcap", nbin, xmin, xmax, IDvar, self.weight)
+            self.hEvent.fill1D(f"Photon_{PhotonsID}_endcap", f"Photon_{PhotonsID}_endcap", nbin, xmin, xmax, IDvar, self.weight)
         
     
 # =========================
