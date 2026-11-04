@@ -29,6 +29,7 @@ Recipe for the tree production step on LXPLUS [TO BE UPDATED]
   - as starting point one can use as template the ```VVXAnalysis/Producers/python/analyzer_VVjj.py``` file.
  - Details about data-sets and their management are reported here: https://github.com/bellan/VVXAnalysis/DATASETSMANAGEMENT.md
 
+
 ### After the production: preparing the samples for the analysis (`manageProduction.py`)
 
 At the end of a production the production directory contains the chunks of **all** the samples that were produced:
@@ -43,12 +44,12 @@ PROD_samplesNano_2024_MC_.../
     ...
 ```
 
-The analysis (see "Recipe for the tree analysis step") expects, for each sample, **either** a single file `<sample>.root` **or** a directory `<sample>/` containing the chunk directories `<sample>_Chunk<N>/ZZ4lAnalysis.root`. Small samples are better merged in a single file: it avoids submitting many short jobs. Large samples are better processed chunk by chunk. `python/manageProduction.py` prepares both cases, checks that nothing is missing, and can move the result to its final location and update `data/samples_DB.json`. The typical sequence is
+The analysis (see "Recipe for the tree analysis step") expects, for each sample, **either** a single file `<sample>.root` **or** a directory `<sample>/` containing the chunk directories `<sample>_Chunk<N>/ZZ4lAnalysis.root`. Small samples are better merged in a single file: it avoids submitting many short jobs. Large samples are better processed chunk by chunk. `scripts/manageProduction.py` prepares both cases, checks that nothing is missing, and can move the result to its final location and update `data/samples_DB.json`. The typical sequence is
 
 ```
-./python/manageProduction.py check   <production dir>                  # 1. is everything there?
-./python/manageProduction.py process <production dir> --threshold 20   # 2. merge the small samples, organize the large ones
-./python/manageProduction.py process <production dir> --threshold 20 \
+./scripts/manageProduction.py check   <production dir>                  # 1. is everything there?
+./scripts/manageProduction.py process <production dir> --threshold 20   # 2. merge the small samples, organize the large ones
+./scripts/manageProduction.py process <production dir> --threshold 20 \
         --dest <final directory> --year 2024 --origin MC --dry-run    # 3. + transfer and DB update (check with --dry-run first)
 ```
 
@@ -80,7 +81,7 @@ Chunks whose directory has no (or an empty) `ZZ4lAnalysis.root`, chunks beyond t
 
 **The threshold** (`process --threshold GB`, default 10) is the total size of the chunk directories, in decimal GB (1 GB = 10^9 bytes). A sample below the threshold is merged; at or above it is organized in `<sample>/`. A sample already organized in `<sample>/` stays organized, whatever its size, so that `<sample>.root` and `<sample>/` never coexist.
 
-**The merge** follows the same recipe of `ZZAnalysis.AnalysisStep.hadd`: `haddnano.py` for NanoAOD files (a single chunk is just copied, other files use `hadd -ff`), so the CMSSW environment must be set (`cmsenv`). Only `ZZ4lAnalysis.root` is merged. The output is written in a temporary file and renamed to `<sample>.root` only if the merge succeeds; if ROOT is available, the number of events in `Events` of the merged file is compared with the sum over the chunks (`--no-verify` skips it). With `--clean` the chunk directories of the merged samples are moved to `<dir>/Chunks/` (otherwise they stay where they are).
+**The merge** calls the function `hadd` of `ZZAnalysis.AnalysisStep.hadd` (the one used by `haddChunks.py`: `haddnano.py` for NanoAOD, `hadd -ff` otherwise, `cp` for a single chunk), so the CMSSW environment must be set (`cmsenv`). It is called on the chunk directories of the single sample, with paths relative to the production directory as `haddChunks.py` does, so the chunks are never moved. Only `ZZ4lAnalysis.root` is merged. The output is written in a temporary directory `.<sample>.merge/` and renamed to `<sample>.root` only if the merge succeeds. If ROOT is available, the number of events in `Events` of the merged file is compared with the sum over the chunks (`--no-verify` skips it). With `--clean` the chunk directories of the merged samples are moved to `<dir>/Chunks/` after a successful merge (otherwise they stay where they are).
 
 **Transfer and update of `samples_DB.json`.** With `--dest <directory>` the result (`<sample>.root` or `<sample>/`) is copied in that directory, typically on EOS, and the sample is registered in the DB:
 
@@ -105,9 +106,9 @@ Notes on the DB: it is written under a lock (`data/samples_DB.json.lock`, the sa
 | `[INCOMPLETE] ... MISSING` | Jobs failed or are still running: resubmit them (see the production recipe above), then run the command again. |
 | `[CONFLICT] both <sample>.root and the directory <sample>/ exist` | Remove the one you do not want. |
 | `already in the destination ... (use --overwrite)` | The sample is already in `--dest`: use `--overwrite` if it is a new production of the same sample. |
-| `haddnano.py not found in the PATH` | Set the CMSSW environment (`cmsenv`). |
+| `cannot import ZZAnalysis.AnalysisStep.hadd` | Set the CMSSW environment (`cmsenv`). |
 | `Not in the bookkeeping: [...]` | The name given with `-s` is not in `condorDB.json` (typo?). |
-| `merged file has N events, the chunks have M` | The merge is not trustworthy and is discarded: check the chunks and the log of `haddnano.py`. |
+| `merged file has N events, the chunks have M` | The merge is not trustworthy and is discarded: check the chunks and the output of `haddnano.py`/`hadd`. |
 
 
 Recipe for the tree analysis step on LXPLUS

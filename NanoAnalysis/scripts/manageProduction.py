@@ -14,7 +14,7 @@ Commands (see <command> --help):
   check     <dir>   only reports, for each sample, if all the chunks are present or which are missing
   organize  <dir>   moves the chunk directories of each COMPLETE sample in a directory <sample>/
   process   <dir>   as organize, but the samples whose chunks are smaller than --threshold are merged
-                    in <sample>.root instead (haddnano.py for NanoAOD, as in ZZAnalysis hadd.py)
+                    in <sample>.root instead (with the function hadd of ZZAnalysis.AnalysisStep.hadd)
   transfer  <dir>   transfers the already prepared <sample>/ or <sample>.root
 
 organize, process and transfer can also copy the result in a destination directory (--dest) and
@@ -37,7 +37,6 @@ import json
 import os
 import re
 import shutil
-import subprocess
 import sys
 from dataclasses import dataclass
 
@@ -73,6 +72,35 @@ def dirSize(path):
 
 def fmtSize(nbytes):
     return f"{nbytes / 1e9:.2f} GB"
+
+
+def absPath(path):
+    """Absolute path that keeps the symlinks the user is working through. os.path.abspath('.') uses
+    os.getcwd(), that resolves them (e.g. /eos/user/b/bellan -> /eos/home-b/bellan), and ROOT/XRootD may
+    not like the resolved form: here a relative path is built on $PWD, the path as the shell shows it."""
+    if os.path.isabs(path):
+        return os.path.normpath(path)
+    pwd = os.environ.get("PWD")
+    try:
+        if pwd and os.path.isabs(pwd) and os.path.samefile(pwd, os.getcwd()):
+            return os.path.normpath(os.path.join(pwd, path))
+    except OSError:
+        pass
+    return os.path.abspath(path)
+
+
+class inDir:
+    """Context manager: run with prodDir as current directory.
+    hadd.py (ZZAnalysis) works with paths RELATIVE to the production directory, which ROOT opens as
+    plain local files. With absolute /eos/... paths ROOT uses the XRootD plugin (TNetXNGFile) and
+    prints "[3001] Required argument not present" at every open: so the merge uses relative paths."""
+    def __init__(self, path):
+        self.path = path
+    def __enter__(self):
+        self.old = os.getcwd()
+        os.chdir(self.path)
+    def __exit__(self, *exc):
+        os.chdir(self.old)
 
 
 def remove(path):
@@ -219,64 +247,48 @@ def verifyMerged(inputs, merged):
     print(f"             check OK: {got} events in Events")
 
 
-def isNanoAOD(path):
-    """Same check as checkNano() in ZZAnalysis hadd.py: Events, Runs and LuminosityBlocks present.
-    Returns None if ROOT is not available."""
-    try:
-        import ROOT
-        ROOT.PyConfig.IgnoreCommandLineOptions = True
-    except ImportError:
-        return None
-    f = ROOT.TFile.Open(path)
-    if not f or f.IsZombie():
-        raise IOError(f"cannot open {path}")
-    keys = f.GetListOfKeys()
-    nano = all(keys.FindObject(k) != None for k in ("Events", "Runs", "LuminosityBlocks"))  # noqa: E711
-    f.Close()
-    return nano
-
-
-def mergeCommand(tmp, inputs):
-    """Same recipe as ZZAnalysis hadd.py: cp for one chunk, haddnano.py for NanoAOD, 'hadd -ff' otherwise"""
-    if len(inputs) == 1:
-        return ["cp", inputs[0], tmp]
-    nano = isNanoAOD(inputs[0])
-    if nano is None:
-        print("             (ROOT not available: the chunks are assumed to be NanoAOD)")
-        nano = True
-    cmd = ["haddnano.py"] if nano else ["hadd", "-ff"]
-    if shutil.which(cmd[0]) is None:
-        raise RuntimeError(f"{cmd[0]} not found in the PATH (is the CMSSW environment set? cmsenv)")
-    return cmd + [tmp] + inputs
-
-
 def doHadd(st, prodDir, dry, verify, clean):
+    """Merge the chunks of a sample with the function `hadd` of ZZAnalysis.AnalysisStep.hadd (the one used by
+    haddChunks.py: haddnano.py for NanoAOD, `hadd -ff` otherwise, `cp` for a single chunk), called with the
+    chunk directories of THIS sample only, so the chunks are never moved:
+      <sample>_Chunk*/ZZ4lAnalysis.root  ->  .<sample>.merge/ZZ4lAnalysis.root  ->  <sample>.root
+    As in haddChunks.py, the paths are relative to the production directory. The output is written in a
+    temporary directory and renamed only if everything is fine."""
     nums = sorted(st.top)
-    inputs = [os.path.join(st.top[n], CHUNK_FILE) for n in nums]
-    final = os.path.join(prodDir, f"{st.name}.root")
-    tmp = os.path.join(prodDir, f".{st.name}.tmp.root")     # renamed only if everything is fine
-    print(f"             {st.name}: merging {len(inputs)} chunks -> {st.name}.root")
+    finalName = f"{st.name}.root"
+    final = os.path.join(prodDir, finalName)
+    print(f"             {st.name}: merging {len(nums)} chunks -> {finalName}")
     if dry:
         return final
     try:
-        cmd = mergeCommand(tmp, inputs)
-        print(f"             {cmd[0]} ...")
-        subprocess.run(cmd, check=True)
-        if not os.path.isfile(tmp) or os.path.getsize(tmp) == 0:
-            raise RuntimeError(f"{cmd[0]} did not produce {tmp}")
-        if verify:
-            verifyMerged(inputs, tmp)
-    except Exception:
-        if os.path.exists(tmp):
-            os.remove(tmp)
-        raise
-    os.replace(tmp, final)
-    if clean:
-        chunksDir = os.path.join(prodDir, "Chunks")
-        os.makedirs(chunksDir, exist_ok=True)
-        for n in nums:
-            shutil.move(st.top[n], os.path.join(chunksDir, os.path.basename(st.top[n])))
-        print(f"             chunks moved in {chunksDir}/")
+        from ZZAnalysis.AnalysisStep.hadd import hadd
+    except ImportError:
+        raise RuntimeError("cannot import ZZAnalysis.AnalysisStep.hadd (is the CMSSW environment set? cmsenv)")
+    tmpDir = f".{st.name}.merge"
+    chunkNames = [os.path.basename(st.top[n]) for n in nums]
+    with inDir(prodDir):
+        if os.path.exists(tmpDir):
+            raise RuntimeError(f"{os.path.join(prodDir, tmpDir)} is in the way (leftover of a failed merge?)")
+        merged = os.path.join(tmpDir, CHUNK_FILE)
+        try:
+            sys.stdout.flush()
+            try:
+                hadd(os.path.join(chunkNames[0], CHUNK_FILE), tmpDir, chunkNames)
+            except SystemExit:                                # hadd() calls exit(1) if the command fails
+                raise RuntimeError("hadd failed (see the output above)")
+            if not os.path.isfile(merged) or os.path.getsize(merged) == 0:
+                raise RuntimeError(f"hadd did not produce {merged}")
+            if verify:
+                verifyMerged([os.path.join(n, CHUNK_FILE) for n in chunkNames], merged)
+            os.replace(merged, finalName)
+        finally:
+            if os.path.isdir(tmpDir):
+                shutil.rmtree(tmpDir)
+        if clean:
+            os.makedirs("Chunks", exist_ok=True)
+            for name in chunkNames:
+                os.rename(name, os.path.join("Chunks", name))
+            print(f"             chunks moved in {os.path.join(prodDir, 'Chunks')}/")
     return final
 
 
@@ -494,7 +506,7 @@ def parseArgs():
 
 def main():
     args = parseArgs()
-    prodDir = os.path.abspath(args.dir)
+    prodDir = absPath(args.dir)
     book = loadBookkeeping(args.bookkeeping or os.path.join(prodDir, "condorDB.json"))
 
     names = args.sample or list(book)
@@ -511,7 +523,7 @@ def main():
         print(f"\n{sum(ok)}/{len(ok)} samples OK")
         return 0 if all(ok) else 1
 
-    dest = os.path.abspath(args.dest) if args.dest else None
+    dest = absPath(args.dest) if args.dest else None
     updateDb = bool(dest) and not args.no_db_update
     if updateDb:                       # read the DB now, and list the new samples, before the long operations
         checkDB(args.samples_db, args.origin, args.year, names)
@@ -530,7 +542,7 @@ def main():
             results[n] = "ok"
             if dest:
                 transfer(product, dest, args.overwrite, args.move, args.dry_run)
-                results[n] = "ok, transferred"
+                results[n] = "ok (would be transferred)" if args.dry_run else "ok, transferred"
                 if updateDb:
                     for c in updateDB(args.samples_db, args.origin, args.year, n, dest, args.version, args.dry_run):
                         print(f"             DB: {c}")
