@@ -25,7 +25,7 @@ if __name__ == "__main__" :
     parser.add_option("-c", "--condor", dest="condor",
                   action="store_true",
                   default=False,
-                  help="submit the jobs through Condor")
+                  help="submit the jobs through Condor, -e option is automatically applied.")
 
     parser.add_option("-e", "--eos", dest="eos",
                       action="store_true",
@@ -35,6 +35,36 @@ if __name__ == "__main__" :
     parser.add_option("-s", "--sample", dest="selectedSample", nargs=2,
                       metavar=("YEAR", "NAME"), default=None, action="append",
                       help="Analyze just this sample (can be repeated and used by Condor jobs")
+
+    parser.add_option("--chunk", dest="chunks", type="int", action="append",
+                      metavar="N", default=None,
+                      help="Process only this chunk of a sample split in chunks (can be repeated). "
+                           "Requires exactly one -s YEAR NAME. Used by the Condor jobs and to re-run failed chunks")
+
+    parser.add_option("--split", dest="split",
+                      action="store_true",
+                      default=False,
+                      help="only if both <name>.root and the directory <name>/ exist: use the chunks")
+
+    parser.add_option("--no-split", dest="noSplit",
+                      action="store_true",
+                      default=False,
+                      help="only if both <name>.root and the directory <name>/ exist: use the single file")
+
+    parser.add_option("--merge", dest="merge",
+                      action="store_true",
+                      default=False,
+                      help="hadd the chunk outputs of the selected samples (after the jobs are finished)")
+
+    parser.add_option("--keep-chunks", dest="keepChunks",
+                      action="store_true",
+                      default=False,
+                      help="debug: do not remove the outputs of the single chunks after the merge")
+
+    parser.add_option("--update-sumw", dest="updateSumw",
+                      action="store_true",
+                      default=False,
+                      help="recompute the total genEventSumw of the chunked MC samples, store it in the DB and exit")
 
     flavours = ["espresso", "microcentury", "longlunch", "workday", "tomorrow", "testmatch", "nextweek"]
     parser.add_option("-f","--flavour", dest="flavour", type="choice",
@@ -48,7 +78,20 @@ if __name__ == "__main__" :
                       help="write Condor files without submitting them")
 
     (options, args) = parser.parse_args()
+    if not args:
+        parser.error("the analysis name is missing")
     analysis       = args[0]
+
+    if options.chunks and (not options.selectedSample or len(options.selectedSample) != 1):
+        parser.error("--chunk can be used only together with exactly one -s YEAR NAME")
+    if options.split and options.noSplit:
+        parser.error("--split and --no-split are mutually exclusive")
+
+    # The jobs always read the samples from EOS: the submission must look at the same files
+    # (to find the chunks, to compute genEventSumw), so -e is forced.
+    if options.condor:
+        print("Condor: the samples are taken from EOS (-e option automatically applied)")
+        options.eos = True
     
     ## Read the configuration in Pydantic mode
     with open(f'configurations/{analysis}.yaml') as f:
@@ -57,6 +100,11 @@ if __name__ == "__main__" :
             
     sampleLoader = SampleLoader(cfg.samples) # --> check against data/samples_DB.json
     samples = sampleLoader.load(not options.eos)
+
+    # Solves the ambiguity when both <name>.root and <name>/ exist (ignored otherwise)
+    if options.split or options.noSplit:
+        for s in samples:
+            s.preferredLayout = "chunks" if options.split else "file"
 
     for s in samples:
         print(s)
@@ -85,20 +133,29 @@ if __name__ == "__main__" :
     Actual samples selection:  {samples}
     """)
     
-    sampleLooper = SampleLooper(cfg.analysis, samples)
-    #sampleLooper.loop(options.nJobs)
-    ##sampleLooper.end()
+    sampleLooper = SampleLooper(cfg.analysis, samples,
+                                loader=sampleLoader,
+                                keepChunks=options.keepChunks)
 
-
-    if options.condor:
+    if options.updateSumw:
+        sampleLooper.updateSumw()
+    elif options.merge:
+        sampleLooper.mergeAll()
+    elif options.condor:
         ## To be fixed
         args = [analysis]
         ## With condor, run on eos samples by default
         #if options.eos:
         args.append("-e")
+        # The jobs repeat the same choice, otherwise they would find the same ambiguity
+        if options.split:
+            args.append("--split")
+        if options.noSplit:
+            args.append("--no-split")
         sampleLooper.submitCondor(runScript=os.path.abspath(sys.argv[0]),
                                   args=args,
                                   flavour=options.flavour,
+                                  chunks=options.chunks,
                                   dryRun=options.dryRun)
     else:
-        sampleLooper.loop(options.nJobs)
+        sampleLooper.loop(options.nJobs, chunks=options.chunks)

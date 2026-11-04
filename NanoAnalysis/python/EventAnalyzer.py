@@ -95,12 +95,12 @@ class EventAnalyzer:
                 self.ZZ = self.ZZs[self.event.bestCandIdx]
                 
                 #self.regionWord |= Regions.ZTL2P_ZTL2P
-
+                
         
         
         
         
-    def end(self, sample):
+    def end(self, sample, base_odir=None):
         
         # for region in regions:
         #     odir = outputdir_format %region
@@ -115,10 +115,13 @@ class EventAnalyzer:
 #            "recreate")
         
         self.histogrammers.write(
-            base_odir = f"results/{sample.year}",
+            base_odir = base_odir if base_odir is not None else f"results/{sample.year}",
             analysis_name = self.analysis_name,
             sample_name   = sample.name
         )
 
     def begin(self):
+        pass
+
+    def endOfAnalysis(self):
         pass
