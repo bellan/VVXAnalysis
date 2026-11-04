@@ -52,18 +52,25 @@ class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
             
         
     def analyze(self):
+        studyPlot = True
+
         self.CutFlowLabelsSD=["TotalEvents","QuarkNum","LeptonNumKin","LeptonZCand","PhotonKin","JetKin","FromLepIso",
                               "PhotonJetIso","JetVCand"]
         self.CutFlowLabelsSR=["TotalEvents","Trigger","ZCandMass","LeptonNumKin","ElectronVeto","PhotonKin","FromLepIso",
-                              "PhotonJetIso","PhotonId","JetKin","JetVCand"]#,"ZCandMass100"]
+                              "PhotonJetIso","PhotonId","JetKin","JetVCand"]#,"ZCandMass80"]
 
+        self.passed_SD = False
         self.fillCutFlow("SD","TotalEvents")
         self.fillCutFlow("SR","TotalEvents")
 
         self.loadCollections()
+
         
-        is_SD = self.IsSignal()
-        is_SR = self.IsInSignalRegion(studyPlot=True)
+        is_SD = self.IsSignal(studyPlot)
+        self.passed_SD = is_SD
+        if self.passed_SD:
+            self.hEvent.fill1D_label("CutFlowSR_isSD", "CutFlowSR_isSD", self.CutFlowLabelsSR, "TotalEvents", self.weight)
+        is_SR = self.IsInSignalRegion(studyPlot)
 
         if self.analyzeMC:
             self.hEvent.fill2D("Confusion_Matrix", "Confusion_Matrix;Passes Signal Definition (GEN);Passes Signal Region (RECO)", 
@@ -87,7 +94,7 @@ class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
     #SIGNAL DEFINITION
     #=================  
 
-    def IsSignal(self):
+    def IsSignal(self, studyPlot):
 
         if not self.analyzeMC: return False
 
@@ -126,6 +133,13 @@ class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
         if len(self.GenKinCutPhotons) == 0: return False
         self.fillCutFlow("SD","PhotonKin")
 
+        # Inspection on pt-ratio/DeltaR relation of Photons that pass Kin Cuts
+        self.ptRatioDeltaRPhotonJetRelation(self.GenKinCutPhotons, self.GenJets, studyPlot, "GEN")
+        # Tuning of deltaR threshold to select the photon
+        self.deltaRThresholdScan(self.GenKinCutPhotons, self.GenZCandLeptons, self.GenJets, studyPlot, "GEN")
+        # Inspection on disambiguation photons-jets (before KinCut)
+        self.studyPhotonJetDisambiguation(self.GenKinCutPhotons, self.GenJets, self.GenZCandLeptons, studyPlot, "GEN")
+
         self.GenKinCutJets=self.jetKinCut(self.GenJets)
         if len(self.GenKinCutJets) < 2: return False
         self.fillCutFlow("SD","JetKin")
@@ -135,7 +149,7 @@ class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
         # Number of Quarks after kinematic Cut
         self.hEvent.fill1D("nQuarks_Kin_GEN", "nQuarks_Kin_GEN; N_{q};", 15, -0.5, 14.5, len(self.GenQuarks), self.weight)
 
-        # DeltaR between photons and 3-most-energetic-jets Distribution 
+        '''# DeltaR between photons and 3-most-energetic-jets Distribution 
         DeltaRGammaJet = self.PhotonJetDeltaRCut(self.GenKinCutPhotons,self.GenKinCutJets)
         for dR in DeltaRGammaJet:
             self.hEvent.fill1D("DeltaR_GammaJet_GEN", "DeltaR_GammaJet_GEN; #DeltaR(#gamma, j);", 60, 0., 6., dR, self.weight)
@@ -153,6 +167,7 @@ class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
                     self.hEvent.fill1D("Pt_Jet_Matched_GEN", "Pt_Jet_Matched_GEN;p_{T}^{j} [GeV];Events", 50, 0., 200., j.pt, self.weight)
                     delta_pt_norm = (j.pt - p.pt)/j.pt
                     self.hEvent.fill1D("DeltaPt_JetPhoton_GEN", "DeltaPt_JetPhoton_GEN;p_{T}^{j} - p_{T}^{#gamma} [GeV];Events", 60, -15., 15., delta_pt_norm, self.weight)
+        '''
 
         self.GenNoLepPhotons = [p for p in self.GenKinCutPhotons if all(p.DeltaR(l) > 0.5 for l in self.GenZCandLeptons)]
         self.GenNoLepJets = [j for j in self.GenKinCutJets if all(j.DeltaR(l) > 0.5 for l in self.GenZCandLeptons)]
@@ -245,17 +260,16 @@ class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
         self.fillCutFlow("SR","ElectronVeto")
 
         # Inspection on pt-ratio/DeltaR relation of Photons that pass Kin Cuts
-        self.ptRatioDeltaRPhotonJetRelation(self.VetoPhotons, self.Jets, studyPlot)
+        self.ptRatioDeltaRPhotonJetRelation(self.VetoPhotons, self.Jets, studyPlot, "RECO")
         # Tuning of deltaR threshold to select the photon
-        self.deltaRThresholdScan(self.VetoPhotons, self.KinCutLeptons, self.Jets, studyPlot)
+        self.deltaRThresholdScan(self.VetoPhotons, self.KinCutLeptons, self.Jets, studyPlot, "RECO")
         # Inspection on disambiguation photons-jets (before KinCut)
-        self.studyPhotonJetDisambiguation(self.VetoPhotons, self.Jets, self.KinCutLeptons, studyPlot)
+        self.studyPhotonJetDisambiguation(self.VetoPhotons, self.Jets, self.KinCutLeptons, studyPlot, "RECO")
 
         self.KinCutPhotons = self.photonKinCut(self.VetoPhotons, "Region")
         if len(self.KinCutPhotons) == 0: return False
         self.fillCutFlow("SR","PhotonKin")
 
-        # Tuning of deltaR threshold to select the photon
         self.NoLepPhotons = [p for p in self.KinCutPhotons if all(p.DeltaR(l) > 0.5 for l in self.KinCutLeptons)]
         self.NoLepJets = [j for j in self.Jets if all(j.DeltaR(l) > 0.5 for l in self.KinCutLeptons)]
         if len(self.NoLepPhotons) == 0 or len(self.NoLepJets) < 2: return False
@@ -340,7 +354,7 @@ class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
 
         ## Cuts for Control Region
         #if self.theZ.mass < 80: return False
-        #self.fillCutFlow("SR","ZCandMass100")
+        #self.fillCutFlow("SR","ZCandMass80")
 
         # Vedere pt-ratio e deltaR per quei fotoni che non passano Id o KinCut, disambiguazione da jet
         # Vedere dopo aver fatto il taglio JetIso, fare loop sui fotoni e vedere quali hanno passato entrambi i tagli,
@@ -495,6 +509,8 @@ class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
     def getTruePhotons(self, Photons, IdType="MVA_wp90"):
         if IdType == "MVA_wp90":
             TruePhotons = [ph for ph in Photons if (ph.mvaID_WP90)]
+        elif IdType == "MVA_wp80":
+            TruePhotons = [ph for ph in Photons if (ph.mvaId_WP80)]
         elif IdType == "Loose":
             TruePhotons = [ph for ph in Photons if (ph.cutBased >= 1)]
         elif IdType == "Medium":
@@ -505,53 +521,53 @@ class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
         return True, TruePhotons
 
     # INSPECTION
-    def ptRatioDeltaRPhotonJetRelation(self, Photons, Jets, flag):
+    def ptRatioDeltaRPhotonJetRelation(self, Photons, Jets, flag, level):
         if flag:
             for p in Photons:
                 cat = self.categorizePhoton(p)
-                self.hEvent.fill1D("Photon_Categories_RECO", "Photon Categories;0=Both, 1=KinOnly, 2=IdOnly, 3=None;Photons", 4, -0.5, 3.5, cat, self.weight)
-                #if cat < 2:
-                for j in Jets:
-                    dR = p.DeltaR(j)
-                    self.hEvent.fill1D("DeltaR_Overlap_Photons", 
-                                        "DeltaR_Overlap_Photons;#DeltaR(#gamma, j);Events", 
-                                        50, 0.05, 5.05, dR, self.weight)
-                    pt_ratio = p.pt / j.pt
-                    self.hEvent.fill2D("DeltaR_vs_PtRatio_Photons", 
-                                        "DeltaR_vs_PtRatio_Photons;#DeltaR(#gamma, j);p_{T}^{#gamma}/p_{T}^{j};Events", 
-                                        50, 0., 5.0, 60, 0., 2.0, dR, pt_ratio, self.weight)
-                    if dR < 1.5:
-                        self.hEvent.fill2D("DeltaR_vs_PtRatio_Photons_Zoom", 
-                                           "DeltaR_vs_PtRatio_Photons_Zoom;#DeltaR(#gamma, j);p_{T}^{#gamma}/p_{T}^{j};Events", 
-                                           20, 0., 0.5, 60, 0., 2.0, dR, pt_ratio, self.weight)
-                    if dR < 0.1:
-                        self.hEvent.fill1D("PtRatio_Overlap_GoodPhotons", 
-                                           "PtRatio_Overlap_GoodPhotons (dR < 0.1);p_{T}^{#gamma}/p_{T}^{j};Events", 
-                                           50, 0., 2.0, pt_ratio, self.weight)
-                    if 0.1 < dR < 0.5:
-                        self.hEvent.fill1D("PtRatio_Overlap_BadPhotons", 
-                                           "PtRatio_Overlap_BadPhotons (0.1 < dR < 0.5);p_{T}^{#gamma}/p_{T}^{j};Events", 
-                                           50, 0., 2.0, pt_ratio, self.weight)
+                self.hEvent.fill1D(f"Photon_Categories_{level}", "Photon Categories;0=Both, 1=KinOnly, 2=IdOnly, 3=None;Photons", 4, -0.5, 3.5, cat, self.weight)
+                if cat < 2:
+                    for j in Jets:
+                        dR = p.DeltaR(j)
+                        self.hEvent.fill1D(f"DeltaR_Overlap_Photons_{level}", 
+                                            "DeltaR_Overlap_Photons;#DeltaR(#gamma, j);Events", 
+                                            50, 0.05, 5.05, dR, self.weight)
+                        pt_ratio = p.pt / j.pt
+                        self.hEvent.fill2D(f"DeltaR_vs_PtRatio_Photons_{level}", 
+                                            "DeltaR_vs_PtRatio_Photons;#DeltaR(#gamma, j);p_{T}^{#gamma}/p_{T}^{j};Events", 
+                                            50, 0., 5.0, 60, 0., 2.0, dR, pt_ratio, self.weight)
+                        if dR < 1.5:
+                            self.hEvent.fill2D(f"DeltaR_vs_PtRatio_Photons_Zoom_{level}", 
+                                               "DeltaR_vs_PtRatio_Photons_Zoom;#DeltaR(#gamma, j);p_{T}^{#gamma}/p_{T}^{j};Events", 
+                                               20, 0., 0.5, 60, 0., 2.0, dR, pt_ratio, self.weight)
+                        if dR < 0.1:
+                            self.hEvent.fill1D(f"PtRatio_Overlap_GoodPhotons_{level}", 
+                                               "PtRatio_Overlap_GoodPhotons (dR < 0.1);p_{T}^{#gamma}/p_{T}^{j};Events", 
+                                               50, 0., 2.0, pt_ratio, self.weight)
+                        if 0.1 < dR < 0.5:
+                            self.hEvent.fill1D(f"PtRatio_Overlap_BadPhotons_{level}", 
+                                               "PtRatio_Overlap_BadPhotons (0.1 < dR < 0.5);p_{T}^{#gamma}/p_{T}^{j};Events", 
+                                               50, 0., 2.0, pt_ratio, self.weight)
 
             return True
         else:
             return False
         
     # INSPECTION
-    def deltaRThresholdScan(self, Photons, Leptons, Jets, flag):
+    def deltaRThresholdScan(self, Photons, Leptons, Jets, flag, level):
         if flag:
             thresholdsTest = [0.02, 0.04, 0.06, 0.08, 0.1, 0.12, 0.14, 0.16, 0.18]
             for thr in thresholdsTest:
                 testPhotons = self.photonIsolationCut(Photons, Leptons, Jets, deltaRThreshold=thr)
                 if len(testPhotons) > 0:
-                    self.hEvent.fill1D("Tuning_DeltaR_Threshold", "Tuning_DeltaR_Threshold;Thr DeltaR(j,#gamma);SR Events", 
+                    self.hEvent.fill1D(f"Tuning_DeltaR_Threshold_{level}", "Tuning_DeltaR_Threshold;Thr DeltaR(j,#gamma);SR Events", 
                                        10, 0.01, 0.21, thr, self.weight)
             return True
         else:
             return False
 
     # INSPECTION
-    def studyPhotonJetDisambiguation(self, vetoPhotons, jets, kinLeptons, flag):
+    def studyPhotonJetDisambiguation(self, vetoPhotons, jets, kinLeptons, flag, level):
         if flag:
             """
             Studies the disambiguation Photons-Jets on photons that passed Electron Veto
@@ -563,10 +579,10 @@ class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
             for j in NoLepJets:
                 if len(NoLepPhotons) > 0:
                     min_dR = min(j.DeltaR(p) for p in NoLepPhotons)
-                    self.hEvent.fill1D("MinDeltaR_Jet_Photon", "Min #DeltaR(j, #gamma);min #DeltaR;Jets", 
+                    self.hEvent.fill1D(f"MinDeltaR_Jet_Photon_{level}", "Min #DeltaR(j, #gamma);min #DeltaR;Jets", 
                                        100, 0., 5., min_dR, self.weight)
                     
-                    self.hEvent.fill1D("MinDeltaR_Jet_Photon_Zoom", "Min #DeltaR(j, #gamma) (Zoom);min #DeltaR;Jets", 
+                    self.hEvent.fill1D(f"MinDeltaR_Jet_Photon_Zoom_{level}", "Min #DeltaR(j, #gamma) (Zoom);min #DeltaR;Jets", 
                                        50, 0., 0.5, min_dR, self.weight)
 
             GoodPhotons, BadPhotons, GoodJets, BadJets = self.disambiguatePhotonJet(NoLepPhotons, NoLepJets, deltaRThr=0.1)
@@ -574,23 +590,23 @@ class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
             nGoodPhotonsPassKin = 0
             for p in GoodPhotons:
                 cat = self.categorizePhoton(p)
-                self.hEvent.fill1D("Disambig_GoodPhotons_Categs", "Good Photons;0=Both, 1=KinOnly, 2=IdOnly, 3=None;Photons", 4, -0.5, 3.5, cat, self.weight)
+                self.hEvent.fill1D(f"Disambig_GoodPhotons_Categs_{level}", "Good Photons;0=Both, 1=KinOnly, 2=IdOnly, 3=None;Photons", 4, -0.5, 3.5, cat, self.weight)
                 if cat in (0, 1):
                     nGoodPhotonsPassKin += 1
 
             nBadPhotonsPassKin = 0
             for p in BadPhotons:
                 cat = self.categorizePhoton(p)
-                self.hEvent.fill1D("Disambig_BadPhotons_Categs", "Bad Photons;0=Both, 1=KinOnly, 2=IdOnly, 3=None;Photons", 4, -0.5, 3.5, cat, self.weight)
+                self.hEvent.fill1D(f"Disambig_BadPhotons_Categs_{level}", "Bad Photons;0=Both, 1=KinOnly, 2=IdOnly, 3=None;Photons", 4, -0.5, 3.5, cat, self.weight)
                 if cat in (0, 1):
                     nBadPhotonsPassKin += 1
 
 
-            self.hEvent.fill1D("nGoodPhotons_Disambig_perEvent", "Good Photons per Event;# Photons;Events", 5, -0.5, 4.5, len(GoodPhotons), self.weight)
-            self.hEvent.fill1D("nBadPhotons_Disambig_perEvent", "Bad Photons per Event;# Photons;Events", 5, -0.5, 4.5, len(BadPhotons), self.weight)
+            self.hEvent.fill1D(f"nGoodPhotons_Disambig_perEvent_{level}", "Good Photons per Event;# Photons;Events", 5, -0.5, 4.5, len(GoodPhotons), self.weight)
+            self.hEvent.fill1D(f"nBadPhotons_Disambig_perEvent_{level}", "Bad Photons per Event;# Photons;Events", 5, -0.5, 4.5, len(BadPhotons), self.weight)
 
-            self.hEvent.fill1D("nGoodPhotons_PassKin_perEvent", "Good Photons Pass Kin per Event;# Photons;Events", 5, -0.5, 4.5, nGoodPhotonsPassKin, self.weight)
-            self.hEvent.fill1D("nBadPhotons_PassKin_perEvent", "Bad Photons Pass Kin per Event;# Photons;Events", 5, -0.5, 4.5, nBadPhotonsPassKin, self.weight)
+            self.hEvent.fill1D(f"nGoodPhotons_PassKin_perEvent_{level}", "Good Photons Pass Kin per Event;# Photons;Events", 5, -0.5, 4.5, nGoodPhotonsPassKin, self.weight)
+            self.hEvent.fill1D(f"nBadPhotons_PassKin_perEvent_{level}", "Bad Photons Pass Kin per Event;# Photons;Events", 5, -0.5, 4.5, nBadPhotonsPassKin, self.weight)
 
             for j in jets:
                 if j in GoodJets:
@@ -599,10 +615,10 @@ class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
                     k = 2
                 else:
                     k = 0
-                self.hEvent.fill1D("nJet_AfterDisambiguation", "Jet Status;0=LepOverlap, 1=PassDisambig, 2=FailDisambig;Jets", 3, -0.5, 2.5, k, self.weight)
+                self.hEvent.fill1D(f"nJet_AfterDisambiguation_{level}", "Jet Status;0=LepOverlap, 1=PassDisambig, 2=FailDisambig;Jets", 3, -0.5, 2.5, k, self.weight)
 
-            self.hEvent.fill1D("nGoodJets_Disambig_perEvent", "Passed Jets per Event;# Jets;Events", 15, -0.5, 14.5, len(GoodJets), self.weight)
-            self.hEvent.fill1D("nBadJets_Disambig_perEvent", "Discarded Jets per Event;# Jets;Events", 10, -0.5, 9.5, len(BadJets), self.weight)
+            self.hEvent.fill1D(f"nGoodJets_Disambig_perEvent_{level}", "Passed Jets per Event;# Jets;Events", 15, -0.5, 14.5, len(GoodJets), self.weight)
+            self.hEvent.fill1D(f"nBadJets_Disambig_perEvent_{level}", "Discarded Jets per Event;# Jets;Events", 10, -0.5, 9.5, len(BadJets), self.weight)
 
             #return GoodPhotons, BadPhotons, GoodJets, BadJets
             return True
@@ -696,6 +712,8 @@ class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
             self.hEvent.fill1D_label("CutFlowSD", "CutFlowSD", self.CutFlowLabelsSD, cut_label, self.weight)
         elif region == "SR":
             self.hEvent.fill1D_label("CutFlowSR", "CutFlowSR", self.CutFlowLabelsSR, cut_label, self.weight)
+            if getattr(self, 'passed_SD', False) and cut_label != "TotalEvents":
+                self.hEvent.fill1D_label("CutFlowSR_isSD", "CutFlowSR_isSD", self.CutFlowLabelsSR, cut_label, self.weight)
 
 # OTHER CLASSES
 

@@ -13,7 +13,7 @@ samples:
     - VBS
 
 analysis:
-  analyzer: VZGammaAnalyzer
+  analyzer: VZGammaAnalyzerDemo
   regions : [L2P]
 
 
