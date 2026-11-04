@@ -11,7 +11,7 @@ import itertools
 from ROOT import TDatabasePDG 
 from enum import IntFlag
 
-class VZGammaAnalyzer(EventAnalyzer, analysis_name="VZGammaAnalyzer"):
+class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
 
     
     def __init__(self, regions):
