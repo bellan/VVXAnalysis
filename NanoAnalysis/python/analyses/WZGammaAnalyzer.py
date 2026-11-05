@@ -26,7 +26,7 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
                                 and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
             self.GenPhotons = [p for p in self.GenParts if p.pdgId == 22 and p.status == 1
                               and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
-            #self.GenPhotons_Prompt = [p for p in self.GenParts if p.pdgId == 22 and p.status == 1 and (p.statusFlags & (1<<0)) != 0]
+            self.GenPhotons_Prompt = [p for p in self.GenParts if p.pdgId == 22 and p.status == 1 and (p.statusFlags & (1<<0)) != 0]
             self.GenNeutrinos = [p for p in self.GenParts if abs(p.pdgId) in (12,14)  and p.status == 1
                             and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
 
@@ -51,28 +51,40 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         self.loadCollections()
         self.SDCuts = ["Weighted_Events","Lep_KinCuts","WZ_MassLimits","Ph_KinCuts", "Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
         self.SRCuts =["Weighted_Events","HLT_passZZ4l","Lep_KinCuts","MET_Cut","Z_MassLimits","ZZFullSel","Ph_kinCuts","Ph_electronVeto","Ph_mvaWP80","Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
-        self.lookOnlyL3P = True
+        
+        self.lookOnlyL3P = True     #for running on L3P region, for data comparison
+        self.runningOnBgk = True    #for running on bg samples
+        self.onlyNPph = False       #for running on WZto3LNu considering just NP photons
 
         self.isSig = False
-        if self.analyzeMC and not self.lookOnlyL3P :
+        if self.analyzeMC and not self.runningOnBgk :
             self.isSig = self.isSignal()  
-            genW, genZ = self.genCouple
 
-        self.isInSR = self.isInSignalRegion(2024)
-        recoZ, recoW = self.recoCouple                
-
-        # sample's statistic values
-        if self.analyzeMC and not self.lookOnlyL3P :
-            self.getPercentagePlot("Background_inSR")
-            self.getPercentagePlot("ReconstructonEfficency")
-
+        if self.runningOnBgk :
+            if self.onlyNPph :
+                if len(self.GenPhotons_Prompt) == 0 :
+                    self.isInSR = self.isInSignalRegion(2024)
+                    
+            else : 
+                self.isInSR = self.isInSignalRegion(2024)
             
-        '''if isSig and isInSR :             
+        else :
+            if self.isSig :
+                self.isInSR = self.isInSignalRegion(2024)  
+            
+           
+        '''# sample's statistic values
+        self.getPercentagePlot("Background_inSR")
+        self.getPercentagePlot("ReconstructonEfficency") 
+            
+        if isSig and isInSR :             
             # GEN-RECO LEPTONS MATCHING
+            genW, genZ = self.genCouple
+            recoZ, recoW = self.recoCouple
             res = self.isRecoMatching(genZ.leptons, genW.leptons, (self.ChargedLeptons[recoZ.l1Idx], self.ChargedLeptons[recoZ.l2Idx]), recoW.lepton, 0.5)
-            self.hEvent.fill1D("GenAndReco_Matching", "GenAndReco_Matching", 2, -0.5, 1.5, int(res), self.weight)'''    
+            self.hEvent.fill1D("GenAndReco_Matching", "GenAndReco_Matching", 2, -0.5, 1.5, int(res), self.weight)  
 
-        '''if self.hasGenFSR and self.lGammaMET_mt != None :
+        if self.hasGenFSR and self.lGammaMET_mt != None :
             self.hEvent.fill1D("lGammaMET_Mt_Cutted", "lGammaMET_Mt_Cutted", 30, 0., 300., self.lGammaMET_mt, self.weight)'''
    
 
@@ -207,6 +219,9 @@ Gen_invMassLLGamma_preCuts, theZ.mass, self.weight)
             theW = WReco(lepW, W_mt)            
         self.recoCouple = (theZ, theW)
 
+        lZ_list = [(lepW.pt, lepW.eta, lepW.phi), (lepZ1.pt, lepZ1.eta, lepZ1.phi), (lepZ2.pt, lepZ2.eta, lepZ2.phi)]
+        lZMET_mt = self.computeMt(lZ_list, self.MET.pt, self.MET.phi)
+
         if not self.lookOnlyL3P :
             BestPhotons = self.photonsCuts(self.Photons, self.ChargedLeptons, "Region")
             if not BestPhotons : return False
@@ -233,20 +248,19 @@ Gen_invMassLLGamma_preCuts, theZ.mass, self.weight)
             lGamma_list = [(lepW.pt, lepW.eta, lepW.phi), (thePhoton.pt, thePhoton.eta, thePhoton.phi)]
             lGammaMET_mt = self.computeMt(lGamma_list, self.MET.pt, self.MET.phi)
             
-            lZ_list = [(lepW.pt, lepW.eta, lepW.phi), (lepZ1.pt, lepZ1.eta, lepZ1.phi), (lepZ2.pt, lepZ2.eta, lepZ2.phi)]
-            lZMET_mt = self.computeMt(lZ_list, self.MET.pt, self.MET.phi)
             lZGamma_list = [(lepW.pt, lepW.eta, lepW.phi), (lepZ1.pt, lepZ1.eta, lepZ1.phi), (lepZ2.pt, lepZ2.eta, lepZ2.phi), (thePhoton.pt, thePhoton.eta, thePhoton.phi)]
             lZGammaMET_mt = self.computeMt(lZGamma_list, self.MET.pt, self.MET.phi) 
         
                         
-        self.hEvent.fill1D("LepZ_1_pt", "LepZ_1_pt", 10, 0., 300., lepZ1.pt, self.weight)
-        self.hEvent.fill1D("LepZ_2_pt", "LepZ_2_pt", 10, 0., 300., lepZ2.pt, self.weight)
-        self.hEvent.fill1D("LepW_pt", "LepW_pt", 10, 0., 300., lepW.pt, self.weight)
+        self.hEvent.fill1D("LepZ_1_pt", "LepZ_1_pt", 10, 0., 200., lepZ1.pt, self.weight)
+        self.hEvent.fill1D("LepZ_2_pt", "LepZ_2_pt", 10, 0., 200., lepZ2.pt, self.weight)
+        self.hEvent.fill1D("LepW_pt", "LepW_pt", 10, 0., 200., lepW.pt, self.weight)
         self.hEvent.fill1D("LepW_eta", "LepW_eta", 10, -2.5, 2.5, lepW.eta, self.weight)
-        self.hEvent.fill1D("MET_pt", "MET_pt", 10, 30., 330., self.MET.pt, self.weight)
+        self.hEvent.fill1D("MET_pt", "MET_pt", 10, 30., 230., self.MET.pt, self.weight)
         self.hEvent.fill1D("MET_phi", "MET_phi", 10, -3.2, 3.2, self.MET.phi, self.weight)
-        self.hEvent.fill1D("ZCandMass_91Gev", "ZCandMass_91Gev", 10, 0., 1000., theZ.mass, self.weight)
-        self.hEvent.fill1D("W_Mt", "W_Mt", 10, 0., 1000., W_mt, self.weight)
+        self.hEvent.fill1D("ZCandMass_91Gev", "ZCandMass_91Gev", 12, 60., 120., theZ.mass, self.weight)
+        self.hEvent.fill1D("W_Mt", "W_Mt", 6, 50., 110., W_mt, self.weight)
+        self.hEvent.fill1D("lZMET_Mt", "lZMET_Mt", 10, 0., 1000., lZMET_mt, self.weight) 
 
         if not self.lookOnlyL3P :    
             self.hEvent.fill1D("Photon_pt", "Photon_pt", 40, 0., 200., thePhoton.pt, self.weight)
