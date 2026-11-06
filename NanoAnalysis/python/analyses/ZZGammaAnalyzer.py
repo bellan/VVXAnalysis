@@ -19,6 +19,8 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         
         self.PhotonsID = "mva90"                     # choose between "cutL", "cutM", "cutT", "mva90" and "mva80"
         self.PhotonsOrder = "CutThenBestPt"          # choose between "CutThenBestPt" and "BestPtThenCut"
+        self.AnalysisMode = "DividePromptPhotons"    # choose between "ZZGamma_Signal", "ZZGamma_NotSignal", "ZZGamma_EfficiencyPurity", "SR_only", "DividePromptPhotons"
+        self.PromptPhotonsType = "other"             # choose between "noMother", "fromG", "fromQ", "fromLep", "fromPh", "other"
 
         self.SDCuts = ["TotalEvents", "LeptonsKinCuts", "Z1Z2Mass", "PhotonsKinCuts", "IsolatedPhotons", "TribosonRegion"]
         self.SRCuts = ["TotalEvents", "HLT_passZZ4l", "BestCand", "LeptonsKinCuts", "Z1Z2Mass", "ElectronVeto", "PhotonsKinCuts", f"PhotonsID_{self.PhotonsID}", "IsolatedPhotons", "TribosonRegion"]
@@ -27,12 +29,35 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         
         self.LoadCollections()
         
-        #isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons, self.PhotonsOrder)
-        #if isSD:
-        isSR = self.SignalRegion(self.Leptons, self.Photons, self.PhotonsOrder, self.PhotonsID)
-                                                                                        
-       # self.isBgivenA(isSD, isSR, "SD", "SR")
-       # self.isBgivenA(isSR, isSD, "SR", "SD")
+        if self.AnalysisMode == "ZZGamma_Signal":
+            isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons, self.PhotonsOrder)               # da modificare GenPhotons??
+            if isSD:
+                isSR = self.SignalRegion(self.Leptons, self.Photons, self.PhotonsOrder, self.PhotonsID)
+
+        elif self.AnalysisMode == "ZZGamma_NotSignal":
+            isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons, self.PhotonsOrder)               # da modificare GenPhotons??
+            if not isSD:
+                isSR = self.SignalRegion(self.Leptons, self.Photons, self.PhotonsOrder, self.PhotonsID)
+
+        elif self.AnalysisMode == "ZZGamma_EfficiencyPurity":
+            isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons, self.PhotonsOrder)               # da modificare GenPhotons??
+            isSR = self.SignalRegion(self.Leptons, self.Photons, self.PhotonsOrder, self.PhotonsID)
+            self.isBgivenA(isSD, isSR, "SD", "SR")
+            self.isBgivenA(isSR, isSD, "SR", "SD")
+
+        elif self.AnalysisMode == "SR_only":
+            isSR = self.SignalRegion(self.Leptons, self.Photons, self.PhotonsOrder, self.PhotonsID)
+
+        elif self.AnalysisMode == "DividePromptPhotons":
+
+            phTypes = list(self.GenPromptPhotons.keys())
+            idx = phTypes.index(self.PromptPhotonsType)
+            GenPhotonsOI = self.GenPromptPhotons[self.PromptPhotonsType]
+
+            if len(GenPhotonsOI) > 0 and not any(self.GenPromptPhotons[key] for key in phTypes[:idx]):
+                
+                isSD = self.SignalDefinition(self.GenLeptons, GenPhotonsOI, self.PhotonsOrder)
+                isSR = self.SignalRegion(self.Leptons, self.Photons, self.PhotonsOrder, self.PhotonsID)
 
         
     # =========================
@@ -353,13 +378,45 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
     def LoadCollections(self):
 
         if self.analyzeMC:
+
             self.GenParts = Collection(self.event, 'GenPart')
             self.GenLeptons = [p for p in self.GenParts if abs(p.pdgId) in (11, 13)
                                                            and p.status == 1
                                                            and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
+
+            self.AllGenPhotons = [p for p in self.GenParts if p.pdgId == 22]
+                                                            
+            self.GenPromptPhotons = {"noMother": [], "fromQ": [], "fromG": [], "fromLep": [], "fromPh": [], "other": []}
+
+            for ph in self.AllGenPhotons:
+
+                if (ph.statusFlags & GenStatusFlag.PH_SEL) != GenStatusFlag.PH_SEL:
+                    continue
+
+                motherIdx = ph.genPartIdxMother
+
+                if motherIdx == -1:
+                    phType = "noMother"
+
+                else:
+                    motherID = self.GenParts[motherIdx].pdgId
+
+                    if abs(motherID) in (1, 2, 3, 4, 5, 6):
+                        phType = "fromQ"
+                    elif abs(motherID) == 21:
+                        phType = "fromG"
+                    elif abs(motherID) in (11, 13, 15):
+                        phType = "fromLep"
+                    elif motherID == 22:
+                        phType = "fromPh"
+                    else:
+                        phType = "other"
+                
+                self.GenPromptPhotons[phType].append(ph)
+
             self.GenPhotons = [p for p in self.GenParts if p.pdgId == 22
                                                            and p.status == 1
-                                                           and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]
+                                                           and (p.statusFlags & GenStatusFlag.SEL) == GenStatusFlag.SEL]            
       
         self.ZZs = Collection(self.event, 'ZZCand')
         self.Leptons = Collection(self.event, 'Lepton')
@@ -488,7 +545,7 @@ class GenStatusFlag(IntFlag):
     FROM_HARD_PROCESS = 1 << 8
 
     SEL = IS_PROMPT | FROM_HARD_PROCESS
-    #PH_SEL = IS_PROMPT
+    PH_SEL = IS_PROMPT
 
 class ZClass:
     def __init__(self, Leptons):
