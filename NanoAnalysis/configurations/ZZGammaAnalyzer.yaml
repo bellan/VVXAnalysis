@@ -1,6 +1,6 @@
 samples:
   years: [2022, 2023, 2024]
-  origin: [MC]
+  origin: [MC, data]
   mode: name          # oppure: process, all
   by_name:
     - ZZGamma
@@ -8,7 +8,23 @@ samples:
     #- ZZTo4l_2Jets_EW
     #- DoubleMu2022H
   by_process:
+    - H
+    - ZZ
+    - WW
+    - WZ
+    - DY
+    - tt
     - VBS
+    - WWZ
+    - WZZ
+    - ZZZ
+    - WZGamma
+    - WZGtoLNuZG
+    - ZZGamma
+    - VH
+    - EGamma
+    - Muon
+    - MuonEG
 
 analysis:
   analyzer: ZZGammaAnalyzer
