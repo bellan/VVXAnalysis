@@ -19,8 +19,8 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         
         self.PhotonsID = "mva90"                     # choose between "cutL", "cutM", "cutT", "mva90" and "mva80"
         self.PhotonsOrder = "CutThenBestPt"          # choose between "CutThenBestPt" and "BestPtThenCut"
-        self.AnalysisMode = "DividePromptPhotons"    # choose between "ZZGamma_Signal", "ZZGamma_NotSignal", "ZZGamma_EfficiencyPurity", "SR_only", "DividePromptPhotons"
-        
+        self.AnalysisMode = "ZZTo4l+ggToZZ"          # choose between "ZZGamma_Signal", "ZZGamma_NotSignal", "ZZGamma_EfficiencyPurity", "SR", "L4P", "L4P_P1F" "DividePromptPhotons", "ZZTo4l+ggToZZ"
+
         self.SDCuts = ["TotalEvents", "LeptonsKinCuts", "Z1Z2Mass", "PhotonsKinCuts", "IsolatedPhotons", "TribosonRegion"]
         self.SRCuts = ["TotalEvents", "HLT_passZZ4l", "BestCand", "LeptonsKinCuts", "Z1Z2Mass", "ElectronVeto", "PhotonsKinCuts", f"PhotonsID_{self.PhotonsID}", "IsolatedPhotons", "TribosonRegion"]
 
@@ -29,36 +29,46 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         self.LoadCollections()
         
         if self.AnalysisMode == "ZZGamma_Signal":
-            isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons, self.PhotonsOrder)               # da modificare GenPhotons
+            isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons, self.PhotonsOrder, False)               # da modificare GenPhotons??
             if isSD:
-                isSR = self.SignalRegion(self.Leptons, self.Photons, self.PhotonsOrder, self.PhotonsID)
+                isSR = self.SignalRegion(self.Leptons, self.Photons, self.PhotonsOrder, self.PhotonsID, False)
 
         elif self.AnalysisMode == "ZZGamma_NotSignal":
-            isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons, self.PhotonsOrder)               # da modificare GenPhotons
+            isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons, self.PhotonsOrder, False)               # da modificare GenPhotons??
             if not isSD:
-                isSR = self.SignalRegion(self.Leptons, self.Photons, self.PhotonsOrder, self.PhotonsID)
+                isSR = self.SignalRegion(self.Leptons, self.Photons, self.PhotonsOrder, self.PhotonsID, False)
 
         elif self.AnalysisMode == "ZZGamma_EfficiencyPurity":
-            isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons, self.PhotonsOrder)               # da modificare GenPhotons
-            isSR = self.SignalRegion(self.Leptons, self.Photons, self.PhotonsOrder, self.PhotonsID)
+            isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotons, self.PhotonsOrder, False)               # da modificare GenPhotons??
+            isSR = self.SignalRegion(self.Leptons, self.Photons, self.PhotonsOrder, self.PhotonsID, False)
             self.isBgivenA(isSD, isSR, "SD", "SR")
             self.isBgivenA(isSR, isSD, "SR", "SD")
 
-        elif self.AnalysisMode == "SR_only":
-            isSR = self.SignalRegion(self.Leptons, self.Photons, self.PhotonsOrder, self.PhotonsID)
+        elif self.AnalysisMode == "SR":
+            isSR = self.SignalRegion(self.Leptons, self.Photons, self.PhotonsOrder, self.PhotonsID, False)
+
+        elif self.AnalysisMode == "L4P":
+            isSR = self.SignalRegion(self.Leptons, self.Photons, self.PhotonsOrder, self.PhotonsID, False, "L4P")
+
+        elif self.AnalysisMode == "L4P_P1F":
+            isSR = self.SignalRegion(self.Leptons, self.Photons, self.PhotonsOrder, self.PhotonsID, False, "L4P_P1F")
 
         elif self.AnalysisMode == "DividePromptPhotons":
-   
             isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotonsOI, self.PhotonsOrder, True)
             if isSD:
                 isSR = self.SignalRegion(self.Leptons, self.Photons, self.PhotonsOrder, self.PhotonsID, True)
+
+        elif self.AnalysisMode == "ZZTo4l+ggToZZ":
+            isSD = self.SignalDefinition(self.GenLeptons, self.GenPhotonsOI, self.PhotonsOrder, False)
+            if isSD and self.GenGammaType in ("nonPrompt", "isPromptfromLep"):
+                isSR = self.SignalRegion(self.Leptons, self.Photons, self.PhotonsOrder, self.PhotonsID, False, "L4P_P1F")
 
         
     # =========================
     # SIGNAL DEF and REGION
     # =========================
 
-    def SignalDefinition(self, GenLeptons, GenPhotons, PhotonsOrder, PhotonSplit = False):
+    def SignalDefinition(self, GenLeptons, GenPhotons, PhotonsOrder, PhotonSplit):
 
         if not self.analyzeMC: return False
         self.CutPlot("Definition", 0, PhotonsOrder)
@@ -70,21 +80,23 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         if not self.ZZMassCuts(GenZZ): return False
         self.CutPlot("Definition", 2, PhotonsOrder)
         
-        KinPass, GoodPhotons = self.PhotonsKinematicCuts(GenPhotons)
+        KinPass, KinPhotons = self.PhotonsKinematicCuts(GenPhotons)
         if not KinPass: return False
         self.CutPlot("Definition", 3, PhotonsOrder)
-        IsolatedPass, IsolatedPhotons = self.GetIsolatedPhotons(GoodPhotons, GenLeptons)
+        IsolatedPass, IsolatedPhotons = self.GetIsolatedPhotons(KinPhotons, GenLeptons)
         if not IsolatedPass: return False
         self.CutPlot("Definition", 4, PhotonsOrder)
-        TribosonPass, self.GenGamma = self.TribosonRegion("Gen", IsolatedPhotons, GenLeptons, GenZZ, PhotonsOrder)
+        TribosonPass, GenGamma = self.TribosonRegion("Gen", IsolatedPhotons, GenLeptons, GenZZ, PhotonsOrder)
         if not TribosonPass: return False
         self.CutPlot("Definition", 5, PhotonsOrder)
 
-        self.PlotsOI("Gen", GenZZ, self.GenGamma, PhotonSplit)
+        self.GenGammaType = self.GetGenGammaType(GenGamma)
+
+        self.PlotsOI_ZZGamma("Gen", GenZZ, GenGamma, "SD", PhotonSplit)
 
         return True
 
-    def SignalRegion(self, Leptons, Photons, PhotonsOrder, PhotonsID, PhotonSplit = False):
+    def SignalRegion(self, Leptons, Photons, PhotonsOrder, PhotonsID, PhotonSplit, Region = "SR"):
 
         self.CutPlot("Region", 0, PhotonsOrder)
 
@@ -100,20 +112,27 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         if not self.ZZMassCuts(RecoZZ): return False
         self.CutPlot("Region", 4, PhotonsOrder)
 
-        self.PlotsOI_ControlRegionL4P("Reco", RecoZZ, PhotonSplit)
+        self.PlotsOI_ZZ("Reco", RecoZZ, "L4P")
 
-        if not self.analyzeMC: return False
+        if Region == "L4P": return
 
-        ElectronVetoPass, TruePhotons = self.GetTruePhotons(Photons)
+        ElectronVetoPass, VetoPhotons = self.GetTruePhotons(Photons)
         if not ElectronVetoPass: return False
         self.CutPlot("Region", 5, PhotonsOrder)
-        KinPass, GoodPhotons = self.PhotonsKinematicCuts(TruePhotons)
+        KinPass, KinPhotons = self.PhotonsKinematicCuts(VetoPhotons)
         if not KinPass: return False
         self.CutPlot("Region", 6, PhotonsOrder)
         
-        self.hEvent.fill1D("nPhotonsPreTribosonregion", "nPhotonsPreTribosonregion", 11, -0.5, 10.5, len(Photons), self.weight)
-        
-        IDPass, GoodIDPhotons = self.GetGoodIDPhotons(GoodPhotons, PhotonsID)
+        #self.hEvent.fill1D("nPhotonsPreTribosonregion", "nPhotonsPreTribosonregion", 11, -0.5, 10.5, len(Photons), self.weight)
+
+        IDPass, GoodIDPhotons = self.GetGoodIDPhotons(KinPhotons, PhotonsID)
+
+        if Region == "L4P_P1F":
+            if not IDPass:
+                FPh = self.GetBestGamma("Reco", KinPhotons, PhotonsOrder)
+                self.PlotsOI_ZZGamma("Reco", RecoZZ, FPh, "L4P_P1F", PhotonSplit)
+            return False
+
         if not IDPass: return False
         self.CutPlot("Region", 7, PhotonsOrder)
         IsolatedPass, IsolatedPhotons = self.GetIsolatedPhotons(GoodIDPhotons, LeptonsOI)
@@ -124,7 +143,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         self.CutPlot("Region", 9, PhotonsOrder)
 
         self.PlotsOI_PhotonID(RecoGamma, PhotonsID)
-        self.PlotsOI("Reco", RecoZZ, RecoGamma, PhotonSplit)
+        self.PlotsOI_ZZGamma("Reco", RecoZZ, RecoGamma, "SR", PhotonSplit)
 
         return True
     
@@ -485,21 +504,16 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         else:
             self.hEvent.fill1D_label(f"Signal{Level}_CutFlow_{Order}", f"Signal{Level}_CutFlow_{Order}", Labels, Labels[Cut], self.weight)
         
-    def PlotsOI_ControlRegionL4P(self, Level, ZZ, PhotonSplit):
-
-        if PhotonSplit:
-            GenGammaType = self.GetGenGammaType(self.GenGamma)
-            suffix = f"_{GenGammaType}GenGamma"
-
-        else:
-            suffix = ""
+    def PlotsOI_ZZ(self, Level, ZZ, Region):
         
-        self.hEvent.fill1D(f"{Level}Level_Z1Mass_L4P_{suffix}", f"{Level}Level_Z1Mass_L4P_{suffix}", 60, 60., 120., ZZ.Z1mass, self.weight)
-        self.hEvent.fill1D(f"{Level}Level_Z2Mass_L4P_{suffix}", f"{Level}Level_Z2Mass_L4P_{suffix}", 60, 60., 120., ZZ.Z2mass, self.weight)
-        self.hEvent.fill1D(f"{Level}Level_ZZMass_L4P_{suffix}", f"{Level}Level_ZZMass_L4P_{suffix}", 10, 0., 1000., ZZ.mass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_Z1Mass_{Region}", f"{Level}Level_Z1Mass_{Region}", 60, 60., 120., ZZ.Z1mass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_Z2Mass_{Region}", f"{Level}Level_Z2Mass_{Region}", 60, 60., 120., ZZ.Z2mass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_ZZMass_{Region}", f"{Level}Level_ZZMass_{Region}", 10, 0., 1000., ZZ.mass, self.weight)
 
-    def PlotsOI(self, Level, ZZ, Gamma, PhotonSplit):
+    def PlotsOI_ZZGamma(self, Level, ZZ, Gamma, Region, PhotonSplit):
 
+        self.PlotsOI_ZZ(Level, ZZ, Region)
+        
         # self.GraphGammaPtThetaZZG(Level, Gamma, ZZ)
         
         if Level == "Gen":
@@ -508,19 +522,14 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
             ZZGammaInvMass = (ZZ.p4() + self.GetP4(Gamma)).M()    
 
         if PhotonSplit:
-            GenGammaType = self.GetGenGammaType(self.GenGamma)
-            suffix = f"_{GenGammaType}GenGamma"
+            suffix = f"_{self.GenGammaType}GenGamma"
 
         else:
             suffix = ""
-
-        self.hEvent.fill1D(f"{Level}Level_Z1Mass{suffix}", f"{Level}Level_Z1Mass{suffix}", 60, 60., 120., ZZ.Z1mass, self.weight)
-        self.hEvent.fill1D(f"{Level}Level_Z2Mass{suffix}", f"{Level}Level_Z2Mass{suffix}", 60, 60., 120., ZZ.Z2mass, self.weight)
-        self.hEvent.fill1D(f"{Level}Level_ZZMass{suffix}", f"{Level}Level_ZZMass{suffix}", 10, 0., 1000., ZZ.mass, self.weight)
-
-        self.hEvent.fill1D(f"{Level}Level_ZZGammaMass{suffix}",   f"{Level}Level_ZZGammaMass{suffix}", 10, 0., 1000., ZZGammaInvMass, self.weight)
-        self.hEvent.fill1D(f"{Level}Level_GammaPt{suffix}",       f"{Level}Level_GammaPt{suffix}", 12, 0., 180., Gamma.pt, self.weight)
-        self.hEvent.fill1D(f"{Level}Level_abs(GammaEta){suffix}", f"{Level}Level_abs(GammaEta){suffix}", 12, 0., 2.4, abs(Gamma.eta), self.weight)
+        
+        self.hEvent.fill1D(f"{Level}Level_ZZGammaMass{suffix}_{Region}",   f"{Level}Level_ZZGammaMass{suffix}_{Region}", 10, 0., 1000., ZZGammaInvMass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_GammaPt{suffix}_{Region}",       f"{Level}Level_GammaPt{suffix}_{Region}", 12, 0., 180., Gamma.pt, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_abs(GammaEta){suffix}_{Region}", f"{Level}Level_abs(GammaEta){suffix}_{Region}", 12, 0., 2.4, abs(Gamma.eta), self.weight)
 
     def PlotsOI_PhotonID(self, Gamma, PhotonsID):
 
