@@ -100,7 +100,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         if not self.ZZMassCuts(RecoZZ): return False
         self.CutPlot("Region", 4, PhotonsOrder)
 
-        self.PlotsOI_ControlRegionL4P("Reco", RecoZZ)
+        self.PlotsOI_ControlRegionL4P("Reco", RecoZZ, PhotonSplit)
 
         if not self.analyzeMC: return False
 
@@ -485,11 +485,18 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         else:
             self.hEvent.fill1D_label(f"Signal{Level}_CutFlow_{Order}", f"Signal{Level}_CutFlow_{Order}", Labels, Labels[Cut], self.weight)
         
-    def PlotsOI_ControlRegionL4P(self, Level, ZZ):
+    def PlotsOI_ControlRegionL4P(self, Level, ZZ, PhotonSplit):
+
+        if PhotonSplit:
+            GenGammaType = self.GetGenGammaType(self.GenGamma)
+            suffix = f"_{GenGammaType}GenGamma"
+
+        else:
+            suffix = ""
         
-        self.hEvent.fill1D(f"{Level}Level_Z1Mass_L4P", f"{Level}Level_Z1Mass_L4P", 60, 60., 120., ZZ.Z1mass, self.weight)
-        self.hEvent.fill1D(f"{Level}Level_Z2Mass_L4P", f"{Level}Level_Z2Mass_L4P", 60, 60., 120., ZZ.Z2mass, self.weight)
-        self.hEvent.fill1D(f"{Level}Level_ZZMass_L4P", f"{Level}Level_ZZMass_L4P", 10, 0., 1000., ZZ.mass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_Z1Mass_L4P_{suffix}", f"{Level}Level_Z1Mass_L4P_{suffix}", 60, 60., 120., ZZ.Z1mass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_Z2Mass_L4P_{suffix}", f"{Level}Level_Z2Mass_L4P_{suffix}", 60, 60., 120., ZZ.Z2mass, self.weight)
+        self.hEvent.fill1D(f"{Level}Level_ZZMass_L4P_{suffix}", f"{Level}Level_ZZMass_L4P_{suffix}", 10, 0., 1000., ZZ.mass, self.weight)
 
     def PlotsOI(self, Level, ZZ, Gamma, PhotonSplit):
 
