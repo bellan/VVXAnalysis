@@ -3,10 +3,12 @@ samples:
   origin: [MC]
   mode: name          # oppure: process, all
   by_name:
-    - ZZGamma
-    - WZGamma
-    #- WZto3LNu
-    #- ZZTo4l
+    #- ZZGamma
+    #- WZGamma
+    - DYJetsTo2E
+    - DYJetsTo2Mu
+    - TTto2L2Nu
+    
     #- ZZTo4l_2Jets_EW
     #- DoubleMu2022H
   by_process:
