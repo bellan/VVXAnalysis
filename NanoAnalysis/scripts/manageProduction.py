@@ -38,6 +38,7 @@ import os
 import re
 import shutil
 import sys
+import time
 from dataclasses import dataclass
 
 CHUNK_RE   = re.compile(r"^(?P<sample>.+)_Chunk(?P<n>\d+)$")
@@ -113,6 +114,20 @@ def remove(path):
 # ======================================================================
 # Bookkeeping and scan of the production directory
 # ======================================================================
+def findBookkeeping(explicit, prodDir):
+    """condorDB.json: --bookkeeping if given, otherwise the directory where the script is launched,
+    otherwise the production directory (the usual case is the first: the chunks are moved elsewhere)"""
+    if explicit:
+        return explicit
+    candidates = [os.path.join(absPath("."), "condorDB.json"), os.path.join(prodDir, "condorDB.json")]
+    for c in candidates:
+        if os.path.isfile(c):
+            print(f"bookkeeping: {c}")
+            return c
+    sys.exit("condorDB.json not found in " + " nor in ".join(os.path.dirname(c) for c in candidates)
+             + " (use --bookkeeping)")
+
+
 def loadBookkeeping(path):
     with open(path) as f:
         data = json.load(f)
@@ -345,7 +360,84 @@ def listing(path):
     return out
 
 
-def transfer(product, destDir, overwrite, move, dry):
+class Progress:
+    """Progress bar of a copy, proportional to the bytes copied. On a terminal the line is rewritten in place;
+    otherwise (log file) a line is printed every 10%."""
+    def __init__(self, label, total, nfiles):
+        self.label, self.total, self.nfiles = label, max(total, 1), nfiles
+        self.done, self.filesDone = 0, 0
+        self.t0 = self.last = time.time()
+        self.tty = sys.stdout.isatty()
+        self.nextStep = 10
+
+    def update(self, nbytes):
+        self.done += nbytes
+        self.show(False)
+
+    def fileDone(self):
+        self.filesDone += 1
+        self.show(False)
+
+    def show(self, final):
+        now = time.time()
+        pct = int(100 * self.done / self.total)
+        if self.tty:
+            if not final and now - self.last < 0.2:
+                return
+        elif not final and (pct < self.nextStep or pct >= 100):
+            return
+        self.last = now
+        self.nextStep = (pct // 10 + 1) * 10
+        elapsed = max(now - self.t0, 1e-6)
+        rate = self.done / elapsed
+        eta = (self.total - self.done) / rate if rate > 0 else 0
+        files = f"  files {self.filesDone}/{self.nfiles}" if self.nfiles > 1 else ""
+        bar = "#" * (pct // 4) + "-" * (25 - pct // 4)
+        line = (f"             {self.label}: [{bar}] {pct:3d}%  {fmtSize(self.done)}/{fmtSize(self.total)}"
+                f"{files}  {rate / 1e6:.0f} MB/s" + ("" if final else f"  ETA {fmtTime(eta)}"))
+        if self.tty:
+            print("\r" + line + "\033[K", end="\n" if final else "", flush=True)
+        else:
+            print(line, flush=True)
+
+    def close(self):
+        self.done = self.total
+        self.show(True)
+
+
+def fmtTime(sec):
+    sec = int(sec)
+    return f"{sec // 3600}h{sec % 3600 // 60:02d}m" if sec >= 3600 else f"{sec // 60}m{sec % 60:02d}s"
+
+
+def copyFile(src, dst, prog, bufsize=16 * 1024 * 1024):
+    with open(src, "rb") as fin, open(dst, "wb") as fout:
+        while True:
+            buf = fin.read(bufsize)
+            if not buf:
+                break
+            fout.write(buf)
+            prog.update(len(buf))
+    shutil.copystat(src, dst)
+    prog.fileDone()
+
+
+def copyWithProgress(src, dst, label):
+    """Copy a file or a directory tree, with a progress bar proportional to the size"""
+    lst = listing(src)
+    prog = Progress(label, sum(lst.values()), len(lst))
+    if os.path.isfile(src):
+        copyFile(src, dst, prog)
+    else:
+        for root, _, files in os.walk(src):
+            target = os.path.join(dst, os.path.relpath(root, src))
+            os.makedirs(target, exist_ok=True)
+            for f in files:
+                copyFile(os.path.join(root, f), os.path.join(target, f), prog)
+    prog.close()
+
+
+def transfer(product, destDir, overwrite, dry):
     base = os.path.basename(product.rstrip("/"))
     sample = base[:-5] if base.endswith(".root") else base
     final = os.path.join(destDir, base)
@@ -356,26 +448,63 @@ def transfer(product, destDir, overwrite, move, dry):
     if existing and not overwrite:
         raise FileExistsError(f"already in the destination: {existing} (use --overwrite)")
 
-    print(f"             {sample}: {'moving' if move else 'copying'} {product} -> {final}"
+    print(f"             {sample}: copying {product} -> {final}"
           + (f" (replacing {existing})" if existing else ""))
     if dry:
         return final
     os.makedirs(destDir, exist_ok=True)
     if os.path.exists(tmp):
         remove(tmp)
-    if os.path.isdir(product):
-        shutil.copytree(product, tmp)
-    else:
-        shutil.copy2(product, tmp)
+    copyWithProgress(product, tmp, sample)
     if listing(product) != listing(tmp):
         remove(tmp)
         raise IOError(f"copy of {product} not identical to the original (files or sizes differ)")
     for p in existing:
         remove(p)
     os.rename(tmp, final)
-    if move:
-        remove(product)
     return final
+
+
+def removeSource(st, product, copied, prodDir, verify, dry):
+    """--move: after a verified copy (and the update of the DB) remove the source: <sample>/ or <sample>.root
+    and, for <sample>.root, also the chunks it was merged from (in the production directory or in Chunks/).
+    Before removing the chunks the number of events of the copy in the destination is compared with the sum
+    over the chunks (ROOT); if this check cannot be done or fails, the chunks are NOT removed."""
+    chunks = {}
+    if product.endswith(".root"):
+        chunksDir = os.path.join(prodDir, "Chunks")
+        if os.path.isdir(chunksDir):
+            for e in os.scandir(chunksDir):
+                m = CHUNK_RE.match(e.name)
+                if m and m["sample"] == st.name and e.is_dir() and int(m["n"]) < st.expected:
+                    chunks[int(m["n"])] = e.path
+        chunks.update({n: p for n, p in st.top.items() if n < st.expected})
+    if chunks and not dry and verify:
+        missing = sorted(set(range(st.expected)) - set(chunks))
+        if missing:
+            raise RuntimeError(f"transferred, but the chunks are NOT removed: {len(missing)} chunk(s) not found "
+                               f"({fmtRanges(missing)}), the number of events cannot be checked")
+        try:
+            import ROOT
+        except ImportError:
+            raise RuntimeError("transferred, but the chunks are NOT removed: ROOT not available for the check "
+                               "of the number of events (use --no-verify to remove them anyway)")
+        try:
+            verifyMerged([os.path.join(chunks[n], CHUNK_FILE) for n in sorted(chunks)], copied)
+        except Exception as e:
+            raise RuntimeError(f"transferred, but the chunks are NOT removed: {e}")
+    what = [product] + [chunks[n] for n in sorted(chunks)]
+    if dry:
+        print(f"             {st.name}: would remove the source {product}"
+              + (f" and {len(chunks)} chunk directories" if chunks else ""))
+        return
+    for p in what:
+        remove(p)
+    chunksDir = os.path.join(prodDir, "Chunks")
+    if os.path.isdir(chunksDir) and not os.listdir(chunksDir):
+        os.rmdir(chunksDir)
+    print(f"             {st.name}: removed the source {product}"
+          + (f" and {len(chunks)} chunk directories" if chunks else ""))
 
 
 # ======================================================================
@@ -460,7 +589,8 @@ def parseArgs():
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("dir", help="production directory, with the chunk directories")
     common.add_argument("--bookkeeping", default=None, metavar="JSON",
-                        help="bookkeeping json (default: <dir>/condorDB.json)")
+                        help="bookkeeping json (default: ./condorDB.json, i.e. in the directory where the script is "
+                             "launched, otherwise <dir>/condorDB.json)")
     common.add_argument("-s", "--sample", action="append", default=None, metavar="NAME",
                         help="only this sample (can be repeated). Default: all the samples in the bookkeeping")
     common.add_argument("--dry-run", action="store_true", help="show what would be done, change nothing")
@@ -473,7 +603,12 @@ def parseArgs():
                     help="samples_DB.json to update (default: the one of the CMSSW area)")
     tr.add_argument("--no-db-update", action="store_true", help="transfer only, do not touch samples_DB.json")
     tr.add_argument("--version", default=None, help="value for the 'version' field of the DB record")
-    tr.add_argument("--move", action="store_true", help="remove the source after a verified copy")
+    tr.add_argument("--move", action="store_true",
+                    help="after the verified copy and the update of the DB, remove the source: <sample>/ or "
+                         "<sample>.root and the chunks it was merged from (their number of events is checked first)")
+    tr.add_argument("--no-verify", action="store_true",
+                    help="do not compare the number of events: of a merged file with its chunks (process) and, "
+                         "with --move, of the copy with the chunks that are going to be removed")
     tr.add_argument("--overwrite", action="store_true", help="replace the sample if already in the destination")
 
     sub.add_parser("check", parents=[common], help="report the missing chunks", description="Report the missing chunks")
@@ -486,8 +621,6 @@ def parseArgs():
     pr.add_argument("--threshold", type=float, default=10., metavar="GB",
                     help="total size of the chunks below which the sample is merged (default: %(default)s GB)")
     pr.add_argument("--clean", action="store_true", help="after a merge, move the chunks in <dir>/Chunks/")
-    pr.add_argument("--no-verify", action="store_true",
-                    help="do not compare the number of events of the merged file with the chunks")
     sub.add_parser("transfer", parents=[common, tr], help="transfer the already prepared samples",
                    description="Transfer the already prepared <sample>/ or <sample>.root")
 
@@ -507,7 +640,7 @@ def parseArgs():
 def main():
     args = parseArgs()
     prodDir = absPath(args.dir)
-    book = loadBookkeeping(args.bookkeeping or os.path.join(prodDir, "condorDB.json"))
+    book = loadBookkeeping(findBookkeeping(args.bookkeeping, prodDir))
 
     names = args.sample or list(book)
     unknownReq = [n for n in names if n not in book]
@@ -541,11 +674,13 @@ def main():
                 continue
             results[n] = "ok"
             if dest:
-                transfer(product, dest, args.overwrite, args.move, args.dry_run)
+                copied = transfer(product, dest, args.overwrite, args.dry_run)
                 results[n] = "ok (would be transferred)" if args.dry_run else "ok, transferred"
                 if updateDb:
                     for c in updateDB(args.samples_db, args.origin, args.year, n, dest, args.version, args.dry_run):
                         print(f"             DB: {c}")
+                if args.move:
+                    removeSource(st, product, copied, prodDir, not args.no_verify, args.dry_run)
         except Exception as e:
             print(f"[FAILED]     {n}: {e}")
             results[n] = "FAILED"
