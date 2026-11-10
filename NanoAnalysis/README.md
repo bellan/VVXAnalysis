@@ -29,7 +29,6 @@ Recipe for the tree production step on LXPLUS [TO BE UPDATED]
   - as starting point one can use as template the ```VVXAnalysis/Producers/python/analyzer_VVjj.py``` file.
  - Details about data-sets and their management are reported here: https://github.com/bellan/VVXAnalysis/DATASETSMANAGEMENT.md
 
-
 ### After the production: preparing the samples for the analysis (`manageProduction.py`)
 
 At the end of a production the production directory contains the chunks of **all** the samples that were produced:
@@ -62,7 +61,7 @@ The analysis (see "Recipe for the tree analysis step") expects, for each sample,
 | `process <dir> --threshold GB` | Like `organize`, but if the total size of the chunks of a sample is *smaller* than the threshold, the chunks are merged in `<sample>.root` instead. |
 | `transfer <dir> --dest ...` | Transfers (and updates the DB for) samples that were already prepared with `organize` or `process`. |
 
-Common options: `-s NAME` (only this sample, repeatable; default is all the samples listed in the bookkeeping), `--bookkeeping JSON` (default `<dir>/condorDB.json`), `--dry-run` (show what would be done and change nothing: use it).
+Common options: `-s NAME` (only this sample, repeatable; default is all the samples listed in the bookkeeping), `--bookkeeping JSON` (default: `condorDB.json` in the directory where the script is launched, otherwise `<dir>/condorDB.json`), `--dry-run` (show what would be done and change nothing: use it).
 
 **The check of the chunks.** The bookkeeping says how many jobs, hence chunks, each sample must have (numbered from 0 to jobs-1). For every sample the script prints either
 
@@ -92,8 +91,10 @@ Chunks whose directory has no (or an empty) `ZZ4lAnalysis.root`, chunks beyond t
 | `--samples-db JSON` | the DB to update. Default: `data/samples_DB.json` of the current CMSSW area. |
 | `--version TAG` | value of the `version` field of the record (left unchanged if not given). |
 | `--no-db-update` | transfer only. |
-| `--move` | remove the source after a verified copy (default: keep it). |
+| `--move` | after the verified copy and the update of the DB, remove the source (default: keep it): `<sample>/`, or `<sample>.root` **and the chunks it was merged from** (in `<dir>` or in `<dir>/Chunks/`). Before removing the chunks, the number of events of the copy in the destination is compared with the sum over the chunks; if the check fails, or ROOT is not available, or some chunk is missing, the chunks are kept and the sample is reported as `FAILED` (it was transferred anyway). `--no-verify` skips the check. Use `--dry-run` first. |
 | `--overwrite` | replace the sample if it is already in the destination (both `<sample>.root` and `<sample>/` count: they cannot coexist). |
+
+While a sample is copied, a progress bar (proportional to the size copied, with the number of files, speed and estimated time) is shown; in a log file one line every 10% is written instead.
 
 For each transferred sample, the record with that name, year and origin is updated: `eos_path` becomes the destination directory, `version` is set if given, and the field `genEventSumw`, if present, is **removed**, because it refers to the previous production (it is recomputed at the first analysis run). If the sample is not in the DB yet, a new record is added (and a new block, if that year and origin do not exist yet) with `process`, `color` and `style` **empty**: fill them by hand (`process` is needed to select the sample with `mode: process` in the yaml; with `mode: name` the sample can be used immediately). The DB is read before starting, so that problems show up before the long operations, and new samples are listed.
 
@@ -109,6 +110,7 @@ Notes on the DB: it is written under a lock (`data/samples_DB.json.lock`, the sa
 | `cannot import ZZAnalysis.AnalysisStep.hadd` | Set the CMSSW environment (`cmsenv`). |
 | `Not in the bookkeeping: [...]` | The name given with `-s` is not in `condorDB.json` (typo?). |
 | `merged file has N events, the chunks have M` | The merge is not trustworthy and is discarded: check the chunks and the output of `haddnano.py`/`hadd`. |
+
 
 
 Recipe for the tree analysis step on LXPLUS
