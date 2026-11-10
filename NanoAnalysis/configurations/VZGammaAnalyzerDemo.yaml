@@ -8,6 +8,14 @@ samples:
     - DYJetsTo2E
     - DYJetsTo2Mu
     - TTto2L2Nu
+    - TTLL_MLL-4to50
+    - TTLL_MLL-50
+    - WminusH-HtoZGto2LG
+    - WplusH-HtoZGto2LG
+    - ZH-HtoZGto2LG
+    - GluGluH-HtoZGto2LG
+    - TTH-HtoZGto2LG
+    - VBFH-HtoZGto2LG
     
     #- ZZTo4l_2Jets_EW
     #- DoubleMu2022H
