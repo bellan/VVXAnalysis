@@ -29,7 +29,7 @@ ggTo2mu2tau_Contin_MCFM701     ,,0.00624157,,,/GluGlu2Zto2Mu2Tau_TuneCP5_13p6TeV
 
 ###,,,,,,,,,,,rare bkg targeting ttH categories
 TTWW                            ,,0.008203,,,/TTWW_TuneCP5_13p6TeV_madgraph-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,,,2,,,
-#TTZZ                            ,,0.001579,,,/TTZZ_TuneCP5_13p6TeV_madgraph-madspin-pythia8/Run3Summer23BPixNanoAODv12-130X_mcRun3_2023_realistic_postBPix_v6-v2/NANOAODSIM,dbs,root://cms-xrd-global.cern.ch/,2,PROCESS_CR=False;NANOVERSION=15;LEPTON_SETUP=2024,, #Still in validation stage
+TTZZ                            ,,0.001579,,,/TTZZ_TuneCP5_13p6TeV_madgraph-madspin-pythia8/Run3Summer23BPixNanoAODv12-130X_mcRun3_2023_realistic_postBPix_v6-v2/NANOAODSIM,dbs,root://cms-xrd-global.cern.ch/,2,PROCESS_CR=False;NANOVERSION=15;LEPTON_SETUP=2024,, #Still in validation stage
 
 ###,,,,,,,,,,,bkg for Z+X studies
 WZto3LNu                        ,,5.27,,,/WZto3LNu_TuneCP5_13p6TeV_powheg-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,,,2,,,
@@ -64,7 +64,7 @@ ZZZ           ,,0.0159,,, /ZZZ-5F_TuneCP5_13p6TeV_amcatnlo-pythia8/RunIII2024Sum
 
 WZGamma       ,,0.1838,,, /WZG_TuneCP5_13p6TeV_amcatnloFXFX-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM     ,,,2,IsSIGNAL=True,,
 
-WZGtoLNuZG    ,,0.08425,,,/WZGtoLNuZG_TuneCP5_13p6TeV_amcatnlo-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM  ,,,2,IsSIGNAL=True,,
+WZGtoLNuZG    ,,0.08425,,,/WZGtoLNuZG_TuneCP5_13p6TeV_amcatnlo-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM  ,,,2,,,
 
 ZZGamma       ,,0.04592,,,/ZZG-4FS_TuneCP5_13p6TeV_amcatnlo-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,,,2,IsSIGNAL=True,,
 
@@ -73,3 +73,24 @@ WminusH125    ,,0.5677,0.0002745,,/WminusH-Hto2Zto4L_Par-M-125_TuneCP5_13p6TeV_p
 
 ###,,,,,,,,,,,Filtered samples - BR includes filter eff from https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsZZ4lRunIII#Signal
 ZH125         ,,0.9439,0.00074812,,/ZH-Hto2Z_Fil-4L_Par-M-125_TuneCP5_13p6TeV_powhegMINLO-jhugen-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM ,,,2,IsSIGNAL=True,, # Different naming as other mass points had to be remade because of wrong mass value in gridpacks
+
+
+EWK-ZG2JtoG2L2J_Bin-MLL-50-MJJ-120,,0.113,,, /EWK-ZG2JtoG2L2J_Bin-MLL-50-MJJ-120_TuneCP5_13p6TeV_madgraph-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM      ,,,2,,,
+
+
+GluGluH-HtoZGto2LG,,32.69,,,/GluGluH-HtoZGto2LG_Par-M-125_TuneCP5_13p6TeV_powheg-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,,,2,,,
+GluGluH-HtoZGto2LG_ext,,32.69,,,/GluGluH-HtoZGto2LG_Par-M-125_TuneCP5_13p6TeV_powheg-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2_ext1-v2/NANOAODSIM,,,2,,,
+
+TTH-HtoZGto2LG,,0.5742,,,/TTH-HtoZGto2LG_Par-M-125_TuneCP5_13p6TeV_powheg-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,,,2,,,
+TTH-HtoZGto2LG_ext,,0.5742,,,/TTH-HtoZGto2LG_Par-M-125_TuneCP5_13p6TeV_powheg-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2_ext1-v2/NANOAODSIM,,,2,,,
+
+VBFH-HtoZGto2LG,,4.18,,,/VBFH-HtoZGto2LG_Par-M-125_TuneCP5_13p6TeV_powheg-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,,,2,,,
+VBFH-HtoZGto2LG_ext,,4.18,,,/VBFH-HtoZGto2LG_Par-M-125_TuneCP5_13p6TeV_powheg-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2_ext1-v2/NANOAODSIM,,,2,,,
+
+WminusH-HtoZGto2LG,,0.5798,,,/WminusH-HtoZGto2LG_Par-M-125_TuneCP5_13p6TeV_powhegMINLO-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,,,2,,,
+WplusH-HtoZGto2LG,,0.9219,,,/WplusH-HtoZGto2LG_Par-M-125_TuneCP5_13p6TeV_powheg-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,,,2,,,
+WminusH-HtoZGto2LG_ext,,0.5798,,,/WminusH-HtoZGto2LG_Par-M-125_TuneCP5_13p6TeV_powheg-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2_ext1-v2/NANOAODSIM,,,2,,,
+WplusH-HtoZGto2LG_ext,,0.9219,,,/WplusH-HtoZGto2LG_Par-M-125_TuneCP5_13p6TeV_powheg-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2_ext1-v2/NANOAODSIM,,,2,,,
+
+ZH-HtoZGto2LG,,0.8473,,,/ZH-HtoZGto2LG_Par-M-125_TuneCP5_13p6TeV_powhegMINLO-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM,,,2,,,
+ZH-HtoZGto2LG_ext,,0.8473,,,/ZH-HtoZGto2LG_Par-M-125_TuneCP5_13p6TeV_powhegMINLO-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2_ext1-v2/NANOAODSIM,,,2,,,
