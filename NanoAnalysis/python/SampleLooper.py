@@ -13,6 +13,7 @@ from ZZAnalysis.NanoAnalysis.tools import getLeptons, get_genEventSumw
 from VVXAnalysis.NanoAnalysis.EventAnalyzer import EventAnalyzer
 from VVXAnalysis.NanoAnalysis.Sample import Sample
 from VVXAnalysis.NanoAnalysis.SampleLoader import SampleLoader
+from VVXAnalysis.NanoAnalysis.SumwTools import totalSumw
 
 import os, sys, traceback, shutil
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -27,16 +28,7 @@ maxEntriesPerSample = None # Use only up to this number of events in each MC sam
 
 def computeTotalSumw(sample):
     """Sum of genEventSumw over ALL the chunks of a sample (only the Runs tree is read)"""
-    chunks = sample.chunkFiles()
-    values = []
-    for i, (n, path) in enumerate(chunks, 1):
-        f = ROOT.TFile.Open(path)
-        if not f or f.IsZombie():
-            raise IOError(f"Cannot open {path}")
-        values.append(get_genEventSumw(f))
-        f.Close()
-        print(f"  [{i}/{len(chunks)}] Chunk{n}: sumw = {values[-1]}")
-    return math.fsum(values), [n for n, _ in chunks]
+    return totalSumw(sample.chunkFiles())
 
 
 class SampleLooper:

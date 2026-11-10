@@ -34,6 +34,7 @@ A sample with missing chunks is never touched: the missing chunks are listed and
 import argparse
 import fcntl
 import json
+import math
 import os
 import re
 import shutil
@@ -60,6 +61,19 @@ def fmtRanges(nums):
     return ", ".join(out)
 
 
+# On EOS, `haddnano.py`/ROOT can print "TNetXNGFile ... [3001]" errors (and fail to open the chunks) when the chunk
+# files were accessed (stat) or the directory was modified a few seconds before. Observed: stat + merge -> errors;
+# stat + 30 s wait + merge -> no errors. So before each merge the script waits until SETTLE seconds have passed since
+# the last access to the chunks or the last operation (merge, transfer, DB update) of the previous sample.
+SETTLE = 30.
+LAST_ACTIVITY = 0.
+
+
+def touched():
+    global LAST_ACTIVITY
+    LAST_ACTIVITY = time.time()
+
+
 def dirSize(path):
     total = 0
     for root, _, files in os.walk(path):
@@ -68,6 +82,7 @@ def dirSize(path):
                 total += os.path.getsize(os.path.join(root, f))
             except OSError:
                 pass
+    touched()
     return total
 
 
@@ -167,6 +182,7 @@ class Status:
             f = os.path.join(path, CHUNK_FILE)
             if not os.path.isfile(f) or os.path.getsize(f) == 0:
                 bad.append(n)
+        touched()
         return bad
 
 
@@ -236,6 +252,7 @@ def doOrganize(st, prodDir, dry):
 
 
 def countEvents(path):
+    """(number of entries of Events, sum of genEventSumw over the Runs tree or None if there is no such branch (data))"""
     import ROOT
     f = ROOT.TFile.Open(path)
     if not f or f.IsZombie():
@@ -244,22 +261,38 @@ def countEvents(path):
     if not t:
         raise IOError(f"no Events tree in {path}")
     n = t.GetEntries()
+    sumw = None
+    runs = f.Get("Runs")
+    if runs and runs.GetBranch("genEventSumw"):
+        sumw = math.fsum(entry.genEventSumw for entry in runs)
     f.Close()
-    return n
+    return n, sumw
 
 
 def verifyMerged(inputs, merged):
+    """The merged file must have the same number of events and, for MC, the same sum of genEventSumw
+    (the normalization of the samples) as the chunks it was made from"""
     try:
         import ROOT
         ROOT.PyConfig.IgnoreCommandLineOptions = True
     except ImportError:
         print("             (ROOT not available: check of the number of events skipped)")
         return
-    expected = sum(countEvents(p) for p in inputs)
-    got = countEvents(merged)
+    parts = [countEvents(p) for p in inputs]
+    expected = sum(n for n, _ in parts)
+    got, gotSumw = countEvents(merged)
     if expected != got:
         raise RuntimeError(f"merged file has {got} events, the chunks have {expected}")
-    print(f"             check OK: {got} events in Events")
+    sumws = [w for _, w in parts]
+    if any(w is None for w in sumws) != (gotSumw is None) or (None in sumws and any(w is not None for w in sumws)):
+        raise RuntimeError("genEventSumw is present in the merged file but not in all the chunks, or vice versa")
+    msg = f"check OK: {got} events in Events"
+    if gotSumw is not None:
+        expectedSumw = math.fsum(sumws)
+        if not math.isclose(gotSumw, expectedSumw, rel_tol=1e-9, abs_tol=0.):
+            raise RuntimeError(f"merged file has genEventSumw = {gotSumw!r}, the chunks have {expectedSumw!r}")
+        msg += f", genEventSumw = {gotSumw:.6g}"
+    print(f"             {msg}")
 
 
 def doHadd(st, prodDir, dry, verify, clean):
@@ -279,6 +312,11 @@ def doHadd(st, prodDir, dry, verify, clean):
         from ZZAnalysis.AnalysisStep.hadd import hadd
     except ImportError:
         raise RuntimeError("cannot import ZZAnalysis.AnalysisStep.hadd (is the CMSSW environment set? cmsenv)")
+    wait = SETTLE - (time.time() - LAST_ACTIVITY)
+    if wait > 0:
+        print(f"             {st.name}: waiting {wait:.0f} s (EOS: avoids the ROOT open errors on the chunks)")
+        sys.stdout.flush()
+        time.sleep(wait)
     tmpDir = f".{st.name}.merge"
     chunkNames = [os.path.basename(st.top[n]) for n in nums]
     with inDir(prodDir):
@@ -437,7 +475,7 @@ def copyWithProgress(src, dst, label):
     prog.close()
 
 
-def transfer(product, destDir, overwrite, dry):
+def transfer(product, destDir, overwrite, dry, check=None):
     base = os.path.basename(product.rstrip("/"))
     sample = base[:-5] if base.endswith(".root") else base
     final = os.path.join(destDir, base)
@@ -446,12 +484,16 @@ def transfer(product, destDir, overwrite, dry):
     existing = [p for p in (os.path.join(destDir, sample + ".root"), os.path.join(destDir, sample))
                 if os.path.exists(p)]
     if existing and not overwrite:
+        # an identical copy (same files and sizes) is not an error: it was transferred by a previous run
+        if existing == [final] and os.path.exists(final) and listing(final) == listing(product):
+            print(f"             {sample}: already in the destination, identical to {product}: not copied")
+            return final, False, (check(final) if check and not dry else None)
         raise FileExistsError(f"already in the destination: {existing} (use --overwrite)")
 
     print(f"             {sample}: copying {product} -> {final}"
           + (f" (replacing {existing})" if existing else ""))
     if dry:
-        return final
+        return final, True, None
     os.makedirs(destDir, exist_ok=True)
     if os.path.exists(tmp):
         remove(tmp)
@@ -459,17 +501,24 @@ def transfer(product, destDir, overwrite, dry):
     if listing(product) != listing(tmp):
         remove(tmp)
         raise IOError(f"copy of {product} not identical to the original (files or sizes differ)")
+    result = None
+    if check:
+        # the checks that read the copy with ROOT (genEventSumw, number of events) are done BEFORE the rename:
+        # on EOS, ROOT opening files in a directory just renamed prints "[3011] Unable to open file
+        # .../.<name>.partial/..." (the old name) and "[3001]" errors
+        try:
+            result = check(tmp)
+        except Exception as e:
+            remove(tmp)
+            raise RuntimeError(f"check of the copy failed, the copy was discarded and nothing was removed: {e}") from e
     for p in existing:
         remove(p)
     os.rename(tmp, final)
-    return final
+    return final, True, result
 
 
-def removeSource(st, product, copied, prodDir, verify, dry):
-    """--move: after a verified copy (and the update of the DB) remove the source: <sample>/ or <sample>.root
-    and, for <sample>.root, also the chunks it was merged from (in the production directory or in Chunks/).
-    Before removing the chunks the number of events of the copy in the destination is compared with the sum
-    over the chunks (ROOT); if this check cannot be done or fails, the chunks are NOT removed."""
+def chunksOf(st, product, prodDir):
+    """Chunk directories (in <dir> or in <dir>/Chunks/) a merged <sample>.root was made from; {} for <sample>/"""
     chunks = {}
     if product.endswith(".root"):
         chunksDir = os.path.join(prodDir, "Chunks")
@@ -479,20 +528,35 @@ def removeSource(st, product, copied, prodDir, verify, dry):
                 if m and m["sample"] == st.name and e.is_dir() and int(m["n"]) < st.expected:
                     chunks[int(m["n"])] = e.path
         chunks.update({n: p for n, p in st.top.items() if n < st.expected})
-    if chunks and not dry and verify:
-        missing = sorted(set(range(st.expected)) - set(chunks))
-        if missing:
-            raise RuntimeError(f"transferred, but the chunks are NOT removed: {len(missing)} chunk(s) not found "
-                               f"({fmtRanges(missing)}), the number of events cannot be checked")
-        try:
-            import ROOT
-        except ImportError:
-            raise RuntimeError("transferred, but the chunks are NOT removed: ROOT not available for the check "
-                               "of the number of events (use --no-verify to remove them anyway)")
-        try:
-            verifyMerged([os.path.join(chunks[n], CHUNK_FILE) for n in sorted(chunks)], copied)
-        except Exception as e:
-            raise RuntimeError(f"transferred, but the chunks are NOT removed: {e}")
+    return chunks
+
+
+def verifyCopy(st, product, prodDir, copy):
+    """Compare the copy of a merged file (in the destination, before the final rename) with the chunks it was
+    merged from. True if everything is fine, a string with the reason if the check cannot be done; a mismatch
+    raises RuntimeError (the copy is then discarded)."""
+    chunks = chunksOf(st, product, prodDir)
+    if not chunks:
+        return True
+    missing = sorted(set(range(st.expected)) - set(chunks))
+    if missing:
+        return f"{len(missing)} chunk(s) not found ({fmtRanges(missing)}), the number of events cannot be checked"
+    try:
+        import ROOT
+    except ImportError:
+        return "ROOT not available for the check of the number of events (use --no-verify to remove them anyway)"
+    verifyMerged([os.path.join(chunks[n], CHUNK_FILE) for n in sorted(chunks)], copy)
+    return True
+
+
+def removeSource(st, product, prodDir, dry, keepChunks=False, verified=None):
+    """--move: after a verified copy (and the update of the DB) remove the source: <sample>/ or <sample>.root
+    and, for <sample>.root, also the chunks it was merged from (in the production directory or in Chunks/).
+    verified: result of verifyCopy (done on the copy before its rename); None with --no-verify. If the check
+    could not be done (a string), the chunks are NOT removed."""
+    chunks = {} if keepChunks else chunksOf(st, product, prodDir)
+    if chunks and not dry and verified is not None and verified is not True:
+        raise RuntimeError(f"transferred, but the chunks are NOT removed: {verified}")
     what = [product] + [chunks[n] for n in sorted(chunks)]
     if dry:
         print(f"             {st.name}: would remove the source {product}"
@@ -531,10 +595,12 @@ def checkDB(dbPath, origin, year, names):
     return new
 
 
-def updateDB(dbPath, origin, year, name, destDir, version, dry):
+def updateDB(dbPath, origin, year, name, destDir, version, dry, sumw=None):
     """Lock + re-read + atomic replace, like the framework does when it writes the DB
     (same lock file). NB: the file is rewritten with tab indentation.
-    If the sample is not in the DB it is added; process, color and style are left empty."""
+    If the sample is not in the DB it is added; process, color and style are left empty.
+    sumw = {"value", "nChunks"} (same format as the framework): stored as genEventSumw, instead of
+    removing the old one."""
     with open(dbPath + ".lock", "w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         with open(dbPath) as f:
@@ -550,6 +616,11 @@ def updateDB(dbPath, origin, year, name, destDir, version, dry):
             block["samples"].append({"process": "", "name": name, "eos_path": destDir,
                                      "version": version if version is not None else "",
                                      "color": None, "style": None})
+            if sumw == "dry":
+                changes.append("genEventSumw: would be computed from the destination")
+            elif sumw is not None:
+                block["samples"][-1]["genEventSumw"] = sumw
+                changes.append(f"genEventSumw = {sumw['value']:.6g} ({sumw['nChunks']} chunks)")
             changes.append(f"NEW record: eos_path={destDir}, version={version if version is not None else ''!r}; "
                            "process, color and style left empty")
         else:
@@ -558,7 +629,12 @@ def updateDB(dbPath, origin, year, name, destDir, version, dry):
             if version is not None:
                 changes.append(f"version: {s.get('version')} -> {version}")
                 s["version"] = version
-            if "genEventSumw" in s:
+            if sumw == "dry":
+                changes.append("genEventSumw: would be replaced by the value computed from the destination")
+            elif sumw is not None:
+                changes.append(f"genEventSumw: {s.get('genEventSumw')} -> {sumw['value']:.6g} ({sumw['nChunks']} chunks)")
+                s["genEventSumw"] = sumw
+            elif "genEventSumw" in s:
                 changes.append("genEventSumw removed (new production)")
                 del s["genEventSumw"]
         if not dry:
@@ -568,6 +644,36 @@ def updateDB(dbPath, origin, year, name, destDir, version, dry):
                 f.write("\n")
             os.replace(tmp, dbPath)
     return changes
+
+
+def chunkSumw(st, copied, dry):
+    """Total genEventSumw of the chunks of an organized MC sample, read in the DESTINATION (so the copy is also
+    checked), as {"value", "nChunks"}, the format of the framework (SampleLooper). None if it cannot be
+    computed: the DB then has no value and run.py computes it at the first run."""
+    if not os.path.isdir(copied):
+        return None
+    if dry:
+        print(f"             {st.name}: (dry run) the total genEventSumw would be computed from the copy in the destination")
+        return "dry"
+    try:
+        from VVXAnalysis.NanoAnalysis.SumwTools import totalSumw
+        files = []
+        for e in sorted(os.scandir(copied), key=lambda e: e.name):
+            m = CHUNK_RE.match(e.name)
+            if m and m["sample"] == st.name and e.is_dir():
+                files.append((int(m["n"]), os.path.join(e.path, CHUNK_FILE)))
+        files.sort()
+        if len(files) != st.expected:
+            raise RuntimeError(f"{len(files)} chunks in {copied}, {st.expected} expected")
+        print(f"             {st.name}: computing the total genEventSumw from {len(files)} chunks in the destination")
+        sys.stdout.flush()
+        value, ids = totalSumw(files, verbose=False)
+        print(f"             {st.name}: total genEventSumw = {value:.6g}")
+        return {"value": value, "nChunks": len(ids)}
+    except Exception as e:
+        print(f"             WARNING {st.name}: genEventSumw NOT computed ({e}); it is left out of the DB "
+              "and run.py will compute it at the first run")
+        return None
 
 
 def defaultDB():
@@ -606,6 +712,11 @@ def parseArgs():
     tr.add_argument("--move", action="store_true",
                     help="after the verified copy and the update of the DB, remove the source: <sample>/ or "
                          "<sample>.root and the chunks it was merged from (their number of events is checked first)")
+    tr.add_argument("--keep-chunks", action="store_true",
+                    help="with --move: remove only <sample>.root, NOT the chunks it was merged from")
+    tr.add_argument("--no-sumw", action="store_true",
+                    help="MC samples in <sample>/ (chunks): do not compute the total genEventSumw to store in the DB "
+                         "(run.py computes it at the first run)")
     tr.add_argument("--no-verify", action="store_true",
                     help="do not compare the number of events: of a merged file with its chunks (process) and, "
                          "with --move, of the copy with the chunks that are going to be removed")
@@ -620,11 +731,21 @@ def parseArgs():
                                     "<sample>/ with the chunks for the others")
     pr.add_argument("--threshold", type=float, default=10., metavar="GB",
                     help="total size of the chunks below which the sample is merged (default: %(default)s GB)")
+    pr.add_argument("--settle", type=float, default=30., metavar="SEC",
+                    help="seconds to wait before each merge since the last access to the chunks or the last "
+                         "operation on EOS, to avoid the 'TNetXNGFile [3001]' errors (0: no wait; default: %(default)s)")
     pr.add_argument("--clean", action="store_true", help="after a merge, move the chunks in <dir>/Chunks/")
-    sub.add_parser("transfer", parents=[common, tr], help="transfer the already prepared samples",
-                   description="Transfer the already prepared <sample>/ or <sample>.root")
+    tp = sub.add_parser("transfer", parents=[common, tr], help="transfer the already prepared samples",
+                        description="Transfer the already prepared <sample>/ or <sample>.root")
+    tp.add_argument("--db-only", action="store_true",
+                    help="do not copy anything: only update samples_DB.json (eos_path, --version) for the samples "
+                         "that are already in --dest, e.g. to add --version after a transfer")
 
     args = p.parse_args()
+    if args.cmd in ("organize", "process", "transfer") and args.keep_chunks and not args.move:
+        p.error("--keep-chunks only makes sense with --move")
+    if args.cmd == "transfer" and args.db_only and args.no_db_update:
+        p.error("--db-only and --no-db-update exclude each other")
     if args.cmd == "transfer" and not args.dest:
         p.error("transfer needs --dest")
     if getattr(args, "dest", None) and not args.no_db_update:
@@ -639,6 +760,8 @@ def parseArgs():
 
 def main():
     args = parseArgs()
+    global SETTLE
+    SETTLE = getattr(args, "settle", SETTLE)
     prodDir = absPath(args.dir)
     book = loadBookkeeping(findBookkeeping(args.bookkeeping, prodDir))
 
@@ -665,6 +788,17 @@ def main():
     for n in names:
         st = statuses[n]
         try:
+            if args.cmd == "transfer" and args.db_only:
+                if not any(os.path.exists(os.path.join(dest, n + ext)) for ext in (".root", "")):
+                    print(f"[SKIP]       {n}: not in {dest}, DB not updated")
+                    results[n] = "NOT DONE"
+                    continue
+                results[n] = "ok (DB only)"
+                sumw = (chunkSumw(st, os.path.join(dest, n), args.dry_run)
+                        if args.origin == "MC" and not args.no_sumw else None)
+                for c in updateDB(args.samples_db, args.origin, args.year, n, dest, args.version, args.dry_run, sumw):
+                    print(f"             DB: {c}")
+                continue
             if args.cmd == "transfer":
                 product = prepareExisting(st, prodDir)
             else:
@@ -674,16 +808,37 @@ def main():
                 continue
             results[n] = "ok"
             if dest:
-                copied = transfer(product, dest, args.overwrite, args.dry_run)
-                results[n] = "ok (would be transferred)" if args.dry_run else "ok, transferred"
+                wantSumw = updateDb and args.origin == "MC" and not args.no_sumw
+                wantVerify = args.move and not args.keep_chunks and not args.no_verify
+
+                def check(path, st=st, product=product, wantSumw=wantSumw, wantVerify=wantVerify):
+                    info = {}
+                    if wantSumw:
+                        info["sumw"] = chunkSumw(st, path, False)
+                    if wantVerify:
+                        info["verify"] = verifyCopy(st, product, prodDir, path)
+                    return info
+
+                copied, copiedNow, info = transfer(product, dest, args.overwrite, args.dry_run,
+                                                   check if (wantSumw or wantVerify) else None)
+                info = info or {}
+                results[n] = ("ok (would be transferred)" if args.dry_run else "ok, transferred") if copiedNow \
+                    else "ok, already in the destination"
                 if updateDb:
-                    for c in updateDB(args.samples_db, args.origin, args.year, n, dest, args.version, args.dry_run):
+                    sumw = info.get("sumw")
+                    if args.dry_run and wantSumw:
+                        sumw = chunkSumw(st, product, True)
+                    for c in updateDB(args.samples_db, args.origin, args.year, n, dest, args.version, args.dry_run, sumw):
                         print(f"             DB: {c}")
-                if args.move:
-                    removeSource(st, product, copied, prodDir, not args.no_verify, args.dry_run)
+                if args.move and copiedNow:         # the source is removed only if it was copied in THIS run
+                    removeSource(st, product, prodDir, args.dry_run, args.keep_chunks, info.get("verify"))
+                elif args.move:
+                    print(f"             {n}: source NOT removed: nothing was copied in this run "
+                          "(an identical copy was already in the destination)")
         except Exception as e:
             print(f"[FAILED]     {n}: {e}")
             results[n] = "FAILED"
+        touched()
 
     print("\nSummary:")
     for n, r in results.items():
