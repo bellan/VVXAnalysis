@@ -141,10 +141,14 @@
 				{
 					"process": "WZ",
 					"name": "WZto3LNu",
-					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-					"version": "",
+					"eos_path": "/eos/home-b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
 					"color": 5,
-					"style": 0
+					"style": 0,
+					"genEventSumw": {
+						"value": 1221944255.2106197,
+						"nChunks": 148
+					}
 				},
 				{
 					"process": "DY",
@@ -281,6 +285,110 @@
 					"version": "Ago2026",
 					"color": 5,
 					"style": 0
+				},
+				{
+					"process": "",
+					"name": "EWK-ZG2JtoG2L2J_Bin-MLL-50-MJJ-120",
+					"eos_path": "/eos/home-b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": null,
+					"style": null
+				},
+				{
+					"process": "",
+					"name": "GluGluH-HtoZGto2LG",
+					"eos_path": "/eos/home-b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": null,
+					"style": null
+				},
+				{
+					"process": "",
+					"name": "TTH-HtoZGto2LG",
+					"eos_path": "/eos/home-b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": null,
+					"style": null
+				},
+				{
+					"process": "",
+					"name": "VBFH-HtoZGto2LG",
+					"eos_path": "/eos/home-b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": null,
+					"style": null
+				},
+				{
+					"process": "",
+					"name": "WminusH-HtoZGto2LG",
+					"eos_path": "/eos/home-b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": null,
+					"style": null
+				},
+				{
+					"process": "",
+					"name": "WplusH-HtoZGto2LG",
+					"eos_path": "/eos/home-b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": null,
+					"style": null
+				},
+				{
+					"process": "",
+					"name": "ZH-HtoZGto2LG",
+					"eos_path": "/eos/home-b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": null,
+					"style": null
+				},
+				{
+					"process": "",
+					"name": "GluGluH-HtoZGto2LG_ext",
+					"eos_path": "/eos/home-b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": null,
+					"style": null
+				},
+				{
+					"process": "",
+					"name": "TTH-HtoZGto2LG_ext",
+					"eos_path": "/eos/home-b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": null,
+					"style": null
+				},
+				{
+					"process": "",
+					"name": "VBFH-HtoZGto2LG_ext",
+					"eos_path": "/eos/home-b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": null,
+					"style": null
+				},
+				{
+					"process": "",
+					"name": "WplusH-HtoZGto2LG_ext",
+					"eos_path": "/eos/home-b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": null,
+					"style": null
+				},
+				{
+					"process": "",
+					"name": "ZH-HtoZGto2LG_ext",
+					"eos_path": "/eos/home-b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": null,
+					"style": null
+				},
+				{
+					"process": "",
+					"name": "WminusH-HtoZGto2LG_ext",
+					"eos_path": "/eos/home-b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
+					"color": null,
+					"style": null
 				}
 			]
 		},
