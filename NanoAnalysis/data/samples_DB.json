@@ -153,18 +153,26 @@
 				{
 					"process": "DY",
 					"name": "DYJetsTo2E",
-					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-					"version": "Ago2026",
+					"eos_path": "/eos/home-b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
 					"color": 5,
-					"style": 0
+					"style": 0,
+					"genEventSumw": {
+						"value": 6528298935475.845,
+						"nChunks": 142
+					}
 				},
 				{
 					"process": "DY",
 					"name": "DYJetsTo2Mu",
-					"eos_path": "/eos/user/b/bellan/samples/RunIII/Ago2026/prod/2024",
-					"version": "Ago2026",
+					"eos_path": "/eos/home-b/bellan/samples/RunIII/Nov2026/prod/2024",
+					"version": "Nov2026",
 					"color": 5,
-					"style": 0
+					"style": 0,
+					"genEventSumw": {
+						"value": 7004927750806.445,
+						"nChunks": 160
+					}
 				},
 				{
 					"process": "tt",
