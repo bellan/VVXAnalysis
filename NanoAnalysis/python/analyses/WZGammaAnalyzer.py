@@ -49,10 +49,10 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
 
     def analyze(self):  
         self.loadCollections()
-        self.SDCuts = ["Weighted_Events","Lep_KinCuts","WZ_MassLimits","Ph_KinCuts", "Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
-        self.SRCuts =["Weighted_Events","HLT_passZZ4l","Lep_KinCuts","MET_Cut","Z_MassLimits","ZZFullSel","Ph_kinCuts","Ph_electronVeto","Ph_mvaWP80","Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
+        self.SDCuts = ["Weighted_Events","Lep_KinCuts","WZ_MassLimits","Cut_M_lll", "Ph_KinCuts", "Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
+        self.SRCuts =["Weighted_Events","HLT_passZZ4l","Lep_KinCuts","MET_Cut","Z_MassLimits","ZZFullSel", "Cut_M_lll","Ph_kinCuts","Ph_electronVeto","Ph_mvaWP80","Ph_AngSeparation", "FSR_onZ", "FSR_onW"]
         
-        self.lookOnlyL3P = False     #for running on L3P region, for data comparison
+        self.lookOnlyL3P = True   #for running on L3P region, for data comparison
         self.runningOnBgk = True   #for running on bg samples, False just for signal's sample
         self.onlyNPph = False       #for running on WZto3LNu considering just NP photons
 
@@ -114,6 +114,11 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         lepW = next((l for l in theW.leptons if abs(l.pdgId) in (11,13)), None)
         nu  = next((n for n in theW.leptons if abs(n.pdgId) in  (12,14)), None)
 
+        invMass_lll = self.getInvMass(lepW, theZ.leptons[0], theZ.leptons[1])
+        self.hEvent.fill1D("Gen_InvMass_lll", "Gen_InvMass_lll", 50, 0., 300., invMass_lll, self.weight)
+        if invMass_lll < 100 : return False
+        self.CutPlot("Definition", 3)
+
         self.hEvent.fill1D("Gen_nPhoton", "Gen_nPhoton",11, -0.5, 10.5, len(self.GenPhotons), self.weight)
         GoodGenPhoton = self.photonsCuts(self.GenPhotons, self.GenChargedLeptons, "Definition")
         if not GoodGenPhoton : return False
@@ -122,9 +127,9 @@ class WZGammaAnalyzer(EventAnalyzer, analysis_name="WZGammaAnalyzer"):
         photon_maxPt = max(GoodGenPhoton, key=lambda p: p.pt, default=None) 
         Gen_invMassLLGamma_preCuts = self.getInvMass(theZ.leptons[0], theZ.leptons[1], photon_maxPt)
         Gen_invMassLNuGamma_preCuts = self.getInvMass(theW.leptons[0], theW.leptons[1], photon_maxPt)
-        self.hEvent.fill2D("llG_vs_ll_invMass", "llG_vs_ll_invMass", 100, 40., 240., 30, 60., 120.,
+        self.hEvent.fill2D("confronto_invMass_Z", "confronto_invMass_Z", 100, 40., 240., 30, 60., 120.,
 Gen_invMassLLGamma_preCuts, theZ.mass, self.weight)
-        self.hEvent.fill2D("lNuG_vs_lNu_invMass", "lNuG_vs_lNu_invMass", 100, 40., 240., 30, 50., 110., Gen_invMassLNuGamma_preCuts, theW.mass, self.weight)
+        self.hEvent.fill2D("confronto_invMass_W", "confronto_invMass_W", 100, 40., 240., 30, 50., 110., Gen_invMassLNuGamma_preCuts, theW.mass, self.weight)
         self.hEvent.fill1D("Gen_invMassLNuGamma", "Gen_invMassLNuGamma", 30, 0., 300., Gen_invMassLNuGamma_preCuts, self.weight)
         
         #computation of different transverse mass for comparison with reco-level
@@ -152,12 +157,12 @@ Gen_invMassLLGamma_preCuts, theZ.mass, self.weight)
         
         SurvivedGenPhotons = [gp for gp in GoodGenPhoton if self.photonIsNotFSR(theZ.leptons, gp, 100)]
         if not SurvivedGenPhotons : return False
-        self.CutPlot("Definition", 5)  #FSR_onZ
+        self.CutPlot("Definition", 6)  #FSR_onZ
 
         UltimateGenPhotons = [sp for sp in SurvivedGenPhotons if self.photonIsNotFSR(theW.leptons, sp, 90)]
         if not UltimateGenPhotons : return False
         else : genPhoton = max(UltimateGenPhotons, key=lambda p: p.pt, default=None)
-        self.CutPlot("Definition", 6)  #FSR_onW
+        self.CutPlot("Definition", 7)  #FSR_onW
 
         invMassLLGamma_Gen = self.getInvMass(theZ.leptons[0], theZ.leptons[1], genPhoton)
         invMassLNuGamma_Gen = self.getInvMass(theW.leptons[0], theW.leptons[1], genPhoton)
@@ -222,6 +227,12 @@ Gen_invMassLLGamma_preCuts, theZ.mass, self.weight)
         lZ_list = [(lepW.pt, lepW.eta, lepW.phi), (lepZ1.pt, lepZ1.eta, lepZ1.phi), (lepZ2.pt, lepZ2.eta, lepZ2.phi)]
         lZMET_mt = self.computeMt(lZ_list, self.MET.pt, self.MET.phi)
 
+        m_lll = self.getInvMass(lepW, lepZ1, lepZ2)
+        self.hEvent.fill1D("InvMass_lll", "InvMass_lll", 30, 0., 300., m_lll, self.weight)
+        if m_lll < 100 : return False
+        self.CutPlot("Region", 6)
+
+        
         if not self.lookOnlyL3P :
             BestPhotons = self.photonsCuts(self.Photons, self.ChargedLeptons, "Region")
             if not BestPhotons : return False
@@ -237,12 +248,12 @@ Gen_invMassLLGamma_preCuts, theZ.mass, self.weight)
             W_mt, self.weight)
             SurvivedPhotons = [bp for bp in BestPhotons if self.photonIsNotFSR([lepZ1,lepZ2], bp, 100)]
             if not SurvivedPhotons : return False
-            self.CutPlot("Region", 10)  #FSR_onZ
+            self.CutPlot("Region", 11)  #FSR_onZ
                    
             UltimatePhotons = [sp for sp in SurvivedPhotons if self.photonIsNotWFSR(lepW, sp, 90)]
             if not UltimatePhotons : return False
             else : thePhoton = max(UltimatePhotons, key=lambda p: p.pt, default=None)
-            self.CutPlot("Region", 11)  #FSR_onW
+            self.CutPlot("Region", 12)  #FSR_onW
     
             invMassLLGamma = self.getInvMass(lepZ1, lepZ2, thePhoton)
             lGamma_list = [(lepW.pt, lepW.eta, lepW.phi), (thePhoton.pt, thePhoton.eta, thePhoton.phi)]
@@ -363,22 +374,22 @@ Gen_invMassLLGamma_preCuts, theZ.mass, self.weight)
     def photonsCuts(self, Photons, ChLeptons, Level) :
         GoodPhotons = [p for p in Photons if p.pt > 20 and abs(p.eta) < 2.4 and not 1.444 < abs(p.eta) < 1.566]
         if Level == "Region" :
-            self.CutPlot(Level, 6)  #Ph_kinCuts
+            self.CutPlot(Level, 7)  #Ph_kinCuts
             BestPhotons = [gp for gp in GoodPhotons if gp.electronVeto]
             if not BestPhotons : return None
-            self.CutPlot(Level, 7)  #Ph_electronVeto
+            self.CutPlot(Level, 8)  #Ph_electronVeto
             SelectedPhotons = [bp for bp in BestPhotons if bp.mvaID_WP80]
             if not SelectedPhotons : return None
-            self.CutPlot(Level, 8)  #Ph_mvaID_WP80
+            self.CutPlot(Level, 9)  #Ph_mvaID_WP80
             FinalistPhotons = [sp for sp in SelectedPhotons if all(sp.DeltaR(l) > 0.5 for l in ChLeptons)]
             if not FinalistPhotons : return None
-            self.CutPlot(Level, 9)  #Ph_AngularSep
+            self.CutPlot(Level, 10)  #Ph_AngularSep
             return FinalistPhotons
         elif Level == "Definition" :
-            self.CutPlot(Level, 3)  #Ph_kinCuts
+            self.CutPlot(Level, 4)  #Ph_kinCuts
             FinalistPhotons = [gp for gp in GoodPhotons if all(gp.DeltaR(l) > 0.5 for l in ChLeptons)]
             if not FinalistPhotons : return None
-            self.CutPlot(Level, 4)  #Ph_AngularSep
+            self.CutPlot(Level, 5)  #Ph_AngularSep
             return FinalistPhotons
         else : raise ValueError(f"Not valid option: '{Level}'.")
             
