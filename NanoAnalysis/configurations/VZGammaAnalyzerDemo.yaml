@@ -5,9 +5,18 @@ samples:
   by_name:
     #- ZZGamma
     #- WZGamma
-    - DYJetsTo2E
-    - DYJetsTo2Mu
-    - TTto2L2Nu
+    #- DYJetsTo2E
+    #- DYJetsTo2Mu
+    #- TTto2L2Nu
+    #- TTLL_MLL-4to50
+    #- TTLL_MLL-50
+    #- WminusH-HtoZGto2LG
+    #- WplusH-HtoZGto2LG
+    #- ZH-HtoZGto2LG
+    #- GluGluH-HtoZGto2LG
+    #- TTH-HtoZGto2LG
+    #- VBFH-HtoZGto2LG
+    - EWK-ZG2JtoG2L2J_Bin-MLL-50-MJJ-120
     
     #- ZZTo4l_2Jets_EW
     #- DoubleMu2022H
