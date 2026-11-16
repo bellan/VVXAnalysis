@@ -21,7 +21,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         self.PhotonsID = "mva90"                        # choose between "cutL", "cutM", "cutT", "mva90" and "mva80"
         self.PromptPhotons_Split = False                # choose between True and False
         self.Region = "L4P_P1F"                         # choose between "SR", "L4P", "L4P_P1F"
-        self.AnalysisMode = "RecoLevel"                   # choose between "SR_ifSD", "SR_ifnotSD", "Cfr_SDSR", "RecoLevel", "ZZTo4l+ggToZZ"
+        self.AnalysisMode = "SR_ifnotSD"                   # choose between "SR_ifSD", "SR_ifnotSD", "Cfr_SDSR", "RecoLevel", "ZZTo4l+ggToZZ"
 
         self.SDCuts = ["TotalEvents", "LeptonsKinCuts", "Z1Z2Mass", "PhotonsKinCuts", "IsolatedPhotons", "TribosonRegion"]
         self.SRCuts = ["TotalEvents", "HLT_passZZ4l", "BestCand", "LeptonsKinCuts", "Z1Z2Mass", "ElectronVeto", "PhotonsKinCuts", f"PhotonsID_{self.PhotonsID}", "IsolatedPhotons", "TribosonRegion"]
@@ -121,7 +121,7 @@ class ZZGammaAnalyzer(EventAnalyzer, analysis_name="ZZGammaAnalyzer"):
         IDPass, GoodIDPhotons, BadIDPhotons = self.GetGoodBadIDPhotons(KinPhotons, PhotonsID)
 
         if Region == "L4P_P1F":
-            if len(BadIDPhotons) < 1: return False
+            if len(BadIDPhotons) < 1 or len(GoodIDPhotons) > 0: return False
             FPh = self.GetBestGamma("Reco", BadIDPhotons, PhotonsOrder)
             self.PlotsOI_ZZGamma("Reco", RecoZZ, FPh, "L4P_P1F", PhotonSplit)
             return True
