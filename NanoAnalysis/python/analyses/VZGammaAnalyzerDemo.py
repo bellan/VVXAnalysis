@@ -106,7 +106,7 @@ class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
         self.hEvent.fill1D("nLepton_BeforeLepCut_GEN", "nLepton_BeforeLepCut_GEN; N_{l};", 15, -0.5, 14.5, len(self.GenLeptons), self.weight)
 
         # -- QUARKS -- #
-        if len(self.GenQuarks) != 2: return False
+        if len(self.GenQuarks) > 2: return False
         self.fillCutFlow("SD","QuarkNum")       
 
         # -- LEPTONS -- #
