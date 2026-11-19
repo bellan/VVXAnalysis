@@ -106,7 +106,7 @@ class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
         self.hEvent.fill1D("nLepton_BeforeLepCut_GEN", "nLepton_BeforeLepCut_GEN; N_{l};", 15, -0.5, 14.5, len(self.GenLeptons), self.weight)
 
         # -- QUARKS -- #
-        if len(self.GenQuarks) > 2: return False
+        if len(self.GenQuarks) < 2: return False
         self.fillCutFlow("SD","QuarkNum")       
 
         # -- LEPTONS -- #
@@ -197,29 +197,41 @@ class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
         if len(self.GenVCandJets) < 2: return False
         self.fillCutFlow("SD","JetVCand")
 
-        
-
-        # Invariant Mass of the two best Leptons after cuts Distribution
-        m_ll = self.getInvMass(self.GenZCandLeptons[0], self.GenZCandLeptons[1])
-        self.hEvent.fill1D("InvMass_LepZCand_GEN", "InvMass_LepZCand_GEN;m_{ll} [GeV];Events", 60, 0., 180., m_ll, self.weight)        
-        # Invariant Mass of 2l Gamma Distribution
+        # Variables calculation (4-momenta)
         leading_photon = max(self.GenTruePhotons, key=lambda ph: ph.pt)
-        m_llgamma = self.getInvMass(self.GenZCandLeptons[0], self.GenZCandLeptons[1], leading_photon)
+        p4_Z       = self.getP4(self.GenZCandLeptons[0], self.GenZCandLeptons[1])
+        p4_V       = self.getP4(self.GenVCandJets[0], self.GenVCandJets[1])
+        p4_gamma   = self.getP4(leading_photon)
+
+        p4_VZ      = p4_V + p4_Z
+        p4_Vgamma  = p4_V + p4_gamma
+        p4_Zgamma  = p4_Z + p4_gamma
+        p4_VZgamma = p4_V + p4_Z + p4_gamma
+
+        # Pt Distributions (GEN)
+        self.hEvent.fill1D("Pt_ZCand_GEN", "Pt_ZCand_GEN;p_{T}^{Z} [GeV];Events", 50, 0., 250., p4_Z.Pt(), self.weight)
+        self.hEvent.fill1D("Pt_VCand_GEN", "Pt_VCand_GEN;p_{T}^{V} [GeV];Events", 50, 0., 250., p4_V.Pt(), self.weight)
+        self.hEvent.fill1D("Pt_VZ_GEN", "Pt_VZ_GEN;p_{T}^{VZ} [GeV];Events", 50, 0., 250., p4_VZ.Pt(), self.weight)
+        self.hEvent.fill1D("Pt_Vgamma_GEN", "Pt_Vgamma_GEN;p_{T}^{V#gamma} [GeV];Events", 50, 0., 250., p4_Vgamma.Pt(), self.weight)
+        self.hEvent.fill1D("Pt_Zgamma_GEN", "Pt_Zgamma_GEN;p_{T}^{Z#gamma} [GeV];Events", 50, 0., 250., p4_Zgamma.Pt(), self.weight)
+        self.hEvent.fill1D("Pt_VZgamma_GEN", "Pt_VZgamma_GEN;p_{T}^{VZ#gamma} [GeV];Events", 50, 0., 250., p4_VZgamma.Pt(), self.weight)
+
+        # Invariant Mass Distributions (GEN)
+        m_ll = p4_Z.M()
+        m_jj = p4_V.M()
+        m_llgamma = p4_Zgamma.M()
+        m_jjgamma = p4_Vgamma.M()
+        m_lljjgamma = p4_VZgamma.M()
+
+        self.hEvent.fill1D("InvMass_LepZCand_GEN", "InvMass_LepZCand_GEN;m_{ll} [GeV];Events", 60, 0., 180., m_ll, self.weight)        
         self.hEvent.fill1D("InvMass_llgamma_GEN", "InvMass_llgamma_GEN;m_{ll#gamma} [GeV];Events", 60, 60., 240., m_llgamma, self.weight)
-        # Invariant Mass of 2l Gamma Distribution vs Invariant Mass of 2l Distribution
         self.hEvent.fill2D("InvMass_ll_llgamma_GEN", "InvMass_ll_llgamma_GEN;m_{ll} [GeV];m_{ll#gamma} [GeV];Events", 36, 0., 180., 50, 0., 250., m_ll, m_llgamma, self.weight)
-        # Invariant Mass of the two best Jet candidate to form V-Boson Distribution
-        m_jj = self.getInvMass(self.GenVCandJets[0], self.GenVCandJets[1])
         self.hEvent.fill1D("InvMass_VJets_GEN", "InvMass_VJets_GEN;m_{jj} [GeV];Events", 50, 40., 140., m_jj, self.weight)
-        # Invariant Mass of 2j Gamma Distribution
-        m_jjgamma = self.getInvMass(self.GenVCandJets[0], self.GenVCandJets[1], leading_photon)
         self.hEvent.fill1D("InvMass_jjgamma_GEN", "InvMass_jjgamma_GEN;m_{jj#gamma} [GeV];Events", 60, 60., 240., m_jjgamma, self.weight)
-        # Invariant Mass of 2j Gamma Distribution vs Invariant Mass of 2j Distribution
-        self.hEvent.fill2D("InvMass_jj_jjgamma_GEN", "InvMass_jj_jjgamma_GEN;m_{jj} [GeV];Events;m_{jj#gamma} [GeV]", 36, 0., 180., 50, 0., 250., m_jj, m_jjgamma, self.weight)
-        # Invariant Mass of 2j 2l Gamma Distribution
-        m_lljjgamma = self.getInvMass(self.GenZCandLeptons[0], self.GenZCandLeptons[1], leading_photon, self.GenVCandJets[0], self.GenVCandJets[1])
+        self.hEvent.fill2D("InvMass_jj_jjgamma_GEN", "InvMass_jj_jjgamma_GEN;m_{jj} [GeV];m_{jj#gamma} [GeV];Events", 36, 0., 180., 50, 0., 250., m_jj, m_jjgamma, self.weight)
         self.hEvent.fill1D("InvMass_VZgamma_GEN", "InvMass_VZgamma_GEN;m_{lljj#gamma} [GeV];Events", 150, 100., 1500., m_lljjgamma, self.weight)
 
+        
 
         return True
 
@@ -348,36 +360,67 @@ class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
         #if hasattr(self, 'isData') and self.isData and region == "SR":
         #    return True
 
-        # Variables calculation
-        m_ll        = self.theZ.mass
-        pt_gamma    = leadingPhoton.pt
-        m_jj        = self.getInvMass(self.VCandJets[0], self.VCandJets[1])
-        m_llgamma   = self.getInvMass(self.theZ, leadingPhoton)
-        m_jjgamma   = self.getInvMass(self.VCandJets[0], self.VCandJets[1], leadingPhoton)
-        m_lljjgamma = self.getInvMass(self.theZ, leadingPhoton, self.VCandJets[0], self.VCandJets[1])
-        m_VZ        = self.getInvMass(self.theZ, self.VCandJets[0], self.VCandJets[1])
+        # Variables calculation (4-momenta)
+        p4_Z       = self.getP4(self.theZ)
+        p4_V       = self.getP4(self.VCandJets[0], self.VCandJets[1])
+        p4_gamma   = self.getP4(leadingPhoton)
 
-        # Pt of the leading Photon
-        self.hEvent.fill1D(f"Pt_LeadingPhoton_{region}_RECO", f"Pt_LeadingPhoton_{region}_RECO;p_{{T}}^{{#gamma}} [GeV];Events", 60, 0., 180., pt_gamma, self.weight)
-        # Invariant Mass of the ZCand (2l) after cuts Distribution
-        self.hEvent.fill1D(f"InvMass_ZCand_{region}_RECO", f"InvMass_ZCand_{region}_RECO;m_{{ll}} [GeV];Events", 60, 0., 180., m_ll, self.weight)        
-        # Invariant Mass of 2l Gamma Distribution
-        self.hEvent.fill1D(f"InvMass_llgamma_{region}_RECO", f"InvMass_llgamma_{region}_RECO;m_{{ll#gamma}} [GeV];Events", 60, 60., 240., m_llgamma, self.weight)
-        # Invariant Mass of 2l Gamma Distribution vs Invariant Mass of 2l Distribution
-        self.hEvent.fill2D(f"InvMass_ll_llgamma_{region}_RECO", f"InvMass_ll_llgamma_{region}_RECO;m_{{ll}} [GeV];m_{{ll#gamma}} [GeV];Events", 36, 0., 180., 50, 0., 250., m_ll, m_llgamma, self.weight)
-        # Invariant Mass Distribution of the two best Jet candidate to form V-Boson
-        self.hEvent.fill1D(f"InvMass_VCandJets_{region}_RECO", f"InvMass_VCandJets_{region}_RECO;m_{{jj}} [GeV];Events", 50, 40., 140., m_jj, self.weight)        
-        # Invariant Mass of 2j Gamma Distribution
-        self.hEvent.fill1D(f"InvMass_jjgamma_{region}_RECO", f"InvMass_jjgamma_{region}_RECO;m_{{jj#gamma}} [GeV];Events", 60, 60., 240., m_jjgamma, self.weight)
-        # Invariant Mass of 2j Gamma Distribution vs Invariant Mass of 2j Distribution
-        self.hEvent.fill2D(f"InvMass_jj_jjgamma_{region}_RECO", f"InvMass_jj_jjgamma_{region}_RECO;m_{{jj}} [GeV];m_{{jj#gamma}} [GeV];Events", 36, 0., 180., 50, 0., 250., m_jj, m_jjgamma, self.weight)
-        # Invariant Mass of VZ Distribution
-        self.hEvent.fill1D(f"InvMass_VZCand_{region}_RECO", f"InvMass_VZCand_{region}_RECO;m_{{ll}} [GeV];Events", 100, 100., 1000., m_VZ, self.weight)
-        # Invariant Mass of 2j 2l Gamma Distribution
-        self.hEvent.fill1D(f"InvMass_VZgamma_{region}_RECO", f"InvMass_VZgamma_{region}_RECO;m_{{2l2j#gamma}} [GeV];Events", 150, 100., 1500., m_lljjgamma, self.weight)
+        p4_VZ      = p4_V + p4_Z
+        p4_Vgamma  = p4_V + p4_gamma
+        p4_Zgamma  = p4_Z + p4_gamma
+        p4_VZgamma = p4_V + p4_Z + p4_gamma
 
+        # Invariant masses
+        m_ll        = p4_Z.M()
+        m_jj        = p4_V.M()
+        m_llgamma   = p4_Zgamma.M()
+        m_jjgamma   = p4_Vgamma.M()
+        m_VZ        = p4_VZ.M()
+        m_lljjgamma = p4_VZgamma.M()
+
+        # Transverse momenta
+        pt_gamma    = p4_gamma.Pt()
+        pt_Z        = p4_Z.Pt()
+        pt_V        = p4_V.Pt()
+        pt_VZ       = p4_VZ.Pt()
+        pt_Vgamma   = p4_Vgamma.Pt()
+        pt_Zgamma   = p4_Zgamma.Pt()
+        pt_VZgamma  = p4_VZgamma.Pt()
+
+    
+        target_regions = [region] 
+        if region == "SR" and getattr(self, 'passed_SD', False):
+            target_regions.append("SR_isSD")
+
+        for reg in target_regions:
+            # --- PT DISTRIBUTIONS ---
+            self.hEvent.fill1D(f"Pt_LeadingPhoton_{reg}_RECO", f"Pt_LeadingPhoton_{reg}_RECO;p_{{T}}^{{#gamma}} [GeV];Events", 60, 0., 180., pt_gamma, self.weight)
+            self.hEvent.fill1D(f"Pt_ZCand_{reg}_RECO", f"Pt_ZCand_{reg}_RECO;p_{{T}}^{{Z}} [GeV];Events", 100, 0., 500., pt_Z, self.weight)
+            self.hEvent.fill1D(f"Pt_VCand_{reg}_RECO", f"Pt_VCand_{reg}_RECO;p_{{T}}^{{V}} [GeV];Events", 100, 0., 500., pt_V, self.weight)
+            self.hEvent.fill1D(f"Pt_VZ_{reg}_RECO", f"Pt_VZ_{reg}_RECO;p_{{T}}^{{VZ}} [GeV];Events", 100, 0., 500., pt_VZ, self.weight)
+            self.hEvent.fill1D(f"Pt_Vgamma_{reg}_RECO", f"Pt_Vgamma_{reg}_RECO;p_{{T}}^{{V#gamma}} [GeV];Events", 100, 0., 500., pt_Vgamma, self.weight)
+            self.hEvent.fill1D(f"Pt_Zgamma_{reg}_RECO", f"Pt_Zgamma_{reg}_RECO;p_{{T}}^{{Z#gamma}} [GeV];Events", 100, 0., 500., pt_Zgamma, self.weight)
+            self.hEvent.fill1D(f"Pt_VZgamma_{reg}_RECO", f"Pt_VZgamma_{reg}_RECO;p_{{T}}^{{VZ#gamma}} [GeV];Events", 100, 0., 500., pt_VZgamma, self.weight)
+
+            # --- INVARIANT MASS DISTRIBUTIONS ---        
+            # Invariant Mass of the ZCand (2l) after cuts
+            self.hEvent.fill1D(f"InvMass_ZCand_{reg}_RECO", f"InvMass_ZCand_{reg}_RECO;m_{{ll}} [GeV];Events", 60, 0., 180., m_ll, self.weight)        
+            # Invariant Mass of 2l Gamma
+            self.hEvent.fill1D(f"InvMass_llgamma_{reg}_RECO", f"InvMass_llgamma_{reg}_RECO;m_{{ll#gamma}} [GeV];Events", 60, 60., 240., m_llgamma, self.weight)
+            # 2D InvMass ll vs llgamma
+            self.hEvent.fill2D(f"InvMass_ll_llgamma_{reg}_RECO", f"InvMass_ll_llgamma_{reg}_RECO;m_{{ll}} [GeV];m_{{ll#gamma}} [GeV];Events", 36, 0., 180., 50, 0., 250., m_ll, m_llgamma, self.weight)
+            # Invariant Mass V-Boson Jets
+            self.hEvent.fill1D(f"InvMass_VCandJets_{reg}_RECO", f"InvMass_VCandJets_{reg}_RECO;m_{{jj}} [GeV];Events", 50, 40., 140., m_jj, self.weight)        
+            # Invariant Mass 2j Gamma
+            self.hEvent.fill1D(f"InvMass_jjgamma_{reg}_RECO", f"InvMass_jjgamma_{reg}_RECO;m_{{jj#gamma}} [GeV];Events", 60, 60., 240., m_jjgamma, self.weight)
+            # 2D InvMass jj vs jjgamma
+            self.hEvent.fill2D(f"InvMass_jj_jjgamma_{reg}_RECO", f"InvMass_jj_jjgamma_{reg}_RECO;m_{{jj}} [GeV];m_{{jj#gamma}} [GeV];Events", 36, 0., 180., 50, 0., 250., m_jj, m_jjgamma, self.weight)
+            # Invariant Mass VZ
+            self.hEvent.fill1D(f"InvMass_VZCand_{reg}_RECO", f"InvMass_VZCand_{reg}_RECO;m_{{ll}} [GeV];Events", 100, 100., 1000., m_VZ, self.weight)
+            # Invariant Mass 2j 2l Gamma
+            self.hEvent.fill1D(f"InvMass_VZgamma_{reg}_RECO", f"InvMass_VZgamma_{reg}_RECO;m_{{2l2j#gamma}} [GeV];Events", 150, 100., 1500., m_lljjgamma, self.weight)
         
-
+        
 
 
 
@@ -704,7 +747,7 @@ class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
                 
         return deltaR_list
 
-    def getInvMass(self, *particles):
+    def getP4(self, *particles):
         # Given a variable number of "daughter particles" it calculates the invariant mass
         ptot = ROOT.TLorentzVector()
         for part in particles:
@@ -718,15 +761,10 @@ class VZGammaAnalyzerDemo(EventAnalyzer, analysis_name="VZGammaAnalyzerDemo"):
             p4_temp.SetPtEtaPhiM(pt, eta, phi, mass)
             ptot += p4_temp
             
-        return ptot.M()
-        #for i, part in enumerate(particles):
-        #    if i == 2 and not hasattr(part, "pdgId") :  
-        #        p4_temp = ROOT.TLorentzVector()
-        #        p4_temp.SetPtEtaPhiM(part.pt, part.eta, part.phi, 0.0)
-        #        ptot += p4_temp
-        #    else:
-        #        ptot += part.p4()              
-        #return ptot.M()
+        return ptot
+    
+    def getInvMass(self, *particles):
+        return self.getP4(*particles).M()
 
     def fillCutFlow(self, region, cut_label):
         # param region: "SD" (Signal Definition) o "SR" (Signal Region)
